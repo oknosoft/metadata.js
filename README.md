@@ -1,4 +1,4 @@
-# lde.js - lightweight data engine
+# osde - oknosoft data engine
 
 ### Предпосылки
 Проект задумывался, как альтернативный лёгкий javascript клиент 1С, позволяющий читать и редактировать данные, расположенные на [сервере 1С](http://v8.1c.ru/overview/Term_000000033.htm).
