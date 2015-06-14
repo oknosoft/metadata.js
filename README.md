@@ -18,10 +18,10 @@
 - Высокоуровневая объектная модель данных. Предопределенное (при необходимости, переопределяемое) поведение *Документов*, *Регистров*, *Справочников* и *Менеджеров объектов*, наличие *стандартных реквизитов* и *событий*, повышает эффективность разработки в разы по сравнению с фреймворками, оперирующими записями реляционных таблиц
  
 Чтобы предоставить разработчику на javascript инструментарий, подобный 1С-ному, на верхнем уровне фреймворка osde реализованы следующие классы:
-- AppEvents, обслуживающий события при старте программы, авторизацию пользователей и состояния сети
-- Meta - хранилище метаданных конфигурации
-- DataManager с наследниками RefDataManager, EnumManager, InfoRegManager, CatManager, DocManager - менеджеры объектов данных - аналоги 1С-ных ПеречислениеМенеджер, РегистрСведенийМенеджер, СправочникМенеджер, ДокументМенеджер
-- DataObj с наследниками CatObj, DocObj, EnumObj, DataProcessorObj - аналоги 1С-ных СправочникОбъект, ДокументОбъект, ОбработкаОбъект
+- [AppEvents](http://www.oknosoft.ru/upzp/apidocs/classes/AppEvents.html), обслуживающий события при старте программы, авторизацию пользователей и состояния сети
+- [Meta](http://www.oknosoft.ru/upzp/apidocs/classes/Meta.html) - хранилище метаданных конфигурации
+- [DataManager](http://www.oknosoft.ru/upzp/apidocs/classes/DataManager.html) с наследниками RefDataManager, EnumManager, InfoRegManager, CatManager, DocManager - менеджеры объектов данных - аналоги 1С-ных ПеречислениеМенеджер, РегистрСведенийМенеджер, СправочникМенеджер, ДокументМенеджер
+- [DataObj](http://www.oknosoft.ru/upzp/apidocs/classes/DataObj.html) с наследниками CatObj, DocObj, EnumObj, DataProcessorObj - аналоги 1С-ных СправочникОбъект, ДокументОбъект, ОбработкаОбъект
 
 ### Благодарности
 * Andrey Gershun, author of [AlaSQL](https://github.com/agershun/alasql) - Javascript SQL database library
