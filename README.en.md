@@ -1,5 +1,7 @@
 # osde - oknosoft data engine
 
+[README на русском языке](README.md)
+
 ### Prehistory
 
 ### Presentations
