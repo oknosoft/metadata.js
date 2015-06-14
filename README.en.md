@@ -1,4 +1,6 @@
-## Credits
+# osde - oknosoft data engine
+
+### Credits
 
 Many thanks to
 * Andrey Gershun, author of [AlaSQL](https://github.com/agershun/alasql) - Javascript SQL database library
@@ -8,7 +10,7 @@ Many thanks to
 * other people for useful tools, which make our work much easier
 
 
-## License
+### License
 
 [Licence information](LICENSE.en.md).
 
