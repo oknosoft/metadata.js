@@ -5,6 +5,8 @@
 
 $p.settings = function (prm, modifiers) {
 
+	prm.check_app_installed = false; // установленность приложения в ChromeStore НЕ проверяем
+
 	prm.offline = false;            // автономная работа запрещена
 	if(localStorage)
 		localStorage.setItem("offline", "");

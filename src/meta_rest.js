@@ -10,7 +10,7 @@
 
 function Rest(){
 
-	$p.job_prm.rest_url()
+	//$p.job_prm.rest_url()
 }
 
 var _rest = $p.rest = new Rest();
