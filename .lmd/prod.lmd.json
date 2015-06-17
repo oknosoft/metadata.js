@@ -1,0 +1,25 @@
+{
+  "name": "osde prod build",
+  "root": "../",
+  "www_root": "../",
+  "output": "osde.min.js",
+  "modules": {
+    "common":   ["osde/common.js", "osde/i18n.ru.js",
+      "osde/ext/excells_ref.js",
+      "osde/ext/wnd_dat.js",
+      "osde/ext/wnd_address.js",
+      "osde/ext/rsvg.js",
+      "osde/metadata.js", "osde/meta_mngrs.js", "osde/meta_tabulars.js", "osde/meta_objs.js", "osde/meta_rest.js",
+      "osde/import_export.js", "osde/ext/wnd_obj.js", "osde/events.js"],
+    "settings": "order_dealer/settings.js",
+    "filesaver" :  "lib/filesaver.js",
+    "modifiers/<%= file %>": "order_dealer/modifiers/*.js",
+    "wnd/<%= file %>": "order_dealer/wnd/*.js",
+    "create_tables" : "data/create_tables.sql",
+    "main":     "order_dealer/main.js"
+  },
+  "optimize": true,
+  "pack": true,
+  "main": "main",
+  "ie": false
+}
