@@ -1,0 +1,313 @@
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    overflow: hidden;
+}
+
+#owb_wrapper {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Tahoma, sans-serif;
+    font-size: 10pt;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+#risdiv {
+    min-width: 710px;
+    max-width: 92%;
+    min-height: 94%;
+    margin: auto;
+}
+
+#msgfooter {
+    clear: both;
+    height: 40px;
+}
+
+.svgs-area {
+    width: 100%;
+    height: 88px;
+    clear: both;
+    overflow: hidden;
+}
+
+.svgs-minmax {
+	top: 0px;
+	right: 18px;
+	position: absolute;
+	width: 18px;
+	height: 18px;
+	background-image: url("../imgs/dhxlayout_web/dhxlayout_cell_btns.gif");
+	background-repeat: no-repeat;
+	background-color: #808080;
+	cursor: pointer;
+	z-index: 99;
+}
+
+.order_dealer_options {
+    position: absolute;
+    right: 4px;
+}
+
+.inputSize {
+    position: absolute;
+    font-family: Tahoma, sans-serif;
+    font-size: 10pt;
+    border: 1px solid #aaaaaa;
+    background: #ffffff 50% 50% repeat-x;
+    color: #222222;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+    z-index: 190;
+}
+
+.dhx_pbox {
+    border: none;
+}
+
+/* зачки состояния объекта: папка, элемент, пометка удаления, проведён */
+.cell_ref_folder {padding-left: 26px !important; background: url(../imgs/dhxtree_web/folderClosed.gif) no-repeat left center;}
+.cell_ref_folder_deleted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/folderDeleted.gif) no-repeat left center;}
+.cell_ref_elm {padding-left: 26px !important; background: url(../imgs/dhxtree_web/catelm.gif) no-repeat left center;}
+.cell_ref_elm_deleted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/catelmDeleted.gif) no-repeat left center;}
+.cell_doc_posted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/doc_posted.png) no-repeat left center;}
+.cell_doc_deleted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/doc_deleted.png) no-repeat left center;}
+.cell_doc_saved {padding-left: 26px !important; background: url(../imgs/dhxtree_web/doc_saved.png) no-repeat left center;}
+.cell_mandatory {border-bottom: 2px red dotted !important;}
+
+div.gridbox_clear table.hdr td {
+    color: #333;
+}
+
+div.gridbox_dhx_web.gridbox table.obj.row20px tr td {
+    height: 23px;
+}
+
+/* фон выделения в гриде */
+div.gridbox_dhx_web.gridbox table.obj tr.rowselected td.cellselected {
+	background-color: #dddddd;
+	color: #000000;
+}
+
+/* отступы в шапке грида */
+div.gridbox_dhx_web.gridbox table.hdr td {
+	padding: 3px 0px 4px 0px;
+}
+
+/* Калькулятор */
+.calcTable {
+    border: 1px silver solid;
+    width: 120px;
+    z-index: 200;
+}
+.calcButton {
+    background-color: #fffefa;
+    color: black;
+    font-family: Tahoma, sans-serif;
+    font-size: 10pt;
+    font-weight: normal;
+}
+.calcInput {
+    font-size: 10pt;
+    font-weight: normal;
+    width: 98%;
+}
+.calkSubmit {
+    width: 22px;
+    display: inline-block;
+    border: none;
+    font-size: 10pt;
+    color: black;
+}
+
+/* Текстовый редактор - высота*/
+.dhx_textarea {
+    height: 50px;
+}
+
+/* поле с тремя точками */
+.ref_div23 {
+    display: inline-block;
+    height: 23px;
+    width: 100%
+}
+.ref_field23 {
+    background: url(../imgs/custom_field/points.png) no-repeat left center;
+    position: relative;
+    width: 22px;
+    height: 23px;
+    right: -1px;
+    top: -23px;
+    float: right;
+    cursor: alias;
+}
+.ref_field23:hover {
+    background: url(../imgs/custom_field/points_hover.png) no-repeat left center;
+}
+.ref_div21 {
+    display: inline-block;
+    height: 21px;
+    width: 100%
+}
+.ref_field21 {
+    background: url(../imgs/custom_field/points.png) no-repeat left center;
+    position: relative;
+    width: 22px;
+    height: 21px;
+    right: -5px;
+    top: -21px;
+    float: right;
+    cursor: alias;
+}
+.ref_field21:hover {
+    background: url(../imgs/custom_field/points_hover.png) no-repeat left center;
+}
+
+/* картинка длительной операции*/
+.img_long {
+    background: url(../imgs/dhxwins_web/dhxwins_progress.gif) no-repeat 20px 20px;
+    width: 80px;
+    height: 100px;
+}
+
+.tb_title {
+    font-size: 16pt;
+    font-family: Segoe UI, Tahoma, sans-serif;
+    margin-right: 20px;
+}
+
+/* оформление таблицы безбумажки*/
+.pl_top { vertical-align: top; }
+.pl_blue{ color: darkblue !important; }
+.pl_red{ color: darkred !important; }
+.pl_bg_gray{ background-color: lightgray !important; }
+.pl_bold{ font-weight: bold; }
+
+
+/* Панель инструментов построителя*/
+.wb-tools {
+    position: fixed;
+    padding: 0;
+    margin: 0;
+    background: rgba(255,254,250,0.4);
+    border: 0px solid white;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.35);
+}
+.wb-button {
+    width: 20px;
+    height: 20px;
+    cursor: default;
+    padding: 4px;
+	font-family: Tahoma, sans-serif;
+	font-size: 10pt;
+}
+.wb-button:hover, .wb-button.selected:hover {
+    background: #bebebe;
+}
+.wb-button.selected {
+    background: #969394;
+}
+
+/* dat.GUI */
+.dhxwins_vp_dhx_web div.dhxwin_hdr div.dhxwin_icon.without_icon {
+    display: none;
+}
+.dhxwins_vp_dhx_web div.dhxwin_brd.dat_gui {
+    position: absolute;
+    border-left: 5px solid #fffefa;
+    border-right: 5px solid #fffefa;
+    border-bottom: 5px solid #fffefa;
+    background: #fffefa;
+    z-index: 0;
+}
+
+.boolean-box {
+    width: 28px !important;
+}
+.boolean-caption {
+    clear: none !important;
+    float: none !important;
+    width: 130px !important;
+}
+
+.property-caption {
+    font-family: Tahoma, sans-serif;
+    font-size: 10pt;
+    cursor: pointer;
+    width: 100% !important;
+}
+.property-caption:hover {
+    background: #ebebeb;
+}
+
+.dg .property-name {
+    font-family: Tahoma, sans-serif;
+    font-size: 10pt;
+}
+
+/* курсоры построителя*/
+.cursor-pen-freehand {
+    cursor: url('/imgs/custom_field/cursor-pen-freehand.png') 5 2, default;
+}
+.cursor-lay-impost {
+    cursor: url('/imgs/custom_field/cursor-lay-impost.png') 3 6, default;
+}
+.cursor-arrow-lay {
+    cursor: url('/imgs/custom_field/cursor-arrow-lay.png') 1 1, default;
+}
+.cursor-arrow-ruler {
+    cursor: url('/imgs/custom_field/cursor-arrow-ruler.png') 3 1, default;
+}
+.cursor-arrow-ruler-light {
+    cursor: url('/imgs/custom_field/cursor-arrow-ruler-light.png') 3 1, default;
+}
+.cursor-pen-adjust {
+    cursor: url('/imgs/custom_field/cursor-pen-adjust.png') 5 2, default;
+}
+.cursor-zoom-in {
+    cursor: url('/imgs/custom_field/cursor-zoom-in.png') 7 7, default;
+}
+.cursor-zoom-out {
+    cursor: url('/imgs/custom_field/cursor-zoom-out.png') 7 7, default;
+}
+.cursor-hand {
+    cursor: url('/imgs/custom_field/cursor-hand.png') 10 10, default;
+}
+.cursor-hand-grab {
+    cursor: url('/imgs/custom_field/cursor-hand-grab.png') 10 10, default;
+}
+.cursor-arc {
+    cursor: url('/imgs/custom_field/cursor-arc-r.png') 6 10, default;
+}
+.cursor-arc-arrow {
+    cursor: url('/imgs/custom_field/cursor-arc-r-active.png') 3 7, default;
+}
+.cursor-arrow-black {
+    cursor: url('/imgs/custom_field/cursor-arrow-black.png') 2 2, default;
+}
+.cursor-arrow-black-point {
+    cursor: url('/imgs/custom_field/cursor-arrow-black-point.png') 2 2, default;
+}
+.cursor-arrow-black-shape {
+    cursor: url('/imgs/custom_field/cursor-arrow-black-shape.png') 2 2, default;
+}
+.cursor-arrow-white {
+    cursor: url('/imgs/custom_field/cursor-arrow-white.png') 2 2, default;
+}
+.cursor-arrow-white-point {
+    cursor: url('/imgs/custom_field/cursor-arrow-white-point.png') 2 2, default;
+}
+.cursor-arrow-white-shape {
+    cursor: url('/imgs/custom_field/cursor-arrow-white-shape.png') 2 2, default;
+}
+.cursor-arrow-small {
+    cursor: url('/imgs/custom_field/cursor-arrow-small.png') 2 2, default;
+}
+.cursor-arrow-small-point {
+    cursor: url('/imgs/custom_field/cursor-arrow-small-point.png') 2 2, default;
+}

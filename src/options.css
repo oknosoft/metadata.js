@@ -1,0 +1,114 @@
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    color: rgb(48, 57, 66);
+    font-family: Segoe UI, Tahoma, sans-serif;
+    background-image: -webkit-linear-gradient(rgb(255, 255, 255) 50%, rgb(236, 230, 240));
+    line-height: 22px;
+    overflow: auto !important;
+}
+#tunes {
+    position: absolute;
+    left: 60px;
+    top: 40px;
+    font-size: 20px;
+}
+#tunes img {
+    margin-right: 10px;
+    vertical-align: top;
+}
+.title {
+    font-weight: bold;
+}
+#tunes label, #tunes input, a {
+    font-size: 14px;
+}
+
+.labelToControl {
+    width: 190px;
+    display: inline-block;
+}
+
+.alignTop {
+    vertical-align: top;
+    margin-top: 8px;
+}
+
+
+.tip, .tip-two, .tip-three {
+    display: none;
+    position: absolute;
+    z-index: 9998;
+    top: 0;
+    left: 100%;
+    background: #EDEDED;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    box-shadow: 5px 5px 0.5em -0.1em rgba(0,0,6,0.5);
+    text-align: left;
+    color: #000;
+    font: normal 100 14px Segoe UI, Tahoma, sans-serif;
+    opacity: .9;
+    cursor: default;
+    padding: 5px;
+    margin: -15px 0 0 10px;
+    width: 320px;
+    min-height: 50px;
+    height: auto;
+}
+.tip-two, .tip-three {
+    margin: -30px 0 0 0;
+}
+.tip:before, .tip-two:before, .tip-three:before {
+    border-width: 9px 8px 9px 0;
+    border-color: transparent #cccccc transparent transparent;
+    top: 13px;
+    left: -9px;
+}
+.tip:after, .tip-two:after, .tip-three:after {
+    border-width: 7px 7px 7px 0;
+    border-color: transparent #ededed transparent transparent;
+    top: 15px;
+    left: -7px;
+}
+.tip:before, .tip-two:before, .tip-three:before, .tip:after, .tip-two:after, .tip-three:after {
+    content:"";
+    position:absolute;
+    width: 0px;
+    height: 0px;
+    border-style: solid;
+}
+.tip-block {
+    display: inline-block;
+    position: relative;
+    background: transparent;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    height: 0;
+    width: 1px;
+}
+input.support-two:focus + .tip-block .tip-two, textarea.support-two:focus + .tip-block .tip-two {
+    display:block;
+}
+input.support-two[tabindex="1"]:focus, textarea.support-two[tabindex="1"]:focus {
+    outline: none;
+}
+input.support-hover-two{
+    width: 450px
+}
+input.support-hover-two[type="checkbox"]{
+    width: 30px
+}
+textarea.support-hover-two{
+    width: 444px;
+    height: 140px;
+    margin-top: 8px;
+}
+
+input.support-hover-two:hover + .tip-block .tip-two,
+label.support-hover-two:hover + .tip-block .tip-two,
+textarea.support-hover-two:hover + .tip-block .tip-two {
+    display:block;
+}
