@@ -1,12 +1,9 @@
 /**
  * <br />&copy; http://www.oknosoft.ru 2009-2015
  * Created 17.06.2015
- * @module  unf-main
+ * @module  основное окно интерфейса unf demo
  */
 
-/**
- * основное окно интерфейса unf demo
- */
 
 function on_log_in_step(step){
 
@@ -76,17 +73,17 @@ function create_main_form(){
  */
 $p.iface.oninit = function() {
 
-	$p.eve.redirect = true;
+	// TODO реализовать класс окна авторизации по умолчанию
 
 	// при первой возможности создаём layout
 	$p.iface.docs = new dhtmlXLayoutObject({
-		parent: document.getElementById("ldemo"),
+		parent: document.body,
 		pattern: "1C"
 	});
 
 	// приклеиваем к layout-у таблицу для вывода сообщений
 	$p.iface.main = $p.iface.docs.cells("a");
-	$p.iface.main.setText("Графический построитель - загрузка справочников при первом запуске");
+	$p.iface.main.setText("Демо УНФ - загрузка перечислений и справочников");
 	$p.iface.synctxt = $p.iface.main.attachGrid();
 	$p.iface.synctxt.setIconsPath(dhtmlx.image_path);
 	$p.iface.synctxt.setImagePath(dhtmlx.image_path);
@@ -111,7 +108,7 @@ $p.iface.oninit = function() {
 		this.selectRowById(newId);
 	};
 
-	//$p.switchmode('video');
+	// TODO реализовать класс интерфейса по умолчанию
 
 	// к сожалению, в совсем старых браузерах работать не будет
 	if(!window.JSON || !window.localStorage){
@@ -120,7 +117,11 @@ $p.iface.oninit = function() {
 
 	}else{
 
-		$p.eve.log_in(on_log_in_step)
+		$p.eve.log_in(on_log_in_step, {
+			meta: "/examples/unf/data/meta.json",
+			data: "/examples/unf/data/zones/",
+			rest: true
+		})
 
 			.then(create_main_form)
 

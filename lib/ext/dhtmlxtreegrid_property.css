@@ -1,0 +1,46 @@
+.dhx_parent_row, .dhx_parent_row td{
+	background: #D4D0C8 !important;
+}
+div.gridbox_property {
+	border:1px solid  #c2d5dc;
+}
+div.gridbox_property table.obj td {
+	border-width: 0px 1px 0px 1px;
+	border-left: 1px solid white;
+	border-right: 1px solid #D6D6D6;
+	font-family:Tahoma;
+	font-size:11px;
+	padding-right:4px;
+	padding-left:4px;
+}
+div.gridbox_property table.row20px tr td {
+	padding-right:4px;
+	padding-left:4px;
+	border-bottom: 1px solid #D6D6D6;
+}
+div.gridbox_property .dhx_combo_edit{
+	font-family:Tahoma;
+	font-size:11px;
+}
+div.gridbox_property table.obj tr.rowselected td{
+	background-color:#ededed;
+	color:black;
+	}
+div.gridbox_property table.obj tr.rowselected td.cellselected, div.gridbox table.obj td.cellselected {
+	background-color:white;
+	}
+div.gridbox_property select{
+	font-family:Tahoma;
+	font-size:8pt;
+}
+div.property_space{
+	background-color:#D4D0C8;
+	width:20px; height:22px;
+	position:relative; top:-20px; left:-5px;
+	z-index:1;
+}
+img.property_image{
+	position:relative;
+	left:-4px;
+	z-index:2;
+}

@@ -7751,7 +7751,8 @@ if(window){
 					});
 
 				}else
-					iface.oninit();
+					setTimeout(iface.oninit, 0);
+
 
 				// Ресурсы уже кэшированнны. Индикатор прогресса скрыт
 				if (cache = w.applicationCache){
@@ -8039,16 +8040,18 @@ $p.eve.reduce_promices = function(parts){
  * @return {Promise.<T>} - промис, ошибки которого должен обработать вызывающий код
  * @async
  */
-$p.eve.log_in = function(onstep){
+$p.eve.log_in = function(onstep, paths){
 
 	var stepper = $p.eve.stepper,
 		mdd;
+	if(!paths)
+		paths = {meta: "/data/meta.json", data: "/data/zones/"};
 
 	// информируем о начале операций
 	onstep($p.eve.steps.load_meta);
 
 	// читаем файл метаданных
-	return $p.ajax.get("/data/meta.json?v="+$p.job_prm.files_date)
+	return $p.ajax.get(paths.meta+"?v="+$p.job_prm.files_date)
 
 		// грузим метаданные
 		.then(function (req) {
@@ -8064,14 +8067,18 @@ $p.eve.log_in = function(onstep){
 			if($p.job_prm.offline)
 				return res;
 
-			return _load({
-				action: "get_meta",
-				cache_md_date: $p.wsql.get_user_param("cache_md_date", "number"),
-				cache_cat_date: stepper.cat_ini_date,
-				now_js: Date.now(),
-				margin: $p.wsql.get_user_param("margin", "number"),
-				ipinfo: $p.ipinfo.hasOwnProperty("latitude") ? JSON.stringify($p.ipinfo) : ""
-			})
+			else if(paths.rest){
+				// в режиме rest тестируем авторизацию
+
+			}else
+				return _load({
+					action: "get_meta",
+					cache_md_date: $p.wsql.get_user_param("cache_md_date", "number"),
+					cache_cat_date: stepper.cat_ini_date,
+					now_js: Date.now(),
+					margin: $p.wsql.get_user_param("margin", "number"),
+					ipinfo: $p.ipinfo.hasOwnProperty("latitude") ? JSON.stringify($p.ipinfo) : ""
+				})
 		})
 
 		// интерпретируем ответ сервера
@@ -8095,8 +8102,10 @@ $p.eve.log_in = function(onstep){
 
 			// обрабатываем поступившие данные
 			$p.wsql.set_user_param("time_diff", res["now_1с"] - res["now_js"]);
-			_md.get("cat.clrs").predefined.white.ref = res.cat["clrs"].predefined.white.ref;
-			_md.get("cat.bases").predefined.main.ref = res.cat["bases"].predefined.main.ref;
+			if(res.cat["clrs"])
+				_md.get("cat.clrs").predefined.white.ref = res.cat["clrs"].predefined.white.ref;
+			if(res.cat["bases"])
+				_md.get("cat.bases").predefined.main.ref = res.cat["bases"].predefined.main.ref;
 
 			return res;
 		})
@@ -8108,7 +8117,7 @@ $p.eve.log_in = function(onstep){
 
 			stepper.zone = ($p.job_prm.demo ? "1" : $p.wsql.get_user_param("zone")) + "/";
 
-			return $p.ajax.get("/data/zones/" + stepper.zone + "p_0.json?v="+$p.job_prm.files_date)
+			return $p.ajax.get(paths.data + stepper.zone + "p_0.json?v="+$p.job_prm.files_date)
 		})
 
 		// из содержимого первого файла получаем количество файлов и загружаем их все
@@ -8127,8 +8136,8 @@ $p.eve.log_in = function(onstep){
 
 			var parts = [];
 			for(var i=1; i<=stepper.files; i++)
-				parts.push($p.ajax.get("/data/zones/" + stepper.zone + "p_" + i + ".json?v="+$p.job_prm.files_date));
-			parts.push($p.ajax.get("/data/zones/" + stepper.zone + "ireg.json?v="+$p.job_prm.files_date));
+				parts.push($p.ajax.get(paths.data + stepper.zone + "p_" + i + ".json?v="+$p.job_prm.files_date));
+			parts.push($p.ajax.get(paths.data + stepper.zone + "ireg.json?v="+$p.job_prm.files_date));
 
 			return $p.eve.reduce_promices(parts);
 
