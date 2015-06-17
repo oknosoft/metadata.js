@@ -1,0 +1,56 @@
+CACHE MANIFEST
+# 2222222222223
+
+
+# Additional resources to cache
+CACHE:
+
+# dhtmlx
+/lib/dhtmlx.css
+/lib/ext/dhtmlxtreegrid_property.css
+/lib/dhtmlx.js
+
+# картинки
+/lib/imgs/dhxlayout_web/dhxlayout_sep_h.gif
+/lib/imgs/dhxlayout_web/dhxlayout_cell_btns.gif
+/lib/imgs/dhxlayout_web/dhxlayout_sep_v.gif
+/lib/imgs/dhxlayout_web/dhxlayout_sep_v.gif
+/lib/imgs/dhxtoolbar_web/dhxtoolbar_arrow.gif
+/lib/imgs/dhxcombo_web/dhxcombo_arrow_down.gif
+/imgs/dhxtoolbar_web/tb-mode-18.png
+/imgs/dhxtoolbar_web/tb_more_w.png
+/imgs/dhxtoolbar_web/tb_settings.png
+/imgs/dhxtoolbar_web/tb_employee.png
+
+
+
+# служебные страницы
+48.png
+128.png
+404.html
+offline.html
+
+# offline.html will be displayed if the user is offline
+FALLBACK:
+/ offline.html
+
+# All other resources (e.g. sites) require the user to be online.
+NETWORK:
+
+# Explicitly cached entries
+/pl_debug.html
+/pl_index.html
+
+# построитель
+/js.builder/raphael-min.js
+/js.builder/owb_min.js
+
+# безбумажка с внедренным фреймворком УПзП
+/lde/upzp20.css
+paperless.css
+scancmd.js
+
+# данные - xml-ки форм, панелей и менюшек
+/data/toolbar_pl.xml
+
+*

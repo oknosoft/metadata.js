@@ -84,11 +84,165 @@ if(window){
 			}
 
 
-			// нулевым делом проверяем загруженность dhtmlx
-			if($p.job_prm.check_dhtmlx && !("dhtmlx" in w)){
-				alert($p.msg.no_dhtmlx);
-				return;
+
+			/**
+			 * Нулевым делом, создаём объект параметров работы программы, в процессе создания которого,
+			 * выполняется клиентский скрипт, переопределяющий триггеры и переменные окружения
+			 * Параметры имеют значения по умолчанию, могут переопределяться подключаемыми модулями
+			 * и параметрами url, синтаксический разбор url производим сразу
+			 * @property job_prm
+			 * @for OSDE
+			 * @type JobPrm
+			 * @static
+			 */
+			$p.job_prm = new JobPrm();
+
+
+			/**
+			 * если в $p.job_prm указано использование геолокации, геокодер инициализируем с небольшой задержкой
+			 */
+			if (navigator.geolocation && $p.job_prm.use_google_geo) {
+
+				/**
+				 * Данные геолокации
+				 * @property ipinfo
+				 * @type IPInfo
+				 * @static
+				 */
+				$p.ipinfo = new function IPInfo(){
+
+					var _yageocoder, _ggeocoder, _addr = "";
+
+					/**
+					 * Геокодер карт Яндекс
+					 * @class YaGeocoder
+					 * @static
+					 */
+					function YaGeocoder(){
+
+						/**
+						 * Выполняет прямое или обратное геокодирование
+						 * @method geocode
+						 * @param attr {Object}
+						 * @return {Promise.<T>}
+						 */
+						this.geocode = function (attr) {
+							//http://geocode-maps.yandex.ru/1.x/?geocode=%D0%A7%D0%B5%D0%BB%D1%8F%D0%B1%D0%B8%D0%BD%D1%81%D0%BA,+%D0%9F%D0%BB%D0%B5%D1%85%D0%B0%D0%BD%D0%BE%D0%B2%D0%B0+%D1%83%D0%BB%D0%B8%D1%86%D0%B0,+%D0%B4%D0%BE%D0%BC+32&format=json&sco=latlong
+							//http://geocode-maps.yandex.ru/1.x/?geocode=61.4080273,55.1550362&format=json&lang=ru_RU
+
+							return Promise.resolve(false);
+						}
+					}
+
+					/**
+					 * Объект геокодера yandex
+					 * https://tech.yandex.ru/maps/doc/geocoder/desc/concepts/input_params-docpage/
+					 * @property yageocoder
+					 * @for IPInfo
+					 * @type YaGeocoder
+					 */
+					this._define("yageocoder", {
+						get : function(){
+
+							if(!_yageocoder)
+								_yageocoder = new YaGeocoder();
+							return _yageocoder;
+						},
+						enumerable : false,
+						configurable : false});
+
+
+					/**
+					 * Объект геокодера google
+					 * https://developers.google.com/maps/documentation/geocoding/?hl=ru#GeocodingRequests
+					 * @property ggeocoder
+					 * @for IPInfo
+					 * @type {google.maps.Geocoder}
+					 */
+					this._define("ggeocoder", {
+							get : function(){
+								return _ggeocoder;
+							},
+							enumerable : false,
+							configurable : false}
+					);
+
+					/**
+					 * Адрес геолокации пользователя программы
+					 * @property addr
+					 * @for IPInfo
+					 * @type String
+					 */
+					this._define("addr", {
+							get : function(){
+								return _addr;
+							},
+							enumerable : true,
+							configurable : false}
+					);
+
+					this.location_callback= function(){
+
+						/**
+						 * Объект геокодера google
+						 * https://developers.google.com/maps/documentation/geocoding/?hl=ru#GeocodingRequests
+						 * @property ggeocoder
+						 * @for IPInfo
+						 * @type {google.maps.Geocoder}
+						 */
+						_ggeocoder = new google.maps.Geocoder();
+
+						navigator.geolocation.getCurrentPosition(function(position){
+
+								/**
+								 * Географическая широта геолокации пользователя программы
+								 * @property latitude
+								 * @for IPInfo
+								 * @type Number
+								 */
+								$p.ipinfo.latitude = position.coords.latitude;
+
+								/**
+								 * Географическая долгота геолокации пользователя программы
+								 * @property longitude
+								 * @for IPInfo
+								 * @type Number
+								 */
+								$p.ipinfo.longitude = position.coords.longitude;
+
+								var latlng = new google.maps.LatLng($p.ipinfo.latitude, $p.ipinfo.longitude);
+
+								_ggeocoder.geocode({'latLng': latlng}, function(results, status) {
+									if (status == google.maps.GeocoderStatus.OK){
+										if(!results[1] || results[0].address_components.length >= results[1].address_components.length)
+											_addr = results[0].formatted_address;
+										else
+											_addr = results[1].formatted_address;
+									}
+								});
+
+							}, function(err){
+								if(err)
+									$p.ipinfo.err = err.message;
+							}, {
+								timeout: 30000
+							}
+						);
+					}
+				};
+
+				// подгружаем скрипты google
+				if(!window.google || !window.google.maps)
+					$p.eve.onload.push(function () {
+						setTimeout(function(){
+							$p.load_script(location.protocol +
+								"//maps.google.com/maps/api/js?sensor=false&callback=$p.ipinfo.location_callback", "script", function(){});
+						}, 600);
+					});
+				else
+					location_callback();
 			}
+
 
 			if("dhtmlx" in w){
 				$p.iface.w = new dhtmlXWindows();

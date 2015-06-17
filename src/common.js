@@ -1149,7 +1149,7 @@ $p.modifiers = new (
 		 */
 		this.push = function (method) {
 			methods.push(method);
-		}
+		};
 
 		/**
 		 * Загружает и выполняет методы модификаторов
@@ -1165,260 +1165,102 @@ $p.modifiers = new (
 );
 
 /**
- * Параметры работы программы - имеют значения по умолчанию, могут переопределяться подключаемыми модулями и параметрами url,
- * синтаксический разбор которых производим сразу
- * @property job_prm
- * @for OSDE
- * @type JobPrm
+ * Хранит глобальные настройки варианта компиляции (Заказ дилера, Безбумажка, Демо и т.д.)
+ * Настройки извлекаются из файла "settings" при запуске приложения и дополняются параметрами url,
+ * которые могут быть переданы как через search (?), так и через hash (#)
+ * @class JobPrm
  * @static
  */
-$p.job_prm = new (
+function JobPrm(){
 
 	/**
-	 * Хранит глобальные настройки варианта компиляции (Заказ дилера, Безбумажка, Демо и т.д.)
-	 * Настройки извлекаются из файла "settings" при запуске приложения и дополняются параметрами url,
-	 * которые могут быть переданы как через search (?), так и через hash (#)
-	 * @class JobPrm
-	 * @static
+	 * Осуществляет синтаксический разбор параметров url
+	 * @method parse_url
+	 * @return {Object}
 	 */
-	function JobPrm(){
+	this.parse_url = function (){
 
-		/**
-		 * Осуществляет синтаксический разбор параметров url
-		 * @method parse_url
-		 * @return {Object}
-		 */
-		this.parse_url = function (){
+		function parse(url_prm){
+			var prm = {}, tmp = [], pairs;
 
-			function parse(url_prm){
-				var prm = {}, tmp = [], pairs;
+			if(url_prm.substr(0, 1) === "#" || url_prm.substr(0, 1) === "?")
+				url_prm = url_prm.substr(1);
 
-				if(url_prm.substr(0, 1) === "#" || url_prm.substr(0, 1) === "?")
-					url_prm = url_prm.substr(1);
+			if(url_prm.length > 2){
 
-				if(url_prm.length > 2){
+				pairs = decodeURI(url_prm).split('&');
 
-					pairs = decodeURI(url_prm).split('&');
-
-					// берём параметры из url
-					for (var i in pairs){   //разбиваем пару на ключ и значение, добавляем в их объект
-						tmp = pairs[i].split('=');
-						if(tmp[0] == "m"){
-							try{
-								prm[tmp[0]] = JSON.parse(tmp[1]);
-							}catch(e){
-								prm[tmp[0]] = {};
-							}
-						}else
-							prm[tmp[0]] = tmp[1] || "";
-					}
-				}
-
-				return prm;
-			}
-
-			return parse(location.search)._mixin(parse(location.hash));
-		}
-
-
-		/**
-		 * Указывает, проверять ли совместимость браузера при запуске программы
-		 * @property check_browser_compatibility
-		 * @type {Boolean}
-		 * @static
-		 */
-		this.check_browser_compatibility = true;
-
-		/**
-		 * Указывает, проверять ли установленность приложения в Google Chrome Store при запуске программы
-		 * @property check_app_installed
-		 * @type {Boolean}
-		 * @static
-		 */
-		this.check_app_installed = true;
-
-		this.check_dhtmlx = true;
-		this.use_builder = false;
-
-		this.offline = false;
-
-		/**
-		 * Содержит объект с расшифровкой параметров url, указанных при запуске программы
-		 * @property url_prm
-		 * @type {Object}
-		 * @static
-		 */
-		this.url_prm = this.parse_url();
-
-		// подмешиваем параметры, заданные в файле настроек сборки
-		require("settings")(this, $p.modifiers);
-
-		// подмешиваем параметры url
-		// Они обладают приоритетом над настройками по умолчанию и настройками из settings.js
-		for(var prm_name in this){
-			if(prm_name !== "url_prm" && typeof this[prm_name] !== "function" && this.url_prm.hasOwnProperty[prm_name])
-				this[prm_name] = this.url_prm[prm_name];
-		}
-
-		this.hs_url = function () {
-			return "/a/zd/%1/hs/upzp".replace("%1", $p.wsql.get_user_param("zone", "number"));
-		}
-
-		this.rest_url = function () {
-			return "/a/zd/%1/odata/standard.odata/".replace("%1", $p.wsql.get_user_param("zone", "number"));
-		}
-
-		this.unf_url = function () {
-			return "/a/unf/%1/odata/standard.odata/".replace("%1", $p.wsql.get_user_param("zone_unf", "number"));
-		}
-
-	}
-);
-
-
-/**
- * если в $p.job_prm указано использование геолокации, геокодер инициализируем с небольшой задержкой
- */
-if (navigator.geolocation && $p.job_prm.use_google_geo) {
-
-	/**
-	 * Данные геолокации
-	 * @property ipinfo
-	 * @type IPInfo
-	 * @static
-	 */
-	$p.ipinfo = new function IPInfo(){
-
-		var _yageocoder, _ggeocoder, _addr = "";
-
-		/**
-		 * Геокодер карт Яндекс
-		 * @class YaGeocoder
-		 * @static
-		 */
-		function YaGeocoder(){
-
-			/**
-			 * Выполняет прямое или обратное геокодирование
-			 * @method geocode
-			 * @param attr {Object}
-			 * @return {Promise.<T>}
-			 */
-			this.geocode = function (attr) {
-				//http://geocode-maps.yandex.ru/1.x/?geocode=%D0%A7%D0%B5%D0%BB%D1%8F%D0%B1%D0%B8%D0%BD%D1%81%D0%BA,+%D0%9F%D0%BB%D0%B5%D1%85%D0%B0%D0%BD%D0%BE%D0%B2%D0%B0+%D1%83%D0%BB%D0%B8%D1%86%D0%B0,+%D0%B4%D0%BE%D0%BC+32&format=json&sco=latlong
-				//http://geocode-maps.yandex.ru/1.x/?geocode=61.4080273,55.1550362&format=json&lang=ru_RU
-
-				return Promise.resolve(false);
-			}
-		};
-
-		/**
-		 * Объект геокодера yandex
-		 * https://tech.yandex.ru/maps/doc/geocoder/desc/concepts/input_params-docpage/
-		 * @property yageocoder
-		 * @for IPInfo
-		 * @type YaGeocoder
-		 */
-		Object.defineProperty(this, "yageocoder", {
-			get : function(){
-
-				if(!_yageocoder)
-					_yageocoder = new YaGeocoder();
-				return _yageocoder;
-			},
-			enumerable : false,
-			configurable : false}
-		);
-
-		/**
-		 * Объект геокодера google
-		 * https://developers.google.com/maps/documentation/geocoding/?hl=ru#GeocodingRequests
-		 * @property ggeocoder
-		 * @for IPInfo
-		 * @type {google.maps.Geocoder}
-		 */
-		Object.defineProperty(this, "ggeocoder", {
-				get : function(){
-					return _ggeocoder;
-				},
-				enumerable : false,
-				configurable : false}
-		);
-
-		/**
-		 * Адрес геолокации пользователя программы
-		 * @property addr
-		 * @for IPInfo
-		 * @type String
-		 */
-		Object.defineProperty(this, "addr", {
-				get : function(){
-					return _addr;
-				},
-				enumerable : true,
-				configurable : false}
-		);
-
-		this.location_callback= function(){
-
-			/**
-			 * Объект геокодера google
-			 * https://developers.google.com/maps/documentation/geocoding/?hl=ru#GeocodingRequests
-			 * @property ggeocoder
-			 * @for IPInfo
-			 * @type {google.maps.Geocoder}
-			 */
-			_ggeocoder = new google.maps.Geocoder();
-
-			navigator.geolocation.getCurrentPosition(function(position){
-
-					/**
-					 * Географическая широта геолокации пользователя программы
-					 * @property latitude
-					 * @for IPInfo
-					 * @type Number
-					 */
-					$p.ipinfo.latitude = position.coords.latitude;
-
-					/**
-					 * Географическая долгота геолокации пользователя программы
-					 * @property longitude
-					 * @for IPInfo
-					 * @type Number
-					 */
-					$p.ipinfo.longitude = position.coords.longitude;
-
-					var latlng = new google.maps.LatLng($p.ipinfo.latitude, $p.ipinfo.longitude);
-
-					_ggeocoder.geocode({'latLng': latlng}, function(results, status) {
-						if (status == google.maps.GeocoderStatus.OK){
-							if(!results[1] || results[0].address_components.length >= results[1].address_components.length)
-								_addr = results[0].formatted_address;
-							else
-								_addr = results[1].formatted_address;
+				// берём параметры из url
+				for (var i in pairs){   //разбиваем пару на ключ и значение, добавляем в их объект
+					tmp = pairs[i].split('=');
+					if(tmp[0] == "m"){
+						try{
+							prm[tmp[0]] = JSON.parse(tmp[1]);
+						}catch(e){
+							prm[tmp[0]] = {};
 						}
-					});
-
-				}, function(err){
-					if(err)
-						$p.ipinfo.err = err.message;
-				}, {
-					timeout: 30000
+					}else
+						prm[tmp[0]] = tmp[1] || "";
 				}
-			);
+			}
+
+			return prm;
 		}
+
+		return parse(location.search)._mixin(parse(location.hash));
 	};
 
-	// подгружаем скрипты google
-	if(!window.google || !window.google.maps)
-		$p.eve.onload.push(function () {
-			setTimeout(function(){
-				$p.load_script(location.protocol +
-					"//maps.google.com/maps/api/js?sensor=false&callback=$p.ipinfo.location_callback", "script", function(){});
-			}, 600);
-		});
-	else
-		location_callback();
+
+	/**
+	 * Указывает, проверять ли совместимость браузера при запуске программы
+	 * @property check_browser_compatibility
+	 * @type {Boolean}
+	 * @static
+	 */
+	this.check_browser_compatibility = true;
+
+	/**
+	 * Указывает, проверять ли установленность приложения в Google Chrome Store при запуске программы
+	 * @property check_app_installed
+	 * @type {Boolean}
+	 * @static
+	 */
+	this.check_app_installed = true;
+	this.check_dhtmlx = true;
+	this.use_builder = false;
+	this.offline = false;
+
+	/**
+	 * Содержит объект с расшифровкой параметров url, указанных при запуске программы
+	 * @property url_prm
+	 * @type {Object}
+	 * @static
+	 */
+	this.url_prm = this.parse_url();
+
+	// подмешиваем параметры, заданные в файле настроек сборки
+	if(typeof $p.settings === "function")
+		$p.settings(this, $p.modifiers);
+
+	// подмешиваем параметры url
+	// Они обладают приоритетом над настройками по умолчанию и настройками из settings.js
+	for(var prm_name in this){
+		if(prm_name !== "url_prm" && typeof this[prm_name] !== "function" && this.url_prm.hasOwnProperty[prm_name])
+			this[prm_name] = this.url_prm[prm_name];
+	}
+
+	this.hs_url = function () {
+		return "/a/zd/%1/hs/upzp".replace("%1", $p.wsql.get_user_param("zone", "number"));
+	};
+
+	this.rest_url = function () {
+		return "/a/zd/%1/odata/standard.odata/".replace("%1", $p.wsql.get_user_param("zone", "number"));
+	};
+
+	this.unf_url = function () {
+		return "/a/unf/%1/odata/standard.odata/".replace("%1", $p.wsql.get_user_param("zone_unf", "number"));
+	}
+
 }
 
 
