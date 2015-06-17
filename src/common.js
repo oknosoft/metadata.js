@@ -1290,12 +1290,8 @@ $p.wsql = (
 	//	inited = 1000;
 	//});
 
-	if(window.alasql){
+	if(window.alasql)
 		wsql.aladb = new alasql.Database('osde');
-		alasql(require("create_tables"), [], function(){
-			inited = 1000;
-		});
-	}
 	else
 		inited = 1000;
 
@@ -1459,6 +1455,14 @@ $p.wsql = (
 			{p: "discount",			v: 15,	t:"number"},
 			{p: "offline",			v: "" || $p.job_prm["offline"], t:"boolean"}
 		], zone;
+
+		if(window.alasql){
+			if($p.job_prm.create_tables)
+				alasql($p.job_prm.create_tables_sql || require("create_tables"), [], function(){
+					inited = 1000;
+				});
+		}
+
 
 		// подмешиваем к базовым параметрам настройки приложения
 		if($p.job_prm.additionsl_params)
