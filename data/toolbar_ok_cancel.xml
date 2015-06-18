@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding='utf-8'?>
+<toolbar>
+    <item id="btn_ok"       type="button"   img=""  imgdis=""   text="&lt;b&gt;Ок&lt;/b&gt;"  />
+    <item id="btn_cancel"   type="button"	img=""  imgdis=""   text="Отмена" />
+</toolbar>

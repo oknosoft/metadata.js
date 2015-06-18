@@ -2529,10 +2529,33 @@ $p.iface.layout_2u = function (tree_filteres) {
 	iface.tree = iface.cell_tree.attachTree();
 	iface.tree.setImagePath(dhtmlx.image_path + 'dhxtree_web/');
 	iface.tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
+	iface.tree.attachEvent("onSelect", function(id){    // довешиваем обработчик на дерево
+
+		var sv = iface.swith_view(id.split('.')[0]);
+
+		if(sv == "oper"){		// открываем форму списка текущего метаданного
+
+			var mgr = $p.md.mgr_by_class_name(id.substr(5));
+
+			if(typeof iface.docs.close === "function" )
+				iface.docs.close();
+
+			if(mgr)
+				mgr.form_list(iface.docs, {});
+
+		}else if(sv == "def"){	// обновляем форму списка заказов
+			setTimeout(function () {
+				iface.grid_calc_order.reload(null, true);
+			}, 200);
+		}
+
+	});
 	
 	if(tree_filteres){
 		var fpromise = new Promise();
 		iface.tree.loadXML(tree_filteres+'?v='+$p.job_prm.files_date, function(){
+
+			this.tree_filteres = tree_filteres;
 			fpromise.resolve(this);
 		});
 		return fpromise;
@@ -2541,7 +2564,14 @@ $p.iface.layout_2u = function (tree_filteres) {
 };
 
 /**
- *
+ * Создаёт форму авторизации с обработчиками перехода к фидбэку и настройкам,
+ * полем входа под гостевой ролью, полями логина и пароля и кнопкой входа
+ * @method frm_auth
+ * @for InterfaceObjs
+ * @param [onstep] {function} - обработчик визуализации шагов входа в систему. Если не указан, рисуется стандарное окно
+ * @param [paths] {Object} - объект с путями к файлам метаданных и данных. Если не указан, файлы ищутся по стандартному пути /data/
+ * @param resolve {function} - обработчик успешной авторизации и начальной загрузки данных
+ * @param reject {function} - обработчик, который вызывается в случае ошибок на старте программы
  */
 $p.iface.frm_auth = function (onstep, paths, resolve, reject) {
 
@@ -2629,7 +2659,13 @@ $p.iface.frm_auth = function (onstep, paths, resolve, reject) {
 				.catch(reject)
 				.then(function (err) {
 					if($p.iface.sync)
-						$p.iface.sync.close()
+						$p.iface.sync.close();
+					if($p.iface.docs){
+						$p.iface.docs.progressOff();
+						$p.iface.docs.hideHeader();
+					}
+					if($p.iface.cell_tree)
+						$p.iface.cell_tree.expand();
 				});
 
 		} else
@@ -2691,11 +2727,130 @@ $p.iface.frm_auth = function (onstep, paths, resolve, reject) {
 
 };
 
+/**
+ * Служебная функция для открытия окна настроек из гиперссылки
+ * @param e
+ * @return {Boolean}
+ */
 $p.iface.open_settings = function (e) {
 	(e || event).preventDefault();
 	window.open(($p.job_prm.settings_url || 'order_dealer/options.html')+'?v='+$p.job_prm.files_date);
 	return $p.cancel_bubble(e);
 };
+
+/**
+ * Переключает вид формы между списком, календаарём и отчетами
+ * @method swith_view
+ * @for InterfaceObjs
+ * @param name {String} - имя представления
+ */
+$p.iface.swith_view = function(name){
+
+	var state,
+		iface = $p.iface,
+
+		/**
+		 * Переключает состав элементов дерева
+		 * @param view
+		 */
+		swith_tree = function(name){
+
+			function compare_text(a, b) {
+				if (a.text > b.text) return 1;
+				if (a.text < b.text) return -1;
+			}
+
+			if(iface.tree._view == name || ["rep", "cal"].indexOf(name) != -1)
+				return;
+
+			iface.tree.deleteChildItems(0);
+			if(name == "oper"){
+				var meta_tree = {id:0, item:[
+					{id:"oper_cat", text: $p.msg.meta_cat, open: true, item:[]},
+					{id:"oper_doc", text: $p.msg.meta_doc, item:[]}
+				]}, mdn, md, tlist = meta_tree.item[0].item;
+				// бежим по справочникам
+				for(mdn in $p.cat){
+					if(typeof $p.cat[mdn] == "function")
+						continue;
+					md = $p.cat[mdn].metadata();
+					tlist.push({id: "oper.cat." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
+				}
+				tlist.sort(compare_text);
+
+				// бежим по документам
+				tlist = meta_tree.item[1].item;
+				for(mdn in $p.doc){
+					if(typeof $p.doc[mdn] == "function")
+						continue;
+					md = $p.doc[mdn].metadata();
+					tlist.push({id: "oper.doc." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
+				}
+				tlist.sort(compare_text);
+
+				iface.tree.loadJSONObject(meta_tree, function(){
+					var hprm = $p.job_prm.parse_url();
+					if(hprm.obj){
+						iface.tree.selectItem(hprm.view+"."+hprm.obj, true);
+					}
+				});
+
+			}else{
+				iface.tree.loadXML(iface.tree.tree_filteres+'?v='+$p.job_prm.files_date, function(){
+
+				});
+
+			}
+
+			iface.tree._view = name;
+		};
+
+	if(iface.docs.getViewName() == name)
+		return name;
+
+	state = iface.docs.showView(name);
+	if (state == true) {
+		// first call, init corresponding components
+		// календарь
+		if(name=="cal" && !window.dhtmlXScheduler){
+			$p.load_script("lib/dhtmlxscheduler.js", "script", function(){
+				$p.load_script("lib/ext/dhtmlxscheduler_minical.js", "script");
+				$p.load_script("lib/ext/dhtmlxscheduler_timeline.js", "script");
+				$p.load_script("lib/ext/dhtmlxscheduler_locale_ru.js", "script", function(){
+					//scheduler.config.xml_date="%Y-%m-%d %H:%i";
+					scheduler.config.first_hour = 8;
+					scheduler.config.last_hour = 22;
+					iface.docs.scheduler = iface.docs.attachScheduler(new Date("2015-03-20"), "week", "scheduler_here");
+					iface.docs.scheduler.attachEvent("onBeforeViewChange", function(old_mode, old_date, mode, date){
+						if(mode == "timeline"){
+							$p.msg.show_not_implemented();
+							return false;
+						}
+						return true;
+					});
+				});
+			});
+
+			$p.load_script("lib/dhtmlxscheduler.css", "link");
+
+			//}else if(name=="rep"){
+			//	// подключаемый отчет
+			//
+			//}else if(name=="oper"){
+			//	// в дереве - список метаданных, в окне - список текущего метаданного
+			//
+
+		}
+	}
+
+	swith_tree(name);
+
+	if(name == "def")
+		iface.main.showStatusBar();
+	else
+		iface.main.hideStatusBar();
+};
+
 
 /**
  * Панель инструментов рисовалки и альтернативная панель инструментов прочих форм

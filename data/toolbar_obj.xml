@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding='utf-8'?>
+<toolbar>
+    <item type="button" id="btn_save_close" text="Записать и закрыть" img="save.gif" imgdis="" title="Рассчитать, записать и закрыть" />
+    <item type="button" id="btn_save" text="Записать" img="tb_calculate.png" title="Рассчитать и записать данные"/>
+    <item type="button" id="btn_post" img="tb_post.png" imgdis="tb_post.png" enabled="false" title="Провести документ" />
+    <item type="button" id="btn_unpost" img="tb_unpost.png" imgdis="tb_unpost.png" enabled="false" title="Отмена проведения" />
+
+    <item type="button" id="btn_files" text="Файлы" img="tb_screpka.png" imgdis="tb_screpka_dis.png" title="Присоединенные файлы"/>
+
+    <item type="buttonSelect" id="bs_create_by_virtue" text="Создать" title="Создать на основании" openAll="true" >
+        <item type="button" id="btn_message" enabled="false" text="Сообщение" image="" />
+    </item>
+
+    <item type="buttonSelect" id="bs_go_to" text="Перейти" title="" openAll="true" >
+        <item type="button" id="btn_go_connection" enabled="false" text="Связи" />
+    </item>
+
+    <item type="buttonSelect" id="bs_print"         img="print.gif"         text="Печать" openAll="true">
+    </item>
+
+    <item type="buttonSelect"   id="bs_more"        img="tb_more_w.png"  title="Дополнительно" openAll="true">
+        <item type="button" id="btn_import" img="document_load.png" text="Загрузить из файла" />
+        <item type="button" id="btn_export" img="document_save.png" text="Выгрузить в файл" />
+    </item>
+
+</toolbar>
