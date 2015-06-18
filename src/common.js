@@ -1157,7 +1157,10 @@ $p.modifiers = new (
 		 */
 		this.execute = function () {
 			methods.forEach(function (method) {
-				require(method)($p);
+				if(typeof method === "function")
+					method($p);
+				else
+					require(method)($p);
 			});
 		}
 
