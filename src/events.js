@@ -68,7 +68,7 @@ if(window){
 
 				else if(!timer_setted){
 					timer_setted = true;
-					setTimeout(do_reload, 20000);
+					setTimeout(do_reload, 25000);
 				}
 
 				if($p.iface.appcache){
@@ -83,8 +83,6 @@ if(window){
 				}
 			}
 
-
-
 			/**
 			 * Нулевым делом, создаём объект параметров работы программы, в процессе создания которого,
 			 * выполняется клиентский скрипт, переопределяющий триггеры и переменные окружения
@@ -96,7 +94,6 @@ if(window){
 			 * @static
 			 */
 			$p.job_prm = new JobPrm();
-
 
 			/**
 			 * если в $p.job_prm указано использование геолокации, геокодер инициализируем с небольшой задержкой
@@ -237,7 +234,7 @@ if(window){
 						setTimeout(function(){
 							$p.load_script(location.protocol +
 								"//maps.google.com/maps/api/js?sensor=false&callback=$p.ipinfo.location_callback", "script", function(){});
-						}, 600);
+						}, 100);
 					});
 				else
 					location_callback();
@@ -271,104 +268,107 @@ if(window){
 			 * Инициализируем параметры пользователя,
 			 * проверяем offline и версию файлов
 			 */
-			$p.wsql.init_params(function(){
+			setTimeout(function(){
+				$p.wsql.init_params(function(){
 
-				eve.set_offline(!navigator.onLine);
+					eve.set_offline(!navigator.onLine);
 
-				eve.update_files_version();
+					eve.update_files_version();
 
-				// пытаемся перейти в полноэкранный режим в мобильных браузерах
-				if (document.documentElement.webkitRequestFullScreen && navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)) {
-					function requestFullScreen(){
-						document.documentElement.webkitRequestFullScreen();
-						w.removeEventListener('touchstart', requestFullScreen);
+					// пытаемся перейти в полноэкранный режим в мобильных браузерах
+					if (document.documentElement.webkitRequestFullScreen && navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)) {
+						function requestFullScreen(){
+							document.documentElement.webkitRequestFullScreen();
+							w.removeEventListener('touchstart', requestFullScreen);
+						}
+						w.addEventListener('touchstart', requestFullScreen, false);
 					}
-					w.addEventListener('touchstart', requestFullScreen, false);
-				}
 
-				// кешируем ссылки на элементы управления
-				if($p.job_prm.use_builder || $p.job_prm.use_wrapper){
-					$p.wrapper	= document.getElementById("owb_wrapper");
-					$p.risdiv	= document.getElementById("risdiv");
-					$p.ft		= document.getElementById("msgfooter");
-					if($p.ft)
-						$p.ft.style.display = "none";
-				}
+					// кешируем ссылки на элементы управления
+					if($p.job_prm.use_builder || $p.job_prm.use_wrapper){
+						$p.wrapper	= document.getElementById("owb_wrapper");
+						$p.risdiv	= document.getElementById("risdiv");
+						$p.ft		= document.getElementById("msgfooter");
+						if($p.ft)
+							$p.ft.style.display = "none";
+					}
 
-				/**
-				 * Выполняем отложенные методы из eve.onload
-				 */
-				eve.onload.forEach(function (method) {
-					if(typeof method === "function")
-						method();
-				});
-
-				// Если есть сплэш, удаляем его
-				if(document && document.querySelector("#splash"))
-					document.querySelector("#splash").parentNode.removeChild(document.querySelector("#splash"));
-
-				/**
-				 *	начинаем слушать события msgfooter-а, в который их пишет рисовалка
-				 */
-				if($p.job_prm.use_builder && $p.ft){
-
-					dhtmlxEvent($p.ft, "click", function(evt){
-						$p.cancel_bubble(evt);
-						if(evt.qualifier == "ready")
-							iface.oninit();
-						else if($p.eve.builder_click)
-							$p.eve.builder_click(evt);
+					/**
+					 * Выполняем отложенные методы из eve.onload
+					 */
+					eve.onload.forEach(function (method) {
+						if(typeof method === "function")
+							method();
 					});
 
-				}else
-					setTimeout(iface.oninit, 0);
+					// Если есть сплэш, удаляем его
+					if(document && document.querySelector("#splash"))
+						document.querySelector("#splash").parentNode.removeChild(document.querySelector("#splash"));
+
+					/**
+					 *	начинаем слушать события msgfooter-а, в который их пишет рисовалка
+					 */
+					if($p.job_prm.use_builder && $p.ft){
+
+						dhtmlxEvent($p.ft, "click", function(evt){
+							$p.cancel_bubble(evt);
+							if(evt.qualifier == "ready")
+								iface.oninit();
+							else if($p.eve.builder_click)
+								$p.eve.builder_click(evt);
+						});
+
+					}else
+						setTimeout(iface.oninit, 100);
 
 
-				// Ресурсы уже кэшированнны. Индикатор прогресса скрыт
-				if (cache = w.applicationCache){
+					// Ресурсы уже кэшированнны. Индикатор прогресса скрыт
+					if (cache = w.applicationCache){
 
-					// обновление не требуется
-					cache.addEventListener('noupdate', function(e){
+						// обновление не требуется
+						cache.addEventListener('noupdate', function(e){
 
-					}, false);
+						}, false);
 
-					// Ресурсы уже кэшированнны. Индикатор прогресса скрыт.
-					cache.addEventListener('cached', function(e){
-						timer_setted = true;
-						if($p.iface.appcache)
-							$p.iface.appcache.close();
-					}, false);
-
-					// Начало скачивания ресурсов. progress_max - количество ресурсов. Показываем индикатор прогресса
-					cache.addEventListener('downloading', do_cache_update_msg, false);
-
-					// Процесс скачивания ресурсов. Индикатор прогресса изменяется
-					cache.addEventListener('progress', do_cache_update_msg,	false);
-
-					// Скачивание завершено. Скрываем индикатор прогресса. Обновляем кэш. Перезагружаем страницу.
-					cache.addEventListener('updateready', function(e) {
-						try{
-							cache.swapCache();
-							if($p.iface.appcache){
+						// Ресурсы уже кэшированнны. Индикатор прогресса скрыт.
+						cache.addEventListener('cached', function(e){
+							timer_setted = true;
+							if($p.iface.appcache)
 								$p.iface.appcache.close();
-							}
-						}catch(e){}
-						do_reload();
-					}, false);
+						}, false);
 
-					// Ошибка кеша
-					cache.addEventListener('error', function(e) {
-						if(!w.JSON || !w.openDatabase || typeof(w.openDatabase) !== 'function'){
-							//msg.show_msg({type: "alert-error",
-							//	text: msg.unknown_error.replace("%1", "applicationCache"),
-							//	title: msg.main_title});
-						}else
-							msg.show_msg({type: "alert-error", text: e.message || msg.unknown_error, title: msg.error_critical});
+						// Начало скачивания ресурсов. progress_max - количество ресурсов. Показываем индикатор прогресса
+						cache.addEventListener('downloading', do_cache_update_msg, false);
 
-					}, false);
-				}
+						// Процесс скачивания ресурсов. Индикатор прогресса изменяется
+						cache.addEventListener('progress', do_cache_update_msg,	false);
 
-			});
+						// Скачивание завершено. Скрываем индикатор прогресса. Обновляем кэш. Перезагружаем страницу.
+						cache.addEventListener('updateready', function(e) {
+							try{
+								cache.swapCache();
+								if($p.iface.appcache){
+									$p.iface.appcache.close();
+								}
+							}catch(e){}
+							do_reload();
+						}, false);
+
+						// Ошибка кеша
+						cache.addEventListener('error', function(e) {
+							if(!w.JSON || !w.openDatabase || typeof(w.openDatabase) !== 'function'){
+								//msg.show_msg({type: "alert-error",
+								//	text: msg.unknown_error.replace("%1", "applicationCache"),
+								//	title: msg.main_title});
+							}else
+								msg.show_msg({type: "alert-error", text: e.message || msg.unknown_error, title: msg.error_critical});
+
+						}, false);
+					}
+
+				});
+			}, 100);
+
 
 		}, false);
 
@@ -513,6 +513,8 @@ $p.eve.pop = function (write_ro_wsql) {
 
 	if($p.job_prm.offline)
 		return Promise.resolve(false);
+	else if($p.job_prm.rest)
+		return Promise.resolve(false);
 
 	// за такт pop делаем не более 2 запросов к 1С
 	return get_cachable_portion()
@@ -547,15 +549,18 @@ $p.eve.push = function () {
 
 };
 
-
 $p.eve.from_json_to_data_obj = function(res) {
 
 	var stepper = $p.eve.stepper, class_name;
 
 	if (typeof res == "string")
 		res = JSON.parse(res);
-	else if(res instanceof XMLHttpRequest)
-		res = JSON.parse(res.response);
+	else if(res instanceof XMLHttpRequest){
+		if(res.response)
+			res = JSON.parse(res.response);
+		else
+			res = {};
+	}
 
 	if(stepper.do_break){
 		$p.iface.sync.close();
@@ -637,8 +642,9 @@ $p.eve.log_in = function(onstep, paths){
 			if($p.job_prm.offline)
 				return res;
 
-			else if(paths.rest){
+			else if($p.job_prm.rest){
 				// в режиме rest тестируем авторизацию
+				return res;
 
 			}else
 				return _load({
@@ -672,9 +678,9 @@ $p.eve.log_in = function(onstep, paths){
 
 			// обрабатываем поступившие данные
 			$p.wsql.set_user_param("time_diff", res["now_1с"] - res["now_js"]);
-			if(res.cat["clrs"])
+			if(res.cat && res.cat["clrs"])
 				_md.get("cat.clrs").predefined.white.ref = res.cat["clrs"].predefined.white.ref;
-			if(res.cat["bases"])
+			if(res.cat && res.cat["bases"])
 				_md.get("cat.bases").predefined.main.ref = res.cat["bases"].predefined.main.ref;
 
 			return res;

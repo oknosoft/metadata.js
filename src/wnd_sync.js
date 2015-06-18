@@ -2,7 +2,7 @@
  * Форма окна длительной операции
  */
 
-function wnd_sync ($p) {
+$p.iface.wnd_sync = function() {
 
 	var _sync = $p.iface.sync = {},
 		_stepper;

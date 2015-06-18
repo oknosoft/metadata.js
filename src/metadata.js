@@ -509,7 +509,7 @@ function Meta(req) {
 	};
 
 	this.sql_mask = function(f){
-		var mask_names = ["delete", "set", "value"];
+		var mask_names = ["delete", "set", "value", "json"];
 		return ", " + (mask_names.some(
 				function (mask) {
 					return f.indexOf(mask) !=-1

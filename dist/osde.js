@@ -2498,6 +2498,206 @@ $p.iface.pgrid_on_checkbox = function(rId, cInd, state){
 };
 
 /**
+ * Рисует стандартную раскладку (XLayout) с деревом в левой части
+ * @method layout_2u
+ * @for InterfaceObjs
+ * @param [tree_filteres] {String} - путь к файлу структуры дерева
+ * @return {Object} - Псевдопромис
+ */
+$p.iface.layout_2u = function (tree_filteres) {
+
+	var iface = $p.iface;
+
+	iface.main = new dhtmlXLayoutObject({
+		parent: document.body,
+		pattern: "2U"
+	});
+	iface.main.attachEvent("onCollapse", function(name){
+		if(name=="b"){
+			iface.docs.expand();
+			return false;
+		}
+	});
+	iface.docs = iface.main.cells('b');
+
+	iface.cell_tree = iface.main.cells('a');
+	iface.cell_tree.setText('Режим');
+	iface.cell_tree.setWidth('190');
+	iface.cell_tree.fixSize(false, false);
+	iface.cell_tree.collapse();
+
+	iface.tree = iface.cell_tree.attachTree();
+	iface.tree.setImagePath(dhtmlx.image_path + 'dhxtree_web/');
+	iface.tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
+	
+	if(tree_filteres){
+		var fpromise = new Promise();
+		iface.tree.loadXML(tree_filteres+'?v='+$p.job_prm.files_date, function(){
+			fpromise.resolve(this);
+		});
+		return fpromise;
+	}else
+		return Promise.resolve(iface.tree);
+};
+
+/**
+ *
+ */
+$p.iface.frm_auth = function (onstep, paths, resolve, reject) {
+
+	var frm_auth = $p.iface.auth = $p.iface.docs.attachForm(), w;
+
+	if(!onstep)
+		onstep = function (step){
+
+			var stepper = $p.eve.stepper;
+
+			switch(step) {
+
+				case $p.eve.steps.authorization:
+
+					stepper.frm_sync.setItemValue("text_processed", "Авторизация");
+
+					break;
+
+				case $p.eve.steps.load_meta:
+
+					// индикатор прогресса и малое всплывающее сообщение
+					$p.iface.docs.progressOn();
+					$p.msg.show_msg($p.msg.init_catalogues + $p.msg.init_catalogues_meta, $p.iface.docs);
+					if(!$p.iface.sync)
+						$p.iface.wnd_sync();
+					$p.iface.sync.create(stepper);
+
+					break;
+
+				case $p.eve.steps.create_managers:
+
+					stepper.frm_sync.setItemValue("text_processed", "Обработка метаданных");
+					stepper.frm_sync.setItemValue("text_bottom", "Создаём объекты менеджеров данных...");
+
+					break;
+
+				case $p.eve.steps.process_access:
+
+					break;
+
+				case $p.eve.steps.load_data_files:
+
+					stepper.frm_sync.setItemValue("text_processed", "Загрузка начального образа");
+					stepper.frm_sync.setItemValue("text_bottom", "Читаем файлы данных зоны...");
+
+					break;
+
+				case $p.eve.steps.load_data_db:
+
+					stepper.frm_sync.setItemValue("text_processed", "Загрузка изменений из 1С");
+					stepper.frm_sync.setItemValue("text_bottom", "Читаем изменённые справочники");
+
+					break;
+
+				case $p.eve.steps.load_data_wsql:
+
+					break;
+
+				case $p.eve.steps.save_data_wsql:
+
+					stepper.frm_sync.setItemValue("text_processed", "Кеширование данных");
+					stepper.frm_sync.setItemValue("text_bottom", "Сохраняем таблицы в локальном SQL...");
+
+					break;
+
+				default:
+
+					break;
+			}
+
+		};
+
+	function do_auth(login, password, is_guest){
+		$p.ajax.username = login;
+		$p.ajax.password = password;
+
+		if(login){
+			if(!is_guest)
+				$p.wsql.set_user_param("user_name", login);					// сохраняем имя пользователя в базе
+			if(!$p.is_guid($p.wsql.get_user_param("browser_uid")))
+				$p.wsql.set_user_param("browser_uid", $p.generate_guid());	// проверяем guid браузера
+
+			$p.eve.log_in(onstep, paths)
+				.then(resolve)
+				.catch(reject)
+				.then(function (err) {
+					if($p.iface.sync)
+						$p.iface.sync.close()
+				});
+
+		} else
+			this.validate();
+	}
+
+	// обработчик кнопки "войти" формы авторизации
+	function auth_click(name){
+
+		this.resetValidateCss();
+
+		if(this.getCheckedValue("type") == "guest"){
+			do_auth.call(this, this.getItemValue("guest"), "", true);
+			$p.wsql.set_user_param("user_name", "");
+
+		}else if(this.getCheckedValue("type") == "auth"){
+			do_auth.call(this, this.getItemValue("login"), this.getItemValue("password"));
+
+		}
+	}
+
+	// загружаем структуру
+	frm_auth.loadStruct('data/form_auth.xml?v='+$p.job_prm.files_date, function(){
+
+		// после готовности формы читаем пользователя из локальной датабазы
+		if($p.wsql.get_user_param("user_name")){
+			frm_auth.setItemValue("login", $p.wsql.get_user_param("user_name"));
+			frm_auth.setItemValue("type", "auth");
+
+			if($p.wsql.get_user_param("enable_save_pwd") && $p.wsql.get_user_param("user_pwd")){
+				frm_auth.setItemValue("password", $p.wsql.get_user_param("user_pwd"));
+
+				if($p.wsql.get_user_param("autologin"))
+					auth_click();
+			}
+		}
+
+		// позиционируем форму по центру
+		if((w = ($p.iface.docs.getWidth() - 500)/2) >= 10)
+			frm_auth.cont.style.paddingLeft = w.toFixed() + "px";
+		else
+			frm_auth.cont.style.paddingLeft = "20px";
+
+	});
+
+	// назначаем обработчик нажатия на кнопку
+	frm_auth.attachEvent("onButtonClick", auth_click);
+
+	frm_auth.attachEvent("onKeyDown",function(inp, ev, name, value){
+		if(ev.keyCode == 13){
+			if(name == "password" || this.getCheckedValue("type") == "guest"){
+				auth_click.call(this);
+			}
+		}
+	});
+
+
+	$p.msg.show_msg($p.msg.init_login, $p.iface.docs);
+
+};
+
+$p.iface.open_settings = function (e) {
+	(e || event).preventDefault();
+	window.open(($p.job_prm.settings_url || 'order_dealer/options.html')+'?v='+$p.job_prm.files_date);
+	return $p.cancel_bubble(e);
+};
+
+/**
  * Панель инструментов рисовалки и альтернативная панель инструментов прочих форм
  * @class OTooolBar
  * @param attr {Object} - параметры создаваемой панели - родитель, положение, размер и ориентация
@@ -2662,6 +2862,8 @@ $p.iface.OTooolBar = OTooolBar;
 
 /**
  * Добавляет кнопку на панель инструментов
+ * @method add_button
+ * @for InterfaceObjs
  * @param parent {Element}
  * @param attr {Object}
  * @param battr {Object}
@@ -3949,7 +4151,7 @@ function Meta(req) {
 	};
 
 	this.sql_mask = function(f){
-		var mask_names = ["delete", "set", "value"];
+		var mask_names = ["delete", "set", "value", "json"];
 		return ", " + (mask_names.some(
 				function (mask) {
 					return f.indexOf(mask) !=-1
@@ -4408,25 +4610,7 @@ DataManager.prototype.register_ex = function(){
 
 };
 
-/**
- * Форма выбора объекта данных
- * @method form_selection
- * @param pwnd {dhtmlXWindows} - указатель на родительскую форму
- * @param attr {Object} - параметры инициализации формы
- */
-DataManager.prototype.form_selection = function(pwnd, attr){
-	$p.iface._form_selection.call(this, pwnd, attr);
-};
 
-/**
- * Форма списка объектов данных
- * @method form_list
- * @param pwnd {dhtmlXWindows} - указатель на родительскую форму
- * @param attr {Object} - параметры инициализации формы
- */
-DataManager.prototype.form_list = function(pwnd, attr){
-	return this.form_selection(pwnd, attr);
-};
 
 /**
  * Cписок значений для поля выбора
@@ -6961,6 +7145,149 @@ DataManager.prototype.export = function(attr){
 
 /* joined by builder */
 /**
+ * Форма обновления кеша appcache
+ */
+
+function wnd_appcache ($p) {
+	var _appcache = $p.iface.appcache = {},
+		_stepper;
+
+	_appcache.create = function(stepper){
+		_stepper = stepper;
+		frm_create();
+	};
+
+	_appcache.update = function(){
+		_stepper.frm_appcache.setItemValue("text_processed", "Обработано элементов: " + _stepper.loaded + " из " + _stepper.total);
+
+	};
+
+	_appcache.close = function(){
+		if(_stepper && _stepper.wnd_appcache){
+			_stepper.wnd_appcache.close();
+			delete _stepper.wnd_appcache;
+		}
+	};
+
+
+	function frm_create(){
+		_stepper.wnd_appcache = $p.iface.w.createWindow('wnd_appcache', 0, 0, 490, 250);
+
+		var str = [
+			{ type:"block" , name:"form_block_1", list:[
+				{ type:"label" , name:"form_label_1", label: $p.msg.sync_script },
+				{ type:"block" , name:"form_block_2", list:[
+					{ type:"template",	name:"img_long", className: "img_long" },
+					{ type:"newcolumn"   },
+					{ type:"template",	name:"text_processed"},
+					{ type:"template",	name:"text_current"},
+					{ type:"template",	name:"text_bottom"}
+				]  }
+			]  },
+			{ type:"button" , name:"form_button_1", value: $p.msg.sync_break }
+		];
+		_stepper.frm_appcache = _stepper.wnd_appcache.attachForm(str);
+		_stepper.frm_appcache.attachEvent("onButtonClick", function(name) {
+			if(_stepper)
+				_stepper.do_break = true;
+		});
+
+		_stepper.wnd_appcache.setText($p.msg.long_operation);
+		_stepper.wnd_appcache.denyResize();
+		_stepper.wnd_appcache.centerOnScreen();
+		_stepper.wnd_appcache.button('park').hide();
+		_stepper.wnd_appcache.button('minmax').hide();
+		_stepper.wnd_appcache.button('close').hide();
+	}
+
+}
+/* joined by builder */
+/**
+ * Форма окна длительной операции
+ */
+
+$p.iface.wnd_sync = function() {
+
+	var _sync = $p.iface.sync = {},
+		_stepper;
+
+	_sync.create = function(stepper){
+		_stepper = stepper;
+		frm_create();
+	};
+
+	_sync.update = function(cats){
+		_stepper.frm_sync.setItemValue("text_processed", "Обработано элементов: " + _stepper.step * _stepper.step_size + " из " + _stepper.count_all);
+		var cat_list = "", md, rcount = 0;
+		for(var cat_name in cats){
+			rcount++;
+			if(rcount > 4)
+				break;
+			if(cat_list)
+				cat_list+= "<br />";
+			md = $p.cat[cat_name].metadata();
+			cat_list+= (md.list_presentation || md.synonym) + " (" + cats[cat_name].length + ")";
+		}
+		_stepper.frm_sync.setItemValue("text_current", "Текущий запрос: " + _stepper.step + " (" + Math.round(_stepper.step * _stepper.step_size * 100 / _stepper.count_all) + "%)");
+		_stepper.frm_sync.setItemValue("text_bottom", cat_list);
+
+	};
+
+	_sync.close = function(){
+		if(_stepper && _stepper.wnd_sync){
+			_stepper.wnd_sync.close();
+			delete _stepper.wnd_sync;
+		}
+	};
+
+
+	/**
+	 *	Приватные методы
+	 */
+	function frm_create(){
+
+		// параметры открытия формы
+		var options = {
+			name: 'wnd_sync',
+			wnd: {
+				id: 'wnd_sync',
+				top: 130,
+				left: 200,
+				width: 496,
+				height: 290,
+				modal: true,
+				center: true,
+				caption: $p.msg.long_operation
+			}
+		};
+
+		_stepper.wnd_sync = $p.iface.dat_blank(null, options.wnd);
+
+		var str = [
+			{ type:"block" , name:"form_block_1", list:[
+				{ type:"label" , name:"form_label_1", label: $p.msg.sync_data },
+				{ type:"block" , name:"form_block_2", list:[
+					{ type:"template",	name:"img_long", className: "img_long" },
+					{ type:"newcolumn"   },
+					{ type:"template",	name:"text_processed"},
+					{ type:"template",	name:"text_current"},
+					{ type:"template",	name:"text_bottom"}
+				]  }
+			]  },
+			{ type:"button" , name:"form_button_1", value: $p.msg.sync_break }
+		];
+		_stepper.frm_sync = _stepper.wnd_sync.attachForm(str);
+		_stepper.frm_sync.attachEvent("onButtonClick", function(name) {
+			if(_stepper)
+				_stepper.do_break = true;
+		});
+
+		_stepper.frm_sync.setItemValue("text_processed", "Подготовка данных");
+		_stepper.frm_sync.setItemValue("text_bottom", "Загружается структура таблиц...");
+	}
+}
+/* joined by builder */
+/**
  * Форма абстрактного объекта данных {{#crossLink "DataObj"}}{{/crossLink}}, в том числе, отчетов и обработок<br />
  * &copy; http://www.oknosoft.ru 2009-2015
  * @module metadata
@@ -7429,6 +7756,369 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 }
 /* joined by builder */
 /**
+ * Абстрактная форма списка и выбора выбора объектов ссылочного типа (документов и справочников)<br />
+ * Может быть переопределена в {{#crossLink "RefDataManager"}}менеджерах{{/crossLink}} конкретных классов<br />
+ * &copy; http://www.oknosoft.ru 2009-2015
+ * @module  wnd_selection
+ */
+
+/**
+ * Форма выбора объекта данных
+ * @method form_selection
+ * @param pwnd {dhtmlXWindows} - указатель на родительскую форму
+ * @param attr {Object} - параметры инициализации формы
+ */
+DataManager.prototype.form_selection = function(pwnd, attr){
+	var _mngr, md, class_name, wnd, s_col, a_direction, previous_filter;
+
+	// читаем метаданные
+	_mngr = this;
+	md = _mngr.metadata();
+	class_name = _mngr.class_name;
+	s_col = 0;
+	a_direction = "asc";
+	previous_filter = {};
+
+	if(!md){
+		$p.msg.show_msg({
+			title: $p.msg.error_critical,
+			type: "alert-error",
+			text: $p.msg.no_metadata.replace("%1", class_name)
+		});
+		return;
+	}
+
+	// создаём и настраиваем форму
+	frm_create();
+
+
+	/**
+	 *	раздел вспомогательных функций
+	 */
+
+	/**
+	 * аналог 1С-ного ПриСозданииНаСервере()
+	 */
+	function frm_create(){
+
+		// создаём и растраиваем форму
+		if(pwnd instanceof dhtmlXLayoutCell) {
+			wnd = pwnd;
+			wnd.showHeader();
+			wnd.close = function () {
+				(wnd || pwnd).detachToolbar();
+				(wnd || pwnd).detachStatusBar();
+				(wnd || pwnd).detachObject(true);
+				frm_unload();
+			};
+		}else{
+			wnd = $p.iface.w.createWindow('wnd_' + class_name.replace(".", "_") + '_select', 0, 0, 900, 600);
+			wnd.centerOnScreen();
+			wnd.setModal(1);
+			wnd.button('park').hide();
+			wnd.button('minmax').show();
+			wnd.button('minmax').enable();
+			wnd.attachEvent("onClose", frm_close);
+		}
+
+		$p.bind_help(wnd);
+		wnd.setText('Список ' + (class_name.indexOf("cat.") > -1 ? 'справочника "' : 'документов "') + (md["list_presentation"] || md.synonym) + '"');
+
+		dhtmlxEvent(document.body, "keydown", body_keydown);
+
+		// командная панель формы
+		wnd.elmnts = {};
+		wnd.elmnts.toolbar = wnd.attachToolbar();
+		wnd.elmnts.toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
+		wnd.elmnts.toolbar.loadStruct('data/toolbar_selection.xml?v='+$p.job_prm.files_date, function(){
+			this.addSpacer("input_filter");
+			this.attachEvent("onclick", toolbar_click);
+			// текстовое поле фильтра по подстроке
+			wnd.elmnts.input_filter = this.getInput("input_filter");
+			wnd.elmnts.input_filter.onchange = input_filter_change;
+			wnd.elmnts.input_filter.type = "search";
+
+			if(!pwnd.on_select && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper"){
+				this.hideItem("btn_select");
+				this.hideItem("sep1");
+				this.addListOption("bs_more", "btn_order_list", "~", "button", "Список заказов", "tb_autocad.png");
+				this.addListOption("bs_more", "btn_import", "~", "button", "Загрузить из файла", "document_load.png");
+				this.addListOption("bs_more", "btn_export", "~", "button", "Выгрузить в файл", "document_save.png");
+
+			}else{
+				this.disableItem("btn_new");
+				this.disableItem("btn_edit");
+				this.disableItem("btn_delete");
+			}
+
+			//
+			create_tree_and_grid();
+		});
+		// статусбар
+		wnd.elmnts.status_bar = wnd.attachStatusBar();
+		wnd.elmnts.status_bar.setText("<div id='" + class_name.replace(".", "_") + "_select_recinfoArea'></div>");
+	}
+
+	/**
+	 * Устанавливает фокус в поле фильтра
+	 * @param evt {KeyboardEvent}
+	 * @return {Boolean}
+	 */
+	function body_keydown(evt){
+		if(wnd && (evt.keyCode == 113 || evt.keyCode == 115)){ //"F2" или "F4"
+			setTimeout(function(){
+				wnd.elmnts.input_filter.focus();
+			}, 0);
+			return $p.cancel_bubble(evt);
+		}
+	}
+
+	function input_filter_change(){
+		if(md["hierarchical"]){
+			if(wnd.elmnts.input_filter.value)
+				wnd.elmnts.cell_tree.collapse();
+			else
+				wnd.elmnts.cell_tree.expand();
+		}
+		wnd.elmnts.grid.reload();
+	}
+
+	function create_tree_and_grid(){
+		var layout, cell_tree, cell_grid, tree, grid, grid_inited;
+
+		if(md["hierarchical"]){
+			layout = wnd.attachLayout('2U');
+
+			cell_grid = layout.cells('b');
+			cell_grid.hideHeader();
+			grid = wnd.elmnts.grid = cell_grid.attachGrid();
+
+			cell_tree = wnd.elmnts.cell_tree = layout.cells('a');
+			cell_tree.setWidth('220');
+			cell_tree.hideHeader();
+			cell_tree.setCollapsedText("Дерево");
+			tree = wnd.elmnts.tree = cell_tree.attachTree();
+			tree.setImagePath(dhtmlx.image_path + 'dhxtree_web/');
+			tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
+			tree.enableKeyboardNavigation(true);
+			tree.attachEvent("onSelect", function(){	// довешиваем обработчик на дерево
+				if(this.do_not_reload)
+					delete this.do_not_reload;
+				else
+					grid.reload();
+			});
+
+			// !!! проверить закешированность дерева
+			// !!! для неиерархических справочников дерево можно спрятать
+			$p.cat.load_soap_to_grid({
+				action: "get_tree",
+				class_name: class_name
+			}, wnd.elmnts.tree, function(){
+				setTimeout(function(){ grid.reload(); }, 20);
+			});
+
+		}else{
+			cell_grid = wnd;
+			grid = wnd.elmnts.grid = wnd.attachGrid();
+			setTimeout(function(){ grid.reload(); }, 20);
+		}
+
+		// настройка грида
+		grid.setIconsPath(dhtmlx.image_path);
+		grid.setImagePath(dhtmlx.image_path);
+		grid.setPagingWTMode(true,true,true,[20,30,60]);
+		grid.enablePaging(true, 30, 8, class_name.replace(".", "_") + "_select_recinfoArea");
+		grid.setPagingSkin("toolbar", dhtmlx.skin);
+		grid.attachEvent("onBeforeSorting", customColumnSort);
+		grid.attachEvent("onBeforePageChanged", function(){ return !!this.getRowsNum();});
+		grid.attachEvent("onXLE", function(){cell_grid.progressOff(); });
+		grid.attachEvent("onXLS", function(){cell_grid.progressOn(); });
+		grid.attachEvent("onDynXLS", function(start,count){
+			var filter = getFilter(start,count);
+			if(!filter)
+				return;
+			$p.cat.load_soap_to_grid(filter, grid);
+			return false;
+		});
+		grid.attachEvent("onRowDblClicked", function(rId, cInd){
+			var tree_row_index=null;
+			if(tree)
+				tree_row_index = tree.getIndexById(rId);
+			if(tree_row_index!=null)
+				tree.selectItem(rId, true);
+			else select(rId);
+		});
+
+		if($p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper")
+			grid.enableMultiselect(true);
+
+		// эту функцию будем вызывать снаружи, чтобы перечитать данные
+		grid.reload = function(){
+			var filter = getFilter();
+			if(!filter) return;
+			cell_grid.progressOn();
+			grid.clearAll();
+			$p.cat.load_soap_to_grid(filter, grid, function(xml){
+				if(typeof xml === "object"){
+					$p.msg.check_soap_result(xml);
+
+				}else if(!grid_inited){
+					if(filter.initial_value){
+						var xpos = xml.indexOf("set_parent"),
+							xpos2 = xml.indexOf("'>", xpos),
+							xh = xml.substr(xpos+12, xpos2-xpos-12);
+						if($p.is_guid(xh)){
+							if(md["hierarchical"]){
+								tree.do_not_reload = true;
+								tree.selectItem(xh, false);
+							}
+						}
+						grid.selectRowById(filter.initial_value);
+
+					}else if(filter.parent && $p.is_guid(filter.parent) && md["hierarchical"]){
+						tree.do_not_reload = true;
+						tree.selectItem(filter.parent, false);
+					}
+					grid.setColumnMinWidth(200, grid.getColIndexById("presentation"));
+					grid.enableAutoWidth(true, 1200, 600);
+					grid.setSizes();
+					grid_inited = true;
+					wnd.elmnts.input_filter.focus();
+				}
+				if (a_direction && grid_inited)
+					grid.setSortImgState(true, s_col, a_direction);
+				cell_grid.progressOff();
+			});
+		};
+	}
+
+	/**
+	 *	@desc: 	обработчик нажатия кнопок командных панелей
+	 */
+	function toolbar_click(btn_id){
+		if(btn_id=="btn_select"){
+			select();
+		}else if(btn_id=="btn_new"){
+			$p.msg.show_not_implemented();
+
+		}else if(btn_id=="btn_edit"){
+			var rId = wnd.elmnts.grid.getSelectedRowId();
+			if(rId)
+				$p.iface.set_hash(_mngr.class_name, rId);
+			else
+				$p.msg.show_msg({type: "alert-warning",
+					text: $p.msg.no_selected_row.replace("%1", ""),
+					title: $p.msg.main_title});
+
+		}else if(btn_id=="btn_order_list"){
+			$p.iface.set_hash("", "", "", "def");
+
+		}else if(btn_id=="btn_delete"){
+			$p.msg.show_not_implemented();
+
+		}else if(btn_id=="btn_import"){
+			$p.msg.show_not_implemented();
+
+		}else if(btn_id=="btn_export"){
+			_mngr.export(wnd.elmnts.grid.getSelectedRowId());
+
+		}else if(btn_id=="btn_requery"){
+			wnd.elmnts.grid.reload();
+
+		}
+	}
+
+	/**
+	 * выбор значения в гриде
+	 * @param rId - идентификтор строки грида
+	 */
+	function select(rId){
+
+		if(!rId)
+			rId = wnd.elmnts.grid.getSelectedRowId();
+
+		// запрещаем выбирать папки
+		if(wnd.elmnts.tree && wnd.elmnts.tree.getIndexById(rId) != null){
+			wnd.elmnts.tree.selectItem(rId, true);
+			return;
+		}
+
+		if(rId && pwnd.on_select){
+			var fld = _mngr.get(rId);
+			wnd.close();
+			pwnd.on_select.call(pwnd.grid || pwnd, fld);
+		}
+	}
+
+	/**
+	 * освобождает переменные после закрытия формы
+	 */
+	function frm_unload(){
+		_mngr = null;
+		wnd = null;
+		md = null;
+		previous_filter = null;
+		document.body.removeEventListener("keydown", body_keydown);
+	}
+
+	function frm_close(win){
+		// проверить на ошибки, записать изменения
+		// если проблемы, вернуть false
+
+		setTimeout(frm_unload, 10);
+
+		if(pwnd.on_unload)
+			pwnd.on_unload.call(pwnd.grid || pwnd);
+
+		return true;
+	}
+
+	/**
+	 *	@desc: 	формирует объект фильтра по значениям элементов формы и позиции пейджинга
+	 *			переопределяется в каждой форме
+	 *	@param:	start, count - начальная запись и количество записей
+	 */
+	function getFilter(start, count){
+		var filter = {
+			action: "get_selection",
+			class_name: class_name,
+			filter: wnd.elmnts.input_filter.value,
+			order_by: s_col,
+			direction: a_direction,
+			start: start || ((wnd.elmnts.grid.currentPage || 1)-1)*wnd.elmnts.grid.rowsBufferOutSize,
+			count: count || wnd.elmnts.grid.rowsBufferOutSize,
+			get_header: (previous_filter.get_header == undefined)
+		}, tparent = md["hierarchical"] ? wnd.elmnts.tree.getSelectedItemId() : null;
+		filter._mixin(attr);
+		filter.parent = ((tparent || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
+		for(var f in filter) if(previous_filter[f] != filter[f]){
+			previous_filter = filter;
+			return filter;
+		}
+	}
+
+	function customColumnSort(ind){
+		var a_state = wnd.elmnts.grid.getSortingState();
+		s_col=ind;
+		a_direction = ((a_state[1] == "des")?"asc":"des");
+		wnd.elmnts.grid.reload();
+		return true;
+	}
+
+	return wnd;
+};
+
+/**
+ * Форма списка объектов данных
+ * @method form_list
+ * @param pwnd {dhtmlXWindows} - указатель на родительскую форму
+ * @param attr {Object} - параметры инициализации формы
+ */
+DataManager.prototype.form_list = function(pwnd, attr){
+	return this.form_selection(pwnd, attr);
+};
+/* joined by builder */
+/**
  * Содержит методы обработки событий __при запуске__ программы, __перед закрытием__,<br />
  * при обновлении файлов __ApplicationCache__, а так же, при переходе в __offline__ и __online__
  *
@@ -7498,7 +8188,7 @@ if(window){
 
 				else if(!timer_setted){
 					timer_setted = true;
-					setTimeout(do_reload, 20000);
+					setTimeout(do_reload, 25000);
 				}
 
 				if($p.iface.appcache){
@@ -7513,8 +8203,6 @@ if(window){
 				}
 			}
 
-
-
 			/**
 			 * Нулевым делом, создаём объект параметров работы программы, в процессе создания которого,
 			 * выполняется клиентский скрипт, переопределяющий триггеры и переменные окружения
@@ -7526,7 +8214,6 @@ if(window){
 			 * @static
 			 */
 			$p.job_prm = new JobPrm();
-
 
 			/**
 			 * если в $p.job_prm указано использование геолокации, геокодер инициализируем с небольшой задержкой
@@ -7667,7 +8354,7 @@ if(window){
 						setTimeout(function(){
 							$p.load_script(location.protocol +
 								"//maps.google.com/maps/api/js?sensor=false&callback=$p.ipinfo.location_callback", "script", function(){});
-						}, 600);
+						}, 100);
 					});
 				else
 					location_callback();
@@ -7701,104 +8388,107 @@ if(window){
 			 * Инициализируем параметры пользователя,
 			 * проверяем offline и версию файлов
 			 */
-			$p.wsql.init_params(function(){
+			setTimeout(function(){
+				$p.wsql.init_params(function(){
 
-				eve.set_offline(!navigator.onLine);
+					eve.set_offline(!navigator.onLine);
 
-				eve.update_files_version();
+					eve.update_files_version();
 
-				// пытаемся перейти в полноэкранный режим в мобильных браузерах
-				if (document.documentElement.webkitRequestFullScreen && navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)) {
-					function requestFullScreen(){
-						document.documentElement.webkitRequestFullScreen();
-						w.removeEventListener('touchstart', requestFullScreen);
+					// пытаемся перейти в полноэкранный режим в мобильных браузерах
+					if (document.documentElement.webkitRequestFullScreen && navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)) {
+						function requestFullScreen(){
+							document.documentElement.webkitRequestFullScreen();
+							w.removeEventListener('touchstart', requestFullScreen);
+						}
+						w.addEventListener('touchstart', requestFullScreen, false);
 					}
-					w.addEventListener('touchstart', requestFullScreen, false);
-				}
 
-				// кешируем ссылки на элементы управления
-				if($p.job_prm.use_builder || $p.job_prm.use_wrapper){
-					$p.wrapper	= document.getElementById("owb_wrapper");
-					$p.risdiv	= document.getElementById("risdiv");
-					$p.ft		= document.getElementById("msgfooter");
-					if($p.ft)
-						$p.ft.style.display = "none";
-				}
+					// кешируем ссылки на элементы управления
+					if($p.job_prm.use_builder || $p.job_prm.use_wrapper){
+						$p.wrapper	= document.getElementById("owb_wrapper");
+						$p.risdiv	= document.getElementById("risdiv");
+						$p.ft		= document.getElementById("msgfooter");
+						if($p.ft)
+							$p.ft.style.display = "none";
+					}
 
-				/**
-				 * Выполняем отложенные методы из eve.onload
-				 */
-				eve.onload.forEach(function (method) {
-					if(typeof method === "function")
-						method();
-				});
-
-				// Если есть сплэш, удаляем его
-				if(document && document.querySelector("#splash"))
-					document.querySelector("#splash").parentNode.removeChild(document.querySelector("#splash"));
-
-				/**
-				 *	начинаем слушать события msgfooter-а, в который их пишет рисовалка
-				 */
-				if($p.job_prm.use_builder && $p.ft){
-
-					dhtmlxEvent($p.ft, "click", function(evt){
-						$p.cancel_bubble(evt);
-						if(evt.qualifier == "ready")
-							iface.oninit();
-						else if($p.eve.builder_click)
-							$p.eve.builder_click(evt);
+					/**
+					 * Выполняем отложенные методы из eve.onload
+					 */
+					eve.onload.forEach(function (method) {
+						if(typeof method === "function")
+							method();
 					});
 
-				}else
-					setTimeout(iface.oninit, 0);
+					// Если есть сплэш, удаляем его
+					if(document && document.querySelector("#splash"))
+						document.querySelector("#splash").parentNode.removeChild(document.querySelector("#splash"));
+
+					/**
+					 *	начинаем слушать события msgfooter-а, в который их пишет рисовалка
+					 */
+					if($p.job_prm.use_builder && $p.ft){
+
+						dhtmlxEvent($p.ft, "click", function(evt){
+							$p.cancel_bubble(evt);
+							if(evt.qualifier == "ready")
+								iface.oninit();
+							else if($p.eve.builder_click)
+								$p.eve.builder_click(evt);
+						});
+
+					}else
+						setTimeout(iface.oninit, 100);
 
 
-				// Ресурсы уже кэшированнны. Индикатор прогресса скрыт
-				if (cache = w.applicationCache){
+					// Ресурсы уже кэшированнны. Индикатор прогресса скрыт
+					if (cache = w.applicationCache){
 
-					// обновление не требуется
-					cache.addEventListener('noupdate', function(e){
+						// обновление не требуется
+						cache.addEventListener('noupdate', function(e){
 
-					}, false);
+						}, false);
 
-					// Ресурсы уже кэшированнны. Индикатор прогресса скрыт.
-					cache.addEventListener('cached', function(e){
-						timer_setted = true;
-						if($p.iface.appcache)
-							$p.iface.appcache.close();
-					}, false);
-
-					// Начало скачивания ресурсов. progress_max - количество ресурсов. Показываем индикатор прогресса
-					cache.addEventListener('downloading', do_cache_update_msg, false);
-
-					// Процесс скачивания ресурсов. Индикатор прогресса изменяется
-					cache.addEventListener('progress', do_cache_update_msg,	false);
-
-					// Скачивание завершено. Скрываем индикатор прогресса. Обновляем кэш. Перезагружаем страницу.
-					cache.addEventListener('updateready', function(e) {
-						try{
-							cache.swapCache();
-							if($p.iface.appcache){
+						// Ресурсы уже кэшированнны. Индикатор прогресса скрыт.
+						cache.addEventListener('cached', function(e){
+							timer_setted = true;
+							if($p.iface.appcache)
 								$p.iface.appcache.close();
-							}
-						}catch(e){}
-						do_reload();
-					}, false);
+						}, false);
 
-					// Ошибка кеша
-					cache.addEventListener('error', function(e) {
-						if(!w.JSON || !w.openDatabase || typeof(w.openDatabase) !== 'function'){
-							//msg.show_msg({type: "alert-error",
-							//	text: msg.unknown_error.replace("%1", "applicationCache"),
-							//	title: msg.main_title});
-						}else
-							msg.show_msg({type: "alert-error", text: e.message || msg.unknown_error, title: msg.error_critical});
+						// Начало скачивания ресурсов. progress_max - количество ресурсов. Показываем индикатор прогресса
+						cache.addEventListener('downloading', do_cache_update_msg, false);
 
-					}, false);
-				}
+						// Процесс скачивания ресурсов. Индикатор прогресса изменяется
+						cache.addEventListener('progress', do_cache_update_msg,	false);
 
-			});
+						// Скачивание завершено. Скрываем индикатор прогресса. Обновляем кэш. Перезагружаем страницу.
+						cache.addEventListener('updateready', function(e) {
+							try{
+								cache.swapCache();
+								if($p.iface.appcache){
+									$p.iface.appcache.close();
+								}
+							}catch(e){}
+							do_reload();
+						}, false);
+
+						// Ошибка кеша
+						cache.addEventListener('error', function(e) {
+							if(!w.JSON || !w.openDatabase || typeof(w.openDatabase) !== 'function'){
+								//msg.show_msg({type: "alert-error",
+								//	text: msg.unknown_error.replace("%1", "applicationCache"),
+								//	title: msg.main_title});
+							}else
+								msg.show_msg({type: "alert-error", text: e.message || msg.unknown_error, title: msg.error_critical});
+
+						}, false);
+					}
+
+				});
+			}, 100);
+
 
 		}, false);
 
@@ -7943,6 +8633,8 @@ $p.eve.pop = function (write_ro_wsql) {
 
 	if($p.job_prm.offline)
 		return Promise.resolve(false);
+	else if($p.job_prm.rest)
+		return Promise.resolve(false);
 
 	// за такт pop делаем не более 2 запросов к 1С
 	return get_cachable_portion()
@@ -7977,15 +8669,18 @@ $p.eve.push = function () {
 
 };
 
-
 $p.eve.from_json_to_data_obj = function(res) {
 
 	var stepper = $p.eve.stepper, class_name;
 
 	if (typeof res == "string")
 		res = JSON.parse(res);
-	else if(res instanceof XMLHttpRequest)
-		res = JSON.parse(res.response);
+	else if(res instanceof XMLHttpRequest){
+		if(res.response)
+			res = JSON.parse(res.response);
+		else
+			res = {};
+	}
 
 	if(stepper.do_break){
 		$p.iface.sync.close();
@@ -8067,8 +8762,9 @@ $p.eve.log_in = function(onstep, paths){
 			if($p.job_prm.offline)
 				return res;
 
-			else if(paths.rest){
+			else if($p.job_prm.rest){
 				// в режиме rest тестируем авторизацию
+				return res;
 
 			}else
 				return _load({
@@ -8102,9 +8798,9 @@ $p.eve.log_in = function(onstep, paths){
 
 			// обрабатываем поступившие данные
 			$p.wsql.set_user_param("time_diff", res["now_1с"] - res["now_js"]);
-			if(res.cat["clrs"])
+			if(res.cat && res.cat["clrs"])
 				_md.get("cat.clrs").predefined.white.ref = res.cat["clrs"].predefined.white.ref;
-			if(res.cat["bases"])
+			if(res.cat && res.cat["bases"])
 				_md.get("cat.bases").predefined.main.ref = res.cat["bases"].predefined.main.ref;
 
 			return res;

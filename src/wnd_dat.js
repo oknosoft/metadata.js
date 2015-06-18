@@ -319,6 +319,206 @@ $p.iface.pgrid_on_checkbox = function(rId, cInd, state){
 };
 
 /**
+ * Рисует стандартную раскладку (XLayout) с деревом в левой части
+ * @method layout_2u
+ * @for InterfaceObjs
+ * @param [tree_filteres] {String} - путь к файлу структуры дерева
+ * @return {Object} - Псевдопромис
+ */
+$p.iface.layout_2u = function (tree_filteres) {
+
+	var iface = $p.iface;
+
+	iface.main = new dhtmlXLayoutObject({
+		parent: document.body,
+		pattern: "2U"
+	});
+	iface.main.attachEvent("onCollapse", function(name){
+		if(name=="b"){
+			iface.docs.expand();
+			return false;
+		}
+	});
+	iface.docs = iface.main.cells('b');
+
+	iface.cell_tree = iface.main.cells('a');
+	iface.cell_tree.setText('Режим');
+	iface.cell_tree.setWidth('190');
+	iface.cell_tree.fixSize(false, false);
+	iface.cell_tree.collapse();
+
+	iface.tree = iface.cell_tree.attachTree();
+	iface.tree.setImagePath(dhtmlx.image_path + 'dhxtree_web/');
+	iface.tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
+	
+	if(tree_filteres){
+		var fpromise = new Promise();
+		iface.tree.loadXML(tree_filteres+'?v='+$p.job_prm.files_date, function(){
+			fpromise.resolve(this);
+		});
+		return fpromise;
+	}else
+		return Promise.resolve(iface.tree);
+};
+
+/**
+ *
+ */
+$p.iface.frm_auth = function (onstep, paths, resolve, reject) {
+
+	var frm_auth = $p.iface.auth = $p.iface.docs.attachForm(), w;
+
+	if(!onstep)
+		onstep = function (step){
+
+			var stepper = $p.eve.stepper;
+
+			switch(step) {
+
+				case $p.eve.steps.authorization:
+
+					stepper.frm_sync.setItemValue("text_processed", "Авторизация");
+
+					break;
+
+				case $p.eve.steps.load_meta:
+
+					// индикатор прогресса и малое всплывающее сообщение
+					$p.iface.docs.progressOn();
+					$p.msg.show_msg($p.msg.init_catalogues + $p.msg.init_catalogues_meta, $p.iface.docs);
+					if(!$p.iface.sync)
+						$p.iface.wnd_sync();
+					$p.iface.sync.create(stepper);
+
+					break;
+
+				case $p.eve.steps.create_managers:
+
+					stepper.frm_sync.setItemValue("text_processed", "Обработка метаданных");
+					stepper.frm_sync.setItemValue("text_bottom", "Создаём объекты менеджеров данных...");
+
+					break;
+
+				case $p.eve.steps.process_access:
+
+					break;
+
+				case $p.eve.steps.load_data_files:
+
+					stepper.frm_sync.setItemValue("text_processed", "Загрузка начального образа");
+					stepper.frm_sync.setItemValue("text_bottom", "Читаем файлы данных зоны...");
+
+					break;
+
+				case $p.eve.steps.load_data_db:
+
+					stepper.frm_sync.setItemValue("text_processed", "Загрузка изменений из 1С");
+					stepper.frm_sync.setItemValue("text_bottom", "Читаем изменённые справочники");
+
+					break;
+
+				case $p.eve.steps.load_data_wsql:
+
+					break;
+
+				case $p.eve.steps.save_data_wsql:
+
+					stepper.frm_sync.setItemValue("text_processed", "Кеширование данных");
+					stepper.frm_sync.setItemValue("text_bottom", "Сохраняем таблицы в локальном SQL...");
+
+					break;
+
+				default:
+
+					break;
+			}
+
+		};
+
+	function do_auth(login, password, is_guest){
+		$p.ajax.username = login;
+		$p.ajax.password = password;
+
+		if(login){
+			if(!is_guest)
+				$p.wsql.set_user_param("user_name", login);					// сохраняем имя пользователя в базе
+			if(!$p.is_guid($p.wsql.get_user_param("browser_uid")))
+				$p.wsql.set_user_param("browser_uid", $p.generate_guid());	// проверяем guid браузера
+
+			$p.eve.log_in(onstep, paths)
+				.then(resolve)
+				.catch(reject)
+				.then(function (err) {
+					if($p.iface.sync)
+						$p.iface.sync.close()
+				});
+
+		} else
+			this.validate();
+	}
+
+	// обработчик кнопки "войти" формы авторизации
+	function auth_click(name){
+
+		this.resetValidateCss();
+
+		if(this.getCheckedValue("type") == "guest"){
+			do_auth.call(this, this.getItemValue("guest"), "", true);
+			$p.wsql.set_user_param("user_name", "");
+
+		}else if(this.getCheckedValue("type") == "auth"){
+			do_auth.call(this, this.getItemValue("login"), this.getItemValue("password"));
+
+		}
+	}
+
+	// загружаем структуру
+	frm_auth.loadStruct('data/form_auth.xml?v='+$p.job_prm.files_date, function(){
+
+		// после готовности формы читаем пользователя из локальной датабазы
+		if($p.wsql.get_user_param("user_name")){
+			frm_auth.setItemValue("login", $p.wsql.get_user_param("user_name"));
+			frm_auth.setItemValue("type", "auth");
+
+			if($p.wsql.get_user_param("enable_save_pwd") && $p.wsql.get_user_param("user_pwd")){
+				frm_auth.setItemValue("password", $p.wsql.get_user_param("user_pwd"));
+
+				if($p.wsql.get_user_param("autologin"))
+					auth_click();
+			}
+		}
+
+		// позиционируем форму по центру
+		if((w = ($p.iface.docs.getWidth() - 500)/2) >= 10)
+			frm_auth.cont.style.paddingLeft = w.toFixed() + "px";
+		else
+			frm_auth.cont.style.paddingLeft = "20px";
+
+	});
+
+	// назначаем обработчик нажатия на кнопку
+	frm_auth.attachEvent("onButtonClick", auth_click);
+
+	frm_auth.attachEvent("onKeyDown",function(inp, ev, name, value){
+		if(ev.keyCode == 13){
+			if(name == "password" || this.getCheckedValue("type") == "guest"){
+				auth_click.call(this);
+			}
+		}
+	});
+
+
+	$p.msg.show_msg($p.msg.init_login, $p.iface.docs);
+
+};
+
+$p.iface.open_settings = function (e) {
+	(e || event).preventDefault();
+	window.open(($p.job_prm.settings_url || 'order_dealer/options.html')+'?v='+$p.job_prm.files_date);
+	return $p.cancel_bubble(e);
+};
+
+/**
  * Панель инструментов рисовалки и альтернативная панель инструментов прочих форм
  * @class OTooolBar
  * @param attr {Object} - параметры создаваемой панели - родитель, положение, размер и ориентация
@@ -483,6 +683,8 @@ $p.iface.OTooolBar = OTooolBar;
 
 /**
  * Добавляет кнопку на панель инструментов
+ * @method add_button
+ * @for InterfaceObjs
  * @param parent {Element}
  * @param attr {Object}
  * @param battr {Object}

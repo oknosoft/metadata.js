@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<items>
+	<item type="settings" position="label-left" labelWidth="150" inputWidth="230" noteWidth="230"/>
+	<item type="fieldset" name="data" inputWidth="auto" label="Авторизация">
+
+        <item type="radio" name="type" labelWidth="auto" position="label-right" checked="true" value="guest" label="Гостевой (демо) режим">
+            <item type="select" name="guest" label="Роль">
+                <option value="Дилер" label="Дилер"/>
+            </item>
+        </item>
+
+		<item type="radio" name="type" labelWidth="auto" position="label-right" value="auth" label="Есть учетная запись">
+			<item type="input" value="" name="login" label="Имя пользователя" validate="NotEmpty" />
+			<item type="password" value="" name="password" label="Пароль" validate="NotEmpty" />
+		</item>
+
+		<item type="button" value="Войти" name="submit"/>
+
+        <item type="template" name="text_options" className="order_dealer_options" inputWidth="231"
+              value="&lt;a href='#' onclick='$p.iface.open_settings();' &gt; &lt;img src='/imgs/dhxtoolbar_web/tb_settings.png' align='top' /&gt; Настройки &lt;/a&gt; &lt;img src='/imgs/dhxtoolbar_web/blank9.png' align='top' /&gt; &lt;a href='http://www.oknosoft.ru/feedback' target='_blank' &gt; &lt;img src='/imgs/dhxtoolbar_web/cloud-question.png' align='top' /&gt; Задать вопрос &lt;/a&gt;"  />
+
+	</item>
+</items>

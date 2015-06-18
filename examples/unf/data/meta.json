@@ -270,7 +270,7 @@
 						"str_len": 1024
 					}
 				},
-				"key": {
+				"f_key": {
 					"synonym": "Key",
 					"multiline_mode": false,
 					"tooltip": "",
@@ -361,7 +361,7 @@
 						"str_len": 0
 					}
 				},
-				"key": {
+				"f_key": {
 					"synonym": "Key",
 					"multiline_mode": false,
 					"tooltip": "",
