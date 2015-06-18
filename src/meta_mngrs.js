@@ -216,25 +216,7 @@ DataManager.prototype.register_ex = function(){
 
 };
 
-/**
- * Форма выбора объекта данных
- * @method form_selection
- * @param pwnd {dhtmlXWindows} - указатель на родительскую форму
- * @param attr {Object} - параметры инициализации формы
- */
-DataManager.prototype.form_selection = function(pwnd, attr){
-	$p.iface._form_selection.call(this, pwnd, attr);
-};
 
-/**
- * Форма списка объектов данных
- * @method form_list
- * @param pwnd {dhtmlXWindows} - указатель на родительскую форму
- * @param attr {Object} - параметры инициализации формы
- */
-DataManager.prototype.form_list = function(pwnd, attr){
-	return this.form_selection(pwnd, attr);
-};
 
 /**
  * Cписок значений для поля выбора
