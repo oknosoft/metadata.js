@@ -1,4 +1,4 @@
-# osde - oknosoft data engine
+# metadata.js: 1С-подобный движок данных и метаданных
 
 [English version](README.en.md)
 
