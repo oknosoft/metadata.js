@@ -1,8 +1,8 @@
 {
-  "name": "osde dev build",
+  "name": "metadata.js development build",
   "root": "../",
   "www_root": "../",
-  "output": "dist/osde.js",
+  "output": "dist/metadata.js",
   "modules": {
     "common":   [
       "src/common.js",

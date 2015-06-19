@@ -1,8 +1,8 @@
 {
-  "name": "osde dev build",
+  "name": "metadata production build",
   "root": "../",
   "www_root": "../",
-  "output": "dist/osde.min.js",
+  "output": "dist/metadata.min.js",
   "modules": {
     "common":   ["src/common.js", "src/i18n.ru.js",
       "src/ext/excells_ref.js",
