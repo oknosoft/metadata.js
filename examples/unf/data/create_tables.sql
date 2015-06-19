@@ -1,4 +1,4 @@
-USE osde;
+USE md;
 CREATE TABLE IF NOT EXISTS refs (ref CHAR);
 CREATE TABLE IF NOT EXISTS enm_individual_legal (ref CHAR PRIMARY KEY NOT NULL, sequence INT, name CHAR, synonym CHAR);
 CREATE TABLE IF NOT EXISTS enm_nom_types (ref CHAR PRIMARY KEY NOT NULL, sequence INT, name CHAR, synonym CHAR);

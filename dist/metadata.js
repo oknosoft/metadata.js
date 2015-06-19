@@ -160,30 +160,30 @@ var $p = require("common");
 }),{
 "common": (function (require, exports, module) { /* wrapped by builder */
 /**
- * Глобальные переменные и общие методы фреймворка __OSDE__ <i>Oknosoft data engine</i> <br />&copy; http://www.oknosoft.ru 2009-2015
+ * Глобальные переменные и общие методы фреймворка __metadata.js__ <i>Oknosoft data engine</i> <br />&copy; http://www.oknosoft.ru 2009-2015
  *
- * Экспортирует глобальную переменную __$p__ типа {{#crossLink "OSDE"}}{{/crossLink}}
+ * Экспортирует глобальную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
  * @module  common
  * @author	Evgeniy Malyarov
  */
 
 /**
  * Класс глобального объекта фреймворка __Лёгкого клиента__
- * @class OSDE
+ * @class MetaEngine
  * @static
  */
-function OSDE() {
+function MetaEngine() {
 	this.version = "2.0.5.185";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
-};
+}
 
 /**
  * Глобальный объект __$p__ фреймворка __Лёгкого клиента__
  * Для совместимости со старыми модулями, публикуем $p глобально
  */
-var $p = window.$p = new OSDE();
+var $p = window.$p = new MetaEngine();
 
 
 /**
@@ -282,7 +282,7 @@ Object.prototype._define("_clone", {
 /**
  * Загружает скрипты и стили синхронно и асинхронно
  * @method load_script
- * @for OSDE
+ * @for MetaEngine
  * @param src {String} - url ресурса
  * @param type {String} - "link" или "script"
  * @param [callback] {function} - функция обратного вызова после загрузки скрипта
@@ -326,7 +326,7 @@ if(typeof Promise !== "function")
  * The date defaults to the current date/time.
  * The mask defaults to dateFormat.masks.default.
  * @method dateFormat
- * @for OSDE
+ * @for MetaEngine
  * @param date {Date} - источник
  * @param mask {dateFormat.masks} - маска формата
  * @param utc {Boolean} Converts the date from local time to UTC/GMT
@@ -438,7 +438,7 @@ $p.dateFormat.masks = {
 /**
  * Наша promise-реализация ajax
  * @property ajax
- * @for OSDE
+ * @for MetaEngine
  * @type Ajax
  * @static
  */
@@ -673,7 +673,7 @@ $p.ajax = new (
 /**
  * Несколько статических методов двумерной математики
  * @property m
- * @for OSDE
+ * @for MetaEngine
  * @static
  */
 $p.m = {
@@ -775,7 +775,7 @@ $p.m = {
 /**
  * Пустые значения даты и уникального идентификатора
  * @property blank
- * @for OSDE
+ * @for MetaEngine
  * @static
  */
 $p.blank = new function Blank() {
@@ -1259,7 +1259,7 @@ $p.iface = new InterfaceObjs();
  * Обработчики событий приложения
  * Подробнее см. класс {{#crossLink "AppEvents"}}{{/crossLink}} и модуль {{#crossLinkModule "events"}}{{/crossLinkModule}}
  * @property eve
- * @for OSDE
+ * @for MetaEngine
  * @type AppEvents
  * @static
  */
@@ -1285,7 +1285,7 @@ $p.eve = new (
 /**
  * Модификаторы менеджеров объектов метаданных {{#crossLink "Modifiers"}}{{/crossLink}}
  * @property modifiers
- * @for OSDE
+ * @for MetaEngine
  * @type {Modifiers}
  * @static
  */
@@ -1414,11 +1414,21 @@ function JobPrm(){
 	}
 
 	this.hs_url = function () {
-		return "/a/zd/%1/hs/upzp".replace("%1", $p.wsql.get_user_param("zone", "number"));
+		var url = this.hs_path || "/a/zd/%1/hs/upzp",
+			zone = $p.wsql.get_user_param("zone", "number");
+		if(zone)
+			return url.replace("%1", zone);
+		else
+			return url.replace("%1/", "");
 	};
 
 	this.rest_url = function () {
-		return "/a/zd/%1/odata/standard.odata/".replace("%1", $p.wsql.get_user_param("zone", "number"));
+		var url = this.rest_path || "/a/zd/%1/odata/standard.odata/",
+			zone = $p.wsql.get_user_param("zone", "number");
+		if(zone)
+			return url.replace("%1", zone);
+		else
+			return url.replace("%1/", "");
 	};
 
 	this.unf_url = function () {
@@ -1431,7 +1441,7 @@ function JobPrm(){
 /**
  * Интерфейс локальной базы данных
  * @property wsql
- * @for OSDE
+ * @for MetaEngine
  * @type WSQL
  * @static
  */
@@ -1448,14 +1458,8 @@ $p.wsql = (
 	var user_params = {},
 		inited = 0;
 
-	//alasql('CREATE INDEXEDDB DATABASE IF NOT EXISTS osde;\
-	//		ATTACH INDEXEDDB DATABASE osde; \
-	//		USE osde;', [], function(){
-	//	inited = 1000;
-	//});
-
 	if(window.alasql)
-		wsql.aladb = new alasql.Database('osde');
+		wsql.aladb = new alasql.Database('md');
 	else
 		inited = 1000;
 
@@ -3808,7 +3812,7 @@ $p.iface.Svgs = function (manager, layout, area) {
 /**
  * Проверяет, является ли значенние Data-объектным типом
  * @method is_data_obj
- * @for OSDE
+ * @for MetaEngine
  * @param v {*} - проверяемое значение
  * @return {Boolean} - true, если значение является ссылкой
  */
@@ -3818,7 +3822,7 @@ $p.is_data_obj = function(v){
 /**
  * приводит тип значения v к типу метаданных
  * @method fetch_type
- * @for OSDE
+ * @for MetaEngine
  * @param str {any} - значение (обычно, строка, полученная из html поля ввода)
  * @param mtype {Object} - поле type объекта метаданных (field.type)
  * @return {any}
@@ -3840,7 +3844,7 @@ $p.fetch_type = function(str, mtype){
 /**
  * Сравнивает на равенство ссылочные типы и примитивные значения
  * @method is_equal
- * @for OSDE
+ * @for MetaEngine
  * @param v1 {DataObj|String}
  * @param v2 {DataObj|String}
  * @return {boolean} - true, если значенния эквивалентны
@@ -3858,7 +3862,7 @@ $p.is_equal = function(v1, v2){
 /**
  * Абстрактный поиск значения в коллекции
  * @method _find
- * @for OSDE
+ * @for MetaEngine
  * @param a {Array}
  * @param val {DataObj|String}
  * @return {any}
@@ -3894,7 +3898,7 @@ $p._find = function(a, val){
 /**
  * Абстрактный поиск массива значений в коллекции
  * @method _find_rows
- * @for OSDE
+ * @for MetaEngine
  * @param a {Array}
  * @param attr {object}
  * @param fn {function}
@@ -4017,7 +4021,6 @@ function _load(attr){
 
 	return $p.ajax.post_ex($p.job_prm.hs_url(), JSON.stringify(attr), true)
 		.then(function (req) {
-			$p.ajax.authorized = true;
 			return req.response;
 		});
 }
@@ -4027,7 +4030,7 @@ function _load(attr){
  * Коллекция менеджеров справочников
  * @property cat
  * @type Catalogs
- * @for OSDE
+ * @for MetaEngine
  * @static
  */
 var _cat = $p.cat = new (
@@ -4045,7 +4048,7 @@ var _cat = $p.cat = new (
 	 * Коллекция менеджеров перечислений
 	 * @property enm
 	 * @type Enumerations
-	 * @for OSDE
+	 * @for MetaEngine
 	 * @static
 	 */
 	_enm = $p.enm = new (
@@ -4062,7 +4065,7 @@ var _cat = $p.cat = new (
 	 * Коллекция менеджеров документов
 	 * @property doc
 	 * @type Documents
-	 * @for OSDE
+	 * @for MetaEngine
 	 * @static
 	 */
 	_doc = $p.doc = new (
@@ -4079,7 +4082,7 @@ var _cat = $p.cat = new (
 	 * Коллекция менеджеров регистров сведений
 	 * @property ireg
 	 * @type InfoRegs
-	 * @for OSDE
+	 * @for MetaEngine
 	 * @static
 	 */
 	_ireg = $p.ireg = new (
@@ -4096,7 +4099,7 @@ var _cat = $p.cat = new (
 	 * Коллекция менеджеров регистров накопления
 	 * @property areg
 	 * @type AccumRegs
-	 * @for OSDE
+	 * @for MetaEngine
 	 * @static
 	 */
 	_areg = $p.areg = new (
@@ -4113,7 +4116,7 @@ var _cat = $p.cat = new (
 	 * Коллекция менеджеров обработок
 	 * @property dp
 	 * @type DataProcessors
-	 * @for OSDE
+	 * @for MetaEngine
 	 * @static
 	 */
 	_dp	= $p.dp = new (
@@ -4130,7 +4133,7 @@ var _cat = $p.cat = new (
 	 * Коллекция менеджеров отчетов
 	 * @property rep
 	 * @type Reports
-	 * @for OSDE
+	 * @for MetaEngine
 	 * @static
 	 */
 	_rep = $p.rep = new (
@@ -4222,7 +4225,7 @@ function Meta(req) {
 	this.create_tables = function(callback){
 
 		var cstep = 0, data_names = [], managers = this.get_classes(), class_name,
-			create = "USE osde;\nCREATE TABLE IF NOT EXISTS refs (ref CHAR);\n";
+			create = "USE md;\nCREATE TABLE IF NOT EXISTS refs (ref CHAR);\n";
 
 		function on_table_created(data){
 
@@ -8367,7 +8370,7 @@ if(window){
 			 * Параметры имеют значения по умолчанию, могут переопределяться подключаемыми модулями
 			 * и параметрами url, синтаксический разбор url производим сразу
 			 * @property job_prm
-			 * @for OSDE
+			 * @for MetaEngine
 			 * @type JobPrm
 			 * @static
 			 */
@@ -8922,7 +8925,7 @@ $p.eve.log_in = function(onstep, paths){
 
 			else if($p.job_prm.rest){
 				// в режиме rest тестируем авторизацию
-				return res;
+				return $p.ajax.get_ex($p.job_prm.rest_url()+"?$format=json", true);
 
 			}else
 				return _load({
@@ -8942,6 +8945,8 @@ $p.eve.log_in = function(onstep, paths){
 
 			if($p.job_prm.offline)
 				return res;
+
+			$p.ajax.authorized = true;
 
 			if(typeof res == "string")
 				res = JSON.parse(res);

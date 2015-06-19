@@ -89,7 +89,7 @@ if(window){
 			 * Параметры имеют значения по умолчанию, могут переопределяться подключаемыми модулями
 			 * и параметрами url, синтаксический разбор url производим сразу
 			 * @property job_prm
-			 * @for OSDE
+			 * @for MetaEngine
 			 * @type JobPrm
 			 * @static
 			 */
@@ -644,7 +644,7 @@ $p.eve.log_in = function(onstep, paths){
 
 			else if($p.job_prm.rest){
 				// в режиме rest тестируем авторизацию
-				return res;
+				return $p.ajax.get_ex($p.job_prm.rest_url()+"?$format=json", true);
 
 			}else
 				return _load({
@@ -664,6 +664,8 @@ $p.eve.log_in = function(onstep, paths){
 
 			if($p.job_prm.offline)
 				return res;
+
+			$p.ajax.authorized = true;
 
 			if(typeof res == "string")
 				res = JSON.parse(res);

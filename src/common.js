@@ -1,28 +1,28 @@
 /**
- * Глобальные переменные и общие методы фреймворка __OSDE__ <i>Oknosoft data engine</i> <br />&copy; http://www.oknosoft.ru 2009-2015
+ * Глобальные переменные и общие методы фреймворка __metadata.js__ <i>Oknosoft data engine</i> <br />&copy; http://www.oknosoft.ru 2009-2015
  *
- * Экспортирует глобальную переменную __$p__ типа {{#crossLink "OSDE"}}{{/crossLink}}
+ * Экспортирует глобальную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
  * @module  common
  * @author	Evgeniy Malyarov
  */
 
 /**
  * Класс глобального объекта фреймворка __Лёгкого клиента__
- * @class OSDE
+ * @class MetaEngine
  * @static
  */
-function OSDE() {
+function MetaEngine() {
 	this.version = "2.0.5.185";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
-};
+}
 
 /**
  * Глобальный объект __$p__ фреймворка __Лёгкого клиента__
  * Для совместимости со старыми модулями, публикуем $p глобально
  */
-var $p = window.$p = new OSDE();
+var $p = window.$p = new MetaEngine();
 
 
 /**
@@ -121,7 +121,7 @@ Object.prototype._define("_clone", {
 /**
  * Загружает скрипты и стили синхронно и асинхронно
  * @method load_script
- * @for OSDE
+ * @for MetaEngine
  * @param src {String} - url ресурса
  * @param type {String} - "link" или "script"
  * @param [callback] {function} - функция обратного вызова после загрузки скрипта
@@ -165,7 +165,7 @@ if(typeof Promise !== "function")
  * The date defaults to the current date/time.
  * The mask defaults to dateFormat.masks.default.
  * @method dateFormat
- * @for OSDE
+ * @for MetaEngine
  * @param date {Date} - источник
  * @param mask {dateFormat.masks} - маска формата
  * @param utc {Boolean} Converts the date from local time to UTC/GMT
@@ -277,7 +277,7 @@ $p.dateFormat.masks = {
 /**
  * Наша promise-реализация ajax
  * @property ajax
- * @for OSDE
+ * @for MetaEngine
  * @type Ajax
  * @static
  */
@@ -512,7 +512,7 @@ $p.ajax = new (
 /**
  * Несколько статических методов двумерной математики
  * @property m
- * @for OSDE
+ * @for MetaEngine
  * @static
  */
 $p.m = {
@@ -614,7 +614,7 @@ $p.m = {
 /**
  * Пустые значения даты и уникального идентификатора
  * @property blank
- * @for OSDE
+ * @for MetaEngine
  * @static
  */
 $p.blank = new function Blank() {
@@ -1098,7 +1098,7 @@ $p.iface = new InterfaceObjs();
  * Обработчики событий приложения
  * Подробнее см. класс {{#crossLink "AppEvents"}}{{/crossLink}} и модуль {{#crossLinkModule "events"}}{{/crossLinkModule}}
  * @property eve
- * @for OSDE
+ * @for MetaEngine
  * @type AppEvents
  * @static
  */
@@ -1124,7 +1124,7 @@ $p.eve = new (
 /**
  * Модификаторы менеджеров объектов метаданных {{#crossLink "Modifiers"}}{{/crossLink}}
  * @property modifiers
- * @for OSDE
+ * @for MetaEngine
  * @type {Modifiers}
  * @static
  */
@@ -1253,11 +1253,21 @@ function JobPrm(){
 	}
 
 	this.hs_url = function () {
-		return "/a/zd/%1/hs/upzp".replace("%1", $p.wsql.get_user_param("zone", "number"));
+		var url = this.hs_path || "/a/zd/%1/hs/upzp",
+			zone = $p.wsql.get_user_param("zone", "number");
+		if(zone)
+			return url.replace("%1", zone);
+		else
+			return url.replace("%1/", "");
 	};
 
 	this.rest_url = function () {
-		return "/a/zd/%1/odata/standard.odata/".replace("%1", $p.wsql.get_user_param("zone", "number"));
+		var url = this.rest_path || "/a/zd/%1/odata/standard.odata/",
+			zone = $p.wsql.get_user_param("zone", "number");
+		if(zone)
+			return url.replace("%1", zone);
+		else
+			return url.replace("%1/", "");
 	};
 
 	this.unf_url = function () {
@@ -1270,7 +1280,7 @@ function JobPrm(){
 /**
  * Интерфейс локальной базы данных
  * @property wsql
- * @for OSDE
+ * @for MetaEngine
  * @type WSQL
  * @static
  */
@@ -1287,14 +1297,8 @@ $p.wsql = (
 	var user_params = {},
 		inited = 0;
 
-	//alasql('CREATE INDEXEDDB DATABASE IF NOT EXISTS osde;\
-	//		ATTACH INDEXEDDB DATABASE osde; \
-	//		USE osde;', [], function(){
-	//	inited = 1000;
-	//});
-
 	if(window.alasql)
-		wsql.aladb = new alasql.Database('osde');
+		wsql.aladb = new alasql.Database('md');
 	else
 		inited = 1000;
 

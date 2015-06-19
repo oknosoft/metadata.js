@@ -27,6 +27,8 @@ $p.settings = function (prm, modifiers) {
 
 	prm.settings_url = "/examples/unf/settings.html";// расположение страницы настроек
 
+	prm.rest_path = "/a/unf/%1/odata/standard.odata/";// расположение rest-сервиса unf
+
 	/**
 	 * для целей демо-примера, методы data-объектов переопределяем здесь в анонимной функции
 	 * в реальных проектах, методы каждого data-объекта удобнее расположить в отдельных модулях

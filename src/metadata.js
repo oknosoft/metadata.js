@@ -8,7 +8,7 @@
 /**
  * Проверяет, является ли значенние Data-объектным типом
  * @method is_data_obj
- * @for OSDE
+ * @for MetaEngine
  * @param v {*} - проверяемое значение
  * @return {Boolean} - true, если значение является ссылкой
  */
@@ -18,7 +18,7 @@ $p.is_data_obj = function(v){
 /**
  * приводит тип значения v к типу метаданных
  * @method fetch_type
- * @for OSDE
+ * @for MetaEngine
  * @param str {any} - значение (обычно, строка, полученная из html поля ввода)
  * @param mtype {Object} - поле type объекта метаданных (field.type)
  * @return {any}
@@ -40,7 +40,7 @@ $p.fetch_type = function(str, mtype){
 /**
  * Сравнивает на равенство ссылочные типы и примитивные значения
  * @method is_equal
- * @for OSDE
+ * @for MetaEngine
  * @param v1 {DataObj|String}
  * @param v2 {DataObj|String}
  * @return {boolean} - true, если значенния эквивалентны
@@ -58,7 +58,7 @@ $p.is_equal = function(v1, v2){
 /**
  * Абстрактный поиск значения в коллекции
  * @method _find
- * @for OSDE
+ * @for MetaEngine
  * @param a {Array}
  * @param val {DataObj|String}
  * @return {any}
@@ -94,7 +94,7 @@ $p._find = function(a, val){
 /**
  * Абстрактный поиск массива значений в коллекции
  * @method _find_rows
- * @for OSDE
+ * @for MetaEngine
  * @param a {Array}
  * @param attr {object}
  * @param fn {function}
@@ -217,7 +217,6 @@ function _load(attr){
 
 	return $p.ajax.post_ex($p.job_prm.hs_url(), JSON.stringify(attr), true)
 		.then(function (req) {
-			$p.ajax.authorized = true;
 			return req.response;
 		});
 }
@@ -227,7 +226,7 @@ function _load(attr){
  * Коллекция менеджеров справочников
  * @property cat
  * @type Catalogs
- * @for OSDE
+ * @for MetaEngine
  * @static
  */
 var _cat = $p.cat = new (
@@ -245,7 +244,7 @@ var _cat = $p.cat = new (
 	 * Коллекция менеджеров перечислений
 	 * @property enm
 	 * @type Enumerations
-	 * @for OSDE
+	 * @for MetaEngine
 	 * @static
 	 */
 	_enm = $p.enm = new (
@@ -262,7 +261,7 @@ var _cat = $p.cat = new (
 	 * Коллекция менеджеров документов
 	 * @property doc
 	 * @type Documents
-	 * @for OSDE
+	 * @for MetaEngine
 	 * @static
 	 */
 	_doc = $p.doc = new (
@@ -279,7 +278,7 @@ var _cat = $p.cat = new (
 	 * Коллекция менеджеров регистров сведений
 	 * @property ireg
 	 * @type InfoRegs
-	 * @for OSDE
+	 * @for MetaEngine
 	 * @static
 	 */
 	_ireg = $p.ireg = new (
@@ -296,7 +295,7 @@ var _cat = $p.cat = new (
 	 * Коллекция менеджеров регистров накопления
 	 * @property areg
 	 * @type AccumRegs
-	 * @for OSDE
+	 * @for MetaEngine
 	 * @static
 	 */
 	_areg = $p.areg = new (
@@ -313,7 +312,7 @@ var _cat = $p.cat = new (
 	 * Коллекция менеджеров обработок
 	 * @property dp
 	 * @type DataProcessors
-	 * @for OSDE
+	 * @for MetaEngine
 	 * @static
 	 */
 	_dp	= $p.dp = new (
@@ -330,7 +329,7 @@ var _cat = $p.cat = new (
 	 * Коллекция менеджеров отчетов
 	 * @property rep
 	 * @type Reports
-	 * @for OSDE
+	 * @for MetaEngine
 	 * @static
 	 */
 	_rep = $p.rep = new (
@@ -422,7 +421,7 @@ function Meta(req) {
 	this.create_tables = function(callback){
 
 		var cstep = 0, data_names = [], managers = this.get_classes(), class_name,
-			create = "USE osde;\nCREATE TABLE IF NOT EXISTS refs (ref CHAR);\n";
+			create = "USE md;\nCREATE TABLE IF NOT EXISTS refs (ref CHAR);\n";
 
 		function on_table_created(data){
 
