@@ -300,7 +300,7 @@ $p.ajax = new (
 
 				if(auth){
 					var username, password;
-					if(typeof auth == "object" && auth.username && auth.password){
+					if(typeof auth == "object" && auth.username && auth.hasOwnProperty("password")){
 						username = auth.username;
 						password = auth.password;
 					}else{

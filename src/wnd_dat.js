@@ -710,8 +710,9 @@ function OTooolBar(attr){
 	}
 
 	/**
-	 * Добавляет кнопку
-	 * @param battr
+	 * Добавляет кнопку на панель инструментов
+	 * @method add
+	 * @param battr {Object} - атрибуты создаваемой кнопки
 	 */
 	this.add = function(battr){
 
@@ -795,8 +796,9 @@ function OTooolBar(attr){
 	};
 
 	/**
-	 * Выделяет активную кнопку
-	 * @param name
+	 * Выделяет кнопку по событию mouseover и снимает выделение с остальных кнопок
+	 * @method select
+	 * @param name {String} - имя текущей кнопки
 	 */
 	this.select = function(name){
 		for(var i=0; i<div.children.length; i++){
@@ -808,6 +810,10 @@ function OTooolBar(attr){
 		}
 	};
 
+	/**
+	 * Деструктор объекта
+	 * @method unload
+	 */
 	this.unload = function(){
 		while(div.firstChild)
 			div.removeChild(div.firstChild);

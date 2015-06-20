@@ -1,7 +1,13 @@
 /**
+ * Расширение типов ячеек dhtmlXGrid
  * <br />&copy; http://www.oknosoft.ru 2009-2015
- * Поля ввода ссылочных типов данных для dhtmlXGrid
+ *
+ * Экспортирует конструкторы:
+ * * **eXcell_ref** - поля ввода значений ссылочных типов
+ * * **eXcell_refc** - комбобокс ссылочных типов (перечисления и короткие справочники)
+ *
  * @module  excells_ref
+ * @requires common
  */
 
 /**
@@ -22,8 +28,10 @@ function input_keydown(e, t){
 
 var eXcell_proto = new eXcell();
 
+
 /**
  * Конструктор поля ввода значений ссылочных типов для грида
+ * @param cell
  */
 function eXcell_ref(cell){
 

@@ -461,7 +461,7 @@ $p.ajax = new (
 
 				if(auth){
 					var username, password;
-					if(typeof auth == "object" && auth.username && auth.password){
+					if(typeof auth == "object" && auth.username && auth.hasOwnProperty("password")){
 						username = auth.username;
 						password = auth.password;
 					}else{
@@ -1886,9 +1886,15 @@ msg.bld_split_imp = "В параметрах продукции<br />'%1'<br />�
 
 /* joined by builder */
 /**
+ * Расширение типов ячеек dhtmlXGrid
  * <br />&copy; http://www.oknosoft.ru 2009-2015
- * Поля ввода ссылочных типов данных для dhtmlXGrid
+ *
+ * Экспортирует конструкторы:
+ * * **eXcell_ref** - поля ввода значений ссылочных типов
+ * * **eXcell_refc** - комбобокс ссылочных типов (перечисления и короткие справочники)
+ *
  * @module  excells_ref
+ * @requires common
  */
 
 /**
@@ -1909,8 +1915,10 @@ function input_keydown(e, t){
 
 var eXcell_proto = new eXcell();
 
+
 /**
  * Конструктор поля ввода значений ссылочных типов для грида
+ * @param cell
  */
 function eXcell_ref(cell){
 
@@ -2896,8 +2904,9 @@ function OTooolBar(attr){
 	}
 
 	/**
-	 * Добавляет кнопку
-	 * @param battr
+	 * Добавляет кнопку на панель инструментов
+	 * @method add
+	 * @param battr {Object} - атрибуты создаваемой кнопки
 	 */
 	this.add = function(battr){
 
@@ -2981,8 +2990,9 @@ function OTooolBar(attr){
 	};
 
 	/**
-	 * Выделяет активную кнопку
-	 * @param name
+	 * Выделяет кнопку по событию mouseover и снимает выделение с остальных кнопок
+	 * @method select
+	 * @param name {String} - имя текущей кнопки
 	 */
 	this.select = function(name){
 		for(var i=0; i<div.children.length; i++){
@@ -2994,6 +3004,10 @@ function OTooolBar(attr){
 		}
 	};
 
+	/**
+	 * Деструктор объекта
+	 * @method unload
+	 */
 	this.unload = function(){
 		while(div.firstChild)
 			div.removeChild(div.firstChild);
@@ -3058,8 +3072,8 @@ $p.iface.add_button = function(parent, attr, battr) {
 
 /* joined by builder */
 /**
- * <br />&copy; http://www.oknosoft.ru 2009-2015
  * Поле ввода адреса связанная с ним форма ввода адреса
+ * <br />&copy; http://www.oknosoft.ru 2009-2015
  * @module  wnd_address
  */
 
@@ -4036,6 +4050,8 @@ function _load(attr){
 var _cat = $p.cat = new (
 		/**
 		 * Коллекция менеджеров справочников
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
 		 * @class Catalogs
 		 * @static
 		 */
@@ -4054,6 +4070,8 @@ var _cat = $p.cat = new (
 	_enm = $p.enm = new (
 		/**
 		 * Коллекция менеджеров перечислений
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
 		 * @class Enumerations
 		 * @static
 		 */
@@ -4071,6 +4089,8 @@ var _cat = $p.cat = new (
 	_doc = $p.doc = new (
 		/**
 		 * Коллекция менеджеров документов
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
 		 * @class Documents
 		 * @static
 		 */
@@ -4088,6 +4108,8 @@ var _cat = $p.cat = new (
 	_ireg = $p.ireg = new (
 		/**
 		 * Коллекция менеджеров регистров сведений
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
 		 * @class InfoRegs
 		 * @static
 		 */
@@ -4105,6 +4127,8 @@ var _cat = $p.cat = new (
 	_areg = $p.areg = new (
 		/**
 		 * Коллекция менеджеров регистров накопления
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
 		 * @class AccumRegs
 		 * @static
 		 */
@@ -4122,6 +4146,8 @@ var _cat = $p.cat = new (
 	_dp	= $p.dp = new (
 		/**
 		 * Коллекция менеджеров обработок
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
 		 * @class DataProcessors
 		 * @static
 		 */
@@ -4139,6 +4165,8 @@ var _cat = $p.cat = new (
 	_rep = $p.rep = new (
 		/**
 		 * Коллекция менеджеров отчетов
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
 		 * @class Reports
 		 * @static
 		 */
@@ -4544,13 +4572,24 @@ _cat.load_soap_to_grid = function(attr, grid, callback){
 		else if(callback)
 			callback(res);
 	}
+
 	grid.xmlFileUrl = "exec";
 
-	_load(attr)
-		.then(cb_callBack)
-		.catch(function (error) {
-		console.log(error);
-	});
+
+	var mgr = _md.mgr_by_class_name(attr.class_name);
+
+	if(!mgr._cachable && ($p.job_prm.rest || attr.rest)){
+
+		mgr.load_rest(attr);
+
+	}else{
+		_load(attr)
+			.then(cb_callBack)
+			.catch(function (error) {
+				console.log(error);
+			});
+	}
+
 };
 /* joined by builder */
 /**
@@ -6947,16 +6986,46 @@ DataManager.prototype._define("rest_name", {
 
 /**
  * Загружает список объектов из rest-сервиса
- * @param filter {String} - строка условия отбора
- * @param [top] {Number} - максимальное число загружаемых записей
+ * @param attr {Object} - параметры сохранения
+ * @param attr.[url] {String}
+ * @param attr.[username] {String}
+ * @param attr.[password] {String}
+ * @param attr.[filter] {String} - строка условия отбора
+ * @param attr.[top] {Number} - максимальное число загружаемых записей
  * @return {Promise.<T>} - промис с массивом загруженных объектов
  * @async
  */
-DataManager.prototype.load_rest = function (url, filter, top) {
-	if(!url)
-		url = $p.job_prm.hs_url();
+DataManager.prototype.load_rest = function (attr) {
+
+	if(!attr.url)
+		attr.url = $p.job_prm.rest_url();
+	if(!attr.username)
+		attr.username = $p.ajax.username;
+	if(!attr.password)
+		attr.password = $p.ajax.password;
+
+	attr.url += this.rest_name + "?$format=json";
 	//a/zd/1/odata/standard.odata/Catalog_Номенклатура?$format=json&$select=Ref_Key,DataVersion
-	return Promise.resolve([]);
+
+	var t = this;
+
+	return $p.ajax.get_ex(attr.url, attr)
+		.then(function (req) {
+			var res = JSON.parse(req.response),
+				mf = t.metadata().fields,
+				i, f, o, ro, syn;
+			for(i = res.value.length-1; i >=0; i--){
+				ro = res.value[i];
+				o = {};
+				for(var f in mf){
+					syn = _md.syns_1с(f);
+					if(mf[f].type.is_ref)
+						syn+="_Key";
+					o[f] = ro[syn];
+				}
+			}
+
+		});
 };
 
 /**
@@ -7092,6 +7161,7 @@ DataObj.prototype.save_rest = function (attr) {
  * Процедуры импорта и экспорта данных
  * @module metadata
  * @submodule import_export
+ * @requires common
  */
 
 

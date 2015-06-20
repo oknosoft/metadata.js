@@ -1331,7 +1331,6 @@ InfoRegManager.prototype.get_ref = function(attr){
  * @extends RefDataManager
  * @constructor
  * @param class_name {string}
- * @param [cachable=false] {boolean}
  */
 function CatManager(class_name) {
 
@@ -1361,8 +1360,34 @@ function CatManager(class_name) {
 
 }
 CatManager._extend(RefDataManager);
-
 CatManager.prototype.toString = function(){return "Менеджер справочника " + this.class_name; };
+
+/**
+ * Абстрактный менеджер плана видов характеристик
+ * @class FeaturesManager
+ * @extends CatManager
+ * @constructor
+ * @param class_name {string}
+ */
+function FeaturesManager(class_name){
+
+}
+FeaturesManager._extend(CatManager);
+FeaturesManager.prototype.toString = function(){return "Менеджер плана видов характеристик " + this.class_name; };
+
+
+/**
+ * Абстрактный менеджер плана видов характеристик
+ * @class AccountsManager
+ * @extends CatManager
+ * @constructor
+ * @param class_name {string}
+ */
+function AccountsManager(class_name){
+
+}
+AccountsManager._extend(CatManager);
+AccountsManager.prototype.toString = function(){return "Менеджер плана счетов " + this.class_name; };
 
 
 /**
@@ -1381,7 +1406,6 @@ function DocManager(class_name) {
 
 }
 DocManager._extend(RefDataManager);
-
 DocManager.prototype.toString = function(){return "Менеджер документа " + this.class_name; };
 
 

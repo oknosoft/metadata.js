@@ -232,6 +232,8 @@ function _load(attr){
 var _cat = $p.cat = new (
 		/**
 		 * Коллекция менеджеров справочников
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
 		 * @class Catalogs
 		 * @static
 		 */
@@ -250,6 +252,8 @@ var _cat = $p.cat = new (
 	_enm = $p.enm = new (
 		/**
 		 * Коллекция менеджеров перечислений
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
 		 * @class Enumerations
 		 * @static
 		 */
@@ -267,6 +271,8 @@ var _cat = $p.cat = new (
 	_doc = $p.doc = new (
 		/**
 		 * Коллекция менеджеров документов
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
 		 * @class Documents
 		 * @static
 		 */
@@ -284,6 +290,8 @@ var _cat = $p.cat = new (
 	_ireg = $p.ireg = new (
 		/**
 		 * Коллекция менеджеров регистров сведений
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
 		 * @class InfoRegs
 		 * @static
 		 */
@@ -301,12 +309,33 @@ var _cat = $p.cat = new (
 	_areg = $p.areg = new (
 		/**
 		 * Коллекция менеджеров регистров накопления
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
 		 * @class AccumRegs
 		 * @static
 		 */
 		function AccumRegs(){
 			this.toString = function(){return $p.msg.meta_areg_mgr};
 	}),
+
+	/**
+	 * Коллекция менеджеров регистров бухгалтерии
+	 * @property aссreg
+	 * @type AccountsRegs
+	 * @for MetaEngine
+	 * @static
+	 */
+	_aссreg = $p.aссreg = new (
+		/**
+		 * Коллекция менеджеров регистров бухгалтерии
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
+		 * @class AccountsRegs
+		 * @static
+		 */
+			function AccountsRegs(){
+			this.toString = function(){return $p.msg.meta_accreg_mgr};
+		}),
 
 	/**
 	 * Коллекция менеджеров обработок
@@ -318,6 +347,8 @@ var _cat = $p.cat = new (
 	_dp	= $p.dp = new (
 		/**
 		 * Коллекция менеджеров обработок
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
 		 * @class DataProcessors
 		 * @static
 		 */
@@ -335,12 +366,54 @@ var _cat = $p.cat = new (
 	_rep = $p.rep = new (
 		/**
 		 * Коллекция менеджеров отчетов
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
 		 * @class Reports
 		 * @static
 		 */
 		function Reports(){
 			this.toString = function(){return $p.msg.meta_reports_mgr};
 	}),
+
+	/**
+	 * Коллекция менеджеров планов счетов
+	 * @property cacc
+	 * @type ChartsOfAccounts
+	 * @for MetaEngine
+	 * @static
+	 */
+	_acc = $p.cacc = new (
+
+		/**
+		 * Коллекция менеджеров планов счетов
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
+		 * @class ChartsOfAccounts
+		 * @static
+		 */
+			function ChartsOfAccounts(){
+			this.toString = function(){return $p.msg.meta_charts_of_accounts_mgr};
+		}),
+
+	/**
+	 * Коллекция менеджеров планов видов характеристик
+	 * @property cch
+	 * @type ChartsOfCharacteristic
+	 * @for MetaEngine
+	 * @static
+	 */
+	_fts = $p.cch = new (
+
+		/**
+		 * Коллекция менеджеров планов видов характеристик
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
+		 * @class ChartsOfCharacteristic
+		 * @static
+		 */
+			function ChartsOfCharacteristic(){
+			this.toString = function(){return $p.msg.meta_charts_of_characteristic_mgr};
+		}),
 
 	/**
 	 * Mетаданные конфигурации
@@ -740,11 +813,22 @@ _cat.load_soap_to_grid = function(attr, grid, callback){
 		else if(callback)
 			callback(res);
 	}
+
 	grid.xmlFileUrl = "exec";
 
-	_load(attr)
-		.then(cb_callBack)
-		.catch(function (error) {
-		console.log(error);
-	});
+
+	var mgr = _md.mgr_by_class_name(attr.class_name);
+
+	if(!mgr._cachable && ($p.job_prm.rest || attr.rest)){
+
+		mgr.load_rest(attr);
+
+	}else{
+		_load(attr)
+			.then(cb_callBack)
+			.catch(function (error) {
+				console.log(error);
+			});
+	}
+
 };

@@ -2,6 +2,7 @@
  * Процедуры импорта и экспорта данных
  * @module metadata
  * @submodule import_export
+ * @requires common
  */
 
 

@@ -1,6 +1,6 @@
 /**
- * <br />&copy; http://www.oknosoft.ru 2009-2015
  * Поле ввода адреса связанная с ним форма ввода адреса
+ * <br />&copy; http://www.oknosoft.ru 2009-2015
  * @module  wnd_address
  */
 

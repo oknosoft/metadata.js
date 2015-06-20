@@ -46,16 +46,65 @@ DataManager.prototype._define("rest_name", {
 
 /**
  * Загружает список объектов из rest-сервиса
- * @param filter {String} - строка условия отбора
- * @param [top] {Number} - максимальное число загружаемых записей
+ * @param attr {Object} - параметры сохранения
+ * @param attr.[url] {String}
+ * @param attr.[username] {String}
+ * @param attr.[password] {String}
+ * @param attr.[filter] {String} - строка условия отбора
+ * @param attr.[top] {Number} - максимальное число загружаемых записей
  * @return {Promise.<T>} - промис с массивом загруженных объектов
  * @async
  */
-DataManager.prototype.load_rest = function (url, filter, top) {
-	if(!url)
-		url = $p.job_prm.hs_url();
+DataManager.prototype.load_rest = function (attr) {
+
+	if(!attr.url)
+		attr.url = $p.job_prm.rest_url();
+	if(!attr.username)
+		attr.username = $p.ajax.username;
+	if(!attr.password)
+		attr.password = $p.ajax.password;
+
+	attr.url += this.rest_name + "?$format=json";
 	//a/zd/1/odata/standard.odata/Catalog_Номенклатура?$format=json&$select=Ref_Key,DataVersion
-	return Promise.resolve([]);
+
+	var t = this;
+
+	return $p.ajax.get_ex(attr.url, attr)
+		.then(function (req) {
+			var res = JSON.parse(req.response),
+				mf = t.metadata().fields,
+				mts = mf = t.metadata().tabular_sections,
+				ts, i, f, tf, row, o, ro, syn, synts;
+			for(i = res.value.length-1; i >=0; i--){
+				ro = res.value[i];
+				o = {};
+				for(f in mf){
+					syn = _md.syns_1с(f);
+					if(mf[f].type.is_ref)
+						syn+="_Key";
+					o[f] = ro[syn];
+				}
+				for(ts in mts){
+					synts = _md.syns_1с(ts);
+					o[f] = [];
+					ro[synts].sort(function (a, b) {
+						return a.LineNumber > b.LineNumber;
+					});
+					ro[synts].forEach(function (r) {
+
+					});
+
+					for(tf in mts[ts].fields){
+						syn = _md.syns_1с(tf);
+						if(mf[tf].type.is_ref)
+							syn+="_Key";
+						row[tf] = ro[syn];
+					}
+				}
+
+			}
+
+		});
 };
 
 /**
