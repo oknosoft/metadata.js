@@ -46,8 +46,7 @@
 * authors of [dhtmlx](http://dhtmlx.com/) - a beautiful set of Ajax-powered UI components
 * Eli Grey for [FileSaver.js](https://github.com/eligrey/FileSaver.js)
 * authors of [XLSX](https://github.com/SheetJS/js-xlsx) library
-* Другим людям, упрощающим нашу работу
-
+* Прочим авторам за их замечательные инструменты, упрощающие нашу работу
 
 ## Лицензия
 Доступ к материалам данного репозитоиря предоставляется исключительно в личных информационно-ознакомительных целях.
