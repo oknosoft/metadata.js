@@ -509,7 +509,7 @@ $p.iface.frm_auth = function (onstep, paths, resolve, reject) {
 	}
 
 	// загружаем структуру
-	frm_auth.loadStruct('data/form_auth.xml?v='+$p.job_prm.files_date, function(){
+	frm_auth.loadStruct(require("form_auth"), function(){
 
 		// после готовности формы читаем пользователя из локальной датабазы
 		if($p.wsql.get_user_param("user_name")){

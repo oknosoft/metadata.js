@@ -69,11 +69,17 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		dhtmlxEvent(document.body, "keydown", body_keydown);
 
+		// статусбар
+		wnd.elmnts = {
+			status_bar: wnd.attachStatusBar()
+		};
+		wnd.elmnts.status_bar.setText("<div id='" + class_name.replace(".", "_") + "_select_recinfoArea'></div>");
+
 		// командная панель формы
-		wnd.elmnts = {};
+
 		wnd.elmnts.toolbar = wnd.attachToolbar();
 		wnd.elmnts.toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
-		wnd.elmnts.toolbar.loadStruct('data/toolbar_selection.xml?v='+$p.job_prm.files_date, function(){
+		wnd.elmnts.toolbar.loadStruct(require("toolbar_selection"), function(){
 			this.addSpacer("input_filter");
 			this.attachEvent("onclick", toolbar_click);
 			// текстовое поле фильтра по подстроке
@@ -97,9 +103,6 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			//
 			create_tree_and_grid();
 		});
-		// статусбар
-		wnd.elmnts.status_bar = wnd.attachStatusBar();
-		wnd.elmnts.status_bar.setText("<div id='" + class_name.replace(".", "_") + "_select_recinfoArea'></div>");
 	}
 
 	/**

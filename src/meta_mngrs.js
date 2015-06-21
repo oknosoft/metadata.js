@@ -37,8 +37,8 @@ function DataManager(class_name){
 	else if(class_name.indexOf("doc.") != -1 || class_name.indexOf("dp.") != -1 || class_name.indexOf("rep.") != -1)
 		_cachable = false;
 
-	// справочники по умолчанию кешируем
-	else if(class_name.indexOf("cat.") != -1)
+	// остальные классы по умолчанию кешируем
+	else
 		_cachable = true;
 
 	// Если в метаданных явно указано правило кеширования, используем его
@@ -131,9 +131,9 @@ function DataManager(class_name){
 	//	Создаём функции конструкторов экземпляров объектов и строк табличных частей
 	var _obj_сonstructor = this._obj_сonstructor || DataObj;		// ссылка на конструктор элементов
 
+	// Для всех типов, кроме перечислений, создаём через (new Function) конструктор объекта
 	if(!(this instanceof EnumManager)){
 
-		// для всех типов, кроме перечислений
 		var obj_сonstructor_name = class_name.split(".")[1];
 		this._obj_сonstructor = eval("(function " + obj_сonstructor_name.charAt(0).toUpperCase() + obj_сonstructor_name.substr(1) +
 			"(attr, manager){manager._obj_сonstructor.superclass.constructor.call(this, attr, manager)})");
@@ -202,7 +202,6 @@ function DataManager(class_name){
 			}
 
 		}
-
 	}
 
 	_obj_сonstructor = null;
@@ -215,7 +214,6 @@ function DataManager(class_name){
 DataManager.prototype.register_ex = function(){
 
 };
-
 
 
 /**
@@ -1062,13 +1060,13 @@ EnumManager.prototype.get_sql_struct = function(attr){
 
 	if(action == "create_table")
 		res = "CREATE TABLE IF NOT EXISTS "+this.table_name+
-			" (ref CHAR PRIMARY KEY NOT NULL, sequence INT, name CHAR, synonym CHAR)";
+			" (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR)";
 	else if(["insert", "update", "replace"].indexOf(action) != -1){
 		res = {};
 		res[this.table_name] = {
-			sql: "INSERT INTO "+this.table_name+" (ref, sequence, name, synonym) VALUES (?, ?, ?, ?)",
-			fields: ["ref", "order", "name", "synonym"],
-			values: "(?, ?, ?, ?)"
+			sql: "INSERT INTO "+this.table_name+" (ref, sequence, synonym) VALUES (?, ?, ?)",
+			fields: ["ref", "sequence", "synonym"],
+			values: "(?, ?, ?)"
 		};
 	}else if(action == "delete")
 		res = "DELETE FROM "+this.table_name+" WHERE ref = ?";
@@ -1339,23 +1337,19 @@ function CatManager(class_name) {
 	CatManager.superclass.constructor.call(this, class_name);
 
 	// реквизиты по метаданным
-	if(this.metadata().hierarchical){
+	if(this.metadata().hierarchical && this.metadata().group_hierarchy){
 
-		if(this.metadata().group_hierarchy){
-
-			/**
-			 * признак "это группа"
-			 * @property is_folder
-			 * @for CatObj
-			 * @type {Boolean}
-			 */
-			this._obj_сonstructor.prototype._define("is_folder", {
-				get : function(){ return this._obj.is_folder || false},
-				set : function(v){ this._obj.is_folder = $p.fix_boolean(v)},
-				enumerable : true
-			});
-		}
-
+		/**
+		 * признак "это группа"
+		 * @property is_folder
+		 * @for CatObj
+		 * @type {Boolean}
+		 */
+		this._obj_сonstructor.prototype._define("is_folder", {
+			get : function(){ return this._obj.is_folder || false},
+			set : function(v){ this._obj.is_folder = $p.fix_boolean(v)},
+			enumerable : true
+		});
 	}
 
 }
@@ -1364,30 +1358,38 @@ CatManager.prototype.toString = function(){return "Менеджер справо
 
 /**
  * Абстрактный менеджер плана видов характеристик
- * @class FeaturesManager
+ * @class ChartOfCharacteristicManager
  * @extends CatManager
  * @constructor
  * @param class_name {string}
  */
-function FeaturesManager(class_name){
+function ChartOfCharacteristicManager(class_name){
+
+	this._obj_сonstructor = CatObj;		// ссылка на конструктор элементов
+
+	ChartOfCharacteristicManager.superclass.constructor.call(this, class_name);
 
 }
-FeaturesManager._extend(CatManager);
-FeaturesManager.prototype.toString = function(){return "Менеджер плана видов характеристик " + this.class_name; };
+ChartOfCharacteristicManager._extend(CatManager);
+ChartOfCharacteristicManager.prototype.toString = function(){return "Менеджер плана видов характеристик " + this.class_name; };
 
 
 /**
  * Абстрактный менеджер плана видов характеристик
- * @class AccountsManager
+ * @class ChartOfAccountManager
  * @extends CatManager
  * @constructor
  * @param class_name {string}
  */
-function AccountsManager(class_name){
+function ChartOfAccountManager(class_name){
+
+	this._obj_сonstructor = CatObj;		// ссылка на конструктор элементов
+
+	ChartOfAccountManager.superclass.constructor.call(this, class_name);
 
 }
-AccountsManager._extend(CatManager);
-AccountsManager.prototype.toString = function(){return "Менеджер плана счетов " + this.class_name; };
+ChartOfAccountManager._extend(CatManager);
+ChartOfAccountManager.prototype.toString = function(){return "Менеджер плана счетов " + this.class_name; };
 
 
 /**

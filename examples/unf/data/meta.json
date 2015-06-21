@@ -1,5 +1,32 @@
 ﻿{
 	"enm": {
+		"contract_kinds": [
+			{
+				"order": 0,
+				"name": "СПоставщиком",
+				"synonym": "С поставщиком"
+			},
+			{
+				"order": 1,
+				"name": "СПокупателем",
+				"synonym": "С покупателем"
+			},
+			{
+				"order": 2,
+				"name": "СКомитентом",
+				"synonym": "С комитентом"
+			},
+			{
+				"order": 3,
+				"name": "СКомиссионером",
+				"synonym": "С комиссионером"
+			},
+			{
+				"order": 4,
+				"name": "Прочее",
+				"synonym": "Прочее"
+			}
+		],
 		"transactions_kinds_buyers_order": [
 			{
 				"order": 0,
@@ -49,6 +76,18 @@
 				"order": 3,
 				"name": "ВозвратИзЭксплуатации",
 				"synonym": "Возврат из эксплуатации"
+			}
+		],
+		"motor_vehicle_kinds": [
+			{
+				"order": 0,
+				"name": "МеханическоеТС",
+				"synonym": "Механическое транспортное средство (автомобиль)"
+			},
+			{
+				"order": 1,
+				"name": "БуксируемоеТС",
+				"synonym": "Буксируемое транспортное средство (прицеп)"
 			}
 		],
 		"inbound_outbound": [
@@ -141,6 +180,57 @@
 				"synonym": "Контакты"
 			}
 		],
+		"gender": [
+			{
+				"order": 0,
+				"name": "Мужской",
+				"synonym": "Мужской"
+			},
+			{
+				"order": 1,
+				"name": "Женский",
+				"synonym": "Женский"
+			}
+		],
+		"invoice_conditions": [
+			{
+				"order": 0,
+				"name": "Открыт",
+				"synonym": "Открыт"
+			},
+			{
+				"order": 1,
+				"name": "ВРаботе",
+				"synonym": "В работе"
+			},
+			{
+				"order": 2,
+				"name": "Выполнен",
+				"synonym": "Выполнен"
+			}
+		],
+		"estimated_payments_states": [
+			{
+				"order": 0,
+				"name": "ПросроченныйПлатеж",
+				"synonym": "Просроченный платеж"
+			},
+			{
+				"order": 1,
+				"name": "ЗапланированныйПлатеж",
+				"synonym": "Запланированный платеж"
+			},
+			{
+				"order": 2,
+				"name": "НеутвержденныйПлатеж",
+				"synonym": "Неутвержденный платеж"
+			},
+			{
+				"order": 3,
+				"name": "ФактическийПлатеж",
+				"synonym": "Фактический платеж"
+			}
+		],
 		"cash_flow_types": [
 			{
 				"order": 0,
@@ -215,6 +305,77 @@
 				"order": 5,
 				"name": "УдалитьРасход",
 				"synonym": "Расход"
+			}
+		],
+		"event_types": [
+			{
+				"order": 0,
+				"name": "ТелефонныйЗвонок",
+				"synonym": "Телефонный звонок"
+			},
+			{
+				"order": 1,
+				"name": "ЛичнаяВстреча",
+				"synonym": "Личная встреча"
+			},
+			{
+				"order": 2,
+				"name": "ЭлектронноеПисьмо",
+				"synonym": "Электронное письмо"
+			},
+			{
+				"order": 3,
+				"name": "СообщениеSMS",
+				"synonym": "Сообщение SMS"
+			},
+			{
+				"order": 4,
+				"name": "Прочее",
+				"synonym": "Прочее"
+			}
+		],
+		"specification_row_types": [
+			{
+				"order": 0,
+				"name": "Материал",
+				"synonym": "Материал"
+			},
+			{
+				"order": 1,
+				"name": "Сборка",
+				"synonym": "Сборка"
+			},
+			{
+				"order": 2,
+				"name": "Узел",
+				"synonym": "Узел"
+			},
+			{
+				"order": 3,
+				"name": "Расход",
+				"synonym": "Расход"
+			}
+		],
+		"structural_unit_types": [
+			{
+				"order": 0,
+				"name": "Подразделение",
+				"synonym": "Подразделение"
+			},
+			{
+				"order": 1,
+				"name": "Склад",
+				"synonym": "Склад"
+			},
+			{
+				"order": 2,
+				"name": "Розница",
+				"synonym": "Розница"
+			},
+			{
+				"order": 3,
+				"name": "РозницаСуммовойУчет",
+				"synonym": "Розница (суммовой учет)"
 			}
 		],
 		"individual_legal": [
@@ -527,7 +688,30 @@
 			"group_hierarchy": true,
 			"main_presentation_name": true,
 			"code_length": 12,
-			"fields": {},
+			"fields": {
+				"brand": {
+					"synonym": "Марка",
+					"multiline_mode": false,
+					"tooltip": "Марка транспортного средства.",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 150
+					}
+				},
+				"motor_vehicle_kind": {
+					"synonym": "Вид",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"enm.motor_vehicle_kinds"
+						],
+						"is_ref": true
+					}
+				}
+			},
 			"tabular_sections": {
 				"extra_fields": {
 					"name": "ДополнительныеРеквизиты",
@@ -714,6 +898,18 @@
 						"str_len": 250
 					}
 				},
+				"changed": {
+					"synonym": "Ручное изменение",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"number"
+						],
+						"digits": 1,
+						"fraction_figits": 0
+					}
+				},
 				"parent": {
 					"synonym": "Группа банков",
 					"multiline_mode": false,
@@ -745,7 +941,9 @@
 					"multiline_mode": false,
 					"tooltip": "Указывается один из вариантов: Начисление или Удержание",
 					"type": {
-						"types": [],
+						"types": [
+							"enm.charges_deductions_types"
+						],
 						"is_ref": true
 					}
 				},
@@ -802,6 +1000,65 @@
 					"synonym": "Комментарий",
 					"multiline_mode": false,
 					"tooltip": "Указывается любой произвольный комментарий",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 0
+					}
+				}
+			},
+			"tabular_sections": {}
+		},
+		"nom_prices_types": {
+			"name": "ВидыЦен",
+			"synonym": "Виды цен",
+			"illustration": "Виды цен на товары и услуги: отпускные, учетные, оптовые и т.д.",
+			"obj_presentation": "Вид цены",
+			"list_presentation": "",
+			"hierarchical": false,
+			"has_owners": false,
+			"group_hierarchy": true,
+			"main_presentation_name": true,
+			"code_length": 9,
+			"fields": {
+				"price_currency": {
+					"synonym": "Валюта цены",
+					"multiline_mode": false,
+					"tooltip": "Используется для указания валюты цены",
+					"type": {
+						"types": [
+							"cat.currencies"
+						],
+						"is_ref": true
+					}
+				},
+				"rounding_in_a_big_way": {
+					"synonym": "Округлять в большую сторону",
+					"multiline_mode": false,
+					"tooltip": "Используется для указания признака округления цены в большую сторону",
+					"type": {
+						"types": [
+							"boolean"
+						]
+					}
+				},
+				"rate": {
+					"synonym": "Наценка, в %",
+					"multiline_mode": false,
+					"tooltip": "Процент, на который будет изменена цена по базовому виду цен",
+					"type": {
+						"types": [
+							"number"
+						],
+						"digits": 5,
+						"fraction_figits": 2
+					}
+				},
+				"note": {
+					"synonym": "Комментарий",
+					"multiline_mode": false,
+					"tooltip": "Используется для указания комментария к виду цен",
 					"type": {
 						"types": [
 							"string"
@@ -872,6 +1129,20 @@
 			},
 			"tabular_sections": {}
 		},
+		"identification_document": {
+			"name": "ВидыДокументовФизическихЛиц",
+			"synonym": "Виды документов физических лиц",
+			"illustration": "",
+			"obj_presentation": "Вид документа физических лиц",
+			"list_presentation": "",
+			"hierarchical": false,
+			"has_owners": false,
+			"group_hierarchy": true,
+			"main_presentation_name": true,
+			"code_length": 0,
+			"fields": {},
+			"tabular_sections": {}
+		},
 		"bank_accounts": {
 			"name": "БанковскиеСчета",
 			"synonym": "Банковские счета",
@@ -917,12 +1188,25 @@
 						"is_ref": true
 					}
 				},
+				"settlements_bank": {
+					"synonym": "Банк расчетов",
+					"multiline_mode": false,
+					"tooltip": "Банк, в случае непрямых расчетов",
+					"type": {
+						"types": [
+							"cat.banks"
+						],
+						"is_ref": true
+					}
+				},
 				"account_accounting": {
 					"synonym": "Счет учета",
 					"multiline_mode": false,
 					"tooltip": "Счет учета денежных средств",
 					"type": {
-						"types": [],
+						"types": [
+							"cacc.managerial"
+						],
 						"is_ref": true
 					}
 				},
@@ -986,6 +1270,17 @@
 			"main_presentation_name": true,
 			"code_length": 9,
 			"fields": {
+				"settlements_currency": {
+					"synonym": "Валюта расчетов",
+					"multiline_mode": false,
+					"tooltip": "Валюта расчетов по договору с контрагентом",
+					"type": {
+						"types": [
+							"cat.currencies"
+						],
+						"is_ref": true
+					}
+				},
 				"organization": {
 					"synonym": "Организация",
 					"multiline_mode": false,
@@ -1002,7 +1297,20 @@
 					"multiline_mode": false,
 					"tooltip": "Вид договора с контрагентом. Реквизит используется только при обмене данными с конфигурацией \"Бухгалтерия предприятия\".",
 					"type": {
-						"types": [],
+						"types": [
+							"enm.contract_kinds"
+						],
+						"is_ref": true
+					}
+				},
+				"price_type": {
+					"synonym": "Вид цен",
+					"multiline_mode": false,
+					"tooltip": "Вид цен, который будет автоматически заполняться в документах, оформляющих реализацию товаров, работ и услуг, при выборе договора контрагента.",
+					"type": {
+						"types": [
+							"cat.nom_prices_types"
+						],
 						"is_ref": true
 					}
 				},
@@ -1306,7 +1614,9 @@
 					"multiline_mode": false,
 					"tooltip": "Счет учета денежных средств в кассе",
 					"type": {
-						"types": [],
+						"types": [
+							"cacc.managerial"
+						],
 						"is_ref": true
 					}
 				}
@@ -1956,6 +2266,16 @@
 							"string"
 						],
 						"str_len": 0
+					}
+				},
+				"vat_price_included": {
+					"synonym": "НДС включать в стоимость",
+					"multiline_mode": false,
+					"tooltip": "Признак включения НДС в стоимость",
+					"type": {
+						"types": [
+							"boolean"
+						]
 					}
 				},
 				"kpp": {
@@ -2824,6 +3144,28 @@
 						"is_ref": true
 					}
 				},
+				"contract": {
+					"synonym": "Договор",
+					"multiline_mode": false,
+					"tooltip": "Договор на выполнение проекта",
+					"choice_links": [
+						{
+							"name": [
+								"selection",
+								"owner"
+							],
+							"path": [
+								"partner"
+							]
+						}
+					],
+					"type": {
+						"types": [
+							"cat.contracts"
+						],
+						"is_ref": true
+					}
+				},
 				"note": {
 					"synonym": "Комментарий",
 					"multiline_mode": false,
@@ -2844,6 +3186,31 @@
 							"cat.projects"
 						],
 						"is_ref": true
+					}
+				}
+			},
+			"tabular_sections": {}
+		},
+		"invoice_states": {
+			"name": "СостоянияЗаказовПокупателей",
+			"synonym": "Состояния заказов покупателей",
+			"illustration": "",
+			"obj_presentation": "Состояние заказа",
+			"list_presentation": "",
+			"hierarchical": false,
+			"has_owners": false,
+			"group_hierarchy": true,
+			"main_presentation_name": true,
+			"code_length": 9,
+			"fields": {
+				"clr": {
+					"synonym": "Цвет",
+					"multiline_mode": false,
+					"tooltip": "Цвет строки в списке заказов",
+					"type": {
+						"types": [
+							""
+						]
 					}
 				}
 			},
@@ -3106,7 +3473,9 @@
 					"multiline_mode": false,
 					"tooltip": "Пол физического лица",
 					"type": {
-						"types": [],
+						"types": [
+							"enm.gender"
+						],
 						"is_ref": true
 					}
 				},
@@ -3485,100 +3854,6 @@
 				}
 			},
 			"tabular_sections": {}
-		},
-		"properties": {
-			"name": "ДополнительныеРеквизитыИСведения",
-			"synonym": "Дополнительные реквизиты и сведения",
-			"illustration": "",
-			"obj_presentation": "Дополнительный реквизит / сведение",
-			"list_presentation": "",
-			"hierarchical": false,
-			"has_owners": false,
-			"group_hierarchy": false,
-			"main_presentation_name": true,
-			"code_length": 0,
-			"fields": {
-				"caption": {
-					"synonym": "Наименование (заголовок)",
-					"multiline_mode": false,
-					"tooltip": "Краткое представление свойства, которое\nвыводится в формах редактирования его значения.",
-					"type": {
-						"types": [
-							"string"
-						],
-						"str_len": 75
-					}
-				},
-				"destination": {
-					"synonym": "Набор свойств",
-					"multiline_mode": false,
-					"tooltip": "Набор свойств, которому принадлежит уникальное свойство. Если не задан, значит свойство общее.",
-					"type": {
-						"types": [
-							"cat.destinations"
-						],
-						"is_ref": true
-					}
-				},
-				"mandatory": {
-					"synonym": "Заполнять обязательно",
-					"multiline_mode": false,
-					"tooltip": "Настройка проверки заполненности дополнительного реквизита.",
-					"type": {
-						"types": [
-							"boolean"
-						]
-					}
-				},
-				"note": {
-					"synonym": "Комментарий",
-					"multiline_mode": false,
-					"tooltip": "Поясняет назначение свойства.",
-					"type": {
-						"types": [
-							"string"
-						],
-						"str_len": 0
-					}
-				},
-				"tooltip": {
-					"synonym": "Подсказка",
-					"multiline_mode": false,
-					"tooltip": "Показывается пользователю при редактировании свойства в форме объекта.",
-					"type": {
-						"types": [
-							"string"
-						],
-						"str_len": 0
-					}
-				},
-				"type": {
-					"synonym": "",
-					"multiline_mode": false,
-					"tooltip": "Типы значения, которое можно ввести при заполнении свойства.",
-					"type": {
-						"types": [
-							"cat.currencies",
-							"cat.property_values",
-							"cat.property_values_hierarchy",
-							"boolean",
-							"cat.individuals",
-							"string",
-							"cat.users",
-							"date",
-							"number",
-							"cat.partners",
-							"cat.projects"
-						],
-						"is_ref": true,
-						"str_len": 1024,
-						"date_part": "date_time",
-						"digits": 17,
-						"fraction_figits": 5
-					}
-				}
-			},
-			"tabular_sections": {}
 		}
 	},
 	"doc": {
@@ -3680,6 +3955,17 @@
 						"is_ref": true
 					}
 				},
+				"price_type": {
+					"synonym": "Вид цен",
+					"multiline_mode": false,
+					"tooltip": "Вид цен на товары и услуги для автоматического заполнения в табличной части",
+					"type": {
+						"types": [
+							"cat.nom_prices_types"
+						],
+						"is_ref": true
+					}
+				},
 				"change_date": {
 					"synonym": "Дата изменения",
 					"multiline_mode": false,
@@ -3689,6 +3975,39 @@
 							"date"
 						],
 						"date_part": "date_time"
+					}
+				},
+				"shipping_date": {
+					"synonym": "Дата отгрузки",
+					"multiline_mode": false,
+					"tooltip": "Желаемая дата отгрузки по заказу",
+					"type": {
+						"types": [
+							"date"
+						],
+						"date_part": "date"
+					}
+				},
+				"contract": {
+					"synonym": "Договор",
+					"multiline_mode": false,
+					"tooltip": "Договор с заказчиком",
+					"choice_links": [
+						{
+							"name": [
+								"selection",
+								"owner"
+							],
+							"path": [
+								"partner"
+							]
+						}
+					],
+					"type": {
+						"types": [
+							"cat.contracts"
+						],
+						"is_ref": true
 					}
 				},
 				"closed": {
@@ -3732,6 +4051,40 @@
 							"cat.partners"
 						],
 						"is_ref": true
+					}
+				},
+				"settlements_multiplicity": {
+					"synonym": "Кратность",
+					"multiline_mode": false,
+					"tooltip": "Кратность валюты расчетов",
+					"type": {
+						"types": [
+							"number"
+						],
+						"digits": 10,
+						"fraction_figits": 0
+					}
+				},
+				"settlements_course": {
+					"synonym": "Курс",
+					"multiline_mode": false,
+					"tooltip": "Курс валюты расчетов",
+					"type": {
+						"types": [
+							"number"
+						],
+						"digits": 10,
+						"fraction_figits": 4
+					}
+				},
+				"vat_price_included": {
+					"synonym": "НДС включать в стоимость",
+					"multiline_mode": false,
+					"tooltip": "Если флаг установлен, то при формировании проводок НДС будет включен в стоимость",
+					"type": {
+						"types": [
+							"boolean"
+						]
 					}
 				},
 				"organization": {
@@ -3794,7 +4147,9 @@
 					"multiline_mode": false,
 					"tooltip": "Состояние заказа",
 					"type": {
-						"types": [],
+						"types": [
+							"cat.invoice_states"
+						],
 						"is_ref": true
 					}
 				},
@@ -4044,6 +4399,17 @@
 								"fraction_figits": 2
 							}
 						},
+						"shipping_date": {
+							"synonym": "Дата отгрузки",
+							"multiline_mode": false,
+							"tooltip": "Желаемая дата отгрузки",
+							"type": {
+								"types": [
+									"date"
+								],
+								"date_part": "date"
+							}
+						},
 						"specification": {
 							"synonym": "Спецификация",
 							"multiline_mode": false,
@@ -4086,6 +4452,18 @@
 									"string"
 								],
 								"str_len": 0
+							}
+						},
+						"discount_percent_automatic": {
+							"synonym": "% Авт.",
+							"multiline_mode": false,
+							"tooltip": "Процент автоматической скидки или наценки для строки чека.",
+							"type": {
+								"types": [
+									"number"
+								],
+								"digits": 5,
+								"fraction_figits": 2
 							}
 						},
 						"discount_amount_automatic": {
@@ -4285,6 +4663,18 @@
 								"str_len": 0
 							}
 						},
+						"settlements_multiplicity": {
+							"synonym": "Кратность",
+							"multiline_mode": false,
+							"tooltip": "Кратность работы (услуги)",
+							"type": {
+								"types": [
+									"number"
+								],
+								"digits": 10,
+								"fraction_figits": 3
+							}
+						},
 						"coefficient": {
 							"synonym": "Коэффициент",
 							"multiline_mode": false,
@@ -4295,6 +4685,18 @@
 								],
 								"digits": 15,
 								"fraction_figits": 3
+							}
+						},
+						"discount_percent_automatic": {
+							"synonym": "% Авт.",
+							"multiline_mode": false,
+							"tooltip": "Процент автоматической скидки или наценки для строки чека.",
+							"type": {
+								"types": [
+									"number"
+								],
+								"digits": 5,
+								"fraction_figits": 2
 							}
 						},
 						"discount_amount_automatic": {
@@ -4410,7 +4812,32 @@
 					"name": "Предоплата",
 					"synonym": "Предоплата",
 					"tooltip": "Зачет предоплаты",
-					"fields": {}
+					"fields": {
+						"settlements_course": {
+							"synonym": "Курс",
+							"multiline_mode": false,
+							"tooltip": "Курс валюты расчетов с контрагентом",
+							"type": {
+								"types": [
+									"number"
+								],
+								"digits": 10,
+								"fraction_figits": 4
+							}
+						},
+						"settlements_multiplicity": {
+							"synonym": "Кратность",
+							"multiline_mode": false,
+							"tooltip": "Кратность валюты расчетов с контрагентом",
+							"type": {
+								"types": [
+									"number"
+								],
+								"digits": 10,
+								"fraction_figits": 0
+							}
+						}
+					}
 				},
 				"extra_fields": {
 					"name": "ДополнительныеРеквизиты",
@@ -4674,17 +5101,190 @@
 	"areg": {},
 	"dp": {},
 	"rep": {},
+	"cch": {
+		"income_expenses_analysis": {
+			"name": "АналитикаПрочихДоходовИРасходов",
+			"synonym": "Аналитика прочих доходов и расходов",
+			"illustration": "",
+			"obj_presentation": "",
+			"list_presentation": "",
+			"hierarchical": false,
+			"has_owners": false,
+			"group_hierarchy": false,
+			"main_presentation_name": false,
+			"code_length": 5,
+			"fields": {},
+			"tabular_sections": {}
+		},
+		"properties": {
+			"name": "ДополнительныеРеквизитыИСведения",
+			"synonym": "Дополнительные реквизиты и сведения",
+			"illustration": "",
+			"obj_presentation": "Дополнительный реквизит / сведение",
+			"list_presentation": "",
+			"hierarchical": false,
+			"has_owners": false,
+			"group_hierarchy": false,
+			"main_presentation_name": true,
+			"code_length": 0,
+			"fields": {
+				"caption": {
+					"synonym": "Наименование (заголовок)",
+					"multiline_mode": false,
+					"tooltip": "Краткое представление свойства, которое\nвыводится в формах редактирования его значения.",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 75
+					}
+				},
+				"destination": {
+					"synonym": "Набор свойств",
+					"multiline_mode": false,
+					"tooltip": "Набор свойств, которому принадлежит уникальное свойство. Если не задан, значит свойство общее.",
+					"type": {
+						"types": [
+							"cat.destinations"
+						],
+						"is_ref": true
+					}
+				},
+				"mandatory": {
+					"synonym": "Заполнять обязательно",
+					"multiline_mode": false,
+					"tooltip": "Настройка проверки заполненности дополнительного реквизита.",
+					"type": {
+						"types": [
+							"boolean"
+						]
+					}
+				},
+				"note": {
+					"synonym": "Комментарий",
+					"multiline_mode": false,
+					"tooltip": "Поясняет назначение свойства.",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 0
+					}
+				},
+				"tooltip": {
+					"synonym": "Подсказка",
+					"multiline_mode": false,
+					"tooltip": "Показывается пользователю при редактировании свойства в форме объекта.",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 0
+					}
+				},
+				"type": {
+					"synonym": "",
+					"multiline_mode": false,
+					"tooltip": "Типы значения, которое можно ввести при заполнении свойства.",
+					"type": {
+						"types": [
+							"cat.currencies",
+							"cat.property_values",
+							"cat.property_values_hierarchy",
+							"boolean",
+							"cat.individuals",
+							"string",
+							"cat.users",
+							"date",
+							"number",
+							"cat.partners",
+							"cat.projects"
+						],
+						"is_ref": true,
+						"str_len": 1024,
+						"date_part": "date_time",
+						"digits": 17,
+						"fraction_figits": 5
+					}
+				}
+			},
+			"tabular_sections": {}
+		}
+	},
+	"cacc": {
+		"managerial": {
+			"name": "Управленческий",
+			"synonym": "План счетов управленческого учета",
+			"illustration": "План счетов управленческого учета.",
+			"obj_presentation": "Счет",
+			"list_presentation": "",
+			"hierarchical": true,
+			"has_owners": false,
+			"group_hierarchy": false,
+			"main_presentation_name": false,
+			"code_length": 8,
+			"fields": {
+				"account_type": {
+					"synonym": "Тип счета",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"enm.account_types"
+						],
+						"is_ref": true
+					}
+				},
+				"distribution_method": {
+					"synonym": "Способ распределения",
+					"multiline_mode": false,
+					"tooltip": "Способ распределения (для счетов, распределяемых автоматически, при закрытии месяца)",
+					"type": {
+						"types": [
+							"enm.distribution_bases"
+						],
+						"is_ref": true
+					}
+				},
+				"account_for_closing": {
+					"synonym": "Счет закрытия",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"cacc.managerial"
+						],
+						"is_ref": true
+					}
+				},
+				"income_expenses_analysis": {
+					"synonym": "Аналитика",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 100
+					}
+				},
+				"parent": {
+					"synonym": "Подчинен счету",
+					"multiline_mode": false,
+					"tooltip": "Группа счета.",
+					"type": {
+						"types": [
+							"cacc.managerial"
+						],
+						"is_ref": true
+					}
+				}
+			},
+			"tabular_sections": {}
+		}
+	},
 	"syns_1с": [
-		"arcCCW",
-		"CH",
-		"CONSNO",
-		"ELNO",
-		"FIXRUCH",
-		"FURNNO",
-		"HRUCH",
-		"OUTCNS",
-		"RADIUS",
-		"REALRUCH",
+		"РучноеИзменение",
 		"Автор",
 		"АвтоУравнивание",
 		"Адрес",
@@ -4702,7 +5302,7 @@
 		"База",
 		"БазоваяЕдиницаИзмерения",
 		"Банк",
-		"БанкДляРасчетов",
+		"БанкРасчетов",
 		"Банки",
 		"БанковскиеСчета",
 		"БанковскиеСчетаКонтрагентов",
@@ -4712,7 +5312,7 @@
 		"БИКБанкаДляРасчетов",
 		"Булево",
 		"Валюта",
-		"ВалютаВзаиморасчетов",
+		"ВалютаРасчетов",
 		"ВалютаДенежныхСредств",
 		"ВалютаДокумента",
 		"ВалютаЦены",
@@ -4739,7 +5339,8 @@
 		"ВидРабот",
 		"ВидСкидкиНаценки",
 		"ВидСчета",
-		"ВидыДоговоровКонтрагентов",
+		"ВидТранспортногоСредства",
+		"ВидыДоговоров",
 		"ВидыЗатрат",
 		"ВидыКонтактнойИнформации",
 		"ВидыНачисленийИУдержаний",
@@ -4748,6 +5349,7 @@
 		"ВидыОперацийЗаказПоставщику",
 		"ВидыОперацийПеремещениеЗапасов",
 		"ВидыСкидокНаценок",
+		"ВидыТранспортныхСредств",
 		"Визуализация",
 		"ВизуализацияТолькоВРасширенномРежиме",
 		"Владелец",
@@ -4775,7 +5377,7 @@
 		"ГрафикРаботы",
 		"ДаНет",
 		"Дата",
-		"ДатаДоставки",
+		"ДатаОтгрузки",
 		"ДатаИзменения",
 		"ДатаНачала",
 		"ДатаОкончания",
@@ -4790,10 +5392,10 @@
 		"ДлинаНомера",
 		"ДлинаПроема",
 		"ДниНедели",
-		"ДоговорКонтрагента",
+		"Договор",
 		"ДоговорыКонтрагентов",
 		"Документ.Расчет",
-		"ДокументУдостоверяющийЛичность",
+		"ВидыДокументовФизическихЛиц",
 		"Долгота",
 		"ДоменноеИмяСервера",
 		"Доп",
@@ -4882,14 +5484,15 @@
 		"КоррСчетБанкаДляРасчетов",
 		"Коэффициент",
 		"КПП",
-		"КратностьВзаиморасчетов",
+		"Кратность",
 		"КрепитсяШтульп",
 		"КреплениеИмпостов",
 		"КреплениеШтульпа",
-		"КурсВзаиморасчетов",
+		"Курс",
 		"ЛеваяПравая",
 		"Листовые",
 		"Маржа",
+		"Марка",
 		"Масса",
 		"МассаМакс",
 		"МассаМин",
@@ -4998,7 +5601,7 @@
 		"пзРайоныДоставки",
 		"пзСвязиПараметров",
 		"пзСоединения",
-		"пзСостоянияЗаказовПокупателей",
+		"СостоянияЗаказовПокупателей",
 		"пзСпособыРасчетаКоличества",
 		"пзСпособыРасчетаУгла",
 		"пзСпособыУстановкиСпецификации",
@@ -5036,12 +5639,12 @@
 		"Покупатель",
 		"Пол",
 		"Положение",
-		"ПолФизическихЛиц",
+		"ПолФизическогоЛица",
 		"Пользователи",
 		"ПометкаУдаления",
 		"ПорогОкругления",
 		"Порядок",
-		"ПорядокОкругления",
+		"ПорядкиОкругления",
 		"Поставщик",
 		"ПоступлениеТоваровУслуг",
 		"ПоСчетам",
@@ -5064,7 +5667,7 @@
 		"Происхождение",
 		"Пропорции",
 		"Процент",
-		"ПроцентАвтоматическихСкидок",
+		"ПроцентАвтоматическойСкидки",
 		"ПроцентПредоплаты",
 		"ПроцентСкидкиНаценки",
 		"ПроцентСкидкиНаценкиВнутр",
@@ -5131,6 +5734,7 @@
 		"СоответствиеЦветов",
 		"СостояниеЗаказа",
 		"СостояниеТранспорта",
+		"СостоянияЗаданий",
 		"Сотрудник",
 		"Сотрудники",
 		"Спецификации",
@@ -5147,6 +5751,7 @@
 		"СтандартнаяВысотаРучки",
 		"Старт",
 		"СтатусМатериальныхЗатрат",
+		"СтатусыЗаказов",
 		"СтатусыМатериальныхЗатратНаПроизводство",
 		"СтатьиДвиженияДенежныхСредств",
 		"СтатьиЗатрат",
@@ -5196,7 +5801,8 @@
 		"ТиповойБлок",
 		"ТипОткрывания",
 		"ТипСоединения",
-		"ТипЦен",
+		"ТипСчета",
+		"ВидЦен",
 		"ТипЦенВнутр",
 		"ТипЦенПрайс",
 		"ТипЦенСебестоимость",
@@ -5204,7 +5810,11 @@
 		"ТипыКонтактнойИнформации",
 		"ТипыНалогообложенияНДС",
 		"ТипыНоменклатуры",
-		"ТипыЦенНоменклатуры",
+		"ТипыСобытий",
+		"ТипыСтрокСоставаСпецификации",
+		"ТипыСтруктурныхЕдиниц",
+		"ТипыСчетов",
+		"ВидыЦен",
 		"ТипЭлемента",
 		"Товары",
 		"Толщина",
@@ -5222,6 +5832,7 @@
 		"УдлинениеАрки",
 		"Укорочение",
 		"УкорочениеПоКонтуру",
+		"Управленческий",
 		"УсловныхИзделий",
 		"Услуги",
 		"УстанавливатьСпецификацию",
@@ -5255,7 +5866,7 @@
 		"ЦветоваяГруппа",
 		"ЦветСнаружи",
 		"Цена",
-		"ЦенаВключаетНДС",
+		"НДСВключатьВСтоимость",
 		"ЦенаВнутр",
 		"ЦеноваяГруппа",
 		"ЦеновыеГруппы",
@@ -5294,19 +5905,16 @@
 		"ЮрЛицо",
 		"ЮрФизЛицо",
 		"Ячейка",
-		"Ячейки"
+		"Ячейки",
+		"АналитикаПрочихДоходовИРасходов",
+		"СтатусыПланируемыхПлатежей",
+		"СпособРаспределения",
+		"СчетЗакрытия",
+		"БазыРаспределенияРасходов",
+		"ТипыНачисленийИУдержаний"
 	],
 	"syns_js": [
-		"arc_ccw",
 		"changed",
-		"cns_no",
-		"elm_no",
-		"fix_ruch",
-		"furn_no",
-		"h_ruch",
-		"out_cns",
-		"arc_r",
-		"real_ruch",
 		"author",
 		"auto_align",
 		"address",
@@ -5361,6 +5969,7 @@
 		"work_kind",
 		"charges_discounts_kind",
 		"account_kind",
+		"motor_vehicle_kind",
 		"contract_kinds",
 		"costs_kinds",
 		"contact_information_kinds",
@@ -5370,6 +5979,7 @@
 		"transactions_kinds_purchase_order",
 		"transactions_kinds_stock_transfer",
 		"charges_discounts_kinds",
+		"motor_vehicle_kinds",
 		"visualization",
 		"visualization_extended_mode_only",
 		"owner",
@@ -5512,6 +6122,7 @@
 		"left_right",
 		"is_sandwich",
 		"margin",
+		"brand",
 		"weight",
 		"mmax",
 		"mmin",
@@ -5753,6 +6364,7 @@
 		"clr_conformity",
 		"invoice_state",
 		"obj_delivery_state",
+		"task_states",
 		"employee",
 		"staff",
 		"specifications",
@@ -5769,6 +6381,7 @@
 		"handle_height_base",
 		"start",
 		"costs_material_feed",
+		"invoice_conditions",
 		"costs_material_feeds",
 		"cash_flow_articles",
 		"cost_items",
@@ -5818,6 +6431,7 @@
 		"base_block",
 		"open_type",
 		"cnn_type",
+		"account_type",
 		"price_type",
 		"price_type_internal",
 		"price_type_sale",
@@ -5826,6 +6440,10 @@
 		"contact_information_types",
 		"vat_types",
 		"nom_types",
+		"event_types",
+		"specification_row_types",
+		"structural_unit_types",
+		"account_types",
 		"nom_prices_types",
 		"elm_type",
 		"goods",
@@ -5844,6 +6462,7 @@
 		"arc_elongation",
 		"contraction",
 		"contraction_by_contour",
+		"managerial",
 		"condition_products",
 		"services",
 		"set_specification",
@@ -5916,6 +6535,12 @@
 		"legal_person",
 		"individual_legal",
 		"cell",
-		"cells"
+		"cells",
+		"income_expenses_analysis",
+		"estimated_payments_states",
+		"distribution_method",
+		"account_for_closing",
+		"distribution_bases",
+		"charges_deductions_types"
 	]
 }

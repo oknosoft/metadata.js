@@ -19,16 +19,20 @@ function DataObj(attr, manager) {
 	var ref, tmp, _ts_ = {}, _obj = {data_version: ""}, _is_new = !(this instanceof EnumObj);
 
 	// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
-	if(!(manager instanceof DataProcessorsManager))
+	if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager))
 		tmp = manager.get(attr, false, true);
 
 	if(tmp)
 		return tmp;
 
-	if(!(manager instanceof InfoRegManager)){
+	if(manager instanceof EnumManager)
+		_obj.ref = ref = attr.name;
+
+	else if(!(manager instanceof InfoRegManager)){
 		_obj.ref = ref = $p.fix_guid(attr);
 		_obj.deleted = false;
 		_obj.lc_changed = 0;
+
 	}else
 		ref = manager.get_ref(attr);
 
@@ -524,30 +528,17 @@ function DataProcessorObj(attr, manager) {
 DataProcessorObj._extend(DataObj);
 
 /**
- * Абстрактный элемент справочника
+ * Абстрактный элемент перечисления
  * @class EnumObj
  * @extends DataObj
  * @constructor
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
- * @param manager {RefDataManager}
+ * @param manager {EnumManager}
  */
 function EnumObj(attr, manager) {
 
 	// выполняем конструктор родительского объекта
 	EnumObj.superclass.constructor.call(this, attr, manager);
-
-	/**
-	 * Представление объекта
-	 * @property presentation
-	 * @for CatObj
-	 * @type String
-	 */
-	this._define('presentation', {
-		get : function(){
-			return this.synonym || this.name;
-		},
-		enumerable : false
-	});
 
 	if(attr && typeof attr == "object")
 		this._mixin(attr);
@@ -557,36 +548,52 @@ EnumObj._extend(DataObj);
 
 
 /**
- * порядок элемента перечисления
+ * Порядок элемента перечисления
  * @property order
+ * @for EnumObj
  * @type Number
  */
 EnumObj.prototype._define('order', {
-	get : function(){ return this._obj.order},
-	set : function(v){ this._obj.order = parseInt(v)},
+	get : function(){ return this._obj.sequence},
+	set : function(v){ this._obj.sequence = parseInt(v)},
 	enumerable : true
 });
 
 /**
  * Наименование элемента перечисления
  * @property name
+ * @for EnumObj
  * @type String
  */
 EnumObj.prototype._define('name', {
-	get : function(){ return this._obj.name || ""},
-	set : function(v){ this._obj.name = String(v)},
+	get : function(){ return this._obj.ref},
+	set : function(v){ this._obj.ref = String(v)},
 	enumerable : true
 });
 
 /**
  * Синоним элемента перечисления
  * @property synonym
+ * @for EnumObj
  * @type String
  */
 EnumObj.prototype._define('synonym', {
 	get : function(){ return this._obj.synonym || ""},
 	set : function(v){ this._obj.synonym = String(v)},
 	enumerable : true
+});
+
+/**
+ * Представление объекта
+ * @property presentation
+ * @for EnumObj
+ * @type String
+ */
+EnumObj.prototype._define('presentation', {
+	get : function(){
+		return this.synonym || this.name;
+	},
+	enumerable : false
 });
 
 

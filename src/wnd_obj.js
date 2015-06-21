@@ -82,34 +82,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.attachEvent("onClose", frm_close);
 		$p.bind_help(wnd);
 
-		wnd.elmnts.frm_toolbar = wnd.attachToolbar();
-		wnd.elmnts.frm_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
-		wnd.elmnts.frm_toolbar.loadStruct('data/toolbar_obj.xml?v='+$p.job_prm.files_date, function(){
-			this.addSpacer("btn_unpost");
-			this.attachEvent("onclick", toolbar_click);
-
-			if(o.hasOwnProperty("posted")){
-				this.enableItem("btn_post");
-				this.enableItem("btn_unpost");
-			}else{
-				this.hideItem("btn_post");
-				this.hideItem("btn_unpost");
-			}
-
-			// добавляем команды печати
-			var pp = md["printing_plates"];
-			for(var pid in pp)
-				this.addListOption("bs_print", pid, "~", "button", pp[pid]);
-
-			// попап для присоединенных файлов
-			wnd.elmnts.vault_pop = new dhtmlXPopup({
-				toolbar: this,
-				id: "btn_files"
-			});
-			wnd.elmnts.vault_pop.attachEvent("onShow", show_vault);
-
-		});
-
 
 		/**
 		 *	Закладки: шапка и табличные части
@@ -150,6 +122,35 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			});
 			wnd.elmnts.pg_header.attachEvent("onPropertyChanged", $p.iface.pgrid_on_change );
 			wnd.elmnts.pg_header.attachEvent("onCheckbox", $p.iface.pgrid_on_checkbox );
+		});
+
+		// панель инструментов формы
+		wnd.elmnts.frm_toolbar = wnd.attachToolbar();
+		wnd.elmnts.frm_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
+		wnd.elmnts.frm_toolbar.loadStruct(require("toolbar_obj"), function(){
+			this.addSpacer("btn_unpost");
+			this.attachEvent("onclick", toolbar_click);
+
+			if(o.hasOwnProperty("posted")){
+				this.enableItem("btn_post");
+				this.enableItem("btn_unpost");
+			}else{
+				this.hideItem("btn_post");
+				this.hideItem("btn_unpost");
+			}
+
+			// добавляем команды печати
+			var pp = md["printing_plates"];
+			for(var pid in pp)
+				this.addListOption("bs_print", pid, "~", "button", pp[pid]);
+
+			// попап для присоединенных файлов
+			wnd.elmnts.vault_pop = new dhtmlXPopup({
+				toolbar: this,
+				id: "btn_files"
+			});
+			wnd.elmnts.vault_pop.attachEvent("onShow", show_vault);
+
 		});
 
 

@@ -382,7 +382,7 @@ var _cat = $p.cat = new (
 	 * @for MetaEngine
 	 * @static
 	 */
-	_acc = $p.cacc = new (
+	_cacc = $p.cacc = new (
 
 		/**
 		 * Коллекция менеджеров планов счетов
@@ -402,16 +402,16 @@ var _cat = $p.cat = new (
 	 * @for MetaEngine
 	 * @static
 	 */
-	_fts = $p.cch = new (
+	_cch = $p.cch = new (
 
 		/**
 		 * Коллекция менеджеров планов видов характеристик
 		 *
 		 * Состав коллекции определяется метаданными используемой конфигурации
-		 * @class ChartsOfCharacteristic
+		 * @class ChartsOfCharacteristics
 		 * @static
 		 */
-			function ChartsOfCharacteristic(){
+			function ChartsOfCharacteristics(){
 			this.toString = function(){return $p.msg.meta_charts_of_characteristic_mgr};
 		}),
 
@@ -557,7 +557,7 @@ function Meta(req) {
 
 	this.sql_type = function (mgr, f, mf) {
 		var sql;
-		if((f == "type" && mgr.table_name == "cat_properties") || (f == "svg" && mgr.table_name == "cat_production_params"))
+		if((f == "type" && mgr.table_name == "cch_properties") || (f == "svg" && mgr.table_name == "cat_production_params"))
 			sql = " JSON";
 
 		else if(mf.is_ref || mf.hasOwnProperty("str_len"))
@@ -731,11 +731,11 @@ function Meta(req) {
 			Date: 'date',
 			Posted: 'posted',
 			Code: 'id'
-		}
+		};
 		if(synJS[v])
 			return synJS[v];
 		return m.syns_js[m.syns_1с.indexOf(v)] || v;
-	}
+	};
 
 	this.syns_1с = function (v) {
 		var syn1c = {
@@ -747,11 +747,11 @@ function Meta(req) {
 			date: 'Date',
 			posted: 'Posted',
 			id: 'Code'
-		}
+		};
 		if(syn1c[v])
 			return syn1c[v];
 		return m.syns_1с[m.syns_js.indexOf(v)] || v;
-	}
+	};
 
 	// Экспортируем ссылку на себя
 	_md = $p.md = this;
@@ -767,18 +767,21 @@ function Meta(req) {
 	}
 
 	for(class_name in m.doc){
-		if(!_doc[class_name])
-			_doc[class_name] = new DocManager("doc."+class_name);
+		_doc[class_name] = new DocManager("doc."+class_name);
 	}
 
 	for(class_name in m.ireg){
-		if(!_ireg[class_name])
-			_ireg[class_name] = new InfoRegManager("ireg."+class_name);
+		_ireg[class_name] = new InfoRegManager("ireg."+class_name);
 	}
 
 	for(class_name in m.dp)
 		_dp[class_name] = new DataProcessorsManager("dp."+class_name);
 
+	for(class_name in m.cch)
+		_cch[class_name] = new ChartOfCharacteristicManager("cch."+class_name);
+
+	for(class_name in m.cacc)
+		_cacc[class_name] = new ChartOfAccountManager("cacc."+class_name);
 
 	// загружаем модификаторы и прочие зависимости
 	$p.modifiers.execute();

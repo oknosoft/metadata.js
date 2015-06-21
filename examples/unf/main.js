@@ -96,7 +96,7 @@ $p.iface.oninit = function() {
 				 *  это место можно переопределить и открывать, например, специальную форму списка заказов
 				 */
 				function () {
-					$p.iface.set_hash("cat.nom", "", "", "oper");
+					$p.iface.set_hash("cat.currencies", "", "", "oper");
 
 				},
 

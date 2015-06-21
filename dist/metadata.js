@@ -1845,8 +1845,11 @@ msg.meta_doc_mgr = "Менеджер документов";
 msg.meta_enn_mgr = "Менеджер перечислений";
 msg.meta_ireg_mgr = "Менеджер регистров сведений";
 msg.meta_areg_mgr = "Менеджер регистров накопления";
+msg.meta_accreg_mgr = "Менеджер регистров бухгалтерии";
 msg.meta_dp_mgr = "Менеджер обработок";
 msg.meta_reports_mgr = "Менеджер отчетов";
+msg.meta_charts_of_accounts_mgr = "Менеджер планов счетов";
+msg.meta_charts_of_characteristic_mgr = "Менеджер планов видов характеристик";
 msg.meta_extender = "Модификаторы объектов и менеджеров";
 msg.no_metadata = "Не найдены метаданные объекта '%1'";
 msg.no_selected_row = "Не выбрана строка табличной части '%1'";
@@ -2050,7 +2053,7 @@ function eXcell_ref(cell){
 
 		td = t.cell.firstChild;
 		ti = td.childNodes[0];
-		ti.value=t.val.presentation;
+		ti.value=t.val ? t.val.presentation : '';
 		ti.onclick=$p.cancel_bubble;		//blocks onclick event
 		ti.readOnly = true;
 		ti.focus();
@@ -2703,7 +2706,7 @@ $p.iface.frm_auth = function (onstep, paths, resolve, reject) {
 	}
 
 	// загружаем структуру
-	frm_auth.loadStruct('data/form_auth.xml?v='+$p.job_prm.files_date, function(){
+	frm_auth.loadStruct(require("form_auth"), function(){
 
 		// после готовности формы читаем пользователя из локальной датабазы
 		if($p.wsql.get_user_param("user_name")){
@@ -4137,6 +4140,25 @@ var _cat = $p.cat = new (
 	}),
 
 	/**
+	 * Коллекция менеджеров регистров бухгалтерии
+	 * @property aссreg
+	 * @type AccountsRegs
+	 * @for MetaEngine
+	 * @static
+	 */
+	_aссreg = $p.aссreg = new (
+		/**
+		 * Коллекция менеджеров регистров бухгалтерии
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
+		 * @class AccountsRegs
+		 * @static
+		 */
+			function AccountsRegs(){
+			this.toString = function(){return $p.msg.meta_accreg_mgr};
+		}),
+
+	/**
 	 * Коллекция менеджеров обработок
 	 * @property dp
 	 * @type DataProcessors
@@ -4173,6 +4195,46 @@ var _cat = $p.cat = new (
 		function Reports(){
 			this.toString = function(){return $p.msg.meta_reports_mgr};
 	}),
+
+	/**
+	 * Коллекция менеджеров планов счетов
+	 * @property cacc
+	 * @type ChartsOfAccounts
+	 * @for MetaEngine
+	 * @static
+	 */
+	_cacc = $p.cacc = new (
+
+		/**
+		 * Коллекция менеджеров планов счетов
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
+		 * @class ChartsOfAccounts
+		 * @static
+		 */
+			function ChartsOfAccounts(){
+			this.toString = function(){return $p.msg.meta_charts_of_accounts_mgr};
+		}),
+
+	/**
+	 * Коллекция менеджеров планов видов характеристик
+	 * @property cch
+	 * @type ChartsOfCharacteristic
+	 * @for MetaEngine
+	 * @static
+	 */
+	_cch = $p.cch = new (
+
+		/**
+		 * Коллекция менеджеров планов видов характеристик
+		 *
+		 * Состав коллекции определяется метаданными используемой конфигурации
+		 * @class ChartsOfCharacteristics
+		 * @static
+		 */
+			function ChartsOfCharacteristics(){
+			this.toString = function(){return $p.msg.meta_charts_of_characteristic_mgr};
+		}),
 
 	/**
 	 * Mетаданные конфигурации
@@ -4316,7 +4378,7 @@ function Meta(req) {
 
 	this.sql_type = function (mgr, f, mf) {
 		var sql;
-		if((f == "type" && mgr.table_name == "cat_properties") || (f == "svg" && mgr.table_name == "cat_production_params"))
+		if((f == "type" && mgr.table_name == "cch_properties") || (f == "svg" && mgr.table_name == "cat_production_params"))
 			sql = " JSON";
 
 		else if(mf.is_ref || mf.hasOwnProperty("str_len"))
@@ -4490,11 +4552,11 @@ function Meta(req) {
 			Date: 'date',
 			Posted: 'posted',
 			Code: 'id'
-		}
+		};
 		if(synJS[v])
 			return synJS[v];
 		return m.syns_js[m.syns_1с.indexOf(v)] || v;
-	}
+	};
 
 	this.syns_1с = function (v) {
 		var syn1c = {
@@ -4506,11 +4568,11 @@ function Meta(req) {
 			date: 'Date',
 			posted: 'Posted',
 			id: 'Code'
-		}
+		};
 		if(syn1c[v])
 			return syn1c[v];
 		return m.syns_1с[m.syns_js.indexOf(v)] || v;
-	}
+	};
 
 	// Экспортируем ссылку на себя
 	_md = $p.md = this;
@@ -4526,18 +4588,21 @@ function Meta(req) {
 	}
 
 	for(class_name in m.doc){
-		if(!_doc[class_name])
-			_doc[class_name] = new DocManager("doc."+class_name);
+		_doc[class_name] = new DocManager("doc."+class_name);
 	}
 
 	for(class_name in m.ireg){
-		if(!_ireg[class_name])
-			_ireg[class_name] = new InfoRegManager("ireg."+class_name);
+		_ireg[class_name] = new InfoRegManager("ireg."+class_name);
 	}
 
 	for(class_name in m.dp)
 		_dp[class_name] = new DataProcessorsManager("dp."+class_name);
 
+	for(class_name in m.cch)
+		_cch[class_name] = new ChartOfCharacteristicManager("cch."+class_name);
+
+	for(class_name in m.cacc)
+		_cacc[class_name] = new ChartOfAccountManager("cacc."+class_name);
 
 	// загружаем модификаторы и прочие зависимости
 	$p.modifiers.execute();
@@ -4631,8 +4696,8 @@ function DataManager(class_name){
 	else if(class_name.indexOf("doc.") != -1 || class_name.indexOf("dp.") != -1 || class_name.indexOf("rep.") != -1)
 		_cachable = false;
 
-	// справочники по умолчанию кешируем
-	else if(class_name.indexOf("cat.") != -1)
+	// остальные классы по умолчанию кешируем
+	else
 		_cachable = true;
 
 	// Если в метаданных явно указано правило кеширования, используем его
@@ -4725,9 +4790,9 @@ function DataManager(class_name){
 	//	Создаём функции конструкторов экземпляров объектов и строк табличных частей
 	var _obj_сonstructor = this._obj_сonstructor || DataObj;		// ссылка на конструктор элементов
 
+	// Для всех типов, кроме перечислений, создаём через (new Function) конструктор объекта
 	if(!(this instanceof EnumManager)){
 
-		// для всех типов, кроме перечислений
 		var obj_сonstructor_name = class_name.split(".")[1];
 		this._obj_сonstructor = eval("(function " + obj_сonstructor_name.charAt(0).toUpperCase() + obj_сonstructor_name.substr(1) +
 			"(attr, manager){manager._obj_сonstructor.superclass.constructor.call(this, attr, manager)})");
@@ -4796,7 +4861,6 @@ function DataManager(class_name){
 			}
 
 		}
-
 	}
 
 	_obj_сonstructor = null;
@@ -4809,7 +4873,6 @@ function DataManager(class_name){
 DataManager.prototype.register_ex = function(){
 
 };
-
 
 
 /**
@@ -5656,13 +5719,13 @@ EnumManager.prototype.get_sql_struct = function(attr){
 
 	if(action == "create_table")
 		res = "CREATE TABLE IF NOT EXISTS "+this.table_name+
-			" (ref CHAR PRIMARY KEY NOT NULL, sequence INT, name CHAR, synonym CHAR)";
+			" (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR)";
 	else if(["insert", "update", "replace"].indexOf(action) != -1){
 		res = {};
 		res[this.table_name] = {
-			sql: "INSERT INTO "+this.table_name+" (ref, sequence, name, synonym) VALUES (?, ?, ?, ?)",
-			fields: ["ref", "order", "name", "synonym"],
-			values: "(?, ?, ?, ?)"
+			sql: "INSERT INTO "+this.table_name+" (ref, sequence, synonym) VALUES (?, ?, ?)",
+			fields: ["ref", "sequence", "synonym"],
+			values: "(?, ?, ?)"
 		};
 	}else if(action == "delete")
 		res = "DELETE FROM "+this.table_name+" WHERE ref = ?";
@@ -5925,7 +5988,6 @@ InfoRegManager.prototype.get_ref = function(attr){
  * @extends RefDataManager
  * @constructor
  * @param class_name {string}
- * @param [cachable=false] {boolean}
  */
 function CatManager(class_name) {
 
@@ -5934,29 +5996,59 @@ function CatManager(class_name) {
 	CatManager.superclass.constructor.call(this, class_name);
 
 	// реквизиты по метаданным
-	if(this.metadata().hierarchical){
+	if(this.metadata().hierarchical && this.metadata().group_hierarchy){
 
-		if(this.metadata().group_hierarchy){
-
-			/**
-			 * признак "это группа"
-			 * @property is_folder
-			 * @for CatObj
-			 * @type {Boolean}
-			 */
-			this._obj_сonstructor.prototype._define("is_folder", {
-				get : function(){ return this._obj.is_folder || false},
-				set : function(v){ this._obj.is_folder = $p.fix_boolean(v)},
-				enumerable : true
-			});
-		}
-
+		/**
+		 * признак "это группа"
+		 * @property is_folder
+		 * @for CatObj
+		 * @type {Boolean}
+		 */
+		this._obj_сonstructor.prototype._define("is_folder", {
+			get : function(){ return this._obj.is_folder || false},
+			set : function(v){ this._obj.is_folder = $p.fix_boolean(v)},
+			enumerable : true
+		});
 	}
 
 }
 CatManager._extend(RefDataManager);
-
 CatManager.prototype.toString = function(){return "Менеджер справочника " + this.class_name; };
+
+/**
+ * Абстрактный менеджер плана видов характеристик
+ * @class ChartOfCharacteristicManager
+ * @extends CatManager
+ * @constructor
+ * @param class_name {string}
+ */
+function ChartOfCharacteristicManager(class_name){
+
+	this._obj_сonstructor = CatObj;		// ссылка на конструктор элементов
+
+	ChartOfCharacteristicManager.superclass.constructor.call(this, class_name);
+
+}
+ChartOfCharacteristicManager._extend(CatManager);
+ChartOfCharacteristicManager.prototype.toString = function(){return "Менеджер плана видов характеристик " + this.class_name; };
+
+
+/**
+ * Абстрактный менеджер плана видов характеристик
+ * @class ChartOfAccountManager
+ * @extends CatManager
+ * @constructor
+ * @param class_name {string}
+ */
+function ChartOfAccountManager(class_name){
+
+	this._obj_сonstructor = CatObj;		// ссылка на конструктор элементов
+
+	ChartOfAccountManager.superclass.constructor.call(this, class_name);
+
+}
+ChartOfAccountManager._extend(CatManager);
+ChartOfAccountManager.prototype.toString = function(){return "Менеджер плана счетов " + this.class_name; };
 
 
 /**
@@ -5975,7 +6067,6 @@ function DocManager(class_name) {
 
 }
 DocManager._extend(RefDataManager);
-
 DocManager.prototype.toString = function(){return "Менеджер документа " + this.class_name; };
 
 
@@ -6325,16 +6416,20 @@ function DataObj(attr, manager) {
 	var ref, tmp, _ts_ = {}, _obj = {data_version: ""}, _is_new = !(this instanceof EnumObj);
 
 	// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
-	if(!(manager instanceof DataProcessorsManager))
+	if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager))
 		tmp = manager.get(attr, false, true);
 
 	if(tmp)
 		return tmp;
 
-	if(!(manager instanceof InfoRegManager)){
+	if(manager instanceof EnumManager)
+		_obj.ref = ref = attr.name;
+
+	else if(!(manager instanceof InfoRegManager)){
 		_obj.ref = ref = $p.fix_guid(attr);
 		_obj.deleted = false;
 		_obj.lc_changed = 0;
+
 	}else
 		ref = manager.get_ref(attr);
 
@@ -6830,30 +6925,17 @@ function DataProcessorObj(attr, manager) {
 DataProcessorObj._extend(DataObj);
 
 /**
- * Абстрактный элемент справочника
+ * Абстрактный элемент перечисления
  * @class EnumObj
  * @extends DataObj
  * @constructor
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
- * @param manager {RefDataManager}
+ * @param manager {EnumManager}
  */
 function EnumObj(attr, manager) {
 
 	// выполняем конструктор родительского объекта
 	EnumObj.superclass.constructor.call(this, attr, manager);
-
-	/**
-	 * Представление объекта
-	 * @property presentation
-	 * @for CatObj
-	 * @type String
-	 */
-	this._define('presentation', {
-		get : function(){
-			return this.synonym || this.name;
-		},
-		enumerable : false
-	});
 
 	if(attr && typeof attr == "object")
 		this._mixin(attr);
@@ -6863,36 +6945,52 @@ EnumObj._extend(DataObj);
 
 
 /**
- * порядок элемента перечисления
+ * Порядок элемента перечисления
  * @property order
+ * @for EnumObj
  * @type Number
  */
 EnumObj.prototype._define('order', {
-	get : function(){ return this._obj.order},
-	set : function(v){ this._obj.order = parseInt(v)},
+	get : function(){ return this._obj.sequence},
+	set : function(v){ this._obj.sequence = parseInt(v)},
 	enumerable : true
 });
 
 /**
  * Наименование элемента перечисления
  * @property name
+ * @for EnumObj
  * @type String
  */
 EnumObj.prototype._define('name', {
-	get : function(){ return this._obj.name || ""},
-	set : function(v){ this._obj.name = String(v)},
+	get : function(){ return this._obj.ref},
+	set : function(v){ this._obj.ref = String(v)},
 	enumerable : true
 });
 
 /**
  * Синоним элемента перечисления
  * @property synonym
+ * @for EnumObj
  * @type String
  */
 EnumObj.prototype._define('synonym', {
 	get : function(){ return this._obj.synonym || ""},
 	set : function(v){ this._obj.synonym = String(v)},
 	enumerable : true
+});
+
+/**
+ * Представление объекта
+ * @property presentation
+ * @for EnumObj
+ * @type String
+ */
+EnumObj.prototype._define('presentation', {
+	get : function(){
+		return this.synonym || this.name;
+	},
+	enumerable : false
 });
 
 
@@ -7013,16 +7111,35 @@ DataManager.prototype.load_rest = function (attr) {
 		.then(function (req) {
 			var res = JSON.parse(req.response),
 				mf = t.metadata().fields,
-				i, f, o, ro, syn;
+				mts = mf = t.metadata().tabular_sections,
+				ts, i, f, tf, row, o, ro, syn, synts;
 			for(i = res.value.length-1; i >=0; i--){
 				ro = res.value[i];
 				o = {};
-				for(var f in mf){
+				for(f in mf){
 					syn = _md.syns_1с(f);
 					if(mf[f].type.is_ref)
 						syn+="_Key";
 					o[f] = ro[syn];
 				}
+				for(ts in mts){
+					synts = _md.syns_1с(ts);
+					o[f] = [];
+					ro[synts].sort(function (a, b) {
+						return a.LineNumber > b.LineNumber;
+					});
+					ro[synts].forEach(function (r) {
+
+					});
+
+					for(tf in mts[ts].fields){
+						syn = _md.syns_1с(tf);
+						if(mf[tf].type.is_ref)
+							syn+="_Key";
+						row[tf] = ro[syn];
+					}
+				}
+
 			}
 
 		});
@@ -7602,34 +7719,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.attachEvent("onClose", frm_close);
 		$p.bind_help(wnd);
 
-		wnd.elmnts.frm_toolbar = wnd.attachToolbar();
-		wnd.elmnts.frm_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
-		wnd.elmnts.frm_toolbar.loadStruct('data/toolbar_obj.xml?v='+$p.job_prm.files_date, function(){
-			this.addSpacer("btn_unpost");
-			this.attachEvent("onclick", toolbar_click);
-
-			if(o.hasOwnProperty("posted")){
-				this.enableItem("btn_post");
-				this.enableItem("btn_unpost");
-			}else{
-				this.hideItem("btn_post");
-				this.hideItem("btn_unpost");
-			}
-
-			// добавляем команды печати
-			var pp = md["printing_plates"];
-			for(var pid in pp)
-				this.addListOption("bs_print", pid, "~", "button", pp[pid]);
-
-			// попап для присоединенных файлов
-			wnd.elmnts.vault_pop = new dhtmlXPopup({
-				toolbar: this,
-				id: "btn_files"
-			});
-			wnd.elmnts.vault_pop.attachEvent("onShow", show_vault);
-
-		});
-
 
 		/**
 		 *	Закладки: шапка и табличные части
@@ -7670,6 +7759,35 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			});
 			wnd.elmnts.pg_header.attachEvent("onPropertyChanged", $p.iface.pgrid_on_change );
 			wnd.elmnts.pg_header.attachEvent("onCheckbox", $p.iface.pgrid_on_checkbox );
+		});
+
+		// панель инструментов формы
+		wnd.elmnts.frm_toolbar = wnd.attachToolbar();
+		wnd.elmnts.frm_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
+		wnd.elmnts.frm_toolbar.loadStruct(require("toolbar_obj"), function(){
+			this.addSpacer("btn_unpost");
+			this.attachEvent("onclick", toolbar_click);
+
+			if(o.hasOwnProperty("posted")){
+				this.enableItem("btn_post");
+				this.enableItem("btn_unpost");
+			}else{
+				this.hideItem("btn_post");
+				this.hideItem("btn_unpost");
+			}
+
+			// добавляем команды печати
+			var pp = md["printing_plates"];
+			for(var pid in pp)
+				this.addListOption("bs_print", pid, "~", "button", pp[pid]);
+
+			// попап для присоединенных файлов
+			wnd.elmnts.vault_pop = new dhtmlXPopup({
+				toolbar: this,
+				id: "btn_files"
+			});
+			wnd.elmnts.vault_pop.attachEvent("onShow", show_vault);
+
 		});
 
 
@@ -8057,11 +8175,17 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		dhtmlxEvent(document.body, "keydown", body_keydown);
 
+		// статусбар
+		wnd.elmnts = {
+			status_bar: wnd.attachStatusBar()
+		};
+		wnd.elmnts.status_bar.setText("<div id='" + class_name.replace(".", "_") + "_select_recinfoArea'></div>");
+
 		// командная панель формы
-		wnd.elmnts = {};
+
 		wnd.elmnts.toolbar = wnd.attachToolbar();
 		wnd.elmnts.toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
-		wnd.elmnts.toolbar.loadStruct('data/toolbar_selection.xml?v='+$p.job_prm.files_date, function(){
+		wnd.elmnts.toolbar.loadStruct(require("toolbar_selection"), function(){
 			this.addSpacer("input_filter");
 			this.attachEvent("onclick", toolbar_click);
 			// текстовое поле фильтра по подстроке
@@ -8085,9 +8209,6 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			//
 			create_tree_and_grid();
 		});
-		// статусбар
-		wnd.elmnts.status_bar = wnd.attachStatusBar();
-		wnd.elmnts.status_bar.setText("<div id='" + class_name.replace(".", "_") + "_select_recinfoArea'></div>");
 	}
 
 	/**
@@ -9354,5 +9475,9 @@ if (typeof module !== "undefined" && module.exports) {
     return saveAs;
   });
 }
-})
+}),
+"form_auth": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<items>\n\t<item type=\"settings\" position=\"label-left\" labelWidth=\"150\" inputWidth=\"230\" noteWidth=\"230\"/>\n\t<item type=\"fieldset\" name=\"data\" inputWidth=\"auto\" label=\"Авторизация\">\n\n        <item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" checked=\"true\" value=\"guest\" label=\"Гостевой (демо) режим\">\n            <item type=\"select\" name=\"guest\" label=\"Роль\">\n                <option value=\"Дилер\" label=\"Дилер\"/>\n            </item>\n        </item>\n\n\t\t<item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" value=\"auth\" label=\"Есть учетная запись\">\n\t\t\t<item type=\"input\" value=\"\" name=\"login\" label=\"Имя пользователя\" validate=\"NotEmpty\" />\n\t\t\t<item type=\"password\" value=\"\" name=\"password\" label=\"Пароль\" validate=\"NotEmpty\" />\n\t\t</item>\n\n\t\t<item type=\"button\" value=\"Войти\" name=\"submit\"/>\n\n        <item type=\"template\" name=\"text_options\" className=\"order_dealer_options\" inputWidth=\"231\"\n              value=\"&lt;a href='#' onclick='$p.iface.open_settings();' &gt; &lt;img src='/imgs/dhxtoolbar_web/tb_settings.png' align='top' /&gt; Настройки &lt;/a&gt; &lt;img src='/imgs/dhxtoolbar_web/blank9.png' align='top' /&gt; &lt;a href='http://www.oknosoft.ru/feedback' target='_blank' &gt; &lt;img src='/imgs/dhxtoolbar_web/cloud-question.png' align='top' /&gt; Задать вопрос &lt;/a&gt;\"  />\n\n\t</item>\n</items>\n",
+"toolbar_obj": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"Записать и закрыть\" img=\"save.gif\" imgdis=\"\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"Записать\" img=\"tb_calculate.png\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_post\" img=\"tb_post.png\" imgdis=\"tb_post.png\" enabled=\"false\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" img=\"tb_unpost.png\" imgdis=\"tb_unpost.png\" enabled=\"false\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"Файлы\" img=\"tb_screpka.png\" imgdis=\"tb_screpka_dis.png\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"Создать\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" image=\"\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"Перейти\" title=\"\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\"         img=\"print.gif\"         text=\"Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"        img=\"tb_more_w.png\"  title=\"Дополнительно\" openAll=\"true\">\r\n        <item type=\"button\" id=\"btn_import\" img=\"document_load.png\" text=\"Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" img=\"document_save.png\" text=\"Выгрузить в файл\" />\r\n    </item>\r\n\r\n</toolbar>\r\n",
+"toolbar_ok_cancel": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_ok\"       type=\"button\"   img=\"\"  imgdis=\"\"   text=\"&lt;b&gt;Ок&lt;/b&gt;\"  />\r\n    <item id=\"btn_cancel\"   type=\"button\"\timg=\"\"  imgdis=\"\"   text=\"Отмена\" />\r\n</toolbar>",
+"toolbar_selection": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_select\"   type=\"button\"   img=\"\"              imgdis=\"\"               title=\"Выбрать элемент списка\" text=\"&lt;b&gt;Выбрать&lt;/b&gt;\"  />\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item id=\"btn_new\"      type=\"button\"\timg=\"tb_new.png\"\timgdis=\"tb_new_dis.png\"\ttitle=\"Создать\" />\r\n    <item id=\"btn_edit\"     type=\"button\"\timg=\"tb_edit.png\"\timgdis=\"tb_edit_dis.png\"\ttitle=\"Изменить\" />\r\n    <item id=\"btn_delete\"   type=\"button\"\timg=\"tb_delete.png\"\timgdis=\"tb_delete_dis.png\"\ttitle=\"Удалить\" />\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n    <item id=\"lbl_filter\" type=\"text\"  text=\"Фильтр\" />\r\n    <item id=\"input_filter\" type=\"buttonInput\" width=\"350\"  />\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"        img=\"tb_more_w.png\"     title=\"Дополнительно\" openAll=\"true\">\r\n\r\n    </item>\r\n\r\n</toolbar>"
 },{},{});

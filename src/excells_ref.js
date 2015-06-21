@@ -163,7 +163,7 @@ function eXcell_ref(cell){
 
 		td = t.cell.firstChild;
 		ti = td.childNodes[0];
-		ti.value=t.val.presentation;
+		ti.value=t.val ? t.val.presentation : '';
 		ti.onclick=$p.cancel_bubble;		//blocks onclick event
 		ti.readOnly = true;
 		ti.focus();

@@ -23,6 +23,7 @@
       "src/wnd_selection.js",
       "src/events.js"],
     "filesaver" :  "lib/filesaver.js",
+    "<%= file %>": "data/*.xml",
     "main":     "dist/main.js"
   },
   "main": "main",
