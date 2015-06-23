@@ -688,9 +688,16 @@ $p.fix_guid = function(ref, generate){
 	if(ref && typeof ref == "string")
 		;
 
-	else if(ref && typeof ref == "object" && ref.ref){
-		if(ref.presentation)
-			return ref.ref;
+	else if(ref instanceof DataObj)
+		return ref.ref;
+
+	else if(ref && typeof ref == "object"){
+		if(ref.presentation){
+			if(ref.ref)
+				return ref.ref;
+			else if(ref.name)
+				return ref.name;
+		}
 		else
 			ref = (typeof ref.ref == "object" && ref.ref.hasOwnProperty("ref")) ?  ref.ref.ref : ref.ref;
 	}

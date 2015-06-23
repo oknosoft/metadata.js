@@ -2623,7 +2623,9 @@
 						}
 					],
 					"type": {
-						"types": [],
+						"types": [
+							"cat.organizational_units"
+						],
 						"is_ref": true
 					}
 				},
@@ -3445,6 +3447,259 @@
 			},
 			"tabular_sections": {}
 		},
+		"organizational_units": {
+			"name": "СтруктурныеЕдиницы",
+			"synonym": "Структурные единицы",
+			"illustration": "Организационно-структурные единицы организаций: административно-управленческие подразделения, производственные подразделения, склады",
+			"obj_presentation": "Структурная единица",
+			"list_presentation": "",
+			"hierarchical": true,
+			"has_owners": false,
+			"group_hierarchy": false,
+			"main_presentation_name": true,
+			"code_length": 9,
+			"fields": {
+				"structural_unit_type": {
+					"synonym": "Тип",
+					"multiline_mode": false,
+					"tooltip": "Тип структурной единицы: склад, производство, управленческое подразделение",
+					"type": {
+						"types": [
+							"enm.structural_unit_types"
+						],
+						"is_ref": true
+					}
+				},
+				"store_is_order": {
+					"synonym": "Ордерный",
+					"multiline_mode": false,
+					"tooltip": "Признак ордерного склада. Флаг следует установить, если на складе будет использоваться ордерная схема.",
+					"type": {
+						"types": [
+							"boolean"
+						]
+					}
+				},
+				"organization": {
+					"synonym": "Организация",
+					"multiline_mode": false,
+					"tooltip": "Организация, к которой относится структурная единица. Реквизит используется только при обмене данными с конфигурацией бухгалтерия предприятия.",
+					"type": {
+						"types": [
+							"cat.organizations"
+						],
+						"is_ref": true
+					}
+				},
+				"parent": {
+					"synonym": "Группа",
+					"multiline_mode": false,
+					"tooltip": "Группа, в которую входит данная структурная единица.",
+					"type": {
+						"types": [
+							"cat.organizational_units"
+						],
+						"is_ref": true
+					}
+				}
+			},
+			"tabular_sections": {
+				"extra_fields": {
+					"name": "ДополнительныеРеквизиты",
+					"synonym": "Дополнительные реквизиты",
+					"tooltip": "Дополнительные реквизиты партии запасов",
+					"fields": {
+						"property": {
+							"synonym": "Свойство",
+							"multiline_mode": false,
+							"tooltip": "Дополнительный реквизит",
+							"type": {
+								"types": [
+									"cch.properties"
+								],
+								"is_ref": true
+							}
+						},
+						"value": {
+							"synonym": "Значение",
+							"multiline_mode": false,
+							"tooltip": "Значение дополнительного реквизита",
+							"choice_links": [
+								{
+									"name": [
+										"selection",
+										"owner"
+									],
+									"path": [
+										"extra_fields",
+										"property"
+									]
+								}
+							],
+							"type": {
+								"types": [
+									"cat.currencies",
+									"cat.property_values",
+									"cat.property_values_hierarchy",
+									"boolean",
+									"cat.individuals",
+									"string",
+									"cat.users",
+									"date",
+									"number",
+									"cat.partners",
+									"cat.projects"
+								],
+								"is_ref": true,
+								"str_len": 1024,
+								"date_part": "date_time",
+								"digits": 17,
+								"fraction_figits": 5
+							}
+						},
+						"txt_row": {
+							"synonym": "Текстовая строка",
+							"multiline_mode": false,
+							"tooltip": "Полный текст строкового дополнительного реквизита",
+							"type": {
+								"types": [
+									"string"
+								],
+								"str_len": 0
+							}
+						}
+					}
+				},
+				"contact_information": {
+					"name": "КонтактнаяИнформация",
+					"synonym": "Контактная информация",
+					"tooltip": "Контактная информация контрагента",
+					"fields": {
+						"type": {
+							"synonym": "Тип",
+							"multiline_mode": false,
+							"tooltip": "Тип контактной информации (телефон, адрес и т.п.)",
+							"type": {
+								"types": [
+									"enm.contact_information_types"
+								],
+								"is_ref": true
+							}
+						},
+						"kind": {
+							"synonym": "Вид",
+							"multiline_mode": false,
+							"tooltip": "Вид контактной информации",
+							"type": {
+								"types": [
+									"cat.contact_information_kinds"
+								],
+								"is_ref": true
+							}
+						},
+						"presentation": {
+							"synonym": "Представление",
+							"multiline_mode": false,
+							"tooltip": "Представление контактной информации для отображения в формах",
+							"type": {
+								"types": [
+									"string"
+								],
+								"str_len": 500
+							}
+						},
+						"values_fields": {
+							"synonym": "Значения полей",
+							"multiline_mode": false,
+							"tooltip": "Служебное поле, для хранения контактной информации",
+							"type": {
+								"types": [
+									"string"
+								],
+								"str_len": 0
+							}
+						},
+						"country": {
+							"synonym": "Страна",
+							"multiline_mode": false,
+							"tooltip": "Страна (заполняется для адреса)",
+							"type": {
+								"types": [
+									"string"
+								],
+								"str_len": 100
+							}
+						},
+						"region": {
+							"synonym": "Регион",
+							"multiline_mode": false,
+							"tooltip": "Регион (заполняется для адреса)",
+							"type": {
+								"types": [
+									"string"
+								],
+								"str_len": 50
+							}
+						},
+						"city": {
+							"synonym": "Город",
+							"multiline_mode": false,
+							"tooltip": "Город (заполняется для адреса)",
+							"type": {
+								"types": [
+									"string"
+								],
+								"str_len": 50
+							}
+						},
+						"email_address": {
+							"synonym": "Адрес ЭП",
+							"multiline_mode": false,
+							"tooltip": "Адрес электронной почты",
+							"type": {
+								"types": [
+									"string"
+								],
+								"str_len": 100
+							}
+						},
+						"server_domain_name": {
+							"synonym": "Доменное имя сервера",
+							"multiline_mode": false,
+							"tooltip": "Доменное имя сервера электронной почты или веб-страницы",
+							"type": {
+								"types": [
+									"string"
+								],
+								"str_len": 100
+							}
+						},
+						"phone_number": {
+							"synonym": "Номер телефона",
+							"multiline_mode": false,
+							"tooltip": "Полный номер телефона",
+							"type": {
+								"types": [
+									"string"
+								],
+								"str_len": 20
+							}
+						},
+						"phone_without_codes": {
+							"synonym": "Номер телефона без кодов",
+							"multiline_mode": false,
+							"tooltip": "Номер телефона без кодов и добавочного номера",
+							"type": {
+								"types": [
+									"string"
+								],
+								"str_len": 20
+							}
+						}
+					}
+				}
+			}
+		},
 		"individuals": {
 			"name": "ФизическиеЛица",
 			"synonym": "Физические лица",
@@ -3837,7 +4092,9 @@
 					"multiline_mode": false,
 					"tooltip": "Структурная единица - владелец ячейки",
 					"type": {
-						"types": [],
+						"types": [
+							"cat.organizational_units"
+						],
 						"is_ref": true
 					}
 				},
@@ -5911,7 +6168,10 @@
 		"СпособРаспределения",
 		"СчетЗакрытия",
 		"БазыРаспределенияРасходов",
-		"ТипыНачисленийИУдержаний"
+		"ТипыНачисленийИУдержаний",
+		"СтруктурныеЕдиницы",
+		"ТипСтруктурнойЕдиницы",
+		"ОрдерныйСклад"
 	],
 	"syns_js": [
 		"changed",
@@ -6541,6 +6801,9 @@
 		"distribution_method",
 		"account_for_closing",
 		"distribution_bases",
-		"charges_deductions_types"
+		"charges_deductions_types",
+		"organizational_units",
+		"structural_unit_type",
+		"store_is_order"
 	]
 }

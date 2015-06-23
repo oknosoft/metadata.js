@@ -318,7 +318,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		// панель инструментов табличной части
 		var tb = wnd.elmnts["tb_" + name] = tab.attachToolbar();
 		tb.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
-		tb.loadStruct('data/toolbar_add_del.xml', function(){
+		tb.loadStruct(require("toolbar_add_del"), function(){
 			this.attachEvent("onclick", toolbar_click);
 		});
 

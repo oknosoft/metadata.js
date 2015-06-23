@@ -159,7 +159,7 @@ DataObj.prototype._setter = function (f, v) {
 		this._obj[f] = $p.fix_guid(v);
 
 		if(v && v.presentation){
-			if(mgr = _md.value_mgr(this._obj, f, mf, false, v))
+			if((mgr = _md.value_mgr(this._obj, f, mf, false, v)) && !(mgr instanceof EnumManager))
 				mgr.create(v);
 		}
 

@@ -849,9 +849,16 @@ $p.fix_guid = function(ref, generate){
 	if(ref && typeof ref == "string")
 		;
 
-	else if(ref && typeof ref == "object" && ref.ref){
-		if(ref.presentation)
-			return ref.ref;
+	else if(ref instanceof DataObj)
+		return ref.ref;
+
+	else if(ref && typeof ref == "object"){
+		if(ref.presentation){
+			if(ref.ref)
+				return ref.ref;
+			else if(ref.name)
+				return ref.name;
+		}
 		else
 			ref = (typeof ref.ref == "object" && ref.ref.hasOwnProperty("ref")) ?  ref.ref.ref : ref.ref;
 	}
@@ -4402,7 +4409,7 @@ function Meta(req) {
 	};
 
 	this.sql_mask = function(f){
-		var mask_names = ["delete", "set", "value", "json"];
+		var mask_names = ["delete", "set", "value", "json", "primary", "content"];
 		return ", " + (mask_names.some(
 				function (mask) {
 					return f.indexOf(mask) !=-1
@@ -5134,7 +5141,7 @@ function RefDataManager(class_name) {
 	 */
 	t.get = function(ref, force_promise, do_not_create){
 
-		var o = by_ref[(ref = $p.fix_guid(ref))];
+		var o = by_ref[ref] || by_ref[(ref = $p.fix_guid(ref))];
 
 		if(!o){
 			if(do_not_create)
@@ -5697,6 +5704,24 @@ function EnumManager(a, class_name) {
 	EnumManager.superclass.constructor.call(this, class_name);
 
 	this._obj_сonstructor = EnumObj;
+
+	this.push = function(o, new_ref){
+		this._define(new_ref, {
+			value : o,
+			enumerable : false
+		}) ;
+	};
+
+	this.get = function(ref){
+		if(!ref || ref == $p.blank.guid)
+			ref = "_";
+
+		var o = this[ref];
+		if(!o)
+			o = new EnumObj({name: ref}, this);
+
+		return o;
+	};
 
 	for(var i in a)
 		new EnumObj(a[i], this);
@@ -6556,7 +6581,7 @@ DataObj.prototype._setter = function (f, v) {
 		this._obj[f] = $p.fix_guid(v);
 
 		if(v && v.presentation){
-			if(mgr = _md.value_mgr(this._obj, f, mf, false, v))
+			if((mgr = _md.value_mgr(this._obj, f, mf, false, v)) && !(mgr instanceof EnumManager))
 				mgr.create(v);
 		}
 
@@ -7955,7 +7980,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		// панель инструментов табличной части
 		var tb = wnd.elmnts["tb_" + name] = tab.attachToolbar();
 		tb.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
-		tb.loadStruct('data/toolbar_add_del.xml', function(){
+		tb.loadStruct(require("toolbar_add_del"), function(){
 			this.attachEvent("onclick", toolbar_click);
 		});
 
@@ -9477,6 +9502,7 @@ if (typeof module !== "undefined" && module.exports) {
 }
 }),
 "form_auth": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<items>\n\t<item type=\"settings\" position=\"label-left\" labelWidth=\"150\" inputWidth=\"230\" noteWidth=\"230\"/>\n\t<item type=\"fieldset\" name=\"data\" inputWidth=\"auto\" label=\"Авторизация\">\n\n        <item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" checked=\"true\" value=\"guest\" label=\"Гостевой (демо) режим\">\n            <item type=\"select\" name=\"guest\" label=\"Роль\">\n                <option value=\"Дилер\" label=\"Дилер\"/>\n            </item>\n        </item>\n\n\t\t<item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" value=\"auth\" label=\"Есть учетная запись\">\n\t\t\t<item type=\"input\" value=\"\" name=\"login\" label=\"Имя пользователя\" validate=\"NotEmpty\" />\n\t\t\t<item type=\"password\" value=\"\" name=\"password\" label=\"Пароль\" validate=\"NotEmpty\" />\n\t\t</item>\n\n\t\t<item type=\"button\" value=\"Войти\" name=\"submit\"/>\n\n        <item type=\"template\" name=\"text_options\" className=\"order_dealer_options\" inputWidth=\"231\"\n              value=\"&lt;a href='#' onclick='$p.iface.open_settings();' &gt; &lt;img src='/imgs/dhxtoolbar_web/tb_settings.png' align='top' /&gt; Настройки &lt;/a&gt; &lt;img src='/imgs/dhxtoolbar_web/blank9.png' align='top' /&gt; &lt;a href='http://www.oknosoft.ru/feedback' target='_blank' &gt; &lt;img src='/imgs/dhxtoolbar_web/cloud-question.png' align='top' /&gt; Задать вопрос &lt;/a&gt;\"  />\n\n\t</item>\n</items>\n",
+"toolbar_add_del": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_add\"    text=\"Добавить\" title=\"Добавить строку\" img=\"tb_new.png\"  />\r\n    <item type=\"button\" id=\"btn_delete\" text=\"Удалить\"  title=\"Удалить строку\" img=\"tb_delete.png\"   imgdis=\"tb_delete_dis.png\" />\r\n</toolbar>",
 "toolbar_obj": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"Записать и закрыть\" img=\"save.gif\" imgdis=\"\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"Записать\" img=\"tb_calculate.png\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_post\" img=\"tb_post.png\" imgdis=\"tb_post.png\" enabled=\"false\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" img=\"tb_unpost.png\" imgdis=\"tb_unpost.png\" enabled=\"false\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"Файлы\" img=\"tb_screpka.png\" imgdis=\"tb_screpka_dis.png\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"Создать\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" image=\"\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"Перейти\" title=\"\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\"         img=\"print.gif\"         text=\"Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"        img=\"tb_more_w.png\"  title=\"Дополнительно\" openAll=\"true\">\r\n        <item type=\"button\" id=\"btn_import\" img=\"document_load.png\" text=\"Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" img=\"document_save.png\" text=\"Выгрузить в файл\" />\r\n    </item>\r\n\r\n</toolbar>\r\n",
 "toolbar_ok_cancel": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_ok\"       type=\"button\"   img=\"\"  imgdis=\"\"   text=\"&lt;b&gt;Ок&lt;/b&gt;\"  />\r\n    <item id=\"btn_cancel\"   type=\"button\"\timg=\"\"  imgdis=\"\"   text=\"Отмена\" />\r\n</toolbar>",
 "toolbar_selection": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_select\"   type=\"button\"   img=\"\"              imgdis=\"\"               title=\"Выбрать элемент списка\" text=\"&lt;b&gt;Выбрать&lt;/b&gt;\"  />\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item id=\"btn_new\"      type=\"button\"\timg=\"tb_new.png\"\timgdis=\"tb_new_dis.png\"\ttitle=\"Создать\" />\r\n    <item id=\"btn_edit\"     type=\"button\"\timg=\"tb_edit.png\"\timgdis=\"tb_edit_dis.png\"\ttitle=\"Изменить\" />\r\n    <item id=\"btn_delete\"   type=\"button\"\timg=\"tb_delete.png\"\timgdis=\"tb_delete_dis.png\"\ttitle=\"Удалить\" />\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n    <item id=\"lbl_filter\" type=\"text\"  text=\"Фильтр\" />\r\n    <item id=\"input_filter\" type=\"buttonInput\" width=\"350\"  />\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"        img=\"tb_more_w.png\"     title=\"Дополнительно\" openAll=\"true\">\r\n\r\n    </item>\r\n\r\n</toolbar>"

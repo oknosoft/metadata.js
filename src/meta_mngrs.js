@@ -418,16 +418,7 @@ DataManager.prototype.print = function(ref, model, wnd){
 function RefDataManager(class_name) {
 
 	var t = this,				// ссылка на себя
-		by_ref={},				// приватное хранилище объектов по guid
-		sys_fields_names = function(){
-			if(t instanceof EnumManager){
-				return {presentation_name: "synonym", id_name: "name"};
-			}else if(t instanceof CatManager){
-				return {presentation_name: "presentation", id_name: "id"};
-			}else if(t instanceof DocManager){
-				return {presentation_name: "presentation", id_name: "number_doc"};
-			}
-		};
+		by_ref={};				// приватное хранилище объектов по guid
 
 	RefDataManager.superclass.constructor.call(t, class_name);
 
@@ -475,7 +466,7 @@ function RefDataManager(class_name) {
 	 */
 	t.get = function(ref, force_promise, do_not_create){
 
-		var o = by_ref[(ref = $p.fix_guid(ref))];
+		var o = by_ref[ref] || by_ref[(ref = $p.fix_guid(ref))];
 
 		if(!o){
 			if(do_not_create)
@@ -519,22 +510,6 @@ function RefDataManager(class_name) {
 		return o;
 	};
 
-	/**
-	 * Возвращает объект по коду (для справочников) или имени (для перечислений)
-	 * @method by_id
-	 * @param id {String|Object} - идентификатор
-	 * @return {DataObj}
-	 */
-	t.by_id = function(id, empty_if_not_finded){
-		var fnames = sys_fields_names();
-
-		for(var i in by_ref)
-			if(by_ref[i][fnames.id_name] == id)
-				return by_ref[i];
-
-		if(empty_if_not_finded)
-			return t.get();
-	};
 
 	/**
 	 * Находит первый элемент, в любом поле которого есть искомое значение
@@ -1039,6 +1014,24 @@ function EnumManager(a, class_name) {
 
 	this._obj_сonstructor = EnumObj;
 
+	this.push = function(o, new_ref){
+		this._define(new_ref, {
+			value : o,
+			enumerable : false
+		}) ;
+	};
+
+	this.get = function(ref){
+		if(!ref || ref == $p.blank.guid)
+			ref = "_";
+
+		var o = this[ref];
+		if(!o)
+			o = new EnumObj({name: ref}, this);
+
+		return o;
+	};
+
 	for(var i in a)
 		new EnumObj(a[i], this);
 
@@ -1355,6 +1348,27 @@ function CatManager(class_name) {
 }
 CatManager._extend(RefDataManager);
 CatManager.prototype.toString = function(){return "Менеджер справочника " + this.class_name; };
+
+/**
+ * Возвращает объект по коду (для справочников) или имени (для перечислений)
+ * @method by_name
+ * @param name {String|Object} - идентификатор
+ * @return {DataObj}
+ */
+CatManager.prototype.by_name = function(name, empty_if_not_finded){
+
+	var o;
+
+	this.find_rows({name: name}, function (obj) {
+		o = obj;
+		return false;
+	});
+
+	if(!o && empty_if_not_finded)
+		o = this.get();
+
+	return o;
+};
 
 /**
  * Абстрактный менеджер плана видов характеристик
