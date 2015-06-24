@@ -7198,8 +7198,8 @@ DataManager.prototype._define("rest_name", {
 DataManager.prototype.load_rest = function (attr) {
 
 	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
-	attr.url += this.rest_name + "?$format=json";
-	//a/unf/odata/standard.odata/Document_ЗаказПокупателя?$format=json&$select=Ref_Key,DataVersion
+	attr.url += this.rest_name + "?allowedOnly=true&$format=json&$top=1000";
+	//a/unf/odata/standard.odata/Document_ЗаказПокупателя?allowedOnly=true&$format=json&$select=Ref_Key,DataVersion
 
 	var t = this;
 
@@ -7318,7 +7318,7 @@ DataManager.prototype.rest_selection = function (attr) {
 	}
 
 	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
-	attr.url += this.rest_name + "?$format=json&" + select; //allowedOnly=true&
+	attr.url += this.rest_name + "?allowedOnly=true&$format=json&$top=1000&" + select;
 
 	attr.url += "&$filter=" + _rest.filter_date("Date", new Date("2014-01-01"), new Date("2015-01-01"));
 
