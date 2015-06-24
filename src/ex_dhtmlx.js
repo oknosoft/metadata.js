@@ -303,3 +303,39 @@ eXcell_refc.prototype = eXcell_proto;
 window.eXcell_refc = eXcell_refc;
 
 
+
+function data_to_grid(data, attr){
+
+	function cat_picture_class(r){
+		var res;
+		if(r.is_folder)
+			res = "cell_ref_folder";
+		else
+			res = "cell_ref_elm";
+		if(r.deleted)
+			res = res + "_deleted";
+		return res ;
+	}
+
+	var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
+			.replace("%1", data.length).replace("%2", attr.start)
+			.replace("%3", attr.set_parent || "" ),
+		caption = this.caption_flds(attr),
+		fname;
+
+	// при первом обращении к методу добавляем описание колонок
+	xml += caption.head;
+
+	data.forEach(function(r){
+		xml +=  "<row id=\"" + r.ref + "\"><cell class=\"" + cat_picture_class(r) + "\">" + r[caption.acols[0].id] + "</cell>";
+		for(var col=1; col < caption.acols.length; col++ ){
+			fname = caption.acols[col].id;
+			xml += "<cell>" + ((fname == "svg" ? $p.normalize_xml(r[fname]) : r[fname]) || "") + "</cell>";
+		}
+		xml += "</row>";
+	});
+
+	return xml + "</rows>";
+}
+
+

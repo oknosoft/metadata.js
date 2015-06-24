@@ -215,6 +215,28 @@ DataManager.prototype.register_ex = function(){
 
 };
 
+/**
+ * Выводит фрагмент списка объектов данного менеджера, ограниченный фильтром attr в grid
+ * @param grid {dhtmlXGridObject}
+ * @param attr {Object}
+ */
+DataManager.prototype.sync_grid = function(grid, attr){
+
+	var res;
+
+	if(this._cachable)
+		;
+	else if($p.job_prm.rest || attr.rest){
+
+		if(attr.action == "get_tree")
+			res = this.rest_tree();
+
+		else if(attr.action == "get_selection")
+			res = this.rest_selection();
+
+	}
+
+};
 
 /**
  * Cписок значений для поля выбора
@@ -645,17 +667,19 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 			set_parent = $p.blank.guid;
 
 		function list_flds(){
-			var flds = ["ref", "deleted"], s = "";
+			var flds = [], s = "_t_.ref, _t_.`deleted`";
 
-			if(t.class_name == "cat.contracts"){
-				flds.push("is_folder");
-				flds.push("id");
-				flds.push("name as presentation");
-				flds.push("contract_kind");
-				flds.push("mutual_settlements");
-				flds.push("organization");
+			if(cmd.selection && cmd.selection.fields){
+				cmd.selection.fields.forEach(function (fld) {
+					flds.push(fld);
+				});
 
-			}else if(t.class_name.indexOf("cat.") != -1 ){
+			}else if(t instanceof DocManager){
+				flds.push("posted");
+				flds.push("date");
+				flds.push("number_doc");
+
+			}else{
 
 				if(cmd["hierarchical"] && cmd["group_hierarchy"])
 					flds.push("is_folder");
@@ -677,20 +701,36 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 				if(cmd["code_length"])
 					flds.push("id");
 
-			}else if(t.class_name.indexOf("doc.") != -1){
-				flds.push("posted");
-				flds.push("date");
-				flds.push("number_doc");
 			}
 
 			flds.forEach(function(fld){
-				if(!s)
-					s = fld;
+				if(fld.indexOf(" as ") != -1)
+					s += ", " + fld;
 				else
-					s += _md.sql_mask(fld);
+					s += _md.sql_mask(fld, true);
 			});
 			return s;
 
+		}
+
+		function join_flds(){
+
+			var s = "", parts;
+
+			if(cmd.selection && cmd.selection.fields){
+				for(var i in cmd.selection.fields){
+					if(cmd.selection.fields[i].indexOf(" as ") == -1 || cmd.selection.fields[i].indexOf("_t_.") != -1)
+						continue;
+					parts = cmd.selection.fields[i].split(" as ");
+					parts[0] = parts[0].split(".");
+					if(parts[0].length > 1){
+						if(s)
+							s+= "\n";
+						s+= "left outer join " + parts[0][0] + " on " + parts[0][0] + ".ref = _t_." + parts[1];
+					}
+				}
+			}
+			return s;
 		}
 
 		function where_flds(){
@@ -830,50 +870,6 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 
 		}
 
-		// ШапкаТаблицыПоИмениКласса
-		function caption_flds(){
-
-			var str_struct = function Col(id,width,type,align,sort,caption){
-					this.id = id;
-					this.width = width;
-					this.type = type;
-					this.align = align;
-					this.sort = sort;
-					this.caption = caption;
-				},
-				str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
-				acols = [],
-				s = "";
-
-			if(t.sql_selection_caption_flds){
-				t.sql_selection_caption_flds(attr, acols, str_struct);
-
-			}else if(t.class_name.indexOf("cat.") != -1 ){
-
-				acols.push(new str_struct("presentation", "*", "ro", "left", "server", "Наименование"));
-				//if(cmd["has_owners"]){
-				//	var owner_caption = "Владелец";
-				//	acols.push(new str_struct("owner", "200", "ro", "left", "server", owner_caption));
-				//}
-
-			}else if(t.class_name.indexOf("doc.") != -1 ){
-				acols.push(new str_struct("date", "120", "ro", "left", "server", "Дата"));
-				acols.push(new str_struct("number_doc", "120", "ro", "left", "server", "Номер"));
-
-			}
-
-			if(attr.get_header && acols.length){
-				s = "<head>";
-				for(var col in acols){
-					s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
-						.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
-				}
-				s += "</head>";
-			}
-
-			return {head: s, acols: acols};
-		}
-
 		selection_prms();
 
 		var sql;
@@ -881,13 +877,12 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 			sql = t.sql_selection_list_flds(initial_value);
 		else
 			sql = ("SELECT %2, case when _t_.ref = '" + initial_value +
-			"' then 0 else 1 end as is_initial_value FROM " + t.table_name + " AS _t_ %3 %4 LIMIT 300")
-				.replace("%2", list_flds());
+			"' then 0 else 1 end as is_initial_value FROM " + t.table_name + " AS _t_ %j %3 %4 LIMIT 300")
+				.replace("%2", list_flds())
+				.replace("%j", join_flds())
+			;
 
-		return {
-			sql: sql.replace("%3", where_flds()).replace("%4", order_flds()),
-			struct: caption_flds()
-		};
+		return sql.replace("%3", where_flds()).replace("%4", order_flds());
 
 	}
 
@@ -973,6 +968,50 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 		res = sql_selection();
 
 	return res;
+};
+
+// ШапкаТаблицыПоИмениКласса
+RefDataManager.prototype.caption_flds = function(attr){
+
+	var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
+		acols = [], cmd = this.metadata(),	s = "";
+
+	function Col_struct(id,width,type,align,sort,caption){
+		this.id = id;
+		this.width = width;
+		this.type = type;
+		this.align = align;
+		this.sort = sort;
+		this.caption = caption;
+	}
+
+	if(cmd.selection && cmd.selection.cols){
+		acols = cmd.selection.cols;
+
+	}else if(this instanceof DocObj){
+		acols.push(new Col_struct("date", "120", "ro", "left", "server", "Дата"));
+		acols.push(new Col_struct("number_doc", "120", "ro", "left", "server", "Номер"));
+
+	}else{
+
+		acols.push(new Col_struct("presentation", "*", "ro", "left", "server", "Наименование"));
+		//if(cmd["has_owners"]){
+		//	var owner_caption = "Владелец";
+		//	acols.push(new Col_struct("owner", "200", "ro", "left", "server", owner_caption));
+		//}
+
+	}
+
+	if(attr.get_header && acols.length){
+		s = "<head>";
+		for(var col in acols){
+			s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
+				.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
+		}
+		s += "</head>";
+	}
+
+	return {head: s, acols: acols};
 };
 
 /**

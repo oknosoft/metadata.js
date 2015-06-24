@@ -12,7 +12,7 @@
  * @static
  */
 function MetaEngine() {
-	this.version = "2.0.5.185";
+	this.version = "2.0.5.189";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
@@ -271,7 +271,8 @@ $p.dateFormat.masks = {
 	isoUtcDateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss'Z'",
 	atom:           "yyyy-mm-dd'T'HH:MM:ss'Z'",
 	ru:				"dd.mm.yyyy HH:MM",
-	short_ru:		"dd.mm.yyyy"
+	date:           "dd.mm.yy",
+	date_time:		"dd.mm.yy HH:MM"
 };
 
 /**
@@ -506,6 +507,15 @@ $p.ajax = new (
 				});
 		};
 
+		this.default_attr = function (attr, url) {
+			if(!attr.url)
+				attr.url = url;
+			if(!attr.username)
+				attr.username = this.username;
+			if(!attr.password)
+				attr.password = this.password;
+		}
+
 	}
 );
 
@@ -660,7 +670,7 @@ $p.is_guid = function(v){
 
 $p.is_empty_guid = function (v) {
 	return !v || v === $p.blank.guid;
-}
+};
 
 /**
  * Генерирует новый guid

@@ -173,7 +173,7 @@ var $p = require("common");
  * @static
  */
 function MetaEngine() {
-	this.version = "2.0.5.185";
+	this.version = "2.0.5.189";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
@@ -432,7 +432,8 @@ $p.dateFormat.masks = {
 	isoUtcDateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss'Z'",
 	atom:           "yyyy-mm-dd'T'HH:MM:ss'Z'",
 	ru:				"dd.mm.yyyy HH:MM",
-	short_ru:		"dd.mm.yyyy"
+	date:           "dd.mm.yy",
+	date_time:		"dd.mm.yy HH:MM"
 };
 
 /**
@@ -667,6 +668,15 @@ $p.ajax = new (
 				});
 		};
 
+		this.default_attr = function (attr, url) {
+			if(!attr.url)
+				attr.url = url;
+			if(!attr.username)
+				attr.username = this.username;
+			if(!attr.password)
+				attr.password = this.password;
+		}
+
 	}
 );
 
@@ -821,7 +831,7 @@ $p.is_guid = function(v){
 
 $p.is_empty_guid = function (v) {
 	return !v || v === $p.blank.guid;
-}
+};
 
 /**
  * Генерирует новый guid
@@ -2201,6 +2211,42 @@ window.eXcell_refc = eXcell_refc;
 
 
 
+function data_to_grid(data, attr){
+
+	function cat_picture_class(r){
+		var res;
+		if(r.is_folder)
+			res = "cell_ref_folder";
+		else
+			res = "cell_ref_elm";
+		if(r.deleted)
+			res = res + "_deleted";
+		return res ;
+	}
+
+	var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
+			.replace("%1", data.length).replace("%2", attr.start)
+			.replace("%3", attr.set_parent || "" ),
+		caption = this.caption_flds(attr),
+		fname;
+
+	// при первом обращении к методу добавляем описание колонок
+	xml += caption.head;
+
+	data.forEach(function(r){
+		xml +=  "<row id=\"" + r.ref + "\"><cell class=\"" + cat_picture_class(r) + "\">" + r[caption.acols[0].id] + "</cell>";
+		for(var col=1; col < caption.acols.length; col++ ){
+			fname = caption.acols[col].id;
+			xml += "<cell>" + ((fname == "svg" ? $p.normalize_xml(r[fname]) : r[fname]) || "") + "</cell>";
+		}
+		xml += "</row>";
+	});
+
+	return xml + "</rows>";
+}
+
+
+
 /* joined by builder */
 /**
  * Форма dat.GUI - визуализация и изменение параметров объекта<br />
@@ -2598,7 +2644,7 @@ $p.iface.layout_2u = function (tree_filteres) {
  * @param resolve {function} - обработчик успешной авторизации и начальной загрузки данных
  * @param reject {function} - обработчик, который вызывается в случае ошибок на старте программы
  */
-$p.iface.frm_auth = function (onstep, paths, resolve, reject) {
+$p.iface.frm_auth = function (onstep, resolve, reject) {
 
 	var frm_auth = $p.iface.auth = $p.iface.docs.attachForm(), w;
 
@@ -2679,7 +2725,7 @@ $p.iface.frm_auth = function (onstep, paths, resolve, reject) {
 			if(!$p.is_guid($p.wsql.get_user_param("browser_uid")))
 				$p.wsql.set_user_param("browser_uid", $p.generate_guid());	// проверяем guid браузера
 
-			$p.eve.log_in(onstep, paths)
+			$p.eve.log_in(onstep)
 				.then(resolve)
 				.catch(reject)
 				.then(function (err) {
@@ -2830,8 +2876,8 @@ $p.iface.swith_view = function(name){
 			iface.tree._view = name;
 		};
 
-	if(iface.docs.getViewName() == name)
-		return name;
+	if(name.indexOf(iface.docs.getViewName())==0)
+		return iface.docs.getViewName();
 
 	state = iface.docs.showView(name);
 	if (state == true) {
@@ -3994,40 +4040,12 @@ function _load(attr){
 
 	function get_selection(){
 
-		function cat_picture_class(r){
-			var res;
-			if(r.is_folder)
-				res = "cell_ref_folder";
-			else
-				res = "cell_ref_elm";
-			if(r.deleted)
-				res = res + "_deleted";
-			return res ;
-		}
-
 		if(mgr._cachable){
-			var ssql = mgr.get_sql_struct(attr);
-			return $p.wsql.promise(ssql.sql, []).then(function(data){
 
-				var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
-						.replace("%1", data.length).replace("%2", attr.start)
-						.replace("%3", attr.set_parent || "" ),
-					fname;
-
-				// при первом обращении к методу добавляем описание колонок
-				xml += ssql.struct.head;
-
-				data.forEach(function(r){
-					xml +=  "<row id=\"" + r.ref + "\"><cell class=\"" + cat_picture_class(r) + "\">" + r[ssql.struct.acols[0].id] + "</cell>";
-					for(var col=1; col < ssql.struct.acols.length; col++ ){
-						fname = ssql.struct.acols[col].id;
-						xml += "<cell>" + ((fname == "svg" ? $p.normalize_xml(r[fname]) : r[fname]) || "") + "</cell>";
-					}
-					xml += "</row>";
+			return $p.wsql.promise(mgr.get_sql_struct(attr), [])
+				.then(function(data){
+					return data_to_grid.call(mgr, data, attr);
 				});
-
-				return xml + "</rows>";
-			});
 		}
 	}
 
@@ -4256,11 +4274,25 @@ var _cat = $p.cat = new (
  * загружает описание из файла на сервере. в оффлайне используется локальный кеш
  * @class Meta
  * @static
- * @param req {XMLHttpRequest}
+ * @param req {XMLHttpRequest} - с основными метаданными
+ * @param patch {XMLHttpRequest} - с дополнительными метаданными
  */
-function Meta(req) {
+function Meta(req, patch) {
 
 	var m = JSON.parse(req.response), class_name;
+	if(patch){
+		patch = JSON.parse(patch.response);
+		for(var area in patch){
+			for(var c in patch[area]){
+				if(!m[area][c])
+					m[area][c] = {};
+				m[area][c]._mixin(patch[area][c]);
+			}
+		}
+	}
+	req = null;
+	patch = null;
+
 
 	/**
 	 * Возвращает описание объекта метаданных
@@ -4408,9 +4440,9 @@ function Meta(req) {
 		return sql;
 	};
 
-	this.sql_mask = function(f){
+	this.sql_mask = function(f, t){
 		var mask_names = ["delete", "set", "value", "json", "primary", "content"];
-		return ", " + (mask_names.some(
+		return ", " + (t ? "_t_." : "") + (mask_names.some(
 				function (mask) {
 					return f.indexOf(mask) !=-1
 				})  ? ("`" + f + "`") : f);
@@ -4436,6 +4468,7 @@ function Meta(req) {
 	 * @param f {String} - имя поля
 	 * @param mf {Object} - метаданные поля
 	 * @param array_enabled {Boolean} - возвращать массив для полей составного типа или первый доступный тип
+	 * @param v {*} - устанавливаемое значение
 	 * @return {DataManager|Array}
 	 */
 	this.value_mgr = function(row, f, mf, array_enabled, v){
@@ -4650,17 +4683,18 @@ _cat.load_soap_to_grid = function(attr, grid, callback){
 
 	var mgr = _md.mgr_by_class_name(attr.class_name);
 
-	if(!mgr._cachable && ($p.job_prm.rest || attr.rest)){
-
-		mgr.load_rest(attr);
-
-	}else{
+	if(!mgr._cachable && ($p.job_prm.rest || attr.rest))
+		mgr.rest_selection(attr)
+			.then(cb_callBack)
+			.catch(function (error) {
+				console.log(error);
+			});
+	else
 		_load(attr)
 			.then(cb_callBack)
 			.catch(function (error) {
 				console.log(error);
 			});
-	}
 
 };
 /* joined by builder */
@@ -4881,6 +4915,28 @@ DataManager.prototype.register_ex = function(){
 
 };
 
+/**
+ * Выводит фрагмент списка объектов данного менеджера, ограниченный фильтром attr в grid
+ * @param grid {dhtmlXGridObject}
+ * @param attr {Object}
+ */
+DataManager.prototype.sync_grid = function(grid, attr){
+
+	var res;
+
+	if(this._cachable)
+		;
+	else if($p.job_prm.rest || attr.rest){
+
+		if(attr.action == "get_tree")
+			res = this.rest_tree();
+
+		else if(attr.action == "get_selection")
+			res = this.rest_selection();
+
+	}
+
+};
 
 /**
  * Cписок значений для поля выбора
@@ -5084,16 +5140,7 @@ DataManager.prototype.print = function(ref, model, wnd){
 function RefDataManager(class_name) {
 
 	var t = this,				// ссылка на себя
-		by_ref={},				// приватное хранилище объектов по guid
-		sys_fields_names = function(){
-			if(t instanceof EnumManager){
-				return {presentation_name: "synonym", id_name: "name"};
-			}else if(t instanceof CatManager){
-				return {presentation_name: "presentation", id_name: "id"};
-			}else if(t instanceof DocManager){
-				return {presentation_name: "presentation", id_name: "number_doc"};
-			}
-		};
+		by_ref={};				// приватное хранилище объектов по guid
 
 	RefDataManager.superclass.constructor.call(t, class_name);
 
@@ -5185,22 +5232,6 @@ function RefDataManager(class_name) {
 		return o;
 	};
 
-	/**
-	 * Возвращает объект по коду (для справочников) или имени (для перечислений)
-	 * @method by_id
-	 * @param id {String|Object} - идентификатор
-	 * @return {DataObj}
-	 */
-	t.by_id = function(id, empty_if_not_finded){
-		var fnames = sys_fields_names();
-
-		for(var i in by_ref)
-			if(by_ref[i][fnames.id_name] == id)
-				return by_ref[i];
-
-		if(empty_if_not_finded)
-			return t.get();
-	};
 
 	/**
 	 * Находит первый элемент, в любом поле которого есть искомое значение
@@ -5336,17 +5367,19 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 			set_parent = $p.blank.guid;
 
 		function list_flds(){
-			var flds = ["ref", "deleted"], s = "";
+			var flds = [], s = "_t_.ref, _t_.`deleted`";
 
-			if(t.class_name == "cat.contracts"){
-				flds.push("is_folder");
-				flds.push("id");
-				flds.push("name as presentation");
-				flds.push("contract_kind");
-				flds.push("mutual_settlements");
-				flds.push("organization");
+			if(cmd.selection && cmd.selection.fields){
+				cmd.selection.fields.forEach(function (fld) {
+					flds.push(fld);
+				});
 
-			}else if(t.class_name.indexOf("cat.") != -1 ){
+			}else if(t instanceof DocManager){
+				flds.push("posted");
+				flds.push("date");
+				flds.push("number_doc");
+
+			}else{
 
 				if(cmd["hierarchical"] && cmd["group_hierarchy"])
 					flds.push("is_folder");
@@ -5368,20 +5401,36 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 				if(cmd["code_length"])
 					flds.push("id");
 
-			}else if(t.class_name.indexOf("doc.") != -1){
-				flds.push("posted");
-				flds.push("date");
-				flds.push("number_doc");
 			}
 
 			flds.forEach(function(fld){
-				if(!s)
-					s = fld;
+				if(fld.indexOf(" as ") != -1)
+					s += ", " + fld;
 				else
-					s += _md.sql_mask(fld);
+					s += _md.sql_mask(fld, true);
 			});
 			return s;
 
+		}
+
+		function join_flds(){
+
+			var s = "", parts;
+
+			if(cmd.selection && cmd.selection.fields){
+				for(var i in cmd.selection.fields){
+					if(cmd.selection.fields[i].indexOf(" as ") == -1 || cmd.selection.fields[i].indexOf("_t_.") != -1)
+						continue;
+					parts = cmd.selection.fields[i].split(" as ");
+					parts[0] = parts[0].split(".");
+					if(parts[0].length > 1){
+						if(s)
+							s+= "\n";
+						s+= "left outer join " + parts[0][0] + " on " + parts[0][0] + ".ref = _t_." + parts[1];
+					}
+				}
+			}
+			return s;
 		}
 
 		function where_flds(){
@@ -5521,50 +5570,6 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 
 		}
 
-		// ШапкаТаблицыПоИмениКласса
-		function caption_flds(){
-
-			var str_struct = function Col(id,width,type,align,sort,caption){
-					this.id = id;
-					this.width = width;
-					this.type = type;
-					this.align = align;
-					this.sort = sort;
-					this.caption = caption;
-				},
-				str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
-				acols = [],
-				s = "";
-
-			if(t.sql_selection_caption_flds){
-				t.sql_selection_caption_flds(attr, acols, str_struct);
-
-			}else if(t.class_name.indexOf("cat.") != -1 ){
-
-				acols.push(new str_struct("presentation", "*", "ro", "left", "server", "Наименование"));
-				//if(cmd["has_owners"]){
-				//	var owner_caption = "Владелец";
-				//	acols.push(new str_struct("owner", "200", "ro", "left", "server", owner_caption));
-				//}
-
-			}else if(t.class_name.indexOf("doc.") != -1 ){
-				acols.push(new str_struct("date", "120", "ro", "left", "server", "Дата"));
-				acols.push(new str_struct("number_doc", "120", "ro", "left", "server", "Номер"));
-
-			}
-
-			if(attr.get_header && acols.length){
-				s = "<head>";
-				for(var col in acols){
-					s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
-						.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
-				}
-				s += "</head>";
-			}
-
-			return {head: s, acols: acols};
-		}
-
 		selection_prms();
 
 		var sql;
@@ -5572,13 +5577,12 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 			sql = t.sql_selection_list_flds(initial_value);
 		else
 			sql = ("SELECT %2, case when _t_.ref = '" + initial_value +
-			"' then 0 else 1 end as is_initial_value FROM " + t.table_name + " AS _t_ %3 %4 LIMIT 300")
-				.replace("%2", list_flds());
+			"' then 0 else 1 end as is_initial_value FROM " + t.table_name + " AS _t_ %j %3 %4 LIMIT 300")
+				.replace("%2", list_flds())
+				.replace("%j", join_flds())
+			;
 
-		return {
-			sql: sql.replace("%3", where_flds()).replace("%4", order_flds()),
-			struct: caption_flds()
-		};
+		return sql.replace("%3", where_flds()).replace("%4", order_flds());
 
 	}
 
@@ -5664,6 +5668,50 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 		res = sql_selection();
 
 	return res;
+};
+
+// ШапкаТаблицыПоИмениКласса
+RefDataManager.prototype.caption_flds = function(attr){
+
+	var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
+		acols = [], cmd = this.metadata(),	s = "";
+
+	function Col_struct(id,width,type,align,sort,caption){
+		this.id = id;
+		this.width = width;
+		this.type = type;
+		this.align = align;
+		this.sort = sort;
+		this.caption = caption;
+	}
+
+	if(cmd.selection && cmd.selection.cols){
+		acols = cmd.selection.cols;
+
+	}else if(this instanceof DocObj){
+		acols.push(new Col_struct("date", "120", "ro", "left", "server", "Дата"));
+		acols.push(new Col_struct("number_doc", "120", "ro", "left", "server", "Номер"));
+
+	}else{
+
+		acols.push(new Col_struct("presentation", "*", "ro", "left", "server", "Наименование"));
+		//if(cmd["has_owners"]){
+		//	var owner_caption = "Владелец";
+		//	acols.push(new Col_struct("owner", "200", "ro", "left", "server", owner_caption));
+		//}
+
+	}
+
+	if(attr.get_header && acols.length){
+		s = "<head>";
+		for(var col in acols){
+			s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
+				.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
+		}
+		s += "</head>";
+	}
+
+	return {head: s, acols: acols};
 };
 
 /**
@@ -6039,6 +6087,27 @@ function CatManager(class_name) {
 }
 CatManager._extend(RefDataManager);
 CatManager.prototype.toString = function(){return "Менеджер справочника " + this.class_name; };
+
+/**
+ * Возвращает объект по коду (для справочников) или имени (для перечислений)
+ * @method by_name
+ * @param name {String|Object} - идентификатор
+ * @return {DataObj}
+ */
+CatManager.prototype.by_name = function(name, empty_if_not_finded){
+
+	var o;
+
+	this.find_rows({name: name}, function (obj) {
+		o = obj;
+		return false;
+	});
+
+	if(!o && empty_if_not_finded)
+		o = this.get();
+
+	return o;
+};
 
 /**
  * Абстрактный менеджер плана видов характеристик
@@ -7073,10 +7142,18 @@ InfoRegRow.prototype._define('ref', {
 
 function Rest(){
 
-	//$p.job_prm.rest_url()
+	this.filter_date = function (fld, dfrom, dtill) {
+		if(!dfrom)
+			dfrom = new Date("2015-01-01");
+		var res = fld + " gt datetime'" + $p.dateFormat(dfrom, $p.dateFormat.masks.isoDateTime) + "'";
+		if(dtill)
+			res += " and " + fld + " lt datetime'" + $p.dateFormat(dtill, $p.dateFormat.masks.isoDateTime) + "'";
+		return res;
+	}
 }
 
 var _rest = $p.rest = new Rest();
+
 
 /**
  * Имя объектов этого менеджера для rest-запросов на сервер<br />
@@ -7120,23 +7197,19 @@ DataManager.prototype._define("rest_name", {
  */
 DataManager.prototype.load_rest = function (attr) {
 
-	if(!attr.url)
-		attr.url = $p.job_prm.rest_url();
-	if(!attr.username)
-		attr.username = $p.ajax.username;
-	if(!attr.password)
-		attr.password = $p.ajax.password;
-
+	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
 	attr.url += this.rest_name + "?$format=json";
-	//a/zd/1/odata/standard.odata/Catalog_Номенклатура?$format=json&$select=Ref_Key,DataVersion
+	//a/unf/odata/standard.odata/Document_ЗаказПокупателя?$format=json&$select=Ref_Key,DataVersion
 
 	var t = this;
 
 	return $p.ajax.get_ex(attr.url, attr)
 		.then(function (req) {
-			var res = JSON.parse(req.response),
-				mf = t.metadata().fields,
-				mts = mf = t.metadata().tabular_sections,
+			return JSON.parse(req.response);
+		})
+		.then(function (res) {
+			var mf = t.metadata().fields,
+				mts = t.metadata().tabular_sections,
 				ts, i, f, tf, row, o, ro, syn, synts;
 			for(i = res.value.length-1; i >=0; i--){
 				ro = res.value[i];
@@ -7149,25 +7222,145 @@ DataManager.prototype.load_rest = function (attr) {
 				}
 				for(ts in mts){
 					synts = _md.syns_1с(ts);
-					o[f] = [];
+					o[ts] = [];
 					ro[synts].sort(function (a, b) {
 						return a.LineNumber > b.LineNumber;
 					});
 					ro[synts].forEach(function (r) {
-
+						row = {};
+						for(tf in mts[ts].fields){
+							syn = _md.syns_1с(tf);
+							if(mts[ts].fields[tf].type.is_ref)
+								syn+="_Key";
+							row[tf] = r[syn];
+						}
+						o[ts].push(row);
 					});
-
-					for(tf in mts[ts].fields){
-						syn = _md.syns_1с(tf);
-						if(mf[tf].type.is_ref)
-							syn+="_Key";
-						row[tf] = ro[syn];
-					}
 				}
 
 			}
 
 		});
+};
+
+DataManager.prototype.rest_tree = function (attr) {
+
+};
+
+DataManager.prototype.rest_selection = function (attr) {
+
+	var t = this,
+		cmd = t.metadata(),
+		flds = [],
+		ares = [], o, ro, syn, mf,
+		select = list_flds();
+
+
+	function list_flds(){
+		var s = "$select=Ref_Key,DeletionMark";
+
+		if(cmd.selection && cmd.selection.fields){
+			cmd.selection.fields.forEach(function (fld) {
+				flds.push(fld);
+			});
+
+		}else if(t instanceof DocManager){
+			flds.push("posted");
+			flds.push("date");
+			flds.push("number_doc");
+
+		}else{
+
+			if(cmd["hierarchical"] && cmd["group_hierarchy"])
+				flds.push("is_folder");
+			else
+				flds.push("0 as is_folder");
+
+			if(cmd["main_presentation_name"])
+				flds.push("name as presentation");
+			else{
+				if(cmd["code_length"])
+					flds.push("id as presentation");
+				else
+					flds.push("'...' as presentation");
+			}
+
+			if(cmd["has_owners"])
+				flds.push("owner");
+
+			if(cmd["code_length"])
+				flds.push("id");
+
+		}
+
+		flds.forEach(function(fld){
+			var parts;
+			if(fld.indexOf(" as ") != -1){
+				parts = fld.split(" as ")[0].split(".");
+				if(parts.length == 1)
+					fld = parts[0];
+				else if(parts[0] != "_t_")
+					return;
+				else
+					fld = parts[1]
+			}
+			syn = _md.syns_1с(fld);
+			if(_md.get(t.class_name, fld).type.is_ref)
+				syn += "_Key";
+			s += "," + syn;
+		});
+
+		flds.push("ref");
+		flds.push("deleted");
+
+		return s;
+
+	}
+
+	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
+	attr.url += this.rest_name + "?$format=json&" + select; //allowedOnly=true&
+
+	attr.url += "&$filter=" + _rest.filter_date("Date", new Date("2014-01-01"), new Date("2015-01-01"));
+
+	return $p.ajax.get_ex(attr.url, attr)
+		.then(function (req) {
+			return JSON.parse(req.response);
+		})
+		.then(function (res) {
+			for(var i = 0; i < res.value.length; i++) {
+				ro = res.value[i];
+				o = {};
+				flds.forEach(function (fld) {
+					if(fld == "ref"){
+						o[fld] = ro["Ref_Key"];
+					}else{
+						syn = _md.syns_1с(fld);
+						mf = _md.get(t.class_name, fld);
+						if(mf.type.is_ref)
+							syn += "_Key";
+
+						if(mf.type.date_part)
+							o[fld] = $p.dateFormat(ro[syn], $p.dateFormat.masks[mf.type.date_part]);
+
+						else if(mf.type.is_ref){
+							if(!ro[syn] || ro[syn] == $p.blank.guid)
+								o[fld] = "";
+							else{
+								var mgr	= _md.value_mgr(o, fld, mf.type, false, ro[syn]);
+								if(mgr)
+									o[fld] = mgr.get(ro[syn]).presentation;
+								else
+									o[fld] = "";
+							}
+						}else
+							o[fld] = ro[syn];
+					}
+				});
+				ares.push(o);
+			}
+			return data_to_grid.call(t, ares, attr);
+		});
+
 };
 
 /**
@@ -9112,23 +9305,29 @@ $p.eve.reduce_promices = function(parts){
  * @return {Promise.<T>} - промис, ошибки которого должен обработать вызывающий код
  * @async
  */
-$p.eve.log_in = function(onstep, paths){
+$p.eve.log_in = function(onstep){
 
 	var stepper = $p.eve.stepper,
-		mdd;
-	if(!paths)
-		paths = {meta: "/data/meta.json", data: "/data/zones/"};
+		mdd, data_url = $p.job_prm.data_url || "/data/";
 
 	// информируем о начале операций
 	onstep($p.eve.steps.load_meta);
 
 	// читаем файл метаданных
-	return $p.ajax.get(paths.meta+"?v="+$p.job_prm.files_date)
+	return $p.ajax.get(data_url + "meta.json?v="+$p.job_prm.files_date)
 
 		// грузим метаданные
 		.then(function (req) {
 			onstep($p.eve.steps.create_managers);
-			return new Meta(req);
+
+			// пытаемся загрузить патч метаданных
+			return $p.ajax.get(data_url + "meta_patch.json?v="+$p.job_prm.files_date)
+				.then(function (rep) {
+					return new Meta(req, rep);
+				})
+				.catch(function () {
+					return new Meta(req, rep);
+				});
 		})
 
 		// авторизуемся на сервере. в автономном режиме сразу переходим к чтению первого файла данных
@@ -9192,7 +9391,7 @@ $p.eve.log_in = function(onstep, paths){
 
 			stepper.zone = ($p.job_prm.demo ? "1" : $p.wsql.get_user_param("zone")) + "/";
 
-			return $p.ajax.get(paths.data + stepper.zone + "p_0.json?v="+$p.job_prm.files_date)
+			return $p.ajax.get(data_url + "zones/" + stepper.zone + "p_0.json?v="+$p.job_prm.files_date)
 		})
 
 		// из содержимого первого файла получаем количество файлов и загружаем их все
@@ -9211,8 +9410,8 @@ $p.eve.log_in = function(onstep, paths){
 
 			var parts = [];
 			for(var i=1; i<=stepper.files; i++)
-				parts.push($p.ajax.get(paths.data + stepper.zone + "p_" + i + ".json?v="+$p.job_prm.files_date));
-			parts.push($p.ajax.get(paths.data + stepper.zone + "ireg.json?v="+$p.job_prm.files_date));
+				parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "p_" + i + ".json?v="+$p.job_prm.files_date));
+			parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "ireg.json?v="+$p.job_prm.files_date));
 
 			return $p.eve.reduce_promices(parts);
 

@@ -615,23 +615,29 @@ $p.eve.reduce_promices = function(parts){
  * @return {Promise.<T>} - промис, ошибки которого должен обработать вызывающий код
  * @async
  */
-$p.eve.log_in = function(onstep, paths){
+$p.eve.log_in = function(onstep){
 
 	var stepper = $p.eve.stepper,
-		mdd;
-	if(!paths)
-		paths = {meta: "/data/meta.json", data: "/data/zones/"};
+		mdd, data_url = $p.job_prm.data_url || "/data/";
 
 	// информируем о начале операций
 	onstep($p.eve.steps.load_meta);
 
 	// читаем файл метаданных
-	return $p.ajax.get(paths.meta+"?v="+$p.job_prm.files_date)
+	return $p.ajax.get(data_url + "meta.json?v="+$p.job_prm.files_date)
 
 		// грузим метаданные
 		.then(function (req) {
 			onstep($p.eve.steps.create_managers);
-			return new Meta(req);
+
+			// пытаемся загрузить патч метаданных
+			return $p.ajax.get(data_url + "meta_patch.json?v="+$p.job_prm.files_date)
+				.then(function (rep) {
+					return new Meta(req, rep);
+				})
+				.catch(function () {
+					return new Meta(req, rep);
+				});
 		})
 
 		// авторизуемся на сервере. в автономном режиме сразу переходим к чтению первого файла данных
@@ -695,7 +701,7 @@ $p.eve.log_in = function(onstep, paths){
 
 			stepper.zone = ($p.job_prm.demo ? "1" : $p.wsql.get_user_param("zone")) + "/";
 
-			return $p.ajax.get(paths.data + stepper.zone + "p_0.json?v="+$p.job_prm.files_date)
+			return $p.ajax.get(data_url + "zones/" + stepper.zone + "p_0.json?v="+$p.job_prm.files_date)
 		})
 
 		// из содержимого первого файла получаем количество файлов и загружаем их все
@@ -714,8 +720,8 @@ $p.eve.log_in = function(onstep, paths){
 
 			var parts = [];
 			for(var i=1; i<=stepper.files; i++)
-				parts.push($p.ajax.get(paths.data + stepper.zone + "p_" + i + ".json?v="+$p.job_prm.files_date));
-			parts.push($p.ajax.get(paths.data + stepper.zone + "ireg.json?v="+$p.job_prm.files_date));
+				parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "p_" + i + ".json?v="+$p.job_prm.files_date));
+			parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "ireg.json?v="+$p.job_prm.files_date));
 
 			return $p.eve.reduce_promices(parts);
 

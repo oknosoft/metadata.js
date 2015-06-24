@@ -10,10 +10,18 @@
 
 function Rest(){
 
-	//$p.job_prm.rest_url()
+	this.filter_date = function (fld, dfrom, dtill) {
+		if(!dfrom)
+			dfrom = new Date("2015-01-01");
+		var res = fld + " gt datetime'" + $p.dateFormat(dfrom, $p.dateFormat.masks.isoDateTime) + "'";
+		if(dtill)
+			res += " and " + fld + " lt datetime'" + $p.dateFormat(dtill, $p.dateFormat.masks.isoDateTime) + "'";
+		return res;
+	}
 }
 
 var _rest = $p.rest = new Rest();
+
 
 /**
  * Имя объектов этого менеджера для rest-запросов на сервер<br />
@@ -57,23 +65,19 @@ DataManager.prototype._define("rest_name", {
  */
 DataManager.prototype.load_rest = function (attr) {
 
-	if(!attr.url)
-		attr.url = $p.job_prm.rest_url();
-	if(!attr.username)
-		attr.username = $p.ajax.username;
-	if(!attr.password)
-		attr.password = $p.ajax.password;
-
-	attr.url += this.rest_name + "?$format=json";
-	//a/zd/1/odata/standard.odata/Catalog_Номенклатура?$format=json&$select=Ref_Key,DataVersion
+	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
+	attr.url += this.rest_name + "?allowedOnly=true&$format=json";
+	//a/unf/odata/standard.odata/Document_ЗаказПокупателя?allowedOnly=true&$format=json&$select=Ref_Key,DataVersion
 
 	var t = this;
 
 	return $p.ajax.get_ex(attr.url, attr)
 		.then(function (req) {
-			var res = JSON.parse(req.response),
-				mf = t.metadata().fields,
-				mts = mf = t.metadata().tabular_sections,
+			return JSON.parse(req.response);
+		})
+		.then(function (res) {
+			var mf = t.metadata().fields,
+				mts = t.metadata().tabular_sections,
 				ts, i, f, tf, row, o, ro, syn, synts;
 			for(i = res.value.length-1; i >=0; i--){
 				ro = res.value[i];
@@ -86,25 +90,145 @@ DataManager.prototype.load_rest = function (attr) {
 				}
 				for(ts in mts){
 					synts = _md.syns_1с(ts);
-					o[f] = [];
+					o[ts] = [];
 					ro[synts].sort(function (a, b) {
 						return a.LineNumber > b.LineNumber;
 					});
 					ro[synts].forEach(function (r) {
-
+						row = {};
+						for(tf in mts[ts].fields){
+							syn = _md.syns_1с(tf);
+							if(mts[ts].fields[tf].type.is_ref)
+								syn+="_Key";
+							row[tf] = r[syn];
+						}
+						o[ts].push(row);
 					});
-
-					for(tf in mts[ts].fields){
-						syn = _md.syns_1с(tf);
-						if(mf[tf].type.is_ref)
-							syn+="_Key";
-						row[tf] = ro[syn];
-					}
 				}
 
 			}
 
 		});
+};
+
+DataManager.prototype.rest_tree = function (attr) {
+
+};
+
+DataManager.prototype.rest_selection = function (attr) {
+
+	var t = this,
+		cmd = t.metadata(),
+		flds = [],
+		ares = [], o, ro, syn, mf,
+		select = list_flds();
+
+
+	function list_flds(){
+		var s = "$select=Ref_Key,DeletionMark";
+
+		if(cmd.selection && cmd.selection.fields){
+			cmd.selection.fields.forEach(function (fld) {
+				flds.push(fld);
+			});
+
+		}else if(t instanceof DocManager){
+			flds.push("posted");
+			flds.push("date");
+			flds.push("number_doc");
+
+		}else{
+
+			if(cmd["hierarchical"] && cmd["group_hierarchy"])
+				flds.push("is_folder");
+			else
+				flds.push("0 as is_folder");
+
+			if(cmd["main_presentation_name"])
+				flds.push("name as presentation");
+			else{
+				if(cmd["code_length"])
+					flds.push("id as presentation");
+				else
+					flds.push("'...' as presentation");
+			}
+
+			if(cmd["has_owners"])
+				flds.push("owner");
+
+			if(cmd["code_length"])
+				flds.push("id");
+
+		}
+
+		flds.forEach(function(fld){
+			var parts;
+			if(fld.indexOf(" as ") != -1){
+				parts = fld.split(" as ")[0].split(".");
+				if(parts.length == 1)
+					fld = parts[0];
+				else if(parts[0] != "_t_")
+					return;
+				else
+					fld = parts[1]
+			}
+			syn = _md.syns_1с(fld);
+			if(_md.get(t.class_name, fld).type.is_ref)
+				syn += "_Key";
+			s += "," + syn;
+		});
+
+		flds.push("ref");
+		flds.push("deleted");
+
+		return s;
+
+	}
+
+	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
+	attr.url += this.rest_name + "?allowedOnly=true&$format=json&" + select;
+
+	attr.url += "&$filter=" + _rest.filter_date("Date", new Date("2014-01-01"), new Date("2015-01-01"));
+
+	return $p.ajax.get_ex(attr.url, attr)
+		.then(function (req) {
+			return JSON.parse(req.response);
+		})
+		.then(function (res) {
+			for(var i = 0; i < res.value.length; i++) {
+				ro = res.value[i];
+				o = {};
+				flds.forEach(function (fld) {
+					if(fld == "ref"){
+						o[fld] = ro["Ref_Key"];
+					}else{
+						syn = _md.syns_1с(fld);
+						mf = _md.get(t.class_name, fld);
+						if(mf.type.is_ref)
+							syn += "_Key";
+
+						if(mf.type.date_part)
+							o[fld] = $p.dateFormat(ro[syn], $p.dateFormat.masks[mf.type.date_part]);
+
+						else if(mf.type.is_ref){
+							if(!ro[syn] || ro[syn] == $p.blank.guid)
+								o[fld] = "";
+							else{
+								var mgr	= _md.value_mgr(o, fld, mf.type, false, ro[syn]);
+								if(mgr)
+									o[fld] = mgr.get(ro[syn]).presentation;
+								else
+									o[fld] = "";
+							}
+						}else
+							o[fld] = ro[syn];
+					}
+				});
+				ares.push(o);
+			}
+			return data_to_grid.call(t, ares, attr);
+		});
+
 };
 
 /**

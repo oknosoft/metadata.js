@@ -394,7 +394,7 @@ $p.iface.layout_2u = function (tree_filteres) {
  * @param resolve {function} - обработчик успешной авторизации и начальной загрузки данных
  * @param reject {function} - обработчик, который вызывается в случае ошибок на старте программы
  */
-$p.iface.frm_auth = function (onstep, paths, resolve, reject) {
+$p.iface.frm_auth = function (onstep, resolve, reject) {
 
 	var frm_auth = $p.iface.auth = $p.iface.docs.attachForm(), w;
 
@@ -475,7 +475,7 @@ $p.iface.frm_auth = function (onstep, paths, resolve, reject) {
 			if(!$p.is_guid($p.wsql.get_user_param("browser_uid")))
 				$p.wsql.set_user_param("browser_uid", $p.generate_guid());	// проверяем guid браузера
 
-			$p.eve.log_in(onstep, paths)
+			$p.eve.log_in(onstep)
 				.then(resolve)
 				.catch(reject)
 				.then(function (err) {
@@ -626,8 +626,8 @@ $p.iface.swith_view = function(name){
 			iface.tree._view = name;
 		};
 
-	if(iface.docs.getViewName() == name)
-		return name;
+	if(name.indexOf(iface.docs.getViewName())==0)
+		return iface.docs.getViewName();
 
 	state = iface.docs.showView(name);
 	if (state == true) {

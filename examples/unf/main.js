@@ -22,12 +22,14 @@ $p.settings = function (prm, modifiers) {
 	prm.create_tables = true;       // будем использовать объекты данных, для которых создаём таблицы
 	$p.ajax.get("/examples/unf/data/create_tables.sql")
 		.then(function (req) {
-			prm.create_tables_sql = req.response;     // текст запроса
+			prm.create_tables_sql = req.response;   // текст запроса
 		});
 
 	prm.settings_url = "/examples/unf/settings.html";// расположение страницы настроек
 
 	prm.rest_path = "/a/unf/%1/odata/standard.odata/";// расположение rest-сервиса unf
+
+	prm.data_url = "/examples/unf/data/";           // расположение файлов данных
 
 	/**
 	 * для целей демо-примера, методы data-объектов переопределяем здесь в анонимной функции
@@ -52,13 +54,6 @@ $p.settings = function (prm, modifiers) {
 				return " OR _t_.article LIKE '" + filter + "' OR _t_.id LIKE '" + filter + "' OR _t_.name LIKE '" + filter + "'";
 			};
 
-			_mgr.sql_selection_caption_flds = function(attr, acols, str_struct){
-				acols.push(new str_struct("id", "120", "ro", "left", "server", "Код"));
-				acols.push(new str_struct("article", "150", "ro", "left", "server", "Артикул"));
-				acols.push(new str_struct("presentation", "*", "ro", "left", "server", "Наименование"));
-				acols.push(new str_struct("nom_unit", "70", "ro", "left", "server", "Ед"));
-				acols.push(new str_struct("nom_group", "170", "ro", "left", "server", "Номенклатурная группа"));
-			};
 
 		});
 
@@ -82,14 +77,6 @@ $p.iface.oninit = function() {
 				 * используем стандартную визуализацию входа в программу
 				 */
 				null,
-
-				/**
-				 * указываем пути, по которым расположены файлы начальных данных и метаданных
-				 */
-				{
-					meta: "/examples/unf/data/meta.json",
-					data: "/examples/unf/data/"
-				},
 
 				/**
 				 *  открываем окно "все функции" с деревом метаданных

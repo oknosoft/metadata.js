@@ -1,0 +1,69 @@
+{
+  "enm": {},
+  "cat": {
+    "nom": {
+      "selection": {
+        "fields": [
+          "is_folder",
+          "id",
+          "article",
+          "name as presentation",
+          "nom_unit.name as nom_unit",
+          "nom_group.name as nom_group"
+        ],
+        "cols": [
+          {"id": "id", "width": "120", "type": "ro", "align": "left", "sort": "server", "caption": "Код"},
+          {"id": "article", "width": "150", "type": "ro", "align": "left", "sort": "server", "caption": "Артикул"},
+          {"id": "presentation", "width": "*", "type": "ro", "align": "left", "sort": "server", "caption": "Наименование"},
+          {"id": "nom_unit", "width": "70", "type": "ro", "align": "left", "sort": "server", "caption": "Ед"},
+          {"id": "nom_group", "width": "170", "type": "ro", "align": "left", "sort": "server", "caption": "Номенклатурная группа"}
+        ]
+      }
+    },
+    "contracts": {
+      "selection": {
+        "fields": [
+          "is_folder",
+          "id",
+          "_t_.name as presentation",
+          "enm_contract_kinds.synonym as contract_kind",
+          "cat_organizations.name as organization"
+        ],
+        "cols": [
+          {"id": "presentation", "width": "*", "type": "ro", "align": "left", "sort": "server", "caption": "Наименование"},
+          {"id": "contract_kind", "width": "150", "type": "ro", "align": "left", "sort": "server", "caption": "Вид договора"},
+          {"id": "organization", "width": "150", "type": "ro", "align": "left", "sort": "server", "caption": "Организация"}
+        ]
+      }
+    }
+  },
+  "doc": {
+    "buyers_order": {
+      "selection": {
+        "fields": [
+          "date",
+          "number_doc",
+          "partner",
+          "doc_amount",
+          "posted",
+          "invoice_state",
+          "note"
+        ],
+        "cols": [
+          {"id": "date", "width": "120", "type": "ro", "align": "left", "sort": "server", "caption": "Дата"},
+          {"id": "number_doc", "width": "120", "type": "ro", "align": "left", "sort": "server", "caption": "Номер"},
+          {"id": "partner", "width": "170", "type": "ro", "align": "left", "sort": "server", "caption": "Контрагент"},
+          {"id": "doc_amount", "width": "120", "type": "ron", "align": "right", "sort": "server", "caption": "Сумма"},
+          {"id": "invoice_state", "width": "100", "type": "ro", "align": "left", "sort": "server", "caption": "Состояние"},
+          {"id": "note", "width": "*", "type": "ro", "align": "left", "sort": "server", "caption": "Комментарий"}
+        ]
+      }
+    }
+  },
+  "ireg": {},
+  "areg": {},
+  "dp": {},
+  "rep": {},
+  "cch": {},
+  "cacc": {}
+}

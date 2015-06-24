@@ -166,40 +166,12 @@ function _load(attr){
 
 	function get_selection(){
 
-		function cat_picture_class(r){
-			var res;
-			if(r.is_folder)
-				res = "cell_ref_folder";
-			else
-				res = "cell_ref_elm";
-			if(r.deleted)
-				res = res + "_deleted";
-			return res ;
-		}
-
 		if(mgr._cachable){
-			var ssql = mgr.get_sql_struct(attr);
-			return $p.wsql.promise(ssql.sql, []).then(function(data){
 
-				var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
-						.replace("%1", data.length).replace("%2", attr.start)
-						.replace("%3", attr.set_parent || "" ),
-					fname;
-
-				// при первом обращении к методу добавляем описание колонок
-				xml += ssql.struct.head;
-
-				data.forEach(function(r){
-					xml +=  "<row id=\"" + r.ref + "\"><cell class=\"" + cat_picture_class(r) + "\">" + r[ssql.struct.acols[0].id] + "</cell>";
-					for(var col=1; col < ssql.struct.acols.length; col++ ){
-						fname = ssql.struct.acols[col].id;
-						xml += "<cell>" + ((fname == "svg" ? $p.normalize_xml(r[fname]) : r[fname]) || "") + "</cell>";
-					}
-					xml += "</row>";
+			return $p.wsql.promise(mgr.get_sql_struct(attr), [])
+				.then(function(data){
+					return data_to_grid.call(mgr, data, attr);
 				});
-
-				return xml + "</rows>";
-			});
 		}
 	}
 
@@ -428,11 +400,25 @@ var _cat = $p.cat = new (
  * загружает описание из файла на сервере. в оффлайне используется локальный кеш
  * @class Meta
  * @static
- * @param req {XMLHttpRequest}
+ * @param req {XMLHttpRequest} - с основными метаданными
+ * @param patch {XMLHttpRequest} - с дополнительными метаданными
  */
-function Meta(req) {
+function Meta(req, patch) {
 
 	var m = JSON.parse(req.response), class_name;
+	if(patch){
+		patch = JSON.parse(patch.response);
+		for(var area in patch){
+			for(var c in patch[area]){
+				if(!m[area][c])
+					m[area][c] = {};
+				m[area][c]._mixin(patch[area][c]);
+			}
+		}
+	}
+	req = null;
+	patch = null;
+
 
 	/**
 	 * Возвращает описание объекта метаданных
@@ -580,9 +566,9 @@ function Meta(req) {
 		return sql;
 	};
 
-	this.sql_mask = function(f){
+	this.sql_mask = function(f, t){
 		var mask_names = ["delete", "set", "value", "json", "primary", "content"];
-		return ", " + (mask_names.some(
+		return ", " + (t ? "_t_." : "") + (mask_names.some(
 				function (mask) {
 					return f.indexOf(mask) !=-1
 				})  ? ("`" + f + "`") : f);
@@ -608,6 +594,7 @@ function Meta(req) {
 	 * @param f {String} - имя поля
 	 * @param mf {Object} - метаданные поля
 	 * @param array_enabled {Boolean} - возвращать массив для полей составного типа или первый доступный тип
+	 * @param v {*} - устанавливаемое значение
 	 * @return {DataManager|Array}
 	 */
 	this.value_mgr = function(row, f, mf, array_enabled, v){
@@ -822,16 +809,17 @@ _cat.load_soap_to_grid = function(attr, grid, callback){
 
 	var mgr = _md.mgr_by_class_name(attr.class_name);
 
-	if(!mgr._cachable && ($p.job_prm.rest || attr.rest)){
-
-		mgr.load_rest(attr);
-
-	}else{
+	if(!mgr._cachable && ($p.job_prm.rest || attr.rest))
+		mgr.rest_selection(attr)
+			.then(cb_callBack)
+			.catch(function (error) {
+				console.log(error);
+			});
+	else
 		_load(attr)
 			.then(cb_callBack)
 			.catch(function (error) {
 				console.log(error);
 			});
-	}
 
 };

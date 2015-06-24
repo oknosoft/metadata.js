@@ -7,11 +7,11 @@
     "common":   [
       "src/common.js",
       "src/i18n.ru.js",
-      "src/excells_ref.js",
+      "src/ex_dhtmlx.js",
       "src/wnd_dat.js",
       "src/wnd_address.js",
       "src/rsvg.js",
-      "src/metadata.js",
+      "src/meta_meta.js",
       "src/meta_mngrs.js",
       "src/meta_tabulars.js",
       "src/meta_objs.js",
