@@ -1,8 +1,9 @@
 /**
- * <br />&copy; http://www.oknosoft.ru 2009-2015
  * Ячейка грида для отображения картинки svg и компонент,
  * получающий и отображающий галерею эскизов объекта данных
- * @module  rsvg
+ * <br />&copy; http://www.oknosoft.ru 2009-2015
+ * @module  wdg_rsvg
+ * @requires common
  */
 
 /**

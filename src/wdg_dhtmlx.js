@@ -6,7 +6,7 @@
  * * **eXcell_ref** - поля ввода значений ссылочных типов
  * * **eXcell_refc** - комбобокс ссылочных типов (перечисления и короткие справочники)
  *
- * @module  excells_ref
+ * @module  wdg_dhtmlx
  * @requires common
  */
 

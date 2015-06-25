@@ -80,12 +80,16 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		wnd.elmnts.toolbar = wnd.attachToolbar();
 		wnd.elmnts.toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
 		wnd.elmnts.toolbar.loadStruct(require("toolbar_selection"), function(){
-			this.addSpacer("input_filter");
+
 			this.attachEvent("onclick", toolbar_click);
+
+
 			// текстовое поле фильтра по подстроке
 			wnd.elmnts.input_filter = this.getInput("input_filter");
 			wnd.elmnts.input_filter.onchange = input_filter_change;
 			wnd.elmnts.input_filter.type = "search";
+
+			this.addSpacer("input_filter");
 
 			if(!pwnd.on_select && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper"){
 				this.hideItem("btn_select");
