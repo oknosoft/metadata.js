@@ -8,9 +8,6 @@
     <item id="btn_delete"   type="button"	img="tb_delete.png"	imgdis="tb_delete_dis.png"	title="Удалить" />
     <item id="sep2" type="separator"/>
 
-    <item id="lbl_filter" type="text"  text="Фильтр" />
-    <item id="input_filter" type="buttonInput" width="350"  />
-
     <item type="buttonSelect"   id="bs_more"        img="tb_more_w.png"     title="Дополнительно" openAll="true">
 
     </item>

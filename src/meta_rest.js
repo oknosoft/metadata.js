@@ -188,7 +188,7 @@ DataManager.prototype.rest_selection = function (attr) {
 	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
 	attr.url += this.rest_name + "?allowedOnly=true&$format=json&$top=1000&" + select;
 
-	attr.url += "&$filter=" + _rest.filter_date("Date", new Date("2014-01-01"), new Date("2015-01-01"));
+	attr.url += "&$filter=" + _rest.filter_date("Date", attr.date_from, attr.date_till);
 
 	return $p.ajax.get_ex(attr.url, attr)
 		.then(function (req) {

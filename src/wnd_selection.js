@@ -83,13 +83,12 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 			this.attachEvent("onclick", toolbar_click);
 
-
 			// текстовое поле фильтра по подстроке
-			wnd.elmnts.input_filter = this.getInput("input_filter");
-			wnd.elmnts.input_filter.onchange = input_filter_change;
-			wnd.elmnts.input_filter.type = "search";
-
-			this.addSpacer("input_filter");
+			wnd.elmnts.filter = new $p.iface.Toolbar_filter({
+				manager: _mngr,
+				toolbar: this,
+				onchange: input_filter_change
+			});
 
 			if(!pwnd.on_select && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper"){
 				this.hideItem("btn_select");
@@ -117,15 +116,15 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	function body_keydown(evt){
 		if(wnd && (evt.keyCode == 113 || evt.keyCode == 115)){ //"F2" или "F4"
 			setTimeout(function(){
-				wnd.elmnts.input_filter.focus();
+				wnd.elmnts.filter.input_filter.focus();
 			}, 0);
 			return $p.cancel_bubble(evt);
 		}
 	}
 
-	function input_filter_change(){
+	function input_filter_change(flt){
 		if(md["hierarchical"]){
-			if(wnd.elmnts.input_filter.value)
+			if(flt.filter)
 				wnd.elmnts.cell_tree.collapse();
 			else
 				wnd.elmnts.cell_tree.expand();
@@ -184,7 +183,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		grid.attachEvent("onXLE", function(){cell_grid.progressOff(); });
 		grid.attachEvent("onXLS", function(){cell_grid.progressOn(); });
 		grid.attachEvent("onDynXLS", function(start,count){
-			var filter = getFilter(start,count);
+			var filter = get_filter(start,count);
 			if(!filter)
 				return;
 			$p.cat.load_soap_to_grid(filter, grid);
@@ -204,7 +203,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		// эту функцию будем вызывать снаружи, чтобы перечитать данные
 		grid.reload = function(){
-			var filter = getFilter();
+			var filter = get_filter();
 			if(!filter) return;
 			cell_grid.progressOn();
 			grid.clearAll();
@@ -233,7 +232,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 					grid.enableAutoWidth(true, 1200, 600);
 					grid.setSizes();
 					grid_inited = true;
-					wnd.elmnts.input_filter.focus();
+					wnd.elmnts.filter.input_filter.focus();
 				}
 				if (a_direction && grid_inited)
 					grid.setSortImgState(true, s_col, a_direction);
@@ -328,22 +327,27 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 *			переопределяется в каждой форме
 	 *	@param:	start, count - начальная запись и количество записей
 	 */
-	function getFilter(start, count){
-		var filter = {
-			action: "get_selection",
-			class_name: class_name,
-			filter: wnd.elmnts.input_filter.value,
-			order_by: s_col,
-			direction: a_direction,
-			start: start || ((wnd.elmnts.grid.currentPage || 1)-1)*wnd.elmnts.grid.rowsBufferOutSize,
-			count: count || wnd.elmnts.grid.rowsBufferOutSize,
-			get_header: (previous_filter.get_header == undefined)
-		}, tparent = md["hierarchical"] ? wnd.elmnts.tree.getSelectedItemId() : null;
-		filter._mixin(attr);
+	function get_filter(start, count){
+		var filter = wnd.elmnts.filter.get_filter()
+				._mixin({
+					action: "get_selection",
+					class_name: class_name,
+					order_by: s_col,
+					direction: a_direction,
+					start: start || ((wnd.elmnts.grid.currentPage || 1)-1)*wnd.elmnts.grid.rowsBufferOutSize,
+					count: count || wnd.elmnts.grid.rowsBufferOutSize,
+					get_header: (previous_filter.get_header == undefined)
+				})
+				._mixin(attr),
+
+			tparent = md["hierarchical"] ? (wnd.elmnts.tree.getSelectedItemId() || $p.blank.guid) : null;
+
 		filter.parent = ((tparent || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
-		for(var f in filter) if(previous_filter[f] != filter[f]){
-			previous_filter = filter;
-			return filter;
+		for(var f in filter){
+			if(previous_filter[f] != filter[f]){
+				previous_filter = filter;
+				return filter;
+			}
 		}
 	}
 

@@ -271,6 +271,7 @@ $p.dateFormat.masks = {
 	isoUtcDateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss'Z'",
 	atom:           "yyyy-mm-dd'T'HH:MM:ss'Z'",
 	ru:				"dd.mm.yyyy HH:MM",
+	short_ru:       "dd.mm.yyyy",
 	date:           "dd.mm.yy",
 	date_time:		"dd.mm.yy HH:MM"
 };
@@ -997,13 +998,6 @@ $p.msg = new function Messages(){
 				text: $p.msg.not_implemented,
 				title: $p.msg.main_title});
 		};
-
-		// задаём путь к картинкам и основной скин
-		dhtmlx.image_path = "imgs/";
-		dhtmlx.skin = "dhx_web";
-
-		// запрещаем добавлять dhxr+date() к запросам get
-		dhx4.ajax.cache = true;
 
 	}
 };

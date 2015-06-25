@@ -432,6 +432,7 @@ $p.dateFormat.masks = {
 	isoUtcDateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss'Z'",
 	atom:           "yyyy-mm-dd'T'HH:MM:ss'Z'",
 	ru:				"dd.mm.yyyy HH:MM",
+	short_ru:       "dd.mm.yyyy",
 	date:           "dd.mm.yy",
 	date_time:		"dd.mm.yy HH:MM"
 };
@@ -1159,13 +1160,6 @@ $p.msg = new function Messages(){
 				title: $p.msg.main_title});
 		};
 
-		// задаём путь к картинкам и основной скин
-		dhtmlx.image_path = "imgs/";
-		dhtmlx.skin = "dhx_web";
-
-		// запрещаем добавлять dhxr+date() к запросам get
-		dhx4.ajax.cache = true;
-
 	}
 };
 
@@ -1767,6 +1761,18 @@ $p.dateFormat.i18n = {
 	]
 };
 
+dhx4.dateFormat.ru = "%d.%m.%Y";
+dhx4.dateLang = "ru";
+dhx4.dateStrings = {
+	ru: {
+		monthFullName:	["Январь","Февраль","Март","Апрель","Maй","Июнь","Июль","Август","Сентябрь","Oктябрь","Ноябрь","Декабрь"],
+		monthShortName:	["Янв","Фев","Maр","Aпр","Maй","Июн","Июл","Aвг","Сен","Окт","Ноя","Дек"],
+		dayFullName:	["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"],
+		dayShortName:	["Вс","Пн","Вт","Ср","Чт","Пт","Сб"]
+	}
+};
+
+
 /**
  *     @desc: 	строки ФИАС адресного классификатора
  */
@@ -1913,7 +1919,7 @@ msg.bld_split_imp = "В параметрах продукции<br />'%1'<br />�
  * * **eXcell_ref** - поля ввода значений ссылочных типов
  * * **eXcell_refc** - комбобокс ссылочных типов (перечисления и короткие справочники)
  *
- * @module  excells_ref
+ * @module  wdg_dhtmlx
  * @requires common
  */
 
@@ -2246,6 +2252,235 @@ function data_to_grid(data, attr){
 }
 
 
+
+/* joined by builder */
+/**
+ * Ячейка грида для отображения картинки svg и компонент,
+ * получающий и отображающий галерею эскизов объекта данных
+ * <br />&copy; http://www.oknosoft.ru 2009-2015
+ * @module  wdg_rsvg
+ * @requires common
+ */
+
+/**
+ * Конструктор поля картинки svg
+ */
+function eXcell_rsvg(cell){ //the eXcell name is defined here
+	if (cell){                // the default pattern, just copy it
+		this.cell = cell;
+		this.grid = this.cell.parentNode.grid;
+	}
+	this.edit = function(){};  //read-only cell doesn't have edit method
+	this.isDisabled = function(){ return true; }; // the cell is read-only, so it's always in the disabled state
+	this.setValue=function(val){
+		this.setCValue(val ? $p.scale_svg(val, 120, 10) : "нет эскиза");
+	}
+}
+eXcell_rsvg.prototype = eXcell_proto;
+window.eXcell_rsvg = eXcell_rsvg;
+
+/**
+ * Компонент Svgs, получающий и отображающий галерею эскизов объекта данных
+ * @class Svgs
+ * @param manager {DataManager}
+ * @param layout {dhtmlXLayoutObject|dhtmlXWindowsCell}
+ * @param area {HTMLElement}
+ * @constructor
+ */
+$p.iface.Svgs = function (manager, layout, area) {
+
+	var t = this,
+		minmax = document.createElement('div'),
+		pics_area = document.createElement('div'),
+		stack = [],
+		area_hidden = $p.wsql.get_user_param("svgs_area_hidden", "boolean"),
+		area_text = area.querySelector(".dhx_cell_statusbar_text");
+
+	if(area_text)
+		area_text.style.display = "none";
+
+	pics_area.className = 'svgs-area';
+	if(area.firstChild)
+		area.insertBefore(pics_area, area.firstChild);
+	else
+		area.appendChild(pics_area);
+
+	minmax.className = 'svgs-minmax';
+	minmax.title="Скрыть/показать панель эскизов";
+	minmax.onclick = function () {
+		area_hidden = !area_hidden;
+		$p.wsql.set_user_param("svgs_area_hidden", area_hidden);
+		apply_area_hidden();
+
+		if(!area_hidden && stack.length)
+			t.reload();
+
+	};
+	area.appendChild(minmax);
+	apply_area_hidden();
+
+	function apply_area_hidden(){
+
+		pics_area.style.display = area_hidden ? "none" : "";
+
+		if(layout.setSizes)
+			layout.setSizes();
+		else{
+			var dim = layout.getDimension();
+			layout.setDimension(dim[0], dim[1]);
+			layout.maximize();
+		}
+
+		if(area_hidden){
+			minmax.style.backgroundPositionX = "-32px";
+			minmax.style.top = layout.setSizes ? "16px" : "-18px";
+		}
+		else{
+			minmax.style.backgroundPositionX = "0px";
+			minmax.style.top = "0px";
+		}
+	}
+
+	function drow_svgs(res){
+
+		var i, j, k, svg_elm;
+
+		$p.iface.clear_svgs(pics_area);
+
+		if(!res.svgs.length){
+			// возможно, стоит показать надпись, что нет эскизов
+		}else
+			for(i in res.svgs){
+				if(!res.svgs[i] || res.svgs[i].substr(0, 1) != "<")
+					continue;
+				svg_elm = document.createElement("div");
+				pics_area.appendChild(svg_elm);
+				svg_elm.style["float"] = "left";
+				svg_elm.innerHTML = $p.scale_svg(res.svgs[i], 88, 22);
+			}
+	}
+
+	this.reload = function (ref) {
+
+		if(ref)
+			stack.push(ref);
+
+		if(!area_hidden)
+			setTimeout(function(){
+				if(stack.length){
+					manager.save({
+						ref: stack.pop(),
+						specify: "order_pics",
+						action: "calc",
+						async: true
+					})
+						.then(drow_svgs)
+						.catch(function (err) {
+							console.log(err);
+						});
+					stack.length = 0;
+				}
+			}, 300);
+	}
+
+}
+/* joined by builder */
+/**
+ * Виджет для панели инструментов форм списка и выбора,
+ * объединяет поля выбора периода и поле ввода фильтра
+ * <br />&copy; http://www.oknosoft.ru 2009-2015
+ * @module  wdg_filter
+ * @requires common
+ */
+
+/**
+ * Виджет для панели инструментов форм списка и выбора,
+ * объединяет поля выбора периода и поле ввода фильтра
+ * @param attr {Object} - параметры создаваемого виджета
+ * @param attr.manager {DataManager}
+ * @param attr.toolbar {dhtmlXToolbarObject}
+ * @param attr.[pos=7] {Number} - номер элемента на тулбаре, после которого вставлять виджет
+ * @constructor
+ */
+$p.iface.Toolbar_filter = function (attr) {
+
+	var t = this, input_filter_width = 350;
+
+	if(!attr.pos)
+		attr.pos = 6;
+
+	// Поля ввода периода
+	if(attr.manager instanceof DocManager || attr.period){
+
+		// управляем доступностью дат в миникалендаре
+		function set_sens(inp, k) {
+			if (k == "min")
+				t.сalendar.setSensitiveRange(inp.value, null);
+			else
+				t.сalendar.setSensitiveRange(null, inp.value);
+		}
+
+		function onchange(){
+			attr.onchange.call(t, t.get_filter());
+		}
+
+		input_filter_width = 180;
+
+		attr.toolbar.addText("lbl_date_from", attr.pos, "Период с:");
+		attr.pos++;
+		attr.toolbar.addInput("input_date_from", attr.pos, "", 72);
+		attr.pos++;
+		attr.toolbar.addText("lbl_date_till", attr.pos, "по:");
+		attr.pos++;
+		attr.toolbar.addInput("input_date_till", attr.pos, "", 72);
+		attr.pos++;
+
+		t.input_date_from = attr.toolbar.getInput("input_date_from");
+		t.input_date_from.setAttribute("readOnly", "true");
+		t.input_date_from.onclick = function(){ set_sens(t.input_date_till,"max"); };
+
+		t.input_date_till = attr.toolbar.getInput("input_date_till");
+		t.input_date_till.setAttribute("readOnly", "true");
+		t.input_date_till.onclick = function(){ set_sens(t.input_date_from,"min"); };
+
+		// подключаем календарь к инпутам
+		t.сalendar = new dhtmlXCalendarObject([t.input_date_from, t.input_date_till]);
+		t.сalendar.attachEvent("onclick", onchange);
+
+		// начальные значения периода
+		if(!attr.date_from)
+			attr.date_from = new Date((new Date()).getFullYear().toFixed() + "-01-01");
+		if(!attr.date_till)
+			attr.date_till = $p.date_add_day(new Date(), 1);
+		t.input_date_from.value=$p.dateFormat(attr.date_from, $p.dateFormat.masks.short_ru);
+		t.input_date_till.value=$p.dateFormat(attr.date_till, $p.dateFormat.masks.short_ru);
+
+	}
+
+	// текстовое поле фильтра по подстроке
+	if(!attr.hide_filter){
+		attr.toolbar.addText("lbl_filter", attr.pos, "Фильтр");
+		attr.pos++;
+		attr.toolbar.addInput("input_filter", attr.pos, "", input_filter_width);
+		t.input_filter = attr.toolbar.getInput("input_filter");
+		t.input_filter.onchange = onchange;
+		t.input_filter.type = "search";
+
+		attr.toolbar.addSpacer("input_filter");
+
+	}else
+		attr.toolbar.addSpacer("input_date_till");
+
+	t.get_filter = function () {
+		return {
+			date_from: t.input_date_from ? dhx4.str2date(t.input_date_from.value) : "",
+			date_till: t.input_date_till ? dhx4.str2date(t.input_date_till.value) : "",
+			filter: t.input_filter ? t.input_filter.value : ""
+		}
+	}
+
+
+};
 
 /* joined by builder */
 /**
@@ -3741,136 +3976,6 @@ function wnd_address(source){
 
 };
 
-/* joined by builder */
-/**
- * <br />&copy; http://www.oknosoft.ru 2009-2015
- * Ячейка грида для отображения картинки svg и компонент,
- * получающий и отображающий галерею эскизов объекта данных
- * @module  rsvg
- */
-
-/**
- * Конструктор поля картинки svg
- */
-function eXcell_rsvg(cell){ //the eXcell name is defined here
-	if (cell){                // the default pattern, just copy it
-		this.cell = cell;
-		this.grid = this.cell.parentNode.grid;
-	}
-	this.edit = function(){};  //read-only cell doesn't have edit method
-	this.isDisabled = function(){ return true; }; // the cell is read-only, so it's always in the disabled state
-	this.setValue=function(val){
-		this.setCValue(val ? $p.scale_svg(val, 120, 10) : "нет эскиза");
-	}
-}
-eXcell_rsvg.prototype = eXcell_proto;
-window.eXcell_rsvg = eXcell_rsvg;
-
-/**
- * Компонент Svgs, получающий и отображающий галерею эскизов объекта данных
- * @class Svgs
- * @param manager {DataManager}
- * @param layout {dhtmlXLayoutObject|dhtmlXWindowsCell}
- * @param area {HTMLElement}
- * @constructor
- */
-$p.iface.Svgs = function (manager, layout, area) {
-
-	var t = this,
-		minmax = document.createElement('div'),
-		pics_area = document.createElement('div'),
-		stack = [],
-		area_hidden = $p.wsql.get_user_param("svgs_area_hidden", "boolean"),
-		area_text = area.querySelector(".dhx_cell_statusbar_text");
-
-	if(area_text)
-		area_text.style.display = "none";
-
-	pics_area.className = 'svgs-area';
-	if(area.firstChild)
-		area.insertBefore(pics_area, area.firstChild);
-	else
-		area.appendChild(pics_area);
-
-	minmax.className = 'svgs-minmax';
-	minmax.title="Скрыть/показать панель эскизов";
-	minmax.onclick = function () {
-		area_hidden = !area_hidden;
-		$p.wsql.set_user_param("svgs_area_hidden", area_hidden);
-		apply_area_hidden();
-
-		if(!area_hidden && stack.length)
-			t.reload();
-
-	};
-	area.appendChild(minmax);
-	apply_area_hidden();
-
-	function apply_area_hidden(){
-
-		pics_area.style.display = area_hidden ? "none" : "";
-
-		if(layout.setSizes)
-			layout.setSizes();
-		else{
-			var dim = layout.getDimension();
-			layout.setDimension(dim[0], dim[1]);
-			layout.maximize();
-		}
-
-		if(area_hidden){
-			minmax.style.backgroundPositionX = "-32px";
-			minmax.style.top = layout.setSizes ? "16px" : "-18px";
-		}
-		else{
-			minmax.style.backgroundPositionX = "0px";
-			minmax.style.top = "0px";
-		}
-	}
-
-	function drow_svgs(res){
-
-		var i, j, k, svg_elm;
-
-		$p.iface.clear_svgs(pics_area);
-
-		if(!res.svgs.length){
-			// возможно, стоит показать надпись, что нет эскизов
-		}else
-			for(i in res.svgs){
-				if(!res.svgs[i] || res.svgs[i].substr(0, 1) != "<")
-					continue;
-				svg_elm = document.createElement("div");
-				pics_area.appendChild(svg_elm);
-				svg_elm.style["float"] = "left";
-				svg_elm.innerHTML = $p.scale_svg(res.svgs[i], 88, 22);
-			}
-	}
-
-	this.reload = function (ref) {
-
-		if(ref)
-			stack.push(ref);
-
-		if(!area_hidden)
-			setTimeout(function(){
-				if(stack.length){
-					manager.save({
-						ref: stack.pop(),
-						specify: "order_pics",
-						action: "calc",
-						async: true
-					})
-						.then(drow_svgs)
-						.catch(function (err) {
-							console.log(err);
-						});
-					stack.length = 0;
-				}
-			}, 300);
-	}
-
-}
 /* joined by builder */
 /**
  * Метаданные на стороне js: конструкторы, заполнение, кеширование, поиск <br />&copy; http://www.oknosoft.ru 2009-2015
@@ -7320,7 +7425,7 @@ DataManager.prototype.rest_selection = function (attr) {
 	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
 	attr.url += this.rest_name + "?allowedOnly=true&$format=json&$top=1000&" + select;
 
-	attr.url += "&$filter=" + _rest.filter_date("Date", new Date("2014-01-01"), new Date("2015-01-01"));
+	attr.url += "&$filter=" + _rest.filter_date("Date", attr.date_from, attr.date_till);
 
 	return $p.ajax.get_ex(attr.url, attr)
 		.then(function (req) {
@@ -8404,12 +8509,15 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		wnd.elmnts.toolbar = wnd.attachToolbar();
 		wnd.elmnts.toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
 		wnd.elmnts.toolbar.loadStruct(require("toolbar_selection"), function(){
-			this.addSpacer("input_filter");
+
 			this.attachEvent("onclick", toolbar_click);
+
 			// текстовое поле фильтра по подстроке
-			wnd.elmnts.input_filter = this.getInput("input_filter");
-			wnd.elmnts.input_filter.onchange = input_filter_change;
-			wnd.elmnts.input_filter.type = "search";
+			wnd.elmnts.filter = new $p.iface.Toolbar_filter({
+				manager: _mngr,
+				toolbar: this,
+				onchange: input_filter_change
+			});
 
 			if(!pwnd.on_select && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper"){
 				this.hideItem("btn_select");
@@ -8437,15 +8545,15 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	function body_keydown(evt){
 		if(wnd && (evt.keyCode == 113 || evt.keyCode == 115)){ //"F2" или "F4"
 			setTimeout(function(){
-				wnd.elmnts.input_filter.focus();
+				wnd.elmnts.filter.input_filter.focus();
 			}, 0);
 			return $p.cancel_bubble(evt);
 		}
 	}
 
-	function input_filter_change(){
+	function input_filter_change(flt){
 		if(md["hierarchical"]){
-			if(wnd.elmnts.input_filter.value)
+			if(flt.filter)
 				wnd.elmnts.cell_tree.collapse();
 			else
 				wnd.elmnts.cell_tree.expand();
@@ -8504,7 +8612,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		grid.attachEvent("onXLE", function(){cell_grid.progressOff(); });
 		grid.attachEvent("onXLS", function(){cell_grid.progressOn(); });
 		grid.attachEvent("onDynXLS", function(start,count){
-			var filter = getFilter(start,count);
+			var filter = get_filter(start,count);
 			if(!filter)
 				return;
 			$p.cat.load_soap_to_grid(filter, grid);
@@ -8524,7 +8632,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		// эту функцию будем вызывать снаружи, чтобы перечитать данные
 		grid.reload = function(){
-			var filter = getFilter();
+			var filter = get_filter();
 			if(!filter) return;
 			cell_grid.progressOn();
 			grid.clearAll();
@@ -8553,7 +8661,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 					grid.enableAutoWidth(true, 1200, 600);
 					grid.setSizes();
 					grid_inited = true;
-					wnd.elmnts.input_filter.focus();
+					wnd.elmnts.filter.input_filter.focus();
 				}
 				if (a_direction && grid_inited)
 					grid.setSortImgState(true, s_col, a_direction);
@@ -8648,22 +8756,27 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 *			переопределяется в каждой форме
 	 *	@param:	start, count - начальная запись и количество записей
 	 */
-	function getFilter(start, count){
-		var filter = {
-			action: "get_selection",
-			class_name: class_name,
-			filter: wnd.elmnts.input_filter.value,
-			order_by: s_col,
-			direction: a_direction,
-			start: start || ((wnd.elmnts.grid.currentPage || 1)-1)*wnd.elmnts.grid.rowsBufferOutSize,
-			count: count || wnd.elmnts.grid.rowsBufferOutSize,
-			get_header: (previous_filter.get_header == undefined)
-		}, tparent = md["hierarchical"] ? wnd.elmnts.tree.getSelectedItemId() : null;
-		filter._mixin(attr);
+	function get_filter(start, count){
+		var filter = wnd.elmnts.filter.get_filter()
+				._mixin({
+					action: "get_selection",
+					class_name: class_name,
+					order_by: s_col,
+					direction: a_direction,
+					start: start || ((wnd.elmnts.grid.currentPage || 1)-1)*wnd.elmnts.grid.rowsBufferOutSize,
+					count: count || wnd.elmnts.grid.rowsBufferOutSize,
+					get_header: (previous_filter.get_header == undefined)
+				})
+				._mixin(attr),
+
+			tparent = md["hierarchical"] ? (wnd.elmnts.tree.getSelectedItemId() || $p.blank.guid) : null;
+
 		filter.parent = ((tparent || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
-		for(var f in filter) if(previous_filter[f] != filter[f]){
-			previous_filter = filter;
-			return filter;
+		for(var f in filter){
+			if(previous_filter[f] != filter[f]){
+				previous_filter = filter;
+				return filter;
+			}
 		}
 	}
 
@@ -8932,8 +9045,17 @@ if(window){
 
 
 			if("dhtmlx" in w){
+
+				// задаём путь к картинкам и основной скин
+				dhtmlx.image_path = "imgs/";
+				dhtmlx.skin = "dhx_web";
+
+				// запрещаем добавлять dhxr+date() к запросам get
+				dhx4.ajax.cache = true;
+
 				$p.iface.w = new dhtmlXWindows();
 				$p.iface.w.setSkin(dhtmlx.skin);
+
 			}
 
 			// проверяем совместимость браузера
@@ -9704,5 +9826,5 @@ if (typeof module !== "undefined" && module.exports) {
 "toolbar_add_del": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_add\"    text=\"Добавить\" title=\"Добавить строку\" img=\"tb_new.png\"  />\r\n    <item type=\"button\" id=\"btn_delete\" text=\"Удалить\"  title=\"Удалить строку\" img=\"tb_delete.png\"   imgdis=\"tb_delete_dis.png\" />\r\n</toolbar>",
 "toolbar_obj": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"Записать и закрыть\" img=\"save.gif\" imgdis=\"\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"Записать\" img=\"tb_calculate.png\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_post\" img=\"tb_post.png\" imgdis=\"tb_post.png\" enabled=\"false\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" img=\"tb_unpost.png\" imgdis=\"tb_unpost.png\" enabled=\"false\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"Файлы\" img=\"tb_screpka.png\" imgdis=\"tb_screpka_dis.png\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"Создать\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" image=\"\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"Перейти\" title=\"\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\"         img=\"print.gif\"         text=\"Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"        img=\"tb_more_w.png\"  title=\"Дополнительно\" openAll=\"true\">\r\n        <item type=\"button\" id=\"btn_import\" img=\"document_load.png\" text=\"Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" img=\"document_save.png\" text=\"Выгрузить в файл\" />\r\n    </item>\r\n\r\n</toolbar>\r\n",
 "toolbar_ok_cancel": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_ok\"       type=\"button\"   img=\"\"  imgdis=\"\"   text=\"&lt;b&gt;Ок&lt;/b&gt;\"  />\r\n    <item id=\"btn_cancel\"   type=\"button\"\timg=\"\"  imgdis=\"\"   text=\"Отмена\" />\r\n</toolbar>",
-"toolbar_selection": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_select\"   type=\"button\"   img=\"\"              imgdis=\"\"               title=\"Выбрать элемент списка\" text=\"&lt;b&gt;Выбрать&lt;/b&gt;\"  />\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item id=\"btn_new\"      type=\"button\"\timg=\"tb_new.png\"\timgdis=\"tb_new_dis.png\"\ttitle=\"Создать\" />\r\n    <item id=\"btn_edit\"     type=\"button\"\timg=\"tb_edit.png\"\timgdis=\"tb_edit_dis.png\"\ttitle=\"Изменить\" />\r\n    <item id=\"btn_delete\"   type=\"button\"\timg=\"tb_delete.png\"\timgdis=\"tb_delete_dis.png\"\ttitle=\"Удалить\" />\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n    <item id=\"lbl_filter\" type=\"text\"  text=\"Фильтр\" />\r\n    <item id=\"input_filter\" type=\"buttonInput\" width=\"350\"  />\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"        img=\"tb_more_w.png\"     title=\"Дополнительно\" openAll=\"true\">\r\n\r\n    </item>\r\n\r\n</toolbar>"
+"toolbar_selection": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_select\"   type=\"button\"   img=\"\"              imgdis=\"\"               title=\"Выбрать элемент списка\" text=\"&lt;b&gt;Выбрать&lt;/b&gt;\"  />\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item id=\"btn_new\"      type=\"button\"\timg=\"tb_new.png\"\timgdis=\"tb_new_dis.png\"\ttitle=\"Создать\" />\r\n    <item id=\"btn_edit\"     type=\"button\"\timg=\"tb_edit.png\"\timgdis=\"tb_edit_dis.png\"\ttitle=\"Изменить\" />\r\n    <item id=\"btn_delete\"   type=\"button\"\timg=\"tb_delete.png\"\timgdis=\"tb_delete_dis.png\"\ttitle=\"Удалить\" />\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"        img=\"tb_more_w.png\"     title=\"Дополнительно\" openAll=\"true\">\r\n\r\n    </item>\r\n\r\n</toolbar>"
 },{},{});

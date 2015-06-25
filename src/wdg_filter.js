@@ -17,19 +17,80 @@
  */
 $p.iface.Toolbar_filter = function (attr) {
 
-	var elmnts = {}, input_filter_width = 350;
+	var t = this, input_filter_width = 350;
+
+	if(!attr.pos)
+		attr.pos = 6;
 
 	// Поля ввода периода
 	if(attr.manager instanceof DocManager || attr.period){
-		input_filter_width = 200;
+
+		// управляем доступностью дат в миникалендаре
+		function set_sens(inp, k) {
+			if (k == "min")
+				t.сalendar.setSensitiveRange(inp.value, null);
+			else
+				t.сalendar.setSensitiveRange(null, inp.value);
+		}
+
+		function onchange(){
+			attr.onchange.call(t, t.get_filter());
+		}
+
+		input_filter_width = 180;
+
+		attr.toolbar.addText("lbl_date_from", attr.pos, "Период с:");
+		attr.pos++;
+		attr.toolbar.addInput("input_date_from", attr.pos, "", 72);
+		attr.pos++;
+		attr.toolbar.addText("lbl_date_till", attr.pos, "по:");
+		attr.pos++;
+		attr.toolbar.addInput("input_date_till", attr.pos, "", 72);
+		attr.pos++;
+
+		t.input_date_from = attr.toolbar.getInput("input_date_from");
+		t.input_date_from.setAttribute("readOnly", "true");
+		t.input_date_from.onclick = function(){ set_sens(t.input_date_till,"max"); };
+
+		t.input_date_till = attr.toolbar.getInput("input_date_till");
+		t.input_date_till.setAttribute("readOnly", "true");
+		t.input_date_till.onclick = function(){ set_sens(t.input_date_from,"min"); };
+
+		// подключаем календарь к инпутам
+		t.сalendar = new dhtmlXCalendarObject([t.input_date_from, t.input_date_till]);
+		t.сalendar.attachEvent("onclick", onchange);
+
+		// начальные значения периода
+		if(!attr.date_from)
+			attr.date_from = new Date((new Date()).getFullYear().toFixed() + "-01-01");
+		if(!attr.date_till)
+			attr.date_till = $p.date_add_day(new Date(), 1);
+		t.input_date_from.value=$p.dateFormat(attr.date_from, $p.dateFormat.masks.short_ru);
+		t.input_date_till.value=$p.dateFormat(attr.date_till, $p.dateFormat.masks.short_ru);
+
 	}
 
-	//<item id="lbl_filter" type="text"  text="Фильтр" />
-	//<item id="input_filter" type="buttonInput" width="350"  />
 	// текстовое поле фильтра по подстроке
-	elmnts.input_filter = attr.toolbar.addInput("input_filter", attr.pos || 7, "", input_filter_width);
-	elmnts.input_filter.onchange = attr.onchange;
-	elmnts.input_filter.type = "search";
+	if(!attr.hide_filter){
+		attr.toolbar.addText("lbl_filter", attr.pos, "Фильтр");
+		attr.pos++;
+		attr.toolbar.addInput("input_filter", attr.pos, "", input_filter_width);
+		t.input_filter = attr.toolbar.getInput("input_filter");
+		t.input_filter.onchange = onchange;
+		t.input_filter.type = "search";
 
-	attr.toolbar.addSpacer("input_filter");
+		attr.toolbar.addSpacer("input_filter");
+
+	}else
+		attr.toolbar.addSpacer("input_date_till");
+
+	t.get_filter = function () {
+		return {
+			date_from: t.input_date_from ? dhx4.str2date(t.input_date_from.value) : "",
+			date_till: t.input_date_till ? dhx4.str2date(t.input_date_till.value) : "",
+			filter: t.input_filter ? t.input_filter.value : ""
+		}
+	}
+
+
 };

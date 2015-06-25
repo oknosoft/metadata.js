@@ -9,6 +9,7 @@
       "src/i18n.ru.js",
       "src/wdg_dhtmlx.js",
       "src/wdg_rsvg.js",
+      "src/wdg_filter.js",
       "src/wnd_dat.js",
       "src/wnd_address.js",
       "src/meta_meta.js",

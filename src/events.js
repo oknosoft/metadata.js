@@ -242,8 +242,17 @@ if(window){
 
 
 			if("dhtmlx" in w){
+
+				// задаём путь к картинкам и основной скин
+				dhtmlx.image_path = "imgs/";
+				dhtmlx.skin = "dhx_web";
+
+				// запрещаем добавлять dhxr+date() к запросам get
+				dhx4.ajax.cache = true;
+
 				$p.iface.w = new dhtmlXWindows();
 				$p.iface.w.setSkin(dhtmlx.skin);
+
 			}
 
 			// проверяем совместимость браузера
