@@ -23,10 +23,29 @@ function Rest(){
 		var o = {},
 			mf = mgr.metadata().fields,
 			mts = mgr.metadata().tabular_sections,
-			ts, f, tf, row, syn, synts;
+			ts, f, tf, row, syn, synts, vmgr;
+
+		if(mgr instanceof RefDataManager){
+			o.deleted = rdata.DeletionMark;
+			o.data_version = rdata.DataVersion;
+		}
+
+		if(mgr instanceof DocManager){
+			o.number_doc = rdata.Number;
+			o.date = rdata.Date;
+			o.posted = rdata.Posted;
+
+		} else {
+			if(mgr.metadata().main_presentation_name)
+				o.name = rdata.Description;
+			if(mgr.metadata().code_length)
+				o.id = rdata.Code;
+		}
+
+
 		for(f in mf){
 			syn = _md.syns_1с(f);
-			if(mf[f].type.is_ref)
+			if(mf[f].type.is_ref && rdata[syn+"_Key"])
 				syn+="_Key";
 			o[f] = rdata[syn];
 		}
@@ -40,7 +59,7 @@ function Rest(){
 				row = {};
 				for(tf in mts[ts].fields){
 					syn = _md.syns_1с(tf);
-					if(mts[ts].fields[tf].type.is_ref)
+					if(mts[ts].fields[tf].type.is_ref && r[syn+"_Key"])
 						syn+="_Key";
 					row[tf] = r[syn];
 				}
@@ -130,8 +149,8 @@ DataManager.prototype.rest_selection = function (attr) {
 	function list_flds(){
 		var s = "$select=Ref_Key,DeletionMark";
 
-		if(cmd.selection && cmd.selection.fields){
-			cmd.selection.fields.forEach(function (fld) {
+		if(cmd.form && cmd.form.selection){
+			cmd.form.selection.fields.forEach(function (fld) {
 				flds.push(fld);
 			});
 
@@ -275,7 +294,11 @@ DataObj.prototype.to_atom = function (ex_meta) {
 		}
 	}
 
-	if(this instanceof CatObj){
+	if(this instanceof DocObj){
+		prop+= '\n<d:Date>' + $p.dateFormat(this.date, $p.dateFormat.masks.atom) + '</d:Date>';
+		prop+= '\n<d:Number>' + this.number_doc + '</d:Number>';
+
+	} else {
 
 		if(this._metadata.main_presentation_name)
 			prop+= '\n<d:Description>' + this.name + '</d:Description>';
@@ -285,10 +308,6 @@ DataObj.prototype.to_atom = function (ex_meta) {
 
 		if(this._metadata.hierarchical && this._metadata.group_hierarchy)
 			prop+= '\n<d:IsFolder>' + this.is_folder + '</d:IsFolder>';
-
-	}else if(this instanceof DocObj){
-		prop+= '\n<d:Date>' + $p.dateFormat(this.date, $p.dateFormat.masks.atom) + '</d:Date>';
-		prop+= '\n<d:Number>' + this.number_doc + '</d:Number>';
 
 	}
 

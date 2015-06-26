@@ -200,7 +200,7 @@ function eXcell_refc(cell){
 			else if(t.fpath.length < 2)
 				fmd = t.source.o._manager.metadata(t.fpath[0]);
 			else if(t.fpath[0] == "extra_fields" || t.fpath[0] == "params"){
-				return $p.cat.properties.slist(t.fpath[1]);
+				return _cch.properties.slist(t.fpath[1]);
 			} else
 				fmd = t.source.o._metadata["tabular_sections"][t.fpath[0]].fields[t.fpath[1]];
 

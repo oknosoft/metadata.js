@@ -17,7 +17,9 @@
  */
 $p.iface.Toolbar_filter = function (attr) {
 
-	var t = this, input_filter_width = 350;
+	var t = this,
+		input_filter_width = 350,
+		input_filter_changed = 0;
 
 	if(!attr.pos)
 		attr.pos = 6;
@@ -34,7 +36,24 @@ $p.iface.Toolbar_filter = function (attr) {
 		}
 
 		function onchange(){
+
+			if(input_filter_changed){
+				clearTimeout(input_filter_changed);
+				input_filter_changed = 0;
+			}
+
 			attr.onchange.call(t, t.get_filter());
+		}
+
+		function onkeydown(){
+
+			if(input_filter_changed)
+				clearTimeout(input_filter_changed);
+
+			input_filter_changed = setTimeout(function () {
+				if(input_filter_changed)
+					onchange();
+			}, 600);
 		}
 
 		input_filter_width = 180;
@@ -77,6 +96,7 @@ $p.iface.Toolbar_filter = function (attr) {
 		attr.toolbar.addInput("input_filter", attr.pos, "", input_filter_width);
 		t.input_filter = attr.toolbar.getInput("input_filter");
 		t.input_filter.onchange = onchange;
+		t.input_filter.onkeydown = onkeydown;
 		t.input_filter.type = "search";
 
 		attr.toolbar.addSpacer("input_filter");

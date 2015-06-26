@@ -1861,6 +1861,8 @@ msg.limit_query = "Превышено число обращений к серв�
 msg.main_title = "Окнософт: заказ дилера ";
 msg.meta_cat = "Справочники";
 msg.meta_doc = "Документы";
+msg.meta_cch = "Планы видов характеристик";
+msg.meta_cacc = "Планы счетов";
 msg.meta_ireg = "Регистры сведений";
 msg.meta_areg = "Регистры накопления";
 msg.meta_cat_mgr = "Менеджер справочников";
@@ -2113,7 +2115,7 @@ function eXcell_refc(cell){
 			else if(t.fpath.length < 2)
 				fmd = t.source.o._manager.metadata(t.fpath[0]);
 			else if(t.fpath[0] == "extra_fields" || t.fpath[0] == "params"){
-				return $p.cat.properties.slist(t.fpath[1]);
+				return _cch.properties.slist(t.fpath[1]);
 			} else
 				fmd = t.source.o._metadata["tabular_sections"][t.fpath[0]].fields[t.fpath[1]];
 
@@ -2404,7 +2406,9 @@ $p.iface.Svgs = function (manager, layout, area) {
  */
 $p.iface.Toolbar_filter = function (attr) {
 
-	var t = this, input_filter_width = 350;
+	var t = this,
+		input_filter_width = 350,
+		input_filter_changed = 0;
 
 	if(!attr.pos)
 		attr.pos = 6;
@@ -2421,7 +2425,24 @@ $p.iface.Toolbar_filter = function (attr) {
 		}
 
 		function onchange(){
+
+			if(input_filter_changed){
+				clearTimeout(input_filter_changed);
+				input_filter_changed = 0;
+			}
+
 			attr.onchange.call(t, t.get_filter());
+		}
+
+		function onkeydown(){
+
+			if(input_filter_changed)
+				clearTimeout(input_filter_changed);
+
+			input_filter_changed = setTimeout(function () {
+				if(input_filter_changed)
+					onchange();
+			}, 500);
 		}
 
 		input_filter_width = 180;
@@ -2464,6 +2485,7 @@ $p.iface.Toolbar_filter = function (attr) {
 		attr.toolbar.addInput("input_filter", attr.pos, "", input_filter_width);
 		t.input_filter = attr.toolbar.getInput("input_filter");
 		t.input_filter.onchange = onchange;
+		t.input_filter.onkeydown = onkeydown;
 		t.input_filter.type = "search";
 
 		attr.toolbar.addSpacer("input_filter");
@@ -3073,24 +3095,48 @@ $p.iface.swith_view = function(name){
 			if(name == "oper"){
 				var meta_tree = {id:0, item:[
 					{id:"oper_cat", text: $p.msg.meta_cat, open: true, item:[]},
-					{id:"oper_doc", text: $p.msg.meta_doc, item:[]}
-				]}, mdn, md, tlist = meta_tree.item[0].item;
+					{id:"oper_doc", text: $p.msg.meta_doc, item:[]},
+					{id:"oper_cch", text: $p.msg.meta_cch, item:[]},
+					{id:"oper_cacc", text: $p.msg.meta_cacc, item:[]}
+				]}, mdn, md,
+
 				// бежим по справочникам
-				for(mdn in $p.cat){
-					if(typeof $p.cat[mdn] == "function")
+					tlist = meta_tree.item[0].item;
+				for(mdn in _cat){
+					if(typeof _cat[mdn] == "function")
 						continue;
-					md = $p.cat[mdn].metadata();
+					md = _cat[mdn].metadata();
 					tlist.push({id: "oper.cat." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
 				}
 				tlist.sort(compare_text);
 
 				// бежим по документам
 				tlist = meta_tree.item[1].item;
-				for(mdn in $p.doc){
-					if(typeof $p.doc[mdn] == "function")
+				for(mdn in _doc){
+					if(typeof _doc[mdn] == "function")
 						continue;
-					md = $p.doc[mdn].metadata();
+					md = _doc[mdn].metadata();
 					tlist.push({id: "oper.doc." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
+				}
+				tlist.sort(compare_text);
+
+				// бежим по планам видов характеристик
+				tlist = meta_tree.item[2].item;
+				for(mdn in _cch){
+					if(typeof _cch[mdn] == "function")
+						continue;
+					md = _cch[mdn].metadata();
+					tlist.push({id: "oper.cch." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
+				}
+				tlist.sort(compare_text);
+
+				// бежим по планам счетов
+				tlist = meta_tree.item[3].item;
+				for(mdn in _cacc){
+					if(typeof _cacc[mdn] == "function")
+						continue;
+					md = _cacc[mdn].metadata();
+					tlist.push({id: "oper.cacc." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
 				}
 				tlist.sort(compare_text);
 
@@ -4589,10 +4635,12 @@ function Meta(req, patch) {
 
 		if(mf.types.length == 1){
 			tnames = mf.types[0].split(".");
-			return mf_mgr($p[tnames[0]][tnames[1]]);
+			if(tnames.length > 1 && $p[tnames[0]])
+				return mf_mgr($p[tnames[0]][tnames[1]]);
 		}else if(v && v.type){
 			tnames = v.type.split(".");
-			return mf_mgr($p[tnames[0]][tnames[1]]);
+			if(tnames.length > 1 && $p[tnames[0]])
+				return mf_mgr($p[tnames[0]][tnames[1]]);
 		}
 
 		property = row.property || row.param;
@@ -4617,7 +4665,7 @@ function Meta(req, patch) {
 		}else{
 
 			// Получаем объект свойства
-			oproperty = _cat.properties.get(property, false);
+			oproperty = _cch.properties.get(property, false);
 			if($p.is_data_obj(oproperty)){
 
 				if(oproperty.is_new())
@@ -4629,7 +4677,8 @@ function Meta(req, patch) {
 						tnames = oproperty.type.types[rt].split(".");
 						break;
 					}
-				return mf_mgr($p[tnames[0]][tnames[1]]);
+				if(tnames && tnames.length > 1 && $p[tnames[0]])
+					return mf_mgr($p[tnames[0]][tnames[1]]);
 			}
 		}
 	};
@@ -4662,30 +4711,45 @@ function Meta(req, patch) {
 		if(!source)
 			source = {};
 
-		var mts = this.get(class_name).tabular_sections[ts_name], mf;
-		source.fields = ["row"];
-		source.headers = "№";
-		source.widths = "40";
-		source.min_widths = "";
-		source.aligns = "";
-		source.sortings = "na";
-		source.types = "cntr";
+		var mts = this.get(class_name).tabular_sections[ts_name],
+			mfrm = this.get(class_name).form,
+			fields = mts.fields, mf;
 
-		for(var f in mts.fields){
-			mf = mts.fields[f];
-			if(!mf.hide){
-				source.fields.push(f);
-				source.headers += "," + (mf.synonym ? mf.synonym.replace(/,/g, " ") : f);
-				source.types += "," + this.control_by_type(mf.type);
-				source.sortings += ",na";
+		// если имеются метаданные формы, используем их
+		if(mfrm && mfrm.obj){
+
+			if(!mfrm.obj.tabular_sections[ts_name])
+				return;
+
+			source._mixin(mfrm.obj.tabular_sections[ts_name]);
+
+		}else{
+
+			if(ts_name==="contact_information")
+				fields = {type: "", kind: "", presentation: ""}
+
+			source.fields = ["row"];
+			source.headers = "№";
+			source.widths = "40";
+			source.min_widths = "";
+			source.aligns = "";
+			source.sortings = "na";
+			source.types = "cntr";
+
+			for(var f in fields){
+				mf = mts.fields[f];
+				if(!mf.hide){
+					source.fields.push(f);
+					source.headers += "," + (mf.synonym ? mf.synonym.replace(/,/g, " ") : f);
+					source.types += "," + this.control_by_type(mf.type);
+					source.sortings += ",na";
+				}
 			}
 		}
 
-		//source.headers = "№,Номенклатура,Характеристика,Комментарий,Штук,Длина,Высота,Площадь,Колич.,Ед,Скидка постав.,Цена постав.,Сумма постав.,Скидка,Цена,Сумма";
-		//source.widths = "40,200,*,220,0,70,70,70,70,40,70,70,70,70,70,70";
-		//source.min_widths = "30,200,220,150,0,70,40,70,70,70,70,70,70,70,70,70";
-	};
+		return true;
 
+	};
 
 	this.syns_js = function (v) {
 		var synJS = {
@@ -5044,11 +5108,23 @@ DataManager.prototype.sync_grid = function(grid, attr){
 };
 
 /**
- * Cписок значений для поля выбора
- * @method get_option_list
+ * Возвращает массив доступных значений для комбобокса
+ * @param val {DataObj|String}
+ * @param filter {Object}
  * @return {Array}
  */
-DataManager.prototype.get_option_list = function(){};
+DataManager.prototype.get_option_list = function(val, filter){
+	var l = [];
+	function check(v){
+		if($p.is_equal(v.value, val))
+			v.selected = true;
+		return v;
+	}
+	this.find_rows(filter, function (v) {
+		l.push(check({text: v.presentation, value: v.ref}));
+	});
+	return l;
+};
 
 /**
  * Заполняет свойства в объекте source в соответствии с реквизитами табчасти
@@ -5171,7 +5247,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o){
 				}
 			});
 			if(!added)
-				add_xml_row({param: $p.cat.properties.get("", false)}, "params");
+				add_xml_row({param: _cch.properties.get("", false)}, "params");
 		}else if(i == "Параметры"){									// параметры фурнитуры
 			for(var k in o.fprms){
 				if(o.fprms[k].hide || o.fprms[k]["param"].empty())
@@ -5426,24 +5502,6 @@ function RefDataManager(class_name) {
 		return t.get();
 	};
 
-	/**
-	 * Возвращает массив доступных значений для комбобокса
-	 * @param val {DataObj|String}
-	 * @param filter {Object}
-	 * @return {Array}
-	 */
-	t.get_option_list = function(val, filter){
-		var l = [];
-		function check(v){
-			if($p.is_equal(v.value, val))
-				v.selected = true;
-			return v;
-		}
-		t.find_rows(filter, function (v) {
-			l.push(check({text: v.synonym || v.name || v.id, value: v.ref}));
-		});
-		return l;
-	};
 
 }
 RefDataManager._extend(DataManager);
@@ -5474,8 +5532,8 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 		function list_flds(){
 			var flds = [], s = "_t_.ref, _t_.`deleted`";
 
-			if(cmd.selection && cmd.selection.fields){
-				cmd.selection.fields.forEach(function (fld) {
+			if(cmd.form && cmd.form.selection){
+				cmd.form.selection.fields.forEach(function (fld) {
 					flds.push(fld);
 				});
 
@@ -5522,11 +5580,11 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 
 			var s = "", parts;
 
-			if(cmd.selection && cmd.selection.fields){
-				for(var i in cmd.selection.fields){
-					if(cmd.selection.fields[i].indexOf(" as ") == -1 || cmd.selection.fields[i].indexOf("_t_.") != -1)
+			if(cmd.form && cmd.form.selection){
+				for(var i in cmd.form.selection.fields){
+					if(cmd.form.selection.fields[i].indexOf(" as ") == -1 || cmd.form.selection.fields[i].indexOf("_t_.") != -1)
 						continue;
-					parts = cmd.selection.fields[i].split(" as ");
+					parts = cmd.form.selection.fields[i].split(" as ");
 					parts[0] = parts[0].split(".");
 					if(parts[0].length > 1){
 						if(s)
@@ -5790,8 +5848,8 @@ RefDataManager.prototype.caption_flds = function(attr){
 		this.caption = caption;
 	}
 
-	if(cmd.selection && cmd.selection.cols){
-		acols = cmd.selection.cols;
+	if(cmd.form && cmd.form.selection){
+		acols = cmd.form.selection.cols;
 
 	}else if(this instanceof DocObj){
 		acols.push(new Col_struct("date", "120", "ro", "left", "server", "Дата"));
@@ -5910,6 +5968,25 @@ EnumManager.prototype.get_sql_struct = function(attr){
 
 	return res;
 
+};
+
+/**
+ * Возвращает массив доступных значений для комбобокса
+ * @param val {DataObj|String}
+ * @param filter {Object}
+ * @return {Array}
+ */
+DataManager.prototype.get_option_list = function(val){
+	var l = [];
+	function check(v){
+		if($p.is_equal(v.value, val))
+			v.selected = true;
+		return v;
+	}
+	this.alatable.forEach(function (v) {
+		l.push(check({text: v.synonym, value: v.ref}));
+	});
+	return l;
 };
 
 
@@ -6754,10 +6831,21 @@ DataObj.prototype._setter = function (f, v) {
 
 		this._obj[f] = $p.fix_guid(v);
 
-		if(v && v.presentation){
-			if((mgr = _md.value_mgr(this._obj, f, mf, false, v)) && !(mgr instanceof EnumManager))
+		mgr = _md.value_mgr(this._obj, f, mf, false, v);
+
+		if(mgr){
+			if(mgr instanceof EnumManager){
+				if(typeof v == "string")
+					this._obj[f] = v;
+				else if(typeof v == "object")
+					this._obj[f] = v.ref || v.name;
+			}else if(v && v.presentation)
 				mgr.create(v);
+		}else{
+			if(typeof v != "object")
+				this._obj[f] = v;
 		}
+
 
 	}else if(mf.date_part)
 		this._obj[f] = $p.fix_date(v, true);
@@ -7265,10 +7353,29 @@ function Rest(){
 		var o = {},
 			mf = mgr.metadata().fields,
 			mts = mgr.metadata().tabular_sections,
-			ts, f, tf, row, syn, synts;
+			ts, f, tf, row, syn, synts, vmgr;
+
+		if(mgr instanceof RefDataManager){
+			o.deleted = rdata.DeletionMark;
+			o.data_version = rdata.DataVersion;
+		}
+
+		if(mgr instanceof DocManager){
+			o.number_doc = rdata.Number;
+			o.date = rdata.Date;
+			o.posted = rdata.Posted;
+
+		} else {
+			if(mgr.metadata().main_presentation_name)
+				o.name = rdata.Description;
+			if(mgr.metadata().code_length)
+				o.id = rdata.Code;
+		}
+
+
 		for(f in mf){
 			syn = _md.syns_1с(f);
-			if(mf[f].type.is_ref)
+			if(mf[f].type.is_ref && rdata[syn+"_Key"])
 				syn+="_Key";
 			o[f] = rdata[syn];
 		}
@@ -7282,7 +7389,7 @@ function Rest(){
 				row = {};
 				for(tf in mts[ts].fields){
 					syn = _md.syns_1с(tf);
-					if(mts[ts].fields[tf].type.is_ref)
+					if(mts[ts].fields[tf].type.is_ref && r[syn+"_Key"])
 						syn+="_Key";
 					row[tf] = r[syn];
 				}
@@ -7372,8 +7479,8 @@ DataManager.prototype.rest_selection = function (attr) {
 	function list_flds(){
 		var s = "$select=Ref_Key,DeletionMark";
 
-		if(cmd.selection && cmd.selection.fields){
-			cmd.selection.fields.forEach(function (fld) {
+		if(cmd.form && cmd.form.selection){
+			cmd.form.selection.fields.forEach(function (fld) {
 				flds.push(fld);
 			});
 
@@ -7517,7 +7624,11 @@ DataObj.prototype.to_atom = function (ex_meta) {
 		}
 	}
 
-	if(this instanceof CatObj){
+	if(this instanceof DocObj){
+		prop+= '\n<d:Date>' + $p.dateFormat(this.date, $p.dateFormat.masks.atom) + '</d:Date>';
+		prop+= '\n<d:Number>' + this.number_doc + '</d:Number>';
+
+	} else {
 
 		if(this._metadata.main_presentation_name)
 			prop+= '\n<d:Description>' + this.name + '</d:Description>';
@@ -7527,10 +7638,6 @@ DataObj.prototype.to_atom = function (ex_meta) {
 
 		if(this._metadata.hierarchical && this._metadata.group_hierarchy)
 			prop+= '\n<d:IsFolder>' + this.is_folder + '</d:IsFolder>';
-
-	}else if(this instanceof DocObj){
-		prop+= '\n<d:Date>' + $p.dateFormat(this.date, $p.dateFormat.masks.atom) + '</d:Date>';
-		prop+= '\n<d:Number>' + this.number_doc + '</d:Number>';
 
 	}
 
@@ -8006,7 +8113,10 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	if(frm)
 		return frm($p, pwnd, attr);
 
-	var _mgr = this, o = attr.o, wnd, md;
+	var _mgr = this,
+		o = attr.o,
+		cmd = _mgr.metadata(),
+		wnd;
 
 	// читаем объект из локального SQL или получаем с сервера
 	if($p.is_data_obj(o))
@@ -8017,7 +8127,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		_mgr.get(attr.hasOwnProperty("ref") ? attr.ref : attr, true)
 			.then(function(tObj){
 				o = tObj;
-				md = _mgr.metadata();
 				tObj = null;
 				pwnd.progressOff();
 				initialize();
@@ -8061,7 +8170,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.elmnts = {};
 		wnd.modified = false;
 
-		wnd.setText(md["obj_presentation"] + ': ' + o.presentation);
+		wnd.setText((cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation);
 		wnd.centerOnScreen();
 		wnd.button('stick').hide();
 		wnd.button('park').hide();
@@ -8076,13 +8185,14 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.elmnts.frm_tabs.addTab('tab_header','&nbsp;Реквизиты&nbsp;', null, null, true);
 		wnd.elmnts.tabs = {'tab_header': wnd.elmnts.frm_tabs.cells('tab_header')};
 		if(!o.is_folder){
-			for(var ts in md.tabular_sections){
-				if(ts !== "extra_fields" && o[ts] instanceof TabularSection && !md.tabular_sections[ts].hide){
-					wnd.elmnts.frm_tabs.addTab('tab_'+ts, '&nbsp;'+md.tabular_sections[ts].synonym+'&nbsp;');
-					wnd.elmnts.tabs['tab_'+ts] = wnd.elmnts.frm_tabs.cells('tab_'+ts);
+			for(var ts in cmd.tabular_sections){
+				if(ts==="extra_fields")
+					continue;
+
+				if(o[ts] instanceof TabularSection){
 
 					// настройка табличной части
-					tabular_init(wnd.elmnts.tabs['tab_'+ts], ts);
+					tabular_init(ts);
 				}
 			}
 		}
@@ -8126,7 +8236,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			}
 
 			// добавляем команды печати
-			var pp = md["printing_plates"];
+			var pp = cmd["printing_plates"];
 			for(var pid in pp)
 				this.addListOption("bs_print", pid, "~", "button", pp[pid]);
 
@@ -8257,7 +8367,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 * Перечитать табчасть продукции из объекта
 	 */
 	function refresh_tabulars(){
-		for(var ts in md.tabular_sections){
+		for(var ts in cmd.tabular_sections){
 			if(ts !== "extra_fields" && o[ts] instanceof TabularSection){
 				o[ts].sync_grid(wnd.elmnts["grid_" + name]);
 			}
@@ -8299,33 +8409,37 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	/**
 	 * настройка (инициализация) табличной части продукции
 	 */
-	function tabular_init(tab, name){
+	function tabular_init(name){
 
-		// панель инструментов табличной части
-		var tb = wnd.elmnts["tb_" + name] = tab.attachToolbar();
-		tb.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
-		tb.loadStruct(require("toolbar_add_del"), function(){
-			this.attachEvent("onclick", toolbar_click);
-		});
-
-
-		// собственно табличная часть
-		var grid = wnd.elmnts["grid_" + name] = tab.attachGrid(),
-			source = {
+		// с помощью метода ts_captions(), выясняем, надо ли добавлять данную ТЧ и формируем описание колонок табчасти
+		var source = {
 				o: o,
 				wnd: wnd,
 				on_select: tabular_on_value_select,
 				tabular_section: name
 			};
+		if(!_md.ts_captions(_mgr.class_name, name, source))
+			return;
 
-		_md.ts_captions(_mgr.class_name, name, source);
+		// закладка табов табличной части
+		wnd.elmnts.frm_tabs.addTab('tab_'+name, '&nbsp;'+cmd.tabular_sections[name].synonym+'&nbsp;');
+		wnd.elmnts.tabs['tab_'+name] = wnd.elmnts.frm_tabs.cells('tab_'+name);
 
+
+		// панель инструментов табличной части
+		var tb = wnd.elmnts["tb_" + name] = wnd.elmnts.tabs['tab_'+name].attachToolbar();
+		tb.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
+		tb.loadStruct(require("toolbar_add_del"), function(){
+			this.attachEvent("onclick", toolbar_click);
+		});
+
+		// собственно табличная часть
+		var grid = wnd.elmnts["grid_" + name] = wnd.elmnts.tabs['tab_'+name].attachGrid();
 		grid.setIconsPath(dhtmlx.image_path);
 		grid.setImagePath(dhtmlx.image_path);
-
-
 		grid.setHeader(source.headers);
-		//grid.setInitWidths(source.widths);
+		if(source.min_widths)
+			grid.setInitWidths(source.widths);
 		if(source.min_widths)
 			grid.setColumnMinWidth(source.min_widths);
 		if(source.aligns)
@@ -8381,7 +8495,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			return Number(selId)-1;
 		$p.msg.show_msg({type: "alert-warning",
 			text: $p.msg.no_selected_row.replace("%1", "Продукция"),
-			title: md["obj_presentation"] + ': ' + o.presentation});
+			title: cmd["obj_presentation"] + ': ' + o.presentation});
 	}
 
 	function del_row(){
@@ -9415,6 +9529,12 @@ $p.eve.from_json_to_data_obj = function(res) {
 		if(res["current"])
 			stepper.current = res["current"];
 
+		for(class_name in res.cch)
+			_cch[class_name].load_array(res.cch[class_name]);
+
+		for(class_name in res.cacc)
+			_cacc[class_name].load_array(res.cacc[class_name]);
+
 		for(class_name in res.cat)
 			_cat[class_name].load_array(res.cat[class_name]);
 
@@ -9423,6 +9543,9 @@ $p.eve.from_json_to_data_obj = function(res) {
 
 		for(class_name in res.ireg)
 			_ireg[class_name].load_array(res.ireg[class_name]);
+
+		for(class_name in res.areg)
+			_areg[class_name].load_array(res.areg[class_name]);
 
 		// если все данные получены в первом запросе, второй можно не делать
 		return res.current && (res.current >= stepper.step_size);

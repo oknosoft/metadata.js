@@ -588,24 +588,48 @@ $p.iface.swith_view = function(name){
 			if(name == "oper"){
 				var meta_tree = {id:0, item:[
 					{id:"oper_cat", text: $p.msg.meta_cat, open: true, item:[]},
-					{id:"oper_doc", text: $p.msg.meta_doc, item:[]}
-				]}, mdn, md, tlist = meta_tree.item[0].item;
+					{id:"oper_doc", text: $p.msg.meta_doc, item:[]},
+					{id:"oper_cch", text: $p.msg.meta_cch, item:[]},
+					{id:"oper_cacc", text: $p.msg.meta_cacc, item:[]}
+				]}, mdn, md,
+
 				// бежим по справочникам
-				for(mdn in $p.cat){
-					if(typeof $p.cat[mdn] == "function")
+					tlist = meta_tree.item[0].item;
+				for(mdn in _cat){
+					if(typeof _cat[mdn] == "function")
 						continue;
-					md = $p.cat[mdn].metadata();
+					md = _cat[mdn].metadata();
 					tlist.push({id: "oper.cat." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
 				}
 				tlist.sort(compare_text);
 
 				// бежим по документам
 				tlist = meta_tree.item[1].item;
-				for(mdn in $p.doc){
-					if(typeof $p.doc[mdn] == "function")
+				for(mdn in _doc){
+					if(typeof _doc[mdn] == "function")
 						continue;
-					md = $p.doc[mdn].metadata();
+					md = _doc[mdn].metadata();
 					tlist.push({id: "oper.doc." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
+				}
+				tlist.sort(compare_text);
+
+				// бежим по планам видов характеристик
+				tlist = meta_tree.item[2].item;
+				for(mdn in _cch){
+					if(typeof _cch[mdn] == "function")
+						continue;
+					md = _cch[mdn].metadata();
+					tlist.push({id: "oper.cch." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
+				}
+				tlist.sort(compare_text);
+
+				// бежим по планам счетов
+				tlist = meta_tree.item[3].item;
+				for(mdn in _cacc){
+					if(typeof _cacc[mdn] == "function")
+						continue;
+					md = _cacc[mdn].metadata();
+					tlist.push({id: "oper.cacc." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
 				}
 				tlist.sort(compare_text);
 

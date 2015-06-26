@@ -586,6 +586,12 @@ $p.eve.from_json_to_data_obj = function(res) {
 		if(res["current"])
 			stepper.current = res["current"];
 
+		for(class_name in res.cch)
+			_cch[class_name].load_array(res.cch[class_name]);
+
+		for(class_name in res.cacc)
+			_cacc[class_name].load_array(res.cacc[class_name]);
+
 		for(class_name in res.cat)
 			_cat[class_name].load_array(res.cat[class_name]);
 
@@ -594,6 +600,9 @@ $p.eve.from_json_to_data_obj = function(res) {
 
 		for(class_name in res.ireg)
 			_ireg[class_name].load_array(res.ireg[class_name]);
+
+		for(class_name in res.areg)
+			_areg[class_name].load_array(res.areg[class_name]);
 
 		// если все данные получены в первом запросе, второй можно не делать
 		return res.current && (res.current >= stepper.step_size);

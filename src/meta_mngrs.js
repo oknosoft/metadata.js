@@ -239,11 +239,23 @@ DataManager.prototype.sync_grid = function(grid, attr){
 };
 
 /**
- * Cписок значений для поля выбора
- * @method get_option_list
+ * Возвращает массив доступных значений для комбобокса
+ * @param val {DataObj|String}
+ * @param filter {Object}
  * @return {Array}
  */
-DataManager.prototype.get_option_list = function(){};
+DataManager.prototype.get_option_list = function(val, filter){
+	var l = [];
+	function check(v){
+		if($p.is_equal(v.value, val))
+			v.selected = true;
+		return v;
+	}
+	this.find_rows(filter, function (v) {
+		l.push(check({text: v.presentation, value: v.ref}));
+	});
+	return l;
+};
 
 /**
  * Заполняет свойства в объекте source в соответствии с реквизитами табчасти
@@ -366,7 +378,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o){
 				}
 			});
 			if(!added)
-				add_xml_row({param: $p.cat.properties.get("", false)}, "params");
+				add_xml_row({param: _cch.properties.get("", false)}, "params");
 		}else if(i == "Параметры"){									// параметры фурнитуры
 			for(var k in o.fprms){
 				if(o.fprms[k].hide || o.fprms[k]["param"].empty())
@@ -621,24 +633,6 @@ function RefDataManager(class_name) {
 		return t.get();
 	};
 
-	/**
-	 * Возвращает массив доступных значений для комбобокса
-	 * @param val {DataObj|String}
-	 * @param filter {Object}
-	 * @return {Array}
-	 */
-	t.get_option_list = function(val, filter){
-		var l = [];
-		function check(v){
-			if($p.is_equal(v.value, val))
-				v.selected = true;
-			return v;
-		}
-		t.find_rows(filter, function (v) {
-			l.push(check({text: v.synonym || v.name || v.id, value: v.ref}));
-		});
-		return l;
-	};
 
 }
 RefDataManager._extend(DataManager);
@@ -669,8 +663,8 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 		function list_flds(){
 			var flds = [], s = "_t_.ref, _t_.`deleted`";
 
-			if(cmd.selection && cmd.selection.fields){
-				cmd.selection.fields.forEach(function (fld) {
+			if(cmd.form && cmd.form.selection){
+				cmd.form.selection.fields.forEach(function (fld) {
 					flds.push(fld);
 				});
 
@@ -717,11 +711,11 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 
 			var s = "", parts;
 
-			if(cmd.selection && cmd.selection.fields){
-				for(var i in cmd.selection.fields){
-					if(cmd.selection.fields[i].indexOf(" as ") == -1 || cmd.selection.fields[i].indexOf("_t_.") != -1)
+			if(cmd.form && cmd.form.selection){
+				for(var i in cmd.form.selection.fields){
+					if(cmd.form.selection.fields[i].indexOf(" as ") == -1 || cmd.form.selection.fields[i].indexOf("_t_.") != -1)
 						continue;
-					parts = cmd.selection.fields[i].split(" as ");
+					parts = cmd.form.selection.fields[i].split(" as ");
 					parts[0] = parts[0].split(".");
 					if(parts[0].length > 1){
 						if(s)
@@ -985,8 +979,8 @@ RefDataManager.prototype.caption_flds = function(attr){
 		this.caption = caption;
 	}
 
-	if(cmd.selection && cmd.selection.cols){
-		acols = cmd.selection.cols;
+	if(cmd.form && cmd.form.selection){
+		acols = cmd.form.selection.cols;
 
 	}else if(this instanceof DocObj){
 		acols.push(new Col_struct("date", "120", "ro", "left", "server", "Дата"));
@@ -1105,6 +1099,25 @@ EnumManager.prototype.get_sql_struct = function(attr){
 
 	return res;
 
+};
+
+/**
+ * Возвращает массив доступных значений для комбобокса
+ * @param val {DataObj|String}
+ * @param filter {Object}
+ * @return {Array}
+ */
+DataManager.prototype.get_option_list = function(val){
+	var l = [];
+	function check(v){
+		if($p.is_equal(v.value, val))
+			v.selected = true;
+		return v;
+	}
+	this.alatable.forEach(function (v) {
+		l.push(check({text: v.synonym, value: v.ref}));
+	});
+	return l;
 };
 
 

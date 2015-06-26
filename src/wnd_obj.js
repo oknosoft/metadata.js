@@ -20,7 +20,10 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	if(frm)
 		return frm($p, pwnd, attr);
 
-	var _mgr = this, o = attr.o, wnd, md;
+	var _mgr = this,
+		o = attr.o,
+		cmd = _mgr.metadata(),
+		wnd;
 
 	// читаем объект из локального SQL или получаем с сервера
 	if($p.is_data_obj(o))
@@ -31,7 +34,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		_mgr.get(attr.hasOwnProperty("ref") ? attr.ref : attr, true)
 			.then(function(tObj){
 				o = tObj;
-				md = _mgr.metadata();
 				tObj = null;
 				pwnd.progressOff();
 				initialize();
@@ -75,7 +77,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.elmnts = {};
 		wnd.modified = false;
 
-		wnd.setText(md["obj_presentation"] + ': ' + o.presentation);
+		wnd.setText((cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation);
 		wnd.centerOnScreen();
 		wnd.button('stick').hide();
 		wnd.button('park').hide();
@@ -90,13 +92,14 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.elmnts.frm_tabs.addTab('tab_header','&nbsp;Реквизиты&nbsp;', null, null, true);
 		wnd.elmnts.tabs = {'tab_header': wnd.elmnts.frm_tabs.cells('tab_header')};
 		if(!o.is_folder){
-			for(var ts in md.tabular_sections){
-				if(ts !== "extra_fields" && o[ts] instanceof TabularSection && !md.tabular_sections[ts].hide){
-					wnd.elmnts.frm_tabs.addTab('tab_'+ts, '&nbsp;'+md.tabular_sections[ts].synonym+'&nbsp;');
-					wnd.elmnts.tabs['tab_'+ts] = wnd.elmnts.frm_tabs.cells('tab_'+ts);
+			for(var ts in cmd.tabular_sections){
+				if(ts==="extra_fields")
+					continue;
+
+				if(o[ts] instanceof TabularSection){
 
 					// настройка табличной части
-					tabular_init(wnd.elmnts.tabs['tab_'+ts], ts);
+					tabular_init(ts);
 				}
 			}
 		}
@@ -140,7 +143,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			}
 
 			// добавляем команды печати
-			var pp = md["printing_plates"];
+			var pp = cmd["printing_plates"];
 			for(var pid in pp)
 				this.addListOption("bs_print", pid, "~", "button", pp[pid]);
 
@@ -271,7 +274,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 * Перечитать табчасть продукции из объекта
 	 */
 	function refresh_tabulars(){
-		for(var ts in md.tabular_sections){
+		for(var ts in cmd.tabular_sections){
 			if(ts !== "extra_fields" && o[ts] instanceof TabularSection){
 				o[ts].sync_grid(wnd.elmnts["grid_" + name]);
 			}
@@ -313,33 +316,37 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	/**
 	 * настройка (инициализация) табличной части продукции
 	 */
-	function tabular_init(tab, name){
+	function tabular_init(name){
 
-		// панель инструментов табличной части
-		var tb = wnd.elmnts["tb_" + name] = tab.attachToolbar();
-		tb.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
-		tb.loadStruct(require("toolbar_add_del"), function(){
-			this.attachEvent("onclick", toolbar_click);
-		});
-
-
-		// собственно табличная часть
-		var grid = wnd.elmnts["grid_" + name] = tab.attachGrid(),
-			source = {
+		// с помощью метода ts_captions(), выясняем, надо ли добавлять данную ТЧ и формируем описание колонок табчасти
+		var source = {
 				o: o,
 				wnd: wnd,
 				on_select: tabular_on_value_select,
 				tabular_section: name
 			};
+		if(!_md.ts_captions(_mgr.class_name, name, source))
+			return;
 
-		_md.ts_captions(_mgr.class_name, name, source);
+		// закладка табов табличной части
+		wnd.elmnts.frm_tabs.addTab('tab_'+name, '&nbsp;'+cmd.tabular_sections[name].synonym+'&nbsp;');
+		wnd.elmnts.tabs['tab_'+name] = wnd.elmnts.frm_tabs.cells('tab_'+name);
 
+
+		// панель инструментов табличной части
+		var tb = wnd.elmnts["tb_" + name] = wnd.elmnts.tabs['tab_'+name].attachToolbar();
+		tb.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
+		tb.loadStruct(require("toolbar_add_del"), function(){
+			this.attachEvent("onclick", toolbar_click);
+		});
+
+		// собственно табличная часть
+		var grid = wnd.elmnts["grid_" + name] = wnd.elmnts.tabs['tab_'+name].attachGrid();
 		grid.setIconsPath(dhtmlx.image_path);
 		grid.setImagePath(dhtmlx.image_path);
-
-
 		grid.setHeader(source.headers);
-		//grid.setInitWidths(source.widths);
+		if(source.min_widths)
+			grid.setInitWidths(source.widths);
 		if(source.min_widths)
 			grid.setColumnMinWidth(source.min_widths);
 		if(source.aligns)
@@ -395,7 +402,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			return Number(selId)-1;
 		$p.msg.show_msg({type: "alert-warning",
 			text: $p.msg.no_selected_row.replace("%1", "Продукция"),
-			title: md["obj_presentation"] + ': ' + o.presentation});
+			title: cmd["obj_presentation"] + ': ' + o.presentation});
 	}
 
 	function del_row(){

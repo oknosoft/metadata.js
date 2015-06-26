@@ -610,10 +610,12 @@ function Meta(req, patch) {
 
 		if(mf.types.length == 1){
 			tnames = mf.types[0].split(".");
-			return mf_mgr($p[tnames[0]][tnames[1]]);
+			if(tnames.length > 1 && $p[tnames[0]])
+				return mf_mgr($p[tnames[0]][tnames[1]]);
 		}else if(v && v.type){
 			tnames = v.type.split(".");
-			return mf_mgr($p[tnames[0]][tnames[1]]);
+			if(tnames.length > 1 && $p[tnames[0]])
+				return mf_mgr($p[tnames[0]][tnames[1]]);
 		}
 
 		property = row.property || row.param;
@@ -638,7 +640,7 @@ function Meta(req, patch) {
 		}else{
 
 			// Получаем объект свойства
-			oproperty = _cat.properties.get(property, false);
+			oproperty = _cch.properties.get(property, false);
 			if($p.is_data_obj(oproperty)){
 
 				if(oproperty.is_new())
@@ -650,7 +652,8 @@ function Meta(req, patch) {
 						tnames = oproperty.type.types[rt].split(".");
 						break;
 					}
-				return mf_mgr($p[tnames[0]][tnames[1]]);
+				if(tnames && tnames.length > 1 && $p[tnames[0]])
+					return mf_mgr($p[tnames[0]][tnames[1]]);
 			}
 		}
 	};
@@ -683,30 +686,45 @@ function Meta(req, patch) {
 		if(!source)
 			source = {};
 
-		var mts = this.get(class_name).tabular_sections[ts_name], mf;
-		source.fields = ["row"];
-		source.headers = "№";
-		source.widths = "40";
-		source.min_widths = "";
-		source.aligns = "";
-		source.sortings = "na";
-		source.types = "cntr";
+		var mts = this.get(class_name).tabular_sections[ts_name],
+			mfrm = this.get(class_name).form,
+			fields = mts.fields, mf;
 
-		for(var f in mts.fields){
-			mf = mts.fields[f];
-			if(!mf.hide){
-				source.fields.push(f);
-				source.headers += "," + (mf.synonym ? mf.synonym.replace(/,/g, " ") : f);
-				source.types += "," + this.control_by_type(mf.type);
-				source.sortings += ",na";
+		// если имеются метаданные формы, используем их
+		if(mfrm && mfrm.obj){
+
+			if(!mfrm.obj.tabular_sections[ts_name])
+				return;
+
+			source._mixin(mfrm.obj.tabular_sections[ts_name]);
+
+		}else{
+
+			if(ts_name==="contact_information")
+				fields = {type: "", kind: "", presentation: ""}
+
+			source.fields = ["row"];
+			source.headers = "№";
+			source.widths = "40";
+			source.min_widths = "";
+			source.aligns = "";
+			source.sortings = "na";
+			source.types = "cntr";
+
+			for(var f in fields){
+				mf = mts.fields[f];
+				if(!mf.hide){
+					source.fields.push(f);
+					source.headers += "," + (mf.synonym ? mf.synonym.replace(/,/g, " ") : f);
+					source.types += "," + this.control_by_type(mf.type);
+					source.sortings += ",na";
+				}
 			}
 		}
 
-		//source.headers = "№,Номенклатура,Характеристика,Комментарий,Штук,Длина,Высота,Площадь,Колич.,Ед,Скидка постав.,Цена постав.,Сумма постав.,Скидка,Цена,Сумма";
-		//source.widths = "40,200,*,220,0,70,70,70,70,40,70,70,70,70,70,70";
-		//source.min_widths = "30,200,220,150,0,70,40,70,70,70,70,70,70,70,70,70";
-	};
+		return true;
 
+	};
 
 	this.syns_js = function (v) {
 		var synJS = {

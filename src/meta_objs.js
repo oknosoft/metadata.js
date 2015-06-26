@@ -158,10 +158,21 @@ DataObj.prototype._setter = function (f, v) {
 
 		this._obj[f] = $p.fix_guid(v);
 
-		if(v && v.presentation){
-			if((mgr = _md.value_mgr(this._obj, f, mf, false, v)) && !(mgr instanceof EnumManager))
+		mgr = _md.value_mgr(this._obj, f, mf, false, v);
+
+		if(mgr){
+			if(mgr instanceof EnumManager){
+				if(typeof v == "string")
+					this._obj[f] = v;
+				else if(typeof v == "object")
+					this._obj[f] = v.ref || v.name;
+			}else if(v && v.presentation)
 				mgr.create(v);
+		}else{
+			if(typeof v != "object")
+				this._obj[f] = v;
 		}
+
 
 	}else if(mf.date_part)
 		this._obj[f] = $p.fix_date(v, true);
