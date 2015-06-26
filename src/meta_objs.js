@@ -222,13 +222,18 @@ DataObj.prototype.load = function(){
 			tObj.number_doc = "000000000";
 		return Promise.resolve(tObj);
 
-	}else
+	}else if(!tObj._manager._cachable && $p.job_prm.rest)
+		return tObj.load_rest();
+
+	else
 		return _load({
 			class_name: tObj._manager.class_name,
 			action: "load",
 			ref: tObj.ref
 		})
 			.then(callback_1c);
+
+
 
 };
 

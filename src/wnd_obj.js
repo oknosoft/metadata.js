@@ -22,7 +22,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 	var _mgr = this, o = attr.o, wnd, md;
 
-	// читаем объект из локального SQL или из 1С
+	// читаем объект из локального SQL или получаем с сервера
 	if($p.is_data_obj(o))
 		initialize();
 	else{

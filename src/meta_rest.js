@@ -17,6 +17,37 @@ function Rest(){
 		if(dtill)
 			res += " and " + fld + " lt datetime'" + $p.dateFormat(dtill, $p.dateFormat.masks.isoDateTime) + "'";
 		return res;
+	};
+
+	this.to_data = function (rdata, mgr) {
+		var o = {},
+			mf = mgr.metadata().fields,
+			mts = mgr.metadata().tabular_sections,
+			ts, f, tf, row, syn, synts;
+		for(f in mf){
+			syn = _md.syns_1с(f);
+			if(mf[f].type.is_ref)
+				syn+="_Key";
+			o[f] = rdata[syn];
+		}
+		for(ts in mts){
+			synts = _md.syns_1с(ts);
+			o[ts] = [];
+			rdata[synts].sort(function (a, b) {
+				return a.LineNumber > b.LineNumber;
+			});
+			rdata[synts].forEach(function (r) {
+				row = {};
+				for(tf in mts[ts].fields){
+					syn = _md.syns_1с(tf);
+					if(mts[ts].fields[tf].type.is_ref)
+						syn+="_Key";
+					row[tf] = r[syn];
+				}
+				o[ts].push(row);
+			});
+		}
+		return o;
 	}
 }
 
@@ -76,37 +107,9 @@ DataManager.prototype.load_rest = function (attr) {
 			return JSON.parse(req.response);
 		})
 		.then(function (res) {
-			var mf = t.metadata().fields,
-				mts = t.metadata().tabular_sections,
-				ts, i, f, tf, row, o, ro, syn, synts;
-			for(i = res.value.length-1; i >=0; i--){
-				ro = res.value[i];
-				o = {};
-				for(f in mf){
-					syn = _md.syns_1с(f);
-					if(mf[f].type.is_ref)
-						syn+="_Key";
-					o[f] = ro[syn];
-				}
-				for(ts in mts){
-					synts = _md.syns_1с(ts);
-					o[ts] = [];
-					ro[synts].sort(function (a, b) {
-						return a.LineNumber > b.LineNumber;
-					});
-					ro[synts].forEach(function (r) {
-						row = {};
-						for(tf in mts[ts].fields){
-							syn = _md.syns_1с(tf);
-							if(mts[ts].fields[tf].type.is_ref)
-								syn+="_Key";
-							row[tf] = r[syn];
-						}
-						o[ts].push(row);
-					});
-				}
-
-			}
+			var data = [];
+			for(var i = res.value.length-1; i >=0; i--)
+				data.push(_rest.to_data(res.value[i], t));
 
 		});
 };
@@ -358,4 +361,22 @@ DataObj.prototype.save_rest = function (attr) {
 	//Post?PostingModeOperational=false.
 	return Promise.resolve(this);
 
+};
+
+/**
+ * Читает объект из rest-сервиса
+ * @return {Promise.<T>} - промис с загруженным объектом
+ */
+DataObj.prototype.load_rest = function () {
+	var attr = {},
+		tObj = this;
+	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
+	attr.url += tObj._manager.rest_name + "(guid'" + tObj.ref + "')?$format=json";
+	return $p.ajax.get_ex(attr.url, attr)
+		.then(function (req) {
+			return JSON.parse(req.response);
+		})
+		.then(function (res) {
+			return tObj._mixin(_rest.to_data(res, tObj._manager));
+		});
 };
