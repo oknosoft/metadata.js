@@ -121,7 +121,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				wnd: wnd,
 				grid: wnd.elmnts.pg_header,
 				on_select: $p.iface.pgrid_on_select,
-				grid_on_change: property_on_select
+				grid_on_change: header_change
 			});
 			wnd.elmnts.pg_header.attachEvent("onPropertyChanged", $p.iface.pgrid_on_change );
 			wnd.elmnts.pg_header.attachEvent("onCheckbox", $p.iface.pgrid_on_checkbox );
@@ -257,18 +257,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 	}
 
-	/**
-	 * обработчик выбора значения в таблице продукции (ссылочные типы)
-	 */
-	function tabular_on_value_select(selv){
-
-		if(selv===undefined)
-			return;
-
-		this.row[this.col] = selv;
-		this.cell.setValue(selv.presentation);
-	}
-
 
 	/**
 	 * Перечитать табчасть продукции из объекта
@@ -283,35 +271,70 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 
 	/**
-	 * обработчик изменения значения в таблице продукции (примитивные типы)
+	 * обработчик выбора значения в таблице продукции (ссылочные типы)
 	 */
-	function tabular_on_edit(stage, rId, cInd, nValue, oValue){
-		if(stage != 2 || nValue == oValue)
-			return true;
-		var source = this.getUserData("", "source"),
-			fName = source.fields[cInd], ret_code;
+	function tabular_on_value_select(selv){
 
-		if(fName == "note"){
-			ret_code = true;
-			o[source.tabular_section].get(rId-1)[fName] = nValue;
-		} else if (!isNaN(Number(nValue))){
-			ret_code = true;
-			o[source.tabular_section].get(rId-1)[fName] = Number(nValue);
-		}
-		if(ret_code){
-			setTimeout(function(){ production_on_value_change(rId-1); } , 0);
-			return ret_code;
+		if(selv===undefined)
+			return;
+
+		var ret_code = _mgr.handle_event(o, "value_change", {
+				field: this.col,
+				value: selv,
+				tabular_section: this.tabular_section,
+				grid: wnd.elmnts["grid_" + this.tabular_section],
+				row: this.row,
+				wnd: wnd
+			});
+
+		if(typeof ret_code !== "boolean"){
+			this.row[this.col] = selv;
+			this.cell.setValue(selv.presentation);
 		}
 	}
 
 	/**
-	 * дополнительный обработчик выбора значения в шапке документа (ссылочные типы)
+	 * обработчик изменения значения в таблице продукции (примитивные типы)
 	 */
-	function property_on_select(f, selv){
+	function tabular_on_edit(stage, rId, cInd, nValue, oValue){
 
+		if(stage != 2 || nValue == oValue)
+			return true;
 
+		var source = this.getUserData("", "source"),
+			row = o[source.tabular_section].get(rId-1),
+			fName = source.fields[cInd],
+			ret_code = _mgr.handle_event(o, "value_change", {
+				field: fName,
+				value: nValue,
+				tabular_section: source.tabular_section,
+				grid: this,
+				row: row,
+				cell: this.cells(rId, cInd),
+				wnd: wnd
+			});
+
+		if(typeof ret_code !== "boolean"){
+			row[fName] = $p.fetch_type(nValue, row._metadata.fields[fName].type);
+			ret_code = true;
+		}
+
+		return ret_code;
 	}
 
+	/**
+	 * дополнительный обработчик изменения значения в шапке документа (ссылочные и примитивные типы)
+	 */
+	function header_change(f, selv){
+		_mgr.handle_event(o, "value_change", {
+			field: f,
+			value: selv,
+			tabular_section: "",
+			grid: this,
+			cell: this.cells(),
+			wnd: wnd
+		})
+	}
 
 	/**
 	 * настройка (инициализация) табличной части продукции

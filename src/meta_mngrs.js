@@ -22,7 +22,8 @@ function DataManager(class_name){
 			after_create: [],
 			after_load: [],
 			before_save: [],
-			after_save: []
+			after_save: [],
+			value_change: []
 		};
 
 	// перечисления кешируются всегда
@@ -115,14 +116,15 @@ function DataManager(class_name){
 
 	/**
 	 * Выполняет методы подписки на событие
-	 * @param obj {DataObj}
-	 * @param name
+	 * @param obj {DataObj} - объект, в котором произошло событие
+	 * @param name {String} - имя события
+	 * @param attr {Object} - дополнительные свойства, передаваемые в обработчик события
 	 */
-	this.handle_event = function (obj, name) {
+	this.handle_event = function (obj, name, attr) {
 		var res;
 		_events[name].forEach(function (method) {
 			if(res !== false)
-				res = method.call(obj);
+				res = method.call(obj, attr);
 		});
 		return res;
 	};
@@ -680,8 +682,13 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 				else
 					flds.push("0 as is_folder");
 
-				if(cmd["main_presentation_name"])
+				if(t instanceof ChartOfAccountManager){
+					flds.push("id");
 					flds.push("name as presentation");
+
+				}else if(cmd["main_presentation_name"])
+					flds.push("name as presentation");
+
 				else{
 					if(cmd["code_length"])
 						flds.push("id as presentation");
@@ -731,32 +738,35 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 
 			var s;
 
-			if(cmd["hierarchical"]){
-				if(cmd["has_owners"]){
+			if(t instanceof ChartOfAccountManager){
+				s = " WHERE (" + (filter ? 0 : 1);
+
+			}else if(cmd["hierarchical"]){
+				if(cmd["has_owners"])
 					s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" +
 						(owner == $p.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
-				}else{
+				else
 					s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" + (filter ? 0 : 1);
-				}
+
 			}else{
-				if(cmd["has_owners"]){
+				if(cmd["has_owners"])
 					s = " WHERE (" + (owner == $p.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
-				}else{
+				else
 					s = " WHERE (" + (filter ? 0 : 1);
-				}
 			}
 
 			if(t.sql_selection_where_flds){
 				s += t.sql_selection_where_flds(filter);
 
-			}else if(t.class_name.indexOf("cat.") != -1){
-				s += " OR _t_.name LIKE '" + filter + "'";
-				if(cmd["code_length"])
-					s += " OR _t_.id LIKE '" + filter + "'";
-
-			}else if(t.class_name.indexOf("doc.") != -1){
+			}else if(t instanceof DocManager)
 				s += " OR _t_.number_doc LIKE '" + filter + "'";
 
+			else{
+				if(cmd["main_presentation_name"] || t instanceof ChartOfAccountManager)
+					s += " OR _t_.name LIKE '" + filter + "'";
+
+				if(cmd["code_length"])
+					s += " OR _t_.id LIKE '" + filter + "'";
 			}
 
 			s += ") AND (_t_.ref != '" + $p.blank.guid + "')";
@@ -786,7 +796,11 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 		}
 
 		function order_flds(){
-			if(cmd["hierarchical"]){
+
+			if(t instanceof ChartOfAccountManager){
+				return "ORDER BY id";
+
+			}else if(cmd["hierarchical"]){
 				if(cmd["group_hierarchy"])
 					return "ORDER BY _t_.is_folder desc, is_initial_value, presentation";
 				else
@@ -883,11 +897,10 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 	function sql_create(){
 		var sql = "CREATE TABLE IF NOT EXISTS "+t.table_name+" (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT";
 
-		if(t.class_name.substr(0, 3)=="cat")
-			sql += ", id CHAR, name CHAR, is_folder BOOLEAN";
-
-		else if(t.class_name.substr(0, 3)=="doc")
+		if(t instanceof DocManager)
 			sql += ", posted BOOLEAN, date Date, number_doc CHAR";
+		else
+			sql += ", id CHAR, name CHAR, is_folder BOOLEAN";
 
 		for(f in cmd.fields)
 			sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.fields[f].type);
@@ -956,7 +969,7 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 		res = "DROP TABLE IF EXISTS "+t.table_name;
 
 	else if(action == "get_tree")
-		res = "SELECT ref, parent, name presentation FROM " + t.table_name + " WHERE is_folder order by parent, name";
+		res = "SELECT ref, parent, name as presentation FROM " + t.table_name + " WHERE is_folder order by parent, name";
 
 	else if(action == "get_selection")
 		res = sql_selection();
@@ -982,9 +995,13 @@ RefDataManager.prototype.caption_flds = function(attr){
 	if(cmd.form && cmd.form.selection){
 		acols = cmd.form.selection.cols;
 
-	}else if(this instanceof DocObj){
+	}else if(this instanceof DocManager){
 		acols.push(new Col_struct("date", "120", "ro", "left", "server", "Дата"));
 		acols.push(new Col_struct("number_doc", "120", "ro", "left", "server", "Номер"));
+
+	}else if(this instanceof ChartOfAccountManager){
+		acols.push(new Col_struct("id", "120", "ro", "left", "server", "Код"));
+		acols.push(new Col_struct("presentation", "*", "ro", "left", "server", "Наименование"));
 
 	}else{
 
@@ -1107,7 +1124,7 @@ EnumManager.prototype.get_sql_struct = function(attr){
  * @param filter {Object}
  * @return {Array}
  */
-DataManager.prototype.get_option_list = function(val){
+EnumManager.prototype.get_option_list = function(val){
 	var l = [];
 	function check(v){
 		if($p.is_equal(v.value, val))
@@ -1183,33 +1200,36 @@ function InfoRegManager(class_name){
 		return force_promise ? Promise.resolve(res) : res;
 	};
 
+	/**
+	 * сохраняет массив объектов в менеджере
+	 * @method load_array
+	 * @param aattr {array} - массив объектов для трансформации в объекты ссылочного типа
+	 * @async
+	 */
+	this.load_array = function(aattr){
+
+		var key, obj, res = [];
+
+		for(var i in aattr){
+
+			key = this.get_ref(aattr[i]);
+
+			if(!(obj = by_ref[key])){
+				new this._obj_сonstructor(aattr[i], this);
+
+			}else
+				obj._mixin(aattr[i]);
+
+			res.push(by_ref[key]);
+		}
+		return res;
+
+	};
+
 }
 InfoRegManager._extend(DataManager);
 
-/**
- * сохраняет массив объектов в менеджере
- * @method load_array
- * @param aattr {array} - массив объектов для трансформации в объекты ссылочного типа
- * @async
- */
-InfoRegManager.prototype.load_array = function(aattr){
 
-	var key, obj, dimensions;
-
-	for(var i in aattr){
-		key = {};
-		dimensions = this.metadata().dimensions;
-		for(var j in dimensions)
-			key[j] = aattr[i][j];
-
-		if(!(obj = this.get(key))){
-			new this._obj_сonstructor(aattr[i], this);
-
-		}else
-			obj._mixin(aattr[i]);
-	}
-
-};
 
 /**
  * Возаращает запросов для создания таблиц или извлечения данных

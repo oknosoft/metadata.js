@@ -506,6 +506,10 @@ function Meta(req, patch) {
 
 		// TODO переписать на промисах и генераторах и перекинуть в синкер
 
+		for(class_name in managers.cat)
+			data_names.push({"class": _cat, "name": managers.cat[class_name]});
+		cstep = data_names.length;
+
 		for(class_name in managers.ireg){
 			data_names.push({"class": _ireg, "name": managers.ireg[class_name]});
 			cstep++;
@@ -516,16 +520,20 @@ function Meta(req, patch) {
 			cstep++;
 		}
 
-		for(class_name in managers.cat)
-			data_names.push({"class": _cat, "name": managers.cat[class_name]});
-		cstep = data_names.length;
-
 		for(class_name in managers.enm){
 			data_names.push({"class": _enm, "name": managers.enm[class_name]});
 			cstep++;
 		}
 
+		for(class_name in managers.cch){
+			data_names.push({"class": _cch, "name": managers.cch[class_name]});
+			cstep++;
+		}
 
+		for(class_name in managers.cacc){
+			data_names.push({"class": _cacc, "name": managers.cacc[class_name]});
+			cstep++;
+		}
 
 		function iteration(){
 			var data = data_names[cstep-1],

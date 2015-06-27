@@ -8,15 +8,15 @@
             "is_folder",
             "id",
             "article",
-            "name as presentation",
-            "nom_unit.name as nom_unit",
-            "nom_group.name as nom_group"
+            "_t_.name as presentation",
+            "cat_units.name as unit",
+            "cat_nom_groups.name as nom_group"
           ],
           "cols": [
             {"id": "id", "width": "120", "type": "ro", "align": "left", "sort": "server", "caption": "Код"},
             {"id": "article", "width": "150", "type": "ro", "align": "left", "sort": "server", "caption": "Артикул"},
             {"id": "presentation", "width": "*", "type": "ro", "align": "left", "sort": "server", "caption": "Наименование"},
-            {"id": "nom_unit", "width": "70", "type": "ro", "align": "left", "sort": "server", "caption": "Ед"},
+            {"id": "unit", "width": "70", "type": "ro", "align": "left", "sort": "server", "caption": "Ед"},
             {"id": "nom_group", "width": "170", "type": "ro", "align": "left", "sort": "server", "caption": "Номенклатурная группа"}
           ]
         }

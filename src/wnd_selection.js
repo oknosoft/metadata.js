@@ -12,24 +12,14 @@
  * @param attr {Object} - параметры инициализации формы
  */
 DataManager.prototype.form_selection = function(pwnd, attr){
-	var _mngr, md, class_name, wnd, s_col, a_direction, previous_filter;
 
-	// читаем метаданные
-	_mngr = this;
-	md = _mngr.metadata();
-	class_name = _mngr.class_name;
-	s_col = 0;
-	a_direction = "asc";
-	previous_filter = {};
+	var _mngr = this,
+		md = _mngr.metadata(),
+		has_tree = md["hierarchical"] && !(_mngr instanceof ChartOfAccountManager),
+		wnd, s_col = 0,
+		a_direction = "asc",
+		previous_filter = {};
 
-	if(!md){
-		$p.msg.show_msg({
-			title: $p.msg.error_critical,
-			type: "alert-error",
-			text: $p.msg.no_metadata.replace("%1", class_name)
-		});
-		return;
-	}
 
 	// создаём и настраиваем форму
 	frm_create();
@@ -55,7 +45,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				frm_unload();
 			};
 		}else{
-			wnd = $p.iface.w.createWindow('wnd_' + class_name.replace(".", "_") + '_select', 0, 0, 900, 600);
+			wnd = $p.iface.w.createWindow('wnd_' + _mngr.class_name.replace(".", "_") + '_select', 0, 0, 900, 600);
 			wnd.centerOnScreen();
 			wnd.setModal(1);
 			wnd.button('park').hide();
@@ -65,7 +55,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 
 		$p.bind_help(wnd);
-		wnd.setText('Список ' + (class_name.indexOf("cat.") > -1 ? 'справочника "' : 'документов "') + (md["list_presentation"] || md.synonym) + '"');
+		wnd.setText('Список ' + (_mngr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (md["list_presentation"] || md.synonym) + '"');
 
 		dhtmlxEvent(document.body, "keydown", body_keydown);
 
@@ -73,7 +63,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		wnd.elmnts = {
 			status_bar: wnd.attachStatusBar()
 		};
-		wnd.elmnts.status_bar.setText("<div id='" + class_name.replace(".", "_") + "_select_recinfoArea'></div>");
+		wnd.elmnts.status_bar.setText("<div id='" + _mngr.class_name.replace(".", "_") + "_select_recinfoArea'></div>");
 
 		// командная панель формы
 
@@ -123,7 +113,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	}
 
 	function input_filter_change(flt){
-		if(md["hierarchical"]){
+		if(has_tree){
 			if(flt.filter)
 				wnd.elmnts.cell_tree.collapse();
 			else
@@ -135,7 +125,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	function create_tree_and_grid(){
 		var layout, cell_tree, cell_grid, tree, grid, grid_inited;
 
-		if(md["hierarchical"]){
+		if(has_tree){
 			layout = wnd.attachLayout('2U');
 
 			cell_grid = layout.cells('b');
@@ -161,7 +151,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			// !!! для неиерархических справочников дерево можно спрятать
 			$p.cat.load_soap_to_grid({
 				action: "get_tree",
-				class_name: class_name
+				class_name: _mngr.class_name
 			}, wnd.elmnts.tree, function(){
 				setTimeout(function(){ grid.reload(); }, 20);
 			});
@@ -176,7 +166,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		grid.setIconsPath(dhtmlx.image_path);
 		grid.setImagePath(dhtmlx.image_path);
 		grid.setPagingWTMode(true,true,true,[20,30,60]);
-		grid.enablePaging(true, 30, 8, class_name.replace(".", "_") + "_select_recinfoArea");
+		grid.enablePaging(true, 30, 8, _mngr.class_name.replace(".", "_") + "_select_recinfoArea");
 		grid.setPagingSkin("toolbar", dhtmlx.skin);
 		grid.attachEvent("onBeforeSorting", customColumnSort);
 		grid.attachEvent("onBeforePageChanged", function(){ return !!this.getRowsNum();});
@@ -217,14 +207,14 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 							xpos2 = xml.indexOf("'>", xpos),
 							xh = xml.substr(xpos+12, xpos2-xpos-12);
 						if($p.is_guid(xh)){
-							if(md["hierarchical"]){
+							if(has_tree){
 								tree.do_not_reload = true;
 								tree.selectItem(xh, false);
 							}
 						}
 						grid.selectRowById(filter.initial_value);
 
-					}else if(filter.parent && $p.is_guid(filter.parent) && md["hierarchical"]){
+					}else if(filter.parent && $p.is_guid(filter.parent) && has_tree){
 						tree.do_not_reload = true;
 						tree.selectItem(filter.parent, false);
 					}
@@ -331,7 +321,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		var filter = wnd.elmnts.filter.get_filter()
 				._mixin({
 					action: "get_selection",
-					class_name: class_name,
+					class_name: _mngr.class_name,
 					order_by: s_col,
 					direction: a_direction,
 					start: start || ((wnd.elmnts.grid.currentPage || 1)-1)*wnd.elmnts.grid.rowsBufferOutSize,
@@ -340,7 +330,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				})
 				._mixin(attr),
 
-			tparent = md["hierarchical"] ? (wnd.elmnts.tree.getSelectedItemId() || $p.blank.guid) : null;
+			tparent = has_tree ? (wnd.elmnts.tree.getSelectedItemId() || $p.blank.guid) : null;
 
 		filter.parent = ((tparent || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
 		for(var f in filter){

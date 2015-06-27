@@ -51,30 +51,33 @@ function eXcell_ref(cell){
 					parent: null,
 					owner: null};
 
+			t.mgr = null;
+
 			if(t.source.slist)
 				t.source.slist.call(t);
 
 			else if(t.source.tabular_section){
-				fmd = t.source.o._metadata["tabular_sections"][t.source.tabular_section].fields[t.source.col];
-				for (rt in fmd.type.types)
-					if (fmd.type.types[rt].indexOf(".") > -1) {
-						at = fmd.type.types[rt].split(".");
-						if(t.source["choice_links"] && t.source["choice_links"][t.source.tabular_section + "_" + t.source.col])
-							acl = t.source["choice_links"][t.source.tabular_section + "_" + t.source.col];
-						else
-							acl = fmd["choice_links"];
-						if(acl){
-							for(var icl in acl){
-								if((cl = acl[icl]).name[1] == "owner")
-									attr.owner = cl.path.length == 2 ? t.source.row[cl.path[1]].ref : t.source.o[cl.path[0]].ref;
-							}
+				fmd = t.source.row._metadata.fields[t.source.col];
+				t.mgr = _md.value_mgr(t.source.row, t.source.col, fmd.type);
+				if(t.mgr){
+					if(t.source["choice_links"] && t.source["choice_links"][t.source.tabular_section + "_" + t.source.col])
+						acl = t.source["choice_links"][t.source.tabular_section + "_" + t.source.col];
+					else
+						acl = fmd["choice_links"];
+					if(acl){
+						for(var icl in acl){
+							if((cl = acl[icl]).name[1] == "owner")
+								attr.owner = cl.path.length == 2 ? t.source.row[cl.path[1]].ref : t.source.o[cl.path[0]].ref;
 						}
-						$p[at[0]][at[1]].form_selection(t.source, attr);
-						break;
+					}
+					t.mgr.form_selection(t.source, attr);
 				}
+
 			}else{
 				if(t.fpath.length < 2){
 					fmd = t.source.o._manager.metadata(t.fpath[0]);
+					t.mgr = _md.value_mgr(t.source.o, t.fpath[0], fmd.type);
+
 					if(t.source["choice_links"] && t.source["choice_links"][t.fpath[0]])
 						acl = t.source["choice_links"][t.fpath[0]];
 					else
@@ -85,35 +88,34 @@ function eXcell_ref(cell){
 								attr.selection = [];
 							attr.selection.push(t.source["choice_params"][t.fpath[0]][icl]);
 						}
-				}else
+				}else{
 					fmd = t.source.o._metadata["tabular_sections"][t.fpath[0]].fields[t.fpath[1]];
+					t.mgr = _md.value_mgr(t.source.row, t.source.col, fmd.type);
+				}
 
-				for(rt in fmd.type.types)
-					if(fmd.type.types[rt].indexOf(".") > -1){
-						at = fmd.type.types[rt].split(".");
-						if(acl){
-							for(var icl in acl){
-								if((cl = acl[icl]).path.length == 1)
-									sval = t.source.o[cl.path[0]].ref;
-								else{
-									// связь по подчиненному реквизиту. надо разыменовать ссылку поля
-									// !!! пока не неализовано
-									sval = t.source.o[cl.path[0]].ref;
-								}
-								if(cl.name[1] == "owner")
-									attr.owner = sval ;
-								else if(cl.name[0] == "selection"){
-									if(!attr.selection)
-										attr.selection = [];
-									var selection = {};
-									selection[cl.name[1]] = sval;
-									attr.selection.push(selection);
-								}
+				if(t.mgr){
+					if(acl){
+						for(var icl in acl){
+							if((cl = acl[icl]).path.length == 1)
+								sval = t.source.o[cl.path[0]].ref;
+							else{
+								// TODO: связь по подчиненному реквизиту. надо разыменовать ссылку поля
+								// !!! пока не неализовано
+								sval = t.source.o[cl.path[0]].ref;
+							}
+							if(cl.name[1] == "owner")
+								attr.owner = sval ;
+							else if(cl.name[0] == "selection"){
+								if(!attr.selection)
+									attr.selection = [];
+								var selection = {};
+								selection[cl.name[1]] = sval;
+								attr.selection.push(selection);
 							}
 						}
-						$p[at[0]][at[1]].form_selection(t.source, attr);
-						break;
 					}
+					t.mgr.form_selection(t.source, attr);
+				}
 			}
 
 			return $p.cancel_bubble(e);
@@ -192,34 +194,32 @@ function eXcell_refc(cell){
 
 	var t = this,
 		slist=function() {
+			t.mgr = null;
 			var fmd, rt, at, res = [{value:"1", text:"One"}];
+
 			if(t.source.slist)
 				return t.source.slist.call(t);
-			else if(t.source.tabular_section)
-				fmd = t.source.o._metadata["tabular_sections"][t.source.tabular_section].fields[t.source.col];
-			else if(t.fpath.length < 2)
-				fmd = t.source.o._manager.metadata(t.fpath[0]);
-			else if(t.fpath[0] == "extra_fields" || t.fpath[0] == "params"){
-				return _cch.properties.slist(t.fpath[1]);
-			} else
-				fmd = t.source.o._metadata["tabular_sections"][t.fpath[0]].fields[t.fpath[1]];
 
-			// получаем менеджер доступных значений
-			for(rt in fmd.type.types)
-				if(fmd.type.types[rt].indexOf(".") > -1){
-					at = fmd.type.types[rt].split(".");
-					t.mgr = $p[at[0]][at[1]];
-					if(t.mgr){
-						if(t.mgr.get_option_list)
-							res = t.mgr.get_option_list(t.val);
-						else {
-							res.length = 0;
-							t.mgr.each(function (v) {
-								res.push({value: v.ref, text: v.presentation || v.synonym});
-							});
-						}
-					}
-				}
+			else if(t.source.tabular_section){
+				fmd = t.source.row._metadata.fields[t.source.col];
+				t.mgr = _md.value_mgr(t.source.row, t.source.col, fmd.type);
+
+			}else if(t.fpath.length < 2){
+				fmd = t.source.o._manager.metadata(t.fpath[0]);
+				t.mgr = _md.value_mgr(t.source.o, t.fpath[0], fmd.type);
+
+			}else if(t.fpath[0] == "extra_fields" || t.fpath[0] == "params"){
+				return _cch.properties.slist(t.fpath[1]);
+
+			} else{
+				fmd = t.source.o._metadata["tabular_sections"][t.fpath[0]].fields[t.fpath[1]];
+				t.mgr = _md.value_mgr(t.source.row, t.source.col, fmd.type);
+			}
+
+			// если менеджер найден, получаем список у него
+			if(t.mgr)
+				res = t.mgr.get_option_list(t.val);
+
 			return res;
 		};
 

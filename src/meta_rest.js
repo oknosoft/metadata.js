@@ -28,6 +28,8 @@ function Rest(){
 		if(mgr instanceof RefDataManager){
 			o.deleted = rdata.DeletionMark;
 			o.data_version = rdata.DataVersion;
+		}else{
+			mf = []._mixin(mgr.metadata().dimensions)._mixin(mgr.metadata().resources);
 		}
 
 		if(mgr instanceof DocManager){
@@ -38,10 +40,10 @@ function Rest(){
 		} else {
 			if(mgr.metadata().main_presentation_name)
 				o.name = rdata.Description;
+
 			if(mgr.metadata().code_length)
 				o.id = rdata.Code;
 		}
-
 
 		for(f in mf){
 			syn = _md.syns_1с(f);
@@ -49,6 +51,7 @@ function Rest(){
 				syn+="_Key";
 			o[f] = rdata[syn];
 		}
+
 		for(ts in mts){
 			synts = _md.syns_1с(ts);
 			o[ts] = [];
@@ -66,7 +69,22 @@ function Rest(){
 				o[ts].push(row);
 			});
 		}
+
 		return o;
+	};
+
+	this.ajax_to_data = function (attr, mgr) {
+		return $p.ajax.get_ex(attr.url, attr)
+			.then(function (req) {
+				return JSON.parse(req.response);
+			})
+			.then(function (res) {
+				var data = [];
+				res.value.forEach(function (rdata) {
+					data.push(_rest.to_data(rdata, mgr));
+				});
+				return data;
+			});
 	}
 }
 
@@ -119,18 +137,8 @@ DataManager.prototype.load_rest = function (attr) {
 	attr.url += this.rest_name + "?allowedOnly=true&$format=json&$top=1000";
 	//a/unf/odata/standard.odata/Document_ЗаказПокупателя?allowedOnly=true&$format=json&$select=Ref_Key,DataVersion
 
-	var t = this;
+	return _rest.ajax_to_data(attr, this);
 
-	return $p.ajax.get_ex(attr.url, attr)
-		.then(function (req) {
-			return JSON.parse(req.response);
-		})
-		.then(function (res) {
-			var data = [];
-			for(var i = res.value.length-1; i >=0; i--)
-				data.push(_rest.to_data(res.value[i], t));
-
-		});
 };
 
 DataManager.prototype.rest_tree = function (attr) {
@@ -251,6 +259,55 @@ DataManager.prototype.rest_selection = function (attr) {
 			return data_to_grid.call(t, ares, attr);
 		});
 
+};
+
+InfoRegManager.prototype.rest_slice_last = function(attr){
+
+	if(!attr.period)
+		attr.period = $p.date_add_day(new Date(), 1);
+
+	var t = this,
+		cmd = t.metadata(),
+		period = "Period=datetime'" + $p.dateFormat(attr.period, $p.dateFormat.masks.isoDateTime) + "'",
+		condition = "";
+
+	for(var fld in cmd.dimensions){
+
+		if(attr[fld] === undefined)
+			continue;
+
+		var syn = _md.syns_1с(fld);
+		if(cmd.dimensions[fld].type.is_ref){
+			syn += "_Key";
+			if(condition)
+				condition+= " and ";
+			condition+= syn+" eq guid'"+attr[fld].ref+"'";
+		}else{
+			if(condition)
+				condition+= " and ";
+
+			if(cmd.dimensions[fld].type.digits)
+				condition+= syn+" eq "+$p.fix_number(attr[fld]);
+
+			else if(cmd.dimensions[fld].type.date_part)
+				condition+= syn+" eq datetime'"+$p.dateFormat(attr[fld], $p.dateFormat.masks.isoDateTime)+"'";
+
+			else
+				condition+= syn+" eq '"+attr[fld]+"'";
+		}
+
+	}
+
+	if(condition)
+		period+= ",Condition='"+condition+"'";
+
+	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
+	attr.url += this.rest_name + "/SliceLast(%sl)?allowedOnly=true&$format=json&$top=1000".replace("%sl", period);
+
+	return _rest.ajax_to_data(attr, t)
+		.then(function (data) {
+			return t.load_array(data);
+		});
 };
 
 /**
@@ -387,10 +444,12 @@ DataObj.prototype.save_rest = function (attr) {
  * @return {Promise.<T>} - промис с загруженным объектом
  */
 DataObj.prototype.load_rest = function () {
+
 	var attr = {},
 		tObj = this;
 	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
 	attr.url += tObj._manager.rest_name + "(guid'" + tObj.ref + "')?$format=json";
+
 	return $p.ajax.get_ex(attr.url, attr)
 		.then(function (req) {
 			return JSON.parse(req.response);

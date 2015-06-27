@@ -275,6 +275,23 @@
 				"synonym": "Другое"
 			}
 		],
+		"vat_types": [
+			{
+				"order": 0,
+				"name": "ОблагаетсяНДС",
+				"synonym": "Облагается НДС"
+			},
+			{
+				"order": 1,
+				"name": "НеОблагаетсяНДС",
+				"synonym": "Не облагается НДС"
+			},
+			{
+				"order": 2,
+				"name": "НаЭкспорт",
+				"synonym": "Экспорт (ставка 0%)"
+			}
+		],
 		"nom_types": [
 			{
 				"order": 0,
@@ -5354,8 +5371,174 @@
 			}
 		}
 	},
-	"ireg": {},
-	"areg": {},
+	"ireg": {
+		"nom_prices": {
+			"name": "ЦеныНоменклатуры",
+			"note": "",
+			"synonym": "Цены номенклатуры",
+			"dimensions": {
+				"price_type": {
+					"synonym": "Вид цен",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"cat.nom_prices_types"
+						],
+						"is_ref": true
+					}
+				},
+				"nom": {
+					"synonym": "Номенклатура",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"cat.nom"
+						],
+						"is_ref": true
+					}
+				},
+				"characteristic": {
+					"synonym": "Характеристика",
+					"multiline_mode": false,
+					"tooltip": "",
+					"choice_links": [
+						{
+							"name": [
+								"selection",
+								"owner"
+							],
+							"path": [
+								"nom"
+							]
+						}
+					],
+					"type": {
+						"types": [
+							"cat.characteristics"
+						],
+						"is_ref": true
+					}
+				}
+			},
+			"resources": {
+				"price": {
+					"synonym": "Цена",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"number"
+						],
+						"digits": 15,
+						"fraction_figits": 2
+					}
+				},
+				"unit": {
+					"synonym": "Ед.",
+					"multiline_mode": false,
+					"tooltip": "",
+					"choice_links": [
+						{
+							"name": [
+								"selection",
+								"owner"
+							],
+							"path": [
+								"nom"
+							]
+						}
+					],
+					"type": {
+						"types": [
+							"cat.units",
+							"cat.nom_units"
+						],
+						"is_ref": true
+					}
+				}
+			}
+		}
+	},
+	"areg": {
+		"inventories_on_stores": {
+			"name": "ЗапасыНаСкладах",
+			"note": "",
+			"synonym": "Запасы на складах",
+			"dimensions": {
+				"organization": {
+					"synonym": "Организация",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"cat.organizations"
+						],
+						"is_ref": true
+					}
+				},
+				"nom": {
+					"synonym": "Номенклатура",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"cat.nom"
+						],
+						"is_ref": true
+					}
+				},
+				"characteristic": {
+					"synonym": "Характеристика",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"cat.characteristics"
+						],
+						"is_ref": true
+					}
+				},
+				"organizational_unit": {
+					"synonym": "Склад",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"cat.organizational_units"
+						],
+						"is_ref": true
+					}
+				},
+				"cell": {
+					"synonym": "Ячейка",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"cat.cells"
+						],
+						"is_ref": true
+					}
+				}
+			},
+			"resources": {
+				"quantity": {
+					"synonym": "Количество",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"number"
+						],
+						"digits": 15,
+						"fraction_figits": 3
+					}
+				}
+			}
+		}
+	},
 	"dp": {},
 	"rep": {},
 	"cch": {
@@ -5550,10 +5733,6 @@
 		"АдресЭП",
 		"Аксессуар",
 		"Активная",
-		"Арт1Стеклопакет",
-		"Арт1ТолькоВертикальный",
-		"Арт2Стеклопакет",
-		"Арт2ТолькоВертикальный",
 		"Артикул",
 		"Атрибуты",
 		"База",
@@ -5833,50 +6012,6 @@
 		"ПараметрыОтбора",
 		"ПараметрыПрописиНаРусском",
 		"ПараметрыФурнитуры",
-		"пзБазыТехнологическихПрограмм",
-		"пзВариантыАтрибутовВставок",
-		"пзВариантыКрепленияИмпостов",
-		"пзВариантыПереносаОпераций",
-		"пзВариантыСмещений",
-		"пзВариантыУкорочений",
-		"пзВизуализацияЭлементов",
-		"пзВставки",
-		"пзДетализацияПланирования",
-		"пзКлючиПараметров",
-		"пзКонтрольПриПроведении",
-		"пзКорректировкаСпецификации",
-		"пзМаржинальныеКоэффициентыИСкидки",
-		"пзНазначенияЦветовыхГрупп",
-		"пзНаправлениеОткрывания",
-		"пзОбластиКорректировокСпецификации",
-		"пзОграничениеПлана",
-		"пзОриентация",
-		"пзПараметрыПродукции",
-		"пзПоложениеЭлемента",
-		"пзПредопределенныеЭлементы",
-		"пзПростыеСложныеВсе",
-		"пзРайоныДоставки",
-		"пзСвязиПараметров",
-		"пзСоединения",
-		"СостоянияЗаказовПокупателей",
-		"пзСпособыРасчетаКоличества",
-		"пзСпособыРасчетаУгла",
-		"пзСпособыУстановкиСпецификации",
-		"пзСторонаСоединения",
-		"пзТехнологическиеПрограммы",
-		"пзТиповыеБлоки",
-		"пзТипыВставок",
-		"пзТипыВставокСтеклопакета",
-		"пзТипыДеленияРаскладки",
-		"пзТипыОптимизацийРаскроя",
-		"пзТипыОткрывания",
-		"пзТипыРазмерныхЛиний",
-		"пзТипыСоединений",
-		"пзТипыЭлементов",
-		"пзФормированиеЭскиза",
-		"пзФурнитура",
-		"пзЦвета",
-		"пзЦветоЦеновыеГруппы",
 		"Планирование",
 		"ПлатежноеПоручениеВходящее",
 		"ПлатежноеПоручениеИсходящее",
@@ -6163,6 +6298,7 @@
 		"ЮрФизЛицо",
 		"Ячейка",
 		"Ячейки",
+		"СостоянияЗаказовПокупателей",
 		"АналитикаПрочихДоходовИРасходов",
 		"СтатусыПланируемыхПлатежей",
 		"СпособРаспределения",
@@ -6171,7 +6307,8 @@
 		"ТипыНачисленийИУдержаний",
 		"СтруктурныеЕдиницы",
 		"ТипСтруктурнойЕдиницы",
-		"ОрдерныйСклад"
+		"ОрдерныйСклад",
+		"ЗапасыНаСкладах"
 	],
 	"syns_js": [
 		"changed",
@@ -6183,10 +6320,6 @@
 		"email_address",
 		"accessory",
 		"active",
-		"art1glass",
-		"art1vert",
-		"art2glass",
-		"art2vert",
 		"article",
 		"attributes",
 		"base",
@@ -6466,50 +6599,6 @@
 		"selection_params",
 		"parameters_russian_recipe",
 		"furn_params",
-		"bases",
-		"inset_attrs_options",
-		"impost_mount_options",
-		"transfer_operations_options",
-		"offset_options",
-		"contraction_options",
-		"elm_visualization",
-		"inserts",
-		"planning_detailing",
-		"parameters_keys",
-		"control_during",
-		"specification_adjustment",
-		"margin_coefficients",
-		"color_groups_destination",
-		"open_directions",
-		"specification_adjustment_areas",
-		"plan_limit",
-		"orientations",
-		"production_params",
-		"positions",
-		"predefined_elmnts",
-		"simple_complex_all",
-		"delivery_areas",
-		"params_links",
-		"cnns",
-		"invoice_states",
-		"count_calculating_ways",
-		"angle_calculating_ways",
-		"specification_installation_methods",
-		"cnn_sides",
-		"bases_types",
-		"base_blocks",
-		"inserts_types",
-		"inserts_glass_types",
-		"lay_split_types",
-		"cutting_optimization_types",
-		"open_types",
-		"sz_line_types",
-		"cnn_types",
-		"elm_types",
-		"outline_formation",
-		"furns",
-		"clrs",
-		"color_price_groups",
 		"planning",
 		"debit_bank_order",
 		"credit_bank_order",
@@ -6796,6 +6885,7 @@
 		"individual_legal",
 		"cell",
 		"cells",
+		"invoice_states",
 		"income_expenses_analysis",
 		"estimated_payments_states",
 		"distribution_method",
@@ -6804,6 +6894,7 @@
 		"charges_deductions_types",
 		"organizational_units",
 		"structural_unit_type",
-		"store_is_order"
+		"store_is_order",
+		"inventories_on_stores"
 	]
 }

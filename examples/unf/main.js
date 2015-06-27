@@ -1,8 +1,19 @@
 /**
+ * Основное окно интерфейса unf demo
  * <br />&copy; http://www.oknosoft.ru 2009-2015
  * Created 17.06.2015
- * @module  основное окно интерфейса unf demo
+ * @module  main
  */
+
+/**
+ * Глобальная переменная демки УНФ (не фреймворка _metadata.js_, а конкретного прикладного решения)<br />
+ * в её свойстве _modifiers_ располагаем модификаторы объектов, подписки на события и прочую бизнес-логику,
+ * которая должна обрабатываться на клиенте
+ * @type {UNF}
+ */
+var unf = new function UNF() {
+	this.modifiers = []
+};
 
 /**
  * Процедура устанавливает параметры работы программы, специфичные для текущей сборки
@@ -11,53 +22,54 @@
  */
 $p.settings = function (prm, modifiers) {
 
-	prm.check_app_installed = false; // установленность приложения в ChromeStore НЕ проверяем
+	/**
+	 * установленность приложения в ChromeStore НЕ проверяем
+ 	 */
+	prm.check_app_installed = false;
 
-	prm.rest = true;                // для транспорта используем rest, а не сервис http
+	/**
+	 * для транспорта используем rest, а не сервис http
+	 */
+	prm.rest = true;
 
-	prm.offline = false;            // автономная работа запрещена
+	/**
+	 * автономная работа запрещена
+	 */
+	prm.offline = false;
 	if(localStorage)
 		localStorage.setItem("offline", "");
 
-	prm.create_tables = true;       // будем использовать объекты данных, для которых создаём таблицы
+	/**
+	 * будем использовать объекты данных, для которых создаём таблицы
+	 */
+	prm.create_tables = "/examples/unf/data/create_tables.sql";
+
 	$p.ajax.get("/examples/unf/data/create_tables.sql")
 		.then(function (req) {
 			prm.create_tables_sql = req.response;   // текст запроса
 		});
 
-	prm.settings_url = "/examples/unf/settings.html";// расположение страницы настроек
-
-	prm.rest_path = "/a/unf/%1/odata/standard.odata/";// расположение rest-сервиса unf
-
-	prm.data_url = "/examples/unf/data/";           // расположение файлов данных
+	/**
+	 * расположение страницы настроек
+	 */
+	prm.settings_url = "/examples/unf/settings.html";
 
 	/**
-	 * для целей демо-примера, методы data-объектов переопределяем здесь в анонимной функции
-	 * в реальных проектах, методы каждого data-объекта удобнее расположить в отдельных модулях
+	 * расположение rest-сервиса unf
 	 */
-	(function(){
+	prm.rest_path = "/a/unf/%1/odata/standard.odata/";
 
-		// методы справочника номенклатуры
-		modifiers.push(function nom($p){
+	/**
+	 * расположение файлов данных
+	 */
+	prm.data_url = "/examples/unf/data/";
 
-			var _mgr = $p.cat.nom;
-
-			// модификаторы
-			_mgr.sql_selection_list_flds = function(initial_value){
-				return "SELECT _t_.ref, _t_.`deleted`, _t_.is_folder, _t_.id, _t_.article, _t_.name as presentation, _u_.name as nom_unit, _k_.name as nom_group," +
-					" case when _t_.ref = '" + initial_value + "' then 0 else 1 end as is_initial_value FROM cat_nom AS _t_" +
-					" left outer join cat_units as _u_ on _u_.ref = _t_.unit" +
-					" left outer join cat_nom_groups as _k_ on _k_.ref = _t_.nom_group %3 %4 LIMIT 300";
-			};
-
-			_mgr.sql_selection_where_flds = function(filter){
-				return " OR _t_.article LIKE '" + filter + "' OR _t_.id LIKE '" + filter + "' OR _t_.name LIKE '" + filter + "'";
-			};
-
-
-		});
-
-	})();
+	/**
+	 * подключаем модификаторы
+	 */
+	unf.modifiers.forEach(function (func) {
+		modifiers.push(func);
+	});
 
 };
 
@@ -67,14 +79,22 @@ $p.settings = function (prm, modifiers) {
  */
 $p.iface.oninit = function() {
 
+	/**
+	 * Используем разбивку экрана в две колонки: дерево навигации слева, динсписок в центре
+	 */
 	$p.iface.layout_2u()
 
 		.then(function (tree) {
 
+			/**
+			 * Используем стандартную процедуру аутентификации.
+			 * При необходимости, можно реализовать клиентские сертификаты, двухфакторную авторизацию с одноразовыми sms и т.д.
+			 */
 			$p.iface.frm_auth(
 
 				/**
-				 * используем стандартную визуализацию входа в программу
+				 * Используем стандартную визуализацию входа в программу.
+				 * При необходимости, можно показкать свои диалоги, оповещения, рекламу и т.д.
 				 */
 				null,
 
@@ -83,7 +103,7 @@ $p.iface.oninit = function() {
 				 *  это место можно переопределить и открывать, например, специальную форму списка заказов
 				 */
 				function () {
-					$p.iface.set_hash("cat.currencies", "", "", "oper");
+					$p.iface.set_hash("doc.buyers_order", "", "", "oper");
 
 				},
 

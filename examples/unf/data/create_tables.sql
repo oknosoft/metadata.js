@@ -1,10 +1,14 @@
 USE md;
 CREATE TABLE IF NOT EXISTS refs (ref CHAR);
+CREATE TABLE IF NOT EXISTS cacc_managerial (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, account_type CHAR, distribution_method CHAR, account_for_closing CHAR, income_expenses_analysis CHAR, parent CHAR);
+CREATE TABLE IF NOT EXISTS cch_properties (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, caption CHAR, destination CHAR, mandatory BOOLEAN, note CHAR, tooltip CHAR, type JSON);
+CREATE TABLE IF NOT EXISTS cch_income_expenses_analysis (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN);
 CREATE TABLE IF NOT EXISTS enm_individual_legal (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR);
 CREATE TABLE IF NOT EXISTS enm_structural_unit_types (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR);
 CREATE TABLE IF NOT EXISTS enm_specification_row_types (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR);
 CREATE TABLE IF NOT EXISTS enm_event_types (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR);
 CREATE TABLE IF NOT EXISTS enm_nom_types (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR);
+CREATE TABLE IF NOT EXISTS enm_vat_types (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR);
 CREATE TABLE IF NOT EXISTS enm_contact_information_types (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR);
 CREATE TABLE IF NOT EXISTS enm_cash_flow_types (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR);
 CREATE TABLE IF NOT EXISTS enm_estimated_payments_states (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR);
@@ -20,6 +24,9 @@ CREATE TABLE IF NOT EXISTS enm_transactions_kinds_stock_transfer (ref CHAR PRIMA
 CREATE TABLE IF NOT EXISTS enm_transactions_kinds_purchase_order (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR);
 CREATE TABLE IF NOT EXISTS enm_transactions_kinds_buyers_order (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR);
 CREATE TABLE IF NOT EXISTS enm_contract_kinds (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR);
+CREATE TABLE IF NOT EXISTS doc_event (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, posted BOOLEAN, date Date, number_doc CHAR, `content` CHAR, responsible CHAR, author CHAR, project CHAR, inbound_outbound CHAR, etag CHAR, identifier CHAR, calendar CHAR, ts_extra_fields JSON);
+CREATE TABLE IF NOT EXISTS doc_buyers_order (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, posted BOOLEAN, date Date, number_doc CHAR, author CHAR, bank_account CHAR, doc_currency CHAR, transactions_kind CHAR, work_kind CHAR, charges_discounts_kind CHAR, price_type CHAR, change_date Date, shipping_date Date, contract CHAR, closed BOOLEAN, cashbox CHAR, note CHAR, partner CHAR, `settlements_multiplicity` INT, `settlements_course` FLOAT, vat_price_included BOOLEAN, organization CHAR, responsible CHAR, project CHAR, event CHAR, invoice_state CHAR, start Date, vat CHAR, vat_included BOOLEAN, doc_amount FLOAT, cash_flow_type CHAR, finish Date, cell CHAR, use_goods BOOLEAN, ts_inventories JSON, ts_calendar_payments JSON, ts_jobs JSON, ts_executors JSON, ts_materials JSON, ts_prepayment JSON, ts_extra_fields JSON, ts_charges_discounts JSON);
+CREATE TABLE IF NOT EXISTS ireg_nom_prices (price_type CHAR, nom CHAR, characteristic CHAR, price FLOAT, unit CHAR, PRIMARY KEY (price_type, nom, characteristic));
 CREATE TABLE IF NOT EXISTS cat_cells (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, owner CHAR, parent CHAR);
 CREATE TABLE IF NOT EXISTS cat_price_groups (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, sorting INT, parent CHAR);
 CREATE TABLE IF NOT EXISTS cat_characteristics (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, owner CHAR, ts_extra_fields JSON);
@@ -56,5 +63,3 @@ CREATE TABLE IF NOT EXISTS cat_transport_means (ref CHAR PRIMARY KEY NOT NULL, `
 CREATE TABLE IF NOT EXISTS cat_banks_qualifier (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, correspondent_account CHAR, city CHAR, address CHAR, phone_numbers CHAR, activity_ceased BOOLEAN, parent CHAR);
 CREATE TABLE IF NOT EXISTS cat_contacts_qualifier (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, id CHAR, `json` CHAR, f_key CHAR, organization CHAR, position CHAR, title CHAR, updated Date);
 CREATE TABLE IF NOT EXISTS cat_calendars_google (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, backgroundcolor CHAR, colorid CHAR, foregroundcolor CHAR, id CHAR, f_key CHAR, `primary` BOOLEAN, selected CHAR, summary CHAR, timezone CHAR);
-CREATE TABLE IF NOT EXISTS doc_event (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, posted BOOLEAN, date Date, number_doc CHAR, `content` CHAR, responsible CHAR, author CHAR, project CHAR, inbound_outbound CHAR, etag CHAR, identifier CHAR, calendar CHAR, ts_extra_fields JSON);
-CREATE TABLE IF NOT EXISTS doc_buyers_order (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, posted BOOLEAN, date Date, number_doc CHAR, author CHAR, bank_account CHAR, doc_currency CHAR, transactions_kind CHAR, work_kind CHAR, charges_discounts_kind CHAR, price_type CHAR, change_date Date, shipping_date Date, contract CHAR, closed BOOLEAN, cashbox CHAR, note CHAR, partner CHAR, `settlements_multiplicity` INT, `settlements_course` FLOAT, vat_price_included BOOLEAN, organization CHAR, responsible CHAR, project CHAR, event CHAR, invoice_state CHAR, start Date, vat CHAR, vat_included BOOLEAN, doc_amount FLOAT, cash_flow_type CHAR, finish Date, cell CHAR, use_goods BOOLEAN, ts_inventories JSON, ts_calendar_payments JSON, ts_jobs JSON, ts_executors JSON, ts_materials JSON, ts_prepayment JSON, ts_extra_fields JSON, ts_charges_discounts JSON);

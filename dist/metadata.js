@@ -1966,30 +1966,33 @@ function eXcell_ref(cell){
 					parent: null,
 					owner: null};
 
+			t.mgr = null;
+
 			if(t.source.slist)
 				t.source.slist.call(t);
 
 			else if(t.source.tabular_section){
-				fmd = t.source.o._metadata["tabular_sections"][t.source.tabular_section].fields[t.source.col];
-				for (rt in fmd.type.types)
-					if (fmd.type.types[rt].indexOf(".") > -1) {
-						at = fmd.type.types[rt].split(".");
-						if(t.source["choice_links"] && t.source["choice_links"][t.source.tabular_section + "_" + t.source.col])
-							acl = t.source["choice_links"][t.source.tabular_section + "_" + t.source.col];
-						else
-							acl = fmd["choice_links"];
-						if(acl){
-							for(var icl in acl){
-								if((cl = acl[icl]).name[1] == "owner")
-									attr.owner = cl.path.length == 2 ? t.source.row[cl.path[1]].ref : t.source.o[cl.path[0]].ref;
-							}
+				fmd = t.source.row._metadata.fields[t.source.col];
+				t.mgr = _md.value_mgr(t.source.row, t.source.col, fmd.type);
+				if(t.mgr){
+					if(t.source["choice_links"] && t.source["choice_links"][t.source.tabular_section + "_" + t.source.col])
+						acl = t.source["choice_links"][t.source.tabular_section + "_" + t.source.col];
+					else
+						acl = fmd["choice_links"];
+					if(acl){
+						for(var icl in acl){
+							if((cl = acl[icl]).name[1] == "owner")
+								attr.owner = cl.path.length == 2 ? t.source.row[cl.path[1]].ref : t.source.o[cl.path[0]].ref;
 						}
-						$p[at[0]][at[1]].form_selection(t.source, attr);
-						break;
+					}
+					t.mgr.form_selection(t.source, attr);
 				}
+
 			}else{
 				if(t.fpath.length < 2){
 					fmd = t.source.o._manager.metadata(t.fpath[0]);
+					t.mgr = _md.value_mgr(t.source.o, t.fpath[0], fmd.type);
+
 					if(t.source["choice_links"] && t.source["choice_links"][t.fpath[0]])
 						acl = t.source["choice_links"][t.fpath[0]];
 					else
@@ -2000,35 +2003,34 @@ function eXcell_ref(cell){
 								attr.selection = [];
 							attr.selection.push(t.source["choice_params"][t.fpath[0]][icl]);
 						}
-				}else
+				}else{
 					fmd = t.source.o._metadata["tabular_sections"][t.fpath[0]].fields[t.fpath[1]];
+					t.mgr = _md.value_mgr(t.source.row, t.source.col, fmd.type);
+				}
 
-				for(rt in fmd.type.types)
-					if(fmd.type.types[rt].indexOf(".") > -1){
-						at = fmd.type.types[rt].split(".");
-						if(acl){
-							for(var icl in acl){
-								if((cl = acl[icl]).path.length == 1)
-									sval = t.source.o[cl.path[0]].ref;
-								else{
-									// связь по подчиненному реквизиту. надо разыменовать ссылку поля
-									// !!! пока не неализовано
-									sval = t.source.o[cl.path[0]].ref;
-								}
-								if(cl.name[1] == "owner")
-									attr.owner = sval ;
-								else if(cl.name[0] == "selection"){
-									if(!attr.selection)
-										attr.selection = [];
-									var selection = {};
-									selection[cl.name[1]] = sval;
-									attr.selection.push(selection);
-								}
+				if(t.mgr){
+					if(acl){
+						for(var icl in acl){
+							if((cl = acl[icl]).path.length == 1)
+								sval = t.source.o[cl.path[0]].ref;
+							else{
+								// TODO: связь по подчиненному реквизиту. надо разыменовать ссылку поля
+								// !!! пока не неализовано
+								sval = t.source.o[cl.path[0]].ref;
+							}
+							if(cl.name[1] == "owner")
+								attr.owner = sval ;
+							else if(cl.name[0] == "selection"){
+								if(!attr.selection)
+									attr.selection = [];
+								var selection = {};
+								selection[cl.name[1]] = sval;
+								attr.selection.push(selection);
 							}
 						}
-						$p[at[0]][at[1]].form_selection(t.source, attr);
-						break;
 					}
+					t.mgr.form_selection(t.source, attr);
+				}
 			}
 
 			return $p.cancel_bubble(e);
@@ -2107,34 +2109,32 @@ function eXcell_refc(cell){
 
 	var t = this,
 		slist=function() {
+			t.mgr = null;
 			var fmd, rt, at, res = [{value:"1", text:"One"}];
+
 			if(t.source.slist)
 				return t.source.slist.call(t);
-			else if(t.source.tabular_section)
-				fmd = t.source.o._metadata["tabular_sections"][t.source.tabular_section].fields[t.source.col];
-			else if(t.fpath.length < 2)
-				fmd = t.source.o._manager.metadata(t.fpath[0]);
-			else if(t.fpath[0] == "extra_fields" || t.fpath[0] == "params"){
-				return _cch.properties.slist(t.fpath[1]);
-			} else
-				fmd = t.source.o._metadata["tabular_sections"][t.fpath[0]].fields[t.fpath[1]];
 
-			// получаем менеджер доступных значений
-			for(rt in fmd.type.types)
-				if(fmd.type.types[rt].indexOf(".") > -1){
-					at = fmd.type.types[rt].split(".");
-					t.mgr = $p[at[0]][at[1]];
-					if(t.mgr){
-						if(t.mgr.get_option_list)
-							res = t.mgr.get_option_list(t.val);
-						else {
-							res.length = 0;
-							t.mgr.each(function (v) {
-								res.push({value: v.ref, text: v.presentation || v.synonym});
-							});
-						}
-					}
-				}
+			else if(t.source.tabular_section){
+				fmd = t.source.row._metadata.fields[t.source.col];
+				t.mgr = _md.value_mgr(t.source.row, t.source.col, fmd.type);
+
+			}else if(t.fpath.length < 2){
+				fmd = t.source.o._manager.metadata(t.fpath[0]);
+				t.mgr = _md.value_mgr(t.source.o, t.fpath[0], fmd.type);
+
+			}else if(t.fpath[0] == "extra_fields" || t.fpath[0] == "params"){
+				return _cch.properties.slist(t.fpath[1]);
+
+			} else{
+				fmd = t.source.o._metadata["tabular_sections"][t.fpath[0]].fields[t.fpath[1]];
+				t.mgr = _md.value_mgr(t.source.row, t.source.col, fmd.type);
+			}
+
+			// если менеджер найден, получаем список у него
+			if(t.mgr)
+				res = t.mgr.get_option_list(t.val);
+
 			return res;
 		};
 
@@ -2442,7 +2442,7 @@ $p.iface.Toolbar_filter = function (attr) {
 			input_filter_changed = setTimeout(function () {
 				if(input_filter_changed)
 					onchange();
-			}, 500);
+			}, 600);
 		}
 
 		input_filter_width = 180;
@@ -4531,6 +4531,10 @@ function Meta(req, patch) {
 
 		// TODO переписать на промисах и генераторах и перекинуть в синкер
 
+		for(class_name in managers.cat)
+			data_names.push({"class": _cat, "name": managers.cat[class_name]});
+		cstep = data_names.length;
+
 		for(class_name in managers.ireg){
 			data_names.push({"class": _ireg, "name": managers.ireg[class_name]});
 			cstep++;
@@ -4541,16 +4545,20 @@ function Meta(req, patch) {
 			cstep++;
 		}
 
-		for(class_name in managers.cat)
-			data_names.push({"class": _cat, "name": managers.cat[class_name]});
-		cstep = data_names.length;
-
 		for(class_name in managers.enm){
 			data_names.push({"class": _enm, "name": managers.enm[class_name]});
 			cstep++;
 		}
 
+		for(class_name in managers.cch){
+			data_names.push({"class": _cch, "name": managers.cch[class_name]});
+			cstep++;
+		}
 
+		for(class_name in managers.cacc){
+			data_names.push({"class": _cacc, "name": managers.cacc[class_name]});
+			cstep++;
+		}
 
 		function iteration(){
 			var data = data_names[cstep-1],
@@ -4891,7 +4899,8 @@ function DataManager(class_name){
 			after_create: [],
 			after_load: [],
 			before_save: [],
-			after_save: []
+			after_save: [],
+			value_change: []
 		};
 
 	// перечисления кешируются всегда
@@ -4984,14 +4993,15 @@ function DataManager(class_name){
 
 	/**
 	 * Выполняет методы подписки на событие
-	 * @param obj {DataObj}
-	 * @param name
+	 * @param obj {DataObj} - объект, в котором произошло событие
+	 * @param name {String} - имя события
+	 * @param attr {Object} - дополнительные свойства, передаваемые в обработчик события
 	 */
-	this.handle_event = function (obj, name) {
+	this.handle_event = function (obj, name, attr) {
 		var res;
 		_events[name].forEach(function (method) {
 			if(res !== false)
-				res = method.call(obj);
+				res = method.call(obj, attr);
 		});
 		return res;
 	};
@@ -5549,8 +5559,13 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 				else
 					flds.push("0 as is_folder");
 
-				if(cmd["main_presentation_name"])
+				if(t instanceof ChartOfAccountManager){
+					flds.push("id");
 					flds.push("name as presentation");
+
+				}else if(cmd["main_presentation_name"])
+					flds.push("name as presentation");
+
 				else{
 					if(cmd["code_length"])
 						flds.push("id as presentation");
@@ -5600,32 +5615,35 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 
 			var s;
 
-			if(cmd["hierarchical"]){
-				if(cmd["has_owners"]){
+			if(t instanceof ChartOfAccountManager){
+				s = " WHERE (" + (filter ? 0 : 1);
+
+			}else if(cmd["hierarchical"]){
+				if(cmd["has_owners"])
 					s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" +
 						(owner == $p.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
-				}else{
+				else
 					s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" + (filter ? 0 : 1);
-				}
+
 			}else{
-				if(cmd["has_owners"]){
+				if(cmd["has_owners"])
 					s = " WHERE (" + (owner == $p.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
-				}else{
+				else
 					s = " WHERE (" + (filter ? 0 : 1);
-				}
 			}
 
 			if(t.sql_selection_where_flds){
 				s += t.sql_selection_where_flds(filter);
 
-			}else if(t.class_name.indexOf("cat.") != -1){
-				s += " OR _t_.name LIKE '" + filter + "'";
-				if(cmd["code_length"])
-					s += " OR _t_.id LIKE '" + filter + "'";
-
-			}else if(t.class_name.indexOf("doc.") != -1){
+			}else if(t instanceof DocManager)
 				s += " OR _t_.number_doc LIKE '" + filter + "'";
 
+			else{
+				if(cmd["main_presentation_name"] || t instanceof ChartOfAccountManager)
+					s += " OR _t_.name LIKE '" + filter + "'";
+
+				if(cmd["code_length"])
+					s += " OR _t_.id LIKE '" + filter + "'";
 			}
 
 			s += ") AND (_t_.ref != '" + $p.blank.guid + "')";
@@ -5655,7 +5673,11 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 		}
 
 		function order_flds(){
-			if(cmd["hierarchical"]){
+
+			if(t instanceof ChartOfAccountManager){
+				return "ORDER BY id";
+
+			}else if(cmd["hierarchical"]){
 				if(cmd["group_hierarchy"])
 					return "ORDER BY _t_.is_folder desc, is_initial_value, presentation";
 				else
@@ -5752,11 +5774,10 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 	function sql_create(){
 		var sql = "CREATE TABLE IF NOT EXISTS "+t.table_name+" (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT";
 
-		if(t.class_name.substr(0, 3)=="cat")
-			sql += ", id CHAR, name CHAR, is_folder BOOLEAN";
-
-		else if(t.class_name.substr(0, 3)=="doc")
+		if(t instanceof DocManager)
 			sql += ", posted BOOLEAN, date Date, number_doc CHAR";
+		else
+			sql += ", id CHAR, name CHAR, is_folder BOOLEAN";
 
 		for(f in cmd.fields)
 			sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.fields[f].type);
@@ -5825,7 +5846,7 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 		res = "DROP TABLE IF EXISTS "+t.table_name;
 
 	else if(action == "get_tree")
-		res = "SELECT ref, parent, name presentation FROM " + t.table_name + " WHERE is_folder order by parent, name";
+		res = "SELECT ref, parent, name as presentation FROM " + t.table_name + " WHERE is_folder order by parent, name";
 
 	else if(action == "get_selection")
 		res = sql_selection();
@@ -5851,9 +5872,13 @@ RefDataManager.prototype.caption_flds = function(attr){
 	if(cmd.form && cmd.form.selection){
 		acols = cmd.form.selection.cols;
 
-	}else if(this instanceof DocObj){
+	}else if(this instanceof DocManager){
 		acols.push(new Col_struct("date", "120", "ro", "left", "server", "Дата"));
 		acols.push(new Col_struct("number_doc", "120", "ro", "left", "server", "Номер"));
+
+	}else if(this instanceof ChartOfAccountManager){
+		acols.push(new Col_struct("id", "120", "ro", "left", "server", "Код"));
+		acols.push(new Col_struct("presentation", "*", "ro", "left", "server", "Наименование"));
 
 	}else{
 
@@ -5976,7 +6001,7 @@ EnumManager.prototype.get_sql_struct = function(attr){
  * @param filter {Object}
  * @return {Array}
  */
-DataManager.prototype.get_option_list = function(val){
+EnumManager.prototype.get_option_list = function(val){
 	var l = [];
 	function check(v){
 		if($p.is_equal(v.value, val))
@@ -6052,33 +6077,36 @@ function InfoRegManager(class_name){
 		return force_promise ? Promise.resolve(res) : res;
 	};
 
+	/**
+	 * сохраняет массив объектов в менеджере
+	 * @method load_array
+	 * @param aattr {array} - массив объектов для трансформации в объекты ссылочного типа
+	 * @async
+	 */
+	this.load_array = function(aattr){
+
+		var key, obj, res = [];
+
+		for(var i in aattr){
+
+			key = this.get_ref(aattr[i]);
+
+			if(!(obj = by_ref[key])){
+				new this._obj_сonstructor(aattr[i], this);
+
+			}else
+				obj._mixin(aattr[i]);
+
+			res.push(by_ref[key]);
+		}
+		return res;
+
+	};
+
 }
 InfoRegManager._extend(DataManager);
 
-/**
- * сохраняет массив объектов в менеджере
- * @method load_array
- * @param aattr {array} - массив объектов для трансформации в объекты ссылочного типа
- * @async
- */
-InfoRegManager.prototype.load_array = function(aattr){
 
-	var key, obj, dimensions;
-
-	for(var i in aattr){
-		key = {};
-		dimensions = this.metadata().dimensions;
-		for(var j in dimensions)
-			key[j] = aattr[i][j];
-
-		if(!(obj = this.get(key))){
-			new this._obj_сonstructor(aattr[i], this);
-
-		}else
-			obj._mixin(aattr[i]);
-	}
-
-};
 
 /**
  * Возаращает запросов для создания таблиц или извлечения данных
@@ -7358,6 +7386,8 @@ function Rest(){
 		if(mgr instanceof RefDataManager){
 			o.deleted = rdata.DeletionMark;
 			o.data_version = rdata.DataVersion;
+		}else{
+			mf = []._mixin(mgr.metadata().dimensions)._mixin(mgr.metadata().resources);
 		}
 
 		if(mgr instanceof DocManager){
@@ -7368,10 +7398,10 @@ function Rest(){
 		} else {
 			if(mgr.metadata().main_presentation_name)
 				o.name = rdata.Description;
+
 			if(mgr.metadata().code_length)
 				o.id = rdata.Code;
 		}
-
 
 		for(f in mf){
 			syn = _md.syns_1с(f);
@@ -7379,6 +7409,7 @@ function Rest(){
 				syn+="_Key";
 			o[f] = rdata[syn];
 		}
+
 		for(ts in mts){
 			synts = _md.syns_1с(ts);
 			o[ts] = [];
@@ -7396,7 +7427,22 @@ function Rest(){
 				o[ts].push(row);
 			});
 		}
+
 		return o;
+	};
+
+	this.ajax_to_data = function (attr, mgr) {
+		return $p.ajax.get_ex(attr.url, attr)
+			.then(function (req) {
+				return JSON.parse(req.response);
+			})
+			.then(function (res) {
+				var data = [];
+				res.value.forEach(function (rdata) {
+					data.push(_rest.to_data(rdata, mgr));
+				});
+				return data;
+			});
 	}
 }
 
@@ -7449,18 +7495,8 @@ DataManager.prototype.load_rest = function (attr) {
 	attr.url += this.rest_name + "?allowedOnly=true&$format=json&$top=1000";
 	//a/unf/odata/standard.odata/Document_ЗаказПокупателя?allowedOnly=true&$format=json&$select=Ref_Key,DataVersion
 
-	var t = this;
+	return _rest.ajax_to_data(attr, this);
 
-	return $p.ajax.get_ex(attr.url, attr)
-		.then(function (req) {
-			return JSON.parse(req.response);
-		})
-		.then(function (res) {
-			var data = [];
-			for(var i = res.value.length-1; i >=0; i--)
-				data.push(_rest.to_data(res.value[i], t));
-
-		});
 };
 
 DataManager.prototype.rest_tree = function (attr) {
@@ -7581,6 +7617,55 @@ DataManager.prototype.rest_selection = function (attr) {
 			return data_to_grid.call(t, ares, attr);
 		});
 
+};
+
+InfoRegManager.prototype.rest_slice_last = function(attr){
+
+	if(!attr.period)
+		attr.period = $p.date_add_day(new Date(), 1);
+
+	var t = this,
+		cmd = t.metadata(),
+		period = "Period=datetime'" + $p.dateFormat(attr.period, $p.dateFormat.masks.isoDateTime) + "'",
+		condition = "";
+
+	for(var fld in cmd.dimensions){
+
+		if(attr[fld] === undefined)
+			continue;
+
+		var syn = _md.syns_1с(fld);
+		if(cmd.dimensions[fld].type.is_ref){
+			syn += "_Key";
+			if(condition)
+				condition+= " and ";
+			condition+= syn+" eq guid'"+attr[fld].ref+"'";
+		}else{
+			if(condition)
+				condition+= " and ";
+
+			if(cmd.dimensions[fld].type.digits)
+				condition+= syn+" eq "+$p.fix_number(attr[fld]);
+
+			else if(cmd.dimensions[fld].type.date_part)
+				condition+= syn+" eq datetime'"+$p.dateFormat(attr[fld], $p.dateFormat.masks.isoDateTime)+"'";
+
+			else
+				condition+= syn+" eq '"+attr[fld]+"'";
+		}
+
+	}
+
+	if(condition)
+		period+= ",Condition='"+condition+"'";
+
+	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
+	attr.url += this.rest_name + "/SliceLast(%sl)?allowedOnly=true&$format=json&$top=1000".replace("%sl", period);
+
+	return _rest.ajax_to_data(attr, t)
+		.then(function (data) {
+			return t.load_array(data);
+		});
 };
 
 /**
@@ -7717,10 +7802,12 @@ DataObj.prototype.save_rest = function (attr) {
  * @return {Promise.<T>} - промис с загруженным объектом
  */
 DataObj.prototype.load_rest = function () {
+
 	var attr = {},
 		tObj = this;
 	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
 	attr.url += tObj._manager.rest_name + "(guid'" + tObj.ref + "')?$format=json";
+
 	return $p.ajax.get_ex(attr.url, attr)
 		.then(function (req) {
 			return JSON.parse(req.response);
@@ -8214,7 +8301,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				wnd: wnd,
 				grid: wnd.elmnts.pg_header,
 				on_select: $p.iface.pgrid_on_select,
-				grid_on_change: property_on_select
+				grid_on_change: header_change
 			});
 			wnd.elmnts.pg_header.attachEvent("onPropertyChanged", $p.iface.pgrid_on_change );
 			wnd.elmnts.pg_header.attachEvent("onCheckbox", $p.iface.pgrid_on_checkbox );
@@ -8350,18 +8437,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 	}
 
-	/**
-	 * обработчик выбора значения в таблице продукции (ссылочные типы)
-	 */
-	function tabular_on_value_select(selv){
-
-		if(selv===undefined)
-			return;
-
-		this.row[this.col] = selv;
-		this.cell.setValue(selv.presentation);
-	}
-
 
 	/**
 	 * Перечитать табчасть продукции из объекта
@@ -8376,35 +8451,70 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 
 	/**
-	 * обработчик изменения значения в таблице продукции (примитивные типы)
+	 * обработчик выбора значения в таблице продукции (ссылочные типы)
 	 */
-	function tabular_on_edit(stage, rId, cInd, nValue, oValue){
-		if(stage != 2 || nValue == oValue)
-			return true;
-		var source = this.getUserData("", "source"),
-			fName = source.fields[cInd], ret_code;
+	function tabular_on_value_select(selv){
 
-		if(fName == "note"){
-			ret_code = true;
-			o[source.tabular_section].get(rId-1)[fName] = nValue;
-		} else if (!isNaN(Number(nValue))){
-			ret_code = true;
-			o[source.tabular_section].get(rId-1)[fName] = Number(nValue);
-		}
-		if(ret_code){
-			setTimeout(function(){ production_on_value_change(rId-1); } , 0);
-			return ret_code;
+		if(selv===undefined)
+			return;
+
+		var ret_code = _mgr.handle_event(o, "value_change", {
+				field: this.col,
+				value: selv,
+				tabular_section: this.tabular_section,
+				grid: wnd.elmnts["grid_" + this.tabular_section],
+				row: this.row,
+				wnd: wnd
+			});
+
+		if(typeof ret_code !== "boolean"){
+			this.row[this.col] = selv;
+			this.cell.setValue(selv.presentation);
 		}
 	}
 
 	/**
-	 * дополнительный обработчик выбора значения в шапке документа (ссылочные типы)
+	 * обработчик изменения значения в таблице продукции (примитивные типы)
 	 */
-	function property_on_select(f, selv){
+	function tabular_on_edit(stage, rId, cInd, nValue, oValue){
 
+		if(stage != 2 || nValue == oValue)
+			return true;
 
+		var source = this.getUserData("", "source"),
+			row = o[source.tabular_section].get(rId-1),
+			fName = source.fields[cInd],
+			ret_code = _mgr.handle_event(o, "value_change", {
+				field: fName,
+				value: nValue,
+				tabular_section: source.tabular_section,
+				grid: this,
+				row: row,
+				cell: this.cells(rId, cInd),
+				wnd: wnd
+			});
+
+		if(typeof ret_code !== "boolean"){
+			row[fName] = $p.fetch_type(nValue, row._metadata.fields[fName].type);
+			ret_code = true;
+		}
+
+		return ret_code;
 	}
 
+	/**
+	 * дополнительный обработчик изменения значения в шапке документа (ссылочные и примитивные типы)
+	 */
+	function header_change(f, selv){
+		_mgr.handle_event(o, "value_change", {
+			field: f,
+			value: selv,
+			tabular_section: "",
+			grid: this,
+			cell: this.cells(),
+			wnd: wnd
+		})
+	}
 
 	/**
 	 * настройка (инициализация) табличной части продукции
@@ -8581,24 +8691,14 @@ DataManager.prototype.form_obj = function(pwnd, attr){
  * @param attr {Object} - параметры инициализации формы
  */
 DataManager.prototype.form_selection = function(pwnd, attr){
-	var _mngr, md, class_name, wnd, s_col, a_direction, previous_filter;
 
-	// читаем метаданные
-	_mngr = this;
-	md = _mngr.metadata();
-	class_name = _mngr.class_name;
-	s_col = 0;
-	a_direction = "asc";
-	previous_filter = {};
+	var _mngr = this,
+		md = _mngr.metadata(),
+		has_tree = md["hierarchical"] && !(_mngr instanceof ChartOfAccountManager),
+		wnd, s_col = 0,
+		a_direction = "asc",
+		previous_filter = {};
 
-	if(!md){
-		$p.msg.show_msg({
-			title: $p.msg.error_critical,
-			type: "alert-error",
-			text: $p.msg.no_metadata.replace("%1", class_name)
-		});
-		return;
-	}
 
 	// создаём и настраиваем форму
 	frm_create();
@@ -8624,7 +8724,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				frm_unload();
 			};
 		}else{
-			wnd = $p.iface.w.createWindow('wnd_' + class_name.replace(".", "_") + '_select', 0, 0, 900, 600);
+			wnd = $p.iface.w.createWindow('wnd_' + _mngr.class_name.replace(".", "_") + '_select', 0, 0, 900, 600);
 			wnd.centerOnScreen();
 			wnd.setModal(1);
 			wnd.button('park').hide();
@@ -8634,7 +8734,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 
 		$p.bind_help(wnd);
-		wnd.setText('Список ' + (class_name.indexOf("cat.") > -1 ? 'справочника "' : 'документов "') + (md["list_presentation"] || md.synonym) + '"');
+		wnd.setText('Список ' + (_mngr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (md["list_presentation"] || md.synonym) + '"');
 
 		dhtmlxEvent(document.body, "keydown", body_keydown);
 
@@ -8642,7 +8742,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		wnd.elmnts = {
 			status_bar: wnd.attachStatusBar()
 		};
-		wnd.elmnts.status_bar.setText("<div id='" + class_name.replace(".", "_") + "_select_recinfoArea'></div>");
+		wnd.elmnts.status_bar.setText("<div id='" + _mngr.class_name.replace(".", "_") + "_select_recinfoArea'></div>");
 
 		// командная панель формы
 
@@ -8692,7 +8792,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	}
 
 	function input_filter_change(flt){
-		if(md["hierarchical"]){
+		if(has_tree){
 			if(flt.filter)
 				wnd.elmnts.cell_tree.collapse();
 			else
@@ -8704,7 +8804,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	function create_tree_and_grid(){
 		var layout, cell_tree, cell_grid, tree, grid, grid_inited;
 
-		if(md["hierarchical"]){
+		if(has_tree){
 			layout = wnd.attachLayout('2U');
 
 			cell_grid = layout.cells('b');
@@ -8730,7 +8830,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			// !!! для неиерархических справочников дерево можно спрятать
 			$p.cat.load_soap_to_grid({
 				action: "get_tree",
-				class_name: class_name
+				class_name: _mngr.class_name
 			}, wnd.elmnts.tree, function(){
 				setTimeout(function(){ grid.reload(); }, 20);
 			});
@@ -8745,7 +8845,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		grid.setIconsPath(dhtmlx.image_path);
 		grid.setImagePath(dhtmlx.image_path);
 		grid.setPagingWTMode(true,true,true,[20,30,60]);
-		grid.enablePaging(true, 30, 8, class_name.replace(".", "_") + "_select_recinfoArea");
+		grid.enablePaging(true, 30, 8, _mngr.class_name.replace(".", "_") + "_select_recinfoArea");
 		grid.setPagingSkin("toolbar", dhtmlx.skin);
 		grid.attachEvent("onBeforeSorting", customColumnSort);
 		grid.attachEvent("onBeforePageChanged", function(){ return !!this.getRowsNum();});
@@ -8786,14 +8886,14 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 							xpos2 = xml.indexOf("'>", xpos),
 							xh = xml.substr(xpos+12, xpos2-xpos-12);
 						if($p.is_guid(xh)){
-							if(md["hierarchical"]){
+							if(has_tree){
 								tree.do_not_reload = true;
 								tree.selectItem(xh, false);
 							}
 						}
 						grid.selectRowById(filter.initial_value);
 
-					}else if(filter.parent && $p.is_guid(filter.parent) && md["hierarchical"]){
+					}else if(filter.parent && $p.is_guid(filter.parent) && has_tree){
 						tree.do_not_reload = true;
 						tree.selectItem(filter.parent, false);
 					}
@@ -8900,7 +9000,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		var filter = wnd.elmnts.filter.get_filter()
 				._mixin({
 					action: "get_selection",
-					class_name: class_name,
+					class_name: _mngr.class_name,
 					order_by: s_col,
 					direction: a_direction,
 					start: start || ((wnd.elmnts.grid.currentPage || 1)-1)*wnd.elmnts.grid.rowsBufferOutSize,
@@ -8909,7 +9009,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				})
 				._mixin(attr),
 
-			tparent = md["hierarchical"] ? (wnd.elmnts.tree.getSelectedItemId() || $p.blank.guid) : null;
+			tparent = has_tree ? (wnd.elmnts.tree.getSelectedItemId() || $p.blank.guid) : null;
 
 		filter.parent = ((tparent || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
 		for(var f in filter){
