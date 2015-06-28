@@ -41,8 +41,10 @@ unf.modifiers.push(
 				nom: attr.row.nom,
 				characteristic: attr.row.characteristic
 			};
+
 			if(!this.price_type.empty())
 				prm.price_type = this.price_type;
+
 			else if(!this.contract.price_type.empty())
 				prm.price_type = this.contract.price_type;
 
