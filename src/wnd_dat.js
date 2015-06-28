@@ -322,10 +322,10 @@ $p.iface.pgrid_on_checkbox = function(rId, cInd, state){
  * Рисует стандартную раскладку (XLayout) с деревом в левой части
  * @method layout_2u
  * @for InterfaceObjs
- * @param [tree_filteres] {String} - путь к файлу структуры дерева
+ * @param [tree_attr] {String} - путь к файлу структуры дерева
  * @return {Object} - Псевдопромис
  */
-$p.iface.layout_2u = function (tree_filteres) {
+$p.iface.layout_2u = function (tree_attr) {
 
 	var iface = $p.iface;
 
@@ -350,38 +350,43 @@ $p.iface.layout_2u = function (tree_filteres) {
 	iface.tree = iface.cell_tree.attachTree();
 	iface.tree.setImagePath(dhtmlx.image_path + 'dhxtree_web/');
 	iface.tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
-	iface.tree.attachEvent("onSelect", function(id){    // довешиваем обработчик на дерево
 
-		var sv = iface.swith_view(id.split('.')[0]);
-
-		if(sv == "oper"){		// открываем форму списка текущего метаданного
-
-			var mgr = $p.md.mgr_by_class_name(id.substr(5));
-
-			if(typeof iface.docs.close === "function" )
-				iface.docs.close();
-
-			if(mgr)
-				mgr.form_list(iface.docs, {});
-
-		}else if(sv == "def"){	// обновляем форму списка заказов
-			setTimeout(function () {
-				iface.grid_calc_order.reload(null, true);
-			}, 200);
-		}
-
-	});
 	
-	if(tree_filteres){
-		var fpromise = new Promise();
-		iface.tree.loadXML(tree_filteres+'?v='+$p.job_prm.files_date, function(){
+	if(tree_attr){
 
-			this.tree_filteres = tree_filteres;
-			fpromise.resolve(this);
+		// довешиваем обработчик на дерево
+		iface.tree.attachEvent("onSelect", tree_attr.onselect);
+
+		return new Promise(function(resolve, reject) {
+			iface.tree.loadXML(tree_attr.path+'?v='+$p.job_prm.files_date, function(){
+				this.tree_filteres = tree_attr.path;
+				resolve(this);
+			});
 		});
-		return fpromise;
-	}else
+
+	}else{
+		iface.tree.attachEvent("onSelect", function(id){    // довешиваем обработчик на дерево
+
+			var parts = id.split('.');
+
+			if(parts.length > 1){
+
+				if(iface.swith_view(parts[0]) == "oper"){		// открываем форму списка текущего метаданного
+
+					var mgr = $p.md.mgr_by_class_name(id.substr(5));
+
+					if(typeof iface.docs.close === "function" )
+						iface.docs.close();
+
+					if(mgr)
+						mgr.form_list(iface.docs, {});
+
+				}
+			}
+		});
 		return Promise.resolve(iface.tree);
+	}
+
 };
 
 /**
@@ -390,13 +395,13 @@ $p.iface.layout_2u = function (tree_filteres) {
  * @method frm_auth
  * @for InterfaceObjs
  * @param [onstep] {function} - обработчик визуализации шагов входа в систему. Если не указан, рисуется стандарное окно
- * @param [paths] {Object} - объект с путями к файлам метаданных и данных. Если не указан, файлы ищутся по стандартному пути /data/
  * @param resolve {function} - обработчик успешной авторизации и начальной загрузки данных
  * @param reject {function} - обработчик, который вызывается в случае ошибок на старте программы
  */
 $p.iface.frm_auth = function (onstep, resolve, reject) {
 
-	var frm_auth = $p.iface.auth = $p.iface.docs.attachForm(), w;
+	var frm_auth = $p.iface.auth = $p.iface.docs.attachForm(),
+		w, were_errors;
 
 	if(!onstep)
 		onstep = function (step){
@@ -477,15 +482,20 @@ $p.iface.frm_auth = function (onstep, resolve, reject) {
 
 			$p.eve.log_in(onstep)
 				.then(resolve)
-				.catch(reject)
+				.catch(function (err) {
+					were_errors = true;
+					if(reject)
+						reject(err);
+				})
 				.then(function (err) {
 					if($p.iface.sync)
 						$p.iface.sync.close();
 					if($p.iface.docs){
 						$p.iface.docs.progressOff();
-						$p.iface.docs.hideHeader();
+						if(!were_errors)
+							$p.iface.docs.hideHeader();
 					}
-					if($p.iface.cell_tree)
+					if($p.iface.cell_tree && !were_errors)
 						$p.iface.cell_tree.expand();
 				});
 

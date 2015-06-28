@@ -1033,7 +1033,7 @@ function InterfaceObjs(){
 	 */
 	this.set_hash = function (obj, ref, frm, view ) {
 		if(!obj)
-			obj = "doc.calc_order";
+			obj = "";
 		if(!ref)
 			ref = "";
 		if(!frm)
