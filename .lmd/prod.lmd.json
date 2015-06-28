@@ -25,7 +25,7 @@
       "src/events.js"],
     "filesaver" :  "lib/filesaver.js",
     "<%= file %>": "data/*.xml",
-    "main":     "dist/main.js"
+    "main":     "src/main.js"
   },
   "optimize": true,
   "pack": true,

@@ -153,9 +153,6 @@
  */
 
 var $p = require("common");
-//require("wnd/wnd_sync")($p);
-//require("wnd/wnd_appcache")($p);
-//require("wnd/wnd__main")($p);
 
 }),{
 "common": (function (require, exports, module) { /* wrapped by builder */
