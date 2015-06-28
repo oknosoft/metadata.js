@@ -636,9 +636,14 @@ function Meta(req, patch) {
 			});
 			if(rt.length == 1)
 				return mf_mgr(rt[0]);
+
 			else if(array_enabled)
 				return rt;
-			else if($p.is_guid(property = row[f]) && property != $p.blank.guid){
+
+			else if((property = row[f]) instanceof DataObj)
+				return property._manager;
+
+			else if($p.is_guid(property) && property != $p.blank.guid){
 				for(var i in rt){
 					mgr = rt[i];
 					if(mgr.get(property, false, true))

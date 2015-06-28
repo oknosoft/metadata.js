@@ -128,7 +128,9 @@ function eXcell_ref(cell){
 	/**
 	 * @desc: 	устанавливает текст в ячейке. например, this.setCValue("<input type='button' value='"+val+"'>",val);
 	 */
-	t.setValue=function(val){ t.setCValue(val); };
+	t.setValue=function(val){
+		t.setCValue(val instanceof DataObj ? val.presentation : val);
+	};
 
 	/**
 	 * @desc: 	получает значение ячейки из табличной части или поля объекта или допполя допобъекта, а не из грида
@@ -229,7 +231,9 @@ function eXcell_refc(cell){
 	/**
 	 * @desc: 	устанавливает текст в ячейке. например, this.setCValue("<input type='button' value='"+val+"'>",val);
 	 */
-	t.setValue=function(val){ t.setCValue(val); };
+	t.setValue=function(val){
+		t.setCValue(val instanceof DataObj ? val.presentation : val);
+	};
 
 	/**
 	 * @desc: 	получает значение ячейки из табличной части или поля объекта или допполя допобъекта, а не из грида
