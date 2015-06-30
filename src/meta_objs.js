@@ -164,10 +164,18 @@ DataObj.prototype._setter = function (f, v) {
 			if(mgr instanceof EnumManager){
 				if(typeof v == "string")
 					this._obj[f] = v;
+
+				else if(!v)
+					this._obj[f] = "";
+
 				else if(typeof v == "object")
-					this._obj[f] = v.ref || v.name;
-			}else if(v && v.presentation)
+					this._obj[f] = v.ref || v.name || "";
+
+			}else if(v && v.presentation){
+				if(v.type && !(v instanceof DataObj))
+					delete v.type;
 				mgr.create(v);
+			}
 		}else{
 			if(typeof v != "object")
 				this._obj[f] = v;
