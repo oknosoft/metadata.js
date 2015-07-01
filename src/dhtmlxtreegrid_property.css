@@ -9,7 +9,7 @@ div.gridbox_property table.obj td {
 	border-left: 1px solid white;
 	border-right: 1px solid #D6D6D6;
 	font-family:Tahoma;
-	font-size:11px;
+	font-size:12px;
 	padding-right:4px;
 	padding-left:4px;
 }
@@ -20,7 +20,7 @@ div.gridbox_property table.row20px tr td {
 }
 div.gridbox_property .dhx_combo_edit{
 	font-family:Tahoma;
-	font-size:11px;
+	font-size:12px;
 }
 div.gridbox_property table.obj tr.rowselected td{
 	background-color:#ededed;

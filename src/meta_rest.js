@@ -261,19 +261,19 @@ DataManager.prototype.rest_selection = function (attr) {
 
 };
 
-InfoRegManager.prototype.rest_slice_last = function(attr){
+InfoRegManager.prototype.rest_slice_last = function(filter){
 
-	if(!attr.period)
-		attr.period = $p.date_add_day(new Date(), 1);
+	if(!filter.period)
+		filter.period = $p.date_add_day(new Date(), 1);
 
 	var t = this,
 		cmd = t.metadata(),
-		period = "Period=datetime'" + $p.dateFormat(attr.period, $p.dateFormat.masks.isoDateTime) + "'",
+		period = "Period=datetime'" + $p.dateFormat(filter.period, $p.dateFormat.masks.isoDateTime) + "'",
 		condition = "";
 
 	for(var fld in cmd.dimensions){
 
-		if(attr[fld] === undefined)
+		if(filter[fld] === undefined)
 			continue;
 
 		var syn = _md.syns_1с(fld);
@@ -281,19 +281,19 @@ InfoRegManager.prototype.rest_slice_last = function(attr){
 			syn += "_Key";
 			if(condition)
 				condition+= " and ";
-			condition+= syn+" eq guid'"+attr[fld].ref+"'";
+			condition+= syn+" eq guid'"+filter[fld].ref+"'";
 		}else{
 			if(condition)
 				condition+= " and ";
 
 			if(cmd.dimensions[fld].type.digits)
-				condition+= syn+" eq "+$p.fix_number(attr[fld]);
+				condition+= syn+" eq "+$p.fix_number(filter[fld]);
 
 			else if(cmd.dimensions[fld].type.date_part)
-				condition+= syn+" eq datetime'"+$p.dateFormat(attr[fld], $p.dateFormat.masks.isoDateTime)+"'";
+				condition+= syn+" eq datetime'"+$p.dateFormat(filter[fld], $p.dateFormat.masks.isoDateTime)+"'";
 
 			else
-				condition+= syn+" eq '"+attr[fld]+"'";
+				condition+= syn+" eq '"+filter[fld]+"'";
 		}
 
 	}
@@ -301,10 +301,10 @@ InfoRegManager.prototype.rest_slice_last = function(attr){
 	if(condition)
 		period+= ",Condition='"+condition+"'";
 
-	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
-	attr.url += this.rest_name + "/SliceLast(%sl)?allowedOnly=true&$format=json&$top=1000".replace("%sl", period);
+	$p.ajax.default_attr(filter, $p.job_prm.rest_url());
+	filter.url += this.rest_name + "/SliceLast(%sl)?allowedOnly=true&$format=json&$top=1000".replace("%sl", period);
 
-	return _rest.ajax_to_data(attr, t)
+	return _rest.ajax_to_data(filter, t)
 		.then(function (data) {
 			return t.load_array(data);
 		});

@@ -1088,7 +1088,6 @@ function EnumManager(a, class_name) {
 }
 EnumManager._extend(RefDataManager);
 
-EnumManager.prototype.toString = function(){return "Менеджер перечисления " + this.class_name; };
 
 /**
  * Bозаращает массив запросов для создания таблиц объекта и его табличных частей
@@ -1138,26 +1137,25 @@ EnumManager.prototype.get_option_list = function(val){
 };
 
 
-
 /**
- * Абстрактный менеджер регистра сведений
+ * Абстрактный менеджер регистра (накопления и сведений)
  * @class InfoRegManager
  * @extends DataManager
  * @constructor
  * @param class_name {string} - имя типа менеджера объекта. например, "ireg.prices"
  */
-function InfoRegManager(class_name){
+function RegisterManager(class_name){
 
 	var by_ref={};				// приватное хранилище объектов по ключу записи
 
-	this._obj_сonstructor = InfoRegRow;
+	this._obj_сonstructor = RegisterRow;
 
-	InfoRegManager.superclass.constructor.call(this, class_name);
+	RegisterManager.superclass.constructor.call(this, class_name);
 
 	/**
 	 * Помещает элемент ссылочных данных в локальную коллекцию
 	 * @method push
-	 * @param o {InfoRegRow}
+	 * @param o {RegisterRow}
 	 */
 	this.push = function(o, new_ref){
 		if(new_ref && (new_ref != o.ref)){
@@ -1227,18 +1225,17 @@ function InfoRegManager(class_name){
 	};
 
 }
-InfoRegManager._extend(DataManager);
-
-
+RegisterManager._extend(DataManager);
 
 /**
  * Возаращает запросов для создания таблиц или извлечения данных
  * @method get_sql_struct
+ * @for RegisterManager
  * @param attr {Object}
  * @param attr.action {String} - [create_table, drop, insert, update, replace, select, delete]
  * @return {Object|String}
  */
-InfoRegManager.prototype.get_sql_struct = function(attr) {
+RegisterManager.prototype.get_sql_struct = function(attr) {
 	var t = this,
 		cmd = t.metadata(),
 		res = {}, f,
@@ -1349,22 +1346,10 @@ InfoRegManager.prototype.get_sql_struct = function(attr) {
 	return res;
 };
 
-InfoRegManager.prototype.toString = function(){
-	return "Менеджер регистра сведений " + this.class_name;
-};
-
-InfoRegManager.prototype.get_first = function(attr){
-
-};
-
-InfoRegManager.prototype.get_last = function(attr){
-
-};
-
-InfoRegManager.prototype.get_ref = function(attr){
+RegisterManager.prototype.get_ref = function(attr){
 	var key = "", ref,
 		dimensions = this.metadata().dimensions;
-	if(attr instanceof InfoRegRow)
+	if(attr instanceof RegisterRow)
 		attr = attr._obj;
 	for(var j in dimensions){
 		key += (key ? "_" : "");
@@ -1385,6 +1370,59 @@ InfoRegManager.prototype.get_ref = function(attr){
 	}
 	return key;
 };
+
+
+
+
+/**
+ * Абстрактный менеджер регистра сведений
+ * @class InfoRegManager
+ * @extends RegisterManager
+ * @constructor
+ * @param class_name {string} - имя типа менеджера объекта. например, "ireg.prices"
+ */
+function InfoRegManager(class_name){
+
+	InfoRegManager.superclass.constructor.call(this, class_name);
+
+}
+InfoRegManager._extend(RegisterManager);
+
+/**
+ * Возаращает массив записей - срез первых значений по ключам отбора
+ * @method slice_first
+ * @for InfoRegManager
+ * @param filter {Object} - отбор + период
+ */
+InfoRegManager.prototype.slice_first = function(filter){
+
+};
+
+/**
+ * Возаращает массив записей - срез последних значений по ключам отбора
+ * @method slice_last
+ * @for InfoRegManager
+ * @param filter {Object} - отбор + период
+ */
+InfoRegManager.prototype.slice_last = function(filter){
+
+};
+
+
+
+/**
+ * Абстрактный менеджер регистра накопления
+ * @class AccumRegManager
+ * @extends RegisterManager
+ * @constructor
+ * @param class_name {string} - имя типа менеджера объекта. например, "areg.goods_on_stores"
+ */
+function AccumRegManager(class_name){
+
+	AccumRegManager.superclass.constructor.call(this, class_name);
+}
+AccumRegManager._extend(RegisterManager);
+
 
 
 
@@ -1419,7 +1457,6 @@ function CatManager(class_name) {
 
 }
 CatManager._extend(RefDataManager);
-CatManager.prototype.toString = function(){return "Менеджер справочника " + this.class_name; };
 
 /**
  * Возвращает объект по коду (для справочников) или имени (для перечислений)
@@ -1457,7 +1494,6 @@ function ChartOfCharacteristicManager(class_name){
 
 }
 ChartOfCharacteristicManager._extend(CatManager);
-ChartOfCharacteristicManager.prototype.toString = function(){return "Менеджер плана видов характеристик " + this.class_name; };
 
 
 /**
@@ -1475,7 +1511,6 @@ function ChartOfAccountManager(class_name){
 
 }
 ChartOfAccountManager._extend(CatManager);
-ChartOfAccountManager.prototype.toString = function(){return "Менеджер плана счетов " + this.class_name; };
 
 
 /**
@@ -1494,7 +1529,3 @@ function DocManager(class_name) {
 
 }
 DocManager._extend(RefDataManager);
-DocManager.prototype.toString = function(){return "Менеджер документа " + this.class_name; };
-
-
-

@@ -5981,7 +5981,6 @@ function EnumManager(a, class_name) {
 }
 EnumManager._extend(RefDataManager);
 
-EnumManager.prototype.toString = function(){return "Менеджер перечисления " + this.class_name; };
 
 /**
  * Bозаращает массив запросов для создания таблиц объекта и его табличных частей
@@ -6031,26 +6030,25 @@ EnumManager.prototype.get_option_list = function(val){
 };
 
 
-
 /**
- * Абстрактный менеджер регистра сведений
+ * Абстрактный менеджер регистра (накопления и сведений)
  * @class InfoRegManager
  * @extends DataManager
  * @constructor
  * @param class_name {string} - имя типа менеджера объекта. например, "ireg.prices"
  */
-function InfoRegManager(class_name){
+function RegisterManager(class_name){
 
 	var by_ref={};				// приватное хранилище объектов по ключу записи
 
-	this._obj_сonstructor = InfoRegRow;
+	this._obj_сonstructor = RegisterRow;
 
-	InfoRegManager.superclass.constructor.call(this, class_name);
+	RegisterManager.superclass.constructor.call(this, class_name);
 
 	/**
 	 * Помещает элемент ссылочных данных в локальную коллекцию
 	 * @method push
-	 * @param o {InfoRegRow}
+	 * @param o {RegisterRow}
 	 */
 	this.push = function(o, new_ref){
 		if(new_ref && (new_ref != o.ref)){
@@ -6120,18 +6118,17 @@ function InfoRegManager(class_name){
 	};
 
 }
-InfoRegManager._extend(DataManager);
-
-
+RegisterManager._extend(DataManager);
 
 /**
  * Возаращает запросов для создания таблиц или извлечения данных
  * @method get_sql_struct
+ * @for RegisterManager
  * @param attr {Object}
  * @param attr.action {String} - [create_table, drop, insert, update, replace, select, delete]
  * @return {Object|String}
  */
-InfoRegManager.prototype.get_sql_struct = function(attr) {
+RegisterManager.prototype.get_sql_struct = function(attr) {
 	var t = this,
 		cmd = t.metadata(),
 		res = {}, f,
@@ -6242,22 +6239,10 @@ InfoRegManager.prototype.get_sql_struct = function(attr) {
 	return res;
 };
 
-InfoRegManager.prototype.toString = function(){
-	return "Менеджер регистра сведений " + this.class_name;
-};
-
-InfoRegManager.prototype.get_first = function(attr){
-
-};
-
-InfoRegManager.prototype.get_last = function(attr){
-
-};
-
-InfoRegManager.prototype.get_ref = function(attr){
+RegisterManager.prototype.get_ref = function(attr){
 	var key = "", ref,
 		dimensions = this.metadata().dimensions;
-	if(attr instanceof InfoRegRow)
+	if(attr instanceof RegisterRow)
 		attr = attr._obj;
 	for(var j in dimensions){
 		key += (key ? "_" : "");
@@ -6278,6 +6263,59 @@ InfoRegManager.prototype.get_ref = function(attr){
 	}
 	return key;
 };
+
+
+
+
+/**
+ * Абстрактный менеджер регистра сведений
+ * @class InfoRegManager
+ * @extends RegisterManager
+ * @constructor
+ * @param class_name {string} - имя типа менеджера объекта. например, "ireg.prices"
+ */
+function InfoRegManager(class_name){
+
+	InfoRegManager.superclass.constructor.call(this, class_name);
+
+}
+InfoRegManager._extend(RegisterManager);
+
+/**
+ * Возаращает массив записей - срез первых значений по ключам отбора
+ * @method slice_first
+ * @for InfoRegManager
+ * @param filter {Object} - отбор + период
+ */
+InfoRegManager.prototype.slice_first = function(filter){
+
+};
+
+/**
+ * Возаращает массив записей - срез последних значений по ключам отбора
+ * @method slice_last
+ * @for InfoRegManager
+ * @param filter {Object} - отбор + период
+ */
+InfoRegManager.prototype.slice_last = function(filter){
+
+};
+
+
+
+/**
+ * Абстрактный менеджер регистра накопления
+ * @class AccumRegManager
+ * @extends RegisterManager
+ * @constructor
+ * @param class_name {string} - имя типа менеджера объекта. например, "areg.goods_on_stores"
+ */
+function AccumRegManager(class_name){
+
+	AccumRegManager.superclass.constructor.call(this, class_name);
+}
+AccumRegManager._extend(RegisterManager);
+
 
 
 
@@ -6312,7 +6350,6 @@ function CatManager(class_name) {
 
 }
 CatManager._extend(RefDataManager);
-CatManager.prototype.toString = function(){return "Менеджер справочника " + this.class_name; };
 
 /**
  * Возвращает объект по коду (для справочников) или имени (для перечислений)
@@ -6350,7 +6387,6 @@ function ChartOfCharacteristicManager(class_name){
 
 }
 ChartOfCharacteristicManager._extend(CatManager);
-ChartOfCharacteristicManager.prototype.toString = function(){return "Менеджер плана видов характеристик " + this.class_name; };
 
 
 /**
@@ -6368,7 +6404,6 @@ function ChartOfAccountManager(class_name){
 
 }
 ChartOfAccountManager._extend(CatManager);
-ChartOfAccountManager.prototype.toString = function(){return "Менеджер плана счетов " + this.class_name; };
 
 
 /**
@@ -6387,10 +6422,6 @@ function DocManager(class_name) {
 
 }
 DocManager._extend(RefDataManager);
-DocManager.prototype.toString = function(){return "Менеджер документа " + this.class_name; };
-
-
-
 
 /* joined by builder */
 /**
@@ -6745,7 +6776,7 @@ function DataObj(attr, manager) {
 	if(manager instanceof EnumManager)
 		_obj.ref = ref = attr.name;
 
-	else if(!(manager instanceof InfoRegManager)){
+	else if(!(manager instanceof RegisterManager)){
 		_obj.ref = ref = $p.fix_guid(attr);
 		_obj.deleted = false;
 		_obj.lc_changed = 0;
@@ -7340,22 +7371,22 @@ EnumObj.prototype._define('presentation', {
 
 
 /**
- * Запись регистра сведений
- * @class InfoRegRow
+ * Запись регистра (накопления и сведений)
+ * @class RegisterRow
  * @extends DataObj
  * @constructor
  * @param attr {object} - объект, по которому запись будет заполнена
- * @param manager {InfoRegManager}
+ * @param manager {InfoRegManager|AccumRegManager}
  */
-function InfoRegRow(attr, manager){
+function RegisterRow(attr, manager){
 
 	// выполняем конструктор родительского объекта
-	InfoRegRow.superclass.constructor.call(this, attr, manager);
+	RegisterRow.superclass.constructor.call(this, attr, manager);
 
 	if(attr && typeof attr == "object")
 		this._mixin(attr);
 }
-InfoRegRow._extend(DataObj);
+RegisterRow._extend(DataObj);
 
 /**
  * Метаданные текущего объекта
@@ -7363,7 +7394,7 @@ InfoRegRow._extend(DataObj);
  * @for DataObj
  * @type Object
  */
-InfoRegRow.prototype._define('_metadata', {
+RegisterRow.prototype._define('_metadata', {
 	get : function(){
 		var cm = this._manager.metadata();
 		if(!cm.fields)
@@ -7373,7 +7404,7 @@ InfoRegRow.prototype._define('_metadata', {
 	enumerable : false
 });
 
-InfoRegRow.prototype._define('ref', {
+RegisterRow.prototype._define('ref', {
 	get : function(){ return this._manager.get_ref(this)},
 	enumerable : true
 });
@@ -7643,19 +7674,19 @@ DataManager.prototype.rest_selection = function (attr) {
 
 };
 
-InfoRegManager.prototype.rest_slice_last = function(attr){
+InfoRegManager.prototype.rest_slice_last = function(filter){
 
-	if(!attr.period)
-		attr.period = $p.date_add_day(new Date(), 1);
+	if(!filter.period)
+		filter.period = $p.date_add_day(new Date(), 1);
 
 	var t = this,
 		cmd = t.metadata(),
-		period = "Period=datetime'" + $p.dateFormat(attr.period, $p.dateFormat.masks.isoDateTime) + "'",
+		period = "Period=datetime'" + $p.dateFormat(filter.period, $p.dateFormat.masks.isoDateTime) + "'",
 		condition = "";
 
 	for(var fld in cmd.dimensions){
 
-		if(attr[fld] === undefined)
+		if(filter[fld] === undefined)
 			continue;
 
 		var syn = _md.syns_1с(fld);
@@ -7663,19 +7694,19 @@ InfoRegManager.prototype.rest_slice_last = function(attr){
 			syn += "_Key";
 			if(condition)
 				condition+= " and ";
-			condition+= syn+" eq guid'"+attr[fld].ref+"'";
+			condition+= syn+" eq guid'"+filter[fld].ref+"'";
 		}else{
 			if(condition)
 				condition+= " and ";
 
 			if(cmd.dimensions[fld].type.digits)
-				condition+= syn+" eq "+$p.fix_number(attr[fld]);
+				condition+= syn+" eq "+$p.fix_number(filter[fld]);
 
 			else if(cmd.dimensions[fld].type.date_part)
-				condition+= syn+" eq datetime'"+$p.dateFormat(attr[fld], $p.dateFormat.masks.isoDateTime)+"'";
+				condition+= syn+" eq datetime'"+$p.dateFormat(filter[fld], $p.dateFormat.masks.isoDateTime)+"'";
 
 			else
-				condition+= syn+" eq '"+attr[fld]+"'";
+				condition+= syn+" eq '"+filter[fld]+"'";
 		}
 
 	}
@@ -7683,10 +7714,10 @@ InfoRegManager.prototype.rest_slice_last = function(attr){
 	if(condition)
 		period+= ",Condition='"+condition+"'";
 
-	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
-	attr.url += this.rest_name + "/SliceLast(%sl)?allowedOnly=true&$format=json&$top=1000".replace("%sl", period);
+	$p.ajax.default_attr(filter, $p.job_prm.rest_url());
+	filter.url += this.rest_name + "/SliceLast(%sl)?allowedOnly=true&$format=json&$top=1000".replace("%sl", period);
 
-	return _rest.ajax_to_data(attr, t)
+	return _rest.ajax_to_data(filter, t)
 		.then(function (data) {
 			return t.load_array(data);
 		});

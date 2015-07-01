@@ -28,7 +28,7 @@ function DataObj(attr, manager) {
 	if(manager instanceof EnumManager)
 		_obj.ref = ref = attr.name;
 
-	else if(!(manager instanceof InfoRegManager)){
+	else if(!(manager instanceof RegisterManager)){
 		_obj.ref = ref = $p.fix_guid(attr);
 		_obj.deleted = false;
 		_obj.lc_changed = 0;
@@ -623,22 +623,22 @@ EnumObj.prototype._define('presentation', {
 
 
 /**
- * Запись регистра сведений
- * @class InfoRegRow
+ * Запись регистра (накопления и сведений)
+ * @class RegisterRow
  * @extends DataObj
  * @constructor
  * @param attr {object} - объект, по которому запись будет заполнена
- * @param manager {InfoRegManager}
+ * @param manager {InfoRegManager|AccumRegManager}
  */
-function InfoRegRow(attr, manager){
+function RegisterRow(attr, manager){
 
 	// выполняем конструктор родительского объекта
-	InfoRegRow.superclass.constructor.call(this, attr, manager);
+	RegisterRow.superclass.constructor.call(this, attr, manager);
 
 	if(attr && typeof attr == "object")
 		this._mixin(attr);
 }
-InfoRegRow._extend(DataObj);
+RegisterRow._extend(DataObj);
 
 /**
  * Метаданные текущего объекта
@@ -646,7 +646,7 @@ InfoRegRow._extend(DataObj);
  * @for DataObj
  * @type Object
  */
-InfoRegRow.prototype._define('_metadata', {
+RegisterRow.prototype._define('_metadata', {
 	get : function(){
 		var cm = this._manager.metadata();
 		if(!cm.fields)
@@ -656,7 +656,7 @@ InfoRegRow.prototype._define('_metadata', {
 	enumerable : false
 });
 
-InfoRegRow.prototype._define('ref', {
+RegisterRow.prototype._define('ref', {
 	get : function(){ return this._manager.get_ref(this)},
 	enumerable : true
 });
