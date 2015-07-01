@@ -22,7 +22,15 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 
 	// создаём и настраиваем форму
-	frm_create();
+	if(has_tree && attr.initial_value && attr.initial_value!= $p.blank.guid && !attr.parent)
+		_mngr.get(attr.initial_value, true)
+			.then(function (tObj) {
+				attr.parent = tObj.parent.ref;
+				attr.set_parent = attr.parent;
+				frm_create();
+			});
+	else
+		frm_create();
 
 
 	/**
@@ -330,9 +338,12 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				})
 				._mixin(attr),
 
-			tparent = has_tree ? (wnd.elmnts.tree.getSelectedItemId() || $p.blank.guid) : null;
+			tparent = has_tree ? wnd.elmnts.tree.getSelectedItemId() : null;
 
-		filter.parent = ((tparent || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
+		filter.parent = ((tparent  || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
+		if(has_tree && !filter.parent)
+			filter.parent = $p.blank.guid;
+
 		for(var f in filter){
 			if(previous_filter[f] != filter[f]){
 				previous_filter = filter;

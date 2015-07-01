@@ -485,7 +485,7 @@ function RefDataManager(class_name) {
 	 */
 	t.each = function(fn){
 		for(var i in by_ref){
-			if(i == $p.blank.guid)
+			if(!i || i == $p.blank.guid)
 				continue;
 			if(fn.call(this, by_ref[i]) == true)
 				break;
@@ -1082,6 +1082,13 @@ function EnumManager(a, class_name) {
 		return o;
 	};
 
+	this.each = function (fn) {
+		this.alatable.forEach(function (v) {
+			if(v.ref && v.ref != $p.blank.guid)
+				fn.call(this[v.ref]);
+		});
+	};
+
 	for(var i in a)
 		new EnumObj(a[i], this);
 
@@ -1459,12 +1466,12 @@ function CatManager(class_name) {
 CatManager._extend(RefDataManager);
 
 /**
- * Возвращает объект по коду (для справочников) или имени (для перечислений)
+ * Возвращает объект по наименованию
  * @method by_name
- * @param name {String|Object} - идентификатор
+ * @param name {String|Object} - искомое наименование
  * @return {DataObj}
  */
-CatManager.prototype.by_name = function(name, empty_if_not_finded){
+CatManager.prototype.by_name = function(name){
 
 	var o;
 
@@ -1473,11 +1480,34 @@ CatManager.prototype.by_name = function(name, empty_if_not_finded){
 		return false;
 	});
 
-	if(!o && empty_if_not_finded)
+	if(!o)
 		o = this.get();
 
 	return o;
 };
+
+/**
+ * Возвращает объект по коду
+ * @method by_id
+ * @param id {String|Object} - искомый код
+ * @return {DataObj}
+ */
+CatManager.prototype.by_id = function(id){
+
+	var o;
+
+	this.find_rows({id: id}, function (obj) {
+		o = obj;
+		return false;
+	});
+
+	if(!o)
+		o = this.get();
+
+	return o;
+};
+
+
 
 /**
  * Абстрактный менеджер плана видов характеристик
