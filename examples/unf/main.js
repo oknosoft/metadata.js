@@ -12,7 +12,7 @@
  * @type {UNF}
  */
 var unf = new function UNF() {
-	this.modifiers = []
+	this.modifiers = [];
 };
 
 /**
@@ -33,21 +33,16 @@ $p.settings = function (prm, modifiers) {
 	prm.rest = true;
 
 	/**
-	 * автономная работа запрещена
+	 * по умолчанию, обращаемся к зоне 1377
 	 */
-	prm.offline = false;
-	if(localStorage)
-		localStorage.setItem("offline", "");
+	$p.job_prm.zone = 1377;
+
 
 	/**
-	 * будем использовать объекты данных, для которых создаём таблицы
+	 * расположение файла инициализации базы sql
 	 */
 	prm.create_tables = "/examples/unf/data/create_tables.sql";
 
-	$p.ajax.get("/examples/unf/data/create_tables.sql")
-		.then(function (req) {
-			prm.create_tables_sql = req.response;   // текст запроса
-		});
 
 	/**
 	 * расположение страницы настроек
@@ -63,6 +58,11 @@ $p.settings = function (prm, modifiers) {
 	 * расположение файлов данных
 	 */
 	prm.data_url = "/examples/unf/data/";
+
+	/**
+	 * расположение картинок dhtmlx
+	 */
+	prm.dhtmlx_image_path = "";
 
 	/**
 	 * подключаем модификаторы

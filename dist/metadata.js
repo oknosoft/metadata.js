@@ -1397,7 +1397,7 @@ function JobPrm(){
 	 * @type {Boolean}
 	 * @static
 	 */
-	this.check_app_installed = true;
+	this.check_app_installed = false;
 	this.check_dhtmlx = true;
 	this.use_builder = false;
 	this.offline = false;
@@ -1618,7 +1618,7 @@ $p.wsql = (
 			{p: "user_name",		v: "", t:"string"},
 			{p: "user_pwd",			v: "", t:"string"},
 			{p: "browser_uid",		v: $p.generate_guid(), t:"string"},
-			{p: "zone",             v: 1, t:"number"},
+			{p: "zone",             v: $p.job_prm.zone || 1, t:"number"},
 			{p: "zone_unf",         v: 1, t:"number"},
 			{p: "phantom_url",		v: "/p/", t:"string"},
 			{p: "enable_save_pwd",	v: "",	t:"boolean"},
@@ -1629,16 +1629,8 @@ $p.wsql = (
 			{p: "files_date",       v: 201506140000,	t:"number"},
 			{p: "margin",			v: 60,	t:"number"},
 			{p: "discount",			v: 15,	t:"number"},
-			{p: "offline",			v: "" || $p.job_prm["offline"], t:"boolean"}
+			{p: "offline",			v: "" || $p.job_prm.offline, t:"boolean"}
 		], zone;
-
-		if(window.alasql){
-			if($p.job_prm.create_tables)
-				alasql($p.job_prm.create_tables_sql || require("create_tables"), [], function(){
-					inited = 1000;
-				});
-		}
-
 
 		// подмешиваем к базовым параметрам настройки приложения
 		if($p.job_prm.additionsl_params)
@@ -1675,7 +1667,26 @@ $p.wsql = (
 			localStorage.removeItem("unf_url");
 		}
 
-		callback([]);
+		if(window.alasql){
+			if($p.job_prm.create_tables){
+				if($p.job_prm.create_tables_sql)
+					alasql($p.job_prm.create_tables_sql, [], function(){
+						inited = 1000;
+						delete $p.job_prm.create_tables_sql;
+						callback([]);
+					});
+				else
+					$p.ajax.get($p.job_prm.create_tables)
+						.then(function (req) {
+							alasql(req.response, [], function(){
+								inited = 1000;
+								callback([]);
+							});
+						});
+			}else
+				callback([]);
+		}else
+			callback([]);
 
 	};
 
@@ -3027,7 +3038,7 @@ $p.iface.frm_auth = function (onstep, resolve, reject) {
 	}
 
 	// загружаем структуру
-	frm_auth.loadStruct(require("form_auth"), function(){
+	frm_auth.loadStruct(require("form_auth").replace(/\/imgs\//g, dhtmlx.image_path), function(){
 
 		// после готовности формы читаем пользователя из локальной датабазы
 		if($p.wsql.get_user_param("user_name")){
@@ -9383,7 +9394,7 @@ if(window){
 			if("dhtmlx" in w){
 
 				// задаём путь к картинкам и основной скин
-				dhtmlx.image_path = "imgs/";
+				dhtmlx.image_path = $p.job_prm.dhtmlx_image_path || "imgs/";
 				dhtmlx.skin = "dhx_web";
 
 				// запрещаем добавлять dhxr+date() к запросам get
@@ -9594,10 +9605,10 @@ $p.eve.update_files_version = function () {
 	if(!$p.job_prm.files_date)
 		$p.job_prm.files_date = $p.wsql.get_user_param("files_date", "number");
 
-	if($p.job_prm['offline'])
+	if($p.job_prm.offline || !$p.job_prm.data_url)
 		return;
 
-	$p.ajax.get("/data/sync.json?v="+Date.now())
+	$p.ajax.get($p.job_prm.data_url + "sync.json?v="+Date.now())
 		.then(function (req) {
 			var sync = JSON.parse(req.response);
 
@@ -9626,7 +9637,7 @@ $p.eve.update_files_version = function () {
 		}).catch(function (err) {
 			console.log(err);
 		})
-}
+};
 
 
 /**
@@ -10167,7 +10178,7 @@ if (typeof module !== "undefined" && module.exports) {
   });
 }
 }),
-"form_auth": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<items>\n\t<item type=\"settings\" position=\"label-left\" labelWidth=\"150\" inputWidth=\"230\" noteWidth=\"230\"/>\n\t<item type=\"fieldset\" name=\"data\" inputWidth=\"auto\" label=\"Авторизация\">\n\n        <item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" checked=\"true\" value=\"guest\" label=\"Гостевой (демо) режим\">\n            <item type=\"select\" name=\"guest\" label=\"Роль\">\n                <option value=\"Дилер\" label=\"Дилер\"/>\n            </item>\n        </item>\n\n\t\t<item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" value=\"auth\" label=\"Есть учетная запись\">\n\t\t\t<item type=\"input\" value=\"\" name=\"login\" label=\"Имя пользователя\" validate=\"NotEmpty\" />\n\t\t\t<item type=\"password\" value=\"\" name=\"password\" label=\"Пароль\" validate=\"NotEmpty\" />\n\t\t</item>\n\n\t\t<item type=\"button\" value=\"Войти\" name=\"submit\"/>\n\n        <item type=\"template\" name=\"text_options\" className=\"order_dealer_options\" inputWidth=\"231\"\n              value=\"&lt;a href='#' onclick='$p.iface.open_settings();' &gt; &lt;img src='/imgs/dhxtoolbar_web/tb_settings.png' align='top' /&gt; Настройки &lt;/a&gt; &lt;img src='/imgs/dhxtoolbar_web/blank9.png' align='top' /&gt; &lt;a href='http://www.oknosoft.ru/feedback' target='_blank' &gt; &lt;img src='/imgs/dhxtoolbar_web/cloud-question.png' align='top' /&gt; Задать вопрос &lt;/a&gt;\"  />\n\n\t</item>\n</items>\n",
+"form_auth": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<items>\n\t<item type=\"settings\" position=\"label-left\" labelWidth=\"150\" inputWidth=\"230\" noteWidth=\"230\"/>\n\t<item type=\"fieldset\" name=\"data\" inputWidth=\"auto\" label=\"Авторизация\">\n\n        <item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" checked=\"true\" value=\"guest\" label=\"Гостевой (демо) режим\">\n            <item type=\"select\" name=\"guest\" label=\"Роль\">\n                <option value=\"Дилер\" label=\"Дилер\"/>\n            </item>\n        </item>\n\n\t\t<item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" value=\"auth\" label=\"Есть учетная запись\">\n\t\t\t<item type=\"input\" value=\"\" name=\"login\" label=\"Имя пользователя\" validate=\"NotEmpty\" />\n\t\t\t<item type=\"password\" value=\"\" name=\"password\" label=\"Пароль\" validate=\"NotEmpty\" />\n\t\t</item>\n\n\t\t<item type=\"button\" value=\"Войти\" name=\"submit\"/>\n\n        <item type=\"template\" name=\"text_options\" className=\"order_dealer_options\" inputWidth=\"231\"\n              value=\"&lt;a href='#' onclick='$p.iface.open_settings();' &gt; &lt;img src='/imgs/dhxtoolbar_web/tb_settings.png' align='top' /&gt; Настройки &lt;/a&gt; &lt;img src='/imgs/dhxtoolbar_web/blank9.png' align='top' /&gt; &lt;a href='//www.oknosoft.ru/feedback' target='_blank' &gt; &lt;img src='/imgs/dhxtoolbar_web/cloud-question.png' align='top' /&gt; Задать вопрос &lt;/a&gt;\"  />\n\n\t</item>\n</items>\n",
 "toolbar_add_del": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_add\"    text=\"Добавить\" title=\"Добавить строку\" img=\"tb_new.png\"  />\r\n    <item type=\"button\" id=\"btn_delete\" text=\"Удалить\"  title=\"Удалить строку\" img=\"tb_delete.png\"   imgdis=\"tb_delete_dis.png\" />\r\n</toolbar>",
 "toolbar_obj": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"Записать и закрыть\" img=\"save.gif\" imgdis=\"\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"Записать\" img=\"tb_calculate.png\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_post\" img=\"tb_post.png\" imgdis=\"tb_post.png\" enabled=\"false\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" img=\"tb_unpost.png\" imgdis=\"tb_unpost.png\" enabled=\"false\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"Файлы\" img=\"tb_screpka.png\" imgdis=\"tb_screpka_dis.png\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"Создать\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" image=\"\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"Перейти\" title=\"\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\"         img=\"print.gif\"         text=\"Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"        img=\"tb_more_w.png\"  title=\"Дополнительно\" openAll=\"true\">\r\n        <item type=\"button\" id=\"btn_import\" img=\"document_load.png\" text=\"Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" img=\"document_save.png\" text=\"Выгрузить в файл\" />\r\n    </item>\r\n\r\n</toolbar>\r\n",
 "toolbar_ok_cancel": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_ok\"       type=\"button\"   img=\"\"  imgdis=\"\"   text=\"&lt;b&gt;Ок&lt;/b&gt;\"  />\r\n    <item id=\"btn_cancel\"   type=\"button\"\timg=\"\"  imgdis=\"\"   text=\"Отмена\" />\r\n</toolbar>",

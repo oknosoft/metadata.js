@@ -244,7 +244,7 @@ if(window){
 			if("dhtmlx" in w){
 
 				// задаём путь к картинкам и основной скин
-				dhtmlx.image_path = "imgs/";
+				dhtmlx.image_path = $p.job_prm.dhtmlx_image_path || "imgs/";
 				dhtmlx.skin = "dhx_web";
 
 				// запрещаем добавлять dhxr+date() к запросам get
@@ -455,10 +455,10 @@ $p.eve.update_files_version = function () {
 	if(!$p.job_prm.files_date)
 		$p.job_prm.files_date = $p.wsql.get_user_param("files_date", "number");
 
-	if($p.job_prm['offline'])
+	if($p.job_prm.offline || !$p.job_prm.data_url)
 		return;
 
-	$p.ajax.get("/data/sync.json?v="+Date.now())
+	$p.ajax.get($p.job_prm.data_url + "sync.json?v="+Date.now())
 		.then(function (req) {
 			var sync = JSON.parse(req.response);
 
@@ -487,7 +487,7 @@ $p.eve.update_files_version = function () {
 		}).catch(function (err) {
 			console.log(err);
 		})
-}
+};
 
 
 /**

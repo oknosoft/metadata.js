@@ -1239,7 +1239,7 @@ function JobPrm(){
 	 * @type {Boolean}
 	 * @static
 	 */
-	this.check_app_installed = true;
+	this.check_app_installed = false;
 	this.check_dhtmlx = true;
 	this.use_builder = false;
 	this.offline = false;
@@ -1460,7 +1460,7 @@ $p.wsql = (
 			{p: "user_name",		v: "", t:"string"},
 			{p: "user_pwd",			v: "", t:"string"},
 			{p: "browser_uid",		v: $p.generate_guid(), t:"string"},
-			{p: "zone",             v: 1, t:"number"},
+			{p: "zone",             v: $p.job_prm.zone || 1, t:"number"},
 			{p: "zone_unf",         v: 1, t:"number"},
 			{p: "phantom_url",		v: "/p/", t:"string"},
 			{p: "enable_save_pwd",	v: "",	t:"boolean"},
@@ -1471,16 +1471,8 @@ $p.wsql = (
 			{p: "files_date",       v: 201506140000,	t:"number"},
 			{p: "margin",			v: 60,	t:"number"},
 			{p: "discount",			v: 15,	t:"number"},
-			{p: "offline",			v: "" || $p.job_prm["offline"], t:"boolean"}
+			{p: "offline",			v: "" || $p.job_prm.offline, t:"boolean"}
 		], zone;
-
-		if(window.alasql){
-			if($p.job_prm.create_tables)
-				alasql($p.job_prm.create_tables_sql || require("create_tables"), [], function(){
-					inited = 1000;
-				});
-		}
-
 
 		// подмешиваем к базовым параметрам настройки приложения
 		if($p.job_prm.additionsl_params)
@@ -1517,7 +1509,26 @@ $p.wsql = (
 			localStorage.removeItem("unf_url");
 		}
 
-		callback([]);
+		if(window.alasql){
+			if($p.job_prm.create_tables){
+				if($p.job_prm.create_tables_sql)
+					alasql($p.job_prm.create_tables_sql, [], function(){
+						inited = 1000;
+						delete $p.job_prm.create_tables_sql;
+						callback([]);
+					});
+				else
+					$p.ajax.get($p.job_prm.create_tables)
+						.then(function (req) {
+							alasql(req.response, [], function(){
+								inited = 1000;
+								callback([]);
+							});
+						});
+			}else
+				callback([]);
+		}else
+			callback([]);
 
 	};
 
