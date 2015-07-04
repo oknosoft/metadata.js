@@ -126,6 +126,7 @@ msg.meta_cch = "Планы видов характеристик";
 msg.meta_cacc = "Планы счетов";
 msg.meta_ireg = "Регистры сведений";
 msg.meta_areg = "Регистры накопления";
+msg.meta_mgr = "Менеджер";
 msg.meta_cat_mgr = "Менеджер справочников";
 msg.meta_doc_mgr = "Менеджер документов";
 msg.meta_enn_mgr = "Менеджер перечислений";

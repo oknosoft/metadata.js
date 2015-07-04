@@ -1093,22 +1093,25 @@ function InterfaceObjs(){
 	 */
 	this.hash_route = function (event) {
 
-		if($p.ajax.authorized){
+		if(!$p.iface.before_route || $p.iface.before_route(event)!==false){
 
-			var hprm = $p.job_prm.parse_url(), mgr;
+			if($p.ajax.authorized){
 
-			if(hprm.ref && typeof _md != "undefined"){
-				// если задана ссылка, открываем форму объекта
-				mgr = _md.mgr_by_class_name(hprm.obj);
-				if(mgr)
-					mgr[hprm.frm || "form_obj"]($p.iface.docs, hprm.ref)
+				var hprm = $p.job_prm.parse_url(), mgr;
 
-			}else if(hprm.view && $p.iface.swith_view){
-				// если задано имя представления, переключаем главную форму
-				$p.iface.swith_view(hprm.view);
+				if(hprm.ref && typeof _md != "undefined"){
+					// если задана ссылка, открываем форму объекта
+					mgr = _md.mgr_by_class_name(hprm.obj);
+					if(mgr)
+						mgr[hprm.frm || "form_obj"]($p.iface.docs, hprm.ref)
+
+				}else if(hprm.view && $p.iface.swith_view){
+					// если задано имя представления, переключаем главную форму
+					$p.iface.swith_view(hprm.view);
+
+				}
 
 			}
-
 		}
 
 		if(event)

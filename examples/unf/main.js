@@ -116,4 +116,18 @@ $p.iface.oninit = function() {
 
 };
 
+/**
+ * Обработчик события перед маршрутизацией
+ * @param event
+ * @return {boolean}
+ */
+$p.iface.before_route = function (event) {
+	if($p.job_prm.parse_url().view!="oper"){
+		setTimeout(function () {
+			$p.iface.set_hash("", "", "", "oper");
+		}, 0);
+		return false;
+	}
+};
+
 

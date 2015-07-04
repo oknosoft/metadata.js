@@ -48,7 +48,7 @@ DataManager.prototype.export = function(attr){
 	function frm_create(){
 
 		$p.wsql.restore_options("data_manager", options);
-		options.wnd.caption = "Экспорт " + _mgr.toString().split(" ")[1] + " '" + (_mgr.metadata().synonym || _mgr.metadata().name) + "'";
+		options.wnd.caption = "Экспорт " + _mgr.family_name + " '" + (_mgr.metadata().synonym || _mgr.metadata().name) + "'";
 
 		wnd = $p.iface.dat_blank(null, options.wnd);
 

@@ -557,6 +557,30 @@ $p.iface.frm_auth = function (onstep, resolve, reject) {
 
 	$p.msg.show_msg($p.msg.init_login, $p.iface.docs);
 
+	frm_auth.onerror = function (err) {
+
+		$p.ajax.authorized = false;
+
+		var emsg = err.message.toLowerCase();
+
+		if(emsg.indexOf("auth") != -1) {
+			$p.msg.show_msg({
+				title: $p.msg.main_title + $p.version,
+				type: "alert-error",
+				text: $p.msg.error_auth
+			});
+			frm_auth.setItemValue("password", "");
+			frm_auth.validate();
+
+		}else if(emsg.indexOf("gateway") != -1 || emsg.indexOf("net") != -1) {
+			$p.msg.show_msg({
+				title: $p.msg.main_title + $p.version,
+				type: "alert-error",
+				text: $p.msg.error_network
+			});
+		}
+	}
+
 };
 
 /**

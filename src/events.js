@@ -681,6 +681,15 @@ $p.eve.log_in = function(onstep){
 				})
 		})
 
+		// обработчик ошибок авторизации
+		.catch(function (err) {
+
+			if($p.iface.auth.onerror)
+				$p.iface.auth.onerror(err);
+
+			throw err;
+		})
+
 		// интерпретируем ответ сервера
 		.then(function (res) {
 

@@ -1251,22 +1251,25 @@ function InterfaceObjs(){
 	 */
 	this.hash_route = function (event) {
 
-		if($p.ajax.authorized){
+		if(!$p.iface.before_route || $p.iface.before_route(event)!==false){
 
-			var hprm = $p.job_prm.parse_url(), mgr;
+			if($p.ajax.authorized){
 
-			if(hprm.ref && typeof _md != "undefined"){
-				// если задана ссылка, открываем форму объекта
-				mgr = _md.mgr_by_class_name(hprm.obj);
-				if(mgr)
-					mgr[hprm.frm || "form_obj"]($p.iface.docs, hprm.ref)
+				var hprm = $p.job_prm.parse_url(), mgr;
 
-			}else if(hprm.view && $p.iface.swith_view){
-				// если задано имя представления, переключаем главную форму
-				$p.iface.swith_view(hprm.view);
+				if(hprm.ref && typeof _md != "undefined"){
+					// если задана ссылка, открываем форму объекта
+					mgr = _md.mgr_by_class_name(hprm.obj);
+					if(mgr)
+						mgr[hprm.frm || "form_obj"]($p.iface.docs, hprm.ref)
+
+				}else if(hprm.view && $p.iface.swith_view){
+					// если задано имя представления, переключаем главную форму
+					$p.iface.swith_view(hprm.view);
+
+				}
 
 			}
-
 		}
 
 		if(event)
@@ -1913,6 +1916,7 @@ msg.meta_cch = "Планы видов характеристик";
 msg.meta_cacc = "Планы счетов";
 msg.meta_ireg = "Регистры сведений";
 msg.meta_areg = "Регистры накопления";
+msg.meta_mgr = "Менеджер";
 msg.meta_cat_mgr = "Менеджер справочников";
 msg.meta_doc_mgr = "Менеджер документов";
 msg.meta_enn_mgr = "Менеджер перечислений";
@@ -3115,6 +3119,30 @@ $p.iface.frm_auth = function (onstep, resolve, reject) {
 
 
 	$p.msg.show_msg($p.msg.init_login, $p.iface.docs);
+
+	frm_auth.onerror = function (err) {
+
+		$p.ajax.authorized = false;
+
+		var emsg = err.message.toLowerCase();
+
+		if(emsg.indexOf("auth") != -1) {
+			$p.msg.show_msg({
+				title: $p.msg.main_title + $p.version,
+				type: "alert-error",
+				text: $p.msg.error_auth
+			});
+			frm_auth.setItemValue("password", "");
+			frm_auth.validate();
+
+		}else if(emsg.indexOf("gateway") != -1 || emsg.indexOf("net") != -1) {
+			$p.msg.show_msg({
+				title: $p.msg.main_title + $p.version,
+				type: "alert-error",
+				text: $p.msg.error_network
+			});
+		}
+	}
 
 };
 
@@ -5156,6 +5184,20 @@ function DataManager(class_name){
 }
 
 /**
+ * Возвращает имя семейства объектов данного менеджера<br />
+ * Примеры: "справочников", "документов", "регистров сведений"
+ * @property family_name
+ * @for DataManager
+ * @type String
+ */
+DataManager.prototype._define("family_name", {
+	get : function () {
+		return $p.msg["meta_"+this.class_name.split(".")[0]+"_mgr"].replace($p.msg.meta_mgr+" ", "");
+	},
+	enumerable : false
+});
+
+/**
  * Регистрирует время изменения при заиси объекта для целей синхронизации
  */
 DataManager.prototype.register_ex = function(){
@@ -5164,6 +5206,8 @@ DataManager.prototype.register_ex = function(){
 
 /**
  * Выводит фрагмент списка объектов данного менеджера, ограниченный фильтром attr в grid
+ * @method sync_grid
+ * @for DataManager
  * @param grid {dhtmlXGridObject}
  * @param attr {Object}
  */
@@ -5187,6 +5231,8 @@ DataManager.prototype.sync_grid = function(grid, attr){
 
 /**
  * Возвращает массив доступных значений для комбобокса
+ * @method get_option_list
+ * @for DataManager
  * @param val {DataObj|String}
  * @param filter {Object}
  * @return {Array}
@@ -8004,7 +8050,7 @@ DataManager.prototype.export = function(attr){
 	function frm_create(){
 
 		$p.wsql.restore_options("data_manager", options);
-		options.wnd.caption = "Экспорт " + _mgr.toString().split(" ")[1] + " '" + (_mgr.metadata().synonym || _mgr.metadata().name) + "'";
+		options.wnd.caption = "Экспорт " + _mgr.family_name + " '" + (_mgr.metadata().synonym || _mgr.metadata().name) + "'";
 
 		wnd = $p.iface.dat_blank(null, options.wnd);
 
@@ -9870,6 +9916,15 @@ $p.eve.log_in = function(onstep){
 					margin: $p.wsql.get_user_param("margin", "number"),
 					ipinfo: $p.ipinfo.hasOwnProperty("latitude") ? JSON.stringify($p.ipinfo) : ""
 				})
+		})
+
+		// обработчик ошибок авторизации
+		.catch(function (err) {
+
+			if($p.iface.auth.onerror)
+				$p.iface.auth.onerror(err);
+
+			throw err;
 		})
 
 		// интерпретируем ответ сервера

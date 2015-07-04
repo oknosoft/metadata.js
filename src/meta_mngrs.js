@@ -211,6 +211,20 @@ function DataManager(class_name){
 }
 
 /**
+ * Возвращает имя семейства объектов данного менеджера<br />
+ * Примеры: "справочников", "документов", "регистров сведений"
+ * @property family_name
+ * @for DataManager
+ * @type String
+ */
+DataManager.prototype._define("family_name", {
+	get : function () {
+		return $p.msg["meta_"+this.class_name.split(".")[0]+"_mgr"].replace($p.msg.meta_mgr+" ", "");
+	},
+	enumerable : false
+});
+
+/**
  * Регистрирует время изменения при заиси объекта для целей синхронизации
  */
 DataManager.prototype.register_ex = function(){
@@ -219,6 +233,8 @@ DataManager.prototype.register_ex = function(){
 
 /**
  * Выводит фрагмент списка объектов данного менеджера, ограниченный фильтром attr в grid
+ * @method sync_grid
+ * @for DataManager
  * @param grid {dhtmlXGridObject}
  * @param attr {Object}
  */
@@ -242,6 +258,8 @@ DataManager.prototype.sync_grid = function(grid, attr){
 
 /**
  * Возвращает массив доступных значений для комбобокса
+ * @method get_option_list
+ * @for DataManager
  * @param val {DataObj|String}
  * @param filter {Object}
  * @return {Array}
