@@ -331,10 +331,12 @@ if(typeof Promise !== "function")
 		}
 		// стили загружаем только при необходимости
 		for(i=0; i < document.styleSheets.length; i++){
-			if(document.styleSheets[i].src.indexOf("dhtmlx.css")!=-1)
-				load_dhtmlx = false;
-			else if(document.styleSheets[i].src.indexOf("metadata.css")!=-1)
-				load_meta = false;
+			if(document.styleSheets[i].href){
+				if(document.styleSheets[i].href.indexOf("dhtmlx.css")!=-1)
+					load_dhtmlx = false;
+				else if(document.styleSheets[i].href.indexOf("metadata.css")!=-1)
+					load_meta = false;
+			}
 		}
 		if(load_dhtmlx)
 			$p.load_script(surl.replace(sname, "dhtmlx.css"), "link");
@@ -1792,7 +1794,7 @@ $p.wsql = (
 var msg = $p.msg;
 
 /**
- *     @desc: 	русификация dateFormat
+ * русификация dateFormat
  */
 $p.dateFormat.i18n = {
 	dayNames: [
@@ -1805,20 +1807,22 @@ $p.dateFormat.i18n = {
 	]
 };
 
-dhx4.dateFormat.ru = "%d.%m.%Y";
-dhx4.dateLang = "ru";
-dhx4.dateStrings = {
-	ru: {
-		monthFullName:	["Январь","Февраль","Март","Апрель","Maй","Июнь","Июль","Август","Сентябрь","Oктябрь","Ноябрь","Декабрь"],
-		monthShortName:	["Янв","Фев","Maр","Aпр","Maй","Июн","Июл","Aвг","Сен","Окт","Ноя","Дек"],
-		dayFullName:	["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"],
-		dayShortName:	["Вс","Пн","Вт","Ср","Чт","Пт","Сб"]
-	}
-};
+if("dhx4" in (window || {})){
+	dhx4.dateFormat.ru = "%d.%m.%Y";
+	dhx4.dateLang = "ru";
+	dhx4.dateStrings = {
+		ru: {
+			monthFullName:	["Январь","Февраль","Март","Апрель","Maй","Июнь","Июль","Август","Сентябрь","Oктябрь","Ноябрь","Декабрь"],
+			monthShortName:	["Янв","Фев","Maр","Aпр","Maй","Июн","Июл","Aвг","Сен","Окт","Ноя","Дек"],
+			dayFullName:	["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"],
+			dayShortName:	["Вс","Пн","Вт","Ср","Чт","Пт","Сб"]
+		}
+	};
+}
 
 
 /**
- *     @desc: 	строки ФИАС адресного классификатора
+ *  строки ФИАС адресного классификатора
  */
 $p.fias = function FIAS(){};
 (function (fias){
@@ -2956,7 +2960,7 @@ $p.iface.layout_2u = function (tree_attr) {
 $p.iface.frm_auth = function (onstep, resolve, reject) {
 
 	var frm_auth = $p.iface.auth = $p.iface.docs.attachForm(),
-		w, were_errors;
+		w, were_errors, auth_struct;
 
 	if(!onstep)
 		onstep = function (step){
@@ -3074,7 +3078,8 @@ $p.iface.frm_auth = function (onstep, resolve, reject) {
 	}
 
 	// загружаем структуру
-	frm_auth.loadStruct(require("form_auth").replace(/\/imgs\//g, dhtmlx.image_path), function(){
+	auth_struct = require("form_auth").replace(/\/imgs\//g, dhtmlx.image_path);
+	frm_auth.loadStruct(auth_struct, function(){
 
 		// после готовности формы читаем пользователя из локальной датабазы
 		if($p.wsql.get_user_param("user_name")){

@@ -23,11 +23,6 @@ var unf = new function UNF() {
 $p.settings = function (prm, modifiers) {
 
 	/**
-	 * установленность приложения в ChromeStore НЕ проверяем
- 	 */
-	prm.check_app_installed = false;
-
-	/**
 	 * для транспорта используем rest, а не сервис http
 	 */
 	prm.rest = true;
@@ -35,7 +30,7 @@ $p.settings = function (prm, modifiers) {
 	/**
 	 * по умолчанию, обращаемся к зоне 1377
 	 */
-	prm.zone = 1377;
+	prm.zone = 0;
 
 
 	/**

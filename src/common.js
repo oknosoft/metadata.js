@@ -173,10 +173,12 @@ if(typeof Promise !== "function")
 		}
 		// стили загружаем только при необходимости
 		for(i=0; i < document.styleSheets.length; i++){
-			if(document.styleSheets[i].src.indexOf("dhtmlx.css")!=-1)
-				load_dhtmlx = false;
-			else if(document.styleSheets[i].src.indexOf("metadata.css")!=-1)
-				load_meta = false;
+			if(document.styleSheets[i].href){
+				if(document.styleSheets[i].href.indexOf("dhtmlx.css")!=-1)
+					load_dhtmlx = false;
+				else if(document.styleSheets[i].href.indexOf("metadata.css")!=-1)
+					load_meta = false;
+			}
 		}
 		if(load_dhtmlx)
 			$p.load_script(surl.replace(sname, "dhtmlx.css"), "link");
