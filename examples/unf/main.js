@@ -35,7 +35,7 @@ $p.settings = function (prm, modifiers) {
 	/**
 	 * по умолчанию, обращаемся к зоне 1377
 	 */
-	$p.job_prm.zone = 1377;
+	prm.zone = 1377;
 
 
 	/**

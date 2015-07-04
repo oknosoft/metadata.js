@@ -180,10 +180,13 @@ function MetaEngine() {
  * Глобальный объект __$p__ фреймворка __Лёгкого клиента__
  * Для совместимости со старыми модулями, публикуем $p глобально
  */
-var $p = window.$p = new MetaEngine();
+var $p = new MetaEngine();
+if(window)
+	window.$p = $p;
 
 
 /**
+ * Обёртка для подключения через AMD или CommonJS
  * https://github.com/umdjs/umd
  */
 if (typeof define === 'function' && define.amd) {
@@ -308,6 +311,38 @@ $p.load_script = function (src, type, callback) {
  */
 if(typeof Promise !== "function")
 	$p.load_script("https://www.promisejs.org/polyfills/promise-7.0.1.min.js", "script");
+
+/**
+ * Если контекст исполнения - браузер, загружаем таблицы стилей
+ */
+(function(w){
+	var i, surl, sname, load_dhtmlx = true, load_meta = true;
+	if("dhtmlx" in w){
+		for(i in document.scripts){
+			if(document.scripts[i].src.indexOf("metadata.js")!=-1){
+				sname = "metadata.js";
+				surl = document.scripts[i].src;
+				break;
+			}else if(document.scripts[i].src.indexOf("metadata.min.js")!=-1){
+				sname = "metadata.min.js";
+				surl = document.scripts[i].src;
+				break;
+			}
+		}
+		// стили загружаем только при необходимости
+		for(i=0; i < document.styleSheets.length; i++){
+			if(document.styleSheets[i].src.indexOf("dhtmlx.css")!=-1)
+				load_dhtmlx = false;
+			else if(document.styleSheets[i].src.indexOf("metadata.css")!=-1)
+				load_meta = false;
+		}
+		if(load_dhtmlx)
+			$p.load_script(surl.replace(sname, "dhtmlx.css"), "link");
+		if(load_meta)
+			$p.load_script(surl.replace(sname, "metadata.css"), "link");
+	}
+})(window || {});
+
 
 
 /**
@@ -1618,7 +1653,7 @@ $p.wsql = (
 			{p: "user_name",		v: "", t:"string"},
 			{p: "user_pwd",			v: "", t:"string"},
 			{p: "browser_uid",		v: $p.generate_guid(), t:"string"},
-			{p: "zone",             v: $p.job_prm.zone || 1, t:"number"},
+			{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t:"number"},
 			{p: "zone_unf",         v: 1, t:"number"},
 			{p: "phantom_url",		v: "/p/", t:"string"},
 			{p: "enable_save_pwd",	v: "",	t:"boolean"},
@@ -1638,7 +1673,8 @@ $p.wsql = (
 
 		// дополняем хранилище недостающими параметрами
 		nesessery_params.forEach(function(o){
-			if(wsql.get_user_param(o.p, o.t) == undefined || (!wsql.get_user_param(o.p, o.t) && o.p.indexOf("url") != -1))
+			if(wsql.get_user_param(o.p, o.t) == undefined ||
+					(!wsql.get_user_param(o.p, o.t) && (o.p.indexOf("url") != -1 || o.p.indexOf("zone") != -1)))
 				wsql.set_user_param(o.p, o.v);
 		});
 
