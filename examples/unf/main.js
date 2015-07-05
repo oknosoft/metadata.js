@@ -122,7 +122,8 @@ $p.iface.oninit = function() {
  * @return {boolean}
  */
 $p.iface.before_route = function (event) {
-	if($p.job_prm.parse_url().view!="oper"){
+	var route_prm = $p.job_prm.parse_url();
+	if(route_prm.view && route_prm.view!="oper"){
 		setTimeout(function () {
 			$p.iface.set_hash("", "", "", "oper");
 		}, 0);

@@ -2,7 +2,7 @@
   "name": "metadata production build",
   "root": "../",
   "www_root": "../",
-  "output": "dist/metadata.min.js",
+  "output": "lib/metadata.min.js",
   "modules": {
     "common":   [
       "src/common.js",

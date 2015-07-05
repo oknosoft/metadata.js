@@ -12,15 +12,17 @@
  * @static
  */
 function MetaEngine() {
-	this.version = "2.0.5.189";
+	this.version = "0.9.190";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
 }
 
 /**
- * Глобальный объект __$p__ фреймворка __Лёгкого клиента__
- * Для совместимости со старыми модулями, публикуем $p глобально
+ * Для совместимости со старыми модулями, публикуем $p глобально<br />
+ * Кроме этой переменной, metadata.js ничего не экспортирует
+ * @property $p
+ * @for window
  */
 var $p = new MetaEngine();
 if(window)
@@ -98,6 +100,8 @@ Object.prototype._define("_mixin", {
 
 /**
  * Создаёт копию объекта
+ * @method _clone
+ * @for Object
  * @param src {Object|Array} - исходный объект
  * @param [exclude_propertyes] {Object} - объект, в ключах которого имена свойств, которые не надо копировать
  * @returns {*}

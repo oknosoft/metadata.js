@@ -1,1 +1,1 @@
-copy /y dhtmlxtreegrid_property.css + upzp20.css + options.css ..\dist\metadata.css
+copy /y dhtmlxtreegrid_property.css + upzp20.css + options.css ..\lib\metadata.css
