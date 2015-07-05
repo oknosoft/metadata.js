@@ -9,7 +9,7 @@ div.gridbox_property table.obj td {
 	border-left: 1px solid white;
 	border-right: 1px solid #D6D6D6;
 	font-family:Tahoma;
-	font-size:12px;
+	font-size:11px;
 	padding-right:4px;
 	padding-left:4px;
 }
@@ -467,6 +467,4 @@ textarea.support-hover-two{
 
 input.support-hover-two:hover + .tip-block .tip-two,
 label.support-hover-two:hover + .tip-block .tip-two,
-textarea.support-hover-two:hover + .tip-block .tip-two {
-    display:block;
-}
+textarea.support-hover-two:hover + .tip-block .tip-two {display:block;}
