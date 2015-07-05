@@ -620,6 +620,15 @@ EnumObj.prototype._define('presentation', {
 	enumerable : false
 });
 
+/**
+ * Проверяет, является ли ссылка объекта пустой
+ * @method empty
+ * @for EnumObj
+ * @return {boolean} - true, если ссылка пустая
+ */
+EnumObj.prototype.empty = function(){
+	return this.ref == "_";
+};
 
 
 /**

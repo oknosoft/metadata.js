@@ -1090,7 +1090,11 @@ function EnumManager(a, class_name) {
 	};
 
 	this.get = function(ref){
-		if(!ref || ref == $p.blank.guid)
+
+		if(ref instanceof EnumObj)
+			return ref;
+
+		else if(!ref || ref == $p.blank.guid)
 			ref = "_";
 
 		var o = this[ref];

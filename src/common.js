@@ -380,7 +380,14 @@ $p.ajax = new (
 					else {
 						// Обламываемся, и передаём статус ошибки
 						// что бы облегчить отладку и поддержку
-						reject(Error(req.statusText));
+						if(req.response)
+							reject({
+								message: req.statusText,
+								description: req.response,
+								status: req.status
+							});
+						else
+							reject(Error(req.statusText));
 					}
 				};
 
