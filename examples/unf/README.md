@@ -6,9 +6,10 @@
 
 ## Шаг №1
 Читаем код js [на странице примера](http://jsfiddle.net/oknosoft/yza3msa9/). Существенные для понимания моменты:
-- Подключение `metadata.js` выполняется в три строки в блоке `head`
+#### Подключение _metadata.js_ выполняется в три строки в блоке _head_
 ```javascript
 <script src="//www.oknosoft.ru/assets/lib/dhtmlx.min.js"></script>
 <script src="//www.oknosoft.ru/assets/lib/alasql.min.js"></script>
 <script src="//www.oknosoft.ru/assets/lib/metadata.min.js"></script>
 ```
+Вызов `dhtmlx` и `alasql` можно было завернуть вовнутрь `metadata.js` и получить подключение в одну строку, но нам хотелось подчеркнуть значимость двух китов, на которых опирается наша библиотека.
