@@ -107,7 +107,14 @@ $p.iface.oninit = function() {
 				 * здесь можно реализовать некий алгоритм recovery - подключиться к резервному серверу, перейти в автономный режим и т.д.
 				 */
 				function (err) {
-					console.log(err.message);
+					var emsg = err.message.toLowerCase();
+					if(emsg.indexOf("not found")!=-1)
+						$p.msg.show_msg({
+							type: "alert-error",
+							text: "Проверьте строку подключения к 1С<br /> и номер зоны публикации 1С",
+							title: "Сервис 1с-rest не найден"});
+
+					console.log(err);
 				}
 			);
 		}
