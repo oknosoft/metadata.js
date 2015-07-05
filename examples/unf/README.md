@@ -13,7 +13,7 @@
 <script src="//www.oknosoft.ru/assets/lib/alasql.min.js"></script>
 <script src="//www.oknosoft.ru/assets/lib/metadata.min.js"></script>
 ```
-Вызов `dhtmlx` и `alasql` можно было завернуть вовнутрь `metadata.js` и получить подключение в одну строку, но нам хотелось подчеркнуть значимость двух китов, на которых опирается наша библиотека.
+Вызов `dhtmlx` и `alasql` можно было завернуть вовнутрь `metadata.js` и получить подключение в одну строку, но нам хотелось подчеркнуть значимость двух китов [alasql](https://github.com/agershun/alasql) и [dhtmlx](http://dhtmlx.com/docs/products/dhtmlxSuite/), на которых опирается наша библиотека.
 
 #### Для минималистичного приложения достаточно переопределить 2 метода
 ```javascript
