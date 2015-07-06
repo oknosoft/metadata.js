@@ -163,6 +163,7 @@ if(typeof Promise !== "function")
  */
 (function(w){
 	var i, surl, sname, load_dhtmlx = true, load_meta = true;
+
 	if("dhtmlx" in w){
 		for(i in document.scripts){
 			if(document.scripts[i].src.indexOf("metadata.js")!=-1){
@@ -188,6 +189,15 @@ if(typeof Promise !== "function")
 			$p.load_script(surl.replace(sname, "dhtmlx.css"), "link");
 		if(load_meta)
 			$p.load_script(surl.replace(sname, "metadata.css"), "link");
+
+		// задаём путь к картинкам
+		dhtmlx.image_path = surl.replace(sname, "imgs/");
+
+		// задаём основной скин
+		dhtmlx.skin = "dhx_web";
+
+		// запрещаем добавлять dhxr+date() к запросам get внутри dhtmlx
+		dhx4.ajax.cache = true;
 	}
 })(window || {});
 

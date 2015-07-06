@@ -28,10 +28,19 @@ $p.settings = function (prm, modifiers) {
 	prm.rest = true;
 
 	/**
+	 * расположение rest-сервиса unf
+	 */
+	prm.rest_path = "/a/unf/%1/odata/standard.odata/";
+
+	/**
 	 * по умолчанию, обращаемся к зоне 1377
 	 */
 	prm.zone = 0;
 
+	/**
+	 * расположение файлов данных
+	 */
+	prm.data_url = "/examples/unf/data/";
 
 	/**
 	 * расположение файла инициализации базы sql
@@ -44,20 +53,7 @@ $p.settings = function (prm, modifiers) {
 	 */
 	prm.settings_url = "/examples/unf/settings.html";
 
-	/**
-	 * расположение rest-сервиса unf
-	 */
-	prm.rest_path = "/a/unf/%1/odata/standard.odata/";
 
-	/**
-	 * расположение файлов данных
-	 */
-	prm.data_url = "/examples/unf/data/";
-
-	/**
-	 * расположение картинок dhtmlx
-	 */
-	prm.dhtmlx_image_path = "";
 
 	/**
 	 * подключаем модификаторы
