@@ -1,0 +1,18 @@
+
+Warning: imagegif(): Unable to open '/chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/3d801aa532c1cec3ee82d87a99fdf63f/372a139ef4abc6d9f0b4306cee91a2e5/temp_frames/00.gif' for writing: Permission denied in /chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/image.php on line 203
+
+Warning: imagegif(): Unable to open '/chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/3d801aa532c1cec3ee82d87a99fdf63f/372a139ef4abc6d9f0b4306cee91a2e5/temp_frames/01.gif' for writing: Permission denied in /chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/image.php on line 203
+
+Warning: imagegif(): Unable to open '/chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/3d801aa532c1cec3ee82d87a99fdf63f/372a139ef4abc6d9f0b4306cee91a2e5/temp_frames/02.gif' for writing: Permission denied in /chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/image.php on line 203
+
+Warning: imagegif(): Unable to open '/chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/3d801aa532c1cec3ee82d87a99fdf63f/372a139ef4abc6d9f0b4306cee91a2e5/temp_frames/03.gif' for writing: Permission denied in /chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/image.php on line 203
+
+Warning: imagegif(): Unable to open '/chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/3d801aa532c1cec3ee82d87a99fdf63f/372a139ef4abc6d9f0b4306cee91a2e5/temp_frames/04.gif' for writing: Permission denied in /chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/image.php on line 203
+
+Warning: imagegif(): Unable to open '/chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/3d801aa532c1cec3ee82d87a99fdf63f/372a139ef4abc6d9f0b4306cee91a2e5/temp_frames/05.gif' for writing: Permission denied in /chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/image.php on line 203
+
+Warning: imagegif(): Unable to open '/chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/3d801aa532c1cec3ee82d87a99fdf63f/372a139ef4abc6d9f0b4306cee91a2e5/temp_frames/06.gif' for writing: Permission denied in /chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/image.php on line 203
+
+Warning: imagegif(): Unable to open '/chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/3d801aa532c1cec3ee82d87a99fdf63f/372a139ef4abc6d9f0b4306cee91a2e5/temp_frames/07.gif' for writing: Permission denied in /chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/image.php on line 203
+
+Warning: readfile(/chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/3d801aa532c1cec3ee82d87a99fdf63f/372a139ef4abc6d9f0b4306cee91a2e5/cash/128_128_128.gif): failed to open stream: No such file or directory in /chroot/puzer/sites/apps.dhtmlx.com/skinBuilder_v40/dhtmlx/imgs/image.php on line 124
