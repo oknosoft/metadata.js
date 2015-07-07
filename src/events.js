@@ -759,6 +759,12 @@ $p.eve.log_in = function(onstep){
 			if(mdd.access){
 				mdd.access.force = true;
 				$p.eve.from_json_to_data_obj(mdd.access);
+
+				// здесь же, уточняем список печатных форм и
+				_md.printing_plates(mdd.printing_plates);
+
+				// и запоминаем в ajax признак полноправности пользователя
+				$p.ajax.root = !!mdd.root;
 			}
 		})
 

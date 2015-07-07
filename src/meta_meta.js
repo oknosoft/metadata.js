@@ -771,6 +771,12 @@ function Meta(req, patch) {
 		return m.syns_1с[m.syns_js.indexOf(v)] || v;
 	};
 
+	this.printing_plates = function (pp) {
+		for(var i in pp.doc)
+			m.doc[i].printing_plates = pp.doc[i];
+
+	};
+
 	// Экспортируем ссылку на себя
 	_md = $p.md = this;
 
