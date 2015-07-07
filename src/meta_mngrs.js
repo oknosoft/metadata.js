@@ -56,7 +56,7 @@ function DataManager(class_name){
 	 */
 	this._define("_cachable", {
 		value: _cachable,
-		writable: false,
+		writable: true,
 		enumerable: false
 	});
 

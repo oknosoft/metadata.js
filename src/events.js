@@ -756,16 +756,17 @@ $p.eve.log_in = function(onstep){
 
 		// читаем справочники с ограниченным доступом, которые могли прибежать вместе с метаданными
 		.then(function () {
+
 			if(mdd.access){
 				mdd.access.force = true;
 				$p.eve.from_json_to_data_obj(mdd.access);
-
-				// здесь же, уточняем список печатных форм и
-				_md.printing_plates(mdd.printing_plates);
-
-				// и запоминаем в ajax признак полноправности пользователя
-				$p.ajax.root = !!mdd.root;
 			}
+
+			// здесь же, уточняем список печатных форм и
+			_md.printing_plates(mdd.printing_plates);
+
+			// и запоминаем в ajax признак полноправности пользователя
+			$p.ajax.root = !!mdd.root;
 		})
 
 		// сохраняем данные в локальной датабазе
