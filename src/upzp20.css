@@ -41,7 +41,7 @@ html, body {
 	position: absolute;
 	width: 18px;
 	height: 18px;
-	background-image: url("../imgs/dhxlayout_web/dhxlayout_cell_btns.gif");
+	background-image: url("imgs/dhxlayout_web/dhxlayout_cell_btns.gif");
 	background-repeat: no-repeat;
 	background-color: #808080;
 	cursor: pointer;
@@ -71,13 +71,13 @@ html, body {
 }
 
 /* зачки состояния объекта: папка, элемент, пометка удаления, проведён */
-.cell_ref_folder {padding-left: 26px !important; background: url(../imgs/dhxtree_web/folderClosed.gif) no-repeat left center;}
-.cell_ref_folder_deleted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/folderDeleted.gif) no-repeat left center;}
-.cell_ref_elm {padding-left: 26px !important; background: url(../imgs/dhxtree_web/catelm.gif) no-repeat left center;}
-.cell_ref_elm_deleted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/catelmDeleted.gif) no-repeat left center;}
-.cell_doc_posted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/doc_posted.png) no-repeat left center;}
-.cell_doc_deleted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/doc_deleted.png) no-repeat left center;}
-.cell_doc_saved {padding-left: 26px !important; background: url(../imgs/dhxtree_web/doc_saved.png) no-repeat left center;}
+.cell_ref_folder {padding-left: 26px !important; background: url(imgs/dhxtree_web/folderClosed.gif) no-repeat left center;}
+.cell_ref_folder_deleted {padding-left: 26px !important; background: url(imgs/dhxtree_web/folderDeleted.gif) no-repeat left center;}
+.cell_ref_elm {padding-left: 26px !important; background: url(imgs/dhxtree_web/catelm.gif) no-repeat left center;}
+.cell_ref_elm_deleted {padding-left: 26px !important; background: url(imgs/dhxtree_web/catelmDeleted.gif) no-repeat left center;}
+.cell_doc_posted {padding-left: 26px !important; background: url(imgs/dhxtree_web/doc_posted.png) no-repeat left center;}
+.cell_doc_deleted {padding-left: 26px !important; background: url(imgs/dhxtree_web/doc_deleted.png) no-repeat left center;}
+.cell_doc_saved {padding-left: 26px !important; background: url(imgs/dhxtree_web/doc_saved.png) no-repeat left center;}
 .cell_mandatory {border-bottom: 2px red dotted !important;}
 
 div.gridbox_clear table.hdr td {
@@ -137,7 +137,7 @@ div.gridbox_dhx_web.gridbox table.hdr td {
     width: 100%
 }
 .ref_field23 {
-    background: url(../imgs/custom_field/points.png) no-repeat left center;
+    background: url(imgs/custom_field/points.png) no-repeat left center;
     position: relative;
     width: 22px;
     height: 23px;
@@ -147,7 +147,7 @@ div.gridbox_dhx_web.gridbox table.hdr td {
     cursor: alias;
 }
 .ref_field23:hover {
-    background: url(../imgs/custom_field/points_hover.png) no-repeat left center;
+    background: url(imgs/custom_field/points_hover.png) no-repeat left center;
 }
 .ref_div21 {
     display: inline-block;
@@ -155,7 +155,7 @@ div.gridbox_dhx_web.gridbox table.hdr td {
     width: 100%
 }
 .ref_field21 {
-    background: url(../imgs/custom_field/points.png) no-repeat left center;
+    background: url(imgs/custom_field/points.png) no-repeat left center;
     position: relative;
     width: 22px;
     height: 21px;
@@ -165,12 +165,12 @@ div.gridbox_dhx_web.gridbox table.hdr td {
     cursor: alias;
 }
 .ref_field21:hover {
-    background: url(../imgs/custom_field/points_hover.png) no-repeat left center;
+    background: url(imgs/custom_field/points_hover.png) no-repeat left center;
 }
 
 /* картинка длительной операции*/
 .img_long {
-    background: url(../imgs/dhxwins_web/dhxwins_progress.gif) no-repeat 20px 20px;
+    background: url(imgs/dhxwins_web/dhxwins_progress.gif) no-repeat 20px 20px;
     width: 80px;
     height: 100px;
 }
