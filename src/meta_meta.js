@@ -772,8 +772,9 @@ function Meta(req, patch) {
 	};
 
 	this.printing_plates = function (pp) {
-		for(var i in pp.doc)
-			m.doc[i].printing_plates = pp.doc[i];
+		if(pp)
+			for(var i in pp.doc)
+				m.doc[i].printing_plates = pp.doc[i];
 
 	};
 
