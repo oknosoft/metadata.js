@@ -21,6 +21,11 @@
     "url": "https://github.com/oknosoft/metadata.js.git"
   },
   "main": "lib/metadata.min.js",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
   "dependencies": {
     "alasql": "~0.1.9"
   },
