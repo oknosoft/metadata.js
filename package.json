@@ -1,0 +1,39 @@
+{
+  "name": "metadata",
+  "description": "metadata.js - Web client for 1C and other rest servers - metadata & data engine",
+  "version": "0.9.191",
+  "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
+  "directories": {
+    "example": "examples"
+  },
+  "dependencies": {
+    "alasql": "~0.1.9"
+  },
+  "devDependencies": {
+    "lmd": "~1.13.1"
+  },
+  "engines": [
+    "node"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oknosoft/metadata.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/oknosoft/metadata.js/issues"
+  },
+  "homepage": "http://www.oknosoft.ru/metadata/",
+  "main": "lib/metadata.min.js",
+  "keywords": [
+    "metadata",
+    "rest",
+    "odata",
+    "1c",
+    "1с",
+    "web сервис",
+    "клиент 1с",
+    "ui framework",
+    "rest client"
+  ],
+  "license": "Oknosoft"
+}
