@@ -1,7 +1,7 @@
 {
   "name": "metadata",
   "description": "metadata.js - Web client for 1C and other rest servers - metadata & data engine",
-  "version": "0.9.191",
+  "version": "0.9.192",
   "license": "Oknosoft",
   "keywords": [
     "metadata",
@@ -50,9 +50,6 @@
     "package.json",
     "README.en.md",
     "README.md",
-    "**/.*",
-    "bower_components",
-    "test",
-    "tests"
+    "bower_components"
   ]
 }
