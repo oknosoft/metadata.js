@@ -39,7 +39,6 @@
     "lmd": "~1.13.1"
   },
   "ignore": [
-    "data",
     "src",
     "lib/ext",
     "lib/alasql.min.js",

@@ -33,8 +33,8 @@ DataManager.prototype.export = function(attr){
 			wnd: {
 				top: 130,
 				left: 200,
-				width: 470,
-				height: 300
+				width: 480,
+				height: 350
 			}
 		};
 
@@ -71,25 +71,26 @@ DataManager.prototype.export = function(attr){
 		wnd.attachEvent("onClose", frm_close);
 
 		var str = [
-			{ type:"fieldset" , name:"form_range", label:"Выгрузить", offsetLeft:"20", list:[
-				{ type:"settings" , labelWidth:300, labelAlign:"left", position:"label-right"  },
+			{ type:"fieldset" , name:"form_range", label:"Выгрузить", list:[
+				{ type:"settings" , labelWidth:320, labelAlign:"left", position:"label-right"  },
 				{ type:"radio" , name:"range", label:"Выделенные строки", value:"selected"  },
 				{ type:"radio" , name:"range", label:"Весь справочник", value:"all"  }
 			]},
-			{ type:"block" , name:"form_block_1", list:[
-				{ type:"fieldset" , name:"fieldset_format", label:"Формат файла", list:[
-					{ type:"settings" , labelWidth:60, labelAlign:"left", position:"label-right"  },
-					{ type:"radio" , name:"format", label:"json", value:"json", tooltip: "Выгрузить в формате JSON"  },
-					{ type:"radio" , name:"format", label:"xlsx", value:"xlsx", tooltip: "Выгрузить в офисном формате XLSX" }
-
-				]  },
+			{ type:"fieldset" , name:"form_fieldset_2", label:"Дополнительно выгрузить", list:[
+				{ type:"settings" , labelWidth:160, position:"label-right"  },
+				{ type:"checkbox" , name:"meta", label:"Описание метаданных", labelAlign:"left", position:"label-right", checked: options.meta  },
 				{ type:"newcolumn"   },
-				{ type:"fieldset" , name:"form_fieldset_2", label:"Дополнительно выгрузить", offsetLeft:"10", list:[
-					{ type:"settings" , position:"label-right"  },
-					{ type:"checkbox" , name:"meta", label:"Описание метаданных", labelAlign:"left", position:"label-right", checked: options.meta  },
-					{ type:"checkbox" , name:"relation", label:"Связанные объекты по ссылкам", position:"label-right", checked: options.relation, tooltip: "Пока не реализовано" }
-				]  }
-			]}
+				{ type:"checkbox" , name:"relation", label:"Связанные объекты", position:"label-right", checked: options.relation, tooltip: "Связанные объекты по ссылкам (пока не реализовано)" }
+			]  },
+			{ type:"fieldset" , name:"fieldset_format", label:"Формат файла", list:[
+				{ type:"settings" , labelWidth:60, labelAlign:"left", position:"label-right"  },
+				{ type:"radio" , name:"format", label:"json", value:"json", tooltip: "Выгрузить в формате JSON"  },
+				{ type:"newcolumn"   },
+				{ type:"radio" , name:"format", label:"xlsx", value:"xlsx", tooltip: "Выгрузить в офисном формате XLSX" },
+				{ type:"newcolumn"   },
+				{ type:"radio" , name:"format", label:"atom", value:"atom", tooltip: "Выгрузить в формате XML Atom" }
+
+			]  }
 
 
 		];
@@ -125,6 +126,13 @@ DataManager.prototype.export = function(attr){
 
 		wnd.elmnts.frm.setItemValue("relation", false);
 		wnd.elmnts.frm.disableItem("relation");
+
+		if(wnd.elmnts.frm.getItemValue("range") == "all"){
+			wnd.elmnts.frm.disableItem("format", "atom");
+			if(wnd.elmnts.frm.getItemValue("format") == "atom")
+				wnd.elmnts.frm.setItemValue("format", "json");
+		}else
+			wnd.elmnts.frm.enableItem("format", "atom");
 
 		if(wnd.elmnts.frm.getItemValue("format") == "json"){
 			wnd.elmnts.frm.enableItem("meta");
@@ -192,6 +200,13 @@ DataManager.prototype.export = function(attr){
 				$p.load_script("lib/xlsx.core.min.js", "script", export_xlsx);
 			else
 				export_xlsx();
+
+		}else if(options.format == "atom" && attr.items.length){
+
+			var po = attr.obj ? Promise.resolve(attr.items[0]) : _mgr.get(attr.items[0], true);
+			po.then(function (o) {
+				alasql.utils.saveFile(_mgr.table_name+".xml", o.to_atom());
+			});
 
 		}else{
 			//alasql("SELECT * INTO SQL('"+_mgr.table_name+".sql') FROM " + _mgr.table_name);
