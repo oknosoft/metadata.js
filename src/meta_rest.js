@@ -456,5 +456,11 @@ DataObj.prototype.load_rest = function () {
 		})
 		.then(function (res) {
 			return tObj._mixin(_rest.to_data(res, tObj._manager));
+		})
+		.catch(function (err) {
+			if(err.status==404)
+				return tObj;
+			else
+				console.log(err);
 		});
 };

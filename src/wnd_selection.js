@@ -88,6 +88,14 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				onchange: input_filter_change
 			});
 
+			// Если нет полных прав - разрешен только просмотр и выбор элементов
+			// TODO: учитывать права для каждой роли на каждый объект
+			if(!$p.ajax.root){
+				this.disableItem("btn_new");
+				this.disableItem("btn_edit");
+				this.disableItem("btn_delete");
+			}
+
 			if(!pwnd.on_select && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper"){
 				this.hideItem("btn_select");
 				this.hideItem("sep1");
@@ -95,10 +103,6 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				this.addListOption("bs_more", "btn_import", "~", "button", "Загрузить из файла", "document_load.png");
 				this.addListOption("bs_more", "btn_export", "~", "button", "Выгрузить в файл", "document_save.png");
 
-			}else{
-				this.disableItem("btn_new");
-				this.disableItem("btn_edit");
-				this.disableItem("btn_delete");
 			}
 
 			//
@@ -245,8 +249,12 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	function toolbar_click(btn_id){
 		if(btn_id=="btn_select"){
 			select();
+
 		}else if(btn_id=="btn_new"){
-			$p.msg.show_not_implemented();
+			var o = _mngr.create({}, true);
+			// TODO: м.б. записывать пустой объект и получать код-номер??
+			o._set_loaded(o.ref);
+			$p.iface.set_hash(_mngr.class_name, o.ref);
 
 		}else if(btn_id=="btn_edit"){
 			var rId = wnd.elmnts.grid.getSelectedRowId();

@@ -16,7 +16,10 @@
  */
 function DataObj(attr, manager) {
 
-	var ref, tmp, _ts_ = {}, _obj = {data_version: ""}, _is_new = !(this instanceof EnumObj);
+	var ref, tmp,
+		_ts_ = {},
+		_obj = {data_version: ""},
+		_is_new = !(this instanceof EnumObj);
 
 	// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
 	if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager))

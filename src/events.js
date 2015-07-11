@@ -646,7 +646,7 @@ $p.eve.log_in = function(onstep){
 					return new Meta(req, rep);
 				})
 				.catch(function () {
-					return new Meta(req, rep);
+					return new Meta(req);
 				});
 		})
 
@@ -660,7 +660,12 @@ $p.eve.log_in = function(onstep){
 
 			else if($p.job_prm.rest){
 				// в режиме rest тестируем авторизацию
-				return $p.ajax.get_ex($p.job_prm.rest_url()+"?$format=json", true);
+				// TODO: реализовать метод для получения списка ролей пользователя
+				return $p.ajax.get_ex($p.job_prm.rest_url()+"?$format=json", true)
+					.then(function (req) {
+						//return JSON.parse(res.response);
+						return {root: true};
+					});
 
 			}else
 				return _load({
@@ -766,7 +771,11 @@ $p.eve.log_in = function(onstep){
 			_md.printing_plates(mdd.printing_plates);
 
 			// и запоминаем в ajax признак полноправности пользователя
-			$p.ajax.root = !!mdd.root;
+			$p.ajax._define("root", {
+				value: !!mdd.root,
+				writable: false,
+				enumerable: false
+			});
 		})
 
 		// сохраняем данные в локальной датабазе

@@ -566,13 +566,24 @@ function RefDataManager(class_name) {
 			return o;
 	};
 
-	t.create = function(attr, fill){
+	/**
+	 * Создаёт новый объект типа объектов текущего менеджера
+	 * @param [attr] {Object} - значениями полей этого объекта будет заполнен создаваемый объект
+	 * @param [fill_default] {Boolean} - признак, надо ли заполнять (инициализировать) создаваемый объект значениями полей по умолчанию
+	 * @return {*}
+	 */
+	t.create = function(attr, fill_default){
+
+		if(!attr || typeof attr != "object")
+			attr = {};
+		if(!attr.ref || !$p.is_guid(attr.ref) || $p.is_empty_guid(attr.ref))
+			attr.ref = $p.generate_guid();
+
 		var o = by_ref[attr.ref];
 		if(!o){
-
 			o = new t._obj_сonstructor(attr, t);
 
-			if(fill){
+			if(fill_default){
 				var _obj = o._obj;
 				// присваиваем типизированные значения по умолчанию
 				for(var f in t.metadata().fields){

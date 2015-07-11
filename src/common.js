@@ -716,8 +716,9 @@ $p.blank = new function Blank() {
 /**
  * Проверяет, является ли значение guid-ом
  * @method is_guid
- * @param v {String} - проверяемое значение
- * @return {boolean} - true, если значение соответствует регурярному выражению guid
+ * @for MetaEngine
+ * @param v {*} - проверяемое значение
+ * @return {Boolean} - true, если значение соответствует регурярному выражению guid
  */
 $p.is_guid = function(v){
 	if(typeof v !== "string" || v.length < 36)
@@ -727,6 +728,13 @@ $p.is_guid = function(v){
 	return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v)
 };
 
+/**
+ * Проверяет, является ли значение пустым идентификатором
+ * @method is_empty_guid
+ * @for MetaEngine
+ * @param v {*} - проверяемое значение
+ * @return {Boolean} - true, если v эквивалентен пустому guid
+ */
 $p.is_empty_guid = function (v) {
 	return !v || v === $p.blank.guid;
 };
@@ -734,7 +742,8 @@ $p.is_empty_guid = function (v) {
 /**
  * Генерирует новый guid
  * @method generate_guid
- * @return {string}
+ * @for MetaEngine
+ * @return {String}
  */
 $p.generate_guid = function(){
 	var d = new Date().getTime();
