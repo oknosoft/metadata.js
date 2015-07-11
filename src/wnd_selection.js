@@ -301,10 +301,15 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			return;
 		}
 
+		if(!rId && wnd.elmnts.tree)
+			rId = wnd.elmnts.tree.getSelectedItemId();
+
 		if(rId && pwnd.on_select){
-			var fld = _mngr.get(rId);
-			wnd.close();
-			pwnd.on_select.call(pwnd.grid || pwnd, fld);
+			_mngr.get(rId, true)
+				.then(function(selv){
+					wnd.close();
+					pwnd.on_select.call(pwnd.grid || pwnd, selv);
+				});
 		}
 	}
 

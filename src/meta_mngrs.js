@@ -355,7 +355,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o){
 		add_xml_row = function(f, tabular){
 			if(tabular){
 				var pref = f["property"] || f["param"] || f["Параметр"],
-					pval = f["value"] || f["Значение"];
+					pval = f["value"] != undefined ? f["value"] : f["Значение"];
 				if(pref.empty()) {
 					row_id = tabular + "|" + "empty";
 					ft = "ro";
@@ -380,7 +380,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o){
 				row_id = f.id;
 				ft = f.type;
 				txt = "";
-				if(f.txt)
+				if(f.hasOwnProperty("txt"))
 					txt = f.txt;
 				else if((v = o[row_id]) !== undefined)
 					txt_by_type(v, _md.get(t.class_name, row_id));

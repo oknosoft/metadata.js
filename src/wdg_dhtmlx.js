@@ -37,6 +37,13 @@ eXcell_proto.input_keydown = function(e, t){
 	else if(e.keyCode == 113){                      // по {F2} открываем форму объекта
 		if(t.source.tabular_section){
 			t.mgr = _md.value_mgr(t.source.row, t.source.col, t.source.row._metadata.fields[t.source.col].type);
+			if(t.mgr){
+				var tv = t.source.row[t.source.col];
+				t.mgr.form_obj(t.source.wnd, {
+					o: tv,
+					on_select: obj_on_select
+				});
+			}
 
 		}else if(t.fpath.length==1){
 			t.mgr = _md.value_mgr(t.source.o._obj, t.fpath[0], t.source.o._metadata.fields[t.fpath[0]].type);

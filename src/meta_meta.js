@@ -667,6 +667,8 @@ function Meta(req, patch) {
 					}
 				if(tnames && tnames.length > 1 && $p[tnames[0]])
 					return mf_mgr($p[tnames[0]][tnames[1]]);
+				else
+					return oproperty.type;
 			}
 		}
 	};

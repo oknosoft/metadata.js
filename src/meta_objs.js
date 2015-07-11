@@ -125,9 +125,12 @@ DataObj.prototype._getter = function (f) {
 		return this._obj[f];
 
 	}else if(mf.is_ref){
-		if(mgr = _md.value_mgr(this._obj, f, mf))
-			return mgr.get(this._obj[f], false);
-		else{
+		if(mgr = _md.value_mgr(this._obj, f, mf)){
+			if(mgr instanceof DataManager)
+				return mgr.get(this._obj[f], false);
+			else
+				return $p.fetch_type(this._obj[f], mgr);
+		}else{
 			console.log([f, mf, this._obj]);
 			return null;
 		}
@@ -178,7 +181,8 @@ DataObj.prototype._setter = function (f, v) {
 				if(v.type && !(v instanceof DataObj))
 					delete v.type;
 				mgr.create(v);
-			}
+			}else if(!(mgr instanceof DataManager))
+				this._obj[f] = $p.fetch_type(v, mgr);
 		}else{
 			if(typeof v != "object")
 				this._obj[f] = v;
