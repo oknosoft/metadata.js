@@ -15,7 +15,7 @@ function eXcell_addr(cell){
 	var t = this, td,
 
 		ti_keydown=function(e){
-			return input_keydown(e, t);
+			return eXcell_proto.input_keydown(e, t);
 		},
 
 		open_selection=function(e) {

@@ -10,23 +10,36 @@
  * @requires common
  */
 
+var eXcell_proto = new eXcell();
+
 /**
  * Обработчик клавиш {tab}, {enter} и {F4} в поле ввода
  */
-function input_keydown(e, t){
-	if(e.keyCode == 8 || e.keyCode == 46){
+eXcell_proto.input_keydown = function(e, t){
+	if(e.keyCode == 8 || e.keyCode == 46){          // по {del} и {bs} очищаем значение
 		t.setValue("");
 		t.grid.editStop();
 		if(t.source.on_select)
 			t.source.on_select.call(t.source);
-	}else if(e.keyCode == 9 || e.keyCode == 13)
-		t.grid.editStop();	// по {tab} и {enter} заканчиваем редактирование
-	else if(e.keyCode == 115)
-		t.cell.firstChild.childNodes[1].onclick(e);			// по {F4} открываем редактор
-	return $p.cancel_bubble(e);
-}
 
-var eXcell_proto = new eXcell();
+	}else if(e.keyCode == 9 || e.keyCode == 13)
+		t.grid.editStop();                          // по {tab} и {enter} заканчиваем редактирование
+
+	else if(e.keyCode == 115)
+		t.cell.firstChild.childNodes[1].onclick(e); // по {F4} открываем редактор
+
+	else if(e.keyCode == 113){                      // по {F2} открываем форму объекта
+		if(t.fpath.length==1){
+			var tv = t.source.o[t.fpath[0]],
+				tm = _md.value_mgr(t.source.o._obj, t.fpath[0], t.source.o._metadata.fields[t.fpath[0]].type);
+			if(tm){
+				tm.form_obj(t.source.wnd, {o: tv});
+			}
+		}
+	}
+
+	return $p.cancel_bubble(e);
+};
 
 
 /**
@@ -40,7 +53,7 @@ function eXcell_ref(cell){
 	var t = this, td,
 
 		ti_keydown=function(e){
-			return input_keydown(e, t);
+			return eXcell_proto.input_keydown(e, t);
 		},
 
 		open_selection=function(e) {
