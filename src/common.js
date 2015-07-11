@@ -86,12 +86,25 @@ Object.prototype._define("_extend", {
  * @return {Object}
  */
 Object.prototype._define("_mixin", {
-	value: function( src ) {
-		var tobj = {}; // tobj - вспомогательный объект для фильтрации свойств, которые есть у объекта Object и его прототипа
-		for(var f in src){
-			// копируем в dst свойства src, кроме тех, которые унаследованы от Object
-			if((typeof tobj[f] == "undefined") || (tobj[f] != src[f]))
-				this[f] = src[f];
+	value: function(src, include, exclude ) {
+		var tobj = {}, i, f; // tobj - вспомогательный объект для фильтрации свойств, которые есть у объекта Object и его прототипа
+		if(include && include.length){
+			for(i = 0; i<include.length; i++){
+				f = include[i];
+				if(exclude && exclude.indexOf(f)!=-1)
+					continue;
+				// копируем в dst свойства src, кроме тех, которые унаследованы от Object
+				if((typeof tobj[f] == "undefined") || (tobj[f] != src[f]))
+					this[f] = src[f];
+			}
+		}else{
+			for(f in src){
+				if(exclude && exclude.indexOf(f)!=-1)
+					continue;
+				// копируем в dst свойства src, кроме тех, которые унаследованы от Object
+				if((typeof tobj[f] == "undefined") || (tobj[f] != src[f]))
+					this[f] = src[f];
+			}
 		}
 		return this;
 	},
@@ -1345,6 +1358,16 @@ function JobPrm(){
 	this.rest_url = function () {
 		var url = this.rest_path || "/a/zd/%1/odata/standard.odata/",
 			zone = $p.wsql.get_user_param("zone", "number");
+		if(zone)
+			return url.replace("%1", zone);
+		else
+			return url.replace("%1/", "");
+	};
+
+	this.irest_url = function () {
+		var url = this.rest_path || "/a/zd/%1/odata/standard.odata/",
+			zone = $p.wsql.get_user_param("zone", "number");
+		url = url.replace("odata/standard.odata", "hs/rest")
 		if(zone)
 			return url.replace("%1", zone);
 		else

@@ -251,10 +251,13 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			select();
 
 		}else if(btn_id=="btn_new"){
-			var o = _mngr.create({}, true);
 			// TODO: м.б. записывать пустой объект и получать код-номер??
-			o._set_loaded(o.ref);
-			$p.iface.set_hash(_mngr.class_name, o.ref);
+			_mngr.create({}, true)
+				.then(function (o) {
+					o._set_loaded(o.ref);
+					$p.iface.set_hash(_mngr.class_name, o.ref);
+				});
+
 
 		}else if(btn_id=="btn_edit"){
 			var rId = wnd.elmnts.grid.getSelectedRowId();

@@ -26,7 +26,7 @@ eXcell_proto.input_keydown = function(e, t){
 		t.setValue("");
 		t.grid.editStop();
 		if(t.source.on_select)
-			t.source.on_select.call(t.source);
+			t.source.on_select.call(t.source, "");
 
 	}else if(e.keyCode == 9 || e.keyCode == 13)
 		t.grid.editStop();                          // по {tab} и {enter} заканчиваем редактирование

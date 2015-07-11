@@ -28,8 +28,14 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	// читаем объект из локального SQL или получаем с сервера
 	if($p.is_data_obj(o)){
 		if(o.is_new() && attr.on_select)
-			o = _mgr.create({}, true);
-		initialize();
+			_mgr.create({}, true)
+				.then(function (tObj) {
+					o = tObj;
+					tObj = null;
+					initialize();
+				});
+		else
+			initialize();
 	}else{
 		pwnd.progressOn();
 

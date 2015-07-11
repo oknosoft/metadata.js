@@ -567,12 +567,18 @@ function RefDataManager(class_name) {
 	};
 
 	/**
-	 * Создаёт новый объект типа объектов текущего менеджера
+	 * Создаёт новый объект типа объектов текущего менеджера<br />
+	 * Для кешируемых объектов, все действия происходят на клиенте<br />
+	 * Для некешируемых, выполняется обращение к серверу для получения guid и значений реквизитов по умолчанию
 	 * @param [attr] {Object} - значениями полей этого объекта будет заполнен создаваемый объект
 	 * @param [fill_default] {Boolean} - признак, надо ли заполнять (инициализировать) создаваемый объект значениями полей по умолчанию
-	 * @return {*}
+	 * @return {Promise.<*>}
 	 */
 	t.create = function(attr, fill_default){
+
+		function do_fill(){
+
+		}
 
 		if(!attr || typeof attr != "object")
 			attr = {};
@@ -582,6 +588,16 @@ function RefDataManager(class_name) {
 		var o = by_ref[attr.ref];
 		if(!o){
 			o = new t._obj_сonstructor(attr, t);
+
+			if(!t._cachable && fill_default){
+				var rattr = {};
+				$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
+				rattr.url += t.rest_name + "/Create()";
+				return $p.ajax.get_ex(rattr.url, rattr)
+					.then(function (req) {
+						return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
+					});
+			}
 
 			if(fill_default){
 				var _obj = o._obj;
@@ -593,7 +609,7 @@ function RefDataManager(class_name) {
 			}
 		}
 
-		return o;
+		return Promise.resolve(o);
 	};
 
 
