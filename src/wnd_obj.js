@@ -23,12 +23,14 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	var _mgr = this,
 		o = attr.o,
 		cmd = _mgr.metadata(),
-		wnd;
+		wnd, options;
 
 	// читаем объект из локального SQL или получаем с сервера
-	if($p.is_data_obj(o))
+	if($p.is_data_obj(o)){
+		if(o.is_new() && attr.on_select)
+			o = _mgr.create({}, true);
 		initialize();
-	else{
+	}else{
 		pwnd.progressOn();
 
 		_mgr.get(attr.hasOwnProperty("ref") ? attr.ref : attr, true)
@@ -51,7 +53,25 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	function initialize(){
 
 		// создаём форму
-		wnd = $p.iface.w.createWindow(_mgr.class_name, 0, 0, 900, 600);
+		options = {
+			name: 'wnd_obj_' + _mgr.class_name,
+			wnd: {
+				id: 'wnd_obj_' + _mgr.class_name,
+				top: 80 + Math.random()*40,
+				left: 120 + Math.random()*80,
+				width: 900,
+				height: 600,
+				modal: true,
+				center: false,
+				pwnd: pwnd,
+				allow_close: true,
+				allow_minmax: true,
+				on_close: frm_close,
+				caption: (cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation
+			}
+		};
+
+		wnd = $p.iface.dat_blank(null, options.wnd);
 
 		/**
 		 * перезаполняет шапку и табчасть документа данными "attr"
@@ -74,17 +94,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 */
 	function frm_create(){
 
-		wnd.elmnts = {};
-		wnd.modified = false;
-
-		wnd.setText((cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation);
-		wnd.centerOnScreen();
-		wnd.button('stick').hide();
-		wnd.button('park').hide();
-		wnd.attachEvent("onClose", frm_close);
-		$p.bind_help(wnd);
-
-
 		/**
 		 *	Закладки: шапка и табличные части
 		 */
@@ -104,7 +113,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			}
 		}
 		wnd.attachEvent("onResizeFinish", function(win){
-			wnd.elmnts.pg_header.enableAutoHeight(false,wnd.elmnts.tabs.tab_header._getHeight()-20,true);
+			wnd.elmnts.pg_header.enableAutoHeight(false, wnd.elmnts.tabs.tab_header._getHeight()-20, true);
 		});
 
 		/**
@@ -141,6 +150,9 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				this.hideItem("btn_post");
 				this.hideItem("btn_unpost");
 			}
+
+			if(attr.on_select)
+				this.setItemText("btn_save_close", "Записать и выбрать");
 
 			// добавляем команды печати
 			var pp = cmd["printing_plates"];
@@ -450,8 +462,12 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		do_save();
 
-		if(action == "close")
+		if(action == "close"){
+			if(attr.on_select)
+				attr.on_select(o);
 			wnd.close();
+		}
+
 	}
 
 	function frm_close(win){

@@ -119,7 +119,9 @@ $p.iface.dat_blank = function(_dxw, attr) {
 		center: !!attr.center,
 		resize: true,
 		caption: attr.caption || "Tools"
-	});
+	}),
+		_modified = false;
+
 	_dxw = null;
 
 	if(!attr.allow_minmax)
@@ -136,7 +138,21 @@ $p.iface.dat_blank = function(_dxw, attr) {
 	$p.bind_help(wnd_dat, attr.help_path);
 
 	wnd_dat.elmnts = {};
-	wnd_dat.modified = false;
+	wnd_dat._define("modified", {
+		get: function () {
+			return _modified;
+		},
+		set: function (v) {
+			_modified = v;
+			var title = wnd_dat.getText();
+			if(_modified && title.lastIndexOf("*")!=title.length-1)
+				wnd_dat.setText(title + " *");
+			else if(!_modified && title.lastIndexOf("*")==title.length-1)
+				wnd_dat.setText(title.replace(" *", ""));
+		},
+		enumerable: false,
+		configurable: false
+	});
 
 	wnd_dat.wnd_options = function (options) {
 		var pos = wnd_dat.getPosition(),
@@ -306,7 +322,7 @@ $p.iface.pgrid_on_change = function(pname, new_value, old_value){
 $p.iface.pgrid_on_checkbox = function(rId, cInd, state){
 
 	var pgrid = this.grid instanceof dhtmlXGridObject ? this.grid : this,
-		source = pgrid.getUserData("", "source")
+		source = pgrid.getUserData("", "source");
 
 	if(source.o[rId] != undefined)
 		source.o[rId] = state;

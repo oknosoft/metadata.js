@@ -16,6 +16,12 @@ var eXcell_proto = new eXcell();
  * Обработчик клавиш {tab}, {enter} и {F4} в поле ввода
  */
 eXcell_proto.input_keydown = function(e, t){
+
+	function obj_on_select(v){
+		if(t.source.on_select)
+			t.source.on_select.call(t.source, v);
+	}
+
 	if(e.keyCode == 8 || e.keyCode == 46){          // по {del} и {bs} очищаем значение
 		t.setValue("");
 		t.grid.editStop();
@@ -29,11 +35,17 @@ eXcell_proto.input_keydown = function(e, t){
 		t.cell.firstChild.childNodes[1].onclick(e); // по {F4} открываем редактор
 
 	else if(e.keyCode == 113){                      // по {F2} открываем форму объекта
-		if(t.fpath.length==1){
-			var tv = t.source.o[t.fpath[0]],
-				tm = _md.value_mgr(t.source.o._obj, t.fpath[0], t.source.o._metadata.fields[t.fpath[0]].type);
-			if(tm){
-				tm.form_obj(t.source.wnd, {o: tv});
+		if(t.source.tabular_section){
+			t.mgr = _md.value_mgr(t.source.row, t.source.col, t.source.row._metadata.fields[t.source.col].type);
+
+		}else if(t.fpath.length==1){
+			t.mgr = _md.value_mgr(t.source.o._obj, t.fpath[0], t.source.o._metadata.fields[t.fpath[0]].type);
+			if(t.mgr){
+				var tv = t.source.o[t.fpath[0]];
+				t.mgr.form_obj(t.source.wnd, {
+					o: tv,
+					on_select: obj_on_select
+				});
 			}
 		}
 	}
@@ -192,7 +204,7 @@ function eXcell_ref(cell){
 	 * @desc: 	вызывается при отключении редактора
 	 */
 	t.detach=function(){
-		if(t.cell.firstChild)
+		if(t.cell.firstChild && t.cell.firstChild.childNodes.length)
 			t.setValue(t.cell.firstChild.childNodes[0].value);	//sets the new value
 		return !$p.is_equal(t.val, t.getValue());				// compares the new and the old values
 	}
