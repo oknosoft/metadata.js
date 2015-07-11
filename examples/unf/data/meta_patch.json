@@ -64,6 +64,13 @@
           ]
         },
         "obj": {
+          "head": {
+            " ": ["number_doc", "date", "transactions_kind", "organization", "partner", "contract"],
+            "Планирование": ["invoice_state", "start", "finish"],
+            "Дополнительно": ["project", "cashbox", "event", "vat", "vat_included", "responsible", "note",
+              {"id": "doc_amount", "path": "o.doc_amount", "synonym": "Сумма документа", "type": "ro"}
+            ]
+          },
           "tabular_sections": {
             "inventories":  {
               "fields": ["row","nom","characteristic","quantity","unit","price","discount_percent","amount","vat_rate","vat_amount","altogether","shipping_date","specification","content"],

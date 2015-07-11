@@ -299,30 +299,36 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o){
 		default_oxml = function () {
 			if(oxml)
 				return;
-			oxml = {" ": []};
-			mf = _md.get(t.class_name);
-			if(o instanceof CatObj){
-				if(mf.code_length)
-					oxml[" "].push("id");
-				if(mf.main_presentation_name)
-					oxml[" "].push("name");
-			}else if(o instanceof DocObj){
-				oxml[" "].push("number");
-				oxml[" "].push("date");
+			mf = t.metadata();
+
+			if(mf.form && mf.form.obj){
+				oxml = mf.form.obj.head;
+
+			}else{
+				oxml = {" ": []};
+
+				if(o instanceof CatObj){
+					if(mf.code_length)
+						oxml[" "].push("id");
+					if(mf.main_presentation_name)
+						oxml[" "].push("name");
+				}else if(o instanceof DocObj){
+					oxml[" "].push("number_doc");
+					oxml[" "].push("date");
+				}
+				if(!o.is_folder){
+					for(i in mf.fields)
+						if(!mf.fields[i].hide)
+							oxml[" "].push(i);
+				}
+				if(mf.tabular_sections["extra_fields"])
+					oxml["Дополнительные реквизиты"] = [];
 			}
-			if(!o.is_folder){
-				for(i in mf.fields)
-					if(!mf.fields[i].hide)
-						oxml[" "].push(i);
-			}
-			if(_md.get(t.class_name).tabular_sections["extra_fields"])
-				oxml["Дополнительные реквизиты"] = [];
+
 
 		},
 
-		by_type = function(fv){
-
-			ft = _md.control_by_type(mf.type);
+		txt_by_type = function (fv, mf) {
 
 			if($p.is_data_obj(fv))
 				txt = fv.presentation;
@@ -337,6 +343,13 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o){
 			} else if(mf.type.types[0]=="boolean") {
 				txt = txt ? "1" : "0";
 			}
+		},
+
+		by_type = function(fv){
+
+			ft = _md.control_by_type(mf.type);
+			txt_by_type(fv, mf);
+
 		},
 
 		add_xml_row = function(f, tabular){
@@ -361,15 +374,21 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o){
 					if(pref.mandatory)
 						ft += '" class="cell_mandatory';
 				}
+
 			}else if(typeof f === "object"){
 				mf = {synonym: f.synonym};
 				row_id = f.id;
 				ft = f.type;
-				txt = f.txt;
+				txt = "";
+				if(f.txt)
+					txt = f.txt;
+				else if((v = o[row_id]) !== undefined)
+					txt_by_type(v, _md.get(t.class_name, row_id));
+
 			}else if((v = o[f]) !== undefined){
-				mf = _md.get(t.class_name, f);
-				row_id = f;
+				mf = _md.get(t.class_name, row_id = f);
 				by_type(v);
+
 			}else
 				return;
 
@@ -380,9 +399,11 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o){
 	default_oxml();
 
 	for(i in oxml){
-		if(i!=" ") gd += '<row open="1"><cell>' + i + '</cell>';	// если у блока есть заголовок, формируем блок иначе добавляем поля без иерархии
+		if(i!=" ")
+			gd += '<row open="1"><cell>' + i + '</cell>';	// если у блока есть заголовок, формируем блок иначе добавляем поля без иерархии
 
-		for(j in oxml[i]) add_xml_row(oxml[i][j]);					// поля, описанные в текущем разделе
+		for(j in oxml[i])
+			add_xml_row(oxml[i][j]);                                // поля, описанные в текущем разделе
 
 		if(i == "Дополнительные реквизиты" && o["extra_fields"])    // строки табчасти o.extra_fields
 			o["extra_fields"].each(function(row){

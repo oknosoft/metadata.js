@@ -281,7 +281,7 @@ function eXcell_refc(cell){
 		t.combo.DOMlist.style.fontSize = "11px";
 
 		t.combo.setFocus();
-		t.combo.setComboValue(t.val.ref);
+		t.combo.setComboValue(t.val ? t.val.ref : "");
 		t.combo.readonly(true, true);
 		t.combo.openSelect();
 		t.combo.attachEvent("onChange", function(){

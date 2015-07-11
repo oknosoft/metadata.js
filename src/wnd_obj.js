@@ -169,10 +169,10 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		else if(btn_id=="btn_save")
 			save("save");
 
-		else if(btn_id=="btn_add_row")
+		else if(btn_id=="btn_add")
 			add_row();
 
-		else if(btn_id=="btn_delete_row")
+		else if(btn_id=="btn_delete")
 			del_row();
 
 		else if(btn_id=="btn_go_connection")
@@ -330,8 +330,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			field: f,
 			value: selv,
 			tabular_section: "",
-			grid: this,
-			cell: this.cells(),
+			grid: this.cells ? this : this.grid,
+			cell: this.cells ? this.cells() : this.grid.cells(),
 			wnd: wnd
 		})
 	}
@@ -412,44 +412,28 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.elmnts.pg_header.forEachRow(function(id){	reflect.call(wnd.elmnts.pg_header, id); });
 	}
 
-	function tabular_new_row(){
-		var row = o["production"].add({qty: 1, quantity: 1, discount_percent_internal: $p.wsql.get_user_param("discount", "number")});
-		refresh_tabulars();
-		wnd.elmnts.detales_grid.selectRowById(row.row);
-		return row;
-	}
+	function tabular_get_sel_index(tabular){
+		var selId = wnd.elmnts["grid_" + tabular].getSelectedRowId();
 
-	function tabular_get_sel_index(){
-		var selId = wnd.elmnts.detales_grid.getSelectedRowId();
 		if(selId && !isNaN(Number(selId)))
 			return Number(selId)-1;
+
 		$p.msg.show_msg({type: "alert-warning",
-			text: $p.msg.no_selected_row.replace("%1", "Продукция"),
-			title: cmd["obj_presentation"] + ': ' + o.presentation});
+			text: $p.msg.no_selected_row.replace("%1", cmd.tabular_sections[tabular].synonym || cmd.tabular_sections[tabular].name),
+			title: cmd.obj_presentation || cmd.synonym + ': ' + o.presentation});
 	}
 
 	function del_row(){
 
-		var rId = tabular_get_sel_index(), row;
+		var tabular = wnd.elmnts.frm_tabs.getActiveTab().replace("tab_", ""),
+			rId = tabular_get_sel_index(tabular);
 
 		if(rId == undefined)
 			return;
-		else
-			row = o["production"].get(rId);
 
+		o[tabular].del(rId);
+		o[tabular].sync_grid(wnd.elmnts["grid_" + tabular]);
 
-		//wnd.progressOn();
-		//_mgr.save({
-		//	ref: o.ref,
-		//	del_row: rId,
-		//	o: o._obj,
-		//	action: "calc",
-		//	specify: "production"
-		//}).then(function(res){
-		//	if(!$p.msg.check_soap_result(res))			// сервер об ошибках не сообщил. считаем, что данные записались
-		//		wnd.reflect_change(res); // - перезаполнить шапку и табчасть
-		//	wnd.progressOff();
-		//});
 	}
 
 	function save(action){
@@ -488,11 +472,11 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 * добавляет строку табчасти
 	 */
 	function add_row(){
-		var row = tabular_new_row(), cell, grid = wnd.elmnts.detales_grid;
-		grid.selectCell(row.row-1, grid.getColIndexById("nom"), false, true, true);
-		cell = grid.cells();
-		cell.edit();
-		cell.open_selection();
+		var tabular = wnd.elmnts.frm_tabs.getActiveTab().replace("tab_", ""),
+			grid = wnd.elmnts["grid_" + tabular],
+			row = o[tabular].add();
+		o[tabular].sync_grid(grid);
+		grid.selectRowById(row.row);
 	}
 
-}
+};
