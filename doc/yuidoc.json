@@ -4,9 +4,9 @@
   "version": "0.9.190",
   "url": "http://www.oknosoft.ru/",
   "options": {
-    "outdir": "../doc",
-    "themedir": "../node_modules/yuidoc-bootstrap-theme",
-    "helpers": ["../node_modules/yuidoc-bootstrap-theme/helpers/helpers.js"],
+    "outdir": "doc",
+    "themedir": "node_modules/yuidoc-bootstrap-theme",
+    "helpers": ["node_modules/yuidoc-bootstrap-theme/helpers/helpers.js"],
     "tabtospace": 2
   }
 }
