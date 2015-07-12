@@ -28,5 +28,6 @@
     "main":     "src/main.js"
   },
   "main": "main",
+  "node": true,
   "ie": false
 }

@@ -25,21 +25,92 @@ function MetaEngine() {
  * @for window
  */
 var $p = new MetaEngine();
-if(window)
+// LMD module
+module.exports = $p;
+
+if(typeof window !== "undefined"){
+
 	window.$p = $p;
 
+	/**
+	 * Загружает скрипты и стили синхронно и асинхронно
+	 * @method load_script
+	 * @for MetaEngine
+	 * @param src {String} - url ресурса
+	 * @param type {String} - "link" или "script"
+	 * @param [callback] {function} - функция обратного вызова после загрузки скрипта
+	 * @async
+	 */
+	$p.load_script = function (src, type, callback) {
+		var s = document.createElement(type);
+		if (type == "script") {
+			s.type = "text/javascript";
+			s.src = src;
+			if(callback){
+				s.async = true;
+				s.addEventListener('load', callback, false);
+			}else
+				s.async = false;
+		} else {
+			s.type = "text/css";
+			s.rel = "stylesheet";
+			s.href = src;
+		}
+		document.head.appendChild(s);
+	};
 
-/**
- * Обёртка для подключения через AMD или CommonJS
- * https://github.com/umdjs/umd
- */
-if (typeof define === 'function' && define.amd) {
-	// Support AMD (e.g. require.js)
-	define('$p', $p);
-} else if (typeof module === 'object' && module) { // could be `null`
-	// Support CommonJS module
-	module.exports = $p;
+	/**
+	 * Если браузер не поддерживает Promise, загружаем полифил
+	 */
+	if(typeof Promise !== "function")
+		$p.load_script("https://www.promisejs.org/polyfills/promise-7.0.1.min.js", "script");
+
+	/**
+	 * Если контекст исполнения - браузер, загружаем таблицы стилей
+	 */
+	(function(w){
+		var i, surl, sname, load_dhtmlx = true, load_meta = true;
+
+		if("dhtmlx" in w){
+			for(i in document.scripts){
+				if(document.scripts[i].src.indexOf("metadata.js")!=-1){
+					sname = "metadata.js";
+					surl = document.scripts[i].src;
+					break;
+				}else if(document.scripts[i].src.indexOf("metadata.min.js")!=-1){
+					sname = "metadata.min.js";
+					surl = document.scripts[i].src;
+					break;
+				}
+			}
+			// стили загружаем только при необходимости
+			for(i=0; i < document.styleSheets.length; i++){
+				if(document.styleSheets[i].href){
+					if(document.styleSheets[i].href.indexOf("dhtmlx.css")!=-1)
+						load_dhtmlx = false;
+					else if(document.styleSheets[i].href.indexOf("metadata.css")!=-1)
+						load_meta = false;
+				}
+			}
+			if(load_dhtmlx)
+				$p.load_script(surl.replace(sname, "dhtmlx.css"), "link");
+			if(load_meta)
+				$p.load_script(surl.replace(sname, "metadata.css"), "link");
+
+			// задаём путь к картинкам
+			dhtmlx.image_path = surl.replace(sname, "imgs/");
+
+			// задаём основной скин
+			dhtmlx.skin = "dhx_web";
+
+			// запрещаем добавлять dhxr+date() к запросам get внутри dhtmlx
+			dhx4.ajax.cache = true;
+		}
+	})(window);
+
 }
+
+
 
 /**
  * Синтаксический сахар для defineProperty
@@ -80,7 +151,7 @@ Object.prototype._define("_extend", {
 
 /**
  * Копирует все свойства из src в текущий объект исключая те, что в цепочке прототипов src до Object
- * @method mixin
+ * @method _mixin
  * @for Object
  * @param src {Object} - источник
  * @return {Object}
@@ -137,83 +208,6 @@ Object.prototype._define("_clone", {
 	},
 	enumerable: false
 });
-
-/**
- * Загружает скрипты и стили синхронно и асинхронно
- * @method load_script
- * @for MetaEngine
- * @param src {String} - url ресурса
- * @param type {String} - "link" или "script"
- * @param [callback] {function} - функция обратного вызова после загрузки скрипта
- * @async
- */
-$p.load_script = function (src, type, callback) {
-	var s = document.createElement(type);
-	if (type == "script") {
-		s.type = "text/javascript";
-		s.src = src;
-		if(callback){
-			s.async = true;
-			s.addEventListener('load', callback, false);
-		}else
-			s.async = false;
-	} else {
-		s.type = "text/css";
-		s.rel = "stylesheet";
-		s.href = src;
-	}
-	document.head.appendChild(s);
-};
-
-/**
- * Если браузер не поддерживает Promise, загружаем полифил
- */
-if(typeof Promise !== "function")
-	$p.load_script("https://www.promisejs.org/polyfills/promise-7.0.1.min.js", "script");
-
-/**
- * Если контекст исполнения - браузер, загружаем таблицы стилей
- */
-(function(w){
-	var i, surl, sname, load_dhtmlx = true, load_meta = true;
-
-	if("dhtmlx" in w){
-		for(i in document.scripts){
-			if(document.scripts[i].src.indexOf("metadata.js")!=-1){
-				sname = "metadata.js";
-				surl = document.scripts[i].src;
-				break;
-			}else if(document.scripts[i].src.indexOf("metadata.min.js")!=-1){
-				sname = "metadata.min.js";
-				surl = document.scripts[i].src;
-				break;
-			}
-		}
-		// стили загружаем только при необходимости
-		for(i=0; i < document.styleSheets.length; i++){
-			if(document.styleSheets[i].href){
-				if(document.styleSheets[i].href.indexOf("dhtmlx.css")!=-1)
-					load_dhtmlx = false;
-				else if(document.styleSheets[i].href.indexOf("metadata.css")!=-1)
-					load_meta = false;
-			}
-		}
-		if(load_dhtmlx)
-			$p.load_script(surl.replace(sname, "dhtmlx.css"), "link");
-		if(load_meta)
-			$p.load_script(surl.replace(sname, "metadata.css"), "link");
-
-		// задаём путь к картинкам
-		dhtmlx.image_path = surl.replace(sname, "imgs/");
-
-		// задаём основной скин
-		dhtmlx.skin = "dhx_web";
-
-		// запрещаем добавлять dhxr+date() к запросам get внутри dhtmlx
-		dhx4.ajax.cache = true;
-	}
-})(window || {});
-
 
 
 /**
@@ -983,7 +977,7 @@ $p.msg = new function Messages(){
 	/**
 	 * расширяем мессанджер
 	 */
-	if("dhtmlx" in (window || {})){
+	if(typeof window !== "undefined" && "dhtmlx" in window){
 
 		/**
 		 * Показывает информационное сообщение или confirm
@@ -1383,29 +1377,29 @@ function JobPrm(){
 
 /**
  * Интерфейс локальной базы данных
+ * @class WSQL
+ * @static
+ */
+function WSQL(){};
+
+/**
+ * Интерфейс локальной базы данных
  * @property wsql
  * @for MetaEngine
  * @type WSQL
  * @static
  */
-$p.wsql = (
-	/**
-	 * Интерфейс локальной базы данных
-	 * @class WSQL
-	 * @static
-	 */
-	function WSQL(){}
-);
+$p.wsql = WSQL;
+
 (function (wsql) {
 
 	var user_params = {},
 		inited = 0;
 
-	if(window.alasql)
+	if(typeof alasql !== "undefined")
 		wsql.aladb = new alasql.Database('md');
 	else
 		inited = 1000;
-
 
 	function fetch_type(prm, type){
 		if(type == "object")
@@ -1499,7 +1493,7 @@ $p.wsql = (
 		else if(prm_value === false)
 			str_prm = "";
 
-		if(window && window.localStorage)
+		if(typeof localStorage !== "undefined")
 			localStorage.setItem(prm_name, str_prm);
 		user_params[prm_name] = prm_value;
 
@@ -1516,7 +1510,7 @@ $p.wsql = (
 	 */
 	wsql.get_user_param = function(prm_name, type){
 
-		if(!user_params.hasOwnProperty(prm_name) && localStorage)
+		if(!user_params.hasOwnProperty(prm_name) && (typeof localStorage !== "undefined"))
 			user_params[prm_name] = fetch_type(localStorage.getItem(prm_name), type);
 
 		return user_params[prm_name];
@@ -1603,7 +1597,7 @@ $p.wsql = (
 			localStorage.removeItem("unf_url");
 		}
 
-		if(window.alasql){
+		if(typeof alasql !== "undefined"){
 			if($p.job_prm.create_tables){
 				if($p.job_prm.create_tables_sql)
 					alasql($p.job_prm.create_tables_sql, [], function(){
@@ -1675,7 +1669,7 @@ $p.wsql = (
 		}
 
 		$p.wsql.exec("SHOW TABLES", [], tmames_finded);
-	}
+	};
 
 	wsql.toString = function(){return "JavaScript SQL engine"};
 

@@ -23,7 +23,7 @@
  * Этот фрагмент кода выполняем только в браузере
  * События окна внутри воркера и Node нас не интересуют
  */
-if(window){
+if(typeof window !== "undefined"){
 	(function (w) {
 
 		var eve = $p.eve,
@@ -444,11 +444,11 @@ setInterval($p.eve.ontimer, 180000);
 
 $p.eve.update_files_version = function () {
 
+	if(!$p.job_prm || $p.job_prm.offline || !$p.job_prm.data_url)
+		return;
+
 	if(!$p.job_prm.files_date)
 		$p.job_prm.files_date = $p.wsql.get_user_param("files_date", "number");
-
-	if($p.job_prm.offline || !$p.job_prm.data_url)
-		return;
 
 	$p.ajax.get($p.job_prm.data_url + "sync.json?v="+Date.now())
 		.then(function (req) {
