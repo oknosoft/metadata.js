@@ -25,8 +25,18 @@ function MetaEngine() {
  * @for window
  */
 var $p = new MetaEngine();
-// LMD module
-module.exports = $p;
+
+/**
+ * Обёртка для подключения через AMD или CommonJS
+ * https://github.com/umdjs/umd
+ */
+if (typeof define === 'function' && define.amd) {
+	// Support AMD (e.g. require.js)
+	define('$p', $p);
+} else if (typeof module === 'object' && module) { // could be `null`
+	// Support CommonJS module
+	module.exports = $p;
+}
 
 if(typeof window !== "undefined"){
 
@@ -107,6 +117,16 @@ if(typeof window !== "undefined"){
 			dhx4.ajax.cache = true;
 		}
 	})(window);
+
+}else{
+
+	// локальное хранилище внутри node.js
+	if(typeof localStorage === "undefined")
+		localStorage = new require('node-localstorage').LocalStorage('./localstorage');
+
+	// alasql внутри node.js
+	if (typeof window === "undefined" && typeof alasql === "undefined")
+		alasql = require('alasql');
 
 }
 
@@ -1396,6 +1416,8 @@ $p.wsql = WSQL;
 	var user_params = {},
 		inited = 0;
 
+
+
 	if(typeof alasql !== "undefined")
 		wsql.aladb = new alasql.Database('md');
 	else
@@ -1581,21 +1603,12 @@ $p.wsql = WSQL;
 		if($p.job_prm.url_prm.hasOwnProperty("zone")){
 			zone = $p.fix_number($p.job_prm.url_prm.zone, true);
 
-		// если зона была указана по-старому в hs_url, используем её
-		}else if((zone = localStorage.getItem("hs_url")) && (zone = zone.match(/\/[0-9]+\//))){
-			zone = $p.fix_number(zone[0].replace("/", "").replace("/", ""));
-
 		// если зона не указана, устанавливаем "1"
 		}else if(!localStorage.getItem("zone"))
 			zone = 1;
 
-		if(zone){
+		if(zone)
 			wsql.set_user_param("zone", zone);
-			localStorage.removeItem("hs_url");
-			localStorage.removeItem("ws_url");
-			localStorage.removeItem("rest_url");
-			localStorage.removeItem("unf_url");
-		}
 
 		if(typeof alasql !== "undefined"){
 			if($p.job_prm.create_tables){

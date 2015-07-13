@@ -1,1 +1,1 @@
-copy /y common.js + i18n.ru.js + meta_meta.js + meta_mngrs.js + meta_tabulars.js + meta_objs.js + meta_rest.js + events.js ..\lib\metadata.node.js
+copy /y common.js+i18n.ru.js+meta_meta.js+meta_mngrs.js+meta_tabulars.js+meta_objs.js+meta_rest.js+events.js ..\lib\metadata.node.js

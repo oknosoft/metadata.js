@@ -79,6 +79,14 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		wnd = $p.iface.dat_blank(null, options.wnd);
 
+		wnd._define("ref", {
+			get: function(){
+				return o.ref;
+			},
+			enumerable: false,
+			configurable: false
+		});
+
 		/**
 		 * перезаполняет шапку и табчасть документа данными "attr"
 		 * @param [attr] {object}
@@ -282,7 +290,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	function refresh_tabulars(){
 		for(var ts in cmd.tabular_sections){
 			if(ts !== "extra_fields" && o[ts] instanceof TabularSection){
-				o[ts].sync_grid(wnd.elmnts["grid_" + name]);
+				o[ts].sync_grid(wnd.elmnts["grid_" + ts]);
 			}
 		}
 	}

@@ -27,8 +27,8 @@
     "<%= file %>": "data/*.xml",
     "main":     "src/main.js"
   },
+  "main": "main",
   "optimize": true,
   "pack": true,
-  "main": "main",
   "ie": false
 }

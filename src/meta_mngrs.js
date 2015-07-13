@@ -652,10 +652,11 @@ function RefDataManager(class_name) {
 	/**
 	 * сохраняет массив объектов в менеджере
 	 * @method load_array
-	 * @param aattr {array} - массив объектов для трансформации в объекты ссылочного типа
+	 * @param aattr {Array} - массив объектов для трансформации в объекты ссылочного типа
+	 * @param forse {Boolean} - перезаписывать объект
 	 * @async
 	 */
-	t.load_array = function(aattr){
+	t.load_array = function(aattr, forse){
 
 		var ref, obj;
 
@@ -664,7 +665,7 @@ function RefDataManager(class_name) {
 			if(!(obj = by_ref[ref])){
 				new t._obj_сonstructor(aattr[i], t);
 
-			}else if(obj.is_new()){
+			}else if(obj.is_new() || forse){
 				obj._mixin(aattr[i]);
 				obj._set_loaded();
 			}

@@ -450,6 +450,55 @@ $p.eve.update_files_version = function () {
 	if(!$p.job_prm.files_date)
 		$p.job_prm.files_date = $p.wsql.get_user_param("files_date", "number");
 
+	// проверяем состояние и пытаемся установить ws соединение с Node
+	if($p.job_prm.ws_url){
+		if(!$p.eve.ws || !$p.eve.ws_opened){
+			try{
+				$p.eve.ws = new WebSocket($p.job_prm.ws_url);
+
+				$p.eve.ws.onopen = function() {
+					$p.eve.ws_opened = true;
+					$p.eve.ws.send(JSON.stringify({
+						zone: $p.wsql.get_user_param("zone"),
+						browser_uid: $p.wsql.get_user_param("browser_uid")
+					}));
+				};
+
+				$p.eve.ws.onclose = function() {
+					$p.eve.ws_opened = false;
+				};
+
+				$p.eve.ws.onmessage = function(ev) {
+					try{
+						var data = JSON.parse(ev.data),
+							hprm = $p.job_prm.parse_url(),
+							mgr = _md ? _md.mgr_by_class_name(data.class_name) : null,
+							ref;
+						if(mgr){
+							mgr.load_array([data.obj], true);
+							ref = $p.fix_guid(data.obj.ref);
+							if($p.iface.w)
+								$p.iface.w.forEachWindow(function (wnd) {
+									if(wnd.reflect_change && wnd.ref == ref)
+										wnd.reflect_change();
+								})
+						}
+					}catch(err){
+						console.log(err);
+					}
+				};
+
+				$p.eve.ws.onerror = function(err) {
+					console.log(err);
+				};
+
+			}catch(err){
+				console.log(err);
+			}
+		}
+	}
+
+
 	$p.ajax.get($p.job_prm.data_url + "sync.json?v="+Date.now())
 		.then(function (req) {
 			var sync = JSON.parse(req.response);

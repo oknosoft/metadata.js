@@ -16,35 +16,61 @@ var WebSocketServer = require('ws').Server,
 	// сервер http для взаимодействия с 1С
 	http_1c = http.createServer(function(request,response) {
 
-		var rtext="", ref;
+		var rtext="";
 
+		/**
+		 * Регистрирует объект в таблице изменений
+		 */
 		function reg_from_1c() {
+
+			var robj, ref;
+
 			try {
-				rtext = JSON.parse(rtext);
-				if($p.is_empty_guid(ref = $p.fix_guid(rtext.obj.ref)))
+				robj = JSON.parse(rtext);
+				if($p.is_empty_guid(ref = $p.fix_guid(robj.obj.ref)))
 					return;
 
-			} catch (e) {
-				console.log(result.rows[0]);
-				return;
+			} catch (err){
+				return console.error('JSON.parse', err);
 			};
 
-			pg.connect(conString, function(err, client, done) {
-				if(err) {
-					return console.error('error fetching client from pool', err);
-				}
-				client.query('SELECT * from changes', [], function(err, result) {
-					//call `done()` to release the client back to the pool
-					done();
+			ws_md.broadcast(rtext);
 
-					if(err) {
+			pg.connect(cnn_str, function(err, client, done) {
+
+				if(err)
+					return console.error('error fetching client from pool', err);
+
+				client.query('SELECT 1 from changes where zone=$1 and ref=$2;', [robj.zone, ref], function(err, result) {
+					if(err){
+						done();
 						return console.error('error running query', err);
 					}
-					console.log(result.rows[0]);
-					//output: 1
+
+					if(result.rows.length){
+						client.query('UPDATE changes SET lc_changed=$3, class_name=$4, obj=$5 WHERE zone=$1 and ref=$2;',
+							[robj.zone, ref, robj.lc_changed, robj.class_name, robj.obj], function(err, result) {
+								done();
+								if(err)
+									return console.error('error running query', err);
+
+							});
+
+					}else{
+						client.query('INSERT INTO changes (zone, ref, lc_changed, class_name, obj) VALUES ($1, $2, $3, $4, $5);',
+							[robj.zone, ref, robj.lc_changed, robj.class_name, robj.obj], function(err, result) {
+								done();
+								if(err)
+									return console.error('error running query', err);
+
+						});
+					}
+
+					// console.log(result.rows[0]);
+
 				});
 			});
-		};
+		}
 
 		request.on("data", function(chunk) {
 			rtext+=chunk.toString();
@@ -59,12 +85,38 @@ var WebSocketServer = require('ws').Server,
 
 	// драйвер PostgreSQL
 	pg = require('pg'),
-	conString = "postgres://md:md@localhost/md",
+	cnn_str = "postgres://md:md@localhost/md",
 
 	// metadata.js
 	$p = require('../lib/metadata.node.js');
 
 http_md.listen(8002);
+
 http_1c.listen(8003);
+
+ws_md.on('connection', function(ws) {
+
+	ws.on('message', function(data) {
+		try{
+			data = JSON.parse(data);
+			if(data.hasOwnProperty("zone"))
+				ws.zone = data.zone;
+			if(data.hasOwnProperty("browser_uid"))
+				ws.browser_uid = data.browser_uid;
+
+			console.log(data);
+
+		}catch(err){
+			console.log(err);
+		}
+	});
+
+});
+
+ws_md.broadcast = function broadcast(data) {
+	ws_md.clients.forEach(function each(client) {
+		client.send(data);
+	});
+};
 
 
