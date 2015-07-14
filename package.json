@@ -23,7 +23,7 @@
     "url": "https://github.com/oknosoft/metadata.js/issues"
   },
   "homepage": "http://www.oknosoft.ru/metadata/",
-  "main": "lib/metadata.min.js",
+  "main": "lib/metadata.node.js",
   "keywords": [
     "metadata",
     "rest",
