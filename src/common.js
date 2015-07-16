@@ -902,10 +902,11 @@ $p.cancel_bubble = function(e) {
  * @return {String}
  */
 $p.scale_svg = function(svg_current, size, padding){
-	var j, k, svg_head, svg_body, head_ind, viewBox, svg_j = {};
+	var j, k, svg_head, svg_body, head_ind, vb_ind, svg_head_str, vb_str, viewBox, svg_j = {};
 
 	head_ind = svg_current.indexOf(">");
-	svg_head = svg_current.substring(5, head_ind).split(' ');
+	svg_head_str = svg_current.substring(5, head_ind);
+	svg_head = svg_head_str.split(' ');
 	svg_body = svg_current.substr(head_ind+1);
 	svg_body = svg_body.substr(0, svg_body.length - 6);
 
@@ -917,7 +918,13 @@ $p.scale_svg = function(svg_current, size, padding){
 			svg_j[svg_current[0]] = svg_current[1];
 		}
 	}
-	viewBox = 'viewBox="0 0 ' + (svg_j["width"] - padding) + ' ' + (svg_j["height"] - padding) + '"';
+
+	if((vb_ind = svg_head_str.indexOf("viewBox="))!=-1){
+		vb_str = svg_head_str.substring(vb_ind+9);
+		viewBox = 'viewBox="' + vb_str.substring(0, vb_str.indexOf('"')) + '"';
+	}else{
+		viewBox = 'viewBox="0 0 ' + (svg_j["width"] - padding) + ' ' + (svg_j["height"] - padding) + '"';
+	}
 	k = size / (svg_j["height"] - padding);
 	svg_j["height"] = size;
 	svg_j["width"] = Math.round(svg_j["width"] * k);
