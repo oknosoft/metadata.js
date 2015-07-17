@@ -576,11 +576,8 @@ function Meta(req, patch) {
 	};
 
 	this.sql_mask = function(f, t){
-		var mask_names = ["delete", "set", "value", "json", "primary", "content"];
-		return ", " + (t ? "_t_." : "") + (mask_names.some(
-				function (mask) {
-					return f.indexOf(mask) !=-1
-				})  ? ("`" + f + "`") : f);
+		//var mask_names = ["delete", "set", "value", "json", "primary", "content"];
+		return ", " + (t ? "_t_." : "") + ("`" + f + "`");
 	};
 
 	/**

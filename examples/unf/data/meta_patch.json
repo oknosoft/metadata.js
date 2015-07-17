@@ -1,7 +1,7 @@
 {
   "enm": {},
   "cat": {
-    "nom": {
+    "Номенклатура": {
       "form": {
         "selection": {
           "fields": [
@@ -22,7 +22,7 @@
         }
       }
     },
-    "contracts": {
+    "ДоговорыКонтрагентов": {
       "form": {
         "selection": {
           "fields": [
@@ -42,32 +42,32 @@
     }
   },
   "doc": {
-    "buyers_order": {
+    "ЗаказПокупателя": {
       "form": {
         "selection": {
           "fields": [
             "date",
             "number_doc",
-            "partner",
-            "doc_amount",
+            "Контрагент",
+            "СуммаДокумента",
             "posted",
-            "invoice_state",
-            "note"
+            "СостояниеЗаказа",
+            "Комментарий"
           ],
           "cols": [
             {"id": "date", "width": "120", "type": "ro", "align": "left", "sort": "server", "caption": "Дата"},
             {"id": "number_doc", "width": "120", "type": "ro", "align": "left", "sort": "server", "caption": "Номер"},
-            {"id": "partner", "width": "170", "type": "ro", "align": "left", "sort": "server", "caption": "Контрагент"},
-            {"id": "doc_amount", "width": "120", "type": "ron", "align": "right", "sort": "server", "caption": "Сумма"},
-            {"id": "invoice_state", "width": "100", "type": "ro", "align": "left", "sort": "server", "caption": "Состояние"},
-            {"id": "note", "width": "*", "type": "ro", "align": "left", "sort": "server", "caption": "Комментарий"}
+            {"id": "Контрагент", "width": "170", "type": "ro", "align": "left", "sort": "server", "caption": "Контрагент"},
+            {"id": "СуммаДокумента", "width": "120", "type": "ron", "align": "right", "sort": "server", "caption": "Сумма"},
+            {"id": "СостояниеЗаказа", "width": "100", "type": "ro", "align": "left", "sort": "server", "caption": "Состояние"},
+            {"id": "Комментарий", "width": "*", "type": "ro", "align": "left", "sort": "server", "caption": "Комментарий"}
           ]
         },
         "obj": {
           "head": {
-            " ": ["number_doc", "date", "transactions_kind", "organization", "partner", "contract"],
-            "Планирование": ["invoice_state", "start", "finish"],
-            "Дополнительно": ["project", "cashbox", "event", "vat", "vat_included", "responsible", "note",
+            " ": ["number_doc", "date", "ВидОперации", "Организация", "Контрагент", "Договор"],
+            "Планирование": ["СостояниеЗаказа", "start", "finish"],
+            "Дополнительно": ["Проект", "Касса", "Событие", "НалогообложениеНДС", "СуммаВключаетНДС", "Ответственный", "Комментарий",
               {"id": "doc_amount", "path": "o.doc_amount", "synonym": "Сумма документа", "type": "ro"}
             ]
           },

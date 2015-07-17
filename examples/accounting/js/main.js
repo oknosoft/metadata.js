@@ -45,18 +45,18 @@ $p.settings = function (prm, modifiers) {
 	/**
 	 * расположение файлов данных
 	 */
-	prm.data_url = "/examples/unf/data/";
+	prm.data_url = "/examples/accounting/data/";
 
 	/**
 	 * расположение файла инициализации базы sql
 	 */
-	prm.create_tables = "/examples/unf/data/create_tables.sql";
+	prm.create_tables = "/examples/accounting/data/create_tables.sql";
 
 
 	/**
 	 * расположение страницы настроек
 	 */
-	prm.settings_url = "/examples/unf/settings.html";
+	prm.settings_url = "/examples/accounting/settings.html";
 
 
 
@@ -99,7 +99,7 @@ $p.iface.oninit = function() {
 				 *  это место можно переопределить и открывать, например, специальную форму списка заказов
 				 */
 				function () {
-					$p.iface.set_hash("doc.ЗаказПокупателя", "", "", "oper");
+					$p.iface.set_hash("doc.СчетНаОплатуПокупателю", "", "", "oper");
 
 				},
 

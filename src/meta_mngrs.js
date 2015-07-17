@@ -952,7 +952,7 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 			sql = t.sql_selection_list_flds(initial_value);
 		else
 			sql = ("SELECT %2, case when _t_.ref = '" + initial_value +
-			"' then 0 else 1 end as is_initial_value FROM " + t.table_name + " AS _t_ %j %3 %4 LIMIT 300")
+			"' then 0 else 1 end as is_initial_value FROM `" + t.table_name + "` AS _t_ %j %3 %4 LIMIT 300")
 				.replace("%2", list_flds())
 				.replace("%j", join_flds())
 			;
@@ -962,7 +962,7 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 	}
 
 	function sql_create(){
-		var sql = "CREATE TABLE IF NOT EXISTS "+t.table_name+" (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT";
+		var sql = "CREATE TABLE IF NOT EXISTS `"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT";
 
 		if(t instanceof DocManager)
 			sql += ", posted BOOLEAN, date Date, number_doc CHAR";
@@ -974,7 +974,7 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 
 
 		for(f in cmd["tabular_sections"])
-			sql += ", " + "ts_" + f + " JSON";
+			sql += ", " + "`ts_" + f + "` JSON";
 		sql += ")";
 		return sql;
 	}
@@ -982,7 +982,7 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 	function sql_update(){
 		// "INSERT OR REPLACE INTO user_params (prm_name, prm_value) VALUES (?, ?);
 		var fields = ["ref", "deleted", "lc_changed"],
-			sql = "INSERT INTO "+t.table_name+" (ref, `deleted`, lc_changed",
+			sql = "INSERT INTO `"+t.table_name+"` (ref, `deleted`, lc_changed",
 			values = "(?";
 
 		if(t.class_name.substr(0, 3)=="cat"){
@@ -1003,7 +1003,7 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 			fields.push(f);
 		}
 		for(f in cmd["tabular_sections"]){
-			sql += ", " + "ts_" + f;
+			sql += ", `ts_" + f + "`";
 			fields.push("ts_" + f);
 		}
 		sql += ") VALUES ";
@@ -1024,19 +1024,19 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 		res[t.table_name] = sql_update();
 
 	else if(action == "select")
-		res = "SELECT * FROM "+t.table_name+" WHERE ref = ?";
+		res = "SELECT * FROM `"+t.table_name+"` WHERE ref = ?";
 
 	else if(action == "select_all")
-		res = "SELECT * FROM "+t.table_name;
+		res = "SELECT * FROM `"+t.table_name+"`";
 
 	else if(action == "delete")
-		res = "DELETE FROM "+t.table_name+" WHERE ref = ?";
+		res = "DELETE FROM `"+t.table_name+"` WHERE ref = ?";
 
 	else if(action == "drop")
-		res = "DROP TABLE IF EXISTS "+t.table_name;
+		res = "DROP TABLE IF EXISTS `"+t.table_name+"`";
 
 	else if(action == "get_tree")
-		res = "SELECT ref, parent, name as presentation FROM " + t.table_name + " WHERE is_folder order by parent, name";
+		res = "SELECT ref, parent, name as presentation FROM `" + t.table_name + "` WHERE is_folder order by parent, name";
 
 	else if(action == "get_selection")
 		res = sql_selection();
@@ -1179,17 +1179,17 @@ EnumManager.prototype.get_sql_struct = function(attr){
 		action = attr && attr.action ? attr.action : "create_table";
 
 	if(action == "create_table")
-		res = "CREATE TABLE IF NOT EXISTS "+this.table_name+
-			" (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR)";
+		res = "CREATE TABLE IF NOT EXISTS `"+this.table_name+
+			"` (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR)";
 	else if(["insert", "update", "replace"].indexOf(action) != -1){
 		res = {};
 		res[this.table_name] = {
-			sql: "INSERT INTO "+this.table_name+" (ref, sequence, synonym) VALUES (?, ?, ?)",
+			sql: "INSERT INTO `"+this.table_name+"` (ref, sequence, synonym) VALUES (?, ?, ?)",
 			fields: ["ref", "sequence", "synonym"],
 			values: "(?, ?, ?)"
 		};
 	}else if(action == "delete")
-		res = "DELETE FROM "+this.table_name+" WHERE ref = ?";
+		res = "DELETE FROM `"+this.table_name+"` WHERE ref = ?";
 
 	return res;
 
@@ -1320,12 +1320,12 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 		action = attr && attr.action ? attr.action : "create_table";
 
 	function sql_create(){
-		var sql = "CREATE TABLE IF NOT EXISTS "+t.table_name+" (",
+		var sql = "CREATE TABLE IF NOT EXISTS `"+t.table_name+"` (",
 			first_field = true;
 
 		for(f in cmd["dimensions"]){
 			if(first_field){
-				sql += f;
+				sql += "`" + f + "`";
 				first_field = false;
 			}else
 				sql += _md.sql_mask(f);
@@ -1339,7 +1339,7 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 		first_field = true;
 		for(f in cmd["dimensions"]){
 			if(first_field){
-				sql += f;
+				sql += "`" + f + "`";
 				first_field = false;
 			}else
 				sql += _md.sql_mask(f);
@@ -1352,7 +1352,7 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 
 	function sql_update(){
 		// "INSERT OR REPLACE INTO user_params (prm_name, prm_value) VALUES (?, ?);
-		var sql = "INSERT OR REPLACE INTO "+t.table_name+" (",
+		var sql = "INSERT OR REPLACE INTO `"+t.table_name+"` (",
 			fields = [],
 			first_field = true;
 
@@ -1379,7 +1379,7 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 	}
 
 	function sql_select(){
-		var sql = "SELECT * FROM "+t.table_name+" WHERE ",
+		var sql = "SELECT * FROM `"+t.table_name+"` WHERE ",
 			first_field = true;
 		attr._values = [];
 
@@ -1416,10 +1416,10 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 		res = sql_select();
 
 	else if(action == "delete")
-		res = "DELETE FROM "+t.table_name+" WHERE ref = ?";
+		res = "DELETE FROM `"+t.table_name+"` WHERE ref = ?";
 
 	else if(action == "drop")
-		res = "DROP TABLE IF EXISTS "+t.table_name;
+		res = "DROP TABLE IF EXISTS `"+t.table_name+"`";
 
 	return res;
 };

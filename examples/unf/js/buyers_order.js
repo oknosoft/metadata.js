@@ -1,14 +1,14 @@
 /**
  * Обработчики событий и методы документа __Заказ покупателя__
  * <br />&copy; http://www.oknosoft.ru 2009-2015
- * @module  buyers_order
+ * @module  ЗаказПокупателя
  */
 
 unf.modifiers.push(
 
 	function($p){
 
-		var _mgr = $p.doc.buyers_order;
+		var _mgr = Документы.ЗаказПокупателя;
 
 
 		/**

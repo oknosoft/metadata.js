@@ -69,11 +69,6 @@ if(typeof window !== "undefined"){
 		document.head.appendChild(s);
 	};
 
-	/**
-	 * Если браузер не поддерживает Promise, загружаем полифил
-	 */
-	if(typeof Promise !== "function")
-		$p.load_script("https://www.promisejs.org/polyfills/promise-7.0.1.min.js", "script");
 
 	/**
 	 * Если контекст исполнения - браузер, загружаем таблицы стилей
@@ -115,7 +110,19 @@ if(typeof window !== "undefined"){
 
 			// запрещаем добавлять dhxr+date() к запросам get внутри dhtmlx
 			dhx4.ajax.cache = true;
+
+			/**
+			 * Если браузер не поддерживает Promise, загружаем полифил
+			 */
+			if(typeof Promise !== "function"){
+				//$p.load_script("https://www.promisejs.org/polyfills/promise-7.0.1.min.js", "script");
+				$p.load_script(surl.replace(sname, "es6-promise.min.js"), "script", function () {
+					ES6Promise.polyfill();
+				});
+
+			}
 		}
+
 	})(window);
 
 }else{

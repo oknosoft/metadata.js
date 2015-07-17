@@ -1,0 +1,22 @@
+CACHE MANIFEST
+# 000000000008
+
+# Additional resources to cache
+CACHE:
+
+# картинки
+
+# служебные страницы
+
+# offline.html will be displayed if the user is offline
+FALLBACK:
+/ offline.html
+
+# All other resources (e.g. sites) require the user to be online.
+NETWORK:
+
+# безбумажка с внедренным фреймворком УПзП
+
+# данные - xml-ки форм, панелей и менюшек
+
+*
