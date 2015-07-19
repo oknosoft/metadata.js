@@ -1,7 +1,67 @@
 {
   "enm": {},
-  "cat": {},
-  "doc": {},
+  "cat": {
+    "ПодразделенияОрганизаций": {
+      "form": {
+        "selection": {
+          "fields": [
+            "is_folder",
+            "id",
+            "_t_.name as presentation",
+            "`cat_Организации`.name as owner"
+          ],
+          "cols": [
+            {"id": "presentation", "width": "*", "type": "ro", "align": "left", "sort": "server", "caption": "Подразделение организации"},
+            {"id": "owner", "width": "*", "type": "ro", "align": "left", "sort": "server", "caption": "Организация"}
+          ]
+        }
+      }
+    }
+  },
+  "doc": {
+    "СчетНаОплатуПокупателю": {
+      "form": {
+        "selection": {
+          "fields": [
+            "date",
+            "number_doc",
+            "posted",
+            "Контрагент",
+            "СуммаДокумента",
+            "Организация",
+            "Комментарий"
+          ],
+          "cols": [
+            {"id": "date", "width": "120", "type": "ro", "align": "left", "sort": "server", "caption": "Дата"},
+            {"id": "number_doc", "width": "120", "type": "ro", "align": "left", "sort": "server", "caption": "Номер"},
+            {"id": "Контрагент", "width": "170", "type": "ro", "align": "left", "sort": "server", "caption": "Контрагент"},
+            {"id": "СуммаДокумента", "width": "120", "type": "ron", "align": "right", "sort": "server", "caption": "Сумма"},
+            {"id": "Организация", "width": "170", "type": "ro", "align": "left", "sort": "server", "caption": "Организация"},
+            {"id": "Комментарий", "width": "*", "type": "ro", "align": "left", "sort": "server", "caption": "Комментарий"}
+          ]
+        },
+        "obj": {
+          "head": {
+            " ": ["number_doc", "date", "Организация", "Контрагент", "ДоговорКонтрагента"],
+            "Дополнительно": ["СтруктурнаяЕдиница", "ПодразделениеОрганизации", "СуммаВключаетНДС", "Ответственный", "Комментарий",
+              {"id": "СуммаДокумента", "path": "o.СуммаДокумента", "synonym": "Сумма документа", "type": "ro"}
+            ]
+          },
+          "tabular_sections": {
+            "Товары":  {
+              "fields": ["row","Номенклатура","Содержание","Количество","Цена","Сумма","СтавкаНДС","СуммаНДС"],
+              "headers": "№,Номенклатура,Содержание,Колич.,Цена,Сумма,% НДС,Сумма НДС",
+              "widths": "40,*,*,70,70,70,70,70",
+              "min_widths": "40,200,140,70,70,70,70,70",
+              "aligns": "",
+              "sortings": "na,na,na,na,na,na,na,na",
+              "types": "cntr,ref,txt,calck,calck,calck,refc,ron"
+            }
+          }
+        }
+      }
+    }
+  },
   "ireg": {},
   "areg": {},
   "dp": {},

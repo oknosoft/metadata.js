@@ -45,18 +45,18 @@ $p.settings = function (prm, modifiers) {
 	/**
 	 * расположение файлов данных
 	 */
-	prm.data_url = "/examples/unf/data/";
+	prm.data_url = "examples/unf/data/";
 
 	/**
 	 * расположение файла инициализации базы sql
 	 */
-	prm.create_tables = "/examples/unf/data/create_tables.sql";
+	prm.create_tables = "examples/unf/data/create_tables.sql";
 
 
 	/**
 	 * расположение страницы настроек
 	 */
-	prm.settings_url = "/examples/unf/settings.html";
+	prm.settings_url = "examples/unf/settings.html";
 
 
 
