@@ -44,7 +44,7 @@
 
 ## Благодарности
 * Andrey Gershun, author of [AlaSQL](https://github.com/agershun/alasql) - Javascript SQL database library
-* authors of [dhtmlx](http://dhtmlx.com/) - a beautiful set of Ajax-powered UI components
+* Авторам [dhtmlx](http://dhtmlx.com/) - a beautiful set of Ajax-powered UI components
 * Прочим авторам за их замечательные инструменты, упрощающие нашу работу
 
 ## Лицензия
