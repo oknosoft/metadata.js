@@ -304,12 +304,15 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		if(!rId && wnd.elmnts.tree)
 			rId = wnd.elmnts.tree.getSelectedItemId();
 
-		if(rId && pwnd.on_select){
-			_mngr.get(rId, true)
-				.then(function(selv){
-					wnd.close();
-					pwnd.on_select.call(pwnd.grid || pwnd, selv);
-				});
+		if(rId){
+			if(pwnd.on_select)
+				_mngr.get(rId, true)
+					.then(function(selv){
+						wnd.close();
+						pwnd.on_select.call(pwnd.grid || pwnd, selv);
+					});
+			else
+				$p.iface.set_hash(_mngr.class_name, rId);
 		}
 	}
 

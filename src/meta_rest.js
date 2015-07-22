@@ -203,8 +203,11 @@ DataManager.prototype.rest_selection = function (attr) {
 					fld = parts[1]
 			}
 			syn = _md.syns_1с(fld);
-			if(_md.get(t.class_name, fld).type.is_ref)
-				syn += "_Key";
+			if(_md.get(t.class_name, fld).type.is_ref){
+				if(_md.get(t.class_name, fld).type.types.length && _md.get(t.class_name, fld).type.types[0].indexOf("enm.")==-1)
+					syn += "_Key";
+			}
+
 			s += "," + syn;
 		});
 
@@ -234,7 +237,7 @@ DataManager.prototype.rest_selection = function (attr) {
 					}else{
 						syn = _md.syns_1с(fld);
 						mf = _md.get(t.class_name, fld);
-						if(mf.type.is_ref)
+						if(mf.type.is_ref && mf.type.types.length && mf.type.types[0].indexOf("enm.")==-1)
 							syn += "_Key";
 
 						if(mf.type.date_part)
@@ -276,8 +279,10 @@ InfoRegManager.prototype.rest_slice_last = function(filter){
 		if(filter[fld] === undefined)
 			continue;
 
-		var syn = _md.syns_1с(fld);
-		if(cmd.dimensions[fld].type.is_ref){
+		var syn = _md.syns_1с(fld),
+			mf = cmd.dimensions[fld];
+
+		if(mf.type.is_ref && mf.type.types.length && mf.type.types[0].indexOf("enm.")==-1){
 			syn += "_Key";
 			if(condition)
 				condition+= " and ";
@@ -286,10 +291,10 @@ InfoRegManager.prototype.rest_slice_last = function(filter){
 			if(condition)
 				condition+= " and ";
 
-			if(cmd.dimensions[fld].type.digits)
+			if(mf.type.digits)
 				condition+= syn+" eq "+$p.fix_number(filter[fld]);
 
-			else if(cmd.dimensions[fld].type.date_part)
+			else if(mf.type.date_part)
 				condition+= syn+" eq datetime'"+$p.dateFormat(filter[fld], $p.dateFormat.masks.isoDateTime)+"'";
 
 			else

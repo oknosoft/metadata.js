@@ -100,6 +100,9 @@ $p.iface.oninit = function() {
 				 */
 				function () {
 					$p.iface.set_hash("doc.ЗаказПокупателя", "", "", "oper");
+					setTimeout(function () {
+						$p.iface.tree.closeItem("oper_cat");
+					}, 500);
 
 				},
 

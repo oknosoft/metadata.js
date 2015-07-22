@@ -18,7 +18,7 @@ unf.modifiers.push(
 		_mgr.attache_event("value_change", function (attr) {
 
 			// для примера, установим цену номнклатуры в строке заказа при изменении номенклатуры или характеристики
-			if(attr.tabular_section == "inventories" && (attr.field == "nom" || attr.field == "characteristic"))
+			if(attr.tabular_section == "Запасы" && (attr.field == "Номенклатура" || attr.field == "Характеристика"))
 				inventories_nom_characteristic_change.call(this, attr);
 
 		});
@@ -32,29 +32,32 @@ unf.modifiers.push(
 			attr.row[attr.field] = attr.value;
 
 			// при непустой характеристике проверяем владельца
-			if(!attr.row.characteristic.empty() && attr.row.characteristic.owner != attr.row.nom)
-				attr.row.characteristic = "";
+			if(!attr.row.Характеристика.empty() && attr.row.Характеристика.owner != attr.row.Номенклатура){
+				attr.row.Характеристика = "";
+				attr.grid.cells(attr.row.row, 2).setValue("");
+			}
+
 
 			// прочитаем цену номенклатуры
 			var prm = {
 				period: this.date,
-				nom: attr.row.nom,
-				characteristic: attr.row.characteristic
+				Номенклатура: attr.row.Номенклатура,
+				Характеристика: attr.row.Характеристика
 			};
 
-			if(!this.price_type.empty())
-				prm.price_type = this.price_type;
+			if(!this.ВидЦен.empty())
+				prm.ВидЦен = this.ВидЦен;
 
-			else if(!this.contract.price_type.empty())
-				prm.price_type = this.contract.price_type;
+			else if(!this.Договор.ВидЦен.empty())
+				prm.ВидЦен = this.Договор.ВидЦен;
 
-			$p.ireg.nom_prices.rest_slice_last(prm)
+			РегистрыСведений.ЦеныНоменклатуры.rest_slice_last(prm)
 				.then(function (data) {
 					if(data.length)
-						attr.row.price = data[0].price;
+						attr.row.Цена = data[0].Цена;
 					else
-						attr.row.price = 0;
-					attr.grid.cells(attr.row.row, 5).setValue(attr.row.price);
+						attr.row.Цена = 0;
+					attr.grid.cells(attr.row.row, 5).setValue(attr.row.Цена);
 				})
 				.catch(function (err) {
 					console.log(err);

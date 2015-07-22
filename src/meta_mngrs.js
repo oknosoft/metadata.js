@@ -1392,7 +1392,7 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 			else
 				sql += " and ";
 
-			sql += f + "=?";
+			sql += "`" + f + "`" + "=?";
 			attr._values.push(attr[f]);
 		}
 

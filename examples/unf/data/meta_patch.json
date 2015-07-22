@@ -7,17 +7,17 @@
           "fields": [
             "is_folder",
             "id",
-            "article",
+            "Артикул",
             "_t_.name as presentation",
-            "cat_units.name as unit",
-            "cat_nom_groups.name as nom_group"
+            "`cat_КлассификаторЕдиницИзмерения`.name as `ЕдиницаИзмерения`",
+            "`cat_НоменклатурныеГруппы`.name as `НоменклатурнаяГруппа`"
           ],
           "cols": [
             {"id": "id", "width": "120", "type": "ro", "align": "left", "sort": "server", "caption": "Код"},
-            {"id": "article", "width": "150", "type": "ro", "align": "left", "sort": "server", "caption": "Артикул"},
+            {"id": "Артикул", "width": "150", "type": "ro", "align": "left", "sort": "server", "caption": "Артикул"},
             {"id": "presentation", "width": "*", "type": "ro", "align": "left", "sort": "server", "caption": "Наименование"},
-            {"id": "unit", "width": "70", "type": "ro", "align": "left", "sort": "server", "caption": "Ед"},
-            {"id": "nom_group", "width": "170", "type": "ro", "align": "left", "sort": "server", "caption": "Номенклатурная группа"}
+            {"id": "ЕдиницаИзмерения", "width": "70", "type": "ro", "align": "left", "sort": "server", "caption": "Ед"},
+            {"id": "НоменклатурнаяГруппа", "width": "170", "type": "ro", "align": "left", "sort": "server", "caption": "Номенклатурная группа"}
           ]
         }
       }
@@ -29,13 +29,13 @@
             "is_folder",
             "id",
             "_t_.name as presentation",
-            "enm_contract_kinds.synonym as contract_kind",
-            "cat_organizations.name as organization"
+            "`enm_ВидыДоговоров`.synonym as `ВидДоговора`",
+            "`cat_Организации`.name as `Организация`"
           ],
           "cols": [
             {"id": "presentation", "width": "*", "type": "ro", "align": "left", "sort": "server", "caption": "Наименование"},
-            {"id": "contract_kind", "width": "150", "type": "ro", "align": "left", "sort": "server", "caption": "Вид договора"},
-            {"id": "organization", "width": "150", "type": "ro", "align": "left", "sort": "server", "caption": "Организация"}
+            {"id": "ВидДоговора", "width": "150", "type": "ro", "align": "left", "sort": "server", "caption": "Вид договора"},
+            {"id": "Организация", "width": "150", "type": "ro", "align": "left", "sort": "server", "caption": "Организация"}
           ]
         }
       }
@@ -72,8 +72,8 @@
             ]
           },
           "tabular_sections": {
-            "inventories":  {
-              "fields": ["row","nom","characteristic","quantity","unit","price","discount_percent","amount","vat_rate","vat_amount","altogether","shipping_date","specification","content"],
+            "Запасы":  {
+              "fields": ["row","Номенклатура","Характеристика","Количество","ЕдиницаИзмерения","Цена","ПроцентСкидкиНаценки","Сумма","СтавкаНДС","СуммаНДС","Всего","ДатаОтгрузки","Спецификация","Содержание"],
               "headers": "№,Номенклатура,Характеристика,Колич.,Ед,Цена,% Скидки,Сумма,% НДС,Сумма НДС,Всего,Дата отгруз.,Спецификация,Содержание",
               "widths": "40,*,*,70,50,70,70,70,70,70,70,70,70,80",
               "min_widths": "40,200,140,70,50,70,70,70,70,70,70,70,70,80",
