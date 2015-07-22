@@ -605,9 +605,11 @@ $p.iface.frm_auth = function (onstep, resolve, reject) {
  * @return {Boolean}
  */
 $p.iface.open_settings = function (e) {
-	(e || event).preventDefault();
+	var evt = (e || (typeof event != "undefined" ? event : undefined));
+	if(evt)
+		evt.preventDefault();
 	window.open(($p.job_prm.settings_url || 'order_dealer/options.html')+'?v='+$p.job_prm.files_date);
-	return $p.cancel_bubble(e);
+	return $p.cancel_bubble(evt);
 };
 
 /**

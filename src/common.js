@@ -894,9 +894,9 @@ $p.date_add_day = function(date, days){
  */
 $p.cancel_bubble = function(e) {
 	var evt = (e || event);
-	if (evt.stopPropagation)
+	if (evt && evt.stopPropagation)
 		evt.stopPropagation();
-	if (!evt.cancelBubble)
+	if (evt && !evt.cancelBubble)
 		evt.cancelBubble = true;
 	return false
 };
