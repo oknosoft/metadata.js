@@ -405,8 +405,8 @@ $p.ajax = new (
 				if(beforeSend)
 					beforeSend.call(this, req);
 
-				if (method == "POST") {
-					if(!this.hide_headers){
+				if (method != "GET") {
+					if(!this.hide_headers && !auth.hide_headers){
 						req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 						req.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 					}
@@ -530,14 +530,28 @@ $p.ajax = new (
 		 * Выполняет асинхронный put запрос с авторизацией и возможностью установить заголовки http
 		 * @method put_ex
 		 * @param url {String}
-		 * @param putData {String} - данные для отправки на сервер
+		 * @param postData {String} - данные для отправки на сервер
 		 * @param auth {Boolean}
 		 * @param beforeSend {function} - callback перед отправкой запроса на сервер
 		 * @return {Promise.<T>}
 		 * @async
 		 */
-		this.put_ex = function(url, putData, auth, beforeSend){
-			return _call("PUT", url, putData, auth, beforeSend);
+		this.put_ex = function(url, postData, auth, beforeSend){
+			return _call("PUT", url, postData, auth, beforeSend);
+		};
+
+		/**
+		 * Выполняет асинхронный patch запрос с авторизацией и возможностью установить заголовки http
+		 * @method patch_ex
+		 * @param url {String}
+		 * @param postData {String} - данные для отправки на сервер
+		 * @param auth {Boolean}
+		 * @param beforeSend {function} - callback перед отправкой запроса на сервер
+		 * @return {Promise.<T>}
+		 * @async
+		 */
+		this.patch_ex = function(url, postData, auth, beforeSend){
+			return _call("PATCH", url, postData, auth, beforeSend);
 		};
 
 		/**
@@ -607,6 +621,7 @@ $p.ajax = new (
 				attr.username = this.username;
 			if(!attr.password)
 				attr.password = this.password;
+			attr.hide_headers = true;
 		}
 
 	}

@@ -464,23 +464,27 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 	function save(action){
 
-		function do_save(){
+		function resolve(){
 
-			//wnd.progressOn();
-			//_mgr.save({
-			//	ref: o.ref,
-			//	o: o._obj,
-			//	action: "calc"
-			//});
+			wnd.progressOff();
+			wnd.modified = false;
+
+			if(action == "close"){
+				if(attr.on_select)
+					attr.on_select(o);
+				wnd.close();
+			}
 		}
 
-		do_save();
-
-		if(action == "close"){
-			if(attr.on_select)
-				attr.on_select(o);
-			wnd.close();
+		function reject(err){
+			wnd.progressOff();
+			console.log(err);
 		}
+
+		wnd.progressOn();
+		o.save()
+			.then(resolve)
+			.catch(reject);
 
 	}
 

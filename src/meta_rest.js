@@ -55,19 +55,21 @@ function Rest(){
 		for(ts in mts){
 			synts = _md.syns_1с(ts);
 			o[ts] = [];
-			rdata[synts].sort(function (a, b) {
-				return a.LineNumber > b.LineNumber;
-			});
-			rdata[synts].forEach(function (r) {
-				row = {};
-				for(tf in mts[ts].fields){
-					syn = _md.syns_1с(tf);
-					if(mts[ts].fields[tf].type.is_ref && r[syn+"_Key"])
-						syn+="_Key";
-					row[tf] = r[syn];
-				}
-				o[ts].push(row);
-			});
+			if(rdata[synts]){
+				rdata[synts].sort(function (a, b) {
+					return a.LineNumber > b.LineNumber;
+				});
+				rdata[synts].forEach(function (r) {
+					row = {};
+					for(tf in mts[ts].fields){
+						syn = _md.syns_1с(tf);
+						if(mts[ts].fields[tf].type.is_ref && r[syn+"_Key"])
+							syn+="_Key";
+						row[tf] = r[syn];
+					}
+					o[ts].push(row);
+				});
+			}
 		}
 
 		return o;
@@ -317,7 +319,7 @@ InfoRegManager.prototype.rest_slice_last = function(filter){
 
 /**
  * Сериализует объект данных в формат xml/atom (например, для rest-сервиса 1С)
- * @param [ex_meta] {Object} - метаданные внешней базы (например, УНФ).
+ * @param [ex_meta] {Object} - метаданные внешней по отношению к текущей базы (например, для записи в *УНФ* объекта *Заказа дилера*).
  * Если указано, вывод ограничен полями, доступными во внешней базе + используются синонимы внешней базы
  */
 DataObj.prototype.to_atom = function (ex_meta) {
@@ -349,8 +351,13 @@ DataObj.prototype.to_atom = function (ex_meta) {
 			else if(v instanceof DataObj){
 				pname+= '_Key';
 				v = v.ref;
-			}else if(mf.type.date_part)
-				v = $p.dateFormat(v, $p.dateFormat.masks.atom);
+			}else if(mf.type.date_part){
+				if($p.blank.date == v)
+					v = '0001-01-01T00:00:00Z';
+				else
+					v = $p.dateFormat(v, $p.dateFormat.masks.atom);
+			}
+
 
 			prop+= prefix + pname + '>' + v + '</d:' + pname + '>';
 		}
@@ -432,15 +439,80 @@ DataObj.prototype.to_atom = function (ex_meta) {
  */
 DataObj.prototype.save_rest = function (attr) {
 
-	attr.url += this._manager.rest_name;
+	var tObj = this,
+		atom = tObj.to_atom(),
+		url;
+
+	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
+	url = attr.url + tObj._manager.rest_name;
 
 	// проверяем наличие ссылки в базе приёмника
+	attr.url = url + "(guid'" + tObj.ref + "')?$format=json&$select=Ref_Key,DeletionMark";
 
-
-
-	//HTTP-заголовок 1C_OData_DataLoadMode=true
-	//Post?PostingModeOperational=false.
-	return Promise.resolve(this);
+	return $p.ajax.get_ex(attr.url, attr)
+		.catch(function (err) {
+			if(err.status == 404){
+				return JSON.stringify({is_new: true});
+			}else
+				return Promise.reject(err);
+		})
+		.then(function (req) {
+			return JSON.parse(req.response);
+		})
+		.then(function (data) {
+			// если объект существует на стороне приемника, выполняем patch, иначе - post
+			if(data.is_new)
+				return $p.ajax.post_ex(url, atom, attr);
+			else
+				return $p.ajax.patch_ex(url + "(guid'" + tObj.ref + "')", atom, attr);
+		})
+		.then(function (req) {
+			var data = require("xml_to_json").parseString(req.response, {
+				mergeCDATA: false, // extract cdata and merge with text
+				grokAttr: true, // convert truthy attributes to boolean, etc
+				grokText: false, // convert truthy text/attr to boolean, etc
+				normalize: true, // collapse multiple spaces to single space
+				xmlns: false, // include namespaces as attribute in output
+				namespaceKey: '_ns', // tag name for namespace objects
+				textKey: '_text', // tag name for text nodes
+				valueKey: '_value', // tag name for attribute values
+				attrKey: '_attr', // tag for attr groups
+				cdataKey: '_cdata', // tag for cdata nodes (ignored if mergeCDATA is true)
+				attrsAsObject: false, // if false, key is used as prefix to name, set prefix to '' to merge children and attrs.
+				stripAttrPrefix: true, // remove namespace prefixes from attributes
+				stripElemPrefix: true, // for elements of same name in diff namespaces, you can enable namespaces and access the nskey property
+				childrenAsArray: false // force children into arrays
+			});
+			if(data.entry && data.entry.content && data.entry.updated){
+				var p = data.entry.content.properties, r = {}, v;
+				r.lc_changed = new Date(data.entry.updated._text);
+				for(var i in p){
+					if(i.indexOf("_")==0)
+						continue;
+					if(v = p[i].element){
+						r[i] = [];
+						if(Array.isArray(v)){
+							for(var n in v){
+								r[i][n] = {};
+								for(var j in v[n])
+									if(j.indexOf("_")!=0)
+										r[i][n][j] = v[n][j]._text === "false" ? false : v[n][j]._text;
+							}
+						}else{
+							r[i][0] = {};
+							for(var j in v)
+								if(j.indexOf("_")!=0)
+									r[i][0][j] = v[j]._text === "false" ? false : v[j]._text;
+						}
+					}else
+						r[i] = p[i]._text === "false" ? false : p[i]._text;
+				}
+				return _rest.to_data(r, tObj._manager);
+			}
+		})
+		.then(function (res) {
+			return tObj._mixin(res);
+		});
 
 };
 

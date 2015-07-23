@@ -274,21 +274,18 @@ DataObj.prototype.load = function(){
 DataObj.prototype.save = function (post, operational) {
 
 	// Если процедуры перед записью завершились неудачно - не продолжаем
-	if(_manager.handle_event(this, "before_save") === false)
+	if(this._manager.handle_event(this, "before_save") === false)
 		return Promise.resolve(this);
 
 	// Сохраняем во внешней базе
-	this.save_rest({
-		url: $p.job_prm.rest_url(),
-		username: $p.ajax.username,
-		password: $p.ajax.password,
+	return this.save_rest({
 		post: post,
 		operational: operational
 	})
 
 		// и выполняем обработку после записи
 		.then(function (obj) {
-			return _manager.handle_event(obj, "after_save");
+			return obj._manager.handle_event(obj, "after_save");
 		});
 };
 
