@@ -25,10 +25,9 @@
       "src/events.js"],
     "filesaver" :  "lib/filesaver.js",
     "xml_to_json": "lib/xml_to_json.js",
-    "<%= file %>": "data/*.xml",
-    "main":     "src/main.js"
+    "<%= file %>": "data/*.xml"
   },
-  "main": "main",
+  "main": "common",
   "optimize": true,
   "ie": false
 }
