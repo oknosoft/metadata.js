@@ -180,15 +180,9 @@ TabularSection.prototype.add = function(attr){
 
 	var row = new this._owner._manager._ts_сonstructors[this._name](this);
 
-	// если передали значения по умолчанию, миксуем
-	if(attr)
-		row._mixin(attr || {});
-
 	// присваиваем типизированные значения по умолчанию
-	for(var f in row._metadata.fields){
-		if(row._obj[f] == undefined)
-			row[f] = "";
-	}
+	for(var f in row._metadata.fields)
+		row[f] = attr[f] || "";
 
 	row._obj.row = this._obj.push(row._obj);
 	row._obj._define("_row", {
@@ -218,9 +212,16 @@ TabularSection.prototype.each = function(fn){
  * @param aattr {Array} - массив объектов к загрузке
  */
 TabularSection.prototype.load = function(aattr){
-	this.clear();
-	for(var i in aattr)
-		this.add(aattr[i]);
+	var t = this, arr;
+	t.clear();
+	if(aattr instanceof TabularSection)
+		arr = aattr._obj;
+	else if(Array.isArray(aattr))
+		arr = aattr;
+	if(arr)
+		arr.forEach(function(row){
+			t.add(row);
+	});
 };
 
 /**
