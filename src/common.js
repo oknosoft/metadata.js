@@ -1453,9 +1453,14 @@ $p.wsql = WSQL;
 		inited = 1000;
 
 	function fetch_type(prm, type){
-		if(type == "object")
-			return prm ? $p.fix_guid(JSON.parse(prm)) : {};
-		else if(type == "number")
+		if(type == "object"){
+			try{
+				prm = JSON.parse(prm);
+			}catch(e){
+				prm = {};
+			}
+			return prm;
+		}else if(type == "number")
 			return $p.fix_number(prm, true);
 		else if(type == "date")
 			return $p.fix_date(prm, true);

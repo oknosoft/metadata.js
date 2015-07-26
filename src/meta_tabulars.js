@@ -97,6 +97,8 @@ TabularSection.prototype.del = function(val){
 		return;
 	else if(typeof val == "number")
 		index = val;
+	else if(_obj[val.row-1]._row === val)
+		index = val.row-1;
 	else{
 		for(var i in _obj)
 			if(_obj[i]._row === val){
@@ -179,6 +181,9 @@ TabularSection.prototype.swap = function(rowid1, rowid2){
 TabularSection.prototype.add = function(attr){
 
 	var row = new this._owner._manager._ts_сonstructors[this._name](this);
+
+	if(!attr)
+		attr = {};
 
 	// присваиваем типизированные значения по умолчанию
 	for(var f in row._metadata.fields)
