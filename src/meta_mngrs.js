@@ -467,20 +467,50 @@ DataManager.prototype.print = function(ref, model, wnd){
 	if(wnd && wnd.progressOn)
 		wnd.progressOn();
 
-	$p.ajax.get_and_show_blob($p.job_prm.hs_url(), {
-		action: "print",
-		class_name: this.class_name,
-		ref: $p.fix_guid(ref),
-		model: model,
-		browser_uid: $p.wsql.get_user_param("browser_uid")
-	})
+	var rattr = {};
+	$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
+	rattr.url += this.rest_name + "(guid'" + $p.fix_guid(ref) + "')" +
+		"/Print(model=" + model + ", browser_uid=" + $p.wsql.get_user_param("browser_uid") +")";
+
+	$p.ajax.get_and_show_blob(rattr.url, rattr, "get")
 		.then(tune_wnd_print)
 		.catch(function (err) {
 			console.log(err);
 		});
-
 	setTimeout(tune_wnd_print, 3000);
+
+	//$p.ajax.get_and_show_blob($p.job_prm.hs_url(), {
+	//	action: "print",
+	//	class_name: this.class_name,
+	//	ref: $p.fix_guid(ref),
+	//	model: model,
+	//	browser_uid: $p.wsql.get_user_param("browser_uid")
+	//})
+	//	.then(tune_wnd_print)
+	//	.catch(function (err) {
+	//		console.log(err);
+	//	});
+
+
 };
+
+/**
+ * Возвращает промис со структурой печатных форм объекта
+ * @return {Promise.<Object>}
+ */
+DataManager.prototype.printing_plates = function(){
+	var rattr = {};
+	$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
+	rattr.url += this.rest_name + "/Print()";
+	return $p.ajax.get_ex(rattr.url, rattr)
+		.then(function (req) {
+			return JSON.parse(req.response);
+		})
+		.catch(function (err) {
+			return {};
+		});
+};
+
 
 
 /**
@@ -611,6 +641,8 @@ function RefDataManager(class_name) {
 
 		return Promise.resolve(o);
 	};
+
+
 
 
 	/**
@@ -1091,6 +1123,8 @@ RefDataManager.prototype.caption_flds = function(attr){
 
 	return {head: s, acols: acols};
 };
+
+
 
 /**
  * Менеджер обработок

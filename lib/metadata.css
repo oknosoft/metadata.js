@@ -378,6 +378,7 @@ html, body {
 }
 .title {
     font-weight: bold;
+	font-size: 11pt;
 }
 #tunes label, #tunes input, a {
     font-size: 14px;

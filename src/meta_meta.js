@@ -747,6 +747,7 @@ function Meta(req, patch) {
 			IsFolder: 'is_folder',
 			Number: 'number_doc',
 			Date: 'date',
+			Дата: 'date',
 			Posted: 'posted',
 			Code: 'id'
 		};

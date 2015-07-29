@@ -277,6 +277,9 @@ DataObj.prototype.save = function (post, operational) {
 	if(this._manager.handle_event(this, "before_save") === false)
 		return Promise.resolve(this);
 
+	if(this instanceof DocObj && $p.blank.date == this.date)
+		this.date = new Date();
+
 	// Сохраняем во внешней базе
 	return this.save_rest({
 		post: post,

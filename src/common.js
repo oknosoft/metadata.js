@@ -573,26 +573,34 @@ $p.ajax = new (
 		 * @method get_and_show_blob
 		 * @param url {String} - адрес, по которому будет произведен запрос
 		 * @param post_data {Object|String} - данные запроса
-		 * @param callback {function}
+		 * @param [method] {String}
 		 * @async
 		 */
-		this.get_and_show_blob = function(url, post_data){
+		this.get_and_show_blob = function(url, post_data, method){
 
 			var params = "menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes",
 				wnd_print;
 
-			return this.post_ex(url,
-				typeof post_data == "object" ? JSON.stringify(post_data) : post_data, true, function(xhr){
-					xhr.responseType = "blob";
-				})
-				.then(function(req){
-					url = window.URL.createObjectURL(req.response);
-					wnd_print = window.open(url, "wnd_print", params);
-					wnd_print.onload = function(e) {
-						window.URL.revokeObjectURL(url);
-					};
-					return wnd_print;
-				});
+			function show_blob(req){
+				url = window.URL.createObjectURL(req.response);
+				wnd_print = window.open(url, "wnd_print", params);
+				wnd_print.onload = function(e) {
+					window.URL.revokeObjectURL(url);
+				};
+				return wnd_print;
+			}
+
+			if(!method || method.toLowerCase().indexOf("post")!=-1)
+				return this.post_ex(url,
+					typeof post_data == "object" ? JSON.stringify(post_data) : post_data, true, function(xhr){
+						xhr.responseType = "blob";
+					})
+					.then(show_blob);
+			else
+				return this.get_ex(url, post_data, function(xhr){
+						xhr.responseType = "blob";
+					})
+					.then(show_blob);
 		};
 
 		/**
@@ -878,7 +886,9 @@ $p.fix_boolean = function(str){
  */
 $p.fix_date = function(str, strict){
 	var dfmt = /(^\d{1,4}[\.|\\/|-]\d{1,2}[\.|\\/|-]\d{1,4})(\s*(?:0?[1-9]:[0-5]|1(?=[012])\d:[0-5])\d\s*[ap]m)?$/, d;
-	if(str && typeof str == "string" && dfmt.test(str.substr(0,10))){
+	if(str instanceof Date)
+		return str;
+	else if(str && typeof str == "string" && dfmt.test(str.substr(0,10))){
 		d=new Date(str);
 		if(d && d.getFullYear()>0)
 			return d;

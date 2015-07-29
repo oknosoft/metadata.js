@@ -105,6 +105,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 			}
 
+			_mngr.printing_plates().then(function (pp) {
+				for(var pid in pp)
+					wnd.elmnts.toolbar.addListOption("bs_print", pid, "~", "button", pp[pid]);
+			});
+
 			//
 			create_tree_and_grid();
 		});
@@ -247,6 +252,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 *	@desc: 	обработчик нажатия кнопок командных панелей
 	 */
 	function toolbar_click(btn_id){
+
 		if(btn_id=="btn_select"){
 			select();
 
@@ -259,14 +265,19 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				});
 
 
-		}else if(btn_id=="btn_edit"){
+		}else if(btn_id=="btn_edit") {
 			var rId = wnd.elmnts.grid.getSelectedRowId();
-			if(rId)
+			if (rId)
 				$p.iface.set_hash(_mngr.class_name, rId);
 			else
-				$p.msg.show_msg({type: "alert-warning",
+				$p.msg.show_msg({
+					type: "alert-warning",
 					text: $p.msg.no_selected_row.replace("%1", ""),
-					title: $p.msg.main_title});
+					title: $p.msg.main_title
+				});
+
+		}else if(btn_id.substr(0,4)=="prn_"){
+				print(btn_id);
 
 		}else if(btn_id=="btn_order_list"){
 			$p.iface.set_hash("", "", "", "def");
@@ -314,6 +325,19 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			else
 				$p.iface.set_hash(_mngr.class_name, rId);
 		}
+	}
+
+	/**
+	 *	Печатает документ
+	 */
+	function print(pid){
+		var rId = wnd.elmnts.grid.getSelectedRowId();
+		if(rId)
+			_mngr.print(rId, pid, wnd);
+		else
+			$p.msg.show_msg({type: "alert-warning",
+				text: $p.msg.no_selected_row.replace("%1", ""),
+				title: $p.msg.main_title});
 	}
 
 	/**

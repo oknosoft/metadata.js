@@ -669,22 +669,28 @@ $p.eve.from_json_to_data_obj = function(res) {
 			stepper.current = res["current"];
 
 		for(class_name in res.cch)
-			_cch[class_name].load_array(res.cch[class_name]);
+			if(_cch[class_name])
+				_cch[class_name].load_array(res.cch[class_name]);
 
 		for(class_name in res.cacc)
-			_cacc[class_name].load_array(res.cacc[class_name]);
+			if(_cacc[class_name])
+				_cacc[class_name].load_array(res.cacc[class_name]);
 
 		for(class_name in res.cat)
-			_cat[class_name].load_array(res.cat[class_name]);
+			if(_cat[class_name])
+				_cat[class_name].load_array(res.cat[class_name]);
 
 		for(class_name in res.doc)
-			_doc[class_name].load_array(res.doc[class_name]);
+			if(_doc[class_name])
+				_doc[class_name].load_array(res.doc[class_name]);
 
 		for(class_name in res.ireg)
-			_ireg[class_name].load_array(res.ireg[class_name]);
+			if(_ireg[class_name])
+				_ireg[class_name].load_array(res.ireg[class_name]);
 
 		for(class_name in res.areg)
-			_areg[class_name].load_array(res.areg[class_name]);
+			if(_areg[class_name])
+				_areg[class_name].load_array(res.areg[class_name]);
 
 		// если все данные получены в первом запросе, второй можно не делать
 		return res.current && (res.current >= stepper.step_size);

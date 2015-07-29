@@ -352,7 +352,7 @@ DataObj.prototype.to_atom = function (ex_meta) {
 				pname+= '_Key';
 				v = v.ref;
 			}else if(mf.type.date_part){
-				if($p.blank.date == v)
+				if(v.getFullYear() < 1900)
 					v = '0001-01-01T00:00:00Z';
 				else
 					v = $p.dateFormat(v, $p.dateFormat.masks.atom);
@@ -452,7 +452,7 @@ DataObj.prototype.save_rest = function (attr) {
 	return $p.ajax.get_ex(attr.url, attr)
 		.catch(function (err) {
 			if(err.status == 404){
-				return JSON.stringify({is_new: true});
+				return {response: JSON.stringify({is_new: true})};
 			}else
 				return Promise.reject(err);
 		})
