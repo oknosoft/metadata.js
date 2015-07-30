@@ -405,6 +405,18 @@ $p.iface.layout_2u = function (tree_attr) {
 
 };
 
+
+$p.iface.layout_1c = function () {
+	var iface = $p.iface;
+
+	iface.main = new dhtmlXLayoutObject({
+		parent: document.body,
+		pattern: "1C",
+		offsets: {top: 4, right: 4, bottom: 4, left: 4}
+	});
+	iface.docs = iface.main.cells('a');
+};
+
 /**
  * Создаёт форму авторизации с обработчиками перехода к фидбэку и настройкам,
  * полем входа под гостевой ролью, полями логина и пароля и кнопкой входа
@@ -634,7 +646,25 @@ $p.iface.swith_view = function(name){
 				if (a.text < b.text) return -1;
 			}
 
-			if(iface.tree._view == name || ["rep", "cal"].indexOf(name) != -1)
+			if(!iface.tree){
+
+				var hprm = $p.job_prm.parse_url();
+				if(hprm.obj) {
+					var parts = hprm.obj.split('.');
+					if(parts.length > 1){
+
+						var mgr = $p.md.mgr_by_class_name(hprm.obj);
+
+						if(typeof iface.docs.close === "function" )
+							iface.docs.close();
+
+						if(mgr)
+							mgr.form_list(iface.docs, {});
+					}
+				}
+				return;
+
+			}else if(iface.tree._view == name || ["rep", "cal"].indexOf(name) != -1)
 				return;
 
 			iface.tree.deleteChildItems(0);

@@ -130,7 +130,7 @@ DataObj.prototype._getter = function (f) {
 				return mgr.get(this._obj[f], false);
 			else
 				return $p.fetch_type(this._obj[f], mgr);
-		}else{
+		}else if(this._obj[f]){
 			console.log([f, mf, this._obj]);
 			return null;
 		}
