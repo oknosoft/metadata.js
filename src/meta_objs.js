@@ -281,7 +281,7 @@ DataObj.prototype.save = function (post, operational) {
 		this.date = new Date();
 
 	// Сохраняем во внешней базе
-	return this.save_rest({
+	return this.save_irest({
 		post: post,
 		operational: operational
 	})

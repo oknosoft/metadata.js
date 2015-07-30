@@ -429,9 +429,9 @@ DataObj.prototype.to_atom = function (ex_meta) {
 /**
  * Сохраняет объект в базе rest-сервиса
  * @param attr {Object} - параметры сохранения
- * @param attr.url {String}
- * @param attr.username {String}
- * @param attr.password {String}
+ * @param attr.[url] {String} - если не указано, будет использован адрес rest из параметров работы программы
+ * @param attr.[username] {String}
+ * @param attr.[password] {String}
  * @param attr.[post] {Boolean|undefined} - проведение или отмена проведения или просто запись
  * @param attr.[operational] {Boolean} - режим проведения документа [Оперативный, Неоперативный]
  * @return {Promise.<T>}
@@ -514,6 +514,36 @@ DataObj.prototype.save_rest = function (attr) {
 			return tObj._mixin(res);
 		});
 
+};
+
+/**
+ * Сохраняет объект в базе irest-сервиса (наш http-интерфейс)
+ * @param attr {Object} - параметры сохранения
+ * @param attr.[url] {String} - если не указано, будет использован адрес irest из параметров работы программы
+ * @param attr.[username] {String}
+ * @param attr.[password] {String}
+ * @param attr.[post] {Boolean|undefined} - проведение или отмена проведения или просто запись
+ * @param attr.[operational] {Boolean|undefined} - режим проведения документа [Оперативный, Неоперативный]
+ * @return {Promise.<T>}
+ * @async
+ */
+DataObj.prototype.save_irest = function (attr) {
+
+	var tObj = this,
+		post_data = JSON.stringify(tObj),
+		prm = (attr.post != undefined ? ",post="+attr.post : "")+
+			(attr.operational != undefined ? ",operational="+attr.operational : "");
+
+	$p.ajax.default_attr(attr, $p.job_prm.irest_url());
+	attr.url += tObj._manager.rest_name + "(guid'"+tObj.ref+"'"+prm+")";
+
+	return $p.ajax.post_ex(attr.url, post_data, attr)
+		.then(function (req) {
+			return JSON.parse(req.response);
+		})
+		.then(function (res) {
+			return tObj._mixin(res);
+		});
 };
 
 /**
