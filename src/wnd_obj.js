@@ -169,9 +169,13 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				this.setItemText("btn_save_close", "Записать и выбрать");
 
 			// добавляем команды печати
-			var pp = cmd["printing_plates"];
-			for(var pid in pp)
-				this.addListOption("bs_print", pid, "~", "button", pp[pid]);
+			if(_mgr instanceof CatManager || _mgr instanceof DocManager)
+				_mgr.printing_plates().then(function (pp) {
+					for(var pid in pp)
+						wnd.elmnts.frm_toolbar.addListOption("bs_print", pid, "~", "button", pp[pid]);
+				});
+			else
+				this.disableItem("bs_print");
 
 			// попап для присоединенных файлов
 			wnd.elmnts.vault_pop = new dhtmlXPopup({
@@ -211,7 +215,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			$p.msg.show_not_implemented();
 
 		else if(btn_id=="btn_export")
-			_mgr.export(o.ref);
+			_mgr.export({items: [o], pwnd: wnd, obj: true} );
 
 	}
 

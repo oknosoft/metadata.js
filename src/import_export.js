@@ -27,7 +27,7 @@ DataManager.prototype.export = function(attr){
 		attr = {items: []};
 
 
-	var _mgr = this, pwnd = attr.pwnd, wnd,
+	var _mgr = this, wnd,
 		options = {
 			name: 'export',
 			wnd: {
@@ -119,6 +119,12 @@ DataManager.prototype.export = function(attr){
 		wnd.elmnts.frm.attachEvent("onChange", set_availability);
 
 		set_availability();
+
+		if(attr.pwnd && attr.pwnd.isModal()){
+			attr.set_pwnd_modal = true;
+			attr.pwnd.setModal(false);
+		}
+		wnd.setModal(true);
 
 	}
 
@@ -221,7 +227,9 @@ DataManager.prototype.export = function(attr){
 		wnd.wnd_options(options.wnd);
 		$p.wsql.save_options("data_manager", refresh_options());
 
-		// TODO задать вопрос о записи изменений + перенести этот метод в $p
+		wnd.setModal(false);
+		if(attr.set_pwnd_modal && attr.pwnd.setModal)
+			attr.pwnd.setModal(true);
 
 		return true;
 	}

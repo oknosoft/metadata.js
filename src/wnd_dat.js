@@ -652,6 +652,8 @@ $p.iface.swith_view = function(name){
 					if(typeof _cat[mdn] == "function")
 						continue;
 					md = _cat[mdn].metadata();
+					if(md.hide)
+						continue;
 					tlist.push({id: "oper.cat." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
 				}
 				tlist.sort(compare_text);
@@ -662,6 +664,8 @@ $p.iface.swith_view = function(name){
 					if(typeof _doc[mdn] == "function")
 						continue;
 					md = _doc[mdn].metadata();
+					if(md.hide)
+						continue;
 					tlist.push({id: "oper.doc." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
 				}
 				tlist.sort(compare_text);
@@ -672,6 +676,8 @@ $p.iface.swith_view = function(name){
 					if(typeof _cch[mdn] == "function")
 						continue;
 					md = _cch[mdn].metadata();
+					if(md.hide)
+						continue;
 					tlist.push({id: "oper.cch." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
 				}
 				tlist.sort(compare_text);
@@ -682,6 +688,8 @@ $p.iface.swith_view = function(name){
 					if(typeof _cacc[mdn] == "function")
 						continue;
 					md = _cacc[mdn].metadata();
+					if(md.hide)
+						continue;
 					tlist.push({id: "oper.cacc." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
 				}
 				tlist.sort(compare_text);

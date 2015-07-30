@@ -13,9 +13,9 @@
  */
 DataManager.prototype.form_selection = function(pwnd, attr){
 
-	var _mngr = this,
-		md = _mngr.metadata(),
-		has_tree = md["hierarchical"] && !(_mngr instanceof ChartOfAccountManager),
+	var _mgr = this,
+		md = _mgr.metadata(),
+		has_tree = md["hierarchical"] && !(_mgr instanceof ChartOfAccountManager),
 		wnd, s_col = 0,
 		a_direction = "asc",
 		previous_filter = {};
@@ -23,7 +23,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 	// создаём и настраиваем форму
 	if(has_tree && attr.initial_value && attr.initial_value!= $p.blank.guid && !attr.parent)
-		_mngr.get(attr.initial_value, true)
+		_mgr.get(attr.initial_value, true)
 			.then(function (tObj) {
 				attr.parent = tObj.parent.ref;
 				attr.set_parent = attr.parent;
@@ -53,7 +53,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				frm_unload();
 			};
 		}else{
-			wnd = $p.iface.w.createWindow('wnd_' + _mngr.class_name.replace(".", "_") + '_select', 0, 0, 900, 600);
+			wnd = $p.iface.w.createWindow('wnd_' + _mgr.class_name.replace(".", "_") + '_select', 0, 0, 900, 600);
 			wnd.centerOnScreen();
 			wnd.setModal(1);
 			wnd.button('park').hide();
@@ -63,7 +63,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 
 		$p.bind_help(wnd);
-		wnd.setText('Список ' + (_mngr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (md["list_presentation"] || md.synonym) + '"');
+		wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (md["list_presentation"] || md.synonym) + '"');
 
 		dhtmlxEvent(document.body, "keydown", body_keydown);
 
@@ -71,7 +71,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		wnd.elmnts = {
 			status_bar: wnd.attachStatusBar()
 		};
-		wnd.elmnts.status_bar.setText("<div id='" + _mngr.class_name.replace(".", "_") + "_select_recinfoArea'></div>");
+		wnd.elmnts.status_bar.setText("<div id='" + _mgr.class_name.replace(".", "_") + "_select_recinfoArea'></div>");
 
 		// командная панель формы
 
@@ -83,7 +83,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 			// текстовое поле фильтра по подстроке
 			wnd.elmnts.filter = new $p.iface.Toolbar_filter({
-				manager: _mngr,
+				manager: _mgr,
 				toolbar: this,
 				onchange: input_filter_change
 			});
@@ -105,10 +105,14 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 			}
 
-			_mngr.printing_plates().then(function (pp) {
-				for(var pid in pp)
-					wnd.elmnts.toolbar.addListOption("bs_print", pid, "~", "button", pp[pid]);
-			});
+			// добавляем команды печати
+			if(_mgr instanceof CatManager || _mgr instanceof DocManager)
+				_mgr.printing_plates().then(function (pp) {
+					for(var pid in pp)
+						wnd.elmnts.toolbar.addListOption("bs_print", pid, "~", "button", pp[pid]);
+				});
+			else
+				this.disableItem("bs_print");
 
 			//
 			create_tree_and_grid();
@@ -168,7 +172,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			// !!! для неиерархических справочников дерево можно спрятать
 			$p.cat.load_soap_to_grid({
 				action: "get_tree",
-				class_name: _mngr.class_name
+				class_name: _mgr.class_name
 			}, wnd.elmnts.tree, function(){
 				setTimeout(function(){ grid.reload(); }, 20);
 			});
@@ -183,7 +187,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		grid.setIconsPath(dhtmlx.image_path);
 		grid.setImagePath(dhtmlx.image_path);
 		grid.setPagingWTMode(true,true,true,[20,30,60]);
-		grid.enablePaging(true, 30, 8, _mngr.class_name.replace(".", "_") + "_select_recinfoArea");
+		grid.enablePaging(true, 30, 8, _mgr.class_name.replace(".", "_") + "_select_recinfoArea");
 		grid.setPagingSkin("toolbar", dhtmlx.skin);
 		grid.attachEvent("onBeforeSorting", customColumnSort);
 		grid.attachEvent("onBeforePageChanged", function(){ return !!this.getRowsNum();});
@@ -258,17 +262,17 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		}else if(btn_id=="btn_new"){
 			// TODO: м.б. записывать пустой объект и получать код-номер??
-			_mngr.create({}, true)
+			_mgr.create({}, true)
 				.then(function (o) {
 					o._set_loaded(o.ref);
-					$p.iface.set_hash(_mngr.class_name, o.ref);
+					$p.iface.set_hash(_mgr.class_name, o.ref);
 				});
 
 
 		}else if(btn_id=="btn_edit") {
 			var rId = wnd.elmnts.grid.getSelectedRowId();
 			if (rId)
-				$p.iface.set_hash(_mngr.class_name, rId);
+				$p.iface.set_hash(_mgr.class_name, rId);
 			else
 				$p.msg.show_msg({
 					type: "alert-warning",
@@ -289,7 +293,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			$p.msg.show_not_implemented();
 
 		}else if(btn_id=="btn_export"){
-			_mngr.export(wnd.elmnts.grid.getSelectedRowId());
+			_mgr.export(wnd.elmnts.grid.getSelectedRowId());
 
 		}else if(btn_id=="btn_requery"){
 			wnd.elmnts.grid.reload();
@@ -317,13 +321,13 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		if(rId){
 			if(pwnd.on_select)
-				_mngr.get(rId, true)
+				_mgr.get(rId, true)
 					.then(function(selv){
 						wnd.close();
 						pwnd.on_select.call(pwnd.grid || pwnd, selv);
 					});
 			else
-				$p.iface.set_hash(_mngr.class_name, rId);
+				$p.iface.set_hash(_mgr.class_name, rId);
 		}
 	}
 
@@ -333,7 +337,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	function print(pid){
 		var rId = wnd.elmnts.grid.getSelectedRowId();
 		if(rId)
-			_mngr.print(rId, pid, wnd);
+			_mgr.print(rId, pid, wnd);
 		else
 			$p.msg.show_msg({type: "alert-warning",
 				text: $p.msg.no_selected_row.replace("%1", ""),
@@ -344,7 +348,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 * освобождает переменные после закрытия формы
 	 */
 	function frm_unload(){
-		_mngr = null;
+		_mgr = null;
 		wnd = null;
 		md = null;
 		previous_filter = null;
@@ -372,7 +376,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		var filter = wnd.elmnts.filter.get_filter()
 				._mixin({
 					action: "get_selection",
-					class_name: _mngr.class_name,
+					class_name: _mgr.class_name,
 					order_by: s_col,
 					direction: a_direction,
 					start: start || ((wnd.elmnts.grid.currentPage || 1)-1)*wnd.elmnts.grid.rowsBufferOutSize,
