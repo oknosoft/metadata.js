@@ -1,17 +1,17 @@
 /**
- * Основное окно интерфейса unf demo
+ * Основное окно интерфейса accounting demo
  * <br />&copy; http://www.oknosoft.ru 2009-2015
- * Created 17.06.2015
+ * Created 17.07.2015
  * @module  main
  */
 
 /**
- * Глобальная переменная демки УНФ (не фреймворка _metadata.js_, а конкретного прикладного решения)<br />
+ * Глобальная переменная демки БП (не фреймворка _metadata.js_, а конкретного прикладного решения)<br />
  * в её свойстве _modifiers_ располагаем модификаторы объектов, подписки на события и прочую бизнес-логику,
  * которая должна обрабатываться на клиенте
- * @type {UNF}
+ * @type {Accounting}
  */
-var unf = new function UNF() {
+var _accounting = new function Accounting() {
 	this.modifiers = [];
 };
 
@@ -35,34 +35,35 @@ $p.settings = function (prm, modifiers) {
 	/**
 	 * расположение rest-сервиса unf
 	 */
-	prm.rest_path = "/a/unf/%1/odata/standard.odata/";
+	prm.rest_path = "/a/ea/%1/odata/standard.odata/";
 
 	/**
-	 * по умолчанию, обращаемся к зоне 1377
+	 * по умолчанию, обращаемся к зоне 1392
 	 */
-	prm.zone = 1377;
+	prm.zone = 1392;
 
 	/**
 	 * расположение файлов данных
 	 */
-	prm.data_url = "examples/unf/data/";
+	prm.data_url = "examples/accounting/data/";
 
 	/**
 	 * расположение файла инициализации базы sql
 	 */
-	prm.create_tables = "examples/unf/data/create_tables.sql";
+	prm.create_tables = "examples/accounting/data/create_tables.sql";
 
 
 	/**
 	 * расположение страницы настроек
 	 */
-	prm.settings_url = "examples/unf/settings.html";
+	prm.settings_url = "examples/accounting/settings.html";
+
 
 
 	/**
 	 * подключаем модификаторы
 	 */
-	unf.modifiers.forEach(function (func) {
+	_accounting.modifiers.forEach(function (func) {
 		modifiers.push(func);
 	});
 
@@ -78,7 +79,7 @@ $p.iface.oninit = function() {
 	 * Т.к. демо-примеры УНФ, безбумажки и бухгалтерии развёрнуты на одном домене, они получают общее локальное хранилище
 	 * чтобы не возник конфликт настроек при переключении между демо-примерами, принудительно перечитываем настройки по умолчанию
 	 */
-	if($p.wsql.get_user_param("zone", "number")==1392){
+	if($p.wsql.get_user_param("zone", "number")==1377){
 		var prm = {};
 		$p.settings(prm, []);
 		for(var i in prm)
@@ -103,11 +104,13 @@ $p.iface.oninit = function() {
 		null,
 
 		/**
-		 *  открываем форму списка заказов
+		 *  открываем окно "все функции" с деревом метаданных
+		 *  это место можно переопределить и открывать, например, специальную форму списка заказов
 		 */
 		function () {
-			$p.iface.set_hash("doc.ЗаказПокупателя", "", "", "oper");
+			$p.iface.set_hash("doc.СчетНаОплатуПокупателю", "", "", "oper");
 			$p.iface.docs.hideHeader();
+
 		},
 
 		/**
