@@ -2,7 +2,7 @@
 - Пример на [jsfiddle](http://jsfiddle.net/oknosoft/yza3msa9/) работает только в браузерах, на основе v8 (хром, опера, яндекс).
 Это особенность фрейма _jsfiddle.net_. Поддержка браузеров ie и mozilla в `metadata.js` есть, но для отладки и промышленной эксплуатации рекомендуется chrome или chromium
 - Копия примера по адресу [oknosoft.ru/assets/examples/unf/](http://www.oknosoft.ru/assets/examples/unf/). Код там не окружен окошками просмотра и живого редактирования, но анализировать и отлаживать его по шагам по {F12} в браузере, пожалуй, даже удобнее, чем в _jsfiddle_
-- Еще один вариант [oknosoft.ru/assets/examples/unf/dealer.html](http://www.oknosoft.ru/assets/examples/unf/dealer.html). Из интерфейса спрятано дерево метаданных, роль главного окра выполняет список заказов
+- Еще один вариант [oknosoft.ru/assets/examples/unf/dealer.html](http://www.oknosoft.ru/assets/examples/unf/dealer.html). Из интерфейса спрятано дерево метаданных, роль главного окна выполняет список заказов
 
 ## Данный пример иллюстрирует
 - Как сформировать файлы описания метаданных

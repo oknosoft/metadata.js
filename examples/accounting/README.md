@@ -1,7 +1,7 @@
 # Тестовое приложение "Счета и реализации для Бухгалтерии предприятия"
 - Пример на [jsfiddle](http://jsfiddle.net/oknosoft/7khanwrr/) работает только в браузерах, на основе v8 (хром, опера, яндекс). Есть ограничения, связанные с фреймом _jsfiddle.net_ и кроссдеменными запросами к данным. Поддержка браузеров ie и mozilla в `metadata.js` реализована, но для отладки и промышленной эксплуатации рекомендуется chrome или chromium
 - Копия примера по адресу [oknosoft.ru/assets/examples/accounting/](http://www.oknosoft.ru/assets/examples/accounting/). Код там не окружен окошками просмотра и живого редактирования, но анализировать и отлаживать его по шагам по {F12} в браузере, пожалуй, даже удобнее, чем в *jsfiddle*
-- Еще один вариант [oknosoft.ru/assets/examples/accounting/dealer.html](http://www.oknosoft.ru/assets/examples/accounting/dealer.html). Из интерфейса спрятано дерево метаданных, роль главного окра выполняет список счетов
+- Еще один вариант [oknosoft.ru/assets/examples/accounting/dealer.html](http://www.oknosoft.ru/assets/examples/accounting/dealer.html). Из интерфейса спрятано дерево метаданных, роль главного окна выполняет список счетов
 
 Рассмотрим по шагам, сначала демо-пример в облаке. Затем - развернём тот же пример на локальном компьютере.
 
