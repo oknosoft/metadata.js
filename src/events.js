@@ -877,11 +877,6 @@ $p.eve.log_in = function(onstep){
 		// сохраняем данные в локальной датабазе
 		.then(function () {
 			onstep($p.eve.steps.save_data_wsql);
-			//for(var cat_name in _cat){
-			//	if(!(_cat[cat_name] instanceof CatManager))
-			//		continue;
-			//	_cat[cat_name].save_wsql();
-			//}
 		});
 
 };
