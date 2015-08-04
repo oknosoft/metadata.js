@@ -49,7 +49,7 @@
             document.getElementById("zone").value = wsql.get_user_param("zone");
 
 
-            ["enable_save_pwd", "sync_worker"].forEach(function (p) {
+            ["enable_save_pwd", "use_service_worker"].forEach(function (p) {
                         if(wsql.get_user_param(p))
                             document.getElementById(p).checked = true;
                     });
@@ -136,8 +136,8 @@
 
         <div>
             <label class="support-hover-two">
-                <input id="sync_worker" type="checkbox"  onchange="value_on_change(event)" />
-                Использовать WebWorkers для фоновой синхронизации</label>
+                <input id="use_service_worker" type="checkbox"  onchange="value_on_change(event)" />
+                Использовать ServiceWorker для фоновой синхронизации</label>
             <span class="tip-block">
                 <span class="tip-two">
                   <span style="color: darkred; font-weight: bold">ТОЛЬКО ДЛЯ ТЕСТИРОВАНИЯ</span><br />не взводите эту константу,<br />возможна потеря данных

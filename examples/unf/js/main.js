@@ -59,7 +59,6 @@ $p.settings = function (prm, modifiers) {
 	prm.settings_url = "examples/unf/settings.html";
 
 
-
 	/**
 	 * подключаем модификаторы
 	 */
