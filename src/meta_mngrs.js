@@ -500,6 +500,9 @@ DataManager.prototype.print = function(ref, model, wnd){
  */
 DataManager.prototype.printing_plates = function(){
 	var rattr = {};
+	if($p.job_prm.offline)
+		return Promise.resolve({});
+
 	$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
 	rattr.url += this.rest_name + "/Print()";
 	return $p.ajax.get_ex(rattr.url, rattr)

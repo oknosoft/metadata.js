@@ -380,6 +380,32 @@ html, body {
     font-weight: bold;
 	font-size: 11pt;
 }
+.otooltip {
+	width: 360px;
+	font-family: Tahoma;
+	font-size: 12px;
+	line-height: 18px;
+}
+p.otooltip {
+	margin-top: 0px;
+	margin-bottom: 4px;
+}
+ul.otooltip {
+	margin-top: 0px;
+	margin-bottom: 4px;
+	padding-left: 24px;
+	display: table-cell;
+}
+.otooltip-video{
+	width: 200px;
+	clear: both;
+	float: left;
+}
+.otooltip-text{
+	display: inline-block;
+	padding-left: 4px;
+
+}
 #tunes label, #tunes input, a {
     font-size: 14px;
 }

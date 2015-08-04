@@ -824,6 +824,14 @@ function OTooolBar(attr){
 			this.classList.add('selected');
 	}
 
+	function popup_hide(){
+		popup_focused = false;
+		setTimeout(function () {
+			if(!popup_focused)
+				$p.iface.popup.hide();
+		}, 300);
+	}
+
 	/**
 	 * Добавляет кнопку на панель инструментов
 	 * @method add
@@ -840,22 +848,21 @@ function OTooolBar(attr){
 		});
 
 		dhtmlxEvent(bdiv, "mouseover", function(){
-			if(battr.title){
+			if(battr.title && !battr.sub){
 				popup_focused = true;
+
 				$p.iface.popup.attachHTML(battr.title);
-				if(!battr.sub)
-					$p.iface.popup.show(dhx4.absLeft(bdiv), dhx4.absTop(bdiv), bdiv.offsetWidth, bdiv.offsetHeight);
+				$p.iface.popup.show(dhx4.absLeft(bdiv), dhx4.absTop(bdiv), bdiv.offsetWidth, bdiv.offsetHeight);
+
+				dhtmlxEvent($p.iface.popup.p, "mouseover", function(){
+					popup_focused = true;
+				});
+
+				dhtmlxEvent($p.iface.popup.p, "mouseout", popup_hide);
 			}
 		});
 
-		dhtmlxEvent(bdiv, "mouseout", function () {
-			popup_focused = false;
-			setTimeout(function () {
-				if(!popup_focused)
-					$p.iface.popup.hide();
-			}, 300);
-
-		});
+		dhtmlxEvent(bdiv, "mouseout", popup_hide);
 
 		_this.buttons[battr.name] = bdiv;
 
