@@ -365,6 +365,7 @@ if(typeof window !== "undefined"){
 					russian_names();
 
 					// Ресурсы уже кэшированнны. Индикатор прогресса скрыт
+					// TODO: переписать управление appcache на сервисворкерах
 					if (cache = w.applicationCache){
 
 						// обновление не требуется
@@ -477,7 +478,7 @@ $p.eve.stepper = {
 $p.eve.ontimer = function () {
 
 	// читаем файл версии файлов js. в случае изменений, оповещаем пользователя
-	// TODO сделать автообновление
+	// TODO: это место желательно перенести в сервисворкер
 	$p.eve.update_files_version();
 
 };
@@ -757,6 +758,7 @@ $p.eve.log_in = function(onstep){
 			else if($p.job_prm.rest){
 				// в режиме rest тестируем авторизацию
 				// TODO: реализовать метод для получения списка ролей пользователя
+				// TODO: реализовать проверку наличия дополнительного http-сервиса
 				return $p.ajax.get_ex($p.job_prm.rest_url()+"?$format=json", true)
 					.then(function (req) {
 						//return JSON.parse(res.response);
