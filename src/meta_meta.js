@@ -108,11 +108,19 @@ $p._find_rows = function(a, attr, fn){
 		o = a[i];
 		ok = true;
 		if(attr)
-			for(j in attr)
-				if(!$p.is_equal(o[j], attr[j])){
-					ok = false;
-					break;
+			for(j in attr){
+				if(attr[j].hasOwnProperty("like")){
+					if(o[j].toLowerCase().indexOf(attr[j].like.toLowerCase())==-1){
+						ok = false;
+						break;
+					}
+				}else{
+					if(!$p.is_equal(o[j], attr[j])){
+						ok = false;
+						break;
+					}
 				}
+			}
 		if(ok){
 			if(fn){
 				if(fn.call(this, o) === false)

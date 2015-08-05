@@ -33,45 +33,6 @@ if(typeof window !== "undefined"){
 			timer_setted = false,
 			cache;
 
-		function russian_names(){
-
-			if($p.job_prm.russian_names){
-				w._define("Метаданные", {
-					get: function(){return _md},
-					enumerable: false
-				});
-				w._define("Справочники", {
-					get: function(){return _cat},
-					enumerable: false
-				});
-				w._define("Документы", {
-					get: function(){return _doc},
-					enumerable: false
-				});
-				w._define("РегистрыСведений", {
-					get: function(){return _ireg},
-					enumerable: false
-				});
-				w._define("РегистрыНакопления", {
-					get: function(){return _areg},
-					enumerable: false
-				});
-				w._define("РегистрыБухгалтерии", {
-					get: function(){return _aссreg},
-					enumerable: false
-				});
-				w._define("Обработки", {
-					get: function(){return _dp},
-					enumerable: false
-				});
-				w._define("Отчеты", {
-					get: function(){return _rep},
-					enumerable: false
-				});
-
-			}
-		}
-
 		/**
 		 * Устанавливает состояние online/offline в параметрах работы программы
 		 * @method set_offline
@@ -362,7 +323,7 @@ if(typeof window !== "undefined"){
 					}else
 						setTimeout(iface.oninit, 100);
 
-					russian_names();
+					$p.msg.russian_names();
 
 					// TODO: переписать управление appcache на сервисворкерах
 					if($p.wsql.get_user_param("use_service_worker", "boolean") && typeof navigator != "undefined"

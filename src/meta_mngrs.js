@@ -260,19 +260,30 @@ DataManager.prototype.sync_grid = function(grid, attr){
  * Возвращает массив доступных значений для комбобокса
  * @method get_option_list
  * @for DataManager
- * @param val {DataObj|String}
- * @param filter {Object}
+ * @param val {DataObj|String} - текущее значение
+ * @param [filter] {Object} - отбор, который будет наложен на список
+ * @param [top] {Number} - ограничивает длину возвращаемого массива
  * @return {Array}
  */
-DataManager.prototype.get_option_list = function(val, filter){
-	var l = [];
+DataManager.prototype.get_option_list = function(val, filter, top){
+	var l = [], count = 0;
 	function check(v){
 		if($p.is_equal(v.value, val))
 			v.selected = true;
 		return v;
 	}
+	if(this.metadata().hierarchical && this.metadata().group_hierarchy){
+		if(!filter)
+			filter = {};
+		filter.is_folder = false;
+	}
 	this.find_rows(filter, function (v) {
 		l.push(check({text: v.presentation, value: v.ref}));
+		if(top){
+			count++;
+			if(count >= top)
+				return false;
+		}
 	});
 	return l;
 };

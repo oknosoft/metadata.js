@@ -33,6 +33,44 @@ if(typeof window !== "undefined" && "dhx4" in window){
 	};
 }
 
+$p.msg.russian_names = function(){
+	if($p.job_prm.russian_names){
+		window._define({
+			"Метаданные": {
+				get: function(){return _md},
+				enumerable: false
+			},
+			"Справочники": {
+				get: function(){return _cat},
+				enumerable: false
+			},
+			"Документы": {
+				get: function(){return _doc},
+				enumerable: false
+			},
+			"РегистрыСведений": {
+				get: function(){return _ireg},
+				enumerable: false
+			},
+			"РегистрыНакопления": {
+				get: function(){return _areg},
+				enumerable: false
+			},
+			"РегистрыБухгалтерии": {
+				get: function(){return _aссreg},
+				enumerable: false
+			},
+			"Обработки": {
+				get: function(){return _dp},
+				enumerable: false
+			},
+			"Отчеты": {
+				get: function(){return _rep},
+				enumerable: false
+			}
+		});
+	}
+};
 
 /**
  *  строки ФИАС адресного классификатора

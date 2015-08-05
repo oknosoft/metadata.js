@@ -341,18 +341,115 @@ window.eXcell_refc = eXcell_refc;
 /**
  * Поле с выпадающим списком с поддержкой ссылочных, в том числе, составных типов
  * @param attr
+ * @param attr.parent {HTMLElement} - контейнер, в котором будет размещен элемент
  * @param attr.obj {DataObj|TabularSectionRow} - ссылка на редактируемый объект
  * @param attr.field {String} - имя поля редактируемого объекта
  * @param [attr.meta] {Object} - описание метаданных поля. Если не указано, описание запрашивается у объекта
+ * @param [attr.width] {Number} - если указано, фиксирует ширину элемента
  * @constructor
  */
 function OCombo(attr){
 
+	var _obj, _field, _meta, _mgr, t = this;
+
 	// выполняем конструктор родительского объекта
 	OCombo.superclass.constructor.call(this, attr);
+	this.DOMelem.style.marginBottom = "4px";
+
+	this.attachEvent("onChange", function(){
+		_obj[_field] = this.getSelectedValue();
+	});
+
+	this.attachEvent("onBlur", function(){
+		if(!this.getSelectedValue() && this.getComboText())
+			this.setComboText("");
+	});
+
+	this.attachEvent("onDynXLS", function (text) {
+
+		if(!_mgr)
+			_mgr = _md.value_mgr(_obj, _field, _meta.type);
+
+		if(_mgr){
+			t.clearAll();
+			t.addOption(_mgr.get_option_list(null, {presentation: {like: text}}, 30));
+			t.openSelect();
+			//t.load('<?xml version="1.0" ?>\
+			//	<complete>\
+			//	<option value="1">one</option>\
+			//	<option value="2">two</option>\
+			//	<option value="3">three</option>\
+			//	</complete>')
+		}
+
+	});
+
+	function observer(changes){
+		changes.forEach(function(change, i){
+			if(change.name == _field){
+				set_value(_obj[_field]);
+			}
+		});
+	}
+
+	function set_value(v){
+		if(v && v instanceof DataObj && !v.empty()){
+			if(!t.getOption(v.ref))
+				t.addOption(v.ref, v.presentation);
+			if(t.getSelectedValue() == v.ref)
+				return;
+			t.setComboValue(v.ref);
+		}else if(t.getSelectedValue()){
+			t.setComboValue("");
+			t.setComboText("")
+		}
+	}
+
+	/**
+	 * Подключает поле объекта к элементу управления
+	 * @param obj
+	 * @param field
+	 * @param [meta]
+	 */
+	this.attach = function (obj, field, meta) {
+		_obj = obj;
+		_field = field;
+		_meta = meta || obj._metadata.fields[field];
+
+		t.clearAll();
+		_mgr = _md.value_mgr(_obj, _field, _meta.type);
+
+		if(_mgr){
+			// загружаем список в 30 строк
+			t.addOption(_mgr.get_option_list(_obj[_field], null, 30));
+
+			// если поле имеет значение - устанавливаем
+			set_value(_obj[_field]);
+		}
+
+		// начинаем следить за объектом
+		Object.observe(_obj, observer, ["update"]);
+
+	};
+
+	this.unload = function () {
+		Object.unobserve(_obj, observer);
+		_obj = null;
+		_field = null;
+		_meta = null;
+		_mgr = null;
+		OCombo.superclass.unload.call(this);
+	};
+
+	// биндим поле объекта
+	if(attr.obj && attr.field)
+		this.attach(attr.obj, attr.field, attr.meta);
+	// устанавливаем url фильтрации
+	this.enableFilteringMode("between", "dummy", false, false);
 
 }
 OCombo._extend(dhtmlXCombo);
+$p.iface.OCombo = OCombo;
 
 function data_to_grid(data, attr){
 
