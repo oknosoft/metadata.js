@@ -1,0 +1,16 @@
+{
+  "name": "codex build",
+  "root": "../",
+  "www_root": "../",
+  "output": "examples/codex/js/main.js",
+  "modules": {
+    "codex": "examples/codex/js/codex.js",
+    "tree": "examples/codex/data/tree.json",
+    "urls": "examples/codex/data/urls.json",
+    "md<%= file %>": "examples/codex/data/*.md",
+    "js<%= file %>": "examples/codex/data/*.code"
+  },
+  "main": "codex",
+  "optimize": true,
+  "ie": false
+}

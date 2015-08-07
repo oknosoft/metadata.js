@@ -1,0 +1,8 @@
+<!---->
+function msg(){
+	$p.msg.show_msg({
+		title: "Справка",
+		type: "alert-info",
+		text: $p.msg.not_implemented
+	});
+}
