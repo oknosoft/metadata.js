@@ -6,7 +6,7 @@
   "modules": {
     "codex": "examples/codex/js/codex.js",
     "tree": "examples/codex/data/tree.json",
-    "urls": "examples/codex/data/urls.json",
+    "options": "examples/codex/data/options.json",
     "md<%= file %>": "examples/codex/data/*.md",
     "js<%= file %>": "examples/codex/data/*.code"
   },

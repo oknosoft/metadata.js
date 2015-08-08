@@ -118,7 +118,12 @@ $p.iface.oninit = function() {
 				})(iframe.contentWindow.$p, iframe.contentDocument, iframe.contentWindow, iframe.contentWindow.alasql);
 			};
 
-			this.location = iframe.contentWindow.location;
+
+			this._define("location", {
+				get: function () {
+					return iframe.contentWindow.location;
+				}
+			});
 
 		})(layout.cells("c").cell.lastChild.firstChild);
 	});
@@ -127,19 +132,36 @@ $p.iface.oninit = function() {
 	var tree = $p.iface.tree = layout.cells("a").attachTree();
 	tree.setImagePath(dhtmlx.image_path + 'dhxtree_web/');
 	tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
-	tree.attachEvent("onSelect", function(id){
-		$p.iface.content.innerHTML = marked(require('md'+id));
-		var js = require('js'+id);
-		if(js)
-			$p.iface.editor.setValue(js.substr(9));
-		else
-			$p.iface.editor.setValue("");
-		$p.iface.editor.clearHistory();
-	});
+	tree.attachEvent("onSelect", tree_select);
 	tree.loadJSONObject(require('tree'));
 	tree.selectItem("0100", true);
 
 };
+
+function tree_select(id){
+
+	// обновляем текст описания
+	$p.iface.content.innerHTML = marked(require('md'+id));
+
+	// обновляем текст js
+	var js = require('js'+id);
+	if(js)
+		$p.iface.editor.setValue(js.substr(9));
+	else
+		$p.iface.editor.setValue("");
+	$p.iface.editor.clearHistory();
+
+	// при необходимости, обновляем url страницы результата
+	var opt = require('options')[id], url;
+	if(typeof opt == "string")
+		url = opt;
+	else if(typeof opt == "object")
+		url = opt.url;
+
+	if(url && ($p.iface.result.location.origin + $p.iface.result.location.pathname).indexOf(url)==-1)
+		$p.iface.result.location.replace(url);
+
+}
 
 /**
  * Обработчик события перед маршрутизацией
@@ -152,11 +174,8 @@ $p.iface.before_route = function (event) {
 		$p.iface.tabs.tabs(route_prm.view).setActive();
 	}
 	if(route_prm.obj && route_prm.obj.indexOf("0")==0){
-		try{
-			$p.iface.tree.selectItem(route_prm.obj, true);
-		}catch(e){
-
-		}
+		try{ $p.iface.tree.selectItem(route_prm.obj, true); }
+		catch(e){ }
 	}
 
 	return false;
@@ -184,8 +203,11 @@ $p.iface.before_route = function (event) {
       ]}
   ]
 },
-"urls": {
-  "0110": "result.html"
+"options": {
+  "0110": "examples/codex/result.html",
+  "0111": "examples/codex/result.html",
+  "0120": "examples/unf/index.html",
+  "0130": "examples/accounting/index.html"
 },
 "md0100": "# Демо-приложения\r\nПри навигации по дереву, закладка `Описание` отображает текст раздела, а закладка `JavaScript` - контекстные примеры кода.<br />Код можно редактировать по месту и выполнять.\r\n\r\n## Элементы управления\r\nПримеры подключения полей ввода, списков, окон и диалогов\r\n\r\n## Подключение к типовым конфигурациям 1С\r\nПримеры реализации javascript-клиентов к типовым конфигурациям 1С",
 "md0110": "## Элементы управления\r\nПри навигации по дереву, закладка `Описание` отображает текст раздела, а закладка `JavaScript` - контекстные примеры кода.<br />Код можно редактировать по месту и выполнять.\r\n",

@@ -2,15 +2,15 @@
   "name": "codex results build",
   "root": "../",
   "www_root": "../",
-  "output": "examples/codex/js/main.js",
+  "output": "examples/codex/js/result.js",
   "modules": {
-    "codex": "examples/codex/js/codex.js",
-    "tree": "examples/codex/data/tree.json",
-    "urls": "examples/codex/data/urls.json",
-    "md<%= file %>": "examples/codex/data/*.md",
-    "js<%= file %>": "examples/codex/data/*.code"
+    "codres": "examples/codex/js/codres.js",
+    "meta": "examples/codex/data/meta.js",
+    "data": "examples/codex/data/data.js",
+    "create_tables": "examples/codex/data/create_tables.sql"
+
   },
-  "main": "codex",
+  "main": "codres",
   "optimize": true,
   "ie": false
 }

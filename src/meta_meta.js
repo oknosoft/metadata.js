@@ -414,7 +414,8 @@ var _cat = $p.cat = new (
  */
 function Meta(req, patch) {
 
-	var m = JSON.parse(req.response), class_name;
+	var m = (req instanceof XMLHttpRequest) ? JSON.parse(req.response) : req,
+		class_name;
 	if(patch){
 		patch = JSON.parse(patch.response);
 		for(var area in patch){
@@ -825,6 +826,7 @@ function Meta(req, patch) {
 		cat_date: m["cat_date"]
 	};
 }
+$p.Meta = Meta;
 
 /**
  * Загрузка данных в grid
