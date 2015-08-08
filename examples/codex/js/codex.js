@@ -21,6 +21,8 @@ $p.settings = function (prm, modifiers) {
  */
 $p.iface.oninit = function() {
 
+	$p.eve.redirect = true;
+
 	var layout = new dhtmlXLayoutObject({
 		parent: document.body,
 		pattern: "3L",
@@ -48,6 +50,13 @@ $p.iface.oninit = function() {
 		}
 	});
 
+	layout.attachEvent("onPanelResizeFinish", function(names){
+		if(names.indexOf("b")!=-1){
+			var h = layout.cells("b").getHeight();
+			$p.iface.editor.setSize(null, h - 66);
+		}
+	});
+
 	// табы
 	var tabs = $p.iface.tabs = layout.cells("b").attachTabbar({
 		tabs: [
@@ -57,17 +66,29 @@ $p.iface.oninit = function() {
 	});
 
 	tabs.tabs("js").attachObject("code_mirror");
-	$p.iface.editor_bar = new dhtmlXToolbarObject({
-		parent: "code_toolbar",
-		icons_path: dhtmlx.image_path + 'dhxtoolbar_web/',
-		items:[
-			{id: "run", type: "button", img: "execute.png", text: "Выполнить"}
-		],
-		onClick:function(id){
-			if(id=="run")
-				$p.iface.result.execute($p.iface.editor.getValue());
-		}
-	});
+
+	$p.iface.editor_bar = new $p.iface.OTooolBar({
+		wrapper: document.querySelector("#code_toolbar"),
+		width: '99%',
+		height: '28px',
+		top: '6px',
+		left: '10px',
+		name: 'top',
+		image_path:	dhtmlx.image_path + 'dhxtoolbar_web/',
+		buttons: [
+			{name: 'run', img: 'execute.png', text: 'Выполнить', width: '110px', float: 'left'}
+		], onclick: function (name) {
+			switch(name) {
+				case 'run':
+					$p.iface.result.execute($p.iface.editor.getValue());
+					break;
+
+				default:
+					$p.msg.show_msg(name);
+					break;
+			}
+		}});
+
 	$p.iface.editor = CodeMirror.fromTextArea(document.querySelector("#code_editor"), {
 		mode: "javascript",
 		lineNumbers: true,
@@ -83,10 +104,7 @@ $p.iface.oninit = function() {
 	layout.cells("c").attachURL("examples/codex/result.html");
 	setTimeout(function () {
 		$p.iface.result = new (function Results(iframe) {
-			var t = {
-				doc: iframe.contentDocument,
-				window: iframe.contentWindow
-			};
+
 			this.execute = function (code) {
 				(function ($p, document, window, alasql) {
 					try{
@@ -94,13 +112,16 @@ $p.iface.oninit = function() {
 					}catch(e){
 						console.log(e);
 					}
-				})(t.window.$p, t.doc, t.window, t.window.alasql);
-			}
+				})(iframe.contentWindow.$p, iframe.contentDocument, iframe.contentWindow, iframe.contentWindow.alasql);
+			};
+
+			this.location = iframe.contentWindow.location;
+
 		})(layout.cells("c").cell.lastChild.firstChild);
 	});
 
 	// дерево
-	var tree = layout.cells("a").attachTree();
+	var tree = $p.iface.tree = layout.cells("a").attachTree();
 	tree.setImagePath(dhtmlx.image_path + 'dhxtree_web/');
 	tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
 	tree.attachEvent("onSelect", function(id){
@@ -124,12 +145,18 @@ $p.iface.oninit = function() {
  */
 $p.iface.before_route = function (event) {
 	var route_prm = $p.job_prm.parse_url();
-	if(route_prm.view && route_prm.view!="oper"){
-		setTimeout(function () {
-			$p.iface.set_hash("", "", "", "oper");
-		}, 0);
-		return false;
+	if(route_prm.view && (route_prm.view=="js" || route_prm.view=="content")){
+		$p.iface.tabs.tabs(route_prm.view).setActive();
 	}
+	if(route_prm.obj && route_prm.obj.indexOf("0")==0){
+		try{
+			$p.iface.tree.selectItem(route_prm.obj, true);
+		}catch(e){
+
+		}
+	}
+
+	return false;
 };
 
 
