@@ -149,8 +149,9 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 
 			});
 
-			wnd.elmnts.toolbar = wnd.attachToolbar();
-			wnd.elmnts.toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
+			wnd.elmnts.toolbar = wnd.attachToolbar({
+				icons_path: dhtmlx.image_path + 'dhxtoolbar_web/'
+			});
 			wnd.elmnts.toolbar.loadStruct('<toolbar><item id="btn_select" type="button" title="Установить адрес" text="&lt;b&gt;Выбрать&lt;/b&gt;" /></toolbar>',
 				function(){
 					this.attachEvent("onclick", toolbar_click);

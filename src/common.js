@@ -137,7 +137,21 @@ if(typeof window !== "undefined"){
 
 }
 
+/**
+ * Полифил для обсервера и нотифаера пока не подключаем
+ * Это простая заглушка, чтобы в старых браузерах не возникали исключения
+ */
+if(!Object.observe)
+	Object.observe = function(target,options) {};
 
+if(!Object.getNotifier)
+	Object.getNotifier = function(obj) {
+		return {
+			notify: function (noti) {
+
+			}
+		}
+	};
 
 /**
  * Синтаксический сахар для defineProperty

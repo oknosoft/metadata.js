@@ -28,12 +28,12 @@ $p.iface.oninit = function() {
 			{
 				id:     "a",
 				header: false,
-				width:  220
+				width:  300
 			},
 			{
 				id:     "b",
 				header: false,
-				height: 320
+				height: 340
 			},
 			{
 				id:     "c",
@@ -47,7 +47,6 @@ $p.iface.oninit = function() {
 			left:   2
 		}
 	});
-	layout.attachHeader("codex_header");
 
 	// табы
 	var tabs = $p.iface.tabs = layout.cells("b").attachTabbar({
@@ -56,31 +55,65 @@ $p.iface.oninit = function() {
 			{id: "js", text: "JavaScript"}
 		]
 	});
-	tabs.tabs("js").attachHTMLString("<textarea style='width:100%;height:100%;'></textarea>");
 
-	$p.iface.editor = CodeMirror.fromTextArea(tabs.tabs("js").cell.firstChild.firstChild, {
+	tabs.tabs("js").attachObject("code_mirror");
+	$p.iface.editor_bar = new dhtmlXToolbarObject({
+		parent: "code_toolbar",
+		icons_path: dhtmlx.image_path + 'dhxtoolbar_web/',
+		items:[
+			{id: "run", type: "button", img: "execute.png", text: "Выполнить"}
+		],
+		onClick:function(id){
+			if(id=="run")
+				$p.iface.result.execute($p.iface.editor.getValue());
+		}
+	});
+	$p.iface.editor = CodeMirror.fromTextArea(document.querySelector("#code_editor"), {
 		mode: "javascript",
 		lineNumbers: true,
-		lineWrapping: true
+		lineWrapping: true,
+		scrollbarStyle: "simple"
 	});
 
-	$p.iface.content = tabs.tabs("content");
+
+	tabs.tabs("content").attachHTMLString("<div style='height: 100%; width: 100%; overflow: auto'></div>")
+	$p.iface.content = tabs.tabs("content").cell.firstChild.firstChild;
 
 	// iframe с результатами
 	layout.cells("c").attachURL("examples/codex/result.html");
+	setTimeout(function () {
+		$p.iface.result = new (function Results(iframe) {
+			var t = {
+				doc: iframe.contentDocument,
+				window: iframe.contentWindow
+			};
+			this.execute = function (code) {
+				(function ($p, document, window, alasql) {
+					try{
+						eval(code);
+					}catch(e){
+						console.log(e);
+					}
+				})(t.window.$p, t.doc, t.window, t.window.alasql);
+			}
+		})(layout.cells("c").cell.lastChild.firstChild);
+	});
 
 	// дерево
 	var tree = layout.cells("a").attachTree();
 	tree.setImagePath(dhtmlx.image_path + 'dhxtree_web/');
 	tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
 	tree.attachEvent("onSelect", function(id){
-		$p.iface.content.attachHTMLString(marked(require('md'+id)));
+		$p.iface.content.innerHTML = marked(require('md'+id));
 		var js = require('js'+id);
 		if(js)
-			$p.iface.editor.setValue(js);
+			$p.iface.editor.setValue(js.substr(9));
+		else
+			$p.iface.editor.setValue("");
+		$p.iface.editor.clearHistory();
 	});
 	tree.loadJSONObject(require('tree'));
-	tree.selectItem("0110", true);
+	tree.selectItem("0100", true);
 
 };
 

@@ -31,12 +31,12 @@ $p.iface.oninit = function() {
 			{
 				id:     "a",
 				header: false,
-				width:  220
+				width:  300
 			},
 			{
 				id:     "b",
 				header: false,
-				height: 320
+				height: 340
 			},
 			{
 				id:     "c",
@@ -50,7 +50,6 @@ $p.iface.oninit = function() {
 			left:   2
 		}
 	});
-	layout.attachHeader("codex_header");
 
 	// табы
 	var tabs = $p.iface.tabs = layout.cells("b").attachTabbar({
@@ -59,31 +58,65 @@ $p.iface.oninit = function() {
 			{id: "js", text: "JavaScript"}
 		]
 	});
-	tabs.tabs("js").attachHTMLString("<textarea style='width:100%;height:100%;'></textarea>");
 
-	$p.iface.editor = CodeMirror.fromTextArea(tabs.tabs("js").cell.firstChild.firstChild, {
+	tabs.tabs("js").attachObject("code_mirror");
+	$p.iface.editor_bar = new dhtmlXToolbarObject({
+		parent: "code_toolbar",
+		icons_path: dhtmlx.image_path + 'dhxtoolbar_web/',
+		items:[
+			{id: "run", type: "button", img: "execute.png", text: "Выполнить"}
+		],
+		onClick:function(id){
+			if(id=="run")
+				$p.iface.result.execute($p.iface.editor.getValue());
+		}
+	});
+	$p.iface.editor = CodeMirror.fromTextArea(document.querySelector("#code_editor"), {
 		mode: "javascript",
 		lineNumbers: true,
-		lineWrapping: true
+		lineWrapping: true,
+		scrollbarStyle: "simple"
 	});
 
-	$p.iface.content = tabs.tabs("content");
+
+	tabs.tabs("content").attachHTMLString("<div style='height: 100%; width: 100%; overflow: auto'></div>")
+	$p.iface.content = tabs.tabs("content").cell.firstChild.firstChild;
 
 	// iframe с результатами
 	layout.cells("c").attachURL("examples/codex/result.html");
+	setTimeout(function () {
+		$p.iface.result = new (function Results(iframe) {
+			var t = {
+				doc: iframe.contentDocument,
+				window: iframe.contentWindow
+			};
+			this.execute = function (code) {
+				(function ($p, document, window, alasql) {
+					try{
+						eval(code);
+					}catch(e){
+						console.log(e);
+					}
+				})(t.window.$p, t.doc, t.window, t.window.alasql);
+			}
+		})(layout.cells("c").cell.lastChild.firstChild);
+	});
 
 	// дерево
 	var tree = layout.cells("a").attachTree();
 	tree.setImagePath(dhtmlx.image_path + 'dhxtree_web/');
 	tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
 	tree.attachEvent("onSelect", function(id){
-		$p.iface.content.attachHTMLString(marked(require('md'+id)));
+		$p.iface.content.innerHTML = marked(require('md'+id));
 		var js = require('js'+id);
 		if(js)
-			$p.iface.editor.setValue(js);
+			$p.iface.editor.setValue(js.substr(9));
+		else
+			$p.iface.editor.setValue("");
+		$p.iface.editor.clearHistory();
 	});
 	tree.loadJSONObject(require('tree'));
-	tree.selectItem("0110", true);
+	tree.selectItem("0100", true);
 
 };
 
@@ -107,9 +140,13 @@ $p.iface.before_route = function (event) {
 }),{
 "tree": {"id":0,
   "item":[
-    {"id":"0100","text":"Демо-приложения","child":"1",
+    {"id":"0100","text":"Демо-приложения","child":"1", "open":"1",
       "item":[
-        {"id":"0110", "text":"Элементы управления"},
+        {"id":"0110", "text":"Элементы управления","child":"1", "open":"1",
+          "item":[
+            {"id":"0111", "text":"Сообщения пользователю"}
+            ]
+        },
         {"id":"0120", "text":"Управление небольшой фирмой"},
         {"id":"0130", "text":"Бухгалтерия предприятия"},
         {"id":"0140", "text":"Безбумажное производство"}
@@ -120,12 +157,17 @@ $p.iface.before_route = function (event) {
       ]}
   ]
 },
-"md0100": "# Демо-приложения\r\nПодключение к типовым конфигурациям 1С\r\n===\r\nПримеры реализации javascript-клиентов к типовым конфигурациям 1С",
-"md0110": "{\r\n  \"0100\": {\r\n    content: \"\"\r\n  }\r\n}",
+"urls": {
+  "0110": "result.html"
+},
+"md0100": "# Демо-приложения\r\nПри навигации по дереву, закладка `Описание` отображает текст раздела, а закладка `JavaScript` - контекстные примеры кода.<br />Код можно редактировать по месту и выполнять.\r\n\r\n## Элементы управления\r\nПримеры подключения полей ввода, списков, окон и диалогов\r\n\r\n## Подключение к типовым конфигурациям 1С\r\nПримеры реализации javascript-клиентов к типовым конфигурациям 1С",
+"md0110": "## Элементы управления\r\nПри навигации по дереву, закладка `Описание` отображает текст раздела, а закладка `JavaScript` - контекстные примеры кода.<br />Код можно редактировать по месту и выполнять.\r\n",
+"md0111": "## Сообщения пользователю\r\nПример содержит два варианта вывода сообщений: _модальный диалог_ и _всплывающее сообщение_.\r\n\r\nЕсли заменить `type` сообщения `alert-info` на один из доступных вариантов - вид диалога изменится, а для типов `confirm`, будут показаны кнопки `Ok` и `Отмена`. Текст кнопок можно задать в том же объекте свойств сообщения. Например, так: \r\n```\r\n{\r\n\ttitle: \"Справка\",\r\n\ttype: \"confirm-error\", \r\n\ttext: \"Нет справки\",\r\n\tcancel: \"До свидания\"\r\n}\r\n```",
 "md0120": "{\r\n  \"0100\": {\r\n    content: \"\"\r\n  }\r\n}",
 "md0130": "{\r\n  \"0100\": {\r\n    content: \"\"\r\n  }\r\n}",
 "md0140": "{\r\n  \"0100\": {\r\n    content: \"\"\r\n  }\r\n}",
-"md0200": "{\r\n  \"0100\": {\r\n    content: \"\"\r\n  }\r\n}",
+"md0200": "# Объектная модель",
 "md0210": "{\r\n  \"0100\": {\r\n    content: \"\"\r\n  }\r\n}",
-"js0100": "<!---->\r\nfunction msg(){\r\n\t$p.msg.show_msg({\r\n\t\ttitle: \"Справка\",\r\n\t\ttype: \"alert-info\",\r\n\t\ttext: $p.msg.not_implemented\r\n\t});\r\n}"
+"js0100": "<!---->\r\nfunction msg(){\r\n\t$p.msg.show_msg({\r\n\t\ttitle: \"Справка\",\r\n\t\ttype: \"alert-info\",\r\n\t\ttext: $p.msg.not_implemented\r\n\t});\r\n}",
+"js0111": "<!---->\r\n// модальное окно сообщения\r\n$p.msg.show_msg({\r\n\ttitle: \"Справка\",\r\n\ttype: \"alert-warning\", // варианты alert, confirm, modalbox, alert-info, confirm-error\r\n\ttext: \"Нет справки\"\r\n});\r\n\r\n// всплывающие сообщения показываем с задержкой в секунду\r\nsetTimeout(function(){\r\n\t$p.msg.show_msg(\"Это сообщение в верхнем правом\");\r\n\t$p.msg.show_msg({type: \"error\", text: \"Сообщение на красном фоне\"});\r\n}, 1000);"
 },{},{});

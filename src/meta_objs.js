@@ -150,6 +150,15 @@ DataObj.prototype._getter = function (f) {
 
 DataObj.prototype._setter = function (f, v) {
 
+	if(this._obj[f] == v)
+		return;
+
+	Object.getNotifier(this).notify({
+		type: 'update',
+		name: f,
+		oldValue: this._obj[f]
+	});
+
 	var mf = this._metadata.fields[f].type,
 		mgr;
 
@@ -187,7 +196,6 @@ DataObj.prototype._setter = function (f, v) {
 			if(typeof v != "object")
 				this._obj[f] = v;
 		}
-
 
 	}else if(mf.date_part)
 		this._obj[f] = $p.fix_date(v, true);

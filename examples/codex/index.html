@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="lib/dhtmlx.css">
     <link rel="stylesheet" type="text/css" href="lib/metadata.css">
     <link rel="stylesheet" type="text/css" href="lib/codemirror/codemirror.css">
+    <link rel="stylesheet" type="text/css" href="lib/codemirror/simplescrollbars.css">
 
     <!--библиотеки dhtmlx, alaSQL и metadata.js-->
     <script src="lib/dhtmlx.min.js"></script>
@@ -18,6 +19,7 @@
 
     <script src="lib/codemirror/codemirror.js"></script>
     <script src="lib/codemirror/javascript.js"></script>
+    <script src="lib/codemirror/simplescrollbars.js"></script>
 
     <!--скрипт codex-->
     <script src="examples/codex/js/main.js"></script>
@@ -25,8 +27,12 @@
 </head>
 <body>
 
+<div id="code_mirror" style="background-color: #e8e8e8; width:100%; height:100%; display: none;">
+    <div id='code_toolbar'></div>
+    <textarea id='code_editor'></textarea>
+</div>
 
-<div id="codex_header" style="background-color: #e8e8e8">
+<div style="color: #e8e8e8; display: block; position: absolute; top: 4px; right: 40px; z-index: 1000">
     <div style="padding: 4px">
         <b>Metadata.js</b> - Примеры кода
     </div>
