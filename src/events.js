@@ -891,6 +891,8 @@ $p.eve.log_in = function(onstep){
 			_md.printing_plates(mdd.printing_plates);
 
 			// и запоминаем в ajax признак полноправности пользователя
+			if($p.ajax.hasOwnProperty("root"))
+				delete $p.ajax.root;
 			$p.ajax._define("root", {
 				value: !!mdd.root,
 				writable: false,

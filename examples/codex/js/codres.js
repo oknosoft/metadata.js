@@ -10,6 +10,7 @@ $p.settings = function (prm, modifiers) {
 	prm.create_tables = true;
 	prm.create_tables_sql = require('create_tables');
 	prm.allow_post_message = "*";
+	prm.russian_names = true;
 };
 
 $p.iface.oninit = function() {
@@ -22,6 +23,7 @@ $p.iface.oninit = function() {
 
 	// говорим, что мы уже авторизованы на "сервере"
 	$p.ajax.authorized = true;
+	$p.ajax.root = true;
 
 	// инициализируем метаданные
 	new $p.Meta(require('meta'));

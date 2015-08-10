@@ -40,6 +40,8 @@ if(typeof window !== "undefined" && "dhx4" in window){
  */
 $p.msg.russian_names = function(){
 	if($p.job_prm.russian_names){
+
+		// глобальный контекст
 		window._define({
 			"Метаданные": {
 				get: function(){return _md},
@@ -72,8 +74,32 @@ $p.msg.russian_names = function(){
 			"Отчеты": {
 				get: function(){return _rep},
 				enumerable: false
+			},
+			"ОкноПриложения": {
+				get: function(){return $p.iface.docs},
+				enumerable: false
+			},
+			"Сообщить": {
+				get: function(){return $p.msg.show_msg},
+				enumerable: false
 			}
+
 		});
+
+		// свойства и методы менеджеров
+		DataManager.prototype._define({
+				"ФормаВыбора": {
+					get: function(){return this.form_selection},
+					enumerable: false
+				},
+				"ФормаОбъекта": {
+					get: function(){return this.form_obj},
+					enumerable: false
+				}
+
+			}
+		);
+
 	}
 };
 

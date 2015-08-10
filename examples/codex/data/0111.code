@@ -1,13 +1,12 @@
 <!---->
 // модальное окно сообщения
-$p.msg.show_msg({
+Сообщить({
 	title: "Справка",
-	type: "alert-warning", // варианты alert, confirm, modalbox, alert-info, confirm-error
+	type: "alert-warning",	// варианты alert, confirm, modalbox, alert-info, confirm-error
 	text: "Нет справки"
 });
-
 // всплывающие сообщения показываем с задержкой в секунду
 setTimeout(function(){
-	$p.msg.show_msg("Это сообщение в верхнем правом");
-	$p.msg.show_msg({type: "error", text: "Сообщение на красном фоне"});
+	Сообщить("Это сообщение в верхнем правом");
+	Сообщить({type: "error", text: "Сообщение на красном фоне"});
 }, 1000);

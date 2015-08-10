@@ -42,8 +42,10 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 */
 	function frm_create(){
 
-		// создаём и растраиваем форму
+		// создаём и настраиваем форму
 		if(pwnd instanceof dhtmlXLayoutCell) {
+			if(typeof pwnd.close == "function")
+				pwnd.close();
 			wnd = pwnd;
 			wnd.showHeader();
 			wnd.close = function () {
