@@ -383,8 +383,8 @@
 							"Комментарий"
 						],
 						"cols": [
-							{"id": "date", "width": "120", "type": "ro", "align": "left", "sort": "server", "caption": "Дата"},
-							{"id": "number_doc", "width": "120", "type": "ro", "align": "left", "sort": "server", "caption": "Номер"},
+							{"id": "date", "width": "130", "type": "ro", "align": "left", "sort": "server", "caption": "Дата"},
+							{"id": "number_doc", "width": "130", "type": "ro", "align": "left", "sort": "server", "caption": "Номер"},
 							{"id": "Контрагент", "width": "170", "type": "ro", "align": "left", "sort": "server", "caption": "Контрагент"},
 							{"id": "СуммаДокумента", "width": "120", "type": "ron", "align": "right", "sort": "server", "caption": "Сумма"},
 							{"id": "СписокНоменклатуры", "width": "170", "type": "ro", "align": "left", "sort": "server", "caption": "Номенклатура"},
