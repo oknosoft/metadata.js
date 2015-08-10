@@ -1,19 +1,9 @@
+<!---->
 /**
- * Основное окно интерфейса unf demo
- * <br />&copy; http://www.oknosoft.ru 2009-2015
- * Created 17.06.2015
- * @module  main
+ * javascript этого примера содержит две функции `settings` и `oninit`
+ * Это необходимое и достаточное количество кода для построения с помощью _metadata.js_
+ * автоматического клиентского интерфейса к типовой конфигурации
  */
-
-/**
- * Глобальная переменная демки УНФ (не фреймворка _metadata.js_, а конкретного прикладного решения)<br />
- * в её свойстве _modifiers_ располагаем модификаторы объектов, подписки на события и прочую бизнес-логику,
- * которая должна обрабатываться на клиенте
- * @type {UNF}
- */
-var unf = new function UNF() {
-	this.modifiers = [];
-};
 
 /**
  * Процедура устанавливает параметры работы программы, специфичные для текущей сборки
@@ -54,7 +44,6 @@ $p.settings = function (prm, modifiers) {
 		modifiers.push(func);
 	});
 };
-
 
 /**
  * Обработчик события при начале работы программы
@@ -119,23 +108,5 @@ $p.iface.oninit = function() {
 				}
 			);
 		}
-
 	);
 };
-
-/**
- * Обработчик события перед маршрутизацией
- * @param event
- * @return {boolean}
- */
-$p.iface.before_route = function (event) {
-	var route_prm = $p.job_prm.parse_url();
-	if(route_prm.view && route_prm.view!="oper"){
-		setTimeout(function () {
-			$p.iface.set_hash("", "", "", "oper");
-		}, 0);
-		return false;
-	}
-};
-
-

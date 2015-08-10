@@ -8,7 +8,9 @@
 
 
 /**
- * Абстрактный объект ссылочных данных - документов и справочников
+ * ### Абстрактный объект данных
+ * Прародитель как ссылочных объектов (документов и справочников), так и регистров с суррогатным ключом и несохраняемых обработок
+ *
  * @class DataObj
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
@@ -72,7 +74,7 @@ function DataObj(attr, manager) {
 
 
 	/**
-	 * Фактическое хранилище данных объекта
+	 * ### Фактическое хранилище данных объекта
 	 * Оно же, запись в таблице объекта локальной базы данных
 	 * @property _obj
 	 * @type Object
@@ -379,7 +381,7 @@ TabularSectionRow.prototype._setter = DataObj.prototype._setter;
 
 
 /**
- * Абстрактный элемент справочника
+ * ### Абстрактный класс СправочникОбъект
  * @class CatObj
  * @extends DataObj
  * @constructor
@@ -448,7 +450,7 @@ CatObj.prototype._define('name', {
 
 
 /**
- * Абстрактный ДокументОбъект
+ * ### Абстрактный класс ДокументОбъект
  * @class DocObj
  * @extends DataObj
  * @constructor
@@ -529,7 +531,7 @@ DocObj.prototype._define('posted', {
 
 
 /**
- * Абстрактный ОбработкаОбъект
+ * ### Абстрактный класс ОбработкаОбъект
  * @class DataProcessorObj
  * @extends DataObj
  * @constructor
@@ -567,7 +569,9 @@ function DataProcessorObj(attr, manager) {
 DataProcessorObj._extend(DataObj);
 
 /**
- * Абстрактный элемент перечисления
+ * ### Абстрактный класс значения перечисления
+ * Имеет fake-ссылку и прочие атрибуты объекта данных, но фактически - это просто значение перечисления
+ *
  * @class EnumObj
  * @extends DataObj
  * @constructor
@@ -647,7 +651,9 @@ EnumObj.prototype.empty = function(){
 
 
 /**
- * Запись регистра (накопления и сведений)
+ * ### Запись (строка) регистра
+ * Используется во всех типах регистров (сведений, накопления, бухгалтерии)
+ *
  * @class RegisterRow
  * @extends DataObj
  * @constructor
@@ -665,9 +671,9 @@ function RegisterRow(attr, manager){
 RegisterRow._extend(DataObj);
 
 /**
- * Метаданные текущего объекта
+ * Метаданные строки регистра
  * @property _metadata
- * @for DataObj
+ * @for RegisterRow
  * @type Object
  */
 RegisterRow.prototype._define('_metadata', {

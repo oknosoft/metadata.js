@@ -62,7 +62,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			wnd.attachEvent("onClose", frm_close);
 		}
 
-		$p.bind_help(wnd);
+		$p.iface.bind_help(wnd);
 		wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (md["list_presentation"] || md.synonym) + '"');
 
 		dhtmlxEvent(document.body, "keydown", body_keydown);

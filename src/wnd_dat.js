@@ -135,7 +135,7 @@ $p.iface.dat_blank = function(_dxw, attr) {
 	wnd_dat.setIconCss('without_icon');
 	wnd_dat.cell.parentNode.children[1].classList.add('dat_gui');
 
-	$p.bind_help(wnd_dat, attr.help_path);
+	$p.iface.bind_help(wnd_dat, attr.help_path);
 
 	wnd_dat.elmnts = {};
 	wnd_dat._define("modified", {
@@ -405,7 +405,12 @@ $p.iface.layout_2u = function (tree_attr) {
 
 };
 
-
+/**
+ * Рисует стандартную раскладку (XLayout) с единственной областью во весь экран.
+ * В созданной области, как правило, размещают форму списка основного документа
+ * @method layout_1c
+ * @for InterfaceObjs
+ */
 $p.iface.layout_1c = function () {
 	var iface = $p.iface;
 
@@ -789,7 +794,12 @@ $p.iface.swith_view = function(name){
 
 
 /**
+ * ### Визуальный компонент OTooolBar
  * Панель инструментов рисовалки и альтернативная панель инструментов прочих форм
+ * - Гибкое управление размером, положением и выравниванием как самой панели, так и отдельных кнопок
+ * - Кнопки и группы кнопок, иконы и текст
+ * - Всплывающие подсказки с произвольным html
+ *
  * @class OTooolBar
  * @param attr {Object} - параметры создаваемой панели - родитель, положение, размер и ориентация
  * @constructor
@@ -884,7 +894,7 @@ function OTooolBar(attr){
 				if(!this.subdiv){
 					this.subdiv = document.createElement('div');
 					this.subdiv.className = 'wb-tools';
-					offset = $p.get_offset(bdiv);
+					offset = $p.iface.get_offset(bdiv);
 					this.subdiv.style.left = offset.left + 'px';
 					this.subdiv.style.top = (offset.top + div.offsetHeight) + 'px';
 					this.subdiv.style.height = '198px';

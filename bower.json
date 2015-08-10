@@ -1,7 +1,7 @@
 {
   "name": "metadata",
   "description": "metadata.js - Web client for 1C and other rest servers - metadata & data engine",
-  "version": "0.9.194",
+  "version": "0.9.195",
   "license": "Oknosoft",
   "keywords": [
     "metadata",
@@ -32,7 +32,7 @@
     "node"
   ],
   "dependencies": {
-    "alasql": "~0.1.9"
+    "alasql": "~0.2.0"
   },
   "devDependencies": {
     "lmd": "~1.13.1"

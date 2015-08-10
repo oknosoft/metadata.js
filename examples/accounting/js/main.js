@@ -22,47 +22,34 @@ var _accounting = new function Accounting() {
  */
 $p.settings = function (prm, modifiers) {
 
-	/**
-	 * для транспорта используем rest, а не сервис http
-	 */
+	// для транспорта используем rest, а не сервис http
 	prm.rest = true;
 
-	/**
-	 * используем русскоязычные синонимы классов и методов
-	 */
-	prm.russian_names = true;
-
-	/**
-	 * расположение rest-сервиса unf
-	 */
+	// расположение rest-сервиса accounting
 	prm.rest_path = "/a/ea/%1/odata/standard.odata/";
 
-	/**
-	 * по умолчанию, обращаемся к зоне 1392
-	 */
+	// по умолчанию, обращаемся к зоне 1392
 	prm.zone = 1392;
 
-	/**
-	 * расположение файлов данных
-	 */
+	// расположение файлов данных
 	prm.data_url = "examples/accounting/data/";
 
-	/**
-	 * расположение файла инициализации базы sql
-	 */
+	// расположение файла инициализации базы sql
 	prm.create_tables = "examples/accounting/data/create_tables.sql";
 
-
-	/**
-	 * расположение страницы настроек
-	 */
+	// расположение страницы настроек
 	prm.settings_url = "examples/accounting/settings.html";
 
+	// разрешаем сообщения от других окон
+	prm.allow_post_message = "*";
 
+	// используем русскоязычные синонимы классов и методов
+	prm.russian_names = true;
 
-	/**
-	 * подключаем модификаторы
-	 */
+	// разрешаем покидать страницу без лишних вопросов
+	$p.eve.redirect = true;
+
+	// подключаем модификаторы
 	_accounting.modifiers.forEach(function (func) {
 		modifiers.push(func);
 	});

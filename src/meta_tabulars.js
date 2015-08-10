@@ -8,9 +8,10 @@
 
 
 /**
- * Абстрактный объект табличной части
- * Физически, данные хранятся в DataObj`екте, а точнее - в поле типа массив и именем табчасти объекта _obj
- * Класс TabularSection предоставляет методы для манипуляции этими данными
+ * ### Абстрактный объект табличной части
+ * - Физически, данные хранятся в {{#crossLink "DataObj"}}{{/crossLink}}, а точнее - в поле типа массив и именем табчасти объекта `_obj`
+ * - Класс предоставляет методы для доступа и манипуляции данными табчасти
+ *
  * @class TabularSection
  * @constructor
  * @param name {String} - имя табчасти
@@ -43,7 +44,7 @@ function TabularSection(name, owner){
 	});
 
 	/**
-	 * Фактическое хранилище данных объекта
+	 * ### Фактическое хранилище данных объекта
 	 * Оно же, запись в таблице объекта локальной базы данных
 	 * @property _obj
 	 * @type Object
@@ -260,7 +261,7 @@ TabularSection.prototype.toJSON = function () {
 
 
 /**
- * Aбстрактная строка табличной части
+ * ### Aбстрактная строка табличной части
  * @class TabularSectionRow
  * @constructor
  * @param owner {TabularSection} - табличная часть, которой принадлежит строка
@@ -280,8 +281,8 @@ function TabularSectionRow(owner){
 	});
 
 	/**
-	 * Фактическое хранилище данных объекта
-	 * отображается в поле типа json записи в таблице объекта локальной базы данных
+	 * ### Фактическое хранилище данных объекта
+	 * Отображается в поле типа json записи в таблице объекта локальной базы данных
 	 * @property _obj
 	 * @type Object
 	 */
@@ -295,7 +296,7 @@ function TabularSectionRow(owner){
 
 /**
  * Метаданые строки табличной части
- * @property row
+ * @property _metadata
  * @for TabularSectionRow
  * @type Number
  */
@@ -309,12 +310,19 @@ TabularSectionRow.prototype._define('_metadata', {
  * @property row
  * @for TabularSectionRow
  * @type Number
+ * @final
  */
 TabularSectionRow.prototype._define("row", {
 	get : function(){ return this._obj.row || 0},
 	enumerable : true
 });
 
+/**
+ * Копирует строку табличной части
+ * @method _clone
+ * @for TabularSectionRow
+ * @type Number
+ */
 TabularSectionRow.prototype._define("_clone", {
 	value : function(){
 		var row = new this._owner._owner._manager._ts_сonstructors[this._owner._name](this._owner)._mixin(this._obj);

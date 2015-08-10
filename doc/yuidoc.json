@@ -1,10 +1,10 @@
 {
   "name": "metadata.js API",
   "description": "metadata.js API",
-  "version": "0.9.192",
+  "version": "0.9.195",
   "url": "http://www.oknosoft.ru/",
   "options": {
-    "outdir": "doc",
+    "outdir": "doc/out",
     "themedir": "node_modules/yuidoc-bootstrap-theme",
     "helpers": ["node_modules/yuidoc-bootstrap-theme/helpers/helpers.js"],
     "tabtospace": 2

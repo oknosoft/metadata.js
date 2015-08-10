@@ -103,10 +103,20 @@ if(typeof window !== "undefined"){
 				/**
 				 * Данные геолокации
 				 * @property ipinfo
+				 * @for MetaEngine
 				 * @type IPInfo
 				 * @static
 				 */
-				$p.ipinfo = new function IPInfo(){
+				$p.ipinfo = new IPInfo();
+
+				/**
+				 * ### Данные геолокации
+				 * Объект предоставляет доступ к функциям _геокодирования браузера_, а так же - геокодерам _Яндекс_ и _Гугл_
+				 *
+				 * @class IPInfo
+				 * @static
+				 */
+				function IPInfo(){
 
 					var _yageocoder, _ggeocoder, _addr = "";
 
@@ -238,6 +248,40 @@ if(typeof window !== "undefined"){
 					});
 				else
 					location_callback();
+			}
+
+			/**
+			 * Если указано, навешиваем слушателя на postMessage
+			 */
+			if($p.job_prm.allow_post_message){
+				/**
+				 * Обработчик события postMessage сторонних окон или родительского окна (если iframe)
+				 * @event message
+				 * @for AppEvents
+				 */
+				w.addEventListener("message", function(event) {
+
+					if($p.job_prm.allow_post_message == "*" || $p.job_prm.allow_post_message == event.origin){
+
+						function navigate(url){
+							if(url && (location.origin + location.pathname).indexOf(url)==-1)
+								location.replace(url);
+						}
+
+						try{
+							var res = eval(event.data);
+							if(res && event.source){
+								if(typeof res == "object")
+									res = JSON.stringify(res);
+								else if(typeof res == "function")
+									return;
+								event.source.postMessage(res, "*");
+							}
+						}catch(e){
+							console.log(e);
+						}
+					}
+				});
 			}
 
 

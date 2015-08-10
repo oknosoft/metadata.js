@@ -1,13 +1,16 @@
 {
   "name": "metadata-js",
   "description": "metadata.js - Web client for 1C and other rest servers - metadata & data engine",
-  "version": "0.9.194",
+  "version": "0.9.195",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "directories": {
     "example": "examples"
   },
   "dependencies": {
-    "alasql": "~0.1.9"
+    "alasql": "~0.2.0",
+    "pg": "~4.4.0",
+    "ws": "~0.7.0",
+    "node-localstorage": "~0.5.0"
   },
   "devDependencies": {
     "lmd": "~1.13.1"

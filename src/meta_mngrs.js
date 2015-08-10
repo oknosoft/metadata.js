@@ -9,7 +9,10 @@
 
 
 /**
- * Абстрактный менеджер данных: и ссылочных и с суррогратным ключом и несохраняемых обработок
+ * ### Абстрактный менеджер данных
+ * Не используется для создания прикладных объектов, но является базовым классом,
+ * от которого унаследованы менеджеры как ссылочных данных, так и объектов с суррогратным ключом и несохраняемых обработок
+ *
  * @class DataManager
  * @constructor
  * @param class_name {string} - имя типа менеджера объекта. например, "doc.calc_order"
@@ -528,7 +531,9 @@ DataManager.prototype.printing_plates = function(){
 
 
 /**
- * Aбстрактный менеджер ссылочных данных - документов и справочников
+ * ### Aбстрактный менеджер ссылочных данных
+ * От него унаследованы менеджеры документов, справочников, планов видов характеристик и планов счетов
+ *
  * @class RefDataManager
  * @extends DataManager
  * @constructor
@@ -1141,7 +1146,10 @@ RefDataManager.prototype.caption_flds = function(attr){
 
 
 /**
- * Менеджер обработок
+ * ### Абстрактный менеджер обработок
+ * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
+ * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "DataProcessors"}}{{/crossLink}}
+ *
  * @class DataProcessorsManager
  * @extends DataManager
  * @param class_name {string} - имя типа менеджера объекта
@@ -1166,7 +1174,10 @@ DataProcessorsManager._extend(DataManager);
 
 
 /**
- * Абстрактный менеджер перечисления
+ * ### Абстрактный менеджер перечисления
+ * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
+ * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "Enumerations"}}{{/crossLink}}
+ *
  * @class EnumManager
  * @extends RefDataManager
  * @param a {array} - массив значений
@@ -1264,8 +1275,9 @@ EnumManager.prototype.get_option_list = function(val){
 
 
 /**
- * Абстрактный менеджер регистра (накопления и сведений)
- * @class InfoRegManager
+ * ### Абстрактный менеджер регистра (накопления, сведений и бухгалтерии)
+ *
+ * @class RegisterManager
  * @extends DataManager
  * @constructor
  * @param class_name {string} - имя типа менеджера объекта. например, "ireg.prices"
@@ -1501,7 +1513,10 @@ RegisterManager.prototype.get_ref = function(attr){
 
 
 /**
- * Абстрактный менеджер регистра сведений
+ * ### Абстрактный менеджер регистра сведений
+ * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
+ * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "InfoRegs"}}{{/crossLink}}
+ *
  * @class InfoRegManager
  * @extends RegisterManager
  * @constructor
@@ -1537,7 +1552,10 @@ InfoRegManager.prototype.slice_last = function(filter){
 
 
 /**
- * Абстрактный менеджер регистра накопления
+ * ### Абстрактный менеджер регистра накопления
+ * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
+ * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "AccumRegs"}}{{/crossLink}}
+ *
  * @class AccumRegManager
  * @extends RegisterManager
  * @constructor
@@ -1553,7 +1571,10 @@ AccumRegManager._extend(RegisterManager);
 
 
 /**
- * Абстрактный менеджер справочника
+ * ### Абстрактный менеджер справочника
+ * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
+ * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "Catalogs"}}{{/crossLink}}
+ *
  * @class CatManager
  * @extends RefDataManager
  * @constructor
@@ -1629,7 +1650,10 @@ CatManager.prototype.by_id = function(id){
 
 
 /**
- * Абстрактный менеджер плана видов характеристик
+ * ### Абстрактный менеджер плана видов характеристик
+ * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
+ * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "ChartsOfCharacteristics"}}{{/crossLink}}
+ *
  * @class ChartOfCharacteristicManager
  * @extends CatManager
  * @constructor
@@ -1646,7 +1670,10 @@ ChartOfCharacteristicManager._extend(CatManager);
 
 
 /**
- * Абстрактный менеджер плана видов характеристик
+ * ### Абстрактный менеджер плана счетов
+ * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
+ * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "ChartsOfAccounts"}}{{/crossLink}}
+ *
  * @class ChartOfAccountManager
  * @extends CatManager
  * @constructor
@@ -1663,7 +1690,10 @@ ChartOfAccountManager._extend(CatManager);
 
 
 /**
- * Абстрактный менеджер документов
+ * ### Абстрактный менеджер документов
+ * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
+ * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "Documents"}}{{/crossLink}}
+ *
  * @class DocManager
  * @extends RefDataManager
  * @constructor

@@ -33,6 +33,11 @@ if(typeof window !== "undefined" && "dhx4" in window){
 	};
 }
 
+/**
+ * Добавляет коллекциям менеджеров и метаданным русские синонимы, как свойства объекта _window_
+ * @method russian_names
+ * @for Messages
+ */
 $p.msg.russian_names = function(){
 	if($p.job_prm.russian_names){
 		window._define({

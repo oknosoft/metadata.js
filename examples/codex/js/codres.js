@@ -9,6 +9,7 @@ $p.eve.redirect = true;
 $p.settings = function (prm, modifiers) {
 	prm.create_tables = true;
 	prm.create_tables_sql = require('create_tables');
+	prm.allow_post_message = "*";
 };
 
 $p.iface.oninit = function() {

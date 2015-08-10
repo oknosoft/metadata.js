@@ -1,2 +1,3 @@
-rem yuidoc -c yuidoc.json ../src --server
-yuidoc -c yuidoc.json src
+rem выполнять в корне репозитория
+rem yuidoc -c doc/yuidoc.json src --server
+yuidoc -c doc/yuidoc.json src

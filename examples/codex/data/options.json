@@ -1,6 +1,12 @@
 {
   "0110": "examples/codex/result.html",
   "0111": "examples/codex/result.html",
-  "0120": "examples/unf/index.html",
-  "0130": "examples/accounting/index.html"
+  "0120": {
+    "url": "examples/unf/",
+    "exec_disabled": true
+  },
+  "0130": {
+    "url": "examples/accounting/",
+    "exec_disabled": true
+  }
 }

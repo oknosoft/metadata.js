@@ -100,30 +100,28 @@ $p.iface.oninit = function() {
 	tabs.tabs("content").attachHTMLString("<div style='height: 100%; width: 100%; overflow: auto'></div>")
 	$p.iface.content = tabs.tabs("content").cell.firstChild.firstChild;
 
+	tabs.attachEvent("onSelect", function(id, lastId){
+		$p.iface.set_hash(tree.getSelectedItemId(), "", "", id);
+		return true;
+	});
+
 	// iframe с результатами
-	layout.cells("c").attachURL("examples/codex/result.html");
+	layout.cells("c").attachURL(opt_url());
 	setTimeout(function () {
-		$p.iface.result = new (function Results(iframe) {
+		$p.iface.result = new function Results() {
+
+			//layout.cells("c").cell.lastChild.style.padding = "0px";
 
 			this.execute = function (code) {
-				(function ($p, document, window, alasql) {
-					try{
-						eval(code);
-					}catch(e){
-						console.log(e);
-					}
-				})(iframe.contentWindow.$p, iframe.contentDocument, iframe.contentWindow, iframe.contentWindow.alasql);
+				frames[0].postMessage(code, "*");
 			};
 
+			this.navigate = function (url) {
+				$p.iface.result.execute('navigate("' +url+ '")');
+			};
 
-			this._define("location", {
-				get: function () {
-					return iframe.contentWindow.location;
-				}
-			});
-
-		})(layout.cells("c").cell.lastChild.firstChild);
-	});
+		};
+	}, 100);
 
 	// дерево
 	var tree = $p.iface.tree = layout.cells("a").attachTree();
@@ -131,7 +129,9 @@ $p.iface.oninit = function() {
 	tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
 	tree.attachEvent("onSelect", tree_select);
 	tree.loadJSONObject(require('tree'));
-	tree.selectItem("0100", true);
+	setTimeout(function () {
+		tree.selectItem("0100", true);
+	}, 300);
 
 };
 
@@ -149,15 +149,31 @@ function tree_select(id){
 	$p.iface.editor.clearHistory();
 
 	// при необходимости, обновляем url страницы результата
-	var opt = require('options')[id], url;
-	if(typeof opt == "string")
-		url = opt;
-	else if(typeof opt == "object")
-		url = opt.url;
+	var opt = require('options')[id];
 
-	if(url && ($p.iface.result.location.origin + $p.iface.result.location.pathname).indexOf(url)==-1)
-		$p.iface.result.location.replace(url);
+	$p.iface.result.navigate(opt_url(opt));
 
+	$p.iface.set_hash(id, "", "", $p.iface.tabs.getActiveTab());
+
+}
+
+function opt_url(url){
+	if(typeof url == "undefined")
+		url =  "examples/codex/result.html";
+	else if(typeof url == "string")
+		url = url;
+	else if(typeof url == "object")
+		url = url.url;
+
+	if(url.indexOf("oknosoft.ru") == -1 && location.protocol.indexOf("file") != -1){
+		if(url.indexOf("/unf/"))
+			url = "http://www.oknosoft.ru/assets/examples/unf/";
+		else if(url.indexOf("/accounting/") != -1)
+			url = "http://www.oknosoft.ru/assets/examples/accounting/";
+		else
+			url = (location.origin + location.pathname).replace("index.html", "") + url;
+	}
+	return url;
 }
 
 /**
@@ -168,10 +184,13 @@ function tree_select(id){
 $p.iface.before_route = function (event) {
 	var route_prm = $p.job_prm.parse_url();
 	if(route_prm.view && (route_prm.view=="js" || route_prm.view=="content")){
-		$p.iface.tabs.tabs(route_prm.view).setActive();
+		if($p.iface.tabs.getActiveTab() != route_prm.view)
+			$p.iface.tabs.tabs(route_prm.view).setActive();
 	}
 	if(route_prm.obj && route_prm.obj.indexOf("0")==0){
-		try{ $p.iface.tree.selectItem(route_prm.obj, true); }
+		try{
+			if($p.iface.tree.getSelectedItemId() != route_prm.obj)
+				$p.iface.tree.selectItem(route_prm.obj, true); }
 		catch(e){ }
 	}
 

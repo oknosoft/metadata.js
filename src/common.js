@@ -7,22 +7,22 @@
  */
 
 /**
- * Класс глобального объекта фреймворка __Лёгкого клиента__
+ * ### Глобальный объект
+ * Фреймворк [metadata.js](https://github.com/oknosoft/metadata.js), экспортирует единственную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
+ *
  * @class MetaEngine
  * @static
  */
 function MetaEngine() {
-	this.version = "0.9.194";
+	this.version = "0.9.195";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
 }
 
 /**
- * Для совместимости со старыми модулями, публикуем $p глобально<br />
+ * Для совместимости со старыми модулями, публикуем $p глобально
  * Кроме этой переменной, metadata.js ничего не экспортирует
- * @property $p
- * @for window
  */
 var $p = new MetaEngine();
 
@@ -154,6 +154,13 @@ if(!Object.getNotifier)
 	};
 
 /**
+ * Фреймворк [metadata.js](https://github.com/oknosoft/metadata.js), добавляет в прототип _Object_<br />
+ * несколько методов - синтаксический сахар для _наследования_ и работы со _свойствами_
+ * @class Object
+ * @constructor
+ */
+
+/**
  * Синтаксический сахар для defineProperty
  * @method _define
  * @for Object
@@ -229,7 +236,7 @@ Object.prototype._define("_mixin", {
  * @for Object
  * @param src {Object|Array} - исходный объект
  * @param [exclude_propertyes] {Object} - объект, в ключах которого имена свойств, которые не надо копировать
- * @returns {*}
+ * @returns {Object|Array} - копия объекта
  */
 Object.prototype._define("_clone", {
 	value: function() {
@@ -377,6 +384,7 @@ $p.dateFormat.masks = {
 
 /**
  * Наша promise-реализация ajax
+ *
  * @property ajax
  * @for MetaEngine
  * @type Ajax
@@ -385,7 +393,12 @@ $p.dateFormat.masks = {
 $p.ajax = new (
 
 	/**
-	 * Наша promise-реализация ajax
+	 * ### Наша promise-реализация ajax
+	 * - Поддерживает basic http авторизацию
+	 * - Позволяет установить перед отправкой запроса специфические заголовки
+	 * - Поддерживает получение и отправку данных с типом `blob`
+	 * - Позволяет отправлять запросы типа `get`, `post`, `put`, `patch`, `delete`
+	 *
 	 * @class Ajax
 	 * @static
 	 */
@@ -941,109 +954,20 @@ $p.cancel_bubble = function(e) {
 };
 
 /**
- * Масштабирует svg
- * @param svg_current {String} - исходная строка svg
- * @param size {Number} - требуемый размер картинки
- * @param padding {Number} - отступ от границы viewBox
- * @return {String}
- */
-$p.scale_svg = function(svg_current, size, padding){
-	var j, k, svg_head, svg_body, head_ind, vb_ind, svg_head_str, vb_str, viewBox, svg_j = {};
-
-	head_ind = svg_current.indexOf(">");
-	svg_head_str = svg_current.substring(5, head_ind);
-	svg_head = svg_head_str.split(' ');
-	svg_body = svg_current.substr(head_ind+1);
-	svg_body = svg_body.substr(0, svg_body.length - 6);
-
-	// получаем w, h и формируем viewBox="0 0 400 100"
-	for(j in svg_head){
-		svg_current = svg_head[j].split("=");
-		if(svg_current[0] == "width" || svg_current[0] == "height"){
-			svg_current[1] = Number(svg_current[1].replace(/"/g, ""));
-			svg_j[svg_current[0]] = svg_current[1];
-		}
-	}
-
-	if((vb_ind = svg_head_str.indexOf("viewBox="))!=-1){
-		vb_str = svg_head_str.substring(vb_ind+9);
-		viewBox = 'viewBox="' + vb_str.substring(0, vb_str.indexOf('"')) + '"';
-	}else{
-		viewBox = 'viewBox="0 0 ' + (svg_j["width"] - padding) + ' ' + (svg_j["height"] - padding) + '"';
-	}
-	k = size / (svg_j["height"] - padding);
-	svg_j["height"] = size;
-	svg_j["width"] = Math.round(svg_j["width"] * k);
-
-	return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' +
-		svg_j["width"] + '" height="' + svg_j["height"] + '" xml:space="preserve" ' + viewBox + '>' + svg_body + '</svg>';
-};
-
-/**
- * Заменяет в строке критичные для xml символы
- * @method normalize_xml
- * @param str {string} - исходная строка, в которой надо замаскировать символы
- * @return {XML|string}
- */
-$p.normalize_xml = function(str){
-	if(!str) return "";
-	var entities = { '&':  '&amp;', '"': '&quot;',  "'":  '&apos;', '<': '&lt;', '>': '&gt;'};
-	return str.replace(	/[&"'<>]/g, function (s) {return entities[s];});
-};
-
-/**
- * Добавляет в форму функциональность вызова справки
- * @param wnd {dhtmlXWindowsCell}
- * @param [path] {String} - url справки
- */
-$p.bind_help = function (wnd, path) {
-
-	function frm_help(win){
-		if(!win.help_path){
-			$p.msg.show_msg({
-				title: "Справка",
-				type: "alert-info",
-				text: $p.msg.not_implemented
-			});
-			return;
-		}
-	}
-
-	if(wnd instanceof dhtmlXLayoutCell) {
-		// TODO реализовать кнопку справки для приклеенной формы
-	}else{
-		if(!wnd.help_path && path)
-			wnd.help_path = path;
-
-		wnd.button('help').show();
-		wnd.button('help').enable();
-		wnd.attachEvent("onHelp", frm_help);
-	}
-
-};
-
-/**
- * Возвращает координату элемента
- * @param elm {HTMLElement}
- */
-$p.get_offset = function(elm) {
-	var offset = {left: 0, top:0};
-	if (elm.offsetParent) {
-		do {
-			offset.left += elm.offsetLeft;
-			offset.top += elm.offsetTop;
-		} while (elm = elm.offsetParent);
-	}
-	return offset;
-};
-
-/**
  * Сообщения пользователю и строки нитернационализации
  * @property msg
  * @type Messages
  * @static
  */
-$p.msg = new function Messages(){
+$p.msg = new Messages();
+
+/**
+ * ### Сообщения пользователю и строки нитернационализации
+ *
+ * @class Messages
+ * @static
+ */
+function Messages(){
 
 	this.toString = function(){return "Интернационализация сообщений"};
 
@@ -1147,7 +1071,7 @@ $p.msg = new function Messages(){
 		};
 
 	}
-};
+}
 
 /**
  * Объекты интерфейса пользователя
@@ -1169,6 +1093,108 @@ function InterfaceObjs(){
 		while (area.firstChild)
 			area.removeChild(area.firstChild);
 	};
+
+	/**
+	 * Возвращает координату левого верхнего угла элемента относительно документа
+	 * @method get_offset
+	 * @param elm {HTMLElement} - элемент, координату которого, необходимо определить
+	 * @return {Object} - {left: number, top: number}
+	 */
+	this.get_offset = function(elm) {
+		var offset = {left: 0, top:0};
+		if (elm.offsetParent) {
+			do {
+				offset.left += elm.offsetLeft;
+				offset.top += elm.offsetTop;
+			} while (elm = elm.offsetParent);
+		}
+		return offset;
+	};
+
+	/**
+	 * Заменяет в строке критичные для xml символы
+	 * @method normalize_xml
+	 * @param str {string} - исходная строка, в которой надо замаскировать символы
+	 * @return {XML|string}
+	 */
+	this.normalize_xml = function(str){
+		if(!str) return "";
+		var entities = { '&':  '&amp;', '"': '&quot;',  "'":  '&apos;', '<': '&lt;', '>': '&gt;'};
+		return str.replace(	/[&"'<>]/g, function (s) {return entities[s];});
+	};
+
+	/**
+	 * Масштабирует svg
+	 * @method scale_svg
+	 * @param svg_current {String} - исходная строка svg
+	 * @param size {Number} - требуемый размер картинки
+	 * @param padding {Number} - отступ от границы viewBox
+	 * @return {String} - отмасштабированная строка svg
+	 */
+	this.scale_svg = function(svg_current, size, padding){
+		var j, k, svg_head, svg_body, head_ind, vb_ind, svg_head_str, vb_str, viewBox, svg_j = {};
+
+		head_ind = svg_current.indexOf(">");
+		svg_head_str = svg_current.substring(5, head_ind);
+		svg_head = svg_head_str.split(' ');
+		svg_body = svg_current.substr(head_ind+1);
+		svg_body = svg_body.substr(0, svg_body.length - 6);
+
+		// получаем w, h и формируем viewBox="0 0 400 100"
+		for(j in svg_head){
+			svg_current = svg_head[j].split("=");
+			if(svg_current[0] == "width" || svg_current[0] == "height"){
+				svg_current[1] = Number(svg_current[1].replace(/"/g, ""));
+				svg_j[svg_current[0]] = svg_current[1];
+			}
+		}
+
+		if((vb_ind = svg_head_str.indexOf("viewBox="))!=-1){
+			vb_str = svg_head_str.substring(vb_ind+9);
+			viewBox = 'viewBox="' + vb_str.substring(0, vb_str.indexOf('"')) + '"';
+		}else{
+			viewBox = 'viewBox="0 0 ' + (svg_j["width"] - padding) + ' ' + (svg_j["height"] - padding) + '"';
+		}
+		k = size / (svg_j["height"] - padding);
+		svg_j["height"] = size;
+		svg_j["width"] = Math.round(svg_j["width"] * k);
+
+		return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' +
+			svg_j["width"] + '" height="' + svg_j["height"] + '" xml:space="preserve" ' + viewBox + '>' + svg_body + '</svg>';
+	};
+
+	/**
+	 * Добавляет в форму функциональность вызова справки
+	 * @method bind_help
+	 * @param wnd {dhtmlXWindowsCell}
+	 * @param [path] {String} - url справки
+	 */
+	this.bind_help = function (wnd, path) {
+
+		function frm_help(win){
+			if(!win.help_path){
+				$p.msg.show_msg({
+					title: "Справка",
+					type: "alert-info",
+					text: $p.msg.not_implemented
+				});
+				return;
+			}
+		}
+
+		if(wnd instanceof dhtmlXLayoutCell) {
+			// TODO реализовать кнопку справки для приклеенной формы
+		}else{
+			if(!wnd.help_path && path)
+				wnd.help_path = path;
+
+			wnd.button('help').show();
+			wnd.button('help').enable();
+			wnd.attachEvent("onHelp", frm_help);
+		}
+
+	};
+
 
 	/**
 	 * Устанавливает hash url для сохранения истории и последующей навигации
@@ -1250,6 +1276,7 @@ function InterfaceObjs(){
 /**
  * Объекты интерфейса пользователя
  * @property iface
+ * @for MetaEngine
  * @type InterfaceObjs
  * @static
  */
@@ -1264,12 +1291,13 @@ $p.iface = new InterfaceObjs();
  * @static
  */
 $p.eve = new (
+
 	/**
-	 * Обработчики событий:
+	 * ### Генераторы и обработчики событий
 	 * - при запуске программы
 	 * - при авторизации и начальной синхронизации с сервером
 	 * - при периодических обменах изменениями с сервером
-	 * См. так же модуль {{#crossLinkModule "events"}}{{/crossLinkModule}}
+	 * - См. так же модуль {{#crossLinkModule "events"}}{{/crossLinkModule}}
 	 * @class AppEvents
 	 * @static
 	 */
@@ -1291,10 +1319,10 @@ $p.eve = new (
  */
 $p.modifiers = new (
 	/**
-	 * Модификаторы менеджеров объектов метаданных<br />
+	 * ### Модификаторы менеджеров объектов метаданных
 	 * Служебный объект, реализующий отложенную загрузку модулей, в которых доопределяется (переопределяется) поведение
-	 * объектов и менеджеров конкретных типов
-	 * Т.к. экземпляры менеджеров и конструкторы объектов доступны в системе только посл загрузки метаданных,
+	 * объектов и менеджеров конкретных типов<br />
+	 * Т.к. экземпляры менеджеров и конструкторы объектов доступны в системе только после загрузки метаданных,
 	 * а метаданные загружаются после авторизации на сервере, методы модификаторов нельзя выполнить при старте приложения
 	 * @class Modifiers
 	 * @static
@@ -1329,9 +1357,11 @@ $p.modifiers = new (
 );
 
 /**
- * Хранит глобальные настройки варианта компиляции (Заказ дилера, Безбумажка, Демо и т.д.)
- * Настройки извлекаются из файла "settings" при запуске приложения и дополняются параметрами url,
+ * ### Параметры работы программы
+ * - Хранит глобальные настройки варианта компиляции (_Заказ дилера_, _Безбумажка_, _Демо_ и т.д.)
+ * - Настройки извлекаются из файла "settings" при запуске приложения и дополняются параметрами url,
  * которые могут быть переданы как через search (?), так и через hash (#)
+ * - см. так же, {{#crossLink "WSQL/get_user_param:method"}}{{/crossLink}} и {{#crossLink "WSQL/set_user_param:method"}}{{/crossLink}} - параметры, изменяемые пользователем
  * @class JobPrm
  * @static
  */

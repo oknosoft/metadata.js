@@ -339,7 +339,11 @@ eXcell_refc.prototype = eXcell_proto;
 window.eXcell_refc = eXcell_refc;
 
 /**
- * Поле с выпадающим списком с поддержкой ссылочных, в том числе, составных типов
+ * ### Визуальный компонент - поле с выпадающим списком
+ * - Предназначен для отображения и редактирования ссылочных, в том числе, составных типов данных
+ * - Состав списка, фильтрация, редактирование и автообновление значения (байндинг), настраиваются автоматически по описанию метаданных поля, к которому подключается элемент
+ *
+ * @class OCombo
  * @param attr
  * @param attr.parent {HTMLElement} - контейнер, в котором будет размещен элемент
  * @param attr.obj {DataObj|TabularSectionRow} - ссылка на редактируемый объект
@@ -477,7 +481,7 @@ function data_to_grid(data, attr){
 		xml +=  "<row id=\"" + r.ref + "\"><cell class=\"" + cat_picture_class(r) + "\">" + r[caption.acols[0].id] + "</cell>";
 		for(var col=1; col < caption.acols.length; col++ ){
 			fname = caption.acols[col].id;
-			xml += "<cell>" + ((fname == "svg" ? $p.normalize_xml(r[fname]) : r[fname]) || "") + "</cell>";
+			xml += "<cell>" + ((fname == "svg" ? $p.iface.normalize_xml(r[fname]) : r[fname]) || "") + "</cell>";
 		}
 		xml += "</row>";
 	});

@@ -94,24 +94,32 @@ var _rest = $p.rest = new Rest();
 
 
 /**
- * Имя объектов этого менеджера для rest-запросов на сервер<br />
+ * ### Имя объектов этого менеджера для rest-запросов на сервер
  * Идентификатор формируется по следующему принципу: ПрефиксИмени_ИмяОбъектаКонфигурации_СуффиксИмени
- * - Справочник  Catalog
- * - Документ    Document
- * - Журнал документов   DocumentJournal
- * - Константа   Constant
- * - План обмена ExchangePlan
- * - План счетов ChartOfAccounts
- * - План видов расчета  ChartOfCalculationTypes
- * - План видов характеристик    ChartOfCharacteristicTypes
- * - Регистр сведений    InformationRegister
- * - Регистр накопления  AccumulationRegister
- * - Регистр расчета CalculationRegister
- * - Регистр бухгалтерии AccountingRegister
- * - Бизнес-процесс  BusinessProcess
- * - Задача  Task
+ * - Справочник _Catalog_
+ * - Документ _Document_
+ * - Журнал документов _DocumentJournal_
+ * - Константа _Constant_
+ * - План обмена _ExchangePlan_
+ * - План счетов _ChartOfAccounts_
+ * - План видов расчета _ChartOfCalculationTypes_
+ * - План видов характеристик _ChartOfCharacteristicTypes_
+ * - Регистр сведений _InformationRegister_
+ * - Регистр накопления _AccumulationRegister_
+ * - Регистр расчета _CalculationRegister_
+ * - Регистр бухгалтерии _AccountingRegister_
+ * - Бизнес-процесс _BusinessProcess_
+ * - Задача _Task_
+ * - Обработка _DataProcessor_
+ * - Отчет _Report_
+ * - Общий модуль _Module_
+ * - Внешняя обработка _ExternalDataProcessor_
+ * - Внешний отчет _ExternalReport_
+ *
  * @property rest_name
+ * @for DataManager
  * @type String
+ * @final
  */
 DataManager.prototype._define("rest_name", {
 	get : function(suffix){
@@ -124,6 +132,8 @@ DataManager.prototype._define("rest_name", {
 
 /**
  * Загружает список объектов из rest-сервиса
+ * @method load_rest
+ * @for DataManager
  * @param attr {Object} - параметры сохранения
  * @param attr.[url] {String}
  * @param attr.[username] {String}

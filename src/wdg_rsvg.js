@@ -19,21 +19,23 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 		this.edit = function(){};  //read-only cell doesn't have edit method
 		this.isDisabled = function(){ return true; }; // the cell is read-only, so it's always in the disabled state
 		this.setValue=function(val){
-			this.setCValue(val ? $p.scale_svg(val, 120, 10) : "нет эскиза");
+			this.setCValue(val ? $p.iface.scale_svg(val, 120, 10) : "нет эскиза");
 		}
 	}
 	eXcell_rsvg.prototype = eXcell_proto;
 	window.eXcell_rsvg = eXcell_rsvg;
 
 	/**
-	 * Компонент Svgs, получающий и отображающий галерею эскизов объекта данных
-	 * @class Svgs
+	 * ### Визуальный компонент OSvgs
+	 * Получает и отображает галерею эскизов объекта данных
+	 *
+	 * @class OSvgs
 	 * @param manager {DataManager}
 	 * @param layout {dhtmlXLayoutObject|dhtmlXWindowsCell}
 	 * @param area {HTMLElement}
 	 * @constructor
 	 */
-	$p.iface.Svgs = function (manager, layout, area) {
+	$p.iface.OSvgs = function (manager, layout, area) {
 
 		var t = this,
 			minmax = document.createElement('div'),
@@ -102,7 +104,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 					svg_elm = document.createElement("div");
 					pics_area.appendChild(svg_elm);
 					svg_elm.style["float"] = "left";
-					svg_elm.innerHTML = $p.scale_svg(res.svgs[i], 88, 22);
+					svg_elm.innerHTML = $p.iface.scale_svg(res.svgs[i], 88, 22);
 				}
 		}
 
