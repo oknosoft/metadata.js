@@ -408,9 +408,50 @@ $p.iface.oninit = function() {
 							}
 						}
 					}
+				},
+				"cachable": true,
+				"form": {
+					"selection": {
+						"fields": [
+							"date",
+							"number_doc",
+							"`cat_Контрагенты`.name as `Контрагент`",
+							"СуммаДокумента",
+							"posted",
+							"СписокНоменклатуры",
+							"Комментарий"
+						],
+						"cols": [
+							{"id": "date", "width": "120", "type": "ro", "align": "left", "sort": "server", "caption": "Дата"},
+							{"id": "number_doc", "width": "120", "type": "ro", "align": "left", "sort": "server", "caption": "Номер"},
+							{"id": "Контрагент", "width": "170", "type": "ro", "align": "left", "sort": "server", "caption": "Контрагент"},
+							{"id": "СуммаДокумента", "width": "120", "type": "ron", "align": "right", "sort": "server", "caption": "Сумма"},
+							{"id": "СписокНоменклатуры", "width": "170", "type": "ro", "align": "left", "sort": "server", "caption": "Номенклатура"},
+							{"id": "Комментарий", "width": "*", "type": "ro", "align": "left", "sort": "server", "caption": "Комментарий"}
+						]
+					},
+					"obj": {
+						"head": {
+							" ": ["number_doc", "date", "Контрагент"],
+							"Планирование": ["ДатаИзменения", "ДатаОтгрузки"],
+							"Дополнительно": [
+								{"id": "СписокНоменклатуры", "path": "o.СписокНоменклатуры", "synonym": "Список номенклатуры", "type": "ro"},
+								{"id": "СуммаДокумента", "path": "o.СуммаДокумента", "synonym": "Сумма документа", "type": "ro"}
+							]
+						},
+						"tabular_sections": {
+							"Запасы":  {
+								"fields": ["row","Номенклатура","Количество","Цена","ПроцентСкидкиНаценки","Сумма"],
+								"headers": "№,Номенклатура,Колич.,Цена,% Скидки,Сумма",
+								"widths": "40,*,80,80,80,80",
+								"min_widths": "40,200,70,70,70,70",
+								"aligns": "",
+								"sortings": "na,na,na,na,na,na",
+								"types": "cntr,ref,calck,calck,calck,ron"
+							}
+						}
+					}
 				}
-				,
-				"cachable": true
 			}
 		}
 		,
