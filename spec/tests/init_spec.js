@@ -62,7 +62,7 @@ describe("События:", function () {
 
 });
 
-describe("Aвторизация:", function () {
+describe("Диалог авторизации:", function () {
 
 	var wtest,	$p;
 
@@ -78,7 +78,21 @@ describe("Aвторизация:", function () {
 
 					$p = wtest.$p;
 					$p.iface.oninit = function () {
-						console.log(Date.now());
+
+						$p.iface.layout_1c();
+
+						$p.iface.frm_auth(
+							null,
+							function () {
+								//$p.iface.set_hash("doc.СчетНаОплатуПокупателю", "", "", "oper");
+								$p.iface.docs.hideHeader();
+
+							},
+							function (err) {
+								console.log(err);
+							}
+						);
+
 					};
 
 					setTimeout(function() {
@@ -92,6 +106,26 @@ describe("Aвторизация:", function () {
 	});
 
 	it("layout + диалог нарисованы", function() {
+		expect(typeof $p).toBe("object");
+	});
+
+});
+
+describe("Aвторизация:", function () {
+
+	var wtest,	$p;
+
+	beforeEach(function() {
+
+		wtest = frames[0];
+		$p = wtest.$p;
+	});
+
+	it("должна быть ошибка при неверном логине-пароле", function() {
+		expect(typeof $p).toBe("object");
+	});
+
+	it("должен случиться callback при успешной авторизации", function() {
 		expect(typeof $p).toBe("object");
 	});
 
