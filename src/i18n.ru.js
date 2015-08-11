@@ -75,7 +75,7 @@ $p.msg.russian_names = function(){
 				get: function(){return _rep},
 				enumerable: false
 			},
-			"ОкноПриложения": {
+			"ОбластьКонтента": {
 				get: function(){return $p.iface.docs},
 				enumerable: false
 			},

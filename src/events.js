@@ -54,6 +54,365 @@ if(typeof window !== "undefined"){
 
 		w.addEventListener('load', function(){
 
+			/**
+			 * Инициализацию выполняем с небольшой задержкой,
+			 * чтобы позволить сторонним скриптам подписаться на событие onload и сделать свои черные дела
+			 */
+			setTimeout(function () {
+
+				/**
+				 * Нулевым делом, создаём объект параметров работы программы, в процессе создания которого,
+				 * выполняется клиентский скрипт, переопределяющий триггеры и переменные окружения
+				 * Параметры имеют значения по умолчанию, могут переопределяться подключаемыми модулями
+				 * и параметрами url, синтаксический разбор url производим сразу
+				 * @property job_prm
+				 * @for MetaEngine
+				 * @type JobPrm
+				 * @static
+				 */
+				$p.job_prm = new JobPrm();
+
+				/**
+				 * если в $p.job_prm указано использование геолокации, геокодер инициализируем с небольшой задержкой
+				 */
+				if (navigator.geolocation && $p.job_prm.use_google_geo) {
+
+					/**
+					 * Данные геолокации
+					 * @property ipinfo
+					 * @for MetaEngine
+					 * @type IPInfo
+					 * @static
+					 */
+					$p.ipinfo = new IPInfo();
+
+					/**
+					 * ### Данные геолокации
+					 * Объект предоставляет доступ к функциям _геокодирования браузера_, а так же - геокодерам _Яндекс_ и _Гугл_
+					 *
+					 * @class IPInfo
+					 * @static
+					 */
+					function IPInfo(){
+
+						var _yageocoder, _ggeocoder, _addr = "";
+
+						/**
+						 * Геокодер карт Яндекс
+						 * @class YaGeocoder
+						 * @static
+						 */
+						function YaGeocoder(){
+
+							/**
+							 * Выполняет прямое или обратное геокодирование
+							 * @method geocode
+							 * @param attr {Object}
+							 * @return {Promise.<T>}
+							 */
+							this.geocode = function (attr) {
+								//http://geocode-maps.yandex.ru/1.x/?geocode=%D0%A7%D0%B5%D0%BB%D1%8F%D0%B1%D0%B8%D0%BD%D1%81%D0%BA,+%D0%9F%D0%BB%D0%B5%D1%85%D0%B0%D0%BD%D0%BE%D0%B2%D0%B0+%D1%83%D0%BB%D0%B8%D1%86%D0%B0,+%D0%B4%D0%BE%D0%BC+32&format=json&sco=latlong
+								//http://geocode-maps.yandex.ru/1.x/?geocode=61.4080273,55.1550362&format=json&lang=ru_RU
+
+								return Promise.resolve(false);
+							}
+						}
+
+						/**
+						 * Объект геокодера yandex
+						 * https://tech.yandex.ru/maps/doc/geocoder/desc/concepts/input_params-docpage/
+						 * @property yageocoder
+						 * @for IPInfo
+						 * @type YaGeocoder
+						 */
+						this._define("yageocoder", {
+							get : function(){
+
+								if(!_yageocoder)
+									_yageocoder = new YaGeocoder();
+								return _yageocoder;
+							},
+							enumerable : false,
+							configurable : false});
+
+
+						/**
+						 * Объект геокодера google
+						 * https://developers.google.com/maps/documentation/geocoding/?hl=ru#GeocodingRequests
+						 * @property ggeocoder
+						 * @for IPInfo
+						 * @type {google.maps.Geocoder}
+						 */
+						this._define("ggeocoder", {
+								get : function(){
+									return _ggeocoder;
+								},
+								enumerable : false,
+								configurable : false}
+						);
+
+						/**
+						 * Адрес геолокации пользователя программы
+						 * @property addr
+						 * @for IPInfo
+						 * @type String
+						 */
+						this._define("addr", {
+								get : function(){
+									return _addr;
+								},
+								enumerable : true,
+								configurable : false}
+						);
+
+						this.location_callback= function(){
+
+							/**
+							 * Объект геокодера google
+							 * https://developers.google.com/maps/documentation/geocoding/?hl=ru#GeocodingRequests
+							 * @property ggeocoder
+							 * @for IPInfo
+							 * @type {google.maps.Geocoder}
+							 */
+							_ggeocoder = new google.maps.Geocoder();
+
+							navigator.geolocation.getCurrentPosition(function(position){
+
+									/**
+									 * Географическая широта геолокации пользователя программы
+									 * @property latitude
+									 * @for IPInfo
+									 * @type Number
+									 */
+									$p.ipinfo.latitude = position.coords.latitude;
+
+									/**
+									 * Географическая долгота геолокации пользователя программы
+									 * @property longitude
+									 * @for IPInfo
+									 * @type Number
+									 */
+									$p.ipinfo.longitude = position.coords.longitude;
+
+									var latlng = new google.maps.LatLng($p.ipinfo.latitude, $p.ipinfo.longitude);
+
+									_ggeocoder.geocode({'latLng': latlng}, function(results, status) {
+										if (status == google.maps.GeocoderStatus.OK){
+											if(!results[1] || results[0].address_components.length >= results[1].address_components.length)
+												_addr = results[0].formatted_address;
+											else
+												_addr = results[1].formatted_address;
+										}
+									});
+
+								}, function(err){
+									if(err)
+										$p.ipinfo.err = err.message;
+								}, {
+									timeout: 30000
+								}
+							);
+						}
+					};
+
+					// подгружаем скрипты google
+					if(!window.google || !window.google.maps)
+						$p.eve.onload.push(function () {
+							setTimeout(function(){
+								$p.load_script(location.protocol +
+									"//maps.google.com/maps/api/js?sensor=false&callback=$p.ipinfo.location_callback", "script", function(){});
+							}, 100);
+						});
+					else
+						location_callback();
+				}
+
+				/**
+				 * Если указано, навешиваем слушателя на postMessage
+				 */
+				if($p.job_prm.allow_post_message){
+					/**
+					 * Обработчик события postMessage сторонних окон или родительского окна (если iframe)
+					 * @event message
+					 * @for AppEvents
+					 */
+					w.addEventListener("message", function(event) {
+
+						if($p.job_prm.allow_post_message == "*" || $p.job_prm.allow_post_message == event.origin){
+
+							function navigate(url){
+								if(url && (location.origin + location.pathname).indexOf(url)==-1)
+									location.replace(url);
+							}
+
+							try{
+								var res = eval(event.data);
+								if(res && event.source){
+									if(typeof res == "object")
+										res = JSON.stringify(res);
+									else if(typeof res == "function")
+										return;
+									event.source.postMessage(res, "*");
+								}
+							}catch(e){
+								console.log(e);
+							}
+						}
+					});
+				}
+
+
+				// создавать dhtmlXWindows можно только после готовности документа
+				if("dhtmlx" in w){
+					$p.iface.w = new dhtmlXWindows();
+					$p.iface.w.setSkin(dhtmlx.skin);
+				}
+
+				// проверяем совместимость браузера
+				if($p.job_prm.check_browser_compatibility && (!w.JSON || !w.indexedDB || !w.localStorage) ){
+					eve.redirect = true;
+					msg.show_msg({type: "alert-error", text: msg.unsupported_browser, title: msg.unsupported_browser_title});
+					setTimeout(function(){ location.replace(msg.store_url_od); }, 6000);
+					return;
+				}
+
+				// проверяем установленность приложения только если мы внутри хрома
+				if($p.job_prm.check_app_installed && w["chrome"] && w["chrome"]["app"] && !w["chrome"]["app"]["isInstalled"]){
+					if(!location.hostname.match(/.local/)){
+						eve.redirect = true;
+						msg.show_msg({type: "alert-error", text: msg.unsupported_mode, title: msg.unsupported_mode_title});
+						setTimeout(function(){ location.replace(msg.store_url_od); }, 6000);
+						return;
+					}
+				}
+
+				/**
+				 * Инициализируем параметры пользователя,
+				 * проверяем offline и версию файлов
+				 */
+				setTimeout(function(){
+
+					$p.wsql.init_params(function(){
+
+						eve.set_offline(!navigator.onLine);
+
+						eve.update_files_version();
+
+						// пытаемся перейти в полноэкранный режим в мобильных браузерах
+						if (document.documentElement.webkitRequestFullScreen && navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)) {
+							function requestFullScreen(){
+								document.documentElement.webkitRequestFullScreen();
+								w.removeEventListener('touchstart', requestFullScreen);
+							}
+							w.addEventListener('touchstart', requestFullScreen, false);
+						}
+
+						// кешируем ссылки на элементы управления
+						if($p.job_prm.use_builder || $p.job_prm.use_wrapper){
+							$p.wrapper	= document.getElementById("owb_wrapper");
+							$p.risdiv	= document.getElementById("risdiv");
+							$p.ft		= document.getElementById("msgfooter");
+							if($p.ft)
+								$p.ft.style.display = "none";
+						}
+
+						/**
+						 * Выполняем отложенные методы из eve.onload
+						 */
+						eve.onload.forEach(function (method) {
+							if(typeof method === "function")
+								method();
+						});
+
+						// Если есть сплэш, удаляем его
+						if(document && document.querySelector("#splash"))
+							document.querySelector("#splash").parentNode.removeChild(document.querySelector("#splash"));
+
+						/**
+						 *	начинаем слушать события msgfooter-а, в который их пишет рисовалка
+						 */
+						if($p.job_prm.use_builder && $p.ft){
+
+							dhtmlxEvent($p.ft, "click", function(evt){
+								$p.cancel_bubble(evt);
+								if(evt.qualifier == "ready")
+									iface.oninit();
+								else if($p.eve.builder_click)
+									$p.eve.builder_click(evt);
+							});
+
+						}else
+							setTimeout(iface.oninit, 100);
+
+						$p.msg.russian_names();
+
+						// TODO: переписать управление appcache на сервисворкерах
+						if($p.wsql.get_user_param("use_service_worker", "boolean") && typeof navigator != "undefined"
+							&& 'serviceWorker' in navigator && location.protocol.indexOf("https") != -1){
+
+							// Override the default scope of '/' with './', so that the registration applies
+							// to the current directory and everything underneath it.
+							navigator.serviceWorker.register('metadata_service_worker.js', {scope: '/'})
+								.then(function(registration) {
+									// At this point, registration has taken place.
+									// The service worker will not handle requests until this page and any
+									// other instances of this page (in other tabs, etc.) have been closed/reloaded.
+									console.log('serviceWorker register succeeded');
+								})
+								.catch(function(error) {
+									// Something went wrong during registration. The service-worker.js file
+									// might be unavailable or contain a syntax error.
+									console.log(error);
+								});
+
+						}else if (cache = w.applicationCache){
+
+							// обновление не требуется
+							cache.addEventListener('noupdate', function(e){
+
+							}, false);
+
+							// Ресурсы уже кэшированнны. Индикатор прогресса скрыт.
+							cache.addEventListener('cached', function(e){
+								timer_setted = true;
+								if($p.iface.appcache)
+									$p.iface.appcache.close();
+							}, false);
+
+							// Начало скачивания ресурсов. progress_max - количество ресурсов. Показываем индикатор прогресса
+							cache.addEventListener('downloading', do_cache_update_msg, false);
+
+							// Процесс скачивания ресурсов. Индикатор прогресса изменяется
+							cache.addEventListener('progress', do_cache_update_msg,	false);
+
+							// Скачивание завершено. Скрываем индикатор прогресса. Обновляем кэш. Перезагружаем страницу.
+							cache.addEventListener('updateready', function(e) {
+								try{
+									cache.swapCache();
+									if($p.iface.appcache){
+										$p.iface.appcache.close();
+									}
+								}catch(e){}
+								do_reload();
+							}, false);
+
+							// Ошибка кеша
+							cache.addEventListener('error', function(e) {
+								if(!w.JSON || !w.openDatabase || typeof(w.openDatabase) !== 'function'){
+									//msg.show_msg({type: "alert-error",
+									//	text: msg.unknown_error.replace("%1", "applicationCache"),
+									//	title: msg.main_title});
+								}else
+									msg.show_msg({type: "alert-error", text: e.message || msg.unknown_error, title: msg.error_critical});
+
+							}, false);
+						}
+
+					});
+				}, 100);
+
+			}, 10);
+
 			function do_reload(){
 				if(!$p.ajax.authorized){
 					eve.redirect = true;
@@ -82,357 +441,6 @@ if(typeof window !== "undefined"){
 					setTimeout(do_reload, 1000);
 				}
 			}
-
-			/**
-			 * Нулевым делом, создаём объект параметров работы программы, в процессе создания которого,
-			 * выполняется клиентский скрипт, переопределяющий триггеры и переменные окружения
-			 * Параметры имеют значения по умолчанию, могут переопределяться подключаемыми модулями
-			 * и параметрами url, синтаксический разбор url производим сразу
-			 * @property job_prm
-			 * @for MetaEngine
-			 * @type JobPrm
-			 * @static
-			 */
-			$p.job_prm = new JobPrm();
-
-			/**
-			 * если в $p.job_prm указано использование геолокации, геокодер инициализируем с небольшой задержкой
-			 */
-			if (navigator.geolocation && $p.job_prm.use_google_geo) {
-
-				/**
-				 * Данные геолокации
-				 * @property ipinfo
-				 * @for MetaEngine
-				 * @type IPInfo
-				 * @static
-				 */
-				$p.ipinfo = new IPInfo();
-
-				/**
-				 * ### Данные геолокации
-				 * Объект предоставляет доступ к функциям _геокодирования браузера_, а так же - геокодерам _Яндекс_ и _Гугл_
-				 *
-				 * @class IPInfo
-				 * @static
-				 */
-				function IPInfo(){
-
-					var _yageocoder, _ggeocoder, _addr = "";
-
-					/**
-					 * Геокодер карт Яндекс
-					 * @class YaGeocoder
-					 * @static
-					 */
-					function YaGeocoder(){
-
-						/**
-						 * Выполняет прямое или обратное геокодирование
-						 * @method geocode
-						 * @param attr {Object}
-						 * @return {Promise.<T>}
-						 */
-						this.geocode = function (attr) {
-							//http://geocode-maps.yandex.ru/1.x/?geocode=%D0%A7%D0%B5%D0%BB%D1%8F%D0%B1%D0%B8%D0%BD%D1%81%D0%BA,+%D0%9F%D0%BB%D0%B5%D1%85%D0%B0%D0%BD%D0%BE%D0%B2%D0%B0+%D1%83%D0%BB%D0%B8%D1%86%D0%B0,+%D0%B4%D0%BE%D0%BC+32&format=json&sco=latlong
-							//http://geocode-maps.yandex.ru/1.x/?geocode=61.4080273,55.1550362&format=json&lang=ru_RU
-
-							return Promise.resolve(false);
-						}
-					}
-
-					/**
-					 * Объект геокодера yandex
-					 * https://tech.yandex.ru/maps/doc/geocoder/desc/concepts/input_params-docpage/
-					 * @property yageocoder
-					 * @for IPInfo
-					 * @type YaGeocoder
-					 */
-					this._define("yageocoder", {
-						get : function(){
-
-							if(!_yageocoder)
-								_yageocoder = new YaGeocoder();
-							return _yageocoder;
-						},
-						enumerable : false,
-						configurable : false});
-
-
-					/**
-					 * Объект геокодера google
-					 * https://developers.google.com/maps/documentation/geocoding/?hl=ru#GeocodingRequests
-					 * @property ggeocoder
-					 * @for IPInfo
-					 * @type {google.maps.Geocoder}
-					 */
-					this._define("ggeocoder", {
-							get : function(){
-								return _ggeocoder;
-							},
-							enumerable : false,
-							configurable : false}
-					);
-
-					/**
-					 * Адрес геолокации пользователя программы
-					 * @property addr
-					 * @for IPInfo
-					 * @type String
-					 */
-					this._define("addr", {
-							get : function(){
-								return _addr;
-							},
-							enumerable : true,
-							configurable : false}
-					);
-
-					this.location_callback= function(){
-
-						/**
-						 * Объект геокодера google
-						 * https://developers.google.com/maps/documentation/geocoding/?hl=ru#GeocodingRequests
-						 * @property ggeocoder
-						 * @for IPInfo
-						 * @type {google.maps.Geocoder}
-						 */
-						_ggeocoder = new google.maps.Geocoder();
-
-						navigator.geolocation.getCurrentPosition(function(position){
-
-								/**
-								 * Географическая широта геолокации пользователя программы
-								 * @property latitude
-								 * @for IPInfo
-								 * @type Number
-								 */
-								$p.ipinfo.latitude = position.coords.latitude;
-
-								/**
-								 * Географическая долгота геолокации пользователя программы
-								 * @property longitude
-								 * @for IPInfo
-								 * @type Number
-								 */
-								$p.ipinfo.longitude = position.coords.longitude;
-
-								var latlng = new google.maps.LatLng($p.ipinfo.latitude, $p.ipinfo.longitude);
-
-								_ggeocoder.geocode({'latLng': latlng}, function(results, status) {
-									if (status == google.maps.GeocoderStatus.OK){
-										if(!results[1] || results[0].address_components.length >= results[1].address_components.length)
-											_addr = results[0].formatted_address;
-										else
-											_addr = results[1].formatted_address;
-									}
-								});
-
-							}, function(err){
-								if(err)
-									$p.ipinfo.err = err.message;
-							}, {
-								timeout: 30000
-							}
-						);
-					}
-				};
-
-				// подгружаем скрипты google
-				if(!window.google || !window.google.maps)
-					$p.eve.onload.push(function () {
-						setTimeout(function(){
-							$p.load_script(location.protocol +
-								"//maps.google.com/maps/api/js?sensor=false&callback=$p.ipinfo.location_callback", "script", function(){});
-						}, 100);
-					});
-				else
-					location_callback();
-			}
-
-			/**
-			 * Если указано, навешиваем слушателя на postMessage
-			 */
-			if($p.job_prm.allow_post_message){
-				/**
-				 * Обработчик события postMessage сторонних окон или родительского окна (если iframe)
-				 * @event message
-				 * @for AppEvents
-				 */
-				w.addEventListener("message", function(event) {
-
-					if($p.job_prm.allow_post_message == "*" || $p.job_prm.allow_post_message == event.origin){
-
-						function navigate(url){
-							if(url && (location.origin + location.pathname).indexOf(url)==-1)
-								location.replace(url);
-						}
-
-						try{
-							var res = eval(event.data);
-							if(res && event.source){
-								if(typeof res == "object")
-									res = JSON.stringify(res);
-								else if(typeof res == "function")
-									return;
-								event.source.postMessage(res, "*");
-							}
-						}catch(e){
-							console.log(e);
-						}
-					}
-				});
-			}
-
-
-			// создавать dhtmlXWindows можно только после готовности документа
-			if("dhtmlx" in w){
-				$p.iface.w = new dhtmlXWindows();
-				$p.iface.w.setSkin(dhtmlx.skin);
-			}
-
-			// проверяем совместимость браузера
-			if($p.job_prm.check_browser_compatibility && (!w.JSON || !w.indexedDB || !w.localStorage) ){
-				eve.redirect = true;
-				msg.show_msg({type: "alert-error", text: msg.unsupported_browser, title: msg.unsupported_browser_title});
-				setTimeout(function(){ location.replace(msg.store_url_od); }, 6000);
-				return;
-			}
-
-			// проверяем установленность приложения только если мы внутри хрома
-			if($p.job_prm.check_app_installed && w["chrome"] && w["chrome"]["app"] && !w["chrome"]["app"]["isInstalled"]){
-				if(!location.hostname.match(/.local/)){
-					eve.redirect = true;
-					msg.show_msg({type: "alert-error", text: msg.unsupported_mode, title: msg.unsupported_mode_title});
-					setTimeout(function(){ location.replace(msg.store_url_od); }, 6000);
-					return;
-				}
-			}
-
-			/**
-			 * Инициализируем параметры пользователя,
-			 * проверяем offline и версию файлов
-			 */
-			setTimeout(function(){
-
-				$p.wsql.init_params(function(){
-
-					eve.set_offline(!navigator.onLine);
-
-					eve.update_files_version();
-
-					// пытаемся перейти в полноэкранный режим в мобильных браузерах
-					if (document.documentElement.webkitRequestFullScreen && navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)) {
-						function requestFullScreen(){
-							document.documentElement.webkitRequestFullScreen();
-							w.removeEventListener('touchstart', requestFullScreen);
-						}
-						w.addEventListener('touchstart', requestFullScreen, false);
-					}
-
-					// кешируем ссылки на элементы управления
-					if($p.job_prm.use_builder || $p.job_prm.use_wrapper){
-						$p.wrapper	= document.getElementById("owb_wrapper");
-						$p.risdiv	= document.getElementById("risdiv");
-						$p.ft		= document.getElementById("msgfooter");
-						if($p.ft)
-							$p.ft.style.display = "none";
-					}
-
-					/**
-					 * Выполняем отложенные методы из eve.onload
-					 */
-					eve.onload.forEach(function (method) {
-						if(typeof method === "function")
-							method();
-					});
-
-					// Если есть сплэш, удаляем его
-					if(document && document.querySelector("#splash"))
-						document.querySelector("#splash").parentNode.removeChild(document.querySelector("#splash"));
-
-					/**
-					 *	начинаем слушать события msgfooter-а, в который их пишет рисовалка
-					 */
-					if($p.job_prm.use_builder && $p.ft){
-
-						dhtmlxEvent($p.ft, "click", function(evt){
-							$p.cancel_bubble(evt);
-							if(evt.qualifier == "ready")
-								iface.oninit();
-							else if($p.eve.builder_click)
-								$p.eve.builder_click(evt);
-						});
-
-					}else
-						setTimeout(iface.oninit, 100);
-
-					$p.msg.russian_names();
-
-					// TODO: переписать управление appcache на сервисворкерах
-					if($p.wsql.get_user_param("use_service_worker", "boolean") && typeof navigator != "undefined"
-							&& 'serviceWorker' in navigator && location.protocol.indexOf("https") != -1){
-
-						// Override the default scope of '/' with './', so that the registration applies
-						// to the current directory and everything underneath it.
-						navigator.serviceWorker.register('metadata_service_worker.js', {scope: '/'})
-							.then(function(registration) {
-								// At this point, registration has taken place.
-								// The service worker will not handle requests until this page and any
-								// other instances of this page (in other tabs, etc.) have been closed/reloaded.
-								console.log('serviceWorker register succeeded');
-							})
-							.catch(function(error) {
-								// Something went wrong during registration. The service-worker.js file
-								// might be unavailable or contain a syntax error.
-								console.log(error);
-						});
-
-					}else if (cache = w.applicationCache){
-
-						// обновление не требуется
-						cache.addEventListener('noupdate', function(e){
-
-						}, false);
-
-						// Ресурсы уже кэшированнны. Индикатор прогресса скрыт.
-						cache.addEventListener('cached', function(e){
-							timer_setted = true;
-							if($p.iface.appcache)
-								$p.iface.appcache.close();
-						}, false);
-
-						// Начало скачивания ресурсов. progress_max - количество ресурсов. Показываем индикатор прогресса
-						cache.addEventListener('downloading', do_cache_update_msg, false);
-
-						// Процесс скачивания ресурсов. Индикатор прогресса изменяется
-						cache.addEventListener('progress', do_cache_update_msg,	false);
-
-						// Скачивание завершено. Скрываем индикатор прогресса. Обновляем кэш. Перезагружаем страницу.
-						cache.addEventListener('updateready', function(e) {
-							try{
-								cache.swapCache();
-								if($p.iface.appcache){
-									$p.iface.appcache.close();
-								}
-							}catch(e){}
-							do_reload();
-						}, false);
-
-						// Ошибка кеша
-						cache.addEventListener('error', function(e) {
-							if(!w.JSON || !w.openDatabase || typeof(w.openDatabase) !== 'function'){
-								//msg.show_msg({type: "alert-error",
-								//	text: msg.unknown_error.replace("%1", "applicationCache"),
-								//	title: msg.main_title});
-							}else
-								msg.show_msg({type: "alert-error", text: e.message || msg.unknown_error, title: msg.error_critical});
-
-						}, false);
-					}
-
-				});
-			}, 100);
 
 
 		}, false);
