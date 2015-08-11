@@ -15,7 +15,7 @@ describe("Загрузка страницы:", function () {
 	describe("Проверка ключевх свойств $p:", function () {
 
 		it("job_prm при загрузке должен быть пустым", function () {
-			expect(typeof $p.job_prm).not.toBe("object");
+			expect($p.job_prm).toBeUndefined();
 		});
 
 		it("eve и iface должны содержать object", function () {
@@ -28,7 +28,7 @@ describe("Загрузка страницы:", function () {
 
 describe("События:", function () {
 
-	var wtest,	$p;
+	var wtest, $p;
 
 	beforeEach(function(done) {
 
@@ -44,7 +44,7 @@ describe("События:", function () {
 					$p.iface.oninit = function () {
 						console.log(Date.now());
 					};
-					spyOn($p.iface, 'oninit');
+					spyOn($p.iface, 'oninit').and.callThrough();
 
 					setTimeout(function() {
 						done();
@@ -64,7 +64,7 @@ describe("События:", function () {
 
 describe("Диалог авторизации:", function () {
 
-	var wtest,	$p;
+	var wtest, $p, was_done;
 
 	beforeEach(function(done) {
 
@@ -77,6 +77,16 @@ describe("Диалог авторизации:", function () {
 				wtest.onload = function(){
 
 					$p = wtest.$p;
+
+					$p.settings = function (prm, modifiers) {
+
+						prm.russian_names = true;
+						prm.rest_path = "/a/unf/odata/standard.odata/";
+						prm.data_url = "examples/unf/data/";
+						prm.create_tables = "examples/unf/data/create_tables.sql";
+
+					};
+
 					$p.iface.oninit = function () {
 
 						$p.iface.layout_1c();
@@ -93,11 +103,18 @@ describe("Диалог авторизации:", function () {
 							}
 						);
 
+						if(!was_done){
+							was_done = true;
+							done();
+						}
 					};
 
 					setTimeout(function() {
-						done();
-					}, 1000);
+						if(!was_done){
+							was_done = true;
+							done();
+						}
+					}, 3000);
 				};
 
 			}, 10);
@@ -106,7 +123,8 @@ describe("Диалог авторизации:", function () {
 	});
 
 	it("layout + диалог нарисованы", function() {
-		expect(typeof $p).toBe("object");
+		expect($p.iface.auth instanceof wtest.dhtmlXForm).toBeTruthy();
+		expect($p.iface.docs instanceof wtest.dhtmlXLayoutCell).toBeTruthy();
 	});
 
 });
@@ -119,6 +137,7 @@ describe("Aвторизация:", function () {
 
 		wtest = frames[0];
 		$p = wtest.$p;
+
 	});
 
 	it("должна быть ошибка при неверном логине-пароле", function() {
