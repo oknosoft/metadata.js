@@ -7,7 +7,10 @@
 
 
 /**
- * Форма объекта данных
+ * ### Форма объекта данных
+ * По умолчанию, форма строится автоматически по описанию метаданных.<br />
+ * Метод можно переопределить для конкретного менеджера
+ *
  * @method form_obj
  * @for DataManager
  * @param pwnd {dhtmlXWindows} - указатель на родительскую форму
@@ -32,10 +35,10 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				.then(function (tObj) {
 					o = tObj;
 					tObj = null;
-					initialize();
+					frm_create();
 				});
 		else
-			initialize();
+			frm_create();
 	}else{
 		pwnd.progressOn();
 
@@ -44,7 +47,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				o = tObj;
 				tObj = null;
 				pwnd.progressOff();
-				initialize();
+				frm_create();
 			})
 			.catch(function (err) {
 				pwnd.progressOff();
@@ -54,38 +57,57 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 
 	/**
-	 * инициализация до создания формы, но после чтения объекта
+	 * ПриСозданииНаСервере - инициализация до создания формы, но после чтения объекта
 	 */
-	function initialize(){
+	function frm_create(){
 
-		// создаём форму
-		options = {
-			name: 'wnd_obj_' + _mgr.class_name,
-			wnd: {
-				id: 'wnd_obj_' + _mgr.class_name,
-				top: 80 + Math.random()*40,
-				left: 120 + Math.random()*80,
-				width: 900,
-				height: 600,
-				modal: true,
-				center: false,
-				pwnd: pwnd,
-				allow_close: true,
-				allow_minmax: true,
-				on_close: frm_close,
-				caption: (cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation
-			}
-		};
+		// создаём и настраиваем окно формы
+		if(pwnd instanceof dhtmlXLayoutCell && (attr.bind_pwnd || attr.Приклеить)) {
+			// форма объекта приклеена к области контента или другой форме
+			if(typeof pwnd.close == "function")
+				pwnd.close();
+			wnd = pwnd;
+			wnd.close = function () {
+				(wnd || pwnd).detachToolbar();
+				(wnd || pwnd).detachStatusBar();
+				(wnd || pwnd).detachObject(true);
+				frm_unload();
+			};
+			wnd.elmnts = {};
+			setTimeout(function () {
+				wnd.showHeader();
+				wnd.setText((cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation);
+			});
 
-		wnd = $p.iface.dat_blank(null, options.wnd);
+		}else{
+			// форма в модальном диалоге
+			options = {
+				name: 'wnd_obj_' + _mgr.class_name,
+				wnd: {
+					id: 'wnd_obj_' + _mgr.class_name,
+					top: 80 + Math.random()*40,
+					left: 120 + Math.random()*80,
+					width: 900,
+					height: 600,
+					modal: true,
+					center: false,
+					pwnd: pwnd,
+					allow_close: true,
+					allow_minmax: true,
+					on_close: frm_close,
+					caption: (cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation
+				}
+			};
+			wnd = $p.iface.dat_blank(null, options.wnd);
+		}
 
-		wnd._define("ref", {
-			get: function(){
-				return o.ref;
-			},
-			enumerable: false,
-			configurable: false
-		});
+		if(delete wnd.ref)
+			wnd._define("ref", {
+				get: function(){
+					return o ? o.ref : $p.blank.guid;
+				},
+				enumerable: false
+			});
 
 		/**
 		 * перезаполняет шапку и табчасть документа данными "attr"
@@ -97,16 +119,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			refresh_tabulars();
 			header_refresh();
 		};
-
-		// настраиваем форму
-		frm_create();
-
-	}
-
-	/**
-	 * ПриСозданииНаСервере()
-	 */
-	function frm_create(){
 
 		/**
 		 *	Закладки: шапка и табличные части
@@ -186,6 +198,26 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		});
 
+		if($p.job_prm.russian_names){
+			if(delete wnd.Элементы)
+				wnd._define({
+					"Элементы": {
+						get: function () {
+							return this.elmnts;
+						},
+						enumerable: false
+					}
+				});
+			if(delete wnd.elmnts.Шапка)
+				wnd.elmnts._define({
+					"Шапка": {
+						get: function () {
+							return this.pg_header;
+						},
+						enumerable: false
+					}
+				});
+		}
 
 	}
 
@@ -425,7 +457,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	function header_refresh(){
 		function reflect(id){
 			if(typeof id == "string"){
-				var fv = o[id]
+				var fv = o[id];
 				if(fv != undefined){
 					if($p.is_data_obj(fv))
 						this.cells(id, 1).setValue(fv.presentation);
@@ -492,19 +524,29 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 	}
 
-	function frm_close(win){
+	/**
+	 * освобождает переменные после закрытия формы
+	 */
+	function frm_unload(){
 
-		if (wnd.elmnts.vault)
+		if (wnd && wnd.elmnts && wnd.elmnts.vault)
 			wnd.elmnts.vault.unload();
 
-		if (wnd.elmnts.vault_pop)
+		if (wnd && wnd.elmnts && wnd.elmnts.vault_pop)
 			wnd.elmnts.vault_pop.unload();
+
+		_mgr = null;
+		wnd = null;
+	}
+
+	function frm_close(win){
+
+		setTimeout(frm_unload, 10);
 
 		// TODO задать вопрос о записи изменений + перенести этот метод в $p
 
 		return true;
 	}
-
 
 	/**
 	 * добавляет строку табчасти
@@ -517,4 +559,22 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		grid.selectRowById(row.row);
 	}
 
+	return wnd;
+};
+
+/**
+ * ### Форма объекта данных
+ * По умолчанию, форма строится автоматически по описанию метаданных.<br />
+ * Метод можно переопределить для конкретного менеджера
+ *
+ * @method form_obj
+ * @for DataObj
+ * @param pwnd {dhtmlXWindows} - указатель на родительскую форму
+ * @param attr {Object} - параметры инициализации формы
+ */
+DataObj.prototype.form_obj = function (pwnd, attr) {
+	if(!attr)
+		attr = {};
+	attr.o = this;
+	return this._manager.form_obj(pwnd, attr);
 };

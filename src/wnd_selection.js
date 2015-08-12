@@ -42,18 +42,20 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 */
 	function frm_create(){
 
-		// создаём и настраиваем форму
+		// создаём и настраиваем окно формы
 		if(pwnd instanceof dhtmlXLayoutCell) {
 			if(typeof pwnd.close == "function")
 				pwnd.close();
 			wnd = pwnd;
-			wnd.showHeader();
 			wnd.close = function () {
 				(wnd || pwnd).detachToolbar();
 				(wnd || pwnd).detachStatusBar();
 				(wnd || pwnd).detachObject(true);
 				frm_unload();
 			};
+			setTimeout(function () {
+				wnd.showHeader();
+			});
 		}else{
 			wnd = $p.iface.w.createWindow('wnd_' + _mgr.class_name.replace(".", "_") + '_select', 0, 0, 900, 600);
 			wnd.centerOnScreen();

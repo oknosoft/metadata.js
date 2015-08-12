@@ -85,8 +85,7 @@
 				}
 				,
 				"tabular_sections": {}
-			}
-			,
+			},
 			"Номенклатура": {
 				"name": "Номенклатура",
 				"synonym": "Номенклатура",
@@ -168,6 +167,103 @@
 				}
 				,
 				"tabular_sections": {}
+			},
+			"delivery_areas": {
+				"name": "РайоныДоставки",
+				"synonym": "Районы доставки",
+				"illustration": "",
+				"obj_presentation": "Район доставки",
+				"list_presentation": "Районы доставки",
+				"input_by_string": [
+					"name",
+					"id"
+				],
+				"hierarchical": false,
+				"has_owners": false,
+				"group_hierarchy": true,
+				"main_presentation_name": true,
+				"code_length": 9,
+				"fields": {
+					"region": {
+						"synonym": "Регион",
+						"multiline_mode": false,
+						"tooltip": "Регион, край, область",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 50
+						}
+					},
+					"city": {
+						"synonym": "Город (населенный пункт)",
+						"multiline_mode": false,
+						"tooltip": "",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 50
+						}
+					},
+					"latitude": {
+						"synonym": "Гео. коорд. Широта",
+						"multiline_mode": false,
+						"tooltip": "",
+						"type": {
+							"types": [
+								"number"
+							],
+							"digits": 15,
+							"fraction_figits": 12
+						}
+					},
+					"longitude": {
+						"synonym": "Гео. коорд. Долгота",
+						"multiline_mode": false,
+						"tooltip": "",
+						"type": {
+							"types": [
+								"number"
+							],
+							"digits": 15,
+							"fraction_figits": 12
+						}
+					},
+					"ind": {
+						"synonym": "Индекс",
+						"multiline_mode": false,
+						"tooltip": "",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 6
+						}
+					},
+					"delivery_area": {
+						"synonym": "Район (внутри города)",
+						"multiline_mode": false,
+						"tooltip": "",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 50
+						}
+					},
+					"specify_area_by_geocoder": {
+						"synonym": "Уточнять район геокодером",
+						"multiline_mode": false,
+						"tooltip": "",
+						"type": {
+							"types": [
+								"boolean"
+							]
+						}
+					}
+				},
+				"tabular_sections": {}
 			}
 		},
 		"doc": {
@@ -229,6 +325,51 @@
 								"cat.Контрагенты"
 							],
 							"is_ref": true
+						}
+					},
+					"delivery_area": {
+						"synonym": "Район",
+						"multiline_mode": false,
+						"tooltip": "Район (зона, направление) доставки для группировки при планировании и оптимизации маршрута геокодером",
+						"choice_groups_elm": "elm",
+						"type": {
+							"types": [
+								"cat.delivery_areas"
+							],
+							"is_ref": true
+						}
+					},
+					"shipping_address": {
+						"synonym": "Адрес доставки",
+						"multiline_mode": false,
+						"tooltip": "Адрес доставки изделий заказа",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 255
+						}
+					},
+					"coordinates": {
+						"synonym": "Координаты",
+						"multiline_mode": false,
+						"tooltip": "Гео - координаты адреса доставки",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 50
+						}
+					},
+					"address_fields": {
+						"synonym": "Значения полей адреса",
+						"multiline_mode": false,
+						"tooltip": "Служебный реквизит",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 0
 						}
 					},
 					"СуммаДокумента": {
@@ -394,7 +535,10 @@
 					"obj": {
 						"head": {
 							" ": ["number_doc", "date", "Контрагент"],
-							"Планирование": ["ДатаИзменения", "ДатаОтгрузки"],
+							"Планирование": [
+								"ДатаОтгрузки",
+								{id: "shipping_address", path: "o.shipping_address", synonym: "Адрес доставки", type: "addr"}
+							],
 							"Дополнительно": [
 								{"id": "СписокНоменклатуры", "path": "o.СписокНоменклатуры", "synonym": "Список номенклатуры", "type": "ro"},
 								{"id": "СуммаДокумента", "path": "o.СуммаДокумента", "synonym": "Сумма документа", "type": "ro"}
@@ -414,20 +558,13 @@
 					}
 				}
 			}
-		}
-		,
-		"ireg": {}
-		,
-		"areg": {}
-		,
-		"dp": {}
-		,
-		"rep": {}
-		,
-		"cch": {}
-		,
-		"cacc": {}
-		,
+		},
+		"ireg": {},
+		"areg": {},
+		"dp": {},
+		"rep": {},
+		"cch": {},
+		"cacc": {},
 		"syns_1с": [
 			"Булево",
 			"ВводПоСтроке",
@@ -563,5 +700,4 @@
 			"is_folder"
 		]
 	};
-
 })

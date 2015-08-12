@@ -12,8 +12,9 @@ $p.eve.redirect = true;
 $p.settings = function (prm, modifiers) {
 	prm.create_tables = true;
 	prm.create_tables_sql = require('create_tables');
-	prm.allow_post_message = "*";
-	prm.russian_names = true;
+	prm.allow_post_message = "*";   // разрешаем обрабатывать сообщения от других окон (обязательно для файлового режима)
+	prm.russian_names = true;       // создаём русскоязычные синонимы
+	prm.use_google_geo = true;      // используем геолокатор
 };
 
 $p.iface.oninit = function() {
@@ -124,8 +125,7 @@ $p.iface.oninit = function() {
 				}
 				,
 				"tabular_sections": {}
-			}
-			,
+			},
 			"Номенклатура": {
 				"name": "Номенклатура",
 				"synonym": "Номенклатура",
@@ -207,6 +207,103 @@ $p.iface.oninit = function() {
 				}
 				,
 				"tabular_sections": {}
+			},
+			"delivery_areas": {
+				"name": "РайоныДоставки",
+				"synonym": "Районы доставки",
+				"illustration": "",
+				"obj_presentation": "Район доставки",
+				"list_presentation": "Районы доставки",
+				"input_by_string": [
+					"name",
+					"id"
+				],
+				"hierarchical": false,
+				"has_owners": false,
+				"group_hierarchy": true,
+				"main_presentation_name": true,
+				"code_length": 9,
+				"fields": {
+					"region": {
+						"synonym": "Регион",
+						"multiline_mode": false,
+						"tooltip": "Регион, край, область",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 50
+						}
+					},
+					"city": {
+						"synonym": "Город (населенный пункт)",
+						"multiline_mode": false,
+						"tooltip": "",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 50
+						}
+					},
+					"latitude": {
+						"synonym": "Гео. коорд. Широта",
+						"multiline_mode": false,
+						"tooltip": "",
+						"type": {
+							"types": [
+								"number"
+							],
+							"digits": 15,
+							"fraction_figits": 12
+						}
+					},
+					"longitude": {
+						"synonym": "Гео. коорд. Долгота",
+						"multiline_mode": false,
+						"tooltip": "",
+						"type": {
+							"types": [
+								"number"
+							],
+							"digits": 15,
+							"fraction_figits": 12
+						}
+					},
+					"ind": {
+						"synonym": "Индекс",
+						"multiline_mode": false,
+						"tooltip": "",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 6
+						}
+					},
+					"delivery_area": {
+						"synonym": "Район (внутри города)",
+						"multiline_mode": false,
+						"tooltip": "",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 50
+						}
+					},
+					"specify_area_by_geocoder": {
+						"synonym": "Уточнять район геокодером",
+						"multiline_mode": false,
+						"tooltip": "",
+						"type": {
+							"types": [
+								"boolean"
+							]
+						}
+					}
+				},
+				"tabular_sections": {}
 			}
 		},
 		"doc": {
@@ -268,6 +365,51 @@ $p.iface.oninit = function() {
 								"cat.Контрагенты"
 							],
 							"is_ref": true
+						}
+					},
+					"delivery_area": {
+						"synonym": "Район",
+						"multiline_mode": false,
+						"tooltip": "Район (зона, направление) доставки для группировки при планировании и оптимизации маршрута геокодером",
+						"choice_groups_elm": "elm",
+						"type": {
+							"types": [
+								"cat.delivery_areas"
+							],
+							"is_ref": true
+						}
+					},
+					"shipping_address": {
+						"synonym": "Адрес доставки",
+						"multiline_mode": false,
+						"tooltip": "Адрес доставки изделий заказа",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 255
+						}
+					},
+					"coordinates": {
+						"synonym": "Координаты",
+						"multiline_mode": false,
+						"tooltip": "Гео - координаты адреса доставки",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 50
+						}
+					},
+					"address_fields": {
+						"synonym": "Значения полей адреса",
+						"multiline_mode": false,
+						"tooltip": "Служебный реквизит",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 0
 						}
 					},
 					"СуммаДокумента": {
@@ -422,8 +564,8 @@ $p.iface.oninit = function() {
 							"Комментарий"
 						],
 						"cols": [
-							{"id": "date", "width": "120", "type": "ro", "align": "left", "sort": "server", "caption": "Дата"},
-							{"id": "number_doc", "width": "120", "type": "ro", "align": "left", "sort": "server", "caption": "Номер"},
+							{"id": "date", "width": "130", "type": "ro", "align": "left", "sort": "server", "caption": "Дата"},
+							{"id": "number_doc", "width": "130", "type": "ro", "align": "left", "sort": "server", "caption": "Номер"},
 							{"id": "Контрагент", "width": "170", "type": "ro", "align": "left", "sort": "server", "caption": "Контрагент"},
 							{"id": "СуммаДокумента", "width": "120", "type": "ron", "align": "right", "sort": "server", "caption": "Сумма"},
 							{"id": "СписокНоменклатуры", "width": "170", "type": "ro", "align": "left", "sort": "server", "caption": "Номенклатура"},
@@ -433,7 +575,10 @@ $p.iface.oninit = function() {
 					"obj": {
 						"head": {
 							" ": ["number_doc", "date", "Контрагент"],
-							"Планирование": ["ДатаИзменения", "ДатаОтгрузки"],
+							"Планирование": [
+								"ДатаОтгрузки",
+								{id: "shipping_address", path: "o.shipping_address", synonym: "Адрес доставки", type: "addr"}
+							],
 							"Дополнительно": [
 								{"id": "СписокНоменклатуры", "path": "o.СписокНоменклатуры", "synonym": "Список номенклатуры", "type": "ro"},
 								{"id": "СуммаДокумента", "path": "o.СуммаДокумента", "synonym": "Сумма документа", "type": "ro"}
@@ -453,20 +598,13 @@ $p.iface.oninit = function() {
 					}
 				}
 			}
-		}
-		,
-		"ireg": {}
-		,
-		"areg": {}
-		,
-		"dp": {}
-		,
-		"rep": {}
-		,
-		"cch": {}
-		,
-		"cacc": {}
-		,
+		},
+		"ireg": {},
+		"areg": {},
+		"dp": {},
+		"rep": {},
+		"cch": {},
+		"cacc": {},
 		"syns_1с": [
 			"Булево",
 			"ВводПоСтроке",
@@ -602,7 +740,6 @@ $p.iface.oninit = function() {
 			"is_folder"
 		]
 	};
-
 }),
 "data": (function (require) {
 	return {
@@ -2139,6 +2276,152 @@ $p.iface.oninit = function() {
 					},
 					"СрокИсполненияЗаказа": 1
 				}
+			],
+			"delivery_areas": [
+				{
+					"ИмяПредопределенныхДанных": "",
+					"ref": {
+						"ref": "d231f8eb-eb80-11e1-9add-000c297147a6",
+						"presentation": "Ленинский (Челябинск)",
+						"type": "cat.delivery_areas"
+					},
+					"deleted": false,
+					"name": "Ленинский (Челябинск)",
+					"id": "000000010",
+					"region": "Челябинская область",
+					"city": "г. Челябинск",
+					"latitude": 55.134030619492,
+					"longitude": 61.437430428223,
+					"ind": "454010",
+					"delivery_area": "Ленинский",
+					"specify_area_by_geocoder": false
+				},
+				{
+					"ИмяПредопределенныхДанных": "",
+					"ref": {
+						"ref": "d231f8f3-eb80-11e1-9add-000c297147a6",
+						"presentation": "Теплый Стан",
+						"type": "cat.delivery_areas"
+					},
+					"deleted": false,
+					"name": "Теплый Стан",
+					"id": "000000018",
+					"region": "г. Москва",
+					"city": "",
+					"latitude": 55.626376568423,
+					"longitude": 37.492746645508,
+					"ind": "",
+					"delivery_area": "Теплый Стан",
+					"specify_area_by_geocoder": false
+				},
+				{
+					"ИмяПредопределенныхДанных": "",
+					"ref": {
+						"ref": "d231f903-eb80-11e1-9add-000c297147a6",
+						"presentation": "Кутузовский проспект",
+						"type": "cat.delivery_areas"
+					},
+					"deleted": false,
+					"name": "Кутузовский проспект",
+					"id": "000000034",
+					"region": "г. Москва",
+					"city": "",
+					"latitude": 55.737977985868,
+					"longitude": 37.511194661377,
+					"ind": "",
+					"delivery_area": "Кутузовский проспект",
+					"specify_area_by_geocoder": false
+				},
+				{
+					"ИмяПредопределенныхДанных": "",
+					"ref": {
+						"ref": "f648af23-eb8a-11e1-9add-000c297147a6",
+						"presentation": "Бескудниковский",
+						"type": "cat.delivery_areas"
+					},
+					"deleted": false,
+					"name": "Бескудниковский",
+					"id": "000000038",
+					"region": "г. Москва",
+					"city": "",
+					"latitude": 55.865642642029,
+					"longitude": 37.552150984131,
+					"ind": "",
+					"delivery_area": "Бескудниковский",
+					"specify_area_by_geocoder": false
+				},
+				{
+					"ИмяПредопределенныхДанных": "",
+					"ref": {
+						"ref": "f648af2a-eb8a-11e1-9add-000c297147a6",
+						"presentation": "Левобережный",
+						"type": "cat.delivery_areas"
+					},
+					"deleted": false,
+					"name": "Левобережный",
+					"id": "000000045",
+					"region": "г. Москва",
+					"city": "",
+					"latitude": 55.8673206194,
+					"longitude": 37.468912936523,
+					"ind": "",
+					"delivery_area": "Левобережный",
+					"specify_area_by_geocoder": false
+				},
+				{
+					"ИмяПредопределенныхДанных": "",
+					"ref": {
+						"ref": "f648af42-eb8a-11e1-9add-000c297147a6",
+						"presentation": "Чертаново",
+						"type": "cat.delivery_areas"
+					},
+					"deleted": false,
+					"name": "Чертаново",
+					"id": "000000069",
+					"region": "г. Москва",
+					"city": "",
+					"latitude": 55.58979461973,
+					"longitude": 37.604085968262,
+					"ind": "",
+					"delivery_area": "Чертаново",
+					"specify_area_by_geocoder": false
+				},
+				{
+					"ИмяПредопределенныхДанных": "",
+					"ref": {
+						"ref": "4609e8c3-eb8d-11e1-9add-000c297147a6",
+						"presentation": "Зеленоград",
+						"type": "cat.delivery_areas"
+					},
+					"deleted": false,
+					"name": "Зеленоград",
+					"id": "000000109",
+					"region": "Московская обл.",
+					"city": "Зеленоград",
+					"latitude": 55.98296250772,
+					"longitude": 37.175513984131,
+					"ind": "",
+					"delivery_area": "",
+					"specify_area_by_geocoder": false
+				},
+				{
+					"ИмяПредопределенныхДанных": "",
+					"ref": {
+						"ref": "dc9df9ba-35ba-11e3-bf86-206a8a1a5bb0",
+						"presentation": "Краснодар",
+						"type": "cat.delivery_areas"
+					},
+					"deleted": false,
+					"name": "Краснодар",
+					"id": "000000110",
+					"region": "Краснодарcкий край",
+					"city": "г. Краснодар",
+					"latitude": 45.027163907908,
+					"longitude": 38.970328661377,
+					"ind": "",
+					"delivery_area": "",
+					"specify_area_by_geocoder": false
+				}
 			]
 		},
 		"doc": {
@@ -2147,7 +2430,6 @@ $p.iface.oninit = function() {
 					"data_version": "",
 					"ref": "51012ccc-397d-11de-b595-00055d80a2b9",
 					"deleted": false,
-					"lc_changed": 0,
 					"number_doc": "ПР00-000002",
 					"date": "2015-01-17T08:00:00.000Z",
 					"posted": true,
@@ -2156,6 +2438,14 @@ $p.iface.oninit = function() {
 					"Контрагент": "77f23ab2-3576-11de-b591-00055d80a2b9",
 					"СуммаДокумента": 2550,
 					"СписокНоменклатуры": "",
+					"delivery_area": {
+						"ref": "f648af42-eb8a-11e1-9add-000c297147a6",
+						"presentation": "Чертаново",
+						"type": "cat.delivery_areas"
+					},
+					"shipping_address": "117545, Москва г, Подольских Курсантов ул, дом № 7 корп с21",
+					"coordinates": "",
+					"address_fields": "\u003CКонтактнаяИнформация xmlns=\"http://www.v8.1c.ru/ssl/contactinfo\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" Представление=\"117545, Москва г, Подольских Курсантов ул, дом № 7\"\u003E\u003CКомментарий/\u003E\u003CСостав xsi:type=\"Адрес\" Страна=\"РОССИЯ\"\u003E\u003CСостав xsi:type=\"АдресРФ\"\u003E\u003CСубъектРФ\u003EМосква г\u003C/СубъектРФ\u003E\u003CСвРайМО\u003E\u003CРайон/\u003E\u003C/СвРайМО\u003E\u003CГород/\u003E\u003CНаселПункт/\u003E\u003CУлица\u003EПодольских Курсантов ул\u003C/Улица\u003E\u003CДопАдрЭл\u003E\u003CНомер Тип=\"1010\" Значение=\"7\"/\u003E\u003C/ДопАдрЭл\u003E\u003CДопАдрЭл ТипАдрЭл=\"10100000\" Значение=\"117545\"/\u003E\u003C/Состав\u003E\u003C/Состав\u003E\u003C/КонтактнаяИнформация\u003E",
 					"Запасы": [
 						{
 							"Номенклатура": "6ebf3bf7-3565-11de-b591-00055d80a2b9",
@@ -2171,7 +2461,6 @@ $p.iface.oninit = function() {
 					"data_version": "",
 					"ref": "bad3fbef-371f-11de-b592-00055d80a2b9",
 					"deleted": false,
-					"lc_changed": 0,
 					"number_doc": "ТД00-000004",
 					"date": "2015-07-02T00:00:00.000Z",
 					"posted": true,
@@ -2195,7 +2484,6 @@ $p.iface.oninit = function() {
 					"data_version": "",
 					"ref": "bcc42416-3986-11de-b595-00055d80a2b9",
 					"deleted": false,
-					"lc_changed": 0,
 					"number_doc": "ТД00-000007",
 					"date": "2015-01-20T12:00:00.000Z",
 					"posted": true,
@@ -2226,5 +2514,5 @@ $p.iface.oninit = function() {
 		"force": true
 	}
 }),
-"create_tables": "USE md;\nCREATE TABLE IF NOT EXISTS refs (ref CHAR);\nCREATE TABLE IF NOT EXISTS `enm_ТипыНоменклатуры` (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR);\nCREATE TABLE IF NOT EXISTS `doc_ЗаказПокупателя` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, posted BOOLEAN, date Date, number_doc CHAR, `ДатаИзменения` Date, `ДатаОтгрузки` Date, `Комментарий` CHAR, `Контрагент` CHAR, `СуммаДокумента` FLOAT, `СписокНоменклатуры` CHAR, `ts_Запасы` JSON);\nCREATE TABLE IF NOT EXISTS `cat_Номенклатура` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, `Артикул` CHAR, `ТипНоменклатуры` CHAR, `Комментарий` CHAR, `СрокИсполненияЗаказа` INT, `parent` CHAR);\nCREATE TABLE IF NOT EXISTS `cat_Контрагенты` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, `ИНН` CHAR, `Комментарий` CHAR, `parent` CHAR);\n"
+"create_tables": "USE md;\nCREATE TABLE IF NOT EXISTS refs (ref CHAR);\nCREATE TABLE IF NOT EXISTS `enm_ТипыНоменклатуры` (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR);\nCREATE TABLE IF NOT EXISTS `doc_ЗаказПокупателя` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, posted BOOLEAN, date Date, number_doc CHAR, `ДатаИзменения` Date, `ДатаОтгрузки` Date, `Комментарий` CHAR, `Контрагент` CHAR, `delivery_area` CHAR, `shipping_address` CHAR, `coordinates` CHAR, `address_fields` CHAR, `СуммаДокумента` FLOAT, `СписокНоменклатуры` CHAR, `ts_Запасы` JSON);\nCREATE TABLE IF NOT EXISTS `cat_delivery_areas` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, `region` CHAR, `city` CHAR, `latitude` FLOAT, `longitude` FLOAT, `ind` CHAR, `delivery_area` CHAR, `specify_area_by_geocoder` BOOLEAN);\nCREATE TABLE IF NOT EXISTS `cat_Номенклатура` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, `Артикул` CHAR, `ТипНоменклатуры` CHAR, `Комментарий` CHAR, `СрокИсполненияЗаказа` INT, `parent` CHAR);\nCREATE TABLE IF NOT EXISTS `cat_Контрагенты` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, `ИНН` CHAR, `Комментарий` CHAR, `parent` CHAR);\n"
 },{},{});

@@ -82,6 +82,14 @@ $p.msg.russian_names = function(){
 			"Сообщить": {
 				get: function(){return $p.msg.show_msg},
 				enumerable: false
+			},
+			"Истина": {
+				value: true,
+				enumerable: false
+			},
+			"Ложь": {
+				value: false,
+				enumerable: false
 			}
 
 		});
@@ -95,8 +103,24 @@ $p.msg.russian_names = function(){
 				"ФормаОбъекта": {
 					get: function(){return this.form_obj},
 					enumerable: false
+				},
+				"Найти": {
+					get: function(){return this.find},
+					enumerable: false
+				},
+				"НайтиСтроки": {
+					get: function(){return this.find_rows},
+					enumerable: false
 				}
+			}
+		);
 
+		// свойства и методы объектов данных
+		DataObj.prototype._define({
+				"ФормаОбъекта": {
+					get: function(){return this.form_obj},
+					enumerable: false
+				}
 			}
 		);
 

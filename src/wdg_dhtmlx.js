@@ -468,21 +468,31 @@ function data_to_grid(data, attr){
 		return res ;
 	}
 
+	function do_format(r, f){
+		if(f == "svg")
+			return $p.iface.normalize_xml(r[f]);
+		if(r[f] instanceof Date){
+			if(r[f].getHours() || r.date.getMinutes())
+				return $p.dateFormat(r[f], $p.dateFormat.masks.date_time);
+			else
+				return $p.dateFormat(r[f], $p.dateFormat.masks.date)
+		}else
+			return r[f] || "";
+	}
+
 	var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
 			.replace("%1", data.length).replace("%2", attr.start)
 			.replace("%3", attr.set_parent || "" ),
-		caption = this.caption_flds(attr),
-		fname;
+		caption = this.caption_flds(attr);
 
 	// при первом обращении к методу добавляем описание колонок
 	xml += caption.head;
 
 	data.forEach(function(r){
-		xml +=  "<row id=\"" + r.ref + "\"><cell class=\"" + cat_picture_class(r) + "\">" + r[caption.acols[0].id] + "</cell>";
-		for(var col=1; col < caption.acols.length; col++ ){
-			fname = caption.acols[col].id;
-			xml += "<cell>" + ((fname == "svg" ? $p.iface.normalize_xml(r[fname]) : r[fname]) || "") + "</cell>";
-		}
+		xml +=  "<row id=\"" + r.ref + "\"><cell class=\"" + cat_picture_class(r) + "\">" + do_format(r, [caption.acols[0].id]) + "</cell>";
+		for(var col=1; col < caption.acols.length; col++ )
+			xml += "<cell>" + do_format(r, [caption.acols[col].id]) + "</cell>";
+
 		xml += "</row>";
 	});
 

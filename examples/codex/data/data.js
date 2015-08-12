@@ -1533,6 +1533,152 @@
 					},
 					"СрокИсполненияЗаказа": 1
 				}
+			],
+			"delivery_areas": [
+				{
+					"ИмяПредопределенныхДанных": "",
+					"ref": {
+						"ref": "d231f8eb-eb80-11e1-9add-000c297147a6",
+						"presentation": "Ленинский (Челябинск)",
+						"type": "cat.delivery_areas"
+					},
+					"deleted": false,
+					"name": "Ленинский (Челябинск)",
+					"id": "000000010",
+					"region": "Челябинская область",
+					"city": "г. Челябинск",
+					"latitude": 55.134030619492,
+					"longitude": 61.437430428223,
+					"ind": "454010",
+					"delivery_area": "Ленинский",
+					"specify_area_by_geocoder": false
+				},
+				{
+					"ИмяПредопределенныхДанных": "",
+					"ref": {
+						"ref": "d231f8f3-eb80-11e1-9add-000c297147a6",
+						"presentation": "Теплый Стан",
+						"type": "cat.delivery_areas"
+					},
+					"deleted": false,
+					"name": "Теплый Стан",
+					"id": "000000018",
+					"region": "г. Москва",
+					"city": "",
+					"latitude": 55.626376568423,
+					"longitude": 37.492746645508,
+					"ind": "",
+					"delivery_area": "Теплый Стан",
+					"specify_area_by_geocoder": false
+				},
+				{
+					"ИмяПредопределенныхДанных": "",
+					"ref": {
+						"ref": "d231f903-eb80-11e1-9add-000c297147a6",
+						"presentation": "Кутузовский проспект",
+						"type": "cat.delivery_areas"
+					},
+					"deleted": false,
+					"name": "Кутузовский проспект",
+					"id": "000000034",
+					"region": "г. Москва",
+					"city": "",
+					"latitude": 55.737977985868,
+					"longitude": 37.511194661377,
+					"ind": "",
+					"delivery_area": "Кутузовский проспект",
+					"specify_area_by_geocoder": false
+				},
+				{
+					"ИмяПредопределенныхДанных": "",
+					"ref": {
+						"ref": "f648af23-eb8a-11e1-9add-000c297147a6",
+						"presentation": "Бескудниковский",
+						"type": "cat.delivery_areas"
+					},
+					"deleted": false,
+					"name": "Бескудниковский",
+					"id": "000000038",
+					"region": "г. Москва",
+					"city": "",
+					"latitude": 55.865642642029,
+					"longitude": 37.552150984131,
+					"ind": "",
+					"delivery_area": "Бескудниковский",
+					"specify_area_by_geocoder": false
+				},
+				{
+					"ИмяПредопределенныхДанных": "",
+					"ref": {
+						"ref": "f648af2a-eb8a-11e1-9add-000c297147a6",
+						"presentation": "Левобережный",
+						"type": "cat.delivery_areas"
+					},
+					"deleted": false,
+					"name": "Левобережный",
+					"id": "000000045",
+					"region": "г. Москва",
+					"city": "",
+					"latitude": 55.8673206194,
+					"longitude": 37.468912936523,
+					"ind": "",
+					"delivery_area": "Левобережный",
+					"specify_area_by_geocoder": false
+				},
+				{
+					"ИмяПредопределенныхДанных": "",
+					"ref": {
+						"ref": "f648af42-eb8a-11e1-9add-000c297147a6",
+						"presentation": "Чертаново",
+						"type": "cat.delivery_areas"
+					},
+					"deleted": false,
+					"name": "Чертаново",
+					"id": "000000069",
+					"region": "г. Москва",
+					"city": "",
+					"latitude": 55.58979461973,
+					"longitude": 37.604085968262,
+					"ind": "",
+					"delivery_area": "Чертаново",
+					"specify_area_by_geocoder": false
+				},
+				{
+					"ИмяПредопределенныхДанных": "",
+					"ref": {
+						"ref": "4609e8c3-eb8d-11e1-9add-000c297147a6",
+						"presentation": "Зеленоград",
+						"type": "cat.delivery_areas"
+					},
+					"deleted": false,
+					"name": "Зеленоград",
+					"id": "000000109",
+					"region": "Московская обл.",
+					"city": "Зеленоград",
+					"latitude": 55.98296250772,
+					"longitude": 37.175513984131,
+					"ind": "",
+					"delivery_area": "",
+					"specify_area_by_geocoder": false
+				},
+				{
+					"ИмяПредопределенныхДанных": "",
+					"ref": {
+						"ref": "dc9df9ba-35ba-11e3-bf86-206a8a1a5bb0",
+						"presentation": "Краснодар",
+						"type": "cat.delivery_areas"
+					},
+					"deleted": false,
+					"name": "Краснодар",
+					"id": "000000110",
+					"region": "Краснодарcкий край",
+					"city": "г. Краснодар",
+					"latitude": 45.027163907908,
+					"longitude": 38.970328661377,
+					"ind": "",
+					"delivery_area": "",
+					"specify_area_by_geocoder": false
+				}
 			]
 		},
 		"doc": {
@@ -1541,7 +1687,6 @@
 					"data_version": "",
 					"ref": "51012ccc-397d-11de-b595-00055d80a2b9",
 					"deleted": false,
-					"lc_changed": 0,
 					"number_doc": "ПР00-000002",
 					"date": "2015-01-17T08:00:00.000Z",
 					"posted": true,
@@ -1550,6 +1695,14 @@
 					"Контрагент": "77f23ab2-3576-11de-b591-00055d80a2b9",
 					"СуммаДокумента": 2550,
 					"СписокНоменклатуры": "",
+					"delivery_area": {
+						"ref": "f648af42-eb8a-11e1-9add-000c297147a6",
+						"presentation": "Чертаново",
+						"type": "cat.delivery_areas"
+					},
+					"shipping_address": "117545, Москва г, Подольских Курсантов ул, дом № 7 корп с21",
+					"coordinates": "",
+					"address_fields": "\u003CКонтактнаяИнформация xmlns=\"http://www.v8.1c.ru/ssl/contactinfo\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" Представление=\"117545, Москва г, Подольских Курсантов ул, дом № 7\"\u003E\u003CКомментарий/\u003E\u003CСостав xsi:type=\"Адрес\" Страна=\"РОССИЯ\"\u003E\u003CСостав xsi:type=\"АдресРФ\"\u003E\u003CСубъектРФ\u003EМосква г\u003C/СубъектРФ\u003E\u003CСвРайМО\u003E\u003CРайон/\u003E\u003C/СвРайМО\u003E\u003CГород/\u003E\u003CНаселПункт/\u003E\u003CУлица\u003EПодольских Курсантов ул\u003C/Улица\u003E\u003CДопАдрЭл\u003E\u003CНомер Тип=\"1010\" Значение=\"7\"/\u003E\u003C/ДопАдрЭл\u003E\u003CДопАдрЭл ТипАдрЭл=\"10100000\" Значение=\"117545\"/\u003E\u003C/Состав\u003E\u003C/Состав\u003E\u003C/КонтактнаяИнформация\u003E",
 					"Запасы": [
 						{
 							"Номенклатура": "6ebf3bf7-3565-11de-b591-00055d80a2b9",
@@ -1565,7 +1718,6 @@
 					"data_version": "",
 					"ref": "bad3fbef-371f-11de-b592-00055d80a2b9",
 					"deleted": false,
-					"lc_changed": 0,
 					"number_doc": "ТД00-000004",
 					"date": "2015-07-02T00:00:00.000Z",
 					"posted": true,
@@ -1589,7 +1741,6 @@
 					"data_version": "",
 					"ref": "bcc42416-3986-11de-b595-00055d80a2b9",
 					"deleted": false,
-					"lc_changed": 0,
 					"number_doc": "ТД00-000007",
 					"date": "2015-01-20T12:00:00.000Z",
 					"posted": true,

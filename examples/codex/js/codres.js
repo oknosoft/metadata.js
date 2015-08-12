@@ -9,8 +9,9 @@ $p.eve.redirect = true;
 $p.settings = function (prm, modifiers) {
 	prm.create_tables = true;
 	prm.create_tables_sql = require('create_tables');
-	prm.allow_post_message = "*";
-	prm.russian_names = true;
+	prm.allow_post_message = "*";   // разрешаем обрабатывать сообщения от других окон (обязательно для файлового режима)
+	prm.russian_names = true;       // создаём русскоязычные синонимы
+	prm.use_google_geo = true;      // используем геолокатор
 };
 
 $p.iface.oninit = function() {

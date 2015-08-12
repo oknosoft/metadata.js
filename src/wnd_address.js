@@ -117,6 +117,12 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 				}
 			};
 
+			// уменьшаем высоту, в случае малого фрейма
+			if(source.wnd && source.wnd.getHeight){
+				if(options.wnd.height > source.wnd.getHeight())
+					options.wnd.height = source.wnd.getHeight();
+			}
+
 			wnd = $p.iface.dat_blank(null, options.wnd);
 
 			wnd.elmnts.layout = wnd.attachLayout('2E');
@@ -523,7 +529,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 						case "route":
 							if(c.short_name.indexOf("Unnamed")==-1){
 								street = c.short_name + (street ? (" " + street) : "");
-								street0 = $p.m.trim(c.long_name.replace("улица", ""));
+								street0 = c.long_name.replace("улица", "").trim();
 							}
 							break;
 						case "administrative_area_level_1":
