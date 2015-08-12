@@ -1,26 +1,72 @@
 {"id":0,
   "item":[
     {"id":"0100","text":"Демо-приложения","child":"1", "open":"1",
+      "userdata": [
+        {"name": "url", "content": "examples/codex/result.html"},
+        {"name": "exec_hidden", "content": true}
+      ],
       "item":[
         {"id":"0150", "text":"Файлы данных","child":"1", "open":"1",
+          "userdata": [
+            {"name": "exec_hidden", "content": true}
+          ],
           "item":[
-            {"id":"0151", "text":"Метаданные"},
-            {"id":"0152", "text":"Тестовые данные"}
+            {"id":"0151", "text":"Метаданные", "userdata": [
+              {"name": "exec_hidden", "content": true}
+            ]},
+            {"id":"0152", "text":"Тестовые данные", "userdata": [
+              {"name": "exec_hidden", "content": true}
+            ]}
           ]
         },
         {"id":"0110", "text":"Элементы управления","child":"1", "open":"1",
           "item":[
             {"id":"0111", "text":"Сообщения пользователю"},
-            {"id":"0112", "text":"Формы списка и выбора"}
+            {"id":"0112", "text":"Формы списка и выбора"},
+            {"id":"0113", "text":"Формы объектов"},
+            {"id":"0114", "text":"Форма ввода адреса"},
+            {"id":"0115", "text":"Панель инструментов OToolbar"},
+            {"id":"0116", "text":"Поле ввода OCombo"},
+            {"id":"0117", "text":"Таблица реквизитов объекта"},
+            {"id":"0118", "text":"Табличная часть объекта"}
             ]
         },
-        {"id":"0120", "text":"Управление небольшой фирмой"},
-        {"id":"0130", "text":"Бухгалтерия предприятия"},
-        {"id":"0140", "text":"Безбумажное производство"}
+        {"id":"0120", "text":"Управление небольшой фирмой", "userdata": [
+          {"name": "url", "content": "examples/unf/"},
+          {"name": "exec_disabled", "content": true}
+        ]},
+        {"id":"0130", "text":"Бухгалтерия предприятия", "userdata": [
+          {"name": "url", "content": "examples/accounting/"},
+          {"name": "exec_disabled", "content": true}
+        ]},
+        {"id":"0140", "text":"Безбумажное производство", "userdata": [
+          {"name": "exec_hidden", "content": true}
+        ]}
       ]},
     {"id":"0200", "text":"Объектная модель","child":"1",
+      "userdata": [
+        {"name": "exec_hidden", "content": true}
+      ],
       "item":[
-        {"id":"0210", "text":"MetaEngine"}
+        {"id":"0210", "text":"MetaEngine"},
+        {"id":"0214", "text":"Meta"},
+        {"id":"0211", "text":"SQL в памяти браузера"},
+        {"id":"0212", "text":"Менеджеры данных"},
+        {"id":"0213", "text":"Объекты данных"}
+      ]},
+    {"id":"0300", "text":"Синхронизация и обмен данными","child":"1",
+      "userdata": [
+        {"name": "exec_hidden", "content": true}
+      ],
+      "item":[
+        {"id":"0309", "text":"Кешируемые и онлайн объекты"},
+        {"id":"0310", "text":"Стандартный ODATA"},
+        {"id":"0311", "text":"HTTP-сервис интеграции"},
+        {"id":"0312", "text":"Файловый снапшот"},
+        {"id":"0313", "text":"Экспорт данных"},
+        {"id":"0314", "text":"Импорт данных"},
+        {"id":"0315", "text":"Синхронизация данных"},
+        {"id":"0316", "text":"Реактивная синхронизация"}
       ]}
   ]
 }

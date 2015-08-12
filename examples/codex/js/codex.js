@@ -39,6 +39,7 @@ $p.iface.oninit = function() {
 			},
 			{
 				id:     "c",
+				collapsed_text: "результат выполнения javascript",
 				header: false
 			}
 		],
@@ -50,12 +51,13 @@ $p.iface.oninit = function() {
 		}
 	});
 
-	layout.attachEvent("onPanelResizeFinish", function(names){
+	function on_resize(names){
 		if(names.indexOf("b")!=-1){
 			var h = layout.cells("b").getHeight();
 			$p.iface.editor.setSize(null, h - 66);
 		}
-	});
+	}
+	layout.attachEvent("onPanelResizeFinish", on_resize);
 
 	// табы
 	var tabs = $p.iface.tabs = layout.cells("b").attachTabbar({
@@ -110,7 +112,15 @@ $p.iface.oninit = function() {
 	setTimeout(function () {
 		$p.iface.result = new function Results() {
 
-			//layout.cells("c").cell.lastChild.style.padding = "0px";
+			this.show = function () {
+				layout.cells("c").expand();
+				on_resize(["b"]);
+			};
+
+			this.hide = function () {
+				layout.cells("c").collapse();
+				on_resize(["b"]);
+			};
 
 			this.execute = function (code) {
 				frames[0].postMessage(code, "*");
@@ -149,9 +159,12 @@ function tree_select(id){
 	$p.iface.editor.clearHistory();
 
 	// при необходимости, обновляем url страницы результата
-	var opt = require('options')[id];
-
-	$p.iface.result.navigate(opt_url(opt));
+	if($p.iface.tree.getUserData(id, "exec_hidden"))
+		$p.iface.result.hide();
+	else{
+		$p.iface.result.navigate(opt_url($p.iface.tree.getUserData(id, "url")));
+		$p.iface.result.show();
+	}
 
 	$p.iface.set_hash(id, "", "", $p.iface.tabs.getActiveTab());
 
