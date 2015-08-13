@@ -143,6 +143,8 @@ $p.iface.oninit = function() {
 		tree.selectItem("0100", true);
 	}, 300);
 
+	// совместимость браузеров
+
 };
 
 function tree_select(id){

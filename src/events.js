@@ -78,15 +78,6 @@ if(typeof window !== "undefined"){
 				if (navigator.geolocation && $p.job_prm.use_google_geo) {
 
 					/**
-					 * Данные геолокации
-					 * @property ipinfo
-					 * @for MetaEngine
-					 * @type IPInfo
-					 * @static
-					 */
-					$p.ipinfo = new IPInfo();
-
-					/**
 					 * ### Данные геолокации
 					 * Объект предоставляет доступ к функциям _геокодирования браузера_, а так же - геокодерам _Яндекс_ и _Гугл_
 					 *
@@ -214,6 +205,15 @@ if(typeof window !== "undefined"){
 							);
 						}
 					};
+
+					/**
+					 * Данные геолокации
+					 * @property ipinfo
+					 * @for MetaEngine
+					 * @type IPInfo
+					 * @static
+					 */
+					$p.ipinfo = new IPInfo();
 
 					// подгружаем скрипты google
 					if(!window.google || !window.google.maps)
