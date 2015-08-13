@@ -3,7 +3,7 @@
 [README на русском языке](README.md)
 
 ### Prehistory
-Metadata.js - an alternative lightweight javascript client 1C, which allows to read and edit the data on the [server 1C](http://v8.1c.ru/overview/Term_000000033.htm) with a large number of connections (dealers or online storefront with hundreds of anonymous or authorized external users).
+[Metadata.js](http://www.oknosoft.ru/metadata/) - an alternative lightweight javascript client 1C, which allows to read and edit the data on the [server 1C](http://v8.1c.ru/overview/Term_000000033.htm) with a large number of connections (dealers or online storefront with hundreds of anonymous or authorized external users).
 
 ### Presentations
 - [Why is it necessary](http://www.oknosoft.ru/presentations/zd_what_for.html)
