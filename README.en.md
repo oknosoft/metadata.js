@@ -1,4 +1,4 @@
-# metadata.js - lightweight metadata&data engine
+# metadata.js - lightweight metadata & data engine
 
 [README на русском языке](README.md)
 
