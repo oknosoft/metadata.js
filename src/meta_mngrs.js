@@ -1550,6 +1550,63 @@ InfoRegManager.prototype.slice_last = function(filter){
 };
 
 
+/**
+ * ### Журнал событий
+ * Хранит и накапливает события сеанса<br />
+ * Является наследником регистра сведений
+ * @extends InfoRegManager
+ * @class LogManager
+ * @static
+ */
+function LogManager(){
+
+	LogManager.superclass.constructor.call(this, "ireg.$log");
+
+	/**
+	 * Добавляет запись в журнал
+	 * @param msg {String} - текст события
+	 */
+	this.record = function(msg){
+
+	};
+
+	/**
+	 * Сбрасывает события на сервер
+	 * @method backup
+	 * @param [dfrom] {Date}
+	 * @param [dtill] {Date}
+	 */
+	this.backup = function(dfrom, dtill){
+
+	};
+
+	/**
+	 * Восстанавливает события из архива на сервере
+	 * @method restore
+	 * @param [dfrom] {Date}
+	 * @param [dtill] {Date}
+	 */
+	this.restore = function(dfrom, dtill){
+
+	};
+
+	/**
+	 * Стирает события в указанном диапазоне дат
+	 * @method clear
+	 * @param [dfrom] {Date}
+	 * @param [dtill] {Date}
+	 */
+	this.clear = function(dfrom, dtill){
+
+	};
+
+	this.show = function (pwnd) {
+
+	}
+}
+LogManager._extend(InfoRegManager);
+
+
 
 /**
  * ### Абстрактный менеджер регистра накопления

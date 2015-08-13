@@ -398,6 +398,8 @@ function OCombo(attr){
 	// выполняем конструктор родительского объекта
 	OCombo.superclass.constructor.call(this, attr);
 	this.DOMelem.style.marginBottom = "4px";
+	if(attr.left)
+		this.DOMelem.style.left = left + "px";
 
 	this.attachEvent("onChange", function(){
 		_obj[_field] = this.getSelectedValue();

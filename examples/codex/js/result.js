@@ -145,7 +145,7 @@ $p.iface.oninit = function() {
 				"fields": {
 					"Артикул": {
 						"synonym": "Артикул",
-						"МногострочныйРежим": false,
+						"multiline_mode": false,
 						"Подсказка": "Цифровой код товара. Текстовое значение, используется в печатных формах документов.",
 						"type": {
 							"types": [
@@ -153,11 +153,10 @@ $p.iface.oninit = function() {
 							],
 							"str_len": 25
 						}
-					}
-					,
+					},
 					"ТипНоменклатуры": {
 						"synonym": "Тип",
-						"МногострочныйРежим": false,
+						"multiline_mode": false,
 						"Подсказка": "Тип позиции номенклатуры, определяющий ее сущность и поведение: запас - складируемые запасы, работа - подрядные работы, услуга - сервисные услуги, услуги сторонних организаций.",
 						"choice_groups_elm": "elm",
 						"type": {
@@ -166,11 +165,10 @@ $p.iface.oninit = function() {
 							],
 							"is_ref": true
 						}
-					}
-					,
+					},
 					"Комментарий": {
 						"synonym": "Описание",
-						"МногострочныйРежим": false,
+						"multiline_mode": false,
 						"Подсказка": "Любая дополнительная информация",
 						"type": {
 							"types": [
@@ -178,12 +176,11 @@ $p.iface.oninit = function() {
 							],
 							"str_len": 0
 						}
-					}
-					,
+					},
 					"СрокИсполненияЗаказа": {
 						"synonym": "Срок исполнения (дн.)",
-						"МногострочныйРежим": false,
-						"Подсказка": "Стандартный срок исполнения заказа покупателя, в днях.",
+						"multiline_mode": false,
+						"tooltip": "Стандартный срок исполнения заказа покупателя, в днях.",
 						"type": {
 							"types": [
 								"number"
@@ -195,8 +192,8 @@ $p.iface.oninit = function() {
 					,
 					"parent": {
 						"synonym": "Группа",
-						"МногострочныйРежим": false,
-						"Подсказка": "Группа, в которую входит данная позиция номенклатуры.",
+						"multiline_mode": false,
+						"tooltip": "Группа, в которую входит данная позиция номенклатуры.",
 						"type": {
 							"types": [
 								"cat.Номенклатура"
@@ -324,8 +321,8 @@ $p.iface.oninit = function() {
 				"fields": {
 					"ДатаИзменения": {
 						"synonym": "Дата изменения",
-						"МногострочныйРежим": false,
-						"Подсказка": "",
+						"multiline_mode": false,
+						"tooltip": "",
 						"type": {
 							"types": [
 								"date"
@@ -335,8 +332,8 @@ $p.iface.oninit = function() {
 					},
 					"ДатаОтгрузки": {
 						"synonym": "Дата отгрузки",
-						"МногострочныйРежим": false,
-						"Подсказка": "Желаемая дата отгрузки по заказу",
+						"multiline_mode": false,
+						"tooltip": "Желаемая дата отгрузки по заказу",
 						"type": {
 							"types": [
 								"date"
@@ -346,8 +343,8 @@ $p.iface.oninit = function() {
 					},
 					"Комментарий": {
 						"synonym": "Комментарий",
-						"МногострочныйРежим": false,
-						"Подсказка": "Произвольный комментарий",
+						"multiline_mode": false,
+						"tooltip": "Произвольный комментарий",
 						"type": {
 							"types": [
 								"string"
@@ -357,8 +354,8 @@ $p.iface.oninit = function() {
 					},
 					"Контрагент": {
 						"synonym": "Контрагент",
-						"МногострочныйРежим": false,
-						"Подсказка": "Покупатель, заказчик",
+						"multiline_mode": false,
+						"tooltip": "Покупатель, заказчик",
 						"choice_groups_elm": "elm",
 						"type": {
 							"types": [
@@ -414,8 +411,8 @@ $p.iface.oninit = function() {
 					},
 					"СуммаДокумента": {
 						"synonym": "Сумма",
-						"МногострочныйРежим": false,
-						"Подсказка": "Заполняется сумма документа",
+						"multiline_mode": false,
+						"tooltip": "Заполняется сумма документа",
 						"type": {
 							"types": [
 								"number"
@@ -426,8 +423,8 @@ $p.iface.oninit = function() {
 					},
 					"СписокНоменклатуры": {
 						"synonym": "Список номенклатуры",
-						"МногострочныйРежим": false,
-						"Подсказка": "Список номенклатуры. Используется для отображения в списке документов.",
+						"multiline_mode": false,
+						"tooltip": "Список номенклатуры. Используется для отображения в списке документов.",
 						"type": {
 							"types": [
 								"string"
@@ -440,12 +437,12 @@ $p.iface.oninit = function() {
 					"Запасы": {
 						"name": "Запасы",
 						"synonym": "Товары, работы, услуги",
-						"Подсказка": "Товары, работы, услуги, продукция",
+						"tooltip": "Товары, работы, услуги, продукция",
 						"fields": {
 							"Номенклатура": {
 								"synonym": "Номенклатура",
-								"МногострочныйРежим": false,
-								"Подсказка": "Заказываемая номенклатура",
+								"multiline_mode": false,
+								"tooltip": "Заказываемая номенклатура",
 								"choice_params": [
 									{
 										"name": "ТипНоменклатуры",
@@ -499,8 +496,8 @@ $p.iface.oninit = function() {
 							,
 							"Количество": {
 								"synonym": "Количество",
-								"МногострочныйРежим": false,
-								"Подсказка": "Заказываемое количество",
+								"multiline_mode": false,
+								"tooltip": "Заказываемое количество",
 								"type": {
 									"types": [
 										"number"
@@ -512,8 +509,8 @@ $p.iface.oninit = function() {
 							,
 							"Цена": {
 								"synonym": "Цена",
-								"МногострочныйРежим": false,
-								"Подсказка": "Цена номенклатуры",
+								"multiline_mode": false,
+								"tooltip": "Цена номенклатуры",
 								"type": {
 									"types": [
 										"number"
@@ -525,8 +522,8 @@ $p.iface.oninit = function() {
 							,
 							"ПроцентСкидкиНаценки": {
 								"synonym": "% Скидки",
-								"МногострочныйРежим": false,
-								"Подсказка": "Процент скидки, наценки по строке документа",
+								"multiline_mode": false,
+								"tooltip": "Процент скидки, наценки по строке документа",
 								"type": {
 									"types": [
 										"number"
@@ -538,8 +535,8 @@ $p.iface.oninit = function() {
 							,
 							"Сумма": {
 								"synonym": "Сумма",
-								"МногострочныйРежим": false,
-								"Подсказка": "Сумма по строке документа",
+								"multiline_mode": false,
+								"tooltip": "Сумма по строке документа",
 								"type": {
 									"types": [
 										"number"
@@ -2514,5 +2511,5 @@ $p.iface.oninit = function() {
 		"force": true
 	}
 }),
-"create_tables": "USE md;\nCREATE TABLE IF NOT EXISTS refs (ref CHAR);\nCREATE TABLE IF NOT EXISTS `enm_ТипыНоменклатуры` (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR);\nCREATE TABLE IF NOT EXISTS `doc_ЗаказПокупателя` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, posted BOOLEAN, date Date, number_doc CHAR, `ДатаИзменения` Date, `ДатаОтгрузки` Date, `Комментарий` CHAR, `Контрагент` CHAR, `delivery_area` CHAR, `shipping_address` CHAR, `coordinates` CHAR, `address_fields` CHAR, `СуммаДокумента` FLOAT, `СписокНоменклатуры` CHAR, `ts_Запасы` JSON);\nCREATE TABLE IF NOT EXISTS `cat_delivery_areas` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, `region` CHAR, `city` CHAR, `latitude` FLOAT, `longitude` FLOAT, `ind` CHAR, `delivery_area` CHAR, `specify_area_by_geocoder` BOOLEAN);\nCREATE TABLE IF NOT EXISTS `cat_Номенклатура` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, `Артикул` CHAR, `ТипНоменклатуры` CHAR, `Комментарий` CHAR, `СрокИсполненияЗаказа` INT, `parent` CHAR);\nCREATE TABLE IF NOT EXISTS `cat_Контрагенты` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, `ИНН` CHAR, `Комментарий` CHAR, `parent` CHAR);\n"
+"create_tables": "USE md;\nCREATE TABLE IF NOT EXISTS refs (ref CHAR);\nCREATE TABLE IF NOT EXISTS `enm_ТипыНоменклатуры` (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR);\nCREATE TABLE IF NOT EXISTS `doc_ЗаказПокупателя` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, posted BOOLEAN, date Date, number_doc CHAR, `ДатаИзменения` Date, `ДатаОтгрузки` Date, `Комментарий` CHAR, `Контрагент` CHAR, `delivery_area` CHAR, `shipping_address` CHAR, `coordinates` CHAR, `address_fields` CHAR, `СуммаДокумента` FLOAT, `СписокНоменклатуры` CHAR, `ts_Запасы` JSON);\nCREATE TABLE IF NOT EXISTS `ireg_$log` (`date` Date, `sequence` INT, `class` CHAR, `note` CHAR, PRIMARY KEY (`date`, `sequence`));\nCREATE TABLE IF NOT EXISTS `cat_delivery_areas` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, `region` CHAR, `city` CHAR, `latitude` FLOAT, `longitude` FLOAT, `ind` CHAR, `delivery_area` CHAR, `specify_area_by_geocoder` BOOLEAN);\nCREATE TABLE IF NOT EXISTS `cat_Номенклатура` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, `Артикул` CHAR, `ТипНоменклатуры` CHAR, `Комментарий` CHAR, `СрокИсполненияЗаказа` INT, `parent` CHAR);\nCREATE TABLE IF NOT EXISTS `cat_Контрагенты` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT, id CHAR, name CHAR, is_folder BOOLEAN, `ИНН` CHAR, `Комментарий` CHAR, `parent` CHAR);\n"
 },{},{});

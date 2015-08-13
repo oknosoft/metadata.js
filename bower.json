@@ -1,7 +1,7 @@
 {
   "name": "metadata",
   "description": "metadata.js - Web client for 1C and other rest servers - metadata & data engine",
-  "version": "0.9.195",
+  "version": "0.9.196",
   "license": "Oknosoft",
   "keywords": [
     "metadata",
@@ -40,10 +40,6 @@
   "ignore": [
     "src",
     "lib/ext",
-    "lib/alasql.min.js",
-    "lib/dat.gui.js",
-    "lib/paper.js",
-    "lib/xlsx.core.min.js",
     "node_modules",
     "bower.json",
     "package.json",

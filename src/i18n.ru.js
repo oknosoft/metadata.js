@@ -111,6 +111,10 @@ $p.msg.russian_names = function(){
 				"НайтиСтроки": {
 					get: function(){return this.find_rows},
 					enumerable: false
+				},
+				"НайтиПоНаименованию": {
+					get: function(){return this.by_name},
+					enumerable: false
 				}
 			}
 		);

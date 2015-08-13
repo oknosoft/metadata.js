@@ -124,7 +124,14 @@ var _rest = $p.rest = new Rest();
 DataManager.prototype._define("rest_name", {
 	get : function(suffix){
 		var fp = this.class_name.split("."),
-			csyn = {cat: "Catalog", doc: "Document", ireg: "InformationRegister", areg: "AccumulationRegister"};
+			csyn = {
+				cat: "Catalog",
+				doc: "Document",
+				ireg: "InformationRegister",
+				areg: "AccumulationRegister",
+				cch: "ChartOfCharacteristicTypes",
+				cacc: "ChartOfAccounts"
+			};
 		return csyn[fp[0]] + "_" + _md.syns_1с(fp[1]) + (suffix || "");
 	},
 	enumerable : false

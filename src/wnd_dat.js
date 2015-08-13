@@ -334,6 +334,32 @@ $p.iface.pgrid_on_checkbox = function(rId, cInd, state){
 		source.grid_on_change(rId, state);
 };
 
+
+function _clear_all(){
+	$p.iface.docs._define({
+		clear_all: {
+			value: function () {
+				this.detachToolbar();
+				this.detachStatusBar();
+				this.detachObject(true);
+			},
+			enumerable: false
+		},
+		"Очистить": {
+			get: function () {
+				return this.clear_all;
+			},
+			enumerable: false
+		},
+		"Контейнер": {
+			get: function () {
+				return this.cell.querySelector(".dhx_cell_cont_layout");
+			},
+			enumerable: false
+		}
+	});
+}
+
 /**
  * Рисует стандартную раскладку (XLayout) с деревом в левой части
  * @method layout_2u
@@ -356,6 +382,7 @@ $p.iface.layout_2u = function (tree_attr) {
 		}
 	});
 	iface.docs = iface.main.cells('b');
+	_clear_all();
 
 	iface.cell_tree = iface.main.cells('a');
 	iface.cell_tree.setText('Режим');
@@ -410,16 +437,26 @@ $p.iface.layout_2u = function (tree_attr) {
  * В созданной области, как правило, размещают форму списка основного документа
  * @method layout_1c
  * @for InterfaceObjs
+ * @return {Promise.<boolean>}
  */
 $p.iface.layout_1c = function () {
+
 	var iface = $p.iface;
 
-	iface.main = new dhtmlXLayoutObject({
-		parent: document.body,
-		pattern: "1C",
-		offsets: {top: 4, right: 4, bottom: 4, left: 4}
+	return new Promise(function(resolve, reject) {
+		try{
+			iface.main = new dhtmlXLayoutObject({
+				parent: document.body,
+				pattern: "1C",
+				offsets: {top: 4, right: 4, bottom: 4, left: 4}
+			});
+			iface.docs = iface.main.cells('a');
+			_clear_all();
+			resolve(true);
+		}catch(err){
+			reject(err);
+		}
 	});
-	iface.docs = iface.main.cells('a');
 };
 
 /**
@@ -430,8 +467,9 @@ $p.iface.layout_1c = function () {
  * @param [onstep] {function} - обработчик визуализации шагов входа в систему. Если не указан, рисуется стандарное окно
  * @param resolve {function} - обработчик успешной авторизации и начальной загрузки данных
  * @param reject {function} - обработчик, который вызывается в случае ошибок на старте программы
+ * @param [on_draw_auth] {function} - обработчик, который вызывается после отрисовки формы
  */
-$p.iface.frm_auth = function (onstep, resolve, reject) {
+$p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 
 	var frm_auth = $p.iface.auth = $p.iface.docs.attachForm(),
 		w, were_errors, auth_struct;
@@ -514,11 +552,11 @@ $p.iface.frm_auth = function (onstep, resolve, reject) {
 				$p.wsql.set_user_param("browser_uid", $p.generate_guid());	// проверяем guid браузера
 
 			$p.eve.log_in(onstep)
-				.then(resolve)
+				.then(frm_auth.on_auth || resolve)
 				.catch(function (err) {
 					were_errors = true;
-					if(reject)
-						reject(err);
+					if(frm_auth.on_error || reject)
+						(frm_auth.on_error || reject)(err);
 				})
 				.then(function (err) {
 					if($p.iface.sync)
@@ -574,6 +612,7 @@ $p.iface.frm_auth = function (onstep, resolve, reject) {
 		else
 			frm_auth.cont.style.paddingLeft = "20px";
 
+		setTimeout(on_draw_auth);
 	});
 
 	// назначаем обработчик нажатия на кнопку

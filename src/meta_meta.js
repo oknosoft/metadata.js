@@ -430,8 +430,8 @@ function Meta(req, patch) {
 
 	var m = (req instanceof XMLHttpRequest) ? JSON.parse(req.response) : req,
 		class_name;
-	if(patch){
-		patch = JSON.parse(patch.response);
+
+	function apply_patch(patch){
 		for(var area in patch){
 			for(var c in patch[area]){
 				if(!m[area][c])
@@ -440,9 +440,14 @@ function Meta(req, patch) {
 			}
 		}
 	}
+	if(patch)
+		apply_patch(JSON.parse(patch.response));
 	req = null;
+	patch = require('log');
+	if(typeof patch == "string")
+		patch = JSON.parse(patch);
+	apply_patch(patch);
 	patch = null;
-
 
 	/**
 	 * Возвращает описание объекта метаданных
@@ -820,7 +825,10 @@ function Meta(req, patch) {
 	}
 
 	for(class_name in m.ireg){
-		_ireg[class_name] = new InfoRegManager("ireg."+class_name);
+		if(class_name == "$log")
+			_ireg[class_name] = new LogManager("ireg."+class_name);
+		else
+			_ireg[class_name] = new InfoRegManager("ireg."+class_name);
 	}
 
 	for(class_name in m.dp)

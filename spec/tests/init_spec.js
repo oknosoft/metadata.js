@@ -8,20 +8,16 @@ describe("Загрузка страницы:", function () {
 	});
 
 	it("Переменная $p должна содержать объект", function () {
-
 		expect(typeof $p).toBe("object");
 	});
 
-	describe("Проверка ключевх свойств $p:", function () {
+	it("Свойство $p.job_prm при загрузке должен быть пустым", function () {
+		expect($p.job_prm).toBeUndefined();
+	});
 
-		it("job_prm при загрузке должен быть пустым", function () {
-			expect($p.job_prm).toBeUndefined();
-		});
-
-		it("eve и iface должны содержать object", function () {
-			expect(typeof $p.eve).toBe("object");
-			expect(typeof $p.iface).toBe("object");
-		});
+	it("Свойства $p.eve и $p.iface должны содержать object", function () {
+		expect(typeof $p.eve).toBe("object");
+		expect(typeof $p.iface).toBe("object");
 	});
 
 });
@@ -73,68 +69,26 @@ describe("События:", function () {
 
 describe("Диалог авторизации:", function () {
 
-	var wtest, $p, was_done;
+	var wtest, $p;
 
 	beforeEach(function(done) {
 
-		wtest = frames[0];
-		wtest.location.reload();
-		wtest.onunload = function(){
-
-			setTimeout(function() {
-				wtest = frames[0];
-				wtest.onload = function(){
-
-					$p = wtest.$p;
-
-					$p.settings = function (prm, modifiers) {
-
-						prm.russian_names = true;
-						prm.rest_path = "/a/unf/odata/standard.odata/";
-						prm.rest = true;
-						prm.data_url = "examples/unf/data/";
-						prm.create_tables = "examples/unf/data/create_tables.sql";
-
-					};
-
-					$p.iface.oninit = function () {
-
-						if(!was_done){
-							was_done = true;
-
-							$p.iface.layout_1c();
-
-							$p.iface.frm_auth(
-								null,
-								function () {
-									//$p.iface.set_hash("doc.СчетНаОплатуПокупателю", "", "", "oper");
-									$p.iface.docs.hideHeader();
-
-								},
-								function (err) {
-									console.log(err);
-								}
-							);
-
-							done();
-						}
-					};
-
-					setTimeout(function() {
-						if(!was_done){
-							was_done = true;
-							done();
-						}
-					}, 3000);
-				};
-
-			}, 10);
-
-		};
+		$j.draw_auth($j.prm_unf)
+			.then(function (w) {
+				wtest = w;
+				$p = wtest.$p;
+				done();
+			})
+			.catch(function (err) {
+				console.log(err);
+				done();
+			});
 	});
 
 	it("layout + диалог нарисованы", function() {
+		// свойство $p.iface.auth должно содеражать объект типа dhtmlXForm
 		expect($p.iface.auth instanceof wtest.dhtmlXForm).toBeTruthy();
+		// свойство $p.iface.docs должно содеражать объект типа dhtmlXLayoutCell
 		expect($p.iface.docs instanceof wtest.dhtmlXLayoutCell).toBeTruthy();
 	});
 
@@ -142,21 +96,27 @@ describe("Диалог авторизации:", function () {
 
 describe("Aвторизация:", function () {
 
-	var wtest, $p, was_done;
-
-	beforeEach(function() {
-		wtest = frames[0];
-		$p = wtest.$p;
-	});
+	var wtest, $p, prm_patch = {
+		login: "",
+		password: ""
+	};
 
 	it("должна быть ошибка при неверном логине-пароле", function(done) {
 
-		$p.iface.auth.setItemValue("type", "auth");
-		$p.iface.auth.setItemValue("login", "Плохой логин");
-		$p.iface.auth.btn_click("submit");
+		prm_patch.login = "Плохой логин";
+		$j.log_in($j.prm_unf, [], prm_patch)
+			.then(function (w) {
+				wtest = w;
+				$p = wtest.$p;
+				spec();
+			})
+			.catch(function (err) {
+				wtest = err.wtest;
+				$p = wtest.$p;
+				spec();
+			});
 
-		setTimeout(function () {
-
+		function spec(){
 			// признак авторизованности в $p.ajax
 			expect($p.ajax.authorized).toBeFalsy();
 
@@ -167,53 +127,98 @@ describe("Aвторизация:", function () {
 				btn = error.querySelector(".dhtmlx_popup_button");
 				btn.click();
 			}
-
 			done();
-
-		}, 2000);
+		}
 
 	});
+
+	it("должна быть ошибка при нереальном url сервиса https://zzz.xxx.su/", function(done) {
+
+		prm_patch.login = "Дилер";
+		prm_patch.rest_path = "https://zzz.xxx.su/";
+		$j.log_in($j.prm_unf, [], prm_patch)
+			.then(function (w) {
+				wtest = w;
+				$p = wtest.$p;
+				spec();
+			})
+			.catch(function (err) {
+				wtest = err.wtest;
+				$p = wtest.$p;
+				spec();
+			});
+
+		function spec(){
+			// признак авторизованности в $p.ajax
+			expect($p.ajax.authorized).toBeFalsy();
+
+			// диалог с ошибкой
+			var error = wtest.document.querySelector(".dhtmlx-alert-error"), btn;
+			expect(error).toBeDefined();
+			if(error){
+				btn = error.querySelector(".dhtmlx_popup_button");
+				btn.click();
+			}
+			done();
+		}
+	});
+
 
 	it("должен случиться callback при успешной авторизации", function(done) {
 
-		$p.iface.auth.unload();
+		prm_patch.login = "Дилер";
+		delete prm_patch.rest_path;
+		$j.log_in($j.prm_unf, [], prm_patch)
+			.then(function (w) {
+				wtest = w;
+				$p = wtest.$p;
+				spec();
+			})
+			.catch(function (err) {
+				wtest = err.wtest;
+				$p = wtest.$p;
+				spec();
+			});
 
-		$p.iface.frm_auth(
-			null,
-			on_success,
-			function (err) {
-				console.log(err);
-			}
-		);
+		function spec(){
 
-		function on_success(){
+			// признак авторизованности в $p.ajax
+			expect($p.ajax.authorized).toBeTruthy();
 
-			if(!was_done){
+			// диалог с ошибкой должен отсутствовать
+			expect(wtest.document.querySelector(".dhtmlx-alert-error")).toBeNull();
 
-				was_done = true;
+			$p.iface.docs.hideHeader();
 
-				// признак авторизованности в $p.ajax
-				expect($p.ajax.authorized).toBeTruthy();
-
-				// диалог с ошибкой должен отсутствовать
-				expect(wtest.document.querySelector(".dhtmlx-alert-error")).toBeNull();
-
-				$p.iface.docs.hideHeader();
-
-				done();
-			}
+			done();
 		}
 
-		$p.iface.auth.setItemValue("type", "auth");
-		$p.iface.auth.setItemValue("login", "Дилер");
-		$p.iface.auth.setItemValue("password", "");
-		$p.iface.auth.btn_click("submit");
-
-		setTimeout(on_success, 6000);
 	});
 
-	it("Справочник номенклатуры должен существовать и содержать элементы", function() {
-		expect($p.cat.Номенклатура.alatable.length).toBeGreaterThan(50);
+	it("Справочник номенклатуры должен существовать и содержать элементы", function(done) {
+
+		prm_patch.login = "Дилер";
+		delete prm_patch.rest_path;
+		$j.log_in($j.prm_unf, [], prm_patch)
+			.then(function (w) {
+				wtest = w;
+				$p = wtest.$p;
+				spec();
+			})
+			.catch(function (err) {
+				wtest = err.wtest;
+				$p = wtest.$p;
+				spec();
+			});
+
+		function spec(){
+
+			expect($p.cat.Номенклатура.alatable.length).toBeGreaterThan(50);
+
+			done();
+		}
+
 	});
+
 
 });
