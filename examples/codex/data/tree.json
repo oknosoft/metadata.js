@@ -43,6 +43,10 @@
         ]},
         {"id":"0140", "text":"Безбумажное производство", "userdata": [
           {"name": "exec_hidden", "content": true}
+        ]},
+        {"id":"0160", "text":"Codex - демо внутри демо", "userdata": [
+          {"name": "url", "content": "index.html"},
+          {"name": "exec_disabled", "content": true}
         ]}
       ]},
     {"id":"0200", "text":"Объектная модель","child":"1",

@@ -6,6 +6,10 @@
 
 $p.eve.redirect = true;
 
+$p.require = function(name){
+	return require(name);
+};
+
 $p.settings = function (prm, modifiers) {
 	prm.create_tables = true;
 	prm.create_tables_sql = require('create_tables');

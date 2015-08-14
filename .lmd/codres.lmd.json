@@ -7,8 +7,8 @@
     "codres": "examples/codex/js/codres.js",
     "meta": "examples/codex/data/meta.js",
     "data": "examples/codex/data/data.js",
-    "create_tables": "examples/codex/data/create_tables.sql"
-
+    "create_tables": "examples/codex/data/create_tables.sql",
+    "<%= file %>": "examples/codex/data/*.html"
   },
   "main": "codres",
   "optimize": true,

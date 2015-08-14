@@ -1,0 +1,44 @@
+<!---->
+// Чистим экран
+ОбластьКонтента.Очистить();
+// Левая панель инструментов
+new $p.iface.OTooolBar({wrapper: ОбластьКонтента.Контейнер, top: '32px', left: '16px', name: 'left', height: '250px',
+	buttons: [
+		{name: 'select_elm', img: 'icon-arrow-black.png', title: $p.require('select_elm')},
+		{name: 'select_node', img: 'icon-arrow-white.png', title: $p.require('select_node')},
+		{name: 'pan', img: 'icon-hand.png', title: 'Панорама и масштаб {Crtl}, {Alt}, {Alt + колёсико мыши}'},
+		{name: 'zoom_fit', img: 'cursor-zoom.png', title: 'Вписать в окно'},
+		{name: 'pen', img: 'cursor-pen-freehand.png', title: 'Добавить профиль'},
+		{name: 'lay_impost', img: 'cursor-lay-impost.png', title: 'Вставить раскладку или импосты'},
+		{name: 'arc', img: 'cursor-arc-r.png', title: 'Арка {Crtl}, {Alt}, {Пробел}'},
+		{name: 'ruler', img: 'ruler_ui.png', title: 'Позиционирование и сдвиг'},
+		{name: 'text', img: 'text.png', title: 'Произвольный текст'}
+	]});
+// Верхняя панель инструментов
+new $p.iface.OTooolBar({wrapper: ОбластьКонтента.Контейнер, width: '170px', height: '28px', top: '16px', left: '80px', name: 'top',
+	buttons: [
+		{name: 'save_close', img: 'save.png', title: 'Рассчитать, записать и закрыть', float: 'left'},
+		{name: 'calck', img: 'calculate.png', title: 'Рассчитать и записать данные', float: 'left'},
+		{name: 'standard_form', img: 'standard_form.png', title: 'Добавить типовую форму', float: 'left',
+			sub: {
+				buttons: [
+					{name: 'square', img: 'square.png', float: 'left'},
+					{name: 'triangle1', img: 'triangle1.png', float: 'right'},
+					{name: 'triangle2', img: 'triangle2.png', float: 'left'},
+					{name: 'triangle3', img: 'triangle3.png', float: 'right'},
+					{name: 'semicircle1', img: 'semicircle1.png', float: 'left'},
+					{name: 'semicircle2', img: 'semicircle2.png', float: 'right'},
+					{name: 'circle',    img: 'circle.png', float: 'left'},
+					{name: 'arc1',      img: 'arc1.png', float: 'right'},
+					{name: 'trapeze1',  img: 'trapeze1.png', float: 'left'},
+					{name: 'trapeze2',  img: 'trapeze2.png', float: 'right'},
+					{name: 'trapeze3',  img: 'trapeze3.png', float: 'left'},
+					{name: 'trapeze4',  img: 'trapeze4.png', float: 'right'},
+					{name: 'trapeze5',  img: 'trapeze5.png', float: 'left'},
+					{name: 'trapeze6',  img: 'trapeze6.png', float: 'right'}]
+			}
+		},
+		{name: 'stamp', img: 'stamp.png', title: 'Загрузить из типового блока', float: 'left'},
+		{name: 'back', img: 'tb_undo_dis.png', title: 'Шаг назад', float: 'left'},
+		{name: 'rewind', img: 'tb_redo_dis.png', title: 'Шаг вперед', float: 'left'}
+	]});

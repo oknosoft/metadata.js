@@ -1284,6 +1284,71 @@ function InterfaceObjs(){
 $p.iface = new InterfaceObjs();
 
 /**
+ * ### Модификатор отложенного запуска
+ * Служебный объект, реализующий отложенную загрузку модулей,<br />
+ * в которых доопределяется (переопределяется) поведение объектов и менеджеров конкретных типов<br />
+ *
+ * @class Modifiers
+ * @constructor
+ */
+function Modifiers(){
+
+	var methods = [];
+
+	/**
+	 * Добавляет метод в коллекцию методов для отложенного вызова.<br />
+	 * См. так же, {{#crossLink "AppEvents/onload:property"}}{{/crossLink}} и {{#crossLink "MetaEngine/modifiers:property"}}{{/crossLink}}
+	 * @method push
+	 * @param method {function} - функция, которая будет вызвана после инициализации менеджеров объектов данных
+	 */
+	this.push = function (method) {
+		methods.push(method);
+	};
+
+	/**
+	 * Загружает и выполняет методы модификаторов
+	 * @method execute
+	 */
+	this.execute = function () {
+		methods.forEach(function (method) {
+			if(typeof method === "function")
+				method($p);
+			else
+				require(method)($p);
+		});
+	}
+
+}
+
+/**
+ * ### Генераторы и обработчики событий
+ * - при запуске программы
+ * - при авторизации и начальной синхронизации с сервером
+ * - при периодических обменах изменениями с сервером
+ * - См. так же модуль {{#crossLinkModule "events"}}{{/crossLinkModule}}
+ * @class AppEvents
+ * @static
+ */
+function AppEvents(){
+
+	this.toString = function(){return "События при начале работы программы"};
+
+	/**
+	 * ### Обработчики при начале работы программы
+	 * Клиентские модули при загрузке могут добавлять в этот массив свои функции,<br />
+	 * которые будут выполнены после готовности документа. См. так же, {{#crossLink "Modifiers/push:method"}}{{/crossLink}}
+	 * @property onload
+	 * @type Modifiers
+	 * @static
+	 */
+	this._define("onload", {
+		value: new Modifiers(),
+		enumerable: false,
+		configurable: false
+	});
+}
+
+/**
  * Обработчики событий приложения
  * Подробнее см. класс {{#crossLink "AppEvents"}}{{/crossLink}} и модуль {{#crossLinkModule "events"}}{{/crossLinkModule}}
  * @property eve
@@ -1291,71 +1356,22 @@ $p.iface = new InterfaceObjs();
  * @type AppEvents
  * @static
  */
-$p.eve = new (
-
-	/**
-	 * ### Генераторы и обработчики событий
-	 * - при запуске программы
-	 * - при авторизации и начальной синхронизации с сервером
-	 * - при периодических обменах изменениями с сервером
-	 * - См. так же модуль {{#crossLinkModule "events"}}{{/crossLinkModule}}
-	 * @class AppEvents
-	 * @static
-	 */
-	function AppEvents(){
-
-		this.toString = function(){return "События при начале работы программы"};
-
-		// Модули при загрузке могут добавлять в этот массив свои функции, которые будут выполнены после готовности документа
-		this.onload = [];
-	}
-);
+$p.eve = new AppEvents();
 
 /**
- * Модификаторы менеджеров объектов метаданных {{#crossLink "Modifiers"}}{{/crossLink}}
+ * ### Модификаторы менеджеров объектов метаданных
+ * Т.к. экземпляры менеджеров и конструкторы объектов доступны в системе только после загрузки метаданных,
+ * а метаданные загружаются после авторизации на сервере, методы модификаторов нельзя выполнить при старте приложения
  * @property modifiers
  * @for MetaEngine
- * @type {Modifiers}
+ * @type Modifiers
  * @static
  */
-$p.modifiers = new (
-	/**
-	 * ### Модификаторы менеджеров объектов метаданных
-	 * Служебный объект, реализующий отложенную загрузку модулей, в которых доопределяется (переопределяется) поведение
-	 * объектов и менеджеров конкретных типов<br />
-	 * Т.к. экземпляры менеджеров и конструкторы объектов доступны в системе только после загрузки метаданных,
-	 * а метаданные загружаются после авторизации на сервере, методы модификаторов нельзя выполнить при старте приложения
-	 * @class Modifiers
-	 * @static
-	 */
-	function Modifiers(){
-
-		var methods = [];
-
-		/**
-		 * Добавляет метод в коллекцию методов для отложенного вызова
-		 * @method push
-		 * @param method {function} - функция, которая будет вызвана после инициализации менеджеров объектов данных
-		 */
-		this.push = function (method) {
-			methods.push(method);
-		};
-
-		/**
-		 * Загружает и выполняет методы модификаторов
-		 * @method execute
-		 */
-		this.execute = function () {
-			methods.forEach(function (method) {
-				if(typeof method === "function")
-					method($p);
-				else
-					require(method)($p);
-			});
-		}
-
-	}
-);
+$p._define("modifiers", {
+	value: new Modifiers(),
+	enumerable: false,
+	configurable: false
+});
 
 /**
  * ### Параметры работы программы

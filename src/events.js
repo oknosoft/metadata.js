@@ -277,7 +277,7 @@ if(typeof window !== "undefined"){
 				}
 
 				// проверяем установленность приложения только если мы внутри хрома
-				if($p.job_prm.check_app_installed && w["chrome"] && w["chrome"]["app"] && !w["chrome"]["app"]["isInstalled"]){
+				if($p.job_prm.check_app_installed && w.chrome && w.chrome.app && !w.chrome.app.isInstalled){
 					if(!location.hostname.match(/.local/)){
 						eve.redirect = true;
 						msg.show_msg({type: "alert-error", text: msg.unsupported_mode, title: msg.unsupported_mode_title});
@@ -319,10 +319,7 @@ if(typeof window !== "undefined"){
 						/**
 						 * Выполняем отложенные методы из eve.onload
 						 */
-						eve.onload.forEach(function (method) {
-							if(typeof method === "function")
-								method();
-						});
+						eve.onload.execute();
 
 						// Если есть сплэш, удаляем его
 						if(document && document.querySelector("#splash"))
