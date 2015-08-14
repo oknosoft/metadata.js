@@ -358,7 +358,7 @@ dhtmlXForm.prototype.btn_click = function (id) {
 			btn = this.itemPull[this.idPrefix+id];
 			return this.objPull[this.idPrefix+id];
 		}
-	};
+	}
 
 	if(btn){
 
@@ -375,7 +375,7 @@ dhtmlXForm.prototype.btn_click = function (id) {
 			});
 		}, 1);
 	}
-}
+};
 
 /**
  * ### Визуальный компонент - поле с выпадающим списком
@@ -393,7 +393,11 @@ dhtmlXForm.prototype.btn_click = function (id) {
  */
 function OCombo(attr){
 
-	var _obj, _field, _meta, _mgr, t = this;
+	var _obj, _field, _meta, _mgr, popup_focused, html_btn,
+		t = this,
+		_pwnd = {on_select: function (selv) {
+			_obj[_field] = selv;
+		}};
 
 	// выполняем конструктор родительского объекта
 	OCombo.superclass.constructor.call(this, attr);
@@ -419,22 +423,104 @@ function OCombo(attr){
 			t.clearAll();
 			t.addOption(_mgr.get_option_list(null, {presentation: {like: text}}, 30));
 			t.openSelect();
-			//t.load('<?xml version="1.0" ?>\
-			//	<complete>\
-			//	<option value="1">one</option>\
-			//	<option value="2">two</option>\
-			//	<option value="3">three</option>\
-			//	</complete>')
 		}
 
 	});
 
-	function observer(changes){
-		changes.forEach(function(change, i){
-			if(change.name == _field){
-				set_value(_obj[_field]);
+	function aclick(e){
+		if(this.name == "select"){
+			if(_mgr)
+				_mgr.form_selection(_pwnd, {initial_value: _obj[_field].ref});
+
+		} else if(this.name == "add"){
+			if(_mgr)
+				_mgr.create({}, true)
+					.then(function (o) {
+						o._set_loaded(o.ref);
+						o.form_obj();
+					});
+
+		} else if(this.name == "open"){
+			if(!_obj[_field].empty())
+				_obj[_field].form_obj();
+		}
+
+		if(e)
+			return $p.cancel_bubble(e);
+	}
+
+	function popup_hide(){
+		popup_focused = false;
+		setTimeout(function () {
+			if(!popup_focused)
+				$p.iface.popup.hide();
+		}, 300);
+	}
+	html_btn = this.DOMelem_button;
+	dhtmlxEvent(html_btn, "mouseover", function(){
+
+		if(_mgr instanceof EnumManager)
+			return;
+
+		popup_focused = true;
+		var div = document.createElement('div'),
+			innerHTML = "<a href='#' name='select' title='Форма выбора {F4}'>Показать все</a>" +
+				"<img src='"+dhtmlx.image_path+"dhxtoolbar_web/blank9.png' />" +
+				"&nbsp;<a href='#' name='open' title='Открыть форму элемента {Ctrl+Shift+F4}'><img src='"+dhtmlx.image_path+"dhxtoolbar_web/tb_open.png' /></a>";
+
+		// для полных прав разрешаем добавление элементов
+		// TODO: учесть реальные права на добавление
+		if($p.ajax.root)
+			innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><img src='"+dhtmlx.image_path+"dhxtoolbar_web/tb_add.png' /></a>";
+
+		// для составных типов разрешаем выбор типа
+		// TODO: реализовать поддержку примитивных типов
+		if(_meta.type.types.length > 1)
+			innerHTML += "&nbsp;<a href='#' name='type' title='Выбрать тип значения {Alt+T}'><img src='"+dhtmlx.image_path+"custom_field/icss_text.png' /></a>";
+
+		div.innerHTML = innerHTML;
+		for(var i=0; i<div.children.length; i++)
+			div.children[i].onclick = aclick;
+
+		$p.iface.popup.clear();
+		$p.iface.popup.attachObject(div);
+		$p.iface.popup.show(dhx4.absLeft(html_btn)-70, dhx4.absTop(html_btn), html_btn.offsetWidth, html_btn.offsetHeight);
+
+		$p.iface.popup.p.onmouseover = function(){
+			popup_focused = true;
+		};
+
+		$p.iface.popup.p.onmouseout = popup_hide;
+
+	});
+
+	dhtmlxEvent(html_btn, "mouseout", popup_hide);
+
+	dhtmlxEvent(this.DOMelem_input, "keyup", function (e) {
+
+		if(_mgr instanceof EnumManager)
+			return;
+
+		if(e.keyCode == 115){ // F4
+			if(e.ctrlKey && e.shiftKey){
+				if(!_obj[_field].empty())
+					_obj[_field].form_obj();
+			}else if(!e.ctrlKey && !e.shiftKey){
+				if(_mgr)
+					_mgr.form_selection(_pwnd, {initial_value: _obj[_field].ref});
 			}
-		});
+		}
+	});
+
+	function observer(changes){
+		if(!t.DOMelem.parentElement)
+			setTimeout(t.unload);
+		else
+			changes.forEach(function(change){
+				if(change.name == _field){
+					set_value(_obj[_field]);
+				}
+			});
 	}
 
 	function set_value(v){
@@ -477,13 +563,14 @@ function OCombo(attr){
 
 	};
 
+	var _unload = this.unload;
 	this.unload = function () {
 		Object.unobserve(_obj, observer);
 		_obj = null;
 		_field = null;
 		_meta = null;
 		_mgr = null;
-		OCombo.superclass.unload.call(this);
+		_unload.call(t);
 	};
 
 	// биндим поле объекта

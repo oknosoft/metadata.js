@@ -264,8 +264,31 @@ if(typeof window !== "undefined"){
 
 				// создавать dhtmlXWindows можно только после готовности документа
 				if("dhtmlx" in w){
-					$p.iface.w = new dhtmlXWindows();
+
+					/**
+					 * ### Каркас оконного интерфейса
+					 * См. описание на сайте dhtmlx [dhtmlXWindows](http://docs.dhtmlx.com/windows__index.html)
+					 * @property w
+					 * @for InterfaceObjs
+					 * @type dhtmlXWindows
+					 */
+					$p.iface._define("w", {
+						value: new dhtmlXWindows(),
+						enumerable: false
+					});
 					$p.iface.w.setSkin(dhtmlx.skin);
+
+					/**
+					 * ### Всплывающие подсказки
+					 * См. описание на сайте dhtmlx [dhtmlXPopup](http://docs.dhtmlx.com/popup__index.html)
+					 * @property popup
+					 * @for InterfaceObjs
+					 * @type dhtmlXPopup
+					 */
+					$p.iface._define("popup", {
+						value: new dhtmlXPopup(),
+						enumerable: false
+					});
 				}
 
 				// проверяем совместимость браузера

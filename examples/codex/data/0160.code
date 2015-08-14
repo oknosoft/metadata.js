@@ -5,7 +5,8 @@
  * @param modifiers {Array} - сюда можно добавить обработчики, переопределяющие функциональность объектов данных
  */
 $p.settings = function (prm, modifiers) {
-	prm.offline = true; // автономная работа. запросы к 1С запрещены
+	prm.offline = true;             // автономная работа. запросы к 1С запрещены
+	prm.allow_post_message = "*";   // разрешаем обрабатывать сообщения от других окон (обязательно для файлового режима)
 };
 
 
@@ -71,11 +72,15 @@ $p.iface.oninit = function() {
 		name: 'top',
 		image_path:	dhtmlx.image_path + 'dhxtoolbar_web/',
 		buttons: [
-			{name: 'run', img: 'execute.png', text: 'Выполнить', width: '110px', float: 'left'}
+			{name: 'run', img: 'execute.png', text: 'Выполнить', width: '110px', float: 'left'},
+			{name: 'reload', img: 'refresh.png', text: 'Очистить окно результата', width: '220px', float: 'left'}
 		], onclick: function (name) {
 			switch(name) {
 				case 'run':
 					$p.iface.result.execute($p.iface.editor.getValue());
+					break;
+				case 'reload':
+					$p.iface.result.execute('location.reload();');
 					break;
 
 				default:
@@ -133,10 +138,12 @@ $p.iface.oninit = function() {
 	tree.attachEvent("onSelect", tree_select);
 	tree.loadJSONObject(require('tree'));
 	setTimeout(function () {
-		tree.selectItem("0100", true);
-	}, 300);
-
-	// совместимость браузеров
+		var route_prm = $p.job_prm.parse_url();
+		if(route_prm.obj && route_prm.obj.indexOf("0")==0)
+			$p.iface.before_route();
+		else
+			$p.iface.set_hash("0100", "", "", "content");
+	}, 500);
 
 };
 

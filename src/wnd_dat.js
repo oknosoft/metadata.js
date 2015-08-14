@@ -848,13 +848,6 @@ function OTooolBar(attr){
 		div = document.createElement('div'),
 		offset, popup_focused, sub_focused, btn_focused;
 
-	/**
-	 * Всплывающие подсказки
-	 * @type {dhtmlXPopup}
-	 */
-	if(!$p.iface.popup)
-		$p.iface.popup = new dhtmlXPopup();
-
 	if(!attr.image_path)
 		attr.image_path = dhtmlx.image_path + 'custom_field/';
 
@@ -900,14 +893,15 @@ function OTooolBar(attr){
 			if(battr.title && !battr.sub){
 				popup_focused = true;
 
+				$p.iface.popup.clear();
 				$p.iface.popup.attachHTML(battr.title);
 				$p.iface.popup.show(dhx4.absLeft(bdiv), dhx4.absTop(bdiv), bdiv.offsetWidth, bdiv.offsetHeight);
 
-				dhtmlxEvent($p.iface.popup.p, "mouseover", function(){
+				$p.iface.popup.p.onmouseover = function(){
 					popup_focused = true;
-				});
+				};
 
-				dhtmlxEvent($p.iface.popup.p, "mouseout", popup_hide);
+				$p.iface.popup.p.onmouseout = popup_hide;
 			}
 		});
 

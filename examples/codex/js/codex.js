@@ -145,10 +145,12 @@ $p.iface.oninit = function() {
 	tree.attachEvent("onSelect", tree_select);
 	tree.loadJSONObject(require('tree'));
 	setTimeout(function () {
-		tree.selectItem("0100", true);
-	}, 300);
-
-	// совместимость браузеров
+		var route_prm = $p.job_prm.parse_url();
+		if(route_prm.obj && route_prm.obj.indexOf("0")==0)
+			$p.iface.before_route();
+		else
+			$p.iface.set_hash("0100", "", "", "content");
+	}, 500);
 
 };
 

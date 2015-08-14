@@ -138,22 +138,6 @@ if(typeof window !== "undefined"){
 }
 
 /**
- * Полифил для обсервера и нотифаера пока не подключаем
- * Это простая заглушка, чтобы в старых браузерах не возникали исключения
- */
-if(!Object.observe)
-	Object.observe = function(target,options) {};
-
-if(!Object.getNotifier)
-	Object.getNotifier = function(obj) {
-		return {
-			notify: function (noti) {
-
-			}
-		}
-	};
-
-/**
  * Фреймворк [metadata.js](https://github.com/oknosoft/metadata.js), добавляет в прототип _Object_<br />
  * несколько методов - синтаксический сахар для _наследования_ и работы со _свойствами_
  * @class Object
@@ -257,6 +241,53 @@ Object.prototype._define("_clone", {
 	enumerable: false
 });
 
+/**
+ * Полифил для обсервера и нотифаера пока не подключаем
+ * Это простая заглушка, чтобы в старых браузерах не возникали исключения
+ */
+if(!Object.observe && !Object.unobserve && !Object.getNotifier)
+	Object._define({
+		observe: {
+			value: function(target, observer) {
+				if(!target._observers)
+					target._define("_observers", {
+						value: [],
+						enumerable: false
+					});
+				target._observers.push(observer);
+			},
+			enumerable: false
+		},
+		unobserve: {
+			value: function(target, observer) {
+				if(!target._observers)
+					return;
+				for(var i in target._observers){
+					if(target._observers[i]===observer){
+						target._observers.splice(i, 1);
+						break;
+					}
+				}
+			},
+			enumerable: false
+		},
+		getNotifier: {
+			value: function(target) {
+				return {
+					notify: function (noti) {
+						if(!target._observers)
+							return;
+						target._observers.forEach(function (observer) {
+							setTimeout(function () {
+								observer([noti]);
+							});
+						});
+					}
+				}
+			},
+			enumerable: false
+		}
+	});
 
 /**
  * Date Format 1.2.3
@@ -1196,7 +1227,6 @@ function InterfaceObjs(){
 
 	};
 
-
 	/**
 	 * Устанавливает hash url для сохранения истории и последующей навигации
 	 * @method set_hash
@@ -1254,6 +1284,7 @@ function InterfaceObjs(){
 		if(event)
 			return $p.cancel_bubble(event);
 	};
+
 
 	/**
 	 * Возникает после готовности DOM. Должен быть обработан конструктором основной формы приложения

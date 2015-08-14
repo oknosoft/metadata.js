@@ -1,38 +1,44 @@
 {"id":0,
   "item":[
-    {"id":"0100","text":"Демо-приложения","child":"1", "open":"1",
+    {"id":"0100","text":"Codex: что это","child":"0", "im0": "view_list.png",
       "userdata": [
         {"name": "url", "content": "examples/codex/result.html"},
         {"name": "exec_hidden", "content": true}
+      ]},
+    {"id":"0150", "text":"Файлы данных","child":"1", "open":"1",
+      "userdata": [
+        {"name": "exec_hidden", "content": true}
       ],
       "item":[
-        {"id":"0150", "text":"Файлы данных","child":"1", "open":"1",
-          "userdata": [
-            {"name": "exec_hidden", "content": true}
-          ],
-          "item":[
-            {"id":"0151", "text":"Метаданные", "userdata": [
-              {"name": "exec_hidden", "content": true}
-            ]},
-            {"id":"0152", "text":"Тестовые данные", "userdata": [
-              {"name": "exec_hidden", "content": true}
-            ]}
-          ]
-        },
-        {"id":"0110", "text":"Элементы управления","child":"1", "open":"1", "userdata": [
+        {"id":"0151", "text":"Метаданные", "userdata": [
           {"name": "exec_hidden", "content": true}
-        ],
-          "item":[
-            {"id":"0111", "text":"Сообщения пользователю"},
-            {"id":"0112", "text":"Формы списка и выбора"},
-            {"id":"0113", "text":"Формы объектов"},
-            {"id":"0114", "text":"Форма ввода адреса"},
-            {"id":"0115", "text":"Панель инструментов OToolbar"},
-            {"id":"0116", "text":"Поле ввода OCombo"},
-            {"id":"0117", "text":"Таблица реквизитов объекта"},
-            {"id":"0118", "text":"Табличная часть объекта"}
-            ]
-        },
+        ]},
+        {"id":"0152", "text":"Тестовые данные", "userdata": [
+          {"name": "exec_hidden", "content": true}
+        ]}
+      ]
+    },
+    {"id":"0110", "text":"Элементы управления","child":"1", "open":"1", "userdata": [
+      {"name": "exec_hidden", "content": true}
+    ],
+      "item":[
+        {"id":"0111", "text":"Сообщения пользователю"},
+        {"id":"01121", "text":"Формы списка и выбора"},
+        {"id":"01122", "text":"Формы объектов"},
+        {"id":"01123", "text":"Форма ввода адреса"},
+        {"id":"01124", "text":"Несвязанная форма"},
+        {"id":"0113", "text":"Навигация"},
+        {"id":"0115", "text":"Панель инструментов OToolbar"},
+        {"id":"0116", "text":"Поле ввода OCombo"},
+        {"id":"0117", "text":"Таблица реквизитов объекта"},
+        {"id":"0118", "text":"Табличная часть объекта"}
+      ]
+    },
+    {"id":"0190","text":"Демо-приложения","child":"1",
+      "userdata": [
+        {"name": "exec_hidden", "content": true}
+      ],
+      "item":[
         {"id":"0120", "text":"Управление небольшой фирмой", "userdata": [
           {"name": "url", "content": "examples/unf/"},
           {"name": "exec_disabled", "content": true}
