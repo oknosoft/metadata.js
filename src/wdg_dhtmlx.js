@@ -401,9 +401,9 @@ function OCombo(attr){
 
 	// выполняем конструктор родительского объекта
 	OCombo.superclass.constructor.call(this, attr);
-	this.DOMelem.style.marginBottom = "4px";
+	t.getBase().style.marginBottom = "4px";
 	if(attr.left)
-		this.DOMelem.style.left = left + "px";
+		t.getBase().style.left = left + "px";
 
 	this.attachEvent("onChange", function(){
 		_obj[_field] = this.getSelectedValue();
@@ -456,7 +456,7 @@ function OCombo(attr){
 				$p.iface.popup.hide();
 		}, 300);
 	}
-	html_btn = this.DOMelem_button;
+	html_btn = t.getButton();
 	dhtmlxEvent(html_btn, "mouseover", function(){
 
 		if(_mgr instanceof EnumManager)
@@ -496,7 +496,7 @@ function OCombo(attr){
 
 	dhtmlxEvent(html_btn, "mouseout", popup_hide);
 
-	dhtmlxEvent(this.DOMelem_input, "keyup", function (e) {
+	dhtmlxEvent(t.getInput(), "keyup", function (e) {
 
 		if(_mgr instanceof EnumManager)
 			return;
@@ -513,7 +513,7 @@ function OCombo(attr){
 	});
 
 	function observer(changes){
-		if(!t.DOMelem.parentElement)
+		if(!t.getBase().parentElement)
 			setTimeout(t.unload);
 		else
 			changes.forEach(function(change){

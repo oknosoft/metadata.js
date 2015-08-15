@@ -245,17 +245,19 @@ if(typeof window !== "undefined"){
 									location.replace(url);
 							}
 
-							try{
-								var res = eval(event.data);
-								if(res && event.source){
-									if(typeof res == "object")
-										res = JSON.stringify(res);
-									else if(typeof res == "function")
-										return;
-									event.source.postMessage(res, "*");
+							if(typeof event.data == "string"){
+								try{
+									var res = eval(event.data);
+									if(res && event.source){
+										if(typeof res == "object")
+											res = JSON.stringify(res);
+										else if(typeof res == "function")
+											return;
+										event.source.postMessage(res, "*");
+									}
+								}catch(e){
+									console.log(e);
 								}
-							}catch(e){
-								console.log(e);
 							}
 						}
 					});

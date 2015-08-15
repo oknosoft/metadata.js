@@ -275,6 +275,9 @@ DataManager.prototype.get_option_list = function(val, filter, top){
 			v.selected = true;
 		return v;
 	}
+	// TODO: реализовать для некешируемых объектов (rest)
+	// TODO: учесть "выбор групп и элементов"
+	// TODO: учесть "поля поиска по строке"
 	if(this.metadata().hierarchical && this.metadata().group_hierarchy){
 		if(!filter)
 			filter = {};
@@ -1257,18 +1260,35 @@ EnumManager.prototype.get_sql_struct = function(attr){
 /**
  * Возвращает массив доступных значений для комбобокса
  * @param val {DataObj|String}
- * @param filter {Object}
+ * @param [filter] {Object}
+ * @param [top] {Number}
  * @return {Array}
  */
-EnumManager.prototype.get_option_list = function(val){
-	var l = [];
+EnumManager.prototype.get_option_list = function(val, filter, top){
+	var l = [], synonym = "";
 	function check(v){
 		if($p.is_equal(v.value, val))
 			v.selected = true;
 		return v;
 	}
+	if(filter){
+		for(var i in filter)
+			synonym = filter[i];
+	}
+	if(typeof synonym == "object"){
+		if(synonym.like)
+			synonym = synonym.like;
+		else
+			synonym = "";
+	}
+	synonym = synonym.toLowerCase();
+
 	this.alatable.forEach(function (v) {
-		l.push(check({text: v.synonym, value: v.ref}));
+		if(synonym){
+			if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1)
+				return;
+		}
+		l.push(check({text: v.synonym || "", value: v.ref}));
 	});
 	return l;
 };
