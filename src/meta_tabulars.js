@@ -81,10 +81,15 @@ TabularSection.prototype.count = function(){return this._obj.length};
  * очищает табличнут часть
  * @method clear
  */
-TabularSection.prototype.clear = function(){
+TabularSection.prototype.clear = function(do_not_notify){
 	for(var i in this._obj)
 		delete this._obj[i];
 	this._obj.length = 0;
+
+	if(!do_not_notify)
+		Object.getNotifier(this).notify({
+			type: 'update'
+		});
 };
 
 /**
@@ -117,6 +122,10 @@ TabularSection.prototype.del = function(val){
 		j++;
 		_obj[i].row = j;
 	}
+
+	Object.getNotifier(this).notify({
+		type: 'update'
+	});
 };
 
 /**
@@ -162,7 +171,7 @@ TabularSection.prototype.find_rows = function(attr, callback){
 };
 
 /**
- * Сдвигает указанную строку табличной части на указанное смещение
+ * Меняет местами строки табчасти
  * @method swap
  * @param rowid1 {number}
  * @param rowid2 {number}
@@ -171,6 +180,10 @@ TabularSection.prototype.swap = function(rowid1, rowid2){
 	var tmp = this._obj[rowid1];
 	this._obj[rowid1] = this._obj[rowid2];
 	this._obj[rowid2] = tmp;
+
+	Object.getNotifier(this).notify({
+		type: 'update'
+	});
 };
 
 /**
@@ -179,7 +192,7 @@ TabularSection.prototype.swap = function(rowid1, rowid2){
  * @param attr {object} - объект со значениями полей. если некого поля нет в attr, для него используется пустое значение типа
  * @return {TabularSectionRow}
  */
-TabularSection.prototype.add = function(attr){
+TabularSection.prototype.add = function(attr, do_not_notify){
 
 	var row = new this._owner._manager._ts_сonstructors[this._name](this);
 
@@ -195,6 +208,11 @@ TabularSection.prototype.add = function(attr){
 		value: row,
 		enumerable: false
 	});
+
+	if(!do_not_notify)
+		Object.getNotifier(this).notify({
+			type: 'update'
+		});
 
 	attr = null;
 	return row;
@@ -219,14 +237,18 @@ TabularSection.prototype.each = function(fn){
  */
 TabularSection.prototype.load = function(aattr){
 	var t = this, arr;
-	t.clear();
+	t.clear(true);
 	if(aattr instanceof TabularSection)
 		arr = aattr._obj;
 	else if(Array.isArray(aattr))
 		arr = aattr;
 	if(arr)
 		arr.forEach(function(row){
-			t.add(row);
+			t.add(row, true);
+	});
+
+	Object.getNotifier(this).notify({
+		type: 'update'
 	});
 };
 
@@ -330,5 +352,4 @@ TabularSectionRow.prototype._define("_clone", {
 	},
 	enumerable : false
 });
-
 

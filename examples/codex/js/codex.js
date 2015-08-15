@@ -84,7 +84,7 @@ $p.iface.oninit = function() {
 		], onclick: function (name) {
 			switch(name) {
 				case 'run':
-					$p.iface.result.execute($p.iface.editor.getValue());
+					$p.iface.result.execute($p.iface.editor.getValue() + ";0;");
 					break;
 				case 'reload':
 					$p.iface.result.execute('location.reload();');

@@ -220,6 +220,66 @@ eXcell_ref.prototype = eXcell_proto;
 window.eXcell_ref = eXcell_ref;
 
 /**
+ * Конструктор поля ввода со списком OCombo
+ * @param cell
+ */
+function eXcell_ocombo(cell){
+
+	if (!cell)
+		return;
+
+	var t = this;
+
+	t.cell = cell;
+	t.grid = cell.parentNode.grid;
+
+	/**
+	 * устанавливает текст в ячейке. например, this.setCValue("<input type='button' value='"+val+"'>",val);
+	 */
+	t.setValue=function(val){
+		t.setCValue(val instanceof DataObj ? val.presentation : val);
+	};
+
+	/**
+	 * получает значение ячейки из табличной части или поля объекта или допполя допобъекта, а не из грида
+	 */
+	t.getValue=function(){
+		return t.grid.get_cell_value();
+
+	};
+
+	/**
+	 * @desc: 	создаёт элементы управления редактора и назначает им обработчики
+	 */
+	t.edit=function(){
+
+		if(t.combo)
+			return;
+
+		t.val = t.getValue();		//save current value
+		t.cell.innerHTML = "";
+		t.combo = new OCombo({
+			parent: t.cell,
+			in_grid: true
+		}._mixin(t.grid.get_cell_field()));
+
+	};
+
+	/**
+	 * вызывается при отключении редактора
+	 */
+	t.detach=function(){
+		if(t.combo){
+			t.setValue(t.combo.getComboText());
+			//t.combo.unload();
+		}
+		return !$p.is_equal(t.val, t.getValue());				// compares the new and the old values
+	}
+}
+eXcell_ocombo.prototype = eXcell_proto;
+window.eXcell_ocombo = eXcell_ocombo;
+
+/**
  * Конструктор комбобокса кешируемых ссылочных типов для грида
  */
 function eXcell_refc(cell){

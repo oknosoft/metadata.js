@@ -703,7 +703,7 @@ function Meta(req, patch) {
 		var ft;
 		if(type.is_ref){
 			if(type.types.join().indexOf("enm.")==-1)
-				ft = "ref";
+				ft = "ref"; // ft = "ocombo";
 			else
 				ft = "refc";
 		} else if(type.date_part) {

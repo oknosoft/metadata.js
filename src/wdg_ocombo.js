@@ -33,8 +33,13 @@ function OCombo(attr){
 		}};
 
 	// выполняем конструктор родительского объекта
-	OCombo.superclass.constructor.call(this, attr);
-	t.getBase().style.marginBottom = "4px";
+	OCombo.superclass.constructor.call(t, attr);
+	html_btn = t.getButton();
+	if(attr.in_grid){
+		t.getBase().style.border = "none";
+		html_btn.style.right = "9px";
+	} else
+		t.getBase().style.marginBottom = "4px";
 	if(attr.left)
 		t.getBase().style.left = left + "px";
 
@@ -89,7 +94,6 @@ function OCombo(attr){
 				$p.iface.popup.hide();
 		}, 300);
 	}
-	html_btn = t.getButton();
 	dhtmlxEvent(html_btn, "mouseover", function(){
 
 		if(_mgr instanceof EnumManager)
@@ -117,7 +121,7 @@ function OCombo(attr){
 
 		$p.iface.popup.clear();
 		$p.iface.popup.attachObject(div);
-		$p.iface.popup.show(dhx4.absLeft(html_btn)-70, dhx4.absTop(html_btn), html_btn.offsetWidth, html_btn.offsetHeight);
+		$p.iface.popup.show(dhx4.absLeft(html_btn)-77, dhx4.absTop(html_btn), html_btn.offsetWidth, html_btn.offsetHeight);
 
 		$p.iface.popup.p.onmouseover = function(){
 			popup_focused = true;

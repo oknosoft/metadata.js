@@ -24,15 +24,17 @@
  */
 function OTabular(attr){
 
+	OTabular.superclass.constructor.call(this, attr.parent);
+
 }
 OTabular._extend(dhtmlXGridObject);
 $p.iface.OTabular = OTabular;
 
 /**
  * Размещает табличное поле объекта в ячейке dhtmlXCellObject
- * @param conf
+ * @param attr
  */
-dhtmlXCellObject.prototype.attachTabular = function(conf) {
+dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 	var obj = document.createElement("DIV");
 	obj.style.width = "100%";
@@ -40,10 +42,10 @@ dhtmlXCellObject.prototype.attachTabular = function(conf) {
 	obj.style.position = "relative";
 	obj.style.overflow = "hidden";
 	this._attachObject(obj);
-	conf.parent = obj;
+	attr.parent = obj;
 
 	this.dataType = "grid";
-	this.dataObj = new OTabular(conf);
+	this.dataObj = new OTabular(attr);
 	this.dataObj.setSkin(this.conf.skin);
 
 	// keep border for window and remove for other
