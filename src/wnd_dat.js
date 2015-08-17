@@ -132,10 +132,15 @@ $p.iface.dat_blank = function(_dxw, attr) {
 	else
 		wnd_dat.button('close').hide();
 
+	if(typeof attr.on_close == "function")
+		wnd_dat.attachEvent("onClose", attr.on_close);
+
 	wnd_dat.setIconCss('without_icon');
 	wnd_dat.cell.parentNode.children[1].classList.add('dat_gui');
 
 	$p.iface.bind_help(wnd_dat, attr.help_path);
+
+
 
 	wnd_dat.elmnts = {};
 	wnd_dat._define("modified", {

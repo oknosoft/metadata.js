@@ -129,11 +129,23 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 * @return {Boolean}
 	 */
 	function body_keydown(evt){
+
 		if(wnd && (evt.keyCode == 113 || evt.keyCode == 115)){ //"F2" или "F4"
+
+			var do_exit;
+			// если есть внешнее модальное, ничего обрабатывать не надо
+			$p.iface.w.forEachWindow(function (w) {
+				if(w.isModal() && w != wnd)
+					do_exit = true;
+			});
+			if(do_exit)
+				return;
+
 			setTimeout(function(){
 				wnd.elmnts.filter.input_filter.focus();
 			}, 0);
 			return $p.cancel_bubble(evt);
+
 		}
 	}
 
@@ -170,6 +182,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 					delete this.do_not_reload;
 				else
 					grid.reload();
+			});
+			tree.attachEvent("onDblClick", function(id){
+				select(id);
 			});
 
 			// !!! проверить закешированность дерева
@@ -307,21 +322,46 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 	/**
 	 * выбор значения в гриде
-	 * @param rId - идентификтор строки грида
+	 * @param rId - идентификтор строки грида или дерева
 	 */
 	function select(rId){
 
 		if(!rId)
 			rId = wnd.elmnts.grid.getSelectedRowId();
 
+		var folders;
+		if(attr.selection){
+			attr.selection.forEach(function(sel){
+				for(var key in sel){
+					if(key=="is_folder")
+						folders = sel[key];
+				}
+			});
+		}
+
 		// запрещаем выбирать папки
-		if(wnd.elmnts.tree && wnd.elmnts.tree.getIndexById(rId) != null){
+		if(wnd.elmnts.tree &&
+			wnd.elmnts.tree.getIndexById(rId) != null &&
+			wnd.elmnts.tree.getSelectedItemId() != rId){
 			wnd.elmnts.tree.selectItem(rId, true);
 			return;
 		}
 
-		if(!rId && wnd.elmnts.tree)
+		// запрещаем выбирать элементы, если в метаданных указано выбирать только папки
+		// TODO: спозиционировать сообщение над выбранным элементом
+		if(rId && folders === true && wnd.elmnts.grid.cells(rId, 0).cell.classList.contains("cell_ref_elm")){
+			$p.msg.show_msg($p.msg.select_grp);
+			return;
+		}
+
+
+		if((!rId && wnd.elmnts.tree) || (wnd.elmnts.tree && wnd.elmnts.tree.getSelectedItemId() == rId)){
+			if(folders === false){
+				$p.msg.show_msg($p.msg.select_elm);
+				return;
+			}
 			rId = wnd.elmnts.tree.getSelectedItemId();
+		}
 
 		if(rId){
 			if(pwnd.on_select)

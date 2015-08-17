@@ -150,16 +150,7 @@ DataObj.prototype._getter = function (f) {
 		return this._obj[f] || "";
 };
 
-DataObj.prototype._setter = function (f, v) {
-
-	if(this._obj[f] == v)
-		return;
-
-	Object.getNotifier(this).notify({
-		type: 'update',
-		name: f,
-		oldValue: this._obj[f]
-	});
+DataObj.prototype.__setter = function (f, v) {
 
 	var mf = this._metadata.fields[f].type,
 		mgr;
@@ -210,6 +201,25 @@ DataObj.prototype._setter = function (f, v) {
 
 	else
 		this._obj[f] = v;
+};
+
+DataObj.prototype.__notify = function (f) {
+	Object.getNotifier(this).notify({
+		type: 'update',
+		name: f,
+		oldValue: this._obj[f]
+	});
+};
+
+DataObj.prototype._setter = function (f, v) {
+
+	if(this._obj[f] == v)
+		return;
+
+	this.__notify(f);
+
+	this.__setter(f, v);
+
 };
 
 DataObj.prototype._getter_ts = function (f) {
@@ -274,8 +284,9 @@ DataObj.prototype.load = function(){
 };
 
 /**
- * Сохраняет объект в локальной датабазе, выполняет подписки на события
- * В зависимости от настроек, инициирует запись объекта во внешнюю базу данных
+ * ### Записывает объект
+ * Ввыполняет подписки на события перед записью и после записи
+ * В зависимости от настроек, выполняет запись объекта во внешнюю базу данных
  * @param [post] {Boolean|undefined} - проведение или отмена проведения или просто запись
  * @param [mode] {Boolean} - режим проведения документа [Оперативный, Неоперативный]
  * @return {Promise.<T>} - промис с результатом выполнения операции
@@ -290,8 +301,8 @@ DataObj.prototype.save = function (post, operational) {
 	if(this instanceof DocObj && $p.blank.date == this.date)
 		this.date = new Date();
 
-	// Сохраняем во внешней базе
-	return this.save_rest({
+	// Сохраняем во внешней базе save_rest
+	return this.save_irest({
 		post: post,
 		operational: operational
 	})
@@ -344,7 +355,10 @@ DataObj.prototype._define('ref', {
  */
 DataObj.prototype._define('deleted', {
 	get : function(){ return this._obj.deleted},
-	set : function(v){ this._obj.deleted = !!v},
+	set : function(v){
+		this.__notify('deleted');
+		this._obj.deleted = !!v;
+	},
 	enumerable : true,
 	configurable: true
 });
@@ -357,7 +371,10 @@ DataObj.prototype._define('deleted', {
  */
 DataObj.prototype._define('data_version', {
 	get : function(){ return this._obj.data_version || ""},
-	set : function(v){ this._obj.data_version = String(v)},
+	set : function(v){
+		this.__notify('data_version');
+		this._obj.data_version = String(v);
+	},
 	enumerable : true
 });
 
@@ -369,14 +386,13 @@ DataObj.prototype._define('data_version', {
  */
 DataObj.prototype._define('lc_changed', {
 	get : function(){ return this._obj.lc_changed || 0},
-	set : function(v){ this._obj.lc_changed = $p.fix_number(v, true)},
+	set : function(v){
+		this.__notify('lc_changed');
+		this._obj.lc_changed = $p.fix_number(v, true);
+	},
 	enumerable : true,
 	configurable: true
 });
-
-TabularSectionRow.prototype._getter = DataObj.prototype._getter;
-
-TabularSectionRow.prototype._setter = DataObj.prototype._setter;
 
 
 
@@ -433,7 +449,10 @@ CatObj._extend(DataObj);
  */
 CatObj.prototype._define('id', {
 	get : function(){ return this._obj.id || ""},
-	set : function(v){ this._obj.id = v},
+	set : function(v){
+		this.__notify('id');
+		this._obj.id = v;
+	},
 	enumerable : true
 });
 
@@ -444,7 +463,10 @@ CatObj.prototype._define('id', {
  */
 CatObj.prototype._define('name', {
 	get : function(){ return this._obj.name || ""},
-	set : function(v){ this._obj.name = String(v)},
+	set : function(v){
+		this.__notify('name');
+		this._obj.name = String(v);
+	},
 	enumerable : true
 });
 
@@ -502,7 +524,10 @@ DocObj._extend(DataObj);
  */
 DocObj.prototype._define('number_doc', {
 	get : function(){ return this._obj.number_doc || ""},
-	set : function(v){ this._obj.number_doc = v},
+	set : function(v){
+		this.__notify('number_doc');
+		this._obj.number_doc = v;
+	},
 	enumerable : true
 });
 
@@ -513,7 +538,10 @@ DocObj.prototype._define('number_doc', {
  */
 DocObj.prototype._define('date', {
 	get : function(){ return this._obj.date || $p.blank.date},
-	set : function(v){ this._obj.date = $p.fix_date(v, true)},
+	set : function(v){
+		this.__notify('date');
+		this._obj.date = $p.fix_date(v, true);
+	},
 	enumerable : true
 });
 
@@ -524,7 +552,10 @@ DocObj.prototype._define('date', {
  */
 DocObj.prototype._define('posted', {
 	get : function(){ return this._obj.posted || false},
-	set : function(v){ this._obj.posted = $p.fix_boolean(v)},
+	set : function(v){
+		this.__notify('posted');
+		this._obj.posted = $p.fix_boolean(v);
+	},
 	enumerable : true
 });
 

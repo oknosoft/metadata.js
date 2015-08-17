@@ -26,18 +26,19 @@
  */
 function OCombo(attr){
 
-	var _obj, _field, _meta, _mgr, popup_focused, html_btn,
+	var _obj, _field, _meta, _mgr, popup_focused,
 		t = this,
-		_pwnd = {on_select: function (selv) {
+		_pwnd = {on_select: attr.on_select || function (selv) {
 			_obj[_field] = selv;
 		}};
 
 	// выполняем конструктор родительского объекта
 	OCombo.superclass.constructor.call(t, attr);
-	html_btn = t.getButton();
-	if(attr.in_grid){
+	if(attr.on_select){
 		t.getBase().style.border = "none";
-		html_btn.style.right = "9px";
+		t.getInput().style.left = "-3px";
+		if(!attr.is_tabular)
+			t.getButton().style.right = "9px";
 	} else
 		t.getBase().style.marginBottom = "4px";
 	if(attr.left)
@@ -59,16 +60,32 @@ function OCombo(attr){
 
 		if(_mgr){
 			t.clearAll();
-			t.addOption(_mgr.get_option_list(null, {presentation: {like: text}}, 30));
+			t.addOption(_mgr.get_option_list(null, get_filter(text), 30));
 			t.openSelect();
 		}
 
 	});
 
+	function get_filter(text){
+		var filter = {};
+		if(_mgr && _mgr.metadata().hierarchical && _mgr.metadata().group_hierarchy){
+			if(_meta.choice_groups_elm == "elm")
+				filter.is_folder = false;
+			else if(_meta.choice_groups_elm == "grp" || _field == "parent")
+				filter.is_folder = true;
+		}
+		if(text)
+			filter.presentation = {like: text};
+		return filter;
+	}
+
 	function aclick(e){
 		if(this.name == "select"){
 			if(_mgr)
-				_mgr.form_selection(_pwnd, {initial_value: _obj[_field].ref});
+				_mgr.form_selection(_pwnd, {
+					initial_value: _obj[_field].ref,
+					selection: [get_filter()]
+				});
 
 		} else if(this.name == "add"){
 			if(_mgr)
@@ -79,7 +96,7 @@ function OCombo(attr){
 					});
 
 		} else if(this.name == "open"){
-			if(!_obj[_field].empty())
+			if(_obj[_field] && !_obj[_field].empty())
 				_obj[_field].form_obj();
 		}
 
@@ -94,7 +111,7 @@ function OCombo(attr){
 				$p.iface.popup.hide();
 		}, 300);
 	}
-	dhtmlxEvent(html_btn, "mouseover", function(){
+	dhtmlxEvent(t.getButton(), "mouseover", function(){
 
 		if(_mgr instanceof EnumManager)
 			return;
@@ -121,7 +138,7 @@ function OCombo(attr){
 
 		$p.iface.popup.clear();
 		$p.iface.popup.attachObject(div);
-		$p.iface.popup.show(dhx4.absLeft(html_btn)-77, dhx4.absTop(html_btn), html_btn.offsetWidth, html_btn.offsetHeight);
+		$p.iface.popup.show(dhx4.absLeft(t.getButton())-77, dhx4.absTop(t.getButton()), t.getButton().offsetWidth, t.getButton().offsetHeight);
 
 		$p.iface.popup.p.onmouseover = function(){
 			popup_focused = true;
@@ -131,7 +148,11 @@ function OCombo(attr){
 
 	});
 
-	dhtmlxEvent(html_btn, "mouseout", popup_hide);
+	dhtmlxEvent(t.getButton(), "mouseout", popup_hide);
+
+	dhtmlxEvent(t.getBase(), "click", function (e) {
+		return $p.cancel_bubble(e);
+	});
 
 	dhtmlxEvent(t.getInput(), "keyup", function (e) {
 
@@ -144,8 +165,12 @@ function OCombo(attr){
 					_obj[_field].form_obj();
 			}else if(!e.ctrlKey && !e.shiftKey){
 				if(_mgr)
-					_mgr.form_selection(_pwnd, {initial_value: _obj[_field].ref});
+					_mgr.form_selection(_pwnd, {
+						initial_value: _obj[_field].ref,
+						selection: [get_filter()]
+					});
 			}
+			return $p.cancel_bubble(e);
 		}
 	});
 
@@ -180,6 +205,10 @@ function OCombo(attr){
 	 * @param [meta]
 	 */
 	this.attach = function (obj, field, meta) {
+
+		if(_obj)
+			Object.unobserve(_obj, observer);
+
 		_obj = obj;
 		_field = field;
 		_meta = meta || obj._metadata.fields[field];
@@ -189,7 +218,7 @@ function OCombo(attr){
 
 		if(_mgr){
 			// загружаем список в 30 строк
-			t.addOption(_mgr.get_option_list(_obj[_field], null, 30));
+			t.addOption(_mgr.get_option_list(_obj[_field], get_filter(), 30));
 
 			// если поле имеет значение - устанавливаем
 			set_value(_obj[_field]);
@@ -202,12 +231,17 @@ function OCombo(attr){
 
 	var _unload = this.unload;
 	this.unload = function () {
-		Object.unobserve(_obj, observer);
+		if(_obj)
+			Object.unobserve(_obj, observer);
+		if(t.conf && t.conf.tm_confirm_blur)
+			clearTimeout(t.conf.tm_confirm_blur);
 		_obj = null;
 		_field = null;
 		_meta = null;
 		_mgr = null;
-		_unload.call(t);
+		_pwnd = null;
+		try{ _unload.call(t); }catch(e){};
+
 	};
 
 	// биндим поле объекта

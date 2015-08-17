@@ -703,7 +703,7 @@ function Meta(req, patch) {
 		var ft;
 		if(type.is_ref){
 			if(type.types.join().indexOf("enm.")==-1)
-				ft = "ref"; // ft = "ocombo";
+				ft = "ocombo";//ft = "ref"; //
 			else
 				ft = "refc";
 		} else if(type.date_part) {
@@ -715,7 +715,7 @@ function Meta(req, patch) {
 				ft = "edn";
 		} else if(type.types[0]=="boolean") {
 			ft = "ch";
-		} else if(type.str_len && type.str_len >= 100) {
+		} else if(type.hasOwnProperty("str_len") && (type.str_len >= 100 || type.str_len == 0)) {
 			ft = "txt";
 		} else {
 			ft = "ed";

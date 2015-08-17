@@ -145,22 +145,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		/**
 		 *	закладка шапка
 		 */
-		wnd.elmnts.pg_header = wnd.elmnts.tabs.tab_header.attachPropertyGrid();
-		wnd.elmnts.pg_header.setDateFormat("%d.%m.%Y %H:%i");
-		wnd.elmnts.pg_header.init();
-		wnd.elmnts.pg_header.loadXMLString(_mgr.get_property_grid_xml(null, o), function(){
-			wnd.elmnts.pg_header.enableAutoHeight(false,wnd.elmnts.tabs.tab_header._getHeight()-20,true);
-			wnd.elmnts.pg_header.setSizes();
-			wnd.elmnts.pg_header.setUserData("", "source", {
-				o: o,
-				wnd: wnd,
-				grid: wnd.elmnts.pg_header,
-				on_select: $p.iface.pgrid_on_select,
-				grid_on_change: header_change
-			});
-			wnd.elmnts.pg_header.attachEvent("onPropertyChanged", $p.iface.pgrid_on_change );
-			wnd.elmnts.pg_header.attachEvent("onCheckbox", $p.iface.pgrid_on_checkbox );
-		});
+		wnd.elmnts.pg_header = wnd.elmnts.tabs.tab_header.attachHeadFields({obj: o, pwnd: wnd});
 
 		// панель инструментов формы
 		wnd.elmnts.frm_toolbar = wnd.attachToolbar();
@@ -384,19 +369,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		return ret_code;
 	}
 
-	/**
-	 * дополнительный обработчик изменения значения в шапке документа (ссылочные и примитивные типы)
-	 */
-	function header_change(f, selv){
-		_mgr.handle_event(o, "value_change", {
-			field: f,
-			value: selv,
-			tabular_section: "",
-			grid: this.cells ? this : this.grid,
-			cell: this.cells ? this.cells() : this.grid.cells(),
-			wnd: wnd
-		})
-	}
+
 
 	/**
 	 * настройка (инициализация) табличной части продукции
@@ -404,50 +377,45 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	function tabular_init(name){
 
 		// с помощью метода ts_captions(), выясняем, надо ли добавлять данную ТЧ и формируем описание колонок табчасти
-		var source = {
-				o: o,
-				wnd: wnd,
-				on_select: tabular_on_value_select,
-				tabular_section: name
-			};
-		if(!_md.ts_captions(_mgr.class_name, name, source))
+		if(!_md.ts_captions(_mgr.class_name, name))
 			return;
 
 		// закладка табов табличной части
 		wnd.elmnts.frm_tabs.addTab('tab_'+name, '&nbsp;'+cmd.tabular_sections[name].synonym+'&nbsp;');
 		wnd.elmnts.tabs['tab_'+name] = wnd.elmnts.frm_tabs.cells('tab_'+name);
 
+		wnd.elmnts.tabs['tab_'+name].attachTabular({obj: o, ts: name,  pwnd: wnd});
 
-		// панель инструментов табличной части
-		var tb = wnd.elmnts["tb_" + name] = wnd.elmnts.tabs['tab_'+name].attachToolbar();
-		tb.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
-		tb.loadStruct(require("toolbar_add_del"), function(){
-			this.attachEvent("onclick", toolbar_click);
-		});
+		//// панель инструментов табличной части
+		//var tb = wnd.elmnts["tb_" + name] = wnd.elmnts.tabs['tab_'+name].attachToolbar();
+		//tb.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
+		//tb.loadStruct(require("toolbar_add_del"), function(){
+		//	this.attachEvent("onclick", toolbar_click);
+		//});
 
-		// собственно табличная часть
-		var grid = wnd.elmnts["grid_" + name] = wnd.elmnts.tabs['tab_'+name].attachGrid();
-		grid.setIconsPath(dhtmlx.image_path);
-		grid.setImagePath(dhtmlx.image_path);
-		grid.setHeader(source.headers);
-		if(source.min_widths)
-			grid.setInitWidths(source.widths);
-		if(source.min_widths)
-			grid.setColumnMinWidth(source.min_widths);
-		if(source.aligns)
-			grid.setColAlign(source.aligns);
-		grid.setColSorting(source.sortings);
-		grid.setColTypes(source.types);
-		grid.setColumnIds(source.fields.join(","));
-		grid.enableAutoWidth(true, 1200, 600);
-		grid.enableEditTabOnly(true);
-
-		grid.init();
-
-		grid.setUserData("", "source", source);
-		grid.attachEvent("onEditCell", tabular_on_edit);
-
-		o[name].sync_grid(grid);
+		//// собственно табличная часть
+		//var grid = wnd.elmnts["grid_" + name] = wnd.elmnts.tabs['tab_'+name].attachGrid();
+		//grid.setIconsPath(dhtmlx.image_path);
+		//grid.setImagePath(dhtmlx.image_path);
+		//grid.setHeader(source.headers);
+		//if(source.min_widths)
+		//	grid.setInitWidths(source.widths);
+		//if(source.min_widths)
+		//	grid.setColumnMinWidth(source.min_widths);
+		//if(source.aligns)
+		//	grid.setColAlign(source.aligns);
+		//grid.setColSorting(source.sortings);
+		//grid.setColTypes(source.types);
+		//grid.setColumnIds(source.fields.join(","));
+		//grid.enableAutoWidth(true, 1200, 600);
+		//grid.enableEditTabOnly(true);
+		//
+		//grid.init();
+		//
+		//grid.setUserData("", "source", source);
+		//grid.attachEvent("onEditCell", tabular_on_edit);
+		//
+		//o[name].sync_grid(grid);
 	}
 
 

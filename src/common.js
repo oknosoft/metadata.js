@@ -14,7 +14,7 @@
  * @static
  */
 function MetaEngine() {
-	this.version = "0.9.196";
+	this.version = "0.9.197";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
@@ -250,9 +250,15 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier)
 		observe: {
 			value: function(target, observer) {
 				if(!target._observers)
-					target._define("_observers", {
-						value: [],
-						enumerable: false
+					target._define({
+						_observers: {
+							value: [],
+							enumerable: false
+						},
+						_notis: {
+							value: [],
+							enumerable: false
+						}
 					});
 				target._observers.push(observer);
 			},
@@ -273,15 +279,23 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier)
 		},
 		getNotifier: {
 			value: function(target) {
+				var timer_setted;
 				return {
 					notify: function (noti) {
 						if(!target._observers)
 							return;
-						target._observers.forEach(function (observer) {
+						target._notis.push(noti);
+						if(!timer_setted){
+							timer_setted = true;
 							setTimeout(function () {
-								observer([noti]);
-							});
-						});
+								//TODO: свернуть массив оповещений перед отправкой
+								target._observers.forEach(function (observer) {
+									observer(target._notis);
+								});
+								target._notis.length = 0;
+								timer_setted = false;
+							}, 10);
+						}
 					}
 				}
 			},
@@ -944,14 +958,28 @@ $p.fix_boolean = function(str){
  * @return {Date|any}
  */
 $p.fix_date = function(str, strict){
-	var dfmt = /(^\d{1,4}[\.|\\/|-]\d{1,2}[\.|\\/|-]\d{1,4})(\s*(?:0?[1-9]:[0-5]|1(?=[012])\d:[0-5])\d\s*[ap]m)?$/, d;
+	var dfmt = /(^\d{1,4}[\.|\\/|-]\d{1,2}[\.|\\/|-]\d{1,4})(\s*(?:0?[1-9]:[0-5]|1(?=[012])\d:[0-5])\d\s*[ap]m)?$/;
 	if(str instanceof Date)
 		return str;
 	else if(str && typeof str == "string" && dfmt.test(str.substr(0,10))){
-		d=new Date(str);
+		var adp = str.split(" "), ad = adp[0].split("."), d, strr;
+		if(ad.length == 1){
+			ad = adp[0].split("/");
+			if(ad.length == 1)
+				ad = adp[0].split("-");
+		}
+		if(ad.length == 3 && ad[2].length == 4){
+			strr = ad[2] + "-" + ad[1] + "-" + ad[0];
+			for(var i = 1; i < adp.length; i++)
+				strr += " " + adp[i];
+			d=new Date(strr);
+		}else
+			d=new Date(str);
+
 		if(d && d.getFullYear()>0)
 			return d;
 	}
+
 	if(strict)
 		return $p.blank.date;
 	else

@@ -87,7 +87,11 @@ $p.iface.oninit = function() {
 					$p.iface.result.execute($p.iface.editor.getValue() + ";0;");
 					break;
 				case 'reload':
+					layout.progressOn();
 					$p.iface.result.execute('location.reload();');
+					setTimeout(function () {
+						layout.progressOff();
+					}, 800);
 					break;
 
 				default:

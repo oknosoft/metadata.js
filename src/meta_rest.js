@@ -364,16 +364,20 @@ DataObj.prototype.to_atom = function (ex_meta) {
 			pname = _md.syns_1с(f);
 			v = obj[f];
 			if(v instanceof EnumObj)
-				v = v.name;
+				v = v.empty() ? "" : v.name;
+
 			else if(v instanceof DataObj){
 				pname+= '_Key';
 				v = v.ref;
+
 			}else if(mf.type.date_part){
-				if(v.getFullYear() < 1900)
+				if(v.getFullYear() < 1000)
 					v = '0001-01-01T00:00:00Z';
 				else
 					v = $p.dateFormat(v, $p.dateFormat.masks.atom);
-			}
+
+			}else if(v == undefined)
+				continue;
 
 
 			prop+= prefix + pname + '>' + v + '</d:' + pname + '>';

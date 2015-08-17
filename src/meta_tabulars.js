@@ -87,8 +87,9 @@ TabularSection.prototype.clear = function(do_not_notify){
 	this._obj.length = 0;
 
 	if(!do_not_notify)
-		Object.getNotifier(this).notify({
-			type: 'update'
+		Object.getNotifier(this._owner).notify({
+			type: 'rows',
+			tabular: this._name
 		});
 };
 
@@ -123,8 +124,9 @@ TabularSection.prototype.del = function(val){
 		_obj[i].row = j;
 	}
 
-	Object.getNotifier(this).notify({
-		type: 'update'
+	Object.getNotifier(this._owner).notify({
+		type: 'rows',
+		tabular: this._name
 	});
 };
 
@@ -181,8 +183,9 @@ TabularSection.prototype.swap = function(rowid1, rowid2){
 	this._obj[rowid1] = this._obj[rowid2];
 	this._obj[rowid2] = tmp;
 
-	Object.getNotifier(this).notify({
-		type: 'update'
+	Object.getNotifier(this._owner).notify({
+		type: 'rows',
+		tabular: this._name
 	});
 };
 
@@ -210,8 +213,9 @@ TabularSection.prototype.add = function(attr, do_not_notify){
 	});
 
 	if(!do_not_notify)
-		Object.getNotifier(this).notify({
-			type: 'update'
+		Object.getNotifier(this._owner).notify({
+			type: 'rows',
+			tabular: this._name
 		});
 
 	attr = null;
@@ -247,8 +251,9 @@ TabularSection.prototype.load = function(aattr){
 			t.add(row, true);
 	});
 
-	Object.getNotifier(this).notify({
-		type: 'update'
+	Object.getNotifier(this._owner).notify({
+		type: 'rows',
+		tabular: this._name
 	});
 };
 
@@ -259,21 +264,25 @@ TabularSection.prototype.load = function(aattr){
  */
 TabularSection.prototype.sync_grid = function(grid){
 	var grid_data = {rows: []},
-		source = grid.getUserData("", "source");
+		columns = [];
+
+	for(var i = 0; i<grid.getColumnCount(); i++)
+		columns.push(grid.getColumnId(i));
+
 	grid.clearAll();
-	grid.setUserData("", "source", source);
 	this.each(function(r){
 		var data = [];
-		for(var f in source.fields){
-			if($p.is_data_obj(r[source.fields[f]]))
-				data.push(r[source.fields[f]].presentation);
+		columns.forEach(function (f) {
+			if($p.is_data_obj(r[f]))
+				data.push(r[f].presentation);
 			else
-				data.push(r[source.fields[f]]);
-		}
+				data.push(r[f]);
+		});
 		grid_data.rows.push({ id: r.row, data: data });
 	});
 	try{ grid.parse(grid_data, "json"); } catch (e){}
-	grid.callEvent("onGridReconstructed",[]);
+	grid.callEvent("onGridReconstructed", []);
+
 };
 
 TabularSection.prototype.toJSON = function () {
@@ -352,4 +361,23 @@ TabularSectionRow.prototype._define("_clone", {
 	},
 	enumerable : false
 });
+
+TabularSectionRow.prototype._getter = DataObj.prototype._getter;
+
+TabularSectionRow.prototype._setter = function (f, v) {
+
+	if(this._obj[f] == v)
+		return;
+
+	Object.getNotifier(this._owner._owner).notify({
+		type: 'row',
+		row: this,
+		tabular: this._owner._name,
+		name: f,
+		oldValue: this._obj[f]
+	});
+
+	DataObj.prototype.__setter.call(this, f, v);
+
+};
 

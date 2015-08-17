@@ -17880,7 +17880,7 @@
 				},
 				"Комментарий": {
 					"synonym": "Комментарий",
-					"multiline_mode": true,
+					"multiline_mode": false,
 					"tooltip": "",
 					"type": {
 						"types": [

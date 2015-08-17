@@ -1,7 +1,7 @@
 /**
  * Поле ввода адреса связанная с ним форма ввода адреса
  * <br />&copy; http://www.oknosoft.ru 2009-2015
- * @module  wnd_address
+ * @module  wnd_oaddress
  */
 
 if(typeof window !== "undefined" && "dhtmlx" in window){
@@ -11,7 +11,8 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 	 */
 	function eXcell_addr(cell){
 
-		if (!cell) return;
+		if (!cell)
+			return;
 
 		var t = this, td,
 
@@ -20,7 +21,8 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 			},
 
 			open_selection=function(e) {
-				wnd_address(t.source);
+				var source = {grid: t.grid}._mixin(t.grid.get_cell_field());
+				wnd_address(source);
 				return $p.cancel_bubble(e);
 			};
 
@@ -29,30 +31,24 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 		t.open_selection = open_selection;
 
 		/**
-		 * @desc: 	устанавливает текст в ячейке. например, this.setCValue("<input type='button' value='"+val+"'>",val);
+		 * Устанавливает текст в ячейке. например, this.setCValue("<input type='button' value='"+val+"'>",val);
 		 */
 		t.setValue=function(val){ t.setCValue(val); };
 
 		/**
-		 * @desc: 	получает значение ячейки из табличной части или поля объекта или допполя допобъекта, а не из грида
+		 * Получает значение ячейки из табличной части или поля объекта или допполя допобъекта, а не из грида
 		 */
 		t.getValue=function(){
-			if(t.source = t.grid.getUserData("", "source")){
-				return t.source.o["shipping_address"];
-			}
+			return t.grid.get_cell_value();
 		};
 
 		/**
-		 * @desc: 	создаёт элементы управления редактора и назначает им обработчики
+		 * Создаёт элементы управления редактора и назначает им обработчики
 		 */
 		t.edit=function(){
 			var ti;
 			t.val = t.getValue();		//save current value
-			if(t.source.tabular_section){
-				t.cell.innerHTML = '<div class="ref_div23"><input type="text" class="dhx_combo_edit" style="height: 22px;"><div class="ref_field23">&nbsp;</div></div>';
-			}else{
-				t.cell.innerHTML = '<div class="ref_div21"><input type="text" class="dhx_combo_edit" style="height: 20px;"><div class="ref_field21">&nbsp;</div></div>';
-			}
+			t.cell.innerHTML = '<div class="ref_div21"><input type="text" class="dhx_combo_edit" style="height: 20px;"><div class="ref_field21">&nbsp;</div></div>';
 
 			td = t.cell.firstChild;
 			ti = td.childNodes[0];
@@ -65,11 +61,10 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 		};
 
 		/**
-		 * @desc: 	вызывается при отключении редактора
+		 * Вызывается при отключении редактора
 		 */
 		t.detach=function(){
-			if(t.cell.firstChild && t.cell.firstChild.childNodes[0] && t.cell.firstChild.childNodes[0].length)
-				t.setValue(t.cell.firstChild.childNodes[0].value);	//sets the new value
+			t.setValue(t.getValue());
 			return !$p.is_equal(t.val, t.getValue());				// compares the new and the old values
 		}
 	}
@@ -79,9 +74,11 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 	function wnd_address(source){
 
 		var wnd,		// окно формы
+			obj = source.obj,
+			pwnd = source.pwnd,
+			_delivery_area = obj.delivery_area,
 			v = {		// реквизиты формы
-				delivery_area: source.o.delivery_area,
-				coordinates: source.o.coordinates ? JSON.parse(source.o.coordinates) : [],
+				coordinates: obj.coordinates ? JSON.parse(obj.coordinates) : [],
 				country: "Россия",
 				region: "",
 				city: "",
@@ -89,6 +86,15 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 				postal_code: "",
 				marker: {}
 			};
+		v._define("delivery_area", {
+			get: function () {
+				return _delivery_area;
+			},
+			set: function (selv) {
+				pgrid_on_select(selv);
+
+			}
+		});
 
 		process_address_fields(frm_create);
 
@@ -109,21 +115,24 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 					height: 560,
 					modal: true,
 					center: true,
-					pwnd: source,
+					pwnd: pwnd,
 					allow_close: true,
 					allow_minmax: true,
 					on_close: frm_close,
-					caption: source.o.shipping_address
+					caption: obj.shipping_address
 				}
 			};
 
 			// уменьшаем высоту, в случае малого фрейма
-			if(source.wnd && source.wnd.getHeight){
-				if(options.wnd.height > source.wnd.getHeight())
-					options.wnd.height = source.wnd.getHeight();
+			if(pwnd && pwnd.getHeight){
+				if(options.wnd.height > pwnd.getHeight())
+					options.wnd.height = pwnd.getHeight();
 			}
 
 			wnd = $p.iface.dat_blank(null, options.wnd);
+
+			//TODO: компактная кнопка выбора в заголовке формы
+			// wnd.cell.parentElement.querySelector(".dhxwin_text")
 
 			wnd.elmnts.layout = wnd.attachLayout('2E');
 			wnd.elmnts.cell_frm = wnd.elmnts.layout.cells('a');
@@ -131,10 +140,11 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 			wnd.elmnts.cell_frm.hideHeader();
 			wnd.elmnts.cell_frm.fixSize(0,1);
 
+			// TODO: переделать на OHeadFields
 			wnd.elmnts.pgrid = wnd.elmnts.cell_frm.attachPropertyGrid();
 			wnd.elmnts.pgrid.setDateFormat("%d.%m.%Y %H:%i");
 			wnd.elmnts.pgrid.init();
-			wnd.elmnts.pgrid.loadXMLString(source.o._manager.get_property_grid_xml({
+			wnd.elmnts.pgrid.loadXMLString(obj._manager.get_property_grid_xml({
 				" ": [
 					{id: "delivery_area", path: "o.delivery_area", synonym: "Район доставки", type: "ref", txt: v.delivery_area.presentation},
 					{id: "region", path: "o.region", synonym: "Регион", type: "ro", txt: v.region},
@@ -143,17 +153,29 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 				]
 			}, v), function(){
 				wnd.elmnts.pgrid.enableAutoHeight(true);
-				//wnd.elmnts.pgrid.setInitWidthsP("40,60");
+				wnd.elmnts.pgrid.setInitWidthsP("40,60");
 				wnd.elmnts.pgrid.setSizes();
-				wnd.elmnts.pgrid.setUserData("", "source", {
-					o: v,
-					grid: wnd.elmnts.pgrid,
-					on_select: pgrid_on_select,
-					slist: slist
-				});
 				wnd.elmnts.pgrid.attachEvent("onPropertyChanged", pgrid_on_changed );
 
 			});
+			wnd.elmnts.pgrid.get_cell_field = function () {
+				return {
+					obj: v,
+					field: "delivery_area",
+					on_select: pgrid_on_select,
+					pwnd: wnd,
+					meta: {
+						"synonym": "Район",
+						"tooltip": "Район (зона, направление) доставки для группировки при планировании и оптимизации маршрута геокодером",
+						"choice_groups_elm": "elm",
+						"type": {
+							"types": [
+								"cat.delivery_areas"
+							],
+							"is_ref": true
+						}
+					}};
+			};
 
 			wnd.elmnts.toolbar = wnd.attachToolbar({
 				icons_path: dhtmlx.image_path + 'dhxtoolbar_web/'
@@ -191,17 +213,6 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 		}
 
 		/**
-		 *	@desc: 	Наборы значений для реффилдов
-		 */
-		function slist() {
-			var res = [];
-			if(this.fpath[0]=="delivery_area"){
-				$p.cat["delivery_areas"].form_selection(this.source, {initial_value: v.delivery_area.ref});
-			}
-			return res;
-		}
-
-		/**
 		 *	@desc: 	обработчик команд формы
 		 *	@type:	private
 		 *	@topic: 0
@@ -209,41 +220,38 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 		function toolbar_click(btn_id){
 			if(btn_id=="btn_select"){					// выполнить команду редактора построителя
 
-				source.o.delivery_area = v.delivery_area;
+				obj.delivery_area = v.delivery_area;
 
 				assemble_address_fields();
 
-				source.grid.cells("shipping_address", 1)
-					.setValue(source.o.shipping_address);
-
-				source.o.coordinates = JSON.stringify([v.latitude, v.longitude]);
+				obj.coordinates = JSON.stringify([v.latitude, v.longitude]);
 
 			}
 			wnd.close();
 		}
 
 		/**
-		 *	@desc: 	обработчик выбора значения в свойствах (ссылочные типы)
-		 *	@param:	this - важный контекст
+		 *	Обработчик выбора значения в свойствах (ссылочные типы)
 		 */
 		function pgrid_on_select(selv){
 
 			if(selv===undefined)
 				return;
 
-			var f = wnd.elmnts.pgrid.getSelectedRowId(),
-				clear_street = false;
+			var old = _delivery_area, clear_street;
 
-			if(v[f] != undefined){
-				clear_street = (v[f] != selv);
-				v[f] = selv;
-			}
+			if($p.is_data_obj(selv))
+				_delivery_area = selv;
+			else
+				_delivery_area = $p.cat.delivery_areas.get(selv, false);
 
-			if($p.is_data_obj(selv) ){
-				wnd.elmnts.pgrid.cells().setValue(selv.presentation);
-				delivery_area_changed(clear_street);
-			}else
-				addr_changed();
+			clear_street = old != _delivery_area;
+
+			if(!$p.is_data_obj(_delivery_area))
+				_delivery_area = $p.cat.delivery_areas.get();
+
+			wnd.elmnts.pgrid.cells().setValue(selv.presentation);
+			delivery_area_changed(clear_street);
 		}
 
 		function delivery_area_changed(clear_street){
@@ -308,7 +316,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 
 		function assemble_address_fields(){
 
-			source.o.shipping_address = assemble_addr();
+			obj.shipping_address = assemble_addr();
 
 			var fields = '<КонтактнаяИнформация  \
 				xmlns="http://www.v8.1c.ru/ssl/contactinfo" \
@@ -317,7 +325,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 				Представление="%1">   \
 					<Комментарий/>  \
 					<Состав xsi:type="Адрес" Страна="РОССИЯ">   \
-						<Состав xsi:type="АдресРФ">'.replace('%1', source.o.shipping_address);
+						<Состав xsi:type="АдресРФ">'.replace('%1', obj.shipping_address);
 
 			if(v.region)
 				fields += '\n<СубъектРФ>' + v.region + '</СубъектРФ>';
@@ -401,13 +409,13 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 			fields += '</Состав> \
 					</Состав></КонтактнаяИнформация>';
 
-			source.o.address_fields = fields;
+			obj.address_fields = fields;
 		}
 
 		function process_address_fields(callback){
 
-			if(source.o.address_fields){
-				v.xml = ( new DOMParser() ).parseFromString(source.o.address_fields, "text/xml");
+			if(obj.address_fields){
+				v.xml = ( new DOMParser() ).parseFromString(obj.address_fields, "text/xml");
 				var tmp = {}, res = {"building_room": ""}, tattr, building_room = [],
 					nss = "СубъектРФ,Округ,СвРайМО,СвРайМО,ВнутригРайон,НаселПункт,Улица,Город,ДопАдрЭл,Адрес_по_документу,Местоположение".split(",");
 
@@ -480,7 +488,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 				v.longitude = v.coordinates[1];
 				callback();
 
-			}else if(source.o.shipping_address){
+			}else if(obj.shipping_address){
 				// если есть строка адреса, пытаемся геокодировать
 				do_geocoding(function (results, status) {
 					if (status == google.maps.GeocoderStatus.OK) {
@@ -606,8 +614,12 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 						wnd.elmnts.pgrid.selectRowById("delivery_area");
 					}, 50);
 
-				} else
+				} else if(pname == "delivery_area")
 					pgrid_on_select(new_value);
+				else{
+					v[wnd.elmnts.pgrid.getSelectedRowId()] = new_value;
+					addr_changed();
+				}
 			}
 		}
 

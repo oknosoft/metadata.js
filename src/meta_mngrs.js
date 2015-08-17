@@ -278,11 +278,7 @@ DataManager.prototype.get_option_list = function(val, filter, top){
 	// TODO: реализовать для некешируемых объектов (rest)
 	// TODO: учесть "выбор групп и элементов"
 	// TODO: учесть "поля поиска по строке"
-	if(this.metadata().hierarchical && this.metadata().group_hierarchy){
-		if(!filter)
-			filter = {};
-		filter.is_folder = false;
-	}
+
 	this.find_rows(filter, function (v) {
 		l.push(check({text: v.presentation, value: v.ref}));
 		if(top){
@@ -907,6 +903,12 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 								s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
 							else
 								s += "\n AND (_t_." + key + " = " + sel[key] + ") ";
+
+						} else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
+							//if(sel[key])
+							//	s += "\n AND _t_." + key + " ";
+							//else
+							//	s += "\n AND (not _t_." + key + ") ";
 						}
 					}
 

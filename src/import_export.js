@@ -120,7 +120,7 @@ DataManager.prototype.export = function(attr){
 
 		set_availability();
 
-		if(attr.pwnd && attr.pwnd.isModal()){
+		if(attr.pwnd && attr.pwnd.isModal && attr.pwnd.isModal()){
 			attr.set_pwnd_modal = true;
 			attr.pwnd.setModal(false);
 		}

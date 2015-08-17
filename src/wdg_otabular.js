@@ -6,6 +6,7 @@
  * @requires common
  */
 
+
 /**
  * ### Визуальный компонент - табличное поле объекта
  * - Предназначен для отображения и редактирования {{#crossLink "TabularSection"}}табличной части{{/crossLink}}
@@ -13,6 +14,8 @@
  * - Состав и типы колонок формируются автоматически по описанию метаданны
  * - Программное изменение состава строк и значений в полях строк синхронно отображается в элементе управления
  * - Редактирование в элементе управления синхронно изменяет свойства табличной части связанного объекта
+ *
+ * Особенность dhtmlx: экземпляр создаётся не конструктором, а функцией `attachTabular` (без `new`) и размещается в ячейке dhtmlXCellObject
  *
  * @class OTabular
  * @param attr
@@ -22,54 +25,176 @@
  * @param [attr.meta] {Object} - описание метаданных табличной части. Если не указано, описание запрашивается у объекта
  * @constructor
  */
-function OTabular(attr){
-
-	OTabular.superclass.constructor.call(this, attr.parent);
-
-}
-OTabular._extend(dhtmlXGridObject);
-$p.iface.OTabular = OTabular;
-
-/**
- * Размещает табличное поле объекта в ячейке dhtmlXCellObject
- * @param attr
- */
 dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
-	var obj = document.createElement("DIV");
-	obj.style.width = "100%";
-	obj.style.height = "100%";
-	obj.style.position = "relative";
-	obj.style.overflow = "hidden";
-	this._attachObject(obj);
-	attr.parent = obj;
 
-	this.dataType = "grid";
-	this.dataObj = new OTabular(attr);
-	this.dataObj.setSkin(this.conf.skin);
+	var _obj = attr.obj,
+		_tsname = attr.ts,
+		_ts = _obj[_tsname],
+		_mgr = _obj._manager,
+		_meta = attr.meta || _mgr.metadata().tabular_sections[_tsname].fields,
+		_cell = this,
+		_source = {};
+	if(!_md.ts_captions(_mgr.class_name, _tsname, _source))
+		return;
 
-	// keep border for window and remove for other
-	if (this.conf.skin == "dhx_skyblue" && typeof(window.dhtmlXWindowsCell) != "undefined" && this instanceof window.dhtmlXWindowsCell) {
-		this.dataObj.entBox.style.border = "1px solid #a4bed4";
-		this.dataObj._sizeFix = 0;
-	} else {
-		this.dataObj.entBox.style.border = "0px solid white";
-		this.dataObj._sizeFix = 2;
+	var _grid = this.attachGrid(),
+		_toolbar = this.attachToolbar(),
+		_destructor = _grid.destructor,
+		_pwnd = {
+			// обработчик выбора ссылочных значений из внешних форм, открываемых полями со списками
+			on_select: function (selv) {
+				tabular_on_edit(2, null, null, selv);
+			},
+			pwnd: attr.pwnd || _cell,
+			is_tabular: true
+		};
+
+	function get_sel_index(silent){
+		var selId = _grid.getSelectedRowId();
+
+		if(selId && !isNaN(Number(selId)))
+			return Number(selId)-1;
+
+		if(!silent)
+			$p.msg.show_msg({
+				type: "alert-warning",
+				text: $p.msg.no_selected_row.replace("%1", _obj._metadata.tabular_sections[_tsname].synonym || _tsname),
+				title: (_obj._metadata.obj_presentation || _obj._metadata.synonym) + ': ' + _obj.presentation
+			});
 	}
 
-	obj = null;
+	/**
+	 * добавляет строку табчасти
+	 */
+	function add_row(){
+		var row = _ts.add();
+		setTimeout(function () {
+			_grid.selectRowById(row.row);
+		}, 100);
+	}
 
-	this.callEvent("_onContentAttach",[]);
+	function del_row(){
+		var rId = get_sel_index();
+		if(rId != undefined)
+			_ts.del(rId);
+	}
 
 	/**
-	 *  патч, ради которого
+	 * обработчик изменения значения в таблице продукции (примитивные типы)
 	 */
-	this.dataObj.objBox.ontouchend = function(){
-		try{
-			this.hdrBox.scrollLeft=this.objBox.scrollLeft;
-		}catch(e){}
+	function tabular_on_edit(stage, rId, cInd, nValue, oValue){
+
+		if(stage != 2 || nValue == oValue)
+			return true;
+
+		var cell_field = _grid.get_cell_field(),
+			ret_code = _mgr.handle_event(_obj, "value_change", {
+				field: cell_field.field,
+				value: nValue,
+				tabular_section: _tsname,
+				grid: _grid,
+				row: cell_field.obj,
+				cell: (rId && cInd) ? _grid.cells(rId, cInd) : _grid.cells(),
+				wnd: _pwnd.pwnd
+			});
+
+		if(typeof ret_code !== "boolean"){
+			cell_field.obj[cell_field.field] = nValue;
+			ret_code = true;
+		}
+		return ret_code;
+	}
+
+	function observer_rows(changes){
+		changes.forEach(function(change){
+			if (_tsname == change.tabular)
+				_ts.sync_grid(_grid);
+		});
+	}
+
+	function observer(changes){
+		if(changes.length > 4)
+			_ts.sync_grid(_grid);
+		else
+			changes.forEach(function(change){
+				if (_tsname == change.tabular){
+					if(_grid.getSelectedRowId() != change.row.row)
+						_ts.sync_grid(_grid);
+					else{
+						var xcell = _grid.cells(change.row.row, _grid.getColIndexById(change.name));
+						xcell.setCValue($p.is_data_obj(change.row[change.name]) ? change.row[change.name].presentation : change.row[change.name]);
+					}
+				}
+			});
+	}
+
+
+	// панель инструментов табличной части
+	_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
+	_toolbar.loadStruct(require("toolbar_add_del"), function(){
+		this.attachEvent("onclick", function toolbar_click(btn_id){
+			if(btn_id=="btn_add")
+				add_row();
+
+			else if(btn_id=="btn_delete")
+				del_row();
+
+		});
+	});
+
+	// собственно табличная часть
+	_grid.setIconsPath(dhtmlx.image_path);
+	_grid.setImagePath(dhtmlx.image_path);
+	_grid.setHeader(_source.headers);
+	if(_source.min_widths)
+		_grid.setInitWidths(_source.widths);
+	if(_source.min_widths)
+		_grid.setColumnMinWidth(_source.min_widths);
+	if(_source.aligns)
+		_grid.setColAlign(_source.aligns);
+	_grid.setColSorting(_source.sortings);
+	_grid.setColTypes(_source.types);
+	_grid.setColumnIds(_source.fields.join(","));
+	_grid.enableAutoWidth(true, 1200, 600);
+	_grid.enableEditTabOnly(true);
+	_grid.init();
+
+	_grid.attachEvent("onEditCell", tabular_on_edit);
+
+	_grid.get_cell_field = function () {
+		var rindex = get_sel_index(true), cindex = _grid.getSelectedCellIndex(), row, col;
+		if(_ts && rindex != undefined && cindex >=0){
+			row = _ts.get(rindex);
+			col = _grid.getColumnId(cindex);
+			return {obj: row, field: col}._mixin(_pwnd);
+		}
 	};
 
-	return this.dataObj;
+	_grid.destructor = function () {
+
+		if(_obj){
+			Object.unobserve(_obj, observer);
+			Object.unobserve(_obj, observer_rows);
+		}
+
+		_obj = null;
+		_ts = null;
+		_meta = null;
+		_mgr = null;
+		_pwnd = null;
+		_cell.detachToolbar();
+
+		_destructor.call(_grid);
+	};
+
+	// заполняем табчасть данными
+	observer_rows([{tabular: _tsname}]);
+
+	// начинаем следить за объектом и, его табчастью допреквизитов
+	Object.observe(_obj, observer, ["row"]);
+	Object.observe(_obj, observer_rows, ["rows"]);
+
+	return _grid;
 };
 
