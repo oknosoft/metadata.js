@@ -111,7 +111,8 @@ function OCombo(attr){
 				$p.iface.popup.hide();
 		}, 300);
 	}
-	dhtmlxEvent(t.getButton(), "mouseover", function(){
+
+	function popup_show(){
 
 		if(_mgr instanceof EnumManager)
 			return;
@@ -145,12 +146,18 @@ function OCombo(attr){
 		};
 
 		$p.iface.popup.p.onmouseout = popup_hide;
+	}
 
-	});
+	dhtmlxEvent(t.getButton(), "mouseover", popup_show);
 
 	dhtmlxEvent(t.getButton(), "mouseout", popup_hide);
 
 	dhtmlxEvent(t.getBase(), "click", function (e) {
+		return $p.cancel_bubble(e);
+	});
+
+	dhtmlxEvent(t.getInput(), "contextmenu", function (e) {
+		popup_show();
 		return $p.cancel_bubble(e);
 	});
 

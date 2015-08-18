@@ -104,10 +104,10 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				this.hideItem("btn_select");
 				this.hideItem("sep1");
 				this.addListOption("bs_more", "btn_order_list", "~", "button", "Список заказов", "tb_autocad.png");
-				this.addListOption("bs_more", "btn_import", "~", "button", "Загрузить из файла", "document_load.png");
-				this.addListOption("bs_more", "btn_export", "~", "button", "Выгрузить в файл", "document_save.png");
 
 			}
+			this.addListOption("bs_more", "btn_import", "~", "button", "Загрузить из файла", "document_load.png");
+			this.addListOption("bs_more", "btn_export", "~", "button", "Выгрузить в файл", "document_save.png");
 
 			// добавляем команды печати
 			if(_mgr instanceof CatManager || _mgr instanceof DocManager)
@@ -309,7 +309,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			$p.msg.show_not_implemented();
 
 		}else if(btn_id=="btn_import"){
-			$p.msg.show_not_implemented();
+			_mgr.import();
 
 		}else if(btn_id=="btn_export"){
 			_mgr.export(wnd.elmnts.grid.getSelectedRowId());

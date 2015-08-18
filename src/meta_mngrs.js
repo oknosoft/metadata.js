@@ -703,7 +703,7 @@ function RefDataManager(class_name) {
 	 * сохраняет массив объектов в менеджере
 	 * @method load_array
 	 * @param aattr {Array} - массив объектов для трансформации в объекты ссылочного типа
-	 * @param forse {Boolean} - перезаписывать объект
+	 * @param forse {Boolean} - перезаполнять объект
 	 * @async
 	 */
 	t.load_array = function(aattr, forse){

@@ -237,3 +237,70 @@ DataManager.prototype.export = function(attr){
 
 };
 
+/**
+ * Осуществляет загрузку данных из json-файла
+ * @param [file] {String|Blob|undefined}
+ * @param [obj] {DataObj} - если указано, загрузка осуществляется только в этот объект. остальные данные файла - игнорируются
+ */
+DataManager.prototype.import = function(file, obj){
+
+	var input_file;
+
+	function import_file(event){
+
+		function do_with_collection(cl_name, items){
+			var _mgr = _md.mgr_by_class_name(cl_name);
+			_mgr.load_array(items, true);
+		}
+
+		wnd.close();
+		if(input_file.files.length){
+
+			var reader = new FileReader();
+			reader.onload = function(e) {
+				try{
+					var res = JSON.parse(reader.result);
+					if(res.items){
+						for(var cl_name in res.items)
+							do_with_collection(cl_name, res.items[cl_name]);
+
+					}else if(res.cat){
+						for(var cl_name in res.cat)
+							do_with_collection("cat." + cl_name, res.cat[cl_name]);
+					}
+
+				}catch(err){
+					$p.msg.show_msg(err.message);
+				}
+			};
+			reader.readAsText(input_file.files[0]);
+		}
+	}
+
+	if(!file && typeof window != undefined){
+
+		var options = {
+				name: 'import',
+				wnd: {
+					width: 300,
+					height: 100,
+					caption: "Укажите файл для импорта"
+				}
+			},
+			wnd = $p.iface.dat_blank(null, options.wnd);
+
+		input_file = document.createElement("input");
+		input_file.setAttribute("id", "json_file");
+		input_file.setAttribute("type", "file");
+		input_file.setAttribute("accept", ".json");
+		input_file.setAttribute("value", "*.json");
+		input_file.onchange = import_file;
+
+		wnd.button('close').show();
+		wnd.button('park').hide();
+		wnd.attachObject(input_file);
+		wnd.centerOnScreen();
+		wnd.setModal(true);
+
+	}
+}

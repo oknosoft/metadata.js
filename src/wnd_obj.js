@@ -229,7 +229,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			_mgr.print(o.ref, btn_id, wnd);
 
 		else if(btn_id=="btn_import")
-			$p.msg.show_not_implemented();
+			_mgr.import(null, o);
 
 		else if(btn_id=="btn_export")
 			_mgr.export({items: [o], pwnd: wnd, obj: true} );
