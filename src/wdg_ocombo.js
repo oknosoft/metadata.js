@@ -96,7 +96,7 @@ function OCombo(attr){
 					});
 
 		} else if(this.name == "open"){
-			if(_obj[_field] && !_obj[_field].empty())
+			if(_obj && _obj[_field] && !_obj[_field].empty())
 				_obj[_field].form_obj();
 		}
 

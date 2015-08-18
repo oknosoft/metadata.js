@@ -244,13 +244,25 @@ DataManager.prototype.export = function(attr){
  */
 DataManager.prototype.import = function(file, obj){
 
-	var input_file;
+	var input_file, imported;
 
 	function import_file(event){
 
 		function do_with_collection(cl_name, items){
 			var _mgr = _md.mgr_by_class_name(cl_name);
-			_mgr.load_array(items, true);
+			if(items.length){
+				if(!obj){
+					imported = true;
+					_mgr.load_array(items, true);
+				} else if(obj._manager == _mgr){
+					for(var i in items){
+						if($p.fix_guid(items[i]) == obj.ref){
+							imported = true;
+							_mgr.load_array([items[i]], true);
+						}
+					}
+				}
+			}
 		}
 
 		wnd.close();
@@ -260,14 +272,21 @@ DataManager.prototype.import = function(file, obj){
 			reader.onload = function(e) {
 				try{
 					var res = JSON.parse(reader.result);
+
 					if(res.items){
 						for(var cl_name in res.items)
 							do_with_collection(cl_name, res.items[cl_name]);
 
-					}else if(res.cat){
-						for(var cl_name in res.cat)
-							do_with_collection("cat." + cl_name, res.cat[cl_name]);
+					}else{
+						["cat", "doc", "ireg", "areg", "cch", "cacc"].forEach(function (cl) {
+							if(res[cl]) {
+								for (var cl_name in res[cl])
+									do_with_collection(cl + "." + cl_name, res.cat[cl_name]);
+							}
+						});
 					}
+					if(!imported)
+						$p.msg.show_msg($p.msg.sync_no_data);
 
 				}catch(err){
 					$p.msg.show_msg(err.message);
@@ -284,7 +303,7 @@ DataManager.prototype.import = function(file, obj){
 				wnd: {
 					width: 300,
 					height: 100,
-					caption: "Укажите файл для импорта"
+					caption: $p.msg.select_file_import
 				}
 			},
 			wnd = $p.iface.dat_blank(null, options.wnd);
@@ -302,5 +321,8 @@ DataManager.prototype.import = function(file, obj){
 		wnd.centerOnScreen();
 		wnd.setModal(true);
 
+		setTimeout(function () {
+			input_file.click();
+		}, 100);
 	}
 }
