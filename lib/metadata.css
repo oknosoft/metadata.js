@@ -170,6 +170,21 @@ div.gridbox_dhx_web.gridbox table.hdr td {
     color: black;
 }
 
+/* marked */
+.marked_area {
+	height: 100%;
+	width: 100%;
+	overflow: auto;
+	font-family: Tahoma;
+	font-size: 12px;
+}
+.marked_area h2, .marked_area h3 {
+	margin-bottom: 0px;
+}
+.marked_area ul {
+	margin-top: 0px;
+}
+
 /* Текстовый редактор - высота*/
 .dhx_textarea {
     height: 50px;

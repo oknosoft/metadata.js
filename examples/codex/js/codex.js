@@ -36,7 +36,7 @@ $p.iface.oninit = function() {
 			{
 				id:     "b",
 				header: false,
-				height: 340
+				height: 360
 			},
 			{
 				id:     "c",
@@ -108,7 +108,7 @@ $p.iface.oninit = function() {
 	});
 
 
-	tabs.tabs("content").attachHTMLString("<div style='height: 100%; width: 100%; overflow: auto'></div>")
+	tabs.tabs("content").attachHTMLString("<div class='marked_area'></div>")
 	$p.iface.content = tabs.tabs("content").cell.firstChild.firstChild;
 
 	tabs.attachEvent("onSelect", function(id, lastId){
