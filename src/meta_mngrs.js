@@ -673,13 +673,15 @@ function RefDataManager(class_name) {
 		return $p._find(by_ref, val); };
 
 	/**
-	 * Находит строки, соответствующие отбору. Eсли отбор пустой, возвращаются все строки табчасти
+	 * Находит строки, соответствующие отбору. Eсли отбор пустой, возвращаются все строки, закешированные в менеджере
 	 * @method find_rows
-	 * @param attr {Object} - объект. в ключах имена полей, в значениях значения фильтра
-	 * @param fn {Function} - callback, в который передается строка табчасти
+	 * @param selection {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: значение}
+	 * @param callback {Function} - в который передается текущий объект данных на каждой итерации
 	 * @return {Array}
 	 */
-	t.find_rows = function(attr, fn){ return $p._find_rows(by_ref, attr, fn); };
+	t.find_rows = function(selection, callback){
+		return $p._find_rows.call(t, by_ref, selection, callback);
+	};
 
 	/**
 	 * Cохраняет объект в базе 1C либо выполняет запрос attr.action

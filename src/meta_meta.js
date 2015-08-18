@@ -97,33 +97,33 @@ $p._find = function(a, val){
  * @method _find_rows
  * @for MetaEngine
  * @param a {Array}
- * @param attr {object}
- * @param fn {function}
+ * @param selection {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: значение}
+ * @param callback {function}
  * @return {Array}
  * @private
  */
-$p._find_rows = function(a, attr, fn){
+$p._find_rows = function(a, selection, callback){
 	var ok, o, i, j, res = [];
 	for(i in a){
 		o = a[i];
 		ok = true;
-		if(attr)
-			for(j in attr){
-				if(attr[j].hasOwnProperty("like")){
-					if(o[j].toLowerCase().indexOf(attr[j].like.toLowerCase())==-1){
+		if(selection)
+			for(j in selection){
+				if(selection[j].hasOwnProperty("like")){
+					if(o[j].toLowerCase().indexOf(selection[j].like.toLowerCase())==-1){
 						ok = false;
 						break;
 					}
 				}else{
-					if(!$p.is_equal(o[j], attr[j])){
+					if(!$p.is_equal(o[j], selection[j])){
 						ok = false;
 						break;
 					}
 				}
 			}
 		if(ok){
-			if(fn){
-				if(fn.call(this, o) === false)
+			if(callback){
+				if(callback.call(this, o) === false)
 					break;
 			}else
 				res.push(o);

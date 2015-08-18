@@ -145,31 +145,19 @@ TabularSection.prototype.find = function(val){
 /**
  * Находит строки, соответствующие отбору. Если отбор пустой, возвращаются все строки табчасти
  * @method find_rows
- * @param attr {object} - в ключах имена полей, в значениях значения фильтра
- * @param callback {function}
+ * @param [selection] {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"}
+ * @param [callback] {Function} - в который передается строка табчасти на каждой итерации
  * @return {Array}
  */
-TabularSection.prototype.find_rows = function(attr, callback){
+TabularSection.prototype.find_rows = function(selection, callback){
 
-	var ok, o, i, j, res = [], a = this._obj;
-	for(i in a){
-		o = a[i];
-		ok = true;
-		if(attr)
-			for(j in attr)
-				if(!$p.is_equal(o[j], attr[j])){
-					ok = false;
-					break;
-				}
-		if(ok){
-			if(callback){
-				if(callback.call(this, o._row) === false)
-					break;
-			}else
-				res.push(o._row);
-		}
-	}
-	return res;
+	var t = this,
+		cb = callback ? function (row) {
+			return callback.call(t, row._row);
+		} : null;
+
+	return $p._find_rows.call(t, t._obj, selection, cb);
+
 };
 
 /**
@@ -258,11 +246,12 @@ TabularSection.prototype.load = function(aattr){
 };
 
 /**
- * Перезаполняет грид данными табчасти
+ * Перезаполняет грид данными табчасти с учетом отбора
  * @method sync_grid
  * @param grid {dhtmlxGrid} - элемент управления
+ * @param [selection] {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"}
  */
-TabularSection.prototype.sync_grid = function(grid){
+TabularSection.prototype.sync_grid = function(grid, selection){
 	var grid_data = {rows: []},
 		columns = [];
 
@@ -270,7 +259,7 @@ TabularSection.prototype.sync_grid = function(grid){
 		columns.push(grid.getColumnId(i));
 
 	grid.clearAll();
-	this.each(function(r){
+	this.find_rows(selection, function(r){
 		var data = [];
 		columns.forEach(function (f) {
 			if($p.is_data_obj(r[f]))
@@ -288,7 +277,6 @@ TabularSection.prototype.sync_grid = function(grid){
 TabularSection.prototype.toJSON = function () {
 	return this._obj;
 };
-
 
 
 /**

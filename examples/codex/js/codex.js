@@ -44,12 +44,7 @@ $p.iface.oninit = function() {
 				header: false
 			}
 		],
-		offsets: {          // optional, offsets for fullscreen init
-			top:    2,     // you can specify all four sides
-			right:  2,     // or only the side where you want to have an offset
-			bottom: 2,
-			left:   2
-		}
+		offsets: { top: 2, right: 2, bottom: 2, left: 2}
 	});
 
 	function on_resize(names){

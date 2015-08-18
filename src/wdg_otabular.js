@@ -188,6 +188,17 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		_destructor.call(_grid);
 	};
 
+	// TODO: реализовать свойство selection и его инициализацию через attr
+	_grid._define("selection", {
+		get: function () {
+
+		},
+		set: function (sel) {
+
+		},
+		enumerable: false
+	});
+
 	// заполняем табчасть данными
 	observer_rows([{tabular: _tsname}]);
 
