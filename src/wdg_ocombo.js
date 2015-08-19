@@ -26,7 +26,7 @@
  */
 function OCombo(attr){
 
-	var _obj, _field, _meta, _mgr, popup_focused,
+	var _obj, _field, _meta, _mgr, _property, popup_focused,
 		t = this,
 		_pwnd = {on_select: attr.on_select || function (selv) {
 			_obj[_field] = selv;
@@ -67,15 +67,31 @@ function OCombo(attr){
 	});
 
 	function get_filter(text){
-		var filter = {};
+		var filter = {}, choice;
+
 		if(_mgr && _mgr.metadata().hierarchical && _mgr.metadata().group_hierarchy){
 			if(_meta.choice_groups_elm == "elm")
 				filter.is_folder = false;
 			else if(_meta.choice_groups_elm == "grp" || _field == "parent")
 				filter.is_folder = true;
 		}
+
+		for(var el in _meta.choice_links){
+			choice = _meta.choice_links[el];
+			if(choice.name && choice.name[0] == "selection"){
+				if(_obj instanceof TabularSectionRow){
+					if(choice.path.length < 2)
+						filter[choice.name[1]] = _obj._owner._owner[choice.path[0]];
+					else
+						filter[choice.name[1]] = _obj[choice.path[1]];
+				}else
+					filter[choice.name[1]] = _obj[choice.path[0]];
+			}
+		}
+
 		if(text)
 			filter.presentation = {like: text};
+
 		return filter;
 	}
 
@@ -156,9 +172,10 @@ function OCombo(attr){
 		return $p.cancel_bubble(e);
 	});
 
-	dhtmlxEvent(t.getInput(), "contextmenu", function (e) {
-		popup_show();
-		return $p.cancel_bubble(e);
+	dhtmlxEvent(t.getBase(), "contextmenu", function (e) {
+		setTimeout(popup_show, 10);
+		e.preventDefault();
+		return false;
 	});
 
 	dhtmlxEvent(t.getInput(), "keyup", function (e) {
@@ -181,15 +198,26 @@ function OCombo(attr){
 		}
 	});
 
+	dhtmlxEvent(t.getInput(), "focus", function (e) {
+		this.select();
+	});
+
+
 	function observer(changes){
-		if(!t.getBase().parentElement)
+		if(!t || !t.getBase)
+			return;
+		else if(!t.getBase().parentElement)
 			setTimeout(t.unload);
-		else
-			changes.forEach(function(change){
-				if(change.name == _field){
-					set_value(_obj[_field]);
-				}
-			});
+		else{
+			if(_obj instanceof TabularSectionRow){
+
+			}else
+				changes.forEach(function(change){
+					if(change.name == _field){
+						set_value(_obj[_field]);
+					}
+				});
+		}
 	}
 
 	function set_value(v){
@@ -206,19 +234,27 @@ function OCombo(attr){
 	}
 
 	/**
-	 * Подключает поле объекта к элементу управления
-	 * @param obj
-	 * @param field
-	 * @param [meta]
+	 * Подключает поле объекта к элементу управления<br />
+	 * Параметры аналогичны конструктору
 	 */
-	this.attach = function (obj, field, meta) {
+	this.attach = function (attr) {
 
 		if(_obj)
 			Object.unobserve(_obj, observer);
 
-		_obj = obj;
-		_field = field;
-		_meta = meta || obj._metadata.fields[field];
+		_obj = attr.obj;
+		_field = attr.field;
+		_property = attr.property;
+
+		if(attr.meta)
+			_meta = attr.meta;
+
+		else if(_property){
+			_meta = _obj._metadata.fields[_field]._clone();
+			_meta.type = _property.type;
+
+		}else
+			_meta = _obj._metadata.fields[_field];
 
 		t.clearAll();
 		_mgr = _md.value_mgr(_obj, _field, _meta.type);
@@ -232,12 +268,16 @@ function OCombo(attr){
 		}
 
 		// начинаем следить за объектом
-		Object.observe(_obj, observer, ["update"]);
+		if(_obj instanceof TabularSectionRow)
+			Object.observe(_obj._owner._owner, observer, ["row"]);
+		else
+			Object.observe(_obj, observer, ["update"]);
 
 	};
 
 	var _unload = this.unload;
 	this.unload = function () {
+		popup_hide();
 		if(_obj)
 			Object.unobserve(_obj, observer);
 		if(t.conf && t.conf.tm_confirm_blur)
@@ -248,12 +288,11 @@ function OCombo(attr){
 		_mgr = null;
 		_pwnd = null;
 		try{ _unload.call(t); }catch(e){};
-
 	};
 
 	// биндим поле объекта
 	if(attr.obj && attr.field)
-		this.attach(attr.obj, attr.field, attr.meta);
+		this.attach(attr);
 	// устанавливаем url фильтрации
 	this.enableFilteringMode("between", "dummy", false, false);
 

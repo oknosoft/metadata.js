@@ -21,8 +21,9 @@
  * @param attr
  * @param attr.parent {HTMLElement} - контейнер, в котором будет размещен элемент
  * @param attr.obj {DataObj} - ссылка на редактируемый объект
- * @param attr.ts {String} - имя поля табличной части
+ * @param attr.ts {String} - имя табличной части
  * @param [attr.meta] {Object} - описание метаданных табличной части. Если не указано, описание запрашивается у объекта
+ * @param [attr.selection] {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
  * @constructor
  */
 dhtmlXCellObject.prototype.attachTabular = function(attr) {
@@ -34,7 +35,8 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		_mgr = _obj._manager,
 		_meta = attr.meta || _mgr.metadata().tabular_sections[_tsname].fields,
 		_cell = this,
-		_source = {};
+		_source = {},
+		_selection = attr.selection;
 	if(!_md.ts_captions(_mgr.class_name, _tsname, _source))
 		return;
 
@@ -107,20 +109,23 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	}
 
 	function observer_rows(changes){
+		var synced;
 		changes.forEach(function(change){
-			if (_tsname == change.tabular)
-				_ts.sync_grid(_grid);
+			if (!synced && _tsname == change.tabular){
+				synced = true;
+				_ts.sync_grid(_grid, _selection);
+			}
 		});
 	}
 
 	function observer(changes){
 		if(changes.length > 4)
-			_ts.sync_grid(_grid);
+			_ts.sync_grid(_grid, _selection);
 		else
 			changes.forEach(function(change){
 				if (_tsname == change.tabular){
 					if(_grid.getSelectedRowId() != change.row.row)
-						_ts.sync_grid(_grid);
+						_ts.sync_grid(_grid, _selection);
 					else{
 						var xcell = _grid.cells(change.row.row, _grid.getColIndexById(change.name));
 						xcell.setCValue($p.is_data_obj(change.row[change.name]) ? change.row[change.name].presentation : change.row[change.name]);
@@ -191,10 +196,11 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	// TODO: реализовать свойство selection и его инициализацию через attr
 	_grid._define("selection", {
 		get: function () {
-
+			return _selection;
 		},
 		set: function (sel) {
-
+			_selection = sel;
+			observer_rows([{tabular: _tsname}]);
 		},
 		enumerable: false
 	});

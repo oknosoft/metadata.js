@@ -81,4 +81,4 @@ $p.iface.wnd_sync = function() {
 		_stepper.frm_sync.setItemValue("text_processed", "Подготовка данных");
 		_stepper.frm_sync.setItemValue("text_bottom", "Загружается структура таблиц...");
 	}
-}
+};

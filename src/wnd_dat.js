@@ -111,36 +111,18 @@ $p.iface.dat_blank = function(_dxw, attr) {
 		attr = {};
 	var wnd_dat, _modified = false, wid = attr.id || 'wnd_dat_' + dhx4.newId();
 
-	if(_dxw instanceof dhtmlXAccordion){
-		_dxw.addItem(
-			wid,
-			attr.caption || "Tools",
-			true,
-			"*",
-			attr.icon);
-		var _acc_cell = _dxw.cells(wid);
-		_acc_cell.undock();
-		wnd_dat = _dxw.dhxWins.window(wid);
-		wnd_dat._define("_acc_cell", {
-			get: function () {
-				return _acc_cell;
-			},
-			enumerable: false
-		})
-
-	} else
-		wnd_dat = (_dxw || $p.iface.w).createWindow({
-			id: wid,
-			left: attr.left || 900,
-			top: attr.top || 20,
-			width: attr.width || 220,
-			height: attr.height || 300,
-			move: true,
-			park: !attr.allow_close,
-			center: !!attr.center,
-			resize: true,
-			caption: attr.caption || "Tools"
-		});
+	wnd_dat = (_dxw || $p.iface.w).createWindow({
+		id: wid,
+		left: attr.left || 900,
+		top: attr.top || 20,
+		width: attr.width || 220,
+		height: attr.height || 300,
+		move: true,
+		park: !attr.allow_close,
+		center: !!attr.center,
+		resize: true,
+		caption: attr.caption || "Tools"
+	});
 
 
 	_dxw = null;

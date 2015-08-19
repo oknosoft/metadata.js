@@ -325,10 +325,10 @@ if(typeof window !== "undefined"){
 
 						// пытаемся перейти в полноэкранный режим в мобильных браузерах
 						if (document.documentElement.webkitRequestFullScreen && navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)) {
-							function requestFullScreen(){
+							var requestFullScreen = function(){
 								document.documentElement.webkitRequestFullScreen();
 								w.removeEventListener('touchstart', requestFullScreen);
-							}
+							};
 							w.addEventListener('touchstart', requestFullScreen, false);
 						}
 

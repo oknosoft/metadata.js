@@ -20,9 +20,9 @@ $p.is_data_obj = function(v){
  * приводит тип значения v к типу метаданных
  * @method fetch_type
  * @for MetaEngine
- * @param str {any} - значение (обычно, строка, полученная из html поля ввода)
+ * @param str {*} - значение (обычно, строка, полученная из html поля ввода)
  * @param mtype {Object} - поле type объекта метаданных (field.type)
- * @return {any}
+ * @return {*}
  */
 $p.fetch_type = function(str, mtype){
 	var v = str;
@@ -62,7 +62,7 @@ $p.is_equal = function(v1, v2){
  * @for MetaEngine
  * @param a {Array}
  * @param val {DataObj|String}
- * @return {any}
+ * @return {*}
  * @private
  */
 $p._find = function(a, val){
@@ -93,12 +93,14 @@ $p._find = function(a, val){
 };
 
 /**
- * Абстрактный поиск массива значений в коллекции
+ * ### Поиск массива значений в коллекции
+ * Кроме стандартного поиска по равенству значений,
+ * поддержаны операторы `in`, `not` и `like` и фильтрация через внешнюю функцию
  * @method _find_rows
  * @for MetaEngine
  * @param a {Array}
- * @param selection {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: значение}
- * @param callback {function}
+ * @param selection {Object|Function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
+ * @param callback {Function}
  * @return {Array}
  * @private
  */
@@ -107,20 +109,38 @@ $p._find_rows = function(a, selection, callback){
 	for(i in a){
 		o = a[i];
 		ok = true;
-		if(selection)
-			for(j in selection){
-				if(selection[j].hasOwnProperty("like")){
-					if(o[j].toLowerCase().indexOf(selection[j].like.toLowerCase())==-1){
-						ok = false;
-						break;
-					}
-				}else{
-					if(!$p.is_equal(o[j], selection[j])){
-						ok = false;
-						break;
+		if(selection){
+			if(typeof selection == "function")
+				ok = selection(o);
+			else
+				for(j in selection){
+					if(selection[j].hasOwnProperty("like")){
+						if(o[j].toLowerCase().indexOf(selection[j].like.toLowerCase())==-1){
+							ok = false;
+							break;
+						}
+					}else if(selection[j].hasOwnProperty("not")){
+						if($p.is_equal(o[j], selection[j].not)){
+							ok = false;
+							break;
+						}
+
+					}else if(selection[j].hasOwnProperty("in")){
+						ok = selection[j].in.some(function(element) {
+							return element == o[j];
+						});
+						if(!ok)
+							break;
+
+					}else{
+						if(!$p.is_equal(o[j], selection[j])){
+							ok = false;
+							break;
+						}
 					}
 				}
-			}
+		}
+
 		if(ok){
 			if(callback){
 				if(callback.call(this, o) === false)
@@ -742,7 +762,7 @@ function Meta(req, patch) {
 		}else{
 
 			if(ts_name==="contact_information")
-				fields = {type: "", kind: "", presentation: ""}
+				fields = {type: "", kind: "", presentation: ""};
 
 			source.fields = ["row"];
 			source.headers = "№";

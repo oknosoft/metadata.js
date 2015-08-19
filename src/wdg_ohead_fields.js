@@ -20,8 +20,8 @@
  * @param attr
  * @param attr.parent {HTMLElement} - контейнер, в котором будет размещен элемент
  * @param attr.obj {DataObj} - ссылка на редактируемый объект
- * @param attr.ts {String} - имя поля табличной части
- * @param [attr.meta] {Object} - описание метаданных табличной части. Если не указано, описание запрашивается у объекта
+ * @param attr.ts {String} - имя табличной части c дополнительными реквизитами
+ * @param [attr.meta] {Object} - описание метаданных реквизитов. Если не указано, описание запрашивается у объекта
  * @constructor
  */
 dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
@@ -32,7 +32,9 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		_cell = this,
 		_grid = this.attachGrid(),
 		_destructor = _grid.destructor,
-		_extra_fields = _obj.extra_fields || _obj["ДополнительныеРеквизиты"],
+		_selection = attr.selection,
+		_tsname = attr.ts,
+		_extra_fields = _tsname ? _obj[_tsname] : (_obj.extra_fields || _obj["ДополнительныеРеквизиты"]),
 		_pwnd = {
 			// обработчик выбора ссылочных значений из внешних форм, открываемых полями со списками
 			on_select: function (selv, cell_field) {
@@ -45,9 +47,9 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 					var ret_code = _mgr.handle_event(_obj, "value_change", {
 						field: cell_field.field,
 						value: selv,
-						tabular_section: "",
+						tabular_section: cell_field.row_id ? _tsname : "",
 						grid: _grid,
-						cell: _grid.cells(cell_field.field, 1),
+						cell: _grid.cells(cell_field.row_id || cell_field.field, 1),
 						wnd: _pwnd.pwnd
 					});
 					if(typeof ret_code !== "boolean"){
@@ -60,6 +62,9 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 			},
 			pwnd: attr.pwnd || _cell
 		};
+
+	if(_extra_fields && !_tsname)
+		_tsname = _obj.extra_fields ? "extra_fields" :  "ДополнительныеРеквизиты";
 
 	// задача обсервера - перерисовать поле при изменении свойств объекта
 	function observer(changes){
@@ -74,8 +79,21 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 			});
 	}
 
-	function observer_extra_fields(changes){
-		console.log(changes);
+	function observer_rows(changes){
+		var synced;
+		changes.forEach(function(change){
+			if (!synced && _tsname == change.tabular){
+				synced = true;
+				_grid.clearAll();
+				_grid.loadXMLString(_mgr.get_property_grid_xml(attr.oxml, _obj, {
+					title: attr.ts_title,
+					ts: _tsname,
+					selection: _selection
+				}), function(){
+
+				});
+			}
+		});
 	}
 
 
@@ -84,32 +102,40 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 	_grid.setInitWidthsP("40,60");
 	_grid.setDateFormat("%d.%m.%Y %H:%i");
 	_grid.init();
-	_grid.loadXMLString(_mgr.get_property_grid_xml(attr.oxml, _obj), function(){
-		//t.enableAutoHeight(false,_cell._getHeight()-20,true);
-		_grid.setSizes();
-		_grid.attachEvent("onPropertyChanged", function(pname, new_value, old_value){
-			if(pname)
-				return _pwnd.on_select(new_value);
-		});
-		_grid.attachEvent("onCheckbox", function(rId, cInd, state){
-			if(_obj[rId] != undefined)
-				return _pwnd.on_select(state, {obj: _obj, field: rId});
-		});
+	//t.enableAutoHeight(false,_cell._getHeight()-20,true);
+	_grid.setSizes();
+	_grid.attachEvent("onPropertyChanged", function(pname, new_value, old_value){
+		if(pname)
+			return _pwnd.on_select(new_value);
 	});
+	_grid.attachEvent("onCheckbox", function(rId, cInd, state){
+		if(_obj[rId] != undefined)
+			return _pwnd.on_select(state, {obj: _obj, field: rId});
+	});
+
 
 	_grid.get_cell_field = function () {
 
-		var fpath = _grid.getSelectedRowId().split("|");
+		if(!_obj)
+			return;
+
+		var res = {row_id: _grid.getSelectedRowId()},
+			fpath = res.row_id.split("|");
 
 		if(fpath.length < 2)
 			return {obj: _obj, field: fpath[0]}._mixin(_pwnd);
 		else {
-			var vr = _obj[_grid.fpath[0]].find(fpath[1]);
+			var vr = _obj[fpath[0]].find(fpath[1]);
 			if(vr){
-				if(vr["Значение"])
-					return {obj: vr, field: "Значение"}._mixin(_pwnd);
-				else
-					return {obj: vr, field: "value"}._mixin(_pwnd);
+				res.obj = vr;
+				if(vr["Значение"]){
+					res.field = "Значение";
+					res.property = vr.Свойство || vr.Параметр;
+				} else{
+					res.field = "value";
+					res.property = vr.property || vr.param;
+				}
+				return res._mixin(_pwnd);
 			}
 		}
 	};
@@ -119,7 +145,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		if(_obj)
 			Object.unobserve(_obj, observer);
 		if(_extra_fields && _extra_fields instanceof TabularSection)
-			Object.unobserve(_extra_fields, observer_extra_fields);
+			Object.unobserve(_extra_fields, observer_rows);
 
 		_obj = null;
 		_extra_fields = null;
@@ -130,11 +156,29 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		_destructor.call(_grid);
 	};
 
+	_grid._define("selection", {
+		get: function () {
+			return _selection;
+		},
+		set: function (sel) {
+			_selection = sel;
+			observer_rows([{tabular: _tsname}]);
+		},
+		enumerable: false
+	});
+
+	//TODO: контекстные меню для элементов и табличных частей
+
+	//TODO: HeadFields для редактирования строки табчасти. Она ведь - тоже DataObj
+
+	// заполняем табчасть данными
+	observer_rows([{tabular: _tsname}]);
+
 	// начинаем следить за объектом и, его табчастью допреквизитов
 	Object.observe(_obj, observer, ["update"]);
 
 	if(_extra_fields && _extra_fields instanceof TabularSection)
-		Object.observe(_extra_fields, observer_extra_fields, ["row"]);
+		Object.observe(_obj, observer_rows, ["row"]);
 
 	return _grid;
 };

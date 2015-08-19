@@ -304,9 +304,13 @@ DataManager.prototype.tabular_captions = function (tabular, source) {
  * @method get_property_grid_xml
  * @param oxml {Object} - объект с иерархией полей (входной параметр - правила)
  * @param o {DataObj} - объект данных, из полей и табличных частей которого будут прочитаны значения
- * @return {string} - XML строка в терминах dhtml.PropertyGrid
+ * @param extra_fields {Object} - объект с описанием допреквизитов
+ * @param extra_fields.ts {String} - имя табчасти
+ * @param extra_fields.title {String} - заголовок в oxml, под которым следует расположить допреквизиты // "Дополнительные реквизиты", "Свойства изделия", "Параметры"
+ * @param extra_fields.selection {Object} - отбор, который следует приминить к табчасти допреквизитов
+ * @return {String} - XML строка в терминах dhtml.PropertyGrid
  */
-DataManager.prototype.get_property_grid_xml = function(oxml, o){
+DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 	var i, j, mf, v, ft, txt, t = this, row_id, gd = '<rows>',
 
 		default_oxml = function () {
@@ -379,9 +383,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o){
 					mf = {synonym: pref.presentation, type: pref.type};
 					row_id = tabular + "|" + pref.ref;
 					by_type(pval);
-					if(ft == "ref")
-						ft = "refc";
-					else if(ft == "edn")
+					if(ft == "edn")
 						ft = "calck";
 
 					if(pref.mandatory)
@@ -413,36 +415,22 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o){
 
 	for(i in oxml){
 		if(i!=" ")
-			gd += '<row open="1"><cell>' + i + '</cell>';	// если у блока есть заголовок, формируем блок иначе добавляем поля без иерархии
+			gd += '<row open="1"><cell>' + i + '</cell>';   // если у блока есть заголовок, формируем блок иначе добавляем поля без иерархии
 
 		for(j in oxml[i])
-			add_xml_row(oxml[i][j]);                                // поля, описанные в текущем разделе
+			add_xml_row(oxml[i][j]);                        // поля, описанные в текущем разделе
 
-		if(i == "Дополнительные реквизиты" && o["extra_fields"])    // строки табчасти o.extra_fields
-			o["extra_fields"].each(function(row){
-				add_xml_row(row, "extra_fields");
-			});
-
-		else if(i == "Свойства изделия"){							// специфичные свойства изделия
+		if(extra_fields && i == extra_fields.title && o[extra_fields.ts]){  // строки табчасти o.extra_fields
 			var added = false;
-			o.params.each(function(row){
-				if(row.cns_no == 0 && !row.hide){
-					add_xml_row(row, "params");
-					added = true;
-				}
+			o[extra_fields.ts].find_rows(extra_fields.selection, function (row) {
+				add_xml_row(row, extra_fields.ts);
 			});
-			if(!added)
-				add_xml_row({param: _cch.properties.get("", false)}, "params");
-		}else if(i == "Параметры"){									// параметры фурнитуры
-			for(var k in o.fprms){
-				if(o.fprms[k].hide || o.fprms[k]["param"].empty())
-					continue;
-				add_xml_row(o.fprms[k], "fprms");
-			}
+			//if(!added)
+			//	add_xml_row({param: _cch.properties.get("", false)}, "params"); // fake-строка, если в табчасти нет допреквизитов
+
 		}
 
-
-		if(i!=" ") gd += '</row>';									// если блок был открыт - закрываем
+		if(i!=" ") gd += '</row>';                          // если блок был открыт - закрываем
 	}
 	gd += '</rows>';
 	return gd;
@@ -585,7 +573,7 @@ function RefDataManager(class_name) {
 	 * @param ref {String|Object} - ссылочный идентификатор
 	 * @param [force_promise] {Boolean} - Если истина, возвращает промис, даже для локальных объектов. Если ложь, ищет только в локальном кеше
 	 * @param [do_not_create] {Boolean} - Не создавать новый. Например, когда поиск элемента выполняется из конструктора
-	 * @return {DataObj|Promise(DataObj)}
+	 * @return {DataObj|Promise.<DataObj>}
 	 */
 	t.get = function(ref, force_promise, do_not_create){
 
@@ -666,7 +654,7 @@ function RefDataManager(class_name) {
 	/**
 	 * Находит первый элемент, в любом поле которого есть искомое значение
 	 * @method find
-	 * @param val {any} - значение для поиска
+	 * @param val {*} - значение для поиска
 	 * @return {DataObj}
 	 */
 	t.find = function(val){
@@ -901,7 +889,7 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 								s += "\n AND _t_." + key + " ";
 							else if(sel[key] === false)
 								s += "\n AND (not _t_." + key + ") ";
-							else if(typeof sel[key] == "string")
+							else if(typeof sel[key] == "string" || typeof sel[key] == "object")
 								s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
 							else
 								s += "\n AND (_t_." + key + " = " + sel[key] + ") ";

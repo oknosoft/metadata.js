@@ -12,7 +12,9 @@
  * @param attr {Object} - параметры создаваемого виджета
  * @param attr.manager {DataManager}
  * @param attr.toolbar {dhtmlXToolbarObject}
- * @param attr.[pos=7] {Number} - номер элемента на тулбаре, после которого вставлять виджет
+ * @param [attr.pos=7] {Number} - номер элемента на тулбаре, после которого вставлять виджет
+ * @param [attr.date_from]
+ * @param [attr.date_till]
  * @constructor
  */
 $p.iface.Toolbar_filter = function (attr) {

@@ -1,7 +1,7 @@
 html, body {
     width: 100%;
     height: 100%;
-    margin: 0px;
+    margin: 0;
     color: rgb(48, 57, 66);
     font-family: Segoe UI, Tahoma, sans-serif;
     background-image: -webkit-linear-gradient(rgb(255, 255, 255) 50%, rgb(236, 230, 240));

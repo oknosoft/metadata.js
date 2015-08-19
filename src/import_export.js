@@ -325,4 +325,4 @@ DataManager.prototype.import = function(file, obj){
 			input_file.click();
 		}, 100);
 	}
-}
+};

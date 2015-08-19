@@ -133,7 +133,7 @@ TabularSection.prototype.del = function(val){
 /**
  * Находит первую строку, содержащую значение
  * @method find
- * @param val {any}
+ * @param val {*}
  * @return {TabularSectionRow}
  */
 TabularSection.prototype.find = function(val){
@@ -344,8 +344,7 @@ TabularSectionRow.prototype._define("row", {
  */
 TabularSectionRow.prototype._define("_clone", {
 	value : function(){
-		var row = new this._owner._owner._manager._ts_сonstructors[this._owner._name](this._owner)._mixin(this._obj);
-		return row;
+		return new this._owner._owner._manager._ts_сonstructors[this._owner._name](this._owner)._mixin(this._obj);
 	},
 	enumerable : false
 });

@@ -6,6 +6,8 @@
  * @author	Evgeniy Malyarov
  */
 
+"use strict";
+
 /**
  * ### Глобальный объект
  * Фреймворк [metadata.js](https://github.com/oknosoft/metadata.js), экспортирует единственную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
@@ -824,7 +826,7 @@ $p.blank = new function Blank() {
 	 * Возвращает пустое значение по типу метаданных
 	 * @method by_type
 	 * @param mtype {Object} - поле type объекта метаданных (field.type)
-	 * @return {any}
+	 * @return {*}
 	 */
 	this.by_type = function(mtype){
 		var v;
@@ -953,9 +955,9 @@ $p.fix_boolean = function(str){
 /**
  * Приводит значение к типу Дата
  * @method fix_date
- * @param str {any} - приводиме значение
+ * @param str {*} - приводиме значение
  * @param [strict=false] {boolean} - если истина и значение не приводится к дате, возвращать пустую дату
- * @return {Date|any}
+ * @return {Date|*}
  */
 $p.fix_date = function(str, strict){
 	var dfmt = /(^\d{1,4}[\.|\\/|-]\d{1,2}[\.|\\/|-]\d{1,4})(\s*(?:0?[1-9]:[0-5]|1(?=[012])\d:[0-5])\d\s*[ap]m)?$/;
@@ -1610,7 +1612,7 @@ $p.wsql = WSQL;
 	 * @param sql {String} - текст запроса
 	 * @param prm {Array} - массив с параметрами для передачи в запрос
 	 * @param [callback] {function} - функция обратного вызова. если не укзана, запрос выполняется "как бы синхронно"
-	 * @param [tag] {any} - произвольные данные для передачи в callback
+	 * @param [tag] {*} - произвольные данные для передачи в callback
 	 * @async
 	 */
 	wsql.exec = function(sql, prm, callback, tag) {
