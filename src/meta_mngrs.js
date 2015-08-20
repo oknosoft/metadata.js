@@ -400,6 +400,10 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 				else if((v = o[row_id]) !== undefined)
 					txt_by_type(v, _md.get(t.class_name, row_id));
 
+			}else if(extra_fields && extra_fields.meta && ((mf = extra_fields.meta[f]) !== undefined)){
+				row_id = f;
+				by_type(v = o[f]);
+
 			}else if((v = o[f]) !== undefined){
 				mf = _md.get(t.class_name, row_id = f);
 				by_type(v);

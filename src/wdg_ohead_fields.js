@@ -26,42 +26,16 @@
  */
 dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 
-	var _obj = attr.obj,
-		_meta = attr.meta || _obj._metadata.fields,
-		_mgr = _obj._manager,
+	var _obj,
+		_meta,
+		_mgr,
+		_selection,
+		_tsname,
+		_extra_fields,
+		_pwnd,
 		_cell = this,
 		_grid = this.attachGrid(),
-		_destructor = _grid.destructor,
-		_selection = attr.selection,
-		_tsname = attr.ts,
-		_extra_fields = _tsname ? _obj[_tsname] : (_obj.extra_fields || _obj["ДополнительныеРеквизиты"]),
-		_pwnd = {
-			// обработчик выбора ссылочных значений из внешних форм, открываемых полями со списками
-			on_select: function (selv, cell_field) {
-
-				if(!cell_field)
-					cell_field = _grid.get_cell_field();
-
-				if(cell_field){
-
-					var ret_code = _mgr.handle_event(_obj, "value_change", {
-						field: cell_field.field,
-						value: selv,
-						tabular_section: cell_field.row_id ? _tsname : "",
-						grid: _grid,
-						cell: _grid.cells(cell_field.row_id || cell_field.field, 1),
-						wnd: _pwnd.pwnd
-					});
-					if(typeof ret_code !== "boolean"){
-						cell_field.obj[cell_field.field] = selv;
-						ret_code = true;
-					}
-					return ret_code;
-				}
-
-			},
-			pwnd: attr.pwnd || _cell
-		};
+		_destructor = _grid.destructor;
 
 	if(_extra_fields && !_tsname)
 		_tsname = _obj.extra_fields ? "extra_fields" :  "ДополнительныеРеквизиты";
@@ -88,7 +62,8 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 				_grid.loadXMLString(_mgr.get_property_grid_xml(attr.oxml, _obj, {
 					title: attr.ts_title,
 					ts: _tsname,
-					selection: _selection
+					selection: _selection,
+					meta: _meta
 				}), function(){
 
 				});
@@ -167,18 +142,66 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		enumerable: false
 	});
 
+	/**
+	 * Подключает поле объекта к элементу управления<br />
+	 * Параметры аналогичны конструктору
+	 */
+	_grid.attach = function (attr) {
+
+		if (_obj){
+			Object.unobserve(_obj, observer);
+			Object.unobserve(_obj, observer_rows);
+		}
+
+		_obj = attr.obj;
+		_meta = attr.meta || _obj._metadata.fields;
+		_mgr = _obj._manager;
+		_selection = attr.selection;
+		_tsname = attr.ts || "";
+		_extra_fields = _tsname ? _obj[_tsname] : (_obj.extra_fields || _obj["ДополнительныеРеквизиты"]);
+		_pwnd = {
+			// обработчик выбора ссылочных значений из внешних форм, открываемых полями со списками
+			on_select: function (selv, cell_field) {
+				if(!cell_field)
+					cell_field = _grid.get_cell_field();
+				if(cell_field){
+
+						var ret_code = _mgr.handle_event(_obj, "value_change", {
+							field: cell_field.field,
+							value: selv,
+							tabular_section: cell_field.row_id ? _tsname : "",
+							grid: _grid,
+							cell: _grid.cells(cell_field.row_id || cell_field.field, 1),
+							wnd: _pwnd.pwnd
+						});
+						if(typeof ret_code !== "boolean"){
+							cell_field.obj[cell_field.field] = selv;
+							ret_code = true;
+						}
+						return ret_code;
+					}
+			},
+			pwnd: attr.pwnd || _cell
+		};
+
+
+		// начинаем следить за объектом и, его табчастью допреквизитов
+		Object.observe(_obj, observer, ["update"]);
+
+		if(_extra_fields && _extra_fields instanceof TabularSection)
+			Object.observe(_obj, observer_rows, ["row"]);
+
+		// заполняем табчасть данными
+		observer_rows([{tabular: _tsname}]);
+
+	};
+
 	//TODO: контекстные меню для элементов и табличных частей
 
 	//TODO: HeadFields для редактирования строки табчасти. Она ведь - тоже DataObj
 
-	// заполняем табчасть данными
-	observer_rows([{tabular: _tsname}]);
-
-	// начинаем следить за объектом и, его табчастью допреквизитов
-	Object.observe(_obj, observer, ["update"]);
-
-	if(_extra_fields && _extra_fields instanceof TabularSection)
-		Object.observe(_obj, observer_rows, ["row"]);
+	if(attr)
+		_grid.attach(attr);
 
 	return _grid;
 };
