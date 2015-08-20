@@ -881,6 +881,12 @@ function OTooolBar(attr){
 		}, 300);
 	}
 
+	function btn_click(){
+		var tool_name = this.name.replace(attr.name + '_', '');
+		if(attr.onclick)
+			attr.onclick.call(_this, tool_name);
+	}
+
 	/**
 	 * Добавляет кнопку на панель инструментов
 	 * @method add
@@ -890,13 +896,9 @@ function OTooolBar(attr){
 
 		var bdiv = $p.iface.add_button(div, attr, battr);
 
-		dhtmlxEvent(bdiv, "click", function(){
-			var tool_name = this.name.replace(attr.name + '_', '');
-			if(attr.onclick)
-				attr.onclick.call(_this, tool_name);
-		});
+		bdiv.onclick = btn_click;
 
-		dhtmlxEvent(bdiv, "mouseover", function(){
+		bdiv.onmouseover = function(){
 			if(battr.title && !battr.sub){
 				popup_focused = true;
 
@@ -910,24 +912,34 @@ function OTooolBar(attr){
 
 				$p.iface.popup.p.onmouseout = popup_hide;
 			}
-		});
+		};
 
-		dhtmlxEvent(bdiv, "mouseout", popup_hide);
+		bdiv.onmouseout = popup_hide;
 
 		_this.buttons[battr.name] = bdiv;
 
 		if(battr.sub){
 
-			function remove_sub(){
-				if(bdiv.subdiv && !sub_focused && !btn_focused){
-					while(bdiv.subdiv.firstChild)
-						bdiv.subdiv.removeChild(bdiv.subdiv.firstChild);
-					bdiv.subdiv.parentNode.removeChild(bdiv.subdiv);
-					bdiv.subdiv = null;
+			function remove_sub(parent){
+				if(!parent)
+					parent = bdiv;
+				if(parent.subdiv && !sub_focused && !btn_focused){
+					while(parent.subdiv.firstChild)
+						parent.subdiv.removeChild(parent.subdiv.firstChild);
+					parent.subdiv.parentNode.removeChild(parent.subdiv);
+					parent.subdiv = null;
 				}
 			}
 
 			bdiv.onmouseover = function(){
+
+				// нужно погасить сабдивы соседей
+				for(var i=0; i<bdiv.parentNode.children.length; i++){
+					if(bdiv.parentNode.children[i] != bdiv && bdiv.parentNode.children[i].subdiv){
+						remove_sub(bdiv.parentNode.children[i]);
+						break;
+					}
+				}
 
 				btn_focused = true;
 
@@ -935,13 +947,16 @@ function OTooolBar(attr){
 					this.subdiv = document.createElement('div');
 					this.subdiv.className = 'wb-tools';
 					offset = $p.iface.get_offset(bdiv);
-					this.subdiv.style.left = offset.left + 'px';
+					if(battr.sub.align == 'right')
+						this.subdiv.style.left = (offset.left + bdiv.offsetWidth - (parseInt(battr.sub.width.replace(/\D+/g,"")) || 56)) + 'px';
+					else
+						this.subdiv.style.left = offset.left + 'px';
 					this.subdiv.style.top = (offset.top + div.offsetHeight) + 'px';
-					this.subdiv.style.height = '198px';
-					this.subdiv.style.width = '56px';
+					this.subdiv.style.height = battr.sub.height || '198px';
+					this.subdiv.style.width = battr.sub.width || '56px';
 					for(var i in battr.sub.buttons){
 						var bsub = $p.iface.add_button(this.subdiv, attr, battr.sub.buttons[i]);
-						bsub.onclick = bdiv.onclick;
+						bsub.onclick = btn_click;
 					}
 					attr.wrapper.appendChild(this.subdiv);
 
