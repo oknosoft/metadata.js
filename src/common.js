@@ -232,9 +232,16 @@ Object.prototype._define("_clone", {
 		for(p in this){
 			if (this.hasOwnProperty(p)){
 				v = this[p];
-				if(v && "object" === typeof v)
-					c[p] = v._clone();
-				else
+				if(v){
+					if("function" === typeof v || v instanceof DataObj || v instanceof DataManager)
+						c[p] = v;
+
+					else if("object" === typeof v)
+						c[p] = v._clone();
+
+					else
+						c[p] = v;
+				} else
 					c[p] = v;
 			}
 		}

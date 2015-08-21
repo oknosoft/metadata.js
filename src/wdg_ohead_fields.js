@@ -27,6 +27,7 @@
 dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 
 	var _obj,
+		_oxml,
 		_meta,
 		_mgr,
 		_selection,
@@ -59,7 +60,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 			if (!synced && _tsname == change.tabular){
 				synced = true;
 				_grid.clearAll();
-				_grid.loadXMLString(_mgr.get_property_grid_xml(attr.oxml, _obj, {
+				_grid.loadXMLString(_mgr.get_property_grid_xml(_oxml, _obj, {
 					title: attr.ts_title,
 					ts: _tsname,
 					selection: _selection,
@@ -148,15 +149,21 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 	 */
 	_grid.attach = function (attr) {
 
-		if (_obj){
+		if (_obj)
 			Object.unobserve(_obj, observer);
+
+		if(_extra_fields && _extra_fields instanceof TabularSection)
 			Object.unobserve(_obj, observer_rows);
-		}
+
+		if(attr.oxml)
+			_oxml = attr.oxml;
+
+		if(attr.selection)
+			_selection = attr.selection;
 
 		_obj = attr.obj;
 		_meta = attr.meta || _obj._metadata.fields;
 		_mgr = _obj._manager;
-		_selection = attr.selection;
 		_tsname = attr.ts || "";
 		_extra_fields = _tsname ? _obj[_tsname] : (_obj.extra_fields || _obj["ДополнительныеРеквизиты"]);
 		_pwnd = {

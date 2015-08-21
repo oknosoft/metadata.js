@@ -114,7 +114,12 @@ $p._find_rows = function(a, selection, callback){
 				ok = selection(o);
 			else
 				for(j in selection){
-					if(selection[j].hasOwnProperty("like")){
+					if(typeof selection[j] == "function"){
+						ok = selection[j](o, j);
+						if(!ok)
+							break;
+
+					}else if(selection[j].hasOwnProperty("like")){
 						if(o[j].toLowerCase().indexOf(selection[j].like.toLowerCase())==-1){
 							ok = false;
 							break;
@@ -132,11 +137,9 @@ $p._find_rows = function(a, selection, callback){
 						if(!ok)
 							break;
 
-					}else{
-						if(!$p.is_equal(o[j], selection[j])){
-							ok = false;
-							break;
-						}
+					}else if(!$p.is_equal(o[j], selection[j])){
+						ok = false;
+						break;
 					}
 				}
 		}

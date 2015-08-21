@@ -101,12 +101,13 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			wnd = $p.iface.dat_blank(null, options.wnd);
 		}
 
-		if(delete wnd.ref)
+		if(!wnd.ref)
 			wnd._define("ref", {
 				get: function(){
 					return o ? o.ref : $p.blank.guid;
 				},
-				enumerable: false
+				enumerable: false,
+				configurable: true
 			});
 
 		/**
@@ -184,7 +185,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		});
 
 		if($p.job_prm.russian_names){
-			if(delete wnd.Элементы)
+			if(!wnd.Элементы)
 				wnd._define({
 					"Элементы": {
 						get: function () {
@@ -193,7 +194,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 						enumerable: false
 					}
 				});
-			if(delete wnd.elmnts.Шапка)
+			if(!wnd.elmnts.Шапка)
 				wnd.elmnts._define({
 					"Шапка": {
 						get: function () {

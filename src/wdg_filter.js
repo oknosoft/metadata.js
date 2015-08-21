@@ -26,6 +26,27 @@ $p.iface.Toolbar_filter = function (attr) {
 	if(!attr.pos)
 		attr.pos = 6;
 
+	function onchange(){
+
+		if(input_filter_changed){
+			clearTimeout(input_filter_changed);
+			input_filter_changed = 0;
+		}
+
+		attr.onchange.call(t, t.get_filter());
+	}
+
+	function onkeydown(){
+
+		if(input_filter_changed)
+			clearTimeout(input_filter_changed);
+
+		input_filter_changed = setTimeout(function () {
+			if(input_filter_changed)
+				onchange();
+		}, 600);
+	}
+
 	// Поля ввода периода
 	if(attr.manager instanceof DocManager || attr.period){
 
@@ -35,27 +56,6 @@ $p.iface.Toolbar_filter = function (attr) {
 				t.сalendar.setSensitiveRange(inp.value, null);
 			else
 				t.сalendar.setSensitiveRange(null, inp.value);
-		}
-
-		function onchange(){
-
-			if(input_filter_changed){
-				clearTimeout(input_filter_changed);
-				input_filter_changed = 0;
-			}
-
-			attr.onchange.call(t, t.get_filter());
-		}
-
-		function onkeydown(){
-
-			if(input_filter_changed)
-				clearTimeout(input_filter_changed);
-
-			input_filter_changed = setTimeout(function () {
-				if(input_filter_changed)
-					onchange();
-			}, 600);
 		}
 
 		input_filter_width = 180;

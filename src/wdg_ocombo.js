@@ -81,11 +81,11 @@ function OCombo(attr){
 			if(choice.name && choice.name[0] == "selection"){
 				if(_obj instanceof TabularSectionRow){
 					if(choice.path.length < 2)
-						filter[choice.name[1]] = _obj._owner._owner[choice.path[0]];
+						filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj._owner._owner[choice.path[0]];
 					else
 						filter[choice.name[1]] = _obj[choice.path[1]];
 				}else
-					filter[choice.name[1]] = _obj[choice.path[0]];
+					filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj[choice.path[0]];
 			}
 		}
 

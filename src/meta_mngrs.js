@@ -885,28 +885,32 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 
 			// допфильтры форм и связей параметров выбора
 			if(attr.selection){
-				attr.selection.forEach(function(sel){
-					for(var key in sel){
+				if(typeof attr.selection == "function"){
 
-						if(cmd.fields.hasOwnProperty(key)){
-							if(sel[key] === true)
-								s += "\n AND _t_." + key + " ";
-							else if(sel[key] === false)
-								s += "\n AND (not _t_." + key + ") ";
-							else if(typeof sel[key] == "string" || typeof sel[key] == "object")
-								s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
-							else
-								s += "\n AND (_t_." + key + " = " + sel[key] + ") ";
+				}else
+					attr.selection.forEach(function(sel){
+						for(var key in sel){
 
-						} else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
-							//if(sel[key])
-							//	s += "\n AND _t_." + key + " ";
-							//else
-							//	s += "\n AND (not _t_." + key + ") ";
+							if(typeof sel[key] == "function"){
+								s += "\n AND " + sel[key](t, key) + " ";
+
+							}else if(cmd.fields.hasOwnProperty(key)){
+								if(sel[key] === true)
+									s += "\n AND _t_." + key + " ";
+								else if(sel[key] === false)
+									s += "\n AND (not _t_." + key + ") ";
+								else if(typeof sel[key] == "string" || typeof sel[key] == "object")
+									s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
+								else
+									s += "\n AND (_t_." + key + " = " + sel[key] + ") ";
+							} else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
+								//if(sel[key])
+								//	s += "\n AND _t_." + key + " ";
+								//else
+								//	s += "\n AND (not _t_." + key + ") ";
+							}
 						}
-					}
-
-				});
+					});
 			}
 
 			return s;
@@ -950,38 +954,6 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 				if(filter && filter.indexOf("%") == -1)
 					filter = "%" + filter + "%";
 
-
-				//
-				//
-				//// допфильтры форм и связей параметров выбора
-				//Если СтруктураМД.param.Свойство("selection") Тогда
-				//Для Каждого selection Из СтруктураМД.param.selection Цикл
-				//Для Каждого Эл Из selection Цикл
-				//Если ТипЗнч(Эл.Значение) = Тип("УникальныйИдентификатор") Тогда
-				//Реквизит = СтруктураМД.МетаОбъекта.Реквизиты.Найти(ИнтеграцияСериализацияСервер.Synonim(Эл.Ключ, СтруктураМД));
-				//Если Реквизит <> Неопределено Тогда
-				//Для Каждого Т Из Реквизит.Тип.Типы() Цикл
-				//Попытка
-				//МенеджерСсылки = ОбщегоНазначения.МенеджерОбъектаПоСсылке(Новый(Т));
-				//ЗначениеОтбора = МенеджерСсылки.ПолучитьСсылку(Эл.Значение);
-				//Исключение
-				//КонецПопытки;
-				//КонецЦикла;
-				//КонецЕсли;
-				//Иначе
-				//ЗначениеОтбора = Эл.Значение;
-				//КонецЕсли;
-				//Запрос.УстановитьПараметр(Эл.Ключ, ЗначениеОтбора);
-				//КонецЦикла;
-				//КонецЦикла;
-				//КонецЕсли;
-				//
-				//// допфильтры форм и связей параметров выбора
-				//Если СтруктураМД.param.Свойство("filter_ex") Тогда
-				//Для Каждого Эл Из СтруктураМД.param.filter_ex Цикл
-				//Запрос.УстановитьПараметр(Эл.Ключ, Эл.Значение);
-				//КонецЦикла;
-				//КонецЕсли;
 			}
 
 			// ссылка родителя во взаимосвязи с начальным значением выбора
