@@ -1,6 +1,9 @@
 /**
- * Форма dat.GUI - визуализация и изменение параметров объекта<br />
- * &copy; http://www.oknosoft.ru 2009-2015
+ * Форма dat.GUI - визуализация и изменение параметров объекта
+ *
+ * &copy; http://www.oknosoft.ru 2014-2015
+ * @author	Evgeniy Malyarov
+ *
  * @module common
  * @submodule wnd_dat
  */

@@ -1,7 +1,10 @@
 /**
  * Ячейка грида для отображения картинки svg и компонент,
  * получающий и отображающий галерею эскизов объекта данных
- * <br />&copy; http://www.oknosoft.ru 2009-2015
+ *
+ * &copy; http://www.oknosoft.ru 2014-2015
+ * @author	Evgeniy Malyarov
+ *
  * @module  wdg_rsvg
  * @requires common
  */

@@ -1,7 +1,10 @@
 /**
  * Основное окно интерфейса accounting demo
- * <br />&copy; http://www.oknosoft.ru 2009-2015
- * Created 17.07.2015
+ *
+ * Created 17.07.2015<br />
+ * &copy; http://www.oknosoft.ru 2014-2015
+ * @author	Evgeniy Malyarov
+ *
  * @module  main
  */
 

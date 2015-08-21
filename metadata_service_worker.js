@@ -1,6 +1,8 @@
 /**
- * <br />&copy; http://www.oknosoft.ru 2009-2015
- * Created 04.08.2015
+ * Created 04.08.2015<br />
+ * &copy; http://www.oknosoft.ru 2014-2015
+ * @author	Evgeniy Malyarov
+ *
  * @module  metadata-service-worker.js
  */
 

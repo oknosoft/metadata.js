@@ -1,6 +1,8 @@
 /**
  * ### Визуальный компонент - поле с выпадающим списком
- * &copy; http://www.oknosoft.ru 2009-2015
+ *
+ * &copy; http://www.oknosoft.ru 2014-2015
+ * @author	Evgeniy Malyarov
  *
  * @module  wdg_ocombo
  * @requires common

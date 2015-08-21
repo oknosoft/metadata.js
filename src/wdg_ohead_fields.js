@@ -1,6 +1,8 @@
 /**
  * ### Визуальный компонент - реквизиты шапки объекта
- * &copy; http://www.oknosoft.ru 2009-2015
+ *
+ * &copy; http://www.oknosoft.ru 2014-2015
+ * @author	Evgeniy Malyarov
  *
  * @module  wdg_ohead_fields
  * @requires common

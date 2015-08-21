@@ -1,6 +1,9 @@
 /**
- * Форма абстрактного объекта данных {{#crossLink "DataObj"}}{{/crossLink}}, в том числе, отчетов и обработок<br />
- * &copy; http://www.oknosoft.ru 2009-2015
+ * Форма абстрактного объекта данных {{#crossLink "DataObj"}}{{/crossLink}}, в том числе, отчетов и обработок
+ *
+ * &copy; http://www.oknosoft.ru 2014-2015
+ * @author	Evgeniy Malyarov
+ *
  * @module metadata
  * @submodule wnd_obj
  */

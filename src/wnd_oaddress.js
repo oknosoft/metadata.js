@@ -1,6 +1,9 @@
 /**
  * Поле ввода адреса связанная с ним форма ввода адреса
- * <br />&copy; http://www.oknosoft.ru 2009-2015
+ *
+ * &copy; http://www.oknosoft.ru 2014-2015
+ * @author	Evgeniy Malyarov
+ *
  * @module  wnd_oaddress
  */
 

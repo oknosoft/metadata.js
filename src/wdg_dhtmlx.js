@@ -1,6 +1,8 @@
 /**
  * Расширение типов ячеек dhtmlXGrid
- * <br />&copy; http://www.oknosoft.ru 2009-2015
+ *
+ * &copy; http://www.oknosoft.ru 2014-2015
+ * @author	Evgeniy Malyarov
  *
  * Экспортирует конструкторы:
  * * **eXcell_ref** - поля ввода значений ссылочных типов

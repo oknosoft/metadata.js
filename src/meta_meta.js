@@ -1,8 +1,11 @@
 /**
- * Метаданные на стороне js: конструкторы, заполнение, кеширование, поиск <br />&copy; http://www.oknosoft.ru 2009-2015
+ * Метаданные на стороне js: конструкторы, заполнение, кеширование, поиск
+ *
+ * &copy; http://www.oknosoft.ru 2014-2015
+ * @author	Evgeniy Malyarov
+ *
  * @module  metadata
  * @submodule meta_meta
- * @author	Evgeniy Malyarov
  * @requires common
  */
 

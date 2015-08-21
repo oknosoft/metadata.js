@@ -1,6 +1,9 @@
 /**
  * Обработчики событий и методы документа __Заказ покупателя__
- * <br />&copy; http://www.oknosoft.ru 2009-2015
+ *
+ * &copy; http://www.oknosoft.ru 2014-2015
+ * @author	Evgeniy Malyarov
+ *
  * @module  ЗаказПокупателя
  */
 
