@@ -62,10 +62,16 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 
 		else
 			changes.forEach(function(change){
-				_grid.forEachRow(function(id){
-					if (id == change.name)
-						_grid.cells(id,1).setValue(_obj[change.name]);
-				});
+				if(change.type == "unload"){
+					if(_cell && _cell.close)
+						_cell.close();
+					else
+						_grid.destructor();
+				}else
+					_grid.forEachRow(function(id){
+						if (id == change.name)
+							_grid.cells(id,1).setValue(_obj[change.name]);
+					});
 			});
 	}
 
@@ -208,7 +214,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 
 
 		// начинаем следить за объектом и, его табчастью допреквизитов
-		Object.observe(_obj, observer, ["update"]);
+		Object.observe(_obj, observer, ["update", "unload"]);
 
 		if(_extra_fields && _extra_fields instanceof TabularSection)
 			Object.observe(_obj, observer_rows, ["row"]);
