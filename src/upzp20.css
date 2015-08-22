@@ -325,3 +325,12 @@ div.gridbox_dhx_web.gridbox table.hdr td {
 .cursor-arrow-small-point {
     cursor: url('imgs/custom_field/cursor-arrow-small-point.png') 2 2, default;
 }
+.cursor-text {
+	cursor: url('imgs/custom_field/cursor-text.png') 2 2, default;
+}
+.cursor-text-add {
+	cursor: url('imgs/custom_field/cursor-text-add.png') 2 2, default;
+}
+.cursor-text-select {
+	cursor: url('imgs/custom_field/cursor-text-select.png') 2 2, default;
+}

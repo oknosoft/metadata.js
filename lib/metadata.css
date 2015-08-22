@@ -46,8 +46,8 @@ img.property_image{
 }html, body {
     width: 100%;
     height: 100%;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
     overflow: hidden;
 }
 
@@ -370,10 +370,18 @@ div.gridbox_dhx_web.gridbox table.hdr td {
 .cursor-arrow-small-point {
     cursor: url('imgs/custom_field/cursor-arrow-small-point.png') 2 2, default;
 }
-html, body {
+.cursor-text {
+	cursor: url('imgs/custom_field/cursor-text.png') 2 2, default;
+}
+.cursor-text-add {
+	cursor: url('imgs/custom_field/cursor-text-add.png') 2 2, default;
+}
+.cursor-text-select {
+	cursor: url('imgs/custom_field/cursor-text-select.png') 2 2, default;
+}html, body {
     width: 100%;
     height: 100%;
-    margin: 0px;
+    margin: 0;
     color: rgb(48, 57, 66);
     font-family: Segoe UI, Tahoma, sans-serif;
     background-image: -webkit-linear-gradient(rgb(255, 255, 255) 50%, rgb(236, 230, 240));

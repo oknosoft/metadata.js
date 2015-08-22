@@ -45,8 +45,21 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 
 	// задача обсервера - перерисовать поле при изменении свойств объекта
 	function observer(changes){
-		if(!_grid.entBox.parentElement)
+		if(!_obj){
+			var stack = [];
+			changes.forEach(function(change){
+				if(stack.indexOf[change.object]==-1){
+					stack.push(change.object);
+					Object.unobserve(change.object, observer);
+					if(_extra_fields && _extra_fields instanceof TabularSection)
+						Object.unobserve(change.object, observer_rows);
+				}
+			});
+			stack = null;
+
+		}else if(_grid.entBox && !_grid.entBox.parentElement)
 			setTimeout(_grid.destructor);
+
 		else
 			changes.forEach(function(change){
 				_grid.forEachRow(function(id){

@@ -35,11 +35,9 @@ var $p = new MetaEngine();
  * https://github.com/umdjs/umd
  */
 if (typeof define === 'function' && define.amd) {
-	// Support AMD (e.g. require.js)
-	define('$p', $p);
-} else if (typeof module === 'object' && module) { // could be `null`
-	// Support CommonJS module
-	module.exports = $p;
+	define('$p', $p);                               // Support AMD (e.g. require.js)
+} else if (typeof module === 'object' && module) {  // could be `null`
+	module.exports = $p;                            // Support CommonJS module
 }
 
 if(typeof window !== "undefined"){
