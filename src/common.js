@@ -8,7 +8,7 @@
  * @module  common
  */
 
-"use strict";
+//"use strict";
 
 /**
  * ### Глобальный объект
@@ -556,7 +556,7 @@ $p.ajax = new (
 		 * @async
 		 */
 		this.get = function(url) {
-			return _call("GET", url);
+			return _call.call(this, "GET", url);
 		};
 
 		/**
@@ -576,7 +576,7 @@ $p.ajax = new (
 			} else {
 				postData = String(postData);
 			}
-			return _call("POST", url, postData);
+			return _call.call(this, "POST", url, postData);
 		};
 
 		/**
@@ -589,7 +589,7 @@ $p.ajax = new (
 		 * @async
 		 */
 		this.get_ex = function(url, auth, beforeSend){
-			return _call("GET", url, null, auth, beforeSend);
+			return _call.call(this, "GET", url, null, auth, beforeSend);
 
 		};
 
@@ -604,7 +604,7 @@ $p.ajax = new (
 		 * @async
 		 */
 		this.post_ex = function(url, postData, auth, beforeSend){
-			return _call("POST", url, postData, auth, beforeSend);
+			return _call.call(this, "POST", url, postData, auth, beforeSend);
 		};
 
 		/**
@@ -618,7 +618,7 @@ $p.ajax = new (
 		 * @async
 		 */
 		this.put_ex = function(url, postData, auth, beforeSend){
-			return _call("PUT", url, postData, auth, beforeSend);
+			return _call.call(this, "PUT", url, postData, auth, beforeSend);
 		};
 
 		/**
@@ -632,7 +632,7 @@ $p.ajax = new (
 		 * @async
 		 */
 		this.patch_ex = function(url, postData, auth, beforeSend){
-			return _call("PATCH", url, postData, auth, beforeSend);
+			return _call.call(this, "PATCH", url, postData, auth, beforeSend);
 		};
 
 		/**
@@ -645,7 +645,7 @@ $p.ajax = new (
 		 * @async
 		 */
 		this.delete_ex = function(url, auth, beforeSend){
-			return _call("DELETE", url, null, auth, beforeSend);
+			return _call.call(this, "DELETE", url, null, auth, beforeSend);
 
 		};
 

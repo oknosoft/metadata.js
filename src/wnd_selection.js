@@ -13,15 +13,31 @@
  * @method form_selection
  * @param pwnd {dhtmlXWindows} - указатель на родительскую форму
  * @param attr {Object} - параметры инициализации формы
+ * @param [attr.initial_value] {DataObj} - начальное значение выбора
+ * @param [attr.parent] {DataObj} - начальное значение родителя для иерархических справочников
+ * @param [attr.on_select] {Function} - callback при выборе значения
  */
 DataManager.prototype.form_selection = function(pwnd, attr){
+
+	if(!pwnd)
+		pwnd = attr && attr.pwnd ? attr.pwnd : {};
+
+	if(!attr && !(pwnd instanceof dhtmlXCellObject)){
+		attr = pwnd;
+		pwnd = {};
+	}
+
+	if(!attr)
+		attr = {};
+
 
 	var _mgr = this,
 		md = _mgr.metadata(),
 		has_tree = md["hierarchical"] && !(_mgr instanceof ChartOfAccountManager),
 		wnd, s_col = 0,
 		a_direction = "asc",
-		previous_filter = {};
+		previous_filter = {},
+		on_select = pwnd.on_select || attr.on_select;
 
 
 	// создаём и настраиваем форму
@@ -103,7 +119,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				this.disableItem("btn_delete");
 			}
 
-			if(!pwnd.on_select && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper"){
+			if(!on_select && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper"){
 				this.hideItem("btn_select");
 				this.hideItem("sep1");
 				this.addListOption("bs_more", "btn_order_list", "~", "button", "Список заказов", "tb_autocad.png");
@@ -367,11 +383,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 
 		if(rId){
-			if(pwnd.on_select)
+			if(on_select)
 				_mgr.get(rId, true)
 					.then(function(selv){
 						wnd.close();
-						pwnd.on_select.call(pwnd.grid || pwnd, selv);
+						on_select.call(pwnd.grid || pwnd, selv);
 					});
 			else
 				$p.iface.set_hash(_mgr.class_name, rId);
@@ -395,11 +411,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 * освобождает переменные после закрытия формы
 	 */
 	function frm_unload(){
-		_mgr = null;
-		wnd = null;
-		md = null;
-		previous_filter = null;
 		document.body.removeEventListener("keydown", body_keydown);
+		_mgr = wnd = md = previous_filter = on_select = pwnd = attr = null;
 	}
 
 	function frm_close(win){
