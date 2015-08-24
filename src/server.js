@@ -120,6 +120,13 @@ ws_md.on('connection', function(ws) {
 				ws.zone = data.zone;
 			if(data.hasOwnProperty("browser_uid"))
 				ws.browser_uid = data.browser_uid;
+			if(data.hasOwnProperty("uid"))
+				ws.uid = data.uid;
+
+			ws_md.clients.forEach(function each(client) {
+				if(client != ws && (client.uid == data.uid || client.browser_uid == data.browser_uid))
+					client.send(data);
+			});
 
 			console.log(data);
 

@@ -1377,12 +1377,12 @@ function Modifiers(){
 	 * Загружает и выполняет методы модификаторов
 	 * @method execute
 	 */
-	this.execute = function () {
+	this.execute = function (data) {
 		methods.forEach(function (method) {
 			if(typeof method === "function")
-				method($p);
+				method(data);
 			else
-				require(method)($p);
+				require(method)(data);
 		});
 	}
 

@@ -867,7 +867,7 @@ function Meta(req, patch) {
 		_cacc[class_name] = new ChartOfAccountManager("cacc."+class_name);
 
 	// загружаем модификаторы и прочие зависимости
-	$p.modifiers.execute();
+	$p.modifiers.execute($p);
 
 	return {
 		md_date: m["md_date"],
