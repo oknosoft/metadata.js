@@ -555,8 +555,7 @@ function SocketMsg(){
 
 					ws.onclose = function() {
 						opened = false;
-						attempt = 0;
-						setTimeout(t.connect, 30000);
+						setTimeout(t.connect, attempt < 3 ? 30000 : 600000);
 					};
 
 					ws.onmessage = function(ev) {
@@ -574,8 +573,7 @@ function SocketMsg(){
 					};
 
 				}catch(err){
-					if(attempt < 3)
-						setTimeout(t.connect, 30000);
+					setTimeout(t.connect, attempt < 3 ? 30000 : 600000);
 					console.log(err);
 				}
 			}
