@@ -507,18 +507,10 @@ function SocketMsg(){
 	function reflect_react(data){
 		if(data && data.type == "react"){
 			try{
-				var hprm = $p.job_prm.parse_url(),
-					mgr = _md ? _md.mgr_by_class_name(data.class_name) : null,
-					ref;
-				if(mgr){
+				var mgr = _md ? _md.mgr_by_class_name(data.class_name) : null;
+				if(mgr)
 					mgr.load_array([data.obj], true);
-					ref = $p.fix_guid(data.obj.ref);
-					if($p.iface.w)
-						$p.iface.w.forEachWindow(function (wnd) {
-							if(wnd.reflect_change && wnd.ref == ref)
-								wnd.reflect_change();
-						})
-				}
+
 			}catch(err){
 				console.log(err);
 			}

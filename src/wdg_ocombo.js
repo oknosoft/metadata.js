@@ -1,5 +1,6 @@
 /**
- * ### Визуальный компонент - поле с выпадающим списком
+ * ### Визуальный компонент OCombo
+ * Поле с выпадающим списком + функция выбора из списка
  *
  * &copy; http://www.oknosoft.ru 2014-2015
  * @author	Evgeniy Malyarov
@@ -104,6 +105,8 @@ function OCombo(attr){
 					initial_value: _obj[_field].ref,
 					selection: [get_filter()]
 				});
+			else
+				aclick.call({name: "type"});
 
 		} else if(this.name == "add"){
 			if(_mgr)
@@ -116,6 +119,42 @@ function OCombo(attr){
 		} else if(this.name == "open"){
 			if(_obj && _obj[_field] && !_obj[_field].empty())
 				_obj[_field].form_obj();
+
+		} else if(this.name == "type"){
+			var tlist = [], tmgr, tmeta, tobj = _obj, tfield = _field;
+			_meta.type.types.forEach(function (o) {
+				tmgr = _md.mgr_by_class_name(o);
+				tmeta = tmgr.metadata();
+				tlist.push({
+					presentation: tmeta.synonym || tmeta.name,
+					mgr: tmgr,
+					selected: _mgr === tmgr
+				});
+			});
+			$p.iface.select_from_list(tlist)
+				.then(function(v){
+					if(!tobj[tfield] || (tobj[tfield] && tobj[tfield]._manager != v.mgr)){
+						_mgr = v.mgr;
+						_obj = tobj;
+						_field = tfield;
+						_meta = _obj._metadata.fields[_field];
+						_mgr.form_selection({
+							on_select: function (selv) {
+								_obj[_field] = selv;
+								_obj = null;
+								_field = null;
+								_meta = null;
+
+							}}, {
+							selection: [get_filter()]
+						});
+					};
+					_mgr = null;
+					tmgr = null;
+					tmeta = null;
+					tobj = null;
+					tfield = null;
+				});
 		}
 
 		if(e)
@@ -302,3 +341,81 @@ function OCombo(attr){
 OCombo._extend(dhtmlXCombo);
 $p.iface.OCombo = OCombo;
 
+$p.iface.select_from_list = function (list, multy) {
+
+	return new Promise(function(resolve, reject){
+
+		if(!Array.isArray(list) || !list.length)
+			resolve(undefined);
+
+		else if(list.length == 1)
+			resolve(list[0]);
+
+		// создаём и показываем диалог со списком
+
+		// параметры открытия формы
+		var options = {
+				name: 'wnd_select_from_list',
+				wnd: {
+					id: 'wnd_select_from_list',
+					width: 300,
+					height: 300,
+					modal: true,
+					center: true,
+					caption: $p.msg.select_from_list,
+					allow_close: true,
+					on_close: function () {
+						if(rid)
+							resolve(list[parseInt(rid)-1]);
+						return true;
+					}
+				}
+			},
+			rid, sid,
+			wnd = $p.iface.dat_blank(null, options.wnd),
+			_grid = wnd.attachGrid(),
+			_toolbar = wnd.attachToolbar({
+				items:[
+					{id: "select", type: "button", text: $p.msg.select_from_list},
+					{id: "cancel", type: "button", text: "Отмена"}
+				],
+				onClick: do_select
+			});
+
+		function do_select(id){
+			if(id != "cancel")
+				rid = _grid.getSelectedRowId();
+			wnd.close();
+		}
+
+		_grid.setIconsPath(dhtmlx.image_path);
+		_grid.setImagePath(dhtmlx.image_path);
+		_grid.setHeader($p.msg.value);
+		_grid.setColTypes("ro");
+		_grid.enableAutoWidth(true, 1200, 600);
+		_grid.attachEvent("onRowDblClicked", do_select);
+		_grid.enableMultiselect(!!multy);
+		_grid.setNoHeader(true);
+		_grid.init();
+
+		_toolbar.addSpacer("select");
+
+		wnd.hideHeader();
+		wnd.cell.offsetParent.querySelector(".dhxwin_brd").style.border = "none"
+
+		// заполняем его данными
+		list.forEach(function (o, i) {
+			var text;
+			if(typeof o == "object")
+				text = o.presentation || o.text || o.toString();
+			else
+				text = o.toString();
+			_grid.addRow(1+i, text);
+			if(o.selected)
+				sid = 1+i;
+		});
+		if(sid)
+			_grid.selectRowById(sid);
+
+	});
+};

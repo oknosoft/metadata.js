@@ -80,7 +80,7 @@ function eXcell_ocombo(cell){
 	 * устанавливает текст в ячейке. например, this.setCValue("<input type='button' value='"+val+"'>",val);
 	 */
 	t.setValue=function(val){
-		t.setCValue(val instanceof DataObj ? val.presentation : val);
+		t.setCValue(val instanceof DataObj ? val.presentation : (val || ""));
 	};
 
 	/**

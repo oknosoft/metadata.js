@@ -121,9 +121,9 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	}
 
 	function observer(changes){
-		if(changes.length > 4)
-			_ts.sync_grid(_grid, _selection);
-		else
+		if(changes.length > 4){
+			try{_ts.sync_grid(_grid, _selection);} catch(err){};
+		} else
 			changes.forEach(function(change){
 				if (_tsname == change.tabular){
 					if(_grid.getSelectedRowId() != change.row.row)

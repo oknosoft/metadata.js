@@ -114,17 +114,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			});
 
 		/**
-		 * перезаполняет шапку и табчасть документа данными "attr"
-		 * @param [attr] {object}
-		 */
-		wnd.reflect_change = function(attr){
-			if(attr)
-				o._mixin(attr);
-			refresh_tabulars();
-			header_refresh();
-		};
-
-		/**
 		 *	Закладки: шапка и табличные части
 		 */
 		wnd.elmnts.frm_tabs = wnd.attachTabbar();
@@ -220,12 +209,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		else if(btn_id=="btn_save")
 			save("save");
 
-		else if(btn_id=="btn_add")
-			add_row();
-
-		else if(btn_id=="btn_delete")
-			del_row();
-
 		else if(btn_id=="btn_go_connection")
 			go_connection();
 
@@ -310,72 +293,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 
 	/**
-	 * Перечитать табчасть продукции из объекта
-	 */
-	function refresh_tabulars(){
-		for(var ts in cmd.tabular_sections){
-			if(ts !== "extra_fields" && o[ts] instanceof TabularSection){
-				o[ts].sync_grid(wnd.elmnts["grid_" + ts]);
-			}
-		}
-	}
-
-
-	/**
-	 * обработчик выбора значения в таблице продукции (ссылочные типы)
-	 */
-	function tabular_on_value_select(selv){
-
-		if(selv===undefined)
-			return;
-
-		var ret_code = _mgr.handle_event(o, "value_change", {
-				field: this.col,
-				value: selv,
-				tabular_section: this.tabular_section,
-				grid: wnd.elmnts["grid_" + this.tabular_section],
-				row: this.row,
-				wnd: wnd
-			});
-
-		if(typeof ret_code !== "boolean"){
-			this.row[this.col] = selv;
-			this.cell.setValue(selv.presentation);
-		}
-	}
-
-	/**
-	 * обработчик изменения значения в таблице продукции (примитивные типы)
-	 */
-	function tabular_on_edit(stage, rId, cInd, nValue, oValue){
-
-		if(stage != 2 || nValue == oValue)
-			return true;
-
-		var source = this.getUserData("", "source"),
-			row = o[source.tabular_section].get(rId-1),
-			fName = source.fields[cInd],
-			ret_code = _mgr.handle_event(o, "value_change", {
-				field: fName,
-				value: nValue,
-				tabular_section: source.tabular_section,
-				grid: this,
-				row: row,
-				cell: this.cells(rId, cInd),
-				wnd: wnd
-			});
-
-		if(typeof ret_code !== "boolean"){
-			row[fName] = $p.fetch_type(nValue, row._metadata.fields[fName].type);
-			ret_code = true;
-		}
-
-		return ret_code;
-	}
-
-
-
-	/**
 	 * настройка (инициализация) табличной части продукции
 	 */
 	function tabular_init(name){
@@ -390,110 +307,28 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		wnd.elmnts.tabs['tab_'+name].attachTabular({obj: o, ts: name,  pwnd: wnd});
 
-		//// панель инструментов табличной части
-		//var tb = wnd.elmnts["tb_" + name] = wnd.elmnts.tabs['tab_'+name].attachToolbar();
-		//tb.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
-		//tb.loadStruct(require("toolbar_add_del"), function(){
-		//	this.attachEvent("onclick", toolbar_click);
-		//});
-
-		//// собственно табличная часть
-		//var grid = wnd.elmnts["grid_" + name] = wnd.elmnts.tabs['tab_'+name].attachGrid();
-		//grid.setIconsPath(dhtmlx.image_path);
-		//grid.setImagePath(dhtmlx.image_path);
-		//grid.setHeader(source.headers);
-		//if(source.min_widths)
-		//	grid.setInitWidths(source.widths);
-		//if(source.min_widths)
-		//	grid.setColumnMinWidth(source.min_widths);
-		//if(source.aligns)
-		//	grid.setColAlign(source.aligns);
-		//grid.setColSorting(source.sortings);
-		//grid.setColTypes(source.types);
-		//grid.setColumnIds(source.fields.join(","));
-		//grid.enableAutoWidth(true, 1200, 600);
-		//grid.enableEditTabOnly(true);
-		//
-		//grid.init();
-		//
-		//grid.setUserData("", "source", source);
-		//grid.attachEvent("onEditCell", tabular_on_edit);
-		//
-		//o[name].sync_grid(grid);
-	}
-
-
-	/**
-	 * перечитывает реквизиты шапки из объекта в гриды
-	 */
-	function header_refresh(){
-		function reflect(id){
-			if(typeof id == "string"){
-				var fv = o[id];
-				if(fv != undefined){
-					if($p.is_data_obj(fv))
-						this.cells(id, 1).setValue(fv.presentation);
-					else if(fv instanceof Date)
-						this.cells(id, 1).setValue($p.dateFormat(fv, ""));
-					else
-						this.cells(id, 1).setValue(fv);
-
-				}else if(id.indexOf("extra_fields") > -1){
-					var row = o["extra_fields"].find(id.split("|")[1]);
-				}
-			}
-		}
-		wnd.elmnts.pg_header.forEachRow(function(id){	reflect.call(wnd.elmnts.pg_header, id); });
-	}
-
-	function tabular_get_sel_index(tabular){
-		var selId = wnd.elmnts["grid_" + tabular].getSelectedRowId();
-
-		if(selId && !isNaN(Number(selId)))
-			return Number(selId)-1;
-
-		$p.msg.show_msg({type: "alert-warning",
-			text: $p.msg.no_selected_row.replace("%1", cmd.tabular_sections[tabular].synonym || cmd.tabular_sections[tabular].name),
-			title: cmd.obj_presentation || cmd.synonym + ': ' + o.presentation});
-	}
-
-	function del_row(){
-
-		var tabular = wnd.elmnts.frm_tabs.getActiveTab().replace("tab_", ""),
-			rId = tabular_get_sel_index(tabular);
-
-		if(rId == undefined)
-			return;
-
-		o[tabular].del(rId);
-		o[tabular].sync_grid(wnd.elmnts["grid_" + tabular]);
-
 	}
 
 	function save(action){
 
-		function resolve(){
-
-			wnd.progressOff();
-			wnd.modified = false;
-
-			if(action == "close"){
-				if(attr.on_select)
-					attr.on_select(o);
-				wnd.close();
-			}
-		}
-
-		function reject(err){
-			wnd.progressOff();
-			console.log(err);
-		}
-
 		wnd.progressOn();
-		o.save()
-			.then(resolve)
-			.catch(reject);
 
+		o.save()
+			.then(function(){
+
+				wnd.progressOff();
+				wnd.modified = false;
+
+				if(action == "close"){
+					if(attr.on_select)
+						attr.on_select(o);
+					wnd.close();
+				}
+			})
+			.catch(function(err){
+				wnd.progressOff();
+				console.log(err);
+			});
 	}
 
 	/**
@@ -513,22 +348,11 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 	function frm_close(win){
 
-		setTimeout(frm_unload, 10);
+		setTimeout(frm_unload, 1);
 
 		// TODO задать вопрос о записи изменений + перенести этот метод в $p
 
 		return true;
-	}
-
-	/**
-	 * добавляет строку табчасти
-	 */
-	function add_row(){
-		var tabular = wnd.elmnts.frm_tabs.getActiveTab().replace("tab_", ""),
-			grid = wnd.elmnts["grid_" + tabular],
-			row = o[tabular].add();
-		o[tabular].sync_grid(grid);
-		grid.selectRowById(row.row);
 	}
 
 	return wnd;
