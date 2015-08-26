@@ -91,8 +91,7 @@ function only_in_browser(w){
 				}
 
 				/**
-				 * Объект геокодера yandex
-				 * https://tech.yandex.ru/maps/doc/geocoder/desc/concepts/input_params-docpage/
+				 * Объект [геокодера yandex](https://tech.yandex.ru/maps/doc/geocoder/desc/concepts/input_params-docpage/)
 				 * @property yageocoder
 				 * @for IPInfo
 				 * @type YaGeocoder
@@ -109,8 +108,7 @@ function only_in_browser(w){
 
 
 				/**
-				 * Объект геокодера google
-				 * https://developers.google.com/maps/documentation/geocoding/?hl=ru#GeocodingRequests
+				 * Объект [геокодера google](https://developers.google.com/maps/documentation/geocoding/?hl=ru#GeocodingRequests)
 				 * @property ggeocoder
 				 * @for IPInfo
 				 * @type {google.maps.Geocoder}
@@ -139,13 +137,6 @@ function only_in_browser(w){
 
 				this.location_callback= function(){
 
-					/**
-					 * Объект геокодера google
-					 * https://developers.google.com/maps/documentation/geocoding/?hl=ru#GeocodingRequests
-					 * @property ggeocoder
-					 * @for IPInfo
-					 * @type {google.maps.Geocoder}
-					 */
 					_ggeocoder = new google.maps.Geocoder();
 
 					navigator.geolocation.getCurrentPosition(function(position){

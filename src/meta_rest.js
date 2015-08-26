@@ -142,11 +142,11 @@ DataManager.prototype._define("rest_name", {
  * @method load_rest
  * @for DataManager
  * @param attr {Object} - параметры сохранения
- * @param attr.[url] {String}
- * @param attr.[username] {String}
- * @param attr.[password] {String}
- * @param attr.[filter] {String} - строка условия отбора
- * @param attr.[top] {Number} - максимальное число загружаемых записей
+ * @param [attr.url] {String}
+ * @param [attr.username] {String}
+ * @param [attr.password] {String}
+ * @param [attr.filter] {String} - строка условия отбора
+ * @param [attr.top] {Number} - максимальное число загружаемых записей
  * @return {Promise.<T>} - промис с массивом загруженных объектов
  * @async
  */

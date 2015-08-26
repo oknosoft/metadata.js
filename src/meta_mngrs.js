@@ -68,6 +68,7 @@ function DataManager(class_name){
 	 * Имя типа объектов этого менеджера
 	 * @property class_name
 	 * @type String
+	 * @final
 	 */
 	this._define("class_name", {
 		value: class_name,
@@ -81,6 +82,7 @@ function DataManager(class_name){
 	 * Фактически - хранилище объектов данного класса
 	 * @property alatable
 	 * @type Array
+	 * @final
 	 */
 	this._define("alatable", {
 		get : function () {
@@ -93,6 +95,7 @@ function DataManager(class_name){
 	 * Метаданные объекта (указатель на фрагмент глобальных метаданных, относящмйся к текущему объекту)
 	 * @property metadata
 	 * @type {Object} - объект метаданных
+	 * @final
 	 */
 	this._define("metadata", {
 		value: function(field){
@@ -219,6 +222,7 @@ function DataManager(class_name){
  * @property family_name
  * @for DataManager
  * @type String
+ * @final
  */
 DataManager.prototype._define("family_name", {
 	get : function () {
@@ -444,6 +448,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
  * Имя таблицы объектов этого менеджера в локальной базе данных
  * @property table_name
  * @type String
+ * @final
  */
 DataManager.prototype._define("table_name", {
 	get : function(){

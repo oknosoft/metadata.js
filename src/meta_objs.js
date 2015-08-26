@@ -45,6 +45,7 @@ function DataObj(attr, manager) {
 	 * Указатель на менеджер данного объекта
 	 * @property _manager
 	 * @type DataManager
+	 * @final
 	 */
 	this._define('_manager', {
 		value : manager,
@@ -78,6 +79,7 @@ function DataObj(attr, manager) {
 	 * Оно же, запись в таблице объекта локальной базы данных
 	 * @property _obj
 	 * @type Object
+	 * @final
 	 */
 	this._define("_obj", {
 		value: _obj,
@@ -328,6 +330,7 @@ DataObj.prototype.empty = function(){
  * @property _metadata
  * @for DataObj
  * @type Object
+ * @final
  */
 DataObj.prototype._define('_metadata', {
 	get : function(){ return this._manager.metadata()},
