@@ -268,30 +268,30 @@ DataManager.prototype.sync_grid = function(grid, attr){
  * @method get_option_list
  * @for DataManager
  * @param val {DataObj|String} - текущее значение
- * @param [filter] {Object} - отбор, который будет наложен на список
- * @param [top] {Number} - ограничивает длину возвращаемого массива
- * @return {Array}
+ * @param [selection] {Object} - отбор, который будет наложен на список
+ * @param [selection._top] {Number} - ограничивает длину возвращаемого массива
+ * @return {Promise.<Array>}
  */
-DataManager.prototype.get_option_list = function(val, filter, top){
+DataManager.prototype.get_option_list = function(val, selection){
 	var l = [], count = 0;
+
 	function check(v){
 		if($p.is_equal(v.value, val))
 			v.selected = true;
 		return v;
 	}
+
 	// TODO: реализовать для некешируемых объектов (rest)
-	// TODO: учесть "выбор групп и элементов"
 	// TODO: учесть "поля поиска по строке"
 
-	this.find_rows(filter, function (v) {
-		l.push(check({text: v.presentation, value: v.ref}));
-		if(top){
-			count++;
-			if(count >= top)
-				return false;
-		}
-	});
-	return l;
+	if(this._cachable || (selection && selection._local)){
+		this.find_rows(selection, function (v) {
+			l.push(check({text: v.presentation, value: v.ref}));
+		});
+		return Promise.resolve(l);
+	}else{
+		// для некешируемых выполняем запрос к серверу
+	}
 };
 
 /**
@@ -670,7 +670,10 @@ function RefDataManager(class_name) {
 		return $p._find(by_ref, val); };
 
 	/**
-	 * Находит строки, соответствующие отбору. Eсли отбор пустой, возвращаются все строки, закешированные в менеджере
+	 * ### Найти строки
+	 * Возвращает массив дата-объектов, обрезанный по отбору<br />
+	 * Eсли отбор пустой, возвращаются все строки, закешированные в менеджере (для кешируемых типов)
+	 * Для некешируемых типов выполняет запрос к базе
 	 * @method find_rows
 	 * @param selection {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: значение}
 	 * @param callback {Function} - в который передается текущий объект данных на каждой итерации
@@ -1232,21 +1235,22 @@ EnumManager.prototype.get_sql_struct = function(attr){
 
 /**
  * Возвращает массив доступных значений для комбобокса
+ * @method get_option_list
  * @param val {DataObj|String}
- * @param [filter] {Object}
- * @param [top] {Number}
- * @return {Array}
+ * @param [selection] {Object}
+ * @param [selection._top] {Number}
+ * @return {Promise.<Array>}
  */
-EnumManager.prototype.get_option_list = function(val, filter, top){
+EnumManager.prototype.get_option_list = function(val, selection){
 	var l = [], synonym = "";
 	function check(v){
 		if($p.is_equal(v.value, val))
 			v.selected = true;
 		return v;
 	}
-	if(filter){
-		for(var i in filter)
-			synonym = filter[i];
+	if(selection){
+		for(var i in selection)
+			synonym = selection[i];
 	}
 	if(typeof synonym == "object"){
 		if(synonym.like)
@@ -1263,7 +1267,7 @@ EnumManager.prototype.get_option_list = function(val, filter, top){
 		}
 		l.push(check({text: v.synonym || "", value: v.ref}));
 	});
-	return l;
+	return Promise.resolve(l);
 };
 
 

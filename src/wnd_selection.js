@@ -67,9 +67,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				pwnd.close();
 			wnd = pwnd;
 			wnd.close = function () {
-				(wnd || pwnd).detachToolbar();
-				(wnd || pwnd).detachStatusBar();
-				(wnd || pwnd).detachObject(true);
+				if(wnd || pwnd){
+					(wnd || pwnd).detachToolbar();
+					(wnd || pwnd).detachStatusBar();
+					(wnd || pwnd).detachObject(true);
+				}
 				frm_unload();
 			};
 			setTimeout(function () {

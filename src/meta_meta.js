@@ -101,23 +101,30 @@ $p._find = function(a, val){
  * поддержаны операторы `in`, `not` и `like` и фильтрация через внешнюю функцию
  * @method _find_rows
  * @for MetaEngine
- * @param a {Array}
+ * @param arr {Array}
  * @param selection {Object|Function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
  * @param callback {Function}
  * @return {Array}
  * @private
  */
-$p._find_rows = function(a, selection, callback){
-	var ok, o, i, j, res = [];
-	for(i in a){
-		o = a[i];
+$p._find_rows = function(arr, selection, callback){
+	var ok, o, i, j, res = [], top, count = 0;
+
+	if(selection)
+		top = selection._top || 300;
+
+	for(i in arr){
+		o = arr[i];
 		ok = true;
 		if(selection){
 			if(typeof selection == "function")
 				ok = selection(o);
 			else
 				for(j in selection){
-					if(typeof selection[j] == "function"){
+					if(j.substr(0, 1) == "_")
+						continue;
+
+					else if(typeof selection[j] == "function"){
 						ok = selection[j](o, j);
 						if(!ok)
 							break;
@@ -147,12 +154,20 @@ $p._find_rows = function(a, selection, callback){
 				}
 		}
 
+		// выполняем колбэк с элементом и пополняем итоговый массив
 		if(ok){
 			if(callback){
 				if(callback.call(this, o) === false)
 					break;
 			}else
 				res.push(o);
+		}
+
+		// ограничиваем кол-во возвращаемых элементов
+		if(top) {
+			count++;
+			if (count >= top)
+				break;
 		}
 	}
 	return res;

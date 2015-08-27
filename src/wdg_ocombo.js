@@ -63,14 +63,17 @@ function OCombo(attr){
 
 		if(_mgr){
 			t.clearAll();
-			t.addOption(_mgr.get_option_list(null, get_filter(text), 30));
-			t.openSelect();
+			_mgr.get_option_list(null, get_filter(text))
+				.then(function (l) {
+					t.addOption(l);
+					t.openSelect();
+				});
 		}
 
 	});
 
 	function get_filter(text){
-		var filter = {}, choice;
+		var filter = {_top: 30}, choice;
 
 		if(_mgr && _mgr.metadata().hierarchical && _mgr.metadata().group_hierarchy){
 			if(_meta.choice_groups_elm == "elm")
@@ -302,10 +305,12 @@ function OCombo(attr){
 
 		if(_mgr){
 			// загружаем список в 30 строк
-			t.addOption(_mgr.get_option_list(_obj[_field], get_filter(), 30));
-
-			// если поле имеет значение - устанавливаем
-			set_value(_obj[_field]);
+			_mgr.get_option_list(_obj[_field], get_filter())
+				.then(function (l) {
+					t.addOption(l);
+					// если поле имеет значение - устанавливаем
+					set_value(_obj[_field]);
+				});
 		}
 
 		// начинаем следить за объектом
