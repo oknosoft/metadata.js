@@ -7800,7 +7800,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -8124,7 +8124,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -8955,7 +8955,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -8964,7 +8964,7 @@
 						},
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"Организация"
 							],
 							"path": [
@@ -9484,7 +9484,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"ВладелецФайла"
 							],
 							"path": [
@@ -9537,7 +9537,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -9723,7 +9723,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -10342,7 +10342,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -10365,7 +10365,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -10388,7 +10388,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"ОбъектВладелец"
 							],
 							"path": [
@@ -11070,7 +11070,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -11195,7 +11195,7 @@
 							"choice_links": [
 								{
 									"name": [
-										"Отбор",
+										"selection",
 										"owner"
 									],
 									"path": [
@@ -11614,7 +11614,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -11987,7 +11987,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -12683,7 +12683,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -12738,7 +12738,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -13107,7 +13107,7 @@
 							"choice_links": [
 								{
 									"name": [
-										"Отбор",
+										"selection",
 										"owner"
 									],
 									"path": [
@@ -13929,7 +13929,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -14524,7 +14524,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -14762,7 +14762,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -15453,7 +15453,7 @@
 							"choice_links": [
 								{
 									"name": [
-										"Отбор",
+										"selection",
 										"owner"
 									],
 									"path": [
@@ -15697,7 +15697,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -15902,7 +15902,7 @@
 							"choice_links": [
 								{
 									"name": [
-										"Отбор",
+										"selection",
 										"owner"
 									],
 									"path": [
@@ -16127,7 +16127,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -16160,7 +16160,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -16195,7 +16195,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -16204,7 +16204,7 @@
 						},
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"Организация"
 							],
 							"path": [
@@ -16446,7 +16446,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"ДоговорКонтрагента"
 							],
 							"path": [
@@ -16455,7 +16455,7 @@
 						},
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"Контрагент"
 							],
 							"path": [
@@ -16464,7 +16464,7 @@
 						},
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"Организация"
 							],
 							"path": [
@@ -16522,7 +16522,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -17562,7 +17562,7 @@
 							"choice_links": [
 								{
 									"name": [
-										"Отбор",
+										"selection",
 										"owner"
 									],
 									"path": [
@@ -17572,7 +17572,7 @@
 								},
 								{
 									"name": [
-										"Отбор",
+										"selection",
 										"Организация"
 									],
 									"path": [
@@ -17733,7 +17733,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -17768,7 +17768,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -17777,7 +17777,7 @@
 						},
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"Организация"
 							],
 							"path": [
@@ -17850,7 +17850,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -18358,7 +18358,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"owner"
 							],
 							"path": [
@@ -18367,7 +18367,7 @@
 						},
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"Организация"
 							],
 							"path": [
@@ -18525,7 +18525,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"Организация"
 							],
 							"path": [
@@ -19020,7 +19020,7 @@
 							"choice_links": [
 								{
 									"name": [
-										"Отбор",
+										"selection",
 										"Контрагент"
 									],
 									"path": [
@@ -19029,7 +19029,7 @@
 								},
 								{
 									"name": [
-										"Отбор",
+										"selection",
 										"Организация"
 									],
 									"path": [
@@ -19291,7 +19291,7 @@
 							"choice_links": [
 								{
 									"name": [
-										"Отбор",
+										"selection",
 										"Контрагент"
 									],
 									"path": [
@@ -19301,7 +19301,7 @@
 								},
 								{
 									"name": [
-										"Отбор",
+										"selection",
 										"Организация"
 									],
 									"path": [
@@ -19514,7 +19514,7 @@
 					"choice_links": [
 						{
 							"name": [
-								"Отбор",
+								"selection",
 								"Организация"
 							],
 							"path": [
@@ -20962,6 +20962,7 @@
 		"Номер",
 		"НомерСтроки",
 		"ОсновноеПредставлениеИмя",
+		"Отбор",
 		"Параметр",
 		"Параметры",
 		"ПараметрыВыбора",
@@ -21031,6 +21032,7 @@
 		"number_doc",
 		"row",
 		"main_presentation_name",
+		"selection",
 		"param",
 		"params",
 		"choice_params",
