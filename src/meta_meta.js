@@ -110,8 +110,13 @@ $p._find = function(a, val){
 $p._find_rows = function(arr, selection, callback){
 	var ok, o, i, j, res = [], top, count = 0;
 
-	if(selection)
-		top = selection._top || 300;
+	if(selection){
+		if(selection._top){
+			top = selection._top;
+			delete selection._top;
+		}else
+			top = 300;
+	}
 
 	for(i in arr){
 		o = arr[i];
@@ -186,27 +191,10 @@ function _load(attr){
 	var mgr = _md.mgr_by_class_name(attr.class_name), res_local;
 
 	function get_tree(){
-		var xml = "<?xml version='1.0' encoding='UTF-8'?><tree id=\"0\">";
-
-		function add_hierarchically(row, adata){
-			xml = xml + "<item text=\"" +
-				row.presentation.replace(/"/g, "'") +	"\" id=\"" +
-				row.ref + "\" im0=\"folderClosed.gif\">";
-			$p._find_rows(adata, {parent: row.ref}, function(r){
-				add_hierarchically(r, adata)
-			});
-			xml = xml + "</item>";
-		}
 
 		if(mgr._cachable){
 			return $p.wsql.promise(mgr.get_sql_struct(attr), [])
-				.then(function(data){
-					add_hierarchically({presentation: "...", ref: $p.blank.guid}, []);
-					$p._find_rows(data, {parent: $p.blank.guid}, function(r){
-						add_hierarchically(r, data)
-					});
-					return xml + "</tree>";
-				});
+				.then($p.iface.data_to_tree);
 		}
 	}
 
@@ -220,7 +208,7 @@ function _load(attr){
 
 			return $p.wsql.promise(mgr.get_sql_struct(attr), [])
 				.then(function(data){
-					return data_to_grid.call(mgr, data, attr);
+					return $p.iface.data_to_grid.call(mgr, data, attr);
 				});
 		}
 	}
@@ -520,6 +508,9 @@ function Meta(req, patch) {
 			res.synonym = "Наименование";
 		}else if(field_name=="deleted"){
 			res.synonym = "Пометка удаления";
+			res.type.types[0] = "boolean";
+		}else if(field_name=="is_folder"){
+			res.synonym = "Это группа";
 			res.type.types[0] = "boolean";
 		}else if(field_name)
 			res = m[np[0]][np[1]].fields[field_name];

@@ -480,7 +480,7 @@ eXcell_dhxCalendar.prototype.edit = function() {
 
 };
 
-function data_to_grid(data, attr){
+$p.iface.data_to_grid = function (data, attr){
 
 	function cat_picture_class(r){
 		var res;
@@ -522,6 +522,28 @@ function data_to_grid(data, attr){
 	});
 
 	return xml + "</rows>";
-}
+};
+
+$p.iface.data_to_tree = function (data) {
+
+	var xml = "<?xml version='1.0' encoding='UTF-8'?><tree id=\"0\">";
+
+	function add_hierarchically(row, adata){
+		xml = xml + "<item text=\"" +
+			row.presentation.replace(/"/g, "'") +	"\" id=\"" +
+			row.ref + "\" im0=\"folderClosed.gif\">";
+		$p._find_rows(adata, {parent: row.ref}, function(r){
+			add_hierarchically(r, adata)
+		});
+		xml = xml + "</item>";
+	}
+
+	add_hierarchically({presentation: "...", ref: $p.blank.guid}, []);
+	$p._find_rows(data, {parent: $p.blank.guid}, function(r){
+		add_hierarchically(r, data)
+	});
+
+	return xml + "</tree>";
+};
 
 

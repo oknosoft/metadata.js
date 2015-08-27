@@ -291,8 +291,24 @@ DataManager.prototype.get_option_list = function(val, selection){
 		return Promise.resolve(l);
 	}else{
 		// для некешируемых выполняем запрос к серверу
+		var attr = { selection: selection, top: selection._top };
+		delete selection._top;
+		if(this instanceof DocManager)
+			attr.fields = ["ref", "date", "number_doc"];
+		else if(this.metadata().main_presentation_name)
+			attr.fields = ["ref", "name"];
+		else
+			attr.fields = ["ref", "id"];
 
-		return Promise.resolve(l);
+		return _rest.load(attr, this)
+			.then(function (data) {
+				data.forEach(function (v) {
+					l.push(check({
+						text: this instanceof DocManager ? (v.number_doc + " от " + $p.dateFormat(v.date, $p.dateFormat.masks.ru)) : (v.name || v.id),
+						value: v.ref}));
+				});
+				return l;
+			});
 	}
 };
 

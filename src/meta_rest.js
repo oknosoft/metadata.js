@@ -8,8 +8,21 @@
  * @requires common
  */
 
+/**
+ * Методы общего назначения для работы с rest
+ * @class Rest
+ * @static
+ */
 function Rest(){
 
+	/**
+	 * Форматирует период для подстановки в запрос rest
+	 * @method filter_date
+	 * @param fld {String} - имя поля для фильтрации по датам
+	 * @param [dfrom] {Date} - дата начала
+	 * @param [dtill] {Date} - дата окончания
+	 * @return {String}
+	 */
 	this.filter_date = function (fld, dfrom, dtill) {
 		if(!dfrom)
 			dfrom = new Date("2015-01-01");
@@ -19,6 +32,13 @@ function Rest(){
 		return res;
 	};
 
+	/**
+	 * Преобразует данные, прочитанные из rest-сервиса в json-прототип DataObj
+	 * @method to_data
+	 * @param rdata {Object} - фрагмент ответа rest
+	 * @param mgr {DataManager}
+	 * @return {Object}
+	 */
 	this.to_data = function (rdata, mgr) {
 		var o = {},
 			mf = mgr.metadata().fields,
@@ -26,22 +46,29 @@ function Rest(){
 			ts, f, tf, row, syn, synts, vmgr;
 
 		if(mgr instanceof RefDataManager){
-			o.deleted = rdata.DeletionMark;
-			o.data_version = rdata.DataVersion;
+			if(rdata.hasOwnProperty("DeletionMark"))
+				o.deleted = rdata.DeletionMark;
+			if(rdata.hasOwnProperty("DataVersion"))
+				o.data_version = rdata.DataVersion;
+			if(rdata.hasOwnProperty("Ref_Key"))
+				o.ref = rdata.Ref_Key;
 		}else{
 			mf = []._mixin(mgr.metadata().dimensions)._mixin(mgr.metadata().resources);
 		}
 
 		if(mgr instanceof DocManager){
-			o.number_doc = rdata.Number;
-			o.date = rdata.Date;
-			o.posted = rdata.Posted;
+			if(rdata.hasOwnProperty("Number"))
+				o.number_doc = rdata.Number;
+			if(rdata.hasOwnProperty("Date"))
+				o.date = rdata.Date;
+			if(rdata.hasOwnProperty("Posted"))
+				o.posted = rdata.Posted;
 
 		} else {
-			if(mgr.metadata().main_presentation_name)
+			if(mgr.metadata().main_presentation_name && rdata.hasOwnProperty("Description"))
 				o.name = rdata.Description;
 
-			if(mgr.metadata().code_length)
+			if(mgr.metadata().code_length && rdata.hasOwnProperty("Code"))
 				o.id = rdata.Code;
 		}
 
@@ -49,11 +76,15 @@ function Rest(){
 			syn = _md.syns_1с(f);
 			if(mf[f].type.is_ref && rdata[syn+"_Key"])
 				syn+="_Key";
+			if(!rdata.hasOwnProperty(syn))
+				continue;
 			o[f] = rdata[syn];
 		}
 
 		for(ts in mts){
 			synts = _md.syns_1с(ts);
+			if(!rdata.hasOwnProperty(synts))
+				continue;
 			o[ts] = [];
 			if(rdata[synts]){
 				rdata[synts].sort(function (a, b) {
@@ -75,6 +106,12 @@ function Rest(){
 		return o;
 	};
 
+	/**
+	 * Выполняет запрос к rest-сервису и возвращает массив прототипов DataObj
+	 * @param attr {Object} - параметры запроса
+	 * @param mgr {DataManager}
+	 * @return {Promise.<T>}
+	 */
 	this.ajax_to_data = function (attr, mgr) {
 		return $p.ajax.get_ex(attr.url, attr)
 			.then(function (req) {
@@ -87,6 +124,117 @@ function Rest(){
 				});
 				return data;
 			});
+	};
+
+	/**
+	 * Загружает список объектов из rest-сервиса, обрезанный отбором
+	 * @method load
+	 * @for DataManager
+	 * @param attr {Object} - параметры запроса
+	 * @param [attr.selection] {Object} - условия отбора
+	 * @param [attr.top] {Number} - максимальное число загружаемых записей
+	 * @param mgr {DataManager}
+	 * @return {Promise.<T>} - промис с массивом загруженных прототипов DataObj
+	 * @async
+	 */
+	this.load = function (attr, mgr) {
+
+		var s, f, syn, type;
+
+		function build_selection(sel){
+			for(var fld in sel){
+
+				if(!f)
+					f = "&$filter=";
+				else
+					f += " and ";
+
+				if(fld == "ref")
+					syn = "Ref_Key";
+				else{
+					syn = _md.syns_1с(fld);
+					type = _md.get(mgr.class_name, fld);
+					if(type){
+						type = type.type;
+						if(type.is_ref){
+							if(type.types.length && type.types[0].indexOf("enm.")==-1)
+								syn += "_Key";
+						}
+					}
+				}
+
+				if(typeof sel[fld] == "function"){
+					f += sel[fld](mgr, fld);
+
+				}else if(type && type.types.length){
+					if(type.is_ref){
+						// работа со ссылками
+
+					}else if(["boolean", "number"].indexOf(typeof sel[fld]) != -1 )
+						f += syn + " eq " + sel[fld];
+
+					else if(typeof sel[fld] == "string" || typeof sel[fld] == "object")
+						f += syn + " eq '" + sel[fld] + "'";
+
+					else if(typeof sel[fld] == "object"){
+						// учесть in, not, like
+						f += syn + " eq '" + sel[fld] + "'";
+					}
+				}
+			}
+		}
+
+		if(!attr)
+			attr = {};
+
+		// для простых запросов используем стандартный odata 1c
+		if(!attr.selection)
+			$p.ajax.default_attr(attr, $p.job_prm.rest_url());
+		// для сложных отборов используем наш rest
+		else
+			$p.ajax.default_attr(attr, $p.job_prm.rest_url()); //irest_url
+
+		// начинаем строить url: только разрешенные + top
+		attr.url += mgr.rest_name + "?allowedOnly=true&$format=json&$top=" + (attr.top || 300);
+		//a/unf/odata/standard.odata/Document_ЗаказПокупателя?allowedOnly=true&$format=json&$select=Ref_Key,DataVersion
+
+		// учитываем нужные поля
+		if(attr.fields){
+			attr.fields.forEach(function(fld){
+				if(fld == "ref")
+					syn = "Ref_Key";
+				else{
+					syn = _md.syns_1с(fld);
+					type = _md.get(mgr.class_name, fld).type;
+					if(type.is_ref){
+						if(type.types.length && type.types[0].indexOf("enm.")==-1)
+							syn += "_Key";
+					}
+				}
+				if(!s)
+					s = "&$select=";
+				else
+					s += ",";
+				s += syn;
+			});
+			attr.url += s;
+		}
+
+		// учитываем отбор
+		// Catalog_Контрагенты?allowedOnly=true&$format=json&$top=30&$select=Ref_Key,Description&$filter=IsFolder eq false
+		if(attr.selection){
+			if(typeof attr.selection == "function"){
+
+			}else if(Array.isArray(attr.selection))
+				attr.selection.forEach(build_selection);
+
+			else
+				build_selection(attr.selection);
+
+			attr.url += f;
+		}
+
+		return _rest.ajax_to_data(attr, mgr);
 	}
 }
 
@@ -94,8 +242,8 @@ var _rest = $p.rest = new Rest();
 
 
 /**
- * ### Имя объектов этого менеджера для rest-запросов на сервер
- * Идентификатор формируется по следующему принципу: ПрефиксИмени_ИмяОбъектаКонфигурации_СуффиксИмени
+ * ### Имя объектов этого менеджера для запросов к rest-серверу
+ * Идентификатор формируется по принципу: ПрефиксИмени_ИмяОбъектаКонфигурации_СуффиксИмени
  * - Справочник _Catalog_
  * - Документ _Document_
  * - Журнал документов _DocumentJournal_
@@ -137,40 +285,47 @@ DataManager.prototype._define("rest_name", {
 	enumerable : false
 });
 
-/**
- * Загружает список объектов из rest-сервиса
- * @method load_rest
- * @for DataManager
- * @param attr {Object} - параметры сохранения
- * @param [attr.url] {String}
- * @param [attr.username] {String}
- * @param [attr.password] {String}
- * @param [attr.filter] {String} - строка условия отбора
- * @param [attr.top] {Number} - максимальное число загружаемых записей
- * @return {Promise.<T>} - промис с массивом загруженных объектов
- * @async
- */
-DataManager.prototype.load_rest = function (attr) {
-
-	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
-	attr.url += this.rest_name + "?allowedOnly=true&$format=json&$top=1000";
-	//a/unf/odata/standard.odata/Document_ЗаказПокупателя?allowedOnly=true&$format=json&$select=Ref_Key,DataVersion
-
-	return _rest.ajax_to_data(attr, this);
-
-};
 
 DataManager.prototype.rest_tree = function (attr) {
+
+	var t = this,
+		cmd = t.metadata(),
+		flds = [], ares = [], o, ro, syn, mf;
+
+	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
+	attr.url += this.rest_name + "?allowedOnly=true&$format=json&$top=1000&$select=Ref_Key,DeletionMark,Parent_Key,Description&$filter=IsFolder eq true";
+
+	return $p.ajax.get_ex(attr.url, attr)
+		.then(function (req) {
+			return JSON.parse(req.response);
+		})
+		.then(function (res) {
+			for(var i = 0; i < res.value.length; i++) {
+				ro = res.value[i];
+				o = {
+					ref: ro["Ref_Key"],
+					deleted: ro["DeletionMark"],
+					parent: ro["Parent_Key"],
+					presentation: ro["Description"]
+				};
+				ares.push(o);
+			}
+			return $p.iface.data_to_tree(ares);
+		});
 
 };
 
 DataManager.prototype.rest_selection = function (attr) {
 
+	if(attr.action == "get_tree")
+		return this.rest_tree(attr);
+
 	var t = this,
 		cmd = t.metadata(),
 		flds = [],
 		ares = [], o, ro, syn, mf,
-		select = list_flds();
+		select = list_flds(),
+		filter_added;
 
 
 	function list_flds(){
@@ -240,7 +395,16 @@ DataManager.prototype.rest_selection = function (attr) {
 	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
 	attr.url += this.rest_name + "?allowedOnly=true&$format=json&$top=1000&" + select;
 
-	attr.url += "&$filter=" + _rest.filter_date("Date", attr.date_from, attr.date_till);
+	if(_md.get(t.class_name, "date")){
+		attr.url += "&$filter=" + _rest.filter_date("Date", attr.date_from, attr.date_till);
+		filter_added = true;
+	}
+
+	if(attr.parent){
+		attr.url += filter_added ? " and " : "&$filter=";
+		attr.url += "Parent_Key eq guid'" + attr.parent + "'";
+		filter_added = true;
+	}
 
 	return $p.ajax.get_ex(attr.url, attr)
 		.then(function (req) {
@@ -251,51 +415,62 @@ DataManager.prototype.rest_selection = function (attr) {
 				ro = res.value[i];
 				o = {};
 				flds.forEach(function (fld) {
-					if(fld == "ref"){
+
+					var fldsyn;
+
+					if(fld == "ref") {
 						o[fld] = ro["Ref_Key"];
-					}else{
-						syn = _md.syns_1с(fld);
-						mf = _md.get(t.class_name, fld);
-						if(mf.type.is_ref && mf.type.types.length && mf.type.types[0].indexOf("enm.")==-1)
-							syn += "_Key";
+						return;
+					}else if(fld.indexOf(" as ") != -1){
+						fldsyn = fld.split(" as ")[1];
+						fld = fld.split(" as ")[0].split(".");
+						fld = fld[fld.length-1];
+					}else
+						fldsyn = fld;
 
-						if(mf.type.date_part)
-							o[fld] = $p.dateFormat(ro[syn], $p.dateFormat.masks[mf.type.date_part]);
+					syn = _md.syns_1с(fld);
+					mf = _md.get(t.class_name, fld);
 
-						else if(mf.type.is_ref){
-							if(!ro[syn] || ro[syn] == $p.blank.guid)
-								o[fld] = "";
-							else{
-								var mgr	= _md.value_mgr(o, fld, mf.type, false, ro[syn]);
-								if(mgr)
-									o[fld] = mgr.get(ro[syn]).presentation;
-								else
-									o[fld] = "";
-							}
-						}else
-							o[fld] = ro[syn];
-					}
+					if(mf.type.is_ref && mf.type.types.length && mf.type.types[0].indexOf("enm.")==-1)
+						syn += "_Key";
+
+					if(mf.type.date_part)
+						o[fldsyn] = $p.dateFormat(ro[syn], $p.dateFormat.masks[mf.type.date_part]);
+
+					else if(mf.type.is_ref){
+						if(!ro[syn] || ro[syn] == $p.blank.guid)
+							o[fldsyn] = "";
+						else{
+							var mgr	= _md.value_mgr(o, fld, mf.type, false, ro[syn]);
+							if(mgr)
+								o[fldsyn] = mgr.get(ro[syn]).presentation;
+							else
+								o[fldsyn] = "";
+						}
+					}else
+						o[fldsyn] = ro[syn];
+
 				});
 				ares.push(o);
 			}
-			return data_to_grid.call(t, ares, attr);
+			return $p.iface.data_to_grid.call(t, ares, attr);
 		});
 
 };
 
-InfoRegManager.prototype.rest_slice_last = function(filter){
+InfoRegManager.prototype.rest_slice_last = function(selection){
 
-	if(!filter.period)
-		filter.period = $p.date_add_day(new Date(), 1);
+	if(!selection.period)
+		selection.period = $p.date_add_day(new Date(), 1);
 
 	var t = this,
 		cmd = t.metadata(),
-		period = "Period=datetime'" + $p.dateFormat(filter.period, $p.dateFormat.masks.isoDateTime) + "'",
+		period = "Period=datetime'" + $p.dateFormat(selection.period, $p.dateFormat.masks.isoDateTime) + "'",
 		condition = "";
 
 	for(var fld in cmd.dimensions){
 
-		if(filter[fld] === undefined)
+		if(selection[fld] === undefined)
 			continue;
 
 		var syn = _md.syns_1с(fld),
@@ -305,19 +480,19 @@ InfoRegManager.prototype.rest_slice_last = function(filter){
 			syn += "_Key";
 			if(condition)
 				condition+= " and ";
-			condition+= syn+" eq guid'"+filter[fld].ref+"'";
+			condition+= syn+" eq guid'"+selection[fld].ref+"'";
 		}else{
 			if(condition)
 				condition+= " and ";
 
 			if(mf.type.digits)
-				condition+= syn+" eq "+$p.fix_number(filter[fld]);
+				condition+= syn+" eq "+$p.fix_number(selection[fld]);
 
 			else if(mf.type.date_part)
-				condition+= syn+" eq datetime'"+$p.dateFormat(filter[fld], $p.dateFormat.masks.isoDateTime)+"'";
+				condition+= syn+" eq datetime'"+$p.dateFormat(selection[fld], $p.dateFormat.masks.isoDateTime)+"'";
 
 			else
-				condition+= syn+" eq '"+filter[fld]+"'";
+				condition+= syn+" eq '"+selection[fld]+"'";
 		}
 
 	}
@@ -325,10 +500,10 @@ InfoRegManager.prototype.rest_slice_last = function(filter){
 	if(condition)
 		period+= ",Condition='"+condition+"'";
 
-	$p.ajax.default_attr(filter, $p.job_prm.rest_url());
-	filter.url += this.rest_name + "/SliceLast(%sl)?allowedOnly=true&$format=json&$top=1000".replace("%sl", period);
+	$p.ajax.default_attr(selection, $p.job_prm.rest_url());
+	selection.url += this.rest_name + "/SliceLast(%sl)?allowedOnly=true&$format=json&$top=1000".replace("%sl", period);
 
-	return _rest.ajax_to_data(filter, t)
+	return _rest.ajax_to_data(selection, t)
 		.then(function (data) {
 			return t.load_array(data);
 		});

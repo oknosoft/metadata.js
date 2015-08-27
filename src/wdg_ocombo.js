@@ -65,8 +65,10 @@ function OCombo(attr){
 			t.clearAll();
 			_mgr.get_option_list(null, get_filter(text))
 				.then(function (l) {
-					t.addOption(l);
-					t.openSelect();
+					if(t.addOption){
+						t.addOption(l);
+						t.openSelect();
+					}
 				});
 		}
 
@@ -307,9 +309,11 @@ function OCombo(attr){
 			// загружаем список в 30 строк
 			_mgr.get_option_list(_obj[_field], get_filter())
 				.then(function (l) {
-					t.addOption(l);
-					// если поле имеет значение - устанавливаем
-					set_value(_obj[_field]);
+					if(t.addOption){
+						t.addOption(l);
+						// если поле имеет значение - устанавливаем
+						set_value(_obj[_field]);
+					}
 				});
 		}
 
