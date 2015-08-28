@@ -120,6 +120,8 @@ function eXcell_ocombo(cell){
 	t.detach=function(){
 		if(t.combo && t.combo.getComboText){
 			t.setValue(t.combo.getComboText());         // текст в элементе управления
+			if(!t.combo.getSelectedValue())
+				t.combo.callEvent("onChange");
 			var res = !$p.is_equal(t.val, t.getValue());// compares the new and the old values
 			t.combo.unload();
 			return res;

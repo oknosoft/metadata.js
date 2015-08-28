@@ -134,6 +134,17 @@ $p._find_rows = function(arr, selection, callback){
 						if(!ok)
 							break;
 
+					}else if(j == "or" && Array.isArray(selection[j])){
+						ok = selection[j].some(function (element) {
+							var key = Object.keys(element)[0];
+							if(element[key].hasOwnProperty("like"))
+								return o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
+							else
+								return o[key] == element[key];
+						});
+						if(!ok)
+							break;
+
 					}else if(selection[j].hasOwnProperty("like")){
 						if(o[j].toLowerCase().indexOf(selection[j].like.toLowerCase())==-1){
 							ok = false;
@@ -470,7 +481,8 @@ function Meta(req, patch) {
 		}
 	}
 	if(patch)
-		apply_patch(JSON.parse(patch.response));
+		apply_patch((patch instanceof XMLHttpRequest) ? JSON.parse(patch.response) : patch);
+
 	req = null;
 	patch = require('log');
 	if(typeof patch == "string")

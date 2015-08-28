@@ -801,7 +801,7 @@ $p.eve.from_json_to_data_obj = function(res) {
 };
 
 // возаращает промис после выполнения всех заданий в очереди
-$p.eve.reduce_promices = function(parts){
+$p.eve.reduce_promices = function(parts, callback){
 
 	return parts.reduce(function(sequence, part_promise) {
 
@@ -811,7 +811,8 @@ $p.eve.reduce_promices = function(parts){
 
 		})
 			// загружаем все части в озу
-			.then($p.eve.from_json_to_data_obj);
+			.then(callback)
+			.catch(callback);
 
 	}, Promise.resolve())
 };
@@ -826,31 +827,49 @@ $p.eve.reduce_promices = function(parts){
  */
 $p.eve.log_in = function(onstep){
 
-	var stepper = $p.eve.stepper,
+	var stepper = $p.eve.stepper, irest_attr = {}, parts = [], mreq, mpatch,
 		mdd, data_url = $p.job_prm.data_url || "/data/";
 
 	// информируем о начале операций
 	onstep($p.eve.steps.load_meta);
 
-	// читаем файл метаданных
-	return $p.ajax.get(data_url + "meta.json?v="+$p.job_prm.files_date)
+	// выясняем, доступен ли irest (наш сервис) или мы ограничены стандартным rest-ом
+	$p.ajax.default_attr(irest_attr, $p.job_prm.irest_url());
 
-		// грузим метаданные
-		.then(function (req) {
-			onstep($p.eve.steps.create_managers);
+	if(!$p.job_prm.offline)
+		parts.push($p.ajax.get_ex(irest_attr.url, irest_attr));
 
-			// пытаемся загрузить патч метаданных
-			return $p.ajax.get(data_url + "meta_patch.json?v="+$p.job_prm.files_date)
-				.then(function (rep) {
-					return new Meta(req, rep);
-				})
-				.catch(function () {
-					return new Meta(req);
-				});
+	parts.push($p.ajax.get(data_url + "meta.json?v="+$p.job_prm.files_date));
+	parts.push($p.ajax.get(data_url + "meta_patch.json?v="+$p.job_prm.files_date));
+
+	// читаем файл метаданных и файл патча метаданных
+	return $p.eve.reduce_promices(parts, function (req) {
+		if(req instanceof XMLHttpRequest && req.status == 200){
+			if(req.responseURL.indexOf("/hs/rest") != -1)
+				$p.job_prm.irest_enabled = true;
+
+			else if(req.responseURL.indexOf("meta.json") != -1){
+				onstep($p.eve.steps.create_managers);
+				mreq = JSON.parse(req.response);
+
+			}else if(req.responseURL.indexOf("meta_patch.json") != -1)
+				mpatch = JSON.parse(req.response);
+		}else{
+			console.log(req);
+		}
+	})
+		// создаём объект Meta() описания метаданных
+		.then(function () {
+			if(!mreq)
+				throw Error("Ошибка чтения файла метаданных");
+			else
+				return new Meta(mreq, mpatch);
 		})
 
 		// авторизуемся на сервере. в автономном режиме сразу переходим к чтению первого файла данных
 		.then(function (res) {
+
+			mreq = mpatch = null;
 
 			onstep($p.eve.steps.authorization);
 
@@ -858,14 +877,18 @@ $p.eve.log_in = function(onstep){
 				return res;
 
 			else if($p.job_prm.rest){
-				// в режиме rest тестируем авторизацию
+
 				// TODO: реализовать метод для получения списка ролей пользователя
-				// TODO: реализовать проверку наличия дополнительного http-сервиса
-				return $p.ajax.get_ex($p.job_prm.rest_url()+"?$format=json", true)
-					.then(function (req) {
-						//return JSON.parse(res.response);
-						return {root: true};
-					});
+
+				// в режиме rest тестируем авторизацию. если irest_enabled, значит уже авторизованы
+				if($p.job_prm.irest_enabled)
+					return {root: true};
+				else
+					return $p.ajax.get_ex($p.job_prm.rest_url()+"?$format=json", true)
+						.then(function (req) {
+							//return JSON.parse(res.response);
+							return {root: true};
+						});
 
 			}else
 				return _load({
@@ -942,21 +965,22 @@ $p.eve.log_in = function(onstep){
 		// формируем массив url файлов данных зоны
 		.then(function () {
 
-			var parts = [];
+			parts = [];
 			for(var i=1; i<=stepper.files; i++)
 				parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "p_" + i + ".json?v="+$p.job_prm.files_date));
 			parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "ireg.json?v="+$p.job_prm.files_date));
 
-			return $p.eve.reduce_promices(parts);
+			return $p.eve.reduce_promices(parts, $p.eve.from_json_to_data_obj);
 
 		})
 
 		// если онлайн, выполняем такт обмена с 1С
-		.then(function(parts) {
+		.then(function() {
 
 			onstep($p.eve.steps.load_data_db);
 			stepper.step_size = 57;
 			return $p.eve.pop();
+
 		})
 
 		// читаем справочники с ограниченным доступом, которые могли прибежать вместе с метаданными

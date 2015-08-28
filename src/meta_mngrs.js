@@ -273,7 +273,7 @@ DataManager.prototype.sync_grid = function(grid, attr){
  * @return {Promise.<Array>}
  */
 DataManager.prototype.get_option_list = function(val, selection){
-	var l = [], count = 0;
+	var l = [], count = 0, input_by_string, text, sel;
 
 	function check(v){
 		if($p.is_equal(v.value, val))
@@ -284,6 +284,18 @@ DataManager.prototype.get_option_list = function(val, selection){
 	// TODO: реализовать для некешируемых объектов (rest)
 	// TODO: учесть "поля поиска по строке"
 
+	// поиск по строке
+	if(selection.presentation && (input_by_string = this.metadata().input_by_string)){
+		text = selection.presentation.like;
+		delete selection.presentation;
+		selection.or = [];
+		input_by_string.forEach(function (fld) {
+			sel = {};
+			sel[fld] = {like: text};
+			selection.or.push(sel);
+		})
+	}
+
 	if(this._cachable || (selection && selection._local)){
 		this.find_rows(selection, function (v) {
 			l.push(check({text: v.presentation, value: v.ref}));
@@ -293,6 +305,9 @@ DataManager.prototype.get_option_list = function(val, selection){
 		// для некешируемых выполняем запрос к серверу
 		var attr = { selection: selection, top: selection._top };
 		delete selection._top;
+
+
+
 		if(this instanceof DocManager)
 			attr.fields = ["ref", "date", "number_doc"];
 		else if(this.metadata().main_presentation_name)
@@ -300,7 +315,7 @@ DataManager.prototype.get_option_list = function(val, selection){
 		else
 			attr.fields = ["ref", "id"];
 
-		return _rest.load(attr, this)
+		return _rest.load_array(attr, this)
 			.then(function (data) {
 				data.forEach(function (v) {
 					l.push(check({

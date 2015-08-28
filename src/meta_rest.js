@@ -137,7 +137,7 @@ function Rest(){
 	 * @return {Promise.<T>} - промис с массивом загруженных прототипов DataObj
 	 * @async
 	 */
-	this.load = function (attr, mgr) {
+	this.load_array = function (attr, mgr) {
 
 		var s, f, syn, type;
 
@@ -221,7 +221,7 @@ function Rest(){
 		}
 
 		// учитываем отбор
-		// Catalog_Контрагенты?allowedOnly=true&$format=json&$top=30&$select=Ref_Key,Description&$filter=IsFolder eq false
+		// /a/unf/hs/rest/Catalog_Контрагенты?allowedOnly=true&$format=json&$top=30&$select=Ref_Key,Description&$filter=IsFolder eq false
 		if(attr.selection){
 			if(typeof attr.selection == "function"){
 
@@ -235,7 +235,152 @@ function Rest(){
 		}
 
 		return _rest.ajax_to_data(attr, mgr);
-	}
+	};
+
+	/**
+	 * Читает объект из rest-сервиса
+	 * @return {Promise.<T>} - промис с загруженным объектом
+	 */
+	this.load_obj = function (tObj) {
+
+		var attr = {};
+		$p.ajax.default_attr(attr, $p.job_prm.rest_url());
+		attr.url += tObj._manager.rest_name + "(guid'" + tObj.ref + "')?$format=json";
+
+		return $p.ajax.get_ex(attr.url, attr)
+			.then(function (req) {
+				return JSON.parse(req.response);
+			})
+			.then(function (res) {
+				return tObj._mixin(_rest.to_data(res, tObj._manager));
+			})
+			.catch(function (err) {
+				if(err.status==404)
+					return tObj;
+				else
+					console.log(err);
+			});
+	};
+
+	/**
+	 * Сохраняет объект в базе irest-сервиса (наш http-интерфейс)
+	 * @param tObj {DataObj} - сохраняемый объект
+	 * @param attr {Object} - параметры сохранения
+	 * @param attr.[url] {String} - если не указано, будет использован адрес irest из параметров работы программы
+	 * @param attr.[username] {String}
+	 * @param attr.[password] {String}
+	 * @param attr.[post] {Boolean|undefined} - проведение или отмена проведения или просто запись
+	 * @param attr.[operational] {Boolean|undefined} - режим проведения документа [Оперативный, Неоперативный]
+	 * @return {Promise.<T>}
+	 * @async
+	 */
+	this.save_irest = function (tObj, attr) {
+
+		var post_data = JSON.stringify(tObj),
+			prm = (attr.post != undefined ? ",post="+attr.post : "")+
+				(attr.operational != undefined ? ",operational="+attr.operational : "");
+
+		$p.ajax.default_attr(attr, $p.job_prm.irest_url());
+		attr.url += tObj._manager.rest_name + "(guid'"+tObj.ref+"'"+prm+")";
+
+		return $p.ajax.post_ex(attr.url, post_data, attr)
+			.then(function (req) {
+				return JSON.parse(req.response);
+			})
+			.then(function (res) {
+				return tObj._mixin(res);
+			});
+	};
+
+	/**
+	 * Сохраняет объект в базе rest-сервиса
+	 * @param tObj {DataObj} - сохраняемый объект
+	 * @param attr {Object} - параметры сохранения
+	 * @param attr.[url] {String} - если не указано, будет использован адрес rest из параметров работы программы
+	 * @param attr.[username] {String}
+	 * @param attr.[password] {String}
+	 * @param attr.[post] {Boolean|undefined} - проведение или отмена проведения или просто запись
+	 * @param attr.[operational] {Boolean} - режим проведения документа [Оперативный, Неоперативный]
+	 * @return {Promise.<T>}
+	 * @async
+	 */
+	this.save_rest = function (tObj, attr) {
+
+		var atom = tObj.to_atom(),
+			url;
+
+		$p.ajax.default_attr(attr, $p.job_prm.rest_url());
+		url = attr.url + tObj._manager.rest_name;
+
+		// проверяем наличие ссылки в базе приёмника
+		attr.url = url + "(guid'" + tObj.ref + "')?$format=json&$select=Ref_Key,DeletionMark";
+
+		return $p.ajax.get_ex(attr.url, attr)
+			.catch(function (err) {
+				if(err.status == 404){
+					return {response: JSON.stringify({is_new: true})};
+				}else
+					return Promise.reject(err);
+			})
+			.then(function (req) {
+				return JSON.parse(req.response);
+			})
+			.then(function (data) {
+				// если объект существует на стороне приемника, выполняем patch, иначе - post
+				if(data.is_new)
+					return $p.ajax.post_ex(url, atom, attr);
+				else
+					return $p.ajax.patch_ex(url + "(guid'" + tObj.ref + "')", atom, attr);
+			})
+			.then(function (req) {
+				var data = require("xml_to_json").parseString(req.response, {
+					mergeCDATA: false, // extract cdata and merge with text
+					grokAttr: true, // convert truthy attributes to boolean, etc
+					grokText: false, // convert truthy text/attr to boolean, etc
+					normalize: true, // collapse multiple spaces to single space
+					xmlns: false, // include namespaces as attribute in output
+					namespaceKey: '_ns', // tag name for namespace objects
+					textKey: '_text', // tag name for text nodes
+					valueKey: '_value', // tag name for attribute values
+					attrKey: '_attr', // tag for attr groups
+					cdataKey: '_cdata', // tag for cdata nodes (ignored if mergeCDATA is true)
+					attrsAsObject: false, // if false, key is used as prefix to name, set prefix to '' to merge children and attrs.
+					stripAttrPrefix: true, // remove namespace prefixes from attributes
+					stripElemPrefix: true, // for elements of same name in diff namespaces, you can enable namespaces and access the nskey property
+					childrenAsArray: false // force children into arrays
+				});
+				if(data.entry && data.entry.content && data.entry.updated){
+					var p = data.entry.content.properties, r = {}, v;
+					r.lc_changed = new Date(data.entry.updated._text);
+					for(var i in p){
+						if(i.indexOf("_")==0)
+							continue;
+						if(v = p[i].element){
+							r[i] = [];
+							if(Array.isArray(v)){
+								for(var n in v){
+									r[i][n] = {};
+									for(var j in v[n])
+										if(j.indexOf("_")!=0)
+											r[i][n][j] = v[n][j]._text === "false" ? false : v[n][j]._text;
+								}
+							}else{
+								r[i][0] = {};
+								for(var j in v)
+									if(j.indexOf("_")!=0)
+										r[i][0][j] = v[j]._text === "false" ? false : v[j]._text;
+							}
+						}else
+							r[i] = p[i]._text === "false" ? false : p[i]._text;
+					}
+					return _rest.to_data(r, tObj._manager);
+				}
+			})
+			.then(function (res) {
+				return tObj._mixin(res);
+			});
+
+	};
 }
 
 var _rest = $p.rest = new Rest();
@@ -622,148 +767,3 @@ DataObj.prototype.to_atom = function (ex_meta) {
 	//<d:МатериалыЗаказчика m:type="Collection(StandardODATA.Document_ЗаказПокупателя_МатериалыЗаказчика_RowType)"/>
 };
 
-/**
- * Сохраняет объект в базе rest-сервиса
- * @param attr {Object} - параметры сохранения
- * @param attr.[url] {String} - если не указано, будет использован адрес rest из параметров работы программы
- * @param attr.[username] {String}
- * @param attr.[password] {String}
- * @param attr.[post] {Boolean|undefined} - проведение или отмена проведения или просто запись
- * @param attr.[operational] {Boolean} - режим проведения документа [Оперативный, Неоперативный]
- * @return {Promise.<T>}
- * @async
- */
-DataObj.prototype.save_rest = function (attr) {
-
-	var tObj = this,
-		atom = tObj.to_atom(),
-		url;
-
-	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
-	url = attr.url + tObj._manager.rest_name;
-
-	// проверяем наличие ссылки в базе приёмника
-	attr.url = url + "(guid'" + tObj.ref + "')?$format=json&$select=Ref_Key,DeletionMark";
-
-	return $p.ajax.get_ex(attr.url, attr)
-		.catch(function (err) {
-			if(err.status == 404){
-				return {response: JSON.stringify({is_new: true})};
-			}else
-				return Promise.reject(err);
-		})
-		.then(function (req) {
-			return JSON.parse(req.response);
-		})
-		.then(function (data) {
-			// если объект существует на стороне приемника, выполняем patch, иначе - post
-			if(data.is_new)
-				return $p.ajax.post_ex(url, atom, attr);
-			else
-				return $p.ajax.patch_ex(url + "(guid'" + tObj.ref + "')", atom, attr);
-		})
-		.then(function (req) {
-			var data = require("xml_to_json").parseString(req.response, {
-				mergeCDATA: false, // extract cdata and merge with text
-				grokAttr: true, // convert truthy attributes to boolean, etc
-				grokText: false, // convert truthy text/attr to boolean, etc
-				normalize: true, // collapse multiple spaces to single space
-				xmlns: false, // include namespaces as attribute in output
-				namespaceKey: '_ns', // tag name for namespace objects
-				textKey: '_text', // tag name for text nodes
-				valueKey: '_value', // tag name for attribute values
-				attrKey: '_attr', // tag for attr groups
-				cdataKey: '_cdata', // tag for cdata nodes (ignored if mergeCDATA is true)
-				attrsAsObject: false, // if false, key is used as prefix to name, set prefix to '' to merge children and attrs.
-				stripAttrPrefix: true, // remove namespace prefixes from attributes
-				stripElemPrefix: true, // for elements of same name in diff namespaces, you can enable namespaces and access the nskey property
-				childrenAsArray: false // force children into arrays
-			});
-			if(data.entry && data.entry.content && data.entry.updated){
-				var p = data.entry.content.properties, r = {}, v;
-				r.lc_changed = new Date(data.entry.updated._text);
-				for(var i in p){
-					if(i.indexOf("_")==0)
-						continue;
-					if(v = p[i].element){
-						r[i] = [];
-						if(Array.isArray(v)){
-							for(var n in v){
-								r[i][n] = {};
-								for(var j in v[n])
-									if(j.indexOf("_")!=0)
-										r[i][n][j] = v[n][j]._text === "false" ? false : v[n][j]._text;
-							}
-						}else{
-							r[i][0] = {};
-							for(var j in v)
-								if(j.indexOf("_")!=0)
-									r[i][0][j] = v[j]._text === "false" ? false : v[j]._text;
-						}
-					}else
-						r[i] = p[i]._text === "false" ? false : p[i]._text;
-				}
-				return _rest.to_data(r, tObj._manager);
-			}
-		})
-		.then(function (res) {
-			return tObj._mixin(res);
-		});
-
-};
-
-/**
- * Сохраняет объект в базе irest-сервиса (наш http-интерфейс)
- * @param attr {Object} - параметры сохранения
- * @param attr.[url] {String} - если не указано, будет использован адрес irest из параметров работы программы
- * @param attr.[username] {String}
- * @param attr.[password] {String}
- * @param attr.[post] {Boolean|undefined} - проведение или отмена проведения или просто запись
- * @param attr.[operational] {Boolean|undefined} - режим проведения документа [Оперативный, Неоперативный]
- * @return {Promise.<T>}
- * @async
- */
-DataObj.prototype.save_irest = function (attr) {
-
-	var tObj = this,
-		post_data = JSON.stringify(tObj),
-		prm = (attr.post != undefined ? ",post="+attr.post : "")+
-			(attr.operational != undefined ? ",operational="+attr.operational : "");
-
-	$p.ajax.default_attr(attr, $p.job_prm.irest_url());
-	attr.url += tObj._manager.rest_name + "(guid'"+tObj.ref+"'"+prm+")";
-
-	return $p.ajax.post_ex(attr.url, post_data, attr)
-		.then(function (req) {
-			return JSON.parse(req.response);
-		})
-		.then(function (res) {
-			return tObj._mixin(res);
-		});
-};
-
-/**
- * Читает объект из rest-сервиса
- * @return {Promise.<T>} - промис с загруженным объектом
- */
-DataObj.prototype.load_rest = function () {
-
-	var attr = {},
-		tObj = this;
-	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
-	attr.url += tObj._manager.rest_name + "(guid'" + tObj.ref + "')?$format=json";
-
-	return $p.ajax.get_ex(attr.url, attr)
-		.then(function (req) {
-			return JSON.parse(req.response);
-		})
-		.then(function (res) {
-			return tObj._mixin(_rest.to_data(res, tObj._manager));
-		})
-		.catch(function (err) {
-			if(err.status==404)
-				return tObj;
-			else
-				console.log(err);
-		});
-};

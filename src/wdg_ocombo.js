@@ -245,7 +245,10 @@ function OCombo(attr){
 	});
 
 	dhtmlxEvent(t.getInput(), "focus", function (e) {
-		this.select();
+		setTimeout(function () {
+			if(t && t.getInput)
+				t.getInput().select();
+		}, 50);
 	});
 
 
@@ -273,7 +276,7 @@ function OCombo(attr){
 			if(t.getSelectedValue() == v.ref)
 				return;
 			t.setComboValue(v.ref);
-		}else if(t.getSelectedValue()){
+		}else if(!t.getSelectedValue()){
 			t.setComboValue("");
 			t.setComboText("")
 		}

@@ -239,7 +239,7 @@ DataObj.prototype._setter_ts = function (f, v) {
  * Читает объект из внешней датабазы асинхронно.
  * @method load
  * @for DataObj
- * @return {Promise.<T>} - промис с результатом выполнения операции
+ * @return {Promise.<DataObj>} - промис с результатом выполнения операции
  * @async
  */
 DataObj.prototype.load = function(){
@@ -271,7 +271,7 @@ DataObj.prototype.load = function(){
 		return Promise.resolve(tObj);
 
 	}else if(!tObj._manager._cachable && $p.job_prm.rest)
-		return tObj.load_rest();
+		return _rest.load_obj(tObj);
 
 	else
 		return _load({
@@ -280,8 +280,6 @@ DataObj.prototype.load = function(){
 			ref: tObj.ref
 		})
 			.then(callback_1c);
-
-
 
 };
 
@@ -296,6 +294,8 @@ DataObj.prototype.load = function(){
  */
 DataObj.prototype.save = function (post, operational) {
 
+	var saver;
+
 	// Если процедуры перед записью завершились неудачно - не продолжаем
 	if(this._manager.handle_event(this, "before_save") === false)
 		return Promise.resolve(this);
@@ -303,8 +303,16 @@ DataObj.prototype.save = function (post, operational) {
 	if(this instanceof DocObj && $p.blank.date == this.date)
 		this.date = new Date();
 
-	// Сохраняем во внешней базе save_rest
-	return this.save_irest({
+	// если доступен irest - сохраняем через него, иначе - стандартным сервисом
+	if($p.job_prm.offline)
+		saver = function (obj) {
+			return Promise.resolve(obj);
+		};
+	else
+		saver = $p.job_prm.irest_enabled ? _rest.save_irest : _rest.save_rest;
+
+	// Сохраняем во внешней базе
+	return saver(this, {
 		post: post,
 		operational: operational
 	})
