@@ -821,7 +821,11 @@ function Meta(req, patch) {
 			Date: 'date',
 			Дата: 'date',
 			Posted: 'posted',
-			Code: 'id'
+			Code: 'id',
+			Parent_Key: 'parent',
+			Ref_Key: 'ref',
+			"Ссылка": 'ref',
+			LineNumber: 'row'
 		};
 		if(synJS[v])
 			return synJS[v];
@@ -837,7 +841,10 @@ function Meta(req, patch) {
 			number_doc: 'Number',
 			date: 'Date',
 			posted: 'Posted',
-			id: 'Code'
+			id: 'Code',
+			ref: 'Ref_Key',
+			parent: 'Parent_Key',
+			row: 'LineNumber'
 		};
 		if(syn1c[v])
 			return syn1c[v];

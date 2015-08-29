@@ -1299,11 +1299,13 @@ EnumManager.prototype.get_sql_struct = function(attr){
  */
 EnumManager.prototype.get_option_list = function(val, selection){
 	var l = [], synonym = "";
+
 	function check(v){
 		if($p.is_equal(v.value, val))
 			v.selected = true;
 		return v;
 	}
+
 	if(selection){
 		for(var i in selection){
 			if(i.substr(0,1)=="_")
@@ -1311,6 +1313,7 @@ EnumManager.prototype.get_option_list = function(val, selection){
 			synonym = selection[i];
 		}
 	}
+
 	if(typeof synonym == "object"){
 		if(synonym.like)
 			synonym = synonym.like;
