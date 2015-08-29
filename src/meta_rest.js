@@ -221,7 +221,7 @@ function Rest(){
 		}
 
 		// учитываем отбор
-		// /a/unf/hs/rest/Catalog_Контрагенты?allowedOnly=true&$format=json&$top=30&$select=Ref_Key,Description&$filter=IsFolder eq false
+		// /a/unf/hs/rest/Catalog_Контрагенты?allowedOnly=true&$format=json&$top=30&$select=Ref_Key,Description&$filter=IsFolder eq false and Description like '%б%'
 		if(attr.selection){
 			if(typeof attr.selection == "function"){
 

@@ -542,15 +542,23 @@ DataManager.prototype.print = function(ref, model, wnd){
  * @return {Promise.<Object>}
  */
 DataManager.prototype.printing_plates = function(){
-	var rattr = {};
+	var rattr = {}, t = this;
+
 	if($p.job_prm.offline)
 		return Promise.resolve({});
 
+	if(t._printing_plates)
+		return Promise.resolve(t._printing_plates);
+
 	$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
-	rattr.url += this.rest_name + "/Print()";
+	rattr.url += t.rest_name + "/Print()";
 	return $p.ajax.get_ex(rattr.url, rattr)
 		.then(function (req) {
-			return JSON.parse(req.response);
+			t._define("_printing_plates", {
+				value: JSON.parse(req.response),
+				enumerable: false
+			});
+			return t._printing_plates;
 		})
 		.catch(function (err) {
 			return {};
