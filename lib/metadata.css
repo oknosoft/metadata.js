@@ -285,30 +285,6 @@ div.gridbox_dhx_web.gridbox table.hdr td {
     z-index: 0;
 }
 
-.boolean-box {
-    width: 28px !important;
-}
-.boolean-caption {
-    clear: none !important;
-    float: none !important;
-    width: 130px !important;
-}
-
-.property-caption {
-    font-family: Tahoma, sans-serif;
-    font-size: 10pt;
-    cursor: pointer;
-    width: 100% !important;
-}
-.property-caption:hover {
-    background: #ebebeb;
-}
-
-.dg .property-name {
-    font-family: Tahoma, sans-serif;
-    font-size: 10pt;
-}
-
 /* курсоры построителя*/
 .cursor-pen-freehand {
     cursor: url('imgs/custom_field/cursor-pen-freehand.png') 5 2, default;
