@@ -140,7 +140,7 @@ $p._find_rows = function(arr, selection, callback){
 							if(element[key].hasOwnProperty("like"))
 								return o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
 							else
-								return o[key] == element[key];
+								return $p.is_equal(o[key], element[key]);
 						});
 						if(!ok)
 							break;
@@ -158,7 +158,7 @@ $p._find_rows = function(arr, selection, callback){
 
 					}else if(selection[j].hasOwnProperty("in")){
 						ok = selection[j].in.some(function(element) {
-							return element == o[j];
+							return $p.is_equal(element, o[j]);
 						});
 						if(!ok)
 							break;
@@ -177,14 +177,15 @@ $p._find_rows = function(arr, selection, callback){
 					break;
 			}else
 				res.push(o);
+
+			// ограничиваем кол-во возвращаемых элементов
+			if(top) {
+				count++;
+				if (count >= top)
+					break;
+			}
 		}
 
-		// ограничиваем кол-во возвращаемых элементов
-		if(top) {
-			count++;
-			if (count >= top)
-				break;
-		}
 	}
 	return res;
 };

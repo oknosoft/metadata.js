@@ -301,6 +301,7 @@ DataManager.prototype.get_option_list = function(val, selection){
 			l.push(check({text: v.presentation, value: v.ref}));
 		});
 		return Promise.resolve(l);
+
 	}else{
 		// для некешируемых выполняем запрос к серверу
 		var attr = { selection: selection, top: selection._top };
