@@ -1584,13 +1584,6 @@ $p.wsql = WSQL;
 	var user_params = {},
 		inited = 0;
 
-
-
-	if(typeof alasql !== "undefined")
-		wsql.aladb = new alasql.Database('md');
-	else
-		inited = 1000;
-
 	function fetch_type(prm, type){
 		if(type == "object"){
 			try{
@@ -1661,7 +1654,7 @@ $p.wsql = WSQL;
 	 */
 	wsql.promise = function(sql, params) {
 		return new Promise(function(resolve, reject){
-			alasql(sql, params, function(data, err) {
+			alasql(sql, params || [], function(data, err) {
 				if(err) {
 					reject(err);
 				} else {
@@ -1858,7 +1851,45 @@ $p.wsql = WSQL;
 		$p.wsql.exec("SHOW TABLES", [], tmames_finded);
 	};
 
+	/**
+	 * Сохраняет снапшот объекта данных в indexedDB для последующей отправки на сервер
+	 * @param obj {DataObj}
+	 */
+	wsql.idb_snapshot = function (obj) {
+
+	};
+
 	wsql.toString = function(){return "JavaScript SQL engine"};
+
+	if(typeof alasql !== "undefined"){
+
+		wsql.aladb = new alasql.Database('md');
+
+		//wsql.promise('CREATE INDEXEDDB DATABASE IF NOT EXISTS ixmd; ATTACH INDEXEDDB DATABASE ixmd;')
+		//	.then(function (data) {
+		//		return wsql.promise('CREATE TABLE IF NOT EXISTS ixmd.changes  \
+		//			(   ref CHAR NOT NULL,  \
+		//			lc_changed INT NOT NULL,\
+		//			data_version CHAR,      \
+		//			class_name CHAR,        \
+		//			obj json,               \
+		//			PRIMARY KEY (ref, lc_changed))');
+		//	})
+		//	.then(function (data) {
+		//		return wsql.promise('INSERT INTO ixmd.changes (ref, lc_changed) VALUES ("ref", ?)', [Date.now()]);
+		//	})
+		//	.then(function (data) {
+		//		return wsql.promise('select * from ixmd.changes');
+		//	})
+		//	.then(function (data) {
+		//		console.log(data);
+		//	})
+		//	.catch(function (err) {
+		//		console.log(err);
+		//	});
+
+	} else
+		inited = 1000;
 
 })($p.wsql);
 

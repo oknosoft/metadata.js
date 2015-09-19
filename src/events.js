@@ -576,7 +576,8 @@ function SocketMsg(){
 				data = {};
 			else if("object" != typeof data)
 				data = {data: data};
-
+			data.socket_uid = socket_uid;
+			data._side = "js";
 			ws.send(JSON.stringify(data));
 		}
 	};
