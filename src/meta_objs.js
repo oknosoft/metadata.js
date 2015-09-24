@@ -260,7 +260,7 @@ DataObj.prototype.load = function(){
 		return tObj._mixin(res);      // заполнить реквизиты шапки и табличных частей
 	}
 
-	if(tObj._manager._cachable && !tObj.is_new())
+	if(tObj._manager.cachable && !tObj.is_new())
 		return Promise.resolve(tObj);
 
 	if(tObj.ref == $p.blank.guid){
@@ -270,7 +270,7 @@ DataObj.prototype.load = function(){
 			tObj.number_doc = "000000000";
 		return Promise.resolve(tObj);
 
-	}else if(!tObj._manager._cachable && $p.job_prm.rest)
+	}else if(!tObj._manager.cachable && $p.job_prm.rest)
 		return _rest.load_obj(tObj);
 
 	else

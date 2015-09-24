@@ -204,7 +204,7 @@ function _load(attr){
 
 	function get_tree(){
 
-		if(mgr._cachable){
+		if(mgr.cachable){
 			return $p.wsql.promise(mgr.get_sql_struct(attr), [])
 				.then($p.iface.data_to_tree);
 		}
@@ -216,7 +216,7 @@ function _load(attr){
 
 	function get_selection(){
 
-		if(mgr._cachable){
+		if(mgr.cachable){
 
 			return $p.wsql.promise(mgr.get_sql_struct(attr), [])
 				.then(function(data){
@@ -932,7 +932,7 @@ _cat.load_soap_to_grid = function(attr, grid, callback){
 
 	var mgr = _md.mgr_by_class_name(attr.class_name);
 
-	if(!mgr._cachable && ($p.job_prm.rest || attr.rest))
+	if(!mgr.cachable && ($p.job_prm.rest || attr.rest))
 		mgr.rest_selection(attr)
 			.then(cb_callBack)
 			.catch(function (error) {

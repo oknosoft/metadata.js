@@ -21,6 +21,7 @@ function DataManager(class_name){
 
 	var _metadata = _md.get(class_name),
 		_cachable,
+		_async_write = false,
 		_events = {
 			after_create: [],
 			after_load: [],
@@ -50,91 +51,123 @@ function DataManager(class_name){
 		_cachable = _metadata.cachable;
 
 
-	/**
-	 * Выполняет две функции:
-	 * - Указывает, нужно ли сохранять (искать) объекты в локальном кеше или сразу топать на сервер
-	 * - Указывает, нужно ли запоминать представления ссылок (инверсно). Для кешируемых, представления ссылок запоминать необязательно, т.к. его быстрее вычислить по месту
-	 * @property _cachable
-	 * @type Boolean
-	 */
-	this._define("_cachable", {
-		value: _cachable,
-		writable: true,
-		enumerable: false
-	});
+	this._define({
 
+			/**
+			 * Выполняет две функции:
+			 * - Указывает, нужно ли сохранять (искать) объекты в локальном кеше или сразу топать на сервер
+			 * - Указывает, нужно ли запоминать представления ссылок (инверсно).
+			 * Для кешируемых, представления ссылок запоминать необязательно, т.к. его быстрее вычислить по месту
+			 * @property cachable
+			 * @for DataManager
+			 * @type Boolean
+			 */
+			"cachable": {
+				value: _cachable,
+				writable: true,
+				enumerable: false
+			},
 
-	/**
-	 * Имя типа объектов этого менеджера
-	 * @property class_name
-	 * @type String
-	 * @final
-	 */
-	this._define("class_name", {
-		value: class_name,
-		writable: false,
-		enumerable: false
-	});
+			/**
+			 * Указывает на возможность асинхронной записи элементов данного объекта
+			 * - Если online, сразу выполняем запрос к серверу
+			 * - Если offline и асинхронная запись разрешена, записываем в кеш и отправляем на сервер при первой возможности
+			 * - Если offline и асинхронная запись запрещена - генерируем ошибку
+			 * @property async_write
+			 * @for DataManager
+			 * @type Boolean
+			 */
+			"async_write": {
+				value: _async_write,
+				writable: false,
+				enumerable: false
+			},
 
+			/**
+			 * Имя типа объектов этого менеджера
+			 * @property class_name
+			 * @for DataManager
+			 * @type String
+			 * @final
+			 */
+			"class_name": {
+				value: class_name,
+				writable: false,
+				enumerable: false
+			},
 
-	/**
-	 * Указатель на массив, сопоставленный с таблицей локальной базы данных
-	 * Фактически - хранилище объектов данного класса
-	 * @property alatable
-	 * @type Array
-	 * @final
-	 */
-	this._define("alatable", {
-		get : function () {
-			return $p.wsql.aladb.tables[this.table_name] ? $p.wsql.aladb.tables[this.table_name].data : []
-		},
-		enumerable : false
-	});
+			/**
+			 * Указатель на массив, сопоставленный с таблицей локальной базы данных
+			 * Фактически - хранилище объектов данного класса
+			 * @property alatable
+			 * @for DataManager
+			 * @type Array
+			 * @final
+			 */
+			"alatable": {
+				get : function () {
+					return $p.wsql.aladb.tables[this.table_name] ? $p.wsql.aladb.tables[this.table_name].data : []
+				},
+				enumerable : false
+			},
 
-	/**
-	 * Метаданные объекта (указатель на фрагмент глобальных метаданных, относящмйся к текущему объекту)
-	 * @property metadata
-	 * @type {Object} - объект метаданных
-	 * @final
-	 */
-	this._define("metadata", {
-		value: function(field){
-			if(field)
-				return _metadata.fields[field] || _metadata.tabular_sections[field];
-			else
-				return _metadata;
-		},
-		enumerable: false
-	});
+			/**
+			 * Метаданные объекта (указатель на фрагмент глобальных метаданных, относящмйся к текущему объекту)
+			 * @method metadata
+			 * @for DataManager
+			 * @return {Object} - объект метаданных
+			 */
+			"metadata": {
+				value: function(field){
+					if(field)
+						return _metadata.fields[field] || _metadata.tabular_sections[field];
+					else
+						return _metadata;
+				},
+				enumerable: false
+			},
 
-	/**
-	 * Добавляет подписку на события объектов данного менеджера
-	 * @param name {String} - имя события
-	 * @param method {Function} - добавляемый метод
-	 * @param [first] {Boolean} - добавлять метод в начало, а не в конец коллекции
-	 */
-	this.attache_event = function (name, method, first) {
-		if(first)
-			_events[name].push(method);
-		else
-			_events[name].push(method);
-	};
+			/**
+			 * Добавляет подписку на события объектов данного менеджера
+			 * @method attache_event
+			 * @for DataManager
+			 * @param name {String} - имя события
+			 * @param method {Function} - добавляемый метод
+			 * @param [first] {Boolean} - добавлять метод в начало, а не в конец коллекции
+			 */
+			"attache_event": {
+				value: function (name, method, first) {
+					if(first)
+						_events[name].push(method);
+					else
+						_events[name].push(method);
+				},
+				enumerable: false
+			},
 
-	/**
-	 * Выполняет методы подписки на событие
-	 * @param obj {DataObj} - объект, в котором произошло событие
-	 * @param name {String} - имя события
-	 * @param attr {Object} - дополнительные свойства, передаваемые в обработчик события
-	 */
-	this.handle_event = function (obj, name, attr) {
-		var res;
-		_events[name].forEach(function (method) {
-			if(res !== false)
-				res = method.call(obj, attr);
-		});
-		return res;
-	};
+			/**
+			 * Выполняет методы подписки на событие
+			 * @method handle_event
+			 * @for DataManager
+			 * @param obj {DataObj} - объект, в котором произошло событие
+			 * @param name {String} - имя события
+			 * @param attr {Object} - дополнительные свойства, передаваемые в обработчик события
+			 * @return {Boolesn}
+			 */
+			"handle_event": {
+				value: function (obj, name, attr) {
+					var res;
+					_events[name].forEach(function (method) {
+						if(res !== false)
+							res = method.call(obj, attr);
+					});
+					return res;
+				},
+				enumerable: false
+			}
 
+		}
+	);
 
 	//	Создаём функции конструкторов экземпляров объектов и строк табличных частей
 	var _obj_сonstructor = this._obj_сonstructor || DataObj;		// ссылка на конструктор элементов
@@ -249,7 +282,7 @@ DataManager.prototype.sync_grid = function(grid, attr){
 
 	var res;
 
-	if(this._cachable)
+	if(this.cachable)
 		;
 	else if($p.job_prm.rest || attr.rest){
 
@@ -296,7 +329,7 @@ DataManager.prototype.get_option_list = function(val, selection){
 		})
 	}
 
-	if(this._cachable || (selection && selection._local)){
+	if(this.cachable || (selection && selection._local)){
 		this.find_rows(selection, function (v) {
 			l.push(check({text: v.presentation, value: v.ref}));
 		});
@@ -643,7 +676,7 @@ function RefDataManager(class_name) {
 		else if(force_promise === undefined && ref === $p.blank.guid)
 			return o;
 
-		if(!t._cachable || o.is_new()){
+		if(!t.cachable || o.is_new()){
 			return o.load();	// читаем из 1С или иного сервера
 
 		}else if(force_promise)
@@ -676,7 +709,7 @@ function RefDataManager(class_name) {
 		if(!o){
 			o = new t._obj_сonstructor(attr, t);
 
-			if(!t._cachable && fill_default){
+			if(!t.cachable && fill_default){
 				var rattr = {};
 				$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
 				rattr.url += t.rest_name + "/Create()";
@@ -734,7 +767,7 @@ function RefDataManager(class_name) {
 	 */
 	t.save = function(attr){
 		if(attr && (attr.specify ||
-			($p.is_guid(attr.ref) && !t._cachable))) {
+			($p.is_guid(attr.ref) && !t.cachable))) {
 			return _load({
 				class_name: t.class_name,
 				action: attr.action || "save", attr: attr
@@ -1622,11 +1655,29 @@ function LogManager(){
 
 	LogManager.superclass.constructor.call(this, "ireg.$log");
 
+	var smax;
+
 	/**
 	 * Добавляет запись в журнал
-	 * @param msg {String} - текст события
+	 * @param msg {String|Object} - текст события
 	 */
 	this.record = function(msg){
+		if(typeof msg != "object")
+			msg = {note: msg};
+		msg.date = Date.now() + $p.eve.time_diff();
+		if(!smax)
+			smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_$log` where `date` = ?");
+		var res = smax([msg.date]);
+		if(!res.length || res[0].sequence === undefined)
+			msg.sequence = 0;
+		else
+			msg.sequence = res[0].sequence + 1;
+		if(!msg.class)
+			msg.class = "note";
+
+		alasql("insert into `ireg_$log` (`date`, `sequence`, `class`, `note`, `obj`) values (?, ?, ?, ?, ?)",
+			[msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
+
 
 	};
 
@@ -1662,6 +1713,73 @@ function LogManager(){
 
 	this.show = function (pwnd) {
 
+	};
+
+	this.get_sql_struct = function(attr){
+
+		if(attr.action == "get_selection"){
+			var sql = "select * from `ireg_$log`";
+			if(attr.date_from){
+				if (attr.date_till)
+					sql += " where `date` >= ? and `date` <= ?";
+				else
+					sql += " where `date` >= ?";
+			}else if (attr.date_till)
+				sql += " where `date` <= ?";
+
+			return sql;
+
+		}else
+			return LogManager.superclass.get_sql_struct.call(this, attr);
+	};
+
+	this.caption_flds = function (attr) {
+
+		var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
+			acols = [], cmd = this.metadata(),	s = "";
+
+		function Col_struct(id,width,type,align,sort,caption){
+			this.id = id;
+			this.width = width;
+			this.type = type;
+			this.align = align;
+			this.sort = sort;
+			this.caption = caption;
+		}
+
+		acols.push(new Col_struct("date", "140", "ro", "left", "server", "Дата"));
+		acols.push(new Col_struct("class", "100", "ro", "left", "server", "Класс"));
+		acols.push(new Col_struct("note", "*", "ro", "left", "server", "Событие"));
+
+		if(attr.get_header){
+			s = "<head>";
+			for(var col in acols){
+				s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
+					.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
+			}
+			s += "</head>";
+		}
+
+		return {head: s, acols: acols};
+	};
+
+	this.data_to_grid = function (data, attr) {
+		var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
+				.replace("%1", data.length).replace("%2", attr.start)
+				.replace("%3", attr.set_parent || "" ),
+			caption = this.caption_flds(attr),
+			time_diff = $p.eve.time_diff();
+
+		// при первом обращении к методу добавляем описание колонок
+		xml += caption.head;
+
+		data.forEach(function(r){
+			xml += "<row id=\"" + r.date + "_" + r.sequence + "\"><cell>" +
+				$p.dateFormat(r.date - time_diff, $p.dateFormat.masks.date_time) + (r.sequence ? "." + r.sequence : "") + "</cell>" +
+				"<cell>" + r.class + "</cell><cell>" + r.note + "</cell></row>";
+		});
+
+		return xml + "</rows>";
 	}
 }
 LogManager._extend(InfoRegManager);

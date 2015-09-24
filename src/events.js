@@ -818,6 +818,13 @@ $p.eve.reduce_promices = function(parts, callback){
 	}, Promise.resolve())
 };
 
+$p.eve.js_time_diff = -(new Date("0001-01-01")).valueOf();
+
+$p.eve.time_diff = function () {
+	var time_diff = $p.wsql.get_user_param("time_diff", "number");
+	return (!time_diff || isNaN(time_diff) || time_diff < 62135571600000 || time_diff > 62135622000000) ? $p.eve.js_time_diff : time_diff;
+};
+
 /**
  * Запускает процесс входа в программу и начальную синхронизацию
  * @method log_in

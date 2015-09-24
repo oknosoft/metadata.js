@@ -484,6 +484,9 @@ eXcell_dhxCalendar.prototype.edit = function() {
 
 $p.iface.data_to_grid = function (data, attr){
 
+	if(this.data_to_grid)
+		return this.data_to_grid(data, attr);
+
 	function cat_picture_class(r){
 		var res;
 		if(r.is_folder)
