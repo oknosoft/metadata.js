@@ -11,6 +11,7 @@ The SOFTWARE is protected by copyright laws and international copyright treaties
 
 ### GRANT OF LICENSE
 - Oknosoft Company hereby grants to you, and you accept, a non-exclusive, non-transferable license to install, copy, use and modify the SOFTWARE only as authorized below.
+- License is permanent and includes **one year of free product upgrades since the purchase date**, including even major version upgrades
 - The Oknosoft Developer License enables YOU to include the SOFTWARE inside any number of products (not competitive to the SOFTWARE) developed by YOU which may be sold and distributed.
 - Distribution standalone is prohibited.
 - Distribution as a part of competitive products is prohibited.
