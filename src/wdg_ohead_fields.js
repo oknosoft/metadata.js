@@ -81,14 +81,14 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 			if (!synced && _tsname == change.tabular){
 				synced = true;
 				_grid.clearAll();
-				_grid.loadXMLString(_mgr.get_property_grid_xml(_oxml, _obj, {
+				_grid.parse(_mgr.get_property_grid_xml(_oxml, _obj, {
 					title: attr.ts_title,
 					ts: _tsname,
 					selection: _selection,
 					meta: _meta
 				}), function(){
 
-				});
+				}, "xml");
 			}
 		});
 	}

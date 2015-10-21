@@ -164,7 +164,7 @@ $p.iface.dat_pgrid = function(_dxw, attr) {
 	pgrid.setDateFormat("%d.%m.%Y %H:%i");
 	pgrid.init();
 	if(attr.grid_struct)
-		pgrid.loadXMLString(
+		pgrid.parse(
 			attr.o._manager.get_property_grid_xml(attr.grid_struct, attr.v), function(){
 				pgrid.enableAutoHeight(false);
 				pgrid.setSizes();
@@ -178,7 +178,7 @@ $p.iface.dat_pgrid = function(_dxw, attr) {
 				});
 				pgrid.attachEvent("onPropertyChanged", $p.iface.pgrid_on_change );
 				pgrid.attachEvent("onCheckbox", $p.iface.pgrid_on_checkbox );
-			});
+			}, "xml");
 
 	return wnd_dat;
 };
@@ -683,12 +683,12 @@ $p.iface.swith_view = function(name){
 				}
 				tlist.sort(compare_text);
 
-				iface.tree.loadJSONObject(meta_tree, function(){
+				iface.tree.parse(meta_tree, function(){
 					var hprm = $p.job_prm.parse_url();
 					if(hprm.obj){
 						iface.tree.selectItem(hprm.view+"."+hprm.obj, true);
 					}
-				});
+				}, "json");
 
 			}else{
 				iface.tree.loadXML(iface.tree.tree_filteres+'?v='+$p.job_prm.files_date, function(){

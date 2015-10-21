@@ -147,7 +147,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 			wnd.elmnts.pgrid = wnd.elmnts.cell_frm.attachPropertyGrid();
 			wnd.elmnts.pgrid.setDateFormat("%d.%m.%Y %H:%i");
 			wnd.elmnts.pgrid.init();
-			wnd.elmnts.pgrid.loadXMLString(obj._manager.get_property_grid_xml({
+			wnd.elmnts.pgrid.parse(obj._manager.get_property_grid_xml({
 				" ": [
 					{id: "delivery_area", path: "o.delivery_area", synonym: "Район доставки", type: "ref", txt: v.delivery_area.presentation},
 					{id: "region", path: "o.region", synonym: "Регион", type: "ro", txt: v.region},
@@ -160,7 +160,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 				wnd.elmnts.pgrid.setSizes();
 				wnd.elmnts.pgrid.attachEvent("onPropertyChanged", pgrid_on_changed );
 
-			});
+			}, "xml");
 			wnd.elmnts.pgrid.get_cell_field = function () {
 				return {
 					obj: v,

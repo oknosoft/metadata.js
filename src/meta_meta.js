@@ -918,10 +918,10 @@ _cat.load_soap_to_grid = function(attr, grid, callback){
 
 		if(typeof res == "string")
 		// загружаем строку в грид
-			grid.loadXMLString(res, function(){
+			grid.parse(res, function(){
 				if(callback)
 					callback(res);
-			});
+			}, "xml");
 
 		else if(callback)
 			callback(res);

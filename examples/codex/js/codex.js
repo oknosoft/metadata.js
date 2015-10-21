@@ -145,7 +145,7 @@ $p.iface.oninit = function() {
 	tree.setImagePath(dhtmlx.image_path + 'dhxtree_web/');
 	tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
 	tree.attachEvent("onSelect", tree_select);
-	tree.loadJSONObject(require('tree'));
+	tree.parse(require('tree'), "json");
 	setTimeout(function () {
 		var route_prm = $p.job_prm.parse_url();
 		if(route_prm.obj && route_prm.obj.indexOf("0")==0)
