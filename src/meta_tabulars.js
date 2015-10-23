@@ -1,8 +1,12 @@
 /**
  * Конструкторы табличных частей
+ *
+ * &copy; http://www.oknosoft.ru 2014-2015
+ * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
+ * @author  Evgeniy Malyarov
+ *
  * @module  metadata
  * @submodule meta_tabulars
- * @author	Evgeniy Malyarov
  * @requires common
  */
 
@@ -213,7 +217,7 @@ TabularSection.prototype.add = function(attr, do_not_notify){
 /**
  * Выполняет цикл "для каждого"
  * @method each
- * @param fn {function} - callback, в который передается строка табчасти
+ * @param fn {Function} - callback, в который передается строка табчасти
  */
 TabularSection.prototype.each = function(fn){
 	var t = this;

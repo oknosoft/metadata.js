@@ -53,7 +53,7 @@ $p.iface.wnd_sync = function() {
 				height: 290,
 				modal: true,
 				center: true,
-				caption: $p.msg.long_operation
+				caption: "Подготовка данных"
 			}
 		};
 
@@ -78,7 +78,7 @@ $p.iface.wnd_sync = function() {
 				_stepper.do_break = true;
 		});
 
-		_stepper.frm_sync.setItemValue("text_processed", "Подготовка данных");
+		_stepper.frm_sync.setItemValue("text_processed", "Инициализация");
 		_stepper.frm_sync.setItemValue("text_bottom", "Загружается структура таблиц...");
 	}
 };

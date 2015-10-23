@@ -1,8 +1,12 @@
 /**
  * Конструкторы менеджеров данных
+ *
+ * &copy; http://www.oknosoft.ru 2014-2015
+ * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
+ * @author  Evgeniy Malyarov
+ *
  * @module  metadata
  * @submodule meta_mngrs
- * @author	Evgeniy Malyarov
  * @requires common
  */
 
@@ -1717,7 +1721,7 @@ function LogManager(){
 
 	this.get_sql_struct = function(attr){
 
-		if(attr.action == "get_selection"){
+		if(attr && attr.action == "get_selection"){
 			var sql = "select * from `ireg_$log`";
 			if(attr.date_from){
 				if (attr.date_till)
@@ -1880,6 +1884,31 @@ CatManager.prototype.by_id = function(id){
 		o = this.get();
 
 	return o;
+};
+
+/**
+ * Для иерархических справочников возвращает путь элемента
+ * @param ref {String|CatObj} - ссылка или объект данных
+ * @return {string} - строка пути элемента
+ */
+CatManager.prototype.path = function(ref){
+	var res = "", tobj;
+
+	if(ref instanceof DataObj)
+		tobj = ref;
+	else
+		tobj = this.get(ref, false, true);
+	res = tobj.presentation;
+
+	if(this.metadata().hierarchical){
+		while(true){
+			tobj = tobj.parent;
+			if(tobj.empty())
+				break;
+			res = tobj.presentation + " / " + res;
+		}
+	}
+	return res;
 };
 
 

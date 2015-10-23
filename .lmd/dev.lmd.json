@@ -13,6 +13,7 @@
       "src/wdg_otabular.js",
       "src/wdg_rsvg.js",
       "src/wdg_filter.js",
+      "src/wdg_dyn_tree.js",
       "src/wnd_dat.js",
       "src/wnd_oaddress.js",
       "src/meta_meta.js",

@@ -2,9 +2,13 @@
  * Дополняет классы {{#crossLink "DataObj"}}{{/crossLink}} и {{#crossLink "DataManager"}}{{/crossLink}} методами чтения,<br />
  * записи и синхронизации через стандартный интерфейс <a href="http://its.1c.ru/db/v83doc#bookmark:dev:TI000001362">OData</a>
  * /a/unf/odata/standard.odata
+ *
+ * &copy; http://www.oknosoft.ru 2014-2015
+ * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
+ * @author  Evgeniy Malyarov
+ *
  * @module  metadata
  * @submodule rest
- * @author	Evgeniy Malyarov
  * @requires common
  */
 

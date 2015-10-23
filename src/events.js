@@ -15,6 +15,10 @@
  *	 по событию построителя "ready", выполняем метод initMainLayout() объекта $p.iface.
  *	 Метод initMainLayout() переопределяется во внешним, по отношению к ядру, модуле
  *
+ * &copy; http://www.oknosoft.ru 2014-2015
+ * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
+ * @author  Evgeniy Malyarov
+ *
  * @module common
  * @submodule events
  */
@@ -47,6 +51,41 @@ function only_in_browser(w){
 		}
 	};
 
+	/**
+	 * Тип устройства и ориентация экрана
+	 * @param e
+	 */
+	eve.on_rotate = function (e) {
+		$p.device_orient = (w.orientation == 0 || w.orientation == 180 ? "portrait":"landscape");
+		if (typeof(e) != "undefined")
+			w.dhx4.callEvent("onOrientationChange", [$p.device_orient]);
+	};
+	if(typeof(w.orientation)=="undefined")
+		$p.device_orient = w.innerWidth>w.innerHeight ? "landscape" : "portrait";
+	else
+		eve.on_rotate();
+	w.addEventListener("orientationchange", eve.on_rotate, false);
+
+	$p._define("device_type", {
+		get: function () {
+			var device_type = $p.wsql.get_user_param("device_type");
+			if(!device_type){
+				device_type = (function(i){return (i<1024?"phone":(i<1280?"tablet":"desktop"));})(Math.max(screen.width, screen.height));
+				$p.wsql.set_user_param("device_type", device_type);
+			}
+			return device_type;
+		},
+		set: function (v) {
+			$p.wsql.set_user_param("device_type", v);
+		},
+		enumerable: false,
+		configurable: false
+	});
+
+
+	/**
+	 * Отслеживаем онлайн
+	 */
 	w.addEventListener('online', eve.set_offline);
 	w.addEventListener('offline', function(){eve.set_offline(true);});
 
@@ -315,7 +354,9 @@ function only_in_browser(w){
 					eve.update_files_version();
 
 					// пытаемся перейти в полноэкранный режим в мобильных браузерах
-					if (document.documentElement.webkitRequestFullScreen && navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)) {
+					if (document.documentElement.webkitRequestFullScreen
+							&& navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)
+							&& ($p.job_prm.request_full_screen || $p.wsql.get_user_param("request_full_screen"))) {
 						var requestFullScreen = function(){
 							document.documentElement.webkitRequestFullScreen();
 							w.removeEventListener('touchstart', requestFullScreen);
@@ -482,6 +523,8 @@ function only_in_browser(w){
 	 * @for AppEvents
 	 */
 	w.addEventListener("hashchange", $p.iface.hash_route);
+
+
 }
 if(typeof window !== "undefined")
 	only_in_browser(window);
@@ -829,7 +872,7 @@ $p.eve.time_diff = function () {
  * Запускает процесс входа в программу и начальную синхронизацию
  * @method log_in
  * @for AppEvents
- * @param onstep {function} - callback обработки состояния. Функция вызывается в начале шага
+ * @param onstep {Function} - callback обработки состояния. Функция вызывается в начале шага
  * @return {Promise.<T>} - промис, ошибки которого должен обработать вызывающий код
  * @async
  */
@@ -843,6 +886,11 @@ $p.eve.log_in = function(onstep){
 
 	// выясняем, доступен ли irest (наш сервис) или мы ограничены стандартным rest-ом
 	$p.ajax.default_attr(irest_attr, $p.job_prm.irest_url());
+	// если указан гостевой пользователь, инициализацию выполняем от его имени
+	if($p.job_prm.guest_name){
+		irest_attr.username = $p.job_prm.guest_name;
+		irest_attr.password = $p.job_prm.guest_pwd;
+	}
 
 	if(!$p.job_prm.offline)
 		parts.push($p.ajax.get_ex(irest_attr.url, irest_attr));

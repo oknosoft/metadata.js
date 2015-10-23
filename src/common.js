@@ -2,8 +2,8 @@
  * Глобальные переменные и общие методы фреймворка __metadata.js__ <i>Oknosoft data engine</i>
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @author	Evgeniy Malyarov
  * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
+ * @author	Evgeniy Malyarov
  *
  * Экспортирует глобальную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
  * @module  common
@@ -51,7 +51,7 @@ if(typeof window !== "undefined"){
 	 * @for MetaEngine
 	 * @param src {String} - url ресурса
 	 * @param type {String} - "link" или "script"
-	 * @param [callback] {function} - функция обратного вызова после загрузки скрипта
+	 * @param [callback] {Function} - функция обратного вызова после загрузки скрипта
 	 * @async
 	 */
 	$p.load_script = function (src, type, callback) {
@@ -168,7 +168,7 @@ Object.defineProperty(Object.prototype, "_define", {
  * Реализует наследование текущим конструктором свойств и методов конструктора Parent
  * @method _extend
  * @for Object
- * @param Parent {function}
+ * @param Parent {Function}
  */
 Object.prototype._define("_extend", {
 	value: function( Parent ) {
@@ -585,7 +585,7 @@ $p.ajax = new (
 		 * @method get_ex
 		 * @param url {String}
 		 * @param auth {Boolean}
-		 * @param beforeSend {function} - callback перед отправкой запроса на сервер
+		 * @param beforeSend {Function} - callback перед отправкой запроса на сервер
 		 * @return {Promise.<T>}
 		 * @async
 		 */
@@ -600,7 +600,7 @@ $p.ajax = new (
 		 * @param url {String}
 		 * @param postData {String} - данные для отправки на сервер
 		 * @param auth {Boolean}
-		 * @param beforeSend {function} - callback перед отправкой запроса на сервер
+		 * @param beforeSend {Function} - callback перед отправкой запроса на сервер
 		 * @return {Promise.<T>}
 		 * @async
 		 */
@@ -614,7 +614,7 @@ $p.ajax = new (
 		 * @param url {String}
 		 * @param postData {String} - данные для отправки на сервер
 		 * @param auth {Boolean}
-		 * @param beforeSend {function} - callback перед отправкой запроса на сервер
+		 * @param beforeSend {Function} - callback перед отправкой запроса на сервер
 		 * @return {Promise.<T>}
 		 * @async
 		 */
@@ -628,7 +628,7 @@ $p.ajax = new (
 		 * @param url {String}
 		 * @param postData {String} - данные для отправки на сервер
 		 * @param auth {Boolean}
-		 * @param beforeSend {function} - callback перед отправкой запроса на сервер
+		 * @param beforeSend {Function} - callback перед отправкой запроса на сервер
 		 * @return {Promise.<T>}
 		 * @async
 		 */
@@ -641,7 +641,7 @@ $p.ajax = new (
 		 * @method delete_ex
 		 * @param url {String}
 		 * @param auth {Boolean}
-		 * @param beforeSend {function} - callback перед отправкой запроса на сервер
+		 * @param beforeSend {Function} - callback перед отправкой запроса на сервер
 		 * @return {Promise.<T>}
 		 * @async
 		 */
@@ -1298,11 +1298,13 @@ function InterfaceObjs(){
 	 */
 	this.hash_route = function (event) {
 
-		if(!$p.iface.before_route || $p.iface.before_route(event)!==false){
+		var hprm = $p.job_prm.parse_url(),
+			res = $p.eve.hash_route.execute(hprm),
+			mgr;
+
+		if((res !== false) && (!$p.iface.before_route || $p.iface.before_route(event) !== false)){
 
 			if($p.ajax.authorized){
-
-				var hprm = $p.job_prm.parse_url(), mgr;
 
 				if(hprm.ref && typeof _md != "undefined"){
 					// если задана ссылка, открываем форму объекта
@@ -1368,10 +1370,20 @@ function Modifiers(){
 	 * Добавляет метод в коллекцию методов для отложенного вызова.<br />
 	 * См. так же, {{#crossLink "AppEvents/onload:property"}}{{/crossLink}} и {{#crossLink "MetaEngine/modifiers:property"}}{{/crossLink}}
 	 * @method push
-	 * @param method {function} - функция, которая будет вызвана после инициализации менеджеров объектов данных
+	 * @param method {Function} - функция, которая будет вызвана после инициализации менеджеров объектов данных
 	 */
 	this.push = function (method) {
 		methods.push(method);
+	};
+
+	/**
+	 * Отменяет подписку на событие
+	 * @param method {Function}
+	 */
+	this.detache = function (method) {
+		var index = methods.indexOf(method);
+		if(index != -1)
+			methods.splice(index, 1);
 	};
 
 	/**
@@ -1379,15 +1391,18 @@ function Modifiers(){
 	 * @method execute
 	 */
 	this.execute = function (data) {
+		var res, tres;
 		methods.forEach(function (method) {
 			if(typeof method === "function")
-				method(data);
+				tres = method(data);
 			else
-				require(method)(data);
+				tres = require(method)(data);
+			if(res !== false)
+				res = tres;
 		});
-	}
-
-}
+		return tres;
+	};
+};
 
 /**
  * ### Генераторы и обработчики событий
@@ -1411,6 +1426,12 @@ function AppEvents(){
 	 * @static
 	 */
 	this._define("onload", {
+		value: new Modifiers(),
+		enumerable: false,
+		configurable: false
+	});
+
+	this._define("hash_route", {
 		value: new Modifiers(),
 		enumerable: false,
 		configurable: false
@@ -1612,7 +1633,7 @@ $p.wsql = WSQL;
 	 * @for WSQL
 	 * @param sql {String} - текст запроса
 	 * @param prm {Array} - массив с параметрами для передачи в запрос
-	 * @param [callback] {function} - функция обратного вызова. если не укзана, запрос выполняется "как бы синхронно"
+	 * @param [callback] {Function} - функция обратного вызова. если не укзана, запрос выполняется "как бы синхронно"
 	 * @param [tag] {*} - произвольные данные для передачи в callback
 	 * @async
 	 */
@@ -1671,7 +1692,7 @@ $p.wsql = WSQL;
 	 * @for WSQL
 	 * @param prm_name {string} - имя параметра
 	 * @param prm_value {string|number|object|boolean} - значение
-	 * @param [callback] {function} - вызывается после установки параметра
+	 * @param [callback] {Function} - вызывается после установки параметра
 	 */
 	wsql.set_user_param = function(prm_name, prm_value, callback){
 
@@ -1727,7 +1748,7 @@ $p.wsql = WSQL;
 	/**
 	 * Создаёт и заполняет умолчаниями таблицу параметров
 	 * @method init_params
-	 * @param [callback] {function} - вызывается после создания и заполнения значениями по умолчанию таблицы параметров
+	 * @param [callback] {Function} - вызывается после создания и заполнения значениями по умолчанию таблицы параметров
 	 * @async
 	 */
 	wsql.init_params = function(callback){
@@ -1804,7 +1825,7 @@ $p.wsql = WSQL;
 	/**
 	 * Удаляет таблицы WSQL. Например, для последующего пересоздания при изменении структуры данных
 	 * @method drop_tables
-	 * @param callback {function}
+	 * @param callback {Function}
 	 * @async
 	 */
 	wsql.drop_tables = function(callback){

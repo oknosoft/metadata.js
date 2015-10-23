@@ -188,42 +188,31 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 			cell_grid = layout.cells('b');
 			cell_grid.hideHeader();
-			grid = wnd.elmnts.grid = cell_grid.attachGrid();
 
 			cell_tree = wnd.elmnts.cell_tree = layout.cells('a');
 			cell_tree.setWidth('220');
 			cell_tree.hideHeader();
-			cell_tree.setCollapsedText("Дерево");
-			tree = wnd.elmnts.tree = cell_tree.attachTree();
-			tree.setImagePath(dhtmlx.image_path + 'dhxtree_web/');
-			tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
-			tree.enableKeyboardNavigation(true);
+
+			tree = wnd.elmnts.tree = cell_tree.attachDynTree(_mgr, null, function(){
+				setTimeout(function(){ grid.reload(); }, 20);
+			});
 			tree.attachEvent("onSelect", function(){	// довешиваем обработчик на дерево
 				if(this.do_not_reload)
 					delete this.do_not_reload;
 				else
-					grid.reload();
+					setTimeout(function(){ grid.reload(); }, 20);
 			});
 			tree.attachEvent("onDblClick", function(id){
 				select(id);
 			});
 
-			// !!! проверить закешированность дерева
-			// !!! для неиерархических справочников дерево можно спрятать
-			$p.cat.load_soap_to_grid({
-				action: "get_tree",
-				class_name: _mgr.class_name
-			}, wnd.elmnts.tree, function(){
-				setTimeout(function(){ grid.reload(); }, 20);
-			});
-
 		}else{
 			cell_grid = wnd;
-			grid = wnd.elmnts.grid = wnd.attachGrid();
 			setTimeout(function(){ grid.reload(); }, 20);
 		}
 
 		// настройка грида
+		grid = wnd.elmnts.grid = cell_grid.attachGrid();
 		grid.setIconsPath(dhtmlx.image_path);
 		grid.setImagePath(dhtmlx.image_path);
 		grid.setPagingWTMode(true,true,true,[20,30,60]);

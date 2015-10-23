@@ -2,7 +2,8 @@
  * ### Визуальный компонент - табличное поле объекта
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @author	Evgeniy Malyarov
+ * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
+ * @author  Evgeniy Malyarov
  *
  * @module  wdg_otabular
  * @requires common

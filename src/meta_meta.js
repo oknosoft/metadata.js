@@ -2,7 +2,8 @@
  * Метаданные на стороне js: конструкторы, заполнение, кеширование, поиск
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @author	Evgeniy Malyarov
+ * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
+ * @author  Evgeniy Malyarov
  *
  * @module  metadata
  * @submodule meta_meta
@@ -102,7 +103,7 @@ $p._find = function(a, val){
  * @method _find_rows
  * @for MetaEngine
  * @param arr {Array}
- * @param selection {Object|Function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
+ * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
  * @param callback {Function}
  * @return {Array}
  * @private
