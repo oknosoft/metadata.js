@@ -7,3 +7,45 @@
  * @author  Evgeniy Malyarov
  * @module  wdg_dyn_dataview
  */
+
+/**
+ * ### Визуальный компонент - динамическое представление элементов справочника
+ *
+ * Особенность dhtmlx: экземпляр создаётся не конструктором, а функцией `attachDynDataView` (без `new`) и размещается в ячейке dhtmlXCellObject
+ *
+ * @class DynDataView
+ * @param mgr {DataManager}
+ * @param attr {Object} - параметры создаваемого компонента
+ * @param attr.type {Object} - шаблон и параметры
+ * @param [attr.filter] {Object} - отбор + период
+ * @param [callback] {Function} - если указано, будет вызвана после инициализации компонента
+ * @constructor
+ */
+dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
+
+	if(!attr)
+		attr = {};
+	var conf = {
+		type: attr.type || { template:"#name#" }
+	};
+	if(attr.pager)
+		conf.pager = attr.pager;
+	if(attr.hasOwnProperty("drag"))
+		conf.drag = attr.drag;
+	if(attr.hasOwnProperty("select"))
+		conf.select = attr.select;
+	if(attr.hasOwnProperty("multiselect"))
+		conf.multiselect = attr.multiselect;
+	if(attr.hasOwnProperty("height"))
+		conf.height = attr.height;
+	if(attr.hasOwnProperty("tooltip"))
+		conf.tooltip = attr.tooltip;
+	if(attr.hasOwnProperty("autowidth"))
+		conf.autowidth = attr.autowidth;
+
+	var dv = this.attachDataView(conf);
+
+
+	return dv;
+
+};

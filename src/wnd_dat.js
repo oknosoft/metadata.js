@@ -53,7 +53,7 @@ $p.iface.dat_blank = function(_dxw, attr) {
 	$p.iface.bind_help(wnd_dat, attr.help_path);
 
 	wnd_dat.elmnts = {};
-	wnd_dat._define("modified", {
+	wnd_dat.__define("modified", {
 		get: function () {
 			return _modified;
 		},
@@ -251,7 +251,7 @@ $p.iface.pgrid_on_checkbox = function(rId, cInd, state){
 
 
 function _clear_all(){
-	$p.iface.docs._define({
+	$p.iface.docs.__define({
 		clear_all: {
 			value: function () {
 				this.detachToolbar();

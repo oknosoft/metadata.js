@@ -447,7 +447,7 @@ var _rest = $p.rest = new Rest();
  * @type String
  * @final
  */
-DataManager.prototype._define("rest_name", {
+DataManager.prototype.__define("rest_name", {
 	get : function(suffix){
 		var fp = this.class_name.split("."),
 			csyn = {

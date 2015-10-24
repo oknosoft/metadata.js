@@ -55,7 +55,7 @@ function DataManager(class_name){
 		_cachable = _metadata.cachable;
 
 
-	this._define({
+	this.__define({
 
 			/**
 			 * Выполняет две функции:
@@ -192,14 +192,14 @@ function DataManager(class_name){
 
 			// реквизиты по метаданным
 			for(var f in this.metadata().dimensions){
-				this._obj_сonstructor.prototype._define(f, {
+				this._obj_сonstructor.prototype.__define(f, {
 					get : new Function("return this._getter('"+f+"')"),
 					set : new Function("v", "this._setter('"+f+"',v)"),
 					enumerable : true
 				});
 			}
 			for(var f in this.metadata().resources){
-				this._obj_сonstructor.prototype._define(f, {
+				this._obj_сonstructor.prototype.__define(f, {
 					get : new Function("return this._getter('"+f+"')"),
 					set : new Function("v", "this._setter('"+f+"',v)"),
 					enumerable : true
@@ -212,7 +212,7 @@ function DataManager(class_name){
 
 			// реквизиты по метаданным
 			for(var f in this.metadata().fields){
-				this._obj_сonstructor.prototype._define(f, {
+				this._obj_сonstructor.prototype.__define(f, {
 					get : new Function("return this._getter('"+f+"')"),
 					set : new Function("v", "this._setter('"+f+"',v)"),
 					enumerable : true
@@ -231,7 +231,7 @@ function DataManager(class_name){
 
 				// в прототипе строки табчасти создаём свойства в соответствии с полями табчасти
 				for(var rf in this.metadata().tabular_sections[f].fields){
-					this._ts_сonstructors[f].prototype._define(rf, {
+					this._ts_сonstructors[f].prototype.__define(rf, {
 						get : new Function("return this._getter('"+rf+"')"),
 						set : new Function("v", "this._setter('"+rf+"',v)"),
 						enumerable : true
@@ -239,7 +239,7 @@ function DataManager(class_name){
 				}
 
 				// устанавливаем геттер и сеттер для табличной части
-				this._obj_сonstructor.prototype._define(f, {
+				this._obj_сonstructor.prototype.__define(f, {
 					get : new Function("return this._getter_ts('"+f+"')"),
 					set : new Function("v", "this._setter_ts('"+f+"',v)"),
 					enumerable : true
@@ -261,7 +261,7 @@ function DataManager(class_name){
  * @type String
  * @final
  */
-DataManager.prototype._define("family_name", {
+DataManager.prototype.__define("family_name", {
 	get : function () {
 		return $p.msg["meta_"+this.class_name.split(".")[0]+"_mgr"].replace($p.msg.meta_mgr+" ", "");
 	},
@@ -521,7 +521,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
  * @type String
  * @final
  */
-DataManager.prototype._define("table_name", {
+DataManager.prototype.__define("table_name", {
 	get : function(){
 		return this.class_name.replace(".", "_");
 	},
@@ -592,7 +592,7 @@ DataManager.prototype.printing_plates = function(){
 	rattr.url += t.rest_name + "/Print()";
 	return $p.ajax.get_ex(rattr.url, rattr)
 		.then(function (req) {
-			t._define("_printing_plates", {
+			t.__define("_printing_plates", {
 				value: JSON.parse(req.response),
 				enumerable: false
 			});
@@ -1264,7 +1264,7 @@ function EnumManager(a, class_name) {
 	this._obj_сonstructor = EnumObj;
 
 	this.push = function(o, new_ref){
-		this._define(new_ref, {
+		this.__define(new_ref, {
 			value : o,
 			enumerable : false
 		}) ;
@@ -1834,7 +1834,7 @@ function CatManager(class_name) {
 		 * @for CatObj
 		 * @type {Boolean}
 		 */
-		this._obj_сonstructor.prototype._define("is_folder", {
+		this._obj_сonstructor.prototype.__define("is_folder", {
 			get : function(){ return this._obj.is_folder || false},
 			set : function(v){ this._obj.is_folder = $p.fix_boolean(v)},
 			enumerable : true
@@ -1887,25 +1887,26 @@ CatManager.prototype.by_id = function(id){
 };
 
 /**
- * Для иерархических справочников возвращает путь элемента
+ * Для иерархических кешируемых справочников возвращает путь элемента
  * @param ref {String|CatObj} - ссылка или объект данных
  * @return {string} - строка пути элемента
  */
 CatManager.prototype.path = function(ref){
-	var res = "", tobj;
+	var res = [], tobj;
 
 	if(ref instanceof DataObj)
 		tobj = ref;
 	else
 		tobj = this.get(ref, false, true);
-	res = tobj.presentation;
+	if(tobj)
+		res.push({ref: tobj.ref, presentation: tobj.presentation});
 
-	if(this.metadata().hierarchical){
+	if(tobj && this.metadata().hierarchical){
 		while(true){
 			tobj = tobj.parent;
 			if(tobj.empty())
 				break;
-			res = tobj.presentation + " / " + res;
+			res.push({ref: tobj.ref, presentation: tobj.presentation});
 		}
 	}
 	return res;

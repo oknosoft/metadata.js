@@ -32,7 +32,7 @@ function TabularSection(name, owner){
 	 * @property _name
 	 * @type String
 	 */
-	this._define('_name', {
+	this.__define('_name', {
 		value : name,
 		enumerable : false
 	});
@@ -42,7 +42,7 @@ function TabularSection(name, owner){
 	 * @property _owner
 	 * @type DataObj
 	 */
-	this._define('_owner', {
+	this.__define('_owner', {
 		value : owner,
 		enumerable : false
 	});
@@ -53,7 +53,7 @@ function TabularSection(name, owner){
 	 * @property _obj
 	 * @type Object
 	 */
-	this._define("_obj", {
+	this.__define("_obj", {
 		value: owner._obj[name],
 		writable: false,
 		enumerable: false
@@ -199,7 +199,7 @@ TabularSection.prototype.add = function(attr, do_not_notify){
 		row[f] = attr[f] || "";
 
 	row._obj.row = this._obj.push(row._obj);
-	row._obj._define("_row", {
+	row._obj.__define("_row", {
 		value: row,
 		enumerable: false
 	});
@@ -298,7 +298,7 @@ function TabularSectionRow(owner){
 	 * @property _owner
 	 * @type TabularSection
 	 */
-	this._define('_owner', {
+	this.__define('_owner', {
 		value : owner,
 		enumerable : false
 	});
@@ -309,7 +309,7 @@ function TabularSectionRow(owner){
 	 * @property _obj
 	 * @type Object
 	 */
-	this._define("_obj", {
+	this.__define("_obj", {
 		value: _obj,
 		writable: false,
 		enumerable: false
@@ -323,7 +323,7 @@ function TabularSectionRow(owner){
  * @for TabularSectionRow
  * @type Number
  */
-TabularSectionRow.prototype._define('_metadata', {
+TabularSectionRow.prototype.__define('_metadata', {
 	get : function(){ return this._owner._owner._metadata["tabular_sections"][this._owner._name]},
 	enumerable : false
 });
@@ -335,7 +335,7 @@ TabularSectionRow.prototype._define('_metadata', {
  * @type Number
  * @final
  */
-TabularSectionRow.prototype._define("row", {
+TabularSectionRow.prototype.__define("row", {
 	get : function(){ return this._obj.row || 0},
 	enumerable : true
 });
@@ -346,7 +346,7 @@ TabularSectionRow.prototype._define("row", {
  * @for TabularSectionRow
  * @type Number
  */
-TabularSectionRow.prototype._define("_clone", {
+TabularSectionRow.prototype.__define("_clone", {
 	value : function(){
 		return new this._owner._owner._manager._ts_сonstructors[this._owner._name](this._owner)._mixin(this._obj);
 	},

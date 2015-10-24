@@ -153,7 +153,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		_destructor.call(_grid);
 	};
 
-	_grid._define("selection", {
+	_grid.__define("selection", {
 		get: function () {
 			return _selection;
 		},

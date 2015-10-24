@@ -89,7 +89,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 				postal_code: "",
 				marker: {}
 			};
-		v._define("delivery_area", {
+		v.__define("delivery_area", {
 			get: function () {
 				return _delivery_area;
 			},

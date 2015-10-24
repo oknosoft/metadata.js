@@ -51,7 +51,7 @@ function DataObj(attr, manager) {
 	 * @type DataManager
 	 * @final
 	 */
-	this._define('_manager', {
+	this.__define('_manager', {
 		value : manager,
 		enumerable : false
 	});
@@ -62,14 +62,14 @@ function DataObj(attr, manager) {
 	 * @for DataObj
 	 * @return {boolean}
 	 */
-	this._define("is_new", {
+	this.__define("is_new", {
 		value: function(){
 			return _is_new;
 		},
 		enumerable: false
 	});
 
-	this._define("_set_loaded", {
+	this.__define("_set_loaded", {
 		value: function(ref){
 			_is_new = false;
 			manager.push(this, ref);
@@ -85,13 +85,13 @@ function DataObj(attr, manager) {
 	 * @type Object
 	 * @final
 	 */
-	this._define("_obj", {
+	this.__define("_obj", {
 		value: _obj,
 		writable: false,
 		enumerable: false
 	});
 
-	this._define("_ts_", {
+	this.__define("_ts_", {
 		value: function( name ) {
 			if( !_ts_[name] ) {
 				_ts_[name] = new TabularSection(name, this);
@@ -344,7 +344,7 @@ DataObj.prototype.empty = function(){
  * @type Object
  * @final
  */
-DataObj.prototype._define('_metadata', {
+DataObj.prototype.__define('_metadata', {
 	get : function(){ return this._manager.metadata()},
 	enumerable : false
 });
@@ -355,7 +355,7 @@ DataObj.prototype._define('_metadata', {
  * @for DataObj
  * @type String
  */
-DataObj.prototype._define('ref', {
+DataObj.prototype.__define('ref', {
 	get : function(){ return this._obj.ref},
 	set : function(v){ this._obj.ref = $p.fix_guid(v)},
 	enumerable : true,
@@ -368,7 +368,7 @@ DataObj.prototype._define('ref', {
  * @for DataObj
  * @type Boolean
  */
-DataObj.prototype._define('deleted', {
+DataObj.prototype.__define('deleted', {
 	get : function(){ return this._obj.deleted},
 	set : function(v){
 		this.__notify('deleted');
@@ -384,7 +384,7 @@ DataObj.prototype._define('deleted', {
  * @for DataObj
  * @type String
  */
-DataObj.prototype._define('data_version', {
+DataObj.prototype.__define('data_version', {
 	get : function(){ return this._obj.data_version || ""},
 	set : function(v){
 		this.__notify('data_version');
@@ -399,7 +399,7 @@ DataObj.prototype._define('data_version', {
  * @for DataObj
  * @type Number
  */
-DataObj.prototype._define('lc_changed', {
+DataObj.prototype.__define('lc_changed', {
 	get : function(){ return this._obj.lc_changed || 0},
 	set : function(v){
 		this.__notify('lc_changed');
@@ -433,7 +433,7 @@ function CatObj(attr, manager) {
 	 * @for CatObj
 	 * @type String
 	 */
-	this._define('presentation', {
+	this.__define('presentation', {
 		get : function(){
 
 			if(this.name || this.id)
@@ -462,7 +462,7 @@ CatObj._extend(DataObj);
  * @property id
  * @type String|Number
  */
-CatObj.prototype._define('id', {
+CatObj.prototype.__define('id', {
 	get : function(){ return this._obj.id || ""},
 	set : function(v){
 		this.__notify('id');
@@ -476,7 +476,7 @@ CatObj.prototype._define('id', {
  * @property name
  * @type String
  */
-CatObj.prototype._define('name', {
+CatObj.prototype.__define('name', {
 	get : function(){ return this._obj.name || ""},
 	set : function(v){
 		this.__notify('name');
@@ -508,7 +508,7 @@ function DocObj(attr, manager) {
 	 * @for DocObj
 	 * @type String
 	 */
-	this._define('presentation', {
+	this.__define('presentation', {
 		get : function(){
 
 			if(this.number_str || this.number_doc)
@@ -537,7 +537,7 @@ DocObj._extend(DataObj);
  * @property number_doc
  * @type {String|Number}
  */
-DocObj.prototype._define('number_doc', {
+DocObj.prototype.__define('number_doc', {
 	get : function(){ return this._obj.number_doc || ""},
 	set : function(v){
 		this.__notify('number_doc');
@@ -551,7 +551,7 @@ DocObj.prototype._define('number_doc', {
  * @property date
  * @type {Date}
  */
-DocObj.prototype._define('date', {
+DocObj.prototype.__define('date', {
 	get : function(){ return this._obj.date || $p.blank.date},
 	set : function(v){
 		this.__notify('date');
@@ -565,7 +565,7 @@ DocObj.prototype._define('date', {
  * @property posted
  * @type {Boolean}
  */
-DocObj.prototype._define('posted', {
+DocObj.prototype.__define('posted', {
 	get : function(){ return this._obj.posted || false},
 	set : function(v){
 		this.__notify('posted');
@@ -642,7 +642,7 @@ EnumObj._extend(DataObj);
  * @for EnumObj
  * @type Number
  */
-EnumObj.prototype._define('order', {
+EnumObj.prototype.__define('order', {
 	get : function(){ return this._obj.sequence},
 	set : function(v){ this._obj.sequence = parseInt(v)},
 	enumerable : true
@@ -654,7 +654,7 @@ EnumObj.prototype._define('order', {
  * @for EnumObj
  * @type String
  */
-EnumObj.prototype._define('name', {
+EnumObj.prototype.__define('name', {
 	get : function(){ return this._obj.ref},
 	set : function(v){ this._obj.ref = String(v)},
 	enumerable : true
@@ -666,7 +666,7 @@ EnumObj.prototype._define('name', {
  * @for EnumObj
  * @type String
  */
-EnumObj.prototype._define('synonym', {
+EnumObj.prototype.__define('synonym', {
 	get : function(){ return this._obj.synonym || ""},
 	set : function(v){ this._obj.synonym = String(v)},
 	enumerable : true
@@ -678,7 +678,7 @@ EnumObj.prototype._define('synonym', {
  * @for EnumObj
  * @type String
  */
-EnumObj.prototype._define('presentation', {
+EnumObj.prototype.__define('presentation', {
 	get : function(){
 		return this.synonym || this.name;
 	},
@@ -722,7 +722,7 @@ RegisterRow._extend(DataObj);
  * @for RegisterRow
  * @type Object
  */
-RegisterRow.prototype._define('_metadata', {
+RegisterRow.prototype.__define('_metadata', {
 	get : function(){
 		var cm = this._manager.metadata();
 		if(!cm.fields)
@@ -732,7 +732,7 @@ RegisterRow.prototype._define('_metadata', {
 	enumerable : false
 });
 
-RegisterRow.prototype._define('ref', {
+RegisterRow.prototype.__define('ref', {
 	get : function(){ return this._manager.get_ref(this)},
 	enumerable : true
 });

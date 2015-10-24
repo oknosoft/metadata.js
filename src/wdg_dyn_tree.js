@@ -28,16 +28,7 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 	tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
 	tree.enableKeyboardNavigation(true);
 
-	// !!! проверить закешированность дерева
-	// !!! для неиерархических справочников дерево можно спрятать
-	setTimeout(function () {
-		$p.cat.load_soap_to_grid({
-			action: "get_tree",
-			class_name: mgr.class_name
-		}, tree, callback);
-	});
-
-	tree._define({
+	tree.__define({
 		/**
 		 * Фильтр, налагаемый на дерево
 		 */
@@ -46,11 +37,20 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 
 			},
 			set: function (v) {
-
+				filter = v;
 			},
 			enumerable: false,
 			configurable: false
 		}
+	});
+
+	// !!! проверить закешированность дерева
+	// !!! для неиерархических справочников дерево можно спрятать
+	setTimeout(function () {
+		$p.cat.load_soap_to_grid({
+			action: "get_tree",
+			class_name: mgr.class_name
+		}, tree, callback);
 	});
 
 	return tree;

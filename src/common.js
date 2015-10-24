@@ -149,10 +149,10 @@ if(typeof window !== "undefined"){
 
 /**
  * Синтаксический сахар для defineProperty
- * @method _define
+ * @method __define
  * @for Object
  */
-Object.defineProperty(Object.prototype, "_define", {
+Object.defineProperty(Object.prototype, "__define", {
 	value: function( key, descriptor ) {
 		if( descriptor ) {
 			Object.defineProperty( this, key, descriptor );
@@ -170,13 +170,13 @@ Object.defineProperty(Object.prototype, "_define", {
  * @for Object
  * @param Parent {Function}
  */
-Object.prototype._define("_extend", {
+Object.prototype.__define("_extend", {
 	value: function( Parent ) {
 		var F = function() { };
 		F.prototype = Parent.prototype;
 		this.prototype = new F();
 		this.prototype.constructor = this;
-		this._define("superclass", {
+		this.__define("superclass", {
 			value: Parent.prototype,
 			enumerable: false
 		});
@@ -191,7 +191,7 @@ Object.prototype._define("_extend", {
  * @param src {Object} - источник
  * @return {Object}
  */
-Object.prototype._define("_mixin", {
+Object.prototype.__define("_mixin", {
 	value: function(src, include, exclude ) {
 		var tobj = {}, i, f; // tobj - вспомогательный объект для фильтрации свойств, которые есть у объекта Object и его прототипа
 		if(include && include.length){
@@ -225,7 +225,7 @@ Object.prototype._define("_mixin", {
  * @param [exclude_propertyes] {Object} - объект, в ключах которого имена свойств, которые не надо копировать
  * @returns {Object|Array} - копия объекта
  */
-Object.prototype._define("_clone", {
+Object.prototype.__define("_clone", {
 	value: function() {
 		if(!this || "object" !== typeof this)
 			return this;
@@ -256,11 +256,11 @@ Object.prototype._define("_clone", {
  * Это простая заглушка, чтобы в старых браузерах не возникали исключения
  */
 if(!Object.observe && !Object.unobserve && !Object.getNotifier)
-	Object._define({
+	Object.__define({
 		observe: {
 			value: function(target, observer) {
 				if(!target._observers)
-					target._define({
+					target.__define({
 						_observers: {
 							value: [],
 							enumerable: false
@@ -501,6 +501,8 @@ $p.ajax = new (
 					// поэтому проверяем статусы ответа
 					if (req.status == 200 && (req.response instanceof Blob || req.response.substr(0,9)!=="<!DOCTYPE")) {
 						// Завершаем Обещание с текстом ответа
+						if(req.responseURL == undefined)
+							req.responseURL = url;
 						resolve(req);
 					}
 					else {
@@ -1425,13 +1427,13 @@ function AppEvents(){
 	 * @type Modifiers
 	 * @static
 	 */
-	this._define("onload", {
+	this.__define("onload", {
 		value: new Modifiers(),
 		enumerable: false,
 		configurable: false
 	});
 
-	this._define("hash_route", {
+	this.__define("hash_route", {
 		value: new Modifiers(),
 		enumerable: false,
 		configurable: false
@@ -1457,7 +1459,7 @@ $p.eve = new AppEvents();
  * @type Modifiers
  * @static
  */
-$p._define("modifiers", {
+$p.__define("modifiers", {
 	value: new Modifiers(),
 	enumerable: false,
 	configurable: false

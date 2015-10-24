@@ -47,7 +47,7 @@ $p.msg.russian_names = function(){
 	if($p.job_prm.russian_names){
 
 		// глобальный контекст
-		window._define({
+		window.__define({
 			"Метаданные": {
 				get: function(){return _md},
 				enumerable: false
@@ -100,7 +100,7 @@ $p.msg.russian_names = function(){
 		});
 
 		// свойства и методы менеджеров
-		DataManager.prototype._define({
+		DataManager.prototype.__define({
 				"ФормаВыбора": {
 					get: function(){return this.form_selection},
 					enumerable: false
@@ -125,7 +125,7 @@ $p.msg.russian_names = function(){
 		);
 
 		// свойства и методы объектов данных
-		DataObj.prototype._define({
+		DataObj.prototype.__define({
 				"ФормаОбъекта": {
 					get: function(){return this.form_obj},
 					enumerable: false

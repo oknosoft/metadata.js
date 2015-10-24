@@ -107,7 +107,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		}
 
 		if(!wnd.ref)
-			wnd._define("ref", {
+			wnd.__define("ref", {
 				get: function(){
 					return o ? o.ref : $p.blank.guid;
 				},
@@ -180,7 +180,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		if($p.job_prm.russian_names){
 			if(!wnd.Элементы)
-				wnd._define({
+				wnd.__define({
 					"Элементы": {
 						get: function () {
 							return this.elmnts;
@@ -189,7 +189,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 					}
 				});
 			if(!wnd.elmnts.Шапка)
-				wnd.elmnts._define({
+				wnd.elmnts.__define({
 					"Шапка": {
 						get: function () {
 							return this.pg_header;

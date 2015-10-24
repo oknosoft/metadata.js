@@ -197,7 +197,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	};
 
 	// TODO: реализовать свойство selection и его инициализацию через attr
-	_grid._define("selection", {
+	_grid.__define("selection", {
 		get: function () {
 			return _selection;
 		},

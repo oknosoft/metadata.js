@@ -66,7 +66,7 @@ function only_in_browser(w){
 		eve.on_rotate();
 	w.addEventListener("orientationchange", eve.on_rotate, false);
 
-	$p._define("device_type", {
+	$p.__define("device_type", {
 		get: function () {
 			var device_type = $p.wsql.get_user_param("device_type");
 			if(!device_type){
@@ -135,7 +135,7 @@ function only_in_browser(w){
 				 * @for IPInfo
 				 * @type YaGeocoder
 				 */
-				this._define("yageocoder", {
+				this.__define("yageocoder", {
 					get : function(){
 
 						if(!_yageocoder)
@@ -152,7 +152,7 @@ function only_in_browser(w){
 				 * @for IPInfo
 				 * @type {google.maps.Geocoder}
 				 */
-				this._define("ggeocoder", {
+				this.__define("ggeocoder", {
 						get : function(){
 							return _ggeocoder;
 						},
@@ -166,7 +166,7 @@ function only_in_browser(w){
 				 * @for IPInfo
 				 * @type String
 				 */
-				this._define("addr", {
+				this.__define("addr", {
 						get : function(){
 							return _addr;
 						},
@@ -304,7 +304,7 @@ function only_in_browser(w){
 				 * @for InterfaceObjs
 				 * @type dhtmlXWindows
 				 */
-				$p.iface._define("w", {
+				$p.iface.__define("w", {
 					value: new dhtmlXWindows(),
 					enumerable: false
 				});
@@ -317,7 +317,7 @@ function only_in_browser(w){
 				 * @for InterfaceObjs
 				 * @type dhtmlXPopup
 				 */
-				$p.iface._define("popup", {
+				$p.iface.__define("popup", {
 					value: new dhtmlXPopup(),
 					enumerable: false
 				});
@@ -886,12 +886,6 @@ $p.eve.log_in = function(onstep){
 
 	// выясняем, доступен ли irest (наш сервис) или мы ограничены стандартным rest-ом
 	$p.ajax.default_attr(irest_attr, $p.job_prm.irest_url());
-	// если указан гостевой пользователь, инициализацию выполняем от его имени
-	if($p.job_prm.guest_name){
-		irest_attr.username = $p.job_prm.guest_name;
-		irest_attr.password = $p.job_prm.guest_pwd;
-	}
-
 	if(!$p.job_prm.offline)
 		parts.push($p.ajax.get_ex(irest_attr.url, irest_attr));
 
@@ -1053,7 +1047,7 @@ $p.eve.log_in = function(onstep){
 			// и запоминаем в ajax признак полноправности пользователя
 			if($p.ajax.hasOwnProperty("root"))
 				delete $p.ajax.root;
-			$p.ajax._define("root", {
+			$p.ajax.__define("root", {
 				value: !!mdd.root,
 				writable: false,
 				enumerable: false
