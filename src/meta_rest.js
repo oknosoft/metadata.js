@@ -78,7 +78,7 @@ function Rest(){
 
 		for(f in mf){
 			syn = _md.syns_1с(f);
-			if(mf[f].type.is_ref && rdata[syn+"_Key"])
+			if(syn.indexOf("_Key") == -1 && mf[f].type.is_ref && rdata[syn+"_Key"])
 				syn+="_Key";
 			if(!rdata.hasOwnProperty(syn))
 				continue;
@@ -98,7 +98,7 @@ function Rest(){
 					row = {};
 					for(tf in mts[ts].fields){
 						syn = _md.syns_1с(tf);
-						if(mts[ts].fields[tf].type.is_ref && r[syn+"_Key"])
+						if(syn.indexOf("_Key") == -1 && mts[ts].fields[tf].type.is_ref && r[syn+"_Key"])
 							syn+="_Key";
 						row[tf] = r[syn];
 					}
@@ -130,19 +130,7 @@ function Rest(){
 			});
 	};
 
-	/**
-	 * Загружает список объектов из rest-сервиса, обрезанный отбором
-	 * @method load
-	 * @for DataManager
-	 * @param attr {Object} - параметры запроса
-	 * @param [attr.selection] {Object} - условия отбора
-	 * @param [attr.top] {Number} - максимальное число загружаемых записей
-	 * @param mgr {DataManager}
-	 * @return {Promise.<T>} - промис с массивом загруженных прототипов DataObj
-	 * @async
-	 */
-	this.load_array = function (attr, mgr) {
-
+	this.build_select = function (attr, mgr) {
 		var s, f, syn, type, select_str = "";
 
 		function build_condition(fld, val){
@@ -157,7 +145,7 @@ function Rest(){
 				if(type){
 					type = type.type;
 					if(type.is_ref){
-						if(type.types.length && type.types[0].indexOf("enm.")==-1)
+						if(syn.indexOf("_Key") == -1 && type.types.length && type.types[0].indexOf("enm.")==-1)
 							syn += "_Key";
 					}
 
@@ -228,7 +216,7 @@ function Rest(){
 					syn = _md.syns_1с(fld);
 					type = _md.get(mgr.class_name, fld).type;
 					if(type.is_ref){
-						if(type.types.length && type.types[0].indexOf("enm.")==-1)
+						if(syn.indexOf("_Key") == -1 && type.types.length && type.types[0].indexOf("enm.")==-1)
 							syn += "_Key";
 					}
 				}
@@ -257,7 +245,11 @@ function Rest(){
 
 
 		// для простых запросов используем стандартный odata 1c
-		if(select_str.indexOf(" like ") == -1 && select_str.indexOf(" in ") == -1)
+		if(mgr.rest_name.indexOf("Module_") == -1 &&
+			mgr.rest_name.indexOf("DataProcessor_") == -1 &&
+			mgr.rest_name.indexOf("Report_") == -1 &&
+			select_str.indexOf(" like ") == -1 &&
+			select_str.indexOf(" in ") == -1)
 			$p.ajax.default_attr(attr, $p.job_prm.rest_url());
 		// для сложных отборов используем наш rest
 		else
@@ -266,6 +258,22 @@ function Rest(){
 		// начинаем строить url: только разрешенные + top
 		attr.url += mgr.rest_name + "?allowedOnly=true&$format=json&$top=" + (attr.top || 300) + select_str;
 		//a/unf/odata/standard.odata/Document_ЗаказПокупателя?allowedOnly=true&$format=json&$select=Ref_Key,DataVersion
+	};
+
+	/**
+	 * Загружает список объектов из rest-сервиса, обрезанный отбором
+	 * @method load
+	 * @for DataManager
+	 * @param attr {Object} - параметры запроса
+	 * @param [attr.selection] {Object} - условия отбора
+	 * @param [attr.top] {Number} - максимальное число загружаемых записей
+	 * @param mgr {DataManager}
+	 * @return {Promise.<T>} - промис с массивом загруженных прототипов DataObj
+	 * @async
+	 */
+	this.load_array = function (attr, mgr) {
+
+		_rest.build_select(attr, mgr);
 
 		return _rest.ajax_to_data(attr, mgr);
 	};
@@ -554,9 +562,11 @@ DataManager.prototype.rest_selection = function (attr) {
 				else
 					fld = parts[1]
 			}
+			if(fld == "0")
+				return;
 			syn = _md.syns_1с(fld);
 			if(_md.get(t.class_name, fld).type.is_ref){
-				if(_md.get(t.class_name, fld).type.types.length && _md.get(t.class_name, fld).type.types[0].indexOf("enm.")==-1)
+				if(syn.indexOf("_Key") == -1 && _md.get(t.class_name, fld).type.types.length && _md.get(t.class_name, fld).type.types[0].indexOf("enm.")==-1)
 					syn += "_Key";
 			}
 
@@ -609,7 +619,7 @@ DataManager.prototype.rest_selection = function (attr) {
 					syn = _md.syns_1с(fld);
 					mf = _md.get(t.class_name, fld);
 
-					if(mf.type.is_ref && mf.type.types.length && mf.type.types[0].indexOf("enm.")==-1)
+					if(syn.indexOf("_Key") == -1 && mf.type.is_ref && mf.type.types.length && mf.type.types[0].indexOf("enm.")==-1)
 						syn += "_Key";
 
 					if(mf.type.date_part)
@@ -654,7 +664,7 @@ InfoRegManager.prototype.rest_slice_last = function(selection){
 		var syn = _md.syns_1с(fld),
 			mf = cmd.dimensions[fld];
 
-		if(mf.type.is_ref && mf.type.types.length && mf.type.types[0].indexOf("enm.")==-1){
+		if(syn.indexOf("_Key") == -1 && mf.type.is_ref && mf.type.types.length && mf.type.types[0].indexOf("enm.")==-1){
 			syn += "_Key";
 			if(condition)
 				condition+= " and ";
@@ -720,7 +730,8 @@ DataObj.prototype.to_atom = function (ex_meta) {
 				v = v.empty() ? "" : v.name;
 
 			else if(v instanceof DataObj){
-				pname+= '_Key';
+				if(pname.indexOf("_Key") == -1)
+					pname+= '_Key';
 				v = v.ref;
 
 			}else if(mf.type.date_part){

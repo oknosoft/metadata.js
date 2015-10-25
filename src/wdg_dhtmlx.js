@@ -136,278 +136,12 @@ window.eXcell_ocombo = eXcell_ocombo;
  * Конструктор поля ввода значений ссылочных типов для грида
  * @param cell
  */
-//function eXcell_ref(cell){
-//
-//	if (!cell) return;
-//
-//	var t = this, td,
-//
-//		ti_keydown=function(e){
-//			return eXcell_proto.input_keydown(e, t);
-//		},
-//
-//		open_selection=function(e) {
-//
-//			var fmd, rt, at, cl, acl, sval,
-//				attr = {
-//					initial_value: t.val.ref,
-//					parent: null,
-//					owner: null};
-//
-//			t.mgr = null;
-//
-//			if(t.source.slist)
-//				t.source.slist.call(t);
-//
-//			else if(t.source.tabular_section){
-//				fmd = t.source.row._metadata.fields[t.source.col];
-//				t.mgr = _md.value_mgr(t.source.row, t.source.col, fmd.type);
-//				if(t.mgr){
-//					if(t.source["choice_links"] && t.source["choice_links"][t.source.tabular_section + "_" + t.source.col])
-//						acl = t.source["choice_links"][t.source.tabular_section + "_" + t.source.col];
-//					else
-//						acl = fmd["choice_links"];
-//					if(acl){
-//						for(var icl in acl){
-//							if((cl = acl[icl]).name[1] == "owner")
-//								attr.owner = cl.path.length == 2 ? t.source.row[cl.path[1]].ref : t.source.o[cl.path[0]].ref;
-//						}
-//					}
-//					t.mgr.form_selection(t.source, attr);
-//				}
-//
-//			}else{
-//				if(t.fpath.length < 2){
-//					fmd = t.source.o._manager.metadata(t.fpath[0]);
-//					t.mgr = _md.value_mgr(t.source.o, t.fpath[0], fmd.type);
-//
-//					if(t.source["choice_links"] && t.source["choice_links"][t.fpath[0]])
-//						acl = t.source["choice_links"][t.fpath[0]];
-//					else
-//						acl = fmd["choice_links"];
-//					if(t.source["choice_params"] && t.source["choice_params"][t.fpath[0]])
-//						for(var icl in t.source["choice_params"][t.fpath[0]]){
-//							if(!attr.selection)
-//								attr.selection = [];
-//							attr.selection.push(t.source["choice_params"][t.fpath[0]][icl]);
-//						}
-//				}else{
-//					fmd = t.source.o._metadata["tabular_sections"][t.fpath[0]].fields[t.fpath[1]];
-//					t.mgr = _md.value_mgr(t.source.row, t.source.col, fmd.type);
-//				}
-//
-//				if(t.mgr){
-//					if(acl){
-//						for(var icl in acl){
-//							if((cl = acl[icl]).path.length == 1)
-//								sval = t.source.o[cl.path[0]].ref;
-//							else{
-//								// TODO: связь по подчиненному реквизиту. надо разыменовать ссылку поля
-//								// !!! пока не неализовано
-//								sval = t.source.o[cl.path[0]].ref;
-//							}
-//							if(cl.name[1] == "owner")
-//								attr.owner = sval ;
-//							else if(cl.name[0] == "selection"){
-//								if(!attr.selection)
-//									attr.selection = [];
-//								var selection = {};
-//								selection[cl.name[1]] = sval;
-//								attr.selection.push(selection);
-//							}
-//						}
-//					}
-//					t.mgr.form_selection(t.source, attr);
-//				}
-//			}
-//
-//			return $p.cancel_bubble(e);
-//		};
-//
-//	t.cell = cell;
-//	t.grid = t.cell.parentNode.grid;
-//	t.open_selection = open_selection;
-//
-//	/**
-//	 * @desc: 	устанавливает текст в ячейке. например, this.setCValue("<input type='button' value='"+val+"'>",val);
-//	 */
-//	t.setValue=function(val){
-//		t.setCValue(val instanceof DataObj ? val.presentation : val);
-//	};
-//
-//	/**
-//	 * @desc: 	получает значение ячейки из табличной части или поля объекта или допполя допобъекта, а не из грида
-//	 */
-//	t.getValue=function(){
-//		if(t.source = t.grid.getUserData("", "source")){
-//			if(t.source.tabular_section){
-//				t.source.row = t.source.o[t.source.tabular_section].get(t.cell.parentNode.idd-1);
-//				t.source.col = t.source.fields[t.cell.cellIndex];
-//				t.source.cell = t;
-//				return t.source.row[t.source.col];
-//			}else{
-//				t.fpath = t.grid.getSelectedRowId().split("|");
-//				if(t.fpath.length < 2) return t.source.o[t.fpath[0]];
-//				else {
-//					var vr = t.source.o[t.fpath[0]].find(t.fpath[1]);
-//					if(vr) return (vr["value"] || vr["Значение"]);
-//				}
-//			}
-//		}
-//	};
-//
-//	/**
-//	 * @desc: 	создаёт элементы управления редактора и назначает им обработчики
-//	 */
-//	t.edit=function(){
-//		var ti;
-//		t.val = t.getValue();		//save current value
-//		if(t.source.tabular_section){
-//			t.cell.innerHTML = '<div class="ref_div23"><input type="text" class="dhx_combo_edit" style="height: 22px;"><div class="ref_field23">&nbsp;</div></div>';
-//		}else{
-//			t.cell.innerHTML = '<div class="ref_div21"><input type="text" class="dhx_combo_edit" style="height: 20px;"><div class="ref_field21">&nbsp;</div></div>';
-//		}
-//
-//		td = t.cell.firstChild;
-//		ti = td.childNodes[0];
-//		ti.value=t.val ? t.val.presentation : '';
-//		ti.onclick=$p.cancel_bubble;		//blocks onclick event
-//		ti.readOnly = true;
-//		ti.focus();
-//		ti.onkeydown=ti_keydown;
-//		td.childNodes[1].onclick=open_selection;
-//	};
-//
-//	/**
-//	 * @desc: 	вызывается при отключении редактора
-//	 */
-//	t.detach=function(){
-//		if(t.cell.firstChild && t.cell.firstChild.childNodes.length)
-//			t.setValue(t.cell.firstChild.childNodes[0].value);	//sets the new value
-//		return !$p.is_equal(t.val, t.getValue());				// compares the new and the old values
-//	}
-//}
-//eXcell_ref.prototype = eXcell_proto;
 window.eXcell_ref = eXcell_ocombo;
 
 
 /**
  * Конструктор комбобокса кешируемых ссылочных типов для грида
  */
-//function eXcell_refc(cell){
-//
-//	if (!cell) return;
-//
-//	var t = this,
-//		slist=function() {
-//			t.mgr = null;
-//			var fmd, rt, at, res = [{value:"1", text:"One"}];
-//
-//			if(t.source.slist)
-//				return t.source.slist.call(t);
-//
-//			else if(t.source.tabular_section){
-//				fmd = t.source.row._metadata.fields[t.source.col];
-//				t.mgr = _md.value_mgr(t.source.row, t.source.col, fmd.type);
-//
-//			}else if(t.fpath.length < 2){
-//				fmd = t.source.o._manager.metadata(t.fpath[0]);
-//				t.mgr = _md.value_mgr(t.source.o, t.fpath[0], fmd.type);
-//
-//			}else if(t.fpath[0] == "extra_fields" || t.fpath[0] == "params"){
-//				return _cch.properties.slist(t.fpath[1]);
-//
-//			} else{
-//				fmd = t.source.o._metadata["tabular_sections"][t.fpath[0]].fields[t.fpath[1]];
-//				t.mgr = _md.value_mgr(t.source.row, t.source.col, fmd.type);
-//			}
-//
-//			// если менеджер найден, получаем список у него
-//			if(t.mgr)
-//				res = t.mgr.get_option_list(t.val);
-//
-//			return res;
-//		};
-//
-//	t.cell = cell;
-//	t.grid = t.cell.parentNode.grid;
-//
-//	/**
-//	 * @desc: 	устанавливает текст в ячейке. например, this.setCValue("<input type='button' value='"+val+"'>",val);
-//	 */
-//	t.setValue=function(val){
-//		t.setCValue(val instanceof DataObj ? val.presentation : val);
-//	};
-//
-//	/**
-//	 * @desc: 	получает значение ячейки из табличной части или поля объекта или допполя допобъекта, а не из грида
-//	 */
-//	t.getValue=function(){
-//		if(t.source = t.grid.getUserData("", "source")){
-//			if(t.source.tabular_section){
-//				t.source.row = t.source.o[t.source.tabular_section].get(t.cell.parentNode.idd-1);
-//				t.source.col = t.source.fields[t.cell.cellIndex];
-//				t.source.cell = t;
-//				return t.source.row[t.source.col];
-//			}else{
-//				t.fpath = t.grid.getSelectedRowId().split("|");
-//				if(t.fpath.length < 2)
-//					return t.source.o[t.fpath[0]];
-//				else {
-//					var collection = t.source.o[t.fpath[0]],
-//						vr = collection.find ? collection.find(t.fpath[1]) : $p._find(collection, t.fpath[1]);
-//					if(vr)
-//						return (vr["value"] || vr["Значение"]);
-//				}
-//			}
-//		}
-//	};
-//
-//	/**
-//	 * @desc: 	создаёт элементы управления редактора и назначает им обработчики
-//	 */
-//	t.edit=function(){
-//
-//		if(t.combo) return;
-//
-//		t.val = t.getValue();		//save current value
-//		t.cell.innerHTML = "";
-//		t.combo = new dhtmlXCombo({
-//			parent: t.cell,
-//			items: slist()
-//		});
-//
-//		t.combo.DOMelem.style.border = "none";
-//		t.combo.DOMelem.style.height = "21px";
-//		t.combo.DOMelem.style.width = (t.cell.offsetWidth - 8) + "px";
-//		t.combo.DOMelem_input.style.fontSize = "11px";
-//		t.combo.DOMelem_input.style.margin = 0;
-//		t.combo.DOMlist.style.fontSize = "11px";
-//
-//		t.combo.setFocus();
-//		t.combo.setComboValue(t.val ? t.val.ref : "");
-//		t.combo.readonly(true, true);
-//		t.combo.openSelect();
-//		t.combo.attachEvent("onChange", function(){
-//			if(t.source.on_select){
-//				var sval = (t.mgr || $p.cat["property_values"]).get(t.combo.getSelectedValue(), false);
-//				setTimeout( function(){t.source.on_select(sval); }, 0 );
-//			}
-//		});
-//
-//	};
-//
-//	/**
-//	 * @desc: 	вызывается при отключении редактора
-//	 */
-//	t.detach=function(){
-//		if(t.combo)
-//			t.setValue(t.combo.getComboText());
-//		return !$p.is_equal(t.val, t.getValue());				// compares the new and the old values
-//	}
-//
-//}
-//eXcell_refc.prototype = eXcell_proto;
 window.eXcell_refc = eXcell_ocombo;
 
 /**
@@ -481,6 +215,136 @@ eXcell_dhxCalendar.prototype.edit = function() {
 	this.grid._grid_calendarA.draw = t;
 
 };
+
+/**
+ * fix ajax
+ */
+(function(){
+
+	function fix_auth(t, method, url, async){
+		if(url.indexOf("odata/standard.odata") != -1 || url.indexOf("/hs/rest") != -1){
+			var username, password;
+			if($p.ajax.authorized){
+				username = $p.ajax.username;
+				password = $p.ajax.password;
+			}else{
+				if($p.job_prm.guest_name){
+					username = $p.job_prm.guest_name;
+					password = $p.job_prm.guest_pwd;
+				}else{
+					username = $p.wsql.get_user_param("user_name");
+					password = $p.wsql.get_user_param("user_pwd");
+				}
+			}
+			t.open(method, url, async, username, password);
+			t.withCredentials = true;
+			t.setRequestHeader("Authorization", "Basic " +
+				btoa(unescape(encodeURIComponent(username + ":" + password))));
+		}else
+			t.open(method, url, async);
+	}
+
+	dhx4.ajax._call = function(method, url, postData, async, onLoad, longParams, headers) {
+
+		var t = (window.XMLHttpRequest && !dhx4.isIE ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+		var isQt = (navigator.userAgent.match(/AppleWebKit/) != null && navigator.userAgent.match(/Qt/) != null && navigator.userAgent.match(/Safari/) != null);
+
+		if (async == true) {
+			t.onreadystatechange = function() {
+				if ((t.readyState == 4) || (isQt == true && t.readyState == 3)) { // what for long response and status 404?
+					if (t.status != 200 || t.responseText == "")
+						if (!dhx4.callEvent("onAjaxError", [{xmlDoc:t, filePath:url, async:async}])) return;
+
+					window.setTimeout(function(){
+						if (typeof(onLoad) == "function") {
+							onLoad.apply(window, [{xmlDoc:t, filePath:url, async:async}]); // dhtmlx-compat, response.xmlDoc.responseXML/responseText
+						}
+						if (longParams != null) {
+							if (typeof(longParams.postData) != "undefined") {
+								dhx4.ajax.postLong(longParams.url, longParams.postData, onLoad);
+							} else {
+								dhx4.ajax.getLong(longParams.url, onLoad);
+							}
+						}
+						onLoad = null;
+						t = null;
+					},1);
+				}
+			}
+		}
+
+		if (method == "GET" && this.cache != true) {
+			url += (url.indexOf("?")>=0?"&":"?")+"dhxr"+new Date().getTime()+"=1";
+		}
+
+		// если обращение по rest или irest, добавляем авторизацию
+		fix_auth(t, method, url, async);
+
+		if (headers != null) {
+			for (var key in headers) t.setRequestHeader(key, headers[key]);
+		} else if (method == "POST" || method == "PUT" || method == "DELETE") {
+			t.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		} else if (method == "GET") {
+			postData = null;
+		}
+
+		t.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+
+		t.send(postData);
+
+		return {xmlDoc:t, filePath:url, async:async}; // dhtmlx-compat, response.xmlDoc.responseXML/responseText
+
+	};
+
+	dhtmlx.ajax.prototype.send = function(url,params,call){
+		var x=this.getXHR();
+		if (typeof call == "function")
+			call = [call];
+		//add extra params to the url
+		if (typeof params == "object"){
+			var t=[];
+			for (var a in params){
+				var value = params[a];
+				if (value === null || value === dhtmlx.undefined)
+					value = "";
+				t.push(a+"="+encodeURIComponent(value));// utf-8 escaping
+			}
+			params=t.join("&");
+		}
+		if (params && !this.post){
+			url=url+(url.indexOf("?")!=-1 ? "&" : "?")+params;
+			params=null;
+		}
+
+		//x.open(this.post?"POST":"GET",url,!this._sync);
+		fix_auth(x, this.post?"POST":"GET",url,!this._sync);
+
+		if (this.post)
+			x.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+
+		//async mode, define loading callback
+		//if (!this._sync){
+		var self=this;
+		x.onreadystatechange= function(){
+			if (!x.readyState || x.readyState == 4){
+				//dhtmlx.log_full_time("data_loading");	//log rendering time
+				if (call && self)
+					for (var i=0; i < call.length; i++)	//there can be multiple callbacks
+						if (call[i])
+							call[i].call((self.master||self),x.responseText,x.responseXML,x);
+				self.master=null;
+				call=self=null;	//anti-leak
+			}
+		};
+		//}
+
+		x.send(params||null);
+		return x; //return XHR, which can be used in case of sync. mode
+	}
+
+})();
+
+
 
 $p.iface.data_to_grid = function (data, attr){
 

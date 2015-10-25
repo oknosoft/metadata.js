@@ -1573,7 +1573,7 @@ function JobPrm(){
 	this.irest_url = function () {
 		var url = this.rest_path || "/a/zd/%1/odata/standard.odata/",
 			zone = $p.wsql.get_user_param("zone", "number");
-		url = url.replace("odata/standard.odata", "hs/rest")
+		url = url.replace("odata/standard.odata", "hs/rest");
 		if(zone)
 			return url.replace("%1", zone);
 		else

@@ -45,6 +45,34 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 
 	var dv = this.attachDataView(conf);
 
+	dv.__define({
+		/**
+		 * Фильтр, налагаемый на дерево
+		 */
+		filter: {
+			get: function () {
+
+			},
+			set: function (v) {
+				attr.filter = v;
+			}
+		},
+		requery: {
+			value: function () {
+				_rest.build_select(attr, mgr);
+				dv.clearAll();
+				dv.load(attr.url, "json", function(v){
+					if(v){
+
+					}
+				});
+			}
+		}
+	});
+
+	setTimeout(function () {
+		dv.requery();
+	}, 100);
 
 	return dv;
 

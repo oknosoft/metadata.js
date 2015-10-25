@@ -478,7 +478,12 @@ function Meta(req, patch) {
 			for(var c in patch[area]){
 				if(!m[area][c])
 					m[area][c] = {};
-				m[area][c]._mixin(patch[area][c]);
+				for(var f in patch[area][c]){
+					if(!m[area][c][f])
+						m[area][c][f] = patch[area][c][f];
+					else if(typeof m[area][c][f] == "object")
+						m[area][c][f]._mixin(patch[area][c][f]);
+				}
 			}
 		}
 	}
@@ -825,6 +830,8 @@ function Meta(req, patch) {
 			Posted: 'posted',
 			Code: 'id',
 			Parent_Key: 'parent',
+			Owner_Key: 'owner',
+			Owner:     'owner',
 			Ref_Key: 'ref',
 			"Ссылка": 'ref',
 			LineNumber: 'row'
@@ -846,6 +853,7 @@ function Meta(req, patch) {
 			id: 'Code',
 			ref: 'Ref_Key',
 			parent: 'Parent_Key',
+			owner: 'Owner_Key',
 			row: 'LineNumber'
 		};
 		if(syn1c[v])
