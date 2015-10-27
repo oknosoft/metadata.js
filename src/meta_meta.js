@@ -531,6 +531,12 @@ function Meta(req, patch) {
 		}else if(field_name=="is_folder"){
 			res.synonym = "Это группа";
 			res.type.types[0] = "boolean";
+		}else if(field_name=="lc_changed"){
+			res.synonym = "Изменено в 1С";
+			res.tooltip = "Время записи в 1С";
+			res.type.types[0] = "number";
+			res.type.digits = 15;
+			res.type.fraction_figits = 0;
 		}else if(field_name)
 			res = m[np[0]][np[1]].fields[field_name];
 		else

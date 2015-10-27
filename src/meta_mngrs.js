@@ -25,7 +25,7 @@ function DataManager(class_name){
 
 	var _metadata = _md.get(class_name),
 		_cachable,
-		_async_write = false,
+		_async_write = _metadata.async_write,
 		_events = {
 			after_create: [],
 			after_load: [],
@@ -53,7 +53,6 @@ function DataManager(class_name){
 	// Если в метаданных явно указано правило кеширования, используем его
 	if(!$p.job_prm.offline && _metadata.hasOwnProperty("cachable"))
 		_cachable = _metadata.cachable;
-
 
 	this.__define({
 
@@ -584,6 +583,9 @@ DataManager.prototype.printing_plates = function(){
 
 	if($p.job_prm.offline)
 		return Promise.resolve({});
+
+	if(t.metadata().printing_plates)
+		t._printing_plates = t.metadata().printing_plates;
 
 	if(t._printing_plates)
 		return Promise.resolve(t._printing_plates);

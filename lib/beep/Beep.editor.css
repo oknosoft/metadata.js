@@ -1,0 +1,148 @@
+@charset "utf-8";
+@import url( http://fonts.googleapis.com/css?family=Cousine );
+
+
+
+
+#editor-open {
+	
+	position: absolute;
+	top:   2rem;
+	right: 2rem;
+}
+
+
+
+
+#editor-container {
+
+	position: absolute;
+	z-index: 30;
+	top:   0;
+/*	right:  -90vw;*/
+	width:   80vw;
+	height: 100vh;
+	box-shadow: 0 0 1rem rgba( 0, 0, 0, 0.3 );
+	text-align: left;
+	overflow: hidden;
+/*	transition-property: right, opacity;
+	transition-duration: 0.2s;
+	transition-timing-function: ease-in;*/
+	display: none;
+	right: 0;
+}
+#editor-container.show {
+
+	display: table;
+/*	right:  0;
+	transition-property: right;
+	transition-duration: 0.2s;
+	transition-timing-function: ease-out;*/
+}
+#editor-container > div {
+
+	display: table-row;
+	position: relative;
+}
+#editor-container > div > div {
+
+	display: table-cell;
+	position: relative;
+}
+
+
+
+
+
+#editor-menu {
+
+	width: 50vw;
+	height: 8rem;
+	background-color: #DDD;	
+}
+#editor-menu > div {
+
+	width: 100%;
+	height: 8rem;
+	padding: 1rem 0 0 2rem;
+	font-size:   2.0rem;
+	line-height: 6.0rem;
+	text-align: left;
+	font-family: "Cousine", "Courier New" "Courier", monospace;
+	color: #000;
+}
+#editor-close {
+
+	position: absolute;
+	top:   2rem;
+	right: 2rem;
+}
+#editor-eval {
+
+	position: absolute;
+	top:   2rem;
+	right: 7rem;
+}
+
+
+
+
+#editor-content {
+
+	margin: 0;
+	padding: 0;
+}
+#editor {
+
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	position: absolute;
+	margin: 0;
+	width:  100%;
+	height: 100%;
+	outline: none;
+	border:  none;
+	border-radius: 0;
+	background-color: #EEE;
+	padding: 2rem;
+	color: #222;
+	font-family: Cousine, "Courier New" Courier, monospace;
+	font-size:   1.6vw;
+	line-height: 2.0vw;
+	-moz-tab-size: 4;
+	tab-size: 4;
+	white-space: pre;
+	overflow: auto;
+	overflow: auto;
+}
+#editor:focus {
+
+	background-color: #FFF;
+}
+#editor .beep-commented {
+
+	color: #999;
+}
+
+
+
+#eval-status {
+
+	height: 1rem;
+	background-color: #666;
+}
+#eval-status.good {
+
+	background-color: #0C0;
+}
+#eval-status.bad {
+
+	background-color: #F30;
+}
+#eval-status.ugly {
+
+	background-color: #FC0;
+}
+
+
+

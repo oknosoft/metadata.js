@@ -1405,6 +1405,7 @@ function Modifiers(){
 		return tres;
 	};
 };
+$p.Modifiers = Modifiers;
 
 /**
  * ### Генераторы и обработчики событий
@@ -1760,8 +1761,6 @@ $p.wsql = WSQL;
 			{p: "user_pwd",			v: "", t:"string"},
 			{p: "browser_uid",		v: $p.generate_guid(), t:"string"},
 			{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t:"number"},
-			{p: "zone_unf",         v: 1, t:"number"},
-			{p: "phantom_url",		v: "/p/", t:"string"},
 			{p: "enable_save_pwd",	v: "",	t:"boolean"},
 			{p: "reset_local_data",	v: "",	t:"boolean"},
 			{p: "autologin",		v: "",	t:"boolean"},
@@ -1776,7 +1775,6 @@ $p.wsql = WSQL;
 		// подмешиваем к базовым параметрам настройки приложения
 		if($p.job_prm.additionsl_params)
 			nesessery_params = nesessery_params.concat($p.job_prm.additionsl_params);
-
 
 		// если зона не указана, устанавливаем "1"
 		if(!localStorage.getItem("zone"))

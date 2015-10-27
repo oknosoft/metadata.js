@@ -300,7 +300,7 @@ DataObj.prototype.save = function (post, operational) {
 
 	var saver;
 
-	// Если процедуры перед записью завершились неудачно - не продолжаем
+	// Если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
 	if(this._manager.handle_event(this, "before_save") === false)
 		return Promise.resolve(this);
 
@@ -312,8 +312,10 @@ DataObj.prototype.save = function (post, operational) {
 		saver = function (obj) {
 			return Promise.resolve(obj);
 		};
-	else
+	else{
 		saver = $p.job_prm.irest_enabled ? _rest.save_irest : _rest.save_rest;
+	}
+
 
 	// Сохраняем во внешней базе
 	return saver(this, {
