@@ -62,7 +62,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	function frm_create(){
 
 		// создаём и настраиваем окно формы
-		if(pwnd instanceof dhtmlXLayoutCell) {
+		if(pwnd instanceof dhtmlXCellObject) {
 			if(typeof pwnd.close == "function")
 				pwnd.close();
 			wnd = pwnd;
@@ -74,9 +74,10 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				}
 				frm_unload();
 			};
-			setTimeout(function () {
-				wnd.showHeader();
-			});
+			if(!attr.hide_header)
+				setTimeout(function () {
+					wnd.showHeader();
+				});
 		}else{
 			wnd = $p.iface.w.createWindow('wnd_' + _mgr.class_name.replace(".", "_") + '_select', 0, 0, 900, 600);
 			wnd.centerOnScreen();

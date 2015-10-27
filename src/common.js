@@ -1766,7 +1766,7 @@ $p.wsql = WSQL;
 			{p: "autologin",		v: "",	t:"boolean"},
 			{p: "cache_md_date",	v: 0,	t:"number"},
 			{p: "cache_cat_date",	v: 0,	t:"number"},
-			{p: "files_date",       v: 201506140000,	t:"number"},
+			{p: "files_date",       v: 201510220000, t:"number"},
 			{p: "margin",			v: 60,	t:"number"},
 			{p: "discount",			v: 15,	t:"number"},
 			{p: "offline",			v: "" || $p.job_prm.offline, t:"boolean"}
@@ -1784,7 +1784,6 @@ $p.wsql = WSQL;
 			zone = $p.fix_number($p.job_prm.url_prm.zone, true);
 		if(zone !== undefined)
 			wsql.set_user_param("zone", zone);
-
 
 		// дополняем хранилище недостающими параметрами
 		nesessery_params.forEach(function(o){
