@@ -392,7 +392,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 				return;
 			mf = t.metadata();
 
-			if(mf.form && mf.form.obj){
+			if(mf.form && mf.form.obj && mf.form.obj.head){
 				oxml = mf.form.obj.head;
 
 			}else{
