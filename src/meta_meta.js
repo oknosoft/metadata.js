@@ -947,7 +947,7 @@ _cat.load_soap_to_grid = function(attr, grid, callback){
 
 	var mgr = _md.mgr_by_class_name(attr.class_name);
 
-	if(!mgr.cachable && ($p.job_prm.rest || attr.rest))
+	if(!mgr.cachable && ($p.job_prm.rest || $p.job_prm.irest_enabled || attr.rest))
 		mgr.rest_selection(attr)
 			.then(cb_callBack)
 			.catch(function (error) {

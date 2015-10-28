@@ -274,7 +274,7 @@ DataObj.prototype.load = function(){
 			tObj.number_doc = "000000000";
 		return Promise.resolve(tObj);
 
-	}else if(!tObj._manager.cachable && $p.job_prm.rest)
+	}else if(!tObj._manager.cachable && ($p.job_prm.rest || $p.job_prm.irest_enabled))
 		return _rest.load_obj(tObj);
 
 	else

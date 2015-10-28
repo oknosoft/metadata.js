@@ -287,7 +287,7 @@ DataManager.prototype.sync_grid = function(grid, attr){
 
 	if(this.cachable)
 		;
-	else if($p.job_prm.rest || attr.rest){
+	else if($p.job_prm.rest || $p.job_prm.irest_enabled || attr.rest){
 
 		if(attr.action == "get_tree")
 			res = this.rest_tree();

@@ -1707,7 +1707,7 @@ $p.wsql = WSQL;
 			str_prm = "";
 
 		if(typeof localStorage !== "undefined")
-			localStorage.setItem(prm_name, str_prm);
+			localStorage.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
 		user_params[prm_name] = prm_value;
 
 		if(callback)
@@ -1724,7 +1724,7 @@ $p.wsql = WSQL;
 	wsql.get_user_param = function(prm_name, type){
 
 		if(!user_params.hasOwnProperty(prm_name) && (typeof localStorage !== "undefined"))
-			user_params[prm_name] = fetch_type(localStorage.getItem(prm_name), type);
+			user_params[prm_name] = fetch_type(localStorage.getItem($p.job_prm.local_storage_prefix+prm_name), type);
 
 		return user_params[prm_name];
 	};
@@ -1777,7 +1777,7 @@ $p.wsql = WSQL;
 			nesessery_params = nesessery_params.concat($p.job_prm.additionsl_params);
 
 		// если зона не указана, устанавливаем "1"
-		if(!localStorage.getItem("zone"))
+		if(!localStorage.getItem($p.job_prm.local_storage_prefix+"zone"))
 			zone = $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1;
 		// если зона указана в url, используем её
 		if($p.job_prm.url_prm.hasOwnProperty("zone"))
@@ -1818,6 +1818,9 @@ $p.wsql = WSQL;
 				callback([]);
 		}else
 			callback([]);
+
+		if(!$p.job_prm.local_storage_prefix)
+			$p.job_prm.local_storage_prefix = "";
 
 	};
 

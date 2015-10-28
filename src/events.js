@@ -349,6 +349,15 @@ function only_in_browser(w){
 
 				$p.wsql.init_params(function(){
 
+					eve.stepper = {
+						step: 0,
+						count_all: 0,
+						cat_date: 0,
+						step_size: 57,
+						files: 0,
+						cat_ini_date: $p.wsql.get_user_param("cache_cat_date", "number")  || 0
+					};
+
 					eve.set_offline(!navigator.onLine);
 
 					eve.update_files_version();
@@ -463,9 +472,9 @@ function only_in_browser(w){
 					}
 
 				});
-			}, 100);
+			}, 20);
 
-		}, 10);
+		}, 20);
 
 		function do_reload(){
 			if(!$p.ajax.authorized){
@@ -523,7 +532,6 @@ function only_in_browser(w){
 	 * @for AppEvents
 	 */
 	w.addEventListener("hashchange", $p.iface.hash_route);
-
 
 }
 if(typeof window !== "undefined")
@@ -655,14 +663,6 @@ $p.eve.steps = {
 	save_data_wsql: 7       // кеширование данных из озу в локальную датабазу
 };
 
-$p.eve.stepper = {
-	step: 0,
-	count_all: 0,
-	cat_date: 0,
-	step_size: 57,
-	files: 0,
-	cat_ini_date: $p.wsql.get_user_param("cache_cat_date", "number")  || 0
-};
 
 /**
  * Регламентные задания синхронизапции каждые 3 минуты
@@ -749,10 +749,13 @@ $p.eve.pop = function () {
 			}, 10000);
 	}
 
-	if($p.job_prm.offline)
+	if($p.job_prm.offline || !$p.job_prm.irest_enabled)
 		return Promise.resolve(false);
-	else if($p.job_prm.rest)
+
+	else {
+		// TODO: реализовать синхронизацию на irest
 		return Promise.resolve(false);
+	}
 
 	// за такт pop делаем не более 2 запросов к 1С
 	return get_cachable_portion()
@@ -926,7 +929,7 @@ $p.eve.log_in = function(onstep){
 			if($p.job_prm.offline)
 				return res;
 
-			else if($p.job_prm.rest){
+			else if($p.job_prm.rest || $p.job_prm.irest_enabled){
 
 				// TODO: реализовать метод для получения списка ролей пользователя
 

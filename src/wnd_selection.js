@@ -108,11 +108,16 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			this.attachEvent("onclick", toolbar_click);
 
 			// текстовое поле фильтра по подстроке
-			wnd.elmnts.filter = new $p.iface.Toolbar_filter({
+			var tbattr = {
 				manager: _mgr,
 				toolbar: this,
 				onchange: input_filter_change
-			});
+			};
+			if(attr.date_from)
+				tbattr.date_from = attr.date_from;
+			if(attr.date_till)
+				tbattr.date_till = attr.date_till;
+			wnd.elmnts.filter = new $p.iface.Toolbar_filter(tbattr);
 
 			// Если нет полных прав - разрешен только просмотр и выбор элементов
 			// TODO: учитывать права для каждой роли на каждый объект
@@ -134,11 +139,16 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			// добавляем команды печати
 			if(_mgr instanceof CatManager || _mgr instanceof DocManager)
 				_mgr.printing_plates().then(function (pp) {
-					for(var pid in pp)
+					var added;
+					for(var pid in pp){
 						wnd.elmnts.toolbar.addListOption("bs_print", pid, "~", "button", pp[pid]);
+						added = true;
+					}
+					if(!added)
+						wnd.elmnts.toolbar.hideItem("bs_print");
 				});
 			else
-				this.disableItem("bs_print");
+				wnd.elmnts.toolbar.hideItem("bs_print");
 
 			//
 			create_tree_and_grid();
@@ -152,22 +162,43 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 */
 	function body_keydown(evt){
 
-		if(wnd && (evt.keyCode == 113 || evt.keyCode == 115)){ //"F2" или "F4"
-
+		/**
+		 * Проверяет, нет ли других модальных форм
+		 */
+		function check_exit(){
 			var do_exit;
 			// если есть внешнее модальное, ничего обрабатывать не надо
 			$p.iface.w.forEachWindow(function (w) {
 				if(w.isModal() && w != wnd)
 					do_exit = true;
 			});
-			if(do_exit)
-				return;
+			return do_exit;
+		}
 
-			setTimeout(function(){
-				wnd.elmnts.filter.input_filter.focus();
-			}, 0);
-			return $p.cancel_bubble(evt);
+		if(wnd){
+			if (evt.keyCode == 113 || evt.keyCode == 115){ //{F2} или {F4}
+				if(!check_exit()){
+					setTimeout(function(){
+						wnd.elmnts.filter.input_filter.focus();
+					});
+					return $p.cancel_bubble(evt);
+				}
 
+			} else if(evt.shiftKey && evt.keyCode == 116){ // requery по {Shift+F5}
+				if(!check_exit()){
+					setTimeout(function(){
+						wnd.elmnts.grid.reload();
+					});
+					if(evt.preventDefault)
+						evt.preventDefault();
+					return $p.cancel_bubble(evt);
+				}
+
+			} else if(evt.keyCode == 27){ // закрытие по {ESC}
+				if(!check_exit()){
+
+				}
+			}
 		}
 	}
 
@@ -274,6 +305,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 					grid.setSizes();
 					grid_inited = true;
 					wnd.elmnts.filter.input_filter.focus();
+
+					if(attr.on_grid_inited)
+						attr.on_grid_inited();
 				}
 				if (a_direction && grid_inited)
 					grid.setSortImgState(true, s_col, a_direction);

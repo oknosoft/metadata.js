@@ -28,6 +28,9 @@ $p.settings = function (prm, modifiers) {
 	// для транспорта используем rest, а не сервис http
 	prm.rest = true;
 
+	// разделитель для localStorage
+	prm.local_storage_prefix = "acc_";
+
 	// расположение rest-сервиса accounting
 	prm.rest_path = "/a/ea/%1/odata/standard.odata/";
 

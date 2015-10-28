@@ -245,7 +245,8 @@ function Rest(){
 
 
 		// для простых запросов используем стандартный odata 1c
-		if(mgr.rest_name.indexOf("Module_") == -1 &&
+		if($p.job_prm.rest &&
+			mgr.rest_name.indexOf("Module_") == -1 &&
 			mgr.rest_name.indexOf("DataProcessor_") == -1 &&
 			mgr.rest_name.indexOf("Report_") == -1 &&
 			select_str.indexOf(" like ") == -1 &&
@@ -285,7 +286,7 @@ function Rest(){
 	this.load_obj = function (tObj) {
 
 		var attr = {};
-		$p.ajax.default_attr(attr, $p.job_prm.rest_url());
+		$p.ajax.default_attr(attr, $p.job_prm.rest ? $p.job_prm.rest_url() : $p.job_prm.irest_url());
 		attr.url += tObj._manager.rest_name + "(guid'" + tObj.ref + "')?$format=json";
 
 		return $p.ajax.get_ex(attr.url, attr)
@@ -478,7 +479,7 @@ DataManager.prototype.rest_tree = function (attr) {
 		cmd = t.metadata(),
 		flds = [], ares = [], o, ro, syn, mf;
 
-	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
+	$p.ajax.default_attr(attr, $p.job_prm.rest ? $p.job_prm.rest_url() : $p.job_prm.irest_url());
 	attr.url += this.rest_name + "?allowedOnly=true&$format=json&$top=1000&$select=Ref_Key,DeletionMark,Parent_Key,Description&$filter=IsFolder eq true";
 
 	return $p.ajax.get_ex(attr.url, attr)
@@ -580,7 +581,7 @@ DataManager.prototype.rest_selection = function (attr) {
 
 	}
 
-	$p.ajax.default_attr(attr, $p.job_prm.rest_url());
+	$p.ajax.default_attr(attr, $p.job_prm.rest ? $p.job_prm.rest_url() : $p.job_prm.irest_url());
 	attr.url += this.rest_name + "?allowedOnly=true&$format=json&$top=1000&" + select;
 
 	if(_md.get(t.class_name, "date")){
