@@ -240,7 +240,8 @@ function Rest(){
 			else
 				build_selection(attr.selection);
 
-			select_str += f;
+			if(f)
+				select_str += f;
 		}
 
 

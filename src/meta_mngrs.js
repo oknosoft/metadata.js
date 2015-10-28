@@ -309,7 +309,7 @@ DataManager.prototype.sync_grid = function(grid, attr){
  * @return {Promise.<Array>}
  */
 DataManager.prototype.get_option_list = function(val, selection){
-	var l = [], count = 0, input_by_string, text, sel;
+	var t = this, l = [], count = 0, input_by_string, text, sel;
 
 	function check(v){
 		if($p.is_equal(v.value, val))
@@ -321,7 +321,7 @@ DataManager.prototype.get_option_list = function(val, selection){
 	// TODO: учесть "поля поиска по строке"
 
 	// поиск по строке
-	if(selection.presentation && (input_by_string = this.metadata().input_by_string)){
+	if(selection.presentation && (input_by_string = t.metadata().input_by_string)){
 		text = selection.presentation.like;
 		delete selection.presentation;
 		selection.or = [];
@@ -332,8 +332,8 @@ DataManager.prototype.get_option_list = function(val, selection){
 		})
 	}
 
-	if(this.cachable || (selection && selection._local)){
-		this.find_rows(selection, function (v) {
+	if(t.cachable || (selection && selection._local)){
+		t.find_rows(selection, function (v) {
 			l.push(check({text: v.presentation, value: v.ref}));
 		});
 		return Promise.resolve(l);
@@ -345,18 +345,18 @@ DataManager.prototype.get_option_list = function(val, selection){
 
 
 
-		if(this instanceof DocManager)
+		if(t instanceof DocManager)
 			attr.fields = ["ref", "date", "number_doc"];
-		else if(this.metadata().main_presentation_name)
+		else if(t.metadata().main_presentation_name)
 			attr.fields = ["ref", "name"];
 		else
 			attr.fields = ["ref", "id"];
 
-		return _rest.load_array(attr, this)
+		return _rest.load_array(attr, t)
 			.then(function (data) {
 				data.forEach(function (v) {
 					l.push(check({
-						text: this instanceof DocManager ? (v.number_doc + " от " + $p.dateFormat(v.date, $p.dateFormat.masks.ru)) : (v.name || v.id),
+						text: t instanceof DocManager ? (v.number_doc + " от " + $p.dateFormat(v.date, $p.dateFormat.masks.ru)) : (v.name || v.id),
 						value: v.ref}));
 				});
 				return l;
@@ -385,7 +385,7 @@ DataManager.prototype.tabular_captions = function (tabular, source) {
  * @return {String} - XML строка в терминах dhtml.PropertyGrid
  */
 DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
-	var i, j, mf, v, ft, txt, t = this, row_id, gd = '<rows>',
+	var t = this, i, j, mf, v, ft, txt, row_id, gd = '<rows>',
 
 		default_oxml = function () {
 			if(oxml)
@@ -558,19 +558,6 @@ DataManager.prototype.print = function(ref, model, wnd){
 			console.log(err);
 		});
 	setTimeout(tune_wnd_print, 3000);
-
-	//$p.ajax.get_and_show_blob($p.job_prm.hs_url(), {
-	//	action: "print",
-	//	class_name: this.class_name,
-	//	ref: $p.fix_guid(ref),
-	//	model: model,
-	//	browser_uid: $p.wsql.get_user_param("browser_uid")
-	//})
-	//	.then(tune_wnd_print)
-	//	.catch(function (err) {
-	//		console.log(err);
-	//	});
-
 
 };
 

@@ -473,8 +473,13 @@ $p.ajax = new (
 						username = auth.username;
 						password = auth.password;
 					}else{
-						username = $p.ajax.username;
-						password = $p.ajax.password;
+						if($p.ajax.username){
+							username = $p.ajax.username;
+							password = $p.ajax.password;
+						}else{
+							username = $p.wsql.get_user_param("user_name");
+							password = $p.wsql.get_user_param("user_pwd");
+						}
 					}
 					req.open(method, url, true, username, password);
 					req.withCredentials = true;
