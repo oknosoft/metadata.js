@@ -55,6 +55,13 @@ $p.iface.oninit = function() {
 
 	// табы
 	var tabs = $p.iface.tabs = layout.cells("b").attachTabbar({
+		arrows_mode: "auto",
+		offsets: {
+			top: 0,
+			right: 0,
+			bottom: 0,
+			left: 0
+		},
 		tabs: [
 			{id: "content", text: "Описание", active: true},
 			{id: "js", text: "JavaScript"}

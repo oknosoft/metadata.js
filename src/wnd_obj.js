@@ -118,7 +118,15 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		/**
 		 *	Закладки: шапка и табличные части
 		 */
-		wnd.elmnts.frm_tabs = wnd.attachTabbar();
+		wnd.elmnts.frm_tabs = wnd.attachTabbar({
+			arrows_mode: "auto",
+			offsets: {
+				top: 0,
+				right: 0,
+				bottom: 0,
+				left: 0
+			}
+		});
 		wnd.elmnts.frm_tabs.addTab('tab_header','&nbsp;Реквизиты&nbsp;', null, null, true);
 		wnd.elmnts.tabs = {'tab_header': wnd.elmnts.frm_tabs.cells('tab_header')};
 		if(!o.is_folder){
