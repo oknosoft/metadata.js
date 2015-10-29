@@ -1652,9 +1652,21 @@ function LogManager(){
 
 	/**
 	 * Добавляет запись в журнал
-	 * @param msg {String|Object} - текст события
+	 * @param msg {String|Object|Error} - текст + класс события
+	 * @param [msg.obj] {Object} - дополнительный json объект
 	 */
 	this.record = function(msg){
+
+		if(msg instanceof Error){
+			if(console)
+				console.log(msg);
+			var err = msg;
+			msg = {
+				class: "error",
+				note: err.toString()
+			}
+		}
+
 		if(typeof msg != "object")
 			msg = {note: msg};
 		msg.date = Date.now() + $p.eve.time_diff();
@@ -1668,9 +1680,9 @@ function LogManager(){
 		if(!msg.class)
 			msg.class = "note";
 
+
 		alasql("insert into `ireg_$log` (`date`, `sequence`, `class`, `note`, `obj`) values (?, ?, ?, ?, ?)",
 			[msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
-
 
 	};
 

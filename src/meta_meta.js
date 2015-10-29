@@ -918,6 +918,17 @@ function Meta(req, patch) {
 $p.Meta = Meta;
 
 /**
+ * Запись журнала регистрации
+ * @param err
+ */
+$p.record_log = function (err) {
+	if($p.ireg.$log)
+		$p.ireg.$log.record(err);
+	else
+		console.log(err);
+};
+
+/**
  * Загрузка данных в grid
  * @method load_soap_to_grid
  * @for Catalogs

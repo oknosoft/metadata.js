@@ -19,7 +19,7 @@
  * @static
  */
 function MetaEngine() {
-	this.version = "0.9.198";
+	this.version = "0.9.199";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
@@ -29,7 +29,7 @@ function MetaEngine() {
  * Для совместимости со старыми модулями, публикуем $p глобально
  * Кроме этой переменной, metadata.js ничего не экспортирует
  */
-var $p = new MetaEngine();
+$p = new MetaEngine();
 
 /**
  * Обёртка для подключения через AMD или CommonJS
@@ -42,8 +42,6 @@ if (typeof define === 'function' && define.amd) {
 }
 
 if(typeof window !== "undefined"){
-
-	window.$p = $p;
 
 	/**
 	 * Загружает скрипты и стили синхронно и асинхронно
@@ -128,7 +126,7 @@ if(typeof window !== "undefined"){
 
 	})(window);
 
-}else{
+}else if(typeof WorkerGlobalScope === "undefined"){
 
 	// локальное хранилище внутри node.js
 	if(typeof localStorage === "undefined")
@@ -1519,7 +1517,6 @@ function JobPrm(){
 		return parse(location.search)._mixin(parse(location.hash));
 	};
 
-
 	/**
 	 * Указывает, проверять ли совместимость браузера при запуске программы
 	 * @property check_browser_compatibility
@@ -1598,20 +1595,10 @@ function JobPrm(){
  * @class WSQL
  * @static
  */
-function WSQL(){};
+function WSQL(){
 
-/**
- * Интерфейс локальной базы данных
- * @property wsql
- * @for MetaEngine
- * @type WSQL
- * @static
- */
-$p.wsql = WSQL;
-
-(function (wsql) {
-
-	var user_params = {},
+	var wsql = this,
+		user_params = {},
 		inited = 0;
 
 	function fetch_type(prm, type){
@@ -1638,7 +1625,6 @@ $p.wsql = WSQL;
 	/**
 	 * Выполняет sql запрос к локальной базе данных
 	 * @method exec
-	 * @for WSQL
 	 * @param sql {String} - текст запроса
 	 * @param prm {Array} - массив с параметрами для передачи в запрос
 	 * @param [callback] {Function} - функция обратного вызова. если не укзана, запрос выполняется "как бы синхронно"
@@ -1697,7 +1683,6 @@ $p.wsql = WSQL;
 	/**
 	 * Устанавливает параметр в user_params и базе данных
 	 * @method set_user_param
-	 * @for WSQL
 	 * @param prm_name {string} - имя параметра
 	 * @param prm_value {string|number|object|boolean} - значение
 	 * @param [callback] {Function} - вызывается после установки параметра
@@ -1793,7 +1778,7 @@ $p.wsql = WSQL;
 		// дополняем хранилище недостающими параметрами
 		nesessery_params.forEach(function(o){
 			if(wsql.get_user_param(o.p, o.t) == undefined ||
-					(!wsql.get_user_param(o.p, o.t) && (o.p.indexOf("url") != -1)))
+				(!wsql.get_user_param(o.p, o.t) && (o.p.indexOf("url") != -1)))
 				wsql.set_user_param(o.p, o.v);
 		});
 
@@ -1865,27 +1850,156 @@ $p.wsql = WSQL;
 		alasql("SHOW TABLES", [], tmames_finded);
 	};
 
-	wsql.dump = function(callback){
-		var cstep = 0, tmames = [], create = "", insert = "";
+	/**
+	 * Формирует архив полной выгрузки базы для сохранения в файловой системе клиента
+	 * @method backup_database
+	 * @param [do_zip] {Boolean} - указывает на необходимость архивировать стоки таблиц в озу перед записью файла
+	 */
+	wsql.backup_database = function(do_zip){
 
-		function tmames_finded(data){
-			data.forEach(function (tname) {
-				create += alasql("show create table " + tname["tableid"]) + ";\n";
-			});
+		// получаем строку create_tables
 
-			console.log(create);
-			setTimeout(callback, 10);
-		}
+		// получаем строки для каждой таблицы
 
-		$p.wsql.exec("SHOW TABLES", [], tmames_finded);
+		// складываем все части в файл
 	};
 
 	/**
-	 * Сохраняет снапшот объекта данных в indexedDB для последующей отправки на сервер
-	 * @param obj {DataObj}
+	 * Восстанавливает базу из архивной копии
+	 * @method restore_database
 	 */
-	wsql.idb_snapshot = function (obj) {
+	wsql.restore_database = function(){
 
+	};
+
+	/**
+	 * Подключается к indexedDB
+	 * @method idx_connect
+	 * @param db_name {String} - имя базы
+	 * @param store_name {String} - имя хранилища в базе
+	 * @return {Promise.<IDBDatabase>}
+	 */
+	wsql.idx_connect = function (db_name, store_name) {
+		return new Promise(function(resolve, reject){
+			var request = indexedDB.open(db_name, 1);
+			request.onerror = function(err){
+				reject(err);
+			};
+			request.onsuccess = function(){
+				// При успешном открытии вызвали коллбэк передав ему объект БД
+				resolve(request.result);
+			};
+			request.onupgradeneeded = function(e){
+				// Если БД еще не существует, то создаем хранилище объектов.
+				e.currentTarget.result.createObjectStore(store_name, { keyPath: "ref" });
+				return wsql.idx_connect(db_name, store_name);
+			}
+		});
+	};
+
+	/**
+	 * Сохраняет объект в indexedDB
+	 * @method idx_save
+	 * @param obj {DataObj|Object}
+	 * @param [db] {IDBDatabase}
+	 * @param [store_name] {String} - имя хранилища в базе
+	 * @return {Promise}
+	 */
+	wsql.idx_save = function (obj, db, store_name) {
+
+		return new Promise(function(resolve, reject){
+
+			function _save(db){
+				var request = db.transaction([store_name], "readwrite")
+					.objectStore(store_name)
+					.put(obj instanceof DataObj ? obj._obj : obj);
+				request.onerror = function(err){
+					reject(err);
+				};
+				request.onsuccess = function(){
+					resolve(request.result);
+				}
+			}
+
+			if(!store_name && obj._manager)
+				store_name = obj._manager.table_name;
+
+			if(db)
+				_save(db);
+			else
+				wsql.idx_connect(wsql.idx_name || $p.job_prm.local_storage_prefix || 'md', store_name)
+					.then(_save);
+
+		});
+	};
+
+	/**
+	 * Получает объект из indexedDB по ключу
+	 * @method idx_get
+	 * @param ref {String} - ключ
+	 * @param [db] {IDBDatabase}
+	 * @param store_name {String} - имя хранилища в базе
+	 * @return {Promise}
+	 */
+	wsql.idx_get = function (ref, db, store_name) {
+
+		return new Promise(function(resolve, reject){
+
+			function _get(db){
+				var request = db.transaction([store_name], "readonly")
+					.objectStore(store_name)
+					.get(ref);
+				request.onerror = function(err){
+					reject(err);
+				};
+				request.onsuccess = function(){
+					resolve(request.result);
+				}
+			}
+
+			if(db)
+				_get(db);
+			else
+				wsql.idx_connect(wsql.idx_name || $p.job_prm.local_storage_prefix || 'md', store_name)
+					.then(_get);
+
+		});
+	};
+
+	/**
+	 * Сохраняет объект в indexedDB
+	 * @method idx_delete
+	 * @param obj {DataObj|Object|String} - объект или идентификатор
+	 * @param [db] {IDBDatabase}
+	 * @param [store_name] {String} - имя хранилища в базе
+	 * @return {Promise}
+	 */
+	wsql.idx_delete = function (obj, db, store_name) {
+
+		return new Promise(function(resolve, reject){
+
+			function _delete(db){
+				var request = db.transaction([store_name], "readwrite")
+					.objectStore(store_name)
+					.delete(obj instanceof DataObj ? obj.ref : obj);
+				request.onerror = function(err){
+					reject(err);
+				};
+				request.onsuccess = function(){
+					resolve(request.result);
+				}
+			}
+
+			if(!store_name && obj._manager)
+				store_name = obj._manager.table_name;
+
+			if(db)
+				_delete(db);
+			else
+				wsql.idx_connect(wsql.idx_name || $p.job_prm.local_storage_prefix || 'md', store_name)
+					.then(_delete);
+
+		});
 	};
 
 	wsql.toString = function(){return "JavaScript SQL engine"};
@@ -1894,31 +2008,16 @@ $p.wsql = WSQL;
 
 		wsql.aladb = new alasql.Database('md');
 
-		//wsql.promise('CREATE INDEXEDDB DATABASE IF NOT EXISTS ixmd; ATTACH INDEXEDDB DATABASE ixmd;')
-		//	.then(function (data) {
-		//		return wsql.promise('CREATE TABLE IF NOT EXISTS ixmd.changes  \
-		//			(   ref CHAR NOT NULL,  \
-		//			lc_changed INT NOT NULL,\
-		//			data_version CHAR,      \
-		//			class_name CHAR,        \
-		//			obj json,               \
-		//			PRIMARY KEY (ref, lc_changed))');
-		//	})
-		//	.then(function (data) {
-		//		return wsql.promise('INSERT INTO ixmd.changes (ref, lc_changed) VALUES ("ref", ?)', [Date.now()]);
-		//	})
-		//	.then(function (data) {
-		//		return wsql.promise('select * from ixmd.changes');
-		//	})
-		//	.then(function (data) {
-		//		console.log(data);
-		//	})
-		//	.catch(function (err) {
-		//		console.log(err);
-		//	});
-
 	} else
 		inited = 1000;
+};
 
-})($p.wsql);
+/**
+ * Экземпляр интерфейса локальной базы данных
+ * @property wsql
+ * @for MetaEngine
+ * @type WSQL
+ * @static
+ */
+$p.wsql = new WSQL();
 

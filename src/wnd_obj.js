@@ -40,7 +40,10 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 					tObj = null;
 					frm_create();
 				});
-		else
+		else if(o.is_new() && !o.empty()){
+			o.load()
+				.then(frm_create);
+		}else
 			frm_create();
 	}else{
 		pwnd.progressOn();

@@ -62,18 +62,32 @@ function Rest(){
 
 		if(mgr instanceof DocManager){
 			if(rdata.hasOwnProperty("Number"))
-				o.number_doc = rdata.Number;
+				o.number_doc = rdata.Number || rdata.number_doc;
+			else if(rdata.hasOwnProperty("number_doc"))
+				o.number_doc = rdata.number_doc;
 			if(rdata.hasOwnProperty("Date"))
 				o.date = rdata.Date;
+			else if(rdata.hasOwnProperty("date"))
+				o.date = rdata.date;
 			if(rdata.hasOwnProperty("Posted"))
 				o.posted = rdata.Posted;
+			else if(rdata.hasOwnProperty("posted"))
+				o.posted = rdata.posted;
 
 		} else {
-			if(mgr.metadata().main_presentation_name && rdata.hasOwnProperty("Description"))
-				o.name = rdata.Description;
+			if(mgr.metadata().main_presentation_name){
+				if(rdata.hasOwnProperty("Description"))
+					o.name = rdata.Description;
+				else if(rdata.hasOwnProperty("name"))
+					o.name = rdata.name;
+			}
 
-			if(mgr.metadata().code_length && rdata.hasOwnProperty("Code"))
-				o.id = rdata.Code;
+			if(mgr.metadata().code_length){
+				if(rdata.hasOwnProperty("Code"))
+					o.id = rdata.Code;
+				else if(rdata.hasOwnProperty("id"))
+					o.id = rdata.id;
+			}
 		}
 
 		for(f in mf){
