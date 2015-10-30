@@ -8,11 +8,11 @@
     <item id="btn_delete"   type="button"	img="tb_delete.png"	imgdis="tb_delete_dis.png"	title="Удалить" />
     <item id="sep2" type="separator"/>
 
-    <item type="buttonSelect" id="bs_print"         img="print.gif"         text="Печать" openAll="true" >
+    <item type="buttonSelect" id="bs_print" img="print.gif"     text="Печать" openAll="true" >
     </item>
 
-    <item type="buttonSelect"   id="bs_more"        img="tb_more_w.png"     title="Дополнительно" openAll="true">
-
+    <item type="buttonSelect"   id="bs_more"    img="tb_more_w.png" title="Дополнительно" openAll="true">
+        <item id="btn_requery"  type="button"	img="refresh.png"	text="Обновить список" />
     </item>
 
 </toolbar>

@@ -63,7 +63,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		// создаём и настраиваем окно формы
 		if(pwnd instanceof dhtmlXCellObject) {
-			if(typeof pwnd.close == "function")
+			if(!(pwnd instanceof dhtmlXTabBarCell) && (typeof pwnd.close == "function"))
 				pwnd.close();
 			wnd = pwnd;
 			wnd.close = function () {
@@ -89,7 +89,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 
 		$p.iface.bind_help(wnd);
-		wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (md["list_presentation"] || md.synonym) + '"');
+		if(!(wnd instanceof dhtmlXTabBarCell))
+			wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (md["list_presentation"] || md.synonym) + '"');
 
 		dhtmlxEvent(document.body, "keydown", body_keydown);
 
@@ -360,6 +361,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			_mgr.export(wnd.elmnts.grid.getSelectedRowId());
 
 		}else if(btn_id=="btn_requery"){
+			previous_filter = {};
 			wnd.elmnts.grid.reload();
 
 		}

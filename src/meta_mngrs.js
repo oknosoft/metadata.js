@@ -683,6 +683,7 @@ function RefDataManager(class_name) {
 	 * Создаёт новый объект типа объектов текущего менеджера<br />
 	 * Для кешируемых объектов, все действия происходят на клиенте<br />
 	 * Для некешируемых, выполняется обращение к серверу для получения guid и значений реквизитов по умолчанию
+	 * @method create
 	 * @param [attr] {Object} - значениями полей этого объекта будет заполнен создаваемый объект
 	 * @param [fill_default] {Boolean} - признак, надо ли заполнять (инициализировать) создаваемый объект значениями полей по умолчанию
 	 * @return {Promise.<*>}
@@ -725,7 +726,24 @@ function RefDataManager(class_name) {
 		return Promise.resolve(o);
 	};
 
-
+	/**
+	 * Удаляет объект из alasql и локального кеша
+	 * @method delete_loc
+	 * @param ref
+	 */
+	t.delete_loc = function(ref) {
+		var ind;
+		delete by_ref[ref];
+		for(var i in t.alatable){
+			if(t.alatable[i].ref == ref){
+				ind = i;
+				break;
+			}
+		}
+		if(ind != undefined){
+			t.alatable.splice(ind, 1);
+		}
+	};
 
 
 	/**
@@ -1446,6 +1464,20 @@ function RegisterManager(class_name){
 		}
 		return res;
 
+	};
+
+	/**
+	 * ### Найти строки
+	 * Возвращает массив дата-объектов, обрезанный по отбору<br />
+	 * Eсли отбор пустой, возвращаются все строки, закешированные в менеджере (для кешируемых типов)
+	 * Для некешируемых типов выполняет запрос к базе
+	 * @method find_rows
+	 * @param selection {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: значение}
+	 * @param callback {Function} - в который передается текущий объект данных на каждой итерации
+	 * @return {Array}
+	 */
+	this.find_rows = function(selection, callback){
+		return $p._find_rows.call(this, this.alatable, selection, callback);
 	};
 
 }

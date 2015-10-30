@@ -1257,7 +1257,7 @@ function InterfaceObjs(){
 			}
 		}
 
-		if(wnd instanceof dhtmlXLayoutCell) {
+		if(wnd instanceof dhtmlXCellObject) {
 			// TODO реализовать кнопку справки для приклеенной формы
 		}else{
 			if(!wnd.help_path && path)

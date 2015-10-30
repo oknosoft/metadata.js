@@ -284,7 +284,7 @@ function only_in_browser(w){
 									event.source.postMessage(res, "*");
 								}
 							}catch(e){
-								console.log(e);
+								$p.record_log(e);
 							}
 						}
 					}
@@ -422,11 +422,7 @@ function only_in_browser(w){
 								// other instances of this page (in other tabs, etc.) have been closed/reloaded.
 								console.log('serviceWorker register succeeded');
 							})
-							.catch(function(error) {
-								// Something went wrong during registration. The service-worker.js file
-								// might be unavailable or contain a syntax error.
-								console.log(error);
-							});
+							.catch($p.record_log);
 
 					}else if (cache = w.applicationCache){
 
@@ -554,7 +550,7 @@ function SocketMsg(){
 					mgr.load_array([data.obj], true);
 
 			}catch(err){
-				console.log(err);
+				$p.record_log(err);
 			}
 		}
 	}
@@ -602,13 +598,11 @@ function SocketMsg(){
 						t.handlers.execute(data);
 					};
 
-					ws.onerror = function(err) {
-						console.log(err);
-					};
+					ws.onerror = $p.record_log;
 
 				}catch(err){
 					setTimeout(t.connect, attempt < 3 ? 30000 : 600000);
-					console.log(err);
+					$p.record_log(err);
 				}
 			}
 		}
@@ -686,8 +680,6 @@ $p.eve.update_files_version = function () {
 	if(!$p.job_prm.files_date)
 		$p.job_prm.files_date = $p.wsql.get_user_param("files_date", "number");
 
-
-
 	$p.ajax.get($p.job_prm.data_url + "sync.json?v="+Date.now())
 		.then(function (req) {
 			var sync = JSON.parse(req.response);
@@ -714,9 +706,7 @@ $p.eve.update_files_version = function () {
 					}
 				});
 			}
-		}).catch(function (err) {
-			console.log(err);
-		})
+		}).catch($p.record_log)
 };
 
 
@@ -908,7 +898,7 @@ $p.eve.log_in = function(onstep){
 			}else if(req.responseURL.indexOf("meta_patch.json") != -1)
 				mpatch = JSON.parse(req.response);
 		}else{
-			console.log(req);
+			$p.record_log(req);
 		}
 	})
 		// создаём объект Meta() описания метаданных
@@ -1089,7 +1079,7 @@ $p.eve.auto_log_in = function () {
 			else if(req.responseURL.indexOf("p_0.json") != -1)
 				p_0 = JSON.parse(req.response);
 		}else{
-			console.log(req);
+			$p.record_log(req);
 		}
 	})
 		// создаём объект Meta() описания метаданных
