@@ -1667,6 +1667,7 @@ function WSQL(){
 	 * @param sql
 	 * @param params
 	 * @return {Promise.<T>}
+	 * @async
 	 */
 	wsql.promise = function(sql, params) {
 		return new Promise(function(resolve, reject){
@@ -1854,6 +1855,7 @@ function WSQL(){
 	 * Формирует архив полной выгрузки базы для сохранения в файловой системе клиента
 	 * @method backup_database
 	 * @param [do_zip] {Boolean} - указывает на необходимость архивировать стоки таблиц в озу перед записью файла
+	 * @async
 	 */
 	wsql.backup_database = function(do_zip){
 
@@ -1867,6 +1869,7 @@ function WSQL(){
 	/**
 	 * Восстанавливает базу из архивной копии
 	 * @method restore_database
+	 * @async
 	 */
 	wsql.restore_database = function(){
 
@@ -1878,6 +1881,7 @@ function WSQL(){
 	 * @param db_name {String} - имя базы
 	 * @param store_name {String} - имя хранилища в базе
 	 * @return {Promise.<IDBDatabase>}
+	 * @async
 	 */
 	wsql.idx_connect = function (db_name, store_name) {
 		return new Promise(function(resolve, reject){
@@ -1904,6 +1908,7 @@ function WSQL(){
 	 * @param [db] {IDBDatabase}
 	 * @param [store_name] {String} - имя хранилища в базе
 	 * @return {Promise}
+	 * @async
 	 */
 	wsql.idx_save = function (obj, db, store_name) {
 
@@ -1940,6 +1945,7 @@ function WSQL(){
 	 * @param [db] {IDBDatabase}
 	 * @param store_name {String} - имя хранилища в базе
 	 * @return {Promise}
+	 * @async
 	 */
 	wsql.idx_get = function (ref, db, store_name) {
 
@@ -1973,6 +1979,7 @@ function WSQL(){
 	 * @param [db] {IDBDatabase}
 	 * @param [store_name] {String} - имя хранилища в базе
 	 * @return {Promise}
+	 * @async
 	 */
 	wsql.idx_delete = function (obj, db, store_name) {
 

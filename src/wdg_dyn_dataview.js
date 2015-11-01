@@ -10,10 +10,13 @@
 
 /**
  * ### Визуальный компонент - динамическое представление элементов справочника
+ * - Отображает коллекцию объектов на основе пользовательских шаблонов (список, мозаика, иконы и т.д.)
+ * - Унаследован от [dhtmlXDataView](http://docs.dhtmlx.com/dataview__index.html)
+ * - Автоматически связывается с irest-сервисом библиотеки интеграции 1С
  *
  * Особенность dhtmlx: экземпляр создаётся не конструктором, а функцией `attachDynDataView` (без `new`) и размещается в ячейке dhtmlXCellObject
  *
- * @class DynDataView
+ * @class ODynDataView
  * @param mgr {DataManager}
  * @param attr {Object} - параметры создаваемого компонента
  * @param attr.type {Object} - шаблон и параметры
