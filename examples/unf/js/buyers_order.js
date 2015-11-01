@@ -63,7 +63,7 @@ unf.modifiers.push(
 					attr.grid.cells(attr.row.row, 5).setValue(attr.row.Цена);
 				})
 				.catch(function (err) {
-					console.log(err);
+					$p.record_log(err);
 				});
 		}
 

@@ -15,6 +15,9 @@ $p.settings = function (prm, modifiers) {
 	// для транспорта используем rest, а не сервис http
 	prm.rest = true;
 
+	// разделитель для localStorage
+	prm.local_storage_prefix = "unf_";
+
 	// расположение rest-сервиса unf
 	prm.rest_path = "/a/unf/%1/odata/standard.odata/";
 
@@ -49,17 +52,6 @@ $p.settings = function (prm, modifiers) {
  * Обработчик события при начале работы программы
  */
 $p.iface.oninit = function() {
-
-	/**
-	 * Т.к. демо-примеры УНФ, безбумажки и бухгалтерии развёрнуты на одном домене, они получают общее локальное хранилище
-	 * чтобы не возник конфликт настроек при переключении между демо-примерами, принудительно перечитываем настройки по умолчанию
-	 */
-	if($p.wsql.get_user_param("zone", "number")==1392){
-		var prm = {};
-		$p.settings(prm, []);
-		for(var i in prm)
-			$p.wsql.set_user_param(i, prm[i]);
-	}
 
 	/**
 	 * Используем разбивку экрана в две колонки: дерево навигации слева, динсписок в центре
@@ -104,7 +96,7 @@ $p.iface.oninit = function() {
 							text: "Проверьте строку подключения к 1С<br /> и номер зоны публикации 1С",
 							title: "Сервис 1с-rest не найден"});
 
-					console.log(err);
+					$p.record_log(err);
 				}
 			);
 		}
