@@ -30,6 +30,9 @@ $p.settings = function (prm, modifiers) {
 	 */
 	prm.rest = true;
 
+	// разделитель для localStorage
+	prm.local_storage_prefix = "acc_";
+
 	/**
 	 * используем русскоязычные синонимы классов и методов
 	 */
