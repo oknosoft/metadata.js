@@ -347,7 +347,7 @@ function only_in_browser(w){
 			 */
 			setTimeout(function(){
 
-				$p.wsql.init_params(function(){
+				$p.wsql.init_params().then(function(){
 
 					eve.stepper = {
 						step: 0,

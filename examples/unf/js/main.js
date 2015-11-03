@@ -66,7 +66,6 @@ $p.settings = function (prm, modifiers) {
  */
 $p.iface.oninit = function() {
 
-
 	/**
 	 * Используем разбивку экрана в две колонки: дерево навигации слева, динсписок в центре
 	 */
