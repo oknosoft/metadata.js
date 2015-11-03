@@ -221,7 +221,7 @@ div.gridbox_dhx_web.gridbox table.hdr td {
 	font-size: 10pt;
 }
 .wb-button:hover, .wb-button.selected:hover {
-    background: #bebebe;
+    background: #ccc;
 }
 .wb-button.selected {
     background: #969394;

@@ -1679,7 +1679,7 @@ function WSQL(){
 	 * Выполняет sql запрос к локальной базе данных, возвращает Promise
 	 * @param sql
 	 * @param params
-	 * @return {Promise.<T>}
+	 * @return {Promise}
 	 * @async
 	 */
 	wsql.promise = function(sql, params) {
@@ -1699,23 +1699,28 @@ function WSQL(){
 	 * @method set_user_param
 	 * @param prm_name {string} - имя параметра
 	 * @param prm_value {string|number|object|boolean} - значение
-	 * @param [callback] {Function} - вызывается после установки параметра
+	 * @return {Promise}
+	 * @async
 	 */
-	wsql.set_user_param = function(prm_name, prm_value, callback){
+	wsql.set_user_param = function(prm_name, prm_value){
 
-		var str_prm = prm_value;
-		if(typeof prm_value == "object")
-			str_prm = JSON.stringify(prm_value);
+		return new Promise(function(resolve, reject){
 
-		else if(prm_value === false)
-			str_prm = "";
+			var str_prm = prm_value;
+			if(typeof prm_value == "object")
+				str_prm = JSON.stringify(prm_value);
 
-		if(typeof localStorage !== "undefined")
-			localStorage.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
-		user_params[prm_name] = prm_value;
+			else if(prm_value === false)
+				str_prm = "";
 
-		if(callback)
-			callback([]);
+			// localStorage в этом месте можно заменить на другое хранилище
+			if(typeof localStorage !== "undefined")
+				localStorage.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
+			user_params[prm_name] = prm_value;
+
+			resolve();
+
+		});
 	};
 
 	/**
@@ -1738,9 +1743,11 @@ function WSQL(){
 	 * @method save_options
 	 * @param prefix {String} - имя области
 	 * @param options {Object} - сохраняемые параметры
+	 * @return {Promise}
+	 * @async
 	 */
 	wsql.save_options = function(prefix, options){
-		wsql.set_user_param(prefix + "_" + options.name, options);
+		return wsql.set_user_param(prefix + "_" + options.name, options);
 	};
 
 	/**
@@ -1798,6 +1805,7 @@ function WSQL(){
 		// если зона указана в url, используем её
 		if($p.job_prm.url_prm.hasOwnProperty("zone"))
 			zone = $p.fix_number($p.job_prm.url_prm.zone, true);
+
 		if(zone !== undefined)
 			wsql.set_user_param("zone", zone);
 

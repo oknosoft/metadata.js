@@ -46,11 +46,28 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 	if(attr.hasOwnProperty("autowidth"))
 		conf.autowidth = attr.autowidth;
 
-	var dv = this.attachDataView(conf);
+	// создаём DataView
+	var dv = this.attachDataView(conf),
+		// и элемент управления режимом просмотра
+		dv_tools = new $p.iface.OTooolBar({
+			wrapper: this.cell, width: '86px', height: '28px', bottom: '2px', right: '28px', name: 'dataview_tools',
+			image_path: dhtmlx.image_path + "dhxdataview" + dhtmlx.skin.replace("dhx", "") + "/",
+			buttons: [
+				{name: 'list', img: 'dataview_list.png', title: 'Список (детально)', float: 'left'},
+				{name: 'large', img: 'dataview_large.png', title: 'Крупные значки', float: 'left'},
+				{name: 'small', img: 'dataview_small.png', title: 'Мелкие значки', float: 'left'}
+			],
+			onclick: function (name) {
+
+
+			}
+		}),
+		timer_id;
 
 	dv.__define({
+
 		/**
-		 * Фильтр, налагаемый на дерево
+		 * Фильтр, налагаемый на DataView
 		 */
 		filter: {
 			get: function () {
@@ -60,8 +77,10 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 				attr.filter = v;
 			}
 		},
+
 		requery: {
 			value: function () {
+				attr.url = "";
 				_rest.build_select(attr, mgr);
 				dv.clearAll();
 				dv.load(attr.url, "json", function(v){
@@ -69,13 +88,34 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 
 					}
 				});
+				timer_id = 0;
+			}
+		},
+
+		/**
+		 * Обработчик маршрутизации
+		 */
+		hash_route: {
+			value: function (hprm) {
+				if(hprm.obj && attr.selection.parent != hprm.obj){
+					attr.selection.parent = hprm.obj;
+
+					// перевзводим таймер обновления
+					if(timer_id)
+						clearTimeout(timer_id);
+					timer_id = setTimeout(dv.requery, 100);
+
+				}
 			}
 		}
 	});
 
-	setTimeout(function () {
-		dv.requery();
-	}, 100);
+	// слушаем события on_text_filter, on_dyn_filter и hash_route
+	$p.eve.hash_route.push(dv.hash_route);
+
+	setTimeout(function(){
+		dv.hash_route($p.job_prm.parse_url());
+	}, 50);
 
 	return dv;
 
