@@ -83,6 +83,8 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 				attr.url = "";
 				_rest.build_select(attr, mgr);
 				dv.clearAll();
+				if(dv._settings)
+					dv._settings.datatype = "json";
 				dv.load(attr.url, "json", function(v){
 					if(v){
 
