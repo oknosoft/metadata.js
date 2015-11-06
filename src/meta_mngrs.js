@@ -1166,8 +1166,12 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 	else if(action == "drop")
 		res = "DROP TABLE IF EXISTS `"+t.table_name+"`";
 
-	else if(action == "get_tree")
-		res = "SELECT ref, parent, name as presentation FROM `" + t.table_name + "` WHERE is_folder order by parent, name";
+	else if(action == "get_tree"){
+		if(!attr.filter || attr.filter.is_folder)
+			res = "SELECT ref, parent, name as presentation FROM `" + t.table_name + "` WHERE is_folder order by parent, name";
+		else
+			res = "SELECT ref, parent, name as presentation FROM `" + t.table_name + "` order by parent, name";
+	}
 
 	else if(action == "get_selection")
 		res = sql_selection();

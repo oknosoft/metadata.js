@@ -114,8 +114,8 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 		 */
 		hash_route: {
 			value: function (hprm) {
-				if(hprm.obj && attr.selection.parent != hprm.obj){
-					attr.selection.parent = hprm.obj;
+				if(hprm.obj && attr.selection.ВидНоменклатуры != hprm.obj){
+					attr.selection.ВидНоменклатуры = hprm.obj;
 
 					// перевзводим таймер обновления
 					if(timer_id)

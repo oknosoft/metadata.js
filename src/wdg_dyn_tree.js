@@ -23,6 +23,9 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 	if(this.setCollapsedText)
 		this.setCollapsedText("Дерево");
 
+	if(!filter)
+		filter = {is_filder: true};
+
 	var tree = this.attachTree();
 	tree.setImagePath(dhtmlx.image_path + 'dhxtree_web/');
 	tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
@@ -49,7 +52,8 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 	setTimeout(function () {
 		$p.cat.load_soap_to_grid({
 			action: "get_tree",
-			class_name: mgr.class_name
+			class_name: mgr.class_name,
+			filter: filter
 		}, tree, callback);
 	});
 
