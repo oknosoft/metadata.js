@@ -79,6 +79,12 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 		}),
 		timer_id;
 
+	function lazy_timer(){
+		if(timer_id)
+			clearTimeout(timer_id);
+		timer_id = setTimeout(dv.requery, 100);
+	}
+
 	dv.__define({
 
 		/**
@@ -115,12 +121,10 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 		hash_route: {
 			value: function (hprm) {
 				if(hprm.obj && attr.selection.ВидНоменклатуры != hprm.obj){
-					attr.selection.ВидНоменклатуры = hprm.obj;
 
-					// перевзводим таймер обновления
-					if(timer_id)
-						clearTimeout(timer_id);
-					timer_id = setTimeout(dv.requery, 100);
+					// обновляем вид номенклатуры и перевзводим таймер обновления
+					attr.selection.ВидНоменклатуры = hprm.obj;
+					lazy_timer();
 
 				}
 			}
@@ -129,6 +133,19 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 
 	// слушаем события on_text_filter, on_dyn_filter и hash_route
 	$p.eve.hash_route.push(dv.hash_route);
+	dhx4.attachEvent("search_text_change", function (text) {
+
+		// обновляем подстроку поиска и перевзводим таймер обновления
+		if(text)
+			attr.selection.text = function (){
+				return "text like '%25" + text + "%25'";
+			};
+		else if(attr.selection.hasOwnProperty("text"))
+			delete attr.selection.text;
+
+		lazy_timer();
+
+	});
 
 	setTimeout(function(){
 		dv.hash_route($p.job_prm.parse_url());
