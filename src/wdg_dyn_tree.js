@@ -27,8 +27,8 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 		filter = {is_filder: true};
 
 	var tree = this.attachTree();
-	tree.setImagePath(dhtmlx.image_path + 'dhxtree_web/');
-	tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
+	tree.setImagePath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
+	tree.setIconsPath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
 	tree.enableKeyboardNavigation(true);
 
 	tree.__define({

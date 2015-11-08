@@ -182,13 +182,13 @@ function OCombo(attr){
 		popup_focused = true;
 		var div = document.createElement('div'),
 			innerHTML = "<a href='#' name='select' title='Форма выбора {F4}'>Показать все</a>" +
-				"<img src='"+dhtmlx.image_path+"dhxtoolbar_web/blank9.png' />" +
-				"&nbsp;<a href='#' name='open' title='Открыть форму элемента {Ctrl+Shift+F4}'><img src='"+dhtmlx.image_path+"dhxtoolbar_web/tb_open.png' /></a>";
+				"<img src='"+dhtmlx.image_path+"dhxtoolbar"+dhtmlx.skin_suffix()+"blank9.png' />" +
+				"&nbsp;<a href='#' name='open' title='Открыть форму элемента {Ctrl+Shift+F4}'><img src='"+dhtmlx.image_path+"dhxtoolbar"+dhtmlx.skin_suffix()+"tb_open.png' /></a>";
 
 		// для полных прав разрешаем добавление элементов
 		// TODO: учесть реальные права на добавление
 		if($p.ajax.root)
-			innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><img src='"+dhtmlx.image_path+"dhxtoolbar_web/tb_add.png' /></a>";
+			innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><img src='"+dhtmlx.image_path+"dhxtoolbar"+dhtmlx.skin_suffix()+"tb_add.png' /></a>";
 
 		// для составных типов разрешаем выбор типа
 		// TODO: реализовать поддержку примитивных типов

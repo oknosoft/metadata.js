@@ -57,7 +57,7 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 		// и элемент управления режимом просмотра
 		dv_tools = new $p.iface.OTooolBar({
 			wrapper: this.cell, width: '86px', height: '28px', bottom: '2px', right: '28px', name: 'dataview_tools',
-			image_path: dhtmlx.image_path + "dhxdataview" + dhtmlx.skin.replace("dhx", "") + "/",
+			image_path: dhtmlx.image_path + 'dhxdataview' + dhtmlx.skin_suffix(),
 			buttons: [
 				{name: 'list', img: 'dataview_list.png', title: 'Список (детально)', float: 'left'},
 				{name: 'large', img: 'dataview_large.png', title: 'Крупные значки', float: 'left'},
@@ -82,7 +82,7 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 	function lazy_timer(){
 		if(timer_id)
 			clearTimeout(timer_id);
-		timer_id = setTimeout(dv.requery, 100);
+		timer_id = setTimeout(dv.requery, 200);
 	}
 
 	dv.__define({
@@ -103,6 +103,8 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 			value: function () {
 				attr.url = "";
 				_rest.build_select(attr, mgr);
+				if(attr.filter_prop)
+					attr.url+= "&filter_prop=" + JSON.stringify(attr.filter_prop);
 				dv.clearAll();
 				if(dv._settings)
 					dv._settings.datatype = "json";
@@ -146,6 +148,16 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 		lazy_timer();
 
 	});
+
+	dhx4.attachEvent("filter_prop_change", function (filter_prop) {
+
+		// обновляем подстроку поиска и перевзводим таймер обновления
+		attr.filter_prop = filter_prop;
+		lazy_timer();
+
+	});
+
+
 
 	setTimeout(function(){
 		dv.hash_route($p.job_prm.parse_url());

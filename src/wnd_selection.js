@@ -103,7 +103,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		// командная панель формы
 
 		wnd.elmnts.toolbar = wnd.attachToolbar();
-		wnd.elmnts.toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
+		wnd.elmnts.toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
 		wnd.elmnts.toolbar.loadStruct(require("toolbar_selection"), function(){
 
 			this.attachEvent("onclick", toolbar_click);

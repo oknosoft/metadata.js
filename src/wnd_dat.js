@@ -141,8 +141,8 @@ $p.iface.dat_tree = function(_dxw, attr) {
 	wnd_dat.cell_a = cell_a;
 
 	wnd_dat.tree = new dhtmlXTreeObject(cell_b, "100%", "100%", 0);
-	wnd_dat.tree.setImagePath(dhtmlx.image_path + 'dhxtree_web/');
-	wnd_dat.tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
+	wnd_dat.tree.setImagePath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
+	wnd_dat.tree.setIconsPath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
 	wnd_dat.tree.enableCheckBoxes(true, true);
 	wnd_dat.tree.enableTreeImages(false);
 
@@ -306,8 +306,8 @@ $p.iface.layout_2u = function (tree_attr) {
 	iface.cell_tree.collapse();
 
 	iface.tree = iface.cell_tree.attachTree();
-	iface.tree.setImagePath(dhtmlx.image_path + 'dhxtree_web/');
-	iface.tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
+	iface.tree.setImagePath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
+	iface.tree.setIconsPath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
 
 	
 	if(tree_attr){

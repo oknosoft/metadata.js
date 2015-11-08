@@ -139,7 +139,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 
 	// панель инструментов табличной части
-	_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar_web/');
+	_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
 	_toolbar.loadStruct(require("toolbar_add_del"), function(){
 		this.attachEvent("onclick", function toolbar_click(btn_id){
 			if(btn_id=="btn_add")

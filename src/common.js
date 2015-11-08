@@ -108,6 +108,9 @@ if(typeof window !== "undefined"){
 
 			// задаём основной скин
 			dhtmlx.skin = "dhx_web";
+			dhtmlx.skin_suffix = function () {
+					return dhtmlx.skin.replace("dhx", "") + "/"
+				};
 
 			// запрещаем добавлять dhxr+date() к запросам get внутри dhtmlx
 			dhx4.ajax.cache = true;
