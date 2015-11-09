@@ -24,7 +24,7 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 		this.setCollapsedText("Дерево");
 
 	if(!filter)
-		filter = {is_filder: true};
+		filter = {is_folder: true};
 
 	var tree = this.attachTree();
 	tree.setImagePath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());

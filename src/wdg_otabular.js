@@ -54,6 +54,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			pwnd: attr.pwnd || _cell,
 			is_tabular: true
 		};
+	_grid.setDateFormat("%d.%m.%Y %H:%i");
 
 	function get_sel_index(silent){
 		var selId = _grid.getSelectedRowId();

@@ -72,12 +72,13 @@ if(typeof window !== "undefined"){
 
 
 	/**
-	 * Если контекст исполнения - браузер, загружаем таблицы стилей
+	 * Если контекст исполнения - браузер, проверяем поддержку промисов, при необходимости загружаем полифил
 	 */
-	(function(w){
-		var i, surl, sname, load_dhtmlx = true, load_meta = true;
+	(function(){
+		var i, surl, sname;
 
-		if("dhtmlx" in w){
+		if(typeof Promise !== "function"){
+
 			for(i in document.scripts){
 				if(document.scripts[i].src.indexOf("metadata.js")!=-1){
 					sname = "metadata.js";
@@ -89,45 +90,14 @@ if(typeof window !== "undefined"){
 					break;
 				}
 			}
-			// стили загружаем только при необходимости
-			for(i=0; i < document.styleSheets.length; i++){
-				if(document.styleSheets[i].href){
-					if(document.styleSheets[i].href.indexOf("dhtmlx.css")!=-1)
-						load_dhtmlx = false;
-					else if(document.styleSheets[i].href.indexOf("metadata.css")!=-1)
-						load_meta = false;
-				}
-			}
-			if(load_dhtmlx)
-				$p.load_script(surl.replace(sname, "dhtmlx.css"), "link");
-			if(load_meta)
-				$p.load_script(surl.replace(sname, "metadata.css"), "link");
 
-			// задаём путь к картинкам
-			dhtmlx.image_path = surl.replace(sname, "imgs/");
+			$p.load_script(surl.replace(sname, "es6-promise.min.js"), "script", function () {
+				ES6Promise.polyfill();
+			});
 
-			// задаём основной скин
-			dhtmlx.skin = "dhx_web";
-			dhtmlx.skin_suffix = function () {
-					return dhtmlx.skin.replace("dhx", "") + "/"
-				};
-
-			// запрещаем добавлять dhxr+date() к запросам get внутри dhtmlx
-			dhx4.ajax.cache = true;
-
-			/**
-			 * Если браузер не поддерживает Promise, загружаем полифил
-			 */
-			if(typeof Promise !== "function"){
-				//$p.load_script("https://www.promisejs.org/polyfills/promise-7.0.1.min.js", "script");
-				$p.load_script(surl.replace(sname, "es6-promise.min.js"), "script", function () {
-					ES6Promise.polyfill();
-				});
-
-			}
 		}
 
-	})(window);
+	})();
 
 }else if(typeof WorkerGlobalScope === "undefined"){
 
@@ -1795,12 +1765,13 @@ function WSQL(){
 			{p: "files_date",       v: 201511010000, t:"number"},
 			{p: "margin",			v: 60,	t:"number"},
 			{p: "discount",			v: 15,	t:"number"},
-			{p: "offline",			v: "" || $p.job_prm.offline, t:"boolean"}
+			{p: "offline",			v: "" || $p.job_prm.offline, t:"boolean"},
+			{p: "skin",		        v: "dhx_web", t:"string"}
 		], zone;
 
 		// подмешиваем к базовым параметрам настройки приложения
-		if($p.job_prm.additionsl_params)
-			nesessery_params = nesessery_params.concat($p.job_prm.additionsl_params);
+		if($p.job_prm.additional_params)
+			nesessery_params = nesessery_params.concat($p.job_prm.additional_params);
 
 		// если зона не указана, устанавливаем "1"
 		if(!localStorage.getItem($p.job_prm.local_storage_prefix+"zone"))
@@ -1808,7 +1779,6 @@ function WSQL(){
 		// если зона указана в url, используем её
 		if($p.job_prm.url_prm.hasOwnProperty("zone"))
 			zone = $p.fix_number($p.job_prm.url_prm.zone, true);
-
 		if(zone !== undefined)
 			wsql.set_user_param("zone", zone);
 
@@ -1816,7 +1786,7 @@ function WSQL(){
 		nesessery_params.forEach(function(o){
 			if(wsql.get_user_param(o.p, o.t) == undefined ||
 				(!wsql.get_user_param(o.p, o.t) && (o.p.indexOf("url") != -1)))
-				wsql.set_user_param(o.p, o.v);
+					wsql.set_user_param(o.p, $p.job_prm.hasOwnProperty(o.p) ? $p.job_prm[o.p] : o.v);
 		});
 
 		// сбрасываем даты, т.к. база в озу

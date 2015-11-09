@@ -151,7 +151,7 @@ div.gridbox_dhx_web.gridbox table.hdr td {
     width: 100%
 }
 .ref_field23 {
-    background: url(imgs/custom_field/points.png) no-repeat left center;
+    background: url(imgs/custom_web/points.png) no-repeat left center;
     position: relative;
     width: 22px;
     height: 23px;
@@ -161,7 +161,7 @@ div.gridbox_dhx_web.gridbox table.hdr td {
     cursor: alias;
 }
 .ref_field23:hover {
-    background: url(imgs/custom_field/points_hover.png) no-repeat left center;
+    background: url(imgs/custom_web/points_hover.png) no-repeat left center;
 }
 .ref_div21 {
     display: inline-block;
@@ -169,7 +169,7 @@ div.gridbox_dhx_web.gridbox table.hdr td {
     width: 100%
 }
 .ref_field21 {
-    background: url(imgs/custom_field/points.png) no-repeat left center;
+    background: url(imgs/custom_web/points.png) no-repeat left center;
     position: relative;
     width: 22px;
     height: 21px;
@@ -179,7 +179,7 @@ div.gridbox_dhx_web.gridbox table.hdr td {
     cursor: alias;
 }
 .ref_field21:hover {
-    background: url(imgs/custom_field/points_hover.png) no-repeat left center;
+    background: url(imgs/custom_web/points_hover.png) no-repeat left center;
 }
 
 /* картинка длительной операции*/
@@ -228,10 +228,10 @@ div.gridbox_dhx_web.gridbox table.hdr td {
 }
 
 /* dat.GUI */
-.dhxwins_vp_dhx_web div.dhxwin_hdr div.dhxwin_icon.without_icon {
+div.dhxwin_hdr div.dhxwin_icon.without_icon {
     display: none;
 }
-.dhxwins_vp_dhx_web div.dhxwin_brd.dat_gui {
+div.dhxwin_brd.dat_gui {
     position: absolute;
     border-left: 5px solid #fffefa;
     border-right: 5px solid #fffefa;
@@ -242,71 +242,71 @@ div.gridbox_dhx_web.gridbox table.hdr td {
 
 /* курсоры построителя*/
 .cursor-pen-freehand {
-    cursor: url('imgs/custom_field/cursor-pen-freehand.png') 5 2, default;
+    cursor: url('imgs/custom_web/cursor-pen-freehand.png') 5 2, default;
 }
 .cursor-lay-impost {
-    cursor: url('imgs/custom_field/cursor-lay-impost.png') 3 6, default;
+    cursor: url('imgs/custom_web/cursor-lay-impost.png') 3 6, default;
 }
 .cursor-arrow-lay {
-    cursor: url('imgs/custom_field/cursor-arrow-lay.png') 1 1, default;
+    cursor: url('imgs/custom_web/cursor-arrow-lay.png') 1 1, default;
 }
 .cursor-arrow-ruler {
-    cursor: url('imgs/custom_field/cursor-arrow-ruler.png') 3 1, default;
+    cursor: url('imgs/custom_web/cursor-arrow-ruler.png') 3 1, default;
 }
 .cursor-arrow-ruler-light {
-    cursor: url('imgs/custom_field/cursor-arrow-ruler-light.png') 3 1, default;
+    cursor: url('imgs/custom_web/cursor-arrow-ruler-light.png') 3 1, default;
 }
 .cursor-pen-adjust {
-    cursor: url('imgs/custom_field/cursor-pen-adjust.png') 5 2, default;
+    cursor: url('imgs/custom_web/cursor-pen-adjust.png') 5 2, default;
 }
 .cursor-zoom-in {
-    cursor: url('imgs/custom_field/cursor-zoom-in.png') 7 7, default;
+    cursor: url('imgs/custom_web/cursor-zoom-in.png') 7 7, default;
 }
 .cursor-zoom-out {
-    cursor: url('imgs/custom_field/cursor-zoom-out.png') 7 7, default;
+    cursor: url('imgs/custom_web/cursor-zoom-out.png') 7 7, default;
 }
 .cursor-hand {
-    cursor: url('imgs/custom_field/cursor-hand.png') 10 10, default;
+    cursor: url('imgs/custom_web/cursor-hand.png') 10 10, default;
 }
 .cursor-hand-grab {
-    cursor: url('imgs/custom_field/cursor-hand-grab.png') 10 10, default;
+    cursor: url('imgs/custom_web/cursor-hand-grab.png') 10 10, default;
 }
 .cursor-arc {
-    cursor: url('imgs/custom_field/cursor-arc-r.png') 6 10, default;
+    cursor: url('imgs/custom_web/cursor-arc-r.png') 6 10, default;
 }
 .cursor-arc-arrow {
-    cursor: url('imgs/custom_field/cursor-arc-r-active.png') 3 7, default;
+    cursor: url('imgs/custom_web/cursor-arc-r-active.png') 3 7, default;
 }
 .cursor-arrow-black {
-    cursor: url('imgs/custom_field/cursor-arrow-black.png') 2 2, default;
+    cursor: url('imgs/custom_web/cursor-arrow-black.png') 2 2, default;
 }
 .cursor-arrow-black-point {
-    cursor: url('imgs/custom_field/cursor-arrow-black-point.png') 2 2, default;
+    cursor: url('imgs/custom_web/cursor-arrow-black-point.png') 2 2, default;
 }
 .cursor-arrow-black-shape {
-    cursor: url('imgs/custom_field/cursor-arrow-black-shape.png') 2 2, default;
+    cursor: url('imgs/custom_web/cursor-arrow-black-shape.png') 2 2, default;
 }
 .cursor-arrow-white {
-    cursor: url('imgs/custom_field/cursor-arrow-white.png') 2 2, default;
+    cursor: url('imgs/custom_web/cursor-arrow-white.png') 2 2, default;
 }
 .cursor-arrow-white-point {
-    cursor: url('imgs/custom_field/cursor-arrow-white-point.png') 2 2, default;
+    cursor: url('imgs/custom_web/cursor-arrow-white-point.png') 2 2, default;
 }
 .cursor-arrow-white-shape {
-    cursor: url('imgs/custom_field/cursor-arrow-white-shape.png') 2 2, default;
+    cursor: url('imgs/custom_web/cursor-arrow-white-shape.png') 2 2, default;
 }
 .cursor-arrow-small {
-    cursor: url('imgs/custom_field/cursor-arrow-small.png') 2 2, default;
+    cursor: url('imgs/custom_web/cursor-arrow-small.png') 2 2, default;
 }
 .cursor-arrow-small-point {
-    cursor: url('imgs/custom_field/cursor-arrow-small-point.png') 2 2, default;
+    cursor: url('imgs/custom_web/cursor-arrow-small-point.png') 2 2, default;
 }
 .cursor-text {
-	cursor: url('imgs/custom_field/cursor-text.png') 2 2, default;
+	cursor: url('imgs/custom_web/cursor-text.png') 2 2, default;
 }
 .cursor-text-add {
-	cursor: url('imgs/custom_field/cursor-text-add.png') 2 2, default;
+	cursor: url('imgs/custom_web/cursor-text-add.png') 2 2, default;
 }
 .cursor-text-select {
-	cursor: url('imgs/custom_field/cursor-text-select.png') 2 2, default;
+	cursor: url('imgs/custom_web/cursor-text-select.png') 2 2, default;
 }

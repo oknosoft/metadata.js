@@ -245,7 +245,7 @@ eXcell_dhxCalendar.prototype.edit = function() {
 	this._val = this.cell.innerHTML;
 	var t = this.grid._grid_calendarA.draw;
 	this.grid._grid_calendarA.draw = function(){};
-	this.grid._grid_calendarA.setDateFormat((this.grid._dtmask||"%d/%m/%Y"));
+	this.grid._grid_calendarA.setDateFormat((this.grid._dtmask||"%d.%m.%Y"));
 	this.grid._grid_calendarA.setDate(this.val||(new Date()));
 	this.grid._grid_calendarA.draw = t;
 

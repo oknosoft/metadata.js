@@ -193,7 +193,7 @@ function OCombo(attr){
 		// для составных типов разрешаем выбор типа
 		// TODO: реализовать поддержку примитивных типов
 		if(_meta.type.types.length > 1)
-			innerHTML += "&nbsp;<a href='#' name='type' title='Выбрать тип значения {Alt+T}'><img src='"+dhtmlx.image_path+"custom_field/icss_text.png' /></a>";
+			innerHTML += "&nbsp;<a href='#' name='type' title='Выбрать тип значения {Alt+T}'><img src='"+dhtmlx.image_path+"custom_web/icss_text.png' /></a>";
 
 		div.innerHTML = innerHTML;
 		for(var i=0; i<div.children.length; i++)

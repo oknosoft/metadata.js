@@ -294,35 +294,6 @@ function only_in_browser(w){
 			// устанавливаем соединение с сокет-сервером
 			eve.socket.connect();
 
-			// создавать dhtmlXWindows можно только после готовности документа
-			if("dhtmlx" in w){
-
-				/**
-				 * ### Каркас оконного интерфейса
-				 * См. описание на сайте dhtmlx [dhtmlXWindows](http://docs.dhtmlx.com/windows__index.html)
-				 * @property w
-				 * @for InterfaceObjs
-				 * @type dhtmlXWindows
-				 */
-				$p.iface.__define("w", {
-					value: new dhtmlXWindows(),
-					enumerable: false
-				});
-				$p.iface.w.setSkin(dhtmlx.skin);
-
-				/**
-				 * ### Всплывающие подсказки
-				 * См. описание на сайте dhtmlx [dhtmlXPopup](http://docs.dhtmlx.com/popup__index.html)
-				 * @property popup
-				 * @for InterfaceObjs
-				 * @type dhtmlXPopup
-				 */
-				$p.iface.__define("popup", {
-					value: new dhtmlXPopup(),
-					enumerable: false
-				});
-			}
-
 			// проверяем совместимость браузера
 			if($p.job_prm.check_browser_compatibility && (!w.JSON || !w.indexedDB || !w.localStorage) ){
 				eve.redirect = true;
@@ -348,6 +319,87 @@ function only_in_browser(w){
 			setTimeout(function(){
 
 				$p.wsql.init_params().then(function(){
+
+					function load_css(){
+
+						var i, surl, sname, load_dhtmlx = true, load_meta = true;
+
+						for(i in document.scripts){
+							if(document.scripts[i].src.indexOf("metadata.js")!=-1){
+								sname = "metadata.js";
+								surl = document.scripts[i].src;
+								break;
+							}else if(document.scripts[i].src.indexOf("metadata.min.js")!=-1){
+								sname = "metadata.min.js";
+								surl = document.scripts[i].src;
+								break;
+							}
+						}
+						// стили загружаем только при необходимости
+						for(i=0; i < document.styleSheets.length; i++){
+							if(document.styleSheets[i].href){
+								if(document.styleSheets[i].href.indexOf("dhtmlx.css")!=-1)
+									load_dhtmlx = false;
+								else if(document.styleSheets[i].href.indexOf("metadata.css")!=-1)
+									load_meta = false;
+							}
+						}
+
+						// задаём основной скин
+						dhtmlx.skin = $p.wsql.get_user_param("skin") || "dhx_web";
+
+						if(load_dhtmlx)
+							$p.load_script(surl.replace(sname, dhtmlx.skin == "dhx_web" ? "dhtmlx.css" : "dhtmlx_terrace.css"), "link");
+						if(load_meta)
+							$p.load_script(surl.replace(sname, "metadata.css"), "link");
+
+						// дополнительные стили
+						if($p.job_prm.additional_css)
+							$p.job_prm.additional_css.forEach(function (name) {
+								$p.load_script(name, "link");
+							});
+
+						// задаём путь к картинкам
+						dhtmlx.image_path = surl.replace(sname, "imgs/");
+
+						// суффикс скина
+						dhtmlx.skin_suffix = function () {
+							return dhtmlx.skin.replace("dhx", "") + "/"
+						};
+
+						// запрещаем добавлять dhxr+date() к запросам get внутри dhtmlx
+						dhx4.ajax.cache = true;
+
+						/**
+						 * ### Каркас оконного интерфейса
+						 * См. описание на сайте dhtmlx [dhtmlXWindows](http://docs.dhtmlx.com/windows__index.html)
+						 * @property w
+						 * @for InterfaceObjs
+						 * @type dhtmlXWindows
+						 */
+						$p.iface.__define("w", {
+							value: new dhtmlXWindows(),
+							enumerable: false
+						});
+						$p.iface.w.setSkin(dhtmlx.skin);
+
+						/**
+						 * ### Всплывающие подсказки
+						 * См. описание на сайте dhtmlx [dhtmlXPopup](http://docs.dhtmlx.com/popup__index.html)
+						 * @property popup
+						 * @for InterfaceObjs
+						 * @type dhtmlXPopup
+						 */
+						$p.iface.__define("popup", {
+							value: new dhtmlXPopup(),
+							enumerable: false
+						});
+
+					}
+
+					// создавать dhtmlXWindows можно только после готовности документа
+					if("dhtmlx" in w)
+						load_css();
 
 					eve.stepper = {
 						step: 0,

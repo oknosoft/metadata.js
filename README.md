@@ -20,7 +20,7 @@ Metadata.js - это альтернативный лёгкий javascript кли
 ## Концепция и философия
 > В metadata.js предпринята попытка дополнить лучшее из современных технологий обработки данных инструментами, которых нам не хватало в повседневной работе
 
-![Структура фреймворка metadata.js](lib/imgs/custom_field/metadata_structure.png)
+![Структура фреймворка metadata.js](lib/imgs/custom_web/metadata_structure.png)
  
 ### Используем самое ценное от 1С
 - Эффективная модель *Метаданных* со *ссылочной типизацией* и *подробным описанием реквизитов*
@@ -51,7 +51,7 @@ Metadata.js не конкурирует с клиентскими [Web UI](https
 На клиенте и сервере в этом случае, доступны дополнительные функции оптимизации вычислений, трафика и кеширования
 
 ## Презентация
-[![Обзор metadata.js](lib/imgs/custom_field/metadata_slideshare.jpg)](http://www.slideshare.net/ssuser7ad218/metadatajs)
+[![Обзор metadata.js](lib/imgs/custom_web/metadata_slideshare.jpg)](http://www.slideshare.net/ssuser7ad218/metadatajs)
 
 ## Примеры
 - Приложение [code examples](examples/codex) дополняет документацию простыми примерами использования и настройки компонентов фреймворка а так же, примерами подключения к типовым конфигурациям 1С  

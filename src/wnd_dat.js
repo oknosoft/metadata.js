@@ -764,7 +764,7 @@ function OTooolBar(attr){
 		offset, popup_focused, sub_focused, btn_focused;
 
 	if(!attr.image_path)
-		attr.image_path = dhtmlx.image_path + 'custom_field/';
+		attr.image_path = dhtmlx.image_path + 'custom_web/';
 
 	div.className = 'wb-tools';
 	_this.cell = div;
