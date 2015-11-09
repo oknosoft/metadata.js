@@ -105,6 +105,8 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 				_rest.build_select(attr, mgr);
 				if(attr.filter_prop)
 					attr.url+= "&filter_prop=" + JSON.stringify(attr.filter_prop);
+				if(dhx4.isIE)
+					attr.url = encodeURI(attr.url);
 				dv.clearAll();
 				if(dv._settings)
 					dv._settings.datatype = "json";

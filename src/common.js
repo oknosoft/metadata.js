@@ -438,6 +438,9 @@ $p.ajax = new (
 				// Делаем привычные XHR вещи
 				var req = new XMLHttpRequest();
 
+				if(typeof window != "undefined" && dhx4.isIE)
+					url = encodeURI(url);
+
 				if(auth){
 					var username, password;
 					if(typeof auth == "object" && auth.username && auth.hasOwnProperty("password")){
