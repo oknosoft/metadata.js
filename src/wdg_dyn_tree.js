@@ -29,7 +29,8 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 	var tree = this.attachTree();
 	tree.setImagePath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
 	tree.setIconsPath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
-	tree.enableKeyboardNavigation(true);
+	if($p.device_type == "desktop")
+		tree.enableKeyboardNavigation(true);
 
 	tree.__define({
 		/**
