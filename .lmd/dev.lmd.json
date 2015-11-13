@@ -8,6 +8,7 @@
       "src/common.js",
       "src/i18n.ru.js",
       "src/wdg_dhtmlx.js",
+      "src/wdg_dropdown_list.js",
       "src/wdg_ocombo.js",
       "src/wdg_ohead_fields.js",
       "src/wdg_otabular.js",

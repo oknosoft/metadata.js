@@ -30,7 +30,10 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 		attr = {};
 	var conf = {
 		type: attr.type || { template:"#name#" }
-	};
+	},
+		timer_id,
+		dv;
+
 	if(attr.pager)
 		conf.pager = attr.pager;
 	if(attr.hasOwnProperty("drag"))
@@ -53,31 +56,31 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 	}
 
 	// создаём DataView
-	var dv = this.attachDataView(conf),
+	if(attr.container){
+		conf.container = attr.container;
+		dv = new dhtmlXDataView(conf);
+	}else
+		dv = this.attachDataView(conf);
+
 		// и элемент управления режимом просмотра
-		dv_tools = new $p.iface.OTooolBar({
-			wrapper: this.cell, width: '86px', height: '28px', bottom: '2px', right: '28px', name: 'dataview_tools',
-			image_path: dhtmlx.image_path + 'dhxdataview' + dhtmlx.skin_suffix(),
-			buttons: [
-				{name: 'list', img: 'dataview_list.png', title: 'Список (детально)', float: 'left'},
-				{name: 'large', img: 'dataview_large.png', title: 'Крупные значки', float: 'left'},
-				{name: 'small', img: 'dataview_small.png', title: 'Мелкие значки', float: 'left'}
-			],
-			onclick: function (name) {
-
+	dv_tools = new $p.iface.OTooolBar({
+		wrapper: attr.outer_container || this.cell, width: '86px', height: '28px', bottom: '2px', right: '28px', name: 'dataview_tools',
+		image_path: dhtmlx.image_path + 'dhxdataview' + dhtmlx.skin_suffix(),
+		buttons: [
+			{name: 'list', img: 'dataview_list.png', title: 'Список (детально)', float: 'left'},
+			{name: 'large', img: 'dataview_large.png', title: 'Крупные значки', float: 'left'},
+			{name: 'small', img: 'dataview_small.png', title: 'Мелкие значки', float: 'left'}
+		],
+		onclick: function (name) {
 				var template = dhtmlXDataView.prototype.types[name];
-
 				if(name == "list")
 					dv.config.autowidth = 1;
 				else
 					dv.config.autowidth = Math.floor((dv._dataobj.scrollWidth) / (template.width + template.padding*2 + template.margin*2 + template.border*2));
-
 				dv.define("type", name);
-
 				//dv.refresh();
 			}
-		}),
-		timer_id;
+		});
 
 	function lazy_timer(){
 		if(timer_id)
@@ -138,7 +141,6 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 	// слушаем события on_text_filter, on_dyn_filter и hash_route
 	$p.eve.hash_route.push(dv.hash_route);
 	dhx4.attachEvent("search_text_change", function (text) {
-
 		// обновляем подстроку поиска и перевзводим таймер обновления
 		if(text)
 			attr.selection.text = function (){
@@ -158,8 +160,6 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 		lazy_timer();
 
 	});
-
-
 
 	setTimeout(function(){
 		dv.hash_route($p.job_prm.parse_url());

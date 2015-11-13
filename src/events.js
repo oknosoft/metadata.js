@@ -356,7 +356,8 @@ function only_in_browser(w){
 						// дополнительные стили
 						if($p.job_prm.additional_css)
 							$p.job_prm.additional_css.forEach(function (name) {
-								$p.load_script(name, "link");
+								if(dhx4.isIE || name.indexOf("ie_only") == -1)
+									$p.load_script(name, "link");
 							});
 
 						// задаём путь к картинкам

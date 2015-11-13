@@ -128,7 +128,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				this.disableItem("btn_delete");
 			}
 
-			if(!on_select && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper"){
+			if(!on_select && $p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper"){
 				this.hideItem("btn_select");
 				this.hideItem("sep1");
 				this.addListOption("bs_more", "btn_order_list", "~", "button", "Список заказов", "tb_autocad.png");
@@ -271,7 +271,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			else select(rId);
 		});
 
-		if($p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper")
+		if($p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper")
 			grid.enableMultiselect(true);
 
 		// эту функцию будем вызывать снаружи, чтобы перечитать данные
