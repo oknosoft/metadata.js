@@ -106,7 +106,7 @@ function only_in_browser(w){
 			 */
 			function IPInfo(){
 
-				var _yageocoder, _ggeocoder, _addr = "";
+				var _yageocoder, _ggeocoder, _addr = "", _parts;
 
 				/**
 				 * Геокодер карт Яндекс
@@ -160,19 +160,80 @@ function only_in_browser(w){
 						configurable : false}
 				);
 
-				/**
-				 * Адрес геолокации пользователя программы
-				 * @property addr
-				 * @for IPInfo
-				 * @type String
-				 */
-				this.__define("addr", {
+
+				this.__define({
+
+					/**
+					 * Адрес геолокации пользователя программы
+					 * @property addr
+					 * @for IPInfo
+					 * @type String
+					 */
+					addr: {
 						get : function(){
 							return _addr;
-						},
-						enumerable : true,
-						configurable : false}
-				);
+						}
+					},
+
+					parts: {
+						get : function(){
+							return _parts;
+						}
+					},
+
+					components: {
+						value : function(v, components){
+							var i, c, j, street = "", street0 = "", locality = "";
+							for(i in components){
+								c = components[i];
+								//street_number,route,locality,administrative_area_level_2,administrative_area_level_1,country,sublocality_level_1
+								for(j in c.types){
+									switch(c.types[j]){
+										case "route":
+											if(c.short_name.indexOf("Unnamed")==-1){
+												street = c.short_name + (street ? (" " + street) : "");
+												street0 = c.long_name.replace("улица", "").trim();
+											}
+											break;
+										case "administrative_area_level_1":
+											v.region = c.long_name;
+											break;
+										case "administrative_area_level_2":
+											v.city = c.short_name;
+											v.city_long = c.long_name;
+											break;
+										case "locality":
+											locality = (locality ? (locality + " ") : "") + c.short_name;
+											break;
+										case "street_number":
+											street = (street ? (street + " ") : "") + c.short_name;
+											break;
+										case "postal_code":
+											v.postal_code = c.short_name;
+											break;
+										default:
+											break;
+									}
+								}
+							}
+							if(v.region && v.region == v.city_long)
+								if(v.city.indexOf(locality) == -1)
+									v.city = locality;
+								else
+									v.city = "";
+							else if(locality){
+								if(v.city.indexOf(locality) == -1 && v.region.indexOf(locality) == -1)
+									street = locality + ", " + street;
+							}
+
+							// если в адресе есть подстрока - не переписываем
+							if(!v.street || v.street.indexOf(street0)==-1)
+								v.street = street;
+
+							return v;
+						}
+					}
+				});
 
 				this.location_callback= function(){
 
@@ -201,16 +262,16 @@ function only_in_browser(w){
 							_ggeocoder.geocode({'latLng': latlng}, function(results, status) {
 								if (status == google.maps.GeocoderStatus.OK){
 									if(!results[1] || results[0].address_components.length >= results[1].address_components.length)
-										_addr = results[0].formatted_address;
+										_parts = results[0];
 									else
-										_addr = results[1].formatted_address;
+										_parts = results[1];
+									_addr = _parts.formatted_address;
+
+									dhx4.callEvent("geo_current_position", [$p.ipinfo.components({}, _parts.address_components)]);
 								}
 							});
 
-						}, function(err){
-							if(err)
-								$p.ipinfo.err = err.message;
-						}, {
+						}, $p.record_log, {
 							timeout: 30000
 						}
 					);
@@ -253,7 +314,7 @@ function only_in_browser(w){
 					$p.eve.onload.push(function () {
 						setTimeout(function(){
 							$p.load_script(location.protocol +
-								"//maps.google.com/maps/api/js?sensor=false&callback=$p.ipinfo.location_callback", "script", function(){});
+								"//maps.google.com/maps/api/js?callback=$p.ipinfo.location_callback", "script", function(){});
 						}, 100);
 					});
 				else

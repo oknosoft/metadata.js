@@ -305,7 +305,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 					v.latitude = loc.lat();
 					v.longitude = loc.lng();
 
-					v.postal_code = process_address_components({}, results[0].address_components).postal_code || "";
+					v.postal_code = $p.ipinfo.components({}, results[0].address_components).postal_code || "";
 				}
 			});
 		}
@@ -530,57 +530,6 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 			}
 		}
 
-		function process_address_components(v, components){
-			var i, c, j, street = "", street0 = "", locality = "";
-			for(i in components){
-				c = components[i];
-				//street_number,route,locality,administrative_area_level_2,administrative_area_level_1,country,sublocality_level_1
-				for(j in c.types){
-					switch(c.types[j]){
-						case "route":
-							if(c.short_name.indexOf("Unnamed")==-1){
-								street = c.short_name + (street ? (" " + street) : "");
-								street0 = c.long_name.replace("улица", "").trim();
-							}
-							break;
-						case "administrative_area_level_1":
-							v.region = c.long_name;
-							break;
-						case "administrative_area_level_2":
-							v.city = c.short_name;
-							v.city_long = c.long_name;
-							break;
-						case "locality":
-							locality = (locality ? (locality + " ") : "") + c.short_name;
-							break;
-						case "street_number":
-							street = (street ? (street + " ") : "") + c.short_name;
-							break;
-						case "postal_code":
-							v.postal_code = c.short_name;
-							break;
-						default:
-							break;
-					}
-				}
-			}
-			if(v.region == v.city_long)
-				if(v.city.indexOf(locality) == -1)
-					v.city = locality;
-				else
-					v.city = "";
-			else if(locality){
-				if(v.city.indexOf(locality) == -1 && v.region.indexOf(locality) == -1)
-					street = locality + ", " + street;
-			}
-
-			// если в адресе есть подстрока - не переписываем
-			if(!v.street || v.street.indexOf(street0)==-1)
-				v.street = street;
-
-			return v;
-		}
-
 		function marker_dragend(e) {
 			$p.ipinfo.ggeocoder.geocode({'latLng': e.latLng}, function(results, status) {
 				if (status == google.maps.GeocoderStatus.OK) {
@@ -588,7 +537,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 						var addr = results[0];
 
 						wnd.setText(addr.formatted_address);
-						process_address_components(v, addr.address_components);
+						$p.ipinfo.components(v, addr.address_components);
 
 						refresh_grid();
 
