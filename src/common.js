@@ -74,30 +74,10 @@ if(typeof window !== "undefined"){
 	/**
 	 * Если контекст исполнения - браузер, проверяем поддержку промисов, при необходимости загружаем полифил
 	 */
-	(function(){
-		var i, surl, sname;
-
-		if(typeof Promise !== "function"){
-
-			for(i in document.scripts){
-				if(document.scripts[i].src.indexOf("metadata.js")!=-1){
-					sname = "metadata.js";
-					surl = document.scripts[i].src;
-					break;
-				}else if(document.scripts[i].src.indexOf("metadata.min.js")!=-1){
-					sname = "metadata.min.js";
-					surl = document.scripts[i].src;
-					break;
-				}
-			}
-
-			$p.load_script(surl.replace(sname, "es6-promise.min.js"), "script", function () {
-				ES6Promise.polyfill();
-			});
-
-		}
-
-	})();
+	if(typeof Promise !== "function")
+		$p.load_script("//cdn.jsdelivr.net/es6-promise/latest/es6-promise.min.js", "script", function () {
+			ES6Promise.polyfill();
+		});
 
 }else if(typeof WorkerGlobalScope === "undefined"){
 
