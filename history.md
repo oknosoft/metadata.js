@@ -36,3 +36,5 @@
 ### 14.11.2015
 - Новый визуальный компонент - ODropdownList - гиперссылка с выпадающим списком
 - Задействован иконошрифт fontawesome
+- Сторонние библиотеки теперь загружаются из cdn.jsdelivr.net, а не с нашего сервера
+- Metadata.js опубликована в cdn и доступна по адресу //cdn.jsdelivr.net/metadata/latest/metadata.min.js
