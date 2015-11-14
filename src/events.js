@@ -391,7 +391,7 @@ function only_in_browser(w){
 								surl = document.scripts[i].src;
 								break;
 							}else if(document.scripts[i].src.endsWith("metadata.min.js")){
-								sname = new RegExp('metadata.min.js$');;
+								sname = new RegExp('metadata.min.js$');
 								surl = document.scripts[i].src;
 								break;
 							}
