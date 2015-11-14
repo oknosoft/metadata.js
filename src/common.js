@@ -1518,6 +1518,7 @@ function JobPrm(){
 
 	/**
 	 * Устаревший метод. умрёт после перевода методов _заказа дилера_ в irest
+	 * TODO: удалить этот метод
 	 * @method hs_url
 	 * @deprecated
 	 * @return {string}
@@ -1531,13 +1532,17 @@ function JobPrm(){
 			return url.replace("%1/", "");
 	};
 
+	function base_url(){
+		return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
+	}
+
 	/**
 	 * Адрес стандартного интерфейса 1С OData
 	 * @method rest_url
 	 * @return {string}
 	 */
 	this.rest_url = function () {
-		var url = this.rest_path || "/a/zd/%1/odata/standard.odata/",
+		var url = base_url(),
 			zone = $p.wsql.get_user_param("zone", "number");
 		if(zone)
 			return url.replace("%1", zone);
@@ -1551,7 +1556,7 @@ function JobPrm(){
 	 * @return {string}
 	 */
 	this.irest_url = function () {
-		var url = this.rest_path || "/a/zd/%1/odata/standard.odata/",
+		var url = base_url(),
 			zone = $p.wsql.get_user_param("zone", "number");
 		url = url.replace("odata/standard.odata", "hs/rest");
 		if(zone)
@@ -1747,13 +1752,13 @@ function WSQL(){
 			{p: "enable_save_pwd",	v: "",	t:"boolean"},
 			{p: "reset_local_data",	v: "",	t:"boolean"},
 			{p: "autologin",		v: "",	t:"boolean"},
-			{p: "cache_md_date",	v: 0,	t:"number"},
 			{p: "cache_cat_date",	v: 0,	t:"number"},
-			{p: "files_date",       v: 201511010000, t:"number"},
+			{p: "files_date",       v: 201511150000, t:"number"},
 			{p: "margin",			v: 60,	t:"number"},
 			{p: "discount",			v: 15,	t:"number"},
-			{p: "offline",			v: "" || $p.job_prm.offline, t:"boolean"},
-			{p: "skin",		        v: "dhx_web", t:"string"}
+			{p: "offline",			v: $p.job_prm.offline || "", t:"boolean"},
+			{p: "skin",		        v: "dhx_web", t:"string"},
+			{p: "rest_path",		v: "", t:"string"}
 		], zone;
 
 		// подмешиваем к базовым параметрам настройки приложения
@@ -1777,7 +1782,6 @@ function WSQL(){
 		});
 
 		// сбрасываем даты, т.к. база в озу
-		wsql.set_user_param("cache_md_date", 0);
 		wsql.set_user_param("cache_cat_date", 0);
 		wsql.set_user_param("reset_local_data", "");
 

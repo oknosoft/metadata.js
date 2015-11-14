@@ -399,7 +399,7 @@ function only_in_browser(w){
 						// стили загружаем только при необходимости
 						for(i=0; i < document.styleSheets.length; i++){
 							if(document.styleSheets[i].href){
-								if(document.styleSheets[i].href.indexOf("dhtmlx.css")!=-1)
+								if(document.styleSheets[i].href.indexOf("dhtmlx_")!=-1)
 									load_dhtmlx = false;
 								else if(document.styleSheets[i].href.indexOf("metadata.css")!=-1)
 									load_meta = false;
@@ -411,7 +411,7 @@ function only_in_browser(w){
 
 						//str.replace(new RegExp(list[i] + '$'), 'finish')
 						if(load_dhtmlx)
-							$p.load_script(surl.replace(sname, dhtmlx.skin == "dhx_web" ? "dhtmlx.css" : "dhtmlx_terrace.css"), "link");
+							$p.load_script(surl.replace(sname, dhtmlx.skin == "dhx_web" ? "dhtmlx_web.css" : "dhtmlx_terrace.css"), "link");
 						if(load_meta)
 							$p.load_script(surl.replace(sname, "metadata.css"), "link");
 
@@ -1043,7 +1043,6 @@ $p.eve.log_in = function(onstep){
 			}else
 				return _load({
 					action: "get_meta",
-					cache_md_date: $p.wsql.get_user_param("cache_md_date", "number"),
 					cache_cat_date: stepper.cat_ini_date,
 					now_js: Date.now(),
 					margin: $p.wsql.get_user_param("margin", "number"),
