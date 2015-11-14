@@ -386,12 +386,12 @@ function only_in_browser(w){
 						var i, surl, sname, load_dhtmlx = true, load_meta = true;
 
 						for(i in document.scripts){
-							if(document.scripts[i].src.indexOf("metadata.js")!=-1){
-								sname = "metadata.js";
+							if(document.scripts[i].src.endsWith("metadata.js")){
+								sname = new RegExp('metadata.js$');
 								surl = document.scripts[i].src;
 								break;
-							}else if(document.scripts[i].src.indexOf("metadata.min.js")!=-1){
-								sname = "metadata.min.js";
+							}else if(document.scripts[i].src.indexOf("metadata.min.js")){
+								sname = new RegExp('metadata.min.js$');;
 								surl = document.scripts[i].src;
 								break;
 							}
@@ -409,6 +409,7 @@ function only_in_browser(w){
 						// задаём основной скин
 						dhtmlx.skin = $p.wsql.get_user_param("skin") || "dhx_web";
 
+						//str.replace(new RegExp(list[i] + '$'), 'finish')
 						if(load_dhtmlx)
 							$p.load_script(surl.replace(sname, dhtmlx.skin == "dhx_web" ? "dhtmlx.css" : "dhtmlx_terrace.css"), "link");
 						if(load_meta)
