@@ -32,7 +32,7 @@ var WebSocketServer = require('ws').Server,
 	cnn_str = "postgres://md:md@localhost/md",
 
 	// metadata.js
-	$p = require('../lib/metadata.node.js');
+	$p = require('../lib/metadata.core.js');
 
 function srv_1c(request, response) {
 

@@ -1,0 +1,9 @@
+//cdn.jsdelivr.net/metadata/latest/metadata.min.js
+//cdn.jsdelivr.net/alasql/latest/alasql.min.js
+//cdn.jsdelivr.net/js-xlsx/latest/xlsx.core.min.js
+//cdn.jsdelivr.net/es6-promise/latest/es6-promise.min.js
+//cdn.jsdelivr.net/fontawesome/latest/css/font-awesome.min.css
+
+//cdn.jsdelivr.net/jquery.nouislider/latest/nouislider.min.js
+//cdn.jsdelivr.net/jquery.nouislider/latest/nouislider.min.css
+
