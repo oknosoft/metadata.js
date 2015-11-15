@@ -383,15 +383,17 @@ function only_in_browser(w){
 
 					function load_css(){
 
-						var i, surl, sname, load_dhtmlx = true, load_meta = true;
+						var i, surl, sname, load_dhtmlx = true, load_meta = true,
+							smetadata = new RegExp('metadata.js$'),
+							smetadatamin = new RegExp('metadata.min.js$');
 
 						for(i in document.scripts){
-							if(document.scripts[i].src.endsWith("metadata.js")){
-								sname = new RegExp('metadata.js$');
+							if(document.scripts[i].src.match(smetadata)){
+								sname = smetadata;
 								surl = document.scripts[i].src;
 								break;
-							}else if(document.scripts[i].src.endsWith("metadata.min.js")){
-								sname = new RegExp('metadata.min.js$');
+							}else if(document.scripts[i].src.endsWith(smetadatamin)){
+								sname = smetadatamin;
 								surl = document.scripts[i].src;
 								break;
 							}
