@@ -392,7 +392,7 @@ function only_in_browser(w){
 								sname = smetadata;
 								surl = document.scripts[i].src;
 								break;
-							}else if(document.scripts[i].src.endsWith(smetadatamin)){
+							}else if(document.scripts[i].src.match(smetadatamin)){
 								sname = smetadatamin;
 								surl = document.scripts[i].src;
 								break;
