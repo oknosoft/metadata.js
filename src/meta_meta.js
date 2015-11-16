@@ -922,7 +922,7 @@ $p.Meta = Meta;
  * @param err
  */
 $p.record_log = function (err) {
-	if($p.ireg.$log)
+	if($p.ireg && $p.ireg.$log)
 		$p.ireg.$log.record(err);
 	else
 		console.log(err);
@@ -961,14 +961,10 @@ _cat.load_soap_to_grid = function(attr, grid, callback){
 	if(!mgr.cachable && ($p.job_prm.rest || $p.job_prm.irest_enabled || attr.rest))
 		mgr.rest_selection(attr)
 			.then(cb_callBack)
-			.catch(function (error) {
-				console.log(error);
-			});
+			.catch($p.record_log);
 	else
 		_load(attr)
 			.then(cb_callBack)
-			.catch(function (error) {
-				console.log(error);
-			});
+			.catch($p.record_log);
 
 };
