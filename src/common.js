@@ -71,19 +71,6 @@ if(typeof window !== "undefined"){
 	};
 
 
-	/**
-	 * Если контекст исполнения - браузер, проверяем поддержку промисов, при необходимости загружаем полифил
-	 */
-	if(typeof Promise !== "function"){
-		if(ES6Promise)
-			ES6Promise.polyfill();
-		else
-			$p.load_script("//cdn.jsdelivr.net/es6-promise/latest/es6-promise.min.js", "script", function () {
-				ES6Promise.polyfill();
-			});
-	}
-
-
 }else if(typeof WorkerGlobalScope === "undefined"){
 
 	// локальное хранилище внутри node.js
