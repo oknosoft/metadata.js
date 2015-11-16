@@ -29,8 +29,8 @@
       "src/wnd_obj.js",
       "src/wnd_selection.js",
       "src/events.js"],
-    "filesaver" :  "lib/filesaver.js",
-    "xml_to_json": "lib/xml_to_json.js",
+    "filesaver" :  "lib_ext/filesaver.js",
+    "xml_to_json": "lib_ext/xml_to_json.js",
     "<%= file %>": "data/*.xml",
     "log": "data/log.json"
   },

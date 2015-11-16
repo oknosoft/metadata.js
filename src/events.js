@@ -377,7 +377,7 @@ function only_in_browser(w){
 			 * Инициализируем параметры пользователя,
 			 * проверяем offline и версию файлов
 			 */
-			setTimeout(function(){
+			function init_params(){
 
 				$p.wsql.init_params().then(function(){
 
@@ -481,8 +481,8 @@ function only_in_browser(w){
 
 					// пытаемся перейти в полноэкранный режим в мобильных браузерах
 					if (document.documentElement.webkitRequestFullScreen
-							&& navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)
-							&& ($p.job_prm.request_full_screen || $p.wsql.get_user_param("request_full_screen"))) {
+						&& navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)
+						&& ($p.job_prm.request_full_screen || $p.wsql.get_user_param("request_full_screen"))) {
 						var requestFullScreen = function(){
 							document.documentElement.webkitRequestFullScreen();
 							w.removeEventListener('touchstart', requestFullScreen);
@@ -577,6 +577,21 @@ function only_in_browser(w){
 					}
 
 				});
+			}
+
+			setTimeout(function(){
+
+				/**
+				 * проверяем поддержку промисов, при необходимости загружаем полифил
+				 */
+				if(typeof Promise !== "function"){
+					$p.load_script("//cdn.jsdelivr.net/es6-promise/latest/es6-promise.min.js", "script", function () {
+						ES6Promise.polyfill();
+						init_params();
+					});
+				} else
+					init_params();
+
 			}, 20);
 
 		}, 20);
