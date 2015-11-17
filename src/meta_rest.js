@@ -301,7 +301,7 @@ function Rest(){
 	this.load_obj = function (tObj) {
 
 		var attr = {};
-		$p.ajax.default_attr(attr, $p.job_prm.rest ? $p.job_prm.rest_url() : $p.job_prm.irest_url());
+		$p.ajax.default_attr(attr, (!tObj._metadata.irest && $p.job_prm.rest) ? $p.job_prm.rest_url() : $p.job_prm.irest_url());
 		attr.url += tObj._manager.rest_name + "(guid'" + tObj.ref + "')?$format=json";
 
 		return $p.ajax.get_ex(attr.url, attr)
@@ -309,13 +309,14 @@ function Rest(){
 				return JSON.parse(req.response);
 			})
 			.then(function (res) {
-				return tObj._mixin(_rest.to_data(res, tObj._manager));
+				tObj._mixin(_rest.to_data(res, tObj._manager))._set_loaded();
+				return tObj;
 			})
 			.catch(function (err) {
 				if(err.status==404)
 					return tObj;
 				else
-					console.log(err);
+					$p.record_log(err);
 			});
 	};
 
@@ -494,7 +495,7 @@ DataManager.prototype.rest_tree = function (attr) {
 		cmd = t.metadata(),
 		flds = [], ares = [], o, ro, syn, mf;
 
-	$p.ajax.default_attr(attr, $p.job_prm.rest ? $p.job_prm.rest_url() : $p.job_prm.irest_url());
+	$p.ajax.default_attr(attr, (!cmd.irest && $p.job_prm.rest) ? $p.job_prm.rest_url() : $p.job_prm.irest_url());
 	attr.url += this.rest_name + "?allowedOnly=true&$format=json&$top=1000&$select=Ref_Key,DeletionMark,Parent_Key,Description&$filter=IsFolder eq true";
 
 	return $p.ajax.get_ex(attr.url, attr)
@@ -596,7 +597,7 @@ DataManager.prototype.rest_selection = function (attr) {
 
 	}
 
-	$p.ajax.default_attr(attr, $p.job_prm.rest ? $p.job_prm.rest_url() : $p.job_prm.irest_url());
+	$p.ajax.default_attr(attr, (!cmd.irest && $p.job_prm.rest) ? $p.job_prm.rest_url() : $p.job_prm.irest_url());
 	attr.url += this.rest_name + "?allowedOnly=true&$format=json&$top=1000&" + select;
 
 	if(_md.get(t.class_name, "date")){

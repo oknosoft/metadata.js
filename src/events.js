@@ -537,7 +537,7 @@ function only_in_browser(w){
 								// At this point, registration has taken place.
 								// The service worker will not handle requests until this page and any
 								// other instances of this page (in other tabs, etc.) have been closed/reloaded.
-								console.log('serviceWorker register succeeded');
+								$p.record_log('serviceWorker register succeeded');
 							})
 							.catch($p.record_log);
 

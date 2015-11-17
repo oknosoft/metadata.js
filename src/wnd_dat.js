@@ -708,21 +708,17 @@ $p.iface.swith_view = function(name){
 		// first call, init corresponding components
 		// календарь
 		if(name=="cal" && !window.dhtmlXScheduler){
-			$p.load_script("lib/dhtmlxscheduler.js", "script", function(){
-				$p.load_script("lib/ext/dhtmlxscheduler_minical.js", "script");
-				$p.load_script("lib/ext/dhtmlxscheduler_timeline.js", "script");
-				$p.load_script("lib/ext/dhtmlxscheduler_locale_ru.js", "script", function(){
-					//scheduler.config.xml_date="%Y-%m-%d %H:%i";
-					scheduler.config.first_hour = 8;
-					scheduler.config.last_hour = 22;
-					iface.docs.scheduler = iface.docs.attachScheduler(new Date("2015-03-20"), "week", "scheduler_here");
-					iface.docs.scheduler.attachEvent("onBeforeViewChange", function(old_mode, old_date, mode, date){
-						if(mode == "timeline"){
-							$p.msg.show_not_implemented();
-							return false;
-						}
-						return true;
-					});
+			$p.load_script("lib/dhtmlxscheduler.min.js", "script", function(){
+				//scheduler.config.xml_date="%Y-%m-%d %H:%i";
+				scheduler.config.first_hour = 8;
+				scheduler.config.last_hour = 22;
+				iface.docs.scheduler = iface.docs.attachScheduler(new Date("2015-11-20"), "week", "scheduler_here");
+				iface.docs.scheduler.attachEvent("onBeforeViewChange", function(old_mode, old_date, mode, date){
+					if(mode == "timeline"){
+						$p.msg.show_not_implemented();
+						return false;
+					}
+					return true;
 				});
 			});
 
@@ -766,7 +762,7 @@ function OTooolBar(attr){
 	if(!attr.image_path)
 		attr.image_path = dhtmlx.image_path + 'custom_web/';
 
-	div.className = 'wb-tools';
+	div.className = 'md_otooolbar';
 	_this.cell = div;
 
 	_this.buttons = {};
@@ -853,7 +849,7 @@ function OTooolBar(attr){
 
 				if(!this.subdiv){
 					this.subdiv = document.createElement('div');
-					this.subdiv.className = 'wb-tools';
+					this.subdiv.className = 'md_otooolbar';
 					offset = $p.iface.get_offset(bdiv);
 					if(battr.sub.align == 'right')
 						this.subdiv.style.left = (offset.left + bdiv.offsetWidth - (parseInt(battr.sub.width.replace(/\D+/g,"")) || 56)) + 'px';
@@ -961,7 +957,7 @@ $p.iface.add_button = function(parent, attr, battr) {
 	var bdiv = document.createElement('div'), html = '';
 	bdiv.name = (attr ? attr.name + '_' : '') + battr.name;
 	parent.appendChild(bdiv);
-	bdiv.className = 'wb-button';
+	bdiv.className = 'md_otooolbar_button';
 	if(battr.img)
 		html = '<img src="' + (attr ? attr.image_path : '') + battr.img + '">';
 	if(battr.b)

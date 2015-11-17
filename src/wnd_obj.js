@@ -57,7 +57,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			})
 			.catch(function (err) {
 				pwnd.progressOff();
-				console.log(err);
+				$p.record_log(err);
 			});
 	}
 
@@ -340,7 +340,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			})
 			.catch(function(err){
 				wnd.progressOff();
-				console.log(err);
+				$p.record_log(err);
 			});
 	}
 

@@ -274,7 +274,7 @@ DataObj.prototype.load = function(){
 			tObj.number_doc = "000000000";
 		return Promise.resolve(tObj);
 
-	}else if(!tObj._manager.cachable && ($p.job_prm.rest || $p.job_prm.irest_enabled))
+	}else if($p.job_prm.rest || $p.job_prm.irest_enabled)
 		return _rest.load_obj(tObj);
 
 	else
@@ -451,11 +451,17 @@ function CatObj(attr, manager) {
 		enumerable : false
 	});
 
-	if(attr && typeof attr == "object")
-		this._mixin(attr);
+	if(attr && typeof attr == "object"){
+		if(attr._not_set_loaded){
+			delete attr._not_set_loaded;
+			this._mixin(attr);
+		}else{
+			this._mixin(attr);
+			if(!$p.is_empty_guid(this.ref) && (attr.id || attr.name))
+				this._set_loaded(this.ref);
+		}
+	}
 
-	if(!$p.is_empty_guid(this.ref) && (attr.id || attr.name))
-		this._set_loaded(this.ref);
 }
 CatObj._extend(DataObj);
 

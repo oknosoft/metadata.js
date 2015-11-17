@@ -554,9 +554,7 @@ DataManager.prototype.print = function(ref, model, wnd){
 
 	$p.ajax.get_and_show_blob(rattr.url, rattr, "get")
 		.then(tune_wnd_print)
-		.catch(function (err) {
-			console.log(err);
-		});
+		.catch($p.record_log);
 	setTimeout(tune_wnd_print, 3000);
 
 };

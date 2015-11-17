@@ -126,9 +126,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 							async: true
 						})
 							.then(drow_svgs)
-							.catch(function (err) {
-								console.log(err);
-							});
+							.catch($p.record_log);
 						stack.length = 0;
 					}
 				}, 300);
