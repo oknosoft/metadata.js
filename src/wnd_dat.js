@@ -762,7 +762,11 @@ function OTooolBar(attr){
 	if(!attr.image_path)
 		attr.image_path = dhtmlx.image_path + 'custom_web/';
 
-	div.className = 'md_otooolbar';
+	if(attr.hasOwnProperty("class_name"))
+		div.className = attr.class_name;
+	else
+		div.className = 'md_otooolbar';
+
 	_this.cell = div;
 
 	_this.buttons = {};
