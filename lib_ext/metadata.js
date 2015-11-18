@@ -4972,7 +4972,7 @@ $p.iface.swith_view = function(name){
 				//scheduler.config.xml_date="%Y-%m-%d %H:%i";
 				scheduler.config.first_hour = 8;
 				scheduler.config.last_hour = 22;
-				iface.docs.scheduler = iface.docs.attachScheduler(new Date("2015-03-20"), "week", "scheduler_here");
+				iface.docs.scheduler = iface.docs.attachScheduler(new Date("2015-11-20"), "week", "scheduler_here");
 				iface.docs.scheduler.attachEvent("onBeforeViewChange", function(old_mode, old_date, mode, date){
 					if(mode == "timeline"){
 						$p.msg.show_not_implemented();
