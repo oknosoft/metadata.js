@@ -6508,7 +6508,7 @@ function Rest(){
 		}
 
 		for(ts in mts){
-			synts = _md.syns_1с(ts);
+			synts = ts == "extra_fields" ? ts : _md.syns_1с(ts);
 			if(!rdata.hasOwnProperty(synts))
 				continue;
 			o[ts] = [];
@@ -6519,7 +6519,7 @@ function Rest(){
 				rdata[synts].forEach(function (r) {
 					row = {};
 					for(tf in mts[ts].fields){
-						syn = _md.syns_1с(tf);
+						syn = (ts == "extra_fields" && (tf == "property" || tf == "value")) ? tf : _md.syns_1с(tf);
 						if(syn.indexOf("_Key") == -1 && mts[ts].fields[tf].type.is_ref && r[syn+"_Key"])
 							syn+="_Key";
 						row[tf] = r[syn];

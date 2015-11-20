@@ -22,7 +22,7 @@
  * @static
  */
 function MetaEngine() {
-	this.version = "0.9.200";
+	this.version = "0.9.201";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
@@ -4968,7 +4968,7 @@ $p.iface.swith_view = function(name){
 		// first call, init corresponding components
 		// календарь
 		if(name=="cal" && !window.dhtmlXScheduler){
-			$p.load_script("lib/dhtmlxscheduler.min.js", "script", function(){
+			$p.load_script("dist/dhtmlxscheduler.min.js", "script", function(){
 				//scheduler.config.xml_date="%Y-%m-%d %H:%i";
 				scheduler.config.first_hour = 8;
 				scheduler.config.last_hour = 22;
@@ -4982,7 +4982,7 @@ $p.iface.swith_view = function(name){
 				});
 			});
 
-			$p.load_script("lib/dhtmlxscheduler.css", "link");
+			$p.load_script("dist/dhtmlxscheduler.css", "link");
 
 			//}else if(name=="rep"){
 			//	// подключаемый отчет

@@ -26,7 +26,7 @@
     "url": "https://github.com/oknosoft/metadata.js/issues"
   },
   "homepage": "http://www.oknosoft.ru/metadata/",
-  "main": "lib/metadata.core.js",
+  "main": "dist/metadata.core.min.js",
   "keywords": [
     "metadata",
     "rest",
