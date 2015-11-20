@@ -22,7 +22,7 @@
  * @static
  */
 function MetaEngine() {
-	this.version = "0.9.200";
+	this.version = "0.9.201";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
@@ -4968,11 +4968,11 @@ $p.iface.swith_view = function(name){
 		// first call, init corresponding components
 		// календарь
 		if(name=="cal" && !window.dhtmlXScheduler){
-			$p.load_script("lib/dhtmlxscheduler.min.js", "script", function(){
+			$p.load_script("dist/dhtmlxscheduler.min.js", "script", function(){
 				//scheduler.config.xml_date="%Y-%m-%d %H:%i";
 				scheduler.config.first_hour = 8;
 				scheduler.config.last_hour = 22;
-				iface.docs.scheduler = iface.docs.attachScheduler(new Date("2015-03-20"), "week", "scheduler_here");
+				iface.docs.scheduler = iface.docs.attachScheduler(new Date("2015-11-20"), "week", "scheduler_here");
 				iface.docs.scheduler.attachEvent("onBeforeViewChange", function(old_mode, old_date, mode, date){
 					if(mode == "timeline"){
 						$p.msg.show_not_implemented();
@@ -4982,7 +4982,7 @@ $p.iface.swith_view = function(name){
 				});
 			});
 
-			$p.load_script("lib/dhtmlxscheduler.css", "link");
+			$p.load_script("dist/dhtmlxscheduler.css", "link");
 
 			//}else if(name=="rep"){
 			//	// подключаемый отчет
@@ -5022,7 +5022,11 @@ function OTooolBar(attr){
 	if(!attr.image_path)
 		attr.image_path = dhtmlx.image_path + 'custom_web/';
 
-	div.className = 'md_otooolbar';
+	if(attr.hasOwnProperty("class_name"))
+		div.className = attr.class_name;
+	else
+		div.className = 'md_otooolbar';
+
 	_this.cell = div;
 
 	_this.buttons = {};
@@ -10037,7 +10041,7 @@ function Rest(){
 		}
 
 		for(ts in mts){
-			synts = _md.syns_1с(ts);
+			synts = ts == "extra_fields" ? ts : _md.syns_1с(ts);
 			if(!rdata.hasOwnProperty(synts))
 				continue;
 			o[ts] = [];
@@ -10048,7 +10052,7 @@ function Rest(){
 				rdata[synts].forEach(function (r) {
 					row = {};
 					for(tf in mts[ts].fields){
-						syn = _md.syns_1с(tf);
+						syn = (ts == "extra_fields" && (tf == "property" || tf == "value")) ? tf : _md.syns_1с(tf);
 						if(syn.indexOf("_Key") == -1 && mts[ts].fields[tf].type.is_ref && r[syn+"_Key"])
 							syn+="_Key";
 						row[tf] = r[syn];

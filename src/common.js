@@ -19,7 +19,7 @@
  * @static
  */
 function MetaEngine() {
-	this.version = "0.9.200";
+	this.version = "0.9.201";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};

@@ -1,7 +1,7 @@
 {
   "name": "metadata",
   "description": "metadata.js - Web client for 1C and other rest servers - metadata & data engine",
-  "version": "0.9.200",
+  "version": "0.9.201",
   "license": "Oknosoft",
   "keywords": [
     "metadata",
@@ -25,7 +25,7 @@
     "type": "git",
     "url": "https://github.com/oknosoft/metadata.js.git"
   },
-  "main": "lib/metadata.min.js",
+  "main": "dist/metadata.min.js",
   "moduleType": [
     "amd",
     "globals",
@@ -39,7 +39,6 @@
   },
   "ignore": [
     "src",
-    "lib/ext",
     "lib_ext",
     "node_modules",
     "bower.json",

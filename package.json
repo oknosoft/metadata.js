@@ -1,7 +1,7 @@
 {
   "name": "metadata-js",
   "description": "metadata.js - Web client for 1C and other rest servers - metadata & data engine",
-  "version": "0.9.200",
+  "version": "0.9.201",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "directories": {
     "example": "examples"
@@ -26,7 +26,7 @@
     "url": "https://github.com/oknosoft/metadata.js/issues"
   },
   "homepage": "http://www.oknosoft.ru/metadata/",
-  "main": "lib/metadata.core.js",
+  "main": "dist/metadata.core.min.js",
   "keywords": [
     "metadata",
     "rest",

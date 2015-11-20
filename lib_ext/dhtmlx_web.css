@@ -3004,7 +3004,7 @@ div.gridbox table.obj td.group_row {
   width: 100%;
   border: 0px;
   padding: 0px;
-  padding-right: 1px !ie;
+  padding-right: 1px;
   margin: 0px;
   font-family: Tahoma;
   font-size: 12px;
@@ -3162,7 +3162,7 @@ div.gridbox_dhx_web.gridbox table.obj tr td {
 div.gridbox_dhx_web.gridbox table.hdr td div.hdrcell {
   width: auto;
   padding-left: 10px;
-  width: 100% !ie;
+  width: 100%;
 }
 div.gridbox_dhx_web.gridbox table.hdr td {
   border-width: 0px 1px 0px 0px;

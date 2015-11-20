@@ -2925,7 +2925,7 @@ div.gridbox table.obj td.group_row {
   width: 100%;
   border: 0px;
   padding: 0px;
-  padding-right: 1px !ie;
+  padding-right: 1px;
   margin: 0px;
   overflow: hidden;
 }
@@ -3077,7 +3077,7 @@ div.gridbox_dhx_terrace.gridbox table.hdr td div.hdrcell {
   padding-left: 20px;
   line-height: 36px;
   text-transform: uppercase;
-  width: 100% !ie;
+  width: 100%;
 }
 div.gridbox_dhx_terrace.gridbox .ftr table td {
   width: auto;
@@ -3088,7 +3088,7 @@ div.gridbox_dhx_terrace.gridbox .ftr table td {
   border-color: #cccccc;
   padding-left: 20px;
   line-height: 41px;
-  width: 100% !ie;
+  width: 100%;
 }
 div.gridbox_dhx_terrace.gridbox table.hdr td {
   border: 1px solid #cccccc;
