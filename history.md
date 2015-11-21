@@ -44,3 +44,6 @@
 - Metadata.js опубликована в cdn и доступна по адресу //cdn.jsdelivr.net/metadata/latest/metadata.min.js
 
 # v0.9.201
+
+### 20.11.2015
+- Изменена структура каталогов проекта для совместимости с cdn.jsdelivr.net

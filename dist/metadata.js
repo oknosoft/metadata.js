@@ -2326,6 +2326,7 @@ msg.bld_split_imp = "В параметрах продукции<br />'%1'<br />�
  * @requires common
  */
 
+// Прототип кустомных ячеек для грида
 var eXcell_proto = new eXcell();
 
 /**
@@ -12552,7 +12553,7 @@ function only_in_browser(w){
 						// стили загружаем только при необходимости
 						for(i=0; i < document.styleSheets.length; i++){
 							if(document.styleSheets[i].href){
-								if(document.styleSheets[i].href.indexOf("dhtmlx_")!=-1)
+								if(document.styleSheets[i].href.indexOf("dhx_web")!=-1 || document.styleSheets[i].href.indexOf("dhx_terrace")!=-1)
 									load_dhtmlx = false;
 								else if(document.styleSheets[i].href.indexOf("metadata.css")!=-1)
 									load_meta = false;
@@ -12564,7 +12565,7 @@ function only_in_browser(w){
 
 						//str.replace(new RegExp(list[i] + '$'), 'finish')
 						if(load_dhtmlx)
-							$p.load_script(surl.replace(sname, dhtmlx.skin == "dhx_web" ? "dhtmlx_web.css" : "dhtmlx_terrace.css"), "link");
+							$p.load_script(surl.replace(sname, dhtmlx.skin == "dhx_web" ? "dhx_web.css" : "dhx_terrace.css"), "link");
 						if(load_meta)
 							$p.load_script(surl.replace(sname, "metadata.css"), "link");
 

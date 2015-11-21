@@ -19,7 +19,7 @@
  * @static
  */
 function MetaEngine() {
-	this.version = "0.9.200";
+	this.version = "0.9.201";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
@@ -402,7 +402,7 @@ $p.ajax = new (
 	 */
 	function Ajax() {
 
-		function _call(method, url, postData, auth, beforeSend) {
+		function _call(method, url, post_data, auth, before_send) {
 
 			// Возвращаем новое Обещание.
 			return new Promise(function(resolve, reject) {
@@ -410,7 +410,7 @@ $p.ajax = new (
 				// Делаем привычные XHR вещи
 				var req = new XMLHttpRequest();
 
-				if(typeof window != "undefined" && dhx4.isIE)
+				if(typeof window != "undefined" && window.dhx4 && window.dhx4.isIE)
 					url = encodeURI(url);
 
 				if(auth){
@@ -435,12 +435,11 @@ $p.ajax = new (
 					req.withCredentials = true;
 					req.setRequestHeader("Authorization", "Basic " +
 						btoa(unescape(encodeURIComponent(username + ":" + password))));
-				}
-				else
+				}else
 					req.open(method, url, true);
 
-				if(beforeSend)
-					beforeSend.call(this, req);
+				if(before_send)
+					before_send.call(this, req);
 
 				if (method != "GET") {
 					if(!this.hide_headers && !auth.hide_headers){
@@ -448,7 +447,7 @@ $p.ajax = new (
 						req.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 					}
 				} else {
-					postData = null;
+					post_data = null;
 				}
 
 				req.onload = function() {
@@ -480,7 +479,7 @@ $p.ajax = new (
 				};
 
 				// Делаем запрос
-				req.send(postData);
+				req.send(post_data);
 			});
 
 		}
@@ -7957,7 +7956,7 @@ function SocketMsg(){
 						}catch(err){
 							data = ev.data;
 						}
-						t.handlers.execute(data);
+						dhx4.callEvent("socket_msg", [data]);
 					};
 
 					ws.onerror = $p.record_log;
@@ -7969,13 +7968,6 @@ function SocketMsg(){
 			}
 		}
 	};
-
-	/**
-	 * Обработчики сообщений
-	 * @property handlers
-	 * @type {Modifiers}
-	 */
-	t.handlers = new Modifiers();
 
 	t.send = function (data) {
 		if(ws && opened){
@@ -7990,8 +7982,8 @@ function SocketMsg(){
 	};
 
 	// если мы в браузере, подключаем обработчик react
-	if(typeof window !== "undefined")
-		t.handlers.push(reflect_react);
+	if(typeof window !== "undefined" && window.dhx4)
+		dhx4.attachEvent("socket_msg", reflect_react);
 
 }
 

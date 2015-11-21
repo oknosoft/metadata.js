@@ -5,11 +5,10 @@
     <title>metadata.js демо: Бухгалтерия предприятия</title>
     <base href="../../">
 
-    <!--стили наши-->
-    <link rel="stylesheet" type="text/css" href="dist/dhtmlx_web.css">
+    <!--стили наши + dhtmlx-->
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/fontawesome/latest/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="dist/dhx_web.css">
     <link rel="stylesheet" type="text/css" href="dist/metadata.css">
-
-    <script src="dist/dhtmlx.min.js"></script>
 
 
     <!--если настройки открыты из приложения, новые экземпляры глобальных объектов создавать не надо-->
@@ -21,7 +20,7 @@
             wsql = window.opener.$p.wsql;
 
         }else{
-            load_script("dist/metadata.js", "script", function () {
+            load_script("dist/metadata.min.js", "script", function () {
                 wsql = $p.wsql;
             });
         }

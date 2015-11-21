@@ -402,7 +402,7 @@ $p.ajax = new (
 	 */
 	function Ajax() {
 
-		function _call(method, url, postData, auth, beforeSend) {
+		function _call(method, url, post_data, auth, before_send) {
 
 			// Возвращаем новое Обещание.
 			return new Promise(function(resolve, reject) {
@@ -410,7 +410,7 @@ $p.ajax = new (
 				// Делаем привычные XHR вещи
 				var req = new XMLHttpRequest();
 
-				if(typeof window != "undefined" && dhx4.isIE)
+				if(typeof window != "undefined" && window.dhx4 && window.dhx4.isIE)
 					url = encodeURI(url);
 
 				if(auth){
@@ -435,12 +435,11 @@ $p.ajax = new (
 					req.withCredentials = true;
 					req.setRequestHeader("Authorization", "Basic " +
 						btoa(unescape(encodeURIComponent(username + ":" + password))));
-				}
-				else
+				}else
 					req.open(method, url, true);
 
-				if(beforeSend)
-					beforeSend.call(this, req);
+				if(before_send)
+					before_send.call(this, req);
 
 				if (method != "GET") {
 					if(!this.hide_headers && !auth.hide_headers){
@@ -448,7 +447,7 @@ $p.ajax = new (
 						req.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 					}
 				} else {
-					postData = null;
+					post_data = null;
 				}
 
 				req.onload = function() {
@@ -480,7 +479,7 @@ $p.ajax = new (
 				};
 
 				// Делаем запрос
-				req.send(postData);
+				req.send(post_data);
 			});
 
 		}

@@ -1,3 +1,4 @@
+
 .dhx_parent_row, .dhx_parent_row td{
 	background: #D4D0C8 !important;
 }
@@ -44,6 +45,7 @@ img.property_image{
 	left:-4px;
 	z-index:2;
 }
+
 html, body {
     width: 100%;
     height: 100%;
@@ -51,8 +53,11 @@ html, body {
     padding: 0;
     overflow: hidden;
 	color: rgb(48, 57, 66);
-	font-family: Segoe UI, Tahoma, sans-serif;
-	line-height: 22px;
+	/* font-family: Segoe UI, Tahoma, sans-serif;
+	font-family: 'Open Sans', sans-serif; */
+	font-family: Arial, sans-serif;
+	font-size: 14px;
+	line-height: 21px;
 }
 
 #owb_wrapper {
@@ -273,7 +278,7 @@ div.gridbox_dhx_web.gridbox table.hdr td {
 
 .tb_title {
     font-size: 16pt;
-    font-family: Segoe UI, Tahoma, sans-serif;
+    font-family: 'Open Sans', sans-serif;
     margin-right: 20px;
 }
 
@@ -322,6 +327,7 @@ div.dhxwin_brd.dat_gui {
 div.dhxwin_brd.dat_gui {
     border-top: none;
 }
+
 #tunes {
     position: absolute;
     left: 60px;

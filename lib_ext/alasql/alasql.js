@@ -4521,7 +4521,7 @@ alasql.matrix = alasql.queryArrayOfArrays;
 // Promises for AlaSQL
 //
 
-if(typeof exports === 'object') {
+if(typeof exports === 'object' && typeof Promise != 'function') {
 	var Promise = require('es6-promise').Promise;
 } 
 
