@@ -2,7 +2,7 @@
   "name": "metadata.js development build",
   "root": "../",
   "www_root": "../",
-  "output": "lib_ext/metadata.js",
+  "output": "dist/metadata.js",
   "modules": {
     "common":   [
       "src/common.js",

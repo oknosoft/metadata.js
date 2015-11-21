@@ -405,7 +405,7 @@ $p.ajax = new (
 	 */
 	function Ajax() {
 
-		function _call(method, url, postData, auth, beforeSend) {
+		function _call(method, url, post_data, auth, before_send) {
 
 			// Возвращаем новое Обещание.
 			return new Promise(function(resolve, reject) {
@@ -413,7 +413,7 @@ $p.ajax = new (
 				// Делаем привычные XHR вещи
 				var req = new XMLHttpRequest();
 
-				if(typeof window != "undefined" && dhx4.isIE)
+				if(typeof window != "undefined" && window.dhx4 && window.dhx4.isIE)
 					url = encodeURI(url);
 
 				if(auth){
@@ -438,12 +438,11 @@ $p.ajax = new (
 					req.withCredentials = true;
 					req.setRequestHeader("Authorization", "Basic " +
 						btoa(unescape(encodeURIComponent(username + ":" + password))));
-				}
-				else
+				}else
 					req.open(method, url, true);
 
-				if(beforeSend)
-					beforeSend.call(this, req);
+				if(before_send)
+					before_send.call(this, req);
 
 				if (method != "GET") {
 					if(!this.hide_headers && !auth.hide_headers){
@@ -451,7 +450,7 @@ $p.ajax = new (
 						req.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 					}
 				} else {
-					postData = null;
+					post_data = null;
 				}
 
 				req.onload = function() {
@@ -483,7 +482,7 @@ $p.ajax = new (
 				};
 
 				// Делаем запрос
-				req.send(postData);
+				req.send(post_data);
 			});
 
 		}
@@ -3337,9 +3336,6 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		_grid = this.attachGrid(),
 		_destructor = _grid.destructor;
 
-	if(_extra_fields && !_tsname)
-		_tsname = _obj.extra_fields ? "extra_fields" :  "ДополнительныеРеквизиты";
-
 	// задача обсервера - перерисовать поле при изменении свойств объекта
 	function observer(changes){
 		if(!_obj){
@@ -3484,6 +3480,8 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		_mgr = _obj._manager;
 		_tsname = attr.ts || "";
 		_extra_fields = _tsname ? _obj[_tsname] : (_obj.extra_fields || _obj["ДополнительныеРеквизиты"]);
+		if(_extra_fields && !_tsname)
+			_tsname = _obj.extra_fields ? "extra_fields" :  "ДополнительныеРеквизиты";
 		_pwnd = {
 			// обработчик выбора ссылочных значений из внешних форм, открываемых полями со списками
 			on_select: function (selv, cell_field) {
@@ -3517,6 +3515,8 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 			Object.observe(_obj, observer_rows, ["row"]);
 
 		// заполняем табчасть данными
+		if(_tsname && !attr.ts_title)
+			attr.ts_title = _obj._metadata.tabular_sections[_tsname].synonym;
 		observer_rows([{tabular: _tsname}]);
 
 	};
@@ -12870,7 +12870,7 @@ function SocketMsg(){
 						}catch(err){
 							data = ev.data;
 						}
-						t.handlers.execute(data);
+						dhx4.callEvent("socket_msg", [data]);
 					};
 
 					ws.onerror = $p.record_log;
@@ -12882,13 +12882,6 @@ function SocketMsg(){
 			}
 		}
 	};
-
-	/**
-	 * Обработчики сообщений
-	 * @property handlers
-	 * @type {Modifiers}
-	 */
-	t.handlers = new Modifiers();
 
 	t.send = function (data) {
 		if(ws && opened){
@@ -12903,8 +12896,8 @@ function SocketMsg(){
 	};
 
 	// если мы в браузере, подключаем обработчик react
-	if(typeof window !== "undefined")
-		t.handlers.push(reflect_react);
+	if(typeof window !== "undefined" && window.dhx4)
+		dhx4.attachEvent("socket_msg", reflect_react);
 
 }
 
@@ -13893,7 +13886,7 @@ else if (typeof define === "function" && define.amd) define(function() {return x
 }),
 "form_auth": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<items>\n\t<item type=\"settings\" position=\"label-left\" labelWidth=\"150\" inputWidth=\"230\" noteWidth=\"230\"/>\n\t<item type=\"fieldset\" name=\"data\" inputWidth=\"auto\" label=\"Авторизация\">\n\n        <item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" checked=\"true\" value=\"guest\" label=\"Гостевой (демо) режим\">\n            <item type=\"select\" name=\"guest\" label=\"Роль\">\n                <option value=\"Дилер\" label=\"Дилер\"/>\n            </item>\n        </item>\n\n\t\t<item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" value=\"auth\" label=\"Есть учетная запись\">\n\t\t\t<item type=\"input\" value=\"\" name=\"login\" label=\"Имя пользователя\" validate=\"NotEmpty\" />\n\t\t\t<item type=\"password\" value=\"\" name=\"password\" label=\"Пароль\" validate=\"NotEmpty\" />\n\t\t</item>\n\n\t\t<item type=\"button\" value=\"Войти\" name=\"submit\"/>\n\n        <item type=\"template\" name=\"text_options\" className=\"order_dealer_options\" inputWidth=\"231\"\n              value=\"&lt;a href='#' onclick='$p.iface.open_settings();' &gt; &lt;img src='/imgs/dhxtoolbar_web/tb_settings.png' align='top' /&gt; Настройки &lt;/a&gt; &lt;img src='/imgs/dhxtoolbar_web/blank9.png' align='top' /&gt; &lt;a href='//www.oknosoft.ru/feedback' target='_blank' &gt; &lt;img src='/imgs/dhxtoolbar_web/cloud-question.png' align='top' /&gt; Задать вопрос &lt;/a&gt;\"  />\n\n\t</item>\n</items>\n",
 "toolbar_add_del": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_add\"    text=\"Добавить\" title=\"Добавить строку\" img=\"tb_new.png\"  />\r\n    <item type=\"button\" id=\"btn_delete\" text=\"Удалить\"  title=\"Удалить строку\" img=\"tb_delete.png\"   imgdis=\"tb_delete_dis.png\" />\r\n</toolbar>",
-"toolbar_obj": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"Записать и закрыть\" img=\"save.gif\" imgdis=\"\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"Записать\" img=\"tb_calculate.png\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_post\" img=\"tb_post.png\" imgdis=\"tb_post.png\" enabled=\"false\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" img=\"tb_unpost.png\" imgdis=\"tb_unpost.png\" enabled=\"false\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"Файлы\" img=\"tb_screpka.png\" imgdis=\"tb_screpka_dis.png\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"Создать\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" image=\"\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"Перейти\" title=\"\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\"         img=\"print.gif\"         text=\"Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"        img=\"tb_more_w.png\"  title=\"Дополнительно\" openAll=\"true\">\r\n        <item type=\"button\" id=\"btn_import\" img=\"document_load.png\" text=\"Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" img=\"document_save.png\" text=\"Выгрузить в файл\" />\r\n    </item>\r\n\r\n</toolbar>\r\n",
+"toolbar_obj": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"&lt;b&gt;Записать и закрыть&lt;/b&gt;\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"&lt;i class='fa fa-floppy-o fa-lg'&gt;&lt;/i&gt; Записать\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_post\" img=\"tb_post.png\" imgdis=\"tb_post.png\" enabled=\"false\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" img=\"tb_unpost.png\" imgdis=\"tb_unpost.png\" enabled=\"false\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"&lt;i class='fa fa-paperclip fa-lg'&gt;&lt;/i&gt; Файлы\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"Создать\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" image=\"\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"Перейти\" title=\"\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n        <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-lg'&gt;&lt;/i&gt; Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"  text=\"&lt;i class='fa fa-th-large fa-lg'&gt;&lt;/i&gt;\"  title=\"Дополнительно\" openAll=\"true\">\r\n        <item type=\"button\" id=\"btn_import\" img=\"document_load.png\" text=\"Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" img=\"document_save.png\" text=\"Выгрузить в файл\" />\r\n    </item>\r\n\r\n</toolbar>\r\n",
 "toolbar_ok_cancel": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_ok\"       type=\"button\"   img=\"\"  imgdis=\"\"   text=\"&lt;b&gt;Ок&lt;/b&gt;\"  />\r\n    <item id=\"btn_cancel\"   type=\"button\"\timg=\"\"  imgdis=\"\"   text=\"Отмена\" />\r\n</toolbar>",
 "toolbar_selection": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_select\"   type=\"button\"   img=\"\"              imgdis=\"\"               title=\"Выбрать элемент списка\" text=\"&lt;b&gt;Выбрать&lt;/b&gt;\"  />\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item id=\"btn_new\"      type=\"button\"\timg=\"tb_new.png\"\timgdis=\"tb_new_dis.png\"\ttitle=\"Создать\" />\r\n    <item id=\"btn_edit\"     type=\"button\"\timg=\"tb_edit.png\"\timgdis=\"tb_edit_dis.png\"\ttitle=\"Изменить\" />\r\n    <item id=\"btn_delete\"   type=\"button\"\timg=\"tb_delete.png\"\timgdis=\"tb_delete_dis.png\"\ttitle=\"Удалить\" />\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" img=\"print.gif\"     text=\"Печать\" openAll=\"true\" >\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"    img=\"tb_more_w.png\" title=\"Дополнительно\" openAll=\"true\">\r\n        <item id=\"btn_requery\"  type=\"button\"\timg=\"refresh.png\"\ttext=\"Обновить список\" />\r\n    </item>\r\n\r\n</toolbar>",
 "log": { "ireg": {

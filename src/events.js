@@ -401,7 +401,7 @@ function only_in_browser(w){
 						// стили загружаем только при необходимости
 						for(i=0; i < document.styleSheets.length; i++){
 							if(document.styleSheets[i].href){
-								if(document.styleSheets[i].href.indexOf("dhtmlx_")!=-1)
+								if(document.styleSheets[i].href.indexOf("dhx_web")!=-1 || document.styleSheets[i].href.indexOf("dhx_terrace")!=-1)
 									load_dhtmlx = false;
 								else if(document.styleSheets[i].href.indexOf("metadata.css")!=-1)
 									load_meta = false;
@@ -413,7 +413,7 @@ function only_in_browser(w){
 
 						//str.replace(new RegExp(list[i] + '$'), 'finish')
 						if(load_dhtmlx)
-							$p.load_script(surl.replace(sname, dhtmlx.skin == "dhx_web" ? "dhtmlx_web.css" : "dhtmlx_terrace.css"), "link");
+							$p.load_script(surl.replace(sname, dhtmlx.skin == "dhx_web" ? "dhx_web.css" : "dhx_terrace.css"), "link");
 						if(load_meta)
 							$p.load_script(surl.replace(sname, "metadata.css"), "link");
 
@@ -719,7 +719,7 @@ function SocketMsg(){
 						}catch(err){
 							data = ev.data;
 						}
-						t.handlers.execute(data);
+						dhx4.callEvent("socket_msg", [data]);
 					};
 
 					ws.onerror = $p.record_log;
@@ -731,13 +731,6 @@ function SocketMsg(){
 			}
 		}
 	};
-
-	/**
-	 * Обработчики сообщений
-	 * @property handlers
-	 * @type {Modifiers}
-	 */
-	t.handlers = new Modifiers();
 
 	t.send = function (data) {
 		if(ws && opened){
@@ -752,8 +745,8 @@ function SocketMsg(){
 	};
 
 	// если мы в браузере, подключаем обработчик react
-	if(typeof window !== "undefined")
-		t.handlers.push(reflect_react);
+	if(typeof window !== "undefined" && window.dhx4)
+		dhx4.attachEvent("socket_msg", reflect_react);
 
 }
 

@@ -40,9 +40,6 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		_grid = this.attachGrid(),
 		_destructor = _grid.destructor;
 
-	if(_extra_fields && !_tsname)
-		_tsname = _obj.extra_fields ? "extra_fields" :  "ДополнительныеРеквизиты";
-
 	// задача обсервера - перерисовать поле при изменении свойств объекта
 	function observer(changes){
 		if(!_obj){
@@ -187,6 +184,8 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		_mgr = _obj._manager;
 		_tsname = attr.ts || "";
 		_extra_fields = _tsname ? _obj[_tsname] : (_obj.extra_fields || _obj["ДополнительныеРеквизиты"]);
+		if(_extra_fields && !_tsname)
+			_tsname = _obj.extra_fields ? "extra_fields" :  "ДополнительныеРеквизиты";
 		_pwnd = {
 			// обработчик выбора ссылочных значений из внешних форм, открываемых полями со списками
 			on_select: function (selv, cell_field) {
@@ -220,6 +219,8 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 			Object.observe(_obj, observer_rows, ["row"]);
 
 		// заполняем табчасть данными
+		if(_tsname && !attr.ts_title)
+			attr.ts_title = _obj._metadata.tabular_sections[_tsname].synonym;
 		observer_rows([{tabular: _tsname}]);
 
 	};

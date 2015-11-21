@@ -12,6 +12,7 @@
  * @requires common
  */
 
+// Прототип кустомных ячеек для грида
 var eXcell_proto = new eXcell();
 
 /**
