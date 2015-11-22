@@ -25,7 +25,7 @@
 
 #### Подключение _metadata.js_
 ```html
-<script src="//oknosoft.github.io/metadata.js/lib/dhtmlx.min.js"></script>
+<script src="//oknosoft.github.io/metadata.js/dist/dhtmlx.min.js"></script>
 <script src="//cdn.jsdelivr.net/alasql/latest/alasql.min.js"></script>
 <script src="//cdn.jsdelivr.net/metadata/latest/metadata.min.js"></script>
 ```
