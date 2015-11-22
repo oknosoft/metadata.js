@@ -39,7 +39,7 @@
   },
   "ignore": [
     "src",
-    "lib_ext",
+    "lib",
     "node_modules",
     "bower.json",
     "package.json",
