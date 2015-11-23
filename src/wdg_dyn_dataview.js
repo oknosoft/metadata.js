@@ -28,11 +28,12 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 
 	if(!attr)
 		attr = {};
+
 	var conf = {
 		type: attr.type || { template:"#name#" }
 	},
 		timer_id,
-		dv;
+		dataview;
 
 	if(attr.pager)
 		conf.pager = attr.pager;
@@ -48,7 +49,8 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 		conf.tooltip = attr.tooltip;
 	if(attr.hasOwnProperty("autowidth"))
 		conf.autowidth = attr.autowidth;
-
+	if(!attr.selection)
+		attr.selection = {};
 	if(attr.custom_css){
 		["list", "large", "small"].forEach(function (type) {
 			dhtmlXDataView.prototype.types[type].css = type;
@@ -58,9 +60,9 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 	// создаём DataView
 	if(attr.container){
 		conf.container = attr.container;
-		dv = new dhtmlXDataView(conf);
+		dataview = new dhtmlXDataView(conf);
 	}else
-		dv = this.attachDataView(conf);
+		dataview = this.attachDataView(conf);
 
 		// и элемент управления режимом просмотра
 	dv_tools = new $p.iface.OTooolBar({
@@ -74,27 +76,31 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 		onclick: function (name) {
 				var template = dhtmlXDataView.prototype.types[name];
 				if(name == "list")
-					dv.config.autowidth = 1;
+					dataview.config.autowidth = 1;
 				else
-					dv.config.autowidth = Math.floor((dv._dataobj.scrollWidth) / (template.width + template.padding*2 + template.margin*2 + template.border*2));
-				dv.define("type", name);
-				//dv.refresh();
+					dataview.config.autowidth = Math.floor((dataview._dataobj.scrollWidth) / (template.width + template.padding*2 + template.margin*2 + template.border*2));
+				dataview.define("type", name);
+				//dataview.refresh();
 			}
 		});
 
 
 
-	dv.__define({
+	dataview.__define({
 
 		/**
 		 * Фильтр, налагаемый на DataView
 		 */
-		filter: {
+		selection: {
 			get: function () {
 
 			},
 			set: function (v) {
-				attr.filter = v;
+				if(typeof v == "object"){
+					for(var key in v)
+						attr.selection[key] = v[key];
+				}
+				this.lazy_timer();
 			}
 		},
 
@@ -106,12 +112,12 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 					attr.url+= "&filter_prop=" + JSON.stringify(attr.filter_prop);
 				if(dhx4.isIE)
 					attr.url = encodeURI(attr.url);
-				dv.clearAll();
-				if(dv._settings)
-					dv._settings.datatype = "json";
-				dv.load(attr.url, "json", function(v){
+				dataview.clearAll();
+				if(dataview._settings)
+					dataview._settings.datatype = "json";
+				dataview.load(attr.url, "json", function(v){
 					if(v){
-						dv.show(dv.first());
+						dataview.show(dataview.first());
 					}
 				});
 				timer_id = 0;
@@ -122,7 +128,7 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 			value: function(){
 				if(timer_id)
 					clearTimeout(timer_id);
-				timer_id = setTimeout(dv.requery, 200);
+				timer_id = setTimeout(dataview.requery, 200);
 			}
 		}
 	});
@@ -137,6 +143,6 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 	}
 
 
-	return dv;
+	return dataview;
 
 };
