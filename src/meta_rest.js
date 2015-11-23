@@ -168,7 +168,7 @@ function Rest(){
 						if(["boolean", "number"].indexOf(typeof val) != -1 )
 							f += syn + " eq " + val;
 
-						else if(type.is_ref || val instanceof DataObj)
+						else if((type.is_ref && typeof val != "object") || val instanceof DataObj)
 							f += syn + " eq guid'" + val + "'";
 
 						else if(typeof val == "string")
@@ -181,6 +181,10 @@ function Rest(){
 
 							else if(val.hasOwnProperty("not")){
 								f += " not (" + build_condition(fld, val.not) + ") ";
+							}
+
+							else if(val.hasOwnProperty("in")){
+								f += (syn + " in (") + (type.is_ref ? val.in.map(function(v){return "guid'" + v + "'"}).join(",") : val.in.join(",")) + ") ";
 							}
 						}
 					}

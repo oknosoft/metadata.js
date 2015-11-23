@@ -82,11 +82,7 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 			}
 		});
 
-	function lazy_timer(){
-		if(timer_id)
-			clearTimeout(timer_id);
-		timer_id = setTimeout(dv.requery, 200);
-	}
+
 
 	dv.__define({
 
@@ -122,48 +118,24 @@ dhtmlXCellObject.prototype.attachDynDataView = function(mgr, attr) {
 			}
 		},
 
-		/**
-		 * Обработчик маршрутизации
-		 */
-		hash_route: {
-			value: function (hprm) {
-				if(hprm.obj && attr.selection.ВидНоменклатуры != hprm.obj){
-
-					// обновляем вид номенклатуры и перевзводим таймер обновления
-					attr.selection.ВидНоменклатуры = hprm.obj;
-					lazy_timer();
-
-				}
+		lazy_timer: {
+			value: function(){
+				if(timer_id)
+					clearTimeout(timer_id);
+				timer_id = setTimeout(dv.requery, 200);
 			}
 		}
 	});
 
-	// слушаем события on_text_filter, on_dyn_filter и hash_route
-	$p.eve.hash_route.push(dv.hash_route);
-	dhx4.attachEvent("search_text_change", function (text) {
-		// обновляем подстроку поиска и перевзводим таймер обновления
-		if(text)
-			attr.selection.text = function (){
-				return "text like '%25" + text + "%25'";
-			};
-		else if(attr.selection.hasOwnProperty("text"))
-			delete attr.selection.text;
+	if(attr.hash_route){
 
-		lazy_timer();
+		$p.eve.hash_route.push(attr.hash_route);
 
-	});
+		setTimeout(function(){
+			attr.hash_route($p.job_prm.parse_url());
+		}, 50);
+	}
 
-	dhx4.attachEvent("filter_prop_change", function (filter_prop) {
-
-		// обновляем подстроку поиска и перевзводим таймер обновления
-		attr.filter_prop = filter_prop;
-		lazy_timer();
-
-	});
-
-	setTimeout(function(){
-		dv.hash_route($p.job_prm.parse_url());
-	}, 50);
 
 	return dv;
 
