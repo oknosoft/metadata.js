@@ -1224,21 +1224,49 @@ function InterfaceObjs(){
 	/**
 	 * Устанавливает hash url для сохранения истории и последующей навигации
 	 * @method set_hash
-	 * @param [obj] {String} - имя класса объекта
+	 * @param [obj] {String|Object} - имя класса или объект со свойствами к установке в хеш адреса
 	 * @param [ref] {String} - ссылка объекта
 	 * @param [frm] {String} - имя формы объекта
 	 * @param [view] {String} - имя представления главной формы
 	 */
 	this.set_hash = function (obj, ref, frm, view ) {
-		if(!obj)
-			obj = "";
-		if(!ref)
-			ref = "";
-		if(!frm)
-			frm = "";
-		if(!view)
-			view = "";
+
+		var ext = {},
+			hprm = $p.job_prm.parse_url();
+
+		if(arguments.length == 1 && typeof obj == "object"){
+			ext = obj;
+			if(ext.hasOwnProperty("obj")){
+				obj = ext.obj;
+				delete ext.obj;
+			}
+			if(ext.hasOwnProperty("ref")){
+				ref = ext.ref;
+				delete ext.ref;
+			}
+			if(ext.hasOwnProperty("frm")){
+				frm = ext.frm;
+				delete ext.frm;
+			}
+			if(ext.hasOwnProperty("view")){
+				view = ext.view;
+				delete ext.view;
+			}
+		}
+
+		if(obj === undefined)
+			obj = hprm.obj || "";
+		if(ref === undefined)
+			ref = hprm.ref || "";
+		if(frm === undefined)
+			frm = hprm.frm || "";
+		if(view === undefined)
+			view = hprm.view || "";
+
 		var hash = "obj=" + obj + "&ref=" + ref + "&frm=" + frm + "&view=" + view;
+		for(var key in ext){
+			hash += "&" + key + "=" + ext[key];
+		}
 
 		if(location.hash.substr(1) == hash)
 			this.hash_route();

@@ -123,9 +123,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			// Если нет полных прав - разрешен только просмотр и выбор элементов
 			// TODO: учитывать права для каждой роли на каждый объект
 			if(!$p.ajax.root){
-				this.disableItem("btn_new");
-				this.disableItem("btn_edit");
-				this.disableItem("btn_delete");
+				this.hideItem("btn_new");
+				this.hideItem("btn_edit");
+				this.hideItem("btn_delete");
 			}
 
 			if(!on_select && $p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper"){
@@ -134,8 +134,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				this.addListOption("bs_more", "btn_order_list", "~", "button", "Список заказов", "tb_autocad.png");
 
 			}
-			this.addListOption("bs_more", "btn_import", "~", "button", "Загрузить из файла", "document_load.png");
-			this.addListOption("bs_more", "btn_export", "~", "button", "Выгрузить в файл", "document_save.png");
+			this.addListOption("bs_more", "btn_import", "~", "button", "<i class='fa fa-upload fa-fw'></i> Загрузить из файла");
+			this.addListOption("bs_more", "btn_export", "~", "button", "<i class='fa fa-download fa-fw'></i> Выгрузить в файл");
 
 			// добавляем команды печати
 			if(_mgr instanceof CatManager || _mgr instanceof DocManager)

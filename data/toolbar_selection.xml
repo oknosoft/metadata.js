@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding='utf-8'?>
 <toolbar>
-    <item id="btn_select"   type="button"   img=""              imgdis=""               title="Выбрать элемент списка" text="&lt;b&gt;Выбрать&lt;/b&gt;"  />
+    <item id="btn_select"   type="button"   title="Выбрать элемент списка" text="&lt;b&gt;Выбрать&lt;/b&gt;"  />
 
     <item id="sep1" type="separator"/>
-    <item id="btn_new"      type="button"	img="tb_new.png"	imgdis="tb_new_dis.png"	title="Создать" />
-    <item id="btn_edit"     type="button"	img="tb_edit.png"	imgdis="tb_edit_dis.png"	title="Изменить" />
-    <item id="btn_delete"   type="button"	img="tb_delete.png"	imgdis="tb_delete_dis.png"	title="Удалить" />
+    <item id="btn_new"      type="button"	text="&lt;i class='fa fa-plus-circle fa-lg'&gt;&lt;/i&gt;"	title="Создать" />
+    <item id="btn_edit"     type="button"	text="&lt;i class='fa fa-pencil fa-lg'&gt;&lt;/i&gt;"	title="Изменить" />
+    <item id="btn_delete"   type="button"	text="&lt;i class='fa fa-times fa-lg'&gt;&lt;/i&gt;"	title="Удалить" />
     <item id="sep2" type="separator"/>
 
-    <item type="buttonSelect" id="bs_print" img="print.gif"     text="Печать" openAll="true" >
+    <item type="buttonSelect" id="bs_print" text="&lt;i class='fa fa-print fa-lg'&gt;&lt;/i&gt; Печать" openAll="true" >
     </item>
 
-    <item type="buttonSelect"   id="bs_more"    img="tb_more_w.png" title="Дополнительно" openAll="true">
-        <item id="btn_requery"  type="button"	img="refresh.png"	text="Обновить список" />
+    <item type="buttonSelect"   id="bs_more"    text="&lt;i class='fa fa-th-large fa-lg'&gt;&lt;/i&gt;" title="Дополнительно" openAll="true">
+        <item id="btn_requery"  type="button"	text="&lt;i class='fa fa-refresh fa-lg'&gt;&lt;/i&gt; Обновить список" />
     </item>
 
 </toolbar>

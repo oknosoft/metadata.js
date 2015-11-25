@@ -269,9 +269,10 @@ function Rest(){
 			mgr.rest_name.indexOf("DataProcessor_") == -1 &&
 			mgr.rest_name.indexOf("Report_") == -1 &&
 			select_str.indexOf(" like ") == -1 &&
-			select_str.indexOf(" in ") == -1)
+			select_str.indexOf(" in ") == -1 &&
+			!mgr.metadata().irest )
 			$p.ajax.default_attr(attr, $p.job_prm.rest_url());
-		// для сложных отборов используем наш rest
+		// для сложных отборов либо при явном irest в метаданных, используем наш irest
 		else
 			$p.ajax.default_attr(attr, $p.job_prm.irest_url());
 
@@ -602,7 +603,7 @@ DataManager.prototype.rest_selection = function (attr) {
 	}
 
 	$p.ajax.default_attr(attr, (!cmd.irest && $p.job_prm.rest) ? $p.job_prm.rest_url() : $p.job_prm.irest_url());
-	attr.url += this.rest_name + "?allowedOnly=true&$format=json&$top=1000&" + select;
+	attr.url += (cmd.irest && cmd.irest.selection ? cmd.irest.selection : this.rest_name) + "?allowedOnly=true&$format=json&$top=1000&" + select;
 
 	if(_md.get(t.class_name, "date")){
 		attr.url += "&$filter=" + _rest.filter_date("Date", attr.date_from, attr.date_till);
