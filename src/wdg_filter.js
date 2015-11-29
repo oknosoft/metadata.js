@@ -106,8 +106,11 @@ $p.iface.Toolbar_filter = function (attr) {
 
 		attr.toolbar.addSpacer("input_filter");
 
-	}else
+	}else if(t.input_date_till)
 		attr.toolbar.addSpacer("input_date_till");
+
+	else if(attr.toolbar.getItemText("btn_delete"))
+		attr.toolbar.addSpacer("btn_delete");
 
 	t.get_filter = function () {
 		return {

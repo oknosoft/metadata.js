@@ -112,7 +112,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			var tbattr = {
 				manager: _mgr,
 				toolbar: this,
-				onchange: input_filter_change
+				onchange: input_filter_change,
+				hide_filter: attr.hide_filter
 			};
 			if(attr.date_from)
 				tbattr.date_from = attr.date_from;
@@ -136,6 +137,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			}
 			this.addListOption("bs_more", "btn_import", "~", "button", "<i class='fa fa-upload fa-fw'></i> Загрузить из файла");
 			this.addListOption("bs_more", "btn_export", "~", "button", "<i class='fa fa-download fa-fw'></i> Выгрузить в файл");
+
 
 			// добавляем команды печати
 			if(_mgr instanceof CatManager || _mgr instanceof DocManager)
@@ -180,7 +182,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			if (evt.keyCode == 113 || evt.keyCode == 115){ //{F2} или {F4}
 				if(!check_exit()){
 					setTimeout(function(){
-						wnd.elmnts.filter.input_filter.focus();
+						if(wnd.elmnts.filter.input_filter)
+							wnd.elmnts.filter.input_filter.focus();
 					});
 					return $p.cancel_bubble(evt);
 				}
@@ -305,7 +308,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 					grid.enableAutoWidth(true, 1200, 600);
 					grid.setSizes();
 					grid_inited = true;
-					wnd.elmnts.filter.input_filter.focus();
+					if(wnd.elmnts.filter.input_filter)
+						wnd.elmnts.filter.input_filter.focus();
 
 					if(attr.on_grid_inited)
 						attr.on_grid_inited();
