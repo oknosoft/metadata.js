@@ -17,7 +17,7 @@
  * @method form_obj
  * @for DataManager
  * @param pwnd {dhtmlXWindows} - указатель на родительскую форму
- * @param attr {Object} - параметры инициализации формы
+ * @param attr {Object|DataObj|String} - параметры инициализации формы
  */
 DataManager.prototype.form_obj = function(pwnd, attr){
 
@@ -151,7 +151,11 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		/**
 		 *	закладка шапка
 		 */
-		wnd.elmnts.pg_header = wnd.elmnts.tabs.tab_header.attachHeadFields({obj: o, pwnd: wnd});
+		wnd.elmnts.pg_header = wnd.elmnts.tabs.tab_header.attachHeadFields({
+			obj: o,
+			pwnd: wnd,
+			read_only: !$p.ajax.root    // TODO: учитывать права для каждой роли на каждый объект
+		});
 
 		// панель инструментов формы
 		wnd.elmnts.frm_toolbar = wnd.attachToolbar();
@@ -160,12 +164,17 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			this.addSpacer("btn_unpost");
 			this.attachEvent("onclick", toolbar_click);
 
-			if(o.hasOwnProperty("posted")){
+			// TODO: учитывать права для каждой роли на каждый объект
+			if(o.hasOwnProperty("posted") && $p.ajax.root){
 				this.enableItem("btn_post");
 				this.enableItem("btn_unpost");
 			}else{
 				this.hideItem("btn_post");
 				this.hideItem("btn_unpost");
+			}
+			if(!$p.ajax.root){
+				this.hideItem("btn_save_close");
+				this.disableItem("btn_save");
 			}
 
 			if(attr.on_select)
@@ -188,6 +197,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			wnd.elmnts.vault_pop.attachEvent("onShow", show_vault);
 
 		});
+
 
 		if($p.job_prm.russian_names){
 			if(!wnd.Элементы)
@@ -250,8 +260,12 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		if (!wnd.elmnts.vault) {
 
+			var rattr = {};
+			$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
+			rattr.url += _mgr.rest_name + "(guid'" + o.ref + "')/Files?$format=json";
+
 			wnd.elmnts.vault = wnd.elmnts.vault_pop.attachVault(400, 250, {
-				uploadUrl:  $p.job_prm.hs_url() + "/files/?class_name=" + _mgr.class_name + "&ref=" + o.ref,
+				uploadUrl:  rattr.url,
 				buttonClear: false,
 				autoStart: true,
 				filesLimit: 10
@@ -318,7 +332,12 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.elmnts.frm_tabs.addTab('tab_'+name, '&nbsp;'+cmd.tabular_sections[name].synonym+'&nbsp;');
 		wnd.elmnts.tabs['tab_'+name] = wnd.elmnts.frm_tabs.cells('tab_'+name);
 
-		wnd.elmnts.tabs['tab_'+name].attachTabular({obj: o, ts: name,  pwnd: wnd});
+		wnd.elmnts.tabs['tab_'+name].attachTabular({
+			obj: o,
+			ts: name,
+			pwnd: wnd,
+			read_only: !$p.ajax.root
+		});
 
 	}
 
@@ -362,6 +381,12 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	function frm_close(win){
 
 		setTimeout(frm_unload, 1);
+
+		if (wnd && wnd.elmnts && wnd.elmnts.vault)
+			wnd.elmnts.vault.unload();
+
+		if (wnd && wnd.elmnts && wnd.elmnts.vault_pop)
+			wnd.elmnts.vault_pop.unload();
 
 		// TODO задать вопрос о записи изменений + перенести этот метод в $p
 

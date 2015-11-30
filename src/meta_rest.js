@@ -283,7 +283,7 @@ function Rest(){
 
 	/**
 	 * Загружает список объектов из rest-сервиса, обрезанный отбором
-	 * @method load
+	 * @method load_array
 	 * @for DataManager
 	 * @param attr {Object} - параметры запроса
 	 * @param [attr.selection] {Object} - условия отбора

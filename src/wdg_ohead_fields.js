@@ -106,6 +106,9 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		if(_obj[rId] != undefined)
 			return _pwnd.on_select(state, {obj: _obj, field: rId});
 	});
+	if(attr.read_only){
+		_grid.setEditable(false);
+	}
 
 
 	_grid.get_cell_field = function () {
