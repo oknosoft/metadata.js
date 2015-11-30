@@ -11,6 +11,7 @@ html, body {
 	font-family: Arial, sans-serif;
 	font-size: 14px;
 	line-height: 21px;
+	text-rendering: optimizeLegibility;
 }
 
 #owb_wrapper {
@@ -248,7 +249,7 @@ div.gridbox_dhx_web.gridbox table.hdr td {
     position: fixed;
     padding: 0;
     margin: 0;
-    background: rgba(255,254,250,0.4);
+    background: rgba(255,254,250,0.9);
     border: 0px solid white;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.35);
 }
@@ -266,6 +267,7 @@ div.gridbox_dhx_web.gridbox table.hdr td {
 .md_otooolbar_button.selected {
     background: #969394;
 }
+/* Панель инструментов OTooolBar*/
 
 /* dat.GUI */
 div.dhxwin_hdr div.dhxwin_icon.without_icon {
@@ -279,4 +281,15 @@ div.dhxwin_brd.dat_gui {
 }
 div.dhxwin_brd.dat_gui {
     border-top: none;
+}
+/* dat.GUI */
+
+/* поле ввода тулбара */
+.dhx_toolbar_dhx_terrace div.dhx_toolbar_btn .dhxtoolbar_input {
+	border: none;
+	background: transparent;
+	font-size: inherit;
+}
+.dhx_toolbar_dhx_terrace div.dhx_toolbar_btn, .dhx_toolbar_dhx_terrace div.dhx_toolbar_arw {
+	margin-top: 1px;
 }

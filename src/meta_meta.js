@@ -473,6 +473,9 @@ function Meta(req, patch) {
 	var m = (req instanceof XMLHttpRequest) ? JSON.parse(req.response) : req,
 		class_name;
 
+	// Экспортируем ссылку на себя
+	_md = $p.md = this;
+
 	function apply_patch(patch){
 		for(var area in patch){
 			for(var c in patch[area]){
@@ -537,6 +540,10 @@ function Meta(req, patch) {
 			res.type.types[0] = "number";
 			res.type.digits = 15;
 			res.type.fraction_figits = 0;
+		}else if(field_name=="ref"){
+			res.synonym = "Ссылка";
+			res.type.is_ref = true;
+			res.type.types[0] = class_name;
 		}else if(field_name)
 			res = m[np[0]][np[1]].fields[field_name];
 		else
@@ -873,10 +880,6 @@ function Meta(req, patch) {
 				m.doc[i].printing_plates = pp.doc[i];
 
 	};
-
-	// Экспортируем ссылку на себя
-	_md = $p.md = this;
-
 
 	// создаём объекты менеджеров
 

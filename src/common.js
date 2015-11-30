@@ -9,7 +9,6 @@
  * @module  common
  */
 
-//"use strict";
 
 /**
  * ### Глобальный объект
@@ -107,99 +106,105 @@ Object.defineProperty(Object.prototype, "__define", {
 	enumerable: false
 });
 
-/**
- * Реализует наследование текущим конструктором свойств и методов конструктора Parent
- * @method _extend
- * @for Object
- * @param Parent {Function}
- */
-Object.prototype.__define("_extend", {
-	value: function( Parent ) {
-		var F = function() { };
-		F.prototype = Parent.prototype;
-		this.prototype = new F();
-		this.prototype.constructor = this;
-		this.__define("superclass", {
-			value: Parent.prototype,
-			enumerable: false
-		});
-	},
-	enumerable: false
-});
+Object.prototype.__define({
 
-/**
- * Копирует все свойства из src в текущий объект исключая те, что в цепочке прототипов src до Object
- * @method _mixin
- * @for Object
- * @param src {Object} - источник
- * @return {Object}
- */
-Object.prototype.__define("_mixin", {
-	value: function(src, include, exclude ) {
-		var tobj = {}, i, f; // tobj - вспомогательный объект для фильтрации свойств, которые есть у объекта Object и его прототипа
-		if(include && include.length){
-			for(i = 0; i<include.length; i++){
-				f = include[i];
-				if(exclude && exclude.indexOf(f)!=-1)
-					continue;
-				// копируем в dst свойства src, кроме тех, которые унаследованы от Object
-				if((typeof tobj[f] == "undefined") || (tobj[f] != src[f]))
-					this[f] = src[f];
-			}
-		}else{
-			for(f in src){
-				if(exclude && exclude.indexOf(f)!=-1)
-					continue;
-				// копируем в dst свойства src, кроме тех, которые унаследованы от Object
-				if((typeof tobj[f] == "undefined") || (tobj[f] != src[f]))
-					this[f] = src[f];
-			}
-		}
-		return this;
+	/**
+	 * Реализует наследование текущим конструктором свойств и методов конструктора Parent
+	 * @method _extend
+	 * @for Object
+	 * @param Parent {Function}
+	 */
+	"_extend": {
+		value: function( Parent ) {
+			var F = function() { };
+			F.prototype = Parent.prototype;
+			this.prototype = new F();
+			this.prototype.constructor = this;
+			this.__define("superclass", {
+				value: Parent.prototype,
+				enumerable: false
+			});
+		},
+		enumerable: false
 	},
-	enumerable: false
-});
 
-/**
- * Создаёт копию объекта
- * @method _clone
- * @for Object
- * @param src {Object|Array} - исходный объект
- * @param [exclude_propertyes] {Object} - объект, в ключах которого имена свойств, которые не надо копировать
- * @returns {Object|Array} - копия объекта
- */
-Object.prototype.__define("_clone", {
-	value: function() {
-		if(!this || "object" !== typeof this)
+	/**
+	 * Копирует все свойства из src в текущий объект исключая те, что в цепочке прототипов src до Object
+	 * @method _mixin
+	 * @for Object
+	 * @param src {Object} - источник
+	 * @return {Object}
+	 */
+	"_mixin": {
+		value: function(src, include, exclude ) {
+			var tobj = {}, i, f; // tobj - вспомогательный объект для фильтрации свойств, которые есть у объекта Object и его прототипа
+			if(include && include.length){
+				for(i = 0; i<include.length; i++){
+					f = include[i];
+					if(exclude && exclude.indexOf(f)!=-1)
+						continue;
+					// копируем в dst свойства src, кроме тех, которые унаследованы от Object
+					if((typeof tobj[f] == "undefined") || (tobj[f] != src[f]))
+						this[f] = src[f];
+				}
+			}else{
+				for(f in src){
+					if(exclude && exclude.indexOf(f)!=-1)
+						continue;
+					// копируем в dst свойства src, кроме тех, которые унаследованы от Object
+					if((typeof tobj[f] == "undefined") || (tobj[f] != src[f]))
+						this[f] = src[f];
+				}
+			}
 			return this;
-		var p, v, c = "function" === typeof this.pop ? [] : {};
-		for(p in this){
-			if (this.hasOwnProperty(p)){
-				v = this[p];
-				if(v){
-					if("function" === typeof v || v instanceof DataObj || v instanceof DataManager)
-						c[p] = v;
-
-					else if("object" === typeof v)
-						c[p] = v._clone();
-
-					else
-						c[p] = v;
-				} else
-					c[p] = v;
-			}
-		}
-		return c;
+		},
+		enumerable: false
 	},
-	enumerable: false
+
+	/**
+	 * Создаёт копию объекта
+	 * @method _clone
+	 * @for Object
+	 * @param src {Object|Array} - исходный объект
+	 * @param [exclude_propertyes] {Object} - объект, в ключах которого имена свойств, которые не надо копировать
+	 * @returns {Object|Array} - копия объекта
+	 */
+	"_clone": {
+		value: function() {
+			if(!this || "object" !== typeof this)
+				return this;
+			var p, v, c = "function" === typeof this.pop ? [] : {};
+			for(p in this){
+				if (this.hasOwnProperty(p)){
+					v = this[p];
+					if(v){
+						if("function" === typeof v || v instanceof DataObj || v instanceof DataManager)
+							c[p] = v;
+
+						else if("object" === typeof v)
+							c[p] = v._clone();
+
+						else
+							c[p] = v;
+					} else
+						c[p] = v;
+				}
+			}
+			return c;
+		},
+		enumerable: false
+	}
 });
+
 
 /**
  * Полифил для обсервера и нотифаера пока не подключаем
  * Это простая заглушка, чтобы в старых браузерах не возникали исключения
  */
 if(!Object.observe && !Object.unobserve && !Object.getNotifier)
-	Object.__define({
+
+	Object.prototype.__define({
+
 		observe: {
 			value: function(target, observer) {
 				if(!target._observers)
@@ -217,6 +222,7 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier)
 			},
 			enumerable: false
 		},
+
 		unobserve: {
 			value: function(target, observer) {
 				if(!target._observers)
@@ -230,6 +236,7 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier)
 			},
 			enumerable: false
 		},
+
 		getNotifier: {
 			value: function(target) {
 				var timer_setted;
@@ -859,10 +866,9 @@ $p.generate_guid = function(){
  */
 $p.fix_guid = function(ref, generate){
 
-	if(ref && typeof ref == "string")
-		;
+	if(ref && typeof ref == "string"){
 
-	else if(ref instanceof DataObj)
+	} else if(ref instanceof DataObj)
 		return ref.ref;
 
 	else if(ref && typeof ref == "object"){
@@ -1224,21 +1230,49 @@ function InterfaceObjs(){
 	/**
 	 * Устанавливает hash url для сохранения истории и последующей навигации
 	 * @method set_hash
-	 * @param [obj] {String} - имя класса объекта
+	 * @param [obj] {String|Object} - имя класса или объект со свойствами к установке в хеш адреса
 	 * @param [ref] {String} - ссылка объекта
 	 * @param [frm] {String} - имя формы объекта
 	 * @param [view] {String} - имя представления главной формы
 	 */
 	this.set_hash = function (obj, ref, frm, view ) {
-		if(!obj)
-			obj = "";
-		if(!ref)
-			ref = "";
-		if(!frm)
-			frm = "";
-		if(!view)
-			view = "";
+
+		var ext = {},
+			hprm = $p.job_prm.parse_url();
+
+		if(arguments.length == 1 && typeof obj == "object"){
+			ext = obj;
+			if(ext.hasOwnProperty("obj")){
+				obj = ext.obj;
+				delete ext.obj;
+			}
+			if(ext.hasOwnProperty("ref")){
+				ref = ext.ref;
+				delete ext.ref;
+			}
+			if(ext.hasOwnProperty("frm")){
+				frm = ext.frm;
+				delete ext.frm;
+			}
+			if(ext.hasOwnProperty("view")){
+				view = ext.view;
+				delete ext.view;
+			}
+		}
+
+		if(obj === undefined)
+			obj = hprm.obj || "";
+		if(ref === undefined)
+			ref = hprm.ref || "";
+		if(frm === undefined)
+			frm = hprm.frm || "";
+		if(view === undefined)
+			view = hprm.view || "";
+
 		var hash = "obj=" + obj + "&ref=" + ref + "&frm=" + frm + "&view=" + view;
+		for(var key in ext){
+			hash += "&" + key + "=" + ext[key];
+		}
 
 		if(location.hash.substr(1) == hash)
 			this.hash_route();

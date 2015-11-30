@@ -74,10 +74,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				}
 				frm_unload();
 			};
-			if(!attr.hide_header)
+			if(!attr.hide_header){
 				setTimeout(function () {
 					wnd.showHeader();
 				});
+			}
 		}else{
 			wnd = $p.iface.w.createWindow('wnd_' + _mgr.class_name.replace(".", "_") + '_select', 0, 0, 900, 600);
 			wnd.centerOnScreen();
@@ -92,7 +93,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		if(!(wnd instanceof dhtmlXTabBarCell))
 			wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (md["list_presentation"] || md.synonym) + '"');
 
-		dhtmlxEvent(document.body, "keydown", body_keydown);
+		document.body.addEventListener("keydown", body_keydown, false);
 
 		// статусбар
 		wnd.elmnts = {
@@ -112,7 +113,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			var tbattr = {
 				manager: _mgr,
 				toolbar: this,
-				onchange: input_filter_change
+				onchange: input_filter_change,
+				hide_filter: attr.hide_filter
 			};
 			if(attr.date_from)
 				tbattr.date_from = attr.date_from;
@@ -123,9 +125,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			// Если нет полных прав - разрешен только просмотр и выбор элементов
 			// TODO: учитывать права для каждой роли на каждый объект
 			if(!$p.ajax.root){
-				this.disableItem("btn_new");
-				this.disableItem("btn_edit");
-				this.disableItem("btn_delete");
+				this.hideItem("btn_new");
+				this.hideItem("btn_edit");
+				this.hideItem("btn_delete");
 			}
 
 			if(!on_select && $p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper"){
@@ -134,8 +136,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				this.addListOption("bs_more", "btn_order_list", "~", "button", "Список заказов", "tb_autocad.png");
 
 			}
-			this.addListOption("bs_more", "btn_import", "~", "button", "Загрузить из файла", "document_load.png");
-			this.addListOption("bs_more", "btn_export", "~", "button", "Выгрузить в файл", "document_save.png");
+			this.addListOption("bs_more", "btn_import", "~", "button", "<i class='fa fa-upload fa-fw'></i> Загрузить из файла");
+			this.addListOption("bs_more", "btn_export", "~", "button", "<i class='fa fa-download fa-fw'></i> Выгрузить в файл");
+
 
 			// добавляем команды печати
 			if(_mgr instanceof CatManager || _mgr instanceof DocManager)
@@ -180,7 +183,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			if (evt.keyCode == 113 || evt.keyCode == 115){ //{F2} или {F4}
 				if(!check_exit()){
 					setTimeout(function(){
-						wnd.elmnts.filter.input_filter.focus();
+						if(wnd.elmnts.filter.input_filter)
+							wnd.elmnts.filter.input_filter.focus();
 					});
 					return $p.cancel_bubble(evt);
 				}
@@ -305,7 +309,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 					grid.enableAutoWidth(true, 1200, 600);
 					grid.setSizes();
 					grid_inited = true;
-					wnd.elmnts.filter.input_filter.focus();
+					if(wnd.elmnts.filter.input_filter)
+						wnd.elmnts.filter.input_filter.focus();
 
 					if(attr.on_grid_inited)
 						attr.on_grid_inited();

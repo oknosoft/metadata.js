@@ -169,6 +169,12 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	_grid.enableEditTabOnly(true);
 	_grid.init();
 
+	if(attr.read_only){
+		_grid.setEditable(false);
+		_toolbar.disableItem("btn_add");
+		_toolbar.disableItem("btn_delete");
+	}
+
 	_grid.attachEvent("onEditCell", tabular_on_edit);
 
 	_grid.get_cell_field = function () {

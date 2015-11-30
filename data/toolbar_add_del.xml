@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding='utf-8'?>
 <toolbar>
-    <item type="button" id="btn_add"    text="Добавить" title="Добавить строку" img="tb_new.png"  />
-    <item type="button" id="btn_delete" text="Удалить"  title="Удалить строку" img="tb_delete.png"   imgdis="tb_delete_dis.png" />
+    <item type="button" id="btn_add"    text="&lt;i class='fa fa-plus-circle fa-lg'&gt;&lt;/i&gt; Добавить" title="Добавить строку"  />
+    <item type="button" id="btn_delete" text="&lt;i class='fa fa-times fa-lg'&gt;&lt;/i&gt; Удалить"  title="Удалить строку" />
 </toolbar>

@@ -168,7 +168,7 @@ function Rest(){
 						if(["boolean", "number"].indexOf(typeof val) != -1 )
 							f += syn + " eq " + val;
 
-						else if(type.is_ref || val instanceof DataObj)
+						else if((type.is_ref && typeof val != "object") || val instanceof DataObj)
 							f += syn + " eq guid'" + val + "'";
 
 						else if(typeof val == "string")
@@ -181,6 +181,10 @@ function Rest(){
 
 							else if(val.hasOwnProperty("not")){
 								f += " not (" + build_condition(fld, val.not) + ") ";
+							}
+
+							else if(val.hasOwnProperty("in")){
+								f += (syn + " in (") + (type.is_ref ? val.in.map(function(v){return "guid'" + v + "'"}).join(",") : val.in.join(",")) + ") ";
 							}
 						}
 					}
@@ -265,9 +269,10 @@ function Rest(){
 			mgr.rest_name.indexOf("DataProcessor_") == -1 &&
 			mgr.rest_name.indexOf("Report_") == -1 &&
 			select_str.indexOf(" like ") == -1 &&
-			select_str.indexOf(" in ") == -1)
+			select_str.indexOf(" in ") == -1 &&
+			!mgr.metadata().irest )
 			$p.ajax.default_attr(attr, $p.job_prm.rest_url());
-		// для сложных отборов используем наш rest
+		// для сложных отборов либо при явном irest в метаданных, используем наш irest
 		else
 			$p.ajax.default_attr(attr, $p.job_prm.irest_url());
 
@@ -527,11 +532,11 @@ DataManager.prototype.rest_selection = function (attr) {
 		cmd = t.metadata(),
 		flds = [],
 		ares = [], o, ro, syn, mf,
-		select = list_flds(),
+		select,
 		filter_added;
 
+	select = (function(){
 
-	function list_flds(){
 		var s = "$select=Ref_Key,DeletionMark";
 
 		if(cmd.form && cmd.form.selection){
@@ -595,10 +600,11 @@ DataManager.prototype.rest_selection = function (attr) {
 
 		return s;
 
-	}
+	})();
+
 
 	$p.ajax.default_attr(attr, (!cmd.irest && $p.job_prm.rest) ? $p.job_prm.rest_url() : $p.job_prm.irest_url());
-	attr.url += this.rest_name + "?allowedOnly=true&$format=json&$top=1000&" + select;
+	attr.url += (cmd.irest && cmd.irest.selection ? cmd.irest.selection : this.rest_name) + "?allowedOnly=true&$format=json&$top=1000&" + select;
 
 	if(_md.get(t.class_name, "date")){
 		attr.url += "&$filter=" + _rest.filter_date("Date", attr.date_from, attr.date_till);
