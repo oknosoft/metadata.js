@@ -473,6 +473,9 @@ function Meta(req, patch) {
 	var m = (req instanceof XMLHttpRequest) ? JSON.parse(req.response) : req,
 		class_name;
 
+	// Экспортируем ссылку на себя
+	_md = $p.md = this;
+
 	function apply_patch(patch){
 		for(var area in patch){
 			for(var c in patch[area]){
@@ -877,10 +880,6 @@ function Meta(req, patch) {
 				m.doc[i].printing_plates = pp.doc[i];
 
 	};
-
-	// Экспортируем ссылку на себя
-	_md = $p.md = this;
-
 
 	// создаём объекты менеджеров
 

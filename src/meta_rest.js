@@ -532,11 +532,11 @@ DataManager.prototype.rest_selection = function (attr) {
 		cmd = t.metadata(),
 		flds = [],
 		ares = [], o, ro, syn, mf,
-		select = list_flds(),
+		select,
 		filter_added;
 
+	select = (function(){
 
-	function list_flds(){
 		var s = "$select=Ref_Key,DeletionMark";
 
 		if(cmd.form && cmd.form.selection){
@@ -600,7 +600,8 @@ DataManager.prototype.rest_selection = function (attr) {
 
 		return s;
 
-	}
+	})();
+
 
 	$p.ajax.default_attr(attr, (!cmd.irest && $p.job_prm.rest) ? $p.job_prm.rest_url() : $p.job_prm.irest_url());
 	attr.url += (cmd.irest && cmd.irest.selection ? cmd.irest.selection : this.rest_name) + "?allowedOnly=true&$format=json&$top=1000&" + select;

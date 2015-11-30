@@ -9,7 +9,6 @@
  * @module  common
  */
 
-//"use strict";
 
 /**
  * ### Глобальный объект

@@ -74,10 +74,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				}
 				frm_unload();
 			};
-			if(!attr.hide_header)
+			if(!attr.hide_header){
 				setTimeout(function () {
 					wnd.showHeader();
 				});
+			}
 		}else{
 			wnd = $p.iface.w.createWindow('wnd_' + _mgr.class_name.replace(".", "_") + '_select', 0, 0, 900, 600);
 			wnd.centerOnScreen();
@@ -92,7 +93,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		if(!(wnd instanceof dhtmlXTabBarCell))
 			wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (md["list_presentation"] || md.synonym) + '"');
 
-		dhtmlxEvent(document.body, "keydown", body_keydown);
+		document.body.addEventListener("keydown", body_keydown, false);
 
 		// статусбар
 		wnd.elmnts = {
