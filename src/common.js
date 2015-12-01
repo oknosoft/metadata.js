@@ -1780,7 +1780,6 @@ function WSQL(){
 			{p: "reset_local_data",	v: "",	t:"boolean"},
 			{p: "autologin",		v: "",	t:"boolean"},
 			{p: "cache_cat_date",	v: 0,	t:"number"},
-			{p: "files_date",       v: 201511300000, t:"number"},
 			{p: "margin",			v: 60,	t:"number"},
 			{p: "discount",			v: 15,	t:"number"},
 			{p: "offline",			v: $p.job_prm.offline || "", t:"boolean"},

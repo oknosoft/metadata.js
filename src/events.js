@@ -823,23 +823,29 @@ $p.eve.update_files_version = function () {
 
 				$p.wsql.set_user_param("files_date", sync.files_date);
 
-				$p.job_prm.confirmation = true;
+				if(!$p.job_prm.files_date){
+					$p.job_prm.files_date = sync.files_date;
 
-				dhtmlx.confirm({
-					title: $p.msg.file_new_date_title,
-					text: $p.msg.file_new_date,
-					ok: "Перезагрузка",
-					cancel: "Продолжить",
-					callback: function(btn) {
+				}else {
 
-						delete $p.job_prm.confirmation;
+					$p.job_prm.confirmation = true;
 
-						if(btn){
-							$p.eve.redirect = true;
-							location.reload(true);
+					dhtmlx.confirm({
+						title: $p.msg.file_new_date_title,
+						text: $p.msg.file_new_date,
+						ok: "Перезагрузка",
+						cancel: "Продолжить",
+						callback: function(btn) {
+
+							delete $p.job_prm.confirmation;
+
+							if(btn){
+								$p.eve.redirect = true;
+								location.reload(true);
+							}
 						}
-					}
-				});
+					});
+				}
 			}
 		}).catch($p.record_log)
 };
