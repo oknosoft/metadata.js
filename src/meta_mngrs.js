@@ -1255,8 +1255,8 @@ RefDataManager.prototype.load_cached_server_array = function (list, alt_rest_nam
 			attr.fields = ["ref"];
 
 		$p.rest.build_select(attr, mgr);
-		if(dhx4.isIE)
-			attr.url = encodeURI(attr.url);
+		//if(dhx4.isIE)
+		//	attr.url = encodeURI(attr.url);
 
 		return $p.ajax.get_ex(attr.url, attr)
 			.then(function (req) {

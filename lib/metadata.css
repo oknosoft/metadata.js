@@ -231,6 +231,21 @@ div.gridbox_dhx_web.gridbox table.hdr td {
     color: black;
 }
 
+/* VAULT */
+
+div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td:last-child {
+	padding-right: 8px
+}
+div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td:first-child {
+	padding-left: 8px
+}
+div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td {
+	padding: 0
+}
+
+/* VAULT */
+
+
 /* marked */
 .marked_area {
 	height: 100%;

@@ -2,13 +2,13 @@
 <toolbar>
     <item type="button" id="btn_save_close" text="&lt;b&gt;Записать и закрыть&lt;/b&gt;" title="Рассчитать, записать и закрыть" />
     <item type="button" id="btn_save" text="&lt;i class='fa fa-floppy-o fa-lg'&gt;&lt;/i&gt; Записать" title="Рассчитать и записать данные"/>
-    <item type="button" id="btn_post" img="tb_post.png" imgdis="tb_post.png" enabled="false" title="Провести документ" />
-    <item type="button" id="btn_unpost" img="tb_unpost.png" imgdis="tb_unpost.png" enabled="false" title="Отмена проведения" />
+    <item type="button" id="btn_post" enabled="false" text="&lt;i class='fa fa-check-square-o fa-lg'&gt;&lt;/i&gt;" title="Провести документ" />
+    <item type="button" id="btn_unpost" enabled="false" text="&lt;i class='fa fa-square-o fa-lg'&gt;&lt;/i&gt;" title="Отмена проведения" />
 
     <item type="button" id="btn_files" text="&lt;i class='fa fa-paperclip fa-lg'&gt;&lt;/i&gt; Файлы" title="Присоединенные файлы"/>
 
     <item type="buttonSelect" id="bs_create_by_virtue" text="Создать" title="Создать на основании" openAll="true" >
-        <item type="button" id="btn_message" enabled="false" text="Сообщение" image="" />
+        <item type="button" id="btn_message" enabled="false" text="Сообщение" />
     </item>
 
     <item type="buttonSelect" id="bs_go_to" text="Перейти" title="" openAll="true" >
