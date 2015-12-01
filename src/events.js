@@ -106,7 +106,11 @@ function only_in_browser(w){
 			 */
 			function IPInfo(){
 
-				var _yageocoder, _ggeocoder, _addr = "", _parts;
+				var _yageocoder,
+					_ggeocoder,
+					_ipgeo,
+					_addr = "",
+					_parts;
 
 				/**
 				 * Геокодер карт Яндекс
@@ -129,39 +133,50 @@ function only_in_browser(w){
 					}
 				}
 
-				/**
-				 * Объект [геокодера yandex](https://tech.yandex.ru/maps/doc/geocoder/desc/concepts/input_params-docpage/)
-				 * @property yageocoder
-				 * @for IPInfo
-				 * @type YaGeocoder
-				 */
-				this.__define("yageocoder", {
-					get : function(){
 
-						if(!_yageocoder)
-							_yageocoder = new YaGeocoder();
-						return _yageocoder;
+
+				this.__define({
+
+					ipgeo: {
+						value: function () {
+							return $p.ajax.get("http://api.sypexgeo.net/")
+								.then(function (req) {
+									return JSON.parse(req.response);
+								})
+								.catch($p.record_log);
+						}
 					},
-					enumerable : false,
-					configurable : false});
 
+					/**
+					 * Объект [геокодера yandex](https://tech.yandex.ru/maps/doc/geocoder/desc/concepts/input_params-docpage/)
+					 * @property yageocoder
+					 * @for IPInfo
+					 * @type YaGeocoder
+					 */
+					yageocoder: {
+						get : function(){
 
-				/**
-				 * Объект [геокодера google](https://developers.google.com/maps/documentation/geocoding/?hl=ru#GeocodingRequests)
-				 * @property ggeocoder
-				 * @for IPInfo
-				 * @type {google.maps.Geocoder}
-				 */
-				this.__define("ggeocoder", {
+							if(!_yageocoder)
+								_yageocoder = new YaGeocoder();
+							return _yageocoder;
+						},
+						enumerable : false,
+						configurable : false
+					},
+
+					/**
+					 * Объект [геокодера google](https://developers.google.com/maps/documentation/geocoding/?hl=ru#GeocodingRequests)
+					 * @property ggeocoder
+					 * @for IPInfo
+					 * @type {google.maps.Geocoder}
+					 */
+					ggeocoder: {
 						get : function(){
 							return _ggeocoder;
 						},
 						enumerable : false,
-						configurable : false}
-				);
-
-
-				this.__define({
+						configurable : false
+					},
 
 					/**
 					 * Адрес геолокации пользователя программы
@@ -298,7 +313,7 @@ function only_in_browser(w){
 			/**
 			 * если в $p.job_prm указано использование геолокации, геокодер инициализируем с небольшой задержкой
 			 */
-			if (navigator.geolocation && $p.job_prm.use_google_geo) {
+			if($p.job_prm.use_ip_geo || $p.job_prm.use_google_geo){
 
 				/**
 				 * Данные геолокации
@@ -308,6 +323,9 @@ function only_in_browser(w){
 				 * @static
 				 */
 				$p.ipinfo = new IPInfo();
+
+			}
+			if (navigator.geolocation && $p.job_prm.use_google_geo) {
 
 				// подгружаем скрипты google
 				if(!window.google || !window.google.maps)
