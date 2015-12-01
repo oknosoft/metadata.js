@@ -139,7 +139,7 @@ function only_in_browser(w){
 
 					ipgeo: {
 						value: function () {
-							return $p.ajax.get("http://api.sypexgeo.net/")
+							return $p.ajax.get("//api.sypexgeo.net/")
 								.then(function (req) {
 									return JSON.parse(req.response);
 								})
