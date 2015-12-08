@@ -12,7 +12,7 @@
     </item>
 
     <item type="buttonSelect"   id="bs_more"    text="&lt;i class='fa fa-th-large fa-lg'&gt;&lt;/i&gt;" title="Дополнительно" openAll="true">
-        <item id="btn_requery"  type="button"	text="&lt;i class='fa fa-refresh fa-lg'&gt;&lt;/i&gt; Обновить список" />
+        <item id="btn_requery"  type="button"	text="&lt;i class='fa fa-refresh fa-lg fa-fw'&gt;&lt;/i&gt; Обновить список" />
     </item>
 
 </toolbar>
