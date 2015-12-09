@@ -414,79 +414,108 @@ $p.ajax = new (
 			// Возвращаем новое Обещание.
 			return new Promise(function(resolve, reject) {
 
-				// Делаем привычные XHR вещи
-				var req = new XMLHttpRequest();
+				// внутри Node, используем request
+				if(typeof window == "undefined" && auth && auth.request){
 
-				if(typeof window != "undefined" && window.dhx4 && window.dhx4.isIE)
-					url = encodeURI(url);
+					auth.request({
+						url: encodeURI(url),
+						headers : {
+							"Authorization": auth.auth
+						}
+					},
+						function (error, response, body) {
+							if(error)
+								reject(error);
 
-				if(auth){
-					var username, password;
-					if(typeof auth == "object" && auth.username && auth.hasOwnProperty("password")){
-						username = auth.username;
-						password = auth.password;
-					}else{
-						if($p.ajax.username && $p.ajax.authorized){
-							username = $p.ajax.username;
-							password = $p.ajax.password;
+							else if(response.statusCode != 200)
+								reject({
+									message: response.statusMessage,
+									description: body,
+									status: response.statusCode
+								});
+
+							else
+								resolve({response: body});
+						}
+					);
+
+				}else {
+
+					// делаем привычные для XHR вещи
+					var req = new XMLHttpRequest();
+
+					if(window.dhx4 && window.dhx4.isIE)
+						url = encodeURI(url);
+
+					if(auth){
+						var username, password;
+						if(typeof auth == "object" && auth.username && auth.hasOwnProperty("password")){
+							username = auth.username;
+							password = auth.password;
 						}else{
-							username = $p.wsql.get_user_param("user_name");
-							password = $p.wsql.get_user_param("user_pwd");
-							if(!username && $p.job_prm && $p.job_prm.guest_name){
-								username = $p.job_prm.guest_name;
-								password = $p.job_prm.guest_pwd;
+							if($p.ajax.username && $p.ajax.authorized){
+								username = $p.ajax.username;
+								password = $p.ajax.password;
+							}else{
+								username = $p.wsql.get_user_param("user_name");
+								password = $p.wsql.get_user_param("user_pwd");
+								if(!username && $p.job_prm && $p.job_prm.guest_name){
+									username = $p.job_prm.guest_name;
+									password = $p.job_prm.guest_pwd;
+								}
 							}
 						}
-					}
-					req.open(method, url, true, username, password);
-					req.withCredentials = true;
-					req.setRequestHeader("Authorization", "Basic " +
-						btoa(unescape(encodeURIComponent(username + ":" + password))));
-				}else
-					req.open(method, url, true);
+						req.open(method, url, true, username, password);
+						req.withCredentials = true;
+						req.setRequestHeader("Authorization", "Basic " +
+							btoa(unescape(encodeURIComponent(username + ":" + password))));
+					}else
+						req.open(method, url, true);
 
-				if(before_send)
-					before_send.call(this, req);
+					if(before_send)
+						before_send.call(this, req);
 
-				if (method != "GET") {
-					if(!this.hide_headers && !auth.hide_headers){
-						req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-						req.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+					if (method != "GET") {
+						if(!this.hide_headers && !auth.hide_headers){
+							req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+							req.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+						}
+					} else {
+						post_data = null;
 					}
-				} else {
-					post_data = null;
+
+					req.onload = function() {
+						// Этот кусок вызовется даже при 404’ой ошибке
+						// поэтому проверяем статусы ответа
+						if (req.status == 200 && (req.response instanceof Blob || req.response.substr(0,9)!=="<!DOCTYPE")) {
+							// Завершаем Обещание с текстом ответа
+							if(req.responseURL == undefined)
+								req.responseURL = url;
+							resolve(req);
+						}
+						else {
+							// Обламываемся, и передаём статус ошибки
+							// что бы облегчить отладку и поддержку
+							if(req.response)
+								reject({
+									message: req.statusText,
+									description: req.response,
+									status: req.status
+								});
+							else
+								reject(Error(req.statusText));
+						}
+					};
+
+					// отлавливаем ошибки сети
+					req.onerror = function() {
+						reject(Error("Network Error"));
+					};
+
+					// Делаем запрос
+					req.send(post_data);
 				}
 
-				req.onload = function() {
-					// Этот кусок вызовется даже при 404’ой ошибке
-					// поэтому проверяем статусы ответа
-					if (req.status == 200 && (req.response instanceof Blob || req.response.substr(0,9)!=="<!DOCTYPE")) {
-						// Завершаем Обещание с текстом ответа
-						if(req.responseURL == undefined)
-							req.responseURL = url;
-						resolve(req);
-					}
-					else {
-						// Обламываемся, и передаём статус ошибки
-						// что бы облегчить отладку и поддержку
-						if(req.response)
-							reject({
-								message: req.statusText,
-								description: req.response,
-								status: req.status
-							});
-						else
-							reject(Error(req.statusText));
-					}
-				};
-
-				// отлавливаем ошибки сети
-				req.onerror = function() {
-					reject(Error("Network Error"));
-				};
-
-				// Делаем запрос
-				req.send(post_data);
 			});
 
 		}
@@ -1524,13 +1553,18 @@ function JobPrm(){
 	this.offline = false;
 	this.local_storage_prefix = "";
 
-	/**
-	 * Содержит объект с расшифровкой параметров url, указанных при запуске программы
-	 * @property url_prm
-	 * @type {Object}
-	 * @static
-	 */
-	this.url_prm = this.parse_url();
+	if(typeof window != "undefined"){
+
+		/**
+		 * Содержит объект с расшифровкой параметров url, указанных при запуске программы
+		 * @property url_prm
+		 * @type {Object}
+		 * @static
+		 */
+		this.url_prm = this.parse_url();
+
+	}else
+		this.url_prm = {};
 
 	// подмешиваем параметры, заданные в файле настроек сборки
 	if(typeof $p.settings === "function")
@@ -1593,6 +1627,7 @@ function JobPrm(){
 	};
 
 }
+$p.JobPrm = JobPrm;
 
 
 /**

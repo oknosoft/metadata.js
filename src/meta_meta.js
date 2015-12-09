@@ -470,7 +470,7 @@ var _cat = $p.cat = new (
  */
 function Meta(req, patch) {
 
-	var m = (req instanceof XMLHttpRequest) ? JSON.parse(req.response) : req,
+	var m = (req && req.response) ? JSON.parse(req.response) : req,
 		class_name;
 
 	// Экспортируем ссылку на себя
@@ -491,14 +491,16 @@ function Meta(req, patch) {
 		}
 	}
 	if(patch)
-		apply_patch((patch instanceof XMLHttpRequest) ? JSON.parse(patch.response) : patch);
+		apply_patch(patch.response ? JSON.parse(patch.response) : patch);
 
 	req = null;
-	patch = require('log');
-	if(typeof patch == "string")
-		patch = JSON.parse(patch);
-	apply_patch(patch);
-	patch = null;
+	if(typeof window != "undefined"){
+		patch = require('log');
+		if(typeof patch == "string")
+			patch = JSON.parse(patch);
+		apply_patch(patch);
+		patch = null;
+	}
 
 	/**
 	 * Возвращает описание объекта метаданных
@@ -507,7 +509,7 @@ function Meta(req, patch) {
 	 * @param [field_name] {String}
 	 * @return {Object}
 	 */
-	this.get = function(class_name, field_name){
+	_md.get = function(class_name, field_name){
 		var np = class_name.split("."),
 			res = {multiline_mode: false, note: "", synonym: "", tooltip: "", type: {is_ref: false,	types: ["string"]}};
 		if(!field_name)
@@ -554,7 +556,7 @@ function Meta(req, patch) {
 	/**
 	 * Возвращает структуру метаданных конфигурации
 	 */
-	this.get_classes = function () {
+	_md.get_classes = function () {
 		var res = {};
 		for(var i in m){
 			res[i] = [];
@@ -570,9 +572,9 @@ function Meta(req, patch) {
 	 * @return {Promise.<T>}
 	 * @async
 	 */
-	this.create_tables = function(callback){
+	_md.create_tables = function(callback){
 
-		var cstep = 0, data_names = [], managers = this.get_classes(), class_name,
+		var cstep = 0, data_names = [], managers = _md.get_classes(), class_name,
 			create = "USE md;\nCREATE TABLE IF NOT EXISTS refs (ref CHAR);\n";
 
 		function on_table_created(data){
@@ -642,7 +644,7 @@ function Meta(req, patch) {
 
 	};
 
-	this.sql_type = function (mgr, f, mf) {
+	_md.sql_type = function (mgr, f, mf) {
 		var sql;
 		if((f == "type" && mgr.table_name == "cch_properties") || (f == "svg" && mgr.table_name == "cat_production_params"))
 			sql = " JSON";
@@ -667,7 +669,7 @@ function Meta(req, patch) {
 		return sql;
 	};
 
-	this.sql_mask = function(f, t){
+	_md.sql_mask = function(f, t){
 		//var mask_names = ["delete", "set", "value", "json", "primary", "content"];
 		return ", " + (t ? "_t_." : "") + ("`" + f + "`");
 	};
@@ -678,7 +680,7 @@ function Meta(req, patch) {
 	 * @return {DataManager|undefined}
 	 * @private
 	 */
-	this.mgr_by_class_name = function(class_name){
+	_md.mgr_by_class_name = function(class_name){
 		if(class_name){
 			var np = class_name.split(".");
 			if(np[1] && $p[np[0]])
@@ -695,7 +697,7 @@ function Meta(req, patch) {
 	 * @param v {*} - устанавливаемое значение
 	 * @return {DataManager|Array}
 	 */
-	this.value_mgr = function(row, f, mf, array_enabled, v){
+	_md.value_mgr = function(row, f, mf, array_enabled, v){
 		var property, oproperty, tnames, rt, mgr;
 		if(mf._mgr)
 			return mf._mgr;
@@ -763,7 +765,7 @@ function Meta(req, patch) {
 		}
 	};
 
-	this.control_by_type = function (type) {
+	_md.control_by_type = function (type) {
 		var ft;
 		if(type.is_ref){
 			if(type.types.join().indexOf("enm.")==-1)
@@ -787,12 +789,12 @@ function Meta(req, patch) {
 		return ft;
 	};
 
-	this.ts_captions = function (class_name, ts_name, source) {
+	_md.ts_captions = function (class_name, ts_name, source) {
 		if(!source)
 			source = {};
 
-		var mts = this.get(class_name).tabular_sections[ts_name],
-			mfrm = this.get(class_name).form,
+		var mts = _md.get(class_name).tabular_sections[ts_name],
+			mfrm = _md.get(class_name).form,
 			fields = mts.fields, mf;
 
 		// если имеются метаданные формы, используем их
@@ -821,7 +823,7 @@ function Meta(req, patch) {
 				if(!mf.hide){
 					source.fields.push(f);
 					source.headers += "," + (mf.synonym ? mf.synonym.replace(/,/g, " ") : f);
-					source.types += "," + this.control_by_type(mf.type);
+					source.types += "," + _md.control_by_type(mf.type);
 					source.sortings += ",na";
 				}
 			}
@@ -831,7 +833,7 @@ function Meta(req, patch) {
 
 	};
 
-	this.syns_js = function (v) {
+	_md.syns_js = function (v) {
 		var synJS = {
 			DeletionMark: 'deleted',
 			Description: 'name',
@@ -854,7 +856,7 @@ function Meta(req, patch) {
 		return m.syns_js[m.syns_1с.indexOf(v)] || v;
 	};
 
-	this.syns_1с = function (v) {
+	_md.syns_1с = function (v) {
 		var syn1c = {
 			deleted: 'DeletionMark',
 			name: 'Description',
@@ -874,7 +876,7 @@ function Meta(req, patch) {
 		return m.syns_1с[m.syns_js.indexOf(v)] || v;
 	};
 
-	this.printing_plates = function (pp) {
+	_md.printing_plates = function (pp) {
 		if(pp)
 			for(var i in pp.doc)
 				m.doc[i].printing_plates = pp.doc[i];

@@ -427,7 +427,7 @@ function only_in_browser(w){
 						}
 
 						// задаём основной скин
-						dhtmlx.skin = $p.wsql.get_user_param("skin") || "dhx_web";
+						dhtmlx.skin = $p.wsql.get_user_param("skin") || $p.job_prm.skin || "dhx_web";
 
 						//str.replace(new RegExp(list[i] + '$'), 'finish')
 						if(load_dhtmlx)
@@ -809,7 +809,7 @@ setInterval($p.eve.ontimer, 180000);
 
 $p.eve.update_files_version = function () {
 
-	if(!$p.job_prm || $p.job_prm.offline || !$p.job_prm.data_url)
+	if(typeof window === "undefined" || !$p.job_prm || $p.job_prm.offline || !$p.job_prm.data_url)
 		return;
 
 	if(!$p.job_prm.files_date)

@@ -1,9 +1,9 @@
 {
   "1c": {
-    "odata": "",
-    "irest": "",
-    "user": "",
-    "pwd": "",
+    "odata": "http://webshop.oknosoft.local/a/ut11/odata/standard.odata/",
+    "irest": "http://webshop.oknosoft.local/a/ut11/hs/rest/",
+    "username": "БахшиевПИ (руководитель)",
+    "password": "",
     "watchdog timer": 300000,
     "sync timer": 30000
   },
@@ -14,6 +14,7 @@
   "http": {
     "1c": 8003,
     "md": 8002,
+    "adm": 8004,
     "socket": 0
   }
 }

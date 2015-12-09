@@ -51,7 +51,7 @@ function DataManager(class_name){
 		_cachable = true;
 
 	// Если в метаданных явно указано правило кеширования, используем его
-	if(!$p.job_prm.offline && _metadata.hasOwnProperty("cachable"))
+	if(!$p.job_prm.offline && _metadata.cachable != undefined)
 		_cachable = _metadata.cachable;
 
 	this.__define({
@@ -1622,9 +1622,7 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 			first_field = true;
 		attr._values = [];
 
-		for(var f in attr){
-			if(f == "action" || f == "_values")
-				continue;
+		for(var f in cmd["dimensions"]){
 
 			if(first_field)
 				first_field = false;
