@@ -555,6 +555,7 @@ function Meta(req, patch) {
 
 	/**
 	 * Возвращает структуру метаданных конфигурации
+	 * @method get_classes
 	 */
 	_md.get_classes = function () {
 		var res = {};
@@ -583,20 +584,23 @@ function Meta(req, patch) {
 				cstep--;
 				if(cstep==0){
 					if(callback)
-						setTimeout(callback, 10);
-					alasql.utils.saveFile("create_tables.sql", create);
+						setTimeout(function () {
+							callback(create);
+						}, 10);
+					else
+						alasql.utils.saveFile("create_tables.sql", create);
 				} else
 					iteration();
-			}else if(data.hasOwnProperty("message")){
-				$p.iface.docs.progressOff();
-				$p.msg.show_msg({
-					title: $p.msg.error_critical,
-					type: "alert-error",
-					text: data.message
-				});
+			}else if(data && data.hasOwnProperty("message")){
+				if($p.iface && $p.iface.docs){
+					$p.iface.docs.progressOff();
+					$p.msg.show_msg({
+						title: $p.msg.error_critical,
+						type: "alert-error",
+						text: data.message
+					});
+				}
 			}
-
-
 		}
 
 		// TODO переписать на промисах и генераторах и перекинуть в синкер
@@ -636,14 +640,20 @@ function Meta(req, patch) {
 
 			create += sql + ";\n";
 			on_table_created(1);
-			//$p.wsql.exec(sql, [], on_table_created);
 		}
 
-		$p.wsql.exec(create);
 		iteration();
 
 	};
 
+	/**
+	 * Возвращает тип поля sql для типа данных
+	 * @method sql_type
+	 * @param mgr
+	 * @param f
+	 * @param mf
+	 * @return {*}
+	 */
 	_md.sql_type = function (mgr, f, mf) {
 		var sql;
 		if((f == "type" && mgr.table_name == "cch_properties") || (f == "svg" && mgr.table_name == "cat_production_params"))
@@ -669,6 +679,13 @@ function Meta(req, patch) {
 		return sql;
 	};
 
+	/**
+	 * Заключает имя поля в аппострофы
+	 * @method sql_mask
+	 * @param f
+	 * @param t
+	 * @return {string}
+	 */
 	_md.sql_mask = function(f, t){
 		//var mask_names = ["delete", "set", "value", "json", "primary", "content"];
 		return ", " + (t ? "_t_." : "") + ("`" + f + "`");
@@ -676,6 +693,7 @@ function Meta(req, patch) {
 
 	/**
 	 * Возвращает менеджер объекта по имени класса
+	 * @method mgr_by_class_name
 	 * @param class_name {String}
 	 * @return {DataManager|undefined}
 	 * @private
@@ -690,6 +708,7 @@ function Meta(req, patch) {
 
 	/**
 	 * Возвращает менеджер значения по свойству строки
+	 * @method value_mgr
 	 * @param row {Object|TabularSectionRow} - строка табчасти или объект
 	 * @param f {String} - имя поля
 	 * @param mf {Object} - метаданные поля
@@ -765,6 +784,12 @@ function Meta(req, patch) {
 		}
 	};
 
+	/**
+	 * Возвращает имя типа элемента управления для типа поля
+	 * @method control_by_type
+	 * @param type
+	 * @return {*}
+	 */
 	_md.control_by_type = function (type) {
 		var ft;
 		if(type.is_ref){
@@ -789,6 +814,14 @@ function Meta(req, patch) {
 		return ft;
 	};
 
+	/**
+	 * Возвращает структуру для инициализации таблицы на форме
+	 * @method ts_captions
+	 * @param class_name
+	 * @param ts_name
+	 * @param source
+	 * @return {boolean}
+	 */
 	_md.ts_captions = function (class_name, ts_name, source) {
 		if(!source)
 			source = {};
@@ -880,6 +913,35 @@ function Meta(req, patch) {
 		if(pp)
 			for(var i in pp.doc)
 				m.doc[i].printing_plates = pp.doc[i];
+
+	};
+
+	/**
+	 * Возвращает имя класса по полному имени объекта метаданных 1С
+	 * @method class_name_from_1c
+	 * @param name
+	 */
+	_md.class_name_from_1c = function (name) {
+
+		var pn = name.split(".");
+		if(pn.length == 1)
+			return "enm." + name;
+		else if(pn[0] == "Перечисление")
+			name = "enm.";
+		else if(pn[0] == "Справочник")
+			name = "cat.";
+		else if(pn[0] == "Документ")
+			name = "doc.";
+		else if(pn[0] == "РегистрСведений")
+			name = "ireg.";
+		else if(pn[0] == "РегистрНакопления")
+			name = "areg.";
+		else if(pn[0] == "ПланВидовХарактеристик")
+			name = "cch.";
+		else if(pn[0] == "ПланСчетов")
+			name = "cacc.";
+
+		return name + pn[1];
 
 	};
 

@@ -86,8 +86,6 @@ function srv_1c(request, response) {
 						});
 				}
 
-				// console.log(result.rows[0]);
-
 			});
 		});
 	}

@@ -40,10 +40,41 @@ parser(attr, function(err, data){
 	attr = data;
 	data = null;
 
-	// metadata.js
-	attr.$p = require('../lib/metadata.core.js');
+	function oninit (create_tables_sql) {
 
-	attr.$p.settings = function (prm, modifiers) {
+		// request
+		attr.http.request = require('request');
+
+		// авторизация в 1С
+		attr["1c"].auth = "Basic " + new Buffer(attr["1c"].username + ":" + attr["1c"].password).toString("base64");
+
+		// http
+		attr.http.http = require('http');
+
+		// драйвер PostgreSQL
+		attr.pg.drv = require('pg');
+
+		alasql(create_tables_sql, [], function(){
+
+			// если указано использование сокетов - инициализируем
+			if(attr.http["socket"])
+				require('./http_socket.js')(attr);
+
+			// если указано использование взаимодействия с 1С - инициализируем
+			if(attr.http["1c"])
+				require('./http_1c.js')(attr);
+
+			// если указано использование административного интерфейса - инициализируем
+			if(attr.http["adm"])
+				require('./http_adm.js')(attr);
+
+		});
+	}
+
+	// metadata.js
+	require('../lib/metadata.core.js');
+
+	$p.settings = function (prm, modifiers) {
 
 		// для транспорта используем rest, а не сервис http
 		prm.rest = true;
@@ -62,45 +93,22 @@ parser(attr, function(err, data){
 		// расположение файлов данных
 		prm.data_url = "data/";
 
-		// расположение файла инициализации базы sql
+		// Таблицы инициализируем не через файл, а вызовом метода метаданных
 		//prm.create_tables = true;
 		//prm.create_tables_sql = require('create_tables');
+		modifiers.push(function () {
+			$p.md.create_tables(oninit);
+		})
 
 	};
-	attr.$p.job_prm = new $p.JobPrm();
+	$p.job_prm = new $p.JobPrm();
 
 	$p.wsql.init_params()
 		.then(function(){
 
 			// метаданные интеграции
 			parser("integration.meta.json", function(err, data){
-
-				new attr.$p.Meta(data);
-
-				// request
-				attr.http.request = require('request');
-
-				// авторизация в 1С
-				attr["1c"].auth = "Basic " + new Buffer(attr["1c"].username + ":" + attr["1c"].password).toString("base64");
-
-				// http
-				attr.http.http = require('http');
-
-				// драйвер PostgreSQL
-				attr.pg.drv = require('pg');
-
-				// если указано использование сокетов - инициализируем
-				if(attr.http["socket"])
-					require('./http_socket.js')(attr);
-
-				// если указано использование взаимодействия с 1С - инициализируем
-				if(attr.http["1c"])
-					require('./http_1c.js')(attr);
-
-				// если указано использование административного интерфейса - инициализируем
-				if(attr.http["adm"])
-					require('./http_adm.js')(attr);
-
+				new $p.Meta(data);
 			});
 
 		});

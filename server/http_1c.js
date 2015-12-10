@@ -152,9 +152,9 @@ module.exports = function (attr) {
 			auth: attr["1c"].auth,
 			request: attr.http.request
 		};
-		attr.$p.rest.load_array(tattr, attr.$p.cat.ИдентификаторыОбъектовМетаданных)
+		$p.rest.load_array(tattr, $p.cat.ИдентификаторыОбъектовМетаданных)
 			.then(function (data) {
-				attr.$p.cat.ИдентификаторыОбъектовМетаданных.load_array(data);
+				$p.cat.ИдентификаторыОбъектовМетаданных.load_array(data, true);
 			})
 			.then(function () {
 				tattr = {
@@ -162,13 +162,102 @@ module.exports = function (attr) {
 					auth: attr["1c"].auth,
 					request: attr.http.request
 				};
-				return attr.$p.rest.load_array(tattr, attr.$p.ireg.ИнтеграцияМетаданные);
+				return $p.rest.load_array(tattr, $p.ireg.ИнтеграцияМетаданные);
 			})
 			.then(function (data) {
-				attr.$p.ireg.ИнтеграцияМетаданные.load_array(data);
+				var o, im;
+				for(var i in data){
+
+					o = data[i];
+
+					if($p.is_guid(o.Объект)){
+						o.ref = o.Объект;
+						im = $p.cat.ИдентификаторыОбъектовМетаданных.get(o.ref);
+						o.class_name = $p.md.class_name_from_1c(im.ПолноеИмя);
+
+					}else{
+						o.class_name = "enm." + o.Объект;
+					}
+
+					o.lc_changed_base = o.ДиапазонДат;
+					o.cache = o.Кешировать ? 1 : 0;
+					o.irest_enabled = o.РазрешенIREST;
+
+					if(o.ТипРегистрации)
+						o.reg_type = $p.enm.ИнтеграцияТипРегистрации[o.ТипРегистрации].order;
+					else
+						o.reg_type = 0;
+
+					delete o.Объект;
+					delete o.ДиапазонДат;
+					delete o.Кешировать;
+					delete o.РазрешенIREST;
+					delete o.ТипРегистрации;
+
+				}
+				return data;
+			})
+			.then(function (data) {
+				var index = -1,
+					insert = "insert into meta (class_name, ref, cache, hide, lc_changed_base, irest_enabled, reg_type, meta, meta_patch) " +
+						"values ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+					update = "update meta set class_name=$1, ref=$2, cache=$3, hide=$4, lc_changed_base=$5, irest_enabled=$6, reg_type=$7, meta=$8, meta_patch=$9 " +
+						"where class_name=$10;";
+
+
+				attr.pg.drv.connect(attr.pg.cnn, function(err, client, done) {
+
+					function iteration(){
+						index++;
+						if(index < data.length){
+							var obj = data[index];
+
+							client.query('SELECT class_name from meta where class_name=$1;', [obj.class_name], function(err, result) {
+								if(err){
+									done();
+									return console.error('error running query', err);
+								}
+
+								if(result.rows.length){
+									client.query(update,
+										[obj.class_name, obj.ref, obj.cache, obj.hide, obj.lc_changed_base, obj.irest_enabled, obj.reg_type, obj.meta, obj.meta_patch, obj.class_name],
+										function(err, result) {
+											if(err){
+												done();
+												return console.error('error running query', err);
+											}
+
+											iteration();
+
+										});
+
+								}else{
+									client.query(insert,
+										[obj.class_name, obj.ref, obj.cache, obj.hide, obj.lc_changed_base, obj.irest_enabled, obj.reg_type, obj.meta, obj.meta_patch],
+										function(err, result) {
+											if(err){
+												done();
+												return console.error('error running query', err);
+											}
+
+											iteration();
+
+										});
+								}
+
+							});
+
+						}else
+							done();
+					}
+
+					if(err)
+						return console.error('error fetching client from pool', err);
+
+					iteration();
+
+				});
 			});
-
-
 
 	}
 

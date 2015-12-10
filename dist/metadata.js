@@ -417,79 +417,108 @@ $p.ajax = new (
 			// Возвращаем новое Обещание.
 			return new Promise(function(resolve, reject) {
 
-				// Делаем привычные XHR вещи
-				var req = new XMLHttpRequest();
+				// внутри Node, используем request
+				if(typeof window == "undefined" && auth && auth.request){
 
-				if(typeof window != "undefined" && window.dhx4 && window.dhx4.isIE)
-					url = encodeURI(url);
+					auth.request({
+						url: encodeURI(url),
+						headers : {
+							"Authorization": auth.auth
+						}
+					},
+						function (error, response, body) {
+							if(error)
+								reject(error);
 
-				if(auth){
-					var username, password;
-					if(typeof auth == "object" && auth.username && auth.hasOwnProperty("password")){
-						username = auth.username;
-						password = auth.password;
-					}else{
-						if($p.ajax.username && $p.ajax.authorized){
-							username = $p.ajax.username;
-							password = $p.ajax.password;
+							else if(response.statusCode != 200)
+								reject({
+									message: response.statusMessage,
+									description: body,
+									status: response.statusCode
+								});
+
+							else
+								resolve({response: body});
+						}
+					);
+
+				}else {
+
+					// делаем привычные для XHR вещи
+					var req = new XMLHttpRequest();
+
+					if(window.dhx4 && window.dhx4.isIE)
+						url = encodeURI(url);
+
+					if(auth){
+						var username, password;
+						if(typeof auth == "object" && auth.username && auth.hasOwnProperty("password")){
+							username = auth.username;
+							password = auth.password;
 						}else{
-							username = $p.wsql.get_user_param("user_name");
-							password = $p.wsql.get_user_param("user_pwd");
-							if(!username && $p.job_prm && $p.job_prm.guest_name){
-								username = $p.job_prm.guest_name;
-								password = $p.job_prm.guest_pwd;
+							if($p.ajax.username && $p.ajax.authorized){
+								username = $p.ajax.username;
+								password = $p.ajax.password;
+							}else{
+								username = $p.wsql.get_user_param("user_name");
+								password = $p.wsql.get_user_param("user_pwd");
+								if(!username && $p.job_prm && $p.job_prm.guest_name){
+									username = $p.job_prm.guest_name;
+									password = $p.job_prm.guest_pwd;
+								}
 							}
 						}
-					}
-					req.open(method, url, true, username, password);
-					req.withCredentials = true;
-					req.setRequestHeader("Authorization", "Basic " +
-						btoa(unescape(encodeURIComponent(username + ":" + password))));
-				}else
-					req.open(method, url, true);
+						req.open(method, url, true, username, password);
+						req.withCredentials = true;
+						req.setRequestHeader("Authorization", "Basic " +
+							btoa(unescape(encodeURIComponent(username + ":" + password))));
+					}else
+						req.open(method, url, true);
 
-				if(before_send)
-					before_send.call(this, req);
+					if(before_send)
+						before_send.call(this, req);
 
-				if (method != "GET") {
-					if(!this.hide_headers && !auth.hide_headers){
-						req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-						req.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+					if (method != "GET") {
+						if(!this.hide_headers && !auth.hide_headers){
+							req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+							req.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+						}
+					} else {
+						post_data = null;
 					}
-				} else {
-					post_data = null;
+
+					req.onload = function() {
+						// Этот кусок вызовется даже при 404’ой ошибке
+						// поэтому проверяем статусы ответа
+						if (req.status == 200 && (req.response instanceof Blob || req.response.substr(0,9)!=="<!DOCTYPE")) {
+							// Завершаем Обещание с текстом ответа
+							if(req.responseURL == undefined)
+								req.responseURL = url;
+							resolve(req);
+						}
+						else {
+							// Обламываемся, и передаём статус ошибки
+							// что бы облегчить отладку и поддержку
+							if(req.response)
+								reject({
+									message: req.statusText,
+									description: req.response,
+									status: req.status
+								});
+							else
+								reject(Error(req.statusText));
+						}
+					};
+
+					// отлавливаем ошибки сети
+					req.onerror = function() {
+						reject(Error("Network Error"));
+					};
+
+					// Делаем запрос
+					req.send(post_data);
 				}
 
-				req.onload = function() {
-					// Этот кусок вызовется даже при 404’ой ошибке
-					// поэтому проверяем статусы ответа
-					if (req.status == 200 && (req.response instanceof Blob || req.response.substr(0,9)!=="<!DOCTYPE")) {
-						// Завершаем Обещание с текстом ответа
-						if(req.responseURL == undefined)
-							req.responseURL = url;
-						resolve(req);
-					}
-					else {
-						// Обламываемся, и передаём статус ошибки
-						// что бы облегчить отладку и поддержку
-						if(req.response)
-							reject({
-								message: req.statusText,
-								description: req.response,
-								status: req.status
-							});
-						else
-							reject(Error(req.statusText));
-					}
-				};
-
-				// отлавливаем ошибки сети
-				req.onerror = function() {
-					reject(Error("Network Error"));
-				};
-
-				// Делаем запрос
-				req.send(post_data);
 			});
 
 		}
@@ -1527,13 +1556,18 @@ function JobPrm(){
 	this.offline = false;
 	this.local_storage_prefix = "";
 
-	/**
-	 * Содержит объект с расшифровкой параметров url, указанных при запуске программы
-	 * @property url_prm
-	 * @type {Object}
-	 * @static
-	 */
-	this.url_prm = this.parse_url();
+	if(typeof window != "undefined"){
+
+		/**
+		 * Содержит объект с расшифровкой параметров url, указанных при запуске программы
+		 * @property url_prm
+		 * @type {Object}
+		 * @static
+		 */
+		this.url_prm = this.parse_url();
+
+	}else
+		this.url_prm = {};
 
 	// подмешиваем параметры, заданные в файле настроек сборки
 	if(typeof $p.settings === "function")
@@ -1596,6 +1630,7 @@ function JobPrm(){
 	};
 
 }
+$p.JobPrm = JobPrm;
 
 
 /**
@@ -1606,8 +1641,7 @@ function JobPrm(){
 function WSQL(){
 
 	var wsql = this,
-		user_params = {},
-		inited = 0;
+		user_params = {};
 
 	function fetch_type(prm, type){
 		if(type == "object"){
@@ -1628,47 +1662,6 @@ function WSQL(){
 	}
 
 	//TODO задействовать вебворкеров + единообразно база в озу alasql
-
-
-	/**
-	 * Выполняет sql запрос к локальной базе данных
-	 * @method exec
-	 * @param sql {String} - текст запроса
-	 * @param prm {Array} - массив с параметрами для передачи в запрос
-	 * @param [callback] {Function} - функция обратного вызова. если не укзана, запрос выполняется "как бы синхронно"
-	 * @param [tag] {*} - произвольные данные для передачи в callback
-	 * @async
-	 */
-	wsql.exec = function(sql, prm, callback, tag) {
-
-		if(inited < 10){
-			inited++;
-			setTimeout(function () {
-				wsql.exec(sql, prm, callback, tag);
-			}, 1000);
-			return;
-
-		}else if(inited < 100) {
-			throw new TypeError('alasql init error');
-		}
-
-		if(!Array.isArray(prm))
-			prm = [prm];	// если параметры не являются массивом, конвертируем
-
-		var i, data = [];
-		try{
-			if(callback)
-				alasql(sql, prm, function (data) {
-					callback(data, tag);
-				});
-			else
-				alasql(sql, prm);
-		}
-		catch(e){
-			if(callback)
-				callback(e);
-		}
-	};
 
 	/**
 	 * Выполняет sql запрос к локальной базе данных, возвращает Promise
@@ -1820,17 +1813,13 @@ function WSQL(){
 				if($p.job_prm.create_tables){
 					if($p.job_prm.create_tables_sql)
 						alasql($p.job_prm.create_tables_sql, [], function(){
-							inited = 1000;
 							delete $p.job_prm.create_tables_sql;
 							resolve();
 						});
 					else
 						$p.ajax.get($p.job_prm.create_tables)
 							.then(function (req) {
-								alasql(req.response, [], function(){
-									inited = 1000;
-									resolve();
-								});
+								alasql(req.response, [], resolve);
 							});
 				}else
 					resolve();
@@ -2035,12 +2024,9 @@ function WSQL(){
 		});
 	};
 
-	if(typeof alasql !== "undefined"){
-
+	if(typeof alasql !== "undefined")
 		wsql.aladb = new alasql.Database('md');
 
-	} else
-		inited = 1000;
 };
 
 /**
@@ -6178,7 +6164,7 @@ var _cat = $p.cat = new (
  */
 function Meta(req, patch) {
 
-	var m = (req instanceof XMLHttpRequest) ? JSON.parse(req.response) : req,
+	var m = (req && req.response) ? JSON.parse(req.response) : req,
 		class_name;
 
 	// Экспортируем ссылку на себя
@@ -6199,14 +6185,16 @@ function Meta(req, patch) {
 		}
 	}
 	if(patch)
-		apply_patch((patch instanceof XMLHttpRequest) ? JSON.parse(patch.response) : patch);
+		apply_patch(patch.response ? JSON.parse(patch.response) : patch);
 
 	req = null;
-	patch = require('log');
-	if(typeof patch == "string")
-		patch = JSON.parse(patch);
-	apply_patch(patch);
-	patch = null;
+	if(typeof window != "undefined"){
+		patch = require('log');
+		if(typeof patch == "string")
+			patch = JSON.parse(patch);
+		apply_patch(patch);
+		patch = null;
+	}
 
 	/**
 	 * Возвращает описание объекта метаданных
@@ -6215,7 +6203,7 @@ function Meta(req, patch) {
 	 * @param [field_name] {String}
 	 * @return {Object}
 	 */
-	this.get = function(class_name, field_name){
+	_md.get = function(class_name, field_name){
 		var np = class_name.split("."),
 			res = {multiline_mode: false, note: "", synonym: "", tooltip: "", type: {is_ref: false,	types: ["string"]}};
 		if(!field_name)
@@ -6261,8 +6249,9 @@ function Meta(req, patch) {
 
 	/**
 	 * Возвращает структуру метаданных конфигурации
+	 * @method get_classes
 	 */
-	this.get_classes = function () {
+	_md.get_classes = function () {
 		var res = {};
 		for(var i in m){
 			res[i] = [];
@@ -6278,9 +6267,9 @@ function Meta(req, patch) {
 	 * @return {Promise.<T>}
 	 * @async
 	 */
-	this.create_tables = function(callback){
+	_md.create_tables = function(callback){
 
-		var cstep = 0, data_names = [], managers = this.get_classes(), class_name,
+		var cstep = 0, data_names = [], managers = _md.get_classes(), class_name,
 			create = "USE md;\nCREATE TABLE IF NOT EXISTS refs (ref CHAR);\n";
 
 		function on_table_created(data){
@@ -6289,20 +6278,23 @@ function Meta(req, patch) {
 				cstep--;
 				if(cstep==0){
 					if(callback)
-						setTimeout(callback, 10);
-					alasql.utils.saveFile("create_tables.sql", create);
+						setTimeout(function () {
+							callback(create);
+						}, 10);
+					else
+						alasql.utils.saveFile("create_tables.sql", create);
 				} else
 					iteration();
-			}else if(data.hasOwnProperty("message")){
-				$p.iface.docs.progressOff();
-				$p.msg.show_msg({
-					title: $p.msg.error_critical,
-					type: "alert-error",
-					text: data.message
-				});
+			}else if(data && data.hasOwnProperty("message")){
+				if($p.iface && $p.iface.docs){
+					$p.iface.docs.progressOff();
+					$p.msg.show_msg({
+						title: $p.msg.error_critical,
+						type: "alert-error",
+						text: data.message
+					});
+				}
 			}
-
-
 		}
 
 		// TODO переписать на промисах и генераторах и перекинуть в синкер
@@ -6342,15 +6334,21 @@ function Meta(req, patch) {
 
 			create += sql + ";\n";
 			on_table_created(1);
-			//$p.wsql.exec(sql, [], on_table_created);
 		}
 
-		$p.wsql.exec(create);
 		iteration();
 
 	};
 
-	this.sql_type = function (mgr, f, mf) {
+	/**
+	 * Возвращает тип поля sql для типа данных
+	 * @method sql_type
+	 * @param mgr
+	 * @param f
+	 * @param mf
+	 * @return {*}
+	 */
+	_md.sql_type = function (mgr, f, mf) {
 		var sql;
 		if((f == "type" && mgr.table_name == "cch_properties") || (f == "svg" && mgr.table_name == "cat_production_params"))
 			sql = " JSON";
@@ -6375,18 +6373,26 @@ function Meta(req, patch) {
 		return sql;
 	};
 
-	this.sql_mask = function(f, t){
+	/**
+	 * Заключает имя поля в аппострофы
+	 * @method sql_mask
+	 * @param f
+	 * @param t
+	 * @return {string}
+	 */
+	_md.sql_mask = function(f, t){
 		//var mask_names = ["delete", "set", "value", "json", "primary", "content"];
 		return ", " + (t ? "_t_." : "") + ("`" + f + "`");
 	};
 
 	/**
 	 * Возвращает менеджер объекта по имени класса
+	 * @method mgr_by_class_name
 	 * @param class_name {String}
 	 * @return {DataManager|undefined}
 	 * @private
 	 */
-	this.mgr_by_class_name = function(class_name){
+	_md.mgr_by_class_name = function(class_name){
 		if(class_name){
 			var np = class_name.split(".");
 			if(np[1] && $p[np[0]])
@@ -6396,6 +6402,7 @@ function Meta(req, patch) {
 
 	/**
 	 * Возвращает менеджер значения по свойству строки
+	 * @method value_mgr
 	 * @param row {Object|TabularSectionRow} - строка табчасти или объект
 	 * @param f {String} - имя поля
 	 * @param mf {Object} - метаданные поля
@@ -6403,7 +6410,7 @@ function Meta(req, patch) {
 	 * @param v {*} - устанавливаемое значение
 	 * @return {DataManager|Array}
 	 */
-	this.value_mgr = function(row, f, mf, array_enabled, v){
+	_md.value_mgr = function(row, f, mf, array_enabled, v){
 		var property, oproperty, tnames, rt, mgr;
 		if(mf._mgr)
 			return mf._mgr;
@@ -6471,7 +6478,13 @@ function Meta(req, patch) {
 		}
 	};
 
-	this.control_by_type = function (type) {
+	/**
+	 * Возвращает имя типа элемента управления для типа поля
+	 * @method control_by_type
+	 * @param type
+	 * @return {*}
+	 */
+	_md.control_by_type = function (type) {
 		var ft;
 		if(type.is_ref){
 			if(type.types.join().indexOf("enm.")==-1)
@@ -6495,12 +6508,20 @@ function Meta(req, patch) {
 		return ft;
 	};
 
-	this.ts_captions = function (class_name, ts_name, source) {
+	/**
+	 * Возвращает структуру для инициализации таблицы на форме
+	 * @method ts_captions
+	 * @param class_name
+	 * @param ts_name
+	 * @param source
+	 * @return {boolean}
+	 */
+	_md.ts_captions = function (class_name, ts_name, source) {
 		if(!source)
 			source = {};
 
-		var mts = this.get(class_name).tabular_sections[ts_name],
-			mfrm = this.get(class_name).form,
+		var mts = _md.get(class_name).tabular_sections[ts_name],
+			mfrm = _md.get(class_name).form,
 			fields = mts.fields, mf;
 
 		// если имеются метаданные формы, используем их
@@ -6529,7 +6550,7 @@ function Meta(req, patch) {
 				if(!mf.hide){
 					source.fields.push(f);
 					source.headers += "," + (mf.synonym ? mf.synonym.replace(/,/g, " ") : f);
-					source.types += "," + this.control_by_type(mf.type);
+					source.types += "," + _md.control_by_type(mf.type);
 					source.sortings += ",na";
 				}
 			}
@@ -6539,7 +6560,7 @@ function Meta(req, patch) {
 
 	};
 
-	this.syns_js = function (v) {
+	_md.syns_js = function (v) {
 		var synJS = {
 			DeletionMark: 'deleted',
 			Description: 'name',
@@ -6562,7 +6583,7 @@ function Meta(req, patch) {
 		return m.syns_js[m.syns_1с.indexOf(v)] || v;
 	};
 
-	this.syns_1с = function (v) {
+	_md.syns_1с = function (v) {
 		var syn1c = {
 			deleted: 'DeletionMark',
 			name: 'Description',
@@ -6582,10 +6603,39 @@ function Meta(req, patch) {
 		return m.syns_1с[m.syns_js.indexOf(v)] || v;
 	};
 
-	this.printing_plates = function (pp) {
+	_md.printing_plates = function (pp) {
 		if(pp)
 			for(var i in pp.doc)
 				m.doc[i].printing_plates = pp.doc[i];
+
+	};
+
+	/**
+	 * Возвращает имя класса по полному имени объекта метаданных 1С
+	 * @method class_name_from_1c
+	 * @param name
+	 */
+	_md.class_name_from_1c = function (name) {
+
+		var pn = name.split(".");
+		if(pn.length == 1)
+			return "enm." + name;
+		else if(pn[0] == "Перечисление")
+			name = "enm.";
+		else if(pn[0] == "Справочник")
+			name = "cat.";
+		else if(pn[0] == "Документ")
+			name = "doc.";
+		else if(pn[0] == "РегистрСведений")
+			name = "ireg.";
+		else if(pn[0] == "РегистрНакопления")
+			name = "areg.";
+		else if(pn[0] == "ПланВидовХарактеристик")
+			name = "cch.";
+		else if(pn[0] == "ПланСчетов")
+			name = "cacc.";
+
+		return name + pn[1];
 
 	};
 
@@ -6733,7 +6783,7 @@ function DataManager(class_name){
 		_cachable = true;
 
 	// Если в метаданных явно указано правило кеширования, используем его
-	if(!$p.job_prm.offline && _metadata.hasOwnProperty("cachable"))
+	if(!$p.job_prm.offline && _metadata.cachable != undefined)
 		_cachable = _metadata.cachable;
 
 	this.__define({
@@ -7481,7 +7531,9 @@ function RefDataManager(class_name) {
 		for(var i in aattr){
 			ref = $p.fix_guid(aattr[i]);
 			if(!(obj = by_ref[ref])){
-				new t._obj_сonstructor(aattr[i], t);
+				obj = new t._obj_сonstructor(aattr[i], t);
+				if(forse)
+					obj._set_loaded();
 
 			}else if(obj.is_new() || forse){
 				obj._mixin(aattr[i]);
@@ -8304,9 +8356,7 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 			first_field = true;
 		attr._values = [];
 
-		for(var f in attr){
-			if(f == "action" || f == "_values")
-				continue;
+		for(var f in cmd["dimensions"]){
 
 			if(first_field)
 				first_field = false;
@@ -12551,7 +12601,7 @@ function only_in_browser(w){
 						}
 
 						// задаём основной скин
-						dhtmlx.skin = $p.wsql.get_user_param("skin") || "dhx_web";
+						dhtmlx.skin = $p.wsql.get_user_param("skin") || $p.job_prm.skin || "dhx_web";
 
 						//str.replace(new RegExp(list[i] + '$'), 'finish')
 						if(load_dhtmlx)
@@ -12933,7 +12983,7 @@ setInterval($p.eve.ontimer, 180000);
 
 $p.eve.update_files_version = function () {
 
-	if(!$p.job_prm || $p.job_prm.offline || !$p.job_prm.data_url)
+	if(typeof window === "undefined" || !$p.job_prm || $p.job_prm.offline || !$p.job_prm.data_url)
 		return;
 
 	if(!$p.job_prm.files_date)

@@ -799,7 +799,9 @@ function RefDataManager(class_name) {
 		for(var i in aattr){
 			ref = $p.fix_guid(aattr[i]);
 			if(!(obj = by_ref[ref])){
-				new t._obj_сonstructor(aattr[i], t);
+				obj = new t._obj_сonstructor(aattr[i], t);
+				if(forse)
+					obj._set_loaded();
 
 			}else if(obj.is_new() || forse){
 				obj._mixin(aattr[i]);

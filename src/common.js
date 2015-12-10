@@ -1638,8 +1638,7 @@ $p.JobPrm = JobPrm;
 function WSQL(){
 
 	var wsql = this,
-		user_params = {},
-		inited = 0;
+		user_params = {};
 
 	function fetch_type(prm, type){
 		if(type == "object"){
@@ -1660,47 +1659,6 @@ function WSQL(){
 	}
 
 	//TODO задействовать вебворкеров + единообразно база в озу alasql
-
-
-	/**
-	 * Выполняет sql запрос к локальной базе данных
-	 * @method exec
-	 * @param sql {String} - текст запроса
-	 * @param prm {Array} - массив с параметрами для передачи в запрос
-	 * @param [callback] {Function} - функция обратного вызова. если не укзана, запрос выполняется "как бы синхронно"
-	 * @param [tag] {*} - произвольные данные для передачи в callback
-	 * @async
-	 */
-	wsql.exec = function(sql, prm, callback, tag) {
-
-		if(inited < 10){
-			inited++;
-			setTimeout(function () {
-				wsql.exec(sql, prm, callback, tag);
-			}, 1000);
-			return;
-
-		}else if(inited < 100) {
-			throw new TypeError('alasql init error');
-		}
-
-		if(!Array.isArray(prm))
-			prm = [prm];	// если параметры не являются массивом, конвертируем
-
-		var i, data = [];
-		try{
-			if(callback)
-				alasql(sql, prm, function (data) {
-					callback(data, tag);
-				});
-			else
-				alasql(sql, prm);
-		}
-		catch(e){
-			if(callback)
-				callback(e);
-		}
-	};
 
 	/**
 	 * Выполняет sql запрос к локальной базе данных, возвращает Promise
@@ -1852,17 +1810,13 @@ function WSQL(){
 				if($p.job_prm.create_tables){
 					if($p.job_prm.create_tables_sql)
 						alasql($p.job_prm.create_tables_sql, [], function(){
-							inited = 1000;
 							delete $p.job_prm.create_tables_sql;
 							resolve();
 						});
 					else
 						$p.ajax.get($p.job_prm.create_tables)
 							.then(function (req) {
-								alasql(req.response, [], function(){
-									inited = 1000;
-									resolve();
-								});
+								alasql(req.response, [], resolve);
 							});
 				}else
 					resolve();
@@ -2067,12 +2021,9 @@ function WSQL(){
 		});
 	};
 
-	if(typeof alasql !== "undefined"){
-
+	if(typeof alasql !== "undefined")
 		wsql.aladb = new alasql.Database('md');
 
-	} else
-		inited = 1000;
 };
 
 /**
