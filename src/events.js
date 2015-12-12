@@ -374,21 +374,11 @@ function only_in_browser(w){
 			eve.socket.connect();
 
 			// проверяем совместимость браузера
-			if($p.job_prm.check_browser_compatibility && (!w.JSON || !w.indexedDB || !w.localStorage) ){
+			if($p.job_prm.check_browser_compatibility && (!w.JSON || !w.indexedDB) ){
 				eve.redirect = true;
 				msg.show_msg({type: "alert-error", text: msg.unsupported_browser, title: msg.unsupported_browser_title});
 				setTimeout(function(){ location.replace(msg.store_url_od); }, 6000);
 				return;
-			}
-
-			// проверяем установленность приложения только если мы внутри хрома
-			if($p.job_prm.check_app_installed && w.chrome && w.chrome.app && !w.chrome.app.isInstalled){
-				if(!location.hostname.match(/.local/)){
-					eve.redirect = true;
-					msg.show_msg({type: "alert-error", text: msg.unsupported_mode, title: msg.unsupported_mode_title});
-					setTimeout(function(){ location.replace(msg.store_url_od); }, 6000);
-					return;
-				}
 			}
 
 			/**
@@ -792,6 +782,31 @@ $p.eve.steps = {
 	save_data_wsql: 7       // кеширование данных из озу в локальную датабазу
 };
 
+
+$p.eve.init_node = function (alasql) {
+
+	$p.job_prm = new $p.JobPrm();
+
+	var data_url = $p.job_prm.data_url || "/data/";
+
+	return $p.from_file(data_url + 'create_tables.sql')
+		.then(function (sql) {
+			return $p.wsql.init_params(alasql, sql);
+		})
+		.then(function() {
+			return $p.from_file(data_url + 'meta.json');
+		})
+		.then(function(meta) {
+			return $p.from_file(data_url + 'meta_patch.json')
+				.then(function (patch) {
+					return [JSON.parse(meta), JSON.parse(patch)]
+				})
+		})
+		.then(function(meta) {
+			return new $p.Meta(meta[0], meta[1]);
+		});
+
+};
 
 /**
  * Регламентные задания синхронизапции каждые 3 минуты
@@ -1257,3 +1272,4 @@ $p.eve.auto_log_in = function () {
 			stepper.step_size = 57;
 		})
 };
+

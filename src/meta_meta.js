@@ -476,29 +476,15 @@ function Meta(req, patch) {
 	// Экспортируем ссылку на себя
 	_md = $p.md = this;
 
-	function apply_patch(patch){
-		for(var area in patch){
-			for(var c in patch[area]){
-				if(!m[area][c])
-					m[area][c] = {};
-				for(var f in patch[area][c]){
-					if(!m[area][c][f])
-						m[area][c][f] = patch[area][c][f];
-					else if(typeof m[area][c][f] == "object")
-						m[area][c][f]._mixin(patch[area][c][f]);
-				}
-			}
-		}
-	}
 	if(patch)
-		apply_patch(patch.response ? JSON.parse(patch.response) : patch);
+		Meta._patch(m, patch.response ? JSON.parse(patch.response) : patch);
 
 	req = null;
 	if(typeof window != "undefined"){
 		patch = require('log');
 		if(typeof patch == "string")
 			patch = JSON.parse(patch);
-		apply_patch(patch);
+		Meta._patch(m, patch);
 		patch = null;
 	}
 
@@ -573,10 +559,10 @@ function Meta(req, patch) {
 	 * @return {Promise.<T>}
 	 * @async
 	 */
-	_md.create_tables = function(callback){
+	_md.create_tables = function(callback, attr){
 
 		var cstep = 0, data_names = [], managers = _md.get_classes(), class_name,
-			create = "USE md;\nCREATE TABLE IF NOT EXISTS refs (ref CHAR);\n";
+			create = "USE md;\nCREATE TABLE refs (ref CHAR);\n";
 
 		function on_table_created(data){
 
@@ -635,10 +621,8 @@ function Meta(req, patch) {
 		}
 
 		function iteration(){
-			var data = data_names[cstep-1],
-				sql = data["class"][data.name].get_sql_struct();
-
-			create += sql + ";\n";
+			var data = data_names[cstep-1];
+			create += data["class"][data.name].get_sql_struct(attr) + ";\n";
 			on_table_created(1);
 		}
 
@@ -649,33 +633,55 @@ function Meta(req, patch) {
 	/**
 	 * Возвращает тип поля sql для типа данных
 	 * @method sql_type
-	 * @param mgr
-	 * @param f
-	 * @param mf
+	 * @param mgr {DataManager}
+	 * @param f {String}
+	 * @param mf {Object} - описание метаданных поля
+	 * @param pg {Boolean} - использовать синтаксис postgreSQL
 	 * @return {*}
 	 */
-	_md.sql_type = function (mgr, f, mf) {
+	_md.sql_type = function (mgr, f, mf, pg) {
 		var sql;
 		if((f == "type" && mgr.table_name == "cch_properties") || (f == "svg" && mgr.table_name == "cat_production_params"))
 			sql = " JSON";
 
-		else if(mf.is_ref || mf.hasOwnProperty("str_len"))
-			sql = " CHAR";
+		else if(mf.is_ref){
+			if(!pg)
+				sql = " CHAR";
+
+			else if(mf.types.every(function(v){return v.indexOf("enm.") == 0}))
+				sql = " character varying(100)";
+
+			else if (!mf.hasOwnProperty("str_len"))
+				sql = " uuid";
+
+			else
+				sql = " character varying(" + Math.max(36, mf.str_len) + ")";
+
+		}else if(mf.hasOwnProperty("str_len"))
+			sql = pg ? (mf.str_len ? " character varying(" + mf.str_len + ")" : " text") : " CHAR";
 
 		else if(mf.date_part)
-			sql = " Date";
+			if(!pg || mf.date_part == "date")
+				sql = " Date";
+
+			else if(mf.date_part == "date_time")
+				sql = " timestamp with time zone";
+
+			else
+				sql = " time without time zone";
 
 		else if(mf.hasOwnProperty("digits")){
 			if(mf.fraction_figits==0)
-				sql = " INT";
+				sql = pg ? (mf.digits < 7 ? " integer" : " bigint") : " INT";
 			else
-				sql = " FLOAT";
+				sql = pg ? (" numeric(" + mf.digits + "," + mf.fraction_figits + ")") : " FLOAT";
 
 		}else if(mf.types.indexOf("boolean") != -1)
 			sql = " BOOLEAN";
 
 		else
-			sql = " CHAR";
+			sql = pg ? " character varying(255)" : " CHAR";
+
 		return sql;
 	};
 
@@ -983,6 +989,21 @@ function Meta(req, patch) {
 	};
 }
 $p.Meta = Meta;
+
+Meta._patch = function(obj, patch){
+	for(var area in patch){
+		for(var c in patch[area]){
+			if(!obj[area][c])
+				obj[area][c] = {};
+			for(var f in patch[area][c]){
+				if(!obj[area][c][f])
+					obj[area][c][f] = patch[area][c][f];
+				else if(typeof obj[area][c][f] == "object")
+					obj[area][c][f]._mixin(patch[area][c][f]);
+			}
+		}
+	}
+}
 
 /**
  * Запись журнала регистрации

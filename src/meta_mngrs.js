@@ -52,7 +52,7 @@ function DataManager(class_name){
 
 	// Если в метаданных явно указано правило кеширования, используем его
 	if(!$p.job_prm.offline && _metadata.cachable != undefined)
-		_cachable = _metadata.cachable;
+		_cachable = _metadata.cachable != "НеКешировать";
 
 	this.__define({
 
@@ -855,7 +855,7 @@ RefDataManager._extend(DataManager);
 RefDataManager.prototype.get_sql_struct = function(attr){
 	var t = this,
 		cmd = t.metadata(),
-		res = {}, f,
+		res = {}, f, f0, trunc_index = 0,
 		action = attr && attr.action ? attr.action : "create_table";
 
 
@@ -1094,20 +1094,49 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 	}
 
 	function sql_create(){
-		var sql = "CREATE TABLE IF NOT EXISTS `"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT";
 
-		if(t instanceof DocManager)
-			sql += ", posted BOOLEAN, date Date, number_doc CHAR";
-		else
-			sql += ", id CHAR, name CHAR, is_folder BOOLEAN";
+		var sql = "CREATE TABLE IF NOT EXISTS ";
 
-		for(f in cmd.fields)
-			sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.fields[f].type);
+		if(attr && attr.postgres){
+			sql += t.table_name+" (ref uuid PRIMARY KEY NOT NULL, deleted boolean, lc_changed bigint";
 
+			if(t instanceof DocManager)
+				sql += ", posted boolean, date timestamp with time zone, number_doc character(11)";
+			else{
+				if(cmd.code_length)
+					sql += ", id character("+cmd.code_length+")";
+				sql += ", name character varying(50), is_folder boolean";
+			}
 
-		for(f in cmd["tabular_sections"])
-			sql += ", " + "`ts_" + f + "` JSON";
+			for(f in cmd.fields){
+				if(f.length > 30){
+					trunc_index++;
+					f0 = f[0] + trunc_index + f.substr(f.length-27);
+				}else
+					f0 = f;
+				sql += ", " + f0 + _md.sql_type(t, f, cmd.fields[f].type, true);
+			}
+
+			for(f in cmd["tabular_sections"])
+				sql += ", " + "ts_" + f + " JSON";
+
+		}else{
+			sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT";
+
+			if(t instanceof DocManager)
+				sql += ", posted boolean, date Date, number_doc CHAR";
+			else
+				sql += ", id CHAR, name CHAR, is_folder BOOLEAN";
+
+			for(f in cmd.fields)
+				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.fields[f].type);
+
+			for(f in cmd["tabular_sections"])
+				sql += ", " + "`ts_" + f + "` JSON";
+		}
+
 		sql += ")";
+
 		return sql;
 	}
 
@@ -1377,21 +1406,42 @@ EnumManager._extend(RefDataManager);
  */
 EnumManager.prototype.get_sql_struct = function(attr){
 
-	var res,
+	var res = "CREATE TABLE IF NOT EXISTS ",
 		action = attr && attr.action ? attr.action : "create_table";
 
-	if(action == "create_table")
-		res = "CREATE TABLE IF NOT EXISTS `"+this.table_name+
-			"` (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR)";
-	else if(["insert", "update", "replace"].indexOf(action) != -1){
-		res = {};
-		res[this.table_name] = {
-			sql: "INSERT INTO `"+this.table_name+"` (ref, sequence, synonym) VALUES (?, ?, ?)",
-			fields: ["ref", "sequence", "synonym"],
-			values: "(?, ?, ?)"
-		};
-	}else if(action == "delete")
-		res = "DELETE FROM `"+this.table_name+"` WHERE ref = ?";
+	if(attr && attr.postgres){
+		if(action == "create_table")
+			res += this.table_name+
+				" (ref character varying(255) PRIMARY KEY NOT NULL, sequence INT, synonym character varying(255))";
+		else if(["insert", "update", "replace"].indexOf(action) != -1){
+			res = {};
+			res[this.table_name] = {
+				sql: "INSERT INTO "+this.table_name+" (ref, sequence, synonym) VALUES ($1, $2, $3)",
+				fields: ["ref", "sequence", "synonym"],
+				values: "($1, $2, $3)"
+			};
+
+		}else if(action == "delete")
+			res = "DELETE FROM "+this.table_name+" WHERE ref = $1";
+
+	}else {
+		if(action == "create_table")
+			res += "`"+this.table_name+
+				"` (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR)";
+
+		else if(["insert", "update", "replace"].indexOf(action) != -1){
+			res = {};
+			res[this.table_name] = {
+				sql: "INSERT INTO `"+this.table_name+"` (ref, sequence, synonym) VALUES (?, ?, ?)",
+				fields: ["ref", "sequence", "synonym"],
+				values: "(?, ?, ?)"
+			};
+
+		}else if(action == "delete")
+			res = "DELETE FROM `"+this.table_name+"` WHERE ref = ?";
+	}
+
+
 
 	return res;
 
@@ -1485,7 +1535,7 @@ function RegisterManager(class_name){
 			attr = {};
 		attr.action = "select";
 
-		var arr = alasql(this.get_sql_struct(attr), attr._values),
+		var arr = $p.wsql.alasql(this.get_sql_struct(attr), attr._values),
 			res;
 
 		delete attr.action;
@@ -1561,29 +1611,58 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 		action = attr && attr.action ? attr.action : "create_table";
 
 	function sql_create(){
-		var sql = "CREATE TABLE IF NOT EXISTS `"+t.table_name+"` (",
+		var sql = "CREATE TABLE IF NOT EXISTS ",
 			first_field = true;
 
-		for(f in cmd["dimensions"]){
-			if(first_field){
-				sql += "`" + f + "`";
-				first_field = false;
-			}else
-				sql += _md.sql_mask(f);
-			sql += _md.sql_type(t, f, cmd["dimensions"][f].type);
-		}
+		if(attr && attr.postgres){
+			sql += t.table_name+" ("
 
-		for(f in cmd["resources"])
-			sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd["resources"][f].type);
+			for(f in cmd["dimensions"]){
+				if(first_field){
+					sql += f;
+					first_field = false;
+				}else
+					sql += ", " + f;
+				sql += _md.sql_type(t, f, cmd["dimensions"][f].type, true);
+			}
 
-		sql += ", PRIMARY KEY (";
-		first_field = true;
-		for(f in cmd["dimensions"]){
-			if(first_field){
-				sql += "`" + f + "`";
-				first_field = false;
-			}else
-				sql += _md.sql_mask(f);
+			for(f in cmd["resources"])
+				sql += ", " + f + _md.sql_type(t, f, cmd["resources"][f].type, true);
+
+			sql += ", PRIMARY KEY (";
+			first_field = true;
+			for(f in cmd["dimensions"]){
+				if(first_field){
+					sql += f;
+					first_field = false;
+				}else
+					sql += ", " + f;
+			}
+
+		}else{
+			sql += "`"+t.table_name+"` ("
+
+			for(f in cmd["dimensions"]){
+				if(first_field){
+					sql += "`" + f + "`";
+					first_field = false;
+				}else
+					sql += _md.sql_mask(f);
+				sql += _md.sql_type(t, f, cmd["dimensions"][f].type);
+			}
+
+			for(f in cmd["resources"])
+				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd["resources"][f].type);
+
+			sql += ", PRIMARY KEY (";
+			first_field = true;
+			for(f in cmd["dimensions"]){
+				if(first_field){
+					sql += "`" + f + "`";
+					first_field = false;
+				}else
+					sql += _md.sql_mask(f);
+			}
 		}
 
 		sql += "))";
@@ -1774,7 +1853,7 @@ function LogManager(){
 			msg.class = "note";
 
 
-		alasql("insert into `ireg_$log` (`date`, `sequence`, `class`, `note`, `obj`) values (?, ?, ?, ?, ?)",
+		$p.wsql.alasql("insert into `ireg_$log` (`date`, `sequence`, `class`, `note`, `obj`) values (?, ?, ?, ?, ?)",
 			[msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
 
 	};

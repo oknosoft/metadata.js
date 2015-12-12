@@ -6,10 +6,20 @@
  * @module  server
  */
 
-var argv = process.argv,
-	attr = argv.length > 2 ? argv[2] : 'settings.json';
-
+// подключаем alasql и metadata.js глобально
 alasql = require('../lib/alasql/alasql.js');
+$p = require('../lib/metadata.core.js');
+
+$p.settings = function (prm, modifiers) {
+
+};
+
+/**
+ * Обработчик события при начале работы программы
+ */
+$p.eve.oninit = function() {
+
+};
 
 function parser(filename, callback){
 
@@ -71,8 +81,7 @@ parser(attr, function(err, data){
 		});
 	}
 
-	// metadata.js
-	require('../lib/metadata.core.js');
+
 
 	$p.settings = function (prm, modifiers) {
 
@@ -101,6 +110,7 @@ parser(attr, function(err, data){
 		})
 
 	};
+
 	$p.job_prm = new $p.JobPrm();
 
 	$p.wsql.init_params()

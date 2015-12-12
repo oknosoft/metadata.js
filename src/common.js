@@ -28,7 +28,7 @@ function MetaEngine() {
  * Для совместимости со старыми модулями, публикуем $p глобально
  * Кроме этой переменной, metadata.js ничего не экспортирует
  */
-$p = new MetaEngine();
+var $p = new MetaEngine();
 
 /**
  * Обёртка для подключения через AMD или CommonJS
@@ -68,19 +68,20 @@ if(typeof window !== "undefined"){
 		}
 		document.head.appendChild(s);
 	};
+	window.$p = $p;
+}else
+	$p.from_file = function(filename){
 
-
-}else if(typeof WorkerGlobalScope === "undefined"){
-
-	// локальное хранилище внутри node.js
-	if(typeof localStorage === "undefined")
-		localStorage = new require('node-localstorage').LocalStorage('./localstorage');
-
-	// alasql внутри node.js
-	if (typeof window === "undefined" && typeof alasql === "undefined")
-		alasql = require('alasql');
-
-}
+		return new Promise(function(resolve, reject){
+			require('fs').readFile(filename, { encoding:'utf8' }, function(err, dataFromFile){
+				if(err){
+					reject(err);
+				} else {
+					resolve(dataFromFile.toString().trim());
+				}
+			});
+		});
+	}
 
 /**
  * Фреймворк [metadata.js](https://github.com/oknosoft/metadata.js), добавляет в прототип _Object_<br />
@@ -1541,13 +1542,6 @@ function JobPrm(){
 	 */
 	this.check_browser_compatibility = true;
 
-	/**
-	 * Указывает, проверять ли установленность приложения в Google Chrome Store при запуске программы
-	 * @property check_app_installed
-	 * @type {Boolean}
-	 * @static
-	 */
-	this.check_app_installed = false;
 	this.check_dhtmlx = true;
 	this.use_builder = false;
 	this.offline = false;
@@ -1638,7 +1632,19 @@ $p.JobPrm = JobPrm;
 function WSQL(){
 
 	var wsql = this,
+		ls,
 		user_params = {};
+
+	if(typeof localStorage === "undefined"){
+
+		// локальное хранилище внутри node.js
+		if(typeof WorkerGlobalScope === "undefined"){
+			if(typeof localStorage === "undefined")
+				ls = new require('node-localstorage').LocalStorage('./localstorage');
+		}
+
+	} else
+		ls = localStorage;
 
 	function fetch_type(prm, type){
 		if(type == "object"){
@@ -1658,7 +1664,7 @@ function WSQL(){
 			return prm;
 	}
 
-	//TODO задействовать вебворкеров + единообразно база в озу alasql
+	//TODO реализовать поддержку postgres в Node
 
 	/**
 	 * Выполняет sql запрос к локальной базе данных, возвращает Promise
@@ -1669,7 +1675,7 @@ function WSQL(){
 	 */
 	wsql.promise = function(sql, params) {
 		return new Promise(function(resolve, reject){
-			alasql(sql, params || [], function(data, err) {
+			wsql.alasql(sql, params || [], function(data, err) {
 				if(err) {
 					reject(err);
 				} else {
@@ -1699,8 +1705,8 @@ function WSQL(){
 				str_prm = "";
 
 			// localStorage в этом месте можно заменить на другое хранилище
-			if(typeof localStorage !== "undefined")
-				localStorage.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
+			if(ls)
+				ls.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
 			user_params[prm_name] = prm_value;
 
 			resolve();
@@ -1717,8 +1723,8 @@ function WSQL(){
 	 */
 	wsql.get_user_param = function(prm_name, type){
 
-		if(!user_params.hasOwnProperty(prm_name) && (typeof localStorage !== "undefined"))
-			user_params[prm_name] = fetch_type(localStorage.getItem($p.job_prm.local_storage_prefix+prm_name), type);
+		if(!user_params.hasOwnProperty(prm_name) && ls)
+			user_params[prm_name] = fetch_type(ls.getItem($p.job_prm.local_storage_prefix+prm_name), type);
 
 		return user_params[prm_name];
 	};
@@ -1757,12 +1763,16 @@ function WSQL(){
 	};
 
 	/**
-	 * Создаёт и заполняет умолчаниями таблицу параметров
+	 * ### Создаёт и заполняет умолчаниями таблицу параметров
+	 * Внутри Node, в функцию следует передать ссылку на alasql
 	 * @method init_params
 	 * @return {Promise}
 	 * @async
 	 */
-	wsql.init_params = function(){
+	wsql.init_params = function(ialasql, create_tables_sql){
+
+		wsql.alasql = ialasql || alasql;
+		wsql.aladb = new wsql.alasql.Database('md');
 
 		var nesessery_params = [
 			{p: "user_name",		v: "", t:"string"},
@@ -1780,12 +1790,14 @@ function WSQL(){
 			{p: "rest_path",		v: "", t:"string"}
 		], zone;
 
+
+
 		// подмешиваем к базовым параметрам настройки приложения
 		if($p.job_prm.additional_params)
 			nesessery_params = nesessery_params.concat($p.job_prm.additional_params);
 
 		// если зона не указана, устанавливаем "1"
-		if(!localStorage.getItem($p.job_prm.local_storage_prefix+"zone"))
+		if(!ls.getItem($p.job_prm.local_storage_prefix+"zone"))
 			zone = $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1;
 		// если зона указана в url, используем её
 		if($p.job_prm.url_prm.hasOwnProperty("zone"))
@@ -1806,20 +1818,20 @@ function WSQL(){
 
 		return new Promise(function(resolve, reject){
 
-			if(typeof alasql !== "undefined"){
-				if($p.job_prm.create_tables){
-					if($p.job_prm.create_tables_sql)
-						alasql($p.job_prm.create_tables_sql, [], function(){
-							delete $p.job_prm.create_tables_sql;
-							resolve();
+			if(create_tables_sql)
+				wsql.alasql(create_tables_sql, [], resolve);
+
+			else if($p.job_prm.create_tables){
+				if($p.job_prm.create_tables_sql)
+					wsql.alasql($p.job_prm.create_tables_sql, [], function(){
+						delete $p.job_prm.create_tables_sql;
+						resolve();
+					});
+				else
+					$p.ajax.get($p.job_prm.create_tables)
+						.then(function (req) {
+							wsql.alasql(req.response, [], resolve);
 						});
-					else
-						$p.ajax.get($p.job_prm.create_tables)
-							.then(function (req) {
-								alasql(req.response, [], resolve);
-							});
-				}else
-					resolve();
 			}else
 				resolve();
 
@@ -1849,7 +1861,7 @@ function WSQL(){
 			if(tname.substr(0, 1) == "_")
 				ccallback();
 			else
-				alasql("drop table IF EXISTS " + tname, [], ccallback);
+				wsql.alasql("drop table IF EXISTS " + tname, [], ccallback);
 		}
 
 		function tmames_finded(data){
@@ -1860,7 +1872,7 @@ function WSQL(){
 				ccallback();
 		}
 
-		alasql("SHOW TABLES", [], tmames_finded);
+		wsql.alasql("SHOW TABLES", [], tmames_finded);
 	};
 
 	/**
@@ -2021,9 +2033,6 @@ function WSQL(){
 		});
 	};
 
-	if(typeof alasql !== "undefined")
-		wsql.aladb = new alasql.Database('md');
-
 };
 
 /**
@@ -2034,4 +2043,3 @@ function WSQL(){
  * @static
  */
 $p.wsql = new WSQL();
-
