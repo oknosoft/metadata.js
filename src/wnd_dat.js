@@ -387,7 +387,7 @@ $p.iface.layout_1c = function () {
 $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 
 	var frm_auth = $p.iface.auth = $p.iface.docs.attachForm(),
-		w, were_errors, auth_struct;
+		w, were_errors;
 
 	if(!onstep)
 		onstep = function (step){
@@ -504,9 +504,8 @@ $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 		}
 	}
 
-	// загружаем структуру
-	auth_struct = require("form_auth").replace(/\/imgs\//g, dhtmlx.image_path);
-	frm_auth.loadStruct(auth_struct, function(){
+	// загружаем структуру формы
+	frm_auth.loadStruct($p.injected_data["form_auth.xml"], function(){
 
 		// после готовности формы читаем пользователя из локальной датабазы
 		if($p.wsql.get_user_param("user_name")){

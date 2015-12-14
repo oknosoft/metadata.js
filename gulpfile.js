@@ -10,16 +10,15 @@ var closure = false;
 
 var gulp = require('gulp');
 module.exports = gulp;
-//var connect = require('gulp-connect');
-//var livereload = require('gulp-livereload');
 //var changed = require('gulp-changed');
 //var concat = require('gulp-concat-sourcemap');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var shell = require('gulp-shell');
 var rename = require('gulp-rename');
-var dereserve = require('gulp-dereserve');
-var argv = require('yargs').argv || {};
+var resources = require('./src/gulp-resource-concat.js');
+var path = require('path');
+var umd = require('gulp-umd');
 
 gulp.task('js-merge', function () {
 	return gulp.src([
@@ -45,37 +44,36 @@ gulp.task('js-merge', function () {
 			'./src/wnd_sync.js',
 			'./src/wnd_obj.js',
 			'./src/wnd_selection.js',
-			'./src/events.js'
+			'./src/events.js',
+			'./src/injected_data.js',
+			'./lib/xml_to_json.js',
+			'./lib/filesaver.js'
 		])
-		.pipe(concat('metadata1.js'))
+		.pipe(concat('metadata.js'))
+		.pipe(umd({
+			exports: function(file) {
+				return '$p';
+			},
+			namespace: function(file) {
+				return '$p';
+			}
+		}))
+		.pipe(gulp.dest('./lib'))
 		.pipe(gulp.dest('./dist'))
-		.pipe(dereserve())
-		.pipe(rename('metadata1.min.js'))
+		.pipe(rename('metadata.min.js'))
 		.pipe(uglify())
+		.pipe(gulp.dest('./lib'))
 		.pipe(gulp.dest('./dist'));
 });
 
 
-/** @todo Replace UglifyJS with Closure */
-gulp.task('uglify', function () {
-	return gulp.src('dist/alasql.js', {read: false})
-		.pipe(shell([
-			'uglifyjs dist/alasql.js -o dist/alasql.min.js',
-			'uglifyjs dist/alasql-worker.js -o dist/alasql-worker.min.js',
-			//'cd test && (mocha . --reporter dot || if [ $? -ne 0 ] ; then say -v karen Tests failed ; else tput bel; fi)',
-
-//      'java -jar utils/compiler.jar -O "SIMPLE_OPTIMIZATIONS" dist/alasql.js --language_in=ECMASCRIPT5 --js_output_file dist/alasql.min.js',
-//      'java -jar utils/compiler.jar -O "SIMPLE_OPTIMIZATIONS" dist/alasql-worker.js --language_in=ECMASCRIPT5 --js_output_file dist/alasql-worker.min.js'
-		]));
+gulp.task('injected_main', function(){
+   gulp.src(['./data/*.xml', './data/log.json'])
+	   .pipe(resources('injected_data.js', function (data) {
+		   return new Buffer('$p.injected_data._mixin(' + JSON.stringify(data) + ');');
+	   }))
+	   .pipe(gulp.dest('./src'));
 });
-
-/*
- gulp.task('copy-dist', function(){
- //  gulp.src(['./dist/alasql.js'/*,'./alasql.js.map'* /])
- //    .pipe(gulp.dest('./'));
- });
- */
-
 
 
 // Сборка сервера для Node.js
@@ -91,9 +89,61 @@ gulp.task('core', function(){
 		'./src/events.js'
 	])
 		.pipe(concat('metadata.core.js'))
-		.pipe(gulp.dest('./lib'));
+		.pipe(gulp.dest('./lib'))
+		.pipe(rename('metadata.core.min.js'))
+		.pipe(uglify())
+		.pipe(gulp.dest('./dist'));
 });
 
+// Ресурсы для codres
+gulp.task('injected-codres', function(){
+	gulp.src([
+		'./examples/codex/data/*.html',
+		'./examples/codex/data/create_tables.sql',
+		'./examples/codex/data/meta.json',
+		'./examples/codex/data/data.json'
+	])
+		.pipe(resources('injected_codres.js', function (data) {
+			return new Buffer('$p.injected_data._mixin(' + JSON.stringify(data) + ');');
+		}))
+		.pipe(gulp.dest('./examples/codex/data'));
+});
+
+// Сборка скрипта codres
+gulp.task('build-codres', function(){
+	gulp.src([
+			'./examples/codex/js/codres.js',
+			'./examples/codex/data/injected_codres.js'
+		])
+		.pipe(concat('result.js'))
+		.pipe(gulp.dest('./examples/codex/js'));
+});
+
+// Ресурсы для codex
+gulp.task('injected-codex', function(){
+	gulp.src([
+		'./examples/codex/data/*.md',
+		'./examples/codex/data/*.code',
+		'./examples/codex/data/tree.json'
+	])
+		.pipe(resources('injected_codex.js', function (data) {
+			return new Buffer('$p.injected_data._mixin(' + JSON.stringify(data) + ');');
+		}))
+		.pipe(gulp.dest('./examples/codex/data'));
+});
+
+// Сборка скрипта codex
+gulp.task('build-codex', function(){
+	gulp.src([
+			'./examples/codex/js/codex.js',
+			'./examples/codex/data/injected_codex.js'
+		])
+		.pipe(concat('main.js'))
+		.pipe(gulp.dest('./examples/codex/js'));
+});
+
+// Сборка codex
+gulp.task('codex', ['injected-codres', 'injected-codex', 'build-codres', 'build-codex'], function(){});
 
 var toRun = ['js-merge' ];
 
@@ -103,12 +153,4 @@ gulp.task('default', toRun, function(){});
 
 gulp.task('watch', toRun, function(){
 	gulp.watch('./src/*.js',function(){ gulp.run('core'); });
-});
-
-
-gulp.task('doc', function(){
-	//return gulp.src('./alasql.js', {read: false})
-	//	.pipe(shell([
-	//		'jsdoc dist/alasql.js -d ../alasql-org/api',
-	//	]));
 });

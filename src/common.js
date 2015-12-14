@@ -22,6 +22,7 @@ function MetaEngine() {
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
+	this.injected_data = {};
 }
 
 /**
@@ -29,16 +30,6 @@ function MetaEngine() {
  * Кроме этой переменной, metadata.js ничего не экспортирует
  */
 var $p = new MetaEngine();
-
-/**
- * Обёртка для подключения через AMD или CommonJS
- * https://github.com/umdjs/umd
- */
-if (typeof define === 'function' && define.amd) {
-	define('$p', $p);                               // Support AMD (e.g. require.js)
-} else if (typeof module === 'object' && module) {  // could be `null`
-	module.exports = $p;                            // Support CommonJS module
-}
 
 if(typeof window !== "undefined"){
 
@@ -68,10 +59,15 @@ if(typeof window !== "undefined"){
 		}
 		document.head.appendChild(s);
 	};
-	window.$p = $p;
-}else
-	$p.from_file = function(filename){
 
+}else{
+
+	/**
+	 * Читает данные из файла (только в Node.js)
+	 * @param filename
+	 * @return {Promise}
+	 */
+	$p.from_file = function(filename){
 		return new Promise(function(resolve, reject){
 			require('fs').readFile(filename, { encoding:'utf8' }, function(err, dataFromFile){
 				if(err){
@@ -82,6 +78,8 @@ if(typeof window !== "undefined"){
 			});
 		});
 	}
+}
+
 
 /**
  * Фреймворк [metadata.js](https://github.com/oknosoft/metadata.js), добавляет в прототип _Object_<br />
@@ -695,7 +693,7 @@ $p.ajax = new (
 					xhr.responseType = "blob";
 				})
 				.then(function(req){
-					require("filesaver").saveAs(req.response, file_name);
+					saveAs(req.response, file_name);
 				});
 		};
 
@@ -1418,7 +1416,7 @@ function Modifiers(){
 			if(typeof method === "function")
 				tres = method(data);
 			else
-				tres = require(method)(data);
+				tres = $p.injected_data[method](data);
 			if(res !== false)
 				res = tres;
 		});

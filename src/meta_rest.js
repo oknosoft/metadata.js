@@ -396,7 +396,7 @@ function Rest(){
 					return $p.ajax.patch_ex(url + "(guid'" + tObj.ref + "')", atom, attr);
 			})
 			.then(function (req) {
-				var data = require("xml_to_json").parseString(req.response, {
+				var data = xmlToJSON.parseString(req.response, {
 					mergeCDATA: false, // extract cdata and merge with text
 					grokAttr: true, // convert truthy attributes to boolean, etc
 					grokText: false, // convert truthy text/attr to boolean, etc

@@ -105,7 +105,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		wnd.elmnts.toolbar = wnd.attachToolbar();
 		wnd.elmnts.toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
-		wnd.elmnts.toolbar.loadStruct(require("toolbar_selection"), function(){
+		wnd.elmnts.toolbar.loadStruct($p.injected_data["toolbar_selection.xml"], function(){
 
 			this.attachEvent("onclick", toolbar_click);
 

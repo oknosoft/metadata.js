@@ -1,6 +1,12 @@
-// This file was automatically generated from "dev.lmd.json"
-(function(global,main,modules,modules_options,options){var initialized_modules={},global_eval=function(code){return global.Function("return "+code)()},global_document=global.document,local_undefined,register_module=function(moduleName,module){var output={exports:{}};initialized_modules[moduleName]=1;modules[moduleName]=output.exports;if(!module){module=module||global[moduleName]}else if(typeof module==="function"){var module_require=lmd_require;if(modules_options[moduleName]&&modules_options[moduleName].sandbox&&typeof module_require==="function"){module_require=local_undefined}module=module(module_require,output.exports,output)||output.exports}module=module;return modules[moduleName]=module},lmd_require=function(moduleName){var module=modules[moduleName];var replacement=[moduleName,module];if(replacement){moduleName=replacement[0];module=replacement[1]}if(initialized_modules[moduleName]&&module){return module}if(typeof module==="string"&&module.indexOf("(function(")===0){module=global_eval(module)}return register_module(moduleName,module)},output={exports:{}};for(var moduleName in modules){initialized_modules[moduleName]=0}main(lmd_require,output.exports,output)})
-(this,(function (require, exports, module) { /* wrapped by builder */
+;(function(root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define([], factory);
+  } else if (typeof exports === 'object') {
+    module.exports = factory();
+  } else {
+    root.$p = factory();
+  }
+}(this, function() {
 /**
  * Глобальные переменные и общие методы фреймворка __metadata.js__ <i>Oknosoft data engine</i>
  *
@@ -25,23 +31,14 @@ function MetaEngine() {
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
+	this.injected_data = {};
 }
 
 /**
  * Для совместимости со старыми модулями, публикуем $p глобально
  * Кроме этой переменной, metadata.js ничего не экспортирует
  */
-$p = new MetaEngine();
-
-/**
- * Обёртка для подключения через AMD или CommonJS
- * https://github.com/umdjs/umd
- */
-if (typeof define === 'function' && define.amd) {
-	define('$p', $p);                               // Support AMD (e.g. require.js)
-} else if (typeof module === 'object' && module) {  // could be `null`
-	module.exports = $p;                            // Support CommonJS module
-}
+var $p = new MetaEngine();
 
 if(typeof window !== "undefined"){
 
@@ -72,18 +69,26 @@ if(typeof window !== "undefined"){
 		document.head.appendChild(s);
 	};
 
+}else{
 
-}else if(typeof WorkerGlobalScope === "undefined"){
-
-	// локальное хранилище внутри node.js
-	if(typeof localStorage === "undefined")
-		localStorage = new require('node-localstorage').LocalStorage('./localstorage');
-
-	// alasql внутри node.js
-	if (typeof window === "undefined" && typeof alasql === "undefined")
-		alasql = require('alasql');
-
+	/**
+	 * Читает данные из файла (только в Node.js)
+	 * @param filename
+	 * @return {Promise}
+	 */
+	$p.from_file = function(filename){
+		return new Promise(function(resolve, reject){
+			require('fs').readFile(filename, { encoding:'utf8' }, function(err, dataFromFile){
+				if(err){
+					reject(err);
+				} else {
+					resolve(dataFromFile.toString().trim());
+				}
+			});
+		});
+	}
 }
+
 
 /**
  * Фреймворк [metadata.js](https://github.com/oknosoft/metadata.js), добавляет в прототип _Object_<br />
@@ -697,7 +702,7 @@ $p.ajax = new (
 					xhr.responseType = "blob";
 				})
 				.then(function(req){
-					require("filesaver").saveAs(req.response, file_name);
+					saveAs(req.response, file_name);
 				});
 		};
 
@@ -1420,7 +1425,7 @@ function Modifiers(){
 			if(typeof method === "function")
 				tres = method(data);
 			else
-				tres = require(method)(data);
+				tres = $p.injected_data[method](data);
 			if(res !== false)
 				res = tres;
 		});
@@ -1544,13 +1549,6 @@ function JobPrm(){
 	 */
 	this.check_browser_compatibility = true;
 
-	/**
-	 * Указывает, проверять ли установленность приложения в Google Chrome Store при запуске программы
-	 * @property check_app_installed
-	 * @type {Boolean}
-	 * @static
-	 */
-	this.check_app_installed = false;
 	this.check_dhtmlx = true;
 	this.use_builder = false;
 	this.offline = false;
@@ -1641,7 +1639,19 @@ $p.JobPrm = JobPrm;
 function WSQL(){
 
 	var wsql = this,
+		ls,
 		user_params = {};
+
+	if(typeof localStorage === "undefined"){
+
+		// локальное хранилище внутри node.js
+		if(typeof WorkerGlobalScope === "undefined"){
+			if(typeof localStorage === "undefined")
+				ls = new require('node-localstorage').LocalStorage('./localstorage');
+		}
+
+	} else
+		ls = localStorage;
 
 	function fetch_type(prm, type){
 		if(type == "object"){
@@ -1661,7 +1671,7 @@ function WSQL(){
 			return prm;
 	}
 
-	//TODO задействовать вебворкеров + единообразно база в озу alasql
+	//TODO реализовать поддержку postgres в Node
 
 	/**
 	 * Выполняет sql запрос к локальной базе данных, возвращает Promise
@@ -1672,7 +1682,7 @@ function WSQL(){
 	 */
 	wsql.promise = function(sql, params) {
 		return new Promise(function(resolve, reject){
-			alasql(sql, params || [], function(data, err) {
+			wsql.alasql(sql, params || [], function(data, err) {
 				if(err) {
 					reject(err);
 				} else {
@@ -1702,8 +1712,8 @@ function WSQL(){
 				str_prm = "";
 
 			// localStorage в этом месте можно заменить на другое хранилище
-			if(typeof localStorage !== "undefined")
-				localStorage.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
+			if(ls)
+				ls.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
 			user_params[prm_name] = prm_value;
 
 			resolve();
@@ -1720,8 +1730,8 @@ function WSQL(){
 	 */
 	wsql.get_user_param = function(prm_name, type){
 
-		if(!user_params.hasOwnProperty(prm_name) && (typeof localStorage !== "undefined"))
-			user_params[prm_name] = fetch_type(localStorage.getItem($p.job_prm.local_storage_prefix+prm_name), type);
+		if(!user_params.hasOwnProperty(prm_name) && ls)
+			user_params[prm_name] = fetch_type(ls.getItem($p.job_prm.local_storage_prefix+prm_name), type);
 
 		return user_params[prm_name];
 	};
@@ -1760,12 +1770,16 @@ function WSQL(){
 	};
 
 	/**
-	 * Создаёт и заполняет умолчаниями таблицу параметров
+	 * ### Создаёт и заполняет умолчаниями таблицу параметров
+	 * Внутри Node, в функцию следует передать ссылку на alasql
 	 * @method init_params
 	 * @return {Promise}
 	 * @async
 	 */
-	wsql.init_params = function(){
+	wsql.init_params = function(ialasql, create_tables_sql){
+
+		wsql.alasql = ialasql || alasql;
+		wsql.aladb = new wsql.alasql.Database('md');
 
 		var nesessery_params = [
 			{p: "user_name",		v: "", t:"string"},
@@ -1783,12 +1797,14 @@ function WSQL(){
 			{p: "rest_path",		v: "", t:"string"}
 		], zone;
 
+
+
 		// подмешиваем к базовым параметрам настройки приложения
 		if($p.job_prm.additional_params)
 			nesessery_params = nesessery_params.concat($p.job_prm.additional_params);
 
 		// если зона не указана, устанавливаем "1"
-		if(!localStorage.getItem($p.job_prm.local_storage_prefix+"zone"))
+		if(!ls.getItem($p.job_prm.local_storage_prefix+"zone"))
 			zone = $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1;
 		// если зона указана в url, используем её
 		if($p.job_prm.url_prm.hasOwnProperty("zone"))
@@ -1809,20 +1825,20 @@ function WSQL(){
 
 		return new Promise(function(resolve, reject){
 
-			if(typeof alasql !== "undefined"){
-				if($p.job_prm.create_tables){
-					if($p.job_prm.create_tables_sql)
-						alasql($p.job_prm.create_tables_sql, [], function(){
-							delete $p.job_prm.create_tables_sql;
-							resolve();
+			if(create_tables_sql)
+				wsql.alasql(create_tables_sql, [], resolve);
+
+			else if($p.job_prm.create_tables){
+				if($p.job_prm.create_tables_sql)
+					wsql.alasql($p.job_prm.create_tables_sql, [], function(){
+						delete $p.job_prm.create_tables_sql;
+						resolve();
+					});
+				else
+					$p.ajax.get($p.job_prm.create_tables)
+						.then(function (req) {
+							wsql.alasql(req.response, [], resolve);
 						});
-					else
-						$p.ajax.get($p.job_prm.create_tables)
-							.then(function (req) {
-								alasql(req.response, [], resolve);
-							});
-				}else
-					resolve();
 			}else
 				resolve();
 
@@ -1852,7 +1868,7 @@ function WSQL(){
 			if(tname.substr(0, 1) == "_")
 				ccallback();
 			else
-				alasql("drop table IF EXISTS " + tname, [], ccallback);
+				wsql.alasql("drop table IF EXISTS " + tname, [], ccallback);
 		}
 
 		function tmames_finded(data){
@@ -1863,7 +1879,7 @@ function WSQL(){
 				ccallback();
 		}
 
-		alasql("SHOW TABLES", [], tmames_finded);
+		wsql.alasql("SHOW TABLES", [], tmames_finded);
 	};
 
 	/**
@@ -2024,9 +2040,6 @@ function WSQL(){
 		});
 	};
 
-	if(typeof alasql !== "undefined")
-		wsql.aladb = new alasql.Database('md');
-
 };
 
 /**
@@ -2038,8 +2051,6 @@ function WSQL(){
  */
 $p.wsql = new WSQL();
 
-
-/* joined by builder */
 /**
  * Строковые константы интернационализации
  *
@@ -2332,7 +2343,6 @@ msg.bld_from_blocks = "Текущее изделие будет заменено
 msg.bld_split_imp = "В параметрах продукции<br />'%1'<br />запрещены незамкнутые контуры<br />" +
 	"Для включения деления импостом,<br />установите это свойство в 'Истина'";
 
-/* joined by builder */
 /**
  * Расширение типов ячеек dhtmlXGrid
  *
@@ -2788,7 +2798,6 @@ $p.iface.data_to_tree = function (data) {
 
 
 
-/* joined by builder */
 /**
  * ### Визуальный компонент - гиперссылка с выпадающим списком для выбора значения
  *
@@ -2881,7 +2890,6 @@ function ODropdownList(attr){
 
 }
 $p.iface.ODropdownList = ODropdownList;
-/* joined by builder */
 /**
  * ### Визуальный компонент OCombo
  * Поле с выпадающим списком + функция выбора из списка
@@ -3314,7 +3322,6 @@ $p.iface.select_from_list = function (list, multy) {
 
 	});
 };
-/* joined by builder */
 /**
  * ### Визуальный компонент - реквизиты шапки объекта
  *
@@ -3562,7 +3569,6 @@ dhtmlXGridObject.prototype.get_cell_value = function () {
 };
 
 
-/* joined by builder */
 /**
  * ### Визуальный компонент - табличное поле объекта
  *
@@ -3706,7 +3712,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 	// панель инструментов табличной части
 	_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
-	_toolbar.loadStruct(require("toolbar_add_del"), function(){
+	_toolbar.loadStruct($p.injected_data["toolbar_add_del.xml"], function(){
 		this.attachEvent("onclick", function toolbar_click(btn_id){
 			if(btn_id=="btn_add")
 				add_row();
@@ -3791,7 +3797,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 };
 
 
-/* joined by builder */
 /**
  * Ячейка грида для отображения картинки svg и компонент,
  * получающий и отображающий галерею эскизов объекта данных
@@ -3929,7 +3934,6 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 	}
 
 }
-/* joined by builder */
 /**
  * Виджет для панели инструментов форм списка и выбора,
  * объединяет поля выбора периода и поле ввода фильтра
@@ -4055,7 +4059,6 @@ $p.iface.Toolbar_filter = function (attr) {
 
 };
 
-/* joined by builder */
 /**
  * Динамическое дерево иерархического справочника
  *
@@ -4118,7 +4121,6 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 
 	return tree;
 };
-/* joined by builder */
 /**
  * Формы визуализации и изменения параметров объекта
  *
@@ -4508,7 +4510,7 @@ $p.iface.layout_1c = function () {
 $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 
 	var frm_auth = $p.iface.auth = $p.iface.docs.attachForm(),
-		w, were_errors, auth_struct;
+		w, were_errors;
 
 	if(!onstep)
 		onstep = function (step){
@@ -4625,9 +4627,8 @@ $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 		}
 	}
 
-	// загружаем структуру
-	auth_struct = require("form_auth").replace(/\/imgs\//g, dhtmlx.image_path);
-	frm_auth.loadStruct(auth_struct, function(){
+	// загружаем структуру формы
+	frm_auth.loadStruct($p.injected_data["form_auth.xml"], function(){
 
 		// после готовности формы читаем пользователя из локальной датабазы
 		if($p.wsql.get_user_param("user_name")){
@@ -5103,7 +5104,6 @@ $p.iface.add_button = function(parent, attr, battr) {
 
 
 
-/* joined by builder */
 /**
  * Поле ввода адреса связанная с ним форма ввода адреса
  *
@@ -5691,7 +5691,6 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 	}
 
 }
-/* joined by builder */
 /**
  * Метаданные на стороне js: конструкторы, заполнение, кеширование, поиск
  *
@@ -6160,7 +6159,7 @@ var _cat = $p.cat = new (
  * @param patch {XMLHttpRequest} - с дополнительными метаданными
  *
  * @example
- *    new $p.Meta(require('meta'));
+ *    new $p.Meta('meta');
  */
 function Meta(req, patch) {
 
@@ -6170,29 +6169,15 @@ function Meta(req, patch) {
 	// Экспортируем ссылку на себя
 	_md = $p.md = this;
 
-	function apply_patch(patch){
-		for(var area in patch){
-			for(var c in patch[area]){
-				if(!m[area][c])
-					m[area][c] = {};
-				for(var f in patch[area][c]){
-					if(!m[area][c][f])
-						m[area][c][f] = patch[area][c][f];
-					else if(typeof m[area][c][f] == "object")
-						m[area][c][f]._mixin(patch[area][c][f]);
-				}
-			}
-		}
-	}
 	if(patch)
-		apply_patch(patch.response ? JSON.parse(patch.response) : patch);
+		Meta._patch(m, patch.response ? JSON.parse(patch.response) : patch);
 
 	req = null;
 	if(typeof window != "undefined"){
-		patch = require('log');
+		patch = $p.injected_data['log.json'];
 		if(typeof patch == "string")
 			patch = JSON.parse(patch);
-		apply_patch(patch);
+		Meta._patch(m, patch);
 		patch = null;
 	}
 
@@ -6267,10 +6252,10 @@ function Meta(req, patch) {
 	 * @return {Promise.<T>}
 	 * @async
 	 */
-	_md.create_tables = function(callback){
+	_md.create_tables = function(callback, attr){
 
 		var cstep = 0, data_names = [], managers = _md.get_classes(), class_name,
-			create = "USE md;\nCREATE TABLE IF NOT EXISTS refs (ref CHAR);\n";
+			create = "USE md;\nCREATE TABLE refs (ref CHAR);\n";
 
 		function on_table_created(data){
 
@@ -6329,10 +6314,8 @@ function Meta(req, patch) {
 		}
 
 		function iteration(){
-			var data = data_names[cstep-1],
-				sql = data["class"][data.name].get_sql_struct();
-
-			create += sql + ";\n";
+			var data = data_names[cstep-1];
+			create += data["class"][data.name].get_sql_struct(attr) + ";\n";
 			on_table_created(1);
 		}
 
@@ -6343,33 +6326,55 @@ function Meta(req, patch) {
 	/**
 	 * Возвращает тип поля sql для типа данных
 	 * @method sql_type
-	 * @param mgr
-	 * @param f
-	 * @param mf
+	 * @param mgr {DataManager}
+	 * @param f {String}
+	 * @param mf {Object} - описание метаданных поля
+	 * @param pg {Boolean} - использовать синтаксис postgreSQL
 	 * @return {*}
 	 */
-	_md.sql_type = function (mgr, f, mf) {
+	_md.sql_type = function (mgr, f, mf, pg) {
 		var sql;
 		if((f == "type" && mgr.table_name == "cch_properties") || (f == "svg" && mgr.table_name == "cat_production_params"))
 			sql = " JSON";
 
-		else if(mf.is_ref || mf.hasOwnProperty("str_len"))
-			sql = " CHAR";
+		else if(mf.is_ref){
+			if(!pg)
+				sql = " CHAR";
+
+			else if(mf.types.every(function(v){return v.indexOf("enm.") == 0}))
+				sql = " character varying(100)";
+
+			else if (!mf.hasOwnProperty("str_len"))
+				sql = " uuid";
+
+			else
+				sql = " character varying(" + Math.max(36, mf.str_len) + ")";
+
+		}else if(mf.hasOwnProperty("str_len"))
+			sql = pg ? (mf.str_len ? " character varying(" + mf.str_len + ")" : " text") : " CHAR";
 
 		else if(mf.date_part)
-			sql = " Date";
+			if(!pg || mf.date_part == "date")
+				sql = " Date";
+
+			else if(mf.date_part == "date_time")
+				sql = " timestamp with time zone";
+
+			else
+				sql = " time without time zone";
 
 		else if(mf.hasOwnProperty("digits")){
 			if(mf.fraction_figits==0)
-				sql = " INT";
+				sql = pg ? (mf.digits < 7 ? " integer" : " bigint") : " INT";
 			else
-				sql = " FLOAT";
+				sql = pg ? (" numeric(" + mf.digits + "," + mf.fraction_figits + ")") : " FLOAT";
 
 		}else if(mf.types.indexOf("boolean") != -1)
 			sql = " BOOLEAN";
 
 		else
-			sql = " CHAR";
+			sql = pg ? " character varying(255)" : " CHAR";
+
 		return sql;
 	};
 
@@ -6678,6 +6683,21 @@ function Meta(req, patch) {
 }
 $p.Meta = Meta;
 
+Meta._patch = function(obj, patch){
+	for(var area in patch){
+		for(var c in patch[area]){
+			if(!obj[area][c])
+				obj[area][c] = {};
+			for(var f in patch[area][c]){
+				if(!obj[area][c][f])
+					obj[area][c][f] = patch[area][c][f];
+				else if(typeof obj[area][c][f] == "object")
+					obj[area][c][f]._mixin(patch[area][c][f]);
+			}
+		}
+	}
+}
+
 /**
  * Запись журнала регистрации
  * @param err
@@ -6729,7 +6749,6 @@ _cat.load_soap_to_grid = function(attr, grid, callback){
 			.catch($p.record_log);
 
 };
-/* joined by builder */
 /**
  * Конструкторы менеджеров данных
  *
@@ -6784,7 +6803,7 @@ function DataManager(class_name){
 
 	// Если в метаданных явно указано правило кеширования, используем его
 	if(!$p.job_prm.offline && _metadata.cachable != undefined)
-		_cachable = _metadata.cachable;
+		_cachable = _metadata.cachable != "НеКешировать";
 
 	this.__define({
 
@@ -7587,7 +7606,7 @@ RefDataManager._extend(DataManager);
 RefDataManager.prototype.get_sql_struct = function(attr){
 	var t = this,
 		cmd = t.metadata(),
-		res = {}, f,
+		res = {}, f, f0, trunc_index = 0,
 		action = attr && attr.action ? attr.action : "create_table";
 
 
@@ -7826,20 +7845,49 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 	}
 
 	function sql_create(){
-		var sql = "CREATE TABLE IF NOT EXISTS `"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT";
 
-		if(t instanceof DocManager)
-			sql += ", posted BOOLEAN, date Date, number_doc CHAR";
-		else
-			sql += ", id CHAR, name CHAR, is_folder BOOLEAN";
+		var sql = "CREATE TABLE IF NOT EXISTS ";
 
-		for(f in cmd.fields)
-			sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.fields[f].type);
+		if(attr && attr.postgres){
+			sql += t.table_name+" (ref uuid PRIMARY KEY NOT NULL, deleted boolean, lc_changed bigint";
 
+			if(t instanceof DocManager)
+				sql += ", posted boolean, date timestamp with time zone, number_doc character(11)";
+			else{
+				if(cmd.code_length)
+					sql += ", id character("+cmd.code_length+")";
+				sql += ", name character varying(50), is_folder boolean";
+			}
 
-		for(f in cmd["tabular_sections"])
-			sql += ", " + "`ts_" + f + "` JSON";
+			for(f in cmd.fields){
+				if(f.length > 30){
+					trunc_index++;
+					f0 = f[0] + trunc_index + f.substr(f.length-27);
+				}else
+					f0 = f;
+				sql += ", " + f0 + _md.sql_type(t, f, cmd.fields[f].type, true);
+			}
+
+			for(f in cmd["tabular_sections"])
+				sql += ", " + "ts_" + f + " JSON";
+
+		}else{
+			sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT";
+
+			if(t instanceof DocManager)
+				sql += ", posted boolean, date Date, number_doc CHAR";
+			else
+				sql += ", id CHAR, name CHAR, is_folder BOOLEAN";
+
+			for(f in cmd.fields)
+				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.fields[f].type);
+
+			for(f in cmd["tabular_sections"])
+				sql += ", " + "`ts_" + f + "` JSON";
+		}
+
 		sql += ")";
+
 		return sql;
 	}
 
@@ -8109,21 +8157,42 @@ EnumManager._extend(RefDataManager);
  */
 EnumManager.prototype.get_sql_struct = function(attr){
 
-	var res,
+	var res = "CREATE TABLE IF NOT EXISTS ",
 		action = attr && attr.action ? attr.action : "create_table";
 
-	if(action == "create_table")
-		res = "CREATE TABLE IF NOT EXISTS `"+this.table_name+
-			"` (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR)";
-	else if(["insert", "update", "replace"].indexOf(action) != -1){
-		res = {};
-		res[this.table_name] = {
-			sql: "INSERT INTO `"+this.table_name+"` (ref, sequence, synonym) VALUES (?, ?, ?)",
-			fields: ["ref", "sequence", "synonym"],
-			values: "(?, ?, ?)"
-		};
-	}else if(action == "delete")
-		res = "DELETE FROM `"+this.table_name+"` WHERE ref = ?";
+	if(attr && attr.postgres){
+		if(action == "create_table")
+			res += this.table_name+
+				" (ref character varying(255) PRIMARY KEY NOT NULL, sequence INT, synonym character varying(255))";
+		else if(["insert", "update", "replace"].indexOf(action) != -1){
+			res = {};
+			res[this.table_name] = {
+				sql: "INSERT INTO "+this.table_name+" (ref, sequence, synonym) VALUES ($1, $2, $3)",
+				fields: ["ref", "sequence", "synonym"],
+				values: "($1, $2, $3)"
+			};
+
+		}else if(action == "delete")
+			res = "DELETE FROM "+this.table_name+" WHERE ref = $1";
+
+	}else {
+		if(action == "create_table")
+			res += "`"+this.table_name+
+				"` (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR)";
+
+		else if(["insert", "update", "replace"].indexOf(action) != -1){
+			res = {};
+			res[this.table_name] = {
+				sql: "INSERT INTO `"+this.table_name+"` (ref, sequence, synonym) VALUES (?, ?, ?)",
+				fields: ["ref", "sequence", "synonym"],
+				values: "(?, ?, ?)"
+			};
+
+		}else if(action == "delete")
+			res = "DELETE FROM `"+this.table_name+"` WHERE ref = ?";
+	}
+
+
 
 	return res;
 
@@ -8217,7 +8286,7 @@ function RegisterManager(class_name){
 			attr = {};
 		attr.action = "select";
 
-		var arr = alasql(this.get_sql_struct(attr), attr._values),
+		var arr = $p.wsql.alasql(this.get_sql_struct(attr), attr._values),
 			res;
 
 		delete attr.action;
@@ -8293,29 +8362,58 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 		action = attr && attr.action ? attr.action : "create_table";
 
 	function sql_create(){
-		var sql = "CREATE TABLE IF NOT EXISTS `"+t.table_name+"` (",
+		var sql = "CREATE TABLE IF NOT EXISTS ",
 			first_field = true;
 
-		for(f in cmd["dimensions"]){
-			if(first_field){
-				sql += "`" + f + "`";
-				first_field = false;
-			}else
-				sql += _md.sql_mask(f);
-			sql += _md.sql_type(t, f, cmd["dimensions"][f].type);
-		}
+		if(attr && attr.postgres){
+			sql += t.table_name+" ("
 
-		for(f in cmd["resources"])
-			sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd["resources"][f].type);
+			for(f in cmd["dimensions"]){
+				if(first_field){
+					sql += f;
+					first_field = false;
+				}else
+					sql += ", " + f;
+				sql += _md.sql_type(t, f, cmd["dimensions"][f].type, true);
+			}
 
-		sql += ", PRIMARY KEY (";
-		first_field = true;
-		for(f in cmd["dimensions"]){
-			if(first_field){
-				sql += "`" + f + "`";
-				first_field = false;
-			}else
-				sql += _md.sql_mask(f);
+			for(f in cmd["resources"])
+				sql += ", " + f + _md.sql_type(t, f, cmd["resources"][f].type, true);
+
+			sql += ", PRIMARY KEY (";
+			first_field = true;
+			for(f in cmd["dimensions"]){
+				if(first_field){
+					sql += f;
+					first_field = false;
+				}else
+					sql += ", " + f;
+			}
+
+		}else{
+			sql += "`"+t.table_name+"` ("
+
+			for(f in cmd["dimensions"]){
+				if(first_field){
+					sql += "`" + f + "`";
+					first_field = false;
+				}else
+					sql += _md.sql_mask(f);
+				sql += _md.sql_type(t, f, cmd["dimensions"][f].type);
+			}
+
+			for(f in cmd["resources"])
+				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd["resources"][f].type);
+
+			sql += ", PRIMARY KEY (";
+			first_field = true;
+			for(f in cmd["dimensions"]){
+				if(first_field){
+					sql += "`" + f + "`";
+					first_field = false;
+				}else
+					sql += _md.sql_mask(f);
+			}
 		}
 
 		sql += "))";
@@ -8506,7 +8604,7 @@ function LogManager(){
 			msg.class = "note";
 
 
-		alasql("insert into `ireg_$log` (`date`, `sequence`, `class`, `note`, `obj`) values (?, ?, ?, ?, ?)",
+		$p.wsql.alasql("insert into `ireg_$log` (`date`, `sequence`, `class`, `note`, `obj`) values (?, ?, ?, ?, ?)",
 			[msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
 
 	};
@@ -8800,7 +8898,6 @@ function DocManager(class_name) {
 }
 DocManager._extend(RefDataManager);
 
-/* joined by builder */
 /**
  * Конструкторы объектов данных
  *
@@ -9549,7 +9646,6 @@ RegisterRow.prototype.__define('ref', {
 });
 
 
-/* joined by builder */
 /**
  * Конструкторы табличных частей
  *
@@ -9925,7 +10021,6 @@ TabularSectionRow.prototype._setter = function (f, v) {
 };
 
 
-/* joined by builder */
 /**
  * Дополняет классы {{#crossLink "DataObj"}}{{/crossLink}} и {{#crossLink "DataManager"}}{{/crossLink}} методами чтения,<br />
  * записи и синхронизации через стандартный интерфейс <a href="http://its.1c.ru/db/v83doc#bookmark:dev:TI000001362">OData</a>
@@ -10324,7 +10419,7 @@ function Rest(){
 					return $p.ajax.patch_ex(url + "(guid'" + tObj.ref + "')", atom, attr);
 			})
 			.then(function (req) {
-				var data = require("xml_to_json").parseString(req.response, {
+				var data = xmlToJSON.parseString(req.response, {
 					mergeCDATA: false, // extract cdata and merge with text
 					grokAttr: true, // convert truthy attributes to boolean, etc
 					grokText: false, // convert truthy text/attr to boolean, etc
@@ -10763,7 +10858,6 @@ DataObj.prototype.to_atom = function (ex_meta) {
 };
 
 
-/* joined by builder */
 /**
  * Процедуры импорта и экспорта данных
  *
@@ -10939,16 +11033,16 @@ DataManager.prototype.export = function(attr){
 
 		function export_xlsx(){
 			if(attr.obj)
-				alasql("SELECT * INTO XLSX('"+_mgr.table_name+".xlsx',{headers:true}) FROM ?", [attr.items[0]._obj]);
+				$p.wsql.alasql("SELECT * INTO XLSX('"+_mgr.table_name+".xlsx',{headers:true}) FROM ?", [attr.items[0]._obj]);
 			else
-				alasql("SELECT * INTO XLSX('"+_mgr.table_name+".xlsx',{headers:true}) FROM " + _mgr.table_name);
+				$p.wsql.alasql("SELECT * INTO XLSX('"+_mgr.table_name+".xlsx',{headers:true}) FROM " + _mgr.table_name);
 		}
 
 		var res = {meta: {}, items: {}},
 			items = res.items[_mgr.class_name] = [];
 
 		//$p.wsql.aladb.tables.refs.data.push({ref: "dd274d11-833b-11e1-92c2-8b79e9a2b61c"})
-		//alasql('select * from cat_cashboxes where ref in (select ref from refs)')
+		//$p.wsql.alasql('select * from cat_cashboxes where ref in (select ref from refs)')
 
 		if(options.meta)
 			res.meta[_mgr.class_name] = _mgr.metadata();
@@ -10986,10 +11080,9 @@ DataManager.prototype.export = function(attr){
 			});
 
 		}else{
-			//alasql("SELECT * INTO SQL('"+_mgr.table_name+".sql') FROM " + _mgr.table_name);
+			//$p.wsql.alasql("SELECT * INTO SQL('"+_mgr.table_name+".sql') FROM " + _mgr.table_name);
 			$p.msg.show_not_implemented();
 		}
-
 	}
 
 	function frm_close(win){
@@ -11098,7 +11191,6 @@ DataManager.prototype.import = function(file, obj){
 	}
 };
 
-/* joined by builder */
 /**
  * Форма обновления кеша appcache
  */
@@ -11156,7 +11248,6 @@ function wnd_appcache ($p) {
 	}
 
 }
-/* joined by builder */
 /**
  * Форма окна длительной операции
  */
@@ -11241,7 +11332,6 @@ $p.iface.wnd_sync = function() {
 		_stepper.frm_sync.setItemValue("text_bottom", "Загружается структура таблиц...");
 	}
 };
-/* joined by builder */
 /**
  * Форма абстрактного объекта данных {{#crossLink "DataObj"}}{{/crossLink}}, в том числе, отчетов и обработок
  *
@@ -11266,7 +11356,7 @@ $p.iface.wnd_sync = function() {
 DataManager.prototype.form_obj = function(pwnd, attr){
 
 	// если существует переопределенная форма, открываем её
-	var frm = require("wnd/wnd_" + this.class_name.replace('.', "_") + "_obj");
+	var frm = $p.injected_data["wnd/wnd_" + this.class_name.replace('.', "_") + "_obj"];
 	if(frm)
 		return frm($p, pwnd, attr);
 
@@ -11404,7 +11494,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		// панель инструментов формы
 		wnd.elmnts.frm_toolbar = wnd.attachToolbar();
 		wnd.elmnts.frm_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
-		wnd.elmnts.frm_toolbar.loadStruct(require("toolbar_obj"), function(){
+		wnd.elmnts.frm_toolbar.loadStruct($p.injected_data["toolbar_obj.xml"], function(){
 			this.addSpacer("btn_unpost");
 			this.attachEvent("onclick", toolbar_click);
 
@@ -11656,7 +11746,6 @@ DataObj.prototype.form_obj = function (pwnd, attr) {
 	attr.o = this;
 	return this._manager.form_obj(pwnd, attr);
 };
-/* joined by builder */
 /**
  * Абстрактная форма списка и выбора выбора объектов ссылочного типа (документов и справочников)<br />
  * Может быть переопределена в {{#crossLink "RefDataManager"}}менеджерах{{/crossLink}} конкретных классов
@@ -11764,7 +11853,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		wnd.elmnts.toolbar = wnd.attachToolbar();
 		wnd.elmnts.toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
-		wnd.elmnts.toolbar.loadStruct(require("toolbar_selection"), function(){
+		wnd.elmnts.toolbar.loadStruct($p.injected_data["toolbar_selection.xml"], function(){
 
 			this.attachEvent("onclick", toolbar_click);
 
@@ -12171,7 +12260,6 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 DataManager.prototype.form_list = function(pwnd, attr){
 	return this.form_selection(pwnd, attr);
 };
-/* joined by builder */
 /**
  * Содержит методы обработки событий __при запуске__ программы, __перед закрытием__,<br />
  * при обновлении файлов __ApplicationCache__, а так же, при переходе в __offline__ и __online__
@@ -12548,21 +12636,11 @@ function only_in_browser(w){
 			eve.socket.connect();
 
 			// проверяем совместимость браузера
-			if($p.job_prm.check_browser_compatibility && (!w.JSON || !w.indexedDB || !w.localStorage) ){
+			if($p.job_prm.check_browser_compatibility && (!w.JSON || !w.indexedDB) ){
 				eve.redirect = true;
 				msg.show_msg({type: "alert-error", text: msg.unsupported_browser, title: msg.unsupported_browser_title});
 				setTimeout(function(){ location.replace(msg.store_url_od); }, 6000);
 				return;
-			}
-
-			// проверяем установленность приложения только если мы внутри хрома
-			if($p.job_prm.check_app_installed && w.chrome && w.chrome.app && !w.chrome.app.isInstalled){
-				if(!location.hostname.match(/.local/)){
-					eve.redirect = true;
-					msg.show_msg({type: "alert-error", text: msg.unsupported_mode, title: msg.unsupported_mode_title});
-					setTimeout(function(){ location.replace(msg.store_url_od); }, 6000);
-					return;
-				}
 			}
 
 			/**
@@ -12966,6 +13044,31 @@ $p.eve.steps = {
 	save_data_wsql: 7       // кеширование данных из озу в локальную датабазу
 };
 
+
+$p.eve.init_node = function (alasql) {
+
+	$p.job_prm = new $p.JobPrm();
+
+	var data_url = $p.job_prm.data_url || "/data/";
+
+	return $p.from_file(data_url + 'create_tables.sql')
+		.then(function (sql) {
+			return $p.wsql.init_params(alasql, sql);
+		})
+		.then(function() {
+			return $p.from_file(data_url + 'meta.json');
+		})
+		.then(function(meta) {
+			return $p.from_file(data_url + 'meta_patch.json')
+				.then(function (patch) {
+					return [JSON.parse(meta), JSON.parse(patch)]
+				})
+		})
+		.then(function(meta) {
+			return new $p.Meta(meta[0], meta[1]);
+		});
+
+};
 
 /**
  * Регламентные задания синхронизапции каждые 3 минуты
@@ -13431,263 +13534,9 @@ $p.eve.auto_log_in = function () {
 			stepper.step_size = 57;
 		})
 };
-}),{
-"filesaver": (function (require, exports, module) { /* wrapped by builder */
-/* FileSaver.js
- * A saveAs() FileSaver implementation.
- * 2015-05-07.2
- *
- * By Eli Grey, http://eligrey.com
- * License: X11/MIT
- *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
- */
 
-/*global self */
-/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
 
-/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
-
-var saveAs = saveAs || (function(view) {
-	"use strict";
-	// IE <10 is explicitly unsupported
-	if (typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
-		return;
-	}
-	var
-		  doc = view.document
-		  // only get URL when necessary in case Blob.js hasn't overridden it yet
-		, get_URL = function() {
-			return view.URL || view.webkitURL || view;
-		}
-		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
-		, can_use_save_link = "download" in save_link
-		, click = function(node) {
-			var event = doc.createEvent("MouseEvents");
-			event.initMouseEvent(
-				"click", true, false, view, 0, 0, 0, 0, 0
-				, false, false, false, false, 0, null
-			);
-			node.dispatchEvent(event);
-		}
-		, webkit_req_fs = view.webkitRequestFileSystem
-		, req_fs = view.requestFileSystem || webkit_req_fs || view.mozRequestFileSystem
-		, throw_outside = function(ex) {
-			(view.setImmediate || view.setTimeout)(function() {
-				throw ex;
-			}, 0);
-		}
-		, force_saveable_type = "application/octet-stream"
-		, fs_min_size = 0
-		// See https://code.google.com/p/chromium/issues/detail?id=375297#c7 and
-		// https://github.com/eligrey/FileSaver.js/commit/485930a#commitcomment-8768047
-		// for the reasoning behind the timeout and revocation flow
-		, arbitrary_revoke_timeout = 500 // in ms
-		, revoke = function(file) {
-			var revoker = function() {
-				if (typeof file === "string") { // file is an object URL
-					get_URL().revokeObjectURL(file);
-				} else { // file is a File
-					file.remove();
-				}
-			};
-			if (view.chrome) {
-				revoker();
-			} else {
-				setTimeout(revoker, arbitrary_revoke_timeout);
-			}
-		}
-		, dispatch = function(filesaver, event_types, event) {
-			event_types = [].concat(event_types);
-			var i = event_types.length;
-			while (i--) {
-				var listener = filesaver["on" + event_types[i]];
-				if (typeof listener === "function") {
-					try {
-						listener.call(filesaver, event || filesaver);
-					} catch (ex) {
-						throw_outside(ex);
-					}
-				}
-			}
-		}
-		, auto_bom = function(blob) {
-			// prepend BOM for UTF-8 XML and text/* types (including HTML)
-			if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
-				return new Blob(["\ufeff", blob], {type: blob.type});
-			}
-			return blob;
-		}
-		, FileSaver = function(blob, name) {
-			blob = auto_bom(blob);
-			// First try a.download, then web filesystem, then object URLs
-			var
-				  filesaver = this
-				, type = blob.type
-				, blob_changed = false
-				, object_url
-				, target_view
-				, dispatch_all = function() {
-					dispatch(filesaver, "writestart progress write writeend".split(" "));
-				}
-				// on any filesys errors revert to saving with object URLs
-				, fs_error = function() {
-					// don't create more object URLs than needed
-					if (blob_changed || !object_url) {
-						object_url = get_URL().createObjectURL(blob);
-					}
-					if (target_view) {
-						target_view.location.href = object_url;
-					} else {
-						var new_tab = view.open(object_url, "_blank");
-						if (new_tab == undefined && typeof safari !== "undefined") {
-							//Apple do not allow window.open, see http://bit.ly/1kZffRI
-							view.location.href = object_url
-						}
-					}
-					filesaver.readyState = filesaver.DONE;
-					dispatch_all();
-					revoke(object_url);
-				}
-				, abortable = function(func) {
-					return function() {
-						if (filesaver.readyState !== filesaver.DONE) {
-							return func.apply(this, arguments);
-						}
-					};
-				}
-				, create_if_not_found = {create: true, exclusive: false}
-				, slice
-			;
-			filesaver.readyState = filesaver.INIT;
-			if (!name) {
-				name = "download";
-			}
-			if (can_use_save_link) {
-				object_url = get_URL().createObjectURL(blob);
-				save_link.href = object_url;
-				save_link.download = name;
-				click(save_link);
-				filesaver.readyState = filesaver.DONE;
-				dispatch_all();
-				revoke(object_url);
-				return;
-			}
-			// Object and web filesystem URLs have a problem saving in Google Chrome when
-			// viewed in a tab, so I force save with application/octet-stream
-			// http://code.google.com/p/chromium/issues/detail?id=91158
-			// Update: Google errantly closed 91158, I submitted it again:
-			// https://code.google.com/p/chromium/issues/detail?id=389642
-			if (view.chrome && type && type !== force_saveable_type) {
-				slice = blob.slice || blob.webkitSlice;
-				blob = slice.call(blob, 0, blob.size, force_saveable_type);
-				blob_changed = true;
-			}
-			// Since I can't be sure that the guessed media type will trigger a download
-			// in WebKit, I append .download to the filename.
-			// https://bugs.webkit.org/show_bug.cgi?id=65440
-			if (webkit_req_fs && name !== "download") {
-				name += ".download";
-			}
-			if (type === force_saveable_type || webkit_req_fs) {
-				target_view = view;
-			}
-			if (!req_fs) {
-				fs_error();
-				return;
-			}
-			fs_min_size += blob.size;
-			req_fs(view.TEMPORARY, fs_min_size, abortable(function(fs) {
-				fs.root.getDirectory("saved", create_if_not_found, abortable(function(dir) {
-					var save = function() {
-						dir.getFile(name, create_if_not_found, abortable(function(file) {
-							file.createWriter(abortable(function(writer) {
-								writer.onwriteend = function(event) {
-									target_view.location.href = file.toURL();
-									filesaver.readyState = filesaver.DONE;
-									dispatch(filesaver, "writeend", event);
-									revoke(file);
-								};
-								writer.onerror = function() {
-									var error = writer.error;
-									if (error.code !== error.ABORT_ERR) {
-										fs_error();
-									}
-								};
-								"writestart progress write abort".split(" ").forEach(function(event) {
-									writer["on" + event] = filesaver["on" + event];
-								});
-								writer.write(blob);
-								filesaver.abort = function() {
-									writer.abort();
-									filesaver.readyState = filesaver.DONE;
-								};
-								filesaver.readyState = filesaver.WRITING;
-							}), fs_error);
-						}), fs_error);
-					};
-					dir.getFile(name, {create: false}, abortable(function(file) {
-						// delete file if it already exists
-						file.remove();
-						save();
-					}), abortable(function(ex) {
-						if (ex.code === ex.NOT_FOUND_ERR) {
-							save();
-						} else {
-							fs_error();
-						}
-					}));
-				}), fs_error);
-			}), fs_error);
-		}
-		, FS_proto = FileSaver.prototype
-		, saveAs = function(blob, name) {
-			return new FileSaver(blob, name);
-		}
-	;
-	// IE 10+ (native saveAs)
-	if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
-		return function(blob, name) {
-			return navigator.msSaveOrOpenBlob(auto_bom(blob), name);
-		};
-	}
-
-	FS_proto.abort = function() {
-		var filesaver = this;
-		filesaver.readyState = filesaver.DONE;
-		dispatch(filesaver, "abort");
-	};
-	FS_proto.readyState = FS_proto.INIT = 0;
-	FS_proto.WRITING = 1;
-	FS_proto.DONE = 2;
-
-	FS_proto.error =
-	FS_proto.onwritestart =
-	FS_proto.onprogress =
-	FS_proto.onwrite =
-	FS_proto.onabort =
-	FS_proto.onerror =
-	FS_proto.onwriteend =
-		null;
-
-	return saveAs;
-}(
-	   typeof self !== "undefined" && self
-	|| typeof window !== "undefined" && window
-	|| this.content
-));
-// `self` is undefined in Firefox for Android content script context
-// while `this` is nsIContentFrameMessageManager
-// with an attribute `content` that corresponds to the window
-
-if (typeof module !== "undefined" && module.exports) {
-  module.exports.saveAs = saveAs;
-} else if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
-  define([], function() {
-    return saveAs;
-  });
-}
-}),
-"xml_to_json": (function (require, exports, module) { /* wrapped by builder */
+$p.injected_data._mixin({"form_auth.xml":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<items>\n\t<item type=\"settings\" position=\"label-left\" labelWidth=\"150\" inputWidth=\"230\" noteWidth=\"230\"/>\n\t<item type=\"fieldset\" name=\"data\" inputWidth=\"auto\" label=\"Авторизация\">\n\n        <item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" checked=\"true\" value=\"guest\" label=\"Гостевой (демо) режим\">\n            <item type=\"select\" name=\"guest\" label=\"Роль\">\n                <option value=\"Дилер\" label=\"Дилер\"/>\n            </item>\n        </item>\n\n\t\t<item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" value=\"auth\" label=\"Есть учетная запись\">\n\t\t\t<item type=\"input\" value=\"\" name=\"login\" label=\"Имя пользователя\" validate=\"NotEmpty\" />\n\t\t\t<item type=\"password\" value=\"\" name=\"password\" label=\"Пароль\" validate=\"NotEmpty\" />\n\t\t</item>\n\n\t\t<item type=\"button\" value=\"Войти\" name=\"submit\"/>\n\n        <item type=\"template\" name=\"text_options\" className=\"order_dealer_options\" inputWidth=\"231\"\n              value=\"&lt;a href='#' onclick='$p.iface.open_settings();' &gt; &lt;i class='fa fa-cog fa-lg'&gt;&lt;/i&gt; Настройки &lt;/a&gt; &lt;a href='//www.oknosoft.ru/feedback' target='_blank' style='margin-left: 9px;' &gt; &lt;i class='fa fa-question-circle fa-lg'&gt;&lt;/i&gt; Задать вопрос &lt;/a&gt;\"  />\n\n\t</item>\n</items>","toolbar_add_del.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_add\"    text=\"&lt;i class='fa fa-plus-circle fa-lg'&gt;&lt;/i&gt; Добавить\" title=\"Добавить строку\"  />\r\n    <item type=\"button\" id=\"btn_delete\" text=\"&lt;i class='fa fa-times fa-lg'&gt;&lt;/i&gt; Удалить\"  title=\"Удалить строку\" />\r\n</toolbar>","toolbar_obj.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"&lt;b&gt;Записать и закрыть&lt;/b&gt;\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"&lt;i class='fa fa-floppy-o fa-lg'&gt;&lt;/i&gt; Записать\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_post\" enabled=\"false\" text=\"&lt;i class='fa fa-check-square-o fa-lg'&gt;&lt;/i&gt;\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" enabled=\"false\" text=\"&lt;i class='fa fa-square-o fa-lg'&gt;&lt;/i&gt;\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"&lt;i class='fa fa-paperclip fa-lg'&gt;&lt;/i&gt; Файлы\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"Создать\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"Перейти\" title=\"\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n        <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-lg'&gt;&lt;/i&gt; Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"  text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\"  title=\"Дополнительно\" openAll=\"true\">\r\n        <item type=\"button\" id=\"btn_import\" text=\"&lt;i class='fa fa-upload fa-fw'&gt;&lt;/i&gt; Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" text=\"&lt;i class='fa fa-download fa-fw'&gt;&lt;/i&gt; Выгрузить в файл\" />\r\n    </item>\r\n\r\n</toolbar>\r\n","toolbar_ok_cancel.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_ok\"       type=\"button\"   img=\"\"  imgdis=\"\"   text=\"&lt;b&gt;Ок&lt;/b&gt;\"  />\r\n    <item id=\"btn_cancel\"   type=\"button\"\timg=\"\"  imgdis=\"\"   text=\"Отмена\" />\r\n</toolbar>","toolbar_selection.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_select\"   type=\"button\"   title=\"Выбрать элемент списка\" text=\"&lt;b&gt;Выбрать&lt;/b&gt;\"  />\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item id=\"btn_new\"      type=\"button\"\ttext=\"&lt;i class='fa fa-plus-circle fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Создать\" />\r\n    <item id=\"btn_edit\"     type=\"button\"\ttext=\"&lt;i class='fa fa-pencil fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Изменить\" />\r\n    <item id=\"btn_delete\"   type=\"button\"\ttext=\"&lt;i class='fa fa-times fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Удалить\" />\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-lg'&gt;&lt;/i&gt; Печать\" openAll=\"true\" >\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"    text=\"&lt;i class='fa fa-th-large fa-lg'&gt;&lt;/i&gt;\" title=\"Дополнительно\" openAll=\"true\">\r\n        <item id=\"btn_requery\"  type=\"button\"\ttext=\"&lt;i class='fa fa-refresh fa-lg fa-fw'&gt;&lt;/i&gt; Обновить список\" />\r\n    </item>\r\n\r\n</toolbar>","log.json":{"ireg":{"$log":{"name":"$log","note":"","synonym":"Журнал событий","dimensions":{"date":{"synonym":"Дата","multiline_mode":false,"tooltip":"Время события","type":{"types":["number"],"digits":15,"fraction_figits":0}},"sequence":{"synonym":"Порядок","multiline_mode":false,"tooltip":"Порядок следования","type":{"types":["number"],"digits":6,"fraction_figits":0}}},"resources":{"class":{"synonym":"Класс","multiline_mode":false,"tooltip":"Класс события","type":{"types":["string"],"str_len":100}},"note":{"synonym":"Комментарий","multiline_mode":true,"tooltip":"Текст события","type":{"types":["string"],"str_len":0}},"obj":{"synonym":"Объект","tooltip":"Объект, к которому относится событие","type":{"types":["string"],"str_len":0}}}}}}});
 /* Copyright 2013 William Summers, metaTribal LLC
  * adapted from https://developer.mozilla.org/en-US/docs/JXON
  *
@@ -13930,78 +13779,275 @@ var xmlToJSON = (function () {
 
 if (typeof module != "undefined" && module !== null && module.exports) module.exports = xmlToJSON;
 else if (typeof define === "function" && define.amd) define(function() {return xmlToJSON});
-}),
-"form_auth": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<items>\n\t<item type=\"settings\" position=\"label-left\" labelWidth=\"150\" inputWidth=\"230\" noteWidth=\"230\"/>\n\t<item type=\"fieldset\" name=\"data\" inputWidth=\"auto\" label=\"Авторизация\">\n\n        <item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" checked=\"true\" value=\"guest\" label=\"Гостевой (демо) режим\">\n            <item type=\"select\" name=\"guest\" label=\"Роль\">\n                <option value=\"Дилер\" label=\"Дилер\"/>\n            </item>\n        </item>\n\n\t\t<item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" value=\"auth\" label=\"Есть учетная запись\">\n\t\t\t<item type=\"input\" value=\"\" name=\"login\" label=\"Имя пользователя\" validate=\"NotEmpty\" />\n\t\t\t<item type=\"password\" value=\"\" name=\"password\" label=\"Пароль\" validate=\"NotEmpty\" />\n\t\t</item>\n\n\t\t<item type=\"button\" value=\"Войти\" name=\"submit\"/>\n\n        <item type=\"template\" name=\"text_options\" className=\"order_dealer_options\" inputWidth=\"231\"\n              value=\"&lt;a href='#' onclick='$p.iface.open_settings();' &gt; &lt;i class='fa fa-cog fa-lg'&gt;&lt;/i&gt; Настройки &lt;/a&gt; &lt;a href='//www.oknosoft.ru/feedback' target='_blank' style='margin-left: 9px;' &gt; &lt;i class='fa fa-question-circle fa-lg'&gt;&lt;/i&gt; Задать вопрос &lt;/a&gt;\"  />\n\n\t</item>\n</items>",
-"toolbar_add_del": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_add\"    text=\"&lt;i class='fa fa-plus-circle fa-lg'&gt;&lt;/i&gt; Добавить\" title=\"Добавить строку\"  />\r\n    <item type=\"button\" id=\"btn_delete\" text=\"&lt;i class='fa fa-times fa-lg'&gt;&lt;/i&gt; Удалить\"  title=\"Удалить строку\" />\r\n</toolbar>",
-"toolbar_obj": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"&lt;b&gt;Записать и закрыть&lt;/b&gt;\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"&lt;i class='fa fa-floppy-o fa-lg'&gt;&lt;/i&gt; Записать\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_post\" enabled=\"false\" text=\"&lt;i class='fa fa-check-square-o fa-lg'&gt;&lt;/i&gt;\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" enabled=\"false\" text=\"&lt;i class='fa fa-square-o fa-lg'&gt;&lt;/i&gt;\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"&lt;i class='fa fa-paperclip fa-lg'&gt;&lt;/i&gt; Файлы\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"Создать\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"Перейти\" title=\"\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n        <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-lg'&gt;&lt;/i&gt; Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"  text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\"  title=\"Дополнительно\" openAll=\"true\">\r\n        <item type=\"button\" id=\"btn_import\" text=\"&lt;i class='fa fa-upload fa-fw'&gt;&lt;/i&gt; Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" text=\"&lt;i class='fa fa-download fa-fw'&gt;&lt;/i&gt; Выгрузить в файл\" />\r\n    </item>\r\n\r\n</toolbar>\r\n",
-"toolbar_ok_cancel": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_ok\"       type=\"button\"   img=\"\"  imgdis=\"\"   text=\"&lt;b&gt;Ок&lt;/b&gt;\"  />\r\n    <item id=\"btn_cancel\"   type=\"button\"\timg=\"\"  imgdis=\"\"   text=\"Отмена\" />\r\n</toolbar>",
-"toolbar_selection": "<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_select\"   type=\"button\"   title=\"Выбрать элемент списка\" text=\"&lt;b&gt;Выбрать&lt;/b&gt;\"  />\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item id=\"btn_new\"      type=\"button\"\ttext=\"&lt;i class='fa fa-plus-circle fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Создать\" />\r\n    <item id=\"btn_edit\"     type=\"button\"\ttext=\"&lt;i class='fa fa-pencil fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Изменить\" />\r\n    <item id=\"btn_delete\"   type=\"button\"\ttext=\"&lt;i class='fa fa-times fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Удалить\" />\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-lg'&gt;&lt;/i&gt; Печать\" openAll=\"true\" >\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"    text=\"&lt;i class='fa fa-th-large fa-lg'&gt;&lt;/i&gt;\" title=\"Дополнительно\" openAll=\"true\">\r\n        <item id=\"btn_requery\"  type=\"button\"\ttext=\"&lt;i class='fa fa-refresh fa-lg fa-fw'&gt;&lt;/i&gt; Обновить список\" />\r\n    </item>\r\n\r\n</toolbar>",
-"log": { "ireg": {
-	"$log": {
-	  "name": "$log",
-	  "note": "",
-	  "synonym": "Журнал событий",
-	  "dimensions": {
-		"date": {
-		  "synonym": "Дата",
-		  "multiline_mode": false,
-		  "tooltip": "Время события",
-		  "type": {
-            "types": [
-              "number"
-            ],
-            "digits": 15,
-            "fraction_figits": 0
-		  }
-		},
-        "sequence": {
-          "synonym": "Порядок",
-          "multiline_mode": false,
-          "tooltip": "Порядок следования",
-          "type": {
-            "types": [
-              "number"
-            ],
-            "digits": 6,
-            "fraction_figits": 0
-          }
-        }
-	  },
-	  "resources": {
-		"class": {
-		  "synonym": "Класс",
-		  "multiline_mode": false,
-		  "tooltip": "Класс события",
-		  "type": {
-			"types": [
-			  "string"
-			],
-			"str_len": 100
-		  }
-		},
-		"note": {
-		  "synonym": "Комментарий",
-		  "multiline_mode": true,
-		  "tooltip": "Текст события",
-		  "type": {
-			"types": [
-			  "string"
-			],
-			"str_len": 0
-		  }
-		},
-        "obj": {
-          "synonym": "Объект",
-          "tooltip": "Объект, к которому относится событие",
-          "type": {
-            "types": [
-              "string"
-            ],
-            "str_len": 0
-          }
-        }
-	  }
-	}
-  }
+/* FileSaver.js
+ * A saveAs() FileSaver implementation.
+ * 1.1.20151003
+ *
+ * By Eli Grey, http://eligrey.com
+ * License: MIT
+ *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
+ */
+
+/*global self */
+/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
+
+/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
+
+var saveAs = saveAs || (function(view) {
+		"use strict";
+		// IE <10 is explicitly unsupported
+		if (typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
+			return;
+		}
+		var
+			doc = view.document
+		// only get URL when necessary in case Blob.js hasn't overridden it yet
+			, get_URL = function() {
+				return view.URL || view.webkitURL || view;
+			}
+			, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
+			, can_use_save_link = "download" in save_link
+			, click = function(node) {
+				var event = new MouseEvent("click");
+				node.dispatchEvent(event);
+			}
+			, is_safari = /Version\/[\d\.]+.*Safari/.test(navigator.userAgent)
+			, webkit_req_fs = view.webkitRequestFileSystem
+			, req_fs = view.requestFileSystem || webkit_req_fs || view.mozRequestFileSystem
+			, throw_outside = function(ex) {
+				(view.setImmediate || view.setTimeout)(function() {
+					throw ex;
+				}, 0);
+			}
+			, force_saveable_type = "application/octet-stream"
+			, fs_min_size = 0
+		// See https://code.google.com/p/chromium/issues/detail?id=375297#c7 and
+		// https://github.com/eligrey/FileSaver.js/commit/485930a#commitcomment-8768047
+		// for the reasoning behind the timeout and revocation flow
+			, arbitrary_revoke_timeout = 500 // in ms
+			, revoke = function(file) {
+				var revoker = function() {
+					if (typeof file === "string") { // file is an object URL
+						get_URL().revokeObjectURL(file);
+					} else { // file is a File
+						file.remove();
+					}
+				};
+				if (view.chrome) {
+					revoker();
+				} else {
+					setTimeout(revoker, arbitrary_revoke_timeout);
+				}
+			}
+			, dispatch = function(filesaver, event_types, event) {
+				event_types = [].concat(event_types);
+				var i = event_types.length;
+				while (i--) {
+					var listener = filesaver["on" + event_types[i]];
+					if (typeof listener === "function") {
+						try {
+							listener.call(filesaver, event || filesaver);
+						} catch (ex) {
+							throw_outside(ex);
+						}
+					}
+				}
+			}
+			, auto_bom = function(blob) {
+				// prepend BOM for UTF-8 XML and text/* types (including HTML)
+				if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
+					return new Blob(["\ufeff", blob], {type: blob.type});
+				}
+				return blob;
+			}
+			, FileSaver = function(blob, name, no_auto_bom) {
+				if (!no_auto_bom) {
+					blob = auto_bom(blob);
+				}
+				// First try a.download, then web filesystem, then object URLs
+				var
+					filesaver = this
+					, type = blob.type
+					, blob_changed = false
+					, object_url
+					, target_view
+					, dispatch_all = function() {
+						dispatch(filesaver, "writestart progress write writeend".split(" "));
+					}
+				// on any filesys errors revert to saving with object URLs
+					, fs_error = function() {
+						if (target_view && is_safari && typeof FileReader !== "undefined") {
+							// Safari doesn't allow downloading of blob urls
+							var reader = new FileReader();
+							reader.onloadend = function() {
+								var base64Data = reader.result;
+								target_view.location.href = "data:attachment/file" + base64Data.slice(base64Data.search(/[,;]/));
+								filesaver.readyState = filesaver.DONE;
+								dispatch_all();
+							};
+							reader.readAsDataURL(blob);
+							filesaver.readyState = filesaver.INIT;
+							return;
+						}
+						// don't create more object URLs than needed
+						if (blob_changed || !object_url) {
+							object_url = get_URL().createObjectURL(blob);
+						}
+						if (target_view) {
+							target_view.location.href = object_url;
+						} else {
+							var new_tab = view.open(object_url, "_blank");
+							if (new_tab == undefined && is_safari) {
+								//Apple do not allow window.open, see http://bit.ly/1kZffRI
+								view.location.href = object_url
+							}
+						}
+						filesaver.readyState = filesaver.DONE;
+						dispatch_all();
+						revoke(object_url);
+					}
+					, abortable = function(func) {
+						return function() {
+							if (filesaver.readyState !== filesaver.DONE) {
+								return func.apply(this, arguments);
+							}
+						};
+					}
+					, create_if_not_found = {create: true, exclusive: false}
+					, slice
+					;
+				filesaver.readyState = filesaver.INIT;
+				if (!name) {
+					name = "download";
+				}
+				if (can_use_save_link) {
+					object_url = get_URL().createObjectURL(blob);
+					setTimeout(function() {
+						save_link.href = object_url;
+						save_link.download = name;
+						click(save_link);
+						dispatch_all();
+						revoke(object_url);
+						filesaver.readyState = filesaver.DONE;
+					});
+					return;
+				}
+				// Object and web filesystem URLs have a problem saving in Google Chrome when
+				// viewed in a tab, so I force save with application/octet-stream
+				// http://code.google.com/p/chromium/issues/detail?id=91158
+				// Update: Google errantly closed 91158, I submitted it again:
+				// https://code.google.com/p/chromium/issues/detail?id=389642
+				if (view.chrome && type && type !== force_saveable_type) {
+					slice = blob.slice || blob.webkitSlice;
+					blob = slice.call(blob, 0, blob.size, force_saveable_type);
+					blob_changed = true;
+				}
+				// Since I can't be sure that the guessed media type will trigger a download
+				// in WebKit, I append .download to the filename.
+				// https://bugs.webkit.org/show_bug.cgi?id=65440
+				if (webkit_req_fs && name !== "download") {
+					name += ".download";
+				}
+				if (type === force_saveable_type || webkit_req_fs) {
+					target_view = view;
+				}
+				if (!req_fs) {
+					fs_error();
+					return;
+				}
+				fs_min_size += blob.size;
+				req_fs(view.TEMPORARY, fs_min_size, abortable(function(fs) {
+					fs.root.getDirectory("saved", create_if_not_found, abortable(function(dir) {
+						var save = function() {
+							dir.getFile(name, create_if_not_found, abortable(function(file) {
+								file.createWriter(abortable(function(writer) {
+									writer.onwriteend = function(event) {
+										target_view.location.href = file.toURL();
+										filesaver.readyState = filesaver.DONE;
+										dispatch(filesaver, "writeend", event);
+										revoke(file);
+									};
+									writer.onerror = function() {
+										var error = writer.error;
+										if (error.code !== error.ABORT_ERR) {
+											fs_error();
+										}
+									};
+									"writestart progress write abort".split(" ").forEach(function(event) {
+										writer["on" + event] = filesaver["on" + event];
+									});
+									writer.write(blob);
+									filesaver.abort = function() {
+										writer.abort();
+										filesaver.readyState = filesaver.DONE;
+									};
+									filesaver.readyState = filesaver.WRITING;
+								}), fs_error);
+							}), fs_error);
+						};
+						dir.getFile(name, {create: false}, abortable(function(file) {
+							// delete file if it already exists
+							file.remove();
+							save();
+						}), abortable(function(ex) {
+							if (ex.code === ex.NOT_FOUND_ERR) {
+								save();
+							} else {
+								fs_error();
+							}
+						}));
+					}), fs_error);
+				}), fs_error);
+			}
+			, FS_proto = FileSaver.prototype
+			, saveAs = function(blob, name, no_auto_bom) {
+				return new FileSaver(blob, name, no_auto_bom);
+			}
+			;
+		// IE 10+ (native saveAs)
+		if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
+			return function(blob, name, no_auto_bom) {
+				if (!no_auto_bom) {
+					blob = auto_bom(blob);
+				}
+				return navigator.msSaveOrOpenBlob(blob, name || "download");
+			};
+		}
+
+		FS_proto.abort = function() {
+			var filesaver = this;
+			filesaver.readyState = filesaver.DONE;
+			dispatch(filesaver, "abort");
+		};
+		FS_proto.readyState = FS_proto.INIT = 0;
+		FS_proto.WRITING = 1;
+		FS_proto.DONE = 2;
+
+		FS_proto.error =
+			FS_proto.onwritestart =
+				FS_proto.onprogress =
+					FS_proto.onwrite =
+						FS_proto.onabort =
+							FS_proto.onerror =
+								FS_proto.onwriteend =
+									null;
+
+		return saveAs;
+	}(
+		typeof self !== "undefined" && self
+		|| typeof window !== "undefined" && window
+		|| this.content
+	));
+// `self` is undefined in Firefox for Android content script context
+// while `this` is nsIContentFrameMessageManager
+// with an attribute `content` that corresponds to the window
+
+if (typeof module !== "undefined" && module.exports) {
+	module.exports.saveAs = saveAs;
+} else if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
+	define([], function() {
+		return saveAs;
+	});
 }
-},{},{});
+return $p;
+}));

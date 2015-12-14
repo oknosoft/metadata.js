@@ -466,7 +466,7 @@ var _cat = $p.cat = new (
  * @param patch {XMLHttpRequest} - с дополнительными метаданными
  *
  * @example
- *    new $p.Meta(require('meta'));
+ *    new $p.Meta('meta');
  */
 function Meta(req, patch) {
 
@@ -481,7 +481,7 @@ function Meta(req, patch) {
 
 	req = null;
 	if(typeof window != "undefined"){
-		patch = require('log');
+		patch = $p.injected_data['log.json'];
 		if(typeof patch == "string")
 			patch = JSON.parse(patch);
 		Meta._patch(m, patch);
