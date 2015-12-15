@@ -3,10 +3,7 @@
  *
  * Created 12.12.2015<br />
  * @author  Evgeniy Malyarov
- * @module  gulpfile.js
  */
-
-var closure = false;
 
 var gulp = require('gulp');
 module.exports = gulp;
@@ -16,7 +13,7 @@ var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var shell = require('gulp-shell');
 var rename = require('gulp-rename');
-var resources = require('./src/gulp-resource-concat.js');
+var resources = require('./lib/gulp-resource-concat.js');
 var path = require('path');
 var umd = require('gulp-umd');
 
@@ -45,7 +42,7 @@ gulp.task('js-merge', function () {
 			'./src/wnd_obj.js',
 			'./src/wnd_selection.js',
 			'./src/events.js',
-			'./src/injected_data.js',
+			'./data/merged_data.js',
 			'./lib/xml_to_json.js',
 			'./lib/filesaver.js'
 		])
@@ -56,12 +53,15 @@ gulp.task('js-merge', function () {
 			},
 			namespace: function(file) {
 				return '$p';
-			}
+			},
+			template: path.join(__dirname, 'lib/gulp-umd-exports-oknosoft.js')
 		}))
 		.pipe(gulp.dest('./lib'))
 		.pipe(gulp.dest('./dist'))
 		.pipe(rename('metadata.min.js'))
-		.pipe(uglify())
+		.pipe(uglify({
+			preserveComments: "license"
+		}))
 		.pipe(gulp.dest('./lib'))
 		.pipe(gulp.dest('./dist'));
 });
@@ -69,10 +69,10 @@ gulp.task('js-merge', function () {
 
 gulp.task('injected_main', function(){
    gulp.src(['./data/*.xml', './data/log.json'])
-	   .pipe(resources('injected_data.js', function (data) {
+	   .pipe(resources('merged_data.js', function (data) {
 		   return new Buffer('$p.injected_data._mixin(' + JSON.stringify(data) + ');');
 	   }))
-	   .pipe(gulp.dest('./src'));
+	   .pipe(gulp.dest('./data'));
 });
 
 
@@ -95,11 +95,14 @@ gulp.task('core', function(){
 			},
 			namespace: function(file) {
 				return '$p';
-			}
+			},
+			template: path.join(__dirname, 'lib/gulp-umd-exports-oknosoft.js')
 		}))
 		.pipe(gulp.dest('./lib'))
 		.pipe(rename('metadata.core.min.js'))
-		.pipe(uglify())
+		.pipe(uglify({
+			preserveComments: "license"
+		}))
 		.pipe(gulp.dest('./dist'));
 });
 

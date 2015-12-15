@@ -2,7 +2,6 @@
  * Метаданные на стороне js: конструкторы, заполнение, кеширование, поиск
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -684,6 +683,33 @@ function Meta(req, patch) {
 
 		return sql;
 	};
+
+	/**
+	 * Для полей составного типа, добавляет в sql поле описания типа
+	 * @param mf
+	 * @param f
+	 * @param pg
+	 * @return {string}
+	 */
+	_md.sql_composite = function (mf, f, f0, pg){
+		var res = "";
+		if(mf[f].type.types.length > 1 && f != "type"){
+			if(!f0)
+				f0 = f + "_T";
+			else{
+				f0 = f0 + "_T";
+			}
+			if(pg && f0.length > 30){
+				f0 = f0.substr(0, 10) + f0.substr(12, 18) + "_T";
+			}
+
+			if(pg)
+				res = ", " + f0 + " character varying(255)";
+			else
+				res = _md.sql_mask(f0) + " CHAR";
+		}
+		return res;
+	}
 
 	/**
 	 * Заключает имя поля в аппострофы

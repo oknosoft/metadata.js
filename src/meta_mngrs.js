@@ -2,7 +2,6 @@
  * Конструкторы менеджеров данных
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -1114,7 +1113,7 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 					f0 = f[0] + trunc_index + f.substr(f.length-27);
 				}else
 					f0 = f;
-				sql += ", " + f0 + _md.sql_type(t, f, cmd.fields[f].type, true);
+				sql += ", " + f0 + _md.sql_type(t, f, cmd.fields[f].type, true) + _md.sql_composite(cmd.fields, f, f0, true);
 			}
 
 			for(f in cmd["tabular_sections"])
@@ -1129,7 +1128,7 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 				sql += ", id CHAR, name CHAR, is_folder BOOLEAN";
 
 			for(f in cmd.fields)
-				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.fields[f].type);
+				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.fields[f].type)+ _md.sql_composite(cmd.fields, f);
 
 			for(f in cmd["tabular_sections"])
 				sql += ", " + "`ts_" + f + "` JSON";
@@ -1623,11 +1622,11 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 					first_field = false;
 				}else
 					sql += ", " + f;
-				sql += _md.sql_type(t, f, cmd["dimensions"][f].type, true);
+				sql += _md.sql_type(t, f, cmd["dimensions"][f].type, true) + _md.sql_composite(cmd["dimensions"], f, "", true);
 			}
 
 			for(f in cmd["resources"])
-				sql += ", " + f + _md.sql_type(t, f, cmd["resources"][f].type, true);
+				sql += ", " + f + _md.sql_type(t, f, cmd["resources"][f].type, true) + _md.sql_composite(cmd["resources"], f, "", true);
 
 			sql += ", PRIMARY KEY (";
 			first_field = true;
@@ -1648,11 +1647,11 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 					first_field = false;
 				}else
 					sql += _md.sql_mask(f);
-				sql += _md.sql_type(t, f, cmd["dimensions"][f].type);
+				sql += _md.sql_type(t, f, cmd["dimensions"][f].type) + _md.sql_composite(cmd["dimensions"], f);
 			}
 
 			for(f in cmd["resources"])
-				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd["resources"][f].type);
+				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd["resources"][f].type) + _md.sql_composite(cmd["resources"], f);
 
 			sql += ", PRIMARY KEY (";
 			first_field = true;

@@ -1,4 +1,9 @@
-;(function(root, factory) {
+/*!
+ &copy; http://www.oknosoft.ru 2014-2015
+ @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
+ @author Evgeniy Malyarov
+ */
+(function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     define([], factory);
   } else if (typeof exports === 'object') {
@@ -11,13 +16,11 @@
  * Глобальные переменные и общие методы фреймворка __metadata.js__ <i>Oknosoft data engine</i>
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
- * @author	Evgeniy Malyarov
+ * @author  Evgeniy Malyarov
  *
  * Экспортирует глобальную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
  * @module  common
  */
-
 
 /**
  * ### Глобальный объект
@@ -2055,7 +2058,6 @@ $p.wsql = new WSQL();
  * Строковые константы интернационализации
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  *
  * @module common
@@ -2803,7 +2805,6 @@ $p.iface.data_to_tree = function (data) {
  *
  * Created 13.11.2015<br />
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  * @module  wdg_dropdown_list
  */
@@ -3573,7 +3574,6 @@ dhtmlXGridObject.prototype.get_cell_value = function () {
  * ### Визуальный компонент - табличное поле объекта
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  *
  * @module  wdg_otabular
@@ -4064,7 +4064,6 @@ $p.iface.Toolbar_filter = function (attr) {
  *
  * Created 22.10.2015<br />
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  * @module  wdg_dyn_tree
  */
@@ -5695,7 +5694,6 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
  * Метаданные на стороне js: конструкторы, заполнение, кеширование, поиск
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -6379,6 +6377,33 @@ function Meta(req, patch) {
 	};
 
 	/**
+	 * Для полей составного типа, добавляет в sql поле описания типа
+	 * @param mf
+	 * @param f
+	 * @param pg
+	 * @return {string}
+	 */
+	_md.sql_composite = function (mf, f, f0, pg){
+		var res = "";
+		if(mf[f].type.types.length > 1 && f != "type"){
+			if(!f0)
+				f0 = f + "_T";
+			else{
+				f0 = f0 + "_T";
+			}
+			if(pg && f0.length > 30){
+				f0 = f0.substr(0, 10) + f0.substr(12, 18) + "_T";
+			}
+
+			if(pg)
+				res = ", " + f0 + " character varying(255)";
+			else
+				res = _md.sql_mask(f0) + " CHAR";
+		}
+		return res;
+	}
+
+	/**
 	 * Заключает имя поля в аппострофы
 	 * @method sql_mask
 	 * @param f
@@ -6753,7 +6778,6 @@ _cat.load_soap_to_grid = function(attr, grid, callback){
  * Конструкторы менеджеров данных
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -7865,7 +7889,7 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 					f0 = f[0] + trunc_index + f.substr(f.length-27);
 				}else
 					f0 = f;
-				sql += ", " + f0 + _md.sql_type(t, f, cmd.fields[f].type, true);
+				sql += ", " + f0 + _md.sql_type(t, f, cmd.fields[f].type, true) + _md.sql_composite(cmd.fields, f, f0, true);
 			}
 
 			for(f in cmd["tabular_sections"])
@@ -7880,7 +7904,7 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 				sql += ", id CHAR, name CHAR, is_folder BOOLEAN";
 
 			for(f in cmd.fields)
-				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.fields[f].type);
+				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.fields[f].type)+ _md.sql_composite(cmd.fields, f);
 
 			for(f in cmd["tabular_sections"])
 				sql += ", " + "`ts_" + f + "` JSON";
@@ -8374,11 +8398,11 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 					first_field = false;
 				}else
 					sql += ", " + f;
-				sql += _md.sql_type(t, f, cmd["dimensions"][f].type, true);
+				sql += _md.sql_type(t, f, cmd["dimensions"][f].type, true) + _md.sql_composite(cmd["dimensions"], f, "", true);
 			}
 
 			for(f in cmd["resources"])
-				sql += ", " + f + _md.sql_type(t, f, cmd["resources"][f].type, true);
+				sql += ", " + f + _md.sql_type(t, f, cmd["resources"][f].type, true) + _md.sql_composite(cmd["resources"], f, "", true);
 
 			sql += ", PRIMARY KEY (";
 			first_field = true;
@@ -8399,11 +8423,11 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 					first_field = false;
 				}else
 					sql += _md.sql_mask(f);
-				sql += _md.sql_type(t, f, cmd["dimensions"][f].type);
+				sql += _md.sql_type(t, f, cmd["dimensions"][f].type) + _md.sql_composite(cmd["dimensions"], f);
 			}
 
 			for(f in cmd["resources"])
-				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd["resources"][f].type);
+				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd["resources"][f].type) + _md.sql_composite(cmd["resources"], f);
 
 			sql += ", PRIMARY KEY (";
 			first_field = true;
@@ -8902,7 +8926,6 @@ DocManager._extend(RefDataManager);
  * Конструкторы объектов данных
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -9650,7 +9673,6 @@ RegisterRow.prototype.__define('ref', {
  * Конструкторы табличных частей
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -10027,7 +10049,6 @@ TabularSectionRow.prototype._setter = function (f, v) {
  * /a/unf/odata/standard.odata
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -10862,7 +10883,6 @@ DataObj.prototype.to_atom = function (ex_meta) {
  * Процедуры импорта и экспорта данных
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  *
  * @module metadata
@@ -12278,7 +12298,6 @@ DataManager.prototype.form_list = function(pwnd, attr){
  *	 Метод initMainLayout() переопределяется во внешним, по отношению к ядру, модуле
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  *
  * @module common
@@ -13536,7 +13555,6 @@ $p.eve.auto_log_in = function () {
 };
 
 
-$p.injected_data._mixin({"form_auth.xml":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<items>\n\t<item type=\"settings\" position=\"label-left\" labelWidth=\"150\" inputWidth=\"230\" noteWidth=\"230\"/>\n\t<item type=\"fieldset\" name=\"data\" inputWidth=\"auto\" label=\"Авторизация\">\n\n        <item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" checked=\"true\" value=\"guest\" label=\"Гостевой (демо) режим\">\n            <item type=\"select\" name=\"guest\" label=\"Роль\">\n                <option value=\"Дилер\" label=\"Дилер\"/>\n            </item>\n        </item>\n\n\t\t<item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" value=\"auth\" label=\"Есть учетная запись\">\n\t\t\t<item type=\"input\" value=\"\" name=\"login\" label=\"Имя пользователя\" validate=\"NotEmpty\" />\n\t\t\t<item type=\"password\" value=\"\" name=\"password\" label=\"Пароль\" validate=\"NotEmpty\" />\n\t\t</item>\n\n\t\t<item type=\"button\" value=\"Войти\" name=\"submit\"/>\n\n        <item type=\"template\" name=\"text_options\" className=\"order_dealer_options\" inputWidth=\"231\"\n              value=\"&lt;a href='#' onclick='$p.iface.open_settings();' &gt; &lt;i class='fa fa-cog fa-lg'&gt;&lt;/i&gt; Настройки &lt;/a&gt; &lt;a href='//www.oknosoft.ru/feedback' target='_blank' style='margin-left: 9px;' &gt; &lt;i class='fa fa-question-circle fa-lg'&gt;&lt;/i&gt; Задать вопрос &lt;/a&gt;\"  />\n\n\t</item>\n</items>","toolbar_add_del.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_add\"    text=\"&lt;i class='fa fa-plus-circle fa-lg'&gt;&lt;/i&gt; Добавить\" title=\"Добавить строку\"  />\r\n    <item type=\"button\" id=\"btn_delete\" text=\"&lt;i class='fa fa-times fa-lg'&gt;&lt;/i&gt; Удалить\"  title=\"Удалить строку\" />\r\n</toolbar>","toolbar_obj.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"&lt;b&gt;Записать и закрыть&lt;/b&gt;\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"&lt;i class='fa fa-floppy-o fa-lg'&gt;&lt;/i&gt; Записать\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_post\" enabled=\"false\" text=\"&lt;i class='fa fa-check-square-o fa-lg'&gt;&lt;/i&gt;\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" enabled=\"false\" text=\"&lt;i class='fa fa-square-o fa-lg'&gt;&lt;/i&gt;\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"&lt;i class='fa fa-paperclip fa-lg'&gt;&lt;/i&gt; Файлы\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"Создать\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"Перейти\" title=\"\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n        <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-lg'&gt;&lt;/i&gt; Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"  text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\"  title=\"Дополнительно\" openAll=\"true\">\r\n        <item type=\"button\" id=\"btn_import\" text=\"&lt;i class='fa fa-upload fa-fw'&gt;&lt;/i&gt; Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" text=\"&lt;i class='fa fa-download fa-fw'&gt;&lt;/i&gt; Выгрузить в файл\" />\r\n    </item>\r\n\r\n</toolbar>\r\n","toolbar_ok_cancel.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_ok\"       type=\"button\"   img=\"\"  imgdis=\"\"   text=\"&lt;b&gt;Ок&lt;/b&gt;\"  />\r\n    <item id=\"btn_cancel\"   type=\"button\"\timg=\"\"  imgdis=\"\"   text=\"Отмена\" />\r\n</toolbar>","toolbar_selection.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_select\"   type=\"button\"   title=\"Выбрать элемент списка\" text=\"&lt;b&gt;Выбрать&lt;/b&gt;\"  />\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item id=\"btn_new\"      type=\"button\"\ttext=\"&lt;i class='fa fa-plus-circle fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Создать\" />\r\n    <item id=\"btn_edit\"     type=\"button\"\ttext=\"&lt;i class='fa fa-pencil fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Изменить\" />\r\n    <item id=\"btn_delete\"   type=\"button\"\ttext=\"&lt;i class='fa fa-times fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Удалить\" />\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-lg'&gt;&lt;/i&gt; Печать\" openAll=\"true\" >\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"    text=\"&lt;i class='fa fa-th-large fa-lg'&gt;&lt;/i&gt;\" title=\"Дополнительно\" openAll=\"true\">\r\n        <item id=\"btn_requery\"  type=\"button\"\ttext=\"&lt;i class='fa fa-refresh fa-lg fa-fw'&gt;&lt;/i&gt; Обновить список\" />\r\n    </item>\r\n\r\n</toolbar>","log.json":{"ireg":{"$log":{"name":"$log","note":"","synonym":"Журнал событий","dimensions":{"date":{"synonym":"Дата","multiline_mode":false,"tooltip":"Время события","type":{"types":["number"],"digits":15,"fraction_figits":0}},"sequence":{"synonym":"Порядок","multiline_mode":false,"tooltip":"Порядок следования","type":{"types":["number"],"digits":6,"fraction_figits":0}}},"resources":{"class":{"synonym":"Класс","multiline_mode":false,"tooltip":"Класс события","type":{"types":["string"],"str_len":100}},"note":{"synonym":"Комментарий","multiline_mode":true,"tooltip":"Текст события","type":{"types":["string"],"str_len":0}},"obj":{"synonym":"Объект","tooltip":"Объект, к которому относится событие","type":{"types":["string"],"str_len":0}}}}}}});
 /* Copyright 2013 William Summers, metaTribal LLC
  * adapted from https://developer.mozilla.org/en-US/docs/JXON
  *
