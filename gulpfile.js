@@ -89,6 +89,14 @@ gulp.task('core', function(){
 		'./src/events.js'
 	])
 		.pipe(concat('metadata.core.js'))
+		.pipe(umd({
+			exports: function(file) {
+				return '$p';
+			},
+			namespace: function(file) {
+				return '$p';
+			}
+		}))
 		.pipe(gulp.dest('./lib'))
 		.pipe(rename('metadata.core.min.js'))
 		.pipe(uglify())

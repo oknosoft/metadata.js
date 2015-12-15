@@ -3,8 +3,8 @@
 // Левая панель инструментов
 new $p.iface.OTooolBar({wrapper: ОбластьКонтента.Контейнер, top: '32px', left: '16px', name: 'left', height: '250px',
 	buttons: [
-		{name: 'select_elm', img: 'icon-arrow-black.png', title: $p.require('select_elm')},
-		{name: 'select_node', img: 'icon-arrow-white.png', title: $p.require('select_node')},
+		{name: 'select_elm', img: 'icon-arrow-black.png', title: $p.injected_data['select_elm.html']},
+		{name: 'select_node', img: 'icon-arrow-white.png', title: $p.injected_data['select_node.html']},
 		{name: 'pan', img: 'icon-hand.png', title: 'Панорама и масштаб {Crtl}, {Alt}, {Alt + колёсико мыши}'},
 		{name: 'zoom_fit', img: 'cursor-zoom.png', title: 'Вписать в окно'},
 		{name: 'pen', img: 'cursor-pen-freehand.png', title: 'Добавить профиль'},
