@@ -22,7 +22,7 @@
 DataManager.prototype.form_obj = function(pwnd, attr){
 
 	// если существует переопределенная форма, открываем её
-	var frm = require("wnd/wnd_" + this.class_name.replace('.', "_") + "_obj");
+	var frm = $p.injected_data["wnd/wnd_" + this.class_name.replace('.', "_") + "_obj"];
 	if(frm)
 		return frm($p, pwnd, attr);
 
@@ -160,7 +160,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		// панель инструментов формы
 		wnd.elmnts.frm_toolbar = wnd.attachToolbar();
 		wnd.elmnts.frm_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
-		wnd.elmnts.frm_toolbar.loadStruct(require("toolbar_obj"), function(){
+		wnd.elmnts.frm_toolbar.loadStruct($p.injected_data["toolbar_obj.xml"], function(){
 			this.addSpacer("btn_unpost");
 			this.attachEvent("onclick", toolbar_click);
 

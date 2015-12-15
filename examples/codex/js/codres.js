@@ -8,13 +8,9 @@
 
 $p.eve.redirect = true;
 
-$p.require = function(name){
-	return require(name);
-};
-
 $p.settings = function (prm, modifiers) {
 	prm.create_tables = true;
-	prm.create_tables_sql = require('create_tables');
+	prm.create_tables_sql = $p.injected_data['create_tables.sql'];
 	prm.allow_post_message = "*";   // разрешаем обрабатывать сообщения от других окон (обязательно для файлового режима)
 	prm.russian_names = true;       // создаём русскоязычные синонимы
 	prm.use_google_geo = true;      // используем геолокатор
@@ -33,9 +29,9 @@ $p.iface.oninit = function() {
 	$p.ajax.root = true;
 
 	// инициализируем метаданные
-	new $p.Meta(require('meta'));
+	new $p.Meta($p.injected_data['meta.json']);
 
 	// загружаем данные
-	$p.eve.from_json_to_data_obj(require('data'));
+	$p.eve.from_json_to_data_obj($p.injected_data['data.json']);
 
 };

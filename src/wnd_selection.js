@@ -105,7 +105,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		wnd.elmnts.toolbar = wnd.attachToolbar();
 		wnd.elmnts.toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
-		wnd.elmnts.toolbar.loadStruct(require("toolbar_selection"), function(){
+		wnd.elmnts.toolbar.loadStruct($p.injected_data["toolbar_selection.xml"], function(){
 
 			this.attachEvent("onclick", toolbar_click);
 
@@ -133,11 +133,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			if(!on_select && $p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper"){
 				this.hideItem("btn_select");
 				this.hideItem("sep1");
-				this.addListOption("bs_more", "btn_order_list", "~", "button", "Список заказов", "tb_autocad.png");
+				this.addListOption("bs_more", "btn_order_list", "~", "button", "<i class='fa fa-briefcase fa-lg fa-fw'></i> Список заказов");
 
 			}
-			this.addListOption("bs_more", "btn_import", "~", "button", "<i class='fa fa-upload fa-fw'></i> Загрузить из файла");
-			this.addListOption("bs_more", "btn_export", "~", "button", "<i class='fa fa-download fa-fw'></i> Выгрузить в файл");
+			this.addListOption("bs_more", "btn_import", "~", "button", "<i class='fa fa-upload fa-lg fa-fw'></i> Загрузить из файла");
+			this.addListOption("bs_more", "btn_export", "~", "button", "<i class='fa fa-download fa-lg fa-fw'></i> Выгрузить в файл");
 
 
 			// добавляем команды печати

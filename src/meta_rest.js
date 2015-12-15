@@ -4,7 +4,6 @@
  * /a/unf/odata/standard.odata
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -396,7 +395,7 @@ function Rest(){
 					return $p.ajax.patch_ex(url + "(guid'" + tObj.ref + "')", atom, attr);
 			})
 			.then(function (req) {
-				var data = require("xml_to_json").parseString(req.response, {
+				var data = xmlToJSON.parseString(req.response, {
 					mergeCDATA: false, // extract cdata and merge with text
 					grokAttr: true, // convert truthy attributes to boolean, etc
 					grokText: false, // convert truthy text/attr to boolean, etc

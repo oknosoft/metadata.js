@@ -2,7 +2,6 @@
  * Процедуры импорта и экспорта данных
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  *
  * @module metadata
@@ -173,16 +172,16 @@ DataManager.prototype.export = function(attr){
 
 		function export_xlsx(){
 			if(attr.obj)
-				alasql("SELECT * INTO XLSX('"+_mgr.table_name+".xlsx',{headers:true}) FROM ?", [attr.items[0]._obj]);
+				$p.wsql.alasql("SELECT * INTO XLSX('"+_mgr.table_name+".xlsx',{headers:true}) FROM ?", [attr.items[0]._obj]);
 			else
-				alasql("SELECT * INTO XLSX('"+_mgr.table_name+".xlsx',{headers:true}) FROM " + _mgr.table_name);
+				$p.wsql.alasql("SELECT * INTO XLSX('"+_mgr.table_name+".xlsx',{headers:true}) FROM " + _mgr.table_name);
 		}
 
 		var res = {meta: {}, items: {}},
 			items = res.items[_mgr.class_name] = [];
 
 		//$p.wsql.aladb.tables.refs.data.push({ref: "dd274d11-833b-11e1-92c2-8b79e9a2b61c"})
-		//alasql('select * from cat_cashboxes where ref in (select ref from refs)')
+		//$p.wsql.alasql('select * from cat_cashboxes where ref in (select ref from refs)')
 
 		if(options.meta)
 			res.meta[_mgr.class_name] = _mgr.metadata();
@@ -220,10 +219,9 @@ DataManager.prototype.export = function(attr){
 			});
 
 		}else{
-			//alasql("SELECT * INTO SQL('"+_mgr.table_name+".sql') FROM " + _mgr.table_name);
+			//$p.wsql.alasql("SELECT * INTO SQL('"+_mgr.table_name+".sql') FROM " + _mgr.table_name);
 			$p.msg.show_not_implemented();
 		}
-
 	}
 
 	function frm_close(win){

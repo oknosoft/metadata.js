@@ -2,13 +2,11 @@
  * Глобальные переменные и общие методы фреймворка __metadata.js__ <i>Oknosoft data engine</i>
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
- * @author	Evgeniy Malyarov
+ * @author  Evgeniy Malyarov
  *
  * Экспортирует глобальную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
  * @module  common
  */
-
 
 /**
  * ### Глобальный объект
@@ -22,23 +20,14 @@ function MetaEngine() {
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
+	this.injected_data = {};
 }
 
 /**
  * Для совместимости со старыми модулями, публикуем $p глобально
  * Кроме этой переменной, metadata.js ничего не экспортирует
  */
-$p = new MetaEngine();
-
-/**
- * Обёртка для подключения через AMD или CommonJS
- * https://github.com/umdjs/umd
- */
-if (typeof define === 'function' && define.amd) {
-	define('$p', $p);                               // Support AMD (e.g. require.js)
-} else if (typeof module === 'object' && module) {  // could be `null`
-	module.exports = $p;                            // Support CommonJS module
-}
+var $p = new MetaEngine();
 
 if(typeof window !== "undefined"){
 
@@ -69,18 +58,26 @@ if(typeof window !== "undefined"){
 		document.head.appendChild(s);
 	};
 
+}else{
 
-}else if(typeof WorkerGlobalScope === "undefined"){
-
-	// локальное хранилище внутри node.js
-	if(typeof localStorage === "undefined")
-		localStorage = new require('node-localstorage').LocalStorage('./localstorage');
-
-	// alasql внутри node.js
-	if (typeof window === "undefined" && typeof alasql === "undefined")
-		alasql = require('alasql');
-
+	/**
+	 * Читает данные из файла (только в Node.js)
+	 * @param filename
+	 * @return {Promise}
+	 */
+	$p.from_file = function(filename){
+		return new Promise(function(resolve, reject){
+			require('fs').readFile(filename, { encoding:'utf8' }, function(err, dataFromFile){
+				if(err){
+					reject(err);
+				} else {
+					resolve(dataFromFile.toString().trim());
+				}
+			});
+		});
+	}
 }
+
 
 /**
  * Фреймворк [metadata.js](https://github.com/oknosoft/metadata.js), добавляет в прототип _Object_<br />
@@ -414,79 +411,108 @@ $p.ajax = new (
 			// Возвращаем новое Обещание.
 			return new Promise(function(resolve, reject) {
 
-				// Делаем привычные XHR вещи
-				var req = new XMLHttpRequest();
+				// внутри Node, используем request
+				if(typeof window == "undefined" && auth && auth.request){
 
-				if(typeof window != "undefined" && window.dhx4 && window.dhx4.isIE)
-					url = encodeURI(url);
+					auth.request({
+						url: encodeURI(url),
+						headers : {
+							"Authorization": auth.auth
+						}
+					},
+						function (error, response, body) {
+							if(error)
+								reject(error);
 
-				if(auth){
-					var username, password;
-					if(typeof auth == "object" && auth.username && auth.hasOwnProperty("password")){
-						username = auth.username;
-						password = auth.password;
-					}else{
-						if($p.ajax.username && $p.ajax.authorized){
-							username = $p.ajax.username;
-							password = $p.ajax.password;
+							else if(response.statusCode != 200)
+								reject({
+									message: response.statusMessage,
+									description: body,
+									status: response.statusCode
+								});
+
+							else
+								resolve({response: body});
+						}
+					);
+
+				}else {
+
+					// делаем привычные для XHR вещи
+					var req = new XMLHttpRequest();
+
+					if(window.dhx4 && window.dhx4.isIE)
+						url = encodeURI(url);
+
+					if(auth){
+						var username, password;
+						if(typeof auth == "object" && auth.username && auth.hasOwnProperty("password")){
+							username = auth.username;
+							password = auth.password;
 						}else{
-							username = $p.wsql.get_user_param("user_name");
-							password = $p.wsql.get_user_param("user_pwd");
-							if(!username && $p.job_prm && $p.job_prm.guest_name){
-								username = $p.job_prm.guest_name;
-								password = $p.job_prm.guest_pwd;
+							if($p.ajax.username && $p.ajax.authorized){
+								username = $p.ajax.username;
+								password = $p.ajax.password;
+							}else{
+								username = $p.wsql.get_user_param("user_name");
+								password = $p.wsql.get_user_param("user_pwd");
+								if(!username && $p.job_prm && $p.job_prm.guest_name){
+									username = $p.job_prm.guest_name;
+									password = $p.job_prm.guest_pwd;
+								}
 							}
 						}
-					}
-					req.open(method, url, true, username, password);
-					req.withCredentials = true;
-					req.setRequestHeader("Authorization", "Basic " +
-						btoa(unescape(encodeURIComponent(username + ":" + password))));
-				}else
-					req.open(method, url, true);
+						req.open(method, url, true, username, password);
+						req.withCredentials = true;
+						req.setRequestHeader("Authorization", "Basic " +
+							btoa(unescape(encodeURIComponent(username + ":" + password))));
+					}else
+						req.open(method, url, true);
 
-				if(before_send)
-					before_send.call(this, req);
+					if(before_send)
+						before_send.call(this, req);
 
-				if (method != "GET") {
-					if(!this.hide_headers && !auth.hide_headers){
-						req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-						req.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+					if (method != "GET") {
+						if(!this.hide_headers && !auth.hide_headers){
+							req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+							req.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+						}
+					} else {
+						post_data = null;
 					}
-				} else {
-					post_data = null;
+
+					req.onload = function() {
+						// Этот кусок вызовется даже при 404’ой ошибке
+						// поэтому проверяем статусы ответа
+						if (req.status == 200 && (req.response instanceof Blob || req.response.substr(0,9)!=="<!DOCTYPE")) {
+							// Завершаем Обещание с текстом ответа
+							if(req.responseURL == undefined)
+								req.responseURL = url;
+							resolve(req);
+						}
+						else {
+							// Обламываемся, и передаём статус ошибки
+							// что бы облегчить отладку и поддержку
+							if(req.response)
+								reject({
+									message: req.statusText,
+									description: req.response,
+									status: req.status
+								});
+							else
+								reject(Error(req.statusText));
+						}
+					};
+
+					// отлавливаем ошибки сети
+					req.onerror = function() {
+						reject(Error("Network Error"));
+					};
+
+					// Делаем запрос
+					req.send(post_data);
 				}
 
-				req.onload = function() {
-					// Этот кусок вызовется даже при 404’ой ошибке
-					// поэтому проверяем статусы ответа
-					if (req.status == 200 && (req.response instanceof Blob || req.response.substr(0,9)!=="<!DOCTYPE")) {
-						// Завершаем Обещание с текстом ответа
-						if(req.responseURL == undefined)
-							req.responseURL = url;
-						resolve(req);
-					}
-					else {
-						// Обламываемся, и передаём статус ошибки
-						// что бы облегчить отладку и поддержку
-						if(req.response)
-							reject({
-								message: req.statusText,
-								description: req.response,
-								status: req.status
-							});
-						else
-							reject(Error(req.statusText));
-					}
-				};
-
-				// отлавливаем ошибки сети
-				req.onerror = function() {
-					reject(Error("Network Error"));
-				};
-
-				// Делаем запрос
-				req.send(post_data);
 			});
 
 		}
@@ -665,7 +691,7 @@ $p.ajax = new (
 					xhr.responseType = "blob";
 				})
 				.then(function(req){
-					require("filesaver").saveAs(req.response, file_name);
+					saveAs(req.response, file_name);
 				});
 		};
 
@@ -1388,7 +1414,7 @@ function Modifiers(){
 			if(typeof method === "function")
 				tres = method(data);
 			else
-				tres = require(method)(data);
+				tres = $p.injected_data[method](data);
 			if(res !== false)
 				res = tres;
 		});
@@ -1512,25 +1538,23 @@ function JobPrm(){
 	 */
 	this.check_browser_compatibility = true;
 
-	/**
-	 * Указывает, проверять ли установленность приложения в Google Chrome Store при запуске программы
-	 * @property check_app_installed
-	 * @type {Boolean}
-	 * @static
-	 */
-	this.check_app_installed = false;
 	this.check_dhtmlx = true;
 	this.use_builder = false;
 	this.offline = false;
 	this.local_storage_prefix = "";
 
-	/**
-	 * Содержит объект с расшифровкой параметров url, указанных при запуске программы
-	 * @property url_prm
-	 * @type {Object}
-	 * @static
-	 */
-	this.url_prm = this.parse_url();
+	if(typeof window != "undefined"){
+
+		/**
+		 * Содержит объект с расшифровкой параметров url, указанных при запуске программы
+		 * @property url_prm
+		 * @type {Object}
+		 * @static
+		 */
+		this.url_prm = this.parse_url();
+
+	}else
+		this.url_prm = {};
 
 	// подмешиваем параметры, заданные в файле настроек сборки
 	if(typeof $p.settings === "function")
@@ -1593,6 +1617,7 @@ function JobPrm(){
 	};
 
 }
+$p.JobPrm = JobPrm;
 
 
 /**
@@ -1603,8 +1628,19 @@ function JobPrm(){
 function WSQL(){
 
 	var wsql = this,
-		user_params = {},
-		inited = 0;
+		ls,
+		user_params = {};
+
+	if(typeof localStorage === "undefined"){
+
+		// локальное хранилище внутри node.js
+		if(typeof WorkerGlobalScope === "undefined"){
+			if(typeof localStorage === "undefined")
+				ls = new require('node-localstorage').LocalStorage('./localstorage');
+		}
+
+	} else
+		ls = localStorage;
 
 	function fetch_type(prm, type){
 		if(type == "object"){
@@ -1624,48 +1660,7 @@ function WSQL(){
 			return prm;
 	}
 
-	//TODO задействовать вебворкеров + единообразно база в озу alasql
-
-
-	/**
-	 * Выполняет sql запрос к локальной базе данных
-	 * @method exec
-	 * @param sql {String} - текст запроса
-	 * @param prm {Array} - массив с параметрами для передачи в запрос
-	 * @param [callback] {Function} - функция обратного вызова. если не укзана, запрос выполняется "как бы синхронно"
-	 * @param [tag] {*} - произвольные данные для передачи в callback
-	 * @async
-	 */
-	wsql.exec = function(sql, prm, callback, tag) {
-
-		if(inited < 10){
-			inited++;
-			setTimeout(function () {
-				wsql.exec(sql, prm, callback, tag);
-			}, 1000);
-			return;
-
-		}else if(inited < 100) {
-			throw new TypeError('alasql init error');
-		}
-
-		if(!Array.isArray(prm))
-			prm = [prm];	// если параметры не являются массивом, конвертируем
-
-		var i, data = [];
-		try{
-			if(callback)
-				alasql(sql, prm, function (data) {
-					callback(data, tag);
-				});
-			else
-				alasql(sql, prm);
-		}
-		catch(e){
-			if(callback)
-				callback(e);
-		}
-	};
+	//TODO реализовать поддержку postgres в Node
 
 	/**
 	 * Выполняет sql запрос к локальной базе данных, возвращает Promise
@@ -1676,7 +1671,7 @@ function WSQL(){
 	 */
 	wsql.promise = function(sql, params) {
 		return new Promise(function(resolve, reject){
-			alasql(sql, params || [], function(data, err) {
+			wsql.alasql(sql, params || [], function(data, err) {
 				if(err) {
 					reject(err);
 				} else {
@@ -1706,8 +1701,8 @@ function WSQL(){
 				str_prm = "";
 
 			// localStorage в этом месте можно заменить на другое хранилище
-			if(typeof localStorage !== "undefined")
-				localStorage.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
+			if(ls)
+				ls.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
 			user_params[prm_name] = prm_value;
 
 			resolve();
@@ -1724,8 +1719,8 @@ function WSQL(){
 	 */
 	wsql.get_user_param = function(prm_name, type){
 
-		if(!user_params.hasOwnProperty(prm_name) && (typeof localStorage !== "undefined"))
-			user_params[prm_name] = fetch_type(localStorage.getItem($p.job_prm.local_storage_prefix+prm_name), type);
+		if(!user_params.hasOwnProperty(prm_name) && ls)
+			user_params[prm_name] = fetch_type(ls.getItem($p.job_prm.local_storage_prefix+prm_name), type);
 
 		return user_params[prm_name];
 	};
@@ -1764,12 +1759,16 @@ function WSQL(){
 	};
 
 	/**
-	 * Создаёт и заполняет умолчаниями таблицу параметров
+	 * ### Создаёт и заполняет умолчаниями таблицу параметров
+	 * Внутри Node, в функцию следует передать ссылку на alasql
 	 * @method init_params
 	 * @return {Promise}
 	 * @async
 	 */
-	wsql.init_params = function(){
+	wsql.init_params = function(ialasql, create_tables_sql){
+
+		wsql.alasql = ialasql || alasql;
+		wsql.aladb = new wsql.alasql.Database('md');
 
 		var nesessery_params = [
 			{p: "user_name",		v: "", t:"string"},
@@ -1787,12 +1786,14 @@ function WSQL(){
 			{p: "rest_path",		v: "", t:"string"}
 		], zone;
 
+
+
 		// подмешиваем к базовым параметрам настройки приложения
 		if($p.job_prm.additional_params)
 			nesessery_params = nesessery_params.concat($p.job_prm.additional_params);
 
 		// если зона не указана, устанавливаем "1"
-		if(!localStorage.getItem($p.job_prm.local_storage_prefix+"zone"))
+		if(!ls.getItem($p.job_prm.local_storage_prefix+"zone"))
 			zone = $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1;
 		// если зона указана в url, используем её
 		if($p.job_prm.url_prm.hasOwnProperty("zone"))
@@ -1813,24 +1814,20 @@ function WSQL(){
 
 		return new Promise(function(resolve, reject){
 
-			if(typeof alasql !== "undefined"){
-				if($p.job_prm.create_tables){
-					if($p.job_prm.create_tables_sql)
-						alasql($p.job_prm.create_tables_sql, [], function(){
-							inited = 1000;
-							delete $p.job_prm.create_tables_sql;
-							resolve();
+			if(create_tables_sql)
+				wsql.alasql(create_tables_sql, [], resolve);
+
+			else if($p.job_prm.create_tables){
+				if($p.job_prm.create_tables_sql)
+					wsql.alasql($p.job_prm.create_tables_sql, [], function(){
+						delete $p.job_prm.create_tables_sql;
+						resolve();
+					});
+				else
+					$p.ajax.get($p.job_prm.create_tables)
+						.then(function (req) {
+							wsql.alasql(req.response, [], resolve);
 						});
-					else
-						$p.ajax.get($p.job_prm.create_tables)
-							.then(function (req) {
-								alasql(req.response, [], function(){
-									inited = 1000;
-									resolve();
-								});
-							});
-				}else
-					resolve();
 			}else
 				resolve();
 
@@ -1860,7 +1857,7 @@ function WSQL(){
 			if(tname.substr(0, 1) == "_")
 				ccallback();
 			else
-				alasql("drop table IF EXISTS " + tname, [], ccallback);
+				wsql.alasql("drop table IF EXISTS " + tname, [], ccallback);
 		}
 
 		function tmames_finded(data){
@@ -1871,7 +1868,7 @@ function WSQL(){
 				ccallback();
 		}
 
-		alasql("SHOW TABLES", [], tmames_finded);
+		wsql.alasql("SHOW TABLES", [], tmames_finded);
 	};
 
 	/**
@@ -2032,12 +2029,6 @@ function WSQL(){
 		});
 	};
 
-	if(typeof alasql !== "undefined"){
-
-		wsql.aladb = new alasql.Database('md');
-
-	} else
-		inited = 1000;
 };
 
 /**
@@ -2048,4 +2039,3 @@ function WSQL(){
  * @static
  */
 $p.wsql = new WSQL();
-

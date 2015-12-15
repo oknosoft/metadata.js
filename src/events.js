@@ -16,7 +16,6 @@
  *	 Метод initMainLayout() переопределяется во внешним, по отношению к ядру, модуле
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  *
  * @module common
@@ -374,21 +373,11 @@ function only_in_browser(w){
 			eve.socket.connect();
 
 			// проверяем совместимость браузера
-			if($p.job_prm.check_browser_compatibility && (!w.JSON || !w.indexedDB || !w.localStorage) ){
+			if($p.job_prm.check_browser_compatibility && (!w.JSON || !w.indexedDB) ){
 				eve.redirect = true;
 				msg.show_msg({type: "alert-error", text: msg.unsupported_browser, title: msg.unsupported_browser_title});
 				setTimeout(function(){ location.replace(msg.store_url_od); }, 6000);
 				return;
-			}
-
-			// проверяем установленность приложения только если мы внутри хрома
-			if($p.job_prm.check_app_installed && w.chrome && w.chrome.app && !w.chrome.app.isInstalled){
-				if(!location.hostname.match(/.local/)){
-					eve.redirect = true;
-					msg.show_msg({type: "alert-error", text: msg.unsupported_mode, title: msg.unsupported_mode_title});
-					setTimeout(function(){ location.replace(msg.store_url_od); }, 6000);
-					return;
-				}
 			}
 
 			/**
@@ -427,7 +416,7 @@ function only_in_browser(w){
 						}
 
 						// задаём основной скин
-						dhtmlx.skin = $p.wsql.get_user_param("skin") || "dhx_web";
+						dhtmlx.skin = $p.wsql.get_user_param("skin") || $p.job_prm.skin || "dhx_web";
 
 						//str.replace(new RegExp(list[i] + '$'), 'finish')
 						if(load_dhtmlx)
@@ -793,6 +782,31 @@ $p.eve.steps = {
 };
 
 
+$p.eve.init_node = function (alasql) {
+
+	$p.job_prm = new $p.JobPrm();
+
+	var data_url = $p.job_prm.data_url || "/data/";
+
+	return $p.from_file(data_url + 'create_tables.sql')
+		.then(function (sql) {
+			return $p.wsql.init_params(alasql, sql);
+		})
+		.then(function() {
+			return $p.from_file(data_url + 'meta.json');
+		})
+		.then(function(meta) {
+			return $p.from_file(data_url + 'meta_patch.json')
+				.then(function (patch) {
+					return [JSON.parse(meta), JSON.parse(patch)]
+				})
+		})
+		.then(function(meta) {
+			return new $p.Meta(meta[0], meta[1]);
+		});
+
+};
+
 /**
  * Регламентные задания синхронизапции каждые 3 минуты
  * @event ontimer
@@ -809,7 +823,7 @@ setInterval($p.eve.ontimer, 180000);
 
 $p.eve.update_files_version = function () {
 
-	if(!$p.job_prm || $p.job_prm.offline || !$p.job_prm.data_url)
+	if(typeof window === "undefined" || !$p.job_prm || $p.job_prm.offline || !$p.job_prm.data_url)
 		return;
 
 	if(!$p.job_prm.files_date)
@@ -1257,3 +1271,4 @@ $p.eve.auto_log_in = function () {
 			stepper.step_size = 57;
 		})
 };
+

@@ -1,0 +1,690 @@
+﻿{
+	"enm": {
+		"ИнтеграцияТипРегистрации": [
+			{
+				"order": 0,
+				"name": "НеРегистрировать",
+				"synonym": "Не регистрировать"
+			},
+			{
+				"order": 1,
+				"name": "Локально",
+				"synonym": "Локально"
+			},
+			{
+				"order": 2,
+				"name": "СсылкуВоВнешнейБазе",
+				"synonym": "Ссылку во внешней базе"
+			},
+			{
+				"order": 3,
+				"name": "ОбъектВоВнешнейБазе",
+				"synonym": "Объект во внешней базе"
+			}
+		]
+	},
+	"cat": {
+		"ИдентификаторыОбъектовМетаданных": {
+			"name": "ИдентификаторыОбъектовМетаданных",
+			"synonym": "Идентификаторы объектов метаданных",
+			"illustration": "Идентификаторы объектов метаданных для использования в базе данных.",
+			"obj_presentation": "Идентификатор объекта метаданных",
+			"list_presentation": "",
+			"input_by_string": [
+				"name"
+			],
+			"hierarchical": true,
+			"has_owners": false,
+			"group_hierarchy": false,
+			"main_presentation_name": true,
+			"code_length": 0,
+			"fields": {
+				"ПорядокКоллекции": {
+					"synonym": "Порядок коллекции",
+					"multiline_mode": false,
+					"tooltip": "Порядок коллекции объекта метаданных,\nиспользуемый для сортировки в отчетах,\nнапример, коллекция \"Справочники\"\nперед коллекцией \"Документы\"",
+					"type": {
+						"types": [
+							"number"
+						],
+						"digits": 2,
+						"fraction_figits": 0
+					}
+				},
+				"Имя": {
+					"synonym": "Имя",
+					"multiline_mode": false,
+					"tooltip": "Имя объекта метаданных",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 255
+					}
+				},
+				"synonym": {
+					"synonym": "Синоним",
+					"multiline_mode": false,
+					"tooltip": "Синоним объекта метаданных,\nнапример, \"Объекты адресации задач\"",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 255
+					}
+				},
+				"ПолноеИмя": {
+					"synonym": "Полное имя",
+					"multiline_mode": false,
+					"tooltip": "Полное имя объекта метаданных",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 430
+					}
+				},
+				"ПолныйСиноним": {
+					"synonym": "Полный синоним",
+					"multiline_mode": false,
+					"tooltip": "Полный синоним объекта метаданных,\nнапример, \"Планы видов характеристик. Объекты адресации задач\"",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 430
+					}
+				},
+				"БезДанных": {
+					"synonym": "Без данных",
+					"multiline_mode": false,
+					"tooltip": "Объект метаданных не имеет таблиц данных",
+					"type": {
+						"types": [
+							"boolean"
+						]
+					}
+				},
+				"ЗначениеПустойСсылки": {
+					"synonym": "Значение пустой ссылки",
+					"multiline_mode": false,
+					"tooltip": "Для ссылочных типов объектов метаданных \nсодержит пустую ссылку своего типа,\nдля остальных - Неопределено\n(в форме показано представление\nтипа значения пустой ссылки)",
+					"choice_groups_elm": "elm",
+					"type": {
+						"types": [
+                          "string"
+						],
+						"is_ref": true
+					}
+				},
+				"КлючОбъектаМетаданных": {
+					"synonym": "Ключ объекта метаданных",
+					"multiline_mode": false,
+					"tooltip": "Хранилище ключа по которому определяется объект метаданных без использования полного имени",
+					"type": {
+						"types": [
+							"Хранилище значения"
+						]
+					}
+				},
+				"НоваяСсылка": {
+					"synonym": "Новая ссылка",
+					"multiline_mode": false,
+					"tooltip": "Используется при обработке дублей идентификаторов подчиненного узла распределенной информационной базы.",
+					"choice_groups_elm": "elm",
+					"type": {
+						"types": [
+							"cat.ИдентификаторыОбъектовМетаданных"
+						],
+						"is_ref": true
+					}
+				},
+				"parent": {
+					"synonym": "Группа объектов",
+					"multiline_mode": false,
+					"tooltip": "Группа объектов метаданных.",
+					"type": {
+						"types": [
+							"cat.ИдентификаторыОбъектовМетаданных"
+						],
+						"is_ref": true
+					}
+				}
+			},
+			"tabular_sections": {},
+			"cachable": true,
+          "irest": true
+		}
+	},
+	"doc": {},
+	"ireg": {
+		"ИнтеграцияДатыИзменения": {
+			"name": "ИнтеграцияДатыИзменения",
+			"note": "",
+			"synonym": "Интеграция (Даты изменения справочников)",
+			"dimensions": {
+				"Объект": {
+					"synonym": "Объект",
+					"multiline_mode": false,
+					"tooltip": "Ссылка на объект, дата изменений которого регистрируется",
+					"type": {
+						"types": [
+                          "string"
+						],
+						"is_ref": true
+					}
+				}
+			},
+			"resources": {
+				"ВремяИзменения": {
+					"synonym": "Время изменения",
+					"multiline_mode": false,
+					"tooltip": "Время последнего изменения объекта или связанных с объектом данных (универсальная дата в миллисекундах)",
+					"type": {
+						"types": [
+							"number"
+						],
+						"digits": 15,
+						"fraction_figits": 0
+					}
+				}
+			}
+		},
+		"ИнтеграцияДатыУдаления": {
+			"name": "ИнтеграцияДатыУдаления",
+			"note": "",
+			"synonym": "Интеграция (Даты удаления)",
+			"dimensions": {
+				"ИдентификаторСсылки": {
+					"synonym": "Идентификатор ссылки",
+					"multiline_mode": false,
+					"tooltip": "Ссылка на объект, дата удаления которого регистрируется",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 36,
+						"str_fix": true
+					}
+				},
+				"ИдентификаторТипа": {
+					"synonym": "Идентификатор типа",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"cat.ИдентификаторыОбъектовМетаданных"
+						],
+						"is_ref": true
+					}
+				}
+			},
+			"resources": {
+				"ВремяИзменения": {
+					"synonym": "Время изменения",
+					"multiline_mode": false,
+					"tooltip": "Время удаления объекта (универсальная дата в миллисекундах)",
+					"type": {
+						"types": [
+							"number"
+						],
+						"digits": 15,
+						"fraction_figits": 0
+					}
+				}
+			}
+		},
+		"ИнтеграцияКешСсылок": {
+			"name": "ИнтеграцияКешСсылок",
+			"note": "",
+			"synonym": "Интеграция (Кеш ссылок)",
+			"dimensions": {
+				"identifier": {
+					"synonym": "Идентификатор (внешн)",
+					"multiline_mode": false,
+					"tooltip": "GUID ссылки во внешней базе",
+					"choice_groups_elm": "elm",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 36,
+						"str_fix": true
+					}
+				}
+			},
+			"resources": {
+				"conformity": {
+					"synonym": "Соответствие",
+					"multiline_mode": false,
+					"tooltip": "Элемент в нашей базе, сопоставленный внешнему идентификатору",
+					"choice_groups_elm": "elm",
+					"type": {
+						"types": [
+                          "string"
+						],
+						"is_ref": true
+					}
+				},
+				"identifier_presentation": {
+					"synonym": "Представление идентификатора",
+					"multiline_mode": false,
+					"tooltip": "Представление ссылки во внешней базе",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 255
+					}
+				}
+			}
+		},
+		"ИнтеграцияЛимиты": {
+			"name": "ИнтеграцияЛимиты",
+			"note": "",
+			"synonym": "Интеграция (Лимиты)",
+			"dimensions": {
+				"ОбластьДанных": {
+					"synonym": "Область данных",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"number"
+						],
+						"digits": 7,
+						"fraction_figits": 0
+					}
+				}
+			},
+			"resources": {
+				"ЛимитСессий": {
+					"synonym": "Лимит сессий",
+					"multiline_mode": false,
+					"tooltip": "Количество одновременных сессий для зоны",
+					"type": {
+						"types": [
+							"number"
+						],
+						"digits": 6,
+						"fraction_figits": 0
+					}
+				},
+				"ЛимитЗапросов": {
+					"synonym": "Лимит запросов",
+					"multiline_mode": false,
+					"tooltip": "Максимальное число запросов в минуту, разрешенных суммарно всем пользователям зоны",
+					"type": {
+						"types": [
+							"number"
+						],
+						"digits": 6,
+						"fraction_figits": 0
+					}
+				},
+				"ЛимитЗапросовНаПользователя": {
+					"synonym": "Лимит запросов на пользователя",
+					"multiline_mode": false,
+					"tooltip": "Максимальное число запросов в минуту, разрешенных одному пользователю зоны",
+					"type": {
+						"types": [
+							"number"
+						],
+						"digits": 6,
+						"fraction_figits": 0
+					}
+				},
+				"ДоступЗапрещен": {
+					"synonym": "Доступ запрещен",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"boolean"
+						]
+					}
+				},
+				"ПричинаБлокировки": {
+					"synonym": "Причина блокировки",
+					"multiline_mode": true,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 255
+					}
+				}
+			}
+		},
+		"ИнтеграцияМетаданные": {
+			"name": "ИнтеграцияМетаданные",
+			"note": "",
+			"synonym": "Интеграция (Метаданные обмена)",
+			"dimensions": {
+				"Объект": {
+					"synonym": "Объект",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"string",
+							"cat.ИдентификаторыОбъектовМетаданных"
+						],
+						"str_len": 250,
+						"is_ref": true
+					}
+				}
+			},
+			"resources": {
+				"Кешировать": {
+					"synonym": "Кешировать",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"boolean"
+						]
+					}
+				},
+				"hide": {
+					"synonym": "Скрыть",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"boolean"
+						]
+					}
+				},
+				"ДиапазонДат": {
+					"synonym": "Диапазон дат",
+					"multiline_mode": false,
+					"tooltip": "Условная дата для группировки редко изменяющихся справочников",
+					"type": {
+						"types": [
+							"number"
+						],
+						"digits": 15,
+						"fraction_figits": 0
+					}
+				},
+				"РазрешенIREST": {
+					"synonym": "Разрешен IREST",
+					"multiline_mode": false,
+					"tooltip": "К объекту разрешен доступ через http-сервис библиотеки интеграции",
+					"type": {
+						"types": [
+							"boolean"
+						]
+					}
+				},
+				"ТипРегистрации": {
+					"synonym": "Тип регистрации",
+					"multiline_mode": false,
+					"tooltip": "",
+					"choice_groups_elm": "elm",
+					"type": {
+						"types": [
+							"enm.ИнтеграцияТипРегистрации"
+						],
+						"is_ref": true
+					}
+				}
+			},
+          "irest": true
+		},
+		"ИнтеграцияСессии": {
+			"name": "ИнтеграцияСессии",
+			"note": "",
+			"synonym": "Интеграция (Сессии)",
+			"dimensions": {
+				"ИдентификаторБраузера": {
+					"synonym": "Идентификатор браузера",
+					"multiline_mode": false,
+					"tooltip": "Уникальный идентификатор браузера",
+					"choice_groups_elm": "elm",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 36,
+						"str_fix": true
+					}
+				}
+			},
+			"resources": {
+				"Одобрено": {
+					"synonym": "Одобрено",
+					"multiline_mode": false,
+					"tooltip": "Используется в сценарии, когда кроме авторизации, доступ ограничен идентификаторами браузеров",
+					"type": {
+						"types": [
+							"boolean"
+						]
+					}
+				},
+				"ТекущихЗапросов": {
+					"synonym": "Текущих запросов",
+					"multiline_mode": false,
+					"tooltip": "Количество запросов за последнюю минуту, произведенных текущим браузером",
+					"type": {
+						"types": [
+							"number"
+						],
+						"digits": 10,
+						"fraction_figits": 0
+					}
+				},
+				"Запросов": {
+					"synonym": "Запросов",
+					"multiline_mode": false,
+					"tooltip": "Количество запросов с начала времён, произведенных текущим браузером",
+					"type": {
+						"types": [
+							"number"
+						],
+						"digits": 10,
+						"fraction_figits": 0
+					}
+				},
+				"ПоследняяАктианость": {
+					"synonym": "Последняя актианость",
+					"multiline_mode": false,
+					"tooltip": "Время последнего обращения к сервису",
+					"type": {
+						"types": [
+							"date"
+						],
+						"date_part": "date_time"
+					}
+				},
+				"ГеоIP": {
+					"synonym": "Гео IP",
+					"multiline_mode": true,
+					"tooltip": "Адрес IP и геоданные",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 255
+					}
+				}
+			}
+		},
+		"ИнтеграцияСинонимы": {
+			"name": "ИнтеграцияСинонимы",
+			"note": "",
+			"synonym": "Интеграция (Синонимы)",
+			"dimensions": {
+				"ИмяВ1С": {
+					"synonym": "Имя в 1С",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 100
+					}
+				}
+			},
+			"resources": {
+				"ИмяВJS": {
+					"synonym": "Имя в JS",
+					"multiline_mode": false,
+					"tooltip": "",
+					"type": {
+						"types": [
+							"string"
+						],
+						"str_len": 100
+					}
+				}
+			}
+		}
+	},
+	"areg": {},
+	"dp": {},
+	"rep": {},
+	"cch": {},
+	"cacc": {},
+	"syns_1с": [
+		"Булево",
+		"ВводПоСтроке",
+		"Владелец",
+		"ВыборГруппИЭлементов",
+		"Дата",
+		"ДлинаКода",
+		"ДополнительныеРеквизиты",
+		"ДополнительныеРеквизитыИСведения",
+		"ДополнительныеСведения",
+		"Значение",
+		"Значения",
+		"ЗначенияПолей",
+		"ЗначенияПолейАдреса",
+		"ЗначенияСвойствОбъектов",
+		"ЗначенияСвойствОбъектовИерархия",
+		"Идентификатор",
+		"Иерархический",
+		"ИерархияГруппИЭлементов",
+		"ИмяПредопределенныхДанных",
+		"ИнтеграцияСостоянияТранспорта",
+		"Календари",
+		"КалендариGoogle",
+		"Календарь",
+		"Код",
+		"МногострочныйРежим",
+		"Наименование",
+		"Номер",
+		"НомерСтроки",
+		"ОсновноеПредставлениеИмя",
+		"Отбор",
+		"Параметр",
+		"Параметры",
+		"ПараметрыВыбора",
+		"ПараметрыОтбора",
+		"Подсказка",
+		"Подчиненый",
+		"ПометкаУдаления",
+		"Порядок",
+		"Пояснение",
+		"Предопределенный",
+		"Представление",
+		"ПредставлениеИдентификатора",
+		"ПредставлениеОбъекта",
+		"ПредставлениеСписка",
+		"Префикс",
+		"Принудительно",
+		"Приоритет",
+		"Проведен",
+		"Реквизит",
+		"Реквизиты",
+		"Родитель",
+		"Свойство",
+		"СвязиПараметровВыбора",
+		"СвязьПоТипу",
+		"Синоним",
+		"Скрыть",
+		"Служебный",
+		"Соответствие",
+		"СостояниеТранспорта",
+		"Ссылка",
+		"Строка",
+		"ТабличнаяЧасть",
+		"ТабличныеЧасти",
+		"Тип",
+		"ТипСчета",
+		"Число",
+		"ЭтоГруппа"
+	],
+	"syns_js": [
+		"boolean",
+		"input_by_string",
+		"owner",
+		"choice_groups_elm",
+		"date",
+		"code_length",
+		"extra_fields",
+		"properties",
+		"extra_properties",
+		"value",
+		"values",
+		"values_fields",
+		"address_fields",
+		"property_values",
+		"property_values_hierarchy",
+		"identifier",
+		"hierarchical",
+		"group_hierarchy",
+		"predefined_name",
+		"obj_delivery_states",
+		"calendars",
+		"calendars_google",
+		"calendar",
+		"id",
+		"multiline_mode",
+		"name",
+		"number_doc",
+		"row",
+		"main_presentation_name",
+		"selection",
+		"param",
+		"params",
+		"choice_params",
+		"selection_params",
+		"tooltip",
+		"has_owners",
+		"deleted",
+		"sequence",
+		"illustration",
+		"predefined",
+		"presentation",
+		"identifier_presentation",
+		"obj_presentation",
+		"list_presentation",
+		"prefix",
+		"forcibly",
+		"priority",
+		"posted",
+		"field",
+		"fields",
+		"parent",
+		"property",
+		"choice_links",
+		"choice_type",
+		"synonym",
+		"hide",
+		"ancillary",
+		"conformity",
+		"obj_delivery_state",
+		"ref",
+		"string",
+		"tabular_section",
+		"tabular_sections",
+		"type",
+		"account_type",
+		"number",
+		"is_folder"
+	]
+}

@@ -1,4 +1,3 @@
-<!---->
 /**
  * Процедура устанавливает параметры работы программы, специфичные для текущей сборки
  * @param prm {Object} - в свойствах этого объекта определяем параметры работы программы
@@ -143,7 +142,7 @@ $p.iface.oninit = function() {
 	tree.setImagePath(dhtmlx.image_path + 'dhxtree_web/');
 	tree.setIconsPath(dhtmlx.image_path + 'dhxtree_web/');
 	tree.attachEvent("onSelect", tree_select);
-	tree.parse(require('tree'), "json");
+	tree.parse($p.injected_data['tree.json'], 'json');
 	setTimeout(function () {
 		var route_prm = $p.job_prm.parse_url();
 		if(route_prm.obj && route_prm.obj.indexOf("0")==0)
@@ -157,14 +156,10 @@ $p.iface.oninit = function() {
 function tree_select(id){
 
 	// обновляем текст описания
-	$p.iface.content.innerHTML = marked(require('md'+id));
+	$p.iface.content.innerHTML = marked($p.injected_data[id+'.md']);
 
 	// обновляем текст js
-	var js = require('js'+id);
-	if(js)
-		$p.iface.editor.setValue(js.substr(9));
-	else
-		$p.iface.editor.setValue("");
+	$p.iface.editor.setValue($p.injected_data[id+'.code'] || "");
 	$p.iface.editor.clearHistory();
 
 	// при необходимости, обновляем url страницы результата

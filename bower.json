@@ -32,10 +32,10 @@
     "node"
   ],
   "dependencies": {
-    "alasql": "~0.2.0"
+    "alasql": "^0.2.1"
   },
   "devDependencies": {
-    "lmd": "~1.13.1"
+    "gulp": "^3.9.0"
   },
   "ignore": [
     "src",

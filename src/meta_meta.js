@@ -2,7 +2,6 @@
  * Метаданные на стороне js: конструкторы, заполнение, кеширование, поиск
  *
  * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -466,39 +465,27 @@ var _cat = $p.cat = new (
  * @param patch {XMLHttpRequest} - с дополнительными метаданными
  *
  * @example
- *    new $p.Meta(require('meta'));
+ *    new $p.Meta('meta');
  */
 function Meta(req, patch) {
 
-	var m = (req instanceof XMLHttpRequest) ? JSON.parse(req.response) : req,
+	var m = (req && req.response) ? JSON.parse(req.response) : req,
 		class_name;
 
 	// Экспортируем ссылку на себя
 	_md = $p.md = this;
 
-	function apply_patch(patch){
-		for(var area in patch){
-			for(var c in patch[area]){
-				if(!m[area][c])
-					m[area][c] = {};
-				for(var f in patch[area][c]){
-					if(!m[area][c][f])
-						m[area][c][f] = patch[area][c][f];
-					else if(typeof m[area][c][f] == "object")
-						m[area][c][f]._mixin(patch[area][c][f]);
-				}
-			}
-		}
-	}
 	if(patch)
-		apply_patch((patch instanceof XMLHttpRequest) ? JSON.parse(patch.response) : patch);
+		Meta._patch(m, patch.response ? JSON.parse(patch.response) : patch);
 
 	req = null;
-	patch = require('log');
-	if(typeof patch == "string")
-		patch = JSON.parse(patch);
-	apply_patch(patch);
-	patch = null;
+	if(typeof window != "undefined"){
+		patch = $p.injected_data['log.json'];
+		if(typeof patch == "string")
+			patch = JSON.parse(patch);
+		Meta._patch(m, patch);
+		patch = null;
+	}
 
 	/**
 	 * Возвращает описание объекта метаданных
@@ -507,7 +494,7 @@ function Meta(req, patch) {
 	 * @param [field_name] {String}
 	 * @return {Object}
 	 */
-	this.get = function(class_name, field_name){
+	_md.get = function(class_name, field_name){
 		var np = class_name.split("."),
 			res = {multiline_mode: false, note: "", synonym: "", tooltip: "", type: {is_ref: false,	types: ["string"]}};
 		if(!field_name)
@@ -553,8 +540,9 @@ function Meta(req, patch) {
 
 	/**
 	 * Возвращает структуру метаданных конфигурации
+	 * @method get_classes
 	 */
-	this.get_classes = function () {
+	_md.get_classes = function () {
 		var res = {};
 		for(var i in m){
 			res[i] = [];
@@ -570,10 +558,10 @@ function Meta(req, patch) {
 	 * @return {Promise.<T>}
 	 * @async
 	 */
-	this.create_tables = function(callback){
+	_md.create_tables = function(callback, attr){
 
-		var cstep = 0, data_names = [], managers = this.get_classes(), class_name,
-			create = "USE md;\nCREATE TABLE IF NOT EXISTS refs (ref CHAR);\n";
+		var cstep = 0, data_names = [], managers = _md.get_classes(), class_name,
+			create = "USE md;\nCREATE TABLE refs (ref CHAR);\n";
 
 		function on_table_created(data){
 
@@ -581,20 +569,23 @@ function Meta(req, patch) {
 				cstep--;
 				if(cstep==0){
 					if(callback)
-						setTimeout(callback, 10);
-					alasql.utils.saveFile("create_tables.sql", create);
+						setTimeout(function () {
+							callback(create);
+						}, 10);
+					else
+						alasql.utils.saveFile("create_tables.sql", create);
 				} else
 					iteration();
-			}else if(data.hasOwnProperty("message")){
-				$p.iface.docs.progressOff();
-				$p.msg.show_msg({
-					title: $p.msg.error_critical,
-					type: "alert-error",
-					text: data.message
-				});
+			}else if(data && data.hasOwnProperty("message")){
+				if($p.iface && $p.iface.docs){
+					$p.iface.docs.progressOff();
+					$p.msg.show_msg({
+						title: $p.msg.error_critical,
+						type: "alert-error",
+						text: data.message
+					});
+				}
 			}
-
-
 		}
 
 		// TODO переписать на промисах и генераторах и перекинуть в синкер
@@ -629,56 +620,117 @@ function Meta(req, patch) {
 		}
 
 		function iteration(){
-			var data = data_names[cstep-1],
-				sql = data["class"][data.name].get_sql_struct();
-
-			create += sql + ";\n";
+			var data = data_names[cstep-1];
+			create += data["class"][data.name].get_sql_struct(attr) + ";\n";
 			on_table_created(1);
-			//$p.wsql.exec(sql, [], on_table_created);
 		}
 
-		$p.wsql.exec(create);
 		iteration();
 
 	};
 
-	this.sql_type = function (mgr, f, mf) {
+	/**
+	 * Возвращает тип поля sql для типа данных
+	 * @method sql_type
+	 * @param mgr {DataManager}
+	 * @param f {String}
+	 * @param mf {Object} - описание метаданных поля
+	 * @param pg {Boolean} - использовать синтаксис postgreSQL
+	 * @return {*}
+	 */
+	_md.sql_type = function (mgr, f, mf, pg) {
 		var sql;
 		if((f == "type" && mgr.table_name == "cch_properties") || (f == "svg" && mgr.table_name == "cat_production_params"))
 			sql = " JSON";
 
-		else if(mf.is_ref || mf.hasOwnProperty("str_len"))
-			sql = " CHAR";
+		else if(mf.is_ref){
+			if(!pg)
+				sql = " CHAR";
+
+			else if(mf.types.every(function(v){return v.indexOf("enm.") == 0}))
+				sql = " character varying(100)";
+
+			else if (!mf.hasOwnProperty("str_len"))
+				sql = " uuid";
+
+			else
+				sql = " character varying(" + Math.max(36, mf.str_len) + ")";
+
+		}else if(mf.hasOwnProperty("str_len"))
+			sql = pg ? (mf.str_len ? " character varying(" + mf.str_len + ")" : " text") : " CHAR";
 
 		else if(mf.date_part)
-			sql = " Date";
+			if(!pg || mf.date_part == "date")
+				sql = " Date";
+
+			else if(mf.date_part == "date_time")
+				sql = " timestamp with time zone";
+
+			else
+				sql = " time without time zone";
 
 		else if(mf.hasOwnProperty("digits")){
 			if(mf.fraction_figits==0)
-				sql = " INT";
+				sql = pg ? (mf.digits < 7 ? " integer" : " bigint") : " INT";
 			else
-				sql = " FLOAT";
+				sql = pg ? (" numeric(" + mf.digits + "," + mf.fraction_figits + ")") : " FLOAT";
 
 		}else if(mf.types.indexOf("boolean") != -1)
 			sql = " BOOLEAN";
 
 		else
-			sql = " CHAR";
+			sql = pg ? " character varying(255)" : " CHAR";
+
 		return sql;
 	};
 
-	this.sql_mask = function(f, t){
+	/**
+	 * Для полей составного типа, добавляет в sql поле описания типа
+	 * @param mf
+	 * @param f
+	 * @param pg
+	 * @return {string}
+	 */
+	_md.sql_composite = function (mf, f, f0, pg){
+		var res = "";
+		if(mf[f].type.types.length > 1 && f != "type"){
+			if(!f0)
+				f0 = f + "_T";
+			else{
+				f0 = f0 + "_T";
+			}
+			if(pg && f0.length > 30){
+				f0 = f0.substr(0, 10) + f0.substr(12, 18) + "_T";
+			}
+
+			if(pg)
+				res = ", " + f0 + " character varying(255)";
+			else
+				res = _md.sql_mask(f0) + " CHAR";
+		}
+		return res;
+	}
+
+	/**
+	 * Заключает имя поля в аппострофы
+	 * @method sql_mask
+	 * @param f
+	 * @param t
+	 * @return {string}
+	 */
+	_md.sql_mask = function(f, t){
 		//var mask_names = ["delete", "set", "value", "json", "primary", "content"];
 		return ", " + (t ? "_t_." : "") + ("`" + f + "`");
 	};
 
 	/**
 	 * Возвращает менеджер объекта по имени класса
+	 * @method mgr_by_class_name
 	 * @param class_name {String}
 	 * @return {DataManager|undefined}
 	 * @private
 	 */
-	this.mgr_by_class_name = function(class_name){
+	_md.mgr_by_class_name = function(class_name){
 		if(class_name){
 			var np = class_name.split(".");
 			if(np[1] && $p[np[0]])
@@ -688,6 +740,7 @@ function Meta(req, patch) {
 
 	/**
 	 * Возвращает менеджер значения по свойству строки
+	 * @method value_mgr
 	 * @param row {Object|TabularSectionRow} - строка табчасти или объект
 	 * @param f {String} - имя поля
 	 * @param mf {Object} - метаданные поля
@@ -695,7 +748,7 @@ function Meta(req, patch) {
 	 * @param v {*} - устанавливаемое значение
 	 * @return {DataManager|Array}
 	 */
-	this.value_mgr = function(row, f, mf, array_enabled, v){
+	_md.value_mgr = function(row, f, mf, array_enabled, v){
 		var property, oproperty, tnames, rt, mgr;
 		if(mf._mgr)
 			return mf._mgr;
@@ -763,7 +816,13 @@ function Meta(req, patch) {
 		}
 	};
 
-	this.control_by_type = function (type) {
+	/**
+	 * Возвращает имя типа элемента управления для типа поля
+	 * @method control_by_type
+	 * @param type
+	 * @return {*}
+	 */
+	_md.control_by_type = function (type) {
 		var ft;
 		if(type.is_ref){
 			if(type.types.join().indexOf("enm.")==-1)
@@ -787,12 +846,20 @@ function Meta(req, patch) {
 		return ft;
 	};
 
-	this.ts_captions = function (class_name, ts_name, source) {
+	/**
+	 * Возвращает структуру для инициализации таблицы на форме
+	 * @method ts_captions
+	 * @param class_name
+	 * @param ts_name
+	 * @param source
+	 * @return {boolean}
+	 */
+	_md.ts_captions = function (class_name, ts_name, source) {
 		if(!source)
 			source = {};
 
-		var mts = this.get(class_name).tabular_sections[ts_name],
-			mfrm = this.get(class_name).form,
+		var mts = _md.get(class_name).tabular_sections[ts_name],
+			mfrm = _md.get(class_name).form,
 			fields = mts.fields, mf;
 
 		// если имеются метаданные формы, используем их
@@ -821,7 +888,7 @@ function Meta(req, patch) {
 				if(!mf.hide){
 					source.fields.push(f);
 					source.headers += "," + (mf.synonym ? mf.synonym.replace(/,/g, " ") : f);
-					source.types += "," + this.control_by_type(mf.type);
+					source.types += "," + _md.control_by_type(mf.type);
 					source.sortings += ",na";
 				}
 			}
@@ -831,7 +898,7 @@ function Meta(req, patch) {
 
 	};
 
-	this.syns_js = function (v) {
+	_md.syns_js = function (v) {
 		var synJS = {
 			DeletionMark: 'deleted',
 			Description: 'name',
@@ -854,7 +921,7 @@ function Meta(req, patch) {
 		return m.syns_js[m.syns_1с.indexOf(v)] || v;
 	};
 
-	this.syns_1с = function (v) {
+	_md.syns_1с = function (v) {
 		var syn1c = {
 			deleted: 'DeletionMark',
 			name: 'Description',
@@ -874,10 +941,39 @@ function Meta(req, patch) {
 		return m.syns_1с[m.syns_js.indexOf(v)] || v;
 	};
 
-	this.printing_plates = function (pp) {
+	_md.printing_plates = function (pp) {
 		if(pp)
 			for(var i in pp.doc)
 				m.doc[i].printing_plates = pp.doc[i];
+
+	};
+
+	/**
+	 * Возвращает имя класса по полному имени объекта метаданных 1С
+	 * @method class_name_from_1c
+	 * @param name
+	 */
+	_md.class_name_from_1c = function (name) {
+
+		var pn = name.split(".");
+		if(pn.length == 1)
+			return "enm." + name;
+		else if(pn[0] == "Перечисление")
+			name = "enm.";
+		else if(pn[0] == "Справочник")
+			name = "cat.";
+		else if(pn[0] == "Документ")
+			name = "doc.";
+		else if(pn[0] == "РегистрСведений")
+			name = "ireg.";
+		else if(pn[0] == "РегистрНакопления")
+			name = "areg.";
+		else if(pn[0] == "ПланВидовХарактеристик")
+			name = "cch.";
+		else if(pn[0] == "ПланСчетов")
+			name = "cacc.";
+
+		return name + pn[1];
 
 	};
 
@@ -919,6 +1015,21 @@ function Meta(req, patch) {
 	};
 }
 $p.Meta = Meta;
+
+Meta._patch = function(obj, patch){
+	for(var area in patch){
+		for(var c in patch[area]){
+			if(!obj[area][c])
+				obj[area][c] = {};
+			for(var f in patch[area][c]){
+				if(!obj[area][c][f])
+					obj[area][c][f] = patch[area][c][f];
+				else if(typeof obj[area][c][f] == "object")
+					obj[area][c][f]._mixin(patch[area][c][f]);
+			}
+		}
+	}
+}
 
 /**
  * Запись журнала регистрации

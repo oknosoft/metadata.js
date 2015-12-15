@@ -7,17 +7,27 @@
     "example": "examples"
   },
   "dependencies": {
-    "alasql": "~0.2.0",
-    "pg": "~4.4.0",
-    "ws": "~0.8.0",
-    "node-localstorage": "~0.6.0"
+    "alasql": "^0.2.1",
+    "pg": "^4.4.0",
+    "ws": "^0.8.0",
+    "node-localstorage": "^0.6.0",
+    "node-static": "^0.7.7",
+    "request": "^2.67.0"
   },
   "devDependencies": {
-    "lmd": "~1.13.1"
+    "gulp": "^3.9.0",
+    "gulp-bundle-assets": "^2.23.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-data": "^1.2.0",
+    "gulp-dereserve": "^0.2.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-shell": "^0.5.0",
+    "gulp-uglify": "^1.4.1",
+    "mocha": "^2.3.0"
   },
-  "engines": [
-    "node"
-  ],
+  "engines": {
+    "node": ">=4.2.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/oknosoft/metadata.js.git"

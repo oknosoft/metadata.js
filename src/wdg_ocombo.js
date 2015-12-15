@@ -182,8 +182,7 @@ function OCombo(attr){
 		popup_focused = true;
 		var div = document.createElement('div'),
 			innerHTML = "<a href='#' name='select' title='Форма выбора {F4}'>Показать все</a>" +
-				"<img src='"+dhtmlx.image_path+"dhxtoolbar"+dhtmlx.skin_suffix()+"blank9.png' />" +
-				"&nbsp;<a href='#' name='open' title='Открыть форму элемента {Ctrl+Shift+F4}'><img src='"+dhtmlx.image_path+"dhxtoolbar"+dhtmlx.skin_suffix()+"tb_open.png' /></a>";
+				"<a href='#' name='open' style='margin-left: 9px;' title='Открыть форму элемента {Ctrl+Shift+F4}'><img src='"+dhtmlx.image_path+"dhxtoolbar"+dhtmlx.skin_suffix()+"tb_open.png' /></a>";
 
 		// для полных прав разрешаем добавление элементов
 		// TODO: учесть реальные права на добавление
