@@ -6335,7 +6335,7 @@ function Meta(req, patch) {
 		if((f == "type" && mgr.table_name == "cch_properties") || (f == "svg" && mgr.table_name == "cat_production_params"))
 			sql = " JSON";
 
-		else if(mf.is_ref){
+		else if(mf.is_ref || mf.types.indexOf("guid") != -1){
 			if(!pg)
 				sql = " CHAR";
 
@@ -6370,6 +6370,9 @@ function Meta(req, patch) {
 		}else if(mf.types.indexOf("boolean") != -1)
 			sql = " BOOLEAN";
 
+		else if(mf.types.indexOf("json") != -1)
+			sql = " JSON";
+
 		else
 			sql = pg ? " character varying(255)" : " CHAR";
 
@@ -6387,16 +6390,13 @@ function Meta(req, patch) {
 		var res = "";
 		if(mf[f].type.types.length > 1 && f != "type"){
 			if(!f0)
-				f0 = f + "_T";
+				f0 = f.substr(0, 29) + "_T";
 			else{
-				f0 = f0 + "_T";
-			}
-			if(pg && f0.length > 30){
-				f0 = f0.substr(0, 10) + f0.substr(12, 18) + "_T";
+				f0 = f0.substr(0, 29) + "_T";
 			}
 
 			if(pg)
-				res = ", " + f0 + " character varying(255)";
+				res = ', "' + f0 + '" character varying(255)';
 			else
 				res = _md.sql_mask(f0) + " CHAR";
 		}
@@ -7885,8 +7885,12 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 
 			for(f in cmd.fields){
 				if(f.length > 30){
-					trunc_index++;
-					f0 = f[0] + trunc_index + f.substr(f.length-27);
+					if(cmd.fields[f].short_name)
+						f0 = cmd.fields[f].short_name;
+					else{
+						trunc_index++;
+						f0 = f[0] + trunc_index + f.substr(f.length-27);
+					}
 				}else
 					f0 = f;
 				sql += ", " + f0 + _md.sql_type(t, f, cmd.fields[f].type, true) + _md.sql_composite(cmd.fields, f, f0, true);
@@ -8392,6 +8396,11 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 		if(attr && attr.postgres){
 			sql += t.table_name+" ("
 
+			if(cmd.splitted){
+				sql += "zone integer";
+				first_field = false;
+			}
+
 			for(f in cmd["dimensions"]){
 				if(first_field){
 					sql += f;
@@ -8406,6 +8415,10 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 
 			sql += ", PRIMARY KEY (";
 			first_field = true;
+			if(cmd.splitted){
+				sql += "zone";
+				first_field = false;
+			}
 			for(f in cmd["dimensions"]){
 				if(first_field){
 					sql += f;

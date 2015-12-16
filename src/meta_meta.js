@@ -643,7 +643,7 @@ function Meta(req, patch) {
 		if((f == "type" && mgr.table_name == "cch_properties") || (f == "svg" && mgr.table_name == "cat_production_params"))
 			sql = " JSON";
 
-		else if(mf.is_ref){
+		else if(mf.is_ref || mf.types.indexOf("guid") != -1){
 			if(!pg)
 				sql = " CHAR";
 
@@ -678,6 +678,9 @@ function Meta(req, patch) {
 		}else if(mf.types.indexOf("boolean") != -1)
 			sql = " BOOLEAN";
 
+		else if(mf.types.indexOf("json") != -1)
+			sql = " JSON";
+
 		else
 			sql = pg ? " character varying(255)" : " CHAR";
 
@@ -695,16 +698,13 @@ function Meta(req, patch) {
 		var res = "";
 		if(mf[f].type.types.length > 1 && f != "type"){
 			if(!f0)
-				f0 = f + "_T";
+				f0 = f.substr(0, 29) + "_T";
 			else{
-				f0 = f0 + "_T";
-			}
-			if(pg && f0.length > 30){
-				f0 = f0.substr(0, 10) + f0.substr(12, 18) + "_T";
+				f0 = f0.substr(0, 29) + "_T";
 			}
 
 			if(pg)
-				res = ", " + f0 + " character varying(255)";
+				res = ', "' + f0 + '" character varying(255)';
 			else
 				res = _md.sql_mask(f0) + " CHAR";
 		}
