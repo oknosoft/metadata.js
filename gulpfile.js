@@ -86,7 +86,8 @@ gulp.task('core', function(){
 		'./src/meta_tabulars.js',
 		'./src/meta_objs.js',
 		'./src/meta_rest.js',
-		'./src/events.js'
+		'./src/events.js',
+		'./src/server.js'
 	])
 		.pipe(concat('metadata.core.js'))
 		.pipe(umd({

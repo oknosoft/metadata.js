@@ -561,7 +561,7 @@ function Meta(req, patch) {
 	_md.create_tables = function(callback, attr){
 
 		var cstep = 0, data_names = [], managers = _md.get_classes(), class_name,
-			create = "USE md;\nCREATE TABLE refs (ref CHAR);\n";
+			create = (attr && attr.postgres) ? "" : "USE md;\n";
 
 		function on_table_created(data){
 
@@ -968,10 +968,51 @@ function Meta(req, patch) {
 			name = "ireg.";
 		else if(pn[0] == "РегистрНакопления")
 			name = "areg.";
+		else if(pn[0] == "РегистрБухгалтерии")
+			name = "aссreg.";
 		else if(pn[0] == "ПланВидовХарактеристик")
 			name = "cch.";
 		else if(pn[0] == "ПланСчетов")
 			name = "cacc.";
+		else if(pn[0] == "Обработка")
+			name = "dp.";
+		else if(pn[0] == "Отчет")
+			name = "rep.";
+
+		return name + pn[1];
+
+	};
+
+	/**
+	 * Возвращает полное именя объекта метаданных 1С по имени класса metadata
+	 * @method class_name_to_1c
+	 * @param name
+	 */
+	_md.class_name_to_1c = function (name) {
+
+		var pn = name.split(".");
+		if(pn.length == 1)
+			return "Перечисление." + name;
+		else if(pn[0] == "enm")
+			name = "Перечисление.";
+		else if(pn[0] == "cat")
+			name = "Справочник.";
+		else if(pn[0] == "doc")
+			name = "Документ.";
+		else if(pn[0] == "ireg")
+			name = "РегистрСведений.";
+		else if(pn[0] == "areg")
+			name = "РегистрНакопления.";
+		else if(pn[0] == "aссreg")
+			name = "РегистрБухгалтерии.";
+		else if(pn[0] == "cch")
+			name = "ПланВидовХарактеристик.";
+		else if(pn[0] == "cacc")
+			name = "ПланСчетов.";
+		else if(pn[0] == "dp")
+			name = "Обработка.";
+		else if(pn[0] == "rep")
+			name = "Отчет.";
 
 		return name + pn[1];
 

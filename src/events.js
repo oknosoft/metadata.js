@@ -782,31 +782,6 @@ $p.eve.steps = {
 };
 
 
-$p.eve.init_node = function (alasql) {
-
-	$p.job_prm = new $p.JobPrm();
-
-	var data_url = $p.job_prm.data_url || "/data/";
-
-	return $p.from_file(data_url + 'create_tables.sql')
-		.then(function (sql) {
-			return $p.wsql.init_params(alasql, sql);
-		})
-		.then(function() {
-			return $p.from_file(data_url + 'meta.json');
-		})
-		.then(function(meta) {
-			return $p.from_file(data_url + 'meta_patch.json')
-				.then(function (patch) {
-					return [JSON.parse(meta), JSON.parse(patch)]
-				})
-		})
-		.then(function(meta) {
-			return new $p.Meta(meta[0], meta[1]);
-		});
-
-};
-
 /**
  * Регламентные задания синхронизапции каждые 3 минуты
  * @event ontimer

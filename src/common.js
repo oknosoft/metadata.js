@@ -58,24 +58,6 @@ if(typeof window !== "undefined"){
 		document.head.appendChild(s);
 	};
 
-}else{
-
-	/**
-	 * Читает данные из файла (только в Node.js)
-	 * @param filename
-	 * @return {Promise}
-	 */
-	$p.from_file = function(filename){
-		return new Promise(function(resolve, reject){
-			require('fs').readFile(filename, { encoding:'utf8' }, function(err, dataFromFile){
-				if(err){
-					reject(err);
-				} else {
-					resolve(dataFromFile.toString().trim());
-				}
-			});
-		});
-	}
 }
 
 
@@ -703,6 +685,11 @@ $p.ajax = new (
 			if(!attr.password)
 				attr.password = this.password;
 			attr.hide_headers = true;
+
+			if($p.job_prm["1c"]){
+				attr.auth = $p.job_prm["1c"].auth;
+				attr.request = $p.job_prm["1c"].request;
+			}
 		}
 
 	}
@@ -1894,6 +1881,7 @@ function WSQL(){
 	wsql.restore_database = function(){
 
 	};
+
 
 	/**
 	 * Подключается к indexedDB
