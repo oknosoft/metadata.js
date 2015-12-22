@@ -38,6 +38,6 @@ new $p.iface.OTooolBar({wrapper: ОбластьКонтента.Контейне
 			}
 		},
 		{name: 'stamp', img: 'stamp.png', title: 'Загрузить из типового блока', float: 'left'},
-		{name: 'back', img: 'tb_undo_dis.png', title: 'Шаг назад', float: 'left'},
-		{name: 'rewind', img: 'tb_redo_dis.png', title: 'Шаг вперед', float: 'left'}
+		{name: 'back', text: '<i class="fa fa-undo fa-fw"></i>', title: 'Шаг назад', float: 'left'},
+		{name: 'rewind', text: '<i class="fa fa-repeat fa-fw"></i>', title: 'Шаг вперед', float: 'left'}
 	]});
