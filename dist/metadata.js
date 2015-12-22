@@ -1819,16 +1819,26 @@ function WSQL(){
 				wsql.alasql(create_tables_sql, [], resolve);
 
 			else if($p.job_prm.create_tables){
+
 				if($p.job_prm.create_tables_sql)
 					wsql.alasql($p.job_prm.create_tables_sql, [], function(){
 						delete $p.job_prm.create_tables_sql;
 						resolve();
 					});
-				else
+
+				else if($p.injected_data["create_tables.sql"])
+					wsql.alasql($p.injected_data["create_tables.sql"], [], function(){
+						delete $p.injected_data["create_tables.sql"];
+						resolve();
+					});
+
+				else if(typeof $p.job_prm.create_tables === "string")
 					$p.ajax.get($p.job_prm.create_tables)
 						.then(function (req) {
 							wsql.alasql(req.response, [], resolve);
 						});
+				else
+					resolve();
 			}else
 				resolve();
 
@@ -2515,48 +2525,6 @@ function eXcell_pwd(cell){ //the eXcell name is defined here
 eXcell_pwd.prototype = eXcell_proto;
 window.eXcell_pwd = eXcell_pwd;
 
-/**
- * Выполняет программный клик по кнопке, расположенной на dhtmlXForm
- * @param id {String} - имя кнопки
- */
-dhtmlXForm.prototype.btn_click = function (id) {
-
-	var t = this, btn, obtn = find_btn.call(t);
-
-	function find_btn(){
-		if (!this.itemPull[this.idPrefix+id]) {
-			var res = null;
-			for (var k in this.itemPull) {
-				if (this.itemPull[k]._list && !res) {
-					for (var q=0; q<this.itemPull[k]._list.length; q++) {
-						if (res == null)
-							res = find_btn.call(this.itemPull[k]._list[q]);
-					}
-				}
-			}
-			return res;
-		} else {
-			btn = this.itemPull[this.idPrefix+id];
-			return this.objPull[this.idPrefix+id];
-		}
-	}
-
-	if(btn){
-
-		btn.firstChild.dispatchEvent(new MouseEvent("mousedown"), {
-			bubbles: true,
-			cancelable: true,
-			view: window
-		});
-		setTimeout(function () {
-			btn.firstChild.dispatchEvent(new MouseEvent("mouseup"), {
-				bubbles: true,
-				cancelable: true,
-				view: window
-			});
-		}, 1);
-	}
-};
 
 dhtmlXCalendarObject.prototype._dateToStr = function(val, format) {
 	if(val instanceof Date && val.getFullYear() < 1000)
@@ -3063,17 +3031,17 @@ function OCombo(attr){
 		popup_focused = true;
 		var div = document.createElement('div'),
 			innerHTML = "<a href='#' name='select' title='Форма выбора {F4}'>Показать все</a>" +
-				"<a href='#' name='open' style='margin-left: 9px;' title='Открыть форму элемента {Ctrl+Shift+F4}'><img src='"+dhtmlx.image_path+"dhxtoolbar"+dhtmlx.skin_suffix()+"tb_open.png' /></a>";
+				"<a href='#' name='open' style='margin-left: 9px;' title='Открыть форму элемента {Ctrl+Shift+F4}'><i class='fa fa-external-link fa-fw'></i></a>";
 
 		// для полных прав разрешаем добавление элементов
 		// TODO: учесть реальные права на добавление
 		if($p.ajax.root)
-			innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><img src='"+dhtmlx.image_path+"dhxtoolbar"+dhtmlx.skin_suffix()+"tb_add.png' /></a>";
+			innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><i class='fa fa-plus fa-fwfa-fw'></i></a>";
 
 		// для составных типов разрешаем выбор типа
 		// TODO: реализовать поддержку примитивных типов
 		if(_meta.type.types.length > 1)
-			innerHTML += "&nbsp;<a href='#' name='type' title='Выбрать тип значения {Alt+T}'><img src='"+dhtmlx.image_path+"custom_web/icss_text.png' /></a>";
+			innerHTML += "&nbsp;<a href='#' name='type' title='Выбрать тип значения {Alt+T}'><i class='fa fa-level-up fa-fw'></i></a>";
 
 		div.innerHTML = innerHTML;
 		for(var i=0; i<div.children.length; i++)
@@ -6161,8 +6129,6 @@ function Meta(req, patch) {
 	req = null;
 	if(typeof window != "undefined"){
 		patch = $p.injected_data['log.json'];
-		if(typeof patch == "string")
-			patch = JSON.parse(patch);
 		Meta._patch(m, patch);
 		patch = null;
 	}

@@ -481,8 +481,6 @@ function Meta(req, patch) {
 	req = null;
 	if(typeof window != "undefined"){
 		patch = $p.injected_data['log.json'];
-		if(typeof patch == "string")
-			patch = JSON.parse(patch);
 		Meta._patch(m, patch);
 		patch = null;
 	}

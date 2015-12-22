@@ -75,6 +75,16 @@ gulp.task('injected_main', function(){
 	   .pipe(gulp.dest('./data'));
 });
 
+// Сжатие dhtmlx
+gulp.task('dhtmlx', function(){
+	gulp.src(['./lib/dhtmlx_debug.js'])
+		.pipe(rename('dhtmlx.min.js'))
+		.pipe(uglify({
+			preserveComments: "license"
+		}))
+		.pipe(gulp.dest('./lib'))
+		.pipe(gulp.dest('./dist'));
+});
 
 // Сборка сервера для Node.js
 gulp.task('core', function(){

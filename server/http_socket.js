@@ -1,4 +1,5 @@
 /**
+ * ### Предоставляет серверный интерфейс metadata.js через websocket
  *
  * Created 09.12.2015<br />
  * &copy; http://www.oknosoft.ru 2014-2015

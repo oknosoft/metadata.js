@@ -180,48 +180,6 @@ function eXcell_pwd(cell){ //the eXcell name is defined here
 eXcell_pwd.prototype = eXcell_proto;
 window.eXcell_pwd = eXcell_pwd;
 
-/**
- * Выполняет программный клик по кнопке, расположенной на dhtmlXForm
- * @param id {String} - имя кнопки
- */
-dhtmlXForm.prototype.btn_click = function (id) {
-
-	var t = this, btn, obtn = find_btn.call(t);
-
-	function find_btn(){
-		if (!this.itemPull[this.idPrefix+id]) {
-			var res = null;
-			for (var k in this.itemPull) {
-				if (this.itemPull[k]._list && !res) {
-					for (var q=0; q<this.itemPull[k]._list.length; q++) {
-						if (res == null)
-							res = find_btn.call(this.itemPull[k]._list[q]);
-					}
-				}
-			}
-			return res;
-		} else {
-			btn = this.itemPull[this.idPrefix+id];
-			return this.objPull[this.idPrefix+id];
-		}
-	}
-
-	if(btn){
-
-		btn.firstChild.dispatchEvent(new MouseEvent("mousedown"), {
-			bubbles: true,
-			cancelable: true,
-			view: window
-		});
-		setTimeout(function () {
-			btn.firstChild.dispatchEvent(new MouseEvent("mouseup"), {
-				bubbles: true,
-				cancelable: true,
-				view: window
-			});
-		}, 1);
-	}
-};
 
 dhtmlXCalendarObject.prototype._dateToStr = function(val, format) {
 	if(val instanceof Date && val.getFullYear() < 1000)

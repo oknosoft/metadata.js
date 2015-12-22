@@ -1805,16 +1805,26 @@ function WSQL(){
 				wsql.alasql(create_tables_sql, [], resolve);
 
 			else if($p.job_prm.create_tables){
+
 				if($p.job_prm.create_tables_sql)
 					wsql.alasql($p.job_prm.create_tables_sql, [], function(){
 						delete $p.job_prm.create_tables_sql;
 						resolve();
 					});
-				else
+
+				else if($p.injected_data["create_tables.sql"])
+					wsql.alasql($p.injected_data["create_tables.sql"], [], function(){
+						delete $p.injected_data["create_tables.sql"];
+						resolve();
+					});
+
+				else if(typeof $p.job_prm.create_tables === "string")
 					$p.ajax.get($p.job_prm.create_tables)
 						.then(function (req) {
 							wsql.alasql(req.response, [], resolve);
 						});
+				else
+					resolve();
 			}else
 				resolve();
 
