@@ -158,12 +158,28 @@ function DataManager(class_name){
 			 */
 			"handle_event": {
 				value: function (obj, name, attr) {
-					var res;
+					var res = [], tmp;
 					_events[name].forEach(function (method) {
-						if(res !== false)
-							res = method.call(obj, attr);
+						if(res !== false){
+							tmp = method.call(obj, attr);
+							if(tmp === false)
+								res = tmp;
+							else if(tmp)
+								res.push(tmp);
+						}
 					});
-					return res;
+					if(!res.length)
+						return;
+					else if(res.length == 1)
+					// если значение единственное - возвращчем его
+						return res[0];
+					else{
+					// если среди значений есть промисы - возвращаем all
+						if(res.some(function (v) {return typeof v === "object" && v.then}))
+							return Promise.all(res);
+						else
+							return res;
+					}
 				},
 				enumerable: false
 			}
