@@ -103,7 +103,6 @@ parser(attr, function(err, data){
 		prm.data_url = "data/";
 
 		// Таблицы инициализируем не через файл, а вызовом метода метаданных
-		//prm.create_tables = true;
 		//prm.create_tables_sql = require('create_tables');
 		modifiers.push(function () {
 			$p.md.create_tables(oninit);

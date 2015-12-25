@@ -1517,18 +1517,11 @@ function JobPrm(){
 		return parse(location.search)._mixin(parse(location.hash));
 	};
 
-	/**
-	 * Указывает, проверять ли совместимость браузера при запуске программы
-	 * @property check_browser_compatibility
-	 * @type {Boolean}
-	 * @static
-	 */
-	this.check_browser_compatibility = true;
-
 	this.check_dhtmlx = true;
 	this.use_builder = false;
 	this.offline = false;
 	this.local_storage_prefix = "";
+	this.create_tables = true;
 
 	if(typeof window != "undefined"){
 

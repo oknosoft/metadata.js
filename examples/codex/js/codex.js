@@ -17,6 +17,7 @@
 $p.settings = function (prm, modifiers) {
 	prm.offline = true;             // автономная работа. запросы к 1С запрещены
 	prm.allow_post_message = "*";   // разрешаем обрабатывать сообщения от других окон (обязательно для файлового режима)
+	prm.create_tables = false;      // таблицы в озу не используем
 };
 
 

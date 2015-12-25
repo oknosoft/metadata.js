@@ -373,10 +373,10 @@ function only_in_browser(w){
 			eve.socket.connect();
 
 			// проверяем совместимость браузера
-			if($p.job_prm.check_browser_compatibility && (!w.JSON || !w.indexedDB) ){
+			if(!w.JSON || !w.indexedDB){
 				eve.redirect = true;
 				msg.show_msg({type: "alert-error", text: msg.unsupported_browser, title: msg.unsupported_browser_title});
-				setTimeout(function(){ location.replace(msg.store_url_od); }, 6000);
+				throw msg.unsupported_browser;
 				return;
 			}
 
