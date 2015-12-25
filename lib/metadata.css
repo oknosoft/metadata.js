@@ -324,10 +324,10 @@ div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td {
 	font-size: 10pt;
 }
 .md_otooolbar_button:hover, .md_otooolbar_button.selected:hover {
-    background: #ccc;
+    background-color: #ccc;
 }
 .md_otooolbar_button.selected {
-    background: #969394;
+	background-color: #969394;
 }
 /* Панель инструментов OTooolBar*/
 

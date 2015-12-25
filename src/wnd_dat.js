@@ -967,6 +967,8 @@ $p.iface.add_button = function(parent, attr, battr) {
 		html +='<b style="vertical-align: super;"> ' + battr.b + '</b>';
 	else if(battr.text)
 		html +='<span style="vertical-align: super;"> ' + battr.text + '</span>';
+	else if(battr.css)
+		bdiv.classList.add(battr.css);
 	bdiv.innerHTML = html;
 
 	if(battr.float)
