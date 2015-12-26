@@ -759,7 +759,7 @@ function OTooolBar(attr){
 		offset, popup_focused, sub_focused, btn_focused;
 
 	if(!attr.image_path)
-		attr.image_path = dhtmlx.image_path + 'custom_web/';
+		attr.image_path = dhtmlx.image_path;
 
 	if(attr.hasOwnProperty("class_name"))
 		div.className = attr.class_name;

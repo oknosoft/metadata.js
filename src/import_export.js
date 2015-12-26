@@ -58,8 +58,8 @@ DataManager.prototype.export = function(attr){
 
 		wnd.bottom_toolbar({
 			buttons: [
-				{name: 'btn_cancel', img: 'tb_delete.png', text: 'Отмена', title: 'Отмена', width:'80px', float: 'right'},
-				{name: 'btn_ok', img: 'save.png', b: 'Ок', title: 'Выполнить экспорт', width:'50px', float: 'right'}],
+				{name: 'btn_cancel', text: '<i class="fa fa-times fa-lg"></i> Отмена', title: 'Отмена', width:'80px', float: 'right'},
+				{name: 'btn_ok', b: '<i class="fa fa-floppy-o"></i> Ок', title: 'Выполнить экспорт', width:'50px', float: 'right'}],
 			onclick: function (name) {
 					if(name == 'btn_ok')
 						do_export();
