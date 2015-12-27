@@ -1,6 +1,6 @@
 {"id":0,
   "item":[
-    {"id":"0100","text":"Codex: что это","child":"0", "im0": "view_list.png",
+    {"id":"0100","text":"Codex: что это","child":"0", "im0": "examples/imgs/view_list.png",
       "userdata": [
         {"name": "url", "content": "examples/codex/result.html"},
         {"name": "exec_hidden", "content": true}

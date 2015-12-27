@@ -392,9 +392,9 @@ $p.iface.data_to_tree = function (data) {
 	var xml = "<?xml version='1.0' encoding='UTF-8'?><tree id=\"0\">";
 
 	function add_hierarchically(row, adata){
-		xml = xml + "<item text=\"" +
-			row.presentation.replace(/"/g, "'") +	"\" id=\"" +
-			row.ref + "\" im0=\"folderClosed.gif\">";
+		xml = xml + "<item text=\"" + row.presentation.replace(/"/g, "'") +
+			"\" id=\"" + row.ref +
+			"\" im0=\"" + dhtmlx.image_cache("tree", "folderClosed") + "\">";
 		$p._find_rows(adata, {parent: row.ref}, function(r){
 			add_hierarchically(r, adata)
 		});
