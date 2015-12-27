@@ -17,6 +17,7 @@
 $p.settings = function (prm, modifiers) {
 	prm.offline = true;             // автономная работа. запросы к 1С запрещены
 	prm.allow_post_message = "*";   // разрешаем обрабатывать сообщения от других окон (обязательно для файлового режима)
+	prm.create_tables = false;      // таблицы в озу не используем
 };
 
 
@@ -84,8 +85,8 @@ $p.iface.oninit = function() {
 		name: 'top',
 		image_path:	dhtmlx.image_path + 'dhxtoolbar_web/',
 		buttons: [
-			{name: 'run', img: 'execute.png', text: 'Выполнить', width: '110px', float: 'left'},
-			{name: 'reload', img: 'refresh.png', text: 'Очистить окно результата', width: '220px', float: 'left'}
+			{name: 'run', text: '<i class="fa fa-arrow-circle-right fa-lg"></i> Выполнить', width: '110px', float: 'left'},
+			{name: 'reload', text: '<i class="fa fa-repeat fa-lg"></i> Очистить окно результата', width: '220px', float: 'left'}
 		], onclick: function (name) {
 			switch(name) {
 				case 'run':

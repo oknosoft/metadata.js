@@ -72,24 +72,6 @@ if(typeof window !== "undefined"){
 		document.head.appendChild(s);
 	};
 
-}else{
-
-	/**
-	 * Читает данные из файла (только в Node.js)
-	 * @param filename
-	 * @return {Promise}
-	 */
-	$p.from_file = function(filename){
-		return new Promise(function(resolve, reject){
-			require('fs').readFile(filename, { encoding:'utf8' }, function(err, dataFromFile){
-				if(err){
-					reject(err);
-				} else {
-					resolve(dataFromFile.toString().trim());
-				}
-			});
-		});
-	}
 }
 
 
@@ -717,6 +699,11 @@ $p.ajax = new (
 			if(!attr.password)
 				attr.password = this.password;
 			attr.hide_headers = true;
+
+			if($p.job_prm["1c"]){
+				attr.auth = $p.job_prm["1c"].auth;
+				attr.request = $p.job_prm["1c"].request;
+			}
 		}
 
 	}
@@ -1544,18 +1531,11 @@ function JobPrm(){
 		return parse(location.search)._mixin(parse(location.hash));
 	};
 
-	/**
-	 * Указывает, проверять ли совместимость браузера при запуске программы
-	 * @property check_browser_compatibility
-	 * @type {Boolean}
-	 * @static
-	 */
-	this.check_browser_compatibility = true;
-
 	this.check_dhtmlx = true;
 	this.use_builder = false;
 	this.offline = false;
 	this.local_storage_prefix = "";
+	this.create_tables = true;
 
 	if(typeof window != "undefined"){
 
@@ -1832,16 +1812,26 @@ function WSQL(){
 				wsql.alasql(create_tables_sql, [], resolve);
 
 			else if($p.job_prm.create_tables){
+
 				if($p.job_prm.create_tables_sql)
 					wsql.alasql($p.job_prm.create_tables_sql, [], function(){
 						delete $p.job_prm.create_tables_sql;
 						resolve();
 					});
-				else
+
+				else if($p.injected_data["create_tables.sql"])
+					wsql.alasql($p.injected_data["create_tables.sql"], [], function(){
+						delete $p.injected_data["create_tables.sql"];
+						resolve();
+					});
+
+				else if(typeof $p.job_prm.create_tables === "string")
 					$p.ajax.get($p.job_prm.create_tables)
 						.then(function (req) {
 							wsql.alasql(req.response, [], resolve);
 						});
+				else
+					resolve();
 			}else
 				resolve();
 
@@ -1908,6 +1898,7 @@ function WSQL(){
 	wsql.restore_database = function(){
 
 	};
+
 
 	/**
 	 * Подключается к indexedDB
@@ -2527,48 +2518,6 @@ function eXcell_pwd(cell){ //the eXcell name is defined here
 eXcell_pwd.prototype = eXcell_proto;
 window.eXcell_pwd = eXcell_pwd;
 
-/**
- * Выполняет программный клик по кнопке, расположенной на dhtmlXForm
- * @param id {String} - имя кнопки
- */
-dhtmlXForm.prototype.btn_click = function (id) {
-
-	var t = this, btn, obtn = find_btn.call(t);
-
-	function find_btn(){
-		if (!this.itemPull[this.idPrefix+id]) {
-			var res = null;
-			for (var k in this.itemPull) {
-				if (this.itemPull[k]._list && !res) {
-					for (var q=0; q<this.itemPull[k]._list.length; q++) {
-						if (res == null)
-							res = find_btn.call(this.itemPull[k]._list[q]);
-					}
-				}
-			}
-			return res;
-		} else {
-			btn = this.itemPull[this.idPrefix+id];
-			return this.objPull[this.idPrefix+id];
-		}
-	}
-
-	if(btn){
-
-		btn.firstChild.dispatchEvent(new MouseEvent("mousedown"), {
-			bubbles: true,
-			cancelable: true,
-			view: window
-		});
-		setTimeout(function () {
-			btn.firstChild.dispatchEvent(new MouseEvent("mouseup"), {
-				bubbles: true,
-				cancelable: true,
-				view: window
-			});
-		}, 1);
-	}
-};
 
 dhtmlXCalendarObject.prototype._dateToStr = function(val, format) {
 	if(val instanceof Date && val.getFullYear() < 1000)
@@ -3075,17 +3024,17 @@ function OCombo(attr){
 		popup_focused = true;
 		var div = document.createElement('div'),
 			innerHTML = "<a href='#' name='select' title='Форма выбора {F4}'>Показать все</a>" +
-				"<a href='#' name='open' style='margin-left: 9px;' title='Открыть форму элемента {Ctrl+Shift+F4}'><img src='"+dhtmlx.image_path+"dhxtoolbar"+dhtmlx.skin_suffix()+"tb_open.png' /></a>";
+				"<a href='#' name='open' style='margin-left: 9px;' title='Открыть форму элемента {Ctrl+Shift+F4}'><i class='fa fa-external-link fa-fw'></i></a>";
 
 		// для полных прав разрешаем добавление элементов
 		// TODO: учесть реальные права на добавление
 		if($p.ajax.root)
-			innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><img src='"+dhtmlx.image_path+"dhxtoolbar"+dhtmlx.skin_suffix()+"tb_add.png' /></a>";
+			innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><i class='fa fa-plus fa-fwfa-fw'></i></a>";
 
 		// для составных типов разрешаем выбор типа
 		// TODO: реализовать поддержку примитивных типов
 		if(_meta.type.types.length > 1)
-			innerHTML += "&nbsp;<a href='#' name='type' title='Выбрать тип значения {Alt+T}'><img src='"+dhtmlx.image_path+"custom_web/icss_text.png' /></a>";
+			innerHTML += "&nbsp;<a href='#' name='type' title='Выбрать тип значения {Alt+T}'><i class='fa fa-level-up fa-fw'></i></a>";
 
 		div.innerHTML = innerHTML;
 		for(var i=0; i<div.children.length; i++)
@@ -4881,7 +4830,7 @@ function OTooolBar(attr){
 		offset, popup_focused, sub_focused, btn_focused;
 
 	if(!attr.image_path)
-		attr.image_path = dhtmlx.image_path + 'custom_web/';
+		attr.image_path = dhtmlx.image_path;
 
 	if(attr.hasOwnProperty("class_name"))
 		div.className = attr.class_name;
@@ -5089,6 +5038,8 @@ $p.iface.add_button = function(parent, attr, battr) {
 		html +='<b style="vertical-align: super;"> ' + battr.b + '</b>';
 	else if(battr.text)
 		html +='<span style="vertical-align: super;"> ' + battr.text + '</span>';
+	else if(battr.css)
+		bdiv.classList.add(battr.css);
 	bdiv.innerHTML = html;
 
 	if(battr.float)
@@ -6173,8 +6124,6 @@ function Meta(req, patch) {
 	req = null;
 	if(typeof window != "undefined"){
 		patch = $p.injected_data['log.json'];
-		if(typeof patch == "string")
-			patch = JSON.parse(patch);
 		Meta._patch(m, patch);
 		patch = null;
 	}
@@ -6253,7 +6202,7 @@ function Meta(req, patch) {
 	_md.create_tables = function(callback, attr){
 
 		var cstep = 0, data_names = [], managers = _md.get_classes(), class_name,
-			create = "USE md;\nCREATE TABLE refs (ref CHAR);\n";
+			create = (attr && attr.postgres) ? "" : "USE md;\n";
 
 		function on_table_created(data){
 
@@ -6335,7 +6284,7 @@ function Meta(req, patch) {
 		if((f == "type" && mgr.table_name == "cch_properties") || (f == "svg" && mgr.table_name == "cat_production_params"))
 			sql = " JSON";
 
-		else if(mf.is_ref){
+		else if(mf.is_ref || mf.types.indexOf("guid") != -1){
 			if(!pg)
 				sql = " CHAR";
 
@@ -6370,6 +6319,9 @@ function Meta(req, patch) {
 		}else if(mf.types.indexOf("boolean") != -1)
 			sql = " BOOLEAN";
 
+		else if(mf.types.indexOf("json") != -1)
+			sql = " JSON";
+
 		else
 			sql = pg ? " character varying(255)" : " CHAR";
 
@@ -6387,16 +6339,13 @@ function Meta(req, patch) {
 		var res = "";
 		if(mf[f].type.types.length > 1 && f != "type"){
 			if(!f0)
-				f0 = f + "_T";
+				f0 = f.substr(0, 29) + "_T";
 			else{
-				f0 = f0 + "_T";
-			}
-			if(pg && f0.length > 30){
-				f0 = f0.substr(0, 10) + f0.substr(12, 18) + "_T";
+				f0 = f0.substr(0, 29) + "_T";
 			}
 
 			if(pg)
-				res = ", " + f0 + " character varying(255)";
+				res = ', "' + f0 + '" character varying(255)';
 			else
 				res = _md.sql_mask(f0) + " CHAR";
 		}
@@ -6660,10 +6609,51 @@ function Meta(req, patch) {
 			name = "ireg.";
 		else if(pn[0] == "РегистрНакопления")
 			name = "areg.";
+		else if(pn[0] == "РегистрБухгалтерии")
+			name = "aссreg.";
 		else if(pn[0] == "ПланВидовХарактеристик")
 			name = "cch.";
 		else if(pn[0] == "ПланСчетов")
 			name = "cacc.";
+		else if(pn[0] == "Обработка")
+			name = "dp.";
+		else if(pn[0] == "Отчет")
+			name = "rep.";
+
+		return name + pn[1];
+
+	};
+
+	/**
+	 * Возвращает полное именя объекта метаданных 1С по имени класса metadata
+	 * @method class_name_to_1c
+	 * @param name
+	 */
+	_md.class_name_to_1c = function (name) {
+
+		var pn = name.split(".");
+		if(pn.length == 1)
+			return "Перечисление." + name;
+		else if(pn[0] == "enm")
+			name = "Перечисление.";
+		else if(pn[0] == "cat")
+			name = "Справочник.";
+		else if(pn[0] == "doc")
+			name = "Документ.";
+		else if(pn[0] == "ireg")
+			name = "РегистрСведений.";
+		else if(pn[0] == "areg")
+			name = "РегистрНакопления.";
+		else if(pn[0] == "aссreg")
+			name = "РегистрБухгалтерии.";
+		else if(pn[0] == "cch")
+			name = "ПланВидовХарактеристик.";
+		else if(pn[0] == "cacc")
+			name = "ПланСчетов.";
+		else if(pn[0] == "dp")
+			name = "Обработка.";
+		else if(pn[0] == "rep")
+			name = "Отчет.";
 
 		return name + pn[1];
 
@@ -6934,12 +6924,28 @@ function DataManager(class_name){
 			 */
 			"handle_event": {
 				value: function (obj, name, attr) {
-					var res;
+					var res = [], tmp;
 					_events[name].forEach(function (method) {
-						if(res !== false)
-							res = method.call(obj, attr);
+						if(res !== false){
+							tmp = method.call(obj, attr);
+							if(tmp === false)
+								res = tmp;
+							else if(tmp)
+								res.push(tmp);
+						}
 					});
-					return res;
+					if(!res.length)
+						return;
+					else if(res.length == 1)
+					// если значение единственное - возвращчем его
+						return res[0];
+					else{
+					// если среди значений есть промисы - возвращаем all
+						if(res.some(function (v) {return typeof v === "object" && v.then}))
+							return Promise.all(res);
+						else
+							return res;
+					}
 				},
 				enumerable: false
 			}
@@ -7885,8 +7891,12 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 
 			for(f in cmd.fields){
 				if(f.length > 30){
-					trunc_index++;
-					f0 = f[0] + trunc_index + f.substr(f.length-27);
+					if(cmd.fields[f].short_name)
+						f0 = cmd.fields[f].short_name;
+					else{
+						trunc_index++;
+						f0 = f[0] + trunc_index + f.substr(f.length-27);
+					}
 				}else
 					f0 = f;
 				sql += ", " + f0 + _md.sql_type(t, f, cmd.fields[f].type, true) + _md.sql_composite(cmd.fields, f, f0, true);
@@ -8392,6 +8402,11 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 		if(attr && attr.postgres){
 			sql += t.table_name+" ("
 
+			if(cmd.splitted){
+				sql += "zone integer";
+				first_field = false;
+			}
+
 			for(f in cmd["dimensions"]){
 				if(first_field){
 					sql += f;
@@ -8406,6 +8421,10 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 
 			sql += ", PRIMARY KEY (";
 			first_field = true;
+			if(cmd.splitted){
+				sql += "zone";
+				first_field = false;
+			}
 			for(f in cmd["dimensions"]){
 				if(first_field){
 					sql += f;
@@ -9221,11 +9240,14 @@ DataObj.prototype.load = function(){
  */
 DataObj.prototype.save = function (post, operational) {
 
-	var saver;
+	var saver,
+		before_save_res = this._manager.handle_event(this, "before_save");
 
 	// Если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
-	if(this._manager.handle_event(this, "before_save") === false)
+	if(before_save_res === false)
 		return Promise.resolve(this);
+	else if(typeof before_save_res === "object" && before_save_res.then)
+		return before_save_res;
 
 	if(this instanceof DocObj && $p.blank.date == this.date)
 		this.date = new Date();
@@ -10939,8 +10961,8 @@ DataManager.prototype.export = function(attr){
 
 		wnd.bottom_toolbar({
 			buttons: [
-				{name: 'btn_cancel', img: 'tb_delete.png', text: 'Отмена', title: 'Отмена', width:'80px', float: 'right'},
-				{name: 'btn_ok', img: 'save.png', b: 'Ок', title: 'Выполнить экспорт', width:'50px', float: 'right'}],
+				{name: 'btn_cancel', text: '<i class="fa fa-times fa-lg"></i> Отмена', title: 'Отмена', width:'80px', float: 'right'},
+				{name: 'btn_ok', b: '<i class="fa fa-floppy-o"></i> Ок', title: 'Выполнить экспорт', width:'50px', float: 'right'}],
 			onclick: function (name) {
 					if(name == 'btn_ok')
 						do_export();
@@ -12655,10 +12677,10 @@ function only_in_browser(w){
 			eve.socket.connect();
 
 			// проверяем совместимость браузера
-			if($p.job_prm.check_browser_compatibility && (!w.JSON || !w.indexedDB) ){
+			if(!w.JSON || !w.indexedDB){
 				eve.redirect = true;
 				msg.show_msg({type: "alert-error", text: msg.unsupported_browser, title: msg.unsupported_browser_title});
-				setTimeout(function(){ location.replace(msg.store_url_od); }, 6000);
+				throw msg.unsupported_browser;
 				return;
 			}
 
@@ -13063,31 +13085,6 @@ $p.eve.steps = {
 	save_data_wsql: 7       // кеширование данных из озу в локальную датабазу
 };
 
-
-$p.eve.init_node = function (alasql) {
-
-	$p.job_prm = new $p.JobPrm();
-
-	var data_url = $p.job_prm.data_url || "/data/";
-
-	return $p.from_file(data_url + 'create_tables.sql')
-		.then(function (sql) {
-			return $p.wsql.init_params(alasql, sql);
-		})
-		.then(function() {
-			return $p.from_file(data_url + 'meta.json');
-		})
-		.then(function(meta) {
-			return $p.from_file(data_url + 'meta_patch.json')
-				.then(function (patch) {
-					return [JSON.parse(meta), JSON.parse(patch)]
-				})
-		})
-		.then(function(meta) {
-			return new $p.Meta(meta[0], meta[1]);
-		});
-
-};
 
 /**
  * Регламентные задания синхронизапции каждые 3 минуты

@@ -759,7 +759,7 @@ function OTooolBar(attr){
 		offset, popup_focused, sub_focused, btn_focused;
 
 	if(!attr.image_path)
-		attr.image_path = dhtmlx.image_path + 'custom_web/';
+		attr.image_path = dhtmlx.image_path;
 
 	if(attr.hasOwnProperty("class_name"))
 		div.className = attr.class_name;
@@ -967,6 +967,8 @@ $p.iface.add_button = function(parent, attr, battr) {
 		html +='<b style="vertical-align: super;"> ' + battr.b + '</b>';
 	else if(battr.text)
 		html +='<span style="vertical-align: super;"> ' + battr.text + '</span>';
+	else if(battr.css)
+		bdiv.classList.add(battr.css);
 	bdiv.innerHTML = html;
 
 	if(battr.float)

@@ -9,7 +9,6 @@
 $p.eve.redirect = true;
 
 $p.settings = function (prm, modifiers) {
-	prm.create_tables = true;
 	prm.create_tables_sql = $p.injected_data['create_tables.sql'];
 	prm.allow_post_message = "*";   // разрешаем обрабатывать сообщения от других окон (обязательно для файлового режима)
 	prm.russian_names = true;       // создаём русскоязычные синонимы

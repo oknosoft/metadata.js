@@ -297,11 +297,14 @@ DataObj.prototype.load = function(){
  */
 DataObj.prototype.save = function (post, operational) {
 
-	var saver;
+	var saver,
+		before_save_res = this._manager.handle_event(this, "before_save");
 
 	// Если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
-	if(this._manager.handle_event(this, "before_save") === false)
+	if(before_save_res === false)
 		return Promise.resolve(this);
+	else if(typeof before_save_res === "object" && before_save_res.then)
+		return before_save_res;
 
 	if(this instanceof DocObj && $p.blank.date == this.date)
 		this.date = new Date();

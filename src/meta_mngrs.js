@@ -158,12 +158,28 @@ function DataManager(class_name){
 			 */
 			"handle_event": {
 				value: function (obj, name, attr) {
-					var res;
+					var res = [], tmp;
 					_events[name].forEach(function (method) {
-						if(res !== false)
-							res = method.call(obj, attr);
+						if(res !== false){
+							tmp = method.call(obj, attr);
+							if(tmp === false)
+								res = tmp;
+							else if(tmp)
+								res.push(tmp);
+						}
 					});
-					return res;
+					if(!res.length)
+						return;
+					else if(res.length == 1)
+					// если значение единственное - возвращчем его
+						return res[0];
+					else{
+					// если среди значений есть промисы - возвращаем all
+						if(res.some(function (v) {return typeof v === "object" && v.then}))
+							return Promise.all(res);
+						else
+							return res;
+					}
 				},
 				enumerable: false
 			}
@@ -1109,8 +1125,12 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 
 			for(f in cmd.fields){
 				if(f.length > 30){
-					trunc_index++;
-					f0 = f[0] + trunc_index + f.substr(f.length-27);
+					if(cmd.fields[f].short_name)
+						f0 = cmd.fields[f].short_name;
+					else{
+						trunc_index++;
+						f0 = f[0] + trunc_index + f.substr(f.length-27);
+					}
 				}else
 					f0 = f;
 				sql += ", " + f0 + _md.sql_type(t, f, cmd.fields[f].type, true) + _md.sql_composite(cmd.fields, f, f0, true);
@@ -1616,6 +1636,11 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 		if(attr && attr.postgres){
 			sql += t.table_name+" ("
 
+			if(cmd.splitted){
+				sql += "zone integer";
+				first_field = false;
+			}
+
 			for(f in cmd["dimensions"]){
 				if(first_field){
 					sql += f;
@@ -1630,6 +1655,10 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 
 			sql += ", PRIMARY KEY (";
 			first_field = true;
+			if(cmd.splitted){
+				sql += "zone";
+				first_field = false;
+			}
 			for(f in cmd["dimensions"]){
 				if(first_field){
 					sql += f;

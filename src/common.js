@@ -58,24 +58,6 @@ if(typeof window !== "undefined"){
 		document.head.appendChild(s);
 	};
 
-}else{
-
-	/**
-	 * Читает данные из файла (только в Node.js)
-	 * @param filename
-	 * @return {Promise}
-	 */
-	$p.from_file = function(filename){
-		return new Promise(function(resolve, reject){
-			require('fs').readFile(filename, { encoding:'utf8' }, function(err, dataFromFile){
-				if(err){
-					reject(err);
-				} else {
-					resolve(dataFromFile.toString().trim());
-				}
-			});
-		});
-	}
 }
 
 
@@ -703,6 +685,11 @@ $p.ajax = new (
 			if(!attr.password)
 				attr.password = this.password;
 			attr.hide_headers = true;
+
+			if($p.job_prm["1c"]){
+				attr.auth = $p.job_prm["1c"].auth;
+				attr.request = $p.job_prm["1c"].request;
+			}
 		}
 
 	}
@@ -1530,18 +1517,11 @@ function JobPrm(){
 		return parse(location.search)._mixin(parse(location.hash));
 	};
 
-	/**
-	 * Указывает, проверять ли совместимость браузера при запуске программы
-	 * @property check_browser_compatibility
-	 * @type {Boolean}
-	 * @static
-	 */
-	this.check_browser_compatibility = true;
-
 	this.check_dhtmlx = true;
 	this.use_builder = false;
 	this.offline = false;
 	this.local_storage_prefix = "";
+	this.create_tables = true;
 
 	if(typeof window != "undefined"){
 
@@ -1818,16 +1798,26 @@ function WSQL(){
 				wsql.alasql(create_tables_sql, [], resolve);
 
 			else if($p.job_prm.create_tables){
+
 				if($p.job_prm.create_tables_sql)
 					wsql.alasql($p.job_prm.create_tables_sql, [], function(){
 						delete $p.job_prm.create_tables_sql;
 						resolve();
 					});
-				else
+
+				else if($p.injected_data["create_tables.sql"])
+					wsql.alasql($p.injected_data["create_tables.sql"], [], function(){
+						delete $p.injected_data["create_tables.sql"];
+						resolve();
+					});
+
+				else if(typeof $p.job_prm.create_tables === "string")
 					$p.ajax.get($p.job_prm.create_tables)
 						.then(function (req) {
 							wsql.alasql(req.response, [], resolve);
 						});
+				else
+					resolve();
 			}else
 				resolve();
 
@@ -1894,6 +1884,7 @@ function WSQL(){
 	wsql.restore_database = function(){
 
 	};
+
 
 	/**
 	 * Подключается к indexedDB

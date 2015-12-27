@@ -481,8 +481,6 @@ function Meta(req, patch) {
 	req = null;
 	if(typeof window != "undefined"){
 		patch = $p.injected_data['log.json'];
-		if(typeof patch == "string")
-			patch = JSON.parse(patch);
 		Meta._patch(m, patch);
 		patch = null;
 	}
@@ -561,7 +559,7 @@ function Meta(req, patch) {
 	_md.create_tables = function(callback, attr){
 
 		var cstep = 0, data_names = [], managers = _md.get_classes(), class_name,
-			create = "USE md;\nCREATE TABLE refs (ref CHAR);\n";
+			create = (attr && attr.postgres) ? "" : "USE md;\n";
 
 		function on_table_created(data){
 
@@ -643,7 +641,7 @@ function Meta(req, patch) {
 		if((f == "type" && mgr.table_name == "cch_properties") || (f == "svg" && mgr.table_name == "cat_production_params"))
 			sql = " JSON";
 
-		else if(mf.is_ref){
+		else if(mf.is_ref || mf.types.indexOf("guid") != -1){
 			if(!pg)
 				sql = " CHAR";
 
@@ -678,6 +676,9 @@ function Meta(req, patch) {
 		}else if(mf.types.indexOf("boolean") != -1)
 			sql = " BOOLEAN";
 
+		else if(mf.types.indexOf("json") != -1)
+			sql = " JSON";
+
 		else
 			sql = pg ? " character varying(255)" : " CHAR";
 
@@ -695,16 +696,13 @@ function Meta(req, patch) {
 		var res = "";
 		if(mf[f].type.types.length > 1 && f != "type"){
 			if(!f0)
-				f0 = f + "_T";
+				f0 = f.substr(0, 29) + "_T";
 			else{
-				f0 = f0 + "_T";
-			}
-			if(pg && f0.length > 30){
-				f0 = f0.substr(0, 10) + f0.substr(12, 18) + "_T";
+				f0 = f0.substr(0, 29) + "_T";
 			}
 
 			if(pg)
-				res = ", " + f0 + " character varying(255)";
+				res = ', "' + f0 + '" character varying(255)';
 			else
 				res = _md.sql_mask(f0) + " CHAR";
 		}
@@ -968,10 +966,51 @@ function Meta(req, patch) {
 			name = "ireg.";
 		else if(pn[0] == "РегистрНакопления")
 			name = "areg.";
+		else if(pn[0] == "РегистрБухгалтерии")
+			name = "aссreg.";
 		else if(pn[0] == "ПланВидовХарактеристик")
 			name = "cch.";
 		else if(pn[0] == "ПланСчетов")
 			name = "cacc.";
+		else if(pn[0] == "Обработка")
+			name = "dp.";
+		else if(pn[0] == "Отчет")
+			name = "rep.";
+
+		return name + pn[1];
+
+	};
+
+	/**
+	 * Возвращает полное именя объекта метаданных 1С по имени класса metadata
+	 * @method class_name_to_1c
+	 * @param name
+	 */
+	_md.class_name_to_1c = function (name) {
+
+		var pn = name.split(".");
+		if(pn.length == 1)
+			return "Перечисление." + name;
+		else if(pn[0] == "enm")
+			name = "Перечисление.";
+		else if(pn[0] == "cat")
+			name = "Справочник.";
+		else if(pn[0] == "doc")
+			name = "Документ.";
+		else if(pn[0] == "ireg")
+			name = "РегистрСведений.";
+		else if(pn[0] == "areg")
+			name = "РегистрНакопления.";
+		else if(pn[0] == "aссreg")
+			name = "РегистрБухгалтерии.";
+		else if(pn[0] == "cch")
+			name = "ПланВидовХарактеристик.";
+		else if(pn[0] == "cacc")
+			name = "ПланСчетов.";
+		else if(pn[0] == "dp")
+			name = "Обработка.";
+		else if(pn[0] == "rep")
+			name = "Отчет.";
 
 		return name + pn[1];
 
