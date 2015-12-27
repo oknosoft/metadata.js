@@ -2,6 +2,7 @@
 ОбластьКонтента.Очистить();
 // Левая панель инструментов
 new $p.iface.OTooolBar({wrapper: ОбластьКонтента.Контейнер, top: '32px', left: '16px', name: 'left', height: '250px',
+	image_path: 'lib/imgs/custom_web/',
 	buttons: [
 		{name: 'select_elm', img: 'icon-arrow-black.png', title: $p.injected_data['select_elm.html']},
 		{name: 'select_node', img: 'icon-arrow-white.png', title: $p.injected_data['select_node.html']},
@@ -15,6 +16,7 @@ new $p.iface.OTooolBar({wrapper: ОбластьКонтента.Контейне
 	]});
 // Верхняя панель инструментов
 new $p.iface.OTooolBar({wrapper: ОбластьКонтента.Контейнер, width: '170px', height: '28px', top: '16px', left: '80px', name: 'top',
+	image_path: 'lib/imgs/custom_web/',
 	buttons: [
 		{name: 'save_close', img: 'save.png', title: 'Рассчитать, записать и закрыть', float: 'left'},
 		{name: 'calck', img: 'calculate.png', title: 'Рассчитать и записать данные', float: 'left'},
