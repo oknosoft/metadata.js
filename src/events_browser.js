@@ -375,27 +375,10 @@
 
 					function load_css(){
 
-						var i, surl, turl, sname, load_dhtmlx = true, load_meta = true,
-							smetadata = new RegExp('metadata.js$'),
-							smetadatamin = new RegExp('metadata.min.js$'),
-							smetadatajsdelvr = new RegExp('metadata.min.js)$');
+						var surl = dhtmlx.codebase;
+						if(surl.indexOf("cdn.jsdelivr.net")!=-1)
+							surl = "//cdn.jsdelivr.net/metadata/latest/"
 
-						for(i=0; i<document.scripts.length; i++){
-							turl = document.scripts[i].src;
-							if(turl.match(smetadata)){
-								sname = smetadata;
-								surl = turl;
-								break;
-							}else if(turl.match(smetadatamin)){
-								sname = smetadatamin;
-								surl = turl;
-								break;
-							}else if(turl.match(smetadatajsdelvr)){
-								sname = "%css";
-								surl = "//cdn.jsdelivr.net/metadata/latest/%css";
-								break;
-							}
-						}
 						// стили загружаем только при необходимости
 						for(i=0; i < document.styleSheets.length; i++){
 							if(document.styleSheets[i].href){
@@ -411,9 +394,9 @@
 
 						//str.replace(new RegExp(list[i] + '$'), 'finish')
 						if(load_dhtmlx)
-							$p.load_script(surl.replace(sname, dhtmlx.skin == "dhx_web" ? "dhx_web.css" : "dhx_terrace.css"), "link");
+							$p.load_script(surl + (dhtmlx.skin == "dhx_web" ? "dhx_web.css" : "dhx_terrace.css"), "link");
 						if(load_meta)
-							$p.load_script(surl.replace(sname, "metadata.css"), "link");
+							$p.load_script(surl + "metadata.css", "link");
 
 						// дополнительные стили
 						if($p.job_prm.additional_css)
@@ -423,7 +406,7 @@
 							});
 
 						// задаём путь к картинкам
-						dhtmlx.image_path = surl.replace(sname, "imgs/");
+						dhtmlx.image_path = "//oknosoft.github.io/metadata.js/lib/imgs/";
 
 						// суффикс скина
 						dhtmlx.skin_suffix = function () {
