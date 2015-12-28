@@ -375,7 +375,7 @@
 
 					function load_css(){
 
-						var surl = dhtmlx.codebase;
+						var surl = dhtmlx.codebase, load_dhtmlx = true, load_meta = true;
 						if(surl.indexOf("cdn.jsdelivr.net")!=-1)
 							surl = "//cdn.jsdelivr.net/metadata/latest/"
 
@@ -384,7 +384,7 @@
 							if(document.styleSheets[i].href){
 								if(document.styleSheets[i].href.indexOf("dhx_web")!=-1 || document.styleSheets[i].href.indexOf("dhx_terrace")!=-1)
 									load_dhtmlx = false;
-								else if(document.styleSheets[i].href.indexOf("metadata.css")!=-1)
+								if(document.styleSheets[i].href.indexOf("metadata.css")!=-1)
 									load_meta = false;
 							}
 						}
