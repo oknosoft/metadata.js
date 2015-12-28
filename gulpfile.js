@@ -42,6 +42,7 @@ gulp.task('js-merge', function () {
 			'./src/wnd_obj.js',
 			'./src/wnd_selection.js',
 			'./src/events.js',
+			'./src/events_browser.js',
 			'./data/merged_data.js',
 			'./lib/xml_to_json.js',
 			'./lib/filesaver.js'
