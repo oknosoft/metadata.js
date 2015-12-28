@@ -1,7 +1,7 @@
 {
   "name": "metadata",
   "description": "metadata.js - Web client for 1C and other rest servers - metadata & data engine",
-  "version": "0.9.201",
+  "version": "0.9.203",
   "license": "Oknosoft",
   "keywords": [
     "metadata",
