@@ -1,5 +1,8 @@
 //cdn.jsdelivr.net/g/alasql,metadata(dhtmlx.min.js+metadata.min.js)
-//cdn.jsdelivr.net/g/fontawesome,metadata(dhx_web.css+metadata.css)
+
+//cdn.jsdelivr.net/fontawesome/4.5/css/font-awesome.min.css
+//cdn.jsdelivr.net/fontawesome/4.5/fonts/fontawesome-webfont.woff2?v=4.5.0
+//cdn.jsdelivr.net/g/metadata(dhx_web.css+metadata.css)
 
 //cdn.jsdelivr.net/alasql/latest/alasql.min.js
 //cdn.jsdelivr.net/js-xlsx/latest/xlsx.core.min.js
