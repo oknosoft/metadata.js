@@ -17,7 +17,7 @@ var resources = require('./lib/gulp-resource-concat.js');
 var path = require('path');
 var umd = require('gulp-umd');
 
-gulp.task('js-merge', function () {
+gulp.task('build-metadata', function () {
 	return gulp.src([
 			'./src/common.js',
 			'./src/i18n.ru.js',
@@ -77,7 +77,7 @@ gulp.task('injected_main', function(){
 });
 
 // dhtmlx
-gulp.task('dhtmlx', function(){
+gulp.task('build-dhtmlx', function(){
 	//gulp.src(['./lib/dhtmlx_debug.js'])
 	//	.pipe(rename('dhtmlx.min.js'))
 	//	.pipe(uglify({
@@ -210,7 +210,7 @@ gulp.task('css-metadata', function () {
 });
 
 // Сборка сервера для Node.js
-gulp.task('core', function(){
+gulp.task('build-metadata-core', function(){
 	gulp.src([
 		'./src/common.js',
 		'./src/i18n.ru.js',
@@ -288,11 +288,11 @@ gulp.task('build-codex', function(){
 });
 
 // Сборка codex
-gulp.task('codex', ['injected-codres', 'injected-codex', 'build-codres', 'build-codex'], function(){});
+//gulp.task('codex', ['injected-codres', 'injected-codex', 'build-codres', 'build-codex'], function(){});
 
 
 // Главная задача
-gulp.task('default', ['js-merge' ], function(){});
+//gulp.task('default', ['js-merge' ], function(){});
 
 //gulp.task('watch', ['js-merge' ], function(){
 //	gulp.watch('./src/*.js',function(){ gulp.run('core'); });

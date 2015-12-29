@@ -240,7 +240,7 @@ eXcell_dhxCalendar.prototype.edit = function() {
 
 	dhx4.ajax._call = function(method, url, postData, async, onLoad, longParams, headers) {
 
-		var t = (window.XMLHttpRequest && !dhx4.isIE ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+		var t = (window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
 		var isQt = (navigator.userAgent.match(/AppleWebKit/) != null && navigator.userAgent.match(/Qt/) != null && navigator.userAgent.match(/Safari/) != null);
 
 		if (async == true) {
@@ -267,9 +267,11 @@ eXcell_dhxCalendar.prototype.edit = function() {
 			}
 		}
 
-		if (method == "GET" && this.cache != true) {
-			url += (url.indexOf("?")>=0?"&":"?")+"dhxr"+new Date().getTime()+"=1";
+		if (method == "GET") {
+			url += this._dhxr(url);
 		}
+
+		t.open(method, url, async);
 
 		// если обращение по rest или irest, добавляем авторизацию
 		fix_auth(t, method, url, async);
@@ -285,6 +287,12 @@ eXcell_dhxCalendar.prototype.edit = function() {
 		t.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 
 		t.send(postData);
+
+		if (async != true) {
+			if ((t.readyState == 4) || (isQt == true && t.readyState == 3)) {
+				if (t.status != 200 || t.responseText == "") dhx4.callEvent("onAjaxError", [{xmlDoc:t, filePath:url, async:async}]);
+			}
+		}
 
 		return {xmlDoc:t, filePath:url, async:async}; // dhtmlx-compat, response.xmlDoc.responseXML/responseText
 
