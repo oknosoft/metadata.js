@@ -210,10 +210,6 @@ function _load(attr){
 		}
 	}
 
-	function get_orders(){
-
-	}
-
 	function get_selection(){
 
 		if(mgr.cachable){
@@ -228,10 +224,10 @@ function _load(attr){
 
 	if(attr.action == "get_tree" && (res_local = get_tree()))
 		return res_local;
-	else if(attr.action == "get_orders" && (res_local = get_orders()))
-		return res_local;
+
 	else if(attr.action == "get_selection" && (res_local = get_selection()))
 		return res_local;
+
 	else if($p.job_prm.offline)
 		return Promise.reject(Error($p.msg.offline_request));
 
@@ -429,7 +425,7 @@ var _cat = $p.cat = new (
 	/**
 	 * Коллекция менеджеров планов видов характеристик
 	 * @property cch
-	 * @type ChartsOfCharacteristic
+	 * @type ChartsOfCharacteristics
 	 * @for MetaEngine
 	 * @static
 	 */
@@ -1016,6 +1012,13 @@ function Meta(req, patch) {
 
 	};
 
+	_md.dates = function () {
+		return {
+			md_date: m["md_date"],
+			cat_date: m["cat_date"]
+		};
+	}
+
 	// создаём объекты менеджеров
 
 	for(class_name in m.enm)
@@ -1048,26 +1051,144 @@ function Meta(req, patch) {
 	// загружаем модификаторы и прочие зависимости
 	$p.modifiers.execute($p);
 
-	return {
-		md_date: m["md_date"],
-		cat_date: m["cat_date"]
-	};
+	// широковещательное оповещение о готовности метаданных
+	dhx4.callEvent("meta");
+
+
 }
 $p.Meta = Meta;
 
+/**
+ * Подмешивает свойства с иерархией объекта patch в объект obj
+ * @param obj
+ * @param patch
+ * @private
+ */
 Meta._patch = function(obj, patch){
 	for(var area in patch){
-		for(var c in patch[area]){
-			if(!obj[area][c])
-				obj[area][c] = {};
-			for(var f in patch[area][c]){
-				if(!obj[area][c][f])
-					obj[area][c][f] = patch[area][c][f];
-				else if(typeof obj[area][c][f] == "object")
-					obj[area][c][f]._mixin(patch[area][c][f]);
+
+		if(typeof patch[area] == "object"){
+			if(obj[area])
+				Meta._patch(obj[area], patch[area]);
+			else
+				obj[area] = patch[area];
+		}else
+			obj[area] = patch[area];
+
+		//for(var c in patch[area]){
+		//	if(!obj[area][c])
+		//		obj[area][c] = {};
+		//	for(var f in patch[area][c]){
+		//		if(!obj[area][c][f])
+		//			obj[area][c][f] = patch[area][c][f];
+		//		else if(typeof obj[area][c][f] == "object")
+		//			obj[area][c][f]._mixin(patch[area][c][f]);
+		//	}
+		//}
+	}
+}
+
+/**
+ * Инициализирует метаданные из встроенных данных, внешних файлов или indexeddb
+ * @return {Promise}
+ * @private
+ */
+Meta.init_meta = function (forse) {
+
+	return new Promise(function(resolve, reject){
+
+		if($p.injected_data['meta.json'])
+			resolve(new Meta($p.injected_data['meta.json'], $p.injected_data['meta_patch.json']));
+
+		else if($p.injected_data['meta_patch.json'])
+			resolve(new Meta($p.injected_data['meta_patch.json']));
+
+		else{
+
+			// проверим indexeddb
+			$p.wsql.idx_connect(null, 'meta')
+				.then(function (db) {
+					var mreq, mpatch;
+					$p.wsql.idx_get('meta', db, 'meta')
+						.then(function (data) {
+							if(data && !forse){
+								mreq = data;
+								$p.wsql.idx_get('meta_patch', db, 'meta')
+									.then(function (data) {
+										resolve(new Meta(mreq, data));
+									});
+							}
+							else{
+								if(!$p.job_prm.files_date)
+									$p.eve.update_files_version()
+										.then(function () {
+											from_files(db);
+										});
+								else
+									from_files(db);
+							}
+						});
+				});
+
+
+			// в indexeddb не нашлось - грузим из файла
+			function from_files(db){
+
+				var parts = [
+					$p.ajax.get($p.job_prm.data_url + "meta.json?v="+$p.job_prm.files_date),
+					$p.ajax.get($p.job_prm.data_url + "meta_patch.json?v="+$p.job_prm.files_date)
+				], mreq, mpatch;
+
+
+				// читаем файл метаданных и файл патча метаданных
+				$p.eve.reduce_promices(parts, function (req) {
+						if(req instanceof XMLHttpRequest && req.status == 200){
+							if(req.responseURL.indexOf("meta.json") != -1){
+								mreq = JSON.parse(req.response);
+
+							}else if(req.responseURL.indexOf("meta_patch.json") != -1)
+								mpatch = JSON.parse(req.response);
+						}else{
+							$p.record_log(req);
+						}
+					})
+					// создаём объект Meta() описания метаданных
+					.then(function () {
+						if(!mreq)
+							reject(new Error("Ошибка чтения файла метаданных"));
+						else{
+							mreq.ref = "meta";
+							$p.wsql.idx_save(mreq, db, 'meta')
+								.then(function () {
+									mpatch.ref = "meta_patch";
+									$p.wsql.idx_save(mpatch, db, 'meta');
+								})
+								.then(function () {
+									resolve(new Meta(mreq, mpatch));
+								});
+						}
+					})
 			}
 		}
-	}
+
+	});
+}
+
+Meta.init_static = function (forse) {
+
+	return new Promise(function(resolve, reject){
+
+		// проверим indexeddb
+		$p.wsql.idx_connect(null, 'static')
+			.then(function (db) {
+				var mreq, mpatch;
+				$p.wsql.idx_get('p0', db, 'static')
+					.then(function (data) {
+
+					});
+			});
+
+	});
 }
 
 /**

@@ -1518,7 +1518,6 @@ function JobPrm(){
 	};
 
 	this.check_dhtmlx = true;
-	this.use_builder = false;
 	this.offline = false;
 	this.local_storage_prefix = "";
 	this.create_tables = true;
@@ -1895,6 +1894,10 @@ function WSQL(){
 	 * @async
 	 */
 	wsql.idx_connect = function (db_name, store_name) {
+
+		if(!db_name)
+			db_name = wsql.idx_name || $p.job_prm.local_storage_prefix || 'md';
+
 		return new Promise(function(resolve, reject){
 			var request = indexedDB.open(db_name, 1);
 			request.onerror = function(err){
@@ -1943,7 +1946,7 @@ function WSQL(){
 			if(db)
 				_save(db);
 			else
-				wsql.idx_connect(wsql.idx_name || $p.job_prm.local_storage_prefix || 'md', store_name)
+				wsql.idx_connect(null, store_name)
 					.then(_save);
 
 		});
@@ -1977,14 +1980,14 @@ function WSQL(){
 			if(db)
 				_get(db);
 			else
-				wsql.idx_connect(wsql.idx_name || $p.job_prm.local_storage_prefix || 'md', store_name)
+				wsql.idx_connect(null, store_name)
 					.then(_get);
 
 		});
 	};
 
 	/**
-	 * Сохраняет объект в indexedDB
+	 * Удаляет объект из indexedDB
 	 * @method idx_delete
 	 * @param obj {DataObj|Object|String} - объект или идентификатор
 	 * @param [db] {IDBDatabase}
@@ -2014,8 +2017,45 @@ function WSQL(){
 			if(db)
 				_delete(db);
 			else
-				wsql.idx_connect(wsql.idx_name || $p.job_prm.local_storage_prefix || 'md', store_name)
+				wsql.idx_connect(null, store_name)
 					.then(_delete);
+
+		});
+	};
+
+	/**
+	 * Удаляет все объекты из таблицы indexedDB
+	 * @method idx_clear
+	 * @param obj {DataObj|Object|String} - объект или идентификатор
+	 * @param [db] {IDBDatabase}
+	 * @param [store_name] {String} - имя хранилища в базе
+	 * @return {Promise}
+	 * @async
+	 */
+	wsql.idx_clear = function (obj, db, store_name) {
+
+		return new Promise(function(resolve, reject){
+
+			function _clear(db){
+				var request = db.transaction([store_name], "readwrite")
+					.objectStore(store_name)
+					.clear();
+				request.onerror = function(err){
+					reject(err);
+				};
+				request.onsuccess = function(){
+					resolve(request.result);
+				}
+			}
+
+			if(!store_name && obj._manager)
+				store_name = obj._manager.table_name;
+
+			if(db)
+				_clear(db);
+			else
+				wsql.idx_connect(null, store_name)
+					.then(_clear);
 
 		});
 	};

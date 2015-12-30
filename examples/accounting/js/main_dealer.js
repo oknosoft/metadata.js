@@ -33,6 +33,9 @@ $p.settings = function (prm, modifiers) {
 	// разделитель для localStorage
 	prm.local_storage_prefix = "acc_";
 
+	// скин по умолчанию
+	localStorage.setItem("acc_skin", prm.skin = "dhx_terrace");
+
 	/**
 	 * используем русскоязычные синонимы классов и методов
 	 */

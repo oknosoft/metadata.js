@@ -31,6 +31,9 @@ $p.settings = function (prm, modifiers) {
 	// разделитель для localStorage
 	prm.local_storage_prefix = "acc_";
 
+	// скин по умолчанию
+	localStorage.setItem("acc_skin", prm.skin = "dhx_terrace");
+
 	// расположение rest-сервиса accounting
 	prm.rest_path = "/a/ea/%1/odata/standard.odata/";
 

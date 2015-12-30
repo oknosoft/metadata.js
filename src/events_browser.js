@@ -471,15 +471,6 @@
 						w.addEventListener('touchstart', requestFullScreen, false);
 					}
 
-					// кешируем ссылки на элементы управления
-					if($p.job_prm.use_builder || $p.job_prm.use_wrapper){
-						$p.wrapper	= document.getElementById("owb_wrapper");
-						$p.risdiv	= document.getElementById("risdiv");
-						$p.ft		= document.getElementById("msgfooter");
-						if($p.ft)
-							$p.ft.style.display = "none";
-					}
-
 					/**
 					 * Выполняем отложенные методы из eve.onload
 					 */
@@ -489,21 +480,13 @@
 					if(document && document.querySelector("#splash"))
 						document.querySelector("#splash").parentNode.removeChild(document.querySelector("#splash"));
 
-					/**
-					 *	начинаем слушать события msgfooter-а, в который их пишет рисовалка
-					 */
-					if($p.job_prm.use_builder && $p.ft){
+					// инициализируем метаданные и обработчик при начале работы интерфейса
+					setTimeout(function () {
+						$p.Meta.init_meta()
+							.catch($p.record_log);
+						iface.oninit();
+					}, 20);
 
-						dhtmlxEvent($p.ft, "click", function(evt){
-							$p.cancel_bubble(evt);
-							if(evt.qualifier == "ready")
-								iface.oninit();
-							else if($p.eve.builder_click)
-								$p.eve.builder_click(evt);
-						});
-
-					}else
-						setTimeout(iface.oninit, 100);
 
 					$p.msg.russian_names();
 
@@ -634,7 +617,24 @@
 	 */
 	w.addEventListener("hashchange", $p.iface.hash_route);
 
-})(window)
+})(window);
+
+/**
+ * Шаги синхронизации (перечисление состояний)
+ * @property steps
+ * @for AppEvents
+ * @type SyncSteps
+ */
+$p.eve.steps = {
+	load_meta: 0,           // загрузка метаданных из файла
+	authorization: 1,       // авторизация на сервере 1С или Node (в автономном режиме шаг не выполняется)
+	create_managers: 2,     // создание менеджеров объектов
+	process_access:  3,     // загрузка данных пользователя, обрезанных по RLS (контрагенты, договоры, организации)
+	load_data_files: 4,     // загрузка данных из файла зоны
+	load_data_db: 5,        // догрузка данных с сервера 1С или Node
+	load_data_wsql: 6,      // загрузка данных из локальной датабазы (имеет смысл, если локальная база не в ОЗУ)
+	save_data_wsql: 7       // кеширование данных из озу в локальную датабазу
+};
 
 /**
  * Запускает процесс входа в программу и начальную синхронизацию
@@ -646,76 +646,51 @@
  */
 $p.eve.log_in = function(onstep){
 
-	var stepper = $p.eve.stepper, irest_attr = {}, parts = [], mreq, mpatch,
-		mdd, data_url = $p.job_prm.data_url || "/data/";
+	var stepper = $p.eve.stepper,
+		irest_attr = {},
+		data_url = $p.job_prm.data_url || "/data/",
+		res,
+		parts = [], mdd;
 
 	// информируем о начале операций
 	onstep($p.eve.steps.load_meta);
 
 	// выясняем, доступен ли irest (наш сервис) или мы ограничены стандартным rest-ом
+	// параллельно, проверяем авторизацию
 	$p.ajax.default_attr(irest_attr, $p.job_prm.irest_url());
-	if(!$p.job_prm.offline)
-		parts.push($p.ajax.get_ex(irest_attr.url, irest_attr));
+	res = $p.job_prm.offline ? Promise.resolve({responseURL: ""}) : $p.ajax.get_ex(irest_attr.url, irest_attr);
 
-	parts.push($p.ajax.get(data_url + "meta.json?v="+$p.job_prm.files_date));
-	parts.push($p.ajax.get(data_url + "meta_patch.json?v="+$p.job_prm.files_date));
-
-	// читаем файл метаданных и файл патча метаданных
-	return $p.eve.reduce_promices(parts, function (req) {
-			if(req instanceof XMLHttpRequest && req.status == 200){
-				if(req.responseURL.indexOf("/hs/rest") != -1)
-					$p.job_prm.irest_enabled = true;
-
-				else if(req.responseURL.indexOf("meta.json") != -1){
-					onstep($p.eve.steps.create_managers);
-					mreq = JSON.parse(req.response);
-
-				}else if(req.responseURL.indexOf("meta_patch.json") != -1)
-					mpatch = JSON.parse(req.response);
-			}else{
-				$p.record_log(req);
-			}
-		})
-		// создаём объект Meta() описания метаданных
-		.then(function () {
-			if(!mreq)
-				throw Error("Ошибка чтения файла метаданных");
-			else
-				return new Meta(mreq, mpatch);
+	return res
+		.then(function (req) {
+			if(!$p.job_prm.offline)
+				$p.job_prm.irest_enabled = true;
+			if(req.response[0] == "{")
+				return JSON.parse(req.response);
 		})
 
-		// авторизуемся на сервере. в автономном режиме сразу переходим к чтению первого файла данных
+		.catch(function () {
+			// если здесь ошибка, значит доступен только стандартный rest
+		})
+
 		.then(function (res) {
 
-			mreq = mpatch = null;
 
 			onstep($p.eve.steps.authorization);
 
-			if($p.job_prm.offline)
-				return res;
+			// TODO: реализовать метод для получения списка ролей пользователя
+			mdd = res || _md.dates();
+			mdd.root = true;
 
-			else if($p.job_prm.rest || $p.job_prm.irest_enabled){
+			// в автономном режиме сразу переходим к чтению первого файла данных
+			// если irest_enabled, значит уже авторизованы
+			if($p.job_prm.offline || $p.job_prm.irest_enabled)
+				return mdd;
 
-				// TODO: реализовать метод для получения списка ролей пользователя
-
-				// в режиме rest тестируем авторизацию. если irest_enabled, значит уже авторизованы
-				if($p.job_prm.irest_enabled)
-					return {root: true};
-				else
-					return $p.ajax.get_ex($p.job_prm.rest_url()+"?$format=json", true)
-						.then(function (req) {
-							//return JSON.parse(res.response);
-							return {root: true};
-						});
-
-			}else
-				return _load({
-					action: "get_meta",
-					cache_cat_date: stepper.cat_ini_date,
-					now_js: Date.now(),
-					margin: $p.wsql.get_user_param("margin", "number"),
-					ipinfo: $p.ipinfo.hasOwnProperty("latitude") ? JSON.stringify($p.ipinfo) : ""
-				})
+			else
+				return $p.ajax.get_ex($p.job_prm.rest_url()+"?$format=json", true)
+					.then(function () {
+						return mdd;
+					});
 		})
 
 		// обработчик ошибок авторизации
@@ -735,7 +710,8 @@ $p.eve.log_in = function(onstep){
 			if($p.job_prm.offline)
 				return res;
 
-			$p.ajax.authorized = true;
+			// широковещательное оповещение об авторизованности на сервере
+			dhx4.callEvent("authorized", [$p.ajax.authorized = true]);
 
 			if(typeof res == "string")
 				res = JSON.parse(res);
@@ -749,19 +725,13 @@ $p.eve.log_in = function(onstep){
 				$p.wsql.set_user_param("user_pwd", "");
 
 			// обрабатываем поступившие данные
-			$p.wsql.set_user_param("time_diff", res["now_1с"] - res["now_js"]);
-			if(res.cat && res.cat["clrs"])
-				_md.get("cat.clrs").predefined.white.ref = res.cat["clrs"].predefined.white.ref;
-			if(res.cat && res.cat["bases"])
-				_md.get("cat.bases").predefined.main.ref = res.cat["bases"].predefined.main.ref;
+			if(res.now_1с && res.now_js)
+				$p.wsql.set_user_param("time_diff", res.now_1с - res.now_js);
 
-			return res;
 		})
 
 		// сохраняем даты справочников в mdd и читаем первый файл данных
-		.then(function(res){
-
-			mdd = res;
+		.then(function(){
 
 			stepper.zone = ($p.job_prm.demo ? "1" : $p.wsql.get_user_param("zone")) + "/";
 
@@ -891,3 +861,83 @@ $p.eve.auto_log_in = function () {
 			stepper.step_size = 57;
 		})
 };
+
+$p.eve.update_files_version = function () {
+
+	if(!$p.job_prm || $p.job_prm.offline || !$p.job_prm.data_url)
+		Promise.resolve($p.wsql.get_user_param("files_date", "number") || 201512310000);
+
+	if(!$p.job_prm.files_date)
+		$p.job_prm.files_date = $p.wsql.get_user_param("files_date", "number");
+
+	return $p.ajax.get($p.job_prm.data_url + "sync.json?v="+Date.now())
+		.then(function (req) {
+			var sync = JSON.parse(req.response);
+
+			if(!$p.job_prm.confirmation && $p.job_prm.files_date != sync.files_date){
+
+				$p.wsql.set_user_param("files_date", sync.files_date);
+
+				if(sync.clear_meta){
+					// чистим indexeddb
+					$p.wsql.idx_connect(null, 'meta')
+						.then(function (db) {
+							return $p.wsql.idx_clear(null, db, 'meta');
+						})
+						.then(function () {
+							return $p.wsql.idx_clear(null, db, 'static');
+						})
+						.catch($p.record_log);
+
+				}else if(sync.clear_static){
+					// чистим indexeddb
+					$p.wsql.idx_connect(null, 'static')
+						.then(function (db) {
+							return $p.wsql.idx_clear(null, db, 'static');
+						})
+						.catch($p.record_log);
+				}
+
+				if(!$p.job_prm.files_date){
+					$p.job_prm.files_date = sync.files_date;
+
+				}else {
+
+					$p.job_prm.confirmation = true;
+
+					dhtmlx.confirm({
+						title: $p.msg.file_new_date_title,
+						text: $p.msg.file_new_date,
+						ok: "Перезагрузка",
+						cancel: "Продолжить",
+						callback: function(btn) {
+
+							delete $p.job_prm.confirmation;
+
+							if(btn){
+								$p.eve.redirect = true;
+								location.reload(true);
+							}
+						}
+					});
+				}
+			}
+
+			return sync.files_date;
+
+		}).catch($p.record_log)
+};
+
+/**
+ * Регламентные задания синхронизапции каждые 3 минуты
+ * @event ontimer
+ * @for AppEvents
+ */
+$p.eve.ontimer = function () {
+
+	// читаем файл версии файлов js. в случае изменений, оповещаем пользователя
+	// TODO: это место желательно перенести в сервисворкер
+	$p.eve.update_files_version();
+
+};
+setInterval($p.eve.ontimer, 180000);

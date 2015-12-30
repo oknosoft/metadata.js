@@ -379,18 +379,22 @@ $p.iface.layout_1c = function () {
  * полем входа под гостевой ролью, полями логина и пароля и кнопкой входа
  * @method frm_auth
  * @for InterfaceObjs
- * @param [onstep] {Function} - обработчик визуализации шагов входа в систему. Если не указан, рисуется стандарное окно
- * @param resolve {Function} - обработчик успешной авторизации и начальной загрузки данных
- * @param reject {Function} - обработчик, который вызывается в случае ошибок на старте программы
- * @param [on_draw_auth] {Function} - обработчик, который вызывается после отрисовки формы
+ * @param attr {Object} - параметры формы
+ * @param [attr.onstep] {Function} - обработчик визуализации шагов входа в систему. Если не указан, рисуется стандарное окно
+ * @param [attr.cell] {dhtmlXCellObject}
+ * @return {Promise}
  */
-$p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
+$p.iface.frm_auth = function (attr, resolve, reject) {
 
-	var frm_auth = $p.iface.auth = $p.iface.docs.attachForm(),
+	if(!attr)
+		attr = {};
+
+	var _cell = attr.cell || $p.iface.docs,
+		_frm = $p.iface.auth = _cell.attachForm(),
 		w, were_errors;
 
-	if(!onstep)
-		onstep = function (step){
+	if(!attr.onstep)
+		attr.onstep = function (step){
 
 			var stepper = $p.eve.stepper;
 
@@ -405,8 +409,8 @@ $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 				case $p.eve.steps.load_meta:
 
 					// индикатор прогресса и малое всплывающее сообщение
-					$p.iface.docs.progressOn();
-					$p.msg.show_msg($p.msg.init_catalogues + $p.msg.init_catalogues_meta, $p.iface.docs);
+					_cell.progressOn();
+					$p.msg.show_msg($p.msg.init_catalogues + $p.msg.init_catalogues_meta, _cell);
 					if(!$p.iface.sync)
 						$p.iface.wnd_sync();
 					$p.iface.sync.create(stepper);
@@ -456,6 +460,9 @@ $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 
 		};
 
+	if(!$p.job_prm.files_date)
+		$p.eve.update_files_version();
+
 	function do_auth(login, password, is_guest){
 		$p.ajax.username = login;
 		$p.ajax.password = password;
@@ -466,20 +473,20 @@ $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 			if(!$p.is_guid($p.wsql.get_user_param("browser_uid")))
 				$p.wsql.set_user_param("browser_uid", $p.generate_guid());	// проверяем guid браузера
 
-			$p.eve.log_in(onstep)
-				.then(frm_auth.on_auth || resolve)
+			$p.eve.log_in(attr.onstep)
+				.then(resolve)
 				.catch(function (err) {
 					were_errors = true;
-					if(frm_auth.on_error || reject)
-						(frm_auth.on_error || reject)(err);
+					if(reject)
+						reject(err);
 				})
-				.then(function (err) {
+				.then(function () {
 					if($p.iface.sync)
 						$p.iface.sync.close();
-					if($p.iface.docs){
-						$p.iface.docs.progressOff();
-						if(!were_errors)
-							$p.iface.docs.hideHeader();
+					if(_cell){
+						_cell.progressOff();
+						if(!were_errors && attr.hide_header)
+							_cell.hideHeader();
 					}
 					if($p.iface.cell_tree && !were_errors)
 						$p.iface.cell_tree.expand();
@@ -505,15 +512,15 @@ $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 	}
 
 	// загружаем структуру формы
-	frm_auth.loadStruct($p.injected_data["form_auth.xml"], function(){
+	_frm.loadStruct($p.injected_data["form_auth.xml"], function(){
 
 		// после готовности формы читаем пользователя из локальной датабазы
 		if($p.wsql.get_user_param("user_name")){
-			frm_auth.setItemValue("login", $p.wsql.get_user_param("user_name"));
-			frm_auth.setItemValue("type", "auth");
+			_frm.setItemValue("login", $p.wsql.get_user_param("user_name"));
+			_frm.setItemValue("type", "auth");
 
 			if($p.wsql.get_user_param("enable_save_pwd") && $p.wsql.get_user_param("user_pwd")){
-				frm_auth.setItemValue("password", $p.wsql.get_user_param("user_pwd"));
+				_frm.setItemValue("password", $p.wsql.get_user_param("user_pwd"));
 
 				if($p.wsql.get_user_param("autologin"))
 					auth_click();
@@ -521,18 +528,20 @@ $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 		}
 
 		// позиционируем форму по центру
-		if((w = ($p.iface.docs.getWidth() - 500)/2) >= 10)
-			frm_auth.cont.style.paddingLeft = w.toFixed() + "px";
+		if((w = ((_cell.getWidth ? _cell.getWidth() : _cell.cell.offsetWidth) - 500)/2) >= 10)
+			_frm.cont.style.paddingLeft = w.toFixed() + "px";
 		else
-			frm_auth.cont.style.paddingLeft = "20px";
+			_frm.cont.style.paddingLeft = "20px";
 
-		setTimeout(on_draw_auth);
+		setTimeout(function () {
+			dhx4.callEvent("on_draw_auth", [_frm]);
+		});
 	});
 
 	// назначаем обработчик нажатия на кнопку
-	frm_auth.attachEvent("onButtonClick", auth_click);
+	_frm.attachEvent("onButtonClick", auth_click);
 
-	frm_auth.attachEvent("onKeyDown",function(inp, ev, name, value){
+	_frm.attachEvent("onKeyDown",function(inp, ev, name, value){
 		if(ev.keyCode == 13){
 			if(name == "password" || this.getCheckedValue("type") == "guest"){
 				auth_click.call(this);
@@ -541,9 +550,9 @@ $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 	});
 
 
-	$p.msg.show_msg($p.msg.init_login, $p.iface.docs);
+	$p.msg.show_msg($p.msg.init_login, _cell);
 
-	frm_auth.onerror = function (err) {
+	_frm.onerror = function (err) {
 
 		$p.ajax.authorized = false;
 
@@ -555,8 +564,8 @@ $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 				type: "alert-error",
 				text: $p.msg.error_auth
 			});
-			frm_auth.setItemValue("password", "");
-			frm_auth.validate();
+			_frm.setItemValue("password", "");
+			_frm.validate();
 
 		}else if(emsg.indexOf("gateway") != -1 || emsg.indexOf("net") != -1) {
 			$p.msg.show_msg({
@@ -578,7 +587,10 @@ $p.iface.open_settings = function (e) {
 	var evt = (e || (typeof event != "undefined" ? event : undefined));
 	if(evt)
 		evt.preventDefault();
-	window.open(($p.job_prm.settings_url || 'order_dealer/options.html')+'?v='+$p.job_prm.files_date);
+
+	var hprm = $p.job_prm.parse_url();
+	$p.iface.set_hash(hprm.obj, hprm.ref, hprm.frm, "settings");
+
 	return $p.cancel_bubble(evt);
 };
 

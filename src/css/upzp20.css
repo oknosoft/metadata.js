@@ -258,6 +258,10 @@ div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td {
 .pl_bg_gray{ background-color: lightgray !important; }
 .pl_bold{ font-weight: bold; }
 
+/* оформление таблицы terrace*/
+div.gridbox_dhx_terrace.gridbox .odd_dhx_terrace {
+	background-color: #fbfbfb;
+}
 
 /* Панель инструментов OTooolBar*/
 .md_otooolbar {

@@ -31,6 +31,9 @@ $p.settings = function (prm, modifiers) {
 	// разделитель для localStorage
 	prm.local_storage_prefix = "unf_";
 
+	// скин по умолчанию
+	localStorage.setItem("unf_skin", prm.skin = "dhx_terrace");
+
 	// расположение rest-сервиса unf
 	prm.rest_path = "/a/unf/%1/odata/standard.odata/";
 
