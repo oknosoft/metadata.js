@@ -474,7 +474,12 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 				$p.wsql.set_user_param("browser_uid", $p.generate_guid());	// проверяем guid браузера
 
 			$p.eve.log_in(attr.onstep)
-				.then(resolve)
+				.then(function () {
+					if(resolve)
+						resolve();
+					$p.eve.logged_in = true;
+					dhx4.callEvent("log_in");
+				})
 				.catch(function (err) {
 					were_errors = true;
 					if(reject)

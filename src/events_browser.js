@@ -802,40 +802,18 @@ $p.eve.auto_log_in = function () {
 	var stepper = $p.eve.stepper,
 		data_url = $p.job_prm.data_url || "/data/",
 		parts = [],
-		mreq, mpatch, p_0, mdd;
+		p_0;
 
 
 	stepper.zone = $p.wsql.get_user_param("zone") + "/";
 
-	parts.push($p.ajax.get(data_url + "meta.json?v="+$p.job_prm.files_date));
-	parts.push($p.ajax.get(data_url + "meta_patch.json?v="+$p.job_prm.files_date));
-	parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "p_0.json?v="+$p.job_prm.files_date));
-
 	// читаем файл метаданных, файл патча метаданных и первый файл снапшота
-	return $p.eve.reduce_promices(parts, function (req) {
-			if(req instanceof XMLHttpRequest && req.status == 200){
-				if(req.responseURL.indexOf("meta.json") != -1)
-					mreq = JSON.parse(req.response);
-
-				else if(req.responseURL.indexOf("meta_patch.json") != -1)
-					mpatch = JSON.parse(req.response);
-
-				else if(req.responseURL.indexOf("p_0.json") != -1)
-					p_0 = JSON.parse(req.response);
-			}else{
-				$p.record_log(req);
-			}
-		})
-		// создаём объект Meta() описания метаданных
-		.then(function () {
-			if(!mreq)
-				throw Error("Ошибка чтения файла метаданных");
-			else
-				return new $p.Meta(mreq, mpatch);
-		})
+	return $p.ajax.get(data_url + "zones/" + stepper.zone + "p_0.json?v="+$p.job_prm.files_date)
 
 		// из содержимого первого файла получаем количество файлов и загружаем их все
 		.then(function (req) {
+
+			p_0 = JSON.parse(req.response);
 
 			stepper.files = p_0.files-1;
 			stepper.step_size = p_0.files > 0 ? Math.round(p_0.count_all / p_0.files) : 57;
@@ -847,7 +825,6 @@ $p.eve.auto_log_in = function () {
 		// формируем массив url файлов данных зоны
 		.then(function () {
 
-			parts = [];
 			for(var i=1; i<=stepper.files; i++)
 				parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "p_" + i + ".json?v="+$p.job_prm.files_date));
 			parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "ireg.json?v="+$p.job_prm.files_date));
