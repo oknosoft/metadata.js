@@ -67,9 +67,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				pwnd.close();
 			wnd = pwnd;
 			wnd.close = function () {
-				if(wnd || pwnd){
+				if(wnd || pwnd){wnd
 					(wnd || pwnd).detachToolbar();
 					(wnd || pwnd).detachStatusBar();
+					if((wnd || pwnd).conf)
+						(wnd || pwnd).conf.unloading = true;
 					(wnd || pwnd).detachObject(true);
 				}
 				frm_unload();
@@ -90,7 +92,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 
 		$p.iface.bind_help(wnd);
-		if(!(wnd instanceof dhtmlXTabBarCell))
+		if(wnd.setText)
 			wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (md["list_presentation"] || md.synonym) + '"');
 
 		document.body.addEventListener("keydown", body_keydown, false);
@@ -130,11 +132,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				this.hideItem("btn_delete");
 			}
 
-			if(!on_select && $p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper"){
+			if(!on_select){
 				this.hideItem("btn_select");
 				this.hideItem("sep1");
-				this.addListOption("bs_more", "btn_order_list", "~", "button", "<i class='fa fa-briefcase fa-lg fa-fw'></i> Список заказов");
-
+				if($p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper")
+					this.addListOption("bs_more", "btn_order_list", "~", "button", "<i class='fa fa-briefcase fa-lg fa-fw'></i> Список заказов");
 			}
 			this.addListOption("bs_more", "btn_import", "~", "button", "<i class='fa fa-upload fa-lg fa-fw'></i> Загрузить из файла");
 			this.addListOption("bs_more", "btn_export", "~", "button", "<i class='fa fa-download fa-lg fa-fw'></i> Выгрузить в файл");

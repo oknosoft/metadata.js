@@ -165,16 +165,29 @@ div.gridbox_dhx_terrace.gridbox table.obj tr td.cellselected {
 
 /* отступы в гриде */
 div.gridbox_dhx_terrace.gridbox table.obj tr td,
+div.gridbox_dhx_terrace.gridbox table.obj.row20px tr td,
 div.gridbox_dhx_terrace.gridbox table.obj tr td.editable{
-	padding: 1px 0;
+	padding: 1px 2px 1px 2px;
 	height: 23px;
 	line-height: 23px;
+	border-right: 1px solid #eee;
 }
 
 /* отступы в шапке грида */
 div.gridbox_dhx_web.gridbox table.hdr td,
 div.gridbox_dhx_terrace.gridbox table.hdr td{
 	padding: 3px 0;
+}
+
+/* отступы в тулбаре
+.dhx_toolbar_dhx_terrace div.dhx_toolbar_btn, .dhx_toolbar_dhx_terrace div.dhx_toolbar_arw {
+	margin-top: 1px;
+}
+*/
+.dhx_toolbar_dhx_terrace div.dhx_toolbar_btn, .dhx_toolbar_dhx_terrace div.dhx_toolbar_arw {
+	background-color: #fefefe;
+	padding: 3px;
+	margin-top: 1px;
 }
 
 div.gridbox_dhx_terrace.gridbox table.hdr td div.hdrcell {
@@ -335,7 +348,4 @@ div.dhxwin_brd.dat_gui {
 	border: none;
 	background: transparent;
 	font-size: inherit;
-}
-.dhx_toolbar_dhx_terrace div.dhx_toolbar_btn, .dhx_toolbar_dhx_terrace div.dhx_toolbar_arw {
-	margin-top: 1px;
 }
