@@ -842,7 +842,7 @@ $p.eve.auto_log_in = function () {
 $p.eve.update_files_version = function () {
 
 	if(!$p.job_prm || $p.job_prm.offline || !$p.job_prm.data_url)
-		Promise.resolve($p.wsql.get_user_param("files_date", "number") || 201512310000);
+		return Promise.resolve($p.wsql.get_user_param("files_date", "number") || 201512310000);
 
 	if(!$p.job_prm.files_date)
 		$p.job_prm.files_date = $p.wsql.get_user_param("files_date", "number");
