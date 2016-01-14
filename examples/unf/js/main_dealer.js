@@ -25,49 +25,37 @@ var unf = new function UNF() {
  */
 $p.settings = function (prm, modifiers) {
 
-	/**
-	 * для транспорта используем rest, а не сервис http
-	 */
+	// для транспорта используем rest, а не сервис http
 	prm.rest = true;
 
 	// разделитель для localStorage
 	prm.local_storage_prefix = "unf_";
 
-	/**
-	 * используем русскоязычные синонимы классов и методов
-	 */
-	prm.russian_names = true;
+	// скин по умолчанию
+	localStorage.setItem("unf_skin", prm.skin = "dhx_terrace");
 
-	/**
-	 * расположение rest-сервиса unf
-	 */
-	prm.rest_path = "/a/unf/%1/odata/standard.odata/";
+	// расположение rest-сервиса unf
+	prm.rest_path = location.host.indexOf("oknosoft.ru") == -1 ? "/unf/odata/standard.odata/" : "/a/unf/%1/odata/standard.odata/";
 
-	/**
-	 * по умолчанию, обращаемся к зоне 1377
-	 */
-	prm.zone = 1377;
+	// по умолчанию, обращаемся к зоне 1377
+	prm.zone = location.host.indexOf("oknosoft.ru") == -1 ? 0 : 1377;
 
-	/**
-	 * расположение файлов данных
-	 */
+	// расположение файлов данных
 	prm.data_url = "examples/unf/data/";
 
-	/**
-	 * расположение файла инициализации базы sql
-	 */
+	// расположение файла инициализации базы sql
 	prm.create_tables = "examples/unf/data/create_tables.sql";
 
+	// разрешаем сообщения от других окон
+	prm.allow_post_message = "*";
 
-	/**
-	 * расположение страницы настроек
-	 */
-	prm.settings_url = "examples/unf/settings.html";
+	// используем русскоязычные синонимы классов и методов
+	prm.russian_names = true;
 
+	// разрешаем покидать страницу без лишних вопросов
+	$p.eve.redirect = true;
 
-	/**
-	 * подключаем модификаторы
-	 */
+	// подключаем модификаторы
 	unf.modifiers.forEach(function (func) {
 		modifiers.push(func);
 	});

@@ -26,7 +26,6 @@ gulp.task('build-metadata', function () {
 			'./src/wdg_ocombo.js',
 			'./src/wdg_ohead_fields.js',
 			'./src/wdg_otabular.js',
-			'./src/wdg_rsvg.js',
 			'./src/wdg_filter.js',
 			'./src/wdg_dyn_tree.js',
 			'./src/wnd_dat.js',

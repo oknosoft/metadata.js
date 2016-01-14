@@ -130,8 +130,12 @@ a.dropdown_list {
 }
 
 /* зачки состояния объекта: папка, элемент, пометка удаления, проведён */
-.cell_ref_folder {padding-left: 26px !important; background: url(../imgs/dhxtree_web/folderClosed.gif) no-repeat left center;}
-.cell_ref_folder_deleted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/folderDeleted.gif) no-repeat left center;}
+.gridbox_dhx_terrace .cell_ref_folder {padding-left: 26px !important; background: url(../imgs/dhxtree_terrace/folderClosed.gif) no-repeat left center;}
+.gridbox_dhx_terrace .cell_ref_folder_deleted {padding-left: 26px !important; background: url(../imgs/dhxtree_terrace/folderDeleted.gif) no-repeat left center;}
+
+.gridbox_dhx_web .cell_ref_folder {padding-left: 26px !important; background: url(../imgs/dhxtree_web/folderClosed.gif) no-repeat left center;}
+.gridbox_dhx_web .cell_ref_folder_deleted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/folderDeleted.gif) no-repeat left center;}
+
 .cell_ref_elm {padding-left: 26px !important; background: url(../imgs/dhxtree_web/catelm.gif) no-repeat left center;}
 .cell_ref_elm_deleted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/catelmDeleted.gif) no-repeat left center;}
 .cell_doc_posted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/doc_posted.png) no-repeat left center;}
@@ -139,13 +143,12 @@ a.dropdown_list {
 .cell_doc_saved {padding-left: 26px !important; background: url(../imgs/dhxtree_web/doc_saved.png) no-repeat left center;}
 .cell_mandatory {border-bottom: 2px red dotted !important;}
 
-div.gridbox_clear table.hdr td {
-    color: #333;
-}
-
-div.gridbox_dhx_web.gridbox table.obj.row20px tr td {
+/* высота строки грида
+div.gridbox_dhx_web.gridbox table.obj.row20px tr td,
+div.gridbox_dhx_terrace.gridbox table.obj.row20px tr td{
     height: 23px;
 }
+*/
 
 /* фон выделения в гриде */
 div.gridbox_dhx_web.gridbox table.obj tr.rowselected td.cellselected {
@@ -153,9 +156,44 @@ div.gridbox_dhx_web.gridbox table.obj tr.rowselected td.cellselected {
 	color: #000000;
 }
 
+/* .dhxtree_dhx_terrace span.selectedTreeRow */
+div.gridbox_dhx_terrace.gridbox table.obj tr.rowselected td,
+div.gridbox_dhx_terrace.gridbox table.obj.row20px tr.rowselected td,
+div.gridbox_dhx_terrace.gridbox table.obj tr td.cellselected {
+	background-color: rgb(255, 251, 240);
+}
+
+/* отступы в гриде */
+div.gridbox_dhx_terrace.gridbox table.obj tr td,
+div.gridbox_dhx_terrace.gridbox table.obj.row20px tr td,
+div.gridbox_dhx_terrace.gridbox table.obj tr td.editable{
+	padding: 1px 2px 1px 2px;
+	height: 23px;
+	line-height: 23px;
+	border-right: 1px solid #eee;
+}
+
 /* отступы в шапке грида */
-div.gridbox_dhx_web.gridbox table.hdr td {
-	padding: 3px 0px 4px 0px;
+div.gridbox_dhx_web.gridbox table.hdr td,
+div.gridbox_dhx_terrace.gridbox table.hdr td{
+	padding: 3px 0;
+}
+
+/* отступы в тулбаре
+.dhx_toolbar_dhx_terrace div.dhx_toolbar_btn, .dhx_toolbar_dhx_terrace div.dhx_toolbar_arw {
+	margin-top: 1px;
+}
+*/
+.dhx_toolbar_dhx_terrace div.dhx_toolbar_btn, .dhx_toolbar_dhx_terrace div.dhx_toolbar_arw {
+	background-color: #fefefe;
+	padding: 3px;
+	margin-top: 1px;
+}
+
+div.gridbox_dhx_terrace.gridbox table.hdr td div.hdrcell {
+	padding-left: 4px;
+	line-height: 28px;
+	text-transform: none;
 }
 
 /* Калькулятор */
@@ -216,6 +254,8 @@ div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td {
 /* Текстовый редактор - высота*/
 .dhx_textarea {
     height: 50px;
+	margin-left: 0;
+	margin-top: -23px;
 }
 
 /* поле с тремя точками */
@@ -258,6 +298,10 @@ div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td {
 .pl_bg_gray{ background-color: lightgray !important; }
 .pl_bold{ font-weight: bold; }
 
+/* оформление таблицы terrace*/
+div.gridbox_dhx_terrace.gridbox .odd_dhx_terrace {
+	background-color: #fbfbfb;
+}
 
 /* Панель инструментов OTooolBar*/
 .md_otooolbar {
@@ -304,7 +348,4 @@ div.dhxwin_brd.dat_gui {
 	border: none;
 	background: transparent;
 	font-size: inherit;
-}
-.dhx_toolbar_dhx_terrace div.dhx_toolbar_btn, .dhx_toolbar_dhx_terrace div.dhx_toolbar_arw {
-	margin-top: 1px;
 }

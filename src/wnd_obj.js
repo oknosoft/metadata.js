@@ -68,7 +68,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	function frm_create(){
 
 		// создаём и настраиваем окно формы
-		if(pwnd instanceof dhtmlXLayoutCell && (attr.bind_pwnd || attr.Приклеить)) {
+		if((pwnd instanceof dhtmlXLayoutCell || pwnd instanceof dhtmlXSideBarCell || pwnd instanceof dhtmlXCarouselCell)
+				&& (attr.bind_pwnd || attr.Приклеить)) {
 			// форма объекта приклеена к области контента или другой форме
 			if(typeof pwnd.close == "function")
 				pwnd.close();
@@ -77,14 +78,18 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				if(wnd || pwnd){
 					(wnd || pwnd).detachToolbar();
 					(wnd || pwnd).detachStatusBar();
+					if((wnd || pwnd).conf)
+						(wnd || pwnd).conf.unloading = true;
 					(wnd || pwnd).detachObject(true);	
 				}
 				frm_unload();
 			};
 			wnd.elmnts = {};
 			setTimeout(function () {
-				wnd.showHeader();
-				wnd.setText((cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation);
+				if(wnd && wnd.showHeader){
+					wnd.showHeader();
+					wnd.setText((cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation);
+				}
 			});
 
 		}else{
@@ -132,7 +137,14 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		});
 		wnd.elmnts.frm_tabs.addTab('tab_header','&nbsp;Реквизиты&nbsp;', null, null, true);
 		wnd.elmnts.tabs = {'tab_header': wnd.elmnts.frm_tabs.cells('tab_header')};
-		if(!o.is_folder){
+
+		/**
+		 * закладки табличных частей
+		 */
+		if(attr.draw_tabular_sections)
+			attr.draw_tabular_sections(o, wnd, tabular_init);
+
+		else if(!o.is_folder){
 			for(var ts in cmd.tabular_sections){
 				if(ts==="extra_fields")
 					continue;
@@ -151,11 +163,14 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		/**
 		 *	закладка шапка
 		 */
-		wnd.elmnts.pg_header = wnd.elmnts.tabs.tab_header.attachHeadFields({
-			obj: o,
-			pwnd: wnd,
-			read_only: !$p.ajax.root    // TODO: учитывать права для каждой роли на каждый объект
-		});
+		if(attr.draw_pg_header)
+			attr.draw_pg_header(o, wnd);
+		else
+			wnd.elmnts.pg_header = wnd.elmnts.tabs.tab_header.attachHeadFields({
+				obj: o,
+				pwnd: wnd,
+				read_only: !$p.ajax.root    // TODO: учитывать права для каждой роли на каждый объект
+			});
 
 		// панель инструментов формы
 		wnd.elmnts.frm_toolbar = wnd.attachToolbar();
@@ -165,7 +180,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			this.attachEvent("onclick", toolbar_click);
 
 			// TODO: учитывать права для каждой роли на каждый объект
-			if(o.hasOwnProperty("posted") && $p.ajax.root){
+			if(o instanceof DocObj && $p.ajax.root){
 				this.enableItem("btn_post");
 				this.enableItem("btn_unpost");
 			}else{
@@ -188,6 +203,11 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				});
 			else
 				this.disableItem("bs_print");
+
+			// кнопка закрытия для приклеенной формы
+			if(wnd != pwnd){
+				this.hideItem("btn_close");
+			}
 
 			// попап для присоединенных файлов
 			wnd.elmnts.vault_pop = new dhtmlXPopup({
@@ -231,6 +251,9 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		else if(btn_id=="btn_save")
 			save("save");
+
+		else if(btn_id=="btn_close")
+			wnd.close();
 
 		else if(btn_id=="btn_go_connection")
 			go_connection();
@@ -320,7 +343,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 
 	/**
-	 * настройка (инициализация) табличной части продукции
+	 * настройка (инициализация) табличной части
 	 */
 	function tabular_init(name){
 
@@ -376,6 +399,10 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		_mgr = null;
 		wnd = null;
+
+		if(attr && attr.on_close){
+			attr.on_close();
+		}
 	}
 
 	function frm_close(win){

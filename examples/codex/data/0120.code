@@ -29,9 +29,6 @@ $p.settings = function (prm, modifiers) {
 	// расположение файла инициализации базы sql
 	prm.create_tables = "examples/unf/data/create_tables.sql";
 
-	// расположение страницы настроек
-	prm.settings_url = "examples/unf/settings.html";
-
 	// разрешаем сообщения от других окон
 	prm.allow_post_message = "*";
 

@@ -31,20 +31,20 @@ $p.settings = function (prm, modifiers) {
 	// разделитель для localStorage
 	prm.local_storage_prefix = "unf_";
 
+	// скин по умолчанию
+	localStorage.setItem("unf_skin", prm.skin = "dhx_terrace");
+
 	// расположение rest-сервиса unf
-	prm.rest_path = "/a/unf/%1/odata/standard.odata/";
+	prm.rest_path = location.host.indexOf("oknosoft.ru") == -1 ? "/unf/odata/standard.odata/" : "/a/unf/%1/odata/standard.odata/";
 
 	// по умолчанию, обращаемся к зоне 1377
-	prm.zone = 1377;
+	prm.zone = location.host.indexOf("oknosoft.ru") == -1 ? 0 : 1377;
 
 	// расположение файлов данных
 	prm.data_url = "examples/unf/data/";
 
 	// расположение файла инициализации базы sql
 	prm.create_tables = "examples/unf/data/create_tables.sql";
-
-	// расположение страницы настроек
-	prm.settings_url = "examples/unf/settings.html";
 
 	// разрешаем сообщения от других окон
 	prm.allow_post_message = "*";

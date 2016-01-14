@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding='utf-8'?>
 <toolbar>
     <item type="button" id="btn_save_close" text="&lt;b&gt;Записать и закрыть&lt;/b&gt;" title="Рассчитать, записать и закрыть" />
-    <item type="button" id="btn_save" text="&lt;i class='fa fa-floppy-o fa-lg'&gt;&lt;/i&gt; Записать" title="Рассчитать и записать данные"/>
+    <item type="button" id="btn_save" text="&lt;i class='fa fa-floppy-o fa-lg'&gt;&lt;/i&gt;" title="Рассчитать и записать данные"/>
+    <item type="button" id="btn_close" text="&lt;i class='fa fa-times fa-lg'&gt;&lt;/i&gt;" title="Закрыть форму"/>
     <item type="button" id="btn_post" enabled="false" text="&lt;i class='fa fa-check-square-o fa-lg'&gt;&lt;/i&gt;" title="Провести документ" />
     <item type="button" id="btn_unpost" enabled="false" text="&lt;i class='fa fa-square-o fa-lg'&gt;&lt;/i&gt;" title="Отмена проведения" />
 

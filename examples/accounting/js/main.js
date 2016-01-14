@@ -31,20 +31,20 @@ $p.settings = function (prm, modifiers) {
 	// разделитель для localStorage
 	prm.local_storage_prefix = "acc_";
 
+	// скин по умолчанию
+	localStorage.setItem("acc_skin", prm.skin = "dhx_terrace");
+
 	// расположение rest-сервиса accounting
-	prm.rest_path = "/a/ea/%1/odata/standard.odata/";
+	prm.rest_path = location.host.indexOf("oknosoft.ru") == -1 ? "/ea/odata/standard.odata/" : "/a/ea/%1/odata/standard.odata/";
 
 	// по умолчанию, обращаемся к зоне 1392
-	prm.zone = 1392;
+	prm.zone = location.host.indexOf("oknosoft.ru") == -1 ? 0 : 1392;
 
 	// расположение файлов данных
 	prm.data_url = "examples/accounting/data/";
 
 	// расположение файла инициализации базы sql
 	prm.create_tables = "examples/accounting/data/create_tables.sql";
-
-	// расположение страницы настроек
-	prm.settings_url = "examples/accounting/settings.html";
 
 	// разрешаем сообщения от других окон
 	prm.allow_post_message = "*";

@@ -1532,7 +1532,6 @@ function JobPrm(){
 	};
 
 	this.check_dhtmlx = true;
-	this.use_builder = false;
 	this.offline = false;
 	this.local_storage_prefix = "";
 	this.create_tables = true;
@@ -1909,6 +1908,10 @@ function WSQL(){
 	 * @async
 	 */
 	wsql.idx_connect = function (db_name, store_name) {
+
+		if(!db_name)
+			db_name = wsql.idx_name || $p.job_prm.local_storage_prefix || 'md';
+
 		return new Promise(function(resolve, reject){
 			var request = indexedDB.open(db_name, 1);
 			request.onerror = function(err){
@@ -1957,7 +1960,7 @@ function WSQL(){
 			if(db)
 				_save(db);
 			else
-				wsql.idx_connect(wsql.idx_name || $p.job_prm.local_storage_prefix || 'md', store_name)
+				wsql.idx_connect(null, store_name)
 					.then(_save);
 
 		});
@@ -1991,14 +1994,14 @@ function WSQL(){
 			if(db)
 				_get(db);
 			else
-				wsql.idx_connect(wsql.idx_name || $p.job_prm.local_storage_prefix || 'md', store_name)
+				wsql.idx_connect(null, store_name)
 					.then(_get);
 
 		});
 	};
 
 	/**
-	 * Сохраняет объект в indexedDB
+	 * Удаляет объект из indexedDB
 	 * @method idx_delete
 	 * @param obj {DataObj|Object|String} - объект или идентификатор
 	 * @param [db] {IDBDatabase}
@@ -2028,8 +2031,45 @@ function WSQL(){
 			if(db)
 				_delete(db);
 			else
-				wsql.idx_connect(wsql.idx_name || $p.job_prm.local_storage_prefix || 'md', store_name)
+				wsql.idx_connect(null, store_name)
 					.then(_delete);
+
+		});
+	};
+
+	/**
+	 * Удаляет все объекты из таблицы indexedDB
+	 * @method idx_clear
+	 * @param obj {DataObj|Object|String} - объект или идентификатор
+	 * @param [db] {IDBDatabase}
+	 * @param [store_name] {String} - имя хранилища в базе
+	 * @return {Promise}
+	 * @async
+	 */
+	wsql.idx_clear = function (obj, db, store_name) {
+
+		return new Promise(function(resolve, reject){
+
+			function _clear(db){
+				var request = db.transaction([store_name], "readwrite")
+					.objectStore(store_name)
+					.clear();
+				request.onerror = function(err){
+					reject(err);
+				};
+				request.onsuccess = function(){
+					resolve(request.result);
+				}
+			}
+
+			if(!store_name && obj._manager)
+				store_name = obj._manager.table_name;
+
+			if(db)
+				_clear(db);
+			else
+				wsql.idx_connect(null, store_name)
+					.then(_clear);
 
 		});
 	};
@@ -3755,143 +3795,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 
 /**
- * Ячейка грида для отображения картинки svg и компонент,
- * получающий и отображающий галерею эскизов объекта данных
- *
- * &copy; http://www.oknosoft.ru 2014-2015
- * @author	Evgeniy Malyarov
- *
- * @module  wdg_rsvg
- * @requires common
- */
-
-if(typeof window !== "undefined" && "dhtmlx" in window){
-
-	/**
-	 * Конструктор поля картинки svg
-	 */
-	function eXcell_rsvg(cell){ //the eXcell name is defined here
-		if (cell){                // the default pattern, just copy it
-			this.cell = cell;
-			this.grid = this.cell.parentNode.grid;
-		}
-		this.edit = function(){};  //read-only cell doesn't have edit method
-		this.isDisabled = function(){ return true; }; // the cell is read-only, so it's always in the disabled state
-		this.setValue=function(val){
-			this.setCValue(val ? $p.iface.scale_svg(val, 120, 10) : "нет эскиза");
-		}
-	}
-	eXcell_rsvg.prototype = eXcell_proto;
-	window.eXcell_rsvg = eXcell_rsvg;
-
-	/**
-	 * ### Визуальный компонент OSvgs
-	 * Получает и отображает галерею эскизов объекта данных
-	 *
-	 * @class OSvgs
-	 * @param manager {DataManager}
-	 * @param layout {dhtmlXLayoutObject|dhtmlXWindowsCell}
-	 * @param area {HTMLElement}
-	 * @constructor
-	 */
-	$p.iface.OSvgs = function (manager, layout, area) {
-
-		var t = this,
-			minmax = document.createElement('div'),
-			pics_area = document.createElement('div'),
-			stack = [],
-			area_hidden = $p.wsql.get_user_param("svgs_area_hidden", "boolean"),
-			area_text = area.querySelector(".dhx_cell_statusbar_text");
-
-		if(area_text)
-			area_text.style.display = "none";
-
-		pics_area.className = 'svgs-area';
-		if(area.firstChild)
-			area.insertBefore(pics_area, area.firstChild);
-		else
-			area.appendChild(pics_area);
-
-		minmax.className = 'svgs-minmax';
-		minmax.title="Скрыть/показать панель эскизов";
-		minmax.onclick = function () {
-			area_hidden = !area_hidden;
-			$p.wsql.set_user_param("svgs_area_hidden", area_hidden);
-			apply_area_hidden();
-
-			if(!area_hidden && stack.length)
-				t.reload();
-
-		};
-		area.appendChild(minmax);
-		apply_area_hidden();
-
-		function apply_area_hidden(){
-
-			pics_area.style.display = area_hidden ? "none" : "";
-
-			if(layout.setSizes)
-				layout.setSizes();
-			else{
-				var dim = layout.getDimension();
-				layout.setDimension(dim[0], dim[1]);
-				layout.maximize();
-			}
-
-			if(area_hidden){
-				minmax.style.backgroundPositionX = "-32px";
-				minmax.style.top = layout.setSizes ? "16px" : "-18px";
-			}
-			else{
-				minmax.style.backgroundPositionX = "0px";
-				minmax.style.top = "0px";
-			}
-		}
-
-		function drow_svgs(res){
-
-			var i, j, k, svg_elm;
-
-			$p.iface.clear_svgs(pics_area);
-
-			if(!res.svgs.length){
-				// возможно, стоит показать надпись, что нет эскизов
-			}else
-				for(i in res.svgs){
-					if(!res.svgs[i] || res.svgs[i].substr(0, 1) != "<")
-						continue;
-					svg_elm = document.createElement("div");
-					pics_area.appendChild(svg_elm);
-					svg_elm.style["float"] = "left";
-					svg_elm.innerHTML = $p.iface.scale_svg(res.svgs[i], 88, 22);
-				}
-		}
-
-		this.reload = function (ref) {
-
-			if(ref)
-				stack.push(ref);
-
-			if(!area_hidden)
-				setTimeout(function(){
-					if(stack.length){
-						manager.save({
-							ref: stack.pop(),
-							specify: "order_pics",
-							action: "calc",
-							async: true
-						})
-							.then(drow_svgs)
-							.catch($p.record_log);
-						stack.length = 0;
-					}
-				}, 300);
-		}
-
-	}
-
-}
-/**
  * Виджет для панели инструментов форм списка и выбора,
  * объединяет поля выбора периода и поле ввода фильтра
  *
@@ -4458,18 +4361,22 @@ $p.iface.layout_1c = function () {
  * полем входа под гостевой ролью, полями логина и пароля и кнопкой входа
  * @method frm_auth
  * @for InterfaceObjs
- * @param [onstep] {Function} - обработчик визуализации шагов входа в систему. Если не указан, рисуется стандарное окно
- * @param resolve {Function} - обработчик успешной авторизации и начальной загрузки данных
- * @param reject {Function} - обработчик, который вызывается в случае ошибок на старте программы
- * @param [on_draw_auth] {Function} - обработчик, который вызывается после отрисовки формы
+ * @param attr {Object} - параметры формы
+ * @param [attr.onstep] {Function} - обработчик визуализации шагов входа в систему. Если не указан, рисуется стандарное окно
+ * @param [attr.cell] {dhtmlXCellObject}
+ * @return {Promise}
  */
-$p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
+$p.iface.frm_auth = function (attr, resolve, reject) {
 
-	var frm_auth = $p.iface.auth = $p.iface.docs.attachForm(),
+	if(!attr)
+		attr = {};
+
+	var _cell = attr.cell || $p.iface.docs,
+		_frm = $p.iface.auth = _cell.attachForm(),
 		w, were_errors;
 
-	if(!onstep)
-		onstep = function (step){
+	if(!attr.onstep)
+		attr.onstep = function (step){
 
 			var stepper = $p.eve.stepper;
 
@@ -4484,8 +4391,8 @@ $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 				case $p.eve.steps.load_meta:
 
 					// индикатор прогресса и малое всплывающее сообщение
-					$p.iface.docs.progressOn();
-					$p.msg.show_msg($p.msg.init_catalogues + $p.msg.init_catalogues_meta, $p.iface.docs);
+					_cell.progressOn();
+					$p.msg.show_msg($p.msg.init_catalogues + $p.msg.init_catalogues_meta, _cell);
 					if(!$p.iface.sync)
 						$p.iface.wnd_sync();
 					$p.iface.sync.create(stepper);
@@ -4535,6 +4442,9 @@ $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 
 		};
 
+	if(!$p.job_prm.files_date)
+		$p.eve.update_files_version();
+
 	function do_auth(login, password, is_guest){
 		$p.ajax.username = login;
 		$p.ajax.password = password;
@@ -4545,20 +4455,25 @@ $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 			if(!$p.is_guid($p.wsql.get_user_param("browser_uid")))
 				$p.wsql.set_user_param("browser_uid", $p.generate_guid());	// проверяем guid браузера
 
-			$p.eve.log_in(onstep)
-				.then(frm_auth.on_auth || resolve)
+			$p.eve.log_in(attr.onstep)
+				.then(function () {
+					if(resolve)
+						resolve();
+					$p.eve.logged_in = true;
+					dhx4.callEvent("log_in");
+				})
 				.catch(function (err) {
 					were_errors = true;
-					if(frm_auth.on_error || reject)
-						(frm_auth.on_error || reject)(err);
+					if(reject)
+						reject(err);
 				})
-				.then(function (err) {
+				.then(function () {
 					if($p.iface.sync)
 						$p.iface.sync.close();
-					if($p.iface.docs){
-						$p.iface.docs.progressOff();
-						if(!were_errors)
-							$p.iface.docs.hideHeader();
+					if(_cell){
+						_cell.progressOff();
+						if(!were_errors && attr.hide_header)
+							_cell.hideHeader();
 					}
 					if($p.iface.cell_tree && !were_errors)
 						$p.iface.cell_tree.expand();
@@ -4584,15 +4499,15 @@ $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 	}
 
 	// загружаем структуру формы
-	frm_auth.loadStruct($p.injected_data["form_auth.xml"], function(){
+	_frm.loadStruct($p.injected_data["form_auth.xml"], function(){
 
 		// после готовности формы читаем пользователя из локальной датабазы
 		if($p.wsql.get_user_param("user_name")){
-			frm_auth.setItemValue("login", $p.wsql.get_user_param("user_name"));
-			frm_auth.setItemValue("type", "auth");
+			_frm.setItemValue("login", $p.wsql.get_user_param("user_name"));
+			_frm.setItemValue("type", "auth");
 
 			if($p.wsql.get_user_param("enable_save_pwd") && $p.wsql.get_user_param("user_pwd")){
-				frm_auth.setItemValue("password", $p.wsql.get_user_param("user_pwd"));
+				_frm.setItemValue("password", $p.wsql.get_user_param("user_pwd"));
 
 				if($p.wsql.get_user_param("autologin"))
 					auth_click();
@@ -4600,18 +4515,20 @@ $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 		}
 
 		// позиционируем форму по центру
-		if((w = ($p.iface.docs.getWidth() - 500)/2) >= 10)
-			frm_auth.cont.style.paddingLeft = w.toFixed() + "px";
+		if((w = ((_cell.getWidth ? _cell.getWidth() : _cell.cell.offsetWidth) - 500)/2) >= 10)
+			_frm.cont.style.paddingLeft = w.toFixed() + "px";
 		else
-			frm_auth.cont.style.paddingLeft = "20px";
+			_frm.cont.style.paddingLeft = "20px";
 
-		setTimeout(on_draw_auth);
+		setTimeout(function () {
+			dhx4.callEvent("on_draw_auth", [_frm]);
+		});
 	});
 
 	// назначаем обработчик нажатия на кнопку
-	frm_auth.attachEvent("onButtonClick", auth_click);
+	_frm.attachEvent("onButtonClick", auth_click);
 
-	frm_auth.attachEvent("onKeyDown",function(inp, ev, name, value){
+	_frm.attachEvent("onKeyDown",function(inp, ev, name, value){
 		if(ev.keyCode == 13){
 			if(name == "password" || this.getCheckedValue("type") == "guest"){
 				auth_click.call(this);
@@ -4620,9 +4537,9 @@ $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 	});
 
 
-	$p.msg.show_msg($p.msg.init_login, $p.iface.docs);
+	$p.msg.show_msg($p.msg.init_login, _cell);
 
-	frm_auth.onerror = function (err) {
+	_frm.onerror = function (err) {
 
 		$p.ajax.authorized = false;
 
@@ -4634,8 +4551,8 @@ $p.iface.frm_auth = function (onstep, resolve, reject, on_draw_auth) {
 				type: "alert-error",
 				text: $p.msg.error_auth
 			});
-			frm_auth.setItemValue("password", "");
-			frm_auth.validate();
+			_frm.setItemValue("password", "");
+			_frm.validate();
 
 		}else if(emsg.indexOf("gateway") != -1 || emsg.indexOf("net") != -1) {
 			$p.msg.show_msg({
@@ -4657,7 +4574,10 @@ $p.iface.open_settings = function (e) {
 	var evt = (e || (typeof event != "undefined" ? event : undefined));
 	if(evt)
 		evt.preventDefault();
-	window.open(($p.job_prm.settings_url || 'order_dealer/options.html')+'?v='+$p.job_prm.files_date);
+
+	var hprm = $p.job_prm.parse_url();
+	$p.iface.set_hash(hprm.obj, hprm.ref, hprm.frm, "settings");
+
 	return $p.cancel_bubble(evt);
 };
 
@@ -5861,10 +5781,6 @@ function _load(attr){
 		}
 	}
 
-	function get_orders(){
-
-	}
-
 	function get_selection(){
 
 		if(mgr.cachable){
@@ -5879,10 +5795,10 @@ function _load(attr){
 
 	if(attr.action == "get_tree" && (res_local = get_tree()))
 		return res_local;
-	else if(attr.action == "get_orders" && (res_local = get_orders()))
-		return res_local;
+
 	else if(attr.action == "get_selection" && (res_local = get_selection()))
 		return res_local;
+
 	else if($p.job_prm.offline)
 		return Promise.reject(Error($p.msg.offline_request));
 
@@ -6080,7 +5996,7 @@ var _cat = $p.cat = new (
 	/**
 	 * Коллекция менеджеров планов видов характеристик
 	 * @property cch
-	 * @type ChartsOfCharacteristic
+	 * @type ChartsOfCharacteristics
 	 * @for MetaEngine
 	 * @static
 	 */
@@ -6667,6 +6583,13 @@ function Meta(req, patch) {
 
 	};
 
+	_md.dates = function () {
+		return {
+			md_date: m["md_date"],
+			cat_date: m["cat_date"]
+		};
+	}
+
 	// создаём объекты менеджеров
 
 	for(class_name in m.enm)
@@ -6699,26 +6622,144 @@ function Meta(req, patch) {
 	// загружаем модификаторы и прочие зависимости
 	$p.modifiers.execute($p);
 
-	return {
-		md_date: m["md_date"],
-		cat_date: m["cat_date"]
-	};
+	// широковещательное оповещение о готовности метаданных
+	dhx4.callEvent("meta");
+
+
 }
 $p.Meta = Meta;
 
+/**
+ * Подмешивает свойства с иерархией объекта patch в объект obj
+ * @param obj
+ * @param patch
+ * @private
+ */
 Meta._patch = function(obj, patch){
 	for(var area in patch){
-		for(var c in patch[area]){
-			if(!obj[area][c])
-				obj[area][c] = {};
-			for(var f in patch[area][c]){
-				if(!obj[area][c][f])
-					obj[area][c][f] = patch[area][c][f];
-				else if(typeof obj[area][c][f] == "object")
-					obj[area][c][f]._mixin(patch[area][c][f]);
+
+		if(typeof patch[area] == "object"){
+			if(obj[area])
+				Meta._patch(obj[area], patch[area]);
+			else
+				obj[area] = patch[area];
+		}else
+			obj[area] = patch[area];
+
+		//for(var c in patch[area]){
+		//	if(!obj[area][c])
+		//		obj[area][c] = {};
+		//	for(var f in patch[area][c]){
+		//		if(!obj[area][c][f])
+		//			obj[area][c][f] = patch[area][c][f];
+		//		else if(typeof obj[area][c][f] == "object")
+		//			obj[area][c][f]._mixin(patch[area][c][f]);
+		//	}
+		//}
+	}
+}
+
+/**
+ * Инициализирует метаданные из встроенных данных, внешних файлов или indexeddb
+ * @return {Promise}
+ * @private
+ */
+Meta.init_meta = function (forse) {
+
+	return new Promise(function(resolve, reject){
+
+		if($p.injected_data['meta.json'])
+			resolve(new Meta($p.injected_data['meta.json'], $p.injected_data['meta_patch.json']));
+
+		else if($p.injected_data['meta_patch.json'])
+			resolve(new Meta($p.injected_data['meta_patch.json']));
+
+		else{
+
+			// проверим indexeddb
+			$p.wsql.idx_connect(null, 'meta')
+				.then(function (db) {
+					var mreq, mpatch;
+					$p.wsql.idx_get('meta', db, 'meta')
+						.then(function (data) {
+							if(data && !forse){
+								mreq = data;
+								$p.wsql.idx_get('meta_patch', db, 'meta')
+									.then(function (data) {
+										resolve(new Meta(mreq, data));
+									});
+							}
+							else{
+								if(!$p.job_prm.files_date)
+									$p.eve.update_files_version()
+										.then(function () {
+											from_files(db);
+										});
+								else
+									from_files(db);
+							}
+						});
+				});
+
+
+			// в indexeddb не нашлось - грузим из файла
+			function from_files(db){
+
+				var parts = [
+					$p.ajax.get($p.job_prm.data_url + "meta.json?v="+$p.job_prm.files_date),
+					$p.ajax.get($p.job_prm.data_url + "meta_patch.json?v="+$p.job_prm.files_date)
+				], mreq, mpatch;
+
+
+				// читаем файл метаданных и файл патча метаданных
+				$p.eve.reduce_promices(parts, function (req) {
+						if(req instanceof XMLHttpRequest && req.status == 200){
+							if(req.responseURL.indexOf("meta.json") != -1){
+								mreq = JSON.parse(req.response);
+
+							}else if(req.responseURL.indexOf("meta_patch.json") != -1)
+								mpatch = JSON.parse(req.response);
+						}else{
+							$p.record_log(req);
+						}
+					})
+					// создаём объект Meta() описания метаданных
+					.then(function () {
+						if(!mreq)
+							reject(new Error("Ошибка чтения файла метаданных"));
+						else{
+							mreq.ref = "meta";
+							$p.wsql.idx_save(mreq, db, 'meta')
+								.then(function () {
+									mpatch.ref = "meta_patch";
+									$p.wsql.idx_save(mpatch, db, 'meta');
+								})
+								.then(function () {
+									resolve(new Meta(mreq, mpatch));
+								});
+						}
+					})
 			}
 		}
-	}
+
+	});
+}
+
+Meta.init_static = function (forse) {
+
+	return new Promise(function(resolve, reject){
+
+		// проверим indexeddb
+		$p.wsql.idx_connect(null, 'static')
+			.then(function (db) {
+				var mreq, mpatch;
+				$p.wsql.idx_get('p0', db, 'static')
+					.then(function (data) {
+
+					});
+			});
+
+	});
 }
 
 /**
@@ -10165,27 +10206,31 @@ function Rest(){
 		}
 
 		for(f in mf){
-			syn = _md.syns_1с(f);
-			if(syn.indexOf("_Key") == -1 && mf[f].type.is_ref && rdata[syn+"_Key"])
-				syn+="_Key";
-			if(!rdata.hasOwnProperty(syn))
-				continue;
-			o[f] = rdata[syn];
+			if(rdata.hasOwnProperty(f)){
+				o[f] = rdata[f];
+			}else{
+				syn = _md.syns_1с(f);
+				if(syn.indexOf("_Key") == -1 && mf[f].type.is_ref && rdata[syn+"_Key"])
+					syn+="_Key";
+				if(!rdata.hasOwnProperty(syn))
+					continue;
+				o[f] = rdata[syn];
+			}
 		}
 
 		for(ts in mts){
-			synts = ts == "extra_fields" ? ts : _md.syns_1с(ts);
+			synts = (ts == "extra_fields" || rdata.hasOwnProperty(ts)) ? ts : _md.syns_1с(ts);
 			if(!rdata.hasOwnProperty(synts))
 				continue;
 			o[ts] = [];
 			if(rdata[synts]){
 				rdata[synts].sort(function (a, b) {
-					return a.LineNumber > b.LineNumber;
+					return (a.LineNumber || a.row) > (b.LineNumber || b.row);
 				});
 				rdata[synts].forEach(function (r) {
 					row = {};
 					for(tf in mts[ts].fields){
-						syn = (ts == "extra_fields" && (tf == "property" || tf == "value")) ? tf : _md.syns_1с(tf);
+						syn = (r.hasOwnProperty(tf) || (ts == "extra_fields" && (tf == "property" || tf == "value"))) ? tf : _md.syns_1с(tf);
 						if(syn.indexOf("_Key") == -1 && mts[ts].fields[tf].type.is_ref && r[syn+"_Key"])
 							syn+="_Key";
 						row[tf] = r[syn];
@@ -11452,7 +11497,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	function frm_create(){
 
 		// создаём и настраиваем окно формы
-		if(pwnd instanceof dhtmlXLayoutCell && (attr.bind_pwnd || attr.Приклеить)) {
+		if((pwnd instanceof dhtmlXLayoutCell || pwnd instanceof dhtmlXSideBarCell || pwnd instanceof dhtmlXCarouselCell)
+				&& (attr.bind_pwnd || attr.Приклеить)) {
 			// форма объекта приклеена к области контента или другой форме
 			if(typeof pwnd.close == "function")
 				pwnd.close();
@@ -11461,14 +11507,18 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				if(wnd || pwnd){
 					(wnd || pwnd).detachToolbar();
 					(wnd || pwnd).detachStatusBar();
+					if((wnd || pwnd).conf)
+						(wnd || pwnd).conf.unloading = true;
 					(wnd || pwnd).detachObject(true);	
 				}
 				frm_unload();
 			};
 			wnd.elmnts = {};
 			setTimeout(function () {
-				wnd.showHeader();
-				wnd.setText((cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation);
+				if(wnd && wnd.showHeader){
+					wnd.showHeader();
+					wnd.setText((cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation);
+				}
 			});
 
 		}else{
@@ -11516,7 +11566,14 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		});
 		wnd.elmnts.frm_tabs.addTab('tab_header','&nbsp;Реквизиты&nbsp;', null, null, true);
 		wnd.elmnts.tabs = {'tab_header': wnd.elmnts.frm_tabs.cells('tab_header')};
-		if(!o.is_folder){
+
+		/**
+		 * закладки табличных частей
+		 */
+		if(attr.draw_tabular_sections)
+			attr.draw_tabular_sections(o, wnd, tabular_init);
+
+		else if(!o.is_folder){
 			for(var ts in cmd.tabular_sections){
 				if(ts==="extra_fields")
 					continue;
@@ -11535,11 +11592,14 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		/**
 		 *	закладка шапка
 		 */
-		wnd.elmnts.pg_header = wnd.elmnts.tabs.tab_header.attachHeadFields({
-			obj: o,
-			pwnd: wnd,
-			read_only: !$p.ajax.root    // TODO: учитывать права для каждой роли на каждый объект
-		});
+		if(attr.draw_pg_header)
+			attr.draw_pg_header(o, wnd);
+		else
+			wnd.elmnts.pg_header = wnd.elmnts.tabs.tab_header.attachHeadFields({
+				obj: o,
+				pwnd: wnd,
+				read_only: !$p.ajax.root    // TODO: учитывать права для каждой роли на каждый объект
+			});
 
 		// панель инструментов формы
 		wnd.elmnts.frm_toolbar = wnd.attachToolbar();
@@ -11549,7 +11609,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			this.attachEvent("onclick", toolbar_click);
 
 			// TODO: учитывать права для каждой роли на каждый объект
-			if(o.hasOwnProperty("posted") && $p.ajax.root){
+			if(o instanceof DocObj && $p.ajax.root){
 				this.enableItem("btn_post");
 				this.enableItem("btn_unpost");
 			}else{
@@ -11572,6 +11632,11 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				});
 			else
 				this.disableItem("bs_print");
+
+			// кнопка закрытия для приклеенной формы
+			if(wnd != pwnd){
+				this.hideItem("btn_close");
+			}
 
 			// попап для присоединенных файлов
 			wnd.elmnts.vault_pop = new dhtmlXPopup({
@@ -11615,6 +11680,9 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		else if(btn_id=="btn_save")
 			save("save");
+
+		else if(btn_id=="btn_close")
+			wnd.close();
 
 		else if(btn_id=="btn_go_connection")
 			go_connection();
@@ -11704,7 +11772,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 
 	/**
-	 * настройка (инициализация) табличной части продукции
+	 * настройка (инициализация) табличной части
 	 */
 	function tabular_init(name){
 
@@ -11760,6 +11828,10 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		_mgr = null;
 		wnd = null;
+
+		if(attr && attr.on_close){
+			attr.on_close();
+		}
 	}
 
 	function frm_close(win){
@@ -11865,9 +11937,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				pwnd.close();
 			wnd = pwnd;
 			wnd.close = function () {
-				if(wnd || pwnd){
+				if(wnd || pwnd){wnd
 					(wnd || pwnd).detachToolbar();
 					(wnd || pwnd).detachStatusBar();
+					if((wnd || pwnd).conf)
+						(wnd || pwnd).conf.unloading = true;
 					(wnd || pwnd).detachObject(true);
 				}
 				frm_unload();
@@ -11888,7 +11962,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 
 		$p.iface.bind_help(wnd);
-		if(!(wnd instanceof dhtmlXTabBarCell))
+		if(wnd.setText)
 			wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (md["list_presentation"] || md.synonym) + '"');
 
 		document.body.addEventListener("keydown", body_keydown, false);
@@ -11928,11 +12002,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				this.hideItem("btn_delete");
 			}
 
-			if(!on_select && $p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper"){
+			if(!on_select){
 				this.hideItem("btn_select");
 				this.hideItem("sep1");
-				this.addListOption("bs_more", "btn_order_list", "~", "button", "<i class='fa fa-briefcase fa-lg fa-fw'></i> Список заказов");
-
+				if($p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper")
+					this.addListOption("bs_more", "btn_order_list", "~", "button", "<i class='fa fa-briefcase fa-lg fa-fw'></i> Список заказов");
 			}
 			this.addListOption("bs_more", "btn_import", "~", "button", "<i class='fa fa-upload fa-lg fa-fw'></i> Загрузить из файла");
 			this.addListOption("bs_more", "btn_export", "~", "button", "<i class='fa fa-download fa-lg fa-fw'></i> Выгрузить в файл");
@@ -12436,80 +12510,8 @@ function SocketMsg(){
  */
 $p.eve.socket = new SocketMsg();
 
-/**
- * Шаги синхронизации (перечисление состояний)
- * @property steps
- * @for AppEvents
- * @type SyncSteps
- */
-$p.eve.steps = {
-	load_meta: 0,           // загрузка метаданных из файла
-	authorization: 1,       // авторизация на сервере 1С или Node (в автономном режиме шаг не выполняется)
-	create_managers: 2,     // создание менеджеров объектов
-	process_access:  3,     // загрузка данных пользователя, обрезанных по RLS (контрагенты, договоры, организации)
-	load_data_files: 4,     // загрузка данных из файла зоны
-	load_data_db: 5,        // догрузка данных с сервера 1С или Node
-	load_data_wsql: 6,      // загрузка данных из локальной датабазы (имеет смысл, если локальная база не в ОЗУ)
-	save_data_wsql: 7       // кеширование данных из озу в локальную датабазу
-};
 
 
-/**
- * Регламентные задания синхронизапции каждые 3 минуты
- * @event ontimer
- * @for AppEvents
- */
-$p.eve.ontimer = function () {
-
-	// читаем файл версии файлов js. в случае изменений, оповещаем пользователя
-	// TODO: это место желательно перенести в сервисворкер
-	$p.eve.update_files_version();
-
-};
-setInterval($p.eve.ontimer, 180000);
-
-$p.eve.update_files_version = function () {
-
-	if(typeof window === "undefined" || !$p.job_prm || $p.job_prm.offline || !$p.job_prm.data_url)
-		return;
-
-	if(!$p.job_prm.files_date)
-		$p.job_prm.files_date = $p.wsql.get_user_param("files_date", "number");
-
-	$p.ajax.get($p.job_prm.data_url + "sync.json?v="+Date.now())
-		.then(function (req) {
-			var sync = JSON.parse(req.response);
-
-			if(!$p.job_prm.confirmation && $p.job_prm.files_date != sync.files_date){
-
-				$p.wsql.set_user_param("files_date", sync.files_date);
-
-				if(!$p.job_prm.files_date){
-					$p.job_prm.files_date = sync.files_date;
-
-				}else {
-
-					$p.job_prm.confirmation = true;
-
-					dhtmlx.confirm({
-						title: $p.msg.file_new_date_title,
-						text: $p.msg.file_new_date,
-						ok: "Перезагрузка",
-						cancel: "Продолжить",
-						callback: function(btn) {
-
-							delete $p.job_prm.confirmation;
-
-							if(btn){
-								$p.eve.redirect = true;
-								location.reload(true);
-							}
-						}
-					});
-				}
-			}
-		}).catch($p.record_log)
-};
 
 
 /**
@@ -13136,15 +13138,6 @@ $p.eve.time_diff = function () {
 						w.addEventListener('touchstart', requestFullScreen, false);
 					}
 
-					// кешируем ссылки на элементы управления
-					if($p.job_prm.use_builder || $p.job_prm.use_wrapper){
-						$p.wrapper	= document.getElementById("owb_wrapper");
-						$p.risdiv	= document.getElementById("risdiv");
-						$p.ft		= document.getElementById("msgfooter");
-						if($p.ft)
-							$p.ft.style.display = "none";
-					}
-
 					/**
 					 * Выполняем отложенные методы из eve.onload
 					 */
@@ -13154,21 +13147,13 @@ $p.eve.time_diff = function () {
 					if(document && document.querySelector("#splash"))
 						document.querySelector("#splash").parentNode.removeChild(document.querySelector("#splash"));
 
-					/**
-					 *	начинаем слушать события msgfooter-а, в который их пишет рисовалка
-					 */
-					if($p.job_prm.use_builder && $p.ft){
+					// инициализируем метаданные и обработчик при начале работы интерфейса
+					setTimeout(function () {
+						$p.Meta.init_meta()
+							.catch($p.record_log);
+						iface.oninit();
+					}, 20);
 
-						dhtmlxEvent($p.ft, "click", function(evt){
-							$p.cancel_bubble(evt);
-							if(evt.qualifier == "ready")
-								iface.oninit();
-							else if($p.eve.builder_click)
-								$p.eve.builder_click(evt);
-						});
-
-					}else
-						setTimeout(iface.oninit, 100);
 
 					$p.msg.russian_names();
 
@@ -13299,7 +13284,24 @@ $p.eve.time_diff = function () {
 	 */
 	w.addEventListener("hashchange", $p.iface.hash_route);
 
-})(window)
+})(window);
+
+/**
+ * Шаги синхронизации (перечисление состояний)
+ * @property steps
+ * @for AppEvents
+ * @type SyncSteps
+ */
+$p.eve.steps = {
+	load_meta: 0,           // загрузка метаданных из файла
+	authorization: 1,       // авторизация на сервере 1С или Node (в автономном режиме шаг не выполняется)
+	create_managers: 2,     // создание менеджеров объектов
+	process_access:  3,     // загрузка данных пользователя, обрезанных по RLS (контрагенты, договоры, организации)
+	load_data_files: 4,     // загрузка данных из файла зоны
+	load_data_db: 5,        // догрузка данных с сервера 1С или Node
+	load_data_wsql: 6,      // загрузка данных из локальной датабазы (имеет смысл, если локальная база не в ОЗУ)
+	save_data_wsql: 7       // кеширование данных из озу в локальную датабазу
+};
 
 /**
  * Запускает процесс входа в программу и начальную синхронизацию
@@ -13311,76 +13313,51 @@ $p.eve.time_diff = function () {
  */
 $p.eve.log_in = function(onstep){
 
-	var stepper = $p.eve.stepper, irest_attr = {}, parts = [], mreq, mpatch,
-		mdd, data_url = $p.job_prm.data_url || "/data/";
+	var stepper = $p.eve.stepper,
+		irest_attr = {},
+		data_url = $p.job_prm.data_url || "/data/",
+		res,
+		parts = [], mdd;
 
 	// информируем о начале операций
 	onstep($p.eve.steps.load_meta);
 
 	// выясняем, доступен ли irest (наш сервис) или мы ограничены стандартным rest-ом
+	// параллельно, проверяем авторизацию
 	$p.ajax.default_attr(irest_attr, $p.job_prm.irest_url());
-	if(!$p.job_prm.offline)
-		parts.push($p.ajax.get_ex(irest_attr.url, irest_attr));
+	res = $p.job_prm.offline ? Promise.resolve({responseURL: ""}) : $p.ajax.get_ex(irest_attr.url, irest_attr);
 
-	parts.push($p.ajax.get(data_url + "meta.json?v="+$p.job_prm.files_date));
-	parts.push($p.ajax.get(data_url + "meta_patch.json?v="+$p.job_prm.files_date));
-
-	// читаем файл метаданных и файл патча метаданных
-	return $p.eve.reduce_promices(parts, function (req) {
-			if(req instanceof XMLHttpRequest && req.status == 200){
-				if(req.responseURL.indexOf("/hs/rest") != -1)
-					$p.job_prm.irest_enabled = true;
-
-				else if(req.responseURL.indexOf("meta.json") != -1){
-					onstep($p.eve.steps.create_managers);
-					mreq = JSON.parse(req.response);
-
-				}else if(req.responseURL.indexOf("meta_patch.json") != -1)
-					mpatch = JSON.parse(req.response);
-			}else{
-				$p.record_log(req);
-			}
-		})
-		// создаём объект Meta() описания метаданных
-		.then(function () {
-			if(!mreq)
-				throw Error("Ошибка чтения файла метаданных");
-			else
-				return new Meta(mreq, mpatch);
+	return res
+		.then(function (req) {
+			if(!$p.job_prm.offline)
+				$p.job_prm.irest_enabled = true;
+			if(req.response[0] == "{")
+				return JSON.parse(req.response);
 		})
 
-		// авторизуемся на сервере. в автономном режиме сразу переходим к чтению первого файла данных
+		.catch(function () {
+			// если здесь ошибка, значит доступен только стандартный rest
+		})
+
 		.then(function (res) {
 
-			mreq = mpatch = null;
 
 			onstep($p.eve.steps.authorization);
 
-			if($p.job_prm.offline)
-				return res;
+			// TODO: реализовать метод для получения списка ролей пользователя
+			mdd = res || _md.dates();
+			mdd.root = true;
 
-			else if($p.job_prm.rest || $p.job_prm.irest_enabled){
+			// в автономном режиме сразу переходим к чтению первого файла данных
+			// если irest_enabled, значит уже авторизованы
+			if($p.job_prm.offline || $p.job_prm.irest_enabled)
+				return mdd;
 
-				// TODO: реализовать метод для получения списка ролей пользователя
-
-				// в режиме rest тестируем авторизацию. если irest_enabled, значит уже авторизованы
-				if($p.job_prm.irest_enabled)
-					return {root: true};
-				else
-					return $p.ajax.get_ex($p.job_prm.rest_url()+"?$format=json", true)
-						.then(function (req) {
-							//return JSON.parse(res.response);
-							return {root: true};
-						});
-
-			}else
-				return _load({
-					action: "get_meta",
-					cache_cat_date: stepper.cat_ini_date,
-					now_js: Date.now(),
-					margin: $p.wsql.get_user_param("margin", "number"),
-					ipinfo: $p.ipinfo.hasOwnProperty("latitude") ? JSON.stringify($p.ipinfo) : ""
-				})
+			else
+				return $p.ajax.get_ex($p.job_prm.rest_url()+"?$format=json", true)
+					.then(function () {
+						return mdd;
+					});
 		})
 
 		// обработчик ошибок авторизации
@@ -13400,7 +13377,8 @@ $p.eve.log_in = function(onstep){
 			if($p.job_prm.offline)
 				return res;
 
-			$p.ajax.authorized = true;
+			// широковещательное оповещение об авторизованности на сервере
+			dhx4.callEvent("authorized", [$p.ajax.authorized = true]);
 
 			if(typeof res == "string")
 				res = JSON.parse(res);
@@ -13414,19 +13392,13 @@ $p.eve.log_in = function(onstep){
 				$p.wsql.set_user_param("user_pwd", "");
 
 			// обрабатываем поступившие данные
-			$p.wsql.set_user_param("time_diff", res["now_1с"] - res["now_js"]);
-			if(res.cat && res.cat["clrs"])
-				_md.get("cat.clrs").predefined.white.ref = res.cat["clrs"].predefined.white.ref;
-			if(res.cat && res.cat["bases"])
-				_md.get("cat.bases").predefined.main.ref = res.cat["bases"].predefined.main.ref;
+			if(res.now_1с && res.now_js)
+				$p.wsql.set_user_param("time_diff", res.now_1с - res.now_js);
 
-			return res;
 		})
 
 		// сохраняем даты справочников в mdd и читаем первый файл данных
-		.then(function(res){
-
-			mdd = res;
+		.then(function(){
 
 			stepper.zone = ($p.job_prm.demo ? "1" : $p.wsql.get_user_param("zone")) + "/";
 
@@ -13497,40 +13469,18 @@ $p.eve.auto_log_in = function () {
 	var stepper = $p.eve.stepper,
 		data_url = $p.job_prm.data_url || "/data/",
 		parts = [],
-		mreq, mpatch, p_0, mdd;
+		p_0;
 
 
 	stepper.zone = $p.wsql.get_user_param("zone") + "/";
 
-	parts.push($p.ajax.get(data_url + "meta.json?v="+$p.job_prm.files_date));
-	parts.push($p.ajax.get(data_url + "meta_patch.json?v="+$p.job_prm.files_date));
-	parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "p_0.json?v="+$p.job_prm.files_date));
-
 	// читаем файл метаданных, файл патча метаданных и первый файл снапшота
-	return $p.eve.reduce_promices(parts, function (req) {
-			if(req instanceof XMLHttpRequest && req.status == 200){
-				if(req.responseURL.indexOf("meta.json") != -1)
-					mreq = JSON.parse(req.response);
-
-				else if(req.responseURL.indexOf("meta_patch.json") != -1)
-					mpatch = JSON.parse(req.response);
-
-				else if(req.responseURL.indexOf("p_0.json") != -1)
-					p_0 = JSON.parse(req.response);
-			}else{
-				$p.record_log(req);
-			}
-		})
-		// создаём объект Meta() описания метаданных
-		.then(function () {
-			if(!mreq)
-				throw Error("Ошибка чтения файла метаданных");
-			else
-				return new $p.Meta(mreq, mpatch);
-		})
+	return $p.ajax.get(data_url + "zones/" + stepper.zone + "p_0.json?v="+$p.job_prm.files_date)
 
 		// из содержимого первого файла получаем количество файлов и загружаем их все
 		.then(function (req) {
+
+			p_0 = JSON.parse(req.response);
 
 			stepper.files = p_0.files-1;
 			stepper.step_size = p_0.files > 0 ? Math.round(p_0.count_all / p_0.files) : 57;
@@ -13542,7 +13492,6 @@ $p.eve.auto_log_in = function () {
 		// формируем массив url файлов данных зоны
 		.then(function () {
 
-			parts = [];
 			for(var i=1; i<=stepper.files; i++)
 				parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "p_" + i + ".json?v="+$p.job_prm.files_date));
 			parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "ireg.json?v="+$p.job_prm.files_date));
@@ -13557,7 +13506,86 @@ $p.eve.auto_log_in = function () {
 		})
 };
 
-$p.injected_data._mixin({"form_auth.xml":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<items>\n\t<item type=\"settings\" position=\"label-left\" labelWidth=\"150\" inputWidth=\"230\" noteWidth=\"230\"/>\n\t<item type=\"fieldset\" name=\"data\" inputWidth=\"auto\" label=\"Авторизация\">\n\n        <item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" checked=\"true\" value=\"guest\" label=\"Гостевой (демо) режим\">\n            <item type=\"select\" name=\"guest\" label=\"Роль\">\n                <option value=\"Дилер\" label=\"Дилер\"/>\n            </item>\n        </item>\n\n\t\t<item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" value=\"auth\" label=\"Есть учетная запись\">\n\t\t\t<item type=\"input\" value=\"\" name=\"login\" label=\"Имя пользователя\" validate=\"NotEmpty\" />\n\t\t\t<item type=\"password\" value=\"\" name=\"password\" label=\"Пароль\" validate=\"NotEmpty\" />\n\t\t</item>\n\n\t\t<item type=\"button\" value=\"Войти\" name=\"submit\"/>\n\n        <item type=\"template\" name=\"text_options\" className=\"order_dealer_options\" inputWidth=\"231\"\n              value=\"&lt;a href='#' onclick='$p.iface.open_settings();' &gt; &lt;i class='fa fa-cog fa-lg'&gt;&lt;/i&gt; Настройки &lt;/a&gt; &lt;a href='//www.oknosoft.ru/feedback' target='_blank' style='margin-left: 9px;' &gt; &lt;i class='fa fa-question-circle fa-lg'&gt;&lt;/i&gt; Задать вопрос &lt;/a&gt;\"  />\n\n\t</item>\n</items>","toolbar_add_del.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_add\"    text=\"&lt;i class='fa fa-plus-circle fa-lg'&gt;&lt;/i&gt; Добавить\" title=\"Добавить строку\"  />\r\n    <item type=\"button\" id=\"btn_delete\" text=\"&lt;i class='fa fa-times fa-lg'&gt;&lt;/i&gt; Удалить\"  title=\"Удалить строку\" />\r\n</toolbar>","toolbar_obj.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"&lt;b&gt;Записать и закрыть&lt;/b&gt;\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"&lt;i class='fa fa-floppy-o fa-lg'&gt;&lt;/i&gt; Записать\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_post\" enabled=\"false\" text=\"&lt;i class='fa fa-check-square-o fa-lg'&gt;&lt;/i&gt;\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" enabled=\"false\" text=\"&lt;i class='fa fa-square-o fa-lg'&gt;&lt;/i&gt;\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"&lt;i class='fa fa-paperclip fa-lg'&gt;&lt;/i&gt; Файлы\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"Создать\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"Перейти\" title=\"\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n        <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-lg'&gt;&lt;/i&gt; Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"  text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\"  title=\"Дополнительно\" openAll=\"true\">\r\n        <item type=\"button\" id=\"btn_import\" text=\"&lt;i class='fa fa-upload fa-fw'&gt;&lt;/i&gt; Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" text=\"&lt;i class='fa fa-download fa-fw'&gt;&lt;/i&gt; Выгрузить в файл\" />\r\n    </item>\r\n\r\n</toolbar>\r\n","toolbar_ok_cancel.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_ok\"       type=\"button\"   img=\"\"  imgdis=\"\"   text=\"&lt;b&gt;Ок&lt;/b&gt;\"  />\r\n    <item id=\"btn_cancel\"   type=\"button\"\timg=\"\"  imgdis=\"\"   text=\"Отмена\" />\r\n</toolbar>","toolbar_selection.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_select\"   type=\"button\"   title=\"Выбрать элемент списка\" text=\"&lt;b&gt;Выбрать&lt;/b&gt;\"  />\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item id=\"btn_new\"      type=\"button\"\ttext=\"&lt;i class='fa fa-plus-circle fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Создать\" />\r\n    <item id=\"btn_edit\"     type=\"button\"\ttext=\"&lt;i class='fa fa-pencil fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Изменить\" />\r\n    <item id=\"btn_delete\"   type=\"button\"\ttext=\"&lt;i class='fa fa-times fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Удалить\" />\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-lg'&gt;&lt;/i&gt; Печать\" openAll=\"true\" >\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"    text=\"&lt;i class='fa fa-th-large fa-lg'&gt;&lt;/i&gt;\" title=\"Дополнительно\" openAll=\"true\">\r\n        <item id=\"btn_requery\"  type=\"button\"\ttext=\"&lt;i class='fa fa-refresh fa-lg fa-fw'&gt;&lt;/i&gt; Обновить список\" />\r\n    </item>\r\n\r\n</toolbar>","log.json":{"ireg":{"$log":{"name":"$log","note":"","synonym":"Журнал событий","dimensions":{"date":{"synonym":"Дата","multiline_mode":false,"tooltip":"Время события","type":{"types":["number"],"digits":15,"fraction_figits":0}},"sequence":{"synonym":"Порядок","multiline_mode":false,"tooltip":"Порядок следования","type":{"types":["number"],"digits":6,"fraction_figits":0}}},"resources":{"class":{"synonym":"Класс","multiline_mode":false,"tooltip":"Класс события","type":{"types":["string"],"str_len":100}},"note":{"synonym":"Комментарий","multiline_mode":true,"tooltip":"Текст события","type":{"types":["string"],"str_len":0}},"obj":{"synonym":"Объект","tooltip":"Объект, к которому относится событие","type":{"types":["string"],"str_len":0}}}}}}});
+$p.eve.update_files_version = function () {
+
+	if(!$p.job_prm || $p.job_prm.offline || !$p.job_prm.data_url)
+		Promise.resolve($p.wsql.get_user_param("files_date", "number") || 201512310000);
+
+	if(!$p.job_prm.files_date)
+		$p.job_prm.files_date = $p.wsql.get_user_param("files_date", "number");
+
+	return $p.ajax.get($p.job_prm.data_url + "sync.json?v="+Date.now())
+		.then(function (req) {
+			var sync = JSON.parse(req.response);
+
+			if(!$p.job_prm.confirmation && $p.job_prm.files_date != sync.files_date){
+
+				$p.wsql.set_user_param("files_date", sync.files_date);
+
+				if(sync.clear_meta){
+					// чистим indexeddb
+					$p.wsql.idx_connect(null, 'meta')
+						.then(function (db) {
+							return $p.wsql.idx_clear(null, db, 'meta');
+						})
+						.then(function () {
+							return $p.wsql.idx_clear(null, db, 'static');
+						})
+						.catch($p.record_log);
+
+				}else if(sync.clear_static){
+					// чистим indexeddb
+					$p.wsql.idx_connect(null, 'static')
+						.then(function (db) {
+							return $p.wsql.idx_clear(null, db, 'static');
+						})
+						.catch($p.record_log);
+				}
+
+				if(!$p.job_prm.files_date){
+					$p.job_prm.files_date = sync.files_date;
+
+				}else {
+
+					$p.job_prm.confirmation = true;
+
+					dhtmlx.confirm({
+						title: $p.msg.file_new_date_title,
+						text: $p.msg.file_new_date,
+						ok: "Перезагрузка",
+						cancel: "Продолжить",
+						callback: function(btn) {
+
+							delete $p.job_prm.confirmation;
+
+							if(btn){
+								$p.eve.redirect = true;
+								location.reload(true);
+							}
+						}
+					});
+				}
+			}
+
+			return sync.files_date;
+
+		}).catch($p.record_log)
+};
+
+/**
+ * Регламентные задания синхронизапции каждые 3 минуты
+ * @event ontimer
+ * @for AppEvents
+ */
+$p.eve.ontimer = function () {
+
+	// читаем файл версии файлов js. в случае изменений, оповещаем пользователя
+	// TODO: это место желательно перенести в сервисворкер
+	$p.eve.update_files_version();
+
+};
+setInterval($p.eve.ontimer, 180000);
+$p.injected_data._mixin({"form_auth.xml":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<items>\n\t<item type=\"settings\" position=\"label-left\" labelWidth=\"150\" inputWidth=\"230\" noteWidth=\"230\"/>\n\t<item type=\"fieldset\" name=\"data\" inputWidth=\"auto\" label=\"Авторизация\">\n\n        <item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" checked=\"true\" value=\"guest\" label=\"Гостевой (демо) режим\">\n            <item type=\"select\" name=\"guest\" label=\"Роль\">\n                <option value=\"Дилер\" label=\"Дилер\"/>\n            </item>\n        </item>\n\n\t\t<item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" value=\"auth\" label=\"Есть учетная запись\">\n\t\t\t<item type=\"input\" value=\"\" name=\"login\" label=\"Имя пользователя\" validate=\"NotEmpty\" />\n\t\t\t<item type=\"password\" value=\"\" name=\"password\" label=\"Пароль\" validate=\"NotEmpty\" />\n\t\t</item>\n\n\t\t<item type=\"button\" value=\"Войти\" name=\"submit\"/>\n\n        <item type=\"template\" name=\"text_options\" className=\"order_dealer_options\" inputWidth=\"231\"\n              value=\"&lt;a href='#' onclick='$p.iface.open_settings();' &gt; &lt;i class='fa fa-cog fa-lg'&gt;&lt;/i&gt; Настройки &lt;/a&gt; &lt;a href='//www.oknosoft.ru/feedback' target='_blank' style='margin-left: 9px;' &gt; &lt;i class='fa fa-question-circle fa-lg'&gt;&lt;/i&gt; Задать вопрос &lt;/a&gt;\"  />\n\n\t</item>\n</items>","toolbar_add_del.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_add\"    text=\"&lt;i class='fa fa-plus-circle fa-lg'&gt;&lt;/i&gt; Добавить\" title=\"Добавить строку\"  />\r\n    <item type=\"button\" id=\"btn_delete\" text=\"&lt;i class='fa fa-times fa-lg'&gt;&lt;/i&gt; Удалить\"  title=\"Удалить строку\" />\r\n</toolbar>","toolbar_obj.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"&lt;b&gt;Записать и закрыть&lt;/b&gt;\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"&lt;i class='fa fa-floppy-o fa-lg'&gt;&lt;/i&gt;\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_close\" text=\"&lt;i class='fa fa-times fa-lg'&gt;&lt;/i&gt;\" title=\"Закрыть форму\"/>\r\n    <item type=\"button\" id=\"btn_post\" enabled=\"false\" text=\"&lt;i class='fa fa-check-square-o fa-lg'&gt;&lt;/i&gt;\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" enabled=\"false\" text=\"&lt;i class='fa fa-square-o fa-lg'&gt;&lt;/i&gt;\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"&lt;i class='fa fa-paperclip fa-lg'&gt;&lt;/i&gt; Файлы\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"Создать\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"Перейти\" title=\"\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n        <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-lg'&gt;&lt;/i&gt; Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"  text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\"  title=\"Дополнительно\" openAll=\"true\">\r\n        <item type=\"button\" id=\"btn_import\" text=\"&lt;i class='fa fa-upload fa-fw'&gt;&lt;/i&gt; Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" text=\"&lt;i class='fa fa-download fa-fw'&gt;&lt;/i&gt; Выгрузить в файл\" />\r\n    </item>\r\n\r\n</toolbar>\r\n","toolbar_ok_cancel.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_ok\"       type=\"button\"   img=\"\"  imgdis=\"\"   text=\"&lt;b&gt;Ок&lt;/b&gt;\"  />\r\n    <item id=\"btn_cancel\"   type=\"button\"\timg=\"\"  imgdis=\"\"   text=\"Отмена\" />\r\n</toolbar>","toolbar_selection.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_select\"   type=\"button\"   title=\"Выбрать элемент списка\" text=\"&lt;b&gt;Выбрать&lt;/b&gt;\"  />\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item id=\"btn_new\"      type=\"button\"\ttext=\"&lt;i class='fa fa-plus-circle fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Создать\" />\r\n    <item id=\"btn_edit\"     type=\"button\"\ttext=\"&lt;i class='fa fa-pencil fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Изменить\" />\r\n    <item id=\"btn_delete\"   type=\"button\"\ttext=\"&lt;i class='fa fa-times fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Удалить\" />\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-lg'&gt;&lt;/i&gt; Печать\" openAll=\"true\" >\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"    text=\"&lt;i class='fa fa-th-large fa-lg'&gt;&lt;/i&gt;\" title=\"Дополнительно\" openAll=\"true\">\r\n        <item id=\"btn_requery\"  type=\"button\"\ttext=\"&lt;i class='fa fa-refresh fa-lg fa-fw'&gt;&lt;/i&gt; Обновить список\" />\r\n    </item>\r\n\r\n</toolbar>","log.json":{"ireg":{"$log":{"name":"$log","note":"","synonym":"Журнал событий","dimensions":{"date":{"synonym":"Дата","multiline_mode":false,"tooltip":"Время события","type":{"types":["number"],"digits":15,"fraction_figits":0}},"sequence":{"synonym":"Порядок","multiline_mode":false,"tooltip":"Порядок следования","type":{"types":["number"],"digits":6,"fraction_figits":0}}},"resources":{"class":{"synonym":"Класс","multiline_mode":false,"tooltip":"Класс события","type":{"types":["string"],"str_len":100}},"note":{"synonym":"Комментарий","multiline_mode":true,"tooltip":"Текст события","type":{"types":["string"],"str_len":0}},"obj":{"synonym":"Объект","tooltip":"Объект, к которому относится событие","type":{"types":["string"],"str_len":0}}}}}}});
 /* Copyright 2013 William Summers, metaTribal LLC
  * adapted from https://developer.mozilla.org/en-US/docs/JXON
  *

@@ -124,80 +124,8 @@ function SocketMsg(){
  */
 $p.eve.socket = new SocketMsg();
 
-/**
- * Шаги синхронизации (перечисление состояний)
- * @property steps
- * @for AppEvents
- * @type SyncSteps
- */
-$p.eve.steps = {
-	load_meta: 0,           // загрузка метаданных из файла
-	authorization: 1,       // авторизация на сервере 1С или Node (в автономном режиме шаг не выполняется)
-	create_managers: 2,     // создание менеджеров объектов
-	process_access:  3,     // загрузка данных пользователя, обрезанных по RLS (контрагенты, договоры, организации)
-	load_data_files: 4,     // загрузка данных из файла зоны
-	load_data_db: 5,        // догрузка данных с сервера 1С или Node
-	load_data_wsql: 6,      // загрузка данных из локальной датабазы (имеет смысл, если локальная база не в ОЗУ)
-	save_data_wsql: 7       // кеширование данных из озу в локальную датабазу
-};
 
 
-/**
- * Регламентные задания синхронизапции каждые 3 минуты
- * @event ontimer
- * @for AppEvents
- */
-$p.eve.ontimer = function () {
-
-	// читаем файл версии файлов js. в случае изменений, оповещаем пользователя
-	// TODO: это место желательно перенести в сервисворкер
-	$p.eve.update_files_version();
-
-};
-setInterval($p.eve.ontimer, 180000);
-
-$p.eve.update_files_version = function () {
-
-	if(typeof window === "undefined" || !$p.job_prm || $p.job_prm.offline || !$p.job_prm.data_url)
-		return;
-
-	if(!$p.job_prm.files_date)
-		$p.job_prm.files_date = $p.wsql.get_user_param("files_date", "number");
-
-	$p.ajax.get($p.job_prm.data_url + "sync.json?v="+Date.now())
-		.then(function (req) {
-			var sync = JSON.parse(req.response);
-
-			if(!$p.job_prm.confirmation && $p.job_prm.files_date != sync.files_date){
-
-				$p.wsql.set_user_param("files_date", sync.files_date);
-
-				if(!$p.job_prm.files_date){
-					$p.job_prm.files_date = sync.files_date;
-
-				}else {
-
-					$p.job_prm.confirmation = true;
-
-					dhtmlx.confirm({
-						title: $p.msg.file_new_date_title,
-						text: $p.msg.file_new_date,
-						ok: "Перезагрузка",
-						cancel: "Продолжить",
-						callback: function(btn) {
-
-							delete $p.job_prm.confirmation;
-
-							if(btn){
-								$p.eve.redirect = true;
-								location.reload(true);
-							}
-						}
-					});
-				}
-			}
-		}).catch($p.record_log)
-};
 
 
 /**
