@@ -38,10 +38,10 @@ $p.settings = function (prm, modifiers) {
 	prm.russian_names = true;
 
 	// расположение rest-сервиса accounting
-	prm.rest_path = location.host.indexOf("oknosoft.ru") == -1 ? "/ea/odata/standard.odata/" : "/a/ea/%1/odata/standard.odata/";
+	prm.rest_path = location.host.indexOf("oknosoft.") == -1 ? "/ea/odata/standard.odata/" : "/a/ea/%1/odata/standard.odata/";
 
 	// по умолчанию, обращаемся к зоне 1392
-	prm.zone = location.host.indexOf("oknosoft.ru") == -1 ? 0 : 1392;
+	prm.zone = location.host.indexOf("oknosoft.") == -1 ? 0 : 1392;
 
 	// расположение файлов данных
 	prm.data_url = "examples/accounting/data/";
