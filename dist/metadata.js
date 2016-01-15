@@ -30,7 +30,7 @@
  * @static
  */
 function MetaEngine() {
-	this.version = "0.9.203";
+	this.version = "0.9.204";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
@@ -13506,7 +13506,7 @@ $p.eve.auto_log_in = function () {
 $p.eve.update_files_version = function () {
 
 	if(!$p.job_prm || $p.job_prm.offline || !$p.job_prm.data_url)
-		return Promise.resolve($p.wsql.get_user_param("files_date", "number") || 201512310000);
+		return Promise.resolve($p.wsql.get_user_param("files_date", "number") || 201601010000);
 
 	if(!$p.job_prm.files_date)
 		$p.job_prm.files_date = $p.wsql.get_user_param("files_date", "number");
