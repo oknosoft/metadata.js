@@ -996,6 +996,3 @@ $p.iface.add_button = function(parent, attr, battr) {
 		bdiv.style.width = battr.width;
 	return bdiv;
 };
-
-
-

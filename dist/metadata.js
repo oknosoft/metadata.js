@@ -4979,9 +4979,6 @@ $p.iface.add_button = function(parent, attr, battr) {
 	return bdiv;
 };
 
-
-
-
 /**
  * Поле ввода адреса связанная с ним форма ввода адреса
  *
