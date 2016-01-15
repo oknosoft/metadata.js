@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding='utf-8'?>
 <toolbar>
+
+    <item id="sep0" type="separator"/>
+
     <item id="btn_select"   type="button"   title="Выбрать элемент списка" text="&lt;b&gt;Выбрать&lt;/b&gt;"  />
 
     <item id="sep1" type="separator"/>
@@ -14,5 +17,7 @@
     <item type="buttonSelect"   id="bs_more"    text="&lt;i class='fa fa-th-large fa-lg'&gt;&lt;/i&gt;" title="Дополнительно" openAll="true">
         <item id="btn_requery"  type="button"	text="&lt;i class='fa fa-refresh fa-lg fa-fw'&gt;&lt;/i&gt; Обновить список" />
     </item>
+
+    <item id="sep3" type="separator"/>
 
 </toolbar>

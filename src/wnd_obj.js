@@ -31,37 +31,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		cmd = _mgr.metadata(),
 		wnd, options;
 
-	// читаем объект из локального SQL или получаем с сервера
-	if($p.is_data_obj(o)){
-		if(o.is_new() && attr.on_select)
-			_mgr.create({}, true)
-				.then(function (tObj) {
-					o = tObj;
-					tObj = null;
-					frm_create();
-				});
-		else if(o.is_new() && !o.empty()){
-			o.load()
-				.then(frm_create);
-		}else
-			frm_create();
-	}else{
-		pwnd.progressOn();
-
-		_mgr.get(attr.hasOwnProperty("ref") ? attr.ref : attr, true)
-			.then(function(tObj){
-				o = tObj;
-				tObj = null;
-				pwnd.progressOff();
-				frm_create();
-			})
-			.catch(function (err) {
-				pwnd.progressOff();
-				$p.record_log(err);
-			});
-	}
-
-
 	/**
 	 * ПриСозданииНаСервере - инициализация до создания формы, но после чтения объекта
 	 */
@@ -69,22 +38,22 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		// создаём и настраиваем окно формы
 		if((pwnd instanceof dhtmlXLayoutCell || pwnd instanceof dhtmlXSideBarCell || pwnd instanceof dhtmlXCarouselCell)
-				&& (attr.bind_pwnd || attr.Приклеить)) {
+			&& (attr.bind_pwnd || attr.Приклеить)) {
 			// форма объекта приклеена к области контента или другой форме
 			if(typeof pwnd.close == "function")
-				pwnd.close();
+				pwnd.close(true);
 			wnd = pwnd;
-			wnd.close = function () {
+			wnd.close = function (on_create) {
 				if(wnd || pwnd){
 					(wnd || pwnd).detachToolbar();
 					(wnd || pwnd).detachStatusBar();
 					if((wnd || pwnd).conf)
 						(wnd || pwnd).conf.unloading = true;
-					(wnd || pwnd).detachObject(true);	
+					(wnd || pwnd).detachObject(true);
 				}
-				frm_unload();
+				frm_unload(on_create);
 			};
-			wnd.elmnts = {};
+			wnd.elmnts = {grids: {}};
 			setTimeout(function () {
 				if(wnd && wnd.showHeader){
 					wnd.showHeader();
@@ -240,6 +209,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				});
 		}
 
+		return {wnd: wnd, o: o};
 	}
 
 	/**
@@ -345,7 +315,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	/**
 	 * настройка (инициализация) табличной части
 	 */
-	function tabular_init(name){
+	function tabular_init(name, toolbar_struct){
 
 		// с помощью метода ts_captions(), выясняем, надо ли добавлять данную ТЧ и формируем описание колонок табчасти
 		if(!_md.ts_captions(_mgr.class_name, name))
@@ -355,11 +325,12 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.elmnts.frm_tabs.addTab('tab_'+name, '&nbsp;'+cmd.tabular_sections[name].synonym+'&nbsp;');
 		wnd.elmnts.tabs['tab_'+name] = wnd.elmnts.frm_tabs.cells('tab_'+name);
 
-		wnd.elmnts.tabs['tab_'+name].attachTabular({
+		wnd.elmnts.grids[name] = wnd.elmnts.tabs['tab_'+name].attachTabular({
 			obj: o,
 			ts: name,
 			pwnd: wnd,
-			read_only: !$p.ajax.root
+			read_only: !$p.ajax.root,
+			toolbar_struct: toolbar_struct
 		});
 
 	}
@@ -389,7 +360,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	/**
 	 * освобождает переменные после закрытия формы
 	 */
-	function frm_unload(){
+	function frm_unload(on_create){
 
 		if (wnd && wnd.elmnts && wnd.elmnts.vault)
 			wnd.elmnts.vault.unload();
@@ -401,7 +372,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd = null;
 
 		if(attr && attr.on_close){
-			attr.on_close();
+			attr.on_close(on_create);
 		}
 	}
 
@@ -420,7 +391,36 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		return true;
 	}
 
-	return wnd;
+	// читаем объект из локального SQL или получаем с сервера
+	if($p.is_data_obj(o)){
+		if(o.is_new() && attr.on_select)
+			return _mgr.create({}, true)
+				.then(function (tObj) {
+					o = tObj;
+					tObj = null;
+					return frm_create();
+				});
+		else if(o.is_new() && !o.empty()){
+			return o.load()
+				.then(frm_create);
+		}else
+			return Promise.resolve(frm_create());
+	}else{
+		pwnd.progressOn();
+
+		return _mgr.get(attr.hasOwnProperty("ref") ? attr.ref : attr, true)
+			.then(function(tObj){
+				o = tObj;
+				tObj = null;
+				pwnd.progressOff();
+				return frm_create();
+			})
+			.catch(function (err) {
+				pwnd.progressOff();
+				$p.record_log(err);
+			});
+	}
+
 };
 
 /**
