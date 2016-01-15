@@ -67,7 +67,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				pwnd.close();
 			wnd = pwnd;
 			wnd.close = function () {
-				if(wnd || pwnd){wnd
+				if(wnd || pwnd){
 					(wnd || pwnd).detachToolbar();
 					(wnd || pwnd).detachStatusBar();
 					if((wnd || pwnd).conf)
