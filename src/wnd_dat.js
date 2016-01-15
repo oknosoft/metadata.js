@@ -52,7 +52,7 @@ $p.iface.dat_blank = function(_dxw, attr) {
 
 	$p.iface.bind_help(wnd_dat, attr.help_path);
 
-	wnd_dat.elmnts = {};
+	wnd_dat.elmnts = {grids: {}};
 	wnd_dat.__define("modified", {
 		get: function () {
 			return _modified;

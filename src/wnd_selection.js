@@ -64,9 +64,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		// создаём и настраиваем окно формы
 		if(pwnd instanceof dhtmlXCellObject) {
 			if(!(pwnd instanceof dhtmlXTabBarCell) && (typeof pwnd.close == "function"))
-				pwnd.close();
+				pwnd.close(true);
 			wnd = pwnd;
-			wnd.close = function () {
+			wnd.close = function (on_create) {
 				if(wnd || pwnd){
 					(wnd || pwnd).detachToolbar();
 					(wnd || pwnd).detachStatusBar();
@@ -74,7 +74,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 						(wnd || pwnd).conf.unloading = true;
 					(wnd || pwnd).detachObject(true);
 				}
-				frm_unload();
+				frm_unload(on_create);
 			};
 			if(!attr.hide_header){
 				setTimeout(function () {
@@ -445,7 +445,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	/**
 	 * освобождает переменные после закрытия формы
 	 */
-	function frm_unload(){
+	function frm_unload(on_create){
 		document.body.removeEventListener("keydown", body_keydown);
 		_mgr = wnd = md = previous_filter = on_select = pwnd = attr = null;
 	}
