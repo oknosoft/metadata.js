@@ -445,8 +445,15 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 * освобождает переменные после закрытия формы
 	 */
 	function frm_unload(on_create){
+
 		document.body.removeEventListener("keydown", body_keydown);
-		_mgr = wnd = md = previous_filter = on_select = pwnd = attr = null;
+
+		if(attr && attr.on_close && !on_create)
+			attr.on_close();
+
+		if(!on_create){
+			_mgr = wnd = md = previous_filter = on_select = pwnd = attr = null;
+		}
 	}
 
 	function frm_close(win){

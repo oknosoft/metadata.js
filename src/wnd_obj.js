@@ -21,20 +21,18 @@
  */
 DataManager.prototype.form_obj = function(pwnd, attr){
 
-	// если существует переопределенная форма, открываем её
-	var frm = $p.injected_data["wnd/wnd_" + this.class_name.replace('.', "_") + "_obj"];
-	if(frm)
-		return frm($p, pwnd, attr);
-
 	var _mgr = this,
 		o = attr.o,
 		cmd = _mgr.metadata(),
-		wnd, options;
+		wnd, options, created, create_id;
 
 	/**
-	 * ПриСозданииНаСервере - инициализация до создания формы, но после чтения объекта
+	 * ПриСозданииНаСервере - инициализация при создании формы, до чтения объекта
 	 */
 	function frm_create(){
+
+		if(created)
+			return;
 
 		// создаём и настраиваем окно формы
 		if((pwnd instanceof dhtmlXLayoutCell || pwnd instanceof dhtmlXSideBarCell || pwnd instanceof dhtmlXCarouselCell)
@@ -54,12 +52,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				frm_unload(on_create);
 			};
 			wnd.elmnts = {grids: {}};
-			setTimeout(function () {
-				if(wnd && wnd.showHeader){
-					wnd.showHeader();
-					wnd.setText((cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation);
-				}
-			});
 
 		}else{
 			// форма в модальном диалоге
@@ -77,7 +69,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 					allow_close: true,
 					allow_minmax: true,
 					on_close: frm_close,
-					caption: (cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation
+					caption: (cmd.obj_presentation || cmd.synonym)
 				}
 			};
 			wnd = $p.iface.dat_blank(null, options.wnd);
@@ -107,40 +99,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.elmnts.frm_tabs.addTab('tab_header','&nbsp;Реквизиты&nbsp;', null, null, true);
 		wnd.elmnts.tabs = {'tab_header': wnd.elmnts.frm_tabs.cells('tab_header')};
 
-		/**
-		 * закладки табличных частей
-		 */
-		if(attr.draw_tabular_sections)
-			attr.draw_tabular_sections(o, wnd, tabular_init);
-
-		else if(!o.is_folder){
-			for(var ts in cmd.tabular_sections){
-				if(ts==="extra_fields")
-					continue;
-
-				if(o[ts] instanceof TabularSection){
-
-					// настройка табличной части
-					tabular_init(ts);
-				}
-			}
-		}
-		wnd.attachEvent("onResizeFinish", function(win){
-			wnd.elmnts.pg_header.enableAutoHeight(false, wnd.elmnts.tabs.tab_header._getHeight()-20, true);
-		});
-
-		/**
-		 *	закладка шапка
-		 */
-		if(attr.draw_pg_header)
-			attr.draw_pg_header(o, wnd);
-		else
-			wnd.elmnts.pg_header = wnd.elmnts.tabs.tab_header.attachHeadFields({
-				obj: o,
-				pwnd: wnd,
-				read_only: !$p.ajax.root    // TODO: учитывать права для каждой роли на каждый объект
-			});
-
 		// панель инструментов формы
 		wnd.elmnts.frm_toolbar = wnd.attachToolbar();
 		wnd.elmnts.frm_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
@@ -150,7 +108,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			this.attachEvent("onclick", toolbar_click);
 
 			// TODO: учитывать права для каждой роли на каждый объект
-			if(o instanceof DocObj && $p.ajax.root){
+			if(_mgr instanceof DocManager && $p.ajax.root){
 				this.enableItem("btn_post");
 				this.enableItem("btn_unpost");
 			}else{
@@ -210,7 +168,63 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				});
 		}
 
+		created = true;
+	}
+
+	/**
+	 * ПриЧтенииНаСервере - инициализация при чтении объекта
+	 */
+	function frm_fill(){
+
+		if(!created){
+			clearTimeout(create_id);
+			frm_create();
+		}
+
+		if(!attr.hide_header){
+			if(wnd.setText)
+				wnd.setText((cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation);
+			if(wnd.showHeader)
+				wnd.showHeader();
+		}
+
+		/**
+		 * закладки табличных частей
+		 */
+		if(attr.draw_tabular_sections)
+			attr.draw_tabular_sections(o, wnd, tabular_init);
+
+		else if(!o.is_folder){
+			for(var ts in cmd.tabular_sections){
+				if(ts==="extra_fields")
+					continue;
+
+				if(o[ts] instanceof TabularSection){
+
+					// настройка табличной части
+					tabular_init(ts);
+				}
+			}
+		}
+
+		/**
+		 *	закладка шапка
+		 */
+		if(attr.draw_pg_header)
+			attr.draw_pg_header(o, wnd);
+		else{
+			wnd.elmnts.pg_header = wnd.elmnts.tabs.tab_header.attachHeadFields({
+				obj: o,
+				pwnd: wnd,
+				read_only: !$p.ajax.root    // TODO: учитывать права для каждой роли на каждый объект
+			});
+			wnd.attachEvent("onResizeFinish", function(win){
+				wnd.elmnts.pg_header.enableAutoHeight(false, wnd.elmnts.tabs.tab_header._getHeight()-20, true);
+			});
+		}
+
 		return {wnd: wnd, o: o};
+
 	}
 
 	/**
@@ -369,11 +383,12 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		if (wnd && wnd.elmnts && wnd.elmnts.vault_pop)
 			wnd.elmnts.vault_pop.unload();
 
-		_mgr = null;
-		wnd = null;
+		if(attr && attr.on_close && !on_create)
+			attr.on_close();
 
-		if(attr && attr.on_close){
-			attr.on_close(on_create);
+		if(!on_create){
+			delete wnd.ref;
+			_mgr = wnd = o = cmd = options = pwnd = attr = null;
 		}
 	}
 
@@ -392,6 +407,9 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		return true;
 	}
 
+	// (пере)создаём статическую часть формы
+	create_id = setTimeout(frm_create);
+
 	// читаем объект из локального SQL или получаем с сервера
 	if($p.is_data_obj(o)){
 		if(o.is_new() && attr.on_select)
@@ -399,14 +417,15 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				.then(function (tObj) {
 					o = tObj;
 					tObj = null;
-					return frm_create();
+					return frm_fill();
 				});
 		else if(o.is_new() && !o.empty()){
 			return o.load()
-				.then(frm_create);
+				.then(frm_fill);
 		}else
-			return Promise.resolve(frm_create());
+			return Promise.resolve(frm_fill);
 	}else{
+
 		pwnd.progressOn();
 
 		return _mgr.get(attr.hasOwnProperty("ref") ? attr.ref : attr, true)
@@ -414,7 +433,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				o = tObj;
 				tObj = null;
 				pwnd.progressOff();
-				return frm_create();
+				return frm_fill();
 			})
 			.catch(function (err) {
 				pwnd.progressOff();

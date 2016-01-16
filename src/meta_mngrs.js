@@ -670,7 +670,7 @@ function RefDataManager(class_name) {
 		var o = by_ref[ref] || by_ref[(ref = $p.fix_guid(ref))];
 
 		if(!o){
-			if(do_not_create)
+			if(do_not_create && !force_promise)
 				return;
 			else
 				o = new t._obj_сonstructor(ref, t, true);
