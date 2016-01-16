@@ -218,6 +218,7 @@ gulp.task('build-metadata-core', function(){
 		'./src/meta_tabulars.js',
 		'./src/meta_objs.js',
 		'./src/meta_rest.js',
+		'./src/events_node.js',
 		'./src/events.js',
 		'./src/server.js'
 	])

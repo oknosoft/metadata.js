@@ -1372,8 +1372,7 @@ function Modifiers(){
 	var methods = [];
 
 	/**
-	 * Добавляет метод в коллекцию методов для отложенного вызова.<br />
-	 * См. так же, {{#crossLink "AppEvents/onload:property"}}{{/crossLink}} и {{#crossLink "MetaEngine/modifiers:property"}}{{/crossLink}}
+	 * Добавляет метод в коллекцию методов для отложенного вызова
 	 * @method push
 	 * @param method {Function} - функция, которая будет вызвана после инициализации менеджеров объектов данных
 	 */
@@ -1410,49 +1409,29 @@ function Modifiers(){
 };
 $p.Modifiers = Modifiers;
 
-/**
- * ### Генераторы и обработчики событий
- * - при запуске программы
- * - при авторизации и начальной синхронизации с сервером
- * - при периодических обменах изменениями с сервером
- * - См. так же модуль {{#crossLinkModule "events"}}{{/crossLinkModule}}
- * @class AppEvents
- * @static
- */
-function AppEvents(){
-
-	this.toString = function(){return "События при начале работы программы"};
-
-	/**
-	 * ### Обработчики при начале работы программы
-	 * Клиентские модули при загрузке могут добавлять в этот массив свои функции,<br />
-	 * которые будут выполнены после готовности документа. См. так же, {{#crossLink "Modifiers/push:method"}}{{/crossLink}}
-	 * @property onload
-	 * @type Modifiers
-	 * @static
-	 */
-	this.__define("onload", {
-		value: new Modifiers(),
-		enumerable: false,
-		configurable: false
-	});
-
-	this.__define("hash_route", {
-		value: new Modifiers(),
-		enumerable: false,
-		configurable: false
-	});
-}
 
 /**
  * Обработчики событий приложения
- * Подробнее см. класс {{#crossLink "AppEvents"}}{{/crossLink}} и модуль {{#crossLinkModule "events"}}{{/crossLinkModule}}
+ * Подробнее см. модули {{#crossLinkModule "events"}}{{/crossLinkModule}} и {{#crossLinkModule "events_browser"}}{{/crossLinkModule}}
  * @property eve
  * @for MetaEngine
- * @type AppEvents
  * @static
  */
-$p.eve = new AppEvents();
+$p.eve = (typeof window !== "undefined" && window.dhx4) ? dhx4 : {};
+$p.eve.__define({
+
+	onload: {
+		value: new Modifiers(),
+		enumerable: false,
+		configurable: false
+	},
+
+	hash_route: {
+		value: new Modifiers(),
+		enumerable: false,
+		configurable: false
+	}
+});
 
 /**
  * ### Модификаторы менеджеров объектов метаданных

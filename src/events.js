@@ -81,12 +81,14 @@ function SocketMsg(){
 
 					ws.onmessage = function(ev) {
 						var data;
+
 						try{
 							data = JSON.parse(ev.data);
 						}catch(err){
 							data = ev.data;
 						}
-						dhx4.callEvent("socket_msg", [data]);
+
+						$p.eve.callEvent("socket_msg", [data]);
 					};
 
 					ws.onerror = $p.record_log;
@@ -111,9 +113,7 @@ function SocketMsg(){
 		}
 	};
 
-	// если мы в браузере, подключаем обработчик react
-	if(typeof window !== "undefined" && window.dhx4)
-		dhx4.attachEvent("socket_msg", reflect_react);
+	$p.eve.attachEvent("socket_msg", reflect_react);
 
 }
 
@@ -123,9 +123,6 @@ function SocketMsg(){
  * @type {SocketMsg}
  */
 $p.eve.socket = new SocketMsg();
-
-
-
 
 
 /**

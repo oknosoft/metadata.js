@@ -24,7 +24,7 @@ $p.dateFormat.i18n = {
 	]
 };
 
-if(typeof window !== "undefined" && "dhx4" in window){
+if(typeof window !== "undefined" && window.dhx4){
 	dhx4.dateFormat.ru = "%d.%m.%Y";
 	dhx4.dateLang = "ru";
 	dhx4.dateStrings = {
