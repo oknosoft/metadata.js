@@ -1404,7 +1404,7 @@ function Modifiers(){
 			if(res !== false)
 				res = tres;
 		});
-		return tres;
+		return res;
 	};
 };
 $p.Modifiers = Modifiers;

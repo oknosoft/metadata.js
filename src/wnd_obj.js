@@ -144,7 +144,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		// панель инструментов формы
 		wnd.elmnts.frm_toolbar = wnd.attachToolbar();
 		wnd.elmnts.frm_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
-		wnd.elmnts.frm_toolbar.loadStruct($p.injected_data["toolbar_obj.xml"], function(){
+		wnd.elmnts.frm_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_obj.xml"], function(){
+
 			this.addSpacer("btn_unpost");
 			this.attachEvent("onclick", toolbar_click);
 
