@@ -600,8 +600,10 @@ DataManager.prototype.printing_plates = function(){
 			});
 			return t._printing_plates;
 		})
-		.catch(function (err) {
-			return {};
+		.catch(function () {
+		})
+		.then(function (pp) {
+			return pp || (t._printing_plates = {});
 		});
 };
 

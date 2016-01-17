@@ -42,12 +42,25 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				pwnd.close(true);
 			wnd = pwnd;
 			wnd.close = function (on_create) {
-				if(wnd || pwnd){
-					(wnd || pwnd).detachToolbar();
-					(wnd || pwnd).detachStatusBar();
-					if((wnd || pwnd).conf)
-						(wnd || pwnd).conf.unloading = true;
-					(wnd || pwnd).detachObject(true);
+				var _wnd = wnd || pwnd;
+				if(_wnd){
+
+					// выгружаем попапы
+					if(_wnd.elmnts)
+						["vault", "vault_pop"].forEach(function (elm) {
+							if (_wnd.elmnts[elm])
+								_wnd.elmnts[elm].unload();
+						});
+
+					// информируем мир о закрытии формы
+					if(_mgr && _mgr.class_name)
+						dhx4.callEvent("frm_close", [_mgr.class_name, o ? o.ref : ""]);
+
+					_wnd.detachToolbar();
+					_wnd.detachStatusBar();
+					if(_wnd.conf)
+						_wnd.conf.unloading = true;
+					_wnd.detachObject(true);
 				}
 				frm_unload(on_create);
 			};
@@ -377,12 +390,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 */
 	function frm_unload(on_create){
 
-		if (wnd && wnd.elmnts && wnd.elmnts.vault)
-			wnd.elmnts.vault.unload();
-
-		if (wnd && wnd.elmnts && wnd.elmnts.vault_pop)
-			wnd.elmnts.vault_pop.unload();
-
 		if(attr && attr.on_close && !on_create)
 			attr.on_close();
 
@@ -394,15 +401,20 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 	function frm_close(win){
 
-		setTimeout(frm_unload, 1);
-
-		if (wnd && wnd.elmnts && wnd.elmnts.vault)
-			wnd.elmnts.vault.unload();
-
-		if (wnd && wnd.elmnts && wnd.elmnts.vault_pop)
-			wnd.elmnts.vault_pop.unload();
-
 		// TODO задать вопрос о записи изменений + перенести этот метод в $p
+
+		setTimeout(frm_unload);
+
+		// выгружаем попапы
+		if(wnd && wnd.elmnts)
+			["vault", "vault_pop"].forEach(function (elm) {
+				if (wnd.elmnts[elm])
+					wnd.elmnts[elm].unload();
+			});
+
+		// информируем мир о закрытии формы
+		if(_mgr && _mgr.class_name)
+			dhx4.callEvent("frm_close", [_mgr.class_name, o ? o.ref : ""]);
 
 		return true;
 	}
@@ -423,7 +435,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			return o.load()
 				.then(frm_fill);
 		}else
-			return Promise.resolve(frm_fill);
+			return Promise.resolve(frm_fill());
 	}else{
 
 		pwnd.progressOn();
