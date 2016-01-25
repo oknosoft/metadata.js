@@ -30,7 +30,7 @@
  * @static
  */
 function MetaEngine() {
-	this.version = "0.9.204";
+	this.version = "0.9.205";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
@@ -1386,8 +1386,7 @@ function Modifiers(){
 	var methods = [];
 
 	/**
-	 * Добавляет метод в коллекцию методов для отложенного вызова.<br />
-	 * См. так же, {{#crossLink "AppEvents/onload:property"}}{{/crossLink}} и {{#crossLink "MetaEngine/modifiers:property"}}{{/crossLink}}
+	 * Добавляет метод в коллекцию методов для отложенного вызова
 	 * @method push
 	 * @param method {Function} - функция, которая будет вызвана после инициализации менеджеров объектов данных
 	 */
@@ -1419,54 +1418,34 @@ function Modifiers(){
 			if(res !== false)
 				res = tres;
 		});
-		return tres;
+		return res;
 	};
 };
 $p.Modifiers = Modifiers;
 
-/**
- * ### Генераторы и обработчики событий
- * - при запуске программы
- * - при авторизации и начальной синхронизации с сервером
- * - при периодических обменах изменениями с сервером
- * - См. так же модуль {{#crossLinkModule "events"}}{{/crossLinkModule}}
- * @class AppEvents
- * @static
- */
-function AppEvents(){
-
-	this.toString = function(){return "События при начале работы программы"};
-
-	/**
-	 * ### Обработчики при начале работы программы
-	 * Клиентские модули при загрузке могут добавлять в этот массив свои функции,<br />
-	 * которые будут выполнены после готовности документа. См. так же, {{#crossLink "Modifiers/push:method"}}{{/crossLink}}
-	 * @property onload
-	 * @type Modifiers
-	 * @static
-	 */
-	this.__define("onload", {
-		value: new Modifiers(),
-		enumerable: false,
-		configurable: false
-	});
-
-	this.__define("hash_route", {
-		value: new Modifiers(),
-		enumerable: false,
-		configurable: false
-	});
-}
 
 /**
  * Обработчики событий приложения
- * Подробнее см. класс {{#crossLink "AppEvents"}}{{/crossLink}} и модуль {{#crossLinkModule "events"}}{{/crossLinkModule}}
+ * Подробнее см. модули {{#crossLinkModule "events"}}{{/crossLinkModule}} и {{#crossLinkModule "events_browser"}}{{/crossLinkModule}}
  * @property eve
  * @for MetaEngine
- * @type AppEvents
  * @static
  */
-$p.eve = new AppEvents();
+$p.eve = (typeof window !== "undefined" && window.dhx4) ? dhx4 : {};
+$p.eve.__define({
+
+	onload: {
+		value: new Modifiers(),
+		enumerable: false,
+		configurable: false
+	},
+
+	hash_route: {
+		value: new Modifiers(),
+		enumerable: false,
+		configurable: false
+	}
+});
 
 /**
  * ### Модификаторы менеджеров объектов метаданных
@@ -2111,7 +2090,7 @@ $p.dateFormat.i18n = {
 	]
 };
 
-if(typeof window !== "undefined" && "dhx4" in window){
+if(typeof window !== "undefined" && window.dhx4){
 	dhx4.dateFormat.ru = "%d.%m.%Y";
 	dhx4.dateLang = "ru";
 	dhx4.dateStrings = {
@@ -6620,8 +6599,7 @@ function Meta(req, patch) {
 	$p.modifiers.execute($p);
 
 	// широковещательное оповещение о готовности метаданных
-	dhx4.callEvent("meta");
-
+	$p.eve.callEvent("meta");
 
 }
 $p.Meta = Meta;
@@ -7412,8 +7390,10 @@ DataManager.prototype.printing_plates = function(){
 			});
 			return t._printing_plates;
 		})
-		.catch(function (err) {
-			return {};
+		.catch(function () {
+		})
+		.then(function (pp) {
+			return pp || (t._printing_plates = {});
 		});
 };
 
@@ -7482,7 +7462,7 @@ function RefDataManager(class_name) {
 		var o = by_ref[ref] || by_ref[(ref = $p.fix_guid(ref))];
 
 		if(!o){
-			if(do_not_create)
+			if(do_not_create && !force_promise)
 				return;
 			else
 				o = new t._obj_сonstructor(ref, t, true);
@@ -11447,20 +11427,18 @@ $p.iface.wnd_sync = function() {
  */
 DataManager.prototype.form_obj = function(pwnd, attr){
 
-	// если существует переопределенная форма, открываем её
-	var frm = $p.injected_data["wnd/wnd_" + this.class_name.replace('.', "_") + "_obj"];
-	if(frm)
-		return frm($p, pwnd, attr);
-
 	var _mgr = this,
 		o = attr.o,
 		cmd = _mgr.metadata(),
-		wnd, options;
+		wnd, options, created, create_id;
 
 	/**
-	 * ПриСозданииНаСервере - инициализация до создания формы, но после чтения объекта
+	 * ПриСозданииНаСервере - инициализация при создании формы, до чтения объекта
 	 */
 	function frm_create(){
+
+		if(created)
+			return;
 
 		// создаём и настраиваем окно формы
 		if((pwnd instanceof dhtmlXLayoutCell || pwnd instanceof dhtmlXSideBarCell || pwnd instanceof dhtmlXCarouselCell)
@@ -11470,22 +11448,29 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				pwnd.close(true);
 			wnd = pwnd;
 			wnd.close = function (on_create) {
-				if(wnd || pwnd){
-					(wnd || pwnd).detachToolbar();
-					(wnd || pwnd).detachStatusBar();
-					if((wnd || pwnd).conf)
-						(wnd || pwnd).conf.unloading = true;
-					(wnd || pwnd).detachObject(true);
+				var _wnd = wnd || pwnd;
+				if(_wnd){
+
+					// выгружаем попапы
+					if(_wnd.elmnts)
+						["vault", "vault_pop"].forEach(function (elm) {
+							if (_wnd.elmnts[elm])
+								_wnd.elmnts[elm].unload();
+						});
+
+					// информируем мир о закрытии формы
+					if(_mgr && _mgr.class_name)
+						dhx4.callEvent("frm_close", [_mgr.class_name, o ? o.ref : ""]);
+
+					_wnd.detachToolbar();
+					_wnd.detachStatusBar();
+					if(_wnd.conf)
+						_wnd.conf.unloading = true;
+					_wnd.detachObject(true);
 				}
 				frm_unload(on_create);
 			};
 			wnd.elmnts = {grids: {}};
-			setTimeout(function () {
-				if(wnd && wnd.showHeader){
-					wnd.showHeader();
-					wnd.setText((cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation);
-				}
-			});
 
 		}else{
 			// форма в модальном диалоге
@@ -11503,7 +11488,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 					allow_close: true,
 					allow_minmax: true,
 					on_close: frm_close,
-					caption: (cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation
+					caption: (cmd.obj_presentation || cmd.synonym)
 				}
 			};
 			wnd = $p.iface.dat_blank(null, options.wnd);
@@ -11533,49 +11518,16 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.elmnts.frm_tabs.addTab('tab_header','&nbsp;Реквизиты&nbsp;', null, null, true);
 		wnd.elmnts.tabs = {'tab_header': wnd.elmnts.frm_tabs.cells('tab_header')};
 
-		/**
-		 * закладки табличных частей
-		 */
-		if(attr.draw_tabular_sections)
-			attr.draw_tabular_sections(o, wnd, tabular_init);
-
-		else if(!o.is_folder){
-			for(var ts in cmd.tabular_sections){
-				if(ts==="extra_fields")
-					continue;
-
-				if(o[ts] instanceof TabularSection){
-
-					// настройка табличной части
-					tabular_init(ts);
-				}
-			}
-		}
-		wnd.attachEvent("onResizeFinish", function(win){
-			wnd.elmnts.pg_header.enableAutoHeight(false, wnd.elmnts.tabs.tab_header._getHeight()-20, true);
-		});
-
-		/**
-		 *	закладка шапка
-		 */
-		if(attr.draw_pg_header)
-			attr.draw_pg_header(o, wnd);
-		else
-			wnd.elmnts.pg_header = wnd.elmnts.tabs.tab_header.attachHeadFields({
-				obj: o,
-				pwnd: wnd,
-				read_only: !$p.ajax.root    // TODO: учитывать права для каждой роли на каждый объект
-			});
-
 		// панель инструментов формы
 		wnd.elmnts.frm_toolbar = wnd.attachToolbar();
 		wnd.elmnts.frm_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
-		wnd.elmnts.frm_toolbar.loadStruct($p.injected_data["toolbar_obj.xml"], function(){
+		wnd.elmnts.frm_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_obj.xml"], function(){
+
 			this.addSpacer("btn_unpost");
 			this.attachEvent("onclick", toolbar_click);
 
 			// TODO: учитывать права для каждой роли на каждый объект
-			if(o instanceof DocObj && $p.ajax.root){
+			if(_mgr instanceof DocManager && $p.ajax.root){
 				this.enableItem("btn_post");
 				this.enableItem("btn_unpost");
 			}else{
@@ -11635,7 +11587,63 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				});
 		}
 
+		created = true;
+	}
+
+	/**
+	 * ПриЧтенииНаСервере - инициализация при чтении объекта
+	 */
+	function frm_fill(){
+
+		if(!created){
+			clearTimeout(create_id);
+			frm_create();
+		}
+
+		if(!attr.hide_header){
+			if(wnd.setText)
+				wnd.setText((cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation);
+			if(wnd.showHeader)
+				wnd.showHeader();
+		}
+
+		/**
+		 * закладки табличных частей
+		 */
+		if(attr.draw_tabular_sections)
+			attr.draw_tabular_sections(o, wnd, tabular_init);
+
+		else if(!o.is_folder){
+			for(var ts in cmd.tabular_sections){
+				if(ts==="extra_fields")
+					continue;
+
+				if(o[ts] instanceof TabularSection){
+
+					// настройка табличной части
+					tabular_init(ts);
+				}
+			}
+		}
+
+		/**
+		 *	закладка шапка
+		 */
+		if(attr.draw_pg_header)
+			attr.draw_pg_header(o, wnd);
+		else{
+			wnd.elmnts.pg_header = wnd.elmnts.tabs.tab_header.attachHeadFields({
+				obj: o,
+				pwnd: wnd,
+				read_only: !$p.ajax.root    // TODO: учитывать права для каждой роли на каждый объект
+			});
+			wnd.attachEvent("onResizeFinish", function(win){
+				wnd.elmnts.pg_header.enableAutoHeight(false, wnd.elmnts.tabs.tab_header._getHeight()-20, true);
+			});
+		}
+
 		return {wnd: wnd, o: o};
+
 	}
 
 	/**
@@ -11788,34 +11796,37 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 */
 	function frm_unload(on_create){
 
-		if (wnd && wnd.elmnts && wnd.elmnts.vault)
-			wnd.elmnts.vault.unload();
+		if(attr && attr.on_close && !on_create)
+			attr.on_close();
 
-		if (wnd && wnd.elmnts && wnd.elmnts.vault_pop)
-			wnd.elmnts.vault_pop.unload();
-
-		_mgr = null;
-		wnd = null;
-
-		if(attr && attr.on_close){
-			attr.on_close(on_create);
+		if(!on_create){
+			delete wnd.ref;
+			_mgr = wnd = o = cmd = options = pwnd = attr = null;
 		}
 	}
 
 	function frm_close(win){
 
-		setTimeout(frm_unload, 1);
-
-		if (wnd && wnd.elmnts && wnd.elmnts.vault)
-			wnd.elmnts.vault.unload();
-
-		if (wnd && wnd.elmnts && wnd.elmnts.vault_pop)
-			wnd.elmnts.vault_pop.unload();
-
 		// TODO задать вопрос о записи изменений + перенести этот метод в $p
+
+		setTimeout(frm_unload);
+
+		// выгружаем попапы
+		if(wnd && wnd.elmnts)
+			["vault", "vault_pop"].forEach(function (elm) {
+				if (wnd.elmnts[elm])
+					wnd.elmnts[elm].unload();
+			});
+
+		// информируем мир о закрытии формы
+		if(_mgr && _mgr.class_name)
+			dhx4.callEvent("frm_close", [_mgr.class_name, o ? o.ref : ""]);
 
 		return true;
 	}
+
+	// (пере)создаём статическую часть формы
+	create_id = setTimeout(frm_create);
 
 	// читаем объект из локального SQL или получаем с сервера
 	if($p.is_data_obj(o)){
@@ -11824,14 +11835,15 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				.then(function (tObj) {
 					o = tObj;
 					tObj = null;
-					return frm_create();
+					return frm_fill();
 				});
 		else if(o.is_new() && !o.empty()){
 			return o.load()
-				.then(frm_create);
+				.then(frm_fill);
 		}else
-			return Promise.resolve(frm_create());
+			return Promise.resolve(frm_fill());
 	}else{
+
 		pwnd.progressOn();
 
 		return _mgr.get(attr.hasOwnProperty("ref") ? attr.ref : attr, true)
@@ -11839,7 +11851,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				o = tObj;
 				tObj = null;
 				pwnd.progressOff();
-				return frm_create();
+				return frm_fill();
 			})
 			.catch(function (err) {
 				pwnd.progressOff();
@@ -11971,10 +11983,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		wnd.elmnts.status_bar.setText("<div id='" + _mgr.class_name.replace(".", "_") + "_select_recinfoArea'></div>");
 
 		// командная панель формы
-
 		wnd.elmnts.toolbar = wnd.attachToolbar();
 		wnd.elmnts.toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
-		wnd.elmnts.toolbar.loadStruct($p.injected_data["toolbar_selection.xml"], function(){
+		wnd.elmnts.toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_selection.xml"], function(){
 
 			this.attachEvent("onclick", toolbar_click);
 
@@ -12313,8 +12324,15 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 * освобождает переменные после закрытия формы
 	 */
 	function frm_unload(on_create){
+
 		document.body.removeEventListener("keydown", body_keydown);
-		_mgr = wnd = md = previous_filter = on_select = pwnd = attr = null;
+
+		if(attr && attr.on_close && !on_create)
+			attr.on_close();
+
+		if(!on_create){
+			_mgr = wnd = md = previous_filter = on_select = pwnd = attr = null;
+		}
 	}
 
 	function frm_close(win){
@@ -12464,12 +12482,14 @@ function SocketMsg(){
 
 					ws.onmessage = function(ev) {
 						var data;
+
 						try{
 							data = JSON.parse(ev.data);
 						}catch(err){
 							data = ev.data;
 						}
-						dhx4.callEvent("socket_msg", [data]);
+
+						$p.eve.callEvent("socket_msg", [data]);
 					};
 
 					ws.onerror = $p.record_log;
@@ -12494,9 +12514,7 @@ function SocketMsg(){
 		}
 	};
 
-	// если мы в браузере, подключаем обработчик react
-	if(typeof window !== "undefined" && window.dhx4)
-		dhx4.attachEvent("socket_msg", reflect_react);
+	$p.eve.attachEvent("socket_msg", reflect_react);
 
 }
 
@@ -12506,9 +12524,6 @@ function SocketMsg(){
  * @type {SocketMsg}
  */
 $p.eve.socket = new SocketMsg();
-
-
-
 
 
 /**
@@ -13506,7 +13521,7 @@ $p.eve.auto_log_in = function () {
 $p.eve.update_files_version = function () {
 
 	if(!$p.job_prm || $p.job_prm.offline || !$p.job_prm.data_url)
-		return Promise.resolve($p.wsql.get_user_param("files_date", "number") || 201601010000);
+		return Promise.resolve($p.wsql.get_user_param("files_date", "number") || 201601220000);
 
 	if(!$p.job_prm.files_date)
 		$p.job_prm.files_date = $p.wsql.get_user_param("files_date", "number");

@@ -1052,8 +1052,7 @@ function Meta(req, patch) {
 	$p.modifiers.execute($p);
 
 	// широковещательное оповещение о готовности метаданных
-	dhx4.callEvent("meta");
-
+	$p.eve.callEvent("meta");
 
 }
 $p.Meta = Meta;

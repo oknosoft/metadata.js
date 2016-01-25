@@ -104,10 +104,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		wnd.elmnts.status_bar.setText("<div id='" + _mgr.class_name.replace(".", "_") + "_select_recinfoArea'></div>");
 
 		// командная панель формы
-
 		wnd.elmnts.toolbar = wnd.attachToolbar();
 		wnd.elmnts.toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
-		wnd.elmnts.toolbar.loadStruct($p.injected_data["toolbar_selection.xml"], function(){
+		wnd.elmnts.toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_selection.xml"], function(){
 
 			this.attachEvent("onclick", toolbar_click);
 
@@ -446,8 +445,15 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 * освобождает переменные после закрытия формы
 	 */
 	function frm_unload(on_create){
+
 		document.body.removeEventListener("keydown", body_keydown);
-		_mgr = wnd = md = previous_filter = on_select = pwnd = attr = null;
+
+		if(attr && attr.on_close && !on_create)
+			attr.on_close();
+
+		if(!on_create){
+			_mgr = wnd = md = previous_filter = on_select = pwnd = attr = null;
+		}
 	}
 
 	function frm_close(win){
