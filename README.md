@@ -40,6 +40,21 @@ Metadata.js - это лёгкий javascript клиент 1С (в дополне
 ### Отличия от конкурентов
 Metadata.js не конкурирует с клиентскими [Web UI](https://ru.wikipedia.org/wiki/%D0%A1%D1%80%D0%B0%D0%B2%D0%BD%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BA%D0%B0%D1%80%D0%BA%D0%B0%D1%81%D0%BE%D0%B2_%D0%B2%D0%B5%D0%B1-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9) и клиент-серверными (в том числе, реактивными) фреймворками, а дополняет их новой абстракцией в виде [Объектов](http://www.oknosoft.ru/upzp/apidocs/classes/DataObj.html) и [Менеджеров](http://www.oknosoft.ru/upzp/apidocs/classes/DataManager.html) данных. Использование этих классов упрощает разработку сложных интерфейсов бизнес-приложений
 
+## Установка и подключение библиотеки
+
+```bash
+npm install --save metadata-js  # node
+bower install --save metadata   # bower
+```
+
+Для браузера, подключите таблицы стилей `fontawesome`, `dhtmlx`, `metadata` и скрипты `alasql`, `dhtmlx`, `metadata`  
+
+```html
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/fontawesome/latest/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/g/metadata(dhx_web.css+metadata.css)">
+<script src="//cdn.jsdelivr.net/g/alasql,metadata(dhtmlx.min.js+metadata.min.js)"></script>
+```
+
 ## Web-приложение к серверу 1С - это просто
 - Подключите скрипт с файлами описания метаданных ([см. демо](examples/unf)) и получите полнофункциональное приложение с бизнес-логикой, реализованной средствами 1С в конфигураторе 1С и отзывчивым интерфейсом, который автоматически сгенерирует библиотека metadata.js
 - С фреймворком metadata.js легко создавать системы на сотни и даже тысячи рабочих мест, используя высокоуровневые инструменты платформы 1С на сервере, сочетая их с гибкостью, эффективностью и доступностью браузерных технологий
