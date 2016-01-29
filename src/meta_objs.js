@@ -341,30 +341,53 @@ DataObj.prototype.empty = function(){
 };
 
 
-/**
- * Метаданные текущего объекта
- * @property _metadata
- * @for DataObj
- * @type Object
- * @final
- */
-DataObj.prototype.__define('_metadata', {
-	get : function(){ return this._manager.metadata()},
-	enumerable : false
+DataObj.prototype.__define({
+
+	/**
+	 * Метаданные текущего объекта
+	 * @property _metadata
+	 * @for DataObj
+	 * @type Object
+	 * @final
+	 */
+	_metadata: {
+		get : function(){ return this._manager.metadata()},
+		enumerable : false
+	},
+
+	/**
+	 * guid ссылки объекта
+	 * @property ref
+	 * @for DataObj
+	 * @type String
+	 */
+	ref: {
+		get : function(){ return this._obj.ref},
+		set : function(v){ this._obj.ref = $p.fix_guid(v)},
+		enumerable : true,
+		configurable: true
+	},
+
+	/**
+	 * Освобождает память и уничтожает объект
+	 * @method unload
+	 * @for DataObj
+	 */
+	unload: {
+		value: function(){
+			for(f in this){
+				if(this[f] instanceof TabularSection){
+					this[f].clear();
+					delete this[f];
+				}else if(typeof this[f] != "function"){
+					delete this[f];
+				}
+			}
+		},
+		enumerable : false
+	}
 });
 
-/**
- * guid ссылки объекта
- * @property ref
- * @for DataObj
- * @type String
- */
-DataObj.prototype.__define('ref', {
-	get : function(){ return this._obj.ref},
-	set : function(v){ this._obj.ref = $p.fix_guid(v)},
-	enumerable : true,
-	configurable: true
-});
 
 /**
  * Пометка удаления
@@ -542,33 +565,43 @@ function DocObj(attr, manager) {
 }
 DocObj._extend(DataObj);
 
-/**
- * Номер документа
- * @property number_doc
- * @type {String|Number}
- */
-DocObj.prototype.__define('number_doc', {
-	get : function(){ return this._obj.number_doc || ""},
-	set : function(v){
-		this.__notify('number_doc');
-		this._obj.number_doc = v;
-	},
-	enumerable : true
-});
+function doc_standard_props(obj){
 
-/**
- * Дата документа
- * @property date
- * @type {Date}
- */
-DocObj.prototype.__define('date', {
-	get : function(){ return this._obj.date || $p.blank.date},
-	set : function(v){
-		this.__notify('date');
-		this._obj.date = $p.fix_date(v, true);
-	},
-	enumerable : true
-});
+	obj.__define({
+
+		/**
+		 * Номер документа
+		 * @property number_doc
+		 * @type {String|Number}
+		 */
+		number_doc: {
+			get : function(){ return this._obj.number_doc || ""},
+			set : function(v){
+				this.__notify('number_doc');
+				this._obj.number_doc = v;
+			},
+			enumerable : true
+		},
+
+		/**
+		 * Дата документа
+		 * @property date
+		 * @type {Date}
+		 */
+		date: {
+			get : function(){ return this._obj.date || $p.blank.date},
+			set : function(v){
+				this.__notify('date');
+				this._obj.date = $p.fix_date(v, true);
+			},
+			enumerable : true
+		}
+
+	});
+}
+
+doc_standard_props(DocObj.prototype);
+
 
 /**
  * Признак проведения
@@ -583,7 +616,6 @@ DocObj.prototype.__define('posted', {
 	},
 	enumerable : true
 });
-
 
 
 /**
@@ -607,22 +639,46 @@ function DataProcessorObj(attr, manager) {
 
 	this._mixin(attr);
 
-	/**
-	 * Освобождает память и уничтожает объект
-	 * @method unload
-	 */
-	this.unload = function(){
-		for(f in this){
-			if(this[f] instanceof TabularSection){
-				this[f].clear();
-				delete this[f];
-			}else if(typeof this[f] != "function"){
-				delete this[f];
-			}
-		}
-	};
 }
 DataProcessorObj._extend(DataObj);
+
+
+/**
+ * ### Абстрактный класс ЗадачаОбъект
+ * @class TaskObj
+ * @extends CatObj
+ * @constructor
+ * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
+ * @param manager {DataManager}
+ */
+function TaskObj(attr, manager) {
+
+	// выполняем конструктор родительского объекта
+	TaskObj.superclass.constructor.call(this, attr, manager);
+
+
+}
+TaskObj._extend(CatObj);
+doc_standard_props(TaskObj.prototype);
+
+
+/**
+ * ### Абстрактный класс БизнесПроцессОбъект
+ * @class BusinessProcessObj
+ * @extends CatObj
+ * @constructor
+ * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
+ * @param manager {DataManager}
+ */
+function BusinessProcessObj(attr, manager) {
+
+	// выполняем конструктор родительского объекта
+	BusinessProcessObj.superclass.constructor.call(this, attr, manager);
+
+
+}
+BusinessProcessObj._extend(CatObj);
+
 
 /**
  * ### Абстрактный класс значения перечисления
@@ -645,65 +701,69 @@ function EnumObj(attr, manager) {
 }
 EnumObj._extend(DataObj);
 
+EnumObj.prototype.__define({
 
-/**
- * Порядок элемента перечисления
- * @property order
- * @for EnumObj
- * @type Number
- */
-EnumObj.prototype.__define('order', {
-	get : function(){ return this._obj.sequence},
-	set : function(v){ this._obj.sequence = parseInt(v)},
-	enumerable : true
-});
-
-/**
- * Наименование элемента перечисления
- * @property name
- * @for EnumObj
- * @type String
- */
-EnumObj.prototype.__define('name', {
-	get : function(){ return this._obj.ref},
-	set : function(v){ this._obj.ref = String(v)},
-	enumerable : true
-});
-
-/**
- * Синоним элемента перечисления
- * @property synonym
- * @for EnumObj
- * @type String
- */
-EnumObj.prototype.__define('synonym', {
-	get : function(){ return this._obj.synonym || ""},
-	set : function(v){ this._obj.synonym = String(v)},
-	enumerable : true
-});
-
-/**
- * Представление объекта
- * @property presentation
- * @for EnumObj
- * @type String
- */
-EnumObj.prototype.__define('presentation', {
-	get : function(){
-		return this.synonym || this.name;
+	/**
+	 * Порядок элемента перечисления
+	 * @property order
+	 * @for EnumObj
+	 * @type Number
+	 */
+	order: {
+		get : function(){ return this._obj.sequence},
+		set : function(v){ this._obj.sequence = parseInt(v)},
+		enumerable : true
 	},
-	enumerable : false
-});
 
-/**
- * Проверяет, является ли ссылка объекта пустой
- * @method empty
- * @for EnumObj
- * @return {boolean} - true, если ссылка пустая
- */
-EnumObj.prototype.empty = function(){
-	return this.ref == "_";
-};
+	/**
+	 * Наименование элемента перечисления
+	 * @property name
+	 * @for EnumObj
+	 * @type String
+	 */
+	name: {
+		get : function(){ return this._obj.ref},
+		set : function(v){ this._obj.ref = String(v)},
+		enumerable : true
+	},
+
+	/**
+	 * Синоним элемента перечисления
+	 * @property synonym
+	 * @for EnumObj
+	 * @type String
+	 */
+	synonym: {
+		get : function(){ return this._obj.synonym || ""},
+		set : function(v){ this._obj.synonym = String(v)},
+		enumerable : true
+	},
+
+	/**
+	 * Представление объекта
+	 * @property presentation
+	 * @for EnumObj
+	 * @type String
+	 */
+	presentation: {
+		get : function(){
+			return this.synonym || this.name;
+		},
+		enumerable : false
+	},
+
+	/**
+	 * Проверяет, является ли ссылка объекта пустой
+	 * @method empty
+	 * @for EnumObj
+	 * @return {boolean} - true, если ссылка пустая
+	 */
+	empty: {
+		value: function(){
+			return this.ref == "_";
+		}
+	}
+});
 
 
 /**

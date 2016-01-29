@@ -51,7 +51,7 @@ function DataManager(class_name){
 
 	// Если в метаданных явно указано правило кеширования, используем его
 	if(!$p.job_prm.offline && _metadata.cachable != undefined)
-		_cachable = _metadata.cachable != "НеКешировать";
+		_cachable = (typeof _metadata.cachable == "boolean") ? _metadata.cachable : _metadata.cachable != "НеКешировать";
 
 	this.__define({
 
@@ -2176,3 +2176,42 @@ function DocManager(class_name) {
 
 }
 DocManager._extend(RefDataManager);
+
+/**
+ * ### Абстрактный менеджер задач
+ * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
+ * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "Tasks"}}{{/crossLink}}
+ *
+ * @class TaskManager
+ * @extends CatManager
+ * @constructor
+ * @param class_name {string}
+ */
+function TaskManager(class_name){
+
+	this._obj_сonstructor = TaskObj;		// ссылка на конструктор элементов
+
+	TaskManager.superclass.constructor.call(this, class_name);
+
+}
+TaskManager._extend(CatManager);
+
+/**
+ * ### Абстрактный менеджер бизнес-процессов
+ * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
+ * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "BusinessProcesses"}}{{/crossLink}}
+ *
+ * @class BusinessProcessManager
+ * @extends CatManager
+ * @constructor
+ * @param class_name {string}
+ */
+function BusinessProcessManager(class_name){
+
+	this._obj_сonstructor = BusinessProcessObj;		// ссылка на конструктор элементов
+
+	BusinessProcessManager.superclass.constructor.call(this, class_name);
+
+}
+BusinessProcessManager._extend(CatManager);
+
