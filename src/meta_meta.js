@@ -1154,6 +1154,16 @@ Meta.init_meta = function (forse) {
 			// в indexeddb не нашлось - грузим из файла
 			function from_files(db){
 
+				if(!$p.job_prm.data_url)
+					return $p.wsql.idx_save({ref: "meta"}, db, 'meta')
+						.then(function () {
+							return $p.wsql.idx_save({ref: "meta_patch"}, db, 'meta')
+						})
+						.then(function () {
+							new Meta({}, {})
+						});
+
+
 				var parts = [
 					$p.ajax.get($p.job_prm.data_url + "meta.json?v="+$p.job_prm.files_date),
 					$p.ajax.get($p.job_prm.data_url + "meta_patch.json?v="+$p.job_prm.files_date)
