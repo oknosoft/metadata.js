@@ -214,6 +214,7 @@ $p.eve.from_json_to_data_obj = function(res) {
 		location.reload(true);
 
 	}else if(res["cat_date"] || res.force){
+
 		if(res["cat_date"] > stepper.cat_ini_date)
 			stepper.cat_ini_date = res["cat_date"];
 		if(res["cat_date"] > stepper.cat_date)
@@ -223,29 +224,11 @@ $p.eve.from_json_to_data_obj = function(res) {
 		if(res["current"])
 			stepper.current = res["current"];
 
-		for(class_name in res.cch)
-			if(_cch[class_name])
-				_cch[class_name].load_array(res.cch[class_name]);
-
-		for(class_name in res.cacc)
-			if(_cacc[class_name])
-				_cacc[class_name].load_array(res.cacc[class_name]);
-
-		for(class_name in res.cat)
-			if(_cat[class_name])
-				_cat[class_name].load_array(res.cat[class_name]);
-
-		for(class_name in res.doc)
-			if(_doc[class_name])
-				_doc[class_name].load_array(res.doc[class_name]);
-
-		for(class_name in res.ireg)
-			if(_ireg[class_name])
-				_ireg[class_name].load_array(res.ireg[class_name]);
-
-		for(class_name in res.areg)
-			if(_areg[class_name])
-				_areg[class_name].load_array(res.areg[class_name]);
+		"cch,cacc,cat,bp,tsk,doc,ireg,areg".split(",").forEach(function (mgr) {
+			for(class_name in res[mgr])
+				if($p[mgr][class_name])
+					$p[mgr][class_name].load_array(res[mgr][class_name]);
+		});
 
 		// если все данные получены в первом запросе, второй можно не делать
 		return res.current && (res.current >= stepper.step_size);

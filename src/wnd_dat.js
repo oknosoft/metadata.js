@@ -648,7 +648,8 @@ $p.iface.swith_view = function(name){
 					{id:"oper_cat", text: $p.msg.meta_cat, open: true, item:[]},
 					{id:"oper_doc", text: $p.msg.meta_doc, item:[]},
 					{id:"oper_cch", text: $p.msg.meta_cch, item:[]},
-					{id:"oper_cacc", text: $p.msg.meta_cacc, item:[]}
+					{id:"oper_cacc", text: $p.msg.meta_cacc, item:[]},
+					{id:"oper_tsk", text: $p.msg.meta_tsk, item:[]}
 				]}, mdn, md,
 
 				// бежим по справочникам
@@ -696,6 +697,18 @@ $p.iface.swith_view = function(name){
 					if(md.hide)
 						continue;
 					tlist.push({id: "oper.cacc." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
+				}
+				tlist.sort(compare_text);
+
+				// бежим по задачам
+				tlist = meta_tree.item[4].item;
+				for(mdn in _tsk){
+					if(typeof _tsk[mdn] == "function")
+						continue;
+					md = _tsk[mdn].metadata();
+					if(md.hide)
+						continue;
+					tlist.push({id: "oper.tsk." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
 				}
 				tlist.sort(compare_text);
 

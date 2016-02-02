@@ -7,15 +7,15 @@
 
 var gulp = require('gulp');
 module.exports = gulp;
-var base64 = require('gulp-base64');
-var csso = require('gulp-csso');
-var concat = require('gulp-concat');
-var uglify = require('gulp-uglify');
-var shell = require('gulp-shell');
-var rename = require('gulp-rename');
-var resources = require('./lib/gulp-resource-concat.js');
-var path = require('path');
-var umd = require('gulp-umd');
+var base64 = require('gulp-base64'),
+	csso = require('gulp-csso'),
+	concat = require('gulp-concat'),
+	uglify = require('gulp-uglify'),
+	shell = require('gulp-shell'),
+	rename = require('gulp-rename'),
+	resources = require('./lib/gulp-resource-concat.js'),
+	path = require('path'),
+	umd = require('gulp-umd');
 
 gulp.task('build-metadata', function () {
 	return gulp.src([
@@ -60,7 +60,9 @@ gulp.task('build-metadata', function () {
 		.pipe(gulp.dest('./dist'))
 		.pipe(rename('metadata.min.js'))
 		.pipe(uglify({
-			preserveComments: "license"
+			preserveComments: function (node, comment) {
+				return comment.value[0]=="!";
+			}
 		}))
 		.pipe(gulp.dest('./lib'))
 		.pipe(gulp.dest('./dist'));
@@ -77,15 +79,9 @@ gulp.task('injected_main', function(){
 
 // dhtmlx
 gulp.task('build-dhtmlx', function(){
-	//gulp.src(['./lib/dhtmlx_debug.js'])
-	//	.pipe(rename('dhtmlx.min.js'))
-	//	.pipe(uglify({
-	//		preserveComments: "license"
-	//	}))
-	//	.pipe(gulp.dest('./lib'))
-	//	.pipe(gulp.dest('./dist'));
 
 	gulp.src([
+			'./src/dhtmlx/patches/license.js',
 			'./src/dhtmlx/sources/dhtmlxCommon/codebase/dhtmlxcommon.js',
 			'./src/dhtmlx/sources/dhtmlxCommon/codebase/dhtmlxcore.js',
 			'./src/dhtmlx/sources/dhtmlxCommon/codebase/dhtmlxcontainer.js',
@@ -168,7 +164,9 @@ gulp.task('build-dhtmlx', function(){
 		.pipe(gulp.dest('./lib'))
 		.pipe(rename('dhtmlx.min.js'))
 		.pipe(uglify({
-			preserveComments: "license"
+			preserveComments: function (node, comment) {
+				return comment.value[0]=="!";
+			}
 		}))
 		.pipe(gulp.dest('./lib'))
 		.pipe(gulp.dest('./dist'));

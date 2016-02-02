@@ -444,6 +444,48 @@ var _cat = $p.cat = new (
 		}),
 
 	/**
+	 * Коллекция менеджеров задач
+	 * @property tsk
+	 * @type Tasks
+	 * @for MetaEngine
+	 * @static
+	 */
+	_tsk = $p.tsk = new (
+
+		/**
+		 * ### Коллекция менеджеров задач
+		 * - Состав коллекции определяется метаданными используемой конфигурации
+		 * - Тип элементов коллекции: {{#crossLink "TaskManager"}}{{/crossLink}}
+		 *
+		 * @class Tasks
+		 * @static
+		 */
+			function Tasks(){
+			this.toString = function(){return $p.msg.meta_task_mgr};
+		}),
+
+	/**
+	 * Коллекция менеджеров бизнес-процессов
+	 * @property bp
+	 * @type Tasks
+	 * @for MetaEngine
+	 * @static
+	 */
+	_bp = $p.bp = new (
+
+		/**
+		 * ### Коллекция бизнес-процессов
+		 * - Состав коллекции определяется метаданными используемой конфигурации
+		 * - Тип элементов коллекции: {{#crossLink "BusinessProcessManager"}}{{/crossLink}}
+		 *
+		 * @class BusinessProcesses
+		 * @static
+		 */
+			function BusinessProcesses(){
+			this.toString = function(){return $p.msg.meta_bp_mgr};
+		}),
+
+	/**
 	 * Mетаданные конфигурации
 	 */
 	_md;
@@ -490,24 +532,25 @@ function Meta(req, patch) {
 	 */
 	_md.get = function(class_name, field_name){
 		var np = class_name.split("."),
-			res = {multiline_mode: false, note: "", synonym: "", tooltip: "", type: {is_ref: false,	types: ["string"]}};
+			res = {multiline_mode: false, note: "", synonym: "", tooltip: "", type: {is_ref: false,	types: ["string"]}},
+			is_doc = "doc,tsk,bp".indexOf(np[0]) != -1, is_cat = "cat,tsk".indexOf(np[0]) != -1;
 		if(!field_name)
 			return m[np[0]][np[1]];
-		if(np[0]=="doc" && field_name=="number_doc"){
+		if(is_doc && field_name=="number_doc"){
 			res.synonym = "Номер";
 			res.tooltip = "Номер документа";
 			res.type.str_len = 11;
-		}else if(np[0]=="doc" && field_name=="date"){
+		}else if(is_doc && field_name=="date"){
 			res.synonym = "Дата";
 			res.tooltip = "Дата документа";
 			res.type.date_part = "date_time";
 			res.type.types[0] = "date";
-		}else if(np[0]=="doc" && field_name=="posted"){
+		}else if(is_doc && field_name=="posted"){
 			res.synonym = "Проведен";
 			res.type.types[0] = "boolean";
-		}else if(np[0]=="cat" && field_name=="id"){
+		}else if(is_cat && field_name=="id"){
 			res.synonym = "Код";
-		}else if(np[0]=="cat" && field_name=="name"){
+		}else if(is_cat && field_name=="name"){
 			res.synonym = "Наименование";
 		}else if(field_name=="deleted"){
 			res.synonym = "Пометка удаления";
@@ -582,42 +625,18 @@ function Meta(req, patch) {
 			}
 		}
 
-		// TODO переписать на промисах и генераторах и перекинуть в синкер
-
-		for(class_name in managers.cat)
-			data_names.push({"class": _cat, "name": managers.cat[class_name]});
-		cstep = data_names.length;
-
-		for(class_name in managers.ireg){
-			data_names.push({"class": _ireg, "name": managers.ireg[class_name]});
-			cstep++;
-		}
-
-		for(class_name in managers.doc){
-			data_names.push({"class": _doc, "name": managers.doc[class_name]});
-			cstep++;
-		}
-
-		for(class_name in managers.enm){
-			data_names.push({"class": _enm, "name": managers.enm[class_name]});
-			cstep++;
-		}
-
-		for(class_name in managers.cch){
-			data_names.push({"class": _cch, "name": managers.cch[class_name]});
-			cstep++;
-		}
-
-		for(class_name in managers.cacc){
-			data_names.push({"class": _cacc, "name": managers.cacc[class_name]});
-			cstep++;
-		}
-
 		function iteration(){
 			var data = data_names[cstep-1];
 			create += data["class"][data.name].get_sql_struct(attr) + ";\n";
 			on_table_created(1);
 		}
+
+		// TODO переписать на промисах и генераторах и перекинуть в синкер
+		"enm,cch,cacc,cat,bp,tsk,doc,ireg,areg".split(",").forEach(function (mgr) {
+			for(class_name in managers[mgr])
+				data_names.push({"class": $p[mgr], "name": managers[mgr][class_name]});
+		});
+		cstep = data_names.length;
 
 		iteration();
 
@@ -1024,20 +1043,17 @@ function Meta(req, patch) {
 	for(class_name in m.enm)
 		_enm[class_name] = new EnumManager(m.enm[class_name], "enm."+class_name);
 
-	for(class_name in m.cat){
+	for(class_name in m.cat)
 		_cat[class_name] = new CatManager("cat."+class_name);
-	}
 
-	for(class_name in m.doc){
+	for(class_name in m.doc)
 		_doc[class_name] = new DocManager("doc."+class_name);
-	}
 
-	for(class_name in m.ireg){
-		if(class_name == "$log")
-			_ireg[class_name] = new LogManager("ireg."+class_name);
-		else
-			_ireg[class_name] = new InfoRegManager("ireg."+class_name);
-	}
+	for(class_name in m.ireg)
+		_ireg[class_name] = (class_name == "$log") ? new LogManager("ireg."+class_name) : new InfoRegManager("ireg."+class_name);
+
+	for(class_name in m.areg)
+		_areg[class_name] = new AccumRegManager("areg."+class_name);
 
 	for(class_name in m.dp)
 		_dp[class_name] = new DataProcessorsManager("dp."+class_name);
@@ -1047,6 +1063,12 @@ function Meta(req, patch) {
 
 	for(class_name in m.cacc)
 		_cacc[class_name] = new ChartOfAccountManager("cacc."+class_name);
+
+	for(class_name in m.tsk)
+		_tsk[class_name] = new TaskManager("tsk."+class_name);
+
+	for(class_name in m.bp)
+		_bp[class_name] = new BusinessProcessManager("bp."+class_name);
 
 	// загружаем модификаторы и прочие зависимости
 	$p.modifiers.execute($p);
@@ -1132,6 +1154,16 @@ Meta.init_meta = function (forse) {
 
 			// в indexeddb не нашлось - грузим из файла
 			function from_files(db){
+
+				if(!$p.job_prm.data_url)
+					return $p.wsql.idx_save({ref: "meta"}, db, 'meta')
+						.then(function () {
+							return $p.wsql.idx_save({ref: "meta_patch"}, db, 'meta')
+						})
+						.then(function () {
+							new Meta({}, {})
+						});
+
 
 				var parts = [
 					$p.ajax.get($p.job_prm.data_url + "meta.json?v="+$p.job_prm.files_date),
@@ -1231,7 +1263,7 @@ _cat.load_soap_to_grid = function(attr, grid, callback){
 
 	var mgr = _md.mgr_by_class_name(attr.class_name);
 
-	if(!mgr.cachable && ($p.job_prm.rest || $p.job_prm.irest_enabled || attr.rest))
+	if((!mgr.cachable || attr.rest) && ($p.job_prm.rest || $p.job_prm.irest_enabled))
 		mgr.rest_selection(attr)
 			.then(cb_callBack)
 			.catch($p.record_log);

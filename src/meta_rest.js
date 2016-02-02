@@ -481,7 +481,7 @@ var _rest = $p.rest = new Rest();
  * @final
  */
 DataManager.prototype.__define("rest_name", {
-	get : function(suffix){
+	get : function(){
 		var fp = this.class_name.split("."),
 			csyn = {
 				cat: "Catalog",
@@ -489,9 +489,11 @@ DataManager.prototype.__define("rest_name", {
 				ireg: "InformationRegister",
 				areg: "AccumulationRegister",
 				cch: "ChartOfCharacteristicTypes",
-				cacc: "ChartOfAccounts"
+				cacc: "ChartOfAccounts",
+				tsk: "Task",
+				bp: "BusinessProcess"
 			};
-		return csyn[fp[0]] + "_" + _md.syns_1с(fp[1]) + (suffix || "");
+		return csyn[fp[0]] + "_" + _md.syns_1с(fp[1]);
 	},
 	enumerable : false
 });
@@ -552,6 +554,18 @@ DataManager.prototype.rest_selection = function (attr) {
 			flds.push("date");
 			flds.push("number_doc");
 
+		}else if(t instanceof TaskManager){
+			flds.push("name as presentation");
+			flds.push("date");
+			flds.push("number_doc");
+			flds.push("completed");
+
+		}else if(t instanceof BusinessProcessManager){
+			flds.push("date");
+			flds.push("number_doc");
+			flds.push("started");
+			flds.push("finished");
+
 		}else{
 
 			if(cmd["hierarchical"] && cmd["group_hierarchy"])
@@ -609,14 +623,26 @@ DataManager.prototype.rest_selection = function (attr) {
 	$p.ajax.default_attr(attr, (!cmd.irest && $p.job_prm.rest) ? $p.job_prm.rest_url() : $p.job_prm.irest_url());
 	attr.url += (cmd.irest && cmd.irest.selection ? cmd.irest.selection : this.rest_name) + "?allowedOnly=true&$format=json&$top=1000&" + select;
 
-	if(_md.get(t.class_name, "date")){
+	if(_md.get(t.class_name, "date") && (attr.date_from || attr.date_till)){
 		attr.url += "&$filter=" + _rest.filter_date("Date", attr.date_from, attr.date_till);
 		filter_added = true;
 	}
 
-	if(attr.parent){
+	if(cmd["hierarchical"] && attr.parent){
 		attr.url += filter_added ? " and " : "&$filter=";
 		attr.url += "Parent_Key eq guid'" + attr.parent + "'";
+		filter_added = true;
+	}
+
+	if(cmd["has_owners"] && attr.owner){
+		attr.url += filter_added ? " and " : "&$filter=";
+		attr.url += "Owner_Key eq guid'" + attr.owner + "'";
+		filter_added = true;
+	}
+
+	if(attr.filter){
+		attr.url += filter_added ? " and " : "&$filter=";
+		attr.url += "$filter eq '" + attr.filter + "'";
 		filter_added = true;
 	}
 
@@ -644,26 +670,26 @@ DataManager.prototype.rest_selection = function (attr) {
 
 					syn = _md.syns_1с(fld);
 					mf = _md.get(t.class_name, fld);
+					if(mf){
+						if(syn.indexOf("_Key") == -1 && mf.type.is_ref && mf.type.types.length && mf.type.types[0].indexOf("enm.")==-1)
+							syn += "_Key";
 
-					if(syn.indexOf("_Key") == -1 && mf.type.is_ref && mf.type.types.length && mf.type.types[0].indexOf("enm.")==-1)
-						syn += "_Key";
+						if(mf.type.date_part)
+							o[fldsyn] = $p.dateFormat(ro[syn], $p.dateFormat.masks[mf.type.date_part]);
 
-					if(mf.type.date_part)
-						o[fldsyn] = $p.dateFormat(ro[syn], $p.dateFormat.masks[mf.type.date_part]);
-
-					else if(mf.type.is_ref){
-						if(!ro[syn] || ro[syn] == $p.blank.guid)
-							o[fldsyn] = "";
-						else{
-							var mgr	= _md.value_mgr(o, fld, mf.type, false, ro[syn]);
-							if(mgr)
-								o[fldsyn] = mgr.get(ro[syn]).presentation;
-							else
+						else if(mf.type.is_ref){
+							if(!ro[syn] || ro[syn] == $p.blank.guid)
 								o[fldsyn] = "";
-						}
-					}else
-						o[fldsyn] = ro[syn];
-
+							else{
+								var mgr	= _md.value_mgr(o, fld, mf.type, false, ro[syn]);
+								if(mgr)
+									o[fldsyn] = mgr.get(ro[syn]).presentation;
+								else
+									o[fldsyn] = "";
+							}
+						}else
+							o[fldsyn] = ro[syn];
+					}
 				});
 				ares.push(o);
 			}
