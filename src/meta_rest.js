@@ -554,6 +554,18 @@ DataManager.prototype.rest_selection = function (attr) {
 			flds.push("date");
 			flds.push("number_doc");
 
+		}else if(t instanceof TaskManager){
+			flds.push("name as presentation");
+			flds.push("date");
+			flds.push("number_doc");
+			flds.push("completed");
+
+		}else if(t instanceof BusinessProcessManager){
+			flds.push("date");
+			flds.push("number_doc");
+			flds.push("started");
+			flds.push("finished");
+
 		}else{
 
 			if(cmd["hierarchical"] && cmd["group_hierarchy"])

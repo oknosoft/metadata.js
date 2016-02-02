@@ -355,13 +355,13 @@ DataManager.prototype.get_option_list = function(val, selection){
 
 	}else{
 		// для некешируемых выполняем запрос к серверу
-		var attr = { selection: selection, top: selection._top };
+		var attr = { selection: selection, top: selection._top},
+			is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
 		delete selection._top;
 
-
-
-		if(t instanceof DocManager)
+		if(is_doc)
 			attr.fields = ["ref", "date", "number_doc"];
+
 		else if(t.metadata().main_presentation_name)
 			attr.fields = ["ref", "name"];
 		else
@@ -371,7 +371,7 @@ DataManager.prototype.get_option_list = function(val, selection){
 			.then(function (data) {
 				data.forEach(function (v) {
 					l.push(check({
-						text: t instanceof DocManager ? (v.number_doc + " от " + $p.dateFormat(v.date, $p.dateFormat.masks.ru)) : (v.name || v.id),
+						text: is_doc ? (v.number_doc + " от " + $p.dateFormat(v.date, $p.dateFormat.masks.ru)) : (v.name || v.id),
 						value: v.ref}));
 				});
 				return l;

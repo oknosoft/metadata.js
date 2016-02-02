@@ -532,24 +532,25 @@ function Meta(req, patch) {
 	 */
 	_md.get = function(class_name, field_name){
 		var np = class_name.split("."),
-			res = {multiline_mode: false, note: "", synonym: "", tooltip: "", type: {is_ref: false,	types: ["string"]}};
+			res = {multiline_mode: false, note: "", synonym: "", tooltip: "", type: {is_ref: false,	types: ["string"]}},
+			is_doc = "doc,tsk,bp".indexOf(np[0]) != -1, is_cat = "cat,tsk".indexOf(np[0]) != -1;
 		if(!field_name)
 			return m[np[0]][np[1]];
-		if(np[0]=="doc" && field_name=="number_doc"){
+		if(is_doc && field_name=="number_doc"){
 			res.synonym = "Номер";
 			res.tooltip = "Номер документа";
 			res.type.str_len = 11;
-		}else if(np[0]=="doc" && field_name=="date"){
+		}else if(is_doc && field_name=="date"){
 			res.synonym = "Дата";
 			res.tooltip = "Дата документа";
 			res.type.date_part = "date_time";
 			res.type.types[0] = "date";
-		}else if(np[0]=="doc" && field_name=="posted"){
+		}else if(is_doc && field_name=="posted"){
 			res.synonym = "Проведен";
 			res.type.types[0] = "boolean";
-		}else if(np[0]=="cat" && field_name=="id"){
+		}else if(is_cat && field_name=="id"){
 			res.synonym = "Код";
-		}else if(np[0]=="cat" && field_name=="name"){
+		}else if(is_cat && field_name=="name"){
 			res.synonym = "Наименование";
 		}else if(field_name=="deleted"){
 			res.synonym = "Пометка удаления";

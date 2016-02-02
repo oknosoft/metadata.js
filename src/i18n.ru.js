@@ -230,6 +230,7 @@ msg.meta_cat = "Справочники";
 msg.meta_doc = "Документы";
 msg.meta_cch = "Планы видов характеристик";
 msg.meta_cacc = "Планы счетов";
+msg.meta_tsk = "Задачи";
 msg.meta_ireg = "Регистры сведений";
 msg.meta_areg = "Регистры накопления";
 msg.meta_mgr = "Менеджер";
