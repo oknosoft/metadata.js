@@ -92,7 +92,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 
 		$p.iface.bind_help(wnd);
-		if(wnd.setText)
+		if(wnd.setText && !attr.hide_text)
 			wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (md["list_presentation"] || md.synonym) + '"');
 
 		document.body.addEventListener("keydown", body_keydown, false);

@@ -678,7 +678,7 @@ $p.eve.log_in = function(onstep){
 			onstep($p.eve.steps.authorization);
 
 			// TODO: реализовать метод для получения списка ролей пользователя
-			mdd = res || _md.dates();
+			mdd = res || (_md ? _md.dates() : {});
 			mdd.root = true;
 
 			// в автономном режиме сразу переходим к чтению первого файла данных
