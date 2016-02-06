@@ -658,7 +658,7 @@ $p.eve.log_in = function(onstep){
 	// выясняем, доступен ли irest (наш сервис) или мы ограничены стандартным rest-ом
 	// параллельно, проверяем авторизацию
 	$p.ajax.default_attr(irest_attr, $p.job_prm.irest_url());
-	res = $p.job_prm.offline ? Promise.resolve({responseURL: ""}) : $p.ajax.get_ex(irest_attr.url, irest_attr);
+	res = $p.job_prm.offline ? Promise.resolve({responseURL: "", response: ""}) : $p.ajax.get_ex(irest_attr.url, irest_attr);
 
 	return res
 		.then(function (req) {
@@ -678,7 +678,7 @@ $p.eve.log_in = function(onstep){
 			onstep($p.eve.steps.authorization);
 
 			// TODO: реализовать метод для получения списка ролей пользователя
-			mdd = res || _md.dates();
+			mdd = res || (_md ? _md.dates() : {});
 			mdd.root = true;
 
 			// в автономном режиме сразу переходим к чтению первого файла данных
