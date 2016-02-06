@@ -77,6 +77,29 @@ gulp.task('injected_main', function(){
 	   .pipe(gulp.dest('./data'));
 });
 
+// dhtmlxscheduler
+gulp.task('build-scheduler', function(){
+
+	gulp.src([
+			'./lib/dhtmlxscheduler/license.js',
+			'./lib/dhtmlxscheduler/dhtmlxscheduler.js',
+			'./lib/dhtmlxscheduler/dhtmlxscheduler_locale_ru.js',
+			'./lib/dhtmlxscheduler/dhtmlxscheduler_minical.js',
+			// './lib/dhtmlxscheduler/dhtmlxscheduler_timeline.js',
+			// './lib/dhtmlxscheduler/dhtmlxscheduler_treetimeline.js'
+		])
+		.pipe(concat('scheduler.js'))
+		.pipe(gulp.dest('./lib/dhtmlxscheduler'))
+		.pipe(rename('dhtmlxscheduler.min.js'))
+		.pipe(uglify({
+			preserveComments: function (node, comment) {
+				return comment.value[0]=="!";
+			}
+		}))
+		.pipe(gulp.dest('./lib/dhtmlxscheduler'))
+		//.pipe(gulp.dest('./dist'));
+});
+
 // dhtmlx
 gulp.task('build-dhtmlx', function(){
 
