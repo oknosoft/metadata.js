@@ -476,15 +476,18 @@
 					 */
 					eve.onload.execute($p);
 
-					// Если есть сплэш, удаляем его
-					if(document && document.querySelector("#splash"))
-						document.querySelector("#splash").parentNode.removeChild(document.querySelector("#splash"));
-
 					// инициализируем метаданные и обработчик при начале работы интерфейса
 					setTimeout(function () {
+
 						$p.Meta.init_meta()
 							.catch($p.record_log);
+
+						// Если есть сплэш, удаляем его
+						if(document && document.querySelector("#splash"))
+							document.querySelector("#splash").parentNode.removeChild(document.querySelector("#splash"));
+
 						iface.oninit();
+
 					}, 20);
 
 
