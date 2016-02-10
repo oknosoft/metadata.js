@@ -810,7 +810,7 @@ $p.eve.auto_log_in = function () {
 
 	stepper.zone = $p.wsql.get_user_param("zone") + "/";
 
-	// читаем файл метаданных, файл патча метаданных и первый файл снапшота
+	// читаем первый файл снапшота
 	return $p.ajax.get(data_url + "zones/" + stepper.zone + "p_0.json?v="+$p.job_prm.files_date)
 
 		// из содержимого первого файла получаем количество файлов и загружаем их все
