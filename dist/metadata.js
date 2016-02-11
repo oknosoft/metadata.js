@@ -9956,8 +9956,10 @@ TabularSection.prototype.count = function(){return this._obj.length};
 /**
  * очищает табличнут часть
  * @method clear
+ * @return {TabularSection}
  */
 TabularSection.prototype.clear = function(do_not_notify){
+
 	for(var i in this._obj)
 		delete this._obj[i];
 	this._obj.length = 0;
@@ -9967,6 +9969,8 @@ TabularSection.prototype.clear = function(do_not_notify){
 			type: 'rows',
 			tabular: this._name
 		});
+
+	return this;
 };
 
 /**
@@ -10099,12 +10103,64 @@ TabularSection.prototype.each = function(fn){
 };
 
 /**
+ * Псевдоним для each
+ * @type {TabularSection.each|*}
+ */
+TabularSection.prototype.forEach = TabularSection.prototype.each;
+
+/**
+ * Сворачивает табличную часть
+ * @param dimensions
+ * @param resources
+ */
+TabularSection.prototype.group_by = function (dimensions, resources) {
+
+	if(typeof dimensions == "string")
+		dimensions = dimensions.split(",");
+	if(typeof resources == "string")
+		resources = resources.split(",");
+
+	var sql, res = true;
+
+	resources.forEach(function (f) {
+		if(!sql)
+			sql = "select sum(`" + f + "`) `" + f + "`";
+		else
+			sql += ", sum(`" + f + "`) `" + f + "`";
+	});
+	dimensions.forEach(function (f) {
+		if(!sql)
+			sql = "select `" + f + "`";
+		else
+			sql += ", `" + f + "`";
+	});
+	sql += " from ? group by ";
+	dimensions.forEach(function (f) {
+		if(res){
+			res = false;
+			sql += "`" + f + "`";
+		}else
+			sql += ", `" + f + "`";
+	});
+
+	try{
+		res = $p.wsql.alasql(sql, [this._obj]);
+		return this.clear(true).load(res);
+
+	}catch(err){
+		$p.record_log(err);
+	}
+}
+
+/**
  * загружает табличнут часть из массива объектов
  * @method load
  * @param aattr {Array} - массив объектов к загрузке
  */
 TabularSection.prototype.load = function(aattr){
+
 	var t = this, arr;
+
 	t.clear(true);
 	if(aattr instanceof TabularSection)
 		arr = aattr._obj;
@@ -10115,10 +10171,12 @@ TabularSection.prototype.load = function(aattr){
 			t.add(row, true);
 	});
 
-	Object.getNotifier(this._owner).notify({
+	Object.getNotifier(t._owner).notify({
 		type: 'rows',
-		tabular: this._name
+		tabular: t._name
 	});
+
+	return t;
 };
 
 /**
