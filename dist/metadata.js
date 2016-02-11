@@ -6355,13 +6355,14 @@ function Meta(req, patch) {
 
 		property = row.property || row.param;
 		if(f != "value" || !property){
+
 			rt = [];
 			mf.types.forEach(function(v){
 				tnames = v.split(".");
 				if(tnames.length > 1 && $p[tnames[0]][tnames[1]])
 					rt.push($p[tnames[0]][tnames[1]]);
 			});
-			if(rt.length == 1)
+			if(rt.length == 1 || row[f] == $p.blank.guid)
 				return mf_mgr(rt[0]);
 
 			else if(array_enabled)
@@ -9176,21 +9177,30 @@ DataObj.prototype.toJSON = function () {
 DataObj.prototype._getter = function (f) {
 
 	var mf = this._metadata.fields[f].type,
+		res = this._obj[f],
 		mgr, ref;
 
-	if(f == "type" && typeof this._obj[f] == "object")
-		return this._obj[f];
+	if(f == "type" && typeof res == "object")
+		return res;
 
 	else if(f == "ref"){
-		return this._obj[f];
+		return res;
 
 	}else if(mf.is_ref){
+		if(mf.digits && typeof res === "number")
+			return res;
+
+		if(mf.hasOwnProperty("str_len") && !$p.is_guid(res))
+			return res;
+
 		if(mgr = _md.value_mgr(this._obj, f, mf)){
 			if(mgr instanceof DataManager)
-				return mgr.get(this._obj[f], false);
+				return mgr.get(res, false);
 			else
-				return $p.fetch_type(this._obj[f], mgr);
-		}else if(this._obj[f]){
+				return $p.fetch_type(res, mgr);
+		}
+
+		if(res){
 			console.log([f, mf, this._obj]);
 			return null;
 		}

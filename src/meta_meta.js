@@ -784,13 +784,14 @@ function Meta(req, patch) {
 
 		property = row.property || row.param;
 		if(f != "value" || !property){
+
 			rt = [];
 			mf.types.forEach(function(v){
 				tnames = v.split(".");
 				if(tnames.length > 1 && $p[tnames[0]][tnames[1]])
 					rt.push($p[tnames[0]][tnames[1]]);
 			});
-			if(rt.length == 1)
+			if(rt.length == 1 || row[f] == $p.blank.guid)
 				return mf_mgr(rt[0]);
 
 			else if(array_enabled)
