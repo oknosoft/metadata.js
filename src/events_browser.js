@@ -1,7 +1,7 @@
 /**
  * Этот фрагмент кода выполняем только в браузере
  * Created 28.12.2015<br />
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author Evgeniy Malyarov
  * @module common
  * @submodule events_browser

@@ -15,7 +15,7 @@
 /**
  * Глобальные переменные и общие методы фреймворка __metadata.js__ <i>Oknosoft data engine</i>
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * Экспортирует глобальную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
@@ -30,7 +30,7 @@
  * @static
  */
 function MetaEngine() {
-	this.version = "0.9.206";
+	this.version = "0.9.207";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
@@ -2075,7 +2075,7 @@ $p.wsql = new WSQL();
 /**
  * Строковые константы интернационализации
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module common
@@ -2369,7 +2369,7 @@ msg.bld_split_imp = "В параметрах продукции<br />'%1'<br />�
 /**
  * Расширение типов ячеек dhtmlXGrid
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * Экспортирует конструкторы:
@@ -2791,7 +2791,7 @@ $p.iface.data_to_tree = function (data) {
  * ### Визуальный компонент - гиперссылка с выпадающим списком для выбора значения
  *
  * Created 13.11.2015<br />
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  * @module  wdg_dropdown_list
  */
@@ -2882,7 +2882,7 @@ $p.iface.ODropdownList = ODropdownList;
  * ### Визуальный компонент OCombo
  * Поле с выпадающим списком + функция выбора из списка
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * @module  wdg_ocombo
@@ -3313,7 +3313,7 @@ $p.iface.select_from_list = function (list, multy) {
 /**
  * ### Визуальный компонент - реквизиты шапки объекта
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * @module  wdg_ohead_fields
@@ -3411,7 +3411,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 	//t.enableAutoHeight(false,_cell._getHeight()-20,true);
 	_grid.setSizes();
 	_grid.attachEvent("onPropertyChanged", function(pname, new_value, old_value){
-		if(pname)
+		if(pname || _grid && _grid.getSelectedRowId())
 			return _pwnd.on_select(new_value);
 	});
 	_grid.attachEvent("onCheckbox", function(rId, cInd, state){
@@ -3560,7 +3560,7 @@ dhtmlXGridObject.prototype.get_cell_value = function () {
 /**
  * ### Визуальный компонент - табличное поле объекта
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module  wdg_otabular
@@ -3788,7 +3788,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
  * Виджет для панели инструментов форм списка и выбора,
  * объединяет поля выбора периода и поле ввода фильтра
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * @module  wdg_filter
@@ -3913,7 +3913,7 @@ $p.iface.Toolbar_filter = function (attr) {
  * Динамическое дерево иерархического справочника
  *
  * Created 22.10.2015<br />
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  * @module  wdg_dyn_tree
  */
@@ -3973,7 +3973,7 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 /**
  * Формы визуализации и изменения параметров объекта
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * @module common
@@ -4985,7 +4985,7 @@ $p.iface.add_button = function(parent, attr, battr) {
 /**
  * Поле ввода адреса связанная с ним форма ввода адреса
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * @module  wnd_oaddress
@@ -5572,7 +5572,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 /**
  * Метаданные на стороне js: конструкторы, заполнение, кеширование, поиск
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -6837,7 +6837,7 @@ _cat.load_soap_to_grid = function(attr, grid, callback){
 /**
  * Конструкторы менеджеров данных
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -9055,7 +9055,7 @@ BusinessProcessManager._extend(CatManager);
 /**
  * Конструкторы объектов данных
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -9874,7 +9874,7 @@ RegisterRow.prototype.__define('ref', {
 /**
  * Конструкторы табличных частей
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -10110,23 +10110,71 @@ TabularSection.prototype.forEach = TabularSection.prototype.each;
 
 /**
  * Сворачивает табличную часть
- * @param dimensions
- * @param resources
+ * @param [dimensions] {Array|String}
+ * @param [resources] {Array|String}
  */
 TabularSection.prototype.group_by = function (dimensions, resources) {
+
+	try{
+		var res = this.aggregate(dimensions, resources, "SUM", true);
+		return this.clear(true).load(res);
+
+	}catch(err){}
+}
+
+/**
+ * Сортирует табличную часть
+ * @param fields {Array|String}
+ */
+TabularSection.prototype.sort = function (fields) {
+
+	if(typeof fields == "string")
+		fields = fields.split(",");
+
+	var sql = "select * from ? order by ", res = true;
+	fields.forEach(function (f) {
+		f = f.trim().replace(/\s{1,}/g," ").split(" ");
+		if(res)
+			res = false;
+		else
+			sql += ", ";
+		sql += "`" + f[0] + "`";
+		if(f[1])
+			sql += " " + f[1];
+	});
+
+	try{
+		res = $p.wsql.alasql(sql, [this._obj]);
+		return this.clear(true).load(res);
+
+	}catch(err){
+		$p.record_log(err);
+	}
+}
+
+/**
+ * Вычисляет агрегатную функцию по табличной части. Не изменяет исходный объект
+ * @param [dimensions] {Array|String}
+ * @param [resources] {Array|String}
+ * @param [aggr] {String} = SUM, COUNT, MIN, MAX, FIRST, LAST, AVG, AGGR, ARRAY, REDUCE
+ * @return {*}
+ */
+TabularSection.prototype.aggregate = function (dimensions, resources, aggr, ret_array) {
 
 	if(typeof dimensions == "string")
 		dimensions = dimensions.split(",");
 	if(typeof resources == "string")
 		resources = resources.split(",");
+	if(!aggr)
+		aggr = "sum";
 
 	var sql, res = true;
 
 	resources.forEach(function (f) {
 		if(!sql)
-			sql = "select sum(`" + f + "`) `" + f + "`";
+			sql = "select " + aggr + "(`" + f + "`) `" + f + "`";
 		else
-			sql += ", sum(`" + f + "`) `" + f + "`";
+			sql += ", " + aggr + "(`" + f + "`) `" + f + "`";
 	});
 	dimensions.forEach(function (f) {
 		if(!sql)
@@ -10134,18 +10182,26 @@ TabularSection.prototype.group_by = function (dimensions, resources) {
 		else
 			sql += ", `" + f + "`";
 	});
-	sql += " from ? group by ";
+	sql += " from ? ";
 	dimensions.forEach(function (f) {
 		if(res){
+			sql += "group by ";
 			res = false;
-			sql += "`" + f + "`";
-		}else
-			sql += ", `" + f + "`";
+		}
+		else
+			sql += ", ";
+		sql += "`" + f + "`";
 	});
 
 	try{
 		res = $p.wsql.alasql(sql, [this._obj]);
-		return this.clear(true).load(res);
+		if(!ret_array){
+			if(resources.length == 1)
+				res = res.length ? res[0][resources[0]] : 0;
+			else
+				res = res.length ? res[0] : {};
+		}
+		return res;
 
 	}catch(err){
 		$p.record_log(err);
@@ -10308,7 +10364,7 @@ TabularSectionRow.prototype._setter = function (f, v) {
  * записи и синхронизации через стандартный интерфейс <a href="http://its.1c.ru/db/v83doc#bookmark:dev:TI000001362">OData</a>
  * /a/unf/odata/standard.odata
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -11172,7 +11228,7 @@ DataObj.prototype.to_atom = function (ex_meta) {
 /**
  * Процедуры импорта и экспорта данных
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module metadata
@@ -11645,7 +11701,7 @@ $p.iface.wnd_sync = function() {
 /**
  * Форма абстрактного объекта данных {{#crossLink "DataObj"}}{{/crossLink}}, в том числе, отчетов и обработок
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * @module metadata
@@ -12119,7 +12175,7 @@ DataObj.prototype.form_obj = function (pwnd, attr) {
  * Абстрактная форма списка и выбора выбора объектов ссылочного типа (документов и справочников)<br />
  * Может быть переопределена в {{#crossLink "RefDataManager"}}менеджерах{{/crossLink}} конкретных классов
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * @module  wnd_selection
@@ -12654,7 +12710,7 @@ DataManager.prototype.form_list = function(pwnd, attr){
  *	 по событию построителя "ready", выполняем метод initMainLayout() объекта $p.iface.
  *	 Метод initMainLayout() переопределяется во внешним, по отношению к ядру, модуле
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module common
@@ -12901,7 +12957,7 @@ $p.eve.time_diff = function () {
 /**
  * Этот фрагмент кода выполняем только в браузере
  * Created 28.12.2015<br />
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author Evgeniy Malyarov
  * @module common
  * @submodule events_browser

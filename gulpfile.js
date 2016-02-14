@@ -112,12 +112,10 @@ gulp.task('build-dhtmlx', function(){
 			'./src/dhtmlx/patches/dhtmlxcalendar_lang_ru.js',
 			'./src/dhtmlx/sources/dhtmlxCalendar/codebase/ext/dhtmlxcalendar_double.js',
 			'./src/dhtmlx/sources/dhtmlxCombo/codebase/dhtmlxcombo.js',
-
 			'./src/dhtmlx/sources/dhtmlxPopup/codebase/dhtmlxpopup.js',
 			'./src/dhtmlx/sources/dhtmlxMenu/codebase/dhtmlxmenu.js',
 			'./src/dhtmlx/sources/dhtmlxMenu/codebase/ext/dhtmlxmenu_ext.js',
 			'./src/dhtmlx/sources/dhtmlxMenu/codebase/ext/dhtmlxmenu_effects.js',
-
 			'./src/dhtmlx/patches/dhtmlxtoolbar.js',
 			'./src/dhtmlx/sources/dhtmlxEditor/codebase/dhtmlxeditor.js',
 			//'./src/dhtmlx/patches/dhtmlxeditor_ext.js',
@@ -155,12 +153,10 @@ gulp.task('build-dhtmlx', function(){
 			'./src/dhtmlx/sources/dhtmlxForm/codebase/ext/dhtmlxform_item_combo.js',
 			'./src/dhtmlx/sources/dhtmlxForm/codebase/ext/dhtmlxform_item_calendar.js',
 			'./src/dhtmlx/sources/dhtmlxForm/codebase/ext/dhtmlxform_item_btn2state.js',
-
 			'./src/dhtmlx/sources/dhtmlxForm/codebase/ext/dhtmlxform_item_container.js',
 			'./src/dhtmlx/sources/dhtmlxForm/codebase/ext/dhtmlxform_item_editor.js',
 			'./src/dhtmlx/sources/dhtmlxForm/codebase/ext/dhtmlxform_item_image.js',
-
-			'./src/dhtmlx/sources/dhtmlxForm/codebase/ext/dhtmlxform_backup.js',
+			//'./src/dhtmlx/sources/dhtmlxForm/codebase/ext/dhtmlxform_backup.js',
 			'./src/dhtmlx/sources/dhtmlxForm/codebase/ext/dhtmlxform_dyn.js',
 			'./src/dhtmlx/patches/dhtmlxform.js',
 			'./src/dhtmlx/sources/dhtmlxAccordion/codebase/dhtmlxaccordion.js',

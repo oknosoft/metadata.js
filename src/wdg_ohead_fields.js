@@ -1,7 +1,7 @@
 /**
  * ### Визуальный компонент - реквизиты шапки объекта
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * @module  wdg_ohead_fields
@@ -99,7 +99,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 	//t.enableAutoHeight(false,_cell._getHeight()-20,true);
 	_grid.setSizes();
 	_grid.attachEvent("onPropertyChanged", function(pname, new_value, old_value){
-		if(pname)
+		if(pname || _grid && _grid.getSelectedRowId())
 			return _pwnd.on_select(new_value);
 	});
 	_grid.attachEvent("onCheckbox", function(rId, cInd, state){
