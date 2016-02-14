@@ -15,7 +15,7 @@
  *	 по событию построителя "ready", выполняем метод initMainLayout() объекта $p.iface.
  *	 Метод initMainLayout() переопределяется во внешним, по отношению к ядру, модуле
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module common

@@ -24,11 +24,13 @@ Many thanks to
 * Other people for useful tools, which make our work easier
 
 ### License
-Access to the materials of the repository is provided solely for personal information and for educational purposes.
-Reproduction and dissemination of materials is prohibited. In the event of a need to use the submissions received, you must contact the complaining party (info@oknosoft.ru) to conclude an agreement on the transfer of property rights.
+
+Metadata.js is dual licensed. You may use it under [AGPL-3.0](http://licenseit.ru/wiki/index.php/GNU_Affero_General_Public_License_version_3) license for non-profit Open Source projects or under [oknosoft commercial license](http://www.oknosoft.ru/programmi-oknosoft/metadata.html) for any number of non-competing products, without restrictions on the number of copies.
+
+To obtain oknosoft commercial license contact (info@oknosoft.ru)
 
 [Licence information](LICENSE.en.md).
 
 The license on this repo covers all contents of the repo, but does not supercede the existing licenses for products used for this work and other products.
 
-(c) 2010-2015, Oknosoft Lab (info@oknosoft.ru)
+(c) 2014-2016, Oknosoft Lab (info@oknosoft.ru)

@@ -1,7 +1,7 @@
 /**
  * Этот фрагмент кода выполняем только в браузере
  * Created 28.12.2015<br />
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author Evgeniy Malyarov
  * @module common
  * @submodule events_browser
@@ -476,15 +476,18 @@
 					 */
 					eve.onload.execute($p);
 
-					// Если есть сплэш, удаляем его
-					if(document && document.querySelector("#splash"))
-						document.querySelector("#splash").parentNode.removeChild(document.querySelector("#splash"));
-
 					// инициализируем метаданные и обработчик при начале работы интерфейса
 					setTimeout(function () {
+
 						$p.Meta.init_meta()
 							.catch($p.record_log);
+
+						// Если есть сплэш, удаляем его
+						if(document && document.querySelector("#splash"))
+							document.querySelector("#splash").parentNode.removeChild(document.querySelector("#splash"));
+
 						iface.oninit();
+
 					}, 20);
 
 
@@ -807,7 +810,7 @@ $p.eve.auto_log_in = function () {
 
 	stepper.zone = $p.wsql.get_user_param("zone") + "/";
 
-	// читаем файл метаданных, файл патча метаданных и первый файл снапшота
+	// читаем первый файл снапшота
 	return $p.ajax.get(data_url + "zones/" + stepper.zone + "p_0.json?v="+$p.job_prm.files_date)
 
 		// из содержимого первого файла получаем количество файлов и загружаем их все

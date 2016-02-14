@@ -15,7 +15,7 @@
 /**
  * Глобальные переменные и общие методы фреймворка __metadata.js__ <i>Oknosoft data engine</i>
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * Экспортирует глобальную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
@@ -30,7 +30,7 @@
  * @static
  */
 function MetaEngine() {
-	this.version = "0.9.206";
+	this.version = "0.9.207";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
@@ -189,6 +189,14 @@ Object.prototype.__define({
 	}
 });
 
+/**
+ * Метод округления в прототип числа
+ */
+if(!Number.prototype.round)
+	Number.prototype.round = function(places) {
+		var multiplier = Math.pow(10, places);
+		return (Math.round(this * multiplier) / multiplier);
+	}
 
 /**
  * Полифил для обсервера и нотифаера пока не подключаем
@@ -2067,7 +2075,7 @@ $p.wsql = new WSQL();
 /**
  * Строковые константы интернационализации
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module common
@@ -2361,7 +2369,7 @@ msg.bld_split_imp = "В параметрах продукции<br />'%1'<br />�
 /**
  * Расширение типов ячеек dhtmlXGrid
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * Экспортирует конструкторы:
@@ -2783,7 +2791,7 @@ $p.iface.data_to_tree = function (data) {
  * ### Визуальный компонент - гиперссылка с выпадающим списком для выбора значения
  *
  * Created 13.11.2015<br />
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  * @module  wdg_dropdown_list
  */
@@ -2874,7 +2882,7 @@ $p.iface.ODropdownList = ODropdownList;
  * ### Визуальный компонент OCombo
  * Поле с выпадающим списком + функция выбора из списка
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * @module  wdg_ocombo
@@ -3305,7 +3313,7 @@ $p.iface.select_from_list = function (list, multy) {
 /**
  * ### Визуальный компонент - реквизиты шапки объекта
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * @module  wdg_ohead_fields
@@ -3403,7 +3411,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 	//t.enableAutoHeight(false,_cell._getHeight()-20,true);
 	_grid.setSizes();
 	_grid.attachEvent("onPropertyChanged", function(pname, new_value, old_value){
-		if(pname)
+		if(pname || _grid && _grid.getSelectedRowId())
 			return _pwnd.on_select(new_value);
 	});
 	_grid.attachEvent("onCheckbox", function(rId, cInd, state){
@@ -3552,7 +3560,7 @@ dhtmlXGridObject.prototype.get_cell_value = function () {
 /**
  * ### Визуальный компонент - табличное поле объекта
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module  wdg_otabular
@@ -3780,7 +3788,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
  * Виджет для панели инструментов форм списка и выбора,
  * объединяет поля выбора периода и поле ввода фильтра
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * @module  wdg_filter
@@ -3905,7 +3913,7 @@ $p.iface.Toolbar_filter = function (attr) {
  * Динамическое дерево иерархического справочника
  *
  * Created 22.10.2015<br />
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  * @module  wdg_dyn_tree
  */
@@ -3965,7 +3973,7 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 /**
  * Формы визуализации и изменения параметров объекта
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * @module common
@@ -4977,7 +4985,7 @@ $p.iface.add_button = function(parent, attr, battr) {
 /**
  * Поле ввода адреса связанная с ним форма ввода адреса
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * @module  wnd_oaddress
@@ -5564,7 +5572,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 /**
  * Метаданные на стороне js: конструкторы, заполнение, кеширование, поиск
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -5708,18 +5716,18 @@ $p._find_rows = function(arr, selection, callback){
 						if(!ok)
 							break;
 
-					}else if(selection[j].hasOwnProperty("like")){
+					}else if(selection[j] && selection[j].hasOwnProperty("like")){
 						if(o[j].toLowerCase().indexOf(selection[j].like.toLowerCase())==-1){
 							ok = false;
 							break;
 						}
-					}else if(selection[j].hasOwnProperty("not")){
+					}else if(selection[j] && selection[j].hasOwnProperty("not")){
 						if($p.is_equal(o[j], selection[j].not)){
 							ok = false;
 							break;
 						}
 
-					}else if(selection[j].hasOwnProperty("in")){
+					}else if(selection[j] && selection[j].hasOwnProperty("in")){
 						ok = selection[j].in.some(function(element) {
 							return $p.is_equal(element, o[j]);
 						});
@@ -6347,13 +6355,14 @@ function Meta(req, patch) {
 
 		property = row.property || row.param;
 		if(f != "value" || !property){
+
 			rt = [];
 			mf.types.forEach(function(v){
 				tnames = v.split(".");
 				if(tnames.length > 1 && $p[tnames[0]][tnames[1]])
 					rt.push($p[tnames[0]][tnames[1]]);
 			});
-			if(rt.length == 1)
+			if(rt.length == 1 || row[f] == $p.blank.guid)
 				return mf_mgr(rt[0]);
 
 			else if(array_enabled)
@@ -6658,17 +6667,6 @@ Meta._patch = function(obj, patch){
 				obj[area] = patch[area];
 		}else
 			obj[area] = patch[area];
-
-		//for(var c in patch[area]){
-		//	if(!obj[area][c])
-		//		obj[area][c] = {};
-		//	for(var f in patch[area][c]){
-		//		if(!obj[area][c][f])
-		//			obj[area][c][f] = patch[area][c][f];
-		//		else if(typeof obj[area][c][f] == "object")
-		//			obj[area][c][f]._mixin(patch[area][c][f]);
-		//	}
-		//}
 	}
 }
 
@@ -6839,7 +6837,7 @@ _cat.load_soap_to_grid = function(attr, grid, callback){
 /**
  * Конструкторы менеджеров данных
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -9057,7 +9055,7 @@ BusinessProcessManager._extend(CatManager);
 /**
  * Конструкторы объектов данных
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -9179,21 +9177,30 @@ DataObj.prototype.toJSON = function () {
 DataObj.prototype._getter = function (f) {
 
 	var mf = this._metadata.fields[f].type,
+		res = this._obj[f],
 		mgr, ref;
 
-	if(f == "type" && typeof this._obj[f] == "object")
-		return this._obj[f];
+	if(f == "type" && typeof res == "object")
+		return res;
 
 	else if(f == "ref"){
-		return this._obj[f];
+		return res;
 
 	}else if(mf.is_ref){
+		if(mf.digits && typeof res === "number")
+			return res;
+
+		if(mf.hasOwnProperty("str_len") && !$p.is_guid(res))
+			return res;
+
 		if(mgr = _md.value_mgr(this._obj, f, mf)){
 			if(mgr instanceof DataManager)
-				return mgr.get(this._obj[f], false);
+				return mgr.get(res, false);
 			else
-				return $p.fetch_type(this._obj[f], mgr);
-		}else if(this._obj[f]){
+				return $p.fetch_type(res, mgr);
+		}
+
+		if(res){
 			console.log([f, mf, this._obj]);
 			return null;
 		}
@@ -9867,7 +9874,7 @@ RegisterRow.prototype.__define('ref', {
 /**
  * Конструкторы табличных частей
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -9949,8 +9956,10 @@ TabularSection.prototype.count = function(){return this._obj.length};
 /**
  * очищает табличнут часть
  * @method clear
+ * @return {TabularSection}
  */
 TabularSection.prototype.clear = function(do_not_notify){
+
 	for(var i in this._obj)
 		delete this._obj[i];
 	this._obj.length = 0;
@@ -9960,6 +9969,8 @@ TabularSection.prototype.clear = function(do_not_notify){
 			type: 'rows',
 			tabular: this._name
 		});
+
+	return this;
 };
 
 /**
@@ -10092,12 +10103,120 @@ TabularSection.prototype.each = function(fn){
 };
 
 /**
+ * Псевдоним для each
+ * @type {TabularSection.each|*}
+ */
+TabularSection.prototype.forEach = TabularSection.prototype.each;
+
+/**
+ * Сворачивает табличную часть
+ * @param [dimensions] {Array|String}
+ * @param [resources] {Array|String}
+ */
+TabularSection.prototype.group_by = function (dimensions, resources) {
+
+	try{
+		var res = this.aggregate(dimensions, resources, "SUM", true);
+		return this.clear(true).load(res);
+
+	}catch(err){}
+}
+
+/**
+ * Сортирует табличную часть
+ * @param fields {Array|String}
+ */
+TabularSection.prototype.sort = function (fields) {
+
+	if(typeof fields == "string")
+		fields = fields.split(",");
+
+	var sql = "select * from ? order by ", res = true;
+	fields.forEach(function (f) {
+		f = f.trim().replace(/\s{1,}/g," ").split(" ");
+		if(res)
+			res = false;
+		else
+			sql += ", ";
+		sql += "`" + f[0] + "`";
+		if(f[1])
+			sql += " " + f[1];
+	});
+
+	try{
+		res = $p.wsql.alasql(sql, [this._obj]);
+		return this.clear(true).load(res);
+
+	}catch(err){
+		$p.record_log(err);
+	}
+}
+
+/**
+ * Вычисляет агрегатную функцию по табличной части. Не изменяет исходный объект
+ * @param [dimensions] {Array|String}
+ * @param [resources] {Array|String}
+ * @param [aggr] {String} = SUM, COUNT, MIN, MAX, FIRST, LAST, AVG, AGGR, ARRAY, REDUCE
+ * @return {*}
+ */
+TabularSection.prototype.aggregate = function (dimensions, resources, aggr, ret_array) {
+
+	if(typeof dimensions == "string")
+		dimensions = dimensions.split(",");
+	if(typeof resources == "string")
+		resources = resources.split(",");
+	if(!aggr)
+		aggr = "sum";
+
+	var sql, res = true;
+
+	resources.forEach(function (f) {
+		if(!sql)
+			sql = "select " + aggr + "(`" + f + "`) `" + f + "`";
+		else
+			sql += ", " + aggr + "(`" + f + "`) `" + f + "`";
+	});
+	dimensions.forEach(function (f) {
+		if(!sql)
+			sql = "select `" + f + "`";
+		else
+			sql += ", `" + f + "`";
+	});
+	sql += " from ? ";
+	dimensions.forEach(function (f) {
+		if(res){
+			sql += "group by ";
+			res = false;
+		}
+		else
+			sql += ", ";
+		sql += "`" + f + "`";
+	});
+
+	try{
+		res = $p.wsql.alasql(sql, [this._obj]);
+		if(!ret_array){
+			if(resources.length == 1)
+				res = res.length ? res[0][resources[0]] : 0;
+			else
+				res = res.length ? res[0] : {};
+		}
+		return res;
+
+	}catch(err){
+		$p.record_log(err);
+	}
+}
+
+/**
  * загружает табличнут часть из массива объектов
  * @method load
  * @param aattr {Array} - массив объектов к загрузке
  */
 TabularSection.prototype.load = function(aattr){
+
 	var t = this, arr;
+
 	t.clear(true);
 	if(aattr instanceof TabularSection)
 		arr = aattr._obj;
@@ -10108,10 +10227,12 @@ TabularSection.prototype.load = function(aattr){
 			t.add(row, true);
 	});
 
-	Object.getNotifier(this._owner).notify({
+	Object.getNotifier(t._owner).notify({
 		type: 'rows',
-		tabular: this._name
+		tabular: t._name
 	});
+
+	return t;
 };
 
 /**
@@ -10243,7 +10364,7 @@ TabularSectionRow.prototype._setter = function (f, v) {
  * записи и синхронизации через стандартный интерфейс <a href="http://its.1c.ru/db/v83doc#bookmark:dev:TI000001362">OData</a>
  * /a/unf/odata/standard.odata
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -11107,7 +11228,7 @@ DataObj.prototype.to_atom = function (ex_meta) {
 /**
  * Процедуры импорта и экспорта данных
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module metadata
@@ -11580,7 +11701,7 @@ $p.iface.wnd_sync = function() {
 /**
  * Форма абстрактного объекта данных {{#crossLink "DataObj"}}{{/crossLink}}, в том числе, отчетов и обработок
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * @module metadata
@@ -12054,7 +12175,7 @@ DataObj.prototype.form_obj = function (pwnd, attr) {
  * Абстрактная форма списка и выбора выбора объектов ссылочного типа (документов и справочников)<br />
  * Может быть переопределена в {{#crossLink "RefDataManager"}}менеджерах{{/crossLink}} конкретных классов
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * @module  wnd_selection
@@ -12589,7 +12710,7 @@ DataManager.prototype.form_list = function(pwnd, attr){
  *	 по событию построителя "ready", выполняем метод initMainLayout() объекта $p.iface.
  *	 Метод initMainLayout() переопределяется во внешним, по отношению к ядру, модуле
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module common
@@ -12836,7 +12957,7 @@ $p.eve.time_diff = function () {
 /**
  * Этот фрагмент кода выполняем только в браузере
  * Created 28.12.2015<br />
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author Evgeniy Malyarov
  * @module common
  * @submodule events_browser
@@ -13311,15 +13432,18 @@ $p.eve.time_diff = function () {
 					 */
 					eve.onload.execute($p);
 
-					// Если есть сплэш, удаляем его
-					if(document && document.querySelector("#splash"))
-						document.querySelector("#splash").parentNode.removeChild(document.querySelector("#splash"));
-
 					// инициализируем метаданные и обработчик при начале работы интерфейса
 					setTimeout(function () {
+
 						$p.Meta.init_meta()
 							.catch($p.record_log);
+
+						// Если есть сплэш, удаляем его
+						if(document && document.querySelector("#splash"))
+							document.querySelector("#splash").parentNode.removeChild(document.querySelector("#splash"));
+
 						iface.oninit();
+
 					}, 20);
 
 
@@ -13642,7 +13766,7 @@ $p.eve.auto_log_in = function () {
 
 	stepper.zone = $p.wsql.get_user_param("zone") + "/";
 
-	// читаем файл метаданных, файл патча метаданных и первый файл снапшота
+	// читаем первый файл снапшота
 	return $p.ajax.get(data_url + "zones/" + stepper.zone + "p_0.json?v="+$p.job_prm.files_date)
 
 		// из содержимого первого файла получаем количество файлов и загружаем их все

@@ -1,7 +1,7 @@
 /**
  * Конструкторы табличных частей
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -83,8 +83,10 @@ TabularSection.prototype.count = function(){return this._obj.length};
 /**
  * очищает табличнут часть
  * @method clear
+ * @return {TabularSection}
  */
 TabularSection.prototype.clear = function(do_not_notify){
+
 	for(var i in this._obj)
 		delete this._obj[i];
 	this._obj.length = 0;
@@ -94,6 +96,8 @@ TabularSection.prototype.clear = function(do_not_notify){
 			type: 'rows',
 			tabular: this._name
 		});
+
+	return this;
 };
 
 /**
@@ -226,12 +230,120 @@ TabularSection.prototype.each = function(fn){
 };
 
 /**
+ * Псевдоним для each
+ * @type {TabularSection.each|*}
+ */
+TabularSection.prototype.forEach = TabularSection.prototype.each;
+
+/**
+ * Сворачивает табличную часть
+ * @param [dimensions] {Array|String}
+ * @param [resources] {Array|String}
+ */
+TabularSection.prototype.group_by = function (dimensions, resources) {
+
+	try{
+		var res = this.aggregate(dimensions, resources, "SUM", true);
+		return this.clear(true).load(res);
+
+	}catch(err){}
+}
+
+/**
+ * Сортирует табличную часть
+ * @param fields {Array|String}
+ */
+TabularSection.prototype.sort = function (fields) {
+
+	if(typeof fields == "string")
+		fields = fields.split(",");
+
+	var sql = "select * from ? order by ", res = true;
+	fields.forEach(function (f) {
+		f = f.trim().replace(/\s{1,}/g," ").split(" ");
+		if(res)
+			res = false;
+		else
+			sql += ", ";
+		sql += "`" + f[0] + "`";
+		if(f[1])
+			sql += " " + f[1];
+	});
+
+	try{
+		res = $p.wsql.alasql(sql, [this._obj]);
+		return this.clear(true).load(res);
+
+	}catch(err){
+		$p.record_log(err);
+	}
+}
+
+/**
+ * Вычисляет агрегатную функцию по табличной части. Не изменяет исходный объект
+ * @param [dimensions] {Array|String}
+ * @param [resources] {Array|String}
+ * @param [aggr] {String} = SUM, COUNT, MIN, MAX, FIRST, LAST, AVG, AGGR, ARRAY, REDUCE
+ * @return {*}
+ */
+TabularSection.prototype.aggregate = function (dimensions, resources, aggr, ret_array) {
+
+	if(typeof dimensions == "string")
+		dimensions = dimensions.split(",");
+	if(typeof resources == "string")
+		resources = resources.split(",");
+	if(!aggr)
+		aggr = "sum";
+
+	var sql, res = true;
+
+	resources.forEach(function (f) {
+		if(!sql)
+			sql = "select " + aggr + "(`" + f + "`) `" + f + "`";
+		else
+			sql += ", " + aggr + "(`" + f + "`) `" + f + "`";
+	});
+	dimensions.forEach(function (f) {
+		if(!sql)
+			sql = "select `" + f + "`";
+		else
+			sql += ", `" + f + "`";
+	});
+	sql += " from ? ";
+	dimensions.forEach(function (f) {
+		if(res){
+			sql += "group by ";
+			res = false;
+		}
+		else
+			sql += ", ";
+		sql += "`" + f + "`";
+	});
+
+	try{
+		res = $p.wsql.alasql(sql, [this._obj]);
+		if(!ret_array){
+			if(resources.length == 1)
+				res = res.length ? res[0][resources[0]] : 0;
+			else
+				res = res.length ? res[0] : {};
+		}
+		return res;
+
+	}catch(err){
+		$p.record_log(err);
+	}
+}
+
+/**
  * загружает табличнут часть из массива объектов
  * @method load
  * @param aattr {Array} - массив объектов к загрузке
  */
 TabularSection.prototype.load = function(aattr){
+
 	var t = this, arr;
+
 	t.clear(true);
 	if(aattr instanceof TabularSection)
 		arr = aattr._obj;
@@ -242,10 +354,12 @@ TabularSection.prototype.load = function(aattr){
 			t.add(row, true);
 	});
 
-	Object.getNotifier(this._owner).notify({
+	Object.getNotifier(t._owner).notify({
 		type: 'rows',
-		tabular: this._name
+		tabular: t._name
 	});
+
+	return t;
 };
 
 /**

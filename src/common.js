@@ -1,7 +1,7 @@
 /**
  * Глобальные переменные и общие методы фреймворка __metadata.js__ <i>Oknosoft data engine</i>
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * Экспортирует глобальную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
@@ -16,7 +16,7 @@
  * @static
  */
 function MetaEngine() {
-	this.version = "0.9.206";
+	this.version = "0.9.207";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
@@ -175,6 +175,14 @@ Object.prototype.__define({
 	}
 });
 
+/**
+ * Метод округления в прототип числа
+ */
+if(!Number.prototype.round)
+	Number.prototype.round = function(places) {
+		var multiplier = Math.pow(10, places);
+		return (Math.round(this * multiplier) / multiplier);
+	}
 
 /**
  * Полифил для обсервера и нотифаера пока не подключаем

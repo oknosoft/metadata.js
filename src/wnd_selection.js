@@ -2,7 +2,7 @@
  * Абстрактная форма списка и выбора выбора объектов ссылочного типа (документов и справочников)<br />
  * Может быть переопределена в {{#crossLink "RefDataManager"}}менеджерах{{/crossLink}} конкретных классов
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author	Evgeniy Malyarov
  *
  * @module  wnd_selection

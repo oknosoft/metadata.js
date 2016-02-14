@@ -1,7 +1,7 @@
 /**
  * ### Визуальный компонент - табличное поле объекта
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module  wdg_otabular

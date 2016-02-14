@@ -1,7 +1,7 @@
 /**
  * Метаданные на стороне js: конструкторы, заполнение, кеширование, поиск
  *
- * &copy; http://www.oknosoft.ru 2014-2015
+ * &copy; http://www.oknosoft.ru 2014-2016
  * @author  Evgeniy Malyarov
  *
  * @module  metadata
@@ -145,18 +145,18 @@ $p._find_rows = function(arr, selection, callback){
 						if(!ok)
 							break;
 
-					}else if(selection[j].hasOwnProperty("like")){
+					}else if(selection[j] && selection[j].hasOwnProperty("like")){
 						if(o[j].toLowerCase().indexOf(selection[j].like.toLowerCase())==-1){
 							ok = false;
 							break;
 						}
-					}else if(selection[j].hasOwnProperty("not")){
+					}else if(selection[j] && selection[j].hasOwnProperty("not")){
 						if($p.is_equal(o[j], selection[j].not)){
 							ok = false;
 							break;
 						}
 
-					}else if(selection[j].hasOwnProperty("in")){
+					}else if(selection[j] && selection[j].hasOwnProperty("in")){
 						ok = selection[j].in.some(function(element) {
 							return $p.is_equal(element, o[j]);
 						});
@@ -784,13 +784,14 @@ function Meta(req, patch) {
 
 		property = row.property || row.param;
 		if(f != "value" || !property){
+
 			rt = [];
 			mf.types.forEach(function(v){
 				tnames = v.split(".");
 				if(tnames.length > 1 && $p[tnames[0]][tnames[1]])
 					rt.push($p[tnames[0]][tnames[1]]);
 			});
-			if(rt.length == 1)
+			if(rt.length == 1 || row[f] == $p.blank.guid)
 				return mf_mgr(rt[0]);
 
 			else if(array_enabled)
@@ -1095,17 +1096,6 @@ Meta._patch = function(obj, patch){
 				obj[area] = patch[area];
 		}else
 			obj[area] = patch[area];
-
-		//for(var c in patch[area]){
-		//	if(!obj[area][c])
-		//		obj[area][c] = {};
-		//	for(var f in patch[area][c]){
-		//		if(!obj[area][c][f])
-		//			obj[area][c][f] = patch[area][c][f];
-		//		else if(typeof obj[area][c][f] == "object")
-		//			obj[area][c][f]._mixin(patch[area][c][f]);
-		//	}
-		//}
 	}
 }
 
