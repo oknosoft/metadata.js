@@ -110,123 +110,143 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		_grid.setEditable(false);
 	}
 
+	_grid.__define({
 
-	_grid.get_cell_field = function () {
+		selection: {
+			get: function () {
+				return _selection;
+			},
+			set: function (sel) {
+				_selection = sel;
+				observer_rows([{tabular: _tsname}]);
+			},
+			enumerable: false
+		},
 
-		if(!_obj)
-			return;
+		get_cell_field: {
+			value: function () {
 
-		var res = {row_id: _grid.getSelectedRowId()},
-			fpath = res.row_id.split("|");
+				if(!_obj)
+					return;
 
-		if(fpath.length < 2)
-			return {obj: _obj, field: fpath[0]}._mixin(_pwnd);
-		else {
-			var vr = _obj[fpath[0]].find(fpath[1]);
-			if(vr){
-				res.obj = vr;
-				if(vr["Значение"]){
-					res.field = "Значение";
-					res.property = vr.Свойство || vr.Параметр;
-				} else{
-					res.field = "value";
-					res.property = vr.property || vr.param;
+				var res = {row_id: _grid.getSelectedRowId()},
+					fpath = res.row_id.split("|");
+
+				if(fpath.length < 2)
+					return {obj: _obj, field: fpath[0]}._mixin(_pwnd);
+				else {
+					var vr = _obj[fpath[0]].find(fpath[1]);
+					if(vr){
+						res.obj = vr;
+						if(vr["Значение"]){
+							res.field = "Значение";
+							res.property = vr.Свойство || vr.Параметр;
+						} else{
+							res.field = "value";
+							res.property = vr.property || vr.param;
+						}
+						return res._mixin(_pwnd);
+					}
 				}
-				return res._mixin(_pwnd);
-			}
+			},
+			enumerable: false
+		},
+
+		_obj: {
+			get: function () {
+				return _obj;
+			},
+			enumerable: false
+		},
+
+		destructor: {
+			value: function () {
+
+				if(_obj)
+					Object.unobserve(_obj, observer);
+				if(_extra_fields && _extra_fields instanceof TabularSection)
+					Object.unobserve(_extra_fields, observer_rows);
+
+				_obj = null;
+				_extra_fields = null;
+				_meta = null;
+				_mgr = null;
+				_pwnd = null;
+
+				_destructor.call(_grid);
+			},
+			enumerable: false
+		},
+
+		/**
+		 * Подключает поле объекта к элементу управления<br />
+		 * Параметры аналогичны конструктору
+		 */
+		attach: {
+			value: function (attr) {
+
+				if (_obj)
+					Object.unobserve(_obj, observer);
+
+				if(_extra_fields && _extra_fields instanceof TabularSection)
+					Object.unobserve(_obj, observer_rows);
+
+				if(attr.oxml)
+					_oxml = attr.oxml;
+
+				if(attr.selection)
+					_selection = attr.selection;
+
+				_obj = attr.obj;
+				_meta = attr.meta || _obj._metadata.fields;
+				_mgr = _obj._manager;
+				_tsname = attr.ts || "";
+				_extra_fields = _tsname ? _obj[_tsname] : (_obj.extra_fields || _obj["ДополнительныеРеквизиты"]);
+				if(_extra_fields && !_tsname)
+					_tsname = _obj.extra_fields ? "extra_fields" :  "ДополнительныеРеквизиты";
+				_pwnd = {
+					// обработчик выбора ссылочных значений из внешних форм, открываемых полями со списками
+					on_select: function (selv, cell_field) {
+						if(!cell_field)
+							cell_field = _grid.get_cell_field();
+						if(cell_field){
+
+							var ret_code = _mgr.handle_event(_obj, "value_change", {
+								field: cell_field.field,
+								value: selv,
+								tabular_section: cell_field.row_id ? _tsname : "",
+								grid: _grid,
+								cell: _grid.cells(cell_field.row_id || cell_field.field, 1),
+								wnd: _pwnd.pwnd
+							});
+							if(typeof ret_code !== "boolean"){
+								cell_field.obj[cell_field.field] = selv;
+								ret_code = true;
+							}
+							return ret_code;
+						}
+					},
+					pwnd: attr.pwnd || _cell
+				};
+
+
+				// начинаем следить за объектом и, его табчастью допреквизитов
+				Object.observe(_obj, observer, ["update", "unload"]);
+
+				if(_extra_fields && _extra_fields instanceof TabularSection)
+					Object.observe(_obj, observer_rows, ["row"]);
+
+				// заполняем табчасть данными
+				if(_tsname && !attr.ts_title)
+					attr.ts_title = _obj._metadata.tabular_sections[_tsname].synonym;
+				observer_rows([{tabular: _tsname}]);
+
+			},
+			enumerable: false
 		}
-	};
 
-	_grid.destructor = function () {
-
-		if(_obj)
-			Object.unobserve(_obj, observer);
-		if(_extra_fields && _extra_fields instanceof TabularSection)
-			Object.unobserve(_extra_fields, observer_rows);
-
-		_obj = null;
-		_extra_fields = null;
-		_meta = null;
-		_mgr = null;
-		_pwnd = null;
-
-		_destructor.call(_grid);
-	};
-
-	_grid.__define("selection", {
-		get: function () {
-			return _selection;
-		},
-		set: function (sel) {
-			_selection = sel;
-			observer_rows([{tabular: _tsname}]);
-		},
-		enumerable: false
 	});
 
-	/**
-	 * Подключает поле объекта к элементу управления<br />
-	 * Параметры аналогичны конструктору
-	 */
-	_grid.attach = function (attr) {
-
-		if (_obj)
-			Object.unobserve(_obj, observer);
-
-		if(_extra_fields && _extra_fields instanceof TabularSection)
-			Object.unobserve(_obj, observer_rows);
-
-		if(attr.oxml)
-			_oxml = attr.oxml;
-
-		if(attr.selection)
-			_selection = attr.selection;
-
-		_obj = attr.obj;
-		_meta = attr.meta || _obj._metadata.fields;
-		_mgr = _obj._manager;
-		_tsname = attr.ts || "";
-		_extra_fields = _tsname ? _obj[_tsname] : (_obj.extra_fields || _obj["ДополнительныеРеквизиты"]);
-		if(_extra_fields && !_tsname)
-			_tsname = _obj.extra_fields ? "extra_fields" :  "ДополнительныеРеквизиты";
-		_pwnd = {
-			// обработчик выбора ссылочных значений из внешних форм, открываемых полями со списками
-			on_select: function (selv, cell_field) {
-				if(!cell_field)
-					cell_field = _grid.get_cell_field();
-				if(cell_field){
-
-						var ret_code = _mgr.handle_event(_obj, "value_change", {
-							field: cell_field.field,
-							value: selv,
-							tabular_section: cell_field.row_id ? _tsname : "",
-							grid: _grid,
-							cell: _grid.cells(cell_field.row_id || cell_field.field, 1),
-							wnd: _pwnd.pwnd
-						});
-						if(typeof ret_code !== "boolean"){
-							cell_field.obj[cell_field.field] = selv;
-							ret_code = true;
-						}
-						return ret_code;
-					}
-			},
-			pwnd: attr.pwnd || _cell
-		};
-
-
-		// начинаем следить за объектом и, его табчастью допреквизитов
-		Object.observe(_obj, observer, ["update", "unload"]);
-
-		if(_extra_fields && _extra_fields instanceof TabularSection)
-			Object.observe(_obj, observer_rows, ["row"]);
-
-		// заполняем табчасть данными
-		if(_tsname && !attr.ts_title)
-			attr.ts_title = _obj._metadata.tabular_sections[_tsname].synonym;
-		observer_rows([{tabular: _tsname}]);
-
-	};
 
 	//TODO: контекстные меню для элементов и табличных частей
 
