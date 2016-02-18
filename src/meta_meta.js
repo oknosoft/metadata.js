@@ -927,7 +927,7 @@ function Meta(req, patch) {
 			Owner_Key: 'owner',
 			Owner:     'owner',
 			Ref_Key: 'ref',
-			"Ссылка": 'ref',
+			Ссылка: 'ref',
 			LineNumber: 'row'
 		};
 		if(synJS[v])
