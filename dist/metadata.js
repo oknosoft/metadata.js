@@ -107,7 +107,7 @@ Object.prototype.__define({
 	 * @for Object
 	 * @param Parent {Function}
 	 */
-	"_extend": {
+	_extend: {
 		value: function( Parent ) {
 			var F = function() { };
 			F.prototype = Parent.prototype;
@@ -126,9 +126,9 @@ Object.prototype.__define({
 	 * @method _mixin
 	 * @for Object
 	 * @param src {Object} - источник
-	 * @return {Object}
+	 * @return {this}
 	 */
-	"_mixin": {
+	_mixin: {
 		value: function(src, include, exclude ) {
 			var tobj = {}, i, f; // tobj - вспомогательный объект для фильтрации свойств, которые есть у объекта Object и его прототипа
 			if(include && include.length){
@@ -155,6 +155,30 @@ Object.prototype.__define({
 	},
 
 	/**
+	 * Подмешивает в объект свойства с иерархией объекта patch
+	 * @method _mixin
+	 * @for Object
+	 * @param patch {Object}
+	 * @return {this}
+	 */
+	_patch: {
+		value: function( patch ) {
+			for(var area in patch){
+
+				if(typeof patch[area] == "object"){
+					if(this[area] && typeof this[area] == "object")
+						this[area]._patch(patch[area]);
+					else
+						this[area] = patch[area];
+				}else
+					this[area] = patch[area];
+			}
+			return this;
+		},
+		enumerable: false
+	},
+
+	/**
 	 * Создаёт копию объекта
 	 * @method _clone
 	 * @for Object
@@ -162,7 +186,7 @@ Object.prototype.__define({
 	 * @param [exclude_propertyes] {Object} - объект, в ключах которого имена свойств, которые не надо копировать
 	 * @returns {Object|Array} - копия объекта
 	 */
-	"_clone": {
+	_clone: {
 		value: function() {
 			if(!this || "object" !== typeof this)
 				return this;
@@ -1607,9 +1631,7 @@ $p.JobPrm = JobPrm;
  */
 function WSQL(){
 
-	var wsql = this,
-		ls,
-		user_params = {};
+	var wsql = this, ls, user_params = {};
 
 	if(typeof localStorage === "undefined"){
 
@@ -1639,6 +1661,7 @@ function WSQL(){
 		else
 			return prm;
 	}
+
 
 	//TODO реализовать поддержку postgres в Node
 
@@ -1747,35 +1770,37 @@ function WSQL(){
 	 */
 	wsql.init_params = function(ialasql, create_tables_sql){
 
+		// указатель на экземпляр alasql - критично в NodeJS
 		wsql.alasql = ialasql || alasql;
 		wsql.aladb = new wsql.alasql.Database('md');
 
+		// префикс параметров LocalStorage и хранилищ PouchDB
+		if(!$p.job_prm.local_storage_prefix)
+			$p.job_prm.local_storage_prefix = "md_";
+
+		// ссылки на локальные и сетевые базы PouchDB
+		if(typeof Pouch !== "undefined")
+			wsql.pouch = new Pouch();
+
+
+		// значения базовых параметров по умолчанию
 		var nesessery_params = [
 			{p: "user_name",		v: "", t:"string"},
 			{p: "user_pwd",			v: "", t:"string"},
 			{p: "browser_uid",		v: $p.generate_guid(), t:"string"},
 			{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t:"number"},
 			{p: "enable_save_pwd",	v: "",	t:"boolean"},
-			{p: "reset_local_data",	v: "",	t:"boolean"},
 			{p: "autologin",		v: "",	t:"boolean"},
-			{p: "cache_cat_date",	v: 0,	t:"number"},
-			{p: "margin",			v: 60,	t:"number"},
-			{p: "discount",			v: 15,	t:"number"},
-			{p: "offline",			v: $p.job_prm.offline || "", t:"boolean"},
 			{p: "skin",		        v: "dhx_web", t:"string"},
 			{p: "rest_path",		v: "", t:"string"}
-		],
-			ls_prefix = $p.job_prm.local_storage_prefix || ($p.job_prm.local_storage_prefix = "md_"),
-			zone;
-
-
+		],	zone;
 
 		// подмешиваем к базовым параметрам настройки приложения
 		if($p.job_prm.additional_params)
 			nesessery_params = nesessery_params.concat($p.job_prm.additional_params);
 
 		// если зона не указана, устанавливаем "1"
-		if(!ls.getItem(ls_prefix+"zone"))
+		if(!ls.getItem($p.job_prm.local_storage_prefix+"zone"))
 			zone = $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1;
 		// если зона указана в url, используем её
 		if($p.job_prm.url_prm.hasOwnProperty("zone"))
@@ -1790,51 +1815,7 @@ function WSQL(){
 					wsql.set_user_param(o.p, $p.job_prm.hasOwnProperty(o.p) ? $p.job_prm[o.p] : o.v);
 		});
 
-		// сбрасываем даты, т.к. база в озу
-		wsql.set_user_param("cache_cat_date", 0);
-		wsql.set_user_param("reset_local_data", "");
-
 		return new Promise(function(resolve, reject){
-
-			// ссылки на локальные и сетевые базы pouchdb
-			if($p.job_prm.pouchdb){
-				wsql.pouch = {
-					local: {
-						cat: new PouchDB(ls_prefix + "cat"),
-						doc: new PouchDB(ls_prefix + "doc")
-					},
-					remote: {
-						cat: new PouchDB($p.job_prm.pouchdb + "cat", {
-							ajax: {
-								cache: true,
-								timeout: 10000,
-								withCredentials: true,
-								headers: {
-									"Authorization": "Basic " + btoa(unescape(encodeURIComponent($p.job_prm.guest_name + ":" + $p.job_prm.guest_pwd)))
-								}
-							}
-							//auth: {
-							//	username: $p.job_prm.guest_name,
-							//	password: $p.job_prm.guest_pwd
-							//}
-						}),
-						doc: new PouchDB($p.job_prm.pouchdb + "doc", {
-							ajax: {
-								cache: true,
-								timeout: 10000,
-								withCredentials: true,
-								headers: {
-									"Authorization": "Basic " + btoa(unescape(encodeURIComponent($p.job_prm.guest_name + ":" + $p.job_prm.guest_pwd)))
-								}
-							}
-							//auth: {
-							//	username: $p.job_prm.guest_name,
-							//	password: $p.job_prm.guest_pwd
-							//}
-						})
-					}
-				};
-			}
 
 			if(create_tables_sql)
 				wsql.alasql(create_tables_sql, [], resolve);
@@ -1903,205 +1884,6 @@ function WSQL(){
 		wsql.alasql("SHOW TABLES", [], tmames_finded);
 	};
 
-	/**
-	 * Формирует архив полной выгрузки базы для сохранения в файловой системе клиента
-	 * @method backup_database
-	 * @param [do_zip] {Boolean} - указывает на необходимость архивировать стоки таблиц в озу перед записью файла
-	 * @async
-	 */
-	wsql.backup_database = function(do_zip){
-
-		// получаем строку create_tables
-
-		// получаем строки для каждой таблицы
-
-		// складываем все части в файл
-	};
-
-	/**
-	 * Восстанавливает базу из архивной копии
-	 * @method restore_database
-	 * @async
-	 */
-	wsql.restore_database = function(){
-
-	};
-
-
-	/**
-	 * Подключается к indexedDB
-	 * @method idx_connect
-	 * @param db_name {String} - имя базы
-	 * @param store_name {String} - имя хранилища в базе
-	 * @return {Promise.<IDBDatabase>}
-	 * @async
-	 */
-	wsql.idx_connect = function (db_name, store_name) {
-
-		if(!db_name)
-			db_name = wsql.idx_name || $p.job_prm.local_storage_prefix;
-
-		return new Promise(function(resolve, reject){
-			var request = indexedDB.open(db_name, 1);
-			request.onerror = function(err){
-				reject(err);
-			};
-			request.onsuccess = function(){
-				// При успешном открытии вызвали коллбэк передав ему объект БД
-				resolve(request.result);
-			};
-			request.onupgradeneeded = function(e){
-				// Если БД еще не существует, то создаем хранилище объектов.
-				e.currentTarget.result.createObjectStore(store_name, { keyPath: "ref" });
-				return wsql.idx_connect(db_name, store_name);
-			}
-		});
-	};
-
-	/**
-	 * Сохраняет объект в indexedDB
-	 * @method idx_save
-	 * @param obj {DataObj|Object}
-	 * @param [db] {IDBDatabase}
-	 * @param [store_name] {String} - имя хранилища в базе
-	 * @return {Promise}
-	 * @async
-	 */
-	wsql.idx_save = function (obj, db, store_name) {
-
-		return new Promise(function(resolve, reject){
-
-			function _save(db){
-				var request = db.transaction([store_name], "readwrite")
-					.objectStore(store_name)
-					.put(obj instanceof DataObj ? obj._obj : obj);
-				request.onerror = function(err){
-					reject(err);
-				};
-				request.onsuccess = function(){
-					resolve(request.result);
-				}
-			}
-
-			if(!store_name && obj._manager)
-				store_name = obj._manager.table_name;
-
-			if(db)
-				_save(db);
-			else
-				wsql.idx_connect(null, store_name)
-					.then(_save);
-
-		});
-	};
-
-	/**
-	 * Получает объект из indexedDB по ключу
-	 * @method idx_get
-	 * @param ref {String} - ключ
-	 * @param [db] {IDBDatabase}
-	 * @param store_name {String} - имя хранилища в базе
-	 * @return {Promise}
-	 * @async
-	 */
-	wsql.idx_get = function (ref, db, store_name) {
-
-		return new Promise(function(resolve, reject){
-
-			function _get(db){
-				var request = db.transaction([store_name], "readonly")
-					.objectStore(store_name)
-					.get(ref);
-				request.onerror = function(err){
-					reject(err);
-				};
-				request.onsuccess = function(){
-					resolve(request.result);
-				}
-			}
-
-			if(db)
-				_get(db);
-			else
-				wsql.idx_connect(null, store_name)
-					.then(_get);
-
-		});
-	};
-
-	/**
-	 * Удаляет объект из indexedDB
-	 * @method idx_delete
-	 * @param obj {DataObj|Object|String} - объект или идентификатор
-	 * @param [db] {IDBDatabase}
-	 * @param [store_name] {String} - имя хранилища в базе
-	 * @return {Promise}
-	 * @async
-	 */
-	wsql.idx_delete = function (obj, db, store_name) {
-
-		return new Promise(function(resolve, reject){
-
-			function _delete(db){
-				var request = db.transaction([store_name], "readwrite")
-					.objectStore(store_name)
-					.delete(obj instanceof DataObj ? obj.ref : obj);
-				request.onerror = function(err){
-					reject(err);
-				};
-				request.onsuccess = function(){
-					resolve(request.result);
-				}
-			}
-
-			if(!store_name && obj._manager)
-				store_name = obj._manager.table_name;
-
-			if(db)
-				_delete(db);
-			else
-				wsql.idx_connect(null, store_name)
-					.then(_delete);
-
-		});
-	};
-
-	/**
-	 * Удаляет все объекты из таблицы indexedDB
-	 * @method idx_clear
-	 * @param obj {DataObj|Object|String} - объект или идентификатор
-	 * @param [db] {IDBDatabase}
-	 * @param [store_name] {String} - имя хранилища в базе
-	 * @return {Promise}
-	 * @async
-	 */
-	wsql.idx_clear = function (obj, db, store_name) {
-
-		return new Promise(function(resolve, reject){
-
-			function _clear(db){
-				var request = db.transaction([store_name], "readwrite")
-					.objectStore(store_name)
-					.clear();
-				request.onerror = function(err){
-					reject(err);
-				};
-				request.onsuccess = function(){
-					resolve(request.result);
-				}
-			}
-
-			if(!store_name && obj._manager)
-				store_name = obj._manager.table_name;
-
-			if(db)
-				_clear(db);
-			else
-				wsql.idx_connect(null, store_name)
-					.then(_clear);
-
-		});
-	};
 
 };
 
@@ -2113,6 +1895,239 @@ function WSQL(){
  * @static
  */
 $p.wsql = new WSQL();
+
+/**
+ * Содержит методы и подписки на события PouchDB
+ *
+ * &copy; http://www.oknosoft.ru 2014-2016
+ * @author  Evgeniy Malyarov
+ * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
+ * @module common
+ * @submodule pouchdb
+ */
+
+/**
+ * Интерфейс локальной и сетевой баз данных PouchDB
+ * @class Pouch
+ * @static
+ */
+function Pouch(){
+
+	var t = this, _local, _remote, _auth;
+
+	t.__define({
+
+		local: {
+			get: function () {
+				if(!_local){
+					_local = {
+						cat: new PouchDB($p.job_prm.local_storage_prefix + "cat"),
+						doc: new PouchDB($p.job_prm.local_storage_prefix + "doc")
+					}
+				}
+				return _local;
+			}
+		},
+
+		remote: {
+			get: function () {
+				if(!_remote && _auth){
+					_remote = {
+						cat: new PouchDB($p.job_prm.couchdb + "cat", {
+							auth: {
+								username: _auth.username,
+								password: _auth.password
+							},
+							skip_setup: true
+						}),
+						doc: new PouchDB($p.job_prm.couchdb + "doc", {
+							auth: {
+								username: _auth.username,
+								password: _auth.password
+							},
+							skip_setup: true
+						})
+					}
+				}
+				return _remote;
+			}
+		},
+
+		/**
+		 * Выполняет авторизацию
+		 */
+		authenticate: {
+			value: function (username, password) {
+
+				// реквизиты гостевого пользователя для демобаз
+				if(username == undefined && password == undefined){
+					username = $p.job_prm.guest_name;
+					password = $p.job_prm.guest_pwd;
+				}
+
+				if(_auth && _auth.username == username)
+					return Promise.resolve();
+
+				// переподключение под другим пользователем
+				if(_auth && _auth.username != username && _local.sync_cat)
+					_local.sync_cat.cancel();
+
+				if(_remote && _remote.cat)
+					delete _remote.cat;
+
+				if(_remote && _remote.doc)
+					delete _remote.doc;
+
+				_remote = null;
+
+				return $p.ajax.get_ex($p.job_prm.couchdb + "cat", {username: username, password: password})
+					.then(function (req) {
+						_auth = {username: username, password: password};
+						return JSON.parse(req.response);
+					});
+			}
+		},
+
+		/**
+		 * Загружает условно-постоянные данные из базы cat в alasql
+		 */
+		load_data: {
+			value: function () {
+
+				var exclude = ["meta", "meta_patch", "sync"], keys = [], curr = [];
+
+				// бежим по ключу всех документов
+				return t.local.cat.allDocs()
+					.then(function (doc) {
+						doc.rows.forEach(function (rev) {
+							if(exclude.indexOf(rev.id) == -1){
+								curr.push({id: rev.id, rev: rev.value.rev});
+								if(curr.length > 100){
+									keys.push(curr);
+									curr = [];
+								}
+							}
+						});
+						if(curr.length){
+							keys.push(curr);
+							curr = [];
+						}
+						doc	= null;
+
+						// формируем пачку запросов по 100 документов
+						keys.forEach(function (rev) {
+							curr.push($p.wsql.pouch.local.cat.bulkGet({docs: rev}));
+						});
+						return $p.eve.reduce_promices(curr, function (result) {
+							var res = {}, cn;
+							result.results.forEach(function (rev) {
+								if(rev.docs.length && (keys = rev.docs[0].ok)){
+									cn = keys.class_name.split(".");
+									keys.ref = keys._id;
+									delete keys.class_name;
+									delete keys._id;
+									delete keys._rev;
+									if(!res[cn[0]])
+										res[cn[0]] = {};
+									if(!res[cn[0]][cn[1]])
+										res[cn[0]][cn[1]] = [];
+									res[cn[0]][cn[1]].push(keys);
+								};
+							});
+
+							for(var mgr in res){
+								for(cn in res[mgr])
+									if($p[mgr][cn])
+										$p[mgr][cn].load_array(res[mgr][cn]);
+							}
+							result	= null;
+							res	= null;
+						});
+					});
+			}
+		},
+
+		/**
+		 * Запускает процесс синхронизвации
+		 */
+		run_sync: {
+			value: function () {
+
+				t.authenticate()
+					.then(function () {
+
+						if(!_local.sync_cat)
+							_local.sync_cat = t.local.cat.sync(t.remote.cat, {
+								live: true,
+								retry: true
+							}).on('change', function (change) {
+								// yo, something changed!
+								$p.eve.callEvent("pouch_change", [change]);
+
+							}).on('paused', function (info) {
+								// replication was paused, usually because of a lost connection
+								$p.eve.callEvent("pouch_paused", [info]);
+
+							}).on('active', function (info) {
+								// replication was resumed
+								$p.eve.callEvent("pouch_active", [info]);
+
+							}).on('denied', function (info) {
+								// a document failed to replicate, e.g. due to permissions
+								$p.eve.callEvent("pouch_denied", [info]);
+
+							}).on('complete', function (info) {
+								// handle complete
+								$p.eve.callEvent("pouch_complete", [info]);
+
+							}).on('error', function (err) {
+								// totally unhandled error (shouldn't happen)
+								$p.eve.callEvent("pouch_error", [err]);
+
+							});
+
+					})
+			}
+		},
+
+		/**
+		 * Формирует архив полной выгрузки базы для сохранения в файловой системе клиента
+		 * @method backup_database
+		 * @param [do_zip] {Boolean} - указывает на необходимость архивировать стоки таблиц в озу перед записью файла
+		 * @async
+		 */
+
+		backup_database: {
+			value: function(do_zip){
+
+				// получаем строку create_tables
+
+				// получаем строки для каждой таблицы
+
+				// складываем все части в файл
+			}
+		},
+
+		/**
+		 * Восстанавливает базу из архивной копии
+		 * @method restore_database
+		 * @async
+		 */
+		restore_database: {
+			value: function(do_zip){
+
+				// получаем строку create_tables
+
+				// получаем строки для каждой таблицы
+
+				// складываем все части в файл
+			}
+
+		}
+
+	});
+
+}
 
 /**
  * Строковые константы интернационализации
@@ -6120,40 +6135,132 @@ var _cat = $p.cat = new (
 	/**
 	 * Mетаданные конфигурации
 	 */
-	_md;
+	_md = $p.md = new Meta();
 
 
 // КОНСТРУКТОРЫ - полная абстракция
 
 /**
  * ### Хранилище метаданных конфигурации
- * Загружает описание из файлов на сервере, объекта или json-строки. В оффлайне используется локальный кеш
+ * Загружает описание из локального PouchDB
  *
  * @class Meta
- * @constructor
- * @param req {XMLHttpRequest|Object|String} - с основными метаданными
- * @param patch {XMLHttpRequest} - с дополнительными метаданными
- *
- * @example
- *    new $p.Meta('meta');
+ * @static
  */
-function Meta(req, patch) {
+function Meta() {
 
-	var m = (req && req.response) ? JSON.parse(req.response) : req,
-		class_name;
+	var _m;
 
-	// Экспортируем ссылку на себя
-	_md = $p.md = this;
+	_md = this;
 
-	if(patch)
-		Meta._patch(m, patch.response ? JSON.parse(patch.response) : patch);
+	// создаёт объекты менеджеров
+	function create_managers(){
 
-	req = null;
-	if(typeof window != "undefined"){
-		patch = $p.injected_data['log.json'];
-		Meta._patch(m, patch);
-		patch = null;
+		if(_ireg.$log)
+			return;
+
+		var class_name;
+		for(class_name in _m.enm)
+			_enm[class_name] = new EnumManager(_m.enm[class_name], "enm."+class_name);
+
+		for(class_name in _m.cat)
+			_cat[class_name] = new CatManager("cat."+class_name);
+
+		for(class_name in _m.doc)
+			_doc[class_name] = new DocManager("doc."+class_name);
+
+		for(class_name in _m.ireg)
+			_ireg[class_name] = (class_name == "$log") ? new LogManager("ireg."+class_name) : new InfoRegManager("ireg."+class_name);
+
+		for(class_name in _m.areg)
+			_areg[class_name] = new AccumRegManager("areg."+class_name);
+
+		for(class_name in _m.dp)
+			_dp[class_name] = new DataProcessorsManager("dp."+class_name);
+
+		for(class_name in _m.cch)
+			_cch[class_name] = new ChartOfCharacteristicManager("cch."+class_name);
+
+		for(class_name in _m.cacc)
+			_cacc[class_name] = new ChartOfAccountManager("cacc."+class_name);
+
+		for(class_name in _m.tsk)
+			_tsk[class_name] = new TaskManager("tsk."+class_name);
+
+		for(class_name in _m.bp)
+			_bp[class_name] = new BusinessProcessManager("bp."+class_name);
+
+		// загружаем модификаторы и прочие зависимости
+		$p.modifiers.execute($p);
+
+		// широковещательное оповещение о готовности метаданных
+		$p.eve.callEvent("meta");
+
 	}
+
+	// загружает метаданные из pouchdb
+	function meta_from_pouch(){
+
+		return $p.wsql.pouch.local.cat.get('meta')
+			.then(function (doc) {
+				_m = doc;
+				doc = null;
+				return $p.wsql.pouch.local.cat.get('meta_patch');
+			}).then(function (doc) {
+				_m._patch(doc)._patch($p.injected_data['log.json']);
+				doc = null;
+				delete $p.injected_data['log.json'];
+				delete _m._id;
+				delete _m._rev;
+			})
+			.catch(function (err) {
+				console.log(err);
+			});
+	}
+
+	// загружает данные из pouchdb
+	function data_from_pouch(){
+
+
+	}
+
+	/**
+	 * Инициализирует метаданные и загружает данные из локального хранилища
+	 * @param [auth] - если указано, выполняет авторизацию в CouchDB и запускает синхронизацию
+	 */
+	_md.init = function (auth) {
+
+		if(!_m){
+			return $p.wsql.pouch.local.cat.info()
+				.then(function (info) {
+					return meta_from_pouch();
+				})
+				.then(create_managers)
+				.then(data_from_pouch);
+		}
+
+	};
+
+	/**
+	 * Инициализирует метаданные из встроенных данных, внешних файлов или indexeddb
+	 * @return {Promise}
+	 * @private
+	 */
+	_md.init_meta = function (forse) {
+
+		return new Promise(function(resolve, reject){
+
+			if($p.injected_data['meta.json'])
+				resolve(new Meta($p.injected_data['meta.json'], $p.injected_data['meta_patch.json']));
+
+			else if($p.injected_data['meta_patch.json'])
+				resolve(new Meta($p.injected_data['meta_patch.json']));
+
+			else
+				reject(new Error("no_injected_data"));
+
+		});
+	};
 
 	/**
 	 * Возвращает описание объекта метаданных
@@ -6167,7 +6274,7 @@ function Meta(req, patch) {
 			res = {multiline_mode: false, note: "", synonym: "", tooltip: "", type: {is_ref: false,	types: ["string"]}},
 			is_doc = "doc,tsk,bp".indexOf(np[0]) != -1, is_cat = "cat,tsk".indexOf(np[0]) != -1;
 		if(!field_name)
-			return m[np[0]][np[1]];
+			return _m[np[0]][np[1]];
 		if(is_doc && field_name=="number_doc"){
 			res.synonym = "Номер";
 			res.tooltip = "Номер документа";
@@ -6201,9 +6308,9 @@ function Meta(req, patch) {
 			res.type.is_ref = true;
 			res.type.types[0] = class_name;
 		}else if(field_name)
-			res = m[np[0]][np[1]].fields[field_name];
+			res = _m[np[0]][np[1]].fields[field_name];
 		else
-			res = m[np[0]][np[1]];
+			res = _m[np[0]][np[1]];
 		return res;
 	};
 
@@ -6213,9 +6320,9 @@ function Meta(req, patch) {
 	 */
 	_md.get_classes = function () {
 		var res = {};
-		for(var i in m){
+		for(var i in _m){
 			res[i] = [];
-			for(var j in m[i])
+			for(var j in _m[i])
 				res[i].push(j);
 		}
 		return res;
@@ -6564,7 +6671,7 @@ function Meta(req, patch) {
 		};
 		if(synJS[v])
 			return synJS[v];
-		return m.syns_js[m.syns_1с.indexOf(v)] || v;
+		return _m.syns_js[_m.syns_1с.indexOf(v)] || v;
 	};
 
 	_md.syns_1с = function (v) {
@@ -6584,13 +6691,13 @@ function Meta(req, patch) {
 		};
 		if(syn1c[v])
 			return syn1c[v];
-		return m.syns_1с[m.syns_js.indexOf(v)] || v;
+		return _m.syns_1с[_m.syns_js.indexOf(v)] || v;
 	};
 
 	_md.printing_plates = function (pp) {
 		if(pp)
 			for(var i in pp.doc)
-				m.doc[i].printing_plates = pp.doc[i];
+				_m.doc[i].printing_plates = pp.doc[i];
 
 	};
 
@@ -6664,185 +6771,10 @@ function Meta(req, patch) {
 
 	};
 
-	_md.dates = function () {
-		return {
-			md_date: m["md_date"],
-			cat_date: m["cat_date"]
-		};
-	}
-
-	// создаём объекты менеджеров
-
-	for(class_name in m.enm)
-		_enm[class_name] = new EnumManager(m.enm[class_name], "enm."+class_name);
-
-	for(class_name in m.cat)
-		_cat[class_name] = new CatManager("cat."+class_name);
-
-	for(class_name in m.doc)
-		_doc[class_name] = new DocManager("doc."+class_name);
-
-	for(class_name in m.ireg)
-		_ireg[class_name] = (class_name == "$log") ? new LogManager("ireg."+class_name) : new InfoRegManager("ireg."+class_name);
-
-	for(class_name in m.areg)
-		_areg[class_name] = new AccumRegManager("areg."+class_name);
-
-	for(class_name in m.dp)
-		_dp[class_name] = new DataProcessorsManager("dp."+class_name);
-
-	for(class_name in m.cch)
-		_cch[class_name] = new ChartOfCharacteristicManager("cch."+class_name);
-
-	for(class_name in m.cacc)
-		_cacc[class_name] = new ChartOfAccountManager("cacc."+class_name);
-
-	for(class_name in m.tsk)
-		_tsk[class_name] = new TaskManager("tsk."+class_name);
-
-	for(class_name in m.bp)
-		_bp[class_name] = new BusinessProcessManager("bp."+class_name);
-
-	// загружаем модификаторы и прочие зависимости
-	$p.modifiers.execute($p);
-
-	// широковещательное оповещение о готовности метаданных
-	$p.eve.callEvent("meta");
 
 }
-$p.Meta = Meta;
-
-/**
- * Подмешивает свойства с иерархией объекта patch в объект obj
- * @param obj
- * @param patch
- * @private
- */
-Meta._patch = function(obj, patch){
-	for(var area in patch){
-
-		if(typeof patch[area] == "object"){
-			if(obj[area])
-				Meta._patch(obj[area], patch[area]);
-			else
-				obj[area] = patch[area];
-		}else
-			obj[area] = patch[area];
-	}
-}
-
-/**
- * Инициализирует метаданные из встроенных данных, внешних файлов или indexeddb
- * @return {Promise}
- * @private
- */
-Meta.init_meta = function (forse) {
-
-	return new Promise(function(resolve, reject){
-
-		if($p.injected_data['meta.json'])
-			resolve(new Meta($p.injected_data['meta.json'], $p.injected_data['meta_patch.json']));
-
-		else if($p.injected_data['meta_patch.json'])
-			resolve(new Meta($p.injected_data['meta_patch.json']));
-
-		else{
-
-			// проверим indexeddb
-			$p.wsql.idx_connect(null, 'meta')
-				.then(function (db) {
-					var mreq, mpatch;
-					$p.wsql.idx_get('meta', db, 'meta')
-						.then(function (data) {
-							if(data && !forse){
-								mreq = data;
-								$p.wsql.idx_get('meta_patch', db, 'meta')
-									.then(function (data) {
-										resolve(new Meta(mreq, data));
-									});
-							}
-							else{
-								if(!$p.job_prm.files_date)
-									$p.eve.update_files_version()
-										.then(function () {
-											from_files(db);
-										});
-								else
-									from_files(db);
-							}
-						});
-				});
 
 
-			// в indexeddb не нашлось - грузим из файла
-			function from_files(db){
-
-				if(!$p.job_prm.data_url)
-					return $p.wsql.idx_save({ref: "meta"}, db, 'meta')
-						.then(function () {
-							return $p.wsql.idx_save({ref: "meta_patch"}, db, 'meta')
-						})
-						.then(function () {
-							new Meta({}, {})
-						});
-
-
-				var parts = [
-					$p.ajax.get($p.job_prm.data_url + "meta.json?v="+$p.job_prm.files_date),
-					$p.ajax.get($p.job_prm.data_url + "meta_patch.json?v="+$p.job_prm.files_date)
-				], mreq, mpatch;
-
-
-				// читаем файл метаданных и файл патча метаданных
-				$p.eve.reduce_promices(parts, function (req) {
-						if(req instanceof XMLHttpRequest && req.status == 200){
-							if(req.responseURL.indexOf("meta.json") != -1){
-								mreq = JSON.parse(req.response);
-
-							}else if(req.responseURL.indexOf("meta_patch.json") != -1)
-								mpatch = JSON.parse(req.response);
-						}else{
-							$p.record_log(req);
-						}
-					})
-					// создаём объект Meta() описания метаданных
-					.then(function () {
-						if(!mreq)
-							reject(new Error("Ошибка чтения файла метаданных"));
-						else{
-							mreq.ref = "meta";
-							$p.wsql.idx_save(mreq, db, 'meta')
-								.then(function () {
-									mpatch.ref = "meta_patch";
-									$p.wsql.idx_save(mpatch, db, 'meta');
-								})
-								.then(function () {
-									resolve(new Meta(mreq, mpatch));
-								});
-						}
-					})
-			}
-		}
-
-	});
-}
-
-Meta.init_static = function (forse) {
-
-	return new Promise(function(resolve, reject){
-
-		// проверим indexeddb
-		$p.wsql.idx_connect(null, 'static')
-			.then(function (db) {
-				var mreq, mpatch;
-				$p.wsql.idx_get('p0', db, 'static')
-					.then(function (data) {
-
-					});
-			});
-
-	});
-}
 
 /**
  * Запись журнала регистрации
@@ -12886,76 +12818,6 @@ function SocketMsg(){
 $p.eve.socket = new SocketMsg();
 
 
-/**
- * Читает порцию данных из веб-сервиса обмена данными
- * @method pop
- * @for AppEvents
- */
-$p.eve.pop = function () {
-
-	var cache_cat_date = $p.eve.stepper.cat_ini_date;
-
-	// запрашиваем очередную порцию данных в 1С
-	function get_cachable_portion(step){
-
-		return _load({
-			action: "get_cachable_portion",
-			cache_cat_date: cache_cat_date,
-			step_size: $p.eve.stepper.step_size,
-			step: step || 0
-		});
-	}
-
-	function update_cache_cat_date(need){
-		if($p.eve.stepper.cat_ini_date > $p.wsql.get_user_param("cache_cat_date", "number"))
-			$p.wsql.set_user_param("cache_cat_date", $p.eve.stepper.cat_ini_date);
-		if(need)
-			setTimeout(function () {
-				$p.eve.pop(true);
-			}, 10000);
-	}
-
-	if($p.job_prm.offline || !$p.job_prm.irest_enabled)
-		return Promise.resolve(false);
-
-	else {
-		// TODO: реализовать синхронизацию на irest
-		return Promise.resolve(false);
-	}
-
-	// за такт pop делаем не более 2 запросов к 1С
-	return get_cachable_portion()
-
-		// загружаем в ОЗУ данные первого запроса
-		.then(function (req) {
-			return $p.eve.from_json_to_data_obj(req);
-		})
-
-		.then(function (need) {
-			if(need){
-				return get_cachable_portion(1)
-
-					.then(function (req) {
-						return $p.eve.from_json_to_data_obj(req);
-					})
-
-					.then(function (need){
-						update_cache_cat_date(need);
-					});
-			}
-			update_cache_cat_date(need);
-		});
-};
-
-/**
- * Записывает порцию данных в веб-сервис обмена данными
- * @method push
- * @for AppEvents
- */
-$p.eve.push = function () {
-
-};
-
 $p.eve.from_json_to_data_obj = function(res) {
 
 	var stepper = $p.eve.stepper, class_name;
@@ -13475,23 +13337,15 @@ $p.eve.time_diff = function () {
 						cat_date: 0,
 						step_size: 57,
 						files: 0,
-						cat_ini_date: $p.wsql.get_user_param("cache_cat_date", "number")  || 0
+						cat_ini_date: 0
 					};
 
 					eve.set_offline(!navigator.onLine);
 
+					/**
+					 * TODO: заменить на обработку события при обновлении данных pouchdb
+					 */
 					eve.update_files_version();
-
-					// пытаемся перейти в полноэкранный режим в мобильных браузерах
-					if (document.documentElement.webkitRequestFullScreen
-						&& navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)
-						&& ($p.job_prm.request_full_screen || $p.wsql.get_user_param("request_full_screen"))) {
-						var requestFullScreen = function(){
-							document.documentElement.webkitRequestFullScreen();
-							w.removeEventListener('touchstart', requestFullScreen);
-						};
-						w.addEventListener('touchstart', requestFullScreen, false);
-					}
 
 					/**
 					 * Выполняем отложенные методы из eve.onload
@@ -13501,7 +13355,7 @@ $p.eve.time_diff = function () {
 					// инициализируем метаданные и обработчик при начале работы интерфейса
 					setTimeout(function () {
 
-						$p.Meta.init_meta()
+						$p.md.init()
 							.catch($p.record_log);
 
 						// Если есть сплэш, удаляем его
@@ -13510,7 +13364,7 @@ $p.eve.time_diff = function () {
 
 						iface.oninit();
 
-					}, 20);
+					}, 10);
 
 
 					$p.msg.russian_names();
@@ -13581,9 +13435,9 @@ $p.eve.time_diff = function () {
 				} else
 					init_params();
 
-			}, 20);
+			}, 10);
 
-		}, 20);
+		}, 10);
 
 		function do_reload(){
 			if(!$p.ajax.authorized){
@@ -13703,7 +13557,7 @@ $p.eve.log_in = function(onstep){
 			onstep($p.eve.steps.authorization);
 
 			// TODO: реализовать метод для получения списка ролей пользователя
-			mdd = res || (_md ? _md.dates() : {});
+			mdd = res;
 			mdd.root = true;
 
 			// в автономном режиме сразу переходим к чтению первого файла данных
@@ -13783,15 +13637,6 @@ $p.eve.log_in = function(onstep){
 			parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "ireg.json?v="+$p.job_prm.files_date));
 
 			return $p.eve.reduce_promices(parts, $p.eve.from_json_to_data_obj);
-
-		})
-
-		// если онлайн, выполняем такт обмена с 1С
-		.then(function() {
-
-			onstep($p.eve.steps.load_data_db);
-			stepper.step_size = 57;
-			return $p.eve.pop();
 
 		})
 
@@ -13882,22 +13727,11 @@ $p.eve.update_files_version = function () {
 
 				if(sync.clear_meta){
 					// чистим indexeddb
-					$p.wsql.idx_connect(null, 'meta')
-						.then(function (db) {
-							return $p.wsql.idx_clear(null, db, 'meta');
-						})
-						.then(function () {
-							return $p.wsql.idx_clear(null, db, 'static');
-						})
-						.catch($p.record_log);
+
 
 				}else if(sync.clear_static){
 					// чистим indexeddb
-					$p.wsql.idx_connect(null, 'static')
-						.then(function (db) {
-							return $p.wsql.idx_clear(null, db, 'static');
-						})
-						.catch($p.record_log);
+
 				}
 
 				if(!$p.job_prm.files_date){

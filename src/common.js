@@ -93,7 +93,7 @@ Object.prototype.__define({
 	 * @for Object
 	 * @param Parent {Function}
 	 */
-	"_extend": {
+	_extend: {
 		value: function( Parent ) {
 			var F = function() { };
 			F.prototype = Parent.prototype;
@@ -112,9 +112,9 @@ Object.prototype.__define({
 	 * @method _mixin
 	 * @for Object
 	 * @param src {Object} - источник
-	 * @return {Object}
+	 * @return {this}
 	 */
-	"_mixin": {
+	_mixin: {
 		value: function(src, include, exclude ) {
 			var tobj = {}, i, f; // tobj - вспомогательный объект для фильтрации свойств, которые есть у объекта Object и его прототипа
 			if(include && include.length){
@@ -141,6 +141,30 @@ Object.prototype.__define({
 	},
 
 	/**
+	 * Подмешивает в объект свойства с иерархией объекта patch
+	 * @method _mixin
+	 * @for Object
+	 * @param patch {Object}
+	 * @return {this}
+	 */
+	_patch: {
+		value: function( patch ) {
+			for(var area in patch){
+
+				if(typeof patch[area] == "object"){
+					if(this[area] && typeof this[area] == "object")
+						this[area]._patch(patch[area]);
+					else
+						this[area] = patch[area];
+				}else
+					this[area] = patch[area];
+			}
+			return this;
+		},
+		enumerable: false
+	},
+
+	/**
 	 * Создаёт копию объекта
 	 * @method _clone
 	 * @for Object
@@ -148,7 +172,7 @@ Object.prototype.__define({
 	 * @param [exclude_propertyes] {Object} - объект, в ключах которого имена свойств, которые не надо копировать
 	 * @returns {Object|Array} - копия объекта
 	 */
-	"_clone": {
+	_clone: {
 		value: function() {
 			if(!this || "object" !== typeof this)
 				return this;
@@ -1593,9 +1617,7 @@ $p.JobPrm = JobPrm;
  */
 function WSQL(){
 
-	var wsql = this,
-		ls,
-		user_params = {};
+	var wsql = this, ls, user_params = {};
 
 	if(typeof localStorage === "undefined"){
 
@@ -1625,6 +1647,7 @@ function WSQL(){
 		else
 			return prm;
 	}
+
 
 	//TODO реализовать поддержку postgres в Node
 
@@ -1733,35 +1756,37 @@ function WSQL(){
 	 */
 	wsql.init_params = function(ialasql, create_tables_sql){
 
+		// указатель на экземпляр alasql - критично в NodeJS
 		wsql.alasql = ialasql || alasql;
 		wsql.aladb = new wsql.alasql.Database('md');
 
+		// префикс параметров LocalStorage и хранилищ PouchDB
+		if(!$p.job_prm.local_storage_prefix)
+			$p.job_prm.local_storage_prefix = "md_";
+
+		// ссылки на локальные и сетевые базы PouchDB
+		if(typeof Pouch !== "undefined")
+			wsql.pouch = new Pouch();
+
+
+		// значения базовых параметров по умолчанию
 		var nesessery_params = [
 			{p: "user_name",		v: "", t:"string"},
 			{p: "user_pwd",			v: "", t:"string"},
 			{p: "browser_uid",		v: $p.generate_guid(), t:"string"},
 			{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t:"number"},
 			{p: "enable_save_pwd",	v: "",	t:"boolean"},
-			{p: "reset_local_data",	v: "",	t:"boolean"},
 			{p: "autologin",		v: "",	t:"boolean"},
-			{p: "cache_cat_date",	v: 0,	t:"number"},
-			{p: "margin",			v: 60,	t:"number"},
-			{p: "discount",			v: 15,	t:"number"},
-			{p: "offline",			v: $p.job_prm.offline || "", t:"boolean"},
 			{p: "skin",		        v: "dhx_web", t:"string"},
 			{p: "rest_path",		v: "", t:"string"}
-		],
-			ls_prefix = $p.job_prm.local_storage_prefix || ($p.job_prm.local_storage_prefix = "md_"),
-			zone;
-
-
+		],	zone;
 
 		// подмешиваем к базовым параметрам настройки приложения
 		if($p.job_prm.additional_params)
 			nesessery_params = nesessery_params.concat($p.job_prm.additional_params);
 
 		// если зона не указана, устанавливаем "1"
-		if(!ls.getItem(ls_prefix+"zone"))
+		if(!ls.getItem($p.job_prm.local_storage_prefix+"zone"))
 			zone = $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1;
 		// если зона указана в url, используем её
 		if($p.job_prm.url_prm.hasOwnProperty("zone"))
@@ -1776,51 +1801,7 @@ function WSQL(){
 					wsql.set_user_param(o.p, $p.job_prm.hasOwnProperty(o.p) ? $p.job_prm[o.p] : o.v);
 		});
 
-		// сбрасываем даты, т.к. база в озу
-		wsql.set_user_param("cache_cat_date", 0);
-		wsql.set_user_param("reset_local_data", "");
-
 		return new Promise(function(resolve, reject){
-
-			// ссылки на локальные и сетевые базы pouchdb
-			if($p.job_prm.pouchdb){
-				wsql.pouch = {
-					local: {
-						cat: new PouchDB(ls_prefix + "cat"),
-						doc: new PouchDB(ls_prefix + "doc")
-					},
-					remote: {
-						cat: new PouchDB($p.job_prm.pouchdb + "cat", {
-							ajax: {
-								cache: true,
-								timeout: 10000,
-								withCredentials: true,
-								headers: {
-									"Authorization": "Basic " + btoa(unescape(encodeURIComponent($p.job_prm.guest_name + ":" + $p.job_prm.guest_pwd)))
-								}
-							}
-							//auth: {
-							//	username: $p.job_prm.guest_name,
-							//	password: $p.job_prm.guest_pwd
-							//}
-						}),
-						doc: new PouchDB($p.job_prm.pouchdb + "doc", {
-							ajax: {
-								cache: true,
-								timeout: 10000,
-								withCredentials: true,
-								headers: {
-									"Authorization": "Basic " + btoa(unescape(encodeURIComponent($p.job_prm.guest_name + ":" + $p.job_prm.guest_pwd)))
-								}
-							}
-							//auth: {
-							//	username: $p.job_prm.guest_name,
-							//	password: $p.job_prm.guest_pwd
-							//}
-						})
-					}
-				};
-			}
 
 			if(create_tables_sql)
 				wsql.alasql(create_tables_sql, [], resolve);
@@ -1889,205 +1870,6 @@ function WSQL(){
 		wsql.alasql("SHOW TABLES", [], tmames_finded);
 	};
 
-	/**
-	 * Формирует архив полной выгрузки базы для сохранения в файловой системе клиента
-	 * @method backup_database
-	 * @param [do_zip] {Boolean} - указывает на необходимость архивировать стоки таблиц в озу перед записью файла
-	 * @async
-	 */
-	wsql.backup_database = function(do_zip){
-
-		// получаем строку create_tables
-
-		// получаем строки для каждой таблицы
-
-		// складываем все части в файл
-	};
-
-	/**
-	 * Восстанавливает базу из архивной копии
-	 * @method restore_database
-	 * @async
-	 */
-	wsql.restore_database = function(){
-
-	};
-
-
-	/**
-	 * Подключается к indexedDB
-	 * @method idx_connect
-	 * @param db_name {String} - имя базы
-	 * @param store_name {String} - имя хранилища в базе
-	 * @return {Promise.<IDBDatabase>}
-	 * @async
-	 */
-	wsql.idx_connect = function (db_name, store_name) {
-
-		if(!db_name)
-			db_name = wsql.idx_name || $p.job_prm.local_storage_prefix;
-
-		return new Promise(function(resolve, reject){
-			var request = indexedDB.open(db_name, 1);
-			request.onerror = function(err){
-				reject(err);
-			};
-			request.onsuccess = function(){
-				// При успешном открытии вызвали коллбэк передав ему объект БД
-				resolve(request.result);
-			};
-			request.onupgradeneeded = function(e){
-				// Если БД еще не существует, то создаем хранилище объектов.
-				e.currentTarget.result.createObjectStore(store_name, { keyPath: "ref" });
-				return wsql.idx_connect(db_name, store_name);
-			}
-		});
-	};
-
-	/**
-	 * Сохраняет объект в indexedDB
-	 * @method idx_save
-	 * @param obj {DataObj|Object}
-	 * @param [db] {IDBDatabase}
-	 * @param [store_name] {String} - имя хранилища в базе
-	 * @return {Promise}
-	 * @async
-	 */
-	wsql.idx_save = function (obj, db, store_name) {
-
-		return new Promise(function(resolve, reject){
-
-			function _save(db){
-				var request = db.transaction([store_name], "readwrite")
-					.objectStore(store_name)
-					.put(obj instanceof DataObj ? obj._obj : obj);
-				request.onerror = function(err){
-					reject(err);
-				};
-				request.onsuccess = function(){
-					resolve(request.result);
-				}
-			}
-
-			if(!store_name && obj._manager)
-				store_name = obj._manager.table_name;
-
-			if(db)
-				_save(db);
-			else
-				wsql.idx_connect(null, store_name)
-					.then(_save);
-
-		});
-	};
-
-	/**
-	 * Получает объект из indexedDB по ключу
-	 * @method idx_get
-	 * @param ref {String} - ключ
-	 * @param [db] {IDBDatabase}
-	 * @param store_name {String} - имя хранилища в базе
-	 * @return {Promise}
-	 * @async
-	 */
-	wsql.idx_get = function (ref, db, store_name) {
-
-		return new Promise(function(resolve, reject){
-
-			function _get(db){
-				var request = db.transaction([store_name], "readonly")
-					.objectStore(store_name)
-					.get(ref);
-				request.onerror = function(err){
-					reject(err);
-				};
-				request.onsuccess = function(){
-					resolve(request.result);
-				}
-			}
-
-			if(db)
-				_get(db);
-			else
-				wsql.idx_connect(null, store_name)
-					.then(_get);
-
-		});
-	};
-
-	/**
-	 * Удаляет объект из indexedDB
-	 * @method idx_delete
-	 * @param obj {DataObj|Object|String} - объект или идентификатор
-	 * @param [db] {IDBDatabase}
-	 * @param [store_name] {String} - имя хранилища в базе
-	 * @return {Promise}
-	 * @async
-	 */
-	wsql.idx_delete = function (obj, db, store_name) {
-
-		return new Promise(function(resolve, reject){
-
-			function _delete(db){
-				var request = db.transaction([store_name], "readwrite")
-					.objectStore(store_name)
-					.delete(obj instanceof DataObj ? obj.ref : obj);
-				request.onerror = function(err){
-					reject(err);
-				};
-				request.onsuccess = function(){
-					resolve(request.result);
-				}
-			}
-
-			if(!store_name && obj._manager)
-				store_name = obj._manager.table_name;
-
-			if(db)
-				_delete(db);
-			else
-				wsql.idx_connect(null, store_name)
-					.then(_delete);
-
-		});
-	};
-
-	/**
-	 * Удаляет все объекты из таблицы indexedDB
-	 * @method idx_clear
-	 * @param obj {DataObj|Object|String} - объект или идентификатор
-	 * @param [db] {IDBDatabase}
-	 * @param [store_name] {String} - имя хранилища в базе
-	 * @return {Promise}
-	 * @async
-	 */
-	wsql.idx_clear = function (obj, db, store_name) {
-
-		return new Promise(function(resolve, reject){
-
-			function _clear(db){
-				var request = db.transaction([store_name], "readwrite")
-					.objectStore(store_name)
-					.clear();
-				request.onerror = function(err){
-					reject(err);
-				};
-				request.onsuccess = function(){
-					resolve(request.result);
-				}
-			}
-
-			if(!store_name && obj._manager)
-				store_name = obj._manager.table_name;
-
-			if(db)
-				_clear(db);
-			else
-				wsql.idx_connect(null, store_name)
-					.then(_clear);
-
-		});
-	};
 
 };
 

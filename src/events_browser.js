@@ -453,23 +453,15 @@
 						cat_date: 0,
 						step_size: 57,
 						files: 0,
-						cat_ini_date: $p.wsql.get_user_param("cache_cat_date", "number")  || 0
+						cat_ini_date: 0
 					};
 
 					eve.set_offline(!navigator.onLine);
 
+					/**
+					 * TODO: заменить на обработку события при обновлении данных pouchdb
+					 */
 					eve.update_files_version();
-
-					// пытаемся перейти в полноэкранный режим в мобильных браузерах
-					if (document.documentElement.webkitRequestFullScreen
-						&& navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)
-						&& ($p.job_prm.request_full_screen || $p.wsql.get_user_param("request_full_screen"))) {
-						var requestFullScreen = function(){
-							document.documentElement.webkitRequestFullScreen();
-							w.removeEventListener('touchstart', requestFullScreen);
-						};
-						w.addEventListener('touchstart', requestFullScreen, false);
-					}
 
 					/**
 					 * Выполняем отложенные методы из eve.onload
@@ -479,7 +471,7 @@
 					// инициализируем метаданные и обработчик при начале работы интерфейса
 					setTimeout(function () {
 
-						$p.Meta.init_meta()
+						$p.md.init()
 							.catch($p.record_log);
 
 						// Если есть сплэш, удаляем его
@@ -488,7 +480,7 @@
 
 						iface.oninit();
 
-					}, 20);
+					}, 10);
 
 
 					$p.msg.russian_names();
@@ -559,9 +551,9 @@
 				} else
 					init_params();
 
-			}, 20);
+			}, 10);
 
-		}, 20);
+		}, 10);
 
 		function do_reload(){
 			if(!$p.ajax.authorized){
@@ -681,7 +673,7 @@ $p.eve.log_in = function(onstep){
 			onstep($p.eve.steps.authorization);
 
 			// TODO: реализовать метод для получения списка ролей пользователя
-			mdd = res || (_md ? _md.dates() : {});
+			mdd = res;
 			mdd.root = true;
 
 			// в автономном режиме сразу переходим к чтению первого файла данных
@@ -761,15 +753,6 @@ $p.eve.log_in = function(onstep){
 			parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "ireg.json?v="+$p.job_prm.files_date));
 
 			return $p.eve.reduce_promices(parts, $p.eve.from_json_to_data_obj);
-
-		})
-
-		// если онлайн, выполняем такт обмена с 1С
-		.then(function() {
-
-			onstep($p.eve.steps.load_data_db);
-			stepper.step_size = 57;
-			return $p.eve.pop();
 
 		})
 
@@ -860,22 +843,11 @@ $p.eve.update_files_version = function () {
 
 				if(sync.clear_meta){
 					// чистим indexeddb
-					$p.wsql.idx_connect(null, 'meta')
-						.then(function (db) {
-							return $p.wsql.idx_clear(null, db, 'meta');
-						})
-						.then(function () {
-							return $p.wsql.idx_clear(null, db, 'static');
-						})
-						.catch($p.record_log);
+
 
 				}else if(sync.clear_static){
 					// чистим indexeddb
-					$p.wsql.idx_connect(null, 'static')
-						.then(function (db) {
-							return $p.wsql.idx_clear(null, db, 'static');
-						})
-						.catch($p.record_log);
+
 				}
 
 				if(!$p.job_prm.files_date){
