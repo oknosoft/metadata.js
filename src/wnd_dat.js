@@ -960,14 +960,13 @@ function OTooolBar(attr){
 	div.style.width = attr.width || '28px';
 	div.style.height = attr.height || '150px';
 	div.style.position = 'absolute';
-	if(attr.top)
-		div.style.top = attr.top;
-	if(attr.left)
-		div.style.left = attr.left;
-	if(attr.bottom)
-		div.style.bottom = attr.bottom;
-	if(attr.right)
-		div.style.right = attr.right;
+
+	if(attr.top) div.style.top = attr.top;
+	if(attr.left) div.style.left = attr.left;
+	if(attr.bottom) div.style.bottom = attr.bottom;
+	if(attr.right) div.style.right = attr.right;
+	if(attr.paddingRight) div.style.paddingRight = attr.paddingRight;
+	if(attr.paddingLeft) div.style.paddingLeft = attr.paddingLeft;
 
 	if(attr.buttons)
 		attr.buttons.forEach(function(battr){
@@ -1001,11 +1000,11 @@ $p.iface.add_button = function(parent, attr, battr) {
 		bdiv.classList.add(battr.css);
 	bdiv.innerHTML = html;
 
-	if(battr.float)
-		bdiv.style.float = battr.float;
-	if(battr.clear)
-		bdiv.style.clear = battr.clear;
-	if(battr.width)
-		bdiv.style.width = battr.width;
+	if(battr.float) bdiv.style.float = battr.float;
+	if(battr.clear) bdiv.style.clear = battr.clear;
+	if(battr.width) bdiv.style.width = battr.width;
+	if(battr.paddingRight) bdiv.style.paddingRight = battr.paddingRight;
+	if(battr.paddingLeft) bdiv.style.paddingLeft = battr.paddingLeft;
+
 	return bdiv;
 };
