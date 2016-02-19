@@ -1915,8 +1915,12 @@ function Pouch(){
 					return Promise.resolve();
 
 				// переподключение под другим пользователем
-				if(_auth && _auth.username != username && _local.sync_cat)
-					_local.sync_cat.cancel();
+				if(_auth && _auth.username != username){
+					if(_local.sync.cat)
+						_local.sync.cat.cancel();
+					if(_local.sync.doc)
+						_local.sync.doc.cancel();
+				}
 
 				if(_remote && _remote.cat)
 					delete _remote.cat;
@@ -1926,7 +1930,7 @@ function Pouch(){
 
 				_remote = null;
 
-				return $p.ajax.get_ex($p.job_prm.couchdb + "cat", {username: username, password: password})
+				return $p.ajax.get_ex($p.job_prm.couchdb + _zone + "_cat", {username: username, password: password})
 					.then(function (req) {
 						_auth = {username: username, password: password};
 						return JSON.parse(req.response);
@@ -1940,56 +1944,60 @@ function Pouch(){
 		load_data: {
 			value: function () {
 
-				var exclude = ["meta", "meta_patch", "sync"], keys = [], curr = [];
+				var options = {
+					limit : 100,
+					include_docs: true
+				};
 
-				// бежим по ключу всех документов
-				return t.local.cat.allDocs()
-					.then(function (doc) {
-						doc.rows.forEach(function (rev) {
-							if(exclude.indexOf(rev.id) == -1){
-								curr.push({id: rev.id, rev: rev.value.rev});
-								if(curr.length > 100){
-									keys.push(curr);
-									curr = [];
-								}
-							}
-						});
-						if(curr.length){
-							keys.push(curr);
-							curr = [];
-						}
-						doc	= null;
+				// бежим по всем документам из cat
+				return new Promise(function(resolve, reject){
 
-						// формируем пачку запросов по 100 документов
-						keys.forEach(function (rev) {
-							curr.push($p.wsql.pouch.local.cat.bulkGet({docs: rev}));
-						});
-						return $p.eve.reduce_promices(curr, function (result) {
-							var res = {}, cn;
-							result.results.forEach(function (rev) {
-								if(rev.docs.length && (keys = rev.docs[0].ok)){
-									cn = keys.class_name.split(".");
-									keys.ref = keys._id;
-									delete keys.class_name;
-									delete keys._id;
-									delete keys._rev;
-									if(!res[cn[0]])
-										res[cn[0]] = {};
-									if(!res[cn[0]][cn[1]])
-										res[cn[0]][cn[1]] = [];
-									res[cn[0]][cn[1]].push(keys);
-								};
-							});
+					function fetchNextPage() {
+						t.local.cat.allDocs(options, function (err, response) {
 
-							for(var mgr in res){
-								for(cn in res[mgr])
-									if($p[mgr][cn])
-										$p[mgr][cn].load_array(res[mgr][cn]);
-							}
-							result	= null;
-							res	= null;
+							if (response) {
+
+								if (response.rows.length > 0) {
+									options.startkey = response.rows[response.rows.length - 1].key;
+									options.skip = 1;
+
+									var res = {}, cn;
+									response.rows.forEach(function (rev) {
+										cn = rev.doc.class_name.split(".");
+										rev.doc.ref = rev.doc._id;
+										delete rev.doc.class_name;
+										delete rev.doc._id;
+										delete rev.doc._rev;
+										if(!res[cn[0]])
+											res[cn[0]] = {};
+										if(!res[cn[0]][cn[1]])
+											res[cn[0]][cn[1]] = [];
+										res[cn[0]][cn[1]].push(rev.doc);
+									});
+
+									for(var mgr in res){
+										for(cn in res[mgr])
+											if($p[mgr][cn])
+												$p[mgr][cn].load_array(res[mgr][cn]);
+									}
+									response = null;
+									res	= null;
+
+									fetchNextPage();
+
+								} else
+									resolve();
+
+							} else if(err)
+								reject(err);
+
 						});
-					});
+					}
+
+					fetchNextPage();
+
+				});
+
 			}
 		},
 
