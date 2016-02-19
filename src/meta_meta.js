@@ -554,20 +554,22 @@ function Meta() {
 	// загружает метаданные из pouchdb
 	function meta_from_pouch(){
 
-		return $p.wsql.pouch.local.cat.get('meta')
+		return $p.wsql.pouch.local.meta.info()
+			.then(function () {
+				return $p.wsql.pouch.local.meta.get('meta');
+
+			})
 			.then(function (doc) {
 				_m = doc;
 				doc = null;
-				return $p.wsql.pouch.local.cat.get('meta_patch');
+				return $p.wsql.pouch.local.meta.get('meta_patch');
+
 			}).then(function (doc) {
-				_m._patch(doc)._patch($p.injected_data['log.json']);
+				$p._patch.call($p._patch.call(_m, doc), $p.injected_data['log.json']);
 				doc = null;
 				delete $p.injected_data['log.json'];
 				delete _m._id;
 				delete _m._rev;
-			})
-			.catch(function (err) {
-				console.log(err);
 			});
 	}
 
@@ -583,13 +585,22 @@ function Meta() {
 	 */
 	_md.init = function (auth) {
 
+		function do_init(dbid){
+			if(!dbid || dbid == "meta")
+				return meta_from_pouch()
+					.then(create_managers)
+					.then(data_from_pouch)
+					.catch($p.record_log);
+		}
+
+		if(!_md.pouch_change)
+			_md.pouch_change = $p.eve.attachEvent("pouch_change", do_init);
+
 		if(!_m){
 			return $p.wsql.pouch.local.cat.info()
-				.then(function (info) {
-					return meta_from_pouch();
-				})
-				.then(create_managers)
-				.then(data_from_pouch);
+				.then(function () {
+					return do_init()
+				});
 		}
 
 	};

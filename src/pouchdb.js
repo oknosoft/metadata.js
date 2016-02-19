@@ -15,7 +15,47 @@
  */
 function Pouch(){
 
-	var t = this, _local, _remote, _auth;
+	var t = this, _local, _remote, _auth,
+		_zone = $p.wsql.get_user_param("zone", "number"),
+		_prefix = $p.job_prm.local_storage_prefix;
+
+	function run_sync(local, remote, id){
+		return local.info()
+			.then(function () {
+				return remote.info()
+			})
+			.then(function (linfo) {
+				return _local.sync[id] = local.sync(remote, {
+					live: true,
+					retry: true
+				}).on('change', function (change) {
+					// yo, something changed!
+					$p.eve.callEvent("pouch_change", [id, change]);
+
+				}).on('paused', function (info) {
+					// replication was paused, usually because of a lost connection
+					if(info)
+						$p.eve.callEvent("pouch_paused", [id, info]);
+
+				}).on('active', function (info) {
+					// replication was resumed
+					$p.eve.callEvent("pouch_active", [id, info]);
+
+				}).on('denied', function (info) {
+					// a document failed to replicate, e.g. due to permissions
+					$p.eve.callEvent("pouch_denied", [id, info]);
+
+				}).on('complete', function (info) {
+					// handle complete
+					$p.eve.callEvent("pouch_complete", [id, info]);
+
+				}).on('error', function (err) {
+					// totally unhandled error (shouldn't happen)
+					$p.eve.callEvent("pouch_error", [id, err]);
+
+				});
+			});
+	}
 
 	t.__define({
 
@@ -23,9 +63,21 @@ function Pouch(){
 			get: function () {
 				if(!_local){
 					_local = {
-						cat: new PouchDB($p.job_prm.local_storage_prefix + "cat"),
-						doc: new PouchDB($p.job_prm.local_storage_prefix + "doc")
+						cat: new PouchDB(_prefix + _zone + "_cat", {auto_compaction: true, revs_limit: 2}),
+						doc: new PouchDB(_prefix + _zone + "_doc", {auto_compaction: true, revs_limit: 2}),
+						meta: new PouchDB(_prefix + "meta", {auto_compaction: true}),
+						sync: {}
 					}
+				}
+				if($p.job_prm.couchdb && !_local._meta){
+					_local._meta = new PouchDB($p.job_prm.couchdb + "meta", {
+						auth: {
+							username: "guest",
+							password: "meta"
+						},
+						skip_setup: true
+					});
+					run_sync(_local.meta, _local._meta, "meta");
 				}
 				return _local;
 			}
@@ -35,14 +87,14 @@ function Pouch(){
 			get: function () {
 				if(!_remote && _auth){
 					_remote = {
-						cat: new PouchDB($p.job_prm.couchdb + "cat", {
+						cat: new PouchDB($p.job_prm.couchdb + _zone + "_cat", {
 							auth: {
 								username: _auth.username,
 								password: _auth.password
 							},
 							skip_setup: true
 						}),
-						doc: new PouchDB($p.job_prm.couchdb + "doc", {
+						doc: new PouchDB($p.job_prm.couchdb + _zone + "_doc", {
 							auth: {
 								username: _auth.username,
 								password: _auth.password
@@ -153,42 +205,11 @@ function Pouch(){
 		 * Запускает процесс синхронизвации
 		 */
 		run_sync: {
-			value: function () {
-
-				t.authenticate()
+			value: function (local, remote, id) {
+				return t.authenticate()
 					.then(function () {
-
-						if(!_local.sync_cat)
-							_local.sync_cat = t.local.cat.sync(t.remote.cat, {
-								live: true,
-								retry: true
-							}).on('change', function (change) {
-								// yo, something changed!
-								$p.eve.callEvent("pouch_change", [change]);
-
-							}).on('paused', function (info) {
-								// replication was paused, usually because of a lost connection
-								$p.eve.callEvent("pouch_paused", [info]);
-
-							}).on('active', function (info) {
-								// replication was resumed
-								$p.eve.callEvent("pouch_active", [info]);
-
-							}).on('denied', function (info) {
-								// a document failed to replicate, e.g. due to permissions
-								$p.eve.callEvent("pouch_denied", [info]);
-
-							}).on('complete', function (info) {
-								// handle complete
-								$p.eve.callEvent("pouch_complete", [info]);
-
-							}).on('error', function (err) {
-								// totally unhandled error (shouldn't happen)
-								$p.eve.callEvent("pouch_error", [err]);
-
-							});
-
-					})
+						return run_sync(local, remote, id);
+					});
 			}
 		},
 
