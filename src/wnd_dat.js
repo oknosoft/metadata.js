@@ -473,7 +473,8 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 			if(!$p.is_guid($p.wsql.get_user_param("browser_uid")))
 				$p.wsql.set_user_param("browser_uid", $p.generate_guid());	// проверяем guid браузера
 
-			$p.eve.log_in(attr.onstep)
+			//$p.eve.log_in(attr.onstep)
+			$p.wsql.pouch.authenticate(login, password)
 				.then(function () {
 					if(resolve)
 						resolve();

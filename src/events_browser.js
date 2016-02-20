@@ -879,17 +879,3 @@ $p.eve.update_files_version = function () {
 
 		}).catch($p.record_log)
 };
-
-/**
- * Регламентные задания синхронизапции каждые 3 минуты
- * @event ontimer
- * @for AppEvents
- */
-$p.eve.ontimer = function () {
-
-	// читаем файл версии файлов js. в случае изменений, оповещаем пользователя
-	// TODO: это место желательно перенести в сервисворкер
-	$p.eve.update_files_version();
-
-};
-setInterval($p.eve.ontimer, 180000);

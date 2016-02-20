@@ -1811,6 +1811,50 @@ function Pouch(){
 		_zone = $p.wsql.get_user_param("zone", "number"),
 		_prefix = $p.job_prm.local_storage_prefix;
 
+	function load_changes(changes, options){
+
+		var docs, doc, res = {}, cn;
+
+		if(!options){
+			if(changes.direction != "pull")
+				return;
+			docs = changes.change.docs;
+		}else
+			docs = changes.rows;
+
+		if (docs.length > 0) {
+			if(options){
+				options.startkey = docs[docs.length - 1].key;
+				options.skip = 1;
+			}
+
+			docs.forEach(function (rev) {
+				doc = options ? rev.doc : rev;
+				cn = doc.class_name.split(".");
+				doc.ref = doc._id;
+				delete doc.class_name;
+				delete doc._id;
+				delete doc._rev;
+				if(!res[cn[0]])
+					res[cn[0]] = {};
+				if(!res[cn[0]][cn[1]])
+					res[cn[0]][cn[1]] = [];
+				res[cn[0]][cn[1]].push(doc);
+			});
+
+			for(var mgr in res){
+				for(cn in res[mgr])
+					if($p[mgr][cn])
+						$p[mgr][cn].load_array(res[mgr][cn], true);
+			}
+
+			res	= changes = docs = doc = null;
+			return true;
+		}
+
+		return false;
+	}
+
 	function run_sync(local, remote, id){
 		return local.info()
 			.then(function () {
@@ -1822,6 +1866,8 @@ function Pouch(){
 					retry: true
 				}).on('change', function (change) {
 					// yo, something changed!
+					if(id == "cat")
+						load_changes(change);
 					$p.eve.callEvent("pouch_change", [id, change]);
 
 				}).on('paused', function (info) {
@@ -1933,7 +1979,7 @@ function Pouch(){
 				return $p.ajax.get_ex($p.job_prm.couchdb + _zone + "_cat", {username: username, password: password})
 					.then(function (req) {
 						_auth = {username: username, password: password};
-						return JSON.parse(req.response);
+						return {cat: run_sync(t.local.cat, t.remote.cat, "cat"), doc: run_sync(t.local.doc, t.remote.doc, "doc")};
 					});
 			}
 		},
@@ -1947,6 +1993,11 @@ function Pouch(){
 				var options = {
 					limit : 100,
 					include_docs: true
+				}, _page = {
+					total_rows: 0,
+					limit: options.limit,
+					page: 0,
+					start: Date.now()
 				};
 
 				// бежим по всем документам из cat
@@ -1957,43 +2008,32 @@ function Pouch(){
 
 							if (response) {
 
-								if (response.rows.length > 0) {
-									options.startkey = response.rows[response.rows.length - 1].key;
-									options.skip = 1;
+								// широковещательное оповещение о загрузке порции локальных данных
+								_page.page++;
+								_page.total_rows = response.total_rows;
+								_page.duration = Date.now() - _page.start;
+								$p.eve.callEvent("pouch_cat_page", [_page]);
 
-									var res = {}, cn;
-									response.rows.forEach(function (rev) {
-										cn = rev.doc.class_name.split(".");
-										rev.doc.ref = rev.doc._id;
-										delete rev.doc.class_name;
-										delete rev.doc._id;
-										delete rev.doc._rev;
-										if(!res[cn[0]])
-											res[cn[0]] = {};
-										if(!res[cn[0]][cn[1]])
-											res[cn[0]][cn[1]] = [];
-										res[cn[0]][cn[1]].push(rev.doc);
-									});
-
-									for(var mgr in res){
-										for(cn in res[mgr])
-											if($p[mgr][cn])
-												$p[mgr][cn].load_array(res[mgr][cn]);
-									}
-									response = null;
-									res	= null;
-
+								if (load_changes(response, options))
 									fetchNextPage();
-
-								} else
+								 else{
 									resolve();
+									// широковещательное оповещение о загрузке локальных данных
+									console.log(_page);
+									$p.eve.callEvent("pouch_cat_loaded", [_page]);
+								}
 
-							} else if(err)
+							} else if(err){
 								reject(err);
+								// широковещательное оповещение об ошибке загрузки
+								$p.eve.callEvent("pouch_cat_error", [err]);
+							}
 
 						});
 					}
 
+					// широковещательное оповещение о начале загрузки локальных данных
+					$p.eve.callEvent("pouch_cat_start");
 					fetchNextPage();
 
 				});
@@ -4445,7 +4485,8 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 			if(!$p.is_guid($p.wsql.get_user_param("browser_uid")))
 				$p.wsql.set_user_param("browser_uid", $p.generate_guid());	// проверяем guid браузера
 
-			$p.eve.log_in(attr.onstep)
+			//$p.eve.log_in(attr.onstep)
+			$p.wsql.pouch.authenticate(login, password)
 				.then(function () {
 					if(resolve)
 						resolve();
@@ -6143,11 +6184,6 @@ function Meta() {
 			});
 	}
 
-	// загружает данные из pouchdb
-	function data_from_pouch(){
-
-
-	}
 
 	/**
 	 * Инициализирует метаданные и загружает данные из локального хранилища
@@ -6159,7 +6195,7 @@ function Meta() {
 			if(!dbid || dbid == "meta")
 				return meta_from_pouch()
 					.then(create_managers)
-					.then(data_from_pouch)
+					.then($p.wsql.pouch.load_data)
 					.catch($p.record_log);
 		}
 

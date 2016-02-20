@@ -573,11 +573,6 @@ function Meta() {
 			});
 	}
 
-	// загружает данные из pouchdb
-	function data_from_pouch(){
-
-
-	}
 
 	/**
 	 * Инициализирует метаданные и загружает данные из локального хранилища
@@ -589,7 +584,7 @@ function Meta() {
 			if(!dbid || dbid == "meta")
 				return meta_from_pouch()
 					.then(create_managers)
-					.then(data_from_pouch)
+					.then($p.wsql.pouch.load_data)
 					.catch($p.record_log);
 		}
 
