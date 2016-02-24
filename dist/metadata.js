@@ -154,7 +154,6 @@ Object.prototype.__define({
 		enumerable: false
 	},
 
-
 	/**
 	 * Создаёт копию объекта
 	 * @method _clone
@@ -203,8 +202,7 @@ if(!Number.prototype.round)
  * Полифил для обсервера и нотифаера пока не подключаем
  * Это простая заглушка, чтобы в старых браузерах не возникали исключения
  */
-if(!Object.observe && !Object.unobserve && !Object.getNotifier)
-
+if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 	Object.prototype.__define({
 
 		observe: {
@@ -264,6 +262,8 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier)
 			enumerable: false
 		}
 	});
+}
+
 
 /**
  * Date Format 1.2.3
@@ -410,6 +410,7 @@ $p.ajax = new (
 	 * @static
 	 */
 	function Ajax() {
+
 
 		function _call(method, url, post_data, auth, before_send) {
 
@@ -1813,7 +1814,7 @@ function Pouch(){
 
 	function load_changes(changes, options){
 
-		var docs, doc, res = {}, cn;
+		var docs, doc, res = {}, cn, key;
 
 		if(!options){
 			if(changes.direction != "pull")
@@ -1830,9 +1831,9 @@ function Pouch(){
 
 			docs.forEach(function (rev) {
 				doc = options ? rev.doc : rev;
-				cn = doc.class_name.split(".");
-				doc.ref = doc._id;
-				delete doc.class_name;
+				key = doc._id.split("|");
+				cn = key[0].split(".");
+				doc.ref = key[1];
 				delete doc._id;
 				delete doc._rev;
 				if(!res[cn[0]])
@@ -1866,7 +1867,7 @@ function Pouch(){
 					retry: true
 				}).on('change', function (change) {
 					// yo, something changed!
-					if(id == "cat")
+					if(id == "ram")
 						load_changes(change);
 					$p.eve.callEvent("pouch_change", [id, change]);
 
@@ -1901,7 +1902,7 @@ function Pouch(){
 			get: function () {
 				if(!_local){
 					_local = {
-						cat: new PouchDB(_prefix + _zone + "_cat", {auto_compaction: true, revs_limit: 2}),
+						ram: new PouchDB(_prefix + _zone + "_ram", {auto_compaction: true, revs_limit: 2}),
 						doc: new PouchDB(_prefix + _zone + "_doc", {auto_compaction: true, revs_limit: 2}),
 						meta: new PouchDB(_prefix + "meta", {auto_compaction: true}),
 						sync: {}
@@ -1925,7 +1926,7 @@ function Pouch(){
 			get: function () {
 				if(!_remote && _auth){
 					_remote = {
-						cat: new PouchDB($p.job_prm.couchdb + _zone + "_cat", {
+						ram: new PouchDB($p.job_prm.couchdb + _zone + "_ram", {
 							auth: {
 								username: _auth.username,
 								password: _auth.password
@@ -1962,30 +1963,30 @@ function Pouch(){
 
 				// переподключение под другим пользователем
 				if(_auth && _auth.username != username){
-					if(_local.sync.cat)
-						_local.sync.cat.cancel();
+					if(_local.sync.ram)
+						_local.sync.ram.cancel();
 					if(_local.sync.doc)
 						_local.sync.doc.cancel();
 				}
 
-				if(_remote && _remote.cat)
-					delete _remote.cat;
+				if(_remote && _remote.ram)
+					delete _remote.ram;
 
 				if(_remote && _remote.doc)
 					delete _remote.doc;
 
 				_remote = null;
 
-				return $p.ajax.get_ex($p.job_prm.couchdb + _zone + "_cat", {username: username, password: password})
+				return $p.ajax.get_ex($p.job_prm.couchdb + _zone + "_ram", {username: username, password: password})
 					.then(function (req) {
 						_auth = {username: username, password: password};
-						return {cat: run_sync(t.local.cat, t.remote.cat, "cat"), doc: run_sync(t.local.doc, t.remote.doc, "doc")};
+						return {ram: run_sync(t.local.ram, t.remote.ram, "ram"), doc: run_sync(t.local.doc, t.remote.doc, "doc")};
 					});
 			}
 		},
 
 		/**
-		 * Загружает условно-постоянные данные из базы cat в alasql
+		 * Загружает условно-постоянные данные из базы ram в alasql
 		 */
 		load_data: {
 			value: function () {
@@ -2000,11 +2001,11 @@ function Pouch(){
 					start: Date.now()
 				};
 
-				// бежим по всем документам из cat
+				// бежим по всем документам из ram
 				return new Promise(function(resolve, reject){
 
 					function fetchNextPage() {
-						t.local.cat.allDocs(options, function (err, response) {
+						t.local.ram.allDocs(options, function (err, response) {
 
 							if (response) {
 
@@ -2054,6 +2055,30 @@ function Pouch(){
 		},
 
 		/**
+		 * Читает объект из pouchdb
+		 * @return {Promise.<DataObj>} - промис с загруженным объектом
+		 */
+		load_obj: {
+			value: function (tObj) {
+
+				return t.local[tObj._manager.cachable].get(tObj._manager.class_name + "|" + tObj.ref)
+					.then(function (res) {
+						delete res._id;
+						delete res._rev;
+						tObj._mixin(res)._set_loaded();
+						return tObj;
+					});
+
+			}
+		},
+
+		save_obj: {
+			value: function (tObj) {
+
+			}
+		},
+
+		/**
 		 * Формирует архив полной выгрузки базы для сохранения в файловой системе клиента
 		 * @method backup_database
 		 * @param [do_zip] {Boolean} - указывает на необходимость архивировать стоки таблиц в озу перед записью файла
@@ -2091,6 +2116,8 @@ function Pouch(){
 	});
 
 }
+
+
 
 /**
  * Строковые константы интернационализации
@@ -2747,7 +2774,7 @@ $p.iface.data_to_grid = function (data, attr){
 			res = "cell_ref_folder";
 		else
 			res = "cell_ref_elm";
-		if(r.deleted)
+		if(r._deleted)
 			res = res + "_deleted";
 		return res ;
 	}
@@ -3769,8 +3796,10 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 	if(attr.read_only){
 		_grid.setEditable(false);
-		_toolbar.disableItem("btn_add");
-		_toolbar.disableItem("btn_delete");
+		_toolbar.forEachItem(function (name) {
+			if(["btn_add", "btn_delete"].indexOf(name) != -1)
+				_toolbar.disableItem(name);
+		});
 	}
 
 	_grid.attachEvent("onEditCell", tabular_on_edit);
@@ -4001,11 +4030,16 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 	// !!! проверить закешированность дерева
 	// !!! для неиерархических справочников дерево можно спрятать
 	setTimeout(function () {
-		$p.cat.load_soap_to_grid({
+
+		mgr.sync_grid({
 			action: "get_tree",
-			class_name: mgr.class_name,
 			filter: filter
-		}, tree, callback);
+		}, tree)
+			.then(function (res) {
+				if(callback)
+					callback(res);
+			});
+
 	});
 
 	return tree;
@@ -5801,55 +5835,6 @@ $p._find_rows = function(arr, selection, callback){
 	return res;
 };
 
-/**
- * Абстрактный запрос к soap или базе WSQL
- * @param method
- * @param attr
- * @param async
- * @param callback
- * @private
- */
-function _load(attr){
-
-	var mgr = _md.mgr_by_class_name(attr.class_name), res_local;
-
-	function get_tree(){
-
-		if(mgr.cachable){
-			return $p.wsql.promise(mgr.get_sql_struct(attr), [])
-				.then($p.iface.data_to_tree);
-		}
-	}
-
-	function get_selection(){
-
-		if(mgr.cachable){
-
-			return $p.wsql.promise(mgr.get_sql_struct(attr), [])
-				.then(function(data){
-					return $p.iface.data_to_grid.call(mgr, data, attr);
-				});
-		}
-	}
-
-
-	if(attr.action == "get_tree" && (res_local = get_tree()))
-		return res_local;
-
-	else if(attr.action == "get_selection" && (res_local = get_selection()))
-		return res_local;
-
-	else if($p.job_prm.offline)
-		return Promise.reject(Error($p.msg.offline_request));
-
-	attr.browser_uid = $p.wsql.get_user_param("browser_uid");
-
-	return $p.ajax.post_ex($p.job_prm.hs_url(), JSON.stringify(attr), true)
-		.then(function (req) {
-			return req.response;
-		});
-}
-
 
 /**
  * Коллекция менеджеров справочников
@@ -6203,7 +6188,7 @@ function Meta() {
 			_md.pouch_change = $p.eve.attachEvent("pouch_change", do_init);
 
 		if(!_m){
-			return $p.wsql.pouch.local.cat.info()
+			return $p.wsql.pouch.local.ram.info()
 				.then(function () {
 					return do_init()
 				});
@@ -6261,26 +6246,26 @@ function Meta() {
 			res.synonym = "Код";
 		}else if(is_cat && field_name=="name"){
 			res.synonym = "Наименование";
-		}else if(field_name=="deleted"){
+
+		}else if(field_name=="_deleted"){
 			res.synonym = "Пометка удаления";
 			res.type.types[0] = "boolean";
+
 		}else if(field_name=="is_folder"){
 			res.synonym = "Это группа";
 			res.type.types[0] = "boolean";
-		}else if(field_name=="lc_changed"){
-			res.synonym = "Изменено в 1С";
-			res.tooltip = "Время записи в 1С";
-			res.type.types[0] = "number";
-			res.type.digits = 15;
-			res.type.fraction_figits = 0;
+
 		}else if(field_name=="ref"){
 			res.synonym = "Ссылка";
 			res.type.is_ref = true;
 			res.type.types[0] = class_name;
+
 		}else if(field_name)
 			res = _m[np[0]][np[1]].fields[field_name];
+
 		else
 			res = _m[np[0]][np[1]];
+
 		return res;
 	};
 
@@ -6431,7 +6416,7 @@ function Meta() {
 				res = _md.sql_mask(f0) + " CHAR";
 		}
 		return res;
-	}
+	};
 
 	/**
 	 * Заключает имя поля в аппострофы
@@ -6623,9 +6608,9 @@ function Meta() {
 
 	_md.syns_js = function (v) {
 		var synJS = {
-			DeletionMark: 'deleted',
+			DeletionMark: '_deleted',
 			Description: 'name',
-			DataVersion: 'data_version',
+			DataVersion: 'data_version',    // todo: не сохранять это поле в pouchdb
 			IsFolder: 'is_folder',
 			Number: 'number_doc',
 			Date: 'date',
@@ -6646,9 +6631,8 @@ function Meta() {
 
 	_md.syns_1с = function (v) {
 		var syn1c = {
-			deleted: 'DeletionMark',
+			_deleted: 'DeletionMark',
 			name: 'Description',
-			data_version: 'DataVersion',
 			is_folder: 'IsFolder',
 			number_doc: 'Number',
 			date: 'Date',
@@ -6745,7 +6729,6 @@ function Meta() {
 }
 
 
-
 /**
  * Запись журнала регистрации
  * @param err
@@ -6753,50 +6736,9 @@ function Meta() {
 $p.record_log = function (err) {
 	if($p.ireg && $p.ireg.$log)
 		$p.ireg.$log.record(err);
-	else
-		console.log(err);
+	console.log(err);
 };
 
-/**
- * Загрузка данных в grid
- * @method load_soap_to_grid
- * @for Catalogs
- * @param attr {Object} - объект с параметрами запроса SOAP
- * @param grid {dhtmlxGrid}
- * @param callback {Function}
- */
-_cat.load_soap_to_grid = function(attr, grid, callback){
-
-	function cb_callBack(res){
-		if(res.substr(0,1) == "{")
-			res = JSON.parse(res);
-
-		if(typeof res == "string")
-		// загружаем строку в грид
-			grid.parse(res, function(){
-				if(callback)
-					callback(res);
-			}, "xml");
-
-		else if(callback)
-			callback(res);
-	}
-
-	grid.xmlFileUrl = "exec";
-
-
-	var mgr = _md.mgr_by_class_name(attr.class_name);
-
-	if((!mgr.cachable || attr.rest) && ($p.job_prm.rest || $p.job_prm.irest_enabled))
-		mgr.rest_selection(attr)
-			.then(cb_callBack)
-			.catch($p.record_log);
-	else
-		_load(attr)
-			.then(cb_callBack)
-			.catch($p.record_log);
-
-};
 /**
  * Конструкторы менеджеров данных
  *
@@ -6821,9 +6763,7 @@ _cat.load_soap_to_grid = function(attr, grid, callback){
  */
 function DataManager(class_name){
 
-	var _metadata = _md.get(class_name),
-		_cachable,
-		_async_write = _metadata.async_write,
+	var _meta = _md.get(class_name),
 		_events = {
 			after_create: [],
 			after_load: [],
@@ -6831,26 +6771,6 @@ function DataManager(class_name){
 			after_save: [],
 			value_change: []
 		};
-
-	// перечисления кешируются всегда
-	if(class_name.indexOf("enm.") != -1)
-		_cachable = true;
-
-	// если offline, все объекты кешируем
-	else if($p.job_prm.offline)
-		_cachable = true;
-
-	// документы, отчеты и обработки по умолчанию не кешируем
-	else if(class_name.indexOf("doc.") != -1 || class_name.indexOf("dp.") != -1 || class_name.indexOf("rep.") != -1)
-		_cachable = false;
-
-	// остальные классы по умолчанию кешируем
-	else
-		_cachable = true;
-
-	// Если в метаданных явно указано правило кеширования, используем его
-	if(!$p.job_prm.offline && _metadata.cachable != undefined)
-		_cachable = (typeof _metadata.cachable == "boolean") ? _metadata.cachable : _metadata.cachable != "НеКешировать";
 
 	this.__define({
 
@@ -6861,26 +6781,27 @@ function DataManager(class_name){
 			 * Для кешируемых, представления ссылок запоминать необязательно, т.к. его быстрее вычислить по месту
 			 * @property cachable
 			 * @for DataManager
-			 * @type Boolean
+			 * @type String - [not, cat, doc]
 			 */
-			"cachable": {
-				value: _cachable,
-				writable: true,
-				enumerable: false
-			},
+			cachable: {
+				get: function () {
 
-			/**
-			 * Указывает на возможность асинхронной записи элементов данного объекта
-			 * - Если online, сразу выполняем запрос к серверу
-			 * - Если offline и асинхронная запись разрешена, записываем в кеш и отправляем на сервер при первой возможности
-			 * - Если offline и асинхронная запись запрещена - генерируем ошибку
-			 * @property async_write
-			 * @for DataManager
-			 * @type Boolean
-			 */
-			"async_write": {
-				value: _async_write,
-				writable: false,
+					// перечисления кешируются всегда
+					if(class_name.indexOf("enm.") != -1)
+						return "ram";
+
+					// Если в метаданных явно указано правило кеширования, используем его
+					if(_meta.cachable)
+						return _meta.cachable;
+
+					// документы, отчеты и обработки по умолчанию кешируем в idb, но в память не загружаем
+					if(class_name.indexOf("doc.") != -1 || class_name.indexOf("dp.") != -1 || class_name.indexOf("rep.") != -1)
+						return "doc";
+
+					// остальные классы по умолчанию кешируем и загружаем в память при старте
+					return "ram";
+
+				},
 				enumerable: false
 			},
 
@@ -6891,7 +6812,7 @@ function DataManager(class_name){
 			 * @type String
 			 * @final
 			 */
-			"class_name": {
+			class_name: {
 				value: class_name,
 				writable: false,
 				enumerable: false
@@ -6905,7 +6826,7 @@ function DataManager(class_name){
 			 * @type Array
 			 * @final
 			 */
-			"alatable": {
+			alatable: {
 				get : function () {
 					return $p.wsql.aladb.tables[this.table_name] ? $p.wsql.aladb.tables[this.table_name].data : []
 				},
@@ -6918,12 +6839,12 @@ function DataManager(class_name){
 			 * @for DataManager
 			 * @return {Object} - объект метаданных
 			 */
-			"metadata": {
+			metadata: {
 				value: function(field){
 					if(field)
-						return _metadata.fields[field] || _metadata.tabular_sections[field];
+						return _meta.fields[field] || _meta.tabular_sections[field];
 					else
-						return _metadata;
+						return _meta;
 				},
 				enumerable: false
 			},
@@ -6936,7 +6857,7 @@ function DataManager(class_name){
 			 * @param method {Function} - добавляемый метод
 			 * @param [first] {Boolean} - добавлять метод в начало, а не в конец коллекции
 			 */
-			"attache_event": {
+			attache_event: {
 				value: function (name, method, first) {
 					if(first)
 						_events[name].push(method);
@@ -6955,7 +6876,7 @@ function DataManager(class_name){
 			 * @param attr {Object} - дополнительные свойства, передаваемые в обработчик события
 			 * @return {Boolesn}
 			 */
-			"handle_event": {
+			handle_event: {
 				value: function (obj, name, attr) {
 					var res = [], tmp;
 					_events[name].forEach(function (method) {
@@ -6967,24 +6888,24 @@ function DataManager(class_name){
 								res.push(tmp);
 						}
 					});
-					if(!res.length)
-						return;
-					else if(res.length == 1)
-					// если значение единственное - возвращчем его
-						return res[0];
-					else{
-					// если среди значений есть промисы - возвращаем all
-						if(res.some(function (v) {return typeof v === "object" && v.then}))
-							return Promise.all(res);
-						else
-							return res;
+					if(res.length){
+						if(res.length == 1)
+						// если значение единственное - возвращчем его
+							return res[0];
+						else{
+							// если среди значений есть промисы - возвращаем all
+							if(res.some(function (v) {return typeof v === "object" && v.then}))
+								return Promise.all(res);
+							else
+								return res;
+						}
 					}
+
 				},
 				enumerable: false
 			}
 
-		}
-	);
+		});
 
 	//	Создаём функции конструкторов экземпляров объектов и строк табличных частей
 	var _obj_сonstructor = this._obj_сonstructor || DataObj;		// ссылка на конструктор элементов
@@ -6999,10 +6920,6 @@ function DataManager(class_name){
 
 		if(this instanceof InfoRegManager){
 
-			delete this._obj_сonstructor.prototype.deleted;
-			delete this._obj_сonstructor.prototype.ref;
-			delete this._obj_сonstructor.prototype.lc_changed;
-
 			// реквизиты по метаданным
 			for(var f in this.metadata().dimensions){
 				this._obj_сonstructor.prototype.__define(f, {
@@ -7012,6 +6929,13 @@ function DataManager(class_name){
 				});
 			}
 			for(var f in this.metadata().resources){
+				this._obj_сonstructor.prototype.__define(f, {
+					get : new Function("return this._getter('"+f+"')"),
+					set : new Function("v", "this._setter('"+f+"',v)"),
+					enumerable : true
+				});
+			}
+			for(var f in this.metadata().attributes){
 				this._obj_сonstructor.prototype.__define(f, {
 					get : new Function("return this._getter('"+f+"')"),
 					set : new Function("v", "this._setter('"+f+"',v)"),
@@ -7081,12 +7005,6 @@ DataManager.prototype.__define("family_name", {
 	enumerable : false
 });
 
-/**
- * Регистрирует время изменения при заиси объекта для целей синхронизации
- */
-DataManager.prototype.register_ex = function(){
-
-};
 
 /**
  * Выводит фрагмент списка объектов данного менеджера, ограниченный фильтром attr в grid
@@ -7095,21 +7013,72 @@ DataManager.prototype.register_ex = function(){
  * @param grid {dhtmlXGridObject}
  * @param attr {Object}
  */
-DataManager.prototype.sync_grid = function(grid, attr){
+DataManager.prototype.sync_grid = function(attr, grid){
 
-	var res;
+	var mgr = this;
 
-	if(this.cachable)
-		;
-	else if($p.job_prm.rest || $p.job_prm.irest_enabled || attr.rest){
+	function request(){
 
-		if(attr.action == "get_tree")
-			res = this.rest_tree();
+		if(mgr.cachable == "ram"){
 
-		else if(attr.action == "get_selection")
-			res = this.rest_selection();
+			// запрос к alasql
+			if(attr.action == "get_tree")
+				return $p.wsql.promise(mgr.get_sql_struct(attr), [])
+					.then($p.iface.data_to_tree);
+
+			else if(attr.action == "get_selection")
+				return $p.wsql.promise(mgr.get_sql_struct(attr), [])
+					.then(function(data){
+						return $p.iface.data_to_grid.call(mgr, data, attr);
+					});
+
+		}else if(mgr.cachable == "doc"){
+
+			// todo: запрос к pouchdb
+			if(attr.action == "get_tree")
+				return mgr.pouch_tree(attr);
+
+			else if(attr.action == "get_selection")
+				return mgr.pouch_selection(attr);
+
+		} else {
+
+			// запрос к серверу по сети
+			if(attr.action == "get_tree")
+				return mgr.rest_tree(attr);
+
+			else if(attr.action == "get_selection")
+				return mgr.rest_selection(attr);
+
+		}
+	}
+
+	function to_grid(res){
+
+		return new Promise(function(resolve, reject) {
+
+			if(typeof res == "string"){
+
+				if(res.substr(0,1) == "{")
+					res = JSON.parse(res);
+
+				// загружаем строку в грид
+				grid.xmlFileUrl = "exec";
+				grid.parse(res, function(){
+					resolve(res);
+				}, "xml");
+
+			}else
+				resolve(res);
+
+		});
 
 	}
+
+	// TODO: переделать обработку catch()
+	return request()
+		.then(to_grid)
+		.catch($p.record_log);
 
 };
 
@@ -7146,7 +7115,7 @@ DataManager.prototype.get_option_list = function(val, selection){
 		})
 	}
 
-	if(t.cachable || (selection && selection._local)){
+	if(t.cachable == "ram" || (selection && selection._local)){
 		t.find_rows(selection, function (v) {
 			l.push(check({text: v.presentation, value: v.ref}));
 		});
@@ -7428,6 +7397,7 @@ function RefDataManager(class_name) {
 	 * Помещает элемент ссылочных данных в локальную коллекцию
 	 * @method push
 	 * @param o {DataObj}
+	 * @param [new_ref] {String} - новое значение ссылки объекта
 	 */
 	t.push = function(o, new_ref){
 		if(new_ref && (new_ref != o.ref)){
@@ -7483,7 +7453,7 @@ function RefDataManager(class_name) {
 		else if(force_promise === undefined && ref === $p.blank.guid)
 			return o;
 
-		if(!t.cachable || o.is_new()){
+		if(o.is_new()){
 			return o.load();	// читаем из 1С или иного сервера
 
 		}else if(force_promise)
@@ -7504,10 +7474,6 @@ function RefDataManager(class_name) {
 	 */
 	t.create = function(attr, fill_default){
 
-		function do_fill(){
-
-		}
-
 		if(!attr || typeof attr != "object")
 			attr = {};
 		if(!attr.ref || !$p.is_guid(attr.ref) || $p.is_empty_guid(attr.ref))
@@ -7517,7 +7483,7 @@ function RefDataManager(class_name) {
 		if(!o){
 			o = new t._obj_сonstructor(attr, t);
 
-			if(!t.cachable && fill_default){
+			if(t.cachable == "net" && fill_default){
 				var rattr = {};
 				$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
 				rattr.url += t.rest_name + "/Create()";
@@ -7542,10 +7508,10 @@ function RefDataManager(class_name) {
 
 	/**
 	 * Удаляет объект из alasql и локального кеша
-	 * @method delete_loc
+	 * @method unload_obj
 	 * @param ref
 	 */
-	t.delete_loc = function(ref) {
+	t.unload_obj = function(ref) {
 		var ind;
 		delete by_ref[ref];
 		for(var i in t.alatable){
@@ -7581,24 +7547,6 @@ function RefDataManager(class_name) {
 	 */
 	t.find_rows = function(selection, callback){
 		return $p._find_rows.call(t, by_ref, selection, callback);
-	};
-
-	/**
-	 * Cохраняет объект в базе 1C либо выполняет запрос attr.action
-	 * @method save
-	 * @param attr {Object} - атрибуты сохраняемого объекта могут быть ранее полученным DataObj или произвольным объектом (а-ля данныеформыструктура)
-	 * @return {Promise.<T>} - инфо о завершении операции
-	 * @async
-	 */
-	t.save = function(attr){
-		if(attr && (attr.specify ||
-			($p.is_guid(attr.ref) && !t.cachable))) {
-			return _load({
-				class_name: t.class_name,
-				action: attr.action || "save", attr: attr
-			}).then(JSON.parse);
-		}else
-			return Promise.reject();
 	};
 
 	/**
@@ -7685,7 +7633,7 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 			set_parent = $p.blank.guid;
 
 		function list_flds(){
-			var flds = [], s = "_t_.ref, _t_.`deleted`";
+			var flds = [], s = "_t_.ref, _t_.`_deleted`";
 
 			if(cmd.form && cmd.form.selection){
 				cmd.form.selection.fields.forEach(function (fld) {
@@ -7914,7 +7862,7 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 		var sql = "CREATE TABLE IF NOT EXISTS ";
 
 		if(attr && attr.postgres){
-			sql += t.table_name+" (ref uuid PRIMARY KEY NOT NULL, deleted boolean, lc_changed bigint";
+			sql += t.table_name+" (ref uuid PRIMARY KEY NOT NULL, _deleted boolean";
 
 			if(t instanceof DocManager)
 				sql += ", posted boolean, date timestamp with time zone, number_doc character(11)";
@@ -7941,7 +7889,7 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 				sql += ", " + "ts_" + f + " JSON";
 
 		}else{
-			sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `deleted` BOOLEAN, lc_changed INT";
+			sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `_deleted` BOOLEAN";
 
 			if(t instanceof DocManager)
 				sql += ", posted boolean, date Date, number_doc CHAR";
@@ -7962,8 +7910,8 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 
 	function sql_update(){
 		// "INSERT OR REPLACE INTO user_params (prm_name, prm_value) VALUES (?, ?);
-		var fields = ["ref", "deleted", "lc_changed"],
-			sql = "INSERT INTO `"+t.table_name+"` (ref, `deleted`, lc_changed",
+		var fields = ["ref", "_deleted"],
+			sql = "INSERT INTO `"+t.table_name+"` (ref, `_deleted`",
 			values = "(?";
 
 		if(t.class_name.substr(0, 3)=="cat"){
@@ -8331,6 +8279,7 @@ function RegisterManager(class_name){
 	 * Помещает элемент ссылочных данных в локальную коллекцию
 	 * @method push
 	 * @param o {RegisterRow}
+	 * @param [new_ref] {String} - новое значение ссылки объекта
 	 */
 	this.push = function(o, new_ref){
 		if(new_ref && (new_ref != o.ref)){
@@ -8435,24 +8384,27 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 			first_field = true;
 
 		if(attr && attr.postgres){
-			sql += t.table_name+" ("
+			sql += t.table_name+" (";
 
 			if(cmd.splitted){
 				sql += "zone integer";
 				first_field = false;
 			}
 
-			for(f in cmd["dimensions"]){
+			for(f in cmd.dimensions){
 				if(first_field){
 					sql += f;
 					first_field = false;
 				}else
 					sql += ", " + f;
-				sql += _md.sql_type(t, f, cmd["dimensions"][f].type, true) + _md.sql_composite(cmd["dimensions"], f, "", true);
+				sql += _md.sql_type(t, f, cmd.dimensions[f].type, true) + _md.sql_composite(cmd.dimensions, f, "", true);
 			}
 
-			for(f in cmd["resources"])
-				sql += ", " + f + _md.sql_type(t, f, cmd["resources"][f].type, true) + _md.sql_composite(cmd["resources"], f, "", true);
+			for(f in cmd.resources)
+				sql += ", " + f + _md.sql_type(t, f, cmd.resources[f].type, true) + _md.sql_composite(cmd.resources, f, "", true);
+
+			for(f in cmd.attributes)
+				sql += ", " + f + _md.sql_type(t, f, cmd.attributes[f].type, true) + _md.sql_composite(cmd.attributes, f, "", true);
 
 			sql += ", PRIMARY KEY (";
 			first_field = true;
@@ -8469,19 +8421,22 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 			}
 
 		}else{
-			sql += "`"+t.table_name+"` ("
+			sql += "`"+t.table_name+"` (";
 
-			for(f in cmd["dimensions"]){
+			for(f in cmd.dimensions){
 				if(first_field){
 					sql += "`" + f + "`";
 					first_field = false;
 				}else
 					sql += _md.sql_mask(f);
-				sql += _md.sql_type(t, f, cmd["dimensions"][f].type) + _md.sql_composite(cmd["dimensions"], f);
+				sql += _md.sql_type(t, f, cmd.dimensions[f].type) + _md.sql_composite(cmd.dimensions, f);
 			}
 
-			for(f in cmd["resources"])
-				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd["resources"][f].type) + _md.sql_composite(cmd["resources"], f);
+			for(f in cmd.resources)
+				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.resources[f].type) + _md.sql_composite(cmd.resources, f);
+
+			for(f in cmd.attributes)
+				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.attributes[f].type) + _md.sql_composite(cmd.attributes, f);
 
 			sql += ", PRIMARY KEY (";
 			first_field = true;
@@ -8505,7 +8460,7 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 			fields = [],
 			first_field = true;
 
-		for(f in cmd["dimensions"]){
+		for(f in cmd.dimensions){
 			if(first_field){
 				sql += f;
 				first_field = false;
@@ -8513,7 +8468,11 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 				sql += ", " + f;
 			fields.push(f);
 		}
-		for(f in cmd["resources"]){
+		for(f in cmd.resources){
+			sql += ", " + f;
+			fields.push(f);
+		}
+		for(f in cmd.attributes){
 			sql += ", " + f;
 			fields.push(f);
 		}
@@ -8661,10 +8620,9 @@ function LogManager(){
 		if(msg instanceof Error){
 			if(console)
 				console.log(msg);
-			var err = msg;
 			msg = {
 				class: "error",
-				note: err.toString()
+				note: msg.toString()
 			}
 		}
 
@@ -9038,90 +8996,106 @@ BusinessProcessManager._extend(CatManager);
  */
 function DataObj(attr, manager) {
 
-	var ref, tmp,
+	var tmp,
 		_ts_ = {},
-		_obj = {data_version: ""},
+		_obj = {},
 		_is_new = !(this instanceof EnumObj);
 
 	// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
 	if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager))
 		tmp = manager.get(attr, false, true);
 
-	if(tmp)
+	if(tmp){
+		attr = null;
 		return tmp;
+	}
+
 
 	if(manager instanceof EnumManager)
-		_obj.ref = ref = attr.name;
+		_obj.ref = attr.name;
 
 	else if(!(manager instanceof RegisterManager)){
-		_obj.ref = ref = $p.fix_guid(attr);
-		_obj.deleted = false;
-		_obj.lc_changed = 0;
+		_obj.ref = $p.fix_guid(attr);
 
 	}else
-		ref = manager.get_ref(attr);
+		_obj.ref = manager.get_ref(attr);
 
-	/**
-	 * Указатель на менеджер данного объекта
-	 * @property _manager
-	 * @type DataManager
-	 * @final
-	 */
-	this.__define('_manager', {
-		value : manager,
-		enumerable : false
-	});
 
-	/**
-	 * Возвращает "истина" для нового (еще не записанного или непрочитанного) объекта
-	 * @method is_new
-	 * @for DataObj
-	 * @return {boolean}
-	 */
-	this.__define("is_new", {
-		value: function(){
-			return _is_new;
+	this.__define({
+
+		/**
+		 * ### Фактическое хранилище данных объекта
+		 * Оно же, запись в таблице объекта локальной базы данных
+		 * @property _obj
+		 * @type Object
+		 * @final
+		 */
+		_obj: {
+			value: _obj,
+			writable: false,
+			enumerable: false
 		},
-		enumerable: false
-	});
 
-	this.__define("_set_loaded", {
-		value: function(ref){
-			_is_new = false;
-			manager.push(this, ref);
+		/**
+		 * Хранилище ссылок на табличные части - не сохраняется в базе данных
+		 * @property _ts_
+		 */
+		_ts_: {
+			value: function( name ) {
+				if( !_ts_[name] ) {
+					_ts_[name] = new TabularSection(name, this);
+				}
+				return _ts_[name];
+			},
+			writable: false,
+			enumerable: false
 		},
-		enumerable: false
-	});
 
-
-	/**
-	 * ### Фактическое хранилище данных объекта
-	 * Оно же, запись в таблице объекта локальной базы данных
-	 * @property _obj
-	 * @type Object
-	 * @final
-	 */
-	this.__define("_obj", {
-		value: _obj,
-		writable: false,
-		enumerable: false
-	});
-
-	this.__define("_ts_", {
-		value: function( name ) {
-			if( !_ts_[name] ) {
-				_ts_[name] = new TabularSection(name, this);
-			}
-			return _ts_[name];
+		/**
+		 * Указатель на менеджер данного объекта
+		 * @property _manager
+		 * @type DataManager
+		 * @final
+		 */
+		_manager: {
+			value : manager,
+			writable: false,
+			enumerable : false
 		},
-		enumerable: false
+
+		/**
+		 * Возвращает "истина" для нового (еще не записанного или не прочитанного) объекта
+		 * @method is_new
+		 * @for DataObj
+		 * @return {boolean}
+		 */
+		is_new: {
+			value: function(){
+				return _is_new;
+			},
+			enumerable: false
+		},
+
+		/**
+		 * Метод для ручной установки признака _прочитан_ (не новый)
+		 */
+		_set_loaded: {
+			value: function(ref){
+				_is_new = false;
+				manager.push(this, ref);
+			},
+			enumerable: false
+		}
+
 	});
 
 
 	if(manager.alatable && manager.push){
 		manager.alatable.push(_obj);
-		manager.push(this, ref);
+		manager.push(this, _obj.ref);
 	}
+
+	attr = null;
 
 }
 
@@ -9263,110 +9237,6 @@ DataObj.prototype._setter_ts = function (f, v) {
 		ts.load(v);
 };
 
-
-/**
- * Читает объект из внешней датабазы асинхронно.
- * @method load
- * @for DataObj
- * @return {Promise.<DataObj>} - промис с результатом выполнения операции
- * @async
- */
-DataObj.prototype.load = function(){
-
-	var tObj = this;
-
-	function callback_1c(res){		// инициализация из датабазы 1C
-
-		if(typeof res == "string")
-			res = JSON.parse(res);
-		if($p.msg.check_soap_result(res))
-			return;
-
-		var ref = $p.fix_guid(res);
-		if(tObj.is_new() && !$p.is_empty_guid(ref))
-			tObj._set_loaded(ref);
-
-		return tObj._mixin(res);      // заполнить реквизиты шапки и табличных частей
-	}
-
-	if(tObj._manager.cachable && !tObj.is_new())
-		return Promise.resolve(tObj);
-
-	if(tObj.ref == $p.blank.guid){
-		if(tObj instanceof CatObj)
-			tObj.id = "000000000";
-		else
-			tObj.number_doc = "000000000";
-		return Promise.resolve(tObj);
-
-	}else if($p.job_prm.rest || $p.job_prm.irest_enabled)
-		return _rest.load_obj(tObj);
-
-	else
-		return _load({
-			class_name: tObj._manager.class_name,
-			action: "load",
-			ref: tObj.ref
-		})
-			.then(callback_1c);
-
-};
-
-/**
- * ### Записывает объект
- * Ввыполняет подписки на события перед записью и после записи
- * В зависимости от настроек, выполняет запись объекта во внешнюю базу данных
- * @param [post] {Boolean|undefined} - проведение или отмена проведения или просто запись
- * @param [mode] {Boolean} - режим проведения документа [Оперативный, Неоперативный]
- * @return {Promise.<T>} - промис с результатом выполнения операции
- * @async
- */
-DataObj.prototype.save = function (post, operational) {
-
-	var saver,
-		before_save_res = this._manager.handle_event(this, "before_save");
-
-	// Если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
-	if(before_save_res === false)
-		return Promise.resolve(this);
-	else if(typeof before_save_res === "object" && before_save_res.then)
-		return before_save_res;
-
-	if(this instanceof DocObj && $p.blank.date == this.date)
-		this.date = new Date();
-
-	// если доступен irest - сохраняем через него, иначе - стандартным сервисом
-	if($p.job_prm.offline)
-		saver = function (obj) {
-			return Promise.resolve(obj);
-		};
-	else{
-		saver = $p.job_prm.irest_enabled ? _rest.save_irest : _rest.save_rest;
-	}
-
-
-	// Сохраняем во внешней базе
-	return saver(this, {
-		post: post,
-		operational: operational
-	})
-
-		// и выполняем обработку после записи
-		.then(function (obj) {
-			return obj._manager.handle_event(obj, "after_save");
-		});
-};
-
-/**
- * Проверяет, является ли ссылка объекта пустой
- * @method empty
- * @return {boolean} - true, если ссылка пустая
- */
-DataObj.prototype.empty = function(){
-	return $p.is_empty_guid(this._obj.ref);
-};
-
-
 DataObj.prototype.__define({
 
 	/**
@@ -9378,6 +9248,21 @@ DataObj.prototype.__define({
 	 */
 	_metadata: {
 		get : function(){ return this._manager.metadata()},
+		enumerable : false
+	},
+
+	/**
+	 * Пометка удаления
+	 * @property _deleted
+	 * @for DataObj
+	 * @type Boolean
+	 */
+	_deleted: {
+		get : function(){ return !!this._obj._deleted},
+		set : function(v){
+			this.__notify('_deleted');
+			this._obj._deleted = !!v;
+		},
 		enumerable : false
 	},
 
@@ -9395,73 +9280,134 @@ DataObj.prototype.__define({
 	},
 
 	/**
+	 * Проверяет, является ли ссылка объекта пустой
+	 * @method empty
+	 * @return {boolean} - true, если ссылка пустая
+	 */
+	empty: {
+		value: function(){
+			return $p.is_empty_guid(this._obj.ref);
+		},
+		enumerable : false
+	},
+
+	/**
+	 * Читает объект из внешней или внутренней датабазы асинхронно.
+	 * @method load
+	 * @for DataObj
+	 * @return {Promise.<DataObj>} - промис с результатом выполнения операции
+	 * @async
+	 */
+	load: {
+		value: function(){
+
+			var tObj = this;
+
+
+			if(tObj.ref == $p.blank.guid){
+				if(tObj instanceof CatObj)
+					tObj.id = "000000000";
+				else
+					tObj.number_doc = "000000000";
+
+				return Promise.resolve(tObj);
+
+			}else{
+				if(tObj._manager.cachable == "ram" || tObj._manager.cachable == "doc"){
+
+					if(tObj.is_new()){
+						// todo: запрос к pouchdb
+						return $p.wsql.pouch.load_obj(tObj);
+
+					}else {
+						return Promise.resolve(tObj);
+					}
+				} else
+					return _rest.load_obj(tObj);
+			}
+
+
+		},
+		enumerable : false
+	},
+
+	/**
 	 * Освобождает память и уничтожает объект
 	 * @method unload
 	 * @for DataObj
 	 */
 	unload: {
 		value: function(){
+			var f, obj = this._obj;
+			this._manager.unload_obj(this.ref);
+			for(f in this._ts_){
+				this[f].clear();
+				delete this._ts_[f];
+			}
 			for(f in this){
-				if(this[f] instanceof TabularSection){
-					this[f].clear();
-					delete this[f];
-				}else if(typeof this[f] != "function"){
+				if(typeof this[f] != "function"){
 					delete this[f];
 				}
 			}
+			for(f in obj){
+				delete obj[f];
+			}
+			f = obj = null;
+		},
+		enumerable : false
+	},
+
+	/**
+	 * ### Записывает объект
+	 * Ввыполняет подписки на события перед записью и после записи
+	 * В зависимости от настроек, выполняет запись объекта во внешнюю базу данных
+	 * @param [post] {Boolean|undefined} - проведение или отмена проведения или просто запись
+	 * @param [mode] {Boolean} - режим проведения документа [Оперативный, Неоперативный]
+	 * @return {Promise.<T>} - промис с результатом выполнения операции
+	 * @async
+	 */
+	save: {
+		value: function (post, operational) {
+
+			var saver,
+				before_save_res = this._manager.handle_event(this, "before_save");
+
+			// Если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
+			if(before_save_res === false)
+				return Promise.resolve(this);
+
+			else if(typeof before_save_res === "object" && before_save_res.then)
+				return before_save_res;
+
+			if(this instanceof DocObj && $p.blank.date == this.date)
+				this.date = new Date();
+
+			if(this._manager.cachable == "ram" || this._manager.cachable == "doc"){
+				// todo: запрос к pouchdb
+				saver = function (obj) {
+					return Promise.resolve(obj);
+				};
+
+			} else {
+				// запрос к серверу по сети
+				saver = _rest.save_irest;
+
+			}
+
+			// Сохраняем во внешней базе
+			return saver(
+				this, {
+					post: post,
+					operational: operational
+				})
+			// и выполняем обработку после записи
+				.then(function (obj) {
+					return obj._manager.handle_event(obj, "after_save");
+				});
 		},
 		enumerable : false
 	}
 });
-
-
-/**
- * Пометка удаления
- * @property deleted
- * @for DataObj
- * @type Boolean
- */
-DataObj.prototype.__define('deleted', {
-	get : function(){ return this._obj.deleted},
-	set : function(v){
-		this.__notify('deleted');
-		this._obj.deleted = !!v;
-	},
-	enumerable : true,
-	configurable: true
-});
-
-/**
- * Версия данных для контроля изменения объекта другим пользователем
- * @property data_version
- * @for DataObj
- * @type String
- */
-DataObj.prototype.__define('data_version', {
-	get : function(){ return this._obj.data_version || ""},
-	set : function(v){
-		this.__notify('data_version');
-		this._obj.data_version = String(v);
-	},
-	enumerable : true
-});
-
-/**
- * Время последнего изменения объекта в миллисекундах от начала времён для целей синхронизации
- * @property lc_changed
- * @for DataObj
- * @type Number
- */
-DataObj.prototype.__define('lc_changed', {
-	get : function(){ return this._obj.lc_changed || 0},
-	set : function(v){
-		this.__notify('lc_changed');
-		this._obj.lc_changed = $p.fix_number(v, true);
-	},
-	enumerable : true,
-	configurable: true
-});
-
 
 
 /**
@@ -9512,6 +9458,8 @@ function CatObj(attr, manager) {
 				this._set_loaded(this.ref);
 		}
 	}
+
+	attr = null;
 
 }
 CatObj._extend(DataObj);
@@ -9588,12 +9536,13 @@ function DocObj(attr, manager) {
 
 	if(!$p.is_empty_guid(this.ref) && attr.number_doc)
 		this._set_loaded(this.ref);
+
+	attr = null;
 }
 DocObj._extend(DataObj);
 
-function doc_standard_props(obj){
-
-	obj.__define({
+function doc_props_date_number(proto){
+	proto.__define({
 
 		/**
 		 * Номер документа
@@ -9622,26 +9571,27 @@ function doc_standard_props(obj){
 			},
 			enumerable : true
 		}
-
 	});
 }
 
-doc_standard_props(DocObj.prototype);
+DocObj.prototype.__define({
 
+	/**
+	 * Признак проведения
+	 * @property posted
+	 * @type {Boolean}
+	 */
+	posted: {
+		get : function(){ return this._obj.posted || false},
+		set : function(v){
+			this.__notify('posted');
+			this._obj.posted = $p.fix_boolean(v);
+		},
+		enumerable : true
+	}
 
-/**
- * Признак проведения
- * @property posted
- * @type {Boolean}
- */
-DocObj.prototype.__define('posted', {
-	get : function(){ return this._obj.posted || false},
-	set : function(v){
-		this.__notify('posted');
-		this._obj.posted = $p.fix_boolean(v);
-	},
-	enumerable : true
 });
+doc_props_date_number(DocObj.prototype);
 
 
 /**
@@ -9685,7 +9635,7 @@ function TaskObj(attr, manager) {
 
 }
 TaskObj._extend(CatObj);
-doc_standard_props(TaskObj.prototype);
+doc_props_date_number(TaskObj.prototype);
 
 
 /**
@@ -9704,6 +9654,7 @@ function BusinessProcessObj(attr, manager) {
 
 }
 BusinessProcessObj._extend(CatObj);
+doc_props_date_number(BusinessProcessObj.prototype);
 
 
 /**
@@ -9812,25 +9763,31 @@ function RegisterRow(attr, manager){
 }
 RegisterRow._extend(DataObj);
 
-/**
- * Метаданные строки регистра
- * @property _metadata
- * @for RegisterRow
- * @type Object
- */
-RegisterRow.prototype.__define('_metadata', {
-	get : function(){
-		var cm = this._manager.metadata();
-		if(!cm.fields)
-			cm.fields = ({})._mixin(cm.dimensions)._mixin(cm.resources);
-		return cm;
-	},
-	enumerable : false
-});
+RegisterRow.prototype.__define({
 
-RegisterRow.prototype.__define('ref', {
-	get : function(){ return this._manager.get_ref(this)},
-	enumerable : true
+	/**
+	 * Метаданные строки регистра
+	 * @property _metadata
+	 * @for RegisterRow
+	 * @type Object
+	 */
+	_metadata: {
+		get: function () {
+			var cm = this._manager.metadata();
+			if (!cm.fields)
+				cm.fields = ({})._mixin(cm.dimensions)._mixin(cm.resources)._mixin(cm.attributes);
+			return cm;
+		},
+		enumerable: false
+	},
+
+	/**
+	 * Ключ записи регистра
+	 */
+	ref: {
+		get : function(){ return this._manager.get_ref(this)},
+		enumerable : true
+	}
 });
 
 
@@ -10368,19 +10325,22 @@ function Rest(){
 	 */
 	this.to_data = function (rdata, mgr) {
 		var o = {},
-			mf = mgr.metadata().fields,
-			mts = mgr.metadata().tabular_sections,
+			cm = mgr.metadata(),
+			mf = cm.fields,
+			mts = cm.tabular_sections,
 			ts, f, tf, row, syn, synts, vmgr;
 
 		if(mgr instanceof RefDataManager){
 			if(rdata.hasOwnProperty("DeletionMark"))
-				o.deleted = rdata.DeletionMark;
+				o._deleted = rdata.DeletionMark;
+
 			if(rdata.hasOwnProperty("DataVersion"))
-				o.data_version = rdata.DataVersion;
+				;
 			if(rdata.hasOwnProperty("Ref_Key"))
 				o.ref = rdata.Ref_Key;
+
 		}else{
-			mf = []._mixin(mgr.metadata().dimensions)._mixin(mgr.metadata().resources);
+			mf = ({})._mixin(cm.dimensions)._mixin(cm.resources)._mixin(cm.attributes);
 		}
 
 		if(mgr instanceof DocManager){
@@ -10398,14 +10358,14 @@ function Rest(){
 				o.posted = rdata.posted;
 
 		} else {
-			if(mgr.metadata().main_presentation_name){
+			if(cm.main_presentation_name){
 				if(rdata.hasOwnProperty("Description"))
 					o.name = rdata.Description;
 				else if(rdata.hasOwnProperty("name"))
 					o.name = rdata.name;
 			}
 
-			if(mgr.metadata().code_length){
+			if(cm.code_length){
 				if(rdata.hasOwnProperty("Code"))
 					o.id = rdata.Code;
 				else if(rdata.hasOwnProperty("id"))
@@ -10628,7 +10588,7 @@ function Rest(){
 
 	/**
 	 * Читает объект из rest-сервиса
-	 * @return {Promise.<T>} - промис с загруженным объектом
+	 * @return {Promise.<DataObj>} - промис с загруженным объектом
 	 */
 	this.load_obj = function (tObj) {
 
@@ -10741,7 +10701,6 @@ function Rest(){
 				});
 				if(data.entry && data.entry.content && data.entry.updated){
 					var p = data.entry.content.properties, r = {}, v;
-					r.lc_changed = new Date(data.entry.updated._text);
 					for(var i in p){
 						if(i.indexOf("_")==0)
 							continue;
@@ -10841,7 +10800,7 @@ DataManager.prototype.rest_tree = function (attr) {
 				ro = res.value[i];
 				o = {
 					ref: ro["Ref_Key"],
-					deleted: ro["DeletionMark"],
+					_deleted: ro["DeletionMark"],
 					parent: ro["Parent_Key"],
 					presentation: ro["Description"]
 				};
@@ -10937,7 +10896,7 @@ DataManager.prototype.rest_selection = function (attr) {
 		});
 
 		flds.push("ref");
-		flds.push("deleted");
+		flds.push("_deleted");
 
 		return s;
 
@@ -11089,8 +11048,8 @@ DataObj.prototype.to_atom = function (ex_meta) {
 		.replace('%d', $p.dateFormat(new Date(), $p.dateFormat.masks.atom)),
 
 		prop = '\n<d:Ref_Key>' + this.ref + '</d:Ref_Key>' +
-			'\n<d:DeletionMark>' + this.deleted + '</d:DeletionMark>' +
-			'\n<d:DataVersion>' + this.data_version + '</d:DataVersion>',
+			'\n<d:DeletionMark>' + this._deleted + '</d:DeletionMark>',
+			// '\n<d:DataVersion>' + this.data_version + '</d:DataVersion>',
 
 		f, mf, fts, ts, mts, pname, v;
 
@@ -11187,6 +11146,163 @@ DataObj.prototype.to_atom = function (ex_meta) {
 	//<d:МатериалыЗаказчика m:type="Collection(StandardODATA.Document_ЗаказПокупателя_МатериалыЗаказчика_RowType)"/>
 };
 
+
+/**
+ * Дополняет классы {{#crossLink "DataObj"}}{{/crossLink}} и {{#crossLink "DataManager"}}{{/crossLink}} методами чтения,<br />
+ * записи и синхронизации с базами PouchDB
+ *
+ * &copy; http://www.oknosoft.ru 2014-2016
+ * @author  Evgeniy Malyarov
+ *
+ * @module  metadata
+ * @submodule meta_pouchdb
+ * @requires common
+ */
+
+DataManager.prototype.pouch_selection = function (attr) {
+
+	var t = this,
+		cmd = t.metadata(),
+		flds = ["ref", "_deleted"], // поля запроса
+		selection = [],             // условие см. find_rows()
+		ares = [], doc, key, o, mf;
+
+	// выполняет фильтрацию по дате
+	function between(obj){
+		return true;
+	}
+
+	// набираем поля
+	if(cmd.form && cmd.form.selection){
+		cmd.form.selection.fields.forEach(function (fld) {
+			flds.push(fld);
+		});
+
+	}else if(t instanceof DocManager){
+		flds.push("posted");
+		flds.push("date");
+		flds.push("number_doc");
+
+	}else if(t instanceof TaskManager){
+		flds.push("name as presentation");
+		flds.push("date");
+		flds.push("number_doc");
+		flds.push("completed");
+
+	}else if(t instanceof BusinessProcessManager){
+		flds.push("date");
+		flds.push("number_doc");
+		flds.push("started");
+		flds.push("finished");
+
+	}else{
+
+		if(cmd["hierarchical"] && cmd["group_hierarchy"])
+			flds.push("is_folder");
+		else
+			flds.push("0 as is_folder");
+
+		if(cmd["main_presentation_name"])
+			flds.push("name as presentation");
+		else{
+			if(cmd["code_length"])
+				flds.push("id as presentation");
+			else
+				flds.push("'...' as presentation");
+		}
+
+		if(cmd["has_owners"])
+			flds.push("owner");
+
+		if(cmd["code_length"])
+			flds.push("id");
+
+	}
+
+	// набираем условие
+	if(_md.get(t.class_name, "date") && (attr.date_from || attr.date_till)){
+
+		if(!attr.date_from)
+			attr.date_from = new Date("2015-01-01");
+		if(!attr.date_till)
+			attr.date_till = $p.date_add_day(new Date(), 1);
+
+		selection.push(between);
+	}
+
+	if(cmd["hierarchical"] && attr.parent){
+		selection.push({parent: attr.parent});
+	}
+
+	if(cmd["has_owners"] && attr.owner){
+		selection.push({owner: attr.owner});
+	}
+
+	// строковый фильтр по полям поиска
+	if(attr.filter){
+		// selection.push({filter: attr.filter});
+	}
+
+	return $p.wsql.pouch.local.doc.allDocs({
+		limit : 100,
+		//skip: 0,
+		include_docs: true,
+		startkey: t.class_name,
+		endkey: t.class_name + '\uffff'
+	})
+		.then(function (result) {
+			// handle result
+			result.rows.forEach(function (rev) {
+				doc = rev.doc;
+
+				// фильтруем
+				key = doc._id.split("|");
+				doc.ref = key[1];
+
+				// наполняем
+				o = {};
+				flds.forEach(function (fld) {
+
+					var fldsyn;
+
+					if(fld == "ref") {
+						o[fld] = doc[fld];
+						return;
+					}else if(fld.indexOf(" as ") != -1){
+						fldsyn = fld.split(" as ")[1];
+						fld = fld.split(" as ")[0].split(".");
+						fld = fld[fld.length-1];
+					};
+
+					mf = _md.get(t.class_name, fld);
+					if(mf){
+
+						if(mf.type.date_part)
+							o[fld] = $p.dateFormat(doc[fld], $p.dateFormat.masks[mf.type.date_part]);
+
+						else if(mf.type.is_ref){
+							if(!doc[fld] || doc[fld] == $p.blank.guid)
+								o[fld] = "";
+							else{
+								var mgr	= _md.value_mgr(o, fld, mf.type, false, doc[fld]);
+								if(mgr)
+									o[fld] = mgr.get(doc[fld]).presentation;
+								else
+									o[fld] = "";
+							}
+						}else
+							o[fld] = doc[fld];
+					}
+				});
+				ares.push(o);
+			});
+
+			return $p.iface.data_to_grid.call(t, ares, attr);
+
+		})
+		.catch($p.record_log);
+
+};
 
 /**
  * Процедуры импорта и экспорта данных
@@ -12405,7 +12521,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			var filter = get_filter(start,count);
 			if(!filter)
 				return;
-			$p.cat.load_soap_to_grid(filter, grid);
+			_mgr.sync_grid(filter, grid);
 			return false;
 		});
 		grid.attachEvent("onRowDblClicked", function(rId, cInd){
@@ -12426,7 +12542,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			if(!filter) return;
 			cell_grid.progressOn();
 			grid.clearAll();
-			$p.cat.load_soap_to_grid(filter, grid, function(xml){
+			_mgr.sync_grid(filter, grid)
+				.then(function(xml){
 				if(typeof xml === "object"){
 					$p.msg.check_soap_result(xml);
 
@@ -13733,20 +13850,6 @@ $p.eve.update_files_version = function () {
 
 		}).catch($p.record_log)
 };
-
-/**
- * Регламентные задания синхронизапции каждые 3 минуты
- * @event ontimer
- * @for AppEvents
- */
-$p.eve.ontimer = function () {
-
-	// читаем файл версии файлов js. в случае изменений, оповещаем пользователя
-	// TODO: это место желательно перенести в сервисворкер
-	$p.eve.update_files_version();
-
-};
-setInterval($p.eve.ontimer, 180000);
 $p.injected_data._mixin({"form_auth.xml":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<items>\n\t<item type=\"settings\" position=\"label-left\" labelWidth=\"150\" inputWidth=\"230\" noteWidth=\"230\"/>\n\t<item type=\"fieldset\" name=\"data\" inputWidth=\"auto\" label=\"Авторизация\">\n\n        <item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" checked=\"true\" value=\"guest\" label=\"Гостевой (демо) режим\">\n            <item type=\"select\" name=\"guest\" label=\"Роль\">\n                <option value=\"Дилер\" label=\"Дилер\"/>\n            </item>\n        </item>\n\n\t\t<item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" value=\"auth\" label=\"Есть учетная запись\">\n\t\t\t<item type=\"input\" value=\"\" name=\"login\" label=\"Имя пользователя\" validate=\"NotEmpty\" />\n\t\t\t<item type=\"password\" value=\"\" name=\"password\" label=\"Пароль\" validate=\"NotEmpty\" />\n\t\t</item>\n\n\t\t<item type=\"button\" value=\"Войти\" name=\"submit\"/>\n\n        <item type=\"template\" name=\"text_options\" className=\"order_dealer_options\" inputWidth=\"231\"\n              value=\"&lt;a href='#' onclick='$p.iface.open_settings();' &gt; &lt;i class='fa fa-cog fa-lg'&gt;&lt;/i&gt; Настройки &lt;/a&gt; &lt;a href='//www.oknosoft.ru/feedback' target='_blank' style='margin-left: 9px;' &gt; &lt;i class='fa fa-question-circle fa-lg'&gt;&lt;/i&gt; Задать вопрос &lt;/a&gt;\"  />\n\n\t</item>\n</items>","toolbar_add_del.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_add\"    text=\"&lt;i class='fa fa-plus-circle fa-lg'&gt;&lt;/i&gt; Добавить\" title=\"Добавить строку\"  />\r\n    <item type=\"button\" id=\"btn_delete\" text=\"&lt;i class='fa fa-times fa-lg'&gt;&lt;/i&gt; Удалить\"  title=\"Удалить строку\" />\r\n</toolbar>","toolbar_obj.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"&lt;b&gt;Записать и закрыть&lt;/b&gt;\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"&lt;i class='fa fa-floppy-o fa-lg fa-fw'&gt;&lt;/i&gt;\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_post\" enabled=\"false\" text=\"&lt;i class='fa fa-check-square-o fa-lg fa-fw'&gt;&lt;/i&gt;\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" enabled=\"false\" text=\"&lt;i class='fa fa-square-o fa-lg fa-fw'&gt;&lt;/i&gt;\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"&lt;i class='fa fa-paperclip fa-lg fa-fw'&gt;&lt;/i&gt;\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-lg fa-fw'&gt;&lt;/i&gt;\" title=\"Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"&lt;i class='fa fa-bolt fa-lg fa-fw'&gt;&lt;/i&gt;\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"&lt;i class='fa fa-external-link fa-lg fa-fw'&gt;&lt;/i&gt;\" title=\"Перейти\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"  text=\"&lt;i class='fa fa-th-large fa-lg fa-fw'&gt;&lt;/i&gt;\"  title=\"Дополнительно\" openAll=\"true\">\r\n\r\n        <item type=\"button\" id=\"btn_import\" text=\"&lt;i class='fa fa-upload fa-lg fa-fw'&gt;&lt;/i&gt; Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" text=\"&lt;i class='fa fa-download fa-lg fa-fw'&gt;&lt;/i&gt; Выгрузить в файл\" />\r\n    </item>\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_close\" text=\"&lt;i class='fa fa-times fa-lg fa-fw'&gt;&lt;/i&gt;\" title=\"Закрыть форму\"/>\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n</toolbar>\r\n","toolbar_ok_cancel.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_ok\"       type=\"button\"   img=\"\"  imgdis=\"\"   text=\"&lt;b&gt;Ок&lt;/b&gt;\"  />\r\n    <item id=\"btn_cancel\"   type=\"button\"\timg=\"\"  imgdis=\"\"   text=\"Отмена\" />\r\n</toolbar>","toolbar_selection.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n\r\n    <item id=\"btn_select\"   type=\"button\"   title=\"Выбрать элемент списка\" text=\"&lt;b&gt;Выбрать&lt;/b&gt;\"  />\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item id=\"btn_new\"      type=\"button\"\ttext=\"&lt;i class='fa fa-plus-circle fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Создать\" />\r\n    <item id=\"btn_edit\"     type=\"button\"\ttext=\"&lt;i class='fa fa-pencil fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Изменить\" />\r\n    <item id=\"btn_delete\"   type=\"button\"\ttext=\"&lt;i class='fa fa-times fa-lg'&gt;&lt;/i&gt;\"\ttitle=\"Удалить\" />\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-lg'&gt;&lt;/i&gt; Печать\" openAll=\"true\" >\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"    text=\"&lt;i class='fa fa-th-large fa-lg'&gt;&lt;/i&gt;\" title=\"Дополнительно\" openAll=\"true\">\r\n        <item id=\"btn_requery\"  type=\"button\"\ttext=\"&lt;i class='fa fa-refresh fa-lg fa-fw'&gt;&lt;/i&gt; Обновить список\" />\r\n    </item>\r\n\r\n    <item id=\"sep3\" type=\"separator\"/>\r\n\r\n</toolbar>","log.json":{"ireg":{"$log":{"name":"$log","note":"","synonym":"Журнал событий","dimensions":{"date":{"synonym":"Дата","multiline_mode":false,"tooltip":"Время события","type":{"types":["number"],"digits":15,"fraction_figits":0}},"sequence":{"synonym":"Порядок","multiline_mode":false,"tooltip":"Порядок следования","type":{"types":["number"],"digits":6,"fraction_figits":0}}},"resources":{"class":{"synonym":"Класс","multiline_mode":false,"tooltip":"Класс события","type":{"types":["string"],"str_len":100}},"note":{"synonym":"Комментарий","multiline_mode":true,"tooltip":"Текст события","type":{"types":["string"],"str_len":0}},"obj":{"synonym":"Объект","tooltip":"Объект, к которому относится событие","type":{"types":["string"],"str_len":0}}}}}}});
 /* Copyright 2013 William Summers, metaTribal LLC
  * adapted from https://developer.mozilla.org/en-US/docs/JXON

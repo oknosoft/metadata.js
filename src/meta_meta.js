@@ -190,55 +190,6 @@ $p._find_rows = function(arr, selection, callback){
 	return res;
 };
 
-/**
- * Абстрактный запрос к soap или базе WSQL
- * @param method
- * @param attr
- * @param async
- * @param callback
- * @private
- */
-function _load(attr){
-
-	var mgr = _md.mgr_by_class_name(attr.class_name), res_local;
-
-	function get_tree(){
-
-		if(mgr.cachable){
-			return $p.wsql.promise(mgr.get_sql_struct(attr), [])
-				.then($p.iface.data_to_tree);
-		}
-	}
-
-	function get_selection(){
-
-		if(mgr.cachable){
-
-			return $p.wsql.promise(mgr.get_sql_struct(attr), [])
-				.then(function(data){
-					return $p.iface.data_to_grid.call(mgr, data, attr);
-				});
-		}
-	}
-
-
-	if(attr.action == "get_tree" && (res_local = get_tree()))
-		return res_local;
-
-	else if(attr.action == "get_selection" && (res_local = get_selection()))
-		return res_local;
-
-	else if($p.job_prm.offline)
-		return Promise.reject(Error($p.msg.offline_request));
-
-	attr.browser_uid = $p.wsql.get_user_param("browser_uid");
-
-	return $p.ajax.post_ex($p.job_prm.hs_url(), JSON.stringify(attr), true)
-		.then(function (req) {
-			return req.response;
-		});
-}
-
 
 /**
  * Коллекция менеджеров справочников
@@ -592,7 +543,7 @@ function Meta() {
 			_md.pouch_change = $p.eve.attachEvent("pouch_change", do_init);
 
 		if(!_m){
-			return $p.wsql.pouch.local.cat.info()
+			return $p.wsql.pouch.local.ram.info()
 				.then(function () {
 					return do_init()
 				});
@@ -650,26 +601,26 @@ function Meta() {
 			res.synonym = "Код";
 		}else if(is_cat && field_name=="name"){
 			res.synonym = "Наименование";
-		}else if(field_name=="deleted"){
+
+		}else if(field_name=="_deleted"){
 			res.synonym = "Пометка удаления";
 			res.type.types[0] = "boolean";
+
 		}else if(field_name=="is_folder"){
 			res.synonym = "Это группа";
 			res.type.types[0] = "boolean";
-		}else if(field_name=="lc_changed"){
-			res.synonym = "Изменено в 1С";
-			res.tooltip = "Время записи в 1С";
-			res.type.types[0] = "number";
-			res.type.digits = 15;
-			res.type.fraction_figits = 0;
+
 		}else if(field_name=="ref"){
 			res.synonym = "Ссылка";
 			res.type.is_ref = true;
 			res.type.types[0] = class_name;
+
 		}else if(field_name)
 			res = _m[np[0]][np[1]].fields[field_name];
+
 		else
 			res = _m[np[0]][np[1]];
+
 		return res;
 	};
 
@@ -820,7 +771,7 @@ function Meta() {
 				res = _md.sql_mask(f0) + " CHAR";
 		}
 		return res;
-	}
+	};
 
 	/**
 	 * Заключает имя поля в аппострофы
@@ -1012,9 +963,9 @@ function Meta() {
 
 	_md.syns_js = function (v) {
 		var synJS = {
-			DeletionMark: 'deleted',
+			DeletionMark: '_deleted',
 			Description: 'name',
-			DataVersion: 'data_version',
+			DataVersion: 'data_version',    // todo: не сохранять это поле в pouchdb
 			IsFolder: 'is_folder',
 			Number: 'number_doc',
 			Date: 'date',
@@ -1035,9 +986,8 @@ function Meta() {
 
 	_md.syns_1с = function (v) {
 		var syn1c = {
-			deleted: 'DeletionMark',
+			_deleted: 'DeletionMark',
 			name: 'Description',
-			data_version: 'DataVersion',
 			is_folder: 'IsFolder',
 			number_doc: 'Number',
 			date: 'Date',
@@ -1134,7 +1084,6 @@ function Meta() {
 }
 
 
-
 /**
  * Запись журнала регистрации
  * @param err
@@ -1142,47 +1091,5 @@ function Meta() {
 $p.record_log = function (err) {
 	if($p.ireg && $p.ireg.$log)
 		$p.ireg.$log.record(err);
-	else
-		console.log(err);
-};
-
-/**
- * Загрузка данных в grid
- * @method load_soap_to_grid
- * @for Catalogs
- * @param attr {Object} - объект с параметрами запроса SOAP
- * @param grid {dhtmlxGrid}
- * @param callback {Function}
- */
-_cat.load_soap_to_grid = function(attr, grid, callback){
-
-	function cb_callBack(res){
-		if(res.substr(0,1) == "{")
-			res = JSON.parse(res);
-
-		if(typeof res == "string")
-		// загружаем строку в грид
-			grid.parse(res, function(){
-				if(callback)
-					callback(res);
-			}, "xml");
-
-		else if(callback)
-			callback(res);
-	}
-
-	grid.xmlFileUrl = "exec";
-
-
-	var mgr = _md.mgr_by_class_name(attr.class_name);
-
-	if((!mgr.cachable || attr.rest) && ($p.job_prm.rest || $p.job_prm.irest_enabled))
-		mgr.rest_selection(attr)
-			.then(cb_callBack)
-			.catch($p.record_log);
-	else
-		_load(attr)
-			.then(cb_callBack)
-			.catch($p.record_log);
-
+	console.log(err);
 };

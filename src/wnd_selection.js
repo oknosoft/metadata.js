@@ -264,7 +264,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			var filter = get_filter(start,count);
 			if(!filter)
 				return;
-			$p.cat.load_soap_to_grid(filter, grid);
+			_mgr.sync_grid(filter, grid);
 			return false;
 		});
 		grid.attachEvent("onRowDblClicked", function(rId, cInd){
@@ -285,7 +285,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			if(!filter) return;
 			cell_grid.progressOn();
 			grid.clearAll();
-			$p.cat.load_soap_to_grid(filter, grid, function(xml){
+			_mgr.sync_grid(filter, grid)
+				.then(function(xml){
 				if(typeof xml === "object"){
 					$p.msg.check_soap_result(xml);
 

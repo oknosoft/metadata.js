@@ -21,90 +21,106 @@
  */
 function DataObj(attr, manager) {
 
-	var ref, tmp,
+	var tmp,
 		_ts_ = {},
-		_obj = {data_version: ""},
+		_obj = {},
 		_is_new = !(this instanceof EnumObj);
 
 	// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
 	if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager))
 		tmp = manager.get(attr, false, true);
 
-	if(tmp)
+	if(tmp){
+		attr = null;
 		return tmp;
+	}
+
 
 	if(manager instanceof EnumManager)
-		_obj.ref = ref = attr.name;
+		_obj.ref = attr.name;
 
 	else if(!(manager instanceof RegisterManager)){
-		_obj.ref = ref = $p.fix_guid(attr);
-		_obj.deleted = false;
-		_obj.lc_changed = 0;
+		_obj.ref = $p.fix_guid(attr);
 
 	}else
-		ref = manager.get_ref(attr);
+		_obj.ref = manager.get_ref(attr);
 
-	/**
-	 * Указатель на менеджер данного объекта
-	 * @property _manager
-	 * @type DataManager
-	 * @final
-	 */
-	this.__define('_manager', {
-		value : manager,
-		enumerable : false
-	});
 
-	/**
-	 * Возвращает "истина" для нового (еще не записанного или непрочитанного) объекта
-	 * @method is_new
-	 * @for DataObj
-	 * @return {boolean}
-	 */
-	this.__define("is_new", {
-		value: function(){
-			return _is_new;
+	this.__define({
+
+		/**
+		 * ### Фактическое хранилище данных объекта
+		 * Оно же, запись в таблице объекта локальной базы данных
+		 * @property _obj
+		 * @type Object
+		 * @final
+		 */
+		_obj: {
+			value: _obj,
+			writable: false,
+			enumerable: false
 		},
-		enumerable: false
-	});
 
-	this.__define("_set_loaded", {
-		value: function(ref){
-			_is_new = false;
-			manager.push(this, ref);
+		/**
+		 * Хранилище ссылок на табличные части - не сохраняется в базе данных
+		 * @property _ts_
+		 */
+		_ts_: {
+			value: function( name ) {
+				if( !_ts_[name] ) {
+					_ts_[name] = new TabularSection(name, this);
+				}
+				return _ts_[name];
+			},
+			writable: false,
+			enumerable: false
 		},
-		enumerable: false
-	});
 
-
-	/**
-	 * ### Фактическое хранилище данных объекта
-	 * Оно же, запись в таблице объекта локальной базы данных
-	 * @property _obj
-	 * @type Object
-	 * @final
-	 */
-	this.__define("_obj", {
-		value: _obj,
-		writable: false,
-		enumerable: false
-	});
-
-	this.__define("_ts_", {
-		value: function( name ) {
-			if( !_ts_[name] ) {
-				_ts_[name] = new TabularSection(name, this);
-			}
-			return _ts_[name];
+		/**
+		 * Указатель на менеджер данного объекта
+		 * @property _manager
+		 * @type DataManager
+		 * @final
+		 */
+		_manager: {
+			value : manager,
+			writable: false,
+			enumerable : false
 		},
-		enumerable: false
+
+		/**
+		 * Возвращает "истина" для нового (еще не записанного или не прочитанного) объекта
+		 * @method is_new
+		 * @for DataObj
+		 * @return {boolean}
+		 */
+		is_new: {
+			value: function(){
+				return _is_new;
+			},
+			enumerable: false
+		},
+
+		/**
+		 * Метод для ручной установки признака _прочитан_ (не новый)
+		 */
+		_set_loaded: {
+			value: function(ref){
+				_is_new = false;
+				manager.push(this, ref);
+			},
+			enumerable: false
+		}
+
 	});
 
 
 	if(manager.alatable && manager.push){
 		manager.alatable.push(_obj);
-		manager.push(this, ref);
+		manager.push(this, _obj.ref);
 	}
+
+	attr = null;
 
 }
 
@@ -246,110 +262,6 @@ DataObj.prototype._setter_ts = function (f, v) {
 		ts.load(v);
 };
 
-
-/**
- * Читает объект из внешней датабазы асинхронно.
- * @method load
- * @for DataObj
- * @return {Promise.<DataObj>} - промис с результатом выполнения операции
- * @async
- */
-DataObj.prototype.load = function(){
-
-	var tObj = this;
-
-	function callback_1c(res){		// инициализация из датабазы 1C
-
-		if(typeof res == "string")
-			res = JSON.parse(res);
-		if($p.msg.check_soap_result(res))
-			return;
-
-		var ref = $p.fix_guid(res);
-		if(tObj.is_new() && !$p.is_empty_guid(ref))
-			tObj._set_loaded(ref);
-
-		return tObj._mixin(res);      // заполнить реквизиты шапки и табличных частей
-	}
-
-	if(tObj._manager.cachable && !tObj.is_new())
-		return Promise.resolve(tObj);
-
-	if(tObj.ref == $p.blank.guid){
-		if(tObj instanceof CatObj)
-			tObj.id = "000000000";
-		else
-			tObj.number_doc = "000000000";
-		return Promise.resolve(tObj);
-
-	}else if($p.job_prm.rest || $p.job_prm.irest_enabled)
-		return _rest.load_obj(tObj);
-
-	else
-		return _load({
-			class_name: tObj._manager.class_name,
-			action: "load",
-			ref: tObj.ref
-		})
-			.then(callback_1c);
-
-};
-
-/**
- * ### Записывает объект
- * Ввыполняет подписки на события перед записью и после записи
- * В зависимости от настроек, выполняет запись объекта во внешнюю базу данных
- * @param [post] {Boolean|undefined} - проведение или отмена проведения или просто запись
- * @param [mode] {Boolean} - режим проведения документа [Оперативный, Неоперативный]
- * @return {Promise.<T>} - промис с результатом выполнения операции
- * @async
- */
-DataObj.prototype.save = function (post, operational) {
-
-	var saver,
-		before_save_res = this._manager.handle_event(this, "before_save");
-
-	// Если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
-	if(before_save_res === false)
-		return Promise.resolve(this);
-	else if(typeof before_save_res === "object" && before_save_res.then)
-		return before_save_res;
-
-	if(this instanceof DocObj && $p.blank.date == this.date)
-		this.date = new Date();
-
-	// если доступен irest - сохраняем через него, иначе - стандартным сервисом
-	if($p.job_prm.offline)
-		saver = function (obj) {
-			return Promise.resolve(obj);
-		};
-	else{
-		saver = $p.job_prm.irest_enabled ? _rest.save_irest : _rest.save_rest;
-	}
-
-
-	// Сохраняем во внешней базе
-	return saver(this, {
-		post: post,
-		operational: operational
-	})
-
-		// и выполняем обработку после записи
-		.then(function (obj) {
-			return obj._manager.handle_event(obj, "after_save");
-		});
-};
-
-/**
- * Проверяет, является ли ссылка объекта пустой
- * @method empty
- * @return {boolean} - true, если ссылка пустая
- */
-DataObj.prototype.empty = function(){
-	return $p.is_empty_guid(this._obj.ref);
-};
-
-
 DataObj.prototype.__define({
 
 	/**
@@ -361,6 +273,21 @@ DataObj.prototype.__define({
 	 */
 	_metadata: {
 		get : function(){ return this._manager.metadata()},
+		enumerable : false
+	},
+
+	/**
+	 * Пометка удаления
+	 * @property _deleted
+	 * @for DataObj
+	 * @type Boolean
+	 */
+	_deleted: {
+		get : function(){ return !!this._obj._deleted},
+		set : function(v){
+			this.__notify('_deleted');
+			this._obj._deleted = !!v;
+		},
 		enumerable : false
 	},
 
@@ -378,73 +305,134 @@ DataObj.prototype.__define({
 	},
 
 	/**
+	 * Проверяет, является ли ссылка объекта пустой
+	 * @method empty
+	 * @return {boolean} - true, если ссылка пустая
+	 */
+	empty: {
+		value: function(){
+			return $p.is_empty_guid(this._obj.ref);
+		},
+		enumerable : false
+	},
+
+	/**
+	 * Читает объект из внешней или внутренней датабазы асинхронно.
+	 * @method load
+	 * @for DataObj
+	 * @return {Promise.<DataObj>} - промис с результатом выполнения операции
+	 * @async
+	 */
+	load: {
+		value: function(){
+
+			var tObj = this;
+
+
+			if(tObj.ref == $p.blank.guid){
+				if(tObj instanceof CatObj)
+					tObj.id = "000000000";
+				else
+					tObj.number_doc = "000000000";
+
+				return Promise.resolve(tObj);
+
+			}else{
+				if(tObj._manager.cachable == "ram" || tObj._manager.cachable == "doc"){
+
+					if(tObj.is_new()){
+						// todo: запрос к pouchdb
+						return $p.wsql.pouch.load_obj(tObj);
+
+					}else {
+						return Promise.resolve(tObj);
+					}
+				} else
+					return _rest.load_obj(tObj);
+			}
+
+
+		},
+		enumerable : false
+	},
+
+	/**
 	 * Освобождает память и уничтожает объект
 	 * @method unload
 	 * @for DataObj
 	 */
 	unload: {
 		value: function(){
+			var f, obj = this._obj;
+			this._manager.unload_obj(this.ref);
+			for(f in this._ts_){
+				this[f].clear();
+				delete this._ts_[f];
+			}
 			for(f in this){
-				if(this[f] instanceof TabularSection){
-					this[f].clear();
-					delete this[f];
-				}else if(typeof this[f] != "function"){
+				if(typeof this[f] != "function"){
 					delete this[f];
 				}
 			}
+			for(f in obj){
+				delete obj[f];
+			}
+			f = obj = null;
+		},
+		enumerable : false
+	},
+
+	/**
+	 * ### Записывает объект
+	 * Ввыполняет подписки на события перед записью и после записи
+	 * В зависимости от настроек, выполняет запись объекта во внешнюю базу данных
+	 * @param [post] {Boolean|undefined} - проведение или отмена проведения или просто запись
+	 * @param [mode] {Boolean} - режим проведения документа [Оперативный, Неоперативный]
+	 * @return {Promise.<T>} - промис с результатом выполнения операции
+	 * @async
+	 */
+	save: {
+		value: function (post, operational) {
+
+			var saver,
+				before_save_res = this._manager.handle_event(this, "before_save");
+
+			// Если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
+			if(before_save_res === false)
+				return Promise.resolve(this);
+
+			else if(typeof before_save_res === "object" && before_save_res.then)
+				return before_save_res;
+
+			if(this instanceof DocObj && $p.blank.date == this.date)
+				this.date = new Date();
+
+			if(this._manager.cachable == "ram" || this._manager.cachable == "doc"){
+				// todo: запрос к pouchdb
+				saver = function (obj) {
+					return Promise.resolve(obj);
+				};
+
+			} else {
+				// запрос к серверу по сети
+				saver = _rest.save_irest;
+
+			}
+
+			// Сохраняем во внешней базе
+			return saver(
+				this, {
+					post: post,
+					operational: operational
+				})
+			// и выполняем обработку после записи
+				.then(function (obj) {
+					return obj._manager.handle_event(obj, "after_save");
+				});
 		},
 		enumerable : false
 	}
 });
-
-
-/**
- * Пометка удаления
- * @property deleted
- * @for DataObj
- * @type Boolean
- */
-DataObj.prototype.__define('deleted', {
-	get : function(){ return this._obj.deleted},
-	set : function(v){
-		this.__notify('deleted');
-		this._obj.deleted = !!v;
-	},
-	enumerable : true,
-	configurable: true
-});
-
-/**
- * Версия данных для контроля изменения объекта другим пользователем
- * @property data_version
- * @for DataObj
- * @type String
- */
-DataObj.prototype.__define('data_version', {
-	get : function(){ return this._obj.data_version || ""},
-	set : function(v){
-		this.__notify('data_version');
-		this._obj.data_version = String(v);
-	},
-	enumerable : true
-});
-
-/**
- * Время последнего изменения объекта в миллисекундах от начала времён для целей синхронизации
- * @property lc_changed
- * @for DataObj
- * @type Number
- */
-DataObj.prototype.__define('lc_changed', {
-	get : function(){ return this._obj.lc_changed || 0},
-	set : function(v){
-		this.__notify('lc_changed');
-		this._obj.lc_changed = $p.fix_number(v, true);
-	},
-	enumerable : true,
-	configurable: true
-});
-
 
 
 /**
@@ -495,6 +483,8 @@ function CatObj(attr, manager) {
 				this._set_loaded(this.ref);
 		}
 	}
+
+	attr = null;
 
 }
 CatObj._extend(DataObj);
@@ -571,12 +561,13 @@ function DocObj(attr, manager) {
 
 	if(!$p.is_empty_guid(this.ref) && attr.number_doc)
 		this._set_loaded(this.ref);
+
+	attr = null;
 }
 DocObj._extend(DataObj);
 
-function doc_standard_props(obj){
-
-	obj.__define({
+function doc_props_date_number(proto){
+	proto.__define({
 
 		/**
 		 * Номер документа
@@ -605,26 +596,27 @@ function doc_standard_props(obj){
 			},
 			enumerable : true
 		}
-
 	});
 }
 
-doc_standard_props(DocObj.prototype);
+DocObj.prototype.__define({
 
+	/**
+	 * Признак проведения
+	 * @property posted
+	 * @type {Boolean}
+	 */
+	posted: {
+		get : function(){ return this._obj.posted || false},
+		set : function(v){
+			this.__notify('posted');
+			this._obj.posted = $p.fix_boolean(v);
+		},
+		enumerable : true
+	}
 
-/**
- * Признак проведения
- * @property posted
- * @type {Boolean}
- */
-DocObj.prototype.__define('posted', {
-	get : function(){ return this._obj.posted || false},
-	set : function(v){
-		this.__notify('posted');
-		this._obj.posted = $p.fix_boolean(v);
-	},
-	enumerable : true
 });
+doc_props_date_number(DocObj.prototype);
 
 
 /**
@@ -668,7 +660,7 @@ function TaskObj(attr, manager) {
 
 }
 TaskObj._extend(CatObj);
-doc_standard_props(TaskObj.prototype);
+doc_props_date_number(TaskObj.prototype);
 
 
 /**
@@ -687,6 +679,7 @@ function BusinessProcessObj(attr, manager) {
 
 }
 BusinessProcessObj._extend(CatObj);
+doc_props_date_number(BusinessProcessObj.prototype);
 
 
 /**
@@ -795,24 +788,30 @@ function RegisterRow(attr, manager){
 }
 RegisterRow._extend(DataObj);
 
-/**
- * Метаданные строки регистра
- * @property _metadata
- * @for RegisterRow
- * @type Object
- */
-RegisterRow.prototype.__define('_metadata', {
-	get : function(){
-		var cm = this._manager.metadata();
-		if(!cm.fields)
-			cm.fields = ({})._mixin(cm.dimensions)._mixin(cm.resources);
-		return cm;
-	},
-	enumerable : false
-});
+RegisterRow.prototype.__define({
 
-RegisterRow.prototype.__define('ref', {
-	get : function(){ return this._manager.get_ref(this)},
-	enumerable : true
+	/**
+	 * Метаданные строки регистра
+	 * @property _metadata
+	 * @for RegisterRow
+	 * @type Object
+	 */
+	_metadata: {
+		get: function () {
+			var cm = this._manager.metadata();
+			if (!cm.fields)
+				cm.fields = ({})._mixin(cm.dimensions)._mixin(cm.resources)._mixin(cm.attributes);
+			return cm;
+		},
+		enumerable: false
+	},
+
+	/**
+	 * Ключ записи регистра
+	 */
+	ref: {
+		get : function(){ return this._manager.get_ref(this)},
+		enumerable : true
+	}
 });
 

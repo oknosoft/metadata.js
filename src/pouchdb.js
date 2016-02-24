@@ -21,7 +21,7 @@ function Pouch(){
 
 	function load_changes(changes, options){
 
-		var docs, doc, res = {}, cn;
+		var docs, doc, res = {}, cn, key;
 
 		if(!options){
 			if(changes.direction != "pull")
@@ -38,9 +38,9 @@ function Pouch(){
 
 			docs.forEach(function (rev) {
 				doc = options ? rev.doc : rev;
-				cn = doc.class_name.split(".");
-				doc.ref = doc._id;
-				delete doc.class_name;
+				key = doc._id.split("|");
+				cn = key[0].split(".");
+				doc.ref = key[1];
 				delete doc._id;
 				delete doc._rev;
 				if(!res[cn[0]])
@@ -74,7 +74,7 @@ function Pouch(){
 					retry: true
 				}).on('change', function (change) {
 					// yo, something changed!
-					if(id == "cat")
+					if(id == "ram")
 						load_changes(change);
 					$p.eve.callEvent("pouch_change", [id, change]);
 
@@ -109,7 +109,7 @@ function Pouch(){
 			get: function () {
 				if(!_local){
 					_local = {
-						cat: new PouchDB(_prefix + _zone + "_cat", {auto_compaction: true, revs_limit: 2}),
+						ram: new PouchDB(_prefix + _zone + "_ram", {auto_compaction: true, revs_limit: 2}),
 						doc: new PouchDB(_prefix + _zone + "_doc", {auto_compaction: true, revs_limit: 2}),
 						meta: new PouchDB(_prefix + "meta", {auto_compaction: true}),
 						sync: {}
@@ -133,7 +133,7 @@ function Pouch(){
 			get: function () {
 				if(!_remote && _auth){
 					_remote = {
-						cat: new PouchDB($p.job_prm.couchdb + _zone + "_cat", {
+						ram: new PouchDB($p.job_prm.couchdb + _zone + "_ram", {
 							auth: {
 								username: _auth.username,
 								password: _auth.password
@@ -170,30 +170,30 @@ function Pouch(){
 
 				// переподключение под другим пользователем
 				if(_auth && _auth.username != username){
-					if(_local.sync.cat)
-						_local.sync.cat.cancel();
+					if(_local.sync.ram)
+						_local.sync.ram.cancel();
 					if(_local.sync.doc)
 						_local.sync.doc.cancel();
 				}
 
-				if(_remote && _remote.cat)
-					delete _remote.cat;
+				if(_remote && _remote.ram)
+					delete _remote.ram;
 
 				if(_remote && _remote.doc)
 					delete _remote.doc;
 
 				_remote = null;
 
-				return $p.ajax.get_ex($p.job_prm.couchdb + _zone + "_cat", {username: username, password: password})
+				return $p.ajax.get_ex($p.job_prm.couchdb + _zone + "_ram", {username: username, password: password})
 					.then(function (req) {
 						_auth = {username: username, password: password};
-						return {cat: run_sync(t.local.cat, t.remote.cat, "cat"), doc: run_sync(t.local.doc, t.remote.doc, "doc")};
+						return {ram: run_sync(t.local.ram, t.remote.ram, "ram"), doc: run_sync(t.local.doc, t.remote.doc, "doc")};
 					});
 			}
 		},
 
 		/**
-		 * Загружает условно-постоянные данные из базы cat в alasql
+		 * Загружает условно-постоянные данные из базы ram в alasql
 		 */
 		load_data: {
 			value: function () {
@@ -208,11 +208,11 @@ function Pouch(){
 					start: Date.now()
 				};
 
-				// бежим по всем документам из cat
+				// бежим по всем документам из ram
 				return new Promise(function(resolve, reject){
 
 					function fetchNextPage() {
-						t.local.cat.allDocs(options, function (err, response) {
+						t.local.ram.allDocs(options, function (err, response) {
 
 							if (response) {
 
@@ -262,6 +262,30 @@ function Pouch(){
 		},
 
 		/**
+		 * Читает объект из pouchdb
+		 * @return {Promise.<DataObj>} - промис с загруженным объектом
+		 */
+		load_obj: {
+			value: function (tObj) {
+
+				return t.local[tObj._manager.cachable].get(tObj._manager.class_name + "|" + tObj.ref)
+					.then(function (res) {
+						delete res._id;
+						delete res._rev;
+						tObj._mixin(res)._set_loaded();
+						return tObj;
+					});
+
+			}
+		},
+
+		save_obj: {
+			value: function (tObj) {
+
+			}
+		},
+
+		/**
 		 * Формирует архив полной выгрузки базы для сохранения в файловой системе клиента
 		 * @method backup_database
 		 * @param [do_zip] {Boolean} - указывает на необходимость архивировать стоки таблиц в озу перед записью файла
@@ -299,3 +323,5 @@ function Pouch(){
 	});
 
 }
+
+

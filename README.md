@@ -90,6 +90,7 @@ bower install --save metadata   # bower
 
 ## Благодарности
 - Andrey Gershun, author of [AlaSQL](https://github.com/agershun/alasql) - Javascript SQL database library
+- Авторам [PouchDB](http://pouchdb.com/) и [CouchDB](http://couchdb.apache.org/) - NoSQL database and data synchronization engine
 - Авторам [dhtmlx](http://dhtmlx.com/) - a beautiful set of Ajax-powered UI components
 - Прочим авторам за их замечательные инструменты, упрощающие нашу работу
 

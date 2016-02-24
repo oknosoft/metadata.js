@@ -140,7 +140,6 @@ Object.prototype.__define({
 		enumerable: false
 	},
 
-
 	/**
 	 * Создаёт копию объекта
 	 * @method _clone
@@ -189,8 +188,7 @@ if(!Number.prototype.round)
  * Полифил для обсервера и нотифаера пока не подключаем
  * Это простая заглушка, чтобы в старых браузерах не возникали исключения
  */
-if(!Object.observe && !Object.unobserve && !Object.getNotifier)
-
+if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 	Object.prototype.__define({
 
 		observe: {
@@ -250,6 +248,8 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier)
 			enumerable: false
 		}
 	});
+}
+
 
 /**
  * Date Format 1.2.3
@@ -396,6 +396,7 @@ $p.ajax = new (
 	 * @static
 	 */
 	function Ajax() {
+
 
 		function _call(method, url, post_data, auth, before_send) {
 
