@@ -608,11 +608,13 @@ DataManager.prototype.print = function(ref, model, wnd){
 DataManager.prototype.printing_plates = function(){
 	var rattr = {}, t = this;
 
-	if($p.job_prm.offline)
-		return Promise.resolve({});
+	if(!t._printing_plates){
+		if(t.metadata().printing_plates)
+			t._printing_plates = t.metadata().printing_plates;
 
-	if(t.metadata().printing_plates)
-		t._printing_plates = t.metadata().printing_plates;
+		else if(t.metadata().cachable == "ram" || t.metadata().cachable == "doc")
+			t._printing_plates = {};
+	}
 
 	if(t._printing_plates)
 		return Promise.resolve(t._printing_plates);

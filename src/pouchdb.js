@@ -15,53 +15,16 @@
  */
 function Pouch(){
 
-	var t = this, _local, _remote, _auth,
+	var t = this, _local, _remote, _auth, _data_loaded,
+		_couch_path = $p.wsql.get_user_param("couch_path", "string") || $p.job_prm.couch_path,
 		_zone = $p.wsql.get_user_param("zone", "number"),
-		_prefix = $p.job_prm.local_storage_prefix;
+		_prefix = $p.job_prm.local_storage_prefix,
+		_suffix = $p.wsql.get_user_param("couch_suffix", "string") || "";
 
-	function load_changes(changes, options){
+	if(_couch_path.indexOf("http") != 0)
+		_couch_path = location.protocol + "//" + location.host + _couch_path;
 
-		var docs, doc, res = {}, cn, key;
 
-		if(!options){
-			if(changes.direction != "pull")
-				return;
-			docs = changes.change.docs;
-		}else
-			docs = changes.rows;
-
-		if (docs.length > 0) {
-			if(options){
-				options.startkey = docs[docs.length - 1].key;
-				options.skip = 1;
-			}
-
-			docs.forEach(function (rev) {
-				doc = options ? rev.doc : rev;
-				key = doc._id.split("|");
-				cn = key[0].split(".");
-				doc.ref = key[1];
-				delete doc._id;
-				delete doc._rev;
-				if(!res[cn[0]])
-					res[cn[0]] = {};
-				if(!res[cn[0]][cn[1]])
-					res[cn[0]][cn[1]] = [];
-				res[cn[0]][cn[1]].push(doc);
-			});
-
-			for(var mgr in res){
-				for(cn in res[mgr])
-					if($p[mgr][cn])
-						$p[mgr][cn].load_array(res[mgr][cn], true);
-			}
-
-			res	= changes = docs = doc = null;
-			return true;
-		}
-
-		return false;
-	}
 
 	function run_sync(local, remote, id){
 		return local.info()
@@ -75,7 +38,7 @@ function Pouch(){
 				}).on('change', function (change) {
 					// yo, something changed!
 					if(id == "ram")
-						load_changes(change);
+						t.load_changes(change);
 					$p.eve.callEvent("pouch_change", [id, change]);
 
 				}).on('paused', function (info) {
@@ -115,8 +78,8 @@ function Pouch(){
 						sync: {}
 					}
 				}
-				if($p.job_prm.couchdb && !_local._meta){
-					_local._meta = new PouchDB($p.job_prm.couchdb + "meta", {
+				if(_couch_path && !_local._meta){
+					_local._meta = new PouchDB(_couch_path + "meta", {
 						auth: {
 							username: "guest",
 							password: "meta"
@@ -133,14 +96,14 @@ function Pouch(){
 			get: function () {
 				if(!_remote && _auth){
 					_remote = {
-						ram: new PouchDB($p.job_prm.couchdb + _zone + "_ram", {
+						ram: new PouchDB(_couch_path + _zone + "_ram", {
 							auth: {
 								username: _auth.username,
 								password: _auth.password
 							},
 							skip_setup: true
 						}),
-						doc: new PouchDB($p.job_prm.couchdb + _zone + "_doc", {
+						doc: new PouchDB(_couch_path + _zone + "_doc" + _suffix, {
 							auth: {
 								username: _auth.username,
 								password: _auth.password
@@ -156,7 +119,7 @@ function Pouch(){
 		/**
 		 * Выполняет авторизацию
 		 */
-		authenticate: {
+		log_in: {
 			value: function (username, password) {
 
 				// реквизиты гостевого пользователя для демобаз
@@ -184,11 +147,30 @@ function Pouch(){
 
 				_remote = null;
 
-				return $p.ajax.get_ex($p.job_prm.couchdb + _zone + "_ram", {username: username, password: password})
+				return $p.ajax.get_ex(_couch_path + _zone + "_ram", {username: username, password: password})
 					.then(function (req) {
 						_auth = {username: username, password: password};
+						setTimeout(function () {
+							dhx4.callEvent("log_in", [username]);
+						});
 						return {ram: run_sync(t.local.ram, t.remote.ram, "ram"), doc: run_sync(t.local.doc, t.remote.doc, "doc")};
 					});
+			}
+		},
+
+		/**
+		 * Останавливает синхронизации и снимает признак авторизованности
+		 */
+		log_out: {
+			value: function () {
+				if(_auth){
+					if(_local.sync.ram)
+						_local.sync.ram.cancel();
+					if(_local.sync.doc)
+						_local.sync.doc.cancel();
+					_auth = null;
+				}
+				dhx4.callEvent("log_out");
 			}
 		},
 
@@ -220,32 +202,49 @@ function Pouch(){
 								_page.page++;
 								_page.total_rows = response.total_rows;
 								_page.duration = Date.now() - _page.start;
-								$p.eve.callEvent("pouch_cat_page", [_page]);
+								$p.eve.callEvent("pouch_load_data_page", [_page]);
 
-								if (load_changes(response, options))
+								if (t.load_changes(response, options))
 									fetchNextPage();
 								 else{
 									resolve();
 									// широковещательное оповещение о загрузке локальных данных
 									console.log(_page);
-									$p.eve.callEvent("pouch_cat_loaded", [_page]);
+									_data_loaded = true;
+									$p.eve.callEvent("pouch_load_data_loaded", [_page]);
 								}
 
 							} else if(err){
 								reject(err);
 								// широковещательное оповещение об ошибке загрузки
-								$p.eve.callEvent("pouch_cat_error", [err]);
+								$p.eve.callEvent("pouch_load_data_error", [err]);
 							}
 
 						});
 					}
 
-					// широковещательное оповещение о начале загрузки локальных данных
-					$p.eve.callEvent("pouch_cat_start");
-					fetchNextPage();
-
+					t.local.ram.info()
+						.then(function (info) {
+							if(info.doc_count > 10){
+								// широковещательное оповещение о начале загрузки локальных данных
+								$p.eve.callEvent("pouch_load_data_start");
+								fetchNextPage();
+							}else{
+								$p.eve.callEvent("pouch_load_data_error", [info]);
+								reject(info);
+							}
+						});
 				});
 
+			}
+		},
+
+		/**
+		 * Информирует о загруженности данных
+		 */
+		data_loaded: {
+			get: function () {
+				return !!_data_loaded;
 			}
 		},
 
@@ -254,10 +253,7 @@ function Pouch(){
 		 */
 		run_sync: {
 			value: function (local, remote, id) {
-				return t.authenticate()
-					.then(function () {
-						return run_sync(local, remote, id);
-					});
+				return run_sync(local, remote, id);
 			}
 		},
 
@@ -282,6 +278,55 @@ function Pouch(){
 		save_obj: {
 			value: function (tObj) {
 
+			}
+		},
+
+		/**
+		 * Загружает в менеджер изменения или полученные через allDocs данные
+		 */
+		load_changes: {
+			value: function(changes, options){
+
+				var docs, doc, res = {}, cn, key;
+
+				if(!options){
+					if(changes.direction != "pull")
+						return;
+					docs = changes.change.docs;
+				}else
+					docs = changes.rows;
+
+				if (docs.length > 0) {
+					if(options){
+						options.startkey = docs[docs.length - 1].key;
+						options.skip = 1;
+					}
+
+					docs.forEach(function (rev) {
+						doc = options ? rev.doc : rev;
+						key = doc._id.split("|");
+						cn = key[0].split(".");
+						doc.ref = key[1];
+						delete doc._id;
+						delete doc._rev;
+						if(!res[cn[0]])
+							res[cn[0]] = {};
+						if(!res[cn[0]][cn[1]])
+							res[cn[0]][cn[1]] = [];
+						res[cn[0]][cn[1]].push(doc);
+					});
+
+					for(var mgr in res){
+						for(cn in res[mgr])
+							if($p[mgr][cn])
+								$p[mgr][cn].load_array(res[mgr][cn], true);
+					}
+
+					res	= changes = docs = doc = null;
+					return true;
+				}
+
+				return false;
 			}
 		},
 

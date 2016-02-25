@@ -98,8 +98,8 @@ DataManager.prototype.pouch_selection = function (attr) {
 		limit : 100,
 		//skip: 0,
 		include_docs: true,
-		startkey: t.class_name,
-		endkey: t.class_name + '\uffff'
+		startkey: t.class_name + "|",
+		endkey: t.class_name + '|\uffff'
 	})
 		.then(function (result) {
 			// handle result
@@ -154,3 +154,19 @@ DataManager.prototype.pouch_selection = function (attr) {
 		.catch($p.record_log);
 
 };
+
+DataManager.prototype.pouch_load_array = function (refs) {
+
+	var t = this;
+
+	return $p.wsql.pouch.local.doc.allDocs({
+			limit : refs.length + 1,
+			include_docs: true,
+			keys: refs.map(function (v) {
+				return t.class_name + "|" + v;
+			})
+		})
+		.then(function (result) {
+			return $p.wsql.pouch.load_changes(result, {});
+		})
+}

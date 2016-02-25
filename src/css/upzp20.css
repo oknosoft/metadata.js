@@ -14,6 +14,11 @@ html, body {
 	text-rendering: optimizeLegibility;
 }
 
+.disabledbutton {
+	pointer-events: none;
+	opacity: 0.4;
+}
+
 #owb_wrapper {
     width: 100%;
     height: 100%;

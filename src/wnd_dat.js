@@ -380,7 +380,6 @@ $p.iface.layout_1c = function () {
  * @method frm_auth
  * @for InterfaceObjs
  * @param attr {Object} - параметры формы
- * @param [attr.onstep] {Function} - обработчик визуализации шагов входа в систему. Если не указан, рисуется стандарное окно
  * @param [attr.cell] {dhtmlXCellObject}
  * @return {Promise}
  */
@@ -389,76 +388,36 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 	if(!attr)
 		attr = {};
 
-	var _cell = attr.cell || $p.iface.docs,
-		_frm = $p.iface.auth = _cell.attachForm(),
-		w, were_errors;
+	var _cell, _frm, w, were_errors;
 
-	if(!attr.onstep)
-		attr.onstep = function (step){
-
-			var stepper = $p.eve.stepper;
-
-			switch(step) {
-
-				case $p.eve.steps.authorization:
-
-					stepper.frm_sync.setItemValue("text_processed", "Авторизация");
-
-					break;
-
-				case $p.eve.steps.load_meta:
-
-					// индикатор прогресса и малое всплывающее сообщение
-					_cell.progressOn();
-					$p.msg.show_msg($p.msg.init_catalogues + $p.msg.init_catalogues_meta, _cell);
-					if(!$p.iface.sync)
-						$p.iface.wnd_sync();
-					$p.iface.sync.create(stepper);
-
-					break;
-
-				case $p.eve.steps.create_managers:
-
-					stepper.frm_sync.setItemValue("text_processed", "Обработка метаданных");
-					stepper.frm_sync.setItemValue("text_bottom", "Создаём объекты менеджеров данных...");
-
-					break;
-
-				case $p.eve.steps.process_access:
-
-					break;
-
-				case $p.eve.steps.load_data_files:
-
-					stepper.frm_sync.setItemValue("text_processed", "Загрузка начального образа");
-					stepper.frm_sync.setItemValue("text_bottom", "Читаем файлы данных зоны...");
-
-					break;
-
-				case $p.eve.steps.load_data_db:
-
-					stepper.frm_sync.setItemValue("text_processed", "Загрузка изменений из 1С");
-					stepper.frm_sync.setItemValue("text_bottom", "Читаем изменённые справочники");
-
-					break;
-
-				case $p.eve.steps.load_data_wsql:
-
-					break;
-
-				case $p.eve.steps.save_data_wsql:
-
-					stepper.frm_sync.setItemValue("text_processed", "Кеширование данных");
-					stepper.frm_sync.setItemValue("text_bottom", "Сохраняем таблицы в локальном SQL...");
-
-					break;
-
-				default:
-
-					break;
+	if(attr.modal_dialog){
+		if(!attr.options)
+			attr.options = {
+				name: "frm_auth",
+				caption: "Вход на сервер",
+				width: 360,
+				height: 300,
+				center: true,
+				allow_close: true,
+				allow_minmax: true,
+				modal: true
 			}
+		_cell = $p.iface.dat_blank(attr._dxw, attr.options);
+		_cell.attachEvent("onClose",function(win){
+			if(were_errors){
+				if(reject)
+					reject(err);
+			}else if(resolve)
+				resolve();
+			return true;
+		});
+		_frm = _cell.attachForm();
 
-		};
+	}else{
+		_cell = attr.cell || $p.iface.docs;
+		_frm = $p.iface.auth = _cell.attachForm();
+		$p.msg.show_msg($p.msg.init_login, _cell);
+	}
 
 	if(!$p.job_prm.files_date)
 		$p.eve.update_files_version();
@@ -468,28 +427,38 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 		$p.ajax.password = password;
 
 		if(login){
-			if(!is_guest)
+
+			if(!is_guest && $p.wsql.get_user_param("user_name") != login)
 				$p.wsql.set_user_param("user_name", login);					// сохраняем имя пользователя в базе
+
 			if(!$p.is_guid($p.wsql.get_user_param("browser_uid")))
 				$p.wsql.set_user_param("browser_uid", $p.generate_guid());	// проверяем guid браузера
 
 			//$p.eve.log_in(attr.onstep)
-			$p.wsql.pouch.authenticate(login, password)
+			$p.wsql.pouch.log_in(login, password)
 				.then(function () {
-					if(resolve)
-						resolve();
+
+					if($p.wsql.get_user_param("enable_save_pwd")){
+						if($p.wsql.get_user_param("user_pwd") != password)
+							$p.wsql.set_user_param("user_pwd", password);   // сохраняем имя пользователя в базе
+					}else if($p.wsql.get_user_param("user_pwd") != "")
+						$p.wsql.set_user_param("user_pwd", "");
+
 					$p.eve.logged_in = true;
-					dhx4.callEvent("log_in");
+					if(attr.modal_dialog)
+						_cell.close()
+					else if(resolve)
+						resolve();
+
 				})
 				.catch(function (err) {
 					were_errors = true;
-					if(reject)
-						reject(err);
+					_frm.onerror(err);
 				})
 				.then(function () {
 					if($p.iface.sync)
 						$p.iface.sync.close();
-					if(_cell){
+					if(_cell && _cell.progressOff){
 						_cell.progressOff();
 						if(!were_errors && attr.hide_header)
 							_cell.hideHeader();
@@ -505,6 +474,7 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 	// обработчик кнопки "войти" формы авторизации
 	function auth_click(name){
 
+		were_errors = false;
 		this.resetValidateCss();
 
 		if(this.getCheckedValue("type") == "guest"){
@@ -528,16 +498,18 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 			if($p.wsql.get_user_param("enable_save_pwd") && $p.wsql.get_user_param("user_pwd")){
 				_frm.setItemValue("password", $p.wsql.get_user_param("user_pwd"));
 
-				if($p.wsql.get_user_param("autologin"))
-					auth_click();
+				if($p.wsql.get_user_param("autologin") || attr.try_auto)
+					auth_click.call(_frm);
 			}
 		}
 
 		// позиционируем форму по центру
-		if((w = ((_cell.getWidth ? _cell.getWidth() : _cell.cell.offsetWidth) - 500)/2) >= 10)
-			_frm.cont.style.paddingLeft = w.toFixed() + "px";
-		else
-			_frm.cont.style.paddingLeft = "20px";
+		if(!attr.modal_dialog){
+			if((w = ((_cell.getWidth ? _cell.getWidth() : _cell.cell.offsetWidth) - 500)/2) >= 10)
+				_frm.cont.style.paddingLeft = w.toFixed() + "px";
+			else
+				_frm.cont.style.paddingLeft = "20px";
+		}
 
 		setTimeout(function () {
 			dhx4.callEvent("on_draw_auth", [_frm]);
@@ -555,8 +527,6 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 		}
 	});
 
-
-	$p.msg.show_msg($p.msg.init_login, _cell);
 
 	_frm.onerror = function (err) {
 
@@ -582,7 +552,10 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 		}
 	}
 
+
+
 };
+
 
 /**
  * Служебная функция для открытия окна настроек из гиперссылки

@@ -515,10 +515,10 @@
 						}, false);
 
 						// Начало скачивания ресурсов. progress_max - количество ресурсов. Показываем индикатор прогресса
-						cache.addEventListener('downloading', do_cache_update_msg, false);
+						//cache.addEventListener('downloading', do_cache_update_msg, false);
 
 						// Процесс скачивания ресурсов. Индикатор прогресса изменяется
-						cache.addEventListener('progress', do_cache_update_msg,	false);
+						//cache.addEventListener('progress', do_cache_update_msg,	false);
 
 						// Скачивание завершено. Скрываем индикатор прогресса. Обновляем кэш. Перезагружаем страницу.
 						cache.addEventListener('updateready', function(e) {
@@ -562,27 +562,6 @@
 			}
 		}
 
-		function do_cache_update_msg(e){
-
-			if(!stepper.wnd_appcache && $p.iface.appcache)
-				$p.iface.appcache.create(stepper);
-
-			else if(!timer_setted){
-				timer_setted = true;
-				setTimeout(do_reload, 25000);
-			}
-
-			if($p.iface.appcache){
-				stepper.loaded = e.loaded || 0;
-				stepper.total = e.total || 140;
-				$p.iface.appcache.update();
-			}
-
-			if(stepper.do_break){
-				$p.iface.appcache.close();
-				setTimeout(do_reload, 1000);
-			}
-		}
 
 
 	}, false);
@@ -706,7 +685,7 @@ $p.eve.log_in = function(onstep){
 				return res;
 
 			// широковещательное оповещение об авторизованности на сервере
-			dhx4.callEvent("authorized", [$p.ajax.authorized = true]);
+			dhx4.callEvent("log_in", [$p.ajax.authorized = true]);
 
 			if(typeof res == "string")
 				res = JSON.parse(res);
@@ -767,14 +746,6 @@ $p.eve.log_in = function(onstep){
 			// здесь же, уточняем список печатных форм и
 			_md.printing_plates(mdd.printing_plates);
 
-			// и запоминаем в ajax признак полноправности пользователя
-			if($p.ajax.hasOwnProperty("root"))
-				delete $p.ajax.root;
-			$p.ajax.__define("root", {
-				value: !!mdd.root,
-				writable: false,
-				enumerable: false
-			});
 		})
 
 		// сохраняем данные в локальной датабазе

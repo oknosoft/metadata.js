@@ -524,6 +524,12 @@ $p.ajax = new (
 		this.password = "";
 
 		/**
+		 * На этапе отладки считаем всех пользователей полноправными
+		 * @type {boolean}
+		 */
+		this.root = true;
+
+		/**
 		 * признак авторизованности на сервере
 		 * @property authorized
 		 * @type Boolean
