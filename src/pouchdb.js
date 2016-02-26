@@ -27,18 +27,56 @@ function Pouch(){
 
 
 	function run_sync(local, remote, id){
+
+		var linfo, _page;
+
 		return local.info()
-			.then(function () {
+			.then(function (info) {
+
+				linfo = info;
 				return remote.info()
+
 			})
-			.then(function (linfo) {
+			.then(function (rinfo) {
+
+				if(id == "ram" && linfo.doc_count < 10){
+					// широковещательное оповещение о начале загрузки локальных данных
+					_page = {
+						total_rows: rinfo.doc_count,
+						limit: 100,
+						page: 0,
+						start: Date.now()
+					};
+					$p.eve.callEvent("pouch_load_data_start", [_page]);
+
+				}
+
 				return _local.sync[id] = local.sync(remote, {
 					live: true,
 					retry: true
 				}).on('change', function (change) {
 					// yo, something changed!
-					if(id == "ram")
+					if(id == "ram"){
 						t.load_changes(change);
+
+						if(linfo.doc_count < 10){
+
+							// широковещательное оповещение о загрузке порции данных
+							_page.page++;
+							_page.docs_written = change.change.docs_written;
+							_page.duration = Date.now() - _page.start;
+							$p.eve.callEvent("pouch_load_data_page", [_page]);
+
+							if(_page.docs_written >= _page.total_rows){
+
+								// широковещательное оповещение об окончании загрузки локальных данных
+								console.log(_page);
+								_data_loaded = true;
+								$p.eve.callEvent("pouch_load_data_loaded", [_page]);
+							}
+
+						}
+					}
 					$p.eve.callEvent("pouch_change", [id, change]);
 
 				}).on('paused', function (info) {
@@ -128,24 +166,12 @@ function Pouch(){
 					password = $p.job_prm.guest_pwd;
 				}
 
-				if(_auth && _auth.username == username)
-					return Promise.resolve();
-
-				// переподключение под другим пользователем
-				if(_auth && _auth.username != username){
-					if(_local.sync.ram)
-						_local.sync.ram.cancel();
-					if(_local.sync.doc)
-						_local.sync.doc.cancel();
+				if(_auth){
+					if(_auth.username == username)
+						return Promise.resolve();
+					else
+						return Promise.reject();
 				}
-
-				if(_remote && _remote.ram)
-					delete _remote.ram;
-
-				if(_remote && _remote.doc)
-					delete _remote.doc;
-
-				_remote = null;
 
 				return $p.ajax.get_ex(_couch_path + _zone + "_ram", {username: username, password: password})
 					.then(function (req) {
@@ -163,6 +189,7 @@ function Pouch(){
 		 */
 		log_out: {
 			value: function () {
+
 				if(_auth){
 					if(_local.sync.ram)
 						_local.sync.ram.cancel();
@@ -170,6 +197,15 @@ function Pouch(){
 						_local.sync.doc.cancel();
 					_auth = null;
 				}
+
+				if(_remote && _remote.ram)
+					delete _remote.ram;
+
+				if(_remote && _remote.doc)
+					delete _remote.doc;
+
+				_remote = null;
+
 				dhx4.callEvent("log_out");
 			}
 		},
@@ -208,7 +244,7 @@ function Pouch(){
 									fetchNextPage();
 								 else{
 									resolve();
-									// широковещательное оповещение о загрузке локальных данных
+									// широковещательное оповещение об окончании загрузки локальных данных
 									console.log(_page);
 									_data_loaded = true;
 									$p.eve.callEvent("pouch_load_data_loaded", [_page]);
@@ -227,7 +263,7 @@ function Pouch(){
 						.then(function (info) {
 							if(info.doc_count > 10){
 								// широковещательное оповещение о начале загрузки локальных данных
-								$p.eve.callEvent("pouch_load_data_start");
+								$p.eve.callEvent("pouch_load_data_start", [_page]);
 								fetchNextPage();
 							}else{
 								$p.eve.callEvent("pouch_load_data_error", [info]);
@@ -238,6 +274,16 @@ function Pouch(){
 
 			}
 		},
+
+		/**
+		 * Информирует об авторизованности на сервере CouchDB
+		 */
+		authorized: {
+			get: function () {
+				return _auth && _auth.username;
+			}
+		},
+
 
 		/**
 		 * Информирует о загруженности данных

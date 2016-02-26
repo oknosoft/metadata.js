@@ -980,5 +980,8 @@ $p.iface.add_button = function(parent, attr, battr) {
 	if(battr.paddingRight) bdiv.style.paddingRight = battr.paddingRight;
 	if(battr.paddingLeft) bdiv.style.paddingLeft = battr.paddingLeft;
 
+	if(battr.tooltip)
+		bdiv.title = battr.tooltip;
+
 	return bdiv;
 };
