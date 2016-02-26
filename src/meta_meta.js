@@ -96,6 +96,104 @@ $p._find = function(a, val){
 };
 
 /**
+ * Выясняет, удовлетворяет ли объект `o` условию `selection`
+ * @param o {Object}
+ * @param [selection]
+ * @private
+ */
+$p._selection = function (o, selection) {
+
+	var ok = true, j, sel, is_obj;
+
+	if(selection){
+		// если отбор является функцией, выполняем её, передав контекст
+		if(typeof selection == "function")
+			ok = selection.call(this, o);
+
+		else{
+			// бежим по всем свойствам `selection`
+			for(j in selection){
+
+				sel = selection[j];
+				is_obj = typeof(sel) === "object";
+
+				// пропускаем служебные свойства
+				if(j.substr(0, 1) == "_")
+					continue;
+
+				// если свойство отбора является функцией, выполняем её, передав контекст
+				else if(typeof sel == "function"){
+					ok = sel.call(this, o, j);
+					if(!ok)
+						break;
+
+				// если свойство отбора является объектом `or`, выполняем Array.some() TODO: здесь напрашивается рекурсия
+				}else if(j == "or" && Array.isArray(sel)){
+					ok = sel.some(function (element) {
+						var key = Object.keys(element)[0];
+						if(element[key].hasOwnProperty("like"))
+							return o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
+						else
+							return $p.is_equal(o[key], element[key]);
+					});
+					if(!ok)
+						break;
+
+				// если свойство отбора является объектом `like`, сравниваем подстроку
+				}else if(is_obj && sel.hasOwnProperty("like")){
+					if(o[j].toLowerCase().indexOf(sel.like.toLowerCase())==-1){
+						ok = false;
+						break;
+					}
+
+				// если свойство отбора является объектом `not`, сравниваем на неравенство
+				}else if(is_obj && sel.hasOwnProperty("not")){
+					if($p.is_equal(o[j], sel.not)){
+						ok = false;
+						break;
+					}
+
+				// если свойство отбора является объектом `in`, выполняем Array.some()
+				}else if(is_obj && sel.hasOwnProperty("in")){
+					ok = sel.in.some(function(element) {
+						return $p.is_equal(element, o[j]);
+					});
+					if(!ok)
+						break;
+
+				// если свойство отбора является объектом `lt`, сравниваем на _меньше_
+				}else if(is_obj && sel.hasOwnProperty("lt")){
+					ok = o[j] < sel.lt;
+					if(!ok)
+						break;
+
+				// если свойство отбора является объектом `gt`, сравниваем на _больше_
+				}else if(is_obj && sel.hasOwnProperty("gt")){
+					ok = o[j] > sel.lt;
+					if(!ok)
+						break;
+
+				// если свойство отбора является объектом `between`, сравниваем на _вхождение_
+				}else if(is_obj && sel.hasOwnProperty("between")){
+					var tmp = o[j];
+					if(typeof tmp != "number")
+						tmp = $p.fix_date(o[j]);
+					ok = (tmp >= sel.between[0]) && (tmp <= sel.between[1]);
+					if(!ok)
+						break;
+
+				}else if(!$p.is_equal(o[j], sel)){
+					ok = false;
+					break;
+				}
+			}
+		}
+	}
+
+	return ok;
+};
+
+/**
  * ### Поиск массива значений в коллекции
  * Кроме стандартного поиска по равенству значений,
  * поддержаны операторы `in`, `not` и `like` и фильтрация через внешнюю функцию
@@ -108,7 +206,8 @@ $p._find = function(a, val){
  * @private
  */
 $p._find_rows = function(arr, selection, callback){
-	var ok, o, i, j, res = [], top, count = 0;
+
+	var o, i, res = [], top, count = 0;
 
 	if(selection){
 		if(selection._top){
@@ -120,58 +219,9 @@ $p._find_rows = function(arr, selection, callback){
 
 	for(i in arr){
 		o = arr[i];
-		ok = true;
-		if(selection){
-			if(typeof selection == "function")
-				ok = selection(o);
-			else
-				for(j in selection){
-					if(j.substr(0, 1) == "_")
-						continue;
-
-					else if(typeof selection[j] == "function"){
-						ok = selection[j](o, j);
-						if(!ok)
-							break;
-
-					}else if(j == "or" && Array.isArray(selection[j])){
-						ok = selection[j].some(function (element) {
-							var key = Object.keys(element)[0];
-							if(element[key].hasOwnProperty("like"))
-								return o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
-							else
-								return $p.is_equal(o[key], element[key]);
-						});
-						if(!ok)
-							break;
-
-					}else if(selection[j] && selection[j].hasOwnProperty("like")){
-						if(o[j].toLowerCase().indexOf(selection[j].like.toLowerCase())==-1){
-							ok = false;
-							break;
-						}
-					}else if(selection[j] && selection[j].hasOwnProperty("not")){
-						if($p.is_equal(o[j], selection[j].not)){
-							ok = false;
-							break;
-						}
-
-					}else if(selection[j] && selection[j].hasOwnProperty("in")){
-						ok = selection[j].in.some(function(element) {
-							return $p.is_equal(element, o[j]);
-						});
-						if(!ok)
-							break;
-
-					}else if(!$p.is_equal(o[j], selection[j])){
-						ok = false;
-						break;
-					}
-				}
-		}
 
 		// выполняем колбэк с элементом и пополняем итоговый массив
-		if(ok){
+		if($p._selection.call(this, o, selection)){
 			if(callback){
 				if(callback.call(this, o) === false)
 					break;
@@ -892,19 +942,25 @@ function Meta() {
 				ft = "ocombo";//ft = "ref"; //
 			else
 				ft = "refc";
+
 		} else if(type.date_part) {
 			ft = "dhxCalendar";
-		} else if(type["digits"]) {
+
+		} else if(type.digits) {
 			if(type.fraction_figits < 5)
 				ft = "calck";
 			else
 				ft = "edn";
+
 		} else if(type.types[0]=="boolean") {
 			ft = "ch";
+
 		} else if(type.hasOwnProperty("str_len") && (type.str_len >= 100 || type.str_len == 0)) {
 			ft = "txt";
+
 		} else {
 			ft = "ed";
+
 		}
 		return ft;
 	};

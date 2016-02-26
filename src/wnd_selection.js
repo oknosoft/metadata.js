@@ -470,24 +470,32 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	}
 
 	/**
-	 *	@desc: 	формирует объект фильтра по значениям элементов формы и позиции пейджинга
-	 *			переопределяется в каждой форме
-	 *	@param:	start, count - начальная запись и количество записей
+	 * формирует объект фильтра по значениям элементов формы и позиции пейджинга
+	 * @param start {Number} - начальная запись = skip
+	 * @param count {Number} - количество записей на странице
+	 * @return {*|{value, enumerable}}
 	 */
 	function get_filter(start, count){
 		var filter = wnd.elmnts.filter.get_filter()
 				._mixin({
 					action: "get_selection",
 					class_name: _mgr.class_name,
-					order_by: s_col,
+					order_by: wnd.elmnts.grid.columnIds[s_col],
 					direction: a_direction,
 					start: start || ((wnd.elmnts.grid.currentPage || 1)-1)*wnd.elmnts.grid.rowsBufferOutSize,
 					count: count || wnd.elmnts.grid.rowsBufferOutSize,
 					get_header: (previous_filter.get_header == undefined)
-				})
-				._mixin(attr),
-
+				}),
 			tparent = has_tree ? wnd.elmnts.tree.getSelectedItemId() : null;
+
+		if(attr.owner)
+			filter.owner = attr.owner;
+
+		if(attr.date_from && !filter.date_from)
+			filter.date_from = attr.date_from;
+
+		if(attr.date_till && !filter.date_till)
+			filter.date_till = attr.date_till;
 
 		filter.parent = ((tparent  || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
 		if(has_tree && !filter.parent)

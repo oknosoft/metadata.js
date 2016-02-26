@@ -43,6 +43,7 @@ function Pouch(){
 					// широковещательное оповещение о начале загрузки локальных данных
 					_page = {
 						total_rows: rinfo.doc_count,
+						local_rows: linfo.doc_count,
 						limit: 100,
 						page: 0,
 						start: Date.now()

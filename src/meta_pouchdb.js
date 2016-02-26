@@ -15,13 +15,8 @@ DataManager.prototype.pouch_selection = function (attr) {
 	var t = this,
 		cmd = t.metadata(),
 		flds = ["ref", "_deleted"], // поля запроса
-		selection = [],             // условие см. find_rows()
+		selection = {},             // условие см. find_rows()
 		ares = [], doc, key, o, mf;
-
-	// выполняет фильтрацию по дате
-	function between(obj){
-		return true;
-	}
 
 	// набираем поля
 	if(cmd.form && cmd.form.selection){
@@ -71,6 +66,7 @@ DataManager.prototype.pouch_selection = function (attr) {
 	}
 
 	// набираем условие
+	// фильтр по дате
 	if(_md.get(t.class_name, "date") && (attr.date_from || attr.date_till)){
 
 		if(!attr.date_from)
@@ -78,7 +74,20 @@ DataManager.prototype.pouch_selection = function (attr) {
 		if(!attr.date_till)
 			attr.date_till = $p.date_add_day(new Date(), 1);
 
-		selection.push(between);
+		selection.date = {between: [attr.date_from, attr.date_till]};
+	}
+	// фильтр по полям поиска
+	if(attr.filter){
+		if(cmd.input_by_string.lenght == 1)
+			selection[cmd.input_by_string] = {like: attr.filter};
+		else{
+			selection.or = [];
+			cmd.input_by_string.forEach(function (ifld) {
+				var flt = {};
+				flt[ifld] = {like: attr.filter};
+				selection.or.push(flt);
+			});
+		}
 	}
 
 	if(cmd["hierarchical"] && attr.parent){
@@ -106,9 +115,12 @@ DataManager.prototype.pouch_selection = function (attr) {
 			result.rows.forEach(function (rev) {
 				doc = rev.doc;
 
-				// фильтруем
 				key = doc._id.split("|");
 				doc.ref = key[1];
+
+				// фильтруем
+				if(!$p._selection.call(attr, doc, selection))
+					return;
 
 				// наполняем
 				o = {};
@@ -141,7 +153,10 @@ DataManager.prototype.pouch_selection = function (attr) {
 								else
 									o[fld] = "";
 							}
-						}else
+						}else if(typeof doc[fld] === "number" && mf.type.fraction_figits)
+							o[fld] = doc[fld].toFixed(mf.type.fraction_figits);
+
+						else
 							o[fld] = doc[fld];
 					}
 				});
