@@ -379,6 +379,15 @@ div.gridbox_dhx_terrace.gridbox .odd_dhx_terrace {
 .md_otooolbar_button.selected {
 	background-color: #969394;
 }
+.md_otooolbar_sep {
+	width: 0;
+	height: 20px;
+	padding: 0;
+	margin: 3px;
+	cursor: default;
+	border-left: 1px #ccc dashed;
+	pointer-events: none;
+}
 /* Панель инструментов OTooolBar*/
 
 /* dat.GUI */
