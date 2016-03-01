@@ -2019,12 +2019,13 @@ function Pouch(){
 				var options = {
 					limit : 100,
 					include_docs: true
-				}, _page = {
-					total_rows: 0,
-					limit: options.limit,
-					page: 0,
-					start: Date.now()
-				};
+				},
+					_page = {
+						total_rows: 0,
+						limit: options.limit,
+						page: 0,
+						start: Date.now()
+					};
 
 				// бежим по всем документам из ram
 				return new Promise(function(resolve, reject){
@@ -7249,11 +7250,22 @@ DataManager.prototype.get_option_list = function(val, selection){
 		})
 	}
 
-	if(t.cachable == "ram" || (selection && selection._local)){
+	if(t.cachable == "ram" || (selection && selection._local)) {
 		t.find_rows(selection, function (v) {
 			l.push(check({text: v.presentation, value: v.ref}));
 		});
 		return Promise.resolve(l);
+
+	}else if(t.cachable == "doc"){
+		return t.pouch_find_rows(selection)
+			.then(function (data) {
+				data.forEach(function (v) {
+					l.push(check({
+						text: v.presentation,
+						value: v.ref}));
+				});
+				return l;
+			});
 
 	}else{
 		// для некешируемых выполняем запрос к серверу
@@ -7673,12 +7685,12 @@ function RefDataManager(class_name) {
 
 	/**
 	 * ### Найти строки
-	 * Возвращает массив дата-объектов, обрезанный по отбору<br />
-	 * Eсли отбор пустой, возвращаются все строки, закешированные в менеджере (для кешируемых типов)
-	 * Для некешируемых типов выполняет запрос к базе
+	 * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
+	 * Eсли отбор пустой, возвращаются все строки, закешированные в менеджере.
+	 * Имеет смысл для объектов, у которых _cachable = "ram"_
 	 * @method find_rows
 	 * @param selection {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: значение}
-	 * @param callback {Function} - в который передается текущий объект данных на каждой итерации
+	 * @param [callback] {Function} - в который передается текущий объект данных на каждой итерации
 	 * @return {Array}
 	 */
 	t.find_rows = function(selection, callback){
@@ -7694,7 +7706,7 @@ function RefDataManager(class_name) {
 	 */
 	t.load_array = function(aattr, forse){
 
-		var ref, obj;
+		var ref, obj, res = [];
 
 		for(var i in aattr){
 			ref = $p.fix_guid(aattr[i]);
@@ -7707,9 +7719,10 @@ function RefDataManager(class_name) {
 				obj._mixin(aattr[i]);
 				obj._set_loaded();
 			}
-
+			res.push(obj);
 		}
 
+		return res;
 	};
 
 
@@ -11295,13 +11308,24 @@ DataObj.prototype.to_atom = function (ex_meta) {
  * @requires common
  */
 
+/**
+ * Возвращает набор данных для динсписка
+ * @param attr
+ * @return {Promise.<Array>}
+ */
 DataManager.prototype.pouch_selection = function (attr) {
 
 	var t = this,
 		cmd = t.metadata(),
 		flds = ["ref", "_deleted"], // поля запроса
-		selection = {},             // условие см. find_rows()
-		ares = [], doc, key, o, mf;
+		selection = {
+			_raw: true,
+			_top: attr.count || 30,
+			_skip: attr.start || 0
+		},   // условие см. find_rows()
+		ares = [], o, mf, fldsyn;
+
+	// TODO: реализовать top и skip
 
 	// набираем поля
 	if(cmd.form && cmd.form.selection){
@@ -11361,7 +11385,7 @@ DataManager.prototype.pouch_selection = function (attr) {
 
 		selection.date = {between: [attr.date_from, attr.date_till]};
 	}
-	// фильтр по полям поиска
+	// строковый фильтр по полям поиска
 	if(attr.filter){
 		if(cmd.input_by_string.lenght == 1)
 			selection[cmd.input_by_string] = {like: attr.filter};
@@ -11374,44 +11398,21 @@ DataManager.prototype.pouch_selection = function (attr) {
 			});
 		}
 	}
+	// фильтр по родителю
+	if(cmd["hierarchical"] && attr.parent)
+		selection.parent = attr.parent;
+	// фильтр по владельцу
+	if(cmd["has_owners"] && attr.owner)
+		selection.owner = attr.owner;
 
-	if(cmd["hierarchical"] && attr.parent){
-		selection.push({parent: attr.parent});
-	}
+	return t.pouch_find_rows(selection)
+		.then(function (rows) {
 
-	if(cmd["has_owners"] && attr.owner){
-		selection.push({owner: attr.owner});
-	}
-
-	// строковый фильтр по полям поиска
-	if(attr.filter){
-		// selection.push({filter: attr.filter});
-	}
-
-	return $p.wsql.pouch.local.doc.allDocs({
-		limit : 100,
-		//skip: 0,
-		include_docs: true,
-		startkey: t.class_name + "|",
-		endkey: t.class_name + '|\uffff'
-	})
-		.then(function (result) {
-			// handle result
-			result.rows.forEach(function (rev) {
-				doc = rev.doc;
-
-				key = doc._id.split("|");
-				doc.ref = key[1];
-
-				// фильтруем
-				if(!$p._selection.call(attr, doc, selection))
-					return;
+			rows.forEach(function (doc) {
 
 				// наполняем
 				o = {};
 				flds.forEach(function (fld) {
-
-					var fldsyn;
 
 					if(fld == "ref") {
 						o[fld] = doc[fld];
@@ -11420,36 +11421,36 @@ DataManager.prototype.pouch_selection = function (attr) {
 						fldsyn = fld.split(" as ")[1];
 						fld = fld.split(" as ")[0].split(".");
 						fld = fld[fld.length-1];
-					};
+					}else
+						fldsyn = fld;
 
 					mf = _md.get(t.class_name, fld);
 					if(mf){
 
 						if(mf.type.date_part)
-							o[fld] = $p.dateFormat(doc[fld], $p.dateFormat.masks[mf.type.date_part]);
+							o[fldsyn] = $p.dateFormat(doc[fld], $p.dateFormat.masks[mf.type.date_part]);
 
 						else if(mf.type.is_ref){
 							if(!doc[fld] || doc[fld] == $p.blank.guid)
-								o[fld] = "";
+								o[fldsyn] = "";
 							else{
 								var mgr	= _md.value_mgr(o, fld, mf.type, false, doc[fld]);
 								if(mgr)
-									o[fld] = mgr.get(doc[fld]).presentation;
+									o[fldsyn] = mgr.get(doc[fld]).presentation;
 								else
-									o[fld] = "";
+									o[fldsyn] = "";
 							}
 						}else if(typeof doc[fld] === "number" && mf.type.fraction_figits)
-							o[fld] = doc[fld].toFixed(mf.type.fraction_figits);
+							o[fldsyn] = doc[fld].toFixed(mf.type.fraction_figits);
 
 						else
-							o[fld] = doc[fld];
+							o[fldsyn] = doc[fld];
 					}
 				});
 				ares.push(o);
 			});
 
 			return $p.iface.data_to_grid.call(t, ares, attr);
-
 		})
 		.catch($p.record_log);
 
@@ -11469,7 +11470,109 @@ DataManager.prototype.pouch_load_array = function (refs) {
 		.then(function (result) {
 			return $p.wsql.pouch.load_changes(result, {});
 		})
-}
+};
+
+/**
+ * ### Найти строки
+ * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
+ * Eсли отбор пустой, возвращаются все строки из PouchDB.
+ * Имеет смысл для объектов, у которых _cachable = "ram"_
+ * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
+ * @param [selection._top] {Number}
+ * @param [selection._skip] {Number}
+ * @param [selection._raw] {Boolean} - если _истина_, возвращаются сырые данные, а не дата-объекты
+ * @return {Promise.<Array>}
+ */
+DataManager.prototype.pouch_find_rows = function (selection) {
+
+	var t = this, doc, res = [],
+		_raw,
+		top, top_count = 0,
+		skip = 0, skip_count = 0,
+		options = {
+			limit : 100,
+			include_docs: true,
+			startkey: t.class_name + "|",
+			endkey: t.class_name + '|\uffff'
+		};
+
+	if(selection){
+		if(selection._top){
+			top = selection._top;
+			delete selection._top;
+		}else
+			top = 300;
+
+		if(selection._skip) {
+			skip = selection._skip;
+			delete selection._skip;
+		}
+	}
+
+
+	// бежим по всем документам из ram
+	return new Promise(function(resolve, reject){
+
+		function fetchNextPage() {
+			$p.wsql.pouch.local.doc.allDocs(options, function (err, result) {
+
+				if (result) {
+
+					if (result.rows.length){
+
+						options.startkey = result.rows[result.rows.length - 1].key;
+						options.skip = 1;
+
+						result.rows.forEach(function (rev) {
+							doc = rev.doc;
+
+							key = doc._id.split("|");
+							doc.ref = key[1];
+
+							// фильтруем
+							if(!$p._selection.call(t, doc, selection))
+								return;
+
+							// пропукскаем лишние (skip) элементы
+							if(skip) {
+								skip_count++;
+								if (skip_count < skip)
+									return;
+							}
+
+							// ограничиваем кол-во возвращаемых элементов
+							if(top) {
+								top_count++;
+								if (top_count >= top)
+									return;
+							}
+
+							// наполняем
+							res.push(doc);
+						});
+
+						if(top && top_count >= top) {
+							resolve(_raw ? res : t.load_array(res));
+						}else
+							fetchNextPage();
+
+					}else{
+						resolve(_raw ? res : t.load_array(res));
+					}
+
+				} else if(err){
+					reject(err);
+				}
+
+			});
+		}
+
+		fetchNextPage();
+
+	});
+
+
+};
 /**
  * Процедуры импорта и экспорта данных
  *
@@ -12847,7 +12950,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				._mixin({
 					action: "get_selection",
 					class_name: _mgr.class_name,
-					order_by: wnd.elmnts.grid.columnIds[s_col],
+					order_by: wnd.elmnts.grid.columnIds[s_col] || s_col,
 					direction: a_direction,
 					start: start || ((wnd.elmnts.grid.currentPage || 1)-1)*wnd.elmnts.grid.rowsBufferOutSize,
 					count: count || wnd.elmnts.grid.rowsBufferOutSize,
@@ -12855,18 +12958,25 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				}),
 			tparent = has_tree ? wnd.elmnts.tree.getSelectedItemId() : null;
 
-		if(attr.owner)
-			filter.owner = attr.owner;
-
 		if(attr.date_from && !filter.date_from)
 			filter.date_from = attr.date_from;
 
 		if(attr.date_till && !filter.date_till)
 			filter.date_till = attr.date_till;
 
+		if(attr.selection){
+			if(Array.isArray(attr.selection) && attr.selection.length){
+				filter._mixin(attr.selection[0]);
+			}
+		}
+
+		if(attr.owner && !filter.owner)
+			filter.owner = attr.owner;
+
 		filter.parent = ((tparent  || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
 		if(has_tree && !filter.parent)
 			filter.parent = $p.blank.guid;
+
 
 		for(var f in filter){
 			if(previous_filter[f] != filter[f]){

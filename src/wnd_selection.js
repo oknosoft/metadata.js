@@ -480,7 +480,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				._mixin({
 					action: "get_selection",
 					class_name: _mgr.class_name,
-					order_by: wnd.elmnts.grid.columnIds[s_col],
+					order_by: wnd.elmnts.grid.columnIds[s_col] || s_col,
 					direction: a_direction,
 					start: start || ((wnd.elmnts.grid.currentPage || 1)-1)*wnd.elmnts.grid.rowsBufferOutSize,
 					count: count || wnd.elmnts.grid.rowsBufferOutSize,
@@ -488,18 +488,25 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				}),
 			tparent = has_tree ? wnd.elmnts.tree.getSelectedItemId() : null;
 
-		if(attr.owner)
-			filter.owner = attr.owner;
-
 		if(attr.date_from && !filter.date_from)
 			filter.date_from = attr.date_from;
 
 		if(attr.date_till && !filter.date_till)
 			filter.date_till = attr.date_till;
 
+		if(attr.selection){
+			if(Array.isArray(attr.selection) && attr.selection.length){
+				filter._mixin(attr.selection[0]);
+			}
+		}
+
+		if(attr.owner && !filter.owner)
+			filter.owner = attr.owner;
+
 		filter.parent = ((tparent  || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
 		if(has_tree && !filter.parent)
 			filter.parent = $p.blank.guid;
+
 
 		for(var f in filter){
 			if(previous_filter[f] != filter[f]){

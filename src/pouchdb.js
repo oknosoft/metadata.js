@@ -220,12 +220,13 @@ function Pouch(){
 				var options = {
 					limit : 100,
 					include_docs: true
-				}, _page = {
-					total_rows: 0,
-					limit: options.limit,
-					page: 0,
-					start: Date.now()
-				};
+				},
+					_page = {
+						total_rows: 0,
+						limit: options.limit,
+						page: 0,
+						start: Date.now()
+					};
 
 				// бежим по всем документам из ram
 				return new Promise(function(resolve, reject){
