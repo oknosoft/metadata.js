@@ -44,6 +44,7 @@ function Pouch(){
 					_page = {
 						total_rows: rinfo.doc_count,
 						local_rows: linfo.doc_count,
+						docs_written: 0,
 						limit: 100,
 						page: 0,
 						start: Date.now()
@@ -52,7 +53,9 @@ function Pouch(){
 
 				}
 
-				return _local.sync[id] = local.sync(remote, {
+				var method = (id == "ram" || id == "meta") ? local.replicate.from : local.sync;
+
+				return _local.sync[id] = method(remote, {
 					live: true,
 					retry: true
 				}).on('change', function (change) {
@@ -64,7 +67,7 @@ function Pouch(){
 
 							// широковещательное оповещение о загрузке порции данных
 							_page.page++;
-							_page.docs_written = change.change.docs_written;
+							_page.docs_written = change.docs_written;
 							_page.duration = Date.now() - _page.start;
 							$p.eve.callEvent("pouch_load_data_page", [_page]);
 
@@ -323,9 +326,27 @@ function Pouch(){
 			}
 		},
 
+		/**
+		 * Записывает объект в pouchdb
+		 * @return {Promise.<DataObj>} - промис с записанным объектом
+		 */
 		save_obj: {
 			value: function (tObj) {
 
+				var tmp = tObj._obj._clone();
+				tmp._id = tObj._manager.class_name + "|" + tObj.ref;
+				delete tmp.ref;
+
+				return (tObj.is_new() ? Promise.resolve() : t.local[tObj._manager.cachable].get(tmp._id))
+					.then(function (res) {
+						if(res)
+							tmp._rev = res._rev;
+						return t.local[tObj._manager.cachable].put(tmp);
+					})
+					.then(function () {
+						tmp = null;
+						return tObj;
+					});
 			}
 		},
 
