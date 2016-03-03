@@ -55,10 +55,19 @@ function Pouch(){
 
 				var method = (id == "ram" || id == "meta") ? local.replicate.from : local.sync;
 
-				return _local.sync[id] = method(remote, {
-					live: true,
-					retry: true
-				}).on('change', function (change) {
+				if(id == "ram" || id == "meta")
+					_local.sync[id] = PouchDB.replicate(remote, local, {
+						live: true,
+						retry: true
+					});
+				else
+					_local.sync[id] = local.sync(remote, {
+						live: true,
+						retry: true
+					});
+
+				_local.sync[id]
+					.on('change', function (change) {
 					// yo, something changed!
 					if(id == "ram"){
 						t.load_changes(change);
@@ -105,6 +114,8 @@ function Pouch(){
 					$p.eve.callEvent("pouch_error", [id, err]);
 
 				});
+
+				return _local.sync[id];
 			});
 	}
 
@@ -195,10 +206,16 @@ function Pouch(){
 			value: function () {
 
 				if(_auth){
-					if(_local.sync.ram)
-						_local.sync.ram.cancel();
-					if(_local.sync.doc)
-						_local.sync.doc.cancel();
+					if(_local.sync.doc){
+						try{
+							_local.sync.doc.cancel();
+						}catch(err){}
+					}
+					if(_local.sync.ram){
+						try{
+							_local.sync.ram.cancel();
+						}catch(err){}
+					}
 					_auth = null;
 				}
 
@@ -359,9 +376,13 @@ function Pouch(){
 				var docs, doc, res = {}, cn, key;
 
 				if(!options){
-					if(changes.direction != "pull")
-						return;
-					docs = changes.change.docs;
+					if(changes.direction){
+						if(changes.direction != "pull")
+							return;
+						docs = changes.change.docs;
+					}else
+						docs = changes.docs;
+
 				}else
 					docs = changes.rows;
 
