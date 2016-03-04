@@ -11434,9 +11434,23 @@ DataManager.prototype.pouch_selection = function (attr) {
 	// фильтр по родителю
 	if(cmd["hierarchical"] && attr.parent)
 		selection.parent = attr.parent;
+
+	// добавляем условия из attr.selection
+	if(attr.selection){
+		if(Array.isArray(attr.selection)){
+			attr.selection.forEach(function (asel) {
+				for(fldsyn in asel)
+					if(fldsyn[0] != "_")
+						selection[fldsyn] = asel[fldsyn];
+			});
+		}else
+			for(fldsyn in attr.selection)
+				if(fldsyn[0] != "_")
+					selection[fldsyn] = attr.selection[fldsyn];
+	}
 	// фильтр по владельцу
-	if(cmd["has_owners"] && attr.owner)
-		selection.owner = attr.owner;
+	//if(cmd["has_owners"] && attr.owner)
+	//	selection.owner = attr.owner;
 
 	return t.pouch_find_rows(selection)
 		.then(function (rows) {
@@ -12997,10 +13011,14 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		if(attr.date_till && !filter.date_till)
 			filter.date_till = attr.date_till;
 
+		if(attr.initial_value)
+			filter.initial_value = attr.initial_value;
+
 		if(attr.selection){
-			if(Array.isArray(attr.selection) && attr.selection.length){
-				filter._mixin(attr.selection[0]);
-			}
+			filter.selection = attr.selection;
+			//if(Array.isArray(attr.selection) && attr.selection.length){
+			//	filter._mixin(attr.selection[0]);
+			//}
 		}
 
 		if(attr.owner && !filter.owner)

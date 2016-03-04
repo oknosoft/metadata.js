@@ -494,10 +494,14 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		if(attr.date_till && !filter.date_till)
 			filter.date_till = attr.date_till;
 
+		if(attr.initial_value)
+			filter.initial_value = attr.initial_value;
+
 		if(attr.selection){
-			if(Array.isArray(attr.selection) && attr.selection.length){
-				filter._mixin(attr.selection[0]);
-			}
+			filter.selection = attr.selection;
+			//if(Array.isArray(attr.selection) && attr.selection.length){
+			//	filter._mixin(attr.selection[0]);
+			//}
 		}
 
 		if(attr.owner && !filter.owner)

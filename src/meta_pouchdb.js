@@ -103,9 +103,23 @@ DataManager.prototype.pouch_selection = function (attr) {
 	// фильтр по родителю
 	if(cmd["hierarchical"] && attr.parent)
 		selection.parent = attr.parent;
+
+	// добавляем условия из attr.selection
+	if(attr.selection){
+		if(Array.isArray(attr.selection)){
+			attr.selection.forEach(function (asel) {
+				for(fldsyn in asel)
+					if(fldsyn[0] != "_")
+						selection[fldsyn] = asel[fldsyn];
+			});
+		}else
+			for(fldsyn in attr.selection)
+				if(fldsyn[0] != "_")
+					selection[fldsyn] = attr.selection[fldsyn];
+	}
 	// фильтр по владельцу
-	if(cmd["has_owners"] && attr.owner)
-		selection.owner = attr.owner;
+	//if(cmd["has_owners"] && attr.owner)
+	//	selection.owner = attr.owner;
 
 	return t.pouch_find_rows(selection)
 		.then(function (rows) {
