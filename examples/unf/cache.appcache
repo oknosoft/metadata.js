@@ -1,12 +1,23 @@
 CACHE MANIFEST
 # 000000000009
 
-# Additional resources to cache
-CACHE:
+# Заголовок и библиотеки
+index.html
+//cdn.jsdelivr.net/g/alasql,metadata@0.9.206(dhtmlx.min.js+metadata.min.js)
+js/settings.js
+js/main.js
+js/buyers_order.js
 
-# картинки
 
-# служебные страницы
+# css и картинки
+
+//cdn.jsdelivr.net/fontawesome/4.5/css/font-awesome.min.css
+//cdn.jsdelivr.net/fontawesome/4.5/fonts/fontawesome-webfont.woff2?v=4.5.0
+//cdn.jsdelivr.net/g/metadata(dhx_terrace.css+metadata.css)
+
+../imgs/fav-md32.png
+data/splash.png
+
 
 # offline.html will be displayed if the user is offline
 # FALLBACK:
@@ -14,9 +25,5 @@ CACHE:
 
 # All other resources (e.g. sites) require the user to be online.
 NETWORK:
-
-# безбумажка с внедренным фреймворком УПзП
-
-# данные - xml-ки форм, панелей и менюшек
 
 *

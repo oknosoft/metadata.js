@@ -3,37 +3,33 @@
 <head>
     <meta charset='UTF-8'>
 	<title>Metadata.js демо: УНФ Заказ покупателя</title>
-    <base href="../../">
 
-    <link rel="icon" href="examples/imgs/fav-md32.png" type="image/png">
-    <link rel="shortcut icon" href="examples/imgs/fav-md32.png" type="image/png">
+    <link rel="icon" href="../imgs/fav-md32.png" type="image/png">
+    <link rel="shortcut icon" href="../imgs/fav-md32.png" type="image/png">
 
     <!--стили наши + dhtmlx-->
-    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/fontawesome/latest/css/font-awesome.min.css">
-    <link rel="stylesheet" type="text/css" href="dist/dhx_terrace.css">
-    <link rel="stylesheet" type="text/css" href="dist/metadata.css">
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/fontawesome/4.5/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/g/metadata(dhx_terrace.css+metadata.css)">
 
 </head>
 <body>
 
 <div id="splash" style="width: 601px; height: 256px; position: relative; left: 48%; margin-left: -300px; margin-top: 80px;">
-    <img src="examples/unf/data/splash.png">
+    <img src="data/splash.png">
 </div>
 
 <!--библиотеки dhtmlx, alaSQL и metadata.js-->
-<script src="dist/dhtmlx.min.js"></script>
-<script src="lib/alasql/alasql.min.js"></script>
-<script src="lib/metadata.js"></script>
+<script src="//cdn.jsdelivr.net/g/alasql,metadata@0.9.206(dhtmlx.min.js+metadata.min.js)"></script>
 
 <!--скрипт демо-примера УНФ-->
-<script src="examples/unf/js/main.js"></script>
+<script src="js/main.js"></script>
 
 <!--скрипт окна настроек-->
-<script src="examples/unf/js/settings.js"></script>
+<script src="js/settings.js"></script>
 
 <!--модификатор документа "Заказ покупателя"
 если файл отключить, получим приложение с автоформами без клиентской логики -->
-<script src="examples/unf/js/buyers_order.js"></script>
+<script src="js/buyers_order.js"></script>
 
 
 </body>

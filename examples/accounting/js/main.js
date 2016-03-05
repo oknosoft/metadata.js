@@ -41,16 +41,13 @@ $p.settings = function (prm, modifiers) {
 	prm.zone = location.host.indexOf("oknosoft.") == -1 ? 0 : 1392;
 
 	// расположение файлов данных
-	prm.data_url = "examples/accounting/data/";
+	prm.data_url = "data/";
 
 	// расположение файла инициализации базы sql
-	prm.create_tables = "examples/accounting/data/create_tables.sql";
+	prm.create_tables = "data/create_tables.sql";
 
 	// разрешаем сообщения от других окон
 	prm.allow_post_message = "*";
-
-	// используем русскоязычные синонимы классов и методов
-	prm.russian_names = true;
 
 	// разрешаем покидать страницу без лишних вопросов
 	$p.eve.redirect = true;
