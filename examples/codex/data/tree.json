@@ -40,12 +40,10 @@
       ],
       "item":[
         {"id":"0120", "text":"Управление небольшой фирмой", "userdata": [
-          {"name": "url", "content": "examples/unf/"},
-          {"name": "exec_disabled", "content": true}
+          {"name": "exec_hidden", "content": true}
         ]},
         {"id":"0130", "text":"Бухгалтерия предприятия", "userdata": [
-          {"name": "url", "content": "examples/accounting/"},
-          {"name": "exec_disabled", "content": true}
+          {"name": "exec_hidden", "content": true}
         ]},
         {"id":"0140", "text":"Безбумажное производство", "userdata": [
           {"name": "exec_hidden", "content": true}

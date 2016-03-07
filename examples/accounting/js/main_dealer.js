@@ -44,10 +44,10 @@ $p.settings = function (prm, modifiers) {
 	prm.zone = location.host.indexOf("oknosoft.") == -1 ? 0 : 1392;
 
 	// расположение файлов данных
-	prm.data_url = "examples/accounting/data/";
+	prm.data_url = "data/";
 
 	// расположение файла инициализации базы sql
-	prm.create_tables = "examples/accounting/data/create_tables.sql";
+	prm.create_tables = "data/create_tables.sql";
 
 
 	// подключаем модификаторы

@@ -44,19 +44,22 @@ function Rest(){
 	 */
 	this.to_data = function (rdata, mgr) {
 		var o = {},
-			mf = mgr.metadata().fields,
-			mts = mgr.metadata().tabular_sections,
+			cm = mgr.metadata(),
+			mf = cm.fields,
+			mts = cm.tabular_sections,
 			ts, f, tf, row, syn, synts, vmgr;
 
 		if(mgr instanceof RefDataManager){
 			if(rdata.hasOwnProperty("DeletionMark"))
-				o.deleted = rdata.DeletionMark;
+				o._deleted = rdata.DeletionMark;
+
 			if(rdata.hasOwnProperty("DataVersion"))
-				o.data_version = rdata.DataVersion;
+				;
 			if(rdata.hasOwnProperty("Ref_Key"))
 				o.ref = rdata.Ref_Key;
+
 		}else{
-			mf = []._mixin(mgr.metadata().dimensions)._mixin(mgr.metadata().resources);
+			mf = ({})._mixin(cm.dimensions)._mixin(cm.resources)._mixin(cm.attributes);
 		}
 
 		if(mgr instanceof DocManager){
@@ -74,14 +77,14 @@ function Rest(){
 				o.posted = rdata.posted;
 
 		} else {
-			if(mgr.metadata().main_presentation_name){
+			if(cm.main_presentation_name){
 				if(rdata.hasOwnProperty("Description"))
 					o.name = rdata.Description;
 				else if(rdata.hasOwnProperty("name"))
 					o.name = rdata.name;
 			}
 
-			if(mgr.metadata().code_length){
+			if(cm.code_length){
 				if(rdata.hasOwnProperty("Code"))
 					o.id = rdata.Code;
 				else if(rdata.hasOwnProperty("id"))
@@ -304,7 +307,7 @@ function Rest(){
 
 	/**
 	 * Читает объект из rest-сервиса
-	 * @return {Promise.<T>} - промис с загруженным объектом
+	 * @return {Promise.<DataObj>} - промис с загруженным объектом
 	 */
 	this.load_obj = function (tObj) {
 
@@ -417,7 +420,6 @@ function Rest(){
 				});
 				if(data.entry && data.entry.content && data.entry.updated){
 					var p = data.entry.content.properties, r = {}, v;
-					r.lc_changed = new Date(data.entry.updated._text);
 					for(var i in p){
 						if(i.indexOf("_")==0)
 							continue;
@@ -517,7 +519,7 @@ DataManager.prototype.rest_tree = function (attr) {
 				ro = res.value[i];
 				o = {
 					ref: ro["Ref_Key"],
-					deleted: ro["DeletionMark"],
+					_deleted: ro["DeletionMark"],
 					parent: ro["Parent_Key"],
 					presentation: ro["Description"]
 				};
@@ -613,7 +615,7 @@ DataManager.prototype.rest_selection = function (attr) {
 		});
 
 		flds.push("ref");
-		flds.push("deleted");
+		flds.push("_deleted");
 
 		return s;
 
@@ -765,8 +767,8 @@ DataObj.prototype.to_atom = function (ex_meta) {
 		.replace('%d', $p.dateFormat(new Date(), $p.dateFormat.masks.atom)),
 
 		prop = '\n<d:Ref_Key>' + this.ref + '</d:Ref_Key>' +
-			'\n<d:DeletionMark>' + this.deleted + '</d:DeletionMark>' +
-			'\n<d:DataVersion>' + this.data_version + '</d:DataVersion>',
+			'\n<d:DeletionMark>' + this._deleted + '</d:DeletionMark>',
+			// '\n<d:DataVersion>' + this.data_version + '</d:DataVersion>',
 
 		f, mf, fts, ts, mts, pname, v;
 

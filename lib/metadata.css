@@ -62,6 +62,11 @@ html, body {
 	text-rendering: optimizeLegibility;
 }
 
+.disabledbutton {
+	pointer-events: none;
+	opacity: 0.4;
+}
+
 #owb_wrapper {
     width: 100%;
     height: 100%;
@@ -313,7 +318,7 @@ div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td {
     width: 100%
 }
 .ref_field21 {
-    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAVCAIAAADNQonCAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAC1JREFUeNpiuH379n8KAFA7EwPFYNSIUSNGmhF+YICfTWVXMIxm9kFmBECAAQDrvYdvMFF6wAAAAABJRU5ErkJggg==) no-repeat left center;
+    background: url(../imgs/custom_web/points.png) no-repeat left center;
     position: relative;
     width: 22px;
     height: 21px;
@@ -323,7 +328,7 @@ div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td {
     cursor: alias;
 }
 .ref_field21:hover {
-    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAVCAIAAADNQonCAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAADZJREFUeNpivH37tqSkJAO54Pnz50wMFINRI0aNGGlGRIIBfjZFrmBlZUUTYRzN7IPMCIAAAwDD5RGcnhhxbgAAAABJRU5ErkJggg==) no-repeat left center;
+    background: url(../imgs/custom_web/points_hover.png) no-repeat left center;
 }
 
 /* картинка длительной операции*/
@@ -373,6 +378,15 @@ div.gridbox_dhx_terrace.gridbox .odd_dhx_terrace {
 }
 .md_otooolbar_button.selected {
 	background-color: #969394;
+}
+.md_otooolbar_sep {
+	width: 0;
+	height: 20px;
+	padding: 0;
+	margin: 3px;
+	cursor: default;
+	border-left: 1px #ccc dashed;
+	pointer-events: none;
 }
 /* Панель инструментов OTooolBar*/
 

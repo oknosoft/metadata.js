@@ -33,6 +33,7 @@ $p.iface.wnd_sync = function() {
 		if(_stepper && _stepper.wnd_sync){
 			_stepper.wnd_sync.close();
 			delete _stepper.wnd_sync;
+			delete _stepper.frm_sync;
 		}
 	};
 

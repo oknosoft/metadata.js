@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <items>
-	<item type="settings" position="label-left" labelWidth="150" inputWidth="230" noteWidth="230"/>
+	<item type="settings" position="label-left" labelWidth="80" inputWidth="180" noteWidth="180"/>
 	<item type="fieldset" name="data" inputWidth="auto" label="Авторизация">
 
         <item type="radio" name="type" labelWidth="auto" position="label-right" checked="true" value="guest" label="Гостевой (демо) режим">
@@ -10,14 +10,14 @@
         </item>
 
 		<item type="radio" name="type" labelWidth="auto" position="label-right" value="auth" label="Есть учетная запись">
-			<item type="input" value="" name="login" label="Имя пользователя" validate="NotEmpty" />
+			<item type="input" value="" name="login" label="Логин" validate="NotEmpty" />
 			<item type="password" value="" name="password" label="Пароль" validate="NotEmpty" />
 		</item>
 
 		<item type="button" value="Войти" name="submit"/>
 
-        <item type="template" name="text_options" className="order_dealer_options" inputWidth="231"
-              value="&lt;a href='#' onclick='$p.iface.open_settings();' &gt; &lt;i class='fa fa-cog fa-lg'&gt;&lt;/i&gt; Настройки &lt;/a&gt; &lt;a href='//www.oknosoft.ru/feedback' target='_blank' style='margin-left: 9px;' &gt; &lt;i class='fa fa-question-circle fa-lg'&gt;&lt;/i&gt; Задать вопрос &lt;/a&gt;"  />
+        <item type="template" name="text_options" className="order_dealer_options" inputWidth="170"
+              value="&lt;a href='#' onclick='$p.iface.open_settings();' title='Страница настроек программы' &gt; &lt;i class='fa fa-cog fa-lg'&gt;&lt;/i&gt; Настройки &lt;/a&gt; &lt;a href='//www.oknosoft.ru/feedback' target='_blank' style='margin-left: 9px;' title='Задать вопрос через форму обратной связи' &gt; &lt;i class='fa fa-question-circle fa-lg'&gt;&lt;/i&gt; Вопрос &lt;/a&gt;"  />
 
 	</item>
 </items>

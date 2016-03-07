@@ -41,10 +41,10 @@ $p.settings = function (prm, modifiers) {
 	prm.zone = location.host.indexOf("oknosoft.") == -1 ? 0 : 1377;
 
 	// расположение файлов данных
-	prm.data_url = "examples/unf/data/";
+	prm.data_url = "data/";
 
 	// расположение файла инициализации базы sql
-	prm.create_tables = "examples/unf/data/create_tables.sql";
+	prm.create_tables = "data/create_tables.sql";
 
 	// разрешаем сообщения от других окон
 	prm.allow_post_message = "*";
