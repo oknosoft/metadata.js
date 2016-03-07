@@ -185,8 +185,7 @@ if(!Number.prototype.round)
 	}
 
 /**
- * Полифил для обсервера и нотифаера пока не подключаем
- * Это простая заглушка, чтобы в старых браузерах не возникали исключения
+ * Полифил обсервера и нотифаера для старых браузеров
  */
 if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 	Object.prototype.__define({
