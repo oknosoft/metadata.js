@@ -96,6 +96,104 @@ $p._find = function(a, val){
 };
 
 /**
+ * Выясняет, удовлетворяет ли объект `o` условию `selection`
+ * @param o {Object}
+ * @param [selection]
+ * @private
+ */
+$p._selection = function (o, selection) {
+
+	var ok = true, j, sel, is_obj;
+
+	if(selection){
+		// если отбор является функцией, выполняем её, передав контекст
+		if(typeof selection == "function")
+			ok = selection.call(this, o);
+
+		else{
+			// бежим по всем свойствам `selection`
+			for(j in selection){
+
+				sel = selection[j];
+				is_obj = typeof(sel) === "object";
+
+				// пропускаем служебные свойства
+				if(j.substr(0, 1) == "_")
+					continue;
+
+				// если свойство отбора является функцией, выполняем её, передав контекст
+				else if(typeof sel == "function"){
+					ok = sel.call(this, o, j);
+					if(!ok)
+						break;
+
+				// если свойство отбора является объектом `or`, выполняем Array.some() TODO: здесь напрашивается рекурсия
+				}else if(j == "or" && Array.isArray(sel)){
+					ok = sel.some(function (element) {
+						var key = Object.keys(element)[0];
+						if(element[key].hasOwnProperty("like"))
+							return o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
+						else
+							return $p.is_equal(o[key], element[key]);
+					});
+					if(!ok)
+						break;
+
+				// если свойство отбора является объектом `like`, сравниваем подстроку
+				}else if(is_obj && sel.hasOwnProperty("like")){
+					if(o[j].toLowerCase().indexOf(sel.like.toLowerCase())==-1){
+						ok = false;
+						break;
+					}
+
+				// если свойство отбора является объектом `not`, сравниваем на неравенство
+				}else if(is_obj && sel.hasOwnProperty("not")){
+					if($p.is_equal(o[j], sel.not)){
+						ok = false;
+						break;
+					}
+
+				// если свойство отбора является объектом `in`, выполняем Array.some()
+				}else if(is_obj && sel.hasOwnProperty("in")){
+					ok = sel.in.some(function(element) {
+						return $p.is_equal(element, o[j]);
+					});
+					if(!ok)
+						break;
+
+				// если свойство отбора является объектом `lt`, сравниваем на _меньше_
+				}else if(is_obj && sel.hasOwnProperty("lt")){
+					ok = o[j] < sel.lt;
+					if(!ok)
+						break;
+
+				// если свойство отбора является объектом `gt`, сравниваем на _больше_
+				}else if(is_obj && sel.hasOwnProperty("gt")){
+					ok = o[j] > sel.lt;
+					if(!ok)
+						break;
+
+				// если свойство отбора является объектом `between`, сравниваем на _вхождение_
+				}else if(is_obj && sel.hasOwnProperty("between")){
+					var tmp = o[j];
+					if(typeof tmp != "number")
+						tmp = $p.fix_date(o[j]);
+					ok = (tmp >= sel.between[0]) && (tmp <= sel.between[1]);
+					if(!ok)
+						break;
+
+				}else if(!$p.is_equal(o[j], sel)){
+					ok = false;
+					break;
+				}
+			}
+		}
+	}
+
+	return ok;
+};
+
+/**
  * ### Поиск массива значений в коллекции
  * Кроме стандартного поиска по равенству значений,
  * поддержаны операторы `in`, `not` и `like` и фильтрация через внешнюю функцию
@@ -108,7 +206,8 @@ $p._find = function(a, val){
  * @private
  */
 $p._find_rows = function(arr, selection, callback){
-	var ok, o, i, j, res = [], top, count = 0;
+
+	var o, i, res = [], top, count = 0;
 
 	if(selection){
 		if(selection._top){
@@ -120,58 +219,9 @@ $p._find_rows = function(arr, selection, callback){
 
 	for(i in arr){
 		o = arr[i];
-		ok = true;
-		if(selection){
-			if(typeof selection == "function")
-				ok = selection(o);
-			else
-				for(j in selection){
-					if(j.substr(0, 1) == "_")
-						continue;
-
-					else if(typeof selection[j] == "function"){
-						ok = selection[j](o, j);
-						if(!ok)
-							break;
-
-					}else if(j == "or" && Array.isArray(selection[j])){
-						ok = selection[j].some(function (element) {
-							var key = Object.keys(element)[0];
-							if(element[key].hasOwnProperty("like"))
-								return o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
-							else
-								return $p.is_equal(o[key], element[key]);
-						});
-						if(!ok)
-							break;
-
-					}else if(selection[j] && selection[j].hasOwnProperty("like")){
-						if(o[j].toLowerCase().indexOf(selection[j].like.toLowerCase())==-1){
-							ok = false;
-							break;
-						}
-					}else if(selection[j] && selection[j].hasOwnProperty("not")){
-						if($p.is_equal(o[j], selection[j].not)){
-							ok = false;
-							break;
-						}
-
-					}else if(selection[j] && selection[j].hasOwnProperty("in")){
-						ok = selection[j].in.some(function(element) {
-							return $p.is_equal(element, o[j]);
-						});
-						if(!ok)
-							break;
-
-					}else if(!$p.is_equal(o[j], selection[j])){
-						ok = false;
-						break;
-					}
-				}
-		}
 
 		// выполняем колбэк с элементом и пополняем итоговый массив
-		if(ok){
+		if($p._selection.call(this, o, selection)){
 			if(callback){
 				if(callback.call(this, o) === false)
 					break;
@@ -189,55 +239,6 @@ $p._find_rows = function(arr, selection, callback){
 	}
 	return res;
 };
-
-/**
- * Абстрактный запрос к soap или базе WSQL
- * @param method
- * @param attr
- * @param async
- * @param callback
- * @private
- */
-function _load(attr){
-
-	var mgr = _md.mgr_by_class_name(attr.class_name), res_local;
-
-	function get_tree(){
-
-		if(mgr.cachable){
-			return $p.wsql.promise(mgr.get_sql_struct(attr), [])
-				.then($p.iface.data_to_tree);
-		}
-	}
-
-	function get_selection(){
-
-		if(mgr.cachable){
-
-			return $p.wsql.promise(mgr.get_sql_struct(attr), [])
-				.then(function(data){
-					return $p.iface.data_to_grid.call(mgr, data, attr);
-				});
-		}
-	}
-
-
-	if(attr.action == "get_tree" && (res_local = get_tree()))
-		return res_local;
-
-	else if(attr.action == "get_selection" && (res_local = get_selection()))
-		return res_local;
-
-	else if($p.job_prm.offline)
-		return Promise.reject(Error($p.msg.offline_request));
-
-	attr.browser_uid = $p.wsql.get_user_param("browser_uid");
-
-	return $p.ajax.post_ex($p.job_prm.hs_url(), JSON.stringify(attr), true)
-		.then(function (req) {
-			return req.response;
-		});
-}
 
 
 /**
@@ -488,40 +489,138 @@ var _cat = $p.cat = new (
 	/**
 	 * Mетаданные конфигурации
 	 */
-	_md;
+	_md = $p.md = new Meta();
 
 
 // КОНСТРУКТОРЫ - полная абстракция
 
 /**
  * ### Хранилище метаданных конфигурации
- * Загружает описание из файлов на сервере, объекта или json-строки. В оффлайне используется локальный кеш
+ * Загружает описание из локального PouchDB
  *
  * @class Meta
- * @constructor
- * @param req {XMLHttpRequest|Object|String} - с основными метаданными
- * @param patch {XMLHttpRequest} - с дополнительными метаданными
- *
- * @example
- *    new $p.Meta('meta');
+ * @static
  */
-function Meta(req, patch) {
+function Meta() {
 
-	var m = (req && req.response) ? JSON.parse(req.response) : req,
-		class_name;
+	var _m;
 
-	// Экспортируем ссылку на себя
-	_md = $p.md = this;
+	_md = this;
 
-	if(patch)
-		Meta._patch(m, patch.response ? JSON.parse(patch.response) : patch);
+	// создаёт объекты менеджеров
+	function create_managers(){
 
-	req = null;
-	if(typeof window != "undefined"){
-		patch = $p.injected_data['log.json'];
-		Meta._patch(m, patch);
-		patch = null;
+		if(_ireg.$log)
+			return;
+
+		var class_name;
+		for(class_name in _m.enm)
+			_enm[class_name] = new EnumManager(_m.enm[class_name], "enm."+class_name);
+
+		for(class_name in _m.cat)
+			_cat[class_name] = new CatManager("cat."+class_name);
+
+		for(class_name in _m.doc)
+			_doc[class_name] = new DocManager("doc."+class_name);
+
+		for(class_name in _m.ireg)
+			_ireg[class_name] = (class_name == "$log") ? new LogManager("ireg."+class_name) : new InfoRegManager("ireg."+class_name);
+
+		for(class_name in _m.areg)
+			_areg[class_name] = new AccumRegManager("areg."+class_name);
+
+		for(class_name in _m.dp)
+			_dp[class_name] = new DataProcessorsManager("dp."+class_name);
+
+		for(class_name in _m.cch)
+			_cch[class_name] = new ChartOfCharacteristicManager("cch."+class_name);
+
+		for(class_name in _m.cacc)
+			_cacc[class_name] = new ChartOfAccountManager("cacc."+class_name);
+
+		for(class_name in _m.tsk)
+			_tsk[class_name] = new TaskManager("tsk."+class_name);
+
+		for(class_name in _m.bp)
+			_bp[class_name] = new BusinessProcessManager("bp."+class_name);
+
+		// загружаем модификаторы и прочие зависимости
+		$p.modifiers.execute($p);
+
+		// широковещательное оповещение о готовности метаданных
+		$p.eve.callEvent("meta");
+
 	}
+
+	// загружает метаданные из pouchdb
+	function meta_from_pouch(){
+
+		return $p.wsql.pouch.local.meta.info()
+			.then(function () {
+				return $p.wsql.pouch.local.meta.get('meta');
+
+			})
+			.then(function (doc) {
+				_m = doc;
+				doc = null;
+				return $p.wsql.pouch.local.meta.get('meta_patch');
+
+			}).then(function (doc) {
+				$p._patch.call($p._patch.call(_m, doc), $p.injected_data['log.json']);
+				doc = null;
+				delete $p.injected_data['log.json'];
+				delete _m._id;
+				delete _m._rev;
+			});
+	}
+
+
+	/**
+	 * Инициализирует метаданные и загружает данные из локального хранилища
+	 * @param [auth] - если указано, выполняет авторизацию в CouchDB и запускает синхронизацию
+	 */
+	_md.init = function (auth) {
+
+		function do_init(dbid){
+			if(!dbid || dbid == "meta")
+				return meta_from_pouch()
+					.then(create_managers)
+					.then($p.wsql.pouch.load_data)
+					.catch($p.record_log);
+		}
+
+		if(!_md.pouch_change)
+			_md.pouch_change = $p.eve.attachEvent("pouch_change", do_init);
+
+		if(!_m){
+			return $p.wsql.pouch.local.ram.info()
+				.then(function () {
+					return do_init()
+				});
+		}
+
+	};
+
+	/**
+	 * Инициализирует метаданные из встроенных данных, внешних файлов или indexeddb
+	 * @return {Promise}
+	 * @private
+	 */
+	_md.init_meta = function (forse) {
+
+		return new Promise(function(resolve, reject){
+
+			if($p.injected_data['meta.json'])
+				resolve(new Meta($p.injected_data['meta.json'], $p.injected_data['meta_patch.json']));
+
+			else if($p.injected_data['meta_patch.json'])
+				resolve(new Meta($p.injected_data['meta_patch.json']));
+
+			else
+				reject(new Error("no_injected_data"));
+
+		});
+	};
 
 	/**
 	 * Возвращает описание объекта метаданных
@@ -535,7 +634,7 @@ function Meta(req, patch) {
 			res = {multiline_mode: false, note: "", synonym: "", tooltip: "", type: {is_ref: false,	types: ["string"]}},
 			is_doc = "doc,tsk,bp".indexOf(np[0]) != -1, is_cat = "cat,tsk".indexOf(np[0]) != -1;
 		if(!field_name)
-			return m[np[0]][np[1]];
+			return _m[np[0]][np[1]];
 		if(is_doc && field_name=="number_doc"){
 			res.synonym = "Номер";
 			res.tooltip = "Номер документа";
@@ -552,26 +651,26 @@ function Meta(req, patch) {
 			res.synonym = "Код";
 		}else if(is_cat && field_name=="name"){
 			res.synonym = "Наименование";
-		}else if(field_name=="deleted"){
+
+		}else if(field_name=="_deleted"){
 			res.synonym = "Пометка удаления";
 			res.type.types[0] = "boolean";
+
 		}else if(field_name=="is_folder"){
 			res.synonym = "Это группа";
 			res.type.types[0] = "boolean";
-		}else if(field_name=="lc_changed"){
-			res.synonym = "Изменено в 1С";
-			res.tooltip = "Время записи в 1С";
-			res.type.types[0] = "number";
-			res.type.digits = 15;
-			res.type.fraction_figits = 0;
+
 		}else if(field_name=="ref"){
 			res.synonym = "Ссылка";
 			res.type.is_ref = true;
 			res.type.types[0] = class_name;
+
 		}else if(field_name)
-			res = m[np[0]][np[1]].fields[field_name];
+			res = _m[np[0]][np[1]].fields[field_name];
+
 		else
-			res = m[np[0]][np[1]];
+			res = _m[np[0]][np[1]];
+
 		return res;
 	};
 
@@ -581,9 +680,9 @@ function Meta(req, patch) {
 	 */
 	_md.get_classes = function () {
 		var res = {};
-		for(var i in m){
+		for(var i in _m){
 			res[i] = [];
-			for(var j in m[i])
+			for(var j in _m[i])
 				res[i].push(j);
 		}
 		return res;
@@ -722,7 +821,7 @@ function Meta(req, patch) {
 				res = _md.sql_mask(f0) + " CHAR";
 		}
 		return res;
-	}
+	};
 
 	/**
 	 * Заключает имя поля в аппострофы
@@ -843,19 +942,25 @@ function Meta(req, patch) {
 				ft = "ocombo";//ft = "ref"; //
 			else
 				ft = "refc";
+
 		} else if(type.date_part) {
 			ft = "dhxCalendar";
-		} else if(type["digits"]) {
+
+		} else if(type.digits) {
 			if(type.fraction_figits < 5)
 				ft = "calck";
 			else
 				ft = "edn";
+
 		} else if(type.types[0]=="boolean") {
 			ft = "ch";
+
 		} else if(type.hasOwnProperty("str_len") && (type.str_len >= 100 || type.str_len == 0)) {
 			ft = "txt";
+
 		} else {
 			ft = "ed";
+
 		}
 		return ft;
 	};
@@ -914,9 +1019,9 @@ function Meta(req, patch) {
 
 	_md.syns_js = function (v) {
 		var synJS = {
-			DeletionMark: 'deleted',
+			DeletionMark: '_deleted',
 			Description: 'name',
-			DataVersion: 'data_version',
+			DataVersion: 'data_version',    // todo: не сохранять это поле в pouchdb
 			IsFolder: 'is_folder',
 			Number: 'number_doc',
 			Date: 'date',
@@ -932,14 +1037,13 @@ function Meta(req, patch) {
 		};
 		if(synJS[v])
 			return synJS[v];
-		return m.syns_js[m.syns_1с.indexOf(v)] || v;
+		return _m.syns_js[_m.syns_1с.indexOf(v)] || v;
 	};
 
 	_md.syns_1с = function (v) {
 		var syn1c = {
-			deleted: 'DeletionMark',
+			_deleted: 'DeletionMark',
 			name: 'Description',
-			data_version: 'DataVersion',
 			is_folder: 'IsFolder',
 			number_doc: 'Number',
 			date: 'Date',
@@ -952,13 +1056,13 @@ function Meta(req, patch) {
 		};
 		if(syn1c[v])
 			return syn1c[v];
-		return m.syns_1с[m.syns_js.indexOf(v)] || v;
+		return _m.syns_1с[_m.syns_js.indexOf(v)] || v;
 	};
 
 	_md.printing_plates = function (pp) {
 		if(pp)
 			for(var i in pp.doc)
-				m.doc[i].printing_plates = pp.doc[i];
+				_m.doc[i].printing_plates = pp.doc[i];
 
 	};
 
@@ -1032,185 +1136,9 @@ function Meta(req, patch) {
 
 	};
 
-	_md.dates = function () {
-		return {
-			md_date: m["md_date"],
-			cat_date: m["cat_date"]
-		};
-	}
-
-	// создаём объекты менеджеров
-
-	for(class_name in m.enm)
-		_enm[class_name] = new EnumManager(m.enm[class_name], "enm."+class_name);
-
-	for(class_name in m.cat)
-		_cat[class_name] = new CatManager("cat."+class_name);
-
-	for(class_name in m.doc)
-		_doc[class_name] = new DocManager("doc."+class_name);
-
-	for(class_name in m.ireg)
-		_ireg[class_name] = (class_name == "$log") ? new LogManager("ireg."+class_name) : new InfoRegManager("ireg."+class_name);
-
-	for(class_name in m.areg)
-		_areg[class_name] = new AccumRegManager("areg."+class_name);
-
-	for(class_name in m.dp)
-		_dp[class_name] = new DataProcessorsManager("dp."+class_name);
-
-	for(class_name in m.cch)
-		_cch[class_name] = new ChartOfCharacteristicManager("cch."+class_name);
-
-	for(class_name in m.cacc)
-		_cacc[class_name] = new ChartOfAccountManager("cacc."+class_name);
-
-	for(class_name in m.tsk)
-		_tsk[class_name] = new TaskManager("tsk."+class_name);
-
-	for(class_name in m.bp)
-		_bp[class_name] = new BusinessProcessManager("bp."+class_name);
-
-	// загружаем модификаторы и прочие зависимости
-	$p.modifiers.execute($p);
-
-	// широковещательное оповещение о готовности метаданных
-	$p.eve.callEvent("meta");
 
 }
-$p.Meta = Meta;
 
-/**
- * Подмешивает свойства с иерархией объекта patch в объект obj
- * @param obj
- * @param patch
- * @private
- */
-Meta._patch = function(obj, patch){
-	for(var area in patch){
-
-		if(typeof patch[area] == "object"){
-			if(obj[area])
-				Meta._patch(obj[area], patch[area]);
-			else
-				obj[area] = patch[area];
-		}else
-			obj[area] = patch[area];
-	}
-}
-
-/**
- * Инициализирует метаданные из встроенных данных, внешних файлов или indexeddb
- * @return {Promise}
- * @private
- */
-Meta.init_meta = function (forse) {
-
-	return new Promise(function(resolve, reject){
-
-		if($p.injected_data['meta.json'])
-			resolve(new Meta($p.injected_data['meta.json'], $p.injected_data['meta_patch.json']));
-
-		else if($p.injected_data['meta_patch.json'])
-			resolve(new Meta($p.injected_data['meta_patch.json']));
-
-		else{
-
-			// проверим indexeddb
-			$p.wsql.idx_connect(null, 'meta')
-				.then(function (db) {
-					var mreq, mpatch;
-					$p.wsql.idx_get('meta', db, 'meta')
-						.then(function (data) {
-							if(data && !forse){
-								mreq = data;
-								$p.wsql.idx_get('meta_patch', db, 'meta')
-									.then(function (data) {
-										resolve(new Meta(mreq, data));
-									});
-							}
-							else{
-								if(!$p.job_prm.files_date)
-									$p.eve.update_files_version()
-										.then(function () {
-											from_files(db);
-										});
-								else
-									from_files(db);
-							}
-						});
-				});
-
-
-			// в indexeddb не нашлось - грузим из файла
-			function from_files(db){
-
-				if(!$p.job_prm.data_url)
-					return $p.wsql.idx_save({ref: "meta"}, db, 'meta')
-						.then(function () {
-							return $p.wsql.idx_save({ref: "meta_patch"}, db, 'meta')
-						})
-						.then(function () {
-							new Meta({}, {})
-						});
-
-
-				var parts = [
-					$p.ajax.get($p.job_prm.data_url + "meta.json?v="+$p.job_prm.files_date),
-					$p.ajax.get($p.job_prm.data_url + "meta_patch.json?v="+$p.job_prm.files_date)
-				], mreq, mpatch;
-
-
-				// читаем файл метаданных и файл патча метаданных
-				$p.eve.reduce_promices(parts, function (req) {
-						if(req instanceof XMLHttpRequest && req.status == 200){
-							if(req.responseURL.indexOf("meta.json") != -1){
-								mreq = JSON.parse(req.response);
-
-							}else if(req.responseURL.indexOf("meta_patch.json") != -1)
-								mpatch = JSON.parse(req.response);
-						}else{
-							$p.record_log(req);
-						}
-					})
-					// создаём объект Meta() описания метаданных
-					.then(function () {
-						if(!mreq)
-							reject(new Error("Ошибка чтения файла метаданных"));
-						else{
-							mreq.ref = "meta";
-							$p.wsql.idx_save(mreq, db, 'meta')
-								.then(function () {
-									mpatch.ref = "meta_patch";
-									$p.wsql.idx_save(mpatch, db, 'meta');
-								})
-								.then(function () {
-									resolve(new Meta(mreq, mpatch));
-								});
-						}
-					})
-			}
-		}
-
-	});
-}
-
-Meta.init_static = function (forse) {
-
-	return new Promise(function(resolve, reject){
-
-		// проверим indexeddb
-		$p.wsql.idx_connect(null, 'static')
-			.then(function (db) {
-				var mreq, mpatch;
-				$p.wsql.idx_get('p0', db, 'static')
-					.then(function (data) {
-
-					});
-			});
-
-	});
-}
 
 /**
  * Запись журнала регистрации
@@ -1219,47 +1147,5 @@ Meta.init_static = function (forse) {
 $p.record_log = function (err) {
 	if($p.ireg && $p.ireg.$log)
 		$p.ireg.$log.record(err);
-	else
-		console.log(err);
-};
-
-/**
- * Загрузка данных в grid
- * @method load_soap_to_grid
- * @for Catalogs
- * @param attr {Object} - объект с параметрами запроса SOAP
- * @param grid {dhtmlxGrid}
- * @param callback {Function}
- */
-_cat.load_soap_to_grid = function(attr, grid, callback){
-
-	function cb_callBack(res){
-		if(res.substr(0,1) == "{")
-			res = JSON.parse(res);
-
-		if(typeof res == "string")
-		// загружаем строку в грид
-			grid.parse(res, function(){
-				if(callback)
-					callback(res);
-			}, "xml");
-
-		else if(callback)
-			callback(res);
-	}
-
-	grid.xmlFileUrl = "exec";
-
-
-	var mgr = _md.mgr_by_class_name(attr.class_name);
-
-	if((!mgr.cachable || attr.rest) && ($p.job_prm.rest || $p.job_prm.irest_enabled))
-		mgr.rest_selection(attr)
-			.then(cb_callBack)
-			.catch($p.record_log);
-	else
-		_load(attr)
-			.then(cb_callBack)
-			.catch($p.record_log);
-
+	console.log(err);
 };

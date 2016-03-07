@@ -20,6 +20,7 @@ var base64 = require('gulp-base64'),
 gulp.task('build-metadata', function () {
 	return gulp.src([
 			'./src/common.js',
+			'./src/pouchdb.js',
 			'./src/i18n.ru.js',
 			'./src/wdg_dhtmlx.js',
 			'./src/wdg_dropdown_list.js',
@@ -35,8 +36,8 @@ gulp.task('build-metadata', function () {
 			'./src/meta_objs.js',
 			'./src/meta_tabulars.js',
 			'./src/meta_rest.js',
+			'./src/meta_pouchdb.js',
 			'./src/import_export.js',
-			'./src/wnd_appcache.js',
 			'./src/wnd_sync.js',
 			'./src/wnd_obj.js',
 			'./src/wnd_selection.js',

@@ -359,7 +359,7 @@ $p.iface.data_to_grid = function (data, attr){
 			res = "cell_ref_folder";
 		else
 			res = "cell_ref_elm";
-		if(r.deleted)
+		if(r._deleted)
 			res = res + "_deleted";
 		return res ;
 	}

@@ -50,11 +50,16 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 	// !!! проверить закешированность дерева
 	// !!! для неиерархических справочников дерево можно спрятать
 	setTimeout(function () {
-		$p.cat.load_soap_to_grid({
+
+		mgr.sync_grid({
 			action: "get_tree",
-			class_name: mgr.class_name,
 			filter: filter
-		}, tree, callback);
+		}, tree)
+			.then(function (res) {
+				if(callback)
+					callback(res);
+			});
+
 	});
 
 	return tree;

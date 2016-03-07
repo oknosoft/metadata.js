@@ -186,6 +186,7 @@ function tree_select(id){
 }
 
 function opt_url(url){
+
 	if(typeof url == "undefined")
 		url =  "examples/codex/result.html";
 	else if(typeof url == "string")
@@ -193,14 +194,9 @@ function opt_url(url){
 	else if(typeof url == "object")
 		url = url.url;
 
-	if(url.indexOf("oknosoft.ru") == -1 && location.protocol.indexOf("file") != -1){
-		if(url.indexOf("/unf/"))
-			url = "http://www.oknosoft.ru/assets/examples/unf/";
-		else if(url.indexOf("/accounting/") != -1)
-			url = "http://www.oknosoft.ru/assets/examples/accounting/";
-		else
-			url = (location.origin + location.pathname).replace("index.html", "") + url;
-	}
+	if(url.indexOf("oknosoft.ru") == -1 && location.protocol.indexOf("file") != -1)
+		url = (location.origin + location.pathname).replace("index.html", "") + url;
+
 	return url;
 }
 

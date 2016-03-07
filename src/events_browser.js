@@ -453,23 +453,15 @@
 						cat_date: 0,
 						step_size: 57,
 						files: 0,
-						cat_ini_date: $p.wsql.get_user_param("cache_cat_date", "number")  || 0
+						cat_ini_date: 0
 					};
 
 					eve.set_offline(!navigator.onLine);
 
+					/**
+					 * TODO: заменить на обработку события при обновлении данных pouchdb
+					 */
 					eve.update_files_version();
-
-					// пытаемся перейти в полноэкранный режим в мобильных браузерах
-					if (document.documentElement.webkitRequestFullScreen
-						&& navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)
-						&& ($p.job_prm.request_full_screen || $p.wsql.get_user_param("request_full_screen"))) {
-						var requestFullScreen = function(){
-							document.documentElement.webkitRequestFullScreen();
-							w.removeEventListener('touchstart', requestFullScreen);
-						};
-						w.addEventListener('touchstart', requestFullScreen, false);
-					}
 
 					/**
 					 * Выполняем отложенные методы из eve.onload
@@ -479,7 +471,7 @@
 					// инициализируем метаданные и обработчик при начале работы интерфейса
 					setTimeout(function () {
 
-						$p.Meta.init_meta()
+						$p.md.init()
 							.catch($p.record_log);
 
 						// Если есть сплэш, удаляем его
@@ -488,7 +480,7 @@
 
 						iface.oninit();
 
-					}, 20);
+					}, 10);
 
 
 					$p.msg.russian_names();
@@ -523,10 +515,10 @@
 						}, false);
 
 						// Начало скачивания ресурсов. progress_max - количество ресурсов. Показываем индикатор прогресса
-						cache.addEventListener('downloading', do_cache_update_msg, false);
+						//cache.addEventListener('downloading', do_cache_update_msg, false);
 
 						// Процесс скачивания ресурсов. Индикатор прогресса изменяется
-						cache.addEventListener('progress', do_cache_update_msg,	false);
+						//cache.addEventListener('progress', do_cache_update_msg,	false);
 
 						// Скачивание завершено. Скрываем индикатор прогресса. Обновляем кэш. Перезагружаем страницу.
 						cache.addEventListener('updateready', function(e) {
@@ -559,9 +551,9 @@
 				} else
 					init_params();
 
-			}, 20);
+			}, 10);
 
-		}, 20);
+		}, 10);
 
 		function do_reload(){
 			if(!$p.ajax.authorized){
@@ -570,27 +562,6 @@
 			}
 		}
 
-		function do_cache_update_msg(e){
-
-			if(!stepper.wnd_appcache && $p.iface.appcache)
-				$p.iface.appcache.create(stepper);
-
-			else if(!timer_setted){
-				timer_setted = true;
-				setTimeout(do_reload, 25000);
-			}
-
-			if($p.iface.appcache){
-				stepper.loaded = e.loaded || 0;
-				stepper.total = e.total || 140;
-				$p.iface.appcache.update();
-			}
-
-			if(stepper.do_break){
-				$p.iface.appcache.close();
-				setTimeout(do_reload, 1000);
-			}
-		}
 
 
 	}, false);
@@ -681,7 +652,7 @@ $p.eve.log_in = function(onstep){
 			onstep($p.eve.steps.authorization);
 
 			// TODO: реализовать метод для получения списка ролей пользователя
-			mdd = res || (_md ? _md.dates() : {});
+			mdd = res;
 			mdd.root = true;
 
 			// в автономном режиме сразу переходим к чтению первого файла данных
@@ -714,7 +685,7 @@ $p.eve.log_in = function(onstep){
 				return res;
 
 			// широковещательное оповещение об авторизованности на сервере
-			dhx4.callEvent("authorized", [$p.ajax.authorized = true]);
+			dhx4.callEvent("log_in", [$p.ajax.authorized = true]);
 
 			if(typeof res == "string")
 				res = JSON.parse(res);
@@ -764,15 +735,6 @@ $p.eve.log_in = function(onstep){
 
 		})
 
-		// если онлайн, выполняем такт обмена с 1С
-		.then(function() {
-
-			onstep($p.eve.steps.load_data_db);
-			stepper.step_size = 57;
-			return $p.eve.pop();
-
-		})
-
 		// читаем справочники с ограниченным доступом, которые могли прибежать вместе с метаданными
 		.then(function () {
 
@@ -784,14 +746,6 @@ $p.eve.log_in = function(onstep){
 			// здесь же, уточняем список печатных форм и
 			_md.printing_plates(mdd.printing_plates);
 
-			// и запоминаем в ajax признак полноправности пользователя
-			if($p.ajax.hasOwnProperty("root"))
-				delete $p.ajax.root;
-			$p.ajax.__define("root", {
-				value: !!mdd.root,
-				writable: false,
-				enumerable: false
-			});
 		})
 
 		// сохраняем данные в локальной датабазе
@@ -860,22 +814,11 @@ $p.eve.update_files_version = function () {
 
 				if(sync.clear_meta){
 					// чистим indexeddb
-					$p.wsql.idx_connect(null, 'meta')
-						.then(function (db) {
-							return $p.wsql.idx_clear(null, db, 'meta');
-						})
-						.then(function () {
-							return $p.wsql.idx_clear(null, db, 'static');
-						})
-						.catch($p.record_log);
+
 
 				}else if(sync.clear_static){
 					// чистим indexeddb
-					$p.wsql.idx_connect(null, 'static')
-						.then(function (db) {
-							return $p.wsql.idx_clear(null, db, 'static');
-						})
-						.catch($p.record_log);
+
 				}
 
 				if(!$p.job_prm.files_date){
@@ -907,17 +850,3 @@ $p.eve.update_files_version = function () {
 
 		}).catch($p.record_log)
 };
-
-/**
- * Регламентные задания синхронизапции каждые 3 минуты
- * @event ontimer
- * @for AppEvents
- */
-$p.eve.ontimer = function () {
-
-	// читаем файл версии файлов js. в случае изменений, оповещаем пользователя
-	// TODO: это место желательно перенести в сервисворкер
-	$p.eve.update_files_version();
-
-};
-setInterval($p.eve.ontimer, 180000);

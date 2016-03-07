@@ -170,8 +170,10 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 	if(attr.read_only){
 		_grid.setEditable(false);
-		_toolbar.disableItem("btn_add");
-		_toolbar.disableItem("btn_delete");
+		_toolbar.forEachItem(function (name) {
+			if(["btn_add", "btn_delete"].indexOf(name) != -1)
+				_toolbar.disableItem(name);
+		});
 	}
 
 	_grid.attachEvent("onEditCell", tabular_on_edit);
