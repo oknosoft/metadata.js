@@ -27,7 +27,7 @@
 ## Концепция и философия
 > В metadata.js предпринята попытка дополнить лучшее из современных технологий обработки данных инструментами, которых нам не хватало в повседневной работе
 
-![Структура системы на базе metadata.js](examples/imgs/metadata_infrastructure.svg)
+![Структура системы на базе metadata.js](examples/imgs/metadata_infrastructure.png)
 
 ![Структура metadata.js в браузере](examples/imgs/metadata_structure.png)
  
