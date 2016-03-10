@@ -157,7 +157,7 @@ Object.prototype.__define({
 				if (this.hasOwnProperty(p)){
 					v = this[p];
 					if(v){
-						if("function" === typeof v || v instanceof DataObj || v instanceof DataManager)
+						if("function" === typeof v || v instanceof DataObj || v instanceof DataManager || v instanceof Date)
 							c[p] = v;
 
 						else if("object" === typeof v)
