@@ -213,13 +213,19 @@ DataManager.prototype.pouch_find_rows = function (selection) {
 		};
 
 	if(selection){
+
 		if(selection._top){
 			top = selection._top;
 			delete selection._top;
 		}else
 			top = 300;
 
-		if(selection._skip) {
+		if(selection._raw) {
+			_raw = selection._raw;
+			delete selection._raw;
+		}
+
+		if(typeof selection._skip == "number") {
 			skip = selection._skip;
 			delete selection._skip;
 		}

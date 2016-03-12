@@ -822,6 +822,9 @@ function OTooolBar(attr){
 				};
 
 				$p.iface.popup.p.onmouseout = popup_hide;
+
+				if(attr.on_popup)
+					attr.on_popup($p.iface.popup, bdiv);
 			}
 		};
 

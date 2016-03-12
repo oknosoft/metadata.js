@@ -118,7 +118,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.elmnts.frm_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_obj.xml"], function(){
 
 			this.addSpacer("btn_unpost");
-			this.attachEvent("onclick", toolbar_click);
+			this.attachEvent("onclick", attr.toolbar_click || toolbar_click);
 
 			// TODO: учитывать права для каждой роли на каждый объект
 			if(_mgr instanceof DocManager && $p.ajax.root){
