@@ -171,7 +171,7 @@ Object.prototype.__define({
 				if (this.hasOwnProperty(p)){
 					v = this[p];
 					if(v){
-						if("function" === typeof v || v instanceof DataObj || v instanceof DataManager)
+						if("function" === typeof v || v instanceof DataObj || v instanceof DataManager || v instanceof Date)
 							c[p] = v;
 
 						else if("object" === typeof v)
@@ -199,8 +199,7 @@ if(!Number.prototype.round)
 	}
 
 /**
- * Полифил для обсервера и нотифаера пока не подключаем
- * Это простая заглушка, чтобы в старых браузерах не возникали исключения
+ * Полифил обсервера и нотифаера для старых браузеров
  */
 if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 	Object.prototype.__define({
@@ -1815,12 +1814,12 @@ $p.wsql = new WSQL();
 function Pouch(){
 
 	var t = this, _local, _remote, _auth, _data_loaded,
-		_couch_path = $p.wsql.get_user_param("couch_path", "string") || $p.job_prm.couch_path,
+		_couch_path = $p.wsql.get_user_param("couch_path", "string") || $p.job_prm.couch_path || "",
 		_zone = $p.wsql.get_user_param("zone", "number"),
 		_prefix = $p.job_prm.local_storage_prefix,
 		_suffix = $p.wsql.get_user_param("couch_suffix", "string") || "";
 
-	if(_couch_path.indexOf("http") != 0)
+	if(_couch_path && _couch_path.indexOf("http") != 0)
 		_couch_path = location.protocol + "//" + location.host + _couch_path;
 
 
@@ -5013,6 +5012,9 @@ function OTooolBar(attr){
 				};
 
 				$p.iface.popup.p.onmouseout = popup_hide;
+
+				if(attr.on_popup)
+					attr.on_popup($p.iface.popup, bdiv);
 			}
 		};
 
@@ -11544,13 +11546,19 @@ DataManager.prototype.pouch_find_rows = function (selection) {
 		};
 
 	if(selection){
+
 		if(selection._top){
 			top = selection._top;
 			delete selection._top;
 		}else
 			top = 300;
 
-		if(selection._skip) {
+		if(selection._raw) {
+			_raw = selection._raw;
+			delete selection._raw;
+		}
+
+		if(typeof selection._skip == "number") {
 			skip = selection._skip;
 			delete selection._skip;
 		}
@@ -12157,7 +12165,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.elmnts.frm_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_obj.xml"], function(){
 
 			this.addSpacer("btn_unpost");
-			this.attachEvent("onclick", toolbar_click);
+			this.attachEvent("onclick", attr.toolbar_click || toolbar_click);
 
 			// TODO: учитывать права для каждой роли на каждый объект
 			if(_mgr instanceof DocManager && $p.ajax.root){

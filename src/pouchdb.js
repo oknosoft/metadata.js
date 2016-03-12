@@ -16,12 +16,12 @@
 function Pouch(){
 
 	var t = this, _local, _remote, _auth, _data_loaded,
-		_couch_path = $p.wsql.get_user_param("couch_path", "string") || $p.job_prm.couch_path,
+		_couch_path = $p.wsql.get_user_param("couch_path", "string") || $p.job_prm.couch_path || "",
 		_zone = $p.wsql.get_user_param("zone", "number"),
 		_prefix = $p.job_prm.local_storage_prefix,
 		_suffix = $p.wsql.get_user_param("couch_suffix", "string") || "";
 
-	if(_couch_path.indexOf("http") != 0)
+	if(_couch_path && _couch_path.indexOf("http") != 0)
 		_couch_path = location.protocol + "//" + location.host + _couch_path;
 
 
