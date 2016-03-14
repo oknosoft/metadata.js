@@ -9,7 +9,7 @@ html, body {
 	/* font-family: Segoe UI, Tahoma, sans-serif;
 	font-family: 'Open Sans', sans-serif; */
 	font-family: Arial, sans-serif;
-	font-size: 14px;
+	font-size: 100%;
 	line-height: 21px;
 	text-rendering: optimizeLegibility;
 }
@@ -17,28 +17,6 @@ html, body {
 .disabledbutton {
 	pointer-events: none;
 	opacity: 0.4;
-}
-
-#owb_wrapper {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    font-family: Tahoma, sans-serif;
-    font-size: 10pt;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-#risdiv {
-    min-width: 710px;
-    max-width: 92%;
-    min-height: 94%;
-    margin: auto;
-}
-
-#msgfooter {
-    clear: both;
-    height: 40px;
 }
 
 .svgs-area {
@@ -66,18 +44,6 @@ html, body {
     right: 4px;
 }
 
-.inputSize {
-    position: absolute;
-    font-family: Tahoma, sans-serif;
-    font-size: 10pt;
-    border: 1px solid #aaaaaa;
-    background: #ffffff 50% 50% repeat-x;
-    color: #222222;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    border-radius: 4px;
-    z-index: 190;
-}
 
 .dhx_pbox {
     border: none;
@@ -154,6 +120,9 @@ div.gridbox_dhx_terrace.gridbox table.obj.row20px tr td{
     height: 23px;
 }
 */
+div.gridbox_dhx_terrace.gridbox table.obj {
+	font-size: 90%;
+}
 
 /* фон выделения в гриде */
 div.gridbox_dhx_web.gridbox table.obj tr.rowselected td.cellselected {
@@ -188,11 +157,26 @@ div.gridbox_dhx_terrace.gridbox table.hdr td{
 .dhx_toolbar_dhx_terrace div.dhx_toolbar_btn, .dhx_toolbar_dhx_terrace div.dhx_toolbar_arw {
 	margin-top: 1px;
 }
+
+-- шрифт в тулбаре и статусбаре -- удалить из основного файла
+.dhxsidebar_base_dhx_terrace div.dhxsidebar_cont div.dhx_cell_sidebar div.dhx_cell_statusbar_def
+.dhxcarousel_base_dhx_terrace div.dhxcarousel_cont div.dhxcarousel_area div.dhx_cell_carousel div.dhx_cell_statusbar_def
 */
 .dhx_toolbar_dhx_terrace div.dhx_toolbar_btn, .dhx_toolbar_dhx_terrace div.dhx_toolbar_arw {
 	background-color: #fefefe;
 	padding: 3px;
 	margin-top: 1px;
+}
+
+/* поле ввода тулбара */
+.dhx_toolbar_dhx_terrace {
+	font-family: inherit;
+	font-size: 90%;
+}
+.dhx_toolbar_dhx_terrace div.dhx_toolbar_btn .dhxtoolbar_input {
+	border: none;
+	background: transparent;
+	font-size: inherit;
 }
 
 div.gridbox_dhx_terrace.gridbox table.hdr td div.hdrcell {
@@ -246,8 +230,8 @@ div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td {
 .marked_area {
 	height: 100%;
 	width: 100%;
+	font-size: 90%;
 	overflow: auto;
-	font-size: 14px;
 }
 .marked_area h2, .marked_area h3 {
 	margin-bottom: 0px;
@@ -291,7 +275,7 @@ div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td {
 }
 
 .tb_title {
-    font-size: 16pt;
+    font-size: 120%;
     font-family: 'Open Sans', sans-serif;
     margin-right: 20px;
 }
@@ -318,12 +302,10 @@ div.gridbox_dhx_terrace.gridbox .odd_dhx_terrace {
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.35);
 }
 .md_otooolbar_button {
-    width: 20px;
-    height: 20px;
+    width: 21px;
+    height: 21px;
     cursor: default;
     padding: 4px;
-	font-family: Tahoma, sans-serif;
-	font-size: 10pt;
 }
 .md_otooolbar_button:hover, .md_otooolbar_button.selected:hover {
     background-color: #ccc;
@@ -357,9 +339,4 @@ div.dhxwin_brd.dat_gui {
 }
 /* dat.GUI */
 
-/* поле ввода тулбара */
-.dhx_toolbar_dhx_terrace div.dhx_toolbar_btn .dhxtoolbar_input {
-	border: none;
-	background: transparent;
-	font-size: inherit;
-}
+

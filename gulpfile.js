@@ -216,8 +216,8 @@ gulp.task('css-dhtmlx-images', function () {
 gulp.task('css-metadata', function () {
 	return gulp.src([
 			'./src/dhtmlx/patches/dhtmlxtreegrid_property.css',
-			'./src/css/upzp20.css',
-			'./src/css/options.css'
+			'./src/css/upzp20.css'
+			//'./src/css/options.css'
 		])
 		.pipe(base64())
 		.pipe(concat('metadata.css'))
