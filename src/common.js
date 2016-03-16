@@ -1324,6 +1324,13 @@ function Modifiers(){
 	};
 
 	/**
+	 * Отменяет все подписки
+	 */
+	this.clear = function () {
+		methods.length = 0;
+	};
+
+	/**
 	 * Загружает и выполняет методы модификаторов
 	 * @method execute
 	 */

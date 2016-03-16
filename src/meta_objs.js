@@ -398,12 +398,12 @@ DataObj.prototype.__define({
 			if(this instanceof DocObj && $p.blank.date == this.date)
 				this.date = new Date();
 
-			if(this._manager.cachable && this._manager.cachable != "net"){
-				saver = $p.wsql.pouch.save_obj;
-
-			} else {
+			if(this._manager.cachable == "net"){
 				// запрос к серверу по сети
 				saver = _rest.save_irest;
+
+			} else {
+				saver = $p.wsql.pouch.save_obj;
 
 			}
 

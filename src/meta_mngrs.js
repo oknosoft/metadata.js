@@ -755,23 +755,30 @@ function RefDataManager(class_name) {
 		if(!o){
 			o = new t._obj_сonstructor(attr, t);
 
-			if(t.cachable == "net" && fill_default){
-				var rattr = {};
-				$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
-				rattr.url += t.rest_name + "/Create()";
-				return $p.ajax.get_ex(rattr.url, rattr)
-					.then(function (req) {
-						return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
-					});
-			}
+			if(o instanceof DocObj && o.date == $p.blank.date)
+				o.date = new Date();
 
-			if(fill_default){
-				var _obj = o._obj;
-				// присваиваем типизированные значения по умолчанию
-				for(var f in t.metadata().fields){
-					if(_obj[f] == undefined)
-						_obj[f] = "";
+			// выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
+			if(t.handle_event(o, "after_create") !== false){
+
+				if(t.cachable == "net" && fill_default){
+					var rattr = {};
+					$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
+					rattr.url += t.rest_name + "/Create()";
+					return $p.ajax.get_ex(rattr.url, rattr)
+						.then(function (req) {
+							return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
+						});
 				}
+
+				//if(fill_default){
+				//	var _obj = o._obj;
+				//	// присваиваем типизированные значения по умолчанию
+				//	for(var f in t.metadata().fields){
+				//		if(_obj[f] == undefined)
+				//			_obj[f] = "";
+				//	}
+				//}
 			}
 		}
 
