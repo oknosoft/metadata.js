@@ -196,7 +196,7 @@ if(!Number.prototype.round)
 	Number.prototype.round = function(places) {
 		var multiplier = Math.pow(10, places);
 		return (Math.round(this * multiplier) / multiplier);
-	}
+	};
 
 /**
  * Полифил обсервера и нотифаера для старых браузеров
@@ -1387,20 +1387,47 @@ $p.eve.__define({
 	}
 });
 
-/**
- * ### Модификаторы менеджеров объектов метаданных
- * Т.к. экземпляры менеджеров и конструкторы объектов доступны в системе только после загрузки метаданных,
- * а метаданные загружаются после авторизации на сервере, методы модификаторов нельзя выполнить при старте приложения
- * @property modifiers
- * @for MetaEngine
- * @type Modifiers
- * @static
- */
-$p.__define("modifiers", {
-	value: new Modifiers(),
-	enumerable: false,
-	configurable: false
+
+$p.__define({
+
+	/**
+	 * ### Модификаторы менеджеров объектов метаданных
+	 * Т.к. экземпляры менеджеров и конструкторы объектов доступны в системе только после загрузки метаданных,
+	 * а метаданные загружаются после авторизации на сервере, методы модификаторов нельзя выполнить при старте приложения
+	 * @property modifiers
+	 * @for MetaEngine
+	 * @type Modifiers
+	 * @static
+	 */
+	modifiers: {
+		value: new Modifiers(),
+		enumerable: false
+	},
+
+	current_user: {
+		get: function () {
+			return $p.cat && $p.cat.users ?
+				$p.cat.users.by_name($p.wsql.get_user_param("user_name")) :
+				$p.cat.users.get();
+		},
+		enumerable: false
+	},
+
+	current_acl: {
+		get: function () {
+			var res;
+			if($p.cat && $p.cat.users_acl){
+				$p.cat.users_acl.find_rows({owner: $p.current_user}, function (o) {
+					res = o;
+					return false;
+				})
+			}
+			return res;
+		},
+		enumerable: false
+	}
 });
+
 
 /**
  * ### Параметры работы программы
@@ -1450,7 +1477,6 @@ function JobPrm(){
 		return parse(location.search)._mixin(parse(location.hash));
 	};
 
-	this.check_dhtmlx = true;
 	this.offline = false;
 	this.local_storage_prefix = "";
 	this.create_tables = true;
@@ -5854,7 +5880,6 @@ $p.fetch_type = function(str, mtype){
 	return v;
 };
 
-
 /**
  * Сравнивает на равенство ссылочные типы и примитивные значения
  * @method is_equal
@@ -7776,10 +7801,11 @@ function RefDataManager(class_name) {
 	 * Находит первый элемент, в любом поле которого есть искомое значение
 	 * @method find
 	 * @param val {*} - значение для поиска
+	 * @param columns {String|Array} - колонки, в которых искать
 	 * @return {DataObj}
 	 */
-	t.find = function(val){
-		return $p._find(by_ref, val); };
+	t.find = function(val, columns){
+		return $p._find(by_ref, val, columns); };
 
 	/**
 	 * ### Найти строки
@@ -9506,9 +9532,20 @@ DataObj.prototype.__define({
 	 */
 	_deleted: {
 		get : function(){ return !!this._obj._deleted},
-		set : function(v){
+		enumerable : false
+	},
+
+	/**
+	 * Установить пометку удаления
+	 * @method mark_deleted
+	 * @for DataObj
+	 * @param deleted {Boolean}
+	 */
+	mark_deleted: {
+		value: function(deleted){
 			this.__notify('_deleted');
-			this._obj._deleted = !!v;
+			this._obj._deleted = !!deleted;
+			this.save();
 		},
 		enumerable : false
 	},
@@ -12552,6 +12589,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			})
 			.catch(function (err) {
 				pwnd.progressOff();
+				wnd.close();
 				$p.record_log(err);
 			});
 	}

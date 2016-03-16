@@ -809,10 +809,11 @@ function RefDataManager(class_name) {
 	 * Находит первый элемент, в любом поле которого есть искомое значение
 	 * @method find
 	 * @param val {*} - значение для поиска
+	 * @param columns {String|Array} - колонки, в которых искать
 	 * @return {DataObj}
 	 */
-	t.find = function(val){
-		return $p._find(by_ref, val); };
+	t.find = function(val, columns){
+		return $p._find(by_ref, val, columns); };
 
 	/**
 	 * ### Найти строки

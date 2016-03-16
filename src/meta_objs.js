@@ -284,9 +284,20 @@ DataObj.prototype.__define({
 	 */
 	_deleted: {
 		get : function(){ return !!this._obj._deleted},
-		set : function(v){
+		enumerable : false
+	},
+
+	/**
+	 * Установить пометку удаления
+	 * @method mark_deleted
+	 * @for DataObj
+	 * @param deleted {Boolean}
+	 */
+	mark_deleted: {
+		value: function(deleted){
 			this.__notify('_deleted');
-			this._obj._deleted = !!v;
+			this._obj._deleted = !!deleted;
+			this.save();
 		},
 		enumerable : false
 	},

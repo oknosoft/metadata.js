@@ -40,7 +40,6 @@ $p.fetch_type = function(str, mtype){
 	return v;
 };
 
-
 /**
  * Сравнивает на равенство ссылочные типы и примитивные значения
  * @method is_equal

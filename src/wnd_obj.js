@@ -454,6 +454,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			})
 			.catch(function (err) {
 				pwnd.progressOff();
+				wnd.close();
 				$p.record_log(err);
 			});
 	}
