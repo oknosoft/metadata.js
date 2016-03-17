@@ -316,7 +316,7 @@ $p.iface.layout_2u = function (tree_attr) {
 		iface.tree.attachEvent("onSelect", tree_attr.onselect);
 
 		return new Promise(function(resolve, reject) {
-			iface.tree.loadXML(tree_attr.path+'?v='+$p.job_prm.files_date, function(){
+			iface.tree.loadXML(tree_attr.path, function(){
 				this.tree_filteres = tree_attr.path;
 				resolve(this);
 			});
@@ -419,8 +419,6 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 		$p.msg.show_msg($p.msg.init_login, _cell);
 	}
 
-	if(!$p.job_prm.files_date)
-		$p.eve.update_files_version();
 
 	function do_auth(login, password, is_guest){
 		$p.ajax.username = login;
@@ -694,7 +692,7 @@ $p.iface.swith_view = function(name){
 				}, "json");
 
 			}else{
-				iface.tree.loadXML(iface.tree.tree_filteres+'?v='+$p.job_prm.files_date, function(){
+				iface.tree.loadXML(iface.tree.tree_filteres, function(){
 
 				});
 
