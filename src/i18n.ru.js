@@ -221,6 +221,8 @@ msg.log_out_title = "Отключиться от сервера?";
 msg.log_out_break = "<br/>Завершить синхронизацию?";
 
 msg.main_title = "Окнософт: заказ дилера ";
+msg.mark_delete_confirm = "Пометить объект %1 на удаление?";
+msg.mark_undelete_confirm = "Снять пометку удаления с объекта %1?";
 msg.meta_cat = "Справочники";
 msg.meta_doc = "Документы";
 msg.meta_cch = "Планы видов характеристик";

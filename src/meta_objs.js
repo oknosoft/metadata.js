@@ -295,9 +295,9 @@ DataObj.prototype.__define({
 	 */
 	mark_deleted: {
 		value: function(deleted){
-			this.__notify('_deleted');
 			this._obj._deleted = !!deleted;
 			this.save();
+			this.__notify('_deleted');
 		},
 		enumerable : false
 	},

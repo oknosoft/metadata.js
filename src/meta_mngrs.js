@@ -758,27 +758,24 @@ function RefDataManager(class_name) {
 			if(o instanceof DocObj && o.date == $p.blank.date)
 				o.date = new Date();
 
+			// Триггер после создания
+			var after_create_res = t.handle_event(o, "after_create");
+
+			if(after_create_res === false)
+				return Promise.resolve(o);
+
+			else if(typeof after_create_res === "object" && after_create_res.then)
+				return after_create_res;
+
 			// выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
-			if(t.handle_event(o, "after_create") !== false){
-
-				if(t.cachable == "net" && fill_default){
-					var rattr = {};
-					$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
-					rattr.url += t.rest_name + "/Create()";
-					return $p.ajax.get_ex(rattr.url, rattr)
-						.then(function (req) {
-							return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
-						});
-				}
-
-				//if(fill_default){
-				//	var _obj = o._obj;
-				//	// присваиваем типизированные значения по умолчанию
-				//	for(var f in t.metadata().fields){
-				//		if(_obj[f] == undefined)
-				//			_obj[f] = "";
-				//	}
-				//}
+			if(t.cachable == "net" && fill_default){
+				var rattr = {};
+				$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
+				rattr.url += t.rest_name + "/Create()";
+				return $p.ajax.get_ex(rattr.url, rattr)
+					.then(function (req) {
+						return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
+					});
 			}
 		}
 

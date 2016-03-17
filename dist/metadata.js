@@ -2234,6 +2234,12 @@ function Pouch(){
 					.then(function (res) {
 						if(res)
 							tmp._rev = res._rev;
+					})
+					.catch(function (err) {
+						if(err.status != 404)
+							throw err;
+					})
+					.then(function () {
 						return t.local[tObj._manager.cachable].put(tmp);
 					})
 					.then(function () {
@@ -2560,6 +2566,8 @@ msg.log_out_title = "Отключиться от сервера?";
 msg.log_out_break = "<br/>Завершить синхронизацию?";
 
 msg.main_title = "Окнософт: заказ дилера ";
+msg.mark_delete_confirm = "Пометить объект %1 на удаление?";
+msg.mark_undelete_confirm = "Снять пометку удаления с объекта %1?";
 msg.meta_cat = "Справочники";
 msg.meta_doc = "Документы";
 msg.meta_cch = "Планы видов характеристик";
@@ -7748,27 +7756,24 @@ function RefDataManager(class_name) {
 			if(o instanceof DocObj && o.date == $p.blank.date)
 				o.date = new Date();
 
+			// Триггер после создания
+			var after_create_res = t.handle_event(o, "after_create");
+
+			if(after_create_res === false)
+				return Promise.resolve(o);
+
+			else if(typeof after_create_res === "object" && after_create_res.then)
+				return after_create_res;
+
 			// выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
-			if(t.handle_event(o, "after_create") !== false){
-
-				if(t.cachable == "net" && fill_default){
-					var rattr = {};
-					$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
-					rattr.url += t.rest_name + "/Create()";
-					return $p.ajax.get_ex(rattr.url, rattr)
-						.then(function (req) {
-							return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
-						});
-				}
-
-				//if(fill_default){
-				//	var _obj = o._obj;
-				//	// присваиваем типизированные значения по умолчанию
-				//	for(var f in t.metadata().fields){
-				//		if(_obj[f] == undefined)
-				//			_obj[f] = "";
-				//	}
-				//}
+			if(t.cachable == "net" && fill_default){
+				var rattr = {};
+				$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
+				rattr.url += t.rest_name + "/Create()";
+				return $p.ajax.get_ex(rattr.url, rattr)
+					.then(function (req) {
+						return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
+					});
 			}
 		}
 
@@ -9541,9 +9546,9 @@ DataObj.prototype.__define({
 	 */
 	mark_deleted: {
 		value: function(deleted){
-			this.__notify('_deleted');
 			this._obj._deleted = !!deleted;
 			this.save();
+			this.__notify('_deleted');
 		},
 		enumerable : false
 	},
@@ -12971,7 +12976,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			$p.iface.set_hash("", "", "", "def");
 
 		}else if(btn_id=="btn_delete"){
-			$p.msg.show_not_implemented();
+			mark_deleted();
 
 		}else if(btn_id=="btn_import"){
 			_mgr.import();
@@ -13049,6 +13054,28 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		if(rId)
 			_mgr.print(rId, pid, wnd);
 		else
+			$p.msg.show_msg({type: "alert-warning",
+				text: $p.msg.no_selected_row.replace("%1", ""),
+				title: $p.msg.main_title});
+	}
+
+	function mark_deleted(){
+		var rId = wnd.elmnts.grid.getSelectedRowId();
+		if(rId){
+			_mgr.get(rId, true, true)
+				.then(function (o) {
+
+					dhtmlx.confirm({
+						title: $p.msg.main_title,
+						text: o._deleted ? $p.msg.mark_undelete_confirm.replace("%1", o.presentation) : $p.msg.mark_delete_confirm.replace("%1", o.presentation),
+						cancel: "Отмена",
+						callback: function(btn) {
+							if(btn)
+								o.mark_deleted(!o._deleted);
+						}
+					});
+				});
+		}else
 			$p.msg.show_msg({type: "alert-warning",
 				text: $p.msg.no_selected_row.replace("%1", ""),
 				title: $p.msg.main_title});

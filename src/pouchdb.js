@@ -403,6 +403,12 @@ function Pouch(){
 					.then(function (res) {
 						if(res)
 							tmp._rev = res._rev;
+					})
+					.catch(function (err) {
+						if(err.status != 404)
+							throw err;
+					})
+					.then(function () {
 						return t.local[tObj._manager.cachable].put(tmp);
 					})
 					.then(function () {

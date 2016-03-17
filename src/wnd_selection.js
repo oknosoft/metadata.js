@@ -359,7 +359,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			$p.iface.set_hash("", "", "", "def");
 
 		}else if(btn_id=="btn_delete"){
-			$p.msg.show_not_implemented();
+			mark_deleted();
 
 		}else if(btn_id=="btn_import"){
 			_mgr.import();
@@ -437,6 +437,28 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		if(rId)
 			_mgr.print(rId, pid, wnd);
 		else
+			$p.msg.show_msg({type: "alert-warning",
+				text: $p.msg.no_selected_row.replace("%1", ""),
+				title: $p.msg.main_title});
+	}
+
+	function mark_deleted(){
+		var rId = wnd.elmnts.grid.getSelectedRowId();
+		if(rId){
+			_mgr.get(rId, true, true)
+				.then(function (o) {
+
+					dhtmlx.confirm({
+						title: $p.msg.main_title,
+						text: o._deleted ? $p.msg.mark_undelete_confirm.replace("%1", o.presentation) : $p.msg.mark_delete_confirm.replace("%1", o.presentation),
+						cancel: "Отмена",
+						callback: function(btn) {
+							if(btn)
+								o.mark_deleted(!o._deleted);
+						}
+					});
+				});
+		}else
 			$p.msg.show_msg({type: "alert-warning",
 				text: $p.msg.no_selected_row.replace("%1", ""),
 				title: $p.msg.main_title});
