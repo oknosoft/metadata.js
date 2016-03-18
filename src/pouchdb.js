@@ -382,9 +382,14 @@ function Pouch(){
 						delete res._id;
 						delete res._rev;
 						tObj._mixin(res)._set_loaded();
+					})
+					.catch(function (err) {
+						if(err.status != 404)
+							throw err;
+					})
+					.then(function (res) {
 						return tObj;
 					});
-
 			}
 		},
 
