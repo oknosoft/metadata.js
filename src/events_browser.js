@@ -450,18 +450,11 @@
 					eve.stepper = {
 						step: 0,
 						count_all: 0,
-						cat_date: 0,
 						step_size: 57,
-						files: 0,
-						cat_ini_date: 0
+						files: 0
 					};
 
 					eve.set_offline(!navigator.onLine);
-
-					/**
-					 * TODO: заменить на обработку события при обновлении данных pouchdb
-					 */
-					eve.update_files_version();
 
 					/**
 					 * Выполняем отложенные методы из eve.onload
@@ -611,7 +604,7 @@ $p.eve.steps = {
 };
 
 /**
- * Запускает процесс входа в программу и начальную синхронизацию
+ * Авторизация на сервере 1С
  * @method log_in
  * @for AppEvents
  * @param onstep {Function} - callback обработки состояния. Функция вызывается в начале шага
@@ -620,11 +613,8 @@ $p.eve.steps = {
  */
 $p.eve.log_in = function(onstep){
 
-	var stepper = $p.eve.stepper,
-		irest_attr = {},
-		data_url = $p.job_prm.data_url || "/data/",
-		res,
-		parts = [], mdd;
+	var irest_attr = {},
+		mdd;
 
 	// информируем о начале операций
 	onstep($p.eve.steps.load_meta);
@@ -632,9 +622,9 @@ $p.eve.log_in = function(onstep){
 	// выясняем, доступен ли irest (наш сервис) или мы ограничены стандартным rest-ом
 	// параллельно, проверяем авторизацию
 	$p.ajax.default_attr(irest_attr, $p.job_prm.irest_url());
-	res = $p.job_prm.offline ? Promise.resolve({responseURL: "", response: ""}) : $p.ajax.get_ex(irest_attr.url, irest_attr);
 
-	return res
+	return ($p.job_prm.offline ? Promise.resolve({responseURL: "", response: ""}) : $p.ajax.get_ex(irest_attr.url, irest_attr))
+
 		.then(function (req) {
 			if(!$p.job_prm.offline)
 				$p.job_prm.irest_enabled = true;
@@ -695,43 +685,13 @@ $p.eve.log_in = function(onstep){
 
 			if($p.wsql.get_user_param("enable_save_pwd"))
 				$p.wsql.set_user_param("user_pwd", $p.ajax.password);
+
 			else if($p.wsql.get_user_param("user_pwd"))
 				$p.wsql.set_user_param("user_pwd", "");
 
-			// обрабатываем поступившие данные
+			// сохраняем разницу времени с сервером
 			if(res.now_1с && res.now_js)
 				$p.wsql.set_user_param("time_diff", res.now_1с - res.now_js);
-
-		})
-
-		// сохраняем даты справочников в mdd и читаем первый файл данных
-		.then(function(){
-
-			stepper.zone = ($p.job_prm.demo ? "1" : $p.wsql.get_user_param("zone")) + "/";
-
-			return $p.ajax.get(data_url + "zones/" + stepper.zone + "p_0.json?v="+$p.job_prm.files_date)
-		})
-
-		// из содержимого первого файла получаем количество файлов и загружаем их все
-		.then(function (req) {
-
-			var tmpres = JSON.parse(req.response);
-			stepper.files = tmpres.files-1;
-			stepper.step_size = tmpres.files > 0 ? Math.round(tmpres.count_all / tmpres.files) : 57;
-			stepper.cat_ini_date = tmpres["cat_date"];
-			$p.eve.from_json_to_data_obj(tmpres);
-
-		})
-
-		// формируем массив url файлов данных зоны
-		.then(function () {
-
-			parts = [];
-			for(var i=1; i<=stepper.files; i++)
-				parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "p_" + i + ".json?v="+$p.job_prm.files_date));
-			parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "ireg.json?v="+$p.job_prm.files_date));
-
-			return $p.eve.reduce_promices(parts, $p.eve.from_json_to_data_obj);
 
 		})
 
@@ -743,110 +703,9 @@ $p.eve.log_in = function(onstep){
 				$p.eve.from_json_to_data_obj(mdd.access);
 			}
 
-			// здесь же, уточняем список печатных форм и
+			// здесь же, уточняем список печатных форм
 			_md.printing_plates(mdd.printing_plates);
 
-		})
-
-		// сохраняем данные в локальной датабазе
-		.then(function () {
-			onstep($p.eve.steps.save_data_wsql);
 		});
 
-};
-
-$p.eve.auto_log_in = function () {
-	var stepper = $p.eve.stepper,
-		data_url = $p.job_prm.data_url || "/data/",
-		parts = [],
-		p_0;
-
-
-	stepper.zone = $p.wsql.get_user_param("zone") + "/";
-
-	// читаем первый файл снапшота
-	return $p.ajax.get(data_url + "zones/" + stepper.zone + "p_0.json?v="+$p.job_prm.files_date)
-
-		// из содержимого первого файла получаем количество файлов и загружаем их все
-		.then(function (req) {
-
-			p_0 = JSON.parse(req.response);
-
-			stepper.files = p_0.files-1;
-			stepper.step_size = p_0.files > 0 ? Math.round(p_0.count_all / p_0.files) : 57;
-			stepper.cat_ini_date = p_0["cat_date"];
-			$p.eve.from_json_to_data_obj(p_0);
-
-		})
-
-		// формируем массив url файлов данных зоны
-		.then(function () {
-
-			for(var i=1; i<=stepper.files; i++)
-				parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "p_" + i + ".json?v="+$p.job_prm.files_date));
-			parts.push($p.ajax.get(data_url + "zones/" + stepper.zone + "ireg.json?v="+$p.job_prm.files_date));
-
-			return $p.eve.reduce_promices(parts, $p.eve.from_json_to_data_obj);
-
-		})
-
-		// читаем справочники с ограниченным доступом, которые могли прибежать вместе с метаданными
-		.then(function () {
-			stepper.step_size = 57;
-		})
-};
-
-$p.eve.update_files_version = function () {
-
-	if(!$p.job_prm || $p.job_prm.offline || !$p.job_prm.data_url)
-		return Promise.resolve($p.wsql.get_user_param("files_date", "number") || 201601220000);
-
-	if(!$p.job_prm.files_date)
-		$p.job_prm.files_date = $p.wsql.get_user_param("files_date", "number");
-
-	return $p.ajax.get($p.job_prm.data_url + "sync.json?v="+Date.now())
-		.then(function (req) {
-			var sync = JSON.parse(req.response);
-
-			if(!$p.job_prm.confirmation && $p.job_prm.files_date != sync.files_date){
-
-				$p.wsql.set_user_param("files_date", sync.files_date);
-
-				if(sync.clear_meta){
-					// чистим indexeddb
-
-
-				}else if(sync.clear_static){
-					// чистим indexeddb
-
-				}
-
-				if(!$p.job_prm.files_date){
-					$p.job_prm.files_date = sync.files_date;
-
-				}else {
-
-					$p.job_prm.confirmation = true;
-
-					dhtmlx.confirm({
-						title: $p.msg.file_new_date_title,
-						text: $p.msg.file_new_date,
-						ok: "Перезагрузка",
-						cancel: "Продолжить",
-						callback: function(btn) {
-
-							delete $p.job_prm.confirmation;
-
-							if(btn){
-								$p.eve.redirect = true;
-								location.reload(true);
-							}
-						}
-					});
-				}
-			}
-
-			return sync.files_date;
-
-		}).catch($p.record_log)
 };

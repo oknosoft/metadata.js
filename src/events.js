@@ -127,10 +127,9 @@ $p.eve.socket = new SocketMsg();
 
 $p.eve.from_json_to_data_obj = function(res) {
 
-	var stepper = $p.eve.stepper, class_name;
-
 	if (typeof res == "string")
 		res = JSON.parse(res);
+
 	else if(res instanceof XMLHttpRequest){
 		if(res.response)
 			res = JSON.parse(res.response);
@@ -138,31 +137,12 @@ $p.eve.from_json_to_data_obj = function(res) {
 			res = {};
 	}
 
-	if(stepper.do_break){
-		$p.iface.sync.close();
-		$p.eve.redirect = true;
-		location.reload(true);
+	"cch,cacc,cat,bp,tsk,doc,ireg,areg".split(",").forEach(function (mgr) {
+		for(var cn in res[mgr])
+			if($p[mgr] && $p[mgr][cn])
+				$p[mgr][cn].load_array(res[mgr][cn], true);
+	});
 
-	}else if(res["cat_date"] || res.force){
-
-		if(res["cat_date"] > stepper.cat_ini_date)
-			stepper.cat_ini_date = res["cat_date"];
-		if(res["cat_date"] > stepper.cat_date)
-			stepper.cat_date = res["cat_date"];
-		if(res["count_all"])
-			stepper.count_all = res["count_all"];
-		if(res["current"])
-			stepper.current = res["current"];
-
-		"cch,cacc,cat,bp,tsk,doc,ireg,areg".split(",").forEach(function (mgr) {
-			for(class_name in res[mgr])
-				if($p[mgr][class_name])
-					$p[mgr][class_name].load_array(res[mgr][class_name]);
-		});
-
-		// если все данные получены в первом запросе, второй можно не делать
-		return res.current && (res.current >= stepper.step_size);
-	}
 };
 
 // возаращает промис после выполнения всех заданий в очереди

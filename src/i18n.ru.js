@@ -181,15 +181,6 @@ $p.fias = function FIAS(){};
 // публичные методы, экспортируемые, как свойства $p.msg
 msg.store_url_od = "https://chrome.google.com/webstore/detail/hcncallbdlondnoadgjomnhifopfaage";
 
-msg.align_node_right = "Уравнять вертикально вправо";
-msg.align_node_bottom = "Уравнять горизонтально вниз";
-msg.align_node_top = "Уравнять горизонтально вверх";
-msg.align_node_left = "Уравнять вертикально влево";
-msg.align_set_right = "Установить размер сдвигом вправо";
-msg.align_set_bottom = "Установить размер сдвигом вниз";
-msg.align_set_top = "Установить размер сдвигом вверх";
-msg.align_set_left = "Установить размер сдвигом влево";
-msg.align_invalid_direction = "Неприменимо для элемента с данной ориентацией";
 msg.argument_is_not_ref = "Аргумент не является ссылкой";
 msg.addr_title = "Ввод адреса";
 
@@ -230,6 +221,8 @@ msg.log_out_title = "Отключиться от сервера?";
 msg.log_out_break = "<br/>Завершить синхронизацию?";
 
 msg.main_title = "Окнософт: заказ дилера ";
+msg.mark_delete_confirm = "Пометить объект %1 на удаление?";
+msg.mark_undelete_confirm = "Снять пометку удаления с объекта %1?";
 msg.meta_cat = "Справочники";
 msg.meta_doc = "Документы";
 msg.meta_cch = "Планы видов характеристик";

@@ -249,19 +249,70 @@ function DataManager(class_name){
 
 }
 
-/**
- * Возвращает имя семейства объектов данного менеджера<br />
- * Примеры: "справочников", "документов", "регистров сведений"
- * @property family_name
- * @for DataManager
- * @type String
- * @final
- */
-DataManager.prototype.__define("family_name", {
-	get : function () {
-		return $p.msg["meta_"+this.class_name.split(".")[0]+"_mgr"].replace($p.msg.meta_mgr+" ", "");
+
+DataManager.prototype.__define({
+
+	/**
+	 * Возвращает имя семейства объектов данного менеджера<br />
+	 * Примеры: "справочников", "документов", "регистров сведений"
+	 * @property family_name
+	 * @for DataManager
+	 * @type String
+	 * @final
+	 */
+	family_name: {
+		get : function () {
+			return $p.msg["meta_"+this.class_name.split(".")[0]+"_mgr"].replace($p.msg.meta_mgr+" ", "");
+		},
+		enumerable : false
 	},
-	enumerable : false
+
+	/**
+	 * Имя таблицы объектов этого менеджера в локальной базе данных
+	 * @property table_name
+	 * @type String
+	 * @final
+	 */
+	table_name: {
+		get : function(){
+			return this.class_name.replace(".", "_");
+		},
+		enumerable : false
+	},
+
+	extra_fields: {
+		value : function(obj){
+
+			// ищем предопределенный элемент, сответствующий классу данных
+			var destinations = $p.cat.destinations || $p.cat.НаборыДополнительныхРеквизитовИСведений,
+				pn = _md.class_name_to_1c(this.class_name).replace(".", "_"),
+				res = [];
+
+			if(destinations){
+				destinations.find_rows({predefined_name: pn}, function (destination) {
+					var ts = destination.extra_fields || destination.ДополнительныеРеквизиты;
+					if(ts){
+						ts.each(function (row) {
+							if(!row._deleted && !row.ПометкаУдаления)
+								res.push(row.property || row.Свойство);
+						});
+					}
+					return false;
+				})
+
+			}
+
+			return res;
+		},
+		enumerable : false
+	},
+
+	extra_properties: {
+		value : function(obj){
+			return [];
+		},
+		enumerable : false
+	}
 });
 
 
@@ -438,6 +489,7 @@ DataManager.prototype.tabular_captions = function (tabular, source) {
  * @return {String} - XML строка в терминах dhtml.PropertyGrid
  */
 DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
+
 	var t = this, i, j, mf, v, ft, txt, row_id, gd = '<rows>',
 
 		default_oxml = function () {
@@ -498,8 +550,8 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 
 		add_xml_row = function(f, tabular){
 			if(tabular){
-				var pref = f["property"] || f["param"] || f["Параметр"],
-					pval = f["value"] != undefined ? f["value"] : f["Значение"];
+				var pref = f.property || f.param || f.Параметр || f.Свойство,
+					pval = f.value != undefined ? f.value : f.Значение;
 				if(pref.empty()) {
 					row_id = tabular + "|" + "empty";
 					ft = "ro";
@@ -552,9 +604,34 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 			add_xml_row(oxml[i][j]);                        // поля, описанные в текущем разделе
 
 		if(extra_fields && i == extra_fields.title && o[extra_fields.ts]){  // строки табчасти o.extra_fields
-			var added = false;
+			var added = false,
+				destinations_extra_fields = t.extra_fields(o),
+				pnames = "property,param,Свойство,Параметр".split(","),
+				meta_extra_fields = o._metadata.tabular_sections[extra_fields.ts].fields,
+				pname;
+
+			// Если в объекте не найдены предопределенные свойства - добавляем
+			if(pnames.some(function (name) {
+				if(meta_extra_fields[name]){
+					pname = name;
+					return true;
+				}
+			})){
+				o[extra_fields.ts].forEach(function (row) {
+					var index = destinations_extra_fields.indexOf(row[pname]);
+					if(index != -1)
+						destinations_extra_fields.splice(index, 1);
+				});
+				destinations_extra_fields.forEach(function (property) {
+					var row = o[extra_fields.ts].add();
+					row[pname] = property;
+				});
+			};
+
+			// Добавляем строки в oxml с учетом отбора, который мог быть задан в extra_fields.selection
 			o[extra_fields.ts].find_rows(extra_fields.selection, function (row) {
 				add_xml_row(row, extra_fields.ts);
+
 			});
 			//if(!added)
 			//	add_xml_row({param: _cch.properties.get("", false)}, "params"); // fake-строка, если в табчасти нет допреквизитов
@@ -567,18 +644,6 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 	return gd;
 };
 
-/**
- * Имя таблицы объектов этого менеджера в локальной базе данных
- * @property table_name
- * @type String
- * @final
- */
-DataManager.prototype.__define("table_name", {
-	get : function(){
-		return this.class_name.replace(".", "_");
-	},
-	enumerable : false
-});
 
 
 /**
@@ -755,7 +820,20 @@ function RefDataManager(class_name) {
 		if(!o){
 			o = new t._obj_сonstructor(attr, t);
 
-			if(t.cachable == "net" && fill_default){
+			if(o instanceof DocObj && o.date == $p.blank.date)
+				o.date = new Date();
+
+			// Триггер после создания
+			var after_create_res = t.handle_event(o, "after_create");
+
+			if(after_create_res === false)
+				return Promise.resolve(o);
+
+			else if(typeof after_create_res === "object" && after_create_res.then)
+				return after_create_res;
+
+			// выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
+			if(t.cachable == "e1cib" && fill_default){
 				var rattr = {};
 				$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
 				rattr.url += t.rest_name + "/Create()";
@@ -763,15 +841,6 @@ function RefDataManager(class_name) {
 					.then(function (req) {
 						return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
 					});
-			}
-
-			if(fill_default){
-				var _obj = o._obj;
-				// присваиваем типизированные значения по умолчанию
-				for(var f in t.metadata().fields){
-					if(_obj[f] == undefined)
-						_obj[f] = "";
-				}
 			}
 		}
 
@@ -802,10 +871,11 @@ function RefDataManager(class_name) {
 	 * Находит первый элемент, в любом поле которого есть искомое значение
 	 * @method find
 	 * @param val {*} - значение для поиска
+	 * @param columns {String|Array} - колонки, в которых искать
 	 * @return {DataObj}
 	 */
-	t.find = function(val){
-		return $p._find(by_ref, val); };
+	t.find = function(val, columns){
+		return $p._find(by_ref, val, columns); };
 
 	/**
 	 * ### Найти строки
