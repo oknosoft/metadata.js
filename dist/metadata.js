@@ -3691,6 +3691,9 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		if(_obj[rId] != undefined)
 			return _pwnd.on_select(state, {obj: _obj, field: rId});
 	});
+	_grid.attachEvent("onKeyPress", function(code,cFlag,sFlag){
+		code = null;
+	});
 	if(attr.read_only){
 		_grid.setEditable(false);
 	}
@@ -3925,16 +3928,24 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	 * добавляет строку табчасти
 	 */
 	function add_row(){
-		var row = _ts.add();
-		setTimeout(function () {
-			_grid.selectRowById(row.row);
-		}, 100);
+		if(!attr.read_only){
+			var row = _ts.add();
+			setTimeout(function () {
+				_grid.selectRowById(row.row);
+			}, 100);
+		}
 	}
 
 	function del_row(){
-		var rId = get_sel_index();
-		if(rId != undefined)
-			_ts.del(rId);
+		if(!attr.read_only){
+			var rId = get_sel_index();
+			if(rId != undefined){
+				_ts.del(rId);
+				setTimeout(function () {
+					_grid.selectRowById(rId < _ts.count() ? rId + 1 : rId);
+				}, 100);
+			}
+		}
 	}
 
 	/**
@@ -3994,11 +4005,17 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
 	_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_add_del.xml"], function(){
 		this.attachEvent("onclick", function(btn_id){
-			if(btn_id=="btn_add")
-				add_row();
 
-			else if(btn_id=="btn_delete")
-				del_row();
+			switch(btn_id) {
+
+				case "btn_add":
+					add_row();
+					break;
+
+				case "btn_delete":
+					del_row();
+					break;
+			};
 
 		});
 	});
@@ -4029,6 +4046,19 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	}
 
 	_grid.attachEvent("onEditCell", tabular_on_edit);
+	_grid.attachEvent("onKeyPress", function(code,cFlag,sFlag){
+
+		switch(code) {
+			case 45:    //  ins
+				add_row();
+				break;
+
+			case 46:    //  del
+				del_row();
+				break;
+		};
+
+	});
 
 	_grid.get_cell_field = function () {
 		var rindex = get_sel_index(true), cindex = _grid.getSelectedCellIndex(), row, col;
@@ -6948,7 +6978,7 @@ function Meta() {
 		else if(pn[0] == "Отчет")
 			name = "rep.";
 
-		return name + pn[1];
+		return name + _md.syns_js(pn[1]);
 
 	};
 
@@ -6983,7 +7013,7 @@ function Meta() {
 		else if(pn[0] == "rep")
 			name = "Отчет.";
 
-		return name + pn[1];
+		return name + _md.syns_1с(pn[1]);
 
 	};
 
@@ -7252,19 +7282,70 @@ function DataManager(class_name){
 
 }
 
-/**
- * Возвращает имя семейства объектов данного менеджера<br />
- * Примеры: "справочников", "документов", "регистров сведений"
- * @property family_name
- * @for DataManager
- * @type String
- * @final
- */
-DataManager.prototype.__define("family_name", {
-	get : function () {
-		return $p.msg["meta_"+this.class_name.split(".")[0]+"_mgr"].replace($p.msg.meta_mgr+" ", "");
+
+DataManager.prototype.__define({
+
+	/**
+	 * Возвращает имя семейства объектов данного менеджера<br />
+	 * Примеры: "справочников", "документов", "регистров сведений"
+	 * @property family_name
+	 * @for DataManager
+	 * @type String
+	 * @final
+	 */
+	family_name: {
+		get : function () {
+			return $p.msg["meta_"+this.class_name.split(".")[0]+"_mgr"].replace($p.msg.meta_mgr+" ", "");
+		},
+		enumerable : false
 	},
-	enumerable : false
+
+	/**
+	 * Имя таблицы объектов этого менеджера в локальной базе данных
+	 * @property table_name
+	 * @type String
+	 * @final
+	 */
+	table_name: {
+		get : function(){
+			return this.class_name.replace(".", "_");
+		},
+		enumerable : false
+	},
+
+	extra_fields: {
+		value : function(obj){
+
+			// ищем предопределенный элемент, сответствующий классу данных
+			var destinations = $p.cat.destinations || $p.cat.НаборыДополнительныхРеквизитовИСведений,
+				pn = _md.class_name_to_1c(this.class_name).replace(".", "_"),
+				res = [];
+
+			if(destinations){
+				destinations.find_rows({predefined_name: pn}, function (destination) {
+					var ts = destination.extra_fields || destination.ДополнительныеРеквизиты;
+					if(ts){
+						ts.each(function (row) {
+							if(!row._deleted && !row.ПометкаУдаления)
+								res.push(row.property || row.Свойство);
+						});
+					}
+					return false;
+				})
+
+			}
+
+			return res;
+		},
+		enumerable : false
+	},
+
+	extra_properties: {
+		value : function(obj){
+			return [];
+		},
+		enumerable : false
+	}
 });
 
 
@@ -7441,6 +7522,7 @@ DataManager.prototype.tabular_captions = function (tabular, source) {
  * @return {String} - XML строка в терминах dhtml.PropertyGrid
  */
 DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
+
 	var t = this, i, j, mf, v, ft, txt, row_id, gd = '<rows>',
 
 		default_oxml = function () {
@@ -7501,8 +7583,8 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 
 		add_xml_row = function(f, tabular){
 			if(tabular){
-				var pref = f["property"] || f["param"] || f["Параметр"],
-					pval = f["value"] != undefined ? f["value"] : f["Значение"];
+				var pref = f.property || f.param || f.Параметр || f.Свойство,
+					pval = f.value != undefined ? f.value : f.Значение;
 				if(pref.empty()) {
 					row_id = tabular + "|" + "empty";
 					ft = "ro";
@@ -7555,9 +7637,34 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 			add_xml_row(oxml[i][j]);                        // поля, описанные в текущем разделе
 
 		if(extra_fields && i == extra_fields.title && o[extra_fields.ts]){  // строки табчасти o.extra_fields
-			var added = false;
+			var added = false,
+				destinations_extra_fields = t.extra_fields(o),
+				pnames = "property,param,Свойство,Параметр".split(","),
+				meta_extra_fields = o._metadata.tabular_sections[extra_fields.ts].fields,
+				pname;
+
+			// Если в объекте не найдены предопределенные свойства - добавляем
+			if(pnames.some(function (name) {
+				if(meta_extra_fields[name]){
+					pname = name;
+					return true;
+				}
+			})){
+				o[extra_fields.ts].forEach(function (row) {
+					var index = destinations_extra_fields.indexOf(row[pname]);
+					if(index != -1)
+						destinations_extra_fields.splice(index, 1);
+				});
+				destinations_extra_fields.forEach(function (property) {
+					var row = o[extra_fields.ts].add();
+					row[pname] = property;
+				});
+			};
+
+			// Добавляем строки в oxml с учетом отбора, который мог быть задан в extra_fields.selection
 			o[extra_fields.ts].find_rows(extra_fields.selection, function (row) {
 				add_xml_row(row, extra_fields.ts);
+
 			});
 			//if(!added)
 			//	add_xml_row({param: _cch.properties.get("", false)}, "params"); // fake-строка, если в табчасти нет допреквизитов
@@ -7570,18 +7677,6 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 	return gd;
 };
 
-/**
- * Имя таблицы объектов этого менеджера в локальной базе данных
- * @property table_name
- * @type String
- * @final
- */
-DataManager.prototype.__define("table_name", {
-	get : function(){
-		return this.class_name.replace(".", "_");
-	},
-	enumerable : false
-});
 
 
 /**
@@ -7771,7 +7866,7 @@ function RefDataManager(class_name) {
 				return after_create_res;
 
 			// выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
-			if(t.cachable == "net" && fill_default){
+			if(t.cachable == "e1cib" && fill_default){
 				var rattr = {};
 				$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
 				rattr.url += t.rest_name + "/Create()";
@@ -9602,7 +9697,7 @@ DataObj.prototype.__define({
 				return Promise.resolve(this);
 
 			}else{
-				if(this._manager.cachable && this._manager.cachable != "net"){
+				if(this._manager.cachable && this._manager.cachable != "e1cib"){
 					return $p.wsql.pouch.load_obj(this);
 
 				} else
@@ -9665,12 +9760,12 @@ DataObj.prototype.__define({
 			if(this instanceof DocObj && $p.blank.date == this.date)
 				this.date = new Date();
 
-			if(this._manager.cachable == "net"){
-				// запрос к серверу по сети
-				saver = _rest.save_irest;
+			if(this._manager.cachable && this._manager.cachable != "e1cib"){
+				saver = $p.wsql.pouch.save_obj;
 
 			} else {
-				saver = $p.wsql.pouch.save_obj;
+				// запрос к серверу 1C по сети
+				saver = _rest.save_irest;
 
 			}
 

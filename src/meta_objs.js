@@ -346,7 +346,7 @@ DataObj.prototype.__define({
 				return Promise.resolve(this);
 
 			}else{
-				if(this._manager.cachable && this._manager.cachable != "net"){
+				if(this._manager.cachable && this._manager.cachable != "e1cib"){
 					return $p.wsql.pouch.load_obj(this);
 
 				} else
@@ -409,12 +409,12 @@ DataObj.prototype.__define({
 			if(this instanceof DocObj && $p.blank.date == this.date)
 				this.date = new Date();
 
-			if(this._manager.cachable == "net"){
-				// запрос к серверу по сети
-				saver = _rest.save_irest;
+			if(this._manager.cachable && this._manager.cachable != "e1cib"){
+				saver = $p.wsql.pouch.save_obj;
 
 			} else {
-				saver = $p.wsql.pouch.save_obj;
+				// запрос к серверу 1C по сети
+				saver = _rest.save_irest;
 
 			}
 

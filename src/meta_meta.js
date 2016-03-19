@@ -1097,7 +1097,7 @@ function Meta() {
 		else if(pn[0] == "Отчет")
 			name = "rep.";
 
-		return name + pn[1];
+		return name + _md.syns_js(pn[1]);
 
 	};
 
@@ -1132,7 +1132,7 @@ function Meta() {
 		else if(pn[0] == "rep")
 			name = "Отчет.";
 
-		return name + pn[1];
+		return name + _md.syns_1с(pn[1]);
 
 	};
 
