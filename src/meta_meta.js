@@ -40,7 +40,6 @@ $p.fetch_type = function(str, mtype){
 	return v;
 };
 
-
 /**
  * Сравнивает на равенство ссылочные типы и примитивные значения
  * @method is_equal
@@ -546,6 +545,7 @@ function Meta() {
 
 		// загружаем модификаторы и прочие зависимости
 		$p.modifiers.execute($p);
+		$p.modifiers.clear();
 
 		// широковещательное оповещение о готовности метаданных
 		$p.eve.callEvent("meta");
@@ -1097,7 +1097,7 @@ function Meta() {
 		else if(pn[0] == "Отчет")
 			name = "rep.";
 
-		return name + pn[1];
+		return name + _md.syns_js(pn[1]);
 
 	};
 
@@ -1132,7 +1132,7 @@ function Meta() {
 		else if(pn[0] == "rep")
 			name = "Отчет.";
 
-		return name + pn[1];
+		return name + _md.syns_1с(pn[1]);
 
 	};
 

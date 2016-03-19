@@ -284,9 +284,20 @@ DataObj.prototype.__define({
 	 */
 	_deleted: {
 		get : function(){ return !!this._obj._deleted},
-		set : function(v){
+		enumerable : false
+	},
+
+	/**
+	 * Установить пометку удаления
+	 * @method mark_deleted
+	 * @for DataObj
+	 * @param deleted {Boolean}
+	 */
+	mark_deleted: {
+		value: function(deleted){
+			this._obj._deleted = !!deleted;
+			this.save();
 			this.__notify('_deleted');
-			this._obj._deleted = !!v;
 		},
 		enumerable : false
 	},
@@ -335,7 +346,7 @@ DataObj.prototype.__define({
 				return Promise.resolve(this);
 
 			}else{
-				if(this._manager.cachable && this._manager.cachable != "net"){
+				if(this._manager.cachable && this._manager.cachable != "e1cib"){
 					return $p.wsql.pouch.load_obj(this);
 
 				} else
@@ -398,11 +409,11 @@ DataObj.prototype.__define({
 			if(this instanceof DocObj && $p.blank.date == this.date)
 				this.date = new Date();
 
-			if(this._manager.cachable && this._manager.cachable != "net"){
+			if(this._manager.cachable && this._manager.cachable != "e1cib"){
 				saver = $p.wsql.pouch.save_obj;
 
 			} else {
-				// запрос к серверу по сети
+				// запрос к серверу 1C по сети
 				saver = _rest.save_irest;
 
 			}

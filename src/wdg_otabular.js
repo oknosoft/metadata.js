@@ -73,16 +73,24 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	 * добавляет строку табчасти
 	 */
 	function add_row(){
-		var row = _ts.add();
-		setTimeout(function () {
-			_grid.selectRowById(row.row);
-		}, 100);
+		if(!attr.read_only){
+			var row = _ts.add();
+			setTimeout(function () {
+				_grid.selectRowById(row.row);
+			}, 100);
+		}
 	}
 
 	function del_row(){
-		var rId = get_sel_index();
-		if(rId != undefined)
-			_ts.del(rId);
+		if(!attr.read_only){
+			var rId = get_sel_index();
+			if(rId != undefined){
+				_ts.del(rId);
+				setTimeout(function () {
+					_grid.selectRowById(rId < _ts.count() ? rId + 1 : rId);
+				}, 100);
+			}
+		}
 	}
 
 	/**
@@ -142,11 +150,17 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
 	_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_add_del.xml"], function(){
 		this.attachEvent("onclick", function(btn_id){
-			if(btn_id=="btn_add")
-				add_row();
 
-			else if(btn_id=="btn_delete")
-				del_row();
+			switch(btn_id) {
+
+				case "btn_add":
+					add_row();
+					break;
+
+				case "btn_delete":
+					del_row();
+					break;
+			};
 
 		});
 	});
@@ -177,6 +191,19 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	}
 
 	_grid.attachEvent("onEditCell", tabular_on_edit);
+	_grid.attachEvent("onKeyPress", function(code,cFlag,sFlag){
+
+		switch(code) {
+			case 45:    //  ins
+				add_row();
+				break;
+
+			case 46:    //  del
+				del_row();
+				break;
+		};
+
+	});
 
 	_grid.get_cell_field = function () {
 		var rindex = get_sel_index(true), cindex = _grid.getSelectedCellIndex(), row, col;

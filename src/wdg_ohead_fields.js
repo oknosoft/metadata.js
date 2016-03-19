@@ -106,6 +106,9 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		if(_obj[rId] != undefined)
 			return _pwnd.on_select(state, {obj: _obj, field: rId});
 	});
+	_grid.attachEvent("onKeyPress", function(code,cFlag,sFlag){
+		code = null;
+	});
 	if(attr.read_only){
 		_grid.setEditable(false);
 	}

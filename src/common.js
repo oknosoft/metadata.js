@@ -182,7 +182,7 @@ if(!Number.prototype.round)
 	Number.prototype.round = function(places) {
 		var multiplier = Math.pow(10, places);
 		return (Math.round(this * multiplier) / multiplier);
-	}
+	};
 
 /**
  * Полифил обсервера и нотифаера для старых браузеров
@@ -1324,6 +1324,13 @@ function Modifiers(){
 	};
 
 	/**
+	 * Отменяет все подписки
+	 */
+	this.clear = function () {
+		methods.length = 0;
+	};
+
+	/**
 	 * Загружает и выполняет методы модификаторов
 	 * @method execute
 	 */
@@ -1366,20 +1373,47 @@ $p.eve.__define({
 	}
 });
 
-/**
- * ### Модификаторы менеджеров объектов метаданных
- * Т.к. экземпляры менеджеров и конструкторы объектов доступны в системе только после загрузки метаданных,
- * а метаданные загружаются после авторизации на сервере, методы модификаторов нельзя выполнить при старте приложения
- * @property modifiers
- * @for MetaEngine
- * @type Modifiers
- * @static
- */
-$p.__define("modifiers", {
-	value: new Modifiers(),
-	enumerable: false,
-	configurable: false
+
+$p.__define({
+
+	/**
+	 * ### Модификаторы менеджеров объектов метаданных
+	 * Т.к. экземпляры менеджеров и конструкторы объектов доступны в системе только после загрузки метаданных,
+	 * а метаданные загружаются после авторизации на сервере, методы модификаторов нельзя выполнить при старте приложения
+	 * @property modifiers
+	 * @for MetaEngine
+	 * @type Modifiers
+	 * @static
+	 */
+	modifiers: {
+		value: new Modifiers(),
+		enumerable: false
+	},
+
+	current_user: {
+		get: function () {
+			return $p.cat && $p.cat.users ?
+				$p.cat.users.by_name($p.wsql.get_user_param("user_name")) :
+				$p.cat.users.get();
+		},
+		enumerable: false
+	},
+
+	current_acl: {
+		get: function () {
+			var res;
+			if($p.cat && $p.cat.users_acl){
+				$p.cat.users_acl.find_rows({owner: $p.current_user}, function (o) {
+					res = o;
+					return false;
+				})
+			}
+			return res;
+		},
+		enumerable: false
+	}
 });
+
 
 /**
  * ### Параметры работы программы
@@ -1429,7 +1463,6 @@ function JobPrm(){
 		return parse(location.search)._mixin(parse(location.hash));
 	};
 
-	this.check_dhtmlx = true;
 	this.offline = false;
 	this.local_storage_prefix = "";
 	this.create_tables = true;

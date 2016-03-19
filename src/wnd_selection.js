@@ -16,6 +16,10 @@
  * @param [attr.initial_value] {DataObj} - начальное значение выбора
  * @param [attr.parent] {DataObj} - начальное значение родителя для иерархических справочников
  * @param [attr.on_select] {Function} - callback при выборе значения
+ * @param [attr.on_grid_inited] {Function} - callback после инициализации грида
+ * @param [attr.on_new] {Function} - callback после создания нового объекта
+ * @param [attr.on_edit] {Function} - callback перед вызовом редактора
+ * @param [attr.on_close] {Function} - callback при закрытии формы
  */
 DataManager.prototype.form_selection = function(pwnd, attr){
 
@@ -336,16 +340,21 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			// TODO: м.б. записывать пустой объект и получать код-номер??
 			_mgr.create({}, true)
 				.then(function (o) {
-					o._set_loaded(o.ref);
-					$p.iface.set_hash(_mgr.class_name, o.ref);
+					if(attr.on_new)
+						attr.on_new(o, wnd);
+					else
+						$p.iface.set_hash(_mgr.class_name, o.ref);
 				});
 
 
 		}else if(btn_id=="btn_edit") {
 			var rId = wnd.elmnts.grid.getSelectedRowId();
-			if (rId)
-				$p.iface.set_hash(_mgr.class_name, rId);
-			else
+			if (rId){
+				if(attr.on_edit)
+					attr.on_edit(_mgr, rId, wnd);
+				else
+					$p.iface.set_hash(_mgr.class_name, rId);
+			}else
 				$p.msg.show_msg({
 					type: "alert-warning",
 					text: $p.msg.no_selected_row.replace("%1", ""),
@@ -359,7 +368,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			$p.iface.set_hash("", "", "", "def");
 
 		}else if(btn_id=="btn_delete"){
-			$p.msg.show_not_implemented();
+			mark_deleted();
 
 		}else if(btn_id=="btn_import"){
 			_mgr.import();
@@ -437,6 +446,28 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		if(rId)
 			_mgr.print(rId, pid, wnd);
 		else
+			$p.msg.show_msg({type: "alert-warning",
+				text: $p.msg.no_selected_row.replace("%1", ""),
+				title: $p.msg.main_title});
+	}
+
+	function mark_deleted(){
+		var rId = wnd.elmnts.grid.getSelectedRowId();
+		if(rId){
+			_mgr.get(rId, true, true)
+				.then(function (o) {
+
+					dhtmlx.confirm({
+						title: $p.msg.main_title,
+						text: o._deleted ? $p.msg.mark_undelete_confirm.replace("%1", o.presentation) : $p.msg.mark_delete_confirm.replace("%1", o.presentation),
+						cancel: "Отмена",
+						callback: function(btn) {
+							if(btn)
+								o.mark_deleted(!o._deleted);
+						}
+					});
+				});
+		}else
 			$p.msg.show_msg({type: "alert-warning",
 				text: $p.msg.no_selected_row.replace("%1", ""),
 				title: $p.msg.main_title});
