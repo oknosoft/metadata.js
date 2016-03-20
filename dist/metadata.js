@@ -3631,7 +3631,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		_extra_fields,
 		_pwnd,
 		_cell = this,
-		_grid = this.attachGrid(),
+		_grid = _cell.attachGrid(),
 		_destructor = _grid.destructor;
 
 	// задача обсервера - перерисовать поле при изменении свойств объекта
@@ -3701,7 +3701,18 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 			return _pwnd.on_select(state, {obj: _obj, field: rId});
 	});
 	_grid.attachEvent("onKeyPress", function(code,cFlag,sFlag){
-		code = null;
+
+		switch(code) {
+			case 13:    //  enter
+			case 9:     //  tab
+				if (_grid.editStop)
+					_grid.editStop();
+				break;
+
+			case 46:    //  del
+				break;
+		};
+
 	});
 	if(attr.read_only){
 		_grid.setEditable(false);
@@ -3752,6 +3763,13 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		_obj: {
 			get: function () {
 				return _obj;
+			},
+			enumerable: false
+		},
+
+		_owner_cell: {
+			get: function () {
+				return _cell;
 			},
 			enumerable: false
 		},
@@ -9690,6 +9708,7 @@ DataObj.prototype.__define({
 
 	/**
 	 * Читает объект из внешней или внутренней датабазы асинхронно.
+	 * В отличии от _mgr.get() перезаполняет объект сохранёнными данными
 	 * @method load
 	 * @for DataObj
 	 * @return {Promise.<DataObj>} - промис с результатом выполнения операции
