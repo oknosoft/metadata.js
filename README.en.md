@@ -1,4 +1,4 @@
-# metadata.js - offline-first browser-based applications
+**Metadata.js** is a library for building offline-first browser-based applications
 
 [README на русском языке](README.md)
 
