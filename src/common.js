@@ -185,6 +185,15 @@ if(!Number.prototype.round)
 	};
 
 /**
+ * Метод дополнения лидирующими нулями в прототип числа
+ */
+Number.prototype.pad = function(size) {
+	var s = String(this);
+	while (s.length < (size || 2)) {s = "0" + s;}
+	return s;
+}
+
+/**
  * Полифил обсервера и нотифаера для старых браузеров
  */
 if(!Object.observe && !Object.unobserve && !Object.getNotifier){
