@@ -1,18 +1,17 @@
-# metadata.js - lightweight metadata & data engine
+# metadata.js - offline-first browser-based applications
 
 [README на русском языке](README.md)
 
-### Prehistory
-[Metadata.js](http://www.oknosoft.ru/metadata/) - an alternative lightweight javascript client 1C, which allows to read and edit the data on the [server 1C](http://v8.1c.ru/overview/Term_000000033.htm) with a large number of connections (dealers or online storefront with hundreds of anonymous or authorized external users).
+### What is Metadata.js?
+**Metadata.js** is a JavaScript implementation of [1C:Enterprise Platform object model](http://1c-dn.com/1c_enterprise/platform_architecture_overview/). Its goal is to emulate the 1C:Enterprise API with near-perfect fidelity, while running in the browser or in Node.js.
 
-### Presentations
-- [Why is it necessary](http://www.oknosoft.ru/presentations/zd_what_for.html)
-- [How it works](http://www.oknosoft.ru/presentations/zd_how.html)
+### Presentation
+[![metadata.js overview](examples/imgs/metadata_slideshare.jpg)](http://www.slideshare.net/ssuser7ad218/metadatajs)
 
 ### Concept
 In metadata.js, we attempt to supplemented the best of modern technologies of data processing, tools that we did not have in their daily work
 - We use the most valuable from 1C
-- Complements ES6 and Web UI
+- Complements ES2015 and Web UI
 
 ### Unlike competitors
 Metadata.js not compete with client Web UI and client-server (including reactive) frameworks, and complements the new abstraction of [data objects](http://www.oknosoft.ru/upzp/apidocs/classes/DataObj.html) and [data managers](http://www.oknosoft.ru/upzp/apidocs/classes/DataManager.html). Using these classes simplifies the development of complex interfaces of business applications.
