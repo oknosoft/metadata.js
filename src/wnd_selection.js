@@ -489,6 +489,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	}
 
 	function frm_close(win){
+
 		// проверить на ошибки, записать изменения
 		// если проблемы, вернуть false
 

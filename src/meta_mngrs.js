@@ -607,7 +607,8 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 			var added = false,
 				destinations_extra_fields = t.extra_fields(o),
 				pnames = "property,param,Свойство,Параметр".split(","),
-				meta_extra_fields = o._metadata.tabular_sections[extra_fields.ts].fields,
+				//meta_extra_fields = o._metadata.tabular_sections[extra_fields.ts].fields,
+				meta_extra_fields = o[extra_fields.ts]._owner._metadata.tabular_sections[o[extra_fields.ts]._name].fields,
 				pname;
 
 			// Если в объекте не найдены предопределенные свойства - добавляем

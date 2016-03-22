@@ -37,6 +37,7 @@ function OCombo(attr){
 
 	// выполняем конструктор родительского объекта
 	OCombo.superclass.constructor.call(t, attr);
+
 	if(attr.on_select){
 		t.getBase().style.border = "none";
 		t.getInput().style.left = "-3px";
@@ -44,6 +45,7 @@ function OCombo(attr){
 			t.getButton().style.right = "9px";
 	} else
 		t.getBase().style.marginBottom = "4px";
+	
 	if(attr.left)
 		t.getBase().style.left = left + "px";
 
