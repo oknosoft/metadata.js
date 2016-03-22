@@ -12,10 +12,10 @@
  * События окна внутри воркера и Node нас не интересуют
  */
 (function(w){
+	
 	var eve = $p.eve,
 		iface = $p.iface,
 		msg = $p.msg,
-		stepper = {},
 		timer_setted = false,
 		cache;
 
@@ -42,7 +42,7 @@
 	eve.on_rotate = function (e) {
 		$p.device_orient = (w.orientation == 0 || w.orientation == 180 ? "portrait":"landscape");
 		if (typeof(e) != "undefined")
-			w.dhx4.callEvent("onOrientationChange", [$p.device_orient]);
+			eve.callEvent("onOrientationChange", [$p.device_orient]);
 	};
 	if(typeof(w.orientation)=="undefined")
 		$p.device_orient = w.innerWidth>w.innerHeight ? "landscape" : "portrait";
@@ -73,6 +73,9 @@
 	w.addEventListener('online', eve.set_offline);
 	w.addEventListener('offline', function(){eve.set_offline(true);});
 
+	/**
+	 * ждём готовности документа
+	 */
 	w.addEventListener('load', function(){
 
 		/**
@@ -266,7 +269,7 @@
 										_parts = results[1];
 									_addr = _parts.formatted_address;
 
-									dhx4.callEvent("geo_current_position", [$p.ipinfo.components({}, _parts.address_components)]);
+									eve.callEvent("geo_current_position", [$p.ipinfo.components({}, _parts.address_components)]);
 								}
 							});
 
@@ -560,6 +563,13 @@
 	}, false);
 
 	/**
+	 * слушаем события клавиатуры
+ 	 */
+	document.body.addEventListener("keydown", function (ev) {
+		eve.callEvent("keydown", [ev]);
+	}, false);
+
+	/**
 	 * Обработчик события "перед закрытием окна"
 	 * @event onbeforeunload
 	 * @for AppEvents
@@ -675,7 +685,7 @@ $p.eve.log_in = function(onstep){
 				return res;
 
 			// широковещательное оповещение об авторизованности на сервере
-			dhx4.callEvent("log_in", [$p.ajax.authorized = true]);
+			eve.callEvent("log_in", [$p.ajax.authorized = true]);
 
 			if(typeof res == "string")
 				res = JSON.parse(res);

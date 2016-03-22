@@ -33,7 +33,6 @@ $p.iface.dat_blank = function(_dxw, attr) {
 		caption: attr.caption || "Tools"
 	});
 
-
 	_dxw = null;
 
 	if(!attr.allow_minmax)
