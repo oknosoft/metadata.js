@@ -819,29 +819,37 @@ function RefDataManager(class_name) {
 
 		var o = by_ref[attr.ref];
 		if(!o){
+
 			o = new t._obj_сonstructor(attr, t);
 
-			if(o instanceof DocObj && o.date == $p.blank.date)
-				o.date = new Date();
+			if(!fill_default && attr.ref && attr.presentation && Object.keys(attr).length == 2){
+				// заглушка ссылки объекта
 
-			// Триггер после создания
-			var after_create_res = t.handle_event(o, "after_create");
+			}else{
 
-			if(after_create_res === false)
-				return Promise.resolve(o);
+				if(o instanceof DocObj && o.date == $p.blank.date)
+					o.date = new Date();
 
-			else if(typeof after_create_res === "object" && after_create_res.then)
-				return after_create_res;
+				// Триггер после создания
+				var after_create_res = t.handle_event(o, "after_create");
 
-			// выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
-			if(t.cachable == "e1cib" && fill_default){
-				var rattr = {};
-				$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
-				rattr.url += t.rest_name + "/Create()";
-				return $p.ajax.get_ex(rattr.url, rattr)
-					.then(function (req) {
-						return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
-					});
+				if(after_create_res === false)
+					return Promise.resolve(o);
+
+				else if(typeof after_create_res === "object" && after_create_res.then)
+					return after_create_res;
+
+				// выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
+				if(t.cachable == "e1cib" && fill_default){
+					var rattr = {};
+					$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
+					rattr.url += t.rest_name + "/Create()";
+					return $p.ajax.get_ex(rattr.url, rattr)
+						.then(function (req) {
+							return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
+						});
+				}
+
 			}
 		}
 

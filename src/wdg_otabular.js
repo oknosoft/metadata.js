@@ -122,7 +122,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	function observer_rows(changes){
 		var synced;
 		changes.forEach(function(change){
-			if (!synced && _tsname == change.tabular){
+			if (!synced && _grid.clearAll && _tsname == change.tabular){
 				synced = true;
 				_ts.sync_grid(_grid, _selection);
 			}
@@ -131,7 +131,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 	function observer(changes){
 		if(changes.length > 4){
-			try{_ts.sync_grid(_grid, _selection);} catch(err){};
+			try{_ts.sync_grid(_grid, _selection);} catch(err){}
 		} else
 			changes.forEach(function(change){
 				if (_tsname == change.tabular){
@@ -160,7 +160,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				case "btn_delete":
 					del_row();
 					break;
-			};
+			}
 
 		});
 	});
@@ -201,7 +201,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			case 46:    //  del
 				del_row();
 				break;
-		};
+		}
 
 	});
 

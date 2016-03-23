@@ -75,7 +75,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 	function observer_rows(changes){
 		var synced;
 		changes.forEach(function(change){
-			if (!synced && _tsname == change.tabular){
+			if (!synced && _grid.clearAll && _tsname == change.tabular){
 				synced = true;
 				_grid.clearAll();
 				_grid.parse(_mgr.get_property_grid_xml(_oxml, _obj, {
