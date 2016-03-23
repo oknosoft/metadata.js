@@ -402,16 +402,14 @@ DataManager.prototype.sync_grid = function(attr, grid){
  * @return {Promise.<Array>}
  */
 DataManager.prototype.get_option_list = function(val, selection){
-	var t = this, l = [], count = 0, input_by_string, text, sel;
+
+	var t = this, l = [], input_by_string, text, sel;
 
 	function check(v){
 		if($p.is_equal(v.value, val))
 			v.selected = true;
 		return v;
 	}
-
-	// TODO: реализовать для некешируемых объектов (rest)
-	// TODO: учесть "поля поиска по строке"
 
 	// поиск по строке
 	if(selection.presentation && (input_by_string = t.metadata().input_by_string)){
@@ -431,7 +429,7 @@ DataManager.prototype.get_option_list = function(val, selection){
 		});
 		return Promise.resolve(l);
 
-	}else if(t.cachable == "doc"){
+	}else if(t.cachable != "e1cib"){
 		return t.pouch_find_rows(selection)
 			.then(function (data) {
 				data.forEach(function (v) {

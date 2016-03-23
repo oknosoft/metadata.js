@@ -309,9 +309,9 @@ function OCombo(attr){
 		t.clearAll();
 		_mgr = _md.value_mgr(_obj, _field, _meta.type);
 
-		if(_mgr){
+		if(_mgr || attr.get_option_list){
 			// загружаем список в 30 строк
-			_mgr.get_option_list(_obj[_field], get_filter())
+			(attr.get_option_list || _mgr.get_option_list)(_obj[_field], get_filter())
 				.then(function (l) {
 					if(t.addOption){
 						t.addOption(l);

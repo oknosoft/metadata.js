@@ -140,7 +140,7 @@ $p._selection = function (o, selection) {
 
 				// если свойство отбора является объектом `like`, сравниваем подстроку
 				}else if(is_obj && sel.hasOwnProperty("like")){
-					if(o[j].toLowerCase().indexOf(sel.like.toLowerCase())==-1){
+					if(!o[j] || o[j].toLowerCase().indexOf(sel.like.toLowerCase())==-1){
 						ok = false;
 						break;
 					}

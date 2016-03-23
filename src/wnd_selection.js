@@ -36,7 +36,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 
 	var _mgr = this,
-		md = _mgr.metadata(),
+		md = attr.metadata || _mgr.metadata(),
 		has_tree = md["hierarchical"] && !(_mgr instanceof ChartOfAccountManager),
 		wnd, s_col = 0,
 		a_direction = "asc",
