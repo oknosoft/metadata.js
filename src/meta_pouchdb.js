@@ -159,7 +159,7 @@ DataManager.prototype.__define({
 		value: function (attr) {
 
 			var t = this,
-				cmd = t.metadata(),
+				cmd = attr.metadata || t.metadata(),
 				flds = ["ref", "_deleted"], // поля запроса
 				selection = {
 					_raw: true,
