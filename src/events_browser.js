@@ -471,8 +471,9 @@
 							.catch($p.record_log);
 
 						// Если есть сплэш, удаляем его
-						if(document && document.querySelector("#splash"))
-							document.querySelector("#splash").parentNode.removeChild(document.querySelector("#splash"));
+						var splash;
+						if(splash = document.querySelector("#splash"))
+							splash.parentNode.removeChild(splash);
 
 						iface.oninit();
 

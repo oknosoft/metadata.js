@@ -71,7 +71,7 @@ gulp.task('build-metadata', function () {
 
 
 gulp.task('injected_main', function(){
-   gulp.src(['./data/*.xml', './data/log.json'])
+   gulp.src(['./data/*.xml'])
 	   .pipe(resources('merged_data.js', function (data) {
 		   return new Buffer('$p.injected_data._mixin(' + JSON.stringify(data) + ');');
 	   }))
