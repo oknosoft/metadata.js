@@ -117,6 +117,10 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.elmnts.frm_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
 		wnd.elmnts.frm_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_obj.xml"], function(){
 
+			// если мы приклеены к ячейке, сдвигаем toolbar на 4px
+			if(wnd === pwnd)
+				this.cont.style.top = "4px";
+
 			this.addSpacer("btn_unpost");
 			this.attachEvent("onclick", attr.toolbar_click || toolbar_click);
 

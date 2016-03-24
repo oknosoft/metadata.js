@@ -114,6 +114,10 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 			this.attachEvent("onclick", toolbar_click);
 
+			// если мы приклеены к ячейке, сдвигаем toolbar на 4px
+			if(wnd === pwnd)
+				this.cont.style.top = "4px";
+
 			// текстовое поле фильтра по подстроке
 			var tbattr = {
 				manager: _mgr,
@@ -530,7 +534,23 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			filter.initial_value = attr.initial_value;
 
 		if(attr.selection){
-			filter.selection = attr.selection;
+			if(!filter.selection)
+				filter.selection = attr.selection;
+
+			else if(Array.isArray(attr.selection)){
+				attr.selection.forEach(function (flt) {
+					filter.selection.push(flt);
+				});
+
+			}else{
+				for(var fld in attr.selection){
+					if(!res.selection)
+						res.selection = [];
+					var flt = {};
+					flt[fld] = attr.selection[fld];
+					filter.selection.push(flt);
+				}
+			}
 			//if(Array.isArray(attr.selection) && attr.selection.length){
 			//	filter._mixin(attr.selection[0]);
 			//}

@@ -54,7 +54,7 @@ DataManager.prototype.__define({
 		value: function (selection) {
 
 			var t = this, doc, res = [],
-				_raw,
+				_raw, _view,
 				top, top_count = 0,
 				skip = 0, skip_count = 0,
 				options = {
@@ -77,6 +77,16 @@ DataManager.prototype.__define({
 					delete selection._raw;
 				}
 
+				if(selection._view) {
+					_view = selection._view;
+					delete selection._view;
+				}
+
+				if(selection._key) {
+					options.startkey = selection._key;
+					options.endkey = selection._key + '\uffff';
+				}
+
 				if(typeof selection._skip == "number") {
 					skip = selection._skip;
 					delete selection._skip;
@@ -87,62 +97,67 @@ DataManager.prototype.__define({
 			// бежим по всем документам из ram
 			return new Promise(function(resolve, reject){
 
-				function fetchNextPage() {
+				function process_docs(err, result) {
 
-					t.pouch_db.allDocs(options, function (err, result) {
+					if (result) {
 
-						if (result) {
+						if (result.rows.length){
 
-							if (result.rows.length){
+							options.startkey = result.rows[result.rows.length - 1].key;
+							options.skip = 1;
 
-								options.startkey = result.rows[result.rows.length - 1].key;
-								options.skip = 1;
+							result.rows.forEach(function (rev) {
+								doc = rev.doc;
 
-								result.rows.forEach(function (rev) {
-									doc = rev.doc;
+								key = doc._id.split("|");
+								doc.ref = key[1];
 
-									key = doc._id.split("|");
-									doc.ref = key[1];
+								// фильтруем
+								if(!$p._selection.call(t, doc, selection))
+									return;
 
-									// фильтруем
-									if(!$p._selection.call(t, doc, selection))
+								// пропукскаем лишние (skip) элементы
+								if(skip) {
+									skip_count++;
+									if (skip_count < skip)
 										return;
+								}
 
-									// пропукскаем лишние (skip) элементы
-									if(skip) {
-										skip_count++;
-										if (skip_count < skip)
-											return;
-									}
+								// ограничиваем кол-во возвращаемых элементов
+								if(top) {
+									top_count++;
+									if (top_count >= top)
+										return;
+								}
 
-									// ограничиваем кол-во возвращаемых элементов
-									if(top) {
-										top_count++;
-										if (top_count >= top)
-											return;
-									}
+								// наполняем
+								res.push(doc);
+							});
 
-									// наполняем
-									res.push(doc);
-								});
-
-								if(top && top_count >= top) {
-									resolve(_raw ? res : t.load_array(res));
-								}else
-									fetchNextPage();
-
-							}else{
+							if(top && top_count >= top) {
 								resolve(_raw ? res : t.load_array(res));
-							}
+							}else
+								fetch_next_page();
 
-						} else if(err){
-							reject(err);
+						}else{
+							resolve(_raw ? res : t.load_array(res));
 						}
 
-					});
+					} else if(err){
+						reject(err);
+					}
 				}
 
-				fetchNextPage();
+				function fetch_next_page() {
+
+					if(_view)
+						t.pouch_db.query(_view, options, process_docs);
+						
+					else
+						t.pouch_db.allDocs(options, process_docs);
+				}
+
+				fetch_next_page();
 
 			});
 
@@ -250,12 +265,12 @@ DataManager.prototype.__define({
 				if(Array.isArray(attr.selection)){
 					attr.selection.forEach(function (asel) {
 						for(fldsyn in asel)
-							if(fldsyn[0] != "_")
+							if(fldsyn[0] != "_" || fldsyn == "_view" || fldsyn == "_key")
 								selection[fldsyn] = asel[fldsyn];
 					});
 				}else
 					for(fldsyn in attr.selection)
-						if(fldsyn[0] != "_")
+						if(fldsyn[0] != "_" || fldsyn == "_view" || fldsyn == "_key")
 							selection[fldsyn] = attr.selection[fldsyn];
 			}
 			// фильтр по владельцу

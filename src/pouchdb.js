@@ -462,6 +462,15 @@ function Pouch(){
 
 					docs.forEach(function (rev) {
 						doc = options ? rev.doc : rev;
+						if(!doc){
+							if((rev.value && rev.value.deleted))
+								doc = {
+									_id: rev.id,
+									_deleted: true
+								};
+							else if(rev.error)
+								return;
+						}
 						key = doc._id.split("|");
 						cn = key[0].split(".");
 						doc.ref = key[1];

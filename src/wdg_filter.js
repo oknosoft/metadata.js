@@ -125,10 +125,15 @@ $p.iface.Toolbar_filter.prototype.__define({
 				date_from: this.input_date_from ? dhx4.str2date(this.input_date_from.value) : "",
 				date_till: this.input_date_till ? dhx4.str2date(this.input_date_till.value) : "",
 				filter: this.input_filter ? this.input_filter.value : ""
-			};
-			for(var fld in this.additional){
-
-			};
+			}, fld, flt;
+			
+			for(fld in this.additional){
+				if(!res.selection)
+					res.selection = [];
+				flt = {};
+				flt[fld] = this.additional[fld].value; 
+				res.selection.push(flt);				
+			}
 			return res;
 		}
 	},

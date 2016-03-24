@@ -155,7 +155,7 @@ function OCombo(attr){
 							}}, {
 							selection: [get_filter()]
 						});
-					};
+					}
 					_mgr = null;
 					tmgr = null;
 					tmeta = null;
@@ -341,7 +341,7 @@ function OCombo(attr){
 		_meta = null;
 		_mgr = null;
 		_pwnd = null;
-		try{ _unload.call(t); }catch(e){};
+		try{ _unload.call(t); }catch(e){}
 	};
 
 	// биндим поле объекта
@@ -349,6 +349,16 @@ function OCombo(attr){
 		this.attach(attr);
 	// устанавливаем url фильтрации
 	this.enableFilteringMode("between", "dummy", false, false);
+
+	// свойство для единообразного доступа к значению
+	this.__define({
+		value: {
+			get: function () {
+				if(_obj)
+					return _obj[_field];
+			}
+		}
+	});
 
 }
 OCombo._extend(dhtmlXCombo);
