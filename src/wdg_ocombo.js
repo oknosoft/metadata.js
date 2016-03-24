@@ -311,7 +311,7 @@ function OCombo(attr){
 
 		if(_mgr || attr.get_option_list){
 			// загружаем список в 30 строк
-			(attr.get_option_list || _mgr.get_option_list)(_obj[_field], get_filter())
+			(attr.get_option_list || _mgr.get_option_list).call(_mgr, _obj[_field], get_filter())
 				.then(function (l) {
 					if(t.addOption){
 						t.addOption(l);
