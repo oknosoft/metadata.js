@@ -36,8 +36,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 
 	var _mgr = this,
-		md = attr.metadata || _mgr.metadata(),
-		has_tree = md["hierarchical"] && !(_mgr instanceof ChartOfAccountManager),
+		_meta = attr.metadata || _mgr.metadata(),
+		has_tree = _meta["hierarchical"] && !(_mgr instanceof ChartOfAccountManager),
 		wnd, s_col = 0,
 		a_direction = "asc",
 		previous_filter = {},
@@ -97,7 +97,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		$p.iface.bind_help(wnd);
 		if(wnd.setText && !attr.hide_text)
-			wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (md["list_presentation"] || md.synonym) + '"');
+			wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (_meta["list_presentation"] || _meta.synonym) + '"');
 
 		document.body.addEventListener("keydown", body_keydown, false);
 
@@ -488,7 +488,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			attr.on_close();
 
 		if(!on_create){
-			_mgr = wnd = md = previous_filter = on_select = pwnd = attr = null;
+			_mgr = wnd = _meta = previous_filter = on_select = pwnd = attr = null;
 		}
 	}
 
@@ -515,6 +515,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		var filter = wnd.elmnts.filter.get_filter()
 				._mixin({
 					action: "get_selection",
+					metadata: _meta,
 					class_name: _mgr.class_name,
 					order_by: wnd.elmnts.grid.columnIds[s_col] || s_col,
 					direction: a_direction,

@@ -22,8 +22,8 @@
 DataManager.prototype.form_obj = function(pwnd, attr){
 
 	var _mgr = this,
+		_meta = _mgr.metadata(),
 		o = attr.o,
-		cmd = _mgr.metadata(),
 		wnd, options, created, create_id;
 
 	/**
@@ -82,7 +82,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 					allow_close: true,
 					allow_minmax: true,
 					on_close: frm_close,
-					caption: (cmd.obj_presentation || cmd.synonym)
+					caption: (_meta.obj_presentation || _meta.synonym)
 				}
 			};
 			wnd = $p.iface.dat_blank(null, options.wnd);
@@ -200,7 +200,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		if(!attr.hide_header){
 			if(wnd.setText)
-				wnd.setText((cmd.obj_presentation || cmd.synonym) + ': ' + o.presentation);
+				wnd.setText((_meta.obj_presentation || _meta.synonym) + ': ' + o.presentation);
 			if(wnd.showHeader)
 				wnd.showHeader();
 		}
@@ -212,13 +212,13 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			attr.draw_tabular_sections(o, wnd, tabular_init);
 
 		else if(!o.is_folder){
-			if(cmd.form && cmd.form.obj && cmd.form.obj.tabular_sections_order)
-				cmd.form.obj.tabular_sections_order.forEach(function (ts) {
+			if(_meta.form && _meta.form.obj && _meta.form.obj.tabular_sections_order)
+				_meta.form.obj.tabular_sections_order.forEach(function (ts) {
 					tabular_init(ts);
 				});
 
 			else
-				for(var ts in cmd.tabular_sections){
+				for(var ts in _meta.tabular_sections){
 					if(ts==="extra_fields")
 						continue;
 
@@ -359,7 +359,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			return;
 
 		// закладка табов табличной части
-		wnd.elmnts.frm_tabs.addTab('tab_'+name, '&nbsp;'+cmd.tabular_sections[name].synonym+'&nbsp;');
+		wnd.elmnts.frm_tabs.addTab('tab_'+name, '&nbsp;'+_meta.tabular_sections[name].synonym+'&nbsp;');
 		wnd.elmnts.tabs['tab_'+name] = wnd.elmnts.frm_tabs.cells('tab_'+name);
 
 		wnd.elmnts.grids[name] = wnd.elmnts.tabs['tab_'+name].attachTabular({
@@ -404,7 +404,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		if(!on_create){
 			delete wnd.ref;
-			_mgr = wnd = o = cmd = options = pwnd = attr = null;
+			_mgr = wnd = o = _meta = options = pwnd = attr = null;
 		}
 	}
 

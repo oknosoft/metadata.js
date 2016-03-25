@@ -168,7 +168,7 @@ $p._selection = function (o, selection) {
 
 				// если свойство отбора является объектом `gt`, сравниваем на _больше_
 				}else if(is_obj && sel.hasOwnProperty("gt")){
-					ok = o[j] > sel.lt;
+					ok = o[j] > sel.gt;
 					if(!ok)
 						break;
 
