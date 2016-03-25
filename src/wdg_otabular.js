@@ -24,7 +24,7 @@
  * @param attr.parent {HTMLElement} - контейнер, в котором будет размещен элемент
  * @param attr.obj {DataObj} - ссылка на редактируемый объект
  * @param attr.ts {String} - имя табличной части
- * @param [attr.meta] {Object} - описание метаданных табличной части. Если не указано, описание запрашивается у объекта
+ * @param [attr.metadata] {Object} - описание метаданных табличной части. Если не указано, описание запрашивается у объекта
  * @param [attr.selection] {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
  * @constructor
  */
@@ -35,7 +35,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		_tsname = attr.ts,
 		_ts = _obj[_tsname],
 		_mgr = _obj._manager,
-		_meta = attr.meta || _mgr.metadata().tabular_sections[_tsname].fields,
+		_meta = attr.metadata || _mgr.metadata().tabular_sections[_tsname].fields,
 		_cell = this,
 		_source = {},
 		_selection = attr.selection;

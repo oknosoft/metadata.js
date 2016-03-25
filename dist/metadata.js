@@ -752,7 +752,27 @@ $p._patch = function (patch) {
 			this[area] = patch[area];
 	}
 	return this;
-}
+};
+
+/**
+ * Читает данные из блоба, возвращает промис
+ * @param blob
+ * @return {Promise}
+ */
+$p.read_blob = function (blob) {
+
+	return new Promise(function(resolve, reject){
+		var reader = new FileReader();
+		reader.onload = function(event){
+			resolve(reader.result);
+		};
+		reader.onerror = function(err){
+			reject(err);
+		};
+		reader.readAsText(blob);
+	});
+	
+};
 
 /**
  * Пустые значения даты и уникального идентификатора
@@ -3206,7 +3226,7 @@ $p.iface.ODropdownList = ODropdownList;
  * @param attr.parent {HTMLElement} - контейнер, в котором будет размещен элемент
  * @param attr.obj {DataObj|TabularSectionRow} - ссылка на редактируемый объект
  * @param attr.field {String} - имя поля редактируемого объекта
- * @param [attr.meta] {Object} - описание метаданных поля. Если не указано, описание запрашивается у объекта
+ * @param [attr.metadata] {Object} - описание метаданных поля. Если не указано, описание запрашивается у объекта
  * @param [attr.width] {Number} - если указано, фиксирует ширину элемента
  * @constructor
  */
@@ -3479,8 +3499,8 @@ function OCombo(attr){
 		_field = attr.field;
 		_property = attr.property;
 
-		if(attr.meta)
-			_meta = attr.meta;
+		if(attr.metadata)
+			_meta = attr.metadata;
 
 		else if(_property){
 			_meta = _obj._metadata.fields[_field]._clone();
@@ -3650,7 +3670,7 @@ $p.iface.select_from_list = function (list, multy) {
  * @param attr.parent {HTMLElement} - контейнер, в котором будет размещен элемент
  * @param attr.obj {DataObj} - ссылка на редактируемый объект
  * @param attr.ts {String} - имя табличной части c дополнительными реквизитами
- * @param [attr.meta] {Object} - описание метаданных реквизитов. Если не указано, описание запрашивается у объекта
+ * @param [attr.metadata] {Object} - описание метаданных реквизитов. Если не указано, описание запрашивается у объекта
  * @constructor
  */
 dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
@@ -3709,7 +3729,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 					title: attr.ts_title,
 					ts: _tsname,
 					selection: _selection,
-					meta: _meta
+					metadata: _meta
 				}), function(){
 
 				}, "xml");
@@ -3846,7 +3866,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 					_selection = attr.selection;
 
 				_obj = attr.obj;
-				_meta = attr.meta || _obj._metadata.fields;
+				_meta = attr.metadata || _obj._metadata.fields;
 				_mgr = _obj._manager;
 				_tsname = attr.ts || "";
 				_extra_fields = _tsname ? _obj[_tsname] : (_obj.extra_fields || _obj["ДополнительныеРеквизиты"]);
@@ -3939,7 +3959,7 @@ dhtmlXGridObject.prototype.get_cell_value = function () {
  * @param attr.parent {HTMLElement} - контейнер, в котором будет размещен элемент
  * @param attr.obj {DataObj} - ссылка на редактируемый объект
  * @param attr.ts {String} - имя табличной части
- * @param [attr.meta] {Object} - описание метаданных табличной части. Если не указано, описание запрашивается у объекта
+ * @param [attr.metadata] {Object} - описание метаданных табличной части. Если не указано, описание запрашивается у объекта
  * @param [attr.selection] {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
  * @constructor
  */
@@ -3950,7 +3970,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		_tsname = attr.ts,
 		_ts = _obj[_tsname],
 		_mgr = _obj._manager,
-		_meta = attr.meta || _mgr.metadata().tabular_sections[_tsname].fields,
+		_meta = attr.metadata || _mgr.metadata().tabular_sections[_tsname].fields,
 		_cell = this,
 		_source = {},
 		_selection = attr.selection;
@@ -5572,7 +5592,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 					field: "delivery_area",
 					on_select: pgrid_on_select,
 					pwnd: wnd,
-					meta: {
+					metadata: {
 						"synonym": "Район",
 						"tooltip": "Район (зона, направление) доставки для группировки при планировании и оптимизации маршрута геокодером",
 						"choice_groups_elm": "elm",
@@ -7481,7 +7501,10 @@ DataManager.prototype.sync_grid = function(attr, grid){
 
 	function request(){
 
-		if(mgr.cachable == "ram"){
+		if(attr.custom_selection){
+			return attr.custom_selection(attr);
+			
+		}else if(mgr.cachable == "ram"){
 
 			// запрос к alasql
 			if(attr.action == "get_tree")
@@ -7729,7 +7752,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 				else if((v = o[row_id]) !== undefined)
 					txt_by_type(v, _md.get(t.class_name, row_id));
 
-			}else if(extra_fields && extra_fields.meta && ((mf = extra_fields.meta[f]) !== undefined)){
+			}else if(extra_fields && extra_fields.metadata && ((mf = extra_fields.metadata[f]) !== undefined)){
 				row_id = f;
 				by_type(v = o[f]);
 
@@ -8482,8 +8505,9 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 // ШапкаТаблицыПоИмениКласса
 RefDataManager.prototype.caption_flds = function(attr){
 
-	var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
-		acols = [], cmd = this.metadata(),	s = "";
+	var _meta = attr.metadata || this.metadata(),
+		str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
+		acols = [],	s = "";
 
 	function Col_struct(id,width,type,align,sort,caption){
 		this.id = id;
@@ -8494,8 +8518,8 @@ RefDataManager.prototype.caption_flds = function(attr){
 		this.caption = caption;
 	}
 
-	if(cmd.form && cmd.form.selection){
-		acols = cmd.form.selection.cols;
+	if(_meta.form && _meta.form.selection){
+		acols = _meta.form.selection.cols;
 
 	}else if(this instanceof DocManager){
 		acols.push(new Col_struct("date", "120", "ro", "left", "server", "Дата"));
@@ -8508,7 +8532,7 @@ RefDataManager.prototype.caption_flds = function(attr){
 	}else{
 
 		acols.push(new Col_struct("presentation", "*", "ro", "left", "server", "Наименование"));
-		//if(cmd["has_owners"]){
+		//if(_meta["has_owners"]){
 		//	var owner_caption = "Владелец";
 		//	acols.push(new Col_struct("owner", "200", "ro", "left", "server", owner_caption));
 		//}
@@ -11689,15 +11713,21 @@ DataObj.prototype.to_atom = function (ex_meta) {
 DataManager.prototype.__define({
 
 	pouch_load_array: {
-		value: function (refs) {
+		value: function (refs, with_attachments) {
 
-			return this.pouch_db.allDocs({
-					limit : refs.length + 1,
-					include_docs: true,
-					keys: refs.map(function (v) {
-						return this.class_name + "|" + v;
-					}.bind(this))
-				})
+			var options = {
+				limit : refs.length + 1,
+				include_docs: true,
+				keys: refs.map(function (v) {
+					return this.class_name + "|" + v;
+				}.bind(this))
+			};
+			if(with_attachments){
+				options.attachments = true;
+				options.binary = true;
+			}
+
+			return this.pouch_db.allDocs(options)
 				.then(function (result) {
 					return $p.wsql.pouch.load_changes(result, {});
 				})
@@ -13521,6 +13551,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		if(attr.initial_value)
 			filter.initial_value = attr.initial_value;
+
+		if(attr.custom_selection)
+			filter.custom_selection = attr.custom_selection;
 
 		if(attr.selection){
 			if(!filter.selection)

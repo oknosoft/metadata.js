@@ -738,7 +738,27 @@ $p._patch = function (patch) {
 			this[area] = patch[area];
 	}
 	return this;
-}
+};
+
+/**
+ * Читает данные из блоба, возвращает промис
+ * @param blob
+ * @return {Promise}
+ */
+$p.read_blob = function (blob) {
+
+	return new Promise(function(resolve, reject){
+		var reader = new FileReader();
+		reader.onload = function(event){
+			resolve(reader.result);
+		};
+		reader.onerror = function(err){
+			reject(err);
+		};
+		reader.readAsText(blob);
+	});
+	
+};
 
 /**
  * Пустые значения даты и уникального идентификатора

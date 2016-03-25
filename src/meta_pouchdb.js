@@ -15,15 +15,21 @@
 DataManager.prototype.__define({
 
 	pouch_load_array: {
-		value: function (refs) {
+		value: function (refs, with_attachments) {
 
-			return this.pouch_db.allDocs({
-					limit : refs.length + 1,
-					include_docs: true,
-					keys: refs.map(function (v) {
-						return this.class_name + "|" + v;
-					}.bind(this))
-				})
+			var options = {
+				limit : refs.length + 1,
+				include_docs: true,
+				keys: refs.map(function (v) {
+					return this.class_name + "|" + v;
+				}.bind(this))
+			};
+			if(with_attachments){
+				options.attachments = true;
+				options.binary = true;
+			}
+
+			return this.pouch_db.allDocs(options)
 				.then(function (result) {
 					return $p.wsql.pouch.load_changes(result, {});
 				})

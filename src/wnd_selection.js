@@ -534,6 +534,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		if(attr.initial_value)
 			filter.initial_value = attr.initial_value;
 
+		if(attr.custom_selection)
+			filter.custom_selection = attr.custom_selection;
+
 		if(attr.selection){
 			if(!filter.selection)
 				filter.selection = attr.selection;

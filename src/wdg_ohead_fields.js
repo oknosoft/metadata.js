@@ -23,7 +23,7 @@
  * @param attr.parent {HTMLElement} - контейнер, в котором будет размещен элемент
  * @param attr.obj {DataObj} - ссылка на редактируемый объект
  * @param attr.ts {String} - имя табличной части c дополнительными реквизитами
- * @param [attr.meta] {Object} - описание метаданных реквизитов. Если не указано, описание запрашивается у объекта
+ * @param [attr.metadata] {Object} - описание метаданных реквизитов. Если не указано, описание запрашивается у объекта
  * @constructor
  */
 dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
@@ -82,7 +82,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 					title: attr.ts_title,
 					ts: _tsname,
 					selection: _selection,
-					meta: _meta
+					metadata: _meta
 				}), function(){
 
 				}, "xml");
@@ -219,7 +219,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 					_selection = attr.selection;
 
 				_obj = attr.obj;
-				_meta = attr.meta || _obj._metadata.fields;
+				_meta = attr.metadata || _obj._metadata.fields;
 				_mgr = _obj._manager;
 				_tsname = attr.ts || "";
 				_extra_fields = _tsname ? _obj[_tsname] : (_obj.extra_fields || _obj["ДополнительныеРеквизиты"]);

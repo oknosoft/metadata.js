@@ -329,7 +329,10 @@ DataManager.prototype.sync_grid = function(attr, grid){
 
 	function request(){
 
-		if(mgr.cachable == "ram"){
+		if(attr.custom_selection){
+			return attr.custom_selection(attr);
+			
+		}else if(mgr.cachable == "ram"){
 
 			// запрос к alasql
 			if(attr.action == "get_tree")
@@ -577,7 +580,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 				else if((v = o[row_id]) !== undefined)
 					txt_by_type(v, _md.get(t.class_name, row_id));
 
-			}else if(extra_fields && extra_fields.meta && ((mf = extra_fields.meta[f]) !== undefined)){
+			}else if(extra_fields && extra_fields.metadata && ((mf = extra_fields.metadata[f]) !== undefined)){
 				row_id = f;
 				by_type(v = o[f]);
 
@@ -1330,8 +1333,9 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 // ШапкаТаблицыПоИмениКласса
 RefDataManager.prototype.caption_flds = function(attr){
 
-	var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
-		acols = [], cmd = this.metadata(),	s = "";
+	var _meta = attr.metadata || this.metadata(),
+		str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
+		acols = [],	s = "";
 
 	function Col_struct(id,width,type,align,sort,caption){
 		this.id = id;
@@ -1342,8 +1346,8 @@ RefDataManager.prototype.caption_flds = function(attr){
 		this.caption = caption;
 	}
 
-	if(cmd.form && cmd.form.selection){
-		acols = cmd.form.selection.cols;
+	if(_meta.form && _meta.form.selection){
+		acols = _meta.form.selection.cols;
 
 	}else if(this instanceof DocManager){
 		acols.push(new Col_struct("date", "120", "ro", "left", "server", "Дата"));
@@ -1356,7 +1360,7 @@ RefDataManager.prototype.caption_flds = function(attr){
 	}else{
 
 		acols.push(new Col_struct("presentation", "*", "ro", "left", "server", "Наименование"));
-		//if(cmd["has_owners"]){
+		//if(_meta["has_owners"]){
 		//	var owner_caption = "Владелец";
 		//	acols.push(new Col_struct("owner", "200", "ro", "left", "server", owner_caption));
 		//}

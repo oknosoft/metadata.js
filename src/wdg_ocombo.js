@@ -23,7 +23,7 @@
  * @param attr.parent {HTMLElement} - контейнер, в котором будет размещен элемент
  * @param attr.obj {DataObj|TabularSectionRow} - ссылка на редактируемый объект
  * @param attr.field {String} - имя поля редактируемого объекта
- * @param [attr.meta] {Object} - описание метаданных поля. Если не указано, описание запрашивается у объекта
+ * @param [attr.metadata] {Object} - описание метаданных поля. Если не указано, описание запрашивается у объекта
  * @param [attr.width] {Number} - если указано, фиксирует ширину элемента
  * @constructor
  */
@@ -296,8 +296,8 @@ function OCombo(attr){
 		_field = attr.field;
 		_property = attr.property;
 
-		if(attr.meta)
-			_meta = attr.meta;
+		if(attr.metadata)
+			_meta = attr.metadata;
 
 		else if(_property){
 			_meta = _obj._metadata.fields[_field]._clone();
