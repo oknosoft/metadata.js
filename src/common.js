@@ -1152,7 +1152,7 @@ function InterfaceObjs(){
 		// получаем w, h и формируем viewBox="0 0 400 100"
 		for(j in svg_head){
 			svg_current = svg_head[j].split("=");
-			if(svg_current[0] == "width" || svg_current[0] == "height"){
+			if("width,height,x,y".indexOf(svg_current[0]) != -1){
 				svg_current[1] = Number(svg_current[1].replace(/"/g, ""));
 				svg_j[svg_current[0]] = svg_current[1];
 			}
@@ -1162,14 +1162,20 @@ function InterfaceObjs(){
 			vb_str = svg_head_str.substring(vb_ind+9);
 			viewBox = 'viewBox="' + vb_str.substring(0, vb_str.indexOf('"')) + '"';
 		}else{
-			viewBox = 'viewBox="0 0 ' + (svg_j["width"] - padding) + ' ' + (svg_j["height"] - padding) + '"';
+			viewBox = 'viewBox="' + (svg_j.x || 0) + ' ' + (svg_j.y || 0) + ' ' + (svg_j.width - padding) + ' ' + (svg_j.height - padding) + '"';
 		}
-		k = size / (svg_j["height"] - padding);
-		svg_j["height"] = size;
-		svg_j["width"] = Math.round(svg_j["width"] * k);
+		k = (size - padding) / svg_j.height;
+		svg_j.height = size;
+		svg_j.width = Math.round(svg_j.width * k);
+		svg_j.x = Math.round(svg_j.x * k);
+		svg_j.y = Math.round(svg_j.y * k);
 
-		return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="' +
-			svg_j["width"] + '" height="' + svg_j["height"] + '" xml:space="preserve" ' + viewBox + '>' + svg_body + '</svg>';
+		return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" ' +
+			'width="' + svg_j.width + '" ' +
+			'height="' + svg_j.height + '" ' +
+			'x="' + svg_j.x + '" ' +
+			'y="' + svg_j.y + '" ' +
+			'xml:space="preserve" ' + viewBox + '>' + svg_body + '</svg>';
 	};
 
 	/**
