@@ -1,10 +1,17 @@
+![Stars](https://img.shields.io/github/stars/oknosoft/metadata.js.svg?label=Github%20%E2%98%85&a)
+![Release](https://img.shields.io/github/tag/oknosoft/metadata.js.svg?label=Last%20release&a)
+[![NPM downloads](http://img.shields.io/npm/dm/metadata-js.svg?style=flat&label=npm%20downloads)](https://npmjs.org/package/metadata-js?)
+![NPM version](https://img.shields.io/npm/l/metadata-js.svg?)
+
 **Metadata.js** - это библиотека для разработки бизнес-ориентированных и учетных offline-first браузерных приложений
 
 [English version](README.en.md)
 
-### Что такое Metadata.js?
-Metadata.js - это JavaScript реализация [Объектной модели 1С](http://v8.1c.ru/overview/Platform.htm). Библиотека эмулирует для веб-программиста наиболее востребованные классы API 1С внутри браузера или Node.js.
-Она предоставляет разработчику:
+### Почему Metadata.js?
+Metadata.js - это JavaScript реализация [Объектной модели 1С](http://v8.1c.ru/overview/Platform.htm). Библиотека эмулирует для веб-программиста наиболее востребованные классы API 1С внутри браузера или Node.js, дополняя их средствами автономной работы и  обработки данных на клиенте.
+
+### Для кого?
+Библиотека ориентирована на разработчиков браузерных бизнес-приложений, которым близка идеология и парадигма разработки 1С, но которым тесно в рамках традиционной платформы 1С. Metadata.js предоставляет программисту:
 - высокоуровневые [data-объекты](http://www.oknosoft.ru/upzp/apidocs/modules/metadata.html), схожие по функциональности с документами, регистрами и справочниками платформы 1С
 - инструменты декларативного описания метаданных и автогенерации интерфейса, схожие по функциональности с метаданными и формами платформы 1С 
 
