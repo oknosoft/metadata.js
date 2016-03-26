@@ -71,7 +71,7 @@ gulp.task('build-metadata', function () {
 
 
 gulp.task('injected_main', function(){
-   gulp.src(['./data/*.xml', './data/log.json'])
+   gulp.src(['./data/*.xml'])
 	   .pipe(resources('merged_data.js', function (data) {
 		   return new Buffer('$p.injected_data._mixin(' + JSON.stringify(data) + ');');
 	   }))
@@ -123,7 +123,8 @@ gulp.task('build-dhtmlx', function(){
 			//'./src/dhtmlx/sources/dhtmlxChart/codebase/dhtmlxchart.js',
 			'./src/dhtmlx/sources/dhtmlxDataView/codebase/dhtmlxdataview.js',
 			//'./src/dhtmlx/sources/dhtmlxList/codebase/dhtmlxlist.js',
-			'./src/dhtmlx/sources/dhtmlxTree/codebase/dhtmlxtree.js',
+			//'./src/dhtmlx/sources/dhtmlxTree/codebase/dhtmlxtree.js',
+			'./src/dhtmlx/patches/dhtmlxtree.js',
 			'./src/dhtmlx/sources/dhtmlxTree/codebase/ext/dhtmlxtree_dragin.js',
 			'./src/dhtmlx/sources/dhtmlxTree/codebase/ext/dhtmlxtree_ed.js',
 			'./src/dhtmlx/sources/dhtmlxTree/codebase/ext/dhtmlxtree_json.js',

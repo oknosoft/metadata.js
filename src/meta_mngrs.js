@@ -329,7 +329,10 @@ DataManager.prototype.sync_grid = function(attr, grid){
 
 	function request(){
 
-		if(mgr.cachable == "ram"){
+		if(attr.custom_selection){
+			return attr.custom_selection(attr);
+			
+		}else if(mgr.cachable == "ram"){
 
 			// запрос к alasql
 			if(attr.action == "get_tree")
@@ -402,16 +405,14 @@ DataManager.prototype.sync_grid = function(attr, grid){
  * @return {Promise.<Array>}
  */
 DataManager.prototype.get_option_list = function(val, selection){
-	var t = this, l = [], count = 0, input_by_string, text, sel;
+
+	var t = this, l = [], input_by_string, text, sel;
 
 	function check(v){
 		if($p.is_equal(v.value, val))
 			v.selected = true;
 		return v;
 	}
-
-	// TODO: реализовать для некешируемых объектов (rest)
-	// TODO: учесть "поля поиска по строке"
 
 	// поиск по строке
 	if(selection.presentation && (input_by_string = t.metadata().input_by_string)){
@@ -431,7 +432,7 @@ DataManager.prototype.get_option_list = function(val, selection){
 		});
 		return Promise.resolve(l);
 
-	}else if(t.cachable == "doc"){
+	}else if(t.cachable != "e1cib"){
 		return t.pouch_find_rows(selection)
 			.then(function (data) {
 				data.forEach(function (v) {
@@ -579,7 +580,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 				else if((v = o[row_id]) !== undefined)
 					txt_by_type(v, _md.get(t.class_name, row_id));
 
-			}else if(extra_fields && extra_fields.meta && ((mf = extra_fields.meta[f]) !== undefined)){
+			}else if(extra_fields && extra_fields.metadata && ((mf = extra_fields.metadata[f]) !== undefined)){
 				row_id = f;
 				by_type(v = o[f]);
 
@@ -819,29 +820,37 @@ function RefDataManager(class_name) {
 
 		var o = by_ref[attr.ref];
 		if(!o){
+
 			o = new t._obj_сonstructor(attr, t);
 
-			if(o instanceof DocObj && o.date == $p.blank.date)
-				o.date = new Date();
+			if(!fill_default && attr.ref && attr.presentation && Object.keys(attr).length == 2){
+				// заглушка ссылки объекта
 
-			// Триггер после создания
-			var after_create_res = t.handle_event(o, "after_create");
+			}else{
 
-			if(after_create_res === false)
-				return Promise.resolve(o);
+				if(o instanceof DocObj && o.date == $p.blank.date)
+					o.date = new Date();
 
-			else if(typeof after_create_res === "object" && after_create_res.then)
-				return after_create_res;
+				// Триггер после создания
+				var after_create_res = t.handle_event(o, "after_create");
 
-			// выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
-			if(t.cachable == "e1cib" && fill_default){
-				var rattr = {};
-				$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
-				rattr.url += t.rest_name + "/Create()";
-				return $p.ajax.get_ex(rattr.url, rattr)
-					.then(function (req) {
-						return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
-					});
+				if(after_create_res === false)
+					return Promise.resolve(o);
+
+				else if(typeof after_create_res === "object" && after_create_res.then)
+					return after_create_res;
+
+				// выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
+				if(t.cachable == "e1cib" && fill_default){
+					var rattr = {};
+					$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
+					rattr.url += t.rest_name + "/Create()";
+					return $p.ajax.get_ex(rattr.url, rattr)
+						.then(function (req) {
+							return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
+						});
+				}
+
 			}
 		}
 
@@ -1324,8 +1333,9 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 // ШапкаТаблицыПоИмениКласса
 RefDataManager.prototype.caption_flds = function(attr){
 
-	var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
-		acols = [], cmd = this.metadata(),	s = "";
+	var _meta = attr.metadata || this.metadata(),
+		str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
+		acols = [],	s = "";
 
 	function Col_struct(id,width,type,align,sort,caption){
 		this.id = id;
@@ -1336,8 +1346,8 @@ RefDataManager.prototype.caption_flds = function(attr){
 		this.caption = caption;
 	}
 
-	if(cmd.form && cmd.form.selection){
-		acols = cmd.form.selection.cols;
+	if(_meta.form && _meta.form.selection){
+		acols = _meta.form.selection.cols;
 
 	}else if(this instanceof DocManager){
 		acols.push(new Col_struct("date", "120", "ro", "left", "server", "Дата"));
@@ -1350,7 +1360,7 @@ RefDataManager.prototype.caption_flds = function(attr){
 	}else{
 
 		acols.push(new Col_struct("presentation", "*", "ro", "left", "server", "Наименование"));
-		//if(cmd["has_owners"]){
+		//if(_meta["has_owners"]){
 		//	var owner_caption = "Владелец";
 		//	acols.push(new Col_struct("owner", "200", "ro", "left", "server", owner_caption));
 		//}

@@ -2092,7 +2092,6 @@ div.dhx_toolbar_slider_label_dhx_terrace {
   -webkit-overflow-scrolling: touch;
   position: relative;
   top: 0;
-  font-size: 12px;
   -khtml-user-select: none;
 }
 .containerTableStyleRTL span {
@@ -2104,18 +2103,13 @@ div.dhx_toolbar_slider_label_dhx_terrace {
   overflow: auto;
   position: relative;
   top: 0;
-  font-size: 12px;
 }
 .standartTreeRow {
-  font-family: Arial;
-  font-size: 13px;
   -moz-user-select: none;
 }
 .selectedTreeRow {
   background-color: navy;
   color: white;
-  font-family: Arial;
-  font-size: 13px;
   -moz-user-select: none;
 }
 .dragAndDropRow {
@@ -2125,16 +2119,12 @@ div.dhx_toolbar_slider_label_dhx_terrace {
 .standartTreeRow_lor {
   text-decoration: underline;
   background-color: #ffffff;
-  font-family: Arial;
-  font-size: 13px;
   -moz-user-select: none;
 }
 .selectedTreeRow_lor {
   text-decoration: underline;
   background-color: navy;
   color: white;
-  font-family: Arial;
-  font-size: 13px;
   -moz-user-select: none;
 }
 .standartTreeImage {
@@ -2243,8 +2233,6 @@ div.dhx_toolbar_slider_label_dhx_terrace {
 .dhxtree_dhx_terrace .standartTreeRow,
 .dhxtree_dhx_terrace .selectedTreeRow_lor,
 .dhxtree_dhx_terrace .selectedTreeRow {
-  font-family: Arial;
-  font-size: 13px;
   padding: 3px 1px 4px 2px;
 }
 .dhxtree_dhx_terrace .standartTreeImage {

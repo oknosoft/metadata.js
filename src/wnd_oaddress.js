@@ -167,7 +167,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 					field: "delivery_area",
 					on_select: pgrid_on_select,
 					pwnd: wnd,
-					meta: {
+					metadata: {
 						"synonym": "Район",
 						"tooltip": "Район (зона, направление) доставки для группировки при планировании и оптимизации маршрута геокодером",
 						"choice_groups_elm": "elm",

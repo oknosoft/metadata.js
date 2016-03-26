@@ -377,7 +377,7 @@ function Pouch(){
 		load_obj: {
 			value: function (tObj) {
 
-				return t.local[tObj._manager.cachable].get(tObj._manager.class_name + "|" + tObj.ref)
+				return tObj._manager.pouch_db.get(tObj._manager.class_name + "|" + tObj.ref)
 					.then(function (res) {
 						delete res._id;
 						delete res._rev;
@@ -398,26 +398,47 @@ function Pouch(){
 		 * @return {Promise.<DataObj>} - промис с записанным объектом
 		 */
 		save_obj: {
-			value: function (tObj) {
+			value: function (tObj, attr) {
 
-				var tmp = tObj._obj._clone();
+				var tmp = tObj._obj._clone(),
+					db = tObj._manager.pouch_db;
+				
 				tmp._id = tObj._manager.class_name + "|" + tObj.ref;
 				delete tmp.ref;
 
-				return (tObj.is_new() ? Promise.resolve() : t.local[tObj._manager.cachable].get(tmp._id))
+				if(attr.attachments)
+					tmp._attachments = attr.attachments;
+
+				return (tObj.is_new() ? Promise.resolve() : db.get(tmp._id))
 					.then(function (res) {
-						if(res)
+						if(res){
 							tmp._rev = res._rev;
+							for(var att in res._attachments){
+								if(!tmp._attachments)
+									tmp._attachments = {};
+								if(!tmp._attachments[att])
+									tmp._attachments[att] = res._attachments[att];
+							}
+						}
 					})
 					.catch(function (err) {
 						if(err.status != 404)
 							throw err;
 					})
 					.then(function () {
-						return t.local[tObj._manager.cachable].put(tmp);
+						return db.put(tmp);
 					})
 					.then(function () {
+						if(tmp._attachments){
+							if(!tObj._attachments)
+								tObj._attachments = {};
+							for(var att in tmp._attachments){
+								if(!tObj._attachments[att] || !tmp._attachments[att].stub)
+									tObj._attachments[att] = tmp._attachments[att];
+							}
+						}
 						tmp = null;
+						attr = null;
 						return tObj;
 					});
 			}
@@ -450,6 +471,15 @@ function Pouch(){
 
 					docs.forEach(function (rev) {
 						doc = options ? rev.doc : rev;
+						if(!doc){
+							if((rev.value && rev.value.deleted))
+								doc = {
+									_id: rev.id,
+									_deleted: true
+								};
+							else if(rev.error)
+								return;
+						}
 						key = doc._id.split("|");
 						cn = key[0].split(".");
 						doc.ref = key[1];

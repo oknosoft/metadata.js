@@ -23,7 +23,7 @@
  * @param attr.parent {HTMLElement} - контейнер, в котором будет размещен элемент
  * @param attr.obj {DataObj|TabularSectionRow} - ссылка на редактируемый объект
  * @param attr.field {String} - имя поля редактируемого объекта
- * @param [attr.meta] {Object} - описание метаданных поля. Если не указано, описание запрашивается у объекта
+ * @param [attr.metadata] {Object} - описание метаданных поля. Если не указано, описание запрашивается у объекта
  * @param [attr.width] {Number} - если указано, фиксирует ширину элемента
  * @constructor
  */
@@ -155,7 +155,7 @@ function OCombo(attr){
 							}}, {
 							selection: [get_filter()]
 						});
-					};
+					}
 					_mgr = null;
 					tmgr = null;
 					tmeta = null;
@@ -296,8 +296,8 @@ function OCombo(attr){
 		_field = attr.field;
 		_property = attr.property;
 
-		if(attr.meta)
-			_meta = attr.meta;
+		if(attr.metadata)
+			_meta = attr.metadata;
 
 		else if(_property){
 			_meta = _obj._metadata.fields[_field]._clone();
@@ -309,9 +309,9 @@ function OCombo(attr){
 		t.clearAll();
 		_mgr = _md.value_mgr(_obj, _field, _meta.type);
 
-		if(_mgr){
+		if(_mgr || attr.get_option_list){
 			// загружаем список в 30 строк
-			_mgr.get_option_list(_obj[_field], get_filter())
+			(attr.get_option_list || _mgr.get_option_list).call(_mgr, _obj[_field], get_filter())
 				.then(function (l) {
 					if(t.addOption){
 						t.addOption(l);
@@ -341,7 +341,7 @@ function OCombo(attr){
 		_meta = null;
 		_mgr = null;
 		_pwnd = null;
-		try{ _unload.call(t); }catch(e){};
+		try{ _unload.call(t); }catch(e){}
 	};
 
 	// биндим поле объекта
@@ -349,6 +349,16 @@ function OCombo(attr){
 		this.attach(attr);
 	// устанавливаем url фильтрации
 	this.enableFilteringMode("between", "dummy", false, false);
+
+	// свойство для единообразного доступа к значению
+	this.__define({
+		value: {
+			get: function () {
+				if(_obj)
+					return _obj[_field];
+			}
+		}
+	});
 
 }
 OCombo._extend(dhtmlXCombo);

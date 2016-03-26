@@ -23,21 +23,44 @@
 $p.iface.Toolbar_filter = function (attr) {
 
 	var t = this,
+		input_filter_changed = 0,
 		input_filter_width = 350,
-		input_filter_changed = 0;
+		custom_selection = {};
 
 	if(!attr.pos)
 		attr.pos = 6;
 
-	function onchange(){
+	t.__define({
 
-		if(input_filter_changed){
-			clearTimeout(input_filter_changed);
-			input_filter_changed = 0;
+		custom_selection: {
+			get: function () {
+				return custom_selection;
+			},
+			enumerable: false,
+			configurable: false
+		},
+
+		toolbar: {
+			get: function () {
+				return attr.toolbar;
+			},
+			enumerable: false,
+			configurable: false
+		},
+
+		call_event: {
+			value: function () {
+
+				if(input_filter_changed){
+					clearTimeout(input_filter_changed);
+					input_filter_changed = 0;
+				}
+
+				attr.onchange.call(t, t.get_filter());
+			}
 		}
 
-		attr.onchange.call(t, t.get_filter());
-	}
+	});
 
 	function onkeydown(){
 
@@ -46,8 +69,8 @@ $p.iface.Toolbar_filter = function (attr) {
 
 		input_filter_changed = setTimeout(function () {
 			if(input_filter_changed)
-				onchange();
-		}, 600);
+				t.call_event();
+		}, 500);
 	}
 
 	// Поля ввода периода
@@ -63,26 +86,26 @@ $p.iface.Toolbar_filter = function (attr) {
 
 		input_filter_width = 180;
 
-		attr.toolbar.addText("lbl_date_from", attr.pos, "Период с:");
+		t.toolbar.addText("lbl_date_from", attr.pos, "Период с:");
 		attr.pos++;
-		attr.toolbar.addInput("input_date_from", attr.pos, "", 72);
+		t.toolbar.addInput("input_date_from", attr.pos, "", 72);
 		attr.pos++;
-		attr.toolbar.addText("lbl_date_till", attr.pos, "по:");
+		t.toolbar.addText("lbl_date_till", attr.pos, "по:");
 		attr.pos++;
-		attr.toolbar.addInput("input_date_till", attr.pos, "", 72);
+		t.toolbar.addInput("input_date_till", attr.pos, "", 72);
 		attr.pos++;
 
-		t.input_date_from = attr.toolbar.getInput("input_date_from");
-		t.input_date_from.setAttribute("readOnly", "true");
+		t.input_date_from = t.toolbar.getInput("input_date_from");
+		//t.input_date_from.setAttribute("readOnly", "true");
 		t.input_date_from.onclick = function(){ set_sens(t.input_date_till,"max"); };
 
-		t.input_date_till = attr.toolbar.getInput("input_date_till");
-		t.input_date_till.setAttribute("readOnly", "true");
+		t.input_date_till = t.toolbar.getInput("input_date_till");
+		//t.input_date_till.setAttribute("readOnly", "true");
 		t.input_date_till.onclick = function(){ set_sens(t.input_date_from,"min"); };
 
 		// подключаем календарь к инпутам
 		t.сalendar = new dhtmlXCalendarObject([t.input_date_from, t.input_date_till]);
-		t.сalendar.attachEvent("onclick", onchange);
+		t.сalendar.attachEvent("onclick", t.call_event);
 
 		// начальные значения периода
 		if(!attr.date_from)
@@ -96,29 +119,58 @@ $p.iface.Toolbar_filter = function (attr) {
 
 	// текстовое поле фильтра по подстроке
 	if(!attr.hide_filter){
-		attr.toolbar.addText("lbl_filter", attr.pos, "Фильтр");
+		t.toolbar.addText("lbl_filter", attr.pos, "Фильтр");
 		attr.pos++;
-		attr.toolbar.addInput("input_filter", attr.pos, "", input_filter_width);
-		t.input_filter = attr.toolbar.getInput("input_filter");
-		t.input_filter.onchange = onchange;
+		t.toolbar.addInput("input_filter", attr.pos, "", input_filter_width);
+		t.input_filter = t.toolbar.getInput("input_filter");
+		t.input_filter.onchange = t.call_event;
 		t.input_filter.onkeydown = onkeydown;
 		t.input_filter.type = "search";
 
-		attr.toolbar.addSpacer("input_filter");
+		t.toolbar.addSpacer("input_filter");
 
 	}else if(t.input_date_till)
-		attr.toolbar.addSpacer("input_date_till");
+		t.toolbar.addSpacer("input_date_till");
 
-	else if(attr.toolbar.getItemText("btn_delete"))
-		attr.toolbar.addSpacer("btn_delete");
-
-	t.get_filter = function () {
-		return {
-			date_from: t.input_date_from ? dhx4.str2date(t.input_date_from.value) : "",
-			date_till: t.input_date_till ? dhx4.str2date(t.input_date_till.value) : "",
-			filter: t.input_filter ? t.input_filter.value : ""
-		}
-	}
+	else if(t.toolbar.getItemText("btn_delete"))
+		t.toolbar.addSpacer("btn_delete");
 
 
 };
+$p.iface.Toolbar_filter.prototype.__define({
+
+	get_filter: {
+		value: function () {
+			var res = {
+				date_from: this.input_date_from ? dhx4.str2date(this.input_date_from.value) : "",
+				date_till: this.input_date_till ? dhx4.str2date(this.input_date_till.value) : "",
+				filter: this.input_filter ? this.input_filter.value : ""
+			}, fld, flt;
+			
+			for(fld in this.custom_selection){
+				if(!res.selection)
+					res.selection = [];
+				flt = {};
+				flt[fld] = this.custom_selection[fld].value;
+				res.selection.push(flt);				
+			}
+			return res;
+		}
+	},
+
+	add_filter: {
+		value: function (elm) {
+
+			var pos = this.toolbar.getPosition("input_filter") - 2,
+				id = dhx4.newId(),
+				width = (this.toolbar.getWidth("input_filter") / 2).round(0);
+
+			this.toolbar.setWidth("input_filter", width);
+			this.toolbar.addText("lbl_"+id, pos, elm.text || "");
+			pos++;
+			this.toolbar.addInput("input_"+id, pos, "", width);
+
+			this.custom_selection[elm.name] = this.toolbar.getInput("input_"+id);
+		}
+	}
+});

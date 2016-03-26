@@ -391,11 +391,12 @@ DataObj.prototype.__define({
 	 * В зависимости от настроек, выполняет запись объекта во внешнюю базу данных
 	 * @param [post] {Boolean|undefined} - проведение или отмена проведения или просто запись
 	 * @param [mode] {Boolean} - режим проведения документа [Оперативный, Неоперативный]
+	 * @param [attachments] {Array} - массив вложений
 	 * @return {Promise.<T>} - промис с результатом выполнения операции
 	 * @async
 	 */
 	save: {
-		value: function (post, operational) {
+		value: function (post, operational, attachments) {
 
 			var saver,
 				before_save_res = this._manager.handle_event(this, "before_save");
@@ -423,7 +424,8 @@ DataObj.prototype.__define({
 			return saver(
 				this, {
 					post: post,
-					operational: operational
+					operational: operational,
+					attachments: attachments
 				})
 			// и выполняем обработку после записи
 				.then(function (obj) {
@@ -431,6 +433,27 @@ DataObj.prototype.__define({
 				});
 		},
 		enumerable : false
+	},
+
+	get_attachment: {
+		value: function (att_id) {
+			return this._manager.get_attachment(this.ref, att_id);
+		},
+		enumerable: false
+	},
+
+	save_attachment: {
+		value: function (att_id, attachment, type) {
+			return this._manager.save_attachment(this.ref, att_id, attachment, type);
+		},
+		enumerable: false
+	},
+
+	delete_attachment: {
+		value: function (att_id) {
+			return this._manager.get_attachment(this.ref, att_id);
+		},
+		enumerable: false
 	}
 });
 
