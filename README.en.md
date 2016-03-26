@@ -5,8 +5,12 @@
 ### What is Metadata.js?
 **Metadata.js** is a JavaScript implementation of [1C:Enterprise Platform object model](http://1c-dn.com/1c_enterprise/platform_architecture_overview/). Its goal is to emulate the most popular classes of 1C:Enterprise API, while running in the browser or in Node.js.
 
+![The structure of the system based on metadata.js](examples/imgs/metadata_infrastructure.png)
+
+![Структура metadata.js в браузере](examples/imgs/metadata_structure.png)
+
 ### Presentation
-[![metadata.js overview](examples/imgs/metadata_slideshare.jpg)](http://www.slideshare.net/ssuser7ad218/metadatajs)
+[![Structure metadata.js in a browser](examples/imgs/metadata_slideshare.jpg)](http://www.slideshare.net/ssuser7ad218/metadatajs)
 
 ### Concept
 In metadata.js, we attempt to supplemented the best of modern technologies of data processing, tools that we did not have in their daily work
