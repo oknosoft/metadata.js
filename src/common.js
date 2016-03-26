@@ -745,7 +745,7 @@ $p._patch = function (patch) {
  * @param blob
  * @return {Promise}
  */
-$p.read_blob = function (blob) {
+$p.blob_as_text = function (blob) {
 
 	return new Promise(function(resolve, reject){
 		var reader = new FileReader();

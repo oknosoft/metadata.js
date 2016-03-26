@@ -429,7 +429,16 @@ function Pouch(){
 						return db.put(tmp);
 					})
 					.then(function () {
+						if(tmp._attachments){
+							if(!tObj._attachments)
+								tObj._attachments = {};
+							for(var att in tmp._attachments){
+								if(!tObj._attachments[att] || !tmp._attachments[att].stub)
+									tObj._attachments[att] = tmp._attachments[att];
+							}
+						}
 						tmp = null;
+						attr = null;
 						return tObj;
 					});
 			}
