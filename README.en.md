@@ -1,5 +1,5 @@
-![Stars](https://img.shields.io/github/stars/oknosoft/metadata.js.svg?label=Github%20%E2%98%85&a)
-![Release](https://img.shields.io/github/tag/oknosoft/metadata.js.svg?label=Last%20release&a)
+[![Stars](https://img.shields.io/github/stars/oknosoft/metadata.js.svg?label=Github%20%E2%98%85&a)](stargazers)
+[![Release](https://img.shields.io/github/tag/oknosoft/metadata.js.svg?label=Last%20release&a)](releases)
 [![NPM downloads](http://img.shields.io/npm/dm/metadata-js.svg?style=flat&label=npm%20downloads)](https://npmjs.org/package/metadata-js?)
 [![NPM version](https://img.shields.io/npm/l/metadata-js.svg?)](http://www.gnu.org/licenses/agpl.html)
 
