@@ -1,7 +1,7 @@
 ![Stars](https://img.shields.io/github/stars/oknosoft/metadata.js.svg?label=Github%20%E2%98%85&a)
 ![Release](https://img.shields.io/github/tag/oknosoft/metadata.js.svg?label=Last%20release&a)
 [![NPM downloads](http://img.shields.io/npm/dm/metadata-js.svg?style=flat&label=npm%20downloads)](https://npmjs.org/package/metadata-js?)
-![NPM version](https://img.shields.io/npm/l/metadata-js.svg?)
+[![NPM version](https://img.shields.io/npm/l/metadata-js.svg?)](http://www.gnu.org/licenses/agpl.html)
 
 **Metadata.js** is a library for building offline-first browser-based applications
 
