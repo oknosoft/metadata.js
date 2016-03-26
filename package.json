@@ -7,11 +7,8 @@
     "example": "examples"
   },
   "dependencies": {
-    "pg": "^4.4.0",
-    "ws": "^0.8.0",
-    "node-localstorage": "^0.6.0",
-    "node-static": "^0.7.7",
-    "request": "^2.67.0"
+    "alasql": "^0.2",
+    "pouchdb": "^5.3"
   },
   "devDependencies": {
     "gulp": "^3.9.0",
@@ -24,7 +21,7 @@
     "mocha": "^2.3.0"
   },
   "engines": {
-    "node": ">=4.2.0"
+    "node": ">=5.0.0"
   },
   "repository": {
     "type": "git",
@@ -44,7 +41,10 @@
     "web сервис",
     "клиент 1с",
     "ui framework",
-    "rest client"
+    "rest client",
+    "CRDT",
+    "offline-first",
+    "replication"
   ],
   "license": "AGPL-3.0"
 }

@@ -15,7 +15,9 @@
     "ui",
     "framework",
     "rest",
-    "client"
+    "client",
+    "CRDT",
+    "offline-first"
   ],
   "authors": [
     "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)"
@@ -32,10 +34,11 @@
     "node"
   ],
   "dependencies": {
-    "alasql": "^0.2.1"
+    "alasql": "^0.2",
+    "pouchdb": "^5.3"
   },
   "devDependencies": {
-    "gulp": "^3.9.0"
+    "gulp": "^3.9"
   },
   "ignore": [
     "src",
