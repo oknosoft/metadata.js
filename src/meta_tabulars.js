@@ -106,7 +106,7 @@ TabularSection.prototype.clear = function(do_not_notify){
  * @param val {Number|TabularSectionRow} - индекс или строка табчасти
  */
 TabularSection.prototype.del = function(val){
-	var index, _obj = this._obj, j = 0;
+	var index, _obj = this._obj;
 	if(typeof val == "undefined")
 		return;
 	else if(typeof val == "number")
@@ -126,10 +126,9 @@ TabularSection.prototype.del = function(val){
 
 	_obj.splice(index, 1);
 
-	for(var i in _obj){
-		j++;
-		_obj[i].row = j;
-	}
+	_obj.forEach(function (row, index) {
+		row.row = index + 1;
+	});
 
 	Object.getNotifier(this._owner).notify({
 		type: 'rows',
