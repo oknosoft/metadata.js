@@ -255,7 +255,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 				Object.observe(_obj, observer, ["update", "unload"]);
 
 				if(_extra_fields && _extra_fields instanceof TabularSection)
-					Object.observe(_obj, observer_rows, ["row"]);
+					Object.observe(_obj, observer_rows, ["row", "rows"]);
 
 				// заполняем табчасть данными
 				if(_tsname && !attr.ts_title)
