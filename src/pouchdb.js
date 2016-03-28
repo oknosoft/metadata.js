@@ -256,19 +256,21 @@ function Pouch(){
 		reset_local_data: {
 			value: function () {
 
-				function do_reload(){
-					setTimeout(function () {
-						$p.eve.redirect = true;
-						location.reload(true);
-					}, 2000);
-				}
+				var destroy_ram = t.local.ram.destroy.bind(t.local.ram),
+					destroy_doc = t.local.doc.destroy.bind(t.local.doc),
+					do_reload = function (){
+						setTimeout(function () {
+							$p.eve.redirect = true;
+							location.reload(true);
+						}, 2000);
+					};
 
 				t.log_out();
 
 				setTimeout(function () {
-					t.local.ram.destroy()
-						.then(t.local.doc.destroy)
-						.catch(t.local.doc.destroy)
+					destroy_ram()
+						.then(destroy_doc)
+						.catch(destroy_doc)
 						.then(do_reload)
 						.catch(do_reload);
 				}, 1000);
