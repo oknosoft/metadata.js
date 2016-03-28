@@ -14081,94 +14081,15 @@ $p.eve.time_diff = function () {
 						}
 					);
 				}
-			};
+			}
 
+			/**
+			 * Метод может быть вызван сторонним сайтом через post_message
+			 * @param url
+			 */
 			function navigate(url){
 				if(url && (location.origin + location.pathname).indexOf(url)==-1)
 					location.replace(url);
-			}
-
-			/**
-			 * Нулевым делом, создаём объект параметров работы программы, в процессе создания которого,
-			 * выполняется клиентский скрипт, переопределяющий триггеры и переменные окружения
-			 * Параметры имеют значения по умолчанию, могут переопределяться подключаемыми модулями
-			 * и параметрами url, синтаксический разбор url производим сразу
-			 * @property job_prm
-			 * @for MetaEngine
-			 * @type JobPrm
-			 * @static
-			 */
-			$p.job_prm = new JobPrm();
-
-			/**
-			 * если в $p.job_prm указано использование геолокации, геокодер инициализируем с небольшой задержкой
-			 */
-			if($p.job_prm.use_ip_geo || $p.job_prm.use_google_geo){
-
-				/**
-				 * Данные геолокации
-				 * @property ipinfo
-				 * @for MetaEngine
-				 * @type IPInfo
-				 * @static
-				 */
-				$p.ipinfo = new IPInfo();
-
-			}
-			if (navigator.geolocation && $p.job_prm.use_google_geo) {
-
-				// подгружаем скрипты google
-				if(!window.google || !window.google.maps)
-					$p.eve.onload.push(function () {
-						setTimeout(function(){
-							$p.load_script(location.protocol +
-								"//maps.google.com/maps/api/js?callback=$p.ipinfo.location_callback", "script", function(){});
-						}, 100);
-					});
-				else
-					location_callback();
-			}
-
-			/**
-			 * Если указано, навешиваем слушателя на postMessage
-			 */
-			if($p.job_prm.allow_post_message){
-				/**
-				 * Обработчик события postMessage сторонних окон или родительского окна (если iframe)
-				 * @event message
-				 * @for AppEvents
-				 */
-				w.addEventListener("message", function(event) {
-
-					if($p.job_prm.allow_post_message == "*" || $p.job_prm.allow_post_message == event.origin){
-
-						if(typeof event.data == "string"){
-							try{
-								var res = eval(event.data);
-								if(res && event.source){
-									if(typeof res == "object")
-										res = JSON.stringify(res);
-									else if(typeof res == "function")
-										return;
-									event.source.postMessage(res, "*");
-								}
-							}catch(e){
-								$p.record_log(e);
-							}
-						}
-					}
-				});
-			}
-
-			// устанавливаем соединение с сокет-сервером
-			eve.socket.connect();
-
-			// проверяем совместимость браузера
-			if(!w.JSON || !w.indexedDB){
-				eve.redirect = true;
-				msg.show_msg({type: "alert-error", text: msg.unsupported_browser, title: msg.unsupported_browser_title});
-				throw msg.unsupported_browser;
-				return;
 			}
 
 			/**
@@ -14338,20 +14259,92 @@ $p.eve.time_diff = function () {
 				});
 			}
 
-			setTimeout(function(){
+			/**
+			 * Нулевым делом, создаём объект параметров работы программы, в процессе создания которого,
+			 * выполняется клиентский скрипт, переопределяющий триггеры и переменные окружения
+			 * Параметры имеют значения по умолчанию, могут переопределяться подключаемыми модулями
+			 * и параметрами url, синтаксический разбор url производим сразу
+			 * @property job_prm
+			 * @for MetaEngine
+			 * @type JobPrm
+			 * @static
+			 */
+			$p.job_prm = new JobPrm();
+
+			/**
+			 * если в $p.job_prm указано использование геолокации, геокодер инициализируем с небольшой задержкой
+			 */
+			if($p.job_prm.use_ip_geo || $p.job_prm.use_google_geo){
 
 				/**
-				 * проверяем поддержку промисов, при необходимости загружаем полифил
+				 * Данные геолокации
+				 * @property ipinfo
+				 * @for MetaEngine
+				 * @type IPInfo
+				 * @static
 				 */
-				if(typeof Promise !== "function"){
-					$p.load_script("//cdn.jsdelivr.net/es6-promise/latest/es6-promise.min.js", "script", function () {
-						ES6Promise.polyfill();
-						init_params();
-					});
-				} else
-					init_params();
+				$p.ipinfo = new IPInfo();
 
-			}, 10);
+			}
+			if (navigator.geolocation && $p.job_prm.use_google_geo) {
+
+				// подгружаем скрипты google
+				if(!window.google || !window.google.maps)
+					$p.eve.onload.push(function () {
+						setTimeout(function(){
+							$p.load_script(location.protocol +
+								"//maps.google.com/maps/api/js?callback=$p.ipinfo.location_callback", "script", function(){});
+						}, 100);
+					});
+				else
+					location_callback();
+			}
+
+			/**
+			 * Если указано, навешиваем слушателя на postMessage
+			 */
+			if($p.job_prm.allow_post_message){
+				/**
+				 * Обработчик события postMessage сторонних окон или родительского окна (если iframe)
+				 * @event message
+				 * @for AppEvents
+				 */
+				w.addEventListener("message", function(event) {
+
+					if($p.job_prm.allow_post_message == "*" || $p.job_prm.allow_post_message == event.origin){
+
+						if(typeof event.data == "string"){
+							try{
+								var res = eval(event.data);
+								if(res && event.source){
+									if(typeof res == "object")
+										res = JSON.stringify(res);
+									else if(typeof res == "function")
+										return;
+									event.source.postMessage(res, "*");
+								}
+							}catch(e){
+								$p.record_log(e);
+							}
+						}
+					}
+				});
+			}
+
+			// устанавливаем соединение с сокет-сервером
+			eve.socket.connect();
+
+			// проверяем совместимость браузера
+			if(!w.JSON || !w.indexedDB){
+				eve.redirect = true;
+				msg.show_msg({type: "alert-error", text: msg.unsupported_browser, title: msg.unsupported_browser_title});
+				throw msg.unsupported_browser;
+				return;
+			}
+
+			
+
+			setTimeout(init_params, 10);
 
 		}, 10);
 
