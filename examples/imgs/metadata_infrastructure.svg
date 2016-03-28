@@ -1,10 +1,53 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
-		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="100%" height="100%"
-		viewBox="0 0 556.24 397.349" xml:space="preserve" color-interpolation-filters="sRGB" class="st13">
-	
-
-	<style type="text/css">
-	<![CDATA[
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="100%"
+   height="100%"
+   viewBox="0 0 556.24 397.349"
+   xml:space="preserve"
+   color-interpolation-filters="sRGB"
+   class="st13"
+   id="svg3336"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="metadata_infrastructure.svg"
+   inkscape:export-filename="D:\WORK\0KNOSOFT\UniServer\www\builder2\git-osde\examples\imgs\metadata_infrastructure.png"
+   inkscape:export-xdpi="221.75595"
+   inkscape:export-ydpi="221.75595"><metadata
+     id="metadata3558"><rdf:RDF><cc:Work
+         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1027"
+     id="namedview3556"
+     showgrid="false"
+     inkscape:snap-bbox="true"
+     inkscape:bbox-paths="true"
+     inkscape:zoom="1.5268633"
+     inkscape:cx="206.17834"
+     inkscape:cy="128.17437"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g3347" /><style
+     type="text/css"
+     id="style3338"><![CDATA[
 		.st1 {fill:#ffffff}
 		.st2 {stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
 		.st3 {fill:#000000;font-family:Calibri;font-size:0.75em;font-weight:bold}
@@ -18,214 +61,889 @@
 		.st11 {fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;stroke-width:0.090252707581227}
 		.st12 {fill:#ffffff;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:1}
 		.st13 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
-	]]>
-	</style>
-
-	<defs id="Markers">
-		<g id="lend4">
-			<path d="M 2 1 L 0 0 L 2 -1 L 2 1 " style="stroke:none"/>
-		</g>
-		<marker id="mrkr4-59" class="st11" v:arrowType="4" v:arrowSize="2" v:setback="22.16" refX="-22.16" orient="auto"
-				markerUnits="strokeWidth" overflow="visible">
-			<use xlink:href="#lend4" transform="scale(-11.08,-11.08) "/>
-		</marker>
-	</defs>
-	<g v:mID="0" v:index="1" v:groupContext="foregroundPage">
-		<title>Структура клиента и сервера metadata.js</title>
-		<v:pageProperties v:drawingScale="0.0393701" v:pageScale="0.0393701" v:drawingUnits="24" v:shadowOffsetX="8.50394"
-				v:shadowOffsetY="-8.50394"/>
-		
-		<g id="shape1-1" v:mID="1" v:groupContext="shape" v:layerMember="0" transform="translate(254.026,-288.041)">
-			<title>База CouchDB</title>			
-			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
-			<v:textRect cx="25.5118" cy="379.278" width="51.03" height="23.3858"/>
-			<path d="M0 361.21 L0 390.97 A25.5118 6.37795 -180 1 0 51.02 390.97 L51.02 361.21 A25.5118 6.37795 -180 0 0 0 361.21 Z"
-					class="st1"/>
-			<path d="M0 361.21 L0 390.97 A25.5118 6.37795 -180 1 0 51.02 390.97 L51.02 361.21 A25.5118 6.37795 -180 0 0 0 361.21"
-					class="st2"/>
-			<path d="M0 361.21 A25.5118 6.37795 -180 1 0 51.02 361.21" class="st2"/>
-			<text x="8.64" y="381.98" class="st3" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>CouchDB</text>		</g>
-		<g id="shape2-6" v:mID="2" v:groupContext="shape" v:layerMember="0" transform="translate(30.0886,-285.207)">
-			<title>Сервер 1С</title>			
-			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
-			<v:textRect cx="25.5118" cy="377.861" width="51.03" height="26.2205"/>
-			<path d="M0 358.37 L0 390.97 A25.5118 6.37795 -180 1 0 51.02 390.97 L51.02 358.37 A25.5118 6.37795 -180 0 0 0 358.37 Z"
-					class="st1"/>
-			<path d="M0 358.37 L0 390.97 A25.5118 6.37795 -180 1 0 51.02 390.97 L51.02 358.37 A25.5118 6.37795 -180 0 0 0 358.37"
-					class="st2"/>
-			<path d="M0 358.37 A25.5118 6.37795 -180 0 0 51.02 358.37" class="st2"/>
-			<text x="10.97" y="380.56" class="st3" v:langID="1049"><v:paragraph v:horizAlign="1"/><v:tabList/>База 1С</text>		</g>
-		<g id="group3-11" transform="translate(18.75,-18.75)" v:mID="3" v:groupContext="group">			
-			<g id="shape4-12" v:mID="4" v:groupContext="shape">
-				<title>Metadata.js в браузере</title>				
-				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
-				<v:textRect cx="259.37" cy="220.467" width="453.9" height="22.1102"/>
-				<rect x="0" y="220.467" width="518.74" height="176.882" rx="9" ry="9" class="st4"/>
-				<rect v:rectContext="textBkgnd" x="36.4214" y="215.067" width="94.3286" height="10.7998" class="st5"/>
-				<text x="40.49" y="223.17" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>Metadata.js <tspan class="st6"
-							v:langID="1049">В</tspan><tspan class="st6" v:langID="1049"> </tspan><tspan class="st6" v:langID="1049">браузере</tspan>  </text>			</g>
-		</g>
-		<g id="group8-19" transform="translate(-96.8768,58.9684) rotate(-90)" v:mID="8" v:groupContext="group">
-			<title>Сервер back-end</title>
-			<g id="shape9-20" v:mID="9" v:groupContext="shape" transform="translate(-121.415,534.422) rotate(-159.12)">				
-				<path d="M29.99 397.35 L0 397.35" class="st7"/>
-			</g>
-			<g id="shape10-23" v:mID="10" v:groupContext="shape" transform="translate(397.349,163.166) rotate(90)">					
-				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
-				<v:textRect cx="117.092" cy="377.147" width="234.19" height="40.4036"/>
-				<path d="M39.03 356.95 L0 356.95 L0 397.35 L39.03 397.35" class="st8"/>
-				<text x="4" y="369.05" class="st9" v:langID="1049"><v:paragraph/><v:tabList/>Серверная бизнес-логика, документы, регистры, отчеты.
-					<tspan x="4" dy="1.2em" class="st6">Много</tspan> типовых и отраслевых решений класса ERP,<v:lf/>
-					<tspan x="4" dy="1.2em" class="st6">от</tspan> которых можно унаследовать метаданные и код</text>
-			</g>
-		</g>
-		<g id="group11-31" transform="translate(121.545,59.33) rotate(-90)" v:mID="11" v:groupContext="group">
-			<title>Распределенная консистентная репликация CRDT</title>
-			<g id="shape12-32" v:mID="12" v:groupContext="shape" transform="translate(-306.933,429.27) rotate(-125.933)">				
-				<path d="M38.35 397.35 L0 397.35" class="st7"/>
-			</g>
-			<g id="shape13-35" v:mID="13" v:groupContext="shape" transform="translate(397.349,196.089) rotate(90)">				
-				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
-				<v:textRect cx="100.63" cy="382.547" width="201.26" height="29.6036"/>
-				<path d="M33.54 367.75 L0 367.75 L0 397.35 L33.54 397.35" class="st8"/>
-				<text x="4" y="379.85" class="st9" v:langID="1049"><v:paragraph/><v:tabList/>Репликация с 1С и браузерными базами PouchDB<v:lf/>
-					<tspan x="4" dy="1.2em" class="st6">Высокая</tspan> масштабируемость и надёжность</text>
-			</g>
-		</g>
-		<g id="shape5-41" v:mID="5" v:groupContext="shape" v:layerMember="0" transform="translate(254.026,-95.2854)">
-			<title>Offline хранилище в IndexedDB</title>			
-			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
-			<v:textRect cx="25.5118" cy="379.278" width="51.03" height="23.3858"/>
-			<path d="M0 361.21 L0 390.97 A25.5118 6.37795 -180 1 0 51.02 390.97 L51.02 361.21 A25.5118 6.37795 -180 0 0 0 361.21 Z"
-					class="st1"/>
-			<path d="M0 361.21 L0 390.97 A25.5118 6.37795 -180 1 0 51.02 390.97 L51.02 361.21 A25.5118 6.37795 -180 0 0 0 361.21"
-					class="st2"/>
-			<path d="M0 361.21 A25.5118 6.37795 -180 1 0 51.02 361.21" class="st2"/>
-			<text x="8.63" y="381.98" class="st3" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>PouchDB</text>		</g>
-		<g id="shape6-46" v:mID="6" v:groupContext="shape" v:layerMember="0" transform="translate(32.9232,-96.7028)">
-			<title>движок SQL для браузера</title>			
-			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
-			<v:textRect cx="25.5118" cy="379.278" width="51.03" height="23.3858"/>
-			<path d="M0 361.21 L0 390.97 A25.5118 6.37795 -180 1 0 51.02 390.97 L51.02 361.21 A25.5118 6.37795 -180 0 0 0 361.21 Z"
-					class="st1"/>
-			<path d="M0 361.21 L0 390.97 A25.5118 6.37795 -180 1 0 51.02 390.97 L51.02 361.21 A25.5118 6.37795 -180 0 0 0 361.21"
-					class="st2"/>
-			<path d="M0 361.21 A25.5118 6.37795 -180 1 0 51.02 361.21" class="st2"/>
-			<text x="12.34" y="381.98" class="st3" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>AlaSQL</text>		</g>
-		<g id="shape7-51" v:mID="7" v:groupContext="shape" transform="translate(31.5059,-35.7579)">
-			<title>MetaEngine экспортирует высокоуровневые объекты и менеджеры данных</title>			
-			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
-			<v:textRect cx="29.0551" cy="381.351" width="58.12" height="31.9961"/>
-			<rect x="0" y="365.353" width="58.1102" height="31.9961" class="st4"/>
-			<text x="6.55" y="384.05" class="st3" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>MetaEngine</text>		</g>
-		<g id="shape14-54" v:mID="14" v:groupContext="shape" v:layerMember="1" transform="translate(81.1122,-309.301)">
-			<path d="M0 390.26 L167.37 390.26" class="st10"/>
-		</g>
-		<g id="shape15-60" v:mID="15" v:groupContext="shape" v:layerMember="1" transform="translate(254.026,-295.128)">
-			<path d="M0 390.26 L-167.37 390.26" class="st10"/>
-		</g>
-		<g id="shape16-65" v:mID="16" v:groupContext="shape" v:layerMember="1" transform="translate(280.702,-288.213)">
-			<path d="M-7.04 397.35 L-7.13 542.39" class="st10"/>
-		</g>
-		<g id="shape17-70" v:mID="17" v:groupContext="shape" v:layerMember="1" transform="translate(278.024,-137.653)">
-			<path d="M7.06 397.35 L7.11 252.34" class="st10"/>
-		</g>
-		<g id="group18-75" transform="translate(125.968,255.651) rotate(-90)" v:mID="18" v:groupContext="group">			
-			<g id="shape19-76" v:mID="19" v:groupContext="shape" transform="translate(-162.954,537.37) rotate(-152.552)">				
-				<path d="M29.17 397.35 L0 397.35" class="st7"/>
-			</g>
-			<g id="shape20-79" v:mID="20" v:groupContext="shape" transform="translate(397.349,184.751) rotate(90)">
-				<title>Offline хранилище в IndexedDB</title>				
-				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
-				<v:textRect cx="106.299" cy="377.147" width="212.6" height="40.4036"/>
-				<path d="M35.43 356.95 L0 356.95 L0 397.35 L35.43 397.35" class="st7"/>
-				<text x="4" y="369.05" class="st9" v:langID="1033"><v:paragraph/><v:tabList/>Offline хранилище данных в IndexedDB браузера
-					<tspan x="4" dy="1.2em" class="st6" v:langID="1049">Репликация</tspan> с базами CouchDB<v:lf/>
-					<tspan x="4" dy="1.2em" class="st6" v:langID="1049">Устойчивость</tspan> к помехам и плохим каналам связи</text>
-			</g>
-		</g>
-		<g id="group21-111" transform="translate(-135.547,247.041) rotate(-90)" v:mID="21" v:groupContext="group">
-			<title>движок SQL для браузера</title>
-			<g id="shape22-112" v:mID="22" v:groupContext="shape" transform="translate(-168.354,560.047) rotate(-152.552)">				
-				<path d="M29.17 397.35 L0 397.35" class="st7"/>
-			</g>
-			<g id="shape23-115" v:mID="23" v:groupContext="shape" transform="translate(397.349,207.428) rotate(90)">				
-				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
-				<v:textRect cx="94.9606" cy="382.547" width="189.93" height="29.6036"/>
-				<path d="M31.65 367.75 L0 367.75 L0 397.35 L31.65 397.35" class="st8"/>
-				<text x="4" y="379.85" class="st9" v:langID="1049"><v:paragraph/><v:tabList/>Массив данных в ОЗУ браузера<v:lf/>
-					<tspan x="4" dy="1.2em" class="st6" v:langID="1033">SQL </tspan>интерфейс к данным в javascript</text>
-			</g>
-		</g>
-		<g id="shape24-122" v:mID="24" v:groupContext="shape" v:layerMember="1" transform="translate(83.9469,-116.545)">
-			<path d="M0 390.26 L164.54 390.26" class="st10"/>
-		</g>
-		<g id="shape25-127" v:mID="25" v:groupContext="shape" v:layerMember="1" transform="translate(254.026,-105.207)">
-			<path d="M0 390.26 L-164.54 390.26" class="st10"/>
-		</g>
-		<g id="shape26-132" v:mID="26" v:groupContext="shape" v:layerMember="1" transform="translate(42.8046,-97.0746)">
-			<path d="M7.05 397.35 L7.11 421.13" class="st10"/>
-		</g>
-		<g id="shape27-137" v:mID="27" v:groupContext="shape" v:layerMember="1" transform="translate(71.0473,-67.8657)">
-			<path d="M-6.98 397.35 L-7.15 373.91" class="st10"/>
-		</g>
-		<g id="group28-142" transform="translate(76.3613,361.681) rotate(-90)" v:mID="28" v:groupContext="group">
-			<title>MetaEngine экспортирует высокоуровневые объекты и менеджеры данных</title>
-			<g id="shape29-143" v:mID="29" v:groupContext="shape" transform="translate(-336.132,193.27) rotate(-114.444)">				
-				<path d="M17.13 397.35 L0 397.35" class="st7"/>
-			</g>
-			<g id="shape30-146" v:mID="30" v:groupContext="shape" transform="translate(397.349,28.8453) rotate(90)">				
-				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
-				<v:textRect cx="184.252" cy="371.747" width="368.51" height="51.2036"/>
-				<path d="M61.42 346.15 L0 346.15 L0 397.35 L61.42 397.35" class="st8"/>
-				<text x="4" y="358.25" class="st9" v:langID="1049"><v:paragraph/><v:tabList/>Предоставляет высокоуровневые javascript объекты (документы, регистры и справочники),<v:lf/>
-					<tspan x="4" dy="1.2em" class="st6">схожие</tspan> по функциональности одноименным объектам платформы 1С<v:lf/>
-					<tspan x="4" dy="1.2em" class="st6">Позволяет</tspan> вести разработку offline-first браузерных бизнес-приложений<v:lf/>
-					<tspan x="4" dy="1.2em" class="st6">в</tspan> стиле и терминах, близких к платформе 1С
-				</text>			
-			</g>
-		</g>
-		<g id="shape31-157" v:mID="31" v:groupContext="shape" v:layerMember="2" transform="translate(249.449,-218.268)">
-			<title>Канал связи</title>			
-			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
-			<v:textRect cx="28.3465" cy="383.176" width="56.7" height="28.3465"/>
-			<path d="M2.17 382.01 A7.07618 4.4263 -180 0 0 5.58 389.52 A8.64477 5.40749 -180 0 0 18.86 394.22 A8.74757 5.4718 -180
-						 0 0 34.28 394.68 A10.4021 6.50677 -180 0 0 50.44 389.24 A8.03278 5.02468 -180 0 0 54.17 380.68 A6.30143
-						 3.94169 -180 0 0 49.2 374.46 A10.7771 6.74132 -180 0 0 30.55 372.13 A10.5913 6.62508 -180 0 0 11.9 372.91
-						 A9.92053 6.20551 -180 0 0 2.17 382.01 Z" class="st12"/>
-			<text x="10.32" y="385.88" class="st9" v:langID="1049"><v:paragraph v:horizAlign="1"/><v:tabList/>Интернет</text>
-		</g>
-		<g id="group32-160" transform="translate(-135.469,175.3) rotate(-90)" v:mID="32" v:groupContext="group">
-			<title>Примечание.32</title>
-			<g id="shape33-161" v:mID="33" v:groupContext="shape" transform="translate(-134.809,-155.414) rotate(-24.6638)">
-				<title>Лист.33</title>
-				<path d="M35.03 397.35 L0 397.35" class="st7"/>
-			</g>
-			<g id="shape34-164" v:mID="34" v:groupContext="shape" transform="translate(397.349,205.686) rotate(90)">
-				<title>Система не имеет строгой зависимости от 1С</title>				
-				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
-				<v:textRect cx="95.8317" cy="366.347" width="191.67" height="62.0036"/>
-				<path d="M31.94 335.35 L0 335.35 L0 397.35 L31.94 397.35" class="st8"/>
-				<text x="4" y="347.45" class="st9" v:langID="1049"><v:paragraph/><v:tabList/>Нет строгой зависимости от 1С<v:lf/>
-					<tspan x="4" dy="1.2em" class="st6">Можно</tspan> использовать любой ORM-Сервер<v:lf/>
-					<tspan x="4" dy="1.2em" class="st6">Небольшие</tspan> проекты могут работать вообще без<v:lf/>
-					<tspan x="4" dy="1.2em" class="st6">back-end</tspan> сервера. Бизнес-логику можно<v:lf/>
-					<tspan x="4" dy="1.2em" class="st6">реализовать</tspan> средствами CouchDB</text>
-			</g>
-		</g>
-		<g id="group35-179" transform="translate(121.391,151.094) rotate(-90)" v:mID="35" v:groupContext="group">
-			<title>Offline-first</title>
-			<g id="shape36-180" v:mID="36" v:groupContext="shape" transform="translate(-278.742,457.851) rotate(-131.206)">				
-				<path d="M32.24 397.35 L0 397.35" class="st7"/>
-			</g>
-			<g id="shape37-183" v:mID="37" v:groupContext="shape" transform="translate(397.349,196.089) rotate(90)">				
-				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
-				<v:textRect cx="100.63" cy="377.147" width="201.26" height="40.4036"/>
-				<path d="M33.54 356.95 L0 356.95 L0 397.35 L33.54 397.35" class="st8"/>
-				<text x="4" y="369.05" class="st9" v:langID="1049"><v:paragraph/><v:tabList/>Основные функции системы доступны offline.<v:lf/>
-					<tspan x="4" dy="1.2em" class="st6">Подключение</tspan> используется для обмена данными<v:lf/> 
-					<tspan x="4" dy="1.2em" class="st6">с</tspan> сервером и построения сложных отчетов</text>
-			</g>
-		</g>
-	</g>
-</svg>
+	]]></style><defs
+     id="Markers"><marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker4809"
+       style="overflow:visible;"
+       inkscape:isstock="true"><path
+         id="path4811"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" /></marker><marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker4805"
+       style="overflow:visible;"
+       inkscape:isstock="true"><path
+         id="path4807"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" /></marker><marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker4801"
+       style="overflow:visible"
+       inkscape:isstock="true"><path
+         id="path4803"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8) translate(12.5,0)" /></marker><marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker4793"
+       style="overflow:visible"
+       inkscape:isstock="true"><path
+         id="path4795"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8) translate(12.5,0)" /></marker><marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker4789"
+       style="overflow:visible;"
+       inkscape:isstock="true"><path
+         id="path4791"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" /></marker><marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker4785"
+       style="overflow:visible;"
+       inkscape:isstock="true"><path
+         id="path4787"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" /></marker><marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker4782"
+       style="overflow:visible"
+       inkscape:isstock="true"><path
+         id="path4523"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8) translate(12.5,0)" /></marker><marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker4779"
+       style="overflow:visible;"
+       inkscape:isstock="true"><path
+         id="path4526"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" /></marker><marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker5644"
+       style="overflow:visible"
+       inkscape:isstock="true"><path
+         id="path5646"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8) translate(12.5,0)" /></marker><marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker5532"
+       style="overflow:visible;"
+       inkscape:isstock="true"><path
+         id="path5534"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" /></marker><marker
+       inkscape:isstock="true"
+       style="overflow:visible;"
+       id="marker5416"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend"
+       inkscape:collect="always"><path
+         transform="scale(0.8) rotate(180) translate(12.5,0)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         id="path5418" /></marker><marker
+       inkscape:isstock="true"
+       style="overflow:visible"
+       id="marker5322"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lstart"><path
+         transform="scale(0.8) translate(12.5,0)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         id="path5324" /></marker><marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Lstart"
+       style="overflow:visible"
+       inkscape:isstock="true"
+       inkscape:collect="always"><path
+         id="path4458"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8) translate(12.5,0)" /></marker><marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="marker5078"
+       style="overflow:visible;"
+       inkscape:isstock="true"
+       inkscape:collect="always"><path
+         id="path5080"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" /></marker><marker
+       inkscape:isstock="true"
+       style="overflow:visible;"
+       id="marker5020"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend"><path
+         transform="scale(0.8) rotate(180) translate(12.5,0)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         id="path5022" /></marker><marker
+       inkscape:isstock="true"
+       style="overflow:visible;"
+       id="marker4930"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend"><path
+         transform="scale(0.8) rotate(180) translate(12.5,0)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         id="path4932" /></marker><marker
+       inkscape:isstock="true"
+       style="overflow:visible;"
+       id="marker4866"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend"><path
+         transform="scale(0.8) rotate(180) translate(12.5,0)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         id="path4868" /></marker><marker
+       inkscape:stockid="TriangleOutL"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="TriangleOutL"
+       style="overflow:visible"
+       inkscape:isstock="true"><path
+         id="path4600"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8)" /></marker><marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Lend"
+       style="overflow:visible;"
+       inkscape:isstock="true"
+       inkscape:collect="always"><path
+         id="path4461"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" /></marker><marker
+       inkscape:stockid="Arrow2Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow2Lend"
+       style="overflow:visible;"
+       inkscape:isstock="true"><path
+         id="path4479"
+         style="fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round;stroke:#000000;stroke-opacity:1"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         transform="scale(1.1) rotate(180) translate(1,0)" /></marker><g
+       id="lend4"><path
+         d="M 2 1 L 0 0 L 2 -1 L 2 1 "
+         style="stroke:none"
+         id="path3342" /></g><marker
+       id="mrkr4-59"
+       class="st11"
+       v:arrowType="4"
+       v:arrowSize="2"
+       v:setback="22.16"
+       refX="-22.16"
+       orient="auto"
+       markerUnits="strokeWidth"
+       overflow="visible"><use
+         xlink:href="#lend4"
+         transform="scale(-11.08,-11.08) "
+         id="use3345" /></marker></defs><g
+     v:mID="0"
+     v:index="1"
+     v:groupContext="foregroundPage"
+     id="g3347"><title
+       id="title3349">Структура клиента и сервера metadata.js</title><v:pageProperties
+       v:drawingScale="0.0393701"
+       v:pageScale="0.0393701"
+       v:drawingUnits="24"
+       v:shadowOffsetX="8.50394"
+       v:shadowOffsetY="-8.50394" /><g
+       id="shape1-1"
+       v:mID="1"
+       v:groupContext="shape"
+       v:layerMember="0"
+       transform="translate(280.026,-288.041)"><title
+         id="title3352">База CouchDB</title><v:textBlock
+         v:margins="rect(0,0,0,0)"
+         v:tabSpace="42.5197" /><v:textRect
+         cx="25.5118"
+         cy="379.278"
+         width="51.03"
+         height="23.3858" /><path
+         d="m 0,361.21 0,29.76 a 25.5118,6.37795 -180 1 0 51.02,0 l 0,-29.76 a 25.5118,6.37795 -180 0 0 -51.02,0 z"
+         class="st1"
+         id="path3354"
+         inkscape:connector-curvature="0"
+         style="fill:#ffffff" /><path
+         d="m 0,361.21 0,29.76 a 25.5118,6.37795 -180 1 0 51.02,0 l 0,-29.76 a 25.5118,6.37795 -180 0 0 -51.02,0"
+         class="st2"
+         id="path3356"
+         inkscape:connector-curvature="0"
+         style="stroke:#000000;stroke-width:0.75;stroke-linecap:round;stroke-linejoin:round" /><path
+         d="m 0,361.21 a 25.5118,6.37795 -180 1 0 51.02,0"
+         class="st2"
+         id="path3358"
+         inkscape:connector-curvature="0"
+         style="stroke:#000000;stroke-width:0.75;stroke-linecap:round;stroke-linejoin:round" /><text
+         x="8.6400003"
+         y="381.98001"
+         class="st3"
+         v:langID="1033"
+         id="text3360"
+         style="font-weight:bold;font-size:9px;font-family:Calibri;fill:#000000"><v:paragraph
+   v:horizAlign="1" /><v:tabList />CouchDB</text>
+</g><g
+       id="shape2-6"
+       v:mID="2"
+       v:groupContext="shape"
+       v:layerMember="0"
+       transform="translate(30.0886,-285.207)"><title
+         id="title3363">Сервер 1С</title><v:textBlock
+         v:margins="rect(0,0,0,0)"
+         v:tabSpace="42.5197" /><v:textRect
+         cx="25.5118"
+         cy="377.861"
+         width="51.03"
+         height="26.2205" /><path
+         d="M0 358.37 L0 390.97 A25.5118 6.37795 -180 1 0 51.02 390.97 L51.02 358.37 A25.5118 6.37795 -180 0 0 0 358.37 Z"
+         class="st1"
+         id="path3365" /><path
+         d="M0 358.37 L0 390.97 A25.5118 6.37795 -180 1 0 51.02 390.97 L51.02 358.37 A25.5118 6.37795 -180 0 0 0 358.37"
+         class="st2"
+         id="path3367" /><path
+         d="M0 358.37 A25.5118 6.37795 -180 0 0 51.02 358.37"
+         class="st2"
+         id="path3369" /><text
+         x="10.97"
+         y="380.56"
+         class="st3"
+         v:langID="1049"
+         id="text3371"><v:paragraph
+   v:horizAlign="1" /><v:tabList />База 1С</text>
+</g><g
+       id="group3-11"
+       transform="translate(18.75,-18.75)"
+       v:mID="3"
+       v:groupContext="group"><g
+         id="shape4-12"
+         v:mID="4"
+         v:groupContext="shape"><title
+           id="title3375">Metadata.js в браузере</title><v:textBlock
+           v:margins="rect(4,4,4,4)"
+           v:tabSpace="42.5197" /><v:textRect
+           cx="259.37"
+           cy="220.467"
+           width="453.9"
+           height="22.1102" /><rect
+           x="-518.73999"
+           y="220.467"
+           width="518.73999"
+           height="176.882"
+           rx="9"
+           ry="9"
+           class="st4"
+           id="rect3377"
+           transform="scale(-1,1)"
+           style="fill:#ffffff;stroke:#000000;stroke-width:0.75;stroke-linecap:round;stroke-linejoin:round" /><rect
+           v:rectContext="textBkgnd"
+           x="364.42139"
+           y="215.067"
+           width="94.328598"
+           height="10.7998"
+           class="st5"
+           id="rect3379"
+           style="fill:#ffffff;stroke:none;stroke-width:7.19999981;stroke-linecap:butt" /><text
+           x="368.49002"
+           y="223.17"
+           class="st3"
+           v:langID="1033"
+           id="text3381"
+           style="font-weight:bold;font-size:8.99999976px;font-family:Calibri;fill:#000000;-inkscape-font-specification:'Calibri, Bold';font-style:normal;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%;"
+           sodipodi:linespacing="125%"><v:paragraph /><v:tabList /><tspan
+             sodipodi:role="line"
+             id="tspan4513">Metadata.js в браузере</tspan></text>
+</g></g><g
+       id="group11-31"
+       transform="matrix(0,-1,1,0,147.545,59.33)"
+       v:mID="11"
+       v:groupContext="group"><title
+         id="title3401">Распределенная консистентная репликация CRDT</title><g
+         id="shape12-32"
+         v:mID="12"
+         v:groupContext="shape"
+         transform="matrix(-0.58683881,-0.80970378,0.80970378,-0.58683881,-306.933,429.27)"><path
+           d="M 38.35,397.35 0,397.35"
+           class="st7"
+           id="path3404"
+           inkscape:connector-curvature="0"
+           style="stroke:#000000;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round" /></g><g
+         id="shape13-35"
+         v:mID="13"
+         v:groupContext="shape"
+         transform="matrix(0,1,-1,0,397.349,196.089)"><v:textBlock
+           v:margins="rect(4,4,4,4)"
+           v:tabSpace="42.5197" /><v:textRect
+           cx="100.63"
+           cy="382.547"
+           width="201.26"
+           height="29.6036" /><path
+           d="m 33.54,367.75 -33.54,0 0,29.6 33.54,0"
+           class="st8"
+           id="path3407"
+           inkscape:connector-curvature="0"
+           style="stroke:#000000;stroke-width:0.23999999;stroke-linecap:round;stroke-linejoin:round" /><text
+           x="4"
+           y="379.85001"
+           class="st9"
+           v:langID="1049"
+           id="text3409"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:125%;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000"
+           sodipodi:linespacing="125%"><v:paragraph /><v:tabList /><v:lf /><tspan
+             sodipodi:role="line"
+             id="tspan3566"
+             x="4"
+             y="379.85001">Репликация с 1С и браузерными базами PouchDB</tspan><tspan
+             sodipodi:role="line"
+             id="tspan3568"
+             x="4"
+             y="391.10001">Высокая масштабируемость и надёжность</tspan></text>
+</g></g><g
+       id="shape5-41"
+       v:mID="5"
+       v:groupContext="shape"
+       v:layerMember="0"
+       transform="translate(280.026,-95.2854)"><title
+         id="title3414">Offline хранилище в IndexedDB</title><v:textBlock
+         v:margins="rect(0,0,0,0)"
+         v:tabSpace="42.5197" /><v:textRect
+         cx="25.5118"
+         cy="379.278"
+         width="51.03"
+         height="23.3858" /><path
+         d="m 0,361.21 0,29.76 a 25.5118,6.37795 -180 1 0 51.02,0 l 0,-29.76 a 25.5118,6.37795 -180 0 0 -51.02,0 z"
+         class="st1"
+         id="path3416"
+         inkscape:connector-curvature="0"
+         style="fill:#ffffff" /><path
+         d="m 0,361.21 0,29.76 a 25.5118,6.37795 -180 1 0 51.02,0 l 0,-29.76 a 25.5118,6.37795 -180 0 0 -51.02,0"
+         class="st2"
+         id="path3418"
+         inkscape:connector-curvature="0"
+         style="stroke:#000000;stroke-width:0.75;stroke-linecap:round;stroke-linejoin:round" /><path
+         d="m 0,361.21 a 25.5118,6.37795 -180 1 0 51.02,0"
+         class="st2"
+         id="path3420"
+         inkscape:connector-curvature="0"
+         style="stroke:#000000;stroke-width:0.75;stroke-linecap:round;stroke-linejoin:round" /><text
+         x="8.6300001"
+         y="381.98001"
+         class="st3"
+         v:langID="1033"
+         id="text3422"
+         style="font-weight:bold;font-size:9px;font-family:Calibri;fill:#000000"><v:paragraph
+   v:horizAlign="1" /><v:tabList />PouchDB</text>
+</g><g
+       id="shape6-46"
+       v:mID="6"
+       v:groupContext="shape"
+       v:layerMember="0"
+       transform="translate(32.9232,-96.7028)"><title
+         id="title3425">движок SQL для браузера</title><v:textBlock
+         v:margins="rect(0,0,0,0)"
+         v:tabSpace="42.5197" /><v:textRect
+         cx="25.5118"
+         cy="379.278"
+         width="51.03"
+         height="23.3858" /><path
+         d="M0 361.21 L0 390.97 A25.5118 6.37795 -180 1 0 51.02 390.97 L51.02 361.21 A25.5118 6.37795 -180 0 0 0 361.21 Z"
+         class="st1"
+         id="path3427" /><path
+         d="M0 361.21 L0 390.97 A25.5118 6.37795 -180 1 0 51.02 390.97 L51.02 361.21 A25.5118 6.37795 -180 0 0 0 361.21"
+         class="st2"
+         id="path3429" /><path
+         d="M0 361.21 A25.5118 6.37795 -180 1 0 51.02 361.21"
+         class="st2"
+         id="path3431" /><text
+         x="12.34"
+         y="381.98"
+         class="st3"
+         v:langID="1033"
+         id="text3433"><v:paragraph
+   v:horizAlign="1" /><v:tabList />AlaSQL</text>
+</g><g
+       id="shape7-51"
+       v:mID="7"
+       v:groupContext="shape"
+       transform="translate(128.29604,-100.13029)"><title
+         id="title3436">MetaEngine экспортирует высокоуровневые объекты и менеджеры данных</title><v:textBlock
+         v:margins="rect(4,4,4,4)"
+         v:tabSpace="42.5197" /><v:textRect
+         cx="29.0551"
+         cy="381.351"
+         width="58.12"
+         height="31.9961" /><rect
+         x="0"
+         y="365.353"
+         width="58.110199"
+         height="31.996099"
+         class="st4"
+         id="rect3438"
+         style="fill:#ffffff;stroke:#000000;stroke-width:0.75;stroke-linecap:round;stroke-linejoin:round" /><text
+         x="6.5500002"
+         y="384.04999"
+         class="st3"
+         v:langID="1033"
+         id="text3440"
+         style="font-weight:bold;font-size:9px;font-family:Calibri;fill:#000000"><v:paragraph
+   v:horizAlign="1" /><v:tabList />MetaEngine</text>
+</g><g
+       id="group18-75"
+       transform="matrix(0,-1,1,0,151.968,255.651)"
+       v:mID="18"
+       v:groupContext="group"><g
+         id="shape19-76"
+         v:mID="19"
+         v:groupContext="shape"
+         transform="matrix(-0.88742954,-0.4609434,0.4609434,-0.88742954,-162.954,537.37)"><path
+           d="M 29.17,397.35 0,397.35"
+           class="st7"
+           id="path3456"
+           inkscape:connector-curvature="0"
+           style="stroke:#000000;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round" /></g><g
+         id="shape20-79"
+         v:mID="20"
+         v:groupContext="shape"
+         transform="matrix(0,1,-1,0,397.349,184.751)"><title
+           id="title3459">Offline хранилище в IndexedDB</title><v:textBlock
+           v:margins="rect(4,4,4,4)"
+           v:tabSpace="42.5197" /><v:textRect
+           cx="106.299"
+           cy="377.147"
+           width="212.6"
+           height="40.4036" /><path
+           d="m 35.43,356.95 -35.43,0 0,40.4 35.43,0"
+           class="st7"
+           id="path3461"
+           inkscape:connector-curvature="0"
+           style="stroke:#000000;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round" /><text
+           x="4"
+           y="369.04999"
+           class="st9"
+           v:langID="1033"
+           id="text3463"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:125%;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000"
+           sodipodi:linespacing="125%"><v:paragraph /><v:tabList /><v:lf /><tspan
+             sodipodi:role="line"
+             id="tspan3588"
+             x="4"
+             y="369.04999">Offline хранилище данных в IndexedDB браузера</tspan><tspan
+             sodipodi:role="line"
+             id="tspan3590"
+             x="4"
+             y="380.29999">Репликация с базами CouchDB</tspan><tspan
+             sodipodi:role="line"
+             id="tspan3592"
+             x="4"
+             y="391.54999">Устойчивость к помехам и плохим каналам связи</tspan></text>
+</g></g><g
+       id="group21-111"
+       transform="matrix(0,-1,1,0,-146.56263,356.67112)"
+       v:mID="21"
+       v:groupContext="group"><title
+         id="title3470">движок SQL для браузера</title><g
+         id="shape23-115"
+         v:mID="23"
+         v:groupContext="shape"
+         transform="matrix(0,1,-1,0,398.27522,215.76399)"><v:textBlock
+           v:margins="rect(4,4,4,4)"
+           v:tabSpace="42.5197" /><v:textRect
+           cx="94.9606"
+           cy="382.547"
+           width="189.93"
+           height="29.6036" /><path
+           d="m 31.65,367.75 -31.65,0 0,29.6 31.65,0"
+           class="st8"
+           id="path3476"
+           inkscape:connector-curvature="0"
+           style="stroke:#000000;stroke-width:0.23999999;stroke-linecap:round;stroke-linejoin:round" /><text
+           x="4"
+           y="379.85001"
+           class="st9"
+           v:langID="1049"
+           id="text3478"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:125%;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000"
+           sodipodi:linespacing="125%"><v:paragraph /><v:tabList /><v:lf /><tspan
+             sodipodi:role="line"
+             id="tspan3584"
+             x="4"
+             y="379.85001">Массив данных в ОЗУ браузера</tspan><tspan
+             sodipodi:role="line"
+             id="tspan3586"
+             x="4"
+             y="391.10001">SQL интерфейс к данным в javascript</tspan></text>
+</g></g><path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:3;stroke-dasharray:none;marker-start:url(#marker4793)"
+       d="m 297.66908,108.52157 0,150.96309 0,0"
+       id="path4515"
+       inkscape:connector-curvature="0" /><path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:3;stroke-dasharray:none;marker-start:url(#marker4782)"
+       d="m 312.73265,259.81213 0.32746,-151.29056"
+       id="path4517"
+       inkscape:connector-curvature="0" /><g
+       id="shape31-157"
+       v:mID="31"
+       v:groupContext="shape"
+       v:layerMember="2"
+       transform="translate(275.449,-218.268)"><title
+         id="title3512">Канал связи</title><v:textBlock
+         v:margins="rect(0,0,0,0)"
+         v:tabSpace="42.5197" /><v:textRect
+         cx="28.3465"
+         cy="383.176"
+         width="56.7"
+         height="28.3465" /><path
+         d="m 2.17,382.01 a 7.07618,4.4263 -180 0 0 3.41,7.51 8.64477,5.40749 -180 0 0 13.28,4.7 8.74757,5.4718 -180 0 0 15.42,0.46 10.4021,6.50677 -180 0 0 16.16,-5.44 8.03278,5.02468 -180 0 0 3.73,-8.56 6.30143,3.94169 -180 0 0 -4.97,-6.22 10.7771,6.74132 -180 0 0 -18.65,-2.33 10.5913,6.62508 -180 0 0 -18.65,0.78 9.92053,6.20551 -180 0 0 -9.73,9.1 z"
+         class="st12"
+         id="path3514"
+         inkscape:connector-curvature="0"
+         style="fill:#ffffff;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round" /><text
+         x="10.32"
+         y="385.88"
+         class="st9"
+         v:langID="1049"
+         id="text3516"
+         style="font-size:9px;font-family:Calibri;fill:#000000"><v:paragraph
+   v:horizAlign="1" /><v:tabList />Интернет</text>
+</g><path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:3;stroke-dasharray:none;marker-end:url(#Arrow2Lend)"
+       d="m 186.17051,275.55088 92.62215,0"
+       id="path3642"
+       inkscape:connector-curvature="0" /><path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:3;stroke-dasharray:none;marker-end:url(#Arrow1Lend)"
+       d="m 279.25577,286.66554 -93.08526,0"
+       id="path3644"
+       inkscape:connector-curvature="0" /><path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:3;stroke-dasharray:none;marker-start:url(#Arrow1Lstart)"
+       d="m 84.286152,286.66554 c 43.532408,-0.46311 43.995518,-0.46311 43.995518,-0.46311"
+       id="path4988"
+       inkscape:connector-curvature="0" /><path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:3;stroke-dasharray:none;marker-end:url(#marker5078)"
+       d="m 83.35993,273.23533 44.92174,0"
+       id="path5246"
+       inkscape:connector-curvature="0" /><g
+       id="shape31-157-4"
+       v:mID="31"
+       v:groupContext="shape"
+       v:layerMember="2"
+       transform="translate(26.661488,-236.66945)"><title
+         id="title3512-9">Канал связи</title><v:textBlock
+         v:margins="rect(0,0,0,0)"
+         v:tabSpace="42.5197" /><v:textRect
+         cx="28.3465"
+         cy="383.176"
+         width="56.7"
+         height="28.3465" /><path
+         d="m 2.17,382.01 a 7.07618,4.4263 -180 0 0 3.41,7.51 8.64477,5.40749 -180 0 0 13.28,4.7 8.74757,5.4718 -180 0 0 15.42,0.46 10.4021,6.50677 -180 0 0 16.16,-5.44 8.03278,5.02468 -180 0 0 3.73,-8.56 6.30143,3.94169 -180 0 0 -4.97,-6.22 10.7771,6.74132 -180 0 0 -18.65,-2.33 10.5913,6.62508 -180 0 0 -18.65,0.78 9.92053,6.20551 -180 0 0 -9.73,9.1 z"
+         class="st12"
+         id="path3514-0"
+         inkscape:connector-curvature="0"
+         style="fill:#ffffff;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round" /><text
+         x="10.32"
+         y="385.88"
+         class="st9"
+         v:langID="1049"
+         id="text3516-4"
+         style="font-size:9px;font-family:Calibri;fill:#000000"><v:paragraph
+   v:horizAlign="1" /><v:tabList />Интернет</text>
+</g><path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:3;stroke-dasharray:0.5, 1.5;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 47.12031,112.4512 c 0,19.64813 0,19.64813 0,19.64813"
+       id="path5310"
+       inkscape:connector-curvature="0" /><path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:3;stroke-dasharray:0.5, 1;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker5416)"
+       d="m 62.183872,132.75426 0,-21.28546"
+       id="path5314"
+       inkscape:connector-curvature="0" /><path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.49210238;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:3;stroke-dasharray:0.49210239, 1.47630718;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 64.508496,158.94897 165.37456,265.05442"
+       id="path5522"
+       inkscape:connector-curvature="0" /><path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:3;stroke-dasharray:0.5, 1.50000000000000000;stroke-dashoffset:0;marker-start:url(#marker5644)"
+       d="M 150.63562,265.05163 49.447779,159.6067"
+       id="path5524"
+       inkscape:connector-curvature="0" /><g
+       id="group18-75-3"
+       transform="matrix(0,-1,1,0,-63.582354,140.94085)"
+       v:mID="18"
+       v:groupContext="group"><g
+         id="shape20-79-5"
+         v:mID="20"
+         v:groupContext="shape"
+         transform="matrix(0,1,-1,0,397.349,170.751)"><title
+           id="title3459-0">Offline хранилище в IndexedDB</title><v:textBlock
+           v:margins="rect(4,4,4,4)"
+           v:tabSpace="42.5197" /><v:textRect
+           cx="106.299"
+           cy="377.147"
+           width="212.6"
+           height="40.4036" /><path
+           d="m 35.43,356.95 -35.43,0 0,40.4 35.43,0"
+           class="st7"
+           id="path3461-2"
+           inkscape:connector-curvature="0"
+           style="stroke:#000000;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round" /><text
+           x="4"
+           y="369.04999"
+           class="st9"
+           v:langID="1033"
+           id="text3463-8"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:125%;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000"
+           sodipodi:linespacing="125%"><v:paragraph /><v:tabList /><v:lf /><tspan
+             sodipodi:role="line"
+             id="tspan5780"
+             x="4"
+             y="369.04999">Нет строгой зависимости от 1С</tspan><tspan
+             sodipodi:role="line"
+             id="tspan5782"
+             x="4"
+             y="380.29999">Небольшие проекты могут работать</tspan><tspan
+             sodipodi:role="line"
+             id="tspan5784"
+             x="4"
+             y="391.54999">вообще без back-end сервера</tspan></text>
+</g><path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:3;stroke-dasharray:none"
+         d="M 31.43687,141.84738 21.28534,170.66463"
+         id="path5870"
+         inkscape:connector-curvature="0" /><path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:3;stroke-dasharray:none"
+         d="m -26.85257,170.00969 12.77128,-30.12712"
+         id="path5872"
+         inkscape:connector-curvature="0" /></g><g
+       id="shape20-79-5-0"
+       v:mID="20"
+       v:groupContext="shape"
+       transform="translate(252.08535,-40.31234)"><title
+         id="title3459-0-4">Offline хранилище в IndexedDB</title><v:textBlock
+         v:margins="rect(4,4,4,4)"
+         v:tabSpace="42.5197" /><v:textRect
+         cx="106.299"
+         cy="377.147"
+         width="212.6"
+         height="40.4036" /><path
+         d="m 35.43,356.95 -35.43,0 0,40.4 35.43,0"
+         class="st7"
+         id="path3461-2-9"
+         inkscape:connector-curvature="0"
+         style="stroke:#000000;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round" /><text
+         x="4"
+         y="369.04999"
+         class="st9"
+         v:langID="1033"
+         id="text3463-8-2"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:125%;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000"
+         sodipodi:linespacing="125%"><v:paragraph /><v:tabList /><v:lf /><tspan
+           sodipodi:role="line"
+           id="tspan5823"
+           x="4"
+           y="369.04999">Предоставляет высокоуровневые javascript объекты</tspan><tspan
+           sodipodi:role="line"
+           id="tspan5825"
+           x="4"
+           y="380.29999">(документы, регистры и справочники),</tspan><tspan
+           sodipodi:role="line"
+           id="tspan5827"
+           x="4"
+           y="391.54999">схожие по функциональности одноименным объектам платформы 1С</tspan></text>
+</g><path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:3;stroke-dasharray:none"
+       d="m 183.38249,298.12597 68.44097,31.76447 0,0 0,0"
+       id="path5829"
+       inkscape:connector-curvature="0" /><path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:3;stroke-dasharray:none"
+       d="m 69.003498,332.28194 -20.839983,-32.6493 0,0"
+       id="path5831"
+       inkscape:connector-curvature="0" /><g
+       id="group21-111-0"
+       transform="matrix(0,-1,1,0,-109.09334,187.81092)"
+       v:mID="21"
+       v:groupContext="group"><title
+         id="title3470-6">движок SQL для браузера</title><g
+         id="shape23-115-9"
+         v:mID="23"
+         v:groupContext="shape"
+         transform="matrix(0,1,-1,0,398.27522,215.76399)"><v:textBlock
+           v:margins="rect(4,4,4,4)"
+           v:tabSpace="42.5197" /><v:textRect
+           cx="94.9606"
+           cy="382.547"
+           width="189.93"
+           height="29.6036" /><path
+           d="m 31.65,367.75 -31.65,0 0,29.6 31.65,0"
+           class="st8"
+           id="path3476-0"
+           inkscape:connector-curvature="0"
+           style="stroke:#000000;stroke-width:0.23999999;stroke-linecap:round;stroke-linejoin:round" /><text
+           x="4"
+           y="379.85001"
+           class="st9"
+           v:langID="1049"
+           id="text3478-2"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:125%;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000"
+           sodipodi:linespacing="125%"><v:paragraph /><v:tabList /><v:lf /><tspan
+             sodipodi:role="line"
+             id="tspan5866"
+             x="4"
+             y="379.85001">Если не требуется автономной работы,</tspan><tspan
+             sodipodi:role="line"
+             id="tspan5868"
+             x="4"
+             y="391.10001">к базе 1С можно обращаться напрямую</tspan></text>
+</g></g><g
+       id="group18-75-36"
+       transform="matrix(0,-1,1,0,-104.87859,59.693408)"
+       v:mID="18"
+       v:groupContext="group"><g
+         id="shape20-79-6"
+         v:mID="20"
+         v:groupContext="shape"
+         transform="matrix(0,1,-1,0,397.349,184.751)"><title
+           id="title3459-9">Offline хранилище в IndexedDB</title><v:textBlock
+           v:margins="rect(4,4,4,4)"
+           v:tabSpace="42.5197" /><v:textRect
+           cx="106.299"
+           cy="377.147"
+           width="212.6"
+           height="40.4036" /><path
+           d="m 35.43,356.95 -35.43,0 0,40.4 35.43,0"
+           class="st7"
+           id="path3461-6"
+           inkscape:connector-curvature="0"
+           style="stroke:#000000;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round" /><text
+           x="4"
+           y="369.04999"
+           class="st9"
+           v:langID="1033"
+           id="text3463-2"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:125%;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000"
+           sodipodi:linespacing="125%"><v:paragraph /><v:tabList /><v:lf /><tspan
+             sodipodi:role="line"
+             id="tspan3588-4"
+             x="4"
+             y="369.04999">Документы, регистры, отчеты на сервере 1С</tspan><tspan
+             sodipodi:role="line"
+             id="tspan3590-1"
+             x="4"
+             y="380.29999">Много типовых и отраслевых решений класса ERP,</tspan><tspan
+             sodipodi:role="line"
+             id="tspan3592-3"
+             x="4"
+             y="391.54999">от которых можно унаследовать метаданные и бизнес-логику</tspan></text>
+</g><path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:3;stroke-dasharray:none"
+         d="m -6.584696,164.15043 25.215093,20.30306"
+         id="path4304"
+         inkscape:connector-curvature="0" /></g><g
+       id="shape20-79-5-0-3"
+       v:mID="20"
+       v:groupContext="shape"
+       transform="translate(343.33917,-240.39574)"><title
+         id="title3459-0-4-7">Offline хранилище в IndexedDB</title><v:textBlock
+         v:margins="rect(4,4,4,4)"
+         v:tabSpace="42.5197" /><v:textRect
+         cx="106.299"
+         cy="377.147"
+         width="212.6"
+         height="40.4036" /><path
+         d="m 35.43,356.95 -35.43,0 0,40.4 35.43,0"
+         class="st7"
+         id="path3461-2-9-9"
+         inkscape:connector-curvature="0"
+         style="stroke:#000000;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round" /><text
+         x="4"
+         y="369.04999"
+         class="st9"
+         v:langID="1033"
+         id="text3463-8-2-1"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:125%;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000"
+         sodipodi:linespacing="125%"><v:paragraph /><v:tabList /><v:lf /><tspan
+           sodipodi:role="line"
+           id="tspan5823-1"
+           x="4"
+           y="369.04999">Основные функции доступны offline</tspan><tspan
+           sodipodi:role="line"
+           id="tspan5825-8"
+           x="4"
+           y="380.29999">Подключение используется для обмена данными</tspan><tspan
+           sodipodi:role="line"
+           id="tspan5827-5"
+           x="4"
+           y="391.54999">с сервером и построения сложных отчетов</tspan></text>
+</g><path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:3;stroke-dasharray:none"
+       d="m 318.95455,152.40238 24.88763,-19.64812"
+       id="path4511"
+       inkscape:connector-curvature="0" /><path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:3;stroke-dasharray:none;marker-end:url(#marker4809)"
+       d="m 81.212247,82.651541 198.773523,0 0,0"
+       id="path4797"
+       inkscape:connector-curvature="0" /><path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:3;stroke-dasharray:none;marker-end:url(#marker4805)"
+       d="m 279.98577,93.130541 -199.755929,0"
+       id="path4799"
+       inkscape:connector-curvature="0" /></g></svg>
