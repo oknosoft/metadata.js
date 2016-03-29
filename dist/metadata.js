@@ -2662,6 +2662,8 @@ msg.meta_charts_of_accounts_mgr = "Менеджер планов счетов";
 msg.meta_charts_of_characteristic_mgr = "Менеджер планов видов характеристик";
 msg.meta_extender = "Модификаторы объектов и менеджеров";
 
+msg.modified_close = "Объект изменен<br/>Закрыть без сохранения?";
+
 msg.no_metadata = "Не найдены метаданные объекта '%1'";
 msg.no_selected_row = "Не выбрана строка табличной части '%1'";
 msg.no_dhtmlx = "Библиотека dhtmlx не загружена";
@@ -2695,16 +2697,7 @@ msg.unknown_error = "Неизвестная ошибка в функции '%1'"
 
 msg.value = "Значение";
 
-msg.bld_constructor = "Конструктор объектов графического построителя";
-msg.bld_title = "Графический построитель";
-msg.bld_empty_param = "Не заполнен обязательный параметр <br />";
-msg.bld_not_product = "В текущей строке нет изделия построителя";
-msg.bld_not_draw = "Отсутствует эскиз или не указана система профилей";
-msg.bld_wnd_title = "Построитель изделия № ";
-msg.bld_from_blocks_title = "Выбор типового блока";
-msg.bld_from_blocks = "Текущее изделие будет заменено конфигурацией типового блока. Продолжить?";
-msg.bld_split_imp = "В параметрах продукции<br />'%1'<br />запрещены незамкнутые контуры<br />" +
-	"Для включения деления импостом,<br />установите это свойство в 'Истина'";
+
 
 /**
  * Расширение типов ячеек dhtmlXGrid
@@ -12663,12 +12656,46 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		}
 
 		if(!wnd.ref)
-			wnd.__define("ref", {
-				get: function(){
-					return o ? o.ref : $p.blank.guid;
+			wnd.__define({
+
+				/**
+				 * Возвращает ссылку текущего объекта
+				 */
+				ref: {
+					get: function(){
+						return o ? o.ref : $p.blank.guid;
+					},
+					enumerable: false,
+					configurable: true
 				},
-				enumerable: false,
-				configurable: true
+
+				/**
+				 * Обновляет текст заголовка формы
+				 */
+				set_text: {
+					value: function() {
+						if(attr && attr.set_text || wnd && wnd.setText){
+							//var title = (_meta.obj_presentation || _meta.synonym) + ': ' + o.presentation;
+							var title = o.presentation;
+
+							if(o._modified && title.lastIndexOf("*")!=title.length-1)
+								title += " *";
+
+							else if(!o._modified && title.lastIndexOf("*")==title.length-1)
+								title = title.replace(" *", "");
+
+							if(_title !== title){
+								_title !== title;
+								if(attr.set_text)
+									attr.set_text(title);
+								else
+									wnd.setText(title);
+							}
+						}
+					},
+					enumerable: false,
+					configurable: true
+				}
 			});
 
 		/**
@@ -12762,29 +12789,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		created = true;
 	}
 
-	/**
-	 * Обновляет текст заголовка формы
-	 */
-	function set_text() {
-		if(attr.set_text || wnd.setText){
-			//var title = (_meta.obj_presentation || _meta.synonym) + ': ' + o.presentation;
-			var title = o.presentation;
 
-			if(o._modified && title.lastIndexOf("*")!=title.length-1)
-				title += " *";
 
-			else if(!o._modified && title.lastIndexOf("*")==title.length-1)
-				title = title.replace(" *", "");
-
-			if(_title !== title){
-				_title !== title;
-				if(attr.set_text)
-					attr.set_text(title);
-				else
-					wnd.setText(title);
-			}
-		}
-	}
 
 	/**
 	 * Наблюдатель за изменением объекта
@@ -12792,8 +12798,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 * @param changes
 	 */
 	function observer(changes) {
-		if(o)
-			set_text();
+		if(o && wnd)
+			wnd.set_text();
 	}
 
 	/**
@@ -12809,7 +12815,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		/**
 		 * Устанавливаем текст заголовка формы
 		 */
-		set_text();
+		wnd.set_text();
 		if(!attr.hide_header && wnd.showHeader)
 			wnd.showHeader();
 
@@ -13001,7 +13007,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 					wnd.close();
 					
 				}else
-					set_text();
+					wnd.set_text();
 			})
 			.catch(function(err){
 				wnd.progressOff();
@@ -13019,6 +13025,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		if(!on_create){
 			delete wnd.ref;
+			delete wnd.set_text;
 			Object.unobserve(o, observer);
 			_mgr = wnd = o = _meta = options = pwnd = attr = null;
 		}
