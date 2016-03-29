@@ -24,7 +24,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	var _mgr = this,
 		_meta = _mgr.metadata(),
 		o = attr.o,
-		wnd, options, created, create_id;
+		wnd, options, created, create_id, _title;
 
 	/**
 	 * ПриСозданииНаСервере - инициализация при создании формы, до чтения объекта
@@ -189,6 +189,40 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	}
 
 	/**
+	 * Обновляет текст заголовка формы
+	 */
+	function set_text() {
+		if(attr.set_text || wnd.setText){
+			//var title = (_meta.obj_presentation || _meta.synonym) + ': ' + o.presentation;
+			var title = o.presentation;
+
+			if(o._modified && title.lastIndexOf("*")!=title.length-1)
+				title += " *";
+
+			else if(!o._modified && title.lastIndexOf("*")==title.length-1)
+				title = title.replace(" *", "");
+
+			if(_title !== title){
+				_title !== title;
+				if(attr.set_text)
+					attr.set_text(title);
+				else
+					wnd.setText(title);
+			}
+		}
+	}
+
+	/**
+	 * Наблюдатель за изменением объекта
+	 * Пока здесь только установка заголовка формы
+	 * @param changes
+	 */
+	function observer(changes) {
+		if(o)
+			set_text();
+	}
+
+	/**
 	 * ПриЧтенииНаСервере - инициализация при чтении объекта
 	 */
 	function frm_fill(){
@@ -198,12 +232,12 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			frm_create();
 		}
 
-		if(!attr.hide_header){
-			if(wnd.setText)
-				wnd.setText((_meta.obj_presentation || _meta.synonym) + ': ' + o.presentation);
-			if(wnd.showHeader)
-				wnd.showHeader();
-		}
+		/**
+		 * Устанавливаем текст заголовка формы
+		 */
+		set_text();
+		if(!attr.hide_header && wnd.showHeader)
+			wnd.showHeader();
 
 		/**
 		 * закладки табличных частей
@@ -244,6 +278,12 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				wnd.elmnts.pg_header.enableAutoHeight(false, wnd.elmnts.tabs.tab_header._getHeight()-20, true);
 			});
 		}
+
+		/**
+		 * начинаем следить за объектом
+		 */
+		Object.observe(o, observer, ["update", "row"]);
+
 
 		return {wnd: wnd, o: o};
 
@@ -380,13 +420,14 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			.then(function(){
 
 				wnd.progressOff();
-				wnd.modified = false;
 
 				if(action == "close"){
 					if(attr.on_select)
 						attr.on_select(o);
 					wnd.close();
-				}
+					
+				}else
+					set_text();
 			})
 			.catch(function(err){
 				wnd.progressOff();
@@ -404,6 +445,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		if(!on_create){
 			delete wnd.ref;
+			Object.unobserve(o, observer);
 			_mgr = wnd = o = _meta = options = pwnd = attr = null;
 		}
 	}

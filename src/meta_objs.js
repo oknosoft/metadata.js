@@ -24,7 +24,9 @@ function DataObj(attr, manager) {
 	var tmp,
 		_ts_ = {},
 		_obj = {},
-		_is_new = !(this instanceof EnumObj);
+		_data = {
+			_is_new: !(this instanceof EnumObj)
+		};
 
 	// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
 	if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager))
@@ -89,27 +91,15 @@ function DataObj(attr, manager) {
 		},
 
 		/**
-		 * Возвращает "истина" для нового (еще не записанного или не прочитанного) объекта
-		 * @method is_new
-		 * @for DataObj
-		 * @return {boolean}
+		 * Пользовательские данные - аналог `AdditionalProperties` _Дополнительные cвойства_ в 1С
+		 * @property _data
+		 * @type DataManager
+		 * @final
 		 */
-		is_new: {
-			value: function(){
-				return _is_new;
-			},
-			enumerable: false
-		},
-
-		/**
-		 * Метод для ручной установки признака _прочитан_ (не новый)
-		 */
-		_set_loaded: {
-			value: function(ref){
-				_is_new = false;
-				manager.push(this, ref);
-			},
-			enumerable: false
+		_data: {
+			value : _data,
+			writable: false,
+			enumerable : false
 		}
 
 	});
@@ -231,6 +221,7 @@ DataObj.prototype.__setter = function (f, v) {
 
 	else
 		this._obj[f] = v;
+	
 };
 
 DataObj.prototype.__notify = function (f) {
@@ -245,10 +236,10 @@ DataObj.prototype._setter = function (f, v) {
 
 	if(this._obj[f] == v)
 		return;
-
+	
 	this.__notify(f);
-
 	this.__setter(f, v);
+	this._data._modified = true;
 
 };
 
@@ -285,6 +276,39 @@ DataObj.prototype.__define({
 	_deleted: {
 		get : function(){ return !!this._obj._deleted},
 		enumerable : false
+	},
+
+	/**
+	 * Признак модифицированности
+	 */
+	_modified: {
+		get : function(){ return !!this._data._modified},
+		enumerable : false
+	},
+
+	/**
+	 * Возвращает "истина" для нового (еще не записанного или не прочитанного) объекта
+	 * @method is_new
+	 * @for DataObj
+	 * @return {boolean}
+	 */
+	is_new: {
+		value: function(){
+			return this._data._is_new;
+		},
+		enumerable: false
+	},
+
+	/**
+	 * Метод для ручной установки признака _прочитан_ (не новый)
+	 */
+	_set_loaded: {
+		value: function(ref){
+			this._manager.push(this, ref);
+			this._data._modified = false;
+			this._data._is_new = false;
+		},
+		enumerable: false
 	},
 
 	/**
@@ -338,6 +362,12 @@ DataObj.prototype.__define({
 	load: {
 		value: function(){
 
+			var reset_modified = function () {
+					reset_modified = null;
+					this._data._modified = false;
+					return this;
+				}.bind(this);
+
 			if(this.ref == $p.blank.guid){
 				if(this instanceof CatObj)
 					this.id = "000000000";
@@ -348,10 +378,10 @@ DataObj.prototype.__define({
 
 			}else{
 				if(this._manager.cachable && this._manager.cachable != "e1cib"){
-					return $p.wsql.pouch.load_obj(this);
+					return $p.wsql.pouch.load_obj(this).then(reset_modified);
 
 				} else
-					return _rest.load_obj(this);
+					return _rest.load_obj(this).then(reset_modified);
 			}
 
 
@@ -399,14 +429,21 @@ DataObj.prototype.__define({
 		value: function (post, operational, attachments) {
 
 			var saver,
-				before_save_res = this._manager.handle_event(this, "before_save");
+				before_save_res = this._manager.handle_event(this, "before_save"),
+				reset_modified = function () {
+					saver = null;
+					before_save_res = null;
+					reset_modified = null;
+					this._data._modified = false;
+					return this;
+				}.bind(this);
 
 			// Если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
 			if(before_save_res === false)
-				return Promise.resolve(this);
+				return Promise.resolve(this).then(reset_modified);
 
 			else if(typeof before_save_res === "object" && before_save_res.then)
-				return before_save_res;
+				return before_save_res.then(reset_modified);
 
 			if(this instanceof DocObj && $p.blank.date == this.date)
 				this.date = new Date();
@@ -430,7 +467,8 @@ DataObj.prototype.__define({
 			// и выполняем обработку после записи
 				.then(function (obj) {
 					return obj._manager.handle_event(obj, "after_save");
-				});
+				})
+				.then(reset_modified);
 		},
 		enumerable : false
 	},
