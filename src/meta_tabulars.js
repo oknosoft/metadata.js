@@ -134,6 +134,8 @@ TabularSection.prototype.del = function(val){
 		type: 'rows',
 		tabular: this._name
 	});
+
+	this._owner._data._modified = true;
 };
 
 /**
@@ -213,6 +215,9 @@ TabularSection.prototype.add = function(attr, do_not_notify){
 		});
 
 	attr = null;
+	
+	this._owner._data._modified = true;
+	
 	return row;
 };
 
@@ -246,7 +251,7 @@ TabularSection.prototype.group_by = function (dimensions, resources) {
 		return this.clear(true).load(res);
 
 	}catch(err){}
-}
+};
 
 /**
  * Сортирует табличную часть
@@ -479,8 +484,8 @@ TabularSectionRow.prototype._setter = function (f, v) {
 		name: f,
 		oldValue: this._obj[f]
 	});
-
 	DataObj.prototype.__setter.call(this, f, v);
+	this._owner._owner._data._modified = true;
 
 };
 

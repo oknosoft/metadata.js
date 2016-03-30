@@ -294,11 +294,14 @@ div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td {
 	margin-top: 0px;
 }
 
-/* Текстовый редактор - высота*/
-.dhx_textarea {
-    height: 50px;
-	margin-left: 0;
-	margin-top: -23px;
+/* Текстовое поле*/
+textarea {
+	width: 100%;
+	height: 100%;
+	border: none;
+	margin: 0px 2px;
+	font-family: inherit;
+	font-size: 90%;
 }
 
 /* поле с тремя точками */

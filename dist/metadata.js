@@ -30,7 +30,7 @@
  * @static
  */
 function MetaEngine() {
-	this.version = "0.10.208";
+	this.version = "0.10.209";
 	this.toString = function(){
 		return "Oknosoft data engine. v:" + this.version;
 	};
@@ -2122,19 +2122,21 @@ function Pouch(){
 		reset_local_data: {
 			value: function () {
 
-				function do_reload(){
-					setTimeout(function () {
-						$p.eve.redirect = true;
-						location.reload(true);
-					}, 2000);
-				}
+				var destroy_ram = t.local.ram.destroy.bind(t.local.ram),
+					destroy_doc = t.local.doc.destroy.bind(t.local.doc),
+					do_reload = function (){
+						setTimeout(function () {
+							$p.eve.redirect = true;
+							location.reload(true);
+						}, 2000);
+					};
 
 				t.log_out();
 
 				setTimeout(function () {
-					t.local.ram.destroy()
-						.then(t.local.doc.destroy)
-						.catch(t.local.doc.destroy)
+					destroy_ram()
+						.then(destroy_doc)
+						.catch(destroy_doc)
 						.then(do_reload)
 						.catch(do_reload);
 				}, 1000);
@@ -2660,6 +2662,8 @@ msg.meta_charts_of_accounts_mgr = "Менеджер планов счетов";
 msg.meta_charts_of_characteristic_mgr = "Менеджер планов видов характеристик";
 msg.meta_extender = "Модификаторы объектов и менеджеров";
 
+msg.modified_close = "Объект изменен<br/>Закрыть без сохранения?";
+
 msg.no_metadata = "Не найдены метаданные объекта '%1'";
 msg.no_selected_row = "Не выбрана строка табличной части '%1'";
 msg.no_dhtmlx = "Библиотека dhtmlx не загружена";
@@ -2693,16 +2697,7 @@ msg.unknown_error = "Неизвестная ошибка в функции '%1'"
 
 msg.value = "Значение";
 
-msg.bld_constructor = "Конструктор объектов графического построителя";
-msg.bld_title = "Графический построитель";
-msg.bld_empty_param = "Не заполнен обязательный параметр <br />";
-msg.bld_not_product = "В текущей строке нет изделия построителя";
-msg.bld_not_draw = "Отсутствует эскиз или не указана система профилей";
-msg.bld_wnd_title = "Построитель изделия № ";
-msg.bld_from_blocks_title = "Выбор типового блока";
-msg.bld_from_blocks = "Текущее изделие будет заменено конфигурацией типового блока. Продолжить?";
-msg.bld_split_imp = "В параметрах продукции<br />'%1'<br />запрещены незамкнутые контуры<br />" +
-	"Для включения деления импостом,<br />установите это свойство в 'Истина'";
+
 
 /**
  * Расширение типов ячеек dhtmlXGrid
@@ -4501,21 +4496,6 @@ $p.iface.dat_blank = function(_dxw, attr) {
 	$p.iface.bind_help(wnd_dat, attr.help_path);
 
 	wnd_dat.elmnts = {grids: {}};
-	wnd_dat.__define("modified", {
-		get: function () {
-			return _modified;
-		},
-		set: function (v) {
-			_modified = v;
-			var title = wnd_dat.getText();
-			if(_modified && title.lastIndexOf("*")!=title.length-1)
-				wnd_dat.setText(title + " *");
-			else if(!_modified && title.lastIndexOf("*")==title.length-1)
-				wnd_dat.setText(title.replace(" *", ""));
-		},
-		enumerable: false,
-		configurable: false
-	});
 
 	wnd_dat.wnd_options = function (options) {
 		var pos = wnd_dat.getPosition(),
@@ -4657,9 +4637,7 @@ $p.iface.pgrid_on_select = function(selv){
 	}
 
 	pgrid.cells().setValue($p.is_data_obj(selv) ? selv.presentation : selv || "");
-
-	if(source.wnd)
-		source.wnd.modified = true;
+	
 
 	if(source.grid_on_change)
 		source.grid_on_change.call(pgrid, f, selv);
@@ -4689,9 +4667,6 @@ $p.iface.pgrid_on_checkbox = function(rId, cInd, state){
 
 	if(source.o[rId] != undefined)
 		source.o[rId] = state;
-
-	if(source.wnd)
-		source.wnd.modified = true;
 
 	if(source.grid_on_change)
 		source.grid_on_change(rId, state);
@@ -9540,7 +9515,9 @@ function DataObj(attr, manager) {
 	var tmp,
 		_ts_ = {},
 		_obj = {},
-		_is_new = !(this instanceof EnumObj);
+		_data = {
+			_is_new: !(this instanceof EnumObj)
+		};
 
 	// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
 	if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager))
@@ -9605,27 +9582,15 @@ function DataObj(attr, manager) {
 		},
 
 		/**
-		 * Возвращает "истина" для нового (еще не записанного или не прочитанного) объекта
-		 * @method is_new
-		 * @for DataObj
-		 * @return {boolean}
+		 * Пользовательские данные - аналог `AdditionalProperties` _Дополнительные cвойства_ в 1С
+		 * @property _data
+		 * @type DataManager
+		 * @final
 		 */
-		is_new: {
-			value: function(){
-				return _is_new;
-			},
-			enumerable: false
-		},
-
-		/**
-		 * Метод для ручной установки признака _прочитан_ (не новый)
-		 */
-		_set_loaded: {
-			value: function(ref){
-				_is_new = false;
-				manager.push(this, ref);
-			},
-			enumerable: false
+		_data: {
+			value : _data,
+			writable: false,
+			enumerable : false
 		}
 
 	});
@@ -9747,6 +9712,7 @@ DataObj.prototype.__setter = function (f, v) {
 
 	else
 		this._obj[f] = v;
+	
 };
 
 DataObj.prototype.__notify = function (f) {
@@ -9761,10 +9727,10 @@ DataObj.prototype._setter = function (f, v) {
 
 	if(this._obj[f] == v)
 		return;
-
+	
 	this.__notify(f);
-
 	this.__setter(f, v);
+	this._data._modified = true;
 
 };
 
@@ -9801,6 +9767,39 @@ DataObj.prototype.__define({
 	_deleted: {
 		get : function(){ return !!this._obj._deleted},
 		enumerable : false
+	},
+
+	/**
+	 * Признак модифицированности
+	 */
+	_modified: {
+		get : function(){ return !!this._data._modified},
+		enumerable : false
+	},
+
+	/**
+	 * Возвращает "истина" для нового (еще не записанного или не прочитанного) объекта
+	 * @method is_new
+	 * @for DataObj
+	 * @return {boolean}
+	 */
+	is_new: {
+		value: function(){
+			return this._data._is_new;
+		},
+		enumerable: false
+	},
+
+	/**
+	 * Метод для ручной установки признака _прочитан_ (не новый)
+	 */
+	_set_loaded: {
+		value: function(ref){
+			this._manager.push(this, ref);
+			this._data._modified = false;
+			this._data._is_new = false;
+		},
+		enumerable: false
 	},
 
 	/**
@@ -9854,6 +9853,12 @@ DataObj.prototype.__define({
 	load: {
 		value: function(){
 
+			var reset_modified = function () {
+					reset_modified = null;
+					this._data._modified = false;
+					return this;
+				}.bind(this);
+
 			if(this.ref == $p.blank.guid){
 				if(this instanceof CatObj)
 					this.id = "000000000";
@@ -9864,10 +9869,10 @@ DataObj.prototype.__define({
 
 			}else{
 				if(this._manager.cachable && this._manager.cachable != "e1cib"){
-					return $p.wsql.pouch.load_obj(this);
+					return $p.wsql.pouch.load_obj(this).then(reset_modified);
 
 				} else
-					return _rest.load_obj(this);
+					return _rest.load_obj(this).then(reset_modified);
 			}
 
 
@@ -9915,14 +9920,21 @@ DataObj.prototype.__define({
 		value: function (post, operational, attachments) {
 
 			var saver,
-				before_save_res = this._manager.handle_event(this, "before_save");
+				before_save_res = this._manager.handle_event(this, "before_save"),
+				reset_modified = function () {
+					saver = null;
+					before_save_res = null;
+					reset_modified = null;
+					this._data._modified = false;
+					return this;
+				}.bind(this);
 
 			// Если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
 			if(before_save_res === false)
-				return Promise.resolve(this);
+				return Promise.resolve(this).then(reset_modified);
 
 			else if(typeof before_save_res === "object" && before_save_res.then)
-				return before_save_res;
+				return before_save_res.then(reset_modified);
 
 			if(this instanceof DocObj && $p.blank.date == this.date)
 				this.date = new Date();
@@ -9946,7 +9958,8 @@ DataObj.prototype.__define({
 			// и выполняем обработку после записи
 				.then(function (obj) {
 					return obj._manager.handle_event(obj, "after_save");
-				});
+				})
+				.then(reset_modified);
 		},
 		enumerable : false
 	},
@@ -10491,6 +10504,8 @@ TabularSection.prototype.del = function(val){
 		type: 'rows',
 		tabular: this._name
 	});
+
+	this._owner._data._modified = true;
 };
 
 /**
@@ -10570,6 +10585,9 @@ TabularSection.prototype.add = function(attr, do_not_notify){
 		});
 
 	attr = null;
+	
+	this._owner._data._modified = true;
+	
 	return row;
 };
 
@@ -10603,7 +10621,7 @@ TabularSection.prototype.group_by = function (dimensions, resources) {
 		return this.clear(true).load(res);
 
 	}catch(err){}
-}
+};
 
 /**
  * Сортирует табличную часть
@@ -10836,8 +10854,8 @@ TabularSectionRow.prototype._setter = function (f, v) {
 		name: f,
 		oldValue: this._obj[f]
 	});
-
 	DataObj.prototype.__setter.call(this, f, v);
+	this._owner._owner._data._modified = true;
 
 };
 
@@ -12573,7 +12591,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	var _mgr = this,
 		_meta = _mgr.metadata(),
 		o = attr.o,
-		wnd, options, created, create_id;
+		wnd, options, created, create_id, _title;
 
 	/**
 	 * ПриСозданииНаСервере - инициализация при создании формы, до чтения объекта
@@ -12638,12 +12656,46 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		}
 
 		if(!wnd.ref)
-			wnd.__define("ref", {
-				get: function(){
-					return o ? o.ref : $p.blank.guid;
+			wnd.__define({
+
+				/**
+				 * Возвращает ссылку текущего объекта
+				 */
+				ref: {
+					get: function(){
+						return o ? o.ref : $p.blank.guid;
+					},
+					enumerable: false,
+					configurable: true
 				},
-				enumerable: false,
-				configurable: true
+
+				/**
+				 * Обновляет текст заголовка формы
+				 */
+				set_text: {
+					value: function() {
+						if(attr && attr.set_text || wnd && wnd.setText){
+							//var title = (_meta.obj_presentation || _meta.synonym) + ': ' + o.presentation;
+							var title = o.presentation;
+
+							if(o._modified && title.lastIndexOf("*")!=title.length-1)
+								title += " *";
+
+							else if(!o._modified && title.lastIndexOf("*")==title.length-1)
+								title = title.replace(" *", "");
+
+							if(_title !== title){
+								_title !== title;
+								if(attr.set_text)
+									attr.set_text(title);
+								else
+									wnd.setText(title);
+							}
+						}
+					},
+					enumerable: false,
+					configurable: true
+				}
 			});
 
 		/**
@@ -12737,6 +12789,19 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		created = true;
 	}
 
+
+
+
+	/**
+	 * Наблюдатель за изменением объекта
+	 * Пока здесь только установка заголовка формы
+	 * @param changes
+	 */
+	function observer(changes) {
+		if(o && wnd)
+			wnd.set_text();
+	}
+
 	/**
 	 * ПриЧтенииНаСервере - инициализация при чтении объекта
 	 */
@@ -12747,12 +12812,12 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			frm_create();
 		}
 
-		if(!attr.hide_header){
-			if(wnd.setText)
-				wnd.setText((_meta.obj_presentation || _meta.synonym) + ': ' + o.presentation);
-			if(wnd.showHeader)
-				wnd.showHeader();
-		}
+		/**
+		 * Устанавливаем текст заголовка формы
+		 */
+		wnd.set_text();
+		if(!attr.hide_header && wnd.showHeader)
+			wnd.showHeader();
 
 		/**
 		 * закладки табличных частей
@@ -12793,6 +12858,12 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				wnd.elmnts.pg_header.enableAutoHeight(false, wnd.elmnts.tabs.tab_header._getHeight()-20, true);
 			});
 		}
+
+		/**
+		 * начинаем следить за объектом
+		 */
+		Object.observe(o, observer, ["update", "row"]);
+
 
 		return {wnd: wnd, o: o};
 
@@ -12929,13 +13000,14 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			.then(function(){
 
 				wnd.progressOff();
-				wnd.modified = false;
 
 				if(action == "close"){
 					if(attr.on_select)
 						attr.on_select(o);
 					wnd.close();
-				}
+					
+				}else
+					wnd.set_text();
 			})
 			.catch(function(err){
 				wnd.progressOff();
@@ -12953,6 +13025,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		if(!on_create){
 			delete wnd.ref;
+			delete wnd.set_text;
+			Object.unobserve(o, observer);
 			_mgr = wnd = o = _meta = options = pwnd = attr = null;
 		}
 	}
@@ -14079,94 +14153,15 @@ $p.eve.time_diff = function () {
 						}
 					);
 				}
-			};
+			}
 
+			/**
+			 * Метод может быть вызван сторонним сайтом через post_message
+			 * @param url
+			 */
 			function navigate(url){
 				if(url && (location.origin + location.pathname).indexOf(url)==-1)
 					location.replace(url);
-			}
-
-			/**
-			 * Нулевым делом, создаём объект параметров работы программы, в процессе создания которого,
-			 * выполняется клиентский скрипт, переопределяющий триггеры и переменные окружения
-			 * Параметры имеют значения по умолчанию, могут переопределяться подключаемыми модулями
-			 * и параметрами url, синтаксический разбор url производим сразу
-			 * @property job_prm
-			 * @for MetaEngine
-			 * @type JobPrm
-			 * @static
-			 */
-			$p.job_prm = new JobPrm();
-
-			/**
-			 * если в $p.job_prm указано использование геолокации, геокодер инициализируем с небольшой задержкой
-			 */
-			if($p.job_prm.use_ip_geo || $p.job_prm.use_google_geo){
-
-				/**
-				 * Данные геолокации
-				 * @property ipinfo
-				 * @for MetaEngine
-				 * @type IPInfo
-				 * @static
-				 */
-				$p.ipinfo = new IPInfo();
-
-			}
-			if (navigator.geolocation && $p.job_prm.use_google_geo) {
-
-				// подгружаем скрипты google
-				if(!window.google || !window.google.maps)
-					$p.eve.onload.push(function () {
-						setTimeout(function(){
-							$p.load_script(location.protocol +
-								"//maps.google.com/maps/api/js?callback=$p.ipinfo.location_callback", "script", function(){});
-						}, 100);
-					});
-				else
-					location_callback();
-			}
-
-			/**
-			 * Если указано, навешиваем слушателя на postMessage
-			 */
-			if($p.job_prm.allow_post_message){
-				/**
-				 * Обработчик события postMessage сторонних окон или родительского окна (если iframe)
-				 * @event message
-				 * @for AppEvents
-				 */
-				w.addEventListener("message", function(event) {
-
-					if($p.job_prm.allow_post_message == "*" || $p.job_prm.allow_post_message == event.origin){
-
-						if(typeof event.data == "string"){
-							try{
-								var res = eval(event.data);
-								if(res && event.source){
-									if(typeof res == "object")
-										res = JSON.stringify(res);
-									else if(typeof res == "function")
-										return;
-									event.source.postMessage(res, "*");
-								}
-							}catch(e){
-								$p.record_log(e);
-							}
-						}
-					}
-				});
-			}
-
-			// устанавливаем соединение с сокет-сервером
-			eve.socket.connect();
-
-			// проверяем совместимость браузера
-			if(!w.JSON || !w.indexedDB){
-				eve.redirect = true;
-				msg.show_msg({type: "alert-error", text: msg.unsupported_browser, title: msg.unsupported_browser_title});
-				throw msg.unsupported_browser;
-				return;
 			}
 
 			/**
@@ -14336,20 +14331,92 @@ $p.eve.time_diff = function () {
 				});
 			}
 
-			setTimeout(function(){
+			/**
+			 * Нулевым делом, создаём объект параметров работы программы, в процессе создания которого,
+			 * выполняется клиентский скрипт, переопределяющий триггеры и переменные окружения
+			 * Параметры имеют значения по умолчанию, могут переопределяться подключаемыми модулями
+			 * и параметрами url, синтаксический разбор url производим сразу
+			 * @property job_prm
+			 * @for MetaEngine
+			 * @type JobPrm
+			 * @static
+			 */
+			$p.job_prm = new JobPrm();
+
+			/**
+			 * если в $p.job_prm указано использование геолокации, геокодер инициализируем с небольшой задержкой
+			 */
+			if($p.job_prm.use_ip_geo || $p.job_prm.use_google_geo){
 
 				/**
-				 * проверяем поддержку промисов, при необходимости загружаем полифил
+				 * Данные геолокации
+				 * @property ipinfo
+				 * @for MetaEngine
+				 * @type IPInfo
+				 * @static
 				 */
-				if(typeof Promise !== "function"){
-					$p.load_script("//cdn.jsdelivr.net/es6-promise/latest/es6-promise.min.js", "script", function () {
-						ES6Promise.polyfill();
-						init_params();
-					});
-				} else
-					init_params();
+				$p.ipinfo = new IPInfo();
 
-			}, 10);
+			}
+			if (navigator.geolocation && $p.job_prm.use_google_geo) {
+
+				// подгружаем скрипты google
+				if(!window.google || !window.google.maps)
+					$p.eve.onload.push(function () {
+						setTimeout(function(){
+							$p.load_script(location.protocol +
+								"//maps.google.com/maps/api/js?callback=$p.ipinfo.location_callback", "script", function(){});
+						}, 100);
+					});
+				else
+					location_callback();
+			}
+
+			/**
+			 * Если указано, навешиваем слушателя на postMessage
+			 */
+			if($p.job_prm.allow_post_message){
+				/**
+				 * Обработчик события postMessage сторонних окон или родительского окна (если iframe)
+				 * @event message
+				 * @for AppEvents
+				 */
+				w.addEventListener("message", function(event) {
+
+					if($p.job_prm.allow_post_message == "*" || $p.job_prm.allow_post_message == event.origin){
+
+						if(typeof event.data == "string"){
+							try{
+								var res = eval(event.data);
+								if(res && event.source){
+									if(typeof res == "object")
+										res = JSON.stringify(res);
+									else if(typeof res == "function")
+										return;
+									event.source.postMessage(res, "*");
+								}
+							}catch(e){
+								$p.record_log(e);
+							}
+						}
+					}
+				});
+			}
+
+			// устанавливаем соединение с сокет-сервером
+			eve.socket.connect();
+
+			// проверяем совместимость браузера
+			if(!w.JSON || !w.indexedDB){
+				eve.redirect = true;
+				msg.show_msg({type: "alert-error", text: msg.unsupported_browser, title: msg.unsupported_browser_title});
+				throw msg.unsupported_browser;
+				return;
+			}
+
+			
+
+			setTimeout(init_params, 10);
 
 		}, 10);
 
