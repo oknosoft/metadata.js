@@ -251,7 +251,7 @@ TabularSection.prototype.group_by = function (dimensions, resources) {
 		return this.clear(true).load(res);
 
 	}catch(err){}
-}
+};
 
 /**
  * Сортирует табличную часть
