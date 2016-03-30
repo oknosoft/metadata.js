@@ -8025,17 +8025,13 @@ function RefDataManager(class_name) {
 	 * @param ref
 	 */
 	t.unload_obj = function(ref) {
-		var ind;
 		delete by_ref[ref];
-		for(var i in t.alatable){
-			if(t.alatable[i].ref == ref){
-				ind = i;
-				break;
+		t.alatable.some(function (o, i, a) {
+			if(o.ref == ref){
+				a.splice(i, 1);
+				return true;
 			}
-		}
-		if(ind != undefined){
-			t.alatable.splice(ind, 1);
-		}
+		});
 	};
 
 
@@ -8047,7 +8043,8 @@ function RefDataManager(class_name) {
 	 * @return {DataObj}
 	 */
 	t.find = function(val, columns){
-		return $p._find(by_ref, val, columns); };
+		return $p._find(by_ref, val, columns); 
+	};
 
 	/**
 	 * ### Найти строки
@@ -9551,7 +9548,8 @@ function DataObj(attr, manager) {
 		_obj: {
 			value: _obj,
 			writable: false,
-			enumerable: false
+			enumerable: false,
+			configurable: true
 		},
 
 		/**
@@ -9565,8 +9563,8 @@ function DataObj(attr, manager) {
 				}
 				return _ts_[name];
 			},
-			writable: false,
-			enumerable: false
+			enumerable: false,
+			configurable: true
 		},
 
 		/**
@@ -9590,7 +9588,8 @@ function DataObj(attr, manager) {
 		_data: {
 			value : _data,
 			writable: false,
-			enumerable : false
+			enumerable : false,
+			configurable: true
 		}
 
 	});
@@ -9889,18 +9888,17 @@ DataObj.prototype.__define({
 		value: function(){
 			var f, obj = this._obj;
 			this._manager.unload_obj(this.ref);
-			for(f in this._ts_){
+			for(f in this._metadata.tabular_sections)
 				this[f].clear();
-				delete this._ts_[f];
-			}
 			for(f in this){
-				if(typeof this[f] != "function"){
+				if(this.hasOwnProperty(f))
 					delete this[f];
-				}
 			}
-			for(f in obj){
+			for(f in obj)
 				delete obj[f];
-			}
+			["_ts_","_obj","_data"].forEach(function (f) {
+				delete this[f];
+			}.bind(this));
 			f = obj = null;
 		},
 		enumerable : false
