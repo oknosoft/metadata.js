@@ -52,21 +52,6 @@ $p.iface.dat_blank = function(_dxw, attr) {
 	$p.iface.bind_help(wnd_dat, attr.help_path);
 
 	wnd_dat.elmnts = {grids: {}};
-	wnd_dat.__define("modified", {
-		get: function () {
-			return _modified;
-		},
-		set: function (v) {
-			_modified = v;
-			var title = wnd_dat.getText();
-			if(_modified && title.lastIndexOf("*")!=title.length-1)
-				wnd_dat.setText(title + " *");
-			else if(!_modified && title.lastIndexOf("*")==title.length-1)
-				wnd_dat.setText(title.replace(" *", ""));
-		},
-		enumerable: false,
-		configurable: false
-	});
 
 	wnd_dat.wnd_options = function (options) {
 		var pos = wnd_dat.getPosition(),
@@ -208,9 +193,7 @@ $p.iface.pgrid_on_select = function(selv){
 	}
 
 	pgrid.cells().setValue($p.is_data_obj(selv) ? selv.presentation : selv || "");
-
-	if(source.wnd)
-		source.wnd.modified = true;
+	
 
 	if(source.grid_on_change)
 		source.grid_on_change.call(pgrid, f, selv);
@@ -240,9 +223,6 @@ $p.iface.pgrid_on_checkbox = function(rId, cInd, state){
 
 	if(source.o[rId] != undefined)
 		source.o[rId] = state;
-
-	if(source.wnd)
-		source.wnd.modified = true;
 
 	if(source.grid_on_change)
 		source.grid_on_change(rId, state);
