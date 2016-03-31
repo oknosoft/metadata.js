@@ -60,7 +60,8 @@ function DataObj(attr, manager) {
 		_obj: {
 			value: _obj,
 			writable: false,
-			enumerable: false
+			enumerable: false,
+			configurable: true
 		},
 
 		/**
@@ -74,8 +75,8 @@ function DataObj(attr, manager) {
 				}
 				return _ts_[name];
 			},
-			writable: false,
-			enumerable: false
+			enumerable: false,
+			configurable: true
 		},
 
 		/**
@@ -99,7 +100,8 @@ function DataObj(attr, manager) {
 		_data: {
 			value : _data,
 			writable: false,
-			enumerable : false
+			enumerable : false,
+			configurable: true
 		}
 
 	});
@@ -398,18 +400,17 @@ DataObj.prototype.__define({
 		value: function(){
 			var f, obj = this._obj;
 			this._manager.unload_obj(this.ref);
-			for(f in this._ts_){
+			for(f in this._metadata.tabular_sections)
 				this[f].clear();
-				delete this._ts_[f];
-			}
 			for(f in this){
-				if(typeof this[f] != "function"){
+				if(this.hasOwnProperty(f))
 					delete this[f];
-				}
 			}
-			for(f in obj){
+			for(f in obj)
 				delete obj[f];
-			}
+			["_ts_","_obj","_data"].forEach(function (f) {
+				delete this[f];
+			}.bind(this));
 			f = obj = null;
 		},
 		enumerable : false

@@ -863,17 +863,13 @@ function RefDataManager(class_name) {
 	 * @param ref
 	 */
 	t.unload_obj = function(ref) {
-		var ind;
 		delete by_ref[ref];
-		for(var i in t.alatable){
-			if(t.alatable[i].ref == ref){
-				ind = i;
-				break;
+		t.alatable.some(function (o, i, a) {
+			if(o.ref == ref){
+				a.splice(i, 1);
+				return true;
 			}
-		}
-		if(ind != undefined){
-			t.alatable.splice(ind, 1);
-		}
+		});
 	};
 
 
@@ -885,7 +881,8 @@ function RefDataManager(class_name) {
 	 * @return {DataObj}
 	 */
 	t.find = function(val, columns){
-		return $p._find(by_ref, val, columns); };
+		return $p._find(by_ref, val, columns); 
+	};
 
 	/**
 	 * ### Найти строки
