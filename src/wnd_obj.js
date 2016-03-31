@@ -24,7 +24,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	var _mgr = this,
 		_meta = _mgr.metadata(),
 		o = attr.o,
-		wnd, options, created, create_id, _title;
+		wnd, options, created, create_id, _title, close_confirmed;
 
 	/**
 	 * ПриСозданииНаСервере - инициализация при создании формы, до чтения объекта
@@ -43,26 +43,30 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			wnd = pwnd;
 			wnd.close = function (on_create) {
 				var _wnd = wnd || pwnd;
-				if(_wnd){
 
-					// выгружаем попапы
-					if(_wnd.elmnts)
-						["vault", "vault_pop"].forEach(function (elm) {
-							if (_wnd.elmnts[elm])
-								_wnd.elmnts[elm].unload();
-						});
+				if(on_create || check_modified()){
 
-					// информируем мир о закрытии формы
-					if(_mgr && _mgr.class_name)
-						dhx4.callEvent("frm_close", [_mgr.class_name, o ? o.ref : ""]);
+					if(_wnd){
+						// выгружаем попапы
+						if(_wnd.elmnts)
+							["vault", "vault_pop"].forEach(function (elm) {
+								if (_wnd.elmnts[elm])
+									_wnd.elmnts[elm].unload();
+							});
 
-					_wnd.detachToolbar();
-					_wnd.detachStatusBar();
-					if(_wnd.conf)
-						_wnd.conf.unloading = true;
-					_wnd.detachObject(true);
+						// информируем мир о закрытии формы
+						if(_mgr && _mgr.class_name)
+							$p.eve.callEvent("frm_close", [_mgr.class_name, o ? o.ref : ""]);
+
+						_wnd.detachToolbar();
+						_wnd.detachStatusBar();
+						if(_wnd.conf)
+							_wnd.conf.unloading = true;
+						_wnd.detachObject(true);
+					}
+					frm_unload(on_create);
+
 				}
-				frm_unload(on_create);
 			};
 			wnd.elmnts = {grids: {}};
 
@@ -464,31 +468,66 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		}
 	}
 
-	function frm_close(win){
+	/**
+	 * Задаёт вопрос о записи изменений и делает откат при необходимости
+	 */
+	function check_modified() {
+		if(o._modified && !close_confirmed){
+			dhtmlx.confirm({
+				title: o.presentation,
+				text: $p.msg.modified_close,
+				cancel: $p.msg.cancel,
+				callback: function(btn) {
+					if(btn){
+						close_confirmed = true;
+						// закрыть изменённый без сохранения - значит прочитать его из pouchdb
+						if(o._manager.cachable == "ram")
+							this.close();
 
-		// TODO задать вопрос о записи изменений + перенести этот метод в $p
-
-		setTimeout(frm_unload);
-
-		// выгружаем попапы
-		if(wnd && wnd.elmnts)
-			["vault", "vault_pop"].forEach(function (elm) {
-				if (wnd.elmnts[elm])
-					wnd.elmnts[elm].unload();
+						else{
+							if(o.is_new()){
+								o.unload();
+								this.close();
+							}else{
+								setTimeout(o.load.bind(o), 100);
+								this.close();
+							}
+						}
+					}
+				}.bind(wnd)
 			});
-
-		// информируем мир о закрытии формы
-		if(_mgr && _mgr.class_name)
-			dhx4.callEvent("frm_close", [_mgr.class_name, o ? o.ref : ""]);
-
+			return false;
+		}
 		return true;
 	}
+
+	function frm_close(wnd){
+
+		if(check_modified()){
+			setTimeout(frm_unload);
+
+			// выгружаем попапы
+			if(wnd && wnd.elmnts)
+				["vault", "vault_pop"].forEach(function (elm) {
+					if (wnd.elmnts[elm])
+						wnd.elmnts[elm].unload();
+				});
+
+			// информируем мир о закрытии формы
+			if(_mgr && _mgr.class_name)
+				$p.eve.callEvent("frm_close", [_mgr.class_name, o ? o.ref : ""]);
+
+			return true;
+		}
+	}
+
 
 	// (пере)создаём статическую часть формы
 	create_id = setTimeout(frm_create);
 
 	// читаем объект из локального SQL или получаем с сервера
 	if($p.is_data_obj(o)){
+
 		if(o.is_new() && attr.on_select)
 			return _mgr.create({}, true)
 				.then(function (tObj) {
@@ -501,6 +540,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				.then(frm_fill);
 		}else
 			return Promise.resolve(frm_fill());
+
 	}else{
 
 		pwnd.progressOn();

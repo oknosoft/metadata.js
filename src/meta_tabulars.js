@@ -281,7 +281,7 @@ TabularSection.prototype.sort = function (fields) {
 	}catch(err){
 		$p.record_log(err);
 	}
-}
+};
 
 /**
  * Вычисляет агрегатную функцию по табличной части. Не изменяет исходный объект
@@ -337,7 +337,7 @@ TabularSection.prototype.aggregate = function (dimensions, resources, aggr, ret_
 	}catch(err){
 		$p.record_log(err);
 	}
-}
+};
 
 /**
  * загружает табличнут часть из массива объектов
@@ -390,9 +390,12 @@ TabularSection.prototype.sync_grid = function(grid, selection){
 		});
 		grid_data.rows.push({ id: r.row, data: data });
 	});
-	try{ grid.parse(grid_data, "json"); } catch (e){}
-	grid.callEvent("onGridReconstructed", []);
-
+	if(grid.objBox){
+		try{
+			grid.parse(grid_data, "json");
+			grid.callEvent("onGridReconstructed", []);
+		} catch (e){}
+	}
 };
 
 TabularSection.prototype.toJSON = function () {
