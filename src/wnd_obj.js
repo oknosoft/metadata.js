@@ -110,7 +110,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				 * Обновляет текст заголовка формы
 				 */
 				set_text: {
-					value: function() {
+					value: function(force) {
 						if(attr && attr.set_text || wnd && wnd.setText){
 							//var title = (_meta.obj_presentation || _meta.synonym) + ': ' + o.presentation;
 							var title = o.presentation;
@@ -121,8 +121,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 							else if(!o._modified && title.lastIndexOf("*")==title.length-1)
 								title = title.replace(" *", "");
 
-							if(_title !== title){
-								_title !== title;
+							if(force || _title !== title){
+								_title = title;
 								if(attr.set_text)
 									attr.set_text(title);
 								else
