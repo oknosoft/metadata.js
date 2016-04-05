@@ -75,7 +75,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			options = {
 				name: 'wnd_obj_' + _mgr.class_name,
 				wnd: {
-					id: 'wnd_obj_' + _mgr.class_name,
 					top: 80 + Math.random()*40,
 					left: 120 + Math.random()*80,
 					width: 900,
@@ -513,6 +512,10 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 						wnd.elmnts[elm].unload();
 				});
 
+			// восстанавливаем модальность родительского окна
+			if(pwnd && pwnd != wnd && pwnd.setModal)
+				pwnd.setModal(1);
+
 			// информируем мир о закрытии формы
 			if(_mgr && _mgr.class_name)
 				$p.eve.callEvent("frm_close", [_mgr.class_name, o ? o.ref : ""]);
@@ -543,17 +546,20 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 	}else{
 
-		pwnd.progressOn();
+		if(pwnd && pwnd.progressOn)
+			pwnd.progressOn();
 
 		return _mgr.get(attr.hasOwnProperty("ref") ? attr.ref : attr, true)
 			.then(function(tObj){
 				o = tObj;
 				tObj = null;
-				pwnd.progressOff();
+				if(pwnd && pwnd.progressOff)
+					pwnd.progressOff();
 				return frm_fill();
 			})
 			.catch(function (err) {
-				pwnd.progressOff();
+				if(pwnd && pwnd.progressOff)
+					pwnd.progressOff();
 				wnd.close();
 				$p.record_log(err);
 			});

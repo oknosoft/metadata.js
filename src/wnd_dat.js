@@ -380,7 +380,7 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 				allow_close: true,
 				allow_minmax: true,
 				modal: true
-			}
+			};
 		_cell = $p.iface.dat_blank(attr._dxw, attr.options);
 		_cell.attachEvent("onClose",function(win){
 			if(were_errors){
