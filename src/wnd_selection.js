@@ -344,9 +344,15 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			// TODO: м.б. записывать пустой объект и получать код-номер??
 			_mgr.create({}, true)
 				.then(function (o) {
+
 					if(attr.on_new)
 						attr.on_new(o, wnd);
-					else
+
+					else if($p.job_prm.keep_hash){
+						//o._set_loaded(o.ref);
+						o.form_obj();
+
+					} else
 						$p.iface.set_hash(_mgr.class_name, o.ref);
 				});
 
@@ -356,7 +362,12 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			if (rId){
 				if(attr.on_edit)
 					attr.on_edit(_mgr, rId, wnd);
-				else
+
+				else if($p.job_prm.keep_hash){
+
+					_mgr.form_obj(wnd, {ref: rId});
+
+				} else
 					$p.iface.set_hash(_mgr.class_name, rId);
 			}else
 				$p.msg.show_msg({
