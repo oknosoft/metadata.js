@@ -4500,8 +4500,21 @@ $p.iface.dat_blank = function(_dxw, attr) {
 	else
 		wnd_dat.button('close').hide();
 
-	if(typeof attr.on_close == "function")
-		wnd_dat.attachEvent("onClose", attr.on_close);
+	// обработчик при закрытии - анализируем модальность
+	wnd_dat.attachEvent("onClose", function () {
+		
+		var allow_close = typeof attr.on_close == "function" ? attr.on_close(wnd_dat) : true;
+		
+		if(allow_close){
+
+			// восстанавливаем модальность родительского окна
+			if(attr.pwnd_modal && attr.pwnd && attr.pwnd.setModal)
+				attr.pwnd.setModal(1);
+
+			return allow_close;
+		}
+						
+	});
 
 	wnd_dat.setIconCss('without_icon');
 	wnd_dat.cell.parentNode.children[1].classList.add('dat_gui');
@@ -4550,8 +4563,10 @@ $p.iface.dat_blank = function(_dxw, attr) {
 	};
 
 	if(attr.modal){
-		if(attr.pwnd && attr.pwnd.setModal)
+		if(attr.pwnd && attr.pwnd.setModal){
+			attr.pwnd_modal = attr.pwnd.isModal();
 			attr.pwnd.setModal(0);
+		}			
 		wnd_dat.setModal(1);
 	}
 
@@ -13098,10 +13113,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 						wnd.elmnts[elm].unload();
 				});
 
-			// восстанавливаем модальность родительского окна
-			if(pwnd && pwnd != wnd && pwnd.setModal)
-				pwnd.setModal(1);
-
 			// информируем мир о закрытии формы
 			if(_mgr && _mgr.class_name)
 				$p.eve.callEvent("frm_close", [_mgr.class_name, o ? o.ref : ""]);
@@ -13678,10 +13689,6 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	function frm_close(){
 
 		setTimeout(frm_unload, 10);
-
-		// восстанавливаем модальность родительского окна
-		if(pwnd && pwnd != wnd && pwnd.setModal)
-			pwnd.setModal(1);
 
 		// если в родительском установлен обработчик выгрузки нашего - вызываем с контекстом грида
 		if(pwnd.on_unload)

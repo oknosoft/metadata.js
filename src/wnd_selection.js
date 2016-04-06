@@ -508,10 +508,6 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		setTimeout(frm_unload, 10);
 
-		// восстанавливаем модальность родительского окна
-		if(pwnd && pwnd != wnd && pwnd.setModal)
-			pwnd.setModal(1);
-
 		// если в родительском установлен обработчик выгрузки нашего - вызываем с контекстом грида
 		if(pwnd.on_unload)
 			pwnd.on_unload.call(pwnd.grid || pwnd);

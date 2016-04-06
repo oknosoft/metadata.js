@@ -512,10 +512,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 						wnd.elmnts[elm].unload();
 				});
 
-			// восстанавливаем модальность родительского окна
-			if(pwnd && pwnd != wnd && pwnd.setModal)
-				pwnd.setModal(1);
-
 			// информируем мир о закрытии формы
 			if(_mgr && _mgr.class_name)
 				$p.eve.callEvent("frm_close", [_mgr.class_name, o ? o.ref : ""]);
