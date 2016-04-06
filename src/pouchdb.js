@@ -431,6 +431,10 @@ function Pouch(){
 						return db.put(tmp);
 					})
 					.then(function () {
+						
+						if(tObj.is_new())
+							tObj._set_loaded(tObj.ref);
+						
 						if(tmp._attachments){
 							if(!tObj._attachments)
 								tObj._attachments = {};
@@ -439,6 +443,7 @@ function Pouch(){
 									tObj._attachments[att] = tmp._attachments[att];
 							}
 						}
+						
 						tmp = null;
 						attr = null;
 						return tObj;

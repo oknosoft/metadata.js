@@ -75,7 +75,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			options = {
 				name: 'wnd_obj_' + _mgr.class_name,
 				wnd: {
-					id: 'wnd_obj_' + _mgr.class_name,
 					top: 80 + Math.random()*40,
 					left: 120 + Math.random()*80,
 					width: 900,
@@ -110,7 +109,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				 * Обновляет текст заголовка формы
 				 */
 				set_text: {
-					value: function() {
+					value: function(force) {
 						if(attr && attr.set_text || wnd && wnd.setText){
 							//var title = (_meta.obj_presentation || _meta.synonym) + ': ' + o.presentation;
 							var title = o.presentation;
@@ -121,8 +120,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 							else if(!o._modified && title.lastIndexOf("*")==title.length-1)
 								title = title.replace(" *", "");
 
-							if(_title !== title){
-								_title !== title;
+							if(force || _title !== title){
+								_title = title;
 								if(attr.set_text)
 									attr.set_text(title);
 								else
@@ -543,17 +542,20 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 	}else{
 
-		pwnd.progressOn();
+		if(pwnd && pwnd.progressOn)
+			pwnd.progressOn();
 
 		return _mgr.get(attr.hasOwnProperty("ref") ? attr.ref : attr, true)
 			.then(function(tObj){
 				o = tObj;
 				tObj = null;
-				pwnd.progressOff();
+				if(pwnd && pwnd.progressOff)
+					pwnd.progressOff();
 				return frm_fill();
 			})
 			.catch(function (err) {
-				pwnd.progressOff();
+				if(pwnd && pwnd.progressOff)
+					pwnd.progressOff();
 				wnd.close();
 				$p.record_log(err);
 			});
