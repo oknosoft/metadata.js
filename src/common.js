@@ -1,8 +1,7 @@
 /**
  * Глобальные переменные и общие методы фреймворка __metadata.js__ <i>Oknosoft data engine</i>
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * Экспортирует глобальную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
  * @module  common

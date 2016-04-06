@@ -2,8 +2,7 @@
  * Виджет для панели инструментов форм списка и выбора,
  * объединяет поля выбора периода и поле ввода фильтра
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author	Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module  wdg_filter
  * @requires common

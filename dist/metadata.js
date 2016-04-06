@@ -1,7 +1,6 @@
 /*!
- &copy; http://www.oknosoft.ru 2014-2015
- @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
- @author Evgeniy Malyarov
+ metadata.js &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
@@ -15,8 +14,7 @@
 /**
  * Глобальные переменные и общие методы фреймворка __metadata.js__ <i>Oknosoft data engine</i>
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * Экспортирует глобальную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
  * @module  common
@@ -1867,9 +1865,7 @@ $p.wsql = new WSQL();
 /**
  * Содержит методы и подписки на события PouchDB
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  * @module common
  * @submodule pouchdb
  */
@@ -2423,8 +2419,7 @@ function Pouch(){
 /**
  * Строковые константы интернационализации
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module common
  * @submodule i18n
@@ -2707,8 +2702,7 @@ msg.value = "Значение";
 /**
  * Расширение типов ячеек dhtmlXGrid
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author	Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * Экспортирует конструкторы:
  * * **eXcell_ref** - поля ввода значений ссылочных типов
@@ -3128,9 +3122,7 @@ $p.iface.data_to_tree = function (data) {
 /**
  * ### Визуальный компонент - гиперссылка с выпадающим списком для выбора значения
  *
- * Created 13.11.2015<br />
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  * @module  wdg_dropdown_list
  */
 
@@ -3220,8 +3212,7 @@ $p.iface.ODropdownList = ODropdownList;
  * ### Визуальный компонент OCombo
  * Поле с выпадающим списком + функция выбора из списка
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author	Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module  wdg_ocombo
  * @requires common
@@ -3671,8 +3662,7 @@ $p.iface.select_from_list = function (list, multy) {
 /**
  * ### Визуальный компонент - реквизиты шапки объекта
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author	Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module  wdg_ohead_fields
  * @requires common
@@ -3959,8 +3949,7 @@ dhtmlXGridObject.prototype.get_cell_value = function () {
 /**
  * ### Визуальный компонент - табличное поле объекта
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module  wdg_otabular
  * @requires common
@@ -4216,8 +4205,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
  * Виджет для панели инструментов форм списка и выбора,
  * объединяет поля выбора периода и поле ввода фильтра
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author	Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module  wdg_filter
  * @requires common
@@ -4392,9 +4380,8 @@ $p.iface.Toolbar_filter.prototype.__define({
 /**
  * Динамическое дерево иерархического справочника
  *
- * Created 22.10.2015<br />
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ * 
  * @module  wdg_dyn_tree
  */
 
@@ -4458,8 +4445,7 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 /**
  * Формы визуализации и изменения параметров объекта
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author	Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module common
  * @submodule wnd_dat
@@ -5444,8 +5430,7 @@ $p.iface.add_button = function(parent, attr, battr) {
 /**
  * Поле ввода адреса связанная с ним форма ввода адреса
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author	Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module  wnd_oaddress
  */
@@ -6031,8 +6016,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 /**
  * Метаданные на стороне js: конструкторы, заполнение, кеширование, поиск
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module  metadata
  * @submodule meta_meta
@@ -7191,8 +7175,7 @@ $p.record_log = function (err) {
 /**
  * Конструкторы менеджеров данных
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module  metadata
  * @submodule meta_mngrs
@@ -9522,8 +9505,7 @@ BusinessProcessManager._extend(CatManager);
 /**
  * Конструкторы объектов данных
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module  metadata
  * @submodule meta_objs
@@ -10402,8 +10384,7 @@ RegisterRow.prototype.__define({
 /**
  * Конструкторы табличных частей
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module  metadata
  * @submodule meta_tabulars
@@ -10899,8 +10880,7 @@ TabularSectionRow.prototype._setter = function (f, v) {
  * записи и синхронизации через стандартный интерфейс <a href="http://its.1c.ru/db/v83doc#bookmark:dev:TI000001362">OData</a>
  * /a/unf/odata/standard.odata
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module  metadata
  * @submodule rest
@@ -11766,8 +11746,7 @@ DataObj.prototype.to_atom = function (ex_meta) {
  * Дополняет классы {{#crossLink "DataObj"}}{{/crossLink}} и {{#crossLink "DataManager"}}{{/crossLink}} методами чтения,<br />
  * записи и синхронизации с базами PouchDB
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module  metadata
  * @submodule meta_pouchdb
@@ -12185,8 +12164,7 @@ DataManager.prototype.__define({
 /**
  * Процедуры импорта и экспорта данных
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module metadata
  * @submodule import_export
@@ -12602,8 +12580,7 @@ $p.iface.wnd_sync = function() {
 /**
  * Форма абстрактного объекта данных {{#crossLink "DataObj"}}{{/crossLink}}, в том числе, отчетов и обработок
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author	Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module metadata
  * @submodule wnd_obj
@@ -13184,8 +13161,7 @@ DataObj.prototype.form_obj = function (pwnd, attr) {
  * Абстрактная форма списка и выбора выбора объектов ссылочного типа (документов и справочников)<br />
  * Может быть переопределена в {{#crossLink "RefDataManager"}}менеджерах{{/crossLink}} конкретных классов
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author	Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module  wnd_selection
  */
@@ -13805,8 +13781,7 @@ DataManager.prototype.form_list = function(pwnd, attr){
  *	 по событию построителя "ready", выполняем метод initMainLayout() объекта $p.iface.
  *	 Метод initMainLayout() переопределяется во внешним, по отношению к ядру, модуле
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module common
  * @submodule events
@@ -13962,8 +13937,7 @@ $p.eve.time_diff = function () {
 /**
  * Этот фрагмент кода выполняем только в браузере
  * Created 28.12.2015<br />
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  * @module common
  * @submodule events_browser
  */

@@ -56,8 +56,8 @@ bower install --save metadata   # bower
 
 ```html
 <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/fontawesome/latest/css/font-awesome.min.css">
-<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/g/metadata(dhx_web.css+metadata.css)">
-<script src="//cdn.jsdelivr.net/g/alasql,metadata(dhtmlx.min.js+metadata.min.js)"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/g/metadata(dhx_terrace.css+metadata.css)">
+<script src="//cdn.jsdelivr.net/g/alasql,pouchdb,metadata(dhtmlx.min.js+metadata.min.js)"></script>
 ```
 
 ## Web-приложение к серверу 1С - это просто

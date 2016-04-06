@@ -2,8 +2,7 @@
  * Дополняет классы {{#crossLink "DataObj"}}{{/crossLink}} и {{#crossLink "DataManager"}}{{/crossLink}} методами чтения,<br />
  * записи и синхронизации с базами PouchDB
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module  metadata
  * @submodule meta_pouchdb

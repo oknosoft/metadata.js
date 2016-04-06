@@ -1,9 +1,7 @@
 /**
  * ### Визуальный компонент - гиперссылка с выпадающим списком для выбора значения
  *
- * Created 13.11.2015<br />
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  * @module  wdg_dropdown_list
  */
 
