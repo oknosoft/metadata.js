@@ -31,9 +31,16 @@ function OCombo(attr){
 
 	var _obj, _field, _meta, _mgr, _property, popup_focused,
 		t = this,
-		_pwnd = {on_select: attr.on_select || function (selv) {
-			_obj[_field] = selv;
-		}};
+		_pwnd = {
+			on_select: attr.on_select || function (selv) {
+				_obj[_field] = selv;
+			}
+		};
+
+	// если нас открыли из окна,
+	// которое может быть модальным - сохраняем указатель на метод модальности родительского окна
+	if(attr.pwnd && attr.pwnd.setModal)
+		_pwnd.setModal = attr.pwnd.setModal.bind(attr.pwnd);
 
 	// выполняем конструктор родительского объекта
 	OCombo.superclass.constructor.call(t, attr);
@@ -120,12 +127,12 @@ function OCombo(attr){
 				_mgr.create({}, true)
 					.then(function (o) {
 						o._set_loaded(o.ref);
-						o.form_obj();
+						o.form_obj(attr.pwnd);
 					});
 
 		} else if(this.name == "open"){
 			if(_obj && _obj[_field] && !_obj[_field].empty())
-				_obj[_field].form_obj();
+				_obj[_field].form_obj(attr.pwnd);
 
 		} else if(this.name == "type"){
 			var tlist = [], tmgr, tmeta, tobj = _obj, tfield = _field;
@@ -233,7 +240,8 @@ function OCombo(attr){
 		if(e.keyCode == 115){ // F4
 			if(e.ctrlKey && e.shiftKey){
 				if(!_obj[_field].empty())
-					_obj[_field].form_obj();
+					_obj[_field].form_obj(attr.pwnd);
+
 			}else if(!e.ctrlKey && !e.shiftKey){
 				if(_mgr)
 					_mgr.form_selection(_pwnd, {

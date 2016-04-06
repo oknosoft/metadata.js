@@ -11,7 +11,7 @@
 /**
  * Форма выбора объекта данных
  * @method form_selection
- * @param pwnd {dhtmlXWindows} - указатель на родительскую форму
+ * @param pwnd {dhtmlXWindowsCell} - указатель на родительскую форму
  * @param attr {Object} - параметры инициализации формы
  * @param [attr.initial_value] {DataObj} - начальное значение выбора
  * @param [attr.parent] {DataObj} - начальное значение родителя для иерархических справочников
@@ -86,7 +86,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				});
 			}
 		}else{
-			wnd = $p.iface.w.createWindow('wnd_' + _mgr.class_name.replace(".", "_") + '_select', 0, 0, 900, 600);
+			wnd = $p.iface.w.createWindow(null, 0, 0, 900, 600);
 			wnd.centerOnScreen();
 			wnd.setModal(1);
 			wnd.button('park').hide();
@@ -341,13 +341,20 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			select();
 
 		}else if(btn_id=="btn_new"){
-			// TODO: м.б. записывать пустой объект и получать код-номер??
+
 			_mgr.create({}, true)
 				.then(function (o) {
+
 					if(attr.on_new)
 						attr.on_new(o, wnd);
-					else
+
+					else if($p.job_prm.keep_hash){
+						o.form_obj(wnd);
+
+					} else{
+						o._set_loaded(o.ref);
 						$p.iface.set_hash(_mgr.class_name, o.ref);
+					}
 				});
 
 
@@ -356,7 +363,12 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			if (rId){
 				if(attr.on_edit)
 					attr.on_edit(_mgr, rId, wnd);
-				else
+
+				else if($p.job_prm.keep_hash){
+
+					_mgr.form_obj(wnd, {ref: rId});
+
+				} else
 					$p.iface.set_hash(_mgr.class_name, rId);
 			}else
 				$p.msg.show_msg({
@@ -492,13 +504,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 	}
 
-	function frm_close(win){
-
-		// проверить на ошибки, записать изменения
-		// если проблемы, вернуть false
+	function frm_close(){
 
 		setTimeout(frm_unload, 10);
 
+		// если в родительском установлен обработчик выгрузки нашего - вызываем с контекстом грида
 		if(pwnd.on_unload)
 			pwnd.on_unload.call(pwnd.grid || pwnd);
 

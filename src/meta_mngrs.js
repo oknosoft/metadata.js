@@ -571,14 +571,19 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 				}
 
 			}else if(typeof f === "object"){
-				mf = {synonym: f.synonym};
 				row_id = f.id;
+				mf = extra_fields && extra_fields.metadata && extra_fields.metadata[row_id];
+				if(!mf)
+					mf = {synonym: f.synonym};
+				else if(f.synonym)
+					mf.synonym = f.synonym;
+
 				ft = f.type;
 				txt = "";
 				if(f.hasOwnProperty("txt"))
 					txt = f.txt;
 				else if((v = o[row_id]) !== undefined)
-					txt_by_type(v, _md.get(t.class_name, row_id));
+					txt_by_type(v, mf.type ? mf : _md.get(t.class_name, row_id));
 
 			}else if(extra_fields && extra_fields.metadata && ((mf = extra_fields.metadata[f]) !== undefined)){
 				row_id = f;
