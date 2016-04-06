@@ -1,9 +1,7 @@
 /**
  * Методы, используемые сервером metadata (postgres + nodejs)
  *
- * Created 16.12.2015<br />
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  * @module server
  */
 

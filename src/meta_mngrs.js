@@ -1,8 +1,7 @@
 /**
  * Конструкторы менеджеров данных
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module  metadata
  * @submodule meta_mngrs
