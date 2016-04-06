@@ -1,8 +1,7 @@
 /**
  * Аналог dhx4.attachEvent / dhx4.callEvent для NodeJS
  * Created 16.01.2016<br />
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  * @module events_node
  */
 

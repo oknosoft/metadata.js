@@ -1,8 +1,7 @@
 /**
  * Формы визуализации и изменения параметров объекта
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author	Evgeniy Malyarov
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * @module common
  * @submodule wnd_dat

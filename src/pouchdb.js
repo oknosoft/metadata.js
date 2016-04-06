@@ -1,9 +1,7 @@
 /**
  * Содержит методы и подписки на события PouchDB
  *
- * &copy; http://www.oknosoft.ru 2014-2016
- * @author  Evgeniy Malyarov
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  * @module common
  * @submodule pouchdb
  */
