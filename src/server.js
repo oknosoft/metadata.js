@@ -21,7 +21,7 @@ $p.from_file = function(filename){
 			}
 		});
 	});
-}
+};
 
 /**
  * Запускает процесс инициализации сервера
@@ -31,7 +31,7 @@ $p.from_file = function(filename){
  */
 $p.eve.init_node = function (alasql) {
 
-	$p.job_prm = new $p.JobPrm();
+	$p.job_prm = new JobPrm();
 
 	var data_url = $p.job_prm.data_url || "/data/",
 		pg_drv = require('pg');
@@ -62,7 +62,7 @@ $p.eve.init_node = function (alasql) {
 
 				function pg_connect (pg_callback) {
 					return pg_drv.connect($p.job_prm.pg_cnn, pg_callback);
-				};
+				}
 
 				/**
 				 * Выполняет запрос к postgres.
@@ -105,7 +105,7 @@ $p.eve.init_node = function (alasql) {
 
 					});
 
-				}
+				};
 
 				/**
 				 * Вызывает в callback соединение postgres.
@@ -193,23 +193,18 @@ DataManager.prototype.load_full = function(){
 
 		})
 
-
-
-
 };
 
 /**
  * Загружает все элементы из postgres
  */
 RefDataManager.prototype.from_postgres = function(){
-
-
+	
 };
 
 /**
  * Сохраняет все элементы в postgres
  */
 RefDataManager.prototype.to_postgres = function(){
-
 
 };

@@ -932,16 +932,27 @@ function RefDataManager(class_name) {
 
 
 	/**
-	 * Возаращает предопределенный элемент или ссылку предопределенного элемента
+	 * Возаращает предопределенный элемент по имени предопределенных данных
 	 * @method predefined
 	 * @param name {String} - имя предопределенного
 	 * @return {DataObj}
 	 */
 	t.predefined = function(name){
-		var p = t.metadata()["predefined"][name];
-		if(!p)
-			return undefined;
-		return t.get(p.ref);
+
+		if(!t._predefined)
+			t._predefined = {};
+
+		if(!t._predefined[name]){
+
+			t._predefined[name] = t.get();
+
+			t.find_rows({predefined_name: name}, function (el) {
+				t._predefined[name] = el;
+				return false;
+			});
+		}
+
+		return t._predefined[name];
 	};
 
 	/**
@@ -1110,12 +1121,38 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 							}else if(cmd.fields.hasOwnProperty(key)){
 								if(sel[key] === true)
 									s += "\n AND _t_." + key + " ";
+
 								else if(sel[key] === false)
 									s += "\n AND (not _t_." + key + ") ";
-								else if(typeof sel[key] == "string" || typeof sel[key] == "object")
+
+								else if(typeof sel[key] == "object"){
+
+									if($p.is_data_obj(sel[key]))
+										s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
+										
+									else{
+										var keys = Object.keys(sel[key]),
+											val = sel[key][keys[0]],
+											mf = cmd.fields[key],
+											vmgr;
+
+										if(mf && mf.type.is_ref){
+											vmgr = _md.value_mgr({}, key, mf.type, true, val);
+										}
+
+										if(keys[0] == "not")
+											s += "\n AND (not _t_." + key + " = '" + val + "') ";
+
+										else
+											s += "\n AND (_t_." + key + " = '" + val + "') ";	
+									}
+									
+								}else if(typeof sel[key] == "string")
 									s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
+
 								else
 									s += "\n AND (_t_." + key + " = " + sel[key] + ") ";
+
 							} else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
 								//if(sel[key])
 								//	s += "\n AND _t_." + key + " ";
@@ -1579,7 +1616,7 @@ EnumManager.prototype.get_sql_struct = function(attr){
  * @return {Promise.<Array>}
  */
 EnumManager.prototype.get_option_list = function(val, selection){
-	var l = [], synonym = "";
+	var l = [], synonym = "", sref;
 
 	function check(v){
 		if($p.is_equal(v.value, val))
@@ -1591,7 +1628,11 @@ EnumManager.prototype.get_option_list = function(val, selection){
 		for(var i in selection){
 			if(i.substr(0,1)=="_")
 				continue;
-			synonym = selection[i];
+			else if(i == "ref"){
+				sref = selection[i].hasOwnProperty("in") ? selection[i].in : selection[i];
+			}
+			else
+				synonym = selection[i];
 		}
 	}
 
@@ -1607,6 +1648,17 @@ EnumManager.prototype.get_option_list = function(val, selection){
 		if(synonym){
 			if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1)
 				return;
+		}
+		if(sref){
+			if(Array.isArray(sref)){
+				if(!sref.some(function (sv) {
+						return sv.name == v.ref || sv.ref == v.ref || sv == v.ref;
+					}))
+					return;
+			}else{
+				if(sref.name != v.ref && sref.ref != v.ref && sref != v.ref)
+					return;
+			}
 		}
 		l.push(check({text: v.synonym || "", value: v.ref}));
 	});

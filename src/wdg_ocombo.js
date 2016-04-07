@@ -92,18 +92,37 @@ function OCombo(attr){
 				filter.is_folder = true;
 		}
 
-		for(var el in _meta.choice_links){
-			choice = _meta.choice_links[el];
-			if(choice.name && choice.name[0] == "selection"){
-				if(_obj instanceof TabularSectionRow){
-					if(choice.path.length < 2)
-						filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj._owner._owner[choice.path[0]];
-					else
-						filter[choice.name[1]] = _obj[choice.path[1]];
-				}else
-					filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj[choice.path[0]];
-			}
-		}
+		// для связей параметров выбора, значение берём из объекта
+		if(_meta.choice_links)
+			_meta.choice_links.forEach(function (choice) {
+				if(choice.name && choice.name[0] == "selection"){
+					if(_obj instanceof TabularSectionRow){
+						if(choice.path.length < 2)
+							filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj._owner._owner[choice.path[0]];
+						else
+							filter[choice.name[1]] = _obj[choice.path[1]];
+					}else
+						filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj[choice.path[0]];
+				}
+			});
+
+		// у параметров выбора, значение живёт внутри отбора
+		if(_meta.choice_params)
+			_meta.choice_params.forEach(function (choice) {
+				
+				var fval = Array.isArray(choice.path) ? {in: choice.path} : choice.path;
+
+				if(!filter[choice.name])
+					filter[choice.name] = fval;
+
+				else if(Array.isArray(filter[choice.name]))
+					filter[choice.name].push(fval);
+
+				else{
+					filter[choice.name] = [filter[choice.name]];
+					filter[choice.name].push(fval);
+				}
+			});
 
 		if(text)
 			filter.presentation = {like: text};

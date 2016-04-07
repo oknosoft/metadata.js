@@ -219,14 +219,16 @@ eXcell_dhxCalendar.prototype.edit = function() {
 			var username, password;
 			if($p.ajax.authorized){
 				username = $p.ajax.username;
-				password = $p.ajax.password;
+				password = $p.aes.Ctr.decrypt($p.ajax.password);
+				
 			}else{
 				if($p.job_prm.guest_name){
 					username = $p.job_prm.guest_name;
-					password = $p.job_prm.guest_pwd;
+					password = $p.aes.Ctr.decrypt($p.job_prm.guest_pwd);
+					
 				}else{
 					username = $p.wsql.get_user_param("user_name");
-					password = $p.wsql.get_user_param("user_pwd");
+					password = $p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd"));
 				}
 			}
 			t.open(method, url, async, username, password);

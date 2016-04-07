@@ -195,7 +195,7 @@ function Pouch(){
 				// реквизиты гостевого пользователя для демобаз
 				if(username == undefined && password == undefined){
 					username = $p.job_prm.guest_name;
-					password = $p.job_prm.guest_pwd;
+					password = $p.aes.Ctr.decrypt($p.job_prm.guest_pwd);
 				}
 
 				if(_auth){

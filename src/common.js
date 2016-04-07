@@ -7,61 +7,9 @@
  * @module  common
  */
 
-/**
- * ### Глобальный объект
- * Фреймворк [metadata.js](https://github.com/oknosoft/metadata.js), экспортирует единственную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
- *
- * @class MetaEngine
- * @static
- */
-function MetaEngine() {
-	this.version = "0.10.209";
-	this.toString = function(){
-		return "Oknosoft data engine. v:" + this.version;
-	};
-	this.injected_data = {};
-}
 
 /**
- * Для совместимости со старыми модулями, публикуем $p глобально
- * Кроме этой переменной, metadata.js ничего не экспортирует
- */
-var $p = new MetaEngine();
-
-if(typeof window !== "undefined"){
-
-	/**
-	 * Загружает скрипты и стили синхронно и асинхронно
-	 * @method load_script
-	 * @for MetaEngine
-	 * @param src {String} - url ресурса
-	 * @param type {String} - "link" или "script"
-	 * @param [callback] {Function} - функция обратного вызова после загрузки скрипта
-	 * @async
-	 */
-	$p.load_script = function (src, type, callback) {
-		var s = document.createElement(type);
-		if (type == "script") {
-			s.type = "text/javascript";
-			s.src = src;
-			if(callback){
-				s.async = true;
-				s.addEventListener('load', callback, false);
-			}else
-				s.async = false;
-		} else {
-			s.type = "text/css";
-			s.rel = "stylesheet";
-			s.href = src;
-		}
-		document.head.appendChild(s);
-	};
-
-}
-
-
-/**
- * Фреймворк [metadata.js](https://github.com/oknosoft/metadata.js), добавляет в прототип _Object_<br />
+ * Фреймворк добавляет в прототипы _Object_ и _Number_<br />
  * несколько методов - синтаксический сахар для _наследования_ и работы со _свойствами_
  * @class Object
  * @constructor
@@ -186,14 +134,15 @@ if(!Number.prototype.round)
 /**
  * Метод дополнения лидирующими нулями в прототип числа
  */
-Number.prototype.pad = function(size) {
-	var s = String(this);
-	while (s.length < (size || 2)) {s = "0" + s;}
-	return s;
-}
+if(!Number.prototype.pad)
+	Number.prototype.pad = function(size) {
+		var s = String(this);
+		while (s.length < (size || 2)) {s = "0" + s;}
+		return s;
+	};
 
 /**
- * Полифил обсервера и нотифаера для старых браузеров
+ * Полифил обсервера и нотифаера
  */
 if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 	Object.prototype.__define({
@@ -255,6 +204,206 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 			enumerable: false
 		}
 	});
+}
+
+
+
+/**
+ * ### Глобальный объект
+ * Фреймворк [metadata.js](https://github.com/oknosoft/metadata.js), экспортирует единственную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
+ *
+ * @class MetaEngine
+ * @static
+ */
+function MetaEngine() {
+
+	this.__define({
+
+		version: {
+			value: "0.10.209",
+			writable: false
+		},
+
+		toString: {
+			value: function(){
+				return "Oknosoft data engine. v:" + this.version;
+			},
+			writable: false
+		},
+
+		/**
+		 * Буфер для строковых и двоичных данных, внедряемых в скрипт
+		 * В этой структуре живут, например, sql текст инициализации таблиц, xml-строки форм и менюшек и т.д.
+		 * @type {Object}
+		 */
+		injected_data: {
+			value: {},
+			writable: false
+		},
+
+		/**
+		 * Наша promise-реализация ajax
+		 *
+		 * @property ajax
+		 * @type {Ajax}
+		 * @final
+		 */
+		ajax: {
+			value: new Ajax(),
+			writable: false
+		},
+
+		/**
+		 * Сообщения пользователю и строки нитернационализации
+		 * @property msg
+		 * @type {Messages}
+		 * @final
+		 */
+		msg: {
+			value: new Messages(),
+			writable: false
+		},
+
+		/**
+		 * Интерфейс к данным в LocalStorage, AlaSQL и IndexedDB
+		 * @property wsql
+		 * @type {WSQL}
+		 * @final
+		 */
+		wsql: {
+			value: new WSQL(),
+			writable: false
+		},
+
+		/**
+		 * Обработчики событий приложения
+		 * Подробнее см. модули {{#crossLinkModule "events"}}{{/crossLinkModule}} и {{#crossLinkModule "events_browser"}}{{/crossLinkModule}}
+		 * @property eve
+		 * @type {AppEvents}
+		 * @final
+		 */
+		eve: {
+			value: new AppEvents(),
+			writable: false
+		},
+
+		/**
+		 * Объекты интерфейса пользователя
+		 * @property iface
+		 * @type {InterfaceObjs}
+		 * @static
+		 */
+		iface: {
+			value: new InterfaceObjs(),
+			writable: false
+		},
+
+		/**
+		 * Экспортируем конструктор модификаторов для внешних приложений (Node.js)
+		 */
+		Modifiers: {
+			value: Modifiers,
+			writable: false
+		},
+
+		/**
+		 * ### Модификаторы менеджеров объектов метаданных
+		 * Т.к. экземпляры менеджеров и конструкторы объектов доступны в системе только после загрузки метаданных,
+		 * а метаданные загружаются после авторизации на сервере, методы модификаторов нельзя выполнить при старте приложения
+		 * @property modifiers
+		 * @type {Modifiers}
+		 * @final
+		 */
+		modifiers: {
+			value: new Modifiers(),
+			writable: false
+		},
+
+		/**
+		 * Aes для шифрования - дешифрования данных
+		 *
+		 * @property aes
+		 * @type {Aes}
+		 * @final
+		 */
+		aes: {
+			value: new Aes("metadata.js"),
+			writable: false
+		},
+
+		/**
+		 * ### Текущий пользователь
+		 * Свойство определено после загрузки метаданных и входя а впрограмму
+		 * @property current_user
+		 * @type {_cat.users}
+		 * @final
+		 */
+		current_user: {
+			get: function () {
+				return $p.cat && $p.cat.users ?
+					$p.cat.users.by_name($p.wsql.get_user_param("user_name")) :
+					$p.cat.users.get();
+			}
+		},
+
+		/**
+		 * ### Права доступа текущего пользователя.
+		 * Свойство определено после загрузки метаданных и входя а впрограмму
+		 * @property current_acl
+		 * @type {_cat.users_acl}
+		 * @final
+		 */
+		current_acl: {
+			get: function () {
+				var res;
+				if($p.cat && $p.cat.users_acl){
+					$p.cat.users_acl.find_rows({owner: $p.current_user}, function (o) {
+						res = o;
+						return false;
+					})
+				}
+				return res;
+			}
+		}
+
+	});
+}
+
+/**
+ * Для совместимости со старыми модулями, публикуем $p глобально
+ * Кроме этой переменной, metadata.js ничего не экспортирует
+ */
+var $p = new MetaEngine();
+
+if(typeof window !== "undefined"){
+
+	/**
+	 * Загружает скрипты и стили синхронно и асинхронно
+	 * @method load_script
+	 * @for MetaEngine
+	 * @param src {String} - url ресурса
+	 * @param type {String} - "link" или "script"
+	 * @param [callback] {Function} - функция обратного вызова после загрузки скрипта
+	 * @async
+	 */
+	$p.load_script = function (src, type, callback) {
+		var s = document.createElement(type);
+		if (type == "script") {
+			s.type = "text/javascript";
+			s.src = src;
+			if(callback){
+				s.async = true;
+				s.addEventListener('load', callback, false);
+			}else
+				s.async = false;
+		} else {
+			s.type = "text/css";
+			s.rel = "stylesheet";
+			s.href = src;
+		}
+		document.head.appendChild(s);
+	};
+
 }
 
 
@@ -382,341 +531,6 @@ $p.dateFormat.masks = {
 	date_time:		"dd.mm.yy HH:MM"
 };
 
-/**
- * Наша promise-реализация ajax
- *
- * @property ajax
- * @for MetaEngine
- * @type Ajax
- * @static
- */
-$p.ajax = new (
-
-	/**
-	 * ### Наша promise-реализация ajax
-	 * - Поддерживает basic http авторизацию
-	 * - Позволяет установить перед отправкой запроса специфические заголовки
-	 * - Поддерживает получение и отправку данных с типом `blob`
-	 * - Позволяет отправлять запросы типа `get`, `post`, `put`, `patch`, `delete`
-	 *
-	 * @class Ajax
-	 * @static
-	 */
-	function Ajax() {
-
-
-		function _call(method, url, post_data, auth, before_send) {
-
-			// Возвращаем новое Обещание.
-			return new Promise(function(resolve, reject) {
-
-				// внутри Node, используем request
-				if(typeof window == "undefined" && auth && auth.request){
-
-					auth.request({
-						url: encodeURI(url),
-						headers : {
-							"Authorization": auth.auth
-						}
-					},
-						function (error, response, body) {
-							if(error)
-								reject(error);
-
-							else if(response.statusCode != 200)
-								reject({
-									message: response.statusMessage,
-									description: body,
-									status: response.statusCode
-								});
-
-							else
-								resolve({response: body});
-						}
-					);
-
-				}else {
-
-					// делаем привычные для XHR вещи
-					var req = new XMLHttpRequest();
-
-					if(window.dhx4 && window.dhx4.isIE)
-						url = encodeURI(url);
-
-					if(auth){
-						var username, password;
-						if(typeof auth == "object" && auth.username && auth.hasOwnProperty("password")){
-							username = auth.username;
-							password = auth.password;
-						}else{
-							if($p.ajax.username && $p.ajax.authorized){
-								username = $p.ajax.username;
-								password = $p.ajax.password;
-							}else{
-								username = $p.wsql.get_user_param("user_name");
-								password = $p.wsql.get_user_param("user_pwd");
-								if(!username && $p.job_prm && $p.job_prm.guest_name){
-									username = $p.job_prm.guest_name;
-									password = $p.job_prm.guest_pwd;
-								}
-							}
-						}
-						req.open(method, url, true, username, password);
-						req.withCredentials = true;
-						req.setRequestHeader("Authorization", "Basic " +
-							btoa(unescape(encodeURIComponent(username + ":" + password))));
-					}else
-						req.open(method, url, true);
-
-					if(before_send)
-						before_send.call(this, req);
-
-					if (method != "GET") {
-						if(!this.hide_headers && !auth.hide_headers){
-							req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-							req.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-						}
-					} else {
-						post_data = null;
-					}
-
-					req.onload = function() {
-						// Этот кусок вызовется даже при 404’ой ошибке
-						// поэтому проверяем статусы ответа
-						if (req.status == 200 && (req.response instanceof Blob || req.response.substr(0,9)!=="<!DOCTYPE")) {
-							// Завершаем Обещание с текстом ответа
-							if(req.responseURL == undefined)
-								req.responseURL = url;
-							resolve(req);
-						}
-						else {
-							// Обламываемся, и передаём статус ошибки
-							// что бы облегчить отладку и поддержку
-							if(req.response)
-								reject({
-									message: req.statusText,
-									description: req.response,
-									status: req.status
-								});
-							else
-								reject(Error(req.statusText));
-						}
-					};
-
-					// отлавливаем ошибки сети
-					req.onerror = function() {
-						reject(Error("Network Error"));
-					};
-
-					// Делаем запрос
-					req.send(post_data);
-				}
-
-			});
-
-		}
-
-		/**
-		 * имя пользователя для авторизации на сервере
-		 * @property username
-		 * @type String
-		 */
-		this.username = "";
-
-		/**
-		 * пароль пользователя для авторизации на сервере
-		 * @property password
-		 * @type String
-		 */
-		this.password = "";
-
-		/**
-		 * На этапе отладки считаем всех пользователей полноправными
-		 * @type {boolean}
-		 */
-		this.root = true;
-
-		/**
-		 * признак авторизованности на сервере
-		 * @property authorized
-		 * @type Boolean
-		 */
-		this.authorized = false;
-
-		/**
-		 * Выполняет асинхронный get запрос
-		 * @method get
-		 * @param url {String}
-		 * @return {Promise.<T>}
-		 * @async
-		 */
-		this.get = function(url) {
-			return _call.call(this, "GET", url);
-		};
-
-		/**
-		 * Выполняет асинхронный post запрос
-		 * @method post
-		 * @param url {String}
-		 * @param postData {String} - данные для отправки на сервер
-		 * @return {Promise.<T>}
-		 * @async
-		 */
-		this.post = function(url, postData) {
-			if (arguments.length == 1) {
-				postData = "";
-			} else if (arguments.length == 2 && (typeof(postData) == "function")) {
-				onLoad = postData;
-				postData = "";
-			} else {
-				postData = String(postData);
-			}
-			return _call.call(this, "POST", url, postData);
-		};
-
-		/**
-		 * Выполняет асинхронный get запрос с авторизацией и возможностью установить заголовки http
-		 * @method get_ex
-		 * @param url {String}
-		 * @param auth {Boolean}
-		 * @param beforeSend {Function} - callback перед отправкой запроса на сервер
-		 * @return {Promise.<T>}
-		 * @async
-		 */
-		this.get_ex = function(url, auth, beforeSend){
-			return _call.call(this, "GET", url, null, auth, beforeSend);
-
-		};
-
-		/**
-		 * Выполняет асинхронный post запрос с авторизацией и возможностью установить заголовки http
-		 * @method post_ex
-		 * @param url {String}
-		 * @param postData {String} - данные для отправки на сервер
-		 * @param auth {Boolean}
-		 * @param beforeSend {Function} - callback перед отправкой запроса на сервер
-		 * @return {Promise.<T>}
-		 * @async
-		 */
-		this.post_ex = function(url, postData, auth, beforeSend){
-			return _call.call(this, "POST", url, postData, auth, beforeSend);
-		};
-
-		/**
-		 * Выполняет асинхронный put запрос с авторизацией и возможностью установить заголовки http
-		 * @method put_ex
-		 * @param url {String}
-		 * @param postData {String} - данные для отправки на сервер
-		 * @param auth {Boolean}
-		 * @param beforeSend {Function} - callback перед отправкой запроса на сервер
-		 * @return {Promise.<T>}
-		 * @async
-		 */
-		this.put_ex = function(url, postData, auth, beforeSend){
-			return _call.call(this, "PUT", url, postData, auth, beforeSend);
-		};
-
-		/**
-		 * Выполняет асинхронный patch запрос с авторизацией и возможностью установить заголовки http
-		 * @method patch_ex
-		 * @param url {String}
-		 * @param postData {String} - данные для отправки на сервер
-		 * @param auth {Boolean}
-		 * @param beforeSend {Function} - callback перед отправкой запроса на сервер
-		 * @return {Promise.<T>}
-		 * @async
-		 */
-		this.patch_ex = function(url, postData, auth, beforeSend){
-			return _call.call(this, "PATCH", url, postData, auth, beforeSend);
-		};
-
-		/**
-		 * Выполняет асинхронный delete запрос с авторизацией и возможностью установить заголовки http
-		 * @method delete_ex
-		 * @param url {String}
-		 * @param auth {Boolean}
-		 * @param beforeSend {Function} - callback перед отправкой запроса на сервер
-		 * @return {Promise.<T>}
-		 * @async
-		 */
-		this.delete_ex = function(url, auth, beforeSend){
-			return _call.call(this, "DELETE", url, null, auth, beforeSend);
-
-		};
-
-		/**
-		 * Получает с сервера двоичные данные (pdf отчета или картинку или произвольный файл) и показывает его в новом окне, используя data-url
-		 * @method get_and_show_blob
-		 * @param url {String} - адрес, по которому будет произведен запрос
-		 * @param post_data {Object|String} - данные запроса
-		 * @param [method] {String}
-		 * @async
-		 */
-		this.get_and_show_blob = function(url, post_data, method){
-
-			var params = "menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes",
-				wnd_print;
-
-			function show_blob(req){
-				url = window.URL.createObjectURL(req.response);
-				wnd_print = window.open(url, "wnd_print", params);
-				wnd_print.onload = function(e) {
-					window.URL.revokeObjectURL(url);
-				};
-				return wnd_print;
-			}
-
-			if(!method || (typeof method == "string" && method.toLowerCase().indexOf("post")!=-1))
-				return this.post_ex(url,
-					typeof post_data == "object" ? JSON.stringify(post_data) : post_data,
-					true,
-					function(xhr){
-						xhr.responseType = "blob";
-					})
-					.then(show_blob);
-			else
-				return this.get_ex(url, true, function(xhr){
-						xhr.responseType = "blob";
-					})
-					.then(show_blob);
-		};
-
-		/**
-		 * Получает с сервера двоичные данные (pdf отчета или картинку или произвольный файл) и показывает диалог сохранения в файл
-		 * @method get_and_save_blob
-		 * @param url {String} - адрес, по которому будет произведен запрос
-		 * @param post_data {Object|String} - данные запроса
-		 * @param file_name {String} - имя файла для сохранения
-		 * @return {Promise.<T>}
-		 */
-		this.get_and_save_blob = function(url, post_data, file_name){
-
-			return this.post_ex(url,
-				typeof post_data == "object" ? JSON.stringify(post_data) : post_data, true, function(xhr){
-					xhr.responseType = "blob";
-				})
-				.then(function(req){
-					saveAs(req.response, file_name);
-				});
-		};
-
-		this.default_attr = function (attr, url) {
-			if(!attr.url)
-				attr.url = url;
-			if(!attr.username)
-				attr.username = this.username;
-			if(!attr.password)
-				attr.password = this.password;
-			attr.hide_headers = true;
-
-			if($p.job_prm["1c"]){
-				attr.auth = $p.job_prm["1c"].auth;
-				attr.request = $p.job_prm["1c"].request;
-			}
-		}
-
-	}
-);
 
 /**
  * Подмешивает в объект свойства с иерархией объекта patch
@@ -790,7 +604,6 @@ $p.blank = new function Blank() {
 		return v;
 	};
 };
-
 
 /**
  * Проверяет, является ли значение guid-ом
@@ -961,124 +774,334 @@ $p.cancel_bubble = function(e) {
 	return false
 };
 
-/**
- * Сообщения пользователю и строки нитернационализации
- * @property msg
- * @type Messages
- * @static
- */
-$p.msg = new Messages();
+
 
 /**
- * ### Сообщения пользователю и строки нитернационализации
+ * ### Наша promise-реализация ajax
+ * - Поддерживает basic http авторизацию
+ * - Позволяет установить перед отправкой запроса специфические заголовки
+ * - Поддерживает получение и отправку данных с типом `blob`
+ * - Позволяет отправлять запросы типа `get`, `post`, `put`, `patch`, `delete`
  *
- * @class Messages
+ * @class Ajax
  * @static
  */
-function Messages(){
+function Ajax() {
 
-	this.toString = function(){return "Интернационализация сообщений"};
 
-	/**
-	 * расширяем мессанджер
-	 */
-	if(typeof window !== "undefined" && "dhtmlx" in window){
+	function _call(method, url, post_data, auth, before_send) {
 
-		/**
-		 * Показывает информационное сообщение или confirm
-		 * @method show_msg
-		 * @for Messages
-		 * @param attr {object} - атрибуты сообщения attr.type - [info, alert, confirm, modalbox, info-error, alert-warning, confirm-error]
-		 * @param [delm] - элемент html в тексте которого сообщение будет продублировано
-		 * @example
-		 *  $p.msg.show_msg({
-		 *      title:"Important!",
-		 *      type:"alert-error",
-		 *      text:"Error"});
-		 */
-		this.show_msg = function(attr, delm){
-			if(!attr)
-				return;
-			if(typeof attr == "string"){
-				if($p.iface.synctxt){
-					$p.iface.synctxt.show_message(attr);
-					return;
+		// Возвращаем новое Обещание.
+		return new Promise(function(resolve, reject) {
+
+			// внутри Node, используем request
+			if(typeof window == "undefined" && auth && auth.request){
+
+				auth.request({
+						url: encodeURI(url),
+						headers : {
+							"Authorization": auth.auth
+						}
+					},
+					function (error, response, body) {
+						if(error)
+							reject(error);
+
+						else if(response.statusCode != 200)
+							reject({
+								message: response.statusMessage,
+								description: body,
+								status: response.statusCode
+							});
+
+						else
+							resolve({response: body});
+					}
+				);
+
+			}else {
+
+				// делаем привычные для XHR вещи
+				var req = new XMLHttpRequest();
+
+				if(window.dhx4 && window.dhx4.isIE)
+					url = encodeURI(url);
+
+				if(auth){
+					var username, password;
+					if(typeof auth == "object" && auth.username && auth.hasOwnProperty("password")){
+						username = auth.username;
+						password = auth.password;
+						
+					}else{
+						if($p.ajax.username && $p.ajax.authorized){
+							username = $p.ajax.username;
+							password = $p.aes.Ctr.decrypt($p.ajax.password);
+							
+						}else{
+							username = $p.wsql.get_user_param("user_name");
+							password = $p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd"));
+							
+							if(!username && $p.job_prm && $p.job_prm.guest_name){
+								username = $p.job_prm.guest_name;
+								password = $p.aes.Ctr.decrypt($p.job_prm.guest_pwd);
+							}
+						}
+					}
+					req.open(method, url, true, username, password);
+					req.withCredentials = true;
+					req.setRequestHeader("Authorization", "Basic " +
+						btoa(unescape(encodeURIComponent(username + ":" + password))));
+				}else
+					req.open(method, url, true);
+
+				if(before_send)
+					before_send.call(this, req);
+
+				if (method != "GET") {
+					if(!this.hide_headers && !auth.hide_headers){
+						req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+						req.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+					}
+				} else {
+					post_data = null;
 				}
-				attr = {type:"info", text:attr };
-			}
-			if(delm && typeof delm.setText == "function")
-				delm.setText(attr.text);
-			dhtmlx.message(attr);
-		};
 
-		/**
-		 * Проверяет корректность ответа сервера
-		 * @method check_soap_result
-		 * @for Messages
-		 * @param res {XMLHttpRequest|Object} - полученный с сервера xhr response
-		 * @return {boolean} - true, если нет ошибки
-		 */
-		this.check_soap_result = function(res){
-			if(!res){
-				$p.msg.show_msg({
-					type: "alert-error",
-					text: $p.msg.empty_response,
-					title: $p.msg.error_critical});
-				return true;
+				req.onload = function() {
+					// Этот кусок вызовется даже при 404’ой ошибке
+					// поэтому проверяем статусы ответа
+					if (req.status == 200 && (req.response instanceof Blob || req.response.substr(0,9)!=="<!DOCTYPE")) {
+						// Завершаем Обещание с текстом ответа
+						if(req.responseURL == undefined)
+							req.responseURL = url;
+						resolve(req);
+					}
+					else {
+						// Обламываемся, и передаём статус ошибки
+						// что бы облегчить отладку и поддержку
+						if(req.response)
+							reject({
+								message: req.statusText,
+								description: req.response,
+								status: req.status
+							});
+						else
+							reject(Error(req.statusText));
+					}
+				};
 
-			}else if(res.error=="limit_query"){
-				$p.iface.docs.progressOff();
-				$p.msg.show_msg({
-					type: "alert-warning",
-					text: $p.msg.limit_query.replace("%1", res["queries"]).replace("%2", res["queries_avalable"]),
-					title: $p.msg.srv_overload});
-				return true;
+				// отлавливаем ошибки сети
+				req.onerror = function() {
+					reject(Error("Network Error"));
+				};
 
-			}else if(res.error=="network" || res.error=="empty"){
-				$p.iface.docs.progressOff();
-				$p.msg.show_msg({
-					type: "alert-warning",
-					text: $p.msg.error_network,
-					title: $p.msg.error_critical});
-				return true;
-
-			}else if(res.error && res.error_description){
-				$p.iface.docs.progressOff();
-				if(res.error_description.indexOf("Недостаточно прав") != -1){
-					res["error_type"] = "alert-warning";
-					res["error_title"] = $p.msg.error_rights;
-				}
-				$p.msg.show_msg({
-					type: res["error_type"] || "alert-error",
-					text: res.error_description,
-					title: res["error_title"] || $p.msg.error_critical
-				});
-				return true;
-
-			}else if(res.error && !res.messages){
-				$p.iface.docs.progressOff();
-				$p.msg.show_msg({
-					type: "alert-error",
-					title: $p.msg.error_critical,
-					text: $p.msg.unknown_error.replace("%1", "unknown_error")
-				});
-				return true;
+				// Делаем запрос
+				req.send(post_data);
 			}
 
-		};
-
-		/**
-		 * Показывает модальное сообщение о нереализованной функциональности
-		 * @method show_not_implemented
-		 * @for Messages
-		 */
-		this.show_not_implemented = function(){
-			$p.msg.show_msg({type: "alert-warning",
-				text: $p.msg.not_implemented,
-				title: $p.msg.main_title});
-		};
+		});
 
 	}
+
+	/**
+	 * имя пользователя для авторизации на сервере
+	 * @property username
+	 * @type String
+	 */
+	this.username = "";
+
+	/**
+	 * пароль пользователя для авторизации на сервере
+	 * @property password
+	 * @type String
+	 */
+	this.password = "";
+
+	/**
+	 * На этапе отладки считаем всех пользователей полноправными
+	 * @type {boolean}
+	 */
+	this.root = true;
+
+	/**
+	 * признак авторизованности на сервере
+	 * @property authorized
+	 * @type Boolean
+	 */
+	this.authorized = false;
+
+	/**
+	 * Выполняет асинхронный get запрос
+	 * @method get
+	 * @param url {String}
+	 * @return {Promise.<T>}
+	 * @async
+	 */
+	this.get = function(url) {
+		return _call.call(this, "GET", url);
+	};
+
+	/**
+	 * Выполняет асинхронный post запрос
+	 * @method post
+	 * @param url {String}
+	 * @param postData {String} - данные для отправки на сервер
+	 * @return {Promise.<T>}
+	 * @async
+	 */
+	this.post = function(url, postData) {
+		if (arguments.length == 1) {
+			postData = "";
+		} else if (arguments.length == 2 && (typeof(postData) == "function")) {
+			onLoad = postData;
+			postData = "";
+		} else {
+			postData = String(postData);
+		}
+		return _call.call(this, "POST", url, postData);
+	};
+
+	/**
+	 * Выполняет асинхронный get запрос с авторизацией и возможностью установить заголовки http
+	 * @method get_ex
+	 * @param url {String}
+	 * @param auth {Boolean}
+	 * @param beforeSend {Function} - callback перед отправкой запроса на сервер
+	 * @return {Promise.<T>}
+	 * @async
+	 */
+	this.get_ex = function(url, auth, beforeSend){
+		return _call.call(this, "GET", url, null, auth, beforeSend);
+
+	};
+
+	/**
+	 * Выполняет асинхронный post запрос с авторизацией и возможностью установить заголовки http
+	 * @method post_ex
+	 * @param url {String}
+	 * @param postData {String} - данные для отправки на сервер
+	 * @param auth {Boolean}
+	 * @param beforeSend {Function} - callback перед отправкой запроса на сервер
+	 * @return {Promise.<T>}
+	 * @async
+	 */
+	this.post_ex = function(url, postData, auth, beforeSend){
+		return _call.call(this, "POST", url, postData, auth, beforeSend);
+	};
+
+	/**
+	 * Выполняет асинхронный put запрос с авторизацией и возможностью установить заголовки http
+	 * @method put_ex
+	 * @param url {String}
+	 * @param postData {String} - данные для отправки на сервер
+	 * @param auth {Boolean}
+	 * @param beforeSend {Function} - callback перед отправкой запроса на сервер
+	 * @return {Promise.<T>}
+	 * @async
+	 */
+	this.put_ex = function(url, postData, auth, beforeSend){
+		return _call.call(this, "PUT", url, postData, auth, beforeSend);
+	};
+
+	/**
+	 * Выполняет асинхронный patch запрос с авторизацией и возможностью установить заголовки http
+	 * @method patch_ex
+	 * @param url {String}
+	 * @param postData {String} - данные для отправки на сервер
+	 * @param auth {Boolean}
+	 * @param beforeSend {Function} - callback перед отправкой запроса на сервер
+	 * @return {Promise.<T>}
+	 * @async
+	 */
+	this.patch_ex = function(url, postData, auth, beforeSend){
+		return _call.call(this, "PATCH", url, postData, auth, beforeSend);
+	};
+
+	/**
+	 * Выполняет асинхронный delete запрос с авторизацией и возможностью установить заголовки http
+	 * @method delete_ex
+	 * @param url {String}
+	 * @param auth {Boolean}
+	 * @param beforeSend {Function} - callback перед отправкой запроса на сервер
+	 * @return {Promise.<T>}
+	 * @async
+	 */
+	this.delete_ex = function(url, auth, beforeSend){
+		return _call.call(this, "DELETE", url, null, auth, beforeSend);
+
+	};
+
+	/**
+	 * Получает с сервера двоичные данные (pdf отчета или картинку или произвольный файл) и показывает его в новом окне, используя data-url
+	 * @method get_and_show_blob
+	 * @param url {String} - адрес, по которому будет произведен запрос
+	 * @param post_data {Object|String} - данные запроса
+	 * @param [method] {String}
+	 * @async
+	 */
+	this.get_and_show_blob = function(url, post_data, method){
+
+		var params = "menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes",
+			wnd_print;
+
+		function show_blob(req){
+			url = window.URL.createObjectURL(req.response);
+			wnd_print = window.open(url, "wnd_print", params);
+			wnd_print.onload = function(e) {
+				window.URL.revokeObjectURL(url);
+			};
+			return wnd_print;
+		}
+
+		if(!method || (typeof method == "string" && method.toLowerCase().indexOf("post")!=-1))
+			return this.post_ex(url,
+				typeof post_data == "object" ? JSON.stringify(post_data) : post_data,
+				true,
+				function(xhr){
+					xhr.responseType = "blob";
+				})
+				.then(show_blob);
+		else
+			return this.get_ex(url, true, function(xhr){
+					xhr.responseType = "blob";
+				})
+				.then(show_blob);
+	};
+
+	/**
+	 * Получает с сервера двоичные данные (pdf отчета или картинку или произвольный файл) и показывает диалог сохранения в файл
+	 * @method get_and_save_blob
+	 * @param url {String} - адрес, по которому будет произведен запрос
+	 * @param post_data {Object|String} - данные запроса
+	 * @param file_name {String} - имя файла для сохранения
+	 * @return {Promise.<T>}
+	 */
+	this.get_and_save_blob = function(url, post_data, file_name){
+
+		return this.post_ex(url,
+			typeof post_data == "object" ? JSON.stringify(post_data) : post_data, true, function(xhr){
+				xhr.responseType = "blob";
+			})
+			.then(function(req){
+				saveAs(req.response, file_name);
+			});
+	};
+
+	this.default_attr = function (attr, url) {
+		if(!attr.url)
+			attr.url = url;
+		if(!attr.username)
+			attr.username = this.username;
+		if(!attr.password)
+			attr.password = this.password;
+		attr.hide_headers = true;
+
+		if($p.job_prm["1c"]){
+			attr.auth = $p.job_prm["1c"].auth;
+			attr.request = $p.job_prm["1c"].request;
+		}
+	}
+
 }
 
 /**
@@ -1318,15 +1341,6 @@ function InterfaceObjs(){
 }
 
 /**
- * Объекты интерфейса пользователя
- * @property iface
- * @for MetaEngine
- * @type InterfaceObjs
- * @static
- */
-$p.iface = new InterfaceObjs();
-
-/**
  * ### Модификатор отложенного запуска
  * Служебный объект, реализующий отложенную загрузку модулей,<br />
  * в которых доопределяется (переопределяется) поведение объектов и менеджеров конкретных типов<br />
@@ -1381,73 +1395,6 @@ function Modifiers(){
 		return res;
 	};
 };
-$p.Modifiers = Modifiers;
-
-
-/**
- * Обработчики событий приложения
- * Подробнее см. модули {{#crossLinkModule "events"}}{{/crossLinkModule}} и {{#crossLinkModule "events_browser"}}{{/crossLinkModule}}
- * @property eve
- * @for MetaEngine
- * @static
- */
-$p.eve = (typeof window !== "undefined" && window.dhx4) ? dhx4 : {};
-$p.eve.__define({
-
-	onload: {
-		value: new Modifiers(),
-		enumerable: false,
-		configurable: false
-	},
-
-	hash_route: {
-		value: new Modifiers(),
-		enumerable: false,
-		configurable: false
-	}
-});
-
-
-$p.__define({
-
-	/**
-	 * ### Модификаторы менеджеров объектов метаданных
-	 * Т.к. экземпляры менеджеров и конструкторы объектов доступны в системе только после загрузки метаданных,
-	 * а метаданные загружаются после авторизации на сервере, методы модификаторов нельзя выполнить при старте приложения
-	 * @property modifiers
-	 * @for MetaEngine
-	 * @type Modifiers
-	 * @static
-	 */
-	modifiers: {
-		value: new Modifiers(),
-		enumerable: false
-	},
-
-	current_user: {
-		get: function () {
-			return $p.cat && $p.cat.users ?
-				$p.cat.users.by_name($p.wsql.get_user_param("user_name")) :
-				$p.cat.users.get();
-		},
-		enumerable: false
-	},
-
-	current_acl: {
-		get: function () {
-			var res;
-			if($p.cat && $p.cat.users_acl){
-				$p.cat.users_acl.find_rows({owner: $p.current_user}, function (o) {
-					res = o;
-					return false;
-				})
-			}
-			return res;
-		},
-		enumerable: false
-	}
-});
-
 
 /**
  * ### Параметры работы программы
@@ -1575,8 +1522,6 @@ function JobPrm(){
 	};
 
 }
-$p.JobPrm = JobPrm;
-
 
 /**
  * Интерфейс локальной базы данных
@@ -1838,13 +1783,5 @@ function WSQL(){
 	};
 
 
-};
+}
 
-/**
- * Экземпляр интерфейса локальной базы данных
- * @property wsql
- * @for MetaEngine
- * @type WSQL
- * @static
- */
-$p.wsql = new WSQL();
