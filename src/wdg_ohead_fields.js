@@ -131,9 +131,14 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 			},
 			set: function (sel) {
 				_selection = sel;
+				this.reload;
+			}
+		},
+		
+		reload: {
+			value: function () {
 				observer_rows([{tabular: _tsname}]);
-			},
-			enumerable: false
+			}
 		},
 
 		get_cell_field: {
@@ -168,15 +173,13 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		_obj: {
 			get: function () {
 				return _obj;
-			},
-			enumerable: false
+			}
 		},
 
 		_owner_cell: {
 			get: function () {
 				return _cell;
-			},
-			enumerable: false
+			}
 		},
 
 		destructor: {
@@ -194,8 +197,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 				_pwnd = null;
 
 				_destructor.call(_grid);
-			},
-			enumerable: false
+			}
 		},
 
 		/**
@@ -261,8 +263,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 					attr.ts_title = _obj._metadata.tabular_sections[_tsname].synonym;
 				observer_rows([{tabular: _tsname}]);
 
-			},
-			enumerable: false
+			}
 		}
 
 	});

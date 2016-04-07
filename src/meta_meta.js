@@ -63,10 +63,11 @@ $p.is_equal = function(v1, v2){
  * @for MetaEngine
  * @param a {Array}
  * @param val {DataObj|String}
+ * @param val {Array|String} - имена полей, в которых искать
  * @return {*}
  * @private
  */
-$p._find = function(a, val){
+$p._find = function(a, val, columns){
 	//TODO переписать с учетом html5 свойств массивов
 	var o, i, finded;
 	if(typeof val != "object"){
@@ -862,7 +863,7 @@ function Meta() {
 	 * @method value_mgr
 	 * @param row {Object|TabularSectionRow} - строка табчасти или объект
 	 * @param f {String} - имя поля
-	 * @param mf {Object} - метаданные поля
+	 * @param mf {Object} - описание типа поля mf.type
 	 * @param array_enabled {Boolean} - возвращать массив для полей составного типа или первый доступный тип
 	 * @param v {*} - устанавливаемое значение
 	 * @return {DataManager|Array}

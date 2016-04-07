@@ -147,7 +147,7 @@ if(!Number.prototype.round)
 /**
  * Метод дополнения лидирующими нулями в прототип числа
  */
-if(!Number.prototype.round)
+if(!Number.prototype.pad)
 	Number.prototype.pad = function(size) {
 		var s = String(this);
 		while (s.length < (size || 2)) {s = "0" + s;}
@@ -3359,18 +3359,37 @@ function OCombo(attr){
 				filter.is_folder = true;
 		}
 
-		for(var el in _meta.choice_links){
-			choice = _meta.choice_links[el];
-			if(choice.name && choice.name[0] == "selection"){
-				if(_obj instanceof TabularSectionRow){
-					if(choice.path.length < 2)
-						filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj._owner._owner[choice.path[0]];
-					else
-						filter[choice.name[1]] = _obj[choice.path[1]];
-				}else
-					filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj[choice.path[0]];
-			}
-		}
+		// для связей параметров выбора, значение берём из объекта
+		if(_meta.choice_links)
+			_meta.choice_links.forEach(function (choice) {
+				if(choice.name && choice.name[0] == "selection"){
+					if(_obj instanceof TabularSectionRow){
+						if(choice.path.length < 2)
+							filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj._owner._owner[choice.path[0]];
+						else
+							filter[choice.name[1]] = _obj[choice.path[1]];
+					}else
+						filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj[choice.path[0]];
+				}
+			});
+
+		// у параметров выбора, значение живёт внутри отбора
+		if(_meta.choice_params)
+			_meta.choice_params.forEach(function (choice) {
+				
+				var fval = Array.isArray(choice.path) ? {in: choice.path} : choice.path;
+
+				if(!filter[choice.name])
+					filter[choice.name] = fval;
+
+				else if(Array.isArray(filter[choice.name]))
+					filter[choice.name].push(fval);
+
+				else{
+					filter[choice.name] = [filter[choice.name]];
+					filter[choice.name].push(fval);
+				}
+			});
 
 		if(text)
 			filter.presentation = {like: text};
@@ -3849,9 +3868,14 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 			},
 			set: function (sel) {
 				_selection = sel;
+				this.reload;
+			}
+		},
+		
+		reload: {
+			value: function () {
 				observer_rows([{tabular: _tsname}]);
-			},
-			enumerable: false
+			}
 		},
 
 		get_cell_field: {
@@ -3886,15 +3910,13 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		_obj: {
 			get: function () {
 				return _obj;
-			},
-			enumerable: false
+			}
 		},
 
 		_owner_cell: {
 			get: function () {
 				return _cell;
-			},
-			enumerable: false
+			}
 		},
 
 		destructor: {
@@ -3912,8 +3934,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 				_pwnd = null;
 
 				_destructor.call(_grid);
-			},
-			enumerable: false
+			}
 		},
 
 		/**
@@ -3979,8 +4000,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 					attr.ts_title = _obj._metadata.tabular_sections[_tsname].synonym;
 				observer_rows([{tabular: _tsname}]);
 
-			},
-			enumerable: false
+			}
 		}
 
 	});
@@ -6137,10 +6157,11 @@ $p.is_equal = function(v1, v2){
  * @for MetaEngine
  * @param a {Array}
  * @param val {DataObj|String}
+ * @param val {Array|String} - имена полей, в которых искать
  * @return {*}
  * @private
  */
-$p._find = function(a, val){
+$p._find = function(a, val, columns){
 	//TODO переписать с учетом html5 свойств массивов
 	var o, i, finded;
 	if(typeof val != "object"){
@@ -6936,7 +6957,7 @@ function Meta() {
 	 * @method value_mgr
 	 * @param row {Object|TabularSectionRow} - строка табчасти или объект
 	 * @param f {String} - имя поля
-	 * @param mf {Object} - метаданные поля
+	 * @param mf {Object} - описание типа поля mf.type
 	 * @param array_enabled {Boolean} - возвращать массив для полей составного типа или первый доступный тип
 	 * @param v {*} - устанавливаемое значение
 	 * @return {DataManager|Array}
@@ -8165,16 +8186,27 @@ function RefDataManager(class_name) {
 
 
 	/**
-	 * Возаращает предопределенный элемент или ссылку предопределенного элемента
+	 * Возаращает предопределенный элемент по имени предопределенных данных
 	 * @method predefined
 	 * @param name {String} - имя предопределенного
 	 * @return {DataObj}
 	 */
 	t.predefined = function(name){
-		var p = t.metadata()["predefined"][name];
-		if(!p)
-			return undefined;
-		return t.get(p.ref);
+
+		if(!t._predefined)
+			t._predefined = {};
+
+		if(!t._predefined[name]){
+
+			t._predefined[name] = t.get();
+
+			t.find_rows({predefined_name: name}, function (el) {
+				t._predefined[name] = el;
+				return false;
+			});
+		}
+
+		return t._predefined[name];
 	};
 
 	/**
@@ -8343,12 +8375,38 @@ RefDataManager.prototype.get_sql_struct = function(attr){
 							}else if(cmd.fields.hasOwnProperty(key)){
 								if(sel[key] === true)
 									s += "\n AND _t_." + key + " ";
+
 								else if(sel[key] === false)
 									s += "\n AND (not _t_." + key + ") ";
-								else if(typeof sel[key] == "string" || typeof sel[key] == "object")
+
+								else if(typeof sel[key] == "object"){
+
+									if($p.is_data_obj(sel[key]))
+										s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
+										
+									else{
+										var keys = Object.keys(sel[key]),
+											val = sel[key][keys[0]],
+											mf = cmd.fields[key],
+											vmgr;
+
+										if(mf && mf.type.is_ref){
+											vmgr = _md.value_mgr({}, key, mf.type, true, val);
+										}
+
+										if(keys[0] == "not")
+											s += "\n AND (not _t_." + key + " = '" + val + "') ";
+
+										else
+											s += "\n AND (_t_." + key + " = '" + val + "') ";	
+									}
+									
+								}else if(typeof sel[key] == "string")
 									s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
+
 								else
 									s += "\n AND (_t_." + key + " = " + sel[key] + ") ";
+
 							} else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
 								//if(sel[key])
 								//	s += "\n AND _t_." + key + " ";
@@ -8812,7 +8870,7 @@ EnumManager.prototype.get_sql_struct = function(attr){
  * @return {Promise.<Array>}
  */
 EnumManager.prototype.get_option_list = function(val, selection){
-	var l = [], synonym = "";
+	var l = [], synonym = "", sref;
 
 	function check(v){
 		if($p.is_equal(v.value, val))
@@ -8824,7 +8882,11 @@ EnumManager.prototype.get_option_list = function(val, selection){
 		for(var i in selection){
 			if(i.substr(0,1)=="_")
 				continue;
-			synonym = selection[i];
+			else if(i == "ref"){
+				sref = selection[i].hasOwnProperty("in") ? selection[i].in : selection[i];
+			}
+			else
+				synonym = selection[i];
 		}
 	}
 
@@ -8840,6 +8902,17 @@ EnumManager.prototype.get_option_list = function(val, selection){
 		if(synonym){
 			if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1)
 				return;
+		}
+		if(sref){
+			if(Array.isArray(sref)){
+				if(!sref.some(function (sv) {
+						return sv.name == v.ref || sv.ref == v.ref || sv == v.ref;
+					}))
+					return;
+			}else{
+				if(sref.name != v.ref && sref.ref != v.ref && sref != v.ref)
+					return;
+			}
 		}
 		l.push(check({text: v.synonym || "", value: v.ref}));
 	});
@@ -10546,14 +10619,19 @@ TabularSection.prototype.clear = function(do_not_notify){
  * @method del
  * @param val {Number|TabularSectionRow} - индекс или строка табчасти
  */
-TabularSection.prototype.del = function(val){
+TabularSection.prototype.del = function(val, do_not_notify){
+	
 	var index, _obj = this._obj;
+	
 	if(typeof val == "undefined")
 		return;
+		
 	else if(typeof val == "number")
 		index = val;
+		
 	else if(_obj[val.row-1]._row === val)
 		index = val.row-1;
+		
 	else{
 		for(var i in _obj)
 			if(_obj[i]._row === val){
@@ -10571,10 +10649,11 @@ TabularSection.prototype.del = function(val){
 		row.row = index + 1;
 	});
 
-	Object.getNotifier(this._owner).notify({
-		type: 'rows',
-		tabular: this._name
-	});
+	if(!do_not_notify)
+		Object.getNotifier(this._owner).notify({
+			type: 'rows',
+			tabular: this._name
+		});
 
 	this._owner._data._modified = true;
 };
@@ -10582,11 +10661,12 @@ TabularSection.prototype.del = function(val){
 /**
  * Находит первую строку, содержащую значение
  * @method find
- * @param val {*}
+ * @param val {*} - значение для поиска
+ * @param columns {String|Array} - колонки, в которых искать
  * @return {TabularSectionRow}
  */
-TabularSection.prototype.find = function(val){
-	var res = $p._find(this._obj, val);
+TabularSection.prototype.find = function(val, columns){
+	var res = $p._find(this._obj, val, columns);
 	if(res)
 		return res._row;
 };
@@ -13506,46 +13586,51 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		// эту функцию будем вызывать снаружи, чтобы перечитать данные
 		grid.reload = function(){
+
 			var filter = get_filter();
-			if(!filter) return;
+			if(!filter)
+				return Promise.resolve();
+
 			cell_grid.progressOn();
 			grid.clearAll();
-			_mgr.sync_grid(filter, grid)
+
+			return _mgr.sync_grid(filter, grid)
 				.then(function(xml){
-				if(typeof xml === "object"){
-					$p.msg.check_soap_result(xml);
-
-				}else if(!grid_inited){
-					if(filter.initial_value){
-						var xpos = xml.indexOf("set_parent"),
-							xpos2 = xml.indexOf("'>", xpos),
-							xh = xml.substr(xpos+12, xpos2-xpos-12);
-						if($p.is_guid(xh)){
-							if(has_tree){
-								tree.do_not_reload = true;
-								tree.selectItem(xh, false);
+					if(typeof xml === "object"){
+						$p.msg.check_soap_result(xml);
+					}else if(!grid_inited){
+						if(filter.initial_value){
+							var xpos = xml.indexOf("set_parent"),
+								xpos2 = xml.indexOf("'>", xpos),
+								xh = xml.substr(xpos+12, xpos2-xpos-12);
+							if($p.is_guid(xh)){
+								if(has_tree){
+									tree.do_not_reload = true;
+									tree.selectItem(xh, false);
+								}
 							}
+							grid.selectRowById(filter.initial_value);
+
+						}else if(filter.parent && $p.is_guid(filter.parent) && has_tree){
+							tree.do_not_reload = true;
+							tree.selectItem(filter.parent, false);
 						}
-						grid.selectRowById(filter.initial_value);
+						grid.setColumnMinWidth(200, grid.getColIndexById("presentation"));
+						grid.enableAutoWidth(true, 1200, 600);
+						grid.setSizes();
+						grid_inited = true;
+						if(wnd.elmnts.filter.input_filter)
+							wnd.elmnts.filter.input_filter.focus();
 
-					}else if(filter.parent && $p.is_guid(filter.parent) && has_tree){
-						tree.do_not_reload = true;
-						tree.selectItem(filter.parent, false);
+						if(attr.on_grid_inited)
+							attr.on_grid_inited();
 					}
-					grid.setColumnMinWidth(200, grid.getColIndexById("presentation"));
-					grid.enableAutoWidth(true, 1200, 600);
-					grid.setSizes();
-					grid_inited = true;
-					if(wnd.elmnts.filter.input_filter)
-						wnd.elmnts.filter.input_filter.focus();
 
-					if(attr.on_grid_inited)
-						attr.on_grid_inited();
-				}
-				if (a_direction && grid_inited)
-					grid.setSortImgState(true, s_col, a_direction);
-				cell_grid.progressOff();
-			});
+					if (a_direction && grid_inited)
+						grid.setSortImgState(true, s_col, a_direction);
+
+					cell_grid.progressOff();
+				});
 		};
 	}
 

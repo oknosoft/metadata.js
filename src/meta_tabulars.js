@@ -104,14 +104,19 @@ TabularSection.prototype.clear = function(do_not_notify){
  * @method del
  * @param val {Number|TabularSectionRow} - индекс или строка табчасти
  */
-TabularSection.prototype.del = function(val){
+TabularSection.prototype.del = function(val, do_not_notify){
+	
 	var index, _obj = this._obj;
+	
 	if(typeof val == "undefined")
 		return;
+		
 	else if(typeof val == "number")
 		index = val;
+		
 	else if(_obj[val.row-1]._row === val)
 		index = val.row-1;
+		
 	else{
 		for(var i in _obj)
 			if(_obj[i]._row === val){
@@ -129,10 +134,11 @@ TabularSection.prototype.del = function(val){
 		row.row = index + 1;
 	});
 
-	Object.getNotifier(this._owner).notify({
-		type: 'rows',
-		tabular: this._name
-	});
+	if(!do_not_notify)
+		Object.getNotifier(this._owner).notify({
+			type: 'rows',
+			tabular: this._name
+		});
 
 	this._owner._data._modified = true;
 };
@@ -140,11 +146,12 @@ TabularSection.prototype.del = function(val){
 /**
  * Находит первую строку, содержащую значение
  * @method find
- * @param val {*}
+ * @param val {*} - значение для поиска
+ * @param columns {String|Array} - колонки, в которых искать
  * @return {TabularSectionRow}
  */
-TabularSection.prototype.find = function(val){
-	var res = $p._find(this._obj, val);
+TabularSection.prototype.find = function(val, columns){
+	var res = $p._find(this._obj, val, columns);
 	if(res)
 		return res._row;
 };

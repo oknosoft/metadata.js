@@ -288,46 +288,51 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		// эту функцию будем вызывать снаружи, чтобы перечитать данные
 		grid.reload = function(){
+
 			var filter = get_filter();
-			if(!filter) return;
+			if(!filter)
+				return Promise.resolve();
+
 			cell_grid.progressOn();
 			grid.clearAll();
-			_mgr.sync_grid(filter, grid)
+
+			return _mgr.sync_grid(filter, grid)
 				.then(function(xml){
-				if(typeof xml === "object"){
-					$p.msg.check_soap_result(xml);
-
-				}else if(!grid_inited){
-					if(filter.initial_value){
-						var xpos = xml.indexOf("set_parent"),
-							xpos2 = xml.indexOf("'>", xpos),
-							xh = xml.substr(xpos+12, xpos2-xpos-12);
-						if($p.is_guid(xh)){
-							if(has_tree){
-								tree.do_not_reload = true;
-								tree.selectItem(xh, false);
+					if(typeof xml === "object"){
+						$p.msg.check_soap_result(xml);
+					}else if(!grid_inited){
+						if(filter.initial_value){
+							var xpos = xml.indexOf("set_parent"),
+								xpos2 = xml.indexOf("'>", xpos),
+								xh = xml.substr(xpos+12, xpos2-xpos-12);
+							if($p.is_guid(xh)){
+								if(has_tree){
+									tree.do_not_reload = true;
+									tree.selectItem(xh, false);
+								}
 							}
+							grid.selectRowById(filter.initial_value);
+
+						}else if(filter.parent && $p.is_guid(filter.parent) && has_tree){
+							tree.do_not_reload = true;
+							tree.selectItem(filter.parent, false);
 						}
-						grid.selectRowById(filter.initial_value);
+						grid.setColumnMinWidth(200, grid.getColIndexById("presentation"));
+						grid.enableAutoWidth(true, 1200, 600);
+						grid.setSizes();
+						grid_inited = true;
+						if(wnd.elmnts.filter.input_filter)
+							wnd.elmnts.filter.input_filter.focus();
 
-					}else if(filter.parent && $p.is_guid(filter.parent) && has_tree){
-						tree.do_not_reload = true;
-						tree.selectItem(filter.parent, false);
+						if(attr.on_grid_inited)
+							attr.on_grid_inited();
 					}
-					grid.setColumnMinWidth(200, grid.getColIndexById("presentation"));
-					grid.enableAutoWidth(true, 1200, 600);
-					grid.setSizes();
-					grid_inited = true;
-					if(wnd.elmnts.filter.input_filter)
-						wnd.elmnts.filter.input_filter.focus();
 
-					if(attr.on_grid_inited)
-						attr.on_grid_inited();
-				}
-				if (a_direction && grid_inited)
-					grid.setSortImgState(true, s_col, a_direction);
-				cell_grid.progressOff();
-			});
+					if (a_direction && grid_inited)
+						grid.setSortImgState(true, s_col, a_direction);
+
+					cell_grid.progressOff();
+				});
 		};
 	}
 

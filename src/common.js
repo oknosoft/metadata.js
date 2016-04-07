@@ -134,7 +134,7 @@ if(!Number.prototype.round)
 /**
  * Метод дополнения лидирующими нулями в прототип числа
  */
-if(!Number.prototype.round)
+if(!Number.prototype.pad)
 	Number.prototype.pad = function(size) {
 		var s = String(this);
 		while (s.length < (size || 2)) {s = "0" + s;}
