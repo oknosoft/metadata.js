@@ -21,7 +21,46 @@
  * @submodule events
  */
 
+/**
+ * Обработчики событий приложения
+ * Подробнее см. модули {{#crossLinkModule "events"}}{{/crossLinkModule}} и {{#crossLinkModule "events_browser"}}{{/crossLinkModule}}
+ * @class AppEvents
+ * @static
+ */
+function AppEvents() {
 
+	// усли мы внутри браузера и загружен dhtmlx, переносим в AppEvents свойства dhx4
+	if(typeof window !== "undefined" && window.dhx4){
+		for(var p in dhx4){
+			this[p] = dhx4[p];
+			delete dhx4[p];
+		}
+		window.dhx4 = this;
+	}
+
+	/**
+	 * Обработчики событий приложения
+	 * Подробнее см. модули {{#crossLinkModule "events"}}{{/crossLinkModule}} и {{#crossLinkModule "events_browser"}}{{/crossLinkModule}}
+	 * @property eve
+	 * @for MetaEngine
+	 * @static
+	 */
+	this.__define({
+
+		onload: {
+			value: new Modifiers(),
+			enumerable: false,
+			configurable: false
+		},
+
+		hash_route: {
+			value: new Modifiers(),
+			enumerable: false,
+			configurable: false
+		}
+	});
+	
+}
 
 /**
  * Устанавливает соединение с вебсокет-сервером, обеспечивает приём и отправку сообщений
