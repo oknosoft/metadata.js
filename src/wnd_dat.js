@@ -414,8 +414,9 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 
 
 	function do_auth(login, password, is_guest){
+		
 		$p.ajax.username = login;
-		$p.ajax.password = password;
+		$p.ajax.password = $p.aes.Ctr.encrypt(password);
 
 		if(login){
 
@@ -430,14 +431,15 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 				.then(function () {
 
 					if($p.wsql.get_user_param("enable_save_pwd")){
-						if($p.wsql.get_user_param("user_pwd") != password)
-							$p.wsql.set_user_param("user_pwd", password);   // сохраняем имя пользователя в базе
+						if($p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")) != password)
+							$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password));   // сохраняем имя пользователя в базе
+						
 					}else if($p.wsql.get_user_param("user_pwd") != "")
 						$p.wsql.set_user_param("user_pwd", "");
 
 					$p.eve.logged_in = true;
 					if(attr.modal_dialog)
-						_cell.close()
+						_cell.close();
 					else if(resolve)
 						resolve();
 
@@ -487,7 +489,7 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 			_frm.setItemValue("type", "auth");
 
 			if($p.wsql.get_user_param("enable_save_pwd") && $p.wsql.get_user_param("user_pwd")){
-				_frm.setItemValue("password", $p.wsql.get_user_param("user_pwd"));
+				_frm.setItemValue("password", $p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")));
 
 				if($p.wsql.get_user_param("autologin") || attr.try_auto)
 					auth_click.call(_frm);

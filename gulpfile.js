@@ -45,7 +45,8 @@ gulp.task('build-metadata', function () {
 			'./src/events_browser.js',
 			'./data/merged_data.js',
 			'./lib/xml_to_json.js',
-			'./lib/filesaver.js'
+			'./lib/filesaver.js',
+			'./lib/aes/aes.js'
 		])
 		.pipe(concat('metadata.js'))
 		.pipe(umd({
@@ -239,7 +240,8 @@ gulp.task('build-metadata-core', function(){
 		'./src/meta_rest.js',
 		'./src/events_node.js',
 		'./src/events.js',
-		'./src/server.js'
+		'./src/server.js',
+		'./lib/aes/aes.js'
 	])
 		.pipe(concat('metadata.core.js'))
 		.pipe(umd({
