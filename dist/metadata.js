@@ -12218,6 +12218,17 @@ DataManager.prototype.__define({
 	},
 
 	/**
+	 * Возвращает набор данных для дерева динсписка
+	 * @param attr
+	 * @return {Promise.<Array>}
+	 */
+	pouch_tree: {
+		value: function (attr) {
+			return Promise.resolve([]);
+		}
+	},
+
+	/**
 	 * Сохраняет присоединенный файл
 	 * @param ref
 	 * @param att_id
