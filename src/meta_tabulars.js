@@ -84,13 +84,13 @@ TabularSection.prototype.count = function(){return this._obj.length};
  * @method clear
  * @return {TabularSection}
  */
-TabularSection.prototype.clear = function(do_not_notify){
+TabularSection.prototype.clear = function(silent){
 
 	for(var i in this._obj)
 		delete this._obj[i];
 	this._obj.length = 0;
 
-	if(!do_not_notify)
+	if(!silent && !this._owner._data._silent)
 		Object.getNotifier(this._owner).notify({
 			type: 'rows',
 			tabular: this._name
@@ -104,7 +104,7 @@ TabularSection.prototype.clear = function(do_not_notify){
  * @method del
  * @param val {Number|TabularSectionRow} - индекс или строка табчасти
  */
-TabularSection.prototype.del = function(val, do_not_notify){
+TabularSection.prototype.del = function(val, silent){
 	
 	var index, _obj = this._obj;
 	
@@ -134,7 +134,7 @@ TabularSection.prototype.del = function(val, do_not_notify){
 		row.row = index + 1;
 	});
 
-	if(!do_not_notify)
+	if(!silent && !this._owner._data._silent)
 		Object.getNotifier(this._owner).notify({
 			type: 'rows',
 			tabular: this._name
@@ -185,10 +185,11 @@ TabularSection.prototype.swap = function(rowid1, rowid2){
 	this._obj[rowid1] = this._obj[rowid2];
 	this._obj[rowid2] = tmp;
 
-	Object.getNotifier(this._owner).notify({
-		type: 'rows',
-		tabular: this._name
-	});
+	if(!this._owner._data._silent)
+		Object.getNotifier(this._owner).notify({
+			type: 'rows',
+			tabular: this._name
+		});
 };
 
 /**
@@ -197,7 +198,7 @@ TabularSection.prototype.swap = function(rowid1, rowid2){
  * @param attr {object} - объект со значениями полей. если некого поля нет в attr, для него используется пустое значение типа
  * @return {TabularSectionRow}
  */
-TabularSection.prototype.add = function(attr, do_not_notify){
+TabularSection.prototype.add = function(attr, silent){
 
 	var row = new this._owner._manager._ts_сonstructors[this._name](this);
 
@@ -214,7 +215,7 @@ TabularSection.prototype.add = function(attr, do_not_notify){
 		enumerable: false
 	});
 
-	if(!do_not_notify)
+	if(!silent && !this._owner._data._silent)
 		Object.getNotifier(this._owner).notify({
 			type: 'rows',
 			tabular: this._name
@@ -364,10 +365,11 @@ TabularSection.prototype.load = function(aattr){
 			t.add(row, true);
 	});
 
-	Object.getNotifier(t._owner).notify({
-		type: 'rows',
-		tabular: t._name
-	});
+	if(!this._owner._data._silent)
+		Object.getNotifier(t._owner).notify({
+			type: 'rows',
+			tabular: t._name
+		});
 
 	return t;
 };
@@ -486,13 +488,14 @@ TabularSectionRow.prototype._setter = function (f, v) {
 	if(this._obj[f] == v)
 		return;
 
-	Object.getNotifier(this._owner._owner).notify({
-		type: 'row',
-		row: this,
-		tabular: this._owner._name,
-		name: f,
-		oldValue: this._obj[f]
-	});
+	if(!this._owner._owner._data._silent)
+		Object.getNotifier(this._owner._owner).notify({
+			type: 'row',
+			row: this,
+			tabular: this._owner._name,
+			name: f,
+			oldValue: this._obj[f]
+		});
 	DataObj.prototype.__setter.call(this, f, v);
 	this._owner._owner._data._modified = true;
 
