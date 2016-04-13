@@ -595,7 +595,7 @@ function Meta() {
 				do_init();
 			else{
 				// если изменился sync, запланировать перезагрузку
-				if(changes.direction == "pull" && changes.change.docs){
+				if(change.direction == "pull" && change.change.docs){
 
 				}
 			}

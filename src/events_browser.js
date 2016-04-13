@@ -300,7 +300,7 @@
 
 						var surl = dhtmlx.codebase, load_dhtmlx = true, load_meta = true;
 						if(surl.indexOf("cdn.jsdelivr.net")!=-1)
-							surl = "//cdn.jsdelivr.net/metadata/latest/"
+							surl = "//cdn.jsdelivr.net/metadata/latest/";
 
 						// стили загружаем только при необходимости
 						for(i=0; i < document.styleSheets.length; i++){

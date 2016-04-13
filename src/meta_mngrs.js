@@ -166,35 +166,35 @@ function DataManager(class_name){
 		});
 
 	//	Создаём функции конструкторов экземпляров объектов и строк табличных частей
-	var _obj_сonstructor = this._obj_сonstructor || DataObj;		// ссылка на конструктор элементов
+	var _obj_constructor = this._obj_constructor || DataObj;		// ссылка на конструктор элементов
 
 	// Для всех типов, кроме перечислений, создаём через (new Function) конструктор объекта
 	if(!(this instanceof EnumManager)){
 
 		var obj_сonstructor_name = class_name.split(".")[1];
-		this._obj_сonstructor = eval("(function " + obj_сonstructor_name.charAt(0).toUpperCase() + obj_сonstructor_name.substr(1) +
-			"(attr, manager){manager._obj_сonstructor.superclass.constructor.call(this, attr, manager)})");
-		this._obj_сonstructor._extend(_obj_сonstructor);
+		this._obj_constructor = eval("(function " + obj_сonstructor_name.charAt(0).toUpperCase() + obj_сonstructor_name.substr(1) +
+			"(attr, manager){manager._obj_constructor.superclass.constructor.call(this, attr, manager)})");
+		this._obj_constructor._extend(_obj_constructor);
 
 		if(this instanceof InfoRegManager){
 
 			// реквизиты по метаданным
 			for(var f in this.metadata().dimensions){
-				this._obj_сonstructor.prototype.__define(f, {
+				this._obj_constructor.prototype.__define(f, {
 					get : new Function("return this._getter('"+f+"')"),
 					set : new Function("v", "this._setter('"+f+"',v)"),
 					enumerable : true
 				});
 			}
 			for(var f in this.metadata().resources){
-				this._obj_сonstructor.prototype.__define(f, {
+				this._obj_constructor.prototype.__define(f, {
 					get : new Function("return this._getter('"+f+"')"),
 					set : new Function("v", "this._setter('"+f+"',v)"),
 					enumerable : true
 				});
 			}
 			for(var f in this.metadata().attributes){
-				this._obj_сonstructor.prototype.__define(f, {
+				this._obj_constructor.prototype.__define(f, {
 					get : new Function("return this._getter('"+f+"')"),
 					set : new Function("v", "this._setter('"+f+"',v)"),
 					enumerable : true
@@ -207,7 +207,7 @@ function DataManager(class_name){
 
 			// реквизиты по метаданным
 			for(var f in this.metadata().fields){
-				this._obj_сonstructor.prototype.__define(f, {
+				this._obj_constructor.prototype.__define(f, {
 					get : new Function("return this._getter('"+f+"')"),
 					set : new Function("v", "this._setter('"+f+"',v)"),
 					enumerable : true
@@ -234,7 +234,7 @@ function DataManager(class_name){
 				}
 
 				// устанавливаем геттер и сеттер для табличной части
-				this._obj_сonstructor.prototype.__define(f, {
+				this._obj_constructor.prototype.__define(f, {
 					get : new Function("return this._getter_ts('"+f+"')"),
 					set : new Function("v", "this._setter_ts('"+f+"',v)"),
 					enumerable : true
@@ -244,7 +244,7 @@ function DataManager(class_name){
 		}
 	}
 
-	_obj_сonstructor = null;
+	_obj_constructor = null;
 
 }
 
@@ -787,7 +787,7 @@ function RefDataManager(class_name) {
 			if(do_not_create && !force_promise)
 				return;
 			else
-				o = new t._obj_сonstructor(ref, t, true);
+				o = new t._obj_constructor(ref, t, true);
 		}
 
 		if(force_promise === false)
@@ -825,7 +825,7 @@ function RefDataManager(class_name) {
 		var o = by_ref[attr.ref];
 		if(!o){
 
-			o = new t._obj_сonstructor(attr, t);
+			o = new t._obj_constructor(attr, t);
 
 			if(!fill_default && attr.ref && attr.presentation && Object.keys(attr).length == 2){
 				// заглушка ссылки объекта
@@ -916,7 +916,7 @@ function RefDataManager(class_name) {
 		for(var i in aattr){
 			ref = $p.fix_guid(aattr[i]);
 			if(!(obj = by_ref[ref])){
-				obj = new t._obj_сonstructor(aattr[i], t);
+				obj = new t._obj_constructor(aattr[i], t);
 				if(forse)
 					obj._set_loaded();
 
@@ -1497,7 +1497,7 @@ function DataProcessorsManager(class_name){
 	 * @return {DataProcessorObj}
 	 */
 	this.create = function(){
-		return new this._obj_сonstructor({}, this);
+		return new this._obj_constructor({}, this);
 	};
 
 }
@@ -1520,7 +1520,7 @@ function EnumManager(a, class_name) {
 
 	EnumManager.superclass.constructor.call(this, class_name);
 
-	this._obj_сonstructor = EnumObj;
+	this._obj_constructor = EnumObj;
 
 	this.push = function(o, new_ref){
 		this.__define(new_ref, {
@@ -1678,7 +1678,7 @@ function RegisterManager(class_name){
 
 	var by_ref={};				// приватное хранилище объектов по ключу записи
 
-	this._obj_сonstructor = RegisterRow;
+	this._obj_constructor = RegisterRow;
 
 	RegisterManager.superclass.constructor.call(this, class_name);
 
@@ -1709,6 +1709,10 @@ function RegisterManager(class_name){
 
 		if(!attr)
 			attr = {};
+		
+		if(attr.ref && return_row)
+			return force_promise ? Promise.resolve(by_ref[attr.ref]) : by_ref[attr.ref];
+		
 		attr.action = "select";
 
 		var arr = $p.wsql.alasql(this.get_sql_struct(attr), attr._values),
@@ -1726,7 +1730,23 @@ function RegisterManager(class_name){
 					res.push(by_ref[this.get_ref(arr[i])]);
 			}
 		}
+		
 		return force_promise ? Promise.resolve(res) : res;
+	};
+
+	/**
+	 * Удаляет объект из alasql и локального кеша
+	 * @method unload_obj
+	 * @param ref
+	 */
+	this.unload_obj = function(ref) {
+		delete by_ref[ref];
+		this.alatable.some(function (o, i, a) {
+			if(o.ref == ref){
+				a.splice(i, 1);
+				return true;
+			}
+		});
 	};
 
 	/**
@@ -1743,11 +1763,18 @@ function RegisterManager(class_name){
 
 			key = this.get_ref(aattr[i]);
 
-			if(!(obj = by_ref[key])){
-				new this._obj_сonstructor(aattr[i], this);
+			obj = by_ref[key];
+			if(!obj && !aattr[i]._deleted){
+				new this._obj_constructor(aattr[i], this);
 
+			}else if(obj){
+				if(aattr[i]._deleted){
+					obj.unload();
+					continue;
+				}else
+					obj._mixin(aattr[i]);
 			}else
-				obj._mixin(aattr[i]);
+				continue;
 
 			res.push(by_ref[key]);
 		}
@@ -1787,6 +1814,7 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 		action = attr && attr.action ? attr.action : "create_table";
 
 	function sql_create(){
+
 		var sql = "CREATE TABLE IF NOT EXISTS ",
 			first_field = true;
 
@@ -1828,35 +1856,31 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 			}
 
 		}else{
-			sql += "`"+t.table_name+"` (";
+			sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `_deleted` BOOLEAN";
 
-			for(f in cmd.dimensions){
-				if(first_field){
-					sql += "`" + f + "`";
-					first_field = false;
-				}else
-					sql += _md.sql_mask(f);
-				sql += _md.sql_type(t, f, cmd.dimensions[f].type) + _md.sql_composite(cmd.dimensions, f);
-			}
+			//sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.dimensions[f].type) + _md.sql_composite(cmd.dimensions, f);
+
+			for(f in cmd.dimensions)
+				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.dimensions[f].type);
 
 			for(f in cmd.resources)
-				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.resources[f].type) + _md.sql_composite(cmd.resources, f);
+				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.resources[f].type);
 
 			for(f in cmd.attributes)
-				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.attributes[f].type) + _md.sql_composite(cmd.attributes, f);
+				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.attributes[f].type);
 
-			sql += ", PRIMARY KEY (";
-			first_field = true;
-			for(f in cmd["dimensions"]){
-				if(first_field){
-					sql += "`" + f + "`";
-					first_field = false;
-				}else
-					sql += _md.sql_mask(f);
-			}
+			// sql += ", PRIMARY KEY (";
+			// first_field = true;
+			// for(f in cmd["dimensions"]){
+			// 	if(first_field){
+			// 		sql += "`" + f + "`";
+			// 		first_field = false;
+			// 	}else
+			// 		sql += _md.sql_mask(f);
+			// }
 		}
 
-		sql += "))";
+		sql += ")";
 
 		return sql;
 	}
@@ -1938,12 +1962,18 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 };
 
 RegisterManager.prototype.get_ref = function(attr){
-	var key = "", ref,
-		dimensions = this.metadata().dimensions;
+	
 	if(attr instanceof RegisterRow)
 		attr = attr._obj;
+
+	if(attr.ref)
+		return attr.ref;
+
+	var key = "",
+		dimensions = this.metadata().dimensions;
+
 	for(var j in dimensions){
-		key += (key ? "_" : "");
+		key += (key ? "¶" : "");
 		if(dimensions[j].type.is_ref)
 			key += $p.fix_guid(attr[j]);
 
@@ -2188,7 +2218,7 @@ AccumRegManager._extend(RegisterManager);
  */
 function CatManager(class_name) {
 
-	this._obj_сonstructor = CatObj;		// ссылка на конструктор элементов
+	this._obj_constructor = CatObj;		// ссылка на конструктор элементов
 
 	CatManager.superclass.constructor.call(this, class_name);
 
@@ -2201,7 +2231,7 @@ function CatManager(class_name) {
 		 * @for CatObj
 		 * @type {Boolean}
 		 */
-		this._obj_сonstructor.prototype.__define("is_folder", {
+		this._obj_constructor.prototype.__define("is_folder", {
 			get : function(){ return this._obj.is_folder || false},
 			set : function(v){ this._obj.is_folder = $p.fix_boolean(v)},
 			enumerable : true
@@ -2293,7 +2323,7 @@ CatManager.prototype.path = function(ref){
  */
 function ChartOfCharacteristicManager(class_name){
 
-	this._obj_сonstructor = CatObj;		// ссылка на конструктор элементов
+	this._obj_constructor = CatObj;		// ссылка на конструктор элементов
 
 	ChartOfCharacteristicManager.superclass.constructor.call(this, class_name);
 
@@ -2313,7 +2343,7 @@ ChartOfCharacteristicManager._extend(CatManager);
  */
 function ChartOfAccountManager(class_name){
 
-	this._obj_сonstructor = CatObj;		// ссылка на конструктор элементов
+	this._obj_constructor = CatObj;		// ссылка на конструктор элементов
 
 	ChartOfAccountManager.superclass.constructor.call(this, class_name);
 
@@ -2333,7 +2363,7 @@ ChartOfAccountManager._extend(CatManager);
  */
 function DocManager(class_name) {
 
-	this._obj_сonstructor = DocObj;		// ссылка на конструктор элементов
+	this._obj_constructor = DocObj;		// ссылка на конструктор элементов
 
 	DocManager.superclass.constructor.call(this, class_name);
 
@@ -2353,7 +2383,7 @@ DocManager._extend(RefDataManager);
  */
 function TaskManager(class_name){
 
-	this._obj_сonstructor = TaskObj;		// ссылка на конструктор элементов
+	this._obj_constructor = TaskObj;		// ссылка на конструктор элементов
 
 	TaskManager.superclass.constructor.call(this, class_name);
 
@@ -2372,7 +2402,7 @@ TaskManager._extend(CatManager);
  */
 function BusinessProcessManager(class_name){
 
-	this._obj_сonstructor = BusinessProcessObj;		// ссылка на конструктор элементов
+	this._obj_constructor = BusinessProcessObj;		// ссылка на конструктор элементов
 
 	BusinessProcessManager.superclass.constructor.call(this, class_name);
 

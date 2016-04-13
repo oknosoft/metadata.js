@@ -890,6 +890,17 @@ function RegisterRow(attr, manager){
 
 	if(attr && typeof attr == "object")
 		this._mixin(attr);
+
+	for(var check in manager.metadata().dimensions){
+		if(!attr.hasOwnProperty(check) && attr.ref){
+			var keys = attr.ref.split("¶");
+			Object.keys(manager.metadata().dimensions).forEach(function (fld, ind) {
+				this[fld] = keys[ind];
+			}.bind(this));
+			break;
+		}
+	}
+
 }
 RegisterRow._extend(DataObj);
 
