@@ -1793,7 +1793,7 @@ function RegisterManager(class_name){
 	 * @return {Array}
 	 */
 	this.find_rows = function(selection, callback){
-		return $p._find_rows.call(this, this.alatable, selection, callback);
+		return $p._find_rows.call(this, by_ref, selection, callback);
 	};
 
 }
