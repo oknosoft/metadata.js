@@ -9330,18 +9330,17 @@ function LogManager(){
 			msg = {note: msg};
 		msg.date = Date.now() + $p.eve.time_diff();
 		if(!smax)
-			smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_$log` where `date` = ?");
+			smax = alasql.compile("select MAX(`ref`) as `ref` from `ireg_$log` where `date` = ?");
 		var res = smax([msg.date]);
 		if(!res.length || res[0].sequence === undefined)
 			msg.sequence = 0;
 		else
-			msg.sequence = res[0].sequence + 1;
+			msg.sequence = parseInt(res[0].ref.split(".")[1]) + 1;
 		if(!msg.class)
 			msg.class = "note";
 
-
-		$p.wsql.alasql("insert into `ireg_$log` (`date`, `sequence`, `class`, `note`, `obj`) values (?, ?, ?, ?, ?)",
-			[msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
+		$p.wsql.alasql("insert into `ireg_$log` (`ref`, `date`, `class`, `note`, `obj`) values (?, ?, ?, ?, ?)",
+			[msg.date + "."+msg.sequence, msg.date, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
 
 	};
 
