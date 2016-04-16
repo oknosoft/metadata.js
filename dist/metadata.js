@@ -4171,8 +4171,9 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 					if(_grid.getSelectedRowId() != change.row.row)
 						_ts.sync_grid(_grid, _selection);
 					else{
-						var xcell = _grid.cells(change.row.row, _grid.getColIndexById(change.name));
-						xcell.setCValue($p.is_data_obj(change.row[change.name]) ? change.row[change.name].presentation : change.row[change.name]);
+						if(_grid.getColIndexById(change.name) != undefined)
+							_grid.cells(change.row.row, _grid.getColIndexById(change.name))
+								.setCValue($p.is_data_obj(change.row[change.name]) ? change.row[change.name].presentation : change.row[change.name]);
 					}
 				}
 			});
