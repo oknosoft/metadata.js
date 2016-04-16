@@ -22,10 +22,12 @@ div.gridbox_property table.row20px tr td {
 	padding-left:4px;
 	border-bottom: 1px solid #D6D6D6;
 }
+/*
 div.gridbox_property .dhx_combo_edit{
 	font-family:Tahoma;
 	font-size:12px;
 }
+*/
 div.gridbox_property table.obj tr.rowselected td{
 	background-color:#ededed;
 	color:black;
@@ -184,11 +186,11 @@ div.gridbox_dhx_web.gridbox table.obj tr.rowselected td.cellselected {
 /* .dhxtree_dhx_terrace span.selectedTreeRow */
 div.gridbox_dhx_terrace.gridbox table.obj tr.rowselected td,
 div.gridbox_dhx_terrace.gridbox table.obj.row20px tr.rowselected td {
-	background-color: rgb(251, 251, 240);
+	background-color: #fffbdc;
 }
 div.gridbox_dhx_terrace.gridbox table.obj tr.rowselected td.cellselected,
 div.gridbox_dhx_terrace.gridbox table.obj.row20px tr.rowselected td.cellselected {
-	background-color: #fefefe;
+	background-color: #fff3a1;
 }
 
 /* отступы в гриде */

@@ -131,7 +131,7 @@ $p._selection = function (o, selection) {
 					ok = sel.some(function (element) {
 						var key = Object.keys(element)[0];
 						if(element[key].hasOwnProperty("like"))
-							return o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
+							return o[key] && o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
 						else
 							return $p.is_equal(o[key], element[key]);
 					});
@@ -595,7 +595,7 @@ function Meta() {
 				do_init();
 			else{
 				// если изменился sync, запланировать перезагрузку
-				if(changes.direction == "pull" && changes.change.docs){
+				if(change.direction == "pull" && change.change.docs){
 
 				}
 			}

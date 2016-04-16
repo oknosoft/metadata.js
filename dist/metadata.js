@@ -2661,6 +2661,7 @@ $p.fias = function FIAS(){};
 	msg.empty_login_password = "Не указаны имя пользователя или пароль";
 	msg.empty_response = "Пустой ответ сервера";
 	msg.empty_geocoding = "Пустой ответ геокодера. Вероятно, отслеживание адреса запрещено в настройках браузера";
+	msg.error_geocoding = "Ошибка геокодера"
 
 	msg.error_auth = "Авторизация пользователя не выполнена";
 	msg.error_critical = "Критическая ошибка";
@@ -3890,7 +3891,16 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 				if(fpath.length < 2)
 					return {obj: _obj, field: fpath[0]}._mixin(_pwnd);
 				else {
-					var vr = _obj[fpath[0]].find(fpath[1]);
+					var vr;
+					if(_selection){
+						_obj[fpath[0]].find_rows(_selection, function (row) {
+							if(row.property == fpath[1] || row.param == fpath[1] || row.Свойство == fpath[1] || row.Параметр == fpath[1]){
+								vr = row;
+								return false;
+							}
+						});
+					}else
+						vr = _obj[fpath[0]].find(fpath[1]);
 					if(vr){
 						res.obj = vr;
 						if(vr["Значение"]){
@@ -4162,8 +4172,9 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 					if(_grid.getSelectedRowId() != change.row.row)
 						_ts.sync_grid(_grid, _selection);
 					else{
-						var xcell = _grid.cells(change.row.row, _grid.getColIndexById(change.name));
-						xcell.setCValue($p.is_data_obj(change.row[change.name]) ? change.row[change.name].presentation : change.row[change.name]);
+						if(_grid.getColIndexById(change.name) != undefined)
+							_grid.cells(change.row.row, _grid.getColIndexById(change.name))
+								.setCValue($p.is_data_obj(change.row[change.name]) ? change.row[change.name].presentation : change.row[change.name]);
 					}
 				}
 			});
@@ -5606,7 +5617,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 			}
 		});
 
-		process_address_fields(frm_create);
+		process_address_fields().then(frm_create);
 
 
 		/**
@@ -5922,7 +5933,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 			obj.address_fields = fields;
 		}
 
-		function process_address_fields(callback){
+		function process_address_fields(){
 
 			if(obj.address_fields){
 				v.xml = ( new DOMParser() ).parseFromString(obj.address_fields, "text/xml");
@@ -5989,35 +6000,77 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 					v.street+= " " + building_room[i];
 				}
 			}
+			
+			return new Promise(function(resolve, reject){
 
-			// если есть координаты $p.ipinfo, используем их
-			// иначе - Москва
-			if(v.coordinates.length){
-				// если координаты есть в Расчете, используем их
-				v.latitude = v.coordinates[0];
-				v.longitude = v.coordinates[1];
-				callback();
+				if(!$p.ipinfo)
+					$p.ipinfo = new IPInfo();
 
-			}else if(obj.shipping_address){
-				// если есть строка адреса, пытаемся геокодировать
-				do_geocoding(function (results, status) {
-					if (status == google.maps.GeocoderStatus.OK) {
-						v.latitude = results[0].geometry.location.lat();
-						v.longitude = results[0].geometry.location.lng();
+				if(window.google && window.google.maps)
+					resolve();
+				else{
+					$p.load_script("//maps.google.com/maps/api/js?callback=$p.ipinfo.location_callback", "script", function(){});
+
+					var google_ready = $p.eve.attachEvent("geo_google_ready", function () {
+						
+						if(watch_dog)
+							clearTimeout(watch_dog);
+						
+						if(google_ready){
+							$p.eve.detachEvent(google_ready);
+							google_ready = null;
+							resolve();	
+						}
+					});
+
+					// Если Google не ответил - информируем об ошибке и продолжаем
+					var watch_dog = setTimeout(function () {
+
+						if(google_ready){
+							$p.eve.detachEvent(google_ready);
+							google_ready = null;
+						}
+						$p.msg.show_msg({
+							type: "alert-warning",
+							text: $p.msg.error_geocoding + " Google",
+							title: $p.msg.main_title
+						});
+
+						resolve();
+
+					}, 10000);
+				}
+
+			})
+				.then(function () {
+
+					// если есть координаты $p.ipinfo, используем их
+					// иначе - Москва
+					if(v.coordinates.length){
+						// если координаты есть в Расчете, используем их
+						v.latitude = v.coordinates[0];
+						v.longitude = v.coordinates[1];
+
+					}else if(obj.shipping_address){
+						// если есть строка адреса, пытаемся геокодировать
+						do_geocoding(function (results, status) {
+							if (status == google.maps.GeocoderStatus.OK) {
+								v.latitude = results[0].geometry.location.lat();
+								v.longitude = results[0].geometry.location.lng();
+							}
+						});
+
+					}else if($p.ipinfo.latitude && $p.ipinfo.longitude ){
+						v.latitude = $p.ipinfo.latitude;
+						v.longitude = $p.ipinfo.longitude;
+
+					}else{
+						v.latitude = 55.635924;
+						v.longitude = 37.6066379;
+						$p.msg.show_msg($p.msg.empty_geocoding);
 					}
-					callback();
-				});
-
-			}else if($p.ipinfo.latitude && $p.ipinfo.longitude ){
-				v.latitude = $p.ipinfo.latitude;
-				v.longitude = $p.ipinfo.longitude;
-				callback();
-			}else{
-				v.latitude = 55.635924;
-				v.longitude = 37.6066379;
-				callback();
-				$p.msg.show_msg($p.msg.empty_geocoding);
-			}
+					
+				});			
 
 		}
 
@@ -6225,7 +6278,7 @@ $p._selection = function (o, selection) {
 					ok = sel.some(function (element) {
 						var key = Object.keys(element)[0];
 						if(element[key].hasOwnProperty("like"))
-							return o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
+							return o[key] && o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
 						else
 							return $p.is_equal(o[key], element[key]);
 					});
@@ -6689,7 +6742,7 @@ function Meta() {
 				do_init();
 			else{
 				// если изменился sync, запланировать перезагрузку
-				if(changes.direction == "pull" && changes.change.docs){
+				if(change.direction == "pull" && change.change.docs){
 
 				}
 			}
@@ -7420,35 +7473,35 @@ function DataManager(class_name){
 		});
 
 	//	Создаём функции конструкторов экземпляров объектов и строк табличных частей
-	var _obj_сonstructor = this._obj_сonstructor || DataObj;		// ссылка на конструктор элементов
+	var _obj_constructor = this._obj_constructor || DataObj;		// ссылка на конструктор элементов
 
 	// Для всех типов, кроме перечислений, создаём через (new Function) конструктор объекта
 	if(!(this instanceof EnumManager)){
 
 		var obj_сonstructor_name = class_name.split(".")[1];
-		this._obj_сonstructor = eval("(function " + obj_сonstructor_name.charAt(0).toUpperCase() + obj_сonstructor_name.substr(1) +
-			"(attr, manager){manager._obj_сonstructor.superclass.constructor.call(this, attr, manager)})");
-		this._obj_сonstructor._extend(_obj_сonstructor);
+		this._obj_constructor = eval("(function " + obj_сonstructor_name.charAt(0).toUpperCase() + obj_сonstructor_name.substr(1) +
+			"(attr, manager){manager._obj_constructor.superclass.constructor.call(this, attr, manager)})");
+		this._obj_constructor._extend(_obj_constructor);
 
 		if(this instanceof InfoRegManager){
 
 			// реквизиты по метаданным
 			for(var f in this.metadata().dimensions){
-				this._obj_сonstructor.prototype.__define(f, {
+				this._obj_constructor.prototype.__define(f, {
 					get : new Function("return this._getter('"+f+"')"),
 					set : new Function("v", "this._setter('"+f+"',v)"),
 					enumerable : true
 				});
 			}
 			for(var f in this.metadata().resources){
-				this._obj_сonstructor.prototype.__define(f, {
+				this._obj_constructor.prototype.__define(f, {
 					get : new Function("return this._getter('"+f+"')"),
 					set : new Function("v", "this._setter('"+f+"',v)"),
 					enumerable : true
 				});
 			}
 			for(var f in this.metadata().attributes){
-				this._obj_сonstructor.prototype.__define(f, {
+				this._obj_constructor.prototype.__define(f, {
 					get : new Function("return this._getter('"+f+"')"),
 					set : new Function("v", "this._setter('"+f+"',v)"),
 					enumerable : true
@@ -7461,7 +7514,7 @@ function DataManager(class_name){
 
 			// реквизиты по метаданным
 			for(var f in this.metadata().fields){
-				this._obj_сonstructor.prototype.__define(f, {
+				this._obj_constructor.prototype.__define(f, {
 					get : new Function("return this._getter('"+f+"')"),
 					set : new Function("v", "this._setter('"+f+"',v)"),
 					enumerable : true
@@ -7488,7 +7541,7 @@ function DataManager(class_name){
 				}
 
 				// устанавливаем геттер и сеттер для табличной части
-				this._obj_сonstructor.prototype.__define(f, {
+				this._obj_constructor.prototype.__define(f, {
 					get : new Function("return this._getter_ts('"+f+"')"),
 					set : new Function("v", "this._setter_ts('"+f+"',v)"),
 					enumerable : true
@@ -7498,7 +7551,7 @@ function DataManager(class_name){
 		}
 	}
 
-	_obj_сonstructor = null;
+	_obj_constructor = null;
 
 }
 
@@ -8041,7 +8094,7 @@ function RefDataManager(class_name) {
 			if(do_not_create && !force_promise)
 				return;
 			else
-				o = new t._obj_сonstructor(ref, t, true);
+				o = new t._obj_constructor(ref, t, true);
 		}
 
 		if(force_promise === false)
@@ -8079,7 +8132,7 @@ function RefDataManager(class_name) {
 		var o = by_ref[attr.ref];
 		if(!o){
 
-			o = new t._obj_сonstructor(attr, t);
+			o = new t._obj_constructor(attr, t);
 
 			if(!fill_default && attr.ref && attr.presentation && Object.keys(attr).length == 2){
 				// заглушка ссылки объекта
@@ -8170,7 +8223,7 @@ function RefDataManager(class_name) {
 		for(var i in aattr){
 			ref = $p.fix_guid(aattr[i]);
 			if(!(obj = by_ref[ref])){
-				obj = new t._obj_сonstructor(aattr[i], t);
+				obj = new t._obj_constructor(aattr[i], t);
 				if(forse)
 					obj._set_loaded();
 
@@ -8751,7 +8804,7 @@ function DataProcessorsManager(class_name){
 	 * @return {DataProcessorObj}
 	 */
 	this.create = function(){
-		return new this._obj_сonstructor({}, this);
+		return new this._obj_constructor({}, this);
 	};
 
 }
@@ -8774,7 +8827,7 @@ function EnumManager(a, class_name) {
 
 	EnumManager.superclass.constructor.call(this, class_name);
 
-	this._obj_сonstructor = EnumObj;
+	this._obj_constructor = EnumObj;
 
 	this.push = function(o, new_ref){
 		this.__define(new_ref, {
@@ -8932,7 +8985,7 @@ function RegisterManager(class_name){
 
 	var by_ref={};				// приватное хранилище объектов по ключу записи
 
-	this._obj_сonstructor = RegisterRow;
+	this._obj_constructor = RegisterRow;
 
 	RegisterManager.superclass.constructor.call(this, class_name);
 
@@ -8963,6 +9016,10 @@ function RegisterManager(class_name){
 
 		if(!attr)
 			attr = {};
+		
+		if(attr.ref && return_row)
+			return force_promise ? Promise.resolve(by_ref[attr.ref]) : by_ref[attr.ref];
+		
 		attr.action = "select";
 
 		var arr = $p.wsql.alasql(this.get_sql_struct(attr), attr._values),
@@ -8980,7 +9037,23 @@ function RegisterManager(class_name){
 					res.push(by_ref[this.get_ref(arr[i])]);
 			}
 		}
+		
 		return force_promise ? Promise.resolve(res) : res;
+	};
+
+	/**
+	 * Удаляет объект из alasql и локального кеша
+	 * @method unload_obj
+	 * @param ref
+	 */
+	this.unload_obj = function(ref) {
+		delete by_ref[ref];
+		this.alatable.some(function (o, i, a) {
+			if(o.ref == ref){
+				a.splice(i, 1);
+				return true;
+			}
+		});
 	};
 
 	/**
@@ -8997,11 +9070,18 @@ function RegisterManager(class_name){
 
 			key = this.get_ref(aattr[i]);
 
-			if(!(obj = by_ref[key])){
-				new this._obj_сonstructor(aattr[i], this);
+			obj = by_ref[key];
+			if(!obj && !aattr[i]._deleted){
+				new this._obj_constructor(aattr[i], this);
 
+			}else if(obj){
+				if(aattr[i]._deleted){
+					obj.unload();
+					continue;
+				}else
+					obj._mixin(aattr[i]);
 			}else
-				obj._mixin(aattr[i]);
+				continue;
 
 			res.push(by_ref[key]);
 		}
@@ -9020,7 +9100,7 @@ function RegisterManager(class_name){
 	 * @return {Array}
 	 */
 	this.find_rows = function(selection, callback){
-		return $p._find_rows.call(this, this.alatable, selection, callback);
+		return $p._find_rows.call(this, by_ref, selection, callback);
 	};
 
 }
@@ -9041,6 +9121,7 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 		action = attr && attr.action ? attr.action : "create_table";
 
 	function sql_create(){
+
 		var sql = "CREATE TABLE IF NOT EXISTS ",
 			first_field = true;
 
@@ -9082,35 +9163,31 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 			}
 
 		}else{
-			sql += "`"+t.table_name+"` (";
+			sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `_deleted` BOOLEAN";
 
-			for(f in cmd.dimensions){
-				if(first_field){
-					sql += "`" + f + "`";
-					first_field = false;
-				}else
-					sql += _md.sql_mask(f);
-				sql += _md.sql_type(t, f, cmd.dimensions[f].type) + _md.sql_composite(cmd.dimensions, f);
-			}
+			//sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.dimensions[f].type) + _md.sql_composite(cmd.dimensions, f);
+
+			for(f in cmd.dimensions)
+				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.dimensions[f].type);
 
 			for(f in cmd.resources)
-				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.resources[f].type) + _md.sql_composite(cmd.resources, f);
+				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.resources[f].type);
 
 			for(f in cmd.attributes)
-				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.attributes[f].type) + _md.sql_composite(cmd.attributes, f);
+				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.attributes[f].type);
 
-			sql += ", PRIMARY KEY (";
-			first_field = true;
-			for(f in cmd["dimensions"]){
-				if(first_field){
-					sql += "`" + f + "`";
-					first_field = false;
-				}else
-					sql += _md.sql_mask(f);
-			}
+			// sql += ", PRIMARY KEY (";
+			// first_field = true;
+			// for(f in cmd["dimensions"]){
+			// 	if(first_field){
+			// 		sql += "`" + f + "`";
+			// 		first_field = false;
+			// 	}else
+			// 		sql += _md.sql_mask(f);
+			// }
 		}
 
-		sql += "))";
+		sql += ")";
 
 		return sql;
 	}
@@ -9192,12 +9269,18 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 };
 
 RegisterManager.prototype.get_ref = function(attr){
-	var key = "", ref,
-		dimensions = this.metadata().dimensions;
+	
 	if(attr instanceof RegisterRow)
 		attr = attr._obj;
+
+	if(attr.ref)
+		return attr.ref;
+
+	var key = "",
+		dimensions = this.metadata().dimensions;
+
 	for(var j in dimensions){
-		key += (key ? "_" : "");
+		key += (key ? "¶" : "");
 		if(dimensions[j].type.is_ref)
 			key += $p.fix_guid(attr[j]);
 
@@ -9291,18 +9374,17 @@ function LogManager(){
 			msg = {note: msg};
 		msg.date = Date.now() + $p.eve.time_diff();
 		if(!smax)
-			smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_$log` where `date` = ?");
+			smax = alasql.compile("select MAX(`ref`) as `ref` from `ireg_$log` where `date` = ?");
 		var res = smax([msg.date]);
 		if(!res.length || res[0].sequence === undefined)
 			msg.sequence = 0;
 		else
-			msg.sequence = res[0].sequence + 1;
+			msg.sequence = parseInt(res[0].ref.split(".")[1]) + 1;
 		if(!msg.class)
 			msg.class = "note";
 
-
-		$p.wsql.alasql("insert into `ireg_$log` (`date`, `sequence`, `class`, `note`, `obj`) values (?, ?, ?, ?, ?)",
-			[msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
+		$p.wsql.alasql("insert into `ireg_$log` (`ref`, `date`, `class`, `note`, `obj`) values (?, ?, ?, ?, ?)",
+			[msg.date + "."+msg.sequence, msg.date, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
 
 	};
 
@@ -9442,7 +9524,7 @@ AccumRegManager._extend(RegisterManager);
  */
 function CatManager(class_name) {
 
-	this._obj_сonstructor = CatObj;		// ссылка на конструктор элементов
+	this._obj_constructor = CatObj;		// ссылка на конструктор элементов
 
 	CatManager.superclass.constructor.call(this, class_name);
 
@@ -9455,7 +9537,7 @@ function CatManager(class_name) {
 		 * @for CatObj
 		 * @type {Boolean}
 		 */
-		this._obj_сonstructor.prototype.__define("is_folder", {
+		this._obj_constructor.prototype.__define("is_folder", {
 			get : function(){ return this._obj.is_folder || false},
 			set : function(v){ this._obj.is_folder = $p.fix_boolean(v)},
 			enumerable : true
@@ -9547,7 +9629,7 @@ CatManager.prototype.path = function(ref){
  */
 function ChartOfCharacteristicManager(class_name){
 
-	this._obj_сonstructor = CatObj;		// ссылка на конструктор элементов
+	this._obj_constructor = CatObj;		// ссылка на конструктор элементов
 
 	ChartOfCharacteristicManager.superclass.constructor.call(this, class_name);
 
@@ -9567,7 +9649,7 @@ ChartOfCharacteristicManager._extend(CatManager);
  */
 function ChartOfAccountManager(class_name){
 
-	this._obj_сonstructor = CatObj;		// ссылка на конструктор элементов
+	this._obj_constructor = CatObj;		// ссылка на конструктор элементов
 
 	ChartOfAccountManager.superclass.constructor.call(this, class_name);
 
@@ -9587,7 +9669,7 @@ ChartOfAccountManager._extend(CatManager);
  */
 function DocManager(class_name) {
 
-	this._obj_сonstructor = DocObj;		// ссылка на конструктор элементов
+	this._obj_constructor = DocObj;		// ссылка на конструктор элементов
 
 	DocManager.superclass.constructor.call(this, class_name);
 
@@ -9607,7 +9689,7 @@ DocManager._extend(RefDataManager);
  */
 function TaskManager(class_name){
 
-	this._obj_сonstructor = TaskObj;		// ссылка на конструктор элементов
+	this._obj_constructor = TaskObj;		// ссылка на конструктор элементов
 
 	TaskManager.superclass.constructor.call(this, class_name);
 
@@ -9626,7 +9708,7 @@ TaskManager._extend(CatManager);
  */
 function BusinessProcessManager(class_name){
 
-	this._obj_сonstructor = BusinessProcessObj;		// ссылка на конструктор элементов
+	this._obj_constructor = BusinessProcessObj;		// ссылка на конструктор элементов
 
 	BusinessProcessManager.superclass.constructor.call(this, class_name);
 
@@ -9862,11 +9944,12 @@ DataObj.prototype.__setter = function (f, v) {
 };
 
 DataObj.prototype.__notify = function (f) {
-	Object.getNotifier(this).notify({
-		type: 'update',
-		name: f,
-		oldValue: this._obj[f]
-	});
+	if(!this._data._silent)
+		Object.getNotifier(this).notify({
+			type: 'update',
+			name: f,
+			oldValue: this._obj[f]
+		});
 };
 
 DataObj.prototype._setter = function (f, v) {
@@ -10055,6 +10138,8 @@ DataObj.prototype.__define({
 	 * ### Записывает объект
 	 * Ввыполняет подписки на события перед записью и после записи
 	 * В зависимости от настроек, выполняет запись объекта во внешнюю базу данных
+	 * @method save
+	 * @for DataObj
 	 * @param [post] {Boolean|undefined} - проведение или отмена проведения или просто запись
 	 * @param [mode] {Boolean} - режим проведения документа [Оперативный, Неоперативный]
 	 * @param [attachments] {Array} - массив вложений
@@ -10109,6 +10194,12 @@ DataObj.prototype.__define({
 		enumerable : false
 	},
 
+	/**
+	 * Возвращает присоединенный объект или файл
+	 * @method get_attachment
+	 * @for DataObj
+	 * @param att_id {String} - идентификатор (имя) вложения
+	 */
 	get_attachment: {
 		value: function (att_id) {
 			return this._manager.get_attachment(this.ref, att_id);
@@ -10116,6 +10207,14 @@ DataObj.prototype.__define({
 		enumerable: false
 	},
 
+	/**
+	 * Сохраняет объект или файл во вложении
+	 * @method save_attachment
+	 * @for DataObj
+	 * @param att_id {String} - идентификатор (имя) вложения
+	 * @param attachment {Blob|String} - вложениe
+	 * @param [type] {String} - mime тип
+	 */
 	save_attachment: {
 		value: function (att_id, attachment, type) {
 			return this._manager.save_attachment(this.ref, att_id, attachment, type);
@@ -10123,9 +10222,36 @@ DataObj.prototype.__define({
 		enumerable: false
 	},
 
+	/**
+	 * Удаляет присоединенный объект или файл
+	 * @method delete_attachment
+	 * @for DataObj
+	 * @param att_id {String} - идентификатор (имя) вложения
+	 */
 	delete_attachment: {
 		value: function (att_id) {
 			return this._manager.get_attachment(this.ref, att_id);
+		},
+		enumerable: false
+	},
+
+	/**
+	 * ###Включает тихий режим
+	 * Режим, при котором объект не информирует мир об изменениях своих свойств
+	 * @method _silent
+	 * @for DataObj
+	 * @param [v] {Boolean}
+	 */
+	_silent: {
+		value: function (v) {
+			if(typeof v == "boolean")
+				this._data._silent = v;
+			else{
+				this._data._silent = true;
+				setTimeout(function () {
+					this._data._silent = false;	
+				}.bind(this));
+			}			
 		},
 		enumerable: false
 	}
@@ -10482,6 +10608,17 @@ function RegisterRow(attr, manager){
 
 	if(attr && typeof attr == "object")
 		this._mixin(attr);
+
+	for(var check in manager.metadata().dimensions){
+		if(!attr.hasOwnProperty(check) && attr.ref){
+			var keys = attr.ref.split("¶");
+			Object.keys(manager.metadata().dimensions).forEach(function (fld, ind) {
+				this[fld] = keys[ind];
+			}.bind(this));
+			break;
+		}
+	}
+
 }
 RegisterRow._extend(DataObj);
 
@@ -10599,13 +10736,13 @@ TabularSection.prototype.count = function(){return this._obj.length};
  * @method clear
  * @return {TabularSection}
  */
-TabularSection.prototype.clear = function(do_not_notify){
+TabularSection.prototype.clear = function(silent){
 
 	for(var i in this._obj)
 		delete this._obj[i];
 	this._obj.length = 0;
 
-	if(!do_not_notify)
+	if(!silent && !this._owner._data._silent)
 		Object.getNotifier(this._owner).notify({
 			type: 'rows',
 			tabular: this._name
@@ -10619,7 +10756,7 @@ TabularSection.prototype.clear = function(do_not_notify){
  * @method del
  * @param val {Number|TabularSectionRow} - индекс или строка табчасти
  */
-TabularSection.prototype.del = function(val, do_not_notify){
+TabularSection.prototype.del = function(val, silent){
 	
 	var index, _obj = this._obj;
 	
@@ -10649,7 +10786,7 @@ TabularSection.prototype.del = function(val, do_not_notify){
 		row.row = index + 1;
 	});
 
-	if(!do_not_notify)
+	if(!silent && !this._owner._data._silent)
 		Object.getNotifier(this._owner).notify({
 			type: 'rows',
 			tabular: this._name
@@ -10700,10 +10837,11 @@ TabularSection.prototype.swap = function(rowid1, rowid2){
 	this._obj[rowid1] = this._obj[rowid2];
 	this._obj[rowid2] = tmp;
 
-	Object.getNotifier(this._owner).notify({
-		type: 'rows',
-		tabular: this._name
-	});
+	if(!this._owner._data._silent)
+		Object.getNotifier(this._owner).notify({
+			type: 'rows',
+			tabular: this._name
+		});
 };
 
 /**
@@ -10712,7 +10850,7 @@ TabularSection.prototype.swap = function(rowid1, rowid2){
  * @param attr {object} - объект со значениями полей. если некого поля нет в attr, для него используется пустое значение типа
  * @return {TabularSectionRow}
  */
-TabularSection.prototype.add = function(attr, do_not_notify){
+TabularSection.prototype.add = function(attr, silent){
 
 	var row = new this._owner._manager._ts_сonstructors[this._name](this);
 
@@ -10729,7 +10867,7 @@ TabularSection.prototype.add = function(attr, do_not_notify){
 		enumerable: false
 	});
 
-	if(!do_not_notify)
+	if(!silent && !this._owner._data._silent)
 		Object.getNotifier(this._owner).notify({
 			type: 'rows',
 			tabular: this._name
@@ -10820,6 +10958,13 @@ TabularSection.prototype.aggregate = function (dimensions, resources, aggr, ret_
 	if(!aggr)
 		aggr = "sum";
 
+	// для простых агрегатных функций, sql не используем
+	if(!dimensions.length && resources.length == 1 && aggr == "sum"){
+		return this._obj.reduce(function(sum, row, index, array) {
+			return sum + row[resources[0]];
+		}, 0);
+	}
+
 	var sql, res = true;
 
 	resources.forEach(function (f) {
@@ -10879,10 +11024,11 @@ TabularSection.prototype.load = function(aattr){
 			t.add(row, true);
 	});
 
-	Object.getNotifier(t._owner).notify({
-		type: 'rows',
-		tabular: t._name
-	});
+	if(!this._owner._data._silent)
+		Object.getNotifier(t._owner).notify({
+			type: 'rows',
+			tabular: t._name
+		});
 
 	return t;
 };
@@ -11001,13 +11147,14 @@ TabularSectionRow.prototype._setter = function (f, v) {
 	if(this._obj[f] == v)
 		return;
 
-	Object.getNotifier(this._owner._owner).notify({
-		type: 'row',
-		row: this,
-		tabular: this._owner._name,
-		name: f,
-		oldValue: this._obj[f]
-	});
+	if(!this._owner._owner._data._silent)
+		Object.getNotifier(this._owner._owner).notify({
+			type: 'row',
+			row: this,
+			tabular: this._owner._name,
+			name: f,
+			oldValue: this._obj[f]
+		});
 	DataObj.prototype.__setter.call(this, f, v);
 	this._owner._owner._data._modified = true;
 
@@ -12214,6 +12361,17 @@ DataManager.prototype.__define({
 				})
 				.catch($p.record_log);
 
+		}
+	},
+
+	/**
+	 * Возвращает набор данных для дерева динсписка
+	 * @param attr
+	 * @return {Promise.<Array>}
+	 */
+	pouch_tree: {
+		value: function (attr) {
+			return Promise.resolve([]);
 		}
 	},
 
@@ -14203,202 +14361,6 @@ $p.eve.time_diff = function () {
 		setTimeout(function () {
 
 			/**
-			 * ### Данные геолокации
-			 * Объект предоставляет доступ к функциям _геокодирования браузера_, а так же - геокодерам _Яндекс_ и _Гугл_
-			 *
-			 * @class IPInfo
-			 * @static
-			 */
-			function IPInfo(){
-
-				var _yageocoder,
-					_ggeocoder,
-					_ipgeo,
-					_addr = "",
-					_parts;
-
-				/**
-				 * Геокодер карт Яндекс
-				 * @class YaGeocoder
-				 * @static
-				 */
-				function YaGeocoder(){
-
-					/**
-					 * Выполняет прямое или обратное геокодирование
-					 * @method geocode
-					 * @param attr {Object}
-					 * @return {Promise.<T>}
-					 */
-					this.geocode = function (attr) {
-						//http://geocode-maps.yandex.ru/1.x/?geocode=%D0%A7%D0%B5%D0%BB%D1%8F%D0%B1%D0%B8%D0%BD%D1%81%D0%BA,+%D0%9F%D0%BB%D0%B5%D1%85%D0%B0%D0%BD%D0%BE%D0%B2%D0%B0+%D1%83%D0%BB%D0%B8%D1%86%D0%B0,+%D0%B4%D0%BE%D0%BC+32&format=json&sco=latlong
-						//http://geocode-maps.yandex.ru/1.x/?geocode=61.4080273,55.1550362&format=json&lang=ru_RU
-
-						return Promise.resolve(false);
-					}
-				}
-
-
-
-				this.__define({
-
-					ipgeo: {
-						value: function () {
-							return $p.ajax.get("//api.sypexgeo.net/")
-								.then(function (req) {
-									return JSON.parse(req.response);
-								})
-								.catch($p.record_log);
-						}
-					},
-
-					/**
-					 * Объект [геокодера yandex](https://tech.yandex.ru/maps/doc/geocoder/desc/concepts/input_params-docpage/)
-					 * @property yageocoder
-					 * @for IPInfo
-					 * @type YaGeocoder
-					 */
-					yageocoder: {
-						get : function(){
-
-							if(!_yageocoder)
-								_yageocoder = new YaGeocoder();
-							return _yageocoder;
-						},
-						enumerable : false,
-						configurable : false
-					},
-
-					/**
-					 * Объект [геокодера google](https://developers.google.com/maps/documentation/geocoding/?hl=ru#GeocodingRequests)
-					 * @property ggeocoder
-					 * @for IPInfo
-					 * @type {google.maps.Geocoder}
-					 */
-					ggeocoder: {
-						get : function(){
-							return _ggeocoder;
-						},
-						enumerable : false,
-						configurable : false
-					},
-
-					/**
-					 * Адрес геолокации пользователя программы
-					 * @property addr
-					 * @for IPInfo
-					 * @type String
-					 */
-					addr: {
-						get : function(){
-							return _addr;
-						}
-					},
-
-					parts: {
-						get : function(){
-							return _parts;
-						}
-					},
-
-					components: {
-						value : function(v, components){
-							var i, c, j, street = "", street0 = "", locality = "";
-							for(i in components){
-								c = components[i];
-								//street_number,route,locality,administrative_area_level_2,administrative_area_level_1,country,sublocality_level_1
-								for(j in c.types){
-									switch(c.types[j]){
-										case "route":
-											if(c.short_name.indexOf("Unnamed")==-1){
-												street = c.short_name + (street ? (" " + street) : "");
-												street0 = c.long_name.replace("улица", "").trim();
-											}
-											break;
-										case "administrative_area_level_1":
-											v.region = c.long_name;
-											break;
-										case "administrative_area_level_2":
-											v.city = c.short_name;
-											v.city_long = c.long_name;
-											break;
-										case "locality":
-											locality = (locality ? (locality + " ") : "") + c.short_name;
-											break;
-										case "street_number":
-											street = (street ? (street + " ") : "") + c.short_name;
-											break;
-										case "postal_code":
-											v.postal_code = c.short_name;
-											break;
-										default:
-											break;
-									}
-								}
-							}
-							if(v.region && v.region == v.city_long)
-								if(v.city.indexOf(locality) == -1)
-									v.city = locality;
-								else
-									v.city = "";
-							else if(locality){
-								if(v.city.indexOf(locality) == -1 && v.region.indexOf(locality) == -1)
-									street = locality + ", " + street;
-							}
-
-							// если в адресе есть подстрока - не переписываем
-							if(!v.street || v.street.indexOf(street0)==-1)
-								v.street = street;
-
-							return v;
-						}
-					}
-				});
-
-				this.location_callback= function(){
-
-					_ggeocoder = new google.maps.Geocoder();
-
-					navigator.geolocation.getCurrentPosition(function(position){
-
-							/**
-							 * Географическая широта геолокации пользователя программы
-							 * @property latitude
-							 * @for IPInfo
-							 * @type Number
-							 */
-							$p.ipinfo.latitude = position.coords.latitude;
-
-							/**
-							 * Географическая долгота геолокации пользователя программы
-							 * @property longitude
-							 * @for IPInfo
-							 * @type Number
-							 */
-							$p.ipinfo.longitude = position.coords.longitude;
-
-							var latlng = new google.maps.LatLng($p.ipinfo.latitude, $p.ipinfo.longitude);
-
-							_ggeocoder.geocode({'latLng': latlng}, function(results, status) {
-								if (status == google.maps.GeocoderStatus.OK){
-									if(!results[1] || results[0].address_components.length >= results[1].address_components.length)
-										_parts = results[0];
-									else
-										_parts = results[1];
-									_addr = _parts.formatted_address;
-
-									eve.callEvent("geo_current_position", [$p.ipinfo.components({}, _parts.address_components)]);
-								}
-							});
-
-						}, $p.record_log, {
-							timeout: 30000
-						}
-					);
-				}
-			}
-
-			/**
 			 * Метод может быть вызван сторонним сайтом через post_message
 			 * @param url
 			 */
@@ -14419,7 +14381,7 @@ $p.eve.time_diff = function () {
 
 						var surl = dhtmlx.codebase, load_dhtmlx = true, load_meta = true;
 						if(surl.indexOf("cdn.jsdelivr.net")!=-1)
-							surl = "//cdn.jsdelivr.net/metadata/latest/"
+							surl = "//cdn.jsdelivr.net/metadata/latest/";
 
 						// стили загружаем только при необходимости
 						for(i=0; i < document.styleSheets.length; i++){
@@ -14601,14 +14563,13 @@ $p.eve.time_diff = function () {
 				$p.ipinfo = new IPInfo();
 
 			}
-			if (navigator.geolocation && $p.job_prm.use_google_geo) {
+			if ($p.job_prm.use_google_geo) {
 
 				// подгружаем скрипты google
 				if(!window.google || !window.google.maps)
 					$p.eve.onload.push(function () {
 						setTimeout(function(){
-							$p.load_script(location.protocol +
-								"//maps.google.com/maps/api/js?callback=$p.ipinfo.location_callback", "script", function(){});
+							$p.load_script("//maps.google.com/maps/api/js?callback=$p.ipinfo.location_callback", "script", function(){});
 						}, 100);
 					});
 				else
@@ -14656,9 +14617,7 @@ $p.eve.time_diff = function () {
 				throw msg.unsupported_browser;
 				return;
 			}
-
 			
-
 			setTimeout(init_params, 10);
 
 		}, 10);
@@ -14831,6 +14790,221 @@ $p.eve.log_in = function(onstep){
 		});
 
 };
+
+/**
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ * @module geocoding
+ * Created 16.04.2016
+ */
+
+/**
+ * ### Данные геолокации
+ * Объект предоставляет доступ к функциям _геокодирования браузера_, а так же - геокодерам _Яндекс_ и _Гугл_
+ *
+ * @class IPInfo
+ * @static
+ */
+function IPInfo(){
+
+	var _yageocoder,
+		_ggeocoder,
+		_ipgeo,
+		_addr = "",
+		_parts;
+
+	/**
+	 * Геокодер карт Яндекс
+	 * @class YaGeocoder
+	 * @static
+	 */
+	function YaGeocoder(){
+
+		/**
+		 * Выполняет прямое или обратное геокодирование
+		 * @method geocode
+		 * @param attr {Object}
+		 * @return {Promise.<T>}
+		 */
+		this.geocode = function (attr) {
+			//http://geocode-maps.yandex.ru/1.x/?geocode=%D0%A7%D0%B5%D0%BB%D1%8F%D0%B1%D0%B8%D0%BD%D1%81%D0%BA,+%D0%9F%D0%BB%D0%B5%D1%85%D0%B0%D0%BD%D0%BE%D0%B2%D0%B0+%D1%83%D0%BB%D0%B8%D1%86%D0%B0,+%D0%B4%D0%BE%D0%BC+32&format=json&sco=latlong
+			//http://geocode-maps.yandex.ru/1.x/?geocode=61.4080273,55.1550362&format=json&lang=ru_RU
+
+			return Promise.resolve(false);
+		}
+	}
+
+
+
+	this.__define({
+
+		ipgeo: {
+			value: function () {
+				return $p.ajax.get("//api.sypexgeo.net/")
+					.then(function (req) {
+						return JSON.parse(req.response);
+					})
+					.catch($p.record_log);
+			}
+		},
+
+		/**
+		 * Объект [геокодера yandex](https://tech.yandex.ru/maps/doc/geocoder/desc/concepts/input_params-docpage/)
+		 * @property yageocoder
+		 * @for IPInfo
+		 * @type YaGeocoder
+		 */
+		yageocoder: {
+			get : function(){
+
+				if(!_yageocoder)
+					_yageocoder = new YaGeocoder();
+				return _yageocoder;
+			},
+			enumerable : false,
+			configurable : false
+		},
+
+		/**
+		 * Объект [геокодера google](https://developers.google.com/maps/documentation/geocoding/?hl=ru#GeocodingRequests)
+		 * @property ggeocoder
+		 * @for IPInfo
+		 * @type {google.maps.Geocoder}
+		 */
+		ggeocoder: {
+			get : function(){
+				return _ggeocoder;
+			},
+			enumerable : false,
+			configurable : false
+		},
+
+		/**
+		 * Адрес геолокации пользователя программы
+		 * @property addr
+		 * @for IPInfo
+		 * @type String
+		 */
+		addr: {
+			get : function(){
+				return _addr;
+			}
+		},
+
+		parts: {
+			get : function(){
+				return _parts;
+			}
+		},
+
+		/**
+		 * Выполняет синтаксический разбор частей адреса
+		 */
+		components: {
+			value : function(v, components){
+				var i, c, j, street = "", street0 = "", locality = "";
+				for(i in components){
+					c = components[i];
+					//street_number,route,locality,administrative_area_level_2,administrative_area_level_1,country,sublocality_level_1
+					for(j in c.types){
+						switch(c.types[j]){
+							case "route":
+								if(c.short_name.indexOf("Unnamed")==-1){
+									street = c.short_name + (street ? (" " + street) : "");
+									street0 = c.long_name.replace("улица", "").trim();
+								}
+								break;
+							case "administrative_area_level_1":
+								v.region = c.long_name;
+								break;
+							case "administrative_area_level_2":
+								v.city = c.short_name;
+								v.city_long = c.long_name;
+								break;
+							case "locality":
+								locality = (locality ? (locality + " ") : "") + c.short_name;
+								break;
+							case "street_number":
+								street = (street ? (street + " ") : "") + c.short_name;
+								break;
+							case "postal_code":
+								v.postal_code = c.short_name;
+								break;
+							default:
+								break;
+						}
+					}
+				}
+				if(v.region && v.region == v.city_long)
+					if(v.city.indexOf(locality) == -1)
+						v.city = locality;
+					else
+						v.city = "";
+				else if(locality){
+					if(v.city.indexOf(locality) == -1 && v.region.indexOf(locality) == -1)
+						street = locality + ", " + street;
+				}
+
+				// если в адресе есть подстрока - не переписываем
+				if(!v.street || v.street.indexOf(street0)==-1)
+					v.street = street;
+
+				return v;
+			}
+		},
+
+		/**
+		 * Функция обратного вызова для карт Google
+		 */
+		location_callback: {
+			value: function(){
+
+				_ggeocoder = new google.maps.Geocoder();
+
+				$p.eve.callEvent("geo_google_ready");
+
+				if(navigator.geolocation)
+					navigator.geolocation.getCurrentPosition(function(position){
+						
+						/**
+						 * Географическая широта геолокации пользователя программы
+						 * @property latitude
+						 * @for IPInfo
+						 * @type Number
+						 */
+						$p.ipinfo.latitude = position.coords.latitude;
+
+						/**
+						 * Географическая долгота геолокации пользователя программы
+						 * @property longitude
+						 * @for IPInfo
+						 * @type Number
+						 */
+						$p.ipinfo.longitude = position.coords.longitude;
+
+						var latlng = new google.maps.LatLng($p.ipinfo.latitude, $p.ipinfo.longitude);
+
+						_ggeocoder.geocode({'latLng': latlng}, function(results, status) {
+							if (status == google.maps.GeocoderStatus.OK){
+								if(!results[1] || results[0].address_components.length >= results[1].address_components.length)
+									_parts = results[0];
+								else
+									_parts = results[1];
+								_addr = _parts.formatted_address;
+
+								$p.eve.callEvent("geo_current_position", [$p.ipinfo.components({}, _parts.address_components)]);
+							}
+						});
+
+					}, $p.record_log, {
+						timeout: 30000
+					}
+				);
+			}
+		}
+	});
+	
+}
 
 $p.injected_data._mixin({"form_auth.xml":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<items>\n\t<item type=\"settings\" position=\"label-left\" labelWidth=\"80\" inputWidth=\"180\" noteWidth=\"180\"/>\n\t<item type=\"fieldset\" name=\"data\" inputWidth=\"auto\" label=\"Авторизация\">\n\n        <item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" checked=\"true\" value=\"guest\" label=\"Гостевой (демо) режим\">\n            <item type=\"select\" name=\"guest\" label=\"Роль\">\n                <option value=\"Дилер\" label=\"Дилер\"/>\n            </item>\n        </item>\n\n\t\t<item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" value=\"auth\" label=\"Есть учетная запись\">\n\t\t\t<item type=\"input\" value=\"\" name=\"login\" label=\"Логин\" validate=\"NotEmpty\" />\n\t\t\t<item type=\"password\" value=\"\" name=\"password\" label=\"Пароль\" validate=\"NotEmpty\" />\n\t\t</item>\n\n\t\t<item type=\"button\" value=\"Войти\" name=\"submit\"/>\n\n        <item type=\"template\" name=\"text_options\" className=\"order_dealer_options\" inputWidth=\"170\"\n              value=\"&lt;a href='#' onclick='$p.iface.open_settings();' title='Страница настроек программы' &gt; &lt;i class='fa fa-cog fa-lg'&gt;&lt;/i&gt; Настройки &lt;/a&gt; &lt;a href='//www.oknosoft.ru/feedback' target='_blank' style='margin-left: 9px;' title='Задать вопрос через форму обратной связи' &gt; &lt;i class='fa fa-question-circle fa-lg'&gt;&lt;/i&gt; Вопрос &lt;/a&gt;\"  />\n\n\t</item>\n</items>","toolbar_add_del.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_add\"    text=\"&lt;i class='fa fa-plus-circle fa-fw'&gt;&lt;/i&gt; Добавить\" title=\"Добавить строку\"  />\r\n    <item type=\"button\" id=\"btn_delete\" text=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt; Удалить\"  title=\"Удалить строку\" />\r\n</toolbar>","toolbar_obj.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"&lt;b&gt;Записать и закрыть&lt;/b&gt;\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"&lt;i class='fa fa-floppy-o fa-fw'&gt;&lt;/i&gt;\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_post\" enabled=\"false\" text=\"&lt;i class='fa fa-check-square-o fa-fw'&gt;&lt;/i&gt;\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" enabled=\"false\" text=\"&lt;i class='fa fa-square-o fa-fw'&gt;&lt;/i&gt;\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"&lt;i class='fa fa-paperclip fa-fw'&gt;&lt;/i&gt;\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt;\" title=\"Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"&lt;i class='fa fa-bolt fa-fw'&gt;&lt;/i&gt;\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"&lt;i class='fa fa-external-link fa-fw'&gt;&lt;/i&gt;\" title=\"Перейти\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"  text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\"  title=\"Дополнительно\" openAll=\"true\">\r\n\r\n        <item type=\"button\" id=\"btn_import\" text=\"&lt;i class='fa fa-upload fa-fw'&gt;&lt;/i&gt; Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" text=\"&lt;i class='fa fa-download fa-fw'&gt;&lt;/i&gt; Выгрузить в файл\" />\r\n    </item>\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_close\" text=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt;\" title=\"Закрыть форму\"/>\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n</toolbar>\r\n","toolbar_ok_cancel.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_ok\"       type=\"button\"   img=\"\"  imgdis=\"\"   text=\"&lt;b&gt;Ок&lt;/b&gt;\"  />\r\n    <item id=\"btn_cancel\"   type=\"button\"\timg=\"\"  imgdis=\"\"   text=\"Отмена\" />\r\n</toolbar>","toolbar_selection.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n\r\n    <item id=\"btn_select\"   type=\"button\"   title=\"Выбрать элемент списка\" text=\"&lt;b&gt;Выбрать&lt;/b&gt;\"  />\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item id=\"btn_new\"      type=\"button\"\ttext=\"&lt;i class='fa fa-plus-circle fa-fw'&gt;&lt;/i&gt;\"\ttitle=\"Создать\" />\r\n    <item id=\"btn_edit\"     type=\"button\"\ttext=\"&lt;i class='fa fa-pencil fa-fw'&gt;&lt;/i&gt;\"\ttitle=\"Изменить\" />\r\n    <item id=\"btn_delete\"   type=\"button\"\ttext=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt;\"\ttitle=\"Удалить\" />\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt; Печать\" openAll=\"true\" >\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"    text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\" title=\"Дополнительно\" openAll=\"true\">\r\n        <item id=\"btn_requery\"  type=\"button\"\ttext=\"&lt;i class='fa fa-refresh fa-fw'&gt;&lt;/i&gt; Обновить список\" />\r\n    </item>\r\n\r\n    <item id=\"sep3\" type=\"separator\"/>\r\n\r\n</toolbar>","log.json":{"ireg":{"$log":{"name":"$log","note":"","synonym":"Журнал событий","dimensions":{"date":{"synonym":"Дата","multiline_mode":false,"tooltip":"Время события","type":{"types":["number"],"digits":15,"fraction_figits":0}},"sequence":{"synonym":"Порядок","multiline_mode":false,"tooltip":"Порядок следования","type":{"types":["number"],"digits":6,"fraction_figits":0}}},"resources":{"class":{"synonym":"Класс","multiline_mode":false,"tooltip":"Класс события","type":{"types":["string"],"str_len":100}},"note":{"synonym":"Комментарий","multiline_mode":true,"tooltip":"Текст события","type":{"types":["string"],"str_len":0}},"obj":{"synonym":"Объект","tooltip":"Объект, к которому относится событие","type":{"types":["string"],"str_len":0}}}}}}});
 /* Copyright 2013 William Summers, metaTribal LLC
