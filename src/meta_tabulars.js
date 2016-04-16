@@ -306,6 +306,13 @@ TabularSection.prototype.aggregate = function (dimensions, resources, aggr, ret_
 	if(!aggr)
 		aggr = "sum";
 
+	// для простых агрегатных функций, sql не используем
+	if(!dimensions.length && resources.length == 1 && aggr == "sum"){
+		return this._obj.reduce(function(sum, row, index, array) {
+			return sum + row[resources[0]];
+		}, 0);
+	}
+
 	var sql, res = true;
 
 	resources.forEach(function (f) {

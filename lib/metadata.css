@@ -22,10 +22,12 @@ div.gridbox_property table.row20px tr td {
 	padding-left:4px;
 	border-bottom: 1px solid #D6D6D6;
 }
+/*
 div.gridbox_property .dhx_combo_edit{
 	font-family:Tahoma;
 	font-size:12px;
 }
+*/
 div.gridbox_property table.obj tr.rowselected td{
 	background-color:#ededed;
 	color:black;

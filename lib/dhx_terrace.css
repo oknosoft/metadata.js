@@ -603,12 +603,14 @@ div.dhtmlxcalendar_skin_detect {
 
 div.dhxcombo_dhx_terrace {
   position: relative;
-  border: 1px solid #cccccc;
   vertical-align: middle;
   background-color: white;
   overflow: hidden;
-  /* font-size: 1px; */
-  height: 24px;
+  /*
+  font-size: 1px;
+  border: 1px solid #cccccc;
+  */
+  height: 21px;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   /* button */
   /* top image */
@@ -617,12 +619,17 @@ div.dhxcombo_dhx_terrace input.dhxcombo_input {
   position: absolute;
   left: 1px;
   top: 0px;
-  *top: 1px;
+
+  /*
   height: 24px;
-  line-height: 23px;
+  *top: 1px;
   *height: 22px;
-  /* ie6,ie7 */
   *line-height: 21px;
+  */
+  line-height: 21px;
+
+  /* ie6,ie7 */
+
   border: 0px solid white;
   outline: 0px solid white;
   padding: 0px;
@@ -2498,8 +2505,8 @@ dhx_dragColDiv,
 div.gridbox div.ftr td,
 div.pagingBlock,
 span.recordsInfoBlock {
-  font-family: Arial;
-  font-size: 13px;
+  font-family: inherit;
+  font-size: inherit;
   color: #333333;
 }
 div.gridbox_dhx_terrace.gridbox table.obj tr td {

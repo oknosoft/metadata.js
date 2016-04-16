@@ -98,7 +98,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 			}
 		});
 
-		process_address_fields(frm_create);
+		process_address_fields().then(frm_create);
 
 
 		/**
@@ -414,7 +414,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 			obj.address_fields = fields;
 		}
 
-		function process_address_fields(callback){
+		function process_address_fields(){
 
 			if(obj.address_fields){
 				v.xml = ( new DOMParser() ).parseFromString(obj.address_fields, "text/xml");
@@ -481,35 +481,77 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 					v.street+= " " + building_room[i];
 				}
 			}
+			
+			return new Promise(function(resolve, reject){
 
-			// если есть координаты $p.ipinfo, используем их
-			// иначе - Москва
-			if(v.coordinates.length){
-				// если координаты есть в Расчете, используем их
-				v.latitude = v.coordinates[0];
-				v.longitude = v.coordinates[1];
-				callback();
+				if(!$p.ipinfo)
+					$p.ipinfo = new IPInfo();
 
-			}else if(obj.shipping_address){
-				// если есть строка адреса, пытаемся геокодировать
-				do_geocoding(function (results, status) {
-					if (status == google.maps.GeocoderStatus.OK) {
-						v.latitude = results[0].geometry.location.lat();
-						v.longitude = results[0].geometry.location.lng();
+				if(window.google && window.google.maps)
+					resolve();
+				else{
+					$p.load_script("//maps.google.com/maps/api/js?callback=$p.ipinfo.location_callback", "script", function(){});
+
+					var google_ready = $p.eve.attachEvent("geo_google_ready", function () {
+						
+						if(watch_dog)
+							clearTimeout(watch_dog);
+						
+						if(google_ready){
+							$p.eve.detachEvent(google_ready);
+							google_ready = null;
+							resolve();	
+						}
+					});
+
+					// Если Google не ответил - информируем об ошибке и продолжаем
+					var watch_dog = setTimeout(function () {
+
+						if(google_ready){
+							$p.eve.detachEvent(google_ready);
+							google_ready = null;
+						}
+						$p.msg.show_msg({
+							type: "alert-warning",
+							text: $p.msg.error_geocoding + " Google",
+							title: $p.msg.main_title
+						});
+
+						resolve();
+
+					}, 10000);
+				}
+
+			})
+				.then(function () {
+
+					// если есть координаты $p.ipinfo, используем их
+					// иначе - Москва
+					if(v.coordinates.length){
+						// если координаты есть в Расчете, используем их
+						v.latitude = v.coordinates[0];
+						v.longitude = v.coordinates[1];
+
+					}else if(obj.shipping_address){
+						// если есть строка адреса, пытаемся геокодировать
+						do_geocoding(function (results, status) {
+							if (status == google.maps.GeocoderStatus.OK) {
+								v.latitude = results[0].geometry.location.lat();
+								v.longitude = results[0].geometry.location.lng();
+							}
+						});
+
+					}else if($p.ipinfo.latitude && $p.ipinfo.longitude ){
+						v.latitude = $p.ipinfo.latitude;
+						v.longitude = $p.ipinfo.longitude;
+
+					}else{
+						v.latitude = 55.635924;
+						v.longitude = 37.6066379;
+						$p.msg.show_msg($p.msg.empty_geocoding);
 					}
-					callback();
-				});
-
-			}else if($p.ipinfo.latitude && $p.ipinfo.longitude ){
-				v.latitude = $p.ipinfo.latitude;
-				v.longitude = $p.ipinfo.longitude;
-				callback();
-			}else{
-				v.latitude = 55.635924;
-				v.longitude = 37.6066379;
-				callback();
-				$p.msg.show_msg($p.msg.empty_geocoding);
-			}
+					
+				});			
 
 		}
 
