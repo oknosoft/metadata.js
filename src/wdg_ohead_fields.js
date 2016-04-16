@@ -153,7 +153,16 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 				if(fpath.length < 2)
 					return {obj: _obj, field: fpath[0]}._mixin(_pwnd);
 				else {
-					var vr = _obj[fpath[0]].find(fpath[1]);
+					var vr;
+					if(_selection){
+						_obj[fpath[0]].find_rows(_selection, function (row) {
+							if(row.property == fpath[1] || row.param == fpath[1] || row.Свойство == fpath[1] || row.Параметр == fpath[1]){
+								vr = row;
+								return false;
+							}
+						});
+					}else
+						vr = _obj[fpath[0]].find(fpath[1]);
 					if(vr){
 						res.obj = vr;
 						if(vr["Значение"]){

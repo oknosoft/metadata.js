@@ -226,11 +226,12 @@ DataObj.prototype.__setter = function (f, v) {
 };
 
 DataObj.prototype.__notify = function (f) {
-	Object.getNotifier(this).notify({
-		type: 'update',
-		name: f,
-		oldValue: this._obj[f]
-	});
+	if(!this._data._silent)
+		Object.getNotifier(this).notify({
+			type: 'update',
+			name: f,
+			oldValue: this._obj[f]
+		});
 };
 
 DataObj.prototype._setter = function (f, v) {
@@ -419,6 +420,8 @@ DataObj.prototype.__define({
 	 * ### Записывает объект
 	 * Ввыполняет подписки на события перед записью и после записи
 	 * В зависимости от настроек, выполняет запись объекта во внешнюю базу данных
+	 * @method save
+	 * @for DataObj
 	 * @param [post] {Boolean|undefined} - проведение или отмена проведения или просто запись
 	 * @param [mode] {Boolean} - режим проведения документа [Оперативный, Неоперативный]
 	 * @param [attachments] {Array} - массив вложений
@@ -473,6 +476,12 @@ DataObj.prototype.__define({
 		enumerable : false
 	},
 
+	/**
+	 * Возвращает присоединенный объект или файл
+	 * @method get_attachment
+	 * @for DataObj
+	 * @param att_id {String} - идентификатор (имя) вложения
+	 */
 	get_attachment: {
 		value: function (att_id) {
 			return this._manager.get_attachment(this.ref, att_id);
@@ -480,6 +489,14 @@ DataObj.prototype.__define({
 		enumerable: false
 	},
 
+	/**
+	 * Сохраняет объект или файл во вложении
+	 * @method save_attachment
+	 * @for DataObj
+	 * @param att_id {String} - идентификатор (имя) вложения
+	 * @param attachment {Blob|String} - вложениe
+	 * @param [type] {String} - mime тип
+	 */
 	save_attachment: {
 		value: function (att_id, attachment, type) {
 			return this._manager.save_attachment(this.ref, att_id, attachment, type);
@@ -487,9 +504,36 @@ DataObj.prototype.__define({
 		enumerable: false
 	},
 
+	/**
+	 * Удаляет присоединенный объект или файл
+	 * @method delete_attachment
+	 * @for DataObj
+	 * @param att_id {String} - идентификатор (имя) вложения
+	 */
 	delete_attachment: {
 		value: function (att_id) {
 			return this._manager.get_attachment(this.ref, att_id);
+		},
+		enumerable: false
+	},
+
+	/**
+	 * ###Включает тихий режим
+	 * Режим, при котором объект не информирует мир об изменениях своих свойств
+	 * @method _silent
+	 * @for DataObj
+	 * @param [v] {Boolean}
+	 */
+	_silent: {
+		value: function (v) {
+			if(typeof v == "boolean")
+				this._data._silent = v;
+			else{
+				this._data._silent = true;
+				setTimeout(function () {
+					this._data._silent = false;	
+				}.bind(this));
+			}			
 		},
 		enumerable: false
 	}
@@ -846,6 +890,17 @@ function RegisterRow(attr, manager){
 
 	if(attr && typeof attr == "object")
 		this._mixin(attr);
+
+	for(var check in manager.metadata().dimensions){
+		if(!attr.hasOwnProperty(check) && attr.ref){
+			var keys = attr.ref.split("¶");
+			Object.keys(manager.metadata().dimensions).forEach(function (fld, ind) {
+				this[fld] = keys[ind];
+			}.bind(this));
+			break;
+		}
+	}
+
 }
 RegisterRow._extend(DataObj);
 
