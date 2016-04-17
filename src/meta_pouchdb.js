@@ -96,6 +96,12 @@ DataManager.prototype.__define({
 					skip = selection._skip;
 					delete selection._skip;
 				}
+				
+				if(selection._attachments) {
+					options.attachments = true;
+					options.binary = true;
+					delete selection._attachments;
+				}
 			}
 
 

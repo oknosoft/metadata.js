@@ -180,7 +180,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			if(_mgr instanceof CatManager || _mgr instanceof DocManager)
 				_mgr.printing_plates().then(function (pp) {
 					for(var pid in pp)
-						wnd.elmnts.frm_toolbar.addListOption("bs_print", pid, "~", "button", pp[pid]);
+						wnd.elmnts.frm_toolbar.addListOption("bs_print", pid, "~", "button", pp[pid].toString());
 				});
 			else
 				this.disableItem("bs_print");

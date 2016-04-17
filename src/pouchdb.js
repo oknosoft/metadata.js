@@ -69,7 +69,7 @@ function Pouch(){
 						total_rows: rinfo.doc_count,
 						local_rows: linfo.doc_count,
 						docs_written: 0,
-						limit: 100,
+						limit: 200,
 						page: 0,
 						start: Date.now()
 					};
@@ -283,7 +283,7 @@ function Pouch(){
 			value: function () {
 
 				var options = {
-					limit : 100,
+					limit : 200,
 					include_docs: true
 				},
 					_page = {
