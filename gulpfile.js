@@ -42,7 +42,8 @@ gulp.task('build-metadata', function () {
 			'./data/merged_data.js',
 			'./lib/xml_to_json.js',
 			'./lib/filesaver.js',
-			'./lib/aes/aes.js'
+			'./lib/aes/aes.js',
+			'./lib/rubles/rubles.js'
 		])
 		.pipe(concat('metadata.js'))
 		.pipe(umd({
