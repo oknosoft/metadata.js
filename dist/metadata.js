@@ -5172,7 +5172,8 @@ function Meta() {
 	_md.get = function(class_name, field_name){
 		var np = class_name.split("."),
 			res = {multiline_mode: false, note: "", synonym: "", tooltip: "", type: {is_ref: false,	types: ["string"]}},
-			is_doc = "doc,tsk,bp".indexOf(np[0]) != -1, is_cat = "cat,tsk".indexOf(np[0]) != -1;
+			is_doc = "doc,tsk,bp".indexOf(np[0]) != -1,
+			is_cat = "cat,cch,cacc,tsk".indexOf(np[0]) != -1;
 		if(!field_name)
 			return _m[np[0]][np[1]];
 		if(is_doc && field_name=="number_doc"){
@@ -10812,7 +10813,34 @@ DataManager.prototype.__define({
 	 */
 	pouch_tree: {
 		value: function (attr) {
-			return Promise.resolve([]);
+
+			return this.pouch_find_rows({
+				is_folder: true,
+				_raw: true,
+				_top: attr.count || 300,
+				_skip: attr.start || 0
+			})
+				.then(function (rows) {
+					rows.sort(function (a, b) {
+						if (a.parent == $p.blank.guid && b.parent != $p.blank.guid)
+							return -1;
+						if (b.parent == $p.blank.guid && a.parent != $p.blank.guid)
+							return 1;
+						if (a.name < b.name)
+							return -1;
+						if (a.name > b.name)
+							return 1;
+						return 0;
+					});
+					return rows.map(function (row) {
+						return {
+							ref: row.ref,
+							parent: row.parent,
+							presentation: row.name
+						}
+					});
+				})
+				.then($p.iface.data_to_tree);
 		}
 	},
 
