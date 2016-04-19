@@ -321,7 +321,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			go_connection();
 
 		else if(btn_id.substr(0,4)=="prn_")
-			_mgr.print(o.ref, btn_id, wnd);
+			_mgr.print(o, btn_id, wnd);
 
 		else if(btn_id=="btn_import")
 			_mgr.import(null, o);
