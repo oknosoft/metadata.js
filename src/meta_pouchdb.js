@@ -96,6 +96,12 @@ DataManager.prototype.__define({
 					skip = selection._skip;
 					delete selection._skip;
 				}
+				
+				if(selection._attachments) {
+					options.attachments = true;
+					options.binary = true;
+					delete selection._attachments;
+				}
 			}
 
 
@@ -341,7 +347,34 @@ DataManager.prototype.__define({
 	 */
 	pouch_tree: {
 		value: function (attr) {
-			return Promise.resolve([]);
+
+			return this.pouch_find_rows({
+				is_folder: true,
+				_raw: true,
+				_top: attr.count || 300,
+				_skip: attr.start || 0
+			})
+				.then(function (rows) {
+					rows.sort(function (a, b) {
+						if (a.parent == $p.blank.guid && b.parent != $p.blank.guid)
+							return -1;
+						if (b.parent == $p.blank.guid && a.parent != $p.blank.guid)
+							return 1;
+						if (a.name < b.name)
+							return -1;
+						if (a.name > b.name)
+							return 1;
+						return 0;
+					});
+					return rows.map(function (row) {
+						return {
+							ref: row.ref,
+							parent: row.parent,
+							presentation: row.name
+						}
+					});
+				})
+				.then($p.iface.data_to_tree);
 		}
 	},
 

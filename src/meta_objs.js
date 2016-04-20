@@ -115,17 +115,6 @@ function DataObj(attr, manager) {
 
 }
 
-DataObj.prototype.valueOf = function () {
-	return this.ref;
-};
-
-/**
- * Обработчик при сериализации объекта
- * @return {*}
- */
-DataObj.prototype.toJSON = function () {
-	return this._obj;
-};
 
 DataObj.prototype._getter = function (f) {
 
@@ -162,7 +151,7 @@ DataObj.prototype._getter = function (f) {
 		return $p.fix_date(this._obj[f], true);
 
 	else if(mf.digits)
-		return $p.fix_number(this._obj[f], true);
+		return $p.fix_number(this._obj[f], !mf.hasOwnProperty("str_len"));
 
 	else if(mf.types[0]=="boolean")
 		return $p.fix_boolean(this._obj[f]);
@@ -215,7 +204,7 @@ DataObj.prototype.__setter = function (f, v) {
 		this._obj[f] = $p.fix_date(v, true);
 
 	else if(mf.digits)
-		this._obj[f] = $p.fix_number(v, true);
+		this._obj[f] = $p.fix_number(v, !mf.hasOwnProperty("str_len"));
 
 	else if(mf.types[0]=="boolean")
 		this._obj[f] = $p.fix_boolean(v);
@@ -256,6 +245,39 @@ DataObj.prototype._setter_ts = function (f, v) {
 };
 
 DataObj.prototype.__define({
+
+	/**
+	 * ### valueOf
+	 * для операций сравнения возвращаем guid
+	 */
+	valueOf: {
+		value: function () {
+			return this.ref;
+		},
+		enumerable : false
+	},
+
+	/**
+	 * ### toJSON
+	 * для сериализации возвращаем внутренний _obj
+	 */
+	toJSON: {
+		value: function () {
+			return this._obj;
+		},
+		enumerable : false
+	},
+
+	/**
+	 * ### toString
+	 * для строкового представления используем
+	 */
+	toString: {
+		value: function () {
+			return this.presentation;
+		},
+		enumerable : false
+	},
 
 	/**
 	 * Метаданные текущего объекта
@@ -536,7 +558,18 @@ DataObj.prototype.__define({
 			}			
 		},
 		enumerable: false
+	},
+
+	/**
+	 * Выполняет команду печати
+	 */
+	print: {
+		value: function (model, wnd) {
+			return this._manager.print(this, model, wnd);
+		},
+		enumerable: false
 	}
+	
 });
 
 

@@ -149,11 +149,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 
 			// добавляем команды печати
-			if(_mgr instanceof CatManager || _mgr instanceof DocManager)
+			if(_mgr.printing_plates)
 				_mgr.printing_plates().then(function (pp) {
 					var added;
 					for(var pid in pp){
-						wnd.elmnts.toolbar.addListOption("bs_print", pid, "~", "button", pp[pid]);
+						wnd.elmnts.toolbar.addListOption("bs_print", pid, "~", "button", pp[pid].toString());
 						added = true;
 					}
 					if(!added)
