@@ -1,6 +1,6 @@
 {
   "name": "metadata",
-  "description": "metadata.js - Web client for 1C and other rest servers - metadata & data engine",
+  "description": "Metadata.js is a library for building offline-first browser-based business applications",
   "version": "0.10.209",
   "license": "AGPL-3.0",
   "keywords": [
