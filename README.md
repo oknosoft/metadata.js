@@ -86,7 +86,7 @@ bower install --save metadata   # bower
 Первые [автоматические тесты](spec) добавлены к проекту в Августе 2015. Покрытие кода тестами пока составляет менее 1%, но начало положено.<br />Разработку нового функционала и работу над ошибками планируется вести _через тестирование_ 
 
 ## Благодарности
-- Andrey Gershun, author of [AlaSQL](https://github.com/agershun/alasql) - Javascript SQL database library
+- Andrey Gershun & M. Rangel Wulff, authors of [AlaSQL](https://github.com/agershun/alasql) - Javascript SQL database library
 - Авторам [PouchDB](http://pouchdb.com/) и [CouchDB](http://couchdb.apache.org/) - NoSQL database and data synchronization engine
 - Авторам [dhtmlx](http://dhtmlx.com/) - a beautiful set of Ajax-powered UI components
 - Прочим авторам за их замечательные инструменты, упрощающие нашу работу

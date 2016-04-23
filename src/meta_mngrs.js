@@ -656,7 +656,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
  * Печатает объект
  * @method print
  * @param ref {DataObj|String} - guid ссылки на объект
- * @param model {String} - идентификатор команды печати
+ * @param model {String|DataObj.cst.formulas} - идентификатор команды печати
  * @param [wnd] {dhtmlXWindows} - окно, из которого вызываем печать
  */
 DataManager.prototype.print = function(ref, model, wnd){
@@ -671,15 +671,34 @@ DataManager.prototype.print = function(ref, model, wnd){
 	if(wnd && wnd.progressOn)
 		wnd.progressOn();
 
-	var rattr = {};
-	$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
-	rattr.url += this.rest_name + "(guid'" + $p.fix_guid(ref) + "')" +
-		"/Print(model=" + model + ", browser_uid=" + $p.wsql.get_user_param("browser_uid") +")";
-
-	$p.ajax.get_and_show_blob(rattr.url, rattr, "get")
-		.then(tune_wnd_print)
-		.catch($p.record_log);
 	setTimeout(tune_wnd_print, 3000);
+
+	// если _printing_plates содержит ссылку на обрабочтик печати, используем его
+	if(this._printing_plates[model] instanceof DataObj)
+		model = this._printing_plates[model];	
+	
+	// если существует локальный обработчик, используем его
+	if(model instanceof DataObj && model.execute){
+
+		if(ref instanceof DataObj)
+			return model.execute(ref)
+				.then(tune_wnd_print);
+		else
+			return this.get(ref, true, true)
+				.then(model.execute.bind(model))
+				.then(tune_wnd_print);
+
+	}else{
+		
+		// иначе - печатаем средствами 1С или иного сервера
+		var rattr = {};
+		$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
+		rattr.url += this.rest_name + "(guid'" + $p.fix_guid(ref) + "')" +
+			"/Print(model=" + model + ", browser_uid=" + $p.wsql.get_user_param("browser_uid") +")";
+
+		return $p.ajax.get_and_show_blob(rattr.url, rattr, "get")
+			.then(tune_wnd_print);
+	}
 
 };
 
@@ -694,8 +713,9 @@ DataManager.prototype.printing_plates = function(){
 		if(t.metadata().printing_plates)
 			t._printing_plates = t.metadata().printing_plates;
 
-		else if(t.metadata().cachable == "ram" || t.metadata().cachable == "doc")
+		else if(t.metadata().cachable == "ram" || t.metadata().cachable == "doc"){
 			t._printing_plates = {};
+		}
 	}
 
 	if(t._printing_plates)
@@ -705,10 +725,7 @@ DataManager.prototype.printing_plates = function(){
 	rattr.url += t.rest_name + "/Print()";
 	return $p.ajax.get_ex(rattr.url, rattr)
 		.then(function (req) {
-			t.__define("_printing_plates", {
-				value: JSON.parse(req.response),
-				enumerable: false
-			});
+			t._printing_plates = JSON.parse(req.response);
 			return t._printing_plates;
 		})
 		.catch(function () {

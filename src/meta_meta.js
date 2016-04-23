@@ -640,7 +640,8 @@ function Meta() {
 	_md.get = function(class_name, field_name){
 		var np = class_name.split("."),
 			res = {multiline_mode: false, note: "", synonym: "", tooltip: "", type: {is_ref: false,	types: ["string"]}},
-			is_doc = "doc,tsk,bp".indexOf(np[0]) != -1, is_cat = "cat,tsk".indexOf(np[0]) != -1;
+			is_doc = "doc,tsk,bp".indexOf(np[0]) != -1,
+			is_cat = "cat,cch,cacc,tsk".indexOf(np[0]) != -1;
 		if(!field_name)
 			return _m[np[0]][np[1]];
 		if(is_doc && field_name=="number_doc"){

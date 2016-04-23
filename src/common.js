@@ -169,7 +169,7 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 			value: function(target, observer) {
 				if(!target._observers)
 					return;
-				for(var i in target._observers){
+				for(var i=0; i<target._observers.length; i++){
 					if(target._observers[i]===observer){
 						target._observers.splice(i, 1);
 						break;
@@ -515,7 +515,7 @@ $p.dateFormat.masks = {
 	"default":      "ddd mmm dd yyyy HH:MM:ss",
 	shortDate:      "m/d/yy",
 	mediumDate:     "mmm d, yyyy",
-	longDate:       "mmmm d, yyyy",
+	longDate:       "dd mmmm yyyy",
 	fullDate:       "dddd, mmmm d, yyyy",
 	shortTime:      "h:MM TT",
 	mediumTime:     "h:MM:ss TT",

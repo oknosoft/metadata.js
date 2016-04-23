@@ -27,7 +27,7 @@ Metadata.js not compete with client Web UI and client-server (including reactive
 
 ### Credits
 Many thanks to
-- Andrey Gershun, author of [AlaSQL](https://github.com/agershun/alasql) - Javascript SQL database library
+- Andrey Gershun & M. Rangel Wulff, authors of [AlaSQL](https://github.com/agershun/alasql) - Javascript SQL database library
 - Authors of [PouchDB](http://pouchdb.com/) and [CouchDB](http://couchdb.apache.org/) - NoSQL database and data synchronization engine
 - Authors of [dhtmlx](http://dhtmlx.com/) - a beautiful set of Ajax-powered UI components
 - Other people for useful tools, which make our work easier
