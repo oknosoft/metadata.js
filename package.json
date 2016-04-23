@@ -34,6 +34,7 @@
   "main": "dist/metadata.core.min.js",
   "keywords": [
     "metadata",
+    "browser data enjine",
     "rest",
     "odata",
     "1c",
@@ -41,6 +42,8 @@
     "web сервис",
     "клиент 1с",
     "ui framework",
+    "offline framework",
+    "offline data enjine",
     "rest client",
     "CRDT",
     "offline-first",
