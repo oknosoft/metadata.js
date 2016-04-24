@@ -181,23 +181,25 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 
 		getNotifier: {
 			value: function(target) {
-				var timer_setted;
+				var timer;
 				return {
 					notify: function (noti) {
 						if(!target._observers)
 							return;
 						target._notis.push(noti);
-						if(!timer_setted){
-							timer_setted = true;
-							setTimeout(function () {
-								//TODO: свернуть массив оповещений перед отправкой
-								target._observers.forEach(function (observer) {
-									observer(target._notis);
-								});
-								target._notis.length = 0;
-								timer_setted = false;
-							}, 10);
-						}
+
+						if(timer)
+							clearTimeout(timer);
+
+						timer = setTimeout(function () {
+							//TODO: свернуть массив оповещений перед отправкой
+							target._observers.forEach(function (observer) {
+								observer(target._notis);
+							});
+							target._notis.length = 0;
+							timer = false;
+
+						}, 4);
 					}
 				}
 			},
@@ -220,7 +222,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.10.209",
+			value: "0.10.210",
 			writable: false
 		},
 
