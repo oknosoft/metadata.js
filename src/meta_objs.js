@@ -306,7 +306,11 @@ DataObj.prototype.__define({
 	 * Признак модифицированности
 	 */
 	_modified: {
-		get : function(){ return !!this._data._modified},
+		get : function(){
+			if(!this._data)
+				return false;
+			return !!(this._data._modified)
+		},
 		enumerable : false
 	},
 
