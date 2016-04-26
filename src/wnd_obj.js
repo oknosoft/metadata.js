@@ -55,7 +55,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 						// информируем мир о закрытии формы
 						if(_mgr && _mgr.class_name)
-							$p.eve.callEvent("frm_close", [_mgr.class_name, o ? o.ref : ""]);
+							$p.eve.callEvent("frm_close", [_mgr.class_name, (o && o._obj ? o.ref : "")]);
 
 						_wnd.detachToolbar();
 						_wnd.detachStatusBar();
@@ -513,7 +513,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 			// информируем мир о закрытии формы
 			if(_mgr && _mgr.class_name)
-				$p.eve.callEvent("frm_close", [_mgr.class_name, o ? o.ref : ""]);
+				$p.eve.callEvent("frm_close", [_mgr.class_name, (o && o._obj ? o.ref : "")]);
 
 			return true;
 		}
