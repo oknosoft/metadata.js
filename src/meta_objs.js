@@ -119,7 +119,7 @@ function DataObj(attr, manager) {
 DataObj.prototype._getter = function (f) {
 
 	var mf = this._metadata.fields[f].type,
-		res = this._obj[f],
+		res = this._obj ? this._obj[f] : "",
 		mgr, ref;
 
 	if(f == "type" && typeof res == "object")
@@ -306,7 +306,11 @@ DataObj.prototype.__define({
 	 * Признак модифицированности
 	 */
 	_modified: {
-		get : function(){ return !!this._data._modified},
+		get : function(){
+			if(!this._data)
+				return false;
+			return !!(this._data._modified)
+		},
 		enumerable : false
 	},
 
@@ -421,9 +425,18 @@ DataObj.prototype.__define({
 	unload: {
 		value: function(){
 			var f, obj = this._obj;
+
 			this._manager.unload_obj(this.ref);
+
+			if(this._observers)
+				this._observers.length = 0;
+
+			if(this._notis)
+				this._notis.length = 0;
+
 			for(f in this._metadata.tabular_sections)
-				this[f].clear();
+				this[f].clear(true);
+
 			for(f in this){
 				if(this.hasOwnProperty(f))
 					delete this[f];

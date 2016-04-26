@@ -1,23 +1,24 @@
 {
   "name": "metadata",
-  "description": "metadata.js - Web client for 1C and other rest servers - metadata & data engine",
-  "version": "0.10.209",
-  "license": "Oknosoft",
+  "description": "Metadata.js is a library for building offline-first browser-based business applications",
+  "version": "0.10.210",
+  "license": "AGPL-3.0",
   "keywords": [
     "metadata",
+    "browser data enjine",
     "rest",
     "odata",
     "1c",
     "1с",
-    "web",
-    "сервис",
-    "клиент",
-    "ui",
-    "framework",
-    "rest",
-    "client",
+    "web сервис",
+    "клиент 1с",
+    "ui framework",
+    "offline framework",
+    "offline data enjine",
+    "rest client",
     "CRDT",
-    "offline-first"
+    "offline-first",
+    "replication"
   ],
   "authors": [
     "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)"
