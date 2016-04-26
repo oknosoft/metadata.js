@@ -184,9 +184,15 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 				var timer;
 				return {
 					notify: function (noti) {
-						if(!target._observers)
+
+						if(!target._observers || !noti)
 							return;
+
+						if(!noti.object)
+							noti.object = target;
+
 						target._notis.push(noti);
+						noti = null;
 
 						if(timer)
 							clearTimeout(timer);
