@@ -412,11 +412,14 @@ if(typeof window !== "undefined"){
 		if (type == "script") {
 			s.type = "text/javascript";
 			s.src = src;
+
 			if(callback){
 				s.async = true;
 				s.addEventListener('load', callback, false);
+
 			}else
 				s.async = false;
+
 		} else {
 			s.type = "text/css";
 			s.rel = "stylesheet";
@@ -579,7 +582,7 @@ $p._patch = function (patch) {
  * @param blob
  * @return {Promise}
  */
-$p.blob_as_text = function (blob) {
+$p.blob_as_text = function (blob, type) {
 
 	return new Promise(function(resolve, reject){
 		var reader = new FileReader();
@@ -589,7 +592,10 @@ $p.blob_as_text = function (blob) {
 		reader.onerror = function(err){
 			reject(err);
 		};
-		reader.readAsText(blob);
+		if(type == "data_url")
+			reader.readAsDataURL(blob);
+		else
+			reader.readAsText(blob);
 	});
 	
 };
@@ -1886,7 +1892,8 @@ function Pouch(){
 
 				}
 
-				var method = (id == "ram" || id == "meta") ? local.replicate.from : local.sync;
+				// ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
+				var method = (id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo) ? local.replicate.from : local.sync;
 				_local.sync[id] = method(remote, {
 					live: true,
 					retry: true
@@ -3397,7 +3404,8 @@ function OCombo(attr){
 		t.getBase().style.left = left + "px";
 
 	this.attachEvent("onChange", function(){
-		_obj[_field] = this.getSelectedValue();
+		if(_obj && _field)
+			_obj[_field] = this.getSelectedValue();
 	});
 
 	this.attachEvent("onBlur", function(){
@@ -7784,13 +7792,17 @@ function LogManager(){
 		if(typeof msg != "object")
 			msg = {note: msg};
 		msg.date = Date.now() + $p.eve.time_diff();
+
+		// уникальность ключа
 		if(!smax)
 			smax = alasql.compile("select MAX(`ref`) as `ref` from `ireg_$log` where `date` = ?");
 		var res = smax([msg.date]);
-		if(!res.length || res[0].sequence === undefined)
+		if(!res.length || res[0].ref === undefined)
 			msg.sequence = 0;
 		else
 			msg.sequence = parseInt(res[0].ref.split(".")[1]) + 1;
+
+		// класс сообщения
 		if(!msg.class)
 			msg.class = "note";
 
