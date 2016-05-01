@@ -399,11 +399,14 @@ if(typeof window !== "undefined"){
 		if (type == "script") {
 			s.type = "text/javascript";
 			s.src = src;
+
 			if(callback){
 				s.async = true;
 				s.addEventListener('load', callback, false);
+
 			}else
 				s.async = false;
+
 		} else {
 			s.type = "text/css";
 			s.rel = "stylesheet";
@@ -566,7 +569,7 @@ $p._patch = function (patch) {
  * @param blob
  * @return {Promise}
  */
-$p.blob_as_text = function (blob) {
+$p.blob_as_text = function (blob, type) {
 
 	return new Promise(function(resolve, reject){
 		var reader = new FileReader();
@@ -576,7 +579,10 @@ $p.blob_as_text = function (blob) {
 		reader.onerror = function(err){
 			reject(err);
 		};
-		reader.readAsText(blob);
+		if(type == "data_url")
+			reader.readAsDataURL(blob);
+		else
+			reader.readAsText(blob);
 	});
 	
 };

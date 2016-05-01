@@ -56,7 +56,8 @@ function OCombo(attr){
 		t.getBase().style.left = left + "px";
 
 	this.attachEvent("onChange", function(){
-		_obj[_field] = this.getSelectedValue();
+		if(_obj && _field)
+			_obj[_field] = this.getSelectedValue();
 	});
 
 	this.attachEvent("onBlur", function(){
