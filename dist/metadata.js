@@ -1892,7 +1892,8 @@ function Pouch(){
 
 				}
 
-				var method = (id == "ram" || id == "meta") ? local.replicate.from : local.sync;
+				// ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
+				var method = (id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo) ? local.replicate.from : local.sync;
 				_local.sync[id] = method(remote, {
 					live: true,
 					retry: true
