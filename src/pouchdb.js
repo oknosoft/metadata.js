@@ -81,7 +81,9 @@ function Pouch(){
 				var method = (id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo) ? local.replicate.from : local.sync;
 				_local.sync[id] = method(remote, {
 					live: true,
-					retry: true
+					retry: true,
+					batch_size: 200,
+					batches_limit: 8
 				});
 
 				_local.sync[id]
