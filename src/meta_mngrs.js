@@ -8,6 +8,24 @@
  * @requires common
  */
 
+/**
+ * Описание структуры колонки формы списка
+ * @param id
+ * @param width
+ * @param type
+ * @param align
+ * @param sort
+ * @param caption
+ * @constructor
+ */
+function Col_struct(id,width,type,align,sort,caption){
+	this.id = id;
+	this.width = width;
+	this.type = type;
+	this.align = align;
+	this.sort = sort;
+	this.caption = caption;
+}
 
 
 /**
@@ -248,7 +266,6 @@ function DataManager(class_name){
 
 }
 
-
 DataManager.prototype.__define({
 
 	/**
@@ -313,6 +330,7 @@ DataManager.prototype.__define({
 		enumerable : false
 	}
 });
+
 
 
 /**
@@ -1392,32 +1410,29 @@ RefDataManager.prototype.caption_flds = function(attr){
 		str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
 		acols = [],	s = "";
 
-	function Col_struct(id,width,type,align,sort,caption){
-		this.id = id;
-		this.width = width;
-		this.type = type;
-		this.align = align;
-		this.sort = sort;
-		this.caption = caption;
-	}
-
 	if(_meta.form && _meta.form.selection){
 		acols = _meta.form.selection.cols;
 
 	}else if(this instanceof DocManager){
-		acols.push(new Col_struct("date", "120", "ro", "left", "server", "Дата"));
-		acols.push(new Col_struct("number_doc", "120", "ro", "left", "server", "Номер"));
+		acols.push(new Col_struct("date", "160", "ro", "left", "server", "Дата"));
+		acols.push(new Col_struct("number_doc", "140", "ro", "left", "server", "Номер"));
+
+		if(_meta.fields.note)
+			acols.push(new Col_struct("note", "*", "ro", "left", "server", _meta.fields.note.synonym));
+
+		if(_meta.fields.responsible)
+			acols.push(new Col_struct("responsible", "*", "ro", "left", "server", _meta.fields.responsible.synonym));
+		
 
 	}else if(this instanceof ChartOfAccountManager){
-		acols.push(new Col_struct("id", "120", "ro", "left", "server", "Код"));
+		acols.push(new Col_struct("id", "140", "ro", "left", "server", "Код"));
 		acols.push(new Col_struct("presentation", "*", "ro", "left", "server", "Наименование"));
 
 	}else{
 
 		acols.push(new Col_struct("presentation", "*", "ro", "left", "server", "Наименование"));
-		//if(_meta["has_owners"]){
-		//	var owner_caption = "Владелец";
-		//	acols.push(new Col_struct("owner", "200", "ro", "left", "server", owner_caption));
+		//if(_meta.has_owners){
+		//	acols.push(new Col_struct("owner", "*", "ro", "left", "server", _meta.fields.owner.synonym));
 		//}
 
 	}
@@ -1830,6 +1845,148 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 		res = {}, f,
 		action = attr && attr.action ? attr.action : "create_table";
 
+	function sql_selection(){
+
+		var filter = attr.filter || "";
+
+		function list_flds(){
+			var flds = [], s = "_t_.ref";
+
+			if(cmd.form && cmd.form.selection){
+				cmd.form.selection.fields.forEach(function (fld) {
+					flds.push(fld);
+				});
+
+			}else{
+
+				for(var f in cmd["dimensions"]){
+					flds.push(f);
+				}
+			}
+
+			flds.forEach(function(fld){
+				if(fld.indexOf(" as ") != -1)
+					s += ", " + fld;
+				else
+					s += _md.sql_mask(fld, true);
+			});
+			return s;
+
+		}
+
+		function join_flds(){
+
+			var s = "", parts;
+
+			if(cmd.form && cmd.form.selection){
+				for(var i in cmd.form.selection.fields){
+					if(cmd.form.selection.fields[i].indexOf(" as ") == -1 || cmd.form.selection.fields[i].indexOf("_t_.") != -1)
+						continue;
+					parts = cmd.form.selection.fields[i].split(" as ");
+					parts[0] = parts[0].split(".");
+					if(parts[0].length > 1){
+						if(s)
+							s+= "\n";
+						s+= "left outer join " + parts[0][0] + " on " + parts[0][0] + ".ref = _t_." + parts[1];
+					}
+				}
+			}
+			return s;
+		}
+
+		function where_flds(){
+
+			var s = " WHERE (" + (filter ? 0 : 1);
+
+			if(t.sql_selection_where_flds){
+				s += t.sql_selection_where_flds(filter);
+
+			}
+
+			s += ")";
+
+
+			// допфильтры форм и связей параметров выбора
+			if(attr.selection){
+				if(typeof attr.selection == "function"){
+
+				}else
+					attr.selection.forEach(function(sel){
+						for(var key in sel){
+
+							if(typeof sel[key] == "function"){
+								s += "\n AND " + sel[key](t, key) + " ";
+
+							}else if(cmd.fields.hasOwnProperty(key)){
+								if(sel[key] === true)
+									s += "\n AND _t_." + key + " ";
+
+								else if(sel[key] === false)
+									s += "\n AND (not _t_." + key + ") ";
+
+								else if(typeof sel[key] == "object"){
+
+									if($p.is_data_obj(sel[key]))
+										s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
+
+									else{
+										var keys = Object.keys(sel[key]),
+											val = sel[key][keys[0]],
+											mf = cmd.fields[key],
+											vmgr;
+
+										if(mf && mf.type.is_ref){
+											vmgr = _md.value_mgr({}, key, mf.type, true, val);
+										}
+
+										if(keys[0] == "not")
+											s += "\n AND (not _t_." + key + " = '" + val + "') ";
+
+										else
+											s += "\n AND (_t_." + key + " = '" + val + "') ";
+									}
+
+								}else if(typeof sel[key] == "string")
+									s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
+
+								else
+									s += "\n AND (_t_." + key + " = " + sel[key] + ") ";
+
+							} else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
+								//if(sel[key])
+								//	s += "\n AND _t_." + key + " ";
+								//else
+								//	s += "\n AND (not _t_." + key + ") ";
+							}
+						}
+					});
+			}
+
+			return s;
+		}
+
+		function order_flds(){
+
+			return "";
+		}
+
+		// строка фильтра
+		if(filter && filter.indexOf("%") == -1)
+			filter = "%" + filter + "%";
+
+		var sql;
+		if(t.sql_selection_list_flds)
+			sql = t.sql_selection_list_flds();
+		else
+			sql = ("SELECT %2 FROM `" + t.table_name + "` AS _t_ %j %3 %4 LIMIT 300")
+				.replace("%2", list_flds())
+				.replace("%j", join_flds())
+			;
+
+		return sql.replace("%3", where_flds()).replace("%4", order_flds());
+
+	}
+
 	function sql_create(){
 
 		var sql = "CREATE TABLE IF NOT EXISTS ",
@@ -1975,6 +2132,9 @@ RegisterManager.prototype.get_sql_struct = function(attr) {
 	else if(action == "drop")
 		res = "DROP TABLE IF EXISTS `"+t.table_name+"`";
 
+	else if(action == "get_selection")
+		res = sql_selection();
+
 	return res;
 };
 
@@ -2009,6 +2169,33 @@ RegisterManager.prototype.get_ref = function(attr){
 	return key;
 };
 
+RegisterManager.prototype.caption_flds = function(attr){
+
+	var _meta = attr.metadata || this.metadata(),
+		str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
+		acols = [],	s = "";
+
+	if(_meta.form && _meta.form.selection){
+		acols = _meta.form.selection.cols;
+
+	}else{
+
+		for(var f in _meta["dimensions"]){
+			acols.push(new Col_struct(f, "*", "ro", "left", "server", _meta["dimensions"][f].synonym));
+		}
+	}
+
+	if(attr.get_header && acols.length){
+		s = "<head>";
+		for(var col in acols){
+			s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
+				.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
+		}
+		s += "</head>";
+	}
+
+	return {head: s, acols: acols};
+};
 
 
 
@@ -2159,14 +2346,6 @@ function LogManager(){
 		var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
 			acols = [], cmd = this.metadata(),	s = "";
 
-		function Col_struct(id,width,type,align,sort,caption){
-			this.id = id;
-			this.width = width;
-			this.type = type;
-			this.align = align;
-			this.sort = sort;
-			this.caption = caption;
-		}
 
 		acols.push(new Col_struct("date", "140", "ro", "left", "server", "Дата"));
 		acols.push(new Col_struct("class", "100", "ro", "left", "server", "Класс"));
