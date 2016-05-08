@@ -448,7 +448,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 
 		if(rId){
-			if(on_select){
+
+			if(attr.on_edit)
+				attr.on_edit(_mgr, rId, wnd);
+
+			else if(on_select){
 
 				_mgr.get(rId, true)
 					.then(function(selv){
