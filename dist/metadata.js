@@ -13647,8 +13647,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			this.attachEvent("onclick", toolbar_click);
 
 			// если мы приклеены к ячейке, сдвигаем toolbar на 4px
-			if(wnd === pwnd)
+			if(wnd === pwnd){
+				this.cont.parentElement.classList.add("dhx_cell_toolbar_no_borders");
+				this.cont.parentElement.classList.remove("dhx_cell_toolbar_def");
 				this.cont.style.top = "4px";
+			}
 
 			// текстовое поле фильтра по подстроке
 			var tbattr = {
