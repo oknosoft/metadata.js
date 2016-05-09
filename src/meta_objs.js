@@ -59,7 +59,6 @@ function DataObj(attr, manager) {
 		_obj: {
 			value: _obj,
 			writable: false,
-			enumerable: false,
 			configurable: true
 		},
 
@@ -74,7 +73,6 @@ function DataObj(attr, manager) {
 				}
 				return _ts_[name];
 			},
-			enumerable: false,
 			configurable: true
 		},
 
@@ -87,7 +85,6 @@ function DataObj(attr, manager) {
 		_manager: {
 			value : manager,
 			writable: false,
-			enumerable : false
 		},
 
 		/**
@@ -99,7 +96,6 @@ function DataObj(attr, manager) {
 		_data: {
 			value : _data,
 			writable: false,
-			enumerable : false,
 			configurable: true
 		}
 
@@ -253,8 +249,7 @@ DataObj.prototype.__define({
 	valueOf: {
 		value: function () {
 			return this.ref;
-		},
-		enumerable : false
+		}
 	},
 
 	/**
@@ -264,8 +259,7 @@ DataObj.prototype.__define({
 	toJSON: {
 		value: function () {
 			return this._obj;
-		},
-		enumerable : false
+		}
 	},
 
 	/**
@@ -275,8 +269,7 @@ DataObj.prototype.__define({
 	toString: {
 		value: function () {
 			return this.presentation;
-		},
-		enumerable : false
+		}
 	},
 
 	/**
@@ -287,8 +280,9 @@ DataObj.prototype.__define({
 	 * @final
 	 */
 	_metadata: {
-		get : function(){ return this._manager.metadata()},
-		enumerable : false
+		get : function(){
+			return this._manager.metadata()
+		}
 	},
 
 	/**
@@ -298,8 +292,9 @@ DataObj.prototype.__define({
 	 * @type Boolean
 	 */
 	_deleted: {
-		get : function(){ return !!this._obj._deleted},
-		enumerable : false
+		get : function(){
+			return !!this._obj._deleted
+		}
 	},
 
 	/**
@@ -310,8 +305,7 @@ DataObj.prototype.__define({
 			if(!this._data)
 				return false;
 			return !!(this._data._modified)
-		},
-		enumerable : false
+		}
 	},
 
 	/**
@@ -323,8 +317,7 @@ DataObj.prototype.__define({
 	is_new: {
 		value: function(){
 			return this._data._is_new;
-		},
-		enumerable: false
+		}
 	},
 
 	/**
@@ -335,8 +328,7 @@ DataObj.prototype.__define({
 			this._manager.push(this, ref);
 			this._data._modified = false;
 			this._data._is_new = false;
-		},
-		enumerable: false
+		}
 	},
 
 	/**
@@ -350,8 +342,7 @@ DataObj.prototype.__define({
 			this._obj._deleted = !!deleted;
 			this.save();
 			this.__notify('_deleted');
-		},
-		enumerable : false
+		}
 	},
 
 	/**
@@ -375,8 +366,7 @@ DataObj.prototype.__define({
 	empty: {
 		value: function(){
 			return $p.is_empty_guid(this._obj.ref);
-		},
-		enumerable : false
+		}
 	},
 
 	/**
@@ -413,8 +403,7 @@ DataObj.prototype.__define({
 			}
 
 
-		},
-		enumerable : false
+		}
 	},
 
 	/**
@@ -447,8 +436,7 @@ DataObj.prototype.__define({
 				delete this[f];
 			}.bind(this));
 			f = obj = null;
-		},
-		enumerable : false
+		}
 	},
 
 	/**
@@ -511,8 +499,7 @@ DataObj.prototype.__define({
 					return obj._manager.handle_event(obj, "after_save");
 				})
 				.then(reset_modified);
-		},
-		enumerable : false
+		}
 	},
 
 	/**
@@ -524,8 +511,7 @@ DataObj.prototype.__define({
 	get_attachment: {
 		value: function (att_id) {
 			return this._manager.get_attachment(this.ref, att_id);
-		},
-		enumerable: false
+		}
 	},
 
 	/**
@@ -539,8 +525,7 @@ DataObj.prototype.__define({
 	save_attachment: {
 		value: function (att_id, attachment, type) {
 			return this._manager.save_attachment(this.ref, att_id, attachment, type);
-		},
-		enumerable: false
+		}
 	},
 
 	/**
@@ -552,8 +537,7 @@ DataObj.prototype.__define({
 	delete_attachment: {
 		value: function (att_id) {
 			return this._manager.get_attachment(this.ref, att_id);
-		},
-		enumerable: false
+		}
 	},
 
 	/**
@@ -573,8 +557,7 @@ DataObj.prototype.__define({
 					this._data._silent = false;	
 				}.bind(this));
 			}			
-		},
-		enumerable: false
+		}
 	},
 
 	/**
@@ -583,8 +566,7 @@ DataObj.prototype.__define({
 	print: {
 		value: function (model, wnd) {
 			return this._manager.print(this, model, wnd);
-		},
-		enumerable: false
+		}
 	}
 	
 });
@@ -624,8 +606,7 @@ function CatObj(attr, manager) {
 		set : function(v){
 			if(v)
 				_presentation = String(v);
-		},
-		enumerable : false
+		}
 	});
 
 	if(attr && typeof attr == "object"){
@@ -655,7 +636,7 @@ CatObj.prototype.__define('id', {
 		this.__notify('id');
 		this._obj.id = v;
 	},
-	enumerable : true
+	enumerable: true
 });
 
 /**
@@ -669,7 +650,7 @@ CatObj.prototype.__define('name', {
 		this.__notify('name');
 		this._obj.name = String(v);
 	},
-	enumerable : true
+	enumerable: true
 });
 
 
@@ -707,8 +688,7 @@ function DocObj(attr, manager) {
 		set : function(v){
 			if(v)
 				_presentation = String(v);
-		},
-		enumerable : false
+		}
 	});
 
 	if(attr && typeof attr == "object")
@@ -735,7 +715,7 @@ function doc_props_date_number(proto){
 				this.__notify('number_doc');
 				this._obj.number_doc = v;
 			},
-			enumerable : true
+			enumerable: true
 		},
 
 		/**
@@ -749,7 +729,7 @@ function doc_props_date_number(proto){
 				this.__notify('date');
 				this._obj.date = $p.fix_date(v, true);
 			},
-			enumerable : true
+			enumerable: true
 		}
 	});
 }
@@ -767,7 +747,7 @@ DocObj.prototype.__define({
 			this.__notify('posted');
 			this._obj.posted = $p.fix_boolean(v);
 		},
-		enumerable : true
+		enumerable: true
 	}
 
 });
@@ -869,7 +849,7 @@ EnumObj.prototype.__define({
 	order: {
 		get : function(){ return this._obj.sequence},
 		set : function(v){ this._obj.sequence = parseInt(v)},
-		enumerable : true
+		enumerable: true
 	},
 
 	/**
@@ -881,7 +861,7 @@ EnumObj.prototype.__define({
 	name: {
 		get : function(){ return this._obj.ref},
 		set : function(v){ this._obj.ref = String(v)},
-		enumerable : true
+		enumerable: true
 	},
 
 	/**
@@ -893,7 +873,7 @@ EnumObj.prototype.__define({
 	synonym: {
 		get : function(){ return this._obj.synonym || ""},
 		set : function(v){ this._obj.synonym = String(v)},
-		enumerable : true
+		enumerable: true
 	},
 
 	/**
@@ -906,7 +886,7 @@ EnumObj.prototype.__define({
 		get : function(){
 			return this.synonym || this.name;
 		},
-		enumerable : false
+		enumerable: false
 	},
 
 	/**
@@ -964,12 +944,11 @@ RegisterRow.prototype.__define({
 	 */
 	_metadata: {
 		get: function () {
-			var cm = this._manager.metadata();
-			if (!cm.fields)
-				cm.fields = ({})._mixin(cm.dimensions)._mixin(cm.resources)._mixin(cm.attributes);
-			return cm;
-		},
-		enumerable: false
+			var _meta = this._manager.metadata();
+			if (!_meta.fields)
+				_meta.fields = ({})._mixin(_meta.dimensions)._mixin(_meta.resources)._mixin(_meta.attributes);
+			return _meta;
+		}
 	},
 
 	/**
@@ -977,7 +956,14 @@ RegisterRow.prototype.__define({
 	 */
 	ref: {
 		get : function(){ return this._manager.get_ref(this)},
-		enumerable : true
+		enumerable: true
+	},
+
+	presentation: {
+		get: function () {
+			var _meta = this._manager.metadata();
+			return _meta.obj_presentation || _meta.synonym;
+		}
 	}
 });
 

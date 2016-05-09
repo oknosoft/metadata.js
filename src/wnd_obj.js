@@ -558,7 +558,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		if(pwnd && pwnd.progressOn)
 			pwnd.progressOn();
 
-		return _mgr.get(attr.hasOwnProperty("ref") ? attr.ref : attr, true)
+		return _mgr.get(attr.hasOwnProperty("ref") ? attr.ref : attr, true, true)
 			.then(function(tObj){
 				o = tObj;
 				tObj = null;
