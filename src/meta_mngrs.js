@@ -45,7 +45,9 @@ function DataManager(class_name){
 			after_load: [],
 			before_save: [],
 			after_save: [],
-			value_change: []
+			value_change: [],
+			add_row: [],
+			del_row: []
 		};
 
 	this.__define({

@@ -314,6 +314,12 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		else if(btn_id=="btn_save")
 			save("save");
 
+		else if(btn_id=="btn_post")
+			save("post");
+
+		else if(btn_id=="btn_unpost")
+			save("unpost");
+
 		else if(btn_id=="btn_close")
 			wnd.close();
 
@@ -430,8 +436,16 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	function save(action){
 
 		wnd.progressOn();
+		
+		var post;
+		if(o instanceof DocObj){
+			if(action == "post")
+				post = true;
+			else if(action == "unpost")
+				post = false;
+		}
 
-		o.save()
+		o.save(post)
 			.then(function(){
 
 				wnd.progressOff();

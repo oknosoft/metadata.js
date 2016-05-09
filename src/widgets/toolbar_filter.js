@@ -72,6 +72,11 @@ $p.iface.Toolbar_filter = function (attr) {
 		}, 500);
 	}
 
+	// заготовка для адаптивного фильтра
+	t.toolbar.addText("div_filter", attr.pos, "");
+	t.div = t.toolbar.objPull[t.toolbar.idPrefix + "div_filter"];
+	attr.pos++;
+
 	// Поля ввода периода
 	if(attr.manager instanceof DocManager || attr.period){
 

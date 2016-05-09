@@ -466,6 +466,10 @@ DataObj.prototype.__define({
 	save: {
 		value: function (post, operational, attachments) {
 
+			if(this instanceof DocObj && typeof post == "boolean"){
+				this.posted = post;
+			}
+
 			var saver,
 				before_save_res = this._manager.handle_event(this, "before_save"),
 				reset_modified = function () {
