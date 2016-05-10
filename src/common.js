@@ -1180,7 +1180,7 @@ function InterfaceObjs(){
 		var j, k, svg_head, svg_body, head_ind, vb_ind, svg_head_str, vb_str, viewBox, svg_j = {};
 
 		var height = typeof size == "number" ? size : size.height,
-			width = typeof size == "number" ? size : size.width,
+			width = typeof size == "number" ? (size * 1.5).round(0) : size.width,
 			max_zoom = typeof size == "number" ? Infinity : (size.zoom || Infinity);
 
 		head_ind = svg_current.indexOf(">");
@@ -1210,22 +1210,22 @@ function InterfaceObjs(){
 
 		k = (height - padding) / init_height;
 		svg_j.height = height;
-		svg_j.width = Math.round(init_width * k);
+		svg_j.width = (init_width * k).round(0);
 
 		if(svg_j.width > width){
 			k = (width - padding) / init_width;
-			svg_j.height = Math.round(init_height * k);
+			svg_j.height = (init_height * k).round(0);
 			svg_j.width = width;
 		}
 
 		if(k > max_zoom){
 			k = max_zoom;
-			svg_j.height = Math.round(init_height * k);
-			svg_j.width = Math.round(init_width * k);
+			svg_j.height = (init_height * k).round(0);
+			svg_j.width = (init_width * k).round(0);
 		}
 
-		svg_j.x = Math.round(svg_j.x * k);
-		svg_j.y = Math.round(svg_j.y * k);
+		svg_j.x = (svg_j.x * k).round(0);
+		svg_j.y = (svg_j.y * k).round(0);
 
 		return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" ' +
 			'width="' + svg_j.width + '" ' +
