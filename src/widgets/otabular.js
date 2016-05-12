@@ -73,7 +73,16 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	 */
 	function add_row(){
 		if(!attr.read_only){
+			
 			var row = _ts.add();
+			
+			_mgr.handle_event(_obj, "add_row", {
+				tabular_section: _tsname,
+				grid: _grid,
+				row: row,
+				wnd: _pwnd.pwnd
+			});
+			
 			setTimeout(function () {
 				_grid.selectRowById(row.row);
 			}, 100);
@@ -83,8 +92,18 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	function del_row(){
 		if(!attr.read_only){
 			var rId = get_sel_index();
+			
 			if(rId != undefined){
+				
+				_mgr.handle_event(_obj, "del_row", {
+					tabular_section: _tsname,
+					grid: _grid,
+					row: rId,
+					wnd: _pwnd.pwnd
+				});
+				
 				_ts.del(rId);
+				
 				setTimeout(function () {
 					_grid.selectRowById(rId < _ts.count() ? rId + 1 : rId);
 				}, 100);
@@ -107,7 +126,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				tabular_section: _tsname,
 				grid: _grid,
 				row: cell_field.obj,
-				cell: (rId && cInd) ? _grid.cells(rId, cInd) : _grid.cells(),
+				cell: (rId && cInd) ? _grid.cells(rId, cInd) : (_grid.getSelectedCellIndex() >=0 ? _grid.cells() : null),
 				wnd: _pwnd.pwnd
 			});
 
@@ -191,6 +210,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	}
 
 	_grid.attachEvent("onEditCell", tabular_on_edit);
+
 	_grid.attachEvent("onKeyPress", function(code,cFlag,sFlag){
 
 		switch(code) {
@@ -204,13 +224,42 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		}
 
 	});
+	
+	_grid.attachEvent("onRowSelect", function(rid,ind){
+		if(_ts){
+			_grid._last = {
+				row: rid-1,
+				cindex: ind
+			}
+		}
+	});
 
 	_grid.get_cell_field = function () {
-		var rindex = get_sel_index(true), cindex = _grid.getSelectedCellIndex(), row, col;
-		if(_ts && rindex != undefined && cindex >=0){
-			row = _ts.get(rindex);
-			col = _grid.getColumnId(cindex);
-			return {obj: row, field: col}._mixin(_pwnd);
+
+
+		if(_ts){
+
+			var rindex = get_sel_index(true),
+				cindex = _grid.getSelectedCellIndex(),
+				row, col;
+
+			if(rindex != undefined){
+				row = _ts.get(rindex);
+
+			}else if(_grid._last){
+				row = _ts.get(_grid._last.row);
+			}
+
+			if(cindex >=0){
+				col = _grid.getColumnId(cindex);
+			}else if(_grid._last){
+				col = _grid.getColumnId(_grid._last.cindex);
+			}
+
+			if(row && col){
+				return {obj: row, field: col}._mixin(_pwnd);
+			}
+
 		}
 	};
 

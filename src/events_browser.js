@@ -60,9 +60,7 @@
 		},
 		set: function (v) {
 			$p.wsql.set_user_param("device_type", v);
-		},
-		enumerable: false,
-		configurable: false
+		}
 	});
 
 

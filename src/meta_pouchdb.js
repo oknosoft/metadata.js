@@ -13,6 +13,9 @@
 
 DataManager.prototype.__define({
 
+	/**
+	 * Загружает объекты из PouchDB по массиву ссылок
+	 */
 	pouch_load_array: {
 		value: function (refs, with_attachments) {
 
@@ -32,6 +35,59 @@ DataManager.prototype.__define({
 				.then(function (result) {
 					return $p.wsql.pouch.load_changes(result, {});
 				})
+		}
+	},
+
+	/**
+	 * Загружает объекты из PouchDB, обрезанные по view
+	 */
+	pouch_load_view: {
+		value: function (_view) {
+
+			var t = this, doc, res = [],
+				options = {
+					limit : 1000,
+					include_docs: true,
+					startkey: t.class_name + "|",
+					endkey: t.class_name + '|\uffff'
+				};
+
+			return new Promise(function(resolve, reject){
+
+				function process_docs(err, result) {
+
+					if (result) {
+
+						if (result.rows.length){
+
+							options.startkey = result.rows[result.rows.length - 1].key;
+							options.skip = 1;
+
+							result.rows.forEach(function (rev) {
+								doc = rev.doc;
+								key = doc._id.split("|");
+								doc.ref = key[1];
+								// наполняем
+								res.push(doc);
+							});
+
+							t.load_array(res);
+							res.length = 0;
+							
+							t.pouch_db.query(_view, options, process_docs);
+
+						}else{
+							resolve();
+						}
+
+					} else if(err){
+						reject(err);
+					}
+				}
+
+				t.pouch_db.query(_view, options, process_docs);
+
+			});
 		}
 	},
 
@@ -459,4 +515,49 @@ DataManager.prototype.__define({
 		}
 	}
 
+});
+
+DocObj.prototype.__define({
+	
+	/**
+	 * Устанавливает новый номер документа
+	 */
+	new_number_doc: {
+
+		value: function () {
+
+			var obj = this,
+				prefix = ($p.current_acl.prefix || "") +
+					(obj.organization && obj.organization.prefix ? obj.organization.prefix : ($p.wsql.get_user_param("zone") + "-")),
+				code_length = obj._metadata.code_length - prefix.length,
+				part = "";
+
+			return obj._manager.pouch_db.query("doc/number_doc",
+				{
+					limit : 1,
+					include_docs: false,
+					startkey: obj._manager.class_name.substr(4) + prefix + '\uffff',
+					endkey: obj._manager.class_name.substr(4) + prefix,
+					descending: true
+				})
+				.then(function (res) {
+					if(res.rows.length){
+						var num0 = res.rows[0].key;
+						for(var i = num0.length-1; i>0; i--){
+							if(isNaN(parseInt(num0[i])))
+								break;
+							part = num0[i] + part;
+						}
+						part = (parseInt(part || 0) + 1).toFixed(0);
+					}else{
+						part = "1";
+					}
+					while (part.length < code_length)
+						part = "0" + part;
+					obj.number_doc = prefix + part;
+
+					return obj;
+				});
+		}
+	}
 });

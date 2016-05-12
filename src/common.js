@@ -1172,12 +1172,16 @@ function InterfaceObjs(){
 	 * Масштабирует svg
 	 * @method scale_svg
 	 * @param svg_current {String} - исходная строка svg
-	 * @param size {Number} - требуемый размер картинки
+	 * @param size {Number|Object} - требуемый размер картинки
 	 * @param padding {Number} - отступ от границы viewBox
 	 * @return {String} - отмасштабированная строка svg
 	 */
 	this.scale_svg = function(svg_current, size, padding){
 		var j, k, svg_head, svg_body, head_ind, vb_ind, svg_head_str, vb_str, viewBox, svg_j = {};
+
+		var height = typeof size == "number" ? size : size.height,
+			width = typeof size == "number" ? (size * 1.5).round(0) : size.width,
+			max_zoom = typeof size == "number" ? Infinity : (size.zoom || Infinity);
 
 		head_ind = svg_current.indexOf(">");
 		svg_head_str = svg_current.substring(5, head_ind);
@@ -1200,11 +1204,28 @@ function InterfaceObjs(){
 		}else{
 			viewBox = 'viewBox="' + (svg_j.x || 0) + ' ' + (svg_j.y || 0) + ' ' + (svg_j.width - padding) + ' ' + (svg_j.height - padding) + '"';
 		}
-		k = (size - padding) / svg_j.height;
-		svg_j.height = size;
-		svg_j.width = Math.round(svg_j.width * k);
-		svg_j.x = Math.round(svg_j.x * k);
-		svg_j.y = Math.round(svg_j.y * k);
+
+		var init_height = svg_j.height,
+			init_width = svg_j.width;
+
+		k = (height - padding) / init_height;
+		svg_j.height = height;
+		svg_j.width = (init_width * k).round(0);
+
+		if(svg_j.width > width){
+			k = (width - padding) / init_width;
+			svg_j.height = (init_height * k).round(0);
+			svg_j.width = width;
+		}
+
+		if(k > max_zoom){
+			k = max_zoom;
+			svg_j.height = (init_height * k).round(0);
+			svg_j.width = (init_width * k).round(0);
+		}
+
+		svg_j.x = (svg_j.x * k).round(0);
+		svg_j.y = (svg_j.y * k).round(0);
 
 		return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" ' +
 			'width="' + svg_j.width + '" ' +
