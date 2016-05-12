@@ -114,8 +114,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			this.attachEvent("onclick", toolbar_click);
 
 			// если мы приклеены к ячейке, сдвигаем toolbar на 4px
-			if(wnd === pwnd)
+			if(wnd === pwnd){
+				this.cont.parentElement.classList.add("dhx_cell_toolbar_no_borders");
+				this.cont.parentElement.classList.remove("dhx_cell_toolbar_def");
 				this.cont.style.top = "4px";
+			}
 
 			// текстовое поле фильтра по подстроке
 			var tbattr = {
@@ -280,7 +283,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				tree_row_index = tree.getIndexById(rId);
 			if(tree_row_index!=null)
 				tree.selectItem(rId, true);
-			else select(rId);
+			else
+				select(rId);
 		});
 
 		if($p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper")
@@ -447,14 +451,25 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 
 		if(rId){
-			if(on_select)
+
+			if(attr.on_edit)
+				attr.on_edit(_mgr, rId, wnd);
+
+			else if(on_select){
+
 				_mgr.get(rId, true)
 					.then(function(selv){
 						wnd.close();
 						on_select.call(pwnd.grid || pwnd, selv);
 					});
-			else
+
+			} else if($p.job_prm.keep_hash){
+
+				_mgr.form_obj(wnd, {ref: rId});
+
+			} else
 				$p.iface.set_hash(_mgr.class_name, rId);
+
 		}
 	}
 

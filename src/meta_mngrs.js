@@ -45,7 +45,9 @@ function DataManager(class_name){
 			after_load: [],
 			before_save: [],
 			after_save: [],
-			value_change: []
+			value_change: [],
+			add_row: [],
+			del_row: []
 		};
 
 	this.__define({
@@ -530,12 +532,14 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 					oxml[" "].push("number_doc");
 					oxml[" "].push("date");
 				}
+
 				if(!o.is_folder){
 					for(i in mf.fields)
 						if(!mf.fields[i].hide)
 							oxml[" "].push(i);
 				}
-				if(mf.tabular_sections["extra_fields"])
+
+				if(mf.tabular_sections && mf.tabular_sections.extra_fields)
 					oxml["Дополнительные реквизиты"] = [];
 			}
 
@@ -1741,6 +1745,8 @@ function RegisterManager(class_name){
 
 		if(!attr)
 			attr = {};
+		else if(typeof attr == "string")
+			attr = {ref: attr};
 		
 		if(attr.ref && return_row)
 			return force_promise ? Promise.resolve(by_ref[attr.ref]) : by_ref[attr.ref];
