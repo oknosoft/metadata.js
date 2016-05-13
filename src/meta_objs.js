@@ -597,9 +597,10 @@ function CatObj(attr, manager) {
 	this.__define('presentation', {
 		get : function(){
 
-			if(this.name || this.id)
-				return this.name || this.id || this._metadata["obj_presentation"];
-			else
+			if(this.name || this.id){
+				// return this._metadata.obj_presentation || this._metadata.synonym + " " + this.name || this.id;
+				return this.name || this.id || this._metadata.obj_presentation || this._metadata.synonym;
+			}else
 				return _presentation;
 
 		},
@@ -680,7 +681,7 @@ function DocObj(attr, manager) {
 		get : function(){
 
 			if(this.number_doc)
-				return this._metadata["obj_presentation"] + ' №' + this.number_doc + " от " + $p.dateFormat(this.date, $p.dateFormat.masks.ru);
+				return (this._metadata.obj_presentation || this._metadata.synonym) + ' №' + this.number_doc + " от " + $p.dateFormat(this.date, $p.dateFormat.masks.ru);
 			else
 				return _presentation;
 
@@ -885,8 +886,7 @@ EnumObj.prototype.__define({
 	presentation: {
 		get : function(){
 			return this.synonym || this.name;
-		},
-		enumerable: false
+		}
 	},
 
 	/**
@@ -897,7 +897,7 @@ EnumObj.prototype.__define({
 	 */
 	empty: {
 		value: function(){
-			return this.ref == "_";
+			return !this.ref || this.ref == "_";
 		}
 	}
 });
@@ -955,14 +955,15 @@ RegisterRow.prototype.__define({
 	 * Ключ записи регистра
 	 */
 	ref: {
-		get : function(){ return this._manager.get_ref(this)},
+		get : function(){ 
+			return this._manager.get_ref(this);
+		},
 		enumerable: true
 	},
 
 	presentation: {
 		get: function () {
-			var _meta = this._manager.metadata();
-			return _meta.obj_presentation || _meta.synonym;
+			return this._metadata.obj_presentation || this._metadata.synonym;
 		}
 	}
 });
