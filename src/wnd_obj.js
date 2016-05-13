@@ -110,8 +110,11 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				set_text: {
 					value: function(force) {
 						if(attr && attr.set_text || wnd && wnd.setText){
-							//var title = (_meta.obj_presentation || _meta.synonym) + ': ' + o.presentation;
+
 							var title = o.presentation;
+
+							if(o instanceof CatObj)
+								title = (_meta.obj_presentation || _meta.synonym) + ': ' + title;
 
 							if(o._modified && title.lastIndexOf("*")!=title.length-1)
 								title += " *";

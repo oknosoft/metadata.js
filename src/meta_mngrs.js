@@ -79,8 +79,7 @@ function DataManager(class_name){
 					// остальные классы по умолчанию кешируем и загружаем в память при старте
 					return "ram";
 
-				},
-				enumerable: false
+				}
 			},
 
 			/**
@@ -92,8 +91,7 @@ function DataManager(class_name){
 			 */
 			class_name: {
 				value: class_name,
-				writable: false,
-				enumerable: false
+				writable: false
 			},
 
 			/**
@@ -107,8 +105,7 @@ function DataManager(class_name){
 			alatable: {
 				get : function () {
 					return $p.wsql.aladb.tables[this.table_name] ? $p.wsql.aladb.tables[this.table_name].data : []
-				},
-				enumerable : false
+				}
 			},
 
 			/**
@@ -123,8 +120,7 @@ function DataManager(class_name){
 						return _meta.fields[field] || _meta.tabular_sections[field];
 					else
 						return _meta;
-				},
-				enumerable: false
+				}
 			},
 
 			/**
@@ -141,8 +137,7 @@ function DataManager(class_name){
 						_events[name].push(method);
 					else
 						_events[name].push(method);
-				},
-				enumerable: false
+				}
 			},
 
 			/**
@@ -179,8 +174,7 @@ function DataManager(class_name){
 						}
 					}
 
-				},
-				enumerable: false
+				}
 			}
 
 		});
@@ -203,21 +197,24 @@ function DataManager(class_name){
 				this._obj_constructor.prototype.__define(f, {
 					get : new Function("return this._getter('"+f+"')"),
 					set : new Function("v", "this._setter('"+f+"',v)"),
-					enumerable : true
+					enumerable: true,
+					configurable: true
 				});
 			}
 			for(var f in this.metadata().resources){
 				this._obj_constructor.prototype.__define(f, {
 					get : new Function("return this._getter('"+f+"')"),
 					set : new Function("v", "this._setter('"+f+"',v)"),
-					enumerable : true
+					enumerable: true,
+					configurable: true
 				});
 			}
 			for(var f in this.metadata().attributes){
 				this._obj_constructor.prototype.__define(f, {
 					get : new Function("return this._getter('"+f+"')"),
 					set : new Function("v", "this._setter('"+f+"',v)"),
-					enumerable : true
+					enumerable: true,
+					configurable: true
 				});
 			}
 
@@ -230,7 +227,8 @@ function DataManager(class_name){
 				this._obj_constructor.prototype.__define(f, {
 					get : new Function("return this._getter('"+f+"')"),
 					set : new Function("v", "this._setter('"+f+"',v)"),
-					enumerable : true
+					enumerable: true,
+					configurable: true
 				});
 			}
 
@@ -249,7 +247,8 @@ function DataManager(class_name){
 					this._ts_сonstructors[f].prototype.__define(rf, {
 						get : new Function("return this._getter('"+rf+"')"),
 						set : new Function("v", "this._setter('"+rf+"',v)"),
-						enumerable : true
+						enumerable: true,
+						configurable: true
 					});
 				}
 
@@ -257,7 +256,8 @@ function DataManager(class_name){
 				this._obj_constructor.prototype.__define(f, {
 					get : new Function("return this._getter_ts('"+f+"')"),
 					set : new Function("v", "this._setter_ts('"+f+"',v)"),
-					enumerable : true
+					enumerable: true,
+					configurable: true
 				});
 			}
 
@@ -281,8 +281,7 @@ DataManager.prototype.__define({
 	family_name: {
 		get : function () {
 			return $p.msg["meta_"+this.class_name.split(".")[0]+"_mgr"].replace($p.msg.meta_mgr+" ", "");
-		},
-		enumerable : false
+		}
 	},
 
 	/**
@@ -294,8 +293,7 @@ DataManager.prototype.__define({
 	table_name: {
 		get : function(){
 			return this.class_name.replace(".", "_");
-		},
-		enumerable : false
+		}
 	},
 
 	extra_fields: {
@@ -321,15 +319,13 @@ DataManager.prototype.__define({
 			}
 
 			return res;
-		},
-		enumerable : false
+		}
 	},
 
 	extra_properties: {
 		value : function(obj){
 			return [];
-		},
-		enumerable : false
+		}
 	}
 });
 
@@ -1560,8 +1556,7 @@ function EnumManager(a, class_name) {
 
 	this.push = function(o, new_ref){
 		this.__define(new_ref, {
-			value : o,
-			enumerable : false
+			value : o
 		}) ;
 	};
 
@@ -2439,7 +2434,8 @@ function CatManager(class_name) {
 		this._obj_constructor.prototype.__define("is_folder", {
 			get : function(){ return this._obj.is_folder || false},
 			set : function(v){ this._obj.is_folder = $p.fix_boolean(v)},
-			enumerable : true
+			enumerable: true,
+			configurable: true
 		});
 	}
 
