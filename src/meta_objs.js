@@ -170,30 +170,35 @@ DataObj.prototype.__setter = function (f, v) {
 
 	else if(mf.is_ref){
 
-		this._obj[f] = $p.fix_guid(v);
+		if(mf.digits && typeof v == "number" || mf.hasOwnProperty("str_len") && typeof v == "string" && !$p.is_guid(v)){
+			this._obj[f] = v;
 
-		mgr = _md.value_mgr(this._obj, f, mf, false, v);
+		}else {
+			this._obj[f] = $p.fix_guid(v);
 
-		if(mgr){
-			if(mgr instanceof EnumManager){
-				if(typeof v == "string")
+			mgr = _md.value_mgr(this._obj, f, mf, false, v);
+
+			if(mgr){
+				if(mgr instanceof EnumManager){
+					if(typeof v == "string")
+						this._obj[f] = v;
+
+					else if(!v)
+						this._obj[f] = "";
+
+					else if(typeof v == "object")
+						this._obj[f] = v.ref || v.name || "";
+
+				}else if(v && v.presentation){
+					if(v.type && !(v instanceof DataObj))
+						delete v.type;
+					mgr.create(v);
+				}else if(!(mgr instanceof DataManager))
+					this._obj[f] = $p.fetch_type(v, mgr);
+			}else{
+				if(typeof v != "object")
 					this._obj[f] = v;
-
-				else if(!v)
-					this._obj[f] = "";
-
-				else if(typeof v == "object")
-					this._obj[f] = v.ref || v.name || "";
-
-			}else if(v && v.presentation){
-				if(v.type && !(v instanceof DataObj))
-					delete v.type;
-				mgr.create(v);
-			}else if(!(mgr instanceof DataManager))
-				this._obj[f] = $p.fetch_type(v, mgr);
-		}else{
-			if(typeof v != "object")
-				this._obj[f] = v;
+			}
 		}
 
 	}else if(mf.date_part)

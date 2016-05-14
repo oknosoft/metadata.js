@@ -179,6 +179,11 @@ DataManager.prototype.__define({
 								key = doc._id.split("|");
 								doc.ref = key[1];
 
+								if(!_raw){
+									delete doc._id;
+									delete doc._rev;
+								}
+
 								// фильтруем
 								if(!$p._selection.call(t, doc, selection))
 									return;
