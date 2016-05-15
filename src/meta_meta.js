@@ -884,6 +884,7 @@ function Meta() {
 			tnames = mf.types[0].split(".");
 			if(tnames.length > 1 && $p[tnames[0]])
 				return mf_mgr($p[tnames[0]][tnames[1]]);
+
 		}else if(v && v.type){
 			tnames = v.type.split(".");
 			if(tnames.length > 1 && $p[tnames[0]])
@@ -918,7 +919,13 @@ function Meta() {
 		}else{
 
 			// Получаем объект свойства
-			oproperty = _cch.properties.get(property, false);
+			if($p.is_data_obj(property))
+				oproperty = property;
+			else if($p.is_guid(property))
+				oproperty = _cch.properties.get(property, false);
+			else
+				return;
+			
 			if($p.is_data_obj(oproperty)){
 
 				if(oproperty.is_new())
