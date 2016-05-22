@@ -349,7 +349,7 @@ function MetaEngine() {
 		current_user: {
 			get: function () {
 				return $p.cat && $p.cat.users ?
-					$p.cat.users.by_name($p.wsql.get_user_param("user_name")) :
+					$p.cat.users.by_id($p.wsql.get_user_param("user_name")) :
 					$p.cat.users.get();
 			}
 		},
