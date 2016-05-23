@@ -531,7 +531,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 
 				if(!o.is_folder){
 					for(i in mf.fields)
-						if(!mf.fields[i].hide)
+						if(i != "predefined_name" && !mf.fields[i].hide)
 							oxml[" "].push(i);
 				}
 
