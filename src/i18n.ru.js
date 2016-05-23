@@ -313,6 +313,7 @@ $p.fias = function FIAS(){};
 	msg.error_metadata = "Ошибка загрузки метаданных конфигурации";
 	msg.error_network = "Ошибка сети или сервера - запрос отклонен";
 	msg.error_rights = "Ограничение доступа";
+	msg.error_low_acl = "Недостаточно прав для выполнения операции";
 
 	msg.file_size = "Запрещена загрузка файлов<br/>размером более ";
 	msg.file_confirm_delete = "Подтвердите удаление файла ";
@@ -333,6 +334,8 @@ $p.fias = function FIAS(){};
 	msg.logged_in = "Авторизован под именем: ";
 	msg.log_out_title = "Отключиться от сервера?";
 	msg.log_out_break = "<br/>Завершить синхронизацию?";
+	msg.sync_title = "Обмен с сервером";
+	msg.sync_complite = "Синхронизация завершена";
 
 	msg.main_title = "Окнософт: заказ дилера ";
 	msg.mark_delete_confirm = "Пометить объект %1 на удаление?";
