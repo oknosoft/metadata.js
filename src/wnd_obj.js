@@ -112,6 +112,9 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 						if(attr && attr.set_text || wnd && wnd.setText){
 
 							var title = o.presentation;
+							
+							if(!title)
+								return;
 
 							if(o instanceof CatObj)
 								title = (_meta.obj_presentation || _meta.synonym) + ': ' + title;
