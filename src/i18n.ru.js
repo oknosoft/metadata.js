@@ -49,7 +49,7 @@ function Messages(){
 					enumerable: false
 				},
 				"РегистрыБухгалтерии": {
-					get: function(){return _aссreg},
+					get: function(){return _accreg},
 					enumerable: false
 				},
 				"Обработки": {
@@ -306,7 +306,7 @@ $p.fias = function FIAS(){};
 	msg.empty_login_password = "Не указаны имя пользователя или пароль";
 	msg.empty_response = "Пустой ответ сервера";
 	msg.empty_geocoding = "Пустой ответ геокодера. Вероятно, отслеживание адреса запрещено в настройках браузера";
-	msg.error_geocoding = "Ошибка геокодера"
+	msg.error_geocoding = "Ошибка геокодера";
 
 	msg.error_auth = "Авторизация пользователя не выполнена";
 	msg.error_critical = "Критическая ошибка";
