@@ -194,7 +194,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			if (evt.keyCode == 113 || evt.keyCode == 115){ //{F2} или {F4}
 				if(!check_exit()){
 					setTimeout(function(){
-						if(wnd.elmnts.filter.input_filter)
+						if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == "desktop")
 							wnd.elmnts.filter.input_filter.focus();
 					});
 					return $p.cancel_bubble(evt);
@@ -325,7 +325,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 						grid.enableAutoWidth(true, 1200, 600);
 						grid.setSizes();
 						grid_inited = true;
-						if(wnd.elmnts.filter.input_filter)
+						if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == "desktop")
 							wnd.elmnts.filter.input_filter.focus();
 
 						if(attr.on_grid_inited)

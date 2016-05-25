@@ -258,7 +258,15 @@ div.gridbox_dhx_terrace.gridbox table.hdr td div.hdrcell {
     font-size: 10pt;
     font-weight: normal;
     width: 98%;
+	-moz-appearance: textfield;
 }
+/* стрелочки в поле ввода числа*/
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
 .calkSubmit {
     width: 22px;
     display: inline-block;
