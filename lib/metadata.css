@@ -233,6 +233,7 @@ div.gridbox_dhx_terrace.gridbox table.hdr td{
 	border: none;
 	background: transparent;
 	font-size: inherit;
+	margin: 0;
 }
 
 div.gridbox_dhx_terrace.gridbox table.hdr td div.hdrcell {

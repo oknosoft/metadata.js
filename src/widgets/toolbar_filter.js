@@ -23,7 +23,7 @@ $p.iface.Toolbar_filter = function (attr) {
 
 	var t = this,
 		input_filter_changed = 0,
-		input_filter_width = 350,
+		input_filter_width = $p.job_prm.device_type == "desktop" ? 300 : 120,
 		custom_selection = {};
 
 	if(!attr.pos)
@@ -88,15 +88,13 @@ $p.iface.Toolbar_filter = function (attr) {
 				t.сalendar.setSensitiveRange(null, inp.value);
 		}
 
-		input_filter_width = 180;
+		input_filter_width = $p.job_prm.device_type == "desktop" ? 180 : 120;
 
-		t.toolbar.addText("lbl_date_from", attr.pos, "Период с:");
+		t.toolbar.addInput("input_date_from", attr.pos, "", $p.job_prm.device_type == "desktop" ? 80 : 72);
 		attr.pos++;
-		t.toolbar.addInput("input_date_from", attr.pos, "", 72);
+		t.toolbar.addText("lbl_date_till", attr.pos, "-");
 		attr.pos++;
-		t.toolbar.addText("lbl_date_till", attr.pos, "по:");
-		attr.pos++;
-		t.toolbar.addInput("input_date_till", attr.pos, "", 72);
+		t.toolbar.addInput("input_date_till", attr.pos, "", $p.job_prm.device_type == "desktop" ? 80 : 72);
 		attr.pos++;
 
 		t.input_date_from = t.toolbar.getInput("input_date_from");
@@ -123,13 +121,16 @@ $p.iface.Toolbar_filter = function (attr) {
 
 	// текстовое поле фильтра по подстроке
 	if(!attr.hide_filter){
-		t.toolbar.addText("lbl_filter", attr.pos, "Фильтр");
+
+		t.toolbar.addSeparator("filter_sep", attr.pos);
 		attr.pos++;
+
 		t.toolbar.addInput("input_filter", attr.pos, "", input_filter_width);
 		t.input_filter = t.toolbar.getInput("input_filter");
 		t.input_filter.onchange = t.call_event;
 		t.input_filter.onkeydown = onkeydown;
 		t.input_filter.type = "search";
+		t.input_filter.setAttribute("placeholder", "Фильтр");
 
 		t.toolbar.addSpacer("input_filter");
 
