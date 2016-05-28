@@ -402,7 +402,7 @@ DataManager.prototype.sync_grid = function(attr, grid){
 		});
 
 	}
-
+	
 	// TODO: переделать обработку catch()
 	return request()
 		.then(to_grid)

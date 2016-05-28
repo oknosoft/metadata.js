@@ -336,6 +336,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 						grid.setSortImgState(true, s_col, a_direction);
 
 					cell_grid.progressOff();
+
 				});
 		};
 	}

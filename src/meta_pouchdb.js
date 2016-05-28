@@ -144,8 +144,13 @@ DataManager.prototype.__define({
 				}
 
 				if(selection._key) {
-					options.startkey = selection._key;
-					options.endkey = selection._key + '\uffff';
+
+					options.startkey = selection._key.startkey || selection._key;
+					options.endkey = selection._key.endkey || selection._key + '\uffff';
+
+					if(selection._key._drop_date && selection.date) {
+						delete selection.date;
+					}
 				}
 
 				if(typeof selection._skip == "number") {
@@ -315,6 +320,7 @@ DataManager.prototype.__define({
 
 				selection.date = {between: [attr.date_from, attr.date_till]};
 			}
+
 			// строковый фильтр по полям поиска
 			if(attr.filter){
 				if(cmd.input_by_string.length == 1)

@@ -768,9 +768,11 @@ $p.fix_date = function(str, strict){
  * @param days {Number} - число дней, добавляемых к дате (может быть отрицательным)
  * @return {Date}
  */
-$p.date_add_day = function(date, days){
-	var newDt = new Date();
+$p.date_add_day = function(date, days, reset_time){
+	var newDt = new Date(date);
 	newDt.setDate(date.getDate() + days);
+	if(reset_time)
+		newDt.setHours(0,-newDt.getTimezoneOffset(),0,0);
 	return newDt;
 };
 

@@ -781,9 +781,11 @@ $p.fix_date = function(str, strict){
  * @param days {Number} - число дней, добавляемых к дате (может быть отрицательным)
  * @return {Date}
  */
-$p.date_add_day = function(date, days){
-	var newDt = new Date();
+$p.date_add_day = function(date, days, reset_time){
+	var newDt = new Date(date);
 	newDt.setDate(date.getDate() + days);
+	if(reset_time)
+		newDt.setHours(0,-newDt.getTimezoneOffset(),0,0);
 	return newDt;
 };
 
@@ -6241,7 +6243,7 @@ DataManager.prototype.sync_grid = function(attr, grid){
 		});
 
 	}
-
+	
 	// TODO: переделать обработку catch()
 	return request()
 		.then(to_grid)
@@ -11043,8 +11045,13 @@ DataManager.prototype.__define({
 				}
 
 				if(selection._key) {
-					options.startkey = selection._key;
-					options.endkey = selection._key + '\uffff';
+
+					options.startkey = selection._key.startkey || selection._key;
+					options.endkey = selection._key.endkey || selection._key + '\uffff';
+
+					if(selection._key._drop_date && selection.date) {
+						delete selection.date;
+					}
 				}
 
 				if(typeof selection._skip == "number") {
@@ -11214,6 +11221,7 @@ DataManager.prototype.__define({
 
 				selection.date = {between: [attr.date_from, attr.date_till]};
 			}
+
 			// строковый фильтр по полям поиска
 			if(attr.filter){
 				if(cmd.input_by_string.length == 1)
@@ -14131,6 +14139,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 						grid.setSortImgState(true, s_col, a_direction);
 
 					cell_grid.progressOff();
+
 				});
 		};
 	}
