@@ -46,22 +46,24 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				if(on_create || check_modified()){
 
 					if(_wnd){
+
 						// выгружаем попапы
 						if(_wnd.elmnts)
 							["vault", "vault_pop"].forEach(function (elm) {
-								if (_wnd.elmnts[elm])
+								if (_wnd.elmnts[elm] && _wnd.elmnts[elm].unload)
 									_wnd.elmnts[elm].unload();
 							});
 
 						// информируем мир о закрытии формы
 						if(_mgr && _mgr.class_name)
 							$p.eve.callEvent("frm_close", [_mgr.class_name, (o && o._obj ? o.ref : "")]);
-
-						_wnd.detachToolbar();
-						_wnd.detachStatusBar();
-						if(_wnd.conf)
+						
+						if(_wnd.conf){
+							_wnd.detachToolbar();
+							_wnd.detachStatusBar();
 							_wnd.conf.unloading = true;
-						_wnd.detachObject(true);
+							_wnd.detachObject(true);
+						}
 					}
 					frm_unload(on_create);
 
@@ -466,7 +468,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			})
 			.catch(function(err){
 				wnd.progressOff();
-				$p.record_log(err);
+				if(err instanceof Error)
+					$p.record_log(err);
 			});
 	}
 
@@ -522,12 +525,13 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	function frm_close(wnd){
 
 		if(check_modified()){
+			
 			setTimeout(frm_unload);
 
 			// выгружаем попапы
 			if(wnd && wnd.elmnts)
 				["vault", "vault_pop"].forEach(function (elm) {
-					if (wnd.elmnts[elm])
+					if (wnd.elmnts[elm] && wnd.elmnts[elm].unload)
 						wnd.elmnts[elm].unload();
 				});
 

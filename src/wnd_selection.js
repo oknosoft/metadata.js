@@ -341,7 +341,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	}
 
 	/**
-	 *	@desc: 	обработчик нажатия кнопок командных панелей
+	 *	обработчик нажатия кнопок командных панелей
 	 */
 	function toolbar_click(btn_id){
 
@@ -531,6 +531,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		if(pwnd.on_unload)
 			pwnd.on_unload.call(pwnd.grid || pwnd);
 
+		if(_frm_close){
+			$p.eve.detachEvent(_frm_close);
+			_frm_close = null;
+		}
+
 		return true;
 	}
 
@@ -612,6 +617,19 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		wnd.elmnts.grid.reload();
 		return true;
 	}
+	
+	/**
+	 * подписываемся на событие закрытия формы объекта, чтобы обновить список и попытаться спозиционироваться на нужной строке 
+	 */
+	var _frm_close = $p.eve.attachEvent("frm_close", function (class_name, ref) {
+		if(_mgr && _mgr.class_name == class_name){
+			wnd.elmnts.grid.reload()
+				.then(function () {
+					if(!$p.is_empty_guid(ref))
+						wnd.elmnts.grid.selectRowById(ref, false, true, true);
+				});
+		}
+	});
 
 	return wnd;
 };
