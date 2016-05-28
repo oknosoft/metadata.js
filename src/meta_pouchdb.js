@@ -532,7 +532,7 @@ DocObj.prototype.__define({
 		value: function () {
 
 			var obj = this,
-				prefix = ($p.current_acl.prefix || "") +
+				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
 					(obj.organization && obj.organization.prefix ? obj.organization.prefix : ($p.wsql.get_user_param("zone") + "-")),
 				code_length = obj._metadata.code_length - prefix.length,
 				part = "";

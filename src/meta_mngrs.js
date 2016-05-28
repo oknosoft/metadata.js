@@ -1586,40 +1586,48 @@ function EnumManager(a, class_name) {
 
 	this._obj_constructor = EnumObj;
 
-	this.push = function(o, new_ref){
-		this.__define(new_ref, {
-			value : o
-		}) ;
-	};
-
-	this.get = function(ref){
-
-		if(ref instanceof EnumObj)
-			return ref;
-
-		else if(!ref || ref == $p.blank.guid)
-			ref = "_";
-
-		var o = this[ref];
-		if(!o)
-			o = new EnumObj({name: ref}, this);
-
-		return o;
-	};
-
-	this.each = function (fn) {
-		this.alatable.forEach(function (v) {
-			if(v.ref && v.ref != $p.blank.guid)
-				fn.call(this[v.ref]);
-		});
-	};
-
 	for(var i in a)
 		new EnumObj(a[i], this);
 
 }
 EnumManager._extend(RefDataManager);
 
+EnumManager.prototype.__define({
+
+	get: {
+		value: function(ref){
+
+			if(ref instanceof EnumObj)
+				return ref;
+
+			else if(!ref || ref == $p.blank.guid)
+				ref = "_";
+
+			var o = this[ref];
+			if(!o)
+				o = new EnumObj({name: ref}, this);
+
+			return o;
+		}
+	},
+
+	push: {
+		value: function(o, new_ref){
+			this.__define(new_ref, {
+				value : o
+			});
+		}
+	},
+
+	each: {
+		value: function (fn) {
+			this.alatable.forEach(function (v) {
+				if(v.ref && v.ref != "_" && v.ref != $p.blank.guid)
+					fn.call(this[v.ref]);
+			}.bind(this));
+		}
+	}
+});
 
 /**
  * Bозаращает массив запросов для создания таблиц объекта и его табличных частей

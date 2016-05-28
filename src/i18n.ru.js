@@ -363,6 +363,8 @@ $p.fias = function FIAS(){};
 	msg.meta_extender = "Модификаторы объектов и менеджеров";
 
 	msg.modified_close = "Объект изменен<br/>Закрыть без сохранения?";
+	msg.mandatory_title = "Обязательный реквизит";
+	msg.mandatory_field = "Укажите значение реквизита '%1'";
 
 	msg.no_metadata = "Не найдены метаданные объекта '%1'";
 	msg.no_selected_row = "Не выбрана строка табличной части '%1'";
@@ -381,6 +383,7 @@ $p.fias = function FIAS(){};
 	msg.select_grp = "Укажите группу, а не элемент";
 	msg.select_elm = "Укажите элемент, а не группу";
 	msg.select_file_import = "Укажите файл для импорта";
+		
 	msg.srv_overload = "Сервер перегружен";
 	msg.sub_row_change_disabled = "Текущая строка подчинена продукции.<br/>Строку нельзя изменить-удалить в документе<br/>только через построитель";
 	msg.sync_script = "Обновление скриптов приложения:";

@@ -50,8 +50,12 @@ $p.iface.dat_blank = function(_dxw, attr) {
 	}else
 		_dxw_area.y = wnd_dat.getPosition()[1];
 		
-	if(_move)
-		wnd_dat.setPosition(_dxw_area.x, _dxw_area.y);
+	if(_move){
+		if(_dxw_area.x<0 || _dxw_area.y<0)
+			wnd_dat.maximize();
+		else
+			wnd_dat.setPosition(_dxw_area.x, _dxw_area.y);
+	}
 
 	_dxw = null;
 
