@@ -58,7 +58,6 @@ function DataObj(attr, manager) {
 		 */
 		_obj: {
 			value: _obj,
-			writable: false,
 			configurable: true
 		},
 
@@ -83,8 +82,7 @@ function DataObj(attr, manager) {
 		 * @final
 		 */
 		_manager: {
-			value : manager,
-			writable: false,
+			value : manager
 		},
 
 		/**
@@ -95,7 +93,6 @@ function DataObj(attr, manager) {
 		 */
 		_data: {
 			value : _data,
-			writable: false,
 			configurable: true
 		}
 

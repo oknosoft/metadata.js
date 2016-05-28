@@ -206,7 +206,7 @@ $p._selection = function (o, selection) {
  */
 $p._find_rows = function(arr, selection, callback){
 
-	var o, i, res = [], top, count = 0;
+	var o, res = [], top, count = 0;
 
 	if(selection){
 		if(selection._top){
@@ -216,7 +216,7 @@ $p._find_rows = function(arr, selection, callback){
 			top = 300;
 	}
 
-	for(i in arr){
+	for(var i in arr){
 		o = arr[i];
 
 		// выполняем колбэк с элементом и пополняем итоговый массив
