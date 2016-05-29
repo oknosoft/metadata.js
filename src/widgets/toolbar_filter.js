@@ -145,20 +145,24 @@ $p.iface.Toolbar_filter = function (attr) {
 $p.iface.Toolbar_filter.prototype.__define({
 
 	get_filter: {
-		value: function () {
+		value: function (exclude_custom) {
+
 			var res = {
-				date_from: this.input_date_from ? dhx4.str2date(this.input_date_from.value) : "",
-				date_till: this.input_date_till ? dhx4.str2date(this.input_date_till.value) : "",
+				date_from: this.input_date_from ? $p.date_add_day(dhx4.str2date(this.input_date_from.value), 0, true) : "",
+				date_till: this.input_date_till ? $p.date_add_day(dhx4.str2date(this.input_date_till.value), 1, true) : "",
 				filter: this.input_filter ? this.input_filter.value : ""
 			}, fld, flt;
-			
-			for(fld in this.custom_selection){
-				if(!res.selection)
-					res.selection = [];
-				flt = {};
-				flt[fld] = this.custom_selection[fld].value;
-				res.selection.push(flt);				
+
+			if(!exclude_custom){
+				for(fld in this.custom_selection){
+					if(!res.selection)
+						res.selection = [];
+					flt = {};
+					flt[fld] = this.custom_selection[fld].value;
+					res.selection.push(flt);
+				}
 			}
+
 			return res;
 		}
 	},

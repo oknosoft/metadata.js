@@ -3188,7 +3188,7 @@ $p.iface.data_to_grid = function (data, attr){
 	}
 
 	var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
-			.replace("%1", data.length).replace("%2", attr.start)
+			.replace("%1", attr._total_count || data.length).replace("%2", attr.start)
 			.replace("%3", attr.set_parent || "" ),
 		caption = this.caption_flds(attr);
 
@@ -4604,20 +4604,24 @@ $p.iface.Toolbar_filter = function (attr) {
 $p.iface.Toolbar_filter.prototype.__define({
 
 	get_filter: {
-		value: function () {
+		value: function (exclude_custom) {
+
 			var res = {
-				date_from: this.input_date_from ? dhx4.str2date(this.input_date_from.value) : "",
-				date_till: this.input_date_till ? dhx4.str2date(this.input_date_till.value) : "",
+				date_from: this.input_date_from ? $p.date_add_day(dhx4.str2date(this.input_date_from.value), 0, true) : "",
+				date_till: this.input_date_till ? $p.date_add_day(dhx4.str2date(this.input_date_till.value), 1, true) : "",
 				filter: this.input_filter ? this.input_filter.value : ""
 			}, fld, flt;
-			
-			for(fld in this.custom_selection){
-				if(!res.selection)
-					res.selection = [];
-				flt = {};
-				flt[fld] = this.custom_selection[fld].value;
-				res.selection.push(flt);				
+
+			if(!exclude_custom){
+				for(fld in this.custom_selection){
+					if(!res.selection)
+						res.selection = [];
+					flt = {};
+					flt[fld] = this.custom_selection[fld].value;
+					res.selection.push(flt);
+				}
 			}
+
 			return res;
 		}
 	},
@@ -11005,26 +11009,28 @@ DataManager.prototype.__define({
 	 * ### Найти строки
 	 * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
 	 * Eсли отбор пустой, возвращаются все строки из PouchDB.
-	 * Имеет смысл для объектов, у которых _cachable = "ram"_
+	 * Имеет смысл для объектов, у которых _cachable ["ram", "doc"]_
 	 * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
 	 * @param [selection._top] {Number}
 	 * @param [selection._skip] {Number}
 	 * @param [selection._raw] {Boolean} - если _истина_, возвращаются сырые данные, а не дата-объекты
+	 * @param [selection._total_count] {Boolean} - если _истина_, вычисляет общее число записей под фильтром, без учета _skip и _top
 	 * @return {Promise.<Array>}
 	 */
 	pouch_find_rows: {
 		value: function (selection) {
 
 			var t = this, doc, res = [],
-				_raw, _view,
-				top, top_count = 0,
-				skip = 0, skip_count = 0,
+				_raw, _view, _total_count, top,
+				top_count = 0, skip = 0, skip_count = 0,
 				options = {
 					limit : 100,
 					include_docs: true,
 					startkey: t.class_name + "|",
 					endkey: t.class_name + '|\uffff'
 				};
+
+			
 
 			if(selection){
 
@@ -11039,6 +11045,11 @@ DataManager.prototype.__define({
 					delete selection._raw;
 				}
 
+				if(selection._total_count) {
+					_total_count = selection._total_count;
+					delete selection._total_count;
+				}
+
 				if(selection._view) {
 					_view = selection._view;
 					delete selection._view;
@@ -11049,9 +11060,6 @@ DataManager.prototype.__define({
 					options.startkey = selection._key.startkey || selection._key;
 					options.endkey = selection._key.endkey || selection._key + '\uffff';
 
-					if(selection._key._drop_date && selection.date) {
-						delete selection.date;
-					}
 				}
 
 				if(typeof selection._skip == "number") {
@@ -11066,9 +11074,84 @@ DataManager.prototype.__define({
 				}
 			}
 
+			// если сказано посчитать все строки...
+			if(_total_count){
+
+				// если нет фильтра по строке или фильтр растворён в ключе
+				if(Object.keys(selection).length <= 1){
+
+					_total_count = 0;
+
+					// если фильтр в ключе, получаем все строки без документов
+					if(selection._key && selection._key.hasOwnProperty("_search")){
+						options.include_docs = false;
+						options.limit = 100000;
+
+						return t.pouch_db.query(_view, options)
+							.then(function (result) {
+
+								result.rows.forEach(function (row) {
+
+									// фильтруем
+									if(!selection._key._search || row.key[row.key.length-1].toLowerCase().indexOf(selection._key._search) != -1){
+
+										_total_count++;
+
+										// пропукскаем лишние (skip) элементы
+										if(skip) {
+											skip_count++;
+											if (skip_count < skip)
+												return;
+										}
+
+										// ограничиваем кол-во возвращаемых элементов
+										if(top) {
+											top_count++;
+											if (top_count > top)
+												return;
+										}
+
+										res.push(row.id);
+									}
+								});
+
+								delete options.startkey;
+								delete options.endkey;
+								options.keys = res;
+								options.include_docs = true;
+
+								return t.pouch_db.allDocs(options);
+
+							})
+							.then(function (result) {
+								return {
+									rows: result.rows.map(function (row) {
+
+										var doc = row.doc;
+
+										doc.ref = doc._id.split("|")[1];
+
+										if(!_raw){
+											delete doc._id;
+											delete doc._rev;
+										}
+
+										return doc;
+									}),
+									_total_count: _total_count
+								};
+							})
+					}
+					
+				}
+				
+			}
+
 
 			// бежим по всем документам из ram
 			return new Promise(function(resolve, reject){
+
+				_total_count = 0;
 
 				function process_docs(err, result) {
 
@@ -11094,6 +11177,8 @@ DataManager.prototype.__define({
 								if(!$p._selection.call(t, doc, selection))
 									return;
 
+								_total_count++;
+								
 								// пропукскаем лишние (skip) элементы
 								if(skip) {
 									skip_count++;
@@ -11104,7 +11189,7 @@ DataManager.prototype.__define({
 								// ограничиваем кол-во возвращаемых элементов
 								if(top) {
 									top_count++;
-									if (top_count >= top)
+									if (top_count > top)
 										return;
 								}
 
@@ -11112,7 +11197,7 @@ DataManager.prototype.__define({
 								res.push(doc);
 							});
 
-							if(top && top_count >= top) {
+							if(top && top_count > top) {
 								resolve(_raw ? res : t.load_array(res));
 							}else
 								fetch_next_page();
@@ -11156,11 +11241,15 @@ DataManager.prototype.__define({
 				flds = ["ref", "_deleted"], // поля запроса
 				selection = {
 					_raw: true,
+					_total_count: true,
 					_top: attr.count || 30,
 					_skip: attr.start || 0
 				},   // условие см. find_rows()
 				ares = [], o, mf, fldsyn;
 
+			if(selection._top < 31)
+				selection._top = 31;
+			
 			// TODO: реализовать top и skip
 
 			// набираем поля
@@ -11220,21 +11309,9 @@ DataManager.prototype.__define({
 					attr.date_till = $p.date_add_day(new Date(), 1);
 
 				selection.date = {between: [attr.date_from, attr.date_till]};
-			}
 
-			// строковый фильтр по полям поиска
-			if(attr.filter){
-				if(cmd.input_by_string.length == 1)
-					selection[cmd.input_by_string] = {like: attr.filter};
-				else{
-					selection.or = [];
-					cmd.input_by_string.forEach(function (ifld) {
-						var flt = {};
-						flt[ifld] = {like: attr.filter};
-						selection.or.push(flt);
-					});
-				}
 			}
+			
 			// фильтр по родителю
 			if(cmd["hierarchical"] && attr.parent)
 				selection.parent = attr.parent;
@@ -11252,12 +11329,37 @@ DataManager.prototype.__define({
 						if(fldsyn[0] != "_" || fldsyn == "_view" || fldsyn == "_key")
 							selection[fldsyn] = attr.selection[fldsyn];
 			}
+
+			// прибиваем фильтр по дате, если он встроен в ключ
+			if(selection._key && selection._key._drop_date && selection.date) {
+				delete selection.date;
+			}
+
+			// строковый фильтр по полям поиска, если он не описан в ключе
+			if(attr.filter && (!selection._key || !selection._key._search)) {
+				if(cmd.input_by_string.length == 1)
+					selection[cmd.input_by_string] = {like: attr.filter};
+				else{
+					selection.or = [];
+					cmd.input_by_string.forEach(function (ifld) {
+						var flt = {};
+						flt[ifld] = {like: attr.filter};
+						selection.or.push(flt);
+					});
+				}	
+			}
+			
 			// фильтр по владельцу
 			//if(cmd["has_owners"] && attr.owner)
 			//	selection.owner = attr.owner;
 
 			return t.pouch_find_rows(selection)
 				.then(function (rows) {
+					
+					if(rows.hasOwnProperty("_total_count") && rows.hasOwnProperty("rows")){
+						attr._total_count = rows._total_count;
+						rows = rows.rows
+					}
 
 					rows.forEach(function (doc) {
 
