@@ -7400,17 +7400,31 @@ function DataProcessorsManager(class_name){
 
 	DataProcessorsManager.superclass.constructor.call(this, class_name);
 
+}
+DataProcessorsManager._extend(DataManager);
+
+DataProcessorsManager.prototype.__define({
+
 	/**
 	 * Создаёт экземпляр объекта обработки
 	 * @method
 	 * @return {DataProcessorObj}
 	 */
-	this.create = function(){
-		return new this._obj_constructor({}, this);
-	};
+	create: {
+		value: function(){
+			return new this._obj_constructor({}, this);
+		}
+	},
 
-}
-DataProcessorsManager._extend(DataManager);
+	/**
+	 * fake-метод, не имеет смысла для обработок, т.к. они не кешируются в alasql. Добавлен, чтобы не ругалась форма обхекта при закрытии
+	 * @method unload_obj
+	 * @param ref
+	 */
+	unload_obj: {
+		value: function() {	}
+	}
+});
 
 
 
@@ -13485,26 +13499,29 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			if(attr.on_select)
 				this.setItemText("btn_save_close", "Записать и выбрать");
 
-			// добавляем команды печати
-			if(_mgr instanceof CatManager || _mgr instanceof DocManager)
+			// для ссылочных типов
+			if(_mgr instanceof CatManager || _mgr instanceof DocManager){
+
+				// добавляем команды печати
 				_mgr.printing_plates().then(function (pp) {
 					for(var pid in pp)
 						wnd.elmnts.frm_toolbar.addListOption("bs_print", pid, "~", "button", pp[pid].toString());
 				});
-			else
+
+				// попап для присоединенных файлов
+				wnd.elmnts.vault_pop = new dhtmlXPopup({
+					toolbar: this,
+					id: "btn_files"
+				});
+				wnd.elmnts.vault_pop.attachEvent("onShow", show_vault);
+				
+			}else
 				this.disableItem("bs_print");
 
 			// кнопка закрытия для приклеенной формы
 			if(wnd != pwnd){
 				this.hideItem("btn_close");
 			}
-
-			// попап для присоединенных файлов
-			wnd.elmnts.vault_pop = new dhtmlXPopup({
-				toolbar: this,
-				id: "btn_files"
-			});
-			wnd.elmnts.vault_pop.attachEvent("onShow", show_vault);
 
 		});
 

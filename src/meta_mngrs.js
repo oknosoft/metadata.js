@@ -1555,17 +1555,31 @@ function DataProcessorsManager(class_name){
 
 	DataProcessorsManager.superclass.constructor.call(this, class_name);
 
+}
+DataProcessorsManager._extend(DataManager);
+
+DataProcessorsManager.prototype.__define({
+
 	/**
 	 * Создаёт экземпляр объекта обработки
 	 * @method
 	 * @return {DataProcessorObj}
 	 */
-	this.create = function(){
-		return new this._obj_constructor({}, this);
-	};
+	create: {
+		value: function(){
+			return new this._obj_constructor({}, this);
+		}
+	},
 
-}
-DataProcessorsManager._extend(DataManager);
+	/**
+	 * fake-метод, не имеет смысла для обработок, т.к. они не кешируются в alasql. Добавлен, чтобы не ругалась форма обхекта при закрытии
+	 * @method unload_obj
+	 * @param ref
+	 */
+	unload_obj: {
+		value: function() {	}
+	}
+});
 
 
 
