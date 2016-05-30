@@ -11035,7 +11035,7 @@ DataManager.prototype.__define({
 		value: function (selection) {
 
 			var t = this, doc, res = [],
-				_raw, _view, _total_count, top,
+				_raw, _view, _total_count, top, calc_count,
 				top_count = 0, skip = 0, skip_count = 0,
 				options = {
 					limit : 100,
@@ -11068,12 +11068,17 @@ DataManager.prototype.__define({
 					_view = selection._view;
 					delete selection._view;
 				}
-
+				
 				if(selection._key) {
 
-					options.startkey = selection._key.startkey || selection._key;
-					options.endkey = selection._key.endkey || selection._key + '\uffff';
-
+					if(selection._key._order_by == "des"){
+						options.startkey = selection._key.endkey || selection._key + '\uffff';
+						options.endkey = selection._key.startkey || selection._key;
+						options.descending = true;
+					}else{
+						options.startkey = selection._key.startkey || selection._key;
+						options.endkey = selection._key.endkey || selection._key + '\uffff';
+					}
 				}
 
 				if(typeof selection._skip == "number") {
@@ -11086,15 +11091,20 @@ DataManager.prototype.__define({
 					options.binary = true;
 					delete selection._attachments;
 				}
+
+
+
+
 			}
 
 			// если сказано посчитать все строки...
 			if(_total_count){
 
+				calc_count = true;
+				_total_count = 0;
+
 				// если нет фильтра по строке или фильтр растворён в ключе
 				if(Object.keys(selection).length <= 1){
-
-					_total_count = 0;
 
 					// если фильтр в ключе, получаем все строки без документов
 					if(selection._key && selection._key.hasOwnProperty("_search")){
@@ -11131,6 +11141,8 @@ DataManager.prototype.__define({
 
 								delete options.startkey;
 								delete options.endkey;
+								if(options.descending)
+									delete options.descending;
 								options.keys = res;
 								options.include_docs = true;
 
@@ -11161,11 +11173,8 @@ DataManager.prototype.__define({
 				
 			}
 
-
 			// бежим по всем документам из ram
 			return new Promise(function(resolve, reject){
-
-				_total_count = 0;
 
 				function process_docs(err, result) {
 
@@ -11191,7 +11200,8 @@ DataManager.prototype.__define({
 								if(!$p._selection.call(t, doc, selection))
 									return;
 
-								_total_count++;
+								if(calc_count)
+									_total_count++;
 								
 								// пропукскаем лишние (skip) элементы
 								if(skip) {
@@ -11211,13 +11221,20 @@ DataManager.prototype.__define({
 								res.push(doc);
 							});
 
-							if(top && top_count > top) {
+							if(top && top_count > top && !calc_count) {
 								resolve(_raw ? res : t.load_array(res));
+
 							}else
 								fetch_next_page();
 
 						}else{
-							resolve(_raw ? res : t.load_array(res));
+							if(calc_count){
+								resolve({
+									rows: _raw ? res : t.load_array(res),
+									_total_count: _total_count
+								});
+							}else
+								resolve(_raw ? res : t.load_array(res));
 						}
 
 					} else if(err){
@@ -11260,12 +11277,7 @@ DataManager.prototype.__define({
 					_skip: attr.start || 0
 				},   // условие см. find_rows()
 				ares = [], o, mf, fldsyn;
-
-			if(selection._top < 31)
-				selection._top = 31;
 			
-			// TODO: реализовать top и skip
-
 			// набираем поля
 			if(cmd.form && cmd.form.selection){
 				cmd.form.selection.fields.forEach(function (fld) {
@@ -11361,6 +11373,11 @@ DataManager.prototype.__define({
 						selection.or.push(flt);
 					});
 				}	
+			}
+
+			// обратная сортировка по ключу, если есть признак сортировки в ключе и 'des' в атрибутах
+			if(selection._key && selection._key._order_by){
+				selection._key._order_by = attr.direction;
 			}
 			
 			// фильтр по владельцу
@@ -11564,13 +11581,13 @@ DocObj.prototype.__define({
 				{
 					limit : 1,
 					include_docs: false,
-					startkey: obj._manager.class_name.substr(4) + prefix + '\uffff',
-					endkey: obj._manager.class_name.substr(4) + prefix,
+					startkey: [obj._manager.class_name, prefix + '\uffff'],
+					endkey: [obj._manager.class_name, prefix],
 					descending: true
 				})
 				.then(function (res) {
 					if(res.rows.length){
-						var num0 = res.rows[0].key;
+						var num0 = res.rows[0].key[1];
 						for(var i = num0.length-1; i>0; i--){
 							if(isNaN(parseInt(num0[i])))
 								break;
