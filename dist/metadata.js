@@ -4363,6 +4363,79 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		});
 	}
 
+	_grid.__define({
+
+		// TODO: реализовать свойство selection и его инициализацию через attr
+		selection: {
+			get: function () {
+				return _selection;
+			},
+			set: function (sel) {
+				_selection = sel;
+				observer_rows([{tabular: _tsname}]);
+			}
+		},
+
+		destructor: {
+			value: function () {
+
+				if(_obj){
+					Object.unobserve(_obj, observer);
+					Object.unobserve(_obj, observer_rows);
+				}
+
+				_obj = null;
+				_ts = null;
+				_meta = null;
+				_mgr = null;
+				_pwnd = null;
+				_cell.detachToolbar();
+
+				_destructor.call(_grid);
+			}
+		},
+
+		get_cell_field: {
+			value: function () {
+
+				if(_ts){
+
+					var rindex = get_sel_index(true),
+						cindex = _grid.getSelectedCellIndex(),
+						row, col;
+
+					if(rindex != undefined){
+						row = _ts.get(rindex);
+
+					}else if(_grid._last){
+						row = _ts.get(_grid._last.row);
+					}
+
+					if(cindex >=0){
+						col = _grid.getColumnId(cindex);
+					}else if(_grid._last){
+						col = _grid.getColumnId(_grid._last.cindex);
+					}
+
+					if(row && col){
+						return {obj: row, field: col}._mixin(_pwnd);
+					}
+
+				}
+			}
+		},
+
+		refresh_row: {
+			value: function (row) {
+				_grid.selectRowById(row.row);
+				_grid.forEachCell(row.row, function(cellObj,ind){
+					var val = row[_grid.getColumnId(ind)];
+					cellObj.setCValue($p.is_data_obj(val) ? val.presentation : val);
+				});
+			}
+		}
+	});
+
 	_grid.attachEvent("onEditCell", tabular_on_edit);
 
 	_grid.attachEvent("onKeyPress", function(code,cFlag,sFlag){
@@ -4378,7 +4451,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		}
 
 	});
-	
+
 	_grid.attachEvent("onRowSelect", function(rid,ind){
 		if(_ts){
 			_grid._last = {
@@ -4386,64 +4459,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				cindex: ind
 			}
 		}
-	});
-
-	_grid.get_cell_field = function () {
-
-
-		if(_ts){
-
-			var rindex = get_sel_index(true),
-				cindex = _grid.getSelectedCellIndex(),
-				row, col;
-
-			if(rindex != undefined){
-				row = _ts.get(rindex);
-
-			}else if(_grid._last){
-				row = _ts.get(_grid._last.row);
-			}
-
-			if(cindex >=0){
-				col = _grid.getColumnId(cindex);
-			}else if(_grid._last){
-				col = _grid.getColumnId(_grid._last.cindex);
-			}
-
-			if(row && col){
-				return {obj: row, field: col}._mixin(_pwnd);
-			}
-
-		}
-	};
-
-	_grid.destructor = function () {
-
-		if(_obj){
-			Object.unobserve(_obj, observer);
-			Object.unobserve(_obj, observer_rows);
-		}
-
-		_obj = null;
-		_ts = null;
-		_meta = null;
-		_mgr = null;
-		_pwnd = null;
-		_cell.detachToolbar();
-
-		_destructor.call(_grid);
-	};
-
-	// TODO: реализовать свойство selection и его инициализацию через attr
-	_grid.__define("selection", {
-		get: function () {
-			return _selection;
-		},
-		set: function (sel) {
-			_selection = sel;
-			observer_rows([{tabular: _tsname}]);
-		},
-		enumerable: false
 	});
 
 	// заполняем табчасть данными
