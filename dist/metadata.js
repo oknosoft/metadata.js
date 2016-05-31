@@ -3511,6 +3511,10 @@ function OCombo(attr){
 				}
 			});
 
+		// если в метаданных указано строить список по локальным данным, подмешиваем эту информацию в фильтр
+		if(_meta._option_list_local)
+			filter._local = true;
+
 		if(text)
 			filter.presentation = {like: text};
 
