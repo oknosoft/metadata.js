@@ -228,7 +228,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.10.211",
+			value: "0.10.212",
 			writable: false
 		},
 
