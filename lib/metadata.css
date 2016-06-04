@@ -233,12 +233,18 @@ div.gridbox_dhx_terrace.gridbox table.hdr td{
 	border: none;
 	background: transparent;
 	font-size: inherit;
+	margin: 0;
 }
 
 div.gridbox_dhx_terrace.gridbox table.hdr td div.hdrcell {
 	padding-left: 4px;
 	line-height: 28px;
 	text-transform: none;
+}
+
+.tabs_hidden {
+	height: 0px !important;
+	border: none !important;
 }
 
 /* Калькулятор */
@@ -259,6 +265,13 @@ div.gridbox_dhx_terrace.gridbox table.hdr td div.hdrcell {
     font-weight: normal;
     width: 98%;
 }
+/* стрелочки в поле ввода числа*/
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
 .calkSubmit {
     width: 22px;
     display: inline-block;

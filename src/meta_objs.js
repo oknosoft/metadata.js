@@ -58,7 +58,6 @@ function DataObj(attr, manager) {
 		 */
 		_obj: {
 			value: _obj,
-			writable: false,
 			configurable: true
 		},
 
@@ -83,8 +82,7 @@ function DataObj(attr, manager) {
 		 * @final
 		 */
 		_manager: {
-			value : manager,
-			writable: false,
+			value : manager
 		},
 
 		/**
@@ -95,7 +93,6 @@ function DataObj(attr, manager) {
 		 */
 		_data: {
 			value : _data,
-			writable: false,
 			configurable: true
 		}
 
@@ -464,25 +461,81 @@ DataObj.prototype.__define({
 			}
 
 			var saver,
+				
 				before_save_res = this._manager.handle_event(this, "before_save"),
+				
 				reset_modified = function () {
+
+					if(before_save_res !== false)
+						this._data._modified = false;
+
 					saver = null;
 					before_save_res = null;
 					reset_modified = null;
-					this._data._modified = false;
+					
 					return this;
 				}.bind(this);
 
-			// Если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
-			if(before_save_res === false)
-				return Promise.resolve(this).then(reset_modified);
+			// для объектов с иерархией установим пустого родителя, если иной не указан
+			if(this._metadata.hierarchical && !this._obj.parent)
+				this._obj.parent = $p.blank.guid;
 
-			else if(typeof before_save_res === "object" && before_save_res.then)
-				return before_save_res.then(reset_modified);
+			// для справочников, требующих код и пустым кодом, присваиваем код
+			if(!this.id && this._metadata.code_length && this._manager.cachable != "ram"){
 
+				var prefix = (($p.current_acl && $p.current_acl.prefix) || "") + ($p.wsql.get_user_param("zone") + "-"),
+					code_length = this._metadata.code_length - prefix.length,
+					part = "",
+					res = $p.wsql.alasql("select max(id) as id from ? where id like '" + prefix + "%'", [this._manager.alatable]);
+
+				// TODO: вынести установку кода в отдельную функцию
+
+				if(res.length){
+					var num0 = res[0].id || "";
+					for(var i = num0.length-1; i>0; i--){
+						if(isNaN(parseInt(num0[i])))
+							break;
+						part = num0[i] + part;
+					}
+					part = (parseInt(part || 0) + 1).toFixed(0);
+				}else{
+					part = "1";
+				}
+				while (part.length < code_length)
+					part = "0" + part;
+
+				this.id = prefix + part;
+			}
+
+			// для документов, контролируем заполненность даты
 			if(this instanceof DocObj && $p.blank.date == this.date)
 				this.date = new Date();
 
+			// если не указаны обязательные реквизиты
+			if($p.msg && $p.msg.show_msg){
+				for(var mf in this._metadata.fields){
+					if(this._metadata.fields[mf].mandatory && !this._obj[mf]){
+						$p.msg.show_msg({
+							title: $p.msg.mandatory_title,
+							type: "alert-error",
+							text: $p.msg.mandatory_field.replace("%1", this._metadata.fields[mf].synonym)
+						});
+						before_save_res = false;
+						return Promise.reject(reset_modified());
+					}
+				}	
+			}
+
+			// если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
+			if(before_save_res === false)
+				return Promise.resolve(this).then(reset_modified);
+
+			// если пользовательский обработчик перед записью вернул промис, его и возвращаем
+			else if(before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then)
+				return before_save_res.then(reset_modified);
+
+			
+			// в зависимости от типа кеширования, получаем saver
 			if(this._manager.cachable && this._manager.cachable != "e1cib"){
 				saver = $p.wsql.pouch.save_obj;
 

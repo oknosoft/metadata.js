@@ -49,7 +49,7 @@ function Messages(){
 					enumerable: false
 				},
 				"РегистрыБухгалтерии": {
-					get: function(){return _aссreg},
+					get: function(){return _accreg},
 					enumerable: false
 				},
 				"Обработки": {
@@ -306,13 +306,14 @@ $p.fias = function FIAS(){};
 	msg.empty_login_password = "Не указаны имя пользователя или пароль";
 	msg.empty_response = "Пустой ответ сервера";
 	msg.empty_geocoding = "Пустой ответ геокодера. Вероятно, отслеживание адреса запрещено в настройках браузера";
-	msg.error_geocoding = "Ошибка геокодера"
+	msg.error_geocoding = "Ошибка геокодера";
 
 	msg.error_auth = "Авторизация пользователя не выполнена";
 	msg.error_critical = "Критическая ошибка";
 	msg.error_metadata = "Ошибка загрузки метаданных конфигурации";
 	msg.error_network = "Ошибка сети или сервера - запрос отклонен";
 	msg.error_rights = "Ограничение доступа";
+	msg.error_low_acl = "Недостаточно прав для выполнения операции";
 
 	msg.file_size = "Запрещена загрузка файлов<br/>размером более ";
 	msg.file_confirm_delete = "Подтвердите удаление файла ";
@@ -333,6 +334,8 @@ $p.fias = function FIAS(){};
 	msg.logged_in = "Авторизован под именем: ";
 	msg.log_out_title = "Отключиться от сервера?";
 	msg.log_out_break = "<br/>Завершить синхронизацию?";
+	msg.sync_title = "Обмен с сервером";
+	msg.sync_complite = "Синхронизация завершена";
 
 	msg.main_title = "Окнософт: заказ дилера ";
 	msg.mark_delete_confirm = "Пометить объект %1 на удаление?";
@@ -360,6 +363,8 @@ $p.fias = function FIAS(){};
 	msg.meta_extender = "Модификаторы объектов и менеджеров";
 
 	msg.modified_close = "Объект изменен<br/>Закрыть без сохранения?";
+	msg.mandatory_title = "Обязательный реквизит";
+	msg.mandatory_field = "Укажите значение реквизита '%1'";
 
 	msg.no_metadata = "Не найдены метаданные объекта '%1'";
 	msg.no_selected_row = "Не выбрана строка табличной части '%1'";
@@ -378,6 +383,7 @@ $p.fias = function FIAS(){};
 	msg.select_grp = "Укажите группу, а не элемент";
 	msg.select_elm = "Укажите элемент, а не группу";
 	msg.select_file_import = "Укажите файл для импорта";
+		
 	msg.srv_overload = "Сервер перегружен";
 	msg.sub_row_change_disabled = "Текущая строка подчинена продукции.<br/>Строку нельзя изменить-удалить в документе<br/>только через построитель";
 	msg.sync_script = "Обновление скриптов приложения:";

@@ -228,7 +228,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.10.211",
+			value: "0.10.212",
 			writable: false
 		},
 
@@ -349,7 +349,7 @@ function MetaEngine() {
 		current_user: {
 			get: function () {
 				return $p.cat && $p.cat.users ?
-					$p.cat.users.by_name($p.wsql.get_user_param("user_name")) :
+					$p.cat.users.by_id($p.wsql.get_user_param("user_name")) :
 					$p.cat.users.get();
 			}
 		},
@@ -768,9 +768,11 @@ $p.fix_date = function(str, strict){
  * @param days {Number} - число дней, добавляемых к дате (может быть отрицательным)
  * @return {Date}
  */
-$p.date_add_day = function(date, days){
-	var newDt = new Date();
+$p.date_add_day = function(date, days, reset_time){
+	var newDt = new Date(date);
 	newDt.setDate(date.getDate() + days);
+	if(reset_time)
+		newDt.setHours(0,-newDt.getTimezoneOffset(),0,0);
 	return newDt;
 };
 
@@ -1442,12 +1444,11 @@ function Modifiers(){
  */
 function JobPrm(){
 
-	/**
-	 * Осуществляет синтаксический разбор параметров url
-	 * @method parse_url
-	 * @return {Object}
-	 */
-	this.parse_url = function (){
+	function base_url(){
+		return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
+	}
+
+	function parse_url(){
 
 		function parse(url_prm){
 			var prm = {}, tmp = [], pairs;
@@ -1477,13 +1478,37 @@ function JobPrm(){
 		}
 
 		return parse(location.search)._mixin(parse(location.hash));
-	};
+	}
 
-	this.offline = false;
-	this.local_storage_prefix = "";
-	this.create_tables = true;
+	this.__define({
 
-	if(typeof window != "undefined"){
+		/**
+		 * Осуществляет синтаксический разбор параметров url
+		 * @method parse_url
+		 * @return {Object}
+		 */
+		parse_url: {
+			value: parse_url
+		},
+
+		offline: {
+			value: false,
+			writable: true
+		},
+
+		local_storage_prefix: {
+			value: "",
+			writable: true
+		},
+
+		create_tables: {
+			value: true,
+			writable: true
+		},
+
+		session_start: {
+			value: new Date()
+		},
 
 		/**
 		 * Содержит объект с расшифровкой параметров url, указанных при запуске программы
@@ -1491,10 +1516,43 @@ function JobPrm(){
 		 * @type {Object}
 		 * @static
 		 */
-		this.url_prm = this.parse_url();
+		url_prm: {
+			value: typeof window != "undefined" ? parse_url() : {}
+		},
 
-	}else
-		this.url_prm = {};
+		/**
+		 * Адрес стандартного интерфейса 1С OData
+		 * @method rest_url
+		 * @return {string}
+		 */
+		rest_url: {
+			value: function () {
+				var url = base_url(),
+					zone = $p.wsql.get_user_param("zone", "number");
+				if(zone)
+					return url.replace("%1", zone);
+				else
+					return url.replace("%1/", "");
+			}
+		},
+
+		/**
+		 * Адрес http интерфейса библиотеки интеграции
+		 * @method irest_url
+		 * @return {string}
+		 */
+		irest_url: {
+			value: function () {
+				var url = base_url(),
+					zone = $p.wsql.get_user_param("zone", "number");
+				url = url.replace("odata/standard.odata", "hs/rest");
+				if(zone)
+					return url.replace("%1", zone);
+				else
+					return url.replace("%1/", "");
+			}
+		}
+	});
 
 	// подмешиваем параметры, заданные в файле настроек сборки
 	if(typeof $p.settings === "function")
@@ -1506,55 +1564,6 @@ function JobPrm(){
 		if(prm_name !== "url_prm" && typeof this[prm_name] !== "function" && this.url_prm.hasOwnProperty[prm_name])
 			this[prm_name] = this.url_prm[prm_name];
 	}
-
-	/**
-	 * Устаревший метод. умрёт после перевода методов _заказа дилера_ в irest
-	 * TODO: удалить этот метод
-	 * @method hs_url
-	 * @deprecated
-	 * @return {string}
-	 */
-	this.hs_url = function () {
-		var url = this.hs_path || "/a/zd/%1/hs/upzp",
-			zone = $p.wsql.get_user_param("zone", "number");
-		if(zone)
-			return url.replace("%1", zone);
-		else
-			return url.replace("%1/", "");
-	};
-
-	function base_url(){
-		return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
-	}
-
-	/**
-	 * Адрес стандартного интерфейса 1С OData
-	 * @method rest_url
-	 * @return {string}
-	 */
-	this.rest_url = function () {
-		var url = base_url(),
-			zone = $p.wsql.get_user_param("zone", "number");
-		if(zone)
-			return url.replace("%1", zone);
-		else
-			return url.replace("%1/", "");
-	};
-
-	/**
-	 * Адрес http интерфейса библиотеки интеграции
-	 * @method irest_url
-	 * @return {string}
-	 */
-	this.irest_url = function () {
-		var url = base_url(),
-			zone = $p.wsql.get_user_param("zone", "number");
-		url = url.replace("odata/standard.odata", "hs/rest");
-		if(zone)
-			return url.replace("%1", zone);
-		else
-			return url.replace("%1/", "");
-	};
 
 }
 

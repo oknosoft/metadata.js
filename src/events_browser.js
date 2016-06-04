@@ -34,34 +34,7 @@
 		}
 	};
 
-	/**
-	 * Тип устройства и ориентация экрана
-	 * @param e
-	 */
-	eve.on_rotate = function (e) {
-		$p.device_orient = (w.orientation == 0 || w.orientation == 180 ? "portrait":"landscape");
-		if (typeof(e) != "undefined")
-			eve.callEvent("onOrientationChange", [$p.device_orient]);
-	};
-	if(typeof(w.orientation)=="undefined")
-		$p.device_orient = w.innerWidth>w.innerHeight ? "landscape" : "portrait";
-	else
-		eve.on_rotate();
-	w.addEventListener("orientationchange", eve.on_rotate, false);
-
-	$p.__define("device_type", {
-		get: function () {
-			var device_type = $p.wsql.get_user_param("device_type");
-			if(!device_type){
-				device_type = (function(i){return (i<1024?"phone":(i<1280?"tablet":"desktop"));})(Math.max(screen.width, screen.height));
-				$p.wsql.set_user_param("device_type", device_type);
-			}
-			return device_type;
-		},
-		set: function (v) {
-			$p.wsql.set_user_param("device_type", v);
-		}
-	});
+	
 
 
 	/**
@@ -257,6 +230,14 @@
 				});
 			}
 
+			// проверяем совместимость браузера
+			if(!w.JSON || !w.indexedDB){
+				eve.redirect = true;
+				msg.show_msg({type: "alert-error", text: msg.unsupported_browser, title: msg.unsupported_browser_title});
+				throw msg.unsupported_browser;
+				return;
+			}
+
 			/**
 			 * Нулевым делом, создаём объект параметров работы программы, в процессе создания которого,
 			 * выполняется клиентский скрипт, переопределяющий триггеры и переменные окружения
@@ -270,7 +251,7 @@
 			$p.job_prm = new JobPrm();
 
 			/**
-			 * если в $p.job_prm указано использование геолокации, геокодер инициализируем с небольшой задержкой
+			 * если в job_prm указано использование геолокации, геокодер инициализируем с небольшой задержкой
 			 */
 			if($p.job_prm.use_ip_geo || $p.job_prm.use_google_geo){
 
@@ -330,14 +311,35 @@
 
 			// устанавливаем соединение с сокет-сервером
 			eve.socket.connect();
+			
+			/**
+			 * Тип устройства и ориентация экрана
+			 * @param e
+			 */
+			eve.on_rotate = function (e) {
+				$p.job_prm.device_orient = (w.orientation == 0 || w.orientation == 180 ? "portrait":"landscape");
+				if (typeof(e) != "undefined")
+					eve.callEvent("onOrientationChange", [$p.job_prm.device_orient]);
+			};
+			if(typeof(w.orientation)=="undefined")
+				$p.job_prm.device_orient = w.innerWidth>w.innerHeight ? "landscape" : "portrait";
+			else
+				eve.on_rotate();
+			w.addEventListener("orientationchange", eve.on_rotate, false);
 
-			// проверяем совместимость браузера
-			if(!w.JSON || !w.indexedDB){
-				eve.redirect = true;
-				msg.show_msg({type: "alert-error", text: msg.unsupported_browser, title: msg.unsupported_browser_title});
-				throw msg.unsupported_browser;
-				return;
-			}
+			$p.job_prm.__define("device_type", {
+				get: function () {
+					var device_type = $p.wsql.get_user_param("device_type");
+					if(!device_type){
+						device_type = (function(i){return (i<800?"phone":(i<1024?"tablet":"desktop"));})(Math.max(screen.width, screen.height));
+						$p.wsql.set_user_param("device_type", device_type);
+					}
+					return device_type;
+				},
+				set: function (v) {
+					$p.wsql.set_user_param("device_type", v);
+				}
+			});
 			
 			setTimeout(init_params, 10);
 

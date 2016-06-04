@@ -194,7 +194,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			if (evt.keyCode == 113 || evt.keyCode == 115){ //{F2} или {F4}
 				if(!check_exit()){
 					setTimeout(function(){
-						if(wnd.elmnts.filter.input_filter)
+						if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == "desktop")
 							wnd.elmnts.filter.input_filter.focus();
 					});
 					return $p.cancel_bubble(evt);
@@ -325,7 +325,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 						grid.enableAutoWidth(true, 1200, 600);
 						grid.setSizes();
 						grid_inited = true;
-						if(wnd.elmnts.filter.input_filter)
+						if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == "desktop")
 							wnd.elmnts.filter.input_filter.focus();
 
 						if(attr.on_grid_inited)
@@ -336,12 +336,13 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 						grid.setSortImgState(true, s_col, a_direction);
 
 					cell_grid.progressOff();
+
 				});
 		};
 	}
 
 	/**
-	 *	@desc: 	обработчик нажатия кнопок командных панелей
+	 *	обработчик нажатия кнопок командных панелей
 	 */
 	function toolbar_click(btn_id){
 
@@ -531,6 +532,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		if(pwnd.on_unload)
 			pwnd.on_unload.call(pwnd.grid || pwnd);
 
+		if(_frm_close){
+			$p.eve.detachEvent(_frm_close);
+			_frm_close = null;
+		}
+
 		return true;
 	}
 
@@ -612,6 +618,19 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		wnd.elmnts.grid.reload();
 		return true;
 	}
+	
+	/**
+	 * подписываемся на событие закрытия формы объекта, чтобы обновить список и попытаться спозиционироваться на нужной строке 
+	 */
+	var _frm_close = $p.eve.attachEvent("frm_close", function (class_name, ref) {
+		if(_mgr && _mgr.class_name == class_name){
+			wnd.elmnts.grid.reload()
+				.then(function () {
+					if(!$p.is_empty_guid(ref))
+						wnd.elmnts.grid.selectRowById(ref, false, true, true);
+				});
+		}
+	});
 
 	return wnd;
 };
