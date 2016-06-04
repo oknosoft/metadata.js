@@ -17,7 +17,7 @@ $p.iface.dat_blank = function(_dxw, attr) {
 
 	if(!attr)
 		attr = {};
-	var wnd_dat, _modified = false, wid = attr.id || 'wnd_dat_' + dhx4.newId();
+	var wnd_dat, wid = attr.id || 'wnd_dat_' + dhx4.newId();
 
 	wnd_dat = (_dxw || $p.iface.w).createWindow({
 		id: wid,
@@ -31,6 +31,31 @@ $p.iface.dat_blank = function(_dxw, attr) {
 		resize: true,
 		caption: attr.caption || "Tools"
 	});
+
+	// если окно не помещается в области - двигаем
+	var _dxw_area = {
+		x: (_dxw || $p.iface.w).vp.clientWidth,
+		y: (_dxw || $p.iface.w).vp.clientHeight
+	}, _move;
+	
+	if(wnd_dat.getPosition()[0] + wnd_dat.getDimension()[0] > _dxw_area.x){
+		_dxw_area.x = _dxw_area.x - wnd_dat.getDimension()[0];
+		_move = true;
+	}else
+		_dxw_area.x = wnd_dat.getPosition()[0];
+	
+	if(wnd_dat.getPosition()[1] + wnd_dat.getDimension()[1] > _dxw_area.y){
+		_dxw_area.y = _dxw_area.y - wnd_dat.getDimension()[1];
+		_move = true;
+	}else
+		_dxw_area.y = wnd_dat.getPosition()[1];
+		
+	if(_move){
+		if(_dxw_area.x<0 || _dxw_area.y<0)
+			wnd_dat.maximize();
+		else
+			wnd_dat.setPosition(_dxw_area.x, _dxw_area.y);
+	}
 
 	_dxw = null;
 

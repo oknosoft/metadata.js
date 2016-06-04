@@ -206,7 +206,7 @@ $p._selection = function (o, selection) {
  */
 $p._find_rows = function(arr, selection, callback){
 
-	var o, i, res = [], top, count = 0;
+	var o, res = [], top, count = 0;
 
 	if(selection){
 		if(selection._top){
@@ -216,7 +216,7 @@ $p._find_rows = function(arr, selection, callback){
 			top = 300;
 	}
 
-	for(i in arr){
+	for(var i in arr){
 		o = arr[i];
 
 		// выполняем колбэк с элементом и пополняем итоговый массив
@@ -348,7 +348,7 @@ var _cat = $p.cat = new (
 	 * @for MetaEngine
 	 * @static
 	 */
-	_aссreg = $p.aссreg = new (
+	_accreg = $p.aссreg = new (
 		/**
 		 * ### Коллекция менеджеров регистров бухгалтерии
 		 * - Состав коллекции определяется метаданными используемой конфигурации
@@ -579,11 +579,42 @@ function Meta() {
 	 */
 	_md.init = function () {
 
+		var confirm_count = 0;
+		
 		function do_init(){
 			return meta_from_pouch()
 				.then(create_managers)
 				.then($p.wsql.pouch.load_data)
 				.catch($p.record_log);
+		}
+
+		function do_reload(){
+
+			dhtmlx.confirm({
+				title: $p.msg.file_new_date_title,
+				text: $p.msg.file_new_date,
+				ok: "Перезагрузка",
+				cancel: "Продолжить",
+				callback: function(btn) {
+
+					if(btn){
+
+						$p.wsql.pouch.log_out();
+
+						setTimeout(function () {
+							$p.eve.redirect = true;
+							location.reload(true);
+						}, 1000);
+						
+					}else{
+
+						confirm_count++;
+						setTimeout(do_reload, confirm_count * 30000);
+						
+					}
+				}
+			});
+			
 		}
 
 		// этот обработчик нужен только при инициализации, когда в таблицах meta еще нет данных
@@ -593,11 +624,12 @@ function Meta() {
 
 			if(!_m)
 				do_init();
+				
 			else{
-				// если изменился sync, запланировать перезагрузку
-				if(change.direction == "pull" && change.change.docs){
-
-				}
+				
+				// если изменились метаданные, запланировать перезагрузку
+				if(change.docs && (Date.now() - $p.job_prm.session_start.getTime() > 20000))
+					do_reload();				
 			}
 			
 		});
