@@ -96,7 +96,10 @@ DataManager.prototype.__define({
 	 */
 	pouch_db: {
 		get: function () {
-			return $p.wsql.pouch.local[this.cachable] || $p.wsql.pouch.remote[this.cachable];
+			if(this.cachable.indexOf("_remote") != -1)
+				return $p.wsql.pouch.remote[this.cachable.replace("_remote", "")];
+			else
+				return $p.wsql.pouch.local[this.cachable] || $p.wsql.pouch.remote[this.cachable];
 		}
 	},
 
