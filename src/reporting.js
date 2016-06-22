@@ -6,7 +6,7 @@
  */
 
 /**
- * Табличный документ для потсроения печатных форм и отчетов
+ * Объект для построения печатных форм и отчетов
  *
  * @param [attr] {Object} - размер листа, ориентация, поля и т.д.
  * @constructor
@@ -97,10 +97,52 @@ SpreadsheetDocument.prototype.__define({
 });
 
 /**
- * Экспортируем конструктор SpreadsheetDocument, чтобы экземпляры табличного документа можно было создать снаружи
+ * Экспортируем конструктор SpreadsheetDocument, чтобы экземпляры печатного документа можно было создать снаружи
  * @property SpreadsheetDocument
  * @for $p
  * @type {function}
  */
-if(typeof $p !== "undefined")
-	$p.SpreadsheetDocument = SpreadsheetDocument;
+$p.SpreadsheetDocument = SpreadsheetDocument;
+
+
+/**
+ * Табличный документ для экранных отчетов
+ * @param [attr] {Object} - атрибуты инициплизации
+ * @param [attr.element] {HTMLElement} - элемент DOM, в котором будет размещена таблица 
+ * @constructor
+ */
+function HandsontableDocument(attr) {
+
+	var init = function () {
+
+		if(this._then)
+			this._then(this);
+
+	}.bind(this);
+
+
+	this.then = function (callback) {
+		this._then = callback;
+		return this;
+	};
+
+	// отложенная загрузка handsontable и зависимостей
+	if(typeof Handsontable != "function"){
+		$p.load_script("//cdnjs.cloudflare.com/ajax/libs/pikaday/1.4.0/pikaday.min.js","script",function () {
+			$p.load_script("//cdn.jsdelivr.net/g/zeroclipboard,handsontable@0.25(handsontable.min.js)","script",init);
+			$p.load_script("//cdn.jsdelivr.net/handsontable/0.25/handsontable.min.css","link");
+		});
+	}else{
+		setTimeout(init);
+	}
+
+
+}
+
+/**
+ * Экспортируем конструктор HandsontableDocument, чтобы экземпляры табличного документа можно было создать снаружи
+ * @property SpreadsheetDocument
+ * @for $p
+ * @type {function}
+ */
+$p.HandsontableDocument = HandsontableDocument;
