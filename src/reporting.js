@@ -107,19 +107,41 @@ $p.SpreadsheetDocument = SpreadsheetDocument;
 
 /**
  * Табличный документ для экранных отчетов
- * @param [attr] {Object} - атрибуты инициплизации
- * @param [attr.element] {HTMLElement} - элемент DOM, в котором будет размещена таблица 
+ * @param container {HTMLElement|dhtmlXCellObject} - элемент DOM, в котором будет размещена таблица
+ * @param [attr] {Object} - атрибуты инициплизации  
  * @constructor
  */
-function HandsontableDocument(attr) {
+function HandsontableDocument(container, attr) {
 
 	var init = function () {
+
+		if(this._online){
+			if(container instanceof dhtmlXCellObject){
+
+				this._cont = document.createElement('div');
+				this._cont.className = "handsontable_wrapper";
+				container.detachObject(true);
+				container.attachObject(this._cont);
+
+
+			}else{
+
+			}
+		}
 
 		if(this._then)
 			this._then(this);
 
 	}.bind(this);
-
+	
+	this._online = navigator.onLine && $p.wsql.pouch.authorized;
+	
+	if(container instanceof dhtmlXCellObject){
+		container.detachObject(true);
+		container.attachHTMLString(this._online ? $p.msg.report_prepare : $p.msg.report_need_online);
+	}else{
+		
+	}
 
 	this.then = function (callback) {
 		this._then = callback;
@@ -127,11 +149,13 @@ function HandsontableDocument(attr) {
 	};
 
 	// отложенная загрузка handsontable и зависимостей
-	if(typeof Handsontable != "function"){
+	if(typeof Handsontable != "function" && this._online){
+
 		$p.load_script("//cdnjs.cloudflare.com/ajax/libs/pikaday/1.4.0/pikaday.min.js","script",function () {
 			$p.load_script("//cdn.jsdelivr.net/g/zeroclipboard,handsontable@0.25(handsontable.min.js)","script",init);
 			$p.load_script("//cdn.jsdelivr.net/handsontable/0.25/handsontable.min.css","link");
 		});
+
 	}else{
 		setTimeout(init);
 	}
