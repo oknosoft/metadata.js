@@ -16,7 +16,19 @@
  * @return {Boolean} - true, если значение является ссылкой
  */
 $p.is_data_obj = function(v){
-	return v && v instanceof DataObj};
+	return v && v instanceof DataObj;
+};
+
+/**
+ * Проверяет, является ли значенние менеджером объектов данных
+ * @method is_data_mgr
+ * @for MetaEngine
+ * @param v {*} - проверяемое значение
+ * @return {Boolean} - true, если значение является ссылкой
+ */
+$p.is_data_mgr = function(v){
+	return v && v instanceof DataManager;
+};
 
 /**
  * приводит тип значения v к типу метаданных
