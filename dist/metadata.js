@@ -16181,21 +16181,7 @@ $p.SpreadsheetDocument = SpreadsheetDocument;
 function HandsontableDocument(container, attr) {
 
 	var init = function () {
-
-		if(this._online){
-			if(container instanceof dhtmlXCellObject){
-
-				this._cont = document.createElement('div');
-				this._cont.className = "handsontable_wrapper";
-				container.detachObject(true);
-				container.attachObject(this._cont);
-
-
-			}else{
-
-			}
-		}
-
+		
 		if(this._then)
 			this._then(this);
 
@@ -16204,15 +16190,26 @@ function HandsontableDocument(container, attr) {
 	this._online = navigator.onLine && $p.wsql.pouch.authorized;
 	
 	if(container instanceof dhtmlXCellObject){
+		this._cont = document.createElement('div');
 		container.detachObject(true);
-		container.attachHTMLString(this._online ? $p.msg.report_prepare : $p.msg.report_need_online);
+		container.attachObject(this._cont);
 	}else{
-		
+		this._cont = container;
 	}
+
+	this._cont.classList.add("handsontable_wrapper");
+	this._cont.innerHTML = this._online ? $p.msg.report_prepare : $p.msg.report_need_online;	
 
 	this.then = function (callback) {
 		this._then = callback;
 		return this;
+	};
+
+	this.requery = function (opt) {
+		if(this.hot)
+			this.hot.destroy();
+		this._cont.innerHTML = "";
+		this.hot = new Handsontable(this._cont, opt);
 	};
 
 	// отложенная загрузка handsontable и зависимостей
@@ -16226,8 +16223,7 @@ function HandsontableDocument(container, attr) {
 	}else{
 		setTimeout(init);
 	}
-
-
+	
 }
 
 /**
