@@ -5848,13 +5848,23 @@ function Meta() {
 	 * @param type
 	 * @return {*}
 	 */
-	_md.control_by_type = function (type) {
+	_md.control_by_type = function (type, val) {
 		var ft;
-		if(type.is_ref){
-			if(type.types.join().indexOf("enm.")==-1)
-				ft = "ocombo";//ft = "ref"; //
+
+		if(typeof val == "boolean" && type.types.indexOf("boolean") != -1){
+			ft = "ch";
+
+		} else if(typeof val == "number" && type.digits) {
+			if(type.fraction_figits < 5)
+				ft = "calck";
 			else
-				ft = "refc";
+				ft = "edn";
+
+		} else if(val instanceof Date && type.date_part){
+			ft = "dhxCalendar";
+			
+		} else if(type.is_ref){
+			ft = "ocombo";
 
 		} else if(type.date_part) {
 			ft = "dhxCalendar";
@@ -6626,7 +6636,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 
 		by_type = function(fv){
 
-			ft = _md.control_by_type(mf.type);
+			ft = _md.control_by_type(mf.type, fv);
 			txt_by_type(fv, mf);
 
 		},
