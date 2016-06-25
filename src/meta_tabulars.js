@@ -503,6 +503,18 @@ TabularSectionRow.prototype._setter = function (f, v) {
 			name: f,
 			oldValue: this._obj[f]
 		});
+
+	// учтём связь по типу
+	if(this._metadata.fields[f].choice_type){
+		var prop;
+		if(this._metadata.fields[f].choice_type.path.length == 2)
+			prop = this[this._metadata.fields[f].choice_type.path[1]];
+		else
+			prop = this._owner._owner[this._metadata.fields[f].choice_type.path[0]];
+		if(prop && prop.type)
+			v = $p.fetch_type(v, prop.type);
+	}
+
 	DataObj.prototype.__setter.call(this, f, v);
 	this._owner._owner._data._modified = true;
 

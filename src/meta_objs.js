@@ -129,7 +129,7 @@ DataObj.prototype._getter = function (f) {
 			return res;
 
 		if(mgr = _md.value_mgr(this._obj, f, mf)){
-			if(mgr instanceof DataManager)
+			if($p.is_data_mgr(mgr))
 				return mgr.get(res, false);
 			else
 				return $p.fetch_type(res, mgr);
@@ -190,7 +190,7 @@ DataObj.prototype.__setter = function (f, v) {
 					if(v.type && !(v instanceof DataObj))
 						delete v.type;
 					mgr.create(v);
-				}else if(!(mgr instanceof DataManager))
+				}else if(!$p.is_data_mgr(mgr))
 					this._obj[f] = $p.fetch_type(v, mgr);
 			}else{
 				if(typeof v != "object")
