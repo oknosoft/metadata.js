@@ -133,12 +133,20 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				tbattr.date_till = attr.date_till;
 			wnd.elmnts.filter = new $p.iface.Toolbar_filter(tbattr);
 
-			// Если нет полных прав - разрешен только просмотр и выбор элементов
-			// TODO: учитывать права для каждой роли на каждый объект
-			if(!$p.ajax.root){
-				this.hideItem("btn_new");
-				this.hideItem("btn_edit");
-				this.hideItem("btn_delete");
+			
+			// учтём права для каждой роли на каждый объект
+			if($p.current_acl && $p.current_acl._acl){
+				var acn = _mgr.class_name.split("."),
+					_acl = $p.current_acl._acl[acn[0]][acn[1]];
+
+				if(_acl.indexOf("i") == -1)
+					this.hideItem("btn_new");
+
+				if(_acl.indexOf("v") == -1)
+					this.hideItem("btn_edit");
+
+				if(_acl.indexOf("d") == -1)
+					this.hideItem("btn_delete");
 			}
 
 			if(!on_select){

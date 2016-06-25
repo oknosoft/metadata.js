@@ -6,7 +6,7 @@
  */
 
 /**
- * Табличный документ для потсроения печатных форм и отчетов
+ * Объект для построения печатных форм и отчетов
  *
  * @param [attr] {Object} - размер листа, ориентация, поля и т.д.
  * @constructor
@@ -97,10 +97,72 @@ SpreadsheetDocument.prototype.__define({
 });
 
 /**
- * Экспортируем конструктор SpreadsheetDocument, чтобы экземпляры табличного документа можно было создать снаружи
+ * Экспортируем конструктор SpreadsheetDocument, чтобы экземпляры печатного документа можно было создать снаружи
  * @property SpreadsheetDocument
  * @for $p
  * @type {function}
  */
-if(typeof $p !== "undefined")
-	$p.SpreadsheetDocument = SpreadsheetDocument;
+$p.SpreadsheetDocument = SpreadsheetDocument;
+
+
+/**
+ * Табличный документ для экранных отчетов
+ * @param container {HTMLElement|dhtmlXCellObject} - элемент DOM, в котором будет размещена таблица
+ * @param [attr] {Object} - атрибуты инициплизации  
+ * @constructor
+ */
+function HandsontableDocument(container, attr) {
+
+	var init = function () {
+		
+		if(this._then)
+			this._then(this);
+
+	}.bind(this);
+	
+	this._online = navigator.onLine && $p.wsql.pouch.authorized;
+	
+	if(container instanceof dhtmlXCellObject){
+		this._cont = document.createElement('div');
+		container.detachObject(true);
+		container.attachObject(this._cont);
+	}else{
+		this._cont = container;
+	}
+
+	this._cont.classList.add("handsontable_wrapper");
+	this._cont.innerHTML = this._online ? $p.msg.report_prepare : $p.msg.report_need_online;	
+
+	this.then = function (callback) {
+		this._then = callback;
+		return this;
+	};
+
+	this.requery = function (opt) {
+		if(this.hot)
+			this.hot.destroy();
+		this._cont.innerHTML = "";
+		this.hot = new Handsontable(this._cont, opt);
+	};
+
+	// отложенная загрузка handsontable и зависимостей
+	if(typeof Handsontable != "function" && this._online){
+
+		$p.load_script("//cdnjs.cloudflare.com/ajax/libs/pikaday/1.4.0/pikaday.min.js","script",function () {
+			$p.load_script("//cdn.jsdelivr.net/g/zeroclipboard,handsontable@0.25(handsontable.min.js)","script",init);
+			$p.load_script("//cdn.jsdelivr.net/handsontable/0.25/handsontable.min.css","link");
+		});
+
+	}else{
+		setTimeout(init);
+	}
+	
+}
+
+/**
+ * Экспортируем конструктор HandsontableDocument, чтобы экземпляры табличного документа можно было создать снаружи
+ * @property SpreadsheetDocument
+ * @for $p
+ * @type {function}
+ */
+$p.HandsontableDocument = HandsontableDocument;

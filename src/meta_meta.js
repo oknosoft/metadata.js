@@ -16,7 +16,19 @@
  * @return {Boolean} - true, если значение является ссылкой
  */
 $p.is_data_obj = function(v){
-	return v && v instanceof DataObj};
+	return v && v instanceof DataObj;
+};
+
+/**
+ * Проверяет, является ли значенние менеджером объектов данных
+ * @method is_data_mgr
+ * @for MetaEngine
+ * @param v {*} - проверяемое значение
+ * @return {Boolean} - true, если значение является ссылкой
+ */
+$p.is_data_mgr = function(v){
+	return v && v instanceof DataManager;
+};
 
 /**
  * приводит тип значения v к типу метаданных
@@ -983,13 +995,23 @@ function Meta() {
 	 * @param type
 	 * @return {*}
 	 */
-	_md.control_by_type = function (type) {
+	_md.control_by_type = function (type, val) {
 		var ft;
-		if(type.is_ref){
-			if(type.types.join().indexOf("enm.")==-1)
-				ft = "ocombo";//ft = "ref"; //
+
+		if(typeof val == "boolean" && type.types.indexOf("boolean") != -1){
+			ft = "ch";
+
+		} else if(typeof val == "number" && type.digits) {
+			if(type.fraction_figits < 5)
+				ft = "calck";
 			else
-				ft = "refc";
+				ft = "edn";
+
+		} else if(val instanceof Date && type.date_part){
+			ft = "dhxCalendar";
+			
+		} else if(type.is_ref){
+			ft = "ocombo";
 
 		} else if(type.date_part) {
 			ft = "dhxCalendar";

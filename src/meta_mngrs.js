@@ -561,7 +561,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 
 		by_type = function(fv){
 
-			ft = _md.control_by_type(mf.type);
+			ft = _md.control_by_type(mf.type, fv);
 			txt_by_type(fv, mf);
 
 		},
