@@ -809,9 +809,8 @@ function OTooolBar(attr){
 	}
 
 	function btn_click(){
-		var tool_name = this.name.replace(attr.name + '_', '');
 		if(attr.onclick)
-			attr.onclick.call(_this, tool_name);
+			attr.onclick.call(_this, this.name.replace(attr.name + '_', ''), attr.name);
 	}
 
 	/**
@@ -985,6 +984,8 @@ $p.iface.add_button = function(parent, attr, battr) {
 
 	// если имя начинается с sep_ - это разделитель
 	bdiv.className = (battr.name.indexOf("sep_") == 0) ? 'md_otooolbar_sep' : 'md_otooolbar_button';
+	if(battr.hasOwnProperty("class_name"))
+		bdiv.classList.add(battr.class_name);
 
 	if(battr.img)
 		html = '<img src="' + (attr ? attr.image_path : '') + battr.img + '">';
