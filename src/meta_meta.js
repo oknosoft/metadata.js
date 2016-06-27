@@ -640,8 +640,9 @@ function Meta() {
 			else{
 				
 				// если изменились метаданные, запланировать перезагрузку
-				if(change.docs && (Date.now() - $p.job_prm.session_start.getTime() > 20000))
-					do_reload();				
+				do_reload();
+				// if(change.docs && (performance.now() $p.job_prm.session_start.getTime() > 20000))
+				// 	do_reload();
 			}
 			
 		});

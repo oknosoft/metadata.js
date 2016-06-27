@@ -1506,10 +1506,6 @@ function JobPrm(){
 			writable: true
 		},
 
-		session_start: {
-			value: new Date()
-		},
-
 		/**
 		 * Содержит объект с расшифровкой параметров url, указанных при запуске программы
 		 * @property url_prm
