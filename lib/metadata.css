@@ -398,6 +398,7 @@ div.gridbox_dhx_terrace.gridbox .odd_dhx_terrace {
 	padding: 0;
 	float: right;
 	text-align: center;
+	cursor: pointer;
 }
 .md_otooolbar_button:hover, .md_otooolbar_button.selected:hover, .md_otooolbar_button.muted {
     background-color: #ccc;
