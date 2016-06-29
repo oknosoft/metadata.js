@@ -127,10 +127,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				onchange: input_filter_change,
 				hide_filter: attr.hide_filter
 			};
-			if(attr.date_from)
-				tbattr.date_from = attr.date_from;
-			if(attr.date_till)
-				tbattr.date_till = attr.date_till;
+			if(attr.date_from) tbattr.date_from = attr.date_from;
+			if(attr.date_till) tbattr.date_till = attr.date_till;
+			if(attr.period) tbattr.period = attr.period;
 			wnd.elmnts.filter = new $p.iface.Toolbar_filter(tbattr);
 
 			

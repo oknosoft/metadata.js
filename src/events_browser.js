@@ -340,6 +340,14 @@
 					$p.wsql.set_user_param("device_type", v);
 				}
 			});
+
+
+			/**
+			 * слушаем события клавиатуры
+			 */
+			document.body.addEventListener("keydown", function (ev) {
+				eve.callEvent("keydown", [ev]);
+			}, false);
 			
 			setTimeout(init_params, 10);
 
@@ -352,15 +360,6 @@
 			}
 		}
 
-
-
-	}, false);
-
-	/**
-	 * слушаем события клавиатуры
- 	 */
-	document.body.addEventListener("keydown", function (ev) {
-		eve.callEvent("keydown", [ev]);
 	}, false);
 
 	/**
