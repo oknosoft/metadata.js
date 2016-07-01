@@ -492,7 +492,7 @@ TabularSectionRow.prototype._getter = DataObj.prototype._getter;
 
 TabularSectionRow.prototype._setter = function (f, v) {
 
-	if(this._obj[f] == v)
+	if(this._obj[f] == v || (!v && this._obj[f] == $p.blank.guid))
 		return;
 
 	if(!this._owner._owner._data._silent)

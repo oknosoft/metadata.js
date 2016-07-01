@@ -199,10 +199,12 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 
 						timer = setTimeout(function () {
 							//TODO: свернуть массив оповещений перед отправкой
-							target._observers.forEach(function (observer) {
-								observer(target._notis);
-							});
-							target._notis.length = 0;
+							if(target._notis.length){
+								target._observers.forEach(function (observer) {
+									observer(target._notis);
+								});
+								target._notis.length = 0;
+							}
 							timer = false;
 
 						}, 4);
@@ -1506,10 +1508,6 @@ function JobPrm(){
 			writable: true
 		},
 
-		session_start: {
-			value: new Date()
-		},
-
 		/**
 		 * Содержит объект с расшифровкой параметров url, указанных при запуске программы
 		 * @property url_prm
@@ -1528,7 +1526,7 @@ function JobPrm(){
 		rest_url: {
 			value: function () {
 				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", "number");
+					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
 				if(zone)
 					return url.replace("%1", zone);
 				else
@@ -1544,7 +1542,7 @@ function JobPrm(){
 		irest_url: {
 			value: function () {
 				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", "number");
+					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
 				url = url.replace("odata/standard.odata", "hs/rest");
 				if(zone)
 					return url.replace("%1", zone);
@@ -1726,8 +1724,8 @@ function WSQL(){
 			{p: "user_name",		v: "", t:"string"},
 			{p: "user_pwd",			v: "", t:"string"},
 			{p: "browser_uid",		v: $p.generate_guid(), t:"string"},
-			{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t:"number"},
-			{p: "enable_save_pwd",	v: "",	t:"boolean"},
+			{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
+			{p: "enable_save_pwd",	v: $p.job_prm.enable_save_pwd,	t:"boolean"},
 			{p: "autologin",		v: "",	t:"boolean"},
 			{p: "skin",		        v: "dhx_web", t:"string"},
 			{p: "rest_path",		v: "", t:"string"}
@@ -1742,7 +1740,7 @@ function WSQL(){
 			zone = $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1;
 		// если зона указана в url, используем её
 		if($p.job_prm.url_prm.hasOwnProperty("zone"))
-			zone = $p.fix_number($p.job_prm.url_prm.zone, true);
+			zone = $p.job_prm.zone_is_string ? $p.job_prm.url_prm.zone : $p.fix_number($p.job_prm.url_prm.zone, true);
 		if(zone !== undefined)
 			wsql.set_user_param("zone", zone);
 

@@ -218,7 +218,7 @@ function Pouch(){
 
 					t.local.ram.info()
 						.then(function (info) {
-							if(info.doc_count > 10){
+							if(info.doc_count >= ($p.job_prm.pouch_ram_doc_count || 10)){
 								// широковещательное оповещение о начале загрузки локальных данных
 								$p.eve.callEvent("pouch_load_data_start", [_page]);
 								fetchNextPage();
@@ -294,7 +294,7 @@ function Pouch(){
 						if(!rinfo)
 							return;
 
-						if(id == "ram" && linfo.doc_count < 10){
+						if(id == "ram" && linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
 							// широковещательное оповещение о начале загрузки локальных данных
 							_page = {
 								total_rows: rinfo.doc_count,
@@ -306,6 +306,11 @@ function Pouch(){
 							};
 							$p.eve.callEvent("pouch_load_data_start", [_page]);
 
+						}else if(id == "doc"){
+							// широковещательное оповещение о начале синхронизации базы doc
+							setTimeout(function () {
+								$p.eve.callEvent("pouch_doc_sync_start");
+							});
 						}
 
 						// ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
@@ -331,7 +336,7 @@ function Pouch(){
 								if(id == "ram"){
 									t.load_changes(change);
 
-									if(linfo.doc_count < 10){
+									if(linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
 
 										// широковещательное оповещение о загрузке порции данных
 										_page.page++;
