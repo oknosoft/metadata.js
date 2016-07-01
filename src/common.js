@@ -199,10 +199,12 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 
 						timer = setTimeout(function () {
 							//TODO: свернуть массив оповещений перед отправкой
-							target._observers.forEach(function (observer) {
-								observer(target._notis);
-							});
-							target._notis.length = 0;
+							if(target._notis.length){
+								target._observers.forEach(function (observer) {
+									observer(target._notis);
+								});
+								target._notis.length = 0;
+							}
 							timer = false;
 
 						}, 4);

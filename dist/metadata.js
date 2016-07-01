@@ -392,10 +392,12 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 
 						timer = setTimeout(function () {
 							//TODO: свернуть массив оповещений перед отправкой
-							target._observers.forEach(function (observer) {
-								observer(target._notis);
-							});
-							target._notis.length = 0;
+							if(target._notis.length){
+								target._observers.forEach(function (observer) {
+									observer(target._notis);
+								});
+								target._notis.length = 0;
+							}
 							timer = false;
 
 						}, 4);
@@ -3116,17 +3118,24 @@ function eXcell_ocombo(cell){
 
 	/**
 	 * вызывается при отключении редактора
+	 * @return {boolean} - если "истина", значит объект был изменён
 	 */
 	t.detach=function(){
-		if(t.combo && t.combo.getComboText){
-			t.setValue(t.combo.getComboText());         // текст в элементе управления
-			if(!t.combo.getSelectedValue())
-				t.combo.callEvent("onChange");
-			var res = !$p.is_equal(t.val, t.getValue());// compares the new and the old values
-			t.combo.unload();
-			return res;
-		} else
-			return true;
+		if(t.combo){
+
+			if(t.combo.getComboText){
+				t.setValue(t.combo.getComboText());         // текст в элементе управления
+				if(!t.combo.getSelectedValue())
+					t.combo.callEvent("onChange");
+				var res = !$p.is_equal(t.val, t.getValue());// compares the new and the old values
+				t.combo.unload();
+				return res;
+
+			} else if(t.combo.unload){
+				t.combo.unload();
+			}
+		}
+		return true;
 	}
 }
 eXcell_ocombo.prototype = eXcell_proto;
@@ -3347,6 +3356,14 @@ eXcell_dhxCalendar.prototype.edit = function() {
 
 })();
 
+/**
+ * Проверяет, видна ли ячейка
+ * TODO: учесть слой, модальность и т.д.
+ */
+dhtmlXCellObject.prototype.is_visible = function () {
+	var rect = this.cell.getBoundingClientRect();
+	return rect.right > 0 && rect.bottom > 0;
+};
 
 
 $p.iface.data_to_grid = function (data, attr){
@@ -3896,8 +3913,12 @@ function OCombo(attr){
 	 */
 	this.attach = function (attr) {
 
-		if(_obj)
-			Object.unobserve(_obj, observer);
+		if(_obj){
+			if(_obj instanceof TabularSectionRow)
+				Object.unobserve(_obj._owner._owner, observer);
+			else
+				Object.unobserve(_obj, observer);
+		}
 
 		_obj = attr.obj;
 		_field = attr.field;
@@ -3939,8 +3960,12 @@ function OCombo(attr){
 	var _unload = this.unload;
 	this.unload = function () {
 		popup_hide();
-		if(_obj)
-			Object.unobserve(_obj, observer);
+		if(_obj){
+			if(_obj instanceof TabularSectionRow)
+				Object.unobserve(_obj._owner._owner, observer);
+			else
+				Object.unobserve(_obj, observer);
+		}
 		if(t.conf && t.conf.tm_confirm_blur)
 			clearTimeout(t.conf.tm_confirm_blur);
 		_obj = null;
@@ -4401,6 +4426,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			is_tabular: true
 		};
 	_grid.setDateFormat("%d.%m.%Y %H:%i");
+	_grid.enableAccessKeyMap();
 
 	function get_sel_index(silent){
 		var selId = _grid.getSelectedRowId();
@@ -4486,17 +4512,18 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	}
 
 	function observer_rows(changes){
-		var synced;
-		changes.forEach(function(change){
-			if (!synced && _grid.clearAll && _tsname == change.tabular){
-				synced = true;
-				_ts.sync_grid(_grid, _selection);
-			}
-		});
+		if(_grid.clearAll){
+			changes.some(function(change){
+				if (change.type == "rows" && change.tabular == _tsname){
+					_ts.sync_grid(_grid, _selection);
+					return true;
+				}
+			});	
+		}
 	}
 
 	function observer(changes){
-		if(changes.length > 4){
+		if(changes.length > 20){
 			try{_ts.sync_grid(_grid, _selection);} catch(err){}
 		} else
 			changes.forEach(function(change){
@@ -4566,7 +4593,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			},
 			set: function (sel) {
 				_selection = sel;
-				observer_rows([{tabular: _tsname}]);
+				observer_rows([{tabular: _tsname, type: "rows"}]);
 			}
 		},
 
@@ -4637,12 +4664,14 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		switch(code) {
 			case 45:    //  ins
 				add_row();
-				break;
+				return false;
 
 			case 46:    //  del
 				del_row();
-				break;
+				return false;
 		}
+
+		return true;
 
 	});
 
@@ -4656,7 +4685,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	});
 
 	// заполняем табчасть данными
-	observer_rows([{tabular: _tsname}]);
+	observer_rows([{tabular: _tsname, type: "rows"}]);
 
 	// начинаем следить за объектом и, его табчастью допреквизитов
 	Object.observe(_obj, observer, ["row"]);
@@ -9118,7 +9147,7 @@ DataObj.prototype.__define({
 
 	/**
 	 * Читает объект из внешней или внутренней датабазы асинхронно.
-	 * В отличии от _mgr.get() перезаполняет объект сохранёнными данными
+	 * В отличии от _mgr.get(), принудительно перезаполняет объект сохранёнными данными
 	 * @method load
 	 * @for DataObj
 	 * @return {Promise.<DataObj>} - промис с результатом выполнения операции
@@ -10266,7 +10295,7 @@ TabularSectionRow.prototype._getter = DataObj.prototype._getter;
 
 TabularSectionRow.prototype._setter = function (f, v) {
 
-	if(this._obj[f] == v)
+	if(this._obj[f] == v || (!v && this._obj[f] == $p.blank.guid))
 		return;
 
 	if(!this._owner._owner._data._silent)
@@ -14418,7 +14447,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			return do_exit;
 		}
 
-		if(wnd){
+		if(wnd && wnd.is_visible && wnd.is_visible()){
 			if (evt.keyCode == 113 || evt.keyCode == 115){ //{F2} или {F4}
 				if(!check_exit()){
 					setTimeout(function(){
@@ -14440,20 +14469,24 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 			} else if(evt.keyCode == 27){ // закрытие по {ESC}
 				if(!check_exit()){
-
+					setTimeout(function(){
+						wnd.close();
+					});
 				}
 			}
 		}
 	}
 
 	function input_filter_change(flt){
-		if(has_tree){
-			if(flt.filter)
-				wnd.elmnts.cell_tree.collapse();
-			else
-				wnd.elmnts.cell_tree.expand();
+		if(wnd && wnd.elmnts){
+			if(has_tree){
+				if(flt.filter)
+					wnd.elmnts.cell_tree.collapse();
+				else
+					wnd.elmnts.cell_tree.expand();
+			}
+			wnd.elmnts.grid.reload();
 		}
-		wnd.elmnts.grid.reload();
 	}
 
 	function create_tree_and_grid(){

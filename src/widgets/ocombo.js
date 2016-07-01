@@ -320,8 +320,12 @@ function OCombo(attr){
 	 */
 	this.attach = function (attr) {
 
-		if(_obj)
-			Object.unobserve(_obj, observer);
+		if(_obj){
+			if(_obj instanceof TabularSectionRow)
+				Object.unobserve(_obj._owner._owner, observer);
+			else
+				Object.unobserve(_obj, observer);
+		}
 
 		_obj = attr.obj;
 		_field = attr.field;
@@ -363,8 +367,12 @@ function OCombo(attr){
 	var _unload = this.unload;
 	this.unload = function () {
 		popup_hide();
-		if(_obj)
-			Object.unobserve(_obj, observer);
+		if(_obj){
+			if(_obj instanceof TabularSectionRow)
+				Object.unobserve(_obj._owner._owner, observer);
+			else
+				Object.unobserve(_obj, observer);
+		}
 		if(t.conf && t.conf.tm_confirm_blur)
 			clearTimeout(t.conf.tm_confirm_blur);
 		_obj = null;

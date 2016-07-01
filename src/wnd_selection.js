@@ -197,7 +197,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			return do_exit;
 		}
 
-		if(wnd){
+		if(wnd && wnd.is_visible && wnd.is_visible()){
 			if (evt.keyCode == 113 || evt.keyCode == 115){ //{F2} или {F4}
 				if(!check_exit()){
 					setTimeout(function(){
@@ -219,20 +219,24 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 			} else if(evt.keyCode == 27){ // закрытие по {ESC}
 				if(!check_exit()){
-
+					setTimeout(function(){
+						wnd.close();
+					});
 				}
 			}
 		}
 	}
 
 	function input_filter_change(flt){
-		if(has_tree){
-			if(flt.filter)
-				wnd.elmnts.cell_tree.collapse();
-			else
-				wnd.elmnts.cell_tree.expand();
+		if(wnd && wnd.elmnts){
+			if(has_tree){
+				if(flt.filter)
+					wnd.elmnts.cell_tree.collapse();
+				else
+					wnd.elmnts.cell_tree.expand();
+			}
+			wnd.elmnts.grid.reload();
 		}
-		wnd.elmnts.grid.reload();
 	}
 
 	function create_tree_and_grid(){
