@@ -392,10 +392,12 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 
 						timer = setTimeout(function () {
 							//TODO: свернуть массив оповещений перед отправкой
-							target._observers.forEach(function (observer) {
-								observer(target._notis);
-							});
-							target._notis.length = 0;
+							if(target._notis.length){
+								target._observers.forEach(function (observer) {
+									observer(target._notis);
+								});
+								target._notis.length = 0;
+							}
 							timer = false;
 
 						}, 4);
@@ -1699,10 +1701,6 @@ function JobPrm(){
 			writable: true
 		},
 
-		session_start: {
-			value: new Date()
-		},
-
 		/**
 		 * Содержит объект с расшифровкой параметров url, указанных при запуске программы
 		 * @property url_prm
@@ -1721,7 +1719,7 @@ function JobPrm(){
 		rest_url: {
 			value: function () {
 				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", "number");
+					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
 				if(zone)
 					return url.replace("%1", zone);
 				else
@@ -1737,7 +1735,7 @@ function JobPrm(){
 		irest_url: {
 			value: function () {
 				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", "number");
+					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
 				url = url.replace("odata/standard.odata", "hs/rest");
 				if(zone)
 					return url.replace("%1", zone);
@@ -1919,8 +1917,8 @@ function WSQL(){
 			{p: "user_name",		v: "", t:"string"},
 			{p: "user_pwd",			v: "", t:"string"},
 			{p: "browser_uid",		v: $p.generate_guid(), t:"string"},
-			{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t:"number"},
-			{p: "enable_save_pwd",	v: "",	t:"boolean"},
+			{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
+			{p: "enable_save_pwd",	v: $p.job_prm.enable_save_pwd,	t:"boolean"},
 			{p: "autologin",		v: "",	t:"boolean"},
 			{p: "skin",		        v: "dhx_web", t:"string"},
 			{p: "rest_path",		v: "", t:"string"}
@@ -1935,7 +1933,7 @@ function WSQL(){
 			zone = $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1;
 		// если зона указана в url, используем её
 		if($p.job_prm.url_prm.hasOwnProperty("zone"))
-			zone = $p.fix_number($p.job_prm.url_prm.zone, true);
+			zone = $p.job_prm.zone_is_string ? $p.job_prm.url_prm.zone : $p.fix_number($p.job_prm.url_prm.zone, true);
 		if(zone !== undefined)
 			wsql.set_user_param("zone", zone);
 
@@ -2243,7 +2241,7 @@ function Pouch(){
 
 					t.local.ram.info()
 						.then(function (info) {
-							if(info.doc_count > 10){
+							if(info.doc_count >= ($p.job_prm.pouch_ram_doc_count || 10)){
 								// широковещательное оповещение о начале загрузки локальных данных
 								$p.eve.callEvent("pouch_load_data_start", [_page]);
 								fetchNextPage();
@@ -2319,7 +2317,7 @@ function Pouch(){
 						if(!rinfo)
 							return;
 
-						if(id == "ram" && linfo.doc_count < 10){
+						if(id == "ram" && linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
 							// широковещательное оповещение о начале загрузки локальных данных
 							_page = {
 								total_rows: rinfo.doc_count,
@@ -2331,6 +2329,11 @@ function Pouch(){
 							};
 							$p.eve.callEvent("pouch_load_data_start", [_page]);
 
+						}else if(id == "doc"){
+							// широковещательное оповещение о начале синхронизации базы doc
+							setTimeout(function () {
+								$p.eve.callEvent("pouch_doc_sync_start");
+							});
 						}
 
 						// ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
@@ -2356,7 +2359,7 @@ function Pouch(){
 								if(id == "ram"){
 									t.load_changes(change);
 
-									if(linfo.doc_count < 10){
+									if(linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
 
 										// широковещательное оповещение о загрузке порции данных
 										_page.page++;
@@ -3115,17 +3118,24 @@ function eXcell_ocombo(cell){
 
 	/**
 	 * вызывается при отключении редактора
+	 * @return {boolean} - если "истина", значит объект был изменён
 	 */
 	t.detach=function(){
-		if(t.combo && t.combo.getComboText){
-			t.setValue(t.combo.getComboText());         // текст в элементе управления
-			if(!t.combo.getSelectedValue())
-				t.combo.callEvent("onChange");
-			var res = !$p.is_equal(t.val, t.getValue());// compares the new and the old values
-			t.combo.unload();
-			return res;
-		} else
-			return true;
+		if(t.combo){
+
+			if(t.combo.getComboText){
+				t.setValue(t.combo.getComboText());         // текст в элементе управления
+				if(!t.combo.getSelectedValue())
+					t.combo.callEvent("onChange");
+				var res = !$p.is_equal(t.val, t.getValue());// compares the new and the old values
+				t.combo.unload();
+				return res;
+
+			} else if(t.combo.unload){
+				t.combo.unload();
+			}
+		}
+		return true;
 	}
 }
 eXcell_ocombo.prototype = eXcell_proto;
@@ -3346,6 +3356,14 @@ eXcell_dhxCalendar.prototype.edit = function() {
 
 })();
 
+/**
+ * Проверяет, видна ли ячейка
+ * TODO: учесть слой, модальность и т.д.
+ */
+dhtmlXCellObject.prototype.is_visible = function () {
+	var rect = this.cell.getBoundingClientRect();
+	return rect.right > 0 && rect.bottom > 0;
+};
 
 
 $p.iface.data_to_grid = function (data, attr){
@@ -3895,8 +3913,12 @@ function OCombo(attr){
 	 */
 	this.attach = function (attr) {
 
-		if(_obj)
-			Object.unobserve(_obj, observer);
+		if(_obj){
+			if(_obj instanceof TabularSectionRow)
+				Object.unobserve(_obj._owner._owner, observer);
+			else
+				Object.unobserve(_obj, observer);
+		}
 
 		_obj = attr.obj;
 		_field = attr.field;
@@ -3938,8 +3960,12 @@ function OCombo(attr){
 	var _unload = this.unload;
 	this.unload = function () {
 		popup_hide();
-		if(_obj)
-			Object.unobserve(_obj, observer);
+		if(_obj){
+			if(_obj instanceof TabularSectionRow)
+				Object.unobserve(_obj._owner._owner, observer);
+			else
+				Object.unobserve(_obj, observer);
+		}
 		if(t.conf && t.conf.tm_confirm_blur)
 			clearTimeout(t.conf.tm_confirm_blur);
 		_obj = null;
@@ -4400,6 +4426,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			is_tabular: true
 		};
 	_grid.setDateFormat("%d.%m.%Y %H:%i");
+	_grid.enableAccessKeyMap();
 
 	function get_sel_index(silent){
 		var selId = _grid.getSelectedRowId();
@@ -4485,17 +4512,18 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	}
 
 	function observer_rows(changes){
-		var synced;
-		changes.forEach(function(change){
-			if (!synced && _grid.clearAll && _tsname == change.tabular){
-				synced = true;
-				_ts.sync_grid(_grid, _selection);
-			}
-		});
+		if(_grid.clearAll){
+			changes.some(function(change){
+				if (change.type == "rows" && change.tabular == _tsname){
+					_ts.sync_grid(_grid, _selection);
+					return true;
+				}
+			});	
+		}
 	}
 
 	function observer(changes){
-		if(changes.length > 4){
+		if(changes.length > 20){
 			try{_ts.sync_grid(_grid, _selection);} catch(err){}
 		} else
 			changes.forEach(function(change){
@@ -4565,7 +4593,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			},
 			set: function (sel) {
 				_selection = sel;
-				observer_rows([{tabular: _tsname}]);
+				observer_rows([{tabular: _tsname, type: "rows"}]);
 			}
 		},
 
@@ -4636,12 +4664,14 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		switch(code) {
 			case 45:    //  ins
 				add_row();
-				break;
+				return false;
 
 			case 46:    //  del
 				del_row();
-				break;
+				return false;
 		}
+
+		return true;
 
 	});
 
@@ -4655,7 +4685,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	});
 
 	// заполняем табчасть данными
-	observer_rows([{tabular: _tsname}]);
+	observer_rows([{tabular: _tsname, type: "rows"}]);
 
 	// начинаем следить за объектом и, его табчастью допреквизитов
 	Object.observe(_obj, observer, ["row"]);
@@ -5493,8 +5523,9 @@ function Meta() {
 			else{
 				
 				// если изменились метаданные, запланировать перезагрузку
-				if(change.docs && (Date.now() - $p.job_prm.session_start.getTime() > 20000))
-					do_reload();				
+				do_reload();
+				// if(change.docs && (performance.now() $p.job_prm.session_start.getTime() > 20000))
+				// 	do_reload();
 			}
 			
 		});
@@ -6101,6 +6132,7 @@ function Col_struct(id,width,type,align,sort,caption){
 	this.sort = sort;
 	this.caption = caption;
 }
+$p.iface.Col_struct = Col_struct;
 
 
 /**
@@ -6806,7 +6838,7 @@ DataManager.prototype.printing_plates = function(){
 		if(t.metadata().printing_plates)
 			t._printing_plates = t.metadata().printing_plates;
 
-		else if(t.metadata().cachable == "ram" || t.metadata().cachable.indexOf("doc") == 0){
+		else if(t.metadata().cachable == "ram" || (t.metadata().cachable && t.metadata().cachable.indexOf("doc") == 0)){
 			t._printing_plates = {};
 		}
 	}
@@ -9115,7 +9147,7 @@ DataObj.prototype.__define({
 
 	/**
 	 * Читает объект из внешней или внутренней датабазы асинхронно.
-	 * В отличии от _mgr.get() перезаполняет объект сохранёнными данными
+	 * В отличии от _mgr.get(), принудительно перезаполняет объект сохранёнными данными
 	 * @method load
 	 * @for DataObj
 	 * @return {Promise.<DataObj>} - промис с результатом выполнения операции
@@ -10263,7 +10295,7 @@ TabularSectionRow.prototype._getter = DataObj.prototype._getter;
 
 TabularSectionRow.prototype._setter = function (f, v) {
 
-	if(this._obj[f] == v)
+	if(this._obj[f] == v || (!v && this._obj[f] == $p.blank.guid))
 		return;
 
 	if(!this._owner._owner._data._silent)
@@ -12663,9 +12695,8 @@ function OTooolBar(attr){
 	}
 
 	function btn_click(){
-		var tool_name = this.name.replace(attr.name + '_', '');
 		if(attr.onclick)
-			attr.onclick.call(_this, tool_name);
+			attr.onclick.call(_this, this.name.replace(attr.name + '_', ''), attr.name);
 	}
 
 	/**
@@ -12839,6 +12870,8 @@ $p.iface.add_button = function(parent, attr, battr) {
 
 	// если имя начинается с sep_ - это разделитель
 	bdiv.className = (battr.name.indexOf("sep_") == 0) ? 'md_otooolbar_sep' : 'md_otooolbar_button';
+	if(battr.hasOwnProperty("class_name"))
+		bdiv.classList.add(battr.class_name);
 
 	if(battr.img)
 		html = '<img src="' + (attr ? attr.image_path : '') + battr.img + '">';
@@ -14344,10 +14377,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				onchange: input_filter_change,
 				hide_filter: attr.hide_filter
 			};
-			if(attr.date_from)
-				tbattr.date_from = attr.date_from;
-			if(attr.date_till)
-				tbattr.date_till = attr.date_till;
+			if(attr.date_from) tbattr.date_from = attr.date_from;
+			if(attr.date_till) tbattr.date_till = attr.date_till;
+			if(attr.period) tbattr.period = attr.period;
 			wnd.elmnts.filter = new $p.iface.Toolbar_filter(tbattr);
 
 			
@@ -14415,7 +14447,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			return do_exit;
 		}
 
-		if(wnd){
+		if(wnd && wnd.is_visible && wnd.is_visible()){
 			if (evt.keyCode == 113 || evt.keyCode == 115){ //{F2} или {F4}
 				if(!check_exit()){
 					setTimeout(function(){
@@ -14437,20 +14469,24 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 			} else if(evt.keyCode == 27){ // закрытие по {ESC}
 				if(!check_exit()){
-
+					setTimeout(function(){
+						wnd.close();
+					});
 				}
 			}
 		}
 	}
 
 	function input_filter_change(flt){
-		if(has_tree){
-			if(flt.filter)
-				wnd.elmnts.cell_tree.collapse();
-			else
-				wnd.elmnts.cell_tree.expand();
+		if(wnd && wnd.elmnts){
+			if(has_tree){
+				if(flt.filter)
+					wnd.elmnts.cell_tree.collapse();
+				else
+					wnd.elmnts.cell_tree.expand();
+			}
+			wnd.elmnts.grid.reload();
 		}
-		wnd.elmnts.grid.reload();
 	}
 
 	function create_tree_and_grid(){
@@ -15751,6 +15787,14 @@ $p.eve.time_diff = function () {
 					$p.wsql.set_user_param("device_type", v);
 				}
 			});
+
+
+			/**
+			 * слушаем события клавиатуры
+			 */
+			document.body.addEventListener("keydown", function (ev) {
+				eve.callEvent("keydown", [ev]);
+			}, false);
 			
 			setTimeout(init_params, 10);
 
@@ -15763,15 +15807,6 @@ $p.eve.time_diff = function () {
 			}
 		}
 
-
-
-	}, false);
-
-	/**
-	 * слушаем события клавиатуры
- 	 */
-	document.body.addEventListener("keydown", function (ev) {
-		eve.callEvent("keydown", [ev]);
 	}, false);
 
 	/**

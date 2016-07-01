@@ -26,6 +26,7 @@ function Col_struct(id,width,type,align,sort,caption){
 	this.sort = sort;
 	this.caption = caption;
 }
+$p.iface.Col_struct = Col_struct;
 
 
 /**
@@ -731,7 +732,7 @@ DataManager.prototype.printing_plates = function(){
 		if(t.metadata().printing_plates)
 			t._printing_plates = t.metadata().printing_plates;
 
-		else if(t.metadata().cachable == "ram" || t.metadata().cachable.indexOf("doc") == 0){
+		else if(t.metadata().cachable == "ram" || (t.metadata().cachable && t.metadata().cachable.indexOf("doc") == 0)){
 			t._printing_plates = {};
 		}
 	}

@@ -53,6 +53,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			is_tabular: true
 		};
 	_grid.setDateFormat("%d.%m.%Y %H:%i");
+	_grid.enableAccessKeyMap();
 
 	function get_sel_index(silent){
 		var selId = _grid.getSelectedRowId();
@@ -138,17 +139,18 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	}
 
 	function observer_rows(changes){
-		var synced;
-		changes.forEach(function(change){
-			if (!synced && _grid.clearAll && _tsname == change.tabular){
-				synced = true;
-				_ts.sync_grid(_grid, _selection);
-			}
-		});
+		if(_grid.clearAll){
+			changes.some(function(change){
+				if (change.type == "rows" && change.tabular == _tsname){
+					_ts.sync_grid(_grid, _selection);
+					return true;
+				}
+			});	
+		}
 	}
 
 	function observer(changes){
-		if(changes.length > 4){
+		if(changes.length > 20){
 			try{_ts.sync_grid(_grid, _selection);} catch(err){}
 		} else
 			changes.forEach(function(change){
@@ -218,7 +220,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			},
 			set: function (sel) {
 				_selection = sel;
-				observer_rows([{tabular: _tsname}]);
+				observer_rows([{tabular: _tsname, type: "rows"}]);
 			}
 		},
 
@@ -289,12 +291,14 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		switch(code) {
 			case 45:    //  ins
 				add_row();
-				break;
+				return false;
 
 			case 46:    //  del
 				del_row();
-				break;
+				return false;
 		}
+
+		return true;
 
 	});
 
@@ -308,7 +312,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	});
 
 	// заполняем табчасть данными
-	observer_rows([{tabular: _tsname}]);
+	observer_rows([{tabular: _tsname, type: "rows"}]);
 
 	// начинаем следить за объектом и, его табчастью допреквизитов
 	Object.observe(_obj, observer, ["row"]);

@@ -116,17 +116,24 @@ function eXcell_ocombo(cell){
 
 	/**
 	 * вызывается при отключении редактора
+	 * @return {boolean} - если "истина", значит объект был изменён
 	 */
 	t.detach=function(){
-		if(t.combo && t.combo.getComboText){
-			t.setValue(t.combo.getComboText());         // текст в элементе управления
-			if(!t.combo.getSelectedValue())
-				t.combo.callEvent("onChange");
-			var res = !$p.is_equal(t.val, t.getValue());// compares the new and the old values
-			t.combo.unload();
-			return res;
-		} else
-			return true;
+		if(t.combo){
+
+			if(t.combo.getComboText){
+				t.setValue(t.combo.getComboText());         // текст в элементе управления
+				if(!t.combo.getSelectedValue())
+					t.combo.callEvent("onChange");
+				var res = !$p.is_equal(t.val, t.getValue());// compares the new and the old values
+				t.combo.unload();
+				return res;
+
+			} else if(t.combo.unload){
+				t.combo.unload();
+			}
+		}
+		return true;
 	}
 }
 eXcell_ocombo.prototype = eXcell_proto;
@@ -347,6 +354,14 @@ eXcell_dhxCalendar.prototype.edit = function() {
 
 })();
 
+/**
+ * Проверяет, видна ли ячейка
+ * TODO: учесть слой, модальность и т.д.
+ */
+dhtmlXCellObject.prototype.is_visible = function () {
+	var rect = this.cell.getBoundingClientRect();
+	return rect.right > 0 && rect.bottom > 0;
+};
 
 
 $p.iface.data_to_grid = function (data, attr){
