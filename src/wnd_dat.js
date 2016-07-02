@@ -17,10 +17,9 @@ $p.iface.dat_blank = function(_dxw, attr) {
 
 	if(!attr)
 		attr = {};
-	var wnd_dat, wid = attr.id || 'wnd_dat_' + dhx4.newId();
 
-	wnd_dat = (_dxw || $p.iface.w).createWindow({
-		id: wid,
+	var wnd_dat = (_dxw || $p.iface.w).createWindow({
+		id: dhx4.newId(),
 		left: attr.left || 900,
 		top: attr.top || 20,
 		width: attr.width || 220,
