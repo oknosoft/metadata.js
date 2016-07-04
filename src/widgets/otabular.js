@@ -305,22 +305,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 	_grid.attachEvent("onEditCell", tabular_on_edit);
 
-	// _grid.attachEvent("onKeyPress", function(code,cFlag,sFlag){
-	//
-	// 	switch(code) {
-	// 		case 45:    //  ins
-	// 			_add_row();
-	// 			return false;
-	//
-	// 		case 46:    //  del
-	// 			_del_row();
-	// 			return false;
-	// 	}
-	//
-	// 	return true;
-	//
-	// });
-
 	_grid.attachEvent("onRowSelect", function(rid,ind){
 		if(_ts){
 			_grid._last = {
