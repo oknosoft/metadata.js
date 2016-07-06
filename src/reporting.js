@@ -1,8 +1,9 @@
 /**
- *
- * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- * @module reporting
+ * Конструкторы табличных документов печатных форм и отчетов<br/>
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016<br/>
  * Created 17.04.2016
+ *
+ * @module reporting
  */
 
 /**
@@ -99,7 +100,7 @@ SpreadsheetDocument.prototype.__define({
 /**
  * Экспортируем конструктор SpreadsheetDocument, чтобы экземпляры печатного документа можно было создать снаружи
  * @property SpreadsheetDocument
- * @for $p
+ * @for MetaEngine
  * @type {function}
  */
 $p.SpreadsheetDocument = SpreadsheetDocument;
@@ -161,8 +162,8 @@ function HandsontableDocument(container, attr) {
 
 /**
  * Экспортируем конструктор HandsontableDocument, чтобы экземпляры табличного документа можно было создать снаружи
- * @property SpreadsheetDocument
- * @for $p
+ * @property HandsontableDocument
+ * @for MetaEngine
  * @type {function}
  */
 $p.HandsontableDocument = HandsontableDocument;

@@ -1,8 +1,9 @@
 /**
- *
- * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- * @module geocoding
+ * Объекты для доступа к геокодерам Яндекс, Google и sypexgeo<br />
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016<br />
  * Created 16.04.2016
+ *
+ * @module geocoding
  */
 
 /**
