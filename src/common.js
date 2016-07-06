@@ -1421,18 +1421,40 @@ function Modifiers(){
 	 * Загружает и выполняет методы модификаторов
 	 * @method execute
 	 */
-	this.execute = function (data) {
+	this.execute = function (context) {
+		
+		// выполняем вшитые в сборку модификаторы
 		var res, tres;
 		methods.forEach(function (method) {
 			if(typeof method === "function")
-				tres = method(data);
+				tres = method(context);
 			else
-				tres = $p.injected_data[method](data);
+				tres = $p.injected_data[method](context);
 			if(res !== false)
 				res = tres;
 		});
 		return res;
 	};
+
+	/**
+	 * выполняет подключаемые модификаторы
+	 * @param data
+	 */
+	this.execute_external = function (data) {
+		var paths = $p.wsql.get_user_param("modifiers").split('\n').map(function (path) {
+			if(path)
+				return new Promise(function(resolve, reject){
+					$p.load_script(path, "script", resolve);
+				});
+			else
+				return Promise.resolve();
+		});
+		return Promise.all(paths)
+			.then(function () {
+				this.execute(data);
+			}.bind(this));		
+	};
+	
 };
 
 /**
