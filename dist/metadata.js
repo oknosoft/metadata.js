@@ -1575,7 +1575,7 @@ function InterfaceObjs(){
 /**
  * ### Модификатор отложенного запуска
  * Служебный объект, реализующий отложенную загрузку модулей,<br />
- * в которых доопределяется (переопределяется) поведение объектов и менеджеров конкретных типов<br />
+ * в которых доопределяется (переопределяется) поведение объектов и менеджеров конкретных типов
  *
  * @class Modifiers
  * @constructor
@@ -1595,6 +1595,7 @@ function Modifiers(){
 
 	/**
 	 * Отменяет подписку на событие
+	 * @method detache
 	 * @param method {Function}
 	 */
 	this.detache = function (method) {
@@ -1605,6 +1606,7 @@ function Modifiers(){
 
 	/**
 	 * Отменяет все подписки
+	 * @method clear
 	 */
 	this.clear = function () {
 		methods.length = 0;
@@ -1631,6 +1633,7 @@ function Modifiers(){
 
 	/**
 	 * выполняет подключаемые модификаторы
+	 * @method execute_external
 	 * @param data
 	 */
 	this.execute_external = function (data) {
