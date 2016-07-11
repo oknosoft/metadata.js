@@ -191,14 +191,14 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			var do_exit;
 			// если есть внешнее модальное, ничего обрабатывать не надо
 			$p.iface.w.forEachWindow(function (w) {
-				if(w.isModal() && w != wnd)
+				if(w != wnd && (w.isModal() || $p.iface.w.getTopmostWindow() == w))
 					do_exit = true;
 			});
 			return do_exit;
 		}
 
 		if(wnd && wnd.is_visible && wnd.is_visible()){
-			if (evt.keyCode == 113 || evt.keyCode == 115){ //{F2} или {F4}
+			if (evt.ctrlKey && evt.keyCode == 70){ // фокус на поиск по {Ctrl+F}
 				if(!check_exit()){
 					setTimeout(function(){
 						if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == "desktop")

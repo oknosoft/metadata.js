@@ -135,6 +135,8 @@ function OCombo(attr){
 		return filter;
 	}
 
+	// обработчики событий
+
 	function aclick(e){
 		if(this.name == "select"){
 			if(_mgr)
@@ -201,8 +203,14 @@ function OCombo(attr){
 	function popup_hide(){
 		popup_focused = false;
 		setTimeout(function () {
-			if(!popup_focused)
+			if(!popup_focused){
+				if($p.iface.popup.p && $p.iface.popup.p.onmouseover)
+					$p.iface.popup.p.onmouseover = null;
+				if($p.iface.popup.p && $p.iface.popup.p.onmouseout)
+					$p.iface.popup.p.onmouseout = null;
+				$p.iface.popup.clear();
 				$p.iface.popup.hide();
+			}
 		}, 300);
 	}
 
@@ -241,22 +249,13 @@ function OCombo(attr){
 		$p.iface.popup.p.onmouseout = popup_hide;
 	}
 
-	dhtmlxEvent(t.getButton(), "mouseover", popup_show);
-
-	dhtmlxEvent(t.getButton(), "mouseout", popup_hide);
-
-	dhtmlxEvent(t.getBase(), "click", function (e) {
-		return $p.cancel_bubble(e);
-	});
-
-	dhtmlxEvent(t.getBase(), "contextmenu", function (e) {
+	function oncontextmenu(e) {
 		setTimeout(popup_show, 10);
 		e.preventDefault();
 		return false;
-	});
+	}
 
-	dhtmlxEvent(t.getInput(), "keyup", function (e) {
-
+	function onkeyup(e) {
 		if(_mgr instanceof EnumManager)
 			return;
 
@@ -274,14 +273,26 @@ function OCombo(attr){
 			}
 			return $p.cancel_bubble(e);
 		}
-	});
+	}
 
-	dhtmlxEvent(t.getInput(), "focus", function (e) {
+	function onfocus(e) {
 		setTimeout(function () {
 			if(t && t.getInput)
 				t.getInput().select();
 		}, 50);
-	});
+	}
+
+	t.getButton().addEventListener("mouseover", popup_show);
+
+	t.getButton().addEventListener("mouseout", popup_hide);
+
+	t.getBase().addEventListener("click", $p.cancel_bubble);
+
+	t.getBase().addEventListener("contextmenu", oncontextmenu);
+
+	t.getInput().addEventListener("keyup", onkeyup);
+
+	t.getInput().addEventListener("focus", onfocus);
 
 
 	function observer(changes){
@@ -366,20 +377,37 @@ function OCombo(attr){
 
 	var _unload = this.unload;
 	this.unload = function () {
+
 		popup_hide();
+
+		t.getButton().removeEventListener("mouseover", popup_show);
+
+		t.getButton().removeEventListener("mouseout", popup_hide);
+
+		t.getBase().removeEventListener("click", $p.cancel_bubble);
+
+		t.getBase().removeEventListener("contextmenu", oncontextmenu);
+
+		t.getInput().removeEventListener("keyup", onkeyup);
+
+		t.getInput().removeEventListener("focus", onfocus);
+
 		if(_obj){
 			if(_obj instanceof TabularSectionRow)
 				Object.unobserve(_obj._owner._owner, observer);
 			else
 				Object.unobserve(_obj, observer);
 		}
+		
 		if(t.conf && t.conf.tm_confirm_blur)
 			clearTimeout(t.conf.tm_confirm_blur);
+		
 		_obj = null;
 		_field = null;
 		_meta = null;
 		_mgr = null;
 		_pwnd = null;
+		
 		try{ _unload.call(t); }catch(e){}
 	};
 

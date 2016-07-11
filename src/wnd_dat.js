@@ -17,10 +17,9 @@ $p.iface.dat_blank = function(_dxw, attr) {
 
 	if(!attr)
 		attr = {};
-	var wnd_dat, wid = attr.id || 'wnd_dat_' + dhx4.newId();
 
-	wnd_dat = (_dxw || $p.iface.w).createWindow({
-		id: wid,
+	var wnd_dat = (_dxw || $p.iface.w).createWindow({
+		id: dhx4.newId(),
 		left: attr.left || 900,
 		top: attr.top || 20,
 		width: attr.width || 220,
@@ -136,72 +135,6 @@ $p.iface.dat_blank = function(_dxw, attr) {
 		}			
 		wnd_dat.setModal(1);
 	}
-
-	return wnd_dat;
-};
-
-/**
- * Форма dat.tree - дерево с галочками
- */
-$p.iface.dat_tree = function(_dxw, attr) {
-
-	var wnd_dat = $p.iface.dat_blank(_dxw, attr),
-		layout = document.createElement("div"),
-		cell_a = document.createElement("div"),
-		cell_b = document.createElement("div"),
-		str_form = [
-			{ type:"combo" , name:"cb_sys", label:"Система"  },
-			{ type:"combo" , name:"cb_clr", label:"Цвет"  },
-			{ type:"settings" , labelWidth:50, inputWidth:160, offsetLeft: 0, offsetTop: 0  }
-		];
-
-	_dxw = null;
-
-	wnd_dat.setMinDimension(250, 300);
-	wnd_dat.attachObject(layout);
-	layout.appendChild(cell_a);
-	layout.appendChild(cell_b);
-	wnd_dat.cell_a = cell_a;
-
-	wnd_dat.tree = new dhtmlXTreeObject(cell_b, "100%", "100%", 0);
-	wnd_dat.tree.setImagePath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
-	wnd_dat.tree.setIconsPath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
-	wnd_dat.tree.enableCheckBoxes(true, true);
-	wnd_dat.tree.enableTreeImages(false);
-
-	return wnd_dat;
-};
-
-/**
- * Форма dat.pgrid - таблица свойств
- */
-$p.iface.dat_pgrid = function(_dxw, attr) {
-
-	var wnd_dat = $p.iface.dat_blank(_dxw, attr);
-
-	_dxw = null;
-
-	wnd_dat.setMinDimension(320, 300);
-
-	var pgrid = wnd_dat.elmnts.pgrid = wnd_dat.attachPropertyGrid();
-	pgrid.setDateFormat("%d.%m.%Y %H:%i");
-	pgrid.init();
-	if(attr.grid_struct)
-		pgrid.parse(
-			attr.o._manager.get_property_grid_xml(attr.grid_struct, attr.v), function(){
-				pgrid.enableAutoHeight(false);
-				pgrid.setSizes();
-				pgrid.setUserData("", "source",	{
-					o: attr.v,
-					grid: pgrid,
-					on_select: $p.iface.pgrid_on_select,
-					slist: attr.grid_slist,
-					grid_on_change: attr.grid_on_change,
-					wnd: wnd_dat
-				});
-				pgrid.attachEvent("onPropertyChanged", $p.iface.pgrid_on_change );
-				pgrid.attachEvent("onCheckbox", $p.iface.pgrid_on_checkbox );
-			}, "xml");
 
 	return wnd_dat;
 };

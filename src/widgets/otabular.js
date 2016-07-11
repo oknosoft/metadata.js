@@ -55,6 +55,57 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	_grid.setDateFormat("%d.%m.%Y %H:%i");
 	_grid.enableAccessKeyMap();
 
+	/**
+	 * добавляет строку табчасти
+	 */
+	_grid._add_row = function(){
+		if(!attr.read_only){
+
+			var row = _ts.add();
+
+			if(_mgr.handle_event(_obj, "add_row",
+					{
+						tabular_section: _tsname,
+						grid: _grid,
+						row: row,
+						wnd: _pwnd.pwnd
+					}) === false)
+				return;
+
+			setTimeout(function () {
+				_grid.selectRowById(row.row);
+			}, 100);
+		}
+	};
+
+	/**
+	 * удаляет строку табчасти
+	 */
+	_grid._del_row = function(){
+		if(!attr.read_only){
+			var rId = get_sel_index();
+
+			if(rId != undefined){
+
+				if(_mgr.handle_event(_obj, "del_row", 
+						{
+							tabular_section: _tsname,
+							grid: _grid,
+							row: rId,
+							wnd: _pwnd.pwnd
+						}) === false)
+					return;
+
+				_ts.del(rId);
+
+				setTimeout(function () {
+					_grid.selectRowById(rId < _ts.count() ? rId + 1 : rId);
+				}, 100);
+			}
+		}
+	};
+	
+
 	function get_sel_index(silent){
 		var selId = _grid.getSelectedRowId();
 
@@ -69,51 +120,10 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			});
 	}
 
-	/**
-	 * добавляет строку табчасти
-	 */
-	function add_row(){
-		if(!attr.read_only){
-			
-			var row = _ts.add();
-			
-			_mgr.handle_event(_obj, "add_row", {
-				tabular_section: _tsname,
-				grid: _grid,
-				row: row,
-				wnd: _pwnd.pwnd
-			});
-			
-			setTimeout(function () {
-				_grid.selectRowById(row.row);
-			}, 100);
-		}
-	}
-
-	function del_row(){
-		if(!attr.read_only){
-			var rId = get_sel_index();
-			
-			if(rId != undefined){
-				
-				_mgr.handle_event(_obj, "del_row", {
-					tabular_section: _tsname,
-					grid: _grid,
-					row: rId,
-					wnd: _pwnd.pwnd
-				});
-				
-				_ts.del(rId);
-				
-				setTimeout(function () {
-					_grid.selectRowById(rId < _ts.count() ? rId + 1 : rId);
-				}, 100);
-			}
-		}
-	}
+	
 
 	/**
-	 * обработчик изменения значения в таблице продукции (примитивные типы)
+	 * обработчик изменения значения примитивного типа
 	 */
 	function tabular_on_edit(stage, rId, cInd, nValue, oValue){
 
@@ -138,6 +148,10 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		return ret_code;
 	}
 
+	/**
+	 * наблюдатель за изменениями насбор строк табчасти
+	 * @param changes
+	 */
 	function observer_rows(changes){
 		if(_grid.clearAll){
 			changes.some(function(change){
@@ -149,6 +163,10 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		}
 	}
 
+	/**
+	 * наблюдатель за изменениями значений в строках табчасти
+	 * @param changes
+	 */
 	function observer(changes){
 		if(changes.length > 20){
 			try{_ts.sync_grid(_grid, _selection);} catch(err){}
@@ -170,16 +188,17 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	// панель инструментов табличной части
 	_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
 	_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_add_del.xml"], function(){
+		
 		this.attachEvent("onclick", function(btn_id){
 
 			switch(btn_id) {
 
 				case "btn_add":
-					add_row();
+					_grid._add_row();
 					break;
 
 				case "btn_delete":
-					del_row();
+					_grid._del_row();
 					break;
 			}
 
@@ -285,22 +304,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	});
 
 	_grid.attachEvent("onEditCell", tabular_on_edit);
-
-	_grid.attachEvent("onKeyPress", function(code,cFlag,sFlag){
-
-		switch(code) {
-			case 45:    //  ins
-				add_row();
-				return false;
-
-			case 46:    //  del
-				del_row();
-				return false;
-		}
-
-		return true;
-
-	});
 
 	_grid.attachEvent("onRowSelect", function(rid,ind){
 		if(_ts){
