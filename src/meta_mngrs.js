@@ -41,26 +41,85 @@ $p.iface.Col_struct = Col_struct;
 function DataManager(class_name){
 
 	var _meta = _md.get(class_name),
+
 		_events = {
+
+			/**
+			 * ### После создания
+			 * Возникает после создания объекта. В обработчике можно установить значения по умолчанию для полей и табличных частей
+			 * или заполнить объект на основании данных связанного объекта
+			 *
+			 * @event after_create
+			 * @for DataManager
+			 */
 			after_create: [],
+
+			/**
+			 * ### После чтения объекта с сервера
+			 * Имеет смысл для объектов с типом кеширования ("doc", "doc_remote", "meta", "e1cib").
+			 * т.к. структура _DataObj_ может отличаться от прототипа в базе-источнике, в обработчике можно дозаполнить или пересчитать реквизиты прочитанного объекта
+			 * 
+			 * @event after_load
+			 * @for DataManager
+			 */
 			after_load: [],
+
+			/**
+			 * ### Перед записью
+			 * Возникает перед записью объекта. В обработчике можно проверить корректность данных, рассчитать итоги и т.д.
+			 * Запись можно отклонить, если у пользователя недостаточно прав, либо введены некорректные данные
+			 *
+			 * @event before_save
+			 * @for DataManager
+			 */
 			before_save: [],
+
+			/**
+			 * ### После записи
+			 *
+			 * @event after_save
+			 * @for DataManager
+			 */
 			after_save: [],
+
+			/**
+			 * ### При изменении реквизита шапки или табличной части
+			 *
+			 * @event value_change
+			 * @for DataManager
+			 */
 			value_change: [],
+
+			/**
+			 * ### При добавлении строки табличной части
+			 *
+			 * @event add_row
+			 * @for DataManager
+			 */
 			add_row: [],
+
+			/**
+			 * ### При удалении строки табличной части
+			 *
+			 * @event del_row
+			 * @for DataManager
+			 */
 			del_row: []
 		};
 
 	this.__define({
 
 			/**
+			 * ### Способ кеширования объектов этого менеджера
+			 *
 			 * Выполняет две функции:
 			 * - Указывает, нужно ли сохранять (искать) объекты в локальном кеше или сразу топать на сервер
 			 * - Указывает, нужно ли запоминать представления ссылок (инверсно).
 			 * Для кешируемых, представления ссылок запоминать необязательно, т.к. его быстрее вычислить по месту
 			 * @property cachable
 			 * @for DataManager
-			 * @type String - [not, cat, doc]
+			 * @type String - ("ram", "doc", "doc_remote", "meta", "e1cib")
+			 * @final
 			 */
 			cachable: {
 				get: function () {
@@ -84,7 +143,7 @@ function DataManager(class_name){
 			},
 
 			/**
-			 * Имя типа объектов этого менеджера
+			 * ### Имя типа объектов этого менеджера
 			 * @property class_name
 			 * @for DataManager
 			 * @type String
@@ -96,7 +155,7 @@ function DataManager(class_name){
 			},
 
 			/**
-			 * Указатель на массив, сопоставленный с таблицей локальной базы данных
+			 * ### Указатель на массив, сопоставленный с таблицей локальной базы данных
 			 * Фактически - хранилище объектов данного класса
 			 * @property alatable
 			 * @for DataManager
@@ -110,7 +169,9 @@ function DataManager(class_name){
 			},
 
 			/**
-			 * Метаданные объекта (указатель на фрагмент глобальных метаданных, относящмйся к текущему объекту)
+			 * ### Метаданные объекта
+			 * указатель на фрагмент глобальных метаданных, относящмйся к текущему объекту
+			 *
 			 * @method metadata
 			 * @for DataManager
 			 * @return {Object} - объект метаданных
@@ -125,12 +186,35 @@ function DataManager(class_name){
 			},
 
 			/**
-			 * Добавляет подписку на события объектов данного менеджера
+			 * ### Добавляет подписку на события объектов данного менеджера
+			 * В обработчиках событий можно реализовать бизнес-логику при создании, удалении и изменении объекта.
+			 * Например, заполнение шапки и табличных частей, пересчет одних полей при изменении других и т.д.
+			 *
 			 * @method attache_event
 			 * @for DataManager
-			 * @param name {String} - имя события
+			 * @param name {String} - имя события [after_create, after_load, before_save, after_save, value_change, add_row, del_row]
 			 * @param method {Function} - добавляемый метод
 			 * @param [first] {Boolean} - добавлять метод в начало, а не в конец коллекции
+			 *
+			 * @example
+			 *
+			 *     // Обработчик при создании документа
+			 *     // @this {DataObj} - обработчик вызывается в контексте текущего объекта
+			 *     $p.doc.nom_prices_setup.attache_event("after_create", function (attr) {
+			 *       // присваиваем новый номер документа
+			 *       return this.new_number_doc();
+			 *     });
+			 *
+			 *     // Обработчик события "при изменении свойства" в шапке или табличной части при редактировании в форме объекта
+			 *     // @this {DataObj} - обработчик вызывается в контексте текущего объекта
+			 *     $p.doc.nom_prices_setup.attache_event("add_row", function (attr) {
+			 *       // установим валюту и тип цен по умолчению при добавлении строки
+			 *       if(attr.tabular_section == "goods"){
+			 *         attr.row.price_type = this.price_type;
+			 *         attr.row.currency = this.price_type.price_currency;
+			 *       }
+			 *     });
+			 *
 			 */
 			attache_event: {
 				value: function (name, method, first) {
@@ -142,13 +226,18 @@ function DataManager(class_name){
 			},
 
 			/**
-			 * Выполняет методы подписки на событие
+			 * ### Выполняет методы подписки на событие
+			 * Служебный, внутренний метод, вызываемый формами и обсерверами при создании и изменении объекта данных<br/>
+			 * Выполняет в цикле все назначенные обработчики текущего события<br/>
+			 * Если любой из обработчиков вернул `false`, возвращает `false`. Иначе, возвращает массив с результатами всех обработчиков
+			 *
 			 * @method handle_event
 			 * @for DataManager
 			 * @param obj {DataObj} - объект, в котором произошло событие
 			 * @param name {String} - имя события
 			 * @param attr {Object} - дополнительные свойства, передаваемые в обработчик события
-			 * @return {Boolesn}
+			 * @return {Boolean|Array.<*>}
+			 * @private
 			 */
 			handle_event: {
 				value: function (obj, name, attr) {
@@ -272,7 +361,7 @@ function DataManager(class_name){
 DataManager.prototype.__define({
 
 	/**
-	 * Возвращает имя семейства объектов данного менеджера<br />
+	 * ### Имя семейства объектов данного менеджера
 	 * Примеры: "справочников", "документов", "регистров сведений"
 	 * @property family_name
 	 * @for DataManager
@@ -286,7 +375,7 @@ DataManager.prototype.__define({
 	},
 
 	/**
-	 * Имя таблицы объектов этого менеджера в локальной базе данных
+	 * ### Имя таблицы объектов этого менеджера в базе alasql
 	 * @property table_name
 	 * @type String
 	 * @final
@@ -333,7 +422,8 @@ DataManager.prototype.__define({
 
 
 /**
- * Выводит фрагмент списка объектов данного менеджера, ограниченный фильтром attr в grid
+ * ### Выводит фрагмент списка объектов данного менеджера, ограниченный фильтром attr в grid
+ *
  * @method sync_grid
  * @for DataManager
  * @param grid {dhtmlXGridObject}
@@ -412,7 +502,7 @@ DataManager.prototype.sync_grid = function(attr, grid){
 };
 
 /**
- * Возвращает массив доступных значений для комбобокса
+ * ### Возвращает массив доступных значений для комбобокса
  * @method get_option_list
  * @for DataManager
  * @param val {DataObj|String} - текущее значение
@@ -495,7 +585,8 @@ DataManager.prototype.tabular_captions = function (tabular, source) {
 };
 
 /**
- * Возаращает строку xml для инициализации PropertyGrid
+ * ### Возаращает строку xml для инициализации PropertyGrid
+ * служебный метод, используется {{#crossLink "OHeadFields"}}{{/crossLink}}
  * @method get_property_grid_xml
  * @param oxml {Object} - объект с иерархией полей (входной параметр - правила)
  * @param o {DataObj} - объект данных, из полей и табличных частей которого будут прочитаны значения
@@ -504,6 +595,7 @@ DataManager.prototype.tabular_captions = function (tabular, source) {
  * @param extra_fields.title {String} - заголовок в oxml, под которым следует расположить допреквизиты // "Дополнительные реквизиты", "Свойства изделия", "Параметры"
  * @param extra_fields.selection {Object} - отбор, который следует приминить к табчасти допреквизитов
  * @return {String} - XML строка в терминах dhtml.PropertyGrid
+ * @private
  */
 DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 

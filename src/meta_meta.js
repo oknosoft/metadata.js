@@ -558,6 +558,7 @@ function Meta() {
 		// загружаем модификаторы и прочие зависимости
 		$p.modifiers.execute($p);
 		$p.modifiers.clear();
+		$p.modifiers.execute_external($p);		
 
 		// широковещательное оповещение о готовности метаданных
 		$p.eve.callEvent("meta");

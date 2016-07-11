@@ -230,7 +230,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.10.212",
+			value: "0.10.213",
 			writable: false
 		},
 
@@ -343,7 +343,7 @@ function MetaEngine() {
 
 		/**
 		 * ### Текущий пользователь
-		 * Свойство определено после загрузки метаданных и входя а впрограмму
+		 * Свойство определено после загрузки метаданных и входа впрограмму
 		 * @property current_user
 		 * @type {_cat.users}
 		 * @final
@@ -358,7 +358,7 @@ function MetaEngine() {
 
 		/**
 		 * ### Права доступа текущего пользователя.
-		 * Свойство определено после загрузки метаданных и входя а впрограмму
+		 * Свойство определено после загрузки метаданных и входа впрограмму
 		 * @property current_acl
 		 * @type {_cat.users_acl}
 		 * @final
@@ -1382,7 +1382,7 @@ function InterfaceObjs(){
 /**
  * ### Модификатор отложенного запуска
  * Служебный объект, реализующий отложенную загрузку модулей,<br />
- * в которых доопределяется (переопределяется) поведение объектов и менеджеров конкретных типов<br />
+ * в которых доопределяется (переопределяется) поведение объектов и менеджеров конкретных типов
  *
  * @class Modifiers
  * @constructor
@@ -1402,6 +1402,7 @@ function Modifiers(){
 
 	/**
 	 * Отменяет подписку на событие
+	 * @method detache
 	 * @param method {Function}
 	 */
 	this.detache = function (method) {
@@ -1412,6 +1413,7 @@ function Modifiers(){
 
 	/**
 	 * Отменяет все подписки
+	 * @method clear
 	 */
 	this.clear = function () {
 		methods.length = 0;
@@ -1421,18 +1423,48 @@ function Modifiers(){
 	 * Загружает и выполняет методы модификаторов
 	 * @method execute
 	 */
-	this.execute = function (data) {
+	this.execute = function (context) {
+		
+		// выполняем вшитые в сборку модификаторы
 		var res, tres;
 		methods.forEach(function (method) {
 			if(typeof method === "function")
-				tres = method(data);
+				tres = method(context);
 			else
-				tres = $p.injected_data[method](data);
+				tres = $p.injected_data[method](context);
 			if(res !== false)
 				res = tres;
 		});
 		return res;
 	};
+
+	/**
+	 * выполняет подключаемые модификаторы
+	 * @method execute_external
+	 * @param data
+	 */
+	this.execute_external = function (data) {
+		
+		var paths = $p.wsql.get_user_param("modifiers");
+		
+		if(paths){
+			paths = paths.split('\n').map(function (path) {
+				if(path)
+					return new Promise(function(resolve, reject){
+						$p.load_script(path, "script", resolve);
+					});
+				else
+					return Promise.resolve();
+			});
+		}else
+			paths = [];
+		
+		return Promise.all(paths)
+			.then(function () {
+				this.execute(data);
+			}.bind(this));		
+	};
+	
 };
 
 /**
