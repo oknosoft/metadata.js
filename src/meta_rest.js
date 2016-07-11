@@ -11,9 +11,12 @@
  */
 
 /**
- * Методы общего назначения для работы с rest
+ * ### Методы общего назначения для работы с rest
+ * 
  * @class Rest
  * @static
+ * @menuorder 35
+ * @tooltip Работа с rest 1С
  */
 function Rest(){
 

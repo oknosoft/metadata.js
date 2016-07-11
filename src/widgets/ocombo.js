@@ -25,6 +25,8 @@
  * @param [attr.metadata] {Object} - описание метаданных поля. Если не указано, описание запрашивается у объекта
  * @param [attr.width] {Number} - если указано, фиксирует ширину элемента
  * @constructor
+ * @menuorder 51
+ * @tooltip Поле со списком
  */
 function OCombo(attr){
 

@@ -32,11 +32,27 @@ $p.iface.Col_struct = Col_struct;
 /**
  * ### Абстрактный менеджер данных
  * Не используется для создания прикладных объектов, но является базовым классом,
- * от которого унаследованы менеджеры как ссылочных данных, так и объектов с суррогратным ключом и несохраняемых обработок
+ * от которого унаследованы менеджеры как ссылочных данных, так и объектов с суррогратным ключом и несохраняемых обработок<br />
+ * См. так же:
+ * - {{#crossLink "EnumManager"}}{{/crossLink}} - менеджер перечислений
+ * - {{#crossLink "RefDataManager"}}{{/crossLink}} - абстрактный менеджер ссылочных данных
+ * - {{#crossLink "CatManager"}}{{/crossLink}} - менеджер регистров накопления
+ * - {{#crossLink "ChartOfCharacteristicManager"}}{{/crossLink}} - менеджер регистров накопления
+ * - {{#crossLink "ChartOfAccountManager"}}{{/crossLink}} - менеджер регистров накопления
+ * - {{#crossLink "DocManager"}}{{/crossLink}} - менеджер регистров накопления
+ * - {{#crossLink "DataProcessorsManager"}}{{/crossLink}} - менеджер обработок
+ * - {{#crossLink "RegisterManager"}}{{/crossLink}} - абстрактный менеджер регистра (накопления, сведений и бухгалтерии)
+ * - {{#crossLink "InfoRegManager"}}{{/crossLink}} - менеджер регистров сведений
+ * - {{#crossLink "LogManager"}}{{/crossLink}} - менеджер журнала регистрации
+ * - {{#crossLink "AccumRegManager"}}{{/crossLink}} - менеджер регистров накопления
+ * - {{#crossLink "TaskManager"}}{{/crossLink}} - менеджер задач
+ * - {{#crossLink "BusinessProcessManager"}}{{/crossLink}} - менеджер бизнес-процессов
  *
  * @class DataManager
  * @constructor
  * @param class_name {string} - имя типа менеджера объекта. например, "doc.calc_order"
+ * @menuorder 10
+ * @tooltip Менеджер данных
  */
 function DataManager(class_name){
 

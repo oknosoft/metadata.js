@@ -7,9 +7,13 @@
  */
 
 /**
- * Интерфейс локальной и сетевой баз данных PouchDB
+ * ### Интерфейс локальной и сетевой баз данных PouchDB
+ * Содержит абстрактные методы методы и подписки на события PouchDB, отвечает за авторизацию, синхронизацию и доступ к данным в IndexedDB и на сервере
+ *
  * @class Pouch
  * @static
+ * @menuorder 34
+ * @tooltip Данные pouchdb
  */
 function Pouch(){
 
@@ -25,6 +29,12 @@ function Pouch(){
 
 	t.__define({
 
+		/**
+		 * ### Локальные базы PouchDB
+		 *
+		 * @property local
+		 * @type {{ram: PouchDB, doc: PouchDB, meta: PouchDB, sync: {}}}
+		 */
 		local: {
 			get: function () {
 				if(!_local){
@@ -49,6 +59,12 @@ function Pouch(){
 			}
 		},
 
+		/**
+		 * ### Базы PouchDB на сервере
+		 *
+		 * @property remote
+		 * @type {{ram: PouchDB, doc: PouchDB}}
+		 */
 		remote: {
 			get: function () {
 				if(!_remote && _auth){
@@ -74,7 +90,11 @@ function Pouch(){
 		},
 
 		/**
-		 * Выполняет авторизацию и запускает репликацию
+		 * ### Выполняет авторизацию и запускает репликацию
+		 * @method log_in
+		 * @param username {String}
+		 * @param password {String}
+		 * @return {Promise}
 		 */
 		log_in: {
 			value: function (username, password) {
@@ -107,7 +127,8 @@ function Pouch(){
 		},
 
 		/**
-		 * Останавливает синхронизации и снимает признак авторизованности
+		 * ### Останавливает синхронизации и снимает признак авторизованности
+		 * @method log_out
 		 */
 		log_out: {
 			value: function () {
@@ -139,7 +160,10 @@ function Pouch(){
 		},
 
 		/**
-		 * Уничтожает локальные данные
+		 * ### Уничтожает локальные данные
+		 * Используется при изменении структуры данных на сервере
+		 *
+		 * @method reset_local_data
 		 */
 		reset_local_data: {
 			value: function () {
@@ -167,7 +191,10 @@ function Pouch(){
 		},
 
 		/**
-		 * Загружает условно-постоянные данные из базы ram в alasql
+		 * ### Загружает условно-постоянные данные из базы ram в alasql
+		 * Используется при инициализации данных на старте приложения
+		 *
+		 * @method load_data
 		 */
 		load_data: {
 			value: function () {
@@ -233,7 +260,9 @@ function Pouch(){
 		},
 
 		/**
-		 * Информирует об авторизованности на сервере CouchDB
+		 * ### Информирует об авторизованности на сервере CouchDB
+		 *
+		 * @property authorized
 		 */
 		authorized: {
 			get: function () {
@@ -243,7 +272,9 @@ function Pouch(){
 
 
 		/**
-		 * Информирует о загруженности данных
+		 * ### Информирует о загруженности данных
+		 *
+		 * @property data_loaded
 		 */
 		data_loaded: {
 			get: function () {
@@ -252,7 +283,13 @@ function Pouch(){
 		},
 
 		/**
-		 * Запускает процесс синхронизвации
+		 * ### Запускает процесс синхронизвации
+		 *
+		 * @method run_sync
+		 * @param local {PouchDB}
+		 * @param remote {PouchDB}
+		 * @param id {String}
+		 * @return {Promise.<TResult>}
 		 */
 		run_sync: {
 			value: function (local, remote, id){
@@ -385,7 +422,10 @@ function Pouch(){
 		},
 
 		/**
-		 * Читает объект из pouchdb
+		 * ### Читает объект из pouchdb
+		 *
+		 * @method load_obj
+		 * @param tObj {DataObj} - объект данных, который необходимо прочитать - дозаполнить
 		 * @return {Promise.<DataObj>} - промис с загруженным объектом
 		 */
 		load_obj: {
@@ -408,7 +448,11 @@ function Pouch(){
 		},
 
 		/**
-		 * Записывает объект в pouchdb
+		 * ### Записывает объект в pouchdb
+		 *
+		 * @method load_obj
+		 * @param tObj {DataObj} - записываемый объект
+		 * @param attr {Object} - ополнительные параметры записи
 		 * @return {Promise.<DataObj>} - промис с записанным объектом
 		 */
 		save_obj: {
@@ -464,7 +508,12 @@ function Pouch(){
 		},
 
 		/**
-		 * Загружает в менеджер изменения или полученные через allDocs данные
+		 * ### Загружает в менеджер изменения или полученные через allDocs данные
+		 *
+		 * @method load_changes
+		 * @param changes
+		 * @param options
+		 * @return {boolean}
 		 */
 		load_changes: {
 			value: function(changes, options){
