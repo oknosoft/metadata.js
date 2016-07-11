@@ -15,6 +15,8 @@
  * @param mgr {DataManager}
  * @param [callback] Function
  * @constructor
+ * @menuorder 54
+ * @tooltip Дерево справочника
  */
 dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 

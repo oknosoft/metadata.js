@@ -707,6 +707,8 @@ $p.iface.swith_view = function(name){
  * @class OTooolBar
  * @param attr {Object} - параметры создаваемой панели - родитель, положение, размер и ориентация
  * @constructor
+ * @menuorder 54
+ * @tooltip Командная панель
  */
 function OTooolBar(attr){
 	var _this = this,

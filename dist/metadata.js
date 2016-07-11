@@ -410,13 +410,30 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 }
 
 
-
 /**
- * ### Глобальный объект
- * Фреймворк [metadata.js](https://github.com/oknosoft/metadata.js), экспортирует единственную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
+ * ### Metadata.js - проект с открытым кодом
+ * Приглашаем к сотрудничеству всех желающих. Будем благодарны за любую помощь
+ *
+ * ### Почему Metadata.js?
+ * Библиотека предназначена для разработки бизнес-ориентированных и учетных offline-first браузерных приложений
+ * и содержит JavaScript реализацию [Объектной модели 1С](http://v8.1cru/overview/Platform.htm).
+ * Библиотека эмулирует наиболее востребованные классы API 1С внутри браузера или Node.js, дополняя их средствами автономной работы и обработки данных на клиенте.
+ *
+ * ### Для кого?
+ * Для разработчиков мобильных и браузерных приложений, которым близка парадигма 1С _на базе бизнес-объектов: документов и справочников_,
+ * но которым тесно в рамках традиционной платформы 1С.<br />
+ * Metadata.js предоставляет программисту:
+ * - высокоуровневые [data-объекты](http://www.oknosoft.ru/upzp/apidocs/classes/DataObj.html), схожие по функциональности с документами, регистрами и справочниками платформы 1С
+ * - инструменты декларативного описания метаданных и автогенерации интерфейса, схожие по функциональности с метаданными и формами платформы 1С
+ * - средства событийно-целостной репликации и эффективные классы обработки данных, не имеющие прямых аналогов в 1С
+ *
+ * ### Контекст metadata.js
+ * [metadata.js](https://github.com/oknosoft/metadata.js), экспортирует в глобальную область видимости переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
  *
  * @class MetaEngine
  * @static
+ * @menuorder 00
+ * @tooltip Контекст metadata.js
  */
 function MetaEngine() {
 
@@ -996,6 +1013,8 @@ $p.cancel_bubble = function(e) {
  *
  * @class Ajax
  * @static
+ * @menuorder 31
+ * @tooltip Работа с http
  */
 function Ajax() {
 
@@ -1316,9 +1335,11 @@ function Ajax() {
 }
 
 /**
- * Объекты интерфейса пользователя
+ * ### Объекты интерфейса пользователя
  * @class InterfaceObjs
  * @static
+ * @menuorder 40
+ * @tooltip Контекст UI
  */
 function InterfaceObjs(){
 
@@ -1579,6 +1600,8 @@ function InterfaceObjs(){
  *
  * @class Modifiers
  * @constructor
+ * @menuorder 62
+ * @tooltip Внешние модули
  */
 function Modifiers(){
 
@@ -1666,8 +1689,11 @@ function Modifiers(){
  * - Настройки извлекаются из файла "settings" при запуске приложения и дополняются параметрами url,
  * которые могут быть переданы как через search (?), так и через hash (#)
  * - см. так же, {{#crossLink "WSQL/get_user_param:method"}}{{/crossLink}} и {{#crossLink "WSQL/set_user_param:method"}}{{/crossLink}} - параметры, изменяемые пользователем
+ *
  * @class JobPrm
  * @static
+ * @menuorder 04
+ * @tooltip Параметры приложения
  */
 function JobPrm(){
 
@@ -1791,9 +1817,14 @@ function JobPrm(){
 }
 
 /**
- * Интерфейс локальной базы данных
+ * ### Интерфейс к localstorage, alasql и pouchdb
+ * - Обеспечивает взаимодействие с локальными и серверными данными
+ * - Обслуживает локальные параметры пользователя
+ *
  * @class WSQL
  * @static
+ * @menuorder 33
+ * @tooltip Данные localstorage
  */
 function WSQL(){
 
@@ -2062,9 +2093,13 @@ function WSQL(){
  */
 
 /**
- * Интерфейс локальной и сетевой баз данных PouchDB
+ * ### Интерфейс локальной и сетевой баз данных PouchDB
+ * Содержит абстрактные методы методы и подписки на события PouchDB, отвечает за авторизацию, синхронизацию и доступ к данным в IndexedDB и на сервере
+ *
  * @class Pouch
  * @static
+ * @menuorder 34
+ * @tooltip Данные pouchdb
  */
 function Pouch(){
 
@@ -2080,6 +2115,12 @@ function Pouch(){
 
 	t.__define({
 
+		/**
+		 * ### Локальные базы PouchDB
+		 *
+		 * @property local
+		 * @type {{ram: PouchDB, doc: PouchDB, meta: PouchDB, sync: {}}}
+		 */
 		local: {
 			get: function () {
 				if(!_local){
@@ -2104,6 +2145,12 @@ function Pouch(){
 			}
 		},
 
+		/**
+		 * ### Базы PouchDB на сервере
+		 *
+		 * @property remote
+		 * @type {{ram: PouchDB, doc: PouchDB}}
+		 */
 		remote: {
 			get: function () {
 				if(!_remote && _auth){
@@ -2129,7 +2176,11 @@ function Pouch(){
 		},
 
 		/**
-		 * Выполняет авторизацию и запускает репликацию
+		 * ### Выполняет авторизацию и запускает репликацию
+		 * @method log_in
+		 * @param username {String}
+		 * @param password {String}
+		 * @return {Promise}
 		 */
 		log_in: {
 			value: function (username, password) {
@@ -2162,7 +2213,8 @@ function Pouch(){
 		},
 
 		/**
-		 * Останавливает синхронизации и снимает признак авторизованности
+		 * ### Останавливает синхронизации и снимает признак авторизованности
+		 * @method log_out
 		 */
 		log_out: {
 			value: function () {
@@ -2194,7 +2246,10 @@ function Pouch(){
 		},
 
 		/**
-		 * Уничтожает локальные данные
+		 * ### Уничтожает локальные данные
+		 * Используется при изменении структуры данных на сервере
+		 *
+		 * @method reset_local_data
 		 */
 		reset_local_data: {
 			value: function () {
@@ -2222,7 +2277,10 @@ function Pouch(){
 		},
 
 		/**
-		 * Загружает условно-постоянные данные из базы ram в alasql
+		 * ### Загружает условно-постоянные данные из базы ram в alasql
+		 * Используется при инициализации данных на старте приложения
+		 *
+		 * @method load_data
 		 */
 		load_data: {
 			value: function () {
@@ -2288,7 +2346,9 @@ function Pouch(){
 		},
 
 		/**
-		 * Информирует об авторизованности на сервере CouchDB
+		 * ### Информирует об авторизованности на сервере CouchDB
+		 *
+		 * @property authorized
 		 */
 		authorized: {
 			get: function () {
@@ -2298,7 +2358,9 @@ function Pouch(){
 
 
 		/**
-		 * Информирует о загруженности данных
+		 * ### Информирует о загруженности данных
+		 *
+		 * @property data_loaded
 		 */
 		data_loaded: {
 			get: function () {
@@ -2307,7 +2369,13 @@ function Pouch(){
 		},
 
 		/**
-		 * Запускает процесс синхронизвации
+		 * ### Запускает процесс синхронизвации
+		 *
+		 * @method run_sync
+		 * @param local {PouchDB}
+		 * @param remote {PouchDB}
+		 * @param id {String}
+		 * @return {Promise.<TResult>}
 		 */
 		run_sync: {
 			value: function (local, remote, id){
@@ -2440,7 +2508,10 @@ function Pouch(){
 		},
 
 		/**
-		 * Читает объект из pouchdb
+		 * ### Читает объект из pouchdb
+		 *
+		 * @method load_obj
+		 * @param tObj {DataObj} - объект данных, который необходимо прочитать - дозаполнить
 		 * @return {Promise.<DataObj>} - промис с загруженным объектом
 		 */
 		load_obj: {
@@ -2463,7 +2534,11 @@ function Pouch(){
 		},
 
 		/**
-		 * Записывает объект в pouchdb
+		 * ### Записывает объект в pouchdb
+		 *
+		 * @method load_obj
+		 * @param tObj {DataObj} - записываемый объект
+		 * @param attr {Object} - ополнительные параметры записи
 		 * @return {Promise.<DataObj>} - промис с записанным объектом
 		 */
 		save_obj: {
@@ -2519,7 +2594,12 @@ function Pouch(){
 		},
 
 		/**
-		 * Загружает в менеджер изменения или полученные через allDocs данные
+		 * ### Загружает в менеджер изменения или полученные через allDocs данные
+		 *
+		 * @method load_changes
+		 * @param changes
+		 * @param options
+		 * @return {boolean}
 		 */
 		load_changes: {
 			value: function(changes, options){
@@ -2632,10 +2712,12 @@ function Pouch(){
 
 
 /**
- * ### Сообщения пользователю и строки нитернационализации
+ * ### Сообщения пользователю и строки интернационализации
  *
  * @class Messages
  * @static
+ * @menuorder 61
+ * @tooltip i18n
  */
 function Messages(){
 
@@ -3488,6 +3570,8 @@ $p.iface.data_to_tree = function (data) {
  * @param attr.event_name {String} - имя события, которое будет генерировать элемент при изменении значения
  * @param [attr.class_name] {String} - имя класса CSS, добавляемое к стилям элемета
  * @constructor
+ * @menuorder 57
+ * @tooltip Гиперссылка со списком
  */
 function ODropdownList(attr){
 
@@ -3575,6 +3659,8 @@ $p.iface.ODropdownList = ODropdownList;
  * @param mgr {DataManager}
  * @param [callback] Function
  * @constructor
+ * @menuorder 54
+ * @tooltip Дерево справочника
  */
 dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 
@@ -3650,6 +3736,8 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
  * @param [attr.metadata] {Object} - описание метаданных поля. Если не указано, описание запрашивается у объекта
  * @param [attr.width] {Number} - если указано, фиксирует ширину элемента
  * @constructor
+ * @menuorder 51
+ * @tooltip Поле со списком
  */
 function OCombo(attr){
 
@@ -4160,6 +4248,8 @@ $p.iface.select_from_list = function (list, multy) {
  * @param attr.ts {String} - имя табличной части c дополнительными реквизитами
  * @param [attr.metadata] {Object} - описание метаданных реквизитов. Если не указано, описание запрашивается у объекта
  * @constructor
+ * @menuorder 52
+ * @tooltip Редактор полей DataObj
  */
 dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 
@@ -4459,6 +4549,8 @@ dhtmlXGridObject.prototype.get_cell_value = function () {
  * @param [attr.metadata] {Object} - описание метаданных табличной части. Если не указано, описание запрашивается у объекта
  * @param [attr.selection] {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
  * @constructor
+ * @menuorder 53
+ * @tooltip Редактор таличной части
  */
 dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
@@ -5453,10 +5545,14 @@ var _cat = $p.cat = new (
 
 /**
  * ### Хранилище метаданных конфигурации
- * Загружает описание из локального PouchDB
+ * Важнейший объект `metadata.js`. Содержит описание всех классов данных приложения.<br />
+ * По данным этого объекта, при старте приложения, формируются менеджеры данных, строятся динамические конструкторы объектов данных,
+ * обеспечивается ссылочная типизация, рисуются автоформы объектов и списков.
  *
  * @class Meta
  * @static
+ * @menuorder 02
+ * @tooltip Описание метаданных
  */
 function Meta() {
 
@@ -6202,11 +6298,27 @@ $p.iface.Col_struct = Col_struct;
 /**
  * ### Абстрактный менеджер данных
  * Не используется для создания прикладных объектов, но является базовым классом,
- * от которого унаследованы менеджеры как ссылочных данных, так и объектов с суррогратным ключом и несохраняемых обработок
+ * от которого унаследованы менеджеры как ссылочных данных, так и объектов с суррогратным ключом и несохраняемых обработок<br />
+ * См. так же:
+ * - {{#crossLink "EnumManager"}}{{/crossLink}} - менеджер перечислений
+ * - {{#crossLink "RefDataManager"}}{{/crossLink}} - абстрактный менеджер ссылочных данных
+ * - {{#crossLink "CatManager"}}{{/crossLink}} - менеджер регистров накопления
+ * - {{#crossLink "ChartOfCharacteristicManager"}}{{/crossLink}} - менеджер регистров накопления
+ * - {{#crossLink "ChartOfAccountManager"}}{{/crossLink}} - менеджер регистров накопления
+ * - {{#crossLink "DocManager"}}{{/crossLink}} - менеджер регистров накопления
+ * - {{#crossLink "DataProcessorsManager"}}{{/crossLink}} - менеджер обработок
+ * - {{#crossLink "RegisterManager"}}{{/crossLink}} - абстрактный менеджер регистра (накопления, сведений и бухгалтерии)
+ * - {{#crossLink "InfoRegManager"}}{{/crossLink}} - менеджер регистров сведений
+ * - {{#crossLink "LogManager"}}{{/crossLink}} - менеджер журнала регистрации
+ * - {{#crossLink "AccumRegManager"}}{{/crossLink}} - менеджер регистров накопления
+ * - {{#crossLink "TaskManager"}}{{/crossLink}} - менеджер задач
+ * - {{#crossLink "BusinessProcessManager"}}{{/crossLink}} - менеджер бизнес-процессов
  *
  * @class DataManager
  * @constructor
  * @param class_name {string} - имя типа менеджера объекта. например, "doc.calc_order"
+ * @menuorder 10
+ * @tooltip Менеджер данных
  */
 function DataManager(class_name){
 
@@ -8941,12 +9053,22 @@ BusinessProcessManager._extend(CatManager);
 
 /**
  * ### Абстрактный объект данных
- * Прародитель как ссылочных объектов (документов и справочников), так и регистров с суррогатным ключом и несохраняемых обработок
+ * Прародитель как ссылочных объектов (документов и справочников), так и регистров с суррогатным ключом и несохраняемых обработок<br />
+ * См. так же:
+ * - {{#crossLink "EnumObj"}}{{/crossLink}} - ПеречислениеОбъект
+ * - {{#crossLink "CatObj"}}{{/crossLink}} - СправочникОбъект
+ * - {{#crossLink "DocObj"}}{{/crossLink}} - ДокументОбъект
+ * - {{#crossLink "DataProcessorObj"}}{{/crossLink}} - ОбработкаОбъект
+ * - {{#crossLink "TaskObj"}}{{/crossLink}} - ЗадачаОбъект
+ * - {{#crossLink "BusinessProcessObj"}}{{/crossLink}} - БизнеспроцессОбъект
+ * - {{#crossLink "RegisterRow"}}{{/crossLink}} - ЗаписьРегистраОбъект
  *
  * @class DataObj
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
  * @constructor
+ * @menuorder 20
+ * @tooltip Объект данных
  */
 function DataObj(attr, manager) {
 
@@ -9373,14 +9495,15 @@ DataObj.prototype.__define({
 
 	/**
 	 * ### Записывает объект
-	 * Ввыполняет подписки на события перед записью и после записи
+	 * Ввыполняет подписки на события перед записью и после записи<br />
 	 * В зависимости от настроек, выполняет запись объекта во внешнюю базу данных
+	 *
 	 * @method save
 	 * @for DataObj
 	 * @param [post] {Boolean|undefined} - проведение или отмена проведения или просто запись
-	 * @param [mode] {Boolean} - режим проведения документа [Оперативный, Неоперативный]
+	 * @param [operational] {Boolean} - режим проведения документа (Оперативный, Неоперативный)
 	 * @param [attachments] {Array} - массив вложений
-	 * @return {Promise.<T>} - промис с результатом выполнения операции
+	 * @return {Promise.<DataObj>} - промис с результатом выполнения операции
 	 * @async
 	 */
 	save: {
@@ -9491,7 +9614,7 @@ DataObj.prototype.__define({
 	},
 
 	/**
-	 * Возвращает присоединенный объект или файл
+	 * ### Возвращает присоединенный объект или файл
 	 * @method get_attachment
 	 * @for DataObj
 	 * @param att_id {String} - идентификатор (имя) вложения
@@ -9503,12 +9626,16 @@ DataObj.prototype.__define({
 	},
 
 	/**
-	 * Сохраняет объект или файл во вложении
+	 * ### Сохраняет объект или файл во вложении
+	 * Вызывает {{#crossLink "DataManager/save_attachment:method"}} одноименный метод менеджера {{/crossLink}} и передаёт ссылку на себя в качестве контекста
+	 * 
 	 * @method save_attachment
 	 * @for DataObj
 	 * @param att_id {String} - идентификатор (имя) вложения
 	 * @param attachment {Blob|String} - вложениe
 	 * @param [type] {String} - mime тип
+	 * @return Promise.<DataObj>
+	 * @async
 	 */
 	save_attachment: {
 		value: function (att_id, attachment, type) {
@@ -9517,10 +9644,13 @@ DataObj.prototype.__define({
 	},
 
 	/**
-	 * Удаляет присоединенный объект или файл
+	 * ### Удаляет присоединенный объект или файл
+	 * Вызывает одноименный метод менеджера и передаёт ссылку на себя в качестве контекста
+	 * 
 	 * @method delete_attachment
 	 * @for DataObj
 	 * @param att_id {String} - идентификатор (имя) вложения
+	 * @async
 	 */
 	delete_attachment: {
 		value: function (att_id) {
@@ -9529,8 +9659,10 @@ DataObj.prototype.__define({
 	},
 
 	/**
-	 * ###Включает тихий режим
-	 * Режим, при котором объект не информирует мир об изменениях своих свойств
+	 * ### Включает тихий режим
+	 * Режим, при котором объект не информирует мир об изменениях своих свойств.<br />
+	 * Полезно, например, при групповых изменениях, чтобы следящие за объектом формы не тратили время на перерисовку при изменении каждого совйтсва
+	 *
 	 * @method _silent
 	 * @for DataObj
 	 * @param [v] {Boolean}
@@ -9549,7 +9681,15 @@ DataObj.prototype.__define({
 	},
 
 	/**
-	 * Выполняет команду печати
+	 * ### Выполняет команду печати
+	 * Вызывает одноименный метод менеджера и передаёт себя в качестве объекта печати
+	 *
+	 * @method print
+	 * @for DataObj
+	 * @param model {String} - идентификатор макета печатной формы
+	 * @param [wnd] - указатель на форму, из которой произведён вызов команды печати
+	 * @return {*|{value}|void}
+	 * @async
 	 */
 	print: {
 		value: function (model, wnd) {
@@ -9567,7 +9707,6 @@ DataObj.prototype.__define({
  * @constructor
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
- * @async
  */
 function CatObj(attr, manager) {
 
@@ -9615,7 +9754,7 @@ function CatObj(attr, manager) {
 CatObj._extend(DataObj);
 
 /**
- * Код элемента справочника
+ * ### Код элемента справочника
  * @property id
  * @type String|Number
  */
@@ -9629,7 +9768,7 @@ CatObj.prototype.__define('id', {
 });
 
 /**
- * Наименование элемента справочника
+ * ### Наименование элемента справочника
  * @property name
  * @type String
  */
@@ -9650,7 +9789,6 @@ CatObj.prototype.__define('name', {
  * @constructor
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
- * @async
  */
 function DocObj(attr, manager) {
 
@@ -9977,6 +10115,8 @@ RegisterRow.prototype.__define({
  * @constructor
  * @param name {String} - имя табчасти
  * @param owner {DataObj} - владелец табличной части
+ * @menuorder 21
+ * @tooltip Табличная часть
  */
 function TabularSection(name, owner){
 
@@ -10379,9 +10519,12 @@ TabularSection.prototype.toJSON = function () {
 
 /**
  * ### Aбстрактная строка табличной части
+ * 
  * @class TabularSectionRow
  * @constructor
  * @param owner {TabularSection} - табличная часть, которой принадлежит строка
+ * @menuorder 22
+ * @tooltip Строка табчасти
  */
 function TabularSectionRow(owner){
 
@@ -10493,9 +10636,12 @@ TabularSectionRow.prototype._setter = function (f, v) {
  */
 
 /**
- * Методы общего назначения для работы с rest
+ * ### Методы общего назначения для работы с rest
+ * 
  * @class Rest
  * @static
+ * @menuorder 35
+ * @tooltip Работа с rest 1С
  */
 function Rest(){
 
@@ -11442,6 +11588,8 @@ DataManager.prototype.__define({
 
 	/**
 	 * Возвращает базу PouchDB, связанную с объектами данного менеджера
+	 * @property pouch_db
+	 * @for DataManager
 	 */
 	pouch_db: {
 		get: function () {
@@ -11456,7 +11604,9 @@ DataManager.prototype.__define({
 	 * ### Найти строки
 	 * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
 	 * Eсли отбор пустой, возвращаются все строки из PouchDB.
-	 * Имеет смысл для объектов, у которых _cachable ["ram", "doc"]_
+	 *
+	 * @method pouch_find_rows
+	 * @for DataManager
 	 * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
 	 * @param [selection._top] {Number}
 	 * @param [selection._skip] {Number}
@@ -11693,7 +11843,10 @@ DataManager.prototype.__define({
 	},
 
 	/**
-	 * Возвращает набор данных для динсписка
+	 * ### Возвращает набор данных для динсписка
+	 *
+	 * @method pouch_selection
+	 * @for DataManager
 	 * @param attr
 	 * @return {Promise.<Array>}
 	 */
@@ -11875,7 +12028,10 @@ DataManager.prototype.__define({
 	},
 
 	/**
-	 * Возвращает набор данных для дерева динсписка
+	 * ### Возвращает набор данных для дерева динсписка
+	 *
+	 * @method pouch_tree
+	 * @for DataManager
 	 * @param attr
 	 * @return {Promise.<Array>}
 	 */
@@ -11913,12 +12069,16 @@ DataManager.prototype.__define({
 	},
 
 	/**
-	 * Сохраняет присоединенный файл
+	 * ### Сохраняет присоединенный файл
+	 *
+	 * @method save_attachment
+	 * @for DataManager
 	 * @param ref
 	 * @param att_id
 	 * @param attachment
 	 * @param type
 	 * @return {Promise}
+	 * @async
 	 */
 	save_attachment: {
 		value: function (ref, att_id, attachment, type) {
@@ -12749,6 +12909,8 @@ $p.iface.swith_view = function(name){
  * @class OTooolBar
  * @param attr {Object} - параметры создаваемой панели - родитель, положение, размер и ориентация
  * @constructor
+ * @menuorder 54
+ * @tooltip Командная панель
  */
 function OTooolBar(attr){
 	var _this = this,
@@ -15364,14 +15526,18 @@ DataManager.prototype.import = function(file, obj){
  */
 
 /**
- * Обработчики событий приложения
- * Подробнее см. модули {{#crossLinkModule "events"}}{{/crossLinkModule}} и {{#crossLinkModule "events_browser"}}{{/crossLinkModule}}
+ * ### Обработчики событий приложения
+ *
+ * Cм. так же, модули {{#crossLinkModule "events"}}{{/crossLinkModule}} и {{#crossLinkModule "events_browser"}}{{/crossLinkModule}}
+ *
  * @class AppEvents
  * @static
+ * @menuorder 30
+ * @tooltip Движок событий
  */
 function AppEvents() {
 
-	// усли мы внутри браузера и загружен dhtmlx, переносим в AppEvents свойства dhx4
+	// если мы внутри браузера и загружен dhtmlx, переносим в AppEvents свойства dhx4
 	if(typeof window !== "undefined" && window.dhx4){
 		for(var p in dhx4){
 			this[p] = dhx4[p];
@@ -15380,21 +15546,26 @@ function AppEvents() {
 		window.dhx4 = this;
 	}
 
-	/**
-	 * Обработчики событий приложения
-	 * Подробнее см. модули {{#crossLinkModule "events"}}{{/crossLinkModule}} и {{#crossLinkModule "events_browser"}}{{/crossLinkModule}}
-	 * @property eve
-	 * @for MetaEngine
-	 * @static
-	 */
 	this.__define({
 
+		/**
+		 * ### При старте приложения
+		 *
+		 * @event onload
+		 * @for MetaEngine
+		 */
 		onload: {
 			value: new Modifiers(),
 			enumerable: false,
 			configurable: false
 		},
 
+		/**
+		 * ### При изменении хеша url
+		 *
+		 * @event hash_route
+		 * @for MetaEngine
+		 */
 		hash_route: {
 			value: new Modifiers(),
 			enumerable: false,
@@ -16078,6 +16249,8 @@ $p.eve.log_in = function(onstep){
  *
  * @class IPInfo
  * @static
+ * @menuorder 60
+ * @tooltip Данные геолокации
  */
 function IPInfo(){
 

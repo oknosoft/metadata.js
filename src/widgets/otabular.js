@@ -26,6 +26,8 @@
  * @param [attr.metadata] {Object} - описание метаданных табличной части. Если не указано, описание запрашивается у объекта
  * @param [attr.selection] {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
  * @constructor
+ * @menuorder 53
+ * @tooltip Редактор таличной части
  */
 dhtmlXCellObject.prototype.attachTabular = function(attr) {
 

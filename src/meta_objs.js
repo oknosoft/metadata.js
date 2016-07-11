@@ -11,12 +11,22 @@
 
 /**
  * ### Абстрактный объект данных
- * Прародитель как ссылочных объектов (документов и справочников), так и регистров с суррогатным ключом и несохраняемых обработок
+ * Прародитель как ссылочных объектов (документов и справочников), так и регистров с суррогатным ключом и несохраняемых обработок<br />
+ * См. так же:
+ * - {{#crossLink "EnumObj"}}{{/crossLink}} - ПеречислениеОбъект
+ * - {{#crossLink "CatObj"}}{{/crossLink}} - СправочникОбъект
+ * - {{#crossLink "DocObj"}}{{/crossLink}} - ДокументОбъект
+ * - {{#crossLink "DataProcessorObj"}}{{/crossLink}} - ОбработкаОбъект
+ * - {{#crossLink "TaskObj"}}{{/crossLink}} - ЗадачаОбъект
+ * - {{#crossLink "BusinessProcessObj"}}{{/crossLink}} - БизнеспроцессОбъект
+ * - {{#crossLink "RegisterRow"}}{{/crossLink}} - ЗаписьРегистраОбъект
  *
  * @class DataObj
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
  * @constructor
+ * @menuorder 20
+ * @tooltip Объект данных
  */
 function DataObj(attr, manager) {
 
@@ -443,14 +453,15 @@ DataObj.prototype.__define({
 
 	/**
 	 * ### Записывает объект
-	 * Ввыполняет подписки на события перед записью и после записи
+	 * Ввыполняет подписки на события перед записью и после записи<br />
 	 * В зависимости от настроек, выполняет запись объекта во внешнюю базу данных
+	 *
 	 * @method save
 	 * @for DataObj
 	 * @param [post] {Boolean|undefined} - проведение или отмена проведения или просто запись
-	 * @param [mode] {Boolean} - режим проведения документа [Оперативный, Неоперативный]
+	 * @param [operational] {Boolean} - режим проведения документа (Оперативный, Неоперативный)
 	 * @param [attachments] {Array} - массив вложений
-	 * @return {Promise.<T>} - промис с результатом выполнения операции
+	 * @return {Promise.<DataObj>} - промис с результатом выполнения операции
 	 * @async
 	 */
 	save: {
@@ -561,7 +572,7 @@ DataObj.prototype.__define({
 	},
 
 	/**
-	 * Возвращает присоединенный объект или файл
+	 * ### Возвращает присоединенный объект или файл
 	 * @method get_attachment
 	 * @for DataObj
 	 * @param att_id {String} - идентификатор (имя) вложения
@@ -573,12 +584,16 @@ DataObj.prototype.__define({
 	},
 
 	/**
-	 * Сохраняет объект или файл во вложении
+	 * ### Сохраняет объект или файл во вложении
+	 * Вызывает {{#crossLink "DataManager/save_attachment:method"}} одноименный метод менеджера {{/crossLink}} и передаёт ссылку на себя в качестве контекста
+	 * 
 	 * @method save_attachment
 	 * @for DataObj
 	 * @param att_id {String} - идентификатор (имя) вложения
 	 * @param attachment {Blob|String} - вложениe
 	 * @param [type] {String} - mime тип
+	 * @return Promise.<DataObj>
+	 * @async
 	 */
 	save_attachment: {
 		value: function (att_id, attachment, type) {
@@ -587,10 +602,13 @@ DataObj.prototype.__define({
 	},
 
 	/**
-	 * Удаляет присоединенный объект или файл
+	 * ### Удаляет присоединенный объект или файл
+	 * Вызывает одноименный метод менеджера и передаёт ссылку на себя в качестве контекста
+	 * 
 	 * @method delete_attachment
 	 * @for DataObj
 	 * @param att_id {String} - идентификатор (имя) вложения
+	 * @async
 	 */
 	delete_attachment: {
 		value: function (att_id) {
@@ -599,8 +617,10 @@ DataObj.prototype.__define({
 	},
 
 	/**
-	 * ###Включает тихий режим
-	 * Режим, при котором объект не информирует мир об изменениях своих свойств
+	 * ### Включает тихий режим
+	 * Режим, при котором объект не информирует мир об изменениях своих свойств.<br />
+	 * Полезно, например, при групповых изменениях, чтобы следящие за объектом формы не тратили время на перерисовку при изменении каждого совйтсва
+	 *
 	 * @method _silent
 	 * @for DataObj
 	 * @param [v] {Boolean}
@@ -619,7 +639,15 @@ DataObj.prototype.__define({
 	},
 
 	/**
-	 * Выполняет команду печати
+	 * ### Выполняет команду печати
+	 * Вызывает одноименный метод менеджера и передаёт себя в качестве объекта печати
+	 *
+	 * @method print
+	 * @for DataObj
+	 * @param model {String} - идентификатор макета печатной формы
+	 * @param [wnd] - указатель на форму, из которой произведён вызов команды печати
+	 * @return {*|{value}|void}
+	 * @async
 	 */
 	print: {
 		value: function (model, wnd) {
@@ -637,7 +665,6 @@ DataObj.prototype.__define({
  * @constructor
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
- * @async
  */
 function CatObj(attr, manager) {
 
@@ -685,7 +712,7 @@ function CatObj(attr, manager) {
 CatObj._extend(DataObj);
 
 /**
- * Код элемента справочника
+ * ### Код элемента справочника
  * @property id
  * @type String|Number
  */
@@ -699,7 +726,7 @@ CatObj.prototype.__define('id', {
 });
 
 /**
- * Наименование элемента справочника
+ * ### Наименование элемента справочника
  * @property name
  * @type String
  */
@@ -720,7 +747,6 @@ CatObj.prototype.__define('name', {
  * @constructor
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
- * @async
  */
 function DocObj(attr, manager) {
 
