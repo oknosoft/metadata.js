@@ -206,7 +206,7 @@ function DataManager(class_name){
 			 * В обработчиках событий можно реализовать бизнес-логику при создании, удалении и изменении объекта.
 			 * Например, заполнение шапки и табличных частей, пересчет одних полей при изменении других и т.д.
 			 *
-			 * @method attache_event
+			 * @method on
 			 * @for DataManager
 			 * @param name {String} - имя события [after_create, after_load, before_save, after_save, value_change, add_row, del_row]
 			 * @param method {Function} - добавляемый метод
@@ -216,14 +216,14 @@ function DataManager(class_name){
 			 *
 			 *     // Обработчик при создании документа
 			 *     // @this {DataObj} - обработчик вызывается в контексте текущего объекта
-			 *     $p.doc.nom_prices_setup.attache_event("after_create", function (attr) {
+			 *     $p.doc.nom_prices_setup.on("after_create", function (attr) {
 			 *       // присваиваем новый номер документа
 			 *       return this.new_number_doc();
 			 *     });
 			 *
 			 *     // Обработчик события "при изменении свойства" в шапке или табличной части при редактировании в форме объекта
 			 *     // @this {DataObj} - обработчик вызывается в контексте текущего объекта
-			 *     $p.doc.nom_prices_setup.attache_event("add_row", function (attr) {
+			 *     $p.doc.nom_prices_setup.on("add_row", function (attr) {
 			 *       // установим валюту и тип цен по умолчению при добавлении строки
 			 *       if(attr.tabular_section == "goods"){
 			 *         attr.row.price_type = this.price_type;
@@ -232,7 +232,7 @@ function DataManager(class_name){
 			 *     });
 			 *
 			 */
-			attache_event: {
+			on: {
 				value: function (name, method, first) {
 					if(first)
 						_events[name].push(method);

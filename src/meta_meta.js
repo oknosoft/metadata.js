@@ -583,7 +583,7 @@ function Meta() {
 				return $p.wsql.pouch.local.meta.get('meta_patch');
 
 			}).then(function (doc) {
-				$p._patch.call(_m, doc);
+				$p._patch(_m, doc);
 				doc = null;
 				delete _m._id;
 				delete _m._rev;
