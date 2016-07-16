@@ -12289,7 +12289,7 @@ $p.iface.dat_blank = function(_dxw, attr) {
 
 	_dxw = null;
 
-	if(!attr.allow_minmax)
+	if(attr.hasOwnProperty('allow_minmax') && !attr.allow_minmax)
 		wnd_dat.button('minmax').hide();
 
 	if(attr.allow_close)
