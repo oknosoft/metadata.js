@@ -154,11 +154,6 @@
 
 					eve.set_offline(!navigator.onLine);
 
-					/**
-					 * Выполняем отложенные методы из eve.onload
-					 */
-					eve.onload.execute($p);
-
 					// инициализируем метаданные и обработчик при начале работы интерфейса
 					setTimeout(function () {
 
@@ -170,7 +165,7 @@
 						if(splash = document.querySelector("#splash"))
 							splash.parentNode.removeChild(splash);
 
-						iface.oninit();
+						eve.callEvent("iface_init", [$p]);
 
 					}, 10);
 
@@ -268,13 +263,14 @@
 			if ($p.job_prm.use_google_geo) {
 
 				// подгружаем скрипты google
-				if(!window.google || !window.google.maps)
-					$p.eve.onload.push(function () {
+				if(!window.google || !window.google.maps){
+					$p.on("iface_init", function () {
 						setTimeout(function(){
 							$p.load_script("//maps.google.com/maps/api/js?callback=$p.ipinfo.location_callback", "script", function(){});
 						}, 100);
 					});
-				else
+
+				}else
 					location_callback();
 			}
 

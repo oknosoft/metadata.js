@@ -42,32 +42,6 @@ function AppEvents() {
 		window.dhx4 = this;
 	}
 
-	this.__define({
-
-		/**
-		 * ### При старте приложения
-		 *
-		 * @event onload
-		 * @for MetaEngine
-		 */
-		onload: {
-			value: new Modifiers(),
-			enumerable: false,
-			configurable: false
-		},
-
-		/**
-		 * ### При изменении хеша url
-		 *
-		 * @event hash_route
-		 * @for MetaEngine
-		 */
-		hash_route: {
-			value: new Modifiers(),
-			enumerable: false,
-			configurable: false
-		}
-	});
 	
 }
 

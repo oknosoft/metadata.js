@@ -15,24 +15,24 @@
  * @constructor
  */
 
-/**
- * Синтаксический сахар для defineProperty
- * @method __define
- * @for Object
- */
-Object.defineProperty(Object.prototype, "__define", {
-	value: function( key, descriptor ) {
-		if( descriptor ) {
-			Object.defineProperty( this, key, descriptor );
-		} else {
-			Object.defineProperties( this, key );
-		}
-		return this;
-	},
-	enumerable: false
-});
 
-Object.prototype.__define({
+Object.defineProperties(Object.prototype, {
+
+	/**
+	 * Синтаксический сахар для defineProperty
+	 * @method __define
+	 * @for Object
+	 */
+	__define: {
+		value: function( key, descriptor ) {
+			if( descriptor ) {
+				Object.defineProperty( this, key, descriptor );
+			} else {
+				Object.defineProperties( this, key );
+			}
+			return this;
+		}
+	},
 
 	/**
 	 * Реализует наследование текущим конструктором свойств и методов конструктора Parent
@@ -50,8 +50,7 @@ Object.prototype.__define({
 				value: Parent.prototype,
 				enumerable: false
 			});
-		},
-		enumerable: false
+		}
 	},
 
 	/**
@@ -83,8 +82,7 @@ Object.prototype.__define({
 				}
 			}
 			return this;
-		},
-		enumerable: false
+		}
 	},
 
 	/**
@@ -117,13 +115,14 @@ Object.prototype.__define({
 				}
 			}
 			return c;
-		},
-		enumerable: false
+		}
 	}
 });
 
 /**
  * Метод округления в прототип числа
+ * @method round
+ * @for Number
  */
 if(!Number.prototype.round)
 	Number.prototype.round = function(places) {
@@ -133,6 +132,8 @@ if(!Number.prototype.round)
 
 /**
  * Метод дополнения лидирующими нулями в прототип числа
+ * @method pad
+ * @for Number
  */
 if(!Number.prototype.pad)
 	Number.prototype.pad = function(size) {
@@ -147,6 +148,11 @@ if(!Number.prototype.pad)
 if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 	Object.prototype.__define({
 
+		/**
+		 * Подключает наблюдателя
+		 * @method observe
+		 * @for Object
+		 */
 		observe: {
 			value: function(target, observer) {
 				if(!target._observers)
@@ -165,6 +171,11 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 			enumerable: false
 		},
 
+		/**
+		 * Отключает наблюдателя
+		 * @method unobserve
+		 * @for Object
+		 */
 		unobserve: {
 			value: function(target, observer) {
 				if(!target._observers)
@@ -179,6 +190,11 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 			enumerable: false
 		},
 
+		/**
+		 * Возвращает объект нотификатора
+		 * @method getNotifier
+		 * @for Object
+		 */
 		getNotifier: {
 			value: function(target) {
 				var timer;
@@ -213,6 +229,7 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 			},
 			enumerable: false
 		}
+
 	});
 }
 
@@ -391,6 +408,50 @@ function MetaEngine() {
 				}
 				return res;
 			}
+		},
+
+		/**
+		 * ### Подмешивает в объект свойства с иерархией объекта patch
+		 * В отличии от `_mixin`, не замещает, а дополняет одноименные свойства
+		 *
+		 * @method _patch
+		 * @param obj {Object}
+		 * @param patch {Object}
+		 * @return {Object} - исходный объект с подмешанными свойствами
+		 */
+		_patch: {
+			value: function (obj, patch) {
+				for(var area in patch){
+
+					if(typeof patch[area] == "object"){
+						if(obj[area] && typeof obj[area] == "object")
+							$p._patch(obj[area], patch[area]);
+						else
+							obj[area] = patch[area];
+					}else
+						obj[area] = patch[area];
+				}
+				return obj;
+			}
+		},
+
+		/**
+		 * Пустые значения даты и уникального идентификатора
+		 * @property blank
+		 * @for MetaEngine
+		 * @final
+		 */
+		blank: {
+			value: new Blank()
+		},
+
+		/**
+		 * Подключает обработчики событий
+		 */
+		on: {
+			value: function (name, fn) {
+				return this.eve.attachEvent(name, fn);
+			}
 		}
 
 	});
@@ -563,27 +624,6 @@ $p.dateFormat.masks = {
 
 
 /**
- * Подмешивает в объект свойства с иерархией объекта patch
- * @method _mixin
- * @for Object
- * @param patch {Object}
- * @return {this}
- */
-$p._patch = function (patch) {
-	for(var area in patch){
-
-		if(typeof patch[area] == "object"){
-			if(this[area] && typeof this[area] == "object")
-				$p._patch.call(this[area], patch[area]);
-			else
-				this[area] = patch[area];
-		}else
-			this[area] = patch[area];
-	}
-	return this;
-};
-
-/**
  * Читает данные из блоба, возвращает промис
  * @param blob
  * @return {Promise}
@@ -606,37 +646,6 @@ $p.blob_as_text = function (blob, type) {
 	
 };
 
-/**
- * Пустые значения даты и уникального идентификатора
- * @property blank
- * @for MetaEngine
- * @static
- */
-$p.blank = new function Blank() {
-	this.date = new Date("0001-01-01");
-	this.guid = "00000000-0000-0000-0000-000000000000";
-
-	/**
-	 * Возвращает пустое значение по типу метаданных
-	 * @method by_type
-	 * @param mtype {Object} - поле type объекта метаданных (field.type)
-	 * @return {*}
-	 */
-	this.by_type = function(mtype){
-		var v;
-		if(mtype.is_ref)
-			v = $p.blank.guid;
-		else if(mtype.date_part)
-			v = $p.blank.date;
-		else if(mtype["digits"])
-			v = 0;
-		else if(mtype.types && mtype.types[0]=="boolean")
-			v = false;
-		else
-			v = "";
-		return v;
-	};
-};
 
 /**
  * Проверяет, является ли значение guid-ом
@@ -810,6 +819,39 @@ $p.cancel_bubble = function(e) {
 };
 
 
+/**
+ * ### Пустые значения примитивных и ссылочных типов
+ *
+ * @class Blank
+ * @static
+ */
+function Blank() {
+
+	this.date = new Date("0001-01-01");
+	this.guid = "00000000-0000-0000-0000-000000000000";
+
+	/**
+	 * Возвращает пустое значение по типу метаданных
+	 * @method by_type
+	 * @for Blank
+	 * @param mtype {Object} - поле type объекта метаданных (field.type)
+	 * @return {*}
+	 */
+	this.by_type = function(mtype){
+		var v;
+		if(mtype.is_ref)
+			v = $p.blank.guid;
+		else if(mtype.date_part)
+			v = $p.blank.date;
+		else if(mtype["digits"])
+			v = 0;
+		else if(mtype.types && mtype.types[0]=="boolean")
+			v = false;
+		else
+			v = "";
+		return v;
+	};
+}
 
 /**
  * ### Наша promise-реализация ajax
@@ -1354,7 +1396,7 @@ function InterfaceObjs(){
 	this.hash_route = function (event) {
 
 		var hprm = $p.job_prm.parse_url(),
-			res = $p.eve.hash_route.execute(hprm),
+			res = $p.eve.callEvent("hash_route", [hprm]),
 			mgr;
 
 		if((res !== false) && (!$p.iface.before_route || $p.iface.before_route(event) !== false)){
@@ -1383,20 +1425,8 @@ function InterfaceObjs(){
 
 	/**
 	 * Возникает после готовности DOM. Должен быть обработан конструктором основной формы приложения
-	 * @event oninit
+	 * @event iface_init
 	 */
-	this.oninit = null;
-
-	/**
-	 * Обновляет формы интерфейса пользователя раз в полторы минуты
-	 * @event ontimer
-	 */
-	this.ontimer = null;
-	setTimeout(function () {
-		if($p.iface.ontimer && typeof $p.iface.ontimer === "function"){
-			setInterval($p.iface.ontimer, 90000);
-		}
-	}, 20000);
 
 }
 
@@ -1611,8 +1641,7 @@ function JobPrm(){
 	});
 
 	// подмешиваем параметры, заданные в файле настроек сборки
-	if(typeof $p.settings === "function")
-		$p.settings(this, $p.modifiers);
+	$p.eve.callEvent("settings", [this, $p.modifiers]);
 
 	// подмешиваем параметры url
 	// Они обладают приоритетом над настройками по умолчанию и настройками из settings.js
