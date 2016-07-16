@@ -6420,165 +6420,172 @@ function DataManager(class_name){
 
 	this.__define({
 
-			/**
-			 * ### Способ кеширования объектов этого менеджера
-			 *
-			 * Выполняет две функции:
-			 * - Указывает, нужно ли сохранять (искать) объекты в локальном кеше или сразу топать на сервер
-			 * - Указывает, нужно ли запоминать представления ссылок (инверсно).
-			 * Для кешируемых, представления ссылок запоминать необязательно, т.к. его быстрее вычислить по месту
-			 * @property cachable
-			 * @for DataManager
-			 * @type String - ("ram", "doc", "doc_remote", "meta", "e1cib")
-			 * @final
-			 */
-			cachable: {
-				get: function () {
+		/**
+		 * ### Способ кеширования объектов этого менеджера
+		 *
+		 * Выполняет две функции:
+		 * - Указывает, нужно ли сохранять (искать) объекты в локальном кеше или сразу топать на сервер
+		 * - Указывает, нужно ли запоминать представления ссылок (инверсно).
+		 * Для кешируемых, представления ссылок запоминать необязательно, т.к. его быстрее вычислить по месту
+		 * @property cachable
+		 * @for DataManager
+		 * @type String - ("ram", "doc", "doc_remote", "meta", "e1cib")
+		 * @final
+		 */
+		cachable: {
+			get: function () {
 
-					// перечисления кешируются всегда
-					if(class_name.indexOf("enm.") != -1)
-						return "ram";
-
-					// Если в метаданных явно указано правило кеширования, используем его
-					if(_meta.cachable)
-						return _meta.cachable;
-
-					// документы, отчеты и обработки по умолчанию кешируем в idb, но в память не загружаем
-					if(class_name.indexOf("doc.") != -1 || class_name.indexOf("dp.") != -1 || class_name.indexOf("rep.") != -1)
-						return "doc";
-
-					// остальные классы по умолчанию кешируем и загружаем в память при старте
+				// перечисления кешируются всегда
+				if(class_name.indexOf("enm.") != -1)
 					return "ram";
 
-				}
-			},
+				// Если в метаданных явно указано правило кеширования, используем его
+				if(_meta.cachable)
+					return _meta.cachable;
 
-			/**
-			 * ### Имя типа объектов этого менеджера
-			 * @property class_name
-			 * @for DataManager
-			 * @type String
-			 * @final
-			 */
-			class_name: {
-				value: class_name,
-				writable: false
-			},
+				// документы, отчеты и обработки по умолчанию кешируем в idb, но в память не загружаем
+				if(class_name.indexOf("doc.") != -1 || class_name.indexOf("dp.") != -1 || class_name.indexOf("rep.") != -1)
+					return "doc";
 
-			/**
-			 * ### Указатель на массив, сопоставленный с таблицей локальной базы данных
-			 * Фактически - хранилище объектов данного класса
-			 * @property alatable
-			 * @for DataManager
-			 * @type Array
-			 * @final
-			 */
-			alatable: {
-				get : function () {
-					return $p.wsql.aladb.tables[this.table_name] ? $p.wsql.aladb.tables[this.table_name].data : []
-				}
-			},
+				// остальные классы по умолчанию кешируем и загружаем в память при старте
+				return "ram";
 
-			/**
-			 * ### Метаданные объекта
-			 * указатель на фрагмент глобальных метаданных, относящмйся к текущему объекту
-			 *
-			 * @method metadata
-			 * @for DataManager
-			 * @return {Object} - объект метаданных
-			 */
-			metadata: {
-				value: function(field){
-					if(field)
-						return _meta.fields[field] || _meta.tabular_sections[field];
-					else
-						return _meta;
-				}
-			},
-
-			/**
-			 * ### Добавляет подписку на события объектов данного менеджера
-			 * В обработчиках событий можно реализовать бизнес-логику при создании, удалении и изменении объекта.
-			 * Например, заполнение шапки и табличных частей, пересчет одних полей при изменении других и т.д.
-			 *
-			 * @method on
-			 * @for DataManager
-			 * @param name {String} - имя события [after_create, after_load, before_save, after_save, value_change, add_row, del_row]
-			 * @param method {Function} - добавляемый метод
-			 * @param [first] {Boolean} - добавлять метод в начало, а не в конец коллекции
-			 *
-			 * @example
-			 *
-			 *     // Обработчик при создании документа
-			 *     // @this {DataObj} - обработчик вызывается в контексте текущего объекта
-			 *     $p.doc.nom_prices_setup.on("after_create", function (attr) {
-			 *       // присваиваем новый номер документа
-			 *       return this.new_number_doc();
-			 *     });
-			 *
-			 *     // Обработчик события "при изменении свойства" в шапке или табличной части при редактировании в форме объекта
-			 *     // @this {DataObj} - обработчик вызывается в контексте текущего объекта
-			 *     $p.doc.nom_prices_setup.on("add_row", function (attr) {
-			 *       // установим валюту и тип цен по умолчению при добавлении строки
-			 *       if(attr.tabular_section == "goods"){
-			 *         attr.row.price_type = this.price_type;
-			 *         attr.row.currency = this.price_type.price_currency;
-			 *       }
-			 *     });
-			 *
-			 */
-			on: {
-				value: function (name, method, first) {
-					if(first)
-						_events[name].push(method);
-					else
-						_events[name].push(method);
-				}
-			},
-
-			/**
-			 * ### Выполняет методы подписки на событие
-			 * Служебный, внутренний метод, вызываемый формами и обсерверами при создании и изменении объекта данных<br/>
-			 * Выполняет в цикле все назначенные обработчики текущего события<br/>
-			 * Если любой из обработчиков вернул `false`, возвращает `false`. Иначе, возвращает массив с результатами всех обработчиков
-			 *
-			 * @method handle_event
-			 * @for DataManager
-			 * @param obj {DataObj} - объект, в котором произошло событие
-			 * @param name {String} - имя события
-			 * @param attr {Object} - дополнительные свойства, передаваемые в обработчик события
-			 * @return {Boolean|Array.<*>}
-			 * @private
-			 */
-			handle_event: {
-				value: function (obj, name, attr) {
-					var res = [], tmp;
-					_events[name].forEach(function (method) {
-						if(res !== false){
-							tmp = method.call(obj, attr);
-							if(tmp === false)
-								res = tmp;
-							else if(tmp)
-								res.push(tmp);
-						}
-					});
-					if(res.length){
-						if(res.length == 1)
-						// если значение единственное - возвращчем его
-							return res[0];
-						else{
-							// если среди значений есть промисы - возвращаем all
-							if(res.some(function (v) {return typeof v === "object" && v.then}))
-								return Promise.all(res);
-							else
-								return res;
-						}
-					}
-
-				}
 			}
+		},
 
-		});
+
+		/**
+		 * ### Имя типа объектов этого менеджера
+		 * @property class_name
+		 * @for DataManager
+		 * @type String
+		 * @final
+		 */
+		class_name: {
+			value: class_name,
+			writable: false
+		},
+
+		/**
+		 * ### Указатель на массив, сопоставленный с таблицей локальной базы данных
+		 * Фактически - хранилище объектов данного класса
+		 * @property alatable
+		 * @for DataManager
+		 * @type Array
+		 * @final
+		 */
+		alatable: {
+			get : function () {
+				return $p.wsql.aladb.tables[this.table_name] ? $p.wsql.aladb.tables[this.table_name].data : []
+			}
+		},
+
+		/**
+		 * ### Метаданные объекта
+		 * указатель на фрагмент глобальных метаданных, относящмйся к текущему объекту
+		 *
+		 * @method metadata
+		 * @for DataManager
+		 * @return {Object} - объект метаданных
+		 */
+		metadata: {
+			value: function(field){
+				if(field)
+					return _meta.fields[field] || _meta.tabular_sections[field];
+				else
+					return _meta;
+			}
+		},
+
+		/**
+		 * ### Добавляет подписку на события объектов данного менеджера
+		 * В обработчиках событий можно реализовать бизнес-логику при создании, удалении и изменении объекта.
+		 * Например, заполнение шапки и табличных частей, пересчет одних полей при изменении других и т.д.
+		 *
+		 * @method on
+		 * @for DataManager
+		 * @param name {String} - имя события [after_create, after_load, before_save, after_save, value_change, add_row, del_row]
+		 * @param method {Function} - добавляемый метод
+		 * @param [first] {Boolean} - добавлять метод в начало, а не в конец коллекции
+		 *
+		 * @example
+		 *
+		 *     // Обработчик при создании документа
+		 *     // @this {DataObj} - обработчик вызывается в контексте текущего объекта
+		 *     $p.doc.nom_prices_setup.on("after_create", function (attr) {
+		 *       // присваиваем новый номер документа
+		 *       return this.new_number_doc();
+		 *     });
+		 *
+		 *     // Обработчик события "при изменении свойства" в шапке или табличной части при редактировании в форме объекта
+		 *     // @this {DataObj} - обработчик вызывается в контексте текущего объекта
+		 *     $p.doc.nom_prices_setup.on("add_row", function (attr) {
+		 *       // установим валюту и тип цен по умолчению при добавлении строки
+		 *       if(attr.tabular_section == "goods"){
+		 *         attr.row.price_type = this.price_type;
+		 *         attr.row.currency = this.price_type.price_currency;
+		 *       }
+		 *     });
+		 *
+		 */
+		on: {
+			value: function (name, method, first) {
+				if(first)
+					_events[name].push(method);
+				else
+					_events[name].push(method);
+			}
+		},
+
+		/**
+		 * ### Выполняет методы подписки на событие
+		 * Служебный, внутренний метод, вызываемый формами и обсерверами при создании и изменении объекта данных<br/>
+		 * Выполняет в цикле все назначенные обработчики текущего события<br/>
+		 * Если любой из обработчиков вернул `false`, возвращает `false`. Иначе, возвращает массив с результатами всех обработчиков
+		 *
+		 * @method handle_event
+		 * @for DataManager
+		 * @param obj {DataObj} - объект, в котором произошло событие
+		 * @param name {String} - имя события
+		 * @param attr {Object} - дополнительные свойства, передаваемые в обработчик события
+		 * @return {Boolean|Array.<*>}
+		 * @private
+		 */
+		handle_event: {
+			value: function (obj, name, attr) {
+				var res = [], tmp;
+				_events[name].forEach(function (method) {
+					if(res !== false){
+						tmp = method.call(obj, attr);
+						if(tmp === false)
+							res = tmp;
+						else if(tmp)
+							res.push(tmp);
+					}
+				});
+				if(res.length){
+					if(res.length == 1)
+					// если значение единственное - возвращчем его
+						return res[0];
+					else{
+						// если среди значений есть промисы - возвращаем all
+						if(res.some(function (v) {return typeof v === "object" && v.then}))
+							return Promise.all(res);
+						else
+							return res;
+					}
+				}
+
+			}
+		},
+
+		/**
+		 * ### Хранилище объектов данного менеджера
+		 */
+		by_ref: {
+			value: {}
+		}
+	});
 
 	//	Создаём функции конструкторов экземпляров объектов и строк табличных частей
 	var _obj_constructor = this._obj_constructor || DataObj;		// ссылка на конструктор элементов
@@ -6694,6 +6701,22 @@ DataManager.prototype.__define({
 	table_name: {
 		get : function(){
 			return this.class_name.replace(".", "_");
+		}
+	},
+
+	/**
+	 * ### Найти строки
+	 * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
+	 * Eсли отбор пустой, возвращаются все строки, закешированные в менеджере.
+	 * Имеет смысл для объектов, у которых _cachable = "ram"_
+	 * @method find_rows
+	 * @param selection {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: значение}
+	 * @param [callback] {Function} - в который передается текущий объект данных на каждой итерации
+	 * @return {Array}
+	 */
+	find_rows: {
+		value: function(selection, callback){
+			return $p._find_rows.call(this, this.by_ref, selection, callback);
 		}
 	},
 
@@ -7172,10 +7195,6 @@ function RefDataManager(class_name) {
 	
 	RefDataManager.superclass.constructor.call(this, class_name);
 	
-	this.__define("by_ref", {
-		value: {}
-	});
-	
 }
 RefDataManager._extend(DataManager);
 
@@ -7260,9 +7279,10 @@ RefDataManager.prototype.__define({
 	},
 
 	/**
-	 * Создаёт новый объект типа объектов текущего менеджера<br />
+	 * ### Создаёт новый объект типа объектов текущего менеджера
 	 * Для кешируемых объектов, все действия происходят на клиенте<br />
 	 * Для некешируемых, выполняется обращение к серверу для получения guid и значений реквизитов по умолчанию
+	 *
 	 * @method create
 	 * @param [attr] {Object} - значениями полей этого объекта будет заполнен создаваемый объект
 	 * @param [fill_default] {Boolean} - признак, надо ли заполнять (инициализировать) создаваемый объект значениями полей по умолчанию
@@ -7347,22 +7367,6 @@ RefDataManager.prototype.__define({
 	},
 
 	/**
-	 * ### Найти строки
-	 * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
-	 * Eсли отбор пустой, возвращаются все строки, закешированные в менеджере.
-	 * Имеет смысл для объектов, у которых _cachable = "ram"_
-	 * @method find_rows
-	 * @param selection {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: значение}
-	 * @param [callback] {Function} - в который передается текущий объект данных на каждой итерации
-	 * @return {Array}
-	 */
-	find_rows: {
-		value: function(selection, callback){
-			return $p._find_rows.call(this, this.by_ref, selection, callback);
-		}
-	},
-
-	/**
 	 * сохраняет массив объектов в менеджере
 	 * @method load_array
 	 * @param aattr {Array} - массив объектов для трансформации в объекты ссылочного типа
@@ -7374,9 +7378,12 @@ RefDataManager.prototype.__define({
 
 			var ref, obj, res = [];
 
-			for(var i in aattr){
+			for(var i=0; i<aattr.length; i++){
+
 				ref = $p.fix_guid(aattr[i]);
-				if(!(obj = this.by_ref[ref])){
+				obj = this.by_ref[ref];
+
+				if(!obj){
 					obj = new this._obj_constructor(aattr[i], this);
 					if(forse)
 						obj._set_loaded();
@@ -7385,9 +7392,9 @@ RefDataManager.prototype.__define({
 					obj._mixin(aattr[i]);
 					obj._set_loaded();
 				}
+
 				res.push(obj);
 			}
-
 			return res;
 		}
 	},
@@ -8165,8 +8172,6 @@ EnumManager.prototype.get_option_list = function(val, selection){
  */
 function RegisterManager(class_name){
 
-	var by_ref={};				// приватное хранилище объектов по ключу записи
-
 	this._obj_constructor = RegisterRow;
 
 	RegisterManager.superclass.constructor.call(this, class_name);
@@ -8179,10 +8184,10 @@ function RegisterManager(class_name){
 	 */
 	this.push = function(o, new_ref){
 		if(new_ref && (new_ref != o.ref)){
-			delete by_ref[o.ref];
-			by_ref[new_ref] = o;
+			delete this.by_ref[o.ref];
+			this.by_ref[new_ref] = o;
 		}else
-			by_ref[o.ref] = o;
+			this.by_ref[o.ref] = o;
 	};
 
 	/**
@@ -8202,7 +8207,7 @@ function RegisterManager(class_name){
 			attr = {ref: attr};
 		
 		if(attr.ref && return_row)
-			return force_promise ? Promise.resolve(by_ref[attr.ref]) : by_ref[attr.ref];
+			return force_promise ? Promise.resolve(this.by_ref[attr.ref]) : this.by_ref[attr.ref];
 		
 		attr.action = "select";
 
@@ -8214,11 +8219,11 @@ function RegisterManager(class_name){
 
 		if(arr.length){
 			if(return_row)
-				res = by_ref[this.get_ref(arr[0])];
+				res = this.by_ref[this.get_ref(arr[0])];
 			else{
 				res = [];
 				for(var i in arr)
-					res.push(by_ref[this.get_ref(arr[i])]);
+					res.push(this.by_ref[this.get_ref(arr[i])]);
 			}
 		}
 		
@@ -8231,7 +8236,7 @@ function RegisterManager(class_name){
 	 * @param ref
 	 */
 	this.unload_obj = function(ref) {
-		delete by_ref[ref];
+		delete this.by_ref[ref];
 		this.alatable.some(function (o, i, a) {
 			if(o.ref == ref){
 				a.splice(i, 1);
@@ -8244,417 +8249,440 @@ function RegisterManager(class_name){
 	 * сохраняет массив объектов в менеджере
 	 * @method load_array
 	 * @param aattr {array} - массив объектов для трансформации в объекты ссылочного типа
+	 * @param forse {Boolean} - перезаполнять объект
 	 * @async
 	 */
-	this.load_array = function(aattr){
+	this.load_array = function(aattr, forse){
 
-		var key, obj, res = [];
+		var ref, obj, res = [];
 
-		for(var i in aattr){
+		for(var i=0; i<aattr.length; i++){
 
-			key = this.get_ref(aattr[i]);
+			ref = this.get_ref(aattr[i]);
+			obj = this.by_ref[ref];
 
-			obj = by_ref[key];
 			if(!obj && !aattr[i]._deleted){
-				new this._obj_constructor(aattr[i], this);
+				obj = new this._obj_constructor(aattr[i], this);
+				if(forse)
+					obj._set_loaded();
 
-			}else if(obj){
-				if(aattr[i]._deleted){
-					obj.unload();
-					continue;
-				}else
-					obj._mixin(aattr[i]);
-			}else
+			}else if(obj && aattr[i]._deleted){
+				obj.unload();
 				continue;
 
-			res.push(by_ref[key]);
+			}else if(obj.is_new() || forse){
+				obj._mixin(aattr[i]);
+				obj._set_loaded();
+			}
+
+			res.push(obj);
 		}
 		return res;
-
-	};
-
-	/**
-	 * ### Найти строки
-	 * Возвращает массив дата-объектов, обрезанный по отбору<br />
-	 * Eсли отбор пустой, возвращаются все строки, закешированные в менеджере (для кешируемых типов)
-	 * Для некешируемых типов выполняет запрос к базе
-	 * @method find_rows
-	 * @param selection {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: значение}
-	 * @param callback {Function} - в который передается текущий объект данных на каждой итерации
-	 * @return {Array}
-	 */
-	this.find_rows = function(selection, callback){
-		return $p._find_rows.call(this, by_ref, selection, callback);
 	};
 
 }
 RegisterManager._extend(DataManager);
 
-/**
- * Возаращает запросов для создания таблиц или извлечения данных
- * @method get_sql_struct
- * @for RegisterManager
- * @param attr {Object}
- * @param attr.action {String} - [create_table, drop, insert, update, replace, select, delete]
- * @return {Object|String}
- */
-RegisterManager.prototype.get_sql_struct = function(attr) {
-	var t = this,
-		cmd = t.metadata(),
-		res = {}, f,
-		action = attr && attr.action ? attr.action : "create_table";
+RegisterManager.prototype.__define({
 
-	function sql_selection(){
+	/**
+	 * Возаращает запросов для создания таблиц или извлечения данных
+	 * @method get_sql_struct
+	 * @for RegisterManager
+	 * @param attr {Object}
+	 * @param attr.action {String} - [create_table, drop, insert, update, replace, select, delete]
+	 * @return {Object|String}
+	 */
+	get_sql_struct: {
+		value: function(attr) {
+			var t = this,
+				cmd = t.metadata(),
+				res = {}, f,
+				action = attr && attr.action ? attr.action : "create_table";
 
-		var filter = attr.filter || "";
+			function sql_selection(){
 
-		function list_flds(){
-			var flds = [], s = "_t_.ref";
+				var filter = attr.filter || "";
 
-			if(cmd.form && cmd.form.selection){
-				cmd.form.selection.fields.forEach(function (fld) {
-					flds.push(fld);
-				});
+				function list_flds(){
+					var flds = [], s = "_t_.ref";
+
+					if(cmd.form && cmd.form.selection){
+						cmd.form.selection.fields.forEach(function (fld) {
+							flds.push(fld);
+						});
+
+					}else{
+
+						for(var f in cmd["dimensions"]){
+							flds.push(f);
+						}
+					}
+
+					flds.forEach(function(fld){
+						if(fld.indexOf(" as ") != -1)
+							s += ", " + fld;
+						else
+							s += _md.sql_mask(fld, true);
+					});
+					return s;
+
+				}
+
+				function join_flds(){
+
+					var s = "", parts;
+
+					if(cmd.form && cmd.form.selection){
+						for(var i in cmd.form.selection.fields){
+							if(cmd.form.selection.fields[i].indexOf(" as ") == -1 || cmd.form.selection.fields[i].indexOf("_t_.") != -1)
+								continue;
+							parts = cmd.form.selection.fields[i].split(" as ");
+							parts[0] = parts[0].split(".");
+							if(parts[0].length > 1){
+								if(s)
+									s+= "\n";
+								s+= "left outer join " + parts[0][0] + " on " + parts[0][0] + ".ref = _t_." + parts[1];
+							}
+						}
+					}
+					return s;
+				}
+
+				function where_flds(){
+
+					var s = " WHERE (" + (filter ? 0 : 1);
+
+					if(t.sql_selection_where_flds){
+						s += t.sql_selection_where_flds(filter);
+
+					}
+
+					s += ")";
+
+
+					// допфильтры форм и связей параметров выбора
+					if(attr.selection){
+						if(typeof attr.selection == "function"){
+
+						}else
+							attr.selection.forEach(function(sel){
+								for(var key in sel){
+
+									if(typeof sel[key] == "function"){
+										s += "\n AND " + sel[key](t, key) + " ";
+
+									}else if(cmd.fields.hasOwnProperty(key)){
+										if(sel[key] === true)
+											s += "\n AND _t_." + key + " ";
+
+										else if(sel[key] === false)
+											s += "\n AND (not _t_." + key + ") ";
+
+										else if(typeof sel[key] == "object"){
+
+											if($p.is_data_obj(sel[key]))
+												s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
+
+											else{
+												var keys = Object.keys(sel[key]),
+													val = sel[key][keys[0]],
+													mf = cmd.fields[key],
+													vmgr;
+
+												if(mf && mf.type.is_ref){
+													vmgr = _md.value_mgr({}, key, mf.type, true, val);
+												}
+
+												if(keys[0] == "not")
+													s += "\n AND (not _t_." + key + " = '" + val + "') ";
+
+												else
+													s += "\n AND (_t_." + key + " = '" + val + "') ";
+											}
+
+										}else if(typeof sel[key] == "string")
+											s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
+
+										else
+											s += "\n AND (_t_." + key + " = " + sel[key] + ") ";
+
+									} else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
+										//if(sel[key])
+										//	s += "\n AND _t_." + key + " ";
+										//else
+										//	s += "\n AND (not _t_." + key + ") ";
+									}
+								}
+							});
+					}
+
+					return s;
+				}
+
+				function order_flds(){
+
+					return "";
+				}
+
+				// строка фильтра
+				if(filter && filter.indexOf("%") == -1)
+					filter = "%" + filter + "%";
+
+				var sql;
+				if(t.sql_selection_list_flds)
+					sql = t.sql_selection_list_flds();
+				else
+					sql = ("SELECT %2 FROM `" + t.table_name + "` AS _t_ %j %3 %4 LIMIT 300")
+						.replace("%2", list_flds())
+						.replace("%j", join_flds())
+					;
+
+				return sql.replace("%3", where_flds()).replace("%4", order_flds());
+
+			}
+
+			function sql_create(){
+
+				var sql = "CREATE TABLE IF NOT EXISTS ",
+					first_field = true;
+
+				if(attr && attr.postgres){
+					sql += t.table_name+" (";
+
+					if(cmd.splitted){
+						sql += "zone integer";
+						first_field = false;
+					}
+
+					for(f in cmd.dimensions){
+						if(first_field){
+							sql += f;
+							first_field = false;
+						}else
+							sql += ", " + f;
+						sql += _md.sql_type(t, f, cmd.dimensions[f].type, true) + _md.sql_composite(cmd.dimensions, f, "", true);
+					}
+
+					for(f in cmd.resources)
+						sql += ", " + f + _md.sql_type(t, f, cmd.resources[f].type, true) + _md.sql_composite(cmd.resources, f, "", true);
+
+					for(f in cmd.attributes)
+						sql += ", " + f + _md.sql_type(t, f, cmd.attributes[f].type, true) + _md.sql_composite(cmd.attributes, f, "", true);
+
+					sql += ", PRIMARY KEY (";
+					first_field = true;
+					if(cmd.splitted){
+						sql += "zone";
+						first_field = false;
+					}
+					for(f in cmd["dimensions"]){
+						if(first_field){
+							sql += f;
+							first_field = false;
+						}else
+							sql += ", " + f;
+					}
+
+				}else{
+					sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `_deleted` BOOLEAN";
+
+					//sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.dimensions[f].type) + _md.sql_composite(cmd.dimensions, f);
+
+					for(f in cmd.dimensions)
+						sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.dimensions[f].type);
+
+					for(f in cmd.resources)
+						sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.resources[f].type);
+
+					for(f in cmd.attributes)
+						sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.attributes[f].type);
+
+					// sql += ", PRIMARY KEY (";
+					// first_field = true;
+					// for(f in cmd["dimensions"]){
+					// 	if(first_field){
+					// 		sql += "`" + f + "`";
+					// 		first_field = false;
+					// 	}else
+					// 		sql += _md.sql_mask(f);
+					// }
+				}
+
+				sql += ")";
+
+				return sql;
+			}
+
+			function sql_update(){
+				// "INSERT OR REPLACE INTO user_params (prm_name, prm_value) VALUES (?, ?);
+				var sql = "INSERT OR REPLACE INTO `"+t.table_name+"` (",
+					fields = [],
+					first_field = true;
+
+				for(f in cmd.dimensions){
+					if(first_field){
+						sql += f;
+						first_field = false;
+					}else
+						sql += ", " + f;
+					fields.push(f);
+				}
+				for(f in cmd.resources){
+					sql += ", " + f;
+					fields.push(f);
+				}
+				for(f in cmd.attributes){
+					sql += ", " + f;
+					fields.push(f);
+				}
+
+				sql += ") VALUES (?";
+				for(f = 1; f<fields.length; f++){
+					sql += ", ?";
+				}
+				sql += ")";
+
+				return {sql: sql, fields: fields};
+			}
+
+			function sql_select(){
+				var sql = "SELECT * FROM `"+t.table_name+"` WHERE ",
+					first_field = true;
+				attr._values = [];
+
+				for(var f in cmd["dimensions"]){
+
+					if(first_field)
+						first_field = false;
+					else
+						sql += " and ";
+
+					sql += "`" + f + "`" + "=?";
+					attr._values.push(attr[f]);
+				}
+
+				if(first_field)
+					sql += "1";
+
+				return sql;
+			}
+
+
+			if(action == "create_table")
+				res = sql_create();
+
+			else if(action in {insert:"", update:"", replace:""})
+				res[t.table_name] = sql_update();
+
+			else if(action == "select")
+				res = sql_select();
+
+			else if(action == "select_all")
+				res = sql_select();
+
+			else if(action == "delete")
+				res = "DELETE FROM `"+t.table_name+"` WHERE ref = ?";
+
+			else if(action == "drop")
+				res = "DROP TABLE IF EXISTS `"+t.table_name+"`";
+
+			else if(action == "get_selection")
+				res = sql_selection();
+
+			return res;
+		}
+	},
+
+	get_ref: {
+		value: function(attr){
+
+			if(attr instanceof RegisterRow)
+				attr = attr._obj;
+
+			if(attr.ref)
+				return attr.ref;
+
+			var key = "",
+				dimensions = this.metadata().dimensions;
+
+			for(var j in dimensions){
+				key += (key ? "¶" : "");
+				if(dimensions[j].type.is_ref)
+					key += $p.fix_guid(attr[j]);
+
+				else if(!attr[j] && dimensions[j].type.digits)
+					key += "0";
+
+				else if(dimensions[j].date_part)
+					key += $p.dateFormat(attr[j] || $p.blank.date, $p.dateFormat.masks.atom);
+
+				else if(attr[j]!=undefined)
+					key += String(attr[j]);
+
+				else
+					key += "$";
+			}
+			return key;
+		}
+	},
+
+	caption_flds: {
+		value: function(attr){
+
+			var _meta = attr.metadata || this.metadata(),
+				str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
+				acols = [],	s = "";
+
+			if(_meta.form && _meta.form.selection){
+				acols = _meta.form.selection.cols;
 
 			}else{
 
-				for(var f in cmd["dimensions"]){
-					flds.push(f);
+				for(var f in _meta["dimensions"]){
+					acols.push(new Col_struct(f, "*", "ro", "left", "server", _meta["dimensions"][f].synonym));
 				}
 			}
 
-			flds.forEach(function(fld){
-				if(fld.indexOf(" as ") != -1)
-					s += ", " + fld;
-				else
-					s += _md.sql_mask(fld, true);
-			});
-			return s;
-
-		}
-
-		function join_flds(){
-
-			var s = "", parts;
-
-			if(cmd.form && cmd.form.selection){
-				for(var i in cmd.form.selection.fields){
-					if(cmd.form.selection.fields[i].indexOf(" as ") == -1 || cmd.form.selection.fields[i].indexOf("_t_.") != -1)
-						continue;
-					parts = cmd.form.selection.fields[i].split(" as ");
-					parts[0] = parts[0].split(".");
-					if(parts[0].length > 1){
-						if(s)
-							s+= "\n";
-						s+= "left outer join " + parts[0][0] + " on " + parts[0][0] + ".ref = _t_." + parts[1];
-					}
+			if(attr.get_header && acols.length){
+				s = "<head>";
+				for(var col in acols){
+					s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
+						.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
 				}
-			}
-			return s;
-		}
-
-		function where_flds(){
-
-			var s = " WHERE (" + (filter ? 0 : 1);
-
-			if(t.sql_selection_where_flds){
-				s += t.sql_selection_where_flds(filter);
-
+				s += "</head>";
 			}
 
-			s += ")";
+			return {head: s, acols: acols};
+		}
+	},
+
+	create: {
+		value: function(attr){
+
+			if(!attr || typeof attr != "object")
+				attr = {};
 
 
-			// допфильтры форм и связей параметров выбора
-			if(attr.selection){
-				if(typeof attr.selection == "function"){
+			var o = this.by_ref[attr.ref];
+			if(!o){
 
-				}else
-					attr.selection.forEach(function(sel){
-						for(var key in sel){
+				o = new this._obj_constructor(attr, this);
 
-							if(typeof sel[key] == "function"){
-								s += "\n AND " + sel[key](t, key) + " ";
+				// Триггер после создания
+				var after_create_res = this.handle_event(o, "after_create");
 
-							}else if(cmd.fields.hasOwnProperty(key)){
-								if(sel[key] === true)
-									s += "\n AND _t_." + key + " ";
+				if(after_create_res === false)
+					return Promise.resolve(o);
 
-								else if(sel[key] === false)
-									s += "\n AND (not _t_." + key + ") ";
-
-								else if(typeof sel[key] == "object"){
-
-									if($p.is_data_obj(sel[key]))
-										s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
-
-									else{
-										var keys = Object.keys(sel[key]),
-											val = sel[key][keys[0]],
-											mf = cmd.fields[key],
-											vmgr;
-
-										if(mf && mf.type.is_ref){
-											vmgr = _md.value_mgr({}, key, mf.type, true, val);
-										}
-
-										if(keys[0] == "not")
-											s += "\n AND (not _t_." + key + " = '" + val + "') ";
-
-										else
-											s += "\n AND (_t_." + key + " = '" + val + "') ";
-									}
-
-								}else if(typeof sel[key] == "string")
-									s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
-
-								else
-									s += "\n AND (_t_." + key + " = " + sel[key] + ") ";
-
-							} else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
-								//if(sel[key])
-								//	s += "\n AND _t_." + key + " ";
-								//else
-								//	s += "\n AND (not _t_." + key + ") ";
-							}
-						}
-					});
+				else if(typeof after_create_res === "object" && after_create_res.then)
+					return after_create_res;
 			}
 
-			return s;
-		}
-
-		function order_flds(){
-
-			return "";
-		}
-
-		// строка фильтра
-		if(filter && filter.indexOf("%") == -1)
-			filter = "%" + filter + "%";
-
-		var sql;
-		if(t.sql_selection_list_flds)
-			sql = t.sql_selection_list_flds();
-		else
-			sql = ("SELECT %2 FROM `" + t.table_name + "` AS _t_ %j %3 %4 LIMIT 300")
-				.replace("%2", list_flds())
-				.replace("%j", join_flds())
-			;
-
-		return sql.replace("%3", where_flds()).replace("%4", order_flds());
-
-	}
-
-	function sql_create(){
-
-		var sql = "CREATE TABLE IF NOT EXISTS ",
-			first_field = true;
-
-		if(attr && attr.postgres){
-			sql += t.table_name+" (";
-
-			if(cmd.splitted){
-				sql += "zone integer";
-				first_field = false;
-			}
-
-			for(f in cmd.dimensions){
-				if(first_field){
-					sql += f;
-					first_field = false;
-				}else
-					sql += ", " + f;
-				sql += _md.sql_type(t, f, cmd.dimensions[f].type, true) + _md.sql_composite(cmd.dimensions, f, "", true);
-			}
-
-			for(f in cmd.resources)
-				sql += ", " + f + _md.sql_type(t, f, cmd.resources[f].type, true) + _md.sql_composite(cmd.resources, f, "", true);
-
-			for(f in cmd.attributes)
-				sql += ", " + f + _md.sql_type(t, f, cmd.attributes[f].type, true) + _md.sql_composite(cmd.attributes, f, "", true);
-
-			sql += ", PRIMARY KEY (";
-			first_field = true;
-			if(cmd.splitted){
-				sql += "zone";
-				first_field = false;
-			}
-			for(f in cmd["dimensions"]){
-				if(first_field){
-					sql += f;
-					first_field = false;
-				}else
-					sql += ", " + f;
-			}
-
-		}else{
-			sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `_deleted` BOOLEAN";
-
-			//sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.dimensions[f].type) + _md.sql_composite(cmd.dimensions, f);
-
-			for(f in cmd.dimensions)
-				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.dimensions[f].type);
-
-			for(f in cmd.resources)
-				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.resources[f].type);
-
-			for(f in cmd.attributes)
-				sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.attributes[f].type);
-
-			// sql += ", PRIMARY KEY (";
-			// first_field = true;
-			// for(f in cmd["dimensions"]){
-			// 	if(first_field){
-			// 		sql += "`" + f + "`";
-			// 		first_field = false;
-			// 	}else
-			// 		sql += _md.sql_mask(f);
-			// }
-		}
-
-		sql += ")";
-
-		return sql;
-	}
-
-	function sql_update(){
-		// "INSERT OR REPLACE INTO user_params (prm_name, prm_value) VALUES (?, ?);
-		var sql = "INSERT OR REPLACE INTO `"+t.table_name+"` (",
-			fields = [],
-			first_field = true;
-
-		for(f in cmd.dimensions){
-			if(first_field){
-				sql += f;
-				first_field = false;
-			}else
-				sql += ", " + f;
-			fields.push(f);
-		}
-		for(f in cmd.resources){
-			sql += ", " + f;
-			fields.push(f);
-		}
-		for(f in cmd.attributes){
-			sql += ", " + f;
-			fields.push(f);
-		}
-
-		sql += ") VALUES (?";
-		for(f = 1; f<fields.length; f++){
-			sql += ", ?";
-		}
-		sql += ")";
-
-		return {sql: sql, fields: fields};
-	}
-
-	function sql_select(){
-		var sql = "SELECT * FROM `"+t.table_name+"` WHERE ",
-			first_field = true;
-		attr._values = [];
-
-		for(var f in cmd["dimensions"]){
-
-			if(first_field)
-				first_field = false;
-			else
-				sql += " and ";
-
-			sql += "`" + f + "`" + "=?";
-			attr._values.push(attr[f]);
-		}
-
-		if(first_field)
-			sql += "1";
-
-		return sql;
-	}
-
-
-	if(action == "create_table")
-		res = sql_create();
-
-	else if(action in {insert:"", update:"", replace:""})
-		res[t.table_name] = sql_update();
-
-	else if(action == "select")
-		res = sql_select();
-
-	else if(action == "select_all")
-		res = sql_select();
-
-	else if(action == "delete")
-		res = "DELETE FROM `"+t.table_name+"` WHERE ref = ?";
-
-	else if(action == "drop")
-		res = "DROP TABLE IF EXISTS `"+t.table_name+"`";
-
-	else if(action == "get_selection")
-		res = sql_selection();
-
-	return res;
-};
-
-RegisterManager.prototype.get_ref = function(attr){
-	
-	if(attr instanceof RegisterRow)
-		attr = attr._obj;
-
-	if(attr.ref)
-		return attr.ref;
-
-	var key = "",
-		dimensions = this.metadata().dimensions;
-
-	for(var j in dimensions){
-		key += (key ? "¶" : "");
-		if(dimensions[j].type.is_ref)
-			key += $p.fix_guid(attr[j]);
-
-		else if(!attr[j] && dimensions[j].type.digits)
-			key += "0";
-
-		else if(dimensions[j].date_part)
-			key += $p.dateFormat(attr[j] || $p.blank.date, $p.dateFormat.masks.atom);
-
-		else if(attr[j]!=undefined)
-			key += String(attr[j]);
-
-		else
-			key += "$";
-	}
-	return key;
-};
-
-RegisterManager.prototype.caption_flds = function(attr){
-
-	var _meta = attr.metadata || this.metadata(),
-		str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
-		acols = [],	s = "";
-
-	if(_meta.form && _meta.form.selection){
-		acols = _meta.form.selection.cols;
-
-	}else{
-
-		for(var f in _meta["dimensions"]){
-			acols.push(new Col_struct(f, "*", "ro", "left", "server", _meta["dimensions"][f].synonym));
+			return Promise.resolve(o);
 		}
 	}
-
-	if(attr.get_header && acols.length){
-		s = "<head>";
-		for(var col in acols){
-			s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
-				.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
-		}
-		s += "</head>";
-	}
-
-	return {head: s, acols: acols};
-};
+});
 
 
 
