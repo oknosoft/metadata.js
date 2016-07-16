@@ -24,6 +24,8 @@
  * @param attr.ts {String} - имя табличной части c дополнительными реквизитами
  * @param [attr.metadata] {Object} - описание метаданных реквизитов. Если не указано, описание запрашивается у объекта
  * @constructor
+ * @menuorder 52
+ * @tooltip Редактор полей DataObj
  */
 dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 

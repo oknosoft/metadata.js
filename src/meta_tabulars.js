@@ -18,6 +18,8 @@
  * @constructor
  * @param name {String} - имя табчасти
  * @param owner {DataObj} - владелец табличной части
+ * @menuorder 21
+ * @tooltip Табличная часть
  */
 function TabularSection(name, owner){
 
@@ -420,9 +422,12 @@ TabularSection.prototype.toJSON = function () {
 
 /**
  * ### Aбстрактная строка табличной части
+ * 
  * @class TabularSectionRow
  * @constructor
  * @param owner {TabularSection} - табличная часть, которой принадлежит строка
+ * @menuorder 22
+ * @tooltip Строка табчасти
  */
 function TabularSectionRow(owner){
 

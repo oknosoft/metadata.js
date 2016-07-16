@@ -58,7 +58,7 @@ $p.iface.dat_blank = function(_dxw, attr) {
 
 	_dxw = null;
 
-	if(!attr.allow_minmax)
+	if(attr.hasOwnProperty('allow_minmax') && !attr.allow_minmax)
 		wnd_dat.button('minmax').hide();
 
 	if(attr.allow_close)
@@ -707,6 +707,8 @@ $p.iface.swith_view = function(name){
  * @class OTooolBar
  * @param attr {Object} - параметры создаваемой панели - родитель, положение, размер и ориентация
  * @constructor
+ * @menuorder 54
+ * @tooltip Командная панель
  */
 function OTooolBar(attr){
 	var _this = this,

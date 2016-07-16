@@ -10,16 +10,7 @@
 alasql = require('../lib/alasql/alasql.js');
 $p = require('../lib/metadata.core.js');
 
-$p.settings = function (prm, modifiers) {
 
-};
-
-/**
- * Обработчик события при начале работы программы
- */
-$p.eve.oninit = function() {
-
-};
 
 function parser(filename, callback){
 

@@ -93,6 +93,8 @@ DataManager.prototype.__define({
 
 	/**
 	 * Возвращает базу PouchDB, связанную с объектами данного менеджера
+	 * @property pouch_db
+	 * @for DataManager
 	 */
 	pouch_db: {
 		get: function () {
@@ -107,7 +109,9 @@ DataManager.prototype.__define({
 	 * ### Найти строки
 	 * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
 	 * Eсли отбор пустой, возвращаются все строки из PouchDB.
-	 * Имеет смысл для объектов, у которых _cachable ["ram", "doc"]_
+	 *
+	 * @method pouch_find_rows
+	 * @for DataManager
 	 * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
 	 * @param [selection._top] {Number}
 	 * @param [selection._skip] {Number}
@@ -344,7 +348,10 @@ DataManager.prototype.__define({
 	},
 
 	/**
-	 * Возвращает набор данных для динсписка
+	 * ### Возвращает набор данных для динсписка
+	 *
+	 * @method pouch_selection
+	 * @for DataManager
 	 * @param attr
 	 * @return {Promise.<Array>}
 	 */
@@ -526,7 +533,10 @@ DataManager.prototype.__define({
 	},
 
 	/**
-	 * Возвращает набор данных для дерева динсписка
+	 * ### Возвращает набор данных для дерева динсписка
+	 *
+	 * @method pouch_tree
+	 * @for DataManager
 	 * @param attr
 	 * @return {Promise.<Array>}
 	 */
@@ -564,12 +574,16 @@ DataManager.prototype.__define({
 	},
 
 	/**
-	 * Сохраняет присоединенный файл
+	 * ### Сохраняет присоединенный файл
+	 *
+	 * @method save_attachment
+	 * @for DataManager
 	 * @param ref
 	 * @param att_id
 	 * @param attachment
 	 * @param type
 	 * @return {Promise}
+	 * @async
 	 */
 	save_attachment: {
 		value: function (ref, att_id, attachment, type) {

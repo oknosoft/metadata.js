@@ -12,6 +12,8 @@
  *
  * @class IPInfo
  * @static
+ * @menuorder 60
+ * @tooltip Данные геолокации
  */
 function IPInfo(){
 

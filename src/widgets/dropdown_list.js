@@ -17,6 +17,8 @@
  * @param attr.event_name {String} - имя события, которое будет генерировать элемент при изменении значения
  * @param [attr.class_name] {String} - имя класса CSS, добавляемое к стилям элемета
  * @constructor
+ * @menuorder 57
+ * @tooltip Гиперссылка со списком
  */
 function ODropdownList(attr){
 
