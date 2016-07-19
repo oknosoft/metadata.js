@@ -3,8 +3,9 @@
  * Created 28.12.2015<br />
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  * @module common
- * @submodule events_browser
+ * @submodule events.ui
  */
+
 
 /**
  * Этот фрагмент кода выполняем только в браузере
@@ -304,9 +305,6 @@
 					}
 				});
 			}
-
-			// устанавливаем соединение с сокет-сервером
-			eve.socket.connect();
 			
 			/**
 			 * Тип устройства и ориентация экрана
@@ -496,11 +494,6 @@ $p.eve.log_in = function(onstep){
 
 		// читаем справочники с ограниченным доступом, которые могли прибежать вместе с метаданными
 		.then(function () {
-
-			if(mdd.access){
-				mdd.access.force = true;
-				$p.eve.from_json_to_data_obj(mdd.access);
-			}
 
 			// здесь же, уточняем список печатных форм
 			_md.printing_plates(mdd.printing_plates);

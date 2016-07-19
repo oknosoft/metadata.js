@@ -40,152 +40,131 @@ function AppEvents() {
 			delete dhx4[p];
 		}
 		window.dhx4 = this;
+
+	}else{
+		AppEvents.do_eventable(this);
 	}
 
-	
 }
 
 /**
- * Устанавливает соединение с вебсокет-сервером, обеспечивает приём и отправку сообщений
- * @class SocketMsg
- * @constructor
+ * ### Добавляет объекту методы генерации и обработки событий
+ *
+ * @method
+ * @for AppEvents
+ * @static
  */
-function SocketMsg(){
+AppEvents.do_eventable = function (obj) {
 
-	var socket_uid, ws, opened, attempt = 0, t = this;
-
-	function reflect_react(data){
-		if(data && data.type == "react"){
-			try{
-				var mgr = _md ? _md.mgr_by_class_name(data.class_name) : null;
-				if(mgr)
-					mgr.load_array([data.obj], true);
-
-			}catch(err){
-				$p.record_log(err);
-			}
-		}
+	function attach(name, func) {
+		name = String(name).toLowerCase();
+		if (!this._evnts.data[name])
+			this._evnts.data[name] = {};
+		var eventId = $p.generate_guid();
+		this._evnts.data[name][eventId] = func;
+		return eventId;
 	}
 
-	t.connect = function(reset_attempt){
-
-		// http://builder.local/debug.html#socket_uid=4e8b16b6-89b0-11e2-9c06-da48b440c859
-
-		if(!socket_uid)
-			socket_uid = $p.job_prm.parse_url().socket_uid || "";
-
-		if(reset_attempt)
-			attempt = 0;
-		attempt++;
-
-		// проверяем состояние и пытаемся установить ws соединение с Node
-		if($p.job_prm.ws_url){
-			if(!ws || !opened){
-				try{
-					ws = new WebSocket($p.job_prm.ws_url);
-
-					ws.onopen = function() {
-						opened = true;
-						ws.send(JSON.stringify({
-							socket_uid: socket_uid,
-							zone: $p.wsql.get_user_param("zone"),
-							browser_uid: $p.wsql.get_user_param("browser_uid"),
-							_side: "js",
-							_mirror: true
-						}));
-					};
-
-					ws.onclose = function() {
-						opened = false;
-						setTimeout(t.connect, attempt < 3 ? 30000 : 600000);
-					};
-
-					ws.onmessage = function(ev) {
-						var data;
-
-						try{
-							data = JSON.parse(ev.data);
-						}catch(err){
-							data = ev.data;
-						}
-
-						$p.eve.callEvent("socket_msg", [data]);
-					};
-
-					ws.onerror = $p.record_log;
-
-				}catch(err){
-					setTimeout(t.connect, attempt < 3 ? 30000 : 600000);
-					$p.record_log(err);
+	function detach(eventId) {
+		for (var a in this._evnts.data) {
+			var k = 0;
+			for (var b in this._evnts.data[a]) {
+				if (b == eventId) {
+					this._evnts.data[a][b] = null;
+					delete this._evnts.data[a][b];
+				} else {
+					k++;
 				}
 			}
+			if (k == 0) {
+				this._evnts.data[a] = null;
+				delete this._evnts.data[a];
+			}
 		}
-	};
-
-	t.send = function (data) {
-		if(ws && opened){
-			if(!data)
-				data = {};
-			else if("object" != typeof data)
-				data = {data: data};
-			data.socket_uid = socket_uid;
-			data._side = "js";
-			ws.send(JSON.stringify(data));
-		}
-	};
-
-	$p.eve.attachEvent("socket_msg", reflect_react);
-
-}
-
-/**
- * Интерфейс асинхронного обмена сообщениями
- * @property socket
- * @type {SocketMsg}
- */
-$p.eve.socket = new SocketMsg();
-
-
-$p.eve.from_json_to_data_obj = function(res) {
-
-	if (typeof res == "string")
-		res = JSON.parse(res);
-
-	else if(res instanceof XMLHttpRequest){
-		if(res.response)
-			res = JSON.parse(res.response);
-		else
-			res = {};
 	}
 
-	"cch,cacc,cat,bp,tsk,doc,ireg,areg".split(",").forEach(function (mgr) {
-		for(var cn in res[mgr])
-			if($p[mgr] && $p[mgr][cn])
-				$p[mgr][cn].load_array(res[mgr][cn], true);
+	function call(name, params) {
+		name = String(name).toLowerCase();
+		if (this._evnts.data[name] == null)
+			return true;
+		var r = true;
+		for (var a in this._evnts.data[name]) {
+			r = this._evnts.data[name][a].apply(this, params) && r;
+		}
+		return r;
+	}
+
+	function ontimer() {
+
+		for(var name in this._evnts.evnts){
+			var l = this._evnts.evnts[name].length;
+			if(l){
+				for(var i=0; i<l; i++){
+					this.emit(name, this._evnts.evnts[name][i]);
+				}
+				this._evnts.evnts[name].length = 0;
+			}
+		}
+
+		this._evnts.timer = 0;
+	}
+
+	obj.__define({
+
+		_evnts: {
+			value: {
+				data: {},
+				timer: 0,
+				evnts: {}
+			}
+		},
+
+		on: {
+			value: attach
+		},
+
+		attachEvent: {
+			value: attach
+		},
+
+		off: {
+			value: detach
+		},
+
+		detachEvent: {
+			value: detach
+		},
+
+		checkEvent: {
+			value: function(name) {
+				name = String(name).toLowerCase();
+				return (this._evnts.data[name] != null);
+			}
+		},
+
+		callEvent: {
+			value: call
+		},
+
+		emit: {
+			value: call
+		},
+
+		emit_async: {
+			value: function callEvent(name, params){
+
+				if(!this._evnts.evnts[name])
+					this._evnts.evnts[name] = [];
+
+				this._evnts.evnts[name].push(params);
+
+				if(this._evnts.timer)
+					clearTimeout(this._evnts.timer);
+
+				this._evnts.timer = setTimeout(ontimer.bind(this), 4);
+			}
+		}
+
 	});
-
 };
 
-// возаращает промис после выполнения всех заданий в очереди
-$p.eve.reduce_promices = function(parts, callback){
-
-	return parts.reduce(function(sequence, part_promise) {
-
-		// Используем редуцирование что бы связать в очередь обещания, и добавить каждую главу на страницу
-		return sequence.then(function() {
-			return part_promise;
-
-		})
-			// загружаем все части в озу
-			.then(callback)
-			.catch(callback);
-
-	}, Promise.resolve())
-};
-
-$p.eve.js_time_diff = -(new Date("0001-01-01")).valueOf();
-
-$p.eve.time_diff = function () {
-	var time_diff = $p.wsql.get_user_param("time_diff", "number");
-	return (!time_diff || isNaN(time_diff) || time_diff < 62135571600000 || time_diff > 62135622000000) ? $p.eve.js_time_diff : time_diff;
-};

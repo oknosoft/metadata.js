@@ -17,17 +17,23 @@
  */
 function Pouch(){
 
-	var t = this, _local, _remote, _auth, _data_loaded,
-		_couch_path = $p.wsql.get_user_param("couch_path", "string") || $p.job_prm.couch_path || "",
-		_zone = $p.wsql.get_user_param("zone", "number"),
-		_prefix = $p.job_prm.local_storage_prefix,
-		_suffix = $p.wsql.get_user_param("couch_suffix", "string") || "";
+	var t = this,
+		_paths = {},
+		_local, _remote, _auth, _data_loaded;
 
-	if(_couch_path && _couch_path.indexOf("http") != 0)
-		_couch_path = location.protocol + "//" + location.host + _couch_path;
-	
 
 	t.__define({
+
+		init: {
+
+			value: function (attr) {
+
+				_paths._mixin(attr);
+
+				if(_paths.path && _paths.path.indexOf("http") != 0 && typeof location != "undefined")
+					_paths.path = location.protocol + "//" + location.host + _paths.path;
+			}
+		},
 
 		/**
 		 * ### Локальные базы PouchDB
@@ -39,14 +45,14 @@ function Pouch(){
 			get: function () {
 				if(!_local){
 					_local = {
-						ram: new PouchDB(_prefix + _zone + "_ram", {auto_compaction: true, revs_limit: 2}),
-						doc: new PouchDB(_prefix + _zone + "_doc", {auto_compaction: true, revs_limit: 2}),
-						meta: new PouchDB(_prefix + "meta", {auto_compaction: true}),
+						ram: new PouchDB(_paths.prefix + _paths.zone + "_ram", {auto_compaction: true, revs_limit: 2}),
+						doc: new PouchDB(_paths.prefix + _paths.zone + "_doc", {auto_compaction: true, revs_limit: 2}),
+						meta: new PouchDB(_paths.prefix + "meta", {auto_compaction: true}),
 						sync: {}
 					}
 				}
-				if(_couch_path && !_local._meta){
-					_local._meta = new PouchDB(_couch_path + "meta", {
+				if(_paths.path && !_local._meta){
+					_local._meta = new PouchDB(_paths.path + "meta", {
 						auth: {
 							username: "guest",
 							password: "meta"
@@ -69,14 +75,14 @@ function Pouch(){
 			get: function () {
 				if(!_remote && _auth){
 					_remote = {
-						ram: new PouchDB(_couch_path + _zone + "_ram", {
+						ram: new PouchDB(_paths.path + _paths.zone + "_ram", {
 							auth: {
 								username: _auth.username,
 								password: _auth.password
 							},
 							skip_setup: true
 						}),
-						doc: new PouchDB(_couch_path + _zone + "_doc" + _suffix, {
+						doc: new PouchDB(_paths.path + _paths.zone + "_doc" + _paths.suffix, {
 							auth: {
 								username: _auth.username,
 								password: _auth.password
@@ -112,7 +118,7 @@ function Pouch(){
 						return Promise.reject();
 				}
 
-				return $p.ajax.get_ex(_couch_path + _zone + "_ram", {username: username, password: password})
+				return $p.ajax.get_ex(_paths.path + _paths.zone + "_ram", {username: username, password: password})
 					.then(function (req) {
 						_auth = {username: username, password: password};
 						setTimeout(function () {

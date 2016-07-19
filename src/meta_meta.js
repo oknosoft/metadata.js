@@ -569,6 +569,7 @@ function Meta() {
 
 	}
 
+
 	// загружает метаданные из pouchdb
 	function meta_from_pouch(){
 
@@ -745,59 +746,6 @@ function Meta() {
 				res[i].push(j);
 		}
 		return res;
-	};
-
-	/**
-	 * Создаёт таблицы WSQL для всех объектов метаданных
-	 * @method create_tables
-	 * @return {Promise.<T>}
-	 * @async
-	 */
-	_md.create_tables = function(callback, attr){
-
-		var cstep = 0, data_names = [], managers = _md.get_classes(), class_name,
-			create = (attr && attr.postgres) ? "" : "USE md;\n";
-
-		function on_table_created(data){
-
-			if(typeof data === "number"){
-				cstep--;
-				if(cstep==0){
-					if(callback)
-						setTimeout(function () {
-							callback(create);
-						}, 10);
-					else
-						alasql.utils.saveFile("create_tables.sql", create);
-				} else
-					iteration();
-			}else if(data && data.hasOwnProperty("message")){
-				if($p.iface && $p.iface.docs){
-					$p.iface.docs.progressOff();
-					$p.msg.show_msg({
-						title: $p.msg.error_critical,
-						type: "alert-error",
-						text: data.message
-					});
-				}
-			}
-		}
-
-		function iteration(){
-			var data = data_names[cstep-1];
-			create += data["class"][data.name].get_sql_struct(attr) + ";\n";
-			on_table_created(1);
-		}
-
-		// TODO переписать на промисах и генераторах и перекинуть в синкер
-		"enm,cch,cacc,cat,bp,tsk,doc,ireg,areg".split(",").forEach(function (mgr) {
-			for(class_name in managers[mgr])
-				data_names.push({"class": $p[mgr], "name": managers[mgr][class_name]});
-		});
-		cstep = data_names.length;
-
-		iteration();
-
 	};
 
 	/**
@@ -1212,6 +1160,75 @@ function Meta() {
 
 	};
 
+
+	/**
+	 * Создаёт таблицы WSQL для всех объектов метаданных
+	 * @method create_tables
+	 * @return {Promise.<T>}
+	 * @async
+	 */
+	_md.create_tables = function(callback, attr){
+
+		var cstep = 0, data_names = [], managers = _md.get_classes(), class_name,
+			create = (attr && attr.postgres) ? "" : "USE md;\n";
+
+		function on_table_created(data){
+
+			if(typeof data === "number"){
+				cstep--;
+				if(cstep==0){
+					if(callback)
+						setTimeout(function () {
+							callback(create);
+						}, 10);
+					else
+						alasql.utils.saveFile("create_tables.sql", create);
+				} else
+					iteration();
+			}else if(data && data.hasOwnProperty("message")){
+				if($p.iface && $p.iface.docs){
+					$p.iface.docs.progressOff();
+					$p.msg.show_msg({
+						title: $p.msg.error_critical,
+						type: "alert-error",
+						text: data.message
+					});
+				}
+			}
+		}
+
+		function iteration(){
+			var data = data_names[cstep-1];
+			create += data["class"][data.name].get_sql_struct(attr) + ";\n";
+			on_table_created(1);
+		}
+
+		// TODO переписать на промисах и генераторах и перекинуть в синкер
+		"enm,cch,cacc,cat,bp,tsk,doc,ireg,areg".split(",").forEach(function (mgr) {
+			for(class_name in managers[mgr])
+				data_names.push({"class": $p[mgr], "name": managers[mgr][class_name]});
+		});
+		cstep = data_names.length;
+
+		iteration();
+
+	};
+
+	_md.create_modules = function(root){
+
+		var class_name,
+			text = "";
+
+		if(!root)
+			root = "$p";
+
+		for(class_name in _m.enm)
+			text+= root + ".enm." + class_name + "= new EnumManager(_m.enm." + class_name + ", 'enm." + class_name + "');\n";
+
+		for(class_name in _m.cat)
+			text+= root + ".cat." + class_name + "= new CatManager('cat." + class_name + "');\n";
+
+	}
 
 }
 

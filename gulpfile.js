@@ -37,7 +37,7 @@ gulp.task('build-metadata', function () {
 		'./src/wnd_selection.js',
 		'./src/import_export.js',
 		'./src/events.js',
-		'./src/events_browser.js',
+		'./src/events.ui.js',
 		'./src/geocoding.js',
 		'./src/reporting.js',
 		'./data/merged_data.js',
@@ -236,7 +236,7 @@ gulp.task('build-metadata-core', function(){
 		'./src/meta_tabulars.js',
 		'./src/meta_objs.js',
 		'./src/meta_rest.js',
-		'./src/events_node.js',
+		'./src/events.node.js',
 		'./src/events.js',
 		'./lib/aes/aes.js'
 	])
