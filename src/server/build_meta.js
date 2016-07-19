@@ -5,5 +5,6 @@
  * Created 19.07.2016
  */
 
-var $p = require('../lib/metadata.core.js');
+var settings = require('./settings.json');
+var $p = require('../../lib/metadata.core.js');
 //var PouchDB = require('pouchdb');
