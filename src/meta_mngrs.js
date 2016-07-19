@@ -8,26 +8,6 @@
  * @requires common
  */
 
-/**
- * Описание структуры колонки формы списка
- * @param id
- * @param width
- * @param type
- * @param align
- * @param sort
- * @param caption
- * @constructor
- */
-function Col_struct(id,width,type,align,sort,caption){
-	this.id = id;
-	this.width = width;
-	this.type = type;
-	this.align = align;
-	this.sort = sort;
-	this.caption = caption;
-}
-$p.iface.Col_struct = Col_struct;
-
 
 /**
  * ### Абстрактный менеджер данных

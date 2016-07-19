@@ -21,6 +21,7 @@ gulp.task('build-metadata', function () {
 	return gulp.src([
 		'./lib/moment/locale/ru.js',
 		'./src/common.js',
+		'./src/common.ui.js',
 		'./src/pouchdb.js',
 		'./src/i18n.ru.js',
 		'./src/widgets/*.js',
@@ -231,12 +232,13 @@ gulp.task('build-metadata-core', function(){
 	gulp.src([
 		'./src/common.js',
 		'./src/i18n.ru.js',
+		'./src/pouchdb.js',
 		'./src/meta_meta.js',
 		'./src/meta_mngrs.js',
 		'./src/meta_tabulars.js',
 		'./src/meta_objs.js',
 		'./src/meta_rest.js',
-		'./src/events.node.js',
+		'./src/meta_pouchdb.js',
 		'./src/events.js',
 		'./lib/aes/aes.js'
 	])

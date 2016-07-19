@@ -21,8 +21,19 @@ function Pouch(){
 		_paths = {},
 		_local, _remote, _auth, _data_loaded;
 
-
 	t.__define({
+
+		/**
+		 * Конструктор PouchDB
+		 */
+		DB: {
+			value: typeof PouchDB === "undefined" ?
+				require('pouchdb-core')
+					.plugin(require('pouchdb-adapter-memory'))
+					.plugin(require('pouchdb-adapter-http'))
+					.plugin(require('pouchdb-replication'))
+					.plugin(require('pouchdb-mapreduce')) : PouchDB
+		},
 
 		init: {
 
@@ -44,15 +55,16 @@ function Pouch(){
 		local: {
 			get: function () {
 				if(!_local){
+					var opts = {auto_compaction: true, revs_limit: 2};
 					_local = {
-						ram: new PouchDB(_paths.prefix + _paths.zone + "_ram", {auto_compaction: true, revs_limit: 2}),
-						doc: new PouchDB(_paths.prefix + _paths.zone + "_doc", {auto_compaction: true, revs_limit: 2}),
-						meta: new PouchDB(_paths.prefix + "meta", {auto_compaction: true}),
+						ram: new t.DB(_paths.prefix + _paths.zone + "_ram", opts),
+						doc: new t.DB(_paths.prefix + _paths.zone + "_doc", opts),
+						meta: new t.DB(_paths.prefix + "meta", opts),
 						sync: {}
 					}
 				}
 				if(_paths.path && !_local._meta){
-					_local._meta = new PouchDB(_paths.path + "meta", {
+					_local._meta = new t.DB(_paths.path + "meta", {
 						auth: {
 							username: "guest",
 							password: "meta"
@@ -75,14 +87,14 @@ function Pouch(){
 			get: function () {
 				if(!_remote && _auth){
 					_remote = {
-						ram: new PouchDB(_paths.path + _paths.zone + "_ram", {
+						ram: new t.DB(_paths.path + _paths.zone + "_ram", {
 							auth: {
 								username: _auth.username,
 								password: _auth.password
 							},
 							skip_setup: true
 						}),
-						doc: new PouchDB(_paths.path + _paths.zone + "_doc" + _paths.suffix, {
+						doc: new t.DB(_paths.path + _paths.zone + "_doc" + _paths.suffix, {
 							auth: {
 								username: _auth.username,
 								password: _auth.password

@@ -19,7 +19,7 @@
   "pouch": {
     "path": "http://i980:89/couchdb/wb_",
     "zone": 0,
-    "prefix": "",
+    "prefix": "wb_",
     "suffix": ""
   }
 }

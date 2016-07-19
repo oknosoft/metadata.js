@@ -6,18 +6,7 @@
  * @submodule events.ui
  */
 
-
-/**
- * Этот фрагмент кода выполняем только в браузере
- * События окна внутри воркера и Node нас не интересуют
- */
-(function(w){
-	
-	var eve = $p.eve,
-		iface = $p.iface,
-		msg = $p.msg,
-		timer_setted = false,
-		cache;
+$p.eve.__define({
 
 	/**
 	 * Устанавливает состояние online/offline в параметрах работы программы
@@ -25,18 +14,167 @@
 	 * @for AppEvents
 	 * @param offline {Boolean}
 	 */
-	eve.set_offline = function(offline){
-		var current_offline = $p.job_prm['offline'];
-		$p.job_prm['offline'] = !!(offline || $p.wsql.get_user_param('offline', 'boolean'));
-		if(current_offline != $p.job_prm['offline']){
-			// предпринять действия
-			current_offline = $p.job_prm['offline'];
+	set_offline: {
+		value: function(offline){
+			var current_offline = $p.job_prm['offline'];
+			$p.job_prm['offline'] = !!(offline || $p.wsql.get_user_param('offline', 'boolean'));
+			if(current_offline != $p.job_prm['offline']){
+				// предпринять действия
+				current_offline = $p.job_prm['offline'];
 
+			}
 		}
-	};
+	},
 
-	
+	/**
+	 * Тип устройства и ориентация экрана
+	 * @method on_rotate
+	 * @for AppEvents
+	 * @param e {Event}
+	 */
+	on_rotate: {
+		value: function (e) {
+			$p.job_prm.device_orient = (w.orientation == 0 || w.orientation == 180 ? "portrait":"landscape");
+			if (typeof(e) != "undefined")
+				eve.callEvent("onOrientationChange", [$p.job_prm.device_orient]);
+		}
+	},
 
+	/**
+	 * Шаги синхронизации (перечисление состояний)
+	 * @property steps
+	 * @for AppEvents
+	 * @type SyncSteps
+	 */
+	steps: {
+		value: {
+			load_meta: 0,           // загрузка метаданных из файла
+			authorization: 1,       // авторизация на сервере 1С или Node (в автономном режиме шаг не выполняется)
+			create_managers: 2,     // создание менеджеров объектов
+			process_access:  3,     // загрузка данных пользователя, обрезанных по RLS (контрагенты, договоры, организации)
+			load_data_files: 4,     // загрузка данных из файла зоны
+			load_data_db: 5,        // догрузка данных с сервера 1С или Node
+			load_data_wsql: 6,      // загрузка данных из локальной датабазы (имеет смысл, если локальная база не в ОЗУ)
+			save_data_wsql: 7       // кеширование данных из озу в локальную датабазу
+		}
+	},
+
+	/**
+	 * Авторизация на сервере 1С
+	 * @method log_in
+	 * @for AppEvents
+	 * @param onstep {Function} - callback обработки состояния. Функция вызывается в начале шага
+	 * @return {Promise.<T>} - промис, ошибки которого должен обработать вызывающий код
+	 * @async
+	 */
+	log_in: {
+		value: function(onstep){
+
+			var irest_attr = {},
+				mdd;
+
+			// информируем о начале операций
+			onstep($p.eve.steps.load_meta);
+
+			// выясняем, доступен ли irest (наш сервис) или мы ограничены стандартным rest-ом
+			// параллельно, проверяем авторизацию
+			$p.ajax.default_attr(irest_attr, $p.job_prm.irest_url());
+
+			return ($p.job_prm.offline ? Promise.resolve({responseURL: "", response: ""}) : $p.ajax.get_ex(irest_attr.url, irest_attr))
+
+				.then(function (req) {
+					if(!$p.job_prm.offline)
+						$p.job_prm.irest_enabled = true;
+					if(req.response[0] == "{")
+						return JSON.parse(req.response);
+				})
+
+				.catch(function () {
+					// если здесь ошибка, значит доступен только стандартный rest
+				})
+
+				.then(function (res) {
+
+
+					onstep($p.eve.steps.authorization);
+
+					// TODO: реализовать метод для получения списка ролей пользователя
+					mdd = res;
+					mdd.root = true;
+
+					// в автономном режиме сразу переходим к чтению первого файла данных
+					// если irest_enabled, значит уже авторизованы
+					if($p.job_prm.offline || $p.job_prm.irest_enabled)
+						return mdd;
+
+					else
+						return $p.ajax.get_ex($p.job_prm.rest_url()+"?$format=json", true)
+							.then(function () {
+								return mdd;
+							});
+				})
+
+				// обработчик ошибок авторизации
+				.catch(function (err) {
+
+					if($p.iface.auth.onerror)
+						$p.iface.auth.onerror(err);
+
+					throw err;
+				})
+
+				// интерпретируем ответ сервера
+				.then(function (res) {
+
+					onstep($p.eve.steps.load_data_files);
+
+					if($p.job_prm.offline)
+						return res;
+
+					// широковещательное оповещение об авторизованности на сервере
+					eve.callEvent("log_in", [$p.ajax.authorized = true]);
+
+					if(typeof res == "string")
+						res = JSON.parse(res);
+
+					if($p.msg.check_soap_result(res))
+						return;
+
+					if($p.wsql.get_user_param("enable_save_pwd"))
+						$p.wsql.set_user_param("user_pwd", $p.ajax.password);
+
+					else if($p.wsql.get_user_param("user_pwd"))
+						$p.wsql.set_user_param("user_pwd", "");
+
+					// сохраняем разницу времени с сервером
+					if(res.now_1с && res.now_js)
+						$p.wsql.set_user_param("time_diff", res.now_1с - res.now_js);
+
+				})
+
+				// читаем справочники с ограниченным доступом, которые могли прибежать вместе с метаданными
+				.then(function () {
+
+					// здесь же, уточняем список печатных форм
+					_md.printing_plates(mdd.printing_plates);
+
+				});
+		}
+	}
+
+});
+
+
+/**
+ * Этот фрагмент кода выполняем только в браузере
+ * События окна внутри воркера и Node нас не интересуют
+ */
+(function(w){
+
+	var eve = $p.eve,
+		msg = $p.msg,
+		timer_setted = false,
+		cache;
 
 	/**
 	 * Отслеживаем онлайн
@@ -305,16 +443,7 @@
 					}
 				});
 			}
-			
-			/**
-			 * Тип устройства и ориентация экрана
-			 * @param e
-			 */
-			eve.on_rotate = function (e) {
-				$p.job_prm.device_orient = (w.orientation == 0 || w.orientation == 180 ? "portrait":"landscape");
-				if (typeof(e) != "undefined")
-					eve.callEvent("onOrientationChange", [$p.job_prm.device_orient]);
-			};
+
 			if(typeof(w.orientation)=="undefined")
 				$p.job_prm.device_orient = w.innerWidth>w.innerHeight ? "landscape" : "portrait";
 			else
@@ -342,7 +471,7 @@
 			document.body.addEventListener("keydown", function (ev) {
 				eve.callEvent("keydown", [ev]);
 			}, false);
-			
+
 			setTimeout(init_params, 10);
 
 		}, 10);
@@ -382,122 +511,3 @@
 	w.addEventListener("hashchange", $p.iface.hash_route);
 
 })(window);
-
-/**
- * Шаги синхронизации (перечисление состояний)
- * @property steps
- * @for AppEvents
- * @type SyncSteps
- */
-$p.eve.steps = {
-	load_meta: 0,           // загрузка метаданных из файла
-	authorization: 1,       // авторизация на сервере 1С или Node (в автономном режиме шаг не выполняется)
-	create_managers: 2,     // создание менеджеров объектов
-	process_access:  3,     // загрузка данных пользователя, обрезанных по RLS (контрагенты, договоры, организации)
-	load_data_files: 4,     // загрузка данных из файла зоны
-	load_data_db: 5,        // догрузка данных с сервера 1С или Node
-	load_data_wsql: 6,      // загрузка данных из локальной датабазы (имеет смысл, если локальная база не в ОЗУ)
-	save_data_wsql: 7       // кеширование данных из озу в локальную датабазу
-};
-
-/**
- * Авторизация на сервере 1С
- * @method log_in
- * @for AppEvents
- * @param onstep {Function} - callback обработки состояния. Функция вызывается в начале шага
- * @return {Promise.<T>} - промис, ошибки которого должен обработать вызывающий код
- * @async
- */
-$p.eve.log_in = function(onstep){
-
-	var irest_attr = {},
-		mdd;
-
-	// информируем о начале операций
-	onstep($p.eve.steps.load_meta);
-
-	// выясняем, доступен ли irest (наш сервис) или мы ограничены стандартным rest-ом
-	// параллельно, проверяем авторизацию
-	$p.ajax.default_attr(irest_attr, $p.job_prm.irest_url());
-
-	return ($p.job_prm.offline ? Promise.resolve({responseURL: "", response: ""}) : $p.ajax.get_ex(irest_attr.url, irest_attr))
-
-		.then(function (req) {
-			if(!$p.job_prm.offline)
-				$p.job_prm.irest_enabled = true;
-			if(req.response[0] == "{")
-				return JSON.parse(req.response);
-		})
-
-		.catch(function () {
-			// если здесь ошибка, значит доступен только стандартный rest
-		})
-
-		.then(function (res) {
-
-
-			onstep($p.eve.steps.authorization);
-
-			// TODO: реализовать метод для получения списка ролей пользователя
-			mdd = res;
-			mdd.root = true;
-
-			// в автономном режиме сразу переходим к чтению первого файла данных
-			// если irest_enabled, значит уже авторизованы
-			if($p.job_prm.offline || $p.job_prm.irest_enabled)
-				return mdd;
-
-			else
-				return $p.ajax.get_ex($p.job_prm.rest_url()+"?$format=json", true)
-					.then(function () {
-						return mdd;
-					});
-		})
-
-		// обработчик ошибок авторизации
-		.catch(function (err) {
-
-			if($p.iface.auth.onerror)
-				$p.iface.auth.onerror(err);
-
-			throw err;
-		})
-
-		// интерпретируем ответ сервера
-		.then(function (res) {
-
-			onstep($p.eve.steps.load_data_files);
-
-			if($p.job_prm.offline)
-				return res;
-
-			// широковещательное оповещение об авторизованности на сервере
-			eve.callEvent("log_in", [$p.ajax.authorized = true]);
-
-			if(typeof res == "string")
-				res = JSON.parse(res);
-
-			if($p.msg.check_soap_result(res))
-				return;
-
-			if($p.wsql.get_user_param("enable_save_pwd"))
-				$p.wsql.set_user_param("user_pwd", $p.ajax.password);
-
-			else if($p.wsql.get_user_param("user_pwd"))
-				$p.wsql.set_user_param("user_pwd", "");
-
-			// сохраняем разницу времени с сервером
-			if(res.now_1с && res.now_js)
-				$p.wsql.set_user_param("time_diff", res.now_1с - res.now_js);
-
-		})
-
-		// читаем справочники с ограниченным доступом, которые могли прибежать вместе с метаданными
-		.then(function () {
-
-			// здесь же, уточняем список печатных форм
-			_md.printing_plates(mdd.printing_plates);
-
-		});
-
-};

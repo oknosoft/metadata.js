@@ -526,25 +526,6 @@ function MetaEngine() {
 		},
 
 		/**
-		 * Объекты интерфейса пользователя
-		 * @property iface
-		 * @type InterfaceObjs
-		 * @static
-		 */
-		iface: {
-			value: new InterfaceObjs(),
-			writable: false
-		},
-
-		/**
-		 * Экспортируем конструктор модификаторов для внешних приложений (Node.js)
-		 */
-		Modifiers: {
-			value: Modifiers,
-			writable: false
-		},
-
-		/**
 		 * ### Модификаторы менеджеров объектов метаданных
 		 * Т.к. экземпляры менеджеров и конструкторы объектов доступны в системе только после загрузки метаданных,
 		 * а метаданные загружаются после авторизации на сервере, методы модификаторов нельзя выполнить при старте приложения
@@ -567,41 +548,6 @@ function MetaEngine() {
 		aes: {
 			value: new Aes("metadata.js"),
 			writable: false
-		},
-
-		/**
-		 * ### Текущий пользователь
-		 * Свойство определено после загрузки метаданных и входа впрограмму
-		 * @property current_user
-		 * @type {_cat.users}
-		 * @final
-		 */
-		current_user: {
-			get: function () {
-				return $p.cat && $p.cat.users ?
-					$p.cat.users.by_id($p.wsql.get_user_param("user_name")) :
-					$p.cat.users.get();
-			}
-		},
-
-		/**
-		 * ### Права доступа текущего пользователя.
-		 * Свойство определено после загрузки метаданных и входа впрограмму
-		 * @property current_acl
-		 * @type {_cat.users_acl}
-		 * @final
-		 */
-		current_acl: {
-			get: function () {
-				var res;
-				if($p.cat && $p.cat.users_acl){
-					$p.cat.users_acl.find_rows({owner: $p.current_user}, function (o) {
-						res = o;
-						return false;
-					})
-				}
-				return res;
-			}
 		},
 
 		/**
@@ -1378,253 +1324,6 @@ function Ajax() {
 }
 
 /**
- * ### Объекты интерфейса пользователя
- * @class InterfaceObjs
- * @static
- * @menuorder 40
- * @tooltip Контекст UI
- */
-function InterfaceObjs(){
-
-	this.toString = function(){return "Объекты интерфейса пользователя"};
-
-	/**
-	 * Очищает область (например, удаляет из div все дочерние элементы)
-	 * @method clear_svgs
-	 * @param area {HTMLElement|String}
-	 */
-	this.clear_svgs = function(area){
-		if(typeof area === "string")
-			area = document.getElementById(area);
-		while (area.firstChild)
-			area.removeChild(area.firstChild);
-	};
-
-	/**
-	 * Возвращает координату левого верхнего угла элемента относительно документа
-	 * @method get_offset
-	 * @param elm {HTMLElement} - элемент, координату которого, необходимо определить
-	 * @return {Object} - {left: number, top: number}
-	 */
-	this.get_offset = function(elm) {
-		var offset = {left: 0, top:0};
-		if (elm.offsetParent) {
-			do {
-				offset.left += elm.offsetLeft;
-				offset.top += elm.offsetTop;
-			} while (elm = elm.offsetParent);
-		}
-		return offset;
-	};
-
-	/**
-	 * Заменяет в строке критичные для xml символы
-	 * @method normalize_xml
-	 * @param str {string} - исходная строка, в которой надо замаскировать символы
-	 * @return {XML|string}
-	 */
-	this.normalize_xml = function(str){
-		if(!str) return "";
-		var entities = { '&':  '&amp;', '"': '&quot;',  "'":  '&apos;', '<': '&lt;', '>': '&gt;'};
-		return str.replace(	/[&"'<>]/g, function (s) {return entities[s];});
-	};
-
-	/**
-	 * Масштабирует svg
-	 * @method scale_svg
-	 * @param svg_current {String} - исходная строка svg
-	 * @param size {Number|Object} - требуемый размер картинки
-	 * @param padding {Number} - отступ от границы viewBox
-	 * @return {String} - отмасштабированная строка svg
-	 */
-	this.scale_svg = function(svg_current, size, padding){
-		var j, k, svg_head, svg_body, head_ind, vb_ind, svg_head_str, vb_str, viewBox, svg_j = {};
-
-		var height = typeof size == "number" ? size : size.height,
-			width = typeof size == "number" ? (size * 1.5).round(0) : size.width,
-			max_zoom = typeof size == "number" ? Infinity : (size.zoom || Infinity);
-
-		head_ind = svg_current.indexOf(">");
-		svg_head_str = svg_current.substring(5, head_ind);
-		svg_head = svg_head_str.split(' ');
-		svg_body = svg_current.substr(head_ind+1);
-		svg_body = svg_body.substr(0, svg_body.length - 6);
-
-		// получаем w, h и формируем viewBox="0 0 400 100"
-		for(j in svg_head){
-			svg_current = svg_head[j].split("=");
-			if("width,height,x,y".indexOf(svg_current[0]) != -1){
-				svg_current[1] = Number(svg_current[1].replace(/"/g, ""));
-				svg_j[svg_current[0]] = svg_current[1];
-			}
-		}
-
-		if((vb_ind = svg_head_str.indexOf("viewBox="))!=-1){
-			vb_str = svg_head_str.substring(vb_ind+9);
-			viewBox = 'viewBox="' + vb_str.substring(0, vb_str.indexOf('"')) + '"';
-		}else{
-			viewBox = 'viewBox="' + (svg_j.x || 0) + ' ' + (svg_j.y || 0) + ' ' + (svg_j.width - padding) + ' ' + (svg_j.height - padding) + '"';
-		}
-
-		var init_height = svg_j.height,
-			init_width = svg_j.width;
-
-		k = (height - padding) / init_height;
-		svg_j.height = height;
-		svg_j.width = (init_width * k).round(0);
-
-		if(svg_j.width > width){
-			k = (width - padding) / init_width;
-			svg_j.height = (init_height * k).round(0);
-			svg_j.width = width;
-		}
-
-		if(k > max_zoom){
-			k = max_zoom;
-			svg_j.height = (init_height * k).round(0);
-			svg_j.width = (init_width * k).round(0);
-		}
-
-		svg_j.x = (svg_j.x * k).round(0);
-		svg_j.y = (svg_j.y * k).round(0);
-
-		return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" ' +
-			'width="' + svg_j.width + '" ' +
-			'height="' + svg_j.height + '" ' +
-			'x="' + svg_j.x + '" ' +
-			'y="' + svg_j.y + '" ' +
-			'xml:space="preserve" ' + viewBox + '>' + svg_body + '</svg>';
-	};
-
-	/**
-	 * Добавляет в форму функциональность вызова справки
-	 * @method bind_help
-	 * @param wnd {dhtmlXWindowsCell}
-	 * @param [path] {String} - url справки
-	 */
-	this.bind_help = function (wnd, path) {
-
-		function frm_help(win){
-			if(!win.help_path){
-				$p.msg.show_msg({
-					title: "Справка",
-					type: "alert-info",
-					text: $p.msg.not_implemented
-				});
-				return;
-			}
-		}
-
-		if(wnd instanceof dhtmlXCellObject) {
-			// TODO реализовать кнопку справки для приклеенной формы
-		}else{
-			if(!wnd.help_path && path)
-				wnd.help_path = path;
-
-			wnd.button('help').show();
-			wnd.button('help').enable();
-			wnd.attachEvent("onHelp", frm_help);
-		}
-
-	};
-
-	/**
-	 * Устанавливает hash url для сохранения истории и последующей навигации
-	 * @method set_hash
-	 * @param [obj] {String|Object} - имя класса или объект со свойствами к установке в хеш адреса
-	 * @param [ref] {String} - ссылка объекта
-	 * @param [frm] {String} - имя формы объекта
-	 * @param [view] {String} - имя представления главной формы
-	 */
-	this.set_hash = function (obj, ref, frm, view ) {
-
-		var ext = {},
-			hprm = $p.job_prm.parse_url();
-
-		if(arguments.length == 1 && typeof obj == "object"){
-			ext = obj;
-			if(ext.hasOwnProperty("obj")){
-				obj = ext.obj;
-				delete ext.obj;
-			}
-			if(ext.hasOwnProperty("ref")){
-				ref = ext.ref;
-				delete ext.ref;
-			}
-			if(ext.hasOwnProperty("frm")){
-				frm = ext.frm;
-				delete ext.frm;
-			}
-			if(ext.hasOwnProperty("view")){
-				view = ext.view;
-				delete ext.view;
-			}
-		}
-
-		if(obj === undefined)
-			obj = hprm.obj || "";
-		if(ref === undefined)
-			ref = hprm.ref || "";
-		if(frm === undefined)
-			frm = hprm.frm || "";
-		if(view === undefined)
-			view = hprm.view || "";
-
-		var hash = "obj=" + obj + "&ref=" + ref + "&frm=" + frm + "&view=" + view;
-		for(var key in ext){
-			hash += "&" + key + "=" + ext[key];
-		}
-
-		if(location.hash.substr(1) == hash)
-			this.hash_route();
-		else
-			location.hash = hash;
-	};
-
-	/**
-	 * Выполняет навигацию при изменении хеша url
-	 * @method hash_route
-	 * @param event {HashChangeEvent}
-	 * @return {Boolean}
-	 */
-	this.hash_route = function (event) {
-
-		var hprm = $p.job_prm.parse_url(),
-			res = $p.eve.callEvent("hash_route", [hprm]),
-			mgr;
-
-		if((res !== false) && (!$p.iface.before_route || $p.iface.before_route(event) !== false)){
-
-			if($p.ajax.authorized){
-
-				if(hprm.ref && typeof _md != "undefined"){
-					// если задана ссылка, открываем форму объекта
-					mgr = _md.mgr_by_class_name(hprm.obj);
-					if(mgr)
-						mgr[hprm.frm || "form_obj"]($p.iface.docs, hprm.ref)
-
-				}else if(hprm.view && $p.iface.swith_view){
-					// если задано имя представления, переключаем главную форму
-					$p.iface.swith_view(hprm.view);
-
-				}
-
-			}
-		}
-
-		if(event)
-			return $p.cancel_bubble(event);
-	};
-
-
-	/**
-	 * Возникает после готовности DOM. Должен быть обработан конструктором основной формы приложения
-	 * @event iface_init
-	 */
-
-}
-
-/**
  * ### Модификатор отложенного запуска
  * Служебный объект, реализующий отложенную загрузку модулей,<br />
  * в которых доопределяется (переопределяется) поведение объектов и менеджеров конкретных типов
@@ -2037,7 +1736,7 @@ function WSQL(){
 		 * @type Pouch
 		 */
 		pouch: {
-			value: typeof Pouch !== "undefined" ? new Pouch() : {}
+			value: new Pouch()
 		},
 
 		/**
@@ -2175,6 +1874,327 @@ function WSQL(){
 }
 
 /**
+ * Глобальные переменные и общие методы фреймворка __metadata.js__ <i>Oknosoft data engine</i>
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ *
+ * @module  common
+ * @submodule common.ui
+ */
+
+
+/**
+ * Описание структуры колонки формы списка
+ * @param id
+ * @param width
+ * @param type
+ * @param align
+ * @param sort
+ * @param caption
+ * @constructor
+ */
+function Col_struct(id,width,type,align,sort,caption){
+	this.id = id;
+	this.width = width;
+	this.type = type;
+	this.align = align;
+	this.sort = sort;
+	this.caption = caption;
+}
+
+/**
+ * ### Объекты интерфейса пользователя
+ * @class InterfaceObjs
+ * @static
+ * @menuorder 40
+ * @tooltip Контекст UI
+ */
+function InterfaceObjs(){
+
+	this.toString = function(){return "Объекты интерфейса пользователя"};
+
+	/**
+	 * Очищает область (например, удаляет из div все дочерние элементы)
+	 * @method clear_svgs
+	 * @param area {HTMLElement|String}
+	 */
+	this.clear_svgs = function(area){
+		if(typeof area === "string")
+			area = document.getElementById(area);
+		while (area.firstChild)
+			area.removeChild(area.firstChild);
+	};
+
+	/**
+	 * Возвращает координату левого верхнего угла элемента относительно документа
+	 * @method get_offset
+	 * @param elm {HTMLElement} - элемент, координату которого, необходимо определить
+	 * @return {Object} - {left: number, top: number}
+	 */
+	this.get_offset = function(elm) {
+		var offset = {left: 0, top:0};
+		if (elm.offsetParent) {
+			do {
+				offset.left += elm.offsetLeft;
+				offset.top += elm.offsetTop;
+			} while (elm = elm.offsetParent);
+		}
+		return offset;
+	};
+
+	/**
+	 * Заменяет в строке критичные для xml символы
+	 * @method normalize_xml
+	 * @param str {string} - исходная строка, в которой надо замаскировать символы
+	 * @return {XML|string}
+	 */
+	this.normalize_xml = function(str){
+		if(!str) return "";
+		var entities = { '&':  '&amp;', '"': '&quot;',  "'":  '&apos;', '<': '&lt;', '>': '&gt;'};
+		return str.replace(	/[&"'<>]/g, function (s) {return entities[s];});
+	};
+
+	/**
+	 * Масштабирует svg
+	 * @method scale_svg
+	 * @param svg_current {String} - исходная строка svg
+	 * @param size {Number|Object} - требуемый размер картинки
+	 * @param padding {Number} - отступ от границы viewBox
+	 * @return {String} - отмасштабированная строка svg
+	 */
+	this.scale_svg = function(svg_current, size, padding){
+		var j, k, svg_head, svg_body, head_ind, vb_ind, svg_head_str, vb_str, viewBox, svg_j = {};
+
+		var height = typeof size == "number" ? size : size.height,
+			width = typeof size == "number" ? (size * 1.5).round(0) : size.width,
+			max_zoom = typeof size == "number" ? Infinity : (size.zoom || Infinity);
+
+		head_ind = svg_current.indexOf(">");
+		svg_head_str = svg_current.substring(5, head_ind);
+		svg_head = svg_head_str.split(' ');
+		svg_body = svg_current.substr(head_ind+1);
+		svg_body = svg_body.substr(0, svg_body.length - 6);
+
+		// получаем w, h и формируем viewBox="0 0 400 100"
+		for(j in svg_head){
+			svg_current = svg_head[j].split("=");
+			if("width,height,x,y".indexOf(svg_current[0]) != -1){
+				svg_current[1] = Number(svg_current[1].replace(/"/g, ""));
+				svg_j[svg_current[0]] = svg_current[1];
+			}
+		}
+
+		if((vb_ind = svg_head_str.indexOf("viewBox="))!=-1){
+			vb_str = svg_head_str.substring(vb_ind+9);
+			viewBox = 'viewBox="' + vb_str.substring(0, vb_str.indexOf('"')) + '"';
+		}else{
+			viewBox = 'viewBox="' + (svg_j.x || 0) + ' ' + (svg_j.y || 0) + ' ' + (svg_j.width - padding) + ' ' + (svg_j.height - padding) + '"';
+		}
+
+		var init_height = svg_j.height,
+			init_width = svg_j.width;
+
+		k = (height - padding) / init_height;
+		svg_j.height = height;
+		svg_j.width = (init_width * k).round(0);
+
+		if(svg_j.width > width){
+			k = (width - padding) / init_width;
+			svg_j.height = (init_height * k).round(0);
+			svg_j.width = width;
+		}
+
+		if(k > max_zoom){
+			k = max_zoom;
+			svg_j.height = (init_height * k).round(0);
+			svg_j.width = (init_width * k).round(0);
+		}
+
+		svg_j.x = (svg_j.x * k).round(0);
+		svg_j.y = (svg_j.y * k).round(0);
+
+		return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" ' +
+			'width="' + svg_j.width + '" ' +
+			'height="' + svg_j.height + '" ' +
+			'x="' + svg_j.x + '" ' +
+			'y="' + svg_j.y + '" ' +
+			'xml:space="preserve" ' + viewBox + '>' + svg_body + '</svg>';
+	};
+
+	/**
+	 * Добавляет в форму функциональность вызова справки
+	 * @method bind_help
+	 * @param wnd {dhtmlXWindowsCell}
+	 * @param [path] {String} - url справки
+	 */
+	this.bind_help = function (wnd, path) {
+
+		function frm_help(win){
+			if(!win.help_path){
+				$p.msg.show_msg({
+					title: "Справка",
+					type: "alert-info",
+					text: $p.msg.not_implemented
+				});
+				return;
+			}
+		}
+
+		if(wnd instanceof dhtmlXCellObject) {
+			// TODO реализовать кнопку справки для приклеенной формы
+		}else{
+			if(!wnd.help_path && path)
+				wnd.help_path = path;
+
+			wnd.button('help').show();
+			wnd.button('help').enable();
+			wnd.attachEvent("onHelp", frm_help);
+		}
+
+	};
+
+	/**
+	 * Устанавливает hash url для сохранения истории и последующей навигации
+	 * @method set_hash
+	 * @param [obj] {String|Object} - имя класса или объект со свойствами к установке в хеш адреса
+	 * @param [ref] {String} - ссылка объекта
+	 * @param [frm] {String} - имя формы объекта
+	 * @param [view] {String} - имя представления главной формы
+	 */
+	this.set_hash = function (obj, ref, frm, view ) {
+
+		var ext = {},
+			hprm = $p.job_prm.parse_url();
+
+		if(arguments.length == 1 && typeof obj == "object"){
+			ext = obj;
+			if(ext.hasOwnProperty("obj")){
+				obj = ext.obj;
+				delete ext.obj;
+			}
+			if(ext.hasOwnProperty("ref")){
+				ref = ext.ref;
+				delete ext.ref;
+			}
+			if(ext.hasOwnProperty("frm")){
+				frm = ext.frm;
+				delete ext.frm;
+			}
+			if(ext.hasOwnProperty("view")){
+				view = ext.view;
+				delete ext.view;
+			}
+		}
+
+		if(obj === undefined)
+			obj = hprm.obj || "";
+		if(ref === undefined)
+			ref = hprm.ref || "";
+		if(frm === undefined)
+			frm = hprm.frm || "";
+		if(view === undefined)
+			view = hprm.view || "";
+
+		var hash = "obj=" + obj + "&ref=" + ref + "&frm=" + frm + "&view=" + view;
+		for(var key in ext){
+			hash += "&" + key + "=" + ext[key];
+		}
+
+		if(location.hash.substr(1) == hash)
+			this.hash_route();
+		else
+			location.hash = hash;
+	};
+
+	/**
+	 * Выполняет навигацию при изменении хеша url
+	 * @method hash_route
+	 * @param event {HashChangeEvent}
+	 * @return {Boolean}
+	 */
+	this.hash_route = function (event) {
+
+		var hprm = $p.job_prm.parse_url(),
+			res = $p.eve.callEvent("hash_route", [hprm]),
+			mgr;
+
+		if((res !== false) && (!$p.iface.before_route || $p.iface.before_route(event) !== false)){
+
+			if($p.ajax.authorized){
+
+				if(hprm.ref && typeof _md != "undefined"){
+					// если задана ссылка, открываем форму объекта
+					mgr = _md.mgr_by_class_name(hprm.obj);
+					if(mgr)
+						mgr[hprm.frm || "form_obj"]($p.iface.docs, hprm.ref)
+
+				}else if(hprm.view && $p.iface.swith_view){
+					// если задано имя представления, переключаем главную форму
+					$p.iface.swith_view(hprm.view);
+
+				}
+
+			}
+		}
+
+		if(event)
+			return $p.cancel_bubble(event);
+	};
+
+	this.Col_struct = Col_struct;
+}
+
+$p.__define({
+
+	/**
+	 * Объекты интерфейса пользователя
+	 * @property iface
+	 * @for MetaEngine
+	 * @type InterfaceObjs
+	 * @static
+	 */
+	iface: {
+		value: new InterfaceObjs(),
+		writable: false
+	},
+
+	/**
+	 * ### Текущий пользователь
+	 * Свойство определено после загрузки метаданных и входа впрограмму
+	 * @property current_user
+	 * @type {_cat.users}
+	 * @final
+	 */
+	current_user: {
+		get: function () {
+			return $p.cat && $p.cat.users ?
+				$p.cat.users.by_id($p.wsql.get_user_param("user_name")) :
+				$p.cat.users.get();
+		}
+	},
+
+	/**
+	 * ### Права доступа текущего пользователя.
+	 * Свойство определено после загрузки метаданных и входа впрограмму
+	 * @property current_acl
+	 * @type {_cat.users_acl}
+	 * @final
+	 */
+	current_acl: {
+		get: function () {
+			var res;
+			if($p.cat && $p.cat.users_acl){
+				$p.cat.users_acl.find_rows({owner: $p.current_user}, function (o) {
+					res = o;
+					return false;
+				})
+			}
+			return res;
+		}
+	}
+
+});
+/**
  * Содержит методы и подписки на события PouchDB
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
@@ -2197,8 +2217,19 @@ function Pouch(){
 		_paths = {},
 		_local, _remote, _auth, _data_loaded;
 
-
 	t.__define({
+
+		/**
+		 * Конструктор PouchDB
+		 */
+		DB: {
+			value: typeof PouchDB === "undefined" ?
+				require('pouchdb-core')
+					.plugin(require('pouchdb-adapter-memory'))
+					.plugin(require('pouchdb-adapter-http'))
+					.plugin(require('pouchdb-replication'))
+					.plugin(require('pouchdb-mapreduce')) : PouchDB
+		},
 
 		init: {
 
@@ -2220,15 +2251,16 @@ function Pouch(){
 		local: {
 			get: function () {
 				if(!_local){
+					var opts = {auto_compaction: true, revs_limit: 2};
 					_local = {
-						ram: new PouchDB(_paths.prefix + _paths.zone + "_ram", {auto_compaction: true, revs_limit: 2}),
-						doc: new PouchDB(_paths.prefix + _paths.zone + "_doc", {auto_compaction: true, revs_limit: 2}),
-						meta: new PouchDB(_paths.prefix + "meta", {auto_compaction: true}),
+						ram: new t.DB(_paths.prefix + _paths.zone + "_ram", opts),
+						doc: new t.DB(_paths.prefix + _paths.zone + "_doc", opts),
+						meta: new t.DB(_paths.prefix + "meta", opts),
 						sync: {}
 					}
 				}
 				if(_paths.path && !_local._meta){
-					_local._meta = new PouchDB(_paths.path + "meta", {
+					_local._meta = new t.DB(_paths.path + "meta", {
 						auth: {
 							username: "guest",
 							password: "meta"
@@ -2251,14 +2283,14 @@ function Pouch(){
 			get: function () {
 				if(!_remote && _auth){
 					_remote = {
-						ram: new PouchDB(_paths.path + _paths.zone + "_ram", {
+						ram: new t.DB(_paths.path + _paths.zone + "_ram", {
 							auth: {
 								username: _auth.username,
 								password: _auth.password
 							},
 							skip_setup: true
 						}),
-						doc: new PouchDB(_paths.path + _paths.zone + "_doc" + _paths.suffix, {
+						doc: new t.DB(_paths.path + _paths.zone + "_doc" + _paths.suffix, {
 							auth: {
 								username: _auth.username,
 								password: _auth.password
@@ -6386,26 +6418,6 @@ $p.record_log = function (err) {
  * @submodule meta_mngrs
  * @requires common
  */
-
-/**
- * Описание структуры колонки формы списка
- * @param id
- * @param width
- * @param type
- * @param align
- * @param sort
- * @param caption
- * @constructor
- */
-function Col_struct(id,width,type,align,sort,caption){
-	this.id = id;
-	this.width = width;
-	this.type = type;
-	this.align = align;
-	this.sort = sort;
-	this.caption = caption;
-}
-$p.iface.Col_struct = Col_struct;
 
 
 /**
@@ -15722,6 +15734,126 @@ DataManager.prototype.import = function(file, obj){
  */
 function AppEvents() {
 
+	/**
+	 * ### Добавляет объекту методы генерации и обработки событий
+	 *
+	 * @method do_eventable
+	 * @param obj {Object} - объект, которому будут добавлены eventable свойства
+	 */
+	this.do_eventable = function (obj) {
+
+		function attach(name, func) {
+			name = String(name).toLowerCase();
+			if (!this._evnts.data[name])
+				this._evnts.data[name] = {};
+			var eventId = $p.generate_guid();
+			this._evnts.data[name][eventId] = func;
+			return eventId;
+		}
+
+		function detach(eventId) {
+			for (var a in this._evnts.data) {
+				var k = 0;
+				for (var b in this._evnts.data[a]) {
+					if (b == eventId) {
+						this._evnts.data[a][b] = null;
+						delete this._evnts.data[a][b];
+					} else {
+						k++;
+					}
+				}
+				if (k == 0) {
+					this._evnts.data[a] = null;
+					delete this._evnts.data[a];
+				}
+			}
+		}
+
+		function call(name, params) {
+			name = String(name).toLowerCase();
+			if (this._evnts.data[name] == null)
+				return true;
+			var r = true;
+			for (var a in this._evnts.data[name]) {
+				r = this._evnts.data[name][a].apply(this, params) && r;
+			}
+			return r;
+		}
+
+		function ontimer() {
+
+			for(var name in this._evnts.evnts){
+				var l = this._evnts.evnts[name].length;
+				if(l){
+					for(var i=0; i<l; i++){
+						this.emit(name, this._evnts.evnts[name][i]);
+					}
+					this._evnts.evnts[name].length = 0;
+				}
+			}
+
+			this._evnts.timer = 0;
+		}
+
+		obj.__define({
+
+			_evnts: {
+				value: {
+					data: {},
+					timer: 0,
+					evnts: {}
+				}
+			},
+
+			on: {
+				value: attach
+			},
+
+			attachEvent: {
+				value: attach
+			},
+
+			off: {
+				value: detach
+			},
+
+			detachEvent: {
+				value: detach
+			},
+
+			checkEvent: {
+				value: function(name) {
+					name = String(name).toLowerCase();
+					return (this._evnts.data[name] != null);
+				}
+			},
+
+			callEvent: {
+				value: call
+			},
+
+			emit: {
+				value: call
+			},
+
+			emit_async: {
+				value: function callEvent(name, params){
+
+					if(!this._evnts.evnts[name])
+						this._evnts.evnts[name] = [];
+
+					this._evnts.evnts[name].push(params);
+
+					if(this._evnts.timer)
+						clearTimeout(this._evnts.timer);
+
+					this._evnts.timer = setTimeout(ontimer.bind(this), 4);
+				}
+			}
+
+		});
+	};
+
 	// если мы внутри браузера и загружен dhtmlx, переносим в AppEvents свойства dhx4
 	if(typeof window !== "undefined" && window.dhx4){
 		for(var p in dhx4){
@@ -15730,132 +15862,23 @@ function AppEvents() {
 		}
 		window.dhx4 = this;
 
-	}else{
-		AppEvents.do_eventable(this);
+	}else if(typeof WorkerGlobalScope === "undefined"){
+
+		// мы внутри Nodejs
+
+		this.do_eventable(this);
+
+		setTimeout(function () {
+			$p.job_prm = new JobPrm();
+			$p.wsql.init_params()
+				.then(function(){
+					$p.md.init();
+				});
+		});
 	}
 
 }
 
-/**
- * ### Добавляет объекту методы генерации и обработки событий
- *
- * @method
- * @for AppEvents
- * @static
- */
-AppEvents.do_eventable = function (obj) {
-
-	function attach(name, func) {
-		name = String(name).toLowerCase();
-		if (!this._evnts.data[name])
-			this._evnts.data[name] = {};
-		var eventId = $p.generate_guid();
-		this._evnts.data[name][eventId] = func;
-		return eventId;
-	}
-
-	function detach(eventId) {
-		for (var a in this._evnts.data) {
-			var k = 0;
-			for (var b in this._evnts.data[a]) {
-				if (b == eventId) {
-					this._evnts.data[a][b] = null;
-					delete this._evnts.data[a][b];
-				} else {
-					k++;
-				}
-			}
-			if (k == 0) {
-				this._evnts.data[a] = null;
-				delete this._evnts.data[a];
-			}
-		}
-	}
-
-	function call(name, params) {
-		name = String(name).toLowerCase();
-		if (this._evnts.data[name] == null)
-			return true;
-		var r = true;
-		for (var a in this._evnts.data[name]) {
-			r = this._evnts.data[name][a].apply(this, params) && r;
-		}
-		return r;
-	}
-
-	function ontimer() {
-
-		for(var name in this._evnts.evnts){
-			var l = this._evnts.evnts[name].length;
-			if(l){
-				for(var i=0; i<l; i++){
-					this.emit(name, this._evnts.evnts[name][i]);
-				}
-				this._evnts.evnts[name].length = 0;
-			}
-		}
-
-		this._evnts.timer = 0;
-	}
-
-	obj.__define({
-
-		_evnts: {
-			value: {
-				data: {},
-				timer: 0,
-				evnts: {}
-			}
-		},
-
-		on: {
-			value: attach
-		},
-
-		attachEvent: {
-			value: attach
-		},
-
-		off: {
-			value: detach
-		},
-
-		detachEvent: {
-			value: detach
-		},
-
-		checkEvent: {
-			value: function(name) {
-				name = String(name).toLowerCase();
-				return (this._evnts.data[name] != null);
-			}
-		},
-
-		callEvent: {
-			value: call
-		},
-
-		emit: {
-			value: call
-		},
-
-		emit_async: {
-			value: function callEvent(name, params){
-
-				if(!this._evnts.evnts[name])
-					this._evnts.evnts[name] = [];
-
-				this._evnts.evnts[name].push(params);
-
-				if(this._evnts.timer)
-					clearTimeout(this._evnts.timer);
-
-				this._evnts.timer = setTimeout(ontimer.bind(this), 4);
-			}
-		}
-
-	});
-};
 
 
 /**
@@ -15866,18 +15889,7 @@ AppEvents.do_eventable = function (obj) {
  * @submodule events.ui
  */
 
-
-/**
- * Этот фрагмент кода выполняем только в браузере
- * События окна внутри воркера и Node нас не интересуют
- */
-(function(w){
-	
-	var eve = $p.eve,
-		iface = $p.iface,
-		msg = $p.msg,
-		timer_setted = false,
-		cache;
+$p.eve.__define({
 
 	/**
 	 * Устанавливает состояние online/offline в параметрах работы программы
@@ -15885,18 +15897,167 @@ AppEvents.do_eventable = function (obj) {
 	 * @for AppEvents
 	 * @param offline {Boolean}
 	 */
-	eve.set_offline = function(offline){
-		var current_offline = $p.job_prm['offline'];
-		$p.job_prm['offline'] = !!(offline || $p.wsql.get_user_param('offline', 'boolean'));
-		if(current_offline != $p.job_prm['offline']){
-			// предпринять действия
-			current_offline = $p.job_prm['offline'];
+	set_offline: {
+		value: function(offline){
+			var current_offline = $p.job_prm['offline'];
+			$p.job_prm['offline'] = !!(offline || $p.wsql.get_user_param('offline', 'boolean'));
+			if(current_offline != $p.job_prm['offline']){
+				// предпринять действия
+				current_offline = $p.job_prm['offline'];
 
+			}
 		}
-	};
+	},
 
-	
+	/**
+	 * Тип устройства и ориентация экрана
+	 * @method on_rotate
+	 * @for AppEvents
+	 * @param e {Event}
+	 */
+	on_rotate: {
+		value: function (e) {
+			$p.job_prm.device_orient = (w.orientation == 0 || w.orientation == 180 ? "portrait":"landscape");
+			if (typeof(e) != "undefined")
+				eve.callEvent("onOrientationChange", [$p.job_prm.device_orient]);
+		}
+	},
 
+	/**
+	 * Шаги синхронизации (перечисление состояний)
+	 * @property steps
+	 * @for AppEvents
+	 * @type SyncSteps
+	 */
+	steps: {
+		value: {
+			load_meta: 0,           // загрузка метаданных из файла
+			authorization: 1,       // авторизация на сервере 1С или Node (в автономном режиме шаг не выполняется)
+			create_managers: 2,     // создание менеджеров объектов
+			process_access:  3,     // загрузка данных пользователя, обрезанных по RLS (контрагенты, договоры, организации)
+			load_data_files: 4,     // загрузка данных из файла зоны
+			load_data_db: 5,        // догрузка данных с сервера 1С или Node
+			load_data_wsql: 6,      // загрузка данных из локальной датабазы (имеет смысл, если локальная база не в ОЗУ)
+			save_data_wsql: 7       // кеширование данных из озу в локальную датабазу
+		}
+	},
+
+	/**
+	 * Авторизация на сервере 1С
+	 * @method log_in
+	 * @for AppEvents
+	 * @param onstep {Function} - callback обработки состояния. Функция вызывается в начале шага
+	 * @return {Promise.<T>} - промис, ошибки которого должен обработать вызывающий код
+	 * @async
+	 */
+	log_in: {
+		value: function(onstep){
+
+			var irest_attr = {},
+				mdd;
+
+			// информируем о начале операций
+			onstep($p.eve.steps.load_meta);
+
+			// выясняем, доступен ли irest (наш сервис) или мы ограничены стандартным rest-ом
+			// параллельно, проверяем авторизацию
+			$p.ajax.default_attr(irest_attr, $p.job_prm.irest_url());
+
+			return ($p.job_prm.offline ? Promise.resolve({responseURL: "", response: ""}) : $p.ajax.get_ex(irest_attr.url, irest_attr))
+
+				.then(function (req) {
+					if(!$p.job_prm.offline)
+						$p.job_prm.irest_enabled = true;
+					if(req.response[0] == "{")
+						return JSON.parse(req.response);
+				})
+
+				.catch(function () {
+					// если здесь ошибка, значит доступен только стандартный rest
+				})
+
+				.then(function (res) {
+
+
+					onstep($p.eve.steps.authorization);
+
+					// TODO: реализовать метод для получения списка ролей пользователя
+					mdd = res;
+					mdd.root = true;
+
+					// в автономном режиме сразу переходим к чтению первого файла данных
+					// если irest_enabled, значит уже авторизованы
+					if($p.job_prm.offline || $p.job_prm.irest_enabled)
+						return mdd;
+
+					else
+						return $p.ajax.get_ex($p.job_prm.rest_url()+"?$format=json", true)
+							.then(function () {
+								return mdd;
+							});
+				})
+
+				// обработчик ошибок авторизации
+				.catch(function (err) {
+
+					if($p.iface.auth.onerror)
+						$p.iface.auth.onerror(err);
+
+					throw err;
+				})
+
+				// интерпретируем ответ сервера
+				.then(function (res) {
+
+					onstep($p.eve.steps.load_data_files);
+
+					if($p.job_prm.offline)
+						return res;
+
+					// широковещательное оповещение об авторизованности на сервере
+					eve.callEvent("log_in", [$p.ajax.authorized = true]);
+
+					if(typeof res == "string")
+						res = JSON.parse(res);
+
+					if($p.msg.check_soap_result(res))
+						return;
+
+					if($p.wsql.get_user_param("enable_save_pwd"))
+						$p.wsql.set_user_param("user_pwd", $p.ajax.password);
+
+					else if($p.wsql.get_user_param("user_pwd"))
+						$p.wsql.set_user_param("user_pwd", "");
+
+					// сохраняем разницу времени с сервером
+					if(res.now_1с && res.now_js)
+						$p.wsql.set_user_param("time_diff", res.now_1с - res.now_js);
+
+				})
+
+				// читаем справочники с ограниченным доступом, которые могли прибежать вместе с метаданными
+				.then(function () {
+
+					// здесь же, уточняем список печатных форм
+					_md.printing_plates(mdd.printing_plates);
+
+				});
+		}
+	}
+
+});
+
+
+/**
+ * Этот фрагмент кода выполняем только в браузере
+ * События окна внутри воркера и Node нас не интересуют
+ */
+(function(w){
+
+	var eve = $p.eve,
+		msg = $p.msg,
+		timer_setted = false,
+		cache;
 
 	/**
 	 * Отслеживаем онлайн
@@ -16165,16 +16326,7 @@ AppEvents.do_eventable = function (obj) {
 					}
 				});
 			}
-			
-			/**
-			 * Тип устройства и ориентация экрана
-			 * @param e
-			 */
-			eve.on_rotate = function (e) {
-				$p.job_prm.device_orient = (w.orientation == 0 || w.orientation == 180 ? "portrait":"landscape");
-				if (typeof(e) != "undefined")
-					eve.callEvent("onOrientationChange", [$p.job_prm.device_orient]);
-			};
+
 			if(typeof(w.orientation)=="undefined")
 				$p.job_prm.device_orient = w.innerWidth>w.innerHeight ? "landscape" : "portrait";
 			else
@@ -16202,7 +16354,7 @@ AppEvents.do_eventable = function (obj) {
 			document.body.addEventListener("keydown", function (ev) {
 				eve.callEvent("keydown", [ev]);
 			}, false);
-			
+
 			setTimeout(init_params, 10);
 
 		}, 10);
@@ -16242,125 +16394,6 @@ AppEvents.do_eventable = function (obj) {
 	w.addEventListener("hashchange", $p.iface.hash_route);
 
 })(window);
-
-/**
- * Шаги синхронизации (перечисление состояний)
- * @property steps
- * @for AppEvents
- * @type SyncSteps
- */
-$p.eve.steps = {
-	load_meta: 0,           // загрузка метаданных из файла
-	authorization: 1,       // авторизация на сервере 1С или Node (в автономном режиме шаг не выполняется)
-	create_managers: 2,     // создание менеджеров объектов
-	process_access:  3,     // загрузка данных пользователя, обрезанных по RLS (контрагенты, договоры, организации)
-	load_data_files: 4,     // загрузка данных из файла зоны
-	load_data_db: 5,        // догрузка данных с сервера 1С или Node
-	load_data_wsql: 6,      // загрузка данных из локальной датабазы (имеет смысл, если локальная база не в ОЗУ)
-	save_data_wsql: 7       // кеширование данных из озу в локальную датабазу
-};
-
-/**
- * Авторизация на сервере 1С
- * @method log_in
- * @for AppEvents
- * @param onstep {Function} - callback обработки состояния. Функция вызывается в начале шага
- * @return {Promise.<T>} - промис, ошибки которого должен обработать вызывающий код
- * @async
- */
-$p.eve.log_in = function(onstep){
-
-	var irest_attr = {},
-		mdd;
-
-	// информируем о начале операций
-	onstep($p.eve.steps.load_meta);
-
-	// выясняем, доступен ли irest (наш сервис) или мы ограничены стандартным rest-ом
-	// параллельно, проверяем авторизацию
-	$p.ajax.default_attr(irest_attr, $p.job_prm.irest_url());
-
-	return ($p.job_prm.offline ? Promise.resolve({responseURL: "", response: ""}) : $p.ajax.get_ex(irest_attr.url, irest_attr))
-
-		.then(function (req) {
-			if(!$p.job_prm.offline)
-				$p.job_prm.irest_enabled = true;
-			if(req.response[0] == "{")
-				return JSON.parse(req.response);
-		})
-
-		.catch(function () {
-			// если здесь ошибка, значит доступен только стандартный rest
-		})
-
-		.then(function (res) {
-
-
-			onstep($p.eve.steps.authorization);
-
-			// TODO: реализовать метод для получения списка ролей пользователя
-			mdd = res;
-			mdd.root = true;
-
-			// в автономном режиме сразу переходим к чтению первого файла данных
-			// если irest_enabled, значит уже авторизованы
-			if($p.job_prm.offline || $p.job_prm.irest_enabled)
-				return mdd;
-
-			else
-				return $p.ajax.get_ex($p.job_prm.rest_url()+"?$format=json", true)
-					.then(function () {
-						return mdd;
-					});
-		})
-
-		// обработчик ошибок авторизации
-		.catch(function (err) {
-
-			if($p.iface.auth.onerror)
-				$p.iface.auth.onerror(err);
-
-			throw err;
-		})
-
-		// интерпретируем ответ сервера
-		.then(function (res) {
-
-			onstep($p.eve.steps.load_data_files);
-
-			if($p.job_prm.offline)
-				return res;
-
-			// широковещательное оповещение об авторизованности на сервере
-			eve.callEvent("log_in", [$p.ajax.authorized = true]);
-
-			if(typeof res == "string")
-				res = JSON.parse(res);
-
-			if($p.msg.check_soap_result(res))
-				return;
-
-			if($p.wsql.get_user_param("enable_save_pwd"))
-				$p.wsql.set_user_param("user_pwd", $p.ajax.password);
-
-			else if($p.wsql.get_user_param("user_pwd"))
-				$p.wsql.set_user_param("user_pwd", "");
-
-			// сохраняем разницу времени с сервером
-			if(res.now_1с && res.now_js)
-				$p.wsql.set_user_param("time_diff", res.now_1с - res.now_js);
-
-		})
-
-		// читаем справочники с ограниченным доступом, которые могли прибежать вместе с метаданными
-		.then(function () {
-
-			// здесь же, уточняем список печатных форм
-			_md.printing_plates(mdd.printing_plates);
-
-		});
-
-};
 
 /**
  * Объекты для доступа к геокодерам Яндекс, Google и sypexgeo<br />
