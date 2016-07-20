@@ -385,9 +385,9 @@ $p.iface.data_to_grid = function (data, attr){
 			return $p.iface.normalize_xml(r[f]);
 		if(r[f] instanceof Date){
 			if(r[f].getHours() || r.date.getMinutes())
-				return $p.dateFormat(r[f], $p.dateFormat.masks.date_time);
+				return $p.moment(r[f]).format($p.moment._masks.date_time);
 			else
-				return $p.dateFormat(r[f], $p.dateFormat.masks.date)
+				return $p.moment(r[f]).format($p.moment._masks.date);
 		}else
 			return r[f] || "";
 	}

@@ -765,7 +765,7 @@ function DocObj(attr, manager) {
 		get : function(){
 
 			if(this.number_doc)
-				return (this._metadata.obj_presentation || this._metadata.synonym) + ' №' + this.number_doc + " от " + $p.dateFormat(this.date, $p.dateFormat.masks.ru);
+				return (this._metadata.obj_presentation || this._metadata.synonym) + ' №' + this.number_doc + " от " + $p.moment(this.date).format($p.moment._masks.ldt);
 			else
 				return _presentation;
 

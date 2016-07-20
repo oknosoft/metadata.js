@@ -19,7 +19,7 @@ var base64 = require('gulp-base64'),
 
 gulp.task('build-metadata', function () {
 	return gulp.src([
-		'./lib/moment/locale/ru.js',
+		'./node_modules/moment/locale/ru.js',
 		'./src/common.js',
 		'./src/common.ui.js',
 		'./src/pouchdb.js',

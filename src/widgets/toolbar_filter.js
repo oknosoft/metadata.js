@@ -114,9 +114,8 @@ $p.iface.Toolbar_filter = function (attr) {
 			attr.date_from = new Date((new Date()).getFullYear().toFixed() + "-01-01");
 		if(!attr.date_till)
 			attr.date_till = $p.date_add_day(new Date(), 1);
-		t.input_date_from.value=$p.dateFormat(attr.date_from, $p.dateFormat.masks.short_ru);
-		t.input_date_till.value=$p.dateFormat(attr.date_till, $p.dateFormat.masks.short_ru);
-
+		t.input_date_from.value=$p.moment(attr.date_from).format("L");
+		t.input_date_till.value=$p.moment(attr.date_till).format("L");
 	}
 
 	// текстовое поле фильтра по подстроке

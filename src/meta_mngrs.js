@@ -586,7 +586,7 @@ DataManager.prototype.get_option_list = function(val, selection){
 			.then(function (data) {
 				data.forEach(function (v) {
 					l.push(check({
-						text: is_doc ? (v.number_doc + " от " + $p.dateFormat(v.date, $p.dateFormat.masks.ru)) : (v.name || v.id),
+						text: is_doc ? (v.number_doc + " от " + $p.moment(v.date).format($p.moment._masks.ldt)) : (v.name || v.id),
 						value: v.ref}));
 				});
 				return l;
@@ -664,7 +664,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 			if(mf.type.is_ref){
 				;
 			} else if(mf.type.date_part) {
-				txt = $p.dateFormat(txt, "");
+				txt = $p.moment(txt).format($p.moment._masks[mf.type.date_part]);
 
 			} else if(mf.type.types[0]=="boolean") {
 				txt = txt ? "1" : "0";
@@ -2344,7 +2344,7 @@ RegisterManager.prototype.__define({
 					key += "0";
 
 				else if(dimensions[j].date_part)
-					key += $p.dateFormat(attr[j] || $p.blank.date, $p.dateFormat.masks.atom);
+					key += $p.moment(attr[j] || $p.blank.date).format($p.moment.defaultFormatUtc);
 
 				else if(attr[j]!=undefined)
 					key += String(attr[j]);
@@ -2591,7 +2591,7 @@ function LogManager(){
 
 		data.forEach(function(r){
 			xml += "<row id=\"" + r.date + "_" + r.sequence + "\"><cell>" +
-				$p.dateFormat(r.date - time_diff, $p.dateFormat.masks.date_time) + (r.sequence ? "." + r.sequence : "") + "</cell>" +
+				$p.moment(r.date - time_diff).format($p.moment._masks.date_time) + (r.sequence ? "." + r.sequence : "") + "</cell>" +
 				"<cell>" + r.class + "</cell><cell>" + r.note + "</cell></row>";
 		});
 

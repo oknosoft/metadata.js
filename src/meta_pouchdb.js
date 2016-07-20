@@ -503,7 +503,7 @@ DataManager.prototype.__define({
 							if(mf){
 
 								if(mf.type.date_part)
-									o[fldsyn] = $p.dateFormat(doc[fld], $p.dateFormat.masks[mf.type.date_part]);
+									o[fldsyn] = $p.moment(doc[fld]).format($p.moment._masks[mf.type.date_part]);
 
 								else if(mf.type.is_ref){
 									if(!doc[fld] || doc[fld] == $p.blank.guid)

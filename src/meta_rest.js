@@ -31,9 +31,9 @@ function Rest(){
 	this.filter_date = function (fld, dfrom, dtill) {
 		if(!dfrom)
 			dfrom = new Date("2015-01-01");
-		var res = fld + " gt datetime'" + $p.dateFormat(dfrom, $p.dateFormat.masks.isoDateTime) + "'";
+		var res = fld + " gt datetime'" + $p.moment(dfrom).format($p.moment._masks.iso) + "'";
 		if(dtill)
-			res += " and " + fld + " lt datetime'" + $p.dateFormat(dtill, $p.dateFormat.masks.isoDateTime) + "'";
+			res += " and " + fld + " lt datetime'" + $p.moment(dtill).format($p.moment._masks.iso) + "'";
 		return res;
 	};
 
@@ -679,7 +679,7 @@ DataManager.prototype.rest_selection = function (attr) {
 							syn += "_Key";
 
 						if(mf.type.date_part)
-							o[fldsyn] = $p.dateFormat(ro[syn], $p.dateFormat.masks[mf.type.date_part]);
+							o[fldsyn] = $p.moment(ro[syn]).format($p.moment._masks[mf.type.date_part]);
 
 						else if(mf.type.is_ref){
 							if(!ro[syn] || ro[syn] == $p.blank.guid)
@@ -709,7 +709,7 @@ InfoRegManager.prototype.rest_slice_last = function(selection){
 
 	var t = this,
 		cmd = t.metadata(),
-		period = "Period=datetime'" + $p.dateFormat(selection.period, $p.dateFormat.masks.isoDateTime) + "'",
+		period = "Period=datetime'" + $p.moment(selection.period).format($p.moment._masks.iso) + "'",
 		condition = "";
 
 	for(var fld in cmd.dimensions){
@@ -733,7 +733,7 @@ InfoRegManager.prototype.rest_slice_last = function(selection){
 				condition+= syn+" eq "+$p.fix_number(selection[fld]);
 
 			else if(mf.type.date_part)
-				condition+= syn+" eq datetime'"+$p.dateFormat(selection[fld], $p.dateFormat.masks.isoDateTime)+"'";
+				condition+= syn+" eq datetime'"+ $p.moment(selection[fld]).format($p.moment._masks.iso) +"'";
 
 			else
 				condition+= syn+" eq '"+selection[fld]+"'";
@@ -766,7 +766,7 @@ DataObj.prototype.to_atom = function (ex_meta) {
 			%p\
 			\n</m:properties></content></entry>'
 		.replace('%n', this._manager.rest_name)
-		.replace('%d', $p.dateFormat(new Date(), $p.dateFormat.masks.atom)),
+		.replace('%d', $p.moment().format($p.moment.defaultFormatUtc)),
 
 		prop = '\n<d:Ref_Key>' + this.ref + '</d:Ref_Key>' +
 			'\n<d:DeletionMark>' + this._deleted + '</d:DeletionMark>',
@@ -794,7 +794,7 @@ DataObj.prototype.to_atom = function (ex_meta) {
 				if(v.getFullYear() < 1000)
 					v = '0001-01-01T00:00:00Z';
 				else
-					v = $p.dateFormat(v, $p.dateFormat.masks.atom);
+					v = $p.moment(v).format($p.moment.defaultFormatUtc);
 
 			}else if(v == undefined)
 				continue;
@@ -805,7 +805,7 @@ DataObj.prototype.to_atom = function (ex_meta) {
 	}
 
 	if(this instanceof DocObj){
-		prop+= '\n<d:Date>' + $p.dateFormat(this.date, $p.dateFormat.masks.atom) + '</d:Date>';
+		prop+= '\n<d:Date>' + $p.moment(this.date).format($p.moment.defaultFormatUtc) + '</d:Date>';
 		prop+= '\n<d:Number>' + this.number_doc + '</d:Number>';
 
 	} else {
