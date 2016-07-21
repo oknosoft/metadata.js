@@ -16177,7 +16177,10 @@ $p.eve.__define({
 			 * @type JobPrm
 			 * @static
 			 */
-			$p.job_prm = new JobPrm();
+			$p.__define("job_prm", {
+				value: new JobPrm(),
+				writable: false
+			});
 
 			/**
 			 * если в job_prm указано использование геолокации, геокодер инициализируем с небольшой задержкой
