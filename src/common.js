@@ -235,6 +235,13 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 
 
 /**
+ * Для совместимости со старыми модулями, публикуем $p глобально
+ * Кроме этой переменной, metadata.js ничего не экспортирует
+ */
+var $p = new MetaEngine();
+
+
+/**
  * ### Metadata.js - проект с открытым кодом
  * Приглашаем к сотрудничеству всех желающих. Будем благодарны за любую помощь
  *
@@ -275,11 +282,24 @@ function MetaEngine() {
 			writable: false
 		},
 
+		/**
+		 * ### Коллекция вспомогательных методов
+		 *
+		 * @property utils
+		 * @type Utils
+		 * @final
+		 */
+		utils: {
+			value: new Utils()
+		},
 
 		/**
-		 * Буфер для строковых и двоичных данных, внедряемых в скрипт
+		 * ### Буфер для строковых и двоичных данных, внедряемых в скрипт
 		 * В этой структуре живут, например, sql текст инициализации таблиц, xml-строки форм и менюшек и т.д.
-		 * @type {Object}
+		 *
+		 * @property injected_data
+		 * @type Object
+		 * @final
 		 */
 		injected_data: {
 			value: {},
@@ -290,7 +310,7 @@ function MetaEngine() {
 		 * Наша promise-реализация ajax
 		 *
 		 * @property ajax
-		 * @type {Ajax}
+		 * @type Ajax
 		 * @final
 		 */
 		ajax: {
@@ -301,7 +321,7 @@ function MetaEngine() {
 		/**
 		 * Сообщения пользователю и строки нитернационализации
 		 * @property msg
-		 * @type {Messages}
+		 * @type Messages
 		 * @final
 		 */
 		msg: {
@@ -365,16 +385,7 @@ function MetaEngine() {
 		 * @final
 		 */
 		moment: {
-			value: (function () {
-				var m = typeof moment == "function" ? moment : require('moment');
-				m._masks = {
-					date:       "DD.MM.YY",
-					date_time:  "DD.MM.YY HH:mm",
-					ldt:        "DD MMMM YYYY, HH:mm",
-					iso:        "YYYY-MM-DDTHH:mm:ss"
-				};
-				return m;
-			})()
+			get: function () { return this.utils.moment; }
 		},
 
 		/**
@@ -403,17 +414,12 @@ function MetaEngine() {
 		},
 
 		/**
-		 * Пустые значения даты и уникального идентификатора
-		 * @property blank
-		 * @for MetaEngine
-		 * @final
-		 */
-		blank: {
-			value: new Blank()
-		},
-
-		/**
-		 * Подключает обработчики событий
+		 * ### Подключает обработчики событий
+		 *
+		 * @method on
+		 * @param name {String} - имя события
+		 * @param fn {Function} - функция - обработчик
+		 * @returns {*}
 		 */
 		on: {
 			value: function (name, fn) {
@@ -425,274 +431,286 @@ function MetaEngine() {
 }
 
 /**
- * Для совместимости со старыми модулями, публикуем $p глобально
- * Кроме этой переменной, metadata.js ничего не экспортирует
+ * ### Коллекция вспомогательных методов
+ * @class Utils
+ * @static
+ * @menuorder 35
+ * @tooltip Вспомогательные методы
  */
-var $p = new MetaEngine();
-
-if(typeof window !== "undefined"){
+function Utils() {
 
 	/**
-	 * Загружает скрипты и стили синхронно и асинхронно
-	 * @method load_script
-	 * @for MetaEngine
-	 * @param src {String} - url ресурса
-	 * @param type {String} - "link" или "script"
-	 * @param [callback] {Function} - функция обратного вызова после загрузки скрипта
-	 * @async
+	 * ### Moment для операций с интервалами и датами
+	 *
+	 * @property moment
+	 * @type Function
+	 * @final
 	 */
-	$p.load_script = function (src, type, callback) {
-		var s = document.createElement(type);
-		if (type == "script") {
-			s.type = "text/javascript";
-			s.src = src;
-
-			if(callback){
-				s.async = true;
-				s.addEventListener('load', callback, false);
-
-			}else
-				s.async = false;
-
-		} else {
-			s.type = "text/css";
-			s.rel = "stylesheet";
-			s.href = src;
-		}
-		document.head.appendChild(s);
+	this.moment = typeof moment == "function" ? moment : require('moment');
+	this.moment._masks = {
+		date:       "DD.MM.YY",
+		date_time:  "DD.MM.YY HH:mm",
+		ldt:        "DD MMMM YYYY, HH:mm",
+		iso:        "YYYY-MM-DDTHH:mm:ss"
 	};
 
-}
-
-
-/**
- * Читает данные из блоба, возвращает промис
- * @param blob
- * @return {Promise}
- */
-$p.blob_as_text = function (blob, type) {
-
-	return new Promise(function(resolve, reject){
-		var reader = new FileReader();
-		reader.onload = function(event){
-			resolve(reader.result);
-		};
-		reader.onerror = function(err){
-			reject(err);
-		};
-		if(type == "data_url")
-			reader.readAsDataURL(blob);
-		else
-			reader.readAsText(blob);
-	});
-	
-};
-
-
-/**
- * Проверяет, является ли значение guid-ом
- * @method is_guid
- * @for MetaEngine
- * @param v {*} - проверяемое значение
- * @return {Boolean} - true, если значение соответствует регурярному выражению guid
- */
-$p.is_guid = function(v){
-	if(typeof v !== "string" || v.length < 36)
-		return false;
-	else if(v.length > 36)
-		v = v.substr(0, 36);
-	return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v)
-};
-
-/**
- * Проверяет, является ли значение пустым идентификатором
- * @method is_empty_guid
- * @for MetaEngine
- * @param v {*} - проверяемое значение
- * @return {Boolean} - true, если v эквивалентен пустому guid
- */
-$p.is_empty_guid = function (v) {
-	return !v || v === $p.blank.guid;
-};
-
-/**
- * Генерирует новый guid
- * @method generate_guid
- * @for MetaEngine
- * @return {String}
- */
-$p.generate_guid = function(){
-	var d = new Date().getTime();
-	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-		var r = (d + Math.random()*16)%16 | 0;
-		d = Math.floor(d/16);
-		return (c=='x' ? r : (r&0x7|0x8)).toString(16);
-	});
-};
-
-/**
- * Извлекает guid из строки или ссылки или объекта
- * @method fix_guid
- * @param ref {*} - значение, из которого надо извлечь идентификатор
- * @param generate {Boolean} - указывает, генерировать ли новый guid для пустого значения
- * @return {String}
- */
-$p.fix_guid = function(ref, generate){
-
-	if(ref && typeof ref == "string"){
-
-	} else if(ref instanceof DataObj)
-		return ref.ref;
-
-	else if(ref && typeof ref == "object"){
-		if(ref.presentation){
-			if(ref.ref)
-				return ref.ref;
-			else if(ref.name)
-				return ref.name;
-		}
-		else
-			ref = (typeof ref.ref == "object" && ref.ref.hasOwnProperty("ref")) ?  ref.ref.ref : ref.ref;
-	}
-
-	if($p.is_guid(ref) || generate === false)
-		return ref;
-
-	else if(generate)
-		return $p.generate_guid();
-
-	else
-		return $p.blank.guid;
-};
-
-/**
- * Приводит значение к типу Число
- * @method fix_number
- * @param str {*} - приводиме значение
- * @param [strict=false] {Boolean} - конвертировать NaN в 0
- * @return {Number}
- */
-$p.fix_number = function(str, strict){
-	var v = parseFloat(str);
-	if(!isNaN(v))
-		return v;
-	else if(strict)
-		return 0;
-	else
-		return str;
-};
-
-/**
- * Приводит значение к типу Булево
- * @method fix_boolean
- * @param str {String}
- * @return {boolean}
- */
-$p.fix_boolean = function(str){
-	if(typeof str === "string")
-		return !(!str || str.toLowerCase() == "false");
-	else
-		return !!str;
-};
-
-/**
- * Приводит значение к типу Дата
- * @method fix_date
- * @param str {*} - приводиме значение
- * @param [strict=false] {boolean} - если истина и значение не приводится к дате, возвращать пустую дату
- * @return {Date|*}
- */
-$p.fix_date = function(str, strict){
-	var dfmt = /(^\d{1,4}[\.|\\/|-]\d{1,2}[\.|\\/|-]\d{1,4})(\s*(?:0?[1-9]:[0-5]|1(?=[012])\d:[0-5])\d\s*[ap]m)?$/;
-	if(str instanceof Date)
-		return str;
-	else if(str && typeof str == "string" && dfmt.test(str.substr(0,10))){
-		var adp = str.split(" "), ad = adp[0].split("."), d, strr;
-		if(ad.length == 1){
-			ad = adp[0].split("/");
-			if(ad.length == 1)
-				ad = adp[0].split("-");
-		}
-		if(ad.length == 3 && ad[2].length == 4){
-			strr = ad[2] + "-" + ad[1] + "-" + ad[0];
-			for(var i = 1; i < adp.length; i++)
-				strr += " " + adp[i];
-			d=new Date(strr);
-		}else
-			d=new Date(str);
-
-		if(d && d.getFullYear()>0)
-			return d;
-	}
-
-	if(strict)
-		return $p.blank.date;
-	else
-		return str;
-};
-
-/**
- * Добавляет days дней к дате
- * @method date_add_day
- * @param date {Date} - исходная дата
- * @param days {Number} - число дней, добавляемых к дате (может быть отрицательным)
- * @return {Date}
- */
-$p.date_add_day = function(date, days, reset_time){
-	var newDt = new Date(date);
-	newDt.setDate(date.getDate() + days);
-	if(reset_time)
-		newDt.setHours(0,-newDt.getTimezoneOffset(),0,0);
-	return newDt;
-};
-
-/**
- * Запрещает всплывание события
- * @param e {MouseEvent|KeyboardEvent}
- * @returns {Boolean}
- */
-$p.cancel_bubble = function(e) {
-	var evt = (e || event);
-	if (evt && evt.stopPropagation)
-		evt.stopPropagation();
-	if (evt && !evt.cancelBubble)
-		evt.cancelBubble = true;
-	return false
-};
-
-
-/**
- * ### Пустые значения примитивных и ссылочных типов
- *
- * @class Blank
- * @static
- */
-function Blank() {
-
-	this.date = new Date("0001-01-01");
-	this.guid = "00000000-0000-0000-0000-000000000000";
 
 	/**
-	 * Возвращает пустое значение по типу метаданных
-	 * @method by_type
-	 * @for Blank
+	 * ### Приводит значение к типу Дата
+	 *
+	 * @method fix_date
+	 * @param str {String|Number|Date} - приводиме значение
+	 * @param [strict=false] {Boolean} - если истина и значение не приводится к дате, возвращать пустую дату
+	 * @return {Date|*}
+	 */
+	this.fix_date = function(str, strict){
+
+		if(str instanceof Date)
+			return str;
+		else{
+			var m = this.moment(str, ["DD-MM-YYYY", "DD-MM-YYYY HH:mm", "DD-MM-YYYY HH:mm:ss", "DD-MM-YY HH:mm", "YYYYDDMMHHmmss", this.moment.ISO_8601]);
+			return m.isValid() ? m.toDate() : (strict ? this.blank.date : str);
+		}
+	};
+
+	/**
+	 * ### Извлекает guid из строки или ссылки или объекта
+	 *
+	 * @method fix_guid
+	 * @param ref {*} - значение, из которого надо извлечь идентификатор
+	 * @param generate {Boolean} - указывает, генерировать ли новый guid для пустого значения
+	 * @return {String}
+	 */
+	this.fix_guid = function(ref, generate){
+
+		if(ref && typeof ref == "string"){
+
+		} else if(ref instanceof DataObj)
+			return ref.ref;
+
+		else if(ref && typeof ref == "object"){
+			if(ref.presentation){
+				if(ref.ref)
+					return ref.ref;
+				else if(ref.name)
+					return ref.name;
+			}
+			else
+				ref = (typeof ref.ref == "object" && ref.ref.hasOwnProperty("ref")) ?  ref.ref.ref : ref.ref;
+		}
+
+		if(this.is_guid(ref) || generate === false)
+			return ref;
+
+		else if(generate)
+			return this.generate_guid();
+
+		else
+			return this.blank.guid;
+	};
+
+	/**
+	 * ### Приводит значение к типу Число
+	 *
+	 * @method fix_number
+	 * @param str {*} - приводиме значение
+	 * @param [strict=false] {Boolean} - конвертировать NaN в 0
+	 * @return {Number}
+	 */
+	this.fix_number = function(str, strict){
+		var v = parseFloat(str);
+		if(!isNaN(v))
+			return v;
+		else if(strict)
+			return 0;
+		else
+			return str;
+	};
+
+	/**
+	 * ### Приводит значение к типу Булево
+	 *
+	 * @method fix_boolean
+	 * @param str {String}
+	 * @return {boolean}
+	 */
+	this.fix_boolean = function(str){
+		if(typeof str === "string")
+			return !(!str || str.toLowerCase() == "false");
+		else
+			return !!str;
+	};
+
+	/**
+	 * ### Пустые значения даты и уникального идентификатора
+	 *
+	 * @property blank
+	 * @type Blank
+	 * @final
+	 */
+	this.blank = {
+		date: this.fix_date("0001-01-01T00:00:00"),
+		guid: "00000000-0000-0000-0000-000000000000",
+		by_type: function(mtype){
+			var v;
+			if(mtype.is_ref)
+				v = this.guid;
+			else if(mtype.date_part)
+				v = this.date;
+			else if(mtype["digits"])
+				v = 0;
+			else if(mtype.types && mtype.types[0]=="boolean")
+				v = false;
+			else
+				v = "";
+			return v;
+		}
+	};
+
+	/**
+	 * ### Приводит тип значения v к типу метаданных
+	 *
+	 * @method fetch_type
+	 * @param str {*} - значение (обычно, строка, полученная из html поля ввода)
 	 * @param mtype {Object} - поле type объекта метаданных (field.type)
 	 * @return {*}
 	 */
-	this.by_type = function(mtype){
-		var v;
+	this.fetch_type = function(str, mtype){
+		var v = str;
 		if(mtype.is_ref)
-			v = $p.blank.guid;
+			v = this.fix_guid(str);
 		else if(mtype.date_part)
-			v = $p.blank.date;
+			v = this.fix_date(str, true);
 		else if(mtype["digits"])
-			v = 0;
-		else if(mtype.types && mtype.types[0]=="boolean")
-			v = false;
-		else
-			v = "";
+			v = this.fix_number(str, true);
+		else if(mtype.types[0]=="boolean")
+			v = this.fix_boolean(str);
 		return v;
 	};
+
+	/**
+	 * ### Добавляет days дней к дате
+	 *
+	 * @method date_add_day
+	 * @param date {Date} - исходная дата
+	 * @param days {Number} - число дней, добавляемых к дате (может быть отрицательным)
+	 * @return {Date}
+	 */
+	this.date_add_day = function(date, days, reset_time){
+		var newDt = new Date(date);
+		newDt.setDate(date.getDate() + days);
+		if(reset_time)
+			newDt.setHours(0,-newDt.getTimezoneOffset(),0,0);
+		return newDt;
+	}
+
+	/**
+	 * ### Генерирует новый guid
+	 *
+	 * @method generate_guid
+	 * @return {String}
+	 */
+	this.generate_guid = function(){
+		var d = new Date().getTime();
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+			var r = (d + Math.random()*16)%16 | 0;
+			d = Math.floor(d/16);
+			return (c=='x' ? r : (r&0x7|0x8)).toString(16);
+		});
+	};
+
+	/**
+	 * ### Проверяет, является ли значение guid-ом
+	 *
+	 * @method is_guid
+	 * @param v {*} - проверяемое значение
+	 * @return {Boolean} - true, если значение соответствует регурярному выражению guid
+	 */
+	this.is_guid = function(v){
+		if(typeof v !== "string" || v.length < 36)
+			return false;
+		else if(v.length > 36)
+			v = v.substr(0, 36);
+		return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v)
+	};
+
+	/**
+	 * ### Проверяет, является ли значение пустым идентификатором
+	 *
+	 * @method is_empty_guid
+	 * @param v {*} - проверяемое значение
+	 * @return {Boolean} - true, если v эквивалентен пустому guid
+	 */
+	this.is_empty_guid = function (v) {
+		return !v || v === this.blank.guid;
+	};
+
+	/**
+	 * ### Проверяет, является ли значенние Data-объектным типом
+	 *
+	 * @method is_data_obj
+	 * @param v {*} - проверяемое значение
+	 * @return {Boolean} - true, если значение является ссылкой
+	 */
+	this.is_data_obj = function(v){
+		return v && v instanceof DataObj;
+	};
+
+	/**
+	 * ### Проверяет, является ли значенние менеджером объектов данных
+	 *
+	 * @method is_data_mgr
+	 * @param v {*} - проверяемое значение
+	 * @return {Boolean} - true, если значение является ссылкой
+	 */
+	this.is_data_mgr = function(v){
+		return v && v instanceof DataManager;
+	};
+
+	/**
+	 * ### Сравнивает на равенство ссылочные типы и примитивные значения
+	 *
+	 * @method is_equal
+	 * @param v1 {DataObj|String}
+	 * @param v2 {DataObj|String}
+	 * @return {boolean} - true, если значенния эквивалентны
+	 */
+	this.is_equal = function(v1, v2){
+
+		if(v1 == v2)
+			return true;
+		else if(typeof v1 === typeof v2)
+			return false;
+
+		return (this.fix_guid(v1, false) == this.fix_guid(v2, false));
+	};
+
+	/**
+	 * ### Читает данные из блоба
+	 * Возвращает промис с прочитанными данными
+	 *
+	 * @param blob {Blob}
+	 * @param [type] {String} - если type == "data_url", в промисе будет возвращен DataURL, а не текст
+	 * @return {Promise}
+	 */
+	this.blob_as_text = function (blob, type) {
+
+		return new Promise(function(resolve, reject){
+			var reader = new FileReader();
+			reader.onload = function(event){
+				resolve(reader.result);
+			};
+			reader.onerror = function(err){
+				reject(err);
+			};
+			if(type == "data_url")
+				reader.readAsDataURL(blob);
+			else
+				reader.readAsText(blob);
+		});
+
+	};
+
 }
 
 /**
@@ -1113,8 +1131,7 @@ function Modifiers(){
 			}.bind(this));		
 	};
 	
-};
-
+}
 
 /**
  * ### Интерфейс к localstorage, alasql и pouchdb
@@ -1272,11 +1289,11 @@ function WSQL(){
 					}
 					return prm;
 				}else if(type == "number")
-					return $p.fix_number(prm, true);
+					return $p.utils.fix_number(prm, true);
 				else if(type == "date")
-					return $p.fix_date(prm, true);
+					return $p.utils.fix_date(prm, true);
 				else if(type == "boolean")
-					return $p.fix_boolean(prm);
+					return $p.utils.fix_boolean(prm);
 				else
 					return prm;
 			}
@@ -1335,7 +1352,7 @@ function WSQL(){
 				var nesessery_params = [
 					{p: "user_name",		v: "", t:"string"},
 					{p: "user_pwd",			v: "", t:"string"},
-					{p: "browser_uid",		v: $p.generate_guid(), t:"string"},
+					{p: "browser_uid",		v: $p.utils.generate_guid(), t:"string"},
 					{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
 					{p: "enable_save_pwd",	v: $p.job_prm.enable_save_pwd,	t:"boolean"},
 					{p: "autologin",		v: "",	t:"boolean"},
@@ -1352,7 +1369,7 @@ function WSQL(){
 					zone = $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1;
 				// если зона указана в url, используем её
 				if($p.job_prm.url_prm.hasOwnProperty("zone"))
-					zone = $p.job_prm.zone_is_string ? $p.job_prm.url_prm.zone : $p.fix_number($p.job_prm.url_prm.zone, true);
+					zone = $p.job_prm.zone_is_string ? $p.job_prm.url_prm.zone : $p.utils.fix_number($p.job_prm.url_prm.zone, true);
 				if(zone !== undefined)
 					wsql.set_user_param("zone", zone);
 

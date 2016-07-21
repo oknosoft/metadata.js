@@ -155,7 +155,7 @@ $p.iface.pgrid_on_select = function(selv){
 
 	if(source.o[f] != undefined){
 		if(typeof source.o[f] == "number")
-			source.o[f] = $p.fix_number(selv, true);
+			source.o[f] = $p.utils.fix_number(selv, true);
 		else
 			source.o[f] = selv;
 
@@ -164,7 +164,7 @@ $p.iface.pgrid_on_select = function(selv){
 		row.value = selv;
 	}
 
-	pgrid.cells().setValue($p.is_data_obj(selv) ? selv.presentation : selv || "");
+	pgrid.cells().setValue($p.utils.is_data_obj(selv) ? selv.presentation : selv || "");
 	
 
 	if(source.grid_on_change)
@@ -381,8 +381,8 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 			if(!is_guest && $p.wsql.get_user_param("user_name") != login)
 				$p.wsql.set_user_param("user_name", login);					// сохраняем имя пользователя в базе
 
-			if(!$p.is_guid($p.wsql.get_user_param("browser_uid")))
-				$p.wsql.set_user_param("browser_uid", $p.generate_guid());	// проверяем guid браузера
+			if(!$p.utils.is_guid($p.wsql.get_user_param("browser_uid")))
+				$p.wsql.set_user_param("browser_uid", $p.utils.generate_guid());	// проверяем guid браузера
 
 			//$p.eve.log_in(attr.onstep)
 			$p.wsql.pouch.log_in(login, password)
@@ -521,7 +521,7 @@ $p.iface.open_settings = function (e) {
 	var hprm = $p.job_prm.parse_url();
 	$p.iface.set_hash(hprm.obj, hprm.ref, hprm.frm, "settings");
 
-	return $p.cancel_bubble(evt);
+	return $p.iface.cancel_bubble(evt);
 };
 
 /**

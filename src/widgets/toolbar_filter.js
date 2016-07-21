@@ -113,7 +113,7 @@ $p.iface.Toolbar_filter = function (attr) {
 		if(!attr.date_from)
 			attr.date_from = new Date((new Date()).getFullYear().toFixed() + "-01-01");
 		if(!attr.date_till)
-			attr.date_till = $p.date_add_day(new Date(), 1);
+			attr.date_till = $p.utils.date_add_day(new Date(), 1);
 		t.input_date_from.value=$p.moment(attr.date_from).format("L");
 		t.input_date_till.value=$p.moment(attr.date_till).format("L");
 	}
@@ -147,8 +147,8 @@ $p.iface.Toolbar_filter.prototype.__define({
 		value: function (exclude_custom) {
 
 			var res = {
-				date_from: this.input_date_from ? $p.date_add_day(dhx4.str2date(this.input_date_from.value), 0, true) : "",
-				date_till: this.input_date_till ? $p.date_add_day(dhx4.str2date(this.input_date_till.value), 1, true) : "",
+				date_from: this.input_date_from ? $p.utils.date_add_day(dhx4.str2date(this.input_date_from.value), 0, true) : "",
+				date_till: this.input_date_till ? $p.utils.date_add_day(dhx4.str2date(this.input_date_till.value), 1, true) : "",
 				filter: this.input_filter ? this.input_filter.value : ""
 			}, fld, flt;
 

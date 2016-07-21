@@ -36,7 +36,7 @@ module.exports = function (attr) {
 
 			try {
 				robj = JSON.parse(rtext);
-				if($p.is_empty_guid(ref = $p.fix_guid(robj.obj.ref)))
+				if($p.utils.is_empty_guid(ref = $p.utils.fix_guid(robj.obj.ref)))
 					return;
 
 			} catch (err){
@@ -170,7 +170,7 @@ module.exports = function (attr) {
 
 					o = data[i];
 
-					if($p.is_guid(o.Объект)){
+					if($p.utils.is_guid(o.Объект)){
 						o.ref = o.Объект;
 						im = $p.cat.ИдентификаторыОбъектовМетаданных.get(o.ref);
 						o.class_name = $p.md.class_name_from_1c(im.ПолноеИмя);

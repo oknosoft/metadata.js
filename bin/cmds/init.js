@@ -5,6 +5,22 @@
  * Created 20.07.2016
  */
 
+/**
+ *  /data
+ *  /dist
+ *  /dist/imgs
+ *  /src
+ *  /src/modifiers
+ *  /src/templates
+ *  /src/templates/cursors
+ *  /src/templates/printing_plates
+ *  /src/templates/imgs
+ *  /src/templates/xml
+ */
+/*
+
+ */
+
 exports.command = 'init [dir]';
 exports.desc = 'Create an empty repo';
 exports.builder = {

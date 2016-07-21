@@ -431,6 +431,13 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 
 
 /**
+ * Для совместимости со старыми модулями, публикуем $p глобально
+ * Кроме этой переменной, metadata.js ничего не экспортирует
+ */
+var $p = new MetaEngine();
+
+
+/**
  * ### Metadata.js - проект с открытым кодом
  * Приглашаем к сотрудничеству всех желающих. Будем благодарны за любую помощь
  *
@@ -471,11 +478,24 @@ function MetaEngine() {
 			writable: false
 		},
 
+		/**
+		 * ### Коллекция вспомогательных методов
+		 *
+		 * @property utils
+		 * @type Utils
+		 * @final
+		 */
+		utils: {
+			value: new Utils()
+		},
 
 		/**
-		 * Буфер для строковых и двоичных данных, внедряемых в скрипт
+		 * ### Буфер для строковых и двоичных данных, внедряемых в скрипт
 		 * В этой структуре живут, например, sql текст инициализации таблиц, xml-строки форм и менюшек и т.д.
-		 * @type {Object}
+		 *
+		 * @property injected_data
+		 * @type Object
+		 * @final
 		 */
 		injected_data: {
 			value: {},
@@ -486,7 +506,7 @@ function MetaEngine() {
 		 * Наша promise-реализация ajax
 		 *
 		 * @property ajax
-		 * @type {Ajax}
+		 * @type Ajax
 		 * @final
 		 */
 		ajax: {
@@ -497,7 +517,7 @@ function MetaEngine() {
 		/**
 		 * Сообщения пользователю и строки нитернационализации
 		 * @property msg
-		 * @type {Messages}
+		 * @type Messages
 		 * @final
 		 */
 		msg: {
@@ -561,16 +581,7 @@ function MetaEngine() {
 		 * @final
 		 */
 		moment: {
-			value: (function () {
-				var m = typeof moment == "function" ? moment : require('moment');
-				m._masks = {
-					date:       "DD.MM.YY",
-					date_time:  "DD.MM.YY HH:mm",
-					ldt:        "DD MMMM YYYY, HH:mm",
-					iso:        "YYYY-MM-DDTHH:mm:ss"
-				};
-				return m;
-			})()
+			get: function () { return this.utils.moment; }
 		},
 
 		/**
@@ -599,17 +610,12 @@ function MetaEngine() {
 		},
 
 		/**
-		 * Пустые значения даты и уникального идентификатора
-		 * @property blank
-		 * @for MetaEngine
-		 * @final
-		 */
-		blank: {
-			value: new Blank()
-		},
-
-		/**
-		 * Подключает обработчики событий
+		 * ### Подключает обработчики событий
+		 *
+		 * @method on
+		 * @param name {String} - имя события
+		 * @param fn {Function} - функция - обработчик
+		 * @returns {*}
 		 */
 		on: {
 			value: function (name, fn) {
@@ -621,274 +627,286 @@ function MetaEngine() {
 }
 
 /**
- * Для совместимости со старыми модулями, публикуем $p глобально
- * Кроме этой переменной, metadata.js ничего не экспортирует
+ * ### Коллекция вспомогательных методов
+ * @class Utils
+ * @static
+ * @menuorder 35
+ * @tooltip Вспомогательные методы
  */
-var $p = new MetaEngine();
-
-if(typeof window !== "undefined"){
+function Utils() {
 
 	/**
-	 * Загружает скрипты и стили синхронно и асинхронно
-	 * @method load_script
-	 * @for MetaEngine
-	 * @param src {String} - url ресурса
-	 * @param type {String} - "link" или "script"
-	 * @param [callback] {Function} - функция обратного вызова после загрузки скрипта
-	 * @async
+	 * ### Moment для операций с интервалами и датами
+	 *
+	 * @property moment
+	 * @type Function
+	 * @final
 	 */
-	$p.load_script = function (src, type, callback) {
-		var s = document.createElement(type);
-		if (type == "script") {
-			s.type = "text/javascript";
-			s.src = src;
-
-			if(callback){
-				s.async = true;
-				s.addEventListener('load', callback, false);
-
-			}else
-				s.async = false;
-
-		} else {
-			s.type = "text/css";
-			s.rel = "stylesheet";
-			s.href = src;
-		}
-		document.head.appendChild(s);
+	this.moment = typeof moment == "function" ? moment : require('moment');
+	this.moment._masks = {
+		date:       "DD.MM.YY",
+		date_time:  "DD.MM.YY HH:mm",
+		ldt:        "DD MMMM YYYY, HH:mm",
+		iso:        "YYYY-MM-DDTHH:mm:ss"
 	};
 
-}
-
-
-/**
- * Читает данные из блоба, возвращает промис
- * @param blob
- * @return {Promise}
- */
-$p.blob_as_text = function (blob, type) {
-
-	return new Promise(function(resolve, reject){
-		var reader = new FileReader();
-		reader.onload = function(event){
-			resolve(reader.result);
-		};
-		reader.onerror = function(err){
-			reject(err);
-		};
-		if(type == "data_url")
-			reader.readAsDataURL(blob);
-		else
-			reader.readAsText(blob);
-	});
-	
-};
-
-
-/**
- * Проверяет, является ли значение guid-ом
- * @method is_guid
- * @for MetaEngine
- * @param v {*} - проверяемое значение
- * @return {Boolean} - true, если значение соответствует регурярному выражению guid
- */
-$p.is_guid = function(v){
-	if(typeof v !== "string" || v.length < 36)
-		return false;
-	else if(v.length > 36)
-		v = v.substr(0, 36);
-	return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v)
-};
-
-/**
- * Проверяет, является ли значение пустым идентификатором
- * @method is_empty_guid
- * @for MetaEngine
- * @param v {*} - проверяемое значение
- * @return {Boolean} - true, если v эквивалентен пустому guid
- */
-$p.is_empty_guid = function (v) {
-	return !v || v === $p.blank.guid;
-};
-
-/**
- * Генерирует новый guid
- * @method generate_guid
- * @for MetaEngine
- * @return {String}
- */
-$p.generate_guid = function(){
-	var d = new Date().getTime();
-	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-		var r = (d + Math.random()*16)%16 | 0;
-		d = Math.floor(d/16);
-		return (c=='x' ? r : (r&0x7|0x8)).toString(16);
-	});
-};
-
-/**
- * Извлекает guid из строки или ссылки или объекта
- * @method fix_guid
- * @param ref {*} - значение, из которого надо извлечь идентификатор
- * @param generate {Boolean} - указывает, генерировать ли новый guid для пустого значения
- * @return {String}
- */
-$p.fix_guid = function(ref, generate){
-
-	if(ref && typeof ref == "string"){
-
-	} else if(ref instanceof DataObj)
-		return ref.ref;
-
-	else if(ref && typeof ref == "object"){
-		if(ref.presentation){
-			if(ref.ref)
-				return ref.ref;
-			else if(ref.name)
-				return ref.name;
-		}
-		else
-			ref = (typeof ref.ref == "object" && ref.ref.hasOwnProperty("ref")) ?  ref.ref.ref : ref.ref;
-	}
-
-	if($p.is_guid(ref) || generate === false)
-		return ref;
-
-	else if(generate)
-		return $p.generate_guid();
-
-	else
-		return $p.blank.guid;
-};
-
-/**
- * Приводит значение к типу Число
- * @method fix_number
- * @param str {*} - приводиме значение
- * @param [strict=false] {Boolean} - конвертировать NaN в 0
- * @return {Number}
- */
-$p.fix_number = function(str, strict){
-	var v = parseFloat(str);
-	if(!isNaN(v))
-		return v;
-	else if(strict)
-		return 0;
-	else
-		return str;
-};
-
-/**
- * Приводит значение к типу Булево
- * @method fix_boolean
- * @param str {String}
- * @return {boolean}
- */
-$p.fix_boolean = function(str){
-	if(typeof str === "string")
-		return !(!str || str.toLowerCase() == "false");
-	else
-		return !!str;
-};
-
-/**
- * Приводит значение к типу Дата
- * @method fix_date
- * @param str {*} - приводиме значение
- * @param [strict=false] {boolean} - если истина и значение не приводится к дате, возвращать пустую дату
- * @return {Date|*}
- */
-$p.fix_date = function(str, strict){
-	var dfmt = /(^\d{1,4}[\.|\\/|-]\d{1,2}[\.|\\/|-]\d{1,4})(\s*(?:0?[1-9]:[0-5]|1(?=[012])\d:[0-5])\d\s*[ap]m)?$/;
-	if(str instanceof Date)
-		return str;
-	else if(str && typeof str == "string" && dfmt.test(str.substr(0,10))){
-		var adp = str.split(" "), ad = adp[0].split("."), d, strr;
-		if(ad.length == 1){
-			ad = adp[0].split("/");
-			if(ad.length == 1)
-				ad = adp[0].split("-");
-		}
-		if(ad.length == 3 && ad[2].length == 4){
-			strr = ad[2] + "-" + ad[1] + "-" + ad[0];
-			for(var i = 1; i < adp.length; i++)
-				strr += " " + adp[i];
-			d=new Date(strr);
-		}else
-			d=new Date(str);
-
-		if(d && d.getFullYear()>0)
-			return d;
-	}
-
-	if(strict)
-		return $p.blank.date;
-	else
-		return str;
-};
-
-/**
- * Добавляет days дней к дате
- * @method date_add_day
- * @param date {Date} - исходная дата
- * @param days {Number} - число дней, добавляемых к дате (может быть отрицательным)
- * @return {Date}
- */
-$p.date_add_day = function(date, days, reset_time){
-	var newDt = new Date(date);
-	newDt.setDate(date.getDate() + days);
-	if(reset_time)
-		newDt.setHours(0,-newDt.getTimezoneOffset(),0,0);
-	return newDt;
-};
-
-/**
- * Запрещает всплывание события
- * @param e {MouseEvent|KeyboardEvent}
- * @returns {Boolean}
- */
-$p.cancel_bubble = function(e) {
-	var evt = (e || event);
-	if (evt && evt.stopPropagation)
-		evt.stopPropagation();
-	if (evt && !evt.cancelBubble)
-		evt.cancelBubble = true;
-	return false
-};
-
-
-/**
- * ### Пустые значения примитивных и ссылочных типов
- *
- * @class Blank
- * @static
- */
-function Blank() {
-
-	this.date = new Date("0001-01-01");
-	this.guid = "00000000-0000-0000-0000-000000000000";
 
 	/**
-	 * Возвращает пустое значение по типу метаданных
-	 * @method by_type
-	 * @for Blank
+	 * ### Приводит значение к типу Дата
+	 *
+	 * @method fix_date
+	 * @param str {String|Number|Date} - приводиме значение
+	 * @param [strict=false] {Boolean} - если истина и значение не приводится к дате, возвращать пустую дату
+	 * @return {Date|*}
+	 */
+	this.fix_date = function(str, strict){
+
+		if(str instanceof Date)
+			return str;
+		else{
+			var m = this.moment(str, ["DD-MM-YYYY", "DD-MM-YYYY HH:mm", "DD-MM-YYYY HH:mm:ss", "DD-MM-YY HH:mm", "YYYYDDMMHHmmss", this.moment.ISO_8601]);
+			return m.isValid() ? m.toDate() : (strict ? this.blank.date : str);
+		}
+	};
+
+	/**
+	 * ### Извлекает guid из строки или ссылки или объекта
+	 *
+	 * @method fix_guid
+	 * @param ref {*} - значение, из которого надо извлечь идентификатор
+	 * @param generate {Boolean} - указывает, генерировать ли новый guid для пустого значения
+	 * @return {String}
+	 */
+	this.fix_guid = function(ref, generate){
+
+		if(ref && typeof ref == "string"){
+
+		} else if(ref instanceof DataObj)
+			return ref.ref;
+
+		else if(ref && typeof ref == "object"){
+			if(ref.presentation){
+				if(ref.ref)
+					return ref.ref;
+				else if(ref.name)
+					return ref.name;
+			}
+			else
+				ref = (typeof ref.ref == "object" && ref.ref.hasOwnProperty("ref")) ?  ref.ref.ref : ref.ref;
+		}
+
+		if(this.is_guid(ref) || generate === false)
+			return ref;
+
+		else if(generate)
+			return this.generate_guid();
+
+		else
+			return this.blank.guid;
+	};
+
+	/**
+	 * ### Приводит значение к типу Число
+	 *
+	 * @method fix_number
+	 * @param str {*} - приводиме значение
+	 * @param [strict=false] {Boolean} - конвертировать NaN в 0
+	 * @return {Number}
+	 */
+	this.fix_number = function(str, strict){
+		var v = parseFloat(str);
+		if(!isNaN(v))
+			return v;
+		else if(strict)
+			return 0;
+		else
+			return str;
+	};
+
+	/**
+	 * ### Приводит значение к типу Булево
+	 *
+	 * @method fix_boolean
+	 * @param str {String}
+	 * @return {boolean}
+	 */
+	this.fix_boolean = function(str){
+		if(typeof str === "string")
+			return !(!str || str.toLowerCase() == "false");
+		else
+			return !!str;
+	};
+
+	/**
+	 * ### Пустые значения даты и уникального идентификатора
+	 *
+	 * @property blank
+	 * @type Blank
+	 * @final
+	 */
+	this.blank = {
+		date: this.fix_date("0001-01-01T00:00:00"),
+		guid: "00000000-0000-0000-0000-000000000000",
+		by_type: function(mtype){
+			var v;
+			if(mtype.is_ref)
+				v = this.guid;
+			else if(mtype.date_part)
+				v = this.date;
+			else if(mtype["digits"])
+				v = 0;
+			else if(mtype.types && mtype.types[0]=="boolean")
+				v = false;
+			else
+				v = "";
+			return v;
+		}
+	};
+
+	/**
+	 * ### Приводит тип значения v к типу метаданных
+	 *
+	 * @method fetch_type
+	 * @param str {*} - значение (обычно, строка, полученная из html поля ввода)
 	 * @param mtype {Object} - поле type объекта метаданных (field.type)
 	 * @return {*}
 	 */
-	this.by_type = function(mtype){
-		var v;
+	this.fetch_type = function(str, mtype){
+		var v = str;
 		if(mtype.is_ref)
-			v = $p.blank.guid;
+			v = this.fix_guid(str);
 		else if(mtype.date_part)
-			v = $p.blank.date;
+			v = this.fix_date(str, true);
 		else if(mtype["digits"])
-			v = 0;
-		else if(mtype.types && mtype.types[0]=="boolean")
-			v = false;
-		else
-			v = "";
+			v = this.fix_number(str, true);
+		else if(mtype.types[0]=="boolean")
+			v = this.fix_boolean(str);
 		return v;
 	};
+
+	/**
+	 * ### Добавляет days дней к дате
+	 *
+	 * @method date_add_day
+	 * @param date {Date} - исходная дата
+	 * @param days {Number} - число дней, добавляемых к дате (может быть отрицательным)
+	 * @return {Date}
+	 */
+	this.date_add_day = function(date, days, reset_time){
+		var newDt = new Date(date);
+		newDt.setDate(date.getDate() + days);
+		if(reset_time)
+			newDt.setHours(0,-newDt.getTimezoneOffset(),0,0);
+		return newDt;
+	}
+
+	/**
+	 * ### Генерирует новый guid
+	 *
+	 * @method generate_guid
+	 * @return {String}
+	 */
+	this.generate_guid = function(){
+		var d = new Date().getTime();
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+			var r = (d + Math.random()*16)%16 | 0;
+			d = Math.floor(d/16);
+			return (c=='x' ? r : (r&0x7|0x8)).toString(16);
+		});
+	};
+
+	/**
+	 * ### Проверяет, является ли значение guid-ом
+	 *
+	 * @method is_guid
+	 * @param v {*} - проверяемое значение
+	 * @return {Boolean} - true, если значение соответствует регурярному выражению guid
+	 */
+	this.is_guid = function(v){
+		if(typeof v !== "string" || v.length < 36)
+			return false;
+		else if(v.length > 36)
+			v = v.substr(0, 36);
+		return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v)
+	};
+
+	/**
+	 * ### Проверяет, является ли значение пустым идентификатором
+	 *
+	 * @method is_empty_guid
+	 * @param v {*} - проверяемое значение
+	 * @return {Boolean} - true, если v эквивалентен пустому guid
+	 */
+	this.is_empty_guid = function (v) {
+		return !v || v === this.blank.guid;
+	};
+
+	/**
+	 * ### Проверяет, является ли значенние Data-объектным типом
+	 *
+	 * @method is_data_obj
+	 * @param v {*} - проверяемое значение
+	 * @return {Boolean} - true, если значение является ссылкой
+	 */
+	this.is_data_obj = function(v){
+		return v && v instanceof DataObj;
+	};
+
+	/**
+	 * ### Проверяет, является ли значенние менеджером объектов данных
+	 *
+	 * @method is_data_mgr
+	 * @param v {*} - проверяемое значение
+	 * @return {Boolean} - true, если значение является ссылкой
+	 */
+	this.is_data_mgr = function(v){
+		return v && v instanceof DataManager;
+	};
+
+	/**
+	 * ### Сравнивает на равенство ссылочные типы и примитивные значения
+	 *
+	 * @method is_equal
+	 * @param v1 {DataObj|String}
+	 * @param v2 {DataObj|String}
+	 * @return {boolean} - true, если значенния эквивалентны
+	 */
+	this.is_equal = function(v1, v2){
+
+		if(v1 == v2)
+			return true;
+		else if(typeof v1 === typeof v2)
+			return false;
+
+		return (this.fix_guid(v1, false) == this.fix_guid(v2, false));
+	};
+
+	/**
+	 * ### Читает данные из блоба
+	 * Возвращает промис с прочитанными данными
+	 *
+	 * @param blob {Blob}
+	 * @param [type] {String} - если type == "data_url", в промисе будет возвращен DataURL, а не текст
+	 * @return {Promise}
+	 */
+	this.blob_as_text = function (blob, type) {
+
+		return new Promise(function(resolve, reject){
+			var reader = new FileReader();
+			reader.onload = function(event){
+				resolve(reader.result);
+			};
+			reader.onerror = function(err){
+				reject(err);
+			};
+			if(type == "data_url")
+				reader.readAsDataURL(blob);
+			else
+				reader.readAsText(blob);
+		});
+
+	};
+
 }
 
 /**
@@ -1309,8 +1327,7 @@ function Modifiers(){
 			}.bind(this));		
 	};
 	
-};
-
+}
 
 /**
  * ### Интерфейс к localstorage, alasql и pouchdb
@@ -1468,11 +1485,11 @@ function WSQL(){
 					}
 					return prm;
 				}else if(type == "number")
-					return $p.fix_number(prm, true);
+					return $p.utils.fix_number(prm, true);
 				else if(type == "date")
-					return $p.fix_date(prm, true);
+					return $p.utils.fix_date(prm, true);
 				else if(type == "boolean")
-					return $p.fix_boolean(prm);
+					return $p.utils.fix_boolean(prm);
 				else
 					return prm;
 			}
@@ -1531,7 +1548,7 @@ function WSQL(){
 				var nesessery_params = [
 					{p: "user_name",		v: "", t:"string"},
 					{p: "user_pwd",			v: "", t:"string"},
-					{p: "browser_uid",		v: $p.generate_guid(), t:"string"},
+					{p: "browser_uid",		v: $p.utils.generate_guid(), t:"string"},
 					{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
 					{p: "enable_save_pwd",	v: $p.job_prm.enable_save_pwd,	t:"boolean"},
 					{p: "autologin",		v: "",	t:"boolean"},
@@ -1548,7 +1565,7 @@ function WSQL(){
 					zone = $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1;
 				// если зона указана в url, используем её
 				if($p.job_prm.url_prm.hasOwnProperty("zone"))
-					zone = $p.job_prm.zone_is_string ? $p.job_prm.url_prm.zone : $p.fix_number($p.job_prm.url_prm.zone, true);
+					zone = $p.job_prm.zone_is_string ? $p.job_prm.url_prm.zone : $p.utils.fix_number($p.job_prm.url_prm.zone, true);
 				if(zone !== undefined)
 					wsql.set_user_param("zone", zone);
 
@@ -1689,7 +1706,7 @@ function Col_struct(id,width,type,align,sort,caption){
  */
 function InterfaceObjs(){
 
-	this.toString = function(){return "Объекты интерфейса пользователя"};
+	var iface = this;
 
 	/**
 	 * Очищает область (например, удаляет из div все дочерние элементы)
@@ -1879,7 +1896,7 @@ function InterfaceObjs(){
 		}
 
 		if(location.hash.substr(1) == hash)
-			this.hash_route();
+			iface.hash_route();
 		else
 			location.hash = hash;
 	};
@@ -1896,7 +1913,7 @@ function InterfaceObjs(){
 			res = $p.eve.callEvent("hash_route", [hprm]),
 			mgr;
 
-		if((res !== false) && (!$p.iface.before_route || $p.iface.before_route(event) !== false)){
+		if((res !== false) && (!iface.before_route || iface.before_route(event) !== false)){
 
 			if($p.ajax.authorized){
 
@@ -1904,11 +1921,11 @@ function InterfaceObjs(){
 					// если задана ссылка, открываем форму объекта
 					mgr = _md.mgr_by_class_name(hprm.obj);
 					if(mgr)
-						mgr[hprm.frm || "form_obj"]($p.iface.docs, hprm.ref)
+						mgr[hprm.frm || "form_obj"](iface.docs, hprm.ref)
 
-				}else if(hprm.view && $p.iface.swith_view){
+				}else if(hprm.view && iface.swith_view){
 					// если задано имя представления, переключаем главную форму
-					$p.iface.swith_view(hprm.view);
+					iface.swith_view(hprm.view);
 
 				}
 
@@ -1916,7 +1933,21 @@ function InterfaceObjs(){
 		}
 
 		if(event)
-			return $p.cancel_bubble(event);
+			return iface.cancel_bubble(event);
+	};
+
+	/**
+	 * Запрещает всплывание события
+	 * @param e {MouseEvent|KeyboardEvent}
+	 * @returns {Boolean}
+	 */
+	this.cancel_bubble = function(e) {
+		var evt = (e || event);
+		if (evt && evt.stopPropagation)
+			evt.stopPropagation();
+		if (evt && !evt.cancelBubble)
+			evt.cancelBubble = true;
+		return false
 	};
 
 	this.Col_struct = Col_struct;
@@ -1940,7 +1971,7 @@ $p.__define({
 	 * ### Текущий пользователь
 	 * Свойство определено после загрузки метаданных и входа впрограмму
 	 * @property current_user
-	 * @type {_cat.users}
+	 * @type _cat.users
 	 * @final
 	 */
 	current_user: {
@@ -1955,7 +1986,7 @@ $p.__define({
 	 * ### Права доступа текущего пользователя.
 	 * Свойство определено после загрузки метаданных и входа впрограмму
 	 * @property current_acl
-	 * @type {_cat.users_acl}
+	 * @type _cat.users_acl
 	 * @final
 	 */
 	current_acl: {
@@ -1968,6 +1999,38 @@ $p.__define({
 				})
 			}
 			return res;
+		}
+	},
+
+	/**
+	 * Загружает скрипты и стили синхронно и асинхронно
+	 * @method load_script
+	 * @for MetaEngine
+	 * @param src {String} - url ресурса
+	 * @param type {String} - "link" или "script"
+	 * @param [callback] {Function} - функция обратного вызова после загрузки скрипта
+	 * @async
+	 */
+	load_script: {
+		value: function (src, type, callback) {
+			var s = document.createElement(type);
+			if (type == "script") {
+				s.type = "text/javascript";
+				s.src = src;
+
+				if(callback){
+					s.async = true;
+					s.addEventListener('load', callback, false);
+
+				}else
+					s.async = false;
+
+			} else {
+				s.type = "text/css";
+				s.rel = "stylesheet";
+				s.href = src;
+			}
+			document.head.appendChild(s);
 		}
 	}
 
@@ -3065,7 +3128,7 @@ eXcell_proto.input_keydown = function(e, t){
 		}
 	}
 
-	return $p.cancel_bubble(e);
+	return $p.iface.cancel_bubble(e);
 };
 
 /**
@@ -3131,7 +3194,7 @@ function eXcell_ocombo(cell){
 				t.setValue(t.combo.getComboText());         // текст в элементе управления
 				if(!t.combo.getSelectedValue())
 					t.combo.callEvent("onChange");
-				var res = !$p.is_equal(t.val, t.getValue());// compares the new and the old values
+				var res = !$p.utils.is_equal(t.val, t.getValue());// compares the new and the old values
 				t.combo.unload();
 				return res;
 
@@ -3431,8 +3494,8 @@ $p.iface.data_to_tree = function (data) {
 		xml = xml + "</item>";
 	}
 
-	add_hierarchically({presentation: "...", ref: $p.blank.guid}, []);
-	$p._find_rows(data, {parent: $p.blank.guid}, function(r){
+	add_hierarchically({presentation: "...", ref: $p.utils.blank.guid}, []);
+	$p._find_rows(data, {parent: $p.utils.blank.guid}, function(r){
 		add_hierarchically(r, data)
 	});
 
@@ -3496,7 +3559,7 @@ function ODropdownList(attr){
 			}
 			body_click();
 		}
-		return $p.cancel_bubble(e);
+		return $p.iface.cancel_bubble(e);
 	};
 	div.appendChild(ul);
 	ul.className = "dropdown_menu";
@@ -3800,7 +3863,7 @@ function OCombo(attr){
 		}
 
 		if(e)
-			return $p.cancel_bubble(e);
+			return $p.iface.cancel_bubble(e);
 	}
 
 	function popup_hide(){
@@ -3874,7 +3937,7 @@ function OCombo(attr){
 						selection: [get_filter()]
 					});
 			}
-			return $p.cancel_bubble(e);
+			return $p.iface.cancel_bubble(e);
 		}
 	}
 
@@ -3889,7 +3952,7 @@ function OCombo(attr){
 
 	t.getButton().addEventListener("mouseout", popup_hide);
 
-	t.getBase().addEventListener("click", $p.cancel_bubble);
+	t.getBase().addEventListener("click", $p.iface.cancel_bubble);
 
 	t.getBase().addEventListener("contextmenu", oncontextmenu);
 
@@ -3987,7 +4050,7 @@ function OCombo(attr){
 
 		t.getButton().removeEventListener("mouseout", popup_hide);
 
-		t.getBase().removeEventListener("click", $p.cancel_bubble);
+		t.getBase().removeEventListener("click", $p.iface.cancel_bubble);
 
 		t.getBase().removeEventListener("contextmenu", oncontextmenu);
 
@@ -4593,7 +4656,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 					else{
 						if(_grid.getColIndexById(change.name) != undefined)
 							_grid.cells(change.row.row, _grid.getColIndexById(change.name))
-								.setCValue($p.is_data_obj(change.row[change.name]) ? change.row[change.name].presentation : change.row[change.name]);
+								.setCValue($p.utils.is_data_obj(change.row[change.name]) ? change.row[change.name].presentation : change.row[change.name]);
 					}
 				}
 			});
@@ -4712,7 +4775,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				_grid.selectRowById(row.row);
 				_grid.forEachCell(row.row, function(cellObj,ind){
 					var val = row[_grid.getColumnId(ind)];
-					cellObj.setCValue($p.is_data_obj(val) ? val.presentation : val);
+					cellObj.setCValue($p.utils.is_data_obj(val) ? val.presentation : val);
 				});
 			}
 		}
@@ -4855,7 +4918,7 @@ $p.iface.Toolbar_filter = function (attr) {
 		if(!attr.date_from)
 			attr.date_from = new Date((new Date()).getFullYear().toFixed() + "-01-01");
 		if(!attr.date_till)
-			attr.date_till = $p.date_add_day(new Date(), 1);
+			attr.date_till = $p.utils.date_add_day(new Date(), 1);
 		t.input_date_from.value=$p.moment(attr.date_from).format("L");
 		t.input_date_till.value=$p.moment(attr.date_till).format("L");
 	}
@@ -4889,8 +4952,8 @@ $p.iface.Toolbar_filter.prototype.__define({
 		value: function (exclude_custom) {
 
 			var res = {
-				date_from: this.input_date_from ? $p.date_add_day(dhx4.str2date(this.input_date_from.value), 0, true) : "",
-				date_till: this.input_date_till ? $p.date_add_day(dhx4.str2date(this.input_date_till.value), 1, true) : "",
+				date_from: this.input_date_from ? $p.utils.date_add_day(dhx4.str2date(this.input_date_from.value), 0, true) : "",
+				date_till: this.input_date_till ? $p.utils.date_add_day(dhx4.str2date(this.input_date_till.value), 1, true) : "",
 				filter: this.input_filter ? this.input_filter.value : ""
 			}, fld, flt;
 
@@ -4935,66 +4998,6 @@ $p.iface.Toolbar_filter.prototype.__define({
  * @requires common
  */
 
-/**
- * Проверяет, является ли значенние Data-объектным типом
- * @method is_data_obj
- * @for MetaEngine
- * @param v {*} - проверяемое значение
- * @return {Boolean} - true, если значение является ссылкой
- */
-$p.is_data_obj = function(v){
-	return v && v instanceof DataObj;
-};
-
-/**
- * Проверяет, является ли значенние менеджером объектов данных
- * @method is_data_mgr
- * @for MetaEngine
- * @param v {*} - проверяемое значение
- * @return {Boolean} - true, если значение является ссылкой
- */
-$p.is_data_mgr = function(v){
-	return v && v instanceof DataManager;
-};
-
-/**
- * приводит тип значения v к типу метаданных
- * @method fetch_type
- * @for MetaEngine
- * @param str {*} - значение (обычно, строка, полученная из html поля ввода)
- * @param mtype {Object} - поле type объекта метаданных (field.type)
- * @return {*}
- */
-$p.fetch_type = function(str, mtype){
-	var v = str;
-	if(mtype.is_ref)
-		v = $p.fix_guid(str);
-	else if(mtype.date_part)
-		v = $p.fix_date(str, true);
-	else if(mtype["digits"])
-		v = $p.fix_number(str, true);
-	else if(mtype.types[0]=="boolean")
-		v = $p.fix_boolean(str);
-	return v;
-};
-
-/**
- * Сравнивает на равенство ссылочные типы и примитивные значения
- * @method is_equal
- * @for MetaEngine
- * @param v1 {DataObj|String}
- * @param v2 {DataObj|String}
- * @return {boolean} - true, если значенния эквивалентны
- */
-$p.is_equal = function(v1, v2){
-
-	if(v1 == v2)
-		return true;
-	else if(typeof v1 === typeof v2)
-		return false;
-
-	return ($p.fix_guid(v1, false) == $p.fix_guid(v2, false));
-};
 
 /**
  * Абстрактный поиск значения в коллекции
@@ -5013,7 +5016,7 @@ $p._find = function(a, val, columns){
 		for(i in a){ // ищем по всем полям объекта
 			o = a[i];
 			for(var j in o){
-				if(typeof o[j] !== "function" && $p.is_equal(o[j], val))
+				if(typeof o[j] !== "function" && $p.utils.is_equal(o[j], val))
 					return o;
 			}
 		}
@@ -5022,7 +5025,7 @@ $p._find = function(a, val, columns){
 			o = a[i];
 			finded = true;
 			for(var j in val){
-				if(typeof o[j] !== "function" && !$p.is_equal(o[j], val[j])){
+				if(typeof o[j] !== "function" && !$p.utils.is_equal(o[j], val[j])){
 					finded = false;
 					break;
 				}
@@ -5072,7 +5075,7 @@ $p._selection = function (o, selection) {
 						if(element[key].hasOwnProperty("like"))
 							return o[key] && o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
 						else
-							return $p.is_equal(o[key], element[key]);
+							return $p.utils.is_equal(o[key], element[key]);
 					});
 					if(!ok)
 						break;
@@ -5086,7 +5089,7 @@ $p._selection = function (o, selection) {
 
 				// если свойство отбора является объектом `not`, сравниваем на неравенство
 				}else if(is_obj && sel.hasOwnProperty("not")){
-					if($p.is_equal(o[j], sel.not)){
+					if($p.utils.is_equal(o[j], sel.not)){
 						ok = false;
 						break;
 					}
@@ -5094,7 +5097,7 @@ $p._selection = function (o, selection) {
 				// если свойство отбора является объектом `in`, выполняем Array.some()
 				}else if(is_obj && sel.hasOwnProperty("in")){
 					ok = sel.in.some(function(element) {
-						return $p.is_equal(element, o[j]);
+						return $p.utils.is_equal(element, o[j]);
 					});
 					if(!ok)
 						break;
@@ -5115,12 +5118,12 @@ $p._selection = function (o, selection) {
 				}else if(is_obj && sel.hasOwnProperty("between")){
 					var tmp = o[j];
 					if(typeof tmp != "number")
-						tmp = $p.fix_date(o[j]);
+						tmp = $p.utils.fix_date(o[j]);
 					ok = (tmp >= sel.between[0]) && (tmp <= sel.between[1]);
 					if(!ok)
 						break;
 
-				}else if(!$p.is_equal(o[j], sel)){
+				}else if(!$p.utils.is_equal(o[j], sel)){
 					ok = false;
 					break;
 				}
@@ -5825,7 +5828,7 @@ function Meta() {
 				if(tnames.length > 1 && $p[tnames[0]][tnames[1]])
 					rt.push($p[tnames[0]][tnames[1]]);
 			});
-			if(rt.length == 1 || row[f] == $p.blank.guid)
+			if(rt.length == 1 || row[f] == $p.utils.blank.guid)
 				return mf_mgr(rt[0]);
 
 			else if(array_enabled)
@@ -5834,7 +5837,7 @@ function Meta() {
 			else if((property = row[f]) instanceof DataObj)
 				return property._manager;
 
-			else if($p.is_guid(property) && property != $p.blank.guid){
+			else if($p.utils.is_guid(property) && property != $p.utils.blank.guid){
 				for(var i in rt){
 					mgr = rt[i];
 					if(mgr.get(property, false, true))
@@ -5844,14 +5847,14 @@ function Meta() {
 		}else{
 
 			// Получаем объект свойства
-			if($p.is_data_obj(property))
+			if($p.utils.is_data_obj(property))
 				oproperty = property;
-			else if($p.is_guid(property))
+			else if($p.utils.is_guid(property))
 				oproperty = _cch.properties.get(property, false);
 			else
 				return;
 			
-			if($p.is_data_obj(oproperty)){
+			if($p.utils.is_data_obj(oproperty)){
 
 				if(oproperty.is_new())
 					return _cat.property_values;
@@ -6706,7 +6709,7 @@ DataManager.prototype.get_option_list = function(val, selection){
 	var t = this, l = [], input_by_string, text, sel;
 
 	function check(v){
-		if($p.is_equal(v.value, val))
+		if($p.utils.is_equal(v.value, val))
 			v.selected = true;
 		return v;
 	}
@@ -6828,7 +6831,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 
 		txt_by_type = function (fv, mf) {
 
-			if($p.is_data_obj(fv))
+			if($p.utils.is_data_obj(fv))
 				txt = fv.presentation;
 			else
 				txt = fv;
@@ -6995,7 +6998,7 @@ DataManager.prototype.print = function(ref, model, wnd){
 		// иначе - печатаем средствами 1С или иного сервера
 		var rattr = {};
 		$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
-		rattr.url += this.rest_name + "(guid'" + $p.fix_guid(ref) + "')" +
+		rattr.url += this.rest_name + "(guid'" + $p.utils.fix_guid(ref) + "')" +
 			"/Print(model=" + model + ", browser_uid=" + $p.wsql.get_user_param("browser_uid") +")";
 
 		return $p.ajax.get_and_show_blob(rattr.url, rattr, "get")
@@ -7081,7 +7084,7 @@ RefDataManager.prototype.__define({
 	each: {
 		value: 	function(fn){
 			for(var i in this.by_ref){
-				if(!i || i == $p.blank.guid)
+				if(!i || i == $p.utils.blank.guid)
 					continue;
 				if(fn.call(this, this.by_ref[i]) == true)
 					break;
@@ -7109,7 +7112,7 @@ RefDataManager.prototype.__define({
 	get: {
 		value: function(ref, force_promise, do_not_create){
 
-			var o = this.by_ref[ref] || this.by_ref[(ref = $p.fix_guid(ref))];
+			var o = this.by_ref[ref] || this.by_ref[(ref = $p.utils.fix_guid(ref))];
 
 			if(!o){
 				if(do_not_create && !force_promise)
@@ -7121,7 +7124,7 @@ RefDataManager.prototype.__define({
 			if(force_promise === false)
 				return o;
 
-			else if(force_promise === undefined && ref === $p.blank.guid)
+			else if(force_promise === undefined && ref === $p.utils.blank.guid)
 				return o;
 
 			if(o.is_new()){
@@ -7150,8 +7153,8 @@ RefDataManager.prototype.__define({
 
 			if(!attr || typeof attr != "object")
 				attr = {};
-			if(!attr.ref || !$p.is_guid(attr.ref) || $p.is_empty_guid(attr.ref))
-				attr.ref = $p.generate_guid();
+			if(!attr.ref || !$p.utils.is_guid(attr.ref) || $p.utils.is_empty_guid(attr.ref))
+				attr.ref = $p.utils.generate_guid();
 
 			var o = this.by_ref[attr.ref];
 			if(!o){
@@ -7163,7 +7166,7 @@ RefDataManager.prototype.__define({
 
 				}else{
 
-					if(o instanceof DocObj && o.date == $p.blank.date)
+					if(o instanceof DocObj && o.date == $p.utils.blank.date)
 						o.date = new Date();
 
 					// Триггер после создания
@@ -7237,7 +7240,7 @@ RefDataManager.prototype.__define({
 
 			for(var i=0; i<aattr.length; i++){
 
-				ref = $p.fix_guid(aattr[i]);
+				ref = $p.utils.fix_guid(aattr[i]);
 				obj = this.by_ref[ref];
 
 				if(!obj){
@@ -7266,7 +7269,7 @@ RefDataManager.prototype.__define({
 		value: function(owner){
 			for(var i in this.by_ref){
 				var o = this.by_ref[i];
-				if(o.is_folder && (!owner || $p.is_equal(owner, o.owner)))
+				if(o.is_folder && (!owner || $p.utils.is_equal(owner, o.owner)))
 					return o;
 			}
 			return this.get();
@@ -7291,11 +7294,11 @@ RefDataManager.prototype.__define({
 			function sql_selection(){
 
 				var ignore_parent = !attr.parent,
-					parent = attr.parent || $p.blank.guid,
+					parent = attr.parent || $p.utils.blank.guid,
 					owner,
-					initial_value = attr.initial_value || $p.blank.guid,
+					initial_value = attr.initial_value || $p.utils.blank.guid,
 					filter = attr.filter || "",
-					set_parent = $p.blank.guid;
+					set_parent = $p.utils.blank.guid;
 
 				function list_flds(){
 					var flds = [], s = "_t_.ref, _t_.`_deleted`";
@@ -7379,13 +7382,13 @@ RefDataManager.prototype.__define({
 					}else if(cmd["hierarchical"]){
 						if(cmd["has_owners"])
 							s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" +
-								(owner == $p.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
+								(owner == $p.utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 						else
 							s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" + (filter ? 0 : 1);
 
 					}else{
 						if(cmd["has_owners"])
-							s = " WHERE (" + (owner == $p.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
+							s = " WHERE (" + (owner == $p.utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 						else
 							s = " WHERE (" + (filter ? 0 : 1);
 					}
@@ -7404,7 +7407,7 @@ RefDataManager.prototype.__define({
 							s += " OR _t_.id LIKE '" + filter + "'";
 					}
 
-					s += ") AND (_t_.ref != '" + $p.blank.guid + "')";
+					s += ") AND (_t_.ref != '" + $p.utils.blank.guid + "')";
 
 
 					// допфильтры форм и связей параметров выбора
@@ -7427,7 +7430,7 @@ RefDataManager.prototype.__define({
 
 										else if(typeof sel[key] == "object"){
 
-											if($p.is_data_obj(sel[key]))
+											if($p.utils.is_data_obj(sel[key]))
 												s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
 
 											else{
@@ -7494,7 +7497,7 @@ RefDataManager.prototype.__define({
 							;
 						}else{
 							if(t.class_name == "cat.base_blocks"){
-								if(owner == $p.blank.guid)
+								if(owner == $p.utils.blank.guid)
 									owner = _cat.bases.predefined("main");
 								parent = t.first_folder(owner).ref;
 							}
@@ -7518,11 +7521,11 @@ RefDataManager.prototype.__define({
 							});
 						}
 						if(!owner)
-							owner = $p.blank.guid;
+							owner = $p.utils.blank.guid;
 					}
 
 					// ссылка родителя во взаимосвязи с начальным значением выбора
-					if(initial_value !=  $p.blank.guid && ignore_parent){
+					if(initial_value !=  $p.utils.blank.guid && ignore_parent){
 						if(cmd["hierarchical"]){
 							on_parent(t.get(initial_value, false))
 						}else
@@ -7926,7 +7929,7 @@ EnumManager.prototype.__define({
 			if(ref instanceof EnumObj)
 				return ref;
 
-			else if(!ref || ref == $p.blank.guid)
+			else if(!ref || ref == $p.utils.blank.guid)
 				ref = "_";
 
 			var o = this[ref];
@@ -7948,7 +7951,7 @@ EnumManager.prototype.__define({
 	each: {
 		value: function (fn) {
 			this.alatable.forEach(function (v) {
-				if(v.ref && v.ref != "_" && v.ref != $p.blank.guid)
+				if(v.ref && v.ref != "_" && v.ref != $p.utils.blank.guid)
 					fn.call(this[v.ref]);
 			}.bind(this));
 		}
@@ -8016,7 +8019,7 @@ EnumManager.prototype.get_option_list = function(val, selection){
 	var l = [], synonym = "", sref;
 
 	function check(v){
-		if($p.is_equal(v.value, val))
+		if($p.utils.is_equal(v.value, val))
 			v.selected = true;
 		return v;
 	}
@@ -8282,7 +8285,7 @@ RegisterManager.prototype.__define({
 
 										else if(typeof sel[key] == "object"){
 
-											if($p.is_data_obj(sel[key]))
+											if($p.utils.is_data_obj(sel[key]))
 												s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
 
 											else{
@@ -8510,13 +8513,13 @@ RegisterManager.prototype.__define({
 			for(var j in dimensions){
 				key += (key ? "¶" : "");
 				if(dimensions[j].type.is_ref)
-					key += $p.fix_guid(attr[j]);
+					key += $p.utils.fix_guid(attr[j]);
 
 				else if(!attr[j] && dimensions[j].type.digits)
 					key += "0";
 
 				else if(dimensions[j].date_part)
-					key += $p.moment(attr[j] || $p.blank.date).format($p.moment.defaultFormatUtc);
+					key += $p.moment(attr[j] || $p.utils.blank.date).format($p.moment.defaultFormatUtc);
 
 				else if(attr[j]!=undefined)
 					key += String(attr[j]);
@@ -8820,7 +8823,7 @@ function CatManager(class_name) {
 		 */
 		this._obj_constructor.prototype.__define("is_folder", {
 			get : function(){ return this._obj.is_folder || false},
-			set : function(v){ this._obj.is_folder = $p.fix_boolean(v)},
+			set : function(v){ this._obj.is_folder = $p.utils.fix_boolean(v)},
 			enumerable: true,
 			configurable: true
 		});
@@ -9051,7 +9054,7 @@ function DataObj(attr, manager) {
 		_obj.ref = attr.name;
 
 	else if(!(manager instanceof RegisterManager)){
-		_obj.ref = $p.fix_guid(attr);
+		_obj.ref = $p.utils.fix_guid(attr);
 
 	}else
 		_obj.ref = manager.get_ref(attr);
@@ -9135,14 +9138,14 @@ DataObj.prototype._getter = function (f) {
 		if(mf.digits && typeof res === "number")
 			return res;
 
-		if(mf.hasOwnProperty("str_len") && !$p.is_guid(res))
+		if(mf.hasOwnProperty("str_len") && !$p.utils.is_guid(res))
 			return res;
 
 		if(mgr = _md.value_mgr(this._obj, f, mf)){
-			if($p.is_data_mgr(mgr))
+			if($p.utils.is_data_mgr(mgr))
 				return mgr.get(res, false);
 			else
-				return $p.fetch_type(res, mgr);
+				return $p.utils.fetch_type(res, mgr);
 		}
 
 		if(res){
@@ -9151,13 +9154,13 @@ DataObj.prototype._getter = function (f) {
 		}
 
 	}else if(mf.date_part)
-		return $p.fix_date(this._obj[f], true);
+		return $p.utils.fix_date(this._obj[f], true);
 
 	else if(mf.digits)
-		return $p.fix_number(this._obj[f], !mf.hasOwnProperty("str_len"));
+		return $p.utils.fix_number(this._obj[f], !mf.hasOwnProperty("str_len"));
 
 	else if(mf.types[0]=="boolean")
-		return $p.fix_boolean(this._obj[f]);
+		return $p.utils.fix_boolean(this._obj[f]);
 
 	else
 		return this._obj[f] || "";
@@ -9173,15 +9176,15 @@ DataObj.prototype.__setter = function (f, v) {
 
 	else if(f == "ref")
 
-		this._obj[f] = $p.fix_guid(v);
+		this._obj[f] = $p.utils.fix_guid(v);
 
 	else if(mf.is_ref){
 
-		if(mf.digits && typeof v == "number" || mf.hasOwnProperty("str_len") && typeof v == "string" && !$p.is_guid(v)){
+		if(mf.digits && typeof v == "number" || mf.hasOwnProperty("str_len") && typeof v == "string" && !$p.utils.is_guid(v)){
 			this._obj[f] = v;
 
 		}else {
-			this._obj[f] = $p.fix_guid(v);
+			this._obj[f] = $p.utils.fix_guid(v);
 
 			mgr = _md.value_mgr(this._obj, f, mf, false, v);
 
@@ -9200,8 +9203,8 @@ DataObj.prototype.__setter = function (f, v) {
 					if(v.type && !(v instanceof DataObj))
 						delete v.type;
 					mgr.create(v);
-				}else if(!$p.is_data_mgr(mgr))
-					this._obj[f] = $p.fetch_type(v, mgr);
+				}else if(!$p.utils.is_data_mgr(mgr))
+					this._obj[f] = $p.utils.fetch_type(v, mgr);
 			}else{
 				if(typeof v != "object")
 					this._obj[f] = v;
@@ -9209,13 +9212,13 @@ DataObj.prototype.__setter = function (f, v) {
 		}
 
 	}else if(mf.date_part)
-		this._obj[f] = $p.fix_date(v, true);
+		this._obj[f] = $p.utils.fix_date(v, true);
 
 	else if(mf.digits)
-		this._obj[f] = $p.fix_number(v, !mf.hasOwnProperty("str_len"));
+		this._obj[f] = $p.utils.fix_number(v, !mf.hasOwnProperty("str_len"));
 
 	else if(mf.types[0]=="boolean")
-		this._obj[f] = $p.fix_boolean(v);
+		this._obj[f] = $p.utils.fix_boolean(v);
 
 	else
 		this._obj[f] = v;
@@ -9365,7 +9368,7 @@ DataObj.prototype.__define({
 	 */
 	ref: {
 		get : function(){ return this._obj.ref},
-		set : function(v){ this._obj.ref = $p.fix_guid(v)},
+		set : function(v){ this._obj.ref = $p.utils.fix_guid(v)},
 		enumerable : true,
 		configurable: true
 	},
@@ -9377,7 +9380,7 @@ DataObj.prototype.__define({
 	 */
 	empty: {
 		value: function(){
-			return $p.is_empty_guid(this._obj.ref);
+			return $p.utils.is_empty_guid(this._obj.ref);
 		}
 	},
 
@@ -9398,7 +9401,7 @@ DataObj.prototype.__define({
 					return this;
 				}.bind(this);
 
-			if(this.ref == $p.blank.guid){
+			if(this.ref == $p.utils.blank.guid){
 				if(this instanceof CatObj)
 					this.id = "000000000";
 				else
@@ -9489,7 +9492,7 @@ DataObj.prototype.__define({
 
 			// для объектов с иерархией установим пустого родителя, если иной не указан
 			if(this._metadata.hierarchical && !this._obj.parent)
-				this._obj.parent = $p.blank.guid;
+				this._obj.parent = $p.utils.blank.guid;
 
 			// для справочников, требующих код и пустым кодом, присваиваем код
 			if(!this.id && this._metadata.code_length && this._manager.cachable != "ram"){
@@ -9519,7 +9522,7 @@ DataObj.prototype.__define({
 			}
 
 			// для документов, контролируем заполненность даты
-			if(this instanceof DocObj && $p.blank.date == this.date)
+			if(this instanceof DocObj && $p.utils.blank.date == this.date)
 				this.date = new Date();
 
 			// если не указаны обязательные реквизиты
@@ -9701,7 +9704,7 @@ function CatObj(attr, manager) {
 			this._mixin(attr);
 		}else{
 			this._mixin(attr);
-			if(!$p.is_empty_guid(this.ref) && (attr.id || attr.name))
+			if(!$p.utils.is_empty_guid(this.ref) && (attr.id || attr.name))
 				this._set_loaded(this.ref);
 		}
 	}
@@ -9779,7 +9782,7 @@ function DocObj(attr, manager) {
 	if(attr && typeof attr == "object")
 		this._mixin(attr);
 
-	if(!$p.is_empty_guid(this.ref) && attr.number_doc)
+	if(!$p.utils.is_empty_guid(this.ref) && attr.number_doc)
 		this._set_loaded(this.ref);
 
 	attr = null;
@@ -9809,10 +9812,10 @@ function doc_props_date_number(proto){
 		 * @type {Date}
 		 */
 		date: {
-			get : function(){ return this._obj.date || $p.blank.date},
+			get : function(){ return this._obj.date || $p.utils.blank.date},
 			set : function(v){
 				this.__notify('date');
-				this._obj.date = $p.fix_date(v, true);
+				this._obj.date = $p.utils.fix_date(v, true);
 			},
 			enumerable: true
 		}
@@ -9830,7 +9833,7 @@ DocObj.prototype.__define({
 		get : function(){ return this._obj.posted || false},
 		set : function(v){
 			this.__notify('posted');
-			this._obj.posted = $p.fix_boolean(v);
+			this._obj.posted = $p.utils.fix_boolean(v);
 		},
 		enumerable: true
 	}
@@ -9854,7 +9857,7 @@ function DataProcessorObj(attr, manager) {
 
 	var f, cmd = manager.metadata();
 	for(f in cmd.fields)
-		attr[f] = $p.fetch_type("", cmd.fields[f].type);
+		attr[f] = $p.utils.fetch_type("", cmd.fields[f].type);
 	for(f in cmd["tabular_sections"])
 		attr[f] = [];
 
@@ -10455,7 +10458,7 @@ TabularSection.prototype.sync_grid = function(grid, selection){
 	this.find_rows(selection, function(r){
 		var data = [];
 		columns.forEach(function (f) {
-			if($p.is_data_obj(r[f]))
+			if($p.utils.is_data_obj(r[f]))
 				data.push(r[f].presentation);
 			else
 				data.push(r[f]);
@@ -10552,7 +10555,7 @@ TabularSectionRow.prototype._getter = DataObj.prototype._getter;
 
 TabularSectionRow.prototype._setter = function (f, v) {
 
-	if(this._obj[f] == v || (!v && this._obj[f] == $p.blank.guid))
+	if(this._obj[f] == v || (!v && this._obj[f] == $p.utils.blank.guid))
 		return;
 
 	if(!this._owner._owner._data._silent)
@@ -10572,7 +10575,7 @@ TabularSectionRow.prototype._setter = function (f, v) {
 		else
 			prop = this._owner._owner[this._metadata.fields[f].choice_type.path[0]];
 		if(prop && prop.type)
-			v = $p.fetch_type(v, prop.type);
+			v = $p.utils.fetch_type(v, prop.type);
 	}
 
 	DataObj.prototype.__setter.call(this, f, v);
@@ -11265,7 +11268,7 @@ DataManager.prototype.rest_selection = function (attr) {
 							o[fldsyn] = $p.moment(ro[syn]).format($p.moment._masks[mf.type.date_part]);
 
 						else if(mf.type.is_ref){
-							if(!ro[syn] || ro[syn] == $p.blank.guid)
+							if(!ro[syn] || ro[syn] == $p.utils.blank.guid)
 								o[fldsyn] = "";
 							else{
 								var mgr	= _md.value_mgr(o, fld, mf.type, false, ro[syn]);
@@ -11288,7 +11291,7 @@ DataManager.prototype.rest_selection = function (attr) {
 InfoRegManager.prototype.rest_slice_last = function(selection){
 
 	if(!selection.period)
-		selection.period = $p.date_add_day(new Date(), 1);
+		selection.period = $p.utils.date_add_day(new Date(), 1);
 
 	var t = this,
 		cmd = t.metadata(),
@@ -11313,7 +11316,7 @@ InfoRegManager.prototype.rest_slice_last = function(selection){
 				condition+= " and ";
 
 			if(mf.type.digits)
-				condition+= syn+" eq "+$p.fix_number(selection[fld]);
+				condition+= syn+" eq "+$p.utils.fix_number(selection[fld]);
 
 			else if(mf.type.date_part)
 				condition+= syn+" eq datetime'"+ $p.moment(selection[fld]).format($p.moment._masks.iso) +"'";
@@ -11876,7 +11879,7 @@ DataManager.prototype.__define({
 				if(!attr.date_from)
 					attr.date_from = new Date("2015-01-01");
 				if(!attr.date_till)
-					attr.date_till = $p.date_add_day(new Date(), 1);
+					attr.date_till = $p.utils.date_add_day(new Date(), 1);
 
 				selection.date = {between: [attr.date_from, attr.date_till]};
 
@@ -11959,7 +11962,7 @@ DataManager.prototype.__define({
 									o[fldsyn] = $p.moment(doc[fld]).format($p.moment._masks[mf.type.date_part]);
 
 								else if(mf.type.is_ref){
-									if(!doc[fld] || doc[fld] == $p.blank.guid)
+									if(!doc[fld] || doc[fld] == $p.utils.blank.guid)
 										o[fldsyn] = "";
 									else{
 										var mgr	= _md.value_mgr(o, fld, mf.type, false, doc[fld]);
@@ -12004,9 +12007,9 @@ DataManager.prototype.__define({
 			})
 				.then(function (rows) {
 					rows.sort(function (a, b) {
-						if (a.parent == $p.blank.guid && b.parent != $p.blank.guid)
+						if (a.parent == $p.utils.blank.guid && b.parent != $p.utils.blank.guid)
 							return -1;
-						if (b.parent == $p.blank.guid && a.parent != $p.blank.guid)
+						if (b.parent == $p.utils.blank.guid && a.parent != $p.utils.blank.guid)
 							return 1;
 						if (a.name < b.name)
 							return -1;
@@ -12050,7 +12053,7 @@ DataManager.prototype.__define({
 			// получаем ревизию документа
 			var _rev,
 				db = this.pouch_db;
-			ref = this.class_name + "|" + $p.fix_guid(ref);
+			ref = this.class_name + "|" + $p.utils.fix_guid(ref);
 
 			return db.get(ref)
 				.then(function (res) {
@@ -12077,7 +12080,7 @@ DataManager.prototype.__define({
 	get_attachment: {
 		value: function (ref, att_id) {
 
-			return this.pouch_db.getAttachment(this.class_name + "|" + $p.fix_guid(ref), att_id);
+			return this.pouch_db.getAttachment(this.class_name + "|" + $p.utils.fix_guid(ref), att_id);
 
 		}
 	},
@@ -12094,7 +12097,7 @@ DataManager.prototype.__define({
 			// получаем ревизию документа
 			var _rev,
 				db = this.pouch_db;
-			ref = this.class_name + "|" + $p.fix_guid(ref);
+			ref = this.class_name + "|" + $p.utils.fix_guid(ref);
 
 			return db.get(ref)
 				.then(function (res) {
@@ -12315,7 +12318,7 @@ $p.iface.pgrid_on_select = function(selv){
 
 	if(source.o[f] != undefined){
 		if(typeof source.o[f] == "number")
-			source.o[f] = $p.fix_number(selv, true);
+			source.o[f] = $p.utils.fix_number(selv, true);
 		else
 			source.o[f] = selv;
 
@@ -12324,7 +12327,7 @@ $p.iface.pgrid_on_select = function(selv){
 		row.value = selv;
 	}
 
-	pgrid.cells().setValue($p.is_data_obj(selv) ? selv.presentation : selv || "");
+	pgrid.cells().setValue($p.utils.is_data_obj(selv) ? selv.presentation : selv || "");
 	
 
 	if(source.grid_on_change)
@@ -12541,8 +12544,8 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 			if(!is_guest && $p.wsql.get_user_param("user_name") != login)
 				$p.wsql.set_user_param("user_name", login);					// сохраняем имя пользователя в базе
 
-			if(!$p.is_guid($p.wsql.get_user_param("browser_uid")))
-				$p.wsql.set_user_param("browser_uid", $p.generate_guid());	// проверяем guid браузера
+			if(!$p.utils.is_guid($p.wsql.get_user_param("browser_uid")))
+				$p.wsql.set_user_param("browser_uid", $p.utils.generate_guid());	// проверяем guid браузера
 
 			//$p.eve.log_in(attr.onstep)
 			$p.wsql.pouch.log_in(login, password)
@@ -12681,7 +12684,7 @@ $p.iface.open_settings = function (e) {
 	var hprm = $p.job_prm.parse_url();
 	$p.iface.set_hash(hprm.obj, hprm.ref, hprm.frm, "settings");
 
-	return $p.cancel_bubble(evt);
+	return $p.iface.cancel_bubble(evt);
 };
 
 /**
@@ -13131,7 +13134,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 			open_selection=function(e) {
 				var source = {grid: t.grid}._mixin(t.grid.get_cell_field());
 				wnd_address(source);
-				return $p.cancel_bubble(e);
+				return $p.iface.cancel_bubble(e);
 			};
 
 		t.cell = cell;
@@ -13161,7 +13164,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 			td = t.cell.firstChild;
 			ti = td.childNodes[0];
 			ti.value=t.val;
-			ti.onclick=$p.cancel_bubble;		//blocks onclick event
+			ti.onclick=$p.iface.cancel_bubble;		//blocks onclick event
 			ti.readOnly = true;
 			ti.focus();
 			ti.onkeydown=ti_keydown;
@@ -13173,7 +13176,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 		 */
 		t.detach=function(){
 			t.setValue(t.getValue());
-			return !$p.is_equal(t.val, t.getValue());				// compares the new and the old values
+			return !$p.utils.is_equal(t.val, t.getValue());				// compares the new and the old values
 		}
 	}
 	eXcell_addr.prototype = eXcell_proto;
@@ -13348,14 +13351,14 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 
 			var old = _delivery_area, clear_street;
 
-			if($p.is_data_obj(selv))
+			if($p.utils.is_data_obj(selv))
 				_delivery_area = selv;
 			else
 				_delivery_area = $p.cat.delivery_areas.get(selv, false);
 
 			clear_street = old != _delivery_area;
 
-			if(!$p.is_data_obj(_delivery_area))
+			if(!$p.utils.is_data_obj(_delivery_area))
 				_delivery_area = $p.cat.delivery_areas.get();
 
 			wnd.elmnts.pgrid.cells().setValue(selv.presentation);
@@ -13919,7 +13922,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				 */
 				ref: {
 					get: function(){
-						return o ? o.ref : $p.blank.guid;
+						return o ? o.ref : $p.utils.blank.guid;
 					},
 					enumerable: false,
 					configurable: true
@@ -14403,7 +14406,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	create_id = setTimeout(frm_create);
 
 	// читаем объект из локального SQL или получаем с сервера
-	if($p.is_data_obj(o)){
+	if($p.utils.is_data_obj(o)){
 
 		if(o.is_new() && attr.on_select)
 			return _mgr.create({}, true)
@@ -14503,7 +14506,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 
 	// создаём и настраиваем форму
-	if(has_tree && attr.initial_value && attr.initial_value!= $p.blank.guid && !attr.parent)
+	if(has_tree && attr.initial_value && attr.initial_value!= $p.utils.blank.guid && !attr.parent)
 		_mgr.get(attr.initial_value, true)
 			.then(function (tObj) {
 				attr.parent = tObj.parent.ref;
@@ -14663,7 +14666,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 						if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == "desktop")
 							wnd.elmnts.filter.input_filter.focus();
 					});
-					return $p.cancel_bubble(evt);
+					return $p.iface.cancel_bubble(evt);
 				}
 
 			} else if(evt.shiftKey && evt.keyCode == 116){ // requery по {Shift+F5}
@@ -14673,7 +14676,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 					});
 					if(evt.preventDefault)
 						evt.preventDefault();
-					return $p.cancel_bubble(evt);
+					return $p.iface.cancel_bubble(evt);
 				}
 
 			} else if(evt.keyCode == 27){ // закрытие по {ESC}
@@ -14779,7 +14782,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 							var xpos = xml.indexOf("set_parent"),
 								xpos2 = xml.indexOf("'>", xpos),
 								xh = xml.substr(xpos+12, xpos2-xpos-12);
-							if($p.is_guid(xh)){
+							if($p.utils.is_guid(xh)){
 								if(has_tree){
 									tree.do_not_reload = true;
 									tree.selectItem(xh, false);
@@ -14787,7 +14790,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 							}
 							grid.selectRowById(filter.initial_value);
 
-						}else if(filter.parent && $p.is_guid(filter.parent) && has_tree){
+						}else if(filter.parent && $p.utils.is_guid(filter.parent) && has_tree){
 							tree.do_not_reload = true;
 							tree.selectItem(filter.parent, false);
 						}
@@ -15070,7 +15073,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		filter.parent = ((tparent  || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
 		if(has_tree && !filter.parent)
-			filter.parent = $p.blank.guid;
+			filter.parent = $p.utils.blank.guid;
 
 
 		for(var f in filter){
@@ -15096,7 +15099,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		if(_mgr && _mgr.class_name == class_name){
 			wnd.elmnts.grid.reload()
 				.then(function () {
-					if(!$p.is_empty_guid(ref))
+					if(!$p.utils.is_empty_guid(ref))
 						wnd.elmnts.grid.selectRowById(ref, false, true, true);
 				});
 		}
@@ -15389,7 +15392,7 @@ DataManager.prototype.import = function(file, obj){
 					_mgr.load_array(items, true);
 				} else if(obj._manager == _mgr){
 					for(var i in items){
-						if($p.fix_guid(items[i]) == obj.ref){
+						if($p.utils.fix_guid(items[i]) == obj.ref){
 							imported = true;
 							_mgr.load_array([items[i]], true);
 						}
@@ -15528,7 +15531,7 @@ function AppEvents() {
 					name = String(name).toLowerCase();
 					if (!this._evnts.data[name])
 						this._evnts.data[name] = {};
-					var eventId = $p.generate_guid();
+					var eventId = $p.utils.generate_guid();
 					this._evnts.data[name][eventId] = func;
 					return eventId;
 				}

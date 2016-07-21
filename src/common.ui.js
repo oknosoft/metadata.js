@@ -36,7 +36,7 @@ function Col_struct(id,width,type,align,sort,caption){
  */
 function InterfaceObjs(){
 
-	this.toString = function(){return "Объекты интерфейса пользователя"};
+	var iface = this;
 
 	/**
 	 * Очищает область (например, удаляет из div все дочерние элементы)
@@ -226,7 +226,7 @@ function InterfaceObjs(){
 		}
 
 		if(location.hash.substr(1) == hash)
-			this.hash_route();
+			iface.hash_route();
 		else
 			location.hash = hash;
 	};
@@ -243,7 +243,7 @@ function InterfaceObjs(){
 			res = $p.eve.callEvent("hash_route", [hprm]),
 			mgr;
 
-		if((res !== false) && (!$p.iface.before_route || $p.iface.before_route(event) !== false)){
+		if((res !== false) && (!iface.before_route || iface.before_route(event) !== false)){
 
 			if($p.ajax.authorized){
 
@@ -251,11 +251,11 @@ function InterfaceObjs(){
 					// если задана ссылка, открываем форму объекта
 					mgr = _md.mgr_by_class_name(hprm.obj);
 					if(mgr)
-						mgr[hprm.frm || "form_obj"]($p.iface.docs, hprm.ref)
+						mgr[hprm.frm || "form_obj"](iface.docs, hprm.ref)
 
-				}else if(hprm.view && $p.iface.swith_view){
+				}else if(hprm.view && iface.swith_view){
 					// если задано имя представления, переключаем главную форму
-					$p.iface.swith_view(hprm.view);
+					iface.swith_view(hprm.view);
 
 				}
 
@@ -263,7 +263,21 @@ function InterfaceObjs(){
 		}
 
 		if(event)
-			return $p.cancel_bubble(event);
+			return iface.cancel_bubble(event);
+	};
+
+	/**
+	 * Запрещает всплывание события
+	 * @param e {MouseEvent|KeyboardEvent}
+	 * @returns {Boolean}
+	 */
+	this.cancel_bubble = function(e) {
+		var evt = (e || event);
+		if (evt && evt.stopPropagation)
+			evt.stopPropagation();
+		if (evt && !evt.cancelBubble)
+			evt.cancelBubble = true;
+		return false
 	};
 
 	this.Col_struct = Col_struct;
@@ -287,7 +301,7 @@ $p.__define({
 	 * ### Текущий пользователь
 	 * Свойство определено после загрузки метаданных и входа впрограмму
 	 * @property current_user
-	 * @type {_cat.users}
+	 * @type _cat.users
 	 * @final
 	 */
 	current_user: {
@@ -302,7 +316,7 @@ $p.__define({
 	 * ### Права доступа текущего пользователя.
 	 * Свойство определено после загрузки метаданных и входа впрограмму
 	 * @property current_acl
-	 * @type {_cat.users_acl}
+	 * @type _cat.users_acl
 	 * @final
 	 */
 	current_acl: {
@@ -315,6 +329,38 @@ $p.__define({
 				})
 			}
 			return res;
+		}
+	},
+
+	/**
+	 * Загружает скрипты и стили синхронно и асинхронно
+	 * @method load_script
+	 * @for MetaEngine
+	 * @param src {String} - url ресурса
+	 * @param type {String} - "link" или "script"
+	 * @param [callback] {Function} - функция обратного вызова после загрузки скрипта
+	 * @async
+	 */
+	load_script: {
+		value: function (src, type, callback) {
+			var s = document.createElement(type);
+			if (type == "script") {
+				s.type = "text/javascript";
+				s.src = src;
+
+				if(callback){
+					s.async = true;
+					s.addEventListener('load', callback, false);
+
+				}else
+					s.async = false;
+
+			} else {
+				s.type = "text/css";
+				s.rel = "stylesheet";
+				s.href = src;
+			}
+			document.head.appendChild(s);
 		}
 	}
 

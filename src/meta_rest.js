@@ -682,7 +682,7 @@ DataManager.prototype.rest_selection = function (attr) {
 							o[fldsyn] = $p.moment(ro[syn]).format($p.moment._masks[mf.type.date_part]);
 
 						else if(mf.type.is_ref){
-							if(!ro[syn] || ro[syn] == $p.blank.guid)
+							if(!ro[syn] || ro[syn] == $p.utils.blank.guid)
 								o[fldsyn] = "";
 							else{
 								var mgr	= _md.value_mgr(o, fld, mf.type, false, ro[syn]);
@@ -705,7 +705,7 @@ DataManager.prototype.rest_selection = function (attr) {
 InfoRegManager.prototype.rest_slice_last = function(selection){
 
 	if(!selection.period)
-		selection.period = $p.date_add_day(new Date(), 1);
+		selection.period = $p.utils.date_add_day(new Date(), 1);
 
 	var t = this,
 		cmd = t.metadata(),
@@ -730,7 +730,7 @@ InfoRegManager.prototype.rest_slice_last = function(selection){
 				condition+= " and ";
 
 			if(mf.type.digits)
-				condition+= syn+" eq "+$p.fix_number(selection[fld]);
+				condition+= syn+" eq "+$p.utils.fix_number(selection[fld]);
 
 			else if(mf.type.date_part)
 				condition+= syn+" eq datetime'"+ $p.moment(selection[fld]).format($p.moment._masks.iso) +"'";

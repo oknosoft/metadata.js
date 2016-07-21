@@ -180,7 +180,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 					else{
 						if(_grid.getColIndexById(change.name) != undefined)
 							_grid.cells(change.row.row, _grid.getColIndexById(change.name))
-								.setCValue($p.is_data_obj(change.row[change.name]) ? change.row[change.name].presentation : change.row[change.name]);
+								.setCValue($p.utils.is_data_obj(change.row[change.name]) ? change.row[change.name].presentation : change.row[change.name]);
 					}
 				}
 			});
@@ -299,7 +299,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				_grid.selectRowById(row.row);
 				_grid.forEachCell(row.row, function(cellObj,ind){
 					var val = row[_grid.getColumnId(ind)];
-					cellObj.setCValue($p.is_data_obj(val) ? val.presentation : val);
+					cellObj.setCValue($p.utils.is_data_obj(val) ? val.presentation : val);
 				});
 			}
 		}

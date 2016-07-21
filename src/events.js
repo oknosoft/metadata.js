@@ -66,7 +66,7 @@ function AppEvents() {
 					name = String(name).toLowerCase();
 					if (!this._evnts.data[name])
 						this._evnts.data[name] = {};
-					var eventId = $p.generate_guid();
+					var eventId = $p.utils.generate_guid();
 					this._evnts.data[name][eventId] = func;
 					return eventId;
 				}

@@ -44,7 +44,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 
 	// создаём и настраиваем форму
-	if(has_tree && attr.initial_value && attr.initial_value!= $p.blank.guid && !attr.parent)
+	if(has_tree && attr.initial_value && attr.initial_value!= $p.utils.blank.guid && !attr.parent)
 		_mgr.get(attr.initial_value, true)
 			.then(function (tObj) {
 				attr.parent = tObj.parent.ref;
@@ -204,7 +204,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 						if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == "desktop")
 							wnd.elmnts.filter.input_filter.focus();
 					});
-					return $p.cancel_bubble(evt);
+					return $p.iface.cancel_bubble(evt);
 				}
 
 			} else if(evt.shiftKey && evt.keyCode == 116){ // requery по {Shift+F5}
@@ -214,7 +214,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 					});
 					if(evt.preventDefault)
 						evt.preventDefault();
-					return $p.cancel_bubble(evt);
+					return $p.iface.cancel_bubble(evt);
 				}
 
 			} else if(evt.keyCode == 27){ // закрытие по {ESC}
@@ -320,7 +320,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 							var xpos = xml.indexOf("set_parent"),
 								xpos2 = xml.indexOf("'>", xpos),
 								xh = xml.substr(xpos+12, xpos2-xpos-12);
-							if($p.is_guid(xh)){
+							if($p.utils.is_guid(xh)){
 								if(has_tree){
 									tree.do_not_reload = true;
 									tree.selectItem(xh, false);
@@ -328,7 +328,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 							}
 							grid.selectRowById(filter.initial_value);
 
-						}else if(filter.parent && $p.is_guid(filter.parent) && has_tree){
+						}else if(filter.parent && $p.utils.is_guid(filter.parent) && has_tree){
 							tree.do_not_reload = true;
 							tree.selectItem(filter.parent, false);
 						}
@@ -611,7 +611,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		filter.parent = ((tparent  || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
 		if(has_tree && !filter.parent)
-			filter.parent = $p.blank.guid;
+			filter.parent = $p.utils.blank.guid;
 
 
 		for(var f in filter){
@@ -637,7 +637,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		if(_mgr && _mgr.class_name == class_name){
 			wnd.elmnts.grid.reload()
 				.then(function () {
-					if(!$p.is_empty_guid(ref))
+					if(!$p.utils.is_empty_guid(ref))
 						wnd.elmnts.grid.selectRowById(ref, false, true, true);
 				});
 		}

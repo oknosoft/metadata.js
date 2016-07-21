@@ -100,7 +100,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				 */
 				ref: {
 					get: function(){
-						return o ? o.ref : $p.blank.guid;
+						return o ? o.ref : $p.utils.blank.guid;
 					},
 					enumerable: false,
 					configurable: true
@@ -584,7 +584,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	create_id = setTimeout(frm_create);
 
 	// читаем объект из локального SQL или получаем с сервера
-	if($p.is_data_obj(o)){
+	if($p.utils.is_data_obj(o)){
 
 		if(o.is_new() && attr.on_select)
 			return _mgr.create({}, true)

@@ -47,7 +47,7 @@ function srv_1c(request, response) {
 
 		try {
 			robj = JSON.parse(rtext);
-			if($p.is_empty_guid(ref = $p.fix_guid(robj.obj.ref)))
+			if($p.utils.is_empty_guid(ref = $p.utils.fix_guid(robj.obj.ref)))
 				return;
 
 		} catch (err){

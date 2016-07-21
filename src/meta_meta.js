@@ -8,66 +8,6 @@
  * @requires common
  */
 
-/**
- * Проверяет, является ли значенние Data-объектным типом
- * @method is_data_obj
- * @for MetaEngine
- * @param v {*} - проверяемое значение
- * @return {Boolean} - true, если значение является ссылкой
- */
-$p.is_data_obj = function(v){
-	return v && v instanceof DataObj;
-};
-
-/**
- * Проверяет, является ли значенние менеджером объектов данных
- * @method is_data_mgr
- * @for MetaEngine
- * @param v {*} - проверяемое значение
- * @return {Boolean} - true, если значение является ссылкой
- */
-$p.is_data_mgr = function(v){
-	return v && v instanceof DataManager;
-};
-
-/**
- * приводит тип значения v к типу метаданных
- * @method fetch_type
- * @for MetaEngine
- * @param str {*} - значение (обычно, строка, полученная из html поля ввода)
- * @param mtype {Object} - поле type объекта метаданных (field.type)
- * @return {*}
- */
-$p.fetch_type = function(str, mtype){
-	var v = str;
-	if(mtype.is_ref)
-		v = $p.fix_guid(str);
-	else if(mtype.date_part)
-		v = $p.fix_date(str, true);
-	else if(mtype["digits"])
-		v = $p.fix_number(str, true);
-	else if(mtype.types[0]=="boolean")
-		v = $p.fix_boolean(str);
-	return v;
-};
-
-/**
- * Сравнивает на равенство ссылочные типы и примитивные значения
- * @method is_equal
- * @for MetaEngine
- * @param v1 {DataObj|String}
- * @param v2 {DataObj|String}
- * @return {boolean} - true, если значенния эквивалентны
- */
-$p.is_equal = function(v1, v2){
-
-	if(v1 == v2)
-		return true;
-	else if(typeof v1 === typeof v2)
-		return false;
-
-	return ($p.fix_guid(v1, false) == $p.fix_guid(v2, false));
-};
 
 /**
  * Абстрактный поиск значения в коллекции
@@ -86,7 +26,7 @@ $p._find = function(a, val, columns){
 		for(i in a){ // ищем по всем полям объекта
 			o = a[i];
 			for(var j in o){
-				if(typeof o[j] !== "function" && $p.is_equal(o[j], val))
+				if(typeof o[j] !== "function" && $p.utils.is_equal(o[j], val))
 					return o;
 			}
 		}
@@ -95,7 +35,7 @@ $p._find = function(a, val, columns){
 			o = a[i];
 			finded = true;
 			for(var j in val){
-				if(typeof o[j] !== "function" && !$p.is_equal(o[j], val[j])){
+				if(typeof o[j] !== "function" && !$p.utils.is_equal(o[j], val[j])){
 					finded = false;
 					break;
 				}
@@ -145,7 +85,7 @@ $p._selection = function (o, selection) {
 						if(element[key].hasOwnProperty("like"))
 							return o[key] && o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
 						else
-							return $p.is_equal(o[key], element[key]);
+							return $p.utils.is_equal(o[key], element[key]);
 					});
 					if(!ok)
 						break;
@@ -159,7 +99,7 @@ $p._selection = function (o, selection) {
 
 				// если свойство отбора является объектом `not`, сравниваем на неравенство
 				}else if(is_obj && sel.hasOwnProperty("not")){
-					if($p.is_equal(o[j], sel.not)){
+					if($p.utils.is_equal(o[j], sel.not)){
 						ok = false;
 						break;
 					}
@@ -167,7 +107,7 @@ $p._selection = function (o, selection) {
 				// если свойство отбора является объектом `in`, выполняем Array.some()
 				}else if(is_obj && sel.hasOwnProperty("in")){
 					ok = sel.in.some(function(element) {
-						return $p.is_equal(element, o[j]);
+						return $p.utils.is_equal(element, o[j]);
 					});
 					if(!ok)
 						break;
@@ -188,12 +128,12 @@ $p._selection = function (o, selection) {
 				}else if(is_obj && sel.hasOwnProperty("between")){
 					var tmp = o[j];
 					if(typeof tmp != "number")
-						tmp = $p.fix_date(o[j]);
+						tmp = $p.utils.fix_date(o[j]);
 					ok = (tmp >= sel.between[0]) && (tmp <= sel.between[1]);
 					if(!ok)
 						break;
 
-				}else if(!$p.is_equal(o[j], sel)){
+				}else if(!$p.utils.is_equal(o[j], sel)){
 					ok = false;
 					break;
 				}
@@ -898,7 +838,7 @@ function Meta() {
 				if(tnames.length > 1 && $p[tnames[0]][tnames[1]])
 					rt.push($p[tnames[0]][tnames[1]]);
 			});
-			if(rt.length == 1 || row[f] == $p.blank.guid)
+			if(rt.length == 1 || row[f] == $p.utils.blank.guid)
 				return mf_mgr(rt[0]);
 
 			else if(array_enabled)
@@ -907,7 +847,7 @@ function Meta() {
 			else if((property = row[f]) instanceof DataObj)
 				return property._manager;
 
-			else if($p.is_guid(property) && property != $p.blank.guid){
+			else if($p.utils.is_guid(property) && property != $p.utils.blank.guid){
 				for(var i in rt){
 					mgr = rt[i];
 					if(mgr.get(property, false, true))
@@ -917,14 +857,14 @@ function Meta() {
 		}else{
 
 			// Получаем объект свойства
-			if($p.is_data_obj(property))
+			if($p.utils.is_data_obj(property))
 				oproperty = property;
-			else if($p.is_guid(property))
+			else if($p.utils.is_guid(property))
 				oproperty = _cch.properties.get(property, false);
 			else
 				return;
 			
-			if($p.is_data_obj(oproperty)){
+			if($p.utils.is_data_obj(oproperty)){
 
 				if(oproperty.is_new())
 					return _cat.property_values;
