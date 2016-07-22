@@ -613,13 +613,37 @@ function MetaEngine() {
 		 * ### Подключает обработчики событий
 		 *
 		 * @method on
-		 * @param name {String} - имя события
+		 * @param name {String|Object} - имя события
 		 * @param fn {Function} - функция - обработчик
 		 * @returns {*}
 		 */
 		on: {
 			value: function (name, fn) {
-				return this.eve.attachEvent(name, fn);
+				if(typeof name == "object"){
+					for(var n in name){
+						if(!name[n]._evnts)
+							name[n]._evnts = [];
+						name[n]._evnts.push(this.eve.attachEvent(n, name[n]));
+					}
+				}else
+					return this.eve.attachEvent(name, fn);
+			}
+		},
+
+		/**
+		 * ### Отключает обработчики событий
+		 *
+		 * @method off
+		 * @param id {String|Number|Function}
+		 */
+		off: {
+			value: function (id) {
+				if(typeof id == "function" && id._evnts){
+					id._evnts.forEach(function (id) {
+						$p.eve.detachEvent(id);
+					});
+				}else
+					$p.eve.detachEvent(id);
 			}
 		}
 
@@ -1363,8 +1387,8 @@ function WSQL(){
 		 */
 		time_diff: {
 			get: function () {
-				var time_diff = this.get_user_param("time_diff", "number");
-				return (!time_diff || isNaN(time_diff) || time_diff < 62135571600000 || time_diff > 62135622000000) ? this.js_time_diff : time_diff;
+				var diff = this.get_user_param("time_diff", "number");
+				return (!diff || isNaN(diff) || diff < 62135571600000 || diff > 62135622000000) ? this.js_time_diff : diff;
 			}
 		},
 
@@ -3064,6 +3088,172 @@ $p.fias = function FIAS(){};
 })($p.msg);
 
 
+
+
+
+/**
+ *
+ * Created 07.11.2015<br />
+ * &copy; http://www.oknosoft.ru 2014-2015
+ * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
+ * @author  Evgeniy Malyarov
+ * @module  widgets
+ * @submodule btn_auth_sync
+ */
+
+/**
+ * ### Невизуальный компонент для управления кнопками авторизации и синхронизации на панелях инструментов
+ * Изменяет текст, всплывающие подсказки и обработчики нажатий кнопок в зависимости от ...
+ *
+ * @class OBtnAuthSync
+ * @constructor
+ */
+$p.iface.OBtnAuthSync = function OBtnAuthSync() {
+
+	var bars = [], spin_timer;
+
+	//$(t.tb_nav.buttons.bell).addClass("disabledbutton");
+
+	function btn_click(){
+
+		if($p.wsql.pouch.authorized)
+			dhtmlx.confirm({
+				title: $p.msg.log_out_title,
+				text: $p.msg.logged_in + $p.wsql.pouch.authorized + $p.msg.log_out_break,
+				cancel: $p.msg.cancel,
+				callback: function(btn) {
+					if(btn){
+						$p.wsql.pouch.log_out();
+					}
+				}
+			});
+		else
+			$p.iface.frm_auth({
+				modal_dialog: true
+				//, try_auto: true
+			});
+	}
+
+	function set_spin(spin){
+
+		if(spin && spin_timer){
+			clearTimeout(spin_timer);
+
+		}else{
+			bars.forEach(function (bar) {
+				if(spin)
+					bar.buttons.sync.innerHTML = '<i class="fa fa-refresh fa-spin md-fa-lg"></i>';
+				else{
+					if($p.wsql.pouch.authorized)
+						bar.buttons.sync.innerHTML = '<i class="fa fa-refresh md-fa-lg"></i>';
+					else
+						bar.buttons.sync.innerHTML = '<i class="fa fa-ban md-fa-lg"></i>';
+				}
+			});
+		}
+		spin_timer = spin ? setTimeout(set_spin, 3000) : 0;
+	}
+
+	function set_auth(){
+
+		bars.forEach(function (bar) {
+
+			if($p.wsql.pouch.authorized){
+				// bar.buttons.auth.title = $p.msg.logged_in + $p.wsql.pouch.authorized;
+				// bar.buttons.auth.innerHTML = '<i class="fa fa-sign-out md-fa-lg"></i>';
+				bar.buttons.auth.title = "Отключиться от сервера";
+				bar.buttons.auth.innerHTML = '<span class="span_user">' + $p.wsql.pouch.authorized + '</span>';
+				bar.buttons.sync.title = "Синхронизация выполняется...";
+				bar.buttons.sync.innerHTML = '<i class="fa fa-refresh md-fa-lg"></i>';
+			}else{
+				bar.buttons.auth.title = "Войти на сервер и включить синхронизацию данных";
+				bar.buttons.auth.innerHTML = '&nbsp;<i class="fa fa-sign-in md-fa-lg"></i><span class="span_user">Вход...</span>';
+				bar.buttons.sync.title = "Синхронизация не выполняется - пользователь не авторизован на сервере";
+				bar.buttons.sync.innerHTML = '<i class="fa fa-ban md-fa-lg"></i>';
+					//'<i class="fa fa-refresh fa-stack-1x"></i>' +
+					//'<i class="fa fa-ban fa-stack-2x text-danger"></i>' +
+					//'</span>';
+			}
+		})
+	}
+
+	/**
+	 * Привязывает обработчики к кнопке
+	 * @param btn
+	 */
+	this.bind = function (bar) {
+		bar.buttons.auth.onclick = btn_click;
+		//bar.buttons.auth.onmouseover = null;
+		//bar.buttons.auth.onmouseout = null;
+		bar.buttons.sync.onclick = null;
+		// bar.buttons.sync.onmouseover = sync_mouseover;
+		// bar.buttons.sync.onmouseout = sync_mouseout;
+		bars.push(bar);
+		setTimeout(set_auth);
+		return bar;
+	};
+
+	$p.on({
+		pouch_load_data_start: function (page) {
+
+			if(!$p.iface.sync)
+				$p.iface.wnd_sync();
+			$p.iface.sync.create($p.eve.stepper);
+			$p.eve.stepper.frm_sync.setItemValue("text_bottom", "Читаем справочники");
+
+			if(page.hasOwnProperty("local_rows") && page.local_rows < 10){
+				$p.eve.stepper.wnd_sync.setText("Первый запуск - подготовка данных");
+				$p.eve.stepper.frm_sync.setItemValue("text_processed", "Загрузка начального образа");
+			}else{
+				$p.eve.stepper.wnd_sync.setText("Загрузка данных из IndexedDB");
+				$p.eve.stepper.frm_sync.setItemValue("text_processed", "Извлечение начального образа");
+			}
+
+			set_spin(true);
+		},
+
+		pouch_load_data_page: function (page) {
+			set_spin(true);
+			if($p.eve.stepper.wnd_sync){
+				var docs_written = page.docs_written || page.page * page.limit;
+				$p.eve.stepper.frm_sync.setItemValue("text_current", "Обработано элементов: " + docs_written + " из " + page.total_rows);
+				$p.eve.stepper.frm_sync.setItemValue("text_bottom", "Текущий запрос: " + page.page + " (" + (100 * docs_written/page.total_rows).toFixed(0) + "%)");
+			}
+		},
+
+		pouch_change: function (id, page) {
+			set_spin(true);
+		},
+
+		pouch_load_data_loaded: function (page) {
+			if($p.eve.stepper.wnd_sync){
+				if(page.docs_written){
+					setTimeout(function () {
+						$p.iface.sync.close();
+						$p.eve.redirect = true;
+						location.reload(true);
+					}, 3000);
+				}else{
+					$p.iface.sync.close();
+				}
+			}
+		},
+
+		pouch_load_data_error: function (err) {
+			set_spin();
+			if($p.eve.stepper.wnd_sync)
+				$p.iface.sync.close();
+		},
+
+		log_in: function (username) {
+			set_auth();
+		},
+
+		log_out: function () {
+			set_auth();
+		}
+	});
+};
 
 
 
@@ -4824,7 +5014,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
  * @param [attr.date_till]
  * @constructor
  */
-$p.iface.Toolbar_filter = function (attr) {
+$p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 
 	var t = this,
 		input_filter_changed = 0,
@@ -6584,7 +6774,7 @@ DataManager.prototype.__define({
 		value : function(obj){
 
 			// ищем предопределенный элемент, сответствующий классу данных
-			var destinations = $p.cat.destinations || $p.cat.НаборыДополнительныхРеквизитовИСведений,
+			var destinations = $p.cat.destinations || $p.cch.destinations,
 				pn = _md.class_name_to_1c(this.class_name).replace(".", "_"),
 				res = [];
 
@@ -8660,7 +8850,7 @@ function LogManager(){
 
 		if(typeof msg != "object")
 			msg = {note: msg};
-		msg.date = Date.now() + $p.eve.time_diff();
+		msg.date = Date.now() + $p.wsql.time_diff;
 
 		// уникальность ключа
 		if(!smax)
@@ -8758,15 +8948,14 @@ function LogManager(){
 		var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
 				.replace("%1", data.length).replace("%2", attr.start)
 				.replace("%3", attr.set_parent || "" ),
-			caption = this.caption_flds(attr),
-			time_diff = $p.eve.time_diff();
+			caption = this.caption_flds(attr);
 
 		// при первом обращении к методу добавляем описание колонок
 		xml += caption.head;
 
 		data.forEach(function(r){
 			xml += "<row id=\"" + r.date + "_" + r.sequence + "\"><cell>" +
-				$p.moment(r.date - time_diff).format($p.moment._masks.date_time) + (r.sequence ? "." + r.sequence : "") + "</cell>" +
+				$p.moment(r.date - $p.wsql.time_diff).format($p.moment._masks.date_time) + (r.sequence ? "." + r.sequence : "") + "</cell>" +
 				"<cell>" + r.class + "</cell><cell>" + r.note + "</cell></row>";
 		});
 
@@ -17225,7 +17414,7 @@ if (typeof module !== "undefined" && module.exports) {
  *
  * @namespace
  */
-function Aes(default_password) {
+function Aes(default_key) {
 
 	'use strict';
 
@@ -17455,7 +17644,7 @@ function Aes(default_password) {
 		if (!(nBits==128 || nBits==192 || nBits==256))
 			nBits = 128;
 		plaintext = utf8Encode(plaintext);
-		password = utf8Encode(password || default_password);
+		password = utf8Encode(password || default_key);
 
 		// use AES itself to encrypt password to get cipher key (using plain password as source for key
 		// expansion) - gives us well encrypted key (though hashed key might be preferred for prod'n use)
@@ -17538,7 +17727,7 @@ function Aes(default_password) {
 		if (!(nBits==128 || nBits==192 || nBits==256))
 			nBits = 128;
 		ciphertext = base64Decode(ciphertext);
-		password = utf8Encode(password || default_password);
+		password = utf8Encode(password || default_key);
 
 		// use AES to encrypt password (mirroring encrypt routine)
 		var nBytes = nBits/8;  // no bytes in key

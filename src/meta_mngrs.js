@@ -409,7 +409,7 @@ DataManager.prototype.__define({
 		value : function(obj){
 
 			// ищем предопределенный элемент, сответствующий классу данных
-			var destinations = $p.cat.destinations || $p.cat.НаборыДополнительныхРеквизитовИСведений,
+			var destinations = $p.cat.destinations || $p.cch.destinations,
 				pn = _md.class_name_to_1c(this.class_name).replace(".", "_"),
 				res = [];
 
@@ -2485,7 +2485,7 @@ function LogManager(){
 
 		if(typeof msg != "object")
 			msg = {note: msg};
-		msg.date = Date.now() + $p.eve.time_diff();
+		msg.date = Date.now() + $p.wsql.time_diff;
 
 		// уникальность ключа
 		if(!smax)
@@ -2583,15 +2583,14 @@ function LogManager(){
 		var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
 				.replace("%1", data.length).replace("%2", attr.start)
 				.replace("%3", attr.set_parent || "" ),
-			caption = this.caption_flds(attr),
-			time_diff = $p.eve.time_diff();
+			caption = this.caption_flds(attr);
 
 		// при первом обращении к методу добавляем описание колонок
 		xml += caption.head;
 
 		data.forEach(function(r){
 			xml += "<row id=\"" + r.date + "_" + r.sequence + "\"><cell>" +
-				$p.moment(r.date - time_diff).format($p.moment._masks.date_time) + (r.sequence ? "." + r.sequence : "") + "</cell>" +
+				$p.moment(r.date - $p.wsql.time_diff).format($p.moment._masks.date_time) + (r.sequence ? "." + r.sequence : "") + "</cell>" +
 				"<cell>" + r.class + "</cell><cell>" + r.note + "</cell></row>";
 		});
 

@@ -417,13 +417,37 @@ function MetaEngine() {
 		 * ### Подключает обработчики событий
 		 *
 		 * @method on
-		 * @param name {String} - имя события
+		 * @param name {String|Object} - имя события
 		 * @param fn {Function} - функция - обработчик
 		 * @returns {*}
 		 */
 		on: {
 			value: function (name, fn) {
-				return this.eve.attachEvent(name, fn);
+				if(typeof name == "object"){
+					for(var n in name){
+						if(!name[n]._evnts)
+							name[n]._evnts = [];
+						name[n]._evnts.push(this.eve.attachEvent(n, name[n]));
+					}
+				}else
+					return this.eve.attachEvent(name, fn);
+			}
+		},
+
+		/**
+		 * ### Отключает обработчики событий
+		 *
+		 * @method off
+		 * @param id {String|Number|Function}
+		 */
+		off: {
+			value: function (id) {
+				if(typeof id == "function" && id._evnts){
+					id._evnts.forEach(function (id) {
+						$p.eve.detachEvent(id);
+					});
+				}else
+					$p.eve.detachEvent(id);
 			}
 		}
 
@@ -1167,8 +1191,8 @@ function WSQL(){
 		 */
 		time_diff: {
 			get: function () {
-				var time_diff = this.get_user_param("time_diff", "number");
-				return (!time_diff || isNaN(time_diff) || time_diff < 62135571600000 || time_diff > 62135622000000) ? this.js_time_diff : time_diff;
+				var diff = this.get_user_param("time_diff", "number");
+				return (!diff || isNaN(diff) || diff < 62135571600000 || diff > 62135622000000) ? this.js_time_diff : diff;
 			}
 		},
 

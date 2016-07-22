@@ -19,7 +19,7 @@
  * @param [attr.date_till]
  * @constructor
  */
-$p.iface.Toolbar_filter = function (attr) {
+$p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 
 	var t = this,
 		input_filter_changed = 0,
