@@ -4,7 +4,8 @@
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
- * @module  wdg_ocombo
+ * @module widgets
+ * @submodule wdg_ocombo
  * @requires common
  */
 
