@@ -423,7 +423,7 @@ DataManager.prototype.__define({
 				if(!attr.date_from)
 					attr.date_from = new Date("2015-01-01");
 				if(!attr.date_till)
-					attr.date_till = $p.date_add_day(new Date(), 1);
+					attr.date_till = $p.utils.date_add_day(new Date(), 1);
 
 				selection.date = {between: [attr.date_from, attr.date_till]};
 
@@ -503,10 +503,10 @@ DataManager.prototype.__define({
 							if(mf){
 
 								if(mf.type.date_part)
-									o[fldsyn] = $p.dateFormat(doc[fld], $p.dateFormat.masks[mf.type.date_part]);
+									o[fldsyn] = $p.moment(doc[fld]).format($p.moment._masks[mf.type.date_part]);
 
 								else if(mf.type.is_ref){
-									if(!doc[fld] || doc[fld] == $p.blank.guid)
+									if(!doc[fld] || doc[fld] == $p.utils.blank.guid)
 										o[fldsyn] = "";
 									else{
 										var mgr	= _md.value_mgr(o, fld, mf.type, false, doc[fld]);
@@ -551,9 +551,9 @@ DataManager.prototype.__define({
 			})
 				.then(function (rows) {
 					rows.sort(function (a, b) {
-						if (a.parent == $p.blank.guid && b.parent != $p.blank.guid)
+						if (a.parent == $p.utils.blank.guid && b.parent != $p.utils.blank.guid)
 							return -1;
-						if (b.parent == $p.blank.guid && a.parent != $p.blank.guid)
+						if (b.parent == $p.utils.blank.guid && a.parent != $p.utils.blank.guid)
 							return 1;
 						if (a.name < b.name)
 							return -1;
@@ -597,7 +597,7 @@ DataManager.prototype.__define({
 			// получаем ревизию документа
 			var _rev,
 				db = this.pouch_db;
-			ref = this.class_name + "|" + $p.fix_guid(ref);
+			ref = this.class_name + "|" + $p.utils.fix_guid(ref);
 
 			return db.get(ref)
 				.then(function (res) {
@@ -624,7 +624,7 @@ DataManager.prototype.__define({
 	get_attachment: {
 		value: function (ref, att_id) {
 
-			return this.pouch_db.getAttachment(this.class_name + "|" + $p.fix_guid(ref), att_id);
+			return this.pouch_db.getAttachment(this.class_name + "|" + $p.utils.fix_guid(ref), att_id);
 
 		}
 	},
@@ -641,7 +641,7 @@ DataManager.prototype.__define({
 			// получаем ревизию документа
 			var _rev,
 				db = this.pouch_db;
-			ref = this.class_name + "|" + $p.fix_guid(ref);
+			ref = this.class_name + "|" + $p.utils.fix_guid(ref);
 
 			return db.get(ref)
 				.then(function (res) {

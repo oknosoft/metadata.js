@@ -4,8 +4,7 @@
     "irest": "http://webshop.oknosoft.local/a/ut11/hs/rest/",
     "username": "БахшиевПИ (руководитель)",
     "password": "",
-    "watchdog timer": 300000,
-    "sync timer": 30000
+    "watchdog": 300000
   },
   "pg": {
     "cnn": "postgres://md:md@localhost/md",
@@ -16,5 +15,11 @@
     "md": 8002,
     "adm": 8004,
     "socket": 0
+  },
+  "pouch": {
+    "path": "http://i980:89/couchdb/wb_",
+    "zone": 0,
+    "prefix": "wb_",
+    "suffix": ""
   }
 }

@@ -235,6 +235,13 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 
 
 /**
+ * Для совместимости со старыми модулями, публикуем $p глобально
+ * Кроме этой переменной, metadata.js ничего не экспортирует
+ */
+var $p = new MetaEngine();
+
+
+/**
  * ### Metadata.js - проект с открытым кодом
  * Приглашаем к сотрудничеству всех желающих. Будем благодарны за любую помощь
  *
@@ -264,7 +271,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.10.213",
+			value: "PACKAGE_VERSION_NUMBER",
 			writable: false
 		},
 
@@ -276,9 +283,23 @@ function MetaEngine() {
 		},
 
 		/**
-		 * Буфер для строковых и двоичных данных, внедряемых в скрипт
+		 * ### Коллекция вспомогательных методов
+		 *
+		 * @property utils
+		 * @type Utils
+		 * @final
+		 */
+		utils: {
+			value: new Utils()
+		},
+
+		/**
+		 * ### Буфер для строковых и двоичных данных, внедряемых в скрипт
 		 * В этой структуре живут, например, sql текст инициализации таблиц, xml-строки форм и менюшек и т.д.
-		 * @type {Object}
+		 *
+		 * @property injected_data
+		 * @type Object
+		 * @final
 		 */
 		injected_data: {
 			value: {},
@@ -289,7 +310,7 @@ function MetaEngine() {
 		 * Наша promise-реализация ajax
 		 *
 		 * @property ajax
-		 * @type {Ajax}
+		 * @type Ajax
 		 * @final
 		 */
 		ajax: {
@@ -300,7 +321,7 @@ function MetaEngine() {
 		/**
 		 * Сообщения пользователю и строки нитернационализации
 		 * @property msg
-		 * @type {Messages}
+		 * @type Messages
 		 * @final
 		 */
 		msg: {
@@ -311,7 +332,7 @@ function MetaEngine() {
 		/**
 		 * Интерфейс к данным в LocalStorage, AlaSQL и IndexedDB
 		 * @property wsql
-		 * @type {WSQL}
+		 * @type WSQL
 		 * @final
 		 */
 		wsql: {
@@ -321,32 +342,13 @@ function MetaEngine() {
 
 		/**
 		 * Обработчики событий приложения
-		 * Подробнее см. модули {{#crossLinkModule "events"}}{{/crossLinkModule}} и {{#crossLinkModule "events_browser"}}{{/crossLinkModule}}
+		 * Подробнее см. модули {{#crossLinkModule "events"}}{{/crossLinkModule}} и {{#crossLinkModule "events.ui"}}{{/crossLinkModule}}
 		 * @property eve
-		 * @type {AppEvents}
+		 * @type AppEvents
 		 * @final
 		 */
 		eve: {
 			value: new AppEvents(),
-			writable: false
-		},
-
-		/**
-		 * Объекты интерфейса пользователя
-		 * @property iface
-		 * @type {InterfaceObjs}
-		 * @static
-		 */
-		iface: {
-			value: new InterfaceObjs(),
-			writable: false
-		},
-
-		/**
-		 * Экспортируем конструктор модификаторов для внешних приложений (Node.js)
-		 */
-		Modifiers: {
-			value: Modifiers,
 			writable: false
 		},
 
@@ -367,7 +369,7 @@ function MetaEngine() {
 		 * Aes для шифрования - дешифрования данных
 		 *
 		 * @property aes
-		 * @type {Aes}
+		 * @type Aes
 		 * @final
 		 */
 		aes: {
@@ -376,38 +378,14 @@ function MetaEngine() {
 		},
 
 		/**
-		 * ### Текущий пользователь
-		 * Свойство определено после загрузки метаданных и входа впрограмму
-		 * @property current_user
-		 * @type {_cat.users}
+		 * ### Moment для операций с интервалами и датами
+		 *
+		 * @property moment
+		 * @type Function
 		 * @final
 		 */
-		current_user: {
-			get: function () {
-				return $p.cat && $p.cat.users ?
-					$p.cat.users.by_id($p.wsql.get_user_param("user_name")) :
-					$p.cat.users.get();
-			}
-		},
-
-		/**
-		 * ### Права доступа текущего пользователя.
-		 * Свойство определено после загрузки метаданных и входа впрограмму
-		 * @property current_acl
-		 * @type {_cat.users_acl}
-		 * @final
-		 */
-		current_acl: {
-			get: function () {
-				var res;
-				if($p.cat && $p.cat.users_acl){
-					$p.cat.users_acl.find_rows({owner: $p.current_user}, function (o) {
-						res = o;
-						return false;
-					})
-				}
-				return res;
-			}
+		moment: {
+			get: function () { return this.utils.moment; }
 		},
 
 		/**
@@ -436,21 +414,40 @@ function MetaEngine() {
 		},
 
 		/**
-		 * Пустые значения даты и уникального идентификатора
-		 * @property blank
-		 * @for MetaEngine
-		 * @final
-		 */
-		blank: {
-			value: new Blank()
-		},
-
-		/**
-		 * Подключает обработчики событий
+		 * ### Подключает обработчики событий
+		 *
+		 * @method on
+		 * @param name {String|Object} - имя события
+		 * @param fn {Function} - функция - обработчик
+		 * @returns {*}
 		 */
 		on: {
 			value: function (name, fn) {
-				return this.eve.attachEvent(name, fn);
+				if(typeof name == "object"){
+					for(var n in name){
+						if(!name[n]._evnts)
+							name[n]._evnts = [];
+						name[n]._evnts.push(this.eve.attachEvent(n, name[n]));
+					}
+				}else
+					return this.eve.attachEvent(name, fn);
+			}
+		},
+
+		/**
+		 * ### Отключает обработчики событий
+		 *
+		 * @method off
+		 * @param id {String|Number|Function}
+		 */
+		off: {
+			value: function (id) {
+				if(typeof id == "function" && id._evnts){
+					id._evnts.forEach(function (id) {
+						$p.eve.detachEvent(id);
+					});
+				}else
+					$p.eve.detachEvent(id);
 			}
 		}
 
@@ -458,399 +455,286 @@ function MetaEngine() {
 }
 
 /**
- * Для совместимости со старыми модулями, публикуем $p глобально
- * Кроме этой переменной, metadata.js ничего не экспортирует
- */
-var $p = new MetaEngine();
-
-if(typeof window !== "undefined"){
-
-	/**
-	 * Загружает скрипты и стили синхронно и асинхронно
-	 * @method load_script
-	 * @for MetaEngine
-	 * @param src {String} - url ресурса
-	 * @param type {String} - "link" или "script"
-	 * @param [callback] {Function} - функция обратного вызова после загрузки скрипта
-	 * @async
-	 */
-	$p.load_script = function (src, type, callback) {
-		var s = document.createElement(type);
-		if (type == "script") {
-			s.type = "text/javascript";
-			s.src = src;
-
-			if(callback){
-				s.async = true;
-				s.addEventListener('load', callback, false);
-
-			}else
-				s.async = false;
-
-		} else {
-			s.type = "text/css";
-			s.rel = "stylesheet";
-			s.href = src;
-		}
-		document.head.appendChild(s);
-	};
-
-}
-
-
-/**
- * Date Format 1.2.3
- * (c) 2007-2009 Steven Levithan <stevenlevithan.com>
- * MIT license
- *
- * Includes enhancements by Scott Trenda <scott.trenda.net>
- * and Kris Kowal <cixar.com/~kris.kowal/>
- *
- * Accepts a date, a mask, or a date and a mask.
- * Returns a formatted version of the given date.
- * The date defaults to the current date/time.
- * The mask defaults to dateFormat.masks.default.
- * @method dateFormat
- * @for MetaEngine
- * @param date {Date} - источник
- * @param mask {dateFormat.masks} - маска формата
- * @param utc {Boolean} Converts the date from local time to UTC/GMT
- * @return {String}
- */
-$p.dateFormat = function () {
-	var	token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g,
-		timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g,
-		timezoneClip = /[^-+\dA-Z]/g,
-		pad = function (val, len) {
-			val = String(val);
-			len = len || 2;
-			while (val.length < len) val = "0" + val;
-			return val;
-		};
-
-	// Regexes and supporting functions are cached through closure
-	return function (date, mask, utc) {
-		var dF = $p.dateFormat;
-
-		if(!mask)
-			mask = $p.dateFormat.masks.ru;
-
-		// You can't provide utc if you skip other args (use the "UTC:" mask prefix)
-		if (arguments.length == 1 && Object.prototype.toString.call(date) == "[object String]" && !/\d/.test(date)) {
-			mask = date;
-			date = undefined;
-		}
-
-		// Passing date through Date applies Date.parse, if necessary
-		date = date ? new Date(date) : new Date;
-		if (isNaN(date)) date = new Date(0);
-
-		mask = String(dF.masks[mask] || mask || dF.masks["default"]);
-
-		// Allow setting the utc argument via the mask
-		if (mask.slice(0, 4) == "UTC:") {
-			mask = mask.slice(4);
-			utc = true;
-		}
-
-		var _ = utc ? "getUTC" : "get",
-			d = date[_ + "Date"](),
-			D = date[_ + "Day"](),
-			m = date[_ + "Month"](),
-			y = date[_ + "FullYear"](),
-			H = date[_ + "Hours"](),
-			M = date[_ + "Minutes"](),
-			s = date[_ + "Seconds"](),
-			L = date[_ + "Milliseconds"](),
-			o = utc ? 0 : date.getTimezoneOffset(),
-			flags = {
-				d:    d,
-				dd:   pad(d),
-				ddd:  dF.i18n.dayNames[D],
-				dddd: dF.i18n.dayNames[D + 7],
-				m:    m + 1,
-				mm:   pad(m + 1),
-				mmm:  dF.i18n.monthNames[m],
-				mmmm: dF.i18n.monthNames[m + 12],
-				yy:   String(y).slice(2),
-				yyyy: y,
-				h:    H % 12 || 12,
-				hh:   pad(H % 12 || 12),
-				H:    H,
-				HH:   pad(H),
-				M:    M,
-				MM:   pad(M),
-				s:    s,
-				ss:   pad(s),
-				l:    pad(L, 3),
-				L:    pad(L > 99 ? Math.round(L / 10) : L),
-				t:    H < 12 ? "a"  : "p",
-				tt:   H < 12 ? "am" : "pm",
-				T:    H < 12 ? "A"  : "P",
-				TT:   H < 12 ? "AM" : "PM",
-				Z:    utc ? "UTC" : (String(date).match(timezone) || [""]).pop().replace(timezoneClip, ""),
-				o:    (o > 0 ? "-" : "+") + pad(Math.floor(Math.abs(o) / 60) * 100 + Math.abs(o) % 60, 4),
-				S:    ["th", "st", "nd", "rd"][d % 10 > 3 ? 0 : (d % 100 - d % 10 != 10) * d % 10]
-			};
-
-		return mask.replace(token, function ($0) {
-			return $0 in flags ? flags[$0] : $0.slice(1, $0.length - 1);
-		});
-	};
-}();
-
-/**
- * Some common format strings
- */
-$p.dateFormat.masks = {
-	"default":      "ddd mmm dd yyyy HH:MM:ss",
-	shortDate:      "m/d/yy",
-	mediumDate:     "mmm d, yyyy",
-	longDate:       "dd mmmm yyyy",
-	fullDate:       "dddd, mmmm d, yyyy",
-	shortTime:      "h:MM TT",
-	mediumTime:     "h:MM:ss TT",
-	longTime:       "h:MM:ss TT Z",
-	isoDate:        "yyyy-mm-dd",
-	isoTime:        "HH:MM:ss",
-	isoDateTime:    "yyyy-mm-dd'T'HH:MM:ss",
-	isoUtcDateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss'Z'",
-	atom:           "yyyy-mm-dd'T'HH:MM:ss'Z'",
-	ru:				"dd.mm.yyyy HH:MM",
-	short_ru:       "dd.mm.yyyy",
-	date:           "dd.mm.yy",
-	date_time:		"dd.mm.yy HH:MM"
-};
-
-
-/**
- * Читает данные из блоба, возвращает промис
- * @param blob
- * @return {Promise}
- */
-$p.blob_as_text = function (blob, type) {
-
-	return new Promise(function(resolve, reject){
-		var reader = new FileReader();
-		reader.onload = function(event){
-			resolve(reader.result);
-		};
-		reader.onerror = function(err){
-			reject(err);
-		};
-		if(type == "data_url")
-			reader.readAsDataURL(blob);
-		else
-			reader.readAsText(blob);
-	});
-	
-};
-
-
-/**
- * Проверяет, является ли значение guid-ом
- * @method is_guid
- * @for MetaEngine
- * @param v {*} - проверяемое значение
- * @return {Boolean} - true, если значение соответствует регурярному выражению guid
- */
-$p.is_guid = function(v){
-	if(typeof v !== "string" || v.length < 36)
-		return false;
-	else if(v.length > 36)
-		v = v.substr(0, 36);
-	return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v)
-};
-
-/**
- * Проверяет, является ли значение пустым идентификатором
- * @method is_empty_guid
- * @for MetaEngine
- * @param v {*} - проверяемое значение
- * @return {Boolean} - true, если v эквивалентен пустому guid
- */
-$p.is_empty_guid = function (v) {
-	return !v || v === $p.blank.guid;
-};
-
-/**
- * Генерирует новый guid
- * @method generate_guid
- * @for MetaEngine
- * @return {String}
- */
-$p.generate_guid = function(){
-	var d = new Date().getTime();
-	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-		var r = (d + Math.random()*16)%16 | 0;
-		d = Math.floor(d/16);
-		return (c=='x' ? r : (r&0x7|0x8)).toString(16);
-	});
-};
-
-/**
- * Извлекает guid из строки или ссылки или объекта
- * @method fix_guid
- * @param ref {*} - значение, из которого надо извлечь идентификатор
- * @param generate {Boolean} - указывает, генерировать ли новый guid для пустого значения
- * @return {String}
- */
-$p.fix_guid = function(ref, generate){
-
-	if(ref && typeof ref == "string"){
-
-	} else if(ref instanceof DataObj)
-		return ref.ref;
-
-	else if(ref && typeof ref == "object"){
-		if(ref.presentation){
-			if(ref.ref)
-				return ref.ref;
-			else if(ref.name)
-				return ref.name;
-		}
-		else
-			ref = (typeof ref.ref == "object" && ref.ref.hasOwnProperty("ref")) ?  ref.ref.ref : ref.ref;
-	}
-
-	if($p.is_guid(ref) || generate === false)
-		return ref;
-
-	else if(generate)
-		return $p.generate_guid();
-
-	else
-		return $p.blank.guid;
-};
-
-/**
- * Приводит значение к типу Число
- * @method fix_number
- * @param str {*} - приводиме значение
- * @param [strict=false] {Boolean} - конвертировать NaN в 0
- * @return {Number}
- */
-$p.fix_number = function(str, strict){
-	var v = parseFloat(str);
-	if(!isNaN(v))
-		return v;
-	else if(strict)
-		return 0;
-	else
-		return str;
-};
-
-/**
- * Приводит значение к типу Булево
- * @method fix_boolean
- * @param str {String}
- * @return {boolean}
- */
-$p.fix_boolean = function(str){
-	if(typeof str === "string")
-		return !(!str || str.toLowerCase() == "false");
-	else
-		return !!str;
-};
-
-/**
- * Приводит значение к типу Дата
- * @method fix_date
- * @param str {*} - приводиме значение
- * @param [strict=false] {boolean} - если истина и значение не приводится к дате, возвращать пустую дату
- * @return {Date|*}
- */
-$p.fix_date = function(str, strict){
-	var dfmt = /(^\d{1,4}[\.|\\/|-]\d{1,2}[\.|\\/|-]\d{1,4})(\s*(?:0?[1-9]:[0-5]|1(?=[012])\d:[0-5])\d\s*[ap]m)?$/;
-	if(str instanceof Date)
-		return str;
-	else if(str && typeof str == "string" && dfmt.test(str.substr(0,10))){
-		var adp = str.split(" "), ad = adp[0].split("."), d, strr;
-		if(ad.length == 1){
-			ad = adp[0].split("/");
-			if(ad.length == 1)
-				ad = adp[0].split("-");
-		}
-		if(ad.length == 3 && ad[2].length == 4){
-			strr = ad[2] + "-" + ad[1] + "-" + ad[0];
-			for(var i = 1; i < adp.length; i++)
-				strr += " " + adp[i];
-			d=new Date(strr);
-		}else
-			d=new Date(str);
-
-		if(d && d.getFullYear()>0)
-			return d;
-	}
-
-	if(strict)
-		return $p.blank.date;
-	else
-		return str;
-};
-
-/**
- * Добавляет days дней к дате
- * @method date_add_day
- * @param date {Date} - исходная дата
- * @param days {Number} - число дней, добавляемых к дате (может быть отрицательным)
- * @return {Date}
- */
-$p.date_add_day = function(date, days, reset_time){
-	var newDt = new Date(date);
-	newDt.setDate(date.getDate() + days);
-	if(reset_time)
-		newDt.setHours(0,-newDt.getTimezoneOffset(),0,0);
-	return newDt;
-};
-
-/**
- * Запрещает всплывание события
- * @param e {MouseEvent|KeyboardEvent}
- * @returns {Boolean}
- */
-$p.cancel_bubble = function(e) {
-	var evt = (e || event);
-	if (evt && evt.stopPropagation)
-		evt.stopPropagation();
-	if (evt && !evt.cancelBubble)
-		evt.cancelBubble = true;
-	return false
-};
-
-
-/**
- * ### Пустые значения примитивных и ссылочных типов
- *
- * @class Blank
+ * ### Коллекция вспомогательных методов
+ * @class Utils
  * @static
+ * @menuorder 35
+ * @tooltip Вспомогательные методы
  */
-function Blank() {
-
-	this.date = new Date("0001-01-01");
-	this.guid = "00000000-0000-0000-0000-000000000000";
+function Utils() {
 
 	/**
-	 * Возвращает пустое значение по типу метаданных
-	 * @method by_type
-	 * @for Blank
+	 * ### Moment для операций с интервалами и датами
+	 *
+	 * @property moment
+	 * @type Function
+	 * @final
+	 */
+	this.moment = typeof moment == "function" ? moment : require('moment');
+	this.moment._masks = {
+		date:       "DD.MM.YY",
+		date_time:  "DD.MM.YYYY HH:mm",
+		ldt:        "DD MMMM YYYY, HH:mm",
+		iso:        "YYYY-MM-DDTHH:mm:ss"
+	};
+
+
+	/**
+	 * ### Приводит значение к типу Дата
+	 *
+	 * @method fix_date
+	 * @param str {String|Number|Date} - приводиме значение
+	 * @param [strict=false] {Boolean} - если истина и значение не приводится к дате, возвращать пустую дату
+	 * @return {Date|*}
+	 */
+	this.fix_date = function(str, strict){
+
+		if(str instanceof Date)
+			return str;
+		else{
+			var m = this.moment(str, ["DD-MM-YYYY", "DD-MM-YYYY HH:mm", "DD-MM-YYYY HH:mm:ss", "DD-MM-YY HH:mm", "YYYYDDMMHHmmss", this.moment.ISO_8601]);
+			return m.isValid() ? m.toDate() : (strict ? this.blank.date : str);
+		}
+	};
+
+	/**
+	 * ### Извлекает guid из строки или ссылки или объекта
+	 *
+	 * @method fix_guid
+	 * @param ref {*} - значение, из которого надо извлечь идентификатор
+	 * @param generate {Boolean} - указывает, генерировать ли новый guid для пустого значения
+	 * @return {String}
+	 */
+	this.fix_guid = function(ref, generate){
+
+		if(ref && typeof ref == "string"){
+
+		} else if(ref instanceof DataObj)
+			return ref.ref;
+
+		else if(ref && typeof ref == "object"){
+			if(ref.presentation){
+				if(ref.ref)
+					return ref.ref;
+				else if(ref.name)
+					return ref.name;
+			}
+			else
+				ref = (typeof ref.ref == "object" && ref.ref.hasOwnProperty("ref")) ?  ref.ref.ref : ref.ref;
+		}
+
+		if(this.is_guid(ref) || generate === false)
+			return ref;
+
+		else if(generate)
+			return this.generate_guid();
+
+		else
+			return this.blank.guid;
+	};
+
+	/**
+	 * ### Приводит значение к типу Число
+	 *
+	 * @method fix_number
+	 * @param str {*} - приводиме значение
+	 * @param [strict=false] {Boolean} - конвертировать NaN в 0
+	 * @return {Number}
+	 */
+	this.fix_number = function(str, strict){
+		var v = parseFloat(str);
+		if(!isNaN(v))
+			return v;
+		else if(strict)
+			return 0;
+		else
+			return str;
+	};
+
+	/**
+	 * ### Приводит значение к типу Булево
+	 *
+	 * @method fix_boolean
+	 * @param str {String}
+	 * @return {boolean}
+	 */
+	this.fix_boolean = function(str){
+		if(typeof str === "string")
+			return !(!str || str.toLowerCase() == "false");
+		else
+			return !!str;
+	};
+
+	/**
+	 * ### Пустые значения даты и уникального идентификатора
+	 *
+	 * @property blank
+	 * @type Blank
+	 * @final
+	 */
+	this.blank = {
+		date: this.fix_date("0001-01-01T00:00:00"),
+		guid: "00000000-0000-0000-0000-000000000000",
+		by_type: function(mtype){
+			var v;
+			if(mtype.is_ref)
+				v = this.guid;
+			else if(mtype.date_part)
+				v = this.date;
+			else if(mtype["digits"])
+				v = 0;
+			else if(mtype.types && mtype.types[0]=="boolean")
+				v = false;
+			else
+				v = "";
+			return v;
+		}
+	};
+
+	/**
+	 * ### Приводит тип значения v к типу метаданных
+	 *
+	 * @method fetch_type
+	 * @param str {*} - значение (обычно, строка, полученная из html поля ввода)
 	 * @param mtype {Object} - поле type объекта метаданных (field.type)
 	 * @return {*}
 	 */
-	this.by_type = function(mtype){
-		var v;
+	this.fetch_type = function(str, mtype){
+		var v = str;
 		if(mtype.is_ref)
-			v = $p.blank.guid;
+			v = this.fix_guid(str);
 		else if(mtype.date_part)
-			v = $p.blank.date;
+			v = this.fix_date(str, true);
 		else if(mtype["digits"])
-			v = 0;
-		else if(mtype.types && mtype.types[0]=="boolean")
-			v = false;
-		else
-			v = "";
+			v = this.fix_number(str, true);
+		else if(mtype.types[0]=="boolean")
+			v = this.fix_boolean(str);
 		return v;
 	};
+
+	/**
+	 * ### Добавляет days дней к дате
+	 *
+	 * @method date_add_day
+	 * @param date {Date} - исходная дата
+	 * @param days {Number} - число дней, добавляемых к дате (может быть отрицательным)
+	 * @return {Date}
+	 */
+	this.date_add_day = function(date, days, reset_time){
+		var newDt = new Date(date);
+		newDt.setDate(date.getDate() + days);
+		if(reset_time)
+			newDt.setHours(0,-newDt.getTimezoneOffset(),0,0);
+		return newDt;
+	}
+
+	/**
+	 * ### Генерирует новый guid
+	 *
+	 * @method generate_guid
+	 * @return {String}
+	 */
+	this.generate_guid = function(){
+		var d = new Date().getTime();
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+			var r = (d + Math.random()*16)%16 | 0;
+			d = Math.floor(d/16);
+			return (c=='x' ? r : (r&0x7|0x8)).toString(16);
+		});
+	};
+
+	/**
+	 * ### Проверяет, является ли значение guid-ом
+	 *
+	 * @method is_guid
+	 * @param v {*} - проверяемое значение
+	 * @return {Boolean} - true, если значение соответствует регурярному выражению guid
+	 */
+	this.is_guid = function(v){
+		if(typeof v !== "string" || v.length < 36)
+			return false;
+		else if(v.length > 36)
+			v = v.substr(0, 36);
+		return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v)
+	};
+
+	/**
+	 * ### Проверяет, является ли значение пустым идентификатором
+	 *
+	 * @method is_empty_guid
+	 * @param v {*} - проверяемое значение
+	 * @return {Boolean} - true, если v эквивалентен пустому guid
+	 */
+	this.is_empty_guid = function (v) {
+		return !v || v === this.blank.guid;
+	};
+
+	/**
+	 * ### Проверяет, является ли значенние Data-объектным типом
+	 *
+	 * @method is_data_obj
+	 * @param v {*} - проверяемое значение
+	 * @return {Boolean} - true, если значение является ссылкой
+	 */
+	this.is_data_obj = function(v){
+		return v && v instanceof DataObj;
+	};
+
+	/**
+	 * ### Проверяет, является ли значенние менеджером объектов данных
+	 *
+	 * @method is_data_mgr
+	 * @param v {*} - проверяемое значение
+	 * @return {Boolean} - true, если значение является ссылкой
+	 */
+	this.is_data_mgr = function(v){
+		return v && v instanceof DataManager;
+	};
+
+	/**
+	 * ### Сравнивает на равенство ссылочные типы и примитивные значения
+	 *
+	 * @method is_equal
+	 * @param v1 {DataObj|String}
+	 * @param v2 {DataObj|String}
+	 * @return {boolean} - true, если значенния эквивалентны
+	 */
+	this.is_equal = function(v1, v2){
+
+		if(v1 == v2)
+			return true;
+		else if(typeof v1 === typeof v2)
+			return false;
+
+		return (this.fix_guid(v1, false) == this.fix_guid(v2, false));
+	};
+
+	/**
+	 * ### Читает данные из блоба
+	 * Возвращает промис с прочитанными данными
+	 *
+	 * @param blob {Blob}
+	 * @param [type] {String} - если type == "data_url", в промисе будет возвращен DataURL, а не текст
+	 * @return {Promise}
+	 */
+	this.blob_as_text = function (blob, type) {
+
+		return new Promise(function(resolve, reject){
+			var reader = new FileReader();
+			reader.onload = function(event){
+				resolve(reader.result);
+			};
+			reader.onerror = function(err){
+				reject(err);
+			};
+			if(type == "data_url")
+				reader.readAsDataURL(blob);
+			else
+				reader.readAsText(blob);
+		});
+
+	};
+
 }
 
 /**
@@ -870,7 +754,7 @@ function Ajax() {
 
 	function _call(method, url, post_data, auth, before_send) {
 
-		// Возвращаем новое Обещание.
+		// Возвращаем новое Обещание
 		return new Promise(function(resolve, reject) {
 
 			// внутри Node, используем request
@@ -1184,253 +1068,6 @@ function Ajax() {
 }
 
 /**
- * ### Объекты интерфейса пользователя
- * @class InterfaceObjs
- * @static
- * @menuorder 40
- * @tooltip Контекст UI
- */
-function InterfaceObjs(){
-
-	this.toString = function(){return "Объекты интерфейса пользователя"};
-
-	/**
-	 * Очищает область (например, удаляет из div все дочерние элементы)
-	 * @method clear_svgs
-	 * @param area {HTMLElement|String}
-	 */
-	this.clear_svgs = function(area){
-		if(typeof area === "string")
-			area = document.getElementById(area);
-		while (area.firstChild)
-			area.removeChild(area.firstChild);
-	};
-
-	/**
-	 * Возвращает координату левого верхнего угла элемента относительно документа
-	 * @method get_offset
-	 * @param elm {HTMLElement} - элемент, координату которого, необходимо определить
-	 * @return {Object} - {left: number, top: number}
-	 */
-	this.get_offset = function(elm) {
-		var offset = {left: 0, top:0};
-		if (elm.offsetParent) {
-			do {
-				offset.left += elm.offsetLeft;
-				offset.top += elm.offsetTop;
-			} while (elm = elm.offsetParent);
-		}
-		return offset;
-	};
-
-	/**
-	 * Заменяет в строке критичные для xml символы
-	 * @method normalize_xml
-	 * @param str {string} - исходная строка, в которой надо замаскировать символы
-	 * @return {XML|string}
-	 */
-	this.normalize_xml = function(str){
-		if(!str) return "";
-		var entities = { '&':  '&amp;', '"': '&quot;',  "'":  '&apos;', '<': '&lt;', '>': '&gt;'};
-		return str.replace(	/[&"'<>]/g, function (s) {return entities[s];});
-	};
-
-	/**
-	 * Масштабирует svg
-	 * @method scale_svg
-	 * @param svg_current {String} - исходная строка svg
-	 * @param size {Number|Object} - требуемый размер картинки
-	 * @param padding {Number} - отступ от границы viewBox
-	 * @return {String} - отмасштабированная строка svg
-	 */
-	this.scale_svg = function(svg_current, size, padding){
-		var j, k, svg_head, svg_body, head_ind, vb_ind, svg_head_str, vb_str, viewBox, svg_j = {};
-
-		var height = typeof size == "number" ? size : size.height,
-			width = typeof size == "number" ? (size * 1.5).round(0) : size.width,
-			max_zoom = typeof size == "number" ? Infinity : (size.zoom || Infinity);
-
-		head_ind = svg_current.indexOf(">");
-		svg_head_str = svg_current.substring(5, head_ind);
-		svg_head = svg_head_str.split(' ');
-		svg_body = svg_current.substr(head_ind+1);
-		svg_body = svg_body.substr(0, svg_body.length - 6);
-
-		// получаем w, h и формируем viewBox="0 0 400 100"
-		for(j in svg_head){
-			svg_current = svg_head[j].split("=");
-			if("width,height,x,y".indexOf(svg_current[0]) != -1){
-				svg_current[1] = Number(svg_current[1].replace(/"/g, ""));
-				svg_j[svg_current[0]] = svg_current[1];
-			}
-		}
-
-		if((vb_ind = svg_head_str.indexOf("viewBox="))!=-1){
-			vb_str = svg_head_str.substring(vb_ind+9);
-			viewBox = 'viewBox="' + vb_str.substring(0, vb_str.indexOf('"')) + '"';
-		}else{
-			viewBox = 'viewBox="' + (svg_j.x || 0) + ' ' + (svg_j.y || 0) + ' ' + (svg_j.width - padding) + ' ' + (svg_j.height - padding) + '"';
-		}
-
-		var init_height = svg_j.height,
-			init_width = svg_j.width;
-
-		k = (height - padding) / init_height;
-		svg_j.height = height;
-		svg_j.width = (init_width * k).round(0);
-
-		if(svg_j.width > width){
-			k = (width - padding) / init_width;
-			svg_j.height = (init_height * k).round(0);
-			svg_j.width = width;
-		}
-
-		if(k > max_zoom){
-			k = max_zoom;
-			svg_j.height = (init_height * k).round(0);
-			svg_j.width = (init_width * k).round(0);
-		}
-
-		svg_j.x = (svg_j.x * k).round(0);
-		svg_j.y = (svg_j.y * k).round(0);
-
-		return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" ' +
-			'width="' + svg_j.width + '" ' +
-			'height="' + svg_j.height + '" ' +
-			'x="' + svg_j.x + '" ' +
-			'y="' + svg_j.y + '" ' +
-			'xml:space="preserve" ' + viewBox + '>' + svg_body + '</svg>';
-	};
-
-	/**
-	 * Добавляет в форму функциональность вызова справки
-	 * @method bind_help
-	 * @param wnd {dhtmlXWindowsCell}
-	 * @param [path] {String} - url справки
-	 */
-	this.bind_help = function (wnd, path) {
-
-		function frm_help(win){
-			if(!win.help_path){
-				$p.msg.show_msg({
-					title: "Справка",
-					type: "alert-info",
-					text: $p.msg.not_implemented
-				});
-				return;
-			}
-		}
-
-		if(wnd instanceof dhtmlXCellObject) {
-			// TODO реализовать кнопку справки для приклеенной формы
-		}else{
-			if(!wnd.help_path && path)
-				wnd.help_path = path;
-
-			wnd.button('help').show();
-			wnd.button('help').enable();
-			wnd.attachEvent("onHelp", frm_help);
-		}
-
-	};
-
-	/**
-	 * Устанавливает hash url для сохранения истории и последующей навигации
-	 * @method set_hash
-	 * @param [obj] {String|Object} - имя класса или объект со свойствами к установке в хеш адреса
-	 * @param [ref] {String} - ссылка объекта
-	 * @param [frm] {String} - имя формы объекта
-	 * @param [view] {String} - имя представления главной формы
-	 */
-	this.set_hash = function (obj, ref, frm, view ) {
-
-		var ext = {},
-			hprm = $p.job_prm.parse_url();
-
-		if(arguments.length == 1 && typeof obj == "object"){
-			ext = obj;
-			if(ext.hasOwnProperty("obj")){
-				obj = ext.obj;
-				delete ext.obj;
-			}
-			if(ext.hasOwnProperty("ref")){
-				ref = ext.ref;
-				delete ext.ref;
-			}
-			if(ext.hasOwnProperty("frm")){
-				frm = ext.frm;
-				delete ext.frm;
-			}
-			if(ext.hasOwnProperty("view")){
-				view = ext.view;
-				delete ext.view;
-			}
-		}
-
-		if(obj === undefined)
-			obj = hprm.obj || "";
-		if(ref === undefined)
-			ref = hprm.ref || "";
-		if(frm === undefined)
-			frm = hprm.frm || "";
-		if(view === undefined)
-			view = hprm.view || "";
-
-		var hash = "obj=" + obj + "&ref=" + ref + "&frm=" + frm + "&view=" + view;
-		for(var key in ext){
-			hash += "&" + key + "=" + ext[key];
-		}
-
-		if(location.hash.substr(1) == hash)
-			this.hash_route();
-		else
-			location.hash = hash;
-	};
-
-	/**
-	 * Выполняет навигацию при изменении хеша url
-	 * @method hash_route
-	 * @param event {HashChangeEvent}
-	 * @return {Boolean}
-	 */
-	this.hash_route = function (event) {
-
-		var hprm = $p.job_prm.parse_url(),
-			res = $p.eve.callEvent("hash_route", [hprm]),
-			mgr;
-
-		if((res !== false) && (!$p.iface.before_route || $p.iface.before_route(event) !== false)){
-
-			if($p.ajax.authorized){
-
-				if(hprm.ref && typeof _md != "undefined"){
-					// если задана ссылка, открываем форму объекта
-					mgr = _md.mgr_by_class_name(hprm.obj);
-					if(mgr)
-						mgr[hprm.frm || "form_obj"]($p.iface.docs, hprm.ref)
-
-				}else if(hprm.view && $p.iface.swith_view){
-					// если задано имя представления, переключаем главную форму
-					$p.iface.swith_view(hprm.view);
-
-				}
-
-			}
-		}
-
-		if(event)
-			return $p.cancel_bubble(event);
-	};
-
-
-	/**
-	 * Возникает после готовности DOM. Должен быть обработан конструктором основной формы приложения
-	 * @event iface_init
-	 */
-
-}
-
-/**
  * ### Модификатор отложенного запуска
  * Служебный объект, реализующий отложенную загрузку модулей,<br />
  * в которых доопределяется (переопределяется) поведение объектов и менеджеров конкретных типов
@@ -1518,138 +1155,6 @@ function Modifiers(){
 			}.bind(this));		
 	};
 	
-};
-
-/**
- * ### Параметры работы программы
- * - Хранит глобальные настройки варианта компиляции (_Заказ дилера_, _Безбумажка_, _Демо_ и т.д.)
- * - Настройки извлекаются из файла "settings" при запуске приложения и дополняются параметрами url,
- * которые могут быть переданы как через search (?), так и через hash (#)
- * - см. так же, {{#crossLink "WSQL/get_user_param:method"}}{{/crossLink}} и {{#crossLink "WSQL/set_user_param:method"}}{{/crossLink}} - параметры, изменяемые пользователем
- *
- * @class JobPrm
- * @static
- * @menuorder 04
- * @tooltip Параметры приложения
- */
-function JobPrm(){
-
-	function base_url(){
-		return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
-	}
-
-	function parse_url(){
-
-		function parse(url_prm){
-			var prm = {}, tmp = [], pairs;
-
-			if(url_prm.substr(0, 1) === "#" || url_prm.substr(0, 1) === "?")
-				url_prm = url_prm.substr(1);
-
-			if(url_prm.length > 2){
-
-				pairs = decodeURI(url_prm).split('&');
-
-				// берём параметры из url
-				for (var i in pairs){   //разбиваем пару на ключ и значение, добавляем в их объект
-					tmp = pairs[i].split('=');
-					if(tmp[0] == "m"){
-						try{
-							prm[tmp[0]] = JSON.parse(tmp[1]);
-						}catch(e){
-							prm[tmp[0]] = {};
-						}
-					}else
-						prm[tmp[0]] = tmp[1] || "";
-				}
-			}
-
-			return prm;
-		}
-
-		return parse(location.search)._mixin(parse(location.hash));
-	}
-
-	this.__define({
-
-		/**
-		 * Осуществляет синтаксический разбор параметров url
-		 * @method parse_url
-		 * @return {Object}
-		 */
-		parse_url: {
-			value: parse_url
-		},
-
-		offline: {
-			value: false,
-			writable: true
-		},
-
-		local_storage_prefix: {
-			value: "",
-			writable: true
-		},
-
-		create_tables: {
-			value: true,
-			writable: true
-		},
-
-		/**
-		 * Содержит объект с расшифровкой параметров url, указанных при запуске программы
-		 * @property url_prm
-		 * @type {Object}
-		 * @static
-		 */
-		url_prm: {
-			value: typeof window != "undefined" ? parse_url() : {}
-		},
-
-		/**
-		 * Адрес стандартного интерфейса 1С OData
-		 * @method rest_url
-		 * @return {string}
-		 */
-		rest_url: {
-			value: function () {
-				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
-				if(zone)
-					return url.replace("%1", zone);
-				else
-					return url.replace("%1/", "");
-			}
-		},
-
-		/**
-		 * Адрес http интерфейса библиотеки интеграции
-		 * @method irest_url
-		 * @return {string}
-		 */
-		irest_url: {
-			value: function () {
-				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
-				url = url.replace("odata/standard.odata", "hs/rest");
-				if(zone)
-					return url.replace("%1", zone);
-				else
-					return url.replace("%1/", "");
-			}
-		}
-	});
-
-	// подмешиваем параметры, заданные в файле настроек сборки
-	$p.eve.callEvent("settings", [this, $p.modifiers]);
-
-	// подмешиваем параметры url
-	// Они обладают приоритетом над настройками по умолчанию и настройками из settings.js
-	for(var prm_name in this){
-		if(prm_name !== "url_prm" && typeof this[prm_name] !== "function" && this.url_prm.hasOwnProperty[prm_name])
-			this[prm_name] = this.url_prm[prm_name];
-	}
-
 }
 
 /**
@@ -1664,258 +1169,329 @@ function JobPrm(){
  */
 function WSQL(){
 
-	var wsql = this, ls, user_params = {};
+	var wsql = this,
+		ls,
+		user_params = {};
 
-	if(typeof localStorage === "undefined"){
+	this.__define({
 
-		// локальное хранилище внутри node.js
-		if(typeof WorkerGlobalScope === "undefined"){
-			if(typeof localStorage === "undefined")
-				ls = new require('node-localstorage').LocalStorage('./localstorage');
-		}
+		/**
+		 * Поправка времени javascript
+		 * @property js_time_diff
+		 * @type Number
+		 */
+		js_time_diff: {
+			value: -(new Date("0001-01-01")).valueOf()
+		},
 
-	} else
-		ls = localStorage;
-
-	function fetch_type(prm, type){
-		if(type == "object"){
-			try{
-				prm = JSON.parse(prm);
-			}catch(e){
-				prm = {};
+		/**
+		 * Поправка времени javascript с учетом пользовательского сдвига из константы _time_diff_
+		 * @property time_diff
+		 * @type Number
+		 */
+		time_diff: {
+			get: function () {
+				var diff = this.get_user_param("time_diff", "number");
+				return (!diff || isNaN(diff) || diff < 62135571600000 || diff > 62135622000000) ? this.js_time_diff : diff;
 			}
-			return prm;
-		}else if(type == "number")
-			return $p.fix_number(prm, true);
-		else if(type == "date")
-			return $p.fix_date(prm, true);
-		else if(type == "boolean")
-			return $p.fix_boolean(prm);
-		else
-			return prm;
-	}
+		},
 
+		/**
+		 * ### Устанавливает параметр в user_params и localStorage
+		 *
+		 * @method set_user_param
+		 * @param prm_name {string} - имя параметра
+		 * @param prm_value {string|number|object|boolean} - значение
+		 * @async
+		 */
+		set_user_param: {
+			value: function(prm_name, prm_value){
 
-	//TODO реализовать поддержку postgres в Node
+				var str_prm = prm_value;
+				if(typeof prm_value == "object")
+					str_prm = JSON.stringify(prm_value);
 
-	/**
-	 * Выполняет sql запрос к локальной базе данных, возвращает Promise
-	 * @param sql
-	 * @param params
-	 * @return {Promise}
-	 * @async
-	 */
-	wsql.promise = function(sql, params) {
-		return new Promise(function(resolve, reject){
-			wsql.alasql(sql, params || [], function(data, err) {
-				if(err) {
-					reject(err);
-				} else {
-					resolve(data);
-				}
-			});
-		});
-	};
+				else if(prm_value === false)
+					str_prm = "";
 
-	/**
-	 * Устанавливает параметр в user_params и базе данных
-	 * @method set_user_param
-	 * @param prm_name {string} - имя параметра
-	 * @param prm_value {string|number|object|boolean} - значение
-	 * @return {Promise}
-	 * @async
-	 */
-	wsql.set_user_param = function(prm_name, prm_value){
-
-		return new Promise(function(resolve, reject){
-
-			var str_prm = prm_value;
-			if(typeof prm_value == "object")
-				str_prm = JSON.stringify(prm_value);
-
-			else if(prm_value === false)
-				str_prm = "";
-
-			// localStorage в этом месте можно заменить на другое хранилище
-			if(ls)
 				ls.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
-			user_params[prm_name] = prm_value;
+				user_params[prm_name] = prm_value;
+			}
+		},
 
-			resolve();
+		/**
+		 * ### Возвращает значение сохраненного параметра из localStorage
+		 * Параметр извлекается с приведением типа
+		 *
+		 * @method get_user_param
+		 * @param prm_name {String} - имя параметра
+		 * @param [type] {String} - имя типа параметра. Если указано, выполняем приведение типов
+		 * @return {*} - значение параметра
+		 */
+		get_user_param: {
+			value: function(prm_name, type){
 
-		});
-	};
+				if(!user_params.hasOwnProperty(prm_name) && ls)
+					user_params[prm_name] = this.fetch_type(ls.getItem($p.job_prm.local_storage_prefix+prm_name), type);
 
-	/**
-	 * Возвращает значение сохраненного параметра
-	 * @method get_user_param
-	 * @param prm_name {String} - имя параметра
-	 * @param [type] {String} - имя типа параметра. Если указано, выполняем приведение типов
-	 * @return {*} - значение параметра
-	 */
-	wsql.get_user_param = function(prm_name, type){
+				return user_params[prm_name];
+			}
+		},
 
-		if(!user_params.hasOwnProperty(prm_name) && ls)
-			user_params[prm_name] = fetch_type(ls.getItem($p.job_prm.local_storage_prefix+prm_name), type);
+		/**
+		 * Выполняет sql запрос к локальной базе данных, возвращает Promise
+		 * @param sql
+		 * @param params
+		 * @return {Promise}
+		 * @async
+		 */
+		promise: {
+			value: function(sql, params) {
+				return new Promise(function(resolve, reject){
+					wsql.alasql(sql, params || [], function(data, err) {
+						if(err) {
+							reject(err);
+						} else {
+							resolve(data);
+						}
+					});
+				});
+			}
+		},
 
-		return user_params[prm_name];
-	};
+		/**
+		 * Сохраняет настройки формы или иные параметры объекта _options_
+		 * @method save_options
+		 * @param prefix {String} - имя области
+		 * @param options {Object} - сохраняемые параметры
+		 * @return {Promise}
+		 * @async
+		 */
+		save_options: {
+			value: function(prefix, options){
+				return wsql.set_user_param(prefix + "_" + options.name, options);
+			}
+		},
 
-	/**
-	 * Сохраняет настройки формы или иные параметры объекта _options_
-	 * @method save_options
-	 * @param prefix {String} - имя области
-	 * @param options {Object} - сохраняемые параметры
-	 * @return {Promise}
-	 * @async
-	 */
-	wsql.save_options = function(prefix, options){
-		return wsql.set_user_param(prefix + "_" + options.name, options);
-	};
+		/**
+		 * Восстанавливает сохраненные параметры в объект _options_
+		 * @method restore_options
+		 * @param prefix {String} - имя области
+		 * @param options {Object} - объект, в который будут записаны параметры
+		 */
+		restore_options: {
+			value: function(prefix, options){
+				var options_saved = wsql.get_user_param(prefix + "_" + options.name, "object");
+				for(var i in options_saved){
+					if(typeof options_saved[i] != "object")
+						options[i] = options_saved[i];
+					else{
+						if(!options[i])
+							options[i] = {};
+						for(var j in options_saved[i])
+							options[i][j] = options_saved[i][j];
+					}
+				}
+				return options;
+			}
+		},
 
-	/**
-	 * Восстанавливает сохраненные параметры в объект _options_
-	 * @method restore_options
-	 * @param prefix {String} - имя области
-	 * @param options {Object} - объект, в который будут записаны параметры
-	 */
-	wsql.restore_options = function(prefix, options){
-		var options_saved = wsql.get_user_param(prefix + "_" + options.name, "object");
-		for(var i in options_saved){
-			if(typeof options_saved[i] != "object")
-				options[i] = options_saved[i];
-			else{
-				if(!options[i])
-					options[i] = {};
-				for(var j in options_saved[i])
-					options[i][j] = options_saved[i][j];
+		/**
+		 * Приведение типов при операциях с `localStorage`
+		 * @method fetch_type
+		 * @param prm
+		 * @param type
+		 * @returns {*}
+		 */
+		fetch_type: {
+			value: 	function(prm, type){
+				if(type == "object"){
+					try{
+						prm = JSON.parse(prm);
+					}catch(e){
+						prm = {};
+					}
+					return prm;
+				}else if(type == "number")
+					return $p.utils.fix_number(prm, true);
+				else if(type == "date")
+					return $p.utils.fix_date(prm, true);
+				else if(type == "boolean")
+					return $p.utils.fix_boolean(prm);
+				else
+					return prm;
+			}
+		},
+
+		/**
+		 * ### Создаёт и заполняет умолчаниями таблицу параметров
+		 * Внутри Node, в функцию следует передать ссылку на alasql
+		 *
+		 * @method init_params
+		 * @return {Promise}
+		 * @async
+		 */
+		init_params: {
+
+			value: function(){
+
+				// префикс параметров LocalStorage
+				// TODO: отразить в документации, что если префикс пустой, то параметры не инициализируются
+				if(!$p.job_prm.local_storage_prefix && !$p.job_prm.create_tables)
+					return Promise.resolve();
+
+				if(typeof localStorage === "undefined"){
+
+					// локальное хранилище внутри node.js
+					if(typeof WorkerGlobalScope === "undefined"){
+						ls = new require('node-localstorage').LocalStorage('./localstorage');
+
+					}else{
+						ls = {
+							setItem: function (name, value) {
+
+							},
+							getItem: function (name) {
+
+							}
+						};
+					}
+
+				} else
+					ls = localStorage;
+
+				/**
+				 * ### Указатель на alasql
+				 * @property alasql
+				 * @for WSQL
+				 * @type Function
+				 */
+				wsql.__define("alasql", {
+					value: typeof alasql != "undefined" ? alasql : ($p.job_prm.alasql || require("alasql"))
+				});
+
+				wsql.aladb = new wsql.alasql.Database('md');
+
+				// значения базовых параметров по умолчанию
+				var nesessery_params = [
+					{p: "user_name",		v: "", t:"string"},
+					{p: "user_pwd",			v: "", t:"string"},
+					{p: "browser_uid",		v: $p.utils.generate_guid(), t:"string"},
+					{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
+					{p: "enable_save_pwd",	v: $p.job_prm.enable_save_pwd,	t:"boolean"},
+					{p: "autologin",		v: "",	t:"boolean"},
+					{p: "skin",		        v: "dhx_web", t:"string"},
+					{p: "rest_path",		v: "", t:"string"}
+				],	zone;
+
+				// подмешиваем к базовым параметрам настройки приложения
+				if($p.job_prm.additional_params)
+					nesessery_params = nesessery_params.concat($p.job_prm.additional_params);
+
+				// если зона не указана, устанавливаем "1"
+				if(!ls.getItem($p.job_prm.local_storage_prefix+"zone"))
+					zone = $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1;
+				// если зона указана в url, используем её
+				if($p.job_prm.url_prm.hasOwnProperty("zone"))
+					zone = $p.job_prm.zone_is_string ? $p.job_prm.url_prm.zone : $p.utils.fix_number($p.job_prm.url_prm.zone, true);
+				if(zone !== undefined)
+					wsql.set_user_param("zone", zone);
+
+				// дополняем хранилище недостающими параметрами
+				nesessery_params.forEach(function(o){
+					if(wsql.get_user_param(o.p, o.t) == undefined ||
+						(!wsql.get_user_param(o.p, o.t) && (o.p.indexOf("url") != -1)))
+						wsql.set_user_param(o.p, $p.job_prm.hasOwnProperty(o.p) ? $p.job_prm[o.p] : o.v);
+				});
+
+				// сообщяем движку pouch пути и префиксы
+				var pouch_prm = {
+					path: wsql.get_user_param("couch_path", "string") || $p.job_prm.couch_path || "",
+					zone: wsql.get_user_param("zone", "number"),
+					prefix: $p.job_prm.local_storage_prefix,
+					suffix: wsql.get_user_param("couch_suffix", "string") || ""
+				};
+				if(pouch_prm.path){
+
+					/**
+					 * ### Указатель на локальные и сетевые базы PouchDB
+					 * @property pouch
+					 * @for WSQL
+					 * @type Pouch
+					 */
+					wsql.__define("pouch", { value: new Pouch()	});
+					wsql.pouch.init(pouch_prm);
+				}
+
+				return new Promise(function(resolve, reject){
+
+					if($p.job_prm.create_tables){
+
+						if($p.job_prm.create_tables_sql)
+							wsql.alasql($p.job_prm.create_tables_sql, [], function(){
+								delete $p.job_prm.create_tables_sql;
+								resolve();
+							});
+
+						else if($p.injected_data["create_tables.sql"])
+							wsql.alasql($p.injected_data["create_tables.sql"], [], function(){
+								delete $p.injected_data["create_tables.sql"];
+								resolve();
+							});
+
+						else if(typeof $p.job_prm.create_tables === "string")
+							$p.ajax.get($p.job_prm.create_tables)
+								.then(function (req) {
+									wsql.alasql(req.response, [], resolve);
+								});
+						else
+							resolve();
+					}else
+						resolve();
+
+				});
+
+			}
+		},
+
+		/**
+		 * Удаляет таблицы WSQL. Например, для последующего пересоздания при изменении структуры данных
+		 * @method drop_tables
+		 * @param callback {Function}
+		 * @async
+		 */
+		drop_tables: {
+			value: function(callback){
+				var cstep = 0, tmames = [];
+
+				function ccallback(){
+					cstep--;
+					if(cstep<=0)
+						setTimeout(callback, 10);
+					else
+						iteration();
+				}
+
+				function iteration(){
+					var tname = tmames[cstep-1]["tableid"];
+					if(tname.substr(0, 1) == "_")
+						ccallback();
+					else
+						wsql.alasql("drop table IF EXISTS " + tname, [], ccallback);
+				}
+
+				function tmames_finded(data){
+					tmames = data;
+					if(cstep = data.length)
+						iteration();
+					else
+						ccallback();
+				}
+
+				wsql.alasql("SHOW TABLES", [], tmames_finded);
 			}
 		}
-		return options;
-	};
 
-	/**
-	 * ### Создаёт и заполняет умолчаниями таблицу параметров
-	 * Внутри Node, в функцию следует передать ссылку на alasql
-	 * @method init_params
-	 * @return {Promise}
-	 * @async
-	 */
-	wsql.init_params = function(ialasql, create_tables_sql){
-
-		// указатель на экземпляр alasql - критично в NodeJS
-		wsql.alasql = ialasql || alasql;
-		wsql.aladb = new wsql.alasql.Database('md');
-
-		// префикс параметров LocalStorage и хранилищ PouchDB
-		if(!$p.job_prm.local_storage_prefix)
-			$p.job_prm.local_storage_prefix = "md_";
-
-		// значения базовых параметров по умолчанию
-		var nesessery_params = [
-			{p: "user_name",		v: "", t:"string"},
-			{p: "user_pwd",			v: "", t:"string"},
-			{p: "browser_uid",		v: $p.generate_guid(), t:"string"},
-			{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
-			{p: "enable_save_pwd",	v: $p.job_prm.enable_save_pwd,	t:"boolean"},
-			{p: "autologin",		v: "",	t:"boolean"},
-			{p: "skin",		        v: "dhx_web", t:"string"},
-			{p: "rest_path",		v: "", t:"string"}
-		],	zone;
-
-		// подмешиваем к базовым параметрам настройки приложения
-		if($p.job_prm.additional_params)
-			nesessery_params = nesessery_params.concat($p.job_prm.additional_params);
-
-		// если зона не указана, устанавливаем "1"
-		if(!ls.getItem($p.job_prm.local_storage_prefix+"zone"))
-			zone = $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1;
-		// если зона указана в url, используем её
-		if($p.job_prm.url_prm.hasOwnProperty("zone"))
-			zone = $p.job_prm.zone_is_string ? $p.job_prm.url_prm.zone : $p.fix_number($p.job_prm.url_prm.zone, true);
-		if(zone !== undefined)
-			wsql.set_user_param("zone", zone);
-
-		// дополняем хранилище недостающими параметрами
-		nesessery_params.forEach(function(o){
-			if(wsql.get_user_param(o.p, o.t) == undefined ||
-				(!wsql.get_user_param(o.p, o.t) && (o.p.indexOf("url") != -1)))
-					wsql.set_user_param(o.p, $p.job_prm.hasOwnProperty(o.p) ? $p.job_prm[o.p] : o.v);
-		});
-
-		// ссылки на локальные и сетевые базы PouchDB
-		if(typeof Pouch !== "undefined")
-			wsql.pouch = new Pouch();
-
-		return new Promise(function(resolve, reject){
-
-			if(create_tables_sql)
-				wsql.alasql(create_tables_sql, [], resolve);
-
-			else if($p.job_prm.create_tables){
-
-				if($p.job_prm.create_tables_sql)
-					wsql.alasql($p.job_prm.create_tables_sql, [], function(){
-						delete $p.job_prm.create_tables_sql;
-						resolve();
-					});
-
-				else if($p.injected_data["create_tables.sql"])
-					wsql.alasql($p.injected_data["create_tables.sql"], [], function(){
-						delete $p.injected_data["create_tables.sql"];
-						resolve();
-					});
-
-				else if(typeof $p.job_prm.create_tables === "string")
-					$p.ajax.get($p.job_prm.create_tables)
-						.then(function (req) {
-							wsql.alasql(req.response, [], resolve);
-						});
-				else
-					resolve();
-			}else
-				resolve();
-
-		});
-
-	};
-
-	/**
-	 * Удаляет таблицы WSQL. Например, для последующего пересоздания при изменении структуры данных
-	 * @method drop_tables
-	 * @param callback {Function}
-	 * @async
-	 */
-	wsql.drop_tables = function(callback){
-		var cstep = 0, tmames = [];
-
-		function ccallback(){
-			cstep--;
-			if(cstep<=0)
-				setTimeout(callback, 10);
-			else
-				iteration();
-		}
-
-		function iteration(){
-			var tname = tmames[cstep-1]["tableid"];
-			if(tname.substr(0, 1) == "_")
-				ccallback();
-			else
-				wsql.alasql("drop table IF EXISTS " + tname, [], ccallback);
-		}
-
-		function tmames_finded(data){
-			tmames = data;
-			if(cstep = data.length)
-				iteration();
-			else
-				ccallback();
-		}
-
-		wsql.alasql("SHOW TABLES", [], tmames_finded);
-	};
-
+	});
 
 }
-

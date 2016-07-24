@@ -53,7 +53,7 @@ function ODropdownList(attr){
 			}
 			body_click();
 		}
-		return $p.cancel_bubble(e);
+		return $p.iface.cancel_bubble(e);
 	};
 	div.appendChild(ul);
 	ul.className = "dropdown_menu";

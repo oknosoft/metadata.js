@@ -59,7 +59,7 @@ eXcell_proto.input_keydown = function(e, t){
 		}
 	}
 
-	return $p.cancel_bubble(e);
+	return $p.iface.cancel_bubble(e);
 };
 
 /**
@@ -125,7 +125,7 @@ function eXcell_ocombo(cell){
 				t.setValue(t.combo.getComboText());         // текст в элементе управления
 				if(!t.combo.getSelectedValue())
 					t.combo.callEvent("onChange");
-				var res = !$p.is_equal(t.val, t.getValue());// compares the new and the old values
+				var res = !$p.utils.is_equal(t.val, t.getValue());// compares the new and the old values
 				t.combo.unload();
 				return res;
 
@@ -385,9 +385,9 @@ $p.iface.data_to_grid = function (data, attr){
 			return $p.iface.normalize_xml(r[f]);
 		if(r[f] instanceof Date){
 			if(r[f].getHours() || r.date.getMinutes())
-				return $p.dateFormat(r[f], $p.dateFormat.masks.date_time);
+				return $p.moment(r[f]).format($p.moment._masks.date_time);
 			else
-				return $p.dateFormat(r[f], $p.dateFormat.masks.date)
+				return $p.moment(r[f]).format($p.moment._masks.date);
 		}else
 			return r[f] || "";
 	}
@@ -425,8 +425,8 @@ $p.iface.data_to_tree = function (data) {
 		xml = xml + "</item>";
 	}
 
-	add_hierarchically({presentation: "...", ref: $p.blank.guid}, []);
-	$p._find_rows(data, {parent: $p.blank.guid}, function(r){
+	add_hierarchically({presentation: "...", ref: $p.utils.blank.guid}, []);
+	$p._find_rows(data, {parent: $p.utils.blank.guid}, function(r){
 		add_hierarchically(r, data)
 	});
 

@@ -199,7 +199,7 @@ function OCombo(attr){
 		}
 
 		if(e)
-			return $p.cancel_bubble(e);
+			return $p.iface.cancel_bubble(e);
 	}
 
 	function popup_hide(){
@@ -273,7 +273,7 @@ function OCombo(attr){
 						selection: [get_filter()]
 					});
 			}
-			return $p.cancel_bubble(e);
+			return $p.iface.cancel_bubble(e);
 		}
 	}
 
@@ -288,7 +288,7 @@ function OCombo(attr){
 
 	t.getButton().addEventListener("mouseout", popup_hide);
 
-	t.getBase().addEventListener("click", $p.cancel_bubble);
+	t.getBase().addEventListener("click", $p.iface.cancel_bubble);
 
 	t.getBase().addEventListener("contextmenu", oncontextmenu);
 
@@ -386,7 +386,7 @@ function OCombo(attr){
 
 		t.getButton().removeEventListener("mouseout", popup_hide);
 
-		t.getBase().removeEventListener("click", $p.cancel_bubble);
+		t.getBase().removeEventListener("click", $p.iface.cancel_bubble);
 
 		t.getBase().removeEventListener("contextmenu", oncontextmenu);
 

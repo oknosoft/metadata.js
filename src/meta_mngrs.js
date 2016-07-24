@@ -8,26 +8,6 @@
  * @requires common
  */
 
-/**
- * Описание структуры колонки формы списка
- * @param id
- * @param width
- * @param type
- * @param align
- * @param sort
- * @param caption
- * @constructor
- */
-function Col_struct(id,width,type,align,sort,caption){
-	this.id = id;
-	this.width = width;
-	this.type = type;
-	this.align = align;
-	this.sort = sort;
-	this.caption = caption;
-}
-$p.iface.Col_struct = Col_struct;
-
 
 /**
  * ### Абстрактный менеджер данных
@@ -298,8 +278,8 @@ function DataManager(class_name){
 	// Для всех типов, кроме перечислений, создаём через (new Function) конструктор объекта
 	if(!(this instanceof EnumManager)){
 
-		var obj_сonstructor_name = class_name.split(".")[1];
-		this._obj_constructor = eval("(function " + obj_сonstructor_name.charAt(0).toUpperCase() + obj_сonstructor_name.substr(1) +
+		var obj_constructor_name = class_name.split(".")[1];
+		this._obj_constructor = eval("(function " + obj_constructor_name.charAt(0).toUpperCase() + obj_constructor_name.substr(1) +
 			"(attr, manager){manager._obj_constructor.superclass.constructor.call(this, attr, manager)})");
 		this._obj_constructor._extend(_obj_constructor);
 
@@ -349,9 +329,9 @@ function DataManager(class_name){
 			for(var f in this.metadata().tabular_sections){
 
 				// создаём конструктор строки табчасти
-				var row_сonstructor_name = obj_сonstructor_name.charAt(0).toUpperCase() + obj_сonstructor_name.substr(1) + f.charAt(0).toUpperCase() + f.substr(1) + "Row";
+				var row_constructor_name = obj_constructor_name.charAt(0).toUpperCase() + obj_constructor_name.substr(1) + f.charAt(0).toUpperCase() + f.substr(1) + "Row";
 
-				this._ts_сonstructors[f] = eval("(function " + row_сonstructor_name + "(owner) \
+				this._ts_сonstructors[f] = eval("(function " + row_constructor_name + "(owner) \
 			{owner._owner._manager._ts_сonstructors[owner._name].superclass.constructor.call(this, owner)})");
 				this._ts_сonstructors[f]._extend(TabularSectionRow);
 
@@ -429,7 +409,7 @@ DataManager.prototype.__define({
 		value : function(obj){
 
 			// ищем предопределенный элемент, сответствующий классу данных
-			var destinations = $p.cat.destinations || $p.cat.НаборыДополнительныхРеквизитовИСведений,
+			var destinations = $p.cat.destinations || $p.cch.destinations,
 				pn = _md.class_name_to_1c(this.class_name).replace(".", "_"),
 				res = [];
 
@@ -554,7 +534,7 @@ DataManager.prototype.get_option_list = function(val, selection){
 	var t = this, l = [], input_by_string, text, sel;
 
 	function check(v){
-		if($p.is_equal(v.value, val))
+		if($p.utils.is_equal(v.value, val))
 			v.selected = true;
 		return v;
 	}
@@ -606,7 +586,7 @@ DataManager.prototype.get_option_list = function(val, selection){
 			.then(function (data) {
 				data.forEach(function (v) {
 					l.push(check({
-						text: is_doc ? (v.number_doc + " от " + $p.dateFormat(v.date, $p.dateFormat.masks.ru)) : (v.name || v.id),
+						text: is_doc ? (v.number_doc + " от " + $p.moment(v.date).format($p.moment._masks.ldt)) : (v.name || v.id),
 						value: v.ref}));
 				});
 				return l;
@@ -676,7 +656,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 
 		txt_by_type = function (fv, mf) {
 
-			if($p.is_data_obj(fv))
+			if($p.utils.is_data_obj(fv))
 				txt = fv.presentation;
 			else
 				txt = fv;
@@ -684,7 +664,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 			if(mf.type.is_ref){
 				;
 			} else if(mf.type.date_part) {
-				txt = $p.dateFormat(txt, "");
+				txt = $p.moment(txt).format($p.moment._masks[mf.type.date_part]);
 
 			} else if(mf.type.types[0]=="boolean") {
 				txt = txt ? "1" : "0";
@@ -843,7 +823,7 @@ DataManager.prototype.print = function(ref, model, wnd){
 		// иначе - печатаем средствами 1С или иного сервера
 		var rattr = {};
 		$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
-		rattr.url += this.rest_name + "(guid'" + $p.fix_guid(ref) + "')" +
+		rattr.url += this.rest_name + "(guid'" + $p.utils.fix_guid(ref) + "')" +
 			"/Print(model=" + model + ", browser_uid=" + $p.wsql.get_user_param("browser_uid") +")";
 
 		return $p.ajax.get_and_show_blob(rattr.url, rattr, "get")
@@ -929,7 +909,7 @@ RefDataManager.prototype.__define({
 	each: {
 		value: 	function(fn){
 			for(var i in this.by_ref){
-				if(!i || i == $p.blank.guid)
+				if(!i || i == $p.utils.blank.guid)
 					continue;
 				if(fn.call(this, this.by_ref[i]) == true)
 					break;
@@ -957,7 +937,7 @@ RefDataManager.prototype.__define({
 	get: {
 		value: function(ref, force_promise, do_not_create){
 
-			var o = this.by_ref[ref] || this.by_ref[(ref = $p.fix_guid(ref))];
+			var o = this.by_ref[ref] || this.by_ref[(ref = $p.utils.fix_guid(ref))];
 
 			if(!o){
 				if(do_not_create && !force_promise)
@@ -969,7 +949,7 @@ RefDataManager.prototype.__define({
 			if(force_promise === false)
 				return o;
 
-			else if(force_promise === undefined && ref === $p.blank.guid)
+			else if(force_promise === undefined && ref === $p.utils.blank.guid)
 				return o;
 
 			if(o.is_new()){
@@ -998,8 +978,8 @@ RefDataManager.prototype.__define({
 
 			if(!attr || typeof attr != "object")
 				attr = {};
-			if(!attr.ref || !$p.is_guid(attr.ref) || $p.is_empty_guid(attr.ref))
-				attr.ref = $p.generate_guid();
+			if(!attr.ref || !$p.utils.is_guid(attr.ref) || $p.utils.is_empty_guid(attr.ref))
+				attr.ref = $p.utils.generate_guid();
 
 			var o = this.by_ref[attr.ref];
 			if(!o){
@@ -1011,7 +991,7 @@ RefDataManager.prototype.__define({
 
 				}else{
 
-					if(o instanceof DocObj && o.date == $p.blank.date)
+					if(o instanceof DocObj && o.date == $p.utils.blank.date)
 						o.date = new Date();
 
 					// Триггер после создания
@@ -1085,7 +1065,7 @@ RefDataManager.prototype.__define({
 
 			for(var i=0; i<aattr.length; i++){
 
-				ref = $p.fix_guid(aattr[i]);
+				ref = $p.utils.fix_guid(aattr[i]);
 				obj = this.by_ref[ref];
 
 				if(!obj){
@@ -1114,7 +1094,7 @@ RefDataManager.prototype.__define({
 		value: function(owner){
 			for(var i in this.by_ref){
 				var o = this.by_ref[i];
-				if(o.is_folder && (!owner || $p.is_equal(owner, o.owner)))
+				if(o.is_folder && (!owner || $p.utils.is_equal(owner, o.owner)))
 					return o;
 			}
 			return this.get();
@@ -1139,11 +1119,11 @@ RefDataManager.prototype.__define({
 			function sql_selection(){
 
 				var ignore_parent = !attr.parent,
-					parent = attr.parent || $p.blank.guid,
+					parent = attr.parent || $p.utils.blank.guid,
 					owner,
-					initial_value = attr.initial_value || $p.blank.guid,
+					initial_value = attr.initial_value || $p.utils.blank.guid,
 					filter = attr.filter || "",
-					set_parent = $p.blank.guid;
+					set_parent = $p.utils.blank.guid;
 
 				function list_flds(){
 					var flds = [], s = "_t_.ref, _t_.`_deleted`";
@@ -1227,13 +1207,13 @@ RefDataManager.prototype.__define({
 					}else if(cmd["hierarchical"]){
 						if(cmd["has_owners"])
 							s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" +
-								(owner == $p.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
+								(owner == $p.utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 						else
 							s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" + (filter ? 0 : 1);
 
 					}else{
 						if(cmd["has_owners"])
-							s = " WHERE (" + (owner == $p.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
+							s = " WHERE (" + (owner == $p.utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 						else
 							s = " WHERE (" + (filter ? 0 : 1);
 					}
@@ -1252,7 +1232,7 @@ RefDataManager.prototype.__define({
 							s += " OR _t_.id LIKE '" + filter + "'";
 					}
 
-					s += ") AND (_t_.ref != '" + $p.blank.guid + "')";
+					s += ") AND (_t_.ref != '" + $p.utils.blank.guid + "')";
 
 
 					// допфильтры форм и связей параметров выбора
@@ -1275,7 +1255,7 @@ RefDataManager.prototype.__define({
 
 										else if(typeof sel[key] == "object"){
 
-											if($p.is_data_obj(sel[key]))
+											if($p.utils.is_data_obj(sel[key]))
 												s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
 
 											else{
@@ -1342,7 +1322,7 @@ RefDataManager.prototype.__define({
 							;
 						}else{
 							if(t.class_name == "cat.base_blocks"){
-								if(owner == $p.blank.guid)
+								if(owner == $p.utils.blank.guid)
 									owner = _cat.bases.predefined("main");
 								parent = t.first_folder(owner).ref;
 							}
@@ -1366,11 +1346,11 @@ RefDataManager.prototype.__define({
 							});
 						}
 						if(!owner)
-							owner = $p.blank.guid;
+							owner = $p.utils.blank.guid;
 					}
 
 					// ссылка родителя во взаимосвязи с начальным значением выбора
-					if(initial_value !=  $p.blank.guid && ignore_parent){
+					if(initial_value !=  $p.utils.blank.guid && ignore_parent){
 						if(cmd["hierarchical"]){
 							on_parent(t.get(initial_value, false))
 						}else
@@ -1652,6 +1632,50 @@ RefDataManager.prototype.__define({
 
 			return this._predefined[name];
 		}
+	},
+
+	obj_constructor_text: {
+		value: function () {
+
+			var parts = this.class_name.split("."),
+				fn_name = parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + parts[1].charAt(0).toUpperCase() + parts[1].substr(1),
+				text = "function " + fn_name + "(attr, manager){manager._obj_constructor.superclass.constructor.call(this, attr, manager)}'\n";
+
+			text += fn_name + "._extend(" + parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + "Obj);\n";
+
+			// реквизиты по метаданным
+			for(var f in this.metadata().fields){
+				text += fn_name + ".prototype.__define('"+f+"', {get: function(){return this._getter('"+f+"')}, " +
+					"set: function(v){this._setter('"+f+"',v)}, enumerable: true, configurable: true});\n";
+			}
+
+
+			// табличные части по метаданным
+			for(var f in this.metadata().tabular_sections){
+
+				// создаём конструктор строки табчасти
+				var row_fn_name = fn_name + f.charAt(0).toUpperCase() + f.substr(1) + "Row";
+
+				text += "function " + row_fn_name + "(owner)" +
+					"{owner._owner._manager._ts_сonstructors[owner._name].superclass.constructor.call(this, owner)});\n";
+
+				text += row_fn_name + "._extend(TabularSectionRow);\n";
+
+				// в прототипе строки табчасти создаём свойства в соответствии с полями табчасти
+				for(var rf in this.metadata().tabular_sections[f].fields){
+					text += row_fn_name + ".prototype.__define('"+rf+"', {get: function(){return this._getter('"+rf+"')}, " +
+						"set: function(v){this._setter('"+rf+"',v)}, enumerable: true, configurable: true});\n";
+				}
+
+				// устанавливаем геттер и сеттер для табличной части
+				text += fn_name + ".prototype.__define('"+f+"', {get: function(){return this._getter_ts('"+f+"')}, " +
+					"set: function(v){this._setter_ts('"+f+"',v)}, enumerable: true, configurable: true});\n";
+
+			}
+
+			return text;
+
+		}
 	}
 });
 
@@ -1730,7 +1754,7 @@ EnumManager.prototype.__define({
 			if(ref instanceof EnumObj)
 				return ref;
 
-			else if(!ref || ref == $p.blank.guid)
+			else if(!ref || ref == $p.utils.blank.guid)
 				ref = "_";
 
 			var o = this[ref];
@@ -1752,7 +1776,7 @@ EnumManager.prototype.__define({
 	each: {
 		value: function (fn) {
 			this.alatable.forEach(function (v) {
-				if(v.ref && v.ref != "_" && v.ref != $p.blank.guid)
+				if(v.ref && v.ref != "_" && v.ref != $p.utils.blank.guid)
 					fn.call(this[v.ref]);
 			}.bind(this));
 		}
@@ -1820,7 +1844,7 @@ EnumManager.prototype.get_option_list = function(val, selection){
 	var l = [], synonym = "", sref;
 
 	function check(v){
-		if($p.is_equal(v.value, val))
+		if($p.utils.is_equal(v.value, val))
 			v.selected = true;
 		return v;
 	}
@@ -2086,7 +2110,7 @@ RegisterManager.prototype.__define({
 
 										else if(typeof sel[key] == "object"){
 
-											if($p.is_data_obj(sel[key]))
+											if($p.utils.is_data_obj(sel[key]))
 												s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
 
 											else{
@@ -2314,13 +2338,13 @@ RegisterManager.prototype.__define({
 			for(var j in dimensions){
 				key += (key ? "¶" : "");
 				if(dimensions[j].type.is_ref)
-					key += $p.fix_guid(attr[j]);
+					key += $p.utils.fix_guid(attr[j]);
 
 				else if(!attr[j] && dimensions[j].type.digits)
 					key += "0";
 
 				else if(dimensions[j].date_part)
-					key += $p.dateFormat(attr[j] || $p.blank.date, $p.dateFormat.masks.atom);
+					key += $p.moment(attr[j] || $p.utils.blank.date).format($p.moment.defaultFormatUtc);
 
 				else if(attr[j]!=undefined)
 					key += String(attr[j]);
@@ -2461,7 +2485,7 @@ function LogManager(){
 
 		if(typeof msg != "object")
 			msg = {note: msg};
-		msg.date = Date.now() + $p.eve.time_diff();
+		msg.date = Date.now() + $p.wsql.time_diff;
 
 		// уникальность ключа
 		if(!smax)
@@ -2559,15 +2583,14 @@ function LogManager(){
 		var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
 				.replace("%1", data.length).replace("%2", attr.start)
 				.replace("%3", attr.set_parent || "" ),
-			caption = this.caption_flds(attr),
-			time_diff = $p.eve.time_diff();
+			caption = this.caption_flds(attr);
 
 		// при первом обращении к методу добавляем описание колонок
 		xml += caption.head;
 
 		data.forEach(function(r){
 			xml += "<row id=\"" + r.date + "_" + r.sequence + "\"><cell>" +
-				$p.dateFormat(r.date - time_diff, $p.dateFormat.masks.date_time) + (r.sequence ? "." + r.sequence : "") + "</cell>" +
+				$p.moment(r.date - $p.wsql.time_diff).format($p.moment._masks.date_time) + (r.sequence ? "." + r.sequence : "") + "</cell>" +
 				"<cell>" + r.class + "</cell><cell>" + r.note + "</cell></row>";
 		});
 
@@ -2624,7 +2647,7 @@ function CatManager(class_name) {
 		 */
 		this._obj_constructor.prototype.__define("is_folder", {
 			get : function(){ return this._obj.is_folder || false},
-			set : function(v){ this._obj.is_folder = $p.fix_boolean(v)},
+			set : function(v){ this._obj.is_folder = $p.utils.fix_boolean(v)},
 			enumerable: true,
 			configurable: true
 		});

@@ -25,7 +25,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 			open_selection=function(e) {
 				var source = {grid: t.grid}._mixin(t.grid.get_cell_field());
 				wnd_address(source);
-				return $p.cancel_bubble(e);
+				return $p.iface.cancel_bubble(e);
 			};
 
 		t.cell = cell;
@@ -55,7 +55,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 			td = t.cell.firstChild;
 			ti = td.childNodes[0];
 			ti.value=t.val;
-			ti.onclick=$p.cancel_bubble;		//blocks onclick event
+			ti.onclick=$p.iface.cancel_bubble;		//blocks onclick event
 			ti.readOnly = true;
 			ti.focus();
 			ti.onkeydown=ti_keydown;
@@ -67,7 +67,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 		 */
 		t.detach=function(){
 			t.setValue(t.getValue());
-			return !$p.is_equal(t.val, t.getValue());				// compares the new and the old values
+			return !$p.utils.is_equal(t.val, t.getValue());				// compares the new and the old values
 		}
 	}
 	eXcell_addr.prototype = eXcell_proto;
@@ -242,14 +242,14 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 
 			var old = _delivery_area, clear_street;
 
-			if($p.is_data_obj(selv))
+			if($p.utils.is_data_obj(selv))
 				_delivery_area = selv;
 			else
 				_delivery_area = $p.cat.delivery_areas.get(selv, false);
 
 			clear_street = old != _delivery_area;
 
-			if(!$p.is_data_obj(_delivery_area))
+			if(!$p.utils.is_data_obj(_delivery_area))
 				_delivery_area = $p.cat.delivery_areas.get();
 
 			wnd.elmnts.pgrid.cells().setValue(selv.presentation);

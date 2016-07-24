@@ -51,7 +51,7 @@ function DataObj(attr, manager) {
 		_obj.ref = attr.name;
 
 	else if(!(manager instanceof RegisterManager)){
-		_obj.ref = $p.fix_guid(attr);
+		_obj.ref = $p.utils.fix_guid(attr);
 
 	}else
 		_obj.ref = manager.get_ref(attr);
@@ -135,14 +135,14 @@ DataObj.prototype._getter = function (f) {
 		if(mf.digits && typeof res === "number")
 			return res;
 
-		if(mf.hasOwnProperty("str_len") && !$p.is_guid(res))
+		if(mf.hasOwnProperty("str_len") && !$p.utils.is_guid(res))
 			return res;
 
 		if(mgr = _md.value_mgr(this._obj, f, mf)){
-			if($p.is_data_mgr(mgr))
+			if($p.utils.is_data_mgr(mgr))
 				return mgr.get(res, false);
 			else
-				return $p.fetch_type(res, mgr);
+				return $p.utils.fetch_type(res, mgr);
 		}
 
 		if(res){
@@ -151,13 +151,13 @@ DataObj.prototype._getter = function (f) {
 		}
 
 	}else if(mf.date_part)
-		return $p.fix_date(this._obj[f], true);
+		return $p.utils.fix_date(this._obj[f], true);
 
 	else if(mf.digits)
-		return $p.fix_number(this._obj[f], !mf.hasOwnProperty("str_len"));
+		return $p.utils.fix_number(this._obj[f], !mf.hasOwnProperty("str_len"));
 
 	else if(mf.types[0]=="boolean")
-		return $p.fix_boolean(this._obj[f]);
+		return $p.utils.fix_boolean(this._obj[f]);
 
 	else
 		return this._obj[f] || "";
@@ -173,15 +173,15 @@ DataObj.prototype.__setter = function (f, v) {
 
 	else if(f == "ref")
 
-		this._obj[f] = $p.fix_guid(v);
+		this._obj[f] = $p.utils.fix_guid(v);
 
 	else if(mf.is_ref){
 
-		if(mf.digits && typeof v == "number" || mf.hasOwnProperty("str_len") && typeof v == "string" && !$p.is_guid(v)){
+		if(mf.digits && typeof v == "number" || mf.hasOwnProperty("str_len") && typeof v == "string" && !$p.utils.is_guid(v)){
 			this._obj[f] = v;
 
 		}else {
-			this._obj[f] = $p.fix_guid(v);
+			this._obj[f] = $p.utils.fix_guid(v);
 
 			mgr = _md.value_mgr(this._obj, f, mf, false, v);
 
@@ -200,8 +200,8 @@ DataObj.prototype.__setter = function (f, v) {
 					if(v.type && !(v instanceof DataObj))
 						delete v.type;
 					mgr.create(v);
-				}else if(!$p.is_data_mgr(mgr))
-					this._obj[f] = $p.fetch_type(v, mgr);
+				}else if(!$p.utils.is_data_mgr(mgr))
+					this._obj[f] = $p.utils.fetch_type(v, mgr);
 			}else{
 				if(typeof v != "object")
 					this._obj[f] = v;
@@ -209,13 +209,13 @@ DataObj.prototype.__setter = function (f, v) {
 		}
 
 	}else if(mf.date_part)
-		this._obj[f] = $p.fix_date(v, true);
+		this._obj[f] = $p.utils.fix_date(v, true);
 
 	else if(mf.digits)
-		this._obj[f] = $p.fix_number(v, !mf.hasOwnProperty("str_len"));
+		this._obj[f] = $p.utils.fix_number(v, !mf.hasOwnProperty("str_len"));
 
 	else if(mf.types[0]=="boolean")
-		this._obj[f] = $p.fix_boolean(v);
+		this._obj[f] = $p.utils.fix_boolean(v);
 
 	else
 		this._obj[f] = v;
@@ -365,7 +365,7 @@ DataObj.prototype.__define({
 	 */
 	ref: {
 		get : function(){ return this._obj.ref},
-		set : function(v){ this._obj.ref = $p.fix_guid(v)},
+		set : function(v){ this._obj.ref = $p.utils.fix_guid(v)},
 		enumerable : true,
 		configurable: true
 	},
@@ -377,7 +377,7 @@ DataObj.prototype.__define({
 	 */
 	empty: {
 		value: function(){
-			return $p.is_empty_guid(this._obj.ref);
+			return $p.utils.is_empty_guid(this._obj.ref);
 		}
 	},
 
@@ -398,7 +398,7 @@ DataObj.prototype.__define({
 					return this;
 				}.bind(this);
 
-			if(this.ref == $p.blank.guid){
+			if(this.ref == $p.utils.blank.guid){
 				if(this instanceof CatObj)
 					this.id = "000000000";
 				else
@@ -489,7 +489,7 @@ DataObj.prototype.__define({
 
 			// для объектов с иерархией установим пустого родителя, если иной не указан
 			if(this._metadata.hierarchical && !this._obj.parent)
-				this._obj.parent = $p.blank.guid;
+				this._obj.parent = $p.utils.blank.guid;
 
 			// для справочников, требующих код и пустым кодом, присваиваем код
 			if(!this.id && this._metadata.code_length && this._manager.cachable != "ram"){
@@ -519,7 +519,7 @@ DataObj.prototype.__define({
 			}
 
 			// для документов, контролируем заполненность даты
-			if(this instanceof DocObj && $p.blank.date == this.date)
+			if(this instanceof DocObj && $p.utils.blank.date == this.date)
 				this.date = new Date();
 
 			// если не указаны обязательные реквизиты
@@ -701,7 +701,7 @@ function CatObj(attr, manager) {
 			this._mixin(attr);
 		}else{
 			this._mixin(attr);
-			if(!$p.is_empty_guid(this.ref) && (attr.id || attr.name))
+			if(!$p.utils.is_empty_guid(this.ref) && (attr.id || attr.name))
 				this._set_loaded(this.ref);
 		}
 	}
@@ -765,7 +765,7 @@ function DocObj(attr, manager) {
 		get : function(){
 
 			if(this.number_doc)
-				return (this._metadata.obj_presentation || this._metadata.synonym) + ' №' + this.number_doc + " от " + $p.dateFormat(this.date, $p.dateFormat.masks.ru);
+				return (this._metadata.obj_presentation || this._metadata.synonym) + ' №' + this.number_doc + " от " + $p.moment(this.date).format($p.moment._masks.ldt);
 			else
 				return _presentation;
 
@@ -779,7 +779,7 @@ function DocObj(attr, manager) {
 	if(attr && typeof attr == "object")
 		this._mixin(attr);
 
-	if(!$p.is_empty_guid(this.ref) && attr.number_doc)
+	if(!$p.utils.is_empty_guid(this.ref) && attr.number_doc)
 		this._set_loaded(this.ref);
 
 	attr = null;
@@ -809,10 +809,10 @@ function doc_props_date_number(proto){
 		 * @type {Date}
 		 */
 		date: {
-			get : function(){ return this._obj.date || $p.blank.date},
+			get : function(){ return this._obj.date || $p.utils.blank.date},
 			set : function(v){
 				this.__notify('date');
-				this._obj.date = $p.fix_date(v, true);
+				this._obj.date = $p.utils.fix_date(v, true);
 			},
 			enumerable: true
 		}
@@ -830,7 +830,7 @@ DocObj.prototype.__define({
 		get : function(){ return this._obj.posted || false},
 		set : function(v){
 			this.__notify('posted');
-			this._obj.posted = $p.fix_boolean(v);
+			this._obj.posted = $p.utils.fix_boolean(v);
 		},
 		enumerable: true
 	}
@@ -854,7 +854,7 @@ function DataProcessorObj(attr, manager) {
 
 	var f, cmd = manager.metadata();
 	for(f in cmd.fields)
-		attr[f] = $p.fetch_type("", cmd.fields[f].type);
+		attr[f] = $p.utils.fetch_type("", cmd.fields[f].type);
 	for(f in cmd["tabular_sections"])
 		attr[f] = [];
 

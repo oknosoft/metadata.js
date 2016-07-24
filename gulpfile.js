@@ -15,12 +15,17 @@ var base64 = require('gulp-base64'),
 	rename = require('gulp-rename'),
 	resources = require('./lib/gulp-resource-concat.js'),
 	path = require('path'),
-	umd = require('gulp-umd');
+	umd = require('gulp-umd'),
+	replace = require('gulp-replace');
+
+// Identify name of the build
+var packageData = JSON.parse(require('fs').readFileSync('package.json', 'utf8'));
 
 gulp.task('build-metadata', function () {
 	return gulp.src([
-		'./lib/moment/locale/ru.js',
+		'./node_modules/moment/locale/ru.js',
 		'./src/common.js',
+		'./src/common.ui.js',
 		'./src/pouchdb.js',
 		'./src/i18n.ru.js',
 		'./src/widgets/*.js',
@@ -37,7 +42,7 @@ gulp.task('build-metadata', function () {
 		'./src/wnd_selection.js',
 		'./src/import_export.js',
 		'./src/events.js',
-		'./src/events_browser.js',
+		'./src/events.ui.js',
 		'./src/geocoding.js',
 		'./src/reporting.js',
 		'./data/merged_data.js',
@@ -47,6 +52,7 @@ gulp.task('build-metadata', function () {
 		'./lib/rubles/rubles.js'
 	])
 		.pipe(concat('metadata.js'))
+		.pipe(replace(/PACKAGE_VERSION_NUMBER/g, packageData.version))
 		.pipe(umd({
 			exports: function(file) {
 				return '$p';
@@ -231,16 +237,18 @@ gulp.task('build-metadata-core', function(){
 	gulp.src([
 		'./src/common.js',
 		'./src/i18n.ru.js',
+		'./src/pouchdb.js',
 		'./src/meta_meta.js',
 		'./src/meta_mngrs.js',
 		'./src/meta_tabulars.js',
 		'./src/meta_objs.js',
 		'./src/meta_rest.js',
-		'./src/events_node.js',
+		'./src/meta_pouchdb.js',
 		'./src/events.js',
 		'./lib/aes/aes.js'
 	])
 		.pipe(concat('metadata.core.js'))
+		.pipe(replace(/PACKAGE_VERSION_NUMBER/g, packageData.version))
 		.pipe(umd({
 			exports: function(file) {
 				return '$p';
@@ -305,13 +313,3 @@ gulp.task('build-codex', function(){
 		.pipe(gulp.dest('./examples/codex/js'));
 });
 
-// Сборка codex
-//gulp.task('codex', ['injected-codres', 'injected-codex', 'build-codres', 'build-codex'], function(){});
-
-
-// Главная задача
-//gulp.task('default', ['js-merge' ], function(){});
-
-//gulp.task('watch', ['js-merge' ], function(){
-//	gulp.watch('./src/*.js',function(){ gulp.run('core'); });
-//});
