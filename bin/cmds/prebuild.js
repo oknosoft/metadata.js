@@ -5,7 +5,7 @@
  * Created 20.07.2016
  */
 
-exports.command = 'prebuild';
+exports.command = 'prebuild [dir]';
 exports.desc = 'Prebuild js files with metadata';
 exports.builder = {
 	dir: {

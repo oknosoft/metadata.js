@@ -4,7 +4,7 @@
 // &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
 //
 
-var $p = require('D:/WORK/0KNOSOFT/UniServer/www/builder2/git-osde/lib/metadata.core.js');
+var $p = require('metadata-js');
 var path = require('path');
 var fs = require('fs');
 var yargs = require('yargs')
@@ -30,8 +30,6 @@ if(0===argv._.length){
 	yargs.showHelp();
 	process.exit(1);
 }
-
-
 
 
 /**

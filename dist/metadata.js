@@ -467,7 +467,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.10.213",
+			value: "0.10.214",
 			writable: false
 		},
 
@@ -669,7 +669,7 @@ function Utils() {
 	this.moment = typeof moment == "function" ? moment : require('moment');
 	this.moment._masks = {
 		date:       "DD.MM.YY",
-		date_time:  "DD.MM.YY HH:mm",
+		date_time:  "DD.MM.YYYY HH:mm",
 		ldt:        "DD MMMM YYYY, HH:mm",
 		iso:        "YYYY-MM-DDTHH:mm:ss"
 	};

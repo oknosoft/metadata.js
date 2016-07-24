@@ -15,7 +15,11 @@ var base64 = require('gulp-base64'),
 	rename = require('gulp-rename'),
 	resources = require('./lib/gulp-resource-concat.js'),
 	path = require('path'),
-	umd = require('gulp-umd');
+	umd = require('gulp-umd'),
+	replace = require('gulp-replace');
+
+// Identify name of the build
+var packageData = JSON.parse(require('fs').readFileSync('package.json', 'utf8'));
 
 gulp.task('build-metadata', function () {
 	return gulp.src([
@@ -48,6 +52,7 @@ gulp.task('build-metadata', function () {
 		'./lib/rubles/rubles.js'
 	])
 		.pipe(concat('metadata.js'))
+		.pipe(replace(/PACKAGE_VERSION_NUMBER/g, packageData.version))
 		.pipe(umd({
 			exports: function(file) {
 				return '$p';
@@ -243,6 +248,7 @@ gulp.task('build-metadata-core', function(){
 		'./lib/aes/aes.js'
 	])
 		.pipe(concat('metadata.core.js'))
+		.pipe(replace(/PACKAGE_VERSION_NUMBER/g, packageData.version))
 		.pipe(umd({
 			exports: function(file) {
 				return '$p';
@@ -307,13 +313,3 @@ gulp.task('build-codex', function(){
 		.pipe(gulp.dest('./examples/codex/js'));
 });
 
-// Сборка codex
-//gulp.task('codex', ['injected-codres', 'injected-codex', 'build-codres', 'build-codex'], function(){});
-
-
-// Главная задача
-//gulp.task('default', ['js-merge' ], function(){});
-
-//gulp.task('watch', ['js-merge' ], function(){
-//	gulp.watch('./src/*.js',function(){ gulp.run('core'); });
-//});
