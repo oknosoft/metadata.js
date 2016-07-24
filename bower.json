@@ -1,11 +1,11 @@
 {
   "name": "metadata",
   "description": "Metadata.js is a library for building offline-first browser-based business applications",
-  "version": "0.10.213",
+  "version": "0.10.214",
   "license": "AGPL-3.0",
   "keywords": [
     "metadata",
-    "browser data enjine",
+    "browser data engine",
     "rest",
     "odata",
     "1c",
@@ -14,7 +14,7 @@
     "клиент 1с",
     "ui framework",
     "offline framework",
-    "offline data enjine",
+    "offline data engine",
     "rest client",
     "CRDT",
     "offline-first",
@@ -36,10 +36,17 @@
   ],
   "dependencies": {
     "alasql": "^0.2",
-    "pouchdb": "^5.3"
+    "pouchdb": "^5.4"
   },
   "devDependencies": {
-    "gulp": "^3.9"
+    "gulp": "^3.9",
+    "gulp-base64": "^0.1",
+    "gulp-concat": "^2.6",
+    "gulp-csso": "^2.0",
+    "gulp-rename": "^1.2",
+    "gulp-uglify": "^1.5",
+    "gulp-umd": "^0.2",
+    "yuidocjs": "^0.10"
   },
   "ignore": [
     "src",

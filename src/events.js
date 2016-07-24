@@ -33,6 +33,149 @@
  */
 function AppEvents() {
 
+	this.__define({
+
+		/**
+		 * ### Запускает процесс инициализаци параметров и метаданных
+		 *
+		 * @method run
+		 * @for AppEvents
+		 *
+		 */
+		init: {
+			value: function () {
+				$p.job_prm = new JobPrm();
+				$p.wsql.init_params()
+					.then(function(){
+						$p.md.init();
+					});
+			}
+		},
+
+		/**
+		 * ### Добавляет объекту методы генерации и обработки событий
+		 *
+		 * @method do_eventable
+		 * @for AppEvents
+		 * @param obj {Object} - объект, которому будут добавлены eventable свойства
+		 */
+		do_eventable: {
+			value: function (obj) {
+
+				function attach(name, func) {
+					name = String(name).toLowerCase();
+					if (!this._evnts.data[name])
+						this._evnts.data[name] = {};
+					var eventId = $p.utils.generate_guid();
+					this._evnts.data[name][eventId] = func;
+					return eventId;
+				}
+
+				function detach(eventId) {
+					for (var a in this._evnts.data) {
+						var k = 0;
+						for (var b in this._evnts.data[a]) {
+							if (b == eventId) {
+								this._evnts.data[a][b] = null;
+								delete this._evnts.data[a][b];
+							} else {
+								k++;
+							}
+						}
+						if (k == 0) {
+							this._evnts.data[a] = null;
+							delete this._evnts.data[a];
+						}
+					}
+				}
+
+				function call(name, params) {
+					name = String(name).toLowerCase();
+					if (this._evnts.data[name] == null)
+						return true;
+					var r = true;
+					for (var a in this._evnts.data[name]) {
+						r = this._evnts.data[name][a].apply(this, params) && r;
+					}
+					return r;
+				}
+
+				function ontimer() {
+
+					for(var name in this._evnts.evnts){
+						var l = this._evnts.evnts[name].length;
+						if(l){
+							for(var i=0; i<l; i++){
+								this.emit(name, this._evnts.evnts[name][i]);
+							}
+							this._evnts.evnts[name].length = 0;
+						}
+					}
+
+					this._evnts.timer = 0;
+				}
+
+				obj.__define({
+
+					_evnts: {
+						value: {
+							data: {},
+							timer: 0,
+							evnts: {}
+						}
+					},
+
+					on: {
+						value: attach
+					},
+
+					attachEvent: {
+						value: attach
+					},
+
+					off: {
+						value: detach
+					},
+
+					detachEvent: {
+						value: detach
+					},
+
+					checkEvent: {
+						value: function(name) {
+							name = String(name).toLowerCase();
+							return (this._evnts.data[name] != null);
+						}
+					},
+
+					callEvent: {
+						value: call
+					},
+
+					emit: {
+						value: call
+					},
+
+					emit_async: {
+						value: function callEvent(name, params){
+
+							if(!this._evnts.evnts[name])
+								this._evnts.evnts[name] = [];
+
+							this._evnts.evnts[name].push(params);
+
+							if(this._evnts.timer)
+								clearTimeout(this._evnts.timer);
+
+							this._evnts.timer = setTimeout(ontimer.bind(this), 4);
+						}
+					}
+
+				});
+			}
+		}
+	});
+
 	// если мы внутри браузера и загружен dhtmlx, переносим в AppEvents свойства dhx4
 	if(typeof window !== "undefined" && window.dhx4){
 		for(var p in dhx4){
@@ -40,152 +183,147 @@ function AppEvents() {
 			delete dhx4[p];
 		}
 		window.dhx4 = this;
+
+	}else if(typeof WorkerGlobalScope === "undefined"){
+
+		// мы внутри Nodejs
+
+		this.do_eventable(this);
+
 	}
 
-	
 }
 
 /**
- * Устанавливает соединение с вебсокет-сервером, обеспечивает приём и отправку сообщений
- * @class SocketMsg
- * @constructor
+ * ### Параметры работы программы
+ * - Хранит глобальные настройки варианта компиляции (_Заказ дилера_, _Безбумажка_, _Демо_ и т.д.)
+ * - Настройки извлекаются из файла "settings" при запуске приложения и дополняются параметрами url,
+ * которые могут быть переданы как через search (?), так и через hash (#)
+ * - см. так же, {{#crossLink "WSQL/get_user_param:method"}}{{/crossLink}} и {{#crossLink "WSQL/set_user_param:method"}}{{/crossLink}} - параметры, изменяемые пользователем
+ *
+ * @class JobPrm
+ * @static
+ * @menuorder 04
+ * @tooltip Параметры приложения
  */
-function SocketMsg(){
+function JobPrm(){
 
-	var socket_uid, ws, opened, attempt = 0, t = this;
-
-	function reflect_react(data){
-		if(data && data.type == "react"){
-			try{
-				var mgr = _md ? _md.mgr_by_class_name(data.class_name) : null;
-				if(mgr)
-					mgr.load_array([data.obj], true);
-
-			}catch(err){
-				$p.record_log(err);
-			}
-		}
+	function base_url(){
+		return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
 	}
 
-	t.connect = function(reset_attempt){
+	function parse_url(){
 
-		// http://builder.local/debug.html#socket_uid=4e8b16b6-89b0-11e2-9c06-da48b440c859
+		function parse(url_prm){
+			var prm = {}, tmp = [], pairs;
 
-		if(!socket_uid)
-			socket_uid = $p.job_prm.parse_url().socket_uid || "";
+			if(url_prm.substr(0, 1) === "#" || url_prm.substr(0, 1) === "?")
+				url_prm = url_prm.substr(1);
 
-		if(reset_attempt)
-			attempt = 0;
-		attempt++;
+			if(url_prm.length > 2){
 
-		// проверяем состояние и пытаемся установить ws соединение с Node
-		if($p.job_prm.ws_url){
-			if(!ws || !opened){
-				try{
-					ws = new WebSocket($p.job_prm.ws_url);
+				pairs = decodeURI(url_prm).split('&');
 
-					ws.onopen = function() {
-						opened = true;
-						ws.send(JSON.stringify({
-							socket_uid: socket_uid,
-							zone: $p.wsql.get_user_param("zone"),
-							browser_uid: $p.wsql.get_user_param("browser_uid"),
-							_side: "js",
-							_mirror: true
-						}));
-					};
-
-					ws.onclose = function() {
-						opened = false;
-						setTimeout(t.connect, attempt < 3 ? 30000 : 600000);
-					};
-
-					ws.onmessage = function(ev) {
-						var data;
-
+				// берём параметры из url
+				for (var i in pairs){   //разбиваем пару на ключ и значение, добавляем в их объект
+					tmp = pairs[i].split('=');
+					if(tmp[0] == "m"){
 						try{
-							data = JSON.parse(ev.data);
-						}catch(err){
-							data = ev.data;
+							prm[tmp[0]] = JSON.parse(tmp[1]);
+						}catch(e){
+							prm[tmp[0]] = {};
 						}
-
-						$p.eve.callEvent("socket_msg", [data]);
-					};
-
-					ws.onerror = $p.record_log;
-
-				}catch(err){
-					setTimeout(t.connect, attempt < 3 ? 30000 : 600000);
-					$p.record_log(err);
+					}else
+						prm[tmp[0]] = tmp[1] || "";
 				}
 			}
-		}
-	};
 
-	t.send = function (data) {
-		if(ws && opened){
-			if(!data)
-				data = {};
-			else if("object" != typeof data)
-				data = {data: data};
-			data.socket_uid = socket_uid;
-			data._side = "js";
-			ws.send(JSON.stringify(data));
+			return prm;
 		}
-	};
 
-	$p.eve.attachEvent("socket_msg", reflect_react);
+		return parse(location.search)._mixin(parse(location.hash));
+	}
+
+	this.__define({
+
+		/**
+		 * Осуществляет синтаксический разбор параметров url
+		 * @method parse_url
+		 * @return {Object}
+		 */
+		parse_url: {
+			value: parse_url
+		},
+
+		offline: {
+			value: false,
+			writable: true
+		},
+
+		local_storage_prefix: {
+			value: "",
+			writable: true
+		},
+
+		create_tables: {
+			value: true,
+			writable: true
+		},
+
+		/**
+		 * Содержит объект с расшифровкой параметров url, указанных при запуске программы
+		 * @property url_prm
+		 * @type {Object}
+		 * @static
+		 */
+		url_prm: {
+			value: typeof window != "undefined" ? parse_url() : {}
+		},
+
+		/**
+		 * Адрес стандартного интерфейса 1С OData
+		 * @method rest_url
+		 * @return {string}
+		 */
+		rest_url: {
+			value: function () {
+				var url = base_url(),
+					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
+				if(zone)
+					return url.replace("%1", zone);
+				else
+					return url.replace("%1/", "");
+			}
+		},
+
+		/**
+		 * Адрес http интерфейса библиотеки интеграции
+		 * @method irest_url
+		 * @return {string}
+		 */
+		irest_url: {
+			value: function () {
+				var url = base_url(),
+					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
+				url = url.replace("odata/standard.odata", "hs/rest");
+				if(zone)
+					return url.replace("%1", zone);
+				else
+					return url.replace("%1/", "");
+			}
+		}
+	});
+
+	// подмешиваем параметры, заданные в файле настроек сборки
+	$p.eve.callEvent("settings", [this, $p.modifiers]);
+
+	// подмешиваем параметры url
+	// Они обладают приоритетом над настройками по умолчанию и настройками из settings.js
+	for(var prm_name in this){
+		if(prm_name !== "url_prm" && typeof this[prm_name] !== "function" && this.url_prm.hasOwnProperty[prm_name])
+			this[prm_name] = this.url_prm[prm_name];
+	}
 
 }
 
-/**
- * Интерфейс асинхронного обмена сообщениями
- * @property socket
- * @type {SocketMsg}
- */
-$p.eve.socket = new SocketMsg();
 
-
-$p.eve.from_json_to_data_obj = function(res) {
-
-	if (typeof res == "string")
-		res = JSON.parse(res);
-
-	else if(res instanceof XMLHttpRequest){
-		if(res.response)
-			res = JSON.parse(res.response);
-		else
-			res = {};
-	}
-
-	"cch,cacc,cat,bp,tsk,doc,ireg,areg".split(",").forEach(function (mgr) {
-		for(var cn in res[mgr])
-			if($p[mgr] && $p[mgr][cn])
-				$p[mgr][cn].load_array(res[mgr][cn], true);
-	});
-
-};
-
-// возаращает промис после выполнения всех заданий в очереди
-$p.eve.reduce_promices = function(parts, callback){
-
-	return parts.reduce(function(sequence, part_promise) {
-
-		// Используем редуцирование что бы связать в очередь обещания, и добавить каждую главу на страницу
-		return sequence.then(function() {
-			return part_promise;
-
-		})
-			// загружаем все части в озу
-			.then(callback)
-			.catch(callback);
-
-	}, Promise.resolve())
-};
-
-$p.eve.js_time_diff = -(new Date("0001-01-01")).valueOf();
-
-$p.eve.time_diff = function () {
-	var time_diff = $p.wsql.get_user_param("time_diff", "number");
-	return (!time_diff || isNaN(time_diff) || time_diff < 62135571600000 || time_diff > 62135622000000) ? $p.eve.js_time_diff : time_diff;
-};

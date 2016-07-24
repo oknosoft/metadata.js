@@ -49,8 +49,13 @@ Metadata.js не конкурирует с клиентскими [Web UI](https
 ## Установка и подключение
 
 ```bash
-npm install --save metadata-js  # node
+npm install -g metadata-js      # node
 bower install --save metadata   # bower
+```
+
+Чтобы создать структуру папок и заготовки файлов проекта, выполните команду
+```bash
+metadata init helloworld    # где 'helloworld' - имя нового проекта
 ```
 
 Для браузера, подключите таблицы стилей `fontawesome`, `dhtmlx`, `metadata` и скрипты `alasql`, `dhtmlx`, `metadata`  

@@ -273,7 +273,7 @@ DataManager.prototype.import = function(file, obj){
 					_mgr.load_array(items, true);
 				} else if(obj._manager == _mgr){
 					for(var i in items){
-						if($p.fix_guid(items[i]) == obj.ref){
+						if($p.utils.fix_guid(items[i]) == obj.ref){
 							imported = true;
 							_mgr.load_array([items[i]], true);
 						}
