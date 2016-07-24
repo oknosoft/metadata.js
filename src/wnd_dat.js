@@ -371,18 +371,15 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 	}
 
 
-	function do_auth(login, password, is_guest){
+	function do_auth(login, password){
 		
 		$p.ajax.username = login;
 		$p.ajax.password = $p.aes.Ctr.encrypt(password);
 
 		if(login){
 
-			if(!is_guest && $p.wsql.get_user_param("user_name") != login)
+			if($p.wsql.get_user_param("user_name") != login)
 				$p.wsql.set_user_param("user_name", login);					// сохраняем имя пользователя в базе
-
-			if(!$p.utils.is_guid($p.wsql.get_user_param("browser_uid")))
-				$p.wsql.set_user_param("browser_uid", $p.utils.generate_guid());	// проверяем guid браузера
 
 			//$p.eve.log_in(attr.onstep)
 			$p.wsql.pouch.log_in(login, password)
@@ -429,8 +426,18 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 		this.resetValidateCss();
 
 		if(this.getCheckedValue("type") == "guest"){
-			do_auth.call(this, this.getItemValue("guest"), "", true);
-			$p.wsql.set_user_param("user_name", "");
+
+			var login = this.getItemValue("guest"),
+				password = "";
+			if($p.job_prm.guests && $p.job_prm.guests.length){
+				$p.job_prm.guests.some(function (g) {
+					if(g.username == login){
+						password = $p.aes.Ctr.decrypt(g.password);
+						return true;
+					}
+				});
+			}
+			do_auth.call(this, login, password);
 
 		}else if(this.getCheckedValue("type") == "auth"){
 			do_auth.call(this, this.getItemValue("login"), this.getItemValue("password"));
@@ -441,16 +448,38 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 	// загружаем структуру формы
 	_frm.loadStruct($p.injected_data["form_auth.xml"], function(){
 
+		var selected;
+
+		// если указан список гостевых пользователей
+		if($p.job_prm.guests && $p.job_prm.guests.length){
+
+			var guests = $p.job_prm.guests.map(function (g) {
+					var v = {
+						text: g.username,
+						value: g.username
+					};
+					if($p.wsql.get_user_param("user_name") == g.username){
+						v.selected = true;
+						selected = g.username;
+					}
+					return v;
+				});
+
+			if(!selected){
+				guests[0].selected = true;
+				selected = guests[0].value;
+			}
+
+			_frm.reloadOptions("guest", guests);
+		}
+
 		// после готовности формы читаем пользователя из локальной датабазы
-		if($p.wsql.get_user_param("user_name")){
+		if($p.wsql.get_user_param("user_name") && $p.wsql.get_user_param("user_name") != selected){
 			_frm.setItemValue("login", $p.wsql.get_user_param("user_name"));
 			_frm.setItemValue("type", "auth");
 
 			if($p.wsql.get_user_param("enable_save_pwd") && $p.wsql.get_user_param("user_pwd")){
 				_frm.setItemValue("password", $p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")));
-
-				if($p.wsql.get_user_param("autologin") || attr.try_auto)
-					auth_click.call(_frm);
 			}
 		}
 
@@ -463,7 +492,12 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 		}
 
 		setTimeout(function () {
+
 			dhx4.callEvent("on_draw_auth", [_frm]);
+
+			if(($p.wsql.get_user_param("autologin") || attr.try_auto) && (selected || ($p.wsql.get_user_param("user_name") && $p.wsql.get_user_param("user_pwd"))))
+				auth_click.call(_frm);
+
 		});
 	});
 
