@@ -511,17 +511,17 @@ function Meta() {
 
 
 	// загружает метаданные из pouchdb
-	function meta_from_pouch(){
+	function meta_from_pouch(meta_db){
 
-		return $p.wsql.pouch.local.meta.info()
+		return meta_db.info()
 			.then(function () {
-				return $p.wsql.pouch.local.meta.get('meta');
+				return meta_db.get('meta');
 
 			})
 			.then(function (doc) {
 				_m = doc;
 				doc = null;
-				return $p.wsql.pouch.local.meta.get('meta_patch');
+				return meta_db.get('meta_patch');
 
 			}).then(function (doc) {
 				$p._patch(_m, doc);
@@ -533,16 +533,23 @@ function Meta() {
 
 
 	/**
-	 * Инициализирует метаданные и загружает данные из локального хранилища
+	 * ### Инициализирует метаданные
+	 * загружает описание метаданных из локального или сетевого хранилища
 	 */
-	_md.init = function () {
+	_md.init = function (meta_db) {
 
 		var confirm_count = 0;
 		
 		function do_init(){
-			return meta_from_pouch()
-				.then(create_managers)
-				.then($p.wsql.pouch.load_data)
+			return meta_from_pouch(meta_db || $p.wsql.pouch.local.meta)
+				.then(function () {
+					if(meta_db){
+						return _m;
+					}else{
+						create_managers();
+						return $p.wsql.pouch.load_data();
+					}
+				})
 				.catch($p.record_log);
 		}
 
@@ -577,6 +584,7 @@ function Meta() {
 
 		// этот обработчик нужен только при инициализации, когда в таблицах meta еще нет данных
 		$p.eve.attachEvent("pouch_change", function (dbid, change) {
+
 			if (dbid != "meta")
 				return;
 
@@ -595,30 +603,9 @@ function Meta() {
 
 		return $p.wsql.pouch.local.ram.info()
 			.then(function () {
-				return do_init()
+				return do_init();
 			});
 
-	};
-
-	/**
-	 * Инициализирует метаданные из встроенных данных, внешних файлов или indexeddb
-	 * @return {Promise}
-	 * @private
-	 */
-	_md.init_meta = function (forse) {
-
-		return new Promise(function(resolve, reject){
-
-			if($p.injected_data['meta.json'])
-				resolve(new Meta($p.injected_data['meta.json'], $p.injected_data['meta_patch.json']));
-
-			else if($p.injected_data['meta_patch.json'])
-				resolve(new Meta($p.injected_data['meta_patch.json']));
-
-			else
-				reject(new Error("no_injected_data"));
-
-		});
 	};
 
 	/**
@@ -1110,37 +1097,24 @@ function Meta() {
 	_md.create_tables = function(callback, attr){
 
 		var cstep = 0, data_names = [], managers = _md.get_classes(), class_name,
-			create = (attr && attr.postgres) ? "" : "USE md;\n";
+			create = (attr && attr.postgres) ? "" : "USE md; ";
 
-		function on_table_created(data){
+		function on_table_created(){
 
-			if(typeof data === "number"){
-				cstep--;
-				if(cstep==0){
-					if(callback)
-						setTimeout(function () {
-							callback(create);
-						}, 10);
-					else
-						alasql.utils.saveFile("create_tables.sql", create);
-				} else
-					iteration();
-			}else if(data && data.hasOwnProperty("message")){
-				if($p.iface && $p.iface.docs){
-					$p.iface.docs.progressOff();
-					$p.msg.show_msg({
-						title: $p.msg.error_critical,
-						type: "alert-error",
-						text: data.message
-					});
-				}
-			}
+			cstep--;
+			if(cstep==0){
+				if(callback)
+					callback(create);
+				else
+					alasql.utils.saveFile("create_tables.sql", create);
+			} else
+				iteration();
 		}
 
 		function iteration(){
 			var data = data_names[cstep-1];
-			create += data["class"][data.name].get_sql_struct(attr) + ";\n";
-			on_table_created(1);
+			create += data["class"][data.name].get_sql_struct(attr) + "; ";
+			on_table_created();
 		}
 
 		// TODO переписать на промисах и генераторах и перекинуть в синкер
@@ -1154,21 +1128,6 @@ function Meta() {
 
 	};
 
-	_md.create_modules = function(root){
-
-		var class_name,
-			text = "";
-
-		if(!root)
-			root = "$p";
-
-		for(class_name in _m.enm)
-			text+= root + ".enm." + class_name + "= new EnumManager(_m.enm." + class_name + ", 'enm." + class_name + "');\n";
-
-		for(class_name in _m.cat)
-			text+= root + ".cat." + class_name + "= new CatManager('cat." + class_name + "');\n";
-
-	}
 
 }
 

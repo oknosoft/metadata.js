@@ -1632,51 +1632,8 @@ RefDataManager.prototype.__define({
 
 			return this._predefined[name];
 		}
-	},
-
-	obj_constructor_text: {
-		value: function () {
-
-			var parts = this.class_name.split("."),
-				fn_name = parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + parts[1].charAt(0).toUpperCase() + parts[1].substr(1),
-				text = "function " + fn_name + "(attr, manager){manager._obj_constructor.superclass.constructor.call(this, attr, manager)}'\n";
-
-			text += fn_name + "._extend(" + parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + "Obj);\n";
-
-			// реквизиты по метаданным
-			for(var f in this.metadata().fields){
-				text += fn_name + ".prototype.__define('"+f+"', {get: function(){return this._getter('"+f+"')}, " +
-					"set: function(v){this._setter('"+f+"',v)}, enumerable: true, configurable: true});\n";
-			}
-
-
-			// табличные части по метаданным
-			for(var f in this.metadata().tabular_sections){
-
-				// создаём конструктор строки табчасти
-				var row_fn_name = fn_name + f.charAt(0).toUpperCase() + f.substr(1) + "Row";
-
-				text += "function " + row_fn_name + "(owner)" +
-					"{owner._owner._manager._ts_сonstructors[owner._name].superclass.constructor.call(this, owner)});\n";
-
-				text += row_fn_name + "._extend(TabularSectionRow);\n";
-
-				// в прототипе строки табчасти создаём свойства в соответствии с полями табчасти
-				for(var rf in this.metadata().tabular_sections[f].fields){
-					text += row_fn_name + ".prototype.__define('"+rf+"', {get: function(){return this._getter('"+rf+"')}, " +
-						"set: function(v){this._setter('"+rf+"',v)}, enumerable: true, configurable: true});\n";
-				}
-
-				// устанавливаем геттер и сеттер для табличной части
-				text += fn_name + ".prototype.__define('"+f+"', {get: function(){return this._getter_ts('"+f+"')}, " +
-					"set: function(v){this._setter_ts('"+f+"',v)}, enumerable: true, configurable: true});\n";
-
-			}
-
-			return text;
-
-		}
 	}
+
 });
 
 

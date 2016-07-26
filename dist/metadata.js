@@ -645,6 +645,106 @@ function MetaEngine() {
 				}else
 					$p.eve.detachEvent(id);
 			}
+		},
+
+		DataManager: {
+			value: DataManager
+		},
+
+		RefDataManager: {
+			value: RefDataManager
+		},
+
+		DataProcessorsManager: {
+			value: DataProcessorsManager
+		},
+
+		EnumManager: {
+			value: EnumManager
+		},
+
+		RegisterManager: {
+			value: RegisterManager
+		},
+
+		InfoRegManager: {
+			value: InfoRegManager
+		},
+
+		InfoRegManager: {
+			value: InfoRegManager
+		},
+
+		LogManager: {
+			value: LogManager
+		},
+
+		AccumRegManager: {
+			value: AccumRegManager
+		},
+
+		CatManager: {
+			value: CatManager
+		},
+
+		ChartOfCharacteristicManager: {
+			value: ChartOfCharacteristicManager
+		},
+
+		ChartOfAccountManager: {
+			value: ChartOfAccountManager
+		},
+
+		DocManager: {
+			value: DocManager
+		},
+
+		TaskManager: {
+			value: TaskManager
+		},
+
+		BusinessProcessManager: {
+			value: BusinessProcessManager
+		},
+
+		DataObj: {
+			value: DataObj
+		},
+
+		CatObj: {
+			value: CatObj
+		},
+
+		DocObj: {
+			value: DocObj
+		},
+
+		DataProcessorObj: {
+			value: DataProcessorObj
+		},
+
+		TaskObj: {
+			value: TaskObj
+		},
+
+		BusinessProcessObj: {
+			value: BusinessProcessObj
+		},
+
+		EnumObj: {
+			value: EnumObj
+		},
+
+		RegisterRow: {
+			value: RegisterRow
+		},
+
+		TabularSection: {
+			value: TabularSection
+		},
+
+		TabularSectionRow: {
+			value: TabularSectionRow
 		}
 
 	});
@@ -3022,6 +3122,17 @@ $p.fias = function FIAS(){};
 	msg.main_title = "Окнософт: заказ дилера ";
 	msg.mark_delete_confirm = "Пометить объект %1 на удаление?";
 	msg.mark_undelete_confirm = "Снять пометку удаления с объекта %1?";
+	msg.meta = {
+		cat: "Справочник",
+		doc: "Документ",
+		cch: "План видов характеристик",
+		cacc: "Планы счетов",
+		tsk : "Задача",
+		ireg: "Регистр сведений",
+		areg: "Регистр накопления",
+		bp: "Бизнес процесс",
+		ts_row: "Строка табличной части"
+	},
 	msg.meta_cat = "Справочники";
 	msg.meta_doc = "Документы";
 	msg.meta_cch = "Планы видов характеристик";
@@ -3092,13 +3203,12 @@ $p.fias = function FIAS(){};
 
 
 /**
+ * ### Кнопки авторизации и синхронизации
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
- * Created 07.11.2015<br />
- * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
- * @author  Evgeniy Malyarov
  * @module  widgets
  * @submodule btn_auth_sync
+ * @requires common
  */
 
 /**
@@ -3107,6 +3217,8 @@ $p.fias = function FIAS(){};
  *
  * @class OBtnAuthSync
  * @constructor
+ * @menuorder 57
+ * @tooltip Кнопки авторизации
  */
 $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 
@@ -3698,7 +3810,10 @@ $p.iface.data_to_tree = function (data) {
  * ### Визуальный компонент - гиперссылка с выпадающим списком для выбора значения
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- * @module  wdg_dropdown_list
+ *
+ * @module  widgets
+ * @submodule  wdg_dropdown_list
+ * @requires common
  */
 
 /**
@@ -3786,11 +3901,13 @@ function ODropdownList(attr){
 }
 $p.iface.ODropdownList = ODropdownList;
 /**
- * Динамическое дерево иерархического справочника
+ * ### Динамическое дерево иерархического справочника
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  * 
- * @module  wdg_dyn_tree
+ * @module  widgets
+ * @submodule wdg_dyn_tree
+ * @requires common
  */
 
 /**
@@ -3858,7 +3975,8 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
- * @module  wdg_ocombo
+ * @module widgets
+ * @submodule wdg_ocombo
  * @requires common
  */
 
@@ -4370,7 +4488,8 @@ $p.iface.select_from_list = function (list, multy) {
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
- * @module  wdg_ohead_fields
+ * @module  widgets
+ * @submodule wdg_ohead_fields
  * @requires common
  */
 
@@ -4669,7 +4788,8 @@ dhtmlXGridObject.prototype.get_cell_value = function () {
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
- * @module  wdg_otabular
+ * @module  widgets
+ * @submodule wdg_otabular
  * @requires common
  */
 
@@ -4994,12 +5114,13 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 
 /**
- * Виджет для панели инструментов форм списка и выбора,
+ * ### Виджет элементов фильтра для панели инструментов форм списка и выбора
  * объединяет поля выбора периода и поле ввода фильтра
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
- * @module  wdg_filter
+ * @module  widgets
+ * @submodule wdg_filter
  * @requires common
  */
 
@@ -5013,6 +5134,8 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
  * @param [attr.date_from]
  * @param [attr.date_till]
  * @constructor
+ * @menuorder 57
+ * @tooltip Фильтр динсписка
  */
 $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 
@@ -5691,17 +5814,17 @@ function Meta() {
 
 
 	// загружает метаданные из pouchdb
-	function meta_from_pouch(){
+	function meta_from_pouch(meta_db){
 
-		return $p.wsql.pouch.local.meta.info()
+		return meta_db.info()
 			.then(function () {
-				return $p.wsql.pouch.local.meta.get('meta');
+				return meta_db.get('meta');
 
 			})
 			.then(function (doc) {
 				_m = doc;
 				doc = null;
-				return $p.wsql.pouch.local.meta.get('meta_patch');
+				return meta_db.get('meta_patch');
 
 			}).then(function (doc) {
 				$p._patch(_m, doc);
@@ -5713,16 +5836,23 @@ function Meta() {
 
 
 	/**
-	 * Инициализирует метаданные и загружает данные из локального хранилища
+	 * ### Инициализирует метаданные
+	 * загружает описание метаданных из локального или сетевого хранилища
 	 */
-	_md.init = function () {
+	_md.init = function (meta_db) {
 
 		var confirm_count = 0;
 		
 		function do_init(){
-			return meta_from_pouch()
-				.then(create_managers)
-				.then($p.wsql.pouch.load_data)
+			return meta_from_pouch(meta_db || $p.wsql.pouch.local.meta)
+				.then(function () {
+					if(meta_db){
+						return _m;
+					}else{
+						create_managers();
+						return $p.wsql.pouch.load_data();
+					}
+				})
 				.catch($p.record_log);
 		}
 
@@ -5757,6 +5887,7 @@ function Meta() {
 
 		// этот обработчик нужен только при инициализации, когда в таблицах meta еще нет данных
 		$p.eve.attachEvent("pouch_change", function (dbid, change) {
+
 			if (dbid != "meta")
 				return;
 
@@ -5775,30 +5906,9 @@ function Meta() {
 
 		return $p.wsql.pouch.local.ram.info()
 			.then(function () {
-				return do_init()
+				return do_init();
 			});
 
-	};
-
-	/**
-	 * Инициализирует метаданные из встроенных данных, внешних файлов или indexeddb
-	 * @return {Promise}
-	 * @private
-	 */
-	_md.init_meta = function (forse) {
-
-		return new Promise(function(resolve, reject){
-
-			if($p.injected_data['meta.json'])
-				resolve(new Meta($p.injected_data['meta.json'], $p.injected_data['meta_patch.json']));
-
-			else if($p.injected_data['meta_patch.json'])
-				resolve(new Meta($p.injected_data['meta_patch.json']));
-
-			else
-				reject(new Error("no_injected_data"));
-
-		});
 	};
 
 	/**
@@ -6290,37 +6400,24 @@ function Meta() {
 	_md.create_tables = function(callback, attr){
 
 		var cstep = 0, data_names = [], managers = _md.get_classes(), class_name,
-			create = (attr && attr.postgres) ? "" : "USE md;\n";
+			create = (attr && attr.postgres) ? "" : "USE md; ";
 
-		function on_table_created(data){
+		function on_table_created(){
 
-			if(typeof data === "number"){
-				cstep--;
-				if(cstep==0){
-					if(callback)
-						setTimeout(function () {
-							callback(create);
-						}, 10);
-					else
-						alasql.utils.saveFile("create_tables.sql", create);
-				} else
-					iteration();
-			}else if(data && data.hasOwnProperty("message")){
-				if($p.iface && $p.iface.docs){
-					$p.iface.docs.progressOff();
-					$p.msg.show_msg({
-						title: $p.msg.error_critical,
-						type: "alert-error",
-						text: data.message
-					});
-				}
-			}
+			cstep--;
+			if(cstep==0){
+				if(callback)
+					callback(create);
+				else
+					alasql.utils.saveFile("create_tables.sql", create);
+			} else
+				iteration();
 		}
 
 		function iteration(){
 			var data = data_names[cstep-1];
-			create += data["class"][data.name].get_sql_struct(attr) + ";\n";
-			on_table_created(1);
+			create += data["class"][data.name].get_sql_struct(attr) + "; ";
+			on_table_created();
 		}
 
 		// TODO переписать на промисах и генераторах и перекинуть в синкер
@@ -6334,21 +6431,6 @@ function Meta() {
 
 	};
 
-	_md.create_modules = function(root){
-
-		var class_name,
-			text = "";
-
-		if(!root)
-			root = "$p";
-
-		for(class_name in _m.enm)
-			text+= root + ".enm." + class_name + "= new EnumManager(_m.enm." + class_name + ", 'enm." + class_name + "');\n";
-
-		for(class_name in _m.cat)
-			text+= root + ".cat." + class_name + "= new CatManager('cat." + class_name + "');\n";
-
-	}
 
 }
 
@@ -7997,51 +8079,8 @@ RefDataManager.prototype.__define({
 
 			return this._predefined[name];
 		}
-	},
-
-	obj_constructor_text: {
-		value: function () {
-
-			var parts = this.class_name.split("."),
-				fn_name = parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + parts[1].charAt(0).toUpperCase() + parts[1].substr(1),
-				text = "function " + fn_name + "(attr, manager){manager._obj_constructor.superclass.constructor.call(this, attr, manager)}'\n";
-
-			text += fn_name + "._extend(" + parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + "Obj);\n";
-
-			// реквизиты по метаданным
-			for(var f in this.metadata().fields){
-				text += fn_name + ".prototype.__define('"+f+"', {get: function(){return this._getter('"+f+"')}, " +
-					"set: function(v){this._setter('"+f+"',v)}, enumerable: true, configurable: true});\n";
-			}
-
-
-			// табличные части по метаданным
-			for(var f in this.metadata().tabular_sections){
-
-				// создаём конструктор строки табчасти
-				var row_fn_name = fn_name + f.charAt(0).toUpperCase() + f.substr(1) + "Row";
-
-				text += "function " + row_fn_name + "(owner)" +
-					"{owner._owner._manager._ts_сonstructors[owner._name].superclass.constructor.call(this, owner)});\n";
-
-				text += row_fn_name + "._extend(TabularSectionRow);\n";
-
-				// в прототипе строки табчасти создаём свойства в соответствии с полями табчасти
-				for(var rf in this.metadata().tabular_sections[f].fields){
-					text += row_fn_name + ".prototype.__define('"+rf+"', {get: function(){return this._getter('"+rf+"')}, " +
-						"set: function(v){this._setter('"+rf+"',v)}, enumerable: true, configurable: true});\n";
-				}
-
-				// устанавливаем геттер и сеттер для табличной части
-				text += fn_name + ".prototype.__define('"+f+"', {get: function(){return this._getter_ts('"+f+"')}, " +
-					"set: function(v){this._setter_ts('"+f+"',v)}, enumerable: true, configurable: true});\n";
-
-			}
-
-			return text;
-
-		}
 	}
+
 });
 
 
@@ -15733,10 +15772,7 @@ function AppEvents() {
 		init: {
 			value: function () {
 				$p.job_prm = new JobPrm();
-				$p.wsql.init_params()
-					.then(function(){
-						$p.md.init();
-					});
+				return $p.wsql.init_params();
 			}
 		},
 

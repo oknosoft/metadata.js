@@ -45,10 +45,7 @@ function AppEvents() {
 		init: {
 			value: function () {
 				$p.job_prm = new JobPrm();
-				$p.wsql.init_params()
-					.then(function(){
-						$p.md.init();
-					});
+				return $p.wsql.init_params();
 			}
 		},
 

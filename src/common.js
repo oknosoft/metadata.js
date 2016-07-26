@@ -449,6 +449,106 @@ function MetaEngine() {
 				}else
 					$p.eve.detachEvent(id);
 			}
+		},
+
+		DataManager: {
+			value: DataManager
+		},
+
+		RefDataManager: {
+			value: RefDataManager
+		},
+
+		DataProcessorsManager: {
+			value: DataProcessorsManager
+		},
+
+		EnumManager: {
+			value: EnumManager
+		},
+
+		RegisterManager: {
+			value: RegisterManager
+		},
+
+		InfoRegManager: {
+			value: InfoRegManager
+		},
+
+		InfoRegManager: {
+			value: InfoRegManager
+		},
+
+		LogManager: {
+			value: LogManager
+		},
+
+		AccumRegManager: {
+			value: AccumRegManager
+		},
+
+		CatManager: {
+			value: CatManager
+		},
+
+		ChartOfCharacteristicManager: {
+			value: ChartOfCharacteristicManager
+		},
+
+		ChartOfAccountManager: {
+			value: ChartOfAccountManager
+		},
+
+		DocManager: {
+			value: DocManager
+		},
+
+		TaskManager: {
+			value: TaskManager
+		},
+
+		BusinessProcessManager: {
+			value: BusinessProcessManager
+		},
+
+		DataObj: {
+			value: DataObj
+		},
+
+		CatObj: {
+			value: CatObj
+		},
+
+		DocObj: {
+			value: DocObj
+		},
+
+		DataProcessorObj: {
+			value: DataProcessorObj
+		},
+
+		TaskObj: {
+			value: TaskObj
+		},
+
+		BusinessProcessObj: {
+			value: BusinessProcessObj
+		},
+
+		EnumObj: {
+			value: EnumObj
+		},
+
+		RegisterRow: {
+			value: RegisterRow
+		},
+
+		TabularSection: {
+			value: TabularSection
+		},
+
+		TabularSectionRow: {
+			value: TabularSectionRow
 		}
 
 	});
