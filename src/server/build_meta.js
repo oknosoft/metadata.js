@@ -98,15 +98,9 @@ function create_modules(_m){
 		}
 	}
 
-	// загружаем модификаторы и прочие зависимости
-	// $p.modifiers.execute($p);
-	// $p.modifiers.clear();
-	// $p.modifiers.execute_external($p);
-
 	return text + "};\n";
 
 }
-
 
 function obj_constructor_text(_m, category, name, proto) {
 

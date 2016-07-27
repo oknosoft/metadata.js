@@ -1,9 +1,6 @@
 /**
  *
- * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016<br />
- * Created 14.12.2015
- * 
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  * @module  gulp-resource-concat
  */
 
@@ -18,7 +15,7 @@ var File = gutil.File;
 
 module.exports = function (fileName, converter) {
 	if (!fileName) {
-		throw new PluginError('gulp-jsonconcat', 'Missing fileName option for gulp-jsonconcat');
+		throw new PluginError('gulp-resource-concat', 'Missing fileName option for gulp-resource-concat');
 	}
 
 	var data = {};

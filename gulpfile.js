@@ -5,21 +5,37 @@
  * @author  Evgeniy Malyarov
  */
 
-var gulp = require('gulp');
-module.exports = gulp;
-var base64 = require('gulp-base64'),
+var gulp = require('gulp'),
+	base64 = require('gulp-base64'),
 	csso = require('gulp-csso'),
 	concat = require('gulp-concat'),
 	uglify = require('gulp-uglify'),
 	shell = require('gulp-shell'),
 	rename = require('gulp-rename'),
-	resources = require('./lib/gulp-resource-concat.js'),
+	resources = require('./src/utils/resource-concat.js'),
 	path = require('path'),
 	umd = require('gulp-umd'),
 	replace = require('gulp-replace');
+	// async = require('gulp-async-func-runner'),
+	// gulpfile = require('gulp-file'),
+	// async = require('gulp-replace-async');
 
-// Identify name of the build
-var packageData = JSON.parse(require('fs').readFileSync('package.json', 'utf8'));
+module.exports = gulp;
+
+// данные файла package.json
+var package_data = JSON.parse(require('fs').readFileSync('package.json', 'utf8'));
+
+
+gulp.task('prebuild', function(){
+
+	var prebuild = require('./src/utils/prebuild.js');
+
+	return gulp.src(['./src/common.js'])
+		.pipe(prebuild('prebuild.js'))
+		.pipe(gulp.dest('./data'));
+
+});
+
 
 gulp.task('build-metadata', function () {
 	return gulp.src([
@@ -53,7 +69,7 @@ gulp.task('build-metadata', function () {
 		'./lib/rubles/rubles.js'
 	])
 		.pipe(concat('metadata.js'))
-		.pipe(replace(/PACKAGE_VERSION_NUMBER/g, packageData.version))
+		.pipe(replace(/PACKAGE_VERSION_NUMBER/g, package_data.version))
 		.pipe(umd({
 			exports: function(file) {
 				return '$p';
@@ -61,7 +77,7 @@ gulp.task('build-metadata', function () {
 			namespace: function(file) {
 				return '$p';
 			},
-			template: path.join(__dirname, 'lib/gulp-umd-exports-oknosoft.js')
+			template: path.join(__dirname, './src/utils/umd-exports-oknosoft.js')
 		}))
 		.pipe(gulp.dest('./lib'))
 		.pipe(gulp.dest('./dist'))
@@ -75,9 +91,8 @@ gulp.task('build-metadata', function () {
 		.pipe(gulp.dest('./dist'));
 });
 
-
 gulp.task('injected_main', function(){
-   gulp.src(['./data/*.xml'])
+   return gulp.src(['./data/*.xml'])
 	   .pipe(resources('merged_data.js', function (data) {
 		   return new Buffer('$p.injected_data._mixin(' + JSON.stringify(data) + ');');
 	   }))
@@ -87,11 +102,11 @@ gulp.task('injected_main', function(){
 // dhtmlxscheduler
 gulp.task('build-scheduler', function(){
 
-	gulp.src([
+	return gulp.src([
 			'./lib/dhtmlxscheduler/license.js',
 			'./lib/dhtmlxscheduler/dhtmlxscheduler.js',
 			'./lib/dhtmlxscheduler/dhtmlxscheduler_locale_ru.js',
-			'./lib/dhtmlxscheduler/dhtmlxscheduler_minical.js',
+			'./lib/dhtmlxscheduler/dhtmlxscheduler_minical.js'
 			// './lib/dhtmlxscheduler/dhtmlxscheduler_timeline.js',
 			// './lib/dhtmlxscheduler/dhtmlxscheduler_treetimeline.js'
 		])
@@ -103,14 +118,14 @@ gulp.task('build-scheduler', function(){
 				return comment.value[0]=="!";
 			}
 		}))
-		.pipe(gulp.dest('./lib/dhtmlxscheduler'))
+		.pipe(gulp.dest('./lib/dhtmlxscheduler'));
 		//.pipe(gulp.dest('./dist'));
 });
 
 // dhtmlx
 gulp.task('build-dhtmlx', function(){
 
-	gulp.src([
+	return gulp.src([
 			'./src/dhtmlx/patches/license.js',
 			'./src/dhtmlx/sources/dhtmlxCommon/codebase/dhtmlxcommon.js',
 			'./src/dhtmlx/sources/dhtmlxCommon/codebase/dhtmlxcore.js',
@@ -235,7 +250,7 @@ gulp.task('css-metadata', function () {
 
 // Сборка сервера для Node.js
 gulp.task('build-metadata-core', function(){
-	gulp.src([
+	return gulp.src([
 		'./src/common.js',
 		'./src/wsql.js',
 		'./src/i18n.ru.js',
@@ -250,7 +265,7 @@ gulp.task('build-metadata-core', function(){
 		'./lib/aes/aes.js'
 	])
 		.pipe(concat('metadata.core.js'))
-		.pipe(replace(/PACKAGE_VERSION_NUMBER/g, packageData.version))
+		.pipe(replace(/PACKAGE_VERSION_NUMBER/g, package_data.version))
 		.pipe(umd({
 			exports: function(file) {
 				return '$p';
@@ -258,7 +273,7 @@ gulp.task('build-metadata-core', function(){
 			namespace: function(file) {
 				return '$p';
 			},
-			template: path.join(__dirname, 'lib/gulp-umd-exports-oknosoft.js')
+			template: path.join(__dirname, './src/utils/umd-exports-oknosoft.js')
 		}))
 		.pipe(gulp.dest('./lib'))
 		.pipe(rename('metadata.core.min.js'))
@@ -270,7 +285,7 @@ gulp.task('build-metadata-core', function(){
 
 // Ресурсы для codres
 gulp.task('injected-codres', function(){
-	gulp.src([
+	return gulp.src([
 		'./examples/codex/data/*.html',
 		'./examples/codex/data/create_tables.sql',
 		'./examples/codex/data/meta.json',
@@ -284,7 +299,7 @@ gulp.task('injected-codres', function(){
 
 // Сборка скрипта codres
 gulp.task('build-codres', function(){
-	gulp.src([
+	return gulp.src([
 			'./examples/codex/js/codres.js',
 			'./examples/codex/data/injected_codres.js'
 		])
@@ -294,7 +309,7 @@ gulp.task('build-codres', function(){
 
 // Ресурсы для codex
 gulp.task('injected-codex', function(){
-	gulp.src([
+	return gulp.src([
 		'./examples/codex/data/*.md',
 		'./examples/codex/data/*.code',
 		'./examples/codex/data/tree.json'
@@ -307,7 +322,7 @@ gulp.task('injected-codex', function(){
 
 // Сборка скрипта codex
 gulp.task('build-codex', function(){
-	gulp.src([
+	return gulp.src([
 			'./examples/codex/js/codex.js',
 			'./examples/codex/data/injected_codex.js'
 		])
