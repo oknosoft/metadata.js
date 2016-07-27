@@ -31,35 +31,35 @@ function Messages(){
 			// глобальный контекст
 			window.__define({
 				"Метаданные": {
-					get: function(){return _md},
+					get: function(){return $p.md},
 					enumerable: false
 				},
 				"Справочники": {
-					get: function(){return _cat},
+					get: function(){return $p.cat},
 					enumerable: false
 				},
 				"Документы": {
-					get: function(){return _doc},
+					get: function(){return $p.doc},
 					enumerable: false
 				},
 				"РегистрыСведений": {
-					get: function(){return _ireg},
+					get: function(){return $p.ireg},
 					enumerable: false
 				},
 				"РегистрыНакопления": {
-					get: function(){return _areg},
+					get: function(){return $p.areg},
 					enumerable: false
 				},
 				"РегистрыБухгалтерии": {
-					get: function(){return _accreg},
+					get: function(){return $p.accreg},
 					enumerable: false
 				},
 				"Обработки": {
-					get: function(){return _dp},
+					get: function(){return $p.dp},
 					enumerable: false
 				},
 				"Отчеты": {
-					get: function(){return _rep},
+					get: function(){return $p.rep},
 					enumerable: false
 				},
 				"ОбластьКонтента": {

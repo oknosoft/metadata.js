@@ -414,6 +414,193 @@ function MetaEngine() {
 		},
 
 		/**
+		 * Абстрактный поиск значения в коллекции
+		 * @method _find
+		 * @param a {Array}
+		 * @param val {DataObj|String}
+		 * @param val {Array|String} - имена полей, в которых искать
+		 * @return {*}
+		 * @private
+		 */
+		_find: {
+			value: function(a, val, columns){
+				//TODO переписать с учетом html5 свойств массивов
+				var o, i, finded;
+				if(typeof val != "object"){
+					for(i in a){ // ищем по всем полям объекта
+						o = a[i];
+						for(var j in o){
+							if(typeof o[j] !== "function" && $p.utils.is_equal(o[j], val))
+								return o;
+						}
+					}
+				}else{
+					for(i in a){ // ищем по ключам из val
+						o = a[i];
+						finded = true;
+						for(var j in val){
+							if(typeof o[j] !== "function" && !$p.utils.is_equal(o[j], val[j])){
+								finded = false;
+								break;
+							}
+						}
+						if(finded)
+							return o;
+					}
+				}
+			}
+		},
+
+		/**
+		 * Выясняет, удовлетворяет ли объект `o` условию `selection`
+		 * @method _selection
+		 * @param o {Object}
+		 * @param [selection]
+		 * @private
+		 */
+		_selection: {
+			value: function (o, selection) {
+
+				var ok = true, j, sel, is_obj;
+
+				if(selection){
+					// если отбор является функцией, выполняем её, передав контекст
+					if(typeof selection == "function")
+						ok = selection.call(this, o);
+
+					else{
+						// бежим по всем свойствам `selection`
+						for(j in selection){
+
+							sel = selection[j];
+							is_obj = typeof(sel) === "object";
+
+							// пропускаем служебные свойства
+							if(j.substr(0, 1) == "_")
+								continue;
+
+							// если свойство отбора является функцией, выполняем её, передав контекст
+							else if(typeof sel == "function"){
+								ok = sel.call(this, o, j);
+								if(!ok)
+									break;
+
+								// если свойство отбора является объектом `or`, выполняем Array.some() TODO: здесь напрашивается рекурсия
+							}else if(j == "or" && Array.isArray(sel)){
+								ok = sel.some(function (element) {
+									var key = Object.keys(element)[0];
+									if(element[key].hasOwnProperty("like"))
+										return o[key] && o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
+									else
+										return $p.utils.is_equal(o[key], element[key]);
+								});
+								if(!ok)
+									break;
+
+								// если свойство отбора является объектом `like`, сравниваем подстроку
+							}else if(is_obj && sel.hasOwnProperty("like")){
+								if(!o[j] || o[j].toLowerCase().indexOf(sel.like.toLowerCase())==-1){
+									ok = false;
+									break;
+								}
+
+								// если свойство отбора является объектом `not`, сравниваем на неравенство
+							}else if(is_obj && sel.hasOwnProperty("not")){
+								if($p.utils.is_equal(o[j], sel.not)){
+									ok = false;
+									break;
+								}
+
+								// если свойство отбора является объектом `in`, выполняем Array.some()
+							}else if(is_obj && sel.hasOwnProperty("in")){
+								ok = sel.in.some(function(element) {
+									return $p.utils.is_equal(element, o[j]);
+								});
+								if(!ok)
+									break;
+
+								// если свойство отбора является объектом `lt`, сравниваем на _меньше_
+							}else if(is_obj && sel.hasOwnProperty("lt")){
+								ok = o[j] < sel.lt;
+								if(!ok)
+									break;
+
+								// если свойство отбора является объектом `gt`, сравниваем на _больше_
+							}else if(is_obj && sel.hasOwnProperty("gt")){
+								ok = o[j] > sel.gt;
+								if(!ok)
+									break;
+
+								// если свойство отбора является объектом `between`, сравниваем на _вхождение_
+							}else if(is_obj && sel.hasOwnProperty("between")){
+								var tmp = o[j];
+								if(typeof tmp != "number")
+									tmp = $p.utils.fix_date(o[j]);
+								ok = (tmp >= sel.between[0]) && (tmp <= sel.between[1]);
+								if(!ok)
+									break;
+
+							}else if(!$p.utils.is_equal(o[j], sel)){
+								ok = false;
+								break;
+							}
+						}
+					}
+				}
+
+				return ok;
+			}
+		},
+
+		/**
+		 * ### Поиск массива значений в коллекции
+		 * Кроме стандартного поиска по равенству значений,
+		 * поддержаны операторы `in`, `not` и `like` и фильтрация через внешнюю функцию
+		 * @method _find_rows
+		 * @param arr {Array}
+		 * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
+		 * @param callback {Function}
+		 * @return {Array}
+		 * @private
+		 */
+		_find_rows: {
+			value: function(arr, selection, callback){
+
+				var o, res = [], top, count = 0;
+
+				if(selection){
+					if(selection._top){
+						top = selection._top;
+						delete selection._top;
+					}else
+						top = 300;
+				}
+
+				for(var i in arr){
+					o = arr[i];
+
+					// выполняем колбэк с элементом и пополняем итоговый массив
+					if($p._selection.call(this, o, selection)){
+						if(callback){
+							if(callback.call(this, o) === false)
+								break;
+						}else
+							res.push(o);
+
+						// ограничиваем кол-во возвращаемых элементов
+						if(top) {
+							count++;
+							if (count >= top)
+								break;
+						}
+					}
+
+				}
+				return res;
+			}
+		},
+
+		/**
 		 * ### Подключает обработчики событий
 		 *
 		 * @method on
@@ -449,6 +636,287 @@ function MetaEngine() {
 				}else
 					$p.eve.detachEvent(id);
 			}
+		},
+
+		/**
+		 * ### Запись журнала регистрации
+		 *
+		 * @method record_log
+		 * @param err
+		 */
+		record_log: {
+			value: function (err) {
+				if($p.ireg && $p.ireg.$log)
+					$p.ireg.$log.record(err);
+				console.log(err);
+			}
+		},
+
+		/**
+		 * ### Mетаданные конфигурации
+		 * @property md
+		 * @type Meta
+		 * @static
+		 */
+		md: {
+			value: new Meta()
+		},
+
+		/**
+		 * Коллекция менеджеров перечислений
+		 * @property enm
+		 * @type Enumerations
+		 * @static
+		 */
+		enm: {
+			value: new (
+				/**
+				 * ### Коллекция менеджеров перечислений
+				 * - Состав коллекции определяется метаданными используемой конфигурации
+				 * - Тип элементов коллекции: {{#crossLink "EnumManager"}}{{/crossLink}}
+				 *
+				 * @class Enumerations
+				 * @static
+				 */
+					function Enumerations(){
+					this.toString = function(){return $p.msg.meta_enn_mgr};
+				})
+		},
+
+		/**
+		 * Коллекция менеджеров справочников
+		 * @property cat
+		 * @type Catalogs
+		 * @static
+		 */
+		cat: {
+			value: 	new (
+				/**
+				 * ### Коллекция менеджеров справочников
+				 * - Состав коллекции определяется метаданными используемой конфигурации
+				 * - Тип элементов коллекции: {{#crossLink "CatManager"}}{{/crossLink}}
+				 *
+				 * @class Catalogs
+				 * @static
+				 */
+					function Catalogs(){
+					this.toString = function(){return $p.msg.meta_cat_mgr};
+				}
+			)
+		},
+
+		/**
+		 * Коллекция менеджеров документов
+		 * @property doc
+		 * @type Documents
+		 * @static
+		 */
+		doc: {
+			value: 	new (
+				/**
+				 * ### Коллекция менеджеров документов
+				 * - Состав коллекции определяется метаданными используемой конфигурации
+				 * - Тип элементов коллекции: {{#crossLink "DocManager"}}{{/crossLink}}
+				 *
+				 * @class Documents
+				 * @static
+				 */
+					function Documents(){
+					this.toString = function(){return $p.msg.meta_doc_mgr};
+				})
+		},
+
+		/**
+		 * Коллекция менеджеров регистров сведений
+		 * @property ireg
+		 * @type InfoRegs
+		 * @static
+		 */
+		ireg: {
+			value: 	new (
+				/**
+				 * ### Коллекция менеджеров регистров сведений
+				 * - Состав коллекции определяется метаданными используемой конфигурации
+				 * - Тип элементов коллекции: {{#crossLink "InfoRegManager"}}{{/crossLink}}
+				 *
+				 * @class InfoRegs
+				 * @static
+				 */
+					function InfoRegs(){
+					this.toString = function(){return $p.msg.meta_ireg_mgr};
+				})
+		},
+
+		/**
+		 * Коллекция менеджеров регистров накопления
+		 * @property areg
+		 * @type AccumRegs
+		 * @static
+		 */
+		areg: {
+			value: 	new (
+				/**
+				 * ### Коллекция менеджеров регистров накопления
+				 * - Состав коллекции определяется метаданными используемой конфигурации
+				 * - Тип элементов коллекции: {{#crossLink "RegisterManager"}}{{/crossLink}}
+				 *
+				 * @class AccumRegs
+				 * @static
+				 */
+					function AccumRegs(){
+					this.toString = function(){return $p.msg.meta_areg_mgr};
+				})
+		},
+
+		/**
+		 * Коллекция менеджеров регистров бухгалтерии
+		 * @property aссreg
+		 * @type AccountsRegs
+		 * @static
+		 */
+		aссreg: {
+			value: 	new (
+				/**
+				 * ### Коллекция менеджеров регистров бухгалтерии
+				 * - Состав коллекции определяется метаданными используемой конфигурации
+				 * - Тип элементов коллекции: {{#crossLink "RegisterManager"}}{{/crossLink}}
+				 *
+				 * @class AccountsRegs
+				 * @static
+				 */
+					function AccountsRegs(){
+					this.toString = function(){return $p.msg.meta_accreg_mgr};
+				})
+		},
+
+		/**
+		 * Коллекция менеджеров обработок
+		 * @property dp
+		 * @type DataProcessors
+		 * @static
+		 */
+		dp: {
+			value: 	new (
+				/**
+				 * ### Коллекция менеджеров обработок
+				 * - Состав коллекции определяется метаданными используемой конфигурации
+				 * - Тип элементов коллекции: {{#crossLink "DataProcessorsManager"}}{{/crossLink}}
+				 *
+				 * @class DataProcessors
+				 * @static
+				 */
+					function DataProcessors(){
+					this.toString = function(){return $p.msg.meta_dp_mgr};
+				})
+		},
+
+		/**
+		 * Коллекция менеджеров отчетов
+		 * @property rep
+		 * @type Reports
+		 * @static
+		 */
+		rep: {
+			value: new (
+				/**
+				 * ### Коллекция менеджеров отчетов
+				 * - Состав коллекции определяется метаданными используемой конфигурации
+				 * - Тип элементов коллекции: {{#crossLink "DataProcessorsManager"}}{{/crossLink}}
+				 *
+				 * @class Reports
+				 * @static
+				 */
+					function Reports(){
+					this.toString = function(){return $p.msg.meta_reports_mgr};
+				})
+		},
+
+		/**
+		 * Коллекция менеджеров планов счетов
+		 * @property cacc
+		 * @type ChartsOfAccounts
+		 * @static
+		 */
+		cacc: {
+			value: 	new (
+
+				/**
+				 * ### Коллекция менеджеров планов счетов
+				 * - Состав коллекции определяется метаданными используемой конфигурации
+				 * - Тип элементов коллекции: {{#crossLink "ChartOfAccountManager"}}{{/crossLink}}
+				 *
+				 * @class ChartsOfAccounts
+				 * @static
+				 */
+					function ChartsOfAccounts(){
+					this.toString = function(){return $p.msg.meta_charts_of_accounts_mgr};
+				})
+		},
+
+		/**
+		 * Коллекция менеджеров планов видов характеристик
+		 * @property cch
+		 * @type ChartsOfCharacteristics
+		 * @static
+		 */
+		cch: {
+			value: new (
+
+				/**
+				 * ### Коллекция менеджеров планов видов характеристик
+				 * - Состав коллекции определяется метаданными используемой конфигурации
+				 * - Тип элементов коллекции: {{#crossLink "ChartOfCharacteristicManager"}}{{/crossLink}}
+				 *
+				 * @class ChartsOfCharacteristics
+				 * @static
+				 */
+					function ChartsOfCharacteristics(){
+					this.toString = function(){return $p.msg.meta_charts_of_characteristic_mgr};
+				})
+		},
+
+		/**
+		 * Коллекция менеджеров задач
+		 * @property tsk
+		 * @type Tasks
+		 * @static
+		 */
+		tsk: {
+			value: 	new (
+
+				/**
+				 * ### Коллекция менеджеров задач
+				 * - Состав коллекции определяется метаданными используемой конфигурации
+				 * - Тип элементов коллекции: {{#crossLink "TaskManager"}}{{/crossLink}}
+				 *
+				 * @class Tasks
+				 * @static
+				 */
+					function Tasks(){
+					this.toString = function(){return $p.msg.meta_task_mgr};
+				})
+		},
+
+		/**
+		 * Коллекция менеджеров бизнес-процессов
+		 * @property bp
+		 * @type Tasks
+		 * @static
+		 */
+		bp: {
+			value: 	new (
+
+				/**
+				 * ### Коллекция бизнес-процессов
+				 * - Состав коллекции определяется метаданными используемой конфигурации
+				 * - Тип элементов коллекции: {{#crossLink "BusinessProcessManager"}}{{/crossLink}}
+				 *
+				 * @class BusinessProcesses
+				 * @static
+				 */
+					function BusinessProcesses(){
+					this.toString = function(){return $p.msg.meta_bp_mgr};
+				})
 		},
 
 		DataManager: {
@@ -1167,431 +1635,4 @@ function Ajax() {
 
 }
 
-/**
- * ### Модификатор отложенного запуска
- * Служебный объект, реализующий отложенную загрузку модулей,<br />
- * в которых доопределяется (переопределяется) поведение объектов и менеджеров конкретных типов
- *
- * @class Modifiers
- * @constructor
- * @menuorder 62
- * @tooltip Внешние модули
- */
-function Modifiers(){
 
-	var methods = [];
-
-	/**
-	 * Добавляет метод в коллекцию методов для отложенного вызова
-	 * @method push
-	 * @param method {Function} - функция, которая будет вызвана после инициализации менеджеров объектов данных
-	 */
-	this.push = function (method) {
-		methods.push(method);
-	};
-
-	/**
-	 * Отменяет подписку на событие
-	 * @method detache
-	 * @param method {Function}
-	 */
-	this.detache = function (method) {
-		var index = methods.indexOf(method);
-		if(index != -1)
-			methods.splice(index, 1);
-	};
-
-	/**
-	 * Отменяет все подписки
-	 * @method clear
-	 */
-	this.clear = function () {
-		methods.length = 0;
-	};
-
-	/**
-	 * Загружает и выполняет методы модификаторов
-	 * @method execute
-	 */
-	this.execute = function (context) {
-		
-		// выполняем вшитые в сборку модификаторы
-		var res, tres;
-		methods.forEach(function (method) {
-			if(typeof method === "function")
-				tres = method(context);
-			else
-				tres = $p.injected_data[method](context);
-			if(res !== false)
-				res = tres;
-		});
-		return res;
-	};
-
-	/**
-	 * выполняет подключаемые модификаторы
-	 * @method execute_external
-	 * @param data
-	 */
-	this.execute_external = function (data) {
-		
-		var paths = $p.wsql.get_user_param("modifiers");
-		
-		if(paths){
-			paths = paths.split('\n').map(function (path) {
-				if(path)
-					return new Promise(function(resolve, reject){
-						$p.load_script(path, "script", resolve);
-					});
-				else
-					return Promise.resolve();
-			});
-		}else
-			paths = [];
-		
-		return Promise.all(paths)
-			.then(function () {
-				this.execute(data);
-			}.bind(this));		
-	};
-	
-}
-
-/**
- * ### Интерфейс к localstorage, alasql и pouchdb
- * - Обеспечивает взаимодействие с локальными и серверными данными
- * - Обслуживает локальные параметры пользователя
- *
- * @class WSQL
- * @static
- * @menuorder 33
- * @tooltip Данные localstorage
- */
-function WSQL(){
-
-	var wsql = this,
-		ls,
-		user_params = {};
-
-	this.__define({
-
-		/**
-		 * Поправка времени javascript
-		 * @property js_time_diff
-		 * @type Number
-		 */
-		js_time_diff: {
-			value: -(new Date("0001-01-01")).valueOf()
-		},
-
-		/**
-		 * Поправка времени javascript с учетом пользовательского сдвига из константы _time_diff_
-		 * @property time_diff
-		 * @type Number
-		 */
-		time_diff: {
-			get: function () {
-				var diff = this.get_user_param("time_diff", "number");
-				return (!diff || isNaN(diff) || diff < 62135571600000 || diff > 62135622000000) ? this.js_time_diff : diff;
-			}
-		},
-
-		/**
-		 * ### Устанавливает параметр в user_params и localStorage
-		 *
-		 * @method set_user_param
-		 * @param prm_name {string} - имя параметра
-		 * @param prm_value {string|number|object|boolean} - значение
-		 * @async
-		 */
-		set_user_param: {
-			value: function(prm_name, prm_value){
-
-				var str_prm = prm_value;
-				if(typeof prm_value == "object")
-					str_prm = JSON.stringify(prm_value);
-
-				else if(prm_value === false)
-					str_prm = "";
-
-				ls.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
-				user_params[prm_name] = prm_value;
-			}
-		},
-
-		/**
-		 * ### Возвращает значение сохраненного параметра из localStorage
-		 * Параметр извлекается с приведением типа
-		 *
-		 * @method get_user_param
-		 * @param prm_name {String} - имя параметра
-		 * @param [type] {String} - имя типа параметра. Если указано, выполняем приведение типов
-		 * @return {*} - значение параметра
-		 */
-		get_user_param: {
-			value: function(prm_name, type){
-
-				if(!user_params.hasOwnProperty(prm_name) && ls)
-					user_params[prm_name] = this.fetch_type(ls.getItem($p.job_prm.local_storage_prefix+prm_name), type);
-
-				return user_params[prm_name];
-			}
-		},
-
-		/**
-		 * Выполняет sql запрос к локальной базе данных, возвращает Promise
-		 * @param sql
-		 * @param params
-		 * @return {Promise}
-		 * @async
-		 */
-		promise: {
-			value: function(sql, params) {
-				return new Promise(function(resolve, reject){
-					wsql.alasql(sql, params || [], function(data, err) {
-						if(err) {
-							reject(err);
-						} else {
-							resolve(data);
-						}
-					});
-				});
-			}
-		},
-
-		/**
-		 * Сохраняет настройки формы или иные параметры объекта _options_
-		 * @method save_options
-		 * @param prefix {String} - имя области
-		 * @param options {Object} - сохраняемые параметры
-		 * @return {Promise}
-		 * @async
-		 */
-		save_options: {
-			value: function(prefix, options){
-				return wsql.set_user_param(prefix + "_" + options.name, options);
-			}
-		},
-
-		/**
-		 * Восстанавливает сохраненные параметры в объект _options_
-		 * @method restore_options
-		 * @param prefix {String} - имя области
-		 * @param options {Object} - объект, в который будут записаны параметры
-		 */
-		restore_options: {
-			value: function(prefix, options){
-				var options_saved = wsql.get_user_param(prefix + "_" + options.name, "object");
-				for(var i in options_saved){
-					if(typeof options_saved[i] != "object")
-						options[i] = options_saved[i];
-					else{
-						if(!options[i])
-							options[i] = {};
-						for(var j in options_saved[i])
-							options[i][j] = options_saved[i][j];
-					}
-				}
-				return options;
-			}
-		},
-
-		/**
-		 * Приведение типов при операциях с `localStorage`
-		 * @method fetch_type
-		 * @param prm
-		 * @param type
-		 * @returns {*}
-		 */
-		fetch_type: {
-			value: 	function(prm, type){
-				if(type == "object"){
-					try{
-						prm = JSON.parse(prm);
-					}catch(e){
-						prm = {};
-					}
-					return prm;
-				}else if(type == "number")
-					return $p.utils.fix_number(prm, true);
-				else if(type == "date")
-					return $p.utils.fix_date(prm, true);
-				else if(type == "boolean")
-					return $p.utils.fix_boolean(prm);
-				else
-					return prm;
-			}
-		},
-
-		/**
-		 * ### Создаёт и заполняет умолчаниями таблицу параметров
-		 * Внутри Node, в функцию следует передать ссылку на alasql
-		 *
-		 * @method init_params
-		 * @return {Promise}
-		 * @async
-		 */
-		init_params: {
-
-			value: function(){
-
-				// префикс параметров LocalStorage
-				// TODO: отразить в документации, что если префикс пустой, то параметры не инициализируются
-				if(!$p.job_prm.local_storage_prefix && !$p.job_prm.create_tables)
-					return Promise.resolve();
-
-				if(typeof localStorage === "undefined"){
-
-					// локальное хранилище внутри node.js
-					if(typeof WorkerGlobalScope === "undefined"){
-						ls = new require('node-localstorage').LocalStorage('./localstorage');
-
-					}else{
-						ls = {
-							setItem: function (name, value) {
-
-							},
-							getItem: function (name) {
-
-							}
-						};
-					}
-
-				} else
-					ls = localStorage;
-
-				/**
-				 * ### Указатель на alasql
-				 * @property alasql
-				 * @for WSQL
-				 * @type Function
-				 */
-				wsql.__define("alasql", {
-					value: typeof alasql != "undefined" ? alasql : ($p.job_prm.alasql || require("alasql"))
-				});
-
-				wsql.aladb = new wsql.alasql.Database('md');
-
-				// значения базовых параметров по умолчанию
-				var nesessery_params = [
-					{p: "user_name",		v: "", t:"string"},
-					{p: "user_pwd",			v: "", t:"string"},
-					{p: "browser_uid",		v: $p.utils.generate_guid(), t:"string"},
-					{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
-					{p: "enable_save_pwd",	v: $p.job_prm.enable_save_pwd,	t:"boolean"},
-					{p: "autologin",		v: "",	t:"boolean"},
-					{p: "skin",		        v: "dhx_web", t:"string"},
-					{p: "rest_path",		v: "", t:"string"}
-				],	zone;
-
-				// подмешиваем к базовым параметрам настройки приложения
-				if($p.job_prm.additional_params)
-					nesessery_params = nesessery_params.concat($p.job_prm.additional_params);
-
-				// если зона не указана, устанавливаем "1"
-				if(!ls.getItem($p.job_prm.local_storage_prefix+"zone"))
-					zone = $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1;
-				// если зона указана в url, используем её
-				if($p.job_prm.url_prm.hasOwnProperty("zone"))
-					zone = $p.job_prm.zone_is_string ? $p.job_prm.url_prm.zone : $p.utils.fix_number($p.job_prm.url_prm.zone, true);
-				if(zone !== undefined)
-					wsql.set_user_param("zone", zone);
-
-				// дополняем хранилище недостающими параметрами
-				nesessery_params.forEach(function(o){
-					if(wsql.get_user_param(o.p, o.t) == undefined ||
-						(!wsql.get_user_param(o.p, o.t) && (o.p.indexOf("url") != -1)))
-						wsql.set_user_param(o.p, $p.job_prm.hasOwnProperty(o.p) ? $p.job_prm[o.p] : o.v);
-				});
-
-				// сообщяем движку pouch пути и префиксы
-				var pouch_prm = {
-					path: wsql.get_user_param("couch_path", "string") || $p.job_prm.couch_path || "",
-					zone: wsql.get_user_param("zone", "number"),
-					prefix: $p.job_prm.local_storage_prefix,
-					suffix: wsql.get_user_param("couch_suffix", "string") || ""
-				};
-				if(pouch_prm.path){
-
-					/**
-					 * ### Указатель на локальные и сетевые базы PouchDB
-					 * @property pouch
-					 * @for WSQL
-					 * @type Pouch
-					 */
-					wsql.__define("pouch", { value: new Pouch()	});
-					wsql.pouch.init(pouch_prm);
-				}
-
-				return new Promise(function(resolve, reject){
-
-					if($p.job_prm.create_tables){
-
-						if($p.job_prm.create_tables_sql)
-							wsql.alasql($p.job_prm.create_tables_sql, [], function(){
-								delete $p.job_prm.create_tables_sql;
-								resolve();
-							});
-
-						else if($p.injected_data["create_tables.sql"])
-							wsql.alasql($p.injected_data["create_tables.sql"], [], function(){
-								delete $p.injected_data["create_tables.sql"];
-								resolve();
-							});
-
-						else if(typeof $p.job_prm.create_tables === "string")
-							$p.ajax.get($p.job_prm.create_tables)
-								.then(function (req) {
-									wsql.alasql(req.response, [], resolve);
-								});
-						else
-							resolve();
-					}else
-						resolve();
-
-				});
-
-			}
-		},
-
-		/**
-		 * Удаляет таблицы WSQL. Например, для последующего пересоздания при изменении структуры данных
-		 * @method drop_tables
-		 * @param callback {Function}
-		 * @async
-		 */
-		drop_tables: {
-			value: function(callback){
-				var cstep = 0, tmames = [];
-
-				function ccallback(){
-					cstep--;
-					if(cstep<=0)
-						setTimeout(callback, 10);
-					else
-						iteration();
-				}
-
-				function iteration(){
-					var tname = tmames[cstep-1]["tableid"];
-					if(tname.substr(0, 1) == "_")
-						ccallback();
-					else
-						wsql.alasql("drop table IF EXISTS " + tname, [], ccallback);
-				}
-
-				function tmames_finded(data){
-					tmames = data;
-					if(cstep = data.length)
-						iteration();
-					else
-						ccallback();
-				}
-
-				wsql.alasql("SHOW TABLES", [], tmames_finded);
-			}
-		}
-
-	});
-
-}

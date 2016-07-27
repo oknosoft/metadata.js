@@ -25,6 +25,7 @@ gulp.task('build-metadata', function () {
 	return gulp.src([
 		'./node_modules/moment/locale/ru.js',
 		'./src/common.js',
+		'./src/wsql.js',
 		'./src/common.ui.js',
 		'./src/pouchdb.js',
 		'./src/i18n.ru.js',
@@ -236,6 +237,7 @@ gulp.task('css-metadata', function () {
 gulp.task('build-metadata-core', function(){
 	gulp.src([
 		'./src/common.js',
+		'./src/wsql.js',
 		'./src/i18n.ru.js',
 		'./src/pouchdb.js',
 		'./src/meta_meta.js',

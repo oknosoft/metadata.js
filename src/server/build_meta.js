@@ -37,18 +37,24 @@ $p.on("settings", function (prm) {
 
 });
 
-$p.eve.init()
-	.then(function () {
-		return $p.md.init($p.wsql.pouch.local._meta);
-	})
+$p.eve.init();
+$p.md.init($p.wsql.pouch.local._meta)
 	.then(function (_m) {
 
+		// создаём текст модуля конструкторов данных
 		var text = create_modules(_m);
-		eval(text);
+		// require('fs').writeFileSync("./metadata.prebuild.js", text);
 
+		// выполняем текст модуля, чтобы появились менеджеры
+		eval(text);
+		$p.md.create_managers();
+
+		// получаем скрипт таблиц
 		$p.md.create_tables(function (sql) {
 
-			text = "$p.wsql.create_tables = function(resolve){this.alasq('" + sql + "', [], function(){ resolve(); })};\n\n" + text;
+			text = "$p.wsql.alasql('" + sql + "', []);\n\n"
+				+ text + "\n\n"
+				+ "$p.md.init(" + JSON.stringify(_m) + ");";
 
 			require('fs').writeFileSync("./metadata.prebuild.js", text);
 		})
@@ -66,7 +72,7 @@ $p.eve.init()
 function create_modules(_m){
 
 	var name,
-		text = "",
+		text = "$p.md.create_managers=function(){\n",
 		categoties = {
 			cch: {mgr: "ChartOfCharacteristicManager", obj: "CatObj"},
 			cacc: {mgr: "ChartOfAccountManager", obj: "CatObj"},
@@ -80,16 +86,24 @@ function create_modules(_m){
 
 
 	for(name in _m.enm)
-		text+= "$p.enm." + name + " = new $p.EnumManager(_m.enm." + name + ", 'enm." + name + "');\n";
+		text+= "$p.enm." + name + " = new $p.EnumManager('enm." + name + "');\n";
 
 	for(var category in categoties){
 		for(name in _m[category]){
 			text+= obj_constructor_text(_m, category, name, categoties[category].obj);
-			text+= "$p." + category + "." + name + " = new $p." + categoties[category].mgr + "('" + category + "." + name + "');\n";
+			if(name == "$log")
+				text+= "$p." + category + "." + name + " = new $p.LogManager('ireg.$log');\n";
+			else
+				text+= "$p." + category + "." + name + " = new $p." + categoties[category].mgr + "('" + category + "." + name + "');\n";
 		}
 	}
 
-	return text;
+	// загружаем модификаторы и прочие зависимости
+	// $p.modifiers.execute($p);
+	// $p.modifiers.clear();
+	// $p.modifiers.execute_external($p);
+
+	return text + "};\n";
 
 }
 
@@ -97,7 +111,7 @@ function create_modules(_m){
 function obj_constructor_text(_m, category, name, proto) {
 
 	var meta = _m[category][name],
-		fn_name = category.charAt(0).toUpperCase() + category.substr(1) + name.charAt(0).toUpperCase() + name.substr(1),
+		fn_name = $p.DataManager.prototype.obj_constructor.call({class_name: category + "." + name}),
 		text = "\n/**\n* ### " + $p.msg.meta[category] + " " + meta.name,
 		f, props = "";
 
@@ -147,10 +161,10 @@ function obj_constructor_text(_m, category, name, proto) {
 	for(var ts in meta.tabular_sections){
 
 		// создаём конструктор строки табчасти
-		var row_fn_name = fn_name + ts.charAt(0).toUpperCase() + ts.substr(1) + "Row";
+		var row_fn_name = $p.DataManager.prototype.obj_constructor.call({class_name: category + "." + name}, ts);
 
-		text+= "function " + row_fn_name + "(owner){" + row_fn_name + ".superclass.constructor.call(this, owner)};";
-		text += row_fn_name + "._extend($p.TabularSectionRow);\n";
+		text+= "function " + row_fn_name + "(owner){" + row_fn_name + ".superclass.constructor.call(this, owner)};\n";
+		text+= row_fn_name + "._extend($p.TabularSectionRow);\n";
 		text+= "$p." + row_fn_name + " = " + row_fn_name + ";\n";
 
 		// в прототипе строки табчасти создаём свойства в соответствии с полями табчасти

@@ -202,7 +202,7 @@ TabularSection.prototype.swap = function(rowid1, rowid2){
  */
 TabularSection.prototype.add = function(attr, silent){
 
-	var row = new this._owner._manager._ts_сonstructors[this._name](this);
+	var row = new $p[this._owner._manager.obj_constructor(this._name)](this);
 
 	if(!attr)
 		attr = {};
@@ -488,7 +488,7 @@ TabularSectionRow.prototype.__define("row", {
  */
 TabularSectionRow.prototype.__define("_clone", {
 	value : function(){
-		return new this._owner._owner._manager._ts_сonstructors[this._owner._name](this._owner)._mixin(this._obj);
+		return new $p[this._owner._owner._manager.obj_constructor(this._owner._name)](this._owner)._mixin(this._obj);
 	},
 	enumerable : false
 });

@@ -301,7 +301,7 @@ $p.__define({
 	 * ### Текущий пользователь
 	 * Свойство определено после загрузки метаданных и входа впрограмму
 	 * @property current_user
-	 * @type _cat.users
+	 * @type CatUsers
 	 * @final
 	 */
 	current_user: {
@@ -316,7 +316,7 @@ $p.__define({
 	 * ### Права доступа текущего пользователя.
 	 * Свойство определено после загрузки метаданных и входа впрограмму
 	 * @property current_acl
-	 * @type _cat.users_acl
+	 * @type CcatUsers_acl
 	 * @final
 	 */
 	current_acl: {

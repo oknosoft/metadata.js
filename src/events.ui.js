@@ -208,160 +208,159 @@ $p.eve.__define({
 			 */
 			function init_params(){
 
-				$p.wsql.init_params().then(function(){
+				function load_css(){
 
-					function load_css(){
+					var surl = dhtmlx.codebase, load_dhtmlx = true, load_meta = true;
+					if(surl.indexOf("cdn.jsdelivr.net")!=-1)
+						surl = "//cdn.jsdelivr.net/metadata/latest/";
 
-						var surl = dhtmlx.codebase, load_dhtmlx = true, load_meta = true;
-						if(surl.indexOf("cdn.jsdelivr.net")!=-1)
-							surl = "//cdn.jsdelivr.net/metadata/latest/";
-
-						// стили загружаем только при необходимости
-						for(i=0; i < document.styleSheets.length; i++){
-							if(document.styleSheets[i].href){
-								if(document.styleSheets[i].href.indexOf("dhx_web")!=-1 || document.styleSheets[i].href.indexOf("dhx_terrace")!=-1)
-									load_dhtmlx = false;
-								if(document.styleSheets[i].href.indexOf("metadata.css")!=-1)
-									load_meta = false;
-							}
+					// стили загружаем только при необходимости
+					for(i=0; i < document.styleSheets.length; i++){
+						if(document.styleSheets[i].href){
+							if(document.styleSheets[i].href.indexOf("dhx_web")!=-1 || document.styleSheets[i].href.indexOf("dhx_terrace")!=-1)
+								load_dhtmlx = false;
+							if(document.styleSheets[i].href.indexOf("metadata.css")!=-1)
+								load_meta = false;
 						}
-
-						// задаём основной скин
-						dhtmlx.skin = $p.wsql.get_user_param("skin") || $p.job_prm.skin || "dhx_web";
-
-						//str.replace(new RegExp(list[i] + '$'), 'finish')
-						if(load_dhtmlx)
-							$p.load_script(surl + (dhtmlx.skin == "dhx_web" ? "dhx_web.css" : "dhx_terrace.css"), "link");
-						if(load_meta)
-							$p.load_script(surl + "metadata.css", "link");
-
-						// дополнительные стили
-						if($p.job_prm.additional_css)
-							$p.job_prm.additional_css.forEach(function (name) {
-								if(dhx4.isIE || name.indexOf("ie_only") == -1)
-									$p.load_script(name, "link");
-							});
-
-						// задаём путь к картинкам
-						dhtmlx.image_path = "//oknosoft.github.io/metadata.js/lib/imgs/";
-
-						// суффикс скина
-						dhtmlx.skin_suffix = function () {
-							return dhtmlx.skin.replace("dhx", "") + "/"
-						};
-
-						// запрещаем добавлять dhxr+date() к запросам get внутри dhtmlx
-						dhx4.ajax.cache = true;
-
-						/**
-						 * ### Каркас оконного интерфейса
-						 * См. описание на сайте dhtmlx [dhtmlXWindows](http://docs.dhtmlx.com/windows__index.html)
-						 * @property w
-						 * @for InterfaceObjs
-						 * @type dhtmlXWindows
-						 */
-						$p.iface.__define("w", {
-							value: new dhtmlXWindows(),
-							enumerable: false
-						});
-						$p.iface.w.setSkin(dhtmlx.skin);
-
-						/**
-						 * ### Всплывающие подсказки
-						 * См. описание на сайте dhtmlx [dhtmlXPopup](http://docs.dhtmlx.com/popup__index.html)
-						 * @property popup
-						 * @for InterfaceObjs
-						 * @type dhtmlXPopup
-						 */
-						$p.iface.__define("popup", {
-							value: new dhtmlXPopup(),
-							enumerable: false
-						});
-
 					}
 
-					// создавать dhtmlXWindows можно только после готовности документа
-					if("dhtmlx" in w)
-						load_css();
+					// задаём основной скин
+					dhtmlx.skin = $p.wsql.get_user_param("skin") || $p.job_prm.skin || "dhx_web";
 
-					eve.stepper = {
-						step: 0,
-						count_all: 0,
-						step_size: 57,
-						files: 0
+					//str.replace(new RegExp(list[i] + '$'), 'finish')
+					if(load_dhtmlx)
+						$p.load_script(surl + (dhtmlx.skin == "dhx_web" ? "dhx_web.css" : "dhx_terrace.css"), "link");
+					if(load_meta)
+						$p.load_script(surl + "metadata.css", "link");
+
+					// дополнительные стили
+					if($p.job_prm.additional_css)
+						$p.job_prm.additional_css.forEach(function (name) {
+							if(dhx4.isIE || name.indexOf("ie_only") == -1)
+								$p.load_script(name, "link");
+						});
+
+					// задаём путь к картинкам
+					dhtmlx.image_path = "//oknosoft.github.io/metadata.js/lib/imgs/";
+
+					// суффикс скина
+					dhtmlx.skin_suffix = function () {
+						return dhtmlx.skin.replace("dhx", "") + "/"
 					};
 
-					eve.set_offline(!navigator.onLine);
+					// запрещаем добавлять dhxr+date() к запросам get внутри dhtmlx
+					dhx4.ajax.cache = true;
 
-					// инициализируем метаданные и обработчик при начале работы интерфейса
-					setTimeout(function () {
+					/**
+					 * ### Каркас оконного интерфейса
+					 * См. описание на сайте dhtmlx [dhtmlXWindows](http://docs.dhtmlx.com/windows__index.html)
+					 * @property w
+					 * @for InterfaceObjs
+					 * @type dhtmlXWindows
+					 */
+					$p.iface.__define("w", {
+						value: new dhtmlXWindows(),
+						enumerable: false
+					});
+					$p.iface.w.setSkin(dhtmlx.skin);
 
-						$p.md.init()
-							.catch($p.record_log);
+					/**
+					 * ### Всплывающие подсказки
+					 * См. описание на сайте dhtmlx [dhtmlXPopup](http://docs.dhtmlx.com/popup__index.html)
+					 * @property popup
+					 * @for InterfaceObjs
+					 * @type dhtmlXPopup
+					 */
+					$p.iface.__define("popup", {
+						value: new dhtmlXPopup(),
+						enumerable: false
+					});
 
-						// Если есть сплэш, удаляем его
-						var splash;
-						if(splash = document.querySelector("#splash"))
-							splash.parentNode.removeChild(splash);
+				}
 
-						eve.callEvent("iface_init", [$p]);
+				// создавать dhtmlXWindows можно только после готовности документа
+				if("dhtmlx" in w)
+					load_css();
 
-					}, 10);
+				eve.stepper = {
+					step: 0,
+					count_all: 0,
+					step_size: 57,
+					files: 0
+				};
+
+				eve.set_offline(!navigator.onLine);
+
+				// инициализируем метаданные и обработчик при начале работы интерфейса
+				setTimeout(function () {
+
+					// устанавливаем параметры localStorage
+					$p.wsql.init_params();
+
+					// начинаем грузить локальные данные
+					$p.wsql.pouch.load_data();
+
+					// Если есть сплэш, удаляем его
+					var splash;
+					if(splash = document.querySelector("#splash"))
+						splash.parentNode.removeChild(splash);
+
+					eve.callEvent("iface_init", [$p]);
+
+				}, 10);
 
 
-					$p.msg.russian_names();
+				$p.msg.russian_names();
 
-					// TODO: переписать управление appcache на сервисворкерах
-					if($p.wsql.get_user_param("use_service_worker", "boolean") && typeof navigator != "undefined"
-						&& 'serviceWorker' in navigator && location.protocol.indexOf("https") != -1){
+				// TODO: переписать управление appcache на сервисворкерах
+				if($p.wsql.get_user_param("use_service_worker", "boolean") && typeof navigator != "undefined"
+					&& 'serviceWorker' in navigator && location.protocol.indexOf("https") != -1){
 
-						// Override the default scope of '/' with './', so that the registration applies
-						// to the current directory and everything underneath it.
-						navigator.serviceWorker.register('metadata_service_worker.js', {scope: '/'})
-							.then(function(registration) {
-								// At this point, registration has taken place.
-								// The service worker will not handle requests until this page and any
-								// other instances of this page (in other tabs, etc.) have been closed/reloaded.
-								$p.record_log('serviceWorker register succeeded');
-							})
-							.catch($p.record_log);
+					// Override the default scope of '/' with './', so that the registration applies
+					// to the current directory and everything underneath it.
+					navigator.serviceWorker.register('metadata_service_worker.js', {scope: '/'})
+						.then(function(registration) {
+							// At this point, registration has taken place.
+							// The service worker will not handle requests until this page and any
+							// other instances of this page (in other tabs, etc.) have been closed/reloaded.
+							$p.record_log('serviceWorker register succeeded');
+						})
+						.catch($p.record_log);
 
-					}else if (cache = w.applicationCache){
+				}else if (cache = w.applicationCache){
 
-						// обновление не требуется
-						cache.addEventListener('noupdate', function(e){
+					// обновление не требуется
+					cache.addEventListener('noupdate', function(e){
 
-						}, false);
+					}, false);
 
-						// Ресурсы уже кэшированнны. Индикатор прогресса скрыт.
-						cache.addEventListener('cached', function(e){
-							timer_setted = true;
-							if($p.iface.appcache)
+					// Ресурсы уже кэшированнны. Индикатор прогресса скрыт.
+					cache.addEventListener('cached', function(e){
+						timer_setted = true;
+						if($p.iface.appcache)
+							$p.iface.appcache.close();
+					}, false);
+
+					// Начало скачивания ресурсов. progress_max - количество ресурсов. Показываем индикатор прогресса
+					//cache.addEventListener('downloading', do_cache_update_msg, false);
+
+					// Процесс скачивания ресурсов. Индикатор прогресса изменяется
+					//cache.addEventListener('progress', do_cache_update_msg,	false);
+
+					// Скачивание завершено. Скрываем индикатор прогресса. Обновляем кэш. Перезагружаем страницу.
+					cache.addEventListener('updateready', function(e) {
+						try{
+							cache.swapCache();
+							if($p.iface.appcache){
 								$p.iface.appcache.close();
-						}, false);
+							}
+						}catch(e){}
+						do_reload();
+					}, false);
 
-						// Начало скачивания ресурсов. progress_max - количество ресурсов. Показываем индикатор прогресса
-						//cache.addEventListener('downloading', do_cache_update_msg, false);
-
-						// Процесс скачивания ресурсов. Индикатор прогресса изменяется
-						//cache.addEventListener('progress', do_cache_update_msg,	false);
-
-						// Скачивание завершено. Скрываем индикатор прогресса. Обновляем кэш. Перезагружаем страницу.
-						cache.addEventListener('updateready', function(e) {
-							try{
-								cache.swapCache();
-								if($p.iface.appcache){
-									$p.iface.appcache.close();
-								}
-							}catch(e){}
-							do_reload();
-						}, false);
-
-						// Ошибка кеша
-						cache.addEventListener('error', $p.record_log, false);
-					}
-
-				});
+					// Ошибка кеша
+					cache.addEventListener('error', $p.record_log, false);
+				}
 			}
 
 			// проверяем совместимость браузера

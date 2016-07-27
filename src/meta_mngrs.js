@@ -189,9 +189,8 @@ function DataManager(class_name){
 		 *
 		 * @method on
 		 * @for DataManager
-		 * @param name {String} - имя события [after_create, after_load, before_save, after_save, value_change, add_row, del_row]
-		 * @param method {Function} - добавляемый метод
-		 * @param [first] {Boolean} - добавлять метод в начало, а не в конец коллекции
+		 * @param name {String|Object} - имя события [after_create, after_load, before_save, after_save, value_change, add_row, del_row]
+		 * @param [method] {Function} - добавляемый метод, если не задан в объекте первым параметром
 		 *
 		 * @example
 		 *
@@ -214,11 +213,28 @@ function DataManager(class_name){
 		 *
 		 */
 		on: {
-			value: function (name, method, first) {
-				if(first)
+			value: function (name, method) {
+				if(typeof name == "object"){
+					for(var n in name){
+						if(name.hasOwnProperty(n))
+							_events[n].push(name[n]);
+					}
+				}else
 					_events[name].push(method);
-				else
-					_events[name].push(method);
+			}
+		},
+
+		/**
+		 * ### Удаляет подписку на событие объектов данного менеджера
+		 *
+		 * @method off
+		 * @for DataManager
+		 * @param name {String} - имя события [after_create, after_load, before_save, after_save, value_change, add_row, del_row]
+		 * @param [method] {Function} - удаляемый метод. Если не задан, будут отключены все обработчики событий `name`
+		 */
+		off: {
+			value: function (name, method) {
+
 			}
 		},
 
@@ -272,93 +288,6 @@ function DataManager(class_name){
 		}
 	});
 
-	//	Создаём функции конструкторов экземпляров объектов и строк табличных частей
-	var _obj_constructor = this._obj_constructor || DataObj;		// ссылка на конструктор элементов
-
-	// Для всех типов, кроме перечислений, создаём через (new Function) конструктор объекта
-	if(!(this instanceof EnumManager)){
-
-		var obj_constructor_name = class_name.split(".")[1];
-		this._obj_constructor = eval("(function " + obj_constructor_name.charAt(0).toUpperCase() + obj_constructor_name.substr(1) +
-			"(attr, manager){manager._obj_constructor.superclass.constructor.call(this, attr, manager)})");
-		this._obj_constructor._extend(_obj_constructor);
-
-		if(this instanceof InfoRegManager){
-
-			// реквизиты по метаданным
-			for(var f in this.metadata().dimensions){
-				this._obj_constructor.prototype.__define(f, {
-					get : new Function("return this._getter('"+f+"')"),
-					set : new Function("v", "this._setter('"+f+"',v)"),
-					enumerable: true,
-					configurable: true
-				});
-			}
-			for(var f in this.metadata().resources){
-				this._obj_constructor.prototype.__define(f, {
-					get : new Function("return this._getter('"+f+"')"),
-					set : new Function("v", "this._setter('"+f+"',v)"),
-					enumerable: true,
-					configurable: true
-				});
-			}
-			for(var f in this.metadata().attributes){
-				this._obj_constructor.prototype.__define(f, {
-					get : new Function("return this._getter('"+f+"')"),
-					set : new Function("v", "this._setter('"+f+"',v)"),
-					enumerable: true,
-					configurable: true
-				});
-			}
-
-		}else{
-
-			this._ts_сonstructors = {};             // ссылки на конструкторы строк табчастей
-
-			// реквизиты по метаданным
-			for(var f in this.metadata().fields){
-				this._obj_constructor.prototype.__define(f, {
-					get : new Function("return this._getter('"+f+"')"),
-					set : new Function("v", "this._setter('"+f+"',v)"),
-					enumerable: true,
-					configurable: true
-				});
-			}
-
-			// табличные части по метаданным
-			for(var f in this.metadata().tabular_sections){
-
-				// создаём конструктор строки табчасти
-				var row_constructor_name = obj_constructor_name.charAt(0).toUpperCase() + obj_constructor_name.substr(1) + f.charAt(0).toUpperCase() + f.substr(1) + "Row";
-
-				this._ts_сonstructors[f] = eval("(function " + row_constructor_name + "(owner) \
-			{owner._owner._manager._ts_сonstructors[owner._name].superclass.constructor.call(this, owner)})");
-				this._ts_сonstructors[f]._extend(TabularSectionRow);
-
-				// в прототипе строки табчасти создаём свойства в соответствии с полями табчасти
-				for(var rf in this.metadata().tabular_sections[f].fields){
-					this._ts_сonstructors[f].prototype.__define(rf, {
-						get : new Function("return this._getter('"+rf+"')"),
-						set : new Function("v", "this._setter('"+rf+"',v)"),
-						enumerable: true,
-						configurable: true
-					});
-				}
-
-				// устанавливаем геттер и сеттер для табличной части
-				this._obj_constructor.prototype.__define(f, {
-					get : new Function("return this._getter_ts('"+f+"')"),
-					set : new Function("v", "this._setter_ts('"+f+"',v)"),
-					enumerable: true,
-					configurable: true
-				});
-			}
-
-		}
-	}
-
-	_obj_constructor = null;
-
 }
 
 DataManager.prototype.__define({
@@ -405,6 +334,14 @@ DataManager.prototype.__define({
 		}
 	},
 
+	/**
+	 * ### Дополнительные реквизиты
+	 * Массив дополнителных реквизитов (аналог подсистемы `Свойства` БСП) вычисляется через
+	 * ПВХ `НазначениеДополнительныхРеквизитов` или справочник `НазначениеСвойствКатегорийОбъектов`
+	 *
+	 * @property extra_fields
+	 * @type Array
+	 */
 	extra_fields: {
 		value : function(obj){
 
@@ -431,11 +368,37 @@ DataManager.prototype.__define({
 		}
 	},
 
+	/**
+	 * ### Дополнительные свойства
+	 * Массив дополнителных свойств (аналог подсистемы `Свойства` БСП) вычисляется через
+	 * ПВХ `НазначениеДополнительныхРеквизитов` или справочник `НазначениеСвойствКатегорийОбъектов`
+	 *
+	 * @property extra_properties
+	 * @type Array
+	 */
 	extra_properties: {
 		value : function(obj){
 			return [];
 		}
+	},
+
+	/**
+	 * ### Имя функции - конструктора объектов или строк табличных частей
+	 *
+	 * @method obj_constructor
+	 * @param ts_name {String}
+	 * @return {Function}
+	 */
+	obj_constructor: {
+		value: function (ts_name) {
+			var parts = this.class_name.split("."),
+				fn_name = parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + parts[1].charAt(0).toUpperCase() + parts[1].substr(1);
+
+			return ts_name ? fn_name + ts_name.charAt(0).toUpperCase() + ts_name.substr(1) + "Row" : fn_name;
+
+		}
 	}
+
 });
 
 
@@ -770,7 +733,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 
 			});
 			//if(!added)
-			//	add_xml_row({param: _cch.properties.get("", false)}, "params"); // fake-строка, если в табчасти нет допреквизитов
+			//	add_xml_row({param: $p.cch.properties.get("", false)}, "params"); // fake-строка, если в табчасти нет допреквизитов
 
 		}
 
@@ -943,7 +906,7 @@ RefDataManager.prototype.__define({
 				if(do_not_create && !force_promise)
 					return;
 				else
-					o = new this._obj_constructor(ref, this, true);
+					o = new $p[this.obj_constructor()](ref, this, true);
 			}
 
 			if(force_promise === false)
@@ -984,7 +947,7 @@ RefDataManager.prototype.__define({
 			var o = this.by_ref[attr.ref];
 			if(!o){
 
-				o = new this._obj_constructor(attr, this);
+				o = new $p[this.obj_constructor()](attr, this);
 
 				if(!fill_default && attr.ref && attr.presentation && Object.keys(attr).length == 2){
 					// заглушка ссылки объекта
@@ -1069,7 +1032,7 @@ RefDataManager.prototype.__define({
 				obj = this.by_ref[ref];
 
 				if(!obj){
-					obj = new this._obj_constructor(aattr[i], this);
+					obj = new $p[this.obj_constructor()](aattr[i], this);
 					if(forse)
 						obj._set_loaded();
 
@@ -1320,12 +1283,7 @@ RefDataManager.prototype.__define({
 							ignore_parent = false;
 						}else if(!filter && !ignore_parent){
 							;
-						}else{
-							if(t.class_name == "cat.base_blocks"){
-								if(owner == $p.utils.blank.guid)
-									owner = _cat.bases.predefined("main");
-								parent = t.first_folder(owner).ref;
-							}
+
 						}
 
 						// строка фильтра
@@ -1664,7 +1622,7 @@ DataProcessorsManager.prototype.__define({
 	 */
 	create: {
 		value: function(){
-			return new this._obj_constructor({}, this);
+			return new $p[this.obj_constructor()]({}, this);
 		}
 	},
 
@@ -1687,16 +1645,14 @@ DataProcessorsManager.prototype.__define({
  *
  * @class EnumManager
  * @extends RefDataManager
- * @param a {array} - массив значений
  * @param class_name {string} - имя типа менеджера объекта. например, "enm.open_types"
  * @constructor
  */
-function EnumManager(a, class_name) {
+function EnumManager(class_name) {
 
 	EnumManager.superclass.constructor.call(this, class_name);
 
-	this._obj_constructor = EnumObj;
-
+	var a = $p.md.get(class_name);
 	for(var i in a)
 		new EnumObj(a[i], this);
 
@@ -1858,8 +1814,6 @@ EnumManager.prototype.get_option_list = function(val, selection){
  */
 function RegisterManager(class_name){
 
-	this._obj_constructor = RegisterRow;
-
 	RegisterManager.superclass.constructor.call(this, class_name);
 
 	/**
@@ -1948,7 +1902,7 @@ function RegisterManager(class_name){
 			obj = this.by_ref[ref];
 
 			if(!obj && !aattr[i]._deleted){
-				obj = new this._obj_constructor(aattr[i], this);
+				obj = new $p[this.obj_constructor()](aattr[i], this);
 				if(forse)
 					obj._set_loaded();
 
@@ -2353,7 +2307,7 @@ RegisterManager.prototype.__define({
 			var o = this.by_ref[attr.ref];
 			if(!o){
 
-				o = new this._obj_constructor(attr, this);
+				o = new $p[this.obj_constructor()](attr, this);
 
 				// Триггер после создания
 				var after_create_res = this.handle_event(o, "after_create");
@@ -2589,20 +2543,18 @@ AccumRegManager._extend(RegisterManager);
  */
 function CatManager(class_name) {
 
-	this._obj_constructor = CatObj;		// ссылка на конструктор элементов
-
 	CatManager.superclass.constructor.call(this, class_name);
 
 	// реквизиты по метаданным
 	if(this.metadata().hierarchical && this.metadata().group_hierarchy){
 
 		/**
-		 * признак "это группа"
+		 * ### Признак "это группа"
 		 * @property is_folder
 		 * @for CatObj
 		 * @type {Boolean}
 		 */
-		this._obj_constructor.prototype.__define("is_folder", {
+		$p[this.obj_constructor()].prototype.__define("is_folder", {
 			get : function(){ return this._obj.is_folder || false},
 			set : function(v){ this._obj.is_folder = $p.utils.fix_boolean(v)},
 			enumerable: true,
@@ -2695,8 +2647,6 @@ CatManager.prototype.path = function(ref){
  */
 function ChartOfCharacteristicManager(class_name){
 
-	this._obj_constructor = CatObj;		// ссылка на конструктор элементов
-
 	ChartOfCharacteristicManager.superclass.constructor.call(this, class_name);
 
 }
@@ -2714,8 +2664,6 @@ ChartOfCharacteristicManager._extend(CatManager);
  * @param class_name {string}
  */
 function ChartOfAccountManager(class_name){
-
-	this._obj_constructor = CatObj;		// ссылка на конструктор элементов
 
 	ChartOfAccountManager.superclass.constructor.call(this, class_name);
 
@@ -2735,10 +2683,8 @@ ChartOfAccountManager._extend(CatManager);
  */
 function DocManager(class_name) {
 
-	this._obj_constructor = DocObj;		// ссылка на конструктор элементов
 
 	DocManager.superclass.constructor.call(this, class_name);
-
 
 }
 DocManager._extend(RefDataManager);
@@ -2754,8 +2700,6 @@ DocManager._extend(RefDataManager);
  * @param class_name {string}
  */
 function TaskManager(class_name){
-
-	this._obj_constructor = TaskObj;		// ссылка на конструктор элементов
 
 	TaskManager.superclass.constructor.call(this, class_name);
 
@@ -2773,8 +2717,6 @@ TaskManager._extend(CatManager);
  * @param class_name {string}
  */
 function BusinessProcessManager(class_name){
-
-	this._obj_constructor = BusinessProcessObj;		// ссылка на конструктор элементов
 
 	BusinessProcessManager.superclass.constructor.call(this, class_name);
 
