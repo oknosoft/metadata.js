@@ -128,7 +128,10 @@ function Meta() {
 			else{
 				
 				// если изменились метаданные, запланировать перезагрузку
-				do_reload();
+				if(performance.now() > 20000 && change.docs.some(function (doc) {
+						return doc._id.substr(0,4)!='meta';
+					}))
+					do_reload();
 
 			}
 			

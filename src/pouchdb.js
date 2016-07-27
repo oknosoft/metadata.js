@@ -380,6 +380,7 @@ function Pouch(){
 						// если указан клиентский или серверный фильтр - подключаем
 						if(id == "meta")
 							options.filter = "auth/meta";
+
 						else if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id])
 							options.filter = $p.job_prm.pouch_filter[id];
 
