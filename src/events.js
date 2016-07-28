@@ -335,7 +335,7 @@ function JobPrm(){
 	});
 
 	// подмешиваем параметры, заданные в файле настроек сборки
-	$p.eve.callEvent("settings", [this, $p.modifiers]);
+	$p.eve.callEvent("settings", [this]);
 
 	// подмешиваем параметры url
 	// Они обладают приоритетом над настройками по умолчанию и настройками из settings.js
