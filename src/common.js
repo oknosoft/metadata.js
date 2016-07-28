@@ -633,7 +633,9 @@ function MetaEngine() {
 					id._evnts.forEach(function (id) {
 						$p.eve.detachEvent(id);
 					});
-				}else
+				}else if(!id)
+					$p.eve.detachAllEvents();
+				else
 					$p.eve.detachEvent(id);
 			}
 		},

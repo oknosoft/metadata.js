@@ -829,7 +829,9 @@ function MetaEngine() {
 					id._evnts.forEach(function (id) {
 						$p.eve.detachEvent(id);
 					});
-				}else
+				}else if(!id)
+					$p.eve.detachAllEvents();
+				else
 					$p.eve.detachEvent(id);
 			}
 		},
@@ -2794,7 +2796,6 @@ function Pouch(){
 								// широковещательное оповещение об ошибке загрузки
 								$p.eve.callEvent("pouch_load_data_error", [err]);
 							}
-
 						});
 					}
 
@@ -3514,7 +3515,9 @@ $p.fias = function FIAS(){};
 		ireg: "Регистр сведений",
 		areg: "Регистр накопления",
 		bp: "Бизнес процесс",
-		ts_row: "Строка табличной части"
+		ts_row: "Строка табличной части",
+		dp: "Обработка",
+		rep: "Отчет"
 	},
 	msg.meta_cat = "Справочники";
 	msg.meta_doc = "Документы";
@@ -15655,6 +15658,11 @@ function AppEvents() {
 				}
 
 				function detach(eventId) {
+
+					if(!eventId){
+						return detach_all.call(this);
+					}
+
 					for (var a in this._evnts.data) {
 						var k = 0;
 						for (var b in this._evnts.data[a]) {
@@ -15669,6 +15677,17 @@ function AppEvents() {
 							this._evnts.data[a] = null;
 							delete this._evnts.data[a];
 						}
+					}
+				}
+
+				 function detach_all() {
+					for (var a in this._evnts.data) {
+						for (var b in this._evnts.data[a]) {
+							this._evnts.data[a][b] = null;
+							delete this._evnts.data[a][b];
+						}
+						this._evnts.data[a] = null;
+						delete this._evnts.data[a];
 					}
 				}
 
@@ -15722,6 +15741,10 @@ function AppEvents() {
 
 					detachEvent: {
 						value: detach
+					},
+
+					detachAllEvents: {
+						value: detach_all
 					},
 
 					checkEvent: {

@@ -81,13 +81,17 @@ function create_modules(_m){
 			tsk: {mgr: "TaskManager", obj: "TaskObj"},
 			doc: {mgr: "DocManager", obj: "DocObj"},
 			ireg: {mgr: "InfoRegManager", obj: "RegisterRow"},
-			areg: {mgr: "AccumRegManager", obj: "RegisterRow"}
+			areg: {mgr: "AccumRegManager", obj: "RegisterRow"},
+			dp: {mgr: "DataProcessorsManager", obj: "DataProcessorObj"},
+			rep: {mgr: "DataProcessorsManager", obj: "DataProcessorObj"}
 		};
 
 
+	// менеджеры перечислений
 	for(name in _m.enm)
 		text+= "$p.enm." + name + " = new $p.EnumManager('enm." + name + "');\n";
 
+	// менеджеры объектов данных, отчетов и обработок
 	for(var category in categoties){
 		for(name in _m[category]){
 			text+= obj_constructor_text(_m, category, name, categoties[category].obj);

@@ -72,6 +72,11 @@ function AppEvents() {
 				}
 
 				function detach(eventId) {
+
+					if(!eventId){
+						return detach_all.call(this);
+					}
+
 					for (var a in this._evnts.data) {
 						var k = 0;
 						for (var b in this._evnts.data[a]) {
@@ -86,6 +91,17 @@ function AppEvents() {
 							this._evnts.data[a] = null;
 							delete this._evnts.data[a];
 						}
+					}
+				}
+
+				 function detach_all() {
+					for (var a in this._evnts.data) {
+						for (var b in this._evnts.data[a]) {
+							this._evnts.data[a][b] = null;
+							delete this._evnts.data[a][b];
+						}
+						this._evnts.data[a] = null;
+						delete this._evnts.data[a];
 					}
 				}
 
@@ -139,6 +155,10 @@ function AppEvents() {
 
 					detachEvent: {
 						value: detach
+					},
+
+					detachAllEvents: {
+						value: detach_all
 					},
 
 					checkEvent: {
