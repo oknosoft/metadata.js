@@ -136,11 +136,12 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 		pouch_load_data_loaded: function (page) {
 			if($p.eve.stepper.wnd_sync){
 				if(page.docs_written){
-					setTimeout(function () {
-						$p.iface.sync.close();
-						$p.eve.redirect = true;
-						location.reload(true);
-					}, 3000);
+					$p.iface.sync.close();
+					// setTimeout(function () {
+					// 	$p.iface.sync.close();
+					// 	$p.eve.redirect = true;
+					// 	location.reload(true);
+					// }, 2000);
 				}else{
 					$p.iface.sync.close();
 				}

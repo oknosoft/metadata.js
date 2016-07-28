@@ -2729,7 +2729,7 @@ function Pouch(){
 						setTimeout(function () {
 							$p.eve.redirect = true;
 							location.reload(true);
-						}, 2000);
+						}, 1000);
 					};
 
 				t.log_out();
@@ -2781,12 +2781,12 @@ function Pouch(){
 
 								if (t.load_changes(response, options))
 									fetchNextPage();
-								 else{
+								else{
 									resolve();
 									// широковещательное оповещение об окончании загрузки локальных данных
-									console.log(_page);
 									_data_loaded = true;
 									$p.eve.callEvent("pouch_load_data_loaded", [_page]);
+									$p.record_log(_page);
 								}
 
 							} else if(err){
@@ -2868,8 +2868,14 @@ function Pouch(){
 						return remote.get("data_version")
 							.then(function (v) {
 								if(v.version != $p.wsql.get_user_param("couch_ram_data_version")){
+
+									// если это не первый запуск - перезагружаем
+									if($p.wsql.get_user_param("couch_ram_data_version"))
+										rinfo = t.reset_local_data();
+
+									// сохраняем версию в localStorage
 									$p.wsql.set_user_param("couch_ram_data_version", v.version);
-									rinfo = t.reset_local_data();
+
 								}
 								return rinfo;
 							})
@@ -2940,9 +2946,9 @@ function Pouch(){
 										if(_page.docs_written >= _page.total_rows){
 
 											// широковещательное оповещение об окончании загрузки локальных данных
-											console.log(_page);
 											_data_loaded = true;
 											$p.eve.callEvent("pouch_load_data_loaded", [_page]);
+											$p.record_log(_page);
 										}
 
 									}
@@ -3717,11 +3723,12 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 		pouch_load_data_loaded: function (page) {
 			if($p.eve.stepper.wnd_sync){
 				if(page.docs_written){
-					setTimeout(function () {
-						$p.iface.sync.close();
-						$p.eve.redirect = true;
-						location.reload(true);
-					}, 3000);
+					$p.iface.sync.close();
+					// setTimeout(function () {
+					// 	$p.iface.sync.close();
+					// 	$p.eve.redirect = true;
+					// 	location.reload(true);
+					// }, 2000);
 				}else{
 					$p.iface.sync.close();
 				}
@@ -16292,10 +16299,11 @@ $p.eve.__define({
 					// устанавливаем параметры localStorage
 					$p.wsql.init_params();
 
-					// начинаем грузить локальные данные
-					$p.wsql.pouch.load_data();
+					// читаем локальные данные в ОЗУ
+					$p.wsql.pouch.load_data()
+						.catch($p.record_log);
 
-					// Если есть сплэш, удаляем его
+					// если есть сплэш, удаляем его
 					var splash;
 					if(splash = document.querySelector("#splash"))
 						splash.parentNode.removeChild(splash);

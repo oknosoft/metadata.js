@@ -297,10 +297,11 @@ $p.eve.__define({
 					// устанавливаем параметры localStorage
 					$p.wsql.init_params();
 
-					// начинаем грузить локальные данные
-					$p.wsql.pouch.load_data();
+					// читаем локальные данные в ОЗУ
+					$p.wsql.pouch.load_data()
+						.catch($p.record_log);
 
-					// Если есть сплэш, удаляем его
+					// если есть сплэш, удаляем его
 					var splash;
 					if(splash = document.querySelector("#splash"))
 						splash.parentNode.removeChild(splash);
