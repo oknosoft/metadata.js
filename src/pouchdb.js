@@ -257,7 +257,6 @@ function Pouch(){
 								// широковещательное оповещение об ошибке загрузки
 								$p.eve.callEvent("pouch_load_data_error", [err]);
 							}
-
 						});
 					}
 
