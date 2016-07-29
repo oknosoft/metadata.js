@@ -4,7 +4,7 @@
 // &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
 //
 
-var $p = require('metadata-js');
+var $p = require('../lib/metadata.core.js');
 var path = require('path');
 var fs = require('fs');
 var yargs = require('yargs')
