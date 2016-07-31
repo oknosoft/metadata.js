@@ -78,8 +78,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				wnd: {
 					top: 80 + Math.random()*40,
 					left: 120 + Math.random()*80,
-					width: 900,
-					height: 600,
+					width: 700,
+					height: 400,
 					modal: true,
 					center: false,
 					pwnd: pwnd,

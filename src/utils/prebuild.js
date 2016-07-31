@@ -1,5 +1,5 @@
 /**
- *
+ * ### Модуль сборки *.js по описанию метаданных
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  * @module  metadata-prebuild
  */
@@ -13,10 +13,10 @@ var gutil = require('gulp-util');
 var PluginError = gutil.PluginError;
 var File = gutil.File;
 
-module.exports = function (fileName) {
+module.exports = function (package_data) {
 
-	if (!fileName) {
-		throw new PluginError('metadata-prebuild', 'Missing fileName option for metadata-prebuild');
+	if (!package_data) {
+		throw new PluginError('metadata-prebuild', 'Missing "package_data" option for metadata-prebuild');
 	}
 
 	var firstFile = null;
@@ -27,30 +27,20 @@ module.exports = function (fileName) {
 	// установим параметры
 	$p.on("settings", function (prm) {
 
-		var settings = require('./settings.json');
-
 		// разделитель для localStorage
-		prm.local_storage_prefix = settings.pouch.prefix;
+		prm.local_storage_prefix = package_data.config.prefix;
 
 		// по умолчанию, обращаемся к зоне 0
-		prm.zone = settings.pouch.zone;
-
-		// объявляем номер демо-зоны
-		prm.zone_demo = 1;
+		prm.zone = package_data.config.zone;
 
 		// расположение couchdb
-		prm.couch_path = settings.pouch.path;
+		prm.couch_path = package_data.config.couchdb;
 
 		// логин гостевого пользователя couchdb
 		prm.guest_name = "guest";
 
 		// пароль гостевого пользователя couchdb
 		prm.guest_pwd = "meta";
-
-		// расположение rest-сервиса 1c
-		prm.rest_path = settings["1c"].odata;
-
-		prm.create_tables = false;
 
 	});
 	$p.eve.init();
@@ -68,13 +58,16 @@ module.exports = function (fileName) {
 				tsk: {mgr: "TaskManager", obj: "TaskObj"},
 				doc: {mgr: "DocManager", obj: "DocObj"},
 				ireg: {mgr: "InfoRegManager", obj: "RegisterRow"},
-				areg: {mgr: "AccumRegManager", obj: "RegisterRow"}
+				areg: {mgr: "AccumRegManager", obj: "RegisterRow"},
+				dp: {mgr: "DataProcessorsManager", obj: "DataProcessorObj"},
+				rep: {mgr: "DataProcessorsManager", obj: "DataProcessorObj"}
 			};
 
-
+		// менеджеры перечислений
 		for(name in _m.enm)
 			text+= "$p.enm." + name + " = new $p.EnumManager('enm." + name + "');\n";
 
+		// менеджеры объектов данных, отчетов и обработок
 		for(var category in categoties){
 			for(name in _m[category]){
 				text+= obj_constructor_text(_m, category, name, categoties[category].obj);
@@ -188,11 +181,12 @@ module.exports = function (fileName) {
 
 		// if file opt was a file path
 		// clone everything from the latest file
-		if (typeof fileName === 'string') {
+
+		if (firstFile) {
 			joinedFile = firstFile.clone({contents: false});
-			joinedFile.path = path.join(firstFile.base, fileName);
+			joinedFile.path = path.join(firstFile.base, 'prebuild.js');
 		} else {
-			joinedFile = new File(fileName);
+			joinedFile = new File(path.join(__dirname, 'prebuild.js'));
 		}
 
 		$p.md.init($p.wsql.pouch.local._meta)
@@ -214,7 +208,19 @@ module.exports = function (fileName) {
 
 					joinedFile.contents = new Buffer(text);
 					t.push(joinedFile);
+
+					// информируем внешний скрипт о завершении нашей работы
 					cb();
+
+					// отключаем все подписки и выгружаем менеджеров
+					$p.off();
+					for(var s in $p.wsql.pouch.local.sync){
+						try{
+							$p.wsql.pouch.local.sync[s].cancel();
+						}catch(e){}
+					}
+					$p = null;
+
 				})
 
 			})

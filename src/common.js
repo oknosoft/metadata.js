@@ -271,7 +271,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "PACKAGE_VERSION_NUMBER",
+			value: "PACKAGE_VERSION",
 			writable: false
 		},
 

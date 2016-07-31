@@ -85,7 +85,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				});
 			}
 		}else{
-			wnd = $p.iface.w.createWindow(null, 0, 0, 900, 600);
+			wnd = $p.iface.w.createWindow(null, 0, 0, 700, 500);
 			wnd.centerOnScreen();
 			wnd.setModal(1);
 			wnd.button('park').hide();
