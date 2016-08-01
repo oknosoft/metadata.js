@@ -175,6 +175,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			//
 			create_tree_and_grid();
 		});
+
+		wnd._mgr = _mgr;
 	}
 
 	/**
@@ -253,13 +255,19 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			cell_tree.hideHeader();
 
 			tree = wnd.elmnts.tree = cell_tree.attachDynTree(_mgr, null, function(){
-				setTimeout(function(){ grid.reload(); }, 20);
+				setTimeout(function(){
+					if(grid && grid.reload)
+						grid.reload();
+				}, 20);
 			});
 			tree.attachEvent("onSelect", function(){	// довешиваем обработчик на дерево
 				if(this.do_not_reload)
 					delete this.do_not_reload;
 				else
-					setTimeout(function(){ grid.reload(); }, 20);
+					setTimeout(function(){
+						if(grid && grid.reload)
+							grid.reload();
+					}, 20);
 			});
 			tree.attachEvent("onDblClick", function(id){
 				select(id);
@@ -267,7 +275,10 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		}else{
 			cell_grid = wnd;
-			setTimeout(function(){ grid.reload(); }, 20);
+			setTimeout(function(){
+				if(grid && grid.reload)
+					grid.reload();
+			}, 20);
 		}
 
 		// настройка грида
