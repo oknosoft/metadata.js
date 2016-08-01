@@ -221,28 +221,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		});
 
-
-		if($p.job_prm.russian_names){
-			if(!wnd.Элементы)
-				wnd.__define({
-					"Элементы": {
-						get: function () {
-							return this.elmnts;
-						},
-						enumerable: false
-					}
-				});
-			if(!wnd.elmnts.Шапка)
-				wnd.elmnts.__define({
-					"Шапка": {
-						get: function () {
-							return this.pg_header;
-						},
-						enumerable: false
-					}
-				});
-		}
-
 		created = true;
 	}
 
