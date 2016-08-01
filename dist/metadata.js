@@ -2775,6 +2775,7 @@ function Pouch(){
 									// широковещательное оповещение об окончании загрузки локальных данных
 									_data_loaded = true;
 									$p.eve.callEvent("pouch_load_data_loaded", [_page]);
+									_page.note = "pouch_load_data_loaded";
 									$p.record_log(_page);
 								}
 
@@ -2936,6 +2937,7 @@ function Pouch(){
 											// широковещательное оповещение об окончании загрузки локальных данных
 											_data_loaded = true;
 											$p.eve.callEvent("pouch_load_data_loaded", [_page]);
+											_page.note = "pouch_load_data_loaded";
 											$p.record_log(_page);
 										}
 
@@ -8734,135 +8736,181 @@ function LogManager(){
 
 	var smax;
 
-	/**
-	 * Добавляет запись в журнал
-	 * @param msg {String|Object|Error} - текст + класс события
-	 * @param [msg.obj] {Object} - дополнительный json объект
-	 */
-	this.record = function(msg){
+	this.__define({
 
-		if(msg instanceof Error){
-			if(console)
-				console.log(msg);
-			msg = {
-				class: "error",
-				note: msg.toString()
-			}
-		}
+		/**
+		 * Добавляет запись в журнал
+		 * @param msg {String|Object|Error} - текст + класс события
+		 * @param [msg.obj] {Object} - дополнительный json объект
+		 */
+		record: {
+			value: function(msg){
 
-		if(typeof msg != "object")
-			msg = {note: msg};
-		msg.date = Date.now() + $p.wsql.time_diff;
+				if(msg instanceof Error){
+					if(console)
+						console.log(msg);
+					msg = {
+						class: "error",
+						note: msg.toString()
+					}
+				}else if(typeof msg == "object" && !msg.class && !msg.obj){
+					msg = {
+						class: "obj",
+						obj: msg,
+						note: msg.note
+					};
+				}else if(typeof msg != "object")
+					msg = {note: msg};
 
-		// уникальность ключа
-		if(!smax)
-			smax = alasql.compile("select MAX(`ref`) as `ref` from `ireg_$log` where `date` = ?");
-		var res = smax([msg.date]);
-		if(!res.length || res[0].ref === undefined)
-			msg.sequence = 0;
-		else
-			msg.sequence = parseInt(res[0].ref.split(".")[1]) + 1;
+				msg.date = Date.now() + $p.wsql.time_diff;
 
-		// класс сообщения
-		if(!msg.class)
-			msg.class = "note";
-
-		$p.wsql.alasql("insert into `ireg_$log` (`ref`, `date`, `class`, `note`, `obj`) values (?, ?, ?, ?, ?)",
-			[msg.date + "."+msg.sequence, msg.date, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
-
-	};
-
-	/**
-	 * Сбрасывает события на сервер
-	 * @method backup
-	 * @param [dfrom] {Date}
-	 * @param [dtill] {Date}
-	 */
-	this.backup = function(dfrom, dtill){
-
-	};
-
-	/**
-	 * Восстанавливает события из архива на сервере
-	 * @method restore
-	 * @param [dfrom] {Date}
-	 * @param [dtill] {Date}
-	 */
-	this.restore = function(dfrom, dtill){
-
-	};
-
-	/**
-	 * Стирает события в указанном диапазоне дат
-	 * @method clear
-	 * @param [dfrom] {Date}
-	 * @param [dtill] {Date}
-	 */
-	this.clear = function(dfrom, dtill){
-
-	};
-
-	this.show = function (pwnd) {
-
-	};
-
-	this.get_sql_struct = function(attr){
-
-		if(attr && attr.action == "get_selection"){
-			var sql = "select * from `ireg_$log`";
-			if(attr.date_from){
-				if (attr.date_till)
-					sql += " where `date` >= ? and `date` <= ?";
+				// уникальность ключа
+				if(!smax)
+					smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_$log` where `date` = ?");
+				var res = smax([msg.date]);
+				if(!res.length || res[0].sequence === undefined)
+					msg.sequence = 0;
 				else
-					sql += " where `date` >= ?";
-			}else if (attr.date_till)
-				sql += " where `date` <= ?";
+					msg.sequence = parseInt(res[0].sequence) + 1;
 
-			return sql;
+				// класс сообщения
+				if(!msg.class)
+					msg.class = "note";
 
-		}else
-			return LogManager.superclass.get_sql_struct.call(this, attr);
-	};
+				$p.wsql.alasql("insert into `ireg_$log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)",
+					[msg.date + "¶" + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
 
-	this.caption_flds = function (attr) {
-
-		var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
-			acols = [], cmd = this.metadata(),	s = "";
-
-
-		acols.push(new Col_struct("date", "140", "ro", "left", "server", "Дата"));
-		acols.push(new Col_struct("class", "100", "ro", "left", "server", "Класс"));
-		acols.push(new Col_struct("note", "*", "ro", "left", "server", "Событие"));
-
-		if(attr.get_header){
-			s = "<head>";
-			for(var col in acols){
-				s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
-					.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
 			}
-			s += "</head>";
+		},
+
+		/**
+		 * Сбрасывает события на сервер
+		 * @method backup
+		 * @param [dfrom] {Date}
+		 * @param [dtill] {Date}
+		 */
+		backup: {
+			value: function(dfrom, dtill){
+
+			}
+		},
+
+		/**
+		 * Восстанавливает события из архива на сервере
+		 * @method restore
+		 * @param [dfrom] {Date}
+		 * @param [dtill] {Date}
+		 */
+		restore: {
+			value: function(dfrom, dtill){
+
+			}
+		},
+
+		/**
+		 * Стирает события в указанном диапазоне дат
+		 * @method clear
+		 * @param [dfrom] {Date}
+		 * @param [dtill] {Date}
+		 */
+		clear: {
+			value: function(dfrom, dtill){
+
+			}
+		},
+
+		show: {
+			value: function (pwnd) {
+
+			}
+		},
+
+		get: {
+			value: function (ref, force_promise, do_not_create) {
+
+				if(typeof ref == "object")
+					ref = ref.ref || "";
+
+				if(!this.by_ref[ref]){
+
+					if(force_promise === false)
+						return undefined;
+
+					var parts = ref.split("¶");
+					$p.wsql.alasql("select * from `ireg_$log` where date=" + parts[0] + " and sequence=" + parts[1]).forEach(function (row) {
+						new RegisterRow(row, this);
+					}.bind(this));
+				}
+
+				return force_promise ? Promise.resolve(this.by_ref[ref]) : this.by_ref[ref];
+			}
+		},
+
+		get_sql_struct: {
+			value: function(attr){
+
+				if(attr && attr.action == "get_selection"){
+					var sql = "select * from `ireg_$log`";
+					if(attr.date_from){
+						if (attr.date_till)
+							sql += " where `date` >= ? and `date` <= ?";
+						else
+							sql += " where `date` >= ?";
+					}else if (attr.date_till)
+						sql += " where `date` <= ?";
+
+					return sql;
+
+				}else
+					return LogManager.superclass.get_sql_struct.call(this, attr);
+			}
+		},
+
+		caption_flds: {
+			value: function (attr) {
+
+				var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
+					acols = [], cmd = this.metadata(),	s = "";
+
+
+				acols.push(new Col_struct("date", "200", "ro", "left", "server", "Дата"));
+				acols.push(new Col_struct("class", "100", "ro", "left", "server", "Класс"));
+				acols.push(new Col_struct("note", "*", "ro", "left", "server", "Событие"));
+
+				if(attr.get_header){
+					s = "<head>";
+					for(var col in acols){
+						s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
+							.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
+					}
+					s += "</head>";
+				}
+
+				return {head: s, acols: acols};
+			}
+		},
+
+		data_to_grid: {
+			value: function (data, attr) {
+				var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
+						.replace("%1", data.length).replace("%2", attr.start)
+						.replace("%3", attr.set_parent || "" ),
+					caption = this.caption_flds(attr);
+
+				// при первом обращении к методу добавляем описание колонок
+				xml += caption.head;
+
+				data.forEach(function(r){
+					xml += "<row id=\"" + r.ref + "\"><cell>" +
+						$p.moment(r.date - $p.wsql.time_diff).format("DD.MM.YYYY HH:mm:ss") + "." + r.sequence + "</cell>" +
+						"<cell>" + (r.class || "") + "</cell><cell>" + (r.note || "") + "</cell></row>";
+				});
+
+				return xml + "</rows>";
+			}
 		}
+	});
 
-		return {head: s, acols: acols};
-	};
-
-	this.data_to_grid = function (data, attr) {
-		var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
-				.replace("%1", data.length).replace("%2", attr.start)
-				.replace("%3", attr.set_parent || "" ),
-			caption = this.caption_flds(attr);
-
-		// при первом обращении к методу добавляем описание колонок
-		xml += caption.head;
-
-		data.forEach(function(r){
-			xml += "<row id=\"" + r.date + "_" + r.sequence + "\"><cell>" +
-				$p.moment(r.date - $p.wsql.time_diff).format($p.moment._masks.date_time) + (r.sequence ? "." + r.sequence : "") + "</cell>" +
-				"<cell>" + r.class + "</cell><cell>" + r.note + "</cell></row>";
-		});
-
-		return xml + "</rows>";
-	}
 }
 LogManager._extend(InfoRegManager);
 

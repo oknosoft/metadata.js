@@ -249,6 +249,7 @@ function Pouch(){
 									// широковещательное оповещение об окончании загрузки локальных данных
 									_data_loaded = true;
 									$p.eve.callEvent("pouch_load_data_loaded", [_page]);
+									_page.note = "pouch_load_data_loaded";
 									$p.record_log(_page);
 								}
 
@@ -410,6 +411,7 @@ function Pouch(){
 											// широковещательное оповещение об окончании загрузки локальных данных
 											_data_loaded = true;
 											$p.eve.callEvent("pouch_load_data_loaded", [_page]);
+											_page.note = "pouch_load_data_loaded";
 											$p.record_log(_page);
 										}
 
