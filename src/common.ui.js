@@ -343,24 +343,30 @@ $p.__define({
 	 */
 	load_script: {
 		value: function (src, type, callback) {
-			var s = document.createElement(type);
-			if (type == "script") {
-				s.type = "text/javascript";
-				s.src = src;
 
-				if(callback){
+			return new Promise(function(resolve, reject){
+
+				var s = document.createElement(type);
+				if (type == "script") {
+					s.type = "text/javascript";
+					s.src = src;
 					s.async = true;
-					s.addEventListener('load', callback, false);
+					s.addEventListener('load', callback ? function () {
+						callback();
+						resolve();
+					} : resolve, false);
 
-				}else
-					s.async = false;
+				} else {
+					s.type = "text/css";
+					s.rel = "stylesheet";
+					s.href = src;
+				}
+				document.head.appendChild(s);
 
-			} else {
-				s.type = "text/css";
-				s.rel = "stylesheet";
-				s.href = src;
-			}
-			document.head.appendChild(s);
+				if(type != "script")
+					resolve()
+
+			});
 		}
 	}
 

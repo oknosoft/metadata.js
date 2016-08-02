@@ -2502,24 +2502,30 @@ $p.__define({
 	 */
 	load_script: {
 		value: function (src, type, callback) {
-			var s = document.createElement(type);
-			if (type == "script") {
-				s.type = "text/javascript";
-				s.src = src;
 
-				if(callback){
+			return new Promise(function(resolve, reject){
+
+				var s = document.createElement(type);
+				if (type == "script") {
+					s.type = "text/javascript";
+					s.src = src;
 					s.async = true;
-					s.addEventListener('load', callback, false);
+					s.addEventListener('load', callback ? function () {
+						callback();
+						resolve();
+					} : resolve, false);
 
-				}else
-					s.async = false;
+				} else {
+					s.type = "text/css";
+					s.rel = "stylesheet";
+					s.href = src;
+				}
+				document.head.appendChild(s);
 
-			} else {
-				s.type = "text/css";
-				s.rel = "stylesheet";
-				s.href = src;
-			}
-			document.head.appendChild(s);
+				if(type != "script")
+					resolve()
+
+			});
 		}
 	}
 
@@ -4860,6 +4866,16 @@ $p.iface.select_from_list = function (list, multy) {
 
 	});
 };
+/**
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ * @module odaterangepicker
+ * Created 02.08.2016
+ */
+
+function ODateRangePicker(container, attr) {
+
+}
 /**
  * ### Визуальный компонент - реквизиты шапки объекта
  *
@@ -16943,10 +16959,28 @@ function HandsontableDocument(container, attr) {
 	// отложенная загрузка handsontable и зависимостей
 	if(typeof Handsontable != "function" && this._online){
 
-		$p.load_script("//cdnjs.cloudflare.com/ajax/libs/pikaday/1.4.0/pikaday.min.js","script",function () {
-			$p.load_script("//cdn.jsdelivr.net/g/zeroclipboard,handsontable@0.25(handsontable.min.js)","script",init);
-			$p.load_script("//cdn.jsdelivr.net/handsontable/0.25/handsontable.min.css","link");
-		});
+		//https://cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/numbro.min.js
+		//http://cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/languages/ru-RU.min.js
+
+		$p.load_script("//cdnjs.cloudflare.com/ajax/libs/pikaday/1.4.0/pikaday.min.js","script")
+			.then(function () {
+				return $p.load_script("//cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/numbro.min.js","script")
+			})
+			.then(function () {
+				return $p.load_script("//cdn.jsdelivr.net/g/zeroclipboard,handsontable@0.26(handsontable.min.js)","script")
+			})
+			.then(function () {
+				return Promise.all([
+					$p.load_script("//cdn.jsdelivr.net/handsontable/0.26/handsontable.min.css","link"),
+					$p.load_script("//cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/languages/ru-RU.min.js","script")
+				]);
+			})
+			.then(init);
+
+		// $p.load_script("//cdnjs.cloudflare.com/ajax/libs/pikaday/1.4.0/pikaday.min.js","script",function () {
+		// 	$p.load_script("//cdn.jsdelivr.net/g/zeroclipboard,handsontable@0.25(handsontable.min.js)","script",init);
+		// 	$p.load_script("//cdn.jsdelivr.net/handsontable/0.25/handsontable.min.css","link");
+		// });
 
 	}else{
 		setTimeout(init);
