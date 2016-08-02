@@ -376,6 +376,7 @@ $p.fias = function FIAS(){};
 	msg.order_sent_message = "Отправленный заказ нельзя изменить.<br/>После проверки менеджером<br/>он будет запущен в работу";
 
 	msg.report_prepare = "<i class='fa fa-spinner fa-spin fa-2x fa-fw'></i> Подготовка отчета";
+	msg.report_need_prepare = "<i class='fa fa-info fa-2x fa-fw'></i> Нажмите 'Сформировать' для получения отчета";
 	msg.report_need_online = "<i class='fa fa-plug fa-2x fa-fw'></i> Нет подключения. Отчет недоступен в автономном режиме";
 
 	msg.request_title = "Окнософт: Запрос регистрации";

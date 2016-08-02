@@ -13,8 +13,8 @@
 
         <item id="sep4" type="separator"/>
 
-        <item type="button" id="btn_import" text="&lt;i class='fa fa-folder-open-o fa-fw'&gt;&lt;/i&gt; Выбрать вариант" />
-        <item type="button" id="btn_export" text="&lt;i class='fa fa-floppy-o fa-fw'&gt;&lt;/i&gt; Сохранить вариант" />
+        <item type="button" id="btn_save" text="&lt;i class='fa fa-folder-open-o fa-fw'&gt;&lt;/i&gt; Выбрать вариант" />
+        <item type="button" id="btn_load" text="&lt;i class='fa fa-floppy-o fa-fw'&gt;&lt;/i&gt; Сохранить вариант" />
 
     </item>
 

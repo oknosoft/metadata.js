@@ -3545,6 +3545,7 @@ $p.fias = function FIAS(){};
 	msg.order_sent_message = "Отправленный заказ нельзя изменить.<br/>После проверки менеджером<br/>он будет запущен в работу";
 
 	msg.report_prepare = "<i class='fa fa-spinner fa-spin fa-2x fa-fw'></i> Подготовка отчета";
+	msg.report_need_prepare = "<i class='fa fa-info fa-2x fa-fw'></i> Нажмите 'Сформировать' для получения отчета";
 	msg.report_need_online = "<i class='fa fa-plug fa-2x fa-fw'></i> Нет подключения. Отчет недоступен в автономном режиме";
 
 	msg.request_title = "Окнософт: Запрос регистрации";
@@ -16910,7 +16911,7 @@ function HandsontableDocument(container, attr) {
 
 	}.bind(this);
 	
-	this._online = navigator.onLine && $p.wsql.pouch.authorized;
+	this._online = (attr && attr.allow_offline) || (navigator.onLine && $p.wsql.pouch.authorized);
 	
 	if(container instanceof dhtmlXCellObject){
 		this._cont = document.createElement('div');
@@ -16921,7 +16922,11 @@ function HandsontableDocument(container, attr) {
 	}
 
 	this._cont.classList.add("handsontable_wrapper");
-	this._cont.innerHTML = this._online ? $p.msg.report_prepare : $p.msg.report_need_online;	
+	if(!this._online){
+		this._cont.innerHTML = $p.msg.report_need_online;
+	}else{
+		this._cont.innerHTML = attr.autorun ? $p.msg.report_prepare : $p.msg.report_need_prepare;
+	}
 
 	this.then = function (callback) {
 		this._then = callback;

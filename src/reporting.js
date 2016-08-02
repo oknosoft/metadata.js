@@ -121,7 +121,7 @@ function HandsontableDocument(container, attr) {
 
 	}.bind(this);
 	
-	this._online = navigator.onLine && $p.wsql.pouch.authorized;
+	this._online = (attr && attr.allow_offline) || (navigator.onLine && $p.wsql.pouch.authorized);
 	
 	if(container instanceof dhtmlXCellObject){
 		this._cont = document.createElement('div');
@@ -132,7 +132,11 @@ function HandsontableDocument(container, attr) {
 	}
 
 	this._cont.classList.add("handsontable_wrapper");
-	this._cont.innerHTML = this._online ? $p.msg.report_prepare : $p.msg.report_need_online;	
+	if(!this._online){
+		this._cont.innerHTML = $p.msg.report_need_online;
+	}else{
+		this._cont.innerHTML = attr.autorun ? $p.msg.report_prepare : $p.msg.report_need_prepare;
+	}
 
 	this.then = function (callback) {
 		this._then = callback;
