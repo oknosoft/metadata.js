@@ -136,7 +136,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			// учтём права для каждой роли на каждый объект
 			if($p.current_acl && $p.current_acl._acl){
 				var acn = _mgr.class_name.split("."),
-					_acl = $p.current_acl._acl[acn[0]][acn[1]];
+					_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
 
 				if(_acl.indexOf("i") == -1)
 					this.hideItem("btn_new");

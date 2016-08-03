@@ -14153,7 +14153,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			if($p.current_acl && $p.current_acl._acl){
 
 				var acn = _mgr.class_name.split("."),
-					_acl = $p.current_acl._acl[acn[0]][acn[1]];
+					_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
 
 				if(_mgr instanceof DocManager && _acl.indexOf("p") != -1)
 					this.enableItem("btn_post");
@@ -14270,7 +14270,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			// учтём права для каждой роли на каждый объект
 			var acn = _mgr.class_name.split("."), _acl;
 			if($p.current_acl && $p.current_acl._acl)
-				_acl = $p.current_acl._acl[acn[0]][acn[1]];
+				_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
 			else
 				_acl = "e";
 
@@ -14416,7 +14416,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		// учтём права для каждой роли на каждый объект
 		var acn = _mgr.class_name.split("."), _acl;
 		if($p.current_acl && $p.current_acl._acl)
-			_acl = $p.current_acl._acl[acn[0]][acn[1]];
+			_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
 		else
 			_acl = "e";
 
@@ -14970,7 +14970,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			// учтём права для каждой роли на каждый объект
 			if($p.current_acl && $p.current_acl._acl){
 				var acn = _mgr.class_name.split("."),
-					_acl = $p.current_acl._acl[acn[0]][acn[1]];
+					_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
 
 				if(_acl.indexOf("i") == -1)
 					this.hideItem("btn_new");
