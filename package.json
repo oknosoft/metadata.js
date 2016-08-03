@@ -26,15 +26,15 @@
     "gulp-concat": ">=2.6",
     "gulp-csso": ">=2.0",
     "gulp-rename": ">=1.2",
-    "gulp-uglify": ">=1.5",
+    "gulp-uglify": ">=2.0",
     "gulp-umd": ">=0.2",
     "gulp-replace": ">=0.5",
     "gulp-base64": ">=0.1",
-    "yuidocjs": "^0.10",
+    "yuidocjs": ">=0.10",
     "jasmine": ">=2.4"
   },
   "engines": {
-    "node": ">=5.0"
+    "node": ">=6.0"
   },
   "bin": {
     "metadata": "./bin/metadata-cli.js"

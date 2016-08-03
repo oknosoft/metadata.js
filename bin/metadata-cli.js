@@ -4,7 +4,7 @@
 // &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
 //
 
-var $p = require('../lib/metadata.core.js');
+var $p = require('metadata-js');
 var path = require('path');
 var fs = require('fs');
 var yargs = require('yargs')
@@ -13,8 +13,7 @@ var yargs = require('yargs')
 	.strict()
     .usage('Metadata.js command-line utility (v '+$p.version+')\n\nUsage: metadata [command] [params]')
     
-    .example('metadata init helloworld', 'Create directory structure for empty project')
-    .example('metadata prebuild', 'Prebuild js files with metadata')
+    .example('metadata init [dir]', 'Create directory structure for empty project')
 
 	.version('v', 'Metadata.js version', $p.version).alias('v', 'version')
 
@@ -29,24 +28,6 @@ var argv = yargs.argv;
 if(0===argv._.length){
 	yargs.showHelp();
 	process.exit(1);
-}
-
-
-/**
- * Is a Directory
- *
- * @param {String} filePath
- * @returns {Boolean}
- */
-function isDirectory(filePath){
-	var isDir = false;
-	try {
-		var absolutePath = path.resolve(filePath);
-		isDir = fs.lstatSync(absolutePath).isDirectory();
-	} catch (e) {
-		isDir = e.code === 'ENOENT';
-	}
-	return isDir;
 }
 
 

@@ -25,6 +25,26 @@ In metadata.js, we attempt to supplemented the best of modern technologies of da
 ### Unlike competitors
 Metadata.js not compete with client Web UI and client-server (including reactive) frameworks, and complements the new abstraction of [data objects](http://www.oknosoft.ru/upzp/apidocs/classes/DataObj.html) and [data managers](http://www.oknosoft.ru/upzp/apidocs/classes/DataManager.html). Using these classes simplifies the development of complex interfaces of business applications.
 
+## Install
+
+```bash
+npm install --save metadata-js  # node
+npm install -g metadata-js      # command line
+```
+
+To create a folder and files structure, run the command
+```bash
+metadata init                   # create empty repo
+npm install                     # install dependencies
+```
+
+For the browser, include:
+```html
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/fontawesome/latest/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/g/metadata(dhx_terrace.css+metadata.css)">
+<script src="//cdn.jsdelivr.net/g/momentjs,alasql,pouchdb,jquery,metadata(dhtmlx.min.js+metadata.min.js)"></script>
+```
+
 ### Credits
 Many thanks to
 - Andrey Gershun & M. Rangel Wulff, authors of [AlaSQL](https://github.com/agershun/alasql) - Javascript SQL database library
