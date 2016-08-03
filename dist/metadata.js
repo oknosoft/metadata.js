@@ -14769,23 +14769,24 @@ DataProcessorsManager.prototype.form_rep = function(pwnd, attr) {
 	 */
 	function toolbar_click(btn_id){
 
-		if(btn_id=="btn_close")
+		if(btn_id=="btn_close"){
 			wnd.close();
 
-		else if(btn_id=="btn_run")
+		}else if(btn_id=="btn_run"){
 			wnd.report.build().then(show).catch(show);
 
-		else if(btn_id=="btn_print")
-			_mgr.import(null, wnd.report);
+		}else if(btn_id=="btn_print"){
+			//_mgr.import(null, wnd.report);
 
-		else if(btn_id=="btn_save")
-			_mgr.import(null, wnd.report);
+		}else if(btn_id=="btn_save"){
+			//_mgr.import(null, wnd.report);
 
-		else if(btn_id=="btn_load")
-			_mgr.import(null, wnd.report);
+		}else if(btn_id=="btn_load"){
+			//_mgr.import(null, wnd.report);
 
-		else if(btn_id=="btn_export")
-			_mgr.export({items: [wnd.report], pwnd: wnd, obj: true} );
+		}else if(btn_id=="btn_export"){
+			//_mgr.export({items: [wnd.report], pwnd: wnd, obj: true} );
+		}
 
 	}
 
