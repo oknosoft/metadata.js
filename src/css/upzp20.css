@@ -39,6 +39,44 @@ html, body {
 	z-index: 99;
 }
 
+/* иконы классов 1С */
+.icon_1c_accreg {
+	background-image: url(../imgs/custom_web/1c-accreg.gif);
+}
+.icon_1c_areg {
+	background-image: url(../imgs/custom_web/1c-areg.gif);
+}
+.icon_1c_bp {
+	background-image: url(../imgs/custom_web/1c-bp.gif);
+}
+.icon_1c_cacc {
+	background-image: url(../imgs/custom_web/1c-cacc.gif);
+}
+.icon_1c_cat {
+	background-image: url(../imgs/custom_web/1c-cat.gif);
+}
+.icon_1c_cch {
+	background-image: url(../imgs/custom_web/1c-cch.gif);
+}
+.icon_1c_doc {
+	background-image: url(../imgs/custom_web/1c-doc.gif);
+}
+.icon_1c_dp {
+	background-image: url(../imgs/custom_web/1c-dp.gif);
+}
+.icon_1c_ireg {
+	background-image: url(../imgs/custom_web/1c-ireg.gif);
+}
+.icon_1c_rep {
+	background-image: url(../imgs/custom_web/1c-rep.gif);
+}
+.icon_1c_tsk {
+	background-image: url(../imgs/custom_web/1c-tsk.gif);
+}
+
+
+
+
 .order_dealer_options {
     position: absolute;
     right: 4px;

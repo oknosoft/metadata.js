@@ -1,9 +1,11 @@
 /**
- * Динамическое дерево иерархического справочника
+ * ### Динамическое дерево иерархического справочника
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  * 
- * @module  wdg_dyn_tree
+ * @module  widgets
+ * @submodule wdg_dyn_tree
+ * @requires common
  */
 
 /**

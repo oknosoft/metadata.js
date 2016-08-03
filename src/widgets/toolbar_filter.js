@@ -1,10 +1,11 @@
 /**
- * Виджет для панели инструментов форм списка и выбора,
+ * ### Виджет элементов фильтра для панели инструментов форм списка и выбора
  * объединяет поля выбора периода и поле ввода фильтра
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
- * @module  wdg_filter
+ * @module  widgets
+ * @submodule wdg_filter
  * @requires common
  */
 
@@ -18,6 +19,8 @@
  * @param [attr.date_from]
  * @param [attr.date_till]
  * @constructor
+ * @menuorder 57
+ * @tooltip Фильтр динсписка
  */
 $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 

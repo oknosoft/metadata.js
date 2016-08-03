@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding='utf-8'?>
+<toolbar>
+    <item id="sep0" type="separator"/>
+    <item type="button" id="btn_run" text="&lt;i class='fa fa-play fa-fw'&gt;&lt;/i&gt; Сформировать" title="Сформировать отчет"/>
+
+    <item type="buttonSelect"   id="bs_more"  text="&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;"  title="Дополнительно" openAll="true">
+
+        <item type="button" id="btn_print" text="&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt; Печать" />
+
+        <item id="sep3" type="separator"/>
+
+        <item type="button" id="btn_export" text="&lt;i class='fa fa-file-excel-o fa-fw'&gt;&lt;/i&gt; Выгрузить в файл" />
+
+        <item id="sep4" type="separator"/>
+
+        <item type="button" id="btn_save" text="&lt;i class='fa fa-folder-open-o fa-fw'&gt;&lt;/i&gt; Выбрать вариант" />
+        <item type="button" id="btn_load" text="&lt;i class='fa fa-floppy-o fa-fw'&gt;&lt;/i&gt; Сохранить вариант" />
+
+    </item>
+
+    <item id="sep1" type="separator"/>
+
+</toolbar>

@@ -3,7 +3,8 @@
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
- * @module  wdg_ohead_fields
+ * @module  widgets
+ * @submodule wdg_ohead_fields
  * @requires common
  */
 

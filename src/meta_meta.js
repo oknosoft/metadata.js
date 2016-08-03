@@ -10,442 +10,6 @@
 
 
 /**
- * Абстрактный поиск значения в коллекции
- * @method _find
- * @for MetaEngine
- * @param a {Array}
- * @param val {DataObj|String}
- * @param val {Array|String} - имена полей, в которых искать
- * @return {*}
- * @private
- */
-$p._find = function(a, val, columns){
-	//TODO переписать с учетом html5 свойств массивов
-	var o, i, finded;
-	if(typeof val != "object"){
-		for(i in a){ // ищем по всем полям объекта
-			o = a[i];
-			for(var j in o){
-				if(typeof o[j] !== "function" && $p.utils.is_equal(o[j], val))
-					return o;
-			}
-		}
-	}else{
-		for(i in a){ // ищем по ключам из val
-			o = a[i];
-			finded = true;
-			for(var j in val){
-				if(typeof o[j] !== "function" && !$p.utils.is_equal(o[j], val[j])){
-					finded = false;
-					break;
-				}
-			}
-			if(finded)
-				return o;
-		}
-	}
-};
-
-/**
- * Выясняет, удовлетворяет ли объект `o` условию `selection`
- * @param o {Object}
- * @param [selection]
- * @private
- */
-$p._selection = function (o, selection) {
-
-	var ok = true, j, sel, is_obj;
-
-	if(selection){
-		// если отбор является функцией, выполняем её, передав контекст
-		if(typeof selection == "function")
-			ok = selection.call(this, o);
-
-		else{
-			// бежим по всем свойствам `selection`
-			for(j in selection){
-
-				sel = selection[j];
-				is_obj = typeof(sel) === "object";
-
-				// пропускаем служебные свойства
-				if(j.substr(0, 1) == "_")
-					continue;
-
-				// если свойство отбора является функцией, выполняем её, передав контекст
-				else if(typeof sel == "function"){
-					ok = sel.call(this, o, j);
-					if(!ok)
-						break;
-
-				// если свойство отбора является объектом `or`, выполняем Array.some() TODO: здесь напрашивается рекурсия
-				}else if(j == "or" && Array.isArray(sel)){
-					ok = sel.some(function (element) {
-						var key = Object.keys(element)[0];
-						if(element[key].hasOwnProperty("like"))
-							return o[key] && o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
-						else
-							return $p.utils.is_equal(o[key], element[key]);
-					});
-					if(!ok)
-						break;
-
-				// если свойство отбора является объектом `like`, сравниваем подстроку
-				}else if(is_obj && sel.hasOwnProperty("like")){
-					if(!o[j] || o[j].toLowerCase().indexOf(sel.like.toLowerCase())==-1){
-						ok = false;
-						break;
-					}
-
-				// если свойство отбора является объектом `not`, сравниваем на неравенство
-				}else if(is_obj && sel.hasOwnProperty("not")){
-					if($p.utils.is_equal(o[j], sel.not)){
-						ok = false;
-						break;
-					}
-
-				// если свойство отбора является объектом `in`, выполняем Array.some()
-				}else if(is_obj && sel.hasOwnProperty("in")){
-					ok = sel.in.some(function(element) {
-						return $p.utils.is_equal(element, o[j]);
-					});
-					if(!ok)
-						break;
-
-				// если свойство отбора является объектом `lt`, сравниваем на _меньше_
-				}else if(is_obj && sel.hasOwnProperty("lt")){
-					ok = o[j] < sel.lt;
-					if(!ok)
-						break;
-
-				// если свойство отбора является объектом `gt`, сравниваем на _больше_
-				}else if(is_obj && sel.hasOwnProperty("gt")){
-					ok = o[j] > sel.gt;
-					if(!ok)
-						break;
-
-				// если свойство отбора является объектом `between`, сравниваем на _вхождение_
-				}else if(is_obj && sel.hasOwnProperty("between")){
-					var tmp = o[j];
-					if(typeof tmp != "number")
-						tmp = $p.utils.fix_date(o[j]);
-					ok = (tmp >= sel.between[0]) && (tmp <= sel.between[1]);
-					if(!ok)
-						break;
-
-				}else if(!$p.utils.is_equal(o[j], sel)){
-					ok = false;
-					break;
-				}
-			}
-		}
-	}
-
-	return ok;
-};
-
-/**
- * ### Поиск массива значений в коллекции
- * Кроме стандартного поиска по равенству значений,
- * поддержаны операторы `in`, `not` и `like` и фильтрация через внешнюю функцию
- * @method _find_rows
- * @for MetaEngine
- * @param arr {Array}
- * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
- * @param callback {Function}
- * @return {Array}
- * @private
- */
-$p._find_rows = function(arr, selection, callback){
-
-	var o, res = [], top, count = 0;
-
-	if(selection){
-		if(selection._top){
-			top = selection._top;
-			delete selection._top;
-		}else
-			top = 300;
-	}
-
-	for(var i in arr){
-		o = arr[i];
-
-		// выполняем колбэк с элементом и пополняем итоговый массив
-		if($p._selection.call(this, o, selection)){
-			if(callback){
-				if(callback.call(this, o) === false)
-					break;
-			}else
-				res.push(o);
-
-			// ограничиваем кол-во возвращаемых элементов
-			if(top) {
-				count++;
-				if (count >= top)
-					break;
-			}
-		}
-
-	}
-	return res;
-};
-
-
-/**
- * Коллекция менеджеров справочников
- * @property cat
- * @type Catalogs
- * @for MetaEngine
- * @static
- */
-var _cat = $p.cat = new (
-		/**
-		 * ### Коллекция менеджеров справочников
-		 * - Состав коллекции определяется метаданными используемой конфигурации
-		 * - Тип элементов коллекции: {{#crossLink "CatManager"}}{{/crossLink}}
-		 *
-		 * @class Catalogs
-		 * @static
-		 */
-		function Catalogs(){
-			this.toString = function(){return $p.msg.meta_cat_mgr};
-		}
-	),
-
-	/**
-	 * Коллекция менеджеров перечислений
-	 * @property enm
-	 * @type Enumerations
-	 * @for MetaEngine
-	 * @static
-	 */
-	_enm = $p.enm = new (
-		/**
-		 * ### Коллекция менеджеров перечислений
-		 * - Состав коллекции определяется метаданными используемой конфигурации
-		 * - Тип элементов коллекции: {{#crossLink "EnumManager"}}{{/crossLink}}
-		 *
-		 * @class Enumerations
-		 * @static
-		 */
-		function Enumerations(){
-			this.toString = function(){return $p.msg.meta_enn_mgr};
-	}),
-
-	/**
-	 * Коллекция менеджеров документов
-	 * @property doc
-	 * @type Documents
-	 * @for MetaEngine
-	 * @static
-	 */
-	_doc = $p.doc = new (
-		/**
-		 * ### Коллекция менеджеров документов
-		 * - Состав коллекции определяется метаданными используемой конфигурации
-		 * - Тип элементов коллекции: {{#crossLink "DocManager"}}{{/crossLink}}
-		 *
-		 * @class Documents
-		 * @static
-		 */
-		function Documents(){
-			this.toString = function(){return $p.msg.meta_doc_mgr};
-	}),
-
-	/**
-	 * Коллекция менеджеров регистров сведений
-	 * @property ireg
-	 * @type InfoRegs
-	 * @for MetaEngine
-	 * @static
-	 */
-	_ireg = $p.ireg = new (
-		/**
-		 * ### Коллекция менеджеров регистров сведений
-		 * - Состав коллекции определяется метаданными используемой конфигурации
-		 * - Тип элементов коллекции: {{#crossLink "InfoRegManager"}}{{/crossLink}}
-		 *
-		 * @class InfoRegs
-		 * @static
-		 */
-		function InfoRegs(){
-			this.toString = function(){return $p.msg.meta_ireg_mgr};
-	}),
-
-	/**
-	 * Коллекция менеджеров регистров накопления
-	 * @property areg
-	 * @type AccumRegs
-	 * @for MetaEngine
-	 * @static
-	 */
-	_areg = $p.areg = new (
-		/**
-		 * ### Коллекция менеджеров регистров накопления
-		 * - Состав коллекции определяется метаданными используемой конфигурации
-		 * - Тип элементов коллекции: {{#crossLink "RegisterManager"}}{{/crossLink}}
-		 *
-		 * @class AccumRegs
-		 * @static
-		 */
-		function AccumRegs(){
-			this.toString = function(){return $p.msg.meta_areg_mgr};
-	}),
-
-	/**
-	 * Коллекция менеджеров регистров бухгалтерии
-	 * @property aссreg
-	 * @type AccountsRegs
-	 * @for MetaEngine
-	 * @static
-	 */
-	_accreg = $p.aссreg = new (
-		/**
-		 * ### Коллекция менеджеров регистров бухгалтерии
-		 * - Состав коллекции определяется метаданными используемой конфигурации
-		 * - Тип элементов коллекции: {{#crossLink "RegisterManager"}}{{/crossLink}}
-		 *
-		 * @class AccountsRegs
-		 * @static
-		 */
-			function AccountsRegs(){
-			this.toString = function(){return $p.msg.meta_accreg_mgr};
-		}),
-
-	/**
-	 * Коллекция менеджеров обработок
-	 * @property dp
-	 * @type DataProcessors
-	 * @for MetaEngine
-	 * @static
-	 */
-	_dp	= $p.dp = new (
-		/**
-		 * ### Коллекция менеджеров обработок
-		 * - Состав коллекции определяется метаданными используемой конфигурации
-		 * - Тип элементов коллекции: {{#crossLink "DataProcessorsManager"}}{{/crossLink}}
-		 *
-		 * @class DataProcessors
-		 * @static
-		 */
-		function DataProcessors(){
-			this.toString = function(){return $p.msg.meta_dp_mgr};
-	}),
-
-	/**
-	 * Коллекция менеджеров отчетов
-	 * @property rep
-	 * @type Reports
-	 * @for MetaEngine
-	 * @static
-	 */
-	_rep = $p.rep = new (
-		/**
-		 * ### Коллекция менеджеров отчетов
-		 * - Состав коллекции определяется метаданными используемой конфигурации
-		 * - Тип элементов коллекции: {{#crossLink "DataProcessorsManager"}}{{/crossLink}}
-		 *
-		 * @class Reports
-		 * @static
-		 */
-		function Reports(){
-			this.toString = function(){return $p.msg.meta_reports_mgr};
-	}),
-
-	/**
-	 * Коллекция менеджеров планов счетов
-	 * @property cacc
-	 * @type ChartsOfAccounts
-	 * @for MetaEngine
-	 * @static
-	 */
-	_cacc = $p.cacc = new (
-
-		/**
-		 * ### Коллекция менеджеров планов счетов
-		 * - Состав коллекции определяется метаданными используемой конфигурации
-		 * - Тип элементов коллекции: {{#crossLink "ChartOfAccountManager"}}{{/crossLink}}
-		 *
-		 * @class ChartsOfAccounts
-		 * @static
-		 */
-			function ChartsOfAccounts(){
-			this.toString = function(){return $p.msg.meta_charts_of_accounts_mgr};
-		}),
-
-	/**
-	 * Коллекция менеджеров планов видов характеристик
-	 * @property cch
-	 * @type ChartsOfCharacteristics
-	 * @for MetaEngine
-	 * @static
-	 */
-	_cch = $p.cch = new (
-
-		/**
-		 * ### Коллекция менеджеров планов видов характеристик
-		 * - Состав коллекции определяется метаданными используемой конфигурации
-		 * - Тип элементов коллекции: {{#crossLink "ChartOfCharacteristicManager"}}{{/crossLink}}
-		 *
-		 * @class ChartsOfCharacteristics
-		 * @static
-		 */
-			function ChartsOfCharacteristics(){
-			this.toString = function(){return $p.msg.meta_charts_of_characteristic_mgr};
-		}),
-
-	/**
-	 * Коллекция менеджеров задач
-	 * @property tsk
-	 * @type Tasks
-	 * @for MetaEngine
-	 * @static
-	 */
-	_tsk = $p.tsk = new (
-
-		/**
-		 * ### Коллекция менеджеров задач
-		 * - Состав коллекции определяется метаданными используемой конфигурации
-		 * - Тип элементов коллекции: {{#crossLink "TaskManager"}}{{/crossLink}}
-		 *
-		 * @class Tasks
-		 * @static
-		 */
-			function Tasks(){
-			this.toString = function(){return $p.msg.meta_task_mgr};
-		}),
-
-	/**
-	 * Коллекция менеджеров бизнес-процессов
-	 * @property bp
-	 * @type Tasks
-	 * @for MetaEngine
-	 * @static
-	 */
-	_bp = $p.bp = new (
-
-		/**
-		 * ### Коллекция бизнес-процессов
-		 * - Состав коллекции определяется метаданными используемой конфигурации
-		 * - Тип элементов коллекции: {{#crossLink "BusinessProcessManager"}}{{/crossLink}}
-		 *
-		 * @class BusinessProcesses
-		 * @static
-		 */
-			function BusinessProcesses(){
-			this.toString = function(){return $p.msg.meta_bp_mgr};
-		}),
-
-	/**
-	 * Mетаданные конфигурации
-	 */
-	_md = $p.md = new Meta();
-
-
-// КОНСТРУКТОРЫ - полная абстракция
-
-/**
  * ### Хранилище метаданных конфигурации
  * Важнейший объект `metadata.js`. Содержит описание всех классов данных приложения.<br />
  * По данным этого объекта, при старте приложения, формируются менеджеры данных, строятся динамические конструкторы объектов данных,
@@ -462,66 +26,21 @@ function Meta() {
 
 	_md = this;
 
-	// создаёт объекты менеджеров
-	function create_managers(){
 
-		if(_ireg.$log)
-			return;
-
-		var class_name;
-		for(class_name in _m.enm)
-			_enm[class_name] = new EnumManager(_m.enm[class_name], "enm."+class_name);
-
-		for(class_name in _m.cat)
-			_cat[class_name] = new CatManager("cat."+class_name);
-
-		for(class_name in _m.doc)
-			_doc[class_name] = new DocManager("doc."+class_name);
-
-		for(class_name in _m.ireg)
-			_ireg[class_name] = (class_name == "$log") ? new LogManager("ireg."+class_name) : new InfoRegManager("ireg."+class_name);
-
-		for(class_name in _m.areg)
-			_areg[class_name] = new AccumRegManager("areg."+class_name);
-
-		for(class_name in _m.dp)
-			_dp[class_name] = new DataProcessorsManager("dp."+class_name);
-
-		for(class_name in _m.cch)
-			_cch[class_name] = new ChartOfCharacteristicManager("cch."+class_name);
-
-		for(class_name in _m.cacc)
-			_cacc[class_name] = new ChartOfAccountManager("cacc."+class_name);
-
-		for(class_name in _m.tsk)
-			_tsk[class_name] = new TaskManager("tsk."+class_name);
-
-		for(class_name in _m.bp)
-			_bp[class_name] = new BusinessProcessManager("bp."+class_name);
-
-		// загружаем модификаторы и прочие зависимости
-		$p.modifiers.execute($p);
-		$p.modifiers.clear();
-		$p.modifiers.execute_external($p);		
-
-		// широковещательное оповещение о готовности метаданных
-		$p.eve.callEvent("meta");
-
-	}
 
 
 	// загружает метаданные из pouchdb
-	function meta_from_pouch(){
+	function meta_from_pouch(meta_db){
 
-		return $p.wsql.pouch.local.meta.info()
+		return meta_db.info()
 			.then(function () {
-				return $p.wsql.pouch.local.meta.get('meta');
+				return meta_db.get('meta');
 
 			})
 			.then(function (doc) {
 				_m = doc;
 				doc = null;
-				return $p.wsql.pouch.local.meta.get('meta_patch');
+				return meta_db.get('meta_patch');
 
 			}).then(function (doc) {
 				$p._patch(_m, doc);
@@ -532,18 +51,40 @@ function Meta() {
 	}
 
 
-	/**
-	 * Инициализирует метаданные и загружает данные из локального хранилища
-	 */
-	_md.init = function () {
+	// создаёт объекты менеджеров
+	_md.create_managers = function(){};
 
-		var confirm_count = 0;
+	/**
+	 * ### Инициализирует метаданные
+	 * загружает описание метаданных из локального или сетевого хранилища
+	 */
+	_md.init = function (meta_db) {
+
+		var confirm_count = 0,
+			is_local = !meta_db || ($p.wsql.pouch && meta_db == $p.wsql.pouch.local.meta),
+			is_remote = meta_db && ($p.wsql.pouch && meta_db == $p.wsql.pouch.local._meta);
 		
 		function do_init(){
-			return meta_from_pouch()
-				.then(create_managers)
-				.then($p.wsql.pouch.load_data)
-				.catch($p.record_log);
+
+			if(meta_db && !is_local && !is_remote){
+				_m = meta_db;
+				meta_db = null;
+
+				_md.create_managers();
+
+			}else{
+
+				return meta_from_pouch(meta_db || $p.wsql.pouch.local.meta)
+					.then(function () {
+						if(is_local){
+							_md.create_managers();
+
+						}else{
+							return _m;
+						}
+					})
+					.catch($p.record_log);
+			}
 		}
 
 		function do_reload(){
@@ -576,7 +117,8 @@ function Meta() {
 		}
 
 		// этот обработчик нужен только при инициализации, когда в таблицах meta еще нет данных
-		$p.eve.attachEvent("pouch_change", function (dbid, change) {
+		$p.on("pouch_change", function (dbid, change) {
+
 			if (dbid != "meta")
 				return;
 
@@ -586,39 +128,17 @@ function Meta() {
 			else{
 				
 				// если изменились метаданные, запланировать перезагрузку
-				do_reload();
-				// if(change.docs && (performance.now() $p.job_prm.session_start.getTime() > 20000))
-				// 	do_reload();
+				if(performance.now() > 20000 && change.docs.some(function (doc) {
+						return doc._id.substr(0,4)!='meta';
+					}))
+					do_reload();
+
 			}
 			
 		});
 
-		return $p.wsql.pouch.local.ram.info()
-			.then(function () {
-				return do_init()
-			});
+		return do_init();
 
-	};
-
-	/**
-	 * Инициализирует метаданные из встроенных данных, внешних файлов или indexeddb
-	 * @return {Promise}
-	 * @private
-	 */
-	_md.init_meta = function (forse) {
-
-		return new Promise(function(resolve, reject){
-
-			if($p.injected_data['meta.json'])
-				resolve(new Meta($p.injected_data['meta.json'], $p.injected_data['meta_patch.json']));
-
-			else if($p.injected_data['meta_patch.json'])
-				resolve(new Meta($p.injected_data['meta_patch.json']));
-
-			else
-				reject(new Error("no_injected_data"));
-
-		});
 	};
 
 	/**
@@ -629,26 +149,34 @@ function Meta() {
 	 * @return {Object}
 	 */
 	_md.get = function(class_name, field_name){
-		var np = class_name.split("."),
-			res = {multiline_mode: false, note: "", synonym: "", tooltip: "", type: {is_ref: false,	types: ["string"]}},
-			is_doc = "doc,tsk,bp".indexOf(np[0]) != -1,
-			is_cat = "cat,cch,cacc,tsk".indexOf(np[0]) != -1;
+
+		var np = class_name.split(".");
+
 		if(!field_name)
 			return _m[np[0]][np[1]];
+
+		var res = {multiline_mode: false, note: "", synonym: "", tooltip: "", type: {is_ref: false,	types: ["string"]}},
+			is_doc = "doc,tsk,bp".indexOf(np[0]) != -1,
+			is_cat = "cat,cch,cacc,tsk".indexOf(np[0]) != -1;
+
 		if(is_doc && field_name=="number_doc"){
 			res.synonym = "Номер";
 			res.tooltip = "Номер документа";
 			res.type.str_len = 11;
+
 		}else if(is_doc && field_name=="date"){
 			res.synonym = "Дата";
 			res.tooltip = "Дата документа";
 			res.type.date_part = "date_time";
 			res.type.types[0] = "date";
+
 		}else if(is_doc && field_name=="posted"){
 			res.synonym = "Проведен";
 			res.type.types[0] = "boolean";
+
 		}else if(is_cat && field_name=="id"){
 			res.synonym = "Код";
+
 		}else if(is_cat && field_name=="name"){
 			res.synonym = "Наименование";
 
@@ -860,14 +388,14 @@ function Meta() {
 			if($p.utils.is_data_obj(property))
 				oproperty = property;
 			else if($p.utils.is_guid(property))
-				oproperty = _cch.properties.get(property, false);
+				oproperty = $p.cch.properties.get(property, false);
 			else
 				return;
 			
 			if($p.utils.is_data_obj(oproperty)){
 
 				if(oproperty.is_new())
-					return _cat.property_values;
+					return $p.cat.property_values;
 
 				// и через его тип выходми на мнеджера значения
 				for(rt in oproperty.type.types)
@@ -1110,37 +638,24 @@ function Meta() {
 	_md.create_tables = function(callback, attr){
 
 		var cstep = 0, data_names = [], managers = _md.get_classes(), class_name,
-			create = (attr && attr.postgres) ? "" : "USE md;\n";
+			create = (attr && attr.postgres) ? "" : "USE md; ";
 
-		function on_table_created(data){
+		function on_table_created(){
 
-			if(typeof data === "number"){
-				cstep--;
-				if(cstep==0){
-					if(callback)
-						setTimeout(function () {
-							callback(create);
-						}, 10);
-					else
-						alasql.utils.saveFile("create_tables.sql", create);
-				} else
-					iteration();
-			}else if(data && data.hasOwnProperty("message")){
-				if($p.iface && $p.iface.docs){
-					$p.iface.docs.progressOff();
-					$p.msg.show_msg({
-						title: $p.msg.error_critical,
-						type: "alert-error",
-						text: data.message
-					});
-				}
-			}
+			cstep--;
+			if(cstep==0){
+				if(callback)
+					callback(create);
+				else
+					alasql.utils.saveFile("create_tables.sql", create);
+			} else
+				iteration();
 		}
 
 		function iteration(){
 			var data = data_names[cstep-1];
-			create += data["class"][data.name].get_sql_struct(attr) + ";\n";
-			on_table_created(1);
+			create += data["class"][data.name].get_sql_struct(attr) + "; ";
+			on_table_created();
 		}
 
 		// TODO переписать на промисах и генераторах и перекинуть в синкер
@@ -1154,31 +669,5 @@ function Meta() {
 
 	};
 
-	_md.create_modules = function(root){
-
-		var class_name,
-			text = "";
-
-		if(!root)
-			root = "$p";
-
-		for(class_name in _m.enm)
-			text+= root + ".enm." + class_name + "= new EnumManager(_m.enm." + class_name + ", 'enm." + class_name + "');\n";
-
-		for(class_name in _m.cat)
-			text+= root + ".cat." + class_name + "= new CatManager('cat." + class_name + "');\n";
-
-	}
 
 }
-
-
-/**
- * Запись журнала регистрации
- * @param err
- */
-$p.record_log = function (err) {
-	if($p.ireg && $p.ireg.$log)
-		$p.ireg.$log.record(err);
-	console.log(err);
-};

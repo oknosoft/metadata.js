@@ -1,11 +1,10 @@
 /**
+ * ### Кнопки авторизации и синхронизации
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
- * Created 07.11.2015<br />
- * &copy; http://www.oknosoft.ru 2014-2015
- * @license content of this file is covered by Oknosoft Commercial license. Usage without proper license is prohibited. To obtain it contact info@oknosoft.ru
- * @author  Evgeniy Malyarov
  * @module  widgets
  * @submodule btn_auth_sync
+ * @requires common
  */
 
 /**
@@ -14,6 +13,8 @@
  *
  * @class OBtnAuthSync
  * @constructor
+ * @menuorder 57
+ * @tooltip Кнопки авторизации
  */
 $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 
@@ -135,11 +136,12 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 		pouch_load_data_loaded: function (page) {
 			if($p.eve.stepper.wnd_sync){
 				if(page.docs_written){
-					setTimeout(function () {
-						$p.iface.sync.close();
-						$p.eve.redirect = true;
-						location.reload(true);
-					}, 3000);
+					$p.iface.sync.close();
+					// setTimeout(function () {
+					// 	$p.iface.sync.close();
+					// 	$p.eve.redirect = true;
+					// 	location.reload(true);
+					// }, 2000);
 				}else{
 					$p.iface.sync.close();
 				}

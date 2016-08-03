@@ -1,36 +1,40 @@
 {
   "name": "metadata-js",
   "description": "Metadata.js is a library for building offline-first browser-based business applications",
-  "version": "0.10.214",
+  "version": "0.11.215",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "directories": {
-    "example": "examples"
+    "example": "examples",
+    "doc": "doc"
   },
   "dependencies": {
-    "alasql": ">=0.2",
-    "pouchdb": ">=5.4",
-    "pouchdb-adapter-memory": ">=5.4",
-    "pouchdb-adapter-http": ">=5.4",
-    "pouchdb-replication": ">=5.4",
-    "pouchdb-mapreduce": ">=5.4",
+    "alasql": ">=0.3",
+    "moment": ">=2.13",
     "node-localstorage": ">=1.3",
-    "yargs": ">=4.8",
-    "moment": ">=2.13"
+    "pouchdb": ">=5.4",
+    "pouchdb-adapter-http": ">=5.4",
+    "pouchdb-adapter-memory": ">=5.4",
+    "pouchdb-core": ">=5.4",
+    "pouchdb-mapreduce": ">=5.4",
+    "pouchdb-replication": ">=5.4",
+    "rimraf": ">=0.1",
+    "decompress": ">=4.0",
+    "yargs": ">=4.8"
   },
   "devDependencies": {
-    "gulp": "^3.9",
-    "gulp-base64": "^0.1",
-    "gulp-concat": "^2.6",
-    "gulp-csso": "^2.0",
-    "gulp-rename": "^1.2",
-    "gulp-uglify": "^1.5",
-    "gulp-umd": "^0.2",
-    "gulp-replace": "^0.5",
-    "yuidocjs": "^0.10",
+    "gulp": ">=3.9",
+    "gulp-concat": ">=2.6",
+    "gulp-csso": ">=2.0",
+    "gulp-rename": ">=1.2",
+    "gulp-uglify": ">=2.0",
+    "gulp-umd": ">=0.2",
+    "gulp-replace": ">=0.5",
+    "gulp-base64": ">=0.1",
+    "yuidocjs": ">=0.10",
     "jasmine": ">=2.4"
   },
   "engines": {
-    "node": ">=5.0"
+    "node": ">=6.0"
   },
   "bin": {
     "metadata": "./bin/metadata-cli.js"

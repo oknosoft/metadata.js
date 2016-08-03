@@ -189,9 +189,8 @@ function DataManager(class_name){
 		 *
 		 * @method on
 		 * @for DataManager
-		 * @param name {String} - имя события [after_create, after_load, before_save, after_save, value_change, add_row, del_row]
-		 * @param method {Function} - добавляемый метод
-		 * @param [first] {Boolean} - добавлять метод в начало, а не в конец коллекции
+		 * @param name {String|Object} - имя события [after_create, after_load, before_save, after_save, value_change, add_row, del_row]
+		 * @param [method] {Function} - добавляемый метод, если не задан в объекте первым параметром
 		 *
 		 * @example
 		 *
@@ -214,11 +213,28 @@ function DataManager(class_name){
 		 *
 		 */
 		on: {
-			value: function (name, method, first) {
-				if(first)
+			value: function (name, method) {
+				if(typeof name == "object"){
+					for(var n in name){
+						if(name.hasOwnProperty(n))
+							_events[n].push(name[n]);
+					}
+				}else
 					_events[name].push(method);
-				else
-					_events[name].push(method);
+			}
+		},
+
+		/**
+		 * ### Удаляет подписку на событие объектов данного менеджера
+		 *
+		 * @method off
+		 * @for DataManager
+		 * @param name {String} - имя события [after_create, after_load, before_save, after_save, value_change, add_row, del_row]
+		 * @param [method] {Function} - удаляемый метод. Если не задан, будут отключены все обработчики событий `name`
+		 */
+		off: {
+			value: function (name, method) {
+
 			}
 		},
 
@@ -272,93 +288,6 @@ function DataManager(class_name){
 		}
 	});
 
-	//	Создаём функции конструкторов экземпляров объектов и строк табличных частей
-	var _obj_constructor = this._obj_constructor || DataObj;		// ссылка на конструктор элементов
-
-	// Для всех типов, кроме перечислений, создаём через (new Function) конструктор объекта
-	if(!(this instanceof EnumManager)){
-
-		var obj_constructor_name = class_name.split(".")[1];
-		this._obj_constructor = eval("(function " + obj_constructor_name.charAt(0).toUpperCase() + obj_constructor_name.substr(1) +
-			"(attr, manager){manager._obj_constructor.superclass.constructor.call(this, attr, manager)})");
-		this._obj_constructor._extend(_obj_constructor);
-
-		if(this instanceof InfoRegManager){
-
-			// реквизиты по метаданным
-			for(var f in this.metadata().dimensions){
-				this._obj_constructor.prototype.__define(f, {
-					get : new Function("return this._getter('"+f+"')"),
-					set : new Function("v", "this._setter('"+f+"',v)"),
-					enumerable: true,
-					configurable: true
-				});
-			}
-			for(var f in this.metadata().resources){
-				this._obj_constructor.prototype.__define(f, {
-					get : new Function("return this._getter('"+f+"')"),
-					set : new Function("v", "this._setter('"+f+"',v)"),
-					enumerable: true,
-					configurable: true
-				});
-			}
-			for(var f in this.metadata().attributes){
-				this._obj_constructor.prototype.__define(f, {
-					get : new Function("return this._getter('"+f+"')"),
-					set : new Function("v", "this._setter('"+f+"',v)"),
-					enumerable: true,
-					configurable: true
-				});
-			}
-
-		}else{
-
-			this._ts_сonstructors = {};             // ссылки на конструкторы строк табчастей
-
-			// реквизиты по метаданным
-			for(var f in this.metadata().fields){
-				this._obj_constructor.prototype.__define(f, {
-					get : new Function("return this._getter('"+f+"')"),
-					set : new Function("v", "this._setter('"+f+"',v)"),
-					enumerable: true,
-					configurable: true
-				});
-			}
-
-			// табличные части по метаданным
-			for(var f in this.metadata().tabular_sections){
-
-				// создаём конструктор строки табчасти
-				var row_constructor_name = obj_constructor_name.charAt(0).toUpperCase() + obj_constructor_name.substr(1) + f.charAt(0).toUpperCase() + f.substr(1) + "Row";
-
-				this._ts_сonstructors[f] = eval("(function " + row_constructor_name + "(owner) \
-			{owner._owner._manager._ts_сonstructors[owner._name].superclass.constructor.call(this, owner)})");
-				this._ts_сonstructors[f]._extend(TabularSectionRow);
-
-				// в прототипе строки табчасти создаём свойства в соответствии с полями табчасти
-				for(var rf in this.metadata().tabular_sections[f].fields){
-					this._ts_сonstructors[f].prototype.__define(rf, {
-						get : new Function("return this._getter('"+rf+"')"),
-						set : new Function("v", "this._setter('"+rf+"',v)"),
-						enumerable: true,
-						configurable: true
-					});
-				}
-
-				// устанавливаем геттер и сеттер для табличной части
-				this._obj_constructor.prototype.__define(f, {
-					get : new Function("return this._getter_ts('"+f+"')"),
-					set : new Function("v", "this._setter_ts('"+f+"',v)"),
-					enumerable: true,
-					configurable: true
-				});
-			}
-
-		}
-	}
-
-	_obj_constructor = null;
-
 }
 
 DataManager.prototype.__define({
@@ -405,6 +334,14 @@ DataManager.prototype.__define({
 		}
 	},
 
+	/**
+	 * ### Дополнительные реквизиты
+	 * Массив дополнителных реквизитов (аналог подсистемы `Свойства` БСП) вычисляется через
+	 * ПВХ `НазначениеДополнительныхРеквизитов` или справочник `НазначениеСвойствКатегорийОбъектов`
+	 *
+	 * @property extra_fields
+	 * @type Array
+	 */
 	extra_fields: {
 		value : function(obj){
 
@@ -431,11 +368,37 @@ DataManager.prototype.__define({
 		}
 	},
 
+	/**
+	 * ### Дополнительные свойства
+	 * Массив дополнителных свойств (аналог подсистемы `Свойства` БСП) вычисляется через
+	 * ПВХ `НазначениеДополнительныхРеквизитов` или справочник `НазначениеСвойствКатегорийОбъектов`
+	 *
+	 * @property extra_properties
+	 * @type Array
+	 */
 	extra_properties: {
 		value : function(obj){
 			return [];
 		}
+	},
+
+	/**
+	 * ### Имя функции - конструктора объектов или строк табличных частей
+	 *
+	 * @method obj_constructor
+	 * @param ts_name {String}
+	 * @return {Function}
+	 */
+	obj_constructor: {
+		value: function (ts_name) {
+			var parts = this.class_name.split("."),
+				fn_name = parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + parts[1].charAt(0).toUpperCase() + parts[1].substr(1);
+
+			return ts_name ? fn_name + ts_name.charAt(0).toUpperCase() + ts_name.substr(1) + "Row" : fn_name;
+
+		}
 	}
+
 });
 
 
@@ -501,10 +464,13 @@ DataManager.prototype.sync_grid = function(attr, grid){
 					res = JSON.parse(res);
 
 				// загружаем строку в грид
-				grid.xmlFileUrl = "exec";
-				grid.parse(res, function(){
+				if(grid && grid.parse){
+					grid.xmlFileUrl = "exec";
+					grid.parse(res, function(){
+						resolve(res);
+					}, "xml");
+				}else
 					resolve(res);
-				}, "xml");
 
 			}else
 				resolve(res);
@@ -770,7 +736,7 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 
 			});
 			//if(!added)
-			//	add_xml_row({param: _cch.properties.get("", false)}, "params"); // fake-строка, если в табчасти нет допреквизитов
+			//	add_xml_row({param: $p.cch.properties.get("", false)}, "params"); // fake-строка, если в табчасти нет допреквизитов
 
 		}
 
@@ -848,21 +814,23 @@ DataManager.prototype.printing_plates = function(){
 		}
 	}
 
-	if(t._printing_plates)
-		return Promise.resolve(t._printing_plates);
+	if(!t._printing_plates && $p.ajax.authorized){
+		$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
+		rattr.url += t.rest_name + "/Print()";
+		return $p.ajax.get_ex(rattr.url, rattr)
+			.then(function (req) {
+				t._printing_plates = JSON.parse(req.response);
+				return t._printing_plates;
+			})
+			.catch(function () {
+			})
+			.then(function (pp) {
+				return pp || (t._printing_plates = {});
+			});
+	}
 
-	$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
-	rattr.url += t.rest_name + "/Print()";
-	return $p.ajax.get_ex(rattr.url, rattr)
-		.then(function (req) {
-			t._printing_plates = JSON.parse(req.response);
-			return t._printing_plates;
-		})
-		.catch(function () {
-		})
-		.then(function (pp) {
-			return pp || (t._printing_plates = {});
-		});
+	return Promise.resolve(t._printing_plates);
+
 };
 
 
@@ -943,7 +911,7 @@ RefDataManager.prototype.__define({
 				if(do_not_create && !force_promise)
 					return;
 				else
-					o = new this._obj_constructor(ref, this, true);
+					o = new $p[this.obj_constructor()](ref, this, true);
 			}
 
 			if(force_promise === false)
@@ -984,7 +952,7 @@ RefDataManager.prototype.__define({
 			var o = this.by_ref[attr.ref];
 			if(!o){
 
-				o = new this._obj_constructor(attr, this);
+				o = new $p[this.obj_constructor()](attr, this);
 
 				if(!fill_default && attr.ref && attr.presentation && Object.keys(attr).length == 2){
 					// заглушка ссылки объекта
@@ -1069,7 +1037,7 @@ RefDataManager.prototype.__define({
 				obj = this.by_ref[ref];
 
 				if(!obj){
-					obj = new this._obj_constructor(aattr[i], this);
+					obj = new $p[this.obj_constructor()](aattr[i], this);
 					if(forse)
 						obj._set_loaded();
 
@@ -1320,12 +1288,7 @@ RefDataManager.prototype.__define({
 							ignore_parent = false;
 						}else if(!filter && !ignore_parent){
 							;
-						}else{
-							if(t.class_name == "cat.base_blocks"){
-								if(owner == $p.utils.blank.guid)
-									owner = _cat.bases.predefined("main");
-								parent = t.first_folder(owner).ref;
-							}
+
 						}
 
 						// строка фильтра
@@ -1632,51 +1595,8 @@ RefDataManager.prototype.__define({
 
 			return this._predefined[name];
 		}
-	},
-
-	obj_constructor_text: {
-		value: function () {
-
-			var parts = this.class_name.split("."),
-				fn_name = parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + parts[1].charAt(0).toUpperCase() + parts[1].substr(1),
-				text = "function " + fn_name + "(attr, manager){manager._obj_constructor.superclass.constructor.call(this, attr, manager)}'\n";
-
-			text += fn_name + "._extend(" + parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + "Obj);\n";
-
-			// реквизиты по метаданным
-			for(var f in this.metadata().fields){
-				text += fn_name + ".prototype.__define('"+f+"', {get: function(){return this._getter('"+f+"')}, " +
-					"set: function(v){this._setter('"+f+"',v)}, enumerable: true, configurable: true});\n";
-			}
-
-
-			// табличные части по метаданным
-			for(var f in this.metadata().tabular_sections){
-
-				// создаём конструктор строки табчасти
-				var row_fn_name = fn_name + f.charAt(0).toUpperCase() + f.substr(1) + "Row";
-
-				text += "function " + row_fn_name + "(owner)" +
-					"{owner._owner._manager._ts_сonstructors[owner._name].superclass.constructor.call(this, owner)});\n";
-
-				text += row_fn_name + "._extend(TabularSectionRow);\n";
-
-				// в прототипе строки табчасти создаём свойства в соответствии с полями табчасти
-				for(var rf in this.metadata().tabular_sections[f].fields){
-					text += row_fn_name + ".prototype.__define('"+rf+"', {get: function(){return this._getter('"+rf+"')}, " +
-						"set: function(v){this._setter('"+rf+"',v)}, enumerable: true, configurable: true});\n";
-				}
-
-				// устанавливаем геттер и сеттер для табличной части
-				text += fn_name + ".prototype.__define('"+f+"', {get: function(){return this._getter_ts('"+f+"')}, " +
-					"set: function(v){this._setter_ts('"+f+"',v)}, enumerable: true, configurable: true});\n";
-
-			}
-
-			return text;
-
-		}
 	}
+
 });
 
 
@@ -1707,7 +1627,7 @@ DataProcessorsManager.prototype.__define({
 	 */
 	create: {
 		value: function(){
-			return new this._obj_constructor({}, this);
+			return new $p[this.obj_constructor()]({}, this);
 		}
 	},
 
@@ -1730,16 +1650,14 @@ DataProcessorsManager.prototype.__define({
  *
  * @class EnumManager
  * @extends RefDataManager
- * @param a {array} - массив значений
  * @param class_name {string} - имя типа менеджера объекта. например, "enm.open_types"
  * @constructor
  */
-function EnumManager(a, class_name) {
+function EnumManager(class_name) {
 
 	EnumManager.superclass.constructor.call(this, class_name);
 
-	this._obj_constructor = EnumObj;
-
+	var a = $p.md.get(class_name);
 	for(var i in a)
 		new EnumObj(a[i], this);
 
@@ -1901,8 +1819,6 @@ EnumManager.prototype.get_option_list = function(val, selection){
  */
 function RegisterManager(class_name){
 
-	this._obj_constructor = RegisterRow;
-
 	RegisterManager.superclass.constructor.call(this, class_name);
 
 	/**
@@ -1991,7 +1907,7 @@ function RegisterManager(class_name){
 			obj = this.by_ref[ref];
 
 			if(!obj && !aattr[i]._deleted){
-				obj = new this._obj_constructor(aattr[i], this);
+				obj = new $p[this.obj_constructor()](aattr[i], this);
 				if(forse)
 					obj._set_loaded();
 
@@ -2396,7 +2312,7 @@ RegisterManager.prototype.__define({
 			var o = this.by_ref[attr.ref];
 			if(!o){
 
-				o = new this._obj_constructor(attr, this);
+				o = new $p[this.obj_constructor()](attr, this);
 
 				// Триггер после создания
 				var after_create_res = this.handle_event(o, "after_create");
@@ -2467,135 +2383,181 @@ function LogManager(){
 
 	var smax;
 
-	/**
-	 * Добавляет запись в журнал
-	 * @param msg {String|Object|Error} - текст + класс события
-	 * @param [msg.obj] {Object} - дополнительный json объект
-	 */
-	this.record = function(msg){
+	this.__define({
 
-		if(msg instanceof Error){
-			if(console)
-				console.log(msg);
-			msg = {
-				class: "error",
-				note: msg.toString()
-			}
-		}
+		/**
+		 * Добавляет запись в журнал
+		 * @param msg {String|Object|Error} - текст + класс события
+		 * @param [msg.obj] {Object} - дополнительный json объект
+		 */
+		record: {
+			value: function(msg){
 
-		if(typeof msg != "object")
-			msg = {note: msg};
-		msg.date = Date.now() + $p.wsql.time_diff;
+				if(msg instanceof Error){
+					if(console)
+						console.log(msg);
+					msg = {
+						class: "error",
+						note: msg.toString()
+					}
+				}else if(typeof msg == "object" && !msg.class && !msg.obj){
+					msg = {
+						class: "obj",
+						obj: msg,
+						note: msg.note
+					};
+				}else if(typeof msg != "object")
+					msg = {note: msg};
 
-		// уникальность ключа
-		if(!smax)
-			smax = alasql.compile("select MAX(`ref`) as `ref` from `ireg_$log` where `date` = ?");
-		var res = smax([msg.date]);
-		if(!res.length || res[0].ref === undefined)
-			msg.sequence = 0;
-		else
-			msg.sequence = parseInt(res[0].ref.split(".")[1]) + 1;
+				msg.date = Date.now() + $p.wsql.time_diff;
 
-		// класс сообщения
-		if(!msg.class)
-			msg.class = "note";
-
-		$p.wsql.alasql("insert into `ireg_$log` (`ref`, `date`, `class`, `note`, `obj`) values (?, ?, ?, ?, ?)",
-			[msg.date + "."+msg.sequence, msg.date, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
-
-	};
-
-	/**
-	 * Сбрасывает события на сервер
-	 * @method backup
-	 * @param [dfrom] {Date}
-	 * @param [dtill] {Date}
-	 */
-	this.backup = function(dfrom, dtill){
-
-	};
-
-	/**
-	 * Восстанавливает события из архива на сервере
-	 * @method restore
-	 * @param [dfrom] {Date}
-	 * @param [dtill] {Date}
-	 */
-	this.restore = function(dfrom, dtill){
-
-	};
-
-	/**
-	 * Стирает события в указанном диапазоне дат
-	 * @method clear
-	 * @param [dfrom] {Date}
-	 * @param [dtill] {Date}
-	 */
-	this.clear = function(dfrom, dtill){
-
-	};
-
-	this.show = function (pwnd) {
-
-	};
-
-	this.get_sql_struct = function(attr){
-
-		if(attr && attr.action == "get_selection"){
-			var sql = "select * from `ireg_$log`";
-			if(attr.date_from){
-				if (attr.date_till)
-					sql += " where `date` >= ? and `date` <= ?";
+				// уникальность ключа
+				if(!smax)
+					smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_$log` where `date` = ?");
+				var res = smax([msg.date]);
+				if(!res.length || res[0].sequence === undefined)
+					msg.sequence = 0;
 				else
-					sql += " where `date` >= ?";
-			}else if (attr.date_till)
-				sql += " where `date` <= ?";
+					msg.sequence = parseInt(res[0].sequence) + 1;
 
-			return sql;
+				// класс сообщения
+				if(!msg.class)
+					msg.class = "note";
 
-		}else
-			return LogManager.superclass.get_sql_struct.call(this, attr);
-	};
+				$p.wsql.alasql("insert into `ireg_$log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)",
+					[msg.date + "¶" + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
 
-	this.caption_flds = function (attr) {
-
-		var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
-			acols = [], cmd = this.metadata(),	s = "";
-
-
-		acols.push(new Col_struct("date", "140", "ro", "left", "server", "Дата"));
-		acols.push(new Col_struct("class", "100", "ro", "left", "server", "Класс"));
-		acols.push(new Col_struct("note", "*", "ro", "left", "server", "Событие"));
-
-		if(attr.get_header){
-			s = "<head>";
-			for(var col in acols){
-				s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
-					.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
 			}
-			s += "</head>";
+		},
+
+		/**
+		 * Сбрасывает события на сервер
+		 * @method backup
+		 * @param [dfrom] {Date}
+		 * @param [dtill] {Date}
+		 */
+		backup: {
+			value: function(dfrom, dtill){
+
+			}
+		},
+
+		/**
+		 * Восстанавливает события из архива на сервере
+		 * @method restore
+		 * @param [dfrom] {Date}
+		 * @param [dtill] {Date}
+		 */
+		restore: {
+			value: function(dfrom, dtill){
+
+			}
+		},
+
+		/**
+		 * Стирает события в указанном диапазоне дат
+		 * @method clear
+		 * @param [dfrom] {Date}
+		 * @param [dtill] {Date}
+		 */
+		clear: {
+			value: function(dfrom, dtill){
+
+			}
+		},
+
+		show: {
+			value: function (pwnd) {
+
+			}
+		},
+
+		get: {
+			value: function (ref, force_promise, do_not_create) {
+
+				if(typeof ref == "object")
+					ref = ref.ref || "";
+
+				if(!this.by_ref[ref]){
+
+					if(force_promise === false)
+						return undefined;
+
+					var parts = ref.split("¶");
+					$p.wsql.alasql("select * from `ireg_$log` where date=" + parts[0] + " and sequence=" + parts[1]).forEach(function (row) {
+						new RegisterRow(row, this);
+					}.bind(this));
+				}
+
+				return force_promise ? Promise.resolve(this.by_ref[ref]) : this.by_ref[ref];
+			}
+		},
+
+		get_sql_struct: {
+			value: function(attr){
+
+				if(attr && attr.action == "get_selection"){
+					var sql = "select * from `ireg_$log`";
+					if(attr.date_from){
+						if (attr.date_till)
+							sql += " where `date` >= ? and `date` <= ?";
+						else
+							sql += " where `date` >= ?";
+					}else if (attr.date_till)
+						sql += " where `date` <= ?";
+
+					return sql;
+
+				}else
+					return LogManager.superclass.get_sql_struct.call(this, attr);
+			}
+		},
+
+		caption_flds: {
+			value: function (attr) {
+
+				var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
+					acols = [], s = "";
+
+
+				acols.push(new Col_struct("date", "200", "ro", "left", "server", "Дата"));
+				acols.push(new Col_struct("class", "100", "ro", "left", "server", "Класс"));
+				acols.push(new Col_struct("note", "*", "ro", "left", "server", "Событие"));
+
+				if(attr.get_header){
+					s = "<head>";
+					for(var col in acols){
+						s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
+							.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
+					}
+					s += "</head>";
+				}
+
+				return {head: s, acols: acols};
+			}
+		},
+
+		data_to_grid: {
+			value: function (data, attr) {
+				var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
+						.replace("%1", data.length).replace("%2", attr.start)
+						.replace("%3", attr.set_parent || "" ),
+					caption = this.caption_flds(attr);
+
+				// при первом обращении к методу добавляем описание колонок
+				xml += caption.head;
+
+				data.forEach(function(r){
+					xml += "<row id=\"" + r.ref + "\"><cell>" +
+						$p.moment(r.date - $p.wsql.time_diff).format("DD.MM.YYYY HH:mm:ss") + "." + r.sequence + "</cell>" +
+						"<cell>" + (r.class || "") + "</cell><cell>" + (r.note || "") + "</cell></row>";
+				});
+
+				return xml + "</rows>";
+			}
 		}
+	});
 
-		return {head: s, acols: acols};
-	};
-
-	this.data_to_grid = function (data, attr) {
-		var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
-				.replace("%1", data.length).replace("%2", attr.start)
-				.replace("%3", attr.set_parent || "" ),
-			caption = this.caption_flds(attr);
-
-		// при первом обращении к методу добавляем описание колонок
-		xml += caption.head;
-
-		data.forEach(function(r){
-			xml += "<row id=\"" + r.date + "_" + r.sequence + "\"><cell>" +
-				$p.moment(r.date - $p.wsql.time_diff).format($p.moment._masks.date_time) + (r.sequence ? "." + r.sequence : "") + "</cell>" +
-				"<cell>" + r.class + "</cell><cell>" + r.note + "</cell></row>";
-		});
-
-		return xml + "</rows>";
-	}
 }
 LogManager._extend(InfoRegManager);
 
@@ -2632,20 +2594,18 @@ AccumRegManager._extend(RegisterManager);
  */
 function CatManager(class_name) {
 
-	this._obj_constructor = CatObj;		// ссылка на конструктор элементов
-
 	CatManager.superclass.constructor.call(this, class_name);
 
 	// реквизиты по метаданным
 	if(this.metadata().hierarchical && this.metadata().group_hierarchy){
 
 		/**
-		 * признак "это группа"
+		 * ### Признак "это группа"
 		 * @property is_folder
 		 * @for CatObj
 		 * @type {Boolean}
 		 */
-		this._obj_constructor.prototype.__define("is_folder", {
+		$p[this.obj_constructor()].prototype.__define("is_folder", {
 			get : function(){ return this._obj.is_folder || false},
 			set : function(v){ this._obj.is_folder = $p.utils.fix_boolean(v)},
 			enumerable: true,
@@ -2738,8 +2698,6 @@ CatManager.prototype.path = function(ref){
  */
 function ChartOfCharacteristicManager(class_name){
 
-	this._obj_constructor = CatObj;		// ссылка на конструктор элементов
-
 	ChartOfCharacteristicManager.superclass.constructor.call(this, class_name);
 
 }
@@ -2757,8 +2715,6 @@ ChartOfCharacteristicManager._extend(CatManager);
  * @param class_name {string}
  */
 function ChartOfAccountManager(class_name){
-
-	this._obj_constructor = CatObj;		// ссылка на конструктор элементов
 
 	ChartOfAccountManager.superclass.constructor.call(this, class_name);
 
@@ -2778,10 +2734,8 @@ ChartOfAccountManager._extend(CatManager);
  */
 function DocManager(class_name) {
 
-	this._obj_constructor = DocObj;		// ссылка на конструктор элементов
 
 	DocManager.superclass.constructor.call(this, class_name);
-
 
 }
 DocManager._extend(RefDataManager);
@@ -2797,8 +2751,6 @@ DocManager._extend(RefDataManager);
  * @param class_name {string}
  */
 function TaskManager(class_name){
-
-	this._obj_constructor = TaskObj;		// ссылка на конструктор элементов
 
 	TaskManager.superclass.constructor.call(this, class_name);
 
@@ -2816,8 +2768,6 @@ TaskManager._extend(CatManager);
  * @param class_name {string}
  */
 function BusinessProcessManager(class_name){
-
-	this._obj_constructor = BusinessProcessObj;		// ссылка на конструктор элементов
 
 	BusinessProcessManager.superclass.constructor.call(this, class_name);
 

@@ -380,16 +380,16 @@ $p.iface.data_to_grid = function (data, attr){
 		return res ;
 	}
 
-	function do_format(r, f){
-		if(f == "svg")
-			return $p.iface.normalize_xml(r[f]);
-		if(r[f] instanceof Date){
-			if(r[f].getHours() || r.date.getMinutes())
-				return $p.moment(r[f]).format($p.moment._masks.date_time);
+	function do_format(v){
+
+		if(v instanceof Date){
+			if(v.getHours() || v.getMinutes())
+				return $p.moment(v).format($p.moment._masks.date_time);
 			else
-				return $p.moment(r[f]).format($p.moment._masks.date);
+				return $p.moment(v).format($p.moment._masks.date);
+
 		}else
-			return r[f] || "";
+			return typeof v == "number" ? v : $p.iface.normalize_xml(v || "");
 	}
 
 	var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
@@ -401,9 +401,9 @@ $p.iface.data_to_grid = function (data, attr){
 	xml += caption.head;
 
 	data.forEach(function(r){
-		xml +=  "<row id=\"" + r.ref + "\"><cell class=\"" + cat_picture_class(r) + "\">" + do_format(r, [caption.acols[0].id]) + "</cell>";
+		xml +=  "<row id=\"" + r.ref + "\"><cell class=\"" + cat_picture_class(r) + "\">" + do_format(r[caption.acols[0].id]) + "</cell>";
 		for(var col=1; col < caption.acols.length; col++ )
-			xml += "<cell>" + do_format(r, [caption.acols[col].id]) + "</cell>";
+			xml += "<cell>" + do_format(r[caption.acols[col].id]) + "</cell>";
 
 		xml += "</row>";
 	});
