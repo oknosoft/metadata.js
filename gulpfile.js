@@ -45,18 +45,13 @@ gulp.task('build-metadata', function () {
 		'./src/common.ui.js',
 		'./src/pouchdb.js',
 		'./src/i18n.ru.js',
-		'./src/widgets/*.js',
 		'./src/meta_meta.js',
 		'./src/meta_mngrs.js',
 		'./src/meta_objs.js',
 		'./src/meta_tabulars.js',
 		'./src/meta_rest.js',
 		'./src/meta_pouchdb.js',
-		'./src/wnd_dat.js',
-		'./src/wnd_oaddress.js',
-		'./src/wnd_sync.js',
-		'./src/wnd_obj.js',
-		'./src/wnd_selection.js',
+		'./src/widgets/*.js',
 		'./src/import_export.js',
 		'./src/events.js',
 		'./src/events.ui.js',
@@ -66,7 +61,8 @@ gulp.task('build-metadata', function () {
 		'./lib/xml_to_json.js',
 		'./lib/filesaver.js',
 		'./lib/aes/aes.js',
-		'./lib/rubles/rubles.js'
+		'./lib/rubles/rubles.js',
+		'./lib/daterangepicker/daterangepicker.js'
 	])
 		.pipe(concat('metadata.js'))
 		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
@@ -241,6 +237,7 @@ gulp.task('css-metadata', function () {
 	return gulp.src([
 		'./src/dhtmlx/patches/dhtmlxtreegrid_property.css',
 		'./src/dhtmlx/dhtmlxTreeView/codebase/skins/dhtmlxtreeview_dhx_terrace.css',
+		'./lib/daterangepicker/daterangepicker.css',
 		'./src/css/upzp20.css'
 			//'./src/css/options.css'
 		])

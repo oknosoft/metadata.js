@@ -1,5 +1,5 @@
 /**
- * Форма абстрактного объекта данных {{#crossLink "DataObj"}}{{/crossLink}}, в том числе, отчетов и обработок
+ * Форма абстрактного объекта данных {{#crossLink "DataObj"}}{{/crossLink}}, в том числе, записей регистров
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
