@@ -44,11 +44,11 @@ function AppEvents() {
 		 */
 		init: {
 			value: function () {
-				$p.job_prm = new JobPrm();
-				$p.wsql.init_params()
-					.then(function(){
-						$p.md.init();
-					});
+				$p.__define("job_prm", {
+					value: new JobPrm(),
+					writable: false
+				});
+				$p.wsql.init_params();
 			}
 		},
 
@@ -72,6 +72,11 @@ function AppEvents() {
 				}
 
 				function detach(eventId) {
+
+					if(!eventId){
+						return detach_all.call(this);
+					}
+
 					for (var a in this._evnts.data) {
 						var k = 0;
 						for (var b in this._evnts.data[a]) {
@@ -86,6 +91,17 @@ function AppEvents() {
 							this._evnts.data[a] = null;
 							delete this._evnts.data[a];
 						}
+					}
+				}
+
+				 function detach_all() {
+					for (var a in this._evnts.data) {
+						for (var b in this._evnts.data[a]) {
+							this._evnts.data[a][b] = null;
+							delete this._evnts.data[a][b];
+						}
+						this._evnts.data[a] = null;
+						delete this._evnts.data[a];
 					}
 				}
 
@@ -139,6 +155,10 @@ function AppEvents() {
 
 					detachEvent: {
 						value: detach
+					},
+
+					detachAllEvents: {
+						value: detach_all
 					},
 
 					checkEvent: {
@@ -315,7 +335,7 @@ function JobPrm(){
 	});
 
 	// подмешиваем параметры, заданные в файле настроек сборки
-	$p.eve.callEvent("settings", [this, $p.modifiers]);
+	$p.eve.callEvent("settings", [this]);
 
 	// подмешиваем параметры url
 	// Они обладают приоритетом над настройками по умолчанию и настройками из settings.js
@@ -326,4 +346,93 @@ function JobPrm(){
 
 }
 
+/**
+ * ### Модификатор отложенного запуска
+ * Служебный объект, реализующий отложенную загрузку модулей,<br />
+ * в которых доопределяется (переопределяется) поведение объектов и менеджеров конкретных типов
+ *
+ * @class Modifiers
+ * @constructor
+ * @menuorder 62
+ * @tooltip Внешние модули
+ */
+function Modifiers(){
+
+	var methods = [];
+
+	/**
+	 * Добавляет метод в коллекцию методов для отложенного вызова
+	 * @method push
+	 * @param method {Function} - функция, которая будет вызвана после инициализации менеджеров объектов данных
+	 */
+	this.push = function (method) {
+		methods.push(method);
+	};
+
+	/**
+	 * Отменяет подписку на событие
+	 * @method detache
+	 * @param method {Function}
+	 */
+	this.detache = function (method) {
+		var index = methods.indexOf(method);
+		if(index != -1)
+			methods.splice(index, 1);
+	};
+
+	/**
+	 * Отменяет все подписки
+	 * @method clear
+	 */
+	this.clear = function () {
+		methods.length = 0;
+	};
+
+	/**
+	 * Загружает и выполняет методы модификаторов
+	 * @method execute
+	 */
+	this.execute = function (context) {
+
+		// выполняем вшитые в сборку модификаторы
+		var res, tres;
+		methods.forEach(function (method) {
+			if(typeof method === "function")
+				tres = method(context);
+			else
+				tres = $p.injected_data[method](context);
+			if(res !== false)
+				res = tres;
+		});
+		return res;
+	};
+
+	/**
+	 * выполняет подключаемые модификаторы
+	 * @method execute_external
+	 * @param data
+	 */
+	this.execute_external = function (data) {
+
+		var paths = $p.wsql.get_user_param("modifiers");
+
+		if(paths){
+			paths = paths.split('\n').map(function (path) {
+				if(path)
+					return new Promise(function(resolve, reject){
+						$p.load_script(path, "script", resolve);
+					});
+				else
+					return Promise.resolve();
+			});
+		}else
+			paths = [];
+
+		return Promise.all(paths)
+			.then(function () {
+				this.execute(data);
+			}.bind(this));
+	};
+
+}
 

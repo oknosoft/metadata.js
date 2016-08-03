@@ -49,21 +49,21 @@ Metadata.js не конкурирует с клиентскими [Web UI](https
 ## Установка и подключение
 
 ```bash
-npm install -g metadata-js      # node
-bower install --save metadata   # bower
+npm install --save metadata-js  # node
+npm install -g metadata-js      # command line
 ```
 
-Чтобы создать структуру папок и заготовки файлов проекта, выполните команду
+Чтобы создать структуру папок и заготовки файлов проекта, выполните команды
 ```bash
-metadata init helloworld    # где 'helloworld' - имя нового проекта
+metadata init                   # create empty repo
+npm install                     # install dependencies
 ```
 
-Для браузера, подключите таблицы стилей `fontawesome`, `dhtmlx`, `metadata` и скрипты `alasql`, `dhtmlx`, `metadata`  
-
+Для браузера, подключите таблицы стилей `fontawesome`, `dhtmlx`, `metadata` и скрипты `alasql`, `dhtmlx`, `metadata`
 ```html
 <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/fontawesome/latest/css/font-awesome.min.css">
 <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/g/metadata(dhx_terrace.css+metadata.css)">
-<script src="//cdn.jsdelivr.net/g/alasql,pouchdb,metadata(dhtmlx.min.js+metadata.min.js)"></script>
+<script src="//cdn.jsdelivr.net/g/momentjs,alasql,pouchdb,jquery,metadata(dhtmlx.min.js+metadata.min.js)"></script>
 ```
 
 ## Web-приложение к серверу 1С - это просто

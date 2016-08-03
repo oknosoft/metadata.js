@@ -192,7 +192,7 @@ function Pouch(){
 						setTimeout(function () {
 							$p.eve.redirect = true;
 							location.reload(true);
-						}, 2000);
+						}, 1000);
 					};
 
 				t.log_out();
@@ -244,12 +244,13 @@ function Pouch(){
 
 								if (t.load_changes(response, options))
 									fetchNextPage();
-								 else{
+								else{
 									resolve();
 									// широковещательное оповещение об окончании загрузки локальных данных
-									console.log(_page);
 									_data_loaded = true;
 									$p.eve.callEvent("pouch_load_data_loaded", [_page]);
+									_page.note = "pouch_load_data_loaded";
+									$p.record_log(_page);
 								}
 
 							} else if(err){
@@ -257,7 +258,6 @@ function Pouch(){
 								// широковещательное оповещение об ошибке загрузки
 								$p.eve.callEvent("pouch_load_data_error", [err]);
 							}
-
 						});
 					}
 
@@ -331,8 +331,14 @@ function Pouch(){
 						return remote.get("data_version")
 							.then(function (v) {
 								if(v.version != $p.wsql.get_user_param("couch_ram_data_version")){
+
+									// если это не первый запуск - перезагружаем
+									if($p.wsql.get_user_param("couch_ram_data_version"))
+										rinfo = t.reset_local_data();
+
+									// сохраняем версию в localStorage
 									$p.wsql.set_user_param("couch_ram_data_version", v.version);
-									rinfo = t.reset_local_data();
+
 								}
 								return rinfo;
 							})
@@ -380,6 +386,7 @@ function Pouch(){
 						// если указан клиентский или серверный фильтр - подключаем
 						if(id == "meta")
 							options.filter = "auth/meta";
+
 						else if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id])
 							options.filter = $p.job_prm.pouch_filter[id];
 
@@ -402,9 +409,10 @@ function Pouch(){
 										if(_page.docs_written >= _page.total_rows){
 
 											// широковещательное оповещение об окончании загрузки локальных данных
-											console.log(_page);
 											_data_loaded = true;
 											$p.eve.callEvent("pouch_load_data_loaded", [_page]);
+											_page.note = "pouch_load_data_loaded";
+											$p.record_log(_page);
 										}
 
 									}

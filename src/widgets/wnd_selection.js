@@ -85,7 +85,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				});
 			}
 		}else{
-			wnd = $p.iface.w.createWindow(null, 0, 0, 900, 600);
+			wnd = $p.iface.w.createWindow(null, 0, 0, 700, 500);
 			wnd.centerOnScreen();
 			wnd.setModal(1);
 			wnd.button('park').hide();
@@ -136,7 +136,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			// учтём права для каждой роли на каждый объект
 			if($p.current_acl && $p.current_acl._acl){
 				var acn = _mgr.class_name.split("."),
-					_acl = $p.current_acl._acl[acn[0]][acn[1]];
+					_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
 
 				if(_acl.indexOf("i") == -1)
 					this.hideItem("btn_new");
@@ -175,6 +175,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			//
 			create_tree_and_grid();
 		});
+
+		wnd._mgr = _mgr;
 	}
 
 	/**
@@ -253,13 +255,19 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			cell_tree.hideHeader();
 
 			tree = wnd.elmnts.tree = cell_tree.attachDynTree(_mgr, null, function(){
-				setTimeout(function(){ grid.reload(); }, 20);
+				setTimeout(function(){
+					if(grid && grid.reload)
+						grid.reload();
+				}, 20);
 			});
 			tree.attachEvent("onSelect", function(){	// довешиваем обработчик на дерево
 				if(this.do_not_reload)
 					delete this.do_not_reload;
 				else
-					setTimeout(function(){ grid.reload(); }, 20);
+					setTimeout(function(){
+						if(grid && grid.reload)
+							grid.reload();
+					}, 20);
 			});
 			tree.attachEvent("onDblClick", function(id){
 				select(id);
@@ -267,7 +275,10 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		}else{
 			cell_grid = wnd;
-			setTimeout(function(){ grid.reload(); }, 20);
+			setTimeout(function(){
+				if(grid && grid.reload)
+					grid.reload();
+			}, 20);
 		}
 
 		// настройка грида

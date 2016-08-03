@@ -121,7 +121,7 @@ function HandsontableDocument(container, attr) {
 
 	}.bind(this);
 	
-	this._online = navigator.onLine && $p.wsql.pouch.authorized;
+	this._online = (attr && attr.allow_offline) || (navigator.onLine && $p.wsql.pouch.authorized);
 	
 	if(container instanceof dhtmlXCellObject){
 		this._cont = document.createElement('div');
@@ -132,7 +132,11 @@ function HandsontableDocument(container, attr) {
 	}
 
 	this._cont.classList.add("handsontable_wrapper");
-	this._cont.innerHTML = this._online ? $p.msg.report_prepare : $p.msg.report_need_online;	
+	if(!this._online){
+		this._cont.innerHTML = $p.msg.report_need_online;
+	}else{
+		this._cont.innerHTML = attr.autorun ? $p.msg.report_prepare : $p.msg.report_need_prepare;
+	}
 
 	this.then = function (callback) {
 		this._then = callback;
@@ -149,10 +153,28 @@ function HandsontableDocument(container, attr) {
 	// отложенная загрузка handsontable и зависимостей
 	if(typeof Handsontable != "function" && this._online){
 
-		$p.load_script("//cdnjs.cloudflare.com/ajax/libs/pikaday/1.4.0/pikaday.min.js","script",function () {
-			$p.load_script("//cdn.jsdelivr.net/g/zeroclipboard,handsontable@0.25(handsontable.min.js)","script",init);
-			$p.load_script("//cdn.jsdelivr.net/handsontable/0.25/handsontable.min.css","link");
-		});
+		//https://cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/numbro.min.js
+		//http://cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/languages/ru-RU.min.js
+
+		$p.load_script("//cdnjs.cloudflare.com/ajax/libs/pikaday/1.4.0/pikaday.min.js","script")
+			.then(function () {
+				return $p.load_script("//cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/numbro.min.js","script")
+			})
+			.then(function () {
+				return $p.load_script("//cdn.jsdelivr.net/g/zeroclipboard,handsontable@0.26(handsontable.min.js)","script")
+			})
+			.then(function () {
+				return Promise.all([
+					$p.load_script("//cdn.jsdelivr.net/handsontable/0.26/handsontable.min.css","link"),
+					$p.load_script("//cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/languages/ru-RU.min.js","script")
+				]);
+			})
+			.then(init);
+
+		// $p.load_script("//cdnjs.cloudflare.com/ajax/libs/pikaday/1.4.0/pikaday.min.js","script",function () {
+		// 	$p.load_script("//cdn.jsdelivr.net/g/zeroclipboard,handsontable@0.25(handsontable.min.js)","script",init);
+		// 	$p.load_script("//cdn.jsdelivr.net/handsontable/0.25/handsontable.min.css","link");
+		// });
 
 	}else{
 		setTimeout(init);

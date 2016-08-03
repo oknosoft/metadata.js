@@ -74,7 +74,7 @@ parser(attr, function(err, data){
 
 
 
-	$p.settings = function (prm, modifiers) {
+	$p.settings = function (prm) {
 
 		// для транспорта используем rest, а не сервис http
 		prm.rest = true;
@@ -92,12 +92,6 @@ parser(attr, function(err, data){
 
 		// расположение файлов данных
 		prm.data_url = "data/";
-
-		// Таблицы инициализируем не через файл, а вызовом метода метаданных
-		//prm.create_tables_sql = require('create_tables');
-		modifiers.push(function () {
-			$p.md.create_tables(oninit);
-		})
 
 	};
 

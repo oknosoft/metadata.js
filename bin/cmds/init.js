@@ -29,5 +29,18 @@ exports.builder = {
 	}
 };
 exports.handler = function (argv) {
-	console.log('init called for dir', argv.dir)
+
+	var fs = require('fs');
+	var path = require('path');
+	const decompress = require('decompress');
+
+	console.log('init called for dir', argv.dir);
+	decompress(path.join(__dirname, 'helloworld.zip'), argv.dir)
+		.then(function (files) {
+			console.log('done');
+		})
+		.catch(function (err) {
+			console.log(err);
+		});
+
 };

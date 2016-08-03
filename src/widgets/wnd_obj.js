@@ -1,5 +1,5 @@
 /**
- * Форма абстрактного объекта данных {{#crossLink "DataObj"}}{{/crossLink}}, в том числе, отчетов и обработок
+ * Форма абстрактного объекта данных {{#crossLink "DataObj"}}{{/crossLink}}, в том числе, записей регистров
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
@@ -78,8 +78,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				wnd: {
 					top: 80 + Math.random()*40,
 					left: 120 + Math.random()*80,
-					width: 900,
-					height: 600,
+					width: 700,
+					height: 400,
 					modal: true,
 					center: false,
 					pwnd: pwnd,
@@ -172,7 +172,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			if($p.current_acl && $p.current_acl._acl){
 
 				var acn = _mgr.class_name.split("."),
-					_acl = $p.current_acl._acl[acn[0]][acn[1]];
+					_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
 
 				if(_mgr instanceof DocManager && _acl.indexOf("p") != -1)
 					this.enableItem("btn_post");
@@ -220,28 +220,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			}
 
 		});
-
-
-		if($p.job_prm.russian_names){
-			if(!wnd.Элементы)
-				wnd.__define({
-					"Элементы": {
-						get: function () {
-							return this.elmnts;
-						},
-						enumerable: false
-					}
-				});
-			if(!wnd.elmnts.Шапка)
-				wnd.elmnts.__define({
-					"Шапка": {
-						get: function () {
-							return this.pg_header;
-						},
-						enumerable: false
-					}
-				});
-		}
 
 		created = true;
 	}
@@ -311,7 +289,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			// учтём права для каждой роли на каждый объект
 			var acn = _mgr.class_name.split("."), _acl;
 			if($p.current_acl && $p.current_acl._acl)
-				_acl = $p.current_acl._acl[acn[0]][acn[1]];
+				_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
 			else
 				_acl = "e";
 
@@ -457,7 +435,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		// учтём права для каждой роли на каждый объект
 		var acn = _mgr.class_name.split("."), _acl;
 		if($p.current_acl && $p.current_acl._acl)
-			_acl = $p.current_acl._acl[acn[0]][acn[1]];
+			_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
 		else
 			_acl = "e";
 

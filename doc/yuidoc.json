@@ -1,7 +1,7 @@
 {
   "name": "metadata.js API",
   "description": "metadata.js API",
-  "version": "0.10.213",
+  "version": "0.10.215",
   "url": "http://www.oknosoft.ru/",
   "options": {
     "outdir": "doc/out",

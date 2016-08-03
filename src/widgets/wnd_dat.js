@@ -20,7 +20,7 @@ $p.iface.dat_blank = function(_dxw, attr) {
 
 	var wnd_dat = (_dxw || $p.iface.w).createWindow({
 		id: dhx4.newId(),
-		left: attr.left || 900,
+		left: attr.left || 700,
 		top: attr.top || 20,
 		width: attr.width || 220,
 		height: attr.height || 300,
@@ -613,10 +613,10 @@ $p.iface.swith_view = function(name){
 
 				// бежим по справочникам
 					tlist = meta_tree.item[0].item;
-				for(mdn in _cat){
-					if(typeof _cat[mdn] == "function")
+				for(mdn in $p.cat){
+					if(typeof $p.cat[mdn] == "function")
 						continue;
-					md = _cat[mdn].metadata();
+					md = $p.cat[mdn].metadata();
 					if(md.hide)
 						continue;
 					tlist.push({id: "oper.cat." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
@@ -625,10 +625,10 @@ $p.iface.swith_view = function(name){
 
 				// бежим по документам
 				tlist = meta_tree.item[1].item;
-				for(mdn in _doc){
-					if(typeof _doc[mdn] == "function")
+				for(mdn in $p.doc){
+					if(typeof $p.doc[mdn] == "function")
 						continue;
-					md = _doc[mdn].metadata();
+					md = $p.doc[mdn].metadata();
 					if(md.hide)
 						continue;
 					tlist.push({id: "oper.doc." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
@@ -637,10 +637,10 @@ $p.iface.swith_view = function(name){
 
 				// бежим по планам видов характеристик
 				tlist = meta_tree.item[2].item;
-				for(mdn in _cch){
-					if(typeof _cch[mdn] == "function")
+				for(mdn in $p.cch){
+					if(typeof $p.cch[mdn] == "function")
 						continue;
-					md = _cch[mdn].metadata();
+					md = $p.cch[mdn].metadata();
 					if(md.hide)
 						continue;
 					tlist.push({id: "oper.cch." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
@@ -649,10 +649,10 @@ $p.iface.swith_view = function(name){
 
 				// бежим по планам счетов
 				tlist = meta_tree.item[3].item;
-				for(mdn in _cacc){
-					if(typeof _cacc[mdn] == "function")
+				for(mdn in $p.cacc){
+					if(typeof $p.cacc[mdn] == "function")
 						continue;
-					md = _cacc[mdn].metadata();
+					md = $p.cacc[mdn].metadata();
 					if(md.hide)
 						continue;
 					tlist.push({id: "oper.cacc." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
@@ -661,10 +661,10 @@ $p.iface.swith_view = function(name){
 
 				// бежим по задачам
 				tlist = meta_tree.item[4].item;
-				for(mdn in _tsk){
-					if(typeof _tsk[mdn] == "function")
+				for(mdn in $p.tsk){
+					if(typeof $p.tsk[mdn] == "function")
 						continue;
-					md = _tsk[mdn].metadata();
+					md = $p.tsk[mdn].metadata();
 					if(md.hide)
 						continue;
 					tlist.push({id: "oper.tsk." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
