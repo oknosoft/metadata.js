@@ -65,7 +65,6 @@ gulp.task('build-metadata', function () {
 		'./lib/daterangepicker/daterangepicker.js'
 	])
 		.pipe(concat('metadata.js'))
-		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
 		.pipe(umd({
 			exports: function(file) {
 				return '$p';
@@ -75,6 +74,8 @@ gulp.task('build-metadata', function () {
 			},
 			template: path.join(__dirname, './src/utils/umd-exports-oknosoft.js')
 		}))
+		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
+		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString()))
 		.pipe(gulp.dest('./lib'))
 		.pipe(gulp.dest('./dist'))
 		.pipe(rename('metadata.min.js'))
@@ -265,7 +266,6 @@ gulp.task('build-metadata-core', function(){
 		'./lib/aes/aes.js'
 	])
 		.pipe(concat('metadata.core.js'))
-		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
 		.pipe(umd({
 			exports: function(file) {
 				return '$p';
@@ -275,6 +275,8 @@ gulp.task('build-metadata-core', function(){
 			},
 			template: path.join(__dirname, './src/utils/umd-exports-oknosoft.js')
 		}))
+		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
+		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString()))
 		.pipe(gulp.dest('./lib'))
 		.pipe(rename('metadata.core.min.js'))
 		.pipe(uglify({
