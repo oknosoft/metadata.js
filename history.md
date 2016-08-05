@@ -267,4 +267,11 @@
 ### 03.08.2016
 - В класс _DataProcessorsManager_ добавлен новый метод _form_rep_ - форма отчета
 - Для визуализации и редактирования диапазона дат реализован компонент _ODateRangePicker_ на базе [daterangepicker](http://www.daterangepicker.com/)
+
+# v0.11.216
+
+### 05.08.2016
+- Компонент _dhtmlxTree_ удалён из сборки dhtmlx
+- Вызовы _dhtmlxTree_ в автоформах заменены вызовами _dhtmlxTreeView_
+- Исправлены выявленные ошибки
   
