@@ -375,6 +375,7 @@ $p.fias = function FIAS(){};
 	msg.order_sent_title = "Подтвердите отправку заказа";
 	msg.order_sent_message = "Отправленный заказ нельзя изменить.<br/>После проверки менеджером<br/>он будет запущен в работу";
 
+	msg.report_error = "<i class='fa fa-exclamation-circle fa-2x fa-fw'></i> Ошибка";
 	msg.report_prepare = "<i class='fa fa-spinner fa-spin fa-2x fa-fw'></i> Подготовка отчета";
 	msg.report_need_prepare = "<i class='fa fa-info fa-2x fa-fw'></i> Нажмите 'Сформировать' для получения отчета";
 	msg.report_need_online = "<i class='fa fa-plug fa-2x fa-fw'></i> Нет подключения. Отчет недоступен в автономном режиме";

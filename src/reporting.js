@@ -144,11 +144,18 @@ function HandsontableDocument(container, attr) {
 	};
 
 	this.requery = function (opt) {
+
 		if(this.hot)
 			this.hot.destroy();
-		this._cont.innerHTML = "";
-		this.hot = new Handsontable(this._cont, opt);
+
+		if(opt instanceof Error){
+			this._cont.innerHTML = $p.msg.report_error + (opt.name ? " <b>" + opt.name + "</b>" : "") + (opt.message ? " " + opt.message : "");
+		}else{
+			this._cont.innerHTML = "";
+			this.hot = new Handsontable(this._cont, opt);
+		}
 	};
+
 
 	// отложенная загрузка handsontable и зависимостей
 	if(typeof Handsontable != "function" && this._online){

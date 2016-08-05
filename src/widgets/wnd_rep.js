@@ -192,14 +192,10 @@ DataProcessorsManager.prototype.form_rep = function(pwnd, attr) {
 	}
 
 	/**
-	 * показывает отчет
+	 * показывает отчет или ошибку (если data instanceof error)
 	 */
 	function show(data) {
-		if(data instanceof Error){
-
-		}else{
-			wnd.elmnts.table.requery(data);
-		}
+		wnd.elmnts.table.requery(data);
 	}
 
 	/**

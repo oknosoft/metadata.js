@@ -28,11 +28,12 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 	if(!filter)
 		filter = {is_folder: true};
 
-	var tree = this.attachTree();
-	tree.setImagePath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
-	tree.setIconsPath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
-	if($p.job_prm.device_type == "desktop")
-		tree.enableKeyboardNavigation(true);
+	var tree = this.attachTreeView();
+
+	// tree.setImagePath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
+	// tree.setIconsPath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
+	// if($p.job_prm.device_type == "desktop")
+	// 	tree.enableKeyboardNavigation(true);
 
 	tree.__define({
 		/**
