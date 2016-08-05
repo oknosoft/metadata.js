@@ -65,7 +65,6 @@ gulp.task('build-metadata', function () {
 		'./lib/daterangepicker/daterangepicker.js'
 	])
 		.pipe(concat('metadata.js'))
-		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
 		.pipe(umd({
 			exports: function(file) {
 				return '$p';
@@ -75,6 +74,8 @@ gulp.task('build-metadata', function () {
 			},
 			template: path.join(__dirname, './src/utils/umd-exports-oknosoft.js')
 		}))
+		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
+		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
 		.pipe(gulp.dest('./lib'))
 		.pipe(gulp.dest('./dist'))
 		.pipe(rename('metadata.min.js'))
@@ -141,12 +142,12 @@ gulp.task('build-dhtmlx', function(){
 		'./src/dhtmlx/sources/dhtmlxDataView/codebase/dhtmlxdataview.js',
 			//'./src/dhtmlx/sources/dhtmlxList/codebase/dhtmlxlist.js',
 			//'./src/dhtmlx/sources/dhtmlxTree/codebase/dhtmlxtree.js',
-		'./src/dhtmlx/patches/dhtmlxtree.js',
-		'./src/dhtmlx/sources/dhtmlxTree/codebase/ext/dhtmlxtree_dragin.js',
-		'./src/dhtmlx/sources/dhtmlxTree/codebase/ext/dhtmlxtree_ed.js',
-		'./src/dhtmlx/sources/dhtmlxTree/codebase/ext/dhtmlxtree_json.js',
-		'./src/dhtmlx/sources/dhtmlxTree/codebase/ext/dhtmlxtree_start.js',
-		'./src/dhtmlx/patches/dhtmlxtree_kn.js',
+		//'./src/dhtmlx/patches/dhtmlxtree.js',
+		//'./src/dhtmlx/sources/dhtmlxTree/codebase/ext/dhtmlxtree_dragin.js',
+		//'./src/dhtmlx/sources/dhtmlxTree/codebase/ext/dhtmlxtree_ed.js',
+		//'./src/dhtmlx/sources/dhtmlxTree/codebase/ext/dhtmlxtree_json.js',
+		//'./src/dhtmlx/sources/dhtmlxTree/codebase/ext/dhtmlxtree_start.js',
+		//'./src/dhtmlx/patches/dhtmlxtree_kn.js',
 		'./src/dhtmlx/patches/dhtmlxgrid.js',
 		'./src/dhtmlx/sources/dhtmlxGrid/codebase/ext/dhtmlxgrid_drag.js',
 		'./src/dhtmlx/sources/dhtmlxGrid/codebase/ext/dhtmlxgrid_export.js',
@@ -265,7 +266,6 @@ gulp.task('build-metadata-core', function(){
 		'./lib/aes/aes.js'
 	])
 		.pipe(concat('metadata.core.js'))
-		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
 		.pipe(umd({
 			exports: function(file) {
 				return '$p';
@@ -275,6 +275,8 @@ gulp.task('build-metadata-core', function(){
 			},
 			template: path.join(__dirname, './src/utils/umd-exports-oknosoft.js')
 		}))
+		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
+		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
 		.pipe(gulp.dest('./lib'))
 		.pipe(rename('metadata.core.min.js'))
 		.pipe(uglify({

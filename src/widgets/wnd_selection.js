@@ -300,12 +300,12 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			return false;
 		});
 		grid.attachEvent("onRowDblClicked", function(rId, cInd){
-			var tree_row_index=null;
-			if(tree)
-				tree_row_index = tree.getIndexById(rId);
-			if(tree_row_index!=null)
-				tree.selectItem(rId, true);
-			else
+			if(tree && tree.items[rId]){
+				tree.selectItem(rId);
+				var pid = tree.getParentId(rId);
+				if(pid && pid != $p.utils.blank.guid)
+					tree.openItem(pid);
+			}else
 				select(rId);
 		});
 
@@ -451,8 +451,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		// запрещаем выбирать папки
 		if(wnd.elmnts.tree &&
-			wnd.elmnts.tree.getIndexById(rId) != null &&
-			wnd.elmnts.tree.getSelectedItemId() != rId){
+			wnd.elmnts.tree.items[rId] &&
+			wnd.elmnts.tree.getSelectedId() != rId){
 			wnd.elmnts.tree.selectItem(rId, true);
 			return;
 		}
@@ -465,12 +465,12 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 
 
-		if((!rId && wnd.elmnts.tree) || (wnd.elmnts.tree && wnd.elmnts.tree.getSelectedItemId() == rId)){
+		if((!rId && wnd.elmnts.tree) || (wnd.elmnts.tree && wnd.elmnts.tree.getSelectedId() == rId)){
 			if(folders === false){
 				$p.msg.show_msg($p.msg.select_elm);
 				return;
 			}
-			rId = wnd.elmnts.tree.getSelectedItemId();
+			rId = wnd.elmnts.tree.getSelectedId();
 		}
 
 		if(rId){
@@ -580,7 +580,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 					count: count || wnd.elmnts.grid.rowsBufferOutSize,
 					get_header: (previous_filter.get_header == undefined)
 				}),
-			tparent = has_tree ? wnd.elmnts.tree.getSelectedItemId() : null;
+			tparent = has_tree ? wnd.elmnts.tree.getSelectedId() : null;
 
 		if(attr.date_from && !filter.date_from)
 			filter.date_from = attr.date_from;

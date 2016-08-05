@@ -472,6 +472,11 @@ DataManager.prototype.sync_grid = function(attr, grid){
 				}else
 					resolve(res);
 
+			}else if(grid instanceof dhtmlXTreeView && grid.loadStruct){
+				grid.loadStruct(res, function(){
+					resolve(res);
+				});
+
 			}else
 				resolve(res);
 

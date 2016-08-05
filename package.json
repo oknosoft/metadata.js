@@ -1,7 +1,7 @@
 {
   "name": "metadata-js",
   "description": "Metadata.js is a library for building offline-first browser-based business applications",
-  "version": "0.11.215",
+  "version": "0.11.216",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "directories": {
     "example": "examples",

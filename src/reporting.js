@@ -144,37 +144,36 @@ function HandsontableDocument(container, attr) {
 	};
 
 	this.requery = function (opt) {
+
 		if(this.hot)
 			this.hot.destroy();
-		this._cont.innerHTML = "";
-		this.hot = new Handsontable(this._cont, opt);
+
+		if(opt instanceof Error){
+			this._cont.innerHTML = $p.msg.report_error + (opt.name ? " <b>" + opt.name + "</b>" : "") + (opt.message ? " " + opt.message : "");
+		}else{
+			this._cont.innerHTML = "";
+			this.hot = new Handsontable(this._cont, opt);
+		}
 	};
+
 
 	// отложенная загрузка handsontable и зависимостей
 	if(typeof Handsontable != "function" && this._online){
 
-		//https://cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/numbro.min.js
-		//http://cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/languages/ru-RU.min.js
-
-		$p.load_script("//cdnjs.cloudflare.com/ajax/libs/pikaday/1.4.0/pikaday.min.js","script")
+		$p.load_script("https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.4.0/pikaday.min.js","script")
 			.then(function () {
-				return $p.load_script("//cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/numbro.min.js","script")
+				return $p.load_script("https://cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/numbro.min.js","script")
 			})
 			.then(function () {
-				return $p.load_script("//cdn.jsdelivr.net/g/zeroclipboard,handsontable@0.26(handsontable.min.js)","script")
+				return $p.load_script("https://cdn.jsdelivr.net/g/zeroclipboard,handsontable@0.26(handsontable.min.js)","script")
 			})
 			.then(function () {
 				return Promise.all([
-					$p.load_script("//cdn.jsdelivr.net/handsontable/0.26/handsontable.min.css","link"),
-					$p.load_script("//cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/languages/ru-RU.min.js","script")
+					$p.load_script("https://cdn.jsdelivr.net/handsontable/0.26/handsontable.min.css","link"),
+					$p.load_script("https://cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/languages/ru-RU.min.js","script")
 				]);
 			})
 			.then(init);
-
-		// $p.load_script("//cdnjs.cloudflare.com/ajax/libs/pikaday/1.4.0/pikaday.min.js","script",function () {
-		// 	$p.load_script("//cdn.jsdelivr.net/g/zeroclipboard,handsontable@0.25(handsontable.min.js)","script",init);
-		// 	$p.load_script("//cdn.jsdelivr.net/handsontable/0.25/handsontable.min.css","link");
-		// });
 
 	}else{
 		setTimeout(init);
