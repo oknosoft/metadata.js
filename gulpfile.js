@@ -278,6 +278,7 @@ gulp.task('build-metadata-core', function(){
 		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
 		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
 		.pipe(gulp.dest('./lib'))
+		.pipe(gulp.dest('./dist'))
 		.pipe(rename('metadata.core.min.js'))
 		.pipe(uglify({
 			preserveComments: "license"
