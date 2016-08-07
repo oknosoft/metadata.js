@@ -345,7 +345,7 @@ function InterfaceObjs(){
 		iface.main.progressOn();
 
 		// активируем страницу
-		hprm = $p.job_prm.parse_url();
+		var hprm = $p.job_prm.parse_url();
 		if(!hprm.view || iface.main.getAllItems().indexOf(hprm.view) == -1){
 			iface.set_hash(hprm.obj, hprm.ref, hprm.frm, "doc");
 		} else
@@ -453,7 +453,7 @@ function InterfaceObjs(){
 		this.cont.style.overflow = "auto";
 
 		// первая колонка настроек
-		this.form1 = (function (cont) {
+		this.form2 = (function (cont) {
 
 			var form = new dhtmlXForm(cont, [
 
@@ -477,11 +477,6 @@ function InterfaceObjs(){
 				{type:"input" , inputWidth: 220, name:"couch_suffix", label:"Суффикс:"},
 				{type:"template", label:"",value:"",
 					note: {text: "Назначается абоненту при регистрации", width: 320}},
-
-				{type: "label", labelWidth:320, label: "Сохранять пароль пользователя", className: "label_options"},
-				{type:"checkbox", name:"enable_save_pwd", label:"Разрешить:", checked: $p.wsql.get_user_param("enable_save_pwd", "boolean")},
-				{type:"template", label:"",value:"", note: {text: "Не рекомендуется, если к компьютеру имеют доступ посторонние лица", width: 320}},
-				{type:"template", label:"",value:"", note: {text: "", width: 320}},
 
 				{type:"block", blockOffset: 0, name:"block_buttons", list:[
 					{type: "button", name: "save", value: "<i class='fa fa-floppy-o fa-lg'></i>", tooltip: "Применить настройки и перезагрузить программу"},
@@ -539,10 +534,10 @@ function InterfaceObjs(){
 
 			return form;
 
-		})(this.cont.querySelector("[name=form1]").firstChild);
+		})(this.cont.querySelector("[name=form2]").firstChild);
 
 		// вторая колонка настроек
-		this.form2 = (function (cont) {
+		this.form1 = (function (cont) {
 
 			var form = new dhtmlXForm(cont, [
 				{ type:"settings", labelWidth:320, position:"label-left"  },
@@ -555,6 +550,11 @@ function InterfaceObjs(){
 					{ type:"radio" , name:"device_type", labelWidth:150, label:'<i class="fa fa-mobile fa-lg"></i> Телефон, планшет', value:"phone"}
 				]  },
 				{type:"template", label:"",value:"", note: {text: "Класс устройства определяется автоматически, но пользователь может задать его явно", width: 320}},
+
+				{type: "label", label: "Сохранять пароль пользователя", className: "label_options"},
+				{type:"checkbox", name:"enable_save_pwd", label:"Разрешить:", labelWidth:90, checked: $p.wsql.get_user_param("enable_save_pwd", "boolean")},
+				{type:"template", label:"",value:"", note: {text: "Не рекомендуется, если к компьютеру имеют доступ посторонние лица", width: 320}},
+				{type:"template", label:"",value:"", note: {text: "", width: 320}},
 
 				{type: "label", label: "Подключаемые модули", className: "label_options"},
 				{type:"input" , position:"label-top", inputWidth: 320, name:"modifiers", label:"Модификаторы:", value: $p.wsql.get_user_param("modifiers"), rows: 3, style:"height:80px;"},
@@ -569,7 +569,7 @@ function InterfaceObjs(){
 
 			// подключаем обработчик изменения значений в форме
 			form.attachEvent("onChange", function (name, value, state){
-				$p.wsql.set_user_param(name, value);
+				$p.wsql.set_user_param(name, name == "enable_save_pwd" ? state || "" : value);
 
 			});
 
@@ -580,7 +580,7 @@ function InterfaceObjs(){
 
 			return form;
 
-		})(this.cont.querySelector("[name=form2]").firstChild);
+		})(this.cont.querySelector("[name=form1]").firstChild);
 
 	}
 

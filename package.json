@@ -47,7 +47,7 @@
     "url": "https://github.com/oknosoft/metadata.js/issues"
   },
   "homepage": "http://www.oknosoft.ru/metadata/",
-  "main": "dist/metadata.core.min.js",
+  "main": "dist/metadata.core.js",
   "keywords": [
     "metadata",
     "browser data engine",
