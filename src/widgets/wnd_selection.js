@@ -260,7 +260,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 						grid.reload();
 				}, 20);
 			});
-			tree.attachEvent("onSelect", function(){	// довешиваем обработчик на дерево
+			tree.attachEvent("onSelect", function(id, mode){	// довешиваем обработчик на дерево
+				if(!mode)
+					return;
 				if(this.do_not_reload)
 					delete this.do_not_reload;
 				else
