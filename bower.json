@@ -1,6 +1,6 @@
 {
   "name": "metadata",
-  "description": "Metadata.js is a library for building offline-first browser-based business applications",
+  "description": "Library for building offline-first browser-based business applications",
   "version": "0.11.216",
   "license": "AGPL-3.0",
   "keywords": [
