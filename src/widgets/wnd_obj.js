@@ -121,6 +121,9 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 							if(o instanceof CatObj)
 								title = (_meta.obj_presentation || _meta.synonym) + ': ' + title;
 
+							else if(o instanceof DocObj)
+								title += o.posted ? " (проведен)" : " (не проведен)";
+
 							if(o._modified && title.lastIndexOf("*")!=title.length-1)
 								title += " *";
 
@@ -174,9 +177,10 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				var acn = _mgr.class_name.split("."),
 					_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
 
-				if(_mgr instanceof DocManager && _acl.indexOf("p") != -1)
+				if(_mgr instanceof DocManager && _acl.indexOf("p") != -1){
 					this.enableItem("btn_post");
-				else
+					this.setItemText("btn_save_close", "<b>Провести и закрыть</b>");
+				}else
 					this.hideItem("btn_post");
 
 				if(_mgr instanceof DocManager && _acl.indexOf("o") != -1)
@@ -463,8 +467,16 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		if(o instanceof DocObj){
 			if(action == "post")
 				post = true;
+
 			else if(action == "unpost")
 				post = false;
+
+			else if(action == "close"){
+				var acn = _mgr.class_name.split("."),
+					_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
+				if(_acl.indexOf("p") != -1)
+					post = true;
+			}
 		}
 
 		o.save(post)

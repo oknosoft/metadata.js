@@ -15,7 +15,7 @@ function ODateRangePicker(container, attr) {
 		container.appendChild(this._cont);
 	}
 
-	this._cont.style="cursor: pointer; padding: 6px 0 6px 8px; width: 100%; font-size: 90%";
+	this._cont.className = "odaterangepicker";
 	this._cont.innerHTML = '<i class="fa fa-calendar"></i>&nbsp; <span></span> &nbsp;<i class="fa fa-caret-down"></i>';
 
 	this.__define({
