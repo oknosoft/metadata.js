@@ -74,9 +74,15 @@ html, body {
 	background-image: url(../imgs/custom_web/1c-tsk.gif);
 }
 
+/* контейнер для daterangepicker*/
+div.odaterangepicker{
+	cursor: pointer;
+	padding: 6px 0 6px 8px;
+	width: 100%;
+	font-size: 90%;
+}
 
-
-
+/* гиперссылка перехода к настройкам на форме авторизации */
 .order_dealer_options {
     position: absolute;
     right: 4px;
@@ -87,7 +93,7 @@ html, body {
     border: none;
 }
 
-/* гиперссылка с выпадающим списком */
+/* гиперссылка с выпадающим списком метасторе? */
 .dropdown_list {
 	float: left;
 }
@@ -149,7 +155,7 @@ a.dropdown_list {
 .cell_ref_elm_deleted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/catelmDeleted.gif) no-repeat left center;}
 .cell_doc_posted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/doc_posted.png) no-repeat left center;}
 .cell_doc_deleted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/doc_deleted.png) no-repeat left center;}
-.cell_doc_saved {padding-left: 26px !important; background: url(../imgs/dhxtree_web/doc_saved.png) no-repeat left center;}
+.cell_doc {padding-left: 26px !important; background: url(../imgs/dhxtree_web/doc_saved.png) no-repeat left center;}
 .cell_mandatory {border-bottom: 2px red dotted !important;}
 
 /* высота строки грида
