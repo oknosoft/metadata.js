@@ -371,10 +371,12 @@ $p.iface.data_to_grid = function (data, attr){
 
 	function cat_picture_class(r){
 		var res;
-		if(r.is_folder)
-			res = "cell_ref_folder";
-		else
-			res = "cell_ref_elm";
+		if(r.hasOwnProperty("posted")){
+			res = r.posted ? "cell_doc_posted" : "cell_doc";
+		}else{
+			res = r.is_folder ? "cell_ref_folder" : "cell_ref_elm";
+		}
+
 		if(r._deleted)
 			res = res + "_deleted";
 		return res ;

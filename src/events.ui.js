@@ -34,9 +34,9 @@ $p.eve.__define({
 	 */
 	on_rotate: {
 		value: function (e) {
-			$p.job_prm.device_orient = (w.orientation == 0 || w.orientation == 180 ? "portrait":"landscape");
+			$p.job_prm.device_orient = (window.orientation == 0 || window.orientation == 180 ? "portrait":"landscape");
 			if (typeof(e) != "undefined")
-				eve.callEvent("onOrientationChange", [$p.job_prm.device_orient]);
+				$p.eve.callEvent("onOrientationChange", [$p.job_prm.device_orient]);
 		}
 	},
 
@@ -132,7 +132,7 @@ $p.eve.__define({
 						return res;
 
 					// широковещательное оповещение об авторизованности на сервере
-					eve.callEvent("log_in", [$p.ajax.authorized = true]);
+					$p.eve.callEvent("log_in", [$p.ajax.authorized = true]);
 
 					if(typeof res == "string")
 						res = JSON.parse(res);
@@ -147,8 +147,8 @@ $p.eve.__define({
 						$p.wsql.set_user_param("user_pwd", "");
 
 					// сохраняем разницу времени с сервером
-					if(res.now_1с && res.now_js)
-						$p.wsql.set_user_param("time_diff", res.now_1с - res.now_js);
+					if(res.now_1c && res.now_js)
+						$p.wsql.set_user_param("time_diff", res.now_1c - res.now_js);
 
 				})
 
@@ -169,11 +169,9 @@ $p.eve.__define({
  * Этот фрагмент кода выполняем только в браузере
  * События окна внутри воркера и Node нас не интересуют
  */
-(function(w){
+(function(w, eve, msg){
 
-	var eve = $p.eve,
-		msg = $p.msg,
-		timer_setted = false,
+	var timer_setted = false,
 		cache;
 
 	/**
@@ -215,7 +213,7 @@ $p.eve.__define({
 						surl = "//cdn.jsdelivr.net/metadata/latest/";
 
 					// стили загружаем только при необходимости
-					for(i=0; i < document.styleSheets.length; i++){
+					for(var i=0; i < document.styleSheets.length; i++){
 						if(document.styleSheets[i].href){
 							if(document.styleSheets[i].href.indexOf("dhx_web")!=-1 || document.styleSheets[i].href.indexOf("dhx_terrace")!=-1)
 								load_dhtmlx = false;
@@ -311,7 +309,7 @@ $p.eve.__define({
 				}, 10);
 
 
-				$p.msg.russian_names();
+				msg.russian_names();
 
 				// TODO: переписать управление appcache на сервисворкерах
 				if($p.wsql.get_user_param("use_service_worker", "boolean") && typeof navigator != "undefined"
@@ -369,7 +367,6 @@ $p.eve.__define({
 				eve.redirect = true;
 				msg.show_msg({type: "alert-error", text: msg.unsupported_browser, title: msg.unsupported_browser_title});
 				throw msg.unsupported_browser;
-				return;
 			}
 
 			/**
@@ -513,4 +510,4 @@ $p.eve.__define({
 	 */
 	w.addEventListener("hashchange", $p.iface.hash_route);
 
-})(window);
+})(window, $p.eve, $p.msg);
