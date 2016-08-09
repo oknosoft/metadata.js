@@ -65,7 +65,7 @@ TabularSection.prototype.toString = function(){
 };
 
 /**
- * Возвращает строку табчасти по индексу
+ * ### Возвращает строку табчасти по индексу
  * @method get
  * @param index {Number} - индекс строки табчасти
  * @return {TabularSectionRow}
@@ -75,16 +75,25 @@ TabularSection.prototype.get = function(index){
 };
 
 /**
- * Возвращает количество элементов в табчасти
+ * ### Возвращает количество элементов в табчасти
  * @method count
  * @return {Number}
+ *
+ * @example
+ *     // количество элементов в табчасти
+ *     var count = ts.count();
  */
 TabularSection.prototype.count = function(){return this._obj.length};
 
 /**
- * очищает табличнут часть
+ * ### Очищает табличнут часть
  * @method clear
  * @return {TabularSection}
+ *
+ * @example
+ *     // Очищает табличнут часть
+ *     ts.clear();
+ *
  */
 TabularSection.prototype.clear = function(silent){
 
@@ -102,7 +111,7 @@ TabularSection.prototype.clear = function(silent){
 };
 
 /**
- * Удаляет строку табличной части
+ * ### Удаляет строку табличной части
  * @method del
  * @param val {Number|TabularSectionRow} - индекс или строка табчасти
  */
@@ -146,7 +155,7 @@ TabularSection.prototype.del = function(val, silent){
 };
 
 /**
- * Находит первую строку, содержащую значение
+ * ### Находит первую строку, содержащую значение
  * @method find
  * @param val {*} - значение для поиска
  * @param columns {String|Array} - колонки, в которых искать
@@ -159,7 +168,9 @@ TabularSection.prototype.find = function(val, columns){
 };
 
 /**
- * Находит строки, соответствующие отбору. Если отбор пустой, возвращаются все строки табчасти
+ * ### Находит строки, соответствующие отбору
+ * Если отбор пустой, возвращаются все строки табчасти
+ *
  * @method find_rows
  * @param [selection] {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"}
  * @param [callback] {Function} - в который передается строка табчасти на каждой итерации
@@ -177,7 +188,7 @@ TabularSection.prototype.find_rows = function(selection, callback){
 };
 
 /**
- * Меняет местами строки табчасти
+ * ### Меняет местами строки табчасти
  * @method swap
  * @param rowid1 {number}
  * @param rowid2 {number}
@@ -195,10 +206,14 @@ TabularSection.prototype.swap = function(rowid1, rowid2){
 };
 
 /**
- * добавляет строку табчасти
+ * ### Добавляет строку табчасти
  * @method add
  * @param attr {object} - объект со значениями полей. если некого поля нет в attr, для него используется пустое значение типа
  * @return {TabularSectionRow}
+ *
+ * @example
+ *     // Добавляет строку в табчасть и заполняет её значениями, переданными в аргументе
+ *     var row = ts.add({field1: value1});
  */
 TabularSection.prototype.add = function(attr, silent){
 
@@ -231,7 +246,7 @@ TabularSection.prototype.add = function(attr, silent){
 };
 
 /**
- * Выполняет цикл "для каждого"
+ * ### Выполняет цикл "для каждого"
  * @method each
  * @param fn {Function} - callback, в который передается строка табчасти
  */
@@ -243,13 +258,16 @@ TabularSection.prototype.each = function(fn){
 };
 
 /**
- * Псевдоним для each
+ * ### Псевдоним для each
+ * @method forEach
  * @type {TabularSection.each|*}
  */
 TabularSection.prototype.forEach = TabularSection.prototype.each;
 
 /**
- * Сворачивает табличную часть
+ * ### Сворачивает табличную часть
+ * детали см. в {{#crossLink "TabularSection/aggregate:method"}}{{/crossLink}}
+ * @method group_by
  * @param [dimensions] {Array|String}
  * @param [resources] {Array|String}
  */
@@ -263,7 +281,9 @@ TabularSection.prototype.group_by = function (dimensions, resources) {
 };
 
 /**
- * Сортирует табличную часть
+ * ### Сортирует табличную часть
+ *
+ * @method sort
  * @param fields {Array|String}
  */
 TabularSection.prototype.sort = function (fields) {
@@ -293,11 +313,25 @@ TabularSection.prototype.sort = function (fields) {
 };
 
 /**
- * Вычисляет агрегатную функцию по табличной части. Не изменяет исходный объект
- * @param [dimensions] {Array|String}
- * @param [resources] {Array|String}
- * @param [aggr] {String} = SUM, COUNT, MIN, MAX, FIRST, LAST, AVG, AGGR, ARRAY, REDUCE
- * @return {*}
+ * ### Вычисляет агрегатную функцию по табличной части
+ * - Не изменяет исходный объект. Если пропущен аргумент `aggr` - вычисляет сумму.
+ * - Стандартные агрегаторы: SUM, COUNT, MIN, MAX, FIRST, LAST, AVG, AGGR, ARRAY, REDUCE
+ * - AGGR - позволяет задать собственный агрегатор (функцию) для расчета итогов
+ *
+ * @method aggregate
+ * @param [dimensions] {Array|String} - список измерений
+ * @param [resources] {Array|String} - список ресурсов
+ * @param [aggr] {String} - агрегатная функция
+ * @param [ret_array] {Boolran} - указывает возвращать массив значений
+ * @return {Number|Array} - Значение агрегатной фукнции или массив значений
+ *
+ * @example
+ *     // вычисляем сумму (итог) по полю amount табличной части
+ *     var total = ts.aggregate("", "amount");
+ *
+ *     // вычисляем максимальные суммы для всех номенклатур табличной части
+ *     // вернёт массив объектов {nom, amount}
+ *     var total = ts.aggregate("nom", "amount", "MAX", true);
  */
 TabularSection.prototype.aggregate = function (dimensions, resources, aggr, ret_array) {
 
@@ -356,7 +390,8 @@ TabularSection.prototype.aggregate = function (dimensions, resources, aggr, ret_
 };
 
 /**
- * загружает табличнут часть из массива объектов
+ * ### Загружает табличнут часть из массива объектов
+ *
  * @method load
  * @param aattr {Array} - массив объектов к загрузке
  */
@@ -384,7 +419,7 @@ TabularSection.prototype.load = function(aattr){
 };
 
 /**
- * Перезаполняет грид данными табчасти с учетом отбора
+ * ### Перезаполняет грид данными табчасти с учетом отбора
  * @method sync_grid
  * @param grid {dhtmlxGrid} - элемент управления
  * @param [selection] {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"}
@@ -458,7 +493,7 @@ function TabularSectionRow(owner){
 }
 
 /**
- * Метаданые строки табличной части
+ * ### Метаданые строки табличной части
  * @property _metadata
  * @for TabularSectionRow
  * @type Number
@@ -469,7 +504,7 @@ TabularSectionRow.prototype.__define('_metadata', {
 });
 
 /**
- * Номер строки табличной части
+ * ### Номер строки табличной части
  * @property row
  * @for TabularSectionRow
  * @type Number
@@ -481,7 +516,7 @@ TabularSectionRow.prototype.__define("row", {
 });
 
 /**
- * Копирует строку табличной части
+ * ### Копирует строку табличной части
  * @method _clone
  * @for TabularSectionRow
  * @type Number

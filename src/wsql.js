@@ -27,7 +27,7 @@ function WSQL(){
 	this.__define({
 
 		/**
-		 * Поправка времени javascript
+		 * ### Поправка времени javascript
 		 * @property js_time_diff
 		 * @type Number
 		 */
@@ -36,7 +36,7 @@ function WSQL(){
 		},
 
 		/**
-		 * Поправка времени javascript с учетом пользовательского сдвига из константы _time_diff_
+		 * ### Поправка времени javascript с учетом пользовательского сдвига из константы _time_diff_
 		 * @property time_diff
 		 * @type Number
 		 */
@@ -90,7 +90,9 @@ function WSQL(){
 		},
 
 		/**
-		 * Выполняет sql запрос к локальной базе данных, возвращает Promise
+		 * ### Выполняет sql запрос к локальной базе данных
+		 *
+		 * @method promise
 		 * @param sql
 		 * @param params
 		 * @return {Promise}
@@ -111,7 +113,7 @@ function WSQL(){
 		},
 
 		/**
-		 * Сохраняет настройки формы или иные параметры объекта _options_
+		 * ### Сохраняет настройки формы или иные параметры объекта _options_
 		 * @method save_options
 		 * @param prefix {String} - имя области
 		 * @param options {Object} - сохраняемые параметры
@@ -125,7 +127,7 @@ function WSQL(){
 		},
 
 		/**
-		 * Восстанавливает сохраненные параметры в объект _options_
+		 * ### Восстанавливает сохраненные параметры в объект _options_
 		 * @method restore_options
 		 * @param prefix {String} - имя области
 		 * @param options {Object} - объект, в который будут записаны параметры
@@ -148,7 +150,7 @@ function WSQL(){
 		},
 
 		/**
-		 * Приведение типов при операциях с `localStorage`
+		 * ### Приведение типов при операциях с `localStorage`
 		 * @method fetch_type
 		 * @param prm
 		 * @param type
@@ -281,7 +283,8 @@ function WSQL(){
 		},
 
 		/**
-		 * Удаляет таблицы WSQL. Например, для последующего пересоздания при изменении структуры данных
+		 * ### Удаляет таблицы WSQL
+		 * Например, для последующего пересоздания при изменении структуры данных
 		 * @method drop_tables
 		 * @param callback {Function}
 		 * @async
@@ -322,7 +325,7 @@ function WSQL(){
 
 	/**
 	 * ### Указатель на aladb
-	 * @property alasql
+	 * @property aladb
 	 * @type alasql.Database
 	 */
 	this.__define({
