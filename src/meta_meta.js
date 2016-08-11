@@ -51,12 +51,20 @@ function Meta() {
 	}
 
 
-	// создаёт объекты менеджеров
+	/**
+	 * ### Cоздаёт объекты менеджеров
+	 * @method create_managers
+	 * @for Meta
+	 */
 	_md.create_managers = function(){};
 
 	/**
 	 * ### Инициализирует метаданные
-	 * загружает описание метаданных из локального или сетевого хранилища
+	 * загружает описание метаданных из локального или сетевого хранилища или из объекта, переданного в параметре
+	 *
+	 * @method create_managers
+	 * @for Meta
+	 * @param [meta_db] {Object|String}
 	 */
 	_md.init = function (meta_db) {
 
@@ -142,7 +150,7 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает описание объекта метаданных
+	 * ### Возвращает описание объекта метаданных
 	 * @method get
 	 * @param class_name {String} - например, "doc.calc_order"
 	 * @param [field_name] {String}
@@ -203,7 +211,8 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает структуру метаданных конфигурации
+	 * ### Возвращает структуру имён объектов метаданных конфигурации
+	 *
 	 * @method get_classes
 	 */
 	_md.get_classes = function () {
@@ -217,7 +226,8 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает тип поля sql для типа данных
+	 * ### Возвращает тип поля sql для типа данных
+	 *
 	 * @method sql_type
 	 * @param mgr {DataManager}
 	 * @param f {String}
@@ -275,7 +285,7 @@ function Meta() {
 	};
 
 	/**
-	 * Для полей составного типа, добавляет в sql поле описания типа
+	 * ### Для полей составного типа, добавляет в sql поле описания типа
 	 * @param mf
 	 * @param f
 	 * @param pg
@@ -299,11 +309,12 @@ function Meta() {
 	};
 
 	/**
-	 * Заключает имя поля в аппострофы
+	 * ### Заключает имя поля в аппострофы
 	 * @method sql_mask
 	 * @param f
 	 * @param t
 	 * @return {string}
+	 * @private
 	 */
 	_md.sql_mask = function(f, t){
 		//var mask_names = ["delete", "set", "value", "json", "primary", "content"];
@@ -311,7 +322,7 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает менеджер объекта по имени класса
+	 * ### Возвращает менеджер объекта по имени класса
 	 * @method mgr_by_class_name
 	 * @param class_name {String}
 	 * @return {DataManager|undefined}
@@ -326,7 +337,7 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает менеджер значения по свойству строки
+	 * ### Возвращает менеджер значения по свойству строки
 	 * @method value_mgr
 	 * @param row {Object|TabularSectionRow} - строка табчасти или объект
 	 * @param f {String} - имя поля
@@ -412,7 +423,7 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает имя типа элемента управления для типа поля
+	 * ### Возвращает имя типа элемента управления для типа поля
 	 * @method control_by_type
 	 * @param type
 	 * @return {*}
@@ -458,7 +469,7 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает структуру для инициализации таблицы на форме
+	 * ### Возвращает структуру для инициализации таблицы на форме
 	 * @method ts_captions
 	 * @param class_name
 	 * @param ts_name
@@ -509,6 +520,12 @@ function Meta() {
 
 	};
 
+	/**
+	 * ### Возвращает англоязычный синоним строки
+	 * @method syns_js
+	 * @param v {String}
+	 * @return {String}
+	 */
 	_md.syns_js = function (v) {
 		var synJS = {
 			DeletionMark: '_deleted',
@@ -532,6 +549,12 @@ function Meta() {
 		return _m.syns_js[_m.syns_1с.indexOf(v)] || v;
 	};
 
+	/**
+	 * ### Возвращает русскоязычный синоним строки
+	 * @method syns_1с
+	 * @param v {String}
+	 * @return {String}
+	 */
 	_md.syns_1с = function (v) {
 		var syn1c = {
 			_deleted: 'DeletionMark',
@@ -551,6 +574,11 @@ function Meta() {
 		return _m.syns_1с[_m.syns_js.indexOf(v)] || v;
 	};
 
+	/**
+	 * ### Возвращает список доступных печатных форм
+	 * @method printing_plates
+	 * @return {Object}
+	 */
 	_md.printing_plates = function (pp) {
 		if(pp)
 			for(var i in pp.doc)
@@ -559,7 +587,7 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает имя класса по полному имени объекта метаданных 1С
+	 * ### Возвращает имя класса по полному имени объекта метаданных 1С
 	 * @method class_name_from_1c
 	 * @param name
 	 */
@@ -594,7 +622,7 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает полное именя объекта метаданных 1С по имени класса metadata
+	 * ### Возвращает полное именя объекта метаданных 1С по имени класса metadata
 	 * @method class_name_to_1c
 	 * @param name
 	 */
@@ -630,10 +658,8 @@ function Meta() {
 
 
 	/**
-	 * Создаёт таблицы WSQL для всех объектов метаданных
+	 * ### Создаёт строку SQL с командами создания таблиц для всех объектов метаданных
 	 * @method create_tables
-	 * @return {Promise.<T>}
-	 * @async
 	 */
 	_md.create_tables = function(callback, attr){
 
