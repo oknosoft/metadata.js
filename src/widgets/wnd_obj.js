@@ -364,15 +364,16 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		if (!wnd.elmnts.vault) {
 
-			var rattr = {};
-			$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
-			rattr.url += _mgr.rest_name + "(guid'" + o.ref + "')/Files?$format=json";
+			// var rattr = {};
+			// $p.ajax.default_attr(rattr, $p.job_prm.irest_url());
+			// rattr.url += _mgr.rest_name + "(guid'" + o.ref + "')/Files?$format=json";
 
 			wnd.elmnts.vault = wnd.elmnts.vault_pop.attachVault(400, 250, {
-				uploadUrl:  rattr.url,
+				_obj:  o,
 				buttonClear: false,
 				autoStart: true,
-				filesLimit: 10
+				filesLimit: 10,
+				mode: "pouch"
 			});
 			wnd.elmnts.vault.conf.wnd = wnd;
 
@@ -404,12 +405,13 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 					text: $p.msg.file_confirm_delete + file.name,
 					cancel: "Отмена",
 					callback: function(btn) {
-						if(btn)
-							$p.ajax.post_ex(wnd.elmnts.vault.actionUrl(file.id, "drop"), "", true)
-								.then(function(req){
-									wnd.elmnts.vault.file_data[file.id].delete_confirmed = true;
+						if(btn){
+							wnd.elmnts.vault.file_data[file.id].delete_confirmed = true;
+							o.delete_attachment(wnd.elmnts.vault.file_data[file.id].name)
+								.then(function () {
 									wnd.elmnts.vault._removeFileFromQueue(file.id);
 								});
+						}
 					}
 				});
 				return false;

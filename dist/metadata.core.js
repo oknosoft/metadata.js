@@ -7676,7 +7676,14 @@ DataObj.prototype.__define({
 	 */
 	save_attachment: {
 		value: function (att_id, attachment, type) {
-			return this._manager.save_attachment(this.ref, att_id, attachment, type);
+			return this._manager.save_attachment(this.ref, att_id, attachment, type)
+				.then(function (att) {
+					if(!this._attachments)
+						this._attachments = {};
+					if(!this._attachments[att_id] || !att.stub)
+						this._attachments[att_id] = att;
+					return att;
+				}.bind(this));
 		}
 	},
 
@@ -7691,7 +7698,12 @@ DataObj.prototype.__define({
 	 */
 	delete_attachment: {
 		value: function (att_id) {
-			return this._manager.get_attachment(this.ref, att_id);
+			return this._manager.delete_attachment(this.ref, att_id)
+				.then(function (att) {
+					if(this._attachments)
+						delete this._attachments[att_id];
+					return att;
+				}.bind(this));
 		}
 	},
 
