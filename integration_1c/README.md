@@ -16,5 +16,6 @@
   + Кнопка `Записать meta`, сохраняет в `CouchDB` одновременно синонимы и метаданные
   + Закладка `Регистрация` позволяет создать начальный образ данных в `CouchDB` либо произвести групповую регистрацию изменений произвольных ссылочных объектов
   
-  ### helloworld.dt - демо приложение htlloworld
-  см. https://github.com/oknosoft/helloworld
+### helloworld.dt - демо приложение helloworld
+- https://github.com/oknosoft/helloworld - репозиторий проекта
+- https://light.oknosoft.ru/helloworld/ - живое демо

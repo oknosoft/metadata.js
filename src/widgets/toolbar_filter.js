@@ -81,7 +81,9 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 	attr.pos++;
 
 	// Поля ввода периода
-	if(attr.manager instanceof DocManager || attr.period){
+	if(attr.manager instanceof DocManager || attr.manager instanceof BusinessProcessManager || attr.manager instanceof TaskManager || attr.period){
+
+		// TODO: подключить вместо календарей daterangepicker
 
 		// управляем доступностью дат в миникалендаре
 		function set_sens(inp, k) {
@@ -119,6 +121,28 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 			attr.date_till = $p.utils.date_add_day(new Date(), 1);
 		t.input_date_from.value=$p.moment(attr.date_from).format("L");
 		t.input_date_till.value=$p.moment(attr.date_till).format("L");
+
+		// для документов, кешируемых в doc, добавляем фильтрацию по индексу
+		if(attr.manager.cachable == "doc" && !attr.custom_selection){
+
+			custom_selection._view = {
+				get value(){
+					return 'doc/by_date';
+				}
+			};
+			custom_selection._key = {
+				get value(){
+					var filter = t.get_filter(true);
+					return {
+						startkey: [attr.manager.class_name, filter.date_from.getFullYear(), filter.date_from.getMonth()+1, filter.date_from.getDate()],
+						endkey: [attr.manager.class_name, filter.date_till.getFullYear(), filter.date_till.getMonth()+1, filter.date_till.getDate()],
+						_drop_date: true,
+						_order_by: true,
+						_search: filter.filter.toLowerCase()
+					};
+				}
+			};
+		}
 	}
 
 	// текстовое поле фильтра по подстроке
