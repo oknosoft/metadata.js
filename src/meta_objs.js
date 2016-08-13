@@ -487,40 +487,34 @@ DataObj.prototype.__define({
 					return this;
 				}.bind(this);
 
+			// если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
+			if(before_save_res === false){
+				return Promise.resolve(this).then(reset_modified);
+
+			}else if(before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then){
+				// если пользовательский обработчик перед записью вернул промис, его и возвращаем
+				return before_save_res.then(reset_modified);
+			}
+
+
 			// для объектов с иерархией установим пустого родителя, если иной не указан
 			if(this._metadata.hierarchical && !this._obj.parent)
 				this._obj.parent = $p.utils.blank.guid;
 
-			// для справочников, требующих код и пустым кодом, присваиваем код
-			if(!this.id && this._metadata.code_length && this._manager.cachable != "ram"){
+			// для документов, контролируем заполненность даты
+			if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj){
 
-				var prefix = (($p.current_acl && $p.current_acl.prefix) || "") + ($p.wsql.get_user_param("zone") + "-"),
-					code_length = this._metadata.code_length - prefix.length,
-					part = "",
-					res = $p.wsql.alasql("select max(id) as id from ? where id like '" + prefix + "%'", [this._manager.alatable]);
+				if($p.utils.blank.date == this.date)
+					this.date = new Date();
 
-				// TODO: вынести установку кода в отдельную функцию
+				if(!this.number_doc)
+					this.new_number_doc();
 
-				if(res.length){
-					var num0 = res[0].id || "";
-					for(var i = num0.length-1; i>0; i--){
-						if(isNaN(parseInt(num0[i])))
-							break;
-						part = num0[i] + part;
-					}
-					part = (parseInt(part || 0) + 1).toFixed(0);
-				}else{
-					part = "1";
-				}
-				while (part.length < code_length)
-					part = "0" + part;
-
-				this.id = prefix + part;
+			}else{
+				if(!this.id)
+					this.new_number_doc();
 			}
 
-			// для документов, контролируем заполненность даты
-			if(this instanceof DocObj && $p.utils.blank.date == this.date)
-				this.date = new Date();
 
 			// если не указаны обязательные реквизиты
 			if($p.msg && $p.msg.show_msg){
@@ -537,15 +531,6 @@ DataObj.prototype.__define({
 				}	
 			}
 
-			// если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
-			if(before_save_res === false)
-				return Promise.resolve(this).then(reset_modified);
-
-			// если пользовательский обработчик перед записью вернул промис, его и возвращаем
-			else if(before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then)
-				return before_save_res.then(reset_modified);
-
-			
 			// в зависимости от типа кеширования, получаем saver
 			if(this._manager.cachable && this._manager.cachable != "e1cib"){
 				saver = $p.wsql.pouch.save_obj;

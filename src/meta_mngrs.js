@@ -264,7 +264,10 @@ function DataManager(class_name){
 							res.push(tmp);
 					}
 				});
-				if(res.length){
+				if(res === false){
+					return res;
+
+				}else if(res.length){
 					if(res.length == 1)
 					// если значение единственное - возвращчем его
 						return res[0];
@@ -969,6 +972,15 @@ RefDataManager.prototype.__define({
 
 					// Триггер после создания
 					var after_create_res = this.handle_event(o, "after_create");
+
+					// Если новый код или номер не были назначены в триггере - устанавливаем стандартное значение
+					if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
+						if(!o.number_doc)
+							o.new_number_doc();
+					}else{
+						if(!o.id)
+							o.new_number_doc();
+					}
 
 					if(after_create_res === false)
 						return Promise.resolve(o);
