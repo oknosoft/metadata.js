@@ -468,6 +468,7 @@ DataObj.prototype.__define({
 		value: function (post, operational, attachments) {
 
 			if(this instanceof DocObj && typeof post == "boolean"){
+				var initial_posted = this.posted;
 				this.posted = post;
 			}
 
@@ -477,7 +478,11 @@ DataObj.prototype.__define({
 				
 				reset_modified = function () {
 
-					if(before_save_res !== false)
+					if(before_save_res === false){
+						if(this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted){
+							this.posted = initial_posted;
+						}
+					}else
 						this._data._modified = false;
 
 					saver = null;
@@ -489,7 +494,7 @@ DataObj.prototype.__define({
 
 			// если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
 			if(before_save_res === false){
-				return Promise.resolve(this).then(reset_modified);
+				return Promise.reject(reset_modified());
 
 			}else if(before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then){
 				// если пользовательский обработчик перед записью вернул промис, его и возвращаем
