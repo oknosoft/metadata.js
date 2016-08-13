@@ -20368,12 +20368,6 @@ $p.utils.__define({
 				"compressible": true,
 				"extensions": ["js"]
 			},
-			"application/jose+json": {
-				"compressible": true
-			},
-			"application/jrd+json": {
-				"compressible": true
-			},
 			"application/json": {
 				"charset": "UTF-8",
 				"compressible": true,
@@ -20388,12 +20382,6 @@ $p.utils.__define({
 			"application/jsonml+json": {
 				"compressible": true,
 				"extensions": ["jsonml"]
-			},
-			"application/jwk+json": {
-				"compressible": true
-			},
-			"application/jwk-set+json": {
-				"compressible": true
 			},
 			"application/ld+json": {
 				"compressible": true,
@@ -20433,9 +20421,6 @@ $p.utils.__define({
 			},
 			"application/mediaservercontrol+xml": {
 				"extensions": ["mscml"]
-			},
-			"application/merge-patch+json": {
-				"compressible": true
 			},
 			"application/metalink+xml": {
 				"extensions": ["metalink"]
@@ -20536,20 +20521,11 @@ $p.utils.__define({
 				"compressible": true,
 				"extensions": ["ai","eps","ps"]
 			},
-			"application/ppsp-tracker+json": {
-				"compressible": true
-			},
-			"application/problem+json": {
-				"compressible": true
-			},
 			"application/prs.cww": {
 				"extensions": ["cww"]
 			},
 			"application/pskc+xml": {
 				"extensions": ["pskcxml"]
-			},
-			"application/rdap+json": {
-				"compressible": true
 			},
 			"application/rdf+xml": {
 				"compressible": true,
@@ -20560,9 +20536,6 @@ $p.utils.__define({
 			},
 			"application/relax-ng-compact-syntax": {
 				"extensions": ["rnc"]
-			},
-			"application/reputon+json": {
-				"compressible": true
 			},
 			"application/resource-lists+xml": {
 				"extensions": ["rl"]
@@ -20596,9 +20569,6 @@ $p.utils.__define({
 			"application/sbml+xml": {
 				"extensions": ["sbml"]
 			},
-			"application/scim+json": {
-				"compressible": true
-			},
 			"application/scvp-cv-request": {
 				"extensions": ["scq"]
 			},
@@ -20626,9 +20596,6 @@ $p.utils.__define({
 			"application/smil+xml": {
 				"extensions": ["smi","smil"]
 			},
-			"application/soap+xml": {
-				"compressible": true
-			},
 			"application/sparql-query": {
 				"extensions": ["rq"]
 			},
@@ -20650,9 +20617,6 @@ $p.utils.__define({
 			"application/ssml+xml": {
 				"extensions": ["ssml"]
 			},
-			"application/tar": {
-				"compressible": true
-			},
 			"application/tei+xml": {
 				"extensions": ["tei","teicorpus"]
 			},
@@ -20661,9 +20625,6 @@ $p.utils.__define({
 			},
 			"application/timestamped-data": {
 				"extensions": ["tsd"]
-			},
-			"application/vcard+json": {
-				"compressible": true
 			},
 			"application/vnd.3gpp.pic-bw-large": {
 				"extensions": ["plb"]
@@ -20738,9 +20699,6 @@ $p.utils.__define({
 			"application/vnd.antix.game-component": {
 				"extensions": ["atx"]
 			},
-			"application/vnd.api+json": {
-				"compressible": true
-			},
 			"application/vnd.apple.installer+xml": {
 				"extensions": ["mpkg"]
 			},
@@ -20759,9 +20717,6 @@ $p.utils.__define({
 			},
 			"application/vnd.audiograph": {
 				"extensions": ["aep"]
-			},
-			"application/vnd.bekitzur-stech+json": {
-				"compressible": true
 			},
 			"application/vnd.blueice.multipass": {
 				"extensions": ["mpm"]
@@ -20796,23 +20751,11 @@ $p.utils.__define({
 			"application/vnd.cluetrust.cartomobile-config-pkg": {
 				"extensions": ["c11amz"]
 			},
-			"application/vnd.collection+json": {
-				"compressible": true
-			},
-			"application/vnd.collection.doc+json": {
-				"compressible": true
-			},
-			"application/vnd.collection.next+json": {
-				"compressible": true
-			},
 			"application/vnd.commonspace": {
 				"extensions": ["csp"]
 			},
 			"application/vnd.contact.cmsg": {
 				"extensions": ["cdbcmsg"]
-			},
-			"application/vnd.coreos.ignition+json": {
-				"compressible": true
 			},
 			"application/vnd.cosmocaller": {
 				"extensions": ["cmc"]
@@ -20872,9 +20815,6 @@ $p.utils.__define({
 			"application/vnd.dna": {
 				"extensions": ["dna"]
 			},
-			"application/vnd.document+json": {
-				"compressible": true
-			},
 			"application/vnd.dolby.mlp": {
 				"extensions": ["mlp"]
 			},
@@ -20883,9 +20823,6 @@ $p.utils.__define({
 			},
 			"application/vnd.dreamfactory": {
 				"extensions": ["dfac"]
-			},
-			"application/vnd.drive+json": {
-				"compressible": true
 			},
 			"application/vnd.ds-keypoint": {
 				"extensions": ["kpxx"]
@@ -20986,9 +20923,6 @@ $p.utils.__define({
 			"application/vnd.genomatix.tuxedo": {
 				"extensions": ["txd"]
 			},
-			"application/vnd.geo+json": {
-				"compressible": true
-			},
 			"application/vnd.geogebra.file": {
 				"extensions": ["ggb"]
 			},
@@ -21054,9 +20988,6 @@ $p.utils.__define({
 			"application/vnd.groove-vcard": {
 				"extensions": ["vcg"]
 			},
-			"application/vnd.hal+json": {
-				"compressible": true
-			},
 			"application/vnd.hal+xml": {
 				"extensions": ["hal"]
 			},
@@ -21065,9 +20996,6 @@ $p.utils.__define({
 			},
 			"application/vnd.hbci": {
 				"extensions": ["hbci"]
-			},
-			"application/vnd.heroku+json": {
-				"compressible": true
 			},
 			"application/vnd.hhe.lesson-player": {
 				"extensions": ["les"]
@@ -21093,9 +21021,6 @@ $p.utils.__define({
 			"application/vnd.hydrostatix.sof-data": {
 				"extensions": ["sfd-hdstx"]
 			},
-			"application/vnd.hyperdrive+json": {
-				"compressible": true
-			},
 			"application/vnd.ibm.minipay": {
 				"extensions": ["mpy"]
 			},
@@ -21119,24 +21044,6 @@ $p.utils.__define({
 			},
 			"application/vnd.immervision-ivu": {
 				"extensions": ["ivu"]
-			},
-			"application/vnd.ims.lis.v2.result+json": {
-				"compressible": true
-			},
-			"application/vnd.ims.lti.v2.toolconsumerprofile+json": {
-				"compressible": true
-			},
-			"application/vnd.ims.lti.v2.toolproxy+json": {
-				"compressible": true
-			},
-			"application/vnd.ims.lti.v2.toolproxy.id+json": {
-				"compressible": true
-			},
-			"application/vnd.ims.lti.v2.toolsettings+json": {
-				"compressible": true
-			},
-			"application/vnd.ims.lti.v2.toolsettings.simple+json": {
-				"compressible": true
 			},
 			"application/vnd.insors.igm": {
 				"extensions": ["igm"]
@@ -21252,9 +21159,6 @@ $p.utils.__define({
 			"application/vnd.macports.portpkg": {
 				"extensions": ["portpkg"]
 			},
-			"application/vnd.mason+json": {
-				"compressible": true
-			},
 			"application/vnd.mcd": {
 				"extensions": ["mcd"]
 			},
@@ -21270,17 +21174,11 @@ $p.utils.__define({
 			"application/vnd.mfmp": {
 				"extensions": ["mfm"]
 			},
-			"application/vnd.micro+json": {
-				"compressible": true
-			},
 			"application/vnd.micrografx.flo": {
 				"extensions": ["flo"]
 			},
 			"application/vnd.micrografx.igx": {
 				"extensions": ["igx"]
-			},
-			"application/vnd.miele+json": {
-				"compressible": true
 			},
 			"application/vnd.mif": {
 				"extensions": ["mif"]
@@ -21501,9 +21399,6 @@ $p.utils.__define({
 			"application/vnd.oasis.opendocument.text-web": {
 				"extensions": ["oth"]
 			},
-			"application/vnd.oftn.l10n+json": {
-				"compressible": true
-			},
 			"application/vnd.olpc-sugar": {
 				"extensions": ["xo"]
 			},
@@ -21540,9 +21435,6 @@ $p.utils.__define({
 			"application/vnd.openxmlformats-officedocument.wordprocessingml.template": {
 				"extensions": ["dotx"]
 			},
-			"application/vnd.oracle.resource+json": {
-				"compressible": true
-			},
 			"application/vnd.osgeo.mapguide.package": {
 				"extensions": ["mgp"]
 			},
@@ -21551,9 +21443,6 @@ $p.utils.__define({
 			},
 			"application/vnd.osgi.subsystem": {
 				"extensions": ["esa"]
-			},
-			"application/vnd.pagerduty+json": {
-				"compressible": true
 			},
 			"application/vnd.palm": {
 				"extensions": ["pdb","pqa","oprc"]
@@ -21647,9 +21536,6 @@ $p.utils.__define({
 			},
 			"application/vnd.simtech-mindmapper": {
 				"extensions": ["twd","twds"]
-			},
-			"application/vnd.siren+json": {
-				"compressible": true
 			},
 			"application/vnd.smaf": {
 				"extensions": ["mmf"]
@@ -21774,9 +21660,6 @@ $p.utils.__define({
 			"application/vnd.vcx": {
 				"extensions": ["vcx"]
 			},
-			"application/vnd.vel+json": {
-				"compressible": true
-			},
 			"application/vnd.visio": {
 				"extensions": ["vsd","vst","vss","vsw"]
 			},
@@ -21809,9 +21692,6 @@ $p.utils.__define({
 			},
 			"application/vnd.wt.stf": {
 				"extensions": ["stf"]
-			},
-			"application/vnd.xacml+json": {
-				"compressible": true
 			},
 			"application/vnd.xara": {
 				"extensions": ["xar"]
@@ -21938,9 +21818,6 @@ $p.utils.__define({
 			"application/x-csh": {
 				"extensions": ["csh"]
 			},
-			"application/x-deb": {
-				"compressible": false
-			},
 			"application/x-debian-package": {
 				"extensions": ["deb","udeb"]
 			},
@@ -22040,9 +21917,6 @@ $p.utils.__define({
 				"compressible": false,
 				"extensions": ["jnlp"]
 			},
-			"application/x-javascript": {
-				"compressible": true
-			},
 			"application/x-latex": {
 				"compressible": false,
 				"extensions": ["latex"]
@@ -22062,9 +21936,6 @@ $p.utils.__define({
 			},
 			"application/x-mobipocket-ebook": {
 				"extensions": ["prc","mobi"]
-			},
-			"application/x-mpegurl": {
-				"compressible": false
 			},
 			"application/x-ms-application": {
 				"extensions": ["application"]
@@ -22231,9 +22102,6 @@ $p.utils.__define({
 				"compressible": true,
 				"extensions": ["webapp"]
 			},
-			"application/x-www-form-urlencoded": {
-				"compressible": true
-			},
 			"application/x-x509-ca-cert": {
 				"extensions": ["der","crt","pem"]
 			},
@@ -22311,9 +22179,6 @@ $p.utils.__define({
 				"compressible": false,
 				"extensions": ["au","snd"]
 			},
-			"audio/l24": {
-				"compressible": false
-			},
 			"audio/midi": {
 				"extensions": ["mid","midi","kar","rmi"]
 			},
@@ -22367,15 +22232,6 @@ $p.utils.__define({
 			},
 			"audio/vnd.rip": {
 				"extensions": ["rip"]
-			},
-			"audio/vnd.rn-realaudio": {
-				"compressible": false
-			},
-			"audio/vnd.wave": {
-				"compressible": false
-			},
-			"audio/vorbis": {
-				"compressible": false
 			},
 			"audio/wav": {
 				"compressible": false,
@@ -22480,9 +22336,6 @@ $p.utils.__define({
 			},
 			"image/ktx": {
 				"extensions": ["ktx"]
-			},
-			"image/pjpeg": {
-				"compressible": false
 			},
 			"image/png": {
 				"compressible": false,
@@ -22609,23 +22462,11 @@ $p.utils.__define({
 			"image/x-xbitmap": {
 				"extensions": ["xbm"]
 			},
-			"image/x-xcf": {
-				"compressible": false
-			},
 			"image/x-xpixmap": {
 				"extensions": ["xpm"]
 			},
 			"image/x-xwindowdump": {
 				"extensions": ["xwd"]
-			},
-			"message/http": {
-				"compressible": false
-			},
-			"message/imdn+xml": {
-				"compressible": true
-			},
-			"message/partial": {
-				"compressible": false
 			},
 			"message/rfc822": {
 				"compressible": true,
@@ -22680,12 +22521,6 @@ $p.utils.__define({
 			"text/calendar": {
 				"extensions": ["ics","ifb"]
 			},
-			"text/calender": {
-				"compressible": true
-			},
-			"text/cmd": {
-				"compressible": true
-			},
 			"text/coffeescript": {
 				"extensions": ["coffee","litcoffee"]
 			},
@@ -22706,9 +22541,6 @@ $p.utils.__define({
 			},
 			"text/jade": {
 				"extensions": ["jade"]
-			},
-			"text/javascript": {
-				"compressible": true
 			},
 			"text/jsx": {
 				"compressible": true,
@@ -22824,17 +22656,11 @@ $p.utils.__define({
 			"text/x-fortran": {
 				"extensions": ["f","for","f77","f90"]
 			},
-			"text/x-gwt-rpc": {
-				"compressible": true
-			},
 			"text/x-handlebars-template": {
 				"extensions": ["hbs"]
 			},
 			"text/x-java-source": {
 				"extensions": ["java"]
-			},
-			"text/x-jquery-tmpl": {
-				"compressible": true
 			},
 			"text/x-lua": {
 				"extensions": ["lua"]
