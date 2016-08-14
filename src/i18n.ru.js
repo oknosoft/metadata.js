@@ -338,7 +338,7 @@ $p.fias = function FIAS(){};
 		ts_row: "Строка табличной части",
 		dp: "Обработка",
 		rep: "Отчет"
-	},
+	};
 	msg.meta_cat = "Справочники";
 	msg.meta_doc = "Документы";
 	msg.meta_cch = "Планы видов характеристик";
@@ -380,7 +380,7 @@ $p.fias = function FIAS(){};
 	msg.report_need_prepare = "<i class='fa fa-info fa-2x fa-fw'></i> Нажмите 'Сформировать' для получения отчета";
 	msg.report_need_online = "<i class='fa fa-plug fa-2x fa-fw'></i> Нет подключения. Отчет недоступен в автономном режиме";
 
-	msg.request_title = "Окнософт: Запрос регистрации";
+	msg.request_title = "Запрос регистрации";
 	msg.request_message = "Заявка зарегистрирована. После обработки менеджером будет сформировано ответное письмо";
 
 	msg.select_from_list = "Выбор из списка";

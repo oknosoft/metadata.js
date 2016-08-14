@@ -125,7 +125,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				manager: _mgr,
 				toolbar: this,
 				onchange: input_filter_change,
-				hide_filter: attr.hide_filter
+				hide_filter: attr.hide_filter,
+				custom_selection: attr.custom_selection
 			};
 			if(attr.date_from) tbattr.date_from = attr.date_from;
 			if(attr.date_till) tbattr.date_till = attr.date_till;
