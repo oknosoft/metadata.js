@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.11.217, built:2016-08-13 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.11.218, built:2016-08-14 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -467,7 +467,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.11.217",
+			value: "0.11.218",
 			writable: false
 		},
 
@@ -5019,7 +5019,7 @@ DataManager.prototype.sync_grid = function(attr, grid){
 
 	function request(){
 
-		if(attr.custom_selection){
+		if(typeof attr.custom_selection == "function"){
 			return attr.custom_selection(attr);
 			
 		}else if(mgr.cachable == "ram"){

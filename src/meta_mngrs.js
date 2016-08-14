@@ -420,7 +420,7 @@ DataManager.prototype.sync_grid = function(attr, grid){
 
 	function request(){
 
-		if(attr.custom_selection){
+		if(typeof attr.custom_selection == "function"){
 			return attr.custom_selection(attr);
 			
 		}else if(mgr.cachable == "ram"){
