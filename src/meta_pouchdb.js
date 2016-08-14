@@ -672,6 +672,7 @@ DataObj.prototype.__define({
 			if(!this._metadata.code_length)
 				return;
 
+			// если не указан явно, рассчитываем префикс по умолчанию
 			if(!prefix)
 				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
 					(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
@@ -680,6 +681,10 @@ DataObj.prototype.__define({
 				part = "",
 				year = (this.date instanceof Date) ? this.date.getFullYear() : 0,
 				code_length = this._metadata.code_length - prefix.length;
+
+			// для кешируемых в озу, вычисляем без индекса
+			if(this._manager.cachable == "ram")
+				return Promise.resolve(this.new_cat_id(prefix));
 
 			return obj._manager.pouch_db.query("doc/number_doc",
 				{
@@ -712,6 +717,39 @@ DataObj.prototype.__define({
 					return obj;
 
 				});
+		}
+	},
+
+	new_cat_id: {
+
+		value: function (prefix) {
+
+			if(!prefix)
+				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
+					(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
+
+			var code_length = this._metadata.code_length - prefix.length,
+				field = (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) ? "number_doc" : "id",
+				part = "",
+				res = $p.wsql.alasql("select top 1 " + field + " as id from ? where " + field + " like '" + prefix + "%' order by " + field + " desc", [this._manager.alatable]);
+
+			if(res.length){
+				var num0 = res[0].id || "";
+				for(var i = num0.length-1; i>0; i--){
+					if(isNaN(parseInt(num0[i])))
+						break;
+					part = num0[i] + part;
+				}
+				part = (parseInt(part || 0) + 1).toFixed(0);
+			}else{
+				part = "1";
+			}
+			while (part.length < code_length)
+				part = "0" + part;
+
+			this[field] = prefix + part;
+
+			return this;
 		}
 	}
 });
