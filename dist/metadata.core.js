@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.11.217, built:2016-08-08 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.11.218, built:2016-08-14 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -284,7 +284,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.11.217",
+			value: "0.11.218",
 			writable: false
 		},
 
@@ -1668,7 +1668,7 @@ function WSQL(){
 	this.__define({
 
 		/**
-		 * Поправка времени javascript
+		 * ### Поправка времени javascript
 		 * @property js_time_diff
 		 * @type Number
 		 */
@@ -1677,7 +1677,7 @@ function WSQL(){
 		},
 
 		/**
-		 * Поправка времени javascript с учетом пользовательского сдвига из константы _time_diff_
+		 * ### Поправка времени javascript с учетом пользовательского сдвига из константы _time_diff_
 		 * @property time_diff
 		 * @type Number
 		 */
@@ -1731,7 +1731,9 @@ function WSQL(){
 		},
 
 		/**
-		 * Выполняет sql запрос к локальной базе данных, возвращает Promise
+		 * ### Выполняет sql запрос к локальной базе данных
+		 *
+		 * @method promise
 		 * @param sql
 		 * @param params
 		 * @return {Promise}
@@ -1752,7 +1754,7 @@ function WSQL(){
 		},
 
 		/**
-		 * Сохраняет настройки формы или иные параметры объекта _options_
+		 * ### Сохраняет настройки формы или иные параметры объекта _options_
 		 * @method save_options
 		 * @param prefix {String} - имя области
 		 * @param options {Object} - сохраняемые параметры
@@ -1766,7 +1768,7 @@ function WSQL(){
 		},
 
 		/**
-		 * Восстанавливает сохраненные параметры в объект _options_
+		 * ### Восстанавливает сохраненные параметры в объект _options_
 		 * @method restore_options
 		 * @param prefix {String} - имя области
 		 * @param options {Object} - объект, в который будут записаны параметры
@@ -1789,7 +1791,7 @@ function WSQL(){
 		},
 
 		/**
-		 * Приведение типов при операциях с `localStorage`
+		 * ### Приведение типов при операциях с `localStorage`
 		 * @method fetch_type
 		 * @param prm
 		 * @param type
@@ -1922,7 +1924,8 @@ function WSQL(){
 		},
 
 		/**
-		 * Удаляет таблицы WSQL. Например, для последующего пересоздания при изменении структуры данных
+		 * ### Удаляет таблицы WSQL
+		 * Например, для последующего пересоздания при изменении структуры данных
 		 * @method drop_tables
 		 * @param callback {Function}
 		 * @async
@@ -1963,7 +1966,7 @@ function WSQL(){
 
 	/**
 	 * ### Указатель на aladb
-	 * @property alasql
+	 * @property aladb
 	 * @type alasql.Database
 	 */
 	this.__define({
@@ -2314,7 +2317,7 @@ $p.fias = function FIAS(){};
 		ts_row: "Строка табличной части",
 		dp: "Обработка",
 		rep: "Отчет"
-	},
+	};
 	msg.meta_cat = "Справочники";
 	msg.meta_doc = "Документы";
 	msg.meta_cch = "Планы видов характеристик";
@@ -2356,7 +2359,7 @@ $p.fias = function FIAS(){};
 	msg.report_need_prepare = "<i class='fa fa-info fa-2x fa-fw'></i> Нажмите 'Сформировать' для получения отчета";
 	msg.report_need_online = "<i class='fa fa-plug fa-2x fa-fw'></i> Нет подключения. Отчет недоступен в автономном режиме";
 
-	msg.request_title = "Окнософт: Запрос регистрации";
+	msg.request_title = "Запрос регистрации";
 	msg.request_message = "Заявка зарегистрирована. После обработки менеджером будет сформировано ответное письмо";
 
 	msg.select_from_list = "Выбор из списка";
@@ -3082,12 +3085,20 @@ function Meta() {
 	}
 
 
-	// создаёт объекты менеджеров
+	/**
+	 * ### Cоздаёт объекты менеджеров
+	 * @method create_managers
+	 * @for Meta
+	 */
 	_md.create_managers = function(){};
 
 	/**
 	 * ### Инициализирует метаданные
-	 * загружает описание метаданных из локального или сетевого хранилища
+	 * загружает описание метаданных из локального или сетевого хранилища или из объекта, переданного в параметре
+	 *
+	 * @method create_managers
+	 * @for Meta
+	 * @param [meta_db] {Object|String}
 	 */
 	_md.init = function (meta_db) {
 
@@ -3173,7 +3184,7 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает описание объекта метаданных
+	 * ### Возвращает описание объекта метаданных
 	 * @method get
 	 * @param class_name {String} - например, "doc.calc_order"
 	 * @param [field_name] {String}
@@ -3234,7 +3245,8 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает структуру метаданных конфигурации
+	 * ### Возвращает структуру имён объектов метаданных конфигурации
+	 *
 	 * @method get_classes
 	 */
 	_md.get_classes = function () {
@@ -3248,7 +3260,8 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает тип поля sql для типа данных
+	 * ### Возвращает тип поля sql для типа данных
+	 *
 	 * @method sql_type
 	 * @param mgr {DataManager}
 	 * @param f {String}
@@ -3306,7 +3319,7 @@ function Meta() {
 	};
 
 	/**
-	 * Для полей составного типа, добавляет в sql поле описания типа
+	 * ### Для полей составного типа, добавляет в sql поле описания типа
 	 * @param mf
 	 * @param f
 	 * @param pg
@@ -3330,11 +3343,12 @@ function Meta() {
 	};
 
 	/**
-	 * Заключает имя поля в аппострофы
+	 * ### Заключает имя поля в аппострофы
 	 * @method sql_mask
 	 * @param f
 	 * @param t
 	 * @return {string}
+	 * @private
 	 */
 	_md.sql_mask = function(f, t){
 		//var mask_names = ["delete", "set", "value", "json", "primary", "content"];
@@ -3342,7 +3356,7 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает менеджер объекта по имени класса
+	 * ### Возвращает менеджер объекта по имени класса
 	 * @method mgr_by_class_name
 	 * @param class_name {String}
 	 * @return {DataManager|undefined}
@@ -3357,7 +3371,7 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает менеджер значения по свойству строки
+	 * ### Возвращает менеджер значения по свойству строки
 	 * @method value_mgr
 	 * @param row {Object|TabularSectionRow} - строка табчасти или объект
 	 * @param f {String} - имя поля
@@ -3443,7 +3457,7 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает имя типа элемента управления для типа поля
+	 * ### Возвращает имя типа элемента управления для типа поля
 	 * @method control_by_type
 	 * @param type
 	 * @return {*}
@@ -3489,7 +3503,7 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает структуру для инициализации таблицы на форме
+	 * ### Возвращает структуру для инициализации таблицы на форме
 	 * @method ts_captions
 	 * @param class_name
 	 * @param ts_name
@@ -3540,6 +3554,12 @@ function Meta() {
 
 	};
 
+	/**
+	 * ### Возвращает англоязычный синоним строки
+	 * @method syns_js
+	 * @param v {String}
+	 * @return {String}
+	 */
 	_md.syns_js = function (v) {
 		var synJS = {
 			DeletionMark: '_deleted',
@@ -3563,6 +3583,12 @@ function Meta() {
 		return _m.syns_js[_m.syns_1с.indexOf(v)] || v;
 	};
 
+	/**
+	 * ### Возвращает русскоязычный синоним строки
+	 * @method syns_1с
+	 * @param v {String}
+	 * @return {String}
+	 */
 	_md.syns_1с = function (v) {
 		var syn1c = {
 			_deleted: 'DeletionMark',
@@ -3582,6 +3608,11 @@ function Meta() {
 		return _m.syns_1с[_m.syns_js.indexOf(v)] || v;
 	};
 
+	/**
+	 * ### Возвращает список доступных печатных форм
+	 * @method printing_plates
+	 * @return {Object}
+	 */
 	_md.printing_plates = function (pp) {
 		if(pp)
 			for(var i in pp.doc)
@@ -3590,7 +3621,7 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает имя класса по полному имени объекта метаданных 1С
+	 * ### Возвращает имя класса по полному имени объекта метаданных 1С
 	 * @method class_name_from_1c
 	 * @param name
 	 */
@@ -3625,7 +3656,7 @@ function Meta() {
 	};
 
 	/**
-	 * Возвращает полное именя объекта метаданных 1С по имени класса metadata
+	 * ### Возвращает полное именя объекта метаданных 1С по имени класса metadata
 	 * @method class_name_to_1c
 	 * @param name
 	 */
@@ -3661,10 +3692,8 @@ function Meta() {
 
 
 	/**
-	 * Создаёт таблицы WSQL для всех объектов метаданных
+	 * ### Создаёт строку SQL с командами создания таблиц для всех объектов метаданных
 	 * @method create_tables
-	 * @return {Promise.<T>}
-	 * @async
 	 */
 	_md.create_tables = function(callback, attr){
 
@@ -3969,7 +3998,10 @@ function DataManager(class_name){
 							res.push(tmp);
 					}
 				});
-				if(res.length){
+				if(res === false){
+					return res;
+
+				}else if(res.length){
 					if(res.length == 1)
 					// если значение единственное - возвращчем его
 						return res[0];
@@ -4122,7 +4154,7 @@ DataManager.prototype.sync_grid = function(attr, grid){
 
 	function request(){
 
-		if(attr.custom_selection){
+		if(typeof attr.custom_selection == "function"){
 			return attr.custom_selection(attr);
 			
 		}else if(mgr.cachable == "ram"){
@@ -4674,6 +4706,15 @@ RefDataManager.prototype.__define({
 
 					// Триггер после создания
 					var after_create_res = this.handle_event(o, "after_create");
+
+					// Если новый код или номер не были назначены в триггере - устанавливаем стандартное значение
+					if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
+						if(!o.number_doc)
+							o.new_number_doc();
+					}else{
+						if(!o.id)
+							o.new_number_doc();
+					}
 
 					if(after_create_res === false)
 						return Promise.resolve(o);
@@ -6552,7 +6593,7 @@ TabularSection.prototype.toString = function(){
 };
 
 /**
- * Возвращает строку табчасти по индексу
+ * ### Возвращает строку табчасти по индексу
  * @method get
  * @param index {Number} - индекс строки табчасти
  * @return {TabularSectionRow}
@@ -6562,16 +6603,25 @@ TabularSection.prototype.get = function(index){
 };
 
 /**
- * Возвращает количество элементов в табчасти
+ * ### Возвращает количество элементов в табчасти
  * @method count
  * @return {Number}
+ *
+ * @example
+ *     // количество элементов в табчасти
+ *     var count = ts.count();
  */
 TabularSection.prototype.count = function(){return this._obj.length};
 
 /**
- * очищает табличнут часть
+ * ### Очищает табличнут часть
  * @method clear
  * @return {TabularSection}
+ *
+ * @example
+ *     // Очищает табличнут часть
+ *     ts.clear();
+ *
  */
 TabularSection.prototype.clear = function(silent){
 
@@ -6589,7 +6639,7 @@ TabularSection.prototype.clear = function(silent){
 };
 
 /**
- * Удаляет строку табличной части
+ * ### Удаляет строку табличной части
  * @method del
  * @param val {Number|TabularSectionRow} - индекс или строка табчасти
  */
@@ -6633,7 +6683,7 @@ TabularSection.prototype.del = function(val, silent){
 };
 
 /**
- * Находит первую строку, содержащую значение
+ * ### Находит первую строку, содержащую значение
  * @method find
  * @param val {*} - значение для поиска
  * @param columns {String|Array} - колонки, в которых искать
@@ -6646,7 +6696,9 @@ TabularSection.prototype.find = function(val, columns){
 };
 
 /**
- * Находит строки, соответствующие отбору. Если отбор пустой, возвращаются все строки табчасти
+ * ### Находит строки, соответствующие отбору
+ * Если отбор пустой, возвращаются все строки табчасти
+ *
  * @method find_rows
  * @param [selection] {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"}
  * @param [callback] {Function} - в который передается строка табчасти на каждой итерации
@@ -6664,7 +6716,7 @@ TabularSection.prototype.find_rows = function(selection, callback){
 };
 
 /**
- * Меняет местами строки табчасти
+ * ### Меняет местами строки табчасти
  * @method swap
  * @param rowid1 {number}
  * @param rowid2 {number}
@@ -6682,10 +6734,14 @@ TabularSection.prototype.swap = function(rowid1, rowid2){
 };
 
 /**
- * добавляет строку табчасти
+ * ### Добавляет строку табчасти
  * @method add
  * @param attr {object} - объект со значениями полей. если некого поля нет в attr, для него используется пустое значение типа
  * @return {TabularSectionRow}
+ *
+ * @example
+ *     // Добавляет строку в табчасть и заполняет её значениями, переданными в аргументе
+ *     var row = ts.add({field1: value1});
  */
 TabularSection.prototype.add = function(attr, silent){
 
@@ -6718,7 +6774,7 @@ TabularSection.prototype.add = function(attr, silent){
 };
 
 /**
- * Выполняет цикл "для каждого"
+ * ### Выполняет цикл "для каждого"
  * @method each
  * @param fn {Function} - callback, в который передается строка табчасти
  */
@@ -6730,13 +6786,16 @@ TabularSection.prototype.each = function(fn){
 };
 
 /**
- * Псевдоним для each
+ * ### Псевдоним для each
+ * @method forEach
  * @type {TabularSection.each|*}
  */
 TabularSection.prototype.forEach = TabularSection.prototype.each;
 
 /**
- * Сворачивает табличную часть
+ * ### Сворачивает табличную часть
+ * детали см. в {{#crossLink "TabularSection/aggregate:method"}}{{/crossLink}}
+ * @method group_by
  * @param [dimensions] {Array|String}
  * @param [resources] {Array|String}
  */
@@ -6750,7 +6809,9 @@ TabularSection.prototype.group_by = function (dimensions, resources) {
 };
 
 /**
- * Сортирует табличную часть
+ * ### Сортирует табличную часть
+ *
+ * @method sort
  * @param fields {Array|String}
  */
 TabularSection.prototype.sort = function (fields) {
@@ -6780,11 +6841,25 @@ TabularSection.prototype.sort = function (fields) {
 };
 
 /**
- * Вычисляет агрегатную функцию по табличной части. Не изменяет исходный объект
- * @param [dimensions] {Array|String}
- * @param [resources] {Array|String}
- * @param [aggr] {String} = SUM, COUNT, MIN, MAX, FIRST, LAST, AVG, AGGR, ARRAY, REDUCE
- * @return {*}
+ * ### Вычисляет агрегатную функцию по табличной части
+ * - Не изменяет исходный объект. Если пропущен аргумент `aggr` - вычисляет сумму.
+ * - Стандартные агрегаторы: SUM, COUNT, MIN, MAX, FIRST, LAST, AVG, AGGR, ARRAY, REDUCE
+ * - AGGR - позволяет задать собственный агрегатор (функцию) для расчета итогов
+ *
+ * @method aggregate
+ * @param [dimensions] {Array|String} - список измерений
+ * @param [resources] {Array|String} - список ресурсов
+ * @param [aggr] {String} - агрегатная функция
+ * @param [ret_array] {Boolran} - указывает возвращать массив значений
+ * @return {Number|Array} - Значение агрегатной фукнции или массив значений
+ *
+ * @example
+ *     // вычисляем сумму (итог) по полю amount табличной части
+ *     var total = ts.aggregate("", "amount");
+ *
+ *     // вычисляем максимальные суммы для всех номенклатур табличной части
+ *     // вернёт массив объектов {nom, amount}
+ *     var total = ts.aggregate("nom", "amount", "MAX", true);
  */
 TabularSection.prototype.aggregate = function (dimensions, resources, aggr, ret_array) {
 
@@ -6843,7 +6918,8 @@ TabularSection.prototype.aggregate = function (dimensions, resources, aggr, ret_
 };
 
 /**
- * загружает табличнут часть из массива объектов
+ * ### Загружает табличнут часть из массива объектов
+ *
  * @method load
  * @param aattr {Array} - массив объектов к загрузке
  */
@@ -6871,7 +6947,7 @@ TabularSection.prototype.load = function(aattr){
 };
 
 /**
- * Перезаполняет грид данными табчасти с учетом отбора
+ * ### Перезаполняет грид данными табчасти с учетом отбора
  * @method sync_grid
  * @param grid {dhtmlxGrid} - элемент управления
  * @param [selection] {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"}
@@ -6945,7 +7021,7 @@ function TabularSectionRow(owner){
 }
 
 /**
- * Метаданые строки табличной части
+ * ### Метаданые строки табличной части
  * @property _metadata
  * @for TabularSectionRow
  * @type Number
@@ -6956,7 +7032,7 @@ TabularSectionRow.prototype.__define('_metadata', {
 });
 
 /**
- * Номер строки табличной части
+ * ### Номер строки табличной части
  * @property row
  * @for TabularSectionRow
  * @type Number
@@ -6968,7 +7044,7 @@ TabularSectionRow.prototype.__define("row", {
 });
 
 /**
- * Копирует строку табличной части
+ * ### Копирует строку табличной части
  * @method _clone
  * @for TabularSectionRow
  * @type Number
@@ -7483,6 +7559,7 @@ DataObj.prototype.__define({
 		value: function (post, operational, attachments) {
 
 			if(this instanceof DocObj && typeof post == "boolean"){
+				var initial_posted = this.posted;
 				this.posted = post;
 			}
 
@@ -7492,7 +7569,11 @@ DataObj.prototype.__define({
 				
 				reset_modified = function () {
 
-					if(before_save_res !== false)
+					if(before_save_res === false){
+						if(this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted){
+							this.posted = initial_posted;
+						}
+					}else
 						this._data._modified = false;
 
 					saver = null;
@@ -7502,40 +7583,34 @@ DataObj.prototype.__define({
 					return this;
 				}.bind(this);
 
+			// если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
+			if(before_save_res === false){
+				return Promise.reject(reset_modified());
+
+			}else if(before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then){
+				// если пользовательский обработчик перед записью вернул промис, его и возвращаем
+				return before_save_res.then(reset_modified);
+			}
+
+
 			// для объектов с иерархией установим пустого родителя, если иной не указан
 			if(this._metadata.hierarchical && !this._obj.parent)
 				this._obj.parent = $p.utils.blank.guid;
 
-			// для справочников, требующих код и пустым кодом, присваиваем код
-			if(!this.id && this._metadata.code_length && this._manager.cachable != "ram"){
+			// для документов, контролируем заполненность даты
+			if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj){
 
-				var prefix = (($p.current_acl && $p.current_acl.prefix) || "") + ($p.wsql.get_user_param("zone") + "-"),
-					code_length = this._metadata.code_length - prefix.length,
-					part = "",
-					res = $p.wsql.alasql("select max(id) as id from ? where id like '" + prefix + "%'", [this._manager.alatable]);
+				if($p.utils.blank.date == this.date)
+					this.date = new Date();
 
-				// TODO: вынести установку кода в отдельную функцию
+				if(!this.number_doc)
+					this.new_number_doc();
 
-				if(res.length){
-					var num0 = res[0].id || "";
-					for(var i = num0.length-1; i>0; i--){
-						if(isNaN(parseInt(num0[i])))
-							break;
-						part = num0[i] + part;
-					}
-					part = (parseInt(part || 0) + 1).toFixed(0);
-				}else{
-					part = "1";
-				}
-				while (part.length < code_length)
-					part = "0" + part;
-
-				this.id = prefix + part;
+			}else{
+				if(!this.id)
+					this.new_number_doc();
 			}
 
-			// для документов, контролируем заполненность даты
-			if(this instanceof DocObj && $p.utils.blank.date == this.date)
-				this.date = new Date();
 
 			// если не указаны обязательные реквизиты
 			if($p.msg && $p.msg.show_msg){
@@ -7552,15 +7627,6 @@ DataObj.prototype.__define({
 				}	
 			}
 
-			// если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
-			if(before_save_res === false)
-				return Promise.resolve(this).then(reset_modified);
-
-			// если пользовательский обработчик перед записью вернул промис, его и возвращаем
-			else if(before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then)
-				return before_save_res.then(reset_modified);
-
-			
 			// в зависимости от типа кеширования, получаем saver
 			if(this._manager.cachable && this._manager.cachable != "e1cib"){
 				saver = $p.wsql.pouch.save_obj;
@@ -7612,7 +7678,14 @@ DataObj.prototype.__define({
 	 */
 	save_attachment: {
 		value: function (att_id, attachment, type) {
-			return this._manager.save_attachment(this.ref, att_id, attachment, type);
+			return this._manager.save_attachment(this.ref, att_id, attachment, type)
+				.then(function (att) {
+					if(!this._attachments)
+						this._attachments = {};
+					if(!this._attachments[att_id] || !att.stub)
+						this._attachments[att_id] = att;
+					return att;
+				}.bind(this));
 		}
 	},
 
@@ -7627,7 +7700,12 @@ DataObj.prototype.__define({
 	 */
 	delete_attachment: {
 		value: function (att_id) {
-			return this._manager.get_attachment(this.ref, att_id);
+			return this._manager.delete_attachment(this.ref, att_id)
+				.then(function (att) {
+					if(this._attachments)
+						delete this._attachments[att_id];
+					return att;
+				}.bind(this));
 		}
 	},
 
@@ -9600,32 +9678,43 @@ DataManager.prototype.__define({
 
 });
 
-DocObj.prototype.__define({
+DataObj.prototype.__define({
 	
 	/**
-	 * Устанавливает новый номер документа
+	 * Устанавливает новый номер документа или код справочника
 	 */
 	new_number_doc: {
 
-		value: function () {
+		value: function (prefix) {
+
+			if(!this._metadata.code_length)
+				return;
+
+			// если не указан явно, рассчитываем префикс по умолчанию
+			if(!prefix)
+				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
+					(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
 
 			var obj = this,
-				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
-					(obj.organization && obj.organization.prefix ? obj.organization.prefix : ($p.wsql.get_user_param("zone") + "-")),
-				code_length = obj._metadata.code_length - prefix.length,
-				part = "";
+				part = "",
+				year = (this.date instanceof Date) ? this.date.getFullYear() : 0,
+				code_length = this._metadata.code_length - prefix.length;
+
+			// для кешируемых в озу, вычисляем без индекса
+			if(this._manager.cachable == "ram")
+				return Promise.resolve(this.new_cat_id(prefix));
 
 			return obj._manager.pouch_db.query("doc/number_doc",
 				{
 					limit : 1,
 					include_docs: false,
-					startkey: [obj._manager.class_name, prefix + '\uffff'],
-					endkey: [obj._manager.class_name, prefix],
+					startkey: [obj._manager.class_name, year, prefix + '\uffff'],
+					endkey: [obj._manager.class_name, year, prefix],
 					descending: true
 				})
 				.then(function (res) {
 					if(res.rows.length){
-						var num0 = res.rows[0].key[1];
+						var num0 = res.rows[0].key[2];
 						for(var i = num0.length-1; i>0; i--){
 							if(isNaN(parseInt(num0[i])))
 								break;
@@ -9637,10 +9726,48 @@ DocObj.prototype.__define({
 					}
 					while (part.length < code_length)
 						part = "0" + part;
-					obj.number_doc = prefix + part;
+
+					if(obj instanceof DocObj || obj instanceof TaskObj || obj instanceof BusinessProcessObj)
+						obj.number_doc = prefix + part;
+					else
+						obj.id = prefix + part;
 
 					return obj;
+
 				});
+		}
+	},
+
+	new_cat_id: {
+
+		value: function (prefix) {
+
+			if(!prefix)
+				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
+					(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
+
+			var code_length = this._metadata.code_length - prefix.length,
+				field = (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) ? "number_doc" : "id",
+				part = "",
+				res = $p.wsql.alasql("select top 1 " + field + " as id from ? where " + field + " like '" + prefix + "%' order by " + field + " desc", [this._manager.alatable]);
+
+			if(res.length){
+				var num0 = res[0].id || "";
+				for(var i = num0.length-1; i>0; i--){
+					if(isNaN(parseInt(num0[i])))
+						break;
+					part = num0[i] + part;
+				}
+				part = (parseInt(part || 0) + 1).toFixed(0);
+			}else{
+				part = "1";
+			}
+			while (part.length < code_length)
+				part = "0" + part;
+
+			this[field] = prefix + part;
+
+			return this;
 		}
 	}
 });

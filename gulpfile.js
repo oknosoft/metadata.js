@@ -62,7 +62,8 @@ gulp.task('build-metadata', function () {
 		'./lib/filesaver.js',
 		'./lib/aes/aes.js',
 		'./lib/rubles/rubles.js',
-		'./lib/daterangepicker/daterangepicker.js'
+		'./lib/daterangepicker/daterangepicker.js',
+		'./lib/mime-types/db.js'
 	])
 		.pipe(concat('metadata.js'))
 		.pipe(umd({

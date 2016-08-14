@@ -229,8 +229,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	}
 
 
-
-
 	/**
 	 * Наблюдатель за изменением объекта
 	 * Пока здесь только установка заголовка формы
@@ -364,62 +362,15 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		if (!wnd.elmnts.vault) {
 
-			var rattr = {};
-			$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
-			rattr.url += _mgr.rest_name + "(guid'" + o.ref + "')/Files?$format=json";
-
 			wnd.elmnts.vault = wnd.elmnts.vault_pop.attachVault(400, 250, {
-				uploadUrl:  rattr.url,
+				_obj:  o,
 				buttonClear: false,
 				autoStart: true,
-				filesLimit: 10
+				filesLimit: 10,
+				mode: "pouch"
 			});
 			wnd.elmnts.vault.conf.wnd = wnd;
-
-			// действия после загрузки файла
-			wnd.elmnts.vault.attachEvent("onUploadFile", function(v, e){
-
-
-			});
-
-			// действия перед загрузкой файла
-			wnd.elmnts.vault.attachEvent("onBeforeFileAdd", function(file){
-				if(file.size <= this.getMaxFileSize())
-					return true;
-				$p.msg.show_msg({
-					type: "alert-warning",
-					text: $p.msg.file_size + this._readableSize(this.getMaxFileSize()),
-					title: $p.msg.main_title});
-				return false;
-			});
-
-			// действия перед удалением файла
-			wnd.elmnts.vault.attachEvent("onBeforeFileRemove", function(file){
-
-				if(wnd.elmnts.vault.file_data[file.id].delete_confirmed)
-					return true;
-
-				dhtmlx.confirm({
-					title: $p.msg.main_title,
-					text: $p.msg.file_confirm_delete + file.name,
-					cancel: "Отмена",
-					callback: function(btn) {
-						if(btn)
-							$p.ajax.post_ex(wnd.elmnts.vault.actionUrl(file.id, "drop"), "", true)
-								.then(function(req){
-									wnd.elmnts.vault.file_data[file.id].delete_confirmed = true;
-									wnd.elmnts.vault._removeFileFromQueue(file.id);
-								});
-					}
-				});
-				return false;
-
-			});
-
-			// обновляем список присоединенных файлов
-
 		}
-
 	}
 
 
@@ -459,6 +410,10 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 	}
 
+	/**
+	 * действия при записи файла
+	 * @param action
+	 */
 	function save(action){
 
 		wnd.progressOn();

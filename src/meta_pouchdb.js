@@ -660,32 +660,43 @@ DataManager.prototype.__define({
 
 });
 
-DocObj.prototype.__define({
+DataObj.prototype.__define({
 	
 	/**
-	 * Устанавливает новый номер документа
+	 * Устанавливает новый номер документа или код справочника
 	 */
 	new_number_doc: {
 
-		value: function () {
+		value: function (prefix) {
+
+			if(!this._metadata.code_length)
+				return;
+
+			// если не указан явно, рассчитываем префикс по умолчанию
+			if(!prefix)
+				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
+					(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
 
 			var obj = this,
-				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
-					(obj.organization && obj.organization.prefix ? obj.organization.prefix : ($p.wsql.get_user_param("zone") + "-")),
-				code_length = obj._metadata.code_length - prefix.length,
-				part = "";
+				part = "",
+				year = (this.date instanceof Date) ? this.date.getFullYear() : 0,
+				code_length = this._metadata.code_length - prefix.length;
+
+			// для кешируемых в озу, вычисляем без индекса
+			if(this._manager.cachable == "ram")
+				return Promise.resolve(this.new_cat_id(prefix));
 
 			return obj._manager.pouch_db.query("doc/number_doc",
 				{
 					limit : 1,
 					include_docs: false,
-					startkey: [obj._manager.class_name, prefix + '\uffff'],
-					endkey: [obj._manager.class_name, prefix],
+					startkey: [obj._manager.class_name, year, prefix + '\uffff'],
+					endkey: [obj._manager.class_name, year, prefix],
 					descending: true
 				})
 				.then(function (res) {
 					if(res.rows.length){
-						var num0 = res.rows[0].key[1];
+						var num0 = res.rows[0].key[2];
 						for(var i = num0.length-1; i>0; i--){
 							if(isNaN(parseInt(num0[i])))
 								break;
@@ -697,10 +708,48 @@ DocObj.prototype.__define({
 					}
 					while (part.length < code_length)
 						part = "0" + part;
-					obj.number_doc = prefix + part;
+
+					if(obj instanceof DocObj || obj instanceof TaskObj || obj instanceof BusinessProcessObj)
+						obj.number_doc = prefix + part;
+					else
+						obj.id = prefix + part;
 
 					return obj;
+
 				});
+		}
+	},
+
+	new_cat_id: {
+
+		value: function (prefix) {
+
+			if(!prefix)
+				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
+					(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
+
+			var code_length = this._metadata.code_length - prefix.length,
+				field = (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) ? "number_doc" : "id",
+				part = "",
+				res = $p.wsql.alasql("select top 1 " + field + " as id from ? where " + field + " like '" + prefix + "%' order by " + field + " desc", [this._manager.alatable]);
+
+			if(res.length){
+				var num0 = res[0].id || "";
+				for(var i = num0.length-1; i>0; i--){
+					if(isNaN(parseInt(num0[i])))
+						break;
+					part = num0[i] + part;
+				}
+				part = (parseInt(part || 0) + 1).toFixed(0);
+			}else{
+				part = "1";
+			}
+			while (part.length < code_length)
+				part = "0" + part;
+
+			this[field] = prefix + part;
+
+			return this;
 		}
 	}
 });
