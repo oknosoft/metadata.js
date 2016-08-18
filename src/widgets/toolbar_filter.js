@@ -154,6 +154,13 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 		t.toolbar.addInput("input_filter", attr.pos, "", input_filter_width);
 		t.input_filter = t.toolbar.getInput("input_filter");
 		t.input_filter.onchange = t.call_event;
+		t.input_filter.onclick = function () {
+			var val = t.input_filter.value;
+			setTimeout(function () {
+				if(val != t.input_filter.value)
+					t.call_event();
+			})
+		};
 		t.input_filter.onkeydown = onkeydown;
 		t.input_filter.type = "search";
 		t.input_filter.setAttribute("placeholder", "Фильтр");
