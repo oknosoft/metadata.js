@@ -233,7 +233,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	function input_filter_change(flt){
 		if(wnd && wnd.elmnts){
 			if(has_tree){
-				if(flt.filter)
+				if(flt.filter || flt.hide_tree)
 					wnd.elmnts.cell_tree.collapse();
 				else
 					wnd.elmnts.cell_tree.expand();
