@@ -395,6 +395,8 @@ $p.fias = function FIAS(){};
 	msg.sync_break = "Прервать синхронизацию";
 	msg.sync_no_data = "Файл не содержит подходящих элементов для загрузки";
 
+	msg.tabular_will_cleared = "Табличная часть '%1' будет очищена. Продолжить?";
+
 	msg.unsupported_browser_title = "Браузер не поддерживается";
 	msg.unsupported_browser = "Несовместимая версия браузера<br/>Рекомендуется Google Chrome";
 	msg.supported_browsers = "Рекомендуется Chrome, Safari или Opera";

@@ -154,6 +154,13 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 		t.toolbar.addInput("input_filter", attr.pos, "", input_filter_width);
 		t.input_filter = t.toolbar.getInput("input_filter");
 		t.input_filter.onchange = t.call_event;
+		t.input_filter.onclick = function () {
+			var val = t.input_filter.value;
+			setTimeout(function () {
+				if(val != t.input_filter.value)
+					t.call_event();
+			})
+		};
 		t.input_filter.onkeydown = onkeydown;
 		t.input_filter.type = "search";
 		t.input_filter.setAttribute("placeholder", "Фильтр");
@@ -163,8 +170,8 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 	}else if(t.input_date_till)
 		t.toolbar.addSpacer("input_date_till");
 
-	else if(t.toolbar.getItemText("btn_delete"))
-		t.toolbar.addSpacer("btn_delete");
+	else
+		t.toolbar.addSpacer("div_filter");
 
 
 };

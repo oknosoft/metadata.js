@@ -43,18 +43,6 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		on_select = pwnd.on_select || attr.on_select;
 
 
-	// создаём и настраиваем форму
-	if(has_tree && attr.initial_value && attr.initial_value!= $p.utils.blank.guid && !attr.parent)
-		_mgr.get(attr.initial_value, true)
-			.then(function (tObj) {
-				attr.parent = tObj.parent.ref;
-				attr.set_parent = attr.parent;
-				frm_create();
-			});
-	else
-		frm_create();
-
-
 	/**
 	 *	раздел вспомогательных функций
 	 */
@@ -178,6 +166,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		});
 
 		wnd._mgr = _mgr;
+
+		return wnd;
 	}
 
 	/**
@@ -233,7 +223,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	function input_filter_change(flt){
 		if(wnd && wnd.elmnts){
 			if(has_tree){
-				if(flt.filter)
+				if(flt.filter || flt.hide_tree)
 					wnd.elmnts.cell_tree.collapse();
 				else
 					wnd.elmnts.cell_tree.expand();
@@ -648,7 +638,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 * подписываемся на событие закрытия формы объекта, чтобы обновить список и попытаться спозиционироваться на нужной строке 
 	 */
 	var _frm_close = $p.eve.attachEvent("frm_close", function (class_name, ref) {
-		if(_mgr && _mgr.class_name == class_name){
+		if(_mgr && _mgr.class_name == class_name && wnd && wnd.elmnts){
 			wnd.elmnts.grid.reload()
 				.then(function () {
 					if(!$p.utils.is_empty_guid(ref))
@@ -657,7 +647,16 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 	});
 
-	return wnd;
+	// создаём и настраиваем форму
+	if(has_tree && attr.initial_value && attr.initial_value!= $p.utils.blank.guid && !attr.parent)
+		return _mgr.get(attr.initial_value, true)
+			.then(function (tObj) {
+				attr.parent = tObj.parent.ref;
+				attr.set_parent = attr.parent;
+				return frm_create();
+			});
+	else
+		return frm_create();
 };
 
 /**

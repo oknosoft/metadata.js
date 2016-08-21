@@ -1231,7 +1231,7 @@ RefDataManager.prototype.__define({
 									if(typeof sel[key] == "function"){
 										s += "\n AND " + sel[key](t, key) + " ";
 
-									}else if(cmd.fields.hasOwnProperty(key)){
+									}else if(cmd.fields.hasOwnProperty(key) || key === "ref"){
 										if(sel[key] === true)
 											s += "\n AND _t_." + key + " ";
 
@@ -1240,7 +1240,7 @@ RefDataManager.prototype.__define({
 
 										else if(typeof sel[key] == "object"){
 
-											if($p.utils.is_data_obj(sel[key]))
+											if($p.utils.is_data_obj(sel[key]) || $p.utils.is_guid(sel[key]))
 												s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
 
 											else{
@@ -1255,6 +1255,19 @@ RefDataManager.prototype.__define({
 
 												if(keys[0] == "not")
 													s += "\n AND (not _t_." + key + " = '" + val + "') ";
+
+												else if(keys[0] == "in")
+													s += "\n AND (_t_." + key + " in (" + sel[key].in.reduce(function(sum, val){
+														if(sum){
+															sum+=",";
+														}
+														if(typeof val == "number"){
+															sum+=val.toString();
+														}else{
+															sum+="'" + val + "'";
+														}
+														return  sum;
+													}, "") + ")) ";
 
 												else
 													s += "\n AND (_t_." + key + " = '" + val + "') ";
