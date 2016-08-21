@@ -179,7 +179,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 				if(_mgr instanceof DocManager && _acl.indexOf("p") != -1){
 					this.enableItem("btn_post");
-					this.setItemText("btn_save_close", "<b>Провести и закрыть</b>");
+					if(!attr.toolbar_struct)
+						this.setItemText("btn_save_close", "<b>Провести и закрыть</b>");
 				}else
 					this.hideItem("btn_post");
 

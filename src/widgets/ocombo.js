@@ -75,7 +75,7 @@ function OCombo(attr){
 
 		if(_mgr){
 			t.clearAll();
-			_mgr.get_option_list(null, get_filter(text))
+			(attr.get_option_list || _mgr.get_option_list).call(_mgr, null, get_filter(text))
 				.then(function (l) {
 					if(t.addOption){
 						t.addOption(l);
@@ -224,32 +224,38 @@ function OCombo(attr){
 
 		popup_focused = true;
 		var div = document.createElement('div'),
-			innerHTML = "<a href='#' name='select' title='Форма выбора {F4}'>Показать все</a>" +
+			innerHTML = attr.hide_frm ? "" : "<a href='#' name='select' title='Форма выбора {F4}'>Показать все</a>" +
 				"<a href='#' name='open' style='margin-left: 9px;' title='Открыть форму элемента {Ctrl+Shift+F4}'><i class='fa fa-external-link fa-fw'></i></a>";
 
 		// для полных прав разрешаем добавление элементов
 		// TODO: учесть реальные права на добавление
-		if($p.ajax.root)
-			innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><i class='fa fa-plus fa-fwfa-fw'></i></a>";
+		if(!attr.hide_frm){
+			var acn = _mgr.class_name.split("."),
+				_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
+			if(_acl.indexOf("i") != -1)
+				innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><i class='fa fa-plus fa-fwfa-fw'></i></a>";
+		}
 
 		// для составных типов разрешаем выбор типа
 		// TODO: реализовать поддержку примитивных типов
 		if(_meta.type.types.length > 1)
 			innerHTML += "&nbsp;<a href='#' name='type' title='Выбрать тип значения {Alt+T}'><i class='fa fa-level-up fa-fw'></i></a>";
 
-		div.innerHTML = innerHTML;
-		for(var i=0; i<div.children.length; i++)
-			div.children[i].onclick = aclick;
+		if(innerHTML){
+			div.innerHTML = innerHTML;
+			for(var i=0; i<div.children.length; i++)
+				div.children[i].onclick = aclick;
 
-		$p.iface.popup.clear();
-		$p.iface.popup.attachObject(div);
-		$p.iface.popup.show(dhx4.absLeft(t.getButton())-77, dhx4.absTop(t.getButton()), t.getButton().offsetWidth, t.getButton().offsetHeight);
+			$p.iface.popup.clear();
+			$p.iface.popup.attachObject(div);
+			$p.iface.popup.show(dhx4.absLeft(t.getButton())-77, dhx4.absTop(t.getButton()), t.getButton().offsetWidth, t.getButton().offsetHeight);
 
-		$p.iface.popup.p.onmouseover = function(){
-			popup_focused = true;
-		};
+			$p.iface.popup.p.onmouseover = function(){
+				popup_focused = true;
+			};
 
-		$p.iface.popup.p.onmouseout = popup_hide;
+			$p.iface.popup.p.onmouseout = popup_hide;
+		}
 	}
 
 	function oncontextmenu(e) {
@@ -434,6 +440,14 @@ function OCombo(attr){
 OCombo._extend(dhtmlXCombo);
 $p.iface.OCombo = OCombo;
 
+/**
+ * ### Форма выбора из списка значений
+ * @method select_from_list
+ * @for InterfaceObjs
+ * @param list
+ * @param multy
+ * @return {Promise}
+ */
 $p.iface.select_from_list = function (list, multy) {
 
 	return new Promise(function(resolve, reject){

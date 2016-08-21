@@ -289,7 +289,9 @@ function InterfaceObjs(){
 	this.Col_struct = Col_struct;
 
 	/**
+	 * ### Один из вариантов основного интерфейса: sidebar
 	 *
+	 * @method init_sidebar
 	 * @param items {Array} - закладки сайдбара
 	 * @param buttons {Array} - кнопки дополнительной навигации
 	 * @param [icons_path] {String} - путь к иконам сайдбара

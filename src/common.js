@@ -178,8 +178,13 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 		 */
 		unobserve: {
 			value: function(target, observer) {
+
 				if(!target._observers)
 					return;
+
+				if(!observer)
+					target._observers.length = 0;
+
 				for(var i=0; i<target._observers.length; i++){
 					if(target._observers[i]===observer){
 						target._observers.splice(i, 1);

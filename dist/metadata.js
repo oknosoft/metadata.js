@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.11.218, built:2016-08-14 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.11.219, built:2016-08-21 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -374,8 +374,13 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 		 */
 		unobserve: {
 			value: function(target, observer) {
+
 				if(!target._observers)
 					return;
+
+				if(!observer)
+					target._observers.length = 0;
+
 				for(var i=0; i<target._observers.length; i++){
 					if(target._observers[i]===observer){
 						target._observers.splice(i, 1);
@@ -467,7 +472,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.11.218",
+			value: "0.11.219",
 			writable: false
 		},
 
@@ -2451,7 +2456,9 @@ function InterfaceObjs(){
 	this.Col_struct = Col_struct;
 
 	/**
+	 * ### Один из вариантов основного интерфейса: sidebar
 	 *
+	 * @method init_sidebar
 	 * @param items {Array} - закладки сайдбара
 	 * @param buttons {Array} - кнопки дополнительной навигации
 	 * @param [icons_path] {String} - путь к иконам сайдбара
@@ -3881,6 +3888,8 @@ $p.fias = function FIAS(){};
 	msg.sync_data = "Синхронизация с сервером выполняется:<br />* при первом старте программы<br /> * при обновлении метаданных<br /> * при изменении цен или технологических справочников";
 	msg.sync_break = "Прервать синхронизацию";
 	msg.sync_no_data = "Файл не содержит подходящих элементов для загрузки";
+
+	msg.tabular_will_cleared = "Табличная часть '%1' будет очищена. Продолжить?";
 
 	msg.unsupported_browser_title = "Браузер не поддерживается";
 	msg.unsupported_browser = "Несовместимая версия браузера<br/>Рекомендуется Google Chrome";
@@ -5830,7 +5839,7 @@ RefDataManager.prototype.__define({
 									if(typeof sel[key] == "function"){
 										s += "\n AND " + sel[key](t, key) + " ";
 
-									}else if(cmd.fields.hasOwnProperty(key)){
+									}else if(cmd.fields.hasOwnProperty(key) || key === "ref"){
 										if(sel[key] === true)
 											s += "\n AND _t_." + key + " ";
 
@@ -5854,6 +5863,19 @@ RefDataManager.prototype.__define({
 
 												if(keys[0] == "not")
 													s += "\n AND (not _t_." + key + " = '" + val + "') ";
+
+												else if(keys[0] == "in")
+													s += "\n AND (_t_." + key + " in (" + sel[key].in.reduce(function(sum, val){
+														if(sum){
+															sum+=",";
+														}
+														if(typeof val == "number"){
+															sum+=val.toString();
+														}else{
+															sum+="'" + val + "'";
+														}
+														return  sum;
+													}, "") + ")) ";
 
 												else
 													s += "\n AND (_t_." + key + " = '" + val + "') ";
@@ -11488,7 +11510,7 @@ function OCombo(attr){
 
 		if(_mgr){
 			t.clearAll();
-			_mgr.get_option_list(null, get_filter(text))
+			(attr.get_option_list || _mgr.get_option_list).call(_mgr, null, get_filter(text))
 				.then(function (l) {
 					if(t.addOption){
 						t.addOption(l);
@@ -11637,32 +11659,38 @@ function OCombo(attr){
 
 		popup_focused = true;
 		var div = document.createElement('div'),
-			innerHTML = "<a href='#' name='select' title='Форма выбора {F4}'>Показать все</a>" +
+			innerHTML = attr.hide_frm ? "" : "<a href='#' name='select' title='Форма выбора {F4}'>Показать все</a>" +
 				"<a href='#' name='open' style='margin-left: 9px;' title='Открыть форму элемента {Ctrl+Shift+F4}'><i class='fa fa-external-link fa-fw'></i></a>";
 
 		// для полных прав разрешаем добавление элементов
 		// TODO: учесть реальные права на добавление
-		if($p.ajax.root)
-			innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><i class='fa fa-plus fa-fwfa-fw'></i></a>";
+		if(!attr.hide_frm){
+			var acn = _mgr.class_name.split("."),
+				_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
+			if(_acl.indexOf("i") != -1)
+				innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><i class='fa fa-plus fa-fwfa-fw'></i></a>";
+		}
 
 		// для составных типов разрешаем выбор типа
 		// TODO: реализовать поддержку примитивных типов
 		if(_meta.type.types.length > 1)
 			innerHTML += "&nbsp;<a href='#' name='type' title='Выбрать тип значения {Alt+T}'><i class='fa fa-level-up fa-fw'></i></a>";
 
-		div.innerHTML = innerHTML;
-		for(var i=0; i<div.children.length; i++)
-			div.children[i].onclick = aclick;
+		if(innerHTML){
+			div.innerHTML = innerHTML;
+			for(var i=0; i<div.children.length; i++)
+				div.children[i].onclick = aclick;
 
-		$p.iface.popup.clear();
-		$p.iface.popup.attachObject(div);
-		$p.iface.popup.show(dhx4.absLeft(t.getButton())-77, dhx4.absTop(t.getButton()), t.getButton().offsetWidth, t.getButton().offsetHeight);
+			$p.iface.popup.clear();
+			$p.iface.popup.attachObject(div);
+			$p.iface.popup.show(dhx4.absLeft(t.getButton())-77, dhx4.absTop(t.getButton()), t.getButton().offsetWidth, t.getButton().offsetHeight);
 
-		$p.iface.popup.p.onmouseover = function(){
-			popup_focused = true;
-		};
+			$p.iface.popup.p.onmouseover = function(){
+				popup_focused = true;
+			};
 
-		$p.iface.popup.p.onmouseout = popup_hide;
+			$p.iface.popup.p.onmouseout = popup_hide;
+		}
 	}
 
 	function oncontextmenu(e) {
@@ -11847,6 +11875,14 @@ function OCombo(attr){
 OCombo._extend(dhtmlXCombo);
 $p.iface.OCombo = OCombo;
 
+/**
+ * ### Форма выбора из списка значений
+ * @method select_from_list
+ * @for InterfaceObjs
+ * @param list
+ * @param multy
+ * @return {Promise}
+ */
 $p.iface.select_from_list = function (list, multy) {
 
 	return new Promise(function(resolve, reject){
@@ -12788,6 +12824,13 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 		t.toolbar.addInput("input_filter", attr.pos, "", input_filter_width);
 		t.input_filter = t.toolbar.getInput("input_filter");
 		t.input_filter.onchange = t.call_event;
+		t.input_filter.onclick = function () {
+			var val = t.input_filter.value;
+			setTimeout(function () {
+				if(val != t.input_filter.value)
+					t.call_event();
+			})
+		};
 		t.input_filter.onkeydown = onkeydown;
 		t.input_filter.type = "search";
 		t.input_filter.setAttribute("placeholder", "Фильтр");
@@ -12797,8 +12840,8 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 	}else if(t.input_date_till)
 		t.toolbar.addSpacer("input_date_till");
 
-	else if(t.toolbar.getItemText("btn_delete"))
-		t.toolbar.addSpacer("btn_delete");
+	else
+		t.toolbar.addSpacer("div_filter");
 
 
 };
@@ -14534,7 +14577,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 				if(_mgr instanceof DocManager && _acl.indexOf("p") != -1){
 					this.enableItem("btn_post");
-					this.setItemText("btn_save_close", "<b>Провести и закрыть</b>");
+					if(!attr.toolbar_struct)
+						this.setItemText("btn_save_close", "<b>Провести и закрыть</b>");
 				}else
 					this.hideItem("btn_post");
 
@@ -15215,18 +15259,6 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		on_select = pwnd.on_select || attr.on_select;
 
 
-	// создаём и настраиваем форму
-	if(has_tree && attr.initial_value && attr.initial_value!= $p.utils.blank.guid && !attr.parent)
-		_mgr.get(attr.initial_value, true)
-			.then(function (tObj) {
-				attr.parent = tObj.parent.ref;
-				attr.set_parent = attr.parent;
-				frm_create();
-			});
-	else
-		frm_create();
-
-
 	/**
 	 *	раздел вспомогательных функций
 	 */
@@ -15350,6 +15382,8 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		});
 
 		wnd._mgr = _mgr;
+
+		return wnd;
 	}
 
 	/**
@@ -15405,7 +15439,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	function input_filter_change(flt){
 		if(wnd && wnd.elmnts){
 			if(has_tree){
-				if(flt.filter)
+				if(flt.filter || flt.hide_tree)
 					wnd.elmnts.cell_tree.collapse();
 				else
 					wnd.elmnts.cell_tree.expand();
@@ -15820,7 +15854,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 * подписываемся на событие закрытия формы объекта, чтобы обновить список и попытаться спозиционироваться на нужной строке 
 	 */
 	var _frm_close = $p.eve.attachEvent("frm_close", function (class_name, ref) {
-		if(_mgr && _mgr.class_name == class_name){
+		if(_mgr && _mgr.class_name == class_name && wnd && wnd.elmnts){
 			wnd.elmnts.grid.reload()
 				.then(function () {
 					if(!$p.utils.is_empty_guid(ref))
@@ -15829,7 +15863,16 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 	});
 
-	return wnd;
+	// создаём и настраиваем форму
+	if(has_tree && attr.initial_value && attr.initial_value!= $p.utils.blank.guid && !attr.parent)
+		return _mgr.get(attr.initial_value, true)
+			.then(function (tObj) {
+				attr.parent = tObj.parent.ref;
+				attr.set_parent = attr.parent;
+				return frm_create();
+			});
+	else
+		return frm_create();
 };
 
 /**
