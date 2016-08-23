@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.11.218, built:2016-08-18 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.11.219, built:2016-08-23 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -191,8 +191,13 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 		 */
 		unobserve: {
 			value: function(target, observer) {
+
 				if(!target._observers)
 					return;
+
+				if(!observer)
+					target._observers.length = 0;
+
 				for(var i=0; i<target._observers.length; i++){
 					if(target._observers[i]===observer){
 						target._observers.splice(i, 1);
@@ -284,7 +289,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.11.218",
+			value: "0.11.219",
 			writable: false
 		},
 
@@ -2373,6 +2378,8 @@ $p.fias = function FIAS(){};
 	msg.sync_data = "Синхронизация с сервером выполняется:<br />* при первом старте программы<br /> * при обновлении метаданных<br /> * при изменении цен или технологических справочников";
 	msg.sync_break = "Прервать синхронизацию";
 	msg.sync_no_data = "Файл не содержит подходящих элементов для загрузки";
+
+	msg.tabular_will_cleared = "Табличная часть '%1' будет очищена. Продолжить?";
 
 	msg.unsupported_browser_title = "Браузер не поддерживается";
 	msg.unsupported_browser = "Несовместимая версия браузера<br/>Рекомендуется Google Chrome";
@@ -4965,7 +4972,7 @@ RefDataManager.prototype.__define({
 									if(typeof sel[key] == "function"){
 										s += "\n AND " + sel[key](t, key) + " ";
 
-									}else if(cmd.fields.hasOwnProperty(key)){
+									}else if(cmd.fields.hasOwnProperty(key) || key === "ref"){
 										if(sel[key] === true)
 											s += "\n AND _t_." + key + " ";
 
@@ -4974,7 +4981,7 @@ RefDataManager.prototype.__define({
 
 										else if(typeof sel[key] == "object"){
 
-											if($p.utils.is_data_obj(sel[key]))
+											if($p.utils.is_data_obj(sel[key]) || $p.utils.is_guid(sel[key]))
 												s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
 
 											else{
@@ -4989,6 +4996,19 @@ RefDataManager.prototype.__define({
 
 												if(keys[0] == "not")
 													s += "\n AND (not _t_." + key + " = '" + val + "') ";
+
+												else if(keys[0] == "in")
+													s += "\n AND (_t_." + key + " in (" + sel[key].in.reduce(function(sum, val){
+														if(sum){
+															sum+=",";
+														}
+														if(typeof val == "number"){
+															sum+=val.toString();
+														}else{
+															sum+="'" + val + "'";
+														}
+														return  sum;
+													}, "") + ")) ";
 
 												else
 													s += "\n AND (_t_." + key + " = '" + val + "') ";

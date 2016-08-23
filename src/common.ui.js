@@ -627,18 +627,73 @@ $p.__define({
 	 * ### Права доступа текущего пользователя.
 	 * Свойство определено после загрузки метаданных и входа впрограмму
 	 * @property current_acl
-	 * @type CcatUsers_acl
+	 * @type CatUsers_acl
 	 * @final
 	 */
 	current_acl: {
 		get: function () {
-			var res = {};
+
+			var res, proto;
+
 			if($p.cat && $p.cat.users_acl){
+
 				$p.cat.users_acl.find_rows({owner: $p.current_user}, function (o) {
 					res = o;
 					return false;
-				})
+				});
+
+				proto = $p.CatUsers_acl.prototype;
 			}
+
+			if(!proto){
+				proto = {};
+			}
+
+			if(!res) {
+				if(this.utils.blank.users_acl){
+					res = this.utils.blank.users_acl;
+				}else{
+					res = this.utils.blank.users_acl = Object.create(proto);
+					res.__define({
+						acl_objs: {
+							value: {
+								_obj: [],
+								each: function () {},
+								find_rows: function () {}
+							}
+						}
+					});
+				}
+			}
+
+
+			if(!proto.hasOwnProperty("role_available")){
+				proto.__define({
+
+					/**
+					 * ### Роль доступна
+					 *
+					 * @param name {String}
+					 * @returns {Boolean}
+					 */
+					role_available: {
+						value: function (name) {
+							return this.acl_objs._obj.some(function (row) {
+								return row.type == name;
+							});
+						}
+					},
+
+					get_acl: {
+						value: function(class_name) {
+							var acn = class_name.split(".");
+							return this._acl && this._acl[acn[0]] ? this._acl[acn[0]][acn[1]] : "e";
+						}
+					}
+
+				});
+			}
+
 			return res;
 		}
 	},
