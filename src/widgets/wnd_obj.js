@@ -172,29 +172,24 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			this.attachEvent("onclick", attr.toolbar_click || toolbar_click);
 
 			// учтём права для каждой роли на каждый объект
-			if($p.current_acl && $p.current_acl._acl){
+			var _acl = $p.current_acl.get_acl(_mgr.class_name);
 
-				var acn = _mgr.class_name.split("."),
-					_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
+			if(_mgr instanceof DocManager && _acl.indexOf("p") != -1){
+				this.enableItem("btn_post");
+				if(!attr.toolbar_struct)
+					this.setItemText("btn_save_close", "<b>Провести и закрыть</b>");
+			}else
+				this.hideItem("btn_post");
 
-				if(_mgr instanceof DocManager && _acl.indexOf("p") != -1){
-					this.enableItem("btn_post");
-					if(!attr.toolbar_struct)
-						this.setItemText("btn_save_close", "<b>Провести и закрыть</b>");
-				}else
-					this.hideItem("btn_post");
-
-				if(_mgr instanceof DocManager && _acl.indexOf("o") != -1)
-					this.enableItem("btn_unpost");
-				else
-					this.hideItem("btn_unpost");
+			if(_mgr instanceof DocManager && _acl.indexOf("o") != -1)
+				this.enableItem("btn_unpost");
+			else
+				this.hideItem("btn_unpost");
 
 
-				if(_acl.indexOf("e") == -1){
-					this.hideItem("btn_save_close");
-					this.disableItem("btn_save");
-				}
-
+			if(_acl.indexOf("e") == -1){
+				this.hideItem("btn_save_close");
+				this.disableItem("btn_save");
 			}
 
 			if(attr.on_select)
@@ -290,11 +285,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		else{
 
 			// учтём права для каждой роли на каждый объект
-			var acn = _mgr.class_name.split("."), _acl;
-			if($p.current_acl && $p.current_acl._acl)
-				_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
-			else
-				_acl = "e";
+			var _acl = $p.current_acl.get_acl(_mgr.class_name);
 
 			wnd.elmnts.pg_header = wnd.elmnts.tabs.tab_header.attachHeadFields({
 				obj: o,
@@ -389,11 +380,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.elmnts.tabs['tab_'+name] = wnd.elmnts.frm_tabs.cells('tab_'+name);
 
 		// учтём права для каждой роли на каждый объект
-		var acn = _mgr.class_name.split("."), _acl;
-		if($p.current_acl && $p.current_acl._acl)
-			_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
-		else
-			_acl = "e";
+		var _acl = $p.current_acl.get_acl(_mgr.class_name);
 
 		wnd.elmnts.grids[name] = wnd.elmnts.tabs['tab_'+name].attachTabular({
 			obj: o,
@@ -428,9 +415,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				post = false;
 
 			else if(action == "close"){
-				var acn = _mgr.class_name.split("."),
-					_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
-				if(_acl.indexOf("p") != -1)
+				if($p.current_acl.get_acl(_mgr.class_name).indexOf("p") != -1)
 					post = true;
 			}
 		}

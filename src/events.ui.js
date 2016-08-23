@@ -37,6 +37,17 @@ $p.eve.__define({
 			$p.job_prm.device_orient = (window.orientation == 0 || window.orientation == 180 ? "portrait":"landscape");
 			if (typeof(e) != "undefined")
 				$p.eve.callEvent("onOrientationChange", [$p.job_prm.device_orient]);
+
+			// if($p.job_prm.device_type != "desktop"){
+			// 	setTimeout(function () {
+			// 		document.body.style.height = window.outerHeight + 'px';
+			// 		setTimeout(function () {
+			// 			window.scrollTo(0, 1);
+			// 		}, 1100);
+			// 	}, 1000);
+			// 	return false;
+			// }
+
 		}
 	},
 
@@ -276,9 +287,19 @@ $p.eve.__define({
 
 				}
 
+				// устанавливаем параметры localStorage
+				$p.wsql.init_params();
+
 				// создавать dhtmlXWindows можно только после готовности документа
 				if("dhtmlx" in w)
 					load_css();
+
+				// разбираемся с ориентацией
+				if(typeof(w.orientation)=="undefined")
+					$p.job_prm.device_orient = w.innerWidth>w.innerHeight ? "landscape" : "portrait";
+				else
+					eve.on_rotate();
+				w.addEventListener("orientationchange", eve.on_rotate, false);
 
 				eve.stepper = {
 					step: 0,
@@ -292,9 +313,6 @@ $p.eve.__define({
 				// инициализируем метаданные и обработчик при начале работы интерфейса
 				setTimeout(function () {
 
-					// устанавливаем параметры localStorage
-					$p.wsql.init_params();
-
 					// читаем локальные данные в ОЗУ
 					$p.wsql.pouch.load_data()
 						.catch($p.record_log);
@@ -306,14 +324,14 @@ $p.eve.__define({
 
 					eve.callEvent("iface_init", [$p]);
 
-				}, 10);
+				}, 20);
 
 
 				msg.russian_names();
 
 				// TODO: переписать управление appcache на сервисворкерах
-				if($p.wsql.get_user_param("use_service_worker", "boolean") && typeof navigator != "undefined"
-					&& 'serviceWorker' in navigator && location.protocol.indexOf("https") != -1){
+				if($p.wsql.get_user_param("use_service_worker", "boolean") &&
+					'serviceWorker' in navigator && location.protocol.indexOf("https") != -1){
 
 					// Override the default scope of '/' with './', so that the registration applies
 					// to the current directory and everything underneath it.
@@ -444,12 +462,6 @@ $p.eve.__define({
 				});
 			}
 
-			if(typeof(w.orientation)=="undefined")
-				$p.job_prm.device_orient = w.innerWidth>w.innerHeight ? "landscape" : "portrait";
-			else
-				eve.on_rotate();
-			w.addEventListener("orientationchange", eve.on_rotate, false);
-
 			$p.job_prm.__define("device_type", {
 				get: function () {
 					var device_type = $p.wsql.get_user_param("device_type");
@@ -463,7 +475,6 @@ $p.eve.__define({
 					$p.wsql.set_user_param("device_type", v);
 				}
 			});
-
 
 			/**
 			 * слушаем события клавиатуры
