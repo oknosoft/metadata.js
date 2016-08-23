@@ -123,19 +123,16 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 			
 			// учтём права для каждой роли на каждый объект
-			if($p.current_acl && $p.current_acl._acl){
-				var acn = _mgr.class_name.split("."),
-					_acl = $p.current_acl._acl[acn[0]][acn[1]] || "e";
+			var _acl = $p.current_acl.get_acl(_mgr.class_name);
 
-				if(_acl.indexOf("i") == -1)
-					this.hideItem("btn_new");
+			if(_acl.indexOf("i") == -1)
+				this.hideItem("btn_new");
 
-				if(_acl.indexOf("v") == -1)
-					this.hideItem("btn_edit");
+			if(_acl.indexOf("v") == -1)
+				this.hideItem("btn_edit");
 
-				if(_acl.indexOf("d") == -1)
-					this.hideItem("btn_delete");
-			}
+			if(_acl.indexOf("d") == -1)
+				this.hideItem("btn_delete");
 
 			if(!on_select){
 				this.hideItem("btn_select");
