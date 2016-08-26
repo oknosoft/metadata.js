@@ -416,6 +416,9 @@ function Pouch(){
 										}
 
 									}
+								}else{
+									change.update_only = true;
+									t.load_changes(change);
 								}
 								$p.eve.callEvent("pouch_change", [id, change]);
 
@@ -587,9 +590,11 @@ function Pouch(){
 					});
 
 					for(var mgr in res){
-						for(cn in res[mgr])
-							if($p[mgr] && $p[mgr][cn])
-								$p[mgr][cn].load_array(res[mgr][cn], true);
+						for(cn in res[mgr]){
+							if($p[mgr] && $p[mgr][cn]){
+								$p[mgr][cn].load_array(res[mgr][cn], changes.update_only ? "update_only" : true);
+							}
+						}
 					}
 
 					res	= changes = docs = doc = null;

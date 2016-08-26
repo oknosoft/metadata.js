@@ -71,7 +71,7 @@ TabularSection.prototype.toString = function(){
  * @return {TabularSectionRow}
  */
 TabularSection.prototype.get = function(index){
-	return this._obj[index]._row;
+	return this._obj[index] ? this._obj[index]._row : null;
 };
 
 /**
