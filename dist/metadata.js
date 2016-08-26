@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.11.219, built:2016-08-23 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.11.219, built:2016-08-26 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -3322,6 +3322,9 @@ function Pouch(){
 										}
 
 									}
+								}else{
+									change.update_only = true;
+									t.load_changes(change);
 								}
 								$p.eve.callEvent("pouch_change", [id, change]);
 
@@ -3493,9 +3496,11 @@ function Pouch(){
 					});
 
 					for(var mgr in res){
-						for(cn in res[mgr])
-							if($p[mgr] && $p[mgr][cn])
-								$p[mgr][cn].load_array(res[mgr][cn], true);
+						for(cn in res[mgr]){
+							if($p[mgr] && $p[mgr][cn]){
+								$p[mgr][cn].load_array(res[mgr][cn], changes.update_only ? "update_only" : true);
+							}
+						}
 					}
 
 					res	= changes = docs = doc = null;
@@ -5700,11 +5705,11 @@ RefDataManager.prototype.__define({
 	},
 
 	/**
-	 * сохраняет массив объектов в менеджере
+	 * ### Сохраняет массив объектов в менеджере
+	 *
 	 * @method load_array
 	 * @param aattr {Array} - массив объектов для трансформации в объекты ссылочного типа
-	 * @param forse {Boolean} - перезаполнять объект
-	 * @async
+	 * @param forse {Boolean|String} - перезаполнять объект
 	 */
 	load_array: {
 		value: function(aattr, forse){
@@ -5717,6 +5722,11 @@ RefDataManager.prototype.__define({
 				obj = this.by_ref[ref];
 
 				if(!obj){
+
+					if(forse == "update_only"){
+						continue;
+					}
+
 					obj = new $p[this.obj_constructor()](aattr[i], this);
 					if(forse)
 						obj._set_loaded();
@@ -8598,7 +8608,7 @@ TabularSection.prototype.toString = function(){
  * @return {TabularSectionRow}
  */
 TabularSection.prototype.get = function(index){
-	return this._obj[index]._row;
+	return this._obj[index] ? this._obj[index]._row : null;
 };
 
 /**
@@ -11098,6 +11108,20 @@ eXcell_dhxCalendar.prototype.edit = function() {
 	this.grid._grid_calendarA.setDate(this.val||(new Date()));
 	this.grid._grid_calendarA.draw = t;
 
+};
+
+eXcell_dhxCalendar.prototype.setCValue = function(val, val2){
+	this.cell.innerHTML = val instanceof Date ? this.grid._grid_calendarA._dateToStr(val) : val;
+	this.grid._grid_calendarA.getFormatedDate((this.grid._dtmask||"%d/%m/%Y"),val).toString()
+//#__pro_feature:21092006{
+//#on_cell_changed:23102006{
+	this.grid.callEvent("onCellChanged", [
+		this.cell.parentNode.idd,
+		this.cell._cellIndex,
+		(arguments.length > 1 ? val2 : val)
+	]);
+//#}
+//#}
 };
 
 /**

@@ -216,6 +216,20 @@ eXcell_dhxCalendar.prototype.edit = function() {
 
 };
 
+eXcell_dhxCalendar.prototype.setCValue = function(val, val2){
+	this.cell.innerHTML = val instanceof Date ? this.grid._grid_calendarA._dateToStr(val) : val;
+	this.grid._grid_calendarA.getFormatedDate((this.grid._dtmask||"%d/%m/%Y"),val).toString()
+//#__pro_feature:21092006{
+//#on_cell_changed:23102006{
+	this.grid.callEvent("onCellChanged", [
+		this.cell.parentNode.idd,
+		this.cell._cellIndex,
+		(arguments.length > 1 ? val2 : val)
+	]);
+//#}
+//#}
+};
+
 /**
  * fix ajax
  */

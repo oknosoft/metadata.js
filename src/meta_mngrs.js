@@ -1037,11 +1037,11 @@ RefDataManager.prototype.__define({
 	},
 
 	/**
-	 * сохраняет массив объектов в менеджере
+	 * ### Сохраняет массив объектов в менеджере
+	 *
 	 * @method load_array
 	 * @param aattr {Array} - массив объектов для трансформации в объекты ссылочного типа
-	 * @param forse {Boolean} - перезаполнять объект
-	 * @async
+	 * @param forse {Boolean|String} - перезаполнять объект
 	 */
 	load_array: {
 		value: function(aattr, forse){
@@ -1054,6 +1054,11 @@ RefDataManager.prototype.__define({
 				obj = this.by_ref[ref];
 
 				if(!obj){
+
+					if(forse == "update_only"){
+						continue;
+					}
+
 					obj = new $p[this.obj_constructor()](aattr[i], this);
 					if(forse)
 						obj._set_loaded();
