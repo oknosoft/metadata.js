@@ -5,7 +5,7 @@
  * @author  Evgeniy Malyarov
  */
 
-var gulp = require('gulp'),
+const gulp = require('gulp'),
 	base64 = require('gulp-base64'),
 	csso = require('gulp-csso'),
 	concat = require('gulp-concat'),
@@ -285,6 +285,32 @@ gulp.task('build-metadata-core', function(){
 			preserveComments: "license"
 		}))
 		.pipe(gulp.dest('./dist'));
+});
+
+// Сборка сервера для Node.js
+gulp.task('build-new-core', function(){
+
+	const babel = require('gulp-babel');
+
+	return gulp.src([
+		'./packages/metadata-core/src/ajax.js',
+		'./packages/metadata-core/src/wsql.js',
+		'./packages/metadata-core/src/mngrs.js',
+		'./packages/metadata-core/src/common.js'
+	])
+		.pipe(concat('metadata-core.js'))
+		.pipe(babel({
+			presets: ['es2015'],
+			plugins: ["transform-async-to-generator"]
+		}))
+		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
+		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
+		.pipe(gulp.dest('./packages/metadata-core'))
+		// .pipe(rename('metadata.core.min.js'))
+		// .pipe(uglify({
+		// 	preserveComments: "license"
+		// }))
+		// .pipe(gulp.dest('./dist'));
 });
 
 // Ресурсы для codres
