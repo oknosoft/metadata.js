@@ -293,10 +293,11 @@ gulp.task('build-new-core', function(){
 	const babel = require('gulp-babel');
 
 	return gulp.src([
+		'./packages/metadata-core/src/common_head.js',
 		'./packages/metadata-core/src/ajax.js',
 		'./packages/metadata-core/src/wsql.js',
 		'./packages/metadata-core/src/mngrs.js',
-		'./packages/metadata-core/src/common.js'
+		'./packages/metadata-core/src/common_footer.js'
 	])
 		.pipe(concat('metadata-core.js'))
 		.pipe(babel({

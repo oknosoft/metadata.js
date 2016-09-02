@@ -119,7 +119,7 @@ class DataManager {
 			 * @final
 			 */
 			cachable: {
-				get: function () {
+				get: () => {
 
 					// перечисления кешируются всегда
 					if(class_name.indexOf("enm.") != -1)
@@ -147,8 +147,7 @@ class DataManager {
 			 * @final
 			 */
 			class_name: {
-				get: function () { return class_name},
-				writable: false
+				get: () => class_name
 			},
 
 			/**
@@ -160,9 +159,7 @@ class DataManager {
 			 * @final
 			 */
 			alatable: {
-				get : function () {
-					return $p.wsql.aladb.tables[this.table_name] ? $p.wsql.aladb.tables[this.table_name].data : []
-				}
+				get: () => $p.wsql.aladb.tables[this.table_name] ? $p.wsql.aladb.tables[this.table_name].data : []
 			},
 
 			/**
@@ -174,7 +171,7 @@ class DataManager {
 			 * @return {Object} - объект метаданных
 			 */
 			metadata: {
-				value: function(field){
+				value: field => {
 					var _meta = $p.md.get(class_name);
 					if(field)
 						return _meta.fields[field] || _meta.tabular_sections[field];
@@ -345,10 +342,10 @@ class DataManager {
 			res = [];
 
 		if(destinations){
-			destinations.find_rows({predefined_name: pn}, function (destination) {
+			destinations.find_rows({predefined_name: pn}, destination => {
 				var ts = destination.extra_fields || destination.ДополнительныеРеквизиты;
 				if(ts){
-					ts.each(function (row) {
+					ts.each(row => {
 						if(!row._deleted && !row.ПометкаУдаления)
 							res.push(row.property || row.Свойство);
 					});
@@ -414,9 +411,7 @@ class DataManager {
 
 				else if(attr.action == "get_selection")
 					return $p.wsql.promise(mgr.get_sql_struct(attr), [])
-						.then(function(data){
-							return $p.iface.data_to_grid.call(mgr, data, attr);
-						});
+						.then(data => $p.iface.data_to_grid.call(mgr, data, attr));
 
 			}else if(mgr.cachable.indexOf("doc") == 0){
 
@@ -694,7 +689,7 @@ class RefDataManager extends DataManager{
 	/**
 	 * Возвращает объект по ссылке (читает из датабазы или локального кеша) если идентификатор пуст, создаёт новый объект
 	 * @method get
-	 * @param ref {String|Object} - ссылочный идентификатор
+	 * @param [ref] {String|Object} - ссылочный идентификатор
 	 * @param [do_not_create] {Boolean} - Не создавать новый. Например, когда поиск элемента выполняется из конструктора
 	 * @return {DataObj|undefined}
 	 */
@@ -926,7 +921,7 @@ class RefDataManager extends DataManager{
 
 				}
 
-				flds.forEach(function(fld){
+				flds.forEach(fld => {
 					if(fld.indexOf(" as ") != -1)
 						s += ", " + fld;
 					else
@@ -999,7 +994,7 @@ class RefDataManager extends DataManager{
 					if(typeof attr.selection == "function"){
 
 					}else
-						attr.selection.forEach(function(sel){
+						attr.selection.forEach(sel => {
 							for(var key in sel){
 
 								if(typeof sel[key] == "function"){
@@ -1031,17 +1026,17 @@ class RefDataManager extends DataManager{
 												s += "\n AND (not _t_." + key + " = '" + val + "') ";
 
 											else if(keys[0] == "in")
-												s += "\n AND (_t_." + key + " in (" + sel[key].in.reduce(function(sum, val){
-														if(sum){
-															sum+=",";
-														}
-														if(typeof val == "number"){
-															sum+=val.toString();
-														}else{
-															sum+="'" + val + "'";
-														}
-														return  sum;
-													}, "") + ")) ";
+												s += "\n AND (_t_." + key + " in (" + sel[key].in.reduce((sum, val) => {
+													if(sum){
+														sum+=",";
+													}
+													if(typeof val == "number"){
+														sum+=val.toString();
+													}else{
+														sum+="'" + val + "'";
+													}
+													return  sum;
+												}, "") + ")) ";
 
 											else
 												s += "\n AND (_t_." + key + " = '" + val + "') ";
@@ -1105,7 +1100,7 @@ class RefDataManager extends DataManager{
 				if(cmd["has_owners"]){
 					owner = attr.owner;
 					if(attr.selection && typeof attr.selection != "function"){
-						attr.selection.forEach(function(sel){
+						attr.selection.forEach(sel => {
 							if(sel.owner){
 								owner = typeof sel.owner == "object" ?  sel.owner.valueOf() : sel.owner;
 								delete sel.owner;
@@ -1325,7 +1320,7 @@ class RefDataManager extends DataManager{
 			mgr = alt_rest_name ? {class_name: t.class_name, rest_name: alt_rest_name} : t,
 			check_loaded = !alt_rest_name;
 
-		list.forEach(function (o) {
+		list.forEach(o => {
 			obj = t.get(o.ref || o, false, true);
 			if(!obj || (check_loaded && obj.is_new()))
 				query.push(o.ref || o);
@@ -1467,10 +1462,10 @@ class EnumManager extends RefDataManager{
 	}
 
 	each(fn) {
-		this.alatable.forEach(function (v) {
+		this.alatable.forEach(v => {
 			if(v.ref && v.ref != "_" && v.ref != $p.utils.blank.guid)
 				fn.call(this[v.ref]);
-		}.bind(this));
+		});
 	}
 
 	/**
@@ -1559,16 +1554,14 @@ class EnumManager extends RefDataManager{
 		}
 		synonym = synonym.toLowerCase();
 
-		this.alatable.forEach(function (v) {
+		this.alatable.forEach(v => {
 			if(synonym){
 				if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1)
 					return;
 			}
 			if(sref){
 				if(Array.isArray(sref)){
-					if(!sref.some(function (sv) {
-							return sv.name == v.ref || sv.ref == v.ref || sv == v.ref;
-						}))
+					if(!sref.some(sv => sv.name == v.ref || sv.ref == v.ref || sv == v.ref))
 						return;
 				}else{
 					if(sref.name != v.ref && sref.ref != v.ref && sref != v.ref)
@@ -1653,7 +1646,7 @@ class RegisterManager extends DataManager{
 	 */
 	unload_obj(ref) {
 		delete this.by_ref[ref];
-		this.alatable.some(function (o, i, a) {
+		this.alatable.some((o, i, a) => {
 			if (o.ref == ref) {
 				a.splice(i, 1);
 				return true;
@@ -1718,9 +1711,7 @@ class RegisterManager extends DataManager{
 				var flds = [], s = "_t_.ref";
 
 				if(cmd.form && cmd.form.selection){
-					cmd.form.selection.fields.forEach(function (fld) {
-						flds.push(fld);
-					});
+					cmd.form.selection.fields.forEach(fld => flds.push(fld));
 
 				}else{
 
@@ -1729,7 +1720,7 @@ class RegisterManager extends DataManager{
 					}
 				}
 
-				flds.forEach(function(fld){
+				flds.forEach(fld => {
 					if(fld.indexOf(" as ") != -1)
 						s += ", " + fld;
 					else
@@ -1776,7 +1767,7 @@ class RegisterManager extends DataManager{
 					if(typeof attr.selection == "function"){
 
 					}else
-						attr.selection.forEach(function(sel){
+						attr.selection.forEach(sel => {
 							for(var key in sel){
 
 								if(typeof sel[key] == "function"){
@@ -2223,9 +2214,8 @@ class LogManager extends InfoRegManager{
 				return undefined;
 
 			var parts = ref.split("¶");
-			$p.wsql.alasql("select * from `ireg_$log` where date=" + parts[0] + " and sequence=" + parts[1]).forEach(function (row) {
-				new RegisterRow(row, this);
-			}.bind(this));
+			$p.wsql.alasql("select * from `ireg_$log` where date=" + parts[0] + " and sequence=" + parts[1])
+				.forEach(row => new RegisterRow(row, this));
 		}
 
 		return force_promise ? Promise.resolve(this.by_ref[ref]) : this.by_ref[ref];
@@ -2280,10 +2270,10 @@ class LogManager extends InfoRegManager{
 		// при первом обращении к методу добавляем описание колонок
 		xml += caption.head;
 
-		data.forEach(function(r){
-			xml += "<row id=\"" + r.ref + "\"><cell>" +
-				$p.moment(r.date - $p.wsql.time_diff).format("DD.MM.YYYY HH:mm:ss") + "." + r.sequence + "</cell>" +
-				"<cell>" + (r.class || "") + "</cell><cell>" + (r.note || "") + "</cell></row>";
+		data.forEach(row => {
+			xml += "<row id=\"" + row.ref + "\"><cell>" +
+				$p.moment(row.date - $p.wsql.time_diff).format("DD.MM.YYYY HH:mm:ss") + "." + row.sequence + "</cell>" +
+				"<cell>" + (row.class || "") + "</cell><cell>" + (row.note || "") + "</cell></row>";
 		});
 
 		return xml + "</rows>";
@@ -2329,13 +2319,9 @@ class CatManager extends RefDataManager{
 			 * @for CatObj
 			 * @type {Boolean}
 			 */
-			$p[this.obj_constructor()].prototype.__define("is_folder", {
-				get: function () {
-					return this._obj.is_folder || false
-				},
-				set: function (v) {
-					this._obj.is_folder = $p.utils.fix_boolean(v)
-				},
+			Object.defineProperty($p[this.obj_constructor()].prototype, "is_folder", {
+				get: () => this._obj.is_folder || false,
+				set: v => this._obj.is_folder = $p.utils.fix_boolean(v),
 				enumerable: true,
 				configurable: true
 			});
@@ -2353,7 +2339,7 @@ class CatManager extends RefDataManager{
 
 		var o;
 
-		this.find_rows({name: name}, function (obj) {
+		this.find_rows({name: name}, obj => {
 			o = obj;
 			return false;
 		});
@@ -2374,7 +2360,7 @@ class CatManager extends RefDataManager{
 
 		var o;
 
-		this.find_rows({id: id}, function (obj) {
+		this.find_rows({id: id}, obj => {
 			o = obj;
 			return false;
 		});

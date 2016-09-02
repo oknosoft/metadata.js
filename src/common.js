@@ -937,10 +937,6 @@ function MetaEngine() {
 			value: InfoRegManager
 		},
 
-		InfoRegManager: {
-			value: InfoRegManager
-		},
-
 		LogManager: {
 			value: LogManager
 		},
