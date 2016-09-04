@@ -294,12 +294,12 @@ gulp.task('build-new-core', function(){
 
 	return gulp.src([
 		'./packages/metadata-core/src/object.js',
-		'./packages/metadata-core/src/head.js',
 		'./packages/metadata-core/src/ajax.js',
 		'./packages/metadata-core/src/wsql.js',
 		'./packages/metadata-core/src/mngrs.js',
+		'./packages/metadata-core/src/meta.js',
 		'./lib/aes/aes.js',
-		'./packages/metadata-core/src/end.js'
+		'./packages/metadata-core/src/common.js'
 	])
 		.pipe(concat('index.js'))
 		.pipe(babel({
