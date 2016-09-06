@@ -1,4 +1,19 @@
 
+/**
+ * ### Moment для операций с интервалами и датами
+ *
+ * @property moment
+ * @type Function
+ * @final
+ */
+const moment = require('moment');
+moment._masks = {
+	date:       "DD.MM.YY",
+	date_time:  "DD.MM.YYYY HH:mm",
+	ldt:        "DD MMMM YYYY, HH:mm",
+	iso:        "YYYY-MM-DDTHH:mm:ss"
+};
+
 Object.defineProperties(Object.prototype, {
 
 	/**
@@ -43,6 +58,7 @@ if(!Number.prototype.pad)
 	};
 
 
+
 /**
  * ### Коллекция вспомогательных методов
  * @class Utils
@@ -54,20 +70,7 @@ class Utils{
 
 	constructor() {
 
-		/**
-		 * ### Moment для операций с интервалами и датами
-		 *
-		 * @property moment
-		 * @type Function
-		 * @final
-		 */
-		this.moment = typeof moment == "function" ? moment : require('moment');
-		this.moment._masks = {
-			date:       "DD.MM.YY",
-			date_time:  "DD.MM.YYYY HH:mm",
-			ldt:        "DD MMMM YYYY, HH:mm",
-			iso:        "YYYY-MM-DDTHH:mm:ss"
-		};
+
 
 		/**
 		 * ### Пустые значения даты и уникального идентификатора
@@ -110,7 +113,7 @@ class Utils{
 		if (str instanceof Date)
 			return str;
 		else {
-			var m = this.moment(str, ["DD-MM-YYYY", "DD-MM-YYYY HH:mm", "DD-MM-YYYY HH:mm:ss", "DD-MM-YY HH:mm", "YYYYDDMMHHmmss", this.moment.ISO_8601]);
+			var m = moment(str, ["DD-MM-YYYY", "DD-MM-YYYY HH:mm", "DD-MM-YYYY HH:mm:ss", "DD-MM-YY HH:mm", "YYYYDDMMHHmmss", moment.ISO_8601]);
 			return m.isValid() ? m.toDate() : (strict ? this.blank.date : str);
 		}
 	}
@@ -326,6 +329,56 @@ class Utils{
 				reader.readAsText(blob);
 		});
 
+	}
+
+	/**
+	 * Получает с сервера двоичные данные (pdf отчета или картинку или произвольный файл) и показывает его в новом окне, используя data-url
+	 * @method get_and_show_blob
+	 * @param url {String} - адрес, по которому будет произведен запрос
+	 * @param post_data {Object|String} - данные запроса
+	 * @param [method] {String}
+	 * @async
+	 */
+	get_and_show_blob(url, post_data, method) {
+
+		var params = "menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes",
+			req;
+
+		function show_blob(req) {
+			url = window.URL.createObjectURL(req.response);
+			var wnd_print = window.open(url, "wnd_print", params);
+			wnd_print.onload = (e) => window.URL.revokeObjectURL(url);
+			return wnd_print;
+		}
+
+		if (!method || (typeof method == "string" && method.toLowerCase().indexOf("post") != -1))
+			req = this.post_ex(url,
+				typeof post_data == "object" ? JSON.stringify(post_data) : post_data,
+				true,
+				xhr => xhr.responseType = "blob");
+		else
+			req = this.get_ex(url, true, xhr => xhr.responseType = "blob");
+
+		return show_blob(req)
+	}
+
+	/**
+	 * Получает с сервера двоичные данные (pdf отчета или картинку или произвольный файл) и показывает диалог сохранения в файл
+	 * @method get_and_save_blob
+	 * @param url {String} - адрес, по которому будет произведен запрос
+	 * @param post_data {Object|String} - данные запроса
+	 * @param file_name {String} - имя файла для сохранения
+	 * @return {Promise.<T>}
+	 */
+	get_and_save_blob(url, post_data, file_name) {
+
+		return this.post_ex(url,
+			typeof post_data == "object" ? JSON.stringify(post_data) : post_data, true, function (xhr) {
+				xhr.responseType = "blob";
+			})
+			.then(function (req) {
+				saveAs(req.response, file_name);
+			});
 	}
 
 	/**
@@ -601,4 +654,6 @@ class Utils{
 }
 
 const utils = new Utils();
+
+
 

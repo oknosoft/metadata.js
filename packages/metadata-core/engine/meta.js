@@ -59,8 +59,8 @@ class Meta{
 		this.init = function (meta_db) {
 
 			var confirm_count = 0,
-				is_local = !meta_db || ($p.wsql.pouch && meta_db == $p.wsql.pouch.local.meta),
-				is_remote = meta_db && ($p.wsql.pouch && meta_db == $p.wsql.pouch.local._meta);
+				is_local = !meta_db || (wsql.pouch && meta_db == wsql.pouch.local.meta),
+				is_remote = meta_db && (wsql.pouch && meta_db == wsql.pouch.local._meta);
 
 			function do_init(){
 
@@ -72,7 +72,7 @@ class Meta{
 
 				}else{
 
-					return meta_from_pouch(meta_db || $p.wsql.pouch.local.meta)
+					return meta_from_pouch(meta_db || wsql.pouch.local.meta)
 						.then(function () {
 							if(is_local){
 								_md.create_managers();
@@ -96,7 +96,7 @@ class Meta{
 
 						if(btn){
 
-							$p.wsql.pouch.log_out();
+							wsql.pouch.log_out();
 
 							setTimeout(function () {
 								$p.eve.redirect = true;
@@ -317,7 +317,7 @@ class Meta{
 					if(callback)
 						callback(create);
 					else
-						$p.wsql.alasql.utils.saveFile("create_tables.sql", create);
+						wsql.alasql.utils.saveFile("create_tables.sql", create);
 				} else
 					iteration();
 			}

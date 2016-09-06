@@ -34,612 +34,613 @@
  * @tooltip Менеджер данных
  */
 
-class DataManager {
 
-	constructor(class_name) {
+function mngrs($p) {
 
-		var _events = {
+	class DataManager {
 
-			/**
-			 * ### После создания
-			 * Возникает после создания объекта. В обработчике можно установить значения по умолчанию для полей и табличных частей
-			 * или заполнить объект на основании данных связанного объекта
-			 *
-			 * @event after_create
-			 * @for DataManager
-			 */
-			after_create: [],
+		constructor(class_name) {
 
-			/**
-			 * ### После чтения объекта с сервера
-			 * Имеет смысл для объектов с типом кеширования ("doc", "doc_remote", "meta", "e1cib").
-			 * т.к. структура _DataObj_ может отличаться от прототипа в базе-источнике, в обработчике можно дозаполнить или пересчитать реквизиты прочитанного объекта
-			 *
-			 * @event after_load
-			 * @for DataManager
-			 */
-			after_load: [],
+			var _events = {
 
-			/**
-			 * ### Перед записью
-			 * Возникает перед записью объекта. В обработчике можно проверить корректность данных, рассчитать итоги и т.д.
-			 * Запись можно отклонить, если у пользователя недостаточно прав, либо введены некорректные данные
-			 *
-			 * @event before_save
-			 * @for DataManager
-			 */
-			before_save: [],
+				/**
+				 * ### После создания
+				 * Возникает после создания объекта. В обработчике можно установить значения по умолчанию для полей и табличных частей
+				 * или заполнить объект на основании данных связанного объекта
+				 *
+				 * @event after_create
+				 * @for DataManager
+				 */
+				after_create: [],
 
-			/**
-			 * ### После записи
-			 *
-			 * @event after_save
-			 * @for DataManager
-			 */
-			after_save: [],
+				/**
+				 * ### После чтения объекта с сервера
+				 * Имеет смысл для объектов с типом кеширования ("doc", "doc_remote", "meta", "e1cib").
+				 * т.к. структура _DataObj_ может отличаться от прототипа в базе-источнике, в обработчике можно дозаполнить или пересчитать реквизиты прочитанного объекта
+				 *
+				 * @event after_load
+				 * @for DataManager
+				 */
+				after_load: [],
 
-			/**
-			 * ### При изменении реквизита шапки или табличной части
-			 *
-			 * @event value_change
-			 * @for DataManager
-			 */
-			value_change: [],
+				/**
+				 * ### Перед записью
+				 * Возникает перед записью объекта. В обработчике можно проверить корректность данных, рассчитать итоги и т.д.
+				 * Запись можно отклонить, если у пользователя недостаточно прав, либо введены некорректные данные
+				 *
+				 * @event before_save
+				 * @for DataManager
+				 */
+				before_save: [],
 
-			/**
-			 * ### При добавлении строки табличной части
-			 *
-			 * @event add_row
-			 * @for DataManager
-			 */
-			add_row: [],
+				/**
+				 * ### После записи
+				 *
+				 * @event after_save
+				 * @for DataManager
+				 */
+				after_save: [],
 
-			/**
-			 * ### При удалении строки табличной части
-			 *
-			 * @event del_row
-			 * @for DataManager
-			 */
-			del_row: []
-		};
+				/**
+				 * ### При изменении реквизита шапки или табличной части
+				 *
+				 * @event value_change
+				 * @for DataManager
+				 */
+				value_change: [],
 
-		Object.defineProperties(this, {
+				/**
+				 * ### При добавлении строки табличной части
+				 *
+				 * @event add_row
+				 * @for DataManager
+				 */
+				add_row: [],
 
-			/**
-			 * ### Способ кеширования объектов этого менеджера
-			 *
-			 * Выполняет две функции:
-			 * - Указывает, нужно ли сохранять (искать) объекты в локальном кеше или сразу топать на сервер
-			 * - Указывает, нужно ли запоминать представления ссылок (инверсно).
-			 * Для кешируемых, представления ссылок запоминать необязательно, т.к. его быстрее вычислить по месту
-			 * @property cachable
-			 * @for DataManager
-			 * @type String - ("ram", "doc", "doc_remote", "meta", "e1cib")
-			 * @final
-			 */
-			cachable: {
-				get: () => {
+				/**
+				 * ### При удалении строки табличной части
+				 *
+				 * @event del_row
+				 * @for DataManager
+				 */
+				del_row: []
+			};
 
-					// перечисления кешируются всегда
-					if(class_name.indexOf("enm.") != -1)
+			Object.defineProperties(this, {
+
+				/**
+				 * ### Способ кеширования объектов этого менеджера
+				 *
+				 * Выполняет две функции:
+				 * - Указывает, нужно ли сохранять (искать) объекты в локальном кеше или сразу топать на сервер
+				 * - Указывает, нужно ли запоминать представления ссылок (инверсно).
+				 * Для кешируемых, представления ссылок запоминать необязательно, т.к. его быстрее вычислить по месту
+				 * @property cachable
+				 * @for DataManager
+				 * @type String - ("ram", "doc", "doc_remote", "meta", "e1cib")
+				 * @final
+				 */
+				cachable: {
+					get: () => {
+
+						// перечисления кешируются всегда
+						if(class_name.indexOf("enm.") != -1)
+							return "ram";
+
+						// Если в метаданных явно указано правило кеширования, используем его
+						if(_meta.cachable)
+							return _meta.cachable;
+
+						// документы, отчеты и обработки по умолчанию кешируем в idb, но в память не загружаем
+						if(class_name.indexOf("doc.") != -1 || class_name.indexOf("dp.") != -1 || class_name.indexOf("rep.") != -1)
+							return "doc";
+
+						// остальные классы по умолчанию кешируем и загружаем в память при старте
 						return "ram";
 
-					// Если в метаданных явно указано правило кеширования, используем его
-					if(_meta.cachable)
-						return _meta.cachable;
+					}
+				},
 
-					// документы, отчеты и обработки по умолчанию кешируем в idb, но в память не загружаем
-					if(class_name.indexOf("doc.") != -1 || class_name.indexOf("dp.") != -1 || class_name.indexOf("rep.") != -1)
-						return "doc";
+				/**
+				 * ### Имя типа объектов этого менеджера
+				 * @property class_name
+				 * @for DataManager
+				 * @type String
+				 * @final
+				 */
+				class_name: {
+					get: () => class_name
+				},
 
-					// остальные классы по умолчанию кешируем и загружаем в память при старте
-					return "ram";
+				/**
+				 * ### Указатель на массив, сопоставленный с таблицей локальной базы данных
+				 * Фактически - хранилище объектов данного класса
+				 * @property alatable
+				 * @for DataManager
+				 * @type Array
+				 * @final
+				 */
+				alatable: {
+					get: () => wsql.aladb.tables[this.table_name] ? wsql.aladb.tables[this.table_name].data : []
+				},
 
-				}
-			},
+				/**
+				 * ### Метаданные объекта
+				 * указатель на фрагмент глобальных метаданных, относящмйся к текущему объекту
+				 *
+				 * @method metadata
+				 * @for DataManager
+				 * @return {Object} - объект метаданных
+				 */
+				metadata: {
+					value: field => {
+						var _meta = $p.md.get(class_name);
+						if(field)
+							return _meta.fields[field] || _meta.tabular_sections[field];
+						else
+							return _meta;
+					}
+				},
 
-			/**
-			 * ### Имя типа объектов этого менеджера
-			 * @property class_name
-			 * @for DataManager
-			 * @type String
-			 * @final
-			 */
-			class_name: {
-				get: () => class_name
-			},
-
-			/**
-			 * ### Указатель на массив, сопоставленный с таблицей локальной базы данных
-			 * Фактически - хранилище объектов данного класса
-			 * @property alatable
-			 * @for DataManager
-			 * @type Array
-			 * @final
-			 */
-			alatable: {
-				get: () => wsql.aladb.tables[this.table_name] ? wsql.aladb.tables[this.table_name].data : []
-			},
-
-			/**
-			 * ### Метаданные объекта
-			 * указатель на фрагмент глобальных метаданных, относящмйся к текущему объекту
-			 *
-			 * @method metadata
-			 * @for DataManager
-			 * @return {Object} - объект метаданных
-			 */
-			metadata: {
-				value: field => {
-					var _meta = $p.md.get(class_name);
-					if(field)
-						return _meta.fields[field] || _meta.tabular_sections[field];
-					else
-						return _meta;
-				}
-			},
-
-			/**
-			 * ### Добавляет подписку на события объектов данного менеджера
-			 * В обработчиках событий можно реализовать бизнес-логику при создании, удалении и изменении объекта.
-			 * Например, заполнение шапки и табличных частей, пересчет одних полей при изменении других и т.д.
-			 *
-			 * @method on
-			 * @for DataManager
-			 * @param name {String|Object} - имя события [after_create, after_load, before_save, after_save, value_change, add_row, del_row]
-			 * @param [method] {Function} - добавляемый метод, если не задан в объекте первым параметром
-			 *
-			 * @example
-			 *
-			 *     // Обработчик при создании документа
-			 *     // @this {DataObj} - обработчик вызывается в контексте текущего объекта
-			 *     $p.doc.nom_prices_setup.on("after_create", function (attr) {
+				/**
+				 * ### Добавляет подписку на события объектов данного менеджера
+				 * В обработчиках событий можно реализовать бизнес-логику при создании, удалении и изменении объекта.
+				 * Например, заполнение шапки и табличных частей, пересчет одних полей при изменении других и т.д.
+				 *
+				 * @method on
+				 * @for DataManager
+				 * @param name {String|Object} - имя события [after_create, after_load, before_save, after_save, value_change, add_row, del_row]
+				 * @param [method] {Function} - добавляемый метод, если не задан в объекте первым параметром
+				 *
+				 * @example
+				 *
+				 *     // Обработчик при создании документа
+				 *     // @this {DataObj} - обработчик вызывается в контексте текущего объекта
+				 *     $p.doc.nom_prices_setup.on("after_create", function (attr) {
  *       // присваиваем новый номер документа
  *       return this.new_number_doc();
  *     });
-			 *
-			 *     // Обработчик события "при изменении свойства" в шапке или табличной части при редактировании в форме объекта
-			 *     // @this {DataObj} - обработчик вызывается в контексте текущего объекта
-			 *     $p.doc.nom_prices_setup.on("add_row", function (attr) {
+				 *
+				 *     // Обработчик события "при изменении свойства" в шапке или табличной части при редактировании в форме объекта
+				 *     // @this {DataObj} - обработчик вызывается в контексте текущего объекта
+				 *     $p.doc.nom_prices_setup.on("add_row", function (attr) {
  *       // установим валюту и тип цен по умолчению при добавлении строки
  *       if(attr.tabular_section == "goods"){
  *         attr.row.price_type = this.price_type;
  *         attr.row.currency = this.price_type.price_currency;
  *       }
  *     });
-			 *
-			 */
-			on: {
-				value: function (name, method) {
-					if(typeof name == "object"){
-						for(var n in name){
-							if(name.hasOwnProperty(n))
-								_events[n].push(name[n]);
-						}
-					}else
-						_events[name].push(method);
-				}
-			},
-
-			/**
-			 * ### Удаляет подписку на событие объектов данного менеджера
-			 *
-			 * @method off
-			 * @for DataManager
-			 * @param name {String} - имя события [after_create, after_load, before_save, after_save, value_change, add_row, del_row]
-			 * @param [method] {Function} - удаляемый метод. Если не задан, будут отключены все обработчики событий `name`
-			 */
-			off: {
-				value: function (name, method) {
-
-				}
-			},
-
-			/**
-			 * ### Выполняет методы подписки на событие
-			 * Служебный, внутренний метод, вызываемый формами и обсерверами при создании и изменении объекта данных<br/>
-			 * Выполняет в цикле все назначенные обработчики текущего события<br/>
-			 * Если любой из обработчиков вернул `false`, возвращает `false`. Иначе, возвращает массив с результатами всех обработчиков
-			 *
-			 * @method handle_event
-			 * @for DataManager
-			 * @param obj {DataObj} - объект, в котором произошло событие
-			 * @param name {String} - имя события
-			 * @param attr {Object} - дополнительные свойства, передаваемые в обработчик события
-			 * @return {Boolean|Array.<*>}
-			 * @private
-			 */
-			handle_event: {
-				value: function (obj, name, attr) {
-					var res = [], tmp;
-					_events[name].forEach(function (method) {
-						if(res !== false){
-							tmp = method.call(obj, attr);
-							if(tmp === false)
-								res = tmp;
-							else if(tmp)
-								res.push(tmp);
-						}
-					});
-					if(res === false){
-						return res;
-
-					}else if(res.length){
-						if(res.length == 1)
-						// если значение единственное - возвращчем его
-							return res[0];
-						else{
-							// если среди значений есть промисы - возвращаем all
-							if(res.some(function (v) {return typeof v === "object" && v.then}))
-								return Promise.all(res);
-							else
-								return res;
-						}
+				 *
+				 */
+				on: {
+					value: function (name, method) {
+						if(typeof name == "object"){
+							for(var n in name){
+								if(name.hasOwnProperty(n))
+									_events[n].push(name[n]);
+							}
+						}else
+							_events[name].push(method);
 					}
+				},
 
+				/**
+				 * ### Удаляет подписку на событие объектов данного менеджера
+				 *
+				 * @method off
+				 * @for DataManager
+				 * @param name {String} - имя события [after_create, after_load, before_save, after_save, value_change, add_row, del_row]
+				 * @param [method] {Function} - удаляемый метод. Если не задан, будут отключены все обработчики событий `name`
+				 */
+				off: {
+					value: function (name, method) {
+
+					}
+				},
+
+				/**
+				 * ### Выполняет методы подписки на событие
+				 * Служебный, внутренний метод, вызываемый формами и обсерверами при создании и изменении объекта данных<br/>
+				 * Выполняет в цикле все назначенные обработчики текущего события<br/>
+				 * Если любой из обработчиков вернул `false`, возвращает `false`. Иначе, возвращает массив с результатами всех обработчиков
+				 *
+				 * @method handle_event
+				 * @for DataManager
+				 * @param obj {DataObj} - объект, в котором произошло событие
+				 * @param name {String} - имя события
+				 * @param attr {Object} - дополнительные свойства, передаваемые в обработчик события
+				 * @return {Boolean|Array.<*>}
+				 * @private
+				 */
+				handle_event: {
+					value: function (obj, name, attr) {
+						var res = [], tmp;
+						_events[name].forEach(function (method) {
+							if(res !== false){
+								tmp = method.call(obj, attr);
+								if(tmp === false)
+									res = tmp;
+								else if(tmp)
+									res.push(tmp);
+							}
+						});
+						if(res === false){
+							return res;
+
+						}else if(res.length){
+							if(res.length == 1)
+							// если значение единственное - возвращчем его
+								return res[0];
+							else{
+								// если среди значений есть промисы - возвращаем all
+								if(res.some(function (v) {return typeof v === "object" && v.then}))
+									return Promise.all(res);
+								else
+									return res;
+							}
+						}
+
+					}
+				},
+
+				/**
+				 * ### Хранилище объектов данного менеджера
+				 */
+				by_ref: {
+					value: {}
 				}
-			},
-
-			/**
-			 * ### Хранилище объектов данного менеджера
-			 */
-			by_ref: {
-				value: {}
-			}
-		});
-
-	}
-
-	/**
-	 * ### Имя семейства объектов данного менеджера
-	 * Примеры: "справочников", "документов", "регистров сведений"
-	 * @property family_name
-	 * @for DataManager
-	 * @type String
-	 * @final
-	 */
-	get family_name(){
-		return msg["meta_"+this.class_name.split(".")[0]+"_mgr"].replace(msg.meta_mgr+" ", "");
-	}
-
-	/**
-	 * ### Имя таблицы объектов этого менеджера в базе alasql
-	 * @property table_name
-	 * @type String
-	 * @final
-	 */
-	get table_name(){
-		return this.class_name.replace(".", "_");
-	}
-
-	/**
-	 * ### Найти строки
-	 * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
-	 * Eсли отбор пустой, возвращаются все строки, закешированные в менеджере.
-	 * Имеет смысл для объектов, у которых _cachable = "ram"_
-	 * @method find_rows
-	 * @param selection {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: значение}
-	 * @param [callback] {Function} - в который передается текущий объект данных на каждой итерации
-	 * @return {Array}
-	 */
-	find_rows(selection, callback){
-		return utils._find_rows.call(this, this.by_ref, selection, callback);
-	}
-
-	/**
-	 * ### Дополнительные реквизиты
-	 * Массив дополнителных реквизитов (аналог подсистемы `Свойства` БСП) вычисляется через
-	 * ПВХ `НазначениеДополнительныхРеквизитов` или справочник `НазначениеСвойствКатегорийОбъектов`
-	 *
-	 * @property extra_fields
-	 * @type Array
-	 */
-	extra_fields(obj){
-		// ищем предопределенный элемент, сответствующий классу данных
-		var destinations = $p.cat.destinations || $p.cch.destinations,
-			pn = _md.class_name_to_1c(this.class_name).replace(".", "_"),
-			res = [];
-
-		if(destinations){
-			destinations.find_rows({predefined_name: pn}, destination => {
-				var ts = destination.extra_fields || destination.ДополнительныеРеквизиты;
-				if(ts){
-					ts.each(row => {
-						if(!row._deleted && !row.ПометкаУдаления)
-							res.push(row.property || row.Свойство);
-					});
-				}
-				return false;
-			})
+			});
 
 		}
 
-		return res;
-	}
-
-	/**
-	 * ### Дополнительные свойства
-	 * Массив дополнителных свойств (аналог подсистемы `Свойства` БСП) вычисляется через
-	 * ПВХ `НазначениеДополнительныхРеквизитов` или справочник `НазначениеСвойствКатегорийОбъектов`
-	 *
-	 * @property extra_properties
-	 * @type Array
-	 */
-	extra_properties(obj){
-		return [];
-	}
-
-	/**
-	 * ### Имя функции - конструктора объектов или строк табличных частей
-	 *
-	 * @method obj_constructor
-	 * @param [ts_name] {String}
-	 * @return {Function}
-	 */
-	obj_constructor(ts_name) {
-		var parts = this.class_name.split("."),
-			fn_name = parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + parts[1].charAt(0).toUpperCase() + parts[1].substr(1);
-
-		return ts_name ? fn_name + ts_name.charAt(0).toUpperCase() + ts_name.substr(1) + "Row" : fn_name;
-
-	}
-
-	/**
-	 * ### Выводит фрагмент списка объектов данного менеджера, ограниченный фильтром attr в grid
-	 *
-	 * @method sync_grid
-	 * @for DataManager
-	 * @param grid {dhtmlXGridObject}
-	 * @param attr {Object}
-	 */
-	sync_grid(attr, grid){
-
-		var mgr = this;
-
-		function request(){
-
-			if(typeof attr.custom_selection == "function"){
-				return attr.custom_selection(attr);
-
-			}else if(mgr.cachable == "ram"){
-
-				// запрос к alasql
-				if(attr.action == "get_tree")
-					return wsql.promise(mgr.get_sql_struct(attr), [])
-						.then($p.iface.data_to_tree);
-
-				else if(attr.action == "get_selection")
-					return wsql.promise(mgr.get_sql_struct(attr), [])
-						.then(data => $p.iface.data_to_grid.call(mgr, data, attr));
-
-			}else if(mgr.cachable.indexOf("doc") == 0){
-
-				// todo: запрос к pouchdb
-				if(attr.action == "get_tree")
-					return mgr.pouch_tree(attr);
-
-				else if(attr.action == "get_selection")
-					return mgr.pouch_selection(attr);
-
-			} else {
-
-				// запрос к серверу по сети
-				if(attr.action == "get_tree")
-					return mgr.rest_tree(attr);
-
-				else if(attr.action == "get_selection")
-					return mgr.rest_selection(attr);
-
-			}
+		/**
+		 * ### Имя семейства объектов данного менеджера
+		 * Примеры: "справочников", "документов", "регистров сведений"
+		 * @property family_name
+		 * @for DataManager
+		 * @type String
+		 * @final
+		 */
+		get family_name(){
+			return msg["meta_"+this.class_name.split(".")[0]+"_mgr"].replace(msg.meta_mgr+" ", "");
 		}
 
-		function to_grid(res){
+		/**
+		 * ### Имя таблицы объектов этого менеджера в базе alasql
+		 * @property table_name
+		 * @type String
+		 * @final
+		 */
+		get table_name(){
+			return this.class_name.replace(".", "_");
+		}
 
-			return new Promise(function(resolve, reject) {
+		/**
+		 * ### Найти строки
+		 * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
+		 * Eсли отбор пустой, возвращаются все строки, закешированные в менеджере.
+		 * Имеет смысл для объектов, у которых _cachable = "ram"_
+		 * @method find_rows
+		 * @param selection {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: значение}
+		 * @param [callback] {Function} - в который передается текущий объект данных на каждой итерации
+		 * @return {Array}
+		 */
+		find_rows(selection, callback){
+			return utils._find_rows.call(this, this.by_ref, selection, callback);
+		}
 
-				if(typeof res == "string"){
+		/**
+		 * ### Дополнительные реквизиты
+		 * Массив дополнителных реквизитов (аналог подсистемы `Свойства` БСП) вычисляется через
+		 * ПВХ `НазначениеДополнительныхРеквизитов` или справочник `НазначениеСвойствКатегорийОбъектов`
+		 *
+		 * @property extra_fields
+		 * @type Array
+		 */
+		extra_fields(obj){
+			// ищем предопределенный элемент, сответствующий классу данных
+			var destinations = $p.cat.destinations || $p.cch.destinations,
+				pn = _md.class_name_to_1c(this.class_name).replace(".", "_"),
+				res = [];
 
-					if(res.substr(0,1) == "{")
-						res = JSON.parse(res);
+			if(destinations){
+				destinations.find_rows({predefined_name: pn}, destination => {
+					var ts = destination.extra_fields || destination.ДополнительныеРеквизиты;
+					if(ts){
+						ts.each(row => {
+							if(!row._deleted && !row.ПометкаУдаления)
+								res.push(row.property || row.Свойство);
+						});
+					}
+					return false;
+				})
 
-					// загружаем строку в грид
-					if(grid && grid.parse){
-						grid.xmlFileUrl = "exec";
-						grid.parse(res, function(){
+			}
+
+			return res;
+		}
+
+		/**
+		 * ### Дополнительные свойства
+		 * Массив дополнителных свойств (аналог подсистемы `Свойства` БСП) вычисляется через
+		 * ПВХ `НазначениеДополнительныхРеквизитов` или справочник `НазначениеСвойствКатегорийОбъектов`
+		 *
+		 * @property extra_properties
+		 * @type Array
+		 */
+		extra_properties(obj){
+			return [];
+		}
+
+		/**
+		 * ### Имя функции - конструктора объектов или строк табличных частей
+		 *
+		 * @method obj_constructor
+		 * @param [ts_name] {String}
+		 * @return {Function}
+		 */
+		obj_constructor(ts_name) {
+			var parts = this.class_name.split("."),
+				fn_name = parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + parts[1].charAt(0).toUpperCase() + parts[1].substr(1);
+
+			return ts_name ? fn_name + ts_name.charAt(0).toUpperCase() + ts_name.substr(1) + "Row" : fn_name;
+
+		}
+
+		/**
+		 * ### Выводит фрагмент списка объектов данного менеджера, ограниченный фильтром attr в grid
+		 *
+		 * @method sync_grid
+		 * @for DataManager
+		 * @param grid {dhtmlXGridObject}
+		 * @param attr {Object}
+		 */
+		sync_grid(attr, grid){
+
+			var mgr = this;
+
+			function request(){
+
+				if(typeof attr.custom_selection == "function"){
+					return attr.custom_selection(attr);
+
+				}else if(mgr.cachable == "ram"){
+
+					// запрос к alasql
+					if(attr.action == "get_tree")
+						return wsql.promise(mgr.get_sql_struct(attr), [])
+							.then($p.iface.data_to_tree);
+
+					else if(attr.action == "get_selection")
+						return wsql.promise(mgr.get_sql_struct(attr), [])
+							.then(data => $p.iface.data_to_grid.call(mgr, data, attr));
+
+				}else if(mgr.cachable.indexOf("doc") == 0){
+
+					// todo: запрос к pouchdb
+					if(attr.action == "get_tree")
+						return mgr.pouch_tree(attr);
+
+					else if(attr.action == "get_selection")
+						return mgr.pouch_selection(attr);
+
+				} else {
+
+					// запрос к серверу по сети
+					if(attr.action == "get_tree")
+						return mgr.rest_tree(attr);
+
+					else if(attr.action == "get_selection")
+						return mgr.rest_selection(attr);
+
+				}
+			}
+
+			function to_grid(res){
+
+				return new Promise(function(resolve, reject) {
+
+					if(typeof res == "string"){
+
+						if(res.substr(0,1) == "{")
+							res = JSON.parse(res);
+
+						// загружаем строку в грид
+						if(grid && grid.parse){
+							grid.xmlFileUrl = "exec";
+							grid.parse(res, function(){
+								resolve(res);
+							}, "xml");
+						}else
 							resolve(res);
-						}, "xml");
+
+					}else if(grid instanceof dhtmlXTreeView && grid.loadStruct){
+						grid.loadStruct(res, function(){
+							resolve(res);
+						});
+
 					}else
 						resolve(res);
 
-				}else if(grid instanceof dhtmlXTreeView && grid.loadStruct){
-					grid.loadStruct(res, function(){
-						resolve(res);
-					});
-
-				}else
-					resolve(res);
-
-			});
-
-		}
-
-		// TODO: переделать обработку catch()
-		return request()
-			.then(to_grid)
-			.catch($p.record_log);
-
-	}
-
-	/**
-	 * ### Возвращает массив доступных значений для комбобокса
-	 * @method get_option_list
-	 * @for DataManager
-	 * @param val {DataObj|String} - текущее значение
-	 * @param [selection] {Object} - отбор, который будет наложен на список
-	 * @param [selection._top] {Number} - ограничивает длину возвращаемого массива
-	 * @return {Promise.<Array>}
-	 */
-	get_option_list(val, selection){
-
-		var t = this, l = [], input_by_string, text, sel;
-
-		function check(v){
-			if(utils.is_equal(v.value, val))
-				v.selected = true;
-			return v;
-		}
-
-		// поиск по строке
-		if(selection.presentation && (input_by_string = t.metadata().input_by_string)){
-			text = selection.presentation.like;
-			delete selection.presentation;
-			selection.or = [];
-			input_by_string.forEach(function (fld) {
-				sel = {};
-				sel[fld] = {like: text};
-				selection.or.push(sel);
-			})
-		}
-
-		if(t.cachable == "ram" || (selection && selection._local)) {
-			t.find_rows(selection, function (v) {
-				l.push(check({text: v.presentation, value: v.ref}));
-			});
-			return Promise.resolve(l);
-
-		}else if(t.cachable != "e1cib"){
-			return t.pouch_find_rows(selection)
-				.then(function (data) {
-					data.forEach(function (v) {
-						l.push(check({
-							text: v.presentation,
-							value: v.ref}));
-					});
-					return l;
 				});
 
-		}else{
-			// для некешируемых выполняем запрос к серверу
-			var attr = { selection: selection, top: selection._top},
-				is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
-			delete selection._top;
+			}
 
-			if(is_doc)
-				attr.fields = ["ref", "date", "number_doc"];
+			// TODO: переделать обработку catch()
+			return request()
+				.then(to_grid)
+				.catch($p.record_log);
 
-			else if(t.metadata().main_presentation_name)
-				attr.fields = ["ref", "name"];
-			else
-				attr.fields = ["ref", "id"];
+		}
 
-			return _rest.load_array(attr, t)
-				.then(function (data) {
-					data.forEach(function (v) {
-						l.push(check({
-							text: is_doc ? (v.number_doc + " от " + utils.moment(v.date).format(urils.moment._masks.ldt)) : (v.name || v.id),
-							value: v.ref}));
-					});
-					return l;
+		/**
+		 * ### Возвращает массив доступных значений для комбобокса
+		 * @method get_option_list
+		 * @for DataManager
+		 * @param val {DataObj|String} - текущее значение
+		 * @param [selection] {Object} - отбор, который будет наложен на список
+		 * @param [selection._top] {Number} - ограничивает длину возвращаемого массива
+		 * @return {Promise.<Array>}
+		 */
+		get_option_list(val, selection){
+
+			var t = this, l = [], input_by_string, text, sel;
+
+			function check(v){
+				if(utils.is_equal(v.value, val))
+					v.selected = true;
+				return v;
+			}
+
+			// поиск по строке
+			if(selection.presentation && (input_by_string = t.metadata().input_by_string)){
+				text = selection.presentation.like;
+				delete selection.presentation;
+				selection.or = [];
+				input_by_string.forEach(function (fld) {
+					sel = {};
+					sel[fld] = {like: text};
+					selection.or.push(sel);
+				})
+			}
+
+			if(t.cachable == "ram" || (selection && selection._local)) {
+				t.find_rows(selection, function (v) {
+					l.push(check({text: v.presentation, value: v.ref}));
 				});
-		}
-	}
+				return Promise.resolve(l);
 
-	/**
-	 * Заполняет свойства в объекте source в соответствии с реквизитами табчасти
-	 * @param tabular {String} - имя табчасти
-	 * @param source {Object}
-	 */
-	tabular_captions(tabular, source) {
+			}else if(t.cachable != "e1cib"){
+				return t.pouch_find_rows(selection)
+					.then(function (data) {
+						data.forEach(function (v) {
+							l.push(check({
+								text: v.presentation,
+								value: v.ref}));
+						});
+						return l;
+					});
 
-	}
+			}else{
+				// для некешируемых выполняем запрос к серверу
+				var attr = { selection: selection, top: selection._top},
+					is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
+				delete selection._top;
 
-	/**
-	 * Печатает объект
-	 * @method print
-	 * @param ref {DataObj|String} - guid ссылки на объект
-	 * @param model {String|DataObj.cat.formulas} - идентификатор команды печати
-	 * @param [wnd] {dhtmlXWindows} - окно, из которого вызываем печать
-	 */
-	print(ref, model, wnd){
+				if(is_doc)
+					attr.fields = ["ref", "date", "number_doc"];
 
-		function tune_wnd_print(wnd_print){
-			if(wnd && wnd.progressOff)
-				wnd.progressOff();
-			if(wnd_print)
-				wnd_print.focus();
-		}
+				else if(t.metadata().main_presentation_name)
+					attr.fields = ["ref", "name"];
+				else
+					attr.fields = ["ref", "id"];
 
-		if(wnd && wnd.progressOn)
-			wnd.progressOn();
-
-		setTimeout(tune_wnd_print, 3000);
-
-		// если _printing_plates содержит ссылку на обрабочтик печати, используем его
-		if(this._printing_plates[model] instanceof DataObj)
-			model = this._printing_plates[model];
-
-		// если существует локальный обработчик, используем его
-		if(model instanceof DataObj && model.execute){
-
-			if(ref instanceof DataObj)
-				return model.execute(ref)
-					.then(tune_wnd_print);
-			else
-				return this.get(ref, true, true)
-					.then(model.execute.bind(model))
-					.then(tune_wnd_print);
-
-		}else{
-
-			// иначе - печатаем средствами 1С или иного сервера
-			var rattr = {};
-			$p.ajax.default_attr(rattr, job_prm.irest_url());
-			rattr.url += this.rest_name + "(guid'" + utils.fix_guid(ref) + "')" +
-				"/Print(model=" + model + ", browser_uid=" + wsql.get_user_param("browser_uid") +")";
-
-			return $p.ajax.get_and_show_blob(rattr.url, rattr, "get")
-				.then(tune_wnd_print);
-		}
-
-	}
-
-	/**
-	 * Возвращает промис со структурой печатных форм объекта
-	 * @return {Promise.<Object>}
-	 */
-	printing_plates(){
-		var rattr = {}, t = this;
-
-		if(!t._printing_plates){
-			if(t.metadata().printing_plates)
-				t._printing_plates = t.metadata().printing_plates;
-
-			else if(t.metadata().cachable == "ram" || (t.metadata().cachable && t.metadata().cachable.indexOf("doc") == 0)){
-				t._printing_plates = {};
+				return _rest.load_array(attr, t)
+					.then(function (data) {
+						data.forEach(function (v) {
+							l.push(check({
+								text: is_doc ? (v.number_doc + " от " + moment(v.date).format(moment._masks.ldt)) : (v.name || v.id),
+								value: v.ref}));
+						});
+						return l;
+					});
 			}
 		}
 
-		if(!t._printing_plates && $p.ajax.authorized){
-			$p.ajax.default_attr(rattr, job_prm.irest_url());
-			rattr.url += t.rest_name + "/Print()";
-			return $p.ajax.get_ex(rattr.url, rattr)
-				.then(function (req) {
-					t._printing_plates = JSON.parse(req.response);
-					return t._printing_plates;
-				})
-				.catch(function () {
-				})
-				.then(function (pp) {
-					return pp || (t._printing_plates = {});
-				});
+		/**
+		 * Заполняет свойства в объекте source в соответствии с реквизитами табчасти
+		 * @param tabular {String} - имя табчасти
+		 * @param source {Object}
+		 */
+		tabular_captions(tabular, source) {
+
 		}
 
-		return Promise.resolve(t._printing_plates);
+		/**
+		 * Печатает объект
+		 * @method print
+		 * @param ref {DataObj|String} - guid ссылки на объект
+		 * @param model {String|DataObj.cat.formulas} - идентификатор команды печати
+		 * @param [wnd] {dhtmlXWindows} - окно, из которого вызываем печать
+		 */
+		print(ref, model, wnd){
 
+			function tune_wnd_print(wnd_print){
+				if(wnd && wnd.progressOff)
+					wnd.progressOff();
+				if(wnd_print)
+					wnd_print.focus();
+			}
+
+			if(wnd && wnd.progressOn)
+				wnd.progressOn();
+
+			setTimeout(tune_wnd_print, 3000);
+
+			// если _printing_plates содержит ссылку на обрабочтик печати, используем его
+			if(this._printing_plates[model] instanceof DataObj)
+				model = this._printing_plates[model];
+
+			// если существует локальный обработчик, используем его
+			if(model instanceof DataObj && model.execute){
+
+				if(ref instanceof DataObj)
+					return model.execute(ref)
+						.then(tune_wnd_print);
+				else
+					return this.get(ref, true, true)
+						.then(model.execute.bind(model))
+						.then(tune_wnd_print);
+
+			}else{
+
+				// иначе - печатаем средствами 1С или иного сервера
+				var rattr = {};
+				$p.ajax.default_attr(rattr, job_prm.irest_url());
+				rattr.url += this.rest_name + "(guid'" + utils.fix_guid(ref) + "')" +
+					"/Print(model=" + model + ", browser_uid=" + wsql.get_user_param("browser_uid") +")";
+
+				return $p.ajax.get_and_show_blob(rattr.url, rattr, "get")
+					.then(tune_wnd_print);
+			}
+
+		}
+
+		/**
+		 * Возвращает промис со структурой печатных форм объекта
+		 * @return {Promise.<Object>}
+		 */
+		printing_plates(){
+			var rattr = {}, t = this;
+
+			if(!t._printing_plates){
+				if(t.metadata().printing_plates)
+					t._printing_plates = t.metadata().printing_plates;
+
+				else if(t.metadata().cachable == "ram" || (t.metadata().cachable && t.metadata().cachable.indexOf("doc") == 0)){
+					t._printing_plates = {};
+				}
+			}
+
+			if(!t._printing_plates && $p.ajax.authorized){
+				$p.ajax.default_attr(rattr, job_prm.irest_url());
+				rattr.url += t.rest_name + "/Print()";
+				return $p.ajax.get_ex(rattr.url, rattr)
+					.then(function (req) {
+						t._printing_plates = JSON.parse(req.response);
+						return t._printing_plates;
+					})
+					.catch(function () {
+					})
+					.then(function (pp) {
+						return pp || (t._printing_plates = {});
+					});
+			}
+
+			return Promise.resolve(t._printing_plates);
+
+		}
 	}
-}
-
-function mngrs($p) {
 
 	/**
 	 * ### Aбстрактный менеджер ссылочных данных
@@ -1454,7 +1455,7 @@ function mngrs($p) {
 		}
 
 		push(o, new_ref){
-			this.__define(new_ref, {
+			Object.defineProperty(this, "new_ref", {
 				value : o
 			});
 		}
@@ -2011,7 +2012,7 @@ function mngrs($p) {
 					key += "0";
 
 				else if(dimensions[j].date_part)
-					key += utils.moment(attr[j] || utils.blank.date).format(utils.moment.defaultFormatUtc);
+					key += moment(attr[j] || utils.blank.date).format(moment.defaultFormatUtc);
 
 				else if(attr[j]!=undefined)
 					key += String(attr[j]);
@@ -2269,7 +2270,7 @@ function mngrs($p) {
 
 			data.forEach(row => {
 				xml += "<row id=\"" + row.ref + "\"><cell>" +
-					utils.moment(row.date - wsql.time_diff).format("DD.MM.YYYY HH:mm:ss") + "." + row.sequence + "</cell>" +
+					moment(row.date - wsql.time_diff).format("DD.MM.YYYY HH:mm:ss") + "." + row.sequence + "</cell>" +
 					"<cell>" + (row.class || "") + "</cell><cell>" + (row.note || "") + "</cell></row>";
 			});
 
@@ -2374,7 +2375,7 @@ function mngrs($p) {
 		 * @param ref {String|CatObj} - ссылка или объект данных
 		 * @return {string} - строка пути элемента
 		 */
-		async path(ref) {
+		path(ref) {
 			var res = [], tobj;
 
 			if (ref instanceof DataObj)
@@ -2394,7 +2395,7 @@ function mngrs($p) {
 				}
 			}
 
-			return await Promise.resolve(res);
+			return res;
 		};
 
 	}
@@ -2613,7 +2614,7 @@ function mngrs($p) {
 		toString(){return msg.meta_bp_mgr}
 	}
 
-	$p.__define({
+	Object.defineProperties($p, {
 
 
 		/**
@@ -2710,7 +2711,7 @@ function mngrs($p) {
 		 * @type Tasks
 		 * @static
 		 */
-		bp: { value: 	new BusinessProcesses() },
+		bp: { value: new BusinessProcesses() },
 
 		DataManager: { value: DataManager },
 
@@ -2739,6 +2740,23 @@ function mngrs($p) {
 		TaskManager: { value: TaskManager },
 
 		BusinessProcessManager: { value: BusinessProcessManager },
+
+		DataObj: { value: DataObj },
+
+		CatObj: { value: CatObj },
+
+		DocObj: { value: DocObj },
+
+		DataProcessorObj: { value: DataProcessorObj },
+
+		TaskObj: { value: TaskObj },
+
+		BusinessProcessObj: { value: BusinessProcessObj },
+
+		EnumObj: { value: EnumObj },
+
+		RegisterRow: { value: RegisterRow },
+
 
 	});
 }

@@ -58,7 +58,7 @@ class DataObj {
 			_obj.ref = manager.get_ref(attr);
 
 
-		this.__define({
+		Object.defineProperties(this, {
 
 			/**
 			 * ### Фактическое хранилище данных объекта
@@ -107,8 +107,7 @@ class DataObj {
 				configurable: true
 			}
 
-		});
-
+		})
 
 		if(manager.alatable && manager.push){
 			manager.alatable.push(_obj);
@@ -578,6 +577,22 @@ class DataObj {
 		}
 	}
 
+	_mixin_attr(attr){
+
+		if(attr && typeof attr == "object"){
+			if(attr._not_set_loaded){
+				delete attr._not_set_loaded;
+				utils._mixin(this, attr);
+
+			}else{
+				utils._mixin(this, attr);
+
+				if(!utils.is_empty_guid(this.ref) && (attr.id || attr.name))
+					this._set_loaded(this.ref);
+			}
+		}
+	}
+
 
 	/**
 	 * ### Выполняет команду печати
@@ -596,22 +611,19 @@ class DataObj {
 
 }
 
-DataObj.prototype.__define({
+/**
+ * guid ссылки объекта
+ * @property ref
+ * @for DataObj
+ * @type String
+ */
+Object.defineProperty(DataObj.prototype, "ref", {
+	get : function(){ return this._obj.ref},
+	set : function(v){ this._obj.ref = utils.fix_guid(v)},
+	enumerable : true,
+	configurable: true
+})
 
-	/**
-	 * guid ссылки объекта
-	 * @property ref
-	 * @for DataObj
-	 * @type String
-	 */
-	ref: {
-		get : function(){ return this._obj.ref},
-		set : function(v){ this._obj.ref = utils.fix_guid(v)},
-		enumerable : true,
-		configurable: true
-	}
-
-});
 
 
 /**
@@ -622,12 +634,16 @@ DataObj.prototype.__define({
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
  */
-function CatObj(attr, manager) {
+class CatObj extends DataObj{
 
-	var _presentation = "";
+	constructor(attr, manager){
 
-	// выполняем конструктор родительского объекта
-	CatObj.superclass.constructor.call(this, attr, manager);
+		// выполняем конструктор родительского объекта
+		super(attr, manager);
+
+		this._mixin_attr(attr);
+
+	}
 
 	/**
 	 * Представление объекта
@@ -635,65 +651,54 @@ function CatObj(attr, manager) {
 	 * @for CatObj
 	 * @type String
 	 */
-	this.__define('presentation', {
-		get : function(){
-
-			if(this.name || this.id){
-				// return this._metadata.obj_presentation || this._metadata.synonym + " " + this.name || this.id;
-				return this.name || this.id || this._metadata.obj_presentation || this._metadata.synonym;
-			}else
-				return _presentation;
-
-		},
-		set : function(v){
-			if(v)
-				_presentation = String(v);
-		}
-	});
-
-	if(attr && typeof attr == "object"){
-		if(attr._not_set_loaded){
-			delete attr._not_set_loaded;
-			utils._mixin(this, attr);
-		}else{
-			utils._mixin(this, attr);
-			if(!utils.is_empty_guid(this.ref) && (attr.id || attr.name))
-				this._set_loaded(this.ref);
-		}
+	get presentation(){
+		if(this.name || this.id){
+			// return this._metadata.obj_presentation || this._metadata.synonym + " " + this.name || this.id;
+			return this.name || this.id || this._metadata.obj_presentation || this._metadata.synonym;
+		}else
+			return this._presentation || '';
+	}
+	/**
+	 * @type String
+	 */
+	set presentation(v){
+		if(v)
+			this._presentation = String(v);
 	}
 
-	attr = null;
-
 }
-CatObj._extend(DataObj);
+Object.defineProperties(CatObj.prototype, {
 
-/**
- * ### Код элемента справочника
- * @property id
- * @type String|Number
- */
-CatObj.prototype.__define('id', {
-	get : function(){ return this._obj.id || ""},
-	set : function(v){
-		this.__notify('id');
-		this._obj.id = v;
+	/**
+	 * ### Код элемента справочника
+	 * @property id
+	 * @type String|Number
+	 */
+	id: {
+		get : function(){ return this._obj.id || ""},
+		set : function(v){
+			this.__notify('id');
+			this._obj.id = v;
+		},
+		enumerable: true
 	},
-	enumerable: true
-});
 
-/**
- * ### Наименование элемента справочника
- * @property name
- * @type String
- */
-CatObj.prototype.__define('name', {
-	get : function(){ return this._obj.name || ""},
-	set : function(v){
-		this.__notify('name');
-		this._obj.name = String(v);
-	},
-	enumerable: true
-});
+	/**
+	 * ### Наименование элемента справочника
+	 * @property name
+	 * @type String
+	 */
+	name: {
+		get : function(){ return this._obj.name || ""},
+		set : function(v){
+			this.__notify('name');
+			this._obj.name = String(v);
+		},
+		enumerable: true
+	}
+})
+
+
 
 
 /**
@@ -704,12 +709,16 @@ CatObj.prototype.__define('name', {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
  */
-function DocObj(attr, manager) {
+class DocObj extends DataObj{
 
-	var _presentation = "";
+	constructor(attr, manager){
 
-	// выполняем конструктор родительского объекта
-	DocObj.superclass.constructor.call(this, attr, manager);
+		// выполняем конструктор родительского объекта
+		super(attr, manager);
+
+		this._mixin_attr(attr);
+
+	}
 
 	/**
 	 * Представление объекта
@@ -717,33 +726,26 @@ function DocObj(attr, manager) {
 	 * @for DocObj
 	 * @type String
 	 */
-	this.__define('presentation', {
-		get : function(){
+	get presentation(){
+		if(this.number_doc)
+			return (this._metadata.obj_presentation || this._metadata.synonym) + ' №' + this.number_doc + " от " + moment(this.date).format(moment._masks.ldt);
+		else
+			return this._presentation || "";
+	}
+	/**
+	 * @type String
+	 */
+	set presentation(v){
+		if(v)
+			this._presentation = String(v);
+	}
 
-			if(this.number_doc)
-				return (this._metadata.obj_presentation || this._metadata.synonym) + ' №' + this.number_doc + " от " + utils.moment(this.date).format(utils.moment._masks.ldt);
-			else
-				return _presentation;
-
-		},
-		set : function(v){
-			if(v)
-				_presentation = String(v);
-		}
-	});
-
-	if(attr && typeof attr == "object")
-		utils._mixin(this, attr);
-
-	if(!utils.is_empty_guid(this.ref) && attr.number_doc)
-		this._set_loaded(this.ref);
-
-	attr = null;
 }
-DocObj._extend(DataObj);
+
 
 function doc_props_date_number(proto){
-	proto.__define({
+
+	Object.defineProperties(proto, {
 
 		/**
 		 * Номер документа
@@ -772,25 +774,22 @@ function doc_props_date_number(proto){
 			},
 			enumerable: true
 		}
+
 	});
 }
 
-DocObj.prototype.__define({
-
-	/**
-	 * Признак проведения
-	 * @property posted
-	 * @type {Boolean}
-	 */
-	posted: {
-		get : function(){ return this._obj.posted || false},
-		set : function(v){
-			this.__notify('posted');
-			this._obj.posted = utils.fix_boolean(v);
-		},
-		enumerable: true
-	}
-
+/**
+ * Признак проведения
+ * @property posted
+ * @type {Boolean}
+ */
+Object.defineProperty(DocObj.prototype, "posted", {
+	get : function(){ return this._obj.posted || false},
+	set : function(v){
+		this.__notify('posted');
+		this._obj.posted = utils.fix_boolean(v);
+	},
+	enumerable: true
 });
 doc_props_date_number(DocObj.prototype);
 
@@ -803,21 +802,24 @@ doc_props_date_number(DocObj.prototype);
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {DataManager}
  */
-function DataProcessorObj(attr, manager) {
+class DataProcessorObj extends DataObj {
 
-	// выполняем конструктор родительского объекта
-	DataProcessorObj.superclass.constructor.call(this, attr, manager);
+	constructor(attr, manager) {
 
-	var f, cmd = manager.metadata();
-	for(f in cmd.fields)
-		attr[f] = utils.fetch_type("", cmd.fields[f].type);
-	for(f in cmd["tabular_sections"])
-		attr[f] = [];
+		// выполняем конструктор родительского объекта
+		super(attr, manager);
 
-	utils._mixin(this, attr);
+		var f, cmd = manager.metadata();
+		for(f in cmd.fields)
+			attr[f] = utils.fetch_type("", cmd.fields[f].type);
+		for(f in cmd["tabular_sections"])
+			attr[f] = [];
 
+		utils._mixin(this, attr);
+
+	}
 }
-DataProcessorObj._extend(DataObj);
+
 
 
 /**
@@ -828,14 +830,7 @@ DataProcessorObj._extend(DataObj);
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {DataManager}
  */
-function TaskObj(attr, manager) {
-
-	// выполняем конструктор родительского объекта
-	TaskObj.superclass.constructor.call(this, attr, manager);
-
-
-}
-TaskObj._extend(CatObj);
+class TaskObj extends CatObj {}
 doc_props_date_number(TaskObj.prototype);
 
 
@@ -847,14 +842,7 @@ doc_props_date_number(TaskObj.prototype);
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {DataManager}
  */
-function BusinessProcessObj(attr, manager) {
-
-	// выполняем конструктор родительского объекта
-	BusinessProcessObj.superclass.constructor.call(this, attr, manager);
-
-
-}
-BusinessProcessObj._extend(CatObj);
+class BusinessProcessObj extends CatObj {}
 doc_props_date_number(BusinessProcessObj.prototype);
 
 
@@ -868,18 +856,17 @@ doc_props_date_number(BusinessProcessObj.prototype);
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {EnumManager}
  */
-function EnumObj(attr, manager) {
+class EnumObj extends DataObj {
 
-	// выполняем конструктор родительского объекта
-	EnumObj.superclass.constructor.call(this, attr, manager);
+	constructor(attr, manager) {
 
-	if(attr && typeof attr == "object")
-		utils._mixin(this, attr);
+		// выполняем конструктор родительского объекта
+		super(attr, manager);
 
-}
-EnumObj._extend(DataObj);
+		if(attr && typeof attr == "object")
+			utils._mixin(this, attr);
 
-EnumObj.prototype.__define({
+	}
 
 	/**
 	 * Порядок элемента перечисления
@@ -887,11 +874,16 @@ EnumObj.prototype.__define({
 	 * @for EnumObj
 	 * @type Number
 	 */
-	order: {
-		get : function(){ return this._obj.sequence},
-		set : function(v){ this._obj.sequence = parseInt(v)},
-		enumerable: true
-	},
+	get order() {
+		return this._obj.sequence
+	}
+	/**
+	 * @type Number
+	 */
+	set order(v) {
+		this._obj.sequence = parseInt(v)
+	}
+
 
 	/**
 	 * Наименование элемента перечисления
@@ -899,11 +891,15 @@ EnumObj.prototype.__define({
 	 * @for EnumObj
 	 * @type String
 	 */
-	name: {
-		get : function(){ return this._obj.ref},
-		set : function(v){ this._obj.ref = String(v)},
-		enumerable: true
-	},
+	get name() {
+		return this._obj.ref
+	}
+	/**
+	 * @type String
+	 */
+	set name(v) {
+		this._obj.ref = String(v)
+	}
 
 	/**
 	 * Синоним элемента перечисления
@@ -911,11 +907,15 @@ EnumObj.prototype.__define({
 	 * @for EnumObj
 	 * @type String
 	 */
-	synonym: {
-		get : function(){ return this._obj.synonym || ""},
-		set : function(v){ this._obj.synonym = String(v)},
-		enumerable: true
-	},
+	get synonym() {
+		return this._obj.synonym || ""
+	}
+	/**
+	 * @type String
+	 */
+	set synonym(v) {
+		this._obj.synonym = String(v)
+	}
 
 	/**
 	 * Представление объекта
@@ -923,11 +923,9 @@ EnumObj.prototype.__define({
 	 * @for EnumObj
 	 * @type String
 	 */
-	presentation: {
-		get : function(){
-			return this.synonym || this.name;
-		}
-	},
+	get presentation() {
+		return this.synonym || this.name;
+	}
 
 	/**
 	 * Проверяет, является ли ссылка объекта пустой
@@ -935,12 +933,10 @@ EnumObj.prototype.__define({
 	 * @for EnumObj
 	 * @return {boolean} - true, если ссылка пустая
 	 */
-	empty: {
-		value: function(){
-			return !this.ref || this.ref == "_";
-		}
+	empty() {
+		return !this.ref || this.ref == "_";
 	}
-});
+}
 
 
 /**
@@ -953,28 +949,27 @@ EnumObj.prototype.__define({
  * @param attr {object} - объект, по которому запись будет заполнена
  * @param manager {InfoRegManager|AccumRegManager}
  */
-function RegisterRow(attr, manager){
+class RegisterRow extends DataObj {
 
-	// выполняем конструктор родительского объекта
-	RegisterRow.superclass.constructor.call(this, attr, manager);
+	constructor(attr, manager) {
 
-	if(attr && typeof attr == "object")
-		utils._mixin(this, attr);
+		// выполняем конструктор родительского объекта
+		super(attr, manager);
 
-	for(var check in manager.metadata().dimensions){
-		if(!attr.hasOwnProperty(check) && attr.ref){
-			var keys = attr.ref.split("¶");
-			Object.keys(manager.metadata().dimensions).forEach(function (fld, ind) {
-				this[fld] = keys[ind];
-			}.bind(this));
-			break;
+		if (attr && typeof attr == "object")
+			utils._mixin(this, attr);
+
+		for (var check in manager.metadata().dimensions) {
+			if (!attr.hasOwnProperty(check) && attr.ref) {
+				var keys = attr.ref.split("¶");
+				Object.keys(manager.metadata().dimensions).forEach((fld, ind) => {
+					this[fld] = keys[ind]
+				});
+				break;
+			}
 		}
+
 	}
-
-}
-RegisterRow._extend(DataObj);
-
-RegisterRow.prototype.__define({
 
 	/**
 	 * Метаданные строки регистра
@@ -982,32 +977,27 @@ RegisterRow.prototype.__define({
 	 * @for RegisterRow
 	 * @type Object
 	 */
-	_metadata: {
-		get: function () {
-			var _meta = this._manager.metadata();
-			if (!_meta.fields)
-				_meta.fields = utils._mixin(
-					utils._mixin(
-						utils._mixin({}, _meta.dimensions),  _meta.resources), _meta.attributes);
-			return _meta;
-		}
-	},
+	get _metadata() {
+		var _meta = this._manager.metadata();
+		if (!_meta.fields)
+			_meta.fields = utils._mixin(
+				utils._mixin(
+					utils._mixin({}, _meta.dimensions), _meta.resources), _meta.attributes);
+		return _meta;
+	}
+
 
 	/**
 	 * Ключ записи регистра
 	 */
-	ref: {
-		get : function(){
-			return this._manager.get_ref(this);
-		},
-		enumerable: true
-	},
-
-	presentation: {
-		get: function () {
-			return this._metadata.obj_presentation || this._metadata.synonym;
-		}
+	get ref() {
+		return this._manager.get_ref(this);
 	}
-});
+
+	get presentation() {
+		return this._metadata.obj_presentation || this._metadata.synonym;
+	}
+}
+
 
 

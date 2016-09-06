@@ -296,21 +296,21 @@ gulp.task('build-new-core', function(){
 		'./packages/metadata-core/engine/utils.js',
 		'./packages/metadata-core/engine/i18n.ru.js',
 		'./packages/metadata-core/engine/jobprm.js',
-		'./packages/metadata-core/engine/ajax.js',
 		'./packages/metadata-core/engine/wsql.js',
 		'./packages/metadata-core/engine/mngrs.js',
 		'./packages/metadata-core/engine/objs.js',
+		'./packages/metadata-core/engine/tabulars.js',
 		'./packages/metadata-core/engine/meta.js',
-		'./lib/aes/aes.js',
+		'./packages/metadata-core/lib/aes.js',
 		'./packages/metadata-core/engine/common.js'
 	])
 		.pipe(concat('index.js'))
-		// .pipe(babel({
-		// 	presets: ['es2015'],
-		// 	plugins: ["transform-async-to-generator"]
-		// }))
 		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
 		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
+		.pipe(babel({
+			presets: ['es2015'],
+			plugins: ["transform-async-to-generator"]
+		}))
 		.pipe(gulp.dest('./packages/metadata-core'))
 		// .pipe(rename('metadata.core.min.js'))
 		// .pipe(uglify({

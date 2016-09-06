@@ -33,13 +33,11 @@
  * @menuorder 00
  * @tooltip Контекст metadata.js
  */
-export class MetaEngine{
+class MetaEngine{
 
 	constructor() {
 
-		const $p = this;
-
-		this.__define({
+		Object.defineProperties(this, {
 
 			version: {
 				value: "PACKAGE_VERSION",
@@ -59,13 +57,12 @@ export class MetaEngine{
 			injected_data: { value: {} },
 
 			/**
-			 * Наша promise-реализация ajax
-			 *
-			 * @property ajax
-			 * @type Ajax
+			 * ### Параметры работы программы
+			 * @property job_prm
+			 * @type JobPrm
 			 * @final
 			 */
-			ajax: { value: new Ajax() },
+			job_prm: {value: new JobPrm()},
 
 			/**
 			 * Интерфейс к данным в LocalStorage, AlaSQL и IndexedDB
@@ -76,15 +73,6 @@ export class MetaEngine{
 			wsql: { value: new WSQL() },
 
 			/**
-			 * Обработчики событий приложения
-			 * Подробнее см. модули {{#crossLinkModule "events"}}{{/crossLinkModule}} и {{#crossLinkModule "events.ui"}}{{/crossLinkModule}}
-			 * @property eve
-			 * @type AppEvents
-			 * @final
-			 */
-			eve: { value: new AppEvents() },
-
-			/**
 			 * Aes для шифрования - дешифрования данных
 			 *
 			 * @property aes
@@ -92,7 +80,6 @@ export class MetaEngine{
 			 * @final
 			 */
 			aes: { value: new Aes("metadata.js") },
-
 
 			/**
 			 * ### Подключает обработчики событий
@@ -125,12 +112,12 @@ export class MetaEngine{
 				value: function (id) {
 					if(typeof id == "function" && id._evnts){
 						id._evnts.forEach(function (id) {
-							$p.eve.detachEvent(id);
+							eve.detachEvent(id);
 						});
 					}else if(!id)
-						$p.eve.detachAllEvents();
+						eve.detachAllEvents();
 					else
-						$p.eve.detachEvent(id);
+						eve.detachEvent(id);
 				}
 			},
 
@@ -154,33 +141,14 @@ export class MetaEngine{
 			 * @type Meta
 			 * @static
 			 */
-			md: { value: new Meta(this) },
+			md: { value: new Meta(this) }
 
-			DataObj: { value: DataObj },
-
-			CatObj: { value: CatObj },
-
-			DocObj: { value: DocObj },
-
-			DataProcessorObj: { value: DataProcessorObj },
-
-			TaskObj: { value: TaskObj },
-
-			BusinessProcessObj: { value: BusinessProcessObj },
-
-			EnumObj: { value: EnumObj },
-
-			RegisterRow: { value: RegisterRow },
-
-			TabularSection: { value: TabularSection },
-
-			TabularSectionRow: { value: TabularSectionRow }
-
-		});
+		})
 
 		mngrs(this);
 
-		objs(this);
+		tabulars(this);
+
 	}
 
 	/**
@@ -193,14 +161,8 @@ export class MetaEngine{
 	 */
 	get msg(){return msg}
 
-	/**
-	 * ### Moment для операций с интервалами и датами
-	 *
-	 * @property moment
-	 * @type Function
-	 * @final
-	 */
-	get moment(){return this.utils.moment}
 }
 
+const $p = new MetaEngine();
+export default $p;
 

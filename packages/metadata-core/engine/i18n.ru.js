@@ -80,7 +80,8 @@ const msg = {
 
 	requery: "Повторите попытку через 1-2 минуты",
 
-	limit_query: "Превышено число обращений к серверу<br/>Запросов за минуту:%1<br/>Лимит запросов:%2<br/>" + this.requery,
+	get limit_query(){return "Превышено число обращений к серверу<br/>Запросов за минуту:%1<br/>Лимит запросов:%2<br/>" + this.requery},
+
 	long_operation: "Длительная операция",
 	logged_in: "Авторизован под именем: ",
 	log_out_title: "Отключиться от сервера?",
@@ -166,7 +167,7 @@ const msg = {
 	unsupported_browser: "Несовместимая версия браузера<br/>Рекомендуется Google Chrome",
 	supported_browsers: "Рекомендуется Chrome, Safari или Opera",
 	unsupported_mode_title: "Режим не поддерживается",
-	unsupported_mode: "Программа не установлена<br/> в <a href='" + this.store_url_od + "'>приложениях Google Chrome</a>",
+	get unsupported_mode(){return "Программа не установлена<br/> в <a href='" + this.store_url_od + "'>приложениях Google Chrome</a>"},
 	unknown_error: "Неизвестная ошибка в функции '%1'",
 
 	value: "Значение",

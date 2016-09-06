@@ -33,7 +33,7 @@ class JobPrm{
 			 * @static
 			 */
 			url_prm: {
-				value: typeof window != "undefined" ? parse_url() : {}
+				value: typeof window != "undefined" ? this.parse_url() : {}
 			},
 
 
@@ -126,6 +126,19 @@ class JobPrm{
 		return url.replace("%1/", "");
 	}
 
-}
+	/**
+	 * Параметры запроса по умолчанию
+	 * @param attr
+	 * @param url
+	 */
+	ajax_attr(attr, url) {
+		if (!attr.url)
+			attr.url = url;
+		if (!attr.username)
+			attr.username = this.username;
+		if (!attr.password)
+			attr.password = this.password;
+		attr.hide_headers = true;
+	}
 
-const job_prm = new JobPrm();
+}
