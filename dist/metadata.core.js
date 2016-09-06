@@ -2433,7 +2433,7 @@ function Pouch(){
 
 			value: function (attr) {
 
-				_paths._mixin(attr);
+				utils._mixin(_paths, attr);
 
 				if(_paths.path && _paths.path.indexOf("http") != 0 && typeof location != "undefined")
 					_paths.path = location.protocol + "//" + location.host + _paths.path;
@@ -2858,7 +2858,7 @@ function Pouch(){
 					.then(function (res) {
 						delete res._id;
 						delete res._rev;
-						tObj._mixin(res)._set_loaded();
+						utils._mixin(tObj, res)._set_loaded();
 					})
 					.catch(function (err) {
 						if(err.status != 404)
@@ -3532,7 +3532,7 @@ function Meta() {
 			if(!mfrm.obj.tabular_sections[ts_name])
 				return;
 
-			source._mixin(mfrm.obj.tabular_sections[ts_name]);
+			utils._mixin(source, mfrm.obj.tabular_sections[ts_name]);
 
 		}else{
 
@@ -4737,7 +4737,7 @@ RefDataManager.prototype.__define({
 						rattr.url += this.rest_name + "/Create()";
 						return $p.ajax.get_ex(rattr.url, rattr)
 							.then(function (req) {
-								return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
+								return utils._mixin(o, JSON.parse(req.response), undefined, ["ref"]);
 							});
 					}
 
@@ -4806,8 +4806,7 @@ RefDataManager.prototype.__define({
 						obj._set_loaded();
 
 				}else if(obj.is_new() || forse){
-					obj._mixin(aattr[i]);
-					obj._set_loaded();
+					utils._mixin(obj, aattr[i])._set_loaded();
 				}
 
 				res.push(obj);
@@ -5693,8 +5692,7 @@ function RegisterManager(class_name){
 				continue;
 
 			}else if(obj.is_new() || forse){
-				obj._mixin(aattr[i]);
-				obj._set_loaded();
+				utils._mixin(obj, aattr[i])._set_loaded();
 			}
 
 			res.push(obj);

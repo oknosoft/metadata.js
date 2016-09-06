@@ -435,7 +435,7 @@ TabularSection.prototype.sync_grid = function(grid, selection){
 	this.find_rows(selection, function(r){
 		var data = [];
 		columns.forEach(function (f) {
-			if($p.utils.is_data_obj(r[f]))
+			if(utils.is_data_obj(r[f]))
 				data.push(r[f].presentation);
 			else
 				data.push(r[f]);
@@ -523,7 +523,7 @@ TabularSectionRow.prototype.__define("row", {
  */
 TabularSectionRow.prototype.__define("_clone", {
 	value : function(){
-		return new $p[this._owner._owner._manager.obj_constructor(this._owner._name)](this._owner)._mixin(this._obj);
+		return utils._mixin(new $p[this._owner._owner._manager.obj_constructor(this._owner._name)](this._owner), this._obj);
 	},
 	enumerable : false
 });
@@ -532,7 +532,7 @@ TabularSectionRow.prototype._getter = DataObj.prototype._getter;
 
 TabularSectionRow.prototype._setter = function (f, v) {
 
-	if(this._obj[f] == v || (!v && this._obj[f] == $p.utils.blank.guid))
+	if(this._obj[f] == v || (!v && this._obj[f] == utils.blank.guid))
 		return;
 
 	if(!this._owner._owner._data._silent)
@@ -552,7 +552,7 @@ TabularSectionRow.prototype._setter = function (f, v) {
 		else
 			prop = this._owner._owner[this._metadata.fields[f].choice_type.path[0]];
 		if(prop && prop.type)
-			v = $p.utils.fetch_type(v, prop.type);
+			v = utils.fetch_type(v, prop.type);
 	}
 
 	DataObj.prototype.__setter.call(this, f, v);

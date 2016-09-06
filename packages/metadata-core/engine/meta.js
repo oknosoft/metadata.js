@@ -41,7 +41,7 @@ class Meta{
 					return meta_db.get('meta_patch');
 
 				}).then(function (doc) {
-					$p.utils._patch(_m, doc);
+					utils._patch(_m, doc);
 					doc = null;
 					delete _m._id;
 					delete _m._rev;
@@ -256,7 +256,7 @@ class Meta{
 					if(tnames.length > 1 && $p[tnames[0]][tnames[1]])
 						rt.push($p[tnames[0]][tnames[1]]);
 				});
-				if(rt.length == 1 || row[f] == $p.utils.blank.guid)
+				if(rt.length == 1 || row[f] == utils.blank.guid)
 					return mf_mgr(rt[0]);
 
 				else if(array_enabled)
@@ -265,7 +265,7 @@ class Meta{
 				else if((property = row[f]) instanceof DataObj)
 					return property._manager;
 
-				else if($p.utils.is_guid(property) && property != $p.utils.blank.guid){
+				else if(utils.is_guid(property) && property != utils.blank.guid){
 					for(var i in rt){
 						mgr = rt[i];
 						if(mgr.get(property, false, true))
@@ -275,14 +275,14 @@ class Meta{
 			}else{
 
 				// Получаем объект свойства
-				if($p.utils.is_data_obj(property))
+				if(utils.is_data_obj(property))
 					oproperty = property;
-				else if($p.utils.is_guid(property))
+				else if(utils.is_guid(property))
 					oproperty = $p.cch.properties.get(property, false);
 				else
 					return;
 
-				if($p.utils.is_data_obj(oproperty)){
+				if(utils.is_data_obj(oproperty)){
 
 					if(oproperty.is_new())
 						return $p.cat.property_values;
@@ -571,7 +571,7 @@ class Meta{
 			if(!mfrm.obj.tabular_sections[ts_name])
 				return;
 
-			source._mixin(mfrm.obj.tabular_sections[ts_name]);
+			utils._mixin(source, mfrm.obj.tabular_sections[ts_name]);
 
 		}else{
 
