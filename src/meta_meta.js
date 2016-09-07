@@ -71,7 +71,7 @@ function Meta() {
 		var confirm_count = 0,
 			is_local = !meta_db || ($p.wsql.pouch && meta_db == $p.wsql.pouch.local.meta),
 			is_remote = meta_db && ($p.wsql.pouch && meta_db == $p.wsql.pouch.local._meta);
-		
+
 		function do_init(){
 
 			if(meta_db && !is_local && !is_remote){
@@ -112,16 +112,16 @@ function Meta() {
 							$p.eve.redirect = true;
 							location.reload(true);
 						}, 1000);
-						
+
 					}else{
 
 						confirm_count++;
 						setTimeout(do_reload, confirm_count * 30000);
-						
+
 					}
 				}
 			});
-			
+
 		}
 
 		// этот обработчик нужен только при инициализации, когда в таблицах meta еще нет данных
@@ -132,9 +132,9 @@ function Meta() {
 
 			if(!_m)
 				do_init();
-				
+
 			else{
-				
+
 				// если изменились метаданные, запланировать перезагрузку
 				if(performance.now() > 20000 && change.docs.some(function (doc) {
 						return doc._id.substr(0,4)!='meta';
@@ -142,7 +142,7 @@ function Meta() {
 					do_reload();
 
 			}
-			
+
 		});
 
 		return do_init();
@@ -402,7 +402,7 @@ function Meta() {
 				oproperty = $p.cch.properties.get(property, false);
 			else
 				return;
-			
+
 			if($p.utils.is_data_obj(oproperty)){
 
 				if(oproperty.is_new())
@@ -442,7 +442,7 @@ function Meta() {
 
 		} else if(val instanceof Date && type.date_part){
 			ft = "dhxCalendar";
-			
+
 		} else if(type.is_ref){
 			ft = "ocombo";
 
@@ -607,7 +607,7 @@ function Meta() {
 		else if(pn[0] == "РегистрНакопления")
 			name = "areg.";
 		else if(pn[0] == "РегистрБухгалтерии")
-			name = "aссreg.";
+			name = "accreg.";
 		else if(pn[0] == "ПланВидовХарактеристик")
 			name = "cch.";
 		else if(pn[0] == "ПланСчетов")
@@ -641,7 +641,7 @@ function Meta() {
 			name = "РегистрСведений.";
 		else if(pn[0] == "areg")
 			name = "РегистрНакопления.";
-		else if(pn[0] == "aссreg")
+		else if(pn[0] == "accreg")
 			name = "РегистрБухгалтерии.";
 		else if(pn[0] == "cch")
 			name = "ПланВидовХарактеристик.";

@@ -8,8 +8,6 @@
  */
 
 
-
-
 /**
  * ### Metadata.js - проект с открытым кодом
  * Приглашаем к сотрудничеству всех желающих. Будем благодарны за любую помощь
@@ -35,7 +33,136 @@
  * @menuorder 00
  * @tooltip Контекст metadata.js
  */
-module.exports = class MetaEngine{
+class MetaEngine{
 
 	constructor() {
-		const $p = this;
+
+		Object.defineProperties(this, {
+
+			version: {
+				value: "PACKAGE_VERSION",
+				writable: false
+			},
+
+			toString: { value: () => "Oknosoft data engine. v:" + this.version },
+
+			/**
+			 * ### Буфер для строковых и двоичных данных, внедряемых в скрипт
+			 * В этой структуре живут, например, sql текст инициализации таблиц, xml-строки форм и менюшек и т.д.
+			 *
+			 * @property injected_data
+			 * @type Object
+			 * @final
+			 */
+			injected_data: { value: {} },
+
+			/**
+			 * ### Параметры работы программы
+			 * @property job_prm
+			 * @type JobPrm
+			 * @final
+			 */
+			job_prm: {value: new JobPrm()},
+
+			/**
+			 * Интерфейс к данным в LocalStorage, AlaSQL и IndexedDB
+			 * @property wsql
+			 * @type WSQL
+			 * @final
+			 */
+			wsql: { value: new WSQL() },
+
+			/**
+			 * Aes для шифрования - дешифрования данных
+			 *
+			 * @property aes
+			 * @type Aes
+			 * @final
+			 */
+			aes: { value: new Aes("metadata.js") },
+
+			/**
+			 * ### Подключает обработчики событий
+			 *
+			 * @method on
+			 * @param name {String|Object} - имя события
+			 * @param fn {Function} - функция - обработчик
+			 * @returns {*}
+			 */
+			on: {
+				value: function (name, fn) {
+					if(typeof name == "object"){
+						for(var n in name){
+							if(!name[n]._evnts)
+								name[n]._evnts = [];
+							name[n]._evnts.push(this.eve.attachEvent(n, name[n]));
+						}
+					}else
+						return this.eve.attachEvent(name, fn);
+				}
+			},
+
+			/**
+			 * ### Отключает обработчики событий
+			 *
+			 * @method off
+			 * @param id {String|Number|Function}
+			 */
+			off: {
+				value: function (id) {
+					if(typeof id == "function" && id._evnts){
+						id._evnts.forEach(function (id) {
+							eve.detachEvent(id);
+						});
+					}else if(!id)
+						eve.detachAllEvents();
+					else
+						eve.detachEvent(id);
+				}
+			},
+
+			/**
+			 * ### Запись журнала регистрации
+			 *
+			 * @method record_log
+			 * @param err
+			 */
+			record_log: {
+				value: function (err) {
+					if($p.ireg && $p.ireg.$log)
+						$p.ireg.$log.record(err);
+					console.log(err);
+				}
+			},
+
+			/**
+			 * ### Mетаданные конфигурации
+			 * @property md
+			 * @type Meta
+			 * @static
+			 */
+			md: { value: new Meta(this) }
+
+		})
+
+		mngrs(this);
+
+		tabulars(this);
+
+	}
+
+	/**
+	 * Вспомогательные методы
+	 */
+	get utils(){return utils}
+
+	/**
+	 * i18n
+	 */
+	get msg(){return msg}
+
+}
+
+const $p = new MetaEngine();
+export default $p;
+

@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.11.219, built:2016-08-26 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.11.219, built:2016-09-07 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -777,11 +777,11 @@ function MetaEngine() {
 
 		/**
 		 * Коллекция менеджеров регистров бухгалтерии
-		 * @property aссreg
+		 * @property accreg
 		 * @type AccountsRegs
 		 * @static
 		 */
-		aссreg: {
+		accreg: {
 			value: 	new (
 				/**
 				 * ### Коллекция менеджеров регистров бухгалтерии
@@ -944,10 +944,6 @@ function MetaEngine() {
 
 		RegisterManager: {
 			value: RegisterManager
-		},
-
-		InfoRegManager: {
-			value: InfoRegManager
 		},
 
 		InfoRegManager: {
@@ -2773,8 +2769,7 @@ function Pouch(){
 						}
 
 						// ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
-						var method = (id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo) ? local.replicate.from : local.sync,
-							options = {
+						var options = {
 								live: true,
 								retry: true,
 								batch_size: 200,
@@ -2782,13 +2777,18 @@ function Pouch(){
 							};
 
 						// если указан клиентский или серверный фильтр - подключаем
-						if(id == "meta")
+						if(id == "meta"){
 							options.filter = "auth/meta";
 
-						else if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id])
+						}else if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id]){
 							options.filter = $p.job_prm.pouch_filter[id];
+						}
 
-						_local.sync[id] = method(remote, options);
+						if(id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo){
+							_local.sync[id] = local.replicate.from(remote, options);
+						}else{
+							_local.sync[id] = local.sync(remote, options);
+						}
 
 						_local.sync[id]
 							.on('change', function (change) {
@@ -3117,7 +3117,7 @@ function Meta() {
 		var confirm_count = 0,
 			is_local = !meta_db || ($p.wsql.pouch && meta_db == $p.wsql.pouch.local.meta),
 			is_remote = meta_db && ($p.wsql.pouch && meta_db == $p.wsql.pouch.local._meta);
-		
+
 		function do_init(){
 
 			if(meta_db && !is_local && !is_remote){
@@ -3158,16 +3158,16 @@ function Meta() {
 							$p.eve.redirect = true;
 							location.reload(true);
 						}, 1000);
-						
+
 					}else{
 
 						confirm_count++;
 						setTimeout(do_reload, confirm_count * 30000);
-						
+
 					}
 				}
 			});
-			
+
 		}
 
 		// этот обработчик нужен только при инициализации, когда в таблицах meta еще нет данных
@@ -3178,9 +3178,9 @@ function Meta() {
 
 			if(!_m)
 				do_init();
-				
+
 			else{
-				
+
 				// если изменились метаданные, запланировать перезагрузку
 				if(performance.now() > 20000 && change.docs.some(function (doc) {
 						return doc._id.substr(0,4)!='meta';
@@ -3188,7 +3188,7 @@ function Meta() {
 					do_reload();
 
 			}
-			
+
 		});
 
 		return do_init();
@@ -3448,7 +3448,7 @@ function Meta() {
 				oproperty = $p.cch.properties.get(property, false);
 			else
 				return;
-			
+
 			if($p.utils.is_data_obj(oproperty)){
 
 				if(oproperty.is_new())
@@ -3488,7 +3488,7 @@ function Meta() {
 
 		} else if(val instanceof Date && type.date_part){
 			ft = "dhxCalendar";
-			
+
 		} else if(type.is_ref){
 			ft = "ocombo";
 
@@ -3653,7 +3653,7 @@ function Meta() {
 		else if(pn[0] == "РегистрНакопления")
 			name = "areg.";
 		else if(pn[0] == "РегистрБухгалтерии")
-			name = "aссreg.";
+			name = "accreg.";
 		else if(pn[0] == "ПланВидовХарактеристик")
 			name = "cch.";
 		else if(pn[0] == "ПланСчетов")
@@ -3687,7 +3687,7 @@ function Meta() {
 			name = "РегистрСведений.";
 		else if(pn[0] == "areg")
 			name = "РегистрНакопления.";
-		else if(pn[0] == "aссreg")
+		else if(pn[0] == "accreg")
 			name = "РегистрБухгалтерии.";
 		else if(pn[0] == "cch")
 			name = "ПланВидовХарактеристик.";

@@ -293,21 +293,24 @@ gulp.task('build-new-core', function(){
 	const babel = require('gulp-babel');
 
 	return gulp.src([
-		'./packages/metadata-core/src/object.js',
-		'./packages/metadata-core/src/head.js',
-		'./packages/metadata-core/src/ajax.js',
-		'./packages/metadata-core/src/wsql.js',
-		'./packages/metadata-core/src/mngrs.js',
-		'./lib/aes/aes.js',
-		'./packages/metadata-core/src/end.js'
+		'./packages/metadata-core/engine/utils.js',
+		'./packages/metadata-core/engine/i18n.ru.js',
+		'./packages/metadata-core/engine/jobprm.js',
+		'./packages/metadata-core/engine/wsql.js',
+		'./packages/metadata-core/engine/mngrs.js',
+		'./packages/metadata-core/engine/objs.js',
+		'./packages/metadata-core/engine/tabulars.js',
+		'./packages/metadata-core/engine/meta.js',
+		'./packages/metadata-core/lib/aes.js',
+		'./packages/metadata-core/engine/common.js'
 	])
 		.pipe(concat('index.js'))
+		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
+		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
 		.pipe(babel({
 			presets: ['es2015'],
 			plugins: ["transform-async-to-generator"]
 		}))
-		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
-		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
 		.pipe(gulp.dest('./packages/metadata-core'))
 		// .pipe(rename('metadata.core.min.js'))
 		// .pipe(uglify({

@@ -764,11 +764,11 @@ function MetaEngine() {
 
 		/**
 		 * Коллекция менеджеров регистров бухгалтерии
-		 * @property aссreg
+		 * @property accreg
 		 * @type AccountsRegs
 		 * @static
 		 */
-		aссreg: {
+		accreg: {
 			value: 	new (
 				/**
 				 * ### Коллекция менеджеров регистров бухгалтерии
