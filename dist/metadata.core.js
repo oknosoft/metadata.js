@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.11.219, built:2016-09-04 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.11.219, built:2016-09-07 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -2433,7 +2433,7 @@ function Pouch(){
 
 			value: function (attr) {
 
-				utils._mixin(_paths, attr);
+				_paths._mixin(attr);
 
 				if(_paths.path && _paths.path.indexOf("http") != 0 && typeof location != "undefined")
 					_paths.path = location.protocol + "//" + location.host + _paths.path;
@@ -2769,8 +2769,7 @@ function Pouch(){
 						}
 
 						// ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
-						var method = (id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo) ? local.replicate.from : local.sync,
-							options = {
+						var options = {
 								live: true,
 								retry: true,
 								batch_size: 200,
@@ -2778,13 +2777,18 @@ function Pouch(){
 							};
 
 						// если указан клиентский или серверный фильтр - подключаем
-						if(id == "meta")
+						if(id == "meta"){
 							options.filter = "auth/meta";
 
-						else if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id])
+						}else if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id]){
 							options.filter = $p.job_prm.pouch_filter[id];
+						}
 
-						_local.sync[id] = method(remote, options);
+						if(id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo){
+							_local.sync[id] = local.replicate.from(remote, options);
+						}else{
+							_local.sync[id] = local.sync(remote, options);
+						}
 
 						_local.sync[id]
 							.on('change', function (change) {
@@ -2858,7 +2862,7 @@ function Pouch(){
 					.then(function (res) {
 						delete res._id;
 						delete res._rev;
-						utils._mixin(tObj, res)._set_loaded();
+						tObj._mixin(res)._set_loaded();
 					})
 					.catch(function (err) {
 						if(err.status != 404)
@@ -3532,7 +3536,7 @@ function Meta() {
 			if(!mfrm.obj.tabular_sections[ts_name])
 				return;
 
-			utils._mixin(source, mfrm.obj.tabular_sections[ts_name]);
+			source._mixin(mfrm.obj.tabular_sections[ts_name]);
 
 		}else{
 
@@ -4737,7 +4741,7 @@ RefDataManager.prototype.__define({
 						rattr.url += this.rest_name + "/Create()";
 						return $p.ajax.get_ex(rattr.url, rattr)
 							.then(function (req) {
-								return utils._mixin(o, JSON.parse(req.response), undefined, ["ref"]);
+								return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
 							});
 					}
 
@@ -4806,7 +4810,8 @@ RefDataManager.prototype.__define({
 						obj._set_loaded();
 
 				}else if(obj.is_new() || forse){
-					utils._mixin(obj, aattr[i])._set_loaded();
+					obj._mixin(aattr[i]);
+					obj._set_loaded();
 				}
 
 				res.push(obj);
@@ -5692,7 +5697,8 @@ function RegisterManager(class_name){
 				continue;
 
 			}else if(obj.is_new() || forse){
-				utils._mixin(obj, aattr[i])._set_loaded();
+				obj._mixin(aattr[i]);
+				obj._set_loaded();
 			}
 
 			res.push(obj);

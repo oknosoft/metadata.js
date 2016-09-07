@@ -1,25 +1,17 @@
 {
-  "name": "metadata-js",
-  "description": "Library for building offline-first browser-based business applications",
-  "version": "0.11.219",
+  "name": "metadata-core",
+  "description": "Data-objects for offline-first browser-based business applications",
+  "version": "2.0.1",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
-  "directories": {
-    "example": "examples",
-    "doc": "doc"
-  },
   "dependencies": {
     "alasql": ">=0.3",
     "moment": ">=2.14",
-    "node-localstorage": ">=1.3",
     "pouchdb": "^6.0",
     "pouchdb-core": "^6.0",
     "pouchdb-adapter-http": "^6.0",
     "pouchdb-adapter-memory": "^6.0",
     "pouchdb-mapreduce": "^6.0",
-    "pouchdb-replication": "^6.0",
-    "rimraf": ">=0.1",
-    "decompress": ">=4.0",
-    "yargs": ">=4.8"
+    "pouchdb-replication": "^6.0"
   },
   "devDependencies": {
     "babel-preset-es2015": ">=6.14.0",
@@ -31,15 +23,10 @@
     "gulp-rename": ">=1.2",
     "gulp-replace": ">=0.5",
     "gulp-uglify": ">=2.0",
-    "gulp-umd": ">=0.2",
-    "jasmine": ">=2.4",
-    "yuidocjs": ">=0.10"
+    "gulp-umd": ">=0.2"
   },
   "engines": {
     "node": ">=6.0"
-  },
-  "bin": {
-    "metadata": "./bin/metadata-cli.js"
   },
   "repository": {
     "type": "git",
@@ -49,7 +36,7 @@
     "url": "https://github.com/oknosoft/metadata.js/issues"
   },
   "homepage": "http://www.oknosoft.ru/metadata/",
-  "main": "dist/metadata.core.js",
+  "main": "./index.js",
   "keywords": [
     "metadata",
     "browser data engine",
@@ -60,10 +47,8 @@
     "1с",
     "web сервис",
     "клиент 1с",
-    "ui framework",
     "offline framework",
     "offline data engine",
-    "rest client",
     "CRDT",
     "offline-first",
     "replication"

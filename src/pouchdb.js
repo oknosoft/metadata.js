@@ -375,8 +375,7 @@ function Pouch(){
 						}
 
 						// ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
-						var method = (id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo) ? local.replicate.from : local.sync,
-							options = {
+						var options = {
 								live: true,
 								retry: true,
 								batch_size: 200,
@@ -384,13 +383,18 @@ function Pouch(){
 							};
 
 						// если указан клиентский или серверный фильтр - подключаем
-						if(id == "meta")
+						if(id == "meta"){
 							options.filter = "auth/meta";
 
-						else if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id])
+						}else if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id]){
 							options.filter = $p.job_prm.pouch_filter[id];
+						}
 
-						_local.sync[id] = method(remote, options);
+						if(id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo){
+							_local.sync[id] = local.replicate.from(remote, options);
+						}else{
+							_local.sync[id] = local.sync(remote, options);
+						}
 
 						_local.sync[id]
 							.on('change', function (change) {
