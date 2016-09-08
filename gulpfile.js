@@ -296,6 +296,7 @@ gulp.task('build-new-core', function(){
 		'./packages/metadata-core/engine/utils.js',
 		'./packages/metadata-core/engine/i18n.ru.js',
 		'./packages/metadata-core/engine/jobprm.js',
+		'./packages/metadata-core/engine/pouchdb.js',
 		'./packages/metadata-core/engine/wsql.js',
 		'./packages/metadata-core/engine/mngrs.js',
 		'./packages/metadata-core/engine/objs.js',

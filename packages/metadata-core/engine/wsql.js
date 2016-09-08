@@ -8,6 +8,20 @@
  */
 
 const alasql = require("alasql/dist/alasql.js")
+
+const PouchDB = require('pouchdb-core')
+ 	// .plugin(require('pouchdb-adapter-indexeddb'))
+ 	// .plugin(require('pouchdb-adapter-http'))
+ 	.plugin(require('pouchdb-replication'))
+ 	.plugin(require('pouchdb-mapreduce')),
+ 	pouchdb_memory = require('pouchdb-adapter-memory'),
+ 	pouchdb_idb = require('pouchdb-adapter-idb')
+
+if(alasql.utils.isNode)
+	PouchDB.plugin(pouchdb_memory)
+else
+	PouchDB.plugin(pouchdb_idb)
+
 //const _ls = require("node-localstorage").LocalStorage
 
 /**
@@ -22,7 +36,7 @@ const alasql = require("alasql/dist/alasql.js")
  */
 class WSQL {
 
-	constructor() {
+	constructor($p) {
 
 		Object.defineProperties(this, {
 
@@ -63,12 +77,130 @@ class WSQL {
 
 			user_params: {
 				value: {}
-			}
+			},
 
-		});
+			/**
+			 * ### Создаёт и заполняет умолчаниями таблицу параметров
+			 *
+			 * @method init_params
+			 * @return {Promise}
+			 * @async
+			 */
+			init_params: {
+				value: function () {
 
-		// отдельной командой, т.к. сначала нужно создать alasql
-		Object.defineProperties(this, {
+					$p.job_prm.init_params();
+
+					// префикс параметров LocalStorage
+					// TODO: отразить в документации, что если префикс пустой, то параметры не инициализируются
+					if (!$p.job_prm.local_storage_prefix && !$p.job_prm.create_tables)
+						return Promise.resolve();
+
+
+					// значения базовых параметров по умолчанию
+					var nesessery_params = [
+						{p: "user_name", v: "", t: "string"},
+						{p: "user_pwd", v: "", t: "string"},
+						{p: "browser_uid", v: utils.generate_guid(), t: "string"},
+						{
+							p: "zone",
+							v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1,
+							t: $p.job_prm.zone_is_string ? "string" : "number"
+						},
+						{p: "enable_save_pwd", v: $p.job_prm.enable_save_pwd, t: "boolean"},
+						{p: "autologin", v: "", t: "boolean"},
+						{p: "skin", v: "dhx_web", t: "string"},
+						{p: "rest_path", v: "", t: "string"}
+					], zone;
+
+					// подмешиваем к базовым параметрам настройки приложения
+					if ($p.job_prm.additional_params)
+						nesessery_params = nesessery_params.concat($p.job_prm.additional_params);
+
+					// если зона не указана, устанавливаем "1"
+					if (!this._ls.getItem($p.job_prm.local_storage_prefix + "zone"))
+						zone = $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1;
+					// если зона указана в url, используем её
+					if ($p.job_prm.url_prm.hasOwnProperty("zone"))
+						zone = $p.job_prm.zone_is_string ? $p.job_prm.url_prm.zone : utils.fix_number($p.job_prm.url_prm.zone, true);
+					if (zone !== undefined)
+						this.set_user_param("zone", zone);
+
+					// дополняем хранилище недостающими параметрами
+					nesessery_params.forEach(function (o) {
+						if (wsql.get_user_param(o.p, o.t) == undefined ||
+							(!wsql.get_user_param(o.p, o.t) && (o.p.indexOf("url") != -1)))
+							wsql.set_user_param(o.p, $p.job_prm.hasOwnProperty(o.p) ? $p.job_prm[o.p] : o.v);
+					});
+
+					// сообщяем движку pouch пути и префиксы
+					var pouch_prm = {
+						path: this.get_user_param("couch_path", "string") || $p.job_prm.couch_path || "",
+						zone: this.get_user_param("zone", "number"),
+						prefix: $p.job_prm.local_storage_prefix,
+						suffix: this.get_user_param("couch_suffix", "string") || ""
+					};
+					if (pouch_prm.path) {
+
+						/**
+						 * ### Указатель на локальные и сетевые базы PouchDB
+						 * @property pouch
+						 * @for WSQL
+						 * @type Pouch
+						 */
+						this.__define("pouch", {value: new Pouch($p)});
+						this.pouch.init(pouch_prm);
+					}
+
+					// создаём таблицы alasql
+					if (this.create_tables) {
+						this.alasq(this.create_tables, []);
+						this.create_tables = "";
+					}
+				}
+			},
+
+			/**
+			 * ### Устанавливает параметр в user_params и localStorage
+			 *
+			 * @method set_user_param
+			 * @param prm_name {string} - имя параметра
+			 * @param prm_value {string|number|object|boolean} - значение
+			 * @async
+			 */
+			set_user_param: {
+				value: function(prm_name, prm_value){
+
+					var str_prm = prm_value;
+					if(typeof prm_value == "object")
+						str_prm = JSON.stringify(prm_value);
+
+					else if(prm_value === false)
+						str_prm = "";
+
+					this._ls.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
+					this.user_params[prm_name] = prm_value;
+				}
+			},
+
+			/**
+			 * ### Возвращает значение сохраненного параметра из localStorage
+			 * Параметр извлекается с приведением типа
+			 *
+			 * @method get_user_param
+			 * @param prm_name {String} - имя параметра
+			 * @param [type] {String} - имя типа параметра. Если указано, выполняем приведение типов
+			 * @return {*} - значение параметра
+			 */
+			get_user_param: {
+				value: function(prm_name, type){
+
+					if(!user_params.hasOwnProperty(prm_name) && this._ls)
+						user_params[prm_name] = this.fetch_type(this._ls.getItem($p.job_prm.local_storage_prefix+prm_name), type);
+
+					return user_params[prm_name];
+				}
+			},
 
 			/**
 			 * ### Указатель на aladb
@@ -78,7 +210,9 @@ class WSQL {
 			aladb: {
 				value: new alasql.Database('md')
 			}
-		})
+
+
+		});
 	}
 
 	/**
@@ -87,6 +221,13 @@ class WSQL {
 	 * @type Function
 	 */
 	get alasql(){ return alasql	}
+
+	/**
+	 * ### Указатель на PouchDB
+	 * @property PouchDB
+	 * @type Function
+	 */
+	get PouchDB(){ return PouchDB }
 
 	/**
 	 * ### Поправка времени javascript
@@ -105,43 +246,7 @@ class WSQL {
 		return (!diff || isNaN(diff) || diff < 62135571600000 || diff > 62135622000000) ? this.js_time_diff : diff;
 	}
 
-	/**
-	 * ### Устанавливает параметр в user_params и localStorage
-	 *
-	 * @method set_user_param
-	 * @param prm_name {string} - имя параметра
-	 * @param prm_value {string|number|object|boolean} - значение
-	 * @async
-	 */
-	set_user_param(prm_name, prm_value){
 
-		var str_prm = prm_value;
-		if(typeof prm_value == "object")
-			str_prm = JSON.stringify(prm_value);
-
-		else if(prm_value === false)
-			str_prm = "";
-
-		this._ls.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
-		this.user_params[prm_name] = prm_value;
-	}
-
-	/**
-	 * ### Возвращает значение сохраненного параметра из localStorage
-	 * Параметр извлекается с приведением типа
-	 *
-	 * @method get_user_param
-	 * @param prm_name {String} - имя параметра
-	 * @param [type] {String} - имя типа параметра. Если указано, выполняем приведение типов
-	 * @return {*} - значение параметра
-	 */
-	get_user_param(prm_name, type){
-
-		if(!user_params.hasOwnProperty(prm_name) && _ls)
-			user_params[prm_name] = this.fetch_type(_ls.getItem($p.job_prm.local_storage_prefix+prm_name), type);
-
-		return user_params[prm_name];
-	}
 
 	/**
 	 * ### Сохраняет настройки формы или иные параметры объекта _options_
@@ -201,79 +306,7 @@ class WSQL {
 			return prm;
 	}
 
-	/**
-	 * ### Создаёт и заполняет умолчаниями таблицу параметров
-	 *
-	 * @method init_params
-	 * @return {Promise}
-	 * @async
-	 */
-	init_params(){
-
-		$p.job_prm.init_params();
-
-		// префикс параметров LocalStorage
-		// TODO: отразить в документации, что если префикс пустой, то параметры не инициализируются
-		if(!$p.job_prm.local_storage_prefix && !$p.job_prm.create_tables)
-			return Promise.resolve();
 
 
-		// значения базовых параметров по умолчанию
-		var nesessery_params = [
-			{p: "user_name",		v: "", t:"string"},
-			{p: "user_pwd",			v: "", t:"string"},
-			{p: "browser_uid",		v: utils.generate_guid(), t:"string"},
-			{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
-			{p: "enable_save_pwd",	v: $p.job_prm.enable_save_pwd,	t:"boolean"},
-			{p: "autologin",		v: "",	t:"boolean"},
-			{p: "skin",		        v: "dhx_web", t:"string"},
-			{p: "rest_path",		v: "", t:"string"}
-		],	zone;
-
-		// подмешиваем к базовым параметрам настройки приложения
-		if($p.job_prm.additional_params)
-			nesessery_params = nesessery_params.concat($p.job_prm.additional_params);
-
-		// если зона не указана, устанавливаем "1"
-		if(!_ls.getItem($p.job_prm.local_storage_prefix+"zone"))
-			zone = $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1;
-		// если зона указана в url, используем её
-		if($p.job_prm.url_prm.hasOwnProperty("zone"))
-			zone = $p.job_prm.zone_is_string ? $p.job_prm.url_prm.zone : utils.fix_number($p.job_prm.url_prm.zone, true);
-		if(zone !== undefined)
-			this.set_user_param("zone", zone);
-
-		// дополняем хранилище недостающими параметрами
-		nesessery_params.forEach(function(o){
-			if(wsql.get_user_param(o.p, o.t) == undefined ||
-				(!wsql.get_user_param(o.p, o.t) && (o.p.indexOf("url") != -1)))
-				wsql.set_user_param(o.p, $p.job_prm.hasOwnProperty(o.p) ? $p.job_prm[o.p] : o.v);
-		});
-
-		// сообщяем движку pouch пути и префиксы
-		var pouch_prm = {
-			path: this.get_user_param("couch_path", "string") || $p.job_prm.couch_path || "",
-			zone: this.get_user_param("zone", "number"),
-			prefix: $p.job_prm.local_storage_prefix,
-			suffix: this.get_user_param("couch_suffix", "string") || ""
-		};
-		if(pouch_prm.path){
-
-			/**
-			 * ### Указатель на локальные и сетевые базы PouchDB
-			 * @property pouch
-			 * @for WSQL
-			 * @type Pouch
-			 */
-			this.__define("pouch", { value: new Pouch()	});
-			this.pouch.init(pouch_prm);
-		}
-
-		// создаём таблицы alasql
-		if(this.create_tables){
-			this.alasq(this.create_tables, []);
-			this.create_tables = "";
-		}
-	}
 
 }

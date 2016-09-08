@@ -15,6 +15,7 @@
     "pouchdb-core": "^6.0",
     "pouchdb-adapter-http": "^6.0",
     "pouchdb-adapter-memory": "^6.0",
+    "pouchdb-adapter-idb": "^6.0",
     "pouchdb-mapreduce": "^6.0",
     "pouchdb-replication": "^6.0",
     "rimraf": ">=0.1",

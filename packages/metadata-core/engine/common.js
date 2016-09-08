@@ -33,7 +33,7 @@
  * @menuorder 00
  * @tooltip Контекст metadata.js
  */
-class MetaEngine{
+export default class MetaEngine{
 
 	constructor() {
 
@@ -70,7 +70,7 @@ class MetaEngine{
 			 * @type WSQL
 			 * @final
 			 */
-			wsql: { value: new WSQL() },
+			wsql: { value: new WSQL(this) },
 
 			/**
 			 * Aes для шифрования - дешифрования данных
@@ -163,6 +163,6 @@ class MetaEngine{
 
 }
 
-const $p = new MetaEngine();
-export default $p;
+
+
 
