@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.11.219, built:2016-09-07 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.11.219, built:2016-09-09 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -2755,6 +2755,42 @@ function InterfaceObjs(){
 	 * @type {Setting2col}
 	 */
 	this.Setting2col = Setting2col;
+
+	this.do_reload = function () {
+
+		var confirm_count = 0;
+
+		function do_reload(){
+
+			dhtmlx.confirm({
+				title: $p.msg.file_new_date_title,
+				text: $p.msg.file_new_date,
+				ok: "Перезагрузка",
+				cancel: "Продолжить",
+				callback: function(btn) {
+
+					if(btn){
+
+						$p.wsql.pouch.log_out();
+
+						setTimeout(function () {
+							$p.eve.redirect = true;
+							location.reload(true);
+						}, 1000);
+
+					}else{
+
+						confirm_count++;
+						setTimeout(do_reload, confirm_count * 30000);
+
+					}
+				}
+			});
+
+		}
+
+		do_reload();
+	}
 }
 
 $p.__define({
@@ -4036,8 +4072,7 @@ function Meta() {
 	 */
 	_md.init = function (meta_db) {
 
-		var confirm_count = 0,
-			is_local = !meta_db || ($p.wsql.pouch && meta_db == $p.wsql.pouch.local.meta),
+		var is_local = !meta_db || ($p.wsql.pouch && meta_db == $p.wsql.pouch.local.meta),
 			is_remote = meta_db && ($p.wsql.pouch && meta_db == $p.wsql.pouch.local._meta);
 
 		function do_init(){
@@ -4063,34 +4098,7 @@ function Meta() {
 			}
 		}
 
-		function do_reload(){
 
-			dhtmlx.confirm({
-				title: $p.msg.file_new_date_title,
-				text: $p.msg.file_new_date,
-				ok: "Перезагрузка",
-				cancel: "Продолжить",
-				callback: function(btn) {
-
-					if(btn){
-
-						$p.wsql.pouch.log_out();
-
-						setTimeout(function () {
-							$p.eve.redirect = true;
-							location.reload(true);
-						}, 1000);
-
-					}else{
-
-						confirm_count++;
-						setTimeout(do_reload, confirm_count * 30000);
-
-					}
-				}
-			});
-
-		}
 
 		// этот обработчик нужен только при инициализации, когда в таблицах meta еще нет данных
 		$p.on("pouch_change", function (dbid, change) {
@@ -4107,7 +4115,7 @@ function Meta() {
 				if(performance.now() > 20000 && change.docs.some(function (doc) {
 						return doc._id.substr(0,4)!='meta';
 					}))
-					do_reload();
+					$p.iface.do_reload();
 
 			}
 
@@ -12605,6 +12613,24 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			});
 	}
 
+	function onpaste(e) {
+
+		if(e.clipboardData.types.indexOf('text/plain') != -1){
+			try{
+				$p.eve.callEvent("tabular_paste", [{
+					obj: _obj,
+					grid: _grid,
+					tsname: _tsname,
+					e: e,
+					data: e.clipboardData.getData('text/plain')
+				}]);
+
+			}catch(e){
+				return;
+			}
+		}
+	}
+
 
 	// панель инструментов табличной части
 	_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
@@ -12679,6 +12705,8 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				_pwnd = null;
 				_cell.detachToolbar();
 
+				_grid.entBox.removeEventListener("paste", onpaste);
+
 				_destructor.call(_grid);
 			}
 		},
@@ -12741,6 +12769,9 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	// начинаем следить за объектом и, его табчастью допреквизитов
 	Object.observe(_obj, observer, ["row"]);
 	Object.observe(_obj, observer_rows, ["rows"]);
+
+	// начинаем следить за буфером обмена
+	_grid.entBox.addEventListener('paste', onpaste);
 
 	return _grid;
 };
@@ -17184,11 +17215,8 @@ $p.eve.__define({
 					cache.addEventListener('updateready', function(e) {
 						try{
 							cache.swapCache();
-							if($p.iface.appcache){
-								$p.iface.appcache.close();
-							}
 						}catch(e){}
-						do_reload();
+						$p.iface.do_reload();
 					}, false);
 
 					// Ошибка кеша
@@ -17302,13 +17330,6 @@ $p.eve.__define({
 			setTimeout(init_params, 10);
 
 		}, 10);
-
-		function do_reload(){
-			if(!$p.ajax.authorized){
-				eve.redirect = true;
-				location.reload(true);
-			}
-		}
 
 	}, false);
 
