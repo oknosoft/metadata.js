@@ -108,10 +108,7 @@ function Meta() {
 			else{
 
 				// если изменились метаданные, запланировать перезагрузку
-				if(performance.now() > 20000 && change.docs.some(function (doc) {
-						return doc._id.substr(0,4)!='meta';
-					}))
-					$p.iface.do_reload();
+				$p.iface.do_reload();
 
 			}
 
