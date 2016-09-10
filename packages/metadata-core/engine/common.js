@@ -33,7 +33,7 @@
  * @menuorder 00
  * @tooltip Контекст metadata.js
  */
-export default class MetaEngine{
+class MetaEngine{
 
 	constructor() {
 

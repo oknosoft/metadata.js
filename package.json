@@ -31,6 +31,7 @@
     "gulp-csso": ">=2.0",
     "gulp-rename": ">=1.2",
     "gulp-replace": ">=0.5",
+    "gulp-sourcemaps": "^1.6",
     "gulp-uglify": ">=2.0",
     "gulp-umd": ">=0.2",
     "jasmine": ">=2.4",
