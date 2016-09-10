@@ -12,9 +12,7 @@
 // Action types - имена типов действий
 // ------------------------------------
 
-export const LOAD_META          = 'LOAD_META'           // Инициализирует параметры и создаёт менеджеры объектов данных
-export const LOAD_RAM           = 'LOAD_RAM'            // Начало загрузки снапшота из Pouch.local.ram
-export const LOAD_RAM_COMPLETE  = 'LOAD_RAM_COMPLETE'   // Начало загрузки снапшота из Pouch.local.ram
+export const META_LOADED        = 'META_LOADED'         // Инициализирует параметры и создаёт менеджеры объектов данных
 
 export const OBJ_ADD            = 'OBJ_ADD'             // Команда создать объекта
 export const OBJ_ADD_ROW        = 'OBJ_ADD_ROW'         // Команда добавить строку в табчасть объекта
@@ -25,30 +23,102 @@ export const OBJ_REVERT         = 'OBJ_REVERT'          // Команда вер
 export const OBJ_SAVE           = 'OBJ_SAVE'            // Команда записать изменённый объект
 export const OBJ_CHANGED        = 'OBJ_CHANGED'         // Записан изменённый объект (по команде интерфейса или в результате репликации)
 
+export const USER_DEFINED       = 'USER_DEFINED'        // Команда создать объекта
+export const USER_LOG_IN        = 'USER_LOG_IN'         // Команда создать объекта
+export const USER_LOG_OUT       = 'USER_LOG_OUT'        // Команда создать объекта
+
+export const POUCH_DATA_PAGE    = 'POUCH_DATA_PAGE'     // Оповещение о загрузке порции локальных данных
+export const POUCH_LOAD_START   = 'POUCH_LOAD_START'    // Оповещение о начале загрузки локальных данных
+export const POUCH_SYNC_START   = 'POUCH_SYNC_START'    // Оповещение о начале синхронизации базы doc
+export const POUCH_DATA_LOADED  = 'POUCH_DATA_LOADED'   // Оповещение об окончании загрузки локальных данных
+export const POUCH_CHANGE       = 'POUCH_CHANGE'        // Прибежали изменения с сервера
+export const POUCH_DATA_ERROR   = 'POUCH_DATA_ERROR'    // Оповещение об ошибке при загрузке локальных данных
+export const POUCH_SYNC_ERROR   = 'POUCH_SYNC_ERROR'    // Оповещение об ошибке репликации
+
+
 
 // ------------------------------------
 // Actions - функции - генераторы действий. Они передаются в диспетчер redux
 // ------------------------------------
 
-export function load_meta(settings, meta) {
+export function meta_loaded() {
 
-	console.log(settings, meta)
+	return { type: META_LOADED }
+}
 
+export function pouch_data_loaded(page) {
 	return {
-		type: LOAD_META,
+		type: POUCH_DATA_LOADED,
+		payload: page
+	}
+}
+
+export function pouch_change(dbid, change) {
+	return {
+		type: POUCH_CHANGE,
 		payload: {
-			settings: settings,
-			meta
+			dbid: dbid,
+			change: change
 		}
 	}
 }
 
-export function load_ram() {
-	return { type: LOAD_RAM }
+export function pouch_data_page(page) {
+	return {
+		type: POUCH_DATA_PAGE,
+		payload: page
+	}
 }
 
-export function load_ram_complete() {
-	return { type: LOAD_RAM_COMPLETE }
+export function pouch_load_start(page) {
+	return {
+		type: POUCH_LOAD_START,
+		payload: page
+	}
+}
+
+export function pouch_sync_start() {
+	return { type: POUCH_SYNC_START }
+}
+
+export function pouch_sync_error(dbid, err) {
+	return {
+		type: POUCH_SYNC_ERROR,
+		payload: {
+			dbid: dbid,
+			err: err
+		}
+	}
+}
+
+export function pouch_data_error(dbid, err) {
+	return {
+		type: POUCH_DATA_ERROR,
+		payload: {
+			dbid: dbid,
+			err: err
+		}
+	}
+}
+
+export function user_defined(name) {
+	return {
+		type: USER_DEFINED,
+		payload: name
+	}
+}
+
+export function user_log_in(name) {
+	return {
+		type: USER_LOG_IN,
+		payload: name
+	}
+}
+
+export function user_log_out() {
+	return {
+		type: USER_LOG_OUT
+	}
 }
 
 export function obj_add(class_name) {
@@ -84,8 +154,25 @@ export function obj_edit(class_name, ref, frm) {
 // Action Handlers - обработчики событий - вызываются из корневого редюсера
 // ------------------------------------
 const ACTION_HANDLERS = {
-	[LOAD_META]: (state, action) => Object.assign({}, state, {load_meta: true}),
-	[LOAD_RAM]: (state, action) => Object.assign({}, state, {load_ram: true})
+	[META_LOADED]:          (state, action) => Object.assign({}, state, {meta_loaded: true}),
+
+	[POUCH_DATA_LOADED]:    (state, action) => Object.assign({}, state, {data_loaded: true}),
+	[POUCH_DATA_PAGE]:      (state, action) => Object.assign({}, state, {page: action.payload}),
+	[POUCH_DATA_ERROR]:     (state, action) => Object.assign({}, state, {err: action.payload}),
+
+	[USER_DEFINED]:     (state, action) => Object.assign({}, state, {user: {
+		name: action.payload,
+		logged_in: state.user.logged_in
+	}}),
+	[USER_LOG_IN]:      (state, action) => Object.assign({}, state, {user: {
+		name: action.payload,
+		logged_in: true
+	}}),
+	[USER_LOG_OUT]:     (state, action) => Object.assign({}, state, {user: {
+		name: state.user.name,
+		logged_in: false
+	}})
+
 }
 
 // ------------------------------------
@@ -95,18 +182,28 @@ export default function metaReducer (state, action) {
 
 	if(!state){
 
-		const data = new MetaEngine();
-		Object.defineProperty(data, 'actions', {
-			value: {
-				[LOAD_META]: load_meta
-			}
-		})
+		if(action && action.type.indexOf('PROBE_UNKNOWN_ACTION') != -1){
+			return {}
+		}
+
+		const data = new MetaEngine()
+		if(!data.actions){
+			Object.defineProperty(data, 'actions', {
+				value: {
+					[META_LOADED]: meta_loaded,
+
+					[POUCH_DATA_LOADED]: pouch_data_loaded,
+					[POUCH_DATA_PAGE]: pouch_data_page,
+					[POUCH_DATA_ERROR]: pouch_data_error
+				}
+			})
+		}
 
 		state = {
-			load_meta: false,
-			load_ram: false,
+			meta_loaded: false,
+			data_loaded: false,
 			user: {
-				defined: false,
+				name: "",
 				logged_in: false
 			},
 			data: data

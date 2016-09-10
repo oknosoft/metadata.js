@@ -58,11 +58,11 @@ class JobPrm{
 
 	}
 
-	init_params(){
+	init(settings){
 
 		// подмешиваем параметры, заданные в файле настроек сборки
-		// TODO обработать установку параметров более цивилизованным способом
-		// $p.eve.callEvent("settings", [this]);
+		if(typeof settings == "function")
+			settings(this);
 
 		// подмешиваем параметры url
 		// Они обладают приоритетом над настройками по умолчанию и настройками из settings.js

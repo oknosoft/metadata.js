@@ -284,7 +284,7 @@ class Utils{
 	 * @return {Boolean} - true, если значение является ссылкой
 	 */
 	is_data_mgr(v) {
-		return v && v instanceof DataManager;
+		return v && v instanceof classes.DataManager;
 	}
 
 	/**
@@ -451,7 +451,7 @@ class Utils{
 			if (obj.hasOwnProperty(p)) {
 				v = obj[p];
 				if (v) {
-					if ("function" === typeof v || v instanceof DataObj || v instanceof DataManager || v instanceof Date)
+					if ("function" === typeof v || v instanceof DataObj || v instanceof classes.DataManager || v instanceof Date)
 						c[p] = v;
 
 					else if ("object" === typeof v)
@@ -650,10 +650,15 @@ class Utils{
 	}
 
 
-
 }
 
 const utils = new Utils();
+
+/**
+ * Здесь живут ссылки на конструкторы классов
+ * @type {{}}
+ */
+export const classes = {};
 
 
 

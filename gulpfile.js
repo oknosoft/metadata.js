@@ -313,15 +313,15 @@ gulp.task('build-new-core', function(){
 		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
 		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
 
-		.pipe(sourcemaps.init({ loadMaps: true }))
+		//.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(concat('index.js'))
 		.pipe(babel({
 			presets: ['es2015'],
 			plugins: ["transform-async-to-generator"],
-			compact: true,
+			compact: false,
 			//comments: false
 		}))
-		.pipe(sourcemaps.write('./'))
+		//.pipe(sourcemaps.write('./'))
 
 		.pipe(gulp.dest('./packages/metadata-core'))
 		// .pipe(rename('metadata.core.min.js'))

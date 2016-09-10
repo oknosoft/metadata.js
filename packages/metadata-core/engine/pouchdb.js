@@ -30,7 +30,7 @@ class Pouch{
 
 				value: function (attr) {
 
-					_paths._mixin(attr);
+					Object.assign(_paths, attr);
 
 					if(_paths.path && _paths.path.indexOf("http") != 0 && typeof location != "undefined")
 						_paths.path = location.protocol + "//" + location.host + _paths.path;
@@ -124,9 +124,7 @@ class Pouch{
 					return $p.ajax.get_ex(_paths.path + _paths.zone + "_ram", {username: username, password: password})
 						.then(function (req) {
 							_auth = {username: username, password: password};
-							setTimeout(function () {
-								dhx4.callEvent("log_in", [username]);
-							});
+							setTimeout(() => { $p.store.dispatch(user_log_in(username)) });
 							return {
 								ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),
 								doc: t.run_sync(t.local.doc, t.remote.doc, "doc")
@@ -164,7 +162,7 @@ class Pouch{
 
 					_remote = null;
 
-					dhx4.callEvent("log_out");
+					$p.store.dispatch(user_log_out())
 				}
 			},
 
@@ -231,7 +229,8 @@ class Pouch{
 									_page.page++;
 									_page.total_rows = response.total_rows;
 									_page.duration = Date.now() - _page.start;
-									$p.eve.callEvent("pouch_load_data_page", [_page]);
+
+									$p.store.dispatch(pouch_data_page(_page))
 
 									if (t.load_changes(response, options))
 										fetchNextPage();
@@ -239,15 +238,15 @@ class Pouch{
 										resolve();
 										// широковещательное оповещение об окончании загрузки локальных данных
 										_data_loaded = true;
-										$p.eve.callEvent("pouch_load_data_loaded", [_page]);
-										_page.note = "pouch_load_data_loaded";
-										$p.record_log(_page);
+
+										$p.store.dispatch(pouch_data_loaded(_page))
+
 									}
 
 								} else if(err){
 									reject(err);
 									// широковещательное оповещение об ошибке загрузки
-									$p.eve.callEvent("pouch_load_data_error", [err]);
+									$p.store.dispatch(pouch_data_error("ram", err))
 								}
 							});
 						}
@@ -255,11 +254,15 @@ class Pouch{
 						t.local.ram.info()
 							.then(function (info) {
 								if(info.doc_count >= ($p.job_prm.pouch_ram_doc_count || 10)){
+
 									// широковещательное оповещение о начале загрузки локальных данных
-									$p.eve.callEvent("pouch_load_data_start", [_page]);
+									$p.store.dispatch(pouch_load_start(_page))
+
 									fetchNextPage();
+
 								}else{
-									$p.eve.callEvent("pouch_load_data_error", [info]);
+
+									$p.store.dispatch(pouch_data_error("ram", info))
 									reject(info);
 								}
 							});
@@ -346,6 +349,7 @@ class Pouch{
 								return;
 
 							if(id == "ram" && linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
+
 								// широковещательное оповещение о начале загрузки локальных данных
 								_page = {
 									total_rows: rinfo.doc_count,
@@ -355,12 +359,12 @@ class Pouch{
 									page: 0,
 									start: Date.now()
 								};
-								$p.eve.callEvent("pouch_load_data_start", [_page]);
+								$p.store.dispatch(pouch_load_start(_page))
 
 							}else if(id == "doc"){
 								// широковещательное оповещение о начале синхронизации базы doc
 								setTimeout(function () {
-									$p.eve.callEvent("pouch_doc_sync_start");
+									$p.store.dispatch(pouch_sync_start(_page))
 								});
 							}
 
@@ -398,15 +402,15 @@ class Pouch{
 											_page.page++;
 											_page.docs_written = change.docs_written;
 											_page.duration = Date.now() - _page.start;
-											$p.eve.callEvent("pouch_load_data_page", [_page]);
+
+											$p.store.dispatch(pouch_data_page(_page))
 
 											if(_page.docs_written >= _page.total_rows){
 
 												// широковещательное оповещение об окончании загрузки локальных данных
 												_data_loaded = true;
-												$p.eve.callEvent("pouch_load_data_loaded", [_page]);
-												_page.note = "pouch_load_data_loaded";
-												$p.record_log(_page);
+												$p.store.dispatch(pouch_data_loaded(_page))
+
 											}
 
 										}
@@ -414,28 +418,28 @@ class Pouch{
 										change.update_only = true;
 										t.load_changes(change);
 									}
-									$p.eve.callEvent("pouch_change", [id, change]);
 
-								}).on('paused', function (info) {
-								// replication was paused, usually because of a lost connection
-								if(info)
-									$p.eve.callEvent("pouch_paused", [id, info]);
+									$p.store.dispatch(pouch_change(id, change))
 
-							}).on('active', function (info) {
-								// replication was resumed
-								$p.eve.callEvent("pouch_active", [id, info]);
+								})
+								.on('paused', function (info) {
+									// replication was paused, usually because of a lost connection
+									if(info)
+										$p.eve.callEvent("pouch_paused", [id, info]);
+								})
+								.on('active', function (info) {
+									// replication was resumed
+									$p.eve.callEvent("pouch_active", [id, info]);
 
-							}).on('denied', function (info) {
-								// a document failed to replicate, e.g. due to permissions
-								$p.eve.callEvent("pouch_denied", [id, info]);
+								})
+								.on('denied', function (info) {
+									// a document failed to replicate, e.g. due to permissions
+									$p.eve.callEvent("pouch_denied", [id, info]);
 
-							}).on('complete', function (info) {
-								// handle complete
-								$p.eve.callEvent("pouch_complete", [id, info]);
-
-							}).on('error', function (err) {
-								// totally unhandled error (shouldn't happen)
-								$p.eve.callEvent("pouch_error", [id, err]);
+								})
+								.on('error', function (err) {
+									// totally unhandled error (shouldn't happen)
+									$p.store.dispatch(pouch_sync_error(id, err))
 
 							});
 

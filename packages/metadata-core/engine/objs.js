@@ -8,6 +8,7 @@
  * @requires common
  */
 
+
 /**
  * ### Абстрактный объект данных
  * Прародитель как ссылочных объектов (документов и справочников), так и регистров с суррогатным ключом и несохраняемых обработок<br />
@@ -39,7 +40,7 @@ class DataObj {
 			};
 
 		// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
-		if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager))
+		if(!(manager instanceof classes.DataProcessorsManager) && !(manager instanceof classes.EnumManager))
 			tmp = manager.get(attr, false, true);
 
 		if(tmp){
@@ -48,10 +49,10 @@ class DataObj {
 		}
 
 
-		if(manager instanceof EnumManager)
+		if(manager instanceof classes.EnumManager)
 			_obj.ref = attr.name;
 
-		else if(!(manager instanceof RegisterManager)){
+		else if(!(manager instanceof classes.RegisterManager)){
 			_obj.ref = utils.fix_guid(attr);
 
 		}else
@@ -79,7 +80,7 @@ class DataObj {
 			_ts_: {
 				value: function( name ) {
 					if( !_ts_[name] ) {
-						_ts_[name] = new TabularSection(name, this);
+						_ts_[name] = new classes.TabularSection(name, this);
 					}
 					return _ts_[name];
 				},
@@ -185,7 +186,7 @@ class DataObj {
 				mgr = _md.value_mgr(this._obj, f, mf, false, v);
 
 				if(mgr){
-					if(mgr instanceof EnumManager){
+					if(mgr instanceof classes.EnumManager){
 						if(typeof v == "string")
 							this._obj[f] = v;
 
@@ -247,7 +248,7 @@ class DataObj {
 
 	_setter_ts(f, v) {
 		var ts = this._ts_(f);
-		if(ts instanceof TabularSection && Array.isArray(v))
+		if(ts instanceof classes.TabularSection && Array.isArray(v))
 			ts.load(v);
 	}
 
@@ -700,7 +701,6 @@ Object.defineProperties(CatObj.prototype, {
 
 
 
-
 /**
  * ### Абстрактный класс ДокументОбъект
  * @class DocObj
@@ -980,12 +980,9 @@ class RegisterRow extends DataObj {
 	get _metadata() {
 		var _meta = this._manager.metadata();
 		if (!_meta.fields)
-			_meta.fields = utils._mixin(
-				utils._mixin(
-					utils._mixin({}, _meta.dimensions), _meta.resources), _meta.attributes);
+			_meta.fields = Object.assign({}, _meta.dimensions, _meta.resources, _meta.attributes);
 		return _meta;
 	}
-
 
 	/**
 	 * Ключ записи регистра

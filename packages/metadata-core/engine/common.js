@@ -7,6 +7,7 @@
  * @module  common
  */
 
+var $p
 
 /**
  * ### Metadata.js - проект с открытым кодом
@@ -36,6 +37,11 @@
 class MetaEngine{
 
 	constructor() {
+
+		if($p)
+			return $p;
+
+		$p = this;
 
 		Object.defineProperties(this, {
 
@@ -129,8 +135,8 @@ class MetaEngine{
 			 */
 			record_log: {
 				value: function (err) {
-					if($p.ireg && $p.ireg.$log)
-						$p.ireg.$log.record(err);
+					if(this.ireg && this.ireg.$log)
+						this.ireg.$log.record(err);
 					console.log(err);
 				}
 			},
@@ -161,6 +167,17 @@ class MetaEngine{
 	 */
 	get msg(){return msg}
 
+	/**
+	 * Конструкторы объектов данных
+	 */
+	get classes(){return classes}
+
+}
+
+if(!classes.MetaEngine){
+	Object.defineProperties(classes, {
+		MetaEngine: {value: MetaEngine}
+	});
 }
 
 

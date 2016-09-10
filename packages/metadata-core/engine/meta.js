@@ -59,8 +59,8 @@ class Meta{
 		this.init = function (meta_db) {
 
 			var confirm_count = 0,
-				is_local = !meta_db || (wsql.pouch && meta_db == wsql.pouch.local.meta),
-				is_remote = meta_db && (wsql.pouch && meta_db == wsql.pouch.local._meta);
+				is_local = !meta_db || ($p.wsql.pouch && meta_db == $p.wsql.pouch.local.meta),
+				is_remote = meta_db && ($p.wsql.pouch && meta_db == $p.wsql.pouch.local._meta);
 
 			function do_init(){
 
@@ -72,7 +72,7 @@ class Meta{
 
 				}else{
 
-					return meta_from_pouch(meta_db || wsql.pouch.local.meta)
+					return meta_from_pouch(meta_db || $p.wsql.pouch.local.meta)
 						.then(function () {
 							if(is_local){
 								_md.create_managers();
@@ -96,7 +96,7 @@ class Meta{
 
 						if(btn){
 
-							wsql.pouch.log_out();
+							$p.wsql.pouch.log_out();
 
 							setTimeout(function () {
 								$p.eve.redirect = true;
@@ -114,26 +114,17 @@ class Meta{
 
 			}
 
-			// этот обработчик нужен только при инициализации, когда в таблицах meta еще нет данных
-			$p.on("pouch_change", function (dbid, change) {
-
-				if (dbid != "meta")
-					return;
-
-				if(!_m)
-					do_init();
-
-				else{
-
-					// если изменились метаданные, запланировать перезагрузку
-					if(performance.now() > 20000 && change.docs.some(function (doc) {
-							return doc._id.substr(0,4)!='meta';
-						}))
-						do_reload();
-
-				}
-
-			});
+			// следим за изменениями базы meta и предлагаем перезагрузку при обновлении версии
+			// TODO: назначить обработчик
+			// $p.wsql.pouch.local.sync.meta.on("change", function (change) {
+			// 	if(!_m)
+			// 		do_init();
+			//
+			// 	else{
+			// 		// если изменились метаданные, запланировать перезагрузку
+			// 		do_reload();
+			// 	}
+			// });
 
 			return do_init();
 
@@ -317,7 +308,7 @@ class Meta{
 					if(callback)
 						callback(create);
 					else
-						wsql.alasql.utils.saveFile("create_tables.sql", create);
+						$p.wsql.alasql.utils.saveFile("create_tables.sql", create);
 				} else
 					iteration();
 			}

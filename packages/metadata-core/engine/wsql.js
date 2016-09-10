@@ -10,8 +10,7 @@
 const alasql = require("alasql/dist/alasql.js")
 
 const PouchDB = require('pouchdb-core')
- 	// .plugin(require('pouchdb-adapter-indexeddb'))
- 	// .plugin(require('pouchdb-adapter-http'))
+ 	.plugin(require('pouchdb-adapter-http'))
  	.plugin(require('pouchdb-replication'))
  	.plugin(require('pouchdb-mapreduce')),
  	pouchdb_memory = require('pouchdb-adapter-memory'),
@@ -37,6 +36,10 @@ else
 class WSQL {
 
 	constructor($p) {
+
+		var user_params = {
+			value: {}
+		}
 
 		Object.defineProperties(this, {
 
@@ -75,26 +78,23 @@ class WSQL {
 				}
 			},
 
-			user_params: {
-				value: {}
-			},
-
 			/**
 			 * ### Создаёт и заполняет умолчаниями таблицу параметров
 			 *
 			 * @method init_params
-			 * @return {Promise}
+			 * @param settings {Function}
+			 * @param meta {Function}
 			 * @async
 			 */
-			init_params: {
-				value: function () {
+			init: {
+				value: function (settings, meta) {
 
-					$p.job_prm.init_params();
+					$p.job_prm.init(settings);
 
 					// префикс параметров LocalStorage
 					// TODO: отразить в документации, что если префикс пустой, то параметры не инициализируются
 					if (!$p.job_prm.local_storage_prefix && !$p.job_prm.create_tables)
-						return Promise.resolve();
+						return;
 
 
 					// значения базовых параметров по умолчанию
@@ -109,7 +109,6 @@ class WSQL {
 						},
 						{p: "enable_save_pwd", v: $p.job_prm.enable_save_pwd, t: "boolean"},
 						{p: "autologin", v: "", t: "boolean"},
-						{p: "skin", v: "dhx_web", t: "string"},
 						{p: "rest_path", v: "", t: "string"}
 					], zone;
 
@@ -127,10 +126,10 @@ class WSQL {
 						this.set_user_param("zone", zone);
 
 					// дополняем хранилище недостающими параметрами
-					nesessery_params.forEach(function (o) {
-						if (wsql.get_user_param(o.p, o.t) == undefined ||
-							(!wsql.get_user_param(o.p, o.t) && (o.p.indexOf("url") != -1)))
-							wsql.set_user_param(o.p, $p.job_prm.hasOwnProperty(o.p) ? $p.job_prm[o.p] : o.v);
+					nesessery_params.forEach((o) => {
+						if (this.get_user_param(o.p, o.t) == undefined ||
+							(!this.get_user_param(o.p, o.t) && (o.p.indexOf("url") != -1)))
+							this.set_user_param(o.p, $p.job_prm.hasOwnProperty(o.p) ? $p.job_prm[o.p] : o.v);
 					});
 
 					// сообщяем движку pouch пути и префиксы
@@ -152,11 +151,8 @@ class WSQL {
 						this.pouch.init(pouch_prm);
 					}
 
-					// создаём таблицы alasql
-					if (this.create_tables) {
-						this.alasq(this.create_tables, []);
-						this.create_tables = "";
-					}
+					meta($p);
+
 				}
 			},
 
@@ -179,7 +175,7 @@ class WSQL {
 						str_prm = "";
 
 					this._ls.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
-					this.user_params[prm_name] = prm_value;
+					user_params[prm_name] = prm_value;
 				}
 			},
 

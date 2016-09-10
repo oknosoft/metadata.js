@@ -37,11 +37,13 @@
 
 function mngrs($p) {
 
+	const {wsql, md} = $p;
+
 	class DataManager {
 
 		constructor(class_name) {
 
-			var _events = {
+			const _events = {
 
 				/**
 				 * ### После создания
@@ -105,6 +107,8 @@ function mngrs($p) {
 				 */
 				del_row: []
 			};
+
+			const _meta = md.get(class_name);
 
 			Object.defineProperties(this, {
 
@@ -174,7 +178,7 @@ function mngrs($p) {
 				 */
 				metadata: {
 					value: field => {
-						var _meta = $p.md.get(class_name);
+
 						if(field)
 							return _meta.fields[field] || _meta.tabular_sections[field];
 						else
@@ -340,7 +344,7 @@ function mngrs($p) {
 		extra_fields(obj){
 			// ищем предопределенный элемент, сответствующий классу данных
 			var destinations = $p.cat.destinations || $p.cch.destinations,
-				pn = _md.class_name_to_1c(this.class_name).replace(".", "_"),
+				pn = md.class_name_to_1c(this.class_name).replace(".", "_"),
 				res = [];
 
 			if(destinations){
@@ -926,7 +930,7 @@ function mngrs($p) {
 						if(fld.indexOf(" as ") != -1)
 							s += ", " + fld;
 						else
-							s += _md.sql_mask(fld, true);
+							s += md.sql_mask(fld, true);
 					});
 					return s;
 
@@ -1020,7 +1024,7 @@ function mngrs($p) {
 													vmgr;
 
 												if(mf && mf.type.is_ref){
-													vmgr = _md.value_mgr({}, key, mf.type, true, val);
+													vmgr = md.value_mgr({}, key, mf.type, true, val);
 												}
 
 												if(keys[0] == "not")
@@ -1162,7 +1166,7 @@ function mngrs($p) {
 							}
 						}else
 							f0 = f;
-						sql += ", " + f0 + $p.md.sql_type(t, f, cmd.fields[f].type, true);
+						sql += ", " + f0 + md.sql_type(t, f, cmd.fields[f].type, true);
 					}
 
 					for(f in cmd["tabular_sections"])
@@ -1177,7 +1181,7 @@ function mngrs($p) {
 						sql += ", id CHAR, name CHAR, is_folder BOOLEAN";
 
 					for(f in cmd.fields)
-						sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.fields[f].type);
+						sql += md.sql_mask(f) + md.sql_type(t, f, cmd.fields[f].type);
 
 					for(f in cmd["tabular_sections"])
 						sql += ", " + "`ts_" + f + "` JSON";
@@ -1208,7 +1212,7 @@ function mngrs($p) {
 
 				}
 				for(f in cmd.fields){
-					sql += _md.sql_mask(f);
+					sql += md.sql_mask(f);
 					fields.push(f);
 				}
 				for(f in cmd["tabular_sections"]){
@@ -1434,7 +1438,7 @@ function mngrs($p) {
 		constructor(class_name) {
 			super(class_name);
 
-			for(var v of $p.md.get(class_name))
+			for(var v of md.get(class_name))
 				new EnumObj(v, this);
 
 		}
@@ -1455,7 +1459,7 @@ function mngrs($p) {
 		}
 
 		push(o, new_ref){
-			Object.defineProperty(this, "new_ref", {
+			Object.defineProperty(this, new_ref, {
 				value : o
 			});
 		}
@@ -1722,7 +1726,7 @@ function mngrs($p) {
 						if(fld.indexOf(" as ") != -1)
 							s += ", " + fld;
 						else
-							s += _md.sql_mask(fld, true);
+							s += md.sql_mask(fld, true);
 					});
 					return s;
 
@@ -1790,7 +1794,7 @@ function mngrs($p) {
 													vmgr;
 
 												if(mf && mf.type.is_ref){
-													vmgr = _md.value_mgr({}, key, mf.type, true, val);
+													vmgr = md.value_mgr({}, key, mf.type, true, val);
 												}
 
 												if(keys[0] == "not")
@@ -1860,14 +1864,14 @@ function mngrs($p) {
 							first_field = false;
 						}else
 							sql += ", " + f;
-						sql += _md.sql_type(t, f, cmd.dimensions[f].type, true);
+						sql += md.sql_type(t, f, cmd.dimensions[f].type, true);
 					}
 
 					for(f in cmd.resources)
-						sql += ", " + f + _md.sql_type(t, f, cmd.resources[f].type, true);
+						sql += ", " + f + md.sql_type(t, f, cmd.resources[f].type, true);
 
 					for(f in cmd.attributes)
-						sql += ", " + f + _md.sql_type(t, f, cmd.attributes[f].type, true);
+						sql += ", " + f + md.sql_type(t, f, cmd.attributes[f].type, true);
 
 					sql += ", PRIMARY KEY (";
 					first_field = true;
@@ -1886,16 +1890,16 @@ function mngrs($p) {
 				}else{
 					sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `_deleted` BOOLEAN";
 
-					//sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.dimensions[f].type);
+					//sql += md.sql_mask(f) + md.sql_type(t, f, cmd.dimensions[f].type);
 
 					for(f in cmd.dimensions)
-						sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.dimensions[f].type);
+						sql += md.sql_mask(f) + md.sql_type(t, f, cmd.dimensions[f].type);
 
 					for(f in cmd.resources)
-						sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.resources[f].type);
+						sql += md.sql_mask(f) + md.sql_type(t, f, cmd.resources[f].type);
 
 					for(f in cmd.attributes)
-						sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.attributes[f].type);
+						sql += md.sql_mask(f) + md.sql_type(t, f, cmd.attributes[f].type);
 
 					// sql += ", PRIMARY KEY (";
 					// first_field = true;
@@ -1904,7 +1908,7 @@ function mngrs($p) {
 					// 		sql += "`" + f + "`";
 					// 		first_field = false;
 					// 	}else
-					// 		sql += _md.sql_mask(f);
+					// 		sql += md.sql_mask(f);
 					// }
 				}
 
@@ -2234,7 +2238,7 @@ function mngrs($p) {
 				return sql;
 
 			}else
-				return LogManager.superclass.get_sql_struct.call(this, attr);
+				return InfoRegManager.prototype.get_sql_struct.call(this, attr);
 		}
 
 		caption_flds(attr) {
@@ -2711,53 +2715,60 @@ function mngrs($p) {
 		 * @type Tasks
 		 * @static
 		 */
-		bp: { value: new BusinessProcesses() },
-
-		DataManager: { value: DataManager },
-
-		RefDataManager: { value: RefDataManager },
-
-		DataProcessorsManager: { value: DataProcessorsManager },
-
-		EnumManager: { value: EnumManager },
-
-		RegisterManager: { value: RegisterManager },
-
-		InfoRegManager: { value: InfoRegManager },
-
-		LogManager: { value: LogManager },
-
-		AccumRegManager: { value: AccumRegManager },
-
-		CatManager: { value: CatManager },
-
-		ChartOfCharacteristicManager: { value: ChartOfCharacteristicManager },
-
-		ChartOfAccountManager: { value: ChartOfAccountManager },
-
-		DocManager: { value: DocManager },
-
-		TaskManager: { value: TaskManager },
-
-		BusinessProcessManager: { value: BusinessProcessManager },
-
-		DataObj: { value: DataObj },
-
-		CatObj: { value: CatObj },
-
-		DocObj: { value: DocObj },
-
-		DataProcessorObj: { value: DataProcessorObj },
-
-		TaskObj: { value: TaskObj },
-
-		BusinessProcessObj: { value: BusinessProcessObj },
-
-		EnumObj: { value: EnumObj },
-
-		RegisterRow: { value: RegisterRow },
+		bp: { value: new BusinessProcesses() }
 
 
 	});
+
+	if(!classes.DataManager){
+		Object.defineProperties(classes, {
+
+			DataManager: { value: DataManager },
+
+			RefDataManager: { value: RefDataManager },
+
+			DataProcessorsManager: { value: DataProcessorsManager },
+
+			EnumManager: { value: EnumManager },
+
+			RegisterManager: { value: RegisterManager },
+
+			InfoRegManager: { value: InfoRegManager },
+
+			LogManager: { value: LogManager },
+
+			AccumRegManager: { value: AccumRegManager },
+
+			CatManager: { value: CatManager },
+
+			ChartOfCharacteristicManager: { value: ChartOfCharacteristicManager },
+
+			ChartOfAccountManager: { value: ChartOfAccountManager },
+
+			DocManager: { value: DocManager },
+
+			TaskManager: { value: TaskManager },
+
+			BusinessProcessManager: { value: BusinessProcessManager },
+
+			DataObj: { value: DataObj },
+
+			CatObj: { value: CatObj },
+
+			DocObj: { value: DocObj },
+
+			DataProcessorObj: { value: DataProcessorObj },
+
+			TaskObj: { value: TaskObj },
+
+			BusinessProcessObj: { value: BusinessProcessObj },
+
+			EnumObj: { value: EnumObj },
+
+			RegisterRow: { value: RegisterRow }
+
+		})
+	}
+
 }
 

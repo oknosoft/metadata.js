@@ -576,12 +576,13 @@ function tabulars($p) {
 
 	}
 
+	if(!classes.TabularSection){
+		Object.defineProperties(classes, {
 
-	Object.defineProperties($p, {
+			TabularSection: {value: TabularSection},
 
-		TabularSection: {value: TabularSection},
-
-		TabularSectionRow: {value: TabularSectionRow}
-	});
+			TabularSectionRow: {value: TabularSectionRow}
+		});
+	}
 
 }
