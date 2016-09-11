@@ -186,6 +186,10 @@ function mngrs($p) {
 					}
 				},
 
+				constructor_names: {
+					value: {}
+				},
+
 				/**
 				 * ### Добавляет подписку на события объектов данного менеджера
 				 * В обработчиках событий можно реализовать бизнес-логику при создании, удалении и изменении объекта.
@@ -383,11 +387,15 @@ function mngrs($p) {
 		 * @param [ts_name] {String}
 		 * @return {Function}
 		 */
-		obj_constructor(ts_name) {
-			var parts = this.class_name.split("."),
-				fn_name = parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + parts[1].charAt(0).toUpperCase() + parts[1].substr(1);
+		obj_constructor(ts_name = "") {
 
-			return ts_name ? fn_name + ts_name.charAt(0).toUpperCase() + ts_name.substr(1) + "Row" : fn_name;
+			if(!this.constructor_names[ts_name]){
+				var parts = this.class_name.split("."),
+					fn_name = parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + parts[1].charAt(0).toUpperCase() + parts[1].substr(1);
+				this.constructor_names[ts_name] = ts_name ? fn_name + ts_name.charAt(0).toUpperCase() + ts_name.substr(1) + "Row" : fn_name;
+			}
+
+			return this.constructor_names[ts_name];
 
 		}
 
@@ -592,7 +600,7 @@ function mngrs($p) {
 					return model.execute(ref)
 						.then(tune_wnd_print);
 				else
-					return this.get(ref, true, true)
+					return this.get(ref, true)
 						.then(model.execute.bind(model))
 						.then(tune_wnd_print);
 
@@ -1024,7 +1032,7 @@ function mngrs($p) {
 													vmgr;
 
 												if(mf && mf.type.is_ref){
-													vmgr = md.value_mgr({}, key, mf.type, true, val);
+													vmgr = utils.value_mgr({}, key, mf.type, true, val);
 												}
 
 												if(keys[0] == "not")
@@ -1117,7 +1125,7 @@ function mngrs($p) {
 					// ссылка родителя во взаимосвязи с начальным значением выбора
 					if(initial_value !=  utils.blank.guid && ignore_parent){
 						if(cmd["hierarchical"]){
-							on_parent(t.get(initial_value, false))
+							on_parent(t.get(initial_value))
 						}else
 							on_parent();
 					}else
@@ -1794,7 +1802,7 @@ function mngrs($p) {
 													vmgr;
 
 												if(mf && mf.type.is_ref){
-													vmgr = md.value_mgr({}, key, mf.type, true, val);
+													vmgr = utils.value_mgr({}, key, mf.type, true, val);
 												}
 
 												if(keys[0] == "not")
@@ -2323,8 +2331,8 @@ function mngrs($p) {
 				 */
 				$p[this.obj_constructor()].prototype.__define({
 					is_folder: {
-						get: () => this._obj.is_folder || false,
-						set: v => this._obj.is_folder = utils.fix_boolean(v),
+						get : function(){ return this._obj.is_folder || false},
+						set : function(v){ this._obj.is_folder = $p.utils.fix_boolean(v)},
 						enumerable: true,
 						configurable: true
 					}
@@ -2620,7 +2628,6 @@ function mngrs($p) {
 
 	Object.defineProperties($p, {
 
-
 		/**
 		 * Коллекция менеджеров перечислений
 		 * @property enm
@@ -2767,6 +2774,97 @@ function mngrs($p) {
 
 			RegisterRow: { value: RegisterRow }
 
+		})
+	}
+
+	if(!utils.value_mgr){
+		/**
+		 * ### Возвращает менеджер значения по свойству строки
+		 * @method value_mgr
+		 * @param row {Object|TabularSectionRow} - строка табчасти или объект
+		 * @param f {String} - имя поля
+		 * @param mf {Object} - описание типа поля mf.type
+		 * @param array_enabled {Boolean} - возвращать массив для полей составного типа или первый доступный тип
+		 * @param v {*} - устанавливаемое значение
+		 * @return {DataManager|Array|undefined}
+		 */
+		Object.defineProperty(utils, 'value_mgr', {
+
+			value: function(row, f, mf, array_enabled, v) {
+				var property, oproperty, tnames, rt, mgr;
+				if (mf._mgr)
+					return mf._mgr;
+
+				function mf_mgr(mgr) {
+					if (mgr && mf.types.length == 1)
+						mf._mgr = mgr;
+					return mgr;
+				}
+
+				if (mf.types.length == 1) {
+					tnames = mf.types[0].split(".");
+					if (tnames.length > 1 && $p[tnames[0]])
+						return mf_mgr($p[tnames[0]][tnames[1]]);
+
+				} else if (v && v.type) {
+					tnames = v.type.split(".");
+					if (tnames.length > 1 && $p[tnames[0]])
+						return mf_mgr($p[tnames[0]][tnames[1]]);
+				}
+
+				property = row.property || row.param;
+				if (f != "value" || !property) {
+
+					rt = [];
+					mf.types.forEach(function (v) {
+						tnames = v.split(".");
+						if (tnames.length > 1 && $p[tnames[0]][tnames[1]])
+							rt.push($p[tnames[0]][tnames[1]]);
+					});
+					if (rt.length == 1 || row[f] == utils.blank.guid)
+						return mf_mgr(rt[0]);
+
+					else if (array_enabled)
+						return rt;
+
+					else if ((property = row[f]) instanceof DataObj)
+						return property._manager;
+
+					else if (utils.is_guid(property) && property != utils.blank.guid) {
+						for (var i in rt) {
+							mgr = rt[i];
+							if (mgr.get(property, true))
+								return mgr;
+						}
+					}
+				} else {
+
+					// Получаем объект свойства
+					if (utils.is_data_obj(property))
+						oproperty = property;
+					else if (utils.is_guid(property))
+						oproperty = $p.cch.properties.get(property);
+					else
+						return;
+
+					if (utils.is_data_obj(oproperty)) {
+
+						if (oproperty.is_new())
+							return $p.cat.property_values;
+
+						// и через его тип выходми на мнеджера значения
+						for (rt in oproperty.type.types)
+							if (oproperty.type.types[rt].indexOf(".") > -1) {
+								tnames = oproperty.type.types[rt].split(".");
+								break;
+							}
+						if (tnames && tnames.length > 1 && $p[tnames[0]])
+							return mf_mgr($p[tnames[0]][tnames[1]]);
+						else
+							return oproperty.type;
+					}
+				}
+			}
 		})
 	}
 

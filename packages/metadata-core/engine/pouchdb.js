@@ -6,6 +6,21 @@
  * @submodule pouchdb
  */
 
+const alasql = require("alasql/dist/alasql.js")
+
+const PouchDB = require('pouchdb-core')
+		.plugin(require('pouchdb-adapter-http'))
+		.plugin(require('pouchdb-replication'))
+		.plugin(require('pouchdb-mapreduce'))
+		.plugin(require('pouchdb-authentication')),
+	pouchdb_memory = require('pouchdb-adapter-memory'),
+	pouchdb_idb = require('pouchdb-adapter-idb')
+
+if(alasql.utils.isNode)
+	PouchDB.plugin(pouchdb_memory)
+else
+	PouchDB.plugin(pouchdb_idb)
+
 
 /**
  * ### Интерфейс локальной и сетевой баз данных PouchDB
@@ -76,22 +91,10 @@ class Pouch{
 			 */
 			remote: {
 				get: function () {
-					if(!_remote && _auth){
+					if(!_remote){
 						_remote = {
-							ram: new PouchDB(_paths.path + _paths.zone + "_ram", {
-								auth: {
-									username: _auth.username,
-									password: _auth.password
-								},
-								skip_setup: true
-							}),
-							doc: new PouchDB(_paths.path + _paths.zone + "_doc" + _paths.suffix, {
-								auth: {
-									username: _auth.username,
-									password: _auth.password
-								},
-								skip_setup: true
-							})
+							ram: new PouchDB(_paths.path + _paths.zone + "_ram", { skip_setup: true }),
+							doc: new PouchDB(_paths.path + _paths.zone + "_doc" + _paths.suffix, { skip_setup: true })
 						}
 					}
 					return _remote;
@@ -118,10 +121,12 @@ class Pouch{
 						if(_auth.username == username)
 							return Promise.resolve();
 						else
-							return Promise.reject();
+							return Promise.reject(new Error("need logout first"));
 					}
 
-					return $p.ajax.get_ex(_paths.path + _paths.zone + "_ram", {username: username, password: password})
+
+					return this.remote.ram.login(username, password)
+						.then(() => _remote.doc.login(username, password))
 						.then(function (req) {
 							_auth = {username: username, password: password};
 							setTimeout(() => { $p.store.dispatch(user_log_in(username)) });
@@ -129,7 +134,7 @@ class Pouch{
 								ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),
 								doc: t.run_sync(t.local.doc, t.remote.doc, "doc")
 							}
-						});
+						})
 				}
 			},
 
@@ -262,8 +267,8 @@ class Pouch{
 
 								}else{
 
-									$p.store.dispatch(pouch_data_error("ram", info))
-									reject(info);
+									$p.store.dispatch(pouch_no_data("ram", info))
+									resolve();
 								}
 							});
 					});
@@ -424,17 +429,21 @@ class Pouch{
 								})
 								.on('paused', function (info) {
 									// replication was paused, usually because of a lost connection
-									if(info)
-										$p.eve.callEvent("pouch_paused", [id, info]);
+									//$p.eve.callEvent("pouch_paused", [id, info]);
+									$p.store.dispatch(pouch_sync_error(id, info))
+
 								})
 								.on('active', function (info) {
 									// replication was resumed
-									$p.eve.callEvent("pouch_active", [id, info]);
+									//$p.eve.callEvent("pouch_active", [id, info]);
+									$p.store.dispatch(pouch_sync_error(id, info))
 
 								})
 								.on('denied', function (info) {
 									// a document failed to replicate, e.g. due to permissions
-									$p.eve.callEvent("pouch_denied", [id, info]);
+									//$p.eve.callEvent("pouch_denied", [id, info]);
+									$p.store.dispatch(pouch_sync_error(id, info))
+
 
 								})
 								.on('error', function (err) {

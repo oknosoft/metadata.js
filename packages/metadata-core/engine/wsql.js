@@ -7,20 +7,6 @@
  * @submodule wsql
  */
 
-const alasql = require("alasql/dist/alasql.js")
-
-const PouchDB = require('pouchdb-core')
- 	.plugin(require('pouchdb-adapter-http'))
- 	.plugin(require('pouchdb-replication'))
- 	.plugin(require('pouchdb-mapreduce')),
- 	pouchdb_memory = require('pouchdb-adapter-memory'),
- 	pouchdb_idb = require('pouchdb-adapter-idb')
-
-if(alasql.utils.isNode)
-	PouchDB.plugin(pouchdb_memory)
-else
-	PouchDB.plugin(pouchdb_idb)
-
 //const _ls = require("node-localstorage").LocalStorage
 
 /**

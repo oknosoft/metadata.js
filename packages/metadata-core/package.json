@@ -11,7 +11,8 @@
     "pouchdb-adapter-memory": "^6.0",
     "pouchdb-adapter-idb": "^6.0",
     "pouchdb-mapreduce": "^6.0",
-    "pouchdb-replication": "^6.0"
+    "pouchdb-replication": "^6.0",
+    "pouchdb-authentication": "^0.5"
   },
   "devDependencies": {
     "babel-preset-es2015": ">=6.14.0",

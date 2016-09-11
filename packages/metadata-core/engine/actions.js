@@ -34,6 +34,7 @@ export const POUCH_DATA_LOADED  = 'POUCH_DATA_LOADED'   // Оповещение 
 export const POUCH_CHANGE       = 'POUCH_CHANGE'        // Прибежали изменения с сервера
 export const POUCH_DATA_ERROR   = 'POUCH_DATA_ERROR'    // Оповещение об ошибке при загрузке локальных данных
 export const POUCH_SYNC_ERROR   = 'POUCH_SYNC_ERROR'    // Оповещение об ошибке репликации
+export const POUCH_NO_DATA      = 'POUCH_NO_DATA'       // Оповещение об отсутствии локальных данных (как правило, при первом запуске)
 
 
 
@@ -101,6 +102,16 @@ export function pouch_data_error(dbid, err) {
 	}
 }
 
+export function pouch_no_data(dbid, err) {
+	return {
+		type: POUCH_NO_DATA,
+		payload: {
+			dbid: dbid,
+			err: err
+		}
+	}
+}
+
 export function user_defined(name) {
 	return {
 		type: USER_DEFINED,
@@ -159,6 +170,8 @@ const ACTION_HANDLERS = {
 	[POUCH_DATA_LOADED]:    (state, action) => Object.assign({}, state, {data_loaded: true}),
 	[POUCH_DATA_PAGE]:      (state, action) => Object.assign({}, state, {page: action.payload}),
 	[POUCH_DATA_ERROR]:     (state, action) => Object.assign({}, state, {err: action.payload}),
+	[POUCH_LOAD_START]:     (state, action) => Object.assign({}, state, {data_empty: false, fetch_local: true}),
+	[POUCH_NO_DATA]:        (state, action) => Object.assign({}, state, {data_empty: true}),
 
 	[USER_DEFINED]:     (state, action) => Object.assign({}, state, {user: {
 		name: action.payload,
@@ -194,7 +207,13 @@ export default function metaReducer (state, action) {
 
 					[POUCH_DATA_LOADED]: pouch_data_loaded,
 					[POUCH_DATA_PAGE]: pouch_data_page,
-					[POUCH_DATA_ERROR]: pouch_data_error
+					[POUCH_DATA_ERROR]: pouch_data_error,
+					[POUCH_LOAD_START]: pouch_load_start,
+					[POUCH_NO_DATA]: pouch_no_data,
+
+					[USER_DEFINED]: user_defined,
+					[USER_LOG_IN]: user_log_in,
+					[USER_LOG_OUT]: user_log_out
 				}
 			})
 		}
@@ -202,6 +221,9 @@ export default function metaReducer (state, action) {
 		state = {
 			meta_loaded: false,
 			data_loaded: false,
+			data_empty: true,
+			fetch_local: false,
+			fetch_remote: false,
 			user: {
 				name: "",
 				logged_in: false
@@ -211,5 +233,10 @@ export default function metaReducer (state, action) {
 	}
 
 	const handler = ACTION_HANDLERS[action.type]
-	return handler ? handler(state, action) : state
+
+	if(handler){
+		console.log(action)
+		return handler(state, action)
+	}else
+		return state
 }

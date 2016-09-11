@@ -41,7 +41,7 @@ class DataObj {
 
 		// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
 		if(!(manager instanceof classes.DataProcessorsManager) && !(manager instanceof classes.EnumManager))
-			tmp = manager.get(attr, false, true);
+			tmp = manager.get(attr, true);
 
 		if(tmp){
 			attr = null;
@@ -138,9 +138,9 @@ class DataObj {
 			if(mf.hasOwnProperty("str_len") && !utils.is_guid(res))
 				return res;
 
-			if(mgr = _md.value_mgr(this._obj, f, mf)){
+			if(mgr = utils.value_mgr(this._obj, f, mf)){
 				if(utils.is_data_mgr(mgr))
-					return mgr.get(res, false);
+					return mgr.get(res);
 				else
 					return utils.fetch_type(res, mgr);
 			}
@@ -183,7 +183,7 @@ class DataObj {
 			}else {
 				this._obj[f] = utils.fix_guid(v);
 
-				mgr = _md.value_mgr(this._obj, f, mf, false, v);
+				mgr = utils.value_mgr(this._obj, f, mf, false, v);
 
 				if(mgr){
 					if(mgr instanceof classes.EnumManager){
@@ -223,12 +223,14 @@ class DataObj {
 	}
 
 	__notify(f) {
-		if(!this._data._silent)
-			Object.getNotifier(this).notify({
-				type: 'update',
-				name: f,
-				oldValue: this._obj[f]
-			});
+		if(!this._data._silent){
+			// TODO: observe
+			// Object.getNotifier(this).notify({
+			// 	type: 'update',
+			// 	name: f,
+			// 	oldValue: this._obj[f]
+			// });
+		}
 	}
 
 	_setter(f, v) {
@@ -307,7 +309,7 @@ class DataObj {
 	/**
 	 * Метод для ручной установки признака _прочитан_ (не новый)
 	 */
-	_set_loaded(){
+	_set_loaded(ref){
 		this._manager.push(this, ref);
 		this._data._modified = false;
 		this._data._is_new = false;

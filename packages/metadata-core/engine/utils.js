@@ -649,7 +649,6 @@ class Utils{
 		return res;
 	}
 
-
 }
 
 const utils = new Utils();
