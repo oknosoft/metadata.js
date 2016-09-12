@@ -8,6 +8,7 @@
  * @requires common
  */
 
+
 /**
  * ### Абстрактный объект данных
  * Прародитель как ссылочных объектов (документов и справочников), так и регистров с суррогатным ключом и несохраняемых обработок<br />
@@ -39,8 +40,8 @@ class DataObj {
 			};
 
 		// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
-		if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager))
-			tmp = manager.get(attr, false, true);
+		if(!(manager instanceof classes.DataProcessorsManager) && !(manager instanceof classes.EnumManager))
+			tmp = manager.get(attr, true);
 
 		if(tmp){
 			attr = null;
@@ -48,10 +49,10 @@ class DataObj {
 		}
 
 
-		if(manager instanceof EnumManager)
+		if(manager instanceof classes.EnumManager)
 			_obj.ref = attr.name;
 
-		else if(!(manager instanceof RegisterManager)){
+		else if(!(manager instanceof classes.RegisterManager)){
 			_obj.ref = utils.fix_guid(attr);
 
 		}else
@@ -79,7 +80,7 @@ class DataObj {
 			_ts_: {
 				value: function( name ) {
 					if( !_ts_[name] ) {
-						_ts_[name] = new TabularSection(name, this);
+						_ts_[name] = new classes.TabularSection(name, this);
 					}
 					return _ts_[name];
 				},
@@ -137,9 +138,9 @@ class DataObj {
 			if(mf.hasOwnProperty("str_len") && !utils.is_guid(res))
 				return res;
 
-			if(mgr = _md.value_mgr(this._obj, f, mf)){
+			if(mgr = utils.value_mgr(this._obj, f, mf)){
 				if(utils.is_data_mgr(mgr))
-					return mgr.get(res, false);
+					return mgr.get(res);
 				else
 					return utils.fetch_type(res, mgr);
 			}
@@ -182,10 +183,10 @@ class DataObj {
 			}else {
 				this._obj[f] = utils.fix_guid(v);
 
-				mgr = _md.value_mgr(this._obj, f, mf, false, v);
+				mgr = utils.value_mgr(this._obj, f, mf, false, v);
 
 				if(mgr){
-					if(mgr instanceof EnumManager){
+					if(mgr instanceof classes.EnumManager){
 						if(typeof v == "string")
 							this._obj[f] = v;
 
@@ -222,12 +223,14 @@ class DataObj {
 	}
 
 	__notify(f) {
-		if(!this._data._silent)
-			Object.getNotifier(this).notify({
-				type: 'update',
-				name: f,
-				oldValue: this._obj[f]
-			});
+		if(!this._data._silent){
+			// TODO: observe
+			// Object.getNotifier(this).notify({
+			// 	type: 'update',
+			// 	name: f,
+			// 	oldValue: this._obj[f]
+			// });
+		}
 	}
 
 	_setter(f, v) {
@@ -247,7 +250,7 @@ class DataObj {
 
 	_setter_ts(f, v) {
 		var ts = this._ts_(f);
-		if(ts instanceof TabularSection && Array.isArray(v))
+		if(ts instanceof classes.TabularSection && Array.isArray(v))
 			ts.load(v);
 	}
 
@@ -306,7 +309,7 @@ class DataObj {
 	/**
 	 * Метод для ручной установки признака _прочитан_ (не новый)
 	 */
-	_set_loaded(){
+	_set_loaded(ref){
 		this._manager.push(this, ref);
 		this._data._modified = false;
 		this._data._is_new = false;
@@ -700,7 +703,6 @@ Object.defineProperties(CatObj.prototype, {
 
 
 
-
 /**
  * ### Абстрактный класс ДокументОбъект
  * @class DocObj
@@ -980,12 +982,9 @@ class RegisterRow extends DataObj {
 	get _metadata() {
 		var _meta = this._manager.metadata();
 		if (!_meta.fields)
-			_meta.fields = utils._mixin(
-				utils._mixin(
-					utils._mixin({}, _meta.dimensions), _meta.resources), _meta.attributes);
+			_meta.fields = Object.assign({}, _meta.dimensions, _meta.resources, _meta.attributes);
 		return _meta;
 	}
-
 
 	/**
 	 * Ключ записи регистра

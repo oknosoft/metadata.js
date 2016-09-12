@@ -24,8 +24,7 @@ class Meta{
 
 	constructor($p) {
 
-		var _m,
-			_md = this;
+		var _m;
 
 		// загружает метаданные из pouchdb
 		function meta_from_pouch(meta_db) {
@@ -58,30 +57,22 @@ class Meta{
 		 */
 		this.init = function (meta_db) {
 
-			var confirm_count = 0,
-				is_local = !meta_db || (wsql.pouch && meta_db == wsql.pouch.local.meta),
-				is_remote = meta_db && (wsql.pouch && meta_db == wsql.pouch.local._meta);
+			var confirm_count = 0;
 
 			function do_init(){
 
-				if(meta_db && !is_local && !is_remote){
-					_m = meta_db;
-					meta_db = null;
+				if(!meta_db || meta_db instanceof PouchDB){
 
-					_md.create_managers();
+					return meta_from_pouch(meta_db || $p.wsql.pouch.local.meta)
+						.then(function () {
+							return _m;
+						});
 
 				}else{
 
-					return meta_from_pouch(meta_db || wsql.pouch.local.meta)
-						.then(function () {
-							if(is_local){
-								_md.create_managers();
+					_m = meta_db;
+					meta_db = null;
 
-							}else{
-								return _m;
-							}
-						})
-						.catch($p.record_log);
 				}
 			}
 
@@ -96,7 +87,7 @@ class Meta{
 
 						if(btn){
 
-							wsql.pouch.log_out();
+							$p.wsql.pouch.log_out();
 
 							setTimeout(function () {
 								$p.eve.redirect = true;
@@ -114,26 +105,17 @@ class Meta{
 
 			}
 
-			// этот обработчик нужен только при инициализации, когда в таблицах meta еще нет данных
-			$p.on("pouch_change", function (dbid, change) {
-
-				if (dbid != "meta")
-					return;
-
-				if(!_m)
-					do_init();
-
-				else{
-
-					// если изменились метаданные, запланировать перезагрузку
-					if(performance.now() > 20000 && change.docs.some(function (doc) {
-							return doc._id.substr(0,4)!='meta';
-						}))
-						do_reload();
-
-				}
-
-			});
+			// следим за изменениями базы meta и предлагаем перезагрузку при обновлении версии
+			// TODO: назначить обработчик
+			// $p.wsql.pouch.local.sync.meta.on("change", function (change) {
+			// 	if(!_m)
+			// 		do_init();
+			//
+			// 	else{
+			// 		// если изменились метаданные, запланировать перезагрузку
+			// 		do_reload();
+			// 	}
+			// });
 
 			return do_init();
 
@@ -216,92 +198,6 @@ class Meta{
 		};
 
 		/**
-		 * ### Возвращает менеджер значения по свойству строки
-		 * @method value_mgr
-		 * @param row {Object|TabularSectionRow} - строка табчасти или объект
-		 * @param f {String} - имя поля
-		 * @param mf {Object} - описание типа поля mf.type
-		 * @param array_enabled {Boolean} - возвращать массив для полей составного типа или первый доступный тип
-		 * @param v {*} - устанавливаемое значение
-		 * @return {DataManager|Array}
-		 */
-		this.value_mgr = function(row, f, mf, array_enabled, v){
-			var property, oproperty, tnames, rt, mgr;
-			if(mf._mgr)
-				return mf._mgr;
-
-			function mf_mgr(mgr){
-				if(mgr && mf.types.length == 1)
-					mf._mgr = mgr;
-				return mgr;
-			}
-
-			if(mf.types.length == 1){
-				tnames = mf.types[0].split(".");
-				if(tnames.length > 1 && $p[tnames[0]])
-					return mf_mgr($p[tnames[0]][tnames[1]]);
-
-			}else if(v && v.type){
-				tnames = v.type.split(".");
-				if(tnames.length > 1 && $p[tnames[0]])
-					return mf_mgr($p[tnames[0]][tnames[1]]);
-			}
-
-			property = row.property || row.param;
-			if(f != "value" || !property){
-
-				rt = [];
-				mf.types.forEach(function(v){
-					tnames = v.split(".");
-					if(tnames.length > 1 && $p[tnames[0]][tnames[1]])
-						rt.push($p[tnames[0]][tnames[1]]);
-				});
-				if(rt.length == 1 || row[f] == utils.blank.guid)
-					return mf_mgr(rt[0]);
-
-				else if(array_enabled)
-					return rt;
-
-				else if((property = row[f]) instanceof DataObj)
-					return property._manager;
-
-				else if(utils.is_guid(property) && property != utils.blank.guid){
-					for(var i in rt){
-						mgr = rt[i];
-						if(mgr.get(property, false, true))
-							return mgr;
-					}
-				}
-			}else{
-
-				// Получаем объект свойства
-				if(utils.is_data_obj(property))
-					oproperty = property;
-				else if(utils.is_guid(property))
-					oproperty = $p.cch.properties.get(property, false);
-				else
-					return;
-
-				if(utils.is_data_obj(oproperty)){
-
-					if(oproperty.is_new())
-						return $p.cat.property_values;
-
-					// и через его тип выходми на мнеджера значения
-					for(rt in oproperty.type.types)
-						if(oproperty.type.types[rt].indexOf(".") > -1){
-							tnames = oproperty.type.types[rt].split(".");
-							break;
-						}
-					if(tnames && tnames.length > 1 && $p[tnames[0]])
-						return mf_mgr($p[tnames[0]][tnames[1]]);
-					else
-						return oproperty.type;
-				}
-			}
-		};
-
-		/**
 		 * ### Создаёт строку SQL с командами создания таблиц для всех объектов метаданных
 		 * @method create_tables
 		 */
@@ -317,7 +213,7 @@ class Meta{
 					if(callback)
 						callback(create);
 					else
-						wsql.alasql.utils.saveFile("create_tables.sql", create);
+						$p.wsql.alasql.utils.saveFile("create_tables.sql", create);
 				} else
 					iteration();
 			}
@@ -406,13 +302,6 @@ class Meta{
 		};
 
 	}
-
-	/**
-	 * ### Cоздаёт объекты менеджеров
-	 * @method create_managers
-	 * @for Meta
-	 */
-	create_managers(){}
 
 	/**
 	 * ### Возвращает тип поля sql для типа данных

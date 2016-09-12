@@ -68,8 +68,7 @@ function Meta() {
 	 */
 	_md.init = function (meta_db) {
 
-		var confirm_count = 0,
-			is_local = !meta_db || ($p.wsql.pouch && meta_db == $p.wsql.pouch.local.meta),
+		var is_local = !meta_db || ($p.wsql.pouch && meta_db == $p.wsql.pouch.local.meta),
 			is_remote = meta_db && ($p.wsql.pouch && meta_db == $p.wsql.pouch.local._meta);
 
 		function do_init(){
@@ -95,34 +94,7 @@ function Meta() {
 			}
 		}
 
-		function do_reload(){
 
-			dhtmlx.confirm({
-				title: $p.msg.file_new_date_title,
-				text: $p.msg.file_new_date,
-				ok: "Перезагрузка",
-				cancel: "Продолжить",
-				callback: function(btn) {
-
-					if(btn){
-
-						$p.wsql.pouch.log_out();
-
-						setTimeout(function () {
-							$p.eve.redirect = true;
-							location.reload(true);
-						}, 1000);
-
-					}else{
-
-						confirm_count++;
-						setTimeout(do_reload, confirm_count * 30000);
-
-					}
-				}
-			});
-
-		}
 
 		// этот обработчик нужен только при инициализации, когда в таблицах meta еще нет данных
 		$p.on("pouch_change", function (dbid, change) {
@@ -136,10 +108,7 @@ function Meta() {
 			else{
 
 				// если изменились метаданные, запланировать перезагрузку
-				if(performance.now() > 20000 && change.docs.some(function (doc) {
-						return doc._id.substr(0,4)!='meta';
-					}))
-					do_reload();
+				$p.iface.do_reload();
 
 			}
 

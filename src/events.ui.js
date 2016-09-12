@@ -368,11 +368,8 @@ $p.eve.__define({
 					cache.addEventListener('updateready', function(e) {
 						try{
 							cache.swapCache();
-							if($p.iface.appcache){
-								$p.iface.appcache.close();
-							}
 						}catch(e){}
-						do_reload();
+						$p.iface.do_reload();
 					}, false);
 
 					// Ошибка кеша
@@ -486,13 +483,6 @@ $p.eve.__define({
 			setTimeout(init_params, 10);
 
 		}, 10);
-
-		function do_reload(){
-			if(!$p.ajax.authorized){
-				eve.redirect = true;
-				location.reload(true);
-			}
-		}
 
 	}, false);
 

@@ -187,6 +187,24 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			});
 	}
 
+	function onpaste(e) {
+
+		if(e.clipboardData.types.indexOf('text/plain') != -1){
+			try{
+				$p.eve.callEvent("tabular_paste", [{
+					obj: _obj,
+					grid: _grid,
+					tsname: _tsname,
+					e: e,
+					data: e.clipboardData.getData('text/plain')
+				}]);
+
+			}catch(e){
+				return;
+			}
+		}
+	}
+
 
 	// панель инструментов табличной части
 	_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
@@ -261,6 +279,8 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				_pwnd = null;
 				_cell.detachToolbar();
 
+				_grid.entBox.removeEventListener("paste", onpaste);
+
 				_destructor.call(_grid);
 			}
 		},
@@ -323,6 +343,9 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	// начинаем следить за объектом и, его табчастью допреквизитов
 	Object.observe(_obj, observer, ["row"]);
 	Object.observe(_obj, observer_rows, ["rows"]);
+
+	// начинаем следить за буфером обмена
+	_grid.entBox.addEventListener('paste', onpaste);
 
 	return _grid;
 };

@@ -37,11 +37,13 @@
 
 function mngrs($p) {
 
+	const {wsql, md} = $p;
+
 	class DataManager {
 
 		constructor(class_name) {
 
-			var _events = {
+			const _events = {
 
 				/**
 				 * ### После создания
@@ -105,6 +107,8 @@ function mngrs($p) {
 				 */
 				del_row: []
 			};
+
+			const _meta = md.get(class_name);
 
 			Object.defineProperties(this, {
 
@@ -174,12 +178,16 @@ function mngrs($p) {
 				 */
 				metadata: {
 					value: field => {
-						var _meta = $p.md.get(class_name);
+
 						if(field)
 							return _meta.fields[field] || _meta.tabular_sections[field];
 						else
 							return _meta;
 					}
+				},
+
+				constructor_names: {
+					value: {}
 				},
 
 				/**
@@ -340,7 +348,7 @@ function mngrs($p) {
 		extra_fields(obj){
 			// ищем предопределенный элемент, сответствующий классу данных
 			var destinations = $p.cat.destinations || $p.cch.destinations,
-				pn = _md.class_name_to_1c(this.class_name).replace(".", "_"),
+				pn = md.class_name_to_1c(this.class_name).replace(".", "_"),
 				res = [];
 
 			if(destinations){
@@ -379,11 +387,15 @@ function mngrs($p) {
 		 * @param [ts_name] {String}
 		 * @return {Function}
 		 */
-		obj_constructor(ts_name) {
-			var parts = this.class_name.split("."),
-				fn_name = parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + parts[1].charAt(0).toUpperCase() + parts[1].substr(1);
+		obj_constructor(ts_name = "") {
 
-			return ts_name ? fn_name + ts_name.charAt(0).toUpperCase() + ts_name.substr(1) + "Row" : fn_name;
+			if(!this.constructor_names[ts_name]){
+				var parts = this.class_name.split("."),
+					fn_name = parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + parts[1].charAt(0).toUpperCase() + parts[1].substr(1);
+				this.constructor_names[ts_name] = ts_name ? fn_name + ts_name.charAt(0).toUpperCase() + ts_name.substr(1) + "Row" : fn_name;
+			}
+
+			return this.constructor_names[ts_name];
 
 		}
 
@@ -588,7 +600,7 @@ function mngrs($p) {
 					return model.execute(ref)
 						.then(tune_wnd_print);
 				else
-					return this.get(ref, true, true)
+					return this.get(ref, true)
 						.then(model.execute.bind(model))
 						.then(tune_wnd_print);
 
@@ -926,7 +938,7 @@ function mngrs($p) {
 						if(fld.indexOf(" as ") != -1)
 							s += ", " + fld;
 						else
-							s += _md.sql_mask(fld, true);
+							s += md.sql_mask(fld, true);
 					});
 					return s;
 
@@ -1020,7 +1032,7 @@ function mngrs($p) {
 													vmgr;
 
 												if(mf && mf.type.is_ref){
-													vmgr = _md.value_mgr({}, key, mf.type, true, val);
+													vmgr = utils.value_mgr({}, key, mf.type, true, val);
 												}
 
 												if(keys[0] == "not")
@@ -1113,7 +1125,7 @@ function mngrs($p) {
 					// ссылка родителя во взаимосвязи с начальным значением выбора
 					if(initial_value !=  utils.blank.guid && ignore_parent){
 						if(cmd["hierarchical"]){
-							on_parent(t.get(initial_value, false))
+							on_parent(t.get(initial_value))
 						}else
 							on_parent();
 					}else
@@ -1162,7 +1174,7 @@ function mngrs($p) {
 							}
 						}else
 							f0 = f;
-						sql += ", " + f0 + $p.md.sql_type(t, f, cmd.fields[f].type, true);
+						sql += ", " + f0 + md.sql_type(t, f, cmd.fields[f].type, true);
 					}
 
 					for(f in cmd["tabular_sections"])
@@ -1177,7 +1189,7 @@ function mngrs($p) {
 						sql += ", id CHAR, name CHAR, is_folder BOOLEAN";
 
 					for(f in cmd.fields)
-						sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.fields[f].type);
+						sql += md.sql_mask(f) + md.sql_type(t, f, cmd.fields[f].type);
 
 					for(f in cmd["tabular_sections"])
 						sql += ", " + "`ts_" + f + "` JSON";
@@ -1208,7 +1220,7 @@ function mngrs($p) {
 
 				}
 				for(f in cmd.fields){
-					sql += _md.sql_mask(f);
+					sql += md.sql_mask(f);
 					fields.push(f);
 				}
 				for(f in cmd["tabular_sections"]){
@@ -1434,7 +1446,7 @@ function mngrs($p) {
 		constructor(class_name) {
 			super(class_name);
 
-			for(var v of $p.md.get(class_name))
+			for(var v of md.get(class_name))
 				new EnumObj(v, this);
 
 		}
@@ -1455,7 +1467,7 @@ function mngrs($p) {
 		}
 
 		push(o, new_ref){
-			Object.defineProperty(this, "new_ref", {
+			Object.defineProperty(this, new_ref, {
 				value : o
 			});
 		}
@@ -1722,7 +1734,7 @@ function mngrs($p) {
 						if(fld.indexOf(" as ") != -1)
 							s += ", " + fld;
 						else
-							s += _md.sql_mask(fld, true);
+							s += md.sql_mask(fld, true);
 					});
 					return s;
 
@@ -1790,7 +1802,7 @@ function mngrs($p) {
 													vmgr;
 
 												if(mf && mf.type.is_ref){
-													vmgr = _md.value_mgr({}, key, mf.type, true, val);
+													vmgr = utils.value_mgr({}, key, mf.type, true, val);
 												}
 
 												if(keys[0] == "not")
@@ -1860,14 +1872,14 @@ function mngrs($p) {
 							first_field = false;
 						}else
 							sql += ", " + f;
-						sql += _md.sql_type(t, f, cmd.dimensions[f].type, true);
+						sql += md.sql_type(t, f, cmd.dimensions[f].type, true);
 					}
 
 					for(f in cmd.resources)
-						sql += ", " + f + _md.sql_type(t, f, cmd.resources[f].type, true);
+						sql += ", " + f + md.sql_type(t, f, cmd.resources[f].type, true);
 
 					for(f in cmd.attributes)
-						sql += ", " + f + _md.sql_type(t, f, cmd.attributes[f].type, true);
+						sql += ", " + f + md.sql_type(t, f, cmd.attributes[f].type, true);
 
 					sql += ", PRIMARY KEY (";
 					first_field = true;
@@ -1886,16 +1898,16 @@ function mngrs($p) {
 				}else{
 					sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `_deleted` BOOLEAN";
 
-					//sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.dimensions[f].type);
+					//sql += md.sql_mask(f) + md.sql_type(t, f, cmd.dimensions[f].type);
 
 					for(f in cmd.dimensions)
-						sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.dimensions[f].type);
+						sql += md.sql_mask(f) + md.sql_type(t, f, cmd.dimensions[f].type);
 
 					for(f in cmd.resources)
-						sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.resources[f].type);
+						sql += md.sql_mask(f) + md.sql_type(t, f, cmd.resources[f].type);
 
 					for(f in cmd.attributes)
-						sql += _md.sql_mask(f) + _md.sql_type(t, f, cmd.attributes[f].type);
+						sql += md.sql_mask(f) + md.sql_type(t, f, cmd.attributes[f].type);
 
 					// sql += ", PRIMARY KEY (";
 					// first_field = true;
@@ -1904,7 +1916,7 @@ function mngrs($p) {
 					// 		sql += "`" + f + "`";
 					// 		first_field = false;
 					// 	}else
-					// 		sql += _md.sql_mask(f);
+					// 		sql += md.sql_mask(f);
 					// }
 				}
 
@@ -2234,7 +2246,7 @@ function mngrs($p) {
 				return sql;
 
 			}else
-				return LogManager.superclass.get_sql_struct.call(this, attr);
+				return InfoRegManager.prototype.get_sql_struct.call(this, attr);
 		}
 
 		caption_flds(attr) {
@@ -2319,8 +2331,8 @@ function mngrs($p) {
 				 */
 				$p[this.obj_constructor()].prototype.__define({
 					is_folder: {
-						get: () => this._obj.is_folder || false,
-						set: v => this._obj.is_folder = utils.fix_boolean(v),
+						get : function(){ return this._obj.is_folder || false},
+						set : function(v){ this._obj.is_folder = $p.utils.fix_boolean(v)},
 						enumerable: true,
 						configurable: true
 					}
@@ -2616,7 +2628,6 @@ function mngrs($p) {
 
 	Object.defineProperties($p, {
 
-
 		/**
 		 * Коллекция менеджеров перечислений
 		 * @property enm
@@ -2711,53 +2722,151 @@ function mngrs($p) {
 		 * @type Tasks
 		 * @static
 		 */
-		bp: { value: new BusinessProcesses() },
-
-		DataManager: { value: DataManager },
-
-		RefDataManager: { value: RefDataManager },
-
-		DataProcessorsManager: { value: DataProcessorsManager },
-
-		EnumManager: { value: EnumManager },
-
-		RegisterManager: { value: RegisterManager },
-
-		InfoRegManager: { value: InfoRegManager },
-
-		LogManager: { value: LogManager },
-
-		AccumRegManager: { value: AccumRegManager },
-
-		CatManager: { value: CatManager },
-
-		ChartOfCharacteristicManager: { value: ChartOfCharacteristicManager },
-
-		ChartOfAccountManager: { value: ChartOfAccountManager },
-
-		DocManager: { value: DocManager },
-
-		TaskManager: { value: TaskManager },
-
-		BusinessProcessManager: { value: BusinessProcessManager },
-
-		DataObj: { value: DataObj },
-
-		CatObj: { value: CatObj },
-
-		DocObj: { value: DocObj },
-
-		DataProcessorObj: { value: DataProcessorObj },
-
-		TaskObj: { value: TaskObj },
-
-		BusinessProcessObj: { value: BusinessProcessObj },
-
-		EnumObj: { value: EnumObj },
-
-		RegisterRow: { value: RegisterRow },
+		bp: { value: new BusinessProcesses() }
 
 
 	});
+
+	if(!classes.DataManager){
+		Object.defineProperties(classes, {
+
+			DataManager: { value: DataManager },
+
+			RefDataManager: { value: RefDataManager },
+
+			DataProcessorsManager: { value: DataProcessorsManager },
+
+			EnumManager: { value: EnumManager },
+
+			RegisterManager: { value: RegisterManager },
+
+			InfoRegManager: { value: InfoRegManager },
+
+			LogManager: { value: LogManager },
+
+			AccumRegManager: { value: AccumRegManager },
+
+			CatManager: { value: CatManager },
+
+			ChartOfCharacteristicManager: { value: ChartOfCharacteristicManager },
+
+			ChartOfAccountManager: { value: ChartOfAccountManager },
+
+			DocManager: { value: DocManager },
+
+			TaskManager: { value: TaskManager },
+
+			BusinessProcessManager: { value: BusinessProcessManager },
+
+			DataObj: { value: DataObj },
+
+			CatObj: { value: CatObj },
+
+			DocObj: { value: DocObj },
+
+			DataProcessorObj: { value: DataProcessorObj },
+
+			TaskObj: { value: TaskObj },
+
+			BusinessProcessObj: { value: BusinessProcessObj },
+
+			EnumObj: { value: EnumObj },
+
+			RegisterRow: { value: RegisterRow }
+
+		})
+	}
+
+	if(!utils.value_mgr){
+		/**
+		 * ### Возвращает менеджер значения по свойству строки
+		 * @method value_mgr
+		 * @param row {Object|TabularSectionRow} - строка табчасти или объект
+		 * @param f {String} - имя поля
+		 * @param mf {Object} - описание типа поля mf.type
+		 * @param array_enabled {Boolean} - возвращать массив для полей составного типа или первый доступный тип
+		 * @param v {*} - устанавливаемое значение
+		 * @return {DataManager|Array|undefined}
+		 */
+		Object.defineProperty(utils, 'value_mgr', {
+
+			value: function(row, f, mf, array_enabled, v) {
+				var property, oproperty, tnames, rt, mgr;
+				if (mf._mgr)
+					return mf._mgr;
+
+				function mf_mgr(mgr) {
+					if (mgr && mf.types.length == 1)
+						mf._mgr = mgr;
+					return mgr;
+				}
+
+				if (mf.types.length == 1) {
+					tnames = mf.types[0].split(".");
+					if (tnames.length > 1 && $p[tnames[0]])
+						return mf_mgr($p[tnames[0]][tnames[1]]);
+
+				} else if (v && v.type) {
+					tnames = v.type.split(".");
+					if (tnames.length > 1 && $p[tnames[0]])
+						return mf_mgr($p[tnames[0]][tnames[1]]);
+				}
+
+				property = row.property || row.param;
+				if (f != "value" || !property) {
+
+					rt = [];
+					mf.types.forEach(function (v) {
+						tnames = v.split(".");
+						if (tnames.length > 1 && $p[tnames[0]][tnames[1]])
+							rt.push($p[tnames[0]][tnames[1]]);
+					});
+					if (rt.length == 1 || row[f] == utils.blank.guid)
+						return mf_mgr(rt[0]);
+
+					else if (array_enabled)
+						return rt;
+
+					else if ((property = row[f]) instanceof DataObj)
+						return property._manager;
+
+					else if (utils.is_guid(property) && property != utils.blank.guid) {
+						for (var i in rt) {
+							mgr = rt[i];
+							if (mgr.get(property, true))
+								return mgr;
+						}
+					}
+				} else {
+
+					// Получаем объект свойства
+					if (utils.is_data_obj(property))
+						oproperty = property;
+					else if (utils.is_guid(property))
+						oproperty = $p.cch.properties.get(property);
+					else
+						return;
+
+					if (utils.is_data_obj(oproperty)) {
+
+						if (oproperty.is_new())
+							return $p.cat.property_values;
+
+						// и через его тип выходми на мнеджера значения
+						for (rt in oproperty.type.types)
+							if (oproperty.type.types[rt].indexOf(".") > -1) {
+								tnames = oproperty.type.types[rt].split(".");
+								break;
+							}
+						if (tnames && tnames.length > 1 && $p[tnames[0]])
+							return mf_mgr($p[tnames[0]][tnames[1]]);
+						else
+							return oproperty.type;
+					}
+				}
+			}
+		})
+	}
+
 }
 

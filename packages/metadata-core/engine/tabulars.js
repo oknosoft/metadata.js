@@ -112,12 +112,13 @@ function tabulars($p) {
 				delete this._obj[i];
 			this._obj.length = 0;
 
-			if (!silent && !this._owner._data._silent)
-				Object.getNotifier(this._owner).notify({
-					type: 'rows',
-					tabular: this._name
-				});
-
+			if (!silent && !this._owner._data._silent){
+				// TODO: observe
+				// Object.getNotifier(this._owner).notify({
+				// 	type: 'rows',
+				// 	tabular: this._name
+				// });
+			}
 			return this;
 		}
 
@@ -156,11 +157,13 @@ function tabulars($p) {
 				row.row = index + 1;
 			});
 
-			if (!silent && !this._owner._data._silent)
-				Object.getNotifier(this._owner).notify({
-					type: 'rows',
-					tabular: this._name
-				});
+			if (!silent && !this._owner._data._silent){
+				// TODO: observe
+				// Object.getNotifier(this._owner).notify({
+				// 	type: 'rows',
+				// 	tabular: this._name
+				// });
+			}
 
 			this._owner._data._modified = true;
 		}
@@ -209,11 +212,13 @@ function tabulars($p) {
 			this._obj[rowid1] = this._obj[rowid2];
 			this._obj[rowid2] = tmp;
 
-			if (!this._owner._data._silent)
-				Object.getNotifier(this._owner).notify({
-					type: 'rows',
-					tabular: this._name
-				});
+			if (!this._owner._data._silent){
+				// TODO: observe
+				// Object.getNotifier(this._owner).notify({
+				// 	type: 'rows',
+				// 	tabular: this._name
+				// });
+			}
 		}
 
 		/**
@@ -243,11 +248,13 @@ function tabulars($p) {
 				enumerable: false
 			});
 
-			if (!silent && !this._owner._data._silent)
-				Object.getNotifier(this._owner).notify({
-					type: 'rows',
-					tabular: this._name
-				});
+			if (!silent && !this._owner._data._silent){
+				// TODO: observe
+				// Object.getNotifier(this._owner).notify({
+				// 	type: 'rows',
+				// 	tabular: this._name
+				// });
+			}
 
 			attr = null;
 
@@ -421,11 +428,13 @@ function tabulars($p) {
 					t.add(row, true);
 				});
 
-			if (!this._owner._data._silent)
-				Object.getNotifier(t._owner).notify({
-					type: 'rows',
-					tabular: t._name
-				});
+			if (!this._owner._data._silent){
+				// TODO: observe
+				// Object.getNotifier(t._owner).notify({
+				// 	type: 'rows',
+				// 	tabular: t._name
+				// });
+			}
 
 			return t;
 		}
@@ -457,7 +466,7 @@ function tabulars($p) {
 			if (grid.objBox) {
 				try {
 					grid.parse(grid_data, "json");
-					grid.callEvent("onGridReconstructed", []);
+					//grid.callEvent("onGridReconstructed", []);
 				} catch (e) {
 				}
 			}
@@ -550,14 +559,16 @@ function tabulars($p) {
 			if (this._obj[f] == v || (!v && this._obj[f] == utils.blank.guid))
 				return;
 
-			if (!this._owner._owner._data._silent)
-				Object.getNotifier(this._owner._owner).notify({
-					type: 'row',
-					row: this,
-					tabular: this._owner._name,
-					name: f,
-					oldValue: this._obj[f]
-				});
+			if (!this._owner._owner._data._silent){
+				// TODO: observe
+				// Object.getNotifier(this._owner._owner).notify({
+				// 	type: 'row',
+				// 	row: this,
+				// 	tabular: this._owner._name,
+				// 	name: f,
+				// 	oldValue: this._obj[f]
+				// });
+			}
 
 			// учтём связь по типу
 			if (this._metadata.fields[f].choice_type) {
@@ -576,12 +587,13 @@ function tabulars($p) {
 
 	}
 
+	if(!classes.TabularSection){
+		Object.defineProperties(classes, {
 
-	Object.defineProperties($p, {
+			TabularSection: {value: TabularSection},
 
-		TabularSection: {value: TabularSection},
-
-		TabularSectionRow: {value: TabularSectionRow}
-	});
+			TabularSectionRow: {value: TabularSectionRow}
+		});
+	}
 
 }

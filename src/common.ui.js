@@ -592,6 +592,42 @@ function InterfaceObjs(){
 	 * @type {Setting2col}
 	 */
 	this.Setting2col = Setting2col;
+
+	this.do_reload = function () {
+
+		var confirm_count = 0;
+
+		function do_reload(){
+
+			dhtmlx.confirm({
+				title: $p.msg.file_new_date_title,
+				text: $p.msg.file_new_date,
+				ok: "Перезагрузка",
+				cancel: "Продолжить",
+				callback: function(btn) {
+
+					if(btn){
+
+						$p.wsql.pouch.log_out();
+
+						setTimeout(function () {
+							$p.eve.redirect = true;
+							location.reload(true);
+						}, 1000);
+
+					}else{
+
+						confirm_count++;
+						setTimeout(do_reload, confirm_count * 30000);
+
+					}
+				}
+			});
+
+		}
+
+		do_reload();
+	}
 }
 
 $p.__define({
