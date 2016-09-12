@@ -191,17 +191,25 @@ const ACTION_HANDLERS = {
 // ------------------------------------
 // Reducer
 // ------------------------------------
-export default function metaReducer (state, action) {
+const initialState = {
+	meta_loaded: false,
+	data_loaded: false,
+	data_empty: true,
+	fetch_local: false,
+	fetch_remote: false,
+	user: {
+		name: "",
+		logged_in: false
+	}
+}
+export default function metaReducer (state = initialState, action) {
 
-	if(!state){
+	if(!state.data){
 
-		if(action && action.type.indexOf('PROBE_UNKNOWN_ACTION') != -1){
-			return {}
-		}
+		state.data = new MetaEngine()
 
-		const data = new MetaEngine()
-		if(!data.actions){
-			Object.defineProperty(data, 'actions', {
+		if(!state.data.actions){
+			Object.defineProperty(state.data, 'actions', {
 				value: {
 					[META_LOADED]: meta_loaded,
 
@@ -216,19 +224,6 @@ export default function metaReducer (state, action) {
 					[USER_LOG_OUT]: user_log_out
 				}
 			})
-		}
-
-		state = {
-			meta_loaded: false,
-			data_loaded: false,
-			data_empty: true,
-			fetch_local: false,
-			fetch_remote: false,
-			user: {
-				name: "",
-				logged_in: false
-			},
-			data: data
 		}
 	}
 
