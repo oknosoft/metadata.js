@@ -14,25 +14,32 @@ moment._masks = {
 	iso:        "YYYY-MM-DDTHH:mm:ss"
 };
 
-Object.defineProperties(Object.prototype, {
+/**
+ * ### EventEmitter будет прототипом менеджеров данных
+ */
+const EventEmitter = require('events')
 
-	/**
-	 * Синтаксический сахар для defineProperty
-	 * @method __define
-	 * @for Object
-	 */
-	__define: {
-		value: function( key, descriptor ) {
-			if( descriptor ) {
-				Object.defineProperty( this, key, descriptor );
-			} else {
-				Object.defineProperties( this, key );
-			}
-			return this;
-		}
-	}
+/**
+ * ### alasql для работы с кешируемым данным
+ */
+const alasql = require("alasql/dist/alasql.js")
 
-});
+/**
+ * ### PouchDB для хранения данных в idb браузера и синхронизации с CouchDB
+ */
+const PouchDB = require('pouchdb-core')
+		.plugin(require('pouchdb-adapter-http'))
+		.plugin(require('pouchdb-replication'))
+		.plugin(require('pouchdb-mapreduce'))
+		.plugin(require('pouchdb-authentication')),
+	pouchdb_memory = require('pouchdb-adapter-memory'),
+	pouchdb_idb = require('pouchdb-adapter-idb')
+
+if(alasql.utils.isNode)
+	PouchDB.plugin(pouchdb_memory)
+else
+	PouchDB.plugin(pouchdb_idb)
+
 
 /**
  * Метод округления в прототип числа

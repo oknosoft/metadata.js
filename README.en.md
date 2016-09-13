@@ -1,7 +1,7 @@
 [![Stars](https://img.shields.io/github/stars/oknosoft/metadata.js.svg?label=Github%20%E2%98%85&a)](https://github.com/oknosoft/metadata.js/stargazers)
 [![Release](https://img.shields.io/github/tag/oknosoft/metadata.js.svg?label=Last%20release&a)](https://github.com/oknosoft/metadata.js/releases)
 [![NPM downloads](http://img.shields.io/npm/dm/metadata-js.svg?style=flat&label=npm%20downloads)](https://npmjs.org/package/metadata-js?)
-[![NPM version](https://img.shields.io/npm/l/metadata-js.svg?)](http://www.gnu.org/licenses/agpl.html)
+[![NPM version](https://img.shields.io/npm/l/metadata-js.svg?)](https://en.wikipedia.org/wiki/MIT_License)
 
 **Metadata.js** is a library for building offline-first browser-based applications
 
@@ -49,16 +49,10 @@ For the browser, include:
 Many thanks to
 - Andrey Gershun & M. Rangel Wulff, authors of [AlaSQL](https://github.com/agershun/alasql) - Javascript SQL database library
 - Authors of [PouchDB](http://pouchdb.com/) and [CouchDB](http://couchdb.apache.org/) - NoSQL database and data synchronization engine
-- Authors of [dhtmlx](http://dhtmlx.com/) - a beautiful set of Ajax-powered UI components
 - Other people for useful tools, which make our work easier
 
 ### License
-
-Metadata.js is dual licensed. You may use it under [AGPL-3.0](http://licenseit.ru/wiki/index.php/GNU_Affero_General_Public_License_version_3) license for non-profit Open Source projects or under [oknosoft commercial license](http://www.oknosoft.ru/programmi-oknosoft/metadata.html) for any number of non-competing products, without restrictions on the number of copies.
-
-To obtain oknosoft commercial license contact (info@oknosoft.ru)
-
-[Licence information](LICENSE.en.md).
+[MIT](LICENSE)
 
 The license on this repo covers all contents of the repo, but does not supercede the existing licenses for products used for this work and other products.
 

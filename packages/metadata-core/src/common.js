@@ -7,8 +7,6 @@
  * @module  common
  */
 
-var $p
-
 /**
  * ### Metadata.js - проект с открытым кодом
  * Приглашаем к сотрудничеству всех желающих. Будем благодарны за любую помощь
@@ -26,8 +24,6 @@ var $p
  * - инструменты декларативного описания метаданных и автогенерации интерфейса, схожие по функциональности с метаданными и формами платформы 1С
  * - средства событийно-целостной репликации и эффективные классы обработки данных, не имеющие прямых аналогов в 1С
  *
- * ### Контекст metadata.js
- * [metadata.js](https://github.com/oknosoft/metadata.js), экспортирует в глобальную область видимости переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
  *
  * @class MetaEngine
  * @static
@@ -37,11 +33,6 @@ var $p
 class MetaEngine{
 
 	constructor() {
-
-		if($p)
-			return $p;
-
-		$p = this;
 
 		Object.defineProperties(this, {
 
@@ -86,46 +77,6 @@ class MetaEngine{
 			 * @final
 			 */
 			aes: { value: new Aes("metadata.js") },
-
-			/**
-			 * ### Подключает обработчики событий
-			 *
-			 * @method on
-			 * @param name {String|Object} - имя события
-			 * @param fn {Function} - функция - обработчик
-			 * @returns {*}
-			 */
-			on: {
-				value: function (name, fn) {
-					if(typeof name == "object"){
-						for(var n in name){
-							if(!name[n]._evnts)
-								name[n]._evnts = [];
-							name[n]._evnts.push(this.eve.attachEvent(n, name[n]));
-						}
-					}else
-						return this.eve.attachEvent(name, fn);
-				}
-			},
-
-			/**
-			 * ### Отключает обработчики событий
-			 *
-			 * @method off
-			 * @param id {String|Number|Function}
-			 */
-			off: {
-				value: function (id) {
-					if(typeof id == "function" && id._evnts){
-						id._evnts.forEach(function (id) {
-							eve.detachEvent(id);
-						});
-					}else if(!id)
-						eve.detachAllEvents();
-					else
-						eve.detachEvent(id);
-				}
-			},
 
 			/**
 			 * ### Запись журнала регистрации

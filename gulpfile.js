@@ -296,18 +296,18 @@ gulp.task('build-new-core', function(){
 	package_data = JSON.parse(require('fs').readFileSync('./packages/metadata-core/package.json', 'utf8'));
 
 	return gulp.src([
-		'./packages/metadata-core/engine/utils.js',
-		'./packages/metadata-core/engine/i18n.ru.js',
-		'./packages/metadata-core/engine/jobprm.js',
-		'./packages/metadata-core/engine/pouchdb.js',
-		'./packages/metadata-core/engine/wsql.js',
-		'./packages/metadata-core/engine/mngrs.js',
-		'./packages/metadata-core/engine/objs.js',
-		'./packages/metadata-core/engine/tabulars.js',
-		'./packages/metadata-core/engine/meta.js',
+		'./packages/metadata-core/src/utils.js',
+		'./packages/metadata-core/src/i18n.ru.js',
+		'./packages/metadata-core/src/jobprm.js',
+		'./packages/metadata-core/src/pouchdb.js',
+		'./packages/metadata-core/src/wsql.js',
+		'./packages/metadata-core/src/mngrs.js',
+		'./packages/metadata-core/src/objs.js',
+		'./packages/metadata-core/src/tabulars.js',
+		'./packages/metadata-core/src/meta.js',
 		'./packages/metadata-core/lib/aes.js',
-		'./packages/metadata-core/engine/common.js',
-		'./packages/metadata-core/engine/actions.js'
+		'./packages/metadata-core/src/common.js',
+		'./packages/metadata-core/src/actions.js'
 	])
 
 		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))

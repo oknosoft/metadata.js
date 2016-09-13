@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.11.219, built:2016-09-09 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.11.220, built:2016-09-13 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -472,7 +472,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.11.219",
+			value: "0.11.220",
 			writable: false
 		},
 
@@ -3610,103 +3610,6 @@ function Messages(){
 
 	this.toString = function(){return "Интернационализация сообщений"};
 
-
-	/**
-	 * Добавляет коллекциям менеджеров и метаданным русские синонимы, как свойства объекта _window_
-	 * @method russian_names
-	 */
-	this.russian_names = function(){
-		if($p.job_prm.russian_names){
-
-			// глобальный контекст
-			window.__define({
-				"Метаданные": {
-					get: function(){return $p.md},
-					enumerable: false
-				},
-				"Справочники": {
-					get: function(){return $p.cat},
-					enumerable: false
-				},
-				"Документы": {
-					get: function(){return $p.doc},
-					enumerable: false
-				},
-				"РегистрыСведений": {
-					get: function(){return $p.ireg},
-					enumerable: false
-				},
-				"РегистрыНакопления": {
-					get: function(){return $p.areg},
-					enumerable: false
-				},
-				"РегистрыБухгалтерии": {
-					get: function(){return $p.accreg},
-					enumerable: false
-				},
-				"Обработки": {
-					get: function(){return $p.dp},
-					enumerable: false
-				},
-				"Отчеты": {
-					get: function(){return $p.rep},
-					enumerable: false
-				},
-				"ОбластьКонтента": {
-					get: function(){return $p.iface.docs},
-					enumerable: false
-				},
-				"Сообщить": {
-					get: function(){return $p.msg.show_msg},
-					enumerable: false
-				},
-				"Истина": {
-					value: true,
-					enumerable: false
-				},
-				"Ложь": {
-					value: false,
-					enumerable: false
-				}
-
-			});
-
-			// свойства и методы менеджеров
-			DataManager.prototype.__define({
-					"ФормаВыбора": {
-						get: function(){return this.form_selection},
-						enumerable: false
-					},
-					"ФормаОбъекта": {
-						get: function(){return this.form_obj},
-						enumerable: false
-					},
-					"Найти": {
-						get: function(){return this.find},
-						enumerable: false
-					},
-					"НайтиСтроки": {
-						get: function(){return this.find_rows},
-						enumerable: false
-					},
-					"НайтиПоНаименованию": {
-						get: function(){return this.by_name},
-						enumerable: false
-					}
-				}
-			);
-
-			// свойства и методы объектов данных
-			DataObj.prototype.__define({
-					"ФормаОбъекта": {
-						get: function(){return this.form_obj},
-						enumerable: false
-					}
-				}
-			);
-
-		}
-	};
 	
 	/**
 	 * расширяем мессанджер
@@ -7315,7 +7218,7 @@ function CatManager(class_name) {
 		 */
 		$p[this.obj_constructor()].prototype.__define("is_folder", {
 			get : function(){ return this._obj.is_folder || false},
-			set : function(v){ this._obj.is_folder = $p.utils.fix_boolean(v)},
+			set : function(v){ this._obj.is_folder = utils.fix_boolean(v)},
 			enumerable: true,
 			configurable: true
 		});
@@ -17170,25 +17073,8 @@ $p.eve.__define({
 
 				}, 20);
 
-
-				msg.russian_names();
-
 				// TODO: переписать управление appcache на сервисворкерах
-				if($p.wsql.get_user_param("use_service_worker", "boolean") &&
-					'serviceWorker' in navigator && location.protocol.indexOf("https") != -1){
-
-					// Override the default scope of '/' with './', so that the registration applies
-					// to the current directory and everything underneath it.
-					navigator.serviceWorker.register('metadata_service_worker.js', {scope: '/'})
-						.then(function(registration) {
-							// At this point, registration has taken place.
-							// The service worker will not handle requests until this page and any
-							// other instances of this page (in other tabs, etc.) have been closed/reloaded.
-							$p.record_log('serviceWorker register succeeded');
-						})
-						.catch($p.record_log);
-
-				}else if (cache = w.applicationCache){
+				if (cache = w.applicationCache){
 
 					// обновление не требуется
 					cache.addEventListener('noupdate', function(e){
