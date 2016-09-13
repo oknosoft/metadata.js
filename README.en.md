@@ -1,7 +1,7 @@
 [![Stars](https://img.shields.io/github/stars/oknosoft/metadata.js.svg?label=Github%20%E2%98%85&a)](https://github.com/oknosoft/metadata.js/stargazers)
 [![Release](https://img.shields.io/github/tag/oknosoft/metadata.js.svg?label=Last%20release&a)](https://github.com/oknosoft/metadata.js/releases)
 [![NPM downloads](http://img.shields.io/npm/dm/metadata-js.svg?style=flat&label=npm%20downloads)](https://npmjs.org/package/metadata-js?)
-[![NPM version](https://img.shields.io/npm/l/metadata-js.svg?)](http://www.gnu.org/licenses/agpl.html)
+[![NPM version](https://img.shields.io/npm/l/metadata-js.svg?)](https://en.wikipedia.org/wiki/MIT_License)
 
 **Metadata.js** is a library for building offline-first browser-based applications
 
