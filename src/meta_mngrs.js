@@ -2642,7 +2642,7 @@ function CatManager(class_name) {
 		 */
 		$p[this.obj_constructor()].prototype.__define("is_folder", {
 			get : function(){ return this._obj.is_folder || false},
-			set : function(v){ this._obj.is_folder = utils.fix_boolean(v)},
+			set : function(v){ this._obj.is_folder = $p.utils.fix_boolean(v)},
 			enumerable: true,
 			configurable: true
 		});

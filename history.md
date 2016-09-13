@@ -320,4 +320,5 @@
 ### 13.09.2016
 - Лицензия AGPL изменена на MIT
 - Метод _russian_names_ удалён из прототипа _Messages_
+- Версия pouchdb изменена с 6.0 на 5.4 - downgrade из-за проблем с установкой [leveldown под windows](https://github.com/level/levelup/issues/5)
 - Собран пререлиз metadata-core v2.0.0-beta.1
