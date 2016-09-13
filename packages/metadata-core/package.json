@@ -6,12 +6,12 @@
   "dependencies": {
     "alasql": ">=0.3",
     "moment": ">=2.15",
-    "pouchdb-core": "^6.0",
-    "pouchdb-adapter-http": "^6.0",
-    "pouchdb-adapter-memory": "^6.0",
-    "pouchdb-adapter-idb": "^6.0",
-    "pouchdb-mapreduce": "^6.0",
-    "pouchdb-replication": "^6.0",
+    "pouchdb-core": "^5.4",
+    "pouchdb-adapter-http": "^5.4",
+    "pouchdb-adapter-memory": "^5.4",
+    "pouchdb-adapter-idb": "^5.4",
+    "pouchdb-mapreduce": "^5.4",
+    "pouchdb-replication": "^5.4",
     "pouchdb-authentication": "^0.5"
   },
   "engines": {
