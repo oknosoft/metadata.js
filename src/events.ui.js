@@ -326,9 +326,6 @@ $p.eve.__define({
 
 				}, 20);
 
-
-				msg.russian_names();
-
 				// TODO: переписать управление appcache на сервисворкерах
 				if (cache = w.applicationCache){
 
