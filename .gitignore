@@ -1,0 +1,8 @@
+tmp
+.DS_Store
+.idea/
+node_modules
+localstorage
+npm-debug.log
+npm-debug.log.*
+lerna-debug.log

@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.11.219, built:2016-09-09 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.11.220, built:2016-09-13 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -289,7 +289,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.11.219",
+			value: "0.11.220",
 			writable: false
 		},
 
@@ -3154,10 +3154,7 @@ function Meta() {
 			else{
 
 				// если изменились метаданные, запланировать перезагрузку
-				if(performance.now() > 20000 && change.docs.some(function (doc) {
-						return doc._id.substr(0,4)!='meta';
-					}))
-					$p.iface.do_reload();
+				$p.iface.do_reload();
 
 			}
 
@@ -6360,7 +6357,7 @@ function CatManager(class_name) {
 		 */
 		$p[this.obj_constructor()].prototype.__define("is_folder", {
 			get : function(){ return this._obj.is_folder || false},
-			set : function(v){ this._obj.is_folder = $p.utils.fix_boolean(v)},
+			set : function(v){ this._obj.is_folder = utils.fix_boolean(v)},
 			enumerable: true,
 			configurable: true
 		});

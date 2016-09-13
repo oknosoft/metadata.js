@@ -6,21 +6,6 @@
  * @submodule pouchdb
  */
 
-const alasql = require("alasql/dist/alasql.js")
-
-const PouchDB = require('pouchdb-core')
-		.plugin(require('pouchdb-adapter-http'))
-		.plugin(require('pouchdb-replication'))
-		.plugin(require('pouchdb-mapreduce'))
-		.plugin(require('pouchdb-authentication')),
-	pouchdb_memory = require('pouchdb-adapter-memory'),
-	pouchdb_idb = require('pouchdb-adapter-idb')
-
-if(alasql.utils.isNode)
-	PouchDB.plugin(pouchdb_memory)
-else
-	PouchDB.plugin(pouchdb_idb)
-
 
 /**
  * ### Интерфейс локальной и сетевой баз данных PouchDB
@@ -128,7 +113,7 @@ class Pouch{
 					return this.remote.ram.login(username, password)
 						.then(() => _remote.doc.login(username, password))
 						.then(function (req) {
-							_auth = {username: username, password: password};
+							_auth = {username: username};
 							setTimeout(() => { $p.store.dispatch(user_log_in(username)) });
 							return {
 								ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),

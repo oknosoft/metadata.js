@@ -14,7 +14,7 @@ class JobPrm{
 
 	constructor(){
 
-		this.__define({
+		Object.defineProperties(this, {
 
 			local_storage_prefix: {
 				value: "",
@@ -54,7 +54,7 @@ class JobPrm{
 						return url.replace("%1/", "");
 				}
 			}
-		});
+		})
 
 	}
 

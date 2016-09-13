@@ -243,10 +243,10 @@ function tabulars($p) {
 				row[f] = attr[f] || "";
 
 			row._obj.row = this._obj.push(row._obj);
-			row._obj.__define("_row", {
+			Object.defineProperty(row._obj, "_row", {
 				value: row,
 				enumerable: false
-			});
+			})
 
 			if (!silent && !this._owner._data._silent){
 				// TODO: observe

@@ -133,8 +133,8 @@ class WSQL {
 						 * @for WSQL
 						 * @type Pouch
 						 */
-						this.__define("pouch", {value: new Pouch($p)});
-						this.pouch.init(pouch_prm);
+						Object.defineProperty(this, "pouch", {value: new Pouch($p)})
+						this.pouch.init(pouch_prm)
 					}
 
 					meta($p);

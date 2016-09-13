@@ -1,7 +1,7 @@
 {
   "name": "metadata-core",
-  "description": "Data-objects for offline-first browser-based business applications",
-  "version": "2.0.1",
+  "description": "The core of metadata.js as a standalone package",
+  "version": "2.0.0-beta.1",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "dependencies": {
     "alasql": ">=0.3",

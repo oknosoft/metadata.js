@@ -1,7 +1,7 @@
 {
   "name": "metadata-js",
   "description": "Library for building offline-first browser-based business applications",
-  "version": "0.11.219",
+  "version": "0.11.220",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "directories": {
     "example": "examples",
@@ -36,7 +36,8 @@
     "gulp-uglify": ">=2.0",
     "gulp-umd": ">=0.2",
     "jasmine": ">=2.4",
-    "yuidocjs": ">=0.10"
+    "yuidocjs": ">=0.10",
+    "lerna": "2.0.0-beta.27"
   },
   "engines": {
     "node": ">=6.0"

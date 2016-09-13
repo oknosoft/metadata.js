@@ -34,79 +34,15 @@
  * @tooltip Менеджер данных
  */
 
-
 function mngrs($p) {
 
 	const {wsql, md} = $p;
 
-	class DataManager {
+	class DataManager extends EventEmitter{
 
 		constructor(class_name) {
 
-			const _events = {
-
-				/**
-				 * ### После создания
-				 * Возникает после создания объекта. В обработчике можно установить значения по умолчанию для полей и табличных частей
-				 * или заполнить объект на основании данных связанного объекта
-				 *
-				 * @event after_create
-				 * @for DataManager
-				 */
-				after_create: [],
-
-				/**
-				 * ### После чтения объекта с сервера
-				 * Имеет смысл для объектов с типом кеширования ("doc", "doc_remote", "meta", "e1cib").
-				 * т.к. структура _DataObj_ может отличаться от прототипа в базе-источнике, в обработчике можно дозаполнить или пересчитать реквизиты прочитанного объекта
-				 *
-				 * @event after_load
-				 * @for DataManager
-				 */
-				after_load: [],
-
-				/**
-				 * ### Перед записью
-				 * Возникает перед записью объекта. В обработчике можно проверить корректность данных, рассчитать итоги и т.д.
-				 * Запись можно отклонить, если у пользователя недостаточно прав, либо введены некорректные данные
-				 *
-				 * @event before_save
-				 * @for DataManager
-				 */
-				before_save: [],
-
-				/**
-				 * ### После записи
-				 *
-				 * @event after_save
-				 * @for DataManager
-				 */
-				after_save: [],
-
-				/**
-				 * ### При изменении реквизита шапки или табличной части
-				 *
-				 * @event value_change
-				 * @for DataManager
-				 */
-				value_change: [],
-
-				/**
-				 * ### При добавлении строки табличной части
-				 *
-				 * @event add_row
-				 * @for DataManager
-				 */
-				add_row: [],
-
-				/**
-				 * ### При удалении строки табличной части
-				 *
-				 * @event del_row
-				 * @for DataManager
-				 */
-				del_row: []
-			};
+			super()
 
 			const _meta = md.get(class_name);
 
@@ -188,62 +124,6 @@ function mngrs($p) {
 
 				constructor_names: {
 					value: {}
-				},
-
-				/**
-				 * ### Добавляет подписку на события объектов данного менеджера
-				 * В обработчиках событий можно реализовать бизнес-логику при создании, удалении и изменении объекта.
-				 * Например, заполнение шапки и табличных частей, пересчет одних полей при изменении других и т.д.
-				 *
-				 * @method on
-				 * @for DataManager
-				 * @param name {String|Object} - имя события [after_create, after_load, before_save, after_save, value_change, add_row, del_row]
-				 * @param [method] {Function} - добавляемый метод, если не задан в объекте первым параметром
-				 *
-				 * @example
-				 *
-				 *     // Обработчик при создании документа
-				 *     // @this {DataObj} - обработчик вызывается в контексте текущего объекта
-				 *     $p.doc.nom_prices_setup.on("after_create", function (attr) {
- *       // присваиваем новый номер документа
- *       return this.new_number_doc();
- *     });
-				 *
-				 *     // Обработчик события "при изменении свойства" в шапке или табличной части при редактировании в форме объекта
-				 *     // @this {DataObj} - обработчик вызывается в контексте текущего объекта
-				 *     $p.doc.nom_prices_setup.on("add_row", function (attr) {
- *       // установим валюту и тип цен по умолчению при добавлении строки
- *       if(attr.tabular_section == "goods"){
- *         attr.row.price_type = this.price_type;
- *         attr.row.currency = this.price_type.price_currency;
- *       }
- *     });
-				 *
-				 */
-				on: {
-					value: function (name, method) {
-						if(typeof name == "object"){
-							for(var n in name){
-								if(name.hasOwnProperty(n))
-									_events[n].push(name[n]);
-							}
-						}else
-							_events[name].push(method);
-					}
-				},
-
-				/**
-				 * ### Удаляет подписку на событие объектов данного менеджера
-				 *
-				 * @method off
-				 * @for DataManager
-				 * @param name {String} - имя события [after_create, after_load, before_save, after_save, value_change, add_row, del_row]
-				 * @param [method] {Function} - удаляемый метод. Если не задан, будут отключены все обработчики событий `name`
-				 */
-				off: {
-					value: function (name, method) {
-
-					}
 				},
 
 				/**
@@ -652,6 +532,74 @@ function mngrs($p) {
 			return Promise.resolve(t._printing_plates);
 
 		}
+
+		static get EVENTS(){
+			return {
+
+				/**
+				 * ### После создания
+				 * Возникает после создания объекта. В обработчике можно установить значения по умолчанию для полей и табличных частей
+				 * или заполнить объект на основании данных связанного объекта
+				 *
+				 * @event AFTER_CREATE
+				 * @for DataManager
+				 */
+				AFTER_CREATE: "AFTER_CREATE",
+
+				/**
+				 * ### После чтения объекта с сервера
+				 * Имеет смысл для объектов с типом кеширования ("doc", "doc_remote", "meta", "e1cib").
+				 * т.к. структура _DataObj_ может отличаться от прототипа в базе-источнике, в обработчике можно дозаполнить или пересчитать реквизиты прочитанного объекта
+				 *
+				 * @event AFTER_LOAD
+				 * @for DataManager
+				 */
+				AFTER_LOAD: "AFTER_LOAD",
+
+				/**
+				 * ### Перед записью
+				 * Возникает перед записью объекта. В обработчике можно проверить корректность данных, рассчитать итоги и т.д.
+				 * Запись можно отклонить, если у пользователя недостаточно прав, либо введены некорректные данные
+				 *
+				 * @event BEFORE_SAVE
+				 * @for DataManager
+				 */
+				BEFORE_SAVE: "BEFORE_SAVE",
+
+				/**
+				 * ### После записи
+				 *
+				 * @event AFTER_SAVE
+				 * @for DataManager
+				 */
+				BEFORE_SAVE: "BEFORE_SAVE",
+
+				/**
+				 * ### При изменении реквизита шапки или табличной части
+				 *
+				 * @event VALUE_CHANGE
+				 * @for DataManager
+				 */
+				VALUE_CHANGE: "VALUE_CHANGE",
+
+				/**
+				 * ### При добавлении строки табличной части
+				 *
+				 * @event ADD_ROW
+				 * @for DataManager
+				 */
+				ADD_ROW: "ADD_ROW",
+
+				/**
+				 * ### При удалении строки табличной части
+				 *
+				 * @event DEL_ROW
+				 * @for DataManager
+				 */
+				DEL_ROW: "DEL_ROW"
+			}
+		}
+
 	}
 
 	/**
@@ -2329,14 +2277,12 @@ function mngrs($p) {
 				 * @for CatObj
 				 * @type {Boolean}
 				 */
-				$p[this.obj_constructor()].prototype.__define({
-					is_folder: {
-						get : function(){ return this._obj.is_folder || false},
-						set : function(v){ this._obj.is_folder = $p.utils.fix_boolean(v)},
-						enumerable: true,
-						configurable: true
-					}
-				});
+				Object.defineProperty($p[this.obj_constructor()].prototype, 'is_folder', {
+					get : function(){ return this._obj.is_folder || false},
+					set : function(v){ this._obj.is_folder = $p.utils.fix_boolean(v)},
+					enumerable: true,
+					configurable: true
+				})
 			}
 		}
 
