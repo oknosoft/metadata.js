@@ -5,7 +5,7 @@
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "dependencies": {
     "alasql": ">=0.3",
-    "moment": ">=2.14",
+    "moment": ">=2.15",
     "pouchdb-core": "^6.0",
     "pouchdb-adapter-http": "^6.0",
     "pouchdb-adapter-memory": "^6.0",
@@ -13,18 +13,6 @@
     "pouchdb-mapreduce": "^6.0",
     "pouchdb-replication": "^6.0",
     "pouchdb-authentication": "^0.5"
-  },
-  "devDependencies": {
-    "babel-preset-es2015": ">=6.14.0",
-    "gulp": ">=3.9",
-    "gulp-babel": ">=6.1.2",
-    "gulp-base64": ">=0.1",
-    "gulp-concat": ">=2.6",
-    "gulp-csso": ">=2.0",
-    "gulp-rename": ">=1.2",
-    "gulp-replace": ">=0.5",
-    "gulp-uglify": ">=2.0",
-    "gulp-umd": ">=0.2"
   },
   "engines": {
     "node": ">=6.0"

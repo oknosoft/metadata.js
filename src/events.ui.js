@@ -330,21 +330,7 @@ $p.eve.__define({
 				msg.russian_names();
 
 				// TODO: переписать управление appcache на сервисворкерах
-				if($p.wsql.get_user_param("use_service_worker", "boolean") &&
-					'serviceWorker' in navigator && location.protocol.indexOf("https") != -1){
-
-					// Override the default scope of '/' with './', so that the registration applies
-					// to the current directory and everything underneath it.
-					navigator.serviceWorker.register('metadata_service_worker.js', {scope: '/'})
-						.then(function(registration) {
-							// At this point, registration has taken place.
-							// The service worker will not handle requests until this page and any
-							// other instances of this page (in other tabs, etc.) have been closed/reloaded.
-							$p.record_log('serviceWorker register succeeded');
-						})
-						.catch($p.record_log);
-
-				}else if (cache = w.applicationCache){
+				if (cache = w.applicationCache){
 
 					// обновление не требуется
 					cache.addEventListener('noupdate', function(e){
