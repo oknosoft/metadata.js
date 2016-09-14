@@ -287,8 +287,8 @@ gulp.task('build-metadata-core', function(){
 		.pipe(gulp.dest('./dist'));
 });
 
-// Сборка сервера для Node.js
-gulp.task('build-new-core', function(){
+// metadata-core
+gulp.task('build--core', function(){
 
 	const babel = require('gulp-babel');
 	const sourcemaps = require('gulp-sourcemaps');
@@ -306,8 +306,7 @@ gulp.task('build-new-core', function(){
 		'./packages/metadata-core/src/tabulars.js',
 		'./packages/metadata-core/src/meta.js',
 		'./packages/metadata-core/lib/aes.js',
-		'./packages/metadata-core/src/common.js',
-		'./packages/metadata-core/src/actions.js'
+		'./packages/metadata-core/src/common.js'
 	])
 
 		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
@@ -330,6 +329,37 @@ gulp.task('build-new-core', function(){
 		// }))
 		// .pipe(gulp.dest('./dist'));
 });
+
+// metadata-redux
+gulp.task('build--redux', function(){
+
+	const babel = require('gulp-babel');
+	const sourcemaps = require('gulp-sourcemaps');
+
+	package_data = JSON.parse(require('fs').readFileSync('./packages/metadata-core/package.json', 'utf8'));
+
+	return gulp.src([
+		'./packages/metadata-redux/src/actions.js',
+		'./packages/metadata-redux/src/events.js'
+	])
+
+		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
+		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
+
+		//.pipe(sourcemaps.init({ loadMaps: true }))
+		.pipe(concat('index.js'))
+		.pipe(babel({
+			presets: ['es2015'],
+			plugins: ["transform-async-to-generator"],
+			compact: false,
+			//comments: false
+		}))
+		//.pipe(sourcemaps.write('./'))
+
+		.pipe(gulp.dest('./packages/metadata-redux'))
+
+});
+
 
 // Ресурсы для codres
 gulp.task('injected-codres', function(){

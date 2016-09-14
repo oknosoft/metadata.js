@@ -7,6 +7,7 @@
  * Created 05.09.2016
  */
 
+import MetaEngine from 'metadata-core'
 
 // ------------------------------------
 // Action types - имена типов действий
@@ -42,19 +43,19 @@ export const POUCH_NO_DATA      = 'POUCH_NO_DATA'       // Оповещение 
 // Actions - функции - генераторы действий. Они передаются в диспетчер redux
 // ------------------------------------
 
-export function meta_loaded() {
+function meta_loaded() {
 
 	return { type: META_LOADED }
 }
 
-export function pouch_data_loaded(page) {
+function pouch_data_loaded(page) {
 	return {
 		type: POUCH_DATA_LOADED,
 		payload: page
 	}
 }
 
-export function pouch_change(dbid, change) {
+function pouch_change(dbid, change) {
 	return {
 		type: POUCH_CHANGE,
 		payload: {
@@ -64,25 +65,25 @@ export function pouch_change(dbid, change) {
 	}
 }
 
-export function pouch_data_page(page) {
+function pouch_data_page(page) {
 	return {
 		type: POUCH_DATA_PAGE,
 		payload: page
 	}
 }
 
-export function pouch_load_start(page) {
+function pouch_load_start(page) {
 	return {
 		type: POUCH_LOAD_START,
 		payload: page
 	}
 }
 
-export function pouch_sync_start() {
+function pouch_sync_start() {
 	return { type: POUCH_SYNC_START }
 }
 
-export function pouch_sync_error(dbid, err) {
+function pouch_sync_error(dbid, err) {
 	return {
 		type: POUCH_SYNC_ERROR,
 		payload: {
@@ -92,7 +93,7 @@ export function pouch_sync_error(dbid, err) {
 	}
 }
 
-export function pouch_data_error(dbid, err) {
+function pouch_data_error(dbid, err) {
 	return {
 		type: POUCH_DATA_ERROR,
 		payload: {
@@ -102,7 +103,7 @@ export function pouch_data_error(dbid, err) {
 	}
 }
 
-export function pouch_no_data(dbid, err) {
+function pouch_no_data(dbid, err) {
 	return {
 		type: POUCH_NO_DATA,
 		payload: {
@@ -112,34 +113,34 @@ export function pouch_no_data(dbid, err) {
 	}
 }
 
-export function user_defined(name) {
+function user_defined(name) {
 	return {
 		type: USER_DEFINED,
 		payload: name
 	}
 }
 
-export function user_log_in(name) {
+function user_log_in(name) {
 	return {
 		type: USER_LOG_IN,
 		payload: name
 	}
 }
 
-export function user_log_out() {
+function user_log_out() {
 	return {
 		type: USER_LOG_OUT
 	}
 }
 
-export function obj_add(class_name) {
+function obj_add(class_name) {
 	return {
 		type: OBJ_ADD,
 		payload: {class_name: class_name}
 	}
 }
 
-export function obj_add_row(class_name, ref, tabular) {
+function obj_add_row(class_name, ref, tabular) {
 	return {
 		type: OBJ_ADD_ROW,
 		payload: {
@@ -150,7 +151,7 @@ export function obj_add_row(class_name, ref, tabular) {
 	}
 }
 
-export function obj_edit(class_name, ref, frm) {
+function obj_edit(class_name, ref, frm) {
 	return {
 		type: OBJ_EDIT,
 		payload: {
@@ -161,10 +162,24 @@ export function obj_edit(class_name, ref, frm) {
 	}
 }
 
+export const actions = {
+	[META_LOADED]: meta_loaded,
+
+	[POUCH_DATA_LOADED]: pouch_data_loaded,
+	[POUCH_DATA_PAGE]: pouch_data_page,
+	[POUCH_DATA_ERROR]: pouch_data_error,
+	[POUCH_LOAD_START]: pouch_load_start,
+	[POUCH_NO_DATA]: pouch_no_data,
+
+	[USER_DEFINED]: user_defined,
+	[USER_LOG_IN]: user_log_in,
+	[USER_LOG_OUT]: user_log_out
+}
+
 // ------------------------------------
 // Action Handlers - обработчики событий - вызываются из корневого редюсера
 // ------------------------------------
-const ACTION_HANDLERS = {
+export const ACTION_HANDLERS = {
 	[META_LOADED]:          (state, action) => Object.assign({}, state, {meta_loaded: true}),
 
 	[POUCH_DATA_LOADED]:    (state, action) => Object.assign({}, state, {data_loaded: true}),
@@ -208,23 +223,9 @@ export default function metaReducer (state = initialState, action) {
 
 		state.data = new MetaEngine()
 
-		if(!state.data.actions){
-			Object.defineProperty(state.data, 'actions', {
-				value: {
-					[META_LOADED]: meta_loaded,
-
-					[POUCH_DATA_LOADED]: pouch_data_loaded,
-					[POUCH_DATA_PAGE]: pouch_data_page,
-					[POUCH_DATA_ERROR]: pouch_data_error,
-					[POUCH_LOAD_START]: pouch_load_start,
-					[POUCH_NO_DATA]: pouch_no_data,
-
-					[USER_DEFINED]: user_defined,
-					[USER_LOG_IN]: user_log_in,
-					[USER_LOG_OUT]: user_log_out
-				}
-			})
-		}
+		Object.defineProperty(state.data, 'actions', {
+			value: actions
+		})
 	}
 
 	const handler = ACTION_HANDLERS[action.type]

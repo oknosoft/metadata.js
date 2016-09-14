@@ -1,0 +1,38 @@
+{
+  "name": "metadata-redux",
+  "description": "Actions and redusers for metadata.js",
+  "version": "2.0.0-beta.1",
+  "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
+  "dependencies": {
+    "metadata-core": "2.0.0-beta.1"
+  },
+  "engines": {
+    "node": ">=6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oknosoft/metadata.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/oknosoft/metadata.js/issues"
+  },
+  "homepage": "http://www.oknosoft.ru/metadata/",
+  "main": "./index.js",
+  "keywords": [
+    "metadata",
+    "browser data engine",
+    "spa offline",
+    "rest",
+    "odata",
+    "1c",
+    "1с",
+    "web сервис",
+    "клиент 1с",
+    "offline framework",
+    "offline data engine",
+    "CRDT",
+    "offline-first",
+    "replication"
+  ],
+  "license": "MIT"
+}
