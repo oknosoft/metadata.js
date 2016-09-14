@@ -16,9 +16,11 @@
  * @menuorder 34
  * @tooltip Данные pouchdb
  */
-class Pouch{
+class Pouch extends EventEmitter{
 
 	constructor($p){
+
+		super();
 
 		var t = this,
 			_paths = {},
@@ -114,7 +116,7 @@ class Pouch{
 						.then(() => _remote.doc.login(username, password))
 						.then(function (req) {
 							_auth = {username: username};
-							setTimeout(() => { $p.store.dispatch(user_log_in(username)) });
+							setTimeout(() => { t.emit('user_log_in', username) });
 							return {
 								ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),
 								doc: t.run_sync(t.local.doc, t.remote.doc, "doc")
@@ -152,7 +154,8 @@ class Pouch{
 
 					_remote = null;
 
-					$p.store.dispatch(user_log_out())
+					t.emit('user_log_out')
+
 				}
 			},
 
@@ -220,7 +223,7 @@ class Pouch{
 									_page.total_rows = response.total_rows;
 									_page.duration = Date.now() - _page.start;
 
-									$p.store.dispatch(pouch_data_page(_page))
+									t.emit('pouch_data_page', _page)
 
 									if (t.load_changes(response, options))
 										fetchNextPage();
@@ -229,14 +232,14 @@ class Pouch{
 										// широковещательное оповещение об окончании загрузки локальных данных
 										_data_loaded = true;
 
-										$p.store.dispatch(pouch_data_loaded(_page))
+										t.emit('pouch_data_loaded', _page)
 
 									}
 
 								} else if(err){
 									reject(err);
 									// широковещательное оповещение об ошибке загрузки
-									$p.store.dispatch(pouch_data_error("ram", err))
+									t.emit('pouch_data_error', "ram", err)
 								}
 							});
 						}
@@ -246,13 +249,13 @@ class Pouch{
 								if(info.doc_count >= ($p.job_prm.pouch_ram_doc_count || 10)){
 
 									// широковещательное оповещение о начале загрузки локальных данных
-									$p.store.dispatch(pouch_load_start(_page))
+									t.emit('pouch_load_start', _page)
 
 									fetchNextPage();
 
 								}else{
 
-									$p.store.dispatch(pouch_no_data("ram", info))
+									t.emit('pouch_no_data', info)
 									resolve();
 								}
 							});
@@ -349,12 +352,12 @@ class Pouch{
 									page: 0,
 									start: Date.now()
 								};
-								$p.store.dispatch(pouch_load_start(_page))
+								t.emit('pouch_load_start', _page)
 
 							}else if(id == "doc"){
 								// широковещательное оповещение о начале синхронизации базы doc
 								setTimeout(function () {
-									$p.store.dispatch(pouch_sync_start(_page))
+									t.emit('pouch_sync_start', _page)
 								});
 							}
 
@@ -393,13 +396,14 @@ class Pouch{
 											_page.docs_written = change.docs_written;
 											_page.duration = Date.now() - _page.start;
 
-											$p.store.dispatch(pouch_data_page(_page))
+											t.emit('pouch_data_page', _page);
 
 											if(_page.docs_written >= _page.total_rows){
 
 												// широковещательное оповещение об окончании загрузки локальных данных
 												_data_loaded = true;
-												$p.store.dispatch(pouch_data_loaded(_page))
+												t.emit('pouch_data_loaded', _page);
+
 
 											}
 
@@ -409,31 +413,30 @@ class Pouch{
 										t.load_changes(change);
 									}
 
-									$p.store.dispatch(pouch_change(id, change))
+									t.emit('pouch_change', id, change);
 
 								})
 								.on('paused', function (info) {
 									// replication was paused, usually because of a lost connection
 									//$p.eve.callEvent("pouch_paused", [id, info]);
-									$p.store.dispatch(pouch_sync_error(id, info))
+									t.emit('pouch_sync_error', id, info);
 
 								})
 								.on('active', function (info) {
 									// replication was resumed
 									//$p.eve.callEvent("pouch_active", [id, info]);
-									$p.store.dispatch(pouch_sync_error(id, info))
+									t.emit('pouch_sync_error', id, info);
 
 								})
 								.on('denied', function (info) {
 									// a document failed to replicate, e.g. due to permissions
 									//$p.eve.callEvent("pouch_denied", [id, info]);
-									$p.store.dispatch(pouch_sync_error(id, info))
-
+									t.emit('pouch_sync_error', id, info);
 
 								})
 								.on('error', function (err) {
 									// totally unhandled error (shouldn't happen)
-									$p.store.dispatch(pouch_sync_error(id, err))
+									t.emit('pouch_sync_error', id, err);
 
 							});
 

@@ -30,7 +30,7 @@
  * @menuorder 00
  * @tooltip Контекст metadata.js
  */
-class MetaEngine{
+export default class MetaEngine{
 
 	constructor() {
 
@@ -121,14 +121,9 @@ class MetaEngine{
 	/**
 	 * Конструкторы объектов данных
 	 */
-	get classes(){return classes}
+	get classes(){//noinspection JSUnresolvedVariable
+		return classes}
 
-}
-
-if(!classes.MetaEngine){
-	Object.defineProperties(classes, {
-		MetaEngine: {value: MetaEngine}
-	});
 }
 
 

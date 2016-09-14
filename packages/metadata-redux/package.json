@@ -1,18 +1,10 @@
 {
-  "name": "metadata-core",
-  "description": "The core of metadata.js as a standalone package",
+  "name": "metadata-redux",
+  "description": "Actions and redusers for metadata.js",
   "version": "2.0.0-beta.1",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "dependencies": {
-    "alasql": ">=0.3",
-    "moment": ">=2.15",
-    "pouchdb-core": "^5.4",
-    "pouchdb-adapter-http": "^5.4",
-    "pouchdb-adapter-memory": "^5.4",
-    "pouchdb-adapter-idb": "^5.4",
-    "pouchdb-mapreduce": "^5.4",
-    "pouchdb-replication": "^5.4",
-    "pouchdb-authentication": "^0.5"
+    "metadata-core": "2.0.0-beta.1"
   },
   "engines": {
     "node": ">=6.0"
