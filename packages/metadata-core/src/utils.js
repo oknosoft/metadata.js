@@ -15,30 +15,9 @@ moment._masks = {
 };
 
 /**
- * ### EventEmitter будет прототипом менеджеров данных
- */
-const EventEmitter = require('events')
-
-/**
  * ### alasql для работы с кешируемым данным
  */
 const alasql = require("alasql/dist/alasql.js")
-
-/**
- * ### PouchDB для хранения данных в idb браузера и синхронизации с CouchDB
- */
-const PouchDB = require('pouchdb-core')
-		.plugin(require('pouchdb-adapter-http'))
-		.plugin(require('pouchdb-replication'))
-		.plugin(require('pouchdb-mapreduce'))
-		.plugin(require('pouchdb-authentication')),
-	pouchdb_memory = require('pouchdb-adapter-memory'),
-	pouchdb_idb = require('pouchdb-adapter-idb')
-
-if(alasql.utils.isNode)
-	PouchDB.plugin(pouchdb_memory)
-else
-	PouchDB.plugin(pouchdb_idb)
 
 
 /**

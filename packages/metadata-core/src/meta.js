@@ -61,9 +61,9 @@ class Meta{
 
 			function do_init(){
 
-				if(!meta_db || meta_db instanceof PouchDB){
+				if(!meta_db || meta_db instanceof $p.classes.PouchDB){
 
-					return meta_from_pouch(meta_db || $p.wsql.pouch.local.meta)
+					return meta_from_pouch(meta_db || $p.adapters.pouch.local.meta)
 						.then(function () {
 							return _m;
 						});
@@ -87,7 +87,7 @@ class Meta{
 
 						if(btn){
 
-							$p.wsql.pouch.log_out();
+							$p.adapters.pouch.log_out();
 
 							setTimeout(function () {
 								$p.eve.redirect = true;
@@ -107,7 +107,7 @@ class Meta{
 
 			// следим за изменениями базы meta и предлагаем перезагрузку при обновлении версии
 			// TODO: назначить обработчик
-			// $p.wsql.pouch.local.sync.meta.on("change", function (change) {
+			// $p.adapters.pouch.local.sync.meta.on("change", function (change) {
 			// 	if(!_m)
 			// 		do_init();
 			//
@@ -301,6 +301,21 @@ class Meta{
 
 		};
 
+		/**
+		 * ### Возвращает менеджер объекта по имени класса
+		 * @method mgr_by_class_name
+		 * @param class_name {String}
+		 * @return {DataManager|undefined}
+		 * @private
+		 */
+		this.mgr_by_class_name = function (class_name) {
+			if (class_name) {
+				var np = class_name.split(".");
+				if (np[1] && $p[np[0]])
+					return $p[np[0]][np[1]];
+			}
+		}
+
 	}
 
 	/**
@@ -375,21 +390,6 @@ class Meta{
 	sql_mask(f, t) {
 		//var mask_names = ["delete", "set", "value", "json", "primary", "content"];
 		return ", " + (t ? "_t_." : "") + ("`" + f + "`");
-	}
-
-	/**
-	 * ### Возвращает менеджер объекта по имени класса
-	 * @method mgr_by_class_name
-	 * @param class_name {String}
-	 * @return {DataManager|undefined}
-	 * @private
-	 */
-	mgr_by_class_name(class_name) {
-		if (class_name) {
-			var np = class_name.split(".");
-			if (np[1] && $p[np[0]])
-				return $p[np[0]][np[1]];
-		}
 	}
 
 	/**

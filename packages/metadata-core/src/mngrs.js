@@ -34,11 +34,20 @@
  * @tooltip Менеджер данных
  */
 
+import {MetaEventEmitter} from 'metadata-abstract-adapter';
+
+// isNode
+// if(typeof process !== 'undefined' && process.versions && process.versions.node){
+// 	MetaEventEmitter = require('metadata-abstract-adapter/index.js').MetaEventEmitter;
+// }else{
+// 	MetaEventEmitter = require('metadata-abstract-adapter').MetaEventEmitter;
+// }
+
 function mngrs($p) {
 
 	const {wsql, md} = $p;
 
-	class DataManager extends EventEmitter{
+	class DataManager extends MetaEventEmitter{
 
 		constructor(class_name) {
 
@@ -403,7 +412,7 @@ function mngrs($p) {
 				return Promise.resolve(l);
 
 			}else if(t.cachable != "e1cib"){
-				return t.pouch_find_rows(selection)
+				return t.adapter.find_rows(t, selection)
 					.then(function (data) {
 						data.forEach(function (v) {
 							l.push(check({
@@ -531,6 +540,20 @@ function mngrs($p) {
 
 			return Promise.resolve(t._printing_plates);
 
+		}
+
+		/**
+		 * Указатель на адаптер данных этого менеджера
+		 */
+		get adapter(){
+			switch (this.cachable){
+				case undefined:
+				case "ram":
+				case "doc":
+				case "meta":
+					return $p.adapter.pouch;
+			}
+			return $p.adapter[this.cachable];
 		}
 
 		static get EVENTS(){

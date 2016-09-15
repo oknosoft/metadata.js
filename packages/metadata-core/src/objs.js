@@ -344,13 +344,8 @@ class DataObj {
 	 */
 	load() {
 
-		var reset_modified = function () {
-			reset_modified = null;
-			this._data._modified = false;
-			return this;
-		}.bind(this);
-
 		if (this.ref == utils.blank.guid) {
+
 			if (this instanceof CatObj)
 				this.id = "000000000";
 			else
@@ -359,11 +354,12 @@ class DataObj {
 			return Promise.resolve(this);
 
 		} else {
-			if (this._manager.cachable && this._manager.cachable != "e1cib") {
-				return wsql.pouch.load_obj(this).then(reset_modified);
 
-			} else
-				return _rest.load_obj(this).then(reset_modified);
+			return this._manager.adapter.load_obj(this)
+				.then(() => {
+					this._data._modified = false;
+					return this;
+				});
 		}
 
 	}
@@ -482,18 +478,8 @@ class DataObj {
 		// 	}
 		// }
 
-		// в зависимости от типа кеширования, получаем saver
-		if (this._manager.cachable && this._manager.cachable != "e1cib") {
-			saver = wsql.pouch.save_obj;
-
-		} else {
-			// запрос к серверу 1C по сети
-			saver = _rest.save_irest;
-
-		}
-
-		// Сохраняем во внешней базе
-		return saver(
+		// в зависимости от типа кеширования, получаем saver и сохраняем объект во внешней базе
+		return this._manager.adapter.save_obj(
 			this, {
 				post: post,
 				operational: operational,

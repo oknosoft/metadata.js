@@ -119,22 +119,17 @@ class WSQL {
 					});
 
 					// сообщяем движку pouch пути и префиксы
-					var pouch_prm = {
-						path: this.get_user_param("couch_path", "string") || $p.job_prm.couch_path || "",
-						zone: this.get_user_param("zone", "number"),
-						prefix: $p.job_prm.local_storage_prefix,
-						suffix: this.get_user_param("couch_suffix", "string") || ""
-					};
-					if (pouch_prm.path) {
+					if($p.adapters.pouch){
+						const pouch_prm = {
+							path: this.get_user_param("couch_path", "string") || $p.job_prm.couch_path || "",
+							zone: this.get_user_param("zone", "number"),
+							prefix: $p.job_prm.local_storage_prefix,
+							suffix: this.get_user_param("couch_suffix", "string") || ""
+						};
+						if (pouch_prm.path) {
 
-						/**
-						 * ### Указатель на локальные и сетевые базы PouchDB
-						 * @property pouch
-						 * @for WSQL
-						 * @type Pouch
-						 */
-						Object.defineProperty(this, "pouch", {value: new Pouch($p)})
-						this.pouch.init(pouch_prm)
+							$p.adapters.pouch.init(pouch_prm)
+						}
 					}
 
 					meta($p);
@@ -203,13 +198,6 @@ class WSQL {
 	 * @type Function
 	 */
 	get alasql(){ return alasql	}
-
-	/**
-	 * ### Указатель на PouchDB
-	 * @property PouchDB
-	 * @type Function
-	 */
-	get PouchDB(){ return PouchDB }
 
 	/**
 	 * ### Поправка времени javascript
@@ -287,8 +275,5 @@ class WSQL {
 		else
 			return prm;
 	}
-
-
-
 
 }
