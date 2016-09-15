@@ -1,9 +1,18 @@
 {
-  "name": "metadata-redux",
-  "description": "Actions and redusers for metadata.js",
+  "name": "metadata-pouchdb",
+  "description": "PouchDB data adapter for metadata.js",
   "version": "2.0.0-beta.2",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
-  "dependencies": {},
+  "dependencies": {
+    "metadata-abstract-adapter": "^2.0.0-beta.2",
+    "pouchdb-core": "^5.4",
+    "pouchdb-adapter-http": "^5.4",
+    "pouchdb-adapter-memory": "^5.4",
+    "pouchdb-adapter-idb": "^5.4",
+    "pouchdb-mapreduce": "^5.4",
+    "pouchdb-replication": "^5.4",
+    "pouchdb-authentication": "^0.5"
+  },
   "engines": {
     "node": ">=6.0"
   },
@@ -16,13 +25,5 @@
   },
   "homepage": "http://www.oknosoft.ru/metadata/",
   "main": "./index.es6",
-  "keywords": [
-    "metadata",
-    "redux",
-    "react",
-    "rest",
-    "odata",
-    "offline-first"
-  ],
   "license": "MIT"
 }

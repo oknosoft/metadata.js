@@ -1,6 +1,6 @@
 {
-  "name": "metadata-redux",
-  "description": "Actions and redusers for metadata.js",
+  "name": "metadata-abstract-adapter",
+  "description": "Abstract data adapter for metadata.js",
   "version": "2.0.0-beta.2",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "dependencies": {},
@@ -16,13 +16,5 @@
   },
   "homepage": "http://www.oknosoft.ru/metadata/",
   "main": "./index.es6",
-  "keywords": [
-    "metadata",
-    "redux",
-    "react",
-    "rest",
-    "odata",
-    "offline-first"
-  ],
   "license": "MIT"
 }

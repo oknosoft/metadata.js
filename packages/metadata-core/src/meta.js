@@ -61,9 +61,9 @@ class Meta{
 
 			function do_init(){
 
-				if(!meta_db || meta_db instanceof PouchDB){
+				if(!meta_db || meta_db instanceof $p.classes.PouchDB){
 
-					return meta_from_pouch(meta_db || $p.wsql.pouch.local.meta)
+					return meta_from_pouch(meta_db || $p.adapters.pouch.local.meta)
 						.then(function () {
 							return _m;
 						});
@@ -87,7 +87,7 @@ class Meta{
 
 						if(btn){
 
-							$p.wsql.pouch.log_out();
+							$p.adapters.pouch.log_out();
 
 							setTimeout(function () {
 								$p.eve.redirect = true;
@@ -107,7 +107,7 @@ class Meta{
 
 			// следим за изменениями базы meta и предлагаем перезагрузку при обновлении версии
 			// TODO: назначить обработчик
-			// $p.wsql.pouch.local.sync.meta.on("change", function (change) {
+			// $p.adapters.pouch.local.sync.meta.on("change", function (change) {
 			// 	if(!_m)
 			// 		do_init();
 			//

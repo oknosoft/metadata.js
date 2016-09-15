@@ -7,35 +7,34 @@
  * Created 05.09.2016
  */
 
-import MetaEngine from 'metadata-core'
 
 // ------------------------------------
 // Action types - имена типов действий
 // ------------------------------------
 
-export const META_LOADED        = 'META_LOADED'         // Инициализирует параметры и создаёт менеджеры объектов данных
+const META_LOADED        = 'META_LOADED'         // Инициализирует параметры и создаёт менеджеры объектов данных
 
-export const OBJ_ADD            = 'OBJ_ADD'             // Команда создать объекта
-export const OBJ_ADD_ROW        = 'OBJ_ADD_ROW'         // Команда добавить строку в табчасть объекта
-export const OBJ_DEL_ROW        = 'OBJ_DEL_ROW'         // Команда удалить строку табчасти объекта
-export const OBJ_EDIT           = 'OBJ_EDIT'            // Команда открыть форму редактирования объекта
-export const OBJ_DELETE         = 'OBJ_DELETE'          // Команда пометить объект на удаление
-export const OBJ_REVERT         = 'OBJ_REVERT'          // Команда вернуть объект в состояние до редактирования (перечитать из базы данных)
-export const OBJ_SAVE           = 'OBJ_SAVE'            // Команда записать изменённый объект
-export const OBJ_CHANGED        = 'OBJ_CHANGED'         // Записан изменённый объект (по команде интерфейса или в результате репликации)
+const OBJ_ADD            = 'OBJ_ADD'             // Команда создать объекта
+const OBJ_ADD_ROW        = 'OBJ_ADD_ROW'         // Команда добавить строку в табчасть объекта
+const OBJ_DEL_ROW        = 'OBJ_DEL_ROW'         // Команда удалить строку табчасти объекта
+const OBJ_EDIT           = 'OBJ_EDIT'            // Команда открыть форму редактирования объекта
+const OBJ_DELETE         = 'OBJ_DELETE'          // Команда пометить объект на удаление
+const OBJ_REVERT         = 'OBJ_REVERT'          // Команда вернуть объект в состояние до редактирования (перечитать из базы данных)
+const OBJ_SAVE           = 'OBJ_SAVE'            // Команда записать изменённый объект
+const OBJ_CHANGED        = 'OBJ_CHANGED'         // Записан изменённый объект (по команде интерфейса или в результате репликации)
 
-export const USER_DEFINED       = 'USER_DEFINED'        // Команда создать объекта
-export const USER_LOG_IN        = 'USER_LOG_IN'         // Команда создать объекта
-export const USER_LOG_OUT       = 'USER_LOG_OUT'        // Команда создать объекта
+const USER_DEFINED       = 'USER_DEFINED'        // Команда создать объекта
+const USER_LOG_IN        = 'USER_LOG_IN'         // Команда создать объекта
+const USER_LOG_OUT       = 'USER_LOG_OUT'        // Команда создать объекта
 
-export const POUCH_DATA_PAGE    = 'POUCH_DATA_PAGE'     // Оповещение о загрузке порции локальных данных
-export const POUCH_LOAD_START   = 'POUCH_LOAD_START'    // Оповещение о начале загрузки локальных данных
-export const POUCH_SYNC_START   = 'POUCH_SYNC_START'    // Оповещение о начале синхронизации базы doc
-export const POUCH_DATA_LOADED  = 'POUCH_DATA_LOADED'   // Оповещение об окончании загрузки локальных данных
-export const POUCH_CHANGE       = 'POUCH_CHANGE'        // Прибежали изменения с сервера
-export const POUCH_DATA_ERROR   = 'POUCH_DATA_ERROR'    // Оповещение об ошибке при загрузке локальных данных
-export const POUCH_SYNC_ERROR   = 'POUCH_SYNC_ERROR'    // Оповещение об ошибке репликации
-export const POUCH_NO_DATA      = 'POUCH_NO_DATA'       // Оповещение об отсутствии локальных данных (как правило, при первом запуске)
+const POUCH_DATA_PAGE    = 'POUCH_DATA_PAGE'     // Оповещение о загрузке порции локальных данных
+const POUCH_LOAD_START   = 'POUCH_LOAD_START'    // Оповещение о начале загрузки локальных данных
+const POUCH_SYNC_START   = 'POUCH_SYNC_START'    // Оповещение о начале синхронизации базы doc
+const POUCH_DATA_LOADED  = 'POUCH_DATA_LOADED'   // Оповещение об окончании загрузки локальных данных
+const POUCH_CHANGE       = 'POUCH_CHANGE'        // Прибежали изменения с сервера
+const POUCH_DATA_ERROR   = 'POUCH_DATA_ERROR'    // Оповещение об ошибке при загрузке локальных данных
+const POUCH_SYNC_ERROR   = 'POUCH_SYNC_ERROR'    // Оповещение об ошибке репликации
+const POUCH_NO_DATA      = 'POUCH_NO_DATA'       // Оповещение об отсутствии локальных данных (как правило, при первом запуске)
 
 
 
@@ -162,7 +161,7 @@ function obj_edit(class_name, ref, frm) {
 	}
 }
 
-export const actions = {
+const actions = {
 	[META_LOADED]: meta_loaded,
 
 	[POUCH_DATA_LOADED]: pouch_data_loaded,
@@ -176,63 +175,5 @@ export const actions = {
 	[USER_LOG_OUT]: user_log_out
 }
 
-// ------------------------------------
-// Action Handlers - обработчики событий - вызываются из корневого редюсера
-// ------------------------------------
-export const ACTION_HANDLERS = {
-	[META_LOADED]:          (state, action) => Object.assign({}, state, {meta_loaded: true}),
 
-	[POUCH_DATA_LOADED]:    (state, action) => Object.assign({}, state, {data_loaded: true}),
-	[POUCH_DATA_PAGE]:      (state, action) => Object.assign({}, state, {page: action.payload}),
-	[POUCH_DATA_ERROR]:     (state, action) => Object.assign({}, state, {err: action.payload}),
-	[POUCH_LOAD_START]:     (state, action) => Object.assign({}, state, {data_empty: false, fetch_local: true}),
-	[POUCH_NO_DATA]:        (state, action) => Object.assign({}, state, {data_empty: true}),
 
-	[USER_DEFINED]:     (state, action) => Object.assign({}, state, {user: {
-		name: action.payload,
-		logged_in: state.user.logged_in
-	}}),
-	[USER_LOG_IN]:      (state, action) => Object.assign({}, state, {user: {
-		name: action.payload,
-		logged_in: true
-	}}),
-	[USER_LOG_OUT]:     (state, action) => Object.assign({}, state, {user: {
-		name: state.user.name,
-		logged_in: false
-	}})
-
-}
-
-// ------------------------------------
-// Reducer
-// ------------------------------------
-const initialState = {
-	meta_loaded: false,
-	data_loaded: false,
-	data_empty: true,
-	fetch_local: false,
-	fetch_remote: false,
-	user: {
-		name: "",
-		logged_in: false
-	}
-}
-export default function metaReducer (state = initialState, action) {
-
-	if(!state.data){
-
-		state.data = new MetaEngine()
-
-		Object.defineProperty(state.data, 'actions', {
-			value: actions
-		})
-	}
-
-	const handler = ACTION_HANDLERS[action.type]
-
-	if(handler){
-		console.log(action)
-		return handler(state, action)
-	}else
-		return state
-}

@@ -34,6 +34,7 @@ export default class MetaEngine{
 
 	constructor() {
 
+		// инициируем базовые свойства
 		Object.defineProperties(this, {
 
 			version: {
@@ -43,15 +44,16 @@ export default class MetaEngine{
 
 			toString: { value: () => "Oknosoft data engine. v:" + this.version },
 
+
 			/**
-			 * ### Буфер для строковых и двоичных данных, внедряемых в скрипт
-			 * В этой структуре живут, например, sql текст инициализации таблиц, xml-строки форм и менюшек и т.д.
-			 *
-			 * @property injected_data
+			 * ### Адаптеры для PouchDB, 1С и т.д.
+			 * @property adapters
 			 * @type Object
 			 * @final
 			 */
-			injected_data: { value: {} },
+			adapters: {
+				value: {}
+			},
 
 			/**
 			 * ### Параметры работы программы
@@ -102,9 +104,18 @@ export default class MetaEngine{
 
 		})
 
+		// создаём конструкторы менеджеров данных
 		mngrs(this);
 
+		// создаём конструкторы табличных частей
 		tabulars(this);
+
+		// при налчии расширений, выполняем их методы инициализации
+		if(MetaEngine._constructors && Array.isArray(MetaEngine._constructors)){
+			for(var i=0; i< MetaEngine._constructors.length; i++){
+				MetaEngine._constructors[i].call(this);
+			}
+		}
 
 	}
 
@@ -124,8 +135,38 @@ export default class MetaEngine{
 	get classes(){//noinspection JSUnresolvedVariable
 		return classes}
 
+	/**
+	 * ### Подключает расширения metadata
+	 * Принимает в качестве параметра объект с полями `proto` и `constructor` типа _function_
+	 * proto выполняется в момент подключения, constructor - после основного конструктора при создании объекта
+	 *
+	 * @param obj
+	 * @return {MetaEngine}
+	 */
+	static plugin(obj){
+
+		if(typeof obj.proto == "function"){ // function style for plugins
+			obj.proto(MetaEngine)
+		}else if (typeof obj.proto == 'object'){
+			Object.keys(obj.proto).forEach(function (id) { // object style for plugins
+				MetaEngine.prototype[id] = obj.proto[id];
+			});
+		}
+
+		if(obj.constructor){
+
+			if(typeof obj.constructor != "function"){
+				throw new Error('Invalid plugin: constructor must be a function');
+			}
+
+			if(!MetaEngine._constructors){
+				MetaEngine._constructors = [];
+			}
+
+			MetaEngine._constructors.push(obj.constructor);
+		}
+
+		return MetaEngine;
+	}
+
 }
-
-
-
-

@@ -6,6 +6,30 @@
  * @submodule pouchdb
  */
 
+/**
+ * ### PouchDB для хранения данных в idb браузера и синхронизации с CouchDB
+ */
+const PouchDB = require('pouchdb-core')
+		.plugin(require('pouchdb-adapter-http'))
+		.plugin(require('pouchdb-replication'))
+		.plugin(require('pouchdb-mapreduce'))
+		.plugin(require('pouchdb-authentication')),
+	pouchdb_memory = require('pouchdb-adapter-memory'),
+	pouchdb_idb = require('pouchdb-adapter-idb')
+
+
+var AbstracrAdapter;
+
+// isNode
+if(typeof process !== 'undefined' && process.versions && process.versions.node){
+	PouchDB.plugin(pouchdb_memory);
+	AbstracrAdapter = require('metadata-abstract-adapter/index.js').default;
+}else{
+	PouchDB.plugin(pouchdb_idb);
+	AbstracrAdapter = require('metadata-abstract-adapter').default;
+}
+
+
 
 /**
  * ### Интерфейс локальной и сетевой баз данных PouchDB
@@ -16,11 +40,11 @@
  * @menuorder 34
  * @tooltip Данные pouchdb
  */
-class Pouch extends EventEmitter{
+class AdapterPouch extends AbstracrAdapter{
 
 	constructor($p){
 
-		super();
+		super($p);
 
 		var t = this,
 			_paths = {},
@@ -473,7 +497,6 @@ class Pouch extends EventEmitter{
 			});
 	}
 
-
 	/**
 	 * ### Записывает объект в pouchdb
 	 *
@@ -533,6 +556,448 @@ class Pouch extends EventEmitter{
 	}
 
 	/**
+	 * ### Возвращает набор данных для дерева динсписка
+	 *
+	 * @method pouch_tree
+	 * @param attr
+	 * @return {Promise.<Array>}
+	 */
+	get_tree(_mgr, attr){
+
+	}
+
+	/**
+	 * ### Возвращает набор данных для динсписка
+	 *
+	 * @method pouch_selection
+	 * @param attr
+	 * @return {Promise.<Array>}
+	 */
+	get_selection(_mgr, attr){
+
+	}
+
+
+	/**
+	 * Загружает объекты из PouchDB по массиву ссылок
+	 *
+	 * @param _mgr {DataManager}
+	 * @param refs {Array}
+	 * @param with_attachments {Boolean}
+	 * @return {*}
+	 */
+	load_array(_mgr, refs, with_attachments) {
+
+		var options = {
+			limit: refs.length + 1,
+			include_docs: true,
+			keys: refs.map((v) => _mgr.class_name + "|" + v)
+		},
+			db = this.db(_mgr),
+			pouch = this;
+
+		if (with_attachments) {
+			options.attachments = true;
+			options.binary = true;
+		}
+
+		return db.allDocs(options)
+			.then(function (result) {
+				return pouch.load_changes(result, {});
+			})
+	}
+
+
+	/**
+	 * Загружает объекты из PouchDB, обрезанные по view
+	 */
+	load_view(_mgr, _view) {
+
+		var doc, res = [],
+			db = this.db(_mgr),
+			options = {
+				limit: 1000,
+				include_docs: true,
+				startkey: _mgr.class_name + "|",
+				endkey: _mgr.class_name + '|\uffff'
+			};
+
+		return new Promise(function (resolve, reject) {
+
+			function process_docs(err, result) {
+
+				if (result) {
+
+					if (result.rows.length) {
+
+						options.startkey = result.rows[result.rows.length - 1].key;
+						options.skip = 1;
+
+						result.rows.forEach(function (rev) {
+							doc = rev.doc;
+							key = doc._id.split("|");
+							doc.ref = key[1];
+							// наполняем
+							res.push(doc);
+						});
+
+						_mgr.load_array(res);
+						res.length = 0;
+
+						_mgr.pouch_db.query(_view, options, process_docs);
+
+					} else {
+						resolve();
+					}
+
+				} else if (err) {
+					reject(err);
+				}
+			}
+
+			db.query(_view, options, process_docs);
+
+		});
+	}
+
+
+	/**
+	 * Возвращает базу PouchDB, связанную с объектами данного менеджера
+	 * @property pouch_db
+	 * @for DataManager
+	 */
+	db(_mgr) {
+		if (_mgr.cachable.indexOf("_remote") != -1)
+			return this.remote[_mgr.cachable.replace("_remote", "")];
+		else
+			return this.local[_mgr.cachable] || this.remote[_mgr.cachable];
+	}
+
+
+	/**
+	 * ### Найти строки
+	 * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
+	 * Eсли отбор пустой, возвращаются все строки из PouchDB.
+	 *
+	 * @method pouch_find_rows
+	 * @for DataManager
+	 * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
+	 * @param [selection._top] {Number}
+	 * @param [selection._skip] {Number}
+	 * @param [selection._raw] {Boolean} - если _истина_, возвращаются сырые данные, а не дата-объекты
+	 * @param [selection._total_count] {Boolean} - если _истина_, вычисляет общее число записей под фильтром, без учета _skip и _top
+	 * @return {Promise.<Array>}
+	 */
+	find_rows(_mgr, selection) {
+
+		var doc, res = [], utils = this.$p.utils,
+			db = this.db(_mgr),
+			_raw, _view, _total_count, top, calc_count,
+			top_count = 0, skip = 0, skip_count = 0,
+			options = {
+				limit: 100,
+				include_docs: true,
+				startkey: _mgr.class_name + "|",
+				endkey: _mgr.class_name + '|\uffff'
+			};
+
+
+		if (selection) {
+
+			if (selection._top) {
+				top = selection._top;
+				delete selection._top;
+			} else
+				top = 300;
+
+			if (selection._raw) {
+				_raw = selection._raw;
+				delete selection._raw;
+			}
+
+			if (selection._total_count) {
+				_total_count = selection._total_count;
+				delete selection._total_count;
+			}
+
+			if (selection._view) {
+				_view = selection._view;
+				delete selection._view;
+			}
+
+			if (selection._key) {
+
+				if (selection._key._order_by == "des") {
+					options.startkey = selection._key.endkey || selection._key + '\uffff';
+					options.endkey = selection._key.startkey || selection._key;
+					options.descending = true;
+				} else {
+					options.startkey = selection._key.startkey || selection._key;
+					options.endkey = selection._key.endkey || selection._key + '\uffff';
+				}
+			}
+
+			if (typeof selection._skip == "number") {
+				skip = selection._skip;
+				delete selection._skip;
+			}
+
+			if (selection._attachments) {
+				options.attachments = true;
+				options.binary = true;
+				delete selection._attachments;
+			}
+
+
+		}
+
+		// если сказано посчитать все строки...
+		if (_total_count) {
+
+			calc_count = true;
+			_total_count = 0;
+
+			// если нет фильтра по строке или фильтр растворён в ключе
+			if (Object.keys(selection).length <= 1) {
+
+				// если фильтр в ключе, получаем все строки без документов
+				if (selection._key && selection._key.hasOwnProperty("_search")) {
+					options.include_docs = false;
+					options.limit = 100000;
+
+					return db.query(_view, options)
+						.then(function (result) {
+
+							result.rows.forEach(function (row) {
+
+								// фильтруем
+								if (!selection._key._search || row.key[row.key.length - 1].toLowerCase().indexOf(selection._key._search) != -1) {
+
+									_total_count++;
+
+									// пропукскаем лишние (skip) элементы
+									if (skip) {
+										skip_count++;
+										if (skip_count < skip)
+											return;
+									}
+
+									// ограничиваем кол-во возвращаемых элементов
+									if (top) {
+										top_count++;
+										if (top_count > top)
+											return;
+									}
+
+									res.push(row.id);
+								}
+							});
+
+							delete options.startkey;
+							delete options.endkey;
+							if (options.descending)
+								delete options.descending;
+							options.keys = res;
+							options.include_docs = true;
+
+							return db.allDocs(options);
+
+						})
+						.then(function (result) {
+							return {
+								rows: result.rows.map(function (row) {
+
+									var doc = row.doc;
+
+									doc.ref = doc._id.split("|")[1];
+
+									if (!_raw) {
+										delete doc._id;
+										delete doc._rev;
+									}
+
+									return doc;
+								}),
+								_total_count: _total_count
+							};
+						})
+				}
+
+			}
+
+		}
+
+		// бежим по всем документам из ram
+		return new Promise(function (resolve, reject) {
+
+			function process_docs(err, result) {
+
+				if (result) {
+
+					if (result.rows.length) {
+
+						options.startkey = result.rows[result.rows.length - 1].key;
+						options.skip = 1;
+
+						result.rows.forEach(function (rev) {
+							doc = rev.doc;
+
+							key = doc._id.split("|");
+							doc.ref = key[1];
+
+							if (!_raw) {
+								delete doc._id;
+								delete doc._rev;
+							}
+
+							// фильтруем
+							if (!utils._selection.call(_mgr, doc, selection))
+								return;
+
+							if (calc_count)
+								_total_count++;
+
+							// пропукскаем лишние (skip) элементы
+							if (skip) {
+								skip_count++;
+								if (skip_count < skip)
+									return;
+							}
+
+							// ограничиваем кол-во возвращаемых элементов
+							if (top) {
+								top_count++;
+								if (top_count > top)
+									return;
+							}
+
+							// наполняем
+							res.push(doc);
+						});
+
+						if (top && top_count > top && !calc_count) {
+							resolve(_raw ? res : _mgr.load_array(res));
+
+						} else
+							fetch_next_page();
+
+					} else {
+						if (calc_count) {
+							resolve({
+								rows: _raw ? res : _mgr.load_array(res),
+								_total_count: _total_count
+							});
+						} else
+							resolve(_raw ? res : _mgr.load_array(res));
+					}
+
+				} else if (err) {
+					reject(err);
+				}
+			}
+
+			function fetch_next_page() {
+
+				if (_view)
+					db.query(_view, options, process_docs);
+
+				else
+					db.allDocs(options, process_docs);
+			}
+
+			fetch_next_page();
+
+		});
+
+
+	}
+
+
+	/**
+	 * ### Сохраняет присоединенный файл
+	 *
+	 * @method save_attachment
+	 * @for DataManager
+	 * @param ref
+	 * @param att_id
+	 * @param attachment
+	 * @param type
+	 * @return {Promise}
+	 * @async
+	 */
+	save_attachment(_mgr, ref, att_id, attachment, type) {
+
+		if (!type)
+			type = {type: "text/plain"};
+
+		if (!(attachment instanceof Blob) && type.indexOf("text") == -1)
+			attachment = new Blob([attachment], {type: type});
+
+		// получаем ревизию документа
+		var _rev,
+			db = this.db(_mgr);
+
+		ref = _mgr.class_name + "|" + this.$p.utils.fix_guid(ref);
+
+		return db.get(ref)
+			.then(function (res) {
+				if (res)
+					_rev = res._rev;
+			})
+			.catch(function (err) {
+				if (err.status != 404)
+					throw err;
+			})
+			.then(function () {
+				return db.putAttachment(ref, att_id, _rev, attachment, type);
+			});
+
+	}
+
+
+	/**
+	 * Получает присоединенный к объекту файл
+	 * @param ref
+	 * @param att_id
+	 * @return {Promise}
+	 */
+	get_attachment(_mgr, ref, att_id) {
+
+		return this.db(_mgr).getAttachment(_mgr.class_name + "|" + this.$p.utils.fix_guid(ref), att_id);
+
+	}
+
+
+	/**
+	 * Удаляет присоединенный к объекту файл
+	 * @param ref
+	 * @param att_id
+	 * @return {Promise}
+	 */
+	delete_attachment(_mgr, ref, att_id) {
+
+		// получаем ревизию документа
+		var _rev,
+			db = this.db(_mgr);
+
+		ref = _mgr.class_name + "|" + this.$p.utils.fix_guid(ref);
+
+		return db.get(ref)
+			.then(function (res) {
+				if (res)
+					_rev = res._rev;
+			})
+			.catch(function (err) {
+				if (err.status != 404)
+					throw err;
+			})
+			.then(function () {
+				return db.removeAttachment(ref, att_id, _rev);
+			});
+	}
+
+
+	/**
 	 * ### Загружает в менеджер изменения или полученные через allDocs данные
 	 *
 	 * @method load_changes
@@ -542,7 +1007,7 @@ class Pouch extends EventEmitter{
 	 */
 	load_changes(changes, options) {
 
-		var docs, doc, res = {}, cn, key;
+		var docs, doc, res = {}, cn, key, {$p} = this;
 
 		if (!options) {
 			if (changes.direction) {
@@ -631,5 +1096,14 @@ class Pouch extends EventEmitter{
 
 }
 
+const plugin = {
 
+	constructor(){
+
+		Object.defineProperty(this.adapters, 'pouch', {value: new AdapterPouch(this)})
+		Object.defineProperty(this.classes, 'PouchDB', {value: PouchDB})
+
+	}
+}
+export default plugin;
 

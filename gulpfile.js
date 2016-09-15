@@ -15,7 +15,8 @@ const gulp = require('gulp'),
 	resources = require('./src/utils/resource-concat.js'),
 	path = require('path'),
 	umd = require('gulp-umd'),
-	replace = require('gulp-replace');
+	replace = require('gulp-replace'),
+	babel = require('gulp-babel');
 	// async = require('gulp-async-func-runner'),
 	// gulpfile = require('gulp-file'),
 	// async = require('gulp-replace-async');
@@ -290,9 +291,6 @@ gulp.task('build-metadata-core', function(){
 // metadata-core
 gulp.task('build--core', function(){
 
-	const babel = require('gulp-babel');
-	const sourcemaps = require('gulp-sourcemaps');
-
 	package_data = JSON.parse(require('fs').readFileSync('./packages/metadata-core/package.json', 'utf8'));
 
 	return gulp.src([
@@ -312,50 +310,74 @@ gulp.task('build--core', function(){
 		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
 		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
 
-		//.pipe(sourcemaps.init({ loadMaps: true }))
-		.pipe(concat('index.js'))
+		.pipe(concat('index.es6'))
+		.pipe(gulp.dest('./packages/metadata-core'))
+
 		.pipe(babel({
 			presets: ['es2015'],
 			plugins: ["transform-async-to-generator"],
 			compact: false,
 			//comments: false
 		}))
-		//.pipe(sourcemaps.write('./'))
 
+		.pipe(rename('index.js'))
 		.pipe(gulp.dest('./packages/metadata-core'))
-		// .pipe(rename('metadata.core.min.js'))
-		// .pipe(uglify({
-		// 	preserveComments: "license"
-		// }))
-		// .pipe(gulp.dest('./dist'));
+});
+
+// metadata-redux
+gulp.task('build--abstract-adapter', function(){
+
+	return gulp.src([
+		'./packages/metadata-abstract-adapter/index.es6'
+	])
+
+		.pipe(babel({
+			presets: ['es2015'],
+			compact: false,
+			//comments: false
+		}))
+
+		.pipe(rename('index.js'))
+		.pipe(gulp.dest('./packages/metadata-abstract-adapter'))
+
+});
+
+// metadata-pouchdb
+gulp.task('build--adapter-pouchdb', function(){
+
+	return gulp.src([
+		'./packages/metadata-pouchdb/index.es6'
+	])
+
+		.pipe(babel({
+			presets: ['es2015'],
+			compact: false,
+			//comments: false
+		}))
+
+		.pipe(rename('index.js'))
+		.pipe(gulp.dest('./packages/metadata-pouchdb'))
+
 });
 
 // metadata-redux
 gulp.task('build--redux', function(){
-
-	const babel = require('gulp-babel');
-	const sourcemaps = require('gulp-sourcemaps');
-
-	package_data = JSON.parse(require('fs').readFileSync('./packages/metadata-core/package.json', 'utf8'));
 
 	return gulp.src([
 		'./packages/metadata-redux/src/actions.js',
 		'./packages/metadata-redux/src/events.js'
 	])
 
-		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
-		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
+		.pipe(concat('index.es6'))
+		.pipe(gulp.dest('./packages/metadata-redux'))
 
-		//.pipe(sourcemaps.init({ loadMaps: true }))
-		.pipe(concat('index.js'))
 		.pipe(babel({
 			presets: ['es2015'],
-			plugins: ["transform-async-to-generator"],
 			compact: false,
 			//comments: false
 		}))
-		//.pipe(sourcemaps.write('./'))
 
+		.pipe(rename('index.js'))
 		.pipe(gulp.dest('./packages/metadata-redux'))
 
 });
