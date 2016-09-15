@@ -57,7 +57,7 @@ function rx_reducer (state = initialState, action) {
  */
 function rx_events(store) {
 
-	this.wsql.pouch.on({
+	this.adapters.pouch.on({
 
 		user_log_in: (name) => {store.dispatch(user_log_in(name))},
 
@@ -87,9 +87,9 @@ function rx_events(store) {
  */
 const plugin = {
 
-	proto(proto) {
+	proto(constructor) {
 
-		Object.defineProperties(proto, {
+		Object.defineProperties(constructor.prototype, {
 
 			rx_actions: {
 				value: actions

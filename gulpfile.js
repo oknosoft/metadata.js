@@ -297,7 +297,6 @@ gulp.task('build--core', function(){
 		'./packages/metadata-core/src/utils.js',
 		'./packages/metadata-core/src/i18n.ru.js',
 		'./packages/metadata-core/src/jobprm.js',
-		'./packages/metadata-core/src/pouchdb.js',
 		'./packages/metadata-core/src/wsql.js',
 		'./packages/metadata-core/src/mngrs.js',
 		'./packages/metadata-core/src/objs.js',
@@ -310,7 +309,7 @@ gulp.task('build--core', function(){
 		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
 		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
 
-		.pipe(concat('index.es6'))
+		.pipe(concat('index.es6.js'))
 		.pipe(gulp.dest('./packages/metadata-core'))
 
 		.pipe(babel({
@@ -328,7 +327,7 @@ gulp.task('build--core', function(){
 gulp.task('build--abstract-adapter', function(){
 
 	return gulp.src([
-		'./packages/metadata-abstract-adapter/index.es6'
+		'./packages/metadata-abstract-adapter/index.es6.js'
 	])
 
 		.pipe(babel({
@@ -346,7 +345,7 @@ gulp.task('build--abstract-adapter', function(){
 gulp.task('build--adapter-pouchdb', function(){
 
 	return gulp.src([
-		'./packages/metadata-pouchdb/index.es6'
+		'./packages/metadata-pouchdb/index.es6.js'
 	])
 
 		.pipe(babel({
@@ -368,7 +367,7 @@ gulp.task('build--redux', function(){
 		'./packages/metadata-redux/src/events.js'
 	])
 
-		.pipe(concat('index.es6'))
+		.pipe(concat('index.es6.js'))
 		.pipe(gulp.dest('./packages/metadata-redux'))
 
 		.pipe(babel({

@@ -301,6 +301,21 @@ class Meta{
 
 		};
 
+		/**
+		 * ### Возвращает менеджер объекта по имени класса
+		 * @method mgr_by_class_name
+		 * @param class_name {String}
+		 * @return {DataManager|undefined}
+		 * @private
+		 */
+		this.mgr_by_class_name = function (class_name) {
+			if (class_name) {
+				var np = class_name.split(".");
+				if (np[1] && $p[np[0]])
+					return $p[np[0]][np[1]];
+			}
+		}
+
 	}
 
 	/**
@@ -375,21 +390,6 @@ class Meta{
 	sql_mask(f, t) {
 		//var mask_names = ["delete", "set", "value", "json", "primary", "content"];
 		return ", " + (t ? "_t_." : "") + ("`" + f + "`");
-	}
-
-	/**
-	 * ### Возвращает менеджер объекта по имени класса
-	 * @method mgr_by_class_name
-	 * @param class_name {String}
-	 * @return {DataManager|undefined}
-	 * @private
-	 */
-	mgr_by_class_name(class_name) {
-		if (class_name) {
-			var np = class_name.split(".");
-			if (np[1] && $p[np[0]])
-				return $p[np[0]][np[1]];
-		}
 	}
 
 	/**

@@ -235,7 +235,7 @@ function rx_reducer() {
  */
 function rx_events(store) {
 
-	this.wsql.pouch.on({
+	this.adapters.pouch.on({
 
 		user_log_in: function user_log_in(name) {
 			store.dispatch(_user_log_in(name));
@@ -283,9 +283,9 @@ function rx_events(store) {
  * Экспортируем объект-плагин для модификации metadata.js
  */
 var plugin = {
-	proto: function proto(_proto) {
+	proto: function proto(constructor) {
 
-		Object.defineProperties(_proto, {
+		Object.defineProperties(constructor.prototype, {
 
 			rx_actions: {
 				value: actions

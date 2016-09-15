@@ -18,17 +18,16 @@ const PouchDB = require('pouchdb-core')
 	pouchdb_idb = require('pouchdb-adapter-idb')
 
 
-var AbstracrAdapter;
+/**
+ * В зависимости от среды исполнения, подключаем адаптер memory или idb
+ * isNode
+ */
+if(typeof process !== 'undefined' && process.versions && process.versions.node)
+	PouchDB.plugin(pouchdb_memory)
+else
+	PouchDB.plugin(pouchdb_idb)
 
-// isNode
-if(typeof process !== 'undefined' && process.versions && process.versions.node){
-	PouchDB.plugin(pouchdb_memory);
-	AbstracrAdapter = require('metadata-abstract-adapter/index.js').default;
-}else{
-	PouchDB.plugin(pouchdb_idb);
-	AbstracrAdapter = require('metadata-abstract-adapter').default;
-}
-
+import AbstracrAdapter from 'metadata-abstract-adapter'
 
 
 /**

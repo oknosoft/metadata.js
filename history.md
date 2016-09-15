@@ -1,5 +1,33 @@
 # v0.11.221
 
+### 16.09.2016
+- Добавлена возможность создавать несколько экземпляров _MetaEngine_ в контексте одного веб-приложения (для одновременной работы с несколькими базами данных)
+- Код взаимодействия metadata.js с хранилишем данных в браузере и внешними источниками данных, решено отделить от ядра и перенести в плагины 
+- Реализованы бета-версии плагинов:
+  + _metadata-abstract-adapter_ - виртуальный класс для адаптеров данных
+  + _metadata-pouchdb_ - адаптер для взаимодействия с pouchdb
+  + _metadata-redux_ - генераторы и обработчики событий в терминах redux
+
+Пример инициализации для приложения react с адаптером pouchdb:
+```javascript
+import MetaEngine from 'metadata-core'
+import metadata_pouchdb from 'metadata-pouchdb'
+import metadata_redux from 'metadata-redux'
+MetaEngine
+  .plugin(metadata_pouchdb) // подключаем pouchdb-адаптер к прототипу metadata.js
+  .plugin(metadata_redux)   // подключаем свойства redux к прототипу metadata.js
+const $p = new MetaEngine()
+```
+
+Вариант без react и pouchdb (например, angular с прямым подключением к 1С):
+```javascript
+import MetaEngine from 'metadata-core'
+import metadata_1с from 'metadata-1с'
+MetaEngine
+  .plugin(metadata_1с) // подключаем адаптер 1С к прототипу metadata.js
+const $p = new MetaEngine()
+```
+
 ### 15.09.2016
 - Для metadata v2, реализован механизм плагинов. Подсистемы работы с PouchDB, 1C и т.д., планируется переместить из ядра в плагины
 - Реализована структура плагина _metadata-redux_ для подключения _metadata-core_ в приложениях _react-redux_

@@ -81,20 +81,6 @@ export default class MetaEngine{
 			aes: { value: new Aes("metadata.js") },
 
 			/**
-			 * ### Запись журнала регистрации
-			 *
-			 * @method record_log
-			 * @param err
-			 */
-			record_log: {
-				value: function (err) {
-					if(this.ireg && this.ireg.$log)
-						this.ireg.$log.record(err);
-					console.log(err);
-				}
-			},
-
-			/**
 			 * ### Mетаданные конфигурации
 			 * @property md
 			 * @type Meta
@@ -117,6 +103,18 @@ export default class MetaEngine{
 			}
 		}
 
+	}
+
+	/**
+	 * ### Запись журнала регистрации
+	 *
+	 * @method record_log
+	 * @param err
+	 */
+	record_log(err) {
+		if(this.ireg && this.ireg.$log)
+			this.ireg.$log.record(err);
+		console.log(err);
 	}
 
 	/**

@@ -34,14 +34,14 @@
  * @tooltip Менеджер данных
  */
 
-var MetaEventEmitter;
+import {MetaEventEmitter} from 'metadata-abstract-adapter';
 
 // isNode
-if(typeof process !== 'undefined' && process.versions && process.versions.node){
-	MetaEventEmitter = require('metadata-abstract-adapter/index.js').MetaEventEmitter;
-}else{
-	MetaEventEmitter = require('metadata-abstract-adapter').MetaEventEmitter;
-}
+// if(typeof process !== 'undefined' && process.versions && process.versions.node){
+// 	MetaEventEmitter = require('metadata-abstract-adapter/index.js').MetaEventEmitter;
+// }else{
+// 	MetaEventEmitter = require('metadata-abstract-adapter').MetaEventEmitter;
+// }
 
 function mngrs($p) {
 
