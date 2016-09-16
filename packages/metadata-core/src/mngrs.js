@@ -551,9 +551,9 @@ function mngrs($p) {
 				case "ram":
 				case "doc":
 				case "meta":
-					return $p.adapter.pouch;
+					return $p.adapters.pouch;
 			}
-			return $p.adapter[this.cachable];
+			return $p.adapters[this.cachable];
 		}
 
 		static get EVENTS(){

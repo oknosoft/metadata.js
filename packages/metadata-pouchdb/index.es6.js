@@ -481,11 +481,11 @@ class AdapterPouch extends AbstracrAdapter{
 	 */
 	load_obj(tObj) {
 
-		return tObj._manager.pouch_db.get(tObj._manager.class_name + "|" + tObj.ref)
-			.then(function (res) {
+		return this.db(tObj._manager).get(tObj._manager.class_name + "|" + tObj.ref)
+			.then((res) => {
 				delete res._id;
 				delete res._rev;
-				tObj._mixin(res)._set_loaded();
+				Object.assign(tObj, res)._set_loaded();
 			})
 			.catch(function (err) {
 				if (err.status != 404)
@@ -507,7 +507,7 @@ class AdapterPouch extends AbstracrAdapter{
 	save_obj(tObj, attr) {
 
 		var tmp = tObj._obj._clone(),
-			db = tObj._manager.pouch_db;
+			db = this.db(tObj._manager);
 
 		tmp._id = tObj._manager.class_name + "|" + tObj.ref;
 		delete tmp.ref;
@@ -643,7 +643,7 @@ class AdapterPouch extends AbstracrAdapter{
 						_mgr.load_array(res);
 						res.length = 0;
 
-						_mgr.pouch_db.query(_view, options, process_docs);
+						db.query(_view, options, process_docs);
 
 					} else {
 						resolve();
@@ -662,8 +662,9 @@ class AdapterPouch extends AbstracrAdapter{
 
 	/**
 	 * Возвращает базу PouchDB, связанную с объектами данного менеджера
-	 * @property pouch_db
-	 * @for DataManager
+	 * @method db
+	 * @param _mgr {DataManager}
+	 * @return {PouchDB}
 	 */
 	db(_mgr) {
 		if (_mgr.cachable.indexOf("_remote") != -1)
