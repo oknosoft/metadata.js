@@ -27,6 +27,7 @@ class Meta{
 		var _m;
 
 		// загружает метаданные из pouchdb
+		// TODO: перенести этот метод в плагин - Meta не должна ничего знать про pouchdb
 		function meta_from_pouch(meta_db) {
 
 			return meta_db.info()
@@ -123,6 +124,7 @@ class Meta{
 
 		/**
 		 * ### Возвращает описание объекта метаданных
+		 *
 		 * @method get
 		 * @param class_name {String} - например, "doc.calc_order"
 		 * @param [field_name] {String}
@@ -237,6 +239,8 @@ class Meta{
 
 		/**
 		 * ### Возвращает англоязычный синоним строки
+		 * TODO: перенести этот метод в плагин
+		 *
 		 * @method syns_js
 		 * @param v {String}
 		 * @return {String}
@@ -266,6 +270,8 @@ class Meta{
 
 		/**
 		 * ### Возвращает русскоязычный синоним строки
+		 * TODO: перенести этот метод в плагин
+		 *
 		 * @method syns_1с
 		 * @param v {String}
 		 * @return {String}
@@ -400,6 +406,8 @@ class Meta{
 
 	/**
 	 * ### Возвращает имя типа элемента управления для типа поля
+	 * TODO: перенести этот метод в плагин
+	 *
 	 * @method control_by_type
 	 * @param type
 	 * @return {*}
@@ -446,6 +454,8 @@ class Meta{
 
 	/**
 	 * ### Возвращает структуру для инициализации таблицы на форме
+	 * TODO: перенести этот метод в плагин
+	 *
 	 * @method ts_captions
 	 * @param class_name
 	 * @param ts_name
@@ -498,6 +508,8 @@ class Meta{
 
 	/**
 	 * ### Возвращает имя класса по полному имени объекта метаданных 1С
+	 * TODO: перенести этот метод в плагин
+	 *
 	 * @method class_name_from_1c
 	 * @param name
 	 */
@@ -533,6 +545,8 @@ class Meta{
 
 	/**
 	 * ### Возвращает полное именя объекта метаданных 1С по имени класса metadata
+	 * TODO: перенести этот метод в плагин
+	 *
 	 * @method class_name_to_1c
 	 * @param name
 	 */
