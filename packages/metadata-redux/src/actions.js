@@ -23,9 +23,10 @@ const OBJ_REVERT         = 'OBJ_REVERT'          // Команда вернут�
 const OBJ_SAVE           = 'OBJ_SAVE'            // Команда записать изменённый объект
 const OBJ_CHANGED        = 'OBJ_CHANGED'         // Записан изменённый объект (по команде интерфейса или в результате репликации)
 
-const USER_DEFINED       = 'USER_DEFINED'        // Команда создать объекта
-const USER_LOG_IN        = 'USER_LOG_IN'         // Команда создать объекта
-const USER_LOG_OUT       = 'USER_LOG_OUT'        // Команда создать объекта
+const USER_TRY_LOG_IN    = 'USER_TRY_LOG_IN'     // Попытка авторизации
+const USER_LOG_IN        = 'USER_LOG_IN'         // Подтверждает авторизацию
+const USER_DEFINED       = 'USER_DEFINED'        // Установить текущего пользователя (авторизация не обязательна)
+const USER_LOG_OUT       = 'USER_LOG_OUT'        // Попытка завершения синхронизации
 
 const POUCH_DATA_PAGE    = 'POUCH_DATA_PAGE'     // Оповещение о загрузке порции локальных данных
 const POUCH_LOAD_START   = 'POUCH_LOAD_START'    // Оповещение о начале загрузки локальных данных
@@ -126,6 +127,38 @@ function user_log_in(name) {
 	}
 }
 
+function user_try_log_in(adapter, name, password) {
+
+	// Thunk middleware знает, как обращаться с функциями.
+	// Он передает метод действия в качестве аргумента функции,
+	// т.о, это позволяет отправить действие самостоятельно.
+
+	return function (dispatch) {
+
+		// First dispatch: the app state is updated to inform
+		// that the API call is starting.
+
+		dispatch({
+			type: USER_TRY_LOG_IN,
+			payload: {name: name, password: password}
+		})
+
+		// The function called by the thunk middleware can return a value,
+		// that is passed on as the return value of the dispatch method.
+
+		// In this case, we return a promise to wait for.
+		// This is not required by thunk middleware, but it is convenient for us.
+
+		return adapter.log_in(name, password)
+			// .then(dispatch(user_log_in(name)))
+
+		// In a real world app, you also want to
+		// catch any error in the network call.
+	}
+}
+
+
+
 function user_log_out() {
 	return {
 		type: USER_LOG_OUT
@@ -170,8 +203,9 @@ const actions = {
 	[POUCH_LOAD_START]: pouch_load_start,
 	[POUCH_NO_DATA]: pouch_no_data,
 
-	[USER_DEFINED]: user_defined,
+	[USER_TRY_LOG_IN]: user_try_log_in,
 	[USER_LOG_IN]: user_log_in,
+	[USER_DEFINED]: user_defined,
 	[USER_LOG_OUT]: user_log_out
 }
 

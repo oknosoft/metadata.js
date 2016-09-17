@@ -380,7 +380,7 @@ class AdapterPouch extends AbstracrAdapter{
 							}else if(id == "doc"){
 								// широковещательное оповещение о начале синхронизации базы doc
 								setTimeout(function () {
-									t.emit('pouch_sync_start', _page)
+									t.emit('pouch_sync_start')
 								});
 							}
 

@@ -3,6 +3,7 @@
  * Action Handlers - обработчики событий - вызываются из корневого редюсера
  */
 export const ACTION_HANDLERS = {
+
 	[META_LOADED]:          (state, action) => Object.assign({}, state, {meta_loaded: true}),
 
 	[POUCH_DATA_LOADED]:    (state, action) => Object.assign({}, state, {data_loaded: true}),
@@ -10,15 +11,23 @@ export const ACTION_HANDLERS = {
 	[POUCH_DATA_ERROR]:     (state, action) => Object.assign({}, state, {err: action.payload}),
 	[POUCH_LOAD_START]:     (state, action) => Object.assign({}, state, {data_empty: false, fetch_local: true}),
 	[POUCH_NO_DATA]:        (state, action) => Object.assign({}, state, {data_empty: true}),
+	[POUCH_SYNC_START]:     (state, action) => Object.assign({}, state, {sync_started: true}),
 
-	[USER_DEFINED]:     (state, action) => Object.assign({}, state, {user: {
+	[USER_DEFINED]: (state, action) => Object.assign({}, state, {user: {
 		name: action.payload,
 		logged_in: state.user.logged_in
 	}}),
-	[USER_LOG_IN]:      (state, action) => Object.assign({}, state, {user: {
+
+	[USER_LOG_IN]:  (state, action) => Object.assign({}, state, {user: {
 		name: action.payload,
 		logged_in: true
 	}}),
+
+	[USER_TRY_LOG_IN]:  (state, action) => Object.assign({}, state, {user: {
+		name: action.payload.name,
+		logged_in: state.user.logged_in
+	}}),
+
 	[USER_LOG_OUT]:     (state, action) => Object.assign({}, state, {user: {
 		name: state.user.name,
 		logged_in: false
@@ -33,6 +42,7 @@ const initialState = {
 	meta_loaded: false,
 	data_loaded: false,
 	data_empty: true,
+	sync_started: false,
 	fetch_local: false,
 	fetch_remote: false,
 	user: {
