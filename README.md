@@ -38,13 +38,10 @@ Metadata.js предоставляет программисту:
 - [Meta](http://www.oknosoft.ru/upzp/apidocs/classes/Meta.html) - хранилище метаданных конфигурации
 - [DataManager](http://www.oknosoft.ru/upzp/apidocs/classes/DataManager.html) с наследниками `RefDataManager`, `EnumManager`, `InfoRegManager`, `CatManager`, `DocManager` - менеджеры объектов данных - аналоги 1С-ных `ПеречислениеМенеджер`, `РегистрСведенийМенеджер`, `СправочникМенеджер`, `ДокументМенеджер`
 - [DataObj](http://www.oknosoft.ru/upzp/apidocs/classes/DataObj.html) с наследниками `CatObj`, `DocObj`, `EnumObj`, `DataProcessorObj` - аналоги 1С-ных `СправочникОбъект`, `ДокументОбъект`, `ОбработкаОбъект`
-
-### Дополняем возможностями ES2015 и Web UI
-- При разработке фреймворка, было решено отказаться от поддержки устаревших браузеров и смело использовать расширения javascript ES2015. Это позволило сократить объём кода, улучшить его структуру и повысить эффективность
-- Для визуализации данных, в текущей реализации, использованы компоненты [dhtmlx](http://dhtmlx.com/). Любители ExtJS, Angular, Dojo, Webix, SAP UI5 и т.д. - могут при необходимости подключить нужные визуальные компоненты к нашим объектам данных
  
 ### Отличия от конкурентов
-Metadata.js не конкурирует с клиентскими [Web UI](https://ru.wikipedia.org/wiki/%D0%A1%D1%80%D0%B0%D0%B2%D0%BD%D0%B5%D0%BD%D0%B8%D0%B5_%D0%BA%D0%B0%D1%80%D0%BA%D0%B0%D1%81%D0%BE%D0%B2_%D0%B2%D0%B5%D0%B1-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9) и клиент-серверными (в том числе, реактивными) фреймворками, а дополняет их новой абстракцией в виде [Объектов](http://www.oknosoft.ru/upzp/apidocs/classes/DataObj.html) и [Менеджеров](http://www.oknosoft.ru/upzp/apidocs/classes/DataManager.html) данных. Использование этих классов упрощает разработку сложных интерфейсов бизнес-приложений
+Metadata.js не конкурирует с UI фреймворками, а дополняет их новой абстракцией в виде [Объектов](http://www.oknosoft.ru/upzp/apidocs/classes/DataObj.html) и [Менеджеров](http://www.oknosoft.ru/upzp/apidocs/classes/DataManager.html) данных. Использование этих классов упрощает разработку сложных интерфейсов бизнес-приложений
+С классической платформой 1С, metadata так же, не конкурирует, т.к. рассчитана в основном, на работу в автономном режиме в браузере или на мобильном устройстве
 
 ## Установка и подключение
 
