@@ -32,18 +32,20 @@ var OBJ_REVERT = 'OBJ_REVERT'; // Команда вернуть объект в 
 var OBJ_SAVE = 'OBJ_SAVE'; // Команда записать изменённый объект
 var OBJ_CHANGED = 'OBJ_CHANGED'; // Записан изменённый объект (по команде интерфейса или в результате репликации)
 
-var USER_DEFINED = 'USER_DEFINED'; // Команда создать объекта
-var USER_LOG_IN = 'USER_LOG_IN'; // Команда создать объекта
-var USER_LOG_OUT = 'USER_LOG_OUT'; // Команда создать объекта
+var USER_TRY_LOG_IN = 'USER_TRY_LOG_IN'; // Попытка авторизации
+var USER_LOG_IN = 'USER_LOG_IN'; // Подтверждает авторизацию
+var USER_DEFINED = 'USER_DEFINED'; // Установить текущего пользователя (авторизация не обязательна)
+var USER_LOG_OUT = 'USER_LOG_OUT'; // Попытка завершения синхронизации
 
 var POUCH_DATA_PAGE = 'POUCH_DATA_PAGE'; // Оповещение о загрузке порции локальных данных
 var POUCH_LOAD_START = 'POUCH_LOAD_START'; // Оповещение о начале загрузки локальных данных
-var POUCH_SYNC_START = 'POUCH_SYNC_START'; // Оповещение о начале синхронизации базы doc
 var POUCH_DATA_LOADED = 'POUCH_DATA_LOADED'; // Оповещение об окончании загрузки локальных данных
-var POUCH_CHANGE = 'POUCH_CHANGE'; // Прибежали изменения с сервера
 var POUCH_DATA_ERROR = 'POUCH_DATA_ERROR'; // Оповещение об ошибке при загрузке локальных данных
-var POUCH_SYNC_ERROR = 'POUCH_SYNC_ERROR'; // Оповещение об ошибке репликации
 var POUCH_NO_DATA = 'POUCH_NO_DATA'; // Оповещение об отсутствии локальных данных (как правило, при первом запуске)
+
+var POUCH_SYNC_START = 'POUCH_SYNC_START'; // Оповещение о начале синхронизации базы doc
+var POUCH_SYNC_ERROR = 'POUCH_SYNC_ERROR'; // Оповещение об ошибке репликации - не означает окончания репликации - просто информирует об ошибке
+var POUCH_SYNC_DATA = 'POUCH_SYNC_DATA'; // Прибежали изменения с сервера или мы отправили данные на сервер
 
 
 // ------------------------------------
@@ -62,13 +64,39 @@ function _pouch_data_loaded(page) {
 	};
 }
 
-function _pouch_change(dbid, change) {
-	return {
-		type: POUCH_CHANGE,
-		payload: {
-			dbid: dbid,
-			change: change
+var sync_data_indicator;
+function _pouch_sync_data(dbid, change) {
+
+	// Thunk middleware знает, как обращаться с функциями.
+	// Он передает метод действия в качестве аргумента функции,
+	// т.о, это позволяет отправить действие самостоятельно.
+
+	return function (dispatch) {
+
+		// First dispatch: the app state is updated to inform
+		// that the API call is starting.
+
+		dispatch({
+			type: POUCH_SYNC_DATA,
+			payload: {
+				dbid: dbid,
+				change: change
+			}
+		});
+
+		if (sync_data_indicator) {
+			clearTimeout(sync_data_indicator);
 		}
+
+		sync_data_indicator = setTimeout(function () {
+
+			sync_data_indicator = 0;
+
+			dispatch({
+				type: POUCH_SYNC_DATA,
+				payload: false
+			});
+		}, 3000);
 	};
 }
 
@@ -134,6 +162,36 @@ function _user_log_in(name) {
 	};
 }
 
+function user_try_log_in(adapter, name, password) {
+
+	// Thunk middleware знает, как обращаться с функциями.
+	// Он передает метод действия в качестве аргумента функции,
+	// т.о, это позволяет отправить действие самостоятельно.
+
+	return function (dispatch) {
+
+		// First dispatch: the app state is updated to inform
+		// that the API call is starting.
+
+		dispatch({
+			type: USER_TRY_LOG_IN,
+			payload: { name: name, password: password }
+		});
+
+		// The function called by the thunk middleware can return a value,
+		// that is passed on as the return value of the dispatch method.
+
+		// In this case, we return a promise to wait for.
+		// This is not required by thunk middleware, but it is convenient for us.
+
+		return adapter.log_in(name, password);
+		// .then(dispatch(user_log_in(name)))
+
+		// In a real world app, you also want to
+		// catch any error in the network call.
+	};
+}
+
 function _user_log_out() {
 	return {
 		type: USER_LOG_OUT
@@ -169,7 +227,7 @@ function obj_edit(class_name, ref, frm) {
 	};
 }
 
-var actions = (_actions = {}, _defineProperty(_actions, META_LOADED, meta_loaded), _defineProperty(_actions, POUCH_DATA_LOADED, _pouch_data_loaded), _defineProperty(_actions, POUCH_DATA_PAGE, _pouch_data_page), _defineProperty(_actions, POUCH_DATA_ERROR, _pouch_data_error), _defineProperty(_actions, POUCH_LOAD_START, _pouch_load_start), _defineProperty(_actions, POUCH_NO_DATA, _pouch_no_data), _defineProperty(_actions, USER_DEFINED, user_defined), _defineProperty(_actions, USER_LOG_IN, _user_log_in), _defineProperty(_actions, USER_LOG_OUT, _user_log_out), _actions);
+var actions = (_actions = {}, _defineProperty(_actions, META_LOADED, meta_loaded), _defineProperty(_actions, POUCH_DATA_LOADED, _pouch_data_loaded), _defineProperty(_actions, POUCH_DATA_PAGE, _pouch_data_page), _defineProperty(_actions, POUCH_DATA_ERROR, _pouch_data_error), _defineProperty(_actions, POUCH_LOAD_START, _pouch_load_start), _defineProperty(_actions, POUCH_NO_DATA, _pouch_no_data), _defineProperty(_actions, USER_TRY_LOG_IN, user_try_log_in), _defineProperty(_actions, USER_LOG_IN, _user_log_in), _defineProperty(_actions, USER_DEFINED, user_defined), _defineProperty(_actions, USER_LOG_OUT, _user_log_out), _actions);
 
 /**
  * Action Handlers - обработчики событий - вызываются из корневого редюсера
@@ -177,15 +235,19 @@ var actions = (_actions = {}, _defineProperty(_actions, META_LOADED, meta_loaded
 var ACTION_HANDLERS = exports.ACTION_HANDLERS = (_ACTION_HANDLERS = {}, _defineProperty(_ACTION_HANDLERS, META_LOADED, function (state, action) {
 	return Object.assign({}, state, { meta_loaded: true });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_LOADED, function (state, action) {
-	return Object.assign({}, state, { data_loaded: true });
+	return Object.assign({}, state, { data_loaded: true, fetch_local: false });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_PAGE, function (state, action) {
 	return Object.assign({}, state, { page: action.payload });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_ERROR, function (state, action) {
-	return Object.assign({}, state, { err: action.payload });
+	return Object.assign({}, state, { err: action.payload, fetch_local: false });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_LOAD_START, function (state, action) {
 	return Object.assign({}, state, { data_empty: false, fetch_local: true });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_NO_DATA, function (state, action) {
-	return Object.assign({}, state, { data_empty: true });
+	return Object.assign({}, state, { data_empty: true, fetch_local: false });
+}), _defineProperty(_ACTION_HANDLERS, POUCH_SYNC_START, function (state, action) {
+	return Object.assign({}, state, { sync_started: true });
+}), _defineProperty(_ACTION_HANDLERS, POUCH_SYNC_DATA, function (state, action) {
+	return Object.assign({}, state, { fetch_remote: action.payload ? true : false });
 }), _defineProperty(_ACTION_HANDLERS, USER_DEFINED, function (state, action) {
 	return Object.assign({}, state, { user: {
 			name: action.payload,
@@ -196,11 +258,19 @@ var ACTION_HANDLERS = exports.ACTION_HANDLERS = (_ACTION_HANDLERS = {}, _defineP
 			name: action.payload,
 			logged_in: true
 		} });
-}), _defineProperty(_ACTION_HANDLERS, USER_LOG_OUT, function (state, action) {
+}), _defineProperty(_ACTION_HANDLERS, USER_TRY_LOG_IN, function (state, action) {
 	return Object.assign({}, state, { user: {
+			name: action.payload.name,
+			logged_in: state.user.logged_in
+		} });
+}), _defineProperty(_ACTION_HANDLERS, USER_LOG_OUT, function (state, action) {
+	return Object.assign({}, state, {
+		user: {
 			name: state.user.name,
 			logged_in: false
-		} });
+		},
+		sync_started: false
+	});
 }), _ACTION_HANDLERS);
 
 /**
@@ -210,6 +280,7 @@ var initialState = {
 	meta_loaded: false,
 	data_loaded: false,
 	data_empty: true,
+	sync_started: false,
 	fetch_local: false,
 	fetch_remote: false,
 	user: {
@@ -269,8 +340,8 @@ function rx_events(store) {
 			store.dispatch(_pouch_sync_start());
 		},
 
-		pouch_change: function pouch_change(dbid, change) {
-			store.dispatch(_pouch_change(dbid, change));
+		pouch_sync_data: function pouch_sync_data(dbid, change) {
+			store.dispatch(_pouch_sync_data(dbid, change));
 		},
 
 		pouch_sync_error: function pouch_sync_error(dbid, err) {

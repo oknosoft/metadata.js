@@ -380,7 +380,7 @@ class AdapterPouch extends AbstracrAdapter{
 							}else if(id == "doc"){
 								// широковещательное оповещение о начале синхронизации базы doc
 								setTimeout(function () {
-									t.emit('pouch_sync_start', _page)
+									t.emit('pouch_sync_start')
 								});
 							}
 
@@ -426,17 +426,16 @@ class AdapterPouch extends AbstracrAdapter{
 												// широковещательное оповещение об окончании загрузки локальных данных
 												_data_loaded = true;
 												t.emit('pouch_data_loaded', _page);
-
-
 											}
 
 										}
 									}else{
+										// если прибежали изменения базы doc - обновляем те объекты, которые уже прочитаны в озу
 										change.update_only = true;
 										t.load_changes(change);
 									}
 
-									t.emit('pouch_change', id, change);
+									t.emit('pouch_sync_data', id, change);
 
 								})
 								.on('paused', function (info) {
@@ -481,11 +480,11 @@ class AdapterPouch extends AbstracrAdapter{
 	 */
 	load_obj(tObj) {
 
-		return tObj._manager.pouch_db.get(tObj._manager.class_name + "|" + tObj.ref)
-			.then(function (res) {
+		return this.db(tObj._manager).get(tObj._manager.class_name + "|" + tObj.ref)
+			.then((res) => {
 				delete res._id;
 				delete res._rev;
-				tObj._mixin(res)._set_loaded();
+				Object.assign(tObj, res)._set_loaded();
 			})
 			.catch(function (err) {
 				if (err.status != 404)
@@ -507,7 +506,7 @@ class AdapterPouch extends AbstracrAdapter{
 	save_obj(tObj, attr) {
 
 		var tmp = tObj._obj._clone(),
-			db = tObj._manager.pouch_db;
+			db = this.db(tObj._manager);
 
 		tmp._id = tObj._manager.class_name + "|" + tObj.ref;
 		delete tmp.ref;
@@ -643,7 +642,7 @@ class AdapterPouch extends AbstracrAdapter{
 						_mgr.load_array(res);
 						res.length = 0;
 
-						_mgr.pouch_db.query(_view, options, process_docs);
+						db.query(_view, options, process_docs);
 
 					} else {
 						resolve();
@@ -662,8 +661,9 @@ class AdapterPouch extends AbstracrAdapter{
 
 	/**
 	 * Возвращает базу PouchDB, связанную с объектами данного менеджера
-	 * @property pouch_db
-	 * @for DataManager
+	 * @method db
+	 * @param _mgr {DataManager}
+	 * @return {PouchDB}
 	 */
 	db(_mgr) {
 		if (_mgr.cachable.indexOf("_remote") != -1)

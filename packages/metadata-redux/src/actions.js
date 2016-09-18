@@ -12,29 +12,32 @@
 // Action types - имена типов действий
 // ------------------------------------
 
-const META_LOADED        = 'META_LOADED'         // Инициализирует параметры и создаёт менеджеры объектов данных
+const META_LOADED       = 'META_LOADED'         // Инициализирует параметры и создаёт менеджеры объектов данных
 
-const OBJ_ADD            = 'OBJ_ADD'             // Команда создать объекта
-const OBJ_ADD_ROW        = 'OBJ_ADD_ROW'         // Команда добавить строку в табчасть объекта
-const OBJ_DEL_ROW        = 'OBJ_DEL_ROW'         // Команда удалить строку табчасти объекта
-const OBJ_EDIT           = 'OBJ_EDIT'            // Команда открыть форму редактирования объекта
-const OBJ_DELETE         = 'OBJ_DELETE'          // Команда пометить объект на удаление
-const OBJ_REVERT         = 'OBJ_REVERT'          // Команда вернуть объект в состояние до редактирования (перечитать из базы данных)
-const OBJ_SAVE           = 'OBJ_SAVE'            // Команда записать изменённый объект
-const OBJ_CHANGED        = 'OBJ_CHANGED'         // Записан изменённый объект (по команде интерфейса или в результате репликации)
+const OBJ_ADD           = 'OBJ_ADD'             // Команда создать объекта
+const OBJ_ADD_ROW       = 'OBJ_ADD_ROW'         // Команда добавить строку в табчасть объекта
+const OBJ_DEL_ROW       = 'OBJ_DEL_ROW'         // Команда удалить строку табчасти объекта
+const OBJ_EDIT          = 'OBJ_EDIT'            // Команда открыть форму редактирования объекта
+const OBJ_DELETE        = 'OBJ_DELETE'          // Команда пометить объект на удаление
+const OBJ_REVERT        = 'OBJ_REVERT'          // Команда вернуть объект в состояние до редактирования (перечитать из базы данных)
+const OBJ_SAVE          = 'OBJ_SAVE'            // Команда записать изменённый объект
+const OBJ_CHANGED       = 'OBJ_CHANGED'         // Записан изменённый объект (по команде интерфейса или в результате репликации)
 
-const USER_DEFINED       = 'USER_DEFINED'        // Команда создать объекта
-const USER_LOG_IN        = 'USER_LOG_IN'         // Команда создать объекта
-const USER_LOG_OUT       = 'USER_LOG_OUT'        // Команда создать объекта
+const USER_TRY_LOG_IN   = 'USER_TRY_LOG_IN'     // Попытка авторизации
+const USER_LOG_IN       = 'USER_LOG_IN'         // Подтверждает авторизацию
+const USER_DEFINED      = 'USER_DEFINED'        // Установить текущего пользователя (авторизация не обязательна)
+const USER_LOG_OUT      = 'USER_LOG_OUT'        // Попытка завершения синхронизации
 
-const POUCH_DATA_PAGE    = 'POUCH_DATA_PAGE'     // Оповещение о загрузке порции локальных данных
-const POUCH_LOAD_START   = 'POUCH_LOAD_START'    // Оповещение о начале загрузки локальных данных
-const POUCH_SYNC_START   = 'POUCH_SYNC_START'    // Оповещение о начале синхронизации базы doc
-const POUCH_DATA_LOADED  = 'POUCH_DATA_LOADED'   // Оповещение об окончании загрузки локальных данных
-const POUCH_CHANGE       = 'POUCH_CHANGE'        // Прибежали изменения с сервера
-const POUCH_DATA_ERROR   = 'POUCH_DATA_ERROR'    // Оповещение об ошибке при загрузке локальных данных
-const POUCH_SYNC_ERROR   = 'POUCH_SYNC_ERROR'    // Оповещение об ошибке репликации
-const POUCH_NO_DATA      = 'POUCH_NO_DATA'       // Оповещение об отсутствии локальных данных (как правило, при первом запуске)
+const POUCH_DATA_PAGE   = 'POUCH_DATA_PAGE'     // Оповещение о загрузке порции локальных данных
+const POUCH_LOAD_START  = 'POUCH_LOAD_START'    // Оповещение о начале загрузки локальных данных
+const POUCH_DATA_LOADED = 'POUCH_DATA_LOADED'   // Оповещение об окончании загрузки локальных данных
+const POUCH_DATA_ERROR  = 'POUCH_DATA_ERROR'    // Оповещение об ошибке при загрузке локальных данных
+const POUCH_NO_DATA     = 'POUCH_NO_DATA'       // Оповещение об отсутствии локальных данных (как правило, при первом запуске)
+
+const POUCH_SYNC_START  = 'POUCH_SYNC_START'    // Оповещение о начале синхронизации базы doc
+const POUCH_SYNC_ERROR  = 'POUCH_SYNC_ERROR'    // Оповещение об ошибке репликации - не означает окончания репликации - просто информирует об ошибке
+const POUCH_SYNC_DATA   = 'POUCH_SYNC_DATA'     // Прибежали изменения с сервера или мы отправили данные на сервер
+
 
 
 
@@ -54,13 +57,41 @@ function pouch_data_loaded(page) {
 	}
 }
 
-function pouch_change(dbid, change) {
-	return {
-		type: POUCH_CHANGE,
-		payload: {
-			dbid: dbid,
-			change: change
+var sync_data_indicator;
+function pouch_sync_data(dbid, change) {
+
+
+	// Thunk middleware знает, как обращаться с функциями.
+	// Он передает метод действия в качестве аргумента функции,
+	// т.о, это позволяет отправить действие самостоятельно.
+
+	return function (dispatch) {
+
+		// First dispatch: the app state is updated to inform
+		// that the API call is starting.
+
+		dispatch({
+			type: POUCH_SYNC_DATA,
+			payload: {
+				dbid: dbid,
+				change: change
+			}
+		})
+
+		if(sync_data_indicator){
+			clearTimeout(sync_data_indicator);
 		}
+
+		sync_data_indicator = setTimeout(function () {
+
+			sync_data_indicator = 0;
+
+			dispatch({
+				type: POUCH_SYNC_DATA,
+				payload: false
+			})
+
+		}, 3000);
 	}
 }
 
@@ -126,6 +157,38 @@ function user_log_in(name) {
 	}
 }
 
+function user_try_log_in(adapter, name, password) {
+
+	// Thunk middleware знает, как обращаться с функциями.
+	// Он передает метод действия в качестве аргумента функции,
+	// т.о, это позволяет отправить действие самостоятельно.
+
+	return function (dispatch) {
+
+		// First dispatch: the app state is updated to inform
+		// that the API call is starting.
+
+		dispatch({
+			type: USER_TRY_LOG_IN,
+			payload: {name: name, password: password}
+		})
+
+		// The function called by the thunk middleware can return a value,
+		// that is passed on as the return value of the dispatch method.
+
+		// In this case, we return a promise to wait for.
+		// This is not required by thunk middleware, but it is convenient for us.
+
+		return adapter.log_in(name, password)
+			// .then(dispatch(user_log_in(name)))
+
+		// In a real world app, you also want to
+		// catch any error in the network call.
+	}
+}
+
+
+
 function user_log_out() {
 	return {
 		type: USER_LOG_OUT
@@ -170,8 +233,10 @@ const actions = {
 	[POUCH_LOAD_START]: pouch_load_start,
 	[POUCH_NO_DATA]: pouch_no_data,
 
-	[USER_DEFINED]: user_defined,
+
+	[USER_TRY_LOG_IN]: user_try_log_in,
 	[USER_LOG_IN]: user_log_in,
+	[USER_DEFINED]: user_defined,
 	[USER_LOG_OUT]: user_log_out
 }
 
