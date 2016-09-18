@@ -39,12 +39,13 @@ var USER_LOG_OUT = 'USER_LOG_OUT'; // Попытка завершения син
 
 var POUCH_DATA_PAGE = 'POUCH_DATA_PAGE'; // Оповещение о загрузке порции локальных данных
 var POUCH_LOAD_START = 'POUCH_LOAD_START'; // Оповещение о начале загрузки локальных данных
-var POUCH_SYNC_START = 'POUCH_SYNC_START'; // Оповещение о начале синхронизации базы doc
 var POUCH_DATA_LOADED = 'POUCH_DATA_LOADED'; // Оповещение об окончании загрузки локальных данных
-var POUCH_CHANGE = 'POUCH_CHANGE'; // Прибежали изменения с сервера
 var POUCH_DATA_ERROR = 'POUCH_DATA_ERROR'; // Оповещение об ошибке при загрузке локальных данных
-var POUCH_SYNC_ERROR = 'POUCH_SYNC_ERROR'; // Оповещение об ошибке репликации
 var POUCH_NO_DATA = 'POUCH_NO_DATA'; // Оповещение об отсутствии локальных данных (как правило, при первом запуске)
+
+var POUCH_SYNC_START = 'POUCH_SYNC_START'; // Оповещение о начале синхронизации базы doc
+var POUCH_SYNC_ERROR = 'POUCH_SYNC_ERROR'; // Оповещение об ошибке репликации - не означает окончания репликации - просто информирует об ошибке
+var POUCH_SYNC_DATA = 'POUCH_SYNC_DATA'; // Прибежали изменения с сервера или мы отправили данные на сервер
 
 
 // ------------------------------------
@@ -63,13 +64,39 @@ function _pouch_data_loaded(page) {
 	};
 }
 
-function _pouch_change(dbid, change) {
-	return {
-		type: POUCH_CHANGE,
-		payload: {
-			dbid: dbid,
-			change: change
+var sync_data_indicator;
+function _pouch_sync_data(dbid, change) {
+
+	// Thunk middleware знает, как обращаться с функциями.
+	// Он передает метод действия в качестве аргумента функции,
+	// т.о, это позволяет отправить действие самостоятельно.
+
+	return function (dispatch) {
+
+		// First dispatch: the app state is updated to inform
+		// that the API call is starting.
+
+		dispatch({
+			type: POUCH_SYNC_DATA,
+			payload: {
+				dbid: dbid,
+				change: change
+			}
+		});
+
+		if (sync_data_indicator) {
+			clearTimeout(sync_data_indicator);
 		}
+
+		sync_data_indicator = setTimeout(function () {
+
+			sync_data_indicator = 0;
+
+			dispatch({
+				type: POUCH_SYNC_DATA,
+				payload: false
+			});
+		}, 3000);
 	};
 }
 
@@ -208,17 +235,19 @@ var actions = (_actions = {}, _defineProperty(_actions, META_LOADED, meta_loaded
 var ACTION_HANDLERS = exports.ACTION_HANDLERS = (_ACTION_HANDLERS = {}, _defineProperty(_ACTION_HANDLERS, META_LOADED, function (state, action) {
 	return Object.assign({}, state, { meta_loaded: true });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_LOADED, function (state, action) {
-	return Object.assign({}, state, { data_loaded: true });
+	return Object.assign({}, state, { data_loaded: true, fetch_local: false });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_PAGE, function (state, action) {
 	return Object.assign({}, state, { page: action.payload });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_ERROR, function (state, action) {
-	return Object.assign({}, state, { err: action.payload });
+	return Object.assign({}, state, { err: action.payload, fetch_local: false });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_LOAD_START, function (state, action) {
 	return Object.assign({}, state, { data_empty: false, fetch_local: true });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_NO_DATA, function (state, action) {
-	return Object.assign({}, state, { data_empty: true });
+	return Object.assign({}, state, { data_empty: true, fetch_local: false });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_SYNC_START, function (state, action) {
 	return Object.assign({}, state, { sync_started: true });
+}), _defineProperty(_ACTION_HANDLERS, POUCH_SYNC_DATA, function (state, action) {
+	return Object.assign({}, state, { fetch_remote: action.payload ? true : false });
 }), _defineProperty(_ACTION_HANDLERS, USER_DEFINED, function (state, action) {
 	return Object.assign({}, state, { user: {
 			name: action.payload,
@@ -235,10 +264,13 @@ var ACTION_HANDLERS = exports.ACTION_HANDLERS = (_ACTION_HANDLERS = {}, _defineP
 			logged_in: state.user.logged_in
 		} });
 }), _defineProperty(_ACTION_HANDLERS, USER_LOG_OUT, function (state, action) {
-	return Object.assign({}, state, { user: {
+	return Object.assign({}, state, {
+		user: {
 			name: state.user.name,
 			logged_in: false
-		} });
+		},
+		sync_started: false
+	});
 }), _ACTION_HANDLERS);
 
 /**
@@ -308,8 +340,8 @@ function rx_events(store) {
 			store.dispatch(_pouch_sync_start());
 		},
 
-		pouch_change: function pouch_change(dbid, change) {
-			store.dispatch(_pouch_change(dbid, change));
+		pouch_sync_data: function pouch_sync_data(dbid, change) {
+			store.dispatch(_pouch_sync_data(dbid, change));
 		},
 
 		pouch_sync_error: function pouch_sync_error(dbid, err) {

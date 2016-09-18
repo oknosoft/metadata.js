@@ -6,12 +6,19 @@ export const ACTION_HANDLERS = {
 
 	[META_LOADED]:          (state, action) => Object.assign({}, state, {meta_loaded: true}),
 
-	[POUCH_DATA_LOADED]:    (state, action) => Object.assign({}, state, {data_loaded: true}),
+	[POUCH_DATA_LOADED]:    (state, action) => Object.assign({}, state, {data_loaded: true, fetch_local: false}),
+
 	[POUCH_DATA_PAGE]:      (state, action) => Object.assign({}, state, {page: action.payload}),
-	[POUCH_DATA_ERROR]:     (state, action) => Object.assign({}, state, {err: action.payload}),
+
+	[POUCH_DATA_ERROR]:     (state, action) => Object.assign({}, state, {err: action.payload, fetch_local: false}),
+
 	[POUCH_LOAD_START]:     (state, action) => Object.assign({}, state, {data_empty: false, fetch_local: true}),
-	[POUCH_NO_DATA]:        (state, action) => Object.assign({}, state, {data_empty: true}),
+
+	[POUCH_NO_DATA]:        (state, action) => Object.assign({}, state, {data_empty: true, fetch_local: false}),
+
 	[POUCH_SYNC_START]:     (state, action) => Object.assign({}, state, {sync_started: true}),
+
+	[POUCH_SYNC_DATA]:     (state, action) => Object.assign({}, state, {fetch_remote: action.payload ? true : false}),
 
 	[USER_DEFINED]: (state, action) => Object.assign({}, state, {user: {
 		name: action.payload,
@@ -28,10 +35,13 @@ export const ACTION_HANDLERS = {
 		logged_in: state.user.logged_in
 	}}),
 
-	[USER_LOG_OUT]:     (state, action) => Object.assign({}, state, {user: {
-		name: state.user.name,
-		logged_in: false
-	}})
+	[USER_LOG_OUT]:     (state, action) => Object.assign({}, state, {
+		user: {
+			name: state.user.name,
+			logged_in: false,
+		},
+		sync_started: false
+	})
 
 }
 
@@ -85,7 +95,7 @@ function rx_events(store) {
 
 		pouch_sync_start: () => {store.dispatch(pouch_sync_start())},
 
-		pouch_change: (dbid, change) => {store.dispatch(pouch_change(dbid, change))},
+		pouch_sync_data: (dbid, change) => {store.dispatch(pouch_sync_data(dbid, change))},
 
 		pouch_sync_error: (dbid, err) => {store.dispatch(pouch_sync_error(dbid, err))}
 	})

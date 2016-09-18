@@ -426,17 +426,16 @@ class AdapterPouch extends AbstracrAdapter{
 												// широковещательное оповещение об окончании загрузки локальных данных
 												_data_loaded = true;
 												t.emit('pouch_data_loaded', _page);
-
-
 											}
 
 										}
 									}else{
+										// если прибежали изменения базы doc - обновляем те объекты, которые уже прочитаны в озу
 										change.update_only = true;
 										t.load_changes(change);
 									}
 
-									t.emit('pouch_change', id, change);
+									t.emit('pouch_sync_data', id, change);
 
 								})
 								.on('paused', function (info) {

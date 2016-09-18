@@ -8,6 +8,8 @@
   + _metadata-pouchdb_ - адаптер для взаимодействия с pouchdb
   + _metadata-redux_ - генераторы и обработчики событий в терминах redux
 
+Ядро и плагины - невизуальные. UI для v2 пока отсутствует
+
 Пример инициализации для приложения react с адаптером pouchdb:
 ```javascript
 import MetaEngine from 'metadata-core'
@@ -31,6 +33,9 @@ const $p = new MetaEngine()
 ### 15.09.2016
 - Для metadata v2, реализован механизм плагинов. Подсистемы работы с PouchDB, 1C и т.д., планируется переместить из ядра в плагины
 - Реализована структура плагина _metadata-redux_ для подключения _metadata-core_ в приложениях _react-redux_
+
+### 14.09.2016
+- Для управления multipackage-repo задействавана библиотека [lerna](https://github.com/lerna/lerna)
 
 # v0.11.220
 
