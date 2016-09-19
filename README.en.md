@@ -18,10 +18,6 @@
 
 ![Структура metadata.js в браузере](examples/imgs/metadata_structure.png)
 
-### Concept
-In metadata.js, we attempt to supplemented the best of modern technologies of data processing, tools that we did not have in their daily work
-- We use the most valuable from 1C
-- Complements ES2015 and Web UI
 
 ### Unlike competitors
 Metadata.js not compete with client Web UI and client-server (including reactive) frameworks, and complements the new abstraction of [data objects](http://www.oknosoft.ru/upzp/apidocs/classes/DataObj.html) and [data managers](http://www.oknosoft.ru/upzp/apidocs/classes/DataManager.html). Using these classes simplifies the development of complex interfaces of business applications.
