@@ -14,15 +14,6 @@
 
 const META_LOADED       = 'META_LOADED'         // Инициализирует параметры и создаёт менеджеры объектов данных
 
-const OBJ_ADD           = 'OBJ_ADD'             // Команда создать объекта
-const OBJ_ADD_ROW       = 'OBJ_ADD_ROW'         // Команда добавить строку в табчасть объекта
-const OBJ_DEL_ROW       = 'OBJ_DEL_ROW'         // Команда удалить строку табчасти объекта
-const OBJ_EDIT          = 'OBJ_EDIT'            // Команда открыть форму редактирования объекта
-const OBJ_DELETE        = 'OBJ_DELETE'          // Команда пометить объект на удаление
-const OBJ_REVERT        = 'OBJ_REVERT'          // Команда вернуть объект в состояние до редактирования (перечитать из базы данных)
-const OBJ_SAVE          = 'OBJ_SAVE'            // Команда записать изменённый объект
-const OBJ_CHANGED       = 'OBJ_CHANGED'         // Записан изменённый объект (по команде интерфейса или в результате репликации)
-
 const USER_TRY_LOG_IN   = 'USER_TRY_LOG_IN'     // Попытка авторизации
 const USER_LOG_IN       = 'USER_LOG_IN'         // Подтверждает авторизацию
 const USER_DEFINED      = 'USER_DEFINED'        // Установить текущего пользователя (авторизация не обязательна)
@@ -65,7 +56,7 @@ function pouch_sync_data(dbid, change) {
 	// Он передает метод действия в качестве аргумента функции,
 	// т.о, это позволяет отправить действие самостоятельно.
 
-	return function (dispatch) {
+	return function (dispatch, getState) {
 
 		// First dispatch: the app state is updated to inform
 		// that the API call is starting.
@@ -163,7 +154,7 @@ function user_try_log_in(adapter, name, password) {
 	// Он передает метод действия в качестве аргумента функции,
 	// т.о, это позволяет отправить действие самостоятельно.
 
-	return function (dispatch) {
+	return function (dispatch, getState) {
 
 		// First dispatch: the app state is updated to inform
 		// that the API call is starting.
@@ -195,37 +186,16 @@ function user_log_out() {
 	}
 }
 
-function obj_add(class_name) {
-	return {
-		type: OBJ_ADD,
-		payload: {class_name: class_name}
-	}
-}
 
-function obj_add_row(class_name, ref, tabular) {
-	return {
-		type: OBJ_ADD_ROW,
-		payload: {
-			class_name: class_name,
-			ref: ref,
-			tabular: tabular
-		}
-	}
-}
-
-function obj_edit(class_name, ref, frm) {
-	return {
-		type: OBJ_EDIT,
-		payload: {
-			class_name: class_name,
-			ref: ref,
-			frm: frm
-		}
-	}
-}
 
 const actions = {
+
 	[META_LOADED]: meta_loaded,
+
+	[USER_TRY_LOG_IN]: user_try_log_in,
+	[USER_LOG_IN]: user_log_in,
+	[USER_DEFINED]: user_defined,
+	[USER_LOG_OUT]: user_log_out,
 
 	[POUCH_DATA_LOADED]: pouch_data_loaded,
 	[POUCH_DATA_PAGE]: pouch_data_page,
@@ -233,11 +203,14 @@ const actions = {
 	[POUCH_LOAD_START]: pouch_load_start,
 	[POUCH_NO_DATA]: pouch_no_data,
 
-
-	[USER_TRY_LOG_IN]: user_try_log_in,
-	[USER_LOG_IN]: user_log_in,
-	[USER_DEFINED]: user_defined,
-	[USER_LOG_OUT]: user_log_out
+	[OBJ_ADD]: obj_add,
+	[OBJ_ADD_ROW]: obj_add_row,
+	[OBJ_DEL_ROW]: obj_del_row,
+	[OBJ_EDIT]: obj_edit,
+	[OBJ_REVERT]: obj_revert,
+	[OBJ_SAVE]: obj_save,
+	[OBJ_CHANGE]: obj_change,
+	[OBJ_VALUE_CHANGE]: obj_value_change,
 }
 
 

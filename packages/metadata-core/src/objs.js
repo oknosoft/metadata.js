@@ -358,6 +358,7 @@ class DataObj {
 			return this._manager.adapter.load_obj(this)
 				.then(() => {
 					this._data._modified = false;
+					setTimeout(() => {this._manager.brodcast_event("obj_loaded", this)})
 					return this;
 				});
 		}

@@ -373,7 +373,9 @@ gulp.task('build--adapter-pouchdb', function(){
 gulp.task('build--redux', function(){
 
 	return gulp.src([
+		'./packages/metadata-redux/src/actions_obj.js',
 		'./packages/metadata-redux/src/actions.js',
+		'./packages/metadata-redux/src/events_obj.js',
 		'./packages/metadata-redux/src/events.js'
 	])
 

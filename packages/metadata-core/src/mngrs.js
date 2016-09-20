@@ -563,6 +563,13 @@ function mngrs($p) {
 		}
 
 		/**
+		 * Широковещательное событие на объекте `md`
+		 * @param name
+		 * @param attr
+		 */
+		brodcast_event(name, attr){md.emit(name, attr)}
+
+		/**
 		 * Указатель на адаптер данных этого менеджера
 		 */
 		get adapter(){

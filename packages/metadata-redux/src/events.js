@@ -2,7 +2,7 @@
 /**
  * Action Handlers - обработчики событий - вызываются из корневого редюсера
  */
-export const ACTION_HANDLERS = {
+const ACTION_HANDLERS = {
 
 	[META_LOADED]:          (state, action) => Object.assign({}, state, {meta_loaded: true}),
 
@@ -62,7 +62,10 @@ const initialState = {
 }
 function rx_reducer (state = initialState, action) {
 
-	const handler = ACTION_HANDLERS[action.type]
+	let handler = ACTION_HANDLERS[action.type];
+
+	if(!handler)
+		handler = ACTION_HANDLERS_OBJ[action.type]
 
 	if(handler){
 		console.log(action)
@@ -98,7 +101,11 @@ function rx_events(store) {
 		pouch_sync_data: (dbid, change) => {store.dispatch(pouch_sync_data(dbid, change))},
 
 		pouch_sync_error: (dbid, err) => {store.dispatch(pouch_sync_error(dbid, err))}
-	})
+	});
+
+	this.md.on({
+		obj_loaded: (_obj) => {store.dispatch(obj_change(_obj._manager.class_name, _obj.ref))}
+	});
 
 }
 

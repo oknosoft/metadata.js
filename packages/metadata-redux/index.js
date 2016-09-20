@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _actions, _ACTION_HANDLERS;
+var _actions, _ACTION_HANDLERS_OBJ, _ACTION_HANDLERS;
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -21,16 +21,152 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 // Action types - имена типов действий
 // ------------------------------------
 
-var META_LOADED = 'META_LOADED'; // Инициализирует параметры и создаёт менеджеры объектов данных
-
 var OBJ_ADD = 'OBJ_ADD'; // Команда создать объекта
 var OBJ_ADD_ROW = 'OBJ_ADD_ROW'; // Команда добавить строку в табчасть объекта
 var OBJ_DEL_ROW = 'OBJ_DEL_ROW'; // Команда удалить строку табчасти объекта
 var OBJ_EDIT = 'OBJ_EDIT'; // Команда открыть форму редактирования объекта
-var OBJ_DELETE = 'OBJ_DELETE'; // Команда пометить объект на удаление
 var OBJ_REVERT = 'OBJ_REVERT'; // Команда вернуть объект в состояние до редактирования (перечитать из базы данных)
-var OBJ_SAVE = 'OBJ_SAVE'; // Команда записать изменённый объект
-var OBJ_CHANGED = 'OBJ_CHANGED'; // Записан изменённый объект (по команде интерфейса или в результате репликации)
+var OBJ_SAVE = 'OBJ_SAVE'; // Команда записать изменённый объект (пометка удаления, проведение и отмена проведения - это так же, запись)
+var OBJ_CHANGE = 'OBJ_CHANGE'; // Записан изменённый объект (по команде интерфейса или в результате репликации)
+var OBJ_VALUE_CHANGE = 'OBJ_VALUE_CHANGE'; // Изменён реквизит шапки или строки табчасти
+
+
+// ------------------------------------
+// Actions - функции - генераторы действий. Они передаются в диспетчер redux
+// ------------------------------------
+
+
+function obj_add(class_name) {
+	return {
+		type: OBJ_ADD,
+		payload: { class_name: class_name }
+	};
+}
+
+function obj_add_row(class_name, ref, tabular, proto) {
+	return {
+		type: OBJ_ADD_ROW,
+		payload: {
+			class_name: class_name,
+			ref: ref,
+			tabular: tabular,
+			proto: proto
+		}
+	};
+}
+
+/**
+ * ### Удаляет строку, не оставляет следов в истории
+ * @param class_name
+ * @param ref
+ * @param tabular
+ * @param index
+ * @return {function(): Promise.<T>}
+ */
+function obj_del_row(class_name, ref, tabular, index) {
+	// удаляем строку
+
+	// возвращаем thunk
+	return function () {
+		return Promise.resolve();
+	};
+}
+
+/**
+ * ### Генерирует событие маршрутизации на форму объекта
+ * @param class_name
+ * @param ref
+ * @param frm
+ * @return {{type: string, payload: {class_name: *, ref: *, frm: *}}}
+ */
+function obj_edit(class_name, ref, frm) {
+	return {
+		type: OBJ_EDIT,
+		payload: {
+			class_name: class_name,
+			ref: ref,
+			frm: frm
+		}
+	};
+}
+
+function obj_revert(class_name, ref) {
+	return function (dispatch, getState) {
+		return new Promise(function (resolve) {
+			setTimeout(function () {
+				dispatch(dispatch({
+					type: OBJ_REVERT,
+					payload: {
+						class_name: class_name,
+						ref: ref
+					}
+				}));
+				resolve();
+			}, 200);
+		});
+	};
+}
+
+function obj_save(class_name, ref, post, mark_deleted) {
+	return function (dispatch, getState) {
+		return new Promise(function (resolve) {
+			setTimeout(function () {
+				dispatch(dispatch({
+					type: OBJ_SAVE,
+					payload: {
+						class_name: class_name,
+						ref: ref,
+						post: post,
+						mark_deleted: mark_deleted
+					}
+				}));
+				resolve();
+			}, 200);
+		});
+	};
+}
+
+function obj_change(class_name, ref) {
+	return {
+		type: OBJ_CHANGE,
+		payload: {
+			class_name: class_name,
+			ref: ref
+		}
+	};
+}
+
+function obj_value_change(class_name, ref) {
+	return function (dispatch, getState) {
+		return new Promise(function (resolve) {
+			setTimeout(function () {
+				dispatch(dispatch({
+					type: OBJ_VALUE_CHANGE,
+					payload: {
+						class_name: class_name,
+						ref: ref
+					}
+				}));
+				resolve();
+			}, 200);
+		});
+	};
+}
+
+/**
+ * ### Действия и типы действий в терминах redux
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ * @module actions.js
+ *
+ * Created 05.09.2016
+ */
+
+// ------------------------------------
+// Action types - имена типов действий
+// ------------------------------------
+
+var META_LOADED = 'META_LOADED'; // Инициализирует параметры и создаёт менеджеры объектов данных
 
 var USER_TRY_LOG_IN = 'USER_TRY_LOG_IN'; // Попытка авторизации
 var USER_LOG_IN = 'USER_LOG_IN'; // Подтверждает авторизацию
@@ -71,7 +207,7 @@ function _pouch_sync_data(dbid, change) {
 	// Он передает метод действия в качестве аргумента функции,
 	// т.о, это позволяет отправить действие самостоятельно.
 
-	return function (dispatch) {
+	return function (dispatch, getState) {
 
 		// First dispatch: the app state is updated to inform
 		// that the API call is starting.
@@ -168,7 +304,7 @@ function user_try_log_in(adapter, name, password) {
 	// Он передает метод действия в качестве аргумента функции,
 	// т.о, это позволяет отправить действие самостоятельно.
 
-	return function (dispatch) {
+	return function (dispatch, getState) {
 
 		// First dispatch: the app state is updated to inform
 		// that the API call is starting.
@@ -198,41 +334,21 @@ function _user_log_out() {
 	};
 }
 
-function obj_add(class_name) {
-	return {
-		type: OBJ_ADD,
-		payload: { class_name: class_name }
-	};
-}
-
-function obj_add_row(class_name, ref, tabular) {
-	return {
-		type: OBJ_ADD_ROW,
-		payload: {
-			class_name: class_name,
-			ref: ref,
-			tabular: tabular
-		}
-	};
-}
-
-function obj_edit(class_name, ref, frm) {
-	return {
-		type: OBJ_EDIT,
-		payload: {
-			class_name: class_name,
-			ref: ref,
-			frm: frm
-		}
-	};
-}
-
-var actions = (_actions = {}, _defineProperty(_actions, META_LOADED, meta_loaded), _defineProperty(_actions, POUCH_DATA_LOADED, _pouch_data_loaded), _defineProperty(_actions, POUCH_DATA_PAGE, _pouch_data_page), _defineProperty(_actions, POUCH_DATA_ERROR, _pouch_data_error), _defineProperty(_actions, POUCH_LOAD_START, _pouch_load_start), _defineProperty(_actions, POUCH_NO_DATA, _pouch_no_data), _defineProperty(_actions, USER_TRY_LOG_IN, user_try_log_in), _defineProperty(_actions, USER_LOG_IN, _user_log_in), _defineProperty(_actions, USER_DEFINED, user_defined), _defineProperty(_actions, USER_LOG_OUT, _user_log_out), _actions);
+var actions = (_actions = {}, _defineProperty(_actions, META_LOADED, meta_loaded), _defineProperty(_actions, USER_TRY_LOG_IN, user_try_log_in), _defineProperty(_actions, USER_LOG_IN, _user_log_in), _defineProperty(_actions, USER_DEFINED, user_defined), _defineProperty(_actions, USER_LOG_OUT, _user_log_out), _defineProperty(_actions, POUCH_DATA_LOADED, _pouch_data_loaded), _defineProperty(_actions, POUCH_DATA_PAGE, _pouch_data_page), _defineProperty(_actions, POUCH_DATA_ERROR, _pouch_data_error), _defineProperty(_actions, POUCH_LOAD_START, _pouch_load_start), _defineProperty(_actions, POUCH_NO_DATA, _pouch_no_data), _defineProperty(_actions, OBJ_ADD, obj_add), _defineProperty(_actions, OBJ_ADD_ROW, obj_add_row), _defineProperty(_actions, OBJ_DEL_ROW, obj_del_row), _defineProperty(_actions, OBJ_EDIT, obj_edit), _defineProperty(_actions, OBJ_REVERT, obj_revert), _defineProperty(_actions, OBJ_SAVE, obj_save), _defineProperty(_actions, OBJ_CHANGE, obj_change), _defineProperty(_actions, OBJ_VALUE_CHANGE, obj_value_change), _actions);
 
 /**
  * Action Handlers - обработчики событий - вызываются из корневого редюсера
  */
-var ACTION_HANDLERS = exports.ACTION_HANDLERS = (_ACTION_HANDLERS = {}, _defineProperty(_ACTION_HANDLERS, META_LOADED, function (state, action) {
+var ACTION_HANDLERS_OBJ = (_ACTION_HANDLERS_OBJ = {}, _defineProperty(_ACTION_HANDLERS_OBJ, OBJ_ADD, function (state, action) {
+	return state;
+}), _defineProperty(_ACTION_HANDLERS_OBJ, OBJ_CHANGE, function (state, action) {
+	return Object.assign({}, state, { obj_change: action.payload });
+}), _ACTION_HANDLERS_OBJ);
+
+/**
+ * Action Handlers - обработчики событий - вызываются из корневого редюсера
+ */
+var ACTION_HANDLERS = (_ACTION_HANDLERS = {}, _defineProperty(_ACTION_HANDLERS, META_LOADED, function (state, action) {
 	return Object.assign({}, state, { meta_loaded: true });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_LOADED, function (state, action) {
 	return Object.assign({}, state, { data_loaded: true, fetch_local: false });
@@ -295,6 +411,8 @@ function rx_reducer() {
 
 	var handler = ACTION_HANDLERS[action.type];
 
+	if (!handler) handler = ACTION_HANDLERS_OBJ[action.type];
+
 	if (handler) {
 		console.log(action);
 		return handler(state, action);
@@ -346,6 +464,12 @@ function rx_events(store) {
 
 		pouch_sync_error: function pouch_sync_error(dbid, err) {
 			store.dispatch(_pouch_sync_error(dbid, err));
+		}
+	});
+
+	this.md.on({
+		obj_loaded: function obj_loaded(_obj) {
+			store.dispatch(obj_change(_obj._manager.class_name, _obj.ref));
 		}
 	});
 }
