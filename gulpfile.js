@@ -251,6 +251,18 @@ gulp.task('css-metadata', function () {
 		.pipe(gulp.dest('./dist'));
 });
 
+// metadata css
+gulp.task('css-icon1c', function () {
+	return gulp.src([
+		'./src/css/icon1c.css'
+		//'./src/css/options.css'
+	])
+		.pipe(base64())
+		.pipe(concat('icon1c.min.css'))
+		//.pipe(csso())
+		.pipe(gulp.dest('./src/css'));
+});
+
 // Сборка сервера для Node.js
 gulp.task('build-metadata-core', function(){
 	return gulp.src([

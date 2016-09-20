@@ -223,7 +223,7 @@ class AdapterPouch extends AbstracrAdapter{
 				value: function () {
 
 					var options = {
-							limit : 200,
+							limit : 800,
 							include_docs: true
 						},
 						_page = {
