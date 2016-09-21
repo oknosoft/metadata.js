@@ -137,13 +137,36 @@ class AdapterPouch extends AbstracrAdapter{
 
 					return this.remote.ram.login(username, password)
 						.then(() => _remote.doc.login(username, password))
-						.then(function (req) {
+						.then(req => {
+
 							_auth = {username: username};
-							setTimeout(() => { t.emit('user_log_in', username) });
+							setTimeout(() => {
+
+								// сохраняем имя пользователя в базе
+								if($p.wsql.get_user_param("user_name") != username)
+									$p.wsql.set_user_param("user_name", username);
+
+								// если настроено сохранение пароля - сохраняем и его
+								if($p.wsql.get_user_param("enable_save_pwd")){
+									if($p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")) != password)
+										$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password));   // сохраняем имя пользователя в базе
+
+								}else if($p.wsql.get_user_param("user_pwd") != ""){
+									$p.wsql.set_user_param("user_pwd", "");
+								}
+
+								// излучаем событие
+								t.emit('user_log_in', username)
+							});
+
 							return {
 								ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),
 								doc: t.run_sync(t.local.doc, t.remote.doc, "doc")
 							}
+						})
+						.catch(err => {
+							// излучаем событие
+							t.emit('user_log_fault', err)
 						})
 				}
 			},

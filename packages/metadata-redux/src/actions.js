@@ -14,6 +14,9 @@
 
 const META_LOADED       = 'META_LOADED'         // Инициализирует параметры и создаёт менеджеры объектов данных
 
+const PRM_CHANGE        = 'PRM_CHANGE'          // Изменены глобальные параметры (couch_path, zone и т.д.)
+
+
 const USER_TRY_LOG_IN   = 'USER_TRY_LOG_IN'     // Попытка авторизации
 const USER_LOG_IN       = 'USER_LOG_IN'         // Подтверждает авторизацию
 const USER_DEFINED      = 'USER_DEFINED'        // Установить текущего пользователя (авторизация не обязательна)
@@ -135,12 +138,26 @@ function pouch_no_data(dbid, err) {
 }
 
 function user_defined(name) {
+
 	return {
 		type: USER_DEFINED,
 		payload: name
 	}
 }
 
+function prm_change(prms) {
+
+	return {
+		type: PRM_CHANGE,
+		payload: prms
+	}
+}
+
+/**
+ * ### Пользователь авторизован
+ * @param name
+ * @return {{type: string, payload: *}}
+ */
 function user_log_in(name) {
 	return {
 		type: USER_LOG_IN,
@@ -191,6 +208,7 @@ function user_log_out() {
 const actions = {
 
 	[META_LOADED]: meta_loaded,
+	[PRM_CHANGE]: prm_change,
 
 	[USER_TRY_LOG_IN]: user_try_log_in,
 	[USER_LOG_IN]: user_log_in,
@@ -211,6 +229,11 @@ const actions = {
 	[OBJ_SAVE]: obj_save,
 	[OBJ_CHANGE]: obj_change,
 	[OBJ_VALUE_CHANGE]: obj_value_change,
+	obj_post: obj_post,
+	obj_unpost: obj_unpost,
+	obj_mark_deleted: obj_mark_deleted,
+	obj_unmark_deleted: obj_unmark_deleted
+
 }
 
 

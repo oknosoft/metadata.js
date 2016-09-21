@@ -6,6 +6,8 @@ const ACTION_HANDLERS = {
 
 	[META_LOADED]:          (state, action) => Object.assign({}, state, {meta_loaded: true}),
 
+	[PRM_CHANGE]:          (state, action) => state,
+
 	[POUCH_DATA_LOADED]:    (state, action) => Object.assign({}, state, {data_loaded: true, fetch_local: false}),
 
 	[POUCH_DATA_PAGE]:      (state, action) => Object.assign({}, state, {page: action.payload}),

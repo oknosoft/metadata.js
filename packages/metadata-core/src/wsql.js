@@ -93,9 +93,9 @@ class WSQL {
 							v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1,
 							t: $p.job_prm.zone_is_string ? "string" : "number"
 						},
-						{p: "enable_save_pwd", v: $p.job_prm.enable_save_pwd, t: "boolean"},
-						{p: "autologin", v: "", t: "boolean"},
-						{p: "rest_path", v: "", t: "string"}
+						{p: "enable_save_pwd", v: true, t: "boolean"},
+						{p: "rest_path", v: "", t: "string"},
+						{p: "couch_path", v: "", t: "string"}
 					], zone;
 
 					// подмешиваем к базовым параметрам настройки приложения
@@ -105,16 +105,13 @@ class WSQL {
 					// если зона не указана, устанавливаем "1"
 					if (!this._ls.getItem($p.job_prm.local_storage_prefix + "zone"))
 						zone = $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1;
-					// если зона указана в url, используем её
-					if ($p.job_prm.url_prm.hasOwnProperty("zone"))
-						zone = $p.job_prm.zone_is_string ? $p.job_prm.url_prm.zone : utils.fix_number($p.job_prm.url_prm.zone, true);
+
 					if (zone !== undefined)
 						this.set_user_param("zone", zone);
 
 					// дополняем хранилище недостающими параметрами
 					nesessery_params.forEach((o) => {
-						if (this.get_user_param(o.p, o.t) == undefined ||
-							(!this.get_user_param(o.p, o.t) && (o.p.indexOf("url") != -1)))
+						if (!this.prm_is_set(o.p))
 							this.set_user_param(o.p, $p.job_prm.hasOwnProperty(o.p) ? $p.job_prm[o.p] : o.v);
 					});
 
@@ -176,6 +173,15 @@ class WSQL {
 						user_params[prm_name] = this.fetch_type(this._ls.getItem($p.job_prm.local_storage_prefix+prm_name), type);
 
 					return user_params[prm_name];
+				}
+			},
+
+			/**
+			 * ### Проверяет, установлено ли свойство в
+			 */
+			prm_is_set: {
+				value: function (prm_name) {
+					return user_params.hasOwnProperty(prm_name) || (this._ls && this._ls.hasOwnProperty($p.job_prm.local_storage_prefix+prm_name))
 				}
 			},
 

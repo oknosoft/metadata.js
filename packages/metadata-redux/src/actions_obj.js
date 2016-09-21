@@ -115,6 +115,22 @@ function obj_save(class_name, ref, post, mark_deleted) {
 	}
 }
 
+function obj_post(class_name, ref) {
+	return obj_save(class_name, ref, true)
+}
+
+function obj_unpost(class_name, ref) {
+	return obj_save(class_name, ref, false)
+}
+
+function obj_mark_deleted(class_name, ref) {
+	return obj_save(class_name, ref, undefined, true)
+}
+
+function obj_unmark_deleted(class_name, ref) {
+	return obj_save(class_name, ref, undefined, false)
+}
+
 function obj_change(class_name, ref) {
 	return {
 		type: OBJ_CHANGE,

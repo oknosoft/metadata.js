@@ -126,6 +126,22 @@ function obj_save(class_name, ref, post, mark_deleted) {
 	};
 }
 
+function obj_post(class_name, ref) {
+	return obj_save(class_name, ref, true);
+}
+
+function obj_unpost(class_name, ref) {
+	return obj_save(class_name, ref, false);
+}
+
+function obj_mark_deleted(class_name, ref) {
+	return obj_save(class_name, ref, undefined, true);
+}
+
+function obj_unmark_deleted(class_name, ref) {
+	return obj_save(class_name, ref, undefined, false);
+}
+
 function obj_change(class_name, ref) {
 	return {
 		type: OBJ_CHANGE,
@@ -167,6 +183,9 @@ function obj_value_change(class_name, ref) {
 // ------------------------------------
 
 var META_LOADED = 'META_LOADED'; // Инициализирует параметры и создаёт менеджеры объектов данных
+
+var PRM_CHANGE = 'PRM_CHANGE'; // Изменены глобальные параметры (couch_path, zone и т.д.)
+
 
 var USER_TRY_LOG_IN = 'USER_TRY_LOG_IN'; // Попытка авторизации
 var USER_LOG_IN = 'USER_LOG_IN'; // Подтверждает авторизацию
@@ -285,12 +304,26 @@ function _pouch_no_data(dbid, err) {
 }
 
 function user_defined(name) {
+
 	return {
 		type: USER_DEFINED,
 		payload: name
 	};
 }
 
+function prm_change(prms) {
+
+	return {
+		type: PRM_CHANGE,
+		payload: prms
+	};
+}
+
+/**
+ * ### Пользователь авторизован
+ * @param name
+ * @return {{type: string, payload: *}}
+ */
 function _user_log_in(name) {
 	return {
 		type: USER_LOG_IN,
@@ -334,7 +367,7 @@ function _user_log_out() {
 	};
 }
 
-var actions = (_actions = {}, _defineProperty(_actions, META_LOADED, meta_loaded), _defineProperty(_actions, USER_TRY_LOG_IN, user_try_log_in), _defineProperty(_actions, USER_LOG_IN, _user_log_in), _defineProperty(_actions, USER_DEFINED, user_defined), _defineProperty(_actions, USER_LOG_OUT, _user_log_out), _defineProperty(_actions, POUCH_DATA_LOADED, _pouch_data_loaded), _defineProperty(_actions, POUCH_DATA_PAGE, _pouch_data_page), _defineProperty(_actions, POUCH_DATA_ERROR, _pouch_data_error), _defineProperty(_actions, POUCH_LOAD_START, _pouch_load_start), _defineProperty(_actions, POUCH_NO_DATA, _pouch_no_data), _defineProperty(_actions, OBJ_ADD, obj_add), _defineProperty(_actions, OBJ_ADD_ROW, obj_add_row), _defineProperty(_actions, OBJ_DEL_ROW, obj_del_row), _defineProperty(_actions, OBJ_EDIT, obj_edit), _defineProperty(_actions, OBJ_REVERT, obj_revert), _defineProperty(_actions, OBJ_SAVE, obj_save), _defineProperty(_actions, OBJ_CHANGE, obj_change), _defineProperty(_actions, OBJ_VALUE_CHANGE, obj_value_change), _actions);
+var actions = (_actions = {}, _defineProperty(_actions, META_LOADED, meta_loaded), _defineProperty(_actions, PRM_CHANGE, prm_change), _defineProperty(_actions, USER_TRY_LOG_IN, user_try_log_in), _defineProperty(_actions, USER_LOG_IN, _user_log_in), _defineProperty(_actions, USER_DEFINED, user_defined), _defineProperty(_actions, USER_LOG_OUT, _user_log_out), _defineProperty(_actions, POUCH_DATA_LOADED, _pouch_data_loaded), _defineProperty(_actions, POUCH_DATA_PAGE, _pouch_data_page), _defineProperty(_actions, POUCH_DATA_ERROR, _pouch_data_error), _defineProperty(_actions, POUCH_LOAD_START, _pouch_load_start), _defineProperty(_actions, POUCH_NO_DATA, _pouch_no_data), _defineProperty(_actions, OBJ_ADD, obj_add), _defineProperty(_actions, OBJ_ADD_ROW, obj_add_row), _defineProperty(_actions, OBJ_DEL_ROW, obj_del_row), _defineProperty(_actions, OBJ_EDIT, obj_edit), _defineProperty(_actions, OBJ_REVERT, obj_revert), _defineProperty(_actions, OBJ_SAVE, obj_save), _defineProperty(_actions, OBJ_CHANGE, obj_change), _defineProperty(_actions, OBJ_VALUE_CHANGE, obj_value_change), _defineProperty(_actions, 'obj_post', obj_post), _defineProperty(_actions, 'obj_unpost', obj_unpost), _defineProperty(_actions, 'obj_mark_deleted', obj_mark_deleted), _defineProperty(_actions, 'obj_unmark_deleted', obj_unmark_deleted), _actions);
 
 /**
  * Action Handlers - обработчики событий - вызываются из корневого редюсера
@@ -350,6 +383,8 @@ var ACTION_HANDLERS_OBJ = (_ACTION_HANDLERS_OBJ = {}, _defineProperty(_ACTION_HA
  */
 var ACTION_HANDLERS = (_ACTION_HANDLERS = {}, _defineProperty(_ACTION_HANDLERS, META_LOADED, function (state, action) {
 	return Object.assign({}, state, { meta_loaded: true });
+}), _defineProperty(_ACTION_HANDLERS, PRM_CHANGE, function (state, action) {
+	return state;
 }), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_LOADED, function (state, action) {
 	return Object.assign({}, state, { data_loaded: true, fetch_local: false });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_PAGE, function (state, action) {
