@@ -21,6 +21,7 @@ const USER_TRY_LOG_IN   = 'USER_TRY_LOG_IN'     // Попытка авториз
 const USER_LOG_IN       = 'USER_LOG_IN'         // Подтверждает авторизацию
 const USER_DEFINED      = 'USER_DEFINED'        // Установить текущего пользователя (авторизация не обязательна)
 const USER_LOG_OUT      = 'USER_LOG_OUT'        // Попытка завершения синхронизации
+const USER_LOG_ERROR    = 'USER_LOG_ERROR'      // Ошибка авторизации
 
 const POUCH_DATA_PAGE   = 'POUCH_DATA_PAGE'     // Оповещение о загрузке порции локальных данных
 const POUCH_LOAD_START  = 'POUCH_LOAD_START'    // Оповещение о начале загрузки локальных данных
@@ -39,16 +40,75 @@ const POUCH_SYNC_DATA   = 'POUCH_SYNC_DATA'     // Прибежали измен
 // Actions - функции - генераторы действий. Они передаются в диспетчер redux
 // ------------------------------------
 
-function meta_loaded() {
+function meta_loaded($p) {
 
-	return { type: META_LOADED }
+	return {
+		type: META_LOADED,
+		payload: $p
+	}
 }
 
-function pouch_data_loaded(page) {
+function prm_change(prms) {
+
 	return {
-		type: POUCH_DATA_LOADED,
-		payload: page
+		type: PRM_CHANGE,
+		payload: prms
 	}
+}
+
+/**
+ * ### После загрузки локальных данных
+ * если разрешено сохранение пароля или демо-режим, выполняем попытку авторизации
+ * @param page
+ * @return {{type: string, payload: *}}
+ */
+function pouch_data_loaded(page) {
+
+	return function (dispatch, getState) {
+
+		// First dispatch: the app state is updated to inform
+		// that the API call is starting.
+
+		dispatch({
+			type: POUCH_DATA_LOADED,
+			payload: page
+		});
+
+		// если вход еще не выполнен...
+		let state = getState();
+		if(!state.meta.user.logged_in){
+
+			setTimeout(function () {
+
+				// получаем имя сохраненного или гостевого пользователя
+				let name = state.meta.$p.wsql.get_user_param('user_name');
+				let password = state.meta.$p.wsql.get_user_param('user_pwd');
+
+				if(!name &&
+					state.meta.$p.job_prm.zone_demo == state.meta.$p.wsql.get_user_param('zone') &&
+					state.meta.$p.job_prm.guests.length){
+					name = state.meta.$p.job_prm.guests[0].name
+				}
+
+				// устанавливаем текущего пользователя
+				if(name)
+					dispatch(user_defined(name));
+
+				// если разрешено сохранение пароля или гостевая зона...
+				if(name && password && state.meta.$p.wsql.get_user_param('enable_save_pwd')){
+					dispatch(user_try_log_in(state.meta.$p.adapters.pouch, name, $p.aes.Ctr.decrypt(password)));
+					return;
+				}
+
+				if(name && state.meta.$p.job_prm.zone_demo == state.meta.$p.wsql.get_user_param('zone')){
+					dispatch(user_try_log_in(state.meta.$p.adapters.pouch, name,
+						$p.aes.Ctr.decrypt(state.meta.$p.job_prm.guests[0].password)));
+				}
+
+			}, 10)
+		}
+	}
+
 }
 
 var sync_data_indicator;
@@ -145,14 +205,6 @@ function user_defined(name) {
 	}
 }
 
-function prm_change(prms) {
-
-	return {
-		type: PRM_CHANGE,
-		payload: prms
-	}
-}
-
 /**
  * ### Пользователь авторизован
  * @param name
@@ -195,13 +247,18 @@ function user_try_log_in(adapter, name, password) {
 	}
 }
 
-
-
 function user_log_out() {
 	return {
 		type: USER_LOG_OUT
 	}
 }
+
+function user_log_error() {
+	return {
+		type: USER_LOG_ERROR
+	}
+}
+
 
 
 
@@ -214,6 +271,7 @@ const actions = {
 	[USER_LOG_IN]: user_log_in,
 	[USER_DEFINED]: user_defined,
 	[USER_LOG_OUT]: user_log_out,
+	[USER_LOG_ERROR]: user_log_error,
 
 	[POUCH_DATA_LOADED]: pouch_data_loaded,
 	[POUCH_DATA_PAGE]: pouch_data_page,

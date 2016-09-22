@@ -4,7 +4,7 @@
  */
 const ACTION_HANDLERS = {
 
-	[META_LOADED]:          (state, action) => Object.assign({}, state, {meta_loaded: true}),
+	[META_LOADED]:          (state, action) => Object.assign({}, state, {$p: action.payload}),
 
 	[PRM_CHANGE]:          (state, action) => state,
 
@@ -43,12 +43,21 @@ const ACTION_HANDLERS = {
 			logged_in: false,
 		},
 		sync_started: false
+	}),
+
+	[USER_LOG_ERROR]:   (state, action) => Object.assign({}, state, {
+	user: {
+		name: state.user.name,
+		logged_in: false,
+	},
+	sync_started: false
 	})
 
 }
 
 /**
- * Reducer
+ * ### Reducer
+ * Он создаёт область в хранилище состояния и несёт ответственность за изменения этой области
  */
 const initialState = {
 	meta_loaded: false,

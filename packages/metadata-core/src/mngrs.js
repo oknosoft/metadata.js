@@ -1275,8 +1275,8 @@ function mngrs($p) {
 			var _meta = (attr && attr.metadata) || this.metadata(),
 				acols = [];
 
-			if(_meta.form && _meta.form.selection){
-				acols = _meta.form.selection.cols;
+			if(_meta.form && _meta.form[attr.form || 'selection']){
+				acols = _meta.form[attr.form || 'selection'].cols;
 
 			}else if(this instanceof DocManager){
 				acols.push(new Col_struct("date", "160", "ro", "left", "server", "Дата"));
@@ -2029,12 +2029,11 @@ function mngrs($p) {
 
 		caption_flds(attr){
 
-			var _meta = attr.metadata || this.metadata(),
-				str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
-				acols = [],	s = "";
+			var _meta = (attr && attr.metadata) || this.metadata(),
+				acols = [];
 
-			if(_meta.form && _meta.form.selection){
-				acols = _meta.form.selection.cols;
+			if(_meta.form && _meta.form[attr.form || 'selection']){
+				acols = _meta.form[attr.form || 'selection'].cols;
 
 			}else{
 
@@ -2043,16 +2042,7 @@ function mngrs($p) {
 				}
 			}
 
-			if(attr.get_header && acols.length){
-				s = "<head>";
-				for(var col in acols){
-					s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
-						.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
-				}
-				s += "</head>";
-			}
-
-			return {head: s, acols: acols};
+			return acols;
 		}
 
 		create(attr){
@@ -2243,24 +2233,19 @@ function mngrs($p) {
 
 		caption_flds(attr) {
 
-			var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
-				acols = [], s = "";
+			var _meta = (attr && attr.metadata) || this.metadata(),
+				acols = [];
 
+			if(_meta.form && _meta.form[attr.form || 'selection']) {
+				acols = _meta.form[attr.form || 'selection'].cols;
 
-			acols.push(new Col_struct("date", "200", "ro", "left", "server", "Дата"));
-			acols.push(new Col_struct("class", "100", "ro", "left", "server", "Класс"));
-			acols.push(new Col_struct("note", "*", "ro", "left", "server", "Событие"));
-
-			if(attr.get_header){
-				s = "<head>";
-				for(var col in acols){
-					s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
-						.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
-				}
-				s += "</head>";
+			}else{
+				acols.push(new Col_struct("date", "200", "ro", "left", "server", "Дата"));
+				acols.push(new Col_struct("class", "100", "ro", "left", "server", "Класс"));
+				acols.push(new Col_struct("note", "*", "ro", "left", "server", "Событие"));
 			}
 
-			return {head: s, acols: acols};
+			return acols;
 		}
 
 		data_to_grid(data, attr) {

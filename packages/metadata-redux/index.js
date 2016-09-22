@@ -191,6 +191,7 @@ var USER_TRY_LOG_IN = 'USER_TRY_LOG_IN'; // Попытка авторизаци�
 var USER_LOG_IN = 'USER_LOG_IN'; // Подтверждает авторизацию
 var USER_DEFINED = 'USER_DEFINED'; // Установить текущего пользователя (авторизация не обязательна)
 var USER_LOG_OUT = 'USER_LOG_OUT'; // Попытка завершения синхронизации
+var USER_LOG_ERROR = 'USER_LOG_ERROR'; // Ошибка авторизации
 
 var POUCH_DATA_PAGE = 'POUCH_DATA_PAGE'; // Оповещение о загрузке порции локальных данных
 var POUCH_LOAD_START = 'POUCH_LOAD_START'; // Оповещение о начале загрузки локальных данных
@@ -207,15 +208,68 @@ var POUCH_SYNC_DATA = 'POUCH_SYNC_DATA'; // Прибежали изменени�
 // Actions - функции - генераторы действий. Они передаются в диспетчер redux
 // ------------------------------------
 
-function meta_loaded() {
+function meta_loaded($p) {
 
-	return { type: META_LOADED };
+	return {
+		type: META_LOADED,
+		payload: $p
+	};
 }
 
-function _pouch_data_loaded(page) {
+function prm_change(prms) {
+
 	return {
-		type: POUCH_DATA_LOADED,
-		payload: page
+		type: PRM_CHANGE,
+		payload: prms
+	};
+}
+
+/**
+ * ### После загрузки локальных данных
+ * если разрешено сохранение пароля или демо-режим, выполняем попытку авторизации
+ * @param page
+ * @return {{type: string, payload: *}}
+ */
+function _pouch_data_loaded(page) {
+
+	return function (dispatch, getState) {
+
+		// First dispatch: the app state is updated to inform
+		// that the API call is starting.
+
+		dispatch({
+			type: POUCH_DATA_LOADED,
+			payload: page
+		});
+
+		// если вход еще не выполнен...
+		var state = getState();
+		if (!state.meta.user.logged_in) {
+
+			setTimeout(function () {
+
+				// получаем имя сохраненного или гостевого пользователя
+				var name = state.meta.$p.wsql.get_user_param('user_name');
+				var password = state.meta.$p.wsql.get_user_param('user_pwd');
+
+				if (!name && state.meta.$p.job_prm.zone_demo == state.meta.$p.wsql.get_user_param('zone') && state.meta.$p.job_prm.guests.length) {
+					name = state.meta.$p.job_prm.guests[0].name;
+				}
+
+				// устанавливаем текущего пользователя
+				if (name) dispatch(user_defined(name));
+
+				// если разрешено сохранение пароля или гостевая зона...
+				if (name && password && state.meta.$p.wsql.get_user_param('enable_save_pwd')) {
+					dispatch(user_try_log_in(state.meta.$p.adapters.pouch, name, $p.aes.Ctr.decrypt(password)));
+					return;
+				}
+
+				if (name && state.meta.$p.job_prm.zone_demo == state.meta.$p.wsql.get_user_param('zone')) {
+					dispatch(user_try_log_in(state.meta.$p.adapters.pouch, name, $p.aes.Ctr.decrypt(state.meta.$p.job_prm.guests[0].password)));
+				}
+			}, 10);
+		}
 	};
 }
 
@@ -311,14 +365,6 @@ function user_defined(name) {
 	};
 }
 
-function prm_change(prms) {
-
-	return {
-		type: PRM_CHANGE,
-		payload: prms
-	};
-}
-
 /**
  * ### Пользователь авторизован
  * @param name
@@ -367,7 +413,13 @@ function _user_log_out() {
 	};
 }
 
-var actions = (_actions = {}, _defineProperty(_actions, META_LOADED, meta_loaded), _defineProperty(_actions, PRM_CHANGE, prm_change), _defineProperty(_actions, USER_TRY_LOG_IN, user_try_log_in), _defineProperty(_actions, USER_LOG_IN, _user_log_in), _defineProperty(_actions, USER_DEFINED, user_defined), _defineProperty(_actions, USER_LOG_OUT, _user_log_out), _defineProperty(_actions, POUCH_DATA_LOADED, _pouch_data_loaded), _defineProperty(_actions, POUCH_DATA_PAGE, _pouch_data_page), _defineProperty(_actions, POUCH_DATA_ERROR, _pouch_data_error), _defineProperty(_actions, POUCH_LOAD_START, _pouch_load_start), _defineProperty(_actions, POUCH_NO_DATA, _pouch_no_data), _defineProperty(_actions, OBJ_ADD, obj_add), _defineProperty(_actions, OBJ_ADD_ROW, obj_add_row), _defineProperty(_actions, OBJ_DEL_ROW, obj_del_row), _defineProperty(_actions, OBJ_EDIT, obj_edit), _defineProperty(_actions, OBJ_REVERT, obj_revert), _defineProperty(_actions, OBJ_SAVE, obj_save), _defineProperty(_actions, OBJ_CHANGE, obj_change), _defineProperty(_actions, OBJ_VALUE_CHANGE, obj_value_change), _defineProperty(_actions, 'obj_post', obj_post), _defineProperty(_actions, 'obj_unpost', obj_unpost), _defineProperty(_actions, 'obj_mark_deleted', obj_mark_deleted), _defineProperty(_actions, 'obj_unmark_deleted', obj_unmark_deleted), _actions);
+function user_log_error() {
+	return {
+		type: USER_LOG_ERROR
+	};
+}
+
+var actions = (_actions = {}, _defineProperty(_actions, META_LOADED, meta_loaded), _defineProperty(_actions, PRM_CHANGE, prm_change), _defineProperty(_actions, USER_TRY_LOG_IN, user_try_log_in), _defineProperty(_actions, USER_LOG_IN, _user_log_in), _defineProperty(_actions, USER_DEFINED, user_defined), _defineProperty(_actions, USER_LOG_OUT, _user_log_out), _defineProperty(_actions, USER_LOG_ERROR, user_log_error), _defineProperty(_actions, POUCH_DATA_LOADED, _pouch_data_loaded), _defineProperty(_actions, POUCH_DATA_PAGE, _pouch_data_page), _defineProperty(_actions, POUCH_DATA_ERROR, _pouch_data_error), _defineProperty(_actions, POUCH_LOAD_START, _pouch_load_start), _defineProperty(_actions, POUCH_NO_DATA, _pouch_no_data), _defineProperty(_actions, OBJ_ADD, obj_add), _defineProperty(_actions, OBJ_ADD_ROW, obj_add_row), _defineProperty(_actions, OBJ_DEL_ROW, obj_del_row), _defineProperty(_actions, OBJ_EDIT, obj_edit), _defineProperty(_actions, OBJ_REVERT, obj_revert), _defineProperty(_actions, OBJ_SAVE, obj_save), _defineProperty(_actions, OBJ_CHANGE, obj_change), _defineProperty(_actions, OBJ_VALUE_CHANGE, obj_value_change), _defineProperty(_actions, 'obj_post', obj_post), _defineProperty(_actions, 'obj_unpost', obj_unpost), _defineProperty(_actions, 'obj_mark_deleted', obj_mark_deleted), _defineProperty(_actions, 'obj_unmark_deleted', obj_unmark_deleted), _actions);
 
 /**
  * Action Handlers - обработчики событий - вызываются из корневого редюсера
@@ -382,7 +434,7 @@ var ACTION_HANDLERS_OBJ = (_ACTION_HANDLERS_OBJ = {}, _defineProperty(_ACTION_HA
  * Action Handlers - обработчики событий - вызываются из корневого редюсера
  */
 var ACTION_HANDLERS = (_ACTION_HANDLERS = {}, _defineProperty(_ACTION_HANDLERS, META_LOADED, function (state, action) {
-	return Object.assign({}, state, { meta_loaded: true });
+	return Object.assign({}, state, { $p: action.payload });
 }), _defineProperty(_ACTION_HANDLERS, PRM_CHANGE, function (state, action) {
 	return state;
 }), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_LOADED, function (state, action) {
@@ -422,10 +474,19 @@ var ACTION_HANDLERS = (_ACTION_HANDLERS = {}, _defineProperty(_ACTION_HANDLERS, 
 		},
 		sync_started: false
 	});
+}), _defineProperty(_ACTION_HANDLERS, USER_LOG_ERROR, function (state, action) {
+	return Object.assign({}, state, {
+		user: {
+			name: state.user.name,
+			logged_in: false
+		},
+		sync_started: false
+	});
 }), _ACTION_HANDLERS);
 
 /**
- * Reducer
+ * ### Reducer
+ * Он создаёт область в хранилище состояния и несёт ответственность за изменения этой области
  */
 var initialState = {
 	meta_loaded: false,

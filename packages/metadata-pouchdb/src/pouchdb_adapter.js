@@ -122,18 +122,22 @@ class AdapterPouch extends AbstracrAdapter{
 				value: function (username, password) {
 
 					// реквизиты гостевого пользователя для демобаз
-					if(username == undefined && password == undefined){
-						username = $p.job_prm.guest_name;
-						password = $p.aes.Ctr.decrypt($p.job_prm.guest_pwd);
+					if (username == undefined && password == undefined){
+						if($p.job_prm.guests && $p.job_prm.guests.length) {
+							username = $p.job_prm.guests[0].username;
+							password = $p.aes.Ctr.decrypt($p.job_prm.guests[0].password);
+						}else{
+							return Promise.reject(new Error("username & password not defined"));
+						}
 					}
 
-					if(_auth){
-						if(_auth.username == username)
+					if (_auth) {
+						if (_auth.username == username){
 							return Promise.resolve();
-						else
+						} else {
 							return Promise.reject(new Error("need logout first"));
+						}
 					}
-
 
 					return this.remote.ram.login(username, password)
 						.then(() => _remote.doc.login(username, password))
