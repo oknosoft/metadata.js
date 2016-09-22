@@ -398,20 +398,13 @@ function mngrs($p) {
 		 * ### Возвращает массив доступных значений для комбобокса
 		 * @method get_option_list
 		 * @for DataManager
-		 * @param val {DataObj|String} - текущее значение
 		 * @param [selection] {Object} - отбор, который будет наложен на список
 		 * @param [selection._top] {Number} - ограничивает длину возвращаемого массива
 		 * @return {Promise.<Array>}
 		 */
-		get_option_list(val, selection){
+		get_option_list(selection){
 
 			var t = this, l = [], input_by_string, text, sel;
-
-			function check(v){
-				if(utils.is_equal(v.value, val))
-					v.selected = true;
-				return v;
-			}
 
 			// поиск по строке
 			if(selection.presentation && (input_by_string = t.metadata().input_by_string)){
@@ -427,7 +420,7 @@ function mngrs($p) {
 
 			if(t.cachable == "ram" || (selection && selection._local)) {
 				t.find_rows(selection, function (v) {
-					l.push(check({text: v.presentation, value: v.ref}));
+					l.push(v);
 				});
 				return Promise.resolve(l);
 
@@ -435,9 +428,7 @@ function mngrs($p) {
 				return t.adapter.find_rows(t, selection)
 					.then(function (data) {
 						data.forEach(function (v) {
-							l.push(check({
-								text: v.presentation,
-								value: v.ref}));
+							l.push(v);
 						});
 						return l;
 					});
@@ -1523,19 +1514,12 @@ function mngrs($p) {
 		/**
 		 * Возвращает массив доступных значений для комбобокса
 		 * @method get_option_list
-		 * @param val {DataObj|String}
 		 * @param [selection] {Object}
 		 * @param [selection._top] {Number}
 		 * @return {Promise.<Array>}
 		 */
-		get_option_list(val, selection){
+		get_option_list(selection){
 			var l = [], synonym = "", sref;
-
-			function check(v){
-				if(utils.is_equal(v.value, val))
-					v.selected = true;
-				return v;
-			}
 
 			if(selection){
 				for(var i in selection){
@@ -1571,7 +1555,7 @@ function mngrs($p) {
 							return;
 					}
 				}
-				l.push(check({text: v.synonym || "", value: v.ref}));
+				l.push(v);
 			});
 			return Promise.resolve(l);
 		}

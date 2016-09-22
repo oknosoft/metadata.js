@@ -134,6 +134,19 @@ export default class MetaEngine{
 		return classes}
 
 	/**
+	 * ### Текущий пользователь
+	 * Свойство определено после загрузки метаданных и входа впрограмму
+	 * @property current_user
+	 * @type CatUsers
+	 * @final
+	 */
+	get current_user() {
+		const user = this.cat && this.cat.users ?
+			this.cat.users.by_id($p.wsql.get_user_param("user_name")) : null
+		return user && !user.empty() ? user : null;
+	}
+
+	/**
 	 * ### Подключает расширения metadata
 	 * Принимает в качестве параметра объект с полями `proto` и `constructor` типа _function_
 	 * proto выполняется в момент подключения, constructor - после основного конструктора при создании объекта
