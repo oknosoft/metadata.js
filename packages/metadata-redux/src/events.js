@@ -2,9 +2,11 @@
 /**
  * Action Handlers - обработчики событий - вызываются из корневого редюсера
  */
-export const ACTION_HANDLERS = {
+const ACTION_HANDLERS = {
 
-	[META_LOADED]:          (state, action) => Object.assign({}, state, {meta_loaded: true}),
+	[META_LOADED]:          (state, action) => Object.assign({}, state, {$p: action.payload}),
+
+	[PRM_CHANGE]:          (state, action) => state,
 
 	[POUCH_DATA_LOADED]:    (state, action) => Object.assign({}, state, {data_loaded: true, fetch_local: false}),
 
@@ -41,12 +43,21 @@ export const ACTION_HANDLERS = {
 			logged_in: false,
 		},
 		sync_started: false
+	}),
+
+	[USER_LOG_ERROR]:   (state, action) => Object.assign({}, state, {
+	user: {
+		name: state.user.name,
+		logged_in: false,
+	},
+	sync_started: false
 	})
 
 }
 
 /**
- * Reducer
+ * ### Reducer
+ * Он создаёт область в хранилище состояния и несёт ответственность за изменения этой области
  */
 const initialState = {
 	meta_loaded: false,
@@ -62,7 +73,10 @@ const initialState = {
 }
 function rx_reducer (state = initialState, action) {
 
-	const handler = ACTION_HANDLERS[action.type]
+	let handler = ACTION_HANDLERS[action.type];
+
+	if(!handler)
+		handler = ACTION_HANDLERS_OBJ[action.type]
 
 	if(handler){
 		console.log(action)
@@ -98,7 +112,11 @@ function rx_events(store) {
 		pouch_sync_data: (dbid, change) => {store.dispatch(pouch_sync_data(dbid, change))},
 
 		pouch_sync_error: (dbid, err) => {store.dispatch(pouch_sync_error(dbid, err))}
-	})
+	});
+
+	this.md.on({
+		obj_loaded: (_obj) => {store.dispatch(obj_change(_obj._manager.class_name, _obj.ref))}
+	});
 
 }
 

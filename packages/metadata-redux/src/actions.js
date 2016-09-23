@@ -14,19 +14,14 @@
 
 const META_LOADED       = 'META_LOADED'         // Инициализирует параметры и создаёт менеджеры объектов данных
 
-const OBJ_ADD           = 'OBJ_ADD'             // Команда создать объекта
-const OBJ_ADD_ROW       = 'OBJ_ADD_ROW'         // Команда добавить строку в табчасть объекта
-const OBJ_DEL_ROW       = 'OBJ_DEL_ROW'         // Команда удалить строку табчасти объекта
-const OBJ_EDIT          = 'OBJ_EDIT'            // Команда открыть форму редактирования объекта
-const OBJ_DELETE        = 'OBJ_DELETE'          // Команда пометить объект на удаление
-const OBJ_REVERT        = 'OBJ_REVERT'          // Команда вернуть объект в состояние до редактирования (перечитать из базы данных)
-const OBJ_SAVE          = 'OBJ_SAVE'            // Команда записать изменённый объект
-const OBJ_CHANGED       = 'OBJ_CHANGED'         // Записан изменённый объект (по команде интерфейса или в результате репликации)
+const PRM_CHANGE        = 'PRM_CHANGE'          // Изменены глобальные параметры (couch_path, zone и т.д.)
+
 
 const USER_TRY_LOG_IN   = 'USER_TRY_LOG_IN'     // Попытка авторизации
 const USER_LOG_IN       = 'USER_LOG_IN'         // Подтверждает авторизацию
 const USER_DEFINED      = 'USER_DEFINED'        // Установить текущего пользователя (авторизация не обязательна)
 const USER_LOG_OUT      = 'USER_LOG_OUT'        // Попытка завершения синхронизации
+const USER_LOG_ERROR    = 'USER_LOG_ERROR'      // Ошибка авторизации
 
 const POUCH_DATA_PAGE   = 'POUCH_DATA_PAGE'     // Оповещение о загрузке порции локальных данных
 const POUCH_LOAD_START  = 'POUCH_LOAD_START'    // Оповещение о начале загрузки локальных данных
@@ -45,16 +40,75 @@ const POUCH_SYNC_DATA   = 'POUCH_SYNC_DATA'     // Прибежали измен
 // Actions - функции - генераторы действий. Они передаются в диспетчер redux
 // ------------------------------------
 
-function meta_loaded() {
+function meta_loaded($p) {
 
-	return { type: META_LOADED }
+	return {
+		type: META_LOADED,
+		payload: $p
+	}
 }
 
-function pouch_data_loaded(page) {
+function prm_change(prms) {
+
 	return {
-		type: POUCH_DATA_LOADED,
-		payload: page
+		type: PRM_CHANGE,
+		payload: prms
 	}
+}
+
+/**
+ * ### После загрузки локальных данных
+ * если разрешено сохранение пароля или демо-режим, выполняем попытку авторизации
+ * @param page
+ * @return {{type: string, payload: *}}
+ */
+function pouch_data_loaded(page) {
+
+	return function (dispatch, getState) {
+
+		// First dispatch: the app state is updated to inform
+		// that the API call is starting.
+
+		dispatch({
+			type: POUCH_DATA_LOADED,
+			payload: page
+		});
+
+		// если вход еще не выполнен...
+		let state = getState();
+		if(!state.meta.user.logged_in){
+
+			setTimeout(function () {
+
+				// получаем имя сохраненного или гостевого пользователя
+				let name = state.meta.$p.wsql.get_user_param('user_name');
+				let password = state.meta.$p.wsql.get_user_param('user_pwd');
+
+				if(!name &&
+					state.meta.$p.job_prm.zone_demo == state.meta.$p.wsql.get_user_param('zone') &&
+					state.meta.$p.job_prm.guests.length){
+					name = state.meta.$p.job_prm.guests[0].name
+				}
+
+				// устанавливаем текущего пользователя
+				if(name)
+					dispatch(user_defined(name));
+
+				// если разрешено сохранение пароля или гостевая зона...
+				if(name && password && state.meta.$p.wsql.get_user_param('enable_save_pwd')){
+					dispatch(user_try_log_in(state.meta.$p.adapters.pouch, name, $p.aes.Ctr.decrypt(password)));
+					return;
+				}
+
+				if(name && state.meta.$p.job_prm.zone_demo == state.meta.$p.wsql.get_user_param('zone')){
+					dispatch(user_try_log_in(state.meta.$p.adapters.pouch, name,
+						$p.aes.Ctr.decrypt(state.meta.$p.job_prm.guests[0].password)));
+				}
+
+			}, 10)
+		}
+	}
+
 }
 
 var sync_data_indicator;
@@ -65,7 +119,7 @@ function pouch_sync_data(dbid, change) {
 	// Он передает метод действия в качестве аргумента функции,
 	// т.о, это позволяет отправить действие самостоятельно.
 
-	return function (dispatch) {
+	return function (dispatch, getState) {
 
 		// First dispatch: the app state is updated to inform
 		// that the API call is starting.
@@ -144,12 +198,18 @@ function pouch_no_data(dbid, err) {
 }
 
 function user_defined(name) {
+
 	return {
 		type: USER_DEFINED,
 		payload: name
 	}
 }
 
+/**
+ * ### Пользователь авторизован
+ * @param name
+ * @return {{type: string, payload: *}}
+ */
 function user_log_in(name) {
 	return {
 		type: USER_LOG_IN,
@@ -163,7 +223,7 @@ function user_try_log_in(adapter, name, password) {
 	// Он передает метод действия в качестве аргумента функции,
 	// т.о, это позволяет отправить действие самостоятельно.
 
-	return function (dispatch) {
+	return function (dispatch, getState) {
 
 		// First dispatch: the app state is updated to inform
 		// that the API call is starting.
@@ -187,45 +247,31 @@ function user_try_log_in(adapter, name, password) {
 	}
 }
 
-
-
 function user_log_out() {
 	return {
 		type: USER_LOG_OUT
 	}
 }
 
-function obj_add(class_name) {
+function user_log_error() {
 	return {
-		type: OBJ_ADD,
-		payload: {class_name: class_name}
+		type: USER_LOG_ERROR
 	}
 }
 
-function obj_add_row(class_name, ref, tabular) {
-	return {
-		type: OBJ_ADD_ROW,
-		payload: {
-			class_name: class_name,
-			ref: ref,
-			tabular: tabular
-		}
-	}
-}
 
-function obj_edit(class_name, ref, frm) {
-	return {
-		type: OBJ_EDIT,
-		payload: {
-			class_name: class_name,
-			ref: ref,
-			frm: frm
-		}
-	}
-}
+
 
 const actions = {
+
 	[META_LOADED]: meta_loaded,
+	[PRM_CHANGE]: prm_change,
+
+	[USER_TRY_LOG_IN]: user_try_log_in,
+	[USER_LOG_IN]: user_log_in,
+	[USER_DEFINED]: user_defined,
+	[USER_LOG_OUT]: user_log_out,
+	[USER_LOG_ERROR]: user_log_error,
 
 	[POUCH_DATA_LOADED]: pouch_data_loaded,
 	[POUCH_DATA_PAGE]: pouch_data_page,
@@ -233,11 +279,19 @@ const actions = {
 	[POUCH_LOAD_START]: pouch_load_start,
 	[POUCH_NO_DATA]: pouch_no_data,
 
+	[OBJ_ADD]: obj_add,
+	[OBJ_ADD_ROW]: obj_add_row,
+	[OBJ_DEL_ROW]: obj_del_row,
+	[OBJ_EDIT]: obj_edit,
+	[OBJ_REVERT]: obj_revert,
+	[OBJ_SAVE]: obj_save,
+	[OBJ_CHANGE]: obj_change,
+	[OBJ_VALUE_CHANGE]: obj_value_change,
+	obj_post: obj_post,
+	obj_unpost: obj_unpost,
+	obj_mark_deleted: obj_mark_deleted,
+	obj_unmark_deleted: obj_unmark_deleted
 
-	[USER_TRY_LOG_IN]: user_try_log_in,
-	[USER_LOG_IN]: user_log_in,
-	[USER_DEFINED]: user_defined,
-	[USER_LOG_OUT]: user_log_out
 }
 
 

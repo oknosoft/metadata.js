@@ -122,34 +122,61 @@ class AdapterPouch extends AbstracrAdapter{
 				value: function (username, password) {
 
 					// реквизиты гостевого пользователя для демобаз
-					if(username == undefined && password == undefined){
-						username = $p.job_prm.guest_name;
-						password = $p.aes.Ctr.decrypt($p.job_prm.guest_pwd);
+					if (username == undefined && password == undefined){
+						if($p.job_prm.guests && $p.job_prm.guests.length) {
+							username = $p.job_prm.guests[0].username;
+							password = $p.aes.Ctr.decrypt($p.job_prm.guests[0].password);
+						}else{
+							return Promise.reject(new Error("username & password not defined"));
+						}
 					}
 
-					if(_auth){
-						if(_auth.username == username)
+					if (_auth) {
+						if (_auth.username == username){
 							return Promise.resolve();
-						else
+						} else {
 							return Promise.reject(new Error("need logout first"));
+						}
 					}
-
 
 					return this.remote.ram.login(username, password)
 						.then(() => _remote.doc.login(username, password))
-						.then(function (req) {
+						.then(req => {
+
 							_auth = {username: username};
-							setTimeout(() => { t.emit('user_log_in', username) });
+							setTimeout(() => {
+
+								// сохраняем имя пользователя в базе
+								if($p.wsql.get_user_param("user_name") != username)
+									$p.wsql.set_user_param("user_name", username);
+
+								// если настроено сохранение пароля - сохраняем и его
+								if($p.wsql.get_user_param("enable_save_pwd")){
+									if($p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")) != password)
+										$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password));   // сохраняем имя пользователя в базе
+
+								}else if($p.wsql.get_user_param("user_pwd") != ""){
+									$p.wsql.set_user_param("user_pwd", "");
+								}
+
+								// излучаем событие
+								t.emit('user_log_in', username)
+							});
+
 							return {
 								ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),
 								doc: t.run_sync(t.local.doc, t.remote.doc, "doc")
 							}
 						})
+						.catch(err => {
+							// излучаем событие
+							t.emit('user_log_fault', err)
+						})
 				}
 			},
 
 			/**
-			 * ### Останавливает синхронизации и снимает признак авторизованности
+			 * ### Останавливает синхронизацию и снимает признак авторизованности
 			 * @method log_out
 			 */
 			log_out: {
@@ -223,7 +250,7 @@ class AdapterPouch extends AbstracrAdapter{
 				value: function () {
 
 					var options = {
-							limit : 200,
+							limit : 800,
 							include_docs: true
 						},
 						_page = {

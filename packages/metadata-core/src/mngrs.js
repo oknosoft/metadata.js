@@ -36,6 +36,26 @@
 
 import {MetaEventEmitter} from 'metadata-abstract-adapter';
 
+/**
+ * Описание структуры колонки формы списка
+ * @class Col_struct
+ * @param id
+ * @param width
+ * @param type
+ * @param align
+ * @param sort
+ * @param caption
+ * @constructor
+ */
+function Col_struct(id,width,type,align,sort,caption){
+	this.id = id;
+	this.width = width;
+	this.type = type;
+	this.align = align;
+	this.sort = sort;
+	this.caption = caption;
+}
+
 // isNode
 // if(typeof process !== 'undefined' && process.versions && process.versions.node){
 // 	MetaEventEmitter = require('metadata-abstract-adapter/index.js').MetaEventEmitter;
@@ -199,7 +219,7 @@ function mngrs($p) {
 		 * @final
 		 */
 		get family_name(){
-			return msg["meta_"+this.class_name.split(".")[0]+"_mgr"].replace(msg.meta_mgr+" ", "");
+			return msg.meta_mgrs[this.class_name.split(".")[0]].replace(msg.meta_mgrs.mgr+" ", "");
 		}
 
 		/**
@@ -378,20 +398,13 @@ function mngrs($p) {
 		 * ### Возвращает массив доступных значений для комбобокса
 		 * @method get_option_list
 		 * @for DataManager
-		 * @param val {DataObj|String} - текущее значение
 		 * @param [selection] {Object} - отбор, который будет наложен на список
 		 * @param [selection._top] {Number} - ограничивает длину возвращаемого массива
 		 * @return {Promise.<Array>}
 		 */
-		get_option_list(val, selection){
+		get_option_list(selection){
 
 			var t = this, l = [], input_by_string, text, sel;
-
-			function check(v){
-				if(utils.is_equal(v.value, val))
-					v.selected = true;
-				return v;
-			}
 
 			// поиск по строке
 			if(selection.presentation && (input_by_string = t.metadata().input_by_string)){
@@ -407,7 +420,7 @@ function mngrs($p) {
 
 			if(t.cachable == "ram" || (selection && selection._local)) {
 				t.find_rows(selection, function (v) {
-					l.push(check({text: v.presentation, value: v.ref}));
+					l.push(v);
 				});
 				return Promise.resolve(l);
 
@@ -415,9 +428,7 @@ function mngrs($p) {
 				return t.adapter.find_rows(t, selection)
 					.then(function (data) {
 						data.forEach(function (v) {
-							l.push(check({
-								text: v.presentation,
-								value: v.ref}));
+							l.push(v);
 						});
 						return l;
 					});
@@ -541,6 +552,13 @@ function mngrs($p) {
 			return Promise.resolve(t._printing_plates);
 
 		}
+
+		/**
+		 * Широковещательное событие на объекте `md`
+		 * @param name
+		 * @param attr
+		 */
+		brodcast_event(name, attr){md.emit(name, attr)}
 
 		/**
 		 * Указатель на адаптер данных этого менеджера
@@ -1245,12 +1263,11 @@ function mngrs($p) {
 		 */
 		caption_flds(attr){
 
-			var _meta = attr.metadata || this.metadata(),
-				str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
-				acols = [],	s = "";
+			var _meta = (attr && attr.metadata) || this.metadata(),
+				acols = [];
 
-			if(_meta.form && _meta.form.selection){
-				acols = _meta.form.selection.cols;
+			if(_meta.form && _meta.form[attr.form || 'selection']){
+				acols = _meta.form[attr.form || 'selection'].cols;
 
 			}else if(this instanceof DocManager){
 				acols.push(new Col_struct("date", "160", "ro", "left", "server", "Дата"));
@@ -1263,9 +1280,13 @@ function mngrs($p) {
 					acols.push(new Col_struct("responsible", "*", "ro", "left", "server", _meta.fields.responsible.synonym));
 
 
-			}else if(this instanceof ChartOfAccountManager){
-				acols.push(new Col_struct("id", "140", "ro", "left", "server", "Код"));
-				acols.push(new Col_struct("presentation", "*", "ro", "left", "server", "Наименование"));
+			}else if(this instanceof CatManager){
+
+				if(_meta.code_length)
+					acols.push(new Col_struct("id", "140", "ro", "left", "server", "Код"));
+
+				if(_meta.main_presentation_name)
+					acols.push(new Col_struct("name", "*", "ro", "left", "server", "Наименование"));
 
 			}else{
 
@@ -1276,16 +1297,7 @@ function mngrs($p) {
 
 			}
 
-			if(attr.get_header && acols.length){
-				s = "<head>";
-				for(var col in acols){
-					s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
-						.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
-				}
-				s += "</head>";
-			}
-
-			return {head: s, acols: acols};
+			return acols;
 		}
 
 		/**
@@ -1502,19 +1514,12 @@ function mngrs($p) {
 		/**
 		 * Возвращает массив доступных значений для комбобокса
 		 * @method get_option_list
-		 * @param val {DataObj|String}
 		 * @param [selection] {Object}
 		 * @param [selection._top] {Number}
 		 * @return {Promise.<Array>}
 		 */
-		get_option_list(val, selection){
+		get_option_list(selection){
 			var l = [], synonym = "", sref;
-
-			function check(v){
-				if(utils.is_equal(v.value, val))
-					v.selected = true;
-				return v;
-			}
 
 			if(selection){
 				for(var i in selection){
@@ -1550,7 +1555,7 @@ function mngrs($p) {
 							return;
 					}
 				}
-				l.push(check({text: v.synonym || "", value: v.ref}));
+				l.push(v);
 			});
 			return Promise.resolve(l);
 		}
@@ -2008,12 +2013,11 @@ function mngrs($p) {
 
 		caption_flds(attr){
 
-			var _meta = attr.metadata || this.metadata(),
-				str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
-				acols = [],	s = "";
+			var _meta = (attr && attr.metadata) || this.metadata(),
+				acols = [];
 
-			if(_meta.form && _meta.form.selection){
-				acols = _meta.form.selection.cols;
+			if(_meta.form && _meta.form[attr.form || 'selection']){
+				acols = _meta.form[attr.form || 'selection'].cols;
 
 			}else{
 
@@ -2022,16 +2026,7 @@ function mngrs($p) {
 				}
 			}
 
-			if(attr.get_header && acols.length){
-				s = "<head>";
-				for(var col in acols){
-					s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
-						.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
-				}
-				s += "</head>";
-			}
-
-			return {head: s, acols: acols};
+			return acols;
 		}
 
 		create(attr){
@@ -2222,24 +2217,19 @@ function mngrs($p) {
 
 		caption_flds(attr) {
 
-			var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
-				acols = [], s = "";
+			var _meta = (attr && attr.metadata) || this.metadata(),
+				acols = [];
 
+			if(_meta.form && _meta.form[attr.form || 'selection']) {
+				acols = _meta.form[attr.form || 'selection'].cols;
 
-			acols.push(new Col_struct("date", "200", "ro", "left", "server", "Дата"));
-			acols.push(new Col_struct("class", "100", "ro", "left", "server", "Класс"));
-			acols.push(new Col_struct("note", "*", "ro", "left", "server", "Событие"));
-
-			if(attr.get_header){
-				s = "<head>";
-				for(var col in acols){
-					s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
-						.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
-				}
-				s += "</head>";
+			}else{
+				acols.push(new Col_struct("date", "200", "ro", "left", "server", "Дата"));
+				acols.push(new Col_struct("class", "100", "ro", "left", "server", "Класс"));
+				acols.push(new Col_struct("note", "*", "ro", "left", "server", "Событие"));
 			}
 
-			return {head: s, acols: acols};
+			return acols;
 		}
 
 		data_to_grid(data, attr) {
@@ -2392,7 +2382,7 @@ function mngrs($p) {
 	 * @param class_name {string}
 	 */
 	class ChartOfCharacteristicManager extends CatManager{
-
+		toString(){return msg.meta_mgrs.cch}
 	}
 
 	/**
@@ -2406,7 +2396,7 @@ function mngrs($p) {
 	 * @param class_name {string}
 	 */
 	class ChartOfAccountManager extends CatManager{
-
+		toString(){return msg.meta_mgrs.cacc}
 	}
 
 	/**
@@ -2420,7 +2410,7 @@ function mngrs($p) {
 	 * @param class_name {string}
 	 */
 	class DocManager extends RefDataManager{
-
+		toString(){return msg.meta_mgrs.doc}
 	}
 
 	/**
@@ -2434,7 +2424,7 @@ function mngrs($p) {
 	 * @param class_name {string}
 	 */
 	class TaskManager extends CatManager{
-
+		toString(){return msg.meta_mgrs.tsk}
 	}
 
 	/**
@@ -2448,7 +2438,7 @@ function mngrs($p) {
 	 * @param class_name {string}
 	 */
 	class BusinessProcessManager extends CatManager{
-
+		toString(){return msg.meta_mgrs.bp}
 	}
 
 	/**
@@ -2460,7 +2450,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class Enumerations{
-		toString(){return msg.meta_enn_mgr}
+		toString(){return msg.meta_classes.enm}
 	}
 
 	/**
@@ -2472,7 +2462,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class Catalogs{
-		toString(){return msg.meta_cat_mgr}
+		toString(){return msg.meta_classes.cat}
 	}
 
 	/**
@@ -2484,7 +2474,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class Documents{
-		toString(){return msg.meta_doc_mgr}
+		toString(){return msg.meta_classes.doc}
 	}
 
 	/**
@@ -2496,7 +2486,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class InfoRegs{
-		toString(){return msg.meta_ireg_mgr}
+		toString(){return msg.meta_classes.ireg}
 	}
 
 	/**
@@ -2508,7 +2498,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class AccumRegs{
-		toString(){return msg.meta_areg_mgr}
+		toString(){return msg.meta_classes.areg}
 	}
 
 	/**
@@ -2520,7 +2510,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class AccountsRegs{
-		toString(){return msg.meta_accreg_mgr}
+		toString(){return msg.meta_classes.accreg}
 	}
 
 	/**
@@ -2532,7 +2522,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class DataProcessors{
-		toString(){return msg.meta_dp_mgr}
+		toString(){return msg.meta_classes.dp}
 	}
 
 	/**
@@ -2544,7 +2534,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class Reports{
-		toString(){return msg.meta_reports_mgr}
+		toString(){return msg.meta_classes.rep}
 	}
 
 	/**
@@ -2556,7 +2546,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class ChartsOfAccounts{
-		toString(){return msg.meta_charts_of_accounts_mgr}
+		toString(){return msg.meta_classes.cacc}
 	}
 
 	/**
@@ -2568,7 +2558,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class ChartsOfCharacteristics{
-		toString(){return msg.meta_charts_of_characteristic_mgr}
+		toString(){return msg.meta_classes.cch}
 	}
 
 	/**
@@ -2580,7 +2570,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class Tasks{
-		toString(){return msg.meta_task_mgr}
+		toString(){return msg.meta_classes.tsk}
 	}
 
 	/**
@@ -2592,7 +2582,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class BusinessProcesses{
-		toString(){return msg.meta_bp_mgr}
+		toString(){return msg.meta_classes.bp}
 	}
 
 	Object.defineProperties($p, {

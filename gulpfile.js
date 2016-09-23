@@ -251,6 +251,18 @@ gulp.task('css-metadata', function () {
 		.pipe(gulp.dest('./dist'));
 });
 
+// metadata css
+gulp.task('css-icon1c', function () {
+	return gulp.src([
+		'./src/css/icon1c.css'
+		//'./src/css/options.css'
+	])
+		.pipe(base64())
+		.pipe(concat('icon1c.min.css'))
+		//.pipe(csso())
+		.pipe(gulp.dest('./src/css'));
+});
+
 // Сборка сервера для Node.js
 gulp.task('build-metadata-core', function(){
 	return gulp.src([
@@ -361,7 +373,9 @@ gulp.task('build--adapter-pouchdb', function(){
 gulp.task('build--redux', function(){
 
 	return gulp.src([
+		'./packages/metadata-redux/src/actions_obj.js',
 		'./packages/metadata-redux/src/actions.js',
+		'./packages/metadata-redux/src/events_obj.js',
 		'./packages/metadata-redux/src/events.js'
 	])
 

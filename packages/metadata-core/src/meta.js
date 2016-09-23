@@ -20,9 +20,11 @@
  * @tooltip Описание метаданных
  */
 
-class Meta{
+class Meta extends MetaEventEmitter{
 
 	constructor($p) {
+
+		super();
 
 		var _m;
 

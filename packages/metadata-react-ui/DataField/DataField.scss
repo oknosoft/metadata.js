@@ -1,0 +1,19 @@
+.table {
+  display: table;
+  padding: 16px;
+  width: 50%;
+  max-width: 600px;
+}
+
+.row {
+  display: table-row;
+}
+
+.celllabel {
+  display: table-cell;
+}
+
+.celldata {
+  display: table-cell;
+  width: 60%;
+}
