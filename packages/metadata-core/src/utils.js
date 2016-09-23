@@ -35,6 +35,9 @@ if(!Number.prototype.round)
  * Метод дополнения лидирующими нулями в прототип числа
  * @method pad
  * @for Number
+ *
+ * @example
+ *      (5).pad(6) // '000005'
  */
 if(!Number.prototype.pad)
 	Number.prototype.pad = function(size) {

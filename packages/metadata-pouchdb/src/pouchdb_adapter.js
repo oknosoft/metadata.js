@@ -80,14 +80,14 @@ class AdapterPouch extends AbstracrAdapter{
 						}
 					}
 					if(_paths.path && !_local._meta){
-						_local._meta = new PouchDB(_paths.path + "meta", {
-							auth: {
-								username: "guest",
-								password: "meta"
-							},
-							skip_setup: true
-						});
-						t.run_sync(_local.meta, _local._meta, "meta");
+						_local._meta = new PouchDB(_paths.path + "meta", { skip_setup: true });
+						if(_paths.user_meta){
+							_local._metalogin(_paths.user_meta.username, _paths.user_meta.password)
+								.then(function () {
+									t.run_sync(_local.meta, _local._meta, "meta");
+								})
+						}else
+							t.run_sync(_local.meta, _local._meta, "meta");
 					}
 					return _local;
 				}
