@@ -46,7 +46,7 @@ export default class TabsLogin extends React.Component {
     };
   }
 
-  handleChange = (value) => {
+  tabChange = (value) => {
     if(value === 'a' || value === 'b'){
       this.setState({
         value: value,
@@ -70,7 +70,7 @@ export default class TabsLogin extends React.Component {
 
           <Tabs
             value={this.state.value}
-            onChange={this.handleChange}
+            onChange={this.tabChange}
           >
             <Tab label="Вход" value="a" >
               <TextField
