@@ -568,8 +568,8 @@ function mngrs($p) {
 				case undefined:
 				case "ram":
 				case "doc":
-				case "doc_remote":
-				case "doc_user":
+				case "remote":
+				case "user":
 				case "meta":
 					return $p.adapters.pouch;
 			}

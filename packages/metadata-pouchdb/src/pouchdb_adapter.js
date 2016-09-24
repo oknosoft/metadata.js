@@ -12,8 +12,9 @@
 const PouchDB = require('pouchdb-core')
 		.plugin(require('pouchdb-adapter-http'))
 		.plugin(require('pouchdb-replication'))
+		.plugin(require('pouchdb-authentication'))
 		.plugin(require('pouchdb-mapreduce'))
-		.plugin(require('pouchdb-authentication')),
+		.plugin(require('pouchdb-find')),
 	pouchdb_memory = require('pouchdb-adapter-memory'),
 	pouchdb_idb = require('pouchdb-adapter-idb')
 
@@ -71,23 +72,20 @@ class AdapterPouch extends AbstracrAdapter{
 			local: {
 				get: function () {
 					if(!_local){
-						var opts = {auto_compaction: true, revs_limit: 2};
-						_local = {
-							ram: new PouchDB(_paths.prefix + _paths.zone + "_ram", opts),
-							doc: new PouchDB(_paths.prefix + _paths.zone + "_doc", opts),
-							meta: new PouchDB(_paths.prefix + "meta", opts),
-							sync: {}
-						}
-					}
-					if(_paths.path && !_local._meta){
-						_local._meta = new PouchDB(_paths.path + "meta", { skip_setup: true });
-						if(_paths.user_meta){
-							_local._metalogin(_paths.user_meta.username, _paths.user_meta.password)
-								.then(function () {
-									t.run_sync(_local.meta, _local._meta, "meta");
-								})
-						}else
-							t.run_sync(_local.meta, _local._meta, "meta");
+
+						var opts = {auto_compaction: true, revs_limit: 2},
+							bases = $p.md.bases();
+
+						_local = { sync: {} };
+
+						["ram", "doc", "meta", "user"].forEach((name) => {
+							if(bases.indexOf(name) != -1){
+								if(name == "meta")
+									_local[name] = new PouchDB(_paths.prefix + "meta", opts);
+								else
+									_local[name] = new PouchDB(_paths.prefix + _paths.zone + "_" + name, opts);
+							}
+						})
 					}
 					return _local;
 				}
@@ -102,10 +100,24 @@ class AdapterPouch extends AbstracrAdapter{
 			remote: {
 				get: function () {
 					if(!_remote){
-						_remote = {
-							ram: new PouchDB(_paths.path + _paths.zone + "_ram", { skip_setup: true }),
-							doc: new PouchDB(_paths.path + _paths.zone + "_doc" + _paths.suffix, { skip_setup: true })
-						}
+
+						var opts = {skip_setup: true};
+
+						if(_paths.user_meta){ opts.auth = _paths.user_meta }
+
+						_remote = { };
+
+						$p.md.bases().forEach((name) => {
+							if(name == "meta")
+								_remote[name] = new PouchDB(_paths.path + "meta", opts);
+
+							else if(name == "ram")
+								_remote[name] = new PouchDB(_paths.path + _paths.zone + "_ram", opts);
+
+							else
+								_remote[name] = new PouchDB(_paths.path + _paths.zone + "_" + name + _paths.suffix, opts);
+						})
+
 					}
 					return _remote;
 				}
@@ -163,10 +175,14 @@ class AdapterPouch extends AbstracrAdapter{
 								t.emit('user_log_in', username)
 							});
 
-							return {
-								ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),
-								doc: t.run_sync(t.local.doc, t.remote.doc, "doc")
-							}
+							let sync = {};
+							$p.md.bases().forEach((name) => {
+								if(t.local[name] && t.remote[name]){
+									sync[name] = t.run_sync(name)
+								}
+							})
+
+							return sync
 						})
 						.catch(err => {
 							// излучаем событие
@@ -346,9 +362,11 @@ class AdapterPouch extends AbstracrAdapter{
 			 * @return {Promise.<TResult>}
 			 */
 			run_sync: {
-				value: function (local, remote, id){
+				value: function (id){
 
-					var linfo, _page;
+					let local = t.local[id],
+						remote = t.remote[id],
+						linfo, _page;
 
 					return local.info()
 						.then(function (info) {
@@ -411,7 +429,7 @@ class AdapterPouch extends AbstracrAdapter{
 								});
 							}
 
-							// ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
+
 							var options = {
 								live: true,
 								retry: true,
@@ -420,13 +438,16 @@ class AdapterPouch extends AbstracrAdapter{
 							};
 
 							// если указан клиентский или серверный фильтр - подключаем
-							if(id == "meta"){
-								options.filter = "auth/meta";
-
-							}else if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id]){
+							if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id]){
 								options.filter = $p.job_prm.pouch_filter[id];
+
+							}else if(id == "meta"){
+
+								// если для базы meta фильтр не задан, используем умолчание
+								options.filter = "auth/meta";
 							}
 
+							// ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
 							if(id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo){
 								_local.sync[id] = local.replicate.from(remote, options);
 							}else{

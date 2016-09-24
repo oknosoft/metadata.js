@@ -23,7 +23,7 @@ const meta = {
   children: []
 }
 
-const classes = $p.md.get_classes();
+const classes = $p.md.classes();
 
 for(let key in struct){
   meta.children.push({

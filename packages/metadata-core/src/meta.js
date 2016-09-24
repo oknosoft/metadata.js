@@ -28,28 +28,6 @@ class Meta extends MetaEventEmitter{
 
 		var _m;
 
-		// загружает метаданные из pouchdb
-		// TODO: перенести этот метод в плагин - Meta не должна ничего знать про pouchdb
-		function meta_from_pouch(meta_db) {
-
-			return meta_db.info()
-				.then(function () {
-					return meta_db.get('meta');
-
-				})
-				.then(function (doc) {
-					_m = doc;
-					doc = null;
-					return meta_db.get('meta_patch');
-
-				}).then(function (doc) {
-					utils._patch(_m, doc);
-					doc = null;
-					delete _m._id;
-					delete _m._rev;
-				});
-		}
-
 		/**
 		 * ### Инициализирует метаданные
 		 * загружает описание метаданных из локального или сетевого хранилища или из объекта, переданного в параметре
@@ -62,22 +40,8 @@ class Meta extends MetaEventEmitter{
 
 			var confirm_count = 0;
 
-			function do_init(){
-
-				if(!meta_db || meta_db instanceof $p.classes.PouchDB){
-
-					return meta_from_pouch(meta_db || $p.adapters.pouch.local.meta)
-						.then(function () {
-							return _m;
-						});
-
-				}else{
-
-					_m = meta_db;
-					meta_db = null;
-
-				}
-			}
+			_m = meta_db;
+			meta_db = null;
 
 			function do_reload(){
 
@@ -120,7 +84,7 @@ class Meta extends MetaEventEmitter{
 			// 	}
 			// });
 
-			return do_init();
+			return _m;
 
 		};
 
@@ -189,9 +153,10 @@ class Meta extends MetaEventEmitter{
 		/**
 		 * ### Возвращает структуру имён объектов метаданных конфигурации
 		 *
-		 * @method get_classes
+		 * @method classes
+		 * @return {Object}
 		 */
-		this.get_classes = function () {
+		this.classes = function () {
 			var res = {};
 			for(var i in _m){
 				res[i] = [];
@@ -202,12 +167,29 @@ class Meta extends MetaEventEmitter{
 		};
 
 		/**
+		 * ### Возвращает массив используемых баз
+		 *
+		 * @method bases
+		 * @return {Array}
+		 */
+		this.bases = function () {
+			var res = {};
+			for(var i in _m){
+				for(var j in _m[i]){
+					if(_m[i][j].cachable &&  !res[_m[i][j].cachable])
+						res[_m[i][j].cachable] = _m[i][j].cachable;
+				}
+			}
+			return Object.keys(res);
+		};
+
+		/**
 		 * ### Создаёт строку SQL с командами создания таблиц для всех объектов метаданных
 		 * @method create_tables
 		 */
 		this.create_tables = function(callback, attr){
 
-			var cstep = 0, data_names = [], managers = this.get_classes(), class_name,
+			var cstep = 0, data_names = [], managers = this.classes(), class_name,
 				create = (attr && attr.postgres) ? "" : "USE md; ";
 
 			function on_table_created(){
