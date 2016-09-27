@@ -568,6 +568,7 @@ function mngrs($p) {
 				case undefined:
 				case "ram":
 				case "doc":
+				case "doc_remote":
 				case "remote":
 				case "user":
 				case "meta":

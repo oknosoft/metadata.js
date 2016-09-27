@@ -212,16 +212,18 @@ class AdapterPouch extends AbstracrAdapter{
 						_auth = null;
 					}
 
-					if(_remote && _remote.ram)
-						delete _remote.ram;
+					return this.remote.ram.logout()
+						.then(function () {
+							if(_remote && _remote.ram)
+								delete _remote.ram;
 
-					if(_remote && _remote.doc)
-						delete _remote.doc;
+							if(_remote && _remote.doc)
+								delete _remote.doc;
 
-					_remote = null;
+							_remote = null;
 
-					t.emit('user_log_out')
-
+							t.emit('user_log_out')
+						})
 				}
 			},
 
@@ -714,7 +716,7 @@ class AdapterPouch extends AbstracrAdapter{
 	 * @return {PouchDB}
 	 */
 	db(_mgr) {
-		if (_mgr.cachable.indexOf("_remote") != -1)
+		if (_mgr.cachable.indexOf("remote") != -1)
 			return this.remote[_mgr.cachable.replace("_remote", "")];
 		else
 			return this.local[_mgr.cachable] || this.remote[_mgr.cachable];
