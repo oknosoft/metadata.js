@@ -101,14 +101,17 @@ class AdapterPouch extends AbstracrAdapter{
 				get: function () {
 					if(!_remote){
 
-						var opts = {skip_setup: true};
+						var opts = {skip_setup: true, adapter: 'http'};
 
-						if(_paths.user_meta){ opts.auth = _paths.user_meta }
+						if(_paths.user_node){ opts.auth = _paths.user_node }
 
 						_remote = { };
 
 						$p.md.bases().forEach((name) => {
-							if(name == "meta")
+							if(name == 'e1cib' || name == 'pgsql')
+								return;
+
+							else if(name == "meta")
 								_remote[name] = new PouchDB(_paths.path + "meta", opts);
 
 							else if(name == "ram")
@@ -120,6 +123,23 @@ class AdapterPouch extends AbstracrAdapter{
 
 					}
 					return _remote;
+				}
+			},
+
+			/**
+			 * Возвращает базу PouchDB, связанную с объектами данного менеджера
+			 * @method db
+			 * @param _mgr {DataManager}
+			 * @return {PouchDB}
+			 */
+			db: {
+				value: function(_mgr) {
+					if (_mgr.cachable.indexOf("remote") != -1 || (
+							_paths.noreplicate && _paths.noreplicate.indexOf(name) != -1
+						))
+						return this.remote[_mgr.cachable.replace("_remote", "")];
+					else
+						return this.local[_mgr.cachable] || this.remote[_mgr.cachable];
 				}
 			},
 
@@ -151,8 +171,13 @@ class AdapterPouch extends AbstracrAdapter{
 						}
 					}
 
-					return this.remote.ram.login(username, password)
-						.then(() => _remote.doc.login(username, password))
+					return (_paths.user_node ? (
+						this.remote.ram.info()
+							.then(() => _remote.doc.info())
+					) : (
+						this.remote.ram.login(username, password)
+							.then(() => _remote.doc.login(username, password))
+					))
 						.then(req => {
 
 							_auth = {username: username};
@@ -178,6 +203,9 @@ class AdapterPouch extends AbstracrAdapter{
 							let sync = {};
 							$p.md.bases().forEach((name) => {
 								if(t.local[name] && t.remote[name]){
+									if(_paths.noreplicate && _paths.noreplicate.indexOf(name) != -1){
+										return;
+									}
 									sync[name] = t.run_sync(name)
 								}
 							})
@@ -418,7 +446,7 @@ class AdapterPouch extends AbstracrAdapter{
 									total_rows: rinfo.doc_count,
 									local_rows: linfo.doc_count,
 									docs_written: 0,
-									limit: 200,
+									limit: 300,
 									page: 0,
 									start: Date.now()
 								};
@@ -431,11 +459,10 @@ class AdapterPouch extends AbstracrAdapter{
 								});
 							}
 
-
 							var options = {
 								live: true,
 								retry: true,
-								batch_size: 200,
+								batch_size: 300,
 								batches_limit: 8
 							};
 
@@ -530,7 +557,8 @@ class AdapterPouch extends AbstracrAdapter{
 	 */
 	load_obj(tObj) {
 
-		return this.db(tObj._manager).get(tObj._manager.class_name + "|" + tObj.ref)
+		const db = this.db(tObj._manager);
+		return db.get(tObj._manager.class_name + "|" + tObj.ref)
 			.then((res) => {
 				delete res._id;
 				delete res._rev;
@@ -539,6 +567,8 @@ class AdapterPouch extends AbstracrAdapter{
 			.catch(function (err) {
 				if (err.status != 404)
 					throw err;
+				else
+					console.log({tObj, db})
 			})
 			.then(function (res) {
 				return tObj;
@@ -625,7 +655,6 @@ class AdapterPouch extends AbstracrAdapter{
 
 	}
 
-
 	/**
 	 * Загружает объекты из PouchDB по массиву ссылок
 	 *
@@ -654,7 +683,6 @@ class AdapterPouch extends AbstracrAdapter{
 				return pouch.load_changes(result, {});
 			})
 	}
-
 
 	/**
 	 * Загружает объекты из PouchDB, обрезанные по view
@@ -707,21 +735,6 @@ class AdapterPouch extends AbstracrAdapter{
 
 		});
 	}
-
-
-	/**
-	 * Возвращает базу PouchDB, связанную с объектами данного менеджера
-	 * @method db
-	 * @param _mgr {DataManager}
-	 * @return {PouchDB}
-	 */
-	db(_mgr) {
-		if (_mgr.cachable.indexOf("remote") != -1)
-			return this.remote[_mgr.cachable.replace("_remote", "")];
-		else
-			return this.local[_mgr.cachable] || this.remote[_mgr.cachable];
-	}
-
 
 	/**
 	 * ### Найти строки
@@ -961,7 +974,6 @@ class AdapterPouch extends AbstracrAdapter{
 
 	}
 
-
 	/**
 	 * ### Сохраняет присоединенный файл
 	 *
@@ -1003,7 +1015,6 @@ class AdapterPouch extends AbstracrAdapter{
 
 	}
 
-
 	/**
 	 * Получает присоединенный к объекту файл
 	 * @param ref
@@ -1015,7 +1026,6 @@ class AdapterPouch extends AbstracrAdapter{
 		return this.db(_mgr).getAttachment(_mgr.class_name + "|" + this.$p.utils.fix_guid(ref), att_id);
 
 	}
-
 
 	/**
 	 * Удаляет присоединенный к объекту файл
@@ -1044,7 +1054,6 @@ class AdapterPouch extends AbstracrAdapter{
 				return db.removeAttachment(ref, att_id, _rev);
 			});
 	}
-
 
 	/**
 	 * ### Загружает в менеджер изменения или полученные через allDocs данные
@@ -1112,7 +1121,6 @@ class AdapterPouch extends AbstracrAdapter{
 		return false;
 	}
 
-
 	/**
 	 * Формирует архив полной выгрузки базы для сохранения в файловой системе клиента
 	 * @method backup_database
@@ -1127,7 +1135,6 @@ class AdapterPouch extends AbstracrAdapter{
 
 		// складываем все части в файл
 	}
-
 
 	/**
 	 * Восстанавливает базу из архивной копии

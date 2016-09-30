@@ -176,8 +176,11 @@ class Meta extends MetaEventEmitter{
 			var res = {};
 			for(var i in _m){
 				for(var j in _m[i]){
-					if(_m[i][j].cachable &&  !res[_m[i][j].cachable])
-						res[_m[i][j].cachable] = _m[i][j].cachable;
+					if(_m[i][j].cachable){
+						let _name = _m[i][j].cachable.replace('_remote', '');
+						if(!res[_name])
+							res[_name] = _name;
+					}
 				}
 			}
 			return Object.keys(res);
