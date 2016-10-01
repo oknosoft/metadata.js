@@ -501,7 +501,7 @@ var initialState = {
 	}
 };
 function rx_reducer() {
-	var state = arguments.length <= 0 || arguments[0] === undefined ? initialState : arguments[0];
+	var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : initialState;
 	var action = arguments[1];
 
 
@@ -580,6 +580,16 @@ var plugin = {
 
 			rx_actions: {
 				value: actions
+			},
+
+			rx_action_types: {
+				value: {
+					USER_TRY_LOG_IN: USER_TRY_LOG_IN,
+					USER_LOG_IN: USER_LOG_IN,
+					USER_DEFINED: USER_DEFINED,
+					USER_LOG_OUT: USER_LOG_OUT,
+					USER_LOG_ERROR: USER_LOG_ERROR
+				}
 			},
 
 			rx_reducer: {

@@ -133,6 +133,16 @@ const plugin = {
 				value: actions
 			},
 
+			rx_action_types: {
+				value: {
+					USER_TRY_LOG_IN,
+					USER_LOG_IN,
+					USER_DEFINED,
+					USER_LOG_OUT,
+					USER_LOG_ERROR
+				}
+			},
+
 			rx_reducer: {
 				value: rx_reducer
 			},

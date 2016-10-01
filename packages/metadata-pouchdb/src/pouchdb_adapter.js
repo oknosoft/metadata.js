@@ -13,8 +13,8 @@ const PouchDB = require('pouchdb-core')
 		.plugin(require('pouchdb-adapter-http'))
 		.plugin(require('pouchdb-replication'))
 		.plugin(require('pouchdb-authentication'))
-		.plugin(require('pouchdb-mapreduce'))
-		.plugin(require('pouchdb-find')),
+		.plugin(require('pouchdb-mapreduce')),
+		//.plugin(require('pouchdb-find')),
 	pouchdb_memory = require('pouchdb-adapter-memory'),
 	pouchdb_idb = require('pouchdb-adapter-idb')
 
@@ -171,14 +171,18 @@ class AdapterPouch extends AbstracrAdapter{
 						}
 					}
 
-					return (_paths.user_node ? (
-						this.remote.ram.info()
-							.then(() => _remote.doc.info())
-					) : (
-						this.remote.ram.login(username, password)
-							.then(() => _remote.doc.login(username, password))
-					))
-						.then(req => {
+					// авторизуемся во всех базах
+					let try_auth = [];
+					$p.md.bases().forEach((name) => {
+						if(t.remote[name]){
+							try_auth.push(
+								_paths.user_node ? this.remote[name].info() : this.remote[name].login(username, password)
+							)
+						}
+					})
+
+					return Promise.all(try_auth)
+						.then(function (){
 
 							_auth = {username: username};
 							setTimeout(() => {
