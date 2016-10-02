@@ -135,20 +135,29 @@ const plugin = {
 
 			rx_action_types: {
 				value: {
+
 					USER_TRY_LOG_IN,
 					USER_LOG_IN,
 					USER_DEFINED,
 					USER_LOG_OUT,
-					USER_LOG_ERROR
+					USER_LOG_ERROR,
+
+					POUCH_DATA_LOADED,
+					POUCH_DATA_PAGE,
+					POUCH_DATA_ERROR,
+					POUCH_LOAD_START,
+					POUCH_NO_DATA
 				}
 			},
 
 			rx_reducer: {
-				value: rx_reducer
+				value: rx_reducer,
+				writable: true
 			},
 
 			rx_events: {
-				value: rx_events
+				value: rx_events,
+				writable: true
 			}
 		})
 

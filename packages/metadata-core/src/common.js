@@ -141,8 +141,18 @@ export default class MetaEngine{
 	 * @final
 	 */
 	get current_user() {
+
+		let user_name;
+
+		if(this.superlogin){
+			const session = this.superlogin.getSession();
+			user_name =  session ? session.user_id : "";
+		}else
+			user_name = this.wsql.get_user_param("user_name");
+
 		const user = this.cat && this.cat.users ?
-			this.cat.users.by_id($p.wsql.get_user_param("user_name")) : null
+			this.cat.users.by_id(user_name) : null;
+
 		return user && !user.empty() ? user : null;
 	}
 

@@ -107,18 +107,30 @@ class AdapterPouch extends AbstracrAdapter{
 
 						_remote = { };
 
+						function dbpath(name) {
+
+							if($p.superlogin){
+								return $p.superlogin.getDbUrl(_paths.prefix + (name == "meta" ? name : (_paths.zone + "_" + name)))
+
+							}else{
+
+								if(name == "meta")
+									return _paths.path + "meta";
+
+								else if(name == "ram")
+									return _paths.path + _paths.zone + "_ram";
+
+								else
+									return _paths.path + _paths.zone + "_" + name + _paths.suffix;
+							}
+						}
+
 						$p.md.bases().forEach((name) => {
 							if(name == 'e1cib' || name == 'pgsql')
 								return;
 
-							else if(name == "meta")
-								_remote[name] = new PouchDB(_paths.path + "meta", opts);
+							_remote[name] = new PouchDB(dbpath(name), opts);
 
-							else if(name == "ram")
-								_remote[name] = new PouchDB(_paths.path + _paths.zone + "_ram", opts);
-
-							else
-								_remote[name] = new PouchDB(_paths.path + _paths.zone + "_" + name + _paths.suffix, opts);
 						})
 
 					}
@@ -589,7 +601,7 @@ class AdapterPouch extends AbstracrAdapter{
 	 */
 	save_obj(tObj, attr) {
 
-		var tmp = tObj._obj._clone(),
+		var tmp = Object.assign({}, tObj._obj),
 			db = this.db(tObj._manager);
 
 		tmp._id = tObj._manager.class_name + "|" + tObj.ref;

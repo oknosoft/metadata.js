@@ -242,31 +242,36 @@ function _pouch_data_loaded(page) {
 			payload: page
 		});
 
+		var _getState = getState();
+
+		var meta = _getState.meta;
+		var $p = meta.$p;
+
 		// если вход еще не выполнен...
-		var state = getState();
-		if (!state.meta.user.logged_in) {
+
+		if (!meta.user.logged_in) {
 
 			setTimeout(function () {
 
 				// получаем имя сохраненного или гостевого пользователя
-				var name = state.meta.$p.wsql.get_user_param('user_name');
-				var password = state.meta.$p.wsql.get_user_param('user_pwd');
+				var name = $p.wsql.get_user_param('user_name');
+				var password = $p.wsql.get_user_param('user_pwd');
 
-				if (!name && state.meta.$p.job_prm.zone_demo == state.meta.$p.wsql.get_user_param('zone') && state.meta.$p.job_prm.guests.length) {
-					name = state.meta.$p.job_prm.guests[0].name;
+				if (!name && $p.job_prm.zone_demo == $p.wsql.get_user_param('zone') && $p.job_prm.guests.length) {
+					name = $p.job_prm.guests[0].name;
 				}
 
 				// устанавливаем текущего пользователя
 				if (name) dispatch(user_defined(name));
 
 				// если разрешено сохранение пароля или гостевая зона...
-				if (name && password && state.meta.$p.wsql.get_user_param('enable_save_pwd')) {
-					dispatch(user_try_log_in(state.meta.$p.adapters.pouch, name, $p.aes.Ctr.decrypt(password)));
+				if (name && password && $p.wsql.get_user_param('enable_save_pwd')) {
+					dispatch(user_try_log_in($p.adapters.pouch, name, $p.aes.Ctr.decrypt(password)));
 					return;
 				}
 
-				if (name && state.meta.$p.job_prm.zone_demo == state.meta.$p.wsql.get_user_param('zone')) {
-					dispatch(user_try_log_in(state.meta.$p.adapters.pouch, name, $p.aes.Ctr.decrypt(state.meta.$p.job_prm.guests[0].password)));
+				if (name && $p.job_prm.zone_demo == $p.wsql.get_user_param('zone')) {
+					dispatch(user_try_log_in($p.adapters.pouch, name, $p.aes.Ctr.decrypt($p.job_prm.guests[0].password)));
 				}
 			}, 10);
 		}
@@ -390,7 +395,7 @@ function user_try_log_in(adapter, name, password) {
 
 		dispatch({
 			type: USER_TRY_LOG_IN,
-			payload: { name: name, password: password }
+			payload: { name: name, password: password, provider: 'local' }
 		});
 
 		// The function called by the thunk middleware can return a value,
@@ -399,8 +404,16 @@ function user_try_log_in(adapter, name, password) {
 		// In this case, we return a promise to wait for.
 		// This is not required by thunk middleware, but it is convenient for us.
 
-		return adapter.log_in(name, password);
-		// .then(dispatch(user_log_in(name)))
+		if (adapter.$p.superlogin) {
+			return adapter.$p.superlogin.login({
+				username: name,
+				password: password
+			}).then(function (session) {
+				return adapter.log_in(session.token, session.password);
+			});
+		} else {
+			return adapter.log_in(name, password);
+		}
 
 		// In a real world app, you also want to
 		// catch any error in the network call.
@@ -584,20 +597,29 @@ var plugin = {
 
 			rx_action_types: {
 				value: {
+
 					USER_TRY_LOG_IN: USER_TRY_LOG_IN,
 					USER_LOG_IN: USER_LOG_IN,
 					USER_DEFINED: USER_DEFINED,
 					USER_LOG_OUT: USER_LOG_OUT,
-					USER_LOG_ERROR: USER_LOG_ERROR
+					USER_LOG_ERROR: USER_LOG_ERROR,
+
+					POUCH_DATA_LOADED: POUCH_DATA_LOADED,
+					POUCH_DATA_PAGE: POUCH_DATA_PAGE,
+					POUCH_DATA_ERROR: POUCH_DATA_ERROR,
+					POUCH_LOAD_START: POUCH_LOAD_START,
+					POUCH_NO_DATA: POUCH_NO_DATA
 				}
 			},
 
 			rx_reducer: {
-				value: rx_reducer
+				value: rx_reducer,
+				writable: true
 			},
 
 			rx_events: {
-				value: rx_events
+				value: rx_events,
+				writable: true
 			}
 		});
 	},

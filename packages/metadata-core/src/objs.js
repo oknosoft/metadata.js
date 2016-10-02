@@ -416,9 +416,9 @@ class DataObj {
 
 		var saver,
 
-			before_save_res = this._manager.handle_event(this, "before_save"),
+			before_save_res = {},
 
-			reset_modified = function () {
+			reset_modified = () => {
 
 				if (before_save_res === false) {
 					if (this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted) {
@@ -432,7 +432,9 @@ class DataObj {
 				reset_modified = null;
 
 				return this;
-			}.bind(this);
+			};
+
+		this._manager.emit("before_save", this, before_save_res);
 
 		// если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
 		if (before_save_res === false) {
@@ -442,7 +444,6 @@ class DataObj {
 			// если пользовательский обработчик перед записью вернул промис, его и возвращаем
 			return before_save_res.then(reset_modified);
 		}
-
 
 		// для объектов с иерархией установим пустого родителя, если иной не указан
 		if (this._metadata.hierarchical && !this._obj.parent)
@@ -488,7 +489,8 @@ class DataObj {
 			})
 		// и выполняем обработку после записи
 			.then(function (obj) {
-				return obj._manager.handle_event(obj, "after_save");
+				obj._manager.emit("after_save", obj);
+				return obj;
 			})
 			.then(reset_modified);
 	}
