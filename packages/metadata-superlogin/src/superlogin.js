@@ -6,7 +6,7 @@
  */
 
 
-import superlogin from 'superlogin-client'
+import superlogin from "superlogin-client";
 
 const default_config = {
 	// The base URL for the SuperLogin routes with leading and trailing slashes (defaults to '/auth/')
@@ -190,18 +190,34 @@ function attach($p){
 		$p.adapters.pouch.on('user_log_in', () => {
 
 			const user_name = superlogin.getSession().user_id;
-			let user = $p.cat && $p.cat.users ? $p.cat.users.by_id(user_name) : null;
-			if(user && user.empty()){
-				user.ref = $p.utils.generate_guid();
-				user.id = user_name;
-				user.save();
+
+			if($p.cat && $p.cat.users){
+
+				$p.cat.users.find_rows_remote({
+					_view: 'doc/number_doc',
+					_key: {
+						startkey: ['cat.users',0,'unpete'],
+						endkey: ['cat.users',0,'unpete']
+					}
+				}).then(function (res) {
+					if (res.length) {
+						return res[0];
+					} else {
+						let user = $p.cat.users.create({
+							ref: $p.utils.generate_guid(),
+							id: user_name
+						});
+						return user.save();
+					}
+				})
+					.then(function () {
+						store.dispatch($p.rx_actions.USER_LOG_IN(user_name));
+					})
+			}else{
+				store.dispatch($p.rx_actions.USER_LOG_IN(user_name));
 			}
-
-			store.dispatch($p.rx_actions.USER_LOG_IN(user_name))
 		});
-
 	}
-
 }
 
 

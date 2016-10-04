@@ -653,7 +653,8 @@ class AdapterPouch extends AbstracrAdapter{
 	 * ### Возвращает набор данных для дерева динсписка
 	 *
 	 * @method pouch_tree
-	 * @param attr
+	 * @param _mgr {DataManager}
+	 * @param attr {Object}
 	 * @return {Promise.<Array>}
 	 */
 	get_tree(_mgr, attr){
@@ -664,6 +665,7 @@ class AdapterPouch extends AbstracrAdapter{
 	 * ### Возвращает набор данных для динсписка
 	 *
 	 * @method pouch_selection
+	 * @param _mgr {DataManager}
 	 * @param attr
 	 * @return {Promise.<Array>}
 	 */
@@ -727,7 +729,7 @@ class AdapterPouch extends AbstracrAdapter{
 
 						result.rows.forEach(function (rev) {
 							doc = rev.doc;
-							key = doc._id.split("|");
+							let key = doc._id.split("|");
 							doc.ref = key[1];
 							// наполняем
 							res.push(doc);
@@ -758,7 +760,7 @@ class AdapterPouch extends AbstracrAdapter{
 	 * Eсли отбор пустой, возвращаются все строки из PouchDB.
 	 *
 	 * @method pouch_find_rows
-	 * @for DataManager
+	 * @param _mgr {DataManager}
 	 * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
 	 * @param [selection._top] {Number}
 	 * @param [selection._skip] {Number}
@@ -920,7 +922,7 @@ class AdapterPouch extends AbstracrAdapter{
 						result.rows.forEach(function (rev) {
 							doc = rev.doc;
 
-							key = doc._id.split("|");
+							let key = doc._id.split("|");
 							doc.ref = key[1];
 
 							if (!_raw) {
@@ -994,7 +996,7 @@ class AdapterPouch extends AbstracrAdapter{
 	 * ### Сохраняет присоединенный файл
 	 *
 	 * @method save_attachment
-	 * @for DataManager
+	 * @param _mgr {DataManager}
 	 * @param ref
 	 * @param att_id
 	 * @param attachment
@@ -1033,6 +1035,7 @@ class AdapterPouch extends AbstracrAdapter{
 
 	/**
 	 * Получает присоединенный к объекту файл
+	 * @param _mgr {DataManager}
 	 * @param ref
 	 * @param att_id
 	 * @return {Promise}
@@ -1045,6 +1048,7 @@ class AdapterPouch extends AbstracrAdapter{
 
 	/**
 	 * Удаляет присоединенный к объекту файл
+	 * @param _mgr {DataManager}
 	 * @param ref
 	 * @param att_id
 	 * @return {Promise}
