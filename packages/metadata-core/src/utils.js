@@ -59,7 +59,7 @@ class Utils{
 
 	constructor() {
 
-
+		this.moment = moment;
 
 		/**
 		 * ### Пустые значения даты и уникального идентификатора
