@@ -142,10 +142,10 @@ function mngrs($p) {
 				 * @return {Object} - объект метаданных
 				 */
 				metadata: {
-					value: field => {
+					value: field_name => {
 
-						if(field)
-							return _meta.fields[field] || _meta.tabular_sections[field];
+						if(field_name)
+							return _meta.fields[field_name] || md.get(class_name, field_name) || _meta.tabular_sections[field_name];
 						else
 							return _meta;
 					}

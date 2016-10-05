@@ -239,7 +239,7 @@ function tabulars($p) {
 				attr = {};
 
 			// присваиваем типизированные значения по умолчанию
-			for (var f in row._metadata.fields)
+			for (var f in row._metadata().fields)
 				row[f] = attr[f] || "";
 
 			row._obj.row = this._obj.push(row._obj);
@@ -526,8 +526,8 @@ function tabulars($p) {
 		 * @for TabularSectionRow
 		 * @type Number
 		 */
-		get _metadata() {
-			return this._owner._owner._metadata["tabular_sections"][this._owner._name]
+		_metadata(field_name) {
+			return field_name ? this._owner._owner._metadata(this._owner._name).fields[field_name] : this._owner._owner._metadata(this._owner._name)
 		}
 
 		/**
@@ -571,12 +571,12 @@ function tabulars($p) {
 			}
 
 			// учтём связь по типу
-			if (this._metadata.fields[f].choice_type) {
+			if (this._metadata(f).choice_type) {
 				var prop;
-				if (this._metadata.fields[f].choice_type.path.length == 2)
-					prop = this[this._metadata.fields[f].choice_type.path[1]];
+				if (this._metadata(f).choice_type.path.length == 2)
+					prop = this[this._metadata(f).choice_type.path[1]];
 				else
-					prop = this._owner._owner[this._metadata.fields[f].choice_type.path[0]];
+					prop = this._owner._owner[this._metadata(f).choice_type.path[0]];
 				if (prop && prop.type)
 					v = utils.fetch_type(v, prop.type);
 			}
