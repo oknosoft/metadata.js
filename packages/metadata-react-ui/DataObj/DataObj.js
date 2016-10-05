@@ -1,10 +1,9 @@
 import React, { Component, PropTypes } from 'react';
 import classes from './DataObj.scss'
 
+import Toolbar from "./Toolbar";
 import DataField from '../DataField'
-
-import TextField from '../DataField/FieldText'
-
+import Subheader from 'material-ui/Subheader';
 
 
 import CircularProgress from 'material-ui/CircularProgress';
@@ -31,14 +30,23 @@ export default class DataObj extends Component {
 
       this.props._obj
         ?
-      <div className={classes.table}>
+      <div>
 
-        <div className={classes.row}>{this.props._obj.presentation}</div>
+        <Toolbar
+          handleSave={this.handleSave}
+          handleSend={this.handleSend}
+          handleRemove={this.handleRemove}
+          handlePrint={this.handlePrint}
+          handleAttachment={this.handleAttachment}
+        />
 
-        <DataField _obj={this.props._obj} _fld="cash_flow_article" />
+        <Subheader>{this.props._obj.presentation}</Subheader>
 
-        <TextField _obj={this.props._obj} _fld="cash_flow_article" />
+        <div className={classes.table50}>
+          <DataField _obj={this.props._obj} _fld="number_doc" />
+          <DataField _obj={this.props._obj} _fld="КатегорияНомера" />
 
+        </div>
 
 
       </div>

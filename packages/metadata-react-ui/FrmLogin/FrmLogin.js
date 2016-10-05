@@ -1,19 +1,20 @@
-import React, { Component, PropTypes } from 'react';
-
-import {Tabs, Tab} from 'material-ui/Tabs';
-import Paper from 'material-ui/Paper';
-import TextField from 'material-ui/TextField';
-import RaisedButton from 'material-ui/RaisedButton';
-import Toggle from 'material-ui/Toggle';
-import Divider from 'material-ui/Divider';
-
-import classes from './FrmLogin.scss';
+import React, {Component, PropTypes} from "react";
+import {Tabs, Tab} from "material-ui/Tabs";
+import Paper from "material-ui/Paper";
+import TextField from "material-ui/TextField";
+import RaisedButton from "material-ui/RaisedButton";
+import Toggle from "material-ui/Toggle";
+import Divider from "material-ui/Divider";
+import classes from "./FrmLogin.scss";
 
 export default class FrmLogin extends Component {
 
   static propTypes = {
+
     login: PropTypes.string,
     password: PropTypes.string,
+
+    user: PropTypes.object.isRequired,
 
     zone: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     couch_path: PropTypes.string,
@@ -28,8 +29,8 @@ export default class FrmLogin extends Component {
     super(props);
 
     this.state = {
-      login: this.props.login,
-      password: this.props.password,
+
+      btn_login_disabled: !this.props.login || !this.props.password,
 
       zone: this.props.zone,
       couch_path: this.props.couch_path,
@@ -41,21 +42,15 @@ export default class FrmLogin extends Component {
 
   }
 
-  handleToggle() {
-    this.setState({enable_save_pwd: !this.state.enable_save_pwd});
-  }
-
-  handleTextChange(event){
-    const v = {};
-    v[event.target.id] =  event.target.value;
-    this.setState(v);
-  }
+  // handleToggle() {
+  //   this.setState({enable_save_pwd: !this.state.enable_save_pwd});
+  // }
 
   handleSetPrm(){
     this.props.handleSetPrm({
-      zone: this.state.zone,
-      couch_path: this.state.couch_path,
-      enable_save_pwd: this.state.enable_save_pwd
+      zone: this.refs.zone.input.value,
+      couch_path: this.refs.couch_path.input.value,
+      enable_save_pwd: this.refs.enable_save_pwd.state.switched
     })
   }
 
@@ -68,12 +63,16 @@ export default class FrmLogin extends Component {
   };
 
   handleLogin = (event) => {
-    this.props.handleLogin(this.state.login, this.state.password);
+    this.props.handleLogin(this.refs.login.input.value, this.refs.password.input.value);
   };
 
   render() {
 
-    const handleTextChange = ::this.handleTextChange;
+    const handleTextChange = function () {
+      this.setState({
+        btn_login_disabled: !this.refs.login.input.value || !this.refs.password.input.value,
+      });
+    }.bind(this);
 
     return (
 
@@ -87,65 +86,92 @@ export default class FrmLogin extends Component {
           >
             <Tab label="Вход" value="a" >
 
-              <TextField
-                id="login"
-                className={classes.loginField}
-                hintText="login"
-                floatingLabelText="Имя пользователя"
-                defaultValue={this.state.login}
-                onChange={handleTextChange}
-              />
+              {
+                this.props.state_user.logged_in ?
+                  <div>
 
-              <TextField
-                id="password"
-                className={classes.loginField}
-                hintText="password"
-                floatingLabelText="Пароль"
-                type="password"
-                defaultValue={this.state.password}
-                onChange={handleTextChange}
-              />
+                    <TextField
+                      className={classes.loginField}
+                      hintText="login"
+                      floatingLabelText="Имя пользователя"
+                      value={this.props.user.presentation}
+                      onChange={handleTextChange}
+                    />
 
-              <RaisedButton label="Войти"
-                            disabled={!this.state.login || !this.state.password}
-                            className={classes.loginButton}
-                            onTouchTap={this.handleLogin} />
+                    <RaisedButton label="Выйти"
+                                className={classes.loginButton}
+                                onTouchTap={this.handleLogin}/>
 
-              <RaisedButton label="Забыли пароль?"
-                            disabled={true}
-                            className={classes.loginButton} />
+                    <RaisedButton label="Справка"
+                                  className={classes.loginButton}
+                                  style={{float: 'right'}} />
+                  </div>
+                  :
+                  <div>
 
-              <RaisedButton label="Справка"
-                            className={classes.loginButton}
-                            style={{float: 'right'}} />
+                    <TextField
+                      ref="login"
+                      className={classes.loginField}
+                      hintText="login"
+                      floatingLabelText="Имя пользователя"
+                      defaultValue={this.props.login}
+                      onChange={handleTextChange}
+                    />
+
+                    <TextField
+                      ref="password"
+                      className={classes.loginField}
+                      hintText="password"
+                      floatingLabelText="Пароль"
+                      type="password"
+                      defaultValue={this.props.password}
+                      onChange={handleTextChange}
+                    />
+
+                    <RaisedButton label="Войти"
+                                  disabled={this.state.btn_login_disabled}
+                                  className={classes.loginButton}
+                                  onTouchTap={this.handleLogin}/>
+
+                    <RaisedButton label="Забыли пароль?"
+                                  disabled={true}
+                                  className={classes.loginButton}/>
+
+                    <RaisedButton label="Справка"
+                                  className={classes.loginButton}
+                                  style={{float: 'right'}} />
+                  </div>
+
+              }
+
+
+
 
             </Tab>
 
             <Tab label="Подключение" value="b">
 
               <TextField
-                id="zone"
+                ref="zone"
                 floatingLabelText="Область данных"
                 hintText="zone"
                 className={classes.loginField}
-                defaultValue={this.state.zone}
-                onChange={handleTextChange}
+                defaultValue={this.props.zone}
               />
 
               <TextField
-                id="couch_path"
+                ref="couch_path"
                 floatingLabelText="Адрес CouchDB"
                 hintText="couch_path"
                 className={classes.loginField}
-                defaultValue={this.state.couch_path}
-                onChange={handleTextChange}
+                defaultValue={this.props.couch_path}
               />
 
               <Toggle
+                ref="enable_save_pwd"
                 label="Разрешить сохранение пароля"
                 className={classes.loginToggle}
-                toggled={this.state.enable_save_pwd}
-                onToggle={::this.handleToggle}
+                defaultToggled={this.props.enable_save_pwd}
               />
 
               <Divider />

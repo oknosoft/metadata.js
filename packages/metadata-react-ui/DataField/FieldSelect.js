@@ -42,25 +42,16 @@ export default class FieldSelect extends Component {
 
         return { options: githubUsers }
       })
-
-    // return fetch(`https://api.github.com/search/users?q=${input}`)
-    //   .then((response) => response.json())
-    //   .then((json) => {
-    //     const githubUsers = json.items
-    //
-    //     this.setState({ githubUsers })
-    //
-    //     return { options: githubUsers }
-    //   })
   }
 
   render() {
     return (
 
       <div className={classes.row}>
-        <div className={classes.celllabel}>Пользователь github</div>
+        <div className={classes.celllabel}>{this.props._meta.synonym}</div>
         <div className={classes.celldata}>
           <VirtualizedSelect
+            name={this.props._meta.name}
             async
             backspaceRemoves={false}
             labelKey='presentation'
