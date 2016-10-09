@@ -36,7 +36,7 @@
     "gulp-umd": "^0.2",
     "jasmine": "^2.5",
     "yuidocjs": "^0.10",
-    "lerna": "2.0.0-beta.29"
+    "lerna": "2.0.0-beta.30"
   },
   "engines": {
     "node": "^6.0"
