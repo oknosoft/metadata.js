@@ -378,7 +378,7 @@ function Pouch(){
 						var options = {
 								live: true,
 								retry: true,
-								batch_size: 200,
+								batch_size: 300,
 								batches_limit: 8
 							};
 

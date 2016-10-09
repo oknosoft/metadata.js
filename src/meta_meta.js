@@ -47,6 +47,7 @@ function Meta() {
 				doc = null;
 				delete _m._id;
 				delete _m._rev;
+				return _m;
 			});
 	}
 
