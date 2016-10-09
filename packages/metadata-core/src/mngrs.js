@@ -156,51 +156,6 @@ function mngrs($p) {
 				},
 
 				/**
-				 * ### Выполняет методы подписки на событие
-				 * Служебный, внутренний метод, вызываемый формами и обсерверами при создании и изменении объекта данных<br/>
-				 * Выполняет в цикле все назначенные обработчики текущего события<br/>
-				 * Если любой из обработчиков вернул `false`, возвращает `false`. Иначе, возвращает массив с результатами всех обработчиков
-				 *
-				 * @method handle_event
-				 * @for DataManager
-				 * @param obj {DataObj} - объект, в котором произошло событие
-				 * @param name {String} - имя события
-				 * @param attr {Object} - дополнительные свойства, передаваемые в обработчик события
-				 * @return {Boolean|Array.<*>}
-				 * @private
-				 */
-				handle_event: {
-					value: function (obj, name, attr) {
-						var res = [], tmp;
-						_events[name].forEach(function (method) {
-							if(res !== false){
-								tmp = method.call(obj, attr);
-								if(tmp === false)
-									res = tmp;
-								else if(tmp)
-									res.push(tmp);
-							}
-						});
-						if(res === false){
-							return res;
-
-						}else if(res.length){
-							if(res.length == 1)
-							// если значение единственное - возвращчем его
-								return res[0];
-							else{
-								// если среди значений есть промисы - возвращаем all
-								if(res.some(function (v) {return typeof v === "object" && v.then}))
-									return Promise.all(res);
-								else
-									return res;
-							}
-						}
-
-					}
-				},
-
-				/**
 				 * ### Хранилище объектов данного менеджера
 				 */
 				by_ref: {
@@ -760,7 +715,8 @@ function mngrs($p) {
 						o.date = new Date();
 
 					// Триггер после создания
-					var after_create_res = this.handle_event(o, "after_create");
+					let after_create_res = {};
+					this.emit("after_create", o, after_create_res);
 
 					// Если новый код или номер не были назначены в триггере - устанавливаем стандартное значение
 					if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
@@ -2053,7 +2009,8 @@ function mngrs($p) {
 				o = new $p[this.obj_constructor()](attr, this);
 
 				// Триггер после создания
-				var after_create_res = this.handle_event(o, "after_create");
+				let after_create_res = {};
+				this.emit("after_create", o, after_create_res);
 
 				if(after_create_res === false)
 					return Promise.resolve(o);

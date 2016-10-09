@@ -310,7 +310,7 @@ function _pouch_sync_data(dbid, change) {
 				type: POUCH_SYNC_DATA,
 				payload: false
 			});
-		}, 3000);
+		}, 1500);
 	};
 }
 
@@ -398,12 +398,7 @@ function user_try_log_in(adapter, name, password) {
 			payload: { name: name, password: password, provider: 'local' }
 		});
 
-		// The function called by the thunk middleware can return a value,
-		// that is passed on as the return value of the dispatch method.
-
-		// In this case, we return a promise to wait for.
-		// This is not required by thunk middleware, but it is convenient for us.
-
+		// в зависимости от использования суперлогина, разные действия
 		if (adapter.$p.superlogin) {
 			return adapter.$p.superlogin.login({
 				username: name,
@@ -420,9 +415,30 @@ function user_try_log_in(adapter, name, password) {
 	};
 }
 
-function _user_log_out() {
-	return {
-		type: USER_LOG_OUT
+/**
+ * Инициирует отключение пользователя
+ * @param adapter
+ * @return {Function}
+ */
+function _user_log_out(adapter) {
+
+	return function (dispatch, getState) {
+
+		var disp_log_out = function disp_log_out() {
+			dispatch({
+				type: USER_LOG_OUT,
+				payload: { name: getState().meta.user.name }
+			});
+		};
+
+		// в зависимости от использования суперлогина, разные действия
+		if (!adapter) {
+			disp_log_out();
+		} else if (adapter.$p.superlogin) {
+			adapter.$p.superlogin.logOut().then(disp_log_out);
+		} else {
+			adapter.log_out();
+		}
 	};
 }
 
