@@ -1523,8 +1523,9 @@ function mngrs($p) {
 							return;
 					}
 				}
-				l.push(v);
+				l.push(this[v.ref]);
 			});
+
 			return Promise.resolve(l);
 		}
 

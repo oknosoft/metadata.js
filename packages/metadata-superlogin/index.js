@@ -55,6 +55,7 @@ function attach($p) {
 	/**
   * Подмена обработчиков событий PouchDB
   */
+
 	/**
   * ### После загрузки локальных данных
   * если разрешено сохранение пароля или демо-режим, выполняем попытку авторизации
@@ -79,11 +80,11 @@ function attach($p) {
 
 			// если вход еще не выполнен...
 
-			if (!meta.user.logged_in && $p.superlogin.authenticated()) {
+			if (!meta.user.logged_in && _superloginClient2.default.authenticated()) {
 
 				setTimeout(function () {
 
-					var session = $p.superlogin.getSession();
+					var session = _superloginClient2.default.getSession();
 
 					// устанавливаем текущего пользователя и пытаемся авторизоваться
 					if (session) {
@@ -129,7 +130,7 @@ function attach($p) {
 			// This is not required by thunk middleware, but it is convenient for us.
 
 			return _superloginClient2.default.socialAuth(provider).then(function (session) {
-				return $p.adapters.pouch.log_in(session.token, session.password);
+				$p.adapters.pouch.log_in(session.token, session.password);
 			});
 
 			// In a real world app, you also want to
@@ -141,6 +142,71 @@ function attach($p) {
 	function handleLogin(login, password) {
 		return $p.rx_actions.USER_TRY_LOG_IN($p.adapters.pouch, login, password);
 	}
+
+	// завершает сессию
+	function handleLogOut() {
+
+		return function (dispatch, getState) {
+
+			$p.adapters.pouch.log_out().then(function () {
+				return _superloginClient2.default.logout();
+			}).then(function () {
+				dispatch({
+					type: $p.rx_action_types.USER_LOG_OUT,
+					payload: { name: getState().meta.user.name }
+				});
+			});
+		};
+	}
+
+	// регистрация нового пользователя
+	function handleRegister(registration) {
+
+		return function (dispatch, getState) {
+
+			_superloginClient2.default.register(registration).then(function () {
+				if (_superloginClient2.default.authenticated()) {
+					//flashy.set('Registration successful, welcome!');
+					//$state.go('navbar.todos');
+
+					var session = _superloginClient2.default.getSession();
+					dispatch({
+						type: USER_LOG_IN,
+						payload: { name: session.name, password: session.password, provider: 'local' }
+					});
+				} else {
+					//toasty('Registration successful.');
+				}
+			});
+		};
+	}
+
+	function handleLink(provider) {
+
+		return function (dispatch, getState) {
+
+			_superloginClient2.default.link(provider).then(function () {
+				// toasty(provider.toUpperCase() + ' link successful!');
+				// refresh();
+			});
+		};
+	}
+
+	// генерирует письмо восстановления пароля
+	function handleForgotPassword() {
+
+		return _superloginClient2.default.forgotPassword(email).then(function () {
+			toasty('Check your email!');
+		}, function (err) {
+			if (err) {
+				console.error(err);
+			}
+		});
+	}
+
+	function handleCheckUsername(name) {}
+
+	function handlecheckEmail(email) {}
 
 	function handleSetPrm(attr) {
 		for (var key in attr) {
@@ -162,6 +228,11 @@ function attach($p) {
 			value: {
 				handleSocialAuth: handleSocialAuth,
 				handleLogin: handleLogin,
+				handleLogOut: handleLogOut,
+				handleRegister: handleRegister,
+				handleForgotPassword: handleForgotPassword,
+				handleCheckUsername: handleCheckUsername,
+				handlecheckEmail: handlecheckEmail,
 				handleSetPrm: handleSetPrm
 			}
 		}
@@ -188,8 +259,8 @@ function attach($p) {
 				$p.cat.users.find_rows_remote({
 					_view: 'doc/number_doc',
 					_key: {
-						startkey: ['cat.users', 0, 'unpete'],
-						endkey: ['cat.users', 0, 'unpete']
+						startkey: ['cat.users', 0, user_name],
+						endkey: ['cat.users', 0, user_name]
 					}
 				}).then(function (res) {
 					if (res.length) {

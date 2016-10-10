@@ -142,16 +142,29 @@ export default class MetaEngine{
 	 */
 	get current_user() {
 
-		let user_name;
+		let user_name, user;
 
 		if(this.superlogin){
 			const session = this.superlogin.getSession();
 			user_name =  session ? session.user_id : "";
-		}else
-			user_name = this.wsql.get_user_param("user_name");
+		}
 
-		const user = this.cat && this.cat.users ?
-			this.cat.users.by_id(user_name) : null;
+		if(!user_name){
+			user_name = this.wsql.get_user_param("user_name");
+		}
+
+		if(this.cat && this.cat.users){
+			user = this.cat.users.by_id(user_name);
+			if(!user){
+				this.cat.users.find_rows_remote({
+					_view: 'doc/number_doc',
+					_key: {
+						startkey: ['cat.users',0,user_name],
+						endkey: ['cat.users',0,user_name]
+					}
+				})
+			}
+		}
 
 		return user && !user.empty() ? user : null;
 	}

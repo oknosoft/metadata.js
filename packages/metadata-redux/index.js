@@ -193,6 +193,10 @@ var USER_DEFINED = 'USER_DEFINED'; // Установить текущего по
 var USER_LOG_OUT = 'USER_LOG_OUT'; // Попытка завершения синхронизации
 var USER_LOG_ERROR = 'USER_LOG_ERROR'; // Ошибка авторизации
 
+var USER_SOCIAL_TRY_LINK = 'USER_SOCIAL_TRY_LINK'; // Попытка привязать аккаунт социальной сети
+var USER_SOCIAL_LINKED = 'USER_SOCIAL_LINKED'; // Пользователь привязан к аккаунту социальной сети
+var USER_SOCIAL_UNLINKED = 'USER_SOCIAL_UNLINKED'; // Пользователь отвязан от аккаунта социальной сети
+
 var POUCH_DATA_PAGE = 'POUCH_DATA_PAGE'; // Оповещение о загрузке порции локальных данных
 var POUCH_LOAD_START = 'POUCH_LOAD_START'; // Оповещение о начале загрузки локальных данных
 var POUCH_DATA_LOADED = 'POUCH_DATA_LOADED'; // Оповещение об окончании загрузки локальных данных
