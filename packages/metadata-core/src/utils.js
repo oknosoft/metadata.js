@@ -286,10 +286,15 @@ class Utils{
 	 */
 	is_equal(v1, v2) {
 
-		if (v1 == v2)
+		if (v1 == v2){
 			return true;
-		else if (typeof v1 === typeof v2)
+
+		}else if(typeof v1 === 'string' &&  typeof v2 === 'string' && v1.trim() === v2.trim()){
+			return true;
+
+		}else if (typeof v1 === typeof v2){
 			return false;
+		}
 
 		return (this.fix_guid(v1, false) == this.fix_guid(v2, false));
 	}
