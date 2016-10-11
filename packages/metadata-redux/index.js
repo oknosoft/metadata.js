@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var _actions, _ACTION_HANDLERS_OBJ, _ACTION_HANDLERS;
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /**
@@ -109,9 +111,14 @@ function obj_revert(class_name, ref) {
 
 function obj_save(class_name, ref, post, mark_deleted) {
 	return function (dispatch, getState) {
-		return new Promise(function (resolve) {
-			setTimeout(function () {
-				dispatch(dispatch({
+		var _obj = void 0;
+		if ((typeof class_name === 'undefined' ? 'undefined' : _typeof(class_name)) == 'object') {
+			_obj = class_name;
+			class_name = _obj._manager.class_name;
+			ref = _obj.ref;
+			if (mark_deleted) _obj._obj._deleted = true;
+			_obj.save(post).then(function () {
+				dispatch({
 					type: OBJ_SAVE,
 					payload: {
 						class_name: class_name,
@@ -119,10 +126,9 @@ function obj_save(class_name, ref, post, mark_deleted) {
 						post: post,
 						mark_deleted: mark_deleted
 					}
-				}));
-				resolve();
-			}, 200);
-		});
+				});
+			});
+		}
 	};
 }
 

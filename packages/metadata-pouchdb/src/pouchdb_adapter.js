@@ -1172,12 +1172,111 @@ class AdapterPouch extends AbstracrAdapter{
 
 }
 
+function proto_data_obj(data_obj, adapter, classes) {
+
+	Object.defineProperties(data_obj, {
+
+		/**
+		 * Устанавливает новый номер документа или код справочника
+		 */
+		new_number_doc: {
+
+			value: function (prefix) {
+
+				if(!this._metadata().code_length)
+					return;
+
+				// если не указан явно, рассчитываем префикс по умолчанию
+				if(!prefix)
+					prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
+						(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
+
+				var obj = this,
+					part = "",
+					year = (this.date instanceof Date) ? this.date.getFullYear() : 0,
+					code_length = this._metadata().code_length - prefix.length;
+
+				// для кешируемых в озу, вычисляем без индекса
+				if(this._manager.cachable == "ram")
+					return Promise.resolve(this.new_cat_id(prefix));
+
+				return adapter.db(obj._manager).query("doc/number_doc",
+					{
+						limit : 1,
+						include_docs: false,
+						startkey: [obj._manager.class_name, year, prefix + '\uffff'],
+						endkey: [obj._manager.class_name, year, prefix],
+						descending: true
+					})
+					.then(function (res) {
+						if(res.rows.length){
+							var num0 = res.rows[0].key[2];
+							for(var i = num0.length-1; i>0; i--){
+								if(isNaN(parseInt(num0[i])))
+									break;
+								part = num0[i] + part;
+							}
+							part = (parseInt(part || 0) + 1).toFixed(0);
+						}else{
+							part = "1";
+						}
+						while (part.length < code_length)
+							part = "0" + part;
+
+						if(obj instanceof classes.DocObj || obj instanceof classes.TaskObj || obj instanceof classes.BusinessProcessObj)
+							obj.number_doc = prefix + part;
+						else
+							obj.id = prefix + part;
+
+						return obj;
+
+					});
+			}
+		},
+
+		new_cat_id: {
+
+			value: function (prefix) {
+
+				if(!prefix)
+					prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
+						(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
+
+				var code_length = this._metadata().code_length - prefix.length,
+					field = (this instanceof classes.DocObj || this instanceof classes.TaskObj || this instanceof classes.BusinessProcessObj) ? "number_doc" : "id",
+					part = "",
+					res = $p.wsql.alasql("select top 1 " + field + " as id from ? where " + field + " like '" + prefix + "%' order by " + field + " desc", [this._manager.alatable]);
+
+				if(res.length){
+					var num0 = res[0].id || "";
+					for(var i = num0.length-1; i>0; i--){
+						if(isNaN(parseInt(num0[i])))
+							break;
+						part = num0[i] + part;
+					}
+					part = (parseInt(part || 0) + 1).toFixed(0);
+				}else{
+					part = "1";
+				}
+				while (part.length < code_length)
+					part = "0" + part;
+
+				this[field] = prefix + part;
+
+				return this;
+			}
+		}
+	})
+}
+
 const plugin = {
 
 	constructor(){
 
 		Object.defineProperty(this.adapters, 'pouch', {value: new AdapterPouch(this)})
 		Object.defineProperty(this.classes, 'PouchDB', {value: PouchDB})
+
+		proto_data_obj(this.classes.DataObj.prototype, this.adapters.pouch, this.classes)
 
 	}
 }

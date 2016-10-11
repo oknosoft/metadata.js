@@ -324,7 +324,7 @@ class DataObj {
 	 * @for DataObj
 	 * @param deleted {Boolean}
 	 */
-	mark_deleted(){
+	mark_deleted(deleted){
 		this._obj._deleted = !!deleted;
 		this.save();
 		this.__notify('_deleted');

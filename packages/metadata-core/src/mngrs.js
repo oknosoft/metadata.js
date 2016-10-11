@@ -702,6 +702,7 @@ function mngrs($p) {
 				attr.ref = utils.generate_guid();
 
 			var o = this.by_ref[attr.ref];
+
 			if(!o){
 
 				o = new $p[this.obj_constructor()](attr, this);
@@ -719,35 +720,46 @@ function mngrs($p) {
 					this.emit("after_create", o, after_create_res);
 
 					// Если новый код или номер не были назначены в триггере - устанавливаем стандартное значение
+					let call_new_number_doc;
 					if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
-						if(!o.number_doc)
-							o.new_number_doc();
+						if(!o.number_doc){
+							call_new_number_doc = true;
+						}
+
 					}else{
-						if(!o.id)
-							o.new_number_doc();
+						if(!o.id){
+							call_new_number_doc = true;
+						}
 					}
 
-					if(after_create_res === false)
-						return Promise.resolve(o);
+					return (call_new_number_doc ? o.new_number_doc() : Promise.resolve(o))
+						.then(() => {
 
-					else if(typeof after_create_res === "object" && after_create_res.then)
-						return after_create_res;
+							if(after_create_res === false)
+								return o;
 
-					// выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
-					if(this.cachable == "e1cib" && fill_default){
-						var rattr = {};
-						$p.ajax.default_attr(rattr, job_prm.irest_url());
-						rattr.url += this.rest_name + "/Create()";
-						return $p.ajax.get_ex(rattr.url, rattr)
-							.then(function (req) {
-								return utils._mixin(o, JSON.parse(req.response), undefined, ["ref"]);
-							});
-					}
+							else if(typeof after_create_res === "object" && after_create_res.then)
+								return after_create_res;
+
+							// выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
+							if(this.cachable == "e1cib" && fill_default){
+								var rattr = {};
+								$p.ajax.default_attr(rattr, job_prm.irest_url());
+								rattr.url += this.rest_name + "/Create()";
+								return $p.ajax.get_ex(rattr.url, rattr)
+									.then(function (req) {
+										return utils._mixin(o, JSON.parse(req.response), undefined, ["ref"]);
+									});
+							}else
+								return o;
+						})
 
 				}
+
 			}
 
 			return Promise.resolve(o);
+
 		}
 
 		/**
