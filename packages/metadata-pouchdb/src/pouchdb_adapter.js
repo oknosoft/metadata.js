@@ -284,7 +284,6 @@ class AdapterPouch extends AbstracrAdapter{
 						destroy_doc = t.local.doc.destroy.bind(t.local.doc),
 						do_reload = function (){
 							setTimeout(function () {
-								$p.eve.redirect = true;
 								location.reload(true);
 							}, 1000);
 						};
@@ -514,7 +513,7 @@ class AdapterPouch extends AbstracrAdapter{
 
 											t.emit('pouch_data_page', _page);
 
-											if(_page.docs_written >= _page.total_rows){
+											if(change.docs.length < _page.limit){
 
 												// широковещательное оповещение об окончании загрузки локальных данных
 												_data_loaded = true;
@@ -533,20 +532,17 @@ class AdapterPouch extends AbstracrAdapter{
 								})
 								.on('paused', function (info) {
 									// replication was paused, usually because of a lost connection
-									//$p.eve.callEvent("pouch_paused", [id, info]);
-									t.emit('pouch_sync_error', id, info);
+									t.emit('pouch_sync_paused', id, info);
 
 								})
 								.on('active', function (info) {
 									// replication was resumed
-									//$p.eve.callEvent("pouch_active", [id, info]);
-									t.emit('pouch_sync_error', id, info);
+									t.emit('pouch_sync_resumed', id, info);
 
 								})
 								.on('denied', function (info) {
 									// a document failed to replicate, e.g. due to permissions
-									//$p.eve.callEvent("pouch_denied", [id, info]);
-									t.emit('pouch_sync_error', id, info);
+									t.emit('pouch_sync_denied', id, info);
 
 								})
 								.on('error', function (err) {

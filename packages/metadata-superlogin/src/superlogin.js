@@ -30,6 +30,10 @@ const default_config = {
 	refreshThreshold: 0.5
 };
 
+const default_getDbUrl = superlogin.getDbUrl.bind(superlogin)
+superlogin.getDbUrl = function (name) {
+	return default_getDbUrl(name).replace('http://', 'https://').replace('cou206:5984', 'kint.oknosoft.ru/couchdb')
+}
 
 function attach($p){
 

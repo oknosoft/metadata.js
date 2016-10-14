@@ -38,10 +38,11 @@ var OBJ_VALUE_CHANGE = 'OBJ_VALUE_CHANGE'; // Изменён реквизит ш
 // ------------------------------------
 
 
-function obj_add(class_name) {
+function obj_add(_mgr) {
+	var _obj = _mgr.create();
 	return {
 		type: OBJ_ADD,
-		payload: { class_name: class_name }
+		payload: { class_name: _mgr.class_name, ref: _obj.ref }
 	};
 }
 
@@ -212,6 +213,9 @@ var POUCH_NO_DATA = 'POUCH_NO_DATA'; // Оповещение об отсутст
 var POUCH_SYNC_START = 'POUCH_SYNC_START'; // Оповещение о начале синхронизации базы doc
 var POUCH_SYNC_ERROR = 'POUCH_SYNC_ERROR'; // Оповещение об ошибке репликации - не означает окончания репликации - просто информирует об ошибке
 var POUCH_SYNC_DATA = 'POUCH_SYNC_DATA'; // Прибежали изменения с сервера или мы отправили данные на сервер
+var POUCH_SYNC_PAUSED = 'POUCH_SYNC_PAUSED'; // Репликация приостановлена, обычно, из-за потери связи с сервером
+var POUCH_SYNC_RESUMED = 'POUCH_SYNC_RESUMED'; // Репликация возобновлена
+var POUCH_SYNC_DENIED = 'POUCH_SYNC_DENIED'; // Разновидность ошибки репликации из-за недостатка прав для записи документа на сервере
 
 
 // ------------------------------------
@@ -289,6 +293,7 @@ function _pouch_data_loaded(page) {
 }
 
 var sync_data_indicator;
+
 function _pouch_sync_data(dbid, change) {
 
 	// Thunk middleware знает, как обращаться с функциями.
@@ -345,30 +350,42 @@ function _pouch_sync_start() {
 function _pouch_sync_error(dbid, err) {
 	return {
 		type: POUCH_SYNC_ERROR,
-		payload: {
-			dbid: dbid,
-			err: err
-		}
+		payload: { dbid: dbid, err: err }
+	};
+}
+
+function _pouch_sync_paused(dbid, info) {
+	return {
+		type: POUCH_SYNC_PAUSED,
+		payload: { dbid: dbid, info: info }
+	};
+}
+
+function _pouch_sync_resumed(dbid, info) {
+	return {
+		type: POUCH_SYNC_RESUMED,
+		payload: { dbid: dbid, info: info }
+	};
+}
+
+function _pouch_sync_denied(dbid, info) {
+	return {
+		type: POUCH_SYNC_DENIED,
+		payload: { dbid: dbid, info: info }
 	};
 }
 
 function _pouch_data_error(dbid, err) {
 	return {
 		type: POUCH_DATA_ERROR,
-		payload: {
-			dbid: dbid,
-			err: err
-		}
+		payload: { dbid: dbid, err: err }
 	};
 }
 
 function _pouch_no_data(dbid, err) {
 	return {
 		type: POUCH_NO_DATA,
-		payload: {
-			dbid: dbid,
-			err: err
-		}
+		payload: { dbid: dbid, err: err }
 	};
 }
 
@@ -530,7 +547,7 @@ var ACTION_HANDLERS = (_ACTION_HANDLERS = {}, _defineProperty(_ACTION_HANDLERS, 
 var initialState = {
 	meta_loaded: false,
 	data_loaded: false,
-	data_empty: true,
+	data_empty: false,
 	sync_started: false,
 	fetch_local: false,
 	fetch_remote: false,
@@ -599,7 +616,20 @@ function rx_events(store) {
 
 		pouch_sync_error: function pouch_sync_error(dbid, err) {
 			store.dispatch(_pouch_sync_error(dbid, err));
+		},
+
+		pouch_sync_paused: function pouch_sync_paused(dbid, info) {
+			store.dispatch(_pouch_sync_paused(dbid, info));
+		},
+
+		pouch_sync_resumed: function pouch_sync_resumed(dbid, info) {
+			store.dispatch(_pouch_sync_resumed(dbid, info));
+		},
+
+		pouch_sync_denied: function pouch_sync_denied(dbid, info) {
+			store.dispatch(_pouch_sync_denied(dbid, info));
 		}
+
 	});
 
 	this.md.on({

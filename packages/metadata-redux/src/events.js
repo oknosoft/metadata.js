@@ -62,7 +62,7 @@ const ACTION_HANDLERS = {
 const initialState = {
 	meta_loaded: false,
 	data_loaded: false,
-	data_empty: true,
+	data_empty: false,
 	sync_started: false,
 	fetch_local: false,
 	fetch_remote: false,
@@ -111,7 +111,14 @@ function rx_events(store) {
 
 		pouch_sync_data: (dbid, change) => {store.dispatch(pouch_sync_data(dbid, change))},
 
-		pouch_sync_error: (dbid, err) => {store.dispatch(pouch_sync_error(dbid, err))}
+		pouch_sync_error: (dbid, err) => {store.dispatch(pouch_sync_error(dbid, err))},
+
+		pouch_sync_paused: (dbid, info) => {store.dispatch(pouch_sync_paused(dbid, info))},
+
+		pouch_sync_resumed: (dbid, info) => {store.dispatch(pouch_sync_resumed(dbid, info))},
+
+		pouch_sync_denied: (dbid, info) => {store.dispatch(pouch_sync_denied(dbid, info))},
+
 	});
 
 	this.md.on({

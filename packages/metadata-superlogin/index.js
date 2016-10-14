@@ -38,6 +38,11 @@ var default_config = {
     * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
     */
 
+var default_getDbUrl = _superloginClient2.default.getDbUrl.bind(_superloginClient2.default);
+_superloginClient2.default.getDbUrl = function (name) {
+	return default_getDbUrl(name).replace('http://', 'https://').replace('cou206:5984', 'kint.oknosoft.ru/couchdb');
+};
+
 function attach($p) {
 
 	// Session is an object that contains all the session information returned by SuperLogin, along with serverTimeDiff, the difference between the server clock and the local clock.

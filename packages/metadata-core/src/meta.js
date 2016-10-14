@@ -43,34 +43,6 @@ class Meta extends MetaEventEmitter{
 			_m = meta_db;
 			meta_db = null;
 
-			function do_reload(){
-
-				dhtmlx.confirm({
-					title: $p.msg.file_new_date_title,
-					text: $p.msg.file_new_date,
-					ok: "Перезагрузка",
-					cancel: "Продолжить",
-					callback: function(btn) {
-
-						if(btn){
-
-							$p.adapters.pouch.log_out();
-
-							setTimeout(function () {
-								$p.eve.redirect = true;
-								location.reload(true);
-							}, 1000);
-
-						}else{
-
-							confirm_count++;
-							setTimeout(do_reload, confirm_count * 30000);
-
-						}
-					}
-				});
-
-			}
 
 			// следим за изменениями базы meta и предлагаем перезагрузку при обновлении версии
 			// TODO: назначить обработчик
@@ -81,7 +53,11 @@ class Meta extends MetaEventEmitter{
 			// 	else{
 			// 		// если изменились метаданные, запланировать перезагрузку
 			// 		do_reload();
-			// 	}
+			//      setTimeout(function () {
+			//       	$p.eve.redirect = true;
+			//       	location.reload(true);
+			//       }, 1000);
+			//   	}
 			// });
 
 			return _m;

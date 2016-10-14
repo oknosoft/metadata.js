@@ -36,6 +36,9 @@ const POUCH_NO_DATA     = 'POUCH_NO_DATA'       // Оповещение об о�
 const POUCH_SYNC_START  = 'POUCH_SYNC_START'    // Оповещение о начале синхронизации базы doc
 const POUCH_SYNC_ERROR  = 'POUCH_SYNC_ERROR'    // Оповещение об ошибке репликации - не означает окончания репликации - просто информирует об ошибке
 const POUCH_SYNC_DATA   = 'POUCH_SYNC_DATA'     // Прибежали изменения с сервера или мы отправили данные на сервер
+const POUCH_SYNC_PAUSED = 'POUCH_SYNC_PAUSED'   // Репликация приостановлена, обычно, из-за потери связи с сервером
+const POUCH_SYNC_RESUMED= 'POUCH_SYNC_RESUMED'  // Репликация возобновлена
+const POUCH_SYNC_DENIED = 'POUCH_SYNC_DENIED'   // Разновидность ошибки репликации из-за недостатка прав для записи документа на сервере
 
 
 
@@ -119,6 +122,7 @@ function pouch_data_loaded(page) {
 }
 
 var sync_data_indicator;
+
 function pouch_sync_data(dbid, change) {
 
 
@@ -177,30 +181,42 @@ function pouch_sync_start() {
 function pouch_sync_error(dbid, err) {
 	return {
 		type: POUCH_SYNC_ERROR,
-		payload: {
-			dbid: dbid,
-			err: err
-		}
+		payload: { dbid, err }
+	}
+}
+
+function pouch_sync_paused(dbid, info) {
+	return {
+		type: POUCH_SYNC_PAUSED,
+		payload: { dbid, info }
+	}
+}
+
+function pouch_sync_resumed(dbid, info) {
+	return {
+		type: POUCH_SYNC_RESUMED,
+		payload: { dbid, info }
+	}
+}
+
+function pouch_sync_denied(dbid, info) {
+	return {
+		type: POUCH_SYNC_DENIED,
+		payload: { dbid, info }
 	}
 }
 
 function pouch_data_error(dbid, err) {
 	return {
 		type: POUCH_DATA_ERROR,
-		payload: {
-			dbid: dbid,
-			err: err
-		}
+		payload: { dbid, err }
 	}
 }
 
 function pouch_no_data(dbid, err) {
 	return {
 		type: POUCH_NO_DATA,
-		payload: {
-			dbid: dbid,
-			err: err
-		}
+		payload: { dbid, err }
 	}
 }
 
