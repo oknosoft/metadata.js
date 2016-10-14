@@ -668,20 +668,20 @@ function mngrs($p) {
 			var o = this.by_ref[ref] || this.by_ref[(ref = utils.fix_guid(ref))];
 
 			if(!o){
-				if(do_not_create)
+				if(do_not_create && do_not_create != 'promise')
 					return;
 				else
 					o = new $p[this.obj_constructor()](ref, this, true);
 			}
 
 			if(ref === utils.blank.guid)
-				return o;
+				return do_not_create == 'promise' ? Promise.resolve(o) : o;
 
 			if(o.is_new()){
 				return o.load();	// читаем из 1С или иного сервера
 
 			}else
-				return o;
+				return do_not_create == 'promise' ? Promise.resolve(o) : o;
 		}
 
 		/**

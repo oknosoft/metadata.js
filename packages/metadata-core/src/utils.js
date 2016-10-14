@@ -7,6 +7,7 @@
  * @final
  */
 const moment = require('moment');
+const moment_ru = require('moment/locale/ru.js');
 moment._masks = {
 	date:       "DD.MM.YY",
 	date_time:  "DD.MM.YYYY HH:mm",

@@ -506,7 +506,7 @@ class DataObj {
 	 * @param att_id {String} - идентификатор (имя) вложения
 	 */
 	get_attachment(att_id) {
-		return this._manager.get_attachment(this.ref, att_id);
+		return this._manager.adapter.get_attachment(this._manager, this.ref, att_id);
 	}
 
 	/**

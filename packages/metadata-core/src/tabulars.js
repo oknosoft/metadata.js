@@ -270,7 +270,7 @@ function tabulars($p) {
 		 */
 		each(fn) {
 
-			t._obj.forEach((row) => fn.call(this, row._row));
+			this._obj.forEach((row) => fn.call(this, row._row));
 		}
 
 		/**

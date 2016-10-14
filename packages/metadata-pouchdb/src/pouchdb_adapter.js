@@ -146,12 +146,13 @@ class AdapterPouch extends AbstracrAdapter{
 			 */
 			db: {
 				value: function(_mgr) {
-					if (_mgr.cachable.indexOf("remote") != -1 || (
-							_paths.noreplicate && _paths.noreplicate.indexOf(name) != -1
+					const dbid = _mgr.cachable;
+					if (dbid.indexOf("remote") != -1 || (
+							_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1
 						))
-						return this.remote[_mgr.cachable.replace("_remote", "")];
+						return this.remote[dbid.replace("_remote", "")];
 					else
-						return this.local[_mgr.cachable] || this.remote[_mgr.cachable];
+						return this.local[dbid] || this.remote[dbid];
 				}
 			},
 
@@ -217,12 +218,12 @@ class AdapterPouch extends AbstracrAdapter{
 							});
 
 							let sync = {};
-							$p.md.bases().forEach((name) => {
-								if(t.local[name] && t.remote[name]){
-									if(_paths.noreplicate && _paths.noreplicate.indexOf(name) != -1){
+							$p.md.bases().forEach((dbid) => {
+								if(t.local[dbid] && t.remote[dbid]){
+									if(_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1){
 										return;
 									}
-									sync[name] = t.run_sync(name)
+									sync[dbid] = t.run_sync(dbid)
 								}
 							})
 
