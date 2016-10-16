@@ -9,24 +9,31 @@
 /**
  * ### PouchDB для хранения данных в idb браузера и синхронизации с CouchDB
  */
-const PouchDB = require('pouchdb-core')
-		.plugin(require('pouchdb-adapter-http'))
-		.plugin(require('pouchdb-replication'))
-		.plugin(require('pouchdb-authentication'))
-		.plugin(require('pouchdb-mapreduce')),
-		//.plugin(require('pouchdb-find')),
-	pouchdb_memory = require('pouchdb-adapter-memory'),
-	pouchdb_idb = require('pouchdb-adapter-idb')
-
+let PouchDB;
+	// 	= require('pouchdb-core')
+	// 	.plugin(require('pouchdb-adapter-http'))
+	// 	.plugin(require('pouchdb-replication'))
+	// 	.plugin(require('pouchdb-authentication'))
+	// 	.plugin(require('pouchdb-mapreduce')),
+	// 	//.plugin(require('pouchdb-find')),
+	// pouchdb_memory = require('pouchdb-adapter-memory'),
+	// pouchdb_idb = require('pouchdb-adapter-idb')
 
 /**
  * В зависимости от среды исполнения, подключаем адаптер memory или idb
  * isNode
  */
-if(typeof process !== 'undefined' && process.versions && process.versions.node)
-	PouchDB.plugin(pouchdb_memory)
-else
-	PouchDB.plugin(pouchdb_idb)
+if(typeof process !== 'undefined' && process.versions && process.versions.node){
+	PouchDB = require('pouchdb-core')
+		.plugin(require('pouchdb-adapter-http'))
+		.plugin(require('pouchdb-replication'))
+		.plugin(require('pouchdb-mapreduce'))
+		.plugin(require('pouchdb-adapter-memory'));
+}else{
+	PouchDB = require('pouchdb/lib/index-browser.js')
+		.plugin(require('pouchdb-authentication'))
+}
+
 
 import AbstracrAdapter from 'metadata-abstract-adapter'
 
