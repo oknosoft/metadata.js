@@ -1,15 +1,19 @@
 {
   "name": "metadata-react-ui",
   "description": "React UI components for metadata.js",
-  "version": "2.0.0-beta.4",
+  "version": "2.0.0-beta.7",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
-  "dependencies": {},
+  "dependencies": {
+    "material-ui": "^0.16",
+    "react-virtualized": "^8.0",
+    "react-virtualized-select": "^2.0"
+  },
   "engines": {
     "node": ">=6.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/oknosoft/metadata.js.git"
+    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-react-ui/"
   },
   "bugs": {
     "url": "https://github.com/oknosoft/metadata.js/issues"

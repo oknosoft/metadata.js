@@ -380,7 +380,6 @@ gulp.task('build--redux', function(){
 	])
 
 		.pipe(concat('index.js'))
-		.pipe(gulp.dest('./packages/metadata-redux'))
 
 		.pipe(babel({
 			presets: ['es2015'],
@@ -389,6 +388,25 @@ gulp.task('build--redux', function(){
 		}))
 
 		.pipe(gulp.dest('./packages/metadata-redux'))
+
+});
+
+// metadata-superlogin
+gulp.task('build--superlogin', function(){
+
+	return gulp.src([
+		'./packages/metadata-superlogin/src/superlogin.js'
+	])
+
+		.pipe(concat('index.js'))
+
+		.pipe(babel({
+			presets: ['es2015'],
+			compact: false,
+			//comments: false
+		}))
+
+		.pipe(gulp.dest('./packages/metadata-superlogin'))
 
 });
 

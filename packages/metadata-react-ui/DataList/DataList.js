@@ -1,136 +1,146 @@
-import React, { Component, PropTypes } from 'react';
+/** @flow */
+import React, {Component, PropTypes} from "react";
+import {InfiniteLoader, Grid} from "react-virtualized";
+import Toolbar from "./Toolbar";
+import styles from "./DataList.scss";
+import cn from "classnames";
 
-import ReactDataGrid from 'react-data-grid';
-import ReactDataGridPlugins from 'react-data-grid/addons';
 
-import CircularProgress from 'material-ui/CircularProgress';
+const limit = 30,
+  totalRows = 999999;
 
-import Toolbar from './Toolbar'
 
-import classes from './DataList.scss'
-
-//helper to generate a random date
-function randomDate(start, end) {
-	return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime())).toLocaleDateString();
+const list = {
+  _data: [],
+  get size(){ return this._data.length},
+  get(index){ return this._data[index]},
+  clear(){this._data.length = 0}
 }
 
-//helper to create a fixed number of rows
-function createRows(numberOfRows, params){
-	var _rows = [];
+const columns = ['date','number_doc','partner','Санаторий']
+const columnWidths = [130,130,200,200]
 
-	for (var i = 1; i < numberOfRows; i++) {
-		_rows.push({
-			id: i,
-			task: 'Task ' + i,
-			complete: Math.min(100, Math.round(Math.random() * 110)),
-			priority : ['Critical', 'High', 'Medium', 'Low'][Math.floor((Math.random() * 3) + 1)],
-			issueType : ['Bug', 'Improvement', 'Epic', 'Story'][Math.floor((Math.random() * 3) + 1)],
-			startDate: randomDate(new Date(2015, 3, 1), new Date()),
-			completeDate: randomDate(new Date(), new Date(2016, 0, 1))
-		});
-	}
-	return _rows;
-}
+export default class DataList extends Component {
 
-//Custom Formatter component
-var DateFormatter = (props) => (<div>{props.value.toLocaleDateString()}</div>);
-
-export default class DataList extends Component{
-
-	// getInitialState(){
-	// 	return {
-	// 	  rows : createRows(1000, this.props.params)}
-	// }
-
-  get rowsCount() {
-
-    return this.props._mgr ? this.props._mgr.alatable.length : 0
-
+  static contextTypes = {
+    $p: React.PropTypes.object.isRequired,
+    screen: React.PropTypes.object.isRequired
   }
 
-  rowGetter = (index) => {
+  // rowIndex, columnIndex
+  //cellContent
 
-    return this.props._mgr ? this.props._mgr.alatable[index] : {}
+  constructor (props) {
 
-    //var _obj = this.props._mgr ? this.props._mgr.alatable[index] : null;
-    //return _obj ? this.props._mgr.get(_obj.ref) : {}
-    //({ index }) => this._mgr ? this._mgr.alatable[index] : {}
-  }
+    super(props);
 
-  createColumns(){
-
-    //Columns definition
-    var _columns = [];
-    if(this.props._mgr){
-      this.props._mgr.caption_flds({ metadata: null, form: this.props.params.form }).forEach(function (col) {
-
-        var width = parseInt(col.width),
-          column = width ? {
-            key: col.id,
-            name: col.caption,
-            width: width,
-            resizable: true
-          } : {
-            key: col.id,
-            name: col.caption
-          };
-
-        if(col.id.indexOf('date') != -1)
-            column.formatter = DateFormatter
-
-        _columns.push(column)
-      })
-
-    }else{
-      _columns = [
-        {
-          key: 'id',
-          name: 'ID',
-          width: 90
-        },
-        {
-          key: 'name',
-          name: 'Name',
-          editable : true
-        },
-        {
-          key: 'priority',
-          name: 'Priority',
-          editable : true
-        },
-        {
-          key: 'issueType',
-          name: 'Issue type',
-          editable : true
-        },
-        {
-          key: 'complete',
-          name: '% Complete',
-          editable : true
-        },
-        {
-          key: 'startDate',
-          name: 'Start Date',
-          editable : true
-        },
-        {
-          key: 'completeDate',
-          name: 'Expected Complete',
-          editable : true
-        }
-      ]
+    this.state = {
+      totalRowCount: totalRows,
+      filter: {id: 0, name: ''},
+      selectedRowIndex: 0
     }
 
+    this._isRowLoaded = ::this._isRowLoaded
+    this._loadMoreRows = ::this._loadMoreRows
+    this._cellRenderer = ::this._cellRenderer
 
-    return _columns;
   }
 
-	handleRowUpdated(e){
-		//merge updated row with current row and rerender by setting state
-		// var rows = this.state.rows;
-		// Object.assign(rows[e.rowIdx], e.updated);
-		// this.setState({rows:rows});
-	}
+  render () {
+
+    const { totalRowCount } = this.state
+    const { screen } = this.context
+
+    return (
+      <div>
+
+        <Toolbar
+          handleAdd={this.handleAdd}
+          handleEdit={this.handleEdit}
+          handleRemove={this.handleRemove}
+          handleSelectionChange={this.handleSelectionChange}
+          handlePrint={this.handlePrint}
+          handleAttachment={this.handleAttachment}
+          selectionValue={{}}
+        />
+
+        <InfiniteLoader
+          isRowLoaded={this._isRowLoaded}
+          loadMoreRows={this._loadMoreRows}
+          rowCount={totalRowCount}
+          minimumBatchSize={limit}
+        >
+          {({onRowsRendered, registerChild}) => {
+
+            const onSectionRendered = ({rowOverscanStartIndex, rowOverscanStopIndex, rowStartIndex, rowStopIndex}) => {
+
+              onRowsRendered({
+                overscanStartIndex: rowOverscanStartIndex,
+                overscanStopIndex: rowOverscanStopIndex,
+                startIndex: rowStartIndex,
+                stopIndex: rowStopIndex
+              })
+            }
+
+            let left = 0;
+
+            return (
+
+              <div>
+
+                <div
+                  //className={styles.BodyGrid}
+                  style={{position: 'relative'}}>
+                  {
+                    columns.map(function (v, index) {
+
+                      let res = <div
+                        key={v}
+                        className={ cn(styles.oddRow, styles.cell)}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          height: 30,
+                          width: columnWidths[index],
+                          left: left
+                        }}>{v}</div>
+
+                      left+=columnWidths[index]
+
+                      return res;
+                    })
+
+                  }
+                </div>
+
+                <Grid
+                  ref={registerChild}
+                  //className={styles.BodyGrid}
+                  onSectionRendered={onSectionRendered}
+                  cellRenderer={this._cellRenderer}
+                  columnCount={columns.length}
+                  columnWidth={({index}) => columnWidths[index] }
+                  rowCount={totalRowCount}
+                  rowHeight={30}
+                  width={screen.width}
+                  height={screen.height-140}
+                  style={{top: 30}}
+                />
+
+              </div>
+
+
+
+            )
+          }
+
+          }
+
+        </InfiniteLoader>
+
+      </div>
+    )
+  }
 
   handleAdd(e){
 
@@ -156,36 +166,139 @@ export default class DataList extends Component{
 
   }
 
-	render(){
-		return(
+  _formatter (row, index){
+    const v = row[columns[index]]
+    const { $p } = this.context
 
-      this.props.meta.data_loaded ?
+    switch(index){
+      case 0:
+        return $p.utils.moment(v).format($p.utils.moment._masks.date);
+      case 1:
+        return v;
+      case 2:
+        return 'клиент';
+      case 3:
+        return $p.cat.organizations.get(v).presentation;
+    }
+  }
 
-      <div >
+  _isRowLoaded ({ index }) {
+    const res = !!list.get(index)
+    return res
+  }
 
-        <Toolbar
-          handleAdd={this.handleAdd}
-          handleEdit={this.handleEdit}
-          handleRemove={this.handleRemove}
-          handleSelectionChange={this.handleSelectionChange}
-          handlePrint={this.handlePrint}
-          handleAttachment={this.handleAttachment}
+  _getRowClassName (row) {
+    return row % 2 === 0 ? styles.evenRow : styles.oddRow
+  }
+
+  _loadMoreRows ({ startIndex, stopIndex }) {
+
+    const { filter, totalRowCount } = this.state
+    const { $p } = this.context
+    const increment = Math.max(limit, stopIndex - startIndex + 1)
+
+    // готовим фильтры для запроса couchdb
+    const select = {
+      _view: 'doc/number_doc',
+      _raw: true,
+      _top: increment,
+      _skip: startIndex,
+      _key: {
+        startkey: ['8cdf4b40-75a2-11e6-8809-5404a66e4a89', 2000],
+        endkey: ['8cdf4b40-75a2-11e6-8809-5404a66e4a89', 2020]
+      }
+
+    }
+
+    // выполняем запрос
+    return $p.doc.buyers_order.find_rows_remote(select)
+
+      .then((data) => {
+
+        // обновляем массив результата
+        for (var i = 0; i < data.length; i++) {
+          if(!list._data[i+startIndex]){
+            list._data[i+startIndex] = data[i];
+          }
+        }
+
+        // обновляем состояние - изменилось количество записей
+        if(totalRowCount != startIndex + data.length + (data.length < increment ? 0 : increment )){
+          this.setState({
+            totalRowCount: startIndex + data.length + (data.length < increment ? 0 : increment )
+          })
+        }else{
+          this.forceUpdate()
+        }
+
+      })
+  }
+
+  /**
+   *
+   * @param columnIndex - Horizontal (column) index of cell
+   * @param isScrolling - The Grid is currently being scrolled
+   * @param key - Unique key within array of cells
+   * @param rowIndex - Vertical (row) index of cell
+   * @param style - Style object to be applied to cell
+   * @return {XML}
+   * @private
+   */
+  _cellRenderer ({columnIndex, isScrolling, key, rowIndex, style}) {
+
+    const { $p } = this.context
+    const setState = ::this.setState
+    // var grid = this.refs.AutoSizer.refs.Grid
+
+    const classNames = cn(
+      this._getRowClassName(rowIndex),
+      styles.cell,
+      {
+        [styles.centeredCell]: columnIndex > 4, // выравнивание текста по центру
+        [styles.hoveredItem]: rowIndex === this.state.hoveredRowIndex && rowIndex != this.state.selectedRowIndex, // || columnIndex === this.state.hoveredColumnIndex
+        [styles.selectedItem]: rowIndex === this.state.selectedRowIndex
+      }
+    )
+
+    const row = list.get(rowIndex)
+
+    let content
+
+    if (row) {
+      content = this._formatter(row, columnIndex)
+
+    } else {
+      content = (
+        <div
+          className={styles.placeholder}
+          style={{ width: 10 + Math.random() * 80 }}
         />
+      )
+    }
 
-        <ReactDataGrid
-          enableCellSelect={false}
-          columns={this.createColumns()}
-          rowGetter={this.rowGetter}
-          rowsCount={this.rowsCount}
-          minHeight={400}
-          onRowUpdated={this.handleRowUpdated}
-        />
-
+    // It is important to attach the style specified as it controls the cell's position.
+    // You can add additional class names or style properties as you would like.
+    // Key is also required by React to more efficiently manage the array of cells.
+    return (
+      <div
+        className={classNames}
+        key={key}
+        style={style}
+        onMouseOver={function () {
+          setState({
+            hoveredColumnIndex: columnIndex,
+            hoveredRowIndex: rowIndex
+          })
+        }}
+        onTouchTap={function () {
+          setState({
+            selectedRowIndex: rowIndex
+          })
+        }}
+      >
+        {content}
       </div>
-
-        :
-        <div ><CircularProgress size={1.5} className={classes.progress} /></div>
-		)
-	}
+    )
+  }
 
 }

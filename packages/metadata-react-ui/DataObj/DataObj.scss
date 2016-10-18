@@ -1,8 +1,20 @@
-.table {
+
+.toolbar {
+  height: 48px !important;
+}
+
+.table100 {
+  display: table;
+  padding: 16px;
+  width: 100%;
+}
+
+.table50 {
   display: table;
   padding: 16px;
   width: 50%;
-  max-width: 600px;
+  max-width: 700px;
+  min-width: 300px;
 }
 
 .row {

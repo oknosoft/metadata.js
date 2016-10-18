@@ -28,28 +28,6 @@ class Meta extends MetaEventEmitter{
 
 		var _m;
 
-		// загружает метаданные из pouchdb
-		// TODO: перенести этот метод в плагин - Meta не должна ничего знать про pouchdb
-		function meta_from_pouch(meta_db) {
-
-			return meta_db.info()
-				.then(function () {
-					return meta_db.get('meta');
-
-				})
-				.then(function (doc) {
-					_m = doc;
-					doc = null;
-					return meta_db.get('meta_patch');
-
-				}).then(function (doc) {
-					utils._patch(_m, doc);
-					doc = null;
-					delete _m._id;
-					delete _m._rev;
-				});
-		}
-
 		/**
 		 * ### Инициализирует метаданные
 		 * загружает описание метаданных из локального или сетевого хранилища или из объекта, переданного в параметре
@@ -62,51 +40,9 @@ class Meta extends MetaEventEmitter{
 
 			var confirm_count = 0;
 
-			function do_init(){
+			_m = meta_db;
+			meta_db = null;
 
-				if(!meta_db || meta_db instanceof $p.classes.PouchDB){
-
-					return meta_from_pouch(meta_db || $p.adapters.pouch.local.meta)
-						.then(function () {
-							return _m;
-						});
-
-				}else{
-
-					_m = meta_db;
-					meta_db = null;
-
-				}
-			}
-
-			function do_reload(){
-
-				dhtmlx.confirm({
-					title: $p.msg.file_new_date_title,
-					text: $p.msg.file_new_date,
-					ok: "Перезагрузка",
-					cancel: "Продолжить",
-					callback: function(btn) {
-
-						if(btn){
-
-							$p.adapters.pouch.log_out();
-
-							setTimeout(function () {
-								$p.eve.redirect = true;
-								location.reload(true);
-							}, 1000);
-
-						}else{
-
-							confirm_count++;
-							setTimeout(do_reload, confirm_count * 30000);
-
-						}
-					}
-				});
-
-			}
 
 			// следим за изменениями базы meta и предлагаем перезагрузку при обновлении версии
 			// TODO: назначить обработчик
@@ -117,10 +53,14 @@ class Meta extends MetaEventEmitter{
 			// 	else{
 			// 		// если изменились метаданные, запланировать перезагрузку
 			// 		do_reload();
-			// 	}
+			//      setTimeout(function () {
+			//       	$p.eve.redirect = true;
+			//       	location.reload(true);
+			//       }, 1000);
+			//   	}
 			// });
 
-			return do_init();
+			return _m;
 
 		};
 
@@ -189,9 +129,10 @@ class Meta extends MetaEventEmitter{
 		/**
 		 * ### Возвращает структуру имён объектов метаданных конфигурации
 		 *
-		 * @method get_classes
+		 * @method classes
+		 * @return {Object}
 		 */
-		this.get_classes = function () {
+		this.classes = function () {
 			var res = {};
 			for(var i in _m){
 				res[i] = [];
@@ -202,12 +143,32 @@ class Meta extends MetaEventEmitter{
 		};
 
 		/**
+		 * ### Возвращает массив используемых баз
+		 *
+		 * @method bases
+		 * @return {Array}
+		 */
+		this.bases = function () {
+			var res = {};
+			for(var i in _m){
+				for(var j in _m[i]){
+					if(_m[i][j].cachable){
+						let _name = _m[i][j].cachable.replace('_remote', '');
+						if(!res[_name])
+							res[_name] = _name;
+					}
+				}
+			}
+			return Object.keys(res);
+		};
+
+		/**
 		 * ### Создаёт строку SQL с командами создания таблиц для всех объектов метаданных
 		 * @method create_tables
 		 */
 		this.create_tables = function(callback, attr){
 
-			var cstep = 0, data_names = [], managers = this.get_classes(), class_name,
+			var cstep = 0, data_names = [], managers = this.classes(), class_name,
 				create = (attr && attr.postgres) ? "" : "USE md; ";
 
 			function on_table_created(){
@@ -406,53 +367,7 @@ class Meta extends MetaEventEmitter{
 		return ", " + (t ? "_t_." : "") + ("`" + f + "`");
 	}
 
-	/**
-	 * ### Возвращает имя типа элемента управления для типа поля
-	 * TODO: перенести этот метод в плагин
-	 *
-	 * @method control_by_type
-	 * @param type
-	 * @return {*}
-	 */
-	control_by_type(type, val) {
-		var ft;
 
-		if (typeof val == "boolean" && type.types.indexOf("boolean") != -1) {
-			ft = "ch";
-
-		} else if (typeof val == "number" && type.digits) {
-			if (type.fraction_figits < 5)
-				ft = "calck";
-			else
-				ft = "edn";
-
-		} else if (val instanceof Date && type.date_part) {
-			ft = "dhxCalendar";
-
-		} else if (type.is_ref) {
-			ft = "ocombo";
-
-		} else if (type.date_part) {
-			ft = "dhxCalendar";
-
-		} else if (type.digits) {
-			if (type.fraction_figits < 5)
-				ft = "calck";
-			else
-				ft = "edn";
-
-		} else if (type.types[0] == "boolean") {
-			ft = "ch";
-
-		} else if (type.hasOwnProperty("str_len") && (type.str_len >= 100 || type.str_len == 0)) {
-			ft = "txt";
-
-		} else {
-			ft = "ed";
-
-		}
-		return ft;
-	}
 
 	/**
 	 * ### Возвращает структуру для инициализации таблицы на форме

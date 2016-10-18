@@ -23,6 +23,10 @@ const USER_DEFINED      = 'USER_DEFINED'        // Установить теку
 const USER_LOG_OUT      = 'USER_LOG_OUT'        // Попытка завершения синхронизации
 const USER_LOG_ERROR    = 'USER_LOG_ERROR'      // Ошибка авторизации
 
+const USER_SOCIAL_TRY_LINK  = 'USER_SOCIAL_TRY_LINK'    // Попытка привязать аккаунт социальной сети
+const USER_SOCIAL_LINKED    = 'USER_SOCIAL_LINKED'      // Пользователь привязан к аккаунту социальной сети
+const USER_SOCIAL_UNLINKED  = 'USER_SOCIAL_UNLINKED'    // Пользователь отвязан от аккаунта социальной сети
+
 const POUCH_DATA_PAGE   = 'POUCH_DATA_PAGE'     // Оповещение о загрузке порции локальных данных
 const POUCH_LOAD_START  = 'POUCH_LOAD_START'    // Оповещение о начале загрузки локальных данных
 const POUCH_DATA_LOADED = 'POUCH_DATA_LOADED'   // Оповещение об окончании загрузки локальных данных
@@ -32,6 +36,9 @@ const POUCH_NO_DATA     = 'POUCH_NO_DATA'       // Оповещение об о�
 const POUCH_SYNC_START  = 'POUCH_SYNC_START'    // Оповещение о начале синхронизации базы doc
 const POUCH_SYNC_ERROR  = 'POUCH_SYNC_ERROR'    // Оповещение об ошибке репликации - не означает окончания репликации - просто информирует об ошибке
 const POUCH_SYNC_DATA   = 'POUCH_SYNC_DATA'     // Прибежали изменения с сервера или мы отправили данные на сервер
+const POUCH_SYNC_PAUSED = 'POUCH_SYNC_PAUSED'   // Репликация приостановлена, обычно, из-за потери связи с сервером
+const POUCH_SYNC_RESUMED= 'POUCH_SYNC_RESUMED'  // Репликация возобновлена
+const POUCH_SYNC_DENIED = 'POUCH_SYNC_DENIED'   // Разновидность ошибки репликации из-за недостатка прав для записи документа на сервере
 
 
 
@@ -74,20 +81,23 @@ function pouch_data_loaded(page) {
 			payload: page
 		});
 
+
+		const { meta } = getState(),
+			{ $p } = meta;
+
 		// если вход еще не выполнен...
-		let state = getState();
-		if(!state.meta.user.logged_in){
+		if(!meta.user.logged_in){
 
 			setTimeout(function () {
 
 				// получаем имя сохраненного или гостевого пользователя
-				let name = state.meta.$p.wsql.get_user_param('user_name');
-				let password = state.meta.$p.wsql.get_user_param('user_pwd');
+				let name = $p.wsql.get_user_param('user_name');
+				let password = $p.wsql.get_user_param('user_pwd');
 
 				if(!name &&
-					state.meta.$p.job_prm.zone_demo == state.meta.$p.wsql.get_user_param('zone') &&
-					state.meta.$p.job_prm.guests.length){
-					name = state.meta.$p.job_prm.guests[0].name
+					$p.job_prm.zone_demo == $p.wsql.get_user_param('zone') &&
+					$p.job_prm.guests.length){
+					name = $p.job_prm.guests[0].name
 				}
 
 				// устанавливаем текущего пользователя
@@ -95,14 +105,14 @@ function pouch_data_loaded(page) {
 					dispatch(user_defined(name));
 
 				// если разрешено сохранение пароля или гостевая зона...
-				if(name && password && state.meta.$p.wsql.get_user_param('enable_save_pwd')){
-					dispatch(user_try_log_in(state.meta.$p.adapters.pouch, name, $p.aes.Ctr.decrypt(password)));
+				if(name && password && $p.wsql.get_user_param('enable_save_pwd')){
+					dispatch(user_try_log_in($p.adapters.pouch, name, $p.aes.Ctr.decrypt(password)));
 					return;
 				}
 
-				if(name && state.meta.$p.job_prm.zone_demo == state.meta.$p.wsql.get_user_param('zone')){
-					dispatch(user_try_log_in(state.meta.$p.adapters.pouch, name,
-						$p.aes.Ctr.decrypt(state.meta.$p.job_prm.guests[0].password)));
+				if(name && $p.job_prm.zone_demo == $p.wsql.get_user_param('zone')){
+					dispatch(user_try_log_in($p.adapters.pouch, name,
+						$p.aes.Ctr.decrypt($p.job_prm.guests[0].password)));
 				}
 
 			}, 10)
@@ -112,6 +122,7 @@ function pouch_data_loaded(page) {
 }
 
 var sync_data_indicator;
+
 function pouch_sync_data(dbid, change) {
 
 
@@ -145,7 +156,7 @@ function pouch_sync_data(dbid, change) {
 				payload: false
 			})
 
-		}, 3000);
+		}, 1200);
 	}
 }
 
@@ -170,30 +181,42 @@ function pouch_sync_start() {
 function pouch_sync_error(dbid, err) {
 	return {
 		type: POUCH_SYNC_ERROR,
-		payload: {
-			dbid: dbid,
-			err: err
-		}
+		payload: { dbid, err }
+	}
+}
+
+function pouch_sync_paused(dbid, info) {
+	return {
+		type: POUCH_SYNC_PAUSED,
+		payload: { dbid, info }
+	}
+}
+
+function pouch_sync_resumed(dbid, info) {
+	return {
+		type: POUCH_SYNC_RESUMED,
+		payload: { dbid, info }
+	}
+}
+
+function pouch_sync_denied(dbid, info) {
+	return {
+		type: POUCH_SYNC_DENIED,
+		payload: { dbid, info }
 	}
 }
 
 function pouch_data_error(dbid, err) {
 	return {
 		type: POUCH_DATA_ERROR,
-		payload: {
-			dbid: dbid,
-			err: err
-		}
+		payload: { dbid, err }
 	}
 }
 
 function pouch_no_data(dbid, err) {
 	return {
 		type: POUCH_NO_DATA,
-		payload: {
-			dbid: dbid,
-			err: err
-		}
+		payload: { dbid, err }
 	}
 }
 
@@ -230,26 +253,55 @@ function user_try_log_in(adapter, name, password) {
 
 		dispatch({
 			type: USER_TRY_LOG_IN,
-			payload: {name: name, password: password}
+			payload: {name: name, password: password, provider: 'local'}
 		})
 
-		// The function called by the thunk middleware can return a value,
-		// that is passed on as the return value of the dispatch method.
+		// в зависимости от использования суперлогина, разные действия
+		if(adapter.$p.superlogin){
+			return adapter.$p.superlogin.login({
+				username: name,
+				password: password
+			})
+				.then(function (session) {
+					return adapter.log_in(session.token, session.password)
+				})
 
-		// In this case, we return a promise to wait for.
-		// This is not required by thunk middleware, but it is convenient for us.
-
-		return adapter.log_in(name, password)
-			// .then(dispatch(user_log_in(name)))
+		}else{
+			return adapter.log_in(name, password)
+		}
 
 		// In a real world app, you also want to
 		// catch any error in the network call.
 	}
 }
 
-function user_log_out() {
-	return {
-		type: USER_LOG_OUT
+/**
+ * Инициирует отключение пользователя
+ * @param adapter
+ * @return {Function}
+ */
+function user_log_out(adapter) {
+
+	return function (dispatch, getState) {
+
+		const disp_log_out = () => {
+			dispatch({
+				type: USER_LOG_OUT,
+				payload: {name: getState().meta.user.name}
+			})
+		}
+
+		// в зависимости от использования суперлогина, разные действия
+		if(!adapter){
+			disp_log_out();
+
+		}else if(adapter.$p.superlogin){
+			adapter.$p.superlogin.logOut()
+				.then(disp_log_out)
+
+		}else{
+			adapter.log_out();
+		}
 	}
 }
 
@@ -258,8 +310,6 @@ function user_log_error() {
 		type: USER_LOG_ERROR
 	}
 }
-
-
 
 
 const actions = {
@@ -278,6 +328,7 @@ const actions = {
 	[POUCH_DATA_ERROR]: pouch_data_error,
 	[POUCH_LOAD_START]: pouch_load_start,
 	[POUCH_NO_DATA]: pouch_no_data,
+	[POUCH_SYNC_DATA]: pouch_sync_data,
 
 	[OBJ_ADD]: obj_add,
 	[OBJ_ADD_ROW]: obj_add_row,

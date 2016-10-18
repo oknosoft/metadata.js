@@ -1,7 +1,7 @@
 {
   "name": "metadata-redux",
   "description": "Actions and reducers for metadata.js",
-  "version": "2.0.0-beta.4",
+  "version": "2.0.0-beta.7",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "dependencies": {},
   "engines": {
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/oknosoft/metadata.js.git"
+    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-redux/"
   },
   "bugs": {
     "url": "https://github.com/oknosoft/metadata.js/issues"

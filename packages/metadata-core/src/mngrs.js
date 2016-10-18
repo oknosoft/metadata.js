@@ -142,10 +142,10 @@ function mngrs($p) {
 				 * @return {Object} - объект метаданных
 				 */
 				metadata: {
-					value: field => {
+					value: field_name => {
 
-						if(field)
-							return _meta.fields[field] || _meta.tabular_sections[field];
+						if(field_name)
+							return _meta.fields[field_name] || md.get(class_name, field_name) || _meta.tabular_sections[field_name];
 						else
 							return _meta;
 					}
@@ -153,51 +153,6 @@ function mngrs($p) {
 
 				constructor_names: {
 					value: {}
-				},
-
-				/**
-				 * ### Выполняет методы подписки на событие
-				 * Служебный, внутренний метод, вызываемый формами и обсерверами при создании и изменении объекта данных<br/>
-				 * Выполняет в цикле все назначенные обработчики текущего события<br/>
-				 * Если любой из обработчиков вернул `false`, возвращает `false`. Иначе, возвращает массив с результатами всех обработчиков
-				 *
-				 * @method handle_event
-				 * @for DataManager
-				 * @param obj {DataObj} - объект, в котором произошло событие
-				 * @param name {String} - имя события
-				 * @param attr {Object} - дополнительные свойства, передаваемые в обработчик события
-				 * @return {Boolean|Array.<*>}
-				 * @private
-				 */
-				handle_event: {
-					value: function (obj, name, attr) {
-						var res = [], tmp;
-						_events[name].forEach(function (method) {
-							if(res !== false){
-								tmp = method.call(obj, attr);
-								if(tmp === false)
-									res = tmp;
-								else if(tmp)
-									res.push(tmp);
-							}
-						});
-						if(res === false){
-							return res;
-
-						}else if(res.length){
-							if(res.length == 1)
-							// если значение единственное - возвращчем его
-								return res[0];
-							else{
-								// если среди значений есть промисы - возвращаем all
-								if(res.some(function (v) {return typeof v === "object" && v.then}))
-									return Promise.all(res);
-								else
-									return res;
-							}
-						}
-
-					}
 				},
 
 				/**
@@ -244,6 +199,15 @@ function mngrs($p) {
 		 */
 		find_rows(selection, callback){
 			return utils._find_rows.call(this, this.by_ref, selection, callback);
+		}
+
+		/**
+		 * ### Найти строки на сервере
+		 * @param selection
+		 * @async
+		 */
+		find_rows_remote(selection) {
+			return this.adapter.find_rows(this, selection);
 		}
 
 		/**
@@ -568,6 +532,9 @@ function mngrs($p) {
 				case undefined:
 				case "ram":
 				case "doc":
+				case "doc_remote":
+				case "remote":
+				case "user":
 				case "meta":
 					return $p.adapters.pouch;
 			}
@@ -701,20 +668,20 @@ function mngrs($p) {
 			var o = this.by_ref[ref] || this.by_ref[(ref = utils.fix_guid(ref))];
 
 			if(!o){
-				if(do_not_create)
+				if(do_not_create && do_not_create != 'promise')
 					return;
 				else
 					o = new $p[this.obj_constructor()](ref, this, true);
 			}
 
 			if(ref === utils.blank.guid)
-				return o;
+				return do_not_create == 'promise' ? Promise.resolve(o) : o;
 
 			if(o.is_new()){
 				return o.load();	// читаем из 1С или иного сервера
 
 			}else
-				return o;
+				return do_not_create == 'promise' ? Promise.resolve(o) : o;
 		}
 
 		/**
@@ -735,6 +702,7 @@ function mngrs($p) {
 				attr.ref = utils.generate_guid();
 
 			var o = this.by_ref[attr.ref];
+
 			if(!o){
 
 				o = new $p[this.obj_constructor()](attr, this);
@@ -748,38 +716,50 @@ function mngrs($p) {
 						o.date = new Date();
 
 					// Триггер после создания
-					var after_create_res = this.handle_event(o, "after_create");
+					let after_create_res = {};
+					this.emit("after_create", o, after_create_res);
 
 					// Если новый код или номер не были назначены в триггере - устанавливаем стандартное значение
+					let call_new_number_doc;
 					if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
-						if(!o.number_doc)
-							o.new_number_doc();
+						if(!o.number_doc){
+							call_new_number_doc = true;
+						}
+
 					}else{
-						if(!o.id)
-							o.new_number_doc();
+						if(!o.id){
+							call_new_number_doc = true;
+						}
 					}
 
-					if(after_create_res === false)
-						return Promise.resolve(o);
+					return (call_new_number_doc ? o.new_number_doc() : Promise.resolve(o))
+						.then(() => {
 
-					else if(typeof after_create_res === "object" && after_create_res.then)
-						return after_create_res;
+							if(after_create_res === false)
+								return o;
 
-					// выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
-					if(this.cachable == "e1cib" && fill_default){
-						var rattr = {};
-						$p.ajax.default_attr(rattr, job_prm.irest_url());
-						rattr.url += this.rest_name + "/Create()";
-						return $p.ajax.get_ex(rattr.url, rattr)
-							.then(function (req) {
-								return utils._mixin(o, JSON.parse(req.response), undefined, ["ref"]);
-							});
-					}
+							else if(typeof after_create_res === "object" && after_create_res.then)
+								return after_create_res;
+
+							// выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
+							if(this.cachable == "e1cib" && fill_default){
+								var rattr = {};
+								$p.ajax.default_attr(rattr, job_prm.irest_url());
+								rattr.url += this.rest_name + "/Create()";
+								return $p.ajax.get_ex(rattr.url, rattr)
+									.then(function (req) {
+										return utils._mixin(o, JSON.parse(req.response), undefined, ["ref"]);
+									});
+							}else
+								return o;
+						})
 
 				}
+
 			}
 
 			return Promise.resolve(o);
+
 		}
 
 		/**
@@ -1555,8 +1535,9 @@ function mngrs($p) {
 							return;
 					}
 				}
-				l.push(v);
+				l.push(this[v.ref]);
 			});
+
 			return Promise.resolve(l);
 		}
 
@@ -2041,7 +2022,8 @@ function mngrs($p) {
 				o = new $p[this.obj_constructor()](attr, this);
 
 				// Триггер после создания
-				var after_create_res = this.handle_event(o, "after_create");
+				let after_create_res = {};
+				this.emit("after_create", o, after_create_res);
 
 				if(after_create_res === false)
 					return Promise.resolve(o);

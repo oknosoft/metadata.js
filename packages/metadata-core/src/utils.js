@@ -7,6 +7,7 @@
  * @final
  */
 const moment = require('moment');
+const moment_ru = require('moment/locale/ru.js');
 moment._masks = {
 	date:       "DD.MM.YY",
 	date_time:  "DD.MM.YYYY HH:mm",
@@ -35,6 +36,9 @@ if(!Number.prototype.round)
  * Метод дополнения лидирующими нулями в прототип числа
  * @method pad
  * @for Number
+ *
+ * @example
+ *      (5).pad(6) // '000005'
  */
 if(!Number.prototype.pad)
 	Number.prototype.pad = function(size) {
@@ -56,7 +60,7 @@ class Utils{
 
 	constructor() {
 
-
+		this.moment = moment;
 
 		/**
 		 * ### Пустые значения даты и уникального идентификатора
@@ -283,10 +287,15 @@ class Utils{
 	 */
 	is_equal(v1, v2) {
 
-		if (v1 == v2)
+		if (v1 == v2){
 			return true;
-		else if (typeof v1 === typeof v2)
+
+		}else if(typeof v1 === 'string' &&  typeof v2 === 'string' && v1.trim() === v2.trim()){
+			return true;
+
+		}else if (typeof v1 === typeof v2){
 			return false;
+		}
 
 		return (this.fix_guid(v1, false) == this.fix_guid(v2, false));
 	}

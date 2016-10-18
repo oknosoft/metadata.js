@@ -121,7 +121,7 @@ class DataObj {
 
 	_getter(f) {
 
-		var mf = this._metadata.fields[f].type,
+		var mf = this._metadata(f).type,
 			res = this._obj ? this._obj[f] : "",
 			mgr, ref;
 
@@ -165,7 +165,7 @@ class DataObj {
 
 	__setter(f, v) {
 
-		var mf = this._metadata.fields[f].type,
+		var mf = this._metadata(f).type,
 			mgr;
 
 		if(f == "type" && v.types)
@@ -274,12 +274,15 @@ class DataObj {
 
 	/**
 	 * Метаданные текущего объекта
-	 * @property _metadata
+	 * @method _metadata
 	 * @for DataObj
+	 * @param field_name
 	 * @type Object
 	 * @final
 	 */
-	get _metadata(){ return this._manager.metadata() }
+	_metadata(field_name){
+		return this._manager.metadata(field_name)
+	}
 
 	/**
 	 * Пометка удаления
@@ -313,6 +316,7 @@ class DataObj {
 		this._manager.push(this, ref);
 		this._data._modified = false;
 		this._data._is_new = false;
+		return this;
 	}
 
 	/**
@@ -321,10 +325,9 @@ class DataObj {
 	 * @for DataObj
 	 * @param deleted {Boolean}
 	 */
-	mark_deleted(){
+	mark_deleted(deleted){
 		this._obj._deleted = !!deleted;
-		this.save();
-		this.__notify('_deleted');
+		return this.save();
 	}
 
 	/**
@@ -381,7 +384,7 @@ class DataObj {
 		if (this._notis)
 			this._notis.length = 0;
 
-		for (f in this._metadata.tabular_sections)
+		for (f in this._metadata().tabular_sections)
 			this[f].clear(true);
 
 		for (f in this) {
@@ -416,9 +419,9 @@ class DataObj {
 
 		var saver,
 
-			before_save_res = this._manager.handle_event(this, "before_save"),
+			before_save_res = {},
 
-			reset_modified = function () {
+			reset_modified = () => {
 
 				if (before_save_res === false) {
 					if (this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted) {
@@ -432,7 +435,9 @@ class DataObj {
 				reset_modified = null;
 
 				return this;
-			}.bind(this);
+			};
+
+		this._manager.emit("before_save", this, before_save_res);
 
 		// если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
 		if (before_save_res === false) {
@@ -443,9 +448,8 @@ class DataObj {
 			return before_save_res.then(reset_modified);
 		}
 
-
 		// для объектов с иерархией установим пустого родителя, если иной не указан
-		if (this._metadata.hierarchical && !this._obj.parent)
+		if (this._metadata().hierarchical && !this._obj.parent)
 			this._obj.parent = utils.blank.guid;
 
 		// для документов, контролируем заполненность даты
@@ -466,12 +470,12 @@ class DataObj {
 		// если не указаны обязательные реквизиты
 		// TODO: show_msg alert-error
 		// if (msg && msg.show_msg) {
-		// 	for (var mf in this._metadata.fields) {
-		// 		if (this._metadata.fields[mf].mandatory && !this._obj[mf]) {
+		// 	for (var mf in this._metadata().fields) {
+		// 		if (this._metadata().fields[mf].mandatory && !this._obj[mf]) {
 		// 			msg.show_msg({
 		// 				title: msg.mandatory_title,
 		// 				type: "alert-error",
-		// 				text: msg.mandatory_field.replace("%1", this._metadata.fields[mf].synonym)
+		// 				text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
 		// 			});
 		// 			before_save_res = false;
 		// 			return Promise.reject(reset_modified());
@@ -488,7 +492,8 @@ class DataObj {
 			})
 		// и выполняем обработку после записи
 			.then(function (obj) {
-				return obj._manager.handle_event(obj, "after_save");
+				obj._manager.emit("after_save", obj);
+				return obj;
 			})
 			.then(reset_modified);
 	}
@@ -501,7 +506,7 @@ class DataObj {
 	 * @param att_id {String} - идентификатор (имя) вложения
 	 */
 	get_attachment(att_id) {
-		return this._manager.get_attachment(this.ref, att_id);
+		return this._manager.adapter.get_attachment(this._manager, this.ref, att_id);
 	}
 
 	/**
@@ -643,8 +648,8 @@ class CatObj extends DataObj{
 	 */
 	get presentation(){
 		if(this.name || this.id){
-			// return this._metadata.obj_presentation || this._metadata.synonym + " " + this.name || this.id;
-			return this.name || this.id || this._metadata.obj_presentation || this._metadata.synonym;
+			// return this._metadata().obj_presentation || this._metadata().synonym + " " + this.name || this.id;
+			return this.name || this.id || this._metadata().obj_presentation || this._metadata().synonym;
 		}else
 			return this._presentation || '';
 	}
@@ -717,7 +722,7 @@ class DocObj extends DataObj{
 	 */
 	get presentation(){
 		if(this.number_doc)
-			return (this._metadata.obj_presentation || this._metadata.synonym) + ' №' + this.number_doc + " от " + moment(this.date).format(moment._masks.ldt);
+			return (this._metadata().obj_presentation || this._metadata().synonym) + ' №' + this.number_doc + " от " + moment(this.date).format(moment._masks.ldt);
 		else
 			return this._presentation || "";
 	}
@@ -962,15 +967,16 @@ class RegisterRow extends DataObj {
 
 	/**
 	 * Метаданные строки регистра
-	 * @property _metadata
+	 * @method _metadata
 	 * @for RegisterRow
+	 * @param field_name
 	 * @type Object
 	 */
-	get _metadata() {
+	_metadata(field_name) {
 		var _meta = this._manager.metadata();
 		if (!_meta.fields)
 			_meta.fields = Object.assign({}, _meta.dimensions, _meta.resources, _meta.attributes);
-		return _meta;
+		return field_name ? _meta.fields[field_name] : _meta;
 	}
 
 	/**
@@ -981,7 +987,7 @@ class RegisterRow extends DataObj {
 	}
 
 	get presentation() {
-		return this._metadata.obj_presentation || this._metadata.synonym;
+		return this._metadata().obj_presentation || this._metadata().synonym;
 	}
 }
 

@@ -62,7 +62,7 @@ const ACTION_HANDLERS = {
 const initialState = {
 	meta_loaded: false,
 	data_loaded: false,
-	data_empty: true,
+	data_empty: false,
 	sync_started: false,
 	fetch_local: false,
 	fetch_remote: false,
@@ -111,7 +111,14 @@ function rx_events(store) {
 
 		pouch_sync_data: (dbid, change) => {store.dispatch(pouch_sync_data(dbid, change))},
 
-		pouch_sync_error: (dbid, err) => {store.dispatch(pouch_sync_error(dbid, err))}
+		pouch_sync_error: (dbid, err) => {store.dispatch(pouch_sync_error(dbid, err))},
+
+		pouch_sync_paused: (dbid, info) => {store.dispatch(pouch_sync_paused(dbid, info))},
+
+		pouch_sync_resumed: (dbid, info) => {store.dispatch(pouch_sync_resumed(dbid, info))},
+
+		pouch_sync_denied: (dbid, info) => {store.dispatch(pouch_sync_denied(dbid, info))},
+
 	});
 
 	this.md.on({
@@ -133,12 +140,31 @@ const plugin = {
 				value: actions
 			},
 
+			rx_action_types: {
+				value: {
+
+					USER_TRY_LOG_IN,
+					USER_LOG_IN,
+					USER_DEFINED,
+					USER_LOG_OUT,
+					USER_LOG_ERROR,
+
+					POUCH_DATA_LOADED,
+					POUCH_DATA_PAGE,
+					POUCH_DATA_ERROR,
+					POUCH_LOAD_START,
+					POUCH_NO_DATA
+				}
+			},
+
 			rx_reducer: {
-				value: rx_reducer
+				value: rx_reducer,
+				writable: true
 			},
 
 			rx_events: {
-				value: rx_events
+				value: rx_events,
+				writable: true
 			}
 		})
 

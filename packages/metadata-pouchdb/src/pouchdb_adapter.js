@@ -10,22 +10,32 @@
  * ### PouchDB для хранения данных в idb браузера и синхронизации с CouchDB
  */
 const PouchDB = require('pouchdb-core')
-		.plugin(require('pouchdb-adapter-http'))
-		.plugin(require('pouchdb-replication'))
-		.plugin(require('pouchdb-mapreduce'))
-		.plugin(require('pouchdb-authentication')),
-	pouchdb_memory = require('pouchdb-adapter-memory'),
-	pouchdb_idb = require('pouchdb-adapter-idb')
-
+	.plugin(require('pouchdb-adapter-http'))
+	.plugin(require('pouchdb-replication'))
+	.plugin(require('pouchdb-mapreduce'));
+	//.plugin(require('pouchdb-find')),
+	// pouchdb_memory = require('pouchdb-adapter-memory'),
+	// pouchdb_idb = require('pouchdb-adapter-idb')
 
 /**
- * В зависимости от среды исполнения, подключаем адаптер memory или idb
+ * В зависимости от среды исполнения, подключаем адаптер memory или idb или websql
  * isNode
  */
-if(typeof process !== 'undefined' && process.versions && process.versions.node)
-	PouchDB.plugin(pouchdb_memory)
-else
-	PouchDB.plugin(pouchdb_idb)
+if(typeof process !== 'undefined' && process.versions && process.versions.node){
+	PouchDB.plugin(require('pouchdb-adapter-memory'));
+}else{
+
+	PouchDB.plugin(require('pouchdb-authentication'));
+
+	const ua = (navigator && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '',
+		isSafari = ua.indexOf('safari') !== -1 && ua.indexOf('chrome') === -1;
+	if(isSafari){
+		PouchDB.plugin(require('pouchdb-adapter-websql'));
+	}else{
+		PouchDB.plugin(require('pouchdb-adapter-idb'));
+	}
+}
+
 
 import AbstracrAdapter from 'metadata-abstract-adapter'
 
@@ -71,23 +81,20 @@ class AdapterPouch extends AbstracrAdapter{
 			local: {
 				get: function () {
 					if(!_local){
-						var opts = {auto_compaction: true, revs_limit: 2};
-						_local = {
-							ram: new PouchDB(_paths.prefix + _paths.zone + "_ram", opts),
-							doc: new PouchDB(_paths.prefix + _paths.zone + "_doc", opts),
-							meta: new PouchDB(_paths.prefix + "meta", opts),
-							sync: {}
-						}
-					}
-					if(_paths.path && !_local._meta){
-						_local._meta = new PouchDB(_paths.path + "meta", {
-							auth: {
-								username: "guest",
-								password: "meta"
-							},
-							skip_setup: true
-						});
-						t.run_sync(_local.meta, _local._meta, "meta");
+
+						var opts = {auto_compaction: true, revs_limit: 2},
+							bases = $p.md.bases();
+
+						_local = { sync: {} };
+
+						["ram", "doc", "meta", "user"].forEach((name) => {
+							if(bases.indexOf(name) != -1){
+								if(name == "meta")
+									_local[name] = new PouchDB(_paths.prefix + "meta", opts);
+								else
+									_local[name] = new PouchDB(_paths.prefix + _paths.zone + "_" + name, opts);
+							}
+						})
 					}
 					return _local;
 				}
@@ -102,12 +109,59 @@ class AdapterPouch extends AbstracrAdapter{
 			remote: {
 				get: function () {
 					if(!_remote){
-						_remote = {
-							ram: new PouchDB(_paths.path + _paths.zone + "_ram", { skip_setup: true }),
-							doc: new PouchDB(_paths.path + _paths.zone + "_doc" + _paths.suffix, { skip_setup: true })
+
+						var opts = {skip_setup: true, adapter: 'http'};
+
+						if(_paths.user_node){ opts.auth = _paths.user_node }
+
+						_remote = { };
+
+						function dbpath(name) {
+
+							if($p.superlogin){
+								return $p.superlogin.getDbUrl(_paths.prefix + (name == "meta" ? name : (_paths.zone + "_" + name)))
+
+							}else{
+
+								if(name == "meta")
+									return _paths.path + "meta";
+
+								else if(name == "ram")
+									return _paths.path + _paths.zone + "_ram";
+
+								else
+									return _paths.path + _paths.zone + "_" + name + _paths.suffix;
+							}
 						}
+
+						$p.md.bases().forEach((name) => {
+							if(name == 'e1cib' || name == 'pgsql')
+								return;
+
+							_remote[name] = new PouchDB(dbpath(name), opts);
+
+						})
+
 					}
 					return _remote;
+				}
+			},
+
+			/**
+			 * Возвращает базу PouchDB, связанную с объектами данного менеджера
+			 * @method db
+			 * @param _mgr {DataManager}
+			 * @return {PouchDB}
+			 */
+			db: {
+				value: function(_mgr) {
+					const dbid = _mgr.cachable;
+					if (dbid.indexOf("remote") != -1 || (
+							_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1
+						))
+						return this.remote[dbid.replace("_remote", "")];
+					else
+						return this.local[dbid] || this.remote[dbid];
 				}
 			},
 
@@ -139,9 +193,18 @@ class AdapterPouch extends AbstracrAdapter{
 						}
 					}
 
-					return this.remote.ram.login(username, password)
-						.then(() => _remote.doc.login(username, password))
-						.then(req => {
+					// авторизуемся во всех базах
+					let try_auth = [];
+					$p.md.bases().forEach((name) => {
+						if(t.remote[name]){
+							try_auth.push(
+								_paths.user_node ? this.remote[name].info() : this.remote[name].login(username, password)
+							)
+						}
+					})
+
+					return Promise.all(try_auth)
+						.then(function (){
 
 							_auth = {username: username};
 							setTimeout(() => {
@@ -163,10 +226,17 @@ class AdapterPouch extends AbstracrAdapter{
 								t.emit('user_log_in', username)
 							});
 
-							return {
-								ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),
-								doc: t.run_sync(t.local.doc, t.remote.doc, "doc")
-							}
+							let sync = {};
+							$p.md.bases().forEach((dbid) => {
+								if(t.local[dbid] && t.remote[dbid]){
+									if(_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1){
+										return;
+									}
+									sync[dbid] = t.run_sync(dbid)
+								}
+							})
+
+							return sync
 						})
 						.catch(err => {
 							// излучаем событие
@@ -196,16 +266,18 @@ class AdapterPouch extends AbstracrAdapter{
 						_auth = null;
 					}
 
-					if(_remote && _remote.ram)
-						delete _remote.ram;
+					return this.remote.ram.logout()
+						.then(function () {
+							if(_remote && _remote.ram)
+								delete _remote.ram;
 
-					if(_remote && _remote.doc)
-						delete _remote.doc;
+							if(_remote && _remote.doc)
+								delete _remote.doc;
 
-					_remote = null;
+							_remote = null;
 
-					t.emit('user_log_out')
-
+							t.emit('user_log_out')
+						})
 				}
 			},
 
@@ -222,7 +294,6 @@ class AdapterPouch extends AbstracrAdapter{
 						destroy_doc = t.local.doc.destroy.bind(t.local.doc),
 						do_reload = function (){
 							setTimeout(function () {
-								$p.eve.redirect = true;
 								location.reload(true);
 							}, 1000);
 						};
@@ -346,9 +417,11 @@ class AdapterPouch extends AbstracrAdapter{
 			 * @return {Promise.<TResult>}
 			 */
 			run_sync: {
-				value: function (local, remote, id){
+				value: function (id){
 
-					var linfo, _page;
+					let local = t.local[id],
+						remote = t.remote[id],
+						linfo, _page;
 
 					return local.info()
 						.then(function (info) {
@@ -398,7 +471,7 @@ class AdapterPouch extends AbstracrAdapter{
 									total_rows: rinfo.doc_count,
 									local_rows: linfo.doc_count,
 									docs_written: 0,
-									limit: 200,
+									limit: 300,
 									page: 0,
 									start: Date.now()
 								};
@@ -411,22 +484,24 @@ class AdapterPouch extends AbstracrAdapter{
 								});
 							}
 
-							// ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
 							var options = {
 								live: true,
 								retry: true,
-								batch_size: 200,
+								batch_size: 300,
 								batches_limit: 8
 							};
 
 							// если указан клиентский или серверный фильтр - подключаем
-							if(id == "meta"){
-								options.filter = "auth/meta";
-
-							}else if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id]){
+							if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id]){
 								options.filter = $p.job_prm.pouch_filter[id];
+
+							}else if(id == "meta"){
+
+								// если для базы meta фильтр не задан, используем умолчание
+								options.filter = "auth/meta";
 							}
 
+							// ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
 							if(id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo){
 								_local.sync[id] = local.replicate.from(remote, options);
 							}else{
@@ -448,7 +523,7 @@ class AdapterPouch extends AbstracrAdapter{
 
 											t.emit('pouch_data_page', _page);
 
-											if(_page.docs_written >= _page.total_rows){
+											if(change.docs.length < _page.limit){
 
 												// широковещательное оповещение об окончании загрузки локальных данных
 												_data_loaded = true;
@@ -467,20 +542,17 @@ class AdapterPouch extends AbstracrAdapter{
 								})
 								.on('paused', function (info) {
 									// replication was paused, usually because of a lost connection
-									//$p.eve.callEvent("pouch_paused", [id, info]);
-									t.emit('pouch_sync_error', id, info);
+									t.emit('pouch_sync_paused', id, info);
 
 								})
 								.on('active', function (info) {
 									// replication was resumed
-									//$p.eve.callEvent("pouch_active", [id, info]);
-									t.emit('pouch_sync_error', id, info);
+									t.emit('pouch_sync_resumed', id, info);
 
 								})
 								.on('denied', function (info) {
 									// a document failed to replicate, e.g. due to permissions
-									//$p.eve.callEvent("pouch_denied", [id, info]);
-									t.emit('pouch_sync_error', id, info);
+									t.emit('pouch_sync_denied', id, info);
 
 								})
 								.on('error', function (err) {
@@ -507,7 +579,8 @@ class AdapterPouch extends AbstracrAdapter{
 	 */
 	load_obj(tObj) {
 
-		return this.db(tObj._manager).get(tObj._manager.class_name + "|" + tObj.ref)
+		const db = this.db(tObj._manager);
+		return db.get(tObj._manager.class_name + "|" + tObj.ref)
 			.then((res) => {
 				delete res._id;
 				delete res._rev;
@@ -516,6 +589,8 @@ class AdapterPouch extends AbstracrAdapter{
 			.catch(function (err) {
 				if (err.status != 404)
 					throw err;
+				else
+					console.log({tObj, db})
 			})
 			.then(function (res) {
 				return tObj;
@@ -532,7 +607,7 @@ class AdapterPouch extends AbstracrAdapter{
 	 */
 	save_obj(tObj, attr) {
 
-		var tmp = tObj._obj._clone(),
+		var tmp = Object.assign({}, tObj._obj),
 			db = this.db(tObj._manager);
 
 		tmp._id = tObj._manager.class_name + "|" + tObj.ref;
@@ -584,7 +659,8 @@ class AdapterPouch extends AbstracrAdapter{
 	 * ### Возвращает набор данных для дерева динсписка
 	 *
 	 * @method pouch_tree
-	 * @param attr
+	 * @param _mgr {DataManager}
+	 * @param attr {Object}
 	 * @return {Promise.<Array>}
 	 */
 	get_tree(_mgr, attr){
@@ -595,13 +671,13 @@ class AdapterPouch extends AbstracrAdapter{
 	 * ### Возвращает набор данных для динсписка
 	 *
 	 * @method pouch_selection
+	 * @param _mgr {DataManager}
 	 * @param attr
 	 * @return {Promise.<Array>}
 	 */
 	get_selection(_mgr, attr){
 
 	}
-
 
 	/**
 	 * Загружает объекты из PouchDB по массиву ссылок
@@ -632,7 +708,6 @@ class AdapterPouch extends AbstracrAdapter{
 			})
 	}
 
-
 	/**
 	 * Загружает объекты из PouchDB, обрезанные по view
 	 */
@@ -660,7 +735,7 @@ class AdapterPouch extends AbstracrAdapter{
 
 						result.rows.forEach(function (rev) {
 							doc = rev.doc;
-							key = doc._id.split("|");
+							let key = doc._id.split("|");
 							doc.ref = key[1];
 							// наполняем
 							res.push(doc);
@@ -685,28 +760,13 @@ class AdapterPouch extends AbstracrAdapter{
 		});
 	}
 
-
-	/**
-	 * Возвращает базу PouchDB, связанную с объектами данного менеджера
-	 * @method db
-	 * @param _mgr {DataManager}
-	 * @return {PouchDB}
-	 */
-	db(_mgr) {
-		if (_mgr.cachable.indexOf("_remote") != -1)
-			return this.remote[_mgr.cachable.replace("_remote", "")];
-		else
-			return this.local[_mgr.cachable] || this.remote[_mgr.cachable];
-	}
-
-
 	/**
 	 * ### Найти строки
 	 * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
 	 * Eсли отбор пустой, возвращаются все строки из PouchDB.
 	 *
 	 * @method pouch_find_rows
-	 * @for DataManager
+	 * @param _mgr {DataManager}
 	 * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
 	 * @param [selection._top] {Number}
 	 * @param [selection._skip] {Number}
@@ -868,7 +928,7 @@ class AdapterPouch extends AbstracrAdapter{
 						result.rows.forEach(function (rev) {
 							doc = rev.doc;
 
-							key = doc._id.split("|");
+							let key = doc._id.split("|");
 							doc.ref = key[1];
 
 							if (!_raw) {
@@ -938,12 +998,11 @@ class AdapterPouch extends AbstracrAdapter{
 
 	}
 
-
 	/**
 	 * ### Сохраняет присоединенный файл
 	 *
 	 * @method save_attachment
-	 * @for DataManager
+	 * @param _mgr {DataManager}
 	 * @param ref
 	 * @param att_id
 	 * @param attachment
@@ -980,9 +1039,9 @@ class AdapterPouch extends AbstracrAdapter{
 
 	}
 
-
 	/**
 	 * Получает присоединенный к объекту файл
+	 * @param _mgr {DataManager}
 	 * @param ref
 	 * @param att_id
 	 * @return {Promise}
@@ -993,9 +1052,9 @@ class AdapterPouch extends AbstracrAdapter{
 
 	}
 
-
 	/**
 	 * Удаляет присоединенный к объекту файл
+	 * @param _mgr {DataManager}
 	 * @param ref
 	 * @param att_id
 	 * @return {Promise}
@@ -1021,7 +1080,6 @@ class AdapterPouch extends AbstracrAdapter{
 				return db.removeAttachment(ref, att_id, _rev);
 			});
 	}
-
 
 	/**
 	 * ### Загружает в менеджер изменения или полученные через allDocs данные
@@ -1089,7 +1147,6 @@ class AdapterPouch extends AbstracrAdapter{
 		return false;
 	}
 
-
 	/**
 	 * Формирует архив полной выгрузки базы для сохранения в файловой системе клиента
 	 * @method backup_database
@@ -1104,7 +1161,6 @@ class AdapterPouch extends AbstracrAdapter{
 
 		// складываем все части в файл
 	}
-
 
 	/**
 	 * Восстанавливает базу из архивной копии
@@ -1122,12 +1178,111 @@ class AdapterPouch extends AbstracrAdapter{
 
 }
 
+function proto_data_obj(data_obj, adapter, classes) {
+
+	Object.defineProperties(data_obj, {
+
+		/**
+		 * Устанавливает новый номер документа или код справочника
+		 */
+		new_number_doc: {
+
+			value: function (prefix) {
+
+				if(!this._metadata().code_length)
+					return;
+
+				// если не указан явно, рассчитываем префикс по умолчанию
+				if(!prefix)
+					prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
+						(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
+
+				var obj = this,
+					part = "",
+					year = (this.date instanceof Date) ? this.date.getFullYear() : 0,
+					code_length = this._metadata().code_length - prefix.length;
+
+				// для кешируемых в озу, вычисляем без индекса
+				if(this._manager.cachable == "ram")
+					return Promise.resolve(this.new_cat_id(prefix));
+
+				return adapter.db(obj._manager).query("doc/number_doc",
+					{
+						limit : 1,
+						include_docs: false,
+						startkey: [obj._manager.class_name, year, prefix + '\uffff'],
+						endkey: [obj._manager.class_name, year, prefix],
+						descending: true
+					})
+					.then(function (res) {
+						if(res.rows.length){
+							var num0 = res.rows[0].key[2];
+							for(var i = num0.length-1; i>0; i--){
+								if(isNaN(parseInt(num0[i])))
+									break;
+								part = num0[i] + part;
+							}
+							part = (parseInt(part || 0) + 1).toFixed(0);
+						}else{
+							part = "1";
+						}
+						while (part.length < code_length)
+							part = "0" + part;
+
+						if(obj instanceof classes.DocObj || obj instanceof classes.TaskObj || obj instanceof classes.BusinessProcessObj)
+							obj.number_doc = prefix + part;
+						else
+							obj.id = prefix + part;
+
+						return obj;
+
+					});
+			}
+		},
+
+		new_cat_id: {
+
+			value: function (prefix) {
+
+				if(!prefix)
+					prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
+						(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
+
+				var code_length = this._metadata().code_length - prefix.length,
+					field = (this instanceof classes.DocObj || this instanceof classes.TaskObj || this instanceof classes.BusinessProcessObj) ? "number_doc" : "id",
+					part = "",
+					res = $p.wsql.alasql("select top 1 " + field + " as id from ? where " + field + " like '" + prefix + "%' order by " + field + " desc", [this._manager.alatable]);
+
+				if(res.length){
+					var num0 = res[0].id || "";
+					for(var i = num0.length-1; i>0; i--){
+						if(isNaN(parseInt(num0[i])))
+							break;
+						part = num0[i] + part;
+					}
+					part = (parseInt(part || 0) + 1).toFixed(0);
+				}else{
+					part = "1";
+				}
+				while (part.length < code_length)
+					part = "0" + part;
+
+				this[field] = prefix + part;
+
+				return this;
+			}
+		}
+	})
+}
+
 const plugin = {
 
 	constructor(){
 
 		Object.defineProperty(this.adapters, 'pouch', {value: new AdapterPouch(this)})
 		Object.defineProperty(this.classes, 'PouchDB', {value: PouchDB})
+
+		proto_data_obj(this.classes.DataObj.prototype, this.adapters.pouch, this.classes)
 
 	}
 }

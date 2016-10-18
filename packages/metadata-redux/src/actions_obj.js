@@ -27,10 +27,11 @@ const OBJ_VALUE_CHANGE  = 'OBJ_VALUE_CHANGE'    // Изменён реквизи
 // ------------------------------------
 
 
-function obj_add(class_name) {
+function obj_add(_mgr) {
+	const _obj = _mgr.create()
 	return {
 		type: OBJ_ADD,
-		payload: {class_name: class_name}
+		payload: {class_name: _mgr.class_name, ref: _obj.ref}
 	}
 }
 
@@ -98,20 +99,28 @@ function obj_revert(class_name, ref) {
 
 function obj_save(class_name, ref, post, mark_deleted) {
 	return (dispatch, getState) => {
-		return new Promise((resolve) => {
-			setTimeout(() => {
-				dispatch(dispatch({
-					type: OBJ_SAVE,
-					payload: {
-						class_name: class_name,
-						ref: ref,
-						post: post,
-						mark_deleted: mark_deleted
+		let _obj
+		if(typeof class_name == 'object'){
+			_obj = class_name;
+			class_name = _obj._manager.class_name
+			ref = _obj.ref
+			if(mark_deleted)
+				_obj._obj._deleted = true;
+			_obj.save(post)
+				.then(
+					() => {
+						dispatch({
+							type: OBJ_SAVE,
+							payload: {
+								class_name: class_name,
+								ref: ref,
+								post: post,
+								mark_deleted: mark_deleted
+							}
+						})
 					}
-				}))
-				resolve()
-			}, 200)
-		})
+				)
+		}
 	}
 }
 

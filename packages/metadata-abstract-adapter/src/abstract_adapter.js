@@ -14,14 +14,15 @@ export class MetaEventEmitter extends EventEmitter{
 	 */
 	on(type, listener){
 
-		if(arguments.length > 1 || typeof type != 'object')
+		if(arguments.length > 1 || typeof type != 'object'){
 			super.on(type, listener);
 
-		for(var fld in type){
-			if(type.hasOwnProperty(fld))
-				super.on(fld, type[fld])
+		}else{
+			for(var fld in type){
+				if(type.hasOwnProperty(fld))
+					super.on(fld, type[fld])
+			}
 		}
-
 	}
 }
 

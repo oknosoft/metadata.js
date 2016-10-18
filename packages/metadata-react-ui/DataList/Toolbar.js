@@ -20,15 +20,15 @@ export default class DataListToolbar extends Component{
 
   static propTypes = {
 
-    handleAdd: PropTypes.func.isRequired,
-    handleEdit: PropTypes.func.isRequired,
-    handleRemove: PropTypes.func.isRequired,
+    handleAdd: PropTypes.func.isRequired,             // обработчик добавления объекта
+    handleEdit: PropTypes.func.isRequired,            // обработчик открфтия формы редактора
+    handleRemove: PropTypes.func.isRequired,          // обработчик удаления строки
 
-    handleSelectionChange: PropTypes.func.isRequired,
-    selectionValue: PropTypes.object.isRequired,
+    handleSelectionChange: PropTypes.func.isRequired, // ??? обработчик при изменении фильтра
+    selectionValue: PropTypes.object.isRequired,      // значение фильтра
 
-    handlePrint: PropTypes.func.isRequired,
-    handleAttachment: PropTypes.func.isRequired,
+    handlePrint: PropTypes.func.isRequired,           // обработчик открытия диалога печати
+    handleAttachment: PropTypes.func.isRequired,      // обработчик открытия диалога присоединенных файлов
   }
 
   render(){

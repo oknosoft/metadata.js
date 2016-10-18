@@ -121,7 +121,9 @@ class WSQL {
 							path: this.get_user_param("couch_path", "string") || $p.job_prm.couch_path || "",
 							zone: this.get_user_param("zone", "number"),
 							prefix: $p.job_prm.local_storage_prefix,
-							suffix: this.get_user_param("couch_suffix", "string") || ""
+							suffix: this.get_user_param("couch_suffix", "string") || "",
+							user_node: $p.job_prm.user_node,
+							noreplicate: $p.job_prm.noreplicate
 						};
 						if (pouch_prm.path) {
 
