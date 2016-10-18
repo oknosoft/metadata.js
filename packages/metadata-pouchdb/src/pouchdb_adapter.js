@@ -9,29 +9,31 @@
 /**
  * ### PouchDB для хранения данных в idb браузера и синхронизации с CouchDB
  */
-let PouchDB;
-	// 	= require('pouchdb-core')
-	// 	.plugin(require('pouchdb-adapter-http'))
-	// 	.plugin(require('pouchdb-replication'))
-	// 	.plugin(require('pouchdb-authentication'))
-	// 	.plugin(require('pouchdb-mapreduce')),
-	// 	//.plugin(require('pouchdb-find')),
+const PouchDB = require('pouchdb-core')
+	.plugin(require('pouchdb-adapter-http'))
+	.plugin(require('pouchdb-replication'))
+	.plugin(require('pouchdb-mapreduce'));
+	//.plugin(require('pouchdb-find')),
 	// pouchdb_memory = require('pouchdb-adapter-memory'),
 	// pouchdb_idb = require('pouchdb-adapter-idb')
 
 /**
- * В зависимости от среды исполнения, подключаем адаптер memory или idb
+ * В зависимости от среды исполнения, подключаем адаптер memory или idb или websql
  * isNode
  */
 if(typeof process !== 'undefined' && process.versions && process.versions.node){
-	PouchDB = require('pouchdb-core')
-		.plugin(require('pouchdb-adapter-http'))
-		.plugin(require('pouchdb-replication'))
-		.plugin(require('pouchdb-mapreduce'))
-		.plugin(require('pouchdb-adapter-memory'));
+	PouchDB.plugin(require('pouchdb-adapter-memory'));
 }else{
-	PouchDB = require('pouchdb/lib/index-browser.js')
-		.plugin(require('pouchdb-authentication'))
+
+	PouchDB.plugin(require('pouchdb-authentication'));
+
+	const ua = (navigator && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '',
+		isSafari = ua.indexOf('safari') !== -1 && ua.indexOf('chrome') === -1;
+	if(isSafari){
+		PouchDB.plugin(require('pouchdb-adapter-websql'));
+	}else{
+		PouchDB.plugin(require('pouchdb-adapter-idb'));
+	}
 }
 
 

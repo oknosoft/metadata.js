@@ -156,7 +156,7 @@ function pouch_sync_data(dbid, change) {
 				payload: false
 			})
 
-		}, 1500);
+		}, 1200);
 	}
 }
 
@@ -328,6 +328,7 @@ const actions = {
 	[POUCH_DATA_ERROR]: pouch_data_error,
 	[POUCH_LOAD_START]: pouch_load_start,
 	[POUCH_NO_DATA]: pouch_no_data,
+	[POUCH_SYNC_DATA]: pouch_sync_data,
 
 	[OBJ_ADD]: obj_add,
 	[OBJ_ADD_ROW]: obj_add_row,

@@ -316,6 +316,7 @@ class DataObj {
 		this._manager.push(this, ref);
 		this._data._modified = false;
 		this._data._is_new = false;
+		return this;
 	}
 
 	/**
@@ -326,8 +327,7 @@ class DataObj {
 	 */
 	mark_deleted(deleted){
 		this._obj._deleted = !!deleted;
-		this.save();
-		this.__notify('_deleted');
+		return this.save();
 	}
 
 	/**

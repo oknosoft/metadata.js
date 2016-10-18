@@ -325,7 +325,7 @@ function _pouch_sync_data(dbid, change) {
 				type: POUCH_SYNC_DATA,
 				payload: false
 			});
-		}, 1500);
+		}, 1200);
 	};
 }
 
@@ -475,7 +475,7 @@ function user_log_error() {
 	};
 }
 
-var actions = (_actions = {}, _defineProperty(_actions, META_LOADED, meta_loaded), _defineProperty(_actions, PRM_CHANGE, prm_change), _defineProperty(_actions, USER_TRY_LOG_IN, user_try_log_in), _defineProperty(_actions, USER_LOG_IN, _user_log_in), _defineProperty(_actions, USER_DEFINED, user_defined), _defineProperty(_actions, USER_LOG_OUT, _user_log_out), _defineProperty(_actions, USER_LOG_ERROR, user_log_error), _defineProperty(_actions, POUCH_DATA_LOADED, _pouch_data_loaded), _defineProperty(_actions, POUCH_DATA_PAGE, _pouch_data_page), _defineProperty(_actions, POUCH_DATA_ERROR, _pouch_data_error), _defineProperty(_actions, POUCH_LOAD_START, _pouch_load_start), _defineProperty(_actions, POUCH_NO_DATA, _pouch_no_data), _defineProperty(_actions, OBJ_ADD, obj_add), _defineProperty(_actions, OBJ_ADD_ROW, obj_add_row), _defineProperty(_actions, OBJ_DEL_ROW, obj_del_row), _defineProperty(_actions, OBJ_EDIT, obj_edit), _defineProperty(_actions, OBJ_REVERT, obj_revert), _defineProperty(_actions, OBJ_SAVE, obj_save), _defineProperty(_actions, OBJ_CHANGE, obj_change), _defineProperty(_actions, OBJ_VALUE_CHANGE, obj_value_change), _defineProperty(_actions, 'obj_post', obj_post), _defineProperty(_actions, 'obj_unpost', obj_unpost), _defineProperty(_actions, 'obj_mark_deleted', obj_mark_deleted), _defineProperty(_actions, 'obj_unmark_deleted', obj_unmark_deleted), _actions);
+var actions = (_actions = {}, _defineProperty(_actions, META_LOADED, meta_loaded), _defineProperty(_actions, PRM_CHANGE, prm_change), _defineProperty(_actions, USER_TRY_LOG_IN, user_try_log_in), _defineProperty(_actions, USER_LOG_IN, _user_log_in), _defineProperty(_actions, USER_DEFINED, user_defined), _defineProperty(_actions, USER_LOG_OUT, _user_log_out), _defineProperty(_actions, USER_LOG_ERROR, user_log_error), _defineProperty(_actions, POUCH_DATA_LOADED, _pouch_data_loaded), _defineProperty(_actions, POUCH_DATA_PAGE, _pouch_data_page), _defineProperty(_actions, POUCH_DATA_ERROR, _pouch_data_error), _defineProperty(_actions, POUCH_LOAD_START, _pouch_load_start), _defineProperty(_actions, POUCH_NO_DATA, _pouch_no_data), _defineProperty(_actions, POUCH_SYNC_DATA, _pouch_sync_data), _defineProperty(_actions, OBJ_ADD, obj_add), _defineProperty(_actions, OBJ_ADD_ROW, obj_add_row), _defineProperty(_actions, OBJ_DEL_ROW, obj_del_row), _defineProperty(_actions, OBJ_EDIT, obj_edit), _defineProperty(_actions, OBJ_REVERT, obj_revert), _defineProperty(_actions, OBJ_SAVE, obj_save), _defineProperty(_actions, OBJ_CHANGE, obj_change), _defineProperty(_actions, OBJ_VALUE_CHANGE, obj_value_change), _defineProperty(_actions, 'obj_post', obj_post), _defineProperty(_actions, 'obj_unpost', obj_unpost), _defineProperty(_actions, 'obj_mark_deleted', obj_mark_deleted), _defineProperty(_actions, 'obj_unmark_deleted', obj_unmark_deleted), _actions);
 
 /**
  * Action Handlers - обработчики событий - вызываются из корневого редюсера
