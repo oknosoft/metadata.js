@@ -1,11 +1,12 @@
 {
   "name": "metadata-react-ui",
   "description": "React UI components for metadata.js",
-  "version": "2.0.0-beta.7",
+  "version": "2.0.0-beta.8",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "dependencies": {
     "material-ui": "^0.16",
-    "react-virtualized": "^8.0",
+    "react-data-grid": "^1.0.54",
+    "react-virtualized": "^8.1",
     "react-virtualized-select": "^2.0"
   },
   "engines": {
