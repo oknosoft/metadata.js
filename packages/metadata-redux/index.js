@@ -1,14 +1,312 @@
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _actions, _ACTION_HANDLERS_OBJ, _ACTION_HANDLERS;
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _actions;
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+/**
+ * ### Действия и типы действий в терминах redux
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ * @module actions.js
+ *
+ * Created 05.09.2016
+ */
+
+// ------------------------------------
+// Action types - имена типов действий
+// ------------------------------------
+
+var META_LOADED = 'META_LOADED'; // Инициализирует параметры и создаёт менеджеры объектов данных
+
+var PRM_CHANGE = 'PRM_CHANGE'; // Изменены глобальные параметры (couch_path, zone и т.д.)
+
+
+var USER_TRY_LOG_IN = 'USER_TRY_LOG_IN'; // Попытка авторизации
+var USER_LOG_IN = 'USER_LOG_IN'; // Подтверждает авторизацию
+var USER_DEFINED = 'USER_DEFINED'; // Установить текущего пользователя (авторизация не обязательна)
+var USER_LOG_OUT = 'USER_LOG_OUT'; // Попытка завершения синхронизации
+var USER_LOG_ERROR = 'USER_LOG_ERROR'; // Ошибка авторизации
+
+var USER_SOCIAL_TRY_LINK = 'USER_SOCIAL_TRY_LINK'; // Попытка привязать аккаунт социальной сети
+var USER_SOCIAL_LINKED = 'USER_SOCIAL_LINKED'; // Пользователь привязан к аккаунту социальной сети
+var USER_SOCIAL_UNLINKED = 'USER_SOCIAL_UNLINKED'; // Пользователь отвязан от аккаунта социальной сети
+
+var POUCH_DATA_PAGE = 'POUCH_DATA_PAGE'; // Оповещение о загрузке порции локальных данных
+var POUCH_LOAD_START = 'POUCH_LOAD_START'; // Оповещение о начале загрузки локальных данных
+var POUCH_DATA_LOADED = 'POUCH_DATA_LOADED'; // Оповещение об окончании загрузки локальных данных
+var POUCH_DATA_ERROR = 'POUCH_DATA_ERROR'; // Оповещение об ошибке при загрузке локальных данных
+var POUCH_NO_DATA = 'POUCH_NO_DATA'; // Оповещение об отсутствии локальных данных (как правило, при первом запуске)
+
+var POUCH_SYNC_START = 'POUCH_SYNC_START'; // Оповещение о начале синхронизации базы doc
+var POUCH_SYNC_ERROR = 'POUCH_SYNC_ERROR'; // Оповещение об ошибке репликации - не означает окончания репликации - просто информирует об ошибке
+var POUCH_SYNC_DATA = 'POUCH_SYNC_DATA'; // Прибежали изменения с сервера или мы отправили данные на сервер
+var POUCH_SYNC_PAUSED = 'POUCH_SYNC_PAUSED'; // Репликация приостановлена, обычно, из-за потери связи с сервером
+var POUCH_SYNC_RESUMED = 'POUCH_SYNC_RESUMED'; // Репликация возобновлена
+var POUCH_SYNC_DENIED = 'POUCH_SYNC_DENIED'; // Разновидность ошибки репликации из-за недостатка прав для записи документа на сервере
+
+
+// ------------------------------------
+// Actions - функции - генераторы действий. Они передаются в диспетчер redux
+// ------------------------------------
+
+function meta_loaded($p) {
+
+	return {
+		type: META_LOADED,
+		payload: $p
+	};
+}
+
+function prm_change(prms) {
+
+	return {
+		type: PRM_CHANGE,
+		payload: prms
+	};
+}
+
+/**
+ * ### После загрузки локальных данных
+ * если разрешено сохранение пароля или демо-режим, выполняем попытку авторизации
+ * @param page
+ * @return {{type: string, payload: *}}
+ */
+function pouch_data_loaded(page) {
+
+	return function (dispatch, getState) {
+
+		// First dispatch: the app state is updated to inform
+		// that the API call is starting.
+
+		dispatch({
+			type: POUCH_DATA_LOADED,
+			payload: page
+		});
+
+		var _getState = getState();
+
+		var meta = _getState.meta;
+		var $p = meta.$p;
+
+		// если вход еще не выполнен...
+
+		if (!meta.user.logged_in) {
+
+			setTimeout(function () {
+
+				// получаем имя сохраненного или гостевого пользователя
+				var name = $p.wsql.get_user_param('user_name');
+				var password = $p.wsql.get_user_param('user_pwd');
+
+				if (!name && $p.job_prm.zone_demo == $p.wsql.get_user_param('zone') && $p.job_prm.guests.length) {
+					name = $p.job_prm.guests[0].name;
+				}
+
+				// устанавливаем текущего пользователя
+				if (name) dispatch(user_defined(name));
+
+				// если разрешено сохранение пароля или гостевая зона...
+				if (name && password && $p.wsql.get_user_param('enable_save_pwd')) {
+					dispatch(user_try_log_in($p.adapters.pouch, name, $p.aes.Ctr.decrypt(password)));
+					return;
+				}
+
+				if (name && $p.job_prm.zone_demo == $p.wsql.get_user_param('zone')) {
+					dispatch(user_try_log_in($p.adapters.pouch, name, $p.aes.Ctr.decrypt($p.job_prm.guests[0].password)));
+				}
+			}, 10);
+		}
+	};
+}
+
+var sync_data_indicator;
+
+function pouch_sync_data(dbid, change) {
+
+	// Thunk middleware знает, как обращаться с функциями.
+	// Он передает метод действия в качестве аргумента функции,
+	// т.о, это позволяет отправить действие самостоятельно.
+
+	return function (dispatch, getState) {
+
+		// First dispatch: the app state is updated to inform
+		// that the API call is starting.
+
+		dispatch({
+			type: POUCH_SYNC_DATA,
+			payload: {
+				dbid: dbid,
+				change: change
+			}
+		});
+
+		if (sync_data_indicator) {
+			clearTimeout(sync_data_indicator);
+		}
+
+		sync_data_indicator = setTimeout(function () {
+
+			sync_data_indicator = 0;
+
+			dispatch({
+				type: POUCH_SYNC_DATA,
+				payload: false
+			});
+		}, 1200);
+	};
+}
+
+function pouch_data_page(page) {
+	return {
+		type: POUCH_DATA_PAGE,
+		payload: page
+	};
+}
+
+function pouch_load_start(page) {
+	return {
+		type: POUCH_LOAD_START,
+		payload: page
+	};
+}
+
+function pouch_sync_start() {
+	return { type: POUCH_SYNC_START };
+}
+
+function pouch_sync_error(dbid, err) {
+	return {
+		type: POUCH_SYNC_ERROR,
+		payload: { dbid: dbid, err: err }
+	};
+}
+
+function pouch_sync_paused(dbid, info) {
+	return {
+		type: POUCH_SYNC_PAUSED,
+		payload: { dbid: dbid, info: info }
+	};
+}
+
+function pouch_sync_resumed(dbid, info) {
+	return {
+		type: POUCH_SYNC_RESUMED,
+		payload: { dbid: dbid, info: info }
+	};
+}
+
+function pouch_sync_denied(dbid, info) {
+	return {
+		type: POUCH_SYNC_DENIED,
+		payload: { dbid: dbid, info: info }
+	};
+}
+
+function pouch_data_error(dbid, err) {
+	return {
+		type: POUCH_DATA_ERROR,
+		payload: { dbid: dbid, err: err }
+	};
+}
+
+function pouch_no_data(dbid, err) {
+	return {
+		type: POUCH_NO_DATA,
+		payload: { dbid: dbid, err: err }
+	};
+}
+
+function user_defined(name) {
+
+	return {
+		type: USER_DEFINED,
+		payload: name
+	};
+}
+
+/**
+ * ### Пользователь авторизован
+ * @param name
+ * @return {{type: string, payload: *}}
+ */
+function user_log_in(name) {
+	return {
+		type: USER_LOG_IN,
+		payload: name
+	};
+}
+
+function user_try_log_in(adapter, name, password) {
+
+	// Thunk middleware знает, как обращаться с функциями.
+	// Он передает метод действия в качестве аргумента функции,
+	// т.о, это позволяет отправить действие самостоятельно.
+
+	return function (dispatch, getState) {
+
+		// First dispatch: the app state is updated to inform
+		// that the API call is starting.
+
+		dispatch({
+			type: USER_TRY_LOG_IN,
+			payload: { name: name, password: password, provider: 'local' }
+		});
+
+		// в зависимости от использования суперлогина, разные действия
+		if (adapter.$p.superlogin) {
+			return adapter.$p.superlogin.login({
+				username: name,
+				password: password
+			}).then(function (session) {
+				return adapter.log_in(session.token, session.password);
+			});
+		} else {
+			return adapter.log_in(name, password);
+		}
+
+		// In a real world app, you also want to
+		// catch any error in the network call.
+	};
+}
+
+/**
+ * Инициирует отключение пользователя
+ * @param adapter
+ * @return {Function}
+ */
+function user_log_out(adapter) {
+
+	return function (dispatch, getState) {
+
+		var disp_log_out = function disp_log_out() {
+			dispatch({
+				type: USER_LOG_OUT,
+				payload: { name: getState().meta.user.name }
+			});
+		};
+
+		// в зависимости от использования суперлогина, разные действия
+		if (!adapter) {
+			disp_log_out();
+		} else if (adapter.$p.superlogin) {
+			adapter.$p.superlogin.logOut().then(disp_log_out);
+		} else {
+			adapter.log_out();
+		}
+	};
+}
+
+function user_log_error() {
+	return {
+		type: USER_LOG_ERROR
+	};
+}
+
+var actions = (_actions = {}, _defineProperty(_actions, META_LOADED, meta_loaded), _defineProperty(_actions, PRM_CHANGE, prm_change), _defineProperty(_actions, USER_TRY_LOG_IN, user_try_log_in), _defineProperty(_actions, USER_LOG_IN, user_log_in), _defineProperty(_actions, USER_DEFINED, user_defined), _defineProperty(_actions, USER_LOG_OUT, user_log_out), _defineProperty(_actions, USER_LOG_ERROR, user_log_error), _defineProperty(_actions, POUCH_DATA_LOADED, pouch_data_loaded), _defineProperty(_actions, POUCH_DATA_PAGE, pouch_data_page), _defineProperty(_actions, POUCH_DATA_ERROR, pouch_data_error), _defineProperty(_actions, POUCH_LOAD_START, pouch_load_start), _defineProperty(_actions, POUCH_NO_DATA, pouch_no_data), _defineProperty(_actions, POUCH_SYNC_DATA, pouch_sync_data), _defineProperty(_actions, OBJ_ADD, obj_add), _defineProperty(_actions, OBJ_ADD_ROW, obj_add_row), _defineProperty(_actions, OBJ_DEL_ROW, obj_del_row), _defineProperty(_actions, OBJ_EDIT, obj_edit), _defineProperty(_actions, OBJ_REVERT, obj_revert), _defineProperty(_actions, OBJ_SAVE, obj_save), _defineProperty(_actions, OBJ_CHANGE, obj_change), _defineProperty(_actions, OBJ_VALUE_CHANGE, obj_value_change), _defineProperty(_actions, 'obj_post', obj_post), _defineProperty(_actions, 'obj_unpost', obj_unpost), _defineProperty(_actions, 'obj_mark_deleted', obj_mark_deleted), _defineProperty(_actions, 'obj_unmark_deleted', obj_unmark_deleted), _actions);
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 /**
  * ### Действия и типы действий в терминах redux
@@ -175,355 +473,60 @@ function obj_value_change(class_name, ref) {
 		});
 	};
 }
+"use strict";
 
-/**
- * ### Действия и типы действий в терминах redux
- *
- * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- * @module actions.js
- *
- * Created 05.09.2016
- */
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
 
-// ------------------------------------
-// Action types - имена типов действий
-// ------------------------------------
+var _ACTION_HANDLERS;
 
-var META_LOADED = 'META_LOADED'; // Инициализирует параметры и создаёт менеджеры объектов данных
+var _simpleAssign = require("simple-assign");
 
-var PRM_CHANGE = 'PRM_CHANGE'; // Изменены глобальные параметры (couch_path, zone и т.д.)
+var _simpleAssign2 = _interopRequireDefault(_simpleAssign);
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var USER_TRY_LOG_IN = 'USER_TRY_LOG_IN'; // Попытка авторизации
-var USER_LOG_IN = 'USER_LOG_IN'; // Подтверждает авторизацию
-var USER_DEFINED = 'USER_DEFINED'; // Установить текущего пользователя (авторизация не обязательна)
-var USER_LOG_OUT = 'USER_LOG_OUT'; // Попытка завершения синхронизации
-var USER_LOG_ERROR = 'USER_LOG_ERROR'; // Ошибка авторизации
-
-var USER_SOCIAL_TRY_LINK = 'USER_SOCIAL_TRY_LINK'; // Попытка привязать аккаунт социальной сети
-var USER_SOCIAL_LINKED = 'USER_SOCIAL_LINKED'; // Пользователь привязан к аккаунту социальной сети
-var USER_SOCIAL_UNLINKED = 'USER_SOCIAL_UNLINKED'; // Пользователь отвязан от аккаунта социальной сети
-
-var POUCH_DATA_PAGE = 'POUCH_DATA_PAGE'; // Оповещение о загрузке порции локальных данных
-var POUCH_LOAD_START = 'POUCH_LOAD_START'; // Оповещение о начале загрузки локальных данных
-var POUCH_DATA_LOADED = 'POUCH_DATA_LOADED'; // Оповещение об окончании загрузки локальных данных
-var POUCH_DATA_ERROR = 'POUCH_DATA_ERROR'; // Оповещение об ошибке при загрузке локальных данных
-var POUCH_NO_DATA = 'POUCH_NO_DATA'; // Оповещение об отсутствии локальных данных (как правило, при первом запуске)
-
-var POUCH_SYNC_START = 'POUCH_SYNC_START'; // Оповещение о начале синхронизации базы doc
-var POUCH_SYNC_ERROR = 'POUCH_SYNC_ERROR'; // Оповещение об ошибке репликации - не означает окончания репликации - просто информирует об ошибке
-var POUCH_SYNC_DATA = 'POUCH_SYNC_DATA'; // Прибежали изменения с сервера или мы отправили данные на сервер
-var POUCH_SYNC_PAUSED = 'POUCH_SYNC_PAUSED'; // Репликация приостановлена, обычно, из-за потери связи с сервером
-var POUCH_SYNC_RESUMED = 'POUCH_SYNC_RESUMED'; // Репликация возобновлена
-var POUCH_SYNC_DENIED = 'POUCH_SYNC_DENIED'; // Разновидность ошибки репликации из-за недостатка прав для записи документа на сервере
-
-
-// ------------------------------------
-// Actions - функции - генераторы действий. Они передаются в диспетчер redux
-// ------------------------------------
-
-function meta_loaded($p) {
-
-	return {
-		type: META_LOADED,
-		payload: $p
-	};
-}
-
-function prm_change(prms) {
-
-	return {
-		type: PRM_CHANGE,
-		payload: prms
-	};
-}
-
-/**
- * ### После загрузки локальных данных
- * если разрешено сохранение пароля или демо-режим, выполняем попытку авторизации
- * @param page
- * @return {{type: string, payload: *}}
- */
-function _pouch_data_loaded(page) {
-
-	return function (dispatch, getState) {
-
-		// First dispatch: the app state is updated to inform
-		// that the API call is starting.
-
-		dispatch({
-			type: POUCH_DATA_LOADED,
-			payload: page
-		});
-
-		var _getState = getState();
-
-		var meta = _getState.meta;
-		var $p = meta.$p;
-
-		// если вход еще не выполнен...
-
-		if (!meta.user.logged_in) {
-
-			setTimeout(function () {
-
-				// получаем имя сохраненного или гостевого пользователя
-				var name = $p.wsql.get_user_param('user_name');
-				var password = $p.wsql.get_user_param('user_pwd');
-
-				if (!name && $p.job_prm.zone_demo == $p.wsql.get_user_param('zone') && $p.job_prm.guests.length) {
-					name = $p.job_prm.guests[0].name;
-				}
-
-				// устанавливаем текущего пользователя
-				if (name) dispatch(user_defined(name));
-
-				// если разрешено сохранение пароля или гостевая зона...
-				if (name && password && $p.wsql.get_user_param('enable_save_pwd')) {
-					dispatch(user_try_log_in($p.adapters.pouch, name, $p.aes.Ctr.decrypt(password)));
-					return;
-				}
-
-				if (name && $p.job_prm.zone_demo == $p.wsql.get_user_param('zone')) {
-					dispatch(user_try_log_in($p.adapters.pouch, name, $p.aes.Ctr.decrypt($p.job_prm.guests[0].password)));
-				}
-			}, 10);
-		}
-	};
-}
-
-var sync_data_indicator;
-
-function _pouch_sync_data(dbid, change) {
-
-	// Thunk middleware знает, как обращаться с функциями.
-	// Он передает метод действия в качестве аргумента функции,
-	// т.о, это позволяет отправить действие самостоятельно.
-
-	return function (dispatch, getState) {
-
-		// First dispatch: the app state is updated to inform
-		// that the API call is starting.
-
-		dispatch({
-			type: POUCH_SYNC_DATA,
-			payload: {
-				dbid: dbid,
-				change: change
-			}
-		});
-
-		if (sync_data_indicator) {
-			clearTimeout(sync_data_indicator);
-		}
-
-		sync_data_indicator = setTimeout(function () {
-
-			sync_data_indicator = 0;
-
-			dispatch({
-				type: POUCH_SYNC_DATA,
-				payload: false
-			});
-		}, 1200);
-	};
-}
-
-function _pouch_data_page(page) {
-	return {
-		type: POUCH_DATA_PAGE,
-		payload: page
-	};
-}
-
-function _pouch_load_start(page) {
-	return {
-		type: POUCH_LOAD_START,
-		payload: page
-	};
-}
-
-function _pouch_sync_start() {
-	return { type: POUCH_SYNC_START };
-}
-
-function _pouch_sync_error(dbid, err) {
-	return {
-		type: POUCH_SYNC_ERROR,
-		payload: { dbid: dbid, err: err }
-	};
-}
-
-function _pouch_sync_paused(dbid, info) {
-	return {
-		type: POUCH_SYNC_PAUSED,
-		payload: { dbid: dbid, info: info }
-	};
-}
-
-function _pouch_sync_resumed(dbid, info) {
-	return {
-		type: POUCH_SYNC_RESUMED,
-		payload: { dbid: dbid, info: info }
-	};
-}
-
-function _pouch_sync_denied(dbid, info) {
-	return {
-		type: POUCH_SYNC_DENIED,
-		payload: { dbid: dbid, info: info }
-	};
-}
-
-function _pouch_data_error(dbid, err) {
-	return {
-		type: POUCH_DATA_ERROR,
-		payload: { dbid: dbid, err: err }
-	};
-}
-
-function _pouch_no_data(dbid, err) {
-	return {
-		type: POUCH_NO_DATA,
-		payload: { dbid: dbid, err: err }
-	};
-}
-
-function user_defined(name) {
-
-	return {
-		type: USER_DEFINED,
-		payload: name
-	};
-}
-
-/**
- * ### Пользователь авторизован
- * @param name
- * @return {{type: string, payload: *}}
- */
-function _user_log_in(name) {
-	return {
-		type: USER_LOG_IN,
-		payload: name
-	};
-}
-
-function user_try_log_in(adapter, name, password) {
-
-	// Thunk middleware знает, как обращаться с функциями.
-	// Он передает метод действия в качестве аргумента функции,
-	// т.о, это позволяет отправить действие самостоятельно.
-
-	return function (dispatch, getState) {
-
-		// First dispatch: the app state is updated to inform
-		// that the API call is starting.
-
-		dispatch({
-			type: USER_TRY_LOG_IN,
-			payload: { name: name, password: password, provider: 'local' }
-		});
-
-		// в зависимости от использования суперлогина, разные действия
-		if (adapter.$p.superlogin) {
-			return adapter.$p.superlogin.login({
-				username: name,
-				password: password
-			}).then(function (session) {
-				return adapter.log_in(session.token, session.password);
-			});
-		} else {
-			return adapter.log_in(name, password);
-		}
-
-		// In a real world app, you also want to
-		// catch any error in the network call.
-	};
-}
-
-/**
- * Инициирует отключение пользователя
- * @param adapter
- * @return {Function}
- */
-function _user_log_out(adapter) {
-
-	return function (dispatch, getState) {
-
-		var disp_log_out = function disp_log_out() {
-			dispatch({
-				type: USER_LOG_OUT,
-				payload: { name: getState().meta.user.name }
-			});
-		};
-
-		// в зависимости от использования суперлогина, разные действия
-		if (!adapter) {
-			disp_log_out();
-		} else if (adapter.$p.superlogin) {
-			adapter.$p.superlogin.logOut().then(disp_log_out);
-		} else {
-			adapter.log_out();
-		}
-	};
-}
-
-function user_log_error() {
-	return {
-		type: USER_LOG_ERROR
-	};
-}
-
-var actions = (_actions = {}, _defineProperty(_actions, META_LOADED, meta_loaded), _defineProperty(_actions, PRM_CHANGE, prm_change), _defineProperty(_actions, USER_TRY_LOG_IN, user_try_log_in), _defineProperty(_actions, USER_LOG_IN, _user_log_in), _defineProperty(_actions, USER_DEFINED, user_defined), _defineProperty(_actions, USER_LOG_OUT, _user_log_out), _defineProperty(_actions, USER_LOG_ERROR, user_log_error), _defineProperty(_actions, POUCH_DATA_LOADED, _pouch_data_loaded), _defineProperty(_actions, POUCH_DATA_PAGE, _pouch_data_page), _defineProperty(_actions, POUCH_DATA_ERROR, _pouch_data_error), _defineProperty(_actions, POUCH_LOAD_START, _pouch_load_start), _defineProperty(_actions, POUCH_NO_DATA, _pouch_no_data), _defineProperty(_actions, POUCH_SYNC_DATA, _pouch_sync_data), _defineProperty(_actions, OBJ_ADD, obj_add), _defineProperty(_actions, OBJ_ADD_ROW, obj_add_row), _defineProperty(_actions, OBJ_DEL_ROW, obj_del_row), _defineProperty(_actions, OBJ_EDIT, obj_edit), _defineProperty(_actions, OBJ_REVERT, obj_revert), _defineProperty(_actions, OBJ_SAVE, obj_save), _defineProperty(_actions, OBJ_CHANGE, obj_change), _defineProperty(_actions, OBJ_VALUE_CHANGE, obj_value_change), _defineProperty(_actions, 'obj_post', obj_post), _defineProperty(_actions, 'obj_unpost', obj_unpost), _defineProperty(_actions, 'obj_mark_deleted', obj_mark_deleted), _defineProperty(_actions, 'obj_unmark_deleted', obj_unmark_deleted), _actions);
-
-/**
- * Action Handlers - обработчики событий - вызываются из корневого редюсера
- */
-var ACTION_HANDLERS_OBJ = (_ACTION_HANDLERS_OBJ = {}, _defineProperty(_ACTION_HANDLERS_OBJ, OBJ_ADD, function (state, action) {
-	return state;
-}), _defineProperty(_ACTION_HANDLERS_OBJ, OBJ_CHANGE, function (state, action) {
-	return Object.assign({}, state, { obj_change: action.payload });
-}), _ACTION_HANDLERS_OBJ);
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /**
  * Action Handlers - обработчики событий - вызываются из корневого редюсера
  */
 var ACTION_HANDLERS = (_ACTION_HANDLERS = {}, _defineProperty(_ACTION_HANDLERS, META_LOADED, function (state, action) {
-	return Object.assign({}, state, { $p: action.payload });
+	return (0, _simpleAssign2.default)({}, state, { $p: action.payload });
 }), _defineProperty(_ACTION_HANDLERS, PRM_CHANGE, function (state, action) {
 	return state;
 }), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_LOADED, function (state, action) {
-	return Object.assign({}, state, { data_loaded: true, fetch_local: false });
+	return (0, _simpleAssign2.default)({}, state, { data_loaded: true, fetch_local: false });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_PAGE, function (state, action) {
-	return Object.assign({}, state, { page: action.payload });
+	return (0, _simpleAssign2.default)({}, state, { page: action.payload });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_ERROR, function (state, action) {
-	return Object.assign({}, state, { err: action.payload, fetch_local: false });
+	return (0, _simpleAssign2.default)({}, state, { err: action.payload, fetch_local: false });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_LOAD_START, function (state, action) {
-	return Object.assign({}, state, { data_empty: false, fetch_local: true });
+	return (0, _simpleAssign2.default)({}, state, { data_empty: false, fetch_local: true });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_NO_DATA, function (state, action) {
-	return Object.assign({}, state, { data_empty: true, fetch_local: false });
+	return (0, _simpleAssign2.default)({}, state, { data_empty: true, fetch_local: false });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_SYNC_START, function (state, action) {
-	return Object.assign({}, state, { sync_started: true });
+	return (0, _simpleAssign2.default)({}, state, { sync_started: true });
 }), _defineProperty(_ACTION_HANDLERS, POUCH_SYNC_DATA, function (state, action) {
-	return Object.assign({}, state, { fetch_remote: action.payload ? true : false });
+	return (0, _simpleAssign2.default)({}, state, { fetch_remote: action.payload ? true : false });
 }), _defineProperty(_ACTION_HANDLERS, USER_DEFINED, function (state, action) {
-	return Object.assign({}, state, { user: {
+	return (0, _simpleAssign2.default)({}, state, { user: {
 			name: action.payload,
 			logged_in: state.user.logged_in
 		} });
 }), _defineProperty(_ACTION_HANDLERS, USER_LOG_IN, function (state, action) {
-	return Object.assign({}, state, { user: {
+	return (0, _simpleAssign2.default)({}, state, { user: {
 			name: action.payload,
 			logged_in: true
 		} });
 }), _defineProperty(_ACTION_HANDLERS, USER_TRY_LOG_IN, function (state, action) {
-	return Object.assign({}, state, { user: {
+	return (0, _simpleAssign2.default)({}, state, { user: {
 			name: action.payload.name,
 			logged_in: state.user.logged_in
 		} });
 }), _defineProperty(_ACTION_HANDLERS, USER_LOG_OUT, function (state, action) {
-	return Object.assign({}, state, {
+	return (0, _simpleAssign2.default)({}, state, {
 		user: {
 			name: state.user.name,
 			logged_in: false
@@ -531,7 +534,7 @@ var ACTION_HANDLERS = (_ACTION_HANDLERS = {}, _defineProperty(_ACTION_HANDLERS, 
 		sync_started: false
 	});
 }), _defineProperty(_ACTION_HANDLERS, USER_LOG_ERROR, function (state, action) {
-	return Object.assign({}, state, {
+	return (0, _simpleAssign2.default)({}, state, {
 		user: {
 			name: state.user.name,
 			logged_in: false
@@ -578,57 +581,187 @@ function rx_events(store) {
 
 	this.adapters.pouch.on({
 
-		user_log_in: function user_log_in(name) {
-			store.dispatch(_user_log_in(name));
-		},
+		user_log_in: function (_user_log_in) {
+			function user_log_in(_x2) {
+				return _user_log_in.apply(this, arguments);
+			}
 
-		user_log_out: function user_log_out() {
-			store.dispatch(_user_log_out());
-		},
+			user_log_in.toString = function () {
+				return _user_log_in.toString();
+			};
 
-		pouch_data_page: function pouch_data_page(page) {
-			store.dispatch(_pouch_data_page(page));
-		},
+			return user_log_in;
+		}(function (name) {
+			store.dispatch(user_log_in(name));
+		}),
 
-		pouch_data_loaded: function pouch_data_loaded(page) {
-			store.dispatch(_pouch_data_loaded(page));
-		},
+		user_log_out: function (_user_log_out) {
+			function user_log_out() {
+				return _user_log_out.apply(this, arguments);
+			}
 
-		pouch_data_error: function pouch_data_error(dbid, err) {
-			store.dispatch(_pouch_data_error(dbid, err));
-		},
+			user_log_out.toString = function () {
+				return _user_log_out.toString();
+			};
 
-		pouch_load_start: function pouch_load_start(page) {
-			store.dispatch(_pouch_load_start(page));
-		},
+			return user_log_out;
+		}(function () {
+			store.dispatch(user_log_out());
+		}),
 
-		pouch_no_data: function pouch_no_data(dbid, err) {
-			store.dispatch(_pouch_no_data(dbid, err));
-		},
+		pouch_data_page: function (_pouch_data_page) {
+			function pouch_data_page(_x3) {
+				return _pouch_data_page.apply(this, arguments);
+			}
 
-		pouch_sync_start: function pouch_sync_start() {
-			store.dispatch(_pouch_sync_start());
-		},
+			pouch_data_page.toString = function () {
+				return _pouch_data_page.toString();
+			};
 
-		pouch_sync_data: function pouch_sync_data(dbid, change) {
-			store.dispatch(_pouch_sync_data(dbid, change));
-		},
+			return pouch_data_page;
+		}(function (page) {
+			store.dispatch(pouch_data_page(page));
+		}),
 
-		pouch_sync_error: function pouch_sync_error(dbid, err) {
-			store.dispatch(_pouch_sync_error(dbid, err));
-		},
+		pouch_data_loaded: function (_pouch_data_loaded) {
+			function pouch_data_loaded(_x4) {
+				return _pouch_data_loaded.apply(this, arguments);
+			}
 
-		pouch_sync_paused: function pouch_sync_paused(dbid, info) {
-			store.dispatch(_pouch_sync_paused(dbid, info));
-		},
+			pouch_data_loaded.toString = function () {
+				return _pouch_data_loaded.toString();
+			};
 
-		pouch_sync_resumed: function pouch_sync_resumed(dbid, info) {
-			store.dispatch(_pouch_sync_resumed(dbid, info));
-		},
+			return pouch_data_loaded;
+		}(function (page) {
+			store.dispatch(pouch_data_loaded(page));
+		}),
 
-		pouch_sync_denied: function pouch_sync_denied(dbid, info) {
-			store.dispatch(_pouch_sync_denied(dbid, info));
-		}
+		pouch_data_error: function (_pouch_data_error) {
+			function pouch_data_error(_x5, _x6) {
+				return _pouch_data_error.apply(this, arguments);
+			}
+
+			pouch_data_error.toString = function () {
+				return _pouch_data_error.toString();
+			};
+
+			return pouch_data_error;
+		}(function (dbid, err) {
+			store.dispatch(pouch_data_error(dbid, err));
+		}),
+
+		pouch_load_start: function (_pouch_load_start) {
+			function pouch_load_start(_x7) {
+				return _pouch_load_start.apply(this, arguments);
+			}
+
+			pouch_load_start.toString = function () {
+				return _pouch_load_start.toString();
+			};
+
+			return pouch_load_start;
+		}(function (page) {
+			store.dispatch(pouch_load_start(page));
+		}),
+
+		pouch_no_data: function (_pouch_no_data) {
+			function pouch_no_data(_x8, _x9) {
+				return _pouch_no_data.apply(this, arguments);
+			}
+
+			pouch_no_data.toString = function () {
+				return _pouch_no_data.toString();
+			};
+
+			return pouch_no_data;
+		}(function (dbid, err) {
+			store.dispatch(pouch_no_data(dbid, err));
+		}),
+
+		pouch_sync_start: function (_pouch_sync_start) {
+			function pouch_sync_start() {
+				return _pouch_sync_start.apply(this, arguments);
+			}
+
+			pouch_sync_start.toString = function () {
+				return _pouch_sync_start.toString();
+			};
+
+			return pouch_sync_start;
+		}(function () {
+			store.dispatch(pouch_sync_start());
+		}),
+
+		pouch_sync_data: function (_pouch_sync_data) {
+			function pouch_sync_data(_x10, _x11) {
+				return _pouch_sync_data.apply(this, arguments);
+			}
+
+			pouch_sync_data.toString = function () {
+				return _pouch_sync_data.toString();
+			};
+
+			return pouch_sync_data;
+		}(function (dbid, change) {
+			store.dispatch(pouch_sync_data(dbid, change));
+		}),
+
+		pouch_sync_error: function (_pouch_sync_error) {
+			function pouch_sync_error(_x12, _x13) {
+				return _pouch_sync_error.apply(this, arguments);
+			}
+
+			pouch_sync_error.toString = function () {
+				return _pouch_sync_error.toString();
+			};
+
+			return pouch_sync_error;
+		}(function (dbid, err) {
+			store.dispatch(pouch_sync_error(dbid, err));
+		}),
+
+		pouch_sync_paused: function (_pouch_sync_paused) {
+			function pouch_sync_paused(_x14, _x15) {
+				return _pouch_sync_paused.apply(this, arguments);
+			}
+
+			pouch_sync_paused.toString = function () {
+				return _pouch_sync_paused.toString();
+			};
+
+			return pouch_sync_paused;
+		}(function (dbid, info) {
+			store.dispatch(pouch_sync_paused(dbid, info));
+		}),
+
+		pouch_sync_resumed: function (_pouch_sync_resumed) {
+			function pouch_sync_resumed(_x16, _x17) {
+				return _pouch_sync_resumed.apply(this, arguments);
+			}
+
+			pouch_sync_resumed.toString = function () {
+				return _pouch_sync_resumed.toString();
+			};
+
+			return pouch_sync_resumed;
+		}(function (dbid, info) {
+			store.dispatch(pouch_sync_resumed(dbid, info));
+		}),
+
+		pouch_sync_denied: function (_pouch_sync_denied) {
+			function pouch_sync_denied(_x18, _x19) {
+				return _pouch_sync_denied.apply(this, arguments);
+			}
+
+			pouch_sync_denied.toString = function () {
+				return _pouch_sync_denied.toString();
+			};
+
+			return pouch_sync_denied;
+		}(function (dbid, info) {
+			store.dispatch(pouch_sync_denied(dbid, info));
+		})
 
 	});
 
@@ -682,3 +815,23 @@ var plugin = {
 	constructor: function constructor() {}
 };
 exports.default = plugin;
+"use strict";
+
+var _ACTION_HANDLERS_OBJ;
+
+var _simpleAssign = require("simple-assign");
+
+var _simpleAssign2 = _interopRequireDefault(_simpleAssign);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+/**
+ * Action Handlers - обработчики событий - вызываются из корневого редюсера
+ */
+var ACTION_HANDLERS_OBJ = (_ACTION_HANDLERS_OBJ = {}, _defineProperty(_ACTION_HANDLERS_OBJ, OBJ_ADD, function (state, action) {
+  return state;
+}), _defineProperty(_ACTION_HANDLERS_OBJ, OBJ_CHANGE, function (state, action) {
+  return (0, _simpleAssign2.default)({}, state, { obj_change: action.payload });
+}), _ACTION_HANDLERS_OBJ);

@@ -70,7 +70,13 @@ var _attachFile = require('material-ui/svg-icons/editor/attach-file');
 
 var _attachFile2 = _interopRequireDefault(_attachFile);
 
-var _DataObj = require('./DataObj.scss');
+var _DataObj = {
+  'progress': 'DataObj__progress___wiyDx',
+  'toolbar': 'DataObj__toolbar___ZeCaX',
+  'cont': 'DataObj__cont___VrxDw',
+  'celllabel': 'DataObj__celllabel___cV15A',
+  'celldata': 'DataObj__celldata___2M8jg'
+};
 
 var _DataObj2 = _interopRequireDefault(_DataObj);
 

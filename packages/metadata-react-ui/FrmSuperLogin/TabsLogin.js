@@ -54,7 +54,14 @@ var _colors = require('material-ui/styles/colors');
 
 var _icons = require('./assets/icons');
 
-var _FrmSuperLogin = require('./FrmSuperLogin.scss');
+var _FrmSuperLogin = {
+  'paper': 'FrmSuperLogin__paper___3ueBx',
+  'sub_paper': 'FrmSuperLogin__sub_paper___3D2WC',
+  'padding18': 'FrmSuperLogin__padding18___3fVoX',
+  'button': 'FrmSuperLogin__button___1wqWa',
+  'social_button': 'FrmSuperLogin__social_button___1_JGN',
+  'subheader': 'FrmSuperLogin__subheader___1OoWd'
+};
 
 var _FrmSuperLogin2 = _interopRequireDefault(_FrmSuperLogin);
 

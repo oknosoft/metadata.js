@@ -28,7 +28,7 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
-var _FrmObj = require('./FrmObj.scss');
+var _FrmObj = {};
 
 var _FrmObj2 = _interopRequireDefault(_FrmObj);
 

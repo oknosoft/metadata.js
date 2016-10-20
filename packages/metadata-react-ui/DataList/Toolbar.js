@@ -70,7 +70,28 @@ var _DataSelection = require('../DataSelection');
 
 var _DataSelection2 = _interopRequireDefault(_DataSelection);
 
-var _DataList = require('./DataList.scss');
+var _DataList = {
+  'toolbar': 'DataList__toolbar___3Q5r-',
+  'List': 'DataList__List___3p2A7',
+  'row': 'DataList__row___1c_lE',
+  'placeholder': 'DataList__placeholder___J261_',
+  'cacheButtonAndCountRow': 'DataList__cacheButtonAndCountRow___egWjE',
+  'button': 'DataList__button___19gJP',
+  'cacheCountRow': 'DataList__cacheCountRow___3UENX',
+  'GridRow': 'DataList__GridRow___3PGBi',
+  'GridColumn': 'DataList__GridColumn___1USDI',
+  'LeftSideGridContainer': 'DataList__LeftSideGridContainer___3Uunq',
+  'BodyGrid': 'DataList__BodyGrid___1XFoZ',
+  'evenRow': 'DataList__evenRow___1XGC4',
+  'oddRow': 'DataList__oddRow___2fnJh',
+  'hoveredItem': 'DataList__hoveredItem___19vQ-',
+  'selectedItem': 'DataList__selectedItem___1U89O',
+  'cell': 'DataList__cell___1VYGH',
+  'headerCell': 'DataList__headerCell___3j1ZO',
+  'centeredCell': 'DataList__centeredCell___-B0cc',
+  'letterCell': 'DataList__letterCell___2vRdC',
+  'noCells': 'DataList__noCells___1iZxL'
+};
 
 var _DataList2 = _interopRequireDefault(_DataList);
 

@@ -52,7 +52,10 @@ var _DatePicker = require('material-ui/DatePicker');
 
 var _DatePicker2 = _interopRequireDefault(_DatePicker);
 
-var _DataSelection = require('./DataSelection.scss');
+var _DataSelection = {
+  'toolbar': 'DataSelection__toolbar___2owiZ',
+  'progress': 'DataSelection__progress___1-v7d'
+};
 
 var _DataSelection2 = _interopRequireDefault(_DataSelection);
 

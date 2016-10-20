@@ -28,7 +28,12 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
-var _DataField = require('./DataField.scss');
+var _DataField = {
+  'label': 'DataField__label___1MXSv',
+  'data': 'DataField__data___E9DYW',
+  'field': 'DataField__field___3McQ6',
+  'dataselect': 'DataField__dataselect___1mT91'
+};
 
 var _DataField2 = _interopRequireDefault(_DataField);
 

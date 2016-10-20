@@ -38,7 +38,33 @@ var _filter = require('./filter');
 
 var filters = _interopRequireWildcard(_filter);
 
-var _MetaDesigner = require('./MetaDesigner.scss');
+var _MetaDesigner = {
+  'span': 'MetaDesigner__span___3e_VE',
+  'searchBox': 'MetaDesigner__searchBox___1ZAFp',
+  'input': 'MetaDesigner__input___1pzzS',
+  'component': 'MetaDesigner__component___1XOAC',
+  'content': 'MetaDesigner__content___3Q0Su',
+  'draggableHandle': 'MetaDesigner__draggableHandle___2YFoE',
+  'icon_1c_accreg': 'MetaDesigner__icon_1c_accreg___2eOjp',
+  'icon_1c_areg': 'MetaDesigner__icon_1c_areg___1Fhpx',
+  'icon_1c_bp': 'MetaDesigner__icon_1c_bp___1Y16V',
+  'icon_1c_cacc': 'MetaDesigner__icon_1c_cacc___39H8m',
+  'icon_1c_cat': 'MetaDesigner__icon_1c_cat___1MZd1',
+  'icon_1c_cch': 'MetaDesigner__icon_1c_cch___3Be8V',
+  'icon_1c_doc': 'MetaDesigner__icon_1c_doc___oLXkt',
+  'icon_1c_dp': 'MetaDesigner__icon_1c_dp___3S8g2',
+  'icon_1c_ireg': 'MetaDesigner__icon_1c_ireg___3GD-8',
+  'icon_1c_rep': 'MetaDesigner__icon_1c_rep___2eiXa',
+  'icon_1c_tsk': 'MetaDesigner__icon_1c_tsk___5IEae',
+  'icon_1c_enm': 'MetaDesigner__icon_1c_enm___uqPxI',
+  'icon_1c_frm': 'MetaDesigner__icon_1c_frm___1ac7A',
+  'icon_1c_cmd': 'MetaDesigner__icon_1c_cmd___2PU1d',
+  'icon_1c_resource': 'MetaDesigner__icon_1c_resource___1dvnC',
+  'icon_1c_props': 'MetaDesigner__icon_1c_props___Gz_w1',
+  'icon_1c_dimension': 'MetaDesigner__icon_1c_dimension___3N66_',
+  'icon_1c_root': 'MetaDesigner__icon_1c_root___QRgpD',
+  'icon_1c_tabular': 'MetaDesigner__icon_1c_tabular___229bs'
+};
 
 var _MetaDesigner2 = _interopRequireDefault(_MetaDesigner);
 
