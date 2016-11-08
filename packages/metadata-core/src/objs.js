@@ -950,8 +950,16 @@ class RegisterRow extends DataObj {
 		// выполняем конструктор родительского объекта
 		super(attr, manager);
 
-		if (attr && typeof attr == "object")
+		if (attr && typeof attr == "object"){
+			var tref = attr.ref;
+			if(tref){
+				delete attr.ref;
+			}
 			utils._mixin(this, attr);
+			if(tref){
+				attr.ref = tref;
+			}
+		}
 
 		for (var check in manager.metadata().dimensions) {
 			if (!attr.hasOwnProperty(check) && attr.ref) {

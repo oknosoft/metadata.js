@@ -569,7 +569,9 @@ function rx_reducer() {
 	if (!handler) handler = ACTION_HANDLERS_OBJ[action.type];
 
 	if (handler) {
-		console.log(action);
+		if (action.type != OBJ_CHANGE) {
+			console.log(action);
+		}
 		return handler(state, action);
 	} else return state;
 }

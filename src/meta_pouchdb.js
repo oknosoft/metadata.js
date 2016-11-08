@@ -132,8 +132,6 @@ DataManager.prototype.__define({
 					endkey: t.class_name + '|\uffff'
 				};
 
-			
-
 			if(selection){
 
 				if(selection._top){
@@ -179,9 +177,6 @@ DataManager.prototype.__define({
 					options.binary = true;
 					delete selection._attachments;
 				}
-
-
-
 
 			}
 
@@ -342,7 +337,6 @@ DataManager.prototype.__define({
 				fetch_next_page();
 
 			});
-
 
 		}
 	},
