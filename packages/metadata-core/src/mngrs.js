@@ -678,7 +678,14 @@ function mngrs($p) {
 				return do_not_create == 'promise' ? Promise.resolve(o) : o;
 
 			if(o.is_new()){
-				return o.load();	// читаем из 1С или иного сервера
+
+				if(do_not_create == 'promise'){
+					return o.load();	// читаем из 1С или иного сервера
+
+				}else{
+					//o.load();	// читаем из 1С или иного сервера
+					return o;
+				}
 
 			}else
 				return do_not_create == 'promise' ? Promise.resolve(o) : o;
@@ -1391,8 +1398,14 @@ function mngrs($p) {
 		 * @method get
 		 * @return {DataProcessorObj}
 		 */
-		get(){
-			return this.create();
+		get(ref){
+			if(ref){
+				if(!this.by_ref[ref]){
+					this.by_ref[ref] = this.create()
+				}
+				return this.by_ref[ref];
+			}else
+				return this.create();
 		}
 
 		/**
