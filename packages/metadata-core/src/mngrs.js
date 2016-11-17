@@ -2829,6 +2829,4 @@ function mngrs($p) {
 			}
 		})
 	}
-
 }
-

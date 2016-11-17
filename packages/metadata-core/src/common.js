@@ -88,7 +88,7 @@ export default class MetaEngine{
 			 */
 			md: { value: new Meta(this) }
 
-		})
+		});
 
 		// создаём конструкторы менеджеров данных
 		mngrs(this);
@@ -120,18 +120,18 @@ export default class MetaEngine{
 	/**
 	 * Вспомогательные методы
 	 */
-	get utils(){return utils}
+	get utils(){return utils;}
 
 	/**
 	 * i18n
 	 */
-	get msg(){return msg}
+	get msg(){return msg;}
 
 	/**
 	 * Конструкторы объектов данных
 	 */
 	get classes(){//noinspection JSUnresolvedVariable
-		return classes}
+		return classes;}
 
 	/**
 	 * ### Текущий пользователь
@@ -162,7 +162,7 @@ export default class MetaEngine{
 						startkey: ['cat.users',0,user_name],
 						endkey: ['cat.users',0,user_name]
 					}
-				})
+				});
 			}
 		}
 
@@ -180,7 +180,7 @@ export default class MetaEngine{
 	static plugin(obj){
 
 		if(typeof obj.proto == "function"){ // function style for plugins
-			obj.proto(MetaEngine)
+			obj.proto(MetaEngine);
 		}else if (typeof obj.proto == 'object'){
 			Object.keys(obj.proto).forEach(function (id) { // object style for plugins
 				MetaEngine.prototype[id] = obj.proto[id];
@@ -201,6 +201,5 @@ export default class MetaEngine{
 		}
 
 		return MetaEngine;
-	}
-
+    }
 }

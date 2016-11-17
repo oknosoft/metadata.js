@@ -10,7 +10,6 @@ const gulp = require('gulp'),
 	csso = require('gulp-csso'),
 	concat = require('gulp-concat'),
 	uglify = require('gulp-uglify'),
-	shell = require('gulp-shell'),
 	rename = require('gulp-rename'),
 	resources = require('./src/utils/resource-concat.js'),
 	path = require('path'),
@@ -68,10 +67,10 @@ gulp.task('build-metadata', function () {
 	])
 		.pipe(concat('metadata.js'))
 		.pipe(umd({
-			exports: function(file) {
+			exports: function() {
 				return '$p';
 			},
-			namespace: function(file) {
+			namespace: function() {
 				return '$p';
 			},
 			template: path.join(__dirname, './src/utils/umd-exports-oknosoft.js')
@@ -91,11 +90,11 @@ gulp.task('build-metadata', function () {
 });
 
 gulp.task('injected_main', function(){
-   return gulp.src(['./data/*.xml'])
-	   .pipe(resources('merged_data.js', function (data) {
-		   return new Buffer('$p.injected_data._mixin(' + JSON.stringify(data) + ');');
-	   }))
-	   .pipe(gulp.dest('./data'));
+    return gulp.src(['./data/*.xml'])
+    .pipe(resources('merged_data.js', function (data) {
+        return new Buffer('$p.injected_data._mixin(' + JSON.stringify(data) + ');');
+	}))
+	.pipe(gulp.dest('./data'));
 });
 
 // dhtmlxscheduler
@@ -327,10 +326,9 @@ gulp.task('build--core', function(){
 			presets: ['es2015'],
 			plugins: ["transform-async-to-generator"],
 			compact: false,
-			//comments: false
-		}))
-
-		.pipe(gulp.dest('./packages/metadata-core'))
+            //comments: false
+        }))
+        .pipe(gulp.dest('./packages/metadata-core'));
 });
 
 
