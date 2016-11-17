@@ -203,5 +203,3 @@ export default class MetaEngine{
 		return MetaEngine;
     }
 }
-
-// vim:set noexpandtab

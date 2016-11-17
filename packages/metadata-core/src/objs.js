@@ -998,6 +998,3 @@ class RegisterRow extends DataObj {
 		return this._metadata().obj_presentation || this._metadata().synonym;
 	}
 }
-
-
-

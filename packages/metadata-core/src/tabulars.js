@@ -595,5 +595,4 @@ function tabulars($p) {
 			TabularSectionRow: {value: TabularSectionRow}
 		});
 	}
-
 }
