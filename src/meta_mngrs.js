@@ -950,7 +950,7 @@ RefDataManager.prototype.__define({
 	 * @return {Promise.<*>}
 	 */
 	create: {
-		value: function(attr, fill_default){
+		value: function(attr, fill_default, force_obj){
 
 			if(!attr || typeof attr != "object")
 				attr = {};
@@ -978,7 +978,7 @@ RefDataManager.prototype.__define({
 						if(!o.number_doc)
 							o.new_number_doc();
 					}else{
-						if(!o.id)
+						if(!o.id && o._metadata.code_length)
 							o.new_number_doc();
 					}
 
@@ -1002,7 +1002,7 @@ RefDataManager.prototype.__define({
 				}
 			}
 
-			return Promise.resolve(o);
+			return force_obj ? o : Promise.resolve(o);
 		}
 	},
 

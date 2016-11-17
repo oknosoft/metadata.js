@@ -340,6 +340,7 @@ DataObj.prototype.__define({
 			this._manager.push(this, ref);
 			this._data._modified = false;
 			this._data._is_new = false;
+			return this;
 		}
 	},
 
@@ -354,6 +355,7 @@ DataObj.prototype.__define({
 			this._obj._deleted = !!deleted;
 			this.save();
 			this.__notify('_deleted');
+			return this;
 		}
 	},
 

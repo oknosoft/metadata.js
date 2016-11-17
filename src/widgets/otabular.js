@@ -32,7 +32,6 @@
  */
 dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
-
 	var _obj = attr.obj,
 		_tsname = attr.ts,
 		_ts = _obj[_tsname],
@@ -64,7 +63,20 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	_grid._add_row = function(){
 		if(!attr.read_only){
 
-			var row = _ts.add();
+			var proto;
+			if(_selection){
+				for(var sel in _selection){
+					if(!_meta[sel] || (typeof _selection[sel] == 'object' && !$p.is_data_obj(_selection[sel]))){
+						continue;
+					}
+					if(!proto){
+						proto = {};
+					}
+					proto[sel] = _selection[sel];
+				}
+			}
+
+			var row = _ts.add(proto);
 
 			if(_mgr.handle_event(_obj, "add_row",
 					{
