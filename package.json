@@ -58,6 +58,7 @@
   },
   "scripts": {
     "build:react-ui": "better-npm-run build:react-ui",
+    "build:data-field": "better-npm-run build:data-field",
     "build:abstract-adapter": "better-npm-run build:abstract-adapter",
     "build:adapter-pouchdb": "better-npm-run build:adapter-pouchdb",
     "build:redux": "better-npm-run build:redux",
@@ -66,6 +67,12 @@
   "betterScripts": {
     "build:react-ui": {
       "command": "babel ./packages/metadata-react-ui/src --out-dir ./packages/metadata-react-ui --ignore spec.js",
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "build:data-field": {
+      "command": "babel .packages/metadata-react-ui/DataField/src --out-dir ./packages/metadata-react-ui/DataField",
       "env": {
         "NODE_ENV": "production"
       }
