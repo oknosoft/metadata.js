@@ -16,6 +16,23 @@ export default class DataField extends Component {
     handleValueChange: PropTypes.func
   }
 
+  static labelPosition = {
+    auto: 'auto',
+    hide: 'hide',
+    left: 'left',
+    right: 'right',
+    top: 'top',
+    bottom: 'bottom'
+  }
+
+  static fieldKind = {
+    input: 'input',   // поле ввода
+    label: 'label',   // поле надписи
+    toggle: 'toggle', // поле переключателя
+    image: 'image',   // поле картинки
+    text: 'text'      // многострочный редактор текста
+  }
+
   constructor (props) {
 
     super(props);
@@ -29,12 +46,14 @@ export default class DataField extends Component {
 
     const { $p } = this.context;
     const { _meta } = this.state;
-    const _val = this.props._obj[this.props._fld];
+    const { _obj, _fld, handleValueChange } = this.props;
+    const _val = _obj[_fld];
     const subProps = {
-      _meta: this.state._meta,
-      _obj: this.props._obj,
-      _fld: this.props._fld,
-      _val: _val
+      _meta: _meta,
+      _obj: _obj,
+      _fld: _fld,
+      _val: _val,
+      handleValueChange: handleValueChange
     }
 
     switch ($p.rx_control_by_type(this.state._meta.type, _val)){
