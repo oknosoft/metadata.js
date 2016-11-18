@@ -1,131 +1,137 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _getPrototypeOf = require('babel-runtime/core-js/object/get-prototype-of');
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
-
-var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = require('babel-runtime/helpers/createClass');
-
-var _createClass3 = _interopRequireDefault(_createClass2);
-
-var _possibleConstructorReturn2 = require('babel-runtime/helpers/possibleConstructorReturn');
-
-var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
-
-var _inherits2 = require('babel-runtime/helpers/inherits');
-
-var _inherits3 = _interopRequireDefault(_inherits2);
-
-var _react = require('react');
+var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _DataField = {
-  'label': 'DataField__label___1MXSv',
-  'data': 'DataField__data___E9DYW',
-  'field': 'DataField__field___3McQ6',
-  'dataselect': 'DataField__dataselect___1mT91'
-};
+var _DataField = require("./DataField.scss");
 
 var _DataField2 = _interopRequireDefault(_DataField);
 
-var _reactVirtualizedSelect = require('react-virtualized-select');
+var _reactVirtualizedSelect = require("react-virtualized-select");
 
 var _reactVirtualizedSelect2 = _interopRequireDefault(_reactVirtualizedSelect);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 var FieldSelect = function (_Component) {
-  (0, _inherits3.default)(FieldSelect, _Component);
+  _inherits(FieldSelect, _Component);
 
   function FieldSelect(props) {
-    (0, _classCallCheck3.default)(this, FieldSelect);
+    _classCallCheck(this, FieldSelect);
 
-    var _this = (0, _possibleConstructorReturn3.default)(this, (FieldSelect.__proto__ || (0, _getPrototypeOf2.default)(FieldSelect)).call(this, props));
+    var _this = _possibleConstructorReturn(this, (FieldSelect.__proto__ || Object.getPrototypeOf(FieldSelect)).call(this, props));
 
     _this.state = {
       clearable: true,
       disabled: false,
-      githubUsers: [],
+      options: [],
       multi: false,
       searchable: true,
       selectedCreatable: null
     };
-
-    _this._loadGithubUsers = _this._loadGithubUsers.bind(_this);
-
     return _this;
   }
 
-  (0, _createClass3.default)(FieldSelect, [{
-    key: '_goToGithubUser',
+  _createClass(FieldSelect, [{
+    key: "_goToGithubUser",
     value: function _goToGithubUser(value) {
       window.open(value.html_url);
     }
   }, {
-    key: '_loadGithubUsers',
-    value: function _loadGithubUsers(input) {
+    key: "_loadOptions",
+    value: function _loadOptions(input) {
       var _this2 = this;
 
-      return this.props._obj[this.props._fld]._manager.get_option_list({
-        presentation: { like: input }
-      }).then(function (githubUsers) {
-        _this2.setState({ githubUsers: githubUsers });
+      var selection = { _top: 40 };
+      if (input) {
+        selection.presentation = { like: input };
+      }
+      if (this.props._meta.choice_params) {
+        this.props._meta.choice_params.forEach(function (cp) {
+          selection[cp.name] = cp.path;
+        });
+      }
 
-        return { options: githubUsers };
+      return this.props._obj[this.props._fld]._manager.get_option_list(selection).then(function (options) {
+        _this2.setState({ options: options });
+
+        return { options: options };
       });
     }
   }, {
-    key: 'render',
+    key: "_onChange",
+    value: function _onChange(value) {
+      this.setState({ value: value });
+      if (this.props.handleValueChange) this.props.handleValueChange(value);
+    }
+  }, {
+    key: "render",
     value: function render() {
-      var _this3 = this;
 
-      return _react2.default.createElement(
-        'div',
+      return this.props._hide_label ? _react2.default.createElement(_reactVirtualizedSelect2.default, {
+        name: this.props._meta.name,
+        async: true,
+        backspaceRemoves: false,
+        labelKey: "presentation",
+        valueKey: "ref",
+        loadOptions: this._loadOptions.bind(this),
+        minimumInput: 0,
+        onChange: this._onChange.bind(this)
+        //onValueClick={this._goToGithubUser}
+        , options: this.state.options,
+        value: this.state.value
+
+      }) : _react2.default.createElement(
+        "div",
         { className: _DataField2.default.field },
         _react2.default.createElement(
-          'div',
+          "div",
           { className: _DataField2.default.label },
           this.props._meta.synonym
         ),
         _react2.default.createElement(
-          'div',
+          "div",
           { className: _DataField2.default.dataselect },
           _react2.default.createElement(_reactVirtualizedSelect2.default, {
             name: this.props._meta.name,
             async: true,
             backspaceRemoves: false,
-            labelKey: 'presentation',
-            valueKey: 'ref',
-            loadOptions: this._loadGithubUsers,
+            labelKey: "presentation",
+            valueKey: "ref",
+            loadOptions: this._loadOptions.bind(this),
             minimumInput: 0,
-            onChange: function onChange(selectedGithubUser) {
-              return _this3.setState({ selectedGithubUser: selectedGithubUser });
-            },
-            onValueClick: this._goToGithubUser,
-            options: this.state.githubUsers,
-            value: this.state.selectedGithubUser
+            onChange: this._onChange.bind(this)
+            //onValueClick={this._goToGithubUser}
+            , options: this.state.options,
+            value: this.state.value
 
           })
         )
       );
     }
   }]);
+
   return FieldSelect;
 }(_react.Component);
 
-exports.default = FieldSelect;
-process.env.NODE_ENV !== "production" ? FieldSelect.propTypes = {
+FieldSelect.propTypes = {
   _obj: _react.PropTypes.object.isRequired,
   _fld: _react.PropTypes.string.isRequired,
   _meta: _react.PropTypes.object,
+  _hide_label: _react.PropTypes.bool,
   handleValueChange: _react.PropTypes.func
-} : void 0;
+};
+exports.default = FieldSelect;

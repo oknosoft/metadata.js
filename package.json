@@ -72,7 +72,7 @@
       }
     },
     "build:data-field": {
-      "command": "babel .packages/metadata-react-ui/DataField/src --out-dir ./packages/metadata-react-ui/DataField",
+      "command": "babel ./packages/metadata-react-ui/DataField/src --out-dir ./packages/metadata-react-ui/DataField",
       "env": {
         "NODE_ENV": "production"
       }

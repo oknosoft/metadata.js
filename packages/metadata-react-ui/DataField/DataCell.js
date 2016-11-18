@@ -10,13 +10,13 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
+var _reactDom = require('react-dom');
+
+var _reactDom2 = _interopRequireDefault(_reactDom);
+
 var _FieldSelect = require('./FieldSelect');
 
 var _FieldSelect2 = _interopRequireDefault(_FieldSelect);
-
-var _FieldText = require('./FieldText');
-
-var _FieldText2 = _interopRequireDefault(_FieldText);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -26,78 +26,74 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var DataField = function (_Component) {
-  _inherits(DataField, _Component);
+var ExcelColumn = {
+  name: _react2.default.PropTypes.string.isRequired,
+  key: _react2.default.PropTypes.string.isRequired,
+  width: _react2.default.PropTypes.number.isRequired,
+  filterable: _react2.default.PropTypes.bool
+};
 
-  function DataField(props) {
-    _classCallCheck(this, DataField);
+var DataCell = function (_Component) {
+  _inherits(DataCell, _Component);
 
-    var _this = _possibleConstructorReturn(this, (DataField.__proto__ || Object.getPrototypeOf(DataField)).call(this, props));
+  // props.column.key, props.rowData(._row)
+
+  function DataCell(props) {
+    _classCallCheck(this, DataCell);
+
+    var _this = _possibleConstructorReturn(this, (DataCell.__proto__ || Object.getPrototypeOf(DataCell)).call(this, props));
 
     _this.state = {
-      _meta: props._meta || props._obj._metadata(props._fld)
+      value: [],
+      _meta: props._meta || props.rowData._metadata(props.column.key)
     };
+    _this.handleSelectChange = _this.handleSelectChange.bind(_this);
     return _this;
   }
 
-  _createClass(DataField, [{
+  _createClass(DataCell, [{
+    key: 'getInputNode',
+    value: function getInputNode() {
+      return _reactDom2.default.findDOMNode(this);
+    }
+  }, {
+    key: 'getValue',
+    value: function getValue() {
+      var updated = {};
+      updated[this.props.column.key] = this.state.value;
+      return updated;
+    }
+  }, {
+    key: 'handleSelectChange',
+    value: function handleSelectChange(value) {
+      this.setState({ value: value });
+    }
+  }, {
     key: 'render',
     value: function render() {
-      var $p = this.context.$p;
-      var _meta = this.state._meta;
-      var _props = this.props;
-      var _obj = _props._obj;
-      var _fld = _props._fld;
-      var handleValueChange = _props.handleValueChange;
 
+      var _obj = this.props.rowData;
+      var _fld = this.props.column.key;
       var _val = _obj[_fld];
       var subProps = {
-        _meta: _meta,
+        _meta: this.state._meta,
         _obj: _obj,
         _fld: _fld,
         _val: _val,
-        handleValueChange: handleValueChange
+        _hide_label: true,
+        handleValueChange: this.handleSelectChange
       };
 
-      switch ($p.rx_control_by_type(this.state._meta.type, _val)) {
-
-        case 'ocombo':
-          return _react2.default.createElement(_FieldSelect2.default, subProps);
-
-        default:
-          return _react2.default.createElement(_FieldText2.default, subProps);
-
-      }
-
-      ;
+      return _react2.default.createElement(_FieldSelect2.default, subProps);
     }
   }]);
 
-  return DataField;
+  return DataCell;
 }(_react.Component);
 
-DataField.contextTypes = {
-  $p: _react2.default.PropTypes.object.isRequired
+DataCell.propTypes = {
+  options: _react2.default.PropTypes.array.isRequired,
+  column: _react2.default.PropTypes.shape(ExcelColumn),
+  value: _react2.default.PropTypes.array
 };
-DataField.propTypes = {
-  _obj: _react.PropTypes.object.isRequired,
-  _fld: _react.PropTypes.string.isRequired,
-  _meta: _react.PropTypes.object,
-  handleValueChange: _react.PropTypes.func
-};
-DataField.labelPosition = {
-  auto: 'auto',
-  hide: 'hide',
-  left: 'left',
-  right: 'right',
-  top: 'top',
-  bottom: 'bottom'
-};
-DataField.fieldKind = {
-  input: 'input', // поле ввода
-  label: 'label', // поле надписи
-  toggle: 'toggle', // поле переключателя
-  image: 'image', // поле картинки
-  text: 'text' // многострочный редактор текста
-};
-exports.default = DataField;
+exports.default = DataCell;
