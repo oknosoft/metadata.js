@@ -4,12 +4,13 @@
   "version": "2.0.0-beta.8",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "dependencies": {
-    "alasql": ">=0.3",
-    "moment": ">=2.15",
+    "alasql": "^0.3",
+    "moment": "^2.16",
     "metadata-abstract-adapter": "^2.0.0-beta.8"
   },
   "engines": {
-    "node": ">=6.0"
+    "node": "^6.5",
+    "npm": "^3.5"
   },
   "repository": {
     "type": "git",

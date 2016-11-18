@@ -16,7 +16,8 @@
     "pouchdb-find": "^0.10"
   },
   "engines": {
-    "node": ">=6.0"
+    "node": "^6.5",
+    "npm": "^3.5"
   },
   "repository": {
     "type": "git",
