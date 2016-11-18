@@ -344,7 +344,7 @@ class AdapterPouch extends AbstracrAdapter{
 									_page.total_rows = response.total_rows;
 									_page.duration = Date.now() - _page.start;
 
-									t.emit('pouch_data_page', _page)
+									t.emit('pouch_data_page', Object.assign({}, _page))
 
 									if (t.load_changes(response, options))
 										fetchNextPage();
@@ -521,7 +521,7 @@ class AdapterPouch extends AbstracrAdapter{
 											_page.docs_written = change.docs_written;
 											_page.duration = Date.now() - _page.start;
 
-											t.emit('pouch_data_page', _page);
+											t.emit('pouch_data_page', Object.assign({}, _page));
 
 											if(change.docs.length < _page.limit){
 

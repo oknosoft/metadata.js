@@ -4,7 +4,10 @@
  */
 const ACTION_HANDLERS = {
 
-	[META_LOADED]:          (state, action) => Object.assign({}, state, {$p: action.payload}),
+	[META_LOADED]:          (state, action) => Object.assign({}, state, {
+		$p: action.payload,
+		meta_loaded: true
+	}),
 
 	[PRM_CHANGE]:          (state, action) => state,
 

@@ -493,7 +493,10 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * Action Handlers - обработчики событий - вызываются из корневого редюсера
  */
 var ACTION_HANDLERS = (_ACTION_HANDLERS = {}, _defineProperty(_ACTION_HANDLERS, META_LOADED, function (state, action) {
-	return (0, _simpleAssign2.default)({}, state, { $p: action.payload });
+	return (0, _simpleAssign2.default)({}, state, {
+		$p: action.payload,
+		meta_loaded: true
+	});
 }), _defineProperty(_ACTION_HANDLERS, PRM_CHANGE, function (state, action) {
 	return state;
 }), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_LOADED, function (state, action) {
