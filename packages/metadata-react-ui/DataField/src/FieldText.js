@@ -16,16 +16,11 @@ export default class FieldText extends Component {
   render() {
     return (
 
-      <div className={classes.field}>
-        <div className={classes.label}>{this.props._meta.synonym}</div>
-        <div className={classes.data}>
-          <TextField
-            name={this.props._meta.name}
-            fullWidth={true}
-            defaultValue={this.props._val}
-          />
-        </div>
-      </div>
+      <TextField
+        name={this.props._meta.name}
+        fullWidth={true}
+        defaultValue={this.props._val}
+      />
 
     );
   }

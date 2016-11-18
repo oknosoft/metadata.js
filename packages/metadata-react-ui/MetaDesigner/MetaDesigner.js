@@ -4,25 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _getPrototypeOf = require('babel-runtime/core-js/object/get-prototype-of');
-
-var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
-
-var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = require('babel-runtime/helpers/createClass');
-
-var _createClass3 = _interopRequireDefault(_createClass2);
-
-var _possibleConstructorReturn2 = require('babel-runtime/helpers/possibleConstructorReturn');
-
-var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
-
-var _inherits2 = require('babel-runtime/helpers/inherits');
-
-var _inherits3 = _interopRequireDefault(_inherits2);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _react = require('react');
 
@@ -32,41 +14,15 @@ var _reactGridLayout = require('react-grid-layout');
 
 var _reactGridLayout2 = _interopRequireDefault(_reactGridLayout);
 
-var _styles = {};
+var _styles = require('react-grid-layout/css/styles.css');
 
 var _styles2 = _interopRequireDefault(_styles);
 
-var _styles3 = {};
+var _styles3 = require('react-resizable/css/styles.css');
 
 var _styles4 = _interopRequireDefault(_styles3);
 
-var _MetaDesigner = {
-  'span': 'MetaDesigner__span___3e_VE',
-  'searchBox': 'MetaDesigner__searchBox___1ZAFp',
-  'input': 'MetaDesigner__input___1pzzS',
-  'component': 'MetaDesigner__component___1XOAC',
-  'content': 'MetaDesigner__content___3Q0Su',
-  'draggableHandle': 'MetaDesigner__draggableHandle___2YFoE',
-  'icon_1c_accreg': 'MetaDesigner__icon_1c_accreg___2eOjp',
-  'icon_1c_areg': 'MetaDesigner__icon_1c_areg___1Fhpx',
-  'icon_1c_bp': 'MetaDesigner__icon_1c_bp___1Y16V',
-  'icon_1c_cacc': 'MetaDesigner__icon_1c_cacc___39H8m',
-  'icon_1c_cat': 'MetaDesigner__icon_1c_cat___1MZd1',
-  'icon_1c_cch': 'MetaDesigner__icon_1c_cch___3Be8V',
-  'icon_1c_doc': 'MetaDesigner__icon_1c_doc___oLXkt',
-  'icon_1c_dp': 'MetaDesigner__icon_1c_dp___3S8g2',
-  'icon_1c_ireg': 'MetaDesigner__icon_1c_ireg___3GD-8',
-  'icon_1c_rep': 'MetaDesigner__icon_1c_rep___2eiXa',
-  'icon_1c_tsk': 'MetaDesigner__icon_1c_tsk___5IEae',
-  'icon_1c_enm': 'MetaDesigner__icon_1c_enm___uqPxI',
-  'icon_1c_frm': 'MetaDesigner__icon_1c_frm___1ac7A',
-  'icon_1c_cmd': 'MetaDesigner__icon_1c_cmd___2PU1d',
-  'icon_1c_resource': 'MetaDesigner__icon_1c_resource___1dvnC',
-  'icon_1c_props': 'MetaDesigner__icon_1c_props___Gz_w1',
-  'icon_1c_dimension': 'MetaDesigner__icon_1c_dimension___3N66_',
-  'icon_1c_root': 'MetaDesigner__icon_1c_root___QRgpD',
-  'icon_1c_tabular': 'MetaDesigner__icon_1c_tabular___229bs'
-};
+var _MetaDesigner = require('./MetaDesigner.scss');
 
 var _MetaDesigner2 = _interopRequireDefault(_MetaDesigner);
 
@@ -76,15 +32,22 @@ var _MetaTree2 = _interopRequireDefault(_MetaTree);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 var MetaDesigner = function (_Component) {
-  (0, _inherits3.default)(MetaDesigner, _Component);
+  _inherits(MetaDesigner, _Component);
 
   function MetaDesigner() {
-    (0, _classCallCheck3.default)(this, MetaDesigner);
-    return (0, _possibleConstructorReturn3.default)(this, (MetaDesigner.__proto__ || (0, _getPrototypeOf2.default)(MetaDesigner)).apply(this, arguments));
+    _classCallCheck(this, MetaDesigner);
+
+    return _possibleConstructorReturn(this, (MetaDesigner.__proto__ || Object.getPrototypeOf(MetaDesigner)).apply(this, arguments));
   }
 
-  (0, _createClass3.default)(MetaDesigner, [{
+  _createClass(MetaDesigner, [{
     key: 'render',
     value: function render() {
       return _react2.default.createElement(
@@ -114,6 +77,7 @@ var MetaDesigner = function (_Component) {
       );
     }
   }]);
+
   return MetaDesigner;
 }(_react.Component);
 

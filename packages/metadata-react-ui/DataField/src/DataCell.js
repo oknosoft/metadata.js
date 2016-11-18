@@ -1,7 +1,6 @@
-import React, {Component} from 'react';
-import ReactDOM from 'react-dom';
-
-import FieldSelect from './FieldSelect'
+import React, {Component} from "react";
+import ReactDOM from "react-dom";
+import DataField from "./DataField";
 
 
 const ExcelColumn = {
@@ -12,6 +11,10 @@ const ExcelColumn = {
 };
 
 class DataCell extends Component {
+
+  static contextTypes = {
+    $p: React.PropTypes.object.isRequired
+  }
 
   static propTypes = {
     options: React.PropTypes.array.isRequired,
@@ -46,6 +49,8 @@ class DataCell extends Component {
 
   render() {
 
+    const { $p } = this.context;
+
     const _obj = this.props.rowData;
     const _fld = this.props.column.key
     const _val = _obj[_fld];
@@ -54,12 +59,12 @@ class DataCell extends Component {
       _obj: _obj,
       _fld: _fld,
       _val: _val,
-      _hide_label: true,
+      label_position: $p.UI.LABEL_POSITIONS.hide,
       handleValueChange: this.handleSelectChange
     }
 
     return (
-      <FieldSelect {...subProps} />
+      <DataField {...subProps} />
     );
   }
 }

@@ -4,10 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _keys = require('babel-runtime/core-js/object/keys');
-
-var _keys2 = _interopRequireDefault(_keys);
-
 var _metadata = require('metadata');
 
 var _metadata2 = _interopRequireDefault(_metadata);
@@ -57,7 +53,7 @@ var _loop = function _loop(key) {
       elm.children.push({
         name: 'Реквизиты',
         icon: 'icon_1c_props',
-        children: (0, _keys2.default)(elm.meta.fields).filter(function (name) {
+        children: Object.keys(elm.meta.fields).filter(function (name) {
           return ['owner', 'parent', 'predefined_name'].indexOf(name) == -1;
         }).map(function (name) {
           return {

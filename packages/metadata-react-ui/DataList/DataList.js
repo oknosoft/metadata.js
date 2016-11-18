@@ -4,29 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _defineProperty2 = require("babel-runtime/helpers/defineProperty");
-
-var _defineProperty3 = _interopRequireDefault(_defineProperty2);
-
-var _getPrototypeOf = require("babel-runtime/core-js/object/get-prototype-of");
-
-var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
-
-var _classCallCheck2 = require("babel-runtime/helpers/classCallCheck");
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = require("babel-runtime/helpers/createClass");
-
-var _createClass3 = _interopRequireDefault(_createClass2);
-
-var _possibleConstructorReturn2 = require("babel-runtime/helpers/possibleConstructorReturn");
-
-var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
-
-var _inherits2 = require("babel-runtime/helpers/inherits");
-
-var _inherits3 = _interopRequireDefault(_inherits2);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _react = require("react");
 
@@ -38,28 +16,7 @@ var _Toolbar = require("./Toolbar");
 
 var _Toolbar2 = _interopRequireDefault(_Toolbar);
 
-var _DataList = {
-  "toolbar": "DataList__toolbar___3Q5r-",
-  "List": "DataList__List___3p2A7",
-  "row": "DataList__row___1c_lE",
-  "placeholder": "DataList__placeholder___J261_",
-  "cacheButtonAndCountRow": "DataList__cacheButtonAndCountRow___egWjE",
-  "button": "DataList__button___19gJP",
-  "cacheCountRow": "DataList__cacheCountRow___3UENX",
-  "GridRow": "DataList__GridRow___3PGBi",
-  "GridColumn": "DataList__GridColumn___1USDI",
-  "LeftSideGridContainer": "DataList__LeftSideGridContainer___3Uunq",
-  "BodyGrid": "DataList__BodyGrid___1XFoZ",
-  "evenRow": "DataList__evenRow___1XGC4",
-  "oddRow": "DataList__oddRow___2fnJh",
-  "hoveredItem": "DataList__hoveredItem___19vQ-",
-  "selectedItem": "DataList__selectedItem___1U89O",
-  "cell": "DataList__cell___1VYGH",
-  "headerCell": "DataList__headerCell___3j1ZO",
-  "centeredCell": "DataList__centeredCell___-B0cc",
-  "letterCell": "DataList__letterCell___2vRdC",
-  "noCells": "DataList__noCells___1iZxL"
-};
+var _DataList = require("./DataList.scss");
 
 var _DataList2 = _interopRequireDefault(_DataList);
 
@@ -69,16 +26,24 @@ var _classnames2 = _interopRequireDefault(_classnames);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 var limit = 30,
     totalRows = 999999;
 
 var DataList = function (_Component) {
-  (0, _inherits3.default)(DataList, _Component);
+  _inherits(DataList, _Component);
 
   function DataList(props) {
-    (0, _classCallCheck3.default)(this, DataList);
+    _classCallCheck(this, DataList);
 
-    var _this = (0, _possibleConstructorReturn3.default)(this, (DataList.__proto__ || (0, _getPrototypeOf2.default)(DataList)).call(this, props));
+    var _this = _possibleConstructorReturn(this, (DataList.__proto__ || Object.getPrototypeOf(DataList)).call(this, props));
 
     _this.state = {
       totalRowCount: totalRows,
@@ -107,7 +72,7 @@ var DataList = function (_Component) {
     return _this;
   }
 
-  (0, _createClass3.default)(DataList, [{
+  _createClass(DataList, [{
     key: "render",
     value: function render() {
       var _this2 = this;
@@ -332,7 +297,7 @@ var DataList = function (_Component) {
       var setState = this.setState.bind(this);
       // var grid = this.refs.AutoSizer.refs.Grid
 
-      var classNames = (0, _classnames2.default)(this._getRowClassName(rowIndex), _DataList2.default.cell, (_cn = {}, (0, _defineProperty3.default)(_cn, _DataList2.default.centeredCell, columnIndex > 3), (0, _defineProperty3.default)(_cn, _DataList2.default.hoveredItem, rowIndex === this.state.hoveredRowIndex && rowIndex != this.state.selectedRowIndex), (0, _defineProperty3.default)(_cn, _DataList2.default.selectedItem, rowIndex === this.state.selectedRowIndex), _cn));
+      var classNames = (0, _classnames2.default)(this._getRowClassName(rowIndex), _DataList2.default.cell, (_cn = {}, _defineProperty(_cn, _DataList2.default.centeredCell, columnIndex > 3), _defineProperty(_cn, _DataList2.default.hoveredItem, rowIndex === this.state.hoveredRowIndex && rowIndex != this.state.selectedRowIndex), _defineProperty(_cn, _DataList2.default.selectedItem, rowIndex === this.state.selectedRowIndex), _cn));
 
       var row = this._list.get(rowIndex);
 
@@ -373,14 +338,14 @@ var DataList = function (_Component) {
       );
     }
   }]);
+
   return DataList;
 }(_react.Component);
 
 DataList.contextTypes = {
   $p: _react2.default.PropTypes.object.isRequired
 };
-exports.default = DataList;
-process.env.NODE_ENV !== "production" ? DataList.propTypes = {
+DataList.propTypes = {
 
   columns: _react.PropTypes.array.isRequired,
 
@@ -388,4 +353,5 @@ process.env.NODE_ENV !== "production" ? DataList.propTypes = {
   _mgr: _react.PropTypes.object.isRequired,
   _width: _react.PropTypes.number.isRequired,
   _height: _react.PropTypes.number.isRequired
-} : void 0;
+};
+exports.default = DataList;

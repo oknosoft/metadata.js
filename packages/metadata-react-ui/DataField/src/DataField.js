@@ -3,6 +3,9 @@ import React, { Component, PropTypes } from 'react';
 import FieldSelect from './FieldSelect'
 import FieldText from './FieldText'
 
+import classes from "./DataField.scss"
+
+
 export default class DataField extends Component {
 
   static contextTypes = {
@@ -10,27 +13,12 @@ export default class DataField extends Component {
   }
 
   static propTypes = {
-    _obj: PropTypes.object.isRequired,
-    _fld: PropTypes.string.isRequired,
-    _meta: PropTypes.object,
-    handleValueChange: PropTypes.func
-  }
+    _obj: PropTypes.object.isRequired,  // DataObj, к полю которого будет привязано поле
+    _fld: PropTypes.string.isRequired,  // имя поля объекта - путь к данным
+    _meta: PropTypes.object,            // метаданные поля - могут быть переопределены снаружи, если не указано, будут задейтвованы стандартные метаданные
 
-  static labelPosition = {
-    auto: 'auto',
-    hide: 'hide',
-    left: 'left',
-    right: 'right',
-    top: 'top',
-    bottom: 'bottom'
-  }
-
-  static fieldKind = {
-    input: 'input',   // поле ввода
-    label: 'label',   // поле надписи
-    toggle: 'toggle', // поле переключателя
-    image: 'image',   // поле картинки
-    text: 'text'      // многострочный редактор текста
+    label_position: PropTypes.string,   // положение заголовка, перечислимый тип $p.UI.LABEL_POSITIONS
+    handleValueChange: PropTypes.func   // обработчик при изменении значения в поле
   }
 
   constructor (props) {
@@ -46,7 +34,7 @@ export default class DataField extends Component {
 
     const { $p } = this.context;
     const { _meta } = this.state;
-    const { _obj, _fld, handleValueChange } = this.props;
+    const { _obj, _fld, handleValueChange, label_position } = this.props;
     const _val = _obj[_fld];
     const subProps = {
       _meta: _meta,
@@ -56,16 +44,31 @@ export default class DataField extends Component {
       handleValueChange: handleValueChange
     }
 
-    switch ($p.rx_control_by_type(this.state._meta.type, _val)){
+    let control
+
+    switch ($p.UI.control_by_type(this.state._meta.type, _val)){
 
       case 'ocombo':
-        return <FieldSelect {...subProps} />
+        control = <FieldSelect {...subProps} />;
+        break;
 
       default:
-        return <FieldText {...subProps} />
+        control = <FieldText {...subProps} />
 
     }
 
-    ;
+    if(label_position == $p.UI.LABEL_POSITIONS.hide){
+      return control
+
+    }else{
+      return (
+        <div className={classes.field}>
+          <div className={classes.label}>{_meta.synonym}</div>
+          <div className={classes.data}>
+            {control}
+          </div>
+        </div>
+        )
+    }
   }
 }

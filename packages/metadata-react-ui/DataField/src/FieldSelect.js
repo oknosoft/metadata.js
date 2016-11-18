@@ -1,5 +1,5 @@
 import React, {Component, PropTypes} from "react";
-import classes from "./DataField.scss";
+
 import VirtualizedSelect from "react-virtualized-select";
 
 export default class FieldSelect extends Component {
@@ -8,7 +8,7 @@ export default class FieldSelect extends Component {
     _obj: PropTypes.object.isRequired,
     _fld: PropTypes.string.isRequired,
     _meta: PropTypes.object,
-    _hide_label: PropTypes.bool,
+
     handleValueChange: PropTypes.func
   }
 
@@ -59,42 +59,20 @@ export default class FieldSelect extends Component {
 
     return (
 
-      this.props._hide_label ?
+      <VirtualizedSelect
+        name={this.props._meta.name}
+        async
+        backspaceRemoves={false}
+        labelKey='presentation'
+        valueKey='ref'
+        loadOptions={::this._loadOptions}
+        minimumInput={0}
+        onChange={::this._onChange}
+        //onValueClick={this._goToGithubUser}
+        options={this.state.options}
+        value={this.state.value}
 
-        <VirtualizedSelect
-          name={this.props._meta.name}
-          async
-          backspaceRemoves={false}
-          labelKey='presentation'
-          valueKey='ref'
-          loadOptions={::this._loadOptions}
-          minimumInput={0}
-          onChange={::this._onChange}
-          //onValueClick={this._goToGithubUser}
-          options={this.state.options}
-          value={this.state.value}
-
-        />
-        :
-        <div className={classes.field}>
-          <div className={classes.label}>{this.props._meta.synonym}</div>
-          <div className={classes.dataselect}>
-            <VirtualizedSelect
-              name={this.props._meta.name}
-              async
-              backspaceRemoves={false}
-              labelKey='presentation'
-              valueKey='ref'
-              loadOptions={::this._loadOptions}
-              minimumInput={0}
-              onChange={::this._onChange}
-              //onValueClick={this._goToGithubUser}
-              options={this.state.options}
-              value={this.state.value}
-
-            />
-          </div>
-        </div>
+      />
 
     );
   }

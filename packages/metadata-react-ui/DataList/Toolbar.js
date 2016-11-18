@@ -4,25 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _getPrototypeOf = require('babel-runtime/core-js/object/get-prototype-of');
-
-var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
-
-var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = require('babel-runtime/helpers/createClass');
-
-var _createClass3 = _interopRequireDefault(_createClass2);
-
-var _possibleConstructorReturn2 = require('babel-runtime/helpers/possibleConstructorReturn');
-
-var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
-
-var _inherits2 = require('babel-runtime/helpers/inherits');
-
-var _inherits3 = _interopRequireDefault(_inherits2);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _react = require('react');
 
@@ -70,42 +52,28 @@ var _DataSelection = require('../DataSelection');
 
 var _DataSelection2 = _interopRequireDefault(_DataSelection);
 
-var _DataList = {
-  'toolbar': 'DataList__toolbar___3Q5r-',
-  'List': 'DataList__List___3p2A7',
-  'row': 'DataList__row___1c_lE',
-  'placeholder': 'DataList__placeholder___J261_',
-  'cacheButtonAndCountRow': 'DataList__cacheButtonAndCountRow___egWjE',
-  'button': 'DataList__button___19gJP',
-  'cacheCountRow': 'DataList__cacheCountRow___3UENX',
-  'GridRow': 'DataList__GridRow___3PGBi',
-  'GridColumn': 'DataList__GridColumn___1USDI',
-  'LeftSideGridContainer': 'DataList__LeftSideGridContainer___3Uunq',
-  'BodyGrid': 'DataList__BodyGrid___1XFoZ',
-  'evenRow': 'DataList__evenRow___1XGC4',
-  'oddRow': 'DataList__oddRow___2fnJh',
-  'hoveredItem': 'DataList__hoveredItem___19vQ-',
-  'selectedItem': 'DataList__selectedItem___1U89O',
-  'cell': 'DataList__cell___1VYGH',
-  'headerCell': 'DataList__headerCell___3j1ZO',
-  'centeredCell': 'DataList__centeredCell___-B0cc',
-  'letterCell': 'DataList__letterCell___2vRdC',
-  'noCells': 'DataList__noCells___1iZxL'
-};
+var _DataList = require('./DataList.scss');
 
 var _DataList2 = _interopRequireDefault(_DataList);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 var DataListToolbar = function (_Component) {
-  (0, _inherits3.default)(DataListToolbar, _Component);
+  _inherits(DataListToolbar, _Component);
 
   function DataListToolbar() {
-    (0, _classCallCheck3.default)(this, DataListToolbar);
-    return (0, _possibleConstructorReturn3.default)(this, (DataListToolbar.__proto__ || (0, _getPrototypeOf2.default)(DataListToolbar)).apply(this, arguments));
+    _classCallCheck(this, DataListToolbar);
+
+    return _possibleConstructorReturn(this, (DataListToolbar.__proto__ || Object.getPrototypeOf(DataListToolbar)).apply(this, arguments));
   }
 
-  (0, _createClass3.default)(DataListToolbar, [{
+  _createClass(DataListToolbar, [{
     key: 'render',
     value: function render() {
       var props = this.props;
@@ -152,11 +120,11 @@ var DataListToolbar = function (_Component) {
       );
     }
   }]);
+
   return DataListToolbar;
 }(_react.Component);
 
-exports.default = DataListToolbar;
-process.env.NODE_ENV !== "production" ? DataListToolbar.propTypes = {
+DataListToolbar.propTypes = {
 
   handleAdd: _react.PropTypes.func.isRequired, // обработчик добавления объекта
   handleEdit: _react.PropTypes.func.isRequired, // обработчик открфтия формы редактора
@@ -166,4 +134,5 @@ process.env.NODE_ENV !== "production" ? DataListToolbar.propTypes = {
   selectionValue: _react.PropTypes.object.isRequired, // значение фильтра
 
   handlePrint: _react.PropTypes.func.isRequired, // обработчик открытия диалога печати
-  handleAttachment: _react.PropTypes.func.isRequired } : void 0;
+  handleAttachment: _react.PropTypes.func.isRequired };
+exports.default = DataListToolbar;
