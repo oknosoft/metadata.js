@@ -16,4 +16,6 @@
 Содержит _Типы действий_, _Генераторы действий_ и _Обработчики регистрации_ в терминах [Redux](https://github.com/reactjs/redux)
 
 ### metadata-react-ui
-Визуальный интерфейс к данным metadata.js можно реализовать с использованием любого js-фреймворка или на чистом javascript. Библиотека [metadata-react-ui](metadata-react-ui) содержит набор высокоуровневых визуальных компонентов, использует [React](https://github.com/facebook/react) для рендеринга UI и [Redux](https://github.com/reactjs/redux) для хранения состояния приложения. 
+Визуальный интерфейс к данным metadata.js можно реализовать с использованием любого js-фреймворка или на чистом javascript.
+
+Библиотека [metadata-react-ui](metadata-react-ui) содержит набор высокоуровневых визуальных компонентов, использует [React](https://github.com/facebook/react) для рендеринга UI и [Redux](https://github.com/reactjs/redux) для хранения состояния приложения. 
