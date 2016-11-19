@@ -98,10 +98,10 @@ var Container = function (_TreebeardContainer) {
   _createClass(Container, [{
     key: 'renderToggleDecorator',
     value: function renderToggleDecorator() {
-      var _props = this.props;
-      var style = _props.style;
-      var decorators = _props.decorators;
-      var node = _props.node;
+      var _props = this.props,
+          style = _props.style,
+          decorators = _props.decorators,
+          node = _props.node;
 
       return _react2.default.createElement(decorators.Toggle, { style: style.toggle, node: node });
     }

@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -6,17 +6,17 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _react = require('react');
+var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactDom = require('react-dom');
+var _reactDom = require("react-dom");
 
 var _reactDom2 = _interopRequireDefault(_reactDom);
 
-var _FieldSelect = require('./FieldSelect');
+var _DataField = require("./DataField");
 
-var _FieldSelect2 = _interopRequireDefault(_FieldSelect);
+var _DataField2 = _interopRequireDefault(_DataField);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -52,25 +52,27 @@ var DataCell = function (_Component) {
   }
 
   _createClass(DataCell, [{
-    key: 'getInputNode',
+    key: "getInputNode",
     value: function getInputNode() {
       return _reactDom2.default.findDOMNode(this);
     }
   }, {
-    key: 'getValue',
+    key: "getValue",
     value: function getValue() {
       var updated = {};
       updated[this.props.column.key] = this.state.value;
       return updated;
     }
   }, {
-    key: 'handleSelectChange',
+    key: "handleSelectChange",
     value: function handleSelectChange(value) {
       this.setState({ value: value });
     }
   }, {
-    key: 'render',
+    key: "render",
     value: function render() {
+      var $p = this.context.$p;
+
 
       var _obj = this.props.rowData;
       var _fld = this.props.column.key;
@@ -80,17 +82,20 @@ var DataCell = function (_Component) {
         _obj: _obj,
         _fld: _fld,
         _val: _val,
-        _hide_label: true,
+        label_position: $p.UI.LABEL_POSITIONS.hide,
         handleValueChange: this.handleSelectChange
       };
 
-      return _react2.default.createElement(_FieldSelect2.default, subProps);
+      return _react2.default.createElement(_DataField2.default, subProps);
     }
   }]);
 
   return DataCell;
 }(_react.Component);
 
+DataCell.contextTypes = {
+  $p: _react2.default.PropTypes.object.isRequired
+};
 DataCell.propTypes = {
   options: _react2.default.PropTypes.array.isRequired,
   column: _react2.default.PropTypes.shape(ExcelColumn),

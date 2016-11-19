@@ -18,6 +18,10 @@ var _FieldText = require('./FieldText');
 
 var _FieldText2 = _interopRequireDefault(_FieldText);
 
+var _DataField = require('./DataField.scss');
+
+var _DataField2 = _interopRequireDefault(_DataField);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -45,10 +49,11 @@ var DataField = function (_Component) {
     value: function render() {
       var $p = this.context.$p;
       var _meta = this.state._meta;
-      var _props = this.props;
-      var _obj = _props._obj;
-      var _fld = _props._fld;
-      var handleValueChange = _props.handleValueChange;
+      var _props = this.props,
+          _obj = _props._obj,
+          _fld = _props._fld,
+          handleValueChange = _props.handleValueChange,
+          label_position = _props.label_position;
 
       var _val = _obj[_fld];
       var subProps = {
@@ -59,17 +64,37 @@ var DataField = function (_Component) {
         handleValueChange: handleValueChange
       };
 
-      switch ($p.rx_control_by_type(this.state._meta.type, _val)) {
+      var control = void 0;
+
+      switch ($p.UI.control_by_type(this.state._meta.type, _val)) {
 
         case 'ocombo':
-          return _react2.default.createElement(_FieldSelect2.default, subProps);
+          control = _react2.default.createElement(_FieldSelect2.default, subProps);
+          break;
 
         default:
-          return _react2.default.createElement(_FieldText2.default, subProps);
+          control = _react2.default.createElement(_FieldText2.default, subProps);
 
       }
 
-      ;
+      if (label_position == $p.UI.LABEL_POSITIONS.hide) {
+        return control;
+      } else {
+        return _react2.default.createElement(
+          'div',
+          { className: _DataField2.default.field },
+          _react2.default.createElement(
+            'div',
+            { className: _DataField2.default.label },
+            _meta.synonym
+          ),
+          _react2.default.createElement(
+            'div',
+            { className: _DataField2.default.data },
+            control
+          )
+        );
+      }
     }
   }]);
 
@@ -80,24 +105,11 @@ DataField.contextTypes = {
   $p: _react2.default.PropTypes.object.isRequired
 };
 DataField.propTypes = {
-  _obj: _react.PropTypes.object.isRequired,
-  _fld: _react.PropTypes.string.isRequired,
-  _meta: _react.PropTypes.object,
-  handleValueChange: _react.PropTypes.func
-};
-DataField.labelPosition = {
-  auto: 'auto',
-  hide: 'hide',
-  left: 'left',
-  right: 'right',
-  top: 'top',
-  bottom: 'bottom'
-};
-DataField.fieldKind = {
-  input: 'input', // поле ввода
-  label: 'label', // поле надписи
-  toggle: 'toggle', // поле переключателя
-  image: 'image', // поле картинки
-  text: 'text' // многострочный редактор текста
+  _obj: _react.PropTypes.object.isRequired, // DataObj, к полю которого будет привязано поле
+  _fld: _react.PropTypes.string.isRequired, // имя поля объекта - путь к данным
+  _meta: _react.PropTypes.object, // метаданные поля - могут быть переопределены снаружи, если не указано, будут задейтвованы стандартные метаданные
+
+  label_position: _react.PropTypes.string, // положение заголовка, перечислимый тип $p.UI.LABEL_POSITIONS
+  handleValueChange: _react.PropTypes.func // обработчик при изменении значения в поле
 };
 exports.default = DataField;

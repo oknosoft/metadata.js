@@ -10,10 +10,6 @@ var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _DataField = require("./DataField.scss");
-
-var _DataField2 = _interopRequireDefault(_DataField);
-
 var _reactVirtualizedSelect = require("react-virtualized-select");
 
 var _reactVirtualizedSelect2 = _interopRequireDefault(_reactVirtualizedSelect);
@@ -81,7 +77,7 @@ var FieldSelect = function (_Component) {
     key: "render",
     value: function render() {
 
-      return this.props._hide_label ? _react2.default.createElement(_reactVirtualizedSelect2.default, {
+      return _react2.default.createElement(_reactVirtualizedSelect2.default, {
         name: this.props._meta.name,
         async: true,
         backspaceRemoves: false,
@@ -94,33 +90,7 @@ var FieldSelect = function (_Component) {
         , options: this.state.options,
         value: this.state.value
 
-      }) : _react2.default.createElement(
-        "div",
-        { className: _DataField2.default.field },
-        _react2.default.createElement(
-          "div",
-          { className: _DataField2.default.label },
-          this.props._meta.synonym
-        ),
-        _react2.default.createElement(
-          "div",
-          { className: _DataField2.default.dataselect },
-          _react2.default.createElement(_reactVirtualizedSelect2.default, {
-            name: this.props._meta.name,
-            async: true,
-            backspaceRemoves: false,
-            labelKey: "presentation",
-            valueKey: "ref",
-            loadOptions: this._loadOptions.bind(this),
-            minimumInput: 0,
-            onChange: this._onChange.bind(this)
-            //onValueClick={this._goToGithubUser}
-            , options: this.state.options,
-            value: this.state.value
-
-          })
-        )
-      );
+      });
     }
   }]);
 
@@ -131,7 +101,7 @@ FieldSelect.propTypes = {
   _obj: _react.PropTypes.object.isRequired,
   _fld: _react.PropTypes.string.isRequired,
   _meta: _react.PropTypes.object,
-  _hide_label: _react.PropTypes.bool,
+
   handleValueChange: _react.PropTypes.func
 };
 exports.default = FieldSelect;

@@ -38,24 +38,11 @@ var FieldText = function (_Component) {
   _createClass(FieldText, [{
     key: 'render',
     value: function render() {
-      return _react2.default.createElement(
-        'div',
-        { className: _DataField2.default.field },
-        _react2.default.createElement(
-          'div',
-          { className: _DataField2.default.label },
-          this.props._meta.synonym
-        ),
-        _react2.default.createElement(
-          'div',
-          { className: _DataField2.default.data },
-          _react2.default.createElement(_TextField2.default, {
-            name: this.props._meta.name,
-            fullWidth: true,
-            defaultValue: this.props._val
-          })
-        )
-      );
+      return _react2.default.createElement(_TextField2.default, {
+        name: this.props._meta.name,
+        fullWidth: true,
+        defaultValue: this.props._val
+      });
     }
   }]);
 

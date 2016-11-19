@@ -5,7 +5,7 @@
  * Created 05.10.2016
  */
 
-import { LABEL_POSITIONS, DATA_FIELD_KIND } from 'metadata-react-ui/enums'
+import { LABEL_POSITIONS, DATA_FIELD_KIND } from './enums'
 
 /**
  * Экспортируем объект-плагин для модификации metadata.js

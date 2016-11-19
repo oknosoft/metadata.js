@@ -100,9 +100,9 @@ var DataObj = function (_Component) {
       var _this2 = this;
 
       return function (event, value) {
-        var _props = _this2.props;
-        var _obj = _props._obj;
-        var handleValueChange = _props.handleValueChange;
+        var _props = _this2.props,
+            _obj = _props._obj,
+            handleValueChange = _props.handleValueChange;
 
         var old_value = _obj[_fld];
         _obj[_fld] = value || (event && event.target ? event.target.value : '');

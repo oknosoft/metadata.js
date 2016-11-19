@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _enums = require('metadata-react-ui/enums');
+var _enums = require('./enums');
 
 /**
  * Экспортируем объект-плагин для модификации metadata.js

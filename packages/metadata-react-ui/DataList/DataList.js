@@ -78,10 +78,10 @@ var DataList = function (_Component) {
       var _this2 = this;
 
       var totalRowCount = this.state.totalRowCount;
-      var _props = this.props;
-      var columns = _props.columns;
-      var _width = _props._width;
-      var _height = _props._height;
+      var _props = this.props,
+          columns = _props.columns,
+          _width = _props._width,
+          _height = _props._height;
 
 
       return _react2.default.createElement(
@@ -105,15 +105,15 @@ var DataList = function (_Component) {
             minimumBatchSize: limit
           },
           function (_ref) {
-            var onRowsRendered = _ref.onRowsRendered;
-            var registerChild = _ref.registerChild;
+            var onRowsRendered = _ref.onRowsRendered,
+                registerChild = _ref.registerChild;
 
 
             var onSectionRendered = function onSectionRendered(_ref2) {
-              var rowOverscanStartIndex = _ref2.rowOverscanStartIndex;
-              var rowOverscanStopIndex = _ref2.rowOverscanStopIndex;
-              var rowStartIndex = _ref2.rowStartIndex;
-              var rowStopIndex = _ref2.rowStopIndex;
+              var rowOverscanStartIndex = _ref2.rowOverscanStartIndex,
+                  rowOverscanStopIndex = _ref2.rowOverscanStopIndex,
+                  rowStartIndex = _ref2.rowStartIndex,
+                  rowStopIndex = _ref2.rowStopIndex;
 
 
               onRowsRendered({
@@ -238,12 +238,12 @@ var DataList = function (_Component) {
     value: function _loadMoreRows(_ref5) {
       var _this3 = this;
 
-      var startIndex = _ref5.startIndex;
-      var stopIndex = _ref5.stopIndex;
+      var startIndex = _ref5.startIndex,
+          stopIndex = _ref5.stopIndex;
       var totalRowCount = this.state.totalRowCount;
-      var _props2 = this.props;
-      var select = _props2.select;
-      var _mgr = _props2._mgr;
+      var _props2 = this.props,
+          select = _props2.select,
+          _mgr = _props2._mgr;
 
       var increment = Math.max(limit, stopIndex - startIndex + 1);
 
@@ -287,11 +287,11 @@ var DataList = function (_Component) {
     value: function _cellRenderer(_ref6) {
       var _cn;
 
-      var columnIndex = _ref6.columnIndex;
-      var isScrolling = _ref6.isScrolling;
-      var key = _ref6.key;
-      var rowIndex = _ref6.rowIndex;
-      var style = _ref6.style;
+      var columnIndex = _ref6.columnIndex,
+          isScrolling = _ref6.isScrolling,
+          key = _ref6.key,
+          rowIndex = _ref6.rowIndex,
+          style = _ref6.style;
       var $p = this.context.$p;
 
       var setState = this.setState.bind(this);
