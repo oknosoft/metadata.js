@@ -4,8 +4,8 @@
   "version": "2.0.0-beta.8",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "dependencies": {
-    "react": "^15.3",
-    "react-dom": "^15.3",
+    "react": "^15.4",
+    "react-dom": "^15.4",
     "material-ui": "^0.16",
     "react-data-grid": "^1.0.62",
     "react-virtualized": "^8.5",
@@ -18,7 +18,8 @@
     "sass-loader": "^4.0",
     "postcss-loader": "^1.1",
     "style-loader": "^0.13",
-    "url-loader": "^0.5"
+    "url-loader": "^0.5",
+    "simple-assign": "^0.1.0"
   },
   "engines": {
     "node": "^6.5",
