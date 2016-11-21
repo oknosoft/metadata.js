@@ -1,5 +1,7 @@
 ### PouchDB data adapter for metadata.js
 
+[README in Russian](README.md)
+
 Example initialization metadata-react-app with pouchdb adapter:
 ```javascript
 import MetaEngine from 'metadata-core'

@@ -5,7 +5,7 @@
 
 **Metadata.js** is a library for building offline-first browser-based applications
 
-[README на русском языке](README.md)
+[README in Russian](README.md)
 
 ### Offline-first web application - it's just
 - [helloworld repo](https://github.com/oknosoft/helloworld)

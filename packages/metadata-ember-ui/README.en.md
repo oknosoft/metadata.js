@@ -1,5 +1,7 @@
-### Social auth & session manager for metadata.js
+### Ember UI components for metadata.js
 
 [README in Russian](README.md)
+
+Not implemented in the current version
 
 For details, see [metadata.js](https://github.com/oknosoft/metadata.js)
