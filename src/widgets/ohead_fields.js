@@ -107,6 +107,9 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 	_grid.attachEvent("onCheckbox", function(rId, cInd, state){
 		if(_obj[rId] != undefined)
 			return _pwnd.on_select(state, {obj: _obj, field: rId});
+
+		if(rId.split("|").length > 1)
+			return _pwnd.on_select(state, _grid.get_cell_field(rId));
 	});
 	_grid.attachEvent("onKeyPress", function(code,cFlag,sFlag){
 
@@ -137,7 +140,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 				this.reload;
 			}
 		},
-		
+
 		reload: {
 			value: function () {
 				observer_rows([{tabular: _tsname}]);
@@ -145,17 +148,18 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		},
 
 		get_cell_field: {
-			value: function () {
+			value: function (rId) {
 
 				if(!_obj)
 					return;
 
-				var res = {row_id: _grid.getSelectedRowId()},
+				var res = {row_id: rId || _grid.getSelectedRowId()},
 					fpath = res.row_id.split("|");
 
-				if(fpath.length < 2)
+				if(fpath.length < 2){
 					return {obj: _obj, field: fpath[0]}._mixin(_pwnd);
-				else {
+
+				}else {
 					var vr;
 					if(_selection){
 						_obj[fpath[0]].find_rows(_selection, function (row) {
@@ -164,8 +168,11 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 								return false;
 							}
 						});
-					}else
+
+					}else{
 						vr = _obj[fpath[0]].find(fpath[1]);
+					}
+
 					if(vr){
 						res.obj = vr;
 						if(vr["Значение"]){

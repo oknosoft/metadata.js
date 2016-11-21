@@ -38,9 +38,10 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		_mgr = _obj._manager,
 		_meta = attr.metadata || _mgr.metadata().tabular_sections[_tsname].fields,
 		_cell = this,
-		_source = {},
+		_source = attr.ts_captions || {},
 		_selection = attr.selection;
-	if(!_md.ts_captions(_mgr.class_name, _tsname, _source))
+
+	if(!attr.ts_captions && !_md.ts_captions(_mgr.class_name, _tsname, _source))
 		return;
 
 	var _grid = this.attachGrid(),
@@ -102,7 +103,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 			if(rId != undefined){
 
-				if(_mgr.handle_event(_obj, "del_row", 
+				if(_mgr.handle_event(_obj, "del_row",
 						{
 							tabular_section: _tsname,
 							grid: _grid,
@@ -119,7 +120,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			}
 		}
 	};
-	
+
 
 	function get_sel_index(silent){
 		var selId = _grid.getSelectedRowId();
@@ -135,7 +136,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			});
 	}
 
-	
+
 
 	/**
 	 * обработчик изменения значения примитивного типа
@@ -174,7 +175,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 					_ts.sync_grid(_grid, _selection);
 					return true;
 				}
-			});	
+			});
 		}
 	}
 
@@ -221,7 +222,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	// панель инструментов табличной части
 	_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
 	_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_add_del.xml"], function(){
-		
+
 		this.attachEvent("onclick", function(btn_id){
 
 			switch(btn_id) {
