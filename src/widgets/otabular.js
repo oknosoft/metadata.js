@@ -321,7 +321,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 					}
 
 					if(row && col){
-						return {obj: row, field: col}._mixin(_pwnd);
+						return {obj: row, field: col, metadata: _meta[col]}._mixin(_pwnd);
 					}
 
 				}
