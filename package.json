@@ -58,8 +58,8 @@
   },
   "scripts": {
     "build:react-ui": "better-npm-run build:react-ui",
-    "build:data-field": "better-npm-run build:data-field",
-    "build:dumb-loader": "better-npm-run build:dumb-loader",
+    "build:data-field": "better-npm-run build:data-field && better-npm-run build:nav-list && better-npm-run build:dumb-loader",
+    "build:dumb-loader": "better-npm-run build:dumb-loader && better-npm-run build:nav-list",
     "build:abstract-adapter": "better-npm-run build:abstract-adapter",
     "build:adapter-pouchdb": "better-npm-run build:adapter-pouchdb",
     "build:redux": "better-npm-run build:redux",
@@ -74,6 +74,12 @@
     },
     "build:data-field": {
       "command": "babel ./packages/metadata-react-ui/DataField/src --out-dir ./packages/metadata-react-ui/DataField",
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "build:nav-list": {
+      "command": "babel ./packages/metadata-react-ui/NavList/src --out-dir ./packages/metadata-react-ui/NavList",
       "env": {
         "NODE_ENV": "production"
       }

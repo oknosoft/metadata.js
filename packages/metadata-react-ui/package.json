@@ -1,24 +1,13 @@
 {
   "name": "metadata-react-ui",
   "description": "React UI components for metadata.js",
-  "version": "2.0.0-beta.9",
+  "version": "2.0.0-beta.10",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "dependencies": {
-    "react": "^15.4",
-    "react-dom": "^15.4",
     "material-ui": "^0.16",
     "react-data-grid": "^1.0.62",
     "react-virtualized": "^8.5",
-    "react-virtualized-select": "^2.1",
-    "node-sass": "^3.13",
-    "css-loader": "^0.25",
-    "file-loader": "^0.9",
-    "imports-loader": "^0.6",
-    "sass-loader": "^4.0",
-    "postcss-loader": "^1.1",
-    "style-loader": "^0.13",
-    "url-loader": "^0.5",
-    "simple-assign": "^0.1.0"
+    "react-virtualized-select": "^2.1"
   },
   "engines": {
     "node": "^6.5",
