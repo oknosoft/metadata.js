@@ -40,7 +40,14 @@ const POUCH_SYNC_PAUSED = 'POUCH_SYNC_PAUSED'   // Репликация прио
 const POUCH_SYNC_RESUMED= 'POUCH_SYNC_RESUMED'  // Репликация возобновлена
 const POUCH_SYNC_DENIED = 'POUCH_SYNC_DENIED'   // Разновидность ошибки репликации из-за недостатка прав для записи документа на сервере
 
-
+const OBJ_ADD           = 'OBJ_ADD'             // Команда создать объекта
+const OBJ_ADD_ROW       = 'OBJ_ADD_ROW'         // Команда добавить строку в табчасть объекта
+const OBJ_DEL_ROW       = 'OBJ_DEL_ROW'         // Команда удалить строку табчасти объекта
+const OBJ_EDIT          = 'OBJ_EDIT'            // Команда открыть форму редактирования объекта
+const OBJ_REVERT        = 'OBJ_REVERT'          // Команда вернуть объект в состояние до редактирования (перечитать из базы данных)
+const OBJ_SAVE          = 'OBJ_SAVE'            // Команда записать изменённый объект (пометка удаления, проведение и отмена проведения - это так же, запись)
+const OBJ_CHANGE        = 'OBJ_CHANGE'          // Записан изменённый объект (по команде интерфейса или в результате репликации)
+const OBJ_VALUE_CHANGE  = 'OBJ_VALUE_CHANGE'    // Изменён реквизит шапки или строки табчасти
 
 
 // ------------------------------------

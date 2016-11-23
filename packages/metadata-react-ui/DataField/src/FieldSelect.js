@@ -60,7 +60,7 @@ export default class FieldSelect extends Component {
     return (
 
       <VirtualizedSelect
-        name={this.props._meta.name}
+        name={this.props._fld}
         async
         backspaceRemoves={false}
         labelKey='presentation'

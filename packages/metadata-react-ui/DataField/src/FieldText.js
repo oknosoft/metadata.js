@@ -17,9 +17,10 @@ export default class FieldText extends Component {
     return (
 
       <TextField
-        name={this.props._meta.name}
+        name={this.props._fld}
         fullWidth={true}
         defaultValue={this.props._val}
+        hintText={this.props._meta.tooltip || this.props._meta.synonym}
       />
 
     );
