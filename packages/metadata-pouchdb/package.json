@@ -13,8 +13,7 @@
     "pouchdb-mapreduce": "^6.0",
     "pouchdb-replication": "^6.0",
     "pouchdb-authentication": "^0.5",
-    "pouchdb-find": "^0.10",
-    "simple-assign": "^0.1.0"
+    "pouchdb-find": "^0.10"
   },
   "engines": {
     "node": "^6.5",

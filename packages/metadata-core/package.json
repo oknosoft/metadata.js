@@ -6,7 +6,6 @@
   "dependencies": {
     "alasql": "^0.3",
     "moment": "^2.16",
-    "simple-assign": "^0.1",
     "metadata-abstract-adapter": "^2.0.0-beta.10"
   },
   "engines": {
