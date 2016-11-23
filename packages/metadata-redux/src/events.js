@@ -4,7 +4,10 @@
  */
 const ACTION_HANDLERS = {
 
-	[META_LOADED]:          (state, action) => Object.assign({}, state, {$p: action.payload}),
+	[META_LOADED]:          (state, action) => Object.assign({}, state, {
+		$p: action.payload,
+		meta_loaded: true
+	}),
 
 	[PRM_CHANGE]:          (state, action) => state,
 
@@ -79,7 +82,9 @@ function rx_reducer (state = initialState, action) {
 		handler = ACTION_HANDLERS_OBJ[action.type]
 
 	if(handler){
-		console.log(action)
+		if(action.type != OBJ_CHANGE){
+			console.log(action)
+		}
 		return handler(state, action)
 	}else
 		return state

@@ -27,8 +27,6 @@ function Meta() {
 	_md = this;
 
 
-
-
 	// загружает метаданные из pouchdb
 	function meta_from_pouch(meta_db){
 

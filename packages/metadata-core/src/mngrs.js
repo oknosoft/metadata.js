@@ -678,7 +678,14 @@ function mngrs($p) {
 				return do_not_create == 'promise' ? Promise.resolve(o) : o;
 
 			if(o.is_new()){
-				return o.load();	// читаем из 1С или иного сервера
+
+				if(do_not_create == 'promise'){
+					return o.load();	// читаем из 1С или иного сервера
+
+				}else{
+					//o.load();	// читаем из 1С или иного сервера
+					return o;
+				}
 
 			}else
 				return do_not_create == 'promise' ? Promise.resolve(o) : o;
@@ -1379,7 +1386,7 @@ function mngrs($p) {
 
 		/**
 		 * Создаёт экземпляр объекта обработки
-		 * @method
+		 * @method create
 		 * @return {DataProcessorObj}
 		 */
 		create(){
@@ -1387,7 +1394,22 @@ function mngrs($p) {
 		}
 
 		/**
-		 * fake-метод, не имеет смысла для обработок, т.к. они не кешируются в alasql. Добавлен, чтобы не ругалась форма обхекта при закрытии
+		 * Создаёт экземпляр объекта обработки - псевдоним create()
+		 * @method get
+		 * @return {DataProcessorObj}
+		 */
+		get(ref){
+			if(ref){
+				if(!this.by_ref[ref]){
+					this.by_ref[ref] = this.create()
+				}
+				return this.by_ref[ref];
+			}else
+				return this.create();
+		}
+
+		/**
+		 * fake-метод, не имеет смысла для обработок, т.к. они не кешируются в alasql. Добавлен, чтобы не ругалась форма объекта при закрытии
 		 * @method unload_obj
 		 * @param [ref]
 		 */
@@ -1572,11 +1594,10 @@ function mngrs($p) {
 		 * @method get
 		 * @for InfoRegManager
 		 * @param attr {Object} - объект {key:value...}
-		 * @param force_promise {Boolean} - возаращять промис, а не массив
 		 * @param return_row {Boolean} - возвращать запись, а не массив
 		 * @return {*}
 		 */
-		get(attr, force_promise, return_row) {
+		get(attr, return_row) {
 
 			if (!attr)
 				attr = {};
@@ -1584,7 +1605,7 @@ function mngrs($p) {
 				attr = {ref: attr};
 
 			if (attr.ref && return_row)
-				return force_promise ? Promise.resolve(this.by_ref[attr.ref]) : this.by_ref[attr.ref];
+				return this.by_ref[attr.ref];
 
 			attr.action = "select";
 
@@ -1604,7 +1625,7 @@ function mngrs($p) {
 				}
 			}
 
-			return force_promise ? Promise.resolve(res) : res;
+			return res;
 		};
 
 		/**
@@ -2808,6 +2829,4 @@ function mngrs($p) {
 			}
 		})
 	}
-
 }
-

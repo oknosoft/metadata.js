@@ -1,3 +1,4 @@
+
 /**
  * React Select
  * ============
@@ -662,7 +663,7 @@ textareaselect.editor-main {
   user-select: none;
   background: #f9f9f9;
   padding: 8px;
-  font-weight: bold;
+  /* font-weight: bold; */
   border-right: 1px solid #dddddd;
   border-bottom: 1px solid #dddddd;
 }
@@ -936,6 +937,98 @@ textarea.react-autocomplete-Autocomplete__search {
   }
   95% {
     transform: translateY(2%);
+
+
+.react-context-menu {
+	min-width: 160px;
+	padding: 4px 0;
+	margin: 2px 0 0;
+	color: #373a3c;
+	text-align: left;
+	background-color: #fff;
+	background-clip: padding-box;
+	border: 1px solid rgba(0, 0, 0, .15);
+	border-radius: .25rem;
+	outline: none
+}
+
+.react-context-menu-link {
+	display: inline-block;
+	width: 100%;
+	padding: 3px 20px;
+	clear: both;
+	font-weight: 400;
+	line-height: 1.5;
+	color: #373a3c;
+	text-align: inherit;
+	white-space: nowrap;
+	background: 0 0;
+	border: 0
+}
+
+.react-context-menu-link.active, .react-context-menu-link:hover {
+	color: #fff;
+	background-color: #0275d8;
+	border-color: #0275d8;
+	text-decoration: none
+}
+
+.react-context-menu-item.submenu > a {
+	padding-right: 27px
+}
+
+.react-context-menu-item.submenu > a:after {
+	content: "\25B6";
+	display: inline-block;
+	position: absolute;
+	right: 7px
+}
+
+.glyphicon-trash {
+	background: #fff;
+	float: none !important;
+	padding-left: 16px !important
+}
+
+.LayoutSplitter {
+	background: #000;
+	opacity: .2;
+	z-index: 1;
+	background-clip: padding-box
+}
+
+.LayoutSplitter, .LayoutSplitter:after, .LayoutSplitter:before {
+	box-sizing: border-box
+}
+
+.LayoutSplitter:hover {
+	transition: all 2s ease
+}
+
+.LayoutSplitter.vertical {
+	border-top: 5px solid hsla(0, 0%, 100%, 0);
+	border-bottom: 5px solid hsla(0, 0%, 100%, 0);
+	cursor: row-resize;
+	width: 100%
+}
+
+.LayoutSplitter.vertical:hover {
+	border-top: 5px solid rgba(0, 0, 0, .5);
+	border-bottom: 5px solid rgba(0, 0, 0, .5)
+}
+
+.LayoutSplitter.horizontal {
+	border-left: 5px solid hsla(0, 0%, 100%, 0);
+	border-right: 5px solid hsla(0, 0%, 100%, 0);
+	cursor: col-resize;
+	height: 100%;
+	float: left
+}
+
+.LayoutSplitter.horizontal:hover {
+	border-left: 5px solid rgba(0, 0, 0, .5);
+	border-right: 5px solid rgba(0, 0, 0, .5)
+}
   }
   100% {
     transform: translateY(0%);

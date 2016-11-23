@@ -4,3 +4,4 @@
  * @module FieldToggle
  * Created 22.09.2016
  */
+"use strict";

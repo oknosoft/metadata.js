@@ -32,16 +32,16 @@
  */
 dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
-
 	var _obj = attr.obj,
 		_tsname = attr.ts,
 		_ts = _obj[_tsname],
 		_mgr = _obj._manager,
 		_meta = attr.metadata || _mgr.metadata().tabular_sections[_tsname].fields,
 		_cell = this,
-		_source = {},
+		_source = attr.ts_captions || {},
 		_selection = attr.selection;
-	if(!_md.ts_captions(_mgr.class_name, _tsname, _source))
+
+	if(!attr.ts_captions && !_md.ts_captions(_mgr.class_name, _tsname, _source))
 		return;
 
 	var _grid = this.attachGrid(),
@@ -64,7 +64,20 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	_grid._add_row = function(){
 		if(!attr.read_only){
 
-			var row = _ts.add();
+			var proto;
+			if(_selection){
+				for(var sel in _selection){
+					if(!_meta[sel] || (typeof _selection[sel] == 'object' && !$p.is_data_obj(_selection[sel]))){
+						continue;
+					}
+					if(!proto){
+						proto = {};
+					}
+					proto[sel] = _selection[sel];
+				}
+			}
+
+			var row = _ts.add(proto);
 
 			if(_mgr.handle_event(_obj, "add_row",
 					{
@@ -90,7 +103,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 			if(rId != undefined){
 
-				if(_mgr.handle_event(_obj, "del_row", 
+				if(_mgr.handle_event(_obj, "del_row",
 						{
 							tabular_section: _tsname,
 							grid: _grid,
@@ -107,7 +120,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			}
 		}
 	};
-	
+
 
 	function get_sel_index(silent){
 		var selId = _grid.getSelectedRowId();
@@ -123,7 +136,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			});
 	}
 
-	
+
 
 	/**
 	 * обработчик изменения значения примитивного типа
@@ -162,7 +175,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 					_ts.sync_grid(_grid, _selection);
 					return true;
 				}
-			});	
+			});
 		}
 	}
 
@@ -209,7 +222,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	// панель инструментов табличной части
 	_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
 	_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_add_del.xml"], function(){
-		
+
 		this.attachEvent("onclick", function(btn_id){
 
 			switch(btn_id) {
@@ -308,7 +321,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 					}
 
 					if(row && col){
-						return {obj: row, field: col}._mixin(_pwnd);
+						return {obj: row, field: col, metadata: _meta[col]}._mixin(_pwnd);
 					}
 
 				}

@@ -1,15 +1,16 @@
 'use strict';
 
-export default {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
   tree: {
     base: {
       listStyle: 'none',
       //backgroundColor: '#FFFFFF',
       margin: 0,
       padding: 0,
-      color: '#9DA5AB',
-      //fontFamily: 'lucida grande ,tahoma,verdana,arial,sans-serif',
-      //fontSize: '14px'
+      color: '#9DA5AB'
     },
     node: {
       base: {

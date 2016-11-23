@@ -37,8 +37,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	var _mgr = this,
 		_meta = attr.metadata || _mgr.metadata(),
 		has_tree = _meta["hierarchical"] && !(_mgr instanceof ChartOfAccountManager),
-		wnd, s_col = 0,
-		a_direction = "asc",
+		wnd, s_col = 0, a_direction = "asc",
 		previous_filter = {},
 		on_select = pwnd.on_select || attr.on_select;
 
@@ -89,10 +88,15 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		document.body.addEventListener("keydown", body_keydown, false);
 
 		// статусбар
-		wnd.elmnts = {
-			status_bar: wnd.attachStatusBar()
-		};
-		wnd.elmnts.status_bar.setText("<div id='" + _mgr.class_name.replace(".", "_") + "_select_recinfoArea'></div>");
+		wnd.elmnts = {}
+
+		if(attr.status_bar || !attr.smart_rendering){
+			wnd.elmnts.status_bar = wnd.attachStatusBar();
+		}
+
+		if(!attr.smart_rendering){
+			wnd.elmnts.status_bar.setText("<div id='" + _mgr.class_name.replace(".", "_") + "_select_recinfoArea'></div>");
+		}
 
 		// командная панель формы
 		wnd.elmnts.toolbar = wnd.attachToolbar();
@@ -275,9 +279,6 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		grid = wnd.elmnts.grid = cell_grid.attachGrid();
 		grid.setIconsPath(dhtmlx.image_path);
 		grid.setImagePath(dhtmlx.image_path);
-		grid.setPagingWTMode(true,true,true,[20,30,60]);
-		grid.enablePaging(true, 30, 8, _mgr.class_name.replace(".", "_") + "_select_recinfoArea");
-		grid.setPagingSkin("toolbar", dhtmlx.skin);
 		grid.attachEvent("onBeforeSorting", customColumnSort);
 		grid.attachEvent("onBeforePageChanged", function(){ return !!this.getRowsNum();});
 		grid.attachEvent("onXLE", function(){cell_grid.progressOff(); });
@@ -299,6 +300,14 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				select(rId);
 		});
 
+		if(attr.smart_rendering){
+			grid.enableSmartRendering(true, 50);
+		}else{
+			grid.setPagingWTMode(true,true,true,[20,30,60]);
+			grid.enablePaging(true, 30, 8, _mgr.class_name.replace(".", "_") + "_select_recinfoArea");
+			grid.setPagingSkin("toolbar", dhtmlx.skin);
+		}
+
 		if($p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper")
 			grid.enableMultiselect(true);
 
@@ -316,6 +325,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				.then(function(xml){
 					if(typeof xml === "object"){
 						$p.msg.check_soap_result(xml);
+
 					}else if(!grid_inited){
 						if(filter.initial_value){
 							var xpos = xml.indexOf("set_parent"),
@@ -571,6 +581,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 					get_header: (previous_filter.get_header == undefined)
 				}),
 			tparent = has_tree ? wnd.elmnts.tree.getSelectedId() : null;
+
+		if(attr.smart_rendering)
+			filter.smart_rendering = true;
 
 		if(attr.date_from && !filter.date_from)
 			filter.date_from = attr.date_from;

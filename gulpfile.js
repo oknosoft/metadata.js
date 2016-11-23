@@ -10,7 +10,6 @@ const gulp = require('gulp'),
 	csso = require('gulp-csso'),
 	concat = require('gulp-concat'),
 	uglify = require('gulp-uglify'),
-	shell = require('gulp-shell'),
 	rename = require('gulp-rename'),
 	resources = require('./src/utils/resource-concat.js'),
 	path = require('path'),
@@ -68,10 +67,10 @@ gulp.task('build-metadata', function () {
 	])
 		.pipe(concat('metadata.js'))
 		.pipe(umd({
-			exports: function(file) {
+			exports: function() {
 				return '$p';
 			},
-			namespace: function(file) {
+			namespace: function() {
 				return '$p';
 			},
 			template: path.join(__dirname, './src/utils/umd-exports-oknosoft.js')
@@ -91,11 +90,11 @@ gulp.task('build-metadata', function () {
 });
 
 gulp.task('injected_main', function(){
-   return gulp.src(['./data/*.xml'])
-	   .pipe(resources('merged_data.js', function (data) {
-		   return new Buffer('$p.injected_data._mixin(' + JSON.stringify(data) + ');');
-	   }))
-	   .pipe(gulp.dest('./data'));
+    return gulp.src(['./data/*.xml'])
+    .pipe(resources('merged_data.js', function (data) {
+        return new Buffer('$p.injected_data._mixin(' + JSON.stringify(data) + ');');
+	}))
+	.pipe(gulp.dest('./data'));
 });
 
 // dhtmlxscheduler
@@ -138,12 +137,12 @@ gulp.task('build-dhtmlx', function(){
 		'./src/dhtmlx/sources/dhtmlxMenu/codebase/ext/dhtmlxmenu_ext.js',
 		'./src/dhtmlx/sources/dhtmlxMenu/codebase/ext/dhtmlxmenu_effects.js',
 		'./src/dhtmlx/patches/dhtmlxtoolbar.js',
-			//'./src/dhtmlx/sources/dhtmlxEditor/codebase/dhtmlxeditor.js',
-			//'./src/dhtmlx/patches/dhtmlxeditor_ext.js',
-			//'./src/dhtmlx/sources/dhtmlxChart/codebase/dhtmlxchart.js',
+		//'./src/dhtmlx/sources/dhtmlxEditor/codebase/dhtmlxeditor.js',
+		//'./src/dhtmlx/patches/dhtmlxeditor_ext.js',
+		//'./src/dhtmlx/sources/dhtmlxChart/codebase/dhtmlxchart.js',
 		'./src/dhtmlx/sources/dhtmlxDataView/codebase/dhtmlxdataview.js',
-			//'./src/dhtmlx/sources/dhtmlxList/codebase/dhtmlxlist.js',
-			//'./src/dhtmlx/sources/dhtmlxTree/codebase/dhtmlxtree.js',
+		//'./src/dhtmlx/sources/dhtmlxList/codebase/dhtmlxlist.js',
+		//'./src/dhtmlx/sources/dhtmlxTree/codebase/dhtmlxtree.js',
 		//'./src/dhtmlx/patches/dhtmlxtree.js',
 		//'./src/dhtmlx/sources/dhtmlxTree/codebase/ext/dhtmlxtree_dragin.js',
 		//'./src/dhtmlx/sources/dhtmlxTree/codebase/ext/dhtmlxtree_ed.js',
@@ -154,10 +153,10 @@ gulp.task('build-dhtmlx', function(){
 		'./src/dhtmlx/sources/dhtmlxGrid/codebase/ext/dhtmlxgrid_drag.js',
 		'./src/dhtmlx/sources/dhtmlxGrid/codebase/ext/dhtmlxgrid_export.js',
 		'./src/dhtmlx/sources/dhtmlxGrid/codebase/ext/dhtmlxgrid_filter.js',
-		'./src/dhtmlx/sources/dhtmlxGrid/codebase/ext/dhtmlxgrid_nxml.js',
 		'./src/dhtmlx/sources/dhtmlxGrid/codebase/ext/dhtmlxgrid_selection.js',
 		'./src/dhtmlx/sources/dhtmlxGrid/codebase/ext/dhtmlxgrid_srnd.js',
-			//'./src/dhtmlx/sources/dhtmlxGrid/codebase/ext/dhtmlxgrid_start.js',
+		//'./src/dhtmlx/sources/dhtmlxGrid/codebase/ext/dhtmlxgrid_nxml.js',
+		//'./src/dhtmlx/sources/dhtmlxGrid/codebase/ext/dhtmlxgrid_start.js',
 		'./src/dhtmlx/sources/dhtmlxGrid/codebase/ext/dhtmlxgrid_validation.js',
 		'./src/dhtmlx/sources/dhtmlxGrid/codebase/excells/dhtmlxgrid_excell_tree.js',
 		'./src/dhtmlx/sources/dhtmlxGrid/codebase/excells/dhtmlxgrid_excell_link.js',
@@ -327,87 +326,9 @@ gulp.task('build--core', function(){
 			presets: ['es2015'],
 			plugins: ["transform-async-to-generator"],
 			compact: false,
-			//comments: false
-		}))
-
-		.pipe(gulp.dest('./packages/metadata-core'))
-});
-
-// metadata-redux
-gulp.task('build--abstract-adapter', function(){
-
-	return gulp.src([
-		'./packages/metadata-abstract-adapter/src/abstract_adapter.js'
-	])
-
-		.pipe(babel({
-			presets: ['es2015'],
-			compact: false,
-			//comments: false
-		}))
-
-		.pipe(rename('index.js'))
-		.pipe(gulp.dest('./packages/metadata-abstract-adapter'))
-
-});
-
-// metadata-pouchdb
-gulp.task('build--adapter-pouchdb', function(){
-
-	return gulp.src([
-		'./packages/metadata-pouchdb/src/pouchdb_adapter.js'
-	])
-
-		.pipe(babel({
-			presets: ['es2015'],
-			compact: false,
-			//comments: false
-		}))
-
-		.pipe(rename('index.js'))
-		.pipe(gulp.dest('./packages/metadata-pouchdb'))
-
-});
-
-// metadata-redux
-gulp.task('build--redux', function(){
-
-	return gulp.src([
-		'./packages/metadata-redux/src/actions_obj.js',
-		'./packages/metadata-redux/src/actions.js',
-		'./packages/metadata-redux/src/events_obj.js',
-		'./packages/metadata-redux/src/events.js'
-	])
-
-		.pipe(concat('index.js'))
-
-		.pipe(babel({
-			presets: ['es2015'],
-			compact: false,
-			//comments: false
-		}))
-
-		.pipe(gulp.dest('./packages/metadata-redux'))
-
-});
-
-// metadata-superlogin
-gulp.task('build--superlogin', function(){
-
-	return gulp.src([
-		'./packages/metadata-superlogin/src/superlogin.js'
-	])
-
-		.pipe(concat('index.js'))
-
-		.pipe(babel({
-			presets: ['es2015'],
-			compact: false,
-			//comments: false
-		}))
-
-		.pipe(gulp.dest('./packages/metadata-superlogin'))
-
+            //comments: false
+        }))
+        .pipe(gulp.dest('./packages/metadata-core'));
 });
 
 
