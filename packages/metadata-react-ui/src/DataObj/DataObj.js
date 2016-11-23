@@ -1,14 +1,11 @@
 import React, { Component, PropTypes } from 'react';
 
-import {GridList, GridTile} from 'material-ui/GridList';
-import Layout from '../../react-flex-layout/react-flex-layout'
-import LayoutSplitter from '../../react-flex-layout/react-flex-layout-splitter'
+import { GridList, GridTile } from 'material-ui/GridList';
+import { Layout, LayoutSplitter } from 'react-flex-layout'
 
 import Toolbar from "./Toolbar";
-import DataField from '../DataField'
-
+import DataField from '../../DataField/src'
 import TabularSection from '../TabularSection'
-
 import classes from './DataObj.scss'
 
 

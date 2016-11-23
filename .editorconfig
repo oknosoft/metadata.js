@@ -3,13 +3,17 @@ root = true
 
 [*]
 end_of_line = lf
-insert_final_newline = true
+insert_final_newline = false
 trim_trailing_whitespace = true
+charset = utf-8
 
 [packages/**.js]
 indent_style = tab
 indent_size = 4
-charset = utf-8
+
+[packages/metadata-react-ui/**.js]
+indent_style = space
+indent_size = 2
 
 [{package.json}]
 indent_style = space
