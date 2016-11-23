@@ -58,8 +58,8 @@
   },
   "scripts": {
     "build:react-ui": "better-npm-run build:react-ui",
-    "build:data-field": "better-npm-run build:data-field && better-npm-run build:nav-list && better-npm-run build:dumb-loader",
-    "build:dumb-loader": "better-npm-run build:dumb-loader && better-npm-run build:nav-list",
+    "data-field, nav-list, dumb-loader": "better-npm-run build:data-field && better-npm-run build:nav-list && better-npm-run build:dumb-loader",
+    "frm-login": "better-npm-run build:frm-login",
     "build:abstract-adapter": "better-npm-run build:abstract-adapter",
     "build:adapter-pouchdb": "better-npm-run build:adapter-pouchdb",
     "build:redux": "better-npm-run build:redux",
@@ -86,6 +86,12 @@
     },
     "build:dumb-loader": {
       "command": "babel ./packages/metadata-react-ui/DumbLoader/src --out-dir ./packages/metadata-react-ui/DumbLoader",
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "build:frm-login": {
+      "command": "babel ./packages/metadata-react-ui/FrmLogin/src --out-dir ./packages/metadata-react-ui/FrmLogin",
       "env": {
         "NODE_ENV": "production"
       }

@@ -14,9 +14,9 @@ var _TabsLogin = require('./TabsLogin');
 
 var _TabsLogin2 = _interopRequireDefault(_TabsLogin);
 
-var _User = require('components/User');
+var _TabsUser = require('./TabsUser');
 
-var _User2 = _interopRequireDefault(_User);
+var _TabsUser2 = _interopRequireDefault(_TabsUser);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -44,7 +44,7 @@ var FrmLogin = function (_Component) {
       return _react2.default.createElement(
         'div',
         null,
-        props.state_user.logged_in ? _react2.default.createElement(_User2.default, props) : _react2.default.createElement(_TabsLogin2.default, props)
+        props.state_user.logged_in ? _react2.default.createElement(_TabsUser2.default, props) : _react2.default.createElement(_TabsLogin2.default, props)
       );
     }
   }]);

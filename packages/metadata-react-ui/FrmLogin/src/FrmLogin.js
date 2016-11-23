@@ -1,7 +1,7 @@
 import React, {Component, PropTypes} from "react";
 
 import TabsLogin from './TabsLogin';
-import User from 'components/User';
+import User from './TabsUser';
 
 export default class FrmLogin extends Component {
 
