@@ -4,7 +4,8 @@ import Paper from 'material-ui/Paper';
 import TextField from 'material-ui/TextField';
 import RaisedButton from 'material-ui/RaisedButton';
 
-import CnnSettings from './CnnSettings';
+// FIXME
+// import CnnSettings from './CnnSettings';
 
 export default class TabsLogin extends Component {
 
@@ -99,7 +100,7 @@ export default class TabsLogin extends Component {
 
             <Tab label="Подключение" value="b">
 
-              <CnnSettings {...props} />
+              {/* <CnnSettings {...props} /> */}
 
             </Tab>
 
