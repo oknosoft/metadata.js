@@ -1,2 +1,2 @@
 
-export plugin from './plugin'
+export default from './plugin'
