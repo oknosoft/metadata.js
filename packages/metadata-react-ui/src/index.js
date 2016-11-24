@@ -9,5 +9,3 @@ export HeadFields from './HeadFields'
 export MetaDesigner from './MetaDesigner'
 export MetaTree from './MetaTree'
 export TabularSection from './TabularSection'
-
-export plugin from './plugin'

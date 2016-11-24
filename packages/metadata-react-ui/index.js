@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.plugin = exports.TabularSection = exports.MetaTree = exports.MetaDesigner = exports.HeadFields = exports.FrmSuperLogin = exports.FrmObj = exports.FrmLogin = exports.DataTree = exports.DataSelection = exports.DataList = exports.DataField = undefined;
+exports.TabularSection = exports.MetaTree = exports.MetaDesigner = exports.HeadFields = exports.FrmSuperLogin = exports.FrmObj = exports.FrmLogin = exports.DataTree = exports.DataSelection = exports.DataList = exports.DataField = undefined;
 
 var _DataField2 = require('./DataField');
 
@@ -45,10 +45,6 @@ var _TabularSection2 = require('./TabularSection');
 
 var _TabularSection3 = _interopRequireDefault(_TabularSection2);
 
-var _plugin2 = require('./plugin');
-
-var _plugin3 = _interopRequireDefault(_plugin2);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.DataField = _DataField3.default;
@@ -62,4 +58,3 @@ exports.HeadFields = _HeadFields3.default;
 exports.MetaDesigner = _MetaDesigner3.default;
 exports.MetaTree = _MetaTree3.default;
 exports.TabularSection = _TabularSection3.default;
-exports.plugin = _plugin3.default;

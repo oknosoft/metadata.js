@@ -1,21 +1,16 @@
 {
-  "name": "metadata-react-ui",
-  "description": "React UI components for metadata.js",
+  "name": "metadata-abstract-ui",
+  "description": "Abstract enums and methods for metadata.js",
   "version": "2.0.0-beta.12",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
-  "dependencies": {
-    "material-ui": "^0.16",
-    "react-data-grid": "^1.0",
-    "react-virtualized": "^8.5",
-    "react-virtualized-select": "^2.1"
-  },
+  "dependencies": {},
   "engines": {
     "node": "^6.5",
     "npm": "^3.5"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-react-ui/"
+    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-abstract-ui/"
   },
   "bugs": {
     "url": "https://github.com/oknosoft/metadata.js/issues"
@@ -24,7 +19,8 @@
   "main": "./index.js",
   "keywords": [
     "metadata",
-    "react"
+    "spa",
+    "ui"
   ],
   "license": "MIT"
 }

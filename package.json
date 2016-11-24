@@ -61,6 +61,7 @@
     "data-field, nav-list, dumb-loader": "better-npm-run build:data-field && better-npm-run build:nav-list && better-npm-run build:dumb-loader",
     "frm-login, tabular": "better-npm-run build:frm-login && better-npm-run build:tabular",
     "build:abstract-adapter": "better-npm-run build:abstract-adapter",
+    "build:abstract-ui": "better-npm-run build:abstract-ui",
     "build:adapter-pouchdb": "better-npm-run build:adapter-pouchdb",
     "build:redux": "better-npm-run build:redux",
     "build:superlogin": "better-npm-run build:superlogin"
@@ -104,6 +105,12 @@
     },
     "build:abstract-adapter": {
       "command": "babel ./packages/metadata-abstract-adapter/src/abstract_adapter.js --out-file ./packages/metadata-abstract-adapter/index.js",
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "build:abstract-ui": {
+      "command": "babel ./packages/metadata-abstract-ui/src --out-dir ./packages/metadata-abstract-ui",
       "env": {
         "NODE_ENV": "production"
       }
