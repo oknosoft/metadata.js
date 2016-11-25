@@ -1,4 +1,3 @@
-
 /**
  * Action Handlers - обработчики событий - вызываются из корневого редюсера
  */
@@ -74,6 +73,7 @@ const initialState = {
 		logged_in: false
 	}
 }
+
 function rx_reducer (state = initialState, action) {
 
 	let handler = ACTION_HANDLERS[action.type];
@@ -81,15 +81,12 @@ function rx_reducer (state = initialState, action) {
 	if(!handler)
 		handler = ACTION_HANDLERS_OBJ[action.type]
 
-	if(handler){
-		if(action.type != OBJ_CHANGE){
-			console.log(action)
-		}
+	if(handler) {
 		return handler(state, action)
-	}else
+	} else {
 		return state
+	}
 }
-
 
 /**
  * Подключает диспетчеризацию событий redux к pouchdb
