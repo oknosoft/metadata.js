@@ -1,11 +1,11 @@
 import React, { Component, PropTypes } from 'react';
 
 import {GridList, GridTile} from 'material-ui/GridList';
-import Layout from '../../react-flex-layout/react-flex-layout'
-import LayoutSplitter from '../../react-flex-layout/react-flex-layout-splitter'
+import Layout from '../react-flex-layout/react-flex-layout'
+import LayoutSplitter from '../react-flex-layout/react-flex-layout-splitter'
 
 import Toolbar from "./Toolbar";
-import DataField from '../DataField'
+import DataField from 'components/DataField'
 
 import TabularSection from '../TabularSection'
 
@@ -14,23 +14,11 @@ import classes from './DataObj.scss'
 
 import CircularProgress from 'material-ui/CircularProgress';
 
-const styles = {
-  root: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-    padding: '8px'
-  },
-  block: {
-    //flex: '1 100%',
-    fontWeight: 'bold'
-  }
-}
 
 export default class DataObj extends Component {
 
   static contextTypes = {
-    screen: React.PropTypes.object.isRequired
+    $p: React.PropTypes.object.isRequired
   }
 
   static propTypes = {
@@ -91,9 +79,7 @@ export default class DataObj extends Component {
 
   render() {
 
-    const { screen } = this.context
-    const { _obj } = this.props
-
+    const { width, height, _obj } = this.props
 
     return (
 
@@ -110,36 +96,13 @@ export default class DataObj extends Component {
           handleClose={this.props.handleClose}
         />
 
-        <div className={classes.cont} style={{width: screen.width}}>
+        <div className={classes.cont} style={{ width }}>
 
-          <div style={styles.block}>{_obj.presentation}, заявитель: {_obj.partner.presentation}</div>
+          {/*
+          <DataField _obj={_obj} _fld="note" handleValueChange={this.handleValueChange("note")} />
 
-          <Layout layoutWidth={screen.width - 24} layoutHeight={screen.height - 140} >
-            <Layout layoutWidth={'flex'}>
-
-              {/*<DataField _obj={_obj} _fld="partner" />
-              <DataField _obj={_obj.partner} _fld="phone" />*/}
-              <DataField _obj={_obj} _fld="НачалоПериода" handleValueChange={this.handleValueChange("НачалоПериода")} />
-              <DataField _obj={_obj} _fld="КонецПериода" handleValueChange={this.handleValueChange("КонецПериода")} />
-              <DataField _obj={_obj} _fld="КоличествоДней" handleValueChange={this.handleValueChange("КоличествоДней")} />
-              <DataField _obj={_obj} _fld="note" handleValueChange={this.handleValueChange("note")} />
-
-              <TabularSection _obj={_obj} _tabular="guests"/>
-
-            </Layout>
-            <LayoutSplitter />
-            <Layout layoutWidth={Math.floor((screen.width - 24)/3)}>
-
-              <DataField _obj={_obj} _fld="Санаторий" handleValueChange={this.handleValueChange("Санаторий")} />
-              <DataField _obj={_obj} _fld="КатегорияПутевки" handleValueChange={this.handleValueChange("КатегорияПутевки")} />
-              <DataField _obj={_obj} _fld="КатегорияНомера" handleValueChange={this.handleValueChange("КатегорияНомера")} />
-              <DataField _obj={_obj} _fld="КоличествоМестЗабронировано" disabled={true} />
-              <DataField _obj={_obj} _fld="КоличествоМестОтказано" disabled={true} />
-              <DataField _obj={_obj} _fld="АктуальноеКоличествоМест" disabled={true} />
-              <DataField _obj={_obj} _fld="organization" handleValueChange={this.handleValueChange("organization")} />
-
-            </Layout>
-          </Layout>
+          <TabularSection _obj={_obj} _tabular="cashboxes"/>
+           */}
 
         </div>
 

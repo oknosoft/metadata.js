@@ -61,7 +61,8 @@
   "scripts": {
     "build:react-ui": "better-npm-run build:react-ui",
     "data-field, nav-list, dumb-loader": "better-npm-run build:data-field && better-npm-run build:nav-list && better-npm-run build:dumb-loader",
-    "frm-login, tabular": "better-npm-run build:frm-login && better-npm-run build:tabular",
+    "data-list": "better-npm-run build:data-list",
+    "frm-login, tabular, selection": "better-npm-run build:frm-login && better-npm-run build:tabular && better-npm-run build:selection",
     "build:abstract-adapter": "better-npm-run build:abstract-adapter",
     "build:abstract-ui": "better-npm-run build:abstract-ui",
     "build:adapter-pouchdb": "better-npm-run build:adapter-pouchdb",
@@ -101,6 +102,18 @@
     },
     "build:tabular": {
       "command": "babel ./packages/metadata-react-ui/TabularSection/src --out-dir ./packages/metadata-react-ui/TabularSection",
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "build:selection": {
+      "command": "babel ./packages/metadata-react-ui/DataSelection/src --out-dir ./packages/metadata-react-ui/DataSelection",
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "build:data-list": {
+      "command": "babel ./packages/metadata-react-ui/DataList/src --out-dir ./packages/metadata-react-ui/DataList",
       "env": {
         "NODE_ENV": "production"
       }

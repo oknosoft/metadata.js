@@ -16,13 +16,13 @@ var _Toolbar = require("./Toolbar");
 
 var _Toolbar2 = _interopRequireDefault(_Toolbar);
 
-var _DataList = require("./DataList.scss");
-
-var _DataList2 = _interopRequireDefault(_DataList);
-
 var _classnames = require("classnames");
 
 var _classnames2 = _interopRequireDefault(_classnames);
+
+var _DataList = require("./DataList.scss");
+
+var _DataList2 = _interopRequireDefault(_DataList);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -40,15 +40,78 @@ var limit = 30,
 var DataList = function (_Component) {
   _inherits(DataList, _Component);
 
-  function DataList(props) {
+  function DataList(props, context) {
     _classCallCheck(this, DataList);
 
     var _this = _possibleConstructorReturn(this, (DataList.__proto__ || Object.getPrototypeOf(DataList)).call(this, props));
 
     _this.state = {
       totalRowCount: totalRows,
-      selectedRowIndex: 0
+      selectedRowIndex: 0,
+      columns: props.columns,
+      _meta: props._meta || props._mgr.metadata(),
+
+      // готовим фильтры для запроса couchdb
+      select: props.select || {
+        _view: 'doc/by_date',
+        _raw: true,
+        _top: 30,
+        _skip: 0,
+        _key: {
+          startkey: [props._mgr.class_name, 2000],
+          endkey: [props._mgr.class_name, 2020]
+        }
+      }
     };
+
+    var state = _this.state;
+    var $p = context.$p;
+
+
+    if (!state.columns || !state.columns.length) {
+
+      state.columns = [];
+
+      // набираем поля
+      if (state._meta.form && state._meta.form.selection) {
+        state._meta.form.selection.cols.forEach(function (fld) {
+          var fld_meta = state._meta.fields[fld.id] || props._mgr.metadata(fld.id);
+          state.columns.push({
+            id: fld.id,
+            synonym: fld.caption || fld_meta.synonym,
+            tooltip: fld_meta.tooltip,
+            type: fld_meta.type,
+            width: fld.width == '*' ? 250 : parseInt(fld.width) || 140
+          });
+        });
+      } else {
+
+        if (props._mgr instanceof $p.classes.CatManager) {
+          if (state._meta.code_length) {
+            state.columns.push('id');
+          }
+
+          if (state._meta.main_presentation_name) {
+            state.columns.push('name');
+          }
+        } else if (props._mgr instanceof $p.classes.DocManager) {
+          state.columns.push('number_doc');
+          state.columns.push('date');
+        }
+
+        state.columns = state.columns.map(function (id, index) {
+          // id, synonym, tooltip, type, width
+          var fld_meta = state._meta.fields[id] || props._mgr.metadata(id);
+          return {
+            id: id,
+            synonym: fld_meta.synonym,
+            tooltip: fld_meta.tooltip,
+            type: fld_meta.type,
+            width: fld_meta.width || 140
+          };
+        });
+      }
+    }
 
     _this._list = {
       _data: [],
@@ -77,18 +140,19 @@ var DataList = function (_Component) {
     value: function render() {
       var _this2 = this;
 
-      var totalRowCount = this.state.totalRowCount;
+      var _state = this.state,
+          columns = _state.columns,
+          totalRowCount = _state.totalRowCount;
       var _props = this.props,
-          columns = _props.columns,
-          _width = _props._width,
-          _height = _props._height;
+          width = _props.width,
+          height = _props.height;
 
 
       return _react2.default.createElement(
         "div",
         null,
         _react2.default.createElement(_Toolbar2.default, {
-          handleAdd: this.props.handleAdd,
+          handleAdd: this.handleAdd,
           handleEdit: this.handleEdit,
           handleRemove: this.handleRemove,
           handleSelectionChange: this.handleSelectionChange,
@@ -168,8 +232,8 @@ var DataList = function (_Component) {
                 },
                 rowCount: totalRowCount,
                 rowHeight: 30,
-                width: _width,
-                height: _height - 140,
+                width: width,
+                height: height - 90,
                 style: { top: 30 }
               })
             );
@@ -179,35 +243,85 @@ var DataList = function (_Component) {
     }
   }, {
     key: "handleAdd",
-    value: function handleAdd(e) {}
+    value: function handleAdd(e) {
+      var _props2 = this.props,
+          handleAdd = _props2.handleAdd,
+          _mgr = _props2._mgr;
+
+      if (handleAdd) {
+        handleAdd(_mgr);
+      }
+    }
   }, {
     key: "handleEdit",
     value: function handleEdit(e) {
       var row = this._list.get(this.state.selectedRowIndex);
-      if (row) this.props.handleEdit(row);
+      var _props3 = this.props,
+          handleEdit = _props3.handleEdit,
+          _mgr = _props3._mgr;
+
+      if (row && handleEdit) {
+        handleEdit(row, _mgr);
+      }
     }
   }, {
     key: "handleRemove",
-    value: function handleRemove(e) {}
+    value: function handleRemove(e) {
+      var row = this._list.get(this.state.selectedRowIndex);
+      var _props4 = this.props,
+          handleRemove = _props4.handleRemove,
+          _mgr = _props4._mgr;
+
+      if (row && handleRemove) {
+        handleRemove(row, _mgr);
+      }
+    }
   }, {
     key: "handleSelectionChange",
-    value: function handleSelectionChange(e) {}
+    value: function handleSelectionChange(e) {
+      var row = this._list.get(this.state.selectedRowIndex);
+      var _props5 = this.props,
+          handleSelectionChange = _props5.handleSelectionChange,
+          _mgr = _props5._mgr;
+
+      if (row && handleSelectionChange) {
+        handleSelectionChange(row, _mgr);
+      }
+    }
   }, {
     key: "handlePrint",
-    value: function handlePrint(e) {}
+    value: function handlePrint(e) {
+      var row = this._list.get(this.state.selectedRowIndex);
+      var _props6 = this.props,
+          handlePrint = _props6.handlePrint,
+          _mgr = _props6._mgr;
+
+      if (row && handlePrint) {
+        handlePrint(row, _mgr);
+      }
+    }
   }, {
     key: "handleAttachment",
-    value: function handleAttachment(e) {}
+    value: function handleAttachment(e) {
+      var row = this._list.get(this.state.selectedRowIndex);
+      var _props7 = this.props,
+          handleAttachment = _props7.handleAttachment,
+          _mgr = _props7._mgr;
+
+      if (row && handleAttachment) {
+        handleAttachment(row, _mgr);
+      }
+    }
   }, {
     key: "_formatter",
     value: function _formatter(row, index) {
       var $p = this.context.$p;
-      var columns = this.props.columns;
+      var columns = this.state.columns;
 
       var column = columns[index];
       var v = row[column.id];
 
-      switch ($p.rx_control_by_type(column.type, v)) {
+      switch ($p.UI.control_by_type(column.type, v)) {
 
         case 'ocombo':
           return $p.utils.value_mgr(row, column.id, column.type, false, v).get(v).presentation;
@@ -240,10 +354,10 @@ var DataList = function (_Component) {
 
       var startIndex = _ref5.startIndex,
           stopIndex = _ref5.stopIndex;
-      var totalRowCount = this.state.totalRowCount;
-      var _props2 = this.props,
-          select = _props2.select,
-          _mgr = _props2._mgr;
+      var _state2 = this.state,
+          select = _state2.select,
+          totalRowCount = _state2.totalRowCount;
+      var _mgr = this.props._mgr;
 
       var increment = Math.max(limit, stopIndex - startIndex + 1);
 
@@ -278,7 +392,7 @@ var DataList = function (_Component) {
      * @param key - Unique key within array of cells
      * @param rowIndex - Vertical (row) index of cell
      * @param style - Style object to be applied to cell
-     * @return {XML}
+     * @return {Component}
      * @private
      */
 
@@ -347,11 +461,28 @@ DataList.contextTypes = {
 };
 DataList.propTypes = {
 
-  columns: _react.PropTypes.array.isRequired,
+  columns: _react.PropTypes.array, // Настройки колонок динамического списка. Если не указано - генерируем по метаданным
+  selection_mode: _react.PropTypes.bool, // Режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
 
-  select: _react.PropTypes.object.isRequired,
-  _mgr: _react.PropTypes.object.isRequired,
-  _width: _react.PropTypes.number.isRequired,
-  _height: _react.PropTypes.number.isRequired
+  select: _react.PropTypes.object, // Параметры запроса к couchdb. Если не указано - генерируем по метаданным
+  _mgr: _react.PropTypes.object.isRequired, // Менеджер данных
+  _meta: _react.PropTypes.object, // Описание метаданных. Если не указано, используем метаданные менеджера
+
+  width: _react.PropTypes.number.isRequired, // ширина элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
+  height: _react.PropTypes.number.isRequired, // высота элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
+
+  // Redux actions
+  // Не факт, что все обработчики должны быть isRequired...
+  handleAdd: _react.PropTypes.func.isRequired, // обработчик добавления объекта
+  handleEdit: _react.PropTypes.func.isRequired, // обработчик открытия формы редактора
+  handleRevert: _react.PropTypes.func.isRequired, // откатить изменения - перечитать объект из базы данных
+  handleMarkDeleted: _react.PropTypes.func.isRequired, // обработчик удаления строки
+  handlePost: _react.PropTypes.func.isRequired, // обработчик проведения документа
+  handleUnPost: _react.PropTypes.func.isRequired, // отмена проведения
+  handlePrint: _react.PropTypes.func.isRequired, // обработчик открытия диалога печати
+  handleAttachment: _react.PropTypes.func.isRequired };
+DataList.defaultProps = {
+  width: 1000,
+  height: 400
 };
 exports.default = DataList;

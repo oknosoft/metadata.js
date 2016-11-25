@@ -85,17 +85,17 @@ var DataListToolbar = function (_Component) {
           { firstChild: true },
           _react2.default.createElement(
             _IconButton2.default,
-            { touch: true, tooltip: '\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u043E\u0431\u044A\u0435\u043A\u0442', tooltipPosition: 'bottom-right', onTouchTap: props.handleAdd },
+            { touch: true, tooltip: '\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u043E\u0431\u044A\u0435\u043A\u0442', tooltipPosition: 'top-right', onTouchTap: props.handleAdd },
             _react2.default.createElement(_addCircleOutline2.default, null)
           ),
           _react2.default.createElement(
             _IconButton2.default,
-            { touch: true, tooltip: '\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0444\u043E\u0440\u043C\u0443 \u043E\u0431\u044A\u0435\u043A\u0442\u0430', tooltipPosition: 'bottom-right', onTouchTap: props.handleEdit },
+            { touch: true, tooltip: '\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0444\u043E\u0440\u043C\u0443 \u043E\u0431\u044A\u0435\u043A\u0442\u0430', tooltipPosition: 'top-right', onTouchTap: props.handleEdit },
             _react2.default.createElement(_edit2.default, null)
           ),
           _react2.default.createElement(
             _IconButton2.default,
-            { touch: true, tooltip: '\u041F\u043E\u043C\u0435\u0442\u0438\u0442\u044C \u043D\u0430 \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u0435', onTouchTap: props.handleRemove },
+            { touch: true, tooltip: '\u041F\u043E\u043C\u0435\u0442\u0438\u0442\u044C \u043D\u0430 \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u0435', tooltipPosition: 'top-center', onTouchTap: props.handleRemove },
             _react2.default.createElement(_delete2.default, null)
           ),
           _react2.default.createElement(_Toolbar.ToolbarSeparator, null),
