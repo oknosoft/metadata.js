@@ -1,1 +1,3 @@
-*.js
+index.js
+plugin.js
+enums.js
