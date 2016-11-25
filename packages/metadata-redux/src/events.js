@@ -81,13 +81,7 @@ function rx_reducer (state = initialState, action) {
 	if(!handler)
 		handler = ACTION_HANDLERS_OBJ[action.type]
 
-	if(handler){
-		if(action.type != OBJ_CHANGE){
-			console.log(action)
-		}
-		return handler(state, action)
-	}else
-		return state
+	return handler ? handler(state, action) : state
 }
 
 

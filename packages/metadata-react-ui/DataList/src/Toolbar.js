@@ -14,7 +14,7 @@ import AttachIcon from 'material-ui/svg-icons/editor/attach-file';
 
 import Filter from '../DataSelection';
 
-import classes from './DataList.scss'
+import classes from './DataList.scss';
 
 export default class DataListToolbar extends Component{
 
@@ -38,13 +38,13 @@ export default class DataListToolbar extends Component{
       <Toolbar className={classes.toolbar}>
         <ToolbarGroup firstChild={true}>
 
-          <IconButton touch={true} tooltip="Создать объект" tooltipPosition="bottom-right" onTouchTap={props.handleAdd}>
+          <IconButton touch={true} tooltip="Создать объект" tooltipPosition="top-right" onTouchTap={props.handleAdd}>
             <AddIcon />
           </IconButton>
-          <IconButton touch={true} tooltip="Открыть форму объекта" tooltipPosition="bottom-right" onTouchTap={props.handleEdit}>
+          <IconButton touch={true} tooltip="Открыть форму объекта" tooltipPosition="top-right" onTouchTap={props.handleEdit}>
             <EditIcon />
           </IconButton>
-          <IconButton touch={true} tooltip="Пометить на удаление" onTouchTap={props.handleRemove}>
+          <IconButton touch={true} tooltip="Пометить на удаление" tooltipPosition="top-center" onTouchTap={props.handleRemove}>
             <RemoveIcon />
           </IconButton>
 

@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -6,17 +6,17 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _react = require('react');
+var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _TabsLogin = require('./TabsLogin');
+var _CircularProgress = require("material-ui/CircularProgress");
 
-var _TabsLogin2 = _interopRequireDefault(_TabsLogin);
+var _CircularProgress2 = _interopRequireDefault(_CircularProgress);
 
-var _User = require('components/User');
+var _DumbLoader = require("./DumbLoader.scss");
 
-var _User2 = _interopRequireDefault(_User);
+var _DumbLoader2 = _interopRequireDefault(_DumbLoader);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -26,30 +26,47 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var FrmLogin = function (_Component) {
-  _inherits(FrmLogin, _Component);
+var DumbLoader = function (_Component) {
+  _inherits(DumbLoader, _Component);
 
-  function FrmLogin() {
-    _classCallCheck(this, FrmLogin);
+  function DumbLoader() {
+    _classCallCheck(this, DumbLoader);
 
-    return _possibleConstructorReturn(this, (FrmLogin.__proto__ || Object.getPrototypeOf(FrmLogin)).apply(this, arguments));
+    return _possibleConstructorReturn(this, (DumbLoader.__proto__ || Object.getPrototypeOf(DumbLoader)).apply(this, arguments));
   }
 
-  _createClass(FrmLogin, [{
-    key: 'render',
+  _createClass(DumbLoader, [{
+    key: "render",
     value: function render() {
-      var props = this.props;
+      var title = this.props.title;
 
+
+      if (title == undefined) title = "Заставка загрузка модулей...";
 
       return _react2.default.createElement(
-        'div',
+        "div",
         null,
-        props.state_user.logged_in ? _react2.default.createElement(_User2.default, props) : _react2.default.createElement(_TabsLogin2.default, props)
+        _react2.default.createElement(
+          "div",
+          { className: _DumbLoader2.default.progress, style: { position: 'relative', width: 300 } },
+          title
+        ),
+        _react2.default.createElement(_CircularProgress2.default, { size: 120, thickness: 5, className: _DumbLoader2.default.progress })
       );
     }
   }]);
 
-  return FrmLogin;
+  return DumbLoader;
 }(_react.Component);
 
-exports.default = FrmLogin;
+DumbLoader.propTypes = {
+  step: _react.PropTypes.number,
+  step_size: _react.PropTypes.number,
+  count_all: _react.PropTypes.number,
+
+  title: _react.PropTypes.string,
+  processed: _react.PropTypes.string,
+  current: _react.PropTypes.string,
+  bottom: _react.PropTypes.string
+};
+exports.default = DumbLoader;

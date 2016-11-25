@@ -6,7 +6,7 @@ import Profile from './Profile';
 export default class SuperLogin extends Component {
 
   static contextTypes = {
-    handleLocationChange: React.PropTypes.func.isRequired
+    $p: React.PropTypes.func.isRequired
   }
 
   constructor(props) {
@@ -23,7 +23,7 @@ export default class SuperLogin extends Component {
 
     if(!this.state.logged_in && props.state_user.logged_in){
       setTimeout(() => {
-        this.context.handleLocationChange('/')
+        this.context.$p.UI.history.push('/')
       })
     }
     this.state.logged_in = props.state_user.logged_in

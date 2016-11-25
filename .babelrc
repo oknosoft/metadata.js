@@ -1,0 +1,39 @@
+{
+  "presets": [
+    "es2015",
+    "stage-0",
+    "react"
+  ],
+  "plugins": [
+    [
+      "transform-replace-object-assign",
+      "simple-assign"
+    ],
+    "transform-dev-warning"
+  ],
+  "env": {
+    "release": {
+      "plugins": [
+        "transform-runtime",
+        [
+          "transform-react-remove-prop-types",
+          {
+            "mode": "wrap"
+          }
+        ],
+        [
+          "css-modules-transform",
+          {
+            "devMode": false,
+            "extensions": [
+              ".css",
+              ".scss",
+              ".less"
+            ],
+            "extractCss": "./packages/metadata-react-ui/combined.css"
+          }
+        ]
+      ],
+    }
+  }
+}

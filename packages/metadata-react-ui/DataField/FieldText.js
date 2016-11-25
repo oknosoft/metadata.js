@@ -39,9 +39,10 @@ var FieldText = function (_Component) {
     key: 'render',
     value: function render() {
       return _react2.default.createElement(_TextField2.default, {
-        name: this.props._meta.name,
+        name: this.props._fld,
         fullWidth: true,
-        defaultValue: this.props._val
+        defaultValue: this.props._val,
+        hintText: this.props._meta.tooltip || this.props._meta.synonym
       });
     }
   }]);

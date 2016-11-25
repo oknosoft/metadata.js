@@ -4,10 +4,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _FrmLogin = require('./FrmLogin');
+var _TabularSection = require('./TabularSection');
 
-var _FrmLogin2 = _interopRequireDefault(_FrmLogin);
+var _TabularSection2 = _interopRequireDefault(_TabularSection);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = _FrmLogin2.default;
+exports.default = _TabularSection2.default;

@@ -10,13 +10,25 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
-var _TabsLogin = require('./TabsLogin');
+var _Paper = require('material-ui/Paper');
 
-var _TabsLogin2 = _interopRequireDefault(_TabsLogin);
+var _Paper2 = _interopRequireDefault(_Paper);
 
-var _Profile = require('./Profile');
+var _Divider = require('material-ui/Divider');
 
-var _Profile2 = _interopRequireDefault(_Profile);
+var _Divider2 = _interopRequireDefault(_Divider);
+
+var _Subheader = require('material-ui/Subheader');
+
+var _Subheader2 = _interopRequireDefault(_Subheader);
+
+var _CircularProgress = require('material-ui/CircularProgress');
+
+var _CircularProgress2 = _interopRequireDefault(_CircularProgress);
+
+var _DumbLoader = require('./DumbLoader.scss');
+
+var _DumbLoader2 = _interopRequireDefault(_DumbLoader);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -26,47 +38,56 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var SuperLogin = function (_Component) {
-  _inherits(SuperLogin, _Component);
+var DumbScreen = function (_Component) {
+  _inherits(DumbScreen, _Component);
 
-  function SuperLogin(props) {
-    _classCallCheck(this, SuperLogin);
+  function DumbScreen() {
+    _classCallCheck(this, DumbScreen);
 
-    var _this = _possibleConstructorReturn(this, (SuperLogin.__proto__ || Object.getPrototypeOf(SuperLogin)).call(this, props));
-
-    _this.state = {
-      logged_in: props.state_user.logged_in
-    };
-    return _this;
+    return _possibleConstructorReturn(this, (DumbScreen.__proto__ || Object.getPrototypeOf(DumbScreen)).apply(this, arguments));
   }
 
-  _createClass(SuperLogin, [{
+  _createClass(DumbScreen, [{
     key: 'render',
     value: function render() {
-      var _this2 = this;
+      var _props = this.props,
+          title = _props.title,
+          img = _props.img,
+          page = _props.page;
 
-      var props = this.props;
 
-
-      if (!this.state.logged_in && props.state_user.logged_in) {
-        setTimeout(function () {
-          _this2.context.$p.UI.history.push('/');
-        });
-      }
-      this.state.logged_in = props.state_user.logged_in;
+      if (!title) title = "Заставка загрузка модулей...";
 
       return _react2.default.createElement(
         'div',
         null,
-        props.state_user.logged_in ? _react2.default.createElement(_Profile2.default, props) : _react2.default.createElement(_TabsLogin2.default, props)
+        _react2.default.createElement(
+          'div',
+          { className: _DumbLoader2.default.progress, style: { position: 'relative', width: 300 } },
+          title
+        ),
+        img,
+        page ? _react2.default.createElement(
+          'div',
+          { className: _DumbLoader2.default.progress, style: { position: 'relative', width: 300 } },
+          page.page
+        ) : null
       );
     }
   }]);
 
-  return SuperLogin;
+  return DumbScreen;
 }(_react.Component);
 
-SuperLogin.contextTypes = {
-  $p: _react2.default.PropTypes.func.isRequired
+DumbScreen.propTypes = {
+  step: _react.PropTypes.number,
+  step_size: _react.PropTypes.number,
+  count_all: _react.PropTypes.number,
+
+  title: _react.PropTypes.string,
+  processed: _react.PropTypes.string,
+  current: _react.PropTypes.string,
+  bottom: _react.PropTypes.string,
+  page: _react.PropTypes.object
 };
-exports.default = SuperLogin;
+exports.default = DumbScreen;
