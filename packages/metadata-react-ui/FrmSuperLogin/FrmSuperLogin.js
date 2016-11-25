@@ -50,7 +50,7 @@ var SuperLogin = function (_Component) {
 
       if (!this.state.logged_in && props.state_user.logged_in) {
         setTimeout(function () {
-          _this2.context.handleLocationChange('/');
+          _this2.context.$p.UI.history.push('/');
         });
       }
       this.state.logged_in = props.state_user.logged_in;
@@ -67,6 +67,6 @@ var SuperLogin = function (_Component) {
 }(_react.Component);
 
 SuperLogin.contextTypes = {
-  handleLocationChange: _react2.default.PropTypes.func.isRequired
+  $p: _react2.default.PropTypes.func.isRequired
 };
 exports.default = SuperLogin;

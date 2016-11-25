@@ -78,7 +78,7 @@ var FieldSelect = function (_Component) {
     value: function render() {
 
       return _react2.default.createElement(_reactVirtualizedSelect2.default, {
-        name: this.props._meta.name,
+        name: this.props._fld,
         async: true,
         backspaceRemoves: false,
         labelKey: "presentation",

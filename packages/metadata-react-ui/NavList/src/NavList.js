@@ -16,7 +16,7 @@ export default class NavList extends Component {
   }
 
   static contextTypes = {
-    handleLocationChange: React.PropTypes.func.isRequired
+    $p: React.PropTypes.object.isRequired
   }
 
   constructor (props) {
@@ -76,7 +76,7 @@ export default class NavList extends Component {
 
     return () => {
       this.handleClose()
-      this.context.handleLocationChange(path)
+      this.context.$p.UI.history.push(path)
     }
   }
 
