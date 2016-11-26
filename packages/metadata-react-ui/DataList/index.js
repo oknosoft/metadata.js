@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _DataList = require('./DataList');
+var _DataList = require("./DataList");
 
 var _DataList2 = _interopRequireDefault(_DataList);
 

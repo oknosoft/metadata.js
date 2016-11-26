@@ -1,3 +1,3 @@
-import DynList from './DataList'
+import DynList from "./DataList";
 
 export default DynList

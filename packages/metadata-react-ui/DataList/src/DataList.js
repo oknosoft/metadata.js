@@ -18,26 +18,26 @@ export default class DataList extends Component {
 
   static propTypes = {
 
-    columns: PropTypes.array,             // Настройки колонок динамического списка. Если не указано - генерируем по метаданным
-    selection_mode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
-
-    select: PropTypes.object,             // Параметры запроса к couchdb. Если не указано - генерируем по метаданным
     _mgr: PropTypes.object.isRequired,    // Менеджер данных
     _meta: PropTypes.object,              // Описание метаданных. Если не указано, используем метаданные менеджера
+
+    selection_mode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
+    columns: PropTypes.array,             // Настройки колонок динамического списка. Если не указано - генерируем по метаданным
+    select: PropTypes.object,             // Параметры запроса к couchdb. Если не указано - генерируем по метаданным
 
     width: PropTypes.number.isRequired,   // ширина элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
     height: PropTypes.number.isRequired,  // высота элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
 
     // Redux actions
-    // Не факт, что все обработчики должны быть isRequired...
-    handleAdd: PropTypes.func.isRequired,         // обработчик добавления объекта
-    handleEdit: PropTypes.func.isRequired,        // обработчик открытия формы редактора
-    handleRevert: PropTypes.func.isRequired,      // откатить изменения - перечитать объект из базы данных
-    handleMarkDeleted: PropTypes.func.isRequired, // обработчик удаления строки
-    handlePost: PropTypes.func.isRequired,        // обработчик проведения документа
-    handleUnPost: PropTypes.func.isRequired,      // отмена проведения
-    handlePrint: PropTypes.func.isRequired,       // обработчик открытия диалога печати
-    handleAttachment: PropTypes.func.isRequired,  // обработчик открытия диалога присоединенных файлов
+    handleSelect: PropTypes.func,         // обработчик выбора значения в списке
+    handleAdd: PropTypes.func,            // обработчик добавления объекта
+    handleEdit: PropTypes.func,           // обработчик открытия формы редактора
+    handleRevert: PropTypes.func,         // откатить изменения - перечитать объект из базы данных
+    handleMarkDeleted: PropTypes.func,    // обработчик удаления строки
+    handlePost: PropTypes.func,           // обработчик проведения документа
+    handleUnPost: PropTypes.func,         // отмена проведения
+    handlePrint: PropTypes.func,          // обработчик открытия диалога печати
+    handleAttachment: PropTypes.func,     // обработчик открытия диалога присоединенных файлов
   }
 
   static defaultProps = {
@@ -142,18 +142,23 @@ export default class DataList extends Component {
   render() {
 
     const {columns, totalRowCount} = this.state
-    const {width, height} = this.props
+    const {width, height, selection_mode} = this.props
 
     return (
       <div>
 
         <Toolbar
+
+          selection_mode={!!selection_mode}
+          handleSelect={this.handleSelect}
+
           handleAdd={this.handleAdd}
           handleEdit={this.handleEdit}
           handleRemove={this.handleRemove}
-          handleSelectionChange={this.handleSelectionChange}
           handlePrint={this.handlePrint}
           handleAttachment={this.handleAttachment}
+
+          handleSelectionChange={this.handleSelectionChange}
           selectionValue={{}}
         />
 
@@ -233,14 +238,25 @@ export default class DataList extends Component {
     )
   }
 
-  handleAdd(e) {
+  // обработчик выбора значения в списке
+  handleSelect = () => {
+    const row = this._list.get(this.state.selectedRowIndex)
+    const {handleSelect, _mgr} = this.props
+    if (row && handleSelect) {
+      handleSelect(row, _mgr)
+    }
+  }
+
+  // обработчик добавления элемента списка
+  handleAdd = () => {
     const {handleAdd, _mgr} = this.props
     if (handleAdd) {
       handleAdd(_mgr)
     }
   }
 
-  handleEdit(e) {
+  // обработчик редактирования элемента списка
+  handleEdit = () => {
     const row = this._list.get(this.state.selectedRowIndex)
     const {handleEdit, _mgr} = this.props
     if (row && handleEdit) {
@@ -248,7 +264,8 @@ export default class DataList extends Component {
     }
   }
 
-  handleRemove(e) {
+  // обработчик удаления элемента списка
+  handleRemove = () => {
     const row = this._list.get(this.state.selectedRowIndex)
     const {handleRemove, _mgr} = this.props
     if (row && handleRemove) {
@@ -256,15 +273,13 @@ export default class DataList extends Component {
     }
   }
 
-  handleSelectionChange(e) {
-    const row = this._list.get(this.state.selectedRowIndex)
-    const {handleSelectionChange, _mgr} = this.props
-    if (row && handleSelectionChange) {
-      handleSelectionChange(row, _mgr)
-    }
+  // обработчик изменении свойств отбора
+  handleSelectionChange = () => {
+
   }
 
-  handlePrint(e) {
+  // обработчик печати теущей строки
+  handlePrint = () => {
     const row = this._list.get(this.state.selectedRowIndex)
     const {handlePrint, _mgr} = this.props
     if (row && handlePrint) {
@@ -272,7 +287,8 @@ export default class DataList extends Component {
     }
   }
 
-  handleAttachment(e) {
+  // обработчик вложений теущей строки
+  handleAttachment = () => {
     const row = this._list.get(this.state.selectedRowIndex)
     const {handleAttachment, _mgr} = this.props
     if (row && handleAttachment) {

@@ -11,14 +11,18 @@ import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import MenuItem from 'material-ui/MenuItem';
 import PrintIcon from 'material-ui/svg-icons/action/print';
 import AttachIcon from 'material-ui/svg-icons/editor/attach-file';
+import SelectIcon from 'material-ui/svg-icons/av/playlist-add-check';
+
 
 import Filter from '../DataSelection';
 
-import classes from './DataList.scss';
+import classes from './DataList.scss'
 
 export default class DataListToolbar extends Component{
 
   static propTypes = {
+
+    selection_mode: PropTypes.bool,                   // режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
 
     handleAdd: PropTypes.func.isRequired,             // обработчик добавления объекта
     handleEdit: PropTypes.func.isRequired,            // обработчик открфтия формы редактора
@@ -38,6 +42,15 @@ export default class DataListToolbar extends Component{
       <Toolbar className={classes.toolbar}>
         <ToolbarGroup firstChild={true}>
 
+          {
+            props.selection_mode ?
+              <IconButton touch={true} tooltip="Выбрать из списка" tooltipPosition="top-right" onTouchTap={props.handleSelect}>
+                <SelectIcon />
+              </IconButton>
+              :
+              null
+          }
+
           <IconButton touch={true} tooltip="Создать объект" tooltipPosition="top-right" onTouchTap={props.handleAdd}>
             <AddIcon />
           </IconButton>
@@ -50,6 +63,7 @@ export default class DataListToolbar extends Component{
 
           <ToolbarSeparator />
           <Filter selectionChange={props.handleSelectionChange} selectionValue={props.selectionValue} />
+
         </ToolbarGroup>
 
         <ToolbarGroup>
