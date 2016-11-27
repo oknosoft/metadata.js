@@ -7,6 +7,23 @@
  * @submodule meta_meta
  */
 
+/**
+ * ### Описание метаданных объекта
+ *
+ * @class MetaObj
+ */
+class MetaObj {
+
+}
+
+/**
+ * ### Описание метаданных поля
+ *
+ * @class MetaField
+ */
+class MetaField {
+
+}
 
 /**
  * ### Хранилище метаданных конфигурации
@@ -367,8 +384,6 @@ class Meta extends MetaEventEmitter{
 		return ", " + (t ? "_t_." : "") + ("`" + f + "`");
 	}
 
-
-
 	/**
 	 * ### Возвращает структуру для инициализации таблицы на форме
 	 * TODO: перенести этот метод в плагин
@@ -499,13 +514,7 @@ class Meta extends MetaEventEmitter{
 
 }
 
-
-Meta.Obj = class MetaObj {
-
-}
-
-Meta.Field = class MetaField {
-
-}
+Meta.Obj = MetaObj;
+Meta.Field = MetaField;
 
 classes.Meta = Meta;
