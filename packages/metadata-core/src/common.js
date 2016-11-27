@@ -93,8 +93,8 @@ export default class MetaEngine{
 		// создаём конструкторы менеджеров данных
 		mngrs(this);
 
-		// создаём конструкторы табличных частей
-		tabulars(this);
+		// дублируем метод record_log в utils
+		utils.record_log = this.record_log;
 
 		// при налчии расширений, выполняем их методы инициализации
 		if(MetaEngine._constructors && Array.isArray(MetaEngine._constructors)){
@@ -112,26 +112,27 @@ export default class MetaEngine{
 	 * @param err
 	 */
 	record_log(err) {
-		if(this.ireg && this.ireg.$log)
-			this.ireg.$log.record(err);
-		console.log(err);
+		if(this.ireg && this.ireg.$log){
+			this.ireg.$log.record(err)
+		}
+		console.log(err)
 	}
 
 	/**
 	 * Вспомогательные методы
 	 */
-	get utils(){return utils;}
+	get utils(){ return utils }
 
 	/**
 	 * i18n
 	 */
-	get msg(){return msg;}
+	get msg(){ return msg }
 
 	/**
 	 * Конструкторы объектов данных
 	 */
 	get classes(){//noinspection JSUnresolvedVariable
-		return classes;}
+		return classes }
 
 	/**
 	 * ### Текущий пользователь

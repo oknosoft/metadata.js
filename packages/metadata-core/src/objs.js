@@ -998,3 +998,11 @@ class RegisterRow extends DataObj {
 		return this._metadata().obj_presentation || this._metadata().synonym;
 	}
 }
+
+/**
+ * Здесь живут ссылки на конструкторы классов
+ * @type {{}}
+ */
+export const classes = {DataObj, CatObj, DocObj, DataProcessorObj, TaskObj, BusinessProcessObj, EnumObj, RegisterRow};
+
+

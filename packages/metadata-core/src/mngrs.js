@@ -258,9 +258,10 @@ function mngrs($p) {
 		 *
 		 * @method obj_constructor
 		 * @param [ts_name] {String}
-		 * @return {Function}
+		 * @param [mode] {Boolean | Object }
+		 * @return {String | Function | DataObj}
 		 */
-		obj_constructor(ts_name = "") {
+		obj_constructor(ts_name = "", mode) {
 
 			if(!this.constructor_names[ts_name]){
 				var parts = this.class_name.split("."),
@@ -268,8 +269,15 @@ function mngrs($p) {
 				this.constructor_names[ts_name] = ts_name ? fn_name + ts_name.charAt(0).toUpperCase() + ts_name.substr(1) + "Row" : fn_name;
 			}
 
-			return this.constructor_names[ts_name];
+			ts_name = this.constructor_names[ts_name];
 
+			if(!mode){
+				return ts_name;
+			}
+			if(mode === true ){
+				return $p[ts_name];
+			}
+			return new $p[ts_name](mode);
 		}
 
 		/**
@@ -2719,22 +2727,6 @@ function mngrs($p) {
 			TaskManager: { value: TaskManager },
 
 			BusinessProcessManager: { value: BusinessProcessManager },
-
-			DataObj: { value: DataObj },
-
-			CatObj: { value: CatObj },
-
-			DocObj: { value: DocObj },
-
-			DataProcessorObj: { value: DataProcessorObj },
-
-			TaskObj: { value: TaskObj },
-
-			BusinessProcessObj: { value: BusinessProcessObj },
-
-			EnumObj: { value: EnumObj },
-
-			RegisterRow: { value: RegisterRow }
 
 		})
 	}

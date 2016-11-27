@@ -498,3 +498,14 @@ class Meta extends MetaEventEmitter{
 	}
 
 }
+
+
+Meta.Obj = class MetaObj {
+
+}
+
+Meta.Field = class MetaField {
+
+}
+
+classes.Meta = Meta;
