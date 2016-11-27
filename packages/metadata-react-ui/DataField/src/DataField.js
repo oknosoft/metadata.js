@@ -18,6 +18,7 @@ export default class DataField extends Component {
     _meta: PropTypes.object,            // метаданные поля - могут быть переопределены снаружи, если не указано, будут задейтвованы стандартные метаданные
 
     label_position: PropTypes.string,   // положение заголовка, перечислимый тип $p.UI.LABEL_POSITIONS
+    read_only: PropTypes.object,        // поле только для чтения
     handleValueChange: PropTypes.func   // обработчик при изменении значения в поле
   }
 
