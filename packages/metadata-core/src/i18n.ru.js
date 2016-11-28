@@ -1,7 +1,7 @@
 /**
  * Строковые константы интернационализации
  *
- * @module common
+ * @module metadata
  * @submodule i18n
  */
 

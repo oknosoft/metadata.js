@@ -4,7 +4,7 @@
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  *
  * Экспортирует глобальную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
- * @module  common
+ * @module  metadata
  */
 
 /**

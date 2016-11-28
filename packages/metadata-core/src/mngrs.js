@@ -1,11 +1,8 @@
 /**
  * Конструкторы менеджеров данных
  *
- * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- *
  * @module  metadata
  * @submodule meta_mngrs
- * @requires common
  */
 
 /**
@@ -73,7 +70,7 @@ function mngrs($p) {
 
 			super()
 
-			const _meta = md.get(class_name);
+			const _meta = md.get(class_name) || (this.metadata ? this.metadata() : {});
 
 			Object.defineProperties(this, {
 
@@ -151,6 +148,9 @@ function mngrs($p) {
 					}
 				},
 
+				/**
+				 * В этой переменной хранятся имена конструктора объекта и конструкторов табличных частей
+				 */
 				constructor_names: {
 					value: {}
 				},
@@ -271,12 +271,19 @@ function mngrs($p) {
 
 			ts_name = this.constructor_names[ts_name];
 
+			// если режим не указан, возвращаем имя функции - конструктора
 			if(!mode){
 				return ts_name;
 			}
+			// если булево - возвращаем саму функцию - конструктор
 			if(mode === true ){
 				return $p[ts_name];
 			}
+			// если массив - создаём объект с параметрами, указанными в массиве
+			if(Array.isArray(mode)){
+				return new $p[ts_name](...mode);
+			}
+			// иначе - создаём объект и передаём в конструктор единственный параметр
 			return new $p[ts_name](mode);
 		}
 
@@ -679,7 +686,7 @@ function mngrs($p) {
 				if(do_not_create && do_not_create != 'promise')
 					return;
 				else
-					o = new $p[this.obj_constructor()](ref, this, true);
+					o = this.obj_constructor('', [ref, this, true]);
 			}
 
 			if(ref === utils.blank.guid)
@@ -720,7 +727,7 @@ function mngrs($p) {
 
 			if(!o){
 
-				o = new $p[this.obj_constructor()](attr, this);
+				o = this.obj_constructor('', [attr, this]);
 
 				if(!fill_default && attr.ref && attr.presentation && Object.keys(attr).length == 2){
 					// заглушка ссылки объекта
@@ -825,7 +832,7 @@ function mngrs($p) {
 						continue;
 					}
 
-					obj = new $p[this.obj_constructor()](aattr[i], this);
+					obj = this.obj_constructor('', [aattr[i], this]);
 					if(forse)
 						obj._set_loaded();
 
@@ -1398,7 +1405,7 @@ function mngrs($p) {
 		 * @return {DataProcessorObj}
 		 */
 		create(){
-			return new $p[this.obj_constructor()]({}, this);
+			return this.obj_constructor('', [{}, this]);
 		}
 
 		/**
@@ -1668,7 +1675,7 @@ function mngrs($p) {
 				obj = this.by_ref[ref];
 
 				if (!obj && !aattr[i]._deleted) {
-					obj = new $p[this.obj_constructor()](aattr[i], this);
+					obj = this.obj_constructor('', [aattr[i], this]);
 					if (forse)
 						obj._set_loaded();
 
@@ -2048,7 +2055,7 @@ function mngrs($p) {
 			var o = this.by_ref[attr.ref];
 			if(!o){
 
-				o = new $p[this.obj_constructor()](attr, this);
+				o = this.obj_constructor('', [attr, this]);
 
 				// Триггер после создания
 				let after_create_res = {};
@@ -2100,170 +2107,6 @@ function mngrs($p) {
 	}
 
 	/**
-	 * ### Журнал событий
-	 * Хранит и накапливает события сеанса<br />
-	 * Является наследником регистра сведений
-	 * @extends InfoRegManager
-	 * @class LogManager
-	 * @static
-	 */
-	class LogManager extends InfoRegManager{
-
-		constructor() {
-			super("ireg.$log");
-		}
-
-		/**
-		 * Добавляет запись в журнал
-		 * @param msg {String|Object|Error} - текст + класс события
-		 * @param [msg.obj] {Object} - дополнительный json объект
-		 */
-		record(msg){
-
-			if(msg instanceof Error){
-				if(console)
-					console.log(msg);
-				msg = {
-					class: "error",
-					note: msg.toString()
-				}
-			}else if(typeof msg == "object" && !msg.class && !msg.obj){
-				msg = {
-					class: "obj",
-					obj: msg,
-					note: msg.note
-				};
-			}else if(typeof msg != "object")
-				msg = {note: msg};
-
-			msg.date = Date.now() + wsql.time_diff;
-
-			// уникальность ключа
-			if(!this.smax)
-				this.smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_$log` where `date` = ?");
-			var res = this.smax([msg.date]);
-			if(!res.length || res[0].sequence === undefined)
-				msg.sequence = 0;
-			else
-				msg.sequence = parseInt(res[0].sequence) + 1;
-
-			// класс сообщения
-			if(!msg.class)
-				msg.class = "note";
-
-			wsql.alasql("insert into `ireg_$log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)",
-				[msg.date + "¶" + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
-
-		}
-
-		/**
-		 * Сбрасывает события на сервер
-		 * @method backup
-		 * @param [dfrom] {Date}
-		 * @param [dtill] {Date}
-		 */
-		backup(dfrom, dtill){
-
-		}
-
-		/**
-		 * Восстанавливает события из архива на сервере
-		 * @method restore
-		 * @param [dfrom] {Date}
-		 * @param [dtill] {Date}
-		 */
-		restore(dfrom, dtill){
-
-		}
-
-		/**
-		 * Стирает события в указанном диапазоне дат
-		 * @method clear
-		 * @param [dfrom] {Date}
-		 * @param [dtill] {Date}
-		 */
-		clear(dfrom, dtill){
-
-		}
-
-		show(pwnd) {
-
-		}
-
-		get(ref, force_promise, do_not_create) {
-
-			if(typeof ref == "object")
-				ref = ref.ref || "";
-
-			if(!this.by_ref[ref]){
-
-				if(force_promise === false)
-					return undefined;
-
-				var parts = ref.split("¶");
-				wsql.alasql("select * from `ireg_$log` where date=" + parts[0] + " and sequence=" + parts[1])
-					.forEach(row => new RegisterRow(row, this));
-			}
-
-			return force_promise ? Promise.resolve(this.by_ref[ref]) : this.by_ref[ref];
-		}
-
-		get_sql_struct(attr){
-
-			if(attr && attr.action == "get_selection"){
-				var sql = "select * from `ireg_$log`";
-				if(attr.date_from){
-					if (attr.date_till)
-						sql += " where `date` >= ? and `date` <= ?";
-					else
-						sql += " where `date` >= ?";
-				}else if (attr.date_till)
-					sql += " where `date` <= ?";
-
-				return sql;
-
-			}else
-				return InfoRegManager.prototype.get_sql_struct.call(this, attr);
-		}
-
-		caption_flds(attr) {
-
-			var _meta = (attr && attr.metadata) || this.metadata(),
-				acols = [];
-
-			if(_meta.form && _meta.form[attr.form || 'selection']) {
-				acols = _meta.form[attr.form || 'selection'].cols;
-
-			}else{
-				acols.push(new Col_struct("date", "200", "ro", "left", "server", "Дата"));
-				acols.push(new Col_struct("class", "100", "ro", "left", "server", "Класс"));
-				acols.push(new Col_struct("note", "*", "ro", "left", "server", "Событие"));
-			}
-
-			return acols;
-		}
-
-		data_to_grid(data, attr) {
-			var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
-					.replace("%1", data.length).replace("%2", attr.start)
-					.replace("%3", attr.set_parent || "" ),
-				caption = this.caption_flds(attr);
-
-			// при первом обращении к методу добавляем описание колонок
-			xml += caption.head;
-
-			data.forEach(row => {
-				xml += "<row id=\"" + row.ref + "\"><cell>" +
-					moment(row.date - wsql.time_diff).format("DD.MM.YYYY HH:mm:ss") + "." + row.sequence + "</cell>" +
-					"<cell>" + (row.class || "") + "</cell><cell>" + (row.note || "") + "</cell></row>";
-			});
-
-			return xml + "</rows>";
-		}
-
-	}
-
-	/**
 	 * ### Абстрактный менеджер регистра накопления
 	 * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
 	 * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "AccumRegs"}}{{/crossLink}}
@@ -2301,9 +2144,9 @@ function mngrs($p) {
 				 * @for CatObj
 				 * @type {Boolean}
 				 */
-				Object.defineProperty($p[this.obj_constructor()].prototype, 'is_folder', {
+				Object.defineProperty(this.obj_constructor('', true).prototype, 'is_folder', {
 					get : function(){ return this._obj.is_folder || false},
-					set : function(v){ this._obj.is_folder = $p.utils.fix_boolean(v)},
+					set : function(v){ this._obj.is_folder = utils.fix_boolean(v)},
 					enumerable: true,
 					configurable: true
 				})
@@ -2461,7 +2304,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class Enumerations{
-		toString(){return msg.meta_classes.enm}
+		toString(){return msg('meta_classes').enm}
 	}
 
 	/**
@@ -2473,7 +2316,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class Catalogs{
-		toString(){return msg.meta_classes.cat}
+		toString(){return msg('meta_classes').cat}
 	}
 
 	/**
@@ -2485,7 +2328,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class Documents{
-		toString(){return msg.meta_classes.doc}
+		toString(){return msg('meta_classes').doc}
 	}
 
 	/**
@@ -2497,7 +2340,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class InfoRegs{
-		toString(){return msg.meta_classes.ireg}
+		toString(){return msg('meta_classes').ireg}
 	}
 
 	/**
@@ -2509,7 +2352,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class AccumRegs{
-		toString(){return msg.meta_classes.areg}
+		toString(){return msg('meta_classes').areg}
 	}
 
 	/**
@@ -2521,7 +2364,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class AccountsRegs{
-		toString(){return msg.meta_classes.accreg}
+		toString(){return msg('meta_classes').accreg}
 	}
 
 	/**
@@ -2533,7 +2376,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class DataProcessors{
-		toString(){return msg.meta_classes.dp}
+		toString(){return msg('meta_classes').dp}
 	}
 
 	/**
@@ -2545,7 +2388,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class Reports{
-		toString(){return msg.meta_classes.rep}
+		toString(){return msg('meta_classes').rep}
 	}
 
 	/**
@@ -2557,7 +2400,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class ChartsOfAccounts{
-		toString(){return msg.meta_classes.cacc}
+		toString(){return msg('meta_classes').cacc}
 	}
 
 	/**
@@ -2569,7 +2412,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class ChartsOfCharacteristics{
-		toString(){return msg.meta_classes.cch}
+		toString(){return msg('meta_classes').cch}
 	}
 
 	/**
@@ -2581,7 +2424,7 @@ function mngrs($p) {
 	 * @static
 	 */
 	class Tasks{
-		toString(){return msg.meta_classes.tsk}
+		toString(){return msg('meta_classes').tsk}
 	}
 
 	/**
@@ -2593,9 +2436,276 @@ function mngrs($p) {
 	 * @static
 	 */
 	class BusinessProcesses{
-		toString(){return msg.meta_classes.bp}
+		toString(){return msg('meta_classes').bp}
 	}
 
+
+	/**
+	 * ### Журнал событий
+	 * Хранит и накапливает события сеанса
+	 * Является наследником регистра сведений
+	 * @extends InfoRegManager
+	 * @class LogManager
+	 * @static
+	 */
+	class LogManager extends InfoRegManager{
+
+		constructor() {
+			super("ireg.$log");
+		}
+
+		metadata(){
+			return {
+				name: "$log",
+				note: "",
+				synonym: "Журнал событий",
+				dimensions: {
+					date: {
+						synonym: "Дата",
+						multiline_mode: false,
+						tooltip: "Время события",
+						type: {
+							types: [
+								"number"
+							],
+							digits: 15,
+							fraction_figits: 0
+						}
+					},
+					sequence: {
+						synonym: "Порядок",
+						multiline_mode: false,
+						tooltip: "Порядок следования",
+						type: {
+							types: [
+								"number"
+							],
+							digits: 6,
+							fraction_figits: 0
+						}
+					}
+				},
+				resources: {
+					"class": {
+						synonym: "Класс",
+						multiline_mode: false,
+						tooltip: "Класс события",
+						type: {
+							types: [
+								"string"
+							],
+							str_len: 100
+						}
+					},
+					note: {
+						synonym: "Комментарий",
+						multiline_mode: true,
+						tooltip: "Текст события",
+						type: {
+							types: [
+								"string"
+							],
+							str_len: 0
+						}
+					},
+					obj: {
+						synonym: "Объект",
+						multiline_mode: true,
+						tooltip: "Объект, к которому относится событие",
+						type: {
+							types: [
+								"string"
+							],
+							str_len: 0
+						}
+					}
+				}
+			}
+		}
+
+		/**
+		 * Добавляет запись в журнал
+		 * @param msg {String|Object|Error} - текст + класс события
+		 * @param [msg.obj] {Object} - дополнительный json объект
+		 */
+		record(msg){
+
+			if(msg instanceof Error){
+				if(console)
+					console.log(msg);
+				msg = {
+					class: "error",
+					note: msg.toString()
+				}
+			}else if(typeof msg == "object" && !msg.class && !msg.obj){
+				msg = {
+					class: "obj",
+					obj: msg,
+					note: msg.note
+				};
+			}else if(typeof msg != "object")
+				msg = {note: msg};
+
+			msg.date = Date.now() + wsql.time_diff;
+
+			// уникальность ключа
+			if(!this.smax)
+				this.smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_$log` where `date` = ?");
+			var res = this.smax([msg.date]);
+			if(!res.length || res[0].sequence === undefined)
+				msg.sequence = 0;
+			else
+				msg.sequence = parseInt(res[0].sequence) + 1;
+
+			// класс сообщения
+			if(!msg.class)
+				msg.class = "note";
+
+			wsql.alasql("insert into `ireg_$log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)",
+				[msg.date + "¶" + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
+
+		}
+
+		/**
+		 * Сбрасывает события на сервер
+		 * @method backup
+		 * @param [dfrom] {Date}
+		 * @param [dtill] {Date}
+		 */
+		backup(dfrom, dtill){
+
+		}
+
+		/**
+		 * Восстанавливает события из архива на сервере
+		 * @method restore
+		 * @param [dfrom] {Date}
+		 * @param [dtill] {Date}
+		 */
+		restore(dfrom, dtill){
+
+		}
+
+		/**
+		 * Стирает события в указанном диапазоне дат
+		 * @method clear
+		 * @param [dfrom] {Date}
+		 * @param [dtill] {Date}
+		 */
+		clear(dfrom, dtill){
+
+		}
+
+		show(pwnd) {
+
+		}
+
+		get(ref, force_promise, do_not_create) {
+
+			if(typeof ref == "object")
+				ref = ref.ref || "";
+
+			if(!this.by_ref[ref]){
+
+				if(force_promise === false)
+					return undefined;
+
+				var parts = ref.split("¶");
+				wsql.alasql("select * from `ireg_$log` where date=" + parts[0] + " and sequence=" + parts[1])
+					.forEach(row => new RegisterRow(row, this));
+			}
+
+			return force_promise ? Promise.resolve(this.by_ref[ref]) : this.by_ref[ref];
+		}
+
+		get_sql_struct(attr){
+
+			if(attr && attr.action == "get_selection"){
+				var sql = "select * from `ireg_$log`";
+				if(attr.date_from){
+					if (attr.date_till)
+						sql += " where `date` >= ? and `date` <= ?";
+					else
+						sql += " where `date` >= ?";
+				}else if (attr.date_till)
+					sql += " where `date` <= ?";
+
+				return sql;
+
+			}else
+				return InfoRegManager.prototype.get_sql_struct.call(this, attr);
+		}
+
+		caption_flds(attr) {
+
+			var _meta = (attr && attr.metadata) || this.metadata(),
+				acols = [];
+
+			if(_meta.form && _meta.form[attr.form || 'selection']) {
+				acols = _meta.form[attr.form || 'selection'].cols;
+
+			}else{
+				acols.push(new Col_struct("date", "200", "ro", "left", "server", "Дата"));
+				acols.push(new Col_struct("class", "100", "ro", "left", "server", "Класс"));
+				acols.push(new Col_struct("note", "*", "ro", "left", "server", "Событие"));
+			}
+
+			return acols;
+		}
+
+		data_to_grid(data, attr) {
+			var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
+					.replace("%1", data.length).replace("%2", attr.start)
+					.replace("%3", attr.set_parent || "" ),
+				caption = this.caption_flds(attr);
+
+			// при первом обращении к методу добавляем описание колонок
+			xml += caption.head;
+
+			data.forEach(row => {
+				xml += "<row id=\"" + row.ref + "\"><cell>" +
+					moment(row.date - wsql.time_diff).format("DD.MM.YYYY HH:mm:ss") + "." + row.sequence + "</cell>" +
+					"<cell>" + (row.class || "") + "</cell><cell>" + (row.note || "") + "</cell></row>";
+			});
+
+			return xml + "</rows>";
+		}
+
+	}
+
+	/**
+	 * ### Менеджер объектов метаданных
+	 * Используется для формирования списков типов документов, справочников и т.д.
+	 * Например, при работе в интерфейсе с составными типами
+	 */
+	class MetaObjManager extends CatManager{
+
+		metadata(){
+			return {}
+		}
+	}
+
+	/**
+	 * ### Менеджер доступных полей
+	 * Используется при настройке отчетов и динамических списков
+	 */
+	class MetaFieldManager extends CatManager{
+		metadata(){
+			return {}
+		}
+	}
+
+	/**
+	 * ### Менеджер настроек отчетов и динсписков
+	 */
+	class SchemeSettingsManager extends CatManager{
+		metadata(){
+			return {}
+		}
+	}
+
+
+	// создаём коллекции менеджеров
 	Object.defineProperties($p, {
 
 		/**
@@ -2697,6 +2807,23 @@ function mngrs($p) {
 
 	});
 
+	// создаём системные менеджеры (журнал регистрации, метаданные и настройки компоновки)
+	Object.defineProperty($p.ireg, '$log', {
+		value: new LogManager('ireg.$log')
+	})
+	Object.defineProperties($p.cat, {
+		$meta: {
+			value: new MetaObjManager('cat.$meta')
+		},
+		$fld: {
+			value: new MetaFieldManager('cat.$fld')
+		},
+		$scheme: {
+			value: new SchemeSettingsManager('cat.$scheme')
+		}
+	})
+
+	// экспортируем ссылки на конструкторы
 	if(!classes.DataManager){
 		Object.defineProperties(classes, {
 
@@ -2731,6 +2858,7 @@ function mngrs($p) {
 		})
 	}
 
+	// экспортируем метод получения менеджера значения в utils
 	if(!utils.value_mgr){
 		/**
 		 * ### Возвращает менеджер значения по свойству строки

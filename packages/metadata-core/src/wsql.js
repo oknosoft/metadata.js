@@ -1,9 +1,7 @@
 /**
  * Интерфейс к localstorage, alasql и pouchdb
  *
- * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- *
- * @module  common
+ * @module  metadata
  * @submodule wsql
  */
 
