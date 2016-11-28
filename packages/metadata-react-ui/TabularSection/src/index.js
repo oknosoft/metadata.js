@@ -1,3 +1,3 @@
-import TabularSection from './TabularSection'
+import TabularSection from "./TabularSection";
 
 export default TabularSection

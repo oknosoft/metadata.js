@@ -22,19 +22,21 @@ export default class DataObj extends Component {
   }
 
   static propTypes = {
-    _obj: PropTypes.object,
-    _acl: PropTypes.string.isRequired,
+    _obj: PropTypes.object,             // DataObj, с которым будет связан компонент
+    _acl: PropTypes.string.isRequired,  // Права на чтение-изменение
 
-    handleSave: PropTypes.func.isRequired,
-    handleRevert: PropTypes.func.isRequired,
-    handleMarkDeleted: PropTypes.func.isRequired,
-    handlePost: PropTypes.func.isRequired,
-    handleUnPost: PropTypes.func.isRequired,
-    handlePrint: PropTypes.func.isRequired,
-    handleAttachment: PropTypes.func.isRequired,
-    handleValueChange: PropTypes.func.isRequired,
-    handleAddRow: PropTypes.func.isRequired,
-    handleDelRow: PropTypes.func.isRequired
+    read_only: PropTypes.object,        // Элемент только для чтения
+
+    handleSave: PropTypes.func,
+    handleRevert: PropTypes.func,
+    handleMarkDeleted: PropTypes.func,
+    handlePost: PropTypes.func,
+    handleUnPost: PropTypes.func,
+    handlePrint: PropTypes.func,
+    handleAttachment: PropTypes.func,
+    handleValueChange: PropTypes.func,
+    handleAddRow: PropTypes.func,
+    handleDelRow: PropTypes.func
   }
 
   constructor(props) {

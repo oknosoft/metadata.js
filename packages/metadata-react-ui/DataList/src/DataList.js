@@ -20,13 +20,16 @@ export default class DataList extends Component {
 
     _mgr: PropTypes.object.isRequired,    // Менеджер данных
     _meta: PropTypes.object,              // Описание метаданных. Если не указано, используем метаданные менеджера
-
     selection_mode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
     columns: PropTypes.array,             // Настройки колонок динамического списка. Если не указано - генерируем по метаданным
     select: PropTypes.object,             // Параметры запроса к couchdb. Если не указано - генерируем по метаданным
 
-    width: PropTypes.number.isRequired,   // ширина элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
-    height: PropTypes.number.isRequired,  // высота элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
+    read_only: PropTypes.object,          // Элемент только для чтения
+    deny_add_del: PropTypes.bool,         // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+    modal: PropTypes.bool,                // Показывать список в модальном диалоге
+    width: PropTypes.number.isRequired,   // Ширина элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
+    height: PropTypes.number.isRequired,  // Высота элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
+    Toolbar: PropTypes.func,              // Индивидуальная панель инструментов. Если не указана, рисуем типовую
 
     // Redux actions
     handleSelect: PropTypes.func,         // обработчик выбора значения в списке

@@ -13,7 +13,7 @@ export default class DataField extends Component {
   }
 
   static propTypes = {
-    _obj: PropTypes.object.isRequired,  // DataObj, к полю которого будет привязано поле
+    _obj: PropTypes.object.isRequired,  // DataObj, к реквизиту которого будет привязано поле
     _fld: PropTypes.string.isRequired,  // имя поля объекта - путь к данным
     _meta: PropTypes.object,            // метаданные поля - могут быть переопределены снаружи, если не указано, будут задейтвованы стандартные метаданные
 
