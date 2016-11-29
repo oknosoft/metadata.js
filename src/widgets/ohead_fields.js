@@ -137,7 +137,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 			},
 			set: function (sel) {
 				_selection = sel;
-				this.reload;
+				this.reload();
 			}
 		},
 

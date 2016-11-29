@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.11.223, built:2016-11-22 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.11.223, built:2016-11-29 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -12161,7 +12161,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 			},
 			set: function (sel) {
 				_selection = sel;
-				this.reload;
+				this.reload();
 			}
 		},
 
@@ -12597,7 +12597,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 	_grid.__define({
 
-		// TODO: реализовать свойство selection и его инициализацию через attr
 		selection: {
 			get: function () {
 				return _selection;
