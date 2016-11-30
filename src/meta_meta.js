@@ -107,7 +107,9 @@ function Meta() {
 			else{
 
 				// если изменились метаданные, запланировать перезагрузку
-				$p.iface.do_reload();
+				setTimeout(function () {
+					$p.iface.do_reload();
+				}, 3000);
 
 			}
 
