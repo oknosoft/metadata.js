@@ -1,11 +1,8 @@
 /**
  * Конструкторы объектов данных
  *
- * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- *
  * @module  metadata
  * @submodule meta_objs
- * @requires common
  */
 
 
@@ -998,3 +995,11 @@ class RegisterRow extends DataObj {
 		return this._metadata().obj_presentation || this._metadata().synonym;
 	}
 }
+
+/**
+ * Здесь живут ссылки на конструкторы классов
+ * @type {{}}
+ */
+export const classes = {DataObj, CatObj, DocObj, DataProcessorObj, TaskObj, BusinessProcessObj, EnumObj, RegisterRow};
+
+

@@ -648,8 +648,3 @@ class Utils{
 
 const utils = new Utils();
 
-/**
- * Здесь живут ссылки на конструкторы классов
- * @type {{}}
- */
-export const classes = {};

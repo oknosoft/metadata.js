@@ -48,6 +48,10 @@ var _attachFile = require('material-ui/svg-icons/editor/attach-file');
 
 var _attachFile2 = _interopRequireDefault(_attachFile);
 
+var _playlistAddCheck = require('material-ui/svg-icons/av/playlist-add-check');
+
+var _playlistAddCheck2 = _interopRequireDefault(_playlistAddCheck);
+
 var _DataSelection = require('../DataSelection');
 
 var _DataSelection2 = _interopRequireDefault(_DataSelection);
@@ -83,6 +87,11 @@ var DataListToolbar = function (_Component) {
         _react2.default.createElement(
           _Toolbar.ToolbarGroup,
           { firstChild: true },
+          props.selection_mode ? _react2.default.createElement(
+            _IconButton2.default,
+            { touch: true, tooltip: '\u0412\u044B\u0431\u0440\u0430\u0442\u044C \u0438\u0437 \u0441\u043F\u0438\u0441\u043A\u0430', tooltipPosition: 'top-right', onTouchTap: props.handleSelect },
+            _react2.default.createElement(_playlistAddCheck2.default, null)
+          ) : null,
           _react2.default.createElement(
             _IconButton2.default,
             { touch: true, tooltip: '\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u043E\u0431\u044A\u0435\u043A\u0442', tooltipPosition: 'top-right', onTouchTap: props.handleAdd },
@@ -125,6 +134,8 @@ var DataListToolbar = function (_Component) {
 }(_react.Component);
 
 DataListToolbar.propTypes = {
+
+  selection_mode: _react.PropTypes.bool, // режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
 
   handleAdd: _react.PropTypes.func.isRequired, // обработчик добавления объекта
   handleEdit: _react.PropTypes.func.isRequired, // обработчик открфтия формы редактора

@@ -1,12 +1,27 @@
 /**
  * Метаданные на стороне js: конструкторы, заполнение, кеширование, поиск
  *
- * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- *
  * @module  metadata
  * @submodule meta_meta
  */
 
+/**
+ * ### Описание метаданных объекта
+ *
+ * @class MetaObj
+ */
+class MetaObj {
+
+}
+
+/**
+ * ### Описание метаданных поля
+ *
+ * @class MetaField
+ */
+class MetaField {
+
+}
 
 /**
  * ### Хранилище метаданных конфигурации
@@ -76,8 +91,13 @@ class Meta extends MetaEventEmitter{
 
 			var np = class_name.split(".");
 
-			if(!field_name)
-				return _m[np[0]][np[1]];
+			if(!_m || !_m[np[0]]){
+				return
+			}
+
+			if(!field_name){
+				return _m[np[0]][np[1]]
+			}
 
 			var res = {multiline_mode: false, note: "", synonym: "", tooltip: "", type: {is_ref: false,	types: ["string"]}},
 				is_doc = "doc,tsk,bp".indexOf(np[0]) != -1,
@@ -367,8 +387,6 @@ class Meta extends MetaEventEmitter{
 		return ", " + (t ? "_t_." : "") + ("`" + f + "`");
 	}
 
-
-
 	/**
 	 * ### Возвращает структуру для инициализации таблицы на форме
 	 * TODO: перенести этот метод в плагин
@@ -498,3 +516,8 @@ class Meta extends MetaEventEmitter{
 	}
 
 }
+
+Meta.Obj = MetaObj;
+Meta.Field = MetaField;
+
+classes.Meta = Meta;

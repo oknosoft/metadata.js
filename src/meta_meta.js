@@ -107,7 +107,9 @@ function Meta() {
 			else{
 
 				// если изменились метаданные, запланировать перезагрузку
-				$p.iface.do_reload();
+				setTimeout(function () {
+					$p.iface.do_reload();
+				}, 3000);
 
 			}
 
@@ -373,19 +375,44 @@ function Meta() {
 
 			if($p.utils.is_data_obj(oproperty)){
 
+				// затычка для неизвестных свойств используем значения свойств объектов
 				if(oproperty.is_new())
 					return $p.cat.property_values;
 
 				// и через его тип выходми на мнеджера значения
-				for(rt in oproperty.type.types)
-					if(oproperty.type.types[rt].indexOf(".") > -1){
-						tnames = oproperty.type.types[rt].split(".");
-						break;
+				// for(rt in oproperty.type.types)
+				// 	if(oproperty.type.types[rt].indexOf(".") > -1){
+				// 		tnames = oproperty.type.types[rt].split(".");
+				// 		break;
+				// 	}
+				// if(tnames && tnames.length > 1 && $p[tnames[0]])
+				// 	return mf_mgr($p[tnames[0]][tnames[1]]);
+				// else
+				// 	return oproperty.type;
+
+				//---
+				rt = [];
+				oproperty.type.types.forEach(function(v){
+					tnames = v.split(".");
+					if(tnames.length > 1 && $p[tnames[0]][tnames[1]])
+						rt.push($p[tnames[0]][tnames[1]]);
+				});
+				if(rt.length == 1 || row[f] == $p.utils.blank.guid)
+					return mf_mgr(rt[0]);
+
+				else if(array_enabled)
+					return rt;
+
+				else if((property = row[f]) instanceof DataObj)
+					return property._manager;
+
+				else if($p.utils.is_guid(property) && property != $p.utils.blank.guid){
+					for(var i in rt){
+						mgr = rt[i];
+						if(mgr.get(property, false, true))
+							return mgr;
 					}
-				if(tnames && tnames.length > 1 && $p[tnames[0]])
-					return mf_mgr($p[tnames[0]][tnames[1]]);
-				else
-					return oproperty.type;
+				}
 			}
 		}
 	};

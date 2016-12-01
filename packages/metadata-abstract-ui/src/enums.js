@@ -2,8 +2,10 @@
  * Перечислимые типы react-ui
  */
 
+//import { classes } from "metadata-core";
+
 /**
- * Положение заголовка элемента управления
+ * Положение заголовка элемента управления DataField.label_position
  * @type Object
  */
 export const LABEL_POSITIONS = {
@@ -16,10 +18,10 @@ export const LABEL_POSITIONS = {
 }
 
 /**
- * Тип поля элемента управления data_field
+ * Тип поля элемента управления DataField.kind
  * @type Object
  */
-export const DATA_FIELD_KIND = {
+export const DATA_FIELD_KINDS = {
 	input: 'input',   // поле ввода
 	label: 'label',   // поле надписи
 	toggle: 'toggle', // поле переключателя

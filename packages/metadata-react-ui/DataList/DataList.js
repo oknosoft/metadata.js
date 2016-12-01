@@ -45,6 +45,73 @@ var DataList = function (_Component) {
 
     var _this = _possibleConstructorReturn(this, (DataList.__proto__ || Object.getPrototypeOf(DataList)).call(this, props));
 
+    _this.handleSelect = function () {
+      var row = _this._list.get(_this.state.selectedRowIndex);
+      var _this$props = _this.props,
+          handleSelect = _this$props.handleSelect,
+          _mgr = _this$props._mgr;
+
+      if (row && handleSelect) {
+        handleSelect(row, _mgr);
+      }
+    };
+
+    _this.handleAdd = function () {
+      var _this$props2 = _this.props,
+          handleAdd = _this$props2.handleAdd,
+          _mgr = _this$props2._mgr;
+
+      if (handleAdd) {
+        handleAdd(_mgr);
+      }
+    };
+
+    _this.handleEdit = function () {
+      var row = _this._list.get(_this.state.selectedRowIndex);
+      var _this$props3 = _this.props,
+          handleEdit = _this$props3.handleEdit,
+          _mgr = _this$props3._mgr;
+
+      if (row && handleEdit) {
+        handleEdit(row, _mgr);
+      }
+    };
+
+    _this.handleRemove = function () {
+      var row = _this._list.get(_this.state.selectedRowIndex);
+      var _this$props4 = _this.props,
+          handleRemove = _this$props4.handleRemove,
+          _mgr = _this$props4._mgr;
+
+      if (row && handleRemove) {
+        handleRemove(row, _mgr);
+      }
+    };
+
+    _this.handleSelectionChange = function () {};
+
+    _this.handlePrint = function () {
+      var row = _this._list.get(_this.state.selectedRowIndex);
+      var _this$props5 = _this.props,
+          handlePrint = _this$props5.handlePrint,
+          _mgr = _this$props5._mgr;
+
+      if (row && handlePrint) {
+        handlePrint(row, _mgr);
+      }
+    };
+
+    _this.handleAttachment = function () {
+      var row = _this._list.get(_this.state.selectedRowIndex);
+      var _this$props6 = _this.props,
+          handleAttachment = _this$props6.handleAttachment,
+          _mgr = _this$props6._mgr;
+
+      if (row && handleAttachment) {
+        handleAttachment(row, _mgr);
+      }
+    };
+
     _this.state = {
       totalRowCount: totalRows,
       selectedRowIndex: 0,
@@ -145,19 +212,25 @@ var DataList = function (_Component) {
           totalRowCount = _state.totalRowCount;
       var _props = this.props,
           width = _props.width,
-          height = _props.height;
+          height = _props.height,
+          selection_mode = _props.selection_mode;
 
 
       return _react2.default.createElement(
         "div",
         null,
         _react2.default.createElement(_Toolbar2.default, {
+
+          selection_mode: !!selection_mode,
+          handleSelect: this.handleSelect,
+
           handleAdd: this.handleAdd,
           handleEdit: this.handleEdit,
           handleRemove: this.handleRemove,
-          handleSelectionChange: this.handleSelectionChange,
           handlePrint: this.handlePrint,
           handleAttachment: this.handleAttachment,
+
+          handleSelectionChange: this.handleSelectionChange,
           selectionValue: {}
         }),
         _react2.default.createElement(
@@ -241,77 +314,27 @@ var DataList = function (_Component) {
         )
       );
     }
-  }, {
-    key: "handleAdd",
-    value: function handleAdd(e) {
-      var _props2 = this.props,
-          handleAdd = _props2.handleAdd,
-          _mgr = _props2._mgr;
 
-      if (handleAdd) {
-        handleAdd(_mgr);
-      }
-    }
-  }, {
-    key: "handleEdit",
-    value: function handleEdit(e) {
-      var row = this._list.get(this.state.selectedRowIndex);
-      var _props3 = this.props,
-          handleEdit = _props3.handleEdit,
-          _mgr = _props3._mgr;
+    // обработчик выбора значения в списке
 
-      if (row && handleEdit) {
-        handleEdit(row, _mgr);
-      }
-    }
-  }, {
-    key: "handleRemove",
-    value: function handleRemove(e) {
-      var row = this._list.get(this.state.selectedRowIndex);
-      var _props4 = this.props,
-          handleRemove = _props4.handleRemove,
-          _mgr = _props4._mgr;
 
-      if (row && handleRemove) {
-        handleRemove(row, _mgr);
-      }
-    }
-  }, {
-    key: "handleSelectionChange",
-    value: function handleSelectionChange(e) {
-      var row = this._list.get(this.state.selectedRowIndex);
-      var _props5 = this.props,
-          handleSelectionChange = _props5.handleSelectionChange,
-          _mgr = _props5._mgr;
+    // обработчик добавления элемента списка
 
-      if (row && handleSelectionChange) {
-        handleSelectionChange(row, _mgr);
-      }
-    }
-  }, {
-    key: "handlePrint",
-    value: function handlePrint(e) {
-      var row = this._list.get(this.state.selectedRowIndex);
-      var _props6 = this.props,
-          handlePrint = _props6.handlePrint,
-          _mgr = _props6._mgr;
 
-      if (row && handlePrint) {
-        handlePrint(row, _mgr);
-      }
-    }
-  }, {
-    key: "handleAttachment",
-    value: function handleAttachment(e) {
-      var row = this._list.get(this.state.selectedRowIndex);
-      var _props7 = this.props,
-          handleAttachment = _props7.handleAttachment,
-          _mgr = _props7._mgr;
+    // обработчик редактирования элемента списка
 
-      if (row && handleAttachment) {
-        handleAttachment(row, _mgr);
-      }
-    }
+
+    // обработчик удаления элемента списка
+
+
+    // обработчик изменении свойств отбора
+
+
+    // обработчик печати теущей строки
+
+
+    // обработчик вложений теущей строки
+
   }, {
     key: "_formatter",
     value: function _formatter(row, index) {
@@ -461,26 +484,26 @@ DataList.contextTypes = {
 };
 DataList.propTypes = {
 
-  columns: _react.PropTypes.array, // Настройки колонок динамического списка. Если не указано - генерируем по метаданным
-  selection_mode: _react.PropTypes.bool, // Режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
-
-  select: _react.PropTypes.object, // Параметры запроса к couchdb. Если не указано - генерируем по метаданным
   _mgr: _react.PropTypes.object.isRequired, // Менеджер данных
   _meta: _react.PropTypes.object, // Описание метаданных. Если не указано, используем метаданные менеджера
+
+  selection_mode: _react.PropTypes.bool, // Режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
+  columns: _react.PropTypes.array, // Настройки колонок динамического списка. Если не указано - генерируем по метаданным
+  select: _react.PropTypes.object, // Параметры запроса к couchdb. Если не указано - генерируем по метаданным
 
   width: _react.PropTypes.number.isRequired, // ширина элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
   height: _react.PropTypes.number.isRequired, // высота элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
 
   // Redux actions
-  // Не факт, что все обработчики должны быть isRequired...
-  handleAdd: _react.PropTypes.func.isRequired, // обработчик добавления объекта
-  handleEdit: _react.PropTypes.func.isRequired, // обработчик открытия формы редактора
-  handleRevert: _react.PropTypes.func.isRequired, // откатить изменения - перечитать объект из базы данных
-  handleMarkDeleted: _react.PropTypes.func.isRequired, // обработчик удаления строки
-  handlePost: _react.PropTypes.func.isRequired, // обработчик проведения документа
-  handleUnPost: _react.PropTypes.func.isRequired, // отмена проведения
-  handlePrint: _react.PropTypes.func.isRequired, // обработчик открытия диалога печати
-  handleAttachment: _react.PropTypes.func.isRequired };
+  handleSelect: _react.PropTypes.func, // обработчик выбора значения в списке
+  handleAdd: _react.PropTypes.func, // обработчик добавления объекта
+  handleEdit: _react.PropTypes.func, // обработчик открытия формы редактора
+  handleRevert: _react.PropTypes.func, // откатить изменения - перечитать объект из базы данных
+  handleMarkDeleted: _react.PropTypes.func, // обработчик удаления строки
+  handlePost: _react.PropTypes.func, // обработчик проведения документа
+  handleUnPost: _react.PropTypes.func, // отмена проведения
+  handlePrint: _react.PropTypes.func, // обработчик открытия диалога печати
+  handleAttachment: _react.PropTypes.func };
 DataList.defaultProps = {
   width: 1000,
   height: 400
