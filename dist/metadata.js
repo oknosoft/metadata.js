@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.11.223, built:2016-11-30 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.11.223, built:2016-12-02 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -3433,8 +3433,8 @@ function Pouch(){
 			value: function (tObj, attr) {
 
 				var tmp = tObj._obj._clone(),
-					db = tObj._manager.pouch_db;
-				
+					db = attr.db || tObj._manager.pouch_db;
+
 				tmp._id = tObj._manager.class_name + "|" + tObj.ref;
 				delete tmp.ref;
 
@@ -3461,10 +3461,10 @@ function Pouch(){
 						return db.put(tmp);
 					})
 					.then(function () {
-						
+
 						if(tObj.is_new())
 							tObj._set_loaded(tObj.ref);
-						
+
 						if(tmp._attachments){
 							if(!tObj._attachments)
 								tObj._attachments = {};
@@ -3473,7 +3473,7 @@ function Pouch(){
 									tObj._attachments[att] = tmp._attachments[att];
 							}
 						}
-						
+
 						tmp = null;
 						attr = null;
 						return tObj;
@@ -15379,7 +15379,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			if(attr.period) tbattr.period = attr.period;
 			wnd.elmnts.filter = new $p.iface.Toolbar_filter(tbattr);
 
-			
+
 			// учтём права для каждой роли на каждый объект
 			var _acl = $p.current_acl.get_acl(_mgr.class_name);
 
@@ -15621,6 +15621,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 *	обработчик нажатия кнопок командных панелей
 	 */
 	function toolbar_click(btn_id){
+
+		// если внешний обработчик вернул false - выходим
+		if(attr.toolbar_click && attr.toolbar_click(btn_id, wnd, _mgr) === false){
+			return;
+		}
 
 		if(btn_id=="btn_select"){
 			select();
@@ -15897,9 +15902,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		wnd.elmnts.grid.reload();
 		return true;
 	}
-	
+
 	/**
-	 * подписываемся на событие закрытия формы объекта, чтобы обновить список и попытаться спозиционироваться на нужной строке 
+	 * подписываемся на событие закрытия формы объекта, чтобы обновить список и попытаться спозиционироваться на нужной строке
 	 */
 	var _frm_close = $p.eve.attachEvent("frm_close", function (class_name, ref) {
 		if(_mgr && _mgr.class_name == class_name && wnd && wnd.elmnts){

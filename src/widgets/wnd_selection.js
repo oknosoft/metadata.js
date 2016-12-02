@@ -125,7 +125,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			if(attr.period) tbattr.period = attr.period;
 			wnd.elmnts.filter = new $p.iface.Toolbar_filter(tbattr);
 
-			
+
 			// учтём права для каждой роли на каждый объект
 			var _acl = $p.current_acl.get_acl(_mgr.class_name);
 
@@ -367,6 +367,11 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 *	обработчик нажатия кнопок командных панелей
 	 */
 	function toolbar_click(btn_id){
+
+		// если внешний обработчик вернул false - выходим
+		if(attr.toolbar_click && attr.toolbar_click(btn_id, wnd, _mgr) === false){
+			return;
+		}
 
 		if(btn_id=="btn_select"){
 			select();
@@ -643,9 +648,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		wnd.elmnts.grid.reload();
 		return true;
 	}
-	
+
 	/**
-	 * подписываемся на событие закрытия формы объекта, чтобы обновить список и попытаться спозиционироваться на нужной строке 
+	 * подписываемся на событие закрытия формы объекта, чтобы обновить список и попытаться спозиционироваться на нужной строке
 	 */
 	var _frm_close = $p.eve.attachEvent("frm_close", function (class_name, ref) {
 		if(_mgr && _mgr.class_name == class_name && wnd && wnd.elmnts){

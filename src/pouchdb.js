@@ -492,8 +492,8 @@ function Pouch(){
 			value: function (tObj, attr) {
 
 				var tmp = tObj._obj._clone(),
-					db = tObj._manager.pouch_db;
-				
+					db = attr.db || tObj._manager.pouch_db;
+
 				tmp._id = tObj._manager.class_name + "|" + tObj.ref;
 				delete tmp.ref;
 
@@ -520,10 +520,10 @@ function Pouch(){
 						return db.put(tmp);
 					})
 					.then(function () {
-						
+
 						if(tObj.is_new())
 							tObj._set_loaded(tObj.ref);
-						
+
 						if(tmp._attachments){
 							if(!tObj._attachments)
 								tObj._attachments = {};
@@ -532,7 +532,7 @@ function Pouch(){
 									tObj._attachments[att] = tmp._attachments[att];
 							}
 						}
-						
+
 						tmp = null;
 						attr = null;
 						return tObj;
