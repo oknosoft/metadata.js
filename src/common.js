@@ -640,8 +640,8 @@ function MetaEngine() {
 		 */
 		record_log: {
 			value: function (err) {
-				if($p.ireg && $p.ireg.$log)
-					$p.ireg.$log.record(err);
+				if($p.ireg && $p.ireg.log)
+					$p.ireg.log.record(err);
 				console.log(err);
 			}
 		},
@@ -941,6 +941,18 @@ function MetaEngine() {
 			value: LogManager
 		},
 
+		MetaObjManager: {
+			value: MetaObjManager
+		},
+
+		MetaFieldManager: {
+			value: MetaFieldManager
+		},
+
+		SchemeSettingsManager: {
+			value: SchemeSettingsManager
+		},
+
 		AccumRegManager: {
 			value: AccumRegManager
 		},
@@ -1010,6 +1022,7 @@ function MetaEngine() {
 		}
 
 	});
+
 }
 
 /**
@@ -1353,16 +1366,16 @@ function Ajax() {
 					if(typeof auth == "object" && auth.username && auth.hasOwnProperty("password")){
 						username = auth.username;
 						password = auth.password;
-						
+
 					}else{
 						if($p.ajax.username && $p.ajax.authorized){
 							username = $p.ajax.username;
 							password = $p.aes.Ctr.decrypt($p.ajax.password);
-							
+
 						}else{
 							username = $p.wsql.get_user_param("user_name");
 							password = $p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd"));
-							
+
 							if(!username && $p.job_prm && $p.job_prm.guest_name){
 								username = $p.job_prm.guest_name;
 								password = $p.aes.Ctr.decrypt($p.job_prm.guest_pwd);

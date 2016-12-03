@@ -2451,76 +2451,7 @@ function mngrs($p) {
 	class LogManager extends InfoRegManager{
 
 		constructor() {
-			super("ireg.$log");
-		}
-
-		metadata(){
-			return {
-				name: "$log",
-				note: "",
-				synonym: "Журнал событий",
-				dimensions: {
-					date: {
-						synonym: "Дата",
-						multiline_mode: false,
-						tooltip: "Время события",
-						type: {
-							types: [
-								"number"
-							],
-							digits: 15,
-							fraction_figits: 0
-						}
-					},
-					sequence: {
-						synonym: "Порядок",
-						multiline_mode: false,
-						tooltip: "Порядок следования",
-						type: {
-							types: [
-								"number"
-							],
-							digits: 6,
-							fraction_figits: 0
-						}
-					}
-				},
-				resources: {
-					"class": {
-						synonym: "Класс",
-						multiline_mode: false,
-						tooltip: "Класс события",
-						type: {
-							types: [
-								"string"
-							],
-							str_len: 100
-						}
-					},
-					note: {
-						synonym: "Комментарий",
-						multiline_mode: true,
-						tooltip: "Текст события",
-						type: {
-							types: [
-								"string"
-							],
-							str_len: 0
-						}
-					},
-					obj: {
-						synonym: "Объект",
-						multiline_mode: true,
-						tooltip: "Объект, к которому относится событие",
-						type: {
-							types: [
-								"string"
-							],
-							str_len: 0
-						}
-					}
-				}
-			}
+			super("ireg.log");
 		}
 
 		/**
@@ -2550,7 +2481,7 @@ function mngrs($p) {
 
 			// уникальность ключа
 			if(!this.smax)
-				this.smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_$log` where `date` = ?");
+				this.smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?");
 			var res = this.smax([msg.date]);
 			if(!res.length || res[0].sequence === undefined)
 				msg.sequence = 0;
@@ -2561,7 +2492,7 @@ function mngrs($p) {
 			if(!msg.class)
 				msg.class = "note";
 
-			wsql.alasql("insert into `ireg_$log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)",
+			wsql.alasql("insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)",
 				[msg.date + "¶" + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
 
 		}
@@ -2611,7 +2542,7 @@ function mngrs($p) {
 					return undefined;
 
 				var parts = ref.split("¶");
-				wsql.alasql("select * from `ireg_$log` where date=" + parts[0] + " and sequence=" + parts[1])
+				wsql.alasql("select * from `ireg_log` where date=" + parts[0] + " and sequence=" + parts[1])
 					.forEach(row => new RegisterRow(row, this));
 			}
 
@@ -2621,7 +2552,7 @@ function mngrs($p) {
 		get_sql_struct(attr){
 
 			if(attr && attr.action == "get_selection"){
-				var sql = "select * from `ireg_$log`";
+				var sql = "select * from `ireg_log`";
 				if(attr.date_from){
 					if (attr.date_till)
 						sql += " where `date` >= ? and `date` <= ?";
@@ -2680,9 +2611,6 @@ function mngrs($p) {
 	 */
 	class MetaObjManager extends CatManager{
 
-		metadata(){
-			return {}
-		}
 	}
 
 	/**
@@ -2690,18 +2618,14 @@ function mngrs($p) {
 	 * Используется при настройке отчетов и динамических списков
 	 */
 	class MetaFieldManager extends CatManager{
-		metadata(){
-			return {}
-		}
+
 	}
 
 	/**
 	 * ### Менеджер настроек отчетов и динсписков
 	 */
 	class SchemeSettingsManager extends CatManager{
-		metadata(){
-			return {}
-		}
+
 	}
 
 
@@ -2808,18 +2732,18 @@ function mngrs($p) {
 	});
 
 	// создаём системные менеджеры (журнал регистрации, метаданные и настройки компоновки)
-	Object.defineProperty($p.ireg, '$log', {
-		value: new LogManager('ireg.$log')
+	Object.defineProperty($p.ireg, 'log', {
+		value: new LogManager('ireg.log')
 	})
 	Object.defineProperties($p.cat, {
-		$meta: {
-			value: new MetaObjManager('cat.$meta')
+		meta_objs: {
+			value: new MetaObjManager('cat.meta_objs')
 		},
-		$fld: {
-			value: new MetaFieldManager('cat.$fld')
+		meta_fields: {
+			value: new MetaFieldManager('cat.meta_fields')
 		},
-		$scheme: {
-			value: new SchemeSettingsManager('cat.$scheme')
+		scheme_settings: {
+			value: new SchemeSettingsManager('cat.scheme_settings')
 		}
 	})
 

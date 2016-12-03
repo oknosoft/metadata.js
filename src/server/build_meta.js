@@ -72,7 +72,13 @@ $p.md.init($p.wsql.pouch.local._meta)
 function create_modules(_m){
 
 	var name,
-		text = "$p.md.create_managers=function(){\n",
+		sys_nsmes = ["log","meta_objs","meta_fields","scheme_settings"],
+		text = "$p.md.create_managers=function(){\n" +
+			"// создаём системные менеджеры (журнал регистрации, метаданные и настройки компоновки)\n" +
+			"$p.ireg.log = new $p.LogManager();\n" +
+			"$p.cat.meta_objs = new $p.MetaObjManager();\n" +
+			"$p.cat.meta_fields = new $p.MetaFieldManager();\n" +
+			"$p.cat.scheme_settings = new $p.SchemeSettingsManager();\n",
 		categoties = {
 			cch: {mgr: "ChartOfCharacteristicManager", obj: "CatObj"},
 			cacc: {mgr: "ChartOfAccountManager", obj: "CatObj"},
@@ -95,10 +101,9 @@ function create_modules(_m){
 	for(var category in categoties){
 		for(name in _m[category]){
 			text+= obj_constructor_text(_m, category, name, categoties[category].obj);
-			if(name == "$log")
-				text+= "$p." + category + "." + name + " = new $p.LogManager('ireg.$log');\n";
-			else
+			if(sys_nsmes.indexOf(name) == -1){
 				text+= "$p." + category + "." + name + " = new $p." + categoties[category].mgr + "('" + category + "." + name + "');\n";
+			}
 		}
 	}
 

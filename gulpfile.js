@@ -312,6 +312,7 @@ gulp.task('build--core', function(){
 		'./packages/metadata-core/src/mngrs.js',
 		'./packages/metadata-core/src/objs.js',
 		'./packages/metadata-core/src/tabulars.js',
+		'./packages/metadata-core/src/meta_sys.js',
 		'./packages/metadata-core/src/meta.js',
 		'./packages/metadata-core/lib/aes.js',
 		'./packages/metadata-core/src/common.js'

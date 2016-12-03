@@ -41,7 +41,7 @@ class Meta extends MetaEventEmitter{
 
 		super();
 
-		var _m;
+		let _m = Object.assign({}, meta_sys);
 
 		/**
 		 * ### Инициализирует метаданные
@@ -52,31 +52,7 @@ class Meta extends MetaEventEmitter{
 		 * @param [meta_db] {Object|String}
 		 */
 		this.init = function (meta_db) {
-
-			var confirm_count = 0;
-
-			_m = meta_db;
-			meta_db = null;
-
-
-			// следим за изменениями базы meta и предлагаем перезагрузку при обновлении версии
-			// TODO: назначить обработчик
-			// $p.adapters.pouch.local.sync.meta.on("change", function (change) {
-			// 	if(!_m)
-			// 		do_init();
-			//
-			// 	else{
-			// 		// если изменились метаданные, запланировать перезагрузку
-			// 		do_reload();
-			//      setTimeout(function () {
-			//       	$p.eve.redirect = true;
-			//       	location.reload(true);
-			//       }, 1000);
-			//   	}
-			// });
-
-			return _m;
-
+			return utils._patch(_m, meta_db);
 		};
 
 		/**

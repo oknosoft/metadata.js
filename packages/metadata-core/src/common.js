@@ -112,8 +112,8 @@ export default class MetaEngine{
 	 * @param err
 	 */
 	record_log(err) {
-		if(this.ireg && this.ireg.$log){
-			this.ireg.$log.record(err)
+		if(this.ireg && this.ireg.log){
+			this.ireg.log.record(err)
 		}
 		console.log(err)
 	}

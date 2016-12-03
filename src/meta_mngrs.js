@@ -54,7 +54,7 @@ function DataManager(class_name){
 			 * ### После чтения объекта с сервера
 			 * Имеет смысл для объектов с типом кеширования ("doc", "doc_remote", "meta", "e1cib").
 			 * т.к. структура _DataObj_ может отличаться от прототипа в базе-источнике, в обработчике можно дозаполнить или пересчитать реквизиты прочитанного объекта
-			 * 
+			 *
 			 * @event after_load
 			 * @for DataManager
 			 */
@@ -422,7 +422,7 @@ DataManager.prototype.sync_grid = function(attr, grid){
 
 		if(typeof attr.custom_selection == "function"){
 			return attr.custom_selection(attr);
-			
+
 		}else if(mgr.cachable == "ram"){
 
 			// запрос к alasql
@@ -486,7 +486,7 @@ DataManager.prototype.sync_grid = function(attr, grid){
 		});
 
 	}
-	
+
 	// TODO: переделать обработку catch()
 	return request()
 		.then(to_grid)
@@ -779,8 +779,8 @@ DataManager.prototype.print = function(ref, model, wnd){
 
 	// если _printing_plates содержит ссылку на обрабочтик печати, используем его
 	if(this._printing_plates[model] instanceof DataObj)
-		model = this._printing_plates[model];	
-	
+		model = this._printing_plates[model];
+
 	// если существует локальный обработчик, используем его
 	if(model instanceof DataObj && model.execute){
 
@@ -793,7 +793,7 @@ DataManager.prototype.print = function(ref, model, wnd){
 				.then(tune_wnd_print);
 
 	}else{
-		
+
 		// иначе - печатаем средствами 1С или иного сервера
 		var rattr = {};
 		$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
@@ -853,9 +853,9 @@ DataManager.prototype.printing_plates = function(){
  * @param class_name {string} - имя типа менеджера объекта
  */
 function RefDataManager(class_name) {
-	
+
 	RefDataManager.superclass.constructor.call(this, class_name);
-	
+
 }
 RefDataManager._extend(DataManager);
 
@@ -1090,7 +1090,7 @@ RefDataManager.prototype.__define({
 			return this.get();
 		}
 	},
-	
+
 	/**
 	 * Возаращает массив запросов для создания таблиц объекта и его табличных частей
 	 * @method get_sql_struct
@@ -1885,10 +1885,10 @@ function RegisterManager(class_name){
 			attr = {};
 		else if(typeof attr == "string")
 			attr = {ref: attr};
-		
+
 		if(attr.ref && return_row)
 			return force_promise ? Promise.resolve(this.by_ref[attr.ref]) : this.by_ref[attr.ref];
-		
+
 		attr.action = "select";
 
 		var arr = $p.wsql.alasql(this.get_sql_struct(attr), attr._values),
@@ -1906,7 +1906,7 @@ function RegisterManager(class_name){
 					res.push(this.by_ref[this.get_ref(arr[i])]);
 			}
 		}
-		
+
 		return force_promise ? Promise.resolve(res) : res;
 	};
 
@@ -2404,199 +2404,6 @@ InfoRegManager.prototype.slice_last = function(filter){
 };
 
 
-/**
- * ### Журнал событий
- * Хранит и накапливает события сеанса<br />
- * Является наследником регистра сведений
- * @extends InfoRegManager
- * @class LogManager
- * @static
- */
-function LogManager(){
-
-	LogManager.superclass.constructor.call(this, "ireg.$log");
-
-	var smax;
-
-	this.__define({
-
-		/**
-		 * Добавляет запись в журнал
-		 * @param msg {String|Object|Error} - текст + класс события
-		 * @param [msg.obj] {Object} - дополнительный json объект
-		 */
-		record: {
-			value: function(msg){
-
-				if(msg instanceof Error){
-					if(console)
-						console.log(msg);
-					msg = {
-						class: "error",
-						note: msg.toString()
-					}
-				}else if(typeof msg == "object" && !msg.class && !msg.obj){
-					msg = {
-						class: "obj",
-						obj: msg,
-						note: msg.note
-					};
-				}else if(typeof msg != "object")
-					msg = {note: msg};
-
-				msg.date = Date.now() + $p.wsql.time_diff;
-
-				// уникальность ключа
-				if(!smax)
-					smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_$log` where `date` = ?");
-				var res = smax([msg.date]);
-				if(!res.length || res[0].sequence === undefined)
-					msg.sequence = 0;
-				else
-					msg.sequence = parseInt(res[0].sequence) + 1;
-
-				// класс сообщения
-				if(!msg.class)
-					msg.class = "note";
-
-				$p.wsql.alasql("insert into `ireg_$log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)",
-					[msg.date + "¶" + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
-
-			}
-		},
-
-		/**
-		 * Сбрасывает события на сервер
-		 * @method backup
-		 * @param [dfrom] {Date}
-		 * @param [dtill] {Date}
-		 */
-		backup: {
-			value: function(dfrom, dtill){
-
-			}
-		},
-
-		/**
-		 * Восстанавливает события из архива на сервере
-		 * @method restore
-		 * @param [dfrom] {Date}
-		 * @param [dtill] {Date}
-		 */
-		restore: {
-			value: function(dfrom, dtill){
-
-			}
-		},
-
-		/**
-		 * Стирает события в указанном диапазоне дат
-		 * @method clear
-		 * @param [dfrom] {Date}
-		 * @param [dtill] {Date}
-		 */
-		clear: {
-			value: function(dfrom, dtill){
-
-			}
-		},
-
-		show: {
-			value: function (pwnd) {
-
-			}
-		},
-
-		get: {
-			value: function (ref, force_promise, do_not_create) {
-
-				if(typeof ref == "object")
-					ref = ref.ref || "";
-
-				if(!this.by_ref[ref]){
-
-					if(force_promise === false)
-						return undefined;
-
-					var parts = ref.split("¶");
-					$p.wsql.alasql("select * from `ireg_$log` where date=" + parts[0] + " and sequence=" + parts[1]).forEach(function (row) {
-						new RegisterRow(row, this);
-					}.bind(this));
-				}
-
-				return force_promise ? Promise.resolve(this.by_ref[ref]) : this.by_ref[ref];
-			}
-		},
-
-		get_sql_struct: {
-			value: function(attr){
-
-				if(attr && attr.action == "get_selection"){
-					var sql = "select * from `ireg_$log`";
-					if(attr.date_from){
-						if (attr.date_till)
-							sql += " where `date` >= ? and `date` <= ?";
-						else
-							sql += " where `date` >= ?";
-					}else if (attr.date_till)
-						sql += " where `date` <= ?";
-
-					return sql;
-
-				}else
-					return LogManager.superclass.get_sql_struct.call(this, attr);
-			}
-		},
-
-		caption_flds: {
-			value: function (attr) {
-
-				var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
-					acols = [], s = "";
-
-
-				acols.push(new Col_struct("date", "200", "ro", "left", "server", "Дата"));
-				acols.push(new Col_struct("class", "100", "ro", "left", "server", "Класс"));
-				acols.push(new Col_struct("note", "*", "ro", "left", "server", "Событие"));
-
-				if(attr.get_header){
-					s = "<head>";
-					for(var col in acols){
-						s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
-							.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
-					}
-					s += "</head>";
-				}
-
-				return {head: s, acols: acols};
-			}
-		},
-
-		data_to_grid: {
-			value: function (data, attr) {
-				var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
-						.replace("%1", data.length).replace("%2", attr.start)
-						.replace("%3", attr.set_parent || "" ),
-					caption = this.caption_flds(attr);
-
-				// при первом обращении к методу добавляем описание колонок
-				xml += caption.head;
-
-				data.forEach(function(r){
-					xml += "<row id=\"" + r.ref + "\"><cell>" +
-						$p.moment(r.date - $p.wsql.time_diff).format("DD.MM.YYYY HH:mm:ss") + "." + r.sequence + "</cell>" +
-						"<cell>" + (r.class || "") + "</cell><cell>" + (r.note || "") + "</cell></row>";
-				});
-
-				return xml + "</rows>";
-			}
-		}
-	});
-
-}
-LogManager._extend(InfoRegManager);
-
-
 
 /**
  * ### Абстрактный менеджер регистра накопления
@@ -2613,7 +2420,6 @@ function AccumRegManager(class_name){
 	AccumRegManager.superclass.constructor.call(this, class_name);
 }
 AccumRegManager._extend(RegisterManager);
-
 
 
 
@@ -2808,4 +2614,232 @@ function BusinessProcessManager(class_name){
 
 }
 BusinessProcessManager._extend(CatManager);
+
+
+/**
+ * ### Журнал событий
+ * Хранит и накапливает события сеанса<br />
+ * Является наследником регистра сведений
+ * @extends InfoRegManager
+ * @class LogManager
+ * @static
+ */
+function LogManager(){
+
+	LogManager.superclass.constructor.call(this, "ireg.log");
+
+	var smax;
+
+	this.__define({
+
+		/**
+		 * Добавляет запись в журнал
+		 * @param msg {String|Object|Error} - текст + класс события
+		 * @param [msg.obj] {Object} - дополнительный json объект
+		 */
+		record: {
+			value: function(msg){
+
+				if(msg instanceof Error){
+					if(console)
+						console.log(msg);
+					msg = {
+						class: "error",
+						note: msg.toString()
+					}
+				}else if(typeof msg == "object" && !msg.class && !msg.obj){
+					msg = {
+						class: "obj",
+						obj: msg,
+						note: msg.note
+					};
+				}else if(typeof msg != "object")
+					msg = {note: msg};
+
+				msg.date = Date.now() + $p.wsql.time_diff;
+
+				// уникальность ключа
+				if(!smax)
+					smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?");
+				var res = smax([msg.date]);
+				if(!res.length || res[0].sequence === undefined)
+					msg.sequence = 0;
+				else
+					msg.sequence = parseInt(res[0].sequence) + 1;
+
+				// класс сообщения
+				if(!msg.class)
+					msg.class = "note";
+
+				$p.wsql.alasql("insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)",
+					[msg.date + "¶" + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
+
+			}
+		},
+
+		/**
+		 * Сбрасывает события на сервер
+		 * @method backup
+		 * @param [dfrom] {Date}
+		 * @param [dtill] {Date}
+		 */
+		backup: {
+			value: function(dfrom, dtill){
+
+			}
+		},
+
+		/**
+		 * Восстанавливает события из архива на сервере
+		 * @method restore
+		 * @param [dfrom] {Date}
+		 * @param [dtill] {Date}
+		 */
+		restore: {
+			value: function(dfrom, dtill){
+
+			}
+		},
+
+		/**
+		 * Стирает события в указанном диапазоне дат
+		 * @method clear
+		 * @param [dfrom] {Date}
+		 * @param [dtill] {Date}
+		 */
+		clear: {
+			value: function(dfrom, dtill){
+
+			}
+		},
+
+		show: {
+			value: function (pwnd) {
+
+			}
+		},
+
+		get: {
+			value: function (ref, force_promise, do_not_create) {
+
+				if(typeof ref == "object")
+					ref = ref.ref || "";
+
+				if(!this.by_ref[ref]){
+
+					if(force_promise === false)
+						return undefined;
+
+					var parts = ref.split("¶");
+					$p.wsql.alasql("select * from `ireg_log` where date=" + parts[0] + " and sequence=" + parts[1]).forEach(function (row) {
+						new RegisterRow(row, this);
+					}.bind(this));
+				}
+
+				return force_promise ? Promise.resolve(this.by_ref[ref]) : this.by_ref[ref];
+			}
+		},
+
+		get_sql_struct: {
+			value: function(attr){
+
+				if(attr && attr.action == "get_selection"){
+					var sql = "select * from `ireg_log`";
+					if(attr.date_from){
+						if (attr.date_till)
+							sql += " where `date` >= ? and `date` <= ?";
+						else
+							sql += " where `date` >= ?";
+					}else if (attr.date_till)
+						sql += " where `date` <= ?";
+
+					return sql;
+
+				}else
+					return LogManager.superclass.get_sql_struct.call(this, attr);
+			}
+		},
+
+		caption_flds: {
+			value: function (attr) {
+
+				var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
+					acols = [], s = "";
+
+
+				acols.push(new Col_struct("date", "200", "ro", "left", "server", "Дата"));
+				acols.push(new Col_struct("class", "100", "ro", "left", "server", "Класс"));
+				acols.push(new Col_struct("note", "*", "ro", "left", "server", "Событие"));
+
+				if(attr.get_header){
+					s = "<head>";
+					for(var col in acols){
+						s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
+							.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
+					}
+					s += "</head>";
+				}
+
+				return {head: s, acols: acols};
+			}
+		},
+
+		data_to_grid: {
+			value: function (data, attr) {
+				var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
+						.replace("%1", data.length).replace("%2", attr.start)
+						.replace("%3", attr.set_parent || "" ),
+					caption = this.caption_flds(attr);
+
+				// при первом обращении к методу добавляем описание колонок
+				xml += caption.head;
+
+				data.forEach(function(r){
+					xml += "<row id=\"" + r.ref + "\"><cell>" +
+						$p.moment(r.date - $p.wsql.time_diff).format("DD.MM.YYYY HH:mm:ss") + "." + r.sequence + "</cell>" +
+						"<cell>" + (r.class || "") + "</cell><cell>" + (r.note || "") + "</cell></row>";
+				});
+
+				return xml + "</rows>";
+			}
+		}
+
+	});
+
+}
+LogManager._extend(InfoRegManager);
+
+
+/**
+ * ### Менеджер объектов метаданных
+ * Используется для формирования списков типов документов, справочников и т.д.
+ * Например, при работе в интерфейсе с составными типами
+ */
+function MetaObjManager() {
+
+	MetaObjManager.superclass.constructor.call(this, "cat.meta_objs");
+}
+MetaObjManager._extend(CatManager);
+
+
+/**
+ * ### Менеджер доступных полей
+ * Используется при настройке отчетов и динамических списков
+ */
+function MetaFieldManager() {
+
+	MetaFieldManager.superclass.constructor.call(this, "cat.meta_fields");
+}
+MetaFieldManager._extend(CatManager);
+
+
+/**
+ * ### Менеджер настроек отчетов и динсписков
+ */
+function SchemeSettingsManager() {
+
+	SchemeSettingsManager.superclass.constructor.call(this, "cat.scheme_settings");
+}
+SchemeSettingsManager._extend(CatManager);
+
 
