@@ -54,7 +54,7 @@ function OCombo(attr){
 			t.getButton().style.right = "9px";
 	} else
 		t.getBase().style.marginBottom = "4px";
-	
+
 	if(attr.left)
 		t.getBase().style.left = left + "px";
 
@@ -113,7 +113,7 @@ function OCombo(attr){
 		// у параметров выбора, значение живёт внутри отбора
 		if(_meta.choice_params)
 			_meta.choice_params.forEach(function (choice) {
-				
+
 				var fval = Array.isArray(choice.path) ? {in: choice.path} : choice.path;
 
 				if(!filter[choice.name])
@@ -175,7 +175,7 @@ function OCombo(attr){
 			});
 			$p.iface.select_from_list(tlist)
 				.then(function(v){
-					if(!tobj[tfield] || (tobj[tfield] && tobj[tfield]._manager != v.mgr)){
+					if(tobj[tfield] && ((tobj[tfield].empty && tobj[tfield].empty()) || tobj[tfield]._manager != v.mgr)){
 						_mgr = v.mgr;
 						_obj = tobj;
 						_field = tfield;
@@ -406,16 +406,16 @@ function OCombo(attr){
 			else
 				Object.unobserve(_obj, observer);
 		}
-		
+
 		if(t.conf && t.conf.tm_confirm_blur)
 			clearTimeout(t.conf.tm_confirm_blur);
-		
+
 		_obj = null;
 		_field = null;
 		_meta = null;
 		_mgr = null;
 		_pwnd = null;
-		
+
 		try{ _unload.call(t); }catch(e){}
 	};
 

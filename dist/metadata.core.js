@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.11.223, built:2016-11-30 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.225, built:2016-12-03 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -289,7 +289,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.11.223",
+			value: "0.12.225",
 			writable: false
 		},
 
@@ -653,8 +653,8 @@ function MetaEngine() {
 		 */
 		record_log: {
 			value: function (err) {
-				if($p.ireg && $p.ireg.$log)
-					$p.ireg.$log.record(err);
+				if($p.ireg && $p.ireg.log)
+					$p.ireg.log.record(err);
 				console.log(err);
 			}
 		},
@@ -954,6 +954,18 @@ function MetaEngine() {
 			value: LogManager
 		},
 
+		MetaObjManager: {
+			value: MetaObjManager
+		},
+
+		MetaFieldManager: {
+			value: MetaFieldManager
+		},
+
+		SchemeSettingsManager: {
+			value: SchemeSettingsManager
+		},
+
 		AccumRegManager: {
 			value: AccumRegManager
 		},
@@ -1023,6 +1035,7 @@ function MetaEngine() {
 		}
 
 	});
+
 }
 
 /**
@@ -1366,16 +1379,16 @@ function Ajax() {
 					if(typeof auth == "object" && auth.username && auth.hasOwnProperty("password")){
 						username = auth.username;
 						password = auth.password;
-						
+
 					}else{
 						if($p.ajax.username && $p.ajax.authorized){
 							username = $p.ajax.username;
 							password = $p.aes.Ctr.decrypt($p.ajax.password);
-							
+
 						}else{
 							username = $p.wsql.get_user_param("user_name");
 							password = $p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd"));
-							
+
 							if(!username && $p.job_prm && $p.job_prm.guest_name){
 								username = $p.job_prm.guest_name;
 								password = $p.aes.Ctr.decrypt($p.job_prm.guest_pwd);
@@ -2791,8 +2804,8 @@ function Pouch(){
 			value: function (tObj, attr) {
 
 				var tmp = tObj._obj._clone(),
-					db = tObj._manager.pouch_db;
-				
+					db = attr.db || tObj._manager.pouch_db;
+
 				tmp._id = tObj._manager.class_name + "|" + tObj.ref;
 				delete tmp.ref;
 
@@ -2819,10 +2832,10 @@ function Pouch(){
 						return db.put(tmp);
 					})
 					.then(function () {
-						
+
 						if(tObj.is_new())
 							tObj._set_loaded(tObj.ref);
-						
+
 						if(tmp._attachments){
 							if(!tObj._attachments)
 								tObj._attachments = {};
@@ -2831,7 +2844,7 @@ function Pouch(){
 									tObj._attachments[att] = tmp._attachments[att];
 							}
 						}
-						
+
 						tmp = null;
 						attr = null;
 						return tObj;
@@ -2973,10 +2986,418 @@ function Pouch(){
  */
 function Meta() {
 
-	var _m;
+	var _m = {
+		enm: {
+			accumulation_record_type: [
+				{
+					order: 0,
+					name: "debit",
+					synonym: "Приход"
+				},
+				{
+					order: 1,
+					name: "credit",
+					synonym: "Расход"
+				}
+			],
+			comparison_types: [
+				{
+					order: 0,
+					name: "gt",
+					synonym: "Больше"
+				},
+				{
+					order: 1,
+					name: "gte",
+					synonym: "Больше или равно"
+				},
+				{
+					order: 2,
+					name: "lt",
+					synonym: "Меньше"
+				},
+				{
+					order: 3,
+					name: "lte",
+					synonym: "Меньше или равно "
+				},
+				{
+					order: 4,
+					name: "eq",
+					synonym: "Равно"
+				},
+				{
+					order: 5,
+					name: "ne",
+					synonym: "Не равно"
+				},
+				{
+					"order": 6,
+					"name": "in",
+					"synonym": "В списке"
+				},
+				{
+					order: 7,
+					name: "nin",
+					synonym: "Не в списке"
+				},
+				{
+					order: 8,
+					name: "lke",
+					synonym: "Подобно "
+				},
+				{
+					order: 9,
+					name: "nlk",
+					synonym: "Не подобно"
+				}
+			]
+		},
+		cat: {
+			meta_objs: {},
+			meta_fields: {},
+			scheme_settings: {
+				name: "scheme_settings",
+				splitted: true,
+				synonym: "Настройки отчетов и списков",
+				illustration: "",
+				obj_presentation: "",
+				list_presentation: "",
+				input_by_string: [
+					"name"
+				],
+				hierarchical: false,
+				has_owners: false,
+				group_hierarchy: true,
+				main_presentation_name: true,
+				code_length: 0,
+				fields: {
+					obj: {
+						"synonym": "Объект",
+						"multiline_mode": false,
+						"tooltip": "",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 250
+						}
+					},
+					user: {
+						"synonym": "Пользователь",
+						"multiline_mode": false,
+						"tooltip": "",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 50
+						}
+					},
+					predefined_name: {
+						"synonym": "",
+						"multiline_mode": false,
+						"tooltip": "",
+						"type": {
+							"types": [
+								"string"
+							],
+							"str_len": 256
+						}
+					}
+				},
+				tabular_sections: {
+					available_fields: {
+						"name": "available_fields",
+						"synonym": "Доступные поля",
+						"tooltip": "Состав, порядок и ширина колонок",
+						"fields": {
+							"parent": {
+								"synonym": "Родитель",
+								"multiline_mode": false,
+								"tooltip": "Для плоского списка, родитель пустой",
+								"type": {
+									"types": [
+										"string"
+									],
+									"str_len": 100
+								}
+							},
+							"use": {
+								"synonym": "Использование",
+								"multiline_mode": false,
+								"tooltip": "",
+								"type": {
+									"types": [
+										"boolean"
+									]
+								}
+							},
+							"field": {
+								"synonym": "Поле",
+								"multiline_mode": false,
+								"tooltip": "",
+								"type": {
+									"types": [
+										"string"
+									],
+									"str_len": 100
+								}
+							},
+							"width": {
+								"synonym": "Ширина",
+								"multiline_mode": false,
+								"tooltip": "",
+								"type": {
+									"types": [
+										"number"
+									],
+									"digits": 6,
+									"fraction_figits": 0
+								}
+							},
+							"caption": {
+								"synonym": "Заголовок",
+								"multiline_mode": false,
+								"tooltip": "",
+								"type": {
+									"types": [
+										"string"
+									],
+									"str_len": 100
+								}
+							}
+						}
+					},
+					sort_fields: {
+						"name": "sort_fields",
+						"synonym": "Поля сортировки",
+						"tooltip": "",
+						"fields": {
+							"parent": {
+								"synonym": "Родитель",
+								"multiline_mode": false,
+								"tooltip": "",
+								"type": {
+									"types": [
+										"string"
+									],
+									"str_len": 100
+								}
+							},
+							"field": {
+								"synonym": "Поле",
+								"multiline_mode": false,
+								"tooltip": "",
+								"type": {
+									"types": [
+										"string"
+									],
+									"str_len": 100
+								}
+							}
+						}
+					},
+					grouping_fields: {
+						"name": "grouping_fields",
+						"synonym": "Поля группировки",
+						"tooltip": "",
+						"fields": {
+							"parent": {
+								"synonym": "Родитель",
+								"multiline_mode": false,
+								"tooltip": "",
+								"type": {
+									"types": [
+										"string"
+									],
+									"str_len": 100
+								}
+							},
+							"field": {
+								"synonym": "Поле",
+								"multiline_mode": false,
+								"tooltip": "",
+								"type": {
+									"types": [
+										"string"
+									],
+									"str_len": 100
+								}
+							}
+						}
+					},
+					selection: {
+						"name": "selection",
+						"synonym": "Отбор",
+						"tooltip": "",
+						"fields": {
+							"parent": {
+								"synonym": "Родитель",
+								"multiline_mode": false,
+								"tooltip": "",
+								"type": {
+									"types": [
+										"string"
+									],
+									"str_len": 100
+								}
+							},
+							"use": {
+								"synonym": "Использование",
+								"multiline_mode": false,
+								"tooltip": "",
+								"type": {
+									"types": [
+										"boolean"
+									]
+								}
+							},
+							"left_value": {
+								"synonym": "Левое значение",
+								"multiline_mode": false,
+								"tooltip": "",
+								"type": {
+									"types": [
+										"string"
+									],
+									"str_len": 100
+								}
+							},
+							"comparison_type": {
+								"synonym": "Вид сравнения",
+								"multiline_mode": false,
+								"tooltip": "",
+								"type": {
+									"types": [
+										"string"
+									],
+									"str_len": 100
+								}
+							},
+							"right_value": {
+								"synonym": "Правое значение",
+								"multiline_mode": false,
+								"tooltip": "",
+								"type": {
+									"types": [
+										"string"
+									],
+									"str_len": 100
+								}
+							}
+						}
+					},
+					scheme: {
+						"name": "scheme",
+						"synonym": "Структура",
+						"tooltip": "",
+						"fields": {
+							"parent": {
+								"synonym": "Родитель",
+								"multiline_mode": false,
+								"tooltip": "",
+								"type": {
+									"types": [
+										"string"
+									],
+									"str_len": 10
+								}
+							},
+							"kind": {
+								"synonym": "Вид раздела отчета",
+								"multiline_mode": false,
+								"tooltip": "список, таблица, группировка строк, группировка колонок",
+								"type": {
+									"types": [
+										"string"
+									],
+									"str_len": 10
+								}
+							}
+						}
+					}
+				},
+				cachable: "doc"
+			}
+		},
+		doc: {},
+		ireg: {
+			"log": {
+				name: "log",
+				note: "",
+				synonym: "Журнал событий",
+				dimensions: {
+					date: {
+						synonym: "Дата",
+						multiline_mode: false,
+						tooltip: "Время события",
+						type: {
+							types: [
+								"number"
+							],
+							digits: 15,
+							fraction_figits: 0
+						}
+					},
+					sequence: {
+						synonym: "Порядок",
+						multiline_mode: false,
+						tooltip: "Порядок следования",
+						type: {
+							types: [
+								"number"
+							],
+							digits: 6,
+							fraction_figits: 0
+						}
+					}
+				},
+				resources: {
+					"class": {
+						synonym: "Класс",
+						multiline_mode: false,
+						tooltip: "Класс события",
+						type: {
+							types: [
+								"string"
+							],
+							str_len: 100
+						}
+					},
+					note: {
+						synonym: "Комментарий",
+						multiline_mode: true,
+						tooltip: "Текст события",
+						type: {
+							types: [
+								"string"
+							],
+							str_len: 0
+						}
+					},
+					obj: {
+						synonym: "Объект",
+						multiline_mode: true,
+						tooltip: "Объект, к которому относится событие",
+						type: {
+							types: [
+								"string"
+							],
+							str_len: 0
+						}
+					}
+				}
+			}
+		},
+		areg: {},
+		dp: {},
+		rep: {},
+		cch: {},
+		cacc: {}
+	};
 
 	_md = this;
-
 
 	// загружает метаданные из pouchdb
 	function meta_from_pouch(meta_db){
@@ -2987,7 +3408,7 @@ function Meta() {
 
 			})
 			.then(function (doc) {
-				_m = doc;
+				$p._patch(_m, doc);
 				doc = null;
 				return meta_db.get('meta_patch');
 
@@ -3024,7 +3445,7 @@ function Meta() {
 		function do_init(){
 
 			if(meta_db && !is_local && !is_remote){
-				_m = meta_db;
+				$p._patch(_m, meta_db);
 				meta_db = null;
 
 				_md.create_managers();
@@ -3055,7 +3476,7 @@ function Meta() {
 			if(!_m)
 				do_init();
 
-			else{
+			else if($p.iface && $p.iface.do_reload){
 
 				// если изменились метаданные, запланировать перезагрузку
 				setTimeout(function () {
@@ -3700,7 +4121,7 @@ function DataManager(class_name){
 			 * ### После чтения объекта с сервера
 			 * Имеет смысл для объектов с типом кеширования ("doc", "doc_remote", "meta", "e1cib").
 			 * т.к. структура _DataObj_ может отличаться от прототипа в базе-источнике, в обработчике можно дозаполнить или пересчитать реквизиты прочитанного объекта
-			 * 
+			 *
 			 * @event after_load
 			 * @for DataManager
 			 */
@@ -4068,7 +4489,7 @@ DataManager.prototype.sync_grid = function(attr, grid){
 
 		if(typeof attr.custom_selection == "function"){
 			return attr.custom_selection(attr);
-			
+
 		}else if(mgr.cachable == "ram"){
 
 			// запрос к alasql
@@ -4132,7 +4553,7 @@ DataManager.prototype.sync_grid = function(attr, grid){
 		});
 
 	}
-	
+
 	// TODO: переделать обработку catch()
 	return request()
 		.then(to_grid)
@@ -4425,8 +4846,8 @@ DataManager.prototype.print = function(ref, model, wnd){
 
 	// если _printing_plates содержит ссылку на обрабочтик печати, используем его
 	if(this._printing_plates[model] instanceof DataObj)
-		model = this._printing_plates[model];	
-	
+		model = this._printing_plates[model];
+
 	// если существует локальный обработчик, используем его
 	if(model instanceof DataObj && model.execute){
 
@@ -4439,7 +4860,7 @@ DataManager.prototype.print = function(ref, model, wnd){
 				.then(tune_wnd_print);
 
 	}else{
-		
+
 		// иначе - печатаем средствами 1С или иного сервера
 		var rattr = {};
 		$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
@@ -4499,9 +4920,9 @@ DataManager.prototype.printing_plates = function(){
  * @param class_name {string} - имя типа менеджера объекта
  */
 function RefDataManager(class_name) {
-	
+
 	RefDataManager.superclass.constructor.call(this, class_name);
-	
+
 }
 RefDataManager._extend(DataManager);
 
@@ -4736,7 +5157,7 @@ RefDataManager.prototype.__define({
 			return this.get();
 		}
 	},
-	
+
 	/**
 	 * Возаращает массив запросов для создания таблиц объекта и его табличных частей
 	 * @method get_sql_struct
@@ -5531,10 +5952,10 @@ function RegisterManager(class_name){
 			attr = {};
 		else if(typeof attr == "string")
 			attr = {ref: attr};
-		
+
 		if(attr.ref && return_row)
 			return force_promise ? Promise.resolve(this.by_ref[attr.ref]) : this.by_ref[attr.ref];
-		
+
 		attr.action = "select";
 
 		var arr = $p.wsql.alasql(this.get_sql_struct(attr), attr._values),
@@ -5552,7 +5973,7 @@ function RegisterManager(class_name){
 					res.push(this.by_ref[this.get_ref(arr[i])]);
 			}
 		}
-		
+
 		return force_promise ? Promise.resolve(res) : res;
 	};
 
@@ -6050,199 +6471,6 @@ InfoRegManager.prototype.slice_last = function(filter){
 };
 
 
-/**
- * ### Журнал событий
- * Хранит и накапливает события сеанса<br />
- * Является наследником регистра сведений
- * @extends InfoRegManager
- * @class LogManager
- * @static
- */
-function LogManager(){
-
-	LogManager.superclass.constructor.call(this, "ireg.$log");
-
-	var smax;
-
-	this.__define({
-
-		/**
-		 * Добавляет запись в журнал
-		 * @param msg {String|Object|Error} - текст + класс события
-		 * @param [msg.obj] {Object} - дополнительный json объект
-		 */
-		record: {
-			value: function(msg){
-
-				if(msg instanceof Error){
-					if(console)
-						console.log(msg);
-					msg = {
-						class: "error",
-						note: msg.toString()
-					}
-				}else if(typeof msg == "object" && !msg.class && !msg.obj){
-					msg = {
-						class: "obj",
-						obj: msg,
-						note: msg.note
-					};
-				}else if(typeof msg != "object")
-					msg = {note: msg};
-
-				msg.date = Date.now() + $p.wsql.time_diff;
-
-				// уникальность ключа
-				if(!smax)
-					smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_$log` where `date` = ?");
-				var res = smax([msg.date]);
-				if(!res.length || res[0].sequence === undefined)
-					msg.sequence = 0;
-				else
-					msg.sequence = parseInt(res[0].sequence) + 1;
-
-				// класс сообщения
-				if(!msg.class)
-					msg.class = "note";
-
-				$p.wsql.alasql("insert into `ireg_$log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)",
-					[msg.date + "¶" + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
-
-			}
-		},
-
-		/**
-		 * Сбрасывает события на сервер
-		 * @method backup
-		 * @param [dfrom] {Date}
-		 * @param [dtill] {Date}
-		 */
-		backup: {
-			value: function(dfrom, dtill){
-
-			}
-		},
-
-		/**
-		 * Восстанавливает события из архива на сервере
-		 * @method restore
-		 * @param [dfrom] {Date}
-		 * @param [dtill] {Date}
-		 */
-		restore: {
-			value: function(dfrom, dtill){
-
-			}
-		},
-
-		/**
-		 * Стирает события в указанном диапазоне дат
-		 * @method clear
-		 * @param [dfrom] {Date}
-		 * @param [dtill] {Date}
-		 */
-		clear: {
-			value: function(dfrom, dtill){
-
-			}
-		},
-
-		show: {
-			value: function (pwnd) {
-
-			}
-		},
-
-		get: {
-			value: function (ref, force_promise, do_not_create) {
-
-				if(typeof ref == "object")
-					ref = ref.ref || "";
-
-				if(!this.by_ref[ref]){
-
-					if(force_promise === false)
-						return undefined;
-
-					var parts = ref.split("¶");
-					$p.wsql.alasql("select * from `ireg_$log` where date=" + parts[0] + " and sequence=" + parts[1]).forEach(function (row) {
-						new RegisterRow(row, this);
-					}.bind(this));
-				}
-
-				return force_promise ? Promise.resolve(this.by_ref[ref]) : this.by_ref[ref];
-			}
-		},
-
-		get_sql_struct: {
-			value: function(attr){
-
-				if(attr && attr.action == "get_selection"){
-					var sql = "select * from `ireg_$log`";
-					if(attr.date_from){
-						if (attr.date_till)
-							sql += " where `date` >= ? and `date` <= ?";
-						else
-							sql += " where `date` >= ?";
-					}else if (attr.date_till)
-						sql += " where `date` <= ?";
-
-					return sql;
-
-				}else
-					return LogManager.superclass.get_sql_struct.call(this, attr);
-			}
-		},
-
-		caption_flds: {
-			value: function (attr) {
-
-				var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
-					acols = [], s = "";
-
-
-				acols.push(new Col_struct("date", "200", "ro", "left", "server", "Дата"));
-				acols.push(new Col_struct("class", "100", "ro", "left", "server", "Класс"));
-				acols.push(new Col_struct("note", "*", "ro", "left", "server", "Событие"));
-
-				if(attr.get_header){
-					s = "<head>";
-					for(var col in acols){
-						s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
-							.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
-					}
-					s += "</head>";
-				}
-
-				return {head: s, acols: acols};
-			}
-		},
-
-		data_to_grid: {
-			value: function (data, attr) {
-				var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
-						.replace("%1", data.length).replace("%2", attr.start)
-						.replace("%3", attr.set_parent || "" ),
-					caption = this.caption_flds(attr);
-
-				// при первом обращении к методу добавляем описание колонок
-				xml += caption.head;
-
-				data.forEach(function(r){
-					xml += "<row id=\"" + r.ref + "\"><cell>" +
-						$p.moment(r.date - $p.wsql.time_diff).format("DD.MM.YYYY HH:mm:ss") + "." + r.sequence + "</cell>" +
-						"<cell>" + (r.class || "") + "</cell><cell>" + (r.note || "") + "</cell></row>";
-				});
-
-				return xml + "</rows>";
-			}
-		}
-	});
-
-}
-LogManager._extend(InfoRegManager);
-
-
 
 /**
  * ### Абстрактный менеджер регистра накопления
@@ -6259,7 +6487,6 @@ function AccumRegManager(class_name){
 	AccumRegManager.superclass.constructor.call(this, class_name);
 }
 AccumRegManager._extend(RegisterManager);
-
 
 
 
@@ -6454,6 +6681,234 @@ function BusinessProcessManager(class_name){
 
 }
 BusinessProcessManager._extend(CatManager);
+
+
+/**
+ * ### Журнал событий
+ * Хранит и накапливает события сеанса<br />
+ * Является наследником регистра сведений
+ * @extends InfoRegManager
+ * @class LogManager
+ * @static
+ */
+function LogManager(){
+
+	LogManager.superclass.constructor.call(this, "ireg.log");
+
+	var smax;
+
+	this.__define({
+
+		/**
+		 * Добавляет запись в журнал
+		 * @param msg {String|Object|Error} - текст + класс события
+		 * @param [msg.obj] {Object} - дополнительный json объект
+		 */
+		record: {
+			value: function(msg){
+
+				if(msg instanceof Error){
+					if(console)
+						console.log(msg);
+					msg = {
+						class: "error",
+						note: msg.toString()
+					}
+				}else if(typeof msg == "object" && !msg.class && !msg.obj){
+					msg = {
+						class: "obj",
+						obj: msg,
+						note: msg.note
+					};
+				}else if(typeof msg != "object")
+					msg = {note: msg};
+
+				msg.date = Date.now() + $p.wsql.time_diff;
+
+				// уникальность ключа
+				if(!smax)
+					smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?");
+				var res = smax([msg.date]);
+				if(!res.length || res[0].sequence === undefined)
+					msg.sequence = 0;
+				else
+					msg.sequence = parseInt(res[0].sequence) + 1;
+
+				// класс сообщения
+				if(!msg.class)
+					msg.class = "note";
+
+				$p.wsql.alasql("insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)",
+					[msg.date + "¶" + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
+
+			}
+		},
+
+		/**
+		 * Сбрасывает события на сервер
+		 * @method backup
+		 * @param [dfrom] {Date}
+		 * @param [dtill] {Date}
+		 */
+		backup: {
+			value: function(dfrom, dtill){
+
+			}
+		},
+
+		/**
+		 * Восстанавливает события из архива на сервере
+		 * @method restore
+		 * @param [dfrom] {Date}
+		 * @param [dtill] {Date}
+		 */
+		restore: {
+			value: function(dfrom, dtill){
+
+			}
+		},
+
+		/**
+		 * Стирает события в указанном диапазоне дат
+		 * @method clear
+		 * @param [dfrom] {Date}
+		 * @param [dtill] {Date}
+		 */
+		clear: {
+			value: function(dfrom, dtill){
+
+			}
+		},
+
+		show: {
+			value: function (pwnd) {
+
+			}
+		},
+
+		get: {
+			value: function (ref, force_promise, do_not_create) {
+
+				if(typeof ref == "object")
+					ref = ref.ref || "";
+
+				if(!this.by_ref[ref]){
+
+					if(force_promise === false)
+						return undefined;
+
+					var parts = ref.split("¶");
+					$p.wsql.alasql("select * from `ireg_log` where date=" + parts[0] + " and sequence=" + parts[1]).forEach(function (row) {
+						new RegisterRow(row, this);
+					}.bind(this));
+				}
+
+				return force_promise ? Promise.resolve(this.by_ref[ref]) : this.by_ref[ref];
+			}
+		},
+
+		get_sql_struct: {
+			value: function(attr){
+
+				if(attr && attr.action == "get_selection"){
+					var sql = "select * from `ireg_log`";
+					if(attr.date_from){
+						if (attr.date_till)
+							sql += " where `date` >= ? and `date` <= ?";
+						else
+							sql += " where `date` >= ?";
+					}else if (attr.date_till)
+						sql += " where `date` <= ?";
+
+					return sql;
+
+				}else
+					return LogManager.superclass.get_sql_struct.call(this, attr);
+			}
+		},
+
+		caption_flds: {
+			value: function (attr) {
+
+				var str_def = "<column id=\"%1\" width=\"%2\" type=\"%3\" align=\"%4\" sort=\"%5\">%6</column>",
+					acols = [], s = "";
+
+
+				acols.push(new Col_struct("date", "200", "ro", "left", "server", "Дата"));
+				acols.push(new Col_struct("class", "100", "ro", "left", "server", "Класс"));
+				acols.push(new Col_struct("note", "*", "ro", "left", "server", "Событие"));
+
+				if(attr.get_header){
+					s = "<head>";
+					for(var col in acols){
+						s += str_def.replace("%1", acols[col].id).replace("%2", acols[col].width).replace("%3", acols[col].type)
+							.replace("%4", acols[col].align).replace("%5", acols[col].sort).replace("%6", acols[col].caption);
+					}
+					s += "</head>";
+				}
+
+				return {head: s, acols: acols};
+			}
+		},
+
+		data_to_grid: {
+			value: function (data, attr) {
+				var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
+						.replace("%1", data.length).replace("%2", attr.start)
+						.replace("%3", attr.set_parent || "" ),
+					caption = this.caption_flds(attr);
+
+				// при первом обращении к методу добавляем описание колонок
+				xml += caption.head;
+
+				data.forEach(function(r){
+					xml += "<row id=\"" + r.ref + "\"><cell>" +
+						$p.moment(r.date - $p.wsql.time_diff).format("DD.MM.YYYY HH:mm:ss") + "." + r.sequence + "</cell>" +
+						"<cell>" + (r.class || "") + "</cell><cell>" + (r.note || "") + "</cell></row>";
+				});
+
+				return xml + "</rows>";
+			}
+		}
+
+	});
+
+}
+LogManager._extend(InfoRegManager);
+
+
+/**
+ * ### Менеджер объектов метаданных
+ * Используется для формирования списков типов документов, справочников и т.д.
+ * Например, при работе в интерфейсе с составными типами
+ */
+function MetaObjManager() {
+
+	MetaObjManager.superclass.constructor.call(this, "cat.meta_objs");
+}
+MetaObjManager._extend(CatManager);
+
+
+/**
+ * ### Менеджер доступных полей
+ * Используется при настройке отчетов и динамических списков
+ */
+function MetaFieldManager() {
+
+	MetaFieldManager.superclass.constructor.call(this, "cat.meta_fields");
+}
+MetaFieldManager._extend(CatManager);
+
+
+/**
+ * ### Менеджер настроек отчетов и динсписков
+ */
+function SchemeSettingsManager() {
+
+	SchemeSettingsManager.superclass.constructor.call(this, "cat.scheme_settings");
+}
+SchemeSettingsManager._extend(CatManager);
+
 
 
 /**

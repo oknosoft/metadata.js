@@ -723,7 +723,7 @@ $p.__define({
 					get_acl: {
 						value: function(class_name) {
 							var acn = class_name.split(".");
-							return this._acl && this._acl[acn[0]] ? this._acl[acn[0]][acn[1]] : "e";
+							return this._acl && this._acl[acn[0]] && this._acl[acn[0]][acn[1]] ? this._acl[acn[0]][acn[1]] : "e";
 						}
 					}
 
