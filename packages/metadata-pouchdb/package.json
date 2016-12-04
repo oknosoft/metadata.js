@@ -3,6 +3,10 @@
   "description": "PouchDB data adapter for metadata.js",
   "version": "2.0.0-beta.12",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
+  "engines": {
+    "node": "^6.5",
+    "npm": "^3.5"
+  },
   "dependencies": {
     "metadata-abstract-adapter": "^2.0.0-beta.12",
     "pouchdb-core": "^6.0",
@@ -15,9 +19,7 @@
     "pouchdb-authentication": "^0.5",
     "pouchdb-find": "^0.10"
   },
-  "engines": {
-    "node": "^6.5",
-    "npm": "^3.5"
+  "devDependencies": {
   },
   "repository": {
     "type": "git",

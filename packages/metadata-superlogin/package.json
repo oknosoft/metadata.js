@@ -3,12 +3,14 @@
   "description": "Social auth & session manager for metadata.js",
   "version": "2.0.0-beta.12",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
-  "dependencies": {
-    "superlogin-client": "^0.4"
-  },
   "engines": {
     "node": "^6.5",
     "npm": "^3.5"
+  },
+  "dependencies": {
+    "superlogin-client": "^0.4"
+  },
+  "devDependencies": {
   },
   "repository": {
     "type": "git",
