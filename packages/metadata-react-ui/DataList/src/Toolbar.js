@@ -1,24 +1,21 @@
-import React, { Component, PropTypes } from 'react';
-import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from 'material-ui/Toolbar';
+import React, {Component, PropTypes} from "react";
+import {Toolbar, ToolbarGroup, ToolbarSeparator} from "material-ui/Toolbar";
+import IconButton from "material-ui/IconButton";
 
-import IconButton from 'material-ui/IconButton';
-import AddIcon from 'material-ui/svg-icons/content/add-circle-outline';
-import RemoveIcon from 'material-ui/svg-icons/action/delete';
-import EditIcon from 'material-ui/svg-icons/image/edit';
+import AddIcon from "material-ui/svg-icons/content/add-circle-outline";
+import RemoveIcon from "material-ui/svg-icons/action/delete";
+import EditIcon from "material-ui/svg-icons/image/edit";
+import IconMenu from "material-ui/IconMenu";
+import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert";
+import MenuItem from "material-ui/MenuItem";
+import PrintIcon from "material-ui/svg-icons/action/print";
+import AttachIcon from "material-ui/svg-icons/editor/attach-file";
+import SelectIcon from "material-ui/svg-icons/av/playlist-add-check";
+import Filter from "../DataSelection";
 
-import IconMenu from 'material-ui/IconMenu';
-import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
-import MenuItem from 'material-ui/MenuItem';
-import PrintIcon from 'material-ui/svg-icons/action/print';
-import AttachIcon from 'material-ui/svg-icons/editor/attach-file';
-import SelectIcon from 'material-ui/svg-icons/av/playlist-add-check';
+import classes from "./DataList.scss";
 
-
-import Filter from '../DataSelection';
-
-import classes from './DataList.scss'
-
-export default class DataListToolbar extends Component{
+export default class DataListToolbar extends Component {
 
   static propTypes = {
 
@@ -35,7 +32,7 @@ export default class DataListToolbar extends Component{
     handleAttachment: PropTypes.func.isRequired,      // обработчик открытия диалога присоединенных файлов
   }
 
-  render(){
+  render() {
     const props = this.props;
     return (
 
@@ -44,7 +41,8 @@ export default class DataListToolbar extends Component{
 
           {
             props.selection_mode ?
-              <IconButton touch={true} tooltip="Выбрать из списка" tooltipPosition="top-right" onTouchTap={props.handleSelect}>
+              <IconButton touch={true} tooltip="Выбрать из списка" tooltipPosition="top-right"
+                          onTouchTap={props.handleSelect}>
                 <SelectIcon />
               </IconButton>
               :
@@ -54,15 +52,17 @@ export default class DataListToolbar extends Component{
           <IconButton touch={true} tooltip="Создать объект" tooltipPosition="top-right" onTouchTap={props.handleAdd}>
             <AddIcon />
           </IconButton>
-          <IconButton touch={true} tooltip="Открыть форму объекта" tooltipPosition="top-right" onTouchTap={props.handleEdit}>
+          <IconButton touch={true} tooltip="Открыть форму объекта" tooltipPosition="top-right"
+                      onTouchTap={props.handleEdit}>
             <EditIcon />
           </IconButton>
-          <IconButton touch={true} tooltip="Пометить на удаление" tooltipPosition="top-center" onTouchTap={props.handleRemove}>
+          <IconButton touch={true} tooltip="Пометить на удаление" tooltipPosition="top-center"
+                      onTouchTap={props.handleRemove}>
             <RemoveIcon />
           </IconButton>
 
           <ToolbarSeparator />
-          <Filter selectionChange={props.handleSelectionChange} selectionValue={props.selectionValue} />
+          <Filter selectionChange={props.handleSelectionChange} selectionValue={props.selectionValue}/>
 
         </ToolbarGroup>
 
@@ -75,8 +75,8 @@ export default class DataListToolbar extends Component{
               </IconButton>
             }
           >
-            <MenuItem primaryText="Печать" leftIcon={<PrintIcon />} onTouchTap={props.handlePrint} />
-            <MenuItem primaryText="Вложения" leftIcon={<AttachIcon />} onTouchTap={props.handleAttachment} />
+            <MenuItem primaryText="Печать" leftIcon={<PrintIcon />} onTouchTap={props.handlePrint}/>
+            <MenuItem primaryText="Вложения" leftIcon={<AttachIcon />} onTouchTap={props.handleAttachment}/>
 
           </IconMenu>
         </ToolbarGroup>

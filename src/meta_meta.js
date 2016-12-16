@@ -512,12 +512,12 @@ function Meta() {
 			if(!_m)
 				do_init();
 
-			else if($p.iface && $p.iface.do_reload){
+			else if($p.iface && $p.iface.do_reload && change.docs && change.docs.length < 4){
 
 				// если изменились метаданные, запланировать перезагрузку
 				setTimeout(function () {
 					$p.iface.do_reload();
-				}, 3000);
+				}, 10000);
 
 			}
 

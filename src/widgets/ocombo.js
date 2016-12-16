@@ -103,10 +103,15 @@ function OCombo(attr){
 					if(_obj instanceof TabularSectionRow){
 						if(choice.path.length < 2)
 							filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj._owner._owner[choice.path[0]];
-						else
+						else{
+							if(choice.name[1] == "owner" && !_mgr.metadata().has_owners){
+								return;
+							}
 							filter[choice.name[1]] = _obj[choice.path[1]];
-					}else
+						}
+					}else{
 						filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj[choice.path[0]];
+					}
 				}
 			});
 
@@ -129,11 +134,19 @@ function OCombo(attr){
 			});
 
 		// если в метаданных указано строить список по локальным данным, подмешиваем эту информацию в фильтр
-		if(_meta._option_list_local)
+		if(_meta._option_list_local){
 			filter._local = true;
+		}
 
-		if(text)
+		// навешиваем фильтр по подстроке
+		if(text){
 			filter.presentation = {like: text};
+		}
+
+		// если включен справочник связей параметров - дополнительно фильтруем результат
+		if(attr.property && attr.property.filter_params_links){
+			attr.property.filter_params_links(filter, attr);
+		}
 
 		return filter;
 	}

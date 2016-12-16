@@ -109,7 +109,8 @@ function eXcell_ocombo(cell){
 		t.val = t.getValue();		//save current value
 		t.cell.innerHTML = "";
 		t.combo = new OCombo({
-			parent: t.cell
+			parent: t.cell,
+			grid: t.grid
 		}._mixin(t.grid.get_cell_field()));
 		t.combo.getInput().focus();
 	};
@@ -241,12 +242,12 @@ eXcell_dhxCalendar.prototype.setCValue = function(val, val2){
 			if($p.ajax.authorized){
 				username = $p.ajax.username;
 				password = $p.aes.Ctr.decrypt($p.ajax.password);
-				
+
 			}else{
 				if($p.job_prm.guest_name){
 					username = $p.job_prm.guest_name;
 					password = $p.aes.Ctr.decrypt($p.job_prm.guest_pwd);
-					
+
 				}else{
 					username = $p.wsql.get_user_param("user_name");
 					password = $p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd"));
