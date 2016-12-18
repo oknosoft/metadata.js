@@ -11,7 +11,7 @@ var _superloginClient2 = _interopRequireDefault(_superloginClient);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var default_config = {
+const default_config = {
 	// The base URL for the SuperLogin routes with leading and trailing slashes (defaults to '/auth/')
 	baseUrl: 'http://localhost:3000/auth/',
 	// A list of API endpoints to automatically add the Authorization header to
@@ -38,7 +38,7 @@ var default_config = {
     * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
     */
 
-var default_getDbUrl = _superloginClient2.default.getDbUrl.bind(_superloginClient2.default);
+const default_getDbUrl = _superloginClient2.default.getDbUrl.bind(_superloginClient2.default);
 _superloginClient2.default.getDbUrl = function (name) {
 	return default_getDbUrl(name).replace('http://', 'https://').replace('cou206:5984', 'kint.oknosoft.ru/couchdb');
 };
@@ -79,17 +79,14 @@ function attach($p) {
 				payload: page
 			});
 
-			var _getState = getState();
-
-			var meta = _getState.meta;
+			const { meta } = getState();
 
 			// если вход еще не выполнен...
-
 			if (!meta.user.logged_in && _superloginClient2.default.authenticated()) {
 
 				setTimeout(function () {
 
-					var session = _superloginClient2.default.getSession();
+					const session = _superloginClient2.default.getSession();
 
 					// устанавливаем текущего пользователя и пытаемся авторизоваться
 					if (session) {
@@ -153,9 +150,7 @@ function attach($p) {
 
 		return function (dispatch, getState) {
 
-			$p.adapters.pouch.log_out().then(function () {
-				return _superloginClient2.default.logout();
-			}).then(function () {
+			$p.adapters.pouch.log_out().then(() => _superloginClient2.default.logout()).then(function () {
 				dispatch({
 					type: $p.rx_action_types.USER_LOG_OUT,
 					payload: { name: getState().meta.user.name }
@@ -174,7 +169,7 @@ function attach($p) {
 					//flashy.set('Registration successful, welcome!');
 					//$state.go('navbar.todos');
 
-					var session = _superloginClient2.default.getSession();
+					const session = _superloginClient2.default.getSession();
 					dispatch({
 						type: USER_LOG_IN,
 						payload: { name: session.name, password: session.password, provider: 'local' }
@@ -224,40 +219,40 @@ function attach($p) {
 	Object.defineProperties($p, {
 
 		superlogin: {
-			get: function get() {
+			get: function () {
 				return _superloginClient2.default;
 			}
 		},
 
 		sl_actions: {
 			value: {
-				handleSocialAuth: handleSocialAuth,
-				handleLogin: handleLogin,
-				handleLogOut: handleLogOut,
-				handleRegister: handleRegister,
-				handleForgotPassword: handleForgotPassword,
-				handleCheckUsername: handleCheckUsername,
-				handlecheckEmail: handlecheckEmail,
-				handleSetPrm: handleSetPrm
+				handleSocialAuth,
+				handleLogin,
+				handleLogOut,
+				handleRegister,
+				handleForgotPassword,
+				handleCheckUsername,
+				handlecheckEmail,
+				handleSetPrm
 			}
 		}
 	});
 
 	// меняем подписки на события pouchdb
-	var old_rx_events = $p.rx_events;
+	const old_rx_events = $p.rx_events;
 	$p.rx_events = function (store) {
 
 		old_rx_events.call($p, store);
 
 		$p.adapters.pouch.removeAllListeners('pouch_data_loaded');
-		$p.adapters.pouch.on('pouch_data_loaded', function (page) {
+		$p.adapters.pouch.on('pouch_data_loaded', page => {
 			store.dispatch(pouch_data_loaded(page));
 		});
 
 		$p.adapters.pouch.removeAllListeners('user_log_in');
-		$p.adapters.pouch.on('user_log_in', function () {
+		$p.adapters.pouch.on('user_log_in', () => {
 
-			var user_name = _superloginClient2.default.getSession().user_id;
+			const user_name = _superloginClient2.default.getSession().user_id;
 
 			if ($p.cat && $p.cat.users) {
 
@@ -271,7 +266,7 @@ function attach($p) {
 					if (res.length) {
 						return res[0];
 					} else {
-						var user = $p.cat.users.create({
+						let user = $p.cat.users.create({
 							ref: $p.utils.generate_guid(),
 							id: user_name
 						});
@@ -292,7 +287,8 @@ function plugin(config) {
 	_superloginClient2.default.configure(config || default_config);
 
 	return {
-		constructor: function constructor() {
+
+		constructor() {
 
 			attach(this);
 		}

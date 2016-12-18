@@ -1,9 +1,5 @@
 'use strict';
 
-var _actions;
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 /**
  * ### Действия и типы действий в терминах redux
  *
@@ -17,42 +13,42 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 // Action types - имена типов действий
 // ------------------------------------
 
-var META_LOADED = 'META_LOADED'; // Инициализирует параметры и создаёт менеджеры объектов данных
+const META_LOADED = 'META_LOADED'; // Инициализирует параметры и создаёт менеджеры объектов данных
 
-var PRM_CHANGE = 'PRM_CHANGE'; // Изменены глобальные параметры (couch_path, zone и т.д.)
+const PRM_CHANGE = 'PRM_CHANGE'; // Изменены глобальные параметры (couch_path, zone и т.д.)
 
 
-var USER_TRY_LOG_IN = 'USER_TRY_LOG_IN'; // Попытка авторизации
-var USER_LOG_IN = 'USER_LOG_IN'; // Подтверждает авторизацию
-var USER_DEFINED = 'USER_DEFINED'; // Установить текущего пользователя (авторизация не обязательна)
-var USER_LOG_OUT = 'USER_LOG_OUT'; // Попытка завершения синхронизации
-var USER_LOG_ERROR = 'USER_LOG_ERROR'; // Ошибка авторизации
+const USER_TRY_LOG_IN = 'USER_TRY_LOG_IN'; // Попытка авторизации
+const USER_LOG_IN = 'USER_LOG_IN'; // Подтверждает авторизацию
+const USER_DEFINED = 'USER_DEFINED'; // Установить текущего пользователя (авторизация не обязательна)
+const USER_LOG_OUT = 'USER_LOG_OUT'; // Попытка завершения синхронизации
+const USER_LOG_ERROR = 'USER_LOG_ERROR'; // Ошибка авторизации
 
-var USER_SOCIAL_TRY_LINK = 'USER_SOCIAL_TRY_LINK'; // Попытка привязать аккаунт социальной сети
-var USER_SOCIAL_LINKED = 'USER_SOCIAL_LINKED'; // Пользователь привязан к аккаунту социальной сети
-var USER_SOCIAL_UNLINKED = 'USER_SOCIAL_UNLINKED'; // Пользователь отвязан от аккаунта социальной сети
+const USER_SOCIAL_TRY_LINK = 'USER_SOCIAL_TRY_LINK'; // Попытка привязать аккаунт социальной сети
+const USER_SOCIAL_LINKED = 'USER_SOCIAL_LINKED'; // Пользователь привязан к аккаунту социальной сети
+const USER_SOCIAL_UNLINKED = 'USER_SOCIAL_UNLINKED'; // Пользователь отвязан от аккаунта социальной сети
 
-var POUCH_DATA_PAGE = 'POUCH_DATA_PAGE'; // Оповещение о загрузке порции локальных данных
-var POUCH_LOAD_START = 'POUCH_LOAD_START'; // Оповещение о начале загрузки локальных данных
-var POUCH_DATA_LOADED = 'POUCH_DATA_LOADED'; // Оповещение об окончании загрузки локальных данных
-var POUCH_DATA_ERROR = 'POUCH_DATA_ERROR'; // Оповещение об ошибке при загрузке локальных данных
-var POUCH_NO_DATA = 'POUCH_NO_DATA'; // Оповещение об отсутствии локальных данных (как правило, при первом запуске)
+const POUCH_DATA_PAGE = 'POUCH_DATA_PAGE'; // Оповещение о загрузке порции локальных данных
+const POUCH_LOAD_START = 'POUCH_LOAD_START'; // Оповещение о начале загрузки локальных данных
+const POUCH_DATA_LOADED = 'POUCH_DATA_LOADED'; // Оповещение об окончании загрузки локальных данных
+const POUCH_DATA_ERROR = 'POUCH_DATA_ERROR'; // Оповещение об ошибке при загрузке локальных данных
+const POUCH_NO_DATA = 'POUCH_NO_DATA'; // Оповещение об отсутствии локальных данных (как правило, при первом запуске)
 
-var POUCH_SYNC_START = 'POUCH_SYNC_START'; // Оповещение о начале синхронизации базы doc
-var POUCH_SYNC_ERROR = 'POUCH_SYNC_ERROR'; // Оповещение об ошибке репликации - не означает окончания репликации - просто информирует об ошибке
-var POUCH_SYNC_DATA = 'POUCH_SYNC_DATA'; // Прибежали изменения с сервера или мы отправили данные на сервер
-var POUCH_SYNC_PAUSED = 'POUCH_SYNC_PAUSED'; // Репликация приостановлена, обычно, из-за потери связи с сервером
-var POUCH_SYNC_RESUMED = 'POUCH_SYNC_RESUMED'; // Репликация возобновлена
-var POUCH_SYNC_DENIED = 'POUCH_SYNC_DENIED'; // Разновидность ошибки репликации из-за недостатка прав для записи документа на сервере
+const POUCH_SYNC_START = 'POUCH_SYNC_START'; // Оповещение о начале синхронизации базы doc
+const POUCH_SYNC_ERROR = 'POUCH_SYNC_ERROR'; // Оповещение об ошибке репликации - не означает окончания репликации - просто информирует об ошибке
+const POUCH_SYNC_DATA = 'POUCH_SYNC_DATA'; // Прибежали изменения с сервера или мы отправили данные на сервер
+const POUCH_SYNC_PAUSED = 'POUCH_SYNC_PAUSED'; // Репликация приостановлена, обычно, из-за потери связи с сервером
+const POUCH_SYNC_RESUMED = 'POUCH_SYNC_RESUMED'; // Репликация возобновлена
+const POUCH_SYNC_DENIED = 'POUCH_SYNC_DENIED'; // Разновидность ошибки репликации из-за недостатка прав для записи документа на сервере
 
-var OBJ_ADD = 'OBJ_ADD'; // Команда создать объекта
-var OBJ_ADD_ROW = 'OBJ_ADD_ROW'; // Команда добавить строку в табчасть объекта
-var OBJ_DEL_ROW = 'OBJ_DEL_ROW'; // Команда удалить строку табчасти объекта
-var OBJ_EDIT = 'OBJ_EDIT'; // Команда открыть форму редактирования объекта
-var OBJ_REVERT = 'OBJ_REVERT'; // Команда вернуть объект в состояние до редактирования (перечитать из базы данных)
-var OBJ_SAVE = 'OBJ_SAVE'; // Команда записать изменённый объект (пометка удаления, проведение и отмена проведения - это так же, запись)
-var OBJ_CHANGE = 'OBJ_CHANGE'; // Записан изменённый объект (по команде интерфейса или в результате репликации)
-var OBJ_VALUE_CHANGE = 'OBJ_VALUE_CHANGE'; // Изменён реквизит шапки или строки табчасти
+const OBJ_ADD = 'OBJ_ADD'; // Команда создать объекта
+const OBJ_ADD_ROW = 'OBJ_ADD_ROW'; // Команда добавить строку в табчасть объекта
+const OBJ_DEL_ROW = 'OBJ_DEL_ROW'; // Команда удалить строку табчасти объекта
+const OBJ_EDIT = 'OBJ_EDIT'; // Команда открыть форму редактирования объекта
+const OBJ_REVERT = 'OBJ_REVERT'; // Команда вернуть объект в состояние до редактирования (перечитать из базы данных)
+const OBJ_SAVE = 'OBJ_SAVE'; // Команда записать изменённый объект (пометка удаления, проведение и отмена проведения - это так же, запись)
+const OBJ_CHANGE = 'OBJ_CHANGE'; // Записан изменённый объект (по команде интерфейса или в результате репликации)
+const OBJ_VALUE_CHANGE = 'OBJ_VALUE_CHANGE'; // Изменён реквизит шапки или строки табчасти
 
 
 // ------------------------------------
@@ -93,20 +89,17 @@ function pouch_data_loaded(page) {
 			payload: page
 		});
 
-		var _getState = getState(),
-		    meta = _getState.meta,
-		    $p = meta.$p;
+		const { meta } = getState(),
+		      { $p } = meta;
 
 		// если вход еще не выполнен...
-
-
 		if (!meta.user.logged_in) {
 
 			setTimeout(function () {
 
 				// получаем имя сохраненного или гостевого пользователя
-				var name = $p.wsql.get_user_param('user_name');
-				var password = $p.wsql.get_user_param('user_pwd');
+				let name = $p.wsql.get_user_param('user_name');
+				let password = $p.wsql.get_user_param('user_pwd');
 
 				if (!name && $p.job_prm.zone_demo == $p.wsql.get_user_param('zone') && $p.job_prm.guests.length) {
 					name = $p.job_prm.guests[0].name;
@@ -187,42 +180,42 @@ function pouch_sync_start() {
 function pouch_sync_error(dbid, err) {
 	return {
 		type: POUCH_SYNC_ERROR,
-		payload: { dbid: dbid, err: err }
+		payload: { dbid, err }
 	};
 }
 
 function pouch_sync_paused(dbid, info) {
 	return {
 		type: POUCH_SYNC_PAUSED,
-		payload: { dbid: dbid, info: info }
+		payload: { dbid, info }
 	};
 }
 
 function pouch_sync_resumed(dbid, info) {
 	return {
 		type: POUCH_SYNC_RESUMED,
-		payload: { dbid: dbid, info: info }
+		payload: { dbid, info }
 	};
 }
 
 function pouch_sync_denied(dbid, info) {
 	return {
 		type: POUCH_SYNC_DENIED,
-		payload: { dbid: dbid, info: info }
+		payload: { dbid, info }
 	};
 }
 
 function pouch_data_error(dbid, err) {
 	return {
 		type: POUCH_DATA_ERROR,
-		payload: { dbid: dbid, err: err }
+		payload: { dbid, err }
 	};
 }
 
 function pouch_no_data(dbid, err) {
 	return {
 		type: POUCH_NO_DATA,
-		payload: { dbid: dbid, err: err }
+		payload: { dbid, err }
 	};
 }
 
@@ -288,7 +281,7 @@ function user_log_out(adapter) {
 
 	return function (dispatch, getState) {
 
-		var disp_log_out = function disp_log_out() {
+		const disp_log_out = () => {
 			dispatch({
 				type: USER_LOG_OUT,
 				payload: { name: getState().meta.user.name }
@@ -312,10 +305,39 @@ function user_log_error() {
 	};
 }
 
-var actions = (_actions = {}, _defineProperty(_actions, META_LOADED, meta_loaded), _defineProperty(_actions, PRM_CHANGE, prm_change), _defineProperty(_actions, USER_TRY_LOG_IN, user_try_log_in), _defineProperty(_actions, USER_LOG_IN, user_log_in), _defineProperty(_actions, USER_DEFINED, user_defined), _defineProperty(_actions, USER_LOG_OUT, user_log_out), _defineProperty(_actions, USER_LOG_ERROR, user_log_error), _defineProperty(_actions, POUCH_DATA_LOADED, pouch_data_loaded), _defineProperty(_actions, POUCH_DATA_PAGE, pouch_data_page), _defineProperty(_actions, POUCH_DATA_ERROR, pouch_data_error), _defineProperty(_actions, POUCH_LOAD_START, pouch_load_start), _defineProperty(_actions, POUCH_NO_DATA, pouch_no_data), _defineProperty(_actions, POUCH_SYNC_DATA, pouch_sync_data), _defineProperty(_actions, OBJ_ADD, obj_add), _defineProperty(_actions, OBJ_ADD_ROW, obj_add_row), _defineProperty(_actions, OBJ_DEL_ROW, obj_del_row), _defineProperty(_actions, OBJ_EDIT, obj_edit), _defineProperty(_actions, OBJ_REVERT, obj_revert), _defineProperty(_actions, OBJ_SAVE, obj_save), _defineProperty(_actions, OBJ_CHANGE, obj_change), _defineProperty(_actions, OBJ_VALUE_CHANGE, obj_value_change), _defineProperty(_actions, 'obj_post', obj_post), _defineProperty(_actions, 'obj_unpost', obj_unpost), _defineProperty(_actions, 'obj_mark_deleted', obj_mark_deleted), _defineProperty(_actions, 'obj_unmark_deleted', obj_unmark_deleted), _actions);
-'use strict';
+const actions = {
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	[META_LOADED]: meta_loaded,
+	[PRM_CHANGE]: prm_change,
+
+	[USER_TRY_LOG_IN]: user_try_log_in,
+	[USER_LOG_IN]: user_log_in,
+	[USER_DEFINED]: user_defined,
+	[USER_LOG_OUT]: user_log_out,
+	[USER_LOG_ERROR]: user_log_error,
+
+	[POUCH_DATA_LOADED]: pouch_data_loaded,
+	[POUCH_DATA_PAGE]: pouch_data_page,
+	[POUCH_DATA_ERROR]: pouch_data_error,
+	[POUCH_LOAD_START]: pouch_load_start,
+	[POUCH_NO_DATA]: pouch_no_data,
+	[POUCH_SYNC_DATA]: pouch_sync_data,
+
+	[OBJ_ADD]: obj_add,
+	[OBJ_ADD_ROW]: obj_add_row,
+	[OBJ_DEL_ROW]: obj_del_row,
+	[OBJ_EDIT]: obj_edit,
+	[OBJ_REVERT]: obj_revert,
+	[OBJ_SAVE]: obj_save,
+	[OBJ_CHANGE]: obj_change,
+	[OBJ_VALUE_CHANGE]: obj_value_change,
+	obj_post: obj_post,
+	obj_unpost: obj_unpost,
+	obj_mark_deleted: obj_mark_deleted,
+	obj_unmark_deleted: obj_unmark_deleted
+
+};
+'use strict';
 
 /**
  * ### Действия и типы действий в терминах redux
@@ -332,7 +354,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 
 function obj_add(_mgr) {
-	var _obj = _mgr.create();
+	const _obj = _mgr.create();
 	return {
 		type: OBJ_ADD,
 		payload: { class_name: _mgr.class_name, ref: _obj.ref }
@@ -363,9 +385,7 @@ function obj_del_row(class_name, ref, tabular, index) {
 	// удаляем строку
 
 	// возвращаем thunk
-	return function () {
-		return Promise.resolve();
-	};
+	return () => Promise.resolve();
 }
 
 /**
@@ -387,9 +407,9 @@ function obj_edit(class_name, ref, frm) {
 }
 
 function obj_revert(class_name, ref) {
-	return function (dispatch, getState) {
-		return new Promise(function (resolve) {
-			setTimeout(function () {
+	return (dispatch, getState) => {
+		return new Promise(resolve => {
+			setTimeout(() => {
 				dispatch(dispatch({
 					type: OBJ_REVERT,
 					payload: {
@@ -404,14 +424,14 @@ function obj_revert(class_name, ref) {
 }
 
 function obj_save(class_name, ref, post, mark_deleted) {
-	return function (dispatch, getState) {
-		var _obj = void 0;
-		if ((typeof class_name === 'undefined' ? 'undefined' : _typeof(class_name)) == 'object') {
+	return (dispatch, getState) => {
+		let _obj;
+		if (typeof class_name == 'object') {
 			_obj = class_name;
 			class_name = _obj._manager.class_name;
 			ref = _obj.ref;
 			if (mark_deleted) _obj._obj._deleted = true;
-			_obj.save(post).then(function () {
+			_obj.save(post).then(() => {
 				dispatch({
 					type: OBJ_SAVE,
 					payload: {
@@ -453,9 +473,9 @@ function obj_change(class_name, ref) {
 }
 
 function obj_value_change(class_name, ref) {
-	return function (dispatch, getState) {
-		return new Promise(function (resolve) {
-			setTimeout(function () {
+	return (dispatch, getState) => {
+		return new Promise(resolve => {
+			setTimeout(() => {
 				dispatch(dispatch({
 					type: OBJ_VALUE_CHANGE,
 					payload: {
@@ -474,78 +494,70 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _ACTION_HANDLERS;
-
-var _simpleAssign = require("simple-assign");
-
-var _simpleAssign2 = _interopRequireDefault(_simpleAssign);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 /**
  * Action Handlers - обработчики событий - вызываются из корневого редюсера
  */
-var ACTION_HANDLERS = (_ACTION_HANDLERS = {}, _defineProperty(_ACTION_HANDLERS, META_LOADED, function (state, action) {
-	return (0, _simpleAssign2.default)({}, state, {
+const ACTION_HANDLERS = {
+
+	[META_LOADED]: (state, action) => Object.assign({}, state, {
 		$p: action.payload,
 		meta_loaded: true
-	});
-}), _defineProperty(_ACTION_HANDLERS, PRM_CHANGE, function (state, action) {
-	return state;
-}), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_LOADED, function (state, action) {
-	return (0, _simpleAssign2.default)({}, state, { data_loaded: true, fetch_local: false });
-}), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_PAGE, function (state, action) {
-	return (0, _simpleAssign2.default)({}, state, { page: action.payload });
-}), _defineProperty(_ACTION_HANDLERS, POUCH_DATA_ERROR, function (state, action) {
-	return (0, _simpleAssign2.default)({}, state, { err: action.payload, fetch_local: false });
-}), _defineProperty(_ACTION_HANDLERS, POUCH_LOAD_START, function (state, action) {
-	return (0, _simpleAssign2.default)({}, state, { data_empty: false, fetch_local: true });
-}), _defineProperty(_ACTION_HANDLERS, POUCH_NO_DATA, function (state, action) {
-	return (0, _simpleAssign2.default)({}, state, { data_empty: true, fetch_local: false });
-}), _defineProperty(_ACTION_HANDLERS, POUCH_SYNC_START, function (state, action) {
-	return (0, _simpleAssign2.default)({}, state, { sync_started: true });
-}), _defineProperty(_ACTION_HANDLERS, POUCH_SYNC_DATA, function (state, action) {
-	return (0, _simpleAssign2.default)({}, state, { fetch_remote: action.payload ? true : false });
-}), _defineProperty(_ACTION_HANDLERS, USER_DEFINED, function (state, action) {
-	return (0, _simpleAssign2.default)({}, state, { user: {
+	}),
+
+	[PRM_CHANGE]: (state, action) => state,
+
+	[POUCH_DATA_LOADED]: (state, action) => Object.assign({}, state, { data_loaded: true, fetch_local: false }),
+
+	[POUCH_DATA_PAGE]: (state, action) => Object.assign({}, state, { page: action.payload }),
+
+	[POUCH_DATA_ERROR]: (state, action) => Object.assign({}, state, { err: action.payload, fetch_local: false }),
+
+	[POUCH_LOAD_START]: (state, action) => Object.assign({}, state, { data_empty: false, fetch_local: true }),
+
+	[POUCH_NO_DATA]: (state, action) => Object.assign({}, state, { data_empty: true, fetch_local: false }),
+
+	[POUCH_SYNC_START]: (state, action) => Object.assign({}, state, { sync_started: true }),
+
+	[POUCH_SYNC_DATA]: (state, action) => Object.assign({}, state, { fetch_remote: action.payload ? true : false }),
+
+	[USER_DEFINED]: (state, action) => Object.assign({}, state, { user: {
 			name: action.payload,
 			logged_in: state.user.logged_in
-		} });
-}), _defineProperty(_ACTION_HANDLERS, USER_LOG_IN, function (state, action) {
-	return (0, _simpleAssign2.default)({}, state, { user: {
+		} }),
+
+	[USER_LOG_IN]: (state, action) => Object.assign({}, state, { user: {
 			name: action.payload,
 			logged_in: true
-		} });
-}), _defineProperty(_ACTION_HANDLERS, USER_TRY_LOG_IN, function (state, action) {
-	return (0, _simpleAssign2.default)({}, state, { user: {
+		} }),
+
+	[USER_TRY_LOG_IN]: (state, action) => Object.assign({}, state, { user: {
 			name: action.payload.name,
 			logged_in: state.user.logged_in
-		} });
-}), _defineProperty(_ACTION_HANDLERS, USER_LOG_OUT, function (state, action) {
-	return (0, _simpleAssign2.default)({}, state, {
+		} }),
+
+	[USER_LOG_OUT]: (state, action) => Object.assign({}, state, {
 		user: {
 			name: state.user.name,
 			logged_in: false
 		},
 		sync_started: false
-	});
-}), _defineProperty(_ACTION_HANDLERS, USER_LOG_ERROR, function (state, action) {
-	return (0, _simpleAssign2.default)({}, state, {
+	}),
+
+	[USER_LOG_ERROR]: (state, action) => Object.assign({}, state, {
 		user: {
 			name: state.user.name,
 			logged_in: false
 		},
 		sync_started: false
-	});
-}), _ACTION_HANDLERS);
+	})
+
+};
 
 /**
  * ### Reducer
  * Он создаёт область в хранилище состояния и несёт ответственность за изменения этой области
  */
-var initialState = {
+const initialState = {
 	meta_loaded: false,
 	data_loaded: false,
 	data_empty: false,
@@ -557,12 +569,9 @@ var initialState = {
 		logged_in: false
 	}
 };
-function rx_reducer() {
-	var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : initialState;
-	var action = arguments[1];
+function rx_reducer(state = initialState, action) {
 
-
-	var handler = ACTION_HANDLERS[action.type];
+	let handler = ACTION_HANDLERS[action.type];
 
 	if (!handler) handler = ACTION_HANDLERS_OBJ[action.type];
 
@@ -576,192 +585,62 @@ function rx_events(store) {
 
 	this.adapters.pouch.on({
 
-		user_log_in: function (_user_log_in) {
-			function user_log_in(_x2) {
-				return _user_log_in.apply(this, arguments);
-			}
-
-			user_log_in.toString = function () {
-				return _user_log_in.toString();
-			};
-
-			return user_log_in;
-		}(function (name) {
+		user_log_in: name => {
 			store.dispatch(user_log_in(name));
-		}),
+		},
 
-		user_log_out: function (_user_log_out) {
-			function user_log_out() {
-				return _user_log_out.apply(this, arguments);
-			}
-
-			user_log_out.toString = function () {
-				return _user_log_out.toString();
-			};
-
-			return user_log_out;
-		}(function () {
+		user_log_out: () => {
 			store.dispatch(user_log_out());
-		}),
+		},
 
-		pouch_data_page: function (_pouch_data_page) {
-			function pouch_data_page(_x3) {
-				return _pouch_data_page.apply(this, arguments);
-			}
-
-			pouch_data_page.toString = function () {
-				return _pouch_data_page.toString();
-			};
-
-			return pouch_data_page;
-		}(function (page) {
+		pouch_data_page: page => {
 			store.dispatch(pouch_data_page(page));
-		}),
+		},
 
-		pouch_data_loaded: function (_pouch_data_loaded) {
-			function pouch_data_loaded(_x4) {
-				return _pouch_data_loaded.apply(this, arguments);
-			}
-
-			pouch_data_loaded.toString = function () {
-				return _pouch_data_loaded.toString();
-			};
-
-			return pouch_data_loaded;
-		}(function (page) {
+		pouch_data_loaded: page => {
 			store.dispatch(pouch_data_loaded(page));
-		}),
+		},
 
-		pouch_data_error: function (_pouch_data_error) {
-			function pouch_data_error(_x5, _x6) {
-				return _pouch_data_error.apply(this, arguments);
-			}
-
-			pouch_data_error.toString = function () {
-				return _pouch_data_error.toString();
-			};
-
-			return pouch_data_error;
-		}(function (dbid, err) {
+		pouch_data_error: (dbid, err) => {
 			store.dispatch(pouch_data_error(dbid, err));
-		}),
+		},
 
-		pouch_load_start: function (_pouch_load_start) {
-			function pouch_load_start(_x7) {
-				return _pouch_load_start.apply(this, arguments);
-			}
-
-			pouch_load_start.toString = function () {
-				return _pouch_load_start.toString();
-			};
-
-			return pouch_load_start;
-		}(function (page) {
+		pouch_load_start: page => {
 			store.dispatch(pouch_load_start(page));
-		}),
+		},
 
-		pouch_no_data: function (_pouch_no_data) {
-			function pouch_no_data(_x8, _x9) {
-				return _pouch_no_data.apply(this, arguments);
-			}
-
-			pouch_no_data.toString = function () {
-				return _pouch_no_data.toString();
-			};
-
-			return pouch_no_data;
-		}(function (dbid, err) {
+		pouch_no_data: (dbid, err) => {
 			store.dispatch(pouch_no_data(dbid, err));
-		}),
+		},
 
-		pouch_sync_start: function (_pouch_sync_start) {
-			function pouch_sync_start() {
-				return _pouch_sync_start.apply(this, arguments);
-			}
-
-			pouch_sync_start.toString = function () {
-				return _pouch_sync_start.toString();
-			};
-
-			return pouch_sync_start;
-		}(function () {
+		pouch_sync_start: () => {
 			store.dispatch(pouch_sync_start());
-		}),
+		},
 
-		pouch_sync_data: function (_pouch_sync_data) {
-			function pouch_sync_data(_x10, _x11) {
-				return _pouch_sync_data.apply(this, arguments);
-			}
-
-			pouch_sync_data.toString = function () {
-				return _pouch_sync_data.toString();
-			};
-
-			return pouch_sync_data;
-		}(function (dbid, change) {
+		pouch_sync_data: (dbid, change) => {
 			store.dispatch(pouch_sync_data(dbid, change));
-		}),
+		},
 
-		pouch_sync_error: function (_pouch_sync_error) {
-			function pouch_sync_error(_x12, _x13) {
-				return _pouch_sync_error.apply(this, arguments);
-			}
-
-			pouch_sync_error.toString = function () {
-				return _pouch_sync_error.toString();
-			};
-
-			return pouch_sync_error;
-		}(function (dbid, err) {
+		pouch_sync_error: (dbid, err) => {
 			store.dispatch(pouch_sync_error(dbid, err));
-		}),
+		},
 
-		pouch_sync_paused: function (_pouch_sync_paused) {
-			function pouch_sync_paused(_x14, _x15) {
-				return _pouch_sync_paused.apply(this, arguments);
-			}
-
-			pouch_sync_paused.toString = function () {
-				return _pouch_sync_paused.toString();
-			};
-
-			return pouch_sync_paused;
-		}(function (dbid, info) {
+		pouch_sync_paused: (dbid, info) => {
 			store.dispatch(pouch_sync_paused(dbid, info));
-		}),
+		},
 
-		pouch_sync_resumed: function (_pouch_sync_resumed) {
-			function pouch_sync_resumed(_x16, _x17) {
-				return _pouch_sync_resumed.apply(this, arguments);
-			}
-
-			pouch_sync_resumed.toString = function () {
-				return _pouch_sync_resumed.toString();
-			};
-
-			return pouch_sync_resumed;
-		}(function (dbid, info) {
+		pouch_sync_resumed: (dbid, info) => {
 			store.dispatch(pouch_sync_resumed(dbid, info));
-		}),
+		},
 
-		pouch_sync_denied: function (_pouch_sync_denied) {
-			function pouch_sync_denied(_x18, _x19) {
-				return _pouch_sync_denied.apply(this, arguments);
-			}
-
-			pouch_sync_denied.toString = function () {
-				return _pouch_sync_denied.toString();
-			};
-
-			return pouch_sync_denied;
-		}(function (dbid, info) {
+		pouch_sync_denied: (dbid, info) => {
 			store.dispatch(pouch_sync_denied(dbid, info));
-		})
+		}
 
 	});
 
 	this.md.on({
-		obj_loaded: function obj_loaded(_obj) {
+		obj_loaded: _obj => {
 			store.dispatch(obj_change(_obj._manager.class_name, _obj.ref));
 		}
 	});
@@ -770,8 +649,9 @@ function rx_events(store) {
 /**
  * Экспортируем объект-плагин для модификации metadata.js
  */
-var plugin = {
-	proto: function proto(constructor) {
+const plugin = {
+
+	proto(constructor) {
 
 		Object.defineProperties(constructor.prototype, {
 
@@ -782,17 +662,17 @@ var plugin = {
 			rx_action_types: {
 				value: {
 
-					USER_TRY_LOG_IN: USER_TRY_LOG_IN,
-					USER_LOG_IN: USER_LOG_IN,
-					USER_DEFINED: USER_DEFINED,
-					USER_LOG_OUT: USER_LOG_OUT,
-					USER_LOG_ERROR: USER_LOG_ERROR,
+					USER_TRY_LOG_IN,
+					USER_LOG_IN,
+					USER_DEFINED,
+					USER_LOG_OUT,
+					USER_LOG_ERROR,
 
-					POUCH_DATA_LOADED: POUCH_DATA_LOADED,
-					POUCH_DATA_PAGE: POUCH_DATA_PAGE,
-					POUCH_DATA_ERROR: POUCH_DATA_ERROR,
-					POUCH_LOAD_START: POUCH_LOAD_START,
-					POUCH_NO_DATA: POUCH_NO_DATA
+					POUCH_DATA_LOADED,
+					POUCH_DATA_PAGE,
+					POUCH_DATA_ERROR,
+					POUCH_LOAD_START,
+					POUCH_NO_DATA
 				}
 			},
 
@@ -807,26 +687,19 @@ var plugin = {
 			}
 		});
 	},
-	constructor: function constructor() {}
+
+	constructor() {}
 };
 exports.default = plugin;
 "use strict";
 
-var _ACTION_HANDLERS_OBJ;
-
-var _simpleAssign = require("simple-assign");
-
-var _simpleAssign2 = _interopRequireDefault(_simpleAssign);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 /**
  * Action Handlers - обработчики событий - вызываются из корневого редюсера
  */
-var ACTION_HANDLERS_OBJ = (_ACTION_HANDLERS_OBJ = {}, _defineProperty(_ACTION_HANDLERS_OBJ, OBJ_ADD, function (state, action) {
-  return state;
-}), _defineProperty(_ACTION_HANDLERS_OBJ, OBJ_CHANGE, function (state, action) {
-  return (0, _simpleAssign2.default)({}, state, { obj_change: action.payload });
-}), _ACTION_HANDLERS_OBJ);
+const ACTION_HANDLERS_OBJ = {
+
+  [OBJ_ADD]: (state, action) => state,
+
+  [OBJ_CHANGE]: (state, action) => Object.assign({}, state, { obj_change: action.payload })
+
+};

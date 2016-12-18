@@ -36,6 +36,18 @@ function Meta() {
 					synonym: "Расход"
 				}
 			],
+			sort_directions: [
+				{
+					order: 0,
+					name: "asc",
+					synonym: "По возрастанию"
+				},
+				{
+					order: 1,
+					name: "desc",
+					synonym: "По убыванию"
+				}
+			],
 			comparison_types: [
 				{
 					order: 0,
@@ -109,217 +121,217 @@ function Meta() {
 				code_length: 0,
 				fields: {
 					obj: {
-						"synonym": "Объект",
-						"multiline_mode": false,
-						"tooltip": "",
-						"type": {
-							"types": [
+						synonym: "Объект",
+						multiline_mode: false,
+						tooltip: "Имя класса метаданных",
+						type: {
+							types: [
 								"string"
 							],
-							"str_len": 250
+							str_len: 250
 						}
 					},
 					user: {
-						"synonym": "Пользователь",
-						"multiline_mode": false,
-						"tooltip": "",
-						"type": {
-							"types": [
+						synonym: "Пользователь",
+						multiline_mode: false,
+						tooltip: "Если пусто - публичная настройка",
+						type: {
+							types: [
 								"string"
 							],
-							"str_len": 50
-						}
-					},
-					predefined_name: {
-						"synonym": "",
-						"multiline_mode": false,
-						"tooltip": "",
-						"type": {
-							"types": [
-								"string"
-							],
-							"str_len": 256
+							str_len: 50
 						}
 					}
 				},
 				tabular_sections: {
 					available_fields: {
-						"name": "available_fields",
-						"synonym": "Доступные поля",
-						"tooltip": "Состав, порядок и ширина колонок",
-						"fields": {
-							"parent": {
-								"synonym": "Родитель",
-								"multiline_mode": false,
-								"tooltip": "Для плоского списка, родитель пустой",
-								"type": {
-									"types": [
+						name: "available_fields",
+						synonym: "Доступные поля",
+						tooltip: "Состав, порядок и ширина колонок",
+						fields: {
+							parent: {
+								synonym: "Родитель",
+								multiline_mode: false,
+								tooltip: "Для плоского списка, родитель пустой",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							},
-							"use": {
-								"synonym": "Использование",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							use: {
+								synonym: "Использование",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"boolean"
 									]
 								}
 							},
-							"field": {
-								"synonym": "Поле",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							field: {
+								synonym: "Поле",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							},
-							"width": {
-								"synonym": "Ширина",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							width: {
+								synonym: "Ширина",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"number"
 									],
-									"digits": 6,
-									"fraction_figits": 0
+									digits: 6,
+									fraction_figits: 0
 								}
 							},
-							"caption": {
-								"synonym": "Заголовок",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							caption: {
+								synonym: "Заголовок",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							}
 						}
 					},
 					sort_fields: {
-						"name": "sort_fields",
-						"synonym": "Поля сортировки",
-						"tooltip": "",
-						"fields": {
-							"parent": {
-								"synonym": "Родитель",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+						name: "sort_fields",
+						synonym: "Поля сортировки",
+						tooltip: "",
+						fields: {
+							parent: {
+								synonym: "Родитель",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							},
-							"field": {
-								"synonym": "Поле",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							field: {
+								synonym: "Поле",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
+								}
+							},
+							direction: {
+								synonym: "Направление",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
+										"enm.sort_directions"
+									],
+									"is_ref": true
 								}
 							}
 						}
 					},
 					grouping_fields: {
-						"name": "grouping_fields",
-						"synonym": "Поля группировки",
-						"tooltip": "",
-						"fields": {
-							"parent": {
-								"synonym": "Родитель",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+						name: "grouping_fields",
+						synonym: "Поля группировки",
+						tooltip: "",
+						fields: {
+							parent: {
+								synonym: "Родитель",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							},
-							"field": {
-								"synonym": "Поле",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							field: {
+								synonym: "Поле",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							}
 						}
 					},
 					selection: {
-						"name": "selection",
-						"synonym": "Отбор",
-						"tooltip": "",
-						"fields": {
-							"parent": {
-								"synonym": "Родитель",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+						name: "selection",
+						synonym: "Отбор",
+						tooltip: "",
+						fields: {
+							parent: {
+								synonym: "Родитель",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							},
-							"use": {
-								"synonym": "Использование",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							use: {
+								synonym: "Использование",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"boolean"
 									]
 								}
 							},
-							"left_value": {
-								"synonym": "Левое значение",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							left_value: {
+								synonym: "Левое значение",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							},
-							"comparison_type": {
-								"synonym": "Вид сравнения",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
-										"string"
+							comparison_type: {
+								synonym: "Вид сравнения",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
+										"enm.comparison_types"
 									],
-									"str_len": 100
+									is_ref: true
 								}
 							},
-							"right_value": {
-								"synonym": "Правое значение",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							right_value: {
+								synonym: "Правое значение",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							}
 						}

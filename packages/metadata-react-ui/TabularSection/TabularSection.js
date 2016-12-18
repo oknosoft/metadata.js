@@ -1,95 +1,186 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _react = require('react');
+var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactDataGrid = require('react-data-grid');
+var _reactDataGrid = require("react-data-grid");
 
 var _reactDataGrid2 = _interopRequireDefault(_reactDataGrid);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+// // Import the necessary modules.
+// import { Menu } from "react-data-grid/addons";
+// // Create the context menu.
+// // Use this.props.rowIdx and this.props.idx to get the row/column where the menu is shown.
+// class MyContextMenu extends Component {
+//
+//   onRowDelete(e, data) {
+//     if (typeof(this.props.onRowDelete) === 'function') {
+//       this.props.onRowDelete(e, data);
+//     }
+//   }
+//
+//   onRowAdd(e, data) {
+//     if (typeof(this.props.onRowAdd) === 'function') {
+//       this.props.onRowAdd(e, data);
+//     }
+//   }
+//
+//   render() {
+//
+//     let { ContextMenu, MenuItem} = Menu;
+//
+//     return (
+//       <ContextMenu>
+//         <MenuItem data={{rowIdx: this.props.rowIdx, idx: this.props.idx}} onClick={::this.onRowDelete}>Delete Row</MenuItem>
+//         <MenuItem data={{rowIdx: this.props.rowIdx, idx: this.props.idx}} onClick={::this.onRowAdd}>Add Row</MenuItem>
+//       </ContextMenu>
+//     );
+//   }
+//
+// }
 
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+class TabularSection extends _react.Component {
 
-var TabularSection = function (_Component) {
-  _inherits(TabularSection, _Component);
+  constructor(props, context) {
 
-  function TabularSection(props, context) {
-    _classCallCheck(this, TabularSection);
+    super(props);
 
-    var _this = _possibleConstructorReturn(this, (TabularSection.__proto__ || Object.getPrototypeOf(TabularSection)).call(this, props));
+    const users_mgr = context.$p.cat.users;
 
-    var users_mgr = context.$p.cat.users;
-
-    _this.state = {
+    this.state = {
       _meta: props._meta || props._obj._metadata(props._tabular),
       _tabular: props._obj[props._tabular],
-      _columns: [{
-        key: 'row',
-        name: '№',
-        resizable: true,
-        width: 80
-      }, {
-        key: 'individual_person',
-        name: 'ФИО',
-        resizable: true,
-        formatter: function formatter(v) {
-          v = users_mgr.get(v.value);
-          return _react2.default.createElement(
-            'div',
-            null,
-            v instanceof Promise ? 'loading...' : v.presentation
-          );
-        }
-      }]
+      _columns: props._columns || []
     };
-    return _this;
+
+    if (!this.state._columns.length) {
+
+      for (let fld in this.state._meta.fields) {
+        let _fld = this.state._meta.fields[fld],
+            column = {
+          key: fld,
+          name: _fld.synonym,
+          resizable: true
+        };
+
+        if (_fld.type.is_ref) {
+          column.formatter = v => {
+            return _react2.default.createElement(
+              "div",
+              null,
+              v.value.presentation
+            );
+          };
+        }
+
+        this.state._columns.push(column);
+      }
+      // this.state._columns = [
+      //   {
+      //     key: 'row',
+      //     name: '№',
+      //     resizable : true,
+      //     width : 80
+      //   },
+      //   {
+      //     key: 'nom',
+      //     name: 'ФИО',
+      //     resizable : true,
+      //     formatter: v => {
+      //       v = users_mgr.get(v.value)
+      //       return (<div>{v instanceof Promise ? 'loading...' : v.presentation}</div>)
+      //     }
+      //   }]
+    }
   }
 
-  _createClass(TabularSection, [{
-    key: 'rowGetter',
-    value: function rowGetter(i) {
-      return this.state._tabular.get(i)._obj;
+  rowGetter(i) {
+    //return this.state._tabular.get(i)._obj;
+    return this.state._tabular.get(i);
+  }
+
+  deleteRow(e, data) {
+    if (!data) {
+      data = this.refs.grid.state.selected;
     }
-  }, {
-    key: 'render',
-    value: function render() {
-      var $p = this.context.$p;
-      var _state = this.state,
-          _meta = _state._meta,
-          _tabular = _state._tabular,
-          _columns = _state._columns;
+    this.state._tabular.del(data.rowIdx);
+    this.forceUpdate();
+  }
 
-      var _val = this.props._obj[this.props._fld];
-      var subProps = {
-        _meta: this.state._meta,
-        _obj: this.props._obj,
-        _fld: this.props._fld,
-        _val: _val
-      };
+  addRow(e, data) {
+    this.state._tabular.add();
+    this.forceUpdate();
+  }
 
-      return _react2.default.createElement(_reactDataGrid2.default, {
+  handleRowUpdated(e) {
+    //merge updated row with current row and rerender by setting state
+    var row = this.rowGetter(e.rowIdx);
+    Object.assign(row._row || row, e.updated);
+  }
+
+  render() {
+
+    const { $p } = this.context;
+    const { _meta, _tabular, _columns } = this.state;
+    const { _obj, _fld, Toolbar } = this.props;
+    const _val = _obj[_fld];
+    const subProps = {
+      _meta: _meta,
+      _obj: _obj,
+      _fld: _fld,
+      _val: _val
+    };
+
+    // contextMenu={<MyContextMenu
+    //   onRowDelete={::this.deleteRow}
+    //   onRowAdd={::this.addRow}
+    //   style={{zIndex: 9999}}
+    // />}
+
+    // <SettingsProductionToolbar
+    //   handleAdd={}
+    //   handleRemove={}
+    // />
+
+    return Toolbar ? _react2.default.createElement(
+      "div",
+      null,
+      _react2.default.createElement(Toolbar, {
+        handleAdd: this.addRow.bind(this),
+        handleRemove: this.deleteRow.bind(this),
+        handleCustom: this.props.handleCustom
+      }),
+      _react2.default.createElement(_reactDataGrid2.default, {
+        ref: "grid",
         columns: _columns,
+        enableCellSelect: true,
         rowGetter: this.rowGetter.bind(this),
         rowsCount: _tabular.count(),
-        minHeight: 140 });
-    }
-  }]);
+        onRowUpdated: this.handleRowUpdated,
+        minHeight: this.props.minHeight || 200
 
-  return TabularSection;
-}(_react.Component);
+      })
+    ) : _react2.default.createElement(_reactDataGrid2.default, {
 
+      columns: _columns,
+      enableCellSelect: true,
+      rowGetter: this.rowGetter.bind(this),
+      rowsCount: _tabular.count(),
+      onRowUpdated: this.handleRowUpdated,
+      minHeight: this.props.minHeight || 200
+
+    });
+  }
+}
+exports.default = TabularSection;
 TabularSection.contextTypes = {
   $p: _react2.default.PropTypes.object.isRequired
 };
@@ -98,8 +189,12 @@ TabularSection.propTypes = {
   _obj: _react.PropTypes.object.isRequired,
   _tabular: _react.PropTypes.string.isRequired,
   _meta: _react.PropTypes.object,
+  _columns: _react.PropTypes.object,
 
-  handleValueChange: _react.PropTypes.func,
-  handleRowChange: _react.PropTypes.func
-};
-exports.default = TabularSection;
+  read_only: _react.PropTypes.object, // Элемент только для чтения
+  deny_add_del: _react.PropTypes.bool, // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+
+  Toolbar: _react.PropTypes.func, // Индивидуальная панель инструментов. Если не указана, рисуем типовую
+
+  handleValueChange: _react.PropTypes.func, // Обработчик изменения значения в ячейке
+  handleRowChange: _react.PropTypes.func };

@@ -23,7 +23,7 @@ const gulp = require('gulp'),
 module.exports = gulp;
 
 // данные файла package.json
-var package_data = JSON.parse(require('fs').readFileSync('package.json', 'utf8'));
+var package_data = require('./package.json');
 
 
 gulp.task('prebuild', function(){
@@ -324,8 +324,8 @@ gulp.task('build--core', function(){
 		.pipe(concat('index.js'))
 
 		.pipe(babel({
-			presets: ['es2015'],
-			plugins: ["transform-async-to-generator"],
+			presets: ['es2016'],
+			plugins: ['transform-es2015-modules-commonjs'],
 			compact: false,
             //comments: false
         }))
