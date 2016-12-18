@@ -3,6 +3,10 @@
   "description": "Library for building offline-first browser-based business applications",
   "version": "0.12.225",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
+  "engines": {
+    "node": "^6.9",
+    "npm": "^3.5"
+  },
   "directories": {
     "example": "examples",
     "doc": "doc"
@@ -151,10 +155,6 @@
         "NODE_ENV": "production"
       }
     }
-  },
-  "engines": {
-    "node": "^6.5",
-    "npm": "^3.5"
   },
   "bin": {
     "metadata": "./bin/metadata-cli.js"
