@@ -322,6 +322,35 @@ const meta_sys = {
 						}
 					}
 				},
+				params: {
+					name: "params",
+					synonym: "Параметры",
+					tooltip: "",
+					fields: {
+						param: {
+							synonym: "Параметр",
+							multiline_mode: false,
+							tooltip: "",
+							type: {
+								types: [
+									"string"
+								],
+								str_len: 100
+							}
+						},
+						value: {
+							synonym: "Значение",
+							multiline_mode: false,
+							tooltip: "Может иметь примитивный или ссылочный тип или массив",
+							type: {
+								types: [
+									"string"
+								],
+								str_len: 0
+							}
+						}
+					}
+				},
 				scheme: {
 					"name": "scheme",
 					"synonym": "Структура",
@@ -429,4 +458,62 @@ const meta_sys = {
 	rep: {},
 	cch: {},
 	cacc: {}
+}
+
+function meta_sys_init($p) {
+
+	/**
+	 * ### Менеджер объектов метаданных
+	 * Используется для формирования списков типов документов, справочников и т.д.
+	 * Например, при работе в интерфейсе с составными типами
+	 */
+	class MetaObjManager extends classes.CatManager{
+
+	}
+
+	/**
+	 * ### Менеджер доступных полей
+	 * Используется при настройке отчетов и динамических списков
+	 */
+	class MetaFieldManager extends classes.CatManager{
+
+	}
+
+	/**
+	 * ### Виртуальный справочник MetaObjs
+	 * undefined
+	 * @class CatMeta_objs
+	 * @extends CatObj
+	 * @constructor
+	 */
+	$p.CatMeta_objs = class CatMeta_objs extends classes.CatObj{}
+
+	/**
+	 * ### Виртуальный справочник MetaFields
+	 * undefined
+	 * @class CatMeta_fields
+	 * @extends CatObj
+	 * @constructor
+	 */
+	$p.CatMeta_fields = class CatMeta_fields extends classes.CatObj{}
+
+	// публикуем системные менеджеры
+	Object.defineProperties(classes, {
+
+		MetaObjManager: { value: MetaObjManager },
+
+		MetaFieldManager: { value: MetaFieldManager }
+
+	})
+
+	// создаём системные менеджеры метаданных
+	Object.defineProperties($p.cat, {
+		meta_objs: {
+			value: new MetaObjManager('cat.meta_objs')
+		},
+		meta_fields: {
+			value: new MetaFieldManager('cat.meta_fields')
+		}
+	})
+
 }
