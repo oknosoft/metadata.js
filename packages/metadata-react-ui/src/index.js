@@ -1,6 +1,6 @@
 export DataField from './DataField'
 export DataList from './DataList'
-export DataSelection from './DataSelection'
+export DataSelection from './SchemeSettings'
 export DataTree from './DataTree'
 export FrmLogin from './FrmLogin'
 export FrmObj from './FrmObj'

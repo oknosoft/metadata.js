@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.225, built:2016-12-03 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.225, built:2016-12-16 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -4435,12 +4435,12 @@ function Meta() {
 			if(!_m)
 				do_init();
 
-			else if($p.iface && $p.iface.do_reload){
+			else if($p.iface && $p.iface.do_reload && change.docs && change.docs.length < 4){
 
 				// если изменились метаданные, запланировать перезагрузку
 				setTimeout(function () {
 					$p.iface.do_reload();
-				}, 3000);
+				}, 10000);
 
 			}
 
@@ -11391,7 +11391,8 @@ function eXcell_ocombo(cell){
 		t.val = t.getValue();		//save current value
 		t.cell.innerHTML = "";
 		t.combo = new OCombo({
-			parent: t.cell
+			parent: t.cell,
+			grid: t.grid
 		}._mixin(t.grid.get_cell_field()));
 		t.combo.getInput().focus();
 	};
@@ -11523,12 +11524,12 @@ eXcell_dhxCalendar.prototype.setCValue = function(val, val2){
 			if($p.ajax.authorized){
 				username = $p.ajax.username;
 				password = $p.aes.Ctr.decrypt($p.ajax.password);
-				
+
 			}else{
 				if($p.job_prm.guest_name){
 					username = $p.job_prm.guest_name;
 					password = $p.aes.Ctr.decrypt($p.job_prm.guest_pwd);
-					
+
 				}else{
 					username = $p.wsql.get_user_param("user_name");
 					password = $p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd"));
@@ -12005,10 +12006,15 @@ function OCombo(attr){
 					if(_obj instanceof TabularSectionRow){
 						if(choice.path.length < 2)
 							filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj._owner._owner[choice.path[0]];
-						else
+						else{
+							if(choice.name[1] == "owner" && !_mgr.metadata().has_owners){
+								return;
+							}
 							filter[choice.name[1]] = _obj[choice.path[1]];
-					}else
+						}
+					}else{
 						filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj[choice.path[0]];
+					}
 				}
 			});
 
@@ -12031,11 +12037,19 @@ function OCombo(attr){
 			});
 
 		// если в метаданных указано строить список по локальным данным, подмешиваем эту информацию в фильтр
-		if(_meta._option_list_local)
+		if(_meta._option_list_local){
 			filter._local = true;
+		}
 
-		if(text)
+		// навешиваем фильтр по подстроке
+		if(text){
 			filter.presentation = {like: text};
+		}
+
+		// если включен справочник связей параметров - дополнительно фильтруем результат
+		if(attr.property && attr.property.filter_params_links){
+			attr.property.filter_params_links(filter, attr);
+		}
 
 		return filter;
 	}

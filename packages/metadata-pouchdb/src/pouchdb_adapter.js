@@ -123,14 +123,15 @@ class AdapterPouch extends AbstracrAdapter{
 
 							}else{
 
-								if(name == "meta")
-									return _paths.path + "meta";
+								if(name == "meta"){
+									return _paths.path + "meta"
 
-								else if(name == "ram")
-									return _paths.path + _paths.zone + "_ram";
+								} else if(name == "ram"){
+									return _paths.path + _paths.zone + "_ram"
 
-								else
-									return _paths.path + _paths.zone + "_" + name + _paths.suffix;
+								} else{
+									return _paths.path + _paths.zone + "_" + name + (_paths.suffix ? "_" + _paths.suffix : "")
+								}
 							}
 						}
 

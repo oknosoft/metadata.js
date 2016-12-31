@@ -1,15 +1,16 @@
 {
   "name": "metadata-superlogin",
   "description": "Social auth & session manager for metadata.js",
-  "version": "2.0.0-beta.12",
+  "version": "2.0.0-beta.13",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
+  "engines": {
+    "node": "^6.9",
+    "npm": "^3.5"
+  },
   "dependencies": {
     "superlogin-client": "^0.4"
   },
-  "engines": {
-    "node": "^6.5",
-    "npm": "^3.5"
-  },
+  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-pouchdb/"

@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _TabularSection = require('./TabularSection');
+var _TabularSection = require("./TabularSection");
 
 var _TabularSection2 = _interopRequireDefault(_TabularSection);
 
