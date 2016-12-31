@@ -32,7 +32,7 @@ var _DatePicker = require('material-ui/DatePicker');
 
 var _DatePicker2 = _interopRequireDefault(_DatePicker);
 
-var _DataSelection = require('./DataSelection.scss');
+var _DataSelection = require('./SchemeSettings.scss');
 
 var _DataSelection2 = _interopRequireDefault(_DataSelection);
 

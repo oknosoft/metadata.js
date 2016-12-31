@@ -8,7 +8,7 @@ import FlatButton from 'material-ui/FlatButton';
 import RaisedButton from 'material-ui/RaisedButton';
 import DatePicker from 'material-ui/DatePicker';
 
-import classes from './DataSelection.scss'
+import classes from './SchemeSettings.scss'
 
 
 export default class DataSelection extends Component{

@@ -11,7 +11,7 @@ import MenuItem from "material-ui/MenuItem";
 import PrintIcon from "material-ui/svg-icons/action/print";
 import AttachIcon from "material-ui/svg-icons/editor/attach-file";
 import SelectIcon from "material-ui/svg-icons/av/playlist-add-check";
-import Filter from "../DataSelection";
+import Filter from "../SchemeSettings";
 
 import classes from "./DataList.scss";
 

@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _DataSelection = require('./DataSelection');
+var _DataSelection = require('./SchemeSettings');
 
 var _DataSelection2 = _interopRequireDefault(_DataSelection);
 
