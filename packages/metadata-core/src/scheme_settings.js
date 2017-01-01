@@ -21,8 +21,8 @@ function scheme_settings($p) {
 		 *
 		 * @param class_name
 		 */
-		get_settings(class_name) {
-
+		get_scheme(class_name) {
+			return {}
 		}
 
 		/**
@@ -30,8 +30,8 @@ function scheme_settings($p) {
 		 *
 		 * @param class_name
 		 */
-		select_settings(class_name) {
-
+		select_scheme(class_name) {
+			return {}
 		}
 
 	}
