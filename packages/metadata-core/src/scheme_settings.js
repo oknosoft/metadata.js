@@ -63,11 +63,7 @@ function scheme_settings($p) {
 					if(!$p.utils.is_guid(ref)){
 						ref = $p.utils.generate_guid()
 					}
-					$p.cat.scheme_settings.create({
-						ref: ref,
-						obj: class_name,
-						name: "Основная"
-					})
+					$p.cat.scheme_settings.create({ref})
 						.then(function (obj) {
 							return obj.fill_default(class_name).save()
 						})
@@ -232,9 +228,16 @@ function scheme_settings($p) {
 				}
 			}
 
+			// заполняем табчасть доступных полей
 			columns.forEach(function (column) {
 				available_fields.add(column)
 			})
+
+			this.obj = class_name
+
+			if(!this.name){
+				this.name = "Основная"
+			}
 
 			return this
 		}
