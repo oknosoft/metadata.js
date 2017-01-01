@@ -228,7 +228,7 @@ function scheme_settings($p) {
 
 			for(var field in _meta.fields){
 				if(!columns.some(function (column) { return column.field == field })){
-					add_column(id, false)
+					add_column(field, false)
 				}
 			}
 
