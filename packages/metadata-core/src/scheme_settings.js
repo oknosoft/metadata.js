@@ -22,7 +22,59 @@ function scheme_settings($p) {
 		 * @param class_name
 		 */
 		get_scheme(class_name) {
-			return {}
+			return new Promise(function(resolve, reject){
+				// получаем сохраненную настройку
+				let ref = $p.wsql.get_user_param("scheme_settings_" + class_name.replace(".", "_"), "string"),
+					need_save, scheme;
+
+				function find_scheme() {
+					$p.cat.scheme_settings.find_rows_remote({
+						_view: 'doc/scheme_settings',
+						_top: 100,
+						_skip: 0,
+						_key: {
+							startkey: class_name,
+							endkey: class_name
+						}
+					})
+						.then(function (data) {
+							if(data.length){
+
+							}else{
+								create_scheme()
+							}
+						})
+						.catch(function (err) {
+							create_scheme()
+						})
+				}
+
+				function create_scheme() {
+					ref = $p.utils.generate_guid()
+					$p.cat.scheme_settings.create({
+						ref: ref,
+						obj: class_name,
+						name: "Основная"
+					})
+						.then(function (obj) {
+							$p.wsql.set_user_param("scheme_settings_" + class_name.replace(".", "_"), ref);
+							resolve(obj.fill_default(class_name))
+						})
+				}
+
+				if(ref){
+					// получаем по гвиду
+					scheme = $p.cat.scheme_settings.get(ref, true)
+					if(scheme && !scheme.is_new()){
+						resolve(scheme)
+					}else{
+						find_scheme()
+					}
+
+				}else{
+					find_scheme()
+				}
+			})
 		}
 
 		/**
@@ -109,6 +161,7 @@ function scheme_settings($p) {
 		 */
 		fill_default(class_name) {
 
+			return this
 		}
 
 	}
