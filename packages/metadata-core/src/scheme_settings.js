@@ -23,9 +23,14 @@ function scheme_settings($p) {
 		 */
 		get_scheme(class_name) {
 			return new Promise(function(resolve, reject){
+
 				// получаем сохраненную настройку
-				let ref = $p.wsql.get_user_param("scheme_settings_" + class_name.replace(".", "_"), "string"),
-					need_save, scheme;
+				let ref = $p.wsql.get_user_param("scheme_settings_" + class_name.replace(".", "_"), "string");
+
+				function set_param_and_resolve(obj){
+					$p.wsql.set_user_param("scheme_settings_" + class_name.replace(".", "_"), obj.ref);
+					resolve(obj)
+				}
 
 				function find_scheme() {
 					$p.cat.scheme_settings.find_rows_remote({
@@ -38,7 +43,12 @@ function scheme_settings($p) {
 						}
 					})
 						.then(function (data) {
-							if(data.length){
+							// если существует с текущим пользователем, берём его, иначе - первый попавшийся
+							if(data.length == 1){
+								set_param_and_resolve(data[0])
+
+							}else if(data.length){
+
 
 							}else{
 								create_scheme()
@@ -50,26 +60,35 @@ function scheme_settings($p) {
 				}
 
 				function create_scheme() {
-					ref = $p.utils.generate_guid()
+					if(!$p.utils.is_guid(ref)){
+						ref = $p.utils.generate_guid()
+					}
 					$p.cat.scheme_settings.create({
 						ref: ref,
 						obj: class_name,
 						name: "Основная"
 					})
 						.then(function (obj) {
-							$p.wsql.set_user_param("scheme_settings_" + class_name.replace(".", "_"), ref);
-							resolve(obj.fill_default(class_name))
+							return obj.fill_default(class_name).save()
+						})
+						.then(function (obj) {
+							set_param_and_resolve(obj)
 						})
 				}
 
 				if(ref){
 					// получаем по гвиду
-					scheme = $p.cat.scheme_settings.get(ref, true)
-					if(scheme && !scheme.is_new()){
-						resolve(scheme)
-					}else{
-						find_scheme()
-					}
+					$p.cat.scheme_settings.get(ref, "promise")
+						.then(function (scheme) {
+							if(scheme && !scheme.is_new()){
+								resolve(scheme)
+							}else{
+								find_scheme()
+							}
+						})
+						.catch(function (err) {
+							find_scheme()
+						})
 
 				}else{
 					find_scheme()
@@ -160,6 +179,62 @@ function scheme_settings($p) {
 		 * @param class_name
 		 */
 		fill_default(class_name) {
+
+			const _mgr = $p.md.mgr_by_class_name(class_name),
+				_meta = _mgr.metadata(),
+				available_fields = this.available_fields,
+				columns = [];
+
+			function add_column(fld, use) {
+				const id = fld.id || fld,
+					fld_meta = _meta.fields[id] || _mgr.metadata(id)
+				columns.push({
+					field: id,
+					caption: fld.caption || fld_meta.synonym,
+					tooltip: fld_meta.tooltip,
+					type: fld_meta.type,
+					width: (fld.width == '*') ? 250 : (parseInt(fld.width || fld_meta.width) || 140),
+					use: use
+				});
+			}
+
+			// набираем поля
+			if (_meta.form && _meta.form.selection) {
+				_meta.form.selection.cols.forEach(fld => {
+					add_column(fld, true)
+				});
+
+			} else {
+
+				if (_mgr instanceof $p.classes.CatManager) {
+					if (_meta.code_length) {
+						columns.push('id')
+					}
+
+					if (_meta.main_presentation_name) {
+						columns.push('name')
+					}
+
+				} else if (_mgr instanceof $p.classes.DocManager) {
+					columns.push('number_doc')
+					columns.push('date')
+				}
+
+				columns.forEach((id, index) => {
+					// id, synonym, tooltip, type, width
+					add_column(id, true)
+				})
+			}
+
+			for(var field in _meta.fields){
+				if(!columns.some(function (column) { return column.field == field })){
+					add_column(id, false)
+				}
+			}
+
+			columns.forEach(function (column) {
+				available_fields.add(column)
+			})
 
 			return this
 		}

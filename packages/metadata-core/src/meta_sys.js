@@ -189,7 +189,30 @@ const meta_sys = {
 								],
 								str_len: 100
 							}
+						},
+						tooltip: {
+							synonym: "Подсказка",
+							multiline_mode: false,
+							tooltip: "",
+							type: {
+								types: [
+									"string"
+								],
+								str_len: 100
+							}
+						},
+						type: {
+							synonym: "Тип",
+							multiline_mode: false,
+							tooltip: "Тип элемента управления",
+							type: {
+								types: [
+									"string"
+								],
+								str_len: 100
+							}
 						}
+
 					}
 				},
 				sort_fields: {
