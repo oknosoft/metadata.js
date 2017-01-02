@@ -27,7 +27,7 @@
     "pouchdb-authentication": "^0.5",
     "pouchdb-find": "^0.10",
     "rimraf": "^2.5",
-    "yargs": "^6.4"
+    "yargs": "^6.6"
   },
   "devDependencies": {
     "babel-cli": "^6.18",
