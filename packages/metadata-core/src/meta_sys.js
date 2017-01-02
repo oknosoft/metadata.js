@@ -127,11 +127,22 @@ const meta_sys = {
 						],
 						str_len: 50
 					}
+				},
+				query: {
+					synonym: "Запрос",
+					multiline_mode: false,
+					tooltip: "Индекс CouchDB или текст SQL",
+					type: {
+						types: [
+							"string"
+						],
+						str_len: 0
+					}
 				}
 			},
 			tabular_sections: {
-				available_fields: {
-					name: "available_fields",
+				fields: {
+					name: "fields",
 					synonym: "Доступные поля",
 					tooltip: "Состав, порядок и ширина колонок",
 					fields: {
@@ -215,8 +226,8 @@ const meta_sys = {
 
 					}
 				},
-				sort_fields: {
-					name: "sort_fields",
+				sorting: {
+					name: "sorting",
 					synonym: "Поля сортировки",
 					tooltip: "",
 					fields: {
@@ -255,8 +266,8 @@ const meta_sys = {
 						}
 					}
 				},
-				grouping_fields: {
-					name: "grouping_fields",
+				dimensions: {
+					name: "dimensions",
 					synonym: "Поля группировки",
 					tooltip: "",
 					fields: {
@@ -280,6 +291,46 @@ const meta_sys = {
 									"string"
 								],
 								str_len: 100
+							}
+						}
+					}
+				},
+				resources: {
+					name: "resources",
+					synonym: "Ресурсы",
+					tooltip: "",
+					fields: {
+						parent: {
+							synonym: "Родитель",
+							multiline_mode: false,
+							tooltip: "",
+							type: {
+								types: [
+									"string"
+								],
+								str_len: 100
+							}
+						},
+						field: {
+							synonym: "Поле",
+							multiline_mode: false,
+							tooltip: "",
+							type: {
+								types: [
+									"string"
+								],
+								str_len: 100
+							}
+						},
+						formula: {
+							synonym: "Формула",
+							multiline_mode: false,
+							tooltip: "По умолчанию - сумма",
+							type: {
+								types: [
+									"cat.formulas"
+								],
+								is_ref: true
 							}
 						}
 					}

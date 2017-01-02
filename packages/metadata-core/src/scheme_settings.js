@@ -126,25 +126,39 @@ function scheme_settings($p) {
 			this._setter('user', v)
 		}
 
-		get available_fields() {
-			return this._getter_ts('available_fields')
+		get query() {
+			return this._getter('query')
 		}
-		set available_fields(v) {
-			this._setter_ts('available_fields', v)
-		}
-
-		get sort_fields() {
-			return this._getter_ts('sort_fields')
-		}
-		set sort_fields(v) {
-			this._setter_ts('sort_fields', v)
+		set query(v) {
+			this._setter('query', v)
 		}
 
-		get grouping_fields() {
-			return this._getter_ts('grouping_fields')
+		get fields() {
+			return this._getter_ts('fields')
 		}
-		set grouping_fields(v) {
-			this._setter_ts('grouping_fields', v)
+		set fields(v) {
+			this._setter_ts('fields', v)
+		}
+
+		get sorting() {
+			return this._getter_ts('sorting')
+		}
+		set sorting(v) {
+			this._setter_ts('sorting', v)
+		}
+
+		get dimensions() {
+			return this._getter_ts('dimensions')
+		}
+		set dimensions(v) {
+			this._setter_ts('dimensions', v)
+		}
+
+		get resources() {
+			return this._getter_ts('resources')
+		}
+		set resources(v) {
+			this._setter_ts('resources', v)
 		}
 
 		get selection() {
@@ -153,7 +167,6 @@ function scheme_settings($p) {
 		set selection(v) {
 			this._setter_ts('selection', v)
 		}
-
 
 		get params() {
 			return this._getter_ts('params')
@@ -178,7 +191,7 @@ function scheme_settings($p) {
 
 			const _mgr = $p.md.mgr_by_class_name(class_name),
 				_meta = _mgr.metadata(),
-				available_fields = this.available_fields,
+				fields = this.fields,
 				columns = [];
 
 			function add_column(fld, use) {
@@ -230,7 +243,7 @@ function scheme_settings($p) {
 
 			// заполняем табчасть доступных полей
 			columns.forEach(function (column) {
-				available_fields.add(column)
+				fields.add(column)
 			})
 
 			this.obj = class_name
@@ -242,9 +255,16 @@ function scheme_settings($p) {
 			return this
 		}
 
+		/**
+		 * ### Возвращает ключ запроса по таблице параметров
+		 */
+		query_key(){
+
+		}
+
 	}
 
-	$p.CatScheme_settingsAvailable_fieldsRow = class CatScheme_settingsAvailable_fieldsRow extends classes.TabularSectionRow {
+	$p.CatScheme_settingsDimensionsRow = class CatScheme_settingsDimensionsRow extends TabularSectionRow {
 
 		get parent() {
 			return this._getter('parent')
@@ -253,18 +273,31 @@ function scheme_settings($p) {
 			this._setter('parent', v)
 		}
 
-		get use() {
-			return this._getter('use')
-		}
-		set use(v) {
-			this._setter('use', v)
-		}
-
 		get field() {
 			return this._getter('field')
 		}
 		set field(v) {
 			this._setter('field', v)
+		}
+	}
+
+	$p.CatScheme_settingsResourcesRow = class CatScheme_settingsResourcesRow extends $p.CatScheme_settingsDimensionsRow {
+
+		get formula() {
+			return this._getter('formula')
+		}
+		set formula(v) {
+			this._setter('formula', v)
+		}
+	}
+
+	$p.CatScheme_settingsFieldsRow = class CatScheme_settingsFieldsRow extends $p.CatScheme_settingsDimensionsRow {
+
+		get use() {
+			return this._getter('use')
+		}
+		set use(v) {
+			this._setter('use', v)
 		}
 
 		get width() {
@@ -281,46 +314,29 @@ function scheme_settings($p) {
 			this._setter('caption', v)
 		}
 
+		get tooltip() {
+			return this._getter('tooltip')
+		}
+		set tooltip(v) {
+			this._setter('tooltip', v)
+		}
+
+		get type() {
+			return this._getter('type')
+		}
+		set type(v) {
+			this._setter('type', v)
+		}
+
 	}
 
-	$p.CatScheme_settingsSort_fieldsRow = class CatScheme_settingsSort_fieldsRow extends TabularSectionRow {
-
-		get parent() {
-			return this._getter('parent')
-		}
-		set parent(v) {
-			this._setter('parent', v)
-		}
-
-		get field() {
-			return this._getter('field')
-		}
-		set field(v) {
-			this._setter('field', v)
-		}
+	$p.CatScheme_settingsSortingRow = class CatScheme_settingsSortingRow extends $p.CatScheme_settingsDimensionsRow {
 
 		get direction() {
 			return this._getter('direction')
 		}
 		set direction(v) {
 			this._setter('direction', v)
-		}
-	}
-
-	$p.CatScheme_settingsGrouping_fieldsRow = class CatScheme_settingsGrouping_fieldsRow extends TabularSectionRow {
-
-		get parent() {
-			return this._getter('parent')
-		}
-		set parent(v) {
-			this._setter('parent', v)
-		}
-
-		get field() {
-			return this._getter('field')
-		}
-		set field(v) {
-			this._setter('field', v)
 		}
 	}
 
