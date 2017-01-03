@@ -308,6 +308,18 @@ function scheme_settings($p) {
 			})
 			return res;
 		}
+
+		/**
+		 * ### Возвращает массив имён используемых колонок
+		 * @return {Array}
+		 */
+		used_fields(){
+			const res = []
+			this.fields.find_rows({use: true}, function (row) {
+				res.push(row.field)
+			})
+			return res
+		}
 	}
 
 	$p.CatScheme_settingsDimensionsRow = class CatScheme_settingsDimensionsRow extends TabularSectionRow {
