@@ -25,7 +25,7 @@ function scheme_settings($p) {
 			return new Promise(function(resolve, reject){
 
 				// получаем сохраненную настройку
-				const scheme_name = "scheme_settings_" + class_name.replace(/./g, "_")
+				const scheme_name = "scheme_settings_" + class_name.replace(/\./g, "_")
 				let ref = $p.wsql.get_user_param(scheme_name, "string")
 
 				function set_param_and_resolve(obj){
@@ -285,19 +285,26 @@ function scheme_settings($p) {
 			this.fields.find_rows({use: true}, function (row) {
 
 				const fld_meta = _meta.fields[row.field] || _mgr.metadata(row.field)
+				let column
 
 				if(mode == "ts"){
-
+					column = {
+						key: row.field,
+						name: row.caption,
+						resizable : true,
+						width: row.width == '*' ? 250 : (parseInt(row.width) || 140)
+					}
 				}else{
-					res.push({
+					column = {
 						id: row.field,
 						synonym: row.caption,
 						tooltip: row.tooltip,
 						type: fld_meta.type,
 						ctrl_type: row.ctrl_type,
 						width: row.width == '*' ? 250 : (parseInt(row.width) || 140)
-					})
+					}
 				}
+				res.push(column)
 			})
 			return res;
 		}
