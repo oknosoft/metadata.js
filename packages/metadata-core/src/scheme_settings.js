@@ -25,10 +25,11 @@ function scheme_settings($p) {
 			return new Promise(function(resolve, reject){
 
 				// получаем сохраненную настройку
-				let ref = $p.wsql.get_user_param("scheme_settings_" + class_name.replace(".", "_"), "string");
+				const scheme_name = "scheme_settings_" + class_name.replace(/./g, "_")
+				let ref = $p.wsql.get_user_param(scheme_name, "string")
 
 				function set_param_and_resolve(obj){
-					$p.wsql.set_user_param("scheme_settings_" + class_name.replace(".", "_"), obj.ref);
+					$p.wsql.set_user_param(scheme_name, obj.ref);
 					resolve(obj)
 				}
 
@@ -189,8 +190,9 @@ function scheme_settings($p) {
 		 */
 		fill_default(class_name) {
 
-			const _mgr = $p.md.mgr_by_class_name(class_name),
-				_meta = _mgr.metadata(),
+			const parts = class_name.split("."),
+				_mgr = $p.md.mgr_by_class_name(class_name),
+				_meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]),
 				fields = this.fields,
 				columns = [];
 
@@ -201,38 +203,44 @@ function scheme_settings($p) {
 					field: id,
 					caption: fld.caption || fld_meta.synonym,
 					tooltip: fld_meta.tooltip,
-					type: fld_meta.type,
-					width: (fld.width == '*') ? 250 : (parseInt(fld.width || fld_meta.width) || 140),
+					width: fld.width || fld_meta.width,
 					use: use
 				});
 			}
 
 			// набираем поля
-			if (_meta.form && _meta.form.selection) {
-				_meta.form.selection.cols.forEach(fld => {
-					add_column(fld, true)
-				});
+			if(parts.length < 3){   // поля динсписка
 
-			} else {
+				if (_meta.form && _meta.form.selection) {
 
-				if (_mgr instanceof $p.classes.CatManager) {
-					if (_meta.code_length) {
-						columns.push('id')
+					_meta.form.selection.cols.forEach(fld => {
+						add_column(fld, true)
+					});
+
+				} else {
+
+					if (_mgr instanceof $p.classes.CatManager) {
+						if (_meta.code_length) {
+							columns.push('id')
+						}
+
+						if (_meta.main_presentation_name) {
+							columns.push('name')
+						}
+
+					} else if (_mgr instanceof $p.classes.DocManager) {
+						columns.push('number_doc')
+						columns.push('date')
 					}
 
-					if (_meta.main_presentation_name) {
-						columns.push('name')
-					}
-
-				} else if (_mgr instanceof $p.classes.DocManager) {
-					columns.push('number_doc')
-					columns.push('date')
+					columns.forEach((id, index) => {
+						// id, synonym, tooltip, type, width
+						add_column(id, true)
+					})
 				}
 
-				columns.forEach((id, index) => {
-					// id, synonym, tooltip, type, width
-					add_column(id, true)
-				})
+			}else{ // поля табличной части
+
 			}
 
 			for(var field in _meta.fields){
@@ -262,6 +270,37 @@ function scheme_settings($p) {
 
 		}
 
+		/**
+		 * ### Возвращает массив колонок для динсписка или табчасти
+		 * @param mode {String} - режим формирования колонок
+		 * @return {Array}
+		 */
+		columns(mode){
+
+			const parts = this.obj.split("."),
+				_mgr = $p.md.mgr_by_class_name(this.obj),
+				_meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]),
+				res = [];
+
+			this.fields.find_rows({use: true}, function (row) {
+
+				const fld_meta = _meta.fields[row.field] || _mgr.metadata(row.field)
+
+				if(mode == "ts"){
+
+				}else{
+					res.push({
+						id: row.field,
+						synonym: row.caption,
+						tooltip: row.tooltip,
+						type: fld_meta.type,
+						ctrl_type: row.ctrl_type,
+						width: row.width == '*' ? 250 : (parseInt(row.width) || 140)
+					})
+				}
+			})
+			return res;
+		}
 	}
 
 	$p.CatScheme_settingsDimensionsRow = class CatScheme_settingsDimensionsRow extends TabularSectionRow {
@@ -321,11 +360,11 @@ function scheme_settings($p) {
 			this._setter('tooltip', v)
 		}
 
-		get type() {
-			return this._getter('type')
+		get ctrl_type() {
+			return this._getter('ctrl_type')
 		}
-		set type(v) {
-			this._setter('type', v)
+		set ctrl_type(v) {
+			this._setter('ctrl_type', v)
 		}
 
 	}

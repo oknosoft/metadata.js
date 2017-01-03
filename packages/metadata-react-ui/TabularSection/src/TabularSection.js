@@ -46,7 +46,7 @@ export default class TabularSection extends Component {
     _obj: PropTypes.object.isRequired,
     _tabular: PropTypes.string.isRequired,
     _meta: PropTypes.object,
-    _columns: PropTypes.object,
+    _columns: PropTypes.array,
 
     read_only: PropTypes.object,          // Элемент только для чтения
     deny_add_del: PropTypes.bool,         // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)

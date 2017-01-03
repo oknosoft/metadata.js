@@ -1,3 +1,5 @@
-import DataSelection from './SchemeSettings'
+import SchemeSettings from './SchemeSettingsWrapper'
 
-export default DataSelection
+export SchemeSettingsTabs from './SchemeSettingsTabs'
+
+export default SchemeSettings
