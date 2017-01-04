@@ -1,14 +1,34 @@
 /** @flow */
 import React, {Component, PropTypes} from "react";
 import {InfiniteLoader, Grid} from "react-virtualized";
+import DumbLoader from "../DumbLoader";
 import Toolbar from "./Toolbar";
 import cn from "classnames";
-
 import styles from "./DataList.scss";
 
 
 const limit = 30,
   totalRows = 999999;
+
+class DataListStorage {
+
+  constructor() {
+    this._data = []
+  }
+
+  get size() {
+    return this._data.length
+  }
+
+  get(index) {
+    return this._data[index]
+  }
+
+  clear() {
+    this._data.length = 0
+  }
+
+}
 
 export default class DataList extends Component {
 
@@ -18,17 +38,22 @@ export default class DataList extends Component {
 
   static propTypes = {
 
+    // данные
     _mgr: PropTypes.object.isRequired,    // Менеджер данных
     _meta: PropTypes.object,              // Описание метаданных. Если не указано, используем метаданные менеджера
-    selection_mode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
-    columns: PropTypes.array,             // Настройки колонок динамического списка. Если не указано - генерируем по метаданным
-    select: PropTypes.object,             // Параметры запроса к couchdb. Если не указано - генерируем по метаданным
 
+    // настройки компоновки
+    select: PropTypes.object,             // todo: переместить в scheme // Параметры запроса к couchdb. Если не указано - генерируем по метаданным
+
+    // настройки внешнего вида и поведения
+    selection_mode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
     read_only: PropTypes.object,          // Элемент только для чтения
     deny_add_del: PropTypes.bool,         // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
     modal: PropTypes.bool,                // Показывать список в модальном диалоге
     width: PropTypes.number.isRequired,   // Ширина элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
     height: PropTypes.number.isRequired,  // Высота элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
+
+
     Toolbar: PropTypes.func,              // Индивидуальная панель инструментов. Если не указана, рисуем типовую
 
     // Redux actions
@@ -50,13 +75,15 @@ export default class DataList extends Component {
 
   constructor(props, context) {
 
-    super(props);
+    super(props, context);
 
-    this.state = {
+    const {class_name} = props._mgr
+    const {$p} = context
+
+    const state = this.state = {
       totalRowCount: totalRows,
       selectedRowIndex: 0,
       do_reload: false,
-      columns: props.columns,
       _meta: props._meta || props._mgr.metadata(),
 
       // готовим фильтры для запроса couchdb
@@ -66,78 +93,19 @@ export default class DataList extends Component {
         _top: 30,
         _skip: 0,
         _key: {
-          startkey: [props.params.options || props._mgr.class_name, 2000],
-          endkey: [props.params.options || props._mgr.class_name, 2020]
+          startkey: [props.params.options || class_name, 2000],
+          endkey: [props.params.options || class_name, 2020]
         }
       }
     }
 
-    const {state} = this
-    const {$p} = context
+    this._list = new DataListStorage()
 
-    if (!state.columns || !state.columns.length) {
-
-      state.columns = []
-
-      // набираем поля
-      if (state._meta.form && state._meta.form.selection) {
-        state._meta.form.selection.cols.forEach(fld => {
-          const fld_meta = state._meta.fields[fld.id] || props._mgr.metadata(fld.id)
-          state.columns.push({
-            id: fld.id,
-            synonym: fld.caption || fld_meta.synonym,
-            tooltip: fld_meta.tooltip,
-            type: fld_meta.type,
-            width: (fld.width == '*') ? 250 : (parseInt(fld.width) || 140)
-          });
-        });
-
-      } else {
-
-        if (props._mgr instanceof $p.classes.CatManager) {
-          if (state._meta.code_length) {
-            state.columns.push('id')
-          }
-
-          if (state._meta.main_presentation_name) {
-            state.columns.push('name')
-          }
-
-        } else if (props._mgr instanceof $p.classes.DocManager) {
-          state.columns.push('number_doc')
-          state.columns.push('date')
-        }
-
-        state.columns = state.columns.map((id, index) => {
-          // id, synonym, tooltip, type, width
-          const fld_meta = state._meta.fields[id] || props._mgr.metadata(id)
-          return {
-            id,
-            synonym: fld_meta.synonym,
-            tooltip: fld_meta.tooltip,
-            type: fld_meta.type,
-            width: fld_meta.width || 140
-          }
-        })
-      }
-    }
-
-    this._list = {
-      _data: [],
-      get size() {
-        return this._data.length
-      },
-      get(index){
-        return this._data[index]
-      },
-      clear(){
-        this._data.length = 0
-      }
-    }
-
+    $p.cat.scheme_settings.get_scheme(class_name)
+      .then(this.handleSchemeChange)
   }
 
-  componentDidUpdate (prevProps, prevState) {
+  componentDidUpdate(prevProps, prevState) {
     // If props/state signals that the underlying collection has changed,
     // Reload the most recently requested batch of rows:
     if (this.state.do_reload) {
@@ -151,11 +119,19 @@ export default class DataList extends Component {
 
   render() {
 
-    const {columns, totalRowCount, select} = this.state
+    const {columns, totalRowCount, select, scheme} = this.state
     const {width, height, selection_mode, params, _mgr} = this.props
     const key0 = params.options || _mgr.class_name
 
-    if(select._key.startkey[0] != key0){
+    if (!scheme) {
+      return <DumbLoader title="Чтение настроек компоновки..."/>
+
+    } else if (!columns || !columns.length) {
+      return <DumbLoader title="Ошибка настроек компоновки..."/>
+
+    }
+
+    if (select._key.startkey[0] != key0) {
       select._key.startkey[0] = key0
       select._key.endkey[0] = key0
       setTimeout(() => {
@@ -165,6 +141,7 @@ export default class DataList extends Component {
           totalRowCount: 0
         })
       })
+      // return <DumbLoader title="Обновление данных..." />
     }
 
     return (
@@ -181,8 +158,9 @@ export default class DataList extends Component {
           handlePrint={this.handlePrint}
           handleAttachment={this.handleAttachment}
 
-          handleSelectionChange={this.handleSelectionChange}
-          selectionValue={{}}
+          scheme={scheme}
+          handleSchemeChange={this.handleSchemeChange}
+
         />
 
         <InfiniteLoader
@@ -211,7 +189,7 @@ export default class DataList extends Component {
 
                 <div
                   //className={styles.BodyGrid}
-                  style={{position: 'relative'}}>
+                  style={{position: 'relative', zIndex: -1}}>
                   {
                     columns.map(function (column, index) {
 
@@ -296,9 +274,12 @@ export default class DataList extends Component {
     }
   }
 
-  // обработчик изменении свойств отбора
-  handleSelectionChange = () => {
-
+  // обработчик при изменении настроек компоновки
+  handleSchemeChange = (scheme) => {
+    this.setState({
+      scheme,
+      columns: scheme.columns()
+    })
   }
 
   // обработчик печати теущей строки

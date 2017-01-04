@@ -22,8 +22,7 @@ export default class SchemeSettingsWrapper extends Component{
 
   static propTypes = {
     handleSchemeChange: PropTypes.func.isRequired,
-    scheme: PropTypes.object.isRequired,
-    schemas: PropTypes.object.isRequired
+    scheme: PropTypes.object.isRequired
   }
 
   state = {
@@ -36,6 +35,15 @@ export default class SchemeSettingsWrapper extends Component{
 
   handleClose = () => {
     this.setState({open: false});
+  }
+
+  handleOk = () => {
+    this.handleClose();
+    this.props.handleSchemeChange(this.state.scheme || this.props.scheme);
+  }
+
+  handleSchemeChange = (scheme) => {
+    this.state.scheme = scheme;
   }
 
 
@@ -51,7 +59,7 @@ export default class SchemeSettingsWrapper extends Component{
         label="Ok"
         primary={true}
         keyboardFocused={true}
-        onTouchTap={this.handleClose}
+        onTouchTap={this.handleOk}
       />,
     ];
 
@@ -72,7 +80,10 @@ export default class SchemeSettingsWrapper extends Component{
           onRequestClose={this.handleClose}
         >
 
-          <SchemeSettingsTabs {...this.props} />
+          <SchemeSettingsTabs
+            handleSchemeChange={this.handleSchemeChange}
+            scheme={this.props.scheme}
+          />
 
         </Dialog>
 
