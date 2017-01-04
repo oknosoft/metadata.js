@@ -177,10 +177,9 @@ const meta_sys = {
 							tooltip: "",
 							type: {
 								types: [
-									"number"
+									"string"
 								],
-								digits: 6,
-								fraction_figits: 0
+								str_len: 6
 							}
 						},
 						caption: {
@@ -413,9 +412,12 @@ const meta_sys = {
 							tooltip: "Может иметь примитивный или ссылочный тип или массив",
 							type: {
 								types: [
-									"string"
+									"string",
+									"number"
 								],
-								str_len: 0
+								str_len: 0,
+								digits: 15,
+								fraction_figits: 3
 							}
 						}
 					}

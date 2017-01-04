@@ -292,7 +292,8 @@ function scheme_settings($p) {
 						key: row.field,
 						name: row.caption,
 						resizable : true,
-						width: row.width == '*' ? 250 : (parseInt(row.width) || 140)
+						width: row.width == '*' ? 250 : (parseInt(row.width) || 140),
+						ctrl_type: row.ctrl_type,
 					}
 				}else{
 					column = {
@@ -301,7 +302,7 @@ function scheme_settings($p) {
 						tooltip: row.tooltip,
 						type: fld_meta.type,
 						ctrl_type: row.ctrl_type,
-						width: row.width == '*' ? 250 : (parseInt(row.width) || 140)
+						width: row.width == '*' ? 250 : (parseInt(row.width) || 140),
 					}
 				}
 				res.push(column)
