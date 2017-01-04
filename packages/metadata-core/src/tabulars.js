@@ -23,8 +23,9 @@ class TabularSection {
 	constructor(name, owner) {
 
 		// Если табчасти нет в данных владельца - создаём
-		if (!owner._obj[name])
-			owner._obj[name] = [];
+		if (!owner._obj[name]){
+			owner._obj[name] = []
+		}
 
 		Object.defineProperties(this, {
 
@@ -34,9 +35,7 @@ class TabularSection {
 			 * @type String
 			 */
 			_name: {
-				get: function () {
-					return name
-				}
+				get: () => name
 			},
 
 			/**
@@ -45,27 +44,25 @@ class TabularSection {
 			 * @type DataObj
 			 */
 			_owner: {
-				get: function () {
-					return owner
-				}
+				get: () => owner
 			},
 
-			/**
-			 * ### Фактическое хранилище данных объекта
-			 * Оно же, запись в таблице объекта локальной базы данных
-			 * @property _obj
-			 * @type Object
-			 */
-			_obj: {
-				get: function () {
-					return owner._obj[name]
-				}
-			}
 		})
 	}
 
 	toString() {
 		return "Табличная часть " + this._owner._manager.class_name + "." + this._name
+	}
+
+	/**
+	 * ### Фактическое хранилище данных объекта
+	 * Оно же, запись в таблице объекта локальной базы данных
+	 * @property _obj
+	 * @type Object
+	 */
+	get _obj(){
+		const {_owner, _name} = this
+		return _owner._obj[_name]
 	}
 
 	/**
@@ -75,7 +72,8 @@ class TabularSection {
 	 * @return {TabularSectionRow}
 	 */
 	get(index) {
-		return this._obj[index] ? this._obj[index]._row : null;
+		const row = this._obj[index]
+		return row ? row._row : null
 	}
 
 	/**
@@ -103,11 +101,14 @@ class TabularSection {
 	 */
 	clear(silent) {
 
-		for (var i in this._obj)
-			delete this._obj[i];
-		this._obj.length = 0;
+		const {_obj, _owner} = this;
 
-		if (!silent && !this._owner._data._silent){
+		// for (var i = 0; i < _obj.length; i++){
+		// 	delete _obj[i]
+		// }
+		_obj.length = 0;
+
+		if (!silent && !_owner._data._silent){
 			// TODO: observe
 			// Object.getNotifier(this._owner).notify({
 			// 	type: 'rows',
@@ -124,7 +125,9 @@ class TabularSection {
 	 */
 	del(val, silent) {
 
-		var index, _obj = this._obj;
+		const {_obj, _owner} = this;
+
+		let index;
 
 		if (typeof val == "undefined")
 			return;
@@ -152,15 +155,15 @@ class TabularSection {
 			row.row = index + 1;
 		});
 
-		if (!silent && !this._owner._data._silent){
+		if (!silent && !_owner._data._silent){
 			// TODO: observe
-			// Object.getNotifier(this._owner).notify({
+			// Object.getNotifier(_owner).notify({
 			// 	type: 'rows',
 			// 	tabular: this._name
 			// });
 		}
 
-		this._owner._data._modified = true;
+		_owner._data._modified = true;
 	}
 
 	/**
@@ -264,7 +267,6 @@ class TabularSection {
 	 * @param fn {Function} - callback, в который передается строка табчасти
 	 */
 	each(fn) {
-
 		this._obj.forEach((row) => fn.call(this, row._row));
 	}
 
@@ -486,7 +488,7 @@ class TabularSectionRow {
 
 	constructor(owner) {
 
-		var _obj = {};
+		//var _obj = {};
 
 		Object.defineProperties(this, {
 
@@ -496,9 +498,8 @@ class TabularSectionRow {
 			 * @type TabularSection
 			 */
 			_owner: {
-				get: function () {
-					return owner
-				}
+				get: () => owner
+
 			},
 
 			/**
@@ -508,12 +509,11 @@ class TabularSectionRow {
 			 * @type Object
 			 */
 			_obj: {
-				get: function () {
-					return _obj
-				}
+				value: {}
 			}
 		})
 	}
+
 
 	/**
 	 * ### Метаданые строки табличной части

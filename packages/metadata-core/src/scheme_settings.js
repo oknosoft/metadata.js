@@ -386,6 +386,20 @@ function scheme_settings($p) {
 			this._setter('ctrl_type', v)
 		}
 
+		get formatter() {
+			return this._getter('formatter')
+		}
+		set formatter(v) {
+			this._setter('formatter', v)
+		}
+
+		get editor() {
+			return this._getter('editor')
+		}
+		set editor(v) {
+			this._setter('editor', v)
+		}
+
 	}
 
 	$p.CatScheme_settingsSortingRow = class CatScheme_settingsSortingRow extends $p.CatScheme_settingsDimensionsRow {
