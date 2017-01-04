@@ -12,8 +12,7 @@
     "metadata-abstract-ui": "^2.0.0-beta.13",
     "material-ui": "^0.16",
     "react-data-grid": "^1.0",
-    "react-virtualized": "^8.8",
-    "react-virtualized-select": "^2.1"
+    "react-virtualized": "^8.8"
   },
   "repository": {
     "type": "git",

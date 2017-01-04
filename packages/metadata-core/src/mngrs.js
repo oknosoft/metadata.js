@@ -74,38 +74,6 @@ function mngrs($p) {
 
 			Object.defineProperties(this, {
 
-				/**
-				 * ### Способ кеширования объектов этого менеджера
-				 *
-				 * Выполняет две функции:
-				 * - Указывает, нужно ли сохранять (искать) объекты в локальном кеше или сразу топать на сервер
-				 * - Указывает, нужно ли запоминать представления ссылок (инверсно).
-				 * Для кешируемых, представления ссылок запоминать необязательно, т.к. его быстрее вычислить по месту
-				 * @property cachable
-				 * @for DataManager
-				 * @type String - ("ram", "doc", "doc_remote", "meta", "e1cib")
-				 * @final
-				 */
-				cachable: {
-					get: () => {
-
-						// перечисления кешируются всегда
-						if(class_name.indexOf("enm.") != -1)
-							return "ram";
-
-						// Если в метаданных явно указано правило кеширования, используем его
-						if(_meta.cachable)
-							return _meta.cachable;
-
-						// документы, отчеты и обработки по умолчанию кешируем в idb, но в память не загружаем
-						if(class_name.indexOf("doc.") != -1 || class_name.indexOf("dp.") != -1 || class_name.indexOf("rep.") != -1)
-							return "doc";
-
-						// остальные классы по умолчанию кешируем и загружаем в память при старте
-						return "ram";
-
-					}
-				},
 
 				/**
 				 * ### Имя типа объектов этого менеджера
@@ -118,17 +86,6 @@ function mngrs($p) {
 					get: () => class_name
 				},
 
-				/**
-				 * ### Указатель на массив, сопоставленный с таблицей локальной базы данных
-				 * Фактически - хранилище объектов данного класса
-				 * @property alatable
-				 * @for DataManager
-				 * @type Array
-				 * @final
-				 */
-				alatable: {
-					get: () => wsql.aladb.tables[this.table_name] ? wsql.aladb.tables[this.table_name].data : []
-				},
 
 				/**
 				 * ### Метаданные объекта
@@ -139,7 +96,7 @@ function mngrs($p) {
 				 * @return {Object} - объект метаданных
 				 */
 				metadata: {
-					value: field_name => {
+					value: (field_name) => {
 
 						if(field_name)
 							return _meta.fields[field_name] || md.get(class_name, field_name) || _meta.tabular_sections[field_name];
@@ -161,8 +118,53 @@ function mngrs($p) {
 				by_ref: {
 					value: {}
 				}
-			});
+			})
+		}
 
+		/**
+		 * ### Указатель на массив, сопоставленный с таблицей локальной базы данных
+		 * Фактически - хранилище объектов данного класса
+		 * @property alatable
+		 * @for DataManager
+		 * @type Array
+		 * @final
+		 */
+		get alatable(){
+			const {table_name} = this
+			return wsql.aladb.tables[table_name] ? wsql.aladb.tables[table_name].data : []
+		}
+
+		/**
+		 * ### Способ кеширования объектов этого менеджера
+		 *
+		 * Выполняет две функции:
+		 * - Указывает, нужно ли сохранять (искать) объекты в локальном кеше или сразу топать на сервер
+		 * - Указывает, нужно ли запоминать представления ссылок (инверсно).
+		 * Для кешируемых, представления ссылок запоминать необязательно, т.к. его быстрее вычислить по месту
+		 * @property cachable
+		 * @for DataManager
+		 * @type String - ("ram", "doc", "doc_remote", "meta", "e1cib")
+		 * @final
+		 */
+		get cachable(){
+
+			const {class_name} = this
+			const _meta = this.metadata()
+
+			// перечисления кешируются всегда
+			if(class_name.indexOf("enm.") != -1)
+				return "ram";
+
+			// Если в метаданных явно указано правило кеширования, используем его
+			if(_meta.cachable)
+				return _meta.cachable;
+
+			// документы, отчеты и обработки по умолчанию кешируем в idb, но в память не загружаем
+			if(class_name.indexOf("doc.") != -1 || class_name.indexOf("dp.") != -1 || class_name.indexOf("rep.") != -1)
+				return "doc";
+
+			// остальные классы по умолчанию кешируем и загружаем в память при старте
+			return "ram";
 		}
 
 		/**

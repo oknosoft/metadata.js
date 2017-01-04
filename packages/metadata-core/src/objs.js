@@ -37,8 +37,9 @@ class DataObj {
 			};
 
 		// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
-		if(!(manager instanceof classes.DataProcessorsManager) && !(manager instanceof classes.EnumManager))
+		if(!(manager instanceof classes.DataProcessorsManager) && !(manager instanceof classes.EnumManager)){
 			tmp = manager.get(attr, true);
+		}
 
 		if(tmp){
 			attr = null;
@@ -46,14 +47,15 @@ class DataObj {
 		}
 
 
-		if(manager instanceof classes.EnumManager)
+		if(manager instanceof classes.EnumManager){
 			_obj.ref = attr.name;
-
+		}
 		else if(!(manager instanceof classes.RegisterManager)){
 			_obj.ref = utils.fix_guid(attr);
-
-		}else
+		}
+		else{
 			_obj.ref = manager.get_ref(attr);
+		}
 
 
 		Object.defineProperties(this, {
@@ -75,9 +77,9 @@ class DataObj {
 			 * @property _ts_
 			 */
 			_ts_: {
-				value: function( name ) {
+				value: ( name ) => {
 					if( !_ts_[name] ) {
-						_ts_[name] = new classes.TabularSection(name, this);
+						_ts_[name] = new TabularSection(name, this);
 					}
 					return _ts_[name];
 				},
@@ -113,7 +115,6 @@ class DataObj {
 		}
 
 		attr = null;
-
 	}
 
 	_getter(f) {
@@ -247,7 +248,7 @@ class DataObj {
 
 	_setter_ts(f, v) {
 		var ts = this._ts_(f);
-		if(ts instanceof classes.TabularSection && Array.isArray(v))
+		if(ts instanceof TabularSection && Array.isArray(v))
 			ts.load(v);
 	}
 
