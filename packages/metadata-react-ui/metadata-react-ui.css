@@ -4,6 +4,14 @@
 	display: block !important;
 }
 
+.meta-toolbar {
+	z-index: 1150;
+}
+
+.meta-toolbar-group {
+	z-index: 1160;
+}
+
 .meta-paper {
 	min-width: 280px !important;
 	margin: auto !important;

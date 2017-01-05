@@ -316,10 +316,23 @@ function scheme_settings($p) {
 		 */
 		used_fields(){
 			const res = []
-			this.fields.find_rows({use: true}, function (row) {
+			this.fields.find_rows({use: true}, (row) => {
 				res.push(row.field)
 			})
 			return res
+		}
+
+		/**
+		 * ### Возвращает массив элементов для поля выбора
+		 * @return {Array}
+		 */
+		used_fields_list(){
+			return this.fields._obj.map((row) => ({
+				id: row.field,
+				value: row.field,
+				text: row.caption,
+				title: row.caption
+			}))
 		}
 	}
 
