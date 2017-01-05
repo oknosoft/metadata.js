@@ -2,6 +2,12 @@ import React, {Component, PropTypes} from "react";
 import ReactDataGrid from "react-data-grid";
 import DumbLoader from "../DumbLoader";
 import DefaultToolbar from "./TabularSectionToolbar"
+import DataCell from 'components/DataField/DataCell'
+
+import {Editors, Formatters} from "react-data-grid/addons";
+const AutoCompleteEditor = Editors.AutoComplete;
+const DropDownEditor = Editors.DropDownEditor;
+const DropDownFormatter = Formatters.DropDownFormatter;
 
 
 // // Import the necessary modules.
@@ -54,7 +60,7 @@ export default class TabularSection extends Component {
     deny_add_del: PropTypes.bool,         // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
     deny_reorder: PropTypes.bool,         // Запрет изменения порядка строк
 
-    Toolbar: PropTypes.func,              // Индивидуальная панель инструментов. Если не указана, рисуем типовую
+    Toolbar: PropTypes.func,              // Конструктор индивидуальной панели инструментов. Если не указан, рисуем типовую
 
     handleValueChange: PropTypes.func,    // Обработчик изменения значения в ячейке
     handleRowChange: PropTypes.func,      // При окончании редактирования строки
@@ -89,23 +95,7 @@ export default class TabularSection extends Component {
 
     if (!this.state._columns.length) {
 
-      for (let fld in this.state._meta.fields) {
-        let _fld = this.state._meta.fields[fld],
-          column = {
-            key: fld,
-            name: _fld.synonym,
-            resizable: true
-          }
 
-        if (_fld.type.is_ref) {
-          column.formatter = v => {
-            return <div>{v.value.presentation}</div>
-          }
-        }
-
-        this.state._columns.push(column)
-
-      }
 
       $p.cat.scheme_settings.get_scheme(class_name)
         .then(this.handleSchemeChange)
@@ -133,10 +123,20 @@ export default class TabularSection extends Component {
 
   handleUp = () => {
     const data = this.refs.grid.state.selected
+    if(data && data.hasOwnProperty("rowIdx") && data.rowIdx > 0){
+      this.state._tabular.swap(data.rowIdx, data.rowIdx - 1)
+      data.rowIdx = data.rowIdx - 1
+      this.forceUpdate()
+    }
   }
 
   handleDown = () => {
     const data = this.refs.grid.state.selected
+    if(data && data.hasOwnProperty("rowIdx") && data.rowIdx < this.state._tabular.count() - 1){
+      this.state._tabular.swap(data.rowIdx, data.rowIdx + 1)
+      data.rowIdx = data.rowIdx + 1
+      this.forceUpdate()
+    }
   }
 
   handleRowUpdated(e) {
@@ -147,10 +147,53 @@ export default class TabularSection extends Component {
 
   // обработчик при изменении настроек компоновки
   handleSchemeChange = (scheme) => {
-    this.setState({
-      scheme,
-      _columns: scheme.columns("ts")
+
+    const _columns = scheme.columns("ts")
+    const {fields} = this.state._meta
+    const {_obj} = this.props
+
+    // подклеиваем редакторы и форматтеры
+    _columns.forEach((column) => {
+
+      const _fld = fields[column.key]
+
+      if(!column.formatter){
+
+        if (_fld.type.is_ref) {
+          column.formatter = (v) => {
+            const {presentation} = v.value
+            return <div title={presentation}>{presentation}</div>
+          }
+        }
+      }
+
+      switch (column.ctrl_type) {
+
+        case 'input':
+          column.editable = true;
+          break;
+
+        case 'ocombo':
+          column.editor = <DataCell />;
+          break;
+
+        case 'ofields':
+          const options = _obj.used_fields_list()
+          column.editor = <DropDownEditor options={options} />
+          column.formatter = <DropDownFormatter options={options} />
+          break;
+
+        case 'dhxCalendar':
+          column.editor = <DataCell />;
+          break;
+
+        default:
+          ;
+      }
+
     })
+
+    this.setState({scheme, _columns})
   }
 
   onRowsSelected = (rows) => {

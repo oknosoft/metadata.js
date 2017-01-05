@@ -51,15 +51,15 @@ export default class SchemeSettingsWrapper extends Component{
 
     const actions = [
       <FlatButton
-        label="Отмена"
-        primary={true}
-        onTouchTap={this.handleClose}
-      />,
-      <FlatButton
-        label="Ok"
+        label="Применить"
         primary={true}
         keyboardFocused={true}
         onTouchTap={this.handleOk}
+      />,
+      <FlatButton
+        label="Отмена"
+        secondary={true}
+        onTouchTap={this.handleClose}
       />,
     ];
 

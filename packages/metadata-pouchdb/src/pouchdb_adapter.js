@@ -1190,8 +1190,9 @@ function proto_data_obj(data_obj, adapter, classes) {
 
 			value: function (prefix) {
 
-				if(!this._metadata().code_length)
-					return;
+				if(!this._metadata().code_length){
+					return Promise.resolve(this)
+				}
 
 				// если не указан явно, рассчитываем префикс по умолчанию
 				if(!prefix)
@@ -1204,8 +1205,9 @@ function proto_data_obj(data_obj, adapter, classes) {
 					code_length = this._metadata().code_length - prefix.length;
 
 				// для кешируемых в озу, вычисляем без индекса
-				if(this._manager.cachable == "ram")
-					return Promise.resolve(this.new_cat_id(prefix));
+				if(this._manager.cachable == "ram"){
+					return Promise.resolve(this.new_cat_id(prefix))
+				}
 
 				return adapter.db(obj._manager).query("doc/number_doc",
 					{

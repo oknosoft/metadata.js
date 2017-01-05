@@ -720,12 +720,14 @@ function mngrs($p) {
 		 */
 		create(attr, fill_default){
 
-			if(!attr || typeof attr != "object")
+			if(!attr || typeof attr != "object"){
 				attr = {};
-			if(!attr.ref || !utils.is_guid(attr.ref) || utils.is_empty_guid(attr.ref))
+			}
+			if(!attr.ref || !utils.is_guid(attr.ref) || utils.is_empty_guid(attr.ref)){
 				attr.ref = utils.generate_guid();
+			}
 
-			var o = this.by_ref[attr.ref];
+			let o = this.by_ref[attr.ref];
 
 			if(!o){
 

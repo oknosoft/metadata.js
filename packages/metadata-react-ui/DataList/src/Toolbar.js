@@ -35,7 +35,7 @@ export default class DataListToolbar extends Component {
     return (
 
       <Toolbar>
-        <ToolbarGroup firstChild={true}>
+        <ToolbarGroup className={"meta-toolbar-group"} firstChild={true}>
 
           {
             props.selection_mode ?
@@ -68,7 +68,7 @@ export default class DataListToolbar extends Component {
 
         </ToolbarGroup>
 
-        <ToolbarGroup>
+        <ToolbarGroup className={"meta-toolbar-group"}>
 
           <IconMenu
             iconButtonElement={

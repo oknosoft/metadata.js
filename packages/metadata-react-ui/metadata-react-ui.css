@@ -5,11 +5,11 @@
 }
 
 .meta-toolbar {
-	z-index: 1150;
+	z-index: 800;
 }
 
 .meta-toolbar-group {
-	z-index: 1160;
+	z-index: 850;
 }
 
 .meta-paper {

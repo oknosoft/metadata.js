@@ -233,7 +233,7 @@ function scheme_settings($p) {
 						columns.push('date')
 					}
 
-					columns.forEach((id, index) => {
+					columns.forEach((id) => {
 						// id, synonym, tooltip, type, width
 						add_column(id, true)
 					})
@@ -241,6 +241,9 @@ function scheme_settings($p) {
 
 			}else{ // поля табличной части
 
+				for(var field in _meta.fields){
+					add_column(field, true)
+				}
 			}
 
 			for(var field in _meta.fields){
