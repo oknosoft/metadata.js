@@ -282,10 +282,34 @@ function scheme_settings($p) {
 		}
 
 		/**
-		 * ### Возвращает ключ запроса по таблице параметров
+		 * ### Устанавливает _view и _key в параметрах запроса
 		 */
-		query_key(){
+		fix_select(select, key0){
 
+			const keys = this.query.split("/")
+			const {_key, _view} = select
+			let res
+
+			if(keys.length > 2){
+				key0 = keys[2]
+			}
+
+			if (_key.startkey[0] != key0) {
+				_key.startkey[0] = _key.endkey[0] = key0
+				res = true
+			}
+
+			if(keys.length > 1){
+				const select_view = keys[0] + "/" + keys[1]
+				if(_view != select_view){
+					select._view = select_view
+					res = true
+				}
+			}
+
+			// если есть параметр период, установим значения ключа
+
+			return res
 		}
 
 		/**
