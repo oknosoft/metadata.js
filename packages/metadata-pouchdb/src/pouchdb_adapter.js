@@ -695,8 +695,7 @@ class AdapterPouch extends AbstracrAdapter{
 			include_docs: true,
 			keys: refs.map((v) => _mgr.class_name + "|" + v)
 		},
-			db = this.db(_mgr),
-			pouch = this;
+			db = this.db(_mgr);
 
 		if (with_attachments) {
 			options.attachments = true;
@@ -704,9 +703,7 @@ class AdapterPouch extends AbstracrAdapter{
 		}
 
 		return db.allDocs(options)
-			.then(function (result) {
-				return pouch.load_changes(result, {});
-			})
+			.then((result) => this.load_changes(result, {}))
 	}
 
 	/**

@@ -92,11 +92,7 @@ const meta_sys = {
 		meta_fields: {},
 		scheme_settings: {
 			name: "scheme_settings",
-			splitted: true,
 			synonym: "Настройки отчетов и списков",
-			illustration: "",
-			obj_presentation: "",
-			list_presentation: "",
 			input_by_string: [
 				"name"
 			],
@@ -407,17 +403,30 @@ const meta_sys = {
 								str_len: 100
 							}
 						},
+						value_type: {
+							synonym: "Тип",
+							tooltip: "Тип значения",
+							type: {
+								types: [
+									"string"
+								],
+								str_len: 100
+							}
+						},
 						value: {
 							synonym: "Значение",
 							tooltip: "Может иметь примитивный или ссылочный тип или массив",
 							type: {
 								types: [
 									"string",
-									"number"
+									"number",
+									// "date",
+									// "array"
 								],
 								str_len: 0,
 								digits: 15,
-								fraction_figits: 3
+								fraction_figits: 3,
+								// date_part: "date"
 							}
 						}
 					}
@@ -522,7 +531,25 @@ const meta_sys = {
 		}
 	},
 	areg: {},
-	dp: {},
+	dp: {
+		scheme_settings: {
+			name: "scheme_settings",
+			synonym: "Варианты настроек",
+			fields: {
+				scheme: {
+					synonym: "Текущая настройка",
+					tooltip: "Текущий вариант настроек",
+					mandatory: true,
+					type: {
+						types: [
+							"cat.scheme_settings"
+						],
+						is_ref: true
+					}
+				}
+			}
+		}
+	},
 	rep: {},
 	cch: {},
 	cacc: {}

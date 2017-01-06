@@ -431,9 +431,9 @@ function mngrs($p) {
 				return _rest.load_array(attr, t)
 					.then(function (data) {
 						data.forEach(function (v) {
-							l.push(check({
+							l.push({
 								text: is_doc ? (v.number_doc + " от " + moment(v.date).format(moment._masks.ldt)) : (v.name || v.id),
-								value: v.ref}));
+								value: v.ref});
 						});
 						return l;
 					});
@@ -682,30 +682,31 @@ function mngrs($p) {
 		 */
 		get(ref, do_not_create){
 
-			var o = this.by_ref[ref] || this.by_ref[(ref = utils.fix_guid(ref))];
+			let o = this.by_ref[ref] || this.by_ref[(ref = utils.fix_guid(ref))];
 
 			if(!o){
-				if(do_not_create && do_not_create != 'promise')
+				if(do_not_create && do_not_create != 'promise'){
 					return;
-				else
-					o = this.obj_constructor('', [ref, this, true]);
+				}
+				else{
+					o = this.obj_constructor('', [ref, this, true])
+				}
 			}
 
-			if(ref === utils.blank.guid)
+			if(ref === utils.blank.guid){
 				return do_not_create == 'promise' ? Promise.resolve(o) : o;
+			}
 
 			if(o.is_new()){
-
 				if(do_not_create == 'promise'){
 					return o.load();	// читаем из 1С или иного сервера
-
-				}else{
-					//o.load();	// читаем из 1С или иного сервера
+				}
+				else{
 					return o;
 				}
-
-			}else
+			}else{
 				return do_not_create == 'promise' ? Promise.resolve(o) : o;
+			}
 		}
 
 		/**
@@ -723,6 +724,10 @@ function mngrs($p) {
 			if(!attr || typeof attr != "object"){
 				attr = {};
 			}
+			else if(utils.is_data_obj(attr)){
+				return Promise.resolve(attr);
+			}
+
 			if(!attr.ref || !utils.is_guid(attr.ref) || utils.is_empty_guid(attr.ref)){
 				attr.ref = utils.generate_guid();
 			}

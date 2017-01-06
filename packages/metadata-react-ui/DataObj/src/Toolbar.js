@@ -1,20 +1,20 @@
-import React, { Component, PropTypes } from 'react';
-import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from 'material-ui/Toolbar';
+import React, {Component, PropTypes} from "react";
+import {Toolbar, ToolbarGroup} from "material-ui/Toolbar";
 
-import IconButton from 'material-ui/IconButton';
-import SaveIcon from 'material-ui/svg-icons/content/save';
-import SendIcon from 'material-ui/svg-icons/content/send';
-import RemoveIcon from 'material-ui/svg-icons/action/delete';
-import CloseIcon from 'material-ui/svg-icons/navigation/close';
+import IconButton from "material-ui/IconButton";
+import IconMenu from "material-ui/IconMenu";
 
-import IconMenu from 'material-ui/IconMenu';
-import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
-import MenuItem from 'material-ui/MenuItem';
-import PrintIcon from 'material-ui/svg-icons/action/print';
-import AttachIcon from 'material-ui/svg-icons/editor/attach-file';
+import SaveIcon from "material-ui/svg-icons/content/save";
+import SendIcon from "material-ui/svg-icons/content/send";
+import RemoveIcon from "material-ui/svg-icons/action/delete";
+import CloseIcon from "material-ui/svg-icons/navigation/close";
+import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert";
+import MenuItem from "material-ui/MenuItem";
+import PrintIcon from "material-ui/svg-icons/action/print";
+import AttachIcon from "material-ui/svg-icons/editor/attach-file";
 
 
-export default class DataObjToolbar extends Component{
+export default class DataObjToolbar extends Component {
 
   static propTypes = {
 
@@ -28,7 +28,7 @@ export default class DataObjToolbar extends Component{
 
   }
 
-  render(){
+  render() {
     const props = this.props;
     return (
 
@@ -37,7 +37,8 @@ export default class DataObjToolbar extends Component{
           <IconButton touch={true} tooltip="Записать" tooltipPosition="bottom-right" onTouchTap={props.handleSave}>
             <SaveIcon />
           </IconButton>
-          <IconButton touch={true} tooltip="Отправить на согласование" tooltipPosition="bottom-right" onTouchTap={props.handleSend}>
+          <IconButton touch={true} tooltip="Отправить на согласование" tooltipPosition="bottom-right"
+                      onTouchTap={props.handleSend}>
             <SendIcon />
           </IconButton>
           <IconButton touch={true} tooltip="Отозвать заказ" onTouchTap={props.handleMarkDeleted}>
@@ -55,8 +56,8 @@ export default class DataObjToolbar extends Component{
               </IconButton>
             }
           >
-            <MenuItem primaryText="Печать" leftIcon={<PrintIcon />} onTouchTap={props.handlePrint} />
-            <MenuItem primaryText="Вложения" leftIcon={<AttachIcon />} onTouchTap={props.handleAttachment} />
+            <MenuItem primaryText="Печать" leftIcon={<PrintIcon />} onTouchTap={props.handlePrint}/>
+            <MenuItem primaryText="Вложения" leftIcon={<AttachIcon />} onTouchTap={props.handleAttachment}/>
 
           </IconMenu>
 

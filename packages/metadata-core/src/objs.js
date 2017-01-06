@@ -77,12 +77,7 @@ class DataObj {
 			 * @property _ts_
 			 */
 			_ts_: {
-				value: ( name ) => {
-					if( !_ts_[name] ) {
-						_ts_[name] = new TabularSection(name, this);
-					}
-					return _ts_[name];
-				},
+				value: (name) => _ts_[name] || (_ts_[name] = new TabularSection(name, this)),
 				configurable: true
 			},
 
@@ -163,60 +158,65 @@ class DataObj {
 
 	__setter(f, v) {
 
-		var mf = this._metadata(f).type,
-			mgr;
+		const {_obj} = this;
+		const mf = this._metadata(f).type;
+		let mgr;
 
-		if(f == "type" && v.types)
-			this._obj[f] = v;
-
-		else if(f == "ref")
-
-			this._obj[f] = utils.fix_guid(v);
-
+		if(f == "type" && v.types){
+			_obj[f] = v;
+		}
+		else if(f == "ref"){
+			_obj[f] = utils.fix_guid(v);
+		}
 		else if(mf.is_ref){
 
 			if(mf.digits && typeof v == "number" || mf.hasOwnProperty("str_len") && typeof v == "string" && !utils.is_guid(v)){
-				this._obj[f] = v;
+				_obj[f] = v;
 
-			}else {
-				this._obj[f] = utils.fix_guid(v);
+			}
+			else {
+				_obj[f] = utils.fix_guid(v);
 
-				mgr = utils.value_mgr(this._obj, f, mf, false, v);
+				if($p.utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1){
 
-				if(mgr){
-					if(mgr instanceof classes.EnumManager){
-						if(typeof v == "string")
-							this._obj[f] = v;
-
-						else if(!v)
-							this._obj[f] = "";
-
-						else if(typeof v == "object")
-							this._obj[f] = v.ref || v.name || "";
-
-					}else if(v && v.presentation){
-						if(v.type && !(v instanceof DataObj))
-							delete v.type;
-						mgr.create(v);
-					}else if(!utils.is_data_mgr(mgr))
-						this._obj[f] = utils.fetch_type(v, mgr);
 				}else{
-					if(typeof v != "object")
-						this._obj[f] = v;
+					mgr = utils.value_mgr(_obj, f, mf, false, v);
+					if(mgr){
+						if(mgr instanceof classes.EnumManager){
+							if(typeof v == "string")
+								_obj[f] = v;
+
+							else if(!v)
+								_obj[f] = "";
+
+							else if(typeof v == "object")
+								_obj[f] = v.ref || v.name || "";
+
+						}else if(v && v.presentation){
+							if(v.type && !(v instanceof DataObj))
+								delete v.type;
+							mgr.create(v);
+						}else if(!utils.is_data_mgr(mgr))
+							_obj[f] = utils.fetch_type(v, mgr);
+					}else{
+						if(typeof v != "object")
+							_obj[f] = v;
+					}
 				}
 			}
-
-		}else if(mf.date_part)
-			this._obj[f] = utils.fix_date(v, true);
-
-		else if(mf.digits)
-			this._obj[f] = utils.fix_number(v, !mf.hasOwnProperty("str_len"));
-
-		else if(mf.types[0]=="boolean")
-			this._obj[f] = utils.fix_boolean(v);
-
-		else
-			this._obj[f] = v;
+		}
+		else if(mf.date_part){
+			_obj[f] = utils.fix_date(v, true);
+		}
+		else if(mf.digits){
+			_obj[f] = utils.fix_number(v, !mf.hasOwnProperty("str_len"));
+		}
+		else if(mf.types[0]=="boolean"){
+			_obj[f] = utils.fix_boolean(v);
+		}
+		else{
+			_obj[f] = v;
+		}
 
 	}
 
@@ -232,24 +232,22 @@ class DataObj {
 	}
 
 	_setter(f, v) {
-
-		if(this._obj[f] == v)
-			return;
-
-		this.__notify(f);
-		this.__setter(f, v);
-		this._data._modified = true;
-
+		if(this._obj[f] != v){
+			this.__notify(f);
+			this.__setter(f, v);
+			this._data._modified = true;
+		}
 	}
 
 	_getter_ts(f) {
-		return this._ts_(f);
+		return this._ts_(f)
 	}
 
 	_setter_ts(f, v) {
-		var ts = this._ts_(f);
-		if(ts instanceof TabularSection && Array.isArray(v))
-			ts.load(v);
+		const ts = this._ts_(f);
+		if(ts instanceof TabularSection && Array.isArray(v)){
+			ts.load(v)
+		}
 	}
 
 	/**
@@ -453,15 +451,18 @@ class DataObj {
 		// для документов, контролируем заполненность даты
 		if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
 
-			if (utils.blank.date == this.date)
+			if (utils.blank.date == this.date){
 				this.date = new Date();
+			}
 
-			if (!this.number_doc)
+			if (!this.number_doc){
 				this.new_number_doc();
+			}
 
 		} else {
-			if (!this.id)
+			if (!this.id){
 				this.new_number_doc();
+			}
 		}
 
 

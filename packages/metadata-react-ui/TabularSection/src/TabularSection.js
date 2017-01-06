@@ -95,8 +95,6 @@ export default class TabularSection extends Component {
 
     if (!this.state._columns.length) {
 
-
-
       $p.cat.scheme_settings.get_scheme(class_name)
         .then(this.handleSchemeChange)
 
@@ -224,16 +222,15 @@ export default class TabularSection extends Component {
 
   render() {
 
-    const {$p} = this.context;
-    const {_meta, _tabular, _columns, scheme, selectedIds, Toolbar} = this.state;
-    const {_obj, rowSelection, deny_add_del, deny_reorder} = this.props;
+    const {props, state, context, rowGetter, onRowsSelected, onRowsDeselected, handleAdd, handleRemove, handleUp, handleDown, handleRowUpdated} = this;
+    const {_meta, _tabular, _columns, scheme, selectedIds, Toolbar} = state;
+    const {_obj, rowSelection, deny_add_del, deny_reorder, minHeight, handleCustom} = props;
 
-    if (!scheme) {
-      return <DumbLoader title="Чтение настроек компоновки..."/>
-
-    } else if (!_columns || !_columns.length) {
+    if (!_columns || !_columns.length) {
+      if (!scheme) {
+        return <DumbLoader title="Чтение настроек компоновки..."/>
+      }
       return <DumbLoader title="Ошибка настроек компоновки..."/>
-
     }
 
     // contextMenu={<MyContextMenu
@@ -251,15 +248,15 @@ export default class TabularSection extends Component {
       ref: "grid",
       columns: _columns,
       enableCellSelect: true,
-      rowGetter: this.rowGetter,
+      rowGetter: rowGetter,
       rowsCount: _tabular.count(),
-      onRowUpdated: this.handleRowUpdated,
-      minHeight: this.props.minHeight || 200
+      onRowUpdated: handleRowUpdated,
+      minHeight: minHeight || 200
     }
 
     if(rowSelection){
-      rowSelection.onRowsSelected = this.onRowsSelected
-      rowSelection.onRowsDeselected = this.onRowsDeselected
+      rowSelection.onRowsSelected = onRowsSelected
+      rowSelection.onRowsDeselected = onRowsDeselected
       rowSelection.selectBy.keys.values = selectedIds
       gridProps.rowSelection = rowSelection
     }
@@ -268,14 +265,16 @@ export default class TabularSection extends Component {
       <div>
 
         <Toolbar
-          handleAdd={this.handleAdd}
-          handleRemove={this.handleRemove}
-          handleUp={this.handleUp}
-          handleDown={this.handleDown}
-          handleCustom={this.props.handleCustom}
+          handleAdd={handleAdd}
+          handleRemove={handleRemove}
+          handleUp={handleUp}
+          handleDown={handleDown}
+          handleCustom={handleCustom}
 
           deny_add_del={deny_add_del}
           deny_reorder={deny_reorder}
+
+          scheme={scheme}
 
         />
 
