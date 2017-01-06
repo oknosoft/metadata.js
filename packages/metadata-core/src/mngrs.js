@@ -431,9 +431,9 @@ function mngrs($p) {
 				return _rest.load_array(attr, t)
 					.then(function (data) {
 						data.forEach(function (v) {
-							l.push(check({
+							l.push({
 								text: is_doc ? (v.number_doc + " от " + moment(v.date).format(moment._masks.ldt)) : (v.name || v.id),
-								value: v.ref}));
+								value: v.ref});
 						});
 						return l;
 					});

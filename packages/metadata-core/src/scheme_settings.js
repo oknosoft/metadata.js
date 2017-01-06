@@ -105,6 +105,21 @@ function scheme_settings($p) {
 	}
 
 	/**
+	 * ### Обработка выбора варианта настроек scheme_settings
+	 * @class CatScheme_settings
+	 * @extends DataProcessorObj
+	 * @constructor
+	 */
+	$p.DpScheme_settings = class DpScheme_settings extends DataProcessorObj{
+		get scheme() {
+			return this._getter('scheme')
+		}
+		set scheme(v) {
+			this._setter('scheme', v)
+		}
+	}
+
+	/**
 	 * ### Справочник scheme_settings
 	 * Настройки отчетов и списков
 	 * @class CatScheme_settings
@@ -507,4 +522,11 @@ function scheme_settings($p) {
 			value: new SchemeSettingsManager('cat.scheme_settings')
 		}
 	})
+
+	Object.defineProperties($p.dp, {
+		scheme_settings: {
+			value: new classes.DataProcessorsManager('dp.scheme_settings')
+		}
+	})
+
 }

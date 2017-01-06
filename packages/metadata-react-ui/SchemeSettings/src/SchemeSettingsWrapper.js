@@ -10,7 +10,7 @@
 import React, { Component, PropTypes } from 'react';
 
 import IconButton from 'material-ui/IconButton';
-import IconFilter from 'material-ui/svg-icons/content/filter-list';
+import IconSettings from 'material-ui/svg-icons/action/settings';
 
 import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
@@ -21,8 +21,9 @@ import SchemeSettingsTabs from './SchemeSettingsTabs';
 export default class SchemeSettingsWrapper extends Component{
 
   static propTypes = {
+    scheme: PropTypes.object.isRequired,
     handleSchemeChange: PropTypes.func.isRequired,
-    scheme: PropTypes.object.isRequired
+    tabParams: PropTypes.object
   }
 
   state = {
@@ -43,23 +44,27 @@ export default class SchemeSettingsWrapper extends Component{
   }
 
   handleSchemeChange = (scheme) => {
-    this.state.scheme = scheme;
+    this.props.handleSchemeChange(scheme)
+    this.setState({scheme});
   }
 
 
   render(){
+
+    const {props, state, handleOpen, handleOk, handleClose, handleSchemeChange} = this;
+    const {open, scheme} = state
 
     const actions = [
       <FlatButton
         label="Применить"
         primary={true}
         keyboardFocused={true}
-        onTouchTap={this.handleOk}
+        onTouchTap={handleOk}
       />,
       <FlatButton
         label="Отмена"
         secondary={true}
-        onTouchTap={this.handleClose}
+        onTouchTap={handleClose}
       />,
     ];
 
@@ -67,8 +72,8 @@ export default class SchemeSettingsWrapper extends Component{
 
       <div>
 
-        <IconButton touch={true} tooltip="Настройка списка" onTouchTap={this.handleOpen}>
-          <IconFilter />
+        <IconButton touch={true} tooltip="Настройка списка" onTouchTap={handleOpen}>
+          <IconSettings />
         </IconButton>
 
         <Dialog
@@ -76,13 +81,14 @@ export default class SchemeSettingsWrapper extends Component{
           actions={actions}
           modal={false}
           autoScrollBodyContent={true}
-          open={this.state.open}
-          onRequestClose={this.handleClose}
+          open={open}
+          onRequestClose={handleClose}
         >
 
           <SchemeSettingsTabs
-            handleSchemeChange={this.handleSchemeChange}
-            scheme={this.props.scheme}
+            handleSchemeChange={handleSchemeChange}
+            scheme={scheme || props.scheme}
+            tabParams={props.tabParams}
           />
 
         </Dialog>

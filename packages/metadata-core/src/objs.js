@@ -77,12 +77,7 @@ class DataObj {
 			 * @property _ts_
 			 */
 			_ts_: {
-				value: ( name ) => {
-					if( !_ts_[name] ) {
-						_ts_[name] = new TabularSection(name, this);
-					}
-					return _ts_[name];
-				},
+				value: (name) => _ts_[name] || (_ts_[name] = new TabularSection(name, this)),
 				configurable: true
 			},
 
@@ -232,24 +227,22 @@ class DataObj {
 	}
 
 	_setter(f, v) {
-
-		if(this._obj[f] == v)
-			return;
-
-		this.__notify(f);
-		this.__setter(f, v);
-		this._data._modified = true;
-
+		if(this._obj[f] != v){
+			this.__notify(f);
+			this.__setter(f, v);
+			this._data._modified = true;
+		}
 	}
 
 	_getter_ts(f) {
-		return this._ts_(f);
+		return this._ts_(f)
 	}
 
 	_setter_ts(f, v) {
-		var ts = this._ts_(f);
-		if(ts instanceof TabularSection && Array.isArray(v))
-			ts.load(v);
+		const ts = this._ts_(f);
+		if(ts instanceof TabularSection && Array.isArray(v)){
+			ts.load(v)
+		}
 	}
 
 	/**

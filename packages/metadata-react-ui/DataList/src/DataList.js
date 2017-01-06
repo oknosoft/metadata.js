@@ -2,7 +2,7 @@
 import React, {Component, PropTypes} from "react";
 import {InfiniteLoader, Grid} from "react-virtualized";
 import DumbLoader from "../DumbLoader";
-import Toolbar from "./Toolbar";
+import Toolbar from "./DataListToolbar";
 import cn from "classnames";
 import styles from "./DataList.scss";
 

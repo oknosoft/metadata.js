@@ -9,22 +9,28 @@ export default class FieldSelect extends Component {
     _fld: PropTypes.string.isRequired,
     _meta: PropTypes.object,
 
-    multi: PropTypes.bool,
+    multi: PropTypes.bool,              // множественный выбор - значение является массивом
+    mandatory: PropTypes.bool,          // поле обязательно для заполнения
 
     handleValueChange: PropTypes.func
   }
 
-  constructor (props) {
+  constructor(props, context) {
 
-    super(props)
+    super(props, context)
+
+    const {_obj, _fld, _meta, mandatory} = props
+    const _val = _obj[_fld]
 
     this.state = {
       clearable: true,
       disabled: false,
-      options: [],
+      options: [_val],
+      value: _val,
       multi: props.multi || false,
       searchable: true,
       selectedCreatable: null,
+      mandatory: mandatory || _meta.mandatory
     }
   }
 
@@ -44,39 +50,41 @@ export default class FieldSelect extends Component {
 
     return _obj[_fld]._manager.get_option_list(selection)
       .then((options) => {
-
-        this.setState({ options })
-
-        return { options }
+        this.setState({options})
+        return {options}
       })
   }
 
   _onChange = (value) => {
+    const {handleValueChange} = this.props
     this.setState({value})
-    if(this.props.handleValueChange)
-      this.props.handleValueChange(value)
+    if(handleValueChange){
+      handleValueChange(value)
+    }
   }
 
   render() {
 
-    return (
+    const {props, state, _loadOptions, _onChange} = this
+    const {_obj, _fld} = props
+    const {options, value, mandatory} = state
 
+    return (
       <VirtualizedSelect
-        name={this.props._fld}
+        name={_fld}
         async
         cache={false}
+        clearable={!mandatory}
         backspaceRemoves={false}
         labelKey='presentation'
         valueKey='ref'
-        loadOptions={this._loadOptions}
+        loadOptions={_loadOptions}
         minimumInput={0}
-        onChange={this._onChange}
+        onChange={_onChange}
         //onValueClick={this._goToGithubUser}
-        options={this.state.options}
-        value={this.state.value}
-
+        options={options}
+        value={value}
       />
-
     );
   }
 }

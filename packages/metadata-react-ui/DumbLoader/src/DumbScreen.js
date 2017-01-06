@@ -26,16 +26,18 @@ export default class DumbScreen extends Component {
     let { title, img, page } = this.props;
 
     if(!title)
-      title = "Заставка загрузка модулей...";
+      title = "Загрузка модулей...";
 
     return (
-    <div>
+    <div className={classes.splash}>
 
-      <div className={classes.progress} style={{position: 'relative', width: 300}}>{title}</div>
+      <div style={{position: 'absolute', bottom: '-20px'}}>{title}</div>
 
       { img }
 
-      { page ? <div className={classes.progress} style={{position: 'relative', width: 300}}>{page.page}</div> : null }
+      { page ? <div style={{position: 'absolute', bottom: '-44px'}}>{
+        `Страница №${page.page}, загружено ${Math.min(page.page * page.limit, page.total_rows)} из ${page.total_rows} объектов`
+      }</div> : null }
 
     </div>
 

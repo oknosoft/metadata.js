@@ -92,11 +92,7 @@ const meta_sys = {
 		meta_fields: {},
 		scheme_settings: {
 			name: "scheme_settings",
-			splitted: true,
 			synonym: "Настройки отчетов и списков",
-			illustration: "",
-			obj_presentation: "",
-			list_presentation: "",
 			input_by_string: [
 				"name"
 			],
@@ -522,7 +518,25 @@ const meta_sys = {
 		}
 	},
 	areg: {},
-	dp: {},
+	dp: {
+		scheme_settings: {
+			name: "scheme_settings",
+			synonym: "Варианты настроек",
+			fields: {
+				scheme: {
+					synonym: "Текущая настройка",
+					tooltip: "Текущий вариант настроек",
+					mandatory: true,
+					type: {
+						types: [
+							"cat.scheme_settings"
+						],
+						is_ref: true
+					}
+				}
+			}
+		}
+	},
 	rep: {},
 	cch: {},
 	cacc: {}

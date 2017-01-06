@@ -17,15 +17,17 @@ class DataCell extends Component {
   }
 
   static propTypes = {
-    options: React.PropTypes.array.isRequired,
+    options: React.PropTypes.array,
     column: React.PropTypes.shape(ExcelColumn),
     value: React.PropTypes.array
   }
 
   // props.column.key, props.rowData(._row)
 
-  constructor(props) {
-    super(props);
+  constructor(props, context) {
+
+    super(props, context)
+
     this.state = {
       value: [],
       _meta: props._meta || props.rowData._metadata(props.column.key)

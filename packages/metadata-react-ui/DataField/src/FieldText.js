@@ -1,7 +1,5 @@
-import React, { Component, PropTypes } from 'react';
-import classes from './DataField.scss'
-
-import TextField from 'material-ui/TextField';
+import React, {Component, PropTypes} from "react";
+import TextField from "material-ui/TextField";
 
 export default class FieldText extends Component {
 
@@ -12,15 +10,28 @@ export default class FieldText extends Component {
     handleValueChange: PropTypes.func
   }
 
+  onChange = (event, newValue) => {
+    const {_obj, _fld, handleValueChange} = this.props;
+    _obj[_fld] = newValue
+    if(handleValueChange){
+      handleValueChange(newValue)
+    }
+  }
+
 
   render() {
+
+    const {onChange, props} = this;
+    const {_obj, _fld, _meta} = props;
+
     return (
 
       <TextField
-        name={this.props._fld}
+        name={_fld}
         fullWidth={true}
-        defaultValue={this.props._val}
-        hintText={this.props._meta.tooltip || this.props._meta.synonym}
+        defaultValue={_obj[_fld]}
+        hintText={_meta.tooltip || _meta.synonym}
+        onChange={onChange}
       />
 
     );

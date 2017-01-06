@@ -18,13 +18,15 @@ export default class DataField extends Component {
     _meta: PropTypes.object,            // метаданные поля - могут быть переопределены снаружи, если не указано, будут задейтвованы стандартные метаданные
 
     label_position: PropTypes.string,   // положение заголовка, перечислимый тип $p.UI.LABEL_POSITIONS
-    read_only: PropTypes.object,        // поле только для чтения
+    read_only: PropTypes.bool,          // поле только для чтения
+    mandatory: PropTypes.bool,          // поле обязательно для заполнения
+    multi: PropTypes.bool,              // множественный выбор - значение является массивом
     handleValueChange: PropTypes.func   // обработчик при изменении значения в поле
   }
 
-  constructor (props) {
+  constructor(props, context) {
 
-    super(props);
+    super(props, context)
 
     this.state = {
       _meta: props._meta || props._obj._metadata(props._fld)
@@ -41,7 +43,6 @@ export default class DataField extends Component {
       _meta: _meta,
       _obj: _obj,
       _fld: _fld,
-      _val: _val,
       handleValueChange: handleValueChange
     }
 
