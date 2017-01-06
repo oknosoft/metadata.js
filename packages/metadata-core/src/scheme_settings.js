@@ -21,8 +21,76 @@ function scheme_settings($p) {
 		 *
 		 * @param class_name
 		 */
-		get_settings(class_name) {
+		get_scheme(class_name) {
+			return new Promise(function(resolve, reject){
 
+				// получаем сохраненную настройку
+				const scheme_name = "scheme_settings_" + class_name.replace(/\./g, "_")
+				let ref = $p.wsql.get_user_param(scheme_name, "string")
+
+				function set_param_and_resolve(obj){
+					$p.wsql.set_user_param(scheme_name, obj.ref);
+					resolve(obj)
+				}
+
+				function find_scheme() {
+					$p.cat.scheme_settings.find_rows_remote({
+						_view: 'doc/scheme_settings',
+						_top: 100,
+						_skip: 0,
+						_key: {
+							startkey: class_name,
+							endkey: class_name
+						}
+					})
+						.then(function (data) {
+							// если существует с текущим пользователем, берём его, иначе - первый попавшийся
+							if(data.length == 1){
+								set_param_and_resolve(data[0])
+
+							}else if(data.length){
+
+
+							}else{
+								create_scheme()
+							}
+						})
+						.catch(function (err) {
+							create_scheme()
+						})
+				}
+
+				function create_scheme() {
+					if(!$p.utils.is_guid(ref)){
+						ref = $p.utils.generate_guid()
+					}
+					$p.cat.scheme_settings.create({ref})
+						.then(function (obj) {
+							return obj.fill_default(class_name).save()
+						})
+						.then(function (obj) {
+							set_param_and_resolve(obj)
+						})
+				}
+
+				if(ref){
+					// получаем по гвиду
+					$p.cat.scheme_settings.get(ref, "promise")
+						.then(function (scheme) {
+							if(scheme && !scheme.is_new()){
+								resolve(scheme)
+							}else{
+								find_scheme()
+							}
+						})
+						.catch(function (err) {
+							find_scheme()
+						})
+
+				}else{
+					find_scheme()
+				}
+			})
 		}
 
 		/**
@@ -30,8 +98,8 @@ function scheme_settings($p) {
 		 *
 		 * @param class_name
 		 */
-		select_settings(class_name) {
-
+		select_scheme(class_name) {
+			return {}
 		}
 
 	}
@@ -59,25 +127,39 @@ function scheme_settings($p) {
 			this._setter('user', v)
 		}
 
-		get available_fields() {
-			return this._getter_ts('available_fields')
+		get query() {
+			return this._getter('query')
 		}
-		set available_fields(v) {
-			this._setter_ts('available_fields', v)
-		}
-
-		get sort_fields() {
-			return this._getter_ts('sort_fields')
-		}
-		set sort_fields(v) {
-			this._setter_ts('sort_fields', v)
+		set query(v) {
+			this._setter('query', v)
 		}
 
-		get grouping_fields() {
-			return this._getter_ts('grouping_fields')
+		get fields() {
+			return this._getter_ts('fields')
 		}
-		set grouping_fields(v) {
-			this._setter_ts('grouping_fields', v)
+		set fields(v) {
+			this._setter_ts('fields', v)
+		}
+
+		get sorting() {
+			return this._getter_ts('sorting')
+		}
+		set sorting(v) {
+			this._setter_ts('sorting', v)
+		}
+
+		get dimensions() {
+			return this._getter_ts('dimensions')
+		}
+		set dimensions(v) {
+			this._setter_ts('dimensions', v)
+		}
+
+		get resources() {
+			return this._getter_ts('resources')
+		}
+		set resources(v) {
+			this._setter_ts('resources', v)
 		}
 
 		get selection() {
@@ -86,7 +168,6 @@ function scheme_settings($p) {
 		set selection(v) {
 			this._setter_ts('selection', v)
 		}
-
 
 		get params() {
 			return this._getter_ts('params')
@@ -109,11 +190,156 @@ function scheme_settings($p) {
 		 */
 		fill_default(class_name) {
 
+			const parts = class_name.split("."),
+				_mgr = $p.md.mgr_by_class_name(class_name),
+				_meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]),
+				fields = this.fields,
+				columns = [];
+
+			function add_column(fld, use) {
+				const id = fld.id || fld,
+					fld_meta = _meta.fields[id] || _mgr.metadata(id)
+				columns.push({
+					field: id,
+					caption: fld.caption || fld_meta.synonym,
+					tooltip: fld_meta.tooltip,
+					width: fld.width || fld_meta.width,
+					use: use
+				});
+			}
+
+			// набираем поля
+			if(parts.length < 3){   // поля динсписка
+
+				if (_meta.form && _meta.form.selection) {
+
+					_meta.form.selection.cols.forEach(fld => {
+						add_column(fld, true)
+					});
+
+				} else {
+
+					if (_mgr instanceof $p.classes.CatManager) {
+						if (_meta.code_length) {
+							columns.push('id')
+						}
+
+						if (_meta.main_presentation_name) {
+							columns.push('name')
+						}
+
+					} else if (_mgr instanceof $p.classes.DocManager) {
+						columns.push('number_doc')
+						columns.push('date')
+					}
+
+					columns.forEach((id) => {
+						// id, synonym, tooltip, type, width
+						add_column(id, true)
+					})
+				}
+
+			}else{ // поля табличной части
+
+				for(var field in _meta.fields){
+					add_column(field, true)
+				}
+			}
+
+			for(var field in _meta.fields){
+				if(!columns.some(function (column) { return column.field == field })){
+					add_column(field, false)
+				}
+			}
+
+			// заполняем табчасть доступных полей
+			columns.forEach(function (column) {
+				fields.add(column)
+			})
+
+			this.obj = class_name
+
+			if(!this.name){
+				this.name = "Основная"
+			}
+
+			return this
 		}
 
+		/**
+		 * ### Возвращает ключ запроса по таблице параметров
+		 */
+		query_key(){
+
+		}
+
+		/**
+		 * ### Возвращает массив колонок для динсписка или табчасти
+		 * @param mode {String} - режим формирования колонок
+		 * @return {Array}
+		 */
+		columns(mode){
+
+			const parts = this.obj.split("."),
+				_mgr = $p.md.mgr_by_class_name(this.obj),
+				_meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]),
+				res = [];
+
+			this.fields.find_rows({use: true}, function (row) {
+
+				const fld_meta = _meta.fields[row.field] || _mgr.metadata(row.field)
+				let column
+
+				if(mode == "ts"){
+					column = {
+						key: row.field,
+						name: row.caption,
+						resizable : true,
+						width: row.width == '*' ? 250 : (parseInt(row.width) || 140),
+						ctrl_type: row.ctrl_type,
+					}
+				}else{
+					column = {
+						id: row.field,
+						synonym: row.caption,
+						tooltip: row.tooltip,
+						type: fld_meta.type,
+						ctrl_type: row.ctrl_type,
+						width: row.width == '*' ? 250 : (parseInt(row.width) || 140),
+					}
+				}
+				res.push(column)
+			})
+			return res;
+		}
+
+		/**
+		 * ### Возвращает массив имён используемых колонок
+		 * @return {Array}
+		 */
+		used_fields(){
+			const res = []
+			this.fields.find_rows({use: true}, (row) => {
+				res.push(row.field)
+			})
+			return res
+		}
+
+		/**
+		 * ### Возвращает массив элементов для поля выбора
+		 * @return {Array}
+		 */
+		used_fields_list(){
+			return this.fields._obj.map((row) => ({
+				id: row.field,
+				value: row.field,
+				text: row.caption,
+				title: row.caption
+			}))
+		}
 	}
 
-	$p.CatScheme_settingsAvailable_fieldsRow = class CatScheme_settingsAvailable_fieldsRow extends classes.TabularSectionRow {
+	$p.CatScheme_settingsDimensionsRow = class CatScheme_settingsDimensionsRow extends TabularSectionRow {
 
 		get parent() {
 			return this._getter('parent')
@@ -122,18 +348,31 @@ function scheme_settings($p) {
 			this._setter('parent', v)
 		}
 
-		get use() {
-			return this._getter('use')
-		}
-		set use(v) {
-			this._setter('use', v)
-		}
-
 		get field() {
 			return this._getter('field')
 		}
 		set field(v) {
 			this._setter('field', v)
+		}
+	}
+
+	$p.CatScheme_settingsResourcesRow = class CatScheme_settingsResourcesRow extends $p.CatScheme_settingsDimensionsRow {
+
+		get formula() {
+			return this._getter('formula')
+		}
+		set formula(v) {
+			this._setter('formula', v)
+		}
+	}
+
+	$p.CatScheme_settingsFieldsRow = class CatScheme_settingsFieldsRow extends $p.CatScheme_settingsDimensionsRow {
+
+		get use() {
+			return this._getter('use')
+		}
+		set use(v) {
+			this._setter('use', v)
 		}
 
 		get width() {
@@ -150,46 +389,43 @@ function scheme_settings($p) {
 			this._setter('caption', v)
 		}
 
+		get tooltip() {
+			return this._getter('tooltip')
+		}
+		set tooltip(v) {
+			this._setter('tooltip', v)
+		}
+
+		get ctrl_type() {
+			return this._getter('ctrl_type')
+		}
+		set ctrl_type(v) {
+			this._setter('ctrl_type', v)
+		}
+
+		get formatter() {
+			return this._getter('formatter')
+		}
+		set formatter(v) {
+			this._setter('formatter', v)
+		}
+
+		get editor() {
+			return this._getter('editor')
+		}
+		set editor(v) {
+			this._setter('editor', v)
+		}
+
 	}
 
-	$p.CatScheme_settingsSort_fieldsRow = class CatScheme_settingsSort_fieldsRow extends TabularSectionRow {
-
-		get parent() {
-			return this._getter('parent')
-		}
-		set parent(v) {
-			this._setter('parent', v)
-		}
-
-		get field() {
-			return this._getter('field')
-		}
-		set field(v) {
-			this._setter('field', v)
-		}
+	$p.CatScheme_settingsSortingRow = class CatScheme_settingsSortingRow extends $p.CatScheme_settingsDimensionsRow {
 
 		get direction() {
 			return this._getter('direction')
 		}
 		set direction(v) {
 			this._setter('direction', v)
-		}
-	}
-
-	$p.CatScheme_settingsGrouping_fieldsRow = class CatScheme_settingsGrouping_fieldsRow extends TabularSectionRow {
-
-		get parent() {
-			return this._getter('parent')
-		}
-		set parent(v) {
-			this._setter('parent', v)
-		}
-
-		get field() {
-			return this._getter('field')
-		}
-		set field(v) {
-			this._setter('field', v)
 		}
 	}
 

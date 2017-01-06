@@ -108,7 +108,6 @@ const meta_sys = {
 			fields: {
 				obj: {
 					synonym: "Объект",
-					multiline_mode: false,
 					tooltip: "Имя класса метаданных",
 					type: {
 						types: [
@@ -119,7 +118,6 @@ const meta_sys = {
 				},
 				user: {
 					synonym: "Пользователь",
-					multiline_mode: false,
 					tooltip: "Если пусто - публичная настройка",
 					type: {
 						types: [
@@ -127,17 +125,26 @@ const meta_sys = {
 						],
 						str_len: 50
 					}
+				},
+				query: {
+					synonym: "Запрос",
+					tooltip: "Индекс CouchDB или текст SQL",
+					type: {
+						types: [
+							"string"
+						],
+						str_len: 0
+					}
 				}
 			},
 			tabular_sections: {
-				available_fields: {
-					name: "available_fields",
+				fields: {
+					name: "fields",
 					synonym: "Доступные поля",
 					tooltip: "Состав, порядок и ширина колонок",
 					fields: {
 						parent: {
 							synonym: "Родитель",
-							multiline_mode: false,
 							tooltip: "Для плоского списка, родитель пустой",
 							type: {
 								types: [
@@ -148,7 +155,6 @@ const meta_sys = {
 						},
 						use: {
 							synonym: "Использование",
-							multiline_mode: false,
 							tooltip: "",
 							type: {
 								types: [
@@ -158,7 +164,6 @@ const meta_sys = {
 						},
 						field: {
 							synonym: "Поле",
-							multiline_mode: false,
 							tooltip: "",
 							type: {
 								types: [
@@ -169,19 +174,16 @@ const meta_sys = {
 						},
 						width: {
 							synonym: "Ширина",
-							multiline_mode: false,
 							tooltip: "",
 							type: {
 								types: [
-									"number"
+									"string"
 								],
-								digits: 6,
-								fraction_figits: 0
+								str_len: 6
 							}
 						},
 						caption: {
 							synonym: "Заголовок",
-							multiline_mode: false,
 							tooltip: "",
 							type: {
 								types: [
@@ -189,17 +191,57 @@ const meta_sys = {
 								],
 								str_len: 100
 							}
+						},
+						tooltip: {
+							synonym: "Подсказка",
+							tooltip: "",
+							type: {
+								types: [
+									"string"
+								],
+								str_len: 100
+							}
+						},
+						ctrl_type: {
+							synonym: "Тип",
+							tooltip: "Тип элемента управления",
+							type: {
+								types: [
+									"string"
+								],
+								str_len: 100
+							}
+						},
+						formatter: {
+							synonym: "Формат",
+							tooltip: "Функция форматирования",
+							type: {
+								types: [
+									"cat.formulas"
+								],
+								is_ref: true
+							}
+						},
+						editor: {
+							synonym: "Редактор",
+							tooltip: "Компонент редактирования",
+							type: {
+								types: [
+									"cat.formulas"
+								],
+								is_ref: true
+							}
 						}
+
 					}
 				},
-				sort_fields: {
-					name: "sort_fields",
+				sorting: {
+					name: "sorting",
 					synonym: "Поля сортировки",
 					tooltip: "",
 					fields: {
 						parent: {
 							synonym: "Родитель",
-							multiline_mode: false,
 							tooltip: "",
 							type: {
 								types: [
@@ -210,7 +252,6 @@ const meta_sys = {
 						},
 						field: {
 							synonym: "Поле",
-							multiline_mode: false,
 							tooltip: "",
 							type: {
 								types: [
@@ -221,7 +262,6 @@ const meta_sys = {
 						},
 						direction: {
 							synonym: "Направление",
-							multiline_mode: false,
 							tooltip: "",
 							type: {
 								types: [
@@ -232,14 +272,13 @@ const meta_sys = {
 						}
 					}
 				},
-				grouping_fields: {
-					name: "grouping_fields",
+				dimensions: {
+					name: "dimensions",
 					synonym: "Поля группировки",
 					tooltip: "",
 					fields: {
 						parent: {
 							synonym: "Родитель",
-							multiline_mode: false,
 							tooltip: "",
 							type: {
 								types: [
@@ -250,13 +289,49 @@ const meta_sys = {
 						},
 						field: {
 							synonym: "Поле",
-							multiline_mode: false,
 							tooltip: "",
 							type: {
 								types: [
 									"string"
 								],
 								str_len: 100
+							}
+						}
+					}
+				},
+				resources: {
+					name: "resources",
+					synonym: "Ресурсы",
+					tooltip: "",
+					fields: {
+						parent: {
+							synonym: "Родитель",
+							tooltip: "",
+							type: {
+								types: [
+									"string"
+								],
+								str_len: 100
+							}
+						},
+						field: {
+							synonym: "Поле",
+							tooltip: "",
+							type: {
+								types: [
+									"string"
+								],
+								str_len: 100
+							}
+						},
+						formula: {
+							synonym: "Формула",
+							tooltip: "По умолчанию - сумма",
+							type: {
+								types: [
+									"cat.formulas"
+								],
+								is_ref: true
 							}
 						}
 					}
@@ -268,7 +343,6 @@ const meta_sys = {
 					fields: {
 						parent: {
 							synonym: "Родитель",
-							multiline_mode: false,
 							tooltip: "",
 							type: {
 								types: [
@@ -279,7 +353,6 @@ const meta_sys = {
 						},
 						use: {
 							synonym: "Использование",
-							multiline_mode: false,
 							tooltip: "",
 							type: {
 								types: [
@@ -289,7 +362,6 @@ const meta_sys = {
 						},
 						left_value: {
 							synonym: "Левое значение",
-							multiline_mode: false,
 							tooltip: "",
 							type: {
 								types: [
@@ -300,7 +372,6 @@ const meta_sys = {
 						},
 						comparison_type: {
 							synonym: "Вид сравнения",
-							multiline_mode: false,
 							tooltip: "",
 							type: {
 								types: [
@@ -311,7 +382,6 @@ const meta_sys = {
 						},
 						right_value: {
 							synonym: "Правое значение",
-							multiline_mode: false,
 							tooltip: "",
 							type: {
 								types: [
@@ -329,7 +399,6 @@ const meta_sys = {
 					fields: {
 						param: {
 							synonym: "Параметр",
-							multiline_mode: false,
 							tooltip: "",
 							type: {
 								types: [
@@ -340,13 +409,15 @@ const meta_sys = {
 						},
 						value: {
 							synonym: "Значение",
-							multiline_mode: false,
 							tooltip: "Может иметь примитивный или ссылочный тип или массив",
 							type: {
 								types: [
-									"string"
+									"string",
+									"number"
 								],
-								str_len: 0
+								str_len: 0,
+								digits: 15,
+								fraction_figits: 3
 							}
 						}
 					}
@@ -393,7 +464,6 @@ const meta_sys = {
 			dimensions: {
 				date: {
 					synonym: "Дата",
-					multiline_mode: false,
 					tooltip: "Время события",
 					type: {
 						types: [
@@ -405,7 +475,6 @@ const meta_sys = {
 				},
 				sequence: {
 					synonym: "Порядок",
-					multiline_mode: false,
 					tooltip: "Порядок следования",
 					type: {
 						types: [
@@ -419,7 +488,6 @@ const meta_sys = {
 			resources: {
 				"class": {
 					synonym: "Класс",
-					multiline_mode: false,
 					tooltip: "Класс события",
 					type: {
 						types: [

@@ -275,10 +275,12 @@ class Meta extends MetaEventEmitter{
 		 */
 		this.mgr_by_class_name = function (class_name) {
 			if (class_name) {
-				var np = class_name.split(".");
+
+				let np = class_name.split(".");
 				if (np[1] && $p[np[0]])
 					return $p[np[0]][np[1]];
-				var pos = class_name.indexOf("_");
+
+				const pos = class_name.indexOf("_");
 				if(pos){
 					np = [class_name.substr(0,pos), class_name.substr(pos+1)];
 					if (np[1] && $p[np[0]])

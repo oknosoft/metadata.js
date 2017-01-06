@@ -11,9 +11,7 @@ import MenuItem from "material-ui/MenuItem";
 import PrintIcon from "material-ui/svg-icons/action/print";
 import AttachIcon from "material-ui/svg-icons/editor/attach-file";
 import SelectIcon from "material-ui/svg-icons/av/playlist-add-check";
-import Filter from "../SchemeSettings";
-
-import classes from "./DataList.scss";
+import SchemeSettings from "../SchemeSettings";
 
 export default class DataListToolbar extends Component {
 
@@ -25,8 +23,8 @@ export default class DataListToolbar extends Component {
     handleEdit: PropTypes.func.isRequired,            // обработчик открфтия формы редактора
     handleRemove: PropTypes.func.isRequired,          // обработчик удаления строки
 
-    handleSelectionChange: PropTypes.func.isRequired, // ??? обработчик при изменении фильтра
-    selectionValue: PropTypes.object.isRequired,      // значение фильтра
+    handleSchemeChange: PropTypes.func.isRequired,    // обработчик при изменении настроек компоновки
+    scheme: PropTypes.object.isRequired,              // значение настроек компоновки
 
     handlePrint: PropTypes.func.isRequired,           // обработчик открытия диалога печати
     handleAttachment: PropTypes.func.isRequired,      // обработчик открытия диалога присоединенных файлов
@@ -36,12 +34,12 @@ export default class DataListToolbar extends Component {
     const props = this.props;
     return (
 
-      <Toolbar className={classes.toolbar}>
-        <ToolbarGroup firstChild={true}>
+      <Toolbar>
+        <ToolbarGroup className={"meta-toolbar-group"} firstChild={true}>
 
           {
             props.selection_mode ?
-              <IconButton touch={true} tooltip="Выбрать из списка" tooltipPosition="top-right"
+              <IconButton touch={true} tooltip="Выбрать из списка" tooltipPosition="bottom-right"
                           onTouchTap={props.handleSelect}>
                 <SelectIcon />
               </IconButton>
@@ -49,24 +47,28 @@ export default class DataListToolbar extends Component {
               null
           }
 
-          <IconButton touch={true} tooltip="Создать объект" tooltipPosition="top-right" onTouchTap={props.handleAdd}>
+          <IconButton touch={true} tooltip="Создать объект" tooltipPosition="bottom-right" onTouchTap={props.handleAdd}>
             <AddIcon />
           </IconButton>
-          <IconButton touch={true} tooltip="Открыть форму объекта" tooltipPosition="top-right"
+          <IconButton touch={true} tooltip="Открыть форму объекта" tooltipPosition="bottom-right"
                       onTouchTap={props.handleEdit}>
             <EditIcon />
           </IconButton>
-          <IconButton touch={true} tooltip="Пометить на удаление" tooltipPosition="top-center"
+          <IconButton touch={true} tooltip="Пометить на удаление" tooltipPosition="bottom-center"
                       onTouchTap={props.handleRemove}>
             <RemoveIcon />
           </IconButton>
 
           <ToolbarSeparator />
-          <Filter selectionChange={props.handleSelectionChange} selectionValue={props.selectionValue}/>
+          <SchemeSettings
+            handleSchemeChange={props.handleSchemeChange}
+            scheme={props.scheme}
+            show_prm={false}
+          />
 
         </ToolbarGroup>
 
-        <ToolbarGroup>
+        <ToolbarGroup className={"meta-toolbar-group"}>
 
           <IconMenu
             iconButtonElement={
