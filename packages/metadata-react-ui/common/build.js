@@ -67,8 +67,8 @@ exec_babel('DataField', 'dir')
     return exec_babel('TabularSection', 'dir')
   })
   .then((stdout) => {
-    return exec_babel('build/plugin.js', 'plugin.js')
+    return exec_babel('common/plugin.js', 'plugin.js')
   })
   .then((stdout) => {
-    return exec_babel('build/bandle.js', 'index.js')
+    return exec_babel('common/bandle.js', 'index.js')
   })
