@@ -36,21 +36,21 @@ class DumbScreen extends _react.Component {
 
     let { title, img, page } = this.props;
 
-    if (!title) title = "Заставка загрузка модулей...";
+    if (!title) title = "Загрузка модулей...";
 
     return _react2.default.createElement(
       'div',
-      null,
+      { className: _DumbLoader2.default.splash },
       _react2.default.createElement(
         'div',
-        { className: _DumbLoader2.default.progress, style: { position: 'relative', width: 300 } },
+        { style: { position: 'absolute', bottom: '-20px' } },
         title
       ),
       img,
       page ? _react2.default.createElement(
         'div',
-        { className: _DumbLoader2.default.progress, style: { position: 'relative', width: 300 } },
-        page.page
+        { style: { position: 'absolute', bottom: '-44px' } },
+        `Страница №${ page.page }, загружено ${ Math.min(page.page * page.limit, page.total_rows) } из ${ page.total_rows } объектов`
       ) : null
     );
   }

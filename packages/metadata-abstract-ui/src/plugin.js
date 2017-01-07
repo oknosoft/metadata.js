@@ -1,7 +1,8 @@
 /**
- * Плагин-модификатор react-ui для metadata.js
- * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ * Плагин-модификатор abstract-ui для metadata.js
+ *
  * @module plugin
+ *
  * Created 05.10.2016
  */
 

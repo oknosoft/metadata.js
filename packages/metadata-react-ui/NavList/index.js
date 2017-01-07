@@ -4,10 +4,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _DataObj = require('./DataObj');
+var _NavList = require('./NavList');
 
-var _DataObj2 = _interopRequireDefault(_DataObj);
+var _NavList2 = _interopRequireDefault(_NavList);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = _DataObj2.default;
+exports.default = _NavList2.default;

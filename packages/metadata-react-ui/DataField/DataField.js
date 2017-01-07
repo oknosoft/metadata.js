@@ -24,9 +24,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 class DataField extends _react.Component {
 
-  constructor(props) {
+  constructor(props, context) {
 
-    super(props);
+    super(props, context);
 
     this.state = {
       _meta: props._meta || props._obj._metadata(props._fld)
@@ -43,7 +43,6 @@ class DataField extends _react.Component {
       _meta: _meta,
       _obj: _obj,
       _fld: _fld,
-      _val: _val,
       handleValueChange: handleValueChange
     };
 
@@ -90,6 +89,8 @@ DataField.propTypes = {
   _meta: _react.PropTypes.object, // метаданные поля - могут быть переопределены снаружи, если не указано, будут задейтвованы стандартные метаданные
 
   label_position: _react.PropTypes.string, // положение заголовка, перечислимый тип $p.UI.LABEL_POSITIONS
-  read_only: _react.PropTypes.object, // поле только для чтения
+  read_only: _react.PropTypes.bool, // поле только для чтения
+  mandatory: _react.PropTypes.bool, // поле обязательно для заполнения
+  multi: _react.PropTypes.bool, // множественный выбор - значение является массивом
   handleValueChange: _react.PropTypes.func // обработчик при изменении значения в поле
 };

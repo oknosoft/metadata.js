@@ -4,10 +4,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _DataObj = require('./DataObj');
+var _DumbLoader = require('./DumbLoader');
 
-var _DataObj2 = _interopRequireDefault(_DataObj);
+var _DumbLoader2 = _interopRequireDefault(_DumbLoader);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = _DataObj2.default;
+exports.default = _DumbLoader2.default;
