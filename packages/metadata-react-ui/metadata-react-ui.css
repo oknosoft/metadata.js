@@ -24,12 +24,12 @@
 	display: inline-block;
 }
 
-.meta-datafield-field{
+.meta-datafield-field {
 	min-width: 320px;
 	margin-right: 8px;
 }
 
-.meta-datafield-dataselect{
+.meta-datafield-dataselect {
 	width: 55%;
 	display: inline-block;
 	position: relative;
@@ -59,5 +59,10 @@
 .meta-toggle {
 	margin: 18px;
 	width: 90% !important
-};
+}
 
+/* AppBar */
+.meta-appbar-button {
+	color: #fff !important;
+	vertical-align: middle;
+}
