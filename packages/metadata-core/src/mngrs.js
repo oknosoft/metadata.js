@@ -176,7 +176,7 @@ function mngrs($p) {
 		 * @final
 		 */
 		get family_name(){
-			return msg.meta_mgrs[this.class_name.split(".")[0]].replace(msg.meta_mgrs.mgr+" ", "");
+			return msg('meta_mgrs')[this.class_name.split(".")[0]].replace(msg('meta_mgrs').mgr+" ", "");
 		}
 
 		/**
@@ -2245,7 +2245,7 @@ function mngrs($p) {
 	 * @param class_name {string}
 	 */
 	class ChartOfCharacteristicManager extends CatManager{
-		toString(){return msg.meta_mgrs.cch}
+		toString(){return msg('meta_mgrs').cch}
 	}
 
 	/**
@@ -2259,7 +2259,7 @@ function mngrs($p) {
 	 * @param class_name {string}
 	 */
 	class ChartOfAccountManager extends CatManager{
-		toString(){return msg.meta_mgrs.cacc}
+		toString(){return msg('meta_mgrs').cacc}
 	}
 
 	/**
@@ -2273,7 +2273,7 @@ function mngrs($p) {
 	 * @param class_name {string}
 	 */
 	class DocManager extends RefDataManager{
-		toString(){return msg.meta_mgrs.doc}
+		toString(){return msg('meta_mgrs').doc}
 	}
 
 	/**
@@ -2287,7 +2287,7 @@ function mngrs($p) {
 	 * @param class_name {string}
 	 */
 	class TaskManager extends CatManager{
-		toString(){return msg.meta_mgrs.tsk}
+		toString(){return msg('meta_mgrs').tsk}
 	}
 
 	/**
@@ -2301,7 +2301,7 @@ function mngrs($p) {
 	 * @param class_name {string}
 	 */
 	class BusinessProcessManager extends CatManager{
-		toString(){return msg.meta_mgrs.bp}
+		toString(){return msg('meta_mgrs').bp}
 	}
 
 	/**
@@ -2585,14 +2585,9 @@ function mngrs($p) {
 	});
 
 
-	// создаём менеджер журнала регистрации
-	log_mngr($p)
-
-	// создаём менеджер настроек компоновки
-	scheme_settings($p)
-
 	// экспортируем метод получения менеджера значения в utils
 	if(!utils.value_mgr){
+
 		/**
 		 * ### Возвращает менеджер значения по свойству строки
 		 * @method value_mgr

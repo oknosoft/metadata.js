@@ -652,46 +652,34 @@ class CatObj extends DataObj{
 		}else
 			return this._presentation || '';
 	}
-	/**
-	 * @type String
-	 */
 	set presentation(v){
 		if(v)
 			this._presentation = String(v);
 	}
-
-}
-Object.defineProperties(CatObj.prototype, {
 
 	/**
 	 * ### Код элемента справочника
 	 * @property id
 	 * @type String|Number
 	 */
-	id: {
-		get : function(){ return this._obj.id || ""},
-		set : function(v){
-			this.__notify('id');
-			this._obj.id = v;
-		},
-		enumerable: true
-	},
+	get id() {return this._obj.id || ""}
+	set id(v) {
+		this.__notify('id');
+		this._obj.id = v;
+	}
 
 	/**
 	 * ### Наименование элемента справочника
 	 * @property name
 	 * @type String
 	 */
-	name: {
-		get : function(){ return this._obj.name || ""},
-		set : function(v){
-			this.__notify('name');
-			this._obj.name = String(v);
-		},
-		enumerable: true
+	get name() {return this._obj.name || ""}
+	set name(v) {
+		this.__notify('name');
+		this._obj.name = String(v);
 	}
-})
 
+}
 
 
 /**
@@ -725,66 +713,52 @@ class DocObj extends DataObj{
 		else
 			return this._presentation || "";
 	}
-	/**
-	 * @type String
-	 */
 	set presentation(v){
 		if(v)
 			this._presentation = String(v);
 	}
 
-}
+	/**
+	 * Номер документа
+	 * @property number_doc
+	 * @type {String|Number}
+	 */
+	get number_doc() {
+		return this._obj.number_doc || ""
+	}
+	set number_doc(v) {
+		this.__notify('number_doc');
+		this._obj.number_doc = v;
+	}
 
+	/**
+	 * Дата документа
+	 * @property date
+	 * @type {Date}
+	 */
+	get date() {
+		return this._obj.date instanceof Date ? this._obj.date : utils.blank.date
+	}
+	set date(v) {
+		this.__notify('date');
+		this._obj.date = utils.fix_date(v, true);
+	}
 
-function doc_props_date_number(proto){
-
-	Object.defineProperties(proto, {
-
-		/**
-		 * Номер документа
-		 * @property number_doc
-		 * @type {String|Number}
-		 */
-		number_doc: {
-			get : function(){ return this._obj.number_doc || ""},
-			set : function(v){
-				this.__notify('number_doc');
-				this._obj.number_doc = v;
-			},
-			enumerable: true
-		},
-
-		/**
-		 * Дата документа
-		 * @property date
-		 * @type {Date}
-		 */
-		date: {
-			get : function(){ return this._obj.date || utils.blank.date},
-			set : function(v){
-				this.__notify('date');
-				this._obj.date = utils.fix_date(v, true);
-			},
-			enumerable: true
-		}
-
-	});
-}
-
-/**
- * Признак проведения
- * @property posted
- * @type {Boolean}
- */
-Object.defineProperty(DocObj.prototype, "posted", {
-	get : function(){ return this._obj.posted || false},
-	set : function(v){
+	/**
+	 * Признак проведения
+	 * @property posted
+	 * @type {Boolean}
+	 */
+	get posted() {
+		return this._obj.posted || false
+	}
+	set posted(v) {
 		this.__notify('posted');
 		this._obj.posted = utils.fix_boolean(v);
-	},
-	enumerable: true
-});
-doc_props_date_number(DocObj.prototype);
+	}
+
+}
+
 
 
 /**
@@ -802,14 +776,17 @@ class DataProcessorObj extends DataObj {
 		// выполняем конструктор родительского объекта
 		super(attr, manager);
 
-		var f, cmd = manager.metadata();
-		for(f in cmd.fields)
+		const cmd = manager.metadata();
+
+		for(let f in cmd.fields){
 			attr[f] = utils.fetch_type("", cmd.fields[f].type);
-		for(f in cmd["tabular_sections"])
+		}
+
+		for(let f in cmd["tabular_sections"]){
 			attr[f] = [];
+		}
 
 		utils._mixin(this, attr);
-
 	}
 }
 
@@ -823,8 +800,34 @@ class DataProcessorObj extends DataObj {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {DataManager}
  */
-class TaskObj extends CatObj {}
-doc_props_date_number(TaskObj.prototype);
+class TaskObj extends CatObj {
+
+	/**
+	 * Номер документа
+	 * @property number_doc
+	 * @type {String|Number}
+	 */
+	get number_doc() {
+		return this._obj.number_doc || ""
+	}
+	set number_doc(v) {
+		this.__notify('number_doc');
+		this._obj.number_doc = v;
+	}
+
+	/**
+	 * Дата документа
+	 * @property date
+	 * @type {Date}
+	 */
+	get date() {
+		return this._obj.date instanceof Date ? this._obj.date : utils.blank.date
+	}
+	set date(v) {
+		this.__notify('date');
+		this._obj.date = utils.fix_date(v, true);
+	}
+}
 
 
 /**
@@ -835,8 +838,35 @@ doc_props_date_number(TaskObj.prototype);
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {DataManager}
  */
-class BusinessProcessObj extends CatObj {}
-doc_props_date_number(BusinessProcessObj.prototype);
+class BusinessProcessObj extends CatObj {
+
+	/**
+	 * Номер документа
+	 * @property number_doc
+	 * @type {String|Number}
+	 */
+	get number_doc() {
+		return this._obj.number_doc || ""
+	}
+	set number_doc(v) {
+		this.__notify('number_doc');
+		this._obj.number_doc = v;
+	}
+
+	/**
+	 * Дата документа
+	 * @property date
+	 * @type {Date}
+	 */
+	get date() {
+		return this._obj.date instanceof Date ? this._obj.date : utils.blank.date
+	}
+	set date(v) {
+		this.__notify('date');
+		this._obj.date = utils.fix_date(v, true);
+	}
+
+}
 
 
 /**

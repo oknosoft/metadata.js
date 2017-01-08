@@ -49,6 +49,7 @@
     "babel-preset-stage-0": "^6.16",
     "babel-runtime": "^6.20",
     "better-npm-run": "^0.0.13",
+    "concat-files": "^0.1.1",
     "graceful-fs": "^4.1",
     "gulp": "^3.9",
     "gulp-babel": "^6.1",
@@ -60,7 +61,6 @@
     "gulp-uglify": "^2.0",
     "gulp-umd": "^0.2",
     "jasmine": "^2.5",
-    "yuidocjs": "^0.10",
     "lerna": "2.0.0-beta.31",
     "webpack": "^1.14",
     "yuidocjs": "^0.10"
@@ -75,7 +75,7 @@
   },
   "betterScripts": {
     "build:react-ui": {
-      "command": "node ./packages/metadata-react-ui/common/build.js",
+      "command": "node ./packages/metadata-react-ui/build.js",
       "env": {
         "NODE_ENV": "production"
       }
@@ -87,7 +87,7 @@
       }
     },
     "build:abstract-ui": {
-      "command": "babel ./packages/metadata-abstract-ui/src --out-dir ./packages/metadata-abstract-ui",
+      "command": "node ./packages/metadata-abstract-ui/build.js",
       "env": {
         "NODE_ENV": "production"
       }

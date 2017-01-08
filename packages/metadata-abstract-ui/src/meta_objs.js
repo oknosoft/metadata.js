@@ -1,12 +1,31 @@
 /**
- * ### Журнал регистрации
+ * ### Метаданные системных перечислений, регистров и справочников
  *
- * @module log_mngr
+ * @module meta_objs
  *
- * Created 19.12.2016
+ * Created 08.01.2017
  */
 
-function log_mngr($p) {
+function meta_objs() {
+
+	const {classes} = this
+
+	/**
+	 * ### Менеджер объектов метаданных
+	 * Используется для формирования списков типов документов, справочников и т.д.
+	 * Например, при работе в интерфейсе с составными типами
+	 */
+	class MetaObjManager extends classes.CatManager{
+
+	}
+
+	/**
+	 * ### Менеджер доступных полей
+	 * Используется при настройке отчетов и динамических списков
+	 */
+	class MetaFieldManager extends classes.CatManager{
+
+	}
 
 	/**
 	 * ### Журнал событий
@@ -173,41 +192,36 @@ function log_mngr($p) {
 	}
 
 	/**
-	 * ### Регистр сведений log
-	 * Журнал событий
-	 * @class IregLog
-	 * @extends RegisterRow
+	 * ### Виртуальный справочник MetaObjs
+	 * undefined
+	 * @class CatMeta_objs
+	 * @extends CatObj
 	 * @constructor
 	 */
-	$p.IregLog = class IregLog extends classes.RegisterRow {
+	this.CatMeta_objs = class CatMeta_objs extends classes.CatObj{}
 
-		get date(){return this._getter('date')}
-		set date(v){this._setter('date',v)}
+	/**
+	 * ### Виртуальный справочник MetaFields
+	 * undefined
+	 * @class CatMeta_fields
+	 * @extends CatObj
+	 * @constructor
+	 */
+	this.CatMeta_fields = class CatMeta_fields extends classes.CatObj{}
 
-		get sequence(){return this._getter('sequence')}
-		set sequence(v){this._setter('sequence',v)}
-
-		get class(){return this._getter('class')}
-		set class(v){this._setter('class',v)}
-
-		get note(){return this._getter('note')}
-		set note(v){this._setter('note',v)}
-
-		get obj(){return this._getter('obj')}
-		set obj(v){this._setter('obj',v)}
-
-	}
-
-	// публикуем конструктор журнала регистрации
+	// публикуем конструкторы системных менеджеров
 	Object.defineProperties(classes, {
-
-		LogManager: { value: LogManager }
-
+		MetaObjManager: { value: MetaObjManager },
+		MetaFieldManager: { value: MetaFieldManager },
 	})
 
-	// создаём менеджер журнала регистрации
-	Object.defineProperty($p.ireg, 'log', {
-		value: new LogManager('ireg.log')
+	// создаём системные менеджеры метаданных
+	Object.defineProperties(this.cat, {
+		meta_objs: {
+			value: new MetaObjManager('cat.meta_objs')
+		},
+		meta_fields: {
+			value: new MetaFieldManager('cat.meta_fields')
+		}
 	})
-
 }
