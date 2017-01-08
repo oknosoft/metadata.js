@@ -12,6 +12,18 @@ var _reactDataGrid = require("react-data-grid");
 
 var _reactDataGrid2 = _interopRequireDefault(_reactDataGrid);
 
+var _DumbLoader = require("../DumbLoader");
+
+var _DumbLoader2 = _interopRequireDefault(_DumbLoader);
+
+var _TabularSectionToolbar = require("./TabularSectionToolbar");
+
+var _TabularSectionToolbar2 = _interopRequireDefault(_TabularSectionToolbar);
+
+var _DataCell = require("components/DataField/DataCell");
+
+var _DataCell2 = _interopRequireDefault(_DataCell);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // // Import the necessary modules.
@@ -51,73 +63,28 @@ class TabularSection extends _react.Component {
 
   constructor(props, context) {
 
-    super(props);
+    super(props, context);
 
-    const users_mgr = context.$p.cat.users;
+    _initialiseProps.call(this);
+
+    const { $p } = context;
+    const { _obj } = props;
+    const class_name = _obj._manager.class_name + "." + props._tabular;
 
     this.state = {
-      _meta: props._meta || props._obj._metadata(props._tabular),
-      _tabular: props._obj[props._tabular],
-      _columns: props._columns || []
+      _meta: props._meta || _obj._metadata(props._tabular),
+      _tabular: _obj[props._tabular],
+      _columns: props._columns || [],
+
+      Toolbar: props.Toolbar || _TabularSectionToolbar2.default,
+
+      selectedIds: props.rowSelection ? props.rowSelection.selectBy.keys.values : []
     };
 
     if (!this.state._columns.length) {
 
-      for (let fld in this.state._meta.fields) {
-        let _fld = this.state._meta.fields[fld],
-            column = {
-          key: fld,
-          name: _fld.synonym,
-          resizable: true
-        };
-
-        if (_fld.type.is_ref) {
-          column.formatter = v => {
-            return _react2.default.createElement(
-              "div",
-              null,
-              v.value.presentation
-            );
-          };
-        }
-
-        this.state._columns.push(column);
-      }
-      // this.state._columns = [
-      //   {
-      //     key: 'row',
-      //     name: '№',
-      //     resizable : true,
-      //     width : 80
-      //   },
-      //   {
-      //     key: 'nom',
-      //     name: 'ФИО',
-      //     resizable : true,
-      //     formatter: v => {
-      //       v = users_mgr.get(v.value)
-      //       return (<div>{v instanceof Promise ? 'loading...' : v.presentation}</div>)
-      //     }
-      //   }]
+      $p.cat.scheme_settings.get_scheme(class_name).then(this.handleSchemeChange);
     }
-  }
-
-  rowGetter(i) {
-    //return this.state._tabular.get(i)._obj;
-    return this.state._tabular.get(i);
-  }
-
-  deleteRow(e, data) {
-    if (!data) {
-      data = this.refs.grid.state.selected;
-    }
-    this.state._tabular.del(data.rowIdx);
-    this.forceUpdate();
-  }
-
-  addRow(e, data) {
-    this.state._tabular.add();
-    this.forceUpdate();
   }
 
   handleRowUpdated(e) {
@@ -126,22 +93,25 @@ class TabularSection extends _react.Component {
     Object.assign(row._row || row, e.updated);
   }
 
+  // обработчик при изменении настроек компоновки
+
+
   render() {
 
-    const { $p } = this.context;
-    const { _meta, _tabular, _columns } = this.state;
-    const { _obj, _fld, Toolbar } = this.props;
-    const _val = _obj[_fld];
-    const subProps = {
-      _meta: _meta,
-      _obj: _obj,
-      _fld: _fld,
-      _val: _val
-    };
+    const { props, state, context, rowGetter, onRowsSelected, onRowsDeselected, handleAdd, handleRemove, handleUp, handleDown, handleRowUpdated } = this;
+    const { _meta, _tabular, _columns, scheme, selectedIds, Toolbar } = state;
+    const { _obj, rowSelection, deny_add_del, deny_reorder, minHeight, handleCustom } = props;
+
+    if (!_columns || !_columns.length) {
+      if (!scheme) {
+        return _react2.default.createElement(_DumbLoader2.default, { title: "\u0427\u0442\u0435\u043D\u0438\u0435 \u043D\u0430\u0441\u0442\u0440\u043E\u0435\u043A \u043A\u043E\u043C\u043F\u043E\u043D\u043E\u0432\u043A\u0438..." });
+      }
+      return _react2.default.createElement(_DumbLoader2.default, { title: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043D\u0430\u0441\u0442\u0440\u043E\u0435\u043A \u043A\u043E\u043C\u043F\u043E\u043D\u043E\u0432\u043A\u0438..." });
+    }
 
     // contextMenu={<MyContextMenu
-    //   onRowDelete={::this.deleteRow}
-    //   onRowAdd={::this.addRow}
+    //   onRowDelete={this.handleRemove}
+    //   onRowAdd={this.handleAdd}
     //   style={{zIndex: 9999}}
     // />}
 
@@ -150,51 +120,142 @@ class TabularSection extends _react.Component {
     //   handleRemove={}
     // />
 
-    return Toolbar ? _react2.default.createElement(
+    const gridProps = {
+      ref: "grid",
+      columns: _columns,
+      enableCellSelect: true,
+      rowGetter: rowGetter,
+      rowsCount: _tabular.count(),
+      onRowUpdated: handleRowUpdated,
+      minHeight: minHeight || 200
+    };
+
+    if (rowSelection) {
+      rowSelection.onRowsSelected = onRowsSelected;
+      rowSelection.onRowsDeselected = onRowsDeselected;
+      rowSelection.selectBy.keys.values = selectedIds;
+      gridProps.rowSelection = rowSelection;
+    }
+
+    return _react2.default.createElement(
       "div",
       null,
       _react2.default.createElement(Toolbar, {
-        handleAdd: this.addRow.bind(this),
-        handleRemove: this.deleteRow.bind(this),
-        handleCustom: this.props.handleCustom
+        handleAdd: handleAdd,
+        handleRemove: handleRemove,
+        handleUp: handleUp,
+        handleDown: handleDown,
+        handleCustom: handleCustom,
+
+        deny_add_del: deny_add_del,
+        deny_reorder: deny_reorder,
+
+        scheme: scheme
+
       }),
-      _react2.default.createElement(_reactDataGrid2.default, {
-        ref: "grid",
-        columns: _columns,
-        enableCellSelect: true,
-        rowGetter: this.rowGetter.bind(this),
-        rowsCount: _tabular.count(),
-        onRowUpdated: this.handleRowUpdated,
-        minHeight: this.props.minHeight || 200
-
-      })
-    ) : _react2.default.createElement(_reactDataGrid2.default, {
-
-      columns: _columns,
-      enableCellSelect: true,
-      rowGetter: this.rowGetter.bind(this),
-      rowsCount: _tabular.count(),
-      onRowUpdated: this.handleRowUpdated,
-      minHeight: this.props.minHeight || 200
-
-    });
+      _react2.default.createElement(_reactDataGrid2.default, gridProps)
+    );
   }
 }
 exports.default = TabularSection;
-TabularSection.contextTypes = {
-  $p: _react2.default.PropTypes.object.isRequired
-};
 TabularSection.propTypes = {
 
   _obj: _react.PropTypes.object.isRequired,
   _tabular: _react.PropTypes.string.isRequired,
   _meta: _react.PropTypes.object,
-  _columns: _react.PropTypes.object,
+  _columns: _react.PropTypes.array,
 
-  read_only: _react.PropTypes.object, // Элемент только для чтения
+  read_only: _react.PropTypes.bool, // Элемент только для чтения
   deny_add_del: _react.PropTypes.bool, // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+  deny_reorder: _react.PropTypes.bool, // Запрет изменения порядка строк
 
-  Toolbar: _react.PropTypes.func, // Индивидуальная панель инструментов. Если не указана, рисуем типовую
+  Toolbar: _react.PropTypes.func, // Конструктор индивидуальной панели инструментов. Если не указан, рисуем типовую
 
   handleValueChange: _react.PropTypes.func, // Обработчик изменения значения в ячейке
-  handleRowChange: _react.PropTypes.func };
+  handleRowChange: _react.PropTypes.func, // При окончании редактирования строки
+
+  rowSelection: _react.PropTypes.object, // Настройка пометок строк
+
+  selectedIds: _react.PropTypes.array
+};
+TabularSection.contextTypes = {
+  $p: _react2.default.PropTypes.object.isRequired
+};
+TabularSection.defaultProps = {
+  deny_add_del: false,
+  read_only: false
+};
+
+var _initialiseProps = function () {
+  this.rowGetter = i => {
+    //return this.state._tabular.get(i)._obj;
+    return this.state._tabular.get(i);
+  };
+
+  this.handleRemove = (e, data) => {
+    if (!data) {
+      data = this.refs.grid.state.selected;
+    }
+    this.state._tabular.del(data.rowIdx);
+    this.forceUpdate();
+  };
+
+  this.handleAdd = (e, data) => {
+    this.state._tabular.add();
+    this.forceUpdate();
+  };
+
+  this.handleUp = () => {
+    const data = this.refs.grid.state.selected;
+    if (data && data.hasOwnProperty("rowIdx") && data.rowIdx > 0) {
+      this.state._tabular.swap(data.rowIdx, data.rowIdx - 1);
+      data.rowIdx = data.rowIdx - 1;
+      this.forceUpdate();
+    }
+  };
+
+  this.handleDown = () => {
+    const data = this.refs.grid.state.selected;
+    if (data && data.hasOwnProperty("rowIdx") && data.rowIdx < this.state._tabular.count() - 1) {
+      this.state._tabular.swap(data.rowIdx, data.rowIdx + 1);
+      data.rowIdx = data.rowIdx + 1;
+      this.forceUpdate();
+    }
+  };
+
+  this.handleSchemeChange = scheme => {
+
+    const { props, state } = this;
+    const _columns = scheme.rx_columns({
+      mode: "ts",
+      fields: state._meta.fields,
+      _obj: props._obj
+    });
+    this.setState({ scheme, _columns });
+  };
+
+  this.onRowsSelected = rows => {
+    const { rowSelection } = this.props;
+    this.setState({
+      selectedIds: this.state.selectedIds.concat(rows.map(r => {
+        if (rowSelection.selectBy.keys.markKey) {
+          r.row[rowSelection.selectBy.keys.markKey] = true;
+        }
+        return r.row[rowSelection.selectBy.keys.rowKey];
+      }))
+    });
+  };
+
+  this.onRowsDeselected = rows => {
+    const { rowSelection } = this.props;
+    let rowIds = rows.map(r => {
+      if (rowSelection.selectBy.keys.markKey) {
+        r.row[rowSelection.selectBy.keys.markKey] = false;
+      }
+      return r.row[rowSelection.selectBy.keys.rowKey];
+    });
+    this.setState({
+      selectedIds: this.state.selectedIds.filter(i => rowIds.indexOf(i) === -1)
+    });
+  };
+};

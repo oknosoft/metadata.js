@@ -10,9 +10,13 @@ var _react2 = _interopRequireDefault(_react);
 
 var _reactVirtualized = require("react-virtualized");
 
-var _Toolbar = require("./Toolbar");
+var _DumbLoader = require("../DumbLoader");
 
-var _Toolbar2 = _interopRequireDefault(_Toolbar);
+var _DumbLoader2 = _interopRequireDefault(_DumbLoader);
+
+var _DataListToolbar = require("./DataListToolbar");
+
+var _DataListToolbar2 = _interopRequireDefault(_DataListToolbar);
 
 var _classnames = require("classnames");
 
@@ -26,155 +30,42 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 const limit = 30,
       totalRows = 999999;
+
+class DataListStorage {
+
+  constructor() {
+    this._data = [];
+  }
+
+  get size() {
+    return this._data.length;
+  }
+
+  get(index) {
+    return this._data[index];
+  }
+
+  clear() {
+    this._data.length = 0;
+  }
+
+}
+
 class DataList extends _react.Component {
 
   constructor(props, context) {
 
-    super(props);
+    super(props, context);
 
-    this.handleSelect = () => {
-      const row = this._list.get(this.state.selectedRowIndex);
-      const { handleSelect, _mgr } = this.props;
-      if (row && handleSelect) {
-        handleSelect(row, _mgr);
-      }
-    };
+    _initialiseProps.call(this);
 
-    this.handleAdd = () => {
-      const { handleAdd, _mgr } = this.props;
-      if (handleAdd) {
-        handleAdd(_mgr);
-      }
-    };
+    const { class_name } = props._mgr;
+    const { $p } = context;
 
-    this.handleEdit = () => {
-      const row = this._list.get(this.state.selectedRowIndex);
-      const { handleEdit, _mgr } = this.props;
-      if (row && handleEdit) {
-        handleEdit(row, _mgr);
-      }
-    };
-
-    this.handleRemove = () => {
-      const row = this._list.get(this.state.selectedRowIndex);
-      const { handleRemove, _mgr } = this.props;
-      if (row && handleRemove) {
-        handleRemove(row, _mgr);
-      }
-    };
-
-    this.handleSelectionChange = () => {};
-
-    this.handlePrint = () => {
-      const row = this._list.get(this.state.selectedRowIndex);
-      const { handlePrint, _mgr } = this.props;
-      if (row && handlePrint) {
-        handlePrint(row, _mgr);
-      }
-    };
-
-    this.handleAttachment = () => {
-      const row = this._list.get(this.state.selectedRowIndex);
-      const { handleAttachment, _mgr } = this.props;
-      if (row && handleAttachment) {
-        handleAttachment(row, _mgr);
-      }
-    };
-
-    this._isRowLoaded = ({ index }) => {
-      const res = !!this._list.get(index);
-      return res;
-    };
-
-    this._loadMoreRows = ({ startIndex, stopIndex }) => {
-
-      const { select, totalRowCount } = this.state;
-      const { _mgr } = this.props;
-      const increment = Math.max(limit, stopIndex - startIndex + 1);
-
-      Object.assign(select, {
-        _top: increment,
-        _skip: startIndex,
-        _view: 'doc/by_date',
-        _raw: true
-      });
-
-      // выполняем запрос
-      return _mgr.find_rows_remote(select).then(data => {
-
-        // обновляем массив результата
-        for (var i = 0; i < data.length; i++) {
-          if (!this._list._data[i + startIndex]) {
-            this._list._data[i + startIndex] = data[i];
-          }
-        }
-
-        // обновляем состояние - изменилось количество записей
-        if (totalRowCount != startIndex + data.length + (data.length < increment ? 0 : increment)) {
-          this.setState({
-            totalRowCount: startIndex + data.length + (data.length < increment ? 0 : increment)
-          });
-        } else {
-          this.forceUpdate();
-        }
-      });
-    };
-
-    this._cellRenderer = ({ columnIndex, isScrolling, key, rowIndex, style }) => {
-
-      const setState = this.setState.bind(this);
-      // var grid = this.refs.AutoSizer.refs.Grid
-
-      const classNames = (0, _classnames2.default)(this._getRowClassName(rowIndex), _DataList2.default.cell, {
-        [_DataList2.default.centeredCell]: columnIndex > 3, // выравнивание текста по центру
-        [_DataList2.default.hoveredItem]: rowIndex === this.state.hoveredRowIndex && rowIndex != this.state.selectedRowIndex, // || columnIndex === this.state.hoveredColumnIndex
-        [_DataList2.default.selectedItem]: rowIndex === this.state.selectedRowIndex
-      });
-
-      const row = this._list.get(rowIndex);
-
-      let content;
-
-      if (row) {
-        content = this._formatter(row, columnIndex);
-      } else {
-        content = _react2.default.createElement("div", {
-          className: _DataList2.default.placeholder,
-          style: { width: 10 + Math.random() * 80 }
-        });
-      }
-
-      // It is important to attach the style specified as it controls the cell's position.
-      // You can add additional class names or style properties as you would like.
-      // Key is also required by React to more efficiently manage the array of cells.
-      return _react2.default.createElement(
-        "div",
-        {
-          className: classNames,
-          key: key,
-          style: style,
-          onMouseOver: function () {
-            setState({
-              hoveredColumnIndex: columnIndex,
-              hoveredRowIndex: rowIndex
-            });
-          },
-          onTouchTap: function () {
-            setState({
-              selectedRowIndex: rowIndex
-            });
-          },
-          onDoubleClick: this.handleEdit
-        },
-        content
-      );
-    };
-
-    this.state = {
+    const state = this.state = {
       totalRowCount: totalRows,
       selectedRowIndex: 0,
       do_reload: false,
-      columns: props.columns,
       _meta: props._meta || props._mgr.metadata(),
 
       // готовим фильтры для запроса couchdb
@@ -184,72 +75,15 @@ class DataList extends _react.Component {
         _top: 30,
         _skip: 0,
         _key: {
-          startkey: [props.params.options || props._mgr.class_name, 2000],
-          endkey: [props.params.options || props._mgr.class_name, 2020]
+          startkey: [props.params && props.params.options || class_name, 2000],
+          endkey: [props.params && props.params.options || class_name, 2020]
         }
       }
     };
 
-    const { state } = this;
-    const { $p } = context;
+    this._list = new DataListStorage();
 
-    if (!state.columns || !state.columns.length) {
-
-      state.columns = [];
-
-      // набираем поля
-      if (state._meta.form && state._meta.form.selection) {
-        state._meta.form.selection.cols.forEach(fld => {
-          const fld_meta = state._meta.fields[fld.id] || props._mgr.metadata(fld.id);
-          state.columns.push({
-            id: fld.id,
-            synonym: fld.caption || fld_meta.synonym,
-            tooltip: fld_meta.tooltip,
-            type: fld_meta.type,
-            width: fld.width == '*' ? 250 : parseInt(fld.width) || 140
-          });
-        });
-      } else {
-
-        if (props._mgr instanceof $p.classes.CatManager) {
-          if (state._meta.code_length) {
-            state.columns.push('id');
-          }
-
-          if (state._meta.main_presentation_name) {
-            state.columns.push('name');
-          }
-        } else if (props._mgr instanceof $p.classes.DocManager) {
-          state.columns.push('number_doc');
-          state.columns.push('date');
-        }
-
-        state.columns = state.columns.map((id, index) => {
-          // id, synonym, tooltip, type, width
-          const fld_meta = state._meta.fields[id] || props._mgr.metadata(id);
-          return {
-            id,
-            synonym: fld_meta.synonym,
-            tooltip: fld_meta.tooltip,
-            type: fld_meta.type,
-            width: fld_meta.width || 140
-          };
-        });
-      }
-    }
-
-    this._list = {
-      _data: [],
-      get size() {
-        return this._data.length;
-      },
-      get(index) {
-        return this._data[index];
-      },
-      clear() {
-        this._data.length = 0;
-      }
-    };
+    $p.cat.scheme_settings.get_scheme(class_name).then(this.handleSchemeChange);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -266,44 +100,40 @@ class DataList extends _react.Component {
 
   render() {
 
-    const { columns, totalRowCount, select } = this.state;
-    const { width, height, selection_mode, params, _mgr } = this.props;
-    const key0 = params.options || _mgr.class_name;
+    const { state, props, handleSelect, handleAdd, handleEdit, handleRemove, handlePrint, handleAttachment,
+      handleSchemeChange, _isRowLoaded, _loadMoreRows, _cellRenderer } = this;
+    const { columns, totalRowCount, scheme } = state;
+    const { width, height, selection_mode } = props;
 
-    if (select._key.startkey[0] != key0) {
-      select._key.startkey[0] = key0;
-      select._key.endkey[0] = key0;
-      setTimeout(() => {
-        this._list.clear();
-        this.setState({
-          do_reload: true,
-          totalRowCount: 0
-        });
-      });
+    if (!scheme) {
+      return _react2.default.createElement(_DumbLoader2.default, { title: "\u0427\u0442\u0435\u043D\u0438\u0435 \u043D\u0430\u0441\u0442\u0440\u043E\u0435\u043A \u043A\u043E\u043C\u043F\u043E\u043D\u043E\u0432\u043A\u0438..." });
+    } else if (!columns || !columns.length) {
+      return _react2.default.createElement(_DumbLoader2.default, { title: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043D\u0430\u0441\u0442\u0440\u043E\u0435\u043A \u043A\u043E\u043C\u043F\u043E\u043D\u043E\u0432\u043A\u0438..." });
     }
 
     return _react2.default.createElement(
       "div",
       null,
-      _react2.default.createElement(_Toolbar2.default, {
+      _react2.default.createElement(_DataListToolbar2.default, {
 
         selection_mode: !!selection_mode,
-        handleSelect: this.handleSelect,
+        handleSelect: handleSelect,
 
-        handleAdd: this.handleAdd,
-        handleEdit: this.handleEdit,
-        handleRemove: this.handleRemove,
-        handlePrint: this.handlePrint,
-        handleAttachment: this.handleAttachment,
+        handleAdd: handleAdd,
+        handleEdit: handleEdit,
+        handleRemove: handleRemove,
+        handlePrint: handlePrint,
+        handleAttachment: handleAttachment,
 
-        handleSelectionChange: this.handleSelectionChange,
-        selectionValue: {}
+        scheme: scheme,
+        handleSchemeChange: handleSchemeChange
+
       }),
       _react2.default.createElement(
         _reactVirtualized.InfiniteLoader,
         {
-          isRowLoaded: this._isRowLoaded,
-          loadMoreRows: this._loadMoreRows,
+          isRowLoaded: _isRowLoaded,
+          loadMoreRows: _loadMoreRows,
           rowCount: totalRowCount,
           minimumBatchSize: limit
         },
@@ -328,7 +158,7 @@ class DataList extends _react.Component {
               "div",
               {
                 //className={styles.BodyGrid}
-                style: { position: 'relative' } },
+                style: { position: 'relative', zIndex: -1 } },
               columns.map(function (column, index) {
 
                 let res = _react2.default.createElement(
@@ -355,7 +185,7 @@ class DataList extends _react.Component {
               ref: registerChild
               //className={styles.BodyGrid}
               , onSectionRendered: onSectionRendered,
-              cellRenderer: this._cellRenderer,
+              cellRenderer: _cellRenderer,
               columnCount: columns.length,
               columnWidth: ({ index }) => columns[index].width,
               rowCount: totalRowCount,
@@ -382,7 +212,7 @@ class DataList extends _react.Component {
   // обработчик удаления элемента списка
 
 
-  // обработчик изменении свойств отбора
+  // обработчик при изменении настроек компоновки
 
 
   // обработчик печати теущей строки
@@ -433,17 +263,22 @@ DataList.contextTypes = {
 };
 DataList.propTypes = {
 
+  // данные
   _mgr: _react.PropTypes.object.isRequired, // Менеджер данных
   _meta: _react.PropTypes.object, // Описание метаданных. Если не указано, используем метаданные менеджера
-  selection_mode: _react.PropTypes.bool, // Режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
-  columns: _react.PropTypes.array, // Настройки колонок динамического списка. Если не указано - генерируем по метаданным
-  select: _react.PropTypes.object, // Параметры запроса к couchdb. Если не указано - генерируем по метаданным
 
+  // настройки компоновки
+  select: _react.PropTypes.object, // todo: переместить в scheme // Параметры запроса к couchdb. Если не указано - генерируем по метаданным
+
+  // настройки внешнего вида и поведения
+  selection_mode: _react.PropTypes.bool, // Режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
   read_only: _react.PropTypes.object, // Элемент только для чтения
   deny_add_del: _react.PropTypes.bool, // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
   modal: _react.PropTypes.bool, // Показывать список в модальном диалоге
   width: _react.PropTypes.number.isRequired, // Ширина элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
   height: _react.PropTypes.number.isRequired, // Высота элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
+
+
   Toolbar: _react.PropTypes.func, // Индивидуальная панель инструментов. Если не указана, рисуем типовую
 
   // Redux actions
@@ -459,4 +294,158 @@ DataList.propTypes = {
 DataList.defaultProps = {
   width: 1000,
   height: 400
+};
+
+var _initialiseProps = function () {
+  this.handleSelect = () => {
+    const row = this._list.get(this.state.selectedRowIndex);
+    const { handleSelect, _mgr } = this.props;
+    if (row && handleSelect) {
+      handleSelect(row, _mgr);
+    }
+  };
+
+  this.handleAdd = () => {
+    const { handleAdd, _mgr } = this.props;
+    if (handleAdd) {
+      handleAdd(_mgr);
+    }
+  };
+
+  this.handleEdit = () => {
+    const row = this._list.get(this.state.selectedRowIndex);
+    const { handleEdit, _mgr } = this.props;
+    if (row && handleEdit) {
+      handleEdit(row, _mgr);
+    }
+  };
+
+  this.handleRemove = () => {
+    const row = this._list.get(this.state.selectedRowIndex);
+    const { handleRemove, _mgr } = this.props;
+    if (row && handleRemove) {
+      handleRemove(row, _mgr);
+    }
+  };
+
+  this.handleSchemeChange = scheme => {
+
+    const { state, props, _list } = this;
+    const { _mgr, params } = props;
+
+    scheme.fix_select(state.select, params && params.options || _mgr.class_name);
+    _list.clear();
+    this.setState({
+      scheme,
+      columns: scheme.columns(),
+      totalRowCount: 0,
+      do_reload: true
+    });
+  };
+
+  this.handlePrint = () => {
+    const row = this._list.get(this.state.selectedRowIndex);
+    const { handlePrint, _mgr } = this.props;
+    if (row && handlePrint) {
+      handlePrint(row, _mgr);
+    }
+  };
+
+  this.handleAttachment = () => {
+    const row = this._list.get(this.state.selectedRowIndex);
+    const { handleAttachment, _mgr } = this.props;
+    if (row && handleAttachment) {
+      handleAttachment(row, _mgr);
+    }
+  };
+
+  this._isRowLoaded = ({ index }) => {
+    const res = !!this._list.get(index);
+    return res;
+  };
+
+  this._loadMoreRows = ({ startIndex, stopIndex }) => {
+
+    const { select, scheme, totalRowCount } = this.state;
+    const { _mgr, params } = this.props;
+    const increment = Math.max(limit, stopIndex - startIndex + 1);
+
+    Object.assign(select, {
+      _top: increment,
+      _skip: startIndex,
+      _view: 'doc/by_date',
+      _raw: true
+    });
+    scheme.fix_select(select, params && params.options || _mgr.class_name);
+
+    // выполняем запрос
+    return _mgr.find_rows_remote(select).then(data => {
+
+      // обновляем массив результата
+      for (var i = 0; i < data.length; i++) {
+        if (!this._list._data[i + startIndex]) {
+          this._list._data[i + startIndex] = data[i];
+        }
+      }
+
+      // обновляем состояние - изменилось количество записей
+      if (totalRowCount != startIndex + data.length + (data.length < increment ? 0 : increment)) {
+        this.setState({
+          totalRowCount: startIndex + data.length + (data.length < increment ? 0 : increment)
+        });
+      } else {
+        this.forceUpdate();
+      }
+    });
+  };
+
+  this._cellRenderer = ({ columnIndex, isScrolling, key, rowIndex, style }) => {
+
+    const setState = this.setState.bind(this);
+    // var grid = this.refs.AutoSizer.refs.Grid
+
+    const classNames = (0, _classnames2.default)(this._getRowClassName(rowIndex), _DataList2.default.cell, {
+      [_DataList2.default.centeredCell]: columnIndex > 3, // выравнивание текста по центру
+      [_DataList2.default.hoveredItem]: rowIndex === this.state.hoveredRowIndex && rowIndex != this.state.selectedRowIndex, // || columnIndex === this.state.hoveredColumnIndex
+      [_DataList2.default.selectedItem]: rowIndex === this.state.selectedRowIndex
+    });
+
+    const row = this._list.get(rowIndex);
+
+    let content;
+
+    if (row) {
+      content = this._formatter(row, columnIndex);
+    } else {
+      content = _react2.default.createElement("div", {
+        className: _DataList2.default.placeholder,
+        style: { width: 10 + Math.random() * 80 }
+      });
+    }
+
+    // It is important to attach the style specified as it controls the cell's position.
+    // You can add additional class names or style properties as you would like.
+    // Key is also required by React to more efficiently manage the array of cells.
+    return _react2.default.createElement(
+      "div",
+      {
+        className: classNames,
+        key: key,
+        style: style,
+        onMouseOver: function () {
+          setState({
+            hoveredColumnIndex: columnIndex,
+            hoveredRowIndex: rowIndex
+          });
+        },
+        onTouchTap: function () {
+          setState({
+            selectedRowIndex: rowIndex
+          });
+        },
+        onDoubleClick: this.handleEdit
+      },
+      content
+    );
+  };
 };

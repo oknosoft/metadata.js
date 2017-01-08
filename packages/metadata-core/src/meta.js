@@ -7,7 +7,7 @@
 
 /**
  * ### Описание метаданных объекта
- *
+ * Не путать с виртуальным справочником CatMeta_objs
  * @class MetaObj
  */
 class MetaObj {
@@ -16,7 +16,7 @@ class MetaObj {
 
 /**
  * ### Описание метаданных поля
- *
+ * Не путать с виртуальным справочником CatMeta_fields
  * @class MetaField
  */
 class MetaField {
@@ -34,14 +34,17 @@ class MetaField {
  * @menuorder 02
  * @tooltip Описание метаданных
  */
-
 class Meta extends MetaEventEmitter{
 
 	constructor($p) {
 
 		super();
 
-		let _m = Object.assign({}, meta_sys);
+		const _m = {};
+		Meta._sys.forEach((patch) => {
+			utils._patch(_m, patch)
+		})
+		Meta._sys.length = 0;
 
 		/**
 		 * ### Инициализирует метаданные
@@ -49,11 +52,11 @@ class Meta extends MetaEventEmitter{
 		 *
 		 * @method init
 		 * @for Meta
-		 * @param [meta_db] {Object|String}
+		 * @param [patch] {Object}
 		 */
-		this.init = function (meta_db) {
-			return utils._patch(_m, meta_db);
-		};
+		this.init = function (patch) {
+			return utils._patch(_m, patch);
+		}
 
 		/**
 		 * ### Возвращает описание объекта метаданных
@@ -65,17 +68,34 @@ class Meta extends MetaEventEmitter{
 		 */
 		this.get = function(class_name, field_name){
 
-			var np = class_name.split(".");
+			const np = class_name.split(".");
 
 			if(!_m || !_m[np[0]]){
 				return
 			}
 
+			const _meta = _m[np[0]][np[1]];
+
 			if(!field_name){
-				return _m[np[0]][np[1]]
+				return _meta
+			}
+			else if(_meta && _meta.fields[field_name]){
+				return _meta.fields[field_name]
+			}
+			else if(_meta && _meta.tabular_sections && _meta.tabular_sections[field_name]){
+				return _meta.tabular_sections[field_name]
 			}
 
-			var res = {multiline_mode: false, note: "", synonym: "", tooltip: "", type: {is_ref: false,	types: ["string"]}},
+			const res = {
+				multiline_mode: false,
+				note: "",
+				synonym: "",
+				tooltip: "",
+				type: {
+					is_ref: false,
+					types: ["string"]
+				}
+			},
 				is_doc = "doc,tsk,bp".indexOf(np[0]) != -1,
 				is_cat = "cat,cch,cacc,tsk".indexOf(np[0]) != -1;
 
@@ -113,14 +133,12 @@ class Meta extends MetaEventEmitter{
 				res.type.is_ref = true;
 				res.type.types[0] = class_name;
 
-			}else if(field_name)
-				res = _m[np[0]][np[1]].fields[field_name];
+			}else{
+				return
+			}
 
-			else
-				res = _m[np[0]][np[1]];
-
-			return res;
-		};
+			return res
+		}
 
 		/**
 		 * ### Возвращает структуру имён объектов метаданных конфигурации
@@ -136,7 +154,7 @@ class Meta extends MetaEventEmitter{
 					res[i].push(j);
 			}
 			return res;
-		};
+		}
 
 		/**
 		 * ### Возвращает массив используемых баз
@@ -156,7 +174,7 @@ class Meta extends MetaEventEmitter{
 				}
 			}
 			return Object.keys(res);
-		};
+		}
 
 		/**
 		 * ### Создаёт строку SQL с командами создания таблиц для всех объектов метаданных
@@ -194,7 +212,7 @@ class Meta extends MetaEventEmitter{
 
 			iteration();
 
-		};
+		}
 
 		/**
 		 * ### Возвращает англоязычный синоним строки
@@ -225,7 +243,7 @@ class Meta extends MetaEventEmitter{
 			if(synJS[v])
 				return synJS[v];
 			return _m.syns_js[_m.syns_1с.indexOf(v)] || v;
-		};
+		}
 
 		/**
 		 * ### Возвращает русскоязычный синоним строки
@@ -252,7 +270,7 @@ class Meta extends MetaEventEmitter{
 			if(syn1c[v])
 				return syn1c[v];
 			return _m.syns_1с[_m.syns_js.indexOf(v)] || v;
-		};
+		}
 
 		/**
 		 * ### Возвращает список доступных печатных форм
@@ -264,7 +282,7 @@ class Meta extends MetaEventEmitter{
 				for(var i in pp.doc)
 					_m.doc[i].printing_plates = pp.doc[i];
 
-		};
+		}
 
 		/**
 		 * ### Возвращает менеджер объекта по имени класса
@@ -290,6 +308,97 @@ class Meta extends MetaEventEmitter{
 		}
 
 	}
+
+	/**
+	 * ### Системные метаданные
+	 * Это свойство наполняют плагины и оно используется в prebuild.js
+	 * @type {Array}
+	 * @private
+	 */
+	static _sys = [{
+		enm: {
+			accumulation_record_type: [
+				{
+					order: 0,
+					name: "debit",
+					synonym: "Приход"
+				},
+				{
+					order: 1,
+					name: "credit",
+					synonym: "Расход"
+				}
+			],
+		},
+		ireg: {
+			log: {
+				name: "log",
+				note: "",
+				synonym: "Журнал событий",
+				dimensions: {
+					date: {
+						synonym: "Дата",
+						tooltip: "Время события",
+						type: {
+							types: [
+								"number"
+							],
+							digits: 15,
+							fraction_figits: 0
+						}
+					},
+					sequence: {
+						synonym: "Порядок",
+						tooltip: "Порядок следования",
+						type: {
+							types: [
+								"number"
+							],
+							digits: 6,
+							fraction_figits: 0
+						}
+					}
+				},
+				resources: {
+					"class": {
+						synonym: "Класс",
+						tooltip: "Класс события",
+						type: {
+							types: [
+								"string"
+							],
+							str_len: 100
+						}
+					},
+					note: {
+						synonym: "Комментарий",
+						multiline_mode: true,
+						tooltip: "Текст события",
+						type: {
+							types: [
+								"string"
+							],
+							str_len: 0
+						}
+					},
+					obj: {
+						synonym: "Объект",
+						multiline_mode: true,
+						tooltip: "Объект, к которому относится событие",
+						type: {
+							types: [
+								"string"
+							],
+							str_len: 0
+						}
+					}
+				}
+			}
+		},
+	}]
+
+	static Obj = MetaObj
+	static Field = MetaField
 
 	/**
 	 * ### Возвращает тип поля sql для типа данных
@@ -494,8 +603,5 @@ class Meta extends MetaEventEmitter{
 	}
 
 }
-
-Meta.Obj = MetaObj;
-Meta.Field = MetaField;
 
 classes.Meta = Meta;

@@ -93,8 +93,8 @@ export default class DataList extends Component {
         _top: 30,
         _skip: 0,
         _key: {
-          startkey: [props.params.options || class_name, 2000],
-          endkey: [props.params.options || class_name, 2020]
+          startkey: [props.params && props.params.options || class_name, 2000],
+          endkey: [props.params && props.params.options || class_name, 2020]
         }
       }
     }
@@ -119,30 +119,19 @@ export default class DataList extends Component {
 
   render() {
 
-    const {columns, totalRowCount, select, scheme} = this.state
-    const {width, height, selection_mode, params, _mgr} = this.props
-    const key0 = params.options || _mgr.class_name
+    const {state, props, handleSelect, handleAdd, handleEdit, handleRemove, handlePrint, handleAttachment,
+      handleSchemeChange, _isRowLoaded, _loadMoreRows, _cellRenderer} = this
+    const {columns, totalRowCount, scheme} = state
+    const {width, height, selection_mode} = props
 
     if (!scheme) {
       return <DumbLoader title="Чтение настроек компоновки..."/>
-
-    } else if (!columns || !columns.length) {
+    }
+    else if (!columns || !columns.length) {
       return <DumbLoader title="Ошибка настроек компоновки..."/>
-
     }
 
-    if (select._key.startkey[0] != key0) {
-      select._key.startkey[0] = key0
-      select._key.endkey[0] = key0
-      setTimeout(() => {
-        this._list.clear()
-        this.setState({
-          do_reload: true,
-          totalRowCount: 0
-        })
-      })
-      // return <DumbLoader title="Обновление данных..." />
-    }
+
 
     return (
       <div>
@@ -150,22 +139,22 @@ export default class DataList extends Component {
         <Toolbar
 
           selection_mode={!!selection_mode}
-          handleSelect={this.handleSelect}
+          handleSelect={handleSelect}
 
-          handleAdd={this.handleAdd}
-          handleEdit={this.handleEdit}
-          handleRemove={this.handleRemove}
-          handlePrint={this.handlePrint}
-          handleAttachment={this.handleAttachment}
+          handleAdd={handleAdd}
+          handleEdit={handleEdit}
+          handleRemove={handleRemove}
+          handlePrint={handlePrint}
+          handleAttachment={handleAttachment}
 
           scheme={scheme}
-          handleSchemeChange={this.handleSchemeChange}
+          handleSchemeChange={handleSchemeChange}
 
         />
 
         <InfiniteLoader
-          isRowLoaded={this._isRowLoaded}
-          loadMoreRows={this._loadMoreRows}
+          isRowLoaded={_isRowLoaded}
+          loadMoreRows={_loadMoreRows}
           rowCount={totalRowCount}
           minimumBatchSize={limit}
         >
@@ -216,7 +205,7 @@ export default class DataList extends Component {
                   ref={registerChild}
                   //className={styles.BodyGrid}
                   onSectionRendered={onSectionRendered}
-                  cellRenderer={this._cellRenderer}
+                  cellRenderer={_cellRenderer}
                   columnCount={columns.length}
                   columnWidth={({index}) => columns[index].width }
                   rowCount={totalRowCount}
@@ -276,9 +265,17 @@ export default class DataList extends Component {
 
   // обработчик при изменении настроек компоновки
   handleSchemeChange = (scheme) => {
+
+    const {state, props, _list} = this
+    const {_mgr, params} = props
+
+    scheme.fix_select(state.select, params && params.options || _mgr.class_name)
+    _list.clear()
     this.setState({
       scheme,
-      columns: scheme.columns()
+      columns: scheme.columns(),
+      totalRowCount: 0,
+      do_reload: true,
     })
   }
 
@@ -332,8 +329,8 @@ export default class DataList extends Component {
 
   _loadMoreRows = ({startIndex, stopIndex}) => {
 
-    const {select, totalRowCount} = this.state
-    const {_mgr} = this.props
+    const {select, scheme, totalRowCount} = this.state
+    const {_mgr, params} = this.props
     const increment = Math.max(limit, stopIndex - startIndex + 1)
 
     Object.assign(select, {
@@ -342,6 +339,7 @@ export default class DataList extends Component {
       _view: 'doc/by_date',
       _raw: true
     })
+    scheme.fix_select(select, params && params.options || _mgr.class_name)
 
     // выполняем запрос
     return _mgr.find_rows_remote(select)

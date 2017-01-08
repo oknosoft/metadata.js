@@ -6,7 +6,9 @@
  * Created 19.12.2016
  */
 
-function scheme_settings($p) {
+function scheme_settings() {
+
+	const {wsql, utils, cat, dp, md, classes} = this
 
 	/**
 	 * ### Менеджер настроек отчетов и динсписков
@@ -26,15 +28,15 @@ function scheme_settings($p) {
 
 				// получаем сохраненную настройку
 				const scheme_name = "scheme_settings_" + class_name.replace(/\./g, "_")
-				let ref = $p.wsql.get_user_param(scheme_name, "string")
+				let ref = wsql.get_user_param(scheme_name, "string")
 
 				function set_param_and_resolve(obj){
-					$p.wsql.set_user_param(scheme_name, obj.ref);
+					wsql.set_user_param(scheme_name, obj.ref);
 					resolve(obj)
 				}
 
 				function find_scheme() {
-					$p.cat.scheme_settings.find_rows_remote({
+					cat.scheme_settings.find_rows_remote({
 						_view: 'doc/scheme_settings',
 						_top: 100,
 						_skip: 0,
@@ -61,10 +63,10 @@ function scheme_settings($p) {
 				}
 
 				function create_scheme() {
-					if(!$p.utils.is_guid(ref)){
-						ref = $p.utils.generate_guid()
+					if(!utils.is_guid(ref)){
+						ref = utils.generate_guid()
 					}
-					$p.cat.scheme_settings.create({ref})
+					cat.scheme_settings.create({ref})
 						.then(function (obj) {
 							return obj.fill_default(class_name).save()
 						})
@@ -75,7 +77,7 @@ function scheme_settings($p) {
 
 				if(ref){
 					// получаем по гвиду
-					$p.cat.scheme_settings.get(ref, "promise")
+					cat.scheme_settings.get(ref, "promise")
 						.then(function (scheme) {
 							if(scheme && !scheme.is_new()){
 								resolve(scheme)
@@ -93,15 +95,6 @@ function scheme_settings($p) {
 			})
 		}
 
-		/**
-		 * ### Выбор варизанта настроек
-		 *
-		 * @param class_name
-		 */
-		select_scheme(class_name) {
-			return {}
-		}
-
 	}
 
 	/**
@@ -110,7 +103,7 @@ function scheme_settings($p) {
 	 * @extends DataProcessorObj
 	 * @constructor
 	 */
-	$p.DpScheme_settings = class DpScheme_settings extends DataProcessorObj{
+	this.DpScheme_settings = class DpScheme_settings extends classes.DataProcessorObj{
 		get scheme() {
 			return this._getter('scheme')
 		}
@@ -126,7 +119,7 @@ function scheme_settings($p) {
 	 * @extends CatObj
 	 * @constructor
 	 */
-	$p.CatScheme_settings = class CatScheme_settings extends classes.CatObj {
+	this.CatScheme_settings = class CatScheme_settings extends classes.CatObj {
 
 		get obj() {
 			return this._getter('obj')
@@ -206,7 +199,7 @@ function scheme_settings($p) {
 		fill_default(class_name) {
 
 			const parts = class_name.split("."),
-				_mgr = $p.md.mgr_by_class_name(class_name),
+				_mgr = md.mgr_by_class_name(class_name),
 				_meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]),
 				fields = this.fields,
 				columns = [];
@@ -234,7 +227,7 @@ function scheme_settings($p) {
 
 				} else {
 
-					if (_mgr instanceof $p.classes.CatManager) {
+					if (_mgr instanceof classes.CatManager) {
 						if (_meta.code_length) {
 							columns.push('id')
 						}
@@ -243,7 +236,7 @@ function scheme_settings($p) {
 							columns.push('name')
 						}
 
-					} else if (_mgr instanceof $p.classes.DocManager) {
+					} else if (_mgr instanceof classes.DocManager) {
 						columns.push('number_doc')
 						columns.push('date')
 					}
@@ -320,7 +313,7 @@ function scheme_settings($p) {
 		columns(mode){
 
 			const parts = this.obj.split("."),
-				_mgr = $p.md.mgr_by_class_name(this.obj),
+				_mgr = md.mgr_by_class_name(this.obj),
 				_meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]),
 				res = [];
 
@@ -378,7 +371,7 @@ function scheme_settings($p) {
 		}
 	}
 
-	$p.CatScheme_settingsDimensionsRow = class CatScheme_settingsDimensionsRow extends TabularSectionRow {
+	this.CatScheme_settingsDimensionsRow = class CatScheme_settingsDimensionsRow extends classes.TabularSectionRow {
 
 		get parent() {
 			return this._getter('parent')
@@ -395,7 +388,7 @@ function scheme_settings($p) {
 		}
 	}
 
-	$p.CatScheme_settingsResourcesRow = class CatScheme_settingsResourcesRow extends $p.CatScheme_settingsDimensionsRow {
+	this.CatScheme_settingsResourcesRow = class CatScheme_settingsResourcesRow extends this.CatScheme_settingsDimensionsRow {
 
 		get formula() {
 			return this._getter('formula')
@@ -405,7 +398,7 @@ function scheme_settings($p) {
 		}
 	}
 
-	$p.CatScheme_settingsFieldsRow = class CatScheme_settingsFieldsRow extends $p.CatScheme_settingsDimensionsRow {
+	this.CatScheme_settingsFieldsRow = class CatScheme_settingsFieldsRow extends this.CatScheme_settingsDimensionsRow {
 
 		get use() {
 			return this._getter('use')
@@ -458,7 +451,7 @@ function scheme_settings($p) {
 
 	}
 
-	$p.CatScheme_settingsSortingRow = class CatScheme_settingsSortingRow extends $p.CatScheme_settingsDimensionsRow {
+	this.CatScheme_settingsSortingRow = class CatScheme_settingsSortingRow extends this.CatScheme_settingsDimensionsRow {
 
 		get direction() {
 			return this._getter('direction')
@@ -468,7 +461,7 @@ function scheme_settings($p) {
 		}
 	}
 
-	$p.CatScheme_settingsSelectionRow = class CatScheme_settingsSelectionRow extends TabularSectionRow {
+	this.CatScheme_settingsSelectionRow = class CatScheme_settingsSelectionRow extends classes.TabularSectionRow {
 
 		get parent() {
 			return this._getter('parent')
@@ -506,7 +499,7 @@ function scheme_settings($p) {
 		}
 	}
 
-	$p.CatScheme_settingsParamsRow = class CatScheme_settingsParamsRow extends TabularSectionRow {
+	this.CatScheme_settingsParamsRow = class CatScheme_settingsParamsRow extends classes.TabularSectionRow {
 
 		get param() {
 			return this._getter('param')
@@ -523,7 +516,7 @@ function scheme_settings($p) {
 		}
 	}
 
-	$p.CatScheme_settingsSchemeRow = class CatScheme_settingsSchemeRow extends TabularSectionRow {
+	this.CatScheme_settingsSchemeRow = class CatScheme_settingsSchemeRow extends classes.TabularSectionRow {
 
 		get parent() {
 			return this._getter('parent')
@@ -541,13 +534,13 @@ function scheme_settings($p) {
 
 	}
 
-	Object.defineProperties($p.cat, {
+	Object.defineProperties(cat, {
 		scheme_settings: {
 			value: new SchemeSettingsManager('cat.scheme_settings')
 		}
 	})
 
-	Object.defineProperties($p.dp, {
+	Object.defineProperties(dp, {
 		scheme_settings: {
 			value: new classes.DataProcessorsManager('dp.scheme_settings')
 		}

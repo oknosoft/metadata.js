@@ -37,24 +37,6 @@ export default class MetaEngine{
 		// инициируем базовые свойства
 		Object.defineProperties(this, {
 
-			version: {
-				value: "PACKAGE_VERSION",
-				writable: false
-			},
-
-			toString: { value: () => "Oknosoft data engine. v:" + this.version },
-
-
-			/**
-			 * ### Адаптеры для PouchDB, 1С и т.д.
-			 * @property adapters
-			 * @type Object
-			 * @final
-			 */
-			adapters: {
-				value: {}
-			},
-
 			/**
 			 * ### Параметры работы программы
 			 * @property job_prm
@@ -97,13 +79,26 @@ export default class MetaEngine{
 		utils.record_log = this.record_log;
 
 		// при налчии расширений, выполняем их методы инициализации
-		if(MetaEngine._constructors && Array.isArray(MetaEngine._constructors)){
-			for(var i=0; i< MetaEngine._constructors.length; i++){
-				MetaEngine._constructors[i].call(this);
-			}
-		}
+		MetaEngine._plugins.forEach((plugin) => plugin.call(this));
+		MetaEngine._plugins.length = 0;
 
 	}
+
+	get version() {
+		return "PACKAGE_VERSION"
+	}
+
+	toString() {
+		return "Oknosoft data engine. v:" + this.version
+	}
+
+	/**
+	 * ### Адаптеры для PouchDB, 1С и т.д.
+	 * @property adapters
+	 * @type Object
+	 * @final
+	 */
+	adapters = {}
 
 	/**
 	 * ### Запись журнала регистрации
@@ -112,8 +107,9 @@ export default class MetaEngine{
 	 * @param err
 	 */
 	record_log(err) {
-		if(this.ireg && this.ireg.log){
-			this.ireg.log.record(err)
+		const {ireg} = this
+		if(ireg && ireg.log){
+			ireg.log.record(err)
 		}
 		console.log(err)
 	}
@@ -170,6 +166,14 @@ export default class MetaEngine{
 		return user && !user.empty() ? user : null;
 	}
 
+
+	/**
+	 * Хранилище плагинов
+	 * @type {Array}
+	 * @private
+	 */
+	static _plugins = [];
+
 	/**
 	 * ### Подключает расширения metadata
 	 * Принимает в качестве параметра объект с полями `proto` и `constructor` типа _function_
@@ -180,25 +184,20 @@ export default class MetaEngine{
 	 */
 	static plugin(obj){
 
-		if(typeof obj.proto == "function"){ // function style for plugins
-			obj.proto(MetaEngine);
-		}else if (typeof obj.proto == 'object'){
-			Object.keys(obj.proto).forEach(function (id) { // object style for plugins
+		if(typeof obj.proto == "function"){         // function style for plugins
+			obj.proto(MetaEngine, classes);
+		}
+		else if (typeof obj.proto == 'object'){     // object style for plugins
+			Object.keys(obj.proto).forEach(function (id) {
 				MetaEngine.prototype[id] = obj.proto[id];
 			});
 		}
 
 		if(obj.constructor){
-
 			if(typeof obj.constructor != "function"){
 				throw new Error('Invalid plugin: constructor must be a function');
 			}
-
-			if(!MetaEngine._constructors){
-				MetaEngine._constructors = [];
-			}
-
-			MetaEngine._constructors.push(obj.constructor);
+			MetaEngine._plugins.push(obj.constructor);
 		}
 
 		return MetaEngine;

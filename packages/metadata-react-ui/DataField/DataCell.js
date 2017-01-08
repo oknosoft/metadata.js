@@ -29,8 +29,10 @@ class DataCell extends _react.Component {
 
   // props.column.key, props.rowData(._row)
 
-  constructor(props) {
-    super(props);
+  constructor(props, context) {
+
+    super(props, context);
+
     this.state = {
       value: [],
       _meta: props._meta || props.rowData._metadata(props.column.key)
@@ -64,7 +66,7 @@ class DataCell extends _react.Component {
       _obj: _obj,
       _fld: _fld,
       _val: _val,
-      label_position: $p.UI.LABEL_POSITIONS.hide,
+      label_position: $p.enm.label_positions.hide,
       handleValueChange: this.handleSelectChange
     };
 
@@ -76,7 +78,7 @@ DataCell.contextTypes = {
   $p: _react2.default.PropTypes.object.isRequired
 };
 DataCell.propTypes = {
-  options: _react2.default.PropTypes.array.isRequired,
+  options: _react2.default.PropTypes.array,
   column: _react2.default.PropTypes.shape(ExcelColumn),
   value: _react2.default.PropTypes.array
 };

@@ -3,8 +3,6 @@ import React, { Component, PropTypes } from 'react';
 import FieldSelect from './FieldSelect'
 import FieldText from './FieldText'
 
-import classes from "./DataField.scss"
-
 
 export default class DataField extends Component {
 
@@ -17,7 +15,7 @@ export default class DataField extends Component {
     _fld: PropTypes.string.isRequired,  // имя поля объекта - путь к данным
     _meta: PropTypes.object,            // метаданные поля - могут быть переопределены снаружи, если не указано, будут задейтвованы стандартные метаданные
 
-    label_position: PropTypes.string,   // положение заголовка, перечислимый тип $p.UI.LABEL_POSITIONS
+    label_position: PropTypes.object,   // положение заголовка, $p.enm.label_positions
     read_only: PropTypes.bool,          // поле только для чтения
     mandatory: PropTypes.bool,          // поле обязательно для заполнения
     multi: PropTypes.bool,              // множественный выбор - значение является массивом
@@ -59,14 +57,14 @@ export default class DataField extends Component {
 
     }
 
-    if(label_position == $p.UI.LABEL_POSITIONS.hide){
+    if(label_position == $p.enm.label_positions.hide){
       return control
 
     }else{
       return (
-        <div className={classes.field}>
-          <div className={classes.label}>{_meta.synonym}</div>
-          <div className={classes.data}>
+        <div className={'meta-datafield-field'}>
+          <div className={'meta-datafield-label'}>{_meta.synonym}</div>
+          <div className={'meta-datafield-data'}>
             {control}
           </div>
         </div>

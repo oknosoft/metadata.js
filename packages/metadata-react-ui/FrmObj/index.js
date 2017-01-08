@@ -4,10 +4,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _FrmObj = require('./FrmObj');
+var _DataObj = require('./DataObj');
 
-var _FrmObj2 = _interopRequireDefault(_FrmObj);
+var _DataObj2 = _interopRequireDefault(_DataObj);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = _FrmObj2.default;
+exports.default = _DataObj2.default;

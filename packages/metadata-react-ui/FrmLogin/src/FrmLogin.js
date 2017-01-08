@@ -10,16 +10,11 @@ export default class FrmLogin extends Component {
 
     const { props } = this
 
-    return (
-      <div>{
-
-        props.state_user.logged_in ?
-
-          < User { ...props } />
-          :
-          < TabsLogin { ...props } />
-
-      }</div>
-    );
+    if(props.state_user.logged_in && props._obj){
+      return < User { ...props } />
+    }else{
+      return < TabsLogin { ...props } />
+    }
   }
+
 }

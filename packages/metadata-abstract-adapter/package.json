@@ -3,6 +3,7 @@
   "description": "Abstract data adapter for metadata.js",
   "version": "2.0.0-beta.13",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
+  "license": "MIT",
   "engines": {
     "node": "^6.9",
     "npm": "^3.5"
@@ -17,6 +18,5 @@
     "url": "https://github.com/oknosoft/metadata.js/issues"
   },
   "homepage": "http://www.oknosoft.ru/metadata/",
-  "main": "./index.js",
-  "license": "MIT"
+  "main": "./index.js"
 }

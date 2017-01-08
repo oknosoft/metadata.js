@@ -49,6 +49,7 @@
     "babel-preset-stage-0": "^6.16",
     "babel-runtime": "^6.20",
     "better-npm-run": "^0.0.13",
+    "concat-files": "^0.1.1",
     "graceful-fs": "^4.1",
     "gulp": "^3.9",
     "gulp-babel": "^6.1",
@@ -60,16 +61,12 @@
     "gulp-uglify": "^2.0",
     "gulp-umd": "^0.2",
     "jasmine": "^2.5",
-    "yuidocjs": "^0.10",
     "lerna": "2.0.0-beta.31",
     "webpack": "^1.14",
     "yuidocjs": "^0.10"
   },
   "scripts": {
     "build:react-ui": "better-npm-run build:react-ui",
-    "data-field, nav-list, dumb-loader": "better-npm-run build:data-field && better-npm-run build:nav-list && better-npm-run build:dumb-loader",
-    "data-list": "better-npm-run build:data-list",
-    "frm-login, tabular, selection": "better-npm-run build:frm-login && better-npm-run build:tabular && better-npm-run build:selection",
     "build:abstract-adapter": "better-npm-run build:abstract-adapter",
     "build:abstract-ui": "better-npm-run build:abstract-ui",
     "build:adapter-pouchdb": "better-npm-run build:adapter-pouchdb",
@@ -78,49 +75,7 @@
   },
   "betterScripts": {
     "build:react-ui": {
-      "command": "babel ./packages/metadata-react-ui/src --out-dir ./packages/metadata-react-ui --ignore spec.js",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    },
-    "build:data-field": {
-      "command": "babel ./packages/metadata-react-ui/DataField/src --out-dir ./packages/metadata-react-ui/DataField",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    },
-    "build:nav-list": {
-      "command": "babel ./packages/metadata-react-ui/NavList/src --out-dir ./packages/metadata-react-ui/NavList",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    },
-    "build:dumb-loader": {
-      "command": "babel ./packages/metadata-react-ui/DumbLoader/src --out-dir ./packages/metadata-react-ui/DumbLoader",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    },
-    "build:frm-login": {
-      "command": "babel ./packages/metadata-react-ui/FrmLogin/src --out-dir ./packages/metadata-react-ui/FrmLogin",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    },
-    "build:tabular": {
-      "command": "babel ./packages/metadata-react-ui/TabularSection/src --out-dir ./packages/metadata-react-ui/TabularSection",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    },
-    "build:selection": {
-      "command": "babel ./packages/metadata-react-ui/DataSelection/src --out-dir ./packages/metadata-react-ui/DataSelection",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    },
-    "build:data-list": {
-      "command": "babel ./packages/metadata-react-ui/DataList/src --out-dir ./packages/metadata-react-ui/DataList",
+      "command": "node ./packages/metadata-react-ui/build.js",
       "env": {
         "NODE_ENV": "production"
       }
@@ -132,7 +87,7 @@
       }
     },
     "build:abstract-ui": {
-      "command": "babel ./packages/metadata-abstract-ui/src --out-dir ./packages/metadata-abstract-ui",
+      "command": "node ./packages/metadata-abstract-ui/build.js",
       "env": {
         "NODE_ENV": "production"
       }
