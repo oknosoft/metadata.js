@@ -24,13 +24,7 @@ var _DataCell = require("components/DataField/DataCell");
 
 var _DataCell2 = _interopRequireDefault(_DataCell);
 
-var _addons = require("react-data-grid/addons");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const AutoCompleteEditor = _addons.Editors.AutoComplete;
-const DropDownEditor = _addons.Editors.DropDownEditor;
-const DropDownFormatter = _addons.Formatters.DropDownFormatter;
 
 // // Import the necessary modules.
 // import { Menu } from "react-data-grid/addons";
@@ -164,9 +158,6 @@ class TabularSection extends _react.Component {
   }
 }
 exports.default = TabularSection;
-TabularSection.contextTypes = {
-  $p: _react2.default.PropTypes.object.isRequired
-};
 TabularSection.propTypes = {
 
   _obj: _react.PropTypes.object.isRequired,
@@ -186,6 +177,9 @@ TabularSection.propTypes = {
   rowSelection: _react.PropTypes.object, // Настройка пометок строк
 
   selectedIds: _react.PropTypes.array
+};
+TabularSection.contextTypes = {
+  $p: _react2.default.PropTypes.object.isRequired
 };
 TabularSection.defaultProps = {
   deny_add_del: false,
@@ -231,54 +225,10 @@ var _initialiseProps = function () {
 
   this.handleSchemeChange = scheme => {
 
+    const { props, state, context } = this;
+    const { UI } = context.$p;
     const _columns = scheme.columns("ts");
-    const { fields } = this.state._meta;
-    const { _obj } = this.props;
-
-    // подклеиваем редакторы и форматтеры
-    _columns.forEach(column => {
-
-      const _fld = fields[column.key];
-
-      if (!column.formatter) {
-
-        if (_fld.type.is_ref) {
-          column.formatter = v => {
-            const { presentation } = v.value;
-            return _react2.default.createElement(
-              "div",
-              { title: presentation },
-              presentation
-            );
-          };
-        }
-      }
-
-      switch (column.ctrl_type) {
-
-        case 'input':
-          column.editable = true;
-          break;
-
-        case 'ocombo':
-          column.editor = _react2.default.createElement(_DataCell2.default, null);
-          break;
-
-        case 'ofields':
-          const options = _obj.used_fields_list();
-          column.editor = _react2.default.createElement(DropDownEditor, { options: options });
-          column.formatter = _react2.default.createElement(DropDownFormatter, { options: options });
-          break;
-
-        case 'dhxCalendar':
-          column.editor = _react2.default.createElement(_DataCell2.default, null);
-          break;
-
-        default:
-          ;
-      }
-    });
-
+    UI.fix_columns(_columns, state._meta.fields, props._obj);
     this.setState({ scheme, _columns });
   };
 

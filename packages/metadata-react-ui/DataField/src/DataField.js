@@ -3,8 +3,6 @@ import React, { Component, PropTypes } from 'react';
 import FieldSelect from './FieldSelect'
 import FieldText from './FieldText'
 
-import classes from "./DataField.scss"
-
 
 export default class DataField extends Component {
 
@@ -64,9 +62,9 @@ export default class DataField extends Component {
 
     }else{
       return (
-        <div className={classes.field}>
-          <div className={classes.label}>{_meta.synonym}</div>
-          <div className={classes.data}>
+        <div className={'meta-datafield-field'}>
+          <div className={'meta-datafield-label'}>{_meta.synonym}</div>
+          <div className={'meta-datafield-data'}>
             {control}
           </div>
         </div>

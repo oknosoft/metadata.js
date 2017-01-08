@@ -4,11 +4,6 @@ import DumbLoader from "../DumbLoader";
 import DefaultToolbar from "./TabularSectionToolbar"
 import DataCell from 'components/DataField/DataCell'
 
-import {Editors, Formatters} from "react-data-grid/addons";
-const AutoCompleteEditor = Editors.AutoComplete;
-const DropDownEditor = Editors.DropDownEditor;
-const DropDownFormatter = Formatters.DropDownFormatter;
-
 
 // // Import the necessary modules.
 // import { Menu } from "react-data-grid/addons";
@@ -45,10 +40,6 @@ const DropDownFormatter = Formatters.DropDownFormatter;
 
 export default class TabularSection extends Component {
 
-  static contextTypes = {
-    $p: React.PropTypes.object.isRequired
-  }
-
   static propTypes = {
 
     _obj: PropTypes.object.isRequired,
@@ -68,6 +59,10 @@ export default class TabularSection extends Component {
     rowSelection: PropTypes.object,       // Настройка пометок строк
 
     selectedIds: PropTypes.array
+  }
+
+  static contextTypes = {
+    $p: React.PropTypes.object.isRequired
   }
 
   static defaultProps = {
@@ -146,51 +141,10 @@ export default class TabularSection extends Component {
   // обработчик при изменении настроек компоновки
   handleSchemeChange = (scheme) => {
 
+    const {props, state, context} = this
+    const {UI} = context.$p
     const _columns = scheme.columns("ts")
-    const {fields} = this.state._meta
-    const {_obj} = this.props
-
-    // подклеиваем редакторы и форматтеры
-    _columns.forEach((column) => {
-
-      const _fld = fields[column.key]
-
-      if(!column.formatter){
-
-        if (_fld.type.is_ref) {
-          column.formatter = (v) => {
-            const {presentation} = v.value
-            return <div title={presentation}>{presentation}</div>
-          }
-        }
-      }
-
-      switch (column.ctrl_type) {
-
-        case 'input':
-          column.editable = true;
-          break;
-
-        case 'ocombo':
-          column.editor = <DataCell />;
-          break;
-
-        case 'ofields':
-          const options = _obj.used_fields_list()
-          column.editor = <DropDownEditor options={options} />
-          column.formatter = <DropDownFormatter options={options} />
-          break;
-
-        case 'dhxCalendar':
-          column.editor = <DataCell />;
-          break;
-
-        default:
-          ;
-      }
-
-    })
-
+    UI.fix_columns(_columns, state._meta.fields, props._obj)
     this.setState({scheme, _columns})
   }
 

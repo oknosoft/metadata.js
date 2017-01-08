@@ -34,14 +34,17 @@ class MetaField {
  * @menuorder 02
  * @tooltip Описание метаданных
  */
-
 class Meta extends MetaEventEmitter{
 
 	constructor($p) {
 
 		super();
 
-		let _m = Object.assign({}, meta_sys);
+		const _m = {};
+		Meta._sys.forEach((patch) => {
+			utils._patch(_m, patch)
+		})
+		Meta._sys.length = 0;
 
 		/**
 		 * ### Инициализирует метаданные
@@ -49,10 +52,10 @@ class Meta extends MetaEventEmitter{
 		 *
 		 * @method init
 		 * @for Meta
-		 * @param [meta_db] {Object|String}
+		 * @param [patch] {Object}
 		 */
-		this.init = function (meta_db) {
-			return utils._patch(_m, meta_db);
+		this.init = function (patch) {
+			return utils._patch(_m, patch);
 		};
 
 		/**
@@ -292,6 +295,101 @@ class Meta extends MetaEventEmitter{
 	}
 
 	/**
+	 * ### Системные метаданные
+	 * Это свойство наполняют плагины и оно используется в prebuild.js
+	 * @type {Array}
+	 * @private
+	 */
+	static _sys = [{
+		enm: {
+			accumulation_record_type: [
+				{
+					order: 0,
+					name: "debit",
+					synonym: "Приход"
+				},
+				{
+					order: 1,
+					name: "credit",
+					synonym: "Расход"
+				}
+			],
+		},
+		cat: {
+			meta_objs: {},
+			meta_fields: {},
+		},
+		ireg: {
+			log: {
+				name: "log",
+				note: "",
+				synonym: "Журнал событий",
+				dimensions: {
+					date: {
+						synonym: "Дата",
+						tooltip: "Время события",
+						type: {
+							types: [
+								"number"
+							],
+							digits: 15,
+							fraction_figits: 0
+						}
+					},
+					sequence: {
+						synonym: "Порядок",
+						tooltip: "Порядок следования",
+						type: {
+							types: [
+								"number"
+							],
+							digits: 6,
+							fraction_figits: 0
+						}
+					}
+				},
+				resources: {
+					"class": {
+						synonym: "Класс",
+						tooltip: "Класс события",
+						type: {
+							types: [
+								"string"
+							],
+							str_len: 100
+						}
+					},
+					note: {
+						synonym: "Комментарий",
+						multiline_mode: true,
+						tooltip: "Текст события",
+						type: {
+							types: [
+								"string"
+							],
+							str_len: 0
+						}
+					},
+					obj: {
+						synonym: "Объект",
+						multiline_mode: true,
+						tooltip: "Объект, к которому относится событие",
+						type: {
+							types: [
+								"string"
+							],
+							str_len: 0
+						}
+					}
+				}
+			}
+		},
+	}]
+
+	static Obj = MetaObj
+	static Field = MetaField
+
+	/**
 	 * ### Возвращает тип поля sql для типа данных
 	 *
 	 * @method sql_type
@@ -494,8 +592,5 @@ class Meta extends MetaEventEmitter{
 	}
 
 }
-
-Meta.Obj = MetaObj;
-Meta.Field = MetaField;
 
 classes.Meta = Meta;
