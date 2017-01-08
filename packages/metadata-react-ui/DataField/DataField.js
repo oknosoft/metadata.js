@@ -16,10 +16,6 @@ var _FieldText = require('./FieldText');
 
 var _FieldText2 = _interopRequireDefault(_FieldText);
 
-var _DataField = require('./DataField.scss');
-
-var _DataField2 = _interopRequireDefault(_DataField);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class DataField extends _react.Component {
@@ -59,20 +55,20 @@ class DataField extends _react.Component {
 
     }
 
-    if (label_position == $p.UI.LABEL_POSITIONS.hide) {
+    if (label_position == $p.enm.label_positions.hide) {
       return control;
     } else {
       return _react2.default.createElement(
         'div',
-        { className: _DataField2.default.field },
+        { className: 'meta-datafield-field' },
         _react2.default.createElement(
           'div',
-          { className: _DataField2.default.label },
+          { className: 'meta-datafield-label' },
           _meta.synonym
         ),
         _react2.default.createElement(
           'div',
-          { className: _DataField2.default.data },
+          { className: 'meta-datafield-data' },
           control
         )
       );
@@ -88,7 +84,7 @@ DataField.propTypes = {
   _fld: _react.PropTypes.string.isRequired, // имя поля объекта - путь к данным
   _meta: _react.PropTypes.object, // метаданные поля - могут быть переопределены снаружи, если не указано, будут задейтвованы стандартные метаданные
 
-  label_position: _react.PropTypes.string, // положение заголовка, перечислимый тип $p.UI.LABEL_POSITIONS
+  label_position: _react.PropTypes.object, // положение заголовка, $p.enm.label_positions
   read_only: _react.PropTypes.bool, // поле только для чтения
   mandatory: _react.PropTypes.bool, // поле обязательно для заполнения
   multi: _react.PropTypes.bool, // множественный выбор - значение является массивом

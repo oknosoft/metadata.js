@@ -225,10 +225,12 @@ var _initialiseProps = function () {
 
   this.handleSchemeChange = scheme => {
 
-    const { props, state, context } = this;
-    const { UI } = context.$p;
-    const _columns = scheme.columns("ts");
-    UI.fix_columns(_columns, state._meta.fields, props._obj);
+    const { props, state } = this;
+    const _columns = scheme.rx_columns({
+      mode: "ts",
+      fields: state._meta.fields,
+      _obj: props._obj
+    });
     this.setState({ scheme, _columns });
   };
 

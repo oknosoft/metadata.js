@@ -60,7 +60,7 @@ class TabsLogin extends _react.Component {
 
   render() {
 
-    const { props } = this;
+    const { props, state, handleTextChange, handleLogin } = this;
 
     return _react2.default.createElement(
       'div',
@@ -71,7 +71,7 @@ class TabsLogin extends _react.Component {
         _react2.default.createElement(
           _Tabs.Tabs,
           {
-            value: this.state.tab_value,
+            value: state.tab_value,
             onChange: this.tabChange },
           _react2.default.createElement(
             _Tabs.Tab,
@@ -85,7 +85,7 @@ class TabsLogin extends _react.Component {
                 floatingLabelText: '\u0418\u043C\u044F \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F',
                 fullWidth: true,
                 defaultValue: props.login,
-                onChange: this.handleTextChange
+                onChange: handleTextChange
               }),
               _react2.default.createElement(_TextField2.default, {
                 ref: 'password',
@@ -94,13 +94,15 @@ class TabsLogin extends _react.Component {
                 fullWidth: true,
                 type: 'password',
                 defaultValue: props.password,
-                onChange: this.handleTextChange
+                onChange: handleTextChange
               }),
               _react2.default.createElement('br', null),
-              _react2.default.createElement(_RaisedButton2.default, { label: '\u0412\u043E\u0439\u0442\u0438',
-                disabled: this.state.btn_login_disabled,
+              props.state_user.logged_in ? _react2.default.createElement(_RaisedButton2.default, { label: '\u0412\u044B\u0439\u0442\u0438',
                 className: 'meta-button-18-0',
-                onTouchTap: this.handleLogin }),
+                onTouchTap: props.handleLogOut }) : _react2.default.createElement(_RaisedButton2.default, { label: '\u0412\u043E\u0439\u0442\u0438',
+                disabled: state.btn_login_disabled,
+                className: 'meta-button-18-0',
+                onTouchTap: handleLogin }),
               _react2.default.createElement(_RaisedButton2.default, { label: '\u0417\u0430\u0431\u044B\u043B\u0438 \u043F\u0430\u0440\u043E\u043B\u044C?',
                 disabled: true,
                 className: 'meta-button-18-0' })
@@ -118,8 +120,12 @@ class TabsLogin extends _react.Component {
 }
 exports.default = TabsLogin;
 TabsLogin.propTypes = {
+
   zone: _react.PropTypes.oneOfType([_react.PropTypes.string, _react.PropTypes.number]).isRequired,
   couch_path: _react.PropTypes.string.isRequired,
   enable_save_pwd: _react.PropTypes.bool.isRequired,
-  handleSetPrm: _react.PropTypes.func.isRequired
+  handleSetPrm: _react.PropTypes.func.isRequired,
+
+  handleLogin: _react.PropTypes.func.isRequired,
+  handleLogOut: _react.PropTypes.func.isRequired
 };

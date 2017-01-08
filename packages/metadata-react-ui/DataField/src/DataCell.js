@@ -61,7 +61,7 @@ class DataCell extends Component {
       _obj: _obj,
       _fld: _fld,
       _val: _val,
-      label_position: $p.UI.LABEL_POSITIONS.hide,
+      label_position: $p.enm.label_positions.hide,
       handleValueChange: this.handleSelectChange
     }
 

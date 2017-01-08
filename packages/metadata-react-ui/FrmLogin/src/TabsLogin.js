@@ -9,13 +9,17 @@ import CnnSettings from './CnnSettings';
 export default class TabsLogin extends Component {
 
   static propTypes = {
+
     zone: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.number
     ]).isRequired,
     couch_path: PropTypes.string.isRequired,
     enable_save_pwd: PropTypes.bool.isRequired,
-    handleSetPrm: PropTypes.func.isRequired
+    handleSetPrm: PropTypes.func.isRequired,
+
+    handleLogin: PropTypes.func.isRequired,
+    handleLogOut: PropTypes.func.isRequired,
   }
 
   constructor(props) {
@@ -48,7 +52,7 @@ export default class TabsLogin extends Component {
 
   render() {
 
-    const { props } = this;
+    const { props, state, handleTextChange, handleLogin } = this;
 
     return (
 
@@ -57,7 +61,7 @@ export default class TabsLogin extends Component {
         <Paper  zDepth={3} rounded={false}>
 
           <Tabs
-            value={this.state.tab_value}
+            value={state.tab_value}
             onChange={this.tabChange} >
 
             <Tab label="Вход" value="a" >
@@ -70,7 +74,7 @@ export default class TabsLogin extends Component {
                   floatingLabelText="Имя пользователя"
                   fullWidth={true}
                   defaultValue={props.login}
-                  onChange={this.handleTextChange}
+                  onChange={handleTextChange}
                 />
 
                 <TextField
@@ -80,14 +84,22 @@ export default class TabsLogin extends Component {
                   fullWidth={true}
                   type="password"
                   defaultValue={props.password}
-                  onChange={this.handleTextChange}
+                  onChange={handleTextChange}
                 />
                 <br />
 
-                <RaisedButton label="Войти"
-                              disabled={this.state.btn_login_disabled}
-                              className={'meta-button-18-0'}
-                              onTouchTap={this.handleLogin} />
+                {
+                  props.state_user.logged_in ?
+                    <RaisedButton label="Выйти"
+                                  className={'meta-button-18-0'}
+                                  onTouchTap={props.handleLogOut}/>
+                    :
+                    <RaisedButton label="Войти"
+                                  disabled={state.btn_login_disabled}
+                                  className={'meta-button-18-0'}
+                                  onTouchTap={handleLogin} />
+                }
+
 
                 <RaisedButton label="Забыли пароль?"
                               disabled={true}

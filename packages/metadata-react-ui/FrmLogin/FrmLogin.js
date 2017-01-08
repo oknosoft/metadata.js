@@ -24,11 +24,12 @@ class FrmLogin extends _react.Component {
 
     const { props } = this;
 
-    return _react2.default.createElement(
-      'div',
-      null,
-      props.state_user.logged_in ? _react2.default.createElement(_TabsUser2.default, props) : _react2.default.createElement(_TabsLogin2.default, props)
-    );
+    if (props.state_user.logged_in && props._obj) {
+      return _react2.default.createElement(_TabsUser2.default, props);
+    } else {
+      return _react2.default.createElement(_TabsLogin2.default, props);
+    }
   }
+
 }
 exports.default = FrmLogin;

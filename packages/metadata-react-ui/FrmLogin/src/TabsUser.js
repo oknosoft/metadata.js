@@ -26,6 +26,8 @@ export default class TabsUser extends Component {
     _obj: PropTypes.object,
     _acl: PropTypes.string.isRequired,
 
+    handleLogOut: PropTypes.func.isRequired,
+
     handleSave: PropTypes.func.isRequired,
     handleRevert: PropTypes.func.isRequired,
     handleMarkDeleted: PropTypes.func.isRequired,
@@ -35,7 +37,7 @@ export default class TabsUser extends Component {
     handleAttachment: PropTypes.func.isRequired,
     handleValueChange: PropTypes.func.isRequired,
     handleAddRow: PropTypes.func.isRequired,
-    handleDelRow: PropTypes.func.isRequired
+    handleDelRow: PropTypes.func.isRequired,
   }
 
   constructor(props) {
@@ -55,10 +57,6 @@ export default class TabsUser extends Component {
       });
     }
   };
-
-  handleLogOut = () => {
-    this.props.handleLogOut()
-  }
 
   handleSave(){
 
@@ -117,7 +115,7 @@ export default class TabsUser extends Component {
 
                       <RaisedButton label="Выйти"
                                     className={'meta-button-18-0'}
-                                    onTouchTap={this.handleLogOut}/>
+                                    onTouchTap={props.handleLogOut}/>
 
                     </div>
 

@@ -33,25 +33,6 @@
 
 import {MetaEventEmitter} from 'metadata-abstract-adapter';
 
-/**
- * Описание структуры колонки формы списка
- * @class Col_struct
- * @param id
- * @param width
- * @param type
- * @param align
- * @param sort
- * @param caption
- * @constructor
- */
-function Col_struct(id,width,type,align,sort,caption){
-	this.id = id;
-	this.width = width;
-	this.type = type;
-	this.align = align;
-	this.sort = sort;
-	this.caption = caption;
-}
 
 // isNode
 // if(typeof process !== 'undefined' && process.versions && process.versions.node){
@@ -70,10 +51,7 @@ function mngrs($p) {
 
 			super()
 
-			const _meta = md.get(class_name) || (this.metadata ? this.metadata() : {});
-
 			Object.defineProperties(this, {
-
 
 				/**
 				 * ### Имя типа объектов этого менеджера
@@ -84,41 +62,40 @@ function mngrs($p) {
 				 */
 				class_name: {
 					get: () => class_name
-				},
-
-
-				/**
-				 * ### Метаданные объекта
-				 * указатель на фрагмент глобальных метаданных, относящмйся к текущему объекту
-				 *
-				 * @method metadata
-				 * @for DataManager
-				 * @return {Object} - объект метаданных
-				 */
-				metadata: {
-					value: (field_name) => {
-
-						if(field_name)
-							return _meta.fields[field_name] || md.get(class_name, field_name) || _meta.tabular_sections[field_name];
-						else
-							return _meta;
-					}
-				},
-
-				/**
-				 * В этой переменной хранятся имена конструктора объекта и конструкторов табличных частей
-				 */
-				constructor_names: {
-					value: {}
-				},
-
-				/**
-				 * ### Хранилище объектов данного менеджера
-				 */
-				by_ref: {
-					value: {}
 				}
 			})
+		}
+
+		/**
+		 * В этой переменной хранятся имена конструктора объекта и конструкторов табличных частей
+		 */
+		constructor_names = {}
+
+		/**
+		 * ### Хранилище объектов данного менеджера
+		 */
+		by_ref = {}
+
+		/**
+		 * ### Метаданные объекта
+		 * указатель на фрагмент глобальных метаданных, относящийся к текущему классу данных
+		 *
+		 * @method metadata
+		 * @for DataManager
+		 * @return {Object} - объект метаданных
+		 */
+		metadata(field_name) {
+
+			if(!this._meta){
+				this._meta = md.get(this.class_name)
+			}
+
+			if(field_name){
+				return this._meta && this._meta.fields && this._meta.fields[field_name] || md.get(this.class_name, field_name);
+			}
+			else{
+				return this._meta;
+			}
 		}
 
 		/**
@@ -156,7 +133,7 @@ function mngrs($p) {
 				return "ram";
 
 			// Если в метаданных явно указано правило кеширования, используем его
-			if(_meta.cachable)
+			if(_meta && _meta.cachable)
 				return _meta.cachable;
 
 			// документы, отчеты и обработки по умолчанию кешируем в idb, но в память не загружаем
@@ -1273,42 +1250,7 @@ function mngrs($p) {
 		 * ШапкаТаблицыПоИмениКласса
 		 */
 		caption_flds(attr){
-
-			var _meta = (attr && attr.metadata) || this.metadata(),
-				acols = [];
-
-			if(_meta.form && _meta.form[attr.form || 'selection']){
-				acols = _meta.form[attr.form || 'selection'].cols;
-
-			}else if(this instanceof DocManager){
-				acols.push(new Col_struct("date", "160", "ro", "left", "server", "Дата"));
-				acols.push(new Col_struct("number_doc", "140", "ro", "left", "server", "Номер"));
-
-				if(_meta.fields.note)
-					acols.push(new Col_struct("note", "*", "ro", "left", "server", _meta.fields.note.synonym));
-
-				if(_meta.fields.responsible)
-					acols.push(new Col_struct("responsible", "*", "ro", "left", "server", _meta.fields.responsible.synonym));
-
-
-			}else if(this instanceof CatManager){
-
-				if(_meta.code_length)
-					acols.push(new Col_struct("id", "140", "ro", "left", "server", "Код"));
-
-				if(_meta.main_presentation_name)
-					acols.push(new Col_struct("name", "*", "ro", "left", "server", "Наименование"));
-
-			}else{
-
-				acols.push(new Col_struct("presentation", "*", "ro", "left", "server", "Наименование"));
-				//if(_meta.has_owners){
-				//	acols.push(new Col_struct("owner", "*", "ro", "left", "server", _meta.fields.owner.synonym));
-				//}
-
-			}
-
-			return acols;
+			return [];
 		}
 
 		/**
@@ -2038,21 +1980,7 @@ function mngrs($p) {
 		}
 
 		caption_flds(attr){
-
-			var _meta = (attr && attr.metadata) || this.metadata(),
-				acols = [];
-
-			if(_meta.form && _meta.form[attr.form || 'selection']){
-				acols = _meta.form[attr.form || 'selection'].cols;
-
-			}else{
-
-				for(var f in _meta["dimensions"]){
-					acols.push(new Col_struct(f, "*", "ro", "left", "server", _meta["dimensions"][f].synonym));
-				}
-			}
-
-			return acols;
+			return [];
 		}
 
 		create(attr){
@@ -2142,10 +2070,13 @@ function mngrs($p) {
 	class CatManager extends RefDataManager{
 
 		constructor(class_name) {
+
 			super(class_name);
 
+			const _meta = this.metadata() || {}
+
 			// реквизиты по метаданным
-			if (this.metadata().hierarchical && this.metadata().group_hierarchy) {
+			if (_meta.hierarchical && _meta.group_hierarchy) {
 
 				/**
 				 * ### Признак "это группа"

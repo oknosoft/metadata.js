@@ -50,10 +50,6 @@ class TabsUser extends _react.Component {
       }
     };
 
-    this.handleLogOut = () => {
-      this.props.handleLogOut();
-    };
-
     this.state = {
       tab_value: 'a',
       btn_login_disabled: !props.login || !props.password
@@ -102,7 +98,7 @@ class TabsUser extends _react.Component {
               _react2.default.createElement(_Divider2.default, null),
               _react2.default.createElement(_RaisedButton2.default, { label: '\u0412\u044B\u0439\u0442\u0438',
                 className: 'meta-button-18-0',
-                onTouchTap: this.handleLogOut })
+                onTouchTap: props.handleLogOut })
             )
           ),
           _react2.default.createElement(
@@ -129,6 +125,8 @@ TabsUser.propTypes = {
 
   _obj: _react.PropTypes.object,
   _acl: _react.PropTypes.string.isRequired,
+
+  handleLogOut: _react.PropTypes.func.isRequired,
 
   handleSave: _react.PropTypes.func.isRequired,
   handleRevert: _react.PropTypes.func.isRequired,

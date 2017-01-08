@@ -3,6 +3,7 @@
   "description": "PouchDB data adapter for metadata.js",
   "version": "2.0.0-beta.13",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
+  "license": "MIT",
   "engines": {
     "node": "^6.9",
     "npm": "^3.5"
@@ -34,6 +35,5 @@
     "couchdb",
     "pouchdb",
     "offline-first"
-  ],
-  "license": "MIT"
+  ]
 }

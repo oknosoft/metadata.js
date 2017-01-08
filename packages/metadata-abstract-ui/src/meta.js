@@ -141,6 +141,12 @@ export default {
 				]
 			},
 			cat: {
+				meta_objs: {
+					fields: {}
+				},
+				meta_fields: {
+					fields: {}
+				},
 				scheme_settings: {
 					name: "scheme_settings",
 					synonym: "Настройки отчетов и списков",

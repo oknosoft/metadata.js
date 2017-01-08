@@ -761,15 +761,6 @@ class WSQL {
 
 }
 
-function Col_struct(id, width, type, align, sort, caption) {
-	this.id = id;
-	this.width = width;
-	this.type = type;
-	this.align = align;
-	this.sort = sort;
-	this.caption = caption;
-}
-
 function mngrs($p) {
 
 	const { wsql, md } = $p;
@@ -780,28 +771,26 @@ function mngrs($p) {
 
 			super();
 
-			const _meta = md.get(class_name) || (this.metadata ? this.metadata() : {});
-
+			this.constructor_names = {};
+			this.by_ref = {};
 			Object.defineProperties(this, {
 				class_name: {
 					get: () => class_name
-				},
-
-				metadata: {
-					value: field_name => {
-
-						if (field_name) return _meta.fields[field_name] || md.get(class_name, field_name) || _meta.tabular_sections[field_name];else return _meta;
-					}
-				},
-
-				constructor_names: {
-					value: {}
-				},
-
-				by_ref: {
-					value: {}
 				}
 			});
+		}
+
+		metadata(field_name) {
+
+			if (!this._meta) {
+				this._meta = md.get(this.class_name);
+			}
+
+			if (field_name) {
+				return this._meta && this._meta.fields && this._meta.fields[field_name] || md.get(this.class_name, field_name);
+			} else {
+				return this._meta;
+			}
 		}
 
 		get alatable() {
@@ -816,7 +805,7 @@ function mngrs($p) {
 
 			if (class_name.indexOf("enm.") != -1) return "ram";
 
-			if (_meta.cachable) return _meta.cachable;
+			if (_meta && _meta.cachable) return _meta.cachable;
 
 			if (class_name.indexOf("doc.") != -1 || class_name.indexOf("dp.") != -1 || class_name.indexOf("rep.") != -1) return "doc";
 
@@ -1480,30 +1469,7 @@ function mngrs($p) {
 		}
 
 		caption_flds(attr) {
-
-			var _meta = attr && attr.metadata || this.metadata(),
-			    acols = [];
-
-			if (_meta.form && _meta.form[attr.form || 'selection']) {
-				acols = _meta.form[attr.form || 'selection'].cols;
-			} else if (this instanceof DocManager) {
-				acols.push(new Col_struct("date", "160", "ro", "left", "server", "Дата"));
-				acols.push(new Col_struct("number_doc", "140", "ro", "left", "server", "Номер"));
-
-				if (_meta.fields.note) acols.push(new Col_struct("note", "*", "ro", "left", "server", _meta.fields.note.synonym));
-
-				if (_meta.fields.responsible) acols.push(new Col_struct("responsible", "*", "ro", "left", "server", _meta.fields.responsible.synonym));
-			} else if (this instanceof CatManager) {
-
-				if (_meta.code_length) acols.push(new Col_struct("id", "140", "ro", "left", "server", "Код"));
-
-				if (_meta.main_presentation_name) acols.push(new Col_struct("name", "*", "ro", "left", "server", "Наименование"));
-			} else {
-
-				acols.push(new Col_struct("presentation", "*", "ro", "left", "server", "Наименование"));
-			}
-
-			return acols;
+			return [];
 		}
 
 		load_cached_server_array(list, alt_rest_name) {
@@ -1971,20 +1937,7 @@ function mngrs($p) {
 		}
 
 		caption_flds(attr) {
-
-			var _meta = attr && attr.metadata || this.metadata(),
-			    acols = [];
-
-			if (_meta.form && _meta.form[attr.form || 'selection']) {
-				acols = _meta.form[attr.form || 'selection'].cols;
-			} else {
-
-				for (var f in _meta["dimensions"]) {
-					acols.push(new Col_struct(f, "*", "ro", "left", "server", _meta["dimensions"][f].synonym));
-				}
-			}
-
-			return acols;
+			return [];
 		}
 
 		create(attr) {
@@ -2018,9 +1971,12 @@ function mngrs($p) {
 	class CatManager extends RefDataManager {
 
 		constructor(class_name) {
+
 			super(class_name);
 
-			if (this.metadata().hierarchical && this.metadata().group_hierarchy) {
+			const _meta = this.metadata() || {};
+
+			if (_meta.hierarchical && _meta.group_hierarchy) {
 				Object.defineProperty(this.obj_constructor('', true).prototype, 'is_folder', {
 					get: function () {
 						return this._obj.is_folder || false;
@@ -3177,19 +3133,34 @@ class Meta extends _metadataAbstractAdapter.MetaEventEmitter {
 
 		this.get = function (class_name, field_name) {
 
-			var np = class_name.split(".");
+			const np = class_name.split(".");
 
 			if (!_m || !_m[np[0]]) {
 				return;
 			}
 
+			const _meta = _m[np[0]][np[1]];
+
 			if (!field_name) {
-				return _m[np[0]][np[1]];
+				return _meta;
+			} else if (_meta && _meta.fields[field_name]) {
+				return _meta.fields[field_name];
+			} else if (_meta && _meta.tabular_sections && _meta.tabular_sections[field_name]) {
+				return _meta.tabular_sections[field_name];
 			}
 
-			var res = { multiline_mode: false, note: "", synonym: "", tooltip: "", type: { is_ref: false, types: ["string"] } },
-			    is_doc = "doc,tsk,bp".indexOf(np[0]) != -1,
-			    is_cat = "cat,cch,cacc,tsk".indexOf(np[0]) != -1;
+			const res = {
+				multiline_mode: false,
+				note: "",
+				synonym: "",
+				tooltip: "",
+				type: {
+					is_ref: false,
+					types: ["string"]
+				}
+			},
+			      is_doc = "doc,tsk,bp".indexOf(np[0]) != -1,
+			      is_cat = "cat,cch,cacc,tsk".indexOf(np[0]) != -1;
 
 			if (is_doc && field_name == "number_doc") {
 				res.synonym = "Номер";
@@ -3217,7 +3188,9 @@ class Meta extends _metadataAbstractAdapter.MetaEventEmitter {
 				res.synonym = "Ссылка";
 				res.type.is_ref = true;
 				res.type.types[0] = class_name;
-			} else if (field_name) res = _m[np[0]][np[1]].fields[field_name];else res = _m[np[0]][np[1]];
+			} else {
+				return;
+			}
 
 			return res;
 		};
@@ -3420,10 +3393,6 @@ Meta._sys = [{
 			name: "credit",
 			synonym: "Расход"
 		}]
-	},
-	cat: {
-		meta_objs: {},
-		meta_fields: {}
 	},
 	ireg: {
 		log: {

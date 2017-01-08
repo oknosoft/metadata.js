@@ -7,75 +7,78 @@
  */
 
 import React, {Component, PropTypes} from "react";
-import DataCell from '../DataField/DataCell'
+import DataCell from "metadata-react-ui/DataCell";
 import {Editors, Formatters} from "react-data-grid/addons";
+
 const AutoCompleteEditor = Editors.AutoComplete;
 const DropDownEditor = Editors.DropDownEditor;
 const DropDownFormatter = Formatters.DropDownFormatter;
 
+
+function rx_columns({mode, fields, _obj}) {
+
+  const res = this.columns(mode);
+
+  if (fields) {
+    res.forEach((column) => {
+
+      const _fld = fields[column.key]
+
+      if (!column.formatter) {
+
+        if (_fld.type.is_ref) {
+          column.formatter = (v) => {
+            const {presentation} = v.value
+            return <div title={presentation}>{presentation}</div>
+          }
+        }
+      }
+
+      switch (column.ctrl_type) {
+
+        case 'input':
+          column.editable = true;
+          break;
+
+        case 'ocombo':
+          column.editor = <DataCell />;
+          break;
+
+        case 'ofields':
+          const options = _obj.used_fields_list()
+          column.editor = <DropDownEditor options={options}/>
+          column.formatter = <DropDownFormatter options={options}/>
+          break;
+
+        case 'dhxCalendar':
+          column.editor = <DataCell />;
+          break;
+
+        default:
+          ;
+      }
+
+    })
+  }
+
+  return res;
+}
 
 /**
  * Экспортируем объект-плагин для модификации metadata.js
  */
 export default {
 
-	proto(constructor) {
+  /**
+   * ### Модификатор конструктора MetaEngine
+   * Вызывается в контексте экземпляра MetaEngine
+   */
+  constructor(){
 
-	  const {UI} = constructor.prototype
+    // модифицируем метод columns() справочника scheme_settings - добавляем форматтеры и редакторы
+    Object.defineProperty(this.CatScheme_settings.prototype, 'rx_columns', {
+      value: rx_columns
+    })
 
-		Object.defineProperties(UI, {
-
-      /**
-       * Подклеивает редакторы и форматтеры к колонкам
-       * @param columns {Array} - колонки табличной части
-       * @param fields {Array} - матаданные полей
-       * @param _obj {DataObj} - объект, которому принадлежит табчасть
-       */
-      fix_columns: {
-        value: (columns, fields, _obj) => {
-
-          columns.forEach((column) => {
-
-            const _fld = fields[column.key]
-
-            if(!column.formatter){
-
-              if (_fld.type.is_ref) {
-                column.formatter = (v) => {
-                  const {presentation} = v.value
-                  return <div title={presentation}>{presentation}</div>
-                }
-              }
-            }
-
-            switch (column.ctrl_type) {
-
-              case 'input':
-                column.editable = true;
-                break;
-
-              case 'ocombo':
-                column.editor = <DataCell />;
-                break;
-
-              case 'ofields':
-                const options = _obj.used_fields_list()
-                column.editor = <DropDownEditor options={options} />
-                column.formatter = <DropDownFormatter options={options} />
-                break;
-
-              case 'dhxCalendar':
-                column.editor = <DataCell />;
-                break;
-
-              default:
-                ;
-            }
-
-          })
-        }
-			}
-
-		})
-	}
+  }
 }
