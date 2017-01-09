@@ -3782,7 +3782,7 @@ class MetaEngine {
 
 		if (this.cat && this.cat.users) {
 			user = this.cat.users.by_id(user_name);
-			if (!user) {
+			if (!user || user.empty()) {
 				this.cat.users.find_rows_remote({
 					_view: 'doc/number_doc',
 					_key: {

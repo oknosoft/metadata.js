@@ -16,13 +16,13 @@ var _DumbLoader = require("../DumbLoader");
 
 var _DumbLoader2 = _interopRequireDefault(_DumbLoader);
 
+var _DataCell = require("../DataField/DataCell");
+
+var _DataCell2 = _interopRequireDefault(_DataCell);
+
 var _TabularSectionToolbar = require("./TabularSectionToolbar");
 
 var _TabularSectionToolbar2 = _interopRequireDefault(_TabularSectionToolbar);
-
-var _DataCell = require("components/DataField/DataCell");
-
-var _DataCell2 = _interopRequireDefault(_DataCell);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -168,11 +168,13 @@ TabularSection.propTypes = {
   read_only: _react.PropTypes.bool, // Элемент только для чтения
   deny_add_del: _react.PropTypes.bool, // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
   deny_reorder: _react.PropTypes.bool, // Запрет изменения порядка строк
+  minHeight: _react.PropTypes.number,
 
   Toolbar: _react.PropTypes.func, // Конструктор индивидуальной панели инструментов. Если не указан, рисуем типовую
 
   handleValueChange: _react.PropTypes.func, // Обработчик изменения значения в ячейке
   handleRowChange: _react.PropTypes.func, // При окончании редактирования строки
+  handleCustom: _react.PropTypes.func, // Внешний дополнительный подключаемый обработчик
 
   rowSelection: _react.PropTypes.object, // Настройка пометок строк
 

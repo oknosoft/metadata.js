@@ -14,6 +14,13 @@ var _TextField2 = _interopRequireDefault(_TextField);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+/**
+ * ### Поле ввода текстовых данных
+ *
+ * @module FieldText
+ *
+ */
+
 class FieldText extends _react.Component {
   constructor(...args) {
     var _temp;

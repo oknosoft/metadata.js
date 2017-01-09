@@ -7,7 +7,7 @@
  */
 
 import React, {Component, PropTypes} from "react";
-import DataCell from "metadata-react-ui/DataCell";
+import {DataCell} from "metadata-react-ui/DataField";
 import {Editors, Formatters} from "react-data-grid/addons";
 
 const AutoCompleteEditor = Editors.AutoComplete;

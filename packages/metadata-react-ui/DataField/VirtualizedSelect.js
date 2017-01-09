@@ -22,12 +22,82 @@ var _reactVirtualized = require("react-virtualized");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class VirtualizedSelect extends _react.Component {
+  constructor(...args) {
+    var _temp;
 
-  constructor(props, context) {
-    super(props, context);
+    return _temp = super(...args), this._renderMenu = ({ focusedOption, focusOption, labelKey, onSelect, options, selectValue, valueArray }) => {
+      const { listProps, optionRenderer } = this.props;
+      const focusedOptionIndex = options.indexOf(focusedOption);
+      const height = this._calculateListHeight({ options });
+      const innerRowRenderer = optionRenderer || this._optionRenderer;
 
-    this._renderMenu = this._renderMenu.bind(this);
-    this._optionRenderer = this._optionRenderer.bind(this);
+      // react-select 1.0.0-rc2 passes duplicate `onSelect` and `selectValue` props to `menuRenderer`
+      // The `Creatable` HOC only overrides `onSelect` which breaks an edge-case
+      // In order to support creating items via clicking on the placeholder option,
+      // We need to ensure that the specified `onSelect` handle is the one we use.
+      // See issue #33
+
+      function wrappedRowRenderer({ index, key, style }) {
+        const option = options[index];
+
+        return innerRowRenderer({
+          focusedOption,
+          focusedOptionIndex,
+          focusOption,
+          key,
+          labelKey,
+          onSelect,
+          option,
+          optionIndex: index,
+          options,
+          selectValue: onSelect,
+          style,
+          valueArray
+        });
+      }
+
+      return _react2.default.createElement(
+        _reactVirtualized.AutoSizer,
+        { disableHeight: true },
+        ({ width }) => _react2.default.createElement(_reactVirtualized.List, _extends({
+          className: "VirtualSelectGrid",
+          height: height,
+          ref: ref => this._virtualScroll = ref,
+          rowCount: options.length,
+          rowHeight: ({ index }) => this._getOptionHeight({
+            option: options[index]
+          }),
+          rowRenderer: wrappedRowRenderer,
+          scrollToIndex: focusedOptionIndex,
+          width: width
+        }, listProps))
+      );
+    }, this._optionRenderer = ({ focusedOption, focusOption, key, labelKey, option, selectValue, style }) => {
+      const className = ['VirtualizedSelectOption'];
+
+      if (option === focusedOption) {
+        className.push('VirtualizedSelectFocusedOption');
+      }
+
+      if (option.disabled) {
+        className.push('VirtualizedSelectDisabledOption');
+      }
+
+      const events = option.disabled ? {} : {
+        onClick: () => selectValue(option),
+        onMouseOver: () => focusOption(option)
+      };
+
+      return _react2.default.createElement(
+        "div",
+        _extends({
+          className: className.join(' '),
+          key: key,
+          style: style
+        }, events),
+        option[labelKey]
+      );
+    }, _temp;
   }
 
   /** See List#recomputeRowHeights */
@@ -47,54 +117,7 @@ class VirtualizedSelect extends _react.Component {
   }
 
   // See https://github.com/JedWatson/react-select/#effeciently-rendering-large-lists-with-windowing
-  _renderMenu({ focusedOption, focusOption, labelKey, onSelect, options, selectValue, valueArray }) {
-    const { listProps, optionRenderer } = this.props;
-    const focusedOptionIndex = options.indexOf(focusedOption);
-    const height = this._calculateListHeight({ options });
-    const innerRowRenderer = optionRenderer || this._optionRenderer;
 
-    // react-select 1.0.0-rc2 passes duplicate `onSelect` and `selectValue` props to `menuRenderer`
-    // The `Creatable` HOC only overrides `onSelect` which breaks an edge-case
-    // In order to support creating items via clicking on the placeholder option,
-    // We need to ensure that the specified `onSelect` handle is the one we use.
-    // See issue #33
-
-    function wrappedRowRenderer({ index, key, style }) {
-      const option = options[index];
-
-      return innerRowRenderer({
-        focusedOption,
-        focusedOptionIndex,
-        focusOption,
-        key,
-        labelKey,
-        onSelect,
-        option,
-        optionIndex: index,
-        options,
-        selectValue: onSelect,
-        style,
-        valueArray
-      });
-    }
-
-    return _react2.default.createElement(
-      _reactVirtualized.AutoSizer,
-      { disableHeight: true },
-      ({ width }) => _react2.default.createElement(_reactVirtualized.List, _extends({
-        className: "VirtualSelectGrid",
-        height: height,
-        ref: ref => this._virtualScroll = ref,
-        rowCount: options.length,
-        rowHeight: ({ index }) => this._getOptionHeight({
-          option: options[index]
-        }),
-        rowRenderer: wrappedRowRenderer,
-        scrollToIndex: focusedOptionIndex,
-        width: width
-      }, listProps))
-    );
-  }
 
   _calculateListHeight({ options }) {
     const { maxHeight } = this.props;
@@ -132,32 +155,6 @@ class VirtualizedSelect extends _react.Component {
     }
   }
 
-  _optionRenderer({ focusedOption, focusOption, key, labelKey, option, selectValue, style }) {
-    const className = ['VirtualizedSelectOption'];
-
-    if (option === focusedOption) {
-      className.push('VirtualizedSelectFocusedOption');
-    }
-
-    if (option.disabled) {
-      className.push('VirtualizedSelectDisabledOption');
-    }
-
-    const events = option.disabled ? {} : {
-      onClick: () => selectValue(option),
-      onMouseOver: () => focusOption(option)
-    };
-
-    return _react2.default.createElement(
-      "div",
-      _extends({
-        className: className.join(' '),
-        key: key,
-        style: style
-      }, events),
-      option[labelKey]
-    );
-  }
 }
 exports.default = VirtualizedSelect;
 VirtualizedSelect.propTypes = {

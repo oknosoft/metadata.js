@@ -23,13 +23,6 @@ export default class VirtualizedSelect extends Component {
     optionHeight: 35
   };
 
-  constructor(props, context) {
-    super(props, context)
-
-    this._renderMenu = this._renderMenu.bind(this)
-    this._optionRenderer = this._optionRenderer.bind(this)
-  }
-
   /** See List#recomputeRowHeights */
   recomputeOptionHeights(index = 0) {
     if (this._virtualScroll) {
@@ -50,7 +43,7 @@ export default class VirtualizedSelect extends Component {
   }
 
   // See https://github.com/JedWatson/react-select/#effeciently-rendering-large-lists-with-windowing
-  _renderMenu({focusedOption, focusOption, labelKey, onSelect, options, selectValue, valueArray}) {
+  _renderMenu = ({focusedOption, focusOption, labelKey, onSelect, options, selectValue, valueArray}) => {
     const {listProps, optionRenderer} = this.props
     const focusedOptionIndex = options.indexOf(focusedOption)
     const height = this._calculateListHeight({options})
@@ -140,7 +133,7 @@ export default class VirtualizedSelect extends Component {
     }
   }
 
-  _optionRenderer({focusedOption, focusOption, key, labelKey, option, selectValue, style}) {
+  _optionRenderer = ({focusedOption, focusOption, key, labelKey, option, selectValue, style}) => {
     const className = ['VirtualizedSelectOption']
 
     if (option === focusedOption) {

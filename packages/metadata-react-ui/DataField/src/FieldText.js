@@ -1,3 +1,10 @@
+/**
+ * ### Поле ввода текстовых данных
+ *
+ * @module FieldText
+ *
+ */
+
 import React, {Component, PropTypes} from "react";
 import TextField from "material-ui/TextField";
 

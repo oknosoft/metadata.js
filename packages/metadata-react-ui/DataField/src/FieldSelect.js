@@ -1,6 +1,12 @@
-import React, {Component, PropTypes} from "react";
+/**
+ * ### Поле ввода ссылочных данных
+ *
+ * @module FieldSelect
+ *
+ */
 
-import VirtualizedSelect from "./FieldVirtualizedSelect";
+import React, {Component, PropTypes} from "react";
+import VirtualizedSelect from "./VirtualizedSelect";
 
 export default class FieldSelect extends Component {
 
@@ -39,10 +45,10 @@ export default class FieldSelect extends Component {
     const selection = {_top: 40};
     const {_obj, _fld, _meta} = this.props
 
-    if(input){
+    if (input) {
       selection.presentation = {like: input}
     }
-    if(_meta.choice_params){
+    if (_meta.choice_params) {
       _meta.choice_params.forEach((cp) => {
         selection[cp.name] = cp.path
       })
@@ -58,7 +64,7 @@ export default class FieldSelect extends Component {
   _onChange = (value) => {
     const {handleValueChange} = this.props
     this.setState({value})
-    if(handleValueChange){
+    if (handleValueChange) {
       handleValueChange(value)
     }
   }

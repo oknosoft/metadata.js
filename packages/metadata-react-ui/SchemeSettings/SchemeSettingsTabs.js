@@ -56,12 +56,12 @@ class SchemeSettingsTabs extends _react.Component {
         tabParams ? tabParams : _react2.default.createElement(_TabularSection2.default, {
           _obj: scheme,
           _tabular: "params",
-          minHeight: 140
+          minHeight: 160
         }),
         _react2.default.createElement(_TabularSection2.default, {
           _obj: scheme,
           _tabular: "selection",
-          minHeight: 140,
+          minHeight: 120,
 
           rowSelection: {
             showCheckbox: true,

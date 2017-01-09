@@ -8,11 +8,18 @@ var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _FieldVirtualizedSelect = require("./FieldVirtualizedSelect");
+var _VirtualizedSelect = require("./VirtualizedSelect");
 
-var _FieldVirtualizedSelect2 = _interopRequireDefault(_FieldVirtualizedSelect);
+var _VirtualizedSelect2 = _interopRequireDefault(_VirtualizedSelect);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * ### Поле ввода ссылочных данных
+ *
+ * @module FieldSelect
+ *
+ */
 
 class FieldSelect extends _react.Component {
 
@@ -43,7 +50,7 @@ class FieldSelect extends _react.Component {
     const { _obj, _fld } = props;
     const { options, value, mandatory } = state;
 
-    return _react2.default.createElement(_FieldVirtualizedSelect2.default, {
+    return _react2.default.createElement(_VirtualizedSelect2.default, {
       name: _fld,
       async: true,
       cache: false,

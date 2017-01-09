@@ -1,43 +1,4 @@
 /**
- * ### Обработчики экспорта
- *
- * @module export_handlers
- *
- * Created 10.01.2017
- */
-
-function export_handlers() {
-
-  this.doExport = (format) => {
-    const {_obj, _tabular, _columns} = this.props;
-    _obj[_tabular].export(format, _columns.map((column) => column.key))
-      .then((res) => {
-      if(res=='success'){
-        console.log(res)
-      }
-    })
-  }
-
-  this.handleExportXLS = () => {
-    const {$p} = this.context
-    const doExport = ::this.doExport
-    require.ensure(["xlsx"], function() {
-      if(!window.XLSX){
-        window.XLSX = require("xlsx");
-      }
-      doExport('xls')
-    });
-  }
-
-  this.handleExportJSON = () => {
-    this.doExport('json')
-  }
-
-  this.handleExportCSV = () => {
-    this.doExport('csv')
-  }
-}
-/**
  * ### модификатор метод columns() справочника scheme_settings - добавляет форматтеры и редакторы
  *
  * @module rx_columns
@@ -46,7 +7,7 @@ function export_handlers() {
  */
 
 import React, {Component, PropTypes} from "react";
-import DataCell from "metadata-react-ui/DataCell";
+import {DataCell} from "metadata-react-ui/DataField";
 import {Editors, Formatters} from "react-data-grid/addons";
 
 const AutoCompleteEditor = Editors.AutoComplete;
@@ -101,6 +62,45 @@ function rx_columns({mode, fields, _obj}) {
   }
 
   return res;
+}
+/**
+ * ### Обработчики экспорта
+ *
+ * @module export_handlers
+ *
+ * Created 10.01.2017
+ */
+
+function export_handlers() {
+
+  this.doExport = (format) => {
+    const {_obj, _tabular, _columns} = this.props;
+    _obj[_tabular].export(format, _columns.map((column) => column.key))
+      .then((res) => {
+      if(res=='success'){
+        console.log(res)
+      }
+    })
+  }
+
+  this.handleExportXLS = () => {
+    const {$p} = this.context
+    const doExport = ::this.doExport
+    require.ensure(["xlsx"], function() {
+      if(!window.XLSX){
+        window.XLSX = require("xlsx");
+      }
+      doExport('xls')
+    });
+  }
+
+  this.handleExportJSON = () => {
+    this.doExport('json')
+  }
+
+  this.handleExportCSV = () => {
+    this.doExport('csv')
+  }
 }
 /**
  * Плагин-модификатор react-ui для metadata.js
