@@ -642,6 +642,20 @@ function scheme_settings() {
 			this._setter('query', v)
 		}
 
+		get date_from() {
+			return this._getter('date_from')
+		}
+		set date_from(v) {
+			this._setter('date_from', v)
+		}
+
+		get date_till() {
+			return this._getter('date_from')
+		}
+		set date_till(v) {
+			this._setter('date_from', v)
+		}
+
 		get fields() {
 			return this._getter_ts('fields')
 		}

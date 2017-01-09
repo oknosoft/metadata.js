@@ -188,6 +188,26 @@ export default {
 								],
 								str_len: 0
 							}
+						},
+						date_from: {
+							"synonym": "Начало периода",
+							"tooltip": "",
+							"type": {
+								"types": [
+									"date"
+								],
+								"date_part": "date"
+							}
+						},
+						date_till: {
+							"synonym": "Конец периода",
+							"tooltip": "",
+							"type": {
+								"types": [
+									"date"
+								],
+								"date_part": "date"
+							}
 						}
 					},
 					tabular_sections: {
