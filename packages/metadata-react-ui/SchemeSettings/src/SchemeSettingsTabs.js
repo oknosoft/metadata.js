@@ -49,14 +49,14 @@ export default class SchemeSettingsTabs extends Component {
               <TabularSection
                 _obj={scheme}
                 _tabular="params"
-                minHeight={140}
+                minHeight={160}
               />
           }
 
           <TabularSection
             _obj={scheme}
             _tabular="selection"
-            minHeight={140}
+            minHeight={120}
 
             rowSelection={{
               showCheckbox: true,

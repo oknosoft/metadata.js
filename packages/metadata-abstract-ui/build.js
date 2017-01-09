@@ -7,9 +7,7 @@
  */
 
 const exec = require('child_process').exec;
-
-var concat = require('concat-files');
-
+const concat = require('concat-files');
 const root = './packages/metadata-abstract-ui/';
 
 const exec_babel = (src, out, ignore) => {
