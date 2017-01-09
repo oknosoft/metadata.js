@@ -73,6 +73,8 @@ class WSQL {
 			init: {
 				value: function (settings, meta) {
 
+					alasql.utils.isBrowserify = false;
+
 					$p.job_prm.init(settings);
 
 					// префикс параметров LocalStorage

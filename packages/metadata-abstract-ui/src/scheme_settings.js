@@ -215,7 +215,6 @@ function scheme_settings() {
 			const parts = class_name.split("."),
 				_mgr = md.mgr_by_class_name(class_name),
 				_meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]),
-				fields = this.fields,
 				columns = [];
 
 			function add_column(fld, use) {
@@ -275,9 +274,17 @@ function scheme_settings() {
 			}
 
 			// заполняем табчасть доступных полей
-			columns.forEach(function (column) {
-				fields.add(column)
+			columns.forEach((column) => {
+				this.fields.add(column)
 			})
+
+			// если для объекта определены измерения по умолчанию - используем
+			const {resources} = _mgr.obj_constructor('', true)
+			if(resources){
+				resources.forEach(function (column) {
+					this.resources.add({field: column})
+				})
+			}
 
 			this.obj = class_name
 

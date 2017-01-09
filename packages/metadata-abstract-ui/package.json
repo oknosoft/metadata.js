@@ -9,7 +9,9 @@
     "npm": "^3.5"
   },
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "clipboard": "^1.5"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-abstract-ui/"
@@ -22,6 +24,7 @@
   "keywords": [
     "metadata",
     "spa",
-    "ui"
+    "ui",
+    "widget"
   ]
 }

@@ -33,6 +33,7 @@ exec_babel('src/meta.js', 'meta.js')
 
 		concat([
 			'ui',
+			'tabulars',
 			'meta_objs',
 			'log_manager',
 			'scheme_settings',

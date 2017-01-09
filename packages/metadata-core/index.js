@@ -647,6 +647,8 @@ class WSQL {
 			init: {
 				value: function (settings, meta) {
 
+					alasql.utils.isBrowserify = false;
+
 					$p.job_prm.init(settings);
 
 					if (!$p.job_prm.local_storage_prefix && !$p.job_prm.create_tables) return;
@@ -2142,6 +2144,12 @@ function mngrs($p) {
 	if (!classes.DataManager) {
 
 		Object.defineProperties(classes, {
+
+			$p: {
+				get: function () {
+					return $p;
+				}
+			},
 
 			DataManager: { value: DataManager },
 

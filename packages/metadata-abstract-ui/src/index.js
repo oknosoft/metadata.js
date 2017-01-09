@@ -56,6 +56,92 @@ function ui(constructor, classes) {
 
 	})
 }/**
+ * ### Расширение функциональности TabularSection
+ *
+ * @module tabulars
+ *
+ * Created 09.01.2017
+ */
+
+import ClipboardAction from "clipboard/lib/clipboard-action";
+
+
+function tabulars(constructor, classes) {
+
+	Object.defineProperty(classes.TabularSection.prototype, 'export', {
+
+		value: function (format = 'csv', columns = []) {
+
+			const data = []
+			const {utils, wsql} = classes.$p
+			const len = columns.length - 1
+
+			let text
+
+			this.forEach((row) => {
+				const rdata = {}
+				columns.forEach((col) => {
+					if(utils.is_data_obj(row[col])){
+						if(format == 'json'){
+							rdata[col] = {
+								ref: row[col].ref,
+								type: row[col]._manager.class_name,
+								presentation: row[col].presentation
+							}
+						}
+						else{
+							rdata[col] = row[col].presentation
+						}
+					}
+					else if(typeof(row[col]) == 'number'  && format == 'csv') {
+						rdata[col] = row[col].toLocaleString('ru-RU', {useGrouping: false})
+					}
+					else if(row[col] instanceof Date && format != 'xls') {
+						rdata[col] = utils.moment(row[col]).format(utils.moment._masks.date_time)
+					}
+					else{
+						rdata[col] = row[col]
+					}
+				})
+				data.push(rdata)
+			})
+
+			if(format == 'xls'){
+				return wsql.alasql.promise(`SELECT * INTO XLSX('${this._name + '_' + utils.moment().format("YYYYMMDDHHmm")}.xlsx',{headers:true}) FROM ? `,[data])
+			}
+			else{
+				return new Promise((resolve, reject) => {
+
+					if(format == 'json'){
+						text = JSON.stringify(data)
+					}
+					else {
+						text = columns.join('\t') + '\n'
+						data.forEach((row) => {
+							columns.forEach((col, index) => {
+								text+= row[col]
+								if(index < len){
+									text+= '\t'
+								}
+							})
+							text+= '\n'
+						})
+					}
+
+					new ClipboardAction({
+						action: 'copy',
+						text,
+						emitter: {emit: resolve}
+					})
+				})
+
+			}
+
+
+		}
+	})
+
+}/**
  * ### Метаданные системных перечислений, регистров и справочников
  *
  * @module meta_objs
@@ -715,7 +801,6 @@ function scheme_settings() {
 			const parts = class_name.split("."),
 				_mgr = md.mgr_by_class_name(class_name),
 				_meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]),
-				fields = this.fields,
 				columns = [];
 
 			function add_column(fld, use) {
@@ -775,9 +860,17 @@ function scheme_settings() {
 			}
 
 			// заполняем табчасть доступных полей
-			columns.forEach(function (column) {
-				fields.add(column)
+			columns.forEach((column) => {
+				this.fields.add(column)
 			})
+
+			// если для объекта определены измерения по умолчанию - используем
+			const {resources} = _mgr.obj_constructor('', true)
+			if(resources){
+				resources.forEach(function (column) {
+					this.resources.add({field: column})
+				})
+			}
 
 			this.obj = class_name
 
@@ -1080,6 +1173,7 @@ export default {
 	 */
 	proto(constructor, classes) {
 		ui(constructor, classes)
+		tabulars(constructor, classes)
 	},
 
 	/**

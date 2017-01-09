@@ -2385,6 +2385,12 @@ function mngrs($p) {
 
 		Object.defineProperties(classes, {
 
+			$p: {
+				get: function () {
+					return $p
+				}
+			},
+
 			DataManager: { value: DataManager },
 
 			RefDataManager: { value: RefDataManager },

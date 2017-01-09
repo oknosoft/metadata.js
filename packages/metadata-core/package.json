@@ -9,11 +9,12 @@
     "npm": "^3.5"
   },
   "dependencies": {
-    "alasql": "^0.3",
-    "moment": "^2.17",
-    "metadata-abstract-adapter": "^2.0.0-beta.13"
+    "alasql": "^0.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "metadata-abstract-adapter": "^2.0.0-beta.13",
+    "moment": "^2.17"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-core/"
