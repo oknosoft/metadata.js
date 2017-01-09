@@ -15,12 +15,12 @@
 
 /* DataField */
 .meta-datafield-label {
-	width: 45%;
+	width: 40%;
 	display: inline-block;
 }
 
 .meta-datafield-data {
-	width: 55%;
+	width: 60%;
 	display: inline-block;
 }
 

@@ -1,8 +1,10 @@
 import React, {Component, PropTypes} from "react";
 import ReactDataGrid from "react-data-grid";
+
 import DumbLoader from "../DumbLoader";
+import DataCell from '../DataField/DataCell'
 import DefaultToolbar from "./TabularSectionToolbar"
-import DataCell from 'components/DataField/DataCell'
+
 
 
 // // Import the necessary modules.
@@ -50,11 +52,13 @@ export default class TabularSection extends Component {
     read_only: PropTypes.bool,            // Элемент только для чтения
     deny_add_del: PropTypes.bool,         // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
     deny_reorder: PropTypes.bool,         // Запрет изменения порядка строк
+    minHeight: PropTypes.number,
 
     Toolbar: PropTypes.func,              // Конструктор индивидуальной панели инструментов. Если не указан, рисуем типовую
 
     handleValueChange: PropTypes.func,    // Обработчик изменения значения в ячейке
     handleRowChange: PropTypes.func,      // При окончании редактирования строки
+    handleCustom: PropTypes.func,         // Внешний дополнительный подключаемый обработчик
 
     rowSelection: PropTypes.object,       // Настройка пометок строк
 
