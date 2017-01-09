@@ -113,7 +113,7 @@ function tabulars(constructor, classes) {
 				return new Promise((resolve, reject) => {
 
 					if(format == 'json'){
-						text = JSON.stringify(data)
+						text = JSON.stringify(data, null, '\t');
 					}
 					else {
 						text = columns.join('\t') + '\n'
@@ -134,10 +134,7 @@ function tabulars(constructor, classes) {
 						emitter: {emit: resolve}
 					})
 				})
-
 			}
-
-
 		}
 	})
 
