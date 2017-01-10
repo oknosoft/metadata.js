@@ -19,9 +19,7 @@ export default {
    */
   proto(constructor, classes) {
 
-    Object.defineProperty(constructor.prototype.UI, 'export_handlers', {
-      value: export_handlers
-    })
+    export_handlers(constructor, classes)
 
   },
 
@@ -34,6 +32,11 @@ export default {
     // модифицируем метод columns() справочника scheme_settings - добавляем форматтеры и редакторы
     Object.defineProperty(this.CatScheme_settings.prototype, 'rx_columns', {
       value: rx_columns
+    })
+
+    // методы печати в прототип DataManager
+    Object.defineProperties(this.classes.DataManager, {
+      value: print
     })
 
   }

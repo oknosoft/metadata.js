@@ -632,7 +632,7 @@ Object.defineProperty(DataObj.prototype, "ref", {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
  */
-class CatObj extends DataObj{
+class CatObj extends DataObj {
 
 	constructor(attr, manager){
 
@@ -685,6 +685,40 @@ class CatObj extends DataObj{
 
 }
 
+/**
+ * mixin свойств дата и номер документа к базовому классу
+ * @param superclass
+ * @constructor
+ */
+let NumberDocAndDate = (superclass) => class extends superclass {
+
+	/**
+	 * Номер документа
+	 * @property number_doc
+	 * @type {String|Number}
+	 */
+	get number_doc() {
+		return this._obj.number_doc || ""
+	}
+	set number_doc(v) {
+		this.__notify('number_doc');
+		this._obj.number_doc = v;
+	}
+
+	/**
+	 * Дата документа
+	 * @property date
+	 * @type {Date}
+	 */
+	get date() {
+		return this._obj.date instanceof Date ? this._obj.date : utils.blank.date
+	}
+	set date(v) {
+		this.__notify('date');
+		this._obj.date = utils.fix_date(v, true);
+	}
+
+}
 
 /**
  * ### Абстрактный класс ДокументОбъект
@@ -694,7 +728,7 @@ class CatObj extends DataObj{
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
  */
-class DocObj extends DataObj{
+class DocObj extends NumberDocAndDate(DataObj) {
 
 	constructor(attr, manager){
 
@@ -723,32 +757,6 @@ class DocObj extends DataObj{
 	}
 
 	/**
-	 * Номер документа
-	 * @property number_doc
-	 * @type {String|Number}
-	 */
-	get number_doc() {
-		return this._obj.number_doc || ""
-	}
-	set number_doc(v) {
-		this.__notify('number_doc');
-		this._obj.number_doc = v;
-	}
-
-	/**
-	 * Дата документа
-	 * @property date
-	 * @type {Date}
-	 */
-	get date() {
-		return this._obj.date instanceof Date ? this._obj.date : utils.blank.date
-	}
-	set date(v) {
-		this.__notify('date');
-		this._obj.date = utils.fix_date(v, true);
-	}
-
-	/**
 	 * Признак проведения
 	 * @property posted
 	 * @type {Boolean}
@@ -762,7 +770,6 @@ class DocObj extends DataObj{
 	}
 
 }
-
 
 
 /**
@@ -795,7 +802,6 @@ class DataProcessorObj extends DataObj {
 }
 
 
-
 /**
  * ### Абстрактный класс ЗадачаОбъект
  * @class TaskObj
@@ -804,33 +810,8 @@ class DataProcessorObj extends DataObj {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {DataManager}
  */
-class TaskObj extends CatObj {
+class TaskObj extends NumberDocAndDate(CatObj) {
 
-	/**
-	 * Номер документа
-	 * @property number_doc
-	 * @type {String|Number}
-	 */
-	get number_doc() {
-		return this._obj.number_doc || ""
-	}
-	set number_doc(v) {
-		this.__notify('number_doc');
-		this._obj.number_doc = v;
-	}
-
-	/**
-	 * Дата документа
-	 * @property date
-	 * @type {Date}
-	 */
-	get date() {
-		return this._obj.date instanceof Date ? this._obj.date : utils.blank.date
-	}
-	set date(v) {
-		this.__notify('date');
-		this._obj.date = utils.fix_date(v, true);
-	}
 }
 
 
@@ -842,33 +823,7 @@ class TaskObj extends CatObj {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {DataManager}
  */
-class BusinessProcessObj extends CatObj {
-
-	/**
-	 * Номер документа
-	 * @property number_doc
-	 * @type {String|Number}
-	 */
-	get number_doc() {
-		return this._obj.number_doc || ""
-	}
-	set number_doc(v) {
-		this.__notify('number_doc');
-		this._obj.number_doc = v;
-	}
-
-	/**
-	 * Дата документа
-	 * @property date
-	 * @type {Date}
-	 */
-	get date() {
-		return this._obj.date instanceof Date ? this._obj.date : utils.blank.date
-	}
-	set date(v) {
-		this.__notify('date');
-		this._obj.date = utils.fix_date(v, true);
-	}
+class BusinessProcessObj extends NumberDocAndDate(CatObj) {
 
 }
 
@@ -1032,6 +987,7 @@ class RegisterRow extends DataObj {
 		return this._metadata().obj_presentation || this._metadata().synonym;
 	}
 }
+
 
 /**
  * Здесь живут ссылки на конструкторы классов

@@ -85,7 +85,10 @@ function tabulars(constructor, classes) {
 							rdata[col] = row[col].presentation;
 						}
 					} else if (typeof row[col] == 'number' && format == 'csv') {
-						rdata[col] = row[col].toLocaleString('ru-RU', { useGrouping: false });
+						rdata[col] = row[col].toLocaleString('ru-RU', {
+							useGrouping: false,
+							maximumFractionDigits: 3
+						});
 					} else if (row[col] instanceof Date && format != 'xls') {
 						rdata[col] = utils.moment(row[col]).format(utils.moment._masks.date_time);
 					} else {

@@ -970,33 +970,6 @@ function mngrs($p) {
 			}
 		}
 
-		tabular_captions(tabular, source) {}
-
-		print(ref, model, wnd) {
-
-			function tune_wnd_print(wnd_print) {
-				if (wnd && wnd.progressOff) wnd.progressOff();
-				if (wnd_print) wnd_print.focus();
-			}
-
-			if (wnd && wnd.progressOn) wnd.progressOn();
-
-			setTimeout(tune_wnd_print, 3000);
-
-			if (this._printing_plates[model] instanceof DataObj) model = this._printing_plates[model];
-
-			if (model instanceof DataObj && model.execute) {
-
-				if (ref instanceof DataObj) return model.execute(ref).then(tune_wnd_print);else return this.get(ref, true).then(model.execute.bind(model)).then(tune_wnd_print);
-			} else {
-				var rattr = {};
-				$p.ajax.default_attr(rattr, job_prm.irest_url());
-				rattr.url += this.rest_name + "(guid'" + utils.fix_guid(ref) + "')" + "/Print(model=" + model + ", browser_uid=" + wsql.get_user_param("browser_uid") + ")";
-
-				return $p.ajax.get_and_show_blob(rattr.url, rattr, "get").then(tune_wnd_print);
-			}
-		}
-
 		printing_plates() {
 			var rattr = {},
 			    t = this;
@@ -2652,21 +2625,7 @@ class CatObj extends DataObj {
 
 }
 
-class DocObj extends DataObj {
-
-	constructor(attr, manager) {
-		super(attr, manager);
-
-		this._mixin_attr(attr);
-	}
-
-	get presentation() {
-		if (this.number_doc) return (this._metadata().obj_presentation || this._metadata().synonym) + ' №' + this.number_doc + " от " + moment(this.date).format(moment._masks.ldt);else return this._presentation || "";
-	}
-	set presentation(v) {
-		if (v) this._presentation = String(v);
-	}
-
+let NumberDocAndDate = superclass => class extends superclass {
 	get number_doc() {
 		return this._obj.number_doc || "";
 	}
@@ -2681,6 +2640,23 @@ class DocObj extends DataObj {
 	set date(v) {
 		this.__notify('date');
 		this._obj.date = utils.fix_date(v, true);
+	}
+
+};
+
+class DocObj extends NumberDocAndDate(DataObj) {
+
+	constructor(attr, manager) {
+		super(attr, manager);
+
+		this._mixin_attr(attr);
+	}
+
+	get presentation() {
+		if (this.number_doc) return (this._metadata().obj_presentation || this._metadata().synonym) + ' №' + this.number_doc + " от " + moment(this.date).format(moment._masks.ldt);else return this._presentation || "";
+	}
+	set presentation(v) {
+		if (v) this._presentation = String(v);
 	}
 
 	get posted() {
@@ -2712,42 +2688,9 @@ class DataProcessorObj extends DataObj {
 	}
 }
 
-class TaskObj extends CatObj {
-	get number_doc() {
-		return this._obj.number_doc || "";
-	}
-	set number_doc(v) {
-		this.__notify('number_doc');
-		this._obj.number_doc = v;
-	}
+class TaskObj extends NumberDocAndDate(CatObj) {}
 
-	get date() {
-		return this._obj.date instanceof Date ? this._obj.date : utils.blank.date;
-	}
-	set date(v) {
-		this.__notify('date');
-		this._obj.date = utils.fix_date(v, true);
-	}
-}
-
-class BusinessProcessObj extends CatObj {
-	get number_doc() {
-		return this._obj.number_doc || "";
-	}
-	set number_doc(v) {
-		this.__notify('number_doc');
-		this._obj.number_doc = v;
-	}
-
-	get date() {
-		return this._obj.date instanceof Date ? this._obj.date : utils.blank.date;
-	}
-	set date(v) {
-		this.__notify('date');
-		this._obj.date = utils.fix_date(v, true);
-	}
-
-}
+class BusinessProcessObj extends NumberDocAndDate(CatObj) {}
 
 class EnumObj extends DataObj {
 

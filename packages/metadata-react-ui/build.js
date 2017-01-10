@@ -81,6 +81,7 @@ exec_babel('DataField', 'dir')
     return exec_concat([
       'rx_columns',
       'export_handlers',
+      'print',
       'plugin_src',
     ], 'common', 'plugin')
   })

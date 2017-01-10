@@ -71,38 +71,110 @@ function rx_columns({mode, fields, _obj}) {
  * Created 10.01.2017
  */
 
-function export_handlers() {
 
-  this.doExport = (format) => {
-    const {_obj, _tabular, _columns} = this.props;
-    _obj[_tabular].export(format, _columns.map((column) => column.key))
-      .then((res) => {
-      if(res=='success'){
-        console.log(res)
+function export_handlers(constructor, classes) {
+
+  /**
+   * mixin свойств дата и номер документа к базовому классу
+   * @param superclass
+   * @constructor
+   */
+  Object.defineProperty(constructor.prototype.UI, 'ExportHandlers', {
+
+    value: (superclass) => class extends superclass {
+
+      doExport = (format) => {
+        const {_obj, _tabular, _columns} = this.props;
+        _obj[_tabular].export(format, _columns.map((column) => column.key))
+          .then((res) => {
+            if (res == 'success') {
+              console.log(res)
+            }
+          })
       }
-    })
-  }
 
-  this.handleExportXLS = () => {
-    const {$p} = this.context
-    const doExport = ::this.doExport
-    require.ensure(["xlsx"], function() {
-      if(!window.XLSX){
-        window.XLSX = require("xlsx");
+      handleExportXLS = () => {
+        const {$p} = this.context
+        const doExport = ::this.doExport
+        require.ensure(["xlsx"], function () {
+          if (!window.XLSX) {
+            window.XLSX = require("xlsx");
+          }
+          doExport('xls')
+        });
       }
-      doExport('xls')
-    });
-  }
 
-  this.handleExportJSON = () => {
-    this.doExport('json')
-  }
+      handleExportJSON = () => {
+        this.doExport('json')
+      }
 
-  this.handleExportCSV = () => {
-    this.doExport('csv')
-  }
+      handleExportCSV = () => {
+        this.doExport('csv')
+      }
+
+    }
+  })
+
 }
+
 /**
+ * ### Методы печати в прототип DataManager
+ *
+ * @module print
+ *
+ * Created 10.01.2017
+ */
+
+
+/**
+ * Печатает объект
+ * @method print
+ * @param ref {DataObj|String} - guid ссылки на объект
+ * @param model {String|DataObj.cat.formulas} - идентификатор команды печати
+ * @param [wnd] {dhtmlXWindows} - окно, из которого вызываем печать
+ */
+function print (ref, model, wnd) {
+
+  function tune_wnd_print(wnd_print){
+    if(wnd && wnd.progressOff)
+      wnd.progressOff();
+    if(wnd_print)
+      wnd_print.focus();
+  }
+
+  if(wnd && wnd.progressOn)
+    wnd.progressOn();
+
+  setTimeout(tune_wnd_print, 3000);
+
+  // если _printing_plates содержит ссылку на обрабочтик печати, используем его
+  if(this._printing_plates[model] instanceof DataObj)
+    model = this._printing_plates[model];
+
+  // если существует локальный обработчик, используем его
+  if(model instanceof DataObj && model.execute){
+
+    if(ref instanceof DataObj)
+      return model.execute(ref)
+        .then(tune_wnd_print);
+    else
+      return this.get(ref, true)
+        .then(model.execute.bind(model))
+        .then(tune_wnd_print);
+
+  }else{
+
+    // иначе - печатаем средствами 1С или иного сервера
+    var rattr = {};
+    $p.ajax.default_attr(rattr, job_prm.irest_url());
+    rattr.url += this.rest_name + "(guid'" + utils.fix_guid(ref) + "')" +
+      "/Print(model=" + model + ", browser_uid=" + wsql.get_user_param("browser_uid") +")";
+
+    return $p.ajax.get_and_show_blob(rattr.url, rattr, "get")
+      .then(tune_wnd_print);
+  }
+
+}/**
  * Плагин-модификатор react-ui для metadata.js
  *
  * @module plugin
@@ -123,9 +195,7 @@ export default {
    */
   proto(constructor, classes) {
 
-    Object.defineProperty(constructor.prototype.UI, 'export_handlers', {
-      value: export_handlers
-    })
+    export_handlers(constructor, classes)
 
   },
 
@@ -138,6 +208,11 @@ export default {
     // модифицируем метод columns() справочника scheme_settings - добавляем форматтеры и редакторы
     Object.defineProperty(this.CatScheme_settings.prototype, 'rx_columns', {
       value: rx_columns
+    })
+
+    // методы печати в прототип DataManager
+    Object.defineProperties(this.classes.DataManager, {
+      value: print
     })
 
   }
