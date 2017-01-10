@@ -79,11 +79,11 @@ function export_handlers(constructor, classes) {
    * @param superclass
    * @constructor
    */
-  Object.defineProperty(constructor.prototype.UI, 'ExportHandlers', {
+  Object.defineProperty(constructor.prototype.UI, 'export_handlers', {
 
-    value: (superclass) => class extends superclass {
+    value: function() {
 
-      doExport = (format) => {
+      this.doExport = (format) => {
         const {_obj, _tabular, _columns} = this.props;
         _obj[_tabular].export(format, _columns.map((column) => column.key))
           .then((res) => {
@@ -93,7 +93,7 @@ function export_handlers(constructor, classes) {
           })
       }
 
-      handleExportXLS = () => {
+      this.handleExportXLS = () => {
         const {$p} = this.context
         const doExport = ::this.doExport
         require.ensure(["xlsx"], function () {
@@ -104,11 +104,11 @@ function export_handlers(constructor, classes) {
         });
       }
 
-      handleExportJSON = () => {
+      this.handleExportJSON = () => {
         this.doExport('json')
       }
 
-      handleExportCSV = () => {
+      this.handleExportCSV = () => {
         this.doExport('csv')
       }
 

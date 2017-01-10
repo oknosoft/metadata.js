@@ -12,4 +12,6 @@ export MetaTree from './MetaTree'
 export SchemeSettings from './SchemeSettings'
 export TabularSection from './TabularSection'
 
+export MetaComponent from './common/MetaComponent'
+
 export default from './plugin'

@@ -38,45 +38,45 @@ const exec_concat = (src, dir, out) => {
 
 
 exec_babel('DataField', 'dir')
-  .then((res) => {
-    return exec_babel('DataHead', 'dir')
-  })
-  .then((res) => {
-    return exec_babel('DataList', 'dir')
-  })
-  .then((res) => {
-    return exec_babel('DataTree', 'dir')
-  })
-  .then((res) => {
-    return exec_babel('DumbLoader', 'dir')
-  })
-  .then((res) => {
-    return exec_babel('FrmLogin', 'dir')
-  })
-  .then((res) => {
-    return exec_babel('FrmObj', 'dir')
-  })
-  .then((res) => {
-    return exec_babel('FrmSuperLogin', 'dir')
-  })
-  .then((res) => {
-    return exec_babel('MetaDesigner', 'dir')
-  })
-  .then((res) => {
-    return exec_babel('MetaList', 'dir')
-  })
-  .then((res) => {
-    return exec_babel('MetaTree', 'dir')
-  })
-  .then((res) => {
-    return exec_babel('NavList', 'dir')
-  })
-  .then((res) => {
-    return exec_babel('SchemeSettings', 'dir')
-  })
-  .then((res) => {
-    return exec_babel('TabularSection', 'dir')
-  })
+  // .then((res) => {
+  //   return exec_babel('DataHead', 'dir')
+  // })
+  // .then((res) => {
+  //   return exec_babel('DataList', 'dir')
+  // })
+  // .then((res) => {
+  //   return exec_babel('DataTree', 'dir')
+  // })
+  // .then((res) => {
+  //   return exec_babel('DumbLoader', 'dir')
+  // })
+  // .then((res) => {
+  //   return exec_babel('FrmLogin', 'dir')
+  // })
+  // .then((res) => {
+  //   return exec_babel('FrmObj', 'dir')
+  // })
+  // .then((res) => {
+  //   return exec_babel('FrmSuperLogin', 'dir')
+  // })
+  // .then((res) => {
+  //   return exec_babel('MetaDesigner', 'dir')
+  // })
+  // .then((res) => {
+  //   return exec_babel('MetaList', 'dir')
+  // })
+  // .then((res) => {
+  //   return exec_babel('MetaTree', 'dir')
+  // })
+  // .then((res) => {
+  //   return exec_babel('NavList', 'dir')
+  // })
+  // .then((res) => {
+  //   return exec_babel('SchemeSettings', 'dir')
+  // })
+  // .then((res) => {
+  //   return exec_babel('TabularSection', 'dir')
+  // })
   .then((res) => {
     return exec_concat([
       'rx_columns',

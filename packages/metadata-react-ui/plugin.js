@@ -91,36 +91,36 @@ function export_handlers(constructor, classes) {
    * @param superclass
    * @constructor
    */
-  Object.defineProperty(constructor.prototype.UI, 'ExportHandlers', {
+  Object.defineProperty(constructor.prototype.UI, 'export_handlers', {
 
-    value: superclass => {
-      return class extends superclass {
-        constructor(...args) {
-          var _temp;
+    value: function () {
 
-          return _temp = super(...args), this.doExport = format => {
-            const { _obj, _tabular, _columns } = this.props;
-            _obj[_tabular].export(format, _columns.map(column => column.key)).then(res => {
-              if (res == 'success') {
-                console.log(res);
-              }
-            });
-          }, this.handleExportXLS = () => {
-            const { $p } = this.context;
-            const doExport = this.doExport.bind(this);
-            require.ensure(["xlsx"], function () {
-              if (!window.XLSX) {
-                window.XLSX = require("xlsx");
-              }
-              doExport('xls');
-            });
-          }, this.handleExportJSON = () => {
-            this.doExport('json');
-          }, this.handleExportCSV = () => {
-            this.doExport('csv');
-          }, _temp;
-        }
+      this.doExport = format => {
+        const { _obj, _tabular, _columns } = this.props;
+        _obj[_tabular].export(format, _columns.map(column => column.key)).then(res => {
+          if (res == 'success') {
+            console.log(res);
+          }
+        });
+      };
 
+      this.handleExportXLS = () => {
+        const { $p } = this.context;
+        const doExport = this.doExport.bind(this);
+        require.ensure(["xlsx"], function () {
+          if (!window.XLSX) {
+            window.XLSX = require("xlsx");
+          }
+          doExport('xls');
+        });
+      };
+
+      this.handleExportJSON = () => {
+        this.doExport('json');
+      };
+
+      this.handleExportCSV = () => {
+        this.doExport('csv');
       };
     }
   });
