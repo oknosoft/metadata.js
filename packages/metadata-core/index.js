@@ -2263,30 +2263,17 @@ function mngrs($p) {
 class DataObj {
 
 	constructor(attr, manager) {
-
-		var tmp,
-		    _ts_ = {},
-		    _obj = {},
-		    _data = {
-			_is_new: !(this instanceof EnumObj)
-		};
-
 		if (!(manager instanceof classes.DataProcessorsManager) && !(manager instanceof classes.EnumManager)) {
-			tmp = manager.get(attr, true);
+			const tmp = manager.get(attr, true);
+			if (tmp) {
+				return tmp;
+			}
 		}
 
-		if (tmp) {
-			attr = null;
-			return tmp;
-		}
-
-		if (manager instanceof classes.EnumManager) {
-			_obj.ref = attr.name;
-		} else if (!(manager instanceof classes.RegisterManager)) {
-			_obj.ref = utils.fix_guid(attr);
-		} else {
-			_obj.ref = manager.get_ref(attr);
-		}
+		const _obj = {
+			ref: manager instanceof classes.EnumManager ? attr.name : !(manager instanceof classes.RegisterManager) ? utils.fix_guid(attr) : manager.get_ref(attr)
+		};
+		const _ts_ = {};
 
 		Object.defineProperties(this, {
 			_obj: {
@@ -2304,7 +2291,9 @@ class DataObj {
 			},
 
 			_data: {
-				value: _data,
+				value: {
+					_is_new: !(this instanceof EnumObj)
+				},
 				configurable: true
 			}
 
@@ -2429,7 +2418,6 @@ class DataObj {
 	}
 
 	get _modified() {
-		if (!this._data) return false;
 		return !!this._data._modified;
 	}
 
@@ -2473,25 +2461,36 @@ class DataObj {
 	}
 
 	unload() {
-		var f,
-		    obj = this._obj;
 
-		this._manager.unload_obj(this.ref);
+		const { obj, ref, _observers, _notis, _manager } = this;
 
-		if (this._observers) this._observers.length = 0;
+		_manager.unload_obj(ref);
 
-		if (this._notis) this._notis.length = 0;
-
-		for (f in this._metadata().tabular_sections) this[f].clear(true);
-
-		for (f in this) {
-			if (this.hasOwnProperty(f)) delete this[f];
+		if (_observers) {
+			_observers.length = 0;
 		}
-		for (f in obj) delete obj[f];
+
+		if (_notis) {
+			_notis.length = 0;
+		}
+
+		for (let f in this._metadata().tabular_sections) {
+			this[f].clear(true);
+		}
+
+		for (let f in this) {
+			if (this.hasOwnProperty(f)) {
+				delete this[f];
+			}
+		}
+
+		for (let f in obj) {
+			delete obj[f];
+		}
+
 		["_ts_", "_obj", "_data"].forEach(f => {
 			delete this[f];
 		});
-		f = obj = null;
 	}
 
 	save(post, operational, attachments) {
@@ -2501,7 +2500,7 @@ class DataObj {
 			this.posted = post;
 		}
 
-		var saver,
+		let saver,
 		    before_save_res = {},
 		    reset_modified = () => {
 
@@ -2554,30 +2553,36 @@ class DataObj {
 	}
 
 	get_attachment(att_id) {
-		return this._manager.adapter.get_attachment(this._manager, this.ref, att_id);
+		const { _manager, ref } = this;
+		return _manager.adapter.get_attachment(_manager, ref, att_id);
 	}
 
 	save_attachment(att_id, attachment, type) {
-		return this._manager.save_attachment(this.ref, att_id, attachment, type).then(function (att) {
-			if (!this._attachments) this._attachments = {};
+		const { _manager, ref, _attachments } = this;
+		return _manager.save_attachment(ref, att_id, attachment, type).then(att => {
+			if (!_attachments) this._attachments = {};
 			if (!this._attachments[att_id] || !att.stub) this._attachments[att_id] = att;
 			return att;
-		}.bind(this));
+		});
 	}
 
 	delete_attachment(att_id) {
-		return this._manager.delete_attachment(this.ref, att_id).then(function (att) {
-			if (this._attachments) delete this._attachments[att_id];
+		const { _manager, ref, _attachments } = this;
+		return _manager.delete_attachment(ref, att_id).then(att => {
+			if (_attachments) delete _attachments[att_id];
 			return att;
-		}.bind(this));
+		});
 	}
 
 	_silent(v) {
-		if (typeof v == "boolean") this._data._silent = v;else {
-			this._data._silent = true;
-			setTimeout(function () {
-				this._data._silent = false;
-			}.bind(this));
+		const { _data } = this;
+		if (typeof v == "boolean") {
+			_data._silent = v;
+		} else {
+			_data._silent = true;
+			setTimeout(() => {
+				_data._silent = false;
+			});
 		}
 	}
 
@@ -2791,7 +2796,7 @@ class RegisterRow extends DataObj {
 		super(attr, manager);
 
 		if (attr && typeof attr == "object") {
-			var tref = attr.ref;
+			let tref = attr.ref;
 			if (tref) {
 				delete attr.ref;
 			}
@@ -2813,8 +2818,10 @@ class RegisterRow extends DataObj {
 	}
 
 	_metadata(field_name) {
-		var _meta = this._manager.metadata();
-		if (!_meta.fields) _meta.fields = Object.assign({}, _meta.dimensions, _meta.resources, _meta.attributes);
+		const _meta = this._manager.metadata();
+		if (!_meta.fields) {
+			_meta.fields = Object.assign({}, _meta.dimensions, _meta.resources, _meta.attributes);
+		}
 		return field_name ? _meta.fields[field_name] : _meta;
 	}
 
@@ -2909,31 +2916,33 @@ class TabularSection {
 
 	find_rows(selection, callback) {
 
-		var t = this,
-		    cb = callback ? function (row) {
-			return callback.call(t, row._row);
+		const cb = callback ? row => {
+			return callback.call(this, row._row);
 		} : null;
 
-		return utils._find_rows.call(t, t._obj, selection, cb);
+		return utils._find_rows.call(this, this._obj, selection, cb);
 	}
 
 	swap(rowid1, rowid2) {
-		var tmp = this._obj[rowid1];
-		this._obj[rowid1] = this._obj[rowid2];
-		this._obj[rowid2] = tmp;
+
+		const { _obj } = this;
+		[_obj[rowid1], _obj[rowid2]] = [_obj[rowid2], _obj[rowid1]];
+		_obj[rowid1].row = rowid2 + 1;
+		_obj[rowid2].row = rowid1 + 1;
 
 		if (!this._owner._data._silent) {}
 	}
 
-	add(attr, silent) {
+	add(attr = {}, silent) {
 
-		var row = this._owner._manager.obj_constructor(this._name, this);
+		const { _owner, _name, _obj } = this;
+		const row = _owner._manager.obj_constructor(_name, this);
 
-		if (!attr) attr = {};
+		for (let f in row._metadata().fields) {
+			row[f] = attr[f] || "";
+		}
 
-		for (var f in row._metadata().fields) row[f] = attr[f] || "";
-
-		row._obj.row = this._obj.push(row._obj);
+		row._obj.row = _obj.push(row._obj);
 		Object.defineProperty(row._obj, "_row", {
 			value: row,
 			enumerable: false
@@ -2941,9 +2950,7 @@ class TabularSection {
 
 		if (!silent && !this._owner._data._silent) {}
 
-		attr = null;
-
-		this._owner._data._modified = true;
+		_owner._data._modified = true;
 
 		return row;
 	}
@@ -2959,37 +2966,54 @@ class TabularSection {
 	group_by(dimensions, resources) {
 
 		try {
-			var res = this.aggregate(dimensions, resources, "SUM", true);
-			return this.clear(true).load(res);
-		} catch (err) {}
-	}
-
-	sort(fields) {
-
-		if (typeof fields == "string") fields = fields.split(",");
-
-		var sql = "select * from ? order by ",
-		    res = true;
-		fields.forEach(function (f) {
-			f = f.trim().replace(/\s{1,}/g, " ").split(" ");
-			if (res) res = false;else sql += ", ";
-			sql += "`" + f[0] + "`";
-			if (f[1]) sql += " " + f[1];
-		});
-
-		try {
-			res = alasql(sql, [this._obj]);
+			const res = this.aggregate(dimensions, resources, "SUM", true);
 			return this.clear(true).load(res);
 		} catch (err) {
 			utils.record_log(err);
 		}
 	}
 
-	aggregate(dimensions, resources, aggr, ret_array) {
+	sort(fields) {
 
-		if (typeof dimensions == "string") dimensions = dimensions.split(",");
-		if (typeof resources == "string") resources = resources.split(",");
-		if (!aggr) aggr = "sum";
+		if (typeof fields == "string") {
+			fields = fields.split(",");
+		}
+
+		let sql = "select * from ? order by ",
+		    res = true;
+		has_dot;
+
+		fields.forEach(function (f) {
+			has_dot = has_dot || f.match('.');
+			f = f.trim().replace(/\s{1,}/g, " ").split(" ");
+			if (res) {
+				res = false;
+			} else {
+				sql += ", ";
+			}
+
+			sql += "`" + f[0] + "`";
+			if (f[1]) {
+				sql += " " + f[1];
+			}
+		});
+
+		try {
+			res = alasql(sql, [has_dot ? this._obj.map(row => row._row) : this._obj]);
+			return this.clear(true).load(res);
+		} catch (err) {
+			utils.record_log(err);
+		}
+	}
+
+	aggregate(dimensions, resources, aggr = "sum", ret_array) {
+
+		if (typeof dimensions == "string") {
+			dimensions = dimensions.split(",");
+		}
+		if (typeof resources == "string") {
+			resources = resources.split(",");
+		}
 
 		if (!dimensions.length && resources.length == 1 && aggr == "sum") {
 			return this._obj.reduce(function (sum, row, index, array) {
@@ -2997,7 +3021,7 @@ class TabularSection {
 			}, 0);
 		}
 
-		var sql,
+		let sql,
 		    res = true;
 
 		resources.forEach(function (f) {
@@ -3027,18 +3051,25 @@ class TabularSection {
 	}
 	load(aattr) {
 
-		var t = this,
-		    arr;
+		let arr;
 
-		t.clear(true);
-		if (aattr instanceof TabularSection) arr = aattr._obj;else if (Array.isArray(aattr)) arr = aattr;
-		if (arr) arr.forEach(function (row) {
-			t.add(row, true);
-		});
+		this.clear(true);
+
+		if (aattr instanceof TabularSection) {
+			arr = aattr._obj;
+		} else if (Array.isArray(aattr)) {
+			arr = aattr;
+		}
+
+		if (arr) {
+			arr.forEach(row => {
+				this.add(row, true);
+			});
+		}
 
 		if (!this._owner._data._silent) {}
 
-		return t;
+		return this;
 	}
 
 	sync_grid(grid, selection) {
@@ -3073,8 +3104,7 @@ class TabularSectionRow {
 
 		Object.defineProperties(this, {
 			_owner: {
-				get: () => owner
-
+				value: owner
 			},
 
 			_obj: {
@@ -3084,7 +3114,8 @@ class TabularSectionRow {
 	}
 
 	_metadata(field_name) {
-		return field_name ? this._owner._owner._metadata(this._owner._name).fields[field_name] : this._owner._owner._metadata(this._owner._name);
+		const { _owner } = this;
+		return field_name ? _owner._owner._metadata(_owner._name).fields[field_name] : _owner._owner._metadata(_owner._name);
 	}
 
 	get row() {
@@ -3092,7 +3123,8 @@ class TabularSectionRow {
 	}
 
 	_clone() {
-		return utils._mixin(this._owner._owner._manager.obj_constructor(this._owner._name, this._owner), this._obj);
+		const { _owner, _obj } = this;
+		return utils._mixin(_owner._owner._manager.obj_constructor(_owner._name, _owner), _obj);
 	}
 
 	get _getter() {
@@ -3100,18 +3132,22 @@ class TabularSectionRow {
 	}
 
 	_setter(f, v) {
-		if (this._obj[f] == v || !v && this._obj[f] == utils.blank.guid) return;
 
-		if (!this._owner._owner._data._silent) {}
+		const { _owner, _obj } = this;
+		const _meta = this._metadata(f);
 
-		if (this._metadata(f).choice_type) {
-			var prop;
-			if (this._metadata(f).choice_type.path.length == 2) prop = this[this._metadata(f).choice_type.path[1]];else prop = this._owner._owner[this._metadata(f).choice_type.path[0]];
+		if (_obj[f] == v || !v && _obj[f] == utils.blank.guid) return;
+
+		if (!_owner._owner._data._silent) {}
+
+		if (_meta.choice_type) {
+			let prop;
+			if (_meta.choice_type.path.length == 2) prop = this[_meta.choice_type.path[1]];else prop = _owner._owner[_meta.choice_type.path[0]];
 			if (prop && prop.type) v = utils.fetch_type(v, prop.type);
 		}
 
 		DataObj.prototype.__setter.call(this, f, v);
-		this._owner._owner._data._modified = true;
+		_owner._owner._data._modified = true;
 	}
 
 }
