@@ -29,6 +29,7 @@ if(typeof process !== 'undefined' && process.versions && process.versions.node){
 
 	const ua = (navigator && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '',
 		isSafari = ua.indexOf('safari') !== -1 && ua.indexOf('chrome') === -1;
+
 	if(isSafari){
 		PouchDB.plugin(require('pouchdb-adapter-websql'));
 	}else{

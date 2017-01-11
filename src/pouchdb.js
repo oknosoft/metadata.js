@@ -65,10 +65,6 @@ function Pouch(){
 				}
 				if(_paths.path && !_local._meta){
 					_local._meta = new t.DB(_paths.path + "meta", {
-						auth: {
-							username: "guest",
-							password: "meta"
-						},
 						skip_setup: true
 					});
 					t.run_sync(_local.meta, _local._meta, "meta");
