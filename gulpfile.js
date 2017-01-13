@@ -379,3 +379,15 @@ gulp.task('build-codex', function(){
 		.pipe(gulp.dest('./examples/codex/js'));
 });
 
+gulp.task('paper-minify', () => {
+	return gulp.src(['./lib/paper-core.js'])
+		.pipe(rename('paper-core.min.js'))
+		.pipe(uglify({
+			preserveComments: function (node, comment) {
+				return comment.value[0]=="!";
+			}
+		}))
+		.pipe(gulp.dest('./lib'))
+	}
+);
+
