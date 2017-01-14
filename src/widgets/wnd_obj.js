@@ -57,7 +57,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 						// информируем мир о закрытии формы
 						if(_mgr && _mgr.class_name)
 							$p.eve.callEvent("frm_close", [_mgr.class_name, (o && o._obj ? o.ref : "")]);
-						
+
 						if(_wnd.conf){
 							_wnd.detachToolbar();
 							_wnd.detachStatusBar();
@@ -114,7 +114,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 						if(attr && attr.set_text || wnd && wnd.setText){
 
 							var title = o.presentation;
-							
+
 							if(!title)
 								return;
 
@@ -210,7 +210,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 					id: "btn_files"
 				});
 				wnd.elmnts.vault_pop.attachEvent("onShow", show_vault);
-				
+
 			}else
 				this.disableItem("bs_print");
 
@@ -405,7 +405,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	function save(action){
 
 		wnd.progressOn();
-		
+
 		var post;
 		if(o instanceof DocObj){
 			if(action == "post")
@@ -429,7 +429,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 					if(attr.on_select)
 						attr.on_select(o);
 					wnd.close();
-					
+
 				}else
 					wnd.set_text();
 			})
@@ -492,7 +492,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	function frm_close(wnd){
 
 		if(check_modified()){
-			
+
 			setTimeout(frm_unload);
 
 			// выгружаем попапы
