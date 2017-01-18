@@ -662,10 +662,10 @@ function scheme_settings() {
 		}
 
 		get date_till() {
-			return this._getter('date_from');
+			return this._getter('date_till');
 		}
 		set date_till(v) {
-			this._setter('date_from', v);
+			this._setter('date_till', v);
 		}
 
 		get fields() {
@@ -801,8 +801,11 @@ function scheme_settings() {
 
 			this.obj = class_name;
 
+			// наименование и период по умолчанию
 			if (!this.name) {
 				this.name = "Основная";
+				this.date_from = new Date(new Date().getFullYear().toFixed() + "-01-01");
+				this.date_till = utils.date_add_day(new Date(), 1);
 			}
 
 			return this;
@@ -880,10 +883,20 @@ function scheme_settings() {
 		}
 
 		/**
-   * ### Возвращает массив имён используемых колонок
+   * ### Возвращает массив измерений группировки
+   * @param [parent] - родитель, для многоуровневой группировки
    * @return {Array}
    */
-		used_fields() {
+		dims(parent) {
+			return this.dimensions._obj.map(row => row.field);
+		}
+
+		/**
+   * ### Возвращает массив имён используемых колонок
+   * @param [parent] - родитель, для многоуровневой группировки
+   * @return {Array}
+   */
+		used_fields(parent) {
 			const res = [];
 			this.fields.find_rows({ use: true }, row => {
 				res.push(row.field);
