@@ -417,7 +417,7 @@ function mngrs($p) {
 			}
 		}
 
-		
+
 
 		/**
 		 * Возвращает промис со структурой печатных форм объекта
@@ -663,8 +663,9 @@ function mngrs($p) {
 
 				}else{
 
-					if(o instanceof DocObj && o.date == utils.blank.date)
+					if(o instanceof DocObj && o.date == utils.blank.date){
 						o.date = new Date();
+					}
 
 					// Триггер после создания
 					let after_create_res = {};

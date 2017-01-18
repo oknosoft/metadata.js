@@ -165,7 +165,7 @@ class DataObj {
 			else {
 				_obj[f] = utils.fix_guid(v);
 
-				if($p.utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1){
+				if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1){
 
 				}else{
 					mgr = utils.value_mgr(_obj, f, mf, false, v);

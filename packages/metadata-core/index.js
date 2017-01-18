@@ -1098,7 +1098,9 @@ function mngrs($p) {
 
 				if (!fill_default && attr.ref && attr.presentation && Object.keys(attr).length == 2) {} else {
 
-					if (o instanceof DocObj && o.date == utils.blank.date) o.date = new Date();
+					if (o instanceof DocObj && o.date == utils.blank.date) {
+						o.date = new Date();
+					}
 
 					let after_create_res = {};
 					this.emit("after_create", o, after_create_res);
@@ -2322,7 +2324,7 @@ class DataObj {
 			} else {
 				_obj[f] = utils.fix_guid(v);
 
-				if ($p.utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1) {} else {
+				if (utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1) {} else {
 					mgr = utils.value_mgr(_obj, f, mf, false, v);
 					if (mgr) {
 						if (mgr instanceof classes.EnumManager) {

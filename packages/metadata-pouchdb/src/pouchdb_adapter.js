@@ -832,8 +832,6 @@ class AdapterPouch extends AbstracrAdapter{
 				options.binary = true;
 				delete selection._attachments;
 			}
-
-
 		}
 
 		// если сказано посчитать все строки...
@@ -960,11 +958,12 @@ class AdapterPouch extends AbstracrAdapter{
 							res.push(doc);
 						});
 
-						if (top && top_count > top && !calc_count) {
+						if (top && (top_count > top || result.rows.length < options.limit) && !calc_count) {
 							resolve(_raw ? res : _mgr.load_array(res));
-
-						} else
+						}
+						else{
 							fetch_next_page();
+						}
 
 					} else {
 						if (calc_count) {

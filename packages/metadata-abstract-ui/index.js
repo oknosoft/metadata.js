@@ -547,15 +547,15 @@ function scheme_settings() {
    * @param class_name
    */
 		get_scheme(class_name) {
-			return new Promise(function (resolve, reject) {
+
+			return new Promise((resolve, reject) => {
 
 				// получаем сохраненную настройку
-				const scheme_name = "scheme_settings_" + class_name.replace(/\./g, "_");
+				const scheme_name = this.scheme_name(class_name);
 				let ref = wsql.get_user_param(scheme_name, "string");
 
-				function set_param_and_resolve(obj) {
-					wsql.set_user_param(scheme_name, obj.ref);
-					resolve(obj);
+				function set_default_and_resolve(obj) {
+					resolve(obj.set_default());
 				}
 
 				function find_scheme() {
@@ -570,8 +570,22 @@ function scheme_settings() {
 					}).then(function (data) {
 						// если существует с текущим пользователем, берём его, иначе - первый попавшийся
 						if (data.length == 1) {
-							set_param_and_resolve(data[0]);
-						} else if (data.length) {} else {
+							set_default_and_resolve(data[0]);
+						} else if (data.length) {
+							if (!$p.current_user || !$p.current_user.name) {
+								set_default_and_resolve(data[0]);
+							} else {
+								const { name } = $p.current_user;
+								if (!data.some(scheme => {
+									if (scheme.user == name) {
+										set_default_and_resolve(scheme);
+										return true;
+									}
+								})) {
+									set_default_and_resolve(data[0]);
+								}
+							}
+						} else {
 							create_scheme();
 						}
 					}).catch(function (err) {
@@ -586,13 +600,13 @@ function scheme_settings() {
 					cat.scheme_settings.create({ ref }).then(function (obj) {
 						return obj.fill_default(class_name).save();
 					}).then(function (obj) {
-						set_param_and_resolve(obj);
+						set_default_and_resolve(obj);
 					});
 				}
 
 				if (ref) {
 					// получаем по гвиду
-					cat.scheme_settings.get(ref, "promise").then(function (scheme) {
+					cat.scheme_settings.get(ref, "promise").then(scheme => {
 						if (scheme && !scheme.is_new()) {
 							resolve(scheme);
 						} else {
@@ -607,6 +621,41 @@ function scheme_settings() {
 			});
 		}
 
+		/**
+   * ### Имя сохраненных настроек
+   * @param class_name
+   */
+		scheme_name(class_name) {
+			return "scheme_settings_" + class_name.replace(/\./g, "_");
+		}
+
+	}
+
+	/**
+  * ### Менеджер настроек отчетов и динсписков
+  */
+	class SchemeSelectManager extends classes.DataProcessorsManager {
+
+		/**
+   * ### Экземпляр обработки для выбора варианта
+   * @param scheme
+   * @return {_obj, _meta}
+   */
+		dp(scheme) {
+
+			// экземпляр обработки для выбора варианта
+			const _obj = dp.scheme_settings.create();
+			_obj.scheme = scheme;
+
+			// корректируем метаданные поля выбора варианта
+			const _meta = Object.assign({}, this.metadata("scheme"));
+			_meta.choice_params = [{
+				name: "obj",
+				path: scheme.obj
+			}];
+
+			return { _obj, _meta };
+		}
 	}
 
 	/**
@@ -812,6 +861,14 @@ function scheme_settings() {
 		}
 
 		/**
+   * ### Устанавливает текущую настройку по умолчанию
+   */
+		set_default() {
+			wsql.set_user_param(this._manager.scheme_name(this.obj), this.ref);
+			return this;
+		}
+
+		/**
    * ### Устанавливает _view и _key в параметрах запроса
    */
 		fix_select(select, key0) {
@@ -838,6 +895,17 @@ function scheme_settings() {
 			}
 
 			// если есть параметр период, установим значения ключа
+			if (this.query.match('date')) {
+				const { date_from, date_till } = this;
+
+				_key.startkey[1] = date_from.getFullYear();
+				_key.startkey[2] = date_from.getMonth() + 1;
+				_key.startkey[3] = date_from.getDate();
+
+				_key.endkey[1] = date_till.getFullYear();
+				_key.endkey[2] = date_till.getMonth() + 1;
+				_key.endkey[3] = date_till.getDate();
+			}
 
 			return res;
 		}
@@ -1089,7 +1157,7 @@ function scheme_settings() {
 
 	Object.defineProperties(dp, {
 		scheme_settings: {
-			value: new classes.DataProcessorsManager('dp.scheme_settings')
+			value: new SchemeSelectManager('dp.scheme_settings')
 		}
 	});
 } /**
