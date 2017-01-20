@@ -564,8 +564,8 @@ function scheme_settings() {
 						_top: 100,
 						_skip: 0,
 						_key: {
-							startkey: class_name,
-							endkey: class_name
+							startkey: [class_name],
+							endkey: [class_name]
 						}
 					}).then(function (data) {
 						// если существует с текущим пользователем, берём его, иначе - первый попавшийся
@@ -665,6 +665,7 @@ function scheme_settings() {
   * @constructor
   */
 	this.DpScheme_settings = class DpScheme_settings extends classes.DataProcessorObj {
+
 		get scheme() {
 			return this._getter('scheme');
 		}
@@ -694,6 +695,20 @@ function scheme_settings() {
 		}
 		set user(v) {
 			this._setter('user', v);
+		}
+
+		get order() {
+			return this._getter('order');
+		}
+		set order(v) {
+			this._setter('order', v);
+		}
+
+		get formula() {
+			return this._getter('formula');
+		}
+		set formula(v) {
+			this._setter('formula', v);
 		}
 
 		get query() {

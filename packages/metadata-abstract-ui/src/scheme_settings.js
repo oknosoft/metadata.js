@@ -41,8 +41,8 @@ function scheme_settings() {
 						_top: 100,
 						_skip: 0,
 						_key: {
-							startkey: class_name,
-							endkey: class_name
+							startkey: [class_name],
+							endkey: [class_name]
 						}
 					})
 						.then(function (data) {
@@ -153,12 +153,9 @@ function scheme_settings() {
 	 * @constructor
 	 */
 	this.DpScheme_settings = class DpScheme_settings extends classes.DataProcessorObj{
-		get scheme() {
-			return this._getter('scheme')
-		}
-		set scheme(v) {
-			this._setter('scheme', v)
-		}
+
+		get scheme() {return this._getter('scheme')}
+		set scheme(v) {this._setter('scheme', v)}
 	}
 
 	/**
@@ -170,89 +167,47 @@ function scheme_settings() {
 	 */
 	this.CatScheme_settings = class CatScheme_settings extends classes.CatObj {
 
-		get obj() {
-			return this._getter('obj')
-		}
-		set obj(v) {
-			this._setter('obj', v)
-		}
+		get obj() {return this._getter('obj')}
+		set obj(v) {this._setter('obj', v)}
 
-		get user() {
-			return this._getter('user')
-		}
-		set user(v) {
-			this._setter('user', v)
-		}
+		get user() {return this._getter('user')}
+		set user(v) {this._setter('user', v)}
 
-		get query() {
-			return this._getter('query')
-		}
-		set query(v) {
-			this._setter('query', v)
-		}
+		get order() {return this._getter('order')}
+		set order(v) {this._setter('order', v)}
 
-		get date_from() {
-			return this._getter('date_from')
-		}
-		set date_from(v) {
-			this._setter('date_from', v)
-		}
+		get formula() {return this._getter('formula')}
+		set formula(v) {this._setter('formula', v)}
 
-		get date_till() {
-			return this._getter('date_till')
-		}
-		set date_till(v) {
-			this._setter('date_till', v)
-		}
+		get query() {return this._getter('query')}
+		set query(v) {this._setter('query', v)}
 
-		get fields() {
-			return this._getter_ts('fields')
-		}
-		set fields(v) {
-			this._setter_ts('fields', v)
-		}
+		get date_from() {return this._getter('date_from')}
+		set date_from(v) {this._setter('date_from', v)}
 
-		get sorting() {
-			return this._getter_ts('sorting')
-		}
-		set sorting(v) {
-			this._setter_ts('sorting', v)
-		}
+		get date_till() {return this._getter('date_till')}
+		set date_till(v) {this._setter('date_till', v)}
 
-		get dimensions() {
-			return this._getter_ts('dimensions')
-		}
-		set dimensions(v) {
-			this._setter_ts('dimensions', v)
-		}
+		get fields() {return this._getter_ts('fields')}
+		set fields(v) {this._setter_ts('fields', v)}
 
-		get resources() {
-			return this._getter_ts('resources')
-		}
-		set resources(v) {
-			this._setter_ts('resources', v)
-		}
+		get sorting() {return this._getter_ts('sorting')}
+		set sorting(v) {this._setter_ts('sorting', v)}
 
-		get selection() {
-			return this._getter_ts('selection')
-		}
-		set selection(v) {
-			this._setter_ts('selection', v)
-		}
+		get dimensions() {return this._getter_ts('dimensions')}
+		set dimensions(v) {this._setter_ts('dimensions', v)}
 
-		get params() {
-			return this._getter_ts('params')
-		}
-		set params(v) {
-			this._setter_ts('params', v)
-		}
+		get resources() {return this._getter_ts('resources')}
+		set resources(v) {this._setter_ts('resources', v)}
 
-		get scheme() {
-			return this._getter_ts('scheme')
-		}
-		set scheme(v) {
-			this._setter_ts('scheme', v)
-		}
+		get selection() {return this._getter_ts('selection')}
+		set selection(v) {this._setter_ts('selection', v)}
+
+		get params() {return this._getter_ts('params')}
+		set params(v) {this._setter_ts('params', v)}
+
+		get scheme() {return this._getter_ts('scheme')}
+		set scheme(v) {this._setter_ts('scheme', v)}
 
 		/**
 		 * ### Заполняет настройки по метаданным
@@ -358,7 +313,7 @@ function scheme_settings() {
 		/**
 		 * ### Устанавливает _view и _key в параметрах запроса
 		 */
-		fix_select(select, key0){
+		fix_select(select, key0) {
 
 			const keys = this.query.split("/")
 			const {_key, _view} = select
@@ -402,7 +357,7 @@ function scheme_settings() {
 		 * @param mode {String} - режим формирования колонок
 		 * @return {Array}
 		 */
-		columns(mode){
+		columns(mode) {
 
 			const parts = this.obj.split("."),
 				_mgr = md.mgr_by_class_name(this.obj),
@@ -451,7 +406,7 @@ function scheme_settings() {
 		 * @param [parent] - родитель, для многоуровневой группировки
 		 * @return {Array}
 		 */
-		used_fields(parent){
+		used_fields(parent) {
 			const res = []
 			this.fields.find_rows({use: true}, (row) => {
 				res.push(row.field)
@@ -463,7 +418,7 @@ function scheme_settings() {
 		 * ### Возвращает массив элементов для поля выбора
 		 * @return {Array}
 		 */
-		used_fields_list(){
+		used_fields_list() {
 			return this.fields._obj.map((row) => ({
 				id: row.field,
 				value: row.field,

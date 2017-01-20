@@ -74,6 +74,10 @@ export default class NavList extends Component {
 
   handleNavigate (path) {
 
+    if(typeof path == "function"){
+      return path.bind(this)
+    }
+
     return () => {
       this.handleClose()
       this.context.$p.UI.history.push(path)

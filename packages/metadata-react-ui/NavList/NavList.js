@@ -81,6 +81,10 @@ class NavList extends _react.Component {
 
   handleNavigate(path) {
 
+    if(typeof path == "function"){
+      return path.bind(this)
+    }
+
     return () => {
       this.handleClose();
       this.context.$p.UI.history.push(path);
