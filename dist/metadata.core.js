@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.225, built:2017-01-13 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.225, built:2017-01-23 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -170,7 +170,10 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 		 */
 		observe: {
 			value: function(target, observer) {
-				if(!target._observers)
+				if(!target){
+					return;
+				}
+				if(!target._observers){
 					target.__define({
 						_observers: {
 							value: [],
@@ -181,6 +184,7 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 							enumerable: false
 						}
 					});
+				}
 				target._observers.push(observer);
 			},
 			enumerable: false
@@ -193,17 +197,17 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 		 */
 		unobserve: {
 			value: function(target, observer) {
+				if(target && target._observers){
 
-				if(!target._observers)
-					return;
+					if(!observer){
+						target._observers.length = 0;
+					}
 
-				if(!observer)
-					target._observers.length = 0;
-
-				for(var i=0; i<target._observers.length; i++){
-					if(target._observers[i]===observer){
-						target._observers.splice(i, 1);
-						break;
+					for(var i=0; i<target._observers.length; i++){
+						if(target._observers[i]===observer){
+							target._observers.splice(i, 1);
+							break;
+						}
 					}
 				}
 			},
@@ -230,8 +234,9 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 						target._notis.push(noti);
 						noti = null;
 
-						if(timer)
+						if(timer){
 							clearTimeout(timer);
+						}
 
 						timer = setTimeout(function () {
 							//TODO: свернуть массив оповещений перед отправкой
