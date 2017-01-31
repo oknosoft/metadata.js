@@ -507,7 +507,7 @@ class Utils{
 	 */
 	_selection(o, selection) {
 
-		var ok = true, j, sel, is_obj;
+		let ok = true;
 
 		if (selection) {
 			// если отбор является функцией, выполняем её, передав контекст
@@ -516,23 +516,23 @@ class Utils{
 
 			else {
 				// бежим по всем свойствам `selection`
-				for (j in selection) {
+				for (let j in selection) {
 
-					sel = selection[j];
-					is_obj = typeof(sel) === "object";
+					const sel = selection[j];
+					const is_obj = sel && typeof(sel) === "object";
 
 					// пропускаем служебные свойства
-					if (j.substr(0, 1) == "_")
+					if (j.substr(0, 1) == "_"){
 						continue;
 
-					// если свойство отбора является функцией, выполняем её, передав контекст
+					} // если свойство отбора является функцией, выполняем её, передав контекст
 					else if (typeof sel == "function") {
 						ok = sel.call(this, o, j);
 						if (!ok)
 							break;
 
-						// если свойство отбора является объектом `or`, выполняем Array.some() TODO: здесь напрашивается рекурсия
-					} else if (j == "or" && Array.isArray(sel)) {
+					} // если свойство отбора является объектом `or`, выполняем Array.some() TODO: здесь напрашивается рекурсия
+					else if (j == "or" && Array.isArray(sel)) {
 						ok = sel.some(function (element) {
 							var key = Object.keys(element)[0];
 							if (element[key].hasOwnProperty("like"))
@@ -543,42 +543,42 @@ class Utils{
 						if (!ok)
 							break;
 
-						// если свойство отбора является объектом `like`, сравниваем подстроку
-					} else if (is_obj && sel.hasOwnProperty("like")) {
+					} // если свойство отбора является объектом `like`, сравниваем подстроку
+					else if (is_obj && sel.hasOwnProperty("like")) {
 						if (!o[j] || o[j].toLowerCase().indexOf(sel.like.toLowerCase()) == -1) {
 							ok = false;
 							break;
 						}
 
-						// если свойство отбора является объектом `not`, сравниваем на неравенство
-					} else if (is_obj && sel.hasOwnProperty("not")) {
+					} // если свойство отбора является объектом `not`, сравниваем на неравенство
+					else if (is_obj && sel.hasOwnProperty("not")) {
 						if (utils.is_equal(o[j], sel.not)) {
 							ok = false;
 							break;
 						}
 
-						// если свойство отбора является объектом `in`, выполняем Array.some()
-					} else if (is_obj && sel.hasOwnProperty("in")) {
+					} // если свойство отбора является объектом `in`, выполняем Array.some()
+					else if (is_obj && sel.hasOwnProperty("in")) {
 						ok = sel.in.some(function (element) {
 							return utils.is_equal(element, o[j]);
 						});
 						if (!ok)
 							break;
 
-						// если свойство отбора является объектом `lt`, сравниваем на _меньше_
-					} else if (is_obj && sel.hasOwnProperty("lt")) {
+					} // если свойство отбора является объектом `lt`, сравниваем на _меньше_
+					else if (is_obj && sel.hasOwnProperty("lt")) {
 						ok = o[j] < sel.lt;
 						if (!ok)
 							break;
 
-						// если свойство отбора является объектом `gt`, сравниваем на _больше_
-					} else if (is_obj && sel.hasOwnProperty("gt")) {
+					} // если свойство отбора является объектом `gt`, сравниваем на _больше_
+					else if (is_obj && sel.hasOwnProperty("gt")) {
 						ok = o[j] > sel.gt;
 						if (!ok)
 							break;
 
-						// если свойство отбора является объектом `between`, сравниваем на _вхождение_
-					} else if (is_obj && sel.hasOwnProperty("between")) {
+					} // если свойство отбора является объектом `between`, сравниваем на _вхождение_
+					else if (is_obj && sel.hasOwnProperty("between")) {
 						var tmp = o[j];
 						if (typeof tmp != "number")
 							tmp = utils.fix_date(o[j]);
@@ -586,7 +586,8 @@ class Utils{
 						if (!ok)
 							break;
 
-					} else if (!utils.is_equal(o[j], sel)) {
+					}
+					else if (!utils.is_equal(o[j], sel)) {
 						ok = false;
 						break;
 					}

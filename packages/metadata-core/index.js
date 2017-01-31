@@ -242,57 +242,56 @@ class Utils {
 
 	_selection(o, selection) {
 
-		var ok = true,
-		    j,
-		    sel,
-		    is_obj;
+		let ok = true;
 
 		if (selection) {
 			if (typeof selection == "function") ok = selection.call(this, o);else {
-				for (j in selection) {
+				for (let j in selection) {
 
-					sel = selection[j];
-					is_obj = typeof sel === "object";
+					const sel = selection[j];
+					const is_obj = sel && typeof sel === "object";
 
-					if (j.substr(0, 1) == "_") continue;else if (typeof sel == "function") {
+					if (j.substr(0, 1) == "_") {
+						continue;
+					} else if (typeof sel == "function") {
 							ok = sel.call(this, o, j);
 							if (!ok) break;
 						} else if (j == "or" && Array.isArray(sel)) {
-							ok = sel.some(function (element) {
-								var key = Object.keys(element)[0];
-								if (element[key].hasOwnProperty("like")) return o[key] && o[key].toLowerCase().indexOf(element[key].like.toLowerCase()) != -1;else return utils.is_equal(o[key], element[key]);
-							});
-							if (!ok) break;
-						} else if (is_obj && sel.hasOwnProperty("like")) {
-							if (!o[j] || o[j].toLowerCase().indexOf(sel.like.toLowerCase()) == -1) {
-								ok = false;
-								break;
-							}
-						} else if (is_obj && sel.hasOwnProperty("not")) {
-							if (utils.is_equal(o[j], sel.not)) {
-								ok = false;
-								break;
-							}
-						} else if (is_obj && sel.hasOwnProperty("in")) {
-							ok = sel.in.some(function (element) {
-								return utils.is_equal(element, o[j]);
-							});
-							if (!ok) break;
-						} else if (is_obj && sel.hasOwnProperty("lt")) {
-							ok = o[j] < sel.lt;
-							if (!ok) break;
-						} else if (is_obj && sel.hasOwnProperty("gt")) {
-							ok = o[j] > sel.gt;
-							if (!ok) break;
-						} else if (is_obj && sel.hasOwnProperty("between")) {
-							var tmp = o[j];
-							if (typeof tmp != "number") tmp = utils.fix_date(o[j]);
-							ok = tmp >= sel.between[0] && tmp <= sel.between[1];
-							if (!ok) break;
-						} else if (!utils.is_equal(o[j], sel)) {
-							ok = false;
-							break;
-						}
+								ok = sel.some(function (element) {
+									var key = Object.keys(element)[0];
+									if (element[key].hasOwnProperty("like")) return o[key] && o[key].toLowerCase().indexOf(element[key].like.toLowerCase()) != -1;else return utils.is_equal(o[key], element[key]);
+								});
+								if (!ok) break;
+							} else if (is_obj && sel.hasOwnProperty("like")) {
+									if (!o[j] || o[j].toLowerCase().indexOf(sel.like.toLowerCase()) == -1) {
+										ok = false;
+										break;
+									}
+								} else if (is_obj && sel.hasOwnProperty("not")) {
+										if (utils.is_equal(o[j], sel.not)) {
+											ok = false;
+											break;
+										}
+									} else if (is_obj && sel.hasOwnProperty("in")) {
+											ok = sel.in.some(function (element) {
+												return utils.is_equal(element, o[j]);
+											});
+											if (!ok) break;
+										} else if (is_obj && sel.hasOwnProperty("lt")) {
+												ok = o[j] < sel.lt;
+												if (!ok) break;
+											} else if (is_obj && sel.hasOwnProperty("gt")) {
+													ok = o[j] > sel.gt;
+													if (!ok) break;
+												} else if (is_obj && sel.hasOwnProperty("between")) {
+														var tmp = o[j];
+														if (typeof tmp != "number") tmp = utils.fix_date(o[j]);
+														ok = tmp >= sel.between[0] && tmp <= sel.between[1];
+														if (!ok) break;
+													} else if (!utils.is_equal(o[j], sel)) {
+														ok = false;
+														break;
+													}
 				}
 			}
 		}

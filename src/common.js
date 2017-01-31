@@ -472,7 +472,7 @@ function MetaEngine() {
 						for(j in selection){
 
 							sel = selection[j];
-							is_obj = typeof(sel) === "object";
+							is_obj = sel && typeof(sel) === "object";
 
 							// пропускаем служебные свойства
 							if(j.substr(0, 1) == "_")
