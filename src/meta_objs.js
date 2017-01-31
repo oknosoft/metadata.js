@@ -132,17 +132,22 @@ DataObj.prototype._getter = function (f) {
 		return res;
 
 	}else if(mf.is_ref){
-		if(mf.digits && typeof res === "number")
-			return res;
 
-		if(mf.hasOwnProperty("str_len") && !$p.utils.is_guid(res))
+		if(mf.digits && typeof res === "number"){
 			return res;
+		}
+
+		if(mf.hasOwnProperty("str_len") && !$p.utils.is_guid(res)){
+			return res;
+		}
 
 		if(mgr = _md.value_mgr(this._obj, f, mf)){
-			if($p.utils.is_data_mgr(mgr))
+			if($p.utils.is_data_mgr(mgr)){
 				return mgr.get(res, false);
-			else
+			}
+			else{
 				return $p.utils.fetch_type(res, mgr);
+			}
 		}
 
 		if(res){
@@ -179,47 +184,57 @@ DataObj.prototype.__setter = function (f, v) {
 
 		if(mf.digits && typeof v == "number" || mf.hasOwnProperty("str_len") && typeof v == "string" && !$p.utils.is_guid(v)){
 			this._obj[f] = v;
-
-		}else {
+		}
+		else if(typeof v == "boolean" && mf.types.indexOf("boolean") != -1){
+			this._obj[f] = v;
+		}
+		else {
 			this._obj[f] = $p.utils.fix_guid(v);
 
 			mgr = _md.value_mgr(this._obj, f, mf, false, v);
 
 			if(mgr){
 				if(mgr instanceof EnumManager){
-					if(typeof v == "string")
+					if(typeof v == "string"){
 						this._obj[f] = v;
-
-					else if(!v)
+					}
+					else if(!v){
 						this._obj[f] = "";
-
-					else if(typeof v == "object")
+					}
+					else if(typeof v == "object"){
 						this._obj[f] = v.ref || v.name || "";
-
-				}else if(v && v.presentation){
-					if(v.type && !(v instanceof DataObj))
+					}
+				}
+				else if(v && v.presentation){
+					if(v.type && !(v instanceof DataObj)){
 						delete v.type;
+					}
 					mgr.create(v);
-				}else if(!$p.utils.is_data_mgr(mgr))
+				}
+				else if(!$p.utils.is_data_mgr(mgr)){
 					this._obj[f] = $p.utils.fetch_type(v, mgr);
-			}else{
-				if(typeof v != "object")
+				}
+			}
+			else{
+				if(typeof v != "object"){
 					this._obj[f] = v;
+				}
 			}
 		}
-
-	}else if(mf.date_part)
+	}
+	else if(mf.date_part){
 		this._obj[f] = $p.utils.fix_date(v, true);
-
-	else if(mf.digits)
+	}
+	else if(mf.digits){
 		this._obj[f] = $p.utils.fix_number(v, !mf.hasOwnProperty("str_len"));
-
-	else if(mf.types[0]=="boolean")
+	}
+	else if(mf.types[0]=="boolean"){
 		this._obj[f] = $p.utils.fix_boolean(v);
-
-	else
+	}
+	else{
 		this._obj[f] = v;
-	
+	}
+
 };
 
 DataObj.prototype.__notify = function (f) {
@@ -235,7 +250,7 @@ DataObj.prototype._setter = function (f, v) {
 
 	if(this._obj[f] == v)
 		return;
-	
+
 	this.__notify(f);
 	this.__setter(f, v);
 	this._data._modified = true;
@@ -475,9 +490,9 @@ DataObj.prototype.__define({
 			}
 
 			var saver,
-				
+
 				before_save_res = this._manager.handle_event(this, "before_save"),
-				
+
 				reset_modified = function () {
 
 					if(before_save_res === false){
@@ -490,7 +505,7 @@ DataObj.prototype.__define({
 					saver = null;
 					before_save_res = null;
 					reset_modified = null;
-					
+
 					return this;
 				}.bind(this);
 
@@ -535,7 +550,7 @@ DataObj.prototype.__define({
 						before_save_res = false;
 						return Promise.reject(reset_modified());
 					}
-				}	
+				}
 			}
 
 			// в зависимости от типа кеширования, получаем saver
@@ -578,7 +593,7 @@ DataObj.prototype.__define({
 	/**
 	 * ### Сохраняет объект или файл во вложении
 	 * Вызывает {{#crossLink "DataManager/save_attachment:method"}} одноименный метод менеджера {{/crossLink}} и передаёт ссылку на себя в качестве контекста
-	 * 
+	 *
 	 * @method save_attachment
 	 * @for DataObj
 	 * @param att_id {String} - идентификатор (имя) вложения
@@ -603,7 +618,7 @@ DataObj.prototype.__define({
 	/**
 	 * ### Удаляет присоединенный объект или файл
 	 * Вызывает одноименный метод менеджера и передаёт ссылку на себя в качестве контекста
-	 * 
+	 *
 	 * @method delete_attachment
 	 * @for DataObj
 	 * @param att_id {String} - идентификатор (имя) вложения
@@ -636,9 +651,9 @@ DataObj.prototype.__define({
 			else{
 				this._data._silent = true;
 				setTimeout(function () {
-					this._data._silent = false;	
+					this._data._silent = false;
 				}.bind(this));
-			}			
+			}
 		}
 	},
 
@@ -658,7 +673,7 @@ DataObj.prototype.__define({
 			return this._manager.print(this, model, wnd);
 		}
 	}
-	
+
 });
 
 
@@ -1043,7 +1058,7 @@ RegisterRow.prototype.__define({
 	 * Ключ записи регистра
 	 */
 	ref: {
-		get : function(){ 
+		get : function(){
 			return this._manager.get_ref(this);
 		},
 		enumerable: true

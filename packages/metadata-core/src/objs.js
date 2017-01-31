@@ -102,28 +102,33 @@ class DataObj {
 
 	_getter(f) {
 
-		var mf = this._metadata(f).type,
-			res = this._obj ? this._obj[f] : "",
-			mgr, ref;
+		const mf = this._metadata(f).type;
+		const res = this._obj ? this._obj[f] : "";
 
-		if(f == "type" && typeof res == "object")
+		if(f == "type" && typeof res == "object"){
 			return res;
-
+		}
 		else if(f == "ref"){
 			return res;
+		}
+		else if(mf.is_ref){
 
-		}else if(mf.is_ref){
-			if(mf.digits && typeof res === "number")
+			if(mf.digits && typeof res === "number"){
 				return res;
+			}
 
-			if(mf.hasOwnProperty("str_len") && !utils.is_guid(res))
+			if(mf.hasOwnProperty("str_len") && !utils.is_guid(res)){
 				return res;
+			}
 
-			if(mgr = utils.value_mgr(this._obj, f, mf)){
-				if(utils.is_data_mgr(mgr))
+			let	mgr = utils.value_mgr(this._obj, f, mf)
+			if(mgr){
+				if(utils.is_data_mgr(mgr)){
 					return mgr.get(res);
-				else
+				}
+				else{
 					return utils.fetch_type(res, mgr);
+				}
 			}
 
 			if(res){
@@ -131,24 +136,24 @@ class DataObj {
 				return null;
 			}
 
-		}else if(mf.date_part)
+		}else if(mf.date_part){
 			return utils.fix_date(this._obj[f], true);
-
-		else if(mf.digits)
+		}
+		else if(mf.digits){
 			return utils.fix_number(this._obj[f], !mf.hasOwnProperty("str_len"));
-
-		else if(mf.types[0]=="boolean")
+		}
+		else if(mf.types[0]=="boolean"){
 			return utils.fix_boolean(this._obj[f]);
-
-		else
+		}
+		else{
 			return this._obj[f] || "";
+		}
 	}
 
 	__setter(f, v) {
 
 		const {_obj} = this;
 		const mf = this._metadata(f).type;
-		let mgr;
 
 		if(f == "type" && v.types){
 			_obj[f] = v;
@@ -160,7 +165,9 @@ class DataObj {
 
 			if(mf.digits && typeof v == "number" || mf.hasOwnProperty("str_len") && typeof v == "string" && !utils.is_guid(v)){
 				_obj[f] = v;
-
+			}
+			else if(typeof v == "boolean" && mf.types.indexOf("boolean") != -1){
+				_obj[f] = v;
 			}
 			else {
 				_obj[f] = utils.fix_guid(v);
@@ -168,7 +175,7 @@ class DataObj {
 				if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1){
 
 				}else{
-					mgr = utils.value_mgr(_obj, f, mf, false, v);
+					let mgr = utils.value_mgr(_obj, f, mf, false, v);
 					if(mgr){
 						if(mgr instanceof classes.EnumManager){
 							if(typeof v == "string")

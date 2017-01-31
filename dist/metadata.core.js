@@ -1191,16 +1191,19 @@ function Utils() {
 	 * @return {*}
 	 */
 	this.fetch_type = function(str, mtype){
-		var v = str;
-		if(mtype.is_ref)
-			v = this.fix_guid(str);
-		else if(mtype.date_part)
-			v = this.fix_date(str, true);
-		else if(mtype["digits"])
-			v = this.fix_number(str, true);
-		else if(mtype.types[0]=="boolean")
-			v = this.fix_boolean(str);
-		return v;
+		if (mtype.is_ref){
+			return this.fix_guid(str);
+		}
+		if (mtype.date_part){
+			return this.fix_date(str, true)
+		}
+		if (mtype["digits"]){
+			return this.fix_number(str, true)
+		}
+		if (mtype.types && mtype.types[0] == "boolean"){
+			return this.fix_boolean(str)
+		}
+		return str;
 	};
 
 	/**
@@ -3704,13 +3707,17 @@ function Meta() {
 	 * @return {DataManager|Array}
 	 */
 	_md.value_mgr = function(row, f, mf, array_enabled, v){
+
 		var property, oproperty, tnames, rt, mgr;
-		if(mf._mgr)
+
+		if(mf._mgr){
 			return mf._mgr;
+		}
 
 		function mf_mgr(mgr){
-			if(mgr && mf.types.length == 1)
+			if(mgr && mf.types.length == 1){
 				mf._mgr = mgr;
+			}
 			return mgr;
 		}
 
@@ -3753,18 +3760,22 @@ function Meta() {
 		}else{
 
 			// Получаем объект свойства
-			if($p.utils.is_data_obj(property))
+			if($p.utils.is_data_obj(property)){
 				oproperty = property;
-			else if($p.utils.is_guid(property))
+			}
+			else if($p.utils.is_guid(property)){
 				oproperty = $p.cch.properties.get(property, false);
-			else
+			}
+			else{
 				return;
+			}
 
 			if($p.utils.is_data_obj(oproperty)){
 
 				// затычка для неизвестных свойств используем значения свойств объектов
-				if(oproperty.is_new())
+				if(oproperty.is_new()){
 					return $p.cat.property_values;
+				}
 
 				// и через его тип выходми на мнеджера значения
 				// for(rt in oproperty.type.types)
@@ -3779,20 +3790,25 @@ function Meta() {
 
 				//---
 				rt = [];
-				oproperty.type.types.forEach(function(v){
+				oproperty.type.types.some(function(v){
 					tnames = v.split(".");
-					if(tnames.length > 1 && $p[tnames[0]][tnames[1]])
+					if(tnames.length > 1 && $p[tnames[0]][tnames[1]]){
 						rt.push($p[tnames[0]][tnames[1]]);
+					}
+					else if(v == "boolean"){
+						rt.push({types: ["boolean"]});
+						return true
+					}
 				});
-				if(rt.length == 1 || row[f] == $p.utils.blank.guid)
+				if(rt.length == 1 || row[f] == $p.utils.blank.guid){
 					return mf_mgr(rt[0]);
-
-				else if(array_enabled)
+				}
+				else if(array_enabled){
 					return rt;
-
-				else if((property = row[f]) instanceof DataObj)
+				}
+				else if((property = row[f]) instanceof DataObj){
 					return property._manager;
-
+				}
 				else if($p.utils.is_guid(property) && property != $p.utils.blank.guid){
 					for(var i in rt){
 						mgr = rt[i];
@@ -7623,17 +7639,22 @@ DataObj.prototype._getter = function (f) {
 		return res;
 
 	}else if(mf.is_ref){
-		if(mf.digits && typeof res === "number")
-			return res;
 
-		if(mf.hasOwnProperty("str_len") && !$p.utils.is_guid(res))
+		if(mf.digits && typeof res === "number"){
 			return res;
+		}
+
+		if(mf.hasOwnProperty("str_len") && !$p.utils.is_guid(res)){
+			return res;
+		}
 
 		if(mgr = _md.value_mgr(this._obj, f, mf)){
-			if($p.utils.is_data_mgr(mgr))
+			if($p.utils.is_data_mgr(mgr)){
 				return mgr.get(res, false);
-			else
+			}
+			else{
 				return $p.utils.fetch_type(res, mgr);
+			}
 		}
 
 		if(res){
@@ -7670,47 +7691,57 @@ DataObj.prototype.__setter = function (f, v) {
 
 		if(mf.digits && typeof v == "number" || mf.hasOwnProperty("str_len") && typeof v == "string" && !$p.utils.is_guid(v)){
 			this._obj[f] = v;
-
-		}else {
+		}
+		else if(typeof v == "boolean" && mf.types.indexOf("boolean") != -1){
+			this._obj[f] = v;
+		}
+		else {
 			this._obj[f] = $p.utils.fix_guid(v);
 
 			mgr = _md.value_mgr(this._obj, f, mf, false, v);
 
 			if(mgr){
 				if(mgr instanceof EnumManager){
-					if(typeof v == "string")
+					if(typeof v == "string"){
 						this._obj[f] = v;
-
-					else if(!v)
+					}
+					else if(!v){
 						this._obj[f] = "";
-
-					else if(typeof v == "object")
+					}
+					else if(typeof v == "object"){
 						this._obj[f] = v.ref || v.name || "";
-
-				}else if(v && v.presentation){
-					if(v.type && !(v instanceof DataObj))
+					}
+				}
+				else if(v && v.presentation){
+					if(v.type && !(v instanceof DataObj)){
 						delete v.type;
+					}
 					mgr.create(v);
-				}else if(!$p.utils.is_data_mgr(mgr))
+				}
+				else if(!$p.utils.is_data_mgr(mgr)){
 					this._obj[f] = $p.utils.fetch_type(v, mgr);
-			}else{
-				if(typeof v != "object")
+				}
+			}
+			else{
+				if(typeof v != "object"){
 					this._obj[f] = v;
+				}
 			}
 		}
-
-	}else if(mf.date_part)
+	}
+	else if(mf.date_part){
 		this._obj[f] = $p.utils.fix_date(v, true);
-
-	else if(mf.digits)
+	}
+	else if(mf.digits){
 		this._obj[f] = $p.utils.fix_number(v, !mf.hasOwnProperty("str_len"));
-
-	else if(mf.types[0]=="boolean")
+	}
+	else if(mf.types[0]=="boolean"){
 		this._obj[f] = $p.utils.fix_boolean(v);
-
-	else
+	}
+	else{
 		this._obj[f] = v;
-	
+	}
+
 };
 
 DataObj.prototype.__notify = function (f) {
@@ -7726,7 +7757,7 @@ DataObj.prototype._setter = function (f, v) {
 
 	if(this._obj[f] == v)
 		return;
-	
+
 	this.__notify(f);
 	this.__setter(f, v);
 	this._data._modified = true;
@@ -7966,9 +7997,9 @@ DataObj.prototype.__define({
 			}
 
 			var saver,
-				
+
 				before_save_res = this._manager.handle_event(this, "before_save"),
-				
+
 				reset_modified = function () {
 
 					if(before_save_res === false){
@@ -7981,7 +8012,7 @@ DataObj.prototype.__define({
 					saver = null;
 					before_save_res = null;
 					reset_modified = null;
-					
+
 					return this;
 				}.bind(this);
 
@@ -8026,7 +8057,7 @@ DataObj.prototype.__define({
 						before_save_res = false;
 						return Promise.reject(reset_modified());
 					}
-				}	
+				}
 			}
 
 			// в зависимости от типа кеширования, получаем saver
@@ -8069,7 +8100,7 @@ DataObj.prototype.__define({
 	/**
 	 * ### Сохраняет объект или файл во вложении
 	 * Вызывает {{#crossLink "DataManager/save_attachment:method"}} одноименный метод менеджера {{/crossLink}} и передаёт ссылку на себя в качестве контекста
-	 * 
+	 *
 	 * @method save_attachment
 	 * @for DataObj
 	 * @param att_id {String} - идентификатор (имя) вложения
@@ -8094,7 +8125,7 @@ DataObj.prototype.__define({
 	/**
 	 * ### Удаляет присоединенный объект или файл
 	 * Вызывает одноименный метод менеджера и передаёт ссылку на себя в качестве контекста
-	 * 
+	 *
 	 * @method delete_attachment
 	 * @for DataObj
 	 * @param att_id {String} - идентификатор (имя) вложения
@@ -8127,9 +8158,9 @@ DataObj.prototype.__define({
 			else{
 				this._data._silent = true;
 				setTimeout(function () {
-					this._data._silent = false;	
+					this._data._silent = false;
 				}.bind(this));
-			}			
+			}
 		}
 	},
 
@@ -8149,7 +8180,7 @@ DataObj.prototype.__define({
 			return this._manager.print(this, model, wnd);
 		}
 	}
-	
+
 });
 
 
@@ -8534,7 +8565,7 @@ RegisterRow.prototype.__define({
 	 * Ключ записи регистра
 	 */
 	ref: {
-		get : function(){ 
+		get : function(){
 			return this._manager.get_ref(this);
 		},
 		enumerable: true

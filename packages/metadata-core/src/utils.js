@@ -186,16 +186,19 @@ class Utils{
 	 * @return {*}
 	 */
 	fetch_type(str, mtype) {
-		var v = str;
-		if (mtype.is_ref)
-			v = this.fix_guid(str);
-		else if (mtype.date_part)
-			v = this.fix_date(str, true);
-		else if (mtype["digits"])
-			v = this.fix_number(str, true);
-		else if (mtype.types[0] == "boolean")
-			v = this.fix_boolean(str);
-		return v;
+		if (mtype.is_ref){
+			return this.fix_guid(str);
+		}
+		if (mtype.date_part){
+			return this.fix_date(str, true)
+		}
+		if (mtype["digits"]){
+			return this.fix_number(str, true)
+		}
+		if (mtype.types && mtype.types[0] == "boolean"){
+			return this.fix_boolean(str)
+		}
+		return str;
 	}
 
 	/**
@@ -207,10 +210,11 @@ class Utils{
 	 * @return {Date}
 	 */
 	date_add_day(date, days, reset_time) {
-		var newDt = new Date(date);
+		const newDt = new Date(date);
 		newDt.setDate(date.getDate() + days);
-		if (reset_time)
+		if (reset_time){
 			newDt.setHours(0, -newDt.getTimezoneOffset(), 0, 0);
+		}
 		return newDt;
 	}
 
@@ -221,9 +225,9 @@ class Utils{
 	 * @return {String}
 	 */
 	generate_guid() {
-		var d = new Date().getTime();
-		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-			var r = (d + Math.random() * 16) % 16 | 0;
+		let d = new Date().getTime();
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+			const r = (d + Math.random() * 16) % 16 | 0;
 			d = Math.floor(d / 16);
 			return (c == 'x' ? r : (r & 0x7 | 0x8)).toString(16);
 		});
@@ -237,10 +241,13 @@ class Utils{
 	 * @return {Boolean} - true, если значение соответствует регурярному выражению guid
 	 */
 	is_guid(v) {
-		if (typeof v !== "string" || v.length < 36)
+		if (typeof v !== "string" || v.length < 36){
 			return false;
-		else if (v.length > 36)
-			v = v.substr(0, 36);
+		}
+		else if (v.length > 36){
+			const parts = v.split("|");
+			v = parts.length == 2 ? parts[1] : v.substr(0, 36);
+		}
 		return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v)
 	}
 
@@ -286,17 +293,15 @@ class Utils{
 	 * @return {boolean} - true, если значенния эквивалентны
 	 */
 	is_equal(v1, v2) {
-
 		if (v1 == v2){
 			return true;
-
-		}else if(typeof v1 === 'string' &&  typeof v2 === 'string' && v1.trim() === v2.trim()){
+		}
+		else if(typeof v1 === 'string' &&  typeof v2 === 'string' && v1.trim() === v2.trim()){
 			return true;
-
-		}else if (typeof v1 === typeof v2){
+		}
+		else if (typeof v1 === typeof v2){
 			return false;
 		}
-
 		return (this.fix_guid(v1, false) == this.fix_guid(v2, false));
 	}
 

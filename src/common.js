@@ -1178,16 +1178,19 @@ function Utils() {
 	 * @return {*}
 	 */
 	this.fetch_type = function(str, mtype){
-		var v = str;
-		if(mtype.is_ref)
-			v = this.fix_guid(str);
-		else if(mtype.date_part)
-			v = this.fix_date(str, true);
-		else if(mtype["digits"])
-			v = this.fix_number(str, true);
-		else if(mtype.types[0]=="boolean")
-			v = this.fix_boolean(str);
-		return v;
+		if (mtype.is_ref){
+			return this.fix_guid(str);
+		}
+		if (mtype.date_part){
+			return this.fix_date(str, true)
+		}
+		if (mtype["digits"]){
+			return this.fix_number(str, true)
+		}
+		if (mtype.types && mtype.types[0] == "boolean"){
+			return this.fix_boolean(str)
+		}
+		return str;
 	};
 
 	/**

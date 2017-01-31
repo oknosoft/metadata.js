@@ -737,13 +737,17 @@ function Meta() {
 	 * @return {DataManager|Array}
 	 */
 	_md.value_mgr = function(row, f, mf, array_enabled, v){
+
 		var property, oproperty, tnames, rt, mgr;
-		if(mf._mgr)
+
+		if(mf._mgr){
 			return mf._mgr;
+		}
 
 		function mf_mgr(mgr){
-			if(mgr && mf.types.length == 1)
+			if(mgr && mf.types.length == 1){
 				mf._mgr = mgr;
+			}
 			return mgr;
 		}
 
@@ -786,18 +790,22 @@ function Meta() {
 		}else{
 
 			// Получаем объект свойства
-			if($p.utils.is_data_obj(property))
+			if($p.utils.is_data_obj(property)){
 				oproperty = property;
-			else if($p.utils.is_guid(property))
+			}
+			else if($p.utils.is_guid(property)){
 				oproperty = $p.cch.properties.get(property, false);
-			else
+			}
+			else{
 				return;
+			}
 
 			if($p.utils.is_data_obj(oproperty)){
 
 				// затычка для неизвестных свойств используем значения свойств объектов
-				if(oproperty.is_new())
+				if(oproperty.is_new()){
 					return $p.cat.property_values;
+				}
 
 				// и через его тип выходми на мнеджера значения
 				// for(rt in oproperty.type.types)
@@ -812,20 +820,25 @@ function Meta() {
 
 				//---
 				rt = [];
-				oproperty.type.types.forEach(function(v){
+				oproperty.type.types.some(function(v){
 					tnames = v.split(".");
-					if(tnames.length > 1 && $p[tnames[0]][tnames[1]])
+					if(tnames.length > 1 && $p[tnames[0]][tnames[1]]){
 						rt.push($p[tnames[0]][tnames[1]]);
+					}
+					else if(v == "boolean"){
+						rt.push({types: ["boolean"]});
+						return true
+					}
 				});
-				if(rt.length == 1 || row[f] == $p.utils.blank.guid)
+				if(rt.length == 1 || row[f] == $p.utils.blank.guid){
 					return mf_mgr(rt[0]);
-
-				else if(array_enabled)
+				}
+				else if(array_enabled){
 					return rt;
-
-				else if((property = row[f]) instanceof DataObj)
+				}
+				else if((property = row[f]) instanceof DataObj){
 					return property._manager;
-
+				}
 				else if($p.utils.is_guid(property) && property != $p.utils.blank.guid){
 					for(var i in rt){
 						mgr = rt[i];
