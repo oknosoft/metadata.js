@@ -58,15 +58,20 @@ function WSQL(){
 		set_user_param: {
 			value: function(prm_name, prm_value){
 
-				var str_prm = prm_value;
-				if(typeof prm_value == "object")
-					str_prm = JSON.stringify(prm_value);
+				if(typeof prm_value == "object"){
+					user_params[prm_name] = prm_value;
+					prm_value = JSON.stringify(prm_value);
+				}
+				else if(prm_value === false || prm_value === "false"){
+					user_params[prm_name] = false;
+					prm_value = "";
+				}
+				else{
+					user_params[prm_name] = prm_value;
+				}
 
-				else if(prm_value === false)
-					str_prm = "";
+				ls.setItem($p.job_prm.local_storage_prefix+prm_name, prm_value);
 
-				ls.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
-				user_params[prm_name] = prm_value;
 			}
 		},
 
@@ -82,8 +87,9 @@ function WSQL(){
 		get_user_param: {
 			value: function(prm_name, type){
 
-				if(!user_params.hasOwnProperty(prm_name) && ls)
+				if(!user_params.hasOwnProperty(prm_name) && ls){
 					user_params[prm_name] = this.fetch_type(ls.getItem($p.job_prm.local_storage_prefix+prm_name), type);
+				}
 
 				return user_params[prm_name];
 			}

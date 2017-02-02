@@ -36,19 +36,19 @@ $p.iface.dat_blank = function(_dxw, attr) {
 		x: (_dxw || $p.iface.w).vp.clientWidth,
 		y: (_dxw || $p.iface.w).vp.clientHeight
 	}, _move;
-	
+
 	if(wnd_dat.getPosition()[0] + wnd_dat.getDimension()[0] > _dxw_area.x){
 		_dxw_area.x = _dxw_area.x - wnd_dat.getDimension()[0];
 		_move = true;
 	}else
 		_dxw_area.x = wnd_dat.getPosition()[0];
-	
+
 	if(wnd_dat.getPosition()[1] + wnd_dat.getDimension()[1] > _dxw_area.y){
 		_dxw_area.y = _dxw_area.y - wnd_dat.getDimension()[1];
 		_move = true;
 	}else
 		_dxw_area.y = wnd_dat.getPosition()[1];
-		
+
 	if(_move){
 		if(_dxw_area.x<0 || _dxw_area.y<0)
 			wnd_dat.maximize();
@@ -68,9 +68,9 @@ $p.iface.dat_blank = function(_dxw, attr) {
 
 	// обработчик при закрытии - анализируем модальность
 	wnd_dat.attachEvent("onClose", function () {
-		
+
 		var allow_close = typeof attr.on_close == "function" ? attr.on_close(wnd_dat) : true;
-		
+
 		if(allow_close){
 
 			// восстанавливаем модальность родительского окна
@@ -79,7 +79,7 @@ $p.iface.dat_blank = function(_dxw, attr) {
 
 			return allow_close;
 		}
-						
+
 	});
 
 	wnd_dat.setIconCss('without_icon');
@@ -132,7 +132,7 @@ $p.iface.dat_blank = function(_dxw, attr) {
 		if(attr.pwnd && attr.pwnd.setModal){
 			attr.pwnd_modal = attr.pwnd.isModal();
 			attr.pwnd.setModal(0);
-		}			
+		}
 		wnd_dat.setModal(1);
 	}
 
@@ -165,7 +165,7 @@ $p.iface.pgrid_on_select = function(selv){
 	}
 
 	pgrid.cells().setValue($p.utils.is_data_obj(selv) ? selv.presentation : selv || "");
-	
+
 
 	if(source.grid_on_change)
 		source.grid_on_change.call(pgrid, f, selv);
@@ -273,7 +273,7 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 
 
 	function do_auth(login, password){
-		
+
 		$p.ajax.username = login;
 		$p.ajax.password = $p.aes.Ctr.encrypt(password);
 
@@ -289,7 +289,7 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 					if($p.wsql.get_user_param("enable_save_pwd")){
 						if($p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")) != password)
 							$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password));   // сохраняем имя пользователя в базе
-						
+
 					}else if($p.wsql.get_user_param("user_pwd") != "")
 						$p.wsql.set_user_param("user_pwd", "");
 
