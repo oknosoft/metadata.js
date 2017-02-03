@@ -8,7 +8,7 @@ import DefaultToolbar from "./TabularSectionToolbar"
 
 
 // // Import the necessary modules.
-// import { Menu } from "react-data-grid/addons";
+// import { Menu } from "react-data-grid-addons";
 // // Create the context menu.
 // // Use this.props.rowIdx and this.props.idx to get the row/column where the menu is shown.
 // class MyContextMenu extends Component {

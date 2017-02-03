@@ -27,7 +27,7 @@ var _TabularSectionToolbar2 = _interopRequireDefault(_TabularSectionToolbar);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // // Import the necessary modules.
-// import { Menu } from "react-data-grid/addons";
+// import { Menu } from "react-data-grid-addons";
 // // Create the context menu.
 // // Use this.props.rowIdx and this.props.idx to get the row/column where the menu is shown.
 // class MyContextMenu extends Component {

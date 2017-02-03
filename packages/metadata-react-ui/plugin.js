@@ -10,20 +10,20 @@ var _react2 = _interopRequireDefault(_react);
 
 var _DataField = require("metadata-react-ui/DataField");
 
-var _addons = require("react-data-grid/addons");
+var _reactDataGridAddons = require("react-data-grid-addons");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const AutoCompleteEditor = _addons.Editors.AutoComplete; /**
-                                                          * ### модификатор метод columns() справочника scheme_settings - добавляет форматтеры и редакторы
-                                                          *
-                                                          * @module rx_columns
-                                                          *
-                                                          * Created 10.01.2017
-                                                          */
+const AutoCompleteEditor = _reactDataGridAddons.Editors.AutoComplete; /**
+                                                                       * ### модификатор метод columns() справочника scheme_settings - добавляет форматтеры и редакторы
+                                                                       *
+                                                                       * @module rx_columns
+                                                                       *
+                                                                       * Created 10.01.2017
+                                                                       */
 
-const DropDownEditor = _addons.Editors.DropDownEditor;
-const DropDownFormatter = _addons.Formatters.DropDownFormatter;
+const DropDownEditor = _reactDataGridAddons.Editors.DropDownEditor;
+const DropDownFormatter = _reactDataGridAddons.Formatters.DropDownFormatter;
 
 function rx_columns({ mode, fields, _obj }) {
 
