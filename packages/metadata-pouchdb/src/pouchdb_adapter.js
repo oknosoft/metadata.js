@@ -12,8 +12,8 @@
 const PouchDB = require('pouchdb-core')
 	.plugin(require('pouchdb-adapter-http'))
 	.plugin(require('pouchdb-replication'))
-	.plugin(require('pouchdb-mapreduce'));
-	//.plugin(require('pouchdb-find')),
+	.plugin(require('pouchdb-mapreduce'))
+	.plugin(require('pouchdb-find'));
 	// pouchdb_memory = require('pouchdb-adapter-memory'),
 	// pouchdb_idb = require('pouchdb-adapter-idb')
 
@@ -23,14 +23,11 @@ const PouchDB = require('pouchdb-core')
  */
 if(typeof process !== 'undefined' && process.versions && process.versions.node){
 	PouchDB.plugin(require('pouchdb-adapter-memory'));
-}else{
-
+}
+else{
 	PouchDB.plugin(require('pouchdb-authentication'));
-
-	const ua = (navigator && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '',
-		isSafari = ua.indexOf('safari') !== -1 && ua.indexOf('chrome') === -1;
-
-	if(isSafari){
+	const ua = (navigator && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
+	if(ua.match('safari') && !ua.match('chrome')){
 		PouchDB.plugin(require('pouchdb-adapter-websql'));
 	}else{
 		PouchDB.plugin(require('pouchdb-adapter-idb'));
@@ -63,13 +60,11 @@ class AdapterPouch extends AbstracrAdapter{
 		Object.defineProperties(this, {
 
 			init: {
-
 				value: function (attr) {
-
 					Object.assign(_paths, attr);
-
-					if(_paths.path && _paths.path.indexOf("http") != 0 && typeof location != "undefined")
+					if(_paths.path && _paths.path.indexOf("http") != 0 && typeof location != "undefined"){
 						_paths.path = location.protocol + "//" + location.host + _paths.path;
+					}
 				}
 			},
 
@@ -90,10 +85,16 @@ class AdapterPouch extends AbstracrAdapter{
 
 						["ram", "doc", "meta", "user"].forEach((name) => {
 							if(bases.indexOf(name) != -1){
-								if(name == "meta")
+								if(name == "meta"){
 									_local[name] = new PouchDB(_paths.prefix + "meta", opts);
-								else
-									_local[name] = new PouchDB(_paths.prefix + _paths.zone + "_" + name, opts);
+								}
+								else{
+									if(_paths.direct){
+										_local[name] = this.remote[name];
+									}else{
+										_local[name] = new PouchDB(_paths.prefix + _paths.zone + "_" + name, opts);
+									}
+								}
 							}
 						})
 					}
@@ -111,37 +112,36 @@ class AdapterPouch extends AbstracrAdapter{
 				get: function () {
 					if(!_remote){
 
-						var opts = {skip_setup: true, adapter: 'http'};
+						const opts = {skip_setup: true, adapter: 'http'};
 
-						if(_paths.user_node){ opts.auth = _paths.user_node }
+						if(_paths.user_node){
+							opts.auth = _paths.user_node
+						}
 
 						_remote = { };
 
 						function dbpath(name) {
-
 							if($p.superlogin){
 								return $p.superlogin.getDbUrl(_paths.prefix + (name == "meta" ? name : (_paths.zone + "_" + name)))
-
-							}else{
-
+							}
+							else{
 								if(name == "meta"){
 									return _paths.path + "meta"
-
-								} else if(name == "ram"){
+								}
+								else if(name == "ram"){
 									return _paths.path + _paths.zone + "_ram"
-
-								} else{
+								}
+								else{
 									return _paths.path + _paths.zone + "_" + name + (_paths.suffix ? "_" + _paths.suffix : "")
 								}
 							}
 						}
 
 						$p.md.bases().forEach((name) => {
-							if(name == 'e1cib' || name == 'pgsql')
+							if(name == 'e1cib' || name == 'pgsql'){
 								return;
-
+							}
 							_remote[name] = new PouchDB(dbpath(name), opts);
-
 						})
 
 					}
@@ -196,7 +196,7 @@ class AdapterPouch extends AbstracrAdapter{
 					}
 
 					// авторизуемся во всех базах
-					let try_auth = [];
+					const try_auth = [];
 					$p.md.bases().forEach((name) => {
 						if(t.remote[name]){
 							try_auth.push(
@@ -212,33 +212,37 @@ class AdapterPouch extends AbstracrAdapter{
 							setTimeout(() => {
 
 								// сохраняем имя пользователя в базе
-								if($p.wsql.get_user_param("user_name") != username)
-									$p.wsql.set_user_param("user_name", username);
+								if($p.wsql.get_user_param("user_name") != username){
+									$p.wsql.set_user_param("user_name", username)
+								}
 
 								// если настроено сохранение пароля - сохраняем и его
 								if($p.wsql.get_user_param("enable_save_pwd")){
-									if($p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")) != password)
-										$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password));   // сохраняем имя пользователя в базе
-
-								}else if($p.wsql.get_user_param("user_pwd") != ""){
-									$p.wsql.set_user_param("user_pwd", "");
+									if($p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")) != password){
+										$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password))   // сохраняем имя пользователя в базе
+									}
+								}
+								else if($p.wsql.get_user_param("user_pwd") != ""){
+									$p.wsql.set_user_param("user_pwd", "")
 								}
 
 								// излучаем событие
 								t.emit('user_log_in', username)
 							});
 
-							let sync = {};
-							$p.md.bases().forEach((dbid) => {
-								if(t.local[dbid] && t.remote[dbid]){
-									if(_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1){
-										return;
+							const sync = {};
+							if(!_paths.direct){
+								$p.md.bases().forEach((dbid) => {
+									if(t.local[dbid] && t.remote[dbid]){
+										if(_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1){
+											return
+										}
+										sync[dbid] = t.run_sync(dbid)
 									}
-									sync[dbid] = t.run_sync(dbid)
-								}
-							})
+								})
+							}
+							return sync;
 
-							return sync
 						})
 						.catch(err => {
 							// излучаем событие
@@ -268,16 +272,20 @@ class AdapterPouch extends AbstracrAdapter{
 						_auth = null;
 					}
 
-					return this.remote.ram.logout()
+					return _remote.ram.logout()
 						.then(function () {
-							if(_remote && _remote.ram)
+							if(_remote && _remote.doc){
+								return _remote.doc.logout()
+							}
+						})
+						.then(function () {
+							if(_remote && _remote.ram){
 								delete _remote.ram;
-
-							if(_remote && _remote.doc)
+							}
+							if(_remote && _remote.doc){
 								delete _remote.doc;
-
+							}
 							_remote = null;
-
 							t.emit('user_log_out')
 						})
 				}

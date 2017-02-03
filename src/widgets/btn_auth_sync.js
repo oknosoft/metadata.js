@@ -102,6 +102,7 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 	};
 
 	$p.on({
+
 		pouch_load_data_start: function (page) {
 
 			if(!$p.iface.sync)
@@ -154,11 +155,15 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 				$p.iface.sync.close();
 		},
 
-		log_in: function (username) {
+		user_log_in: function (username) {
 			set_auth();
 		},
 
-		log_out: function () {
+		user_log_fault: function () {
+			set_auth();
+		},
+
+		user_log_out: function () {
 			set_auth();
 		}
 	});
