@@ -1,5 +1,7 @@
 /** @flow */
 import React, {Component, PropTypes} from "react";
+import MetaComponent from "../common/MetaComponent";
+
 import {InfiniteLoader, Grid} from "react-virtualized";
 import DumbLoader from "../DumbLoader";
 import Toolbar from "./DataListToolbar";
@@ -30,11 +32,7 @@ class DataListStorage {
 
 }
 
-export default class DataList extends Component {
-
-  static contextTypes = {
-    $p: React.PropTypes.object.isRequired
-  }
+export default class DataList extends MetaComponent {
 
   static propTypes = {
 
@@ -49,6 +47,8 @@ export default class DataList extends Component {
     selection_mode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
     read_only: PropTypes.object,          // Элемент только для чтения
     deny_add_del: PropTypes.bool,         // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+    show_search: PropTypes.bool,          // Показывать поле поиска
+    show_variants: PropTypes.bool,        // Показывать список вариантов настройки динсписка
     modal: PropTypes.bool,                // Показывать список в модальном диалоге
     width: PropTypes.number.isRequired,   // Ширина элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
     height: PropTypes.number.isRequired,  // Высота элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
@@ -117,12 +117,83 @@ export default class DataList extends Component {
     }
   }
 
+  // обработчик выбора значения в списке
+  handleSelect = () => {
+    const row = this._list.get(this.state.selectedRowIndex)
+    const {handleSelect, _mgr} = this.props
+    if (row && handleSelect) {
+      handleSelect(row, _mgr)
+    }
+  }
+
+  // обработчик добавления элемента списка
+  handleAdd = () => {
+    const {handleAdd, _mgr} = this.props
+    if (handleAdd) {
+      handleAdd(_mgr)
+    }
+  }
+
+  // обработчик редактирования элемента списка
+  handleEdit = () => {
+    const row = this._list.get(this.state.selectedRowIndex)
+    const {handleEdit, _mgr} = this.props
+    if (row && handleEdit) {
+      handleEdit(row, _mgr)
+    }
+  }
+
+  // обработчик удаления элемента списка
+  handleRemove = () => {
+    const row = this._list.get(this.state.selectedRowIndex)
+    const {handleRemove, _mgr} = this.props
+    if (row && handleRemove) {
+      handleRemove(row, _mgr)
+    }
+  }
+
+  // обработчик при изменении настроек компоновки
+  handleSchemeChange = (scheme) => {
+
+    const {state, props, _list} = this
+    const {_mgr, params} = props
+
+    scheme.set_default().fix_select(state.select, params && params.options || _mgr.class_name);
+
+    _list.clear()
+    this.setState({
+      scheme,
+      columns: scheme.columns(),
+      totalRowCount: 0,
+      do_reload: true,
+    });
+
+  }
+
+  // обработчик печати теущей строки
+  handlePrint = () => {
+    const row = this._list.get(this.state.selectedRowIndex)
+    const {handlePrint, _mgr} = this.props
+    if (row && handlePrint) {
+      handlePrint(row, _mgr)
+    }
+  }
+
+  // обработчик вложений теущей строки
+  handleAttachment = () => {
+    const row = this._list.get(this.state.selectedRowIndex)
+    const {handleAttachment, _mgr} = this.props
+    if (row && handleAttachment) {
+      handleAttachment(row, _mgr)
+    }
+  }
+
   render() {
 
     const {state, props, handleSelect, handleAdd, handleEdit, handleRemove, handlePrint, handleAttachment,
       handleSchemeChange, _isRowLoaded, _loadMoreRows, _cellRenderer} = this
     const {columns, totalRowCount, scheme} = state
-    const {width, height, selection_mode} = props
+    const {width, height, selection_mode, deny_add_del, show_search, show_variants} = props
 
     if (!scheme) {
       return <DumbLoader title="Чтение настроек компоновки..."/>
@@ -131,26 +202,13 @@ export default class DataList extends Component {
       return <DumbLoader title="Ошибка настроек компоновки..."/>
     }
 
-
+    const toolbar_props = {scheme, selection_mode, deny_add_del, show_search, show_variants, handleSelect, handleAdd,
+      handleEdit, handleRemove, handlePrint, handleAttachment, handleSchemeChange}
 
     return (
       <div>
 
-        <Toolbar
-
-          selection_mode={!!selection_mode}
-          handleSelect={handleSelect}
-
-          handleAdd={handleAdd}
-          handleEdit={handleEdit}
-          handleRemove={handleRemove}
-          handlePrint={handlePrint}
-          handleAttachment={handleAttachment}
-
-          scheme={scheme}
-          handleSchemeChange={handleSchemeChange}
-
-        />
+        <Toolbar {...toolbar_props} />
 
         <InfiniteLoader
           isRowLoaded={_isRowLoaded}
@@ -226,75 +284,6 @@ export default class DataList extends Component {
 
       </div>
     )
-  }
-
-  // обработчик выбора значения в списке
-  handleSelect = () => {
-    const row = this._list.get(this.state.selectedRowIndex)
-    const {handleSelect, _mgr} = this.props
-    if (row && handleSelect) {
-      handleSelect(row, _mgr)
-    }
-  }
-
-  // обработчик добавления элемента списка
-  handleAdd = () => {
-    const {handleAdd, _mgr} = this.props
-    if (handleAdd) {
-      handleAdd(_mgr)
-    }
-  }
-
-  // обработчик редактирования элемента списка
-  handleEdit = () => {
-    const row = this._list.get(this.state.selectedRowIndex)
-    const {handleEdit, _mgr} = this.props
-    if (row && handleEdit) {
-      handleEdit(row, _mgr)
-    }
-  }
-
-  // обработчик удаления элемента списка
-  handleRemove = () => {
-    const row = this._list.get(this.state.selectedRowIndex)
-    const {handleRemove, _mgr} = this.props
-    if (row && handleRemove) {
-      handleRemove(row, _mgr)
-    }
-  }
-
-  // обработчик при изменении настроек компоновки
-  handleSchemeChange = (scheme) => {
-
-    const {state, props, _list} = this
-    const {_mgr, params} = props
-
-    scheme.fix_select(state.select, params && params.options || _mgr.class_name)
-    _list.clear()
-    this.setState({
-      scheme,
-      columns: scheme.columns(),
-      totalRowCount: 0,
-      do_reload: true,
-    })
-  }
-
-  // обработчик печати теущей строки
-  handlePrint = () => {
-    const row = this._list.get(this.state.selectedRowIndex)
-    const {handlePrint, _mgr} = this.props
-    if (row && handlePrint) {
-      handlePrint(row, _mgr)
-    }
-  }
-
-  // обработчик вложений теущей строки
-  handleAttachment = () => {
-    const row = this._list.get(this.state.selectedRowIndex)
-    const {handleAttachment, _mgr} = this.props
-    if (row && handleAttachment) {
-      handleAttachment(row, _mgr)
-    }
   }
 
   _formatter(row, index) {
@@ -377,33 +366,42 @@ export default class DataList extends Component {
    */
   _cellRenderer = ({columnIndex, isScrolling, key, rowIndex, style}) => {
 
-    const setState = ::this.setState
-    // var grid = this.refs.AutoSizer.refs.Grid
+    const {state, props, _list, handleEdit, handleSelect} = this
+    const {hoveredColumnIndex, hoveredRowIndex, selectedRowIndex} = state
 
+    // оформление ячейки
     const classNames = cn(
       this._getRowClassName(rowIndex),
       styles.cell,
       {
-        [styles.centeredCell]: columnIndex > 3, // выравнивание текста по центру
-        [styles.hoveredItem]: rowIndex === this.state.hoveredRowIndex && rowIndex != this.state.selectedRowIndex, // || columnIndex === this.state.hoveredColumnIndex
-        [styles.selectedItem]: rowIndex === this.state.selectedRowIndex
+        //[styles.centeredCell]: columnIndex > 3, // выравнивание текста по центру
+        [styles.hoveredItem]: rowIndex == hoveredRowIndex && rowIndex != selectedRowIndex, // || columnIndex === this.state.hoveredColumnIndex
+        [styles.selectedItem]: rowIndex == selectedRowIndex
       }
     )
 
-    const row = this._list.get(rowIndex)
+    // данные строки
+    const row = _list.get(rowIndex)
 
-    let content
-
-    if (row) {
-      content = this._formatter(row, columnIndex)
-
-    } else {
-      content = (
+    // текст ячейки
+    const content = row ? this._formatter(row, columnIndex) : (
         <div
           className={styles.placeholder}
           style={{width: 10 + Math.random() * 80}}
         />
       )
+
+    const onMouseOver = () => {
+      this.setState({
+        hoveredColumnIndex: columnIndex,
+        hoveredRowIndex: rowIndex
+      })
+    }
+
+    const onTouchTap = () => {
+      this.setState({
+        selectedRowIndex: rowIndex
+      })
     }
 
     // It is important to attach the style specified as it controls the cell's position.
@@ -414,18 +412,10 @@ export default class DataList extends Component {
         className={classNames}
         key={key}
         style={style}
-        onMouseOver={function () {
-          setState({
-            hoveredColumnIndex: columnIndex,
-            hoveredRowIndex: rowIndex
-          })
-        }}
-        onTouchTap={function () {
-          setState({
-            selectedRowIndex: rowIndex
-          })
-        }}
-        onDoubleClick={this.handleEdit}
+        onMouseOver={onMouseOver}
+        onTouchTap={onTouchTap}
+        onDoubleClick={props.selection_mode ? handleSelect : handleEdit}
+        title={hoveredColumnIndex == columnIndex && hoveredRowIndex == rowIndex ? content : ''}
       >
         {content}
       </div>

@@ -27,28 +27,13 @@ export default class SchemeSettingsSelect extends Component {
 
   constructor(props, context) {
 
-    super(props, context)
+    super(props, context);
 
-    const {scheme} = props
-    const {$p} = context
-    const _mgr = $p.dp.scheme_settings
+    const {scheme} = props;
+    const {$p} = context;
 
-    // экземпляр обработки для выбора варианта
-    if (!_mgr[scheme.obj]) {
-      _mgr[scheme.obj] = $p.dp.scheme_settings.create()
-    }
+    this.state = $p.dp.scheme_settings.dp(scheme);
 
-    this.state = {
-      _obj: _mgr[scheme.obj],
-      _meta: Object.assign({}, _mgr.metadata("scheme"))
-    }
-    this.state._obj.scheme = scheme
-
-    // корректируем метаданные поля выбора варианта
-    this.state._meta.choice_params = [{
-      name: "obj",
-      path: scheme.obj
-    }]
   }
 
   handleSave = () => {
@@ -60,11 +45,15 @@ export default class SchemeSettingsSelect extends Component {
   }
 
   handleCreate = () => {
-    const {scheme, handleSchemeChange} = this.props
-    // scheme.save()
-    //   .then(() => {
-    //     handleSchemeChange(scheme)
-    //   })
+    const {scheme, handleSchemeChange} = this.props;
+    const proto = Object.assign({}, scheme._obj);
+    proto.name = proto.name.replace(/[0-9]/g, '') + Math.floor(10 + Math.random() * 21);
+    proto.ref = "";
+
+    scheme._manager.create(proto)
+       .then((scheme) => {
+         handleSchemeChange(scheme)
+       })
   }
 
   handleNameChange = () => {

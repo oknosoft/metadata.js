@@ -42,24 +42,8 @@ class SchemeSettingsSelect extends _react.Component {
 
     const { scheme } = props;
     const { $p } = context;
-    const _mgr = $p.dp.scheme_settings;
 
-    // экземпляр обработки для выбора варианта
-    if (!_mgr[scheme.obj]) {
-      _mgr[scheme.obj] = $p.dp.scheme_settings.create();
-    }
-
-    this.state = {
-      _obj: _mgr[scheme.obj],
-      _meta: Object.assign({}, _mgr.metadata("scheme"))
-    };
-    this.state._obj.scheme = scheme;
-
-    // корректируем метаданные поля выбора варианта
-    this.state._meta.choice_params = [{
-      name: "obj",
-      path: scheme.obj
-    }];
+    this.state = $p.dp.scheme_settings.dp(scheme);
   }
 
   render() {
@@ -144,10 +128,13 @@ var _initialiseProps = function () {
 
   this.handleCreate = () => {
     const { scheme, handleSchemeChange } = this.props;
-    // scheme.save()
-    //   .then(() => {
-    //     handleSchemeChange(scheme)
-    //   })
+    const proto = Object.assign({}, scheme._obj);
+    proto.name = proto.name.replace(/[0-9]/g, '') + Math.floor(10 + Math.random() * 21);
+    proto.ref = "";
+
+    scheme._manager.create(proto).then(scheme => {
+      handleSchemeChange(scheme);
+    });
   };
 
   this.handleNameChange = () => {

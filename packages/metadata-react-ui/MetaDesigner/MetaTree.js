@@ -58,8 +58,8 @@ _reactTreebeard.decorators.Toggle = props => {
   const height = style.height;
   const width = style.width;
   let r = (height - 4) / 2;
-  let path = `M${ r / 2 },${ r * 1.5 }a${ r },${ r } 0 1,0 ${ r * 2 },0a${ r },${ r } 0 1,0 -${ r * 2 },0`;
-  if (props.node.toggled === true) path += `M${ r * 1.5 },${ r }l0,${ r }`;else path += `M${ r },${ r * 1.5 }l${ r },0M${ r * 1.5 },${ r }l0,${ r }`;
+  let path = `M${r / 2},${r * 1.5}a${r},${r} 0 1,0 ${r * 2},0a${r},${r} 0 1,0 -${r * 2},0`;
+  if (props.node.toggled === true) path += `M${r * 1.5},${r}l0,${r}`;else path += `M${r},${r * 1.5}l${r},0M${r * 1.5},${r}l0,${r}`;
 
   return _react2.default.createElement(
     'div',

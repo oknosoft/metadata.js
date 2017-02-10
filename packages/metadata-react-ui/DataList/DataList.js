@@ -8,6 +8,10 @@ var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
+var _MetaComponent = require("../common/MetaComponent");
+
+var _MetaComponent2 = _interopRequireDefault(_MetaComponent);
+
 var _reactVirtualized = require("react-virtualized");
 
 var _DumbLoader = require("../DumbLoader");
@@ -31,6 +35,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const limit = 30,
       totalRows = 999999;
 
+
 class DataListStorage {
 
   constructor() {
@@ -51,7 +56,7 @@ class DataListStorage {
 
 }
 
-class DataList extends _react.Component {
+class DataList extends _MetaComponent2.default {
 
   constructor(props, context) {
 
@@ -98,12 +103,33 @@ class DataList extends _react.Component {
     }
   }
 
+  // обработчик выбора значения в списке
+
+
+  // обработчик добавления элемента списка
+
+
+  // обработчик редактирования элемента списка
+
+
+  // обработчик удаления элемента списка
+
+
+  // обработчик при изменении настроек компоновки
+
+
+  // обработчик печати теущей строки
+
+
+  // обработчик вложений теущей строки
+
+
   render() {
 
     const { state, props, handleSelect, handleAdd, handleEdit, handleRemove, handlePrint, handleAttachment,
       handleSchemeChange, _isRowLoaded, _loadMoreRows, _cellRenderer } = this;
     const { columns, totalRowCount, scheme } = state;
-    const { width, height, selection_mode } = props;
+    const { width, height, selection_mode, deny_add_del, show_search, show_variants } = props;
 
     if (!scheme) {
       return _react2.default.createElement(_DumbLoader2.default, { title: "\u0427\u0442\u0435\u043D\u0438\u0435 \u043D\u0430\u0441\u0442\u0440\u043E\u0435\u043A \u043A\u043E\u043C\u043F\u043E\u043D\u043E\u0432\u043A\u0438..." });
@@ -111,24 +137,13 @@ class DataList extends _react.Component {
       return _react2.default.createElement(_DumbLoader2.default, { title: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043D\u0430\u0441\u0442\u0440\u043E\u0435\u043A \u043A\u043E\u043C\u043F\u043E\u043D\u043E\u0432\u043A\u0438..." });
     }
 
+    const toolbar_props = { scheme, selection_mode, deny_add_del, show_search, show_variants, handleSelect, handleAdd,
+      handleEdit, handleRemove, handlePrint, handleAttachment, handleSchemeChange };
+
     return _react2.default.createElement(
       "div",
       null,
-      _react2.default.createElement(_DataListToolbar2.default, {
-
-        selection_mode: !!selection_mode,
-        handleSelect: handleSelect,
-
-        handleAdd: handleAdd,
-        handleEdit: handleEdit,
-        handleRemove: handleRemove,
-        handlePrint: handlePrint,
-        handleAttachment: handleAttachment,
-
-        scheme: scheme,
-        handleSchemeChange: handleSchemeChange
-
-      }),
+      _react2.default.createElement(_DataListToolbar2.default, toolbar_props),
       _react2.default.createElement(
         _reactVirtualized.InfiniteLoader,
         {
@@ -200,27 +215,6 @@ class DataList extends _react.Component {
     );
   }
 
-  // обработчик выбора значения в списке
-
-
-  // обработчик добавления элемента списка
-
-
-  // обработчик редактирования элемента списка
-
-
-  // обработчик удаления элемента списка
-
-
-  // обработчик при изменении настроек компоновки
-
-
-  // обработчик печати теущей строки
-
-
-  // обработчик вложений теущей строки
-
-
   _formatter(row, index) {
 
     const { $p } = this.context;
@@ -258,9 +252,6 @@ class DataList extends _react.Component {
    */
 }
 exports.default = DataList;
-DataList.contextTypes = {
-  $p: _react2.default.PropTypes.object.isRequired
-};
 DataList.propTypes = {
 
   // данные
@@ -274,6 +265,8 @@ DataList.propTypes = {
   selection_mode: _react.PropTypes.bool, // Режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
   read_only: _react.PropTypes.object, // Элемент только для чтения
   deny_add_del: _react.PropTypes.bool, // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+  show_search: _react.PropTypes.bool, // Показывать поле поиска
+  show_variants: _react.PropTypes.bool, // Показывать список вариантов настройки динсписка
   modal: _react.PropTypes.bool, // Показывать список в модальном диалоге
   width: _react.PropTypes.number.isRequired, // Ширина элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
   height: _react.PropTypes.number.isRequired, // Высота элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
@@ -333,7 +326,8 @@ var _initialiseProps = function () {
     const { state, props, _list } = this;
     const { _mgr, params } = props;
 
-    scheme.fix_select(state.select, params && params.options || _mgr.class_name);
+    scheme.set_default().fix_select(state.select, params && params.options || _mgr.class_name);
+
     _list.clear();
     this.setState({
       scheme,
@@ -401,27 +395,37 @@ var _initialiseProps = function () {
 
   this._cellRenderer = ({ columnIndex, isScrolling, key, rowIndex, style }) => {
 
-    const setState = this.setState.bind(this);
-    // var grid = this.refs.AutoSizer.refs.Grid
+    const { state, props, _list, handleEdit, handleSelect } = this;
+    const { hoveredColumnIndex, hoveredRowIndex, selectedRowIndex } = state;
 
+    // оформление ячейки
     const classNames = (0, _classnames2.default)(this._getRowClassName(rowIndex), _DataList2.default.cell, {
-      [_DataList2.default.centeredCell]: columnIndex > 3, // выравнивание текста по центру
-      [_DataList2.default.hoveredItem]: rowIndex === this.state.hoveredRowIndex && rowIndex != this.state.selectedRowIndex, // || columnIndex === this.state.hoveredColumnIndex
-      [_DataList2.default.selectedItem]: rowIndex === this.state.selectedRowIndex
+      //[styles.centeredCell]: columnIndex > 3, // выравнивание текста по центру
+      [_DataList2.default.hoveredItem]: rowIndex == hoveredRowIndex && rowIndex != selectedRowIndex, // || columnIndex === this.state.hoveredColumnIndex
+      [_DataList2.default.selectedItem]: rowIndex == selectedRowIndex
     });
 
-    const row = this._list.get(rowIndex);
+    // данные строки
+    const row = _list.get(rowIndex);
 
-    let content;
+    // текст ячейки
+    const content = row ? this._formatter(row, columnIndex) : _react2.default.createElement("div", {
+      className: _DataList2.default.placeholder,
+      style: { width: 10 + Math.random() * 80 }
+    });
 
-    if (row) {
-      content = this._formatter(row, columnIndex);
-    } else {
-      content = _react2.default.createElement("div", {
-        className: _DataList2.default.placeholder,
-        style: { width: 10 + Math.random() * 80 }
+    const onMouseOver = () => {
+      this.setState({
+        hoveredColumnIndex: columnIndex,
+        hoveredRowIndex: rowIndex
       });
-    }
+    };
+
+    const onTouchTap = () => {
+      this.setState({
+        selectedRowIndex: rowIndex
+      });
+    };
 
     // It is important to attach the style specified as it controls the cell's position.
     // You can add additional class names or style properties as you would like.
@@ -432,18 +436,10 @@ var _initialiseProps = function () {
         className: classNames,
         key: key,
         style: style,
-        onMouseOver: function () {
-          setState({
-            hoveredColumnIndex: columnIndex,
-            hoveredRowIndex: rowIndex
-          });
-        },
-        onTouchTap: function () {
-          setState({
-            selectedRowIndex: rowIndex
-          });
-        },
-        onDoubleClick: this.handleEdit
+        onMouseOver: onMouseOver,
+        onTouchTap: onTouchTap,
+        onDoubleClick: props.selection_mode ? handleSelect : handleEdit,
+        title: hoveredColumnIndex == columnIndex && hoveredRowIndex == rowIndex ? content : ''
       },
       content
     );

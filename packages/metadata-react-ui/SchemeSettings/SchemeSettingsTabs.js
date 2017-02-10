@@ -18,6 +18,14 @@ var _SchemeSettingsSelect = require("./SchemeSettingsSelect");
 
 var _SchemeSettingsSelect2 = _interopRequireDefault(_SchemeSettingsSelect);
 
+var _DataField = require("../DataField");
+
+var _DataField2 = _interopRequireDefault(_DataField);
+
+var _Divider = require("material-ui/Divider");
+
+var _Divider2 = _interopRequireDefault(_Divider);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
@@ -44,6 +52,10 @@ class SchemeSettingsTabs extends _react.Component {
 
     const { handleSchemeChange, scheme, tabParams } = this.props;
 
+    // если панель параметров передали снаружи, показываем её
+    // если в scheme.query есть 'date', показываем выбор периода
+    // по умолчанию, показываем табчать параметров
+
     return _react2.default.createElement(
       _Tabs.Tabs,
       {
@@ -53,28 +65,21 @@ class SchemeSettingsTabs extends _react.Component {
       _react2.default.createElement(
         _Tabs.Tab,
         { label: "\u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B", value: "p" },
-        tabParams ? tabParams : _react2.default.createElement(_TabularSection2.default, {
+        tabParams ? tabParams : scheme.query.match('date') ? _react2.default.createElement(
+          "div",
+          { style: { height: 356 } },
+          _react2.default.createElement(_DataField2.default, {
+            _obj: scheme,
+            _fld: "date_from"
+          }),
+          _react2.default.createElement(_DataField2.default, {
+            _obj: scheme,
+            _fld: "date_till"
+          })
+        ) : _react2.default.createElement(_TabularSection2.default, {
           _obj: scheme,
           _tabular: "params",
-          minHeight: 160
-        }),
-        _react2.default.createElement(_TabularSection2.default, {
-          _obj: scheme,
-          _tabular: "selection",
-          minHeight: 120,
-
-          rowSelection: {
-            showCheckbox: true,
-            enableShiftSelect: true,
-            selectBy: {
-              keys: {
-                rowKey: "field",
-                markKey: "use",
-                values: scheme.used_fields()
-              }
-            }
-          }
-
+          minHeight: 308
         })
       ),
       _react2.default.createElement(
@@ -84,7 +89,7 @@ class SchemeSettingsTabs extends _react.Component {
           _obj: scheme,
           _tabular: "fields",
           deny_add_del: true,
-          minHeight: 328,
+          minHeight: 308,
 
           rowSelection: {
             showCheckbox: true,
@@ -101,25 +106,47 @@ class SchemeSettingsTabs extends _react.Component {
       ),
       _react2.default.createElement(
         _Tabs.Tab,
-        { label: "\u0413\u0440\u0443\u043F\u043F\u0438\u0440\u043E\u0432\u043A\u0430", value: "g" },
+        { label: "\u041E\u0442\u0431\u043E\u0440", value: "s" },
         _react2.default.createElement(_TabularSection2.default, {
           _obj: scheme,
-          _tabular: "dimensions",
-          minHeight: 140
-        }),
-        _react2.default.createElement(_TabularSection2.default, {
-          _obj: scheme,
-          _tabular: "resources",
-          minHeight: 140
+          _tabular: "selection",
+          minHeight: 308,
+
+          rowSelection: {
+            showCheckbox: true,
+            enableShiftSelect: true,
+            selectBy: {
+              keys: {
+                rowKey: "field",
+                markKey: "use",
+                values: scheme.used_fields()
+              }
+            }
+          }
+
         })
       ),
       _react2.default.createElement(
         _Tabs.Tab,
-        { label: "\u0421\u043E\u0440\u0442\u0438\u0440\u043E\u0432\u043A\u0430", value: "s" },
+        { label: "\u0413\u0440\u0443\u043F\u043F\u0438\u0440\u043E\u0432\u043A\u0430", value: "g" },
+        _react2.default.createElement(_TabularSection2.default, {
+          _obj: scheme,
+          _tabular: "dimensions",
+          minHeight: 130
+        }),
+        _react2.default.createElement(_TabularSection2.default, {
+          _obj: scheme,
+          _tabular: "resources",
+          minHeight: 130
+        })
+      ),
+      _react2.default.createElement(
+        _Tabs.Tab,
+        { label: "\u0421\u043E\u0440\u0442\u0438\u0440\u043E\u0432\u043A\u0430", value: "o" },
         _react2.default.createElement(_TabularSection2.default, {
           _obj: scheme,
           _tabular: "sorting",
-          minHeight: 328
+          minHeight: 308
         })
       ),
       _react2.default.createElement(
@@ -128,7 +155,7 @@ class SchemeSettingsTabs extends _react.Component {
         _react2.default.createElement(_SchemeSettingsSelect2.default, {
           scheme: scheme,
           handleSchemeChange: handleSchemeChange,
-          minHeight: 376
+          minHeight: 356
         })
       )
     );

@@ -1,8 +1,6 @@
 /** @flow */
 import React, {Component, PropTypes} from "react";
 import Select from "react-select";
-
-// Import directly to avoid Webpack bundling the parts of react-virtualized that we are not using
 import {AutoSizer, List} from "react-virtualized";
 
 

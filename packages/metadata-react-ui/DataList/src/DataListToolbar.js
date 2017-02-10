@@ -18,6 +18,7 @@ export default class DataListToolbar extends Component {
   static propTypes = {
 
     selection_mode: PropTypes.bool,                   // режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
+    deny_add_del: PropTypes.bool,                     // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
 
     handleAdd: PropTypes.func.isRequired,             // обработчик добавления объекта
     handleEdit: PropTypes.func.isRequired,            // обработчик открфтия формы редактора
@@ -31,34 +32,43 @@ export default class DataListToolbar extends Component {
   }
 
   render() {
-    const props = this.props;
+
+    const {props} = this;
+
+    const buttons = [];
+
+    if(props.selection_mode){
+      buttons.push(
+        <IconButton key="select" touch={true} tooltip="Выбрать из списка" tooltipPosition="bottom-right" onTouchTap={props.handleSelect}>
+          <SelectIcon />
+        </IconButton>
+      );
+    }
+
+    if(!props.deny_add_del){
+      buttons.push(
+        <IconButton key="create" touch={true} tooltip="Создать объект" tooltipPosition="bottom-right" onTouchTap={props.handleAdd}>
+          <AddIcon />
+        </IconButton>
+      );
+      buttons.push(
+        <IconButton key="edit" touch={true} tooltip="Открыть форму объекта" tooltipPosition="bottom-right" onTouchTap={props.handleEdit}>
+          <EditIcon />
+        </IconButton>
+      );
+      buttons.push(
+        <IconButton key="del" touch={true} tooltip="Пометить на удаление" tooltipPosition="bottom-center"
+                    onTouchTap={props.handleRemove}>
+          <RemoveIcon />
+        </IconButton>
+      );
+    }
+
     return (
 
       <Toolbar>
         <ToolbarGroup className={"meta-toolbar-group"} firstChild={true}>
-
-          {
-            props.selection_mode ?
-              <IconButton touch={true} tooltip="Выбрать из списка" tooltipPosition="bottom-right"
-                          onTouchTap={props.handleSelect}>
-                <SelectIcon />
-              </IconButton>
-              :
-              null
-          }
-
-          <IconButton touch={true} tooltip="Создать объект" tooltipPosition="bottom-right" onTouchTap={props.handleAdd}>
-            <AddIcon />
-          </IconButton>
-          <IconButton touch={true} tooltip="Открыть форму объекта" tooltipPosition="bottom-right"
-                      onTouchTap={props.handleEdit}>
-            <EditIcon />
-          </IconButton>
-          <IconButton touch={true} tooltip="Пометить на удаление" tooltipPosition="bottom-center"
-                      onTouchTap={props.handleRemove}>
-            <RemoveIcon />
-          </IconButton>
-
+          {buttons}
         </ToolbarGroup>
 
         <ToolbarGroup className={"meta-toolbar-group"}>
@@ -66,6 +76,8 @@ export default class DataListToolbar extends Component {
           <SchemeSettings
             handleSchemeChange={props.handleSchemeChange}
             scheme={props.scheme}
+            show_search={props.show_search}
+            show_variants={props.show_variants}
           />
 
           <IconMenu

@@ -59,43 +59,54 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 class DataListToolbar extends _react.Component {
 
   render() {
-    const props = this.props;
+
+    const { props } = this;
+
+    const buttons = [];
+
+    if (props.selection_mode) {
+      buttons.push(_react2.default.createElement(
+        _IconButton2.default,
+        { key: "select", touch: true, tooltip: "\u0412\u044B\u0431\u0440\u0430\u0442\u044C \u0438\u0437 \u0441\u043F\u0438\u0441\u043A\u0430", tooltipPosition: "bottom-right", onTouchTap: props.handleSelect },
+        _react2.default.createElement(_playlistAddCheck2.default, null)
+      ));
+    }
+
+    if (!props.deny_add_del) {
+      buttons.push(_react2.default.createElement(
+        _IconButton2.default,
+        { key: "create", touch: true, tooltip: "\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u043E\u0431\u044A\u0435\u043A\u0442", tooltipPosition: "bottom-right", onTouchTap: props.handleAdd },
+        _react2.default.createElement(_addCircleOutline2.default, null)
+      ));
+      buttons.push(_react2.default.createElement(
+        _IconButton2.default,
+        { key: "edit", touch: true, tooltip: "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0444\u043E\u0440\u043C\u0443 \u043E\u0431\u044A\u0435\u043A\u0442\u0430", tooltipPosition: "bottom-right", onTouchTap: props.handleEdit },
+        _react2.default.createElement(_edit2.default, null)
+      ));
+      buttons.push(_react2.default.createElement(
+        _IconButton2.default,
+        { key: "del", touch: true, tooltip: "\u041F\u043E\u043C\u0435\u0442\u0438\u0442\u044C \u043D\u0430 \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u0435", tooltipPosition: "bottom-center",
+          onTouchTap: props.handleRemove },
+        _react2.default.createElement(_delete2.default, null)
+      ));
+    }
+
     return _react2.default.createElement(
       _Toolbar.Toolbar,
       null,
       _react2.default.createElement(
         _Toolbar.ToolbarGroup,
         { className: "meta-toolbar-group", firstChild: true },
-        props.selection_mode ? _react2.default.createElement(
-          _IconButton2.default,
-          { touch: true, tooltip: "\u0412\u044B\u0431\u0440\u0430\u0442\u044C \u0438\u0437 \u0441\u043F\u0438\u0441\u043A\u0430", tooltipPosition: "bottom-right",
-            onTouchTap: props.handleSelect },
-          _react2.default.createElement(_playlistAddCheck2.default, null)
-        ) : null,
-        _react2.default.createElement(
-          _IconButton2.default,
-          { touch: true, tooltip: "\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u043E\u0431\u044A\u0435\u043A\u0442", tooltipPosition: "bottom-right", onTouchTap: props.handleAdd },
-          _react2.default.createElement(_addCircleOutline2.default, null)
-        ),
-        _react2.default.createElement(
-          _IconButton2.default,
-          { touch: true, tooltip: "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0444\u043E\u0440\u043C\u0443 \u043E\u0431\u044A\u0435\u043A\u0442\u0430", tooltipPosition: "bottom-right",
-            onTouchTap: props.handleEdit },
-          _react2.default.createElement(_edit2.default, null)
-        ),
-        _react2.default.createElement(
-          _IconButton2.default,
-          { touch: true, tooltip: "\u041F\u043E\u043C\u0435\u0442\u0438\u0442\u044C \u043D\u0430 \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u0435", tooltipPosition: "bottom-center",
-            onTouchTap: props.handleRemove },
-          _react2.default.createElement(_delete2.default, null)
-        )
+        buttons
       ),
       _react2.default.createElement(
         _Toolbar.ToolbarGroup,
         { className: "meta-toolbar-group" },
         _react2.default.createElement(_SchemeSettings2.default, {
           handleSchemeChange: props.handleSchemeChange,
-          scheme: props.scheme
+          scheme: props.scheme,
+          show_search: props.show_search,
+          show_variants: props.show_variants
         }),
         _react2.default.createElement(
           _IconMenu2.default,
@@ -117,6 +128,7 @@ exports.default = DataListToolbar;
 DataListToolbar.propTypes = {
 
   selection_mode: _react.PropTypes.bool, // режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
+  deny_add_del: _react.PropTypes.bool, // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
 
   handleAdd: _react.PropTypes.func.isRequired, // обработчик добавления объекта
   handleEdit: _react.PropTypes.func.isRequired, // обработчик открфтия формы редактора

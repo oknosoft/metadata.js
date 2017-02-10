@@ -50,7 +50,7 @@ class DumbScreen extends _react.Component {
       page ? _react2.default.createElement(
         'div',
         { style: { position: 'absolute', bottom: '-44px' } },
-        `Страница №${ page.page }, загружено ${ Math.min(page.page * page.limit, page.total_rows) } из ${ page.total_rows } объектов`
+        `Страница №${page.page}, загружено ${Math.min(page.page * page.limit, page.total_rows)} из ${page.total_rows} объектов`
       ) : null
     );
   }

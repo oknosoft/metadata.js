@@ -12,6 +12,9 @@ import {Tabs, Tab} from "material-ui/Tabs";
 import TabularSection from "../TabularSection";
 import SchemeSettingsSelect from "./SchemeSettingsSelect"
 
+import DataField, {FieldSelect} from "../DataField";
+import Divider from 'material-ui/Divider';
+
 
 export default class SchemeSettingsTabs extends Component {
 
@@ -29,9 +32,16 @@ export default class SchemeSettingsTabs extends Component {
     this.setState({tab_value})
   }
 
+
+
   render() {
 
-    const {handleSchemeChange, scheme, tabParams} = this.props
+    const {handleSchemeChange, scheme, tabParams} = this.props;
+
+
+    // если панель параметров передали снаружи, показываем её
+    // если в scheme.query есть 'date', показываем выбор периода
+    // по умолчанию, показываем табчать параметров
 
     return (
 
@@ -46,31 +56,28 @@ export default class SchemeSettingsTabs extends Component {
             tabParams ?
               tabParams
               :
-              <TabularSection
-                _obj={scheme}
-                _tabular="params"
-                minHeight={160}
-              />
+              (
+                scheme.query.match('date') ?
+                  <div style={{height: 356}}>
+
+                    <DataField
+                      _obj={scheme}
+                      _fld="date_from"
+                    />
+                    <DataField
+                      _obj={scheme}
+                      _fld="date_till"
+                    />
+
+                  </div>
+                  :
+                  <TabularSection
+                    _obj={scheme}
+                    _tabular="params"
+                    minHeight={308}
+                  />
+              )
           }
-
-          <TabularSection
-            _obj={scheme}
-            _tabular="selection"
-            minHeight={120}
-
-            rowSelection={{
-              showCheckbox: true,
-              enableShiftSelect: true,
-              selectBy: {
-                keys: {
-                  rowKey: "field",
-                  markKey: "use",
-                  values: scheme.used_fields()
-                }
-              }
-            }}
-
-          />
 
         </Tab>
 
@@ -80,7 +87,7 @@ export default class SchemeSettingsTabs extends Component {
             _obj={scheme}
             _tabular="fields"
             deny_add_del={true}
-            minHeight={328}
+            minHeight={308}
 
             rowSelection={{
               showCheckbox: true,
@@ -97,28 +104,51 @@ export default class SchemeSettingsTabs extends Component {
 
         </Tab>
 
+        <Tab label="Отбор" value="s">
+
+          <TabularSection
+            _obj={scheme}
+            _tabular="selection"
+            minHeight={308}
+
+            rowSelection={{
+              showCheckbox: true,
+              enableShiftSelect: true,
+              selectBy: {
+                keys: {
+                  rowKey: "field",
+                  markKey: "use",
+                  values: scheme.used_fields()
+                }
+              }
+            }}
+
+          />
+
+        </Tab>
+
         <Tab label="Группировка" value="g">
 
           <TabularSection
             _obj={scheme}
             _tabular="dimensions"
-            minHeight={140}
+            minHeight={130}
           />
 
           <TabularSection
             _obj={scheme}
             _tabular="resources"
-            minHeight={140}
+            minHeight={130}
           />
 
         </Tab>
 
-        <Tab label="Сортировка" value="s">
+        <Tab label="Сортировка" value="o">
 
           <TabularSection
             _obj={scheme}
             _tabular="sorting"
-            minHeight={328}
+            minHeight={308}
           />
 
         </Tab>
@@ -128,7 +158,7 @@ export default class SchemeSettingsTabs extends Component {
           <SchemeSettingsSelect
             scheme={scheme}
             handleSchemeChange={handleSchemeChange}
-            minHeight={376}
+            minHeight={356}
           />
 
         </Tab>

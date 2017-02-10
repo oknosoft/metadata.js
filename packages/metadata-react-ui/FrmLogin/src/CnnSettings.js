@@ -13,7 +13,9 @@ export default class CnnSettings extends Component {
       PropTypes.number
     ]).isRequired,
     couch_path: PropTypes.string.isRequired,
-    enable_save_pwd: PropTypes.bool.isRequired,
+    couch_suffix: PropTypes.string.isRequired,
+    couch_direct: PropTypes.bool,
+    enable_save_pwd: PropTypes.bool,
     handleSetPrm: PropTypes.func.isRequired
   }
 
@@ -21,16 +23,12 @@ export default class CnnSettings extends Component {
 
     super(props)
 
-    this.state = {
-      zone: props.zone,
-      couch_path: props.couch_path,
-      enable_save_pwd: props.enable_save_pwd
-    }
+    const {zone, couch_path, enable_save_pwd, couch_suffix, couch_direct} = props;
+    this.state = {zone, couch_path, couch_suffix, enable_save_pwd,  couch_direct};
   }
 
-  handleSetPrm(){
-    const { zone, couch_path, enable_save_pwd} = this.state
-    this.props.handleSetPrm({ zone, couch_path, enable_save_pwd})
+  handleSetPrm = () => {
+    this.props.handleSetPrm(this.state)
   }
 
   valueToState(name){
@@ -39,34 +37,49 @@ export default class CnnSettings extends Component {
 
   render() {
 
+    const {zone, couch_path, enable_save_pwd, couch_suffix, couch_direct} = this.state;
+
     return (
       <div className={'meta-padding-18'} >
-
-        <TextField
-          floatingLabelText="Область данных"
-          hintText="zone"
-          fullWidth={true}
-          onChange={this.valueToState("zone")}
-          value={this.state.zone} />
 
         <TextField
           floatingLabelText="Адрес CouchDB"
           hintText="couch_path"
           fullWidth={true}
           onChange={this.valueToState("couch_path")}
-          value={this.state.couch_path}/>
+          value={couch_path}/>
+
+        <TextField
+          floatingLabelText="Область данных"
+          hintText="zone"
+          fullWidth={true}
+          onChange={this.valueToState("zone")}
+          value={zone} />
+
+        <TextField
+          floatingLabelText="Суффикс пользователя"
+          hintText="couch_suffix"
+          fullWidth={true}
+          onChange={this.valueToState("couch_suffix")}
+          value={couch_suffix} />
+
+        <Toggle
+          label="Прямое подключение без кеширования"
+          className={'meta-toggle'}
+          onToggle={() => this.setState({ couch_direct: !couch_direct })}
+          toggled={couch_direct} />
 
         <Toggle
           label="Разрешить сохранение пароля"
           className={'meta-toggle'}
-          onToggle={() => this.setState({ enable_save_pwd: !this.state.enable_save_pwd })}
-          toggled={this.state.enable_save_pwd} />
+          onToggle={() => this.setState({ enable_save_pwd: !enable_save_pwd })}
+          toggled={enable_save_pwd} />
 
         <Divider />
 
         <RaisedButton label="Сохранить настройки"
                       className={'meta-button-18-0'}
-                      onTouchTap={::this.handleSetPrm} />
+                      onTouchTap={this.handleSetPrm} />
 
       </div>
     )
