@@ -42,7 +42,7 @@ function scheme_settings() {
 						_skip: 0,
 						_key: {
 							startkey: [class_name],
-							endkey: [class_name]
+							endkey: [class_name + '|']
 						}
 					})
 						.then(function (data) {

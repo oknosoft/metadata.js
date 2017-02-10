@@ -15,54 +15,76 @@ const DropDownEditor = Editors.DropDownEditor;
 const DropDownFormatter = Formatters.DropDownFormatter;
 
 
-function rx_columns({mode, fields, _obj}) {
+function rx_columns($p) {
 
-  const res = this.columns(mode);
+  const {moment} = $p.utils;
 
-  if (fields) {
-    res.forEach((column) => {
-
-      const _fld = fields[column.key]
-
-      if (!column.formatter) {
-
-        if (_fld.type.is_ref) {
-          column.formatter = (v) => {
-            const {presentation} = v.value
-            return <div title={presentation}>{presentation}</div>
-          }
-        }
-      }
-
-      switch (column.ctrl_type) {
-
-        case 'input':
-          column.editable = true;
-          break;
-
-        case 'ocombo':
-          column.editor = <DataCell />;
-          break;
-
-        case 'ofields':
-          const options = _obj.used_fields_list()
-          column.editor = <DropDownEditor options={options}/>
-          column.formatter = <DropDownFormatter options={options}/>
-          break;
-
-        case 'dhxCalendar':
-          column.editor = <DataCell />;
-          break;
-
-        default:
-          ;
-      }
-
-    })
+  const date_formatter = {
+    date: (v) => {
+      const {presentation} = moment(v).format(moment._masks.date);
+      return <div title={presentation}>{presentation}</div>
+    },
+    date_time: (v) => {
+      const {presentation} = moment(v).format(moment._masks.date_time);
+      return <div title={presentation}>{presentation}</div>
+    }
   }
 
-  return res;
+  const presentation_formatter = (v) => {
+    const {presentation} = v.value
+    return <div title={presentation}>{presentation}</div>
+  }
+
+  return function columns({mode, fields, _obj}) {
+
+    const res = this.columns(mode);
+
+    if (fields) {
+      res.forEach((column) => {
+
+        const _fld = fields[column.key]
+
+        if (!column.formatter) {
+
+          if (_fld.type.is_ref) {
+            column.formatter = presentation_formatter
+          }
+          else if(_fld.type.date_part){
+            column.formatter = date_formatter[_fld.type.date_part]
+          }
+        }
+
+        switch (column.ctrl_type) {
+
+          case 'input':
+            column.editable = true;
+            break;
+
+          case 'ocombo':
+            column.editor = <DataCell />;
+            break;
+
+          case 'ofields':
+            const options = _obj.used_fields_list()
+            column.editor = <DropDownEditor options={options}/>
+            column.formatter = <DropDownFormatter options={options}/>
+            break;
+
+          case 'dhxCalendar':
+            column.editor = <DataCell />;
+            break;
+
+          default:
+            ;
+        }
+
+      })
+    }
+
+    return res;
+  }
 }
+
 /**
  * ### Обработчики экспорта
  *
@@ -207,7 +229,7 @@ export default {
 
     // модифицируем метод columns() справочника scheme_settings - добавляем форматтеры и редакторы
     Object.defineProperty(this.CatScheme_settings.prototype, 'rx_columns', {
-      value: rx_columns
+      value: rx_columns(this)
     })
 
     // методы печати в прототип DataManager

@@ -99,7 +99,7 @@ function tabulars(constructor, classes) {
 			});
 
 			if (format == 'xls') {
-				return wsql.alasql.promise(`SELECT * INTO XLSX('${ this._name + '_' + utils.moment().format("YYYYMMDDHHmm") }.xlsx',{headers:true}) FROM ? `, [data]);
+				return wsql.alasql.promise(`SELECT * INTO XLSX('${this._name + '_' + utils.moment().format("YYYYMMDDHHmm")}.xlsx',{headers:true}) FROM ? `, [data]);
 			} else {
 				return new Promise((resolve, reject) => {
 
@@ -565,7 +565,7 @@ function scheme_settings() {
 						_skip: 0,
 						_key: {
 							startkey: [class_name],
-							endkey: [class_name]
+							endkey: [class_name + '|']
 						}
 					}).then(function (data) {
 						// если существует с текущим пользователем, берём его, иначе - первый попавшийся

@@ -31,7 +31,7 @@ export default {
 
     // модифицируем метод columns() справочника scheme_settings - добавляем форматтеры и редакторы
     Object.defineProperty(this.CatScheme_settings.prototype, 'rx_columns', {
-      value: rx_columns
+      value: rx_columns(this)
     })
 
     // методы печати в прототип DataManager

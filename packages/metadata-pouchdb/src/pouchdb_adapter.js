@@ -206,7 +206,7 @@ class AdapterPouch extends AbstracrAdapter{
 					})
 
 					return Promise.all(try_auth)
-						.then(function (){
+						.then(() => {
 
 							_auth = {username: username};
 							setTimeout(() => {
@@ -273,12 +273,12 @@ class AdapterPouch extends AbstracrAdapter{
 					}
 
 					return _remote.ram.logout()
-						.then(function () {
+						.then(() => {
 							if(_remote && _remote.doc){
 								return _remote.doc.logout()
 							}
 						})
-						.then(function () {
+						.then(() => {
 							if(_remote && _remote.ram){
 								delete _remote.ram;
 							}
@@ -303,14 +303,14 @@ class AdapterPouch extends AbstracrAdapter{
 					var destroy_ram = t.local.ram.destroy.bind(t.local.ram),
 						destroy_doc = t.local.doc.destroy.bind(t.local.doc),
 						do_reload = function (){
-							setTimeout(function () {
+							setTimeout(() => {
 								location.reload(true);
 							}, 1000);
 						};
 
 					t.log_out();
 
-					setTimeout(function () {
+					setTimeout(() => {
 						destroy_ram()
 							.then(destroy_doc)
 							.catch(destroy_doc)
@@ -342,7 +342,7 @@ class AdapterPouch extends AbstracrAdapter{
 						};
 
 					// бежим по всем документам из ram
-					return new Promise(function(resolve, reject){
+					return new Promise((resolve, reject) => {
 
 						function fetchNextPage() {
 							t.local.ram.allDocs(options, function (err, response) {
@@ -376,7 +376,7 @@ class AdapterPouch extends AbstracrAdapter{
 						}
 
 						t.local.ram.info()
-							.then(function (info) {
+							.then((info) => {
 								if(info.doc_count >= ($p.job_prm.pouch_ram_doc_count || 10)){
 
 									// широковещательное оповещение о начале загрузки локальных данных
@@ -434,13 +434,13 @@ class AdapterPouch extends AbstracrAdapter{
 						linfo, _page;
 
 					return local.info()
-						.then(function (info) {
+						.then((info) => {
 
 							linfo = info;
 							return remote.info()
 
 						})
-						.then(function (rinfo) {
+						.then((rinfo) => {
 
 							// для базы "ram", сервер мог указать тотальную перезагрузку данных
 							// в этом случае - очищаем базы и перезапускаем браузер
@@ -448,7 +448,7 @@ class AdapterPouch extends AbstracrAdapter{
 								return rinfo;
 
 							return remote.get("data_version")
-								.then(function (v) {
+								.then((v) => {
 									if(v.version != $p.wsql.get_user_param("couch_ram_data_version")){
 
 										// если это не первый запуск - перезагружаем
@@ -461,15 +461,15 @@ class AdapterPouch extends AbstracrAdapter{
 									}
 									return rinfo;
 								})
-								.catch(function (err) {
+								.catch((err) => {
 									$p.record_log(err);
 								})
-								.then(function () {
+								.then(() => {
 									return rinfo;
 								});
 
 						})
-						.then(function (rinfo) {
+						.then((rinfo) => {
 
 							if(!rinfo)
 								return;
@@ -489,7 +489,7 @@ class AdapterPouch extends AbstracrAdapter{
 
 							}else if(id == "doc"){
 								// широковещательное оповещение о начале синхронизации базы doc
-								setTimeout(function () {
+								setTimeout(() => {
 									t.emit('pouch_sync_start')
 								});
 							}
@@ -519,7 +519,7 @@ class AdapterPouch extends AbstracrAdapter{
 							}
 
 							_local.sync[id]
-								.on('change', function (change) {
+								.on('change', (change) => {
 									// yo, something changed!
 									if(id == "ram"){
 										t.load_changes(change);
@@ -550,22 +550,22 @@ class AdapterPouch extends AbstracrAdapter{
 									t.emit('pouch_sync_data', id, change);
 
 								})
-								.on('paused', function (info) {
+								.on('paused', (info) => {
 									// replication was paused, usually because of a lost connection
 									t.emit('pouch_sync_paused', id, info);
 
 								})
-								.on('active', function (info) {
+								.on('active', (info) => {
 									// replication was resumed
 									t.emit('pouch_sync_resumed', id, info);
 
 								})
-								.on('denied', function (info) {
+								.on('denied', (info) => {
 									// a document failed to replicate, e.g. due to permissions
 									t.emit('pouch_sync_denied', id, info);
 
 								})
-								.on('error', function (err) {
+								.on('error', (err) => {
 									// totally unhandled error (shouldn't happen)
 									t.emit('pouch_sync_error', id, err);
 
@@ -596,13 +596,13 @@ class AdapterPouch extends AbstracrAdapter{
 				delete res._rev;
 				Object.assign(tObj, res)._set_loaded();
 			})
-			.catch(function (err) {
+			.catch((err) => {
 				if (err.status != 404)
 					throw err;
 				else
 					console.log({tObj, db})
 			})
-			.then(function (res) {
+			.then((res) => {
 				return tObj;
 			});
 	}
@@ -627,7 +627,7 @@ class AdapterPouch extends AbstracrAdapter{
 			tmp._attachments = attr.attachments;
 
 		return (tObj.is_new() ? Promise.resolve() : db.get(tmp._id))
-			.then(function (res) {
+			.then((res) => {
 				if (res) {
 					tmp._rev = res._rev;
 					for (var att in res._attachments) {
@@ -638,14 +638,14 @@ class AdapterPouch extends AbstracrAdapter{
 					}
 				}
 			})
-			.catch(function (err) {
+			.catch((err) => {
 				if (err.status != 404)
 					throw err;
 			})
-			.then(function () {
+			.then(() => {
 				return db.put(tmp);
 			})
-			.then(function () {
+			.then(() => {
 
 				if (tObj.is_new())
 					tObj._set_loaded(tObj.ref);
@@ -729,7 +729,7 @@ class AdapterPouch extends AbstracrAdapter{
 				endkey: _mgr.class_name + '|\uffff'
 			};
 
-		return new Promise(function (resolve, reject) {
+		return new Promise((resolve, reject) => {
 
 			function process_docs(err, result) {
 
@@ -740,7 +740,7 @@ class AdapterPouch extends AbstracrAdapter{
 						options.startkey = result.rows[result.rows.length - 1].key;
 						options.skip = 1;
 
-						result.rows.forEach(function (rev) {
+						result.rows.forEach((rev) => {
 							doc = rev.doc;
 							let key = doc._id.split("|");
 							doc.ref = key[1];
@@ -857,9 +857,9 @@ class AdapterPouch extends AbstracrAdapter{
 					options.limit = 100000;
 
 					return db.query(_view, options)
-						.then(function (result) {
+						.then((result) => {
 
-							result.rows.forEach(function (row) {
+							result.rows.forEach((row) => {
 
 								// фильтруем
 								if (!selection._key._search || row.key[row.key.length - 1].toLowerCase().indexOf(selection._key._search) != -1) {
@@ -873,14 +873,16 @@ class AdapterPouch extends AbstracrAdapter{
 											return;
 									}
 
+									res.push(row.id);
+
 									// ограничиваем кол-во возвращаемых элементов
 									if (top) {
 										top_count++;
-										if (top_count > top)
+										if (top_count >= top){
 											return;
+										}
 									}
 
-									res.push(row.id);
 								}
 							});
 
@@ -894,9 +896,9 @@ class AdapterPouch extends AbstracrAdapter{
 							return db.allDocs(options);
 
 						})
-						.then(function (result) {
+						.then((result) => {
 							return {
-								rows: result.rows.map(function (row) {
+								rows: result.rows.map((row) => {
 
 									var doc = row.doc;
 
@@ -919,7 +921,7 @@ class AdapterPouch extends AbstracrAdapter{
 		}
 
 		// бежим по всем документам из ram
-		return new Promise(function (resolve, reject) {
+		return new Promise((resolve, reject) => {
 
 			function process_docs(err, result) {
 
@@ -930,7 +932,7 @@ class AdapterPouch extends AbstracrAdapter{
 						options.startkey = result.rows[result.rows.length - 1].key;
 						options.skip = 1;
 
-						result.rows.forEach(function (rev) {
+						result.rows.forEach((rev) => {
 							doc = rev.doc;
 
 							let key = doc._id.split("|");
@@ -942,11 +944,13 @@ class AdapterPouch extends AbstracrAdapter{
 							}
 
 							// фильтруем
-							if (!utils._selection.call(_mgr, doc, selection))
+							if (!utils._selection.call(_mgr, doc, selection)){
 								return;
+							}
 
-							if (calc_count)
+							if (calc_count){
 								_total_count++;
+							}
 
 							// пропукскаем лишние (skip) элементы
 							if (skip) {
@@ -955,18 +959,19 @@ class AdapterPouch extends AbstracrAdapter{
 									return;
 							}
 
+							// наполняем
+							res.push(doc);
+
 							// ограничиваем кол-во возвращаемых элементов
 							if (top) {
 								top_count++;
-								if (top_count > top)
+								if (top_count >= top){
 									return;
+								}
 							}
-
-							// наполняем
-							res.push(doc);
 						});
 
-						if (top && (top_count > top || result.rows.length < options.limit) && !calc_count) {
+						if (top && (top_count >= top || result.rows.length < options.limit) && !calc_count) {
 							resolve(_raw ? res : _mgr.load_array(res));
 						}
 						else{
@@ -1031,15 +1036,15 @@ class AdapterPouch extends AbstracrAdapter{
 		ref = _mgr.class_name + "|" + this.$p.utils.fix_guid(ref);
 
 		return db.get(ref)
-			.then(function (res) {
+			.then((res) => {
 				if (res)
 					_rev = res._rev;
 			})
-			.catch(function (err) {
+			.catch((err) => {
 				if (err.status != 404)
 					throw err;
 			})
-			.then(function () {
+			.then(() => {
 				return db.putAttachment(ref, att_id, _rev, attachment, type);
 			});
 
@@ -1074,15 +1079,15 @@ class AdapterPouch extends AbstracrAdapter{
 		ref = _mgr.class_name + "|" + this.$p.utils.fix_guid(ref);
 
 		return db.get(ref)
-			.then(function (res) {
+			.then((res) => {
 				if (res)
 					_rev = res._rev;
 			})
-			.catch(function (err) {
+			.catch((err) => {
 				if (err.status != 404)
 					throw err;
 			})
-			.then(function () {
+			.then(() => {
 				return db.removeAttachment(ref, att_id, _rev);
 			});
 	}
@@ -1116,7 +1121,7 @@ class AdapterPouch extends AbstracrAdapter{
 				options.skip = 1;
 			}
 
-			docs.forEach(function (rev) {
+			docs.forEach((rev) => {
 				doc = options ? rev.doc : rev;
 				if (!doc) {
 					if ((rev.value && rev.value.deleted))
@@ -1222,7 +1227,7 @@ function proto_data_obj(data_obj, adapter, classes) {
 						endkey: [obj._manager.class_name, year, prefix],
 						descending: true
 					})
-					.then(function (res) {
+					.then((res) => {
 						if(res.rows.length){
 							var num0 = res.rows[0].key[2];
 							for(var i = num0.length-1; i>0; i--){
