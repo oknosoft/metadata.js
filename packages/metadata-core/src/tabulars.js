@@ -451,38 +451,27 @@ class TabularSection {
 	}
 
 	/**
-	 * ### Перезаполняет грид данными табчасти с учетом отбора
-	 * @method sync_grid
-	 * @param grid {dhtmlxGrid} - элемент управления
-	 * @param [selection] {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"}
+	 * ### Выгружает колонку табчасти в массив
+	 *
+	 * @method unload_column
+	 * @param column {String} - имя колонки
+	 * @return {Array}
 	 */
-	sync_grid(grid, selection) {
-		var grid_data = {rows: []},
-			columns = [];
+	unload_column(column) {
 
-		for (var i = 0; i < grid.getColumnCount(); i++)
-			columns.push(grid.getColumnId(i));
+		const res = [];
 
-		grid.clearAll();
-		this.find_rows(selection, function (r) {
-			var data = [];
-			columns.forEach(function (f) {
-				if (utils.is_data_obj(r[f]))
-					data.push(r[f].presentation);
-				else
-					data.push(r[f]);
-			});
-			grid_data.rows.push({id: r.row, data: data});
-		});
-		if (grid.objBox) {
-			try {
-				grid.parse(grid_data, "json");
-				//grid.callEvent("onGridReconstructed", []);
-			} catch (e) {
-			}
-		}
+		this.each((row) => {
+			res.push(row[column])
+		})
+
+		return res;
 	}
 
+	/**
+	 * Обработчик сериализации
+	 * @return {Object}
+	 */
 	toJSON() {
 		return this._obj;
 	}

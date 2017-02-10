@@ -3105,25 +3105,15 @@ class TabularSection {
 		return this;
 	}
 
-	sync_grid(grid, selection) {
-		var grid_data = { rows: [] },
-		    columns = [];
+	unload_column(column) {
 
-		for (var i = 0; i < grid.getColumnCount(); i++) columns.push(grid.getColumnId(i));
+		const res = [];
 
-		grid.clearAll();
-		this.find_rows(selection, function (r) {
-			var data = [];
-			columns.forEach(function (f) {
-				if (utils.is_data_obj(r[f])) data.push(r[f].presentation);else data.push(r[f]);
-			});
-			grid_data.rows.push({ id: r.row, data: data });
+		this.each(row => {
+			res.push(row[column]);
 		});
-		if (grid.objBox) {
-			try {
-				grid.parse(grid_data, "json");
-			} catch (e) {}
-		}
+
+		return res;
 	}
 
 	toJSON() {
