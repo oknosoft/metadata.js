@@ -15,4 +15,4 @@ export TabularSection from './TabularSection'
 
 export MetaComponent from './common/MetaComponent'
 
-export default from './plugin'
+export default from './common/plugin.js'

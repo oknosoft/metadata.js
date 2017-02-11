@@ -4,7 +4,7 @@ import {Tabs, Tab} from 'material-ui/Tabs';
 import Paper from 'material-ui/Paper';
 import RaisedButton from 'material-ui/RaisedButton';
 import Divider from 'material-ui/Divider';
-import DataField from 'components/DataField'
+import DataField from '../DataField'
 
 import CircularProgress from "material-ui/CircularProgress";
 

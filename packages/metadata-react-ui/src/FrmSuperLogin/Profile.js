@@ -4,7 +4,7 @@ import Paper from 'material-ui/Paper';
 import TextField from 'material-ui/TextField';
 import RaisedButton from 'material-ui/RaisedButton';
 import Divider from 'material-ui/Divider';
-import DataField from 'components/metadata-react-ui/DataField';
+import DataField from '../DataField';
 import Subheader from 'material-ui/Subheader';
 import {blue500, red500} from 'material-ui/styles/colors';
 import {YandexIcon, GoogleIcon, FacebookIcon, VkontakteIcon} from './assets/icons';

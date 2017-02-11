@@ -99,7 +99,7 @@ export default class DataListField extends MetaComponent {
       value={value}
     />
 
-    if(label_position == $p.enm.label_positions.hide){
+    if(label_position == this.context.$p.enm.label_positions.hide){
       return control
 
     }else{

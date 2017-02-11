@@ -53,7 +53,6 @@ export default class DataList extends MetaComponent {
     width: PropTypes.number.isRequired,   // Ширина элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
     height: PropTypes.number.isRequired,  // Высота элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
 
-
     Toolbar: PropTypes.func,              // Индивидуальная панель инструментов. Если не указана, рисуем типовую
 
     // Redux actions
@@ -77,9 +76,8 @@ export default class DataList extends MetaComponent {
 
     super(props, context);
 
-    const {class_name} = props._mgr
-    const {$p} = context
-
+    const {class_name} = props._mgr;
+    const {$p} = context;
     const state = this.state = {
       totalRowCount: totalRows,
       selectedRowIndex: 0,
@@ -99,10 +97,10 @@ export default class DataList extends MetaComponent {
       }
     }
 
-    this._list = new DataListStorage()
+    this._list = new DataListStorage();
 
     $p.cat.scheme_settings.get_scheme(class_name)
-      .then(this.handleSchemeChange)
+      .then(this.handleSchemeChange);
   }
 
   componentDidUpdate(prevProps, prevState) {

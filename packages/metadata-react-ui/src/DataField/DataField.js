@@ -7,14 +7,14 @@
  */
 
 import React, {Component, PropTypes} from "react";
+import MetaComponent from "../common/MetaComponent";
 import FieldSelect from "./FieldSelect";
 import FieldText from "./FieldText";
 import FieldDate from "./FieldDate";
 import FieldNumber from "./FieldNumber";
 import FieldToggle from "./FieldToggle";
 
-
-export default class DataField extends Component {
+export default class DataField extends MetaComponent {
 
   static propTypes = {
     _obj: PropTypes.object.isRequired,  // DataObj, к реквизиту которого будет привязано поле
@@ -26,10 +26,6 @@ export default class DataField extends Component {
     mandatory: PropTypes.bool,          // поле обязательно для заполнения
     multi: PropTypes.bool,              // множественный выбор - значение является массивом
     handleValueChange: PropTypes.func   // обработчик при изменении значения в поле
-  }
-
-  static contextTypes = {
-    $p: React.PropTypes.object.isRequired
   }
 
   constructor(props, context) {
