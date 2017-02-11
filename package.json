@@ -81,7 +81,7 @@
   },
   "betterScripts": {
     "build:react-ui": {
-      "command": "node ./packages/metadata-react-ui/build.js",
+      "command": "node ./packages/metadata-react-ui/src/build.js",
       "env": {
         "NODE_ENV": "production"
       }

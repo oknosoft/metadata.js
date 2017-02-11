@@ -12,7 +12,7 @@ const root = './packages/metadata-react-ui/';
 
 const exec_babel = (src, out, ignore) => {
   return new Promise((resolve, reject) => {
-    const cmd = `babel ${root}${src}${out == 'dir' ? `/src --out-dir ${root}dist` : ` --out-file ${root}dist`} ${ignore ? '--ignore ' + ignore : ''}`;
+    const cmd = `babel ${root}src/${src}${out == 'dir' ? ` --out-dir ${root}dist/${src}` : ` --out-file ${root}dist/${out}`} ${ignore ? '--ignore ' + ignore : ''}`;
     console.log(`to be executed: "${cmd}"`);
     exec(cmd, (err, stdout, stderr) => {
       if (err) {
@@ -27,7 +27,7 @@ const exec_babel = (src, out, ignore) => {
 
 const exec_concat = (src, dir, out) => {
   return new Promise((resolve, reject) => {
-    concat(src.map((name => `${root}${dir}/${name}.js`)), `${root}${dir}/${out}.js`, (err) => {
+    concat(src.map((name => `${root}${dir}/${name}.js`)), `${root}${out}.js`, (err) => {
       if (err){
         return reject(err)
       }
@@ -36,10 +36,12 @@ const exec_concat = (src, dir, out) => {
   })
 }
 
-const cpms = 'DataField,DataHead,DataList,DataListField,DataTree,Dialog,DumbLoader,FlexPanel,FrmLogin,FrmObj,FrmReport,FrmSuperLogin,MetaDesigner,MetaList,MetaTree,NavList,SchemeSettings,Tabs,TabularSection'.split(',');
+// const cmps = 'DataField,DataHead,DataList,DataListField,DataTree,Dialog,DumbLoader,FlexPanel,FrmLogin,FrmObj,FrmReport,FrmSuperLogin,MetaDesigner,MetaList,MetaTree,NavList,SchemeSettings,Tabs,TabularSection'.split(',');
+
+const cmps = [];
 
 const exec_recursive = () => {
-  const cpm = cmps.pop();
+  const cmp = cmps.pop();
   if(cmp){
     return exec_babel(cmp, 'dir').then(exec_recursive)
   }
@@ -49,12 +51,12 @@ const exec_recursive = () => {
       'export_handlers',
       'print',
       'plugin_src',
-    ], 'common', 'plugin')
-      .then((res) => {
-        return exec_babel('common/plugin.js', 'common/plugin.js')
-      })
+    ], 'src/common', 'src/plugin')
       .then((res) => {
         return exec_babel('common/MetaComponent.js', 'common/MetaComponent.js')
+      })
+      .then((res) => {
+        return exec_babel('plugin.js', 'plugin.js')
       })
       .then((res) => {
         return exec_babel('index.js', 'index.js')

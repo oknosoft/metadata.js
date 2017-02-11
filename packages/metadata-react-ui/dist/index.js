@@ -65,7 +65,7 @@ var _MetaComponent2 = require('./common/MetaComponent');
 
 var _MetaComponent3 = _interopRequireDefault(_MetaComponent2);
 
-var _plugin = require('./plugin');
+var _plugin = require('./common/plugin.js');
 
 var _plugin2 = _interopRequireDefault(_plugin);
 

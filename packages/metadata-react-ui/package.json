@@ -18,6 +18,7 @@
     "react-data-grid-addons": "^2.0",
     "react-virtualized": "^8.11"
   },
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-react-ui/"
@@ -26,7 +27,6 @@
     "url": "https://github.com/oknosoft/metadata.js/issues"
   },
   "homepage": "http://www.oknosoft.ru/metadata/",
-  "main": "./index.js",
   "keywords": [
     "metadata",
     "react"
