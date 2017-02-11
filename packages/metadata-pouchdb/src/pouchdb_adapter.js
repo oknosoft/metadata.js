@@ -231,7 +231,10 @@ class AdapterPouch extends AbstracrAdapter{
 							});
 
 							const sync = {};
-							if(!_paths.direct){
+							if(_paths.direct) {
+								t.load_data();
+							}
+							else{
 								$p.md.bases().forEach((dbid) => {
 									if(t.local[dbid] && t.remote[dbid]){
 										if(_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1){
@@ -302,7 +305,7 @@ class AdapterPouch extends AbstracrAdapter{
 
 					var destroy_ram = t.local.ram.destroy.bind(t.local.ram),
 						destroy_doc = t.local.doc.destroy.bind(t.local.doc),
-						do_reload = function (){
+						do_reload = () => {
 							setTimeout(() => {
 								location.reload(true);
 							}, 1000);
@@ -444,20 +447,19 @@ class AdapterPouch extends AbstracrAdapter{
 
 							// для базы "ram", сервер мог указать тотальную перезагрузку данных
 							// в этом случае - очищаем базы и перезапускаем браузер
-							if(id != "ram")
+							if(id != "ram"){
 								return rinfo;
+							}
 
 							return remote.get("data_version")
 								.then((v) => {
 									if(v.version != $p.wsql.get_user_param("couch_ram_data_version")){
-
 										// если это не первый запуск - перезагружаем
-										if($p.wsql.get_user_param("couch_ram_data_version"))
+										if($p.wsql.get_user_param("couch_ram_data_version")){
 											rinfo = t.reset_local_data();
-
+										}
 										// сохраняем версию в localStorage
 										$p.wsql.set_user_param("couch_ram_data_version", v.version);
-
 									}
 									return rinfo;
 								})
@@ -471,8 +473,9 @@ class AdapterPouch extends AbstracrAdapter{
 						})
 						.then((rinfo) => {
 
-							if(!rinfo)
+							if(!rinfo){
 								return;
+							}
 
 							if(id == "ram" && linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
 
@@ -504,9 +507,8 @@ class AdapterPouch extends AbstracrAdapter{
 							// если указан клиентский или серверный фильтр - подключаем
 							if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id]){
 								options.filter = $p.job_prm.pouch_filter[id];
-
-							}else if(id == "meta"){
-
+							}
+							else if(id == "meta"){
 								// если для базы meta фильтр не задан, используем умолчание
 								options.filter = "auth/meta";
 							}

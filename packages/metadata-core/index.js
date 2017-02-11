@@ -18,18 +18,22 @@ moment._masks = {
 
 const alasql = require("alasql/dist/alasql.js");
 
-if (!Number.prototype.round) Number.prototype.round = function (places) {
-	var multiplier = Math.pow(10, places);
-	return Math.round(this * multiplier) / multiplier;
-};
+if (!Number.prototype.round) {
+	Number.prototype.round = function (places) {
+		var multiplier = Math.pow(10, places);
+		return Math.round(this * multiplier) / multiplier;
+	};
+}
 
-if (!Number.prototype.pad) Number.prototype.pad = function (size) {
-	var s = String(this);
-	while (s.length < (size || 2)) {
-		s = "0" + s;
-	}
-	return s;
-};
+if (!Number.prototype.pad) {
+	Number.prototype.pad = function (size) {
+		var s = String(this);
+		while (s.length < (size || 2)) {
+			s = "0" + s;
+		}
+		return s;
+	};
+}
 
 class Utils {
 
@@ -58,22 +62,39 @@ class Utils {
 
 	fix_guid(ref, generate) {
 
-		if (ref && typeof ref == "string") {} else if (ref instanceof DataObj) return ref.ref;else if (ref && typeof ref == "object") {
+		if (ref && typeof ref == "string") {} else if (ref instanceof DataObj) {
+			return ref.ref;
+		} else if (ref && typeof ref == "object") {
 			if (ref.presentation) {
 				if (ref.ref) return ref.ref;else if (ref.name) return ref.name;
-			} else ref = typeof ref.ref == "object" && ref.ref.hasOwnProperty("ref") ? ref.ref.ref : ref.ref;
+			} else {
+				ref = typeof ref.ref == "object" && ref.ref.hasOwnProperty("ref") ? ref.ref.ref : ref.ref;
+			}
 		}
 
-		if (this.is_guid(ref) || generate === false) return ref;else if (generate) return this.generate_guid();else return this.blank.guid;
+		if (this.is_guid(ref) || generate === false) {
+			return ref;
+		} else if (generate) {
+			return this.generate_guid();
+		}
+		return this.blank.guid;
 	}
 
 	fix_number(str, strict) {
-		var v = parseFloat(str);
-		if (!isNaN(v)) return v;else if (strict) return 0;else return str;
+		const v = parseFloat(str);
+		if (!isNaN(v)) {
+			return v;
+		} else if (strict) {
+			return 0;
+		}
+		return str;
 	}
 
 	fix_boolean(str) {
-		if (typeof str === "string") return !(!str || str.toLowerCase() == "false");else return !!str;
+		if (typeof str === "string") {
+			return !(!str || str.toLowerCase() == "false");
+		}
+		return !!str;
 	}
 
 	fetch_type(str, mtype) {
@@ -185,32 +206,39 @@ class Utils {
 	}
 
 	_mixin(obj, src, include, exclude) {
-		var tobj = {},
-		    i,
-		    f;
-		if (include && include.length) {
-			for (i = 0; i < include.length; i++) {
-				f = include[i];
-				if (exclude && exclude.indexOf(f) != -1) continue;
+		const tobj = {};
 
-				if (typeof tobj[f] == "undefined" || tobj[f] != src[f]) obj[f] = src[f];
+		function exclude_cpy(f) {
+			if (!exclude || exclude.indexOf(f) == -1) {
+				if (typeof tobj[f] == "undefined" || tobj[f] != src[f]) {
+					obj[f] = src[f];
+				}
+			}
+		}
+
+		if (include && include.length) {
+			for (let i = 0; i < include.length; i++) {
+				exclude_cpy(include[i]);
 			}
 		} else {
-			for (f in src) {
-				if (exclude && exclude.indexOf(f) != -1) continue;
-
-				if (typeof tobj[f] == "undefined" || tobj[f] != src[f]) obj[f] = src[f];
+			for (let f in src) {
+				exclude_cpy(f);
 			}
 		}
 		return obj;
 	}
 
 	_patch(obj, patch) {
-		for (var area in patch) {
-
+		for (let area in patch) {
 			if (typeof patch[area] == "object") {
-				if (obj[area] && typeof obj[area] == "object") this._patch(obj[area], patch[area]);else obj[area] = patch[area];
-			} else obj[area] = patch[area];
+				if (obj[area] && typeof obj[area] == "object") {
+					this._patch(obj[area], patch[area]);
+				} else {
+					obj[area] = patch[area];
+				}
+			} else {
+				obj[area] = patch[area];
+			}
 		}
 		return obj;
 	}
@@ -231,26 +259,29 @@ class Utils {
 		return c;
 	}
 
-	_find(a, val, columns) {
-		var o, i, finded;
+	_find(src, val, columns) {
 		if (typeof val != "object") {
-			for (i in a) {
-				o = a[i];
-				for (var j in o) {
-					if (typeof o[j] !== "function" && utils.is_equal(o[j], val)) return o;
+			for (let i in src) {
+				const o = src[i];
+				for (let j in o) {
+					if (typeof o[j] !== "function" && utils.is_equal(o[j], val)) {
+						return o;
+					}
 				}
 			}
 		} else {
-			for (i in a) {
-				o = a[i];
-				finded = true;
-				for (var j in val) {
+			for (let i in src) {
+				const o = src[i];
+				let finded = true;
+				for (let j in val) {
 					if (typeof o[j] !== "function" && !utils.is_equal(o[j], val[j])) {
 						finded = false;
 						break;
 					}
 				}
-				if (finded) return o;
+				if (finded) {
+					return o;
+				}
 			}
 		}
 	}
@@ -260,7 +291,9 @@ class Utils {
 		let ok = true;
 
 		if (selection) {
-			if (typeof selection == "function") ok = selection.call(this, o);else {
+			if (typeof selection == "function") {
+				ok = selection.call(this, o);
+			} else {
 				for (let j in selection) {
 
 					const sel = selection[j];
@@ -314,31 +347,38 @@ class Utils {
 		return ok;
 	}
 
-	_find_rows(arr, selection, callback) {
+	_find_rows(src, selection, callback) {
 
-		var o,
-		    res = [],
-		    top,
+		const res = [];
+		let top,
 		    count = 0;
 
 		if (selection) {
 			if (selection._top) {
 				top = selection._top;
 				delete selection._top;
-			} else top = 300;
+			} else {
+				top = 300;
+			}
 		}
 
-		for (var i in arr) {
-			o = arr[i];
+		for (let i in src) {
+			const o = src[i];
 
 			if (utils._selection.call(this, o, selection)) {
 				if (callback) {
-					if (callback.call(this, o) === false) break;
-				} else res.push(o);
+					if (callback.call(this, o) === false) {
+						break;
+					}
+				} else {
+					res.push(o);
+				}
 
 				if (top) {
 					count++;
-					if (count >= top) break;
+					if (count >= top) {
+						break;
+					}
 				}
 			}
 		}
@@ -690,11 +730,11 @@ class WSQL {
 							zone: this.get_user_param("zone", "number"),
 							prefix: $p.job_prm.local_storage_prefix,
 							suffix: this.get_user_param("couch_suffix", "string") || "",
+							direct: this.get_user_param("couch_direct", "boolean"),
 							user_node: $p.job_prm.user_node,
 							noreplicate: $p.job_prm.noreplicate
 						};
 						if (pouch_prm.path) {
-
 							$p.adapters.pouch.init(pouch_prm);
 						}
 					}
@@ -706,19 +746,25 @@ class WSQL {
 			set_user_param: {
 				value: function (prm_name, prm_value) {
 
-					var str_prm = prm_value;
-					if (typeof prm_value == "object") str_prm = JSON.stringify(prm_value);else if (prm_value === false) str_prm = "";
+					if (typeof prm_value == "object") {
+						user_params[prm_name] = prm_value;
+						prm_value = JSON.stringify(prm_value);
+					} else if (prm_value === false || prm_value === "false") {
+						user_params[prm_name] = false;
+						prm_value = "";
+					} else {
+						user_params[prm_name] = prm_value;
+					}
 
-					this._ls.setItem($p.job_prm.local_storage_prefix + prm_name, str_prm);
-					user_params[prm_name] = prm_value;
+					this._ls.setItem($p.job_prm.local_storage_prefix + prm_name, prm_value);
 				}
 			},
 
 			get_user_param: {
 				value: function (prm_name, type) {
-
-					if (!user_params.hasOwnProperty(prm_name) && this._ls) user_params[prm_name] = this.fetch_type(this._ls.getItem($p.job_prm.local_storage_prefix + prm_name), type);
-
+					if (!user_params.hasOwnProperty(prm_name) && this._ls) {
+						user_params[prm_name] = this.fetch_type(this._ls.getItem($p.job_prm.local_storage_prefix + prm_name), type);
+					}
 					return user_params[prm_name];
 				}
 			},
@@ -754,11 +800,17 @@ class WSQL {
 	}
 
 	restore_options(prefix, options) {
-		var options_saved = this.get_user_param(prefix + "_" + options.name, "object");
-		for (var i in options_saved) {
-			if (typeof options_saved[i] != "object") options[i] = options_saved[i];else {
-				if (!options[i]) options[i] = {};
-				for (var j in options_saved[i]) options[i][j] = options_saved[i][j];
+		const options_saved = this.get_user_param(prefix + "_" + options.name, "object");
+		for (let i in options_saved) {
+			if (typeof options_saved[i] != "object") {
+				options[i] = options_saved[i];
+			} else {
+				if (!options[i]) {
+					options[i] = {};
+				}
+				for (let j in options_saved[i]) {
+					options[i][j] = options_saved[i][j];
+				}
 			}
 		}
 		return options;
@@ -772,7 +824,14 @@ class WSQL {
 				prm = {};
 			}
 			return prm;
-		} else if (type == "number") return utils.fix_number(prm, true);else if (type == "date") return utils.fix_date(prm, true);else if (type == "boolean") return utils.fix_boolean(prm);else return prm;
+		} else if (type == "number") {
+			return utils.fix_number(prm, true);
+		} else if (type == "date") {
+			return utils.fix_date(prm, true);
+		} else if (type == "boolean") {
+			return utils.fix_boolean(prm);
+		}
+		return prm;
 	}
 
 }

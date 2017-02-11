@@ -13,7 +13,7 @@ export default class CnnSettings extends Component {
       PropTypes.number
     ]).isRequired,
     couch_path: PropTypes.string.isRequired,
-    couch_suffix: PropTypes.string.isRequired,
+    couch_suffix: PropTypes.string,
     couch_direct: PropTypes.bool,
     enable_save_pwd: PropTypes.bool,
     handleSetPrm: PropTypes.func.isRequired

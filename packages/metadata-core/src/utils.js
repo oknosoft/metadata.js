@@ -26,11 +26,12 @@ const alasql = require("alasql/dist/alasql.js")
  * @method round
  * @for Number
  */
-if(!Number.prototype.round)
+if(!Number.prototype.round){
 	Number.prototype.round = function(places) {
 		var multiplier = Math.pow(10, places);
 		return (Math.round(this * multiplier) / multiplier);
 	};
+}
 
 /**
  * Метод дополнения лидирующими нулями в прототип числа
@@ -40,12 +41,13 @@ if(!Number.prototype.round)
  * @example
  *      (5).pad(6) // '000005'
  */
-if(!Number.prototype.pad)
+if(!Number.prototype.pad){
 	Number.prototype.pad = function(size) {
 		var s = String(this);
 		while (s.length < (size || 2)) {s = "0" + s;}
 		return s;
 	};
+}
 
 
 
@@ -120,9 +122,10 @@ class Utils{
 
 		if (ref && typeof ref == "string") {
 
-		} else if (ref instanceof DataObj)
+		}
+		else if (ref instanceof DataObj){
 			return ref.ref;
-
+		}
 		else if (ref && typeof ref == "object") {
 			if (ref.presentation) {
 				if (ref.ref)
@@ -130,18 +133,18 @@ class Utils{
 				else if (ref.name)
 					return ref.name;
 			}
-			else
+			else{
 				ref = (typeof ref.ref == "object" && ref.ref.hasOwnProperty("ref")) ? ref.ref.ref : ref.ref;
+			}
 		}
 
-		if (this.is_guid(ref) || generate === false)
+		if (this.is_guid(ref) || generate === false){
 			return ref;
-
-		else if (generate)
+		}
+		else if (generate){
 			return this.generate_guid();
-
-		else
-			return this.blank.guid;
+		}
+		return this.blank.guid;
 	}
 
 	/**
@@ -153,13 +156,14 @@ class Utils{
 	 * @return {Number}
 	 */
 	fix_number(str, strict) {
-		var v = parseFloat(str);
-		if (!isNaN(v))
+		const v = parseFloat(str);
+		if (!isNaN(v)){
 			return v;
-		else if (strict)
+		}
+		else if (strict){
 			return 0;
-		else
-			return str;
+		}
+		return str;
 	}
 
 	/**
@@ -170,10 +174,10 @@ class Utils{
 	 * @return {boolean}
 	 */
 	fix_boolean(str) {
-		if (typeof str === "string")
+		if (typeof str === "string"){
 			return !(!str || str.toLowerCase() == "false");
-		else
-			return !!str;
+		}
+		return !!str;
 	}
 
 
@@ -385,27 +389,31 @@ class Utils{
 	 * Копирует все свойства из src в текущий объект исключая те, что в цепочке прототипов src до Object
 	 * @method _mixin
 	 * @for Object
+	 * @param obj {Object} - приемник
 	 * @param src {Object} - источник
+	 * @param include {Array}
+	 * @param exclude {Array}
 	 * @return {Object}
 	 */
 	_mixin(obj, src, include, exclude) {
-		var tobj = {}, i, f; // tobj - вспомогательный объект для фильтрации свойств, которые есть у объекта Object и его прототипа
-		if (include && include.length) {
-			for (i = 0; i < include.length; i++) {
-				f = include[i];
-				if (exclude && exclude.indexOf(f) != -1)
-					continue;
+		const tobj = {}; // tobj - вспомогательный объект для фильтрации свойств, которые есть у объекта Object и его прототипа
+
+		function exclude_cpy(f) {
+			if (!exclude || exclude.indexOf(f) == -1){
 				// копируем в dst свойства src, кроме тех, которые унаследованы от Object
-				if ((typeof tobj[f] == "undefined") || (tobj[f] != src[f]))
+				if ((typeof tobj[f] == "undefined") || (tobj[f] != src[f])){
 					obj[f] = src[f];
+				}
+			}
+		}
+
+		if (include && include.length) {
+			for (let i = 0; i < include.length; i++) {
+				exclude_cpy(include[i]);
 			}
 		} else {
-			for (f in src) {
-				if (exclude && exclude.indexOf(f) != -1)
-					continue;
-				// копируем в dst свойства src, кроме тех, которые унаследованы от Object
-				if ((typeof tobj[f] == "undefined") || (tobj[f] != src[f]))
-					obj[f] = src[f];
+			for (let f in src) {
+				exclude_cpy(f);
 			}
 		}
 		return obj;
@@ -422,15 +430,17 @@ class Utils{
 	 * @return {Object} - исходный объект с подмешанными свойствами
 	 */
 	_patch(obj, patch) {
-		for (var area in patch) {
-
+		for (let area in patch) {
 			if (typeof patch[area] == "object") {
-				if (obj[area] && typeof obj[area] == "object")
+				if (obj[area] && typeof obj[area] == "object"){
 					this._patch(obj[area], patch[area]);
-				else
+				}
+				else{
 					obj[area] = patch[area];
-			} else
+				}
+			} else{
 				obj[area] = patch[area];
+			}
 		}
 		return obj;
 	}
@@ -469,35 +479,35 @@ class Utils{
 	/**
 	 * Абстрактный поиск значения в коллекции
 	 * @method _find
-	 * @param a {Array}
+	 * @param src {Array|Object}
 	 * @param val {DataObj|String}
-	 * @param val {Array|String} - имена полей, в которых искать
+	 * @param columns {Array|String} - имена полей, в которых искать
 	 * @return {*}
 	 * @private
 	 */
-	_find(a, val, columns) {
-		//TODO переписать с учетом html5 свойств массивов
-		var o, i, finded;
+	_find(src, val, columns) {
 		if (typeof val != "object") {
-			for (i in a) { // ищем по всем полям объекта
-				o = a[i];
-				for (var j in o) {
-					if (typeof o[j] !== "function" && utils.is_equal(o[j], val))
+			for (let i in src) { // ищем по всем полям объекта
+				const o = src[i];
+				for (let j in o) {
+					if (typeof o[j] !== "function" && utils.is_equal(o[j], val)){
 						return o;
+					}
 				}
 			}
 		} else {
-			for (i in a) { // ищем по ключам из val
-				o = a[i];
-				finded = true;
-				for (var j in val) {
+			for (let i in src) { // ищем по ключам из val
+				const o = src[i];
+				let finded = true;
+				for (let j in val) {
 					if (typeof o[j] !== "function" && !utils.is_equal(o[j], val[j])) {
 						finded = false;
 						break;
 					}
 				}
-				if (finded)
+				if (finded){
 					return o;
+				}
 			}
 		}
 	}
@@ -516,9 +526,9 @@ class Utils{
 
 		if (selection) {
 			// если отбор является функцией, выполняем её, передав контекст
-			if (typeof selection == "function")
+			if (typeof selection == "function"){
 				ok = selection.call(this, o);
-
+			}
 			else {
 				// бежим по всем свойствам `selection`
 				for (let j in selection) {
@@ -590,7 +600,6 @@ class Utils{
 						ok = (tmp >= sel.between[0]) && (tmp <= sel.between[1]);
 						if (!ok)
 							break;
-
 					}
 					else if (!utils.is_equal(o[j], sel)) {
 						ok = false;
@@ -609,40 +618,43 @@ class Utils{
 	 * Кроме стандартного поиска по равенству значений,
 	 * поддержаны операторы `in`, `not` и `like` и фильтрация через внешнюю функцию
 	 * @method _find_rows
-	 * @param arr {Array}
+	 * @param src {Object|Array}
 	 * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
 	 * @param callback {Function}
 	 * @return {Array}
 	 * @private
 	 */
-	_find_rows(arr, selection, callback) {
+	_find_rows(src, selection, callback) {
 
-		var o, res = [], top, count = 0;
+		const res = [];
+		let top, count = 0;
 
 		if (selection) {
 			if (selection._top) {
 				top = selection._top;
 				delete selection._top;
-			} else
+			} else{
 				top = 300;
+			}
 		}
 
-		for (var i in arr) {
-			o = arr[i];
-
+		for (let i in src) {
+			const o = src[i];
 			// выполняем колбэк с элементом и пополняем итоговый массив
 			if (utils._selection.call(this, o, selection)) {
 				if (callback) {
-					if (callback.call(this, o) === false)
+					if (callback.call(this, o) === false){
 						break;
-				} else
+					}
+				} else{
 					res.push(o);
-
+				}
 				// ограничиваем кол-во возвращаемых элементов
 				if (top) {
 					count++;
-					if (count >= top)
+					if (count >= top){
 						break;
+					}
 				}
 			}
 
