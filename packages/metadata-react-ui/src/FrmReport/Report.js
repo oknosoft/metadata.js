@@ -1,19 +1,22 @@
 import React, {PropTypes} from "react";
 import MetaComponent from "../common/MetaComponent";
+import DumbLoader from "../DumbLoader";
 
 import RepToolbar from "./RepToolbar";
 import RepTabularSection from "./RepTabularSection";
-import DumbLoader from "../DumbLoader";
-import RepParams from "./RepParams";
 
 
 export default class Report extends MetaComponent {
 
   static propTypes = {
-    _obj: PropTypes.object,
-    _acl: PropTypes.string.isRequired,
+    _obj: PropTypes.object,               // объект данных - отчет DataProcessorObj
+    _tabular: PropTypes.string,           // имя табчасти, в которой живут данные отчета
+    _acl: PropTypes.string.isRequired,    // права текущего пользователя
 
-    handlePrint: PropTypes.func.isRequired,
+    TabParams: PropTypes.func,            // внешний компонент страницы параметров - транслируется в RepToolbar
+
+    handlePrint: PropTypes.func,          // внешний обработчик печати
+    handleSchemeChange: PropTypes.func,   // внешний обработчик при изменении настроек компоновки
 
   }
 
@@ -21,14 +24,14 @@ export default class Report extends MetaComponent {
 
     super(props, context);
 
-    const {$p} = context
-    const {_obj} = props
-    const _tabular = "data"
+    const {$p} = context;
+    const {_obj} = props;
+    const _tabular = props._tabular || "data";
 
     this.state = {
       _tabular,
       _meta: _obj._metadata(_tabular),
-    }
+    };
 
     $p.cat.scheme_settings.get_scheme(_obj._manager.class_name + `.${_tabular}`)
       .then(this.handleSchemeChange)
@@ -42,7 +45,6 @@ export default class Report extends MetaComponent {
     this.props._obj.calculate(this.state._columns)
       .then(() => {
         this.refs.data.setState({groupBy: scheme.dims()})
-        //this.forceUpdate()
       })
   }
 
@@ -54,39 +56,37 @@ export default class Report extends MetaComponent {
   handleSchemeChange = (scheme) => {
 
     const {props, state} = this;
-    const {_obj} = props;
+    const {_obj, handleSchemeChange} = props;
     const _columns = scheme.rx_columns({
       mode: "ts",
       fields: state._meta.fields,
-      _obj: props._obj
+      _obj: _obj
     });
 
-    _obj.period_from = scheme.date_from;
-    _obj.period_till = scheme.date_till;
+    if(handleSchemeChange){
+      handleSchemeChange.call(this, scheme);
+    }
 
     this.setState({
       scheme,
       _columns
-    })
+    });
   }
 
   render() {
 
-    const {props, state, handleSave, handlePrint, handleSchemeChange} = this
-    const {_obj, height, width, handleClose} = props
-    const {_columns, scheme, _tabular} = state
+    const {props, state, handleSave, handlePrint, handleSchemeChange} = this;
+    const {_obj, height, width, handleClose, TabParams} = props;
+    const {_columns, scheme, _tabular} = state;
 
     if (!scheme) {
       return <DumbLoader title="Чтение настроек компоновки..."/>
-
     }
     else if (!_obj) {
       return <DumbLoader title="Чтение объекта данных..."/>
-
     }
     else if (!_columns || !_columns.length) {
       return <DumbLoader title="Ошибка настроек компоновки..."/>
-
     }
 
     return (
@@ -102,7 +102,7 @@ export default class Report extends MetaComponent {
           _tabular={_tabular}
           _columns={_columns}
 
-          TabParams={RepParams}
+          TabParams={TabParams}
 
           scheme={scheme}
           handleSchemeChange={handleSchemeChange}

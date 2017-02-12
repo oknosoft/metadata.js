@@ -36,9 +36,9 @@ const exec_concat = (src, dir, out) => {
   })
 }
 
-//const cmps = 'DataField,DataHead,DataList,DataListField,DataTree,Dialog,DumbLoader,FlexPanel,FrmLogin,FrmObj,FrmReport,FrmSuperLogin,MetaDesigner,MetaList,MetaTree,NavList,SchemeSettings,Tabs,TabularSection'.split(',');
+const cmps = 'DataField,DataHead,DataList,DataListField,DataTree,Dialog,DumbLoader,FlexPanel,FrmLogin,FrmObj,FrmReport,FrmSuperLogin,MetaDesigner,MetaList,MetaTree,NavList,SchemeSettings,Tabs,TabularSection'.split(',');
 
-const cmps = [];
+//const cmps = [];
 
 const exec_recursive = () => {
   const cmp = cmps.pop();

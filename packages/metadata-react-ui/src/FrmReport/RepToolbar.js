@@ -36,13 +36,6 @@ export default class RepToolbar extends MetaComponent {
 
   }
 
-  handleCustom = (row, _mgr) => {
-    this.props._obj.fill_by_order(row, _mgr)
-      .then((objs) => {
-        this.refs.production.forceUpdate()
-      })
-  }
-
   constructor (props, context) {
 
     super(props, context);
@@ -53,7 +46,7 @@ export default class RepToolbar extends MetaComponent {
 
   render() {
 
-    const {handleCustom, handleExportXLS, handleExportJSON, handleExportCSV, props} = this;
+    const {handleExportXLS, handleExportJSON, handleExportCSV, props} = this;
     const {handleSave, handleClose, handleSchemeChange, handlePrint, scheme, _obj, _tabular, TabParams} = props;
 
     return (
@@ -78,7 +71,6 @@ export default class RepToolbar extends MetaComponent {
               TabParams ? <TabParams
                 _obj={_obj}
                 scheme={scheme}
-                handleCustom={handleCustom}
               />
               : null
             }
