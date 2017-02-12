@@ -1,5 +1,5 @@
 export DataField from './DataField'
-export DataHead from './DataHead'
+export FieldsSet from './FieldsSet'
 export DataList from './DataList'
 export DataListField from './DataListField'
 export DataTree from './DataTree'

@@ -9,7 +9,7 @@ var _DataField2 = require('./DataField');
 
 var _DataField3 = _interopRequireDefault(_DataField2);
 
-var _DataHead2 = require('./DataHead');
+var _DataHead2 = require('./FieldsSet');
 
 var _DataHead3 = _interopRequireDefault(_DataHead2);
 
