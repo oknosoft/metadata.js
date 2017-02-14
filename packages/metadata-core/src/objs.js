@@ -29,34 +29,20 @@ class DataObj {
 
 	constructor(attr, manager) {
 
-		var tmp,
-			_ts_ = {},
-			_obj = {},
-			_data = {
-				_is_new: !(this instanceof EnumObj)
-			};
-
 		// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
 		if(!(manager instanceof classes.DataProcessorsManager) && !(manager instanceof classes.EnumManager)){
-			tmp = manager.get(attr, true);
+			const tmp = manager.get(attr, true);
+			if(tmp){
+				return tmp;
+			}
 		}
 
-		if(tmp){
-			attr = null;
-			return tmp;
-		}
-
-
-		if(manager instanceof classes.EnumManager){
-			_obj.ref = attr.name;
-		}
-		else if(!(manager instanceof classes.RegisterManager)){
-			_obj.ref = utils.fix_guid(attr);
-		}
-		else{
-			_obj.ref = manager.get_ref(attr);
-		}
-
+		const _obj = {
+			ref: manager instanceof classes.EnumManager ? attr.name : (
+					!(manager instanceof classes.RegisterManager) ? utils.fix_guid(attr) : manager.get_ref(attr)
+				)
+		};
+		const _ts_ = {};
 
 		Object.defineProperties(this, {
 
@@ -98,7 +84,9 @@ class DataObj {
 			 * @final
 			 */
 			_data: {
-				value : _data,
+				value: {
+					_is_new: !(this instanceof EnumObj)
+				},
 				configurable: true
 			}
 
@@ -114,28 +102,33 @@ class DataObj {
 
 	_getter(f) {
 
-		var mf = this._metadata(f).type,
-			res = this._obj ? this._obj[f] : "",
-			mgr, ref;
+		const mf = this._metadata(f).type;
+		const res = this._obj ? this._obj[f] : "";
 
-		if(f == "type" && typeof res == "object")
+		if(f == "type" && typeof res == "object"){
 			return res;
-
+		}
 		else if(f == "ref"){
 			return res;
+		}
+		else if(mf.is_ref){
 
-		}else if(mf.is_ref){
-			if(mf.digits && typeof res === "number")
+			if(mf.digits && typeof res === "number"){
 				return res;
+			}
 
-			if(mf.hasOwnProperty("str_len") && !utils.is_guid(res))
+			if(mf.hasOwnProperty("str_len") && !utils.is_guid(res)){
 				return res;
+			}
 
-			if(mgr = utils.value_mgr(this._obj, f, mf)){
-				if(utils.is_data_mgr(mgr))
+			let	mgr = utils.value_mgr(this._obj, f, mf)
+			if(mgr){
+				if(utils.is_data_mgr(mgr)){
 					return mgr.get(res);
-				else
+				}
+				else{
 					return utils.fetch_type(res, mgr);
+				}
 			}
 
 			if(res){
@@ -143,24 +136,24 @@ class DataObj {
 				return null;
 			}
 
-		}else if(mf.date_part)
+		}else if(mf.date_part){
 			return utils.fix_date(this._obj[f], true);
-
-		else if(mf.digits)
+		}
+		else if(mf.digits){
 			return utils.fix_number(this._obj[f], !mf.hasOwnProperty("str_len"));
-
-		else if(mf.types[0]=="boolean")
+		}
+		else if(mf.types[0]=="boolean"){
 			return utils.fix_boolean(this._obj[f]);
-
-		else
+		}
+		else{
 			return this._obj[f] || "";
+		}
 	}
 
 	__setter(f, v) {
 
 		const {_obj} = this;
 		const mf = this._metadata(f).type;
-		let mgr;
 
 		if(f == "type" && v.types){
 			_obj[f] = v;
@@ -172,15 +165,17 @@ class DataObj {
 
 			if(mf.digits && typeof v == "number" || mf.hasOwnProperty("str_len") && typeof v == "string" && !utils.is_guid(v)){
 				_obj[f] = v;
-
+			}
+			else if(typeof v == "boolean" && mf.types.indexOf("boolean") != -1){
+				_obj[f] = v;
 			}
 			else {
 				_obj[f] = utils.fix_guid(v);
 
-				if($p.utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1){
+				if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1){
 
 				}else{
-					mgr = utils.value_mgr(_obj, f, mf, false, v);
+					let mgr = utils.value_mgr(_obj, f, mf, false, v);
 					if(mgr){
 						if(mgr instanceof classes.EnumManager){
 							if(typeof v == "string")
@@ -286,15 +281,15 @@ class DataObj {
 	 * @for DataObj
 	 * @type Boolean
 	 */
-	get _deleted(){ return !!this._obj._deleted }
+	get _deleted(){
+		return !!this._obj._deleted
+	}
 
 	/**
 	 * Признак модифицированности
 	 */
 	get _modified(){
-		if(!this._data)
-			return false;
-		return !!(this._data._modified)
+		return !!this._data._modified
 	}
 
 	/**
@@ -303,7 +298,9 @@ class DataObj {
 	 * @for DataObj
 	 * @return {boolean}
 	 */
-	is_new(){ return this._data._is_new }
+	is_new(){
+		return this._data._is_new
+	}
 
 	/**
 	 * Метод для ручной установки признака _прочитан_ (не новый)
@@ -331,7 +328,9 @@ class DataObj {
 	 * @method empty
 	 * @return {boolean} - true, если ссылка пустая
 	 */
-	empty(){ return utils.is_empty_guid(this._obj.ref) }
+	empty(){
+		return utils.is_empty_guid(this._obj.ref)
+	}
 
 	/**
 	 * Читает объект из внешней или внутренней датабазы асинхронно.
@@ -370,27 +369,34 @@ class DataObj {
 	 * @for DataObj
 	 */
 	unload() {
-		var f, obj = this._obj;
 
-		this._manager.unload_obj(this.ref);
+		const {obj, ref, _observers, _notis, _manager} = this;
 
-		if (this._observers)
-			this._observers.length = 0;
+		_manager.unload_obj(ref)
 
-		if (this._notis)
-			this._notis.length = 0;
-
-		for (f in this._metadata().tabular_sections)
-			this[f].clear(true);
-
-		for (f in this) {
-			if (this.hasOwnProperty(f))
-				delete this[f];
+		if (_observers){
+			_observers.length = 0
 		}
-		for (f in obj)
-			delete obj[f];
-		["_ts_", "_obj", "_data"].forEach((f) => { delete this[f]; });
-		f = obj = null;
+
+		if (_notis){
+			_notis.length = 0
+		}
+
+		for (let f in this._metadata().tabular_sections){
+			this[f].clear(true)
+		}
+
+		for (let f in this) {
+			if (this.hasOwnProperty(f)){
+				delete this[f]
+			}
+		}
+
+		for (let f in obj){
+			delete obj[f]
+		}
+
+		["_ts_", "_obj", "_data"].forEach((f) => { delete this[f]; })
 	}
 
 	/**
@@ -413,7 +419,7 @@ class DataObj {
 			this.posted = post;
 		}
 
-		var saver,
+		let saver,
 
 			before_save_res = {},
 
@@ -505,7 +511,8 @@ class DataObj {
 	 * @param att_id {String} - идентификатор (имя) вложения
 	 */
 	get_attachment(att_id) {
-		return this._manager.adapter.get_attachment(this._manager, this.ref, att_id);
+		const {_manager, ref} = this
+		return _manager.adapter.get_attachment(_manager, ref, att_id);
 	}
 
 	/**
@@ -521,14 +528,15 @@ class DataObj {
 	 * @async
 	 */
 	save_attachment(att_id, attachment, type) {
-		return this._manager.save_attachment(this.ref, att_id, attachment, type)
-			.then(function (att) {
-				if (!this._attachments)
+		const {_manager, ref, _attachments} = this
+		return _manager.save_attachment(ref, att_id, attachment, type)
+			.then((att) => {
+				if (!_attachments)
 					this._attachments = {};
 				if (!this._attachments[att_id] || !att.stub)
 					this._attachments[att_id] = att;
 				return att;
-			}.bind(this));
+			});
 	}
 
 
@@ -542,12 +550,13 @@ class DataObj {
 	 * @async
 	 */
 	delete_attachment(att_id) {
-		return this._manager.delete_attachment(this.ref, att_id)
-			.then(function (att) {
-				if (this._attachments)
-					delete this._attachments[att_id];
+		const {_manager, ref, _attachments} = this
+		return _manager.delete_attachment(ref, att_id)
+			.then((att) => {
+				if (_attachments)
+					delete _attachments[att_id];
 				return att;
-			}.bind(this));
+			});
 	}
 
 
@@ -561,13 +570,15 @@ class DataObj {
 	 * @param [v] {Boolean}
 	 */
 	_silent(v) {
-		if (typeof v == "boolean")
-			this._data._silent = v;
+		const {_data} = this
+		if (typeof v == "boolean"){
+			_data._silent = v
+		}
 		else {
-			this._data._silent = true;
-			setTimeout(function () {
-				this._data._silent = false;
-			}.bind(this));
+			_data._silent = true;
+			setTimeout(() => {
+				_data._silent = false
+			})
 		}
 	}
 
@@ -628,7 +639,7 @@ Object.defineProperty(DataObj.prototype, "ref", {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
  */
-class CatObj extends DataObj{
+class CatObj extends DataObj {
 
 	constructor(attr, manager){
 
@@ -681,6 +692,40 @@ class CatObj extends DataObj{
 
 }
 
+/**
+ * mixin свойств дата и номер документа к базовому классу
+ * @param superclass
+ * @constructor
+ */
+let NumberDocAndDate = (superclass) => class extends superclass {
+
+	/**
+	 * Номер документа
+	 * @property number_doc
+	 * @type {String|Number}
+	 */
+	get number_doc() {
+		return this._obj.number_doc || ""
+	}
+	set number_doc(v) {
+		this.__notify('number_doc');
+		this._obj.number_doc = v;
+	}
+
+	/**
+	 * Дата документа
+	 * @property date
+	 * @type {Date}
+	 */
+	get date() {
+		return this._obj.date instanceof Date ? this._obj.date : utils.blank.date
+	}
+	set date(v) {
+		this.__notify('date');
+		this._obj.date = utils.fix_date(v, true);
+	}
+
+}
 
 /**
  * ### Абстрактный класс ДокументОбъект
@@ -690,7 +735,7 @@ class CatObj extends DataObj{
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
  */
-class DocObj extends DataObj{
+class DocObj extends NumberDocAndDate(DataObj) {
 
 	constructor(attr, manager){
 
@@ -719,32 +764,6 @@ class DocObj extends DataObj{
 	}
 
 	/**
-	 * Номер документа
-	 * @property number_doc
-	 * @type {String|Number}
-	 */
-	get number_doc() {
-		return this._obj.number_doc || ""
-	}
-	set number_doc(v) {
-		this.__notify('number_doc');
-		this._obj.number_doc = v;
-	}
-
-	/**
-	 * Дата документа
-	 * @property date
-	 * @type {Date}
-	 */
-	get date() {
-		return this._obj.date instanceof Date ? this._obj.date : utils.blank.date
-	}
-	set date(v) {
-		this.__notify('date');
-		this._obj.date = utils.fix_date(v, true);
-	}
-
-	/**
 	 * Признак проведения
 	 * @property posted
 	 * @type {Boolean}
@@ -758,7 +777,6 @@ class DocObj extends DataObj{
 	}
 
 }
-
 
 
 /**
@@ -791,7 +809,6 @@ class DataProcessorObj extends DataObj {
 }
 
 
-
 /**
  * ### Абстрактный класс ЗадачаОбъект
  * @class TaskObj
@@ -800,33 +817,8 @@ class DataProcessorObj extends DataObj {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {DataManager}
  */
-class TaskObj extends CatObj {
+class TaskObj extends NumberDocAndDate(CatObj) {
 
-	/**
-	 * Номер документа
-	 * @property number_doc
-	 * @type {String|Number}
-	 */
-	get number_doc() {
-		return this._obj.number_doc || ""
-	}
-	set number_doc(v) {
-		this.__notify('number_doc');
-		this._obj.number_doc = v;
-	}
-
-	/**
-	 * Дата документа
-	 * @property date
-	 * @type {Date}
-	 */
-	get date() {
-		return this._obj.date instanceof Date ? this._obj.date : utils.blank.date
-	}
-	set date(v) {
-		this.__notify('date');
-		this._obj.date = utils.fix_date(v, true);
-	}
 }
 
 
@@ -838,33 +830,7 @@ class TaskObj extends CatObj {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {DataManager}
  */
-class BusinessProcessObj extends CatObj {
-
-	/**
-	 * Номер документа
-	 * @property number_doc
-	 * @type {String|Number}
-	 */
-	get number_doc() {
-		return this._obj.number_doc || ""
-	}
-	set number_doc(v) {
-		this.__notify('number_doc');
-		this._obj.number_doc = v;
-	}
-
-	/**
-	 * Дата документа
-	 * @property date
-	 * @type {Date}
-	 */
-	get date() {
-		return this._obj.date instanceof Date ? this._obj.date : utils.blank.date
-	}
-	set date(v) {
-		this.__notify('date');
-		this._obj.date = utils.fix_date(v, true);
-	}
+class BusinessProcessObj extends NumberDocAndDate(CatObj) {
 
 }
 
@@ -980,7 +946,7 @@ class RegisterRow extends DataObj {
 		super(attr, manager);
 
 		if (attr && typeof attr == "object"){
-			var tref = attr.ref;
+			let tref = attr.ref;
 			if(tref){
 				delete attr.ref;
 			}
@@ -1010,9 +976,10 @@ class RegisterRow extends DataObj {
 	 * @type Object
 	 */
 	_metadata(field_name) {
-		var _meta = this._manager.metadata();
-		if (!_meta.fields)
+		const _meta = this._manager.metadata();
+		if (!_meta.fields){
 			_meta.fields = Object.assign({}, _meta.dimensions, _meta.resources, _meta.attributes);
+		}
 		return field_name ? _meta.fields[field_name] : _meta;
 	}
 
@@ -1027,6 +994,7 @@ class RegisterRow extends DataObj {
 		return this._metadata().obj_presentation || this._metadata().synonym;
 	}
 }
+
 
 /**
  * Здесь живут ссылки на конструкторы классов

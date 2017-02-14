@@ -1,0 +1,68 @@
+
+.meta-progress {
+	margin: 40px auto auto auto !important;
+	display: block !important;
+}
+
+/* Toolbar */
+.meta-toolbar {
+	z-index: 800;
+}
+
+.meta-toolbar-group {
+	z-index: 850;
+}
+
+/* DataField */
+.meta-datafield-label {
+	width: 40%;
+	display: inline-block;
+}
+
+.meta-datafield-data {
+	width: 60%;
+	display: inline-block;
+}
+
+.meta-datafield-field {
+	min-width: 320px;
+	margin-right: 8px;
+}
+
+.meta-datafield-dataselect {
+	width: 55%;
+	display: inline-block;
+	position: relative;
+	bottom: -8px;
+}
+
+/* Paper */
+.meta-paper {
+	min-width: 280px !important;
+	margin: auto !important;
+	max-width: 800px !important;
+	padding-top: 18px !important;
+}
+
+.meta-padding-8 {
+	padding: 8px;
+}
+
+.meta-padding-18 {
+	padding: 18px;
+}
+
+.meta-button-18-0 {
+	margin: 18px 18px 0 0
+}
+
+.meta-toggle {
+	margin: 18px;
+	width: 90% !important
+}
+
+/* AppBar */
+.meta-appbar-button {
+	color: #fff !important;
+	vertical-align: middle;
+}

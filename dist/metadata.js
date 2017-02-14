@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.225, built:2016-12-16 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.225, built:2017-02-03 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -205,6 +205,8 @@ return ru;
  */
 
 
+"use strict";
+
 /**
  * Фреймворк добавляет в прототипы _Object_ и _Number_<br />
  * несколько методов - синтаксический сахар для _наследования_ и работы со _свойствами_
@@ -352,7 +354,10 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 		 */
 		observe: {
 			value: function(target, observer) {
-				if(!target._observers)
+				if(!target){
+					return;
+				}
+				if(!target._observers){
 					target.__define({
 						_observers: {
 							value: [],
@@ -363,6 +368,7 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 							enumerable: false
 						}
 					});
+				}
 				target._observers.push(observer);
 			},
 			enumerable: false
@@ -375,17 +381,17 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 		 */
 		unobserve: {
 			value: function(target, observer) {
+				if(target && target._observers){
 
-				if(!target._observers)
-					return;
+					if(!observer){
+						target._observers.length = 0;
+					}
 
-				if(!observer)
-					target._observers.length = 0;
-
-				for(var i=0; i<target._observers.length; i++){
-					if(target._observers[i]===observer){
-						target._observers.splice(i, 1);
-						break;
+					for(var i=0; i<target._observers.length; i++){
+						if(target._observers[i]===observer){
+							target._observers.splice(i, 1);
+							break;
+						}
 					}
 				}
 			},
@@ -412,8 +418,9 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 						target._notis.push(noti);
 						noti = null;
 
-						if(timer)
+						if(timer){
 							clearTimeout(timer);
+						}
 
 						timer = setTimeout(function () {
 							//TODO: свернуть массив оповещений перед отправкой
@@ -662,7 +669,7 @@ function MetaEngine() {
 						for(j in selection){
 
 							sel = selection[j];
-							is_obj = typeof(sel) === "object";
+							is_obj = sel && typeof(sel) === "object";
 
 							// пропускаем служебные свойства
 							if(j.substr(0, 1) == "_")
@@ -1368,16 +1375,19 @@ function Utils() {
 	 * @return {*}
 	 */
 	this.fetch_type = function(str, mtype){
-		var v = str;
-		if(mtype.is_ref)
-			v = this.fix_guid(str);
-		else if(mtype.date_part)
-			v = this.fix_date(str, true);
-		else if(mtype["digits"])
-			v = this.fix_number(str, true);
-		else if(mtype.types[0]=="boolean")
-			v = this.fix_boolean(str);
-		return v;
+		if (mtype.is_ref){
+			return this.fix_guid(str);
+		}
+		if (mtype.date_part){
+			return this.fix_date(str, true)
+		}
+		if (mtype["digits"]){
+			return this.fix_number(str, true)
+		}
+		if (mtype.types && mtype.types[0] == "boolean"){
+			return this.fix_boolean(str)
+		}
+		return str;
 	};
 
 	/**
@@ -1897,15 +1907,20 @@ function WSQL(){
 		set_user_param: {
 			value: function(prm_name, prm_value){
 
-				var str_prm = prm_value;
-				if(typeof prm_value == "object")
-					str_prm = JSON.stringify(prm_value);
+				if(typeof prm_value == "object"){
+					user_params[prm_name] = prm_value;
+					prm_value = JSON.stringify(prm_value);
+				}
+				else if(prm_value === false || prm_value === "false"){
+					user_params[prm_name] = false;
+					prm_value = "";
+				}
+				else{
+					user_params[prm_name] = prm_value;
+				}
 
-				else if(prm_value === false)
-					str_prm = "";
+				ls.setItem($p.job_prm.local_storage_prefix+prm_name, prm_value);
 
-				ls.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
-				user_params[prm_name] = prm_value;
 			}
 		},
 
@@ -1921,8 +1936,9 @@ function WSQL(){
 		get_user_param: {
 			value: function(prm_name, type){
 
-				if(!user_params.hasOwnProperty(prm_name) && ls)
+				if(!user_params.hasOwnProperty(prm_name) && ls){
 					user_params[prm_name] = this.fetch_type(ls.getItem($p.job_prm.local_storage_prefix+prm_name), type);
+				}
 
 				return user_params[prm_name];
 			}
@@ -2098,6 +2114,7 @@ function WSQL(){
 					zone: wsql.get_user_param("zone", "number"),
 					prefix: $p.job_prm.local_storage_prefix,
 					suffix: wsql.get_user_param("couch_suffix", "string") || "",
+					direct: wsql.get_user_param("couch_direct", "boolean"),
 					user_node: $p.job_prm.user_node,
 					noreplicate: $p.job_prm.noreplicate
 				};
@@ -2986,17 +3003,16 @@ function Pouch(){
 					.plugin(require('pouchdb-adapter-memory'))
 					.plugin(require('pouchdb-adapter-http'))
 					.plugin(require('pouchdb-replication'))
-					.plugin(require('pouchdb-mapreduce')) : PouchDB
+					.plugin(require('pouchdb-mapreduce'))
+					.plugin(require('pouchdb-find')) : PouchDB
 		},
 
 		init: {
-
 			value: function (attr) {
-
 				_paths._mixin(attr);
-
-				if(_paths.path && _paths.path.indexOf("http") != 0 && typeof location != "undefined")
+				if(_paths.path && _paths.path.indexOf("http") != 0 && typeof location != "undefined"){
 					_paths.path = location.protocol + "//" + location.host + _paths.path;
+				}
 			}
 		},
 
@@ -3010,19 +3026,24 @@ function Pouch(){
 			get: function () {
 				if(!_local){
 					var opts = {auto_compaction: true, revs_limit: 2};
-					_local = {
-						ram: new t.DB(_paths.prefix + _paths.zone + "_ram", opts),
-						doc: new t.DB(_paths.prefix + _paths.zone + "_doc", opts),
-						meta: new t.DB(_paths.prefix + "meta", opts),
-						sync: {}
+					if(_paths.direct){
+						_local = {
+							ram: this.remote.ram,
+							doc: this.remote.doc,
+							sync: {}
+						}
+					}
+					else{
+						_local = {
+							ram: new t.DB(_paths.prefix + _paths.zone + "_ram", opts),
+							doc: new t.DB(_paths.prefix + _paths.zone + "_doc", opts),
+							meta: new t.DB(_paths.prefix + "meta", opts),
+							sync: {}
+						}
 					}
 				}
 				if(_paths.path && !_local._meta){
 					_local._meta = new t.DB(_paths.path + "meta", {
-						auth: {
-							username: "guest",
-							password: "meta"
-						},
 						skip_setup: true
 					});
 					t.run_sync(_local.meta, _local._meta, "meta");
@@ -3039,22 +3060,11 @@ function Pouch(){
 		 */
 		remote: {
 			get: function () {
-				if(!_remote && _auth){
+				if(!_remote){
+					var opts = {skip_setup: true, adapter: 'http'};
 					_remote = {
-						ram: new t.DB(_paths.path + _paths.zone + "_ram", {
-							auth: {
-								username: _auth.username,
-								password: _auth.password
-							},
-							skip_setup: true
-						}),
-						doc: new t.DB(_paths.path + _paths.zone + "_doc" + _paths.suffix, {
-							auth: {
-								username: _auth.username,
-								password: _auth.password
-							},
-							skip_setup: true
-						})
+						ram: new t.DB(_paths.path + _paths.zone + "_ram", opts),
+						doc: new t.DB(_paths.path + _paths.zone + "_doc" + (_paths.suffix ? "_" + _paths.suffix : ""), opts)
 					}
 				}
 				return _remote;
@@ -3072,29 +3082,84 @@ function Pouch(){
 			value: function (username, password) {
 
 				// реквизиты гостевого пользователя для демобаз
-				if(username == undefined && password == undefined){
-					username = $p.job_prm.guest_name;
-					password = $p.aes.Ctr.decrypt($p.job_prm.guest_pwd);
+				if (username == undefined && password == undefined){
+					if($p.job_prm.guests && $p.job_prm.guests.length) {
+						username = $p.job_prm.guests[0].username;
+						password = $p.aes.Ctr.decrypt($p.job_prm.guests[0].password);
+					}else{
+						return Promise.reject(new Error("username & password not defined"));
+					}
 				}
 
-				if(_auth){
-					if(_auth.username == username)
+				if (_auth) {
+					if (_auth.username == username){
 						return Promise.resolve();
-					else
-						return Promise.reject();
+					} else {
+						return Promise.reject(new Error("need logout first"));
+					}
 				}
 
-				return $p.ajax.get_ex(_paths.path + _paths.zone + "_ram", {username: username, password: password})
-					.then(function (req) {
-						_auth = {username: username, password: password};
-						setTimeout(function () {
-							dhx4.callEvent("log_in", [username]);
+				// авторизуемся во всех базах
+				var bases = ["ram", "doc"],
+					try_auth = [];
+
+				this.remote;
+
+				bases.forEach(function(name){
+					try_auth.push(
+						_remote[name].login(username, password)
+					)
+				})
+
+				return Promise.all(try_auth)
+					.then(function (){
+
+						_auth = {username: username};
+						setTimeout(function(){
+
+							// сохраняем имя пользователя в базе
+							if($p.wsql.get_user_param("user_name") != username){
+								$p.wsql.set_user_param("user_name", username)
+							}
+
+							// если настроено сохранение пароля - сохраняем и его
+							if($p.wsql.get_user_param("enable_save_pwd")){
+								if($p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")) != password){
+									$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password))   // сохраняем имя пользователя в базе
+								}
+							}
+							else if($p.wsql.get_user_param("user_pwd") != ""){
+								$p.wsql.set_user_param("user_pwd", "")
+							}
+
+							// излучаем событие
+							$p.eve.callEvent('user_log_in', [username]);
 						});
-						return {
-							ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),
-							doc: t.run_sync(t.local.doc, t.remote.doc, "doc")
+
+						if(!_paths.direct){
+							bases.forEach(function(dbid) {
+								t.run_sync(t.local[dbid], t.remote[dbid], dbid)
+							})
 						}
-					});
+						return t.local.sync;
+
+					})
+					.catch(function(err) {
+						// излучаем событие
+						$p.eve.callEvent("user_log_fault", [err])
+					})
+
+				// return $p.ajax.get_ex(_paths.path + _paths.zone + "_ram", {username: username, password: password})
+				// 	.then(function (req) {
+				// 		_auth = {username: username, password: password};
+				// 		setTimeout(function () {
+				// 			$p.eve.callEvent("log_in", [username]);
+				// 		});
+				// 		return {
+				// 			ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),
+				// 			doc: t.run_sync(t.local.doc, t.remote.doc, "doc")
+				// 		}
+				// 	});
 			}
 		},
 
@@ -3119,15 +3184,34 @@ function Pouch(){
 					_auth = null;
 				}
 
-				if(_remote && _remote.ram)
-					delete _remote.ram;
+				$p.eve.callEvent("log_out");
 
-				if(_remote && _remote.doc)
-					delete _remote.doc;
+				if(_paths.direct){
+					setTimeout(function () {
+						$p.eve.redirect = true;
+						location.reload(true);
+					}, 1000);
+				}
 
-				_remote = null;
-
-				dhx4.callEvent("log_out");
+				return _remote && _remote.ram ?
+					_remote.ram.logout()
+						.then(function () {
+							if(_remote && _remote.doc){
+								return _remote.doc.logout()
+							}
+						})
+						.then(function () {
+							if(_remote && _remote.ram){
+								delete _remote.ram;
+							}
+							if(_remote && _remote.doc){
+								delete _remote.doc;
+							}
+							_remote = null;
+							$p.eve.callEvent("user_log_out")
+						})
+					:
+					Promise.resolve();
 			}
 		},
 
@@ -3332,8 +3416,8 @@ function Pouch(){
 						var options = {
 								live: true,
 								retry: true,
-								batch_size: 300,
-								batches_limit: 8
+								batch_size: 200,
+								batches_limit: 6
 							};
 
 						// если указан клиентский или серверный фильтр - подключаем
@@ -3959,6 +4043,18 @@ function Meta() {
 					synonym: "Расход"
 				}
 			],
+			sort_directions: [
+				{
+					order: 0,
+					name: "asc",
+					synonym: "По возрастанию"
+				},
+				{
+					order: 1,
+					name: "desc",
+					synonym: "По убыванию"
+				}
+			],
 			comparison_types: [
 				{
 					order: 0,
@@ -4032,217 +4128,217 @@ function Meta() {
 				code_length: 0,
 				fields: {
 					obj: {
-						"synonym": "Объект",
-						"multiline_mode": false,
-						"tooltip": "",
-						"type": {
-							"types": [
+						synonym: "Объект",
+						multiline_mode: false,
+						tooltip: "Имя класса метаданных",
+						type: {
+							types: [
 								"string"
 							],
-							"str_len": 250
+							str_len: 250
 						}
 					},
 					user: {
-						"synonym": "Пользователь",
-						"multiline_mode": false,
-						"tooltip": "",
-						"type": {
-							"types": [
+						synonym: "Пользователь",
+						multiline_mode: false,
+						tooltip: "Если пусто - публичная настройка",
+						type: {
+							types: [
 								"string"
 							],
-							"str_len": 50
-						}
-					},
-					predefined_name: {
-						"synonym": "",
-						"multiline_mode": false,
-						"tooltip": "",
-						"type": {
-							"types": [
-								"string"
-							],
-							"str_len": 256
+							str_len: 50
 						}
 					}
 				},
 				tabular_sections: {
 					available_fields: {
-						"name": "available_fields",
-						"synonym": "Доступные поля",
-						"tooltip": "Состав, порядок и ширина колонок",
-						"fields": {
-							"parent": {
-								"synonym": "Родитель",
-								"multiline_mode": false,
-								"tooltip": "Для плоского списка, родитель пустой",
-								"type": {
-									"types": [
+						name: "available_fields",
+						synonym: "Доступные поля",
+						tooltip: "Состав, порядок и ширина колонок",
+						fields: {
+							parent: {
+								synonym: "Родитель",
+								multiline_mode: false,
+								tooltip: "Для плоского списка, родитель пустой",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							},
-							"use": {
-								"synonym": "Использование",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							use: {
+								synonym: "Использование",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"boolean"
 									]
 								}
 							},
-							"field": {
-								"synonym": "Поле",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							field: {
+								synonym: "Поле",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							},
-							"width": {
-								"synonym": "Ширина",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							width: {
+								synonym: "Ширина",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"number"
 									],
-									"digits": 6,
-									"fraction_figits": 0
+									digits: 6,
+									fraction_figits: 0
 								}
 							},
-							"caption": {
-								"synonym": "Заголовок",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							caption: {
+								synonym: "Заголовок",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							}
 						}
 					},
 					sort_fields: {
-						"name": "sort_fields",
-						"synonym": "Поля сортировки",
-						"tooltip": "",
-						"fields": {
-							"parent": {
-								"synonym": "Родитель",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+						name: "sort_fields",
+						synonym: "Поля сортировки",
+						tooltip: "",
+						fields: {
+							parent: {
+								synonym: "Родитель",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							},
-							"field": {
-								"synonym": "Поле",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							field: {
+								synonym: "Поле",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
+								}
+							},
+							direction: {
+								synonym: "Направление",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
+										"enm.sort_directions"
+									],
+									"is_ref": true
 								}
 							}
 						}
 					},
 					grouping_fields: {
-						"name": "grouping_fields",
-						"synonym": "Поля группировки",
-						"tooltip": "",
-						"fields": {
-							"parent": {
-								"synonym": "Родитель",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+						name: "grouping_fields",
+						synonym: "Поля группировки",
+						tooltip: "",
+						fields: {
+							parent: {
+								synonym: "Родитель",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							},
-							"field": {
-								"synonym": "Поле",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							field: {
+								synonym: "Поле",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							}
 						}
 					},
 					selection: {
-						"name": "selection",
-						"synonym": "Отбор",
-						"tooltip": "",
-						"fields": {
-							"parent": {
-								"synonym": "Родитель",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+						name: "selection",
+						synonym: "Отбор",
+						tooltip: "",
+						fields: {
+							parent: {
+								synonym: "Родитель",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							},
-							"use": {
-								"synonym": "Использование",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							use: {
+								synonym: "Использование",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"boolean"
 									]
 								}
 							},
-							"left_value": {
-								"synonym": "Левое значение",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							left_value: {
+								synonym: "Левое значение",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							},
-							"comparison_type": {
-								"synonym": "Вид сравнения",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
-										"string"
+							comparison_type: {
+								synonym: "Вид сравнения",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
+										"enm.comparison_types"
 									],
-									"str_len": 100
+									is_ref: true
 								}
 							},
-							"right_value": {
-								"synonym": "Правое значение",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
+							right_value: {
+								synonym: "Правое значение",
+								multiline_mode: false,
+								tooltip: "",
+								type: {
+									types: [
 										"string"
 									],
-									"str_len": 100
+									str_len: 100
 								}
 							}
 						}
@@ -4648,13 +4744,17 @@ function Meta() {
 	 * @return {DataManager|Array}
 	 */
 	_md.value_mgr = function(row, f, mf, array_enabled, v){
+
 		var property, oproperty, tnames, rt, mgr;
-		if(mf._mgr)
+
+		if(mf._mgr){
 			return mf._mgr;
+		}
 
 		function mf_mgr(mgr){
-			if(mgr && mf.types.length == 1)
+			if(mgr && mf.types.length == 1){
 				mf._mgr = mgr;
+			}
 			return mgr;
 		}
 
@@ -4697,18 +4797,22 @@ function Meta() {
 		}else{
 
 			// Получаем объект свойства
-			if($p.utils.is_data_obj(property))
+			if($p.utils.is_data_obj(property)){
 				oproperty = property;
-			else if($p.utils.is_guid(property))
+			}
+			else if($p.utils.is_guid(property)){
 				oproperty = $p.cch.properties.get(property, false);
-			else
+			}
+			else{
 				return;
+			}
 
 			if($p.utils.is_data_obj(oproperty)){
 
 				// затычка для неизвестных свойств используем значения свойств объектов
-				if(oproperty.is_new())
+				if(oproperty.is_new()){
 					return $p.cat.property_values;
+				}
 
 				// и через его тип выходми на мнеджера значения
 				// for(rt in oproperty.type.types)
@@ -4723,20 +4827,25 @@ function Meta() {
 
 				//---
 				rt = [];
-				oproperty.type.types.forEach(function(v){
+				oproperty.type.types.some(function(v){
 					tnames = v.split(".");
-					if(tnames.length > 1 && $p[tnames[0]][tnames[1]])
+					if(tnames.length > 1 && $p[tnames[0]][tnames[1]]){
 						rt.push($p[tnames[0]][tnames[1]]);
+					}
+					else if(v == "boolean"){
+						rt.push({types: ["boolean"]});
+						return true
+					}
 				});
-				if(rt.length == 1 || row[f] == $p.utils.blank.guid)
+				if(rt.length == 1 || row[f] == $p.utils.blank.guid){
 					return mf_mgr(rt[0]);
-
-				else if(array_enabled)
+				}
+				else if(array_enabled){
 					return rt;
-
-				else if((property = row[f]) instanceof DataObj)
+				}
+				else if((property = row[f]) instanceof DataObj){
 					return property._manager;
-
+				}
 				else if($p.utils.is_guid(property) && property != $p.utils.blank.guid){
 					for(var i in rt){
 						mgr = rt[i];
@@ -5698,32 +5807,40 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 					if(pref.mandatory)
 						ft += '" class="cell_mandatory';
 				}
-
-			}else if(typeof f === "object"){
+			}
+			else if(typeof f === "object"){
 				row_id = f.id;
 				mf = extra_fields && extra_fields.metadata && extra_fields.metadata[row_id];
-				if(!mf)
+				if(!mf){
 					mf = {synonym: f.synonym};
-				else if(f.synonym)
+				}
+				else if(f.synonym){
 					mf.synonym = f.synonym;
+				}
 
 				ft = f.type;
 				txt = "";
-				if(f.hasOwnProperty("txt"))
+				if(f.hasOwnProperty("txt")){
 					txt = f.txt;
-				else if((v = o[row_id]) !== undefined)
+				}
+				else if((v = o[row_id]) !== undefined){
 					txt_by_type(v, mf.type ? mf : _md.get(t.class_name, row_id));
-
-			}else if(extra_fields && extra_fields.metadata && ((mf = extra_fields.metadata[f]) !== undefined)){
+				}
+			}
+			else if(extra_fields && extra_fields.metadata && ((mf = extra_fields.metadata[f]) !== undefined)){
 				row_id = f;
 				by_type(v = o[f]);
-
-			}else if((v = o[f]) !== undefined){
+			}
+			else if((v = o[f]) !== undefined){
 				mf = _md.get(t.class_name, row_id = f);
+				if(!mf){
+					return;
+				}
 				by_type(v);
-
-			}else
+			}
+			else{
 				return;
+			}
 
 			gd += '<row id="' + row_id + '"><cell>' + (mf.synonym || mf.name) +
 				'</cell><cell type="' + ft + '">' + txt + '</cell></row>';
@@ -5732,11 +5849,13 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 	default_oxml();
 
 	for(i in oxml){
-		if(i!=" ")
+		if(i!=" "){
 			gd += '<row open="1"><cell>' + i + '</cell>';   // если у блока есть заголовок, формируем блок иначе добавляем поля без иерархии
+		}
 
-		for(j in oxml[i])
+		for(j in oxml[i]){
 			add_xml_row(oxml[i][j]);                        // поля, описанные в текущем разделе
+		}
 
 		if(extra_fields && i == extra_fields.title && o[extra_fields.ts]){  // строки табчасти o.extra_fields
 			var added = false,
@@ -5798,14 +5917,16 @@ DataManager.prototype.print = function(ref, model, wnd){
 			wnd_print.focus();
 	}
 
-	if(wnd && wnd.progressOn)
+	if(wnd && wnd.progressOn){
 		wnd.progressOn();
+	}
 
 	setTimeout(tune_wnd_print, 3000);
 
 	// если _printing_plates содержит ссылку на обрабочтик печати, используем его
-	if(this._printing_plates[model] instanceof DataObj)
+	if(this._printing_plates[model] instanceof DataObj){
 		model = this._printing_plates[model];
+	}
 
 	// если существует локальный обработчик, используем его
 	if(model instanceof DataObj && model.execute){
@@ -8004,17 +8125,22 @@ DataObj.prototype._getter = function (f) {
 		return res;
 
 	}else if(mf.is_ref){
-		if(mf.digits && typeof res === "number")
-			return res;
 
-		if(mf.hasOwnProperty("str_len") && !$p.utils.is_guid(res))
+		if(mf.digits && typeof res === "number"){
 			return res;
+		}
+
+		if(mf.hasOwnProperty("str_len") && !$p.utils.is_guid(res)){
+			return res;
+		}
 
 		if(mgr = _md.value_mgr(this._obj, f, mf)){
-			if($p.utils.is_data_mgr(mgr))
+			if($p.utils.is_data_mgr(mgr)){
 				return mgr.get(res, false);
-			else
+			}
+			else{
 				return $p.utils.fetch_type(res, mgr);
+			}
 		}
 
 		if(res){
@@ -8051,47 +8177,57 @@ DataObj.prototype.__setter = function (f, v) {
 
 		if(mf.digits && typeof v == "number" || mf.hasOwnProperty("str_len") && typeof v == "string" && !$p.utils.is_guid(v)){
 			this._obj[f] = v;
-
-		}else {
+		}
+		else if(typeof v == "boolean" && mf.types.indexOf("boolean") != -1){
+			this._obj[f] = v;
+		}
+		else {
 			this._obj[f] = $p.utils.fix_guid(v);
 
 			mgr = _md.value_mgr(this._obj, f, mf, false, v);
 
 			if(mgr){
 				if(mgr instanceof EnumManager){
-					if(typeof v == "string")
+					if(typeof v == "string"){
 						this._obj[f] = v;
-
-					else if(!v)
+					}
+					else if(!v){
 						this._obj[f] = "";
-
-					else if(typeof v == "object")
+					}
+					else if(typeof v == "object"){
 						this._obj[f] = v.ref || v.name || "";
-
-				}else if(v && v.presentation){
-					if(v.type && !(v instanceof DataObj))
+					}
+				}
+				else if(v && v.presentation){
+					if(v.type && !(v instanceof DataObj)){
 						delete v.type;
+					}
 					mgr.create(v);
-				}else if(!$p.utils.is_data_mgr(mgr))
+				}
+				else if(!$p.utils.is_data_mgr(mgr)){
 					this._obj[f] = $p.utils.fetch_type(v, mgr);
-			}else{
-				if(typeof v != "object")
+				}
+			}
+			else{
+				if(typeof v != "object"){
 					this._obj[f] = v;
+				}
 			}
 		}
-
-	}else if(mf.date_part)
+	}
+	else if(mf.date_part){
 		this._obj[f] = $p.utils.fix_date(v, true);
-
-	else if(mf.digits)
+	}
+	else if(mf.digits){
 		this._obj[f] = $p.utils.fix_number(v, !mf.hasOwnProperty("str_len"));
-
-	else if(mf.types[0]=="boolean")
+	}
+	else if(mf.types[0]=="boolean"){
 		this._obj[f] = $p.utils.fix_boolean(v);
-
-	else
+	}
+	else{
 		this._obj[f] = v;
-	
+	}
+
 };
 
 DataObj.prototype.__notify = function (f) {
@@ -8107,7 +8243,7 @@ DataObj.prototype._setter = function (f, v) {
 
 	if(this._obj[f] == v)
 		return;
-	
+
 	this.__notify(f);
 	this.__setter(f, v);
 	this._data._modified = true;
@@ -8347,9 +8483,9 @@ DataObj.prototype.__define({
 			}
 
 			var saver,
-				
+
 				before_save_res = this._manager.handle_event(this, "before_save"),
-				
+
 				reset_modified = function () {
 
 					if(before_save_res === false){
@@ -8362,7 +8498,7 @@ DataObj.prototype.__define({
 					saver = null;
 					before_save_res = null;
 					reset_modified = null;
-					
+
 					return this;
 				}.bind(this);
 
@@ -8407,7 +8543,7 @@ DataObj.prototype.__define({
 						before_save_res = false;
 						return Promise.reject(reset_modified());
 					}
-				}	
+				}
 			}
 
 			// в зависимости от типа кеширования, получаем saver
@@ -8450,7 +8586,7 @@ DataObj.prototype.__define({
 	/**
 	 * ### Сохраняет объект или файл во вложении
 	 * Вызывает {{#crossLink "DataManager/save_attachment:method"}} одноименный метод менеджера {{/crossLink}} и передаёт ссылку на себя в качестве контекста
-	 * 
+	 *
 	 * @method save_attachment
 	 * @for DataObj
 	 * @param att_id {String} - идентификатор (имя) вложения
@@ -8475,7 +8611,7 @@ DataObj.prototype.__define({
 	/**
 	 * ### Удаляет присоединенный объект или файл
 	 * Вызывает одноименный метод менеджера и передаёт ссылку на себя в качестве контекста
-	 * 
+	 *
 	 * @method delete_attachment
 	 * @for DataObj
 	 * @param att_id {String} - идентификатор (имя) вложения
@@ -8508,9 +8644,9 @@ DataObj.prototype.__define({
 			else{
 				this._data._silent = true;
 				setTimeout(function () {
-					this._data._silent = false;	
+					this._data._silent = false;
 				}.bind(this));
-			}			
+			}
 		}
 	},
 
@@ -8530,7 +8666,7 @@ DataObj.prototype.__define({
 			return this._manager.print(this, model, wnd);
 		}
 	}
-	
+
 });
 
 
@@ -8915,7 +9051,7 @@ RegisterRow.prototype.__define({
 	 * Ключ записи регистра
 	 */
 	ref: {
-		get : function(){ 
+		get : function(){
 			return this._manager.get_ref(this);
 		},
 		enumerable: true
@@ -11216,6 +11352,7 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 	};
 
 	$p.on({
+
 		pouch_load_data_start: function (page) {
 
 			if(!$p.iface.sync)
@@ -11268,11 +11405,15 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 				$p.iface.sync.close();
 		},
 
-		log_in: function (username) {
+		user_log_in: function (username) {
 			set_auth();
 		},
 
-		log_out: function () {
+		user_log_fault: function () {
+			set_auth();
+		},
+
+		user_log_out: function () {
 			set_auth();
 		}
 	});
@@ -13447,19 +13588,19 @@ $p.iface.dat_blank = function(_dxw, attr) {
 		x: (_dxw || $p.iface.w).vp.clientWidth,
 		y: (_dxw || $p.iface.w).vp.clientHeight
 	}, _move;
-	
+
 	if(wnd_dat.getPosition()[0] + wnd_dat.getDimension()[0] > _dxw_area.x){
 		_dxw_area.x = _dxw_area.x - wnd_dat.getDimension()[0];
 		_move = true;
 	}else
 		_dxw_area.x = wnd_dat.getPosition()[0];
-	
+
 	if(wnd_dat.getPosition()[1] + wnd_dat.getDimension()[1] > _dxw_area.y){
 		_dxw_area.y = _dxw_area.y - wnd_dat.getDimension()[1];
 		_move = true;
 	}else
 		_dxw_area.y = wnd_dat.getPosition()[1];
-		
+
 	if(_move){
 		if(_dxw_area.x<0 || _dxw_area.y<0)
 			wnd_dat.maximize();
@@ -13479,9 +13620,9 @@ $p.iface.dat_blank = function(_dxw, attr) {
 
 	// обработчик при закрытии - анализируем модальность
 	wnd_dat.attachEvent("onClose", function () {
-		
+
 		var allow_close = typeof attr.on_close == "function" ? attr.on_close(wnd_dat) : true;
-		
+
 		if(allow_close){
 
 			// восстанавливаем модальность родительского окна
@@ -13490,7 +13631,7 @@ $p.iface.dat_blank = function(_dxw, attr) {
 
 			return allow_close;
 		}
-						
+
 	});
 
 	wnd_dat.setIconCss('without_icon');
@@ -13543,7 +13684,7 @@ $p.iface.dat_blank = function(_dxw, attr) {
 		if(attr.pwnd && attr.pwnd.setModal){
 			attr.pwnd_modal = attr.pwnd.isModal();
 			attr.pwnd.setModal(0);
-		}			
+		}
 		wnd_dat.setModal(1);
 	}
 
@@ -13576,7 +13717,7 @@ $p.iface.pgrid_on_select = function(selv){
 	}
 
 	pgrid.cells().setValue($p.utils.is_data_obj(selv) ? selv.presentation : selv || "");
-	
+
 
 	if(source.grid_on_change)
 		source.grid_on_change.call(pgrid, f, selv);
@@ -13684,7 +13825,7 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 
 
 	function do_auth(login, password){
-		
+
 		$p.ajax.username = login;
 		$p.ajax.password = $p.aes.Ctr.encrypt(password);
 
@@ -13700,7 +13841,7 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 					if($p.wsql.get_user_param("enable_save_pwd")){
 						if($p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")) != password)
 							$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password));   // сохраняем имя пользователя в базе
-						
+
 					}else if($p.wsql.get_user_param("user_pwd") != "")
 						$p.wsql.set_user_param("user_pwd", "");
 
@@ -14977,7 +15118,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 						// информируем мир о закрытии формы
 						if(_mgr && _mgr.class_name)
 							$p.eve.callEvent("frm_close", [_mgr.class_name, (o && o._obj ? o.ref : "")]);
-						
+
 						if(_wnd.conf){
 							_wnd.detachToolbar();
 							_wnd.detachStatusBar();
@@ -15034,7 +15175,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 						if(attr && attr.set_text || wnd && wnd.setText){
 
 							var title = o.presentation;
-							
+
 							if(!title)
 								return;
 
@@ -15130,7 +15271,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 					id: "btn_files"
 				});
 				wnd.elmnts.vault_pop.attachEvent("onShow", show_vault);
-				
+
 			}else
 				this.disableItem("bs_print");
 
@@ -15325,7 +15466,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	function save(action){
 
 		wnd.progressOn();
-		
+
 		var post;
 		if(o instanceof DocObj){
 			if(action == "post")
@@ -15349,7 +15490,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 					if(attr.on_select)
 						attr.on_select(o);
 					wnd.close();
-					
+
 				}else
 					wnd.set_text();
 			})
@@ -15412,7 +15553,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	function frm_close(wnd){
 
 		if(check_modified()){
-			
+
 			setTimeout(frm_unload);
 
 			// выгружаем попапы
@@ -17421,7 +17562,7 @@ $p.eve.__define({
 						return res;
 
 					// широковещательное оповещение об авторизованности на сервере
-					$p.eve.callEvent("log_in", [$p.ajax.authorized = true]);
+					$p.eve.callEvent("user_log_in", [$p.ajax.authorized = true]);
 
 					if(typeof res == "string")
 						res = JSON.parse(res);
@@ -17565,6 +17706,19 @@ $p.eve.__define({
 
 				}
 
+				function load_data() {
+					// читаем локальные данные в ОЗУ
+					$p.wsql.pouch.load_data()
+						.catch($p.record_log);
+
+					// если есть сплэш, удаляем его
+					if(document.querySelector("#splash")){
+						document.querySelector("#splash").parentNode.removeChild(splash);
+					}
+
+					eve.callEvent("iface_init", [$p]);
+				}
+
 				// устанавливаем параметры localStorage
 				$p.wsql.init_params();
 
@@ -17573,10 +17727,12 @@ $p.eve.__define({
 					load_css();
 
 				// разбираемся с ориентацией
-				if(typeof(w.orientation)=="undefined")
+				if(typeof(w.orientation)=="undefined"){
 					$p.job_prm.device_orient = w.innerWidth>w.innerHeight ? "landscape" : "portrait";
-				else
+				}
+				else{
 					eve.on_rotate();
+				}
 				w.addEventListener("orientationchange", eve.on_rotate, false);
 
 				eve.stepper = {
@@ -17589,20 +17745,31 @@ $p.eve.__define({
 				eve.set_offline(!navigator.onLine);
 
 				// инициализируем метаданные и обработчик при начале работы интерфейса
-				setTimeout(function () {
+				if($p.wsql.get_user_param("couch_direct")){
 
-					// читаем локальные данные в ОЗУ
-					$p.wsql.pouch.load_data()
-						.catch($p.record_log);
+					var on_user_log_in = eve.attachEvent("user_log_in", function () {
+						eve.detachEvent(on_user_log_in);
+						load_data();
+					});
 
-					// если есть сплэш, удаляем его
-					var splash;
-					if(splash = document.querySelector("#splash"))
-						splash.parentNode.removeChild(splash);
+					// если это демо (zone === zone_demo), устанавливаем логин и пароль
+					if($p.wsql.get_user_param("zone") == $p.job_prm.zone_demo &&
+							!$p.wsql.get_user_param("user_name") && $p.job_prm.guests.length){
+						$p.wsql.set_user_param("enable_save_pwd", true);
+						$p.wsql.set_user_param("user_name", $p.job_prm.guests[0].username);
+						$p.wsql.set_user_param("user_pwd", $p.job_prm.guests[0].password);
+					}
 
-					eve.callEvent("iface_init", [$p]);
-
-				}, 20);
+					setTimeout(function () {
+						$p.iface.frm_auth({
+							modal_dialog: true,
+							try_auto: true
+						});
+					}, 100);
+				}
+				else{
+					setTimeout(load_data, 20);
+				}
 
 				// TODO: переписать управление appcache на сервисворкерах
 				if (cache = w.applicationCache){

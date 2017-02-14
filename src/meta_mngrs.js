@@ -672,32 +672,40 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 					if(pref.mandatory)
 						ft += '" class="cell_mandatory';
 				}
-
-			}else if(typeof f === "object"){
+			}
+			else if(typeof f === "object"){
 				row_id = f.id;
 				mf = extra_fields && extra_fields.metadata && extra_fields.metadata[row_id];
-				if(!mf)
+				if(!mf){
 					mf = {synonym: f.synonym};
-				else if(f.synonym)
+				}
+				else if(f.synonym){
 					mf.synonym = f.synonym;
+				}
 
 				ft = f.type;
 				txt = "";
-				if(f.hasOwnProperty("txt"))
+				if(f.hasOwnProperty("txt")){
 					txt = f.txt;
-				else if((v = o[row_id]) !== undefined)
+				}
+				else if((v = o[row_id]) !== undefined){
 					txt_by_type(v, mf.type ? mf : _md.get(t.class_name, row_id));
-
-			}else if(extra_fields && extra_fields.metadata && ((mf = extra_fields.metadata[f]) !== undefined)){
+				}
+			}
+			else if(extra_fields && extra_fields.metadata && ((mf = extra_fields.metadata[f]) !== undefined)){
 				row_id = f;
 				by_type(v = o[f]);
-
-			}else if((v = o[f]) !== undefined){
+			}
+			else if((v = o[f]) !== undefined){
 				mf = _md.get(t.class_name, row_id = f);
+				if(!mf){
+					return;
+				}
 				by_type(v);
-
-			}else
+			}
+			else{
 				return;
+			}
 
 			gd += '<row id="' + row_id + '"><cell>' + (mf.synonym || mf.name) +
 				'</cell><cell type="' + ft + '">' + txt + '</cell></row>';
@@ -706,11 +714,13 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 	default_oxml();
 
 	for(i in oxml){
-		if(i!=" ")
+		if(i!=" "){
 			gd += '<row open="1"><cell>' + i + '</cell>';   // если у блока есть заголовок, формируем блок иначе добавляем поля без иерархии
+		}
 
-		for(j in oxml[i])
+		for(j in oxml[i]){
 			add_xml_row(oxml[i][j]);                        // поля, описанные в текущем разделе
+		}
 
 		if(extra_fields && i == extra_fields.title && o[extra_fields.ts]){  // строки табчасти o.extra_fields
 			var added = false,
@@ -772,14 +782,16 @@ DataManager.prototype.print = function(ref, model, wnd){
 			wnd_print.focus();
 	}
 
-	if(wnd && wnd.progressOn)
+	if(wnd && wnd.progressOn){
 		wnd.progressOn();
+	}
 
 	setTimeout(tune_wnd_print, 3000);
 
 	// если _printing_plates содержит ссылку на обрабочтик печати, используем его
-	if(this._printing_plates[model] instanceof DataObj)
+	if(this._printing_plates[model] instanceof DataObj){
 		model = this._printing_plates[model];
+	}
 
 	// если существует локальный обработчик, используем его
 	if(model instanceof DataObj && model.execute){

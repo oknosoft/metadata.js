@@ -143,7 +143,7 @@ $p.eve.__define({
 						return res;
 
 					// широковещательное оповещение об авторизованности на сервере
-					$p.eve.callEvent("log_in", [$p.ajax.authorized = true]);
+					$p.eve.callEvent("user_log_in", [$p.ajax.authorized = true]);
 
 					if(typeof res == "string")
 						res = JSON.parse(res);
@@ -287,6 +287,19 @@ $p.eve.__define({
 
 				}
 
+				function load_data() {
+					// читаем локальные данные в ОЗУ
+					$p.wsql.pouch.load_data()
+						.catch($p.record_log);
+
+					// если есть сплэш, удаляем его
+					if(document.querySelector("#splash")){
+						document.querySelector("#splash").parentNode.removeChild(splash);
+					}
+
+					eve.callEvent("iface_init", [$p]);
+				}
+
 				// устанавливаем параметры localStorage
 				$p.wsql.init_params();
 
@@ -295,10 +308,12 @@ $p.eve.__define({
 					load_css();
 
 				// разбираемся с ориентацией
-				if(typeof(w.orientation)=="undefined")
+				if(typeof(w.orientation)=="undefined"){
 					$p.job_prm.device_orient = w.innerWidth>w.innerHeight ? "landscape" : "portrait";
-				else
+				}
+				else{
 					eve.on_rotate();
+				}
 				w.addEventListener("orientationchange", eve.on_rotate, false);
 
 				eve.stepper = {
@@ -311,20 +326,31 @@ $p.eve.__define({
 				eve.set_offline(!navigator.onLine);
 
 				// инициализируем метаданные и обработчик при начале работы интерфейса
-				setTimeout(function () {
+				if($p.wsql.get_user_param("couch_direct")){
 
-					// читаем локальные данные в ОЗУ
-					$p.wsql.pouch.load_data()
-						.catch($p.record_log);
+					var on_user_log_in = eve.attachEvent("user_log_in", function () {
+						eve.detachEvent(on_user_log_in);
+						load_data();
+					});
 
-					// если есть сплэш, удаляем его
-					var splash;
-					if(splash = document.querySelector("#splash"))
-						splash.parentNode.removeChild(splash);
+					// если это демо (zone === zone_demo), устанавливаем логин и пароль
+					if($p.wsql.get_user_param("zone") == $p.job_prm.zone_demo &&
+							!$p.wsql.get_user_param("user_name") && $p.job_prm.guests.length){
+						$p.wsql.set_user_param("enable_save_pwd", true);
+						$p.wsql.set_user_param("user_name", $p.job_prm.guests[0].username);
+						$p.wsql.set_user_param("user_pwd", $p.job_prm.guests[0].password);
+					}
 
-					eve.callEvent("iface_init", [$p]);
-
-				}, 20);
+					setTimeout(function () {
+						$p.iface.frm_auth({
+							modal_dialog: true,
+							try_auto: true
+						});
+					}, 100);
+				}
+				else{
+					setTimeout(load_data, 20);
+				}
 
 				// TODO: переписать управление appcache на сервисворкерах
 				if (cache = w.applicationCache){

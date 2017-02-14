@@ -32,17 +32,16 @@ function Pouch(){
 					.plugin(require('pouchdb-adapter-memory'))
 					.plugin(require('pouchdb-adapter-http'))
 					.plugin(require('pouchdb-replication'))
-					.plugin(require('pouchdb-mapreduce')) : PouchDB
+					.plugin(require('pouchdb-mapreduce'))
+					.plugin(require('pouchdb-find')) : PouchDB
 		},
 
 		init: {
-
 			value: function (attr) {
-
 				_paths._mixin(attr);
-
-				if(_paths.path && _paths.path.indexOf("http") != 0 && typeof location != "undefined")
+				if(_paths.path && _paths.path.indexOf("http") != 0 && typeof location != "undefined"){
 					_paths.path = location.protocol + "//" + location.host + _paths.path;
+				}
 			}
 		},
 
@@ -56,19 +55,24 @@ function Pouch(){
 			get: function () {
 				if(!_local){
 					var opts = {auto_compaction: true, revs_limit: 2};
-					_local = {
-						ram: new t.DB(_paths.prefix + _paths.zone + "_ram", opts),
-						doc: new t.DB(_paths.prefix + _paths.zone + "_doc", opts),
-						meta: new t.DB(_paths.prefix + "meta", opts),
-						sync: {}
+					if(_paths.direct){
+						_local = {
+							ram: this.remote.ram,
+							doc: this.remote.doc,
+							sync: {}
+						}
+					}
+					else{
+						_local = {
+							ram: new t.DB(_paths.prefix + _paths.zone + "_ram", opts),
+							doc: new t.DB(_paths.prefix + _paths.zone + "_doc", opts),
+							meta: new t.DB(_paths.prefix + "meta", opts),
+							sync: {}
+						}
 					}
 				}
 				if(_paths.path && !_local._meta){
 					_local._meta = new t.DB(_paths.path + "meta", {
-						auth: {
-							username: "guest",
-							password: "meta"
-						},
 						skip_setup: true
 					});
 					t.run_sync(_local.meta, _local._meta, "meta");
@@ -85,22 +89,11 @@ function Pouch(){
 		 */
 		remote: {
 			get: function () {
-				if(!_remote && _auth){
+				if(!_remote){
+					var opts = {skip_setup: true, adapter: 'http'};
 					_remote = {
-						ram: new t.DB(_paths.path + _paths.zone + "_ram", {
-							auth: {
-								username: _auth.username,
-								password: _auth.password
-							},
-							skip_setup: true
-						}),
-						doc: new t.DB(_paths.path + _paths.zone + "_doc" + _paths.suffix, {
-							auth: {
-								username: _auth.username,
-								password: _auth.password
-							},
-							skip_setup: true
-						})
+						ram: new t.DB(_paths.path + _paths.zone + "_ram", opts),
+						doc: new t.DB(_paths.path + _paths.zone + "_doc" + (_paths.suffix ? "_" + _paths.suffix : ""), opts)
 					}
 				}
 				return _remote;
@@ -118,29 +111,84 @@ function Pouch(){
 			value: function (username, password) {
 
 				// реквизиты гостевого пользователя для демобаз
-				if(username == undefined && password == undefined){
-					username = $p.job_prm.guest_name;
-					password = $p.aes.Ctr.decrypt($p.job_prm.guest_pwd);
+				if (username == undefined && password == undefined){
+					if($p.job_prm.guests && $p.job_prm.guests.length) {
+						username = $p.job_prm.guests[0].username;
+						password = $p.aes.Ctr.decrypt($p.job_prm.guests[0].password);
+					}else{
+						return Promise.reject(new Error("username & password not defined"));
+					}
 				}
 
-				if(_auth){
-					if(_auth.username == username)
+				if (_auth) {
+					if (_auth.username == username){
 						return Promise.resolve();
-					else
-						return Promise.reject();
+					} else {
+						return Promise.reject(new Error("need logout first"));
+					}
 				}
 
-				return $p.ajax.get_ex(_paths.path + _paths.zone + "_ram", {username: username, password: password})
-					.then(function (req) {
-						_auth = {username: username, password: password};
-						setTimeout(function () {
-							dhx4.callEvent("log_in", [username]);
+				// авторизуемся во всех базах
+				var bases = ["ram", "doc"],
+					try_auth = [];
+
+				this.remote;
+
+				bases.forEach(function(name){
+					try_auth.push(
+						_remote[name].login(username, password)
+					)
+				})
+
+				return Promise.all(try_auth)
+					.then(function (){
+
+						_auth = {username: username};
+						setTimeout(function(){
+
+							// сохраняем имя пользователя в базе
+							if($p.wsql.get_user_param("user_name") != username){
+								$p.wsql.set_user_param("user_name", username)
+							}
+
+							// если настроено сохранение пароля - сохраняем и его
+							if($p.wsql.get_user_param("enable_save_pwd")){
+								if($p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")) != password){
+									$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password))   // сохраняем имя пользователя в базе
+								}
+							}
+							else if($p.wsql.get_user_param("user_pwd") != ""){
+								$p.wsql.set_user_param("user_pwd", "")
+							}
+
+							// излучаем событие
+							$p.eve.callEvent('user_log_in', [username]);
 						});
-						return {
-							ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),
-							doc: t.run_sync(t.local.doc, t.remote.doc, "doc")
+
+						if(!_paths.direct){
+							bases.forEach(function(dbid) {
+								t.run_sync(t.local[dbid], t.remote[dbid], dbid)
+							})
 						}
-					});
+						return t.local.sync;
+
+					})
+					.catch(function(err) {
+						// излучаем событие
+						$p.eve.callEvent("user_log_fault", [err])
+					})
+
+				// return $p.ajax.get_ex(_paths.path + _paths.zone + "_ram", {username: username, password: password})
+				// 	.then(function (req) {
+				// 		_auth = {username: username, password: password};
+				// 		setTimeout(function () {
+				// 			$p.eve.callEvent("log_in", [username]);
+				// 		});
+				// 		return {
+				// 			ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),
+				// 			doc: t.run_sync(t.local.doc, t.remote.doc, "doc")
+				// 		}
+				// 	});
 			}
 		},
 
@@ -165,15 +213,34 @@ function Pouch(){
 					_auth = null;
 				}
 
-				if(_remote && _remote.ram)
-					delete _remote.ram;
+				$p.eve.callEvent("log_out");
 
-				if(_remote && _remote.doc)
-					delete _remote.doc;
+				if(_paths.direct){
+					setTimeout(function () {
+						$p.eve.redirect = true;
+						location.reload(true);
+					}, 1000);
+				}
 
-				_remote = null;
-
-				dhx4.callEvent("log_out");
+				return _remote && _remote.ram ?
+					_remote.ram.logout()
+						.then(function () {
+							if(_remote && _remote.doc){
+								return _remote.doc.logout()
+							}
+						})
+						.then(function () {
+							if(_remote && _remote.ram){
+								delete _remote.ram;
+							}
+							if(_remote && _remote.doc){
+								delete _remote.doc;
+							}
+							_remote = null;
+							$p.eve.callEvent("user_log_out")
+						})
+					:
+					Promise.resolve();
 			}
 		},
 
@@ -378,8 +445,8 @@ function Pouch(){
 						var options = {
 								live: true,
 								retry: true,
-								batch_size: 300,
-								batches_limit: 8
+								batch_size: 200,
+								batches_limit: 6
 							};
 
 						// если указан клиентский или серверный фильтр - подключаем

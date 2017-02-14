@@ -56,6 +56,92 @@ function ui(constructor, classes) {
 
 	})
 }/**
+ * ### Расширение функциональности TabularSection
+ *
+ * @module tabulars
+ *
+ * Created 09.01.2017
+ */
+
+import ClipboardAction from "clipboard/lib/clipboard-action";
+
+
+function tabulars(constructor, classes) {
+
+	Object.defineProperty(classes.TabularSection.prototype, 'export', {
+
+		value: function (format = 'csv', columns = []) {
+
+			const data = []
+			const {utils, wsql} = classes.$p
+			const len = columns.length - 1
+
+			let text
+
+			this.forEach((row) => {
+				const rdata = {}
+				columns.forEach((col) => {
+					if(utils.is_data_obj(row[col])){
+						if(format == 'json'){
+							rdata[col] = {
+								ref: row[col].ref,
+								type: row[col]._manager.class_name,
+								presentation: row[col].presentation
+							}
+						}
+						else{
+							rdata[col] = row[col].presentation
+						}
+					}
+					else if(typeof(row[col]) == 'number'  && format == 'csv') {
+						rdata[col] = row[col].toLocaleString('ru-RU', {
+							useGrouping: false,
+							maximumFractionDigits: 3
+						})
+					}
+					else if(row[col] instanceof Date && format != 'xls') {
+						rdata[col] = utils.moment(row[col]).format(utils.moment._masks.date_time)
+					}
+					else{
+						rdata[col] = row[col]
+					}
+				})
+				data.push(rdata)
+			})
+
+			if(format == 'xls'){
+				return wsql.alasql.promise(`SELECT * INTO XLSX('${this._name + '_' + utils.moment().format("YYYYMMDDHHmm")}.xlsx',{headers:true}) FROM ? `,[data])
+			}
+			else{
+				return new Promise((resolve, reject) => {
+
+					if(format == 'json'){
+						text = JSON.stringify(data, null, '\t');
+					}
+					else {
+						text = columns.join('\t') + '\n'
+						data.forEach((row) => {
+							columns.forEach((col, index) => {
+								text+= row[col]
+								if(index < len){
+									text+= '\t'
+								}
+							})
+							text+= '\n'
+						})
+					}
+
+					new ClipboardAction({
+						action: 'copy',
+						text,
+						emitter: {emit: resolve}
+					})
+				})
+			}
+		}
+	})
+
+}/**
  * ### Метаданные системных перечислений, регистров и справочников
  *
  * @module meta_objs
@@ -524,15 +610,15 @@ function scheme_settings() {
 		 * @param class_name
 		 */
 		get_scheme(class_name) {
-			return new Promise(function(resolve, reject){
+
+			return new Promise((resolve, reject) => {
 
 				// получаем сохраненную настройку
-				const scheme_name = "scheme_settings_" + class_name.replace(/\./g, "_")
-				let ref = wsql.get_user_param(scheme_name, "string")
+				const scheme_name = this.scheme_name(class_name);
+				let ref = wsql.get_user_param(scheme_name, "string");
 
-				function set_param_and_resolve(obj){
-					wsql.set_user_param(scheme_name, obj.ref);
-					resolve(obj)
+				function set_default_and_resolve(obj){
+					resolve(obj.set_default());
 				}
 
 				function find_scheme() {
@@ -541,19 +627,32 @@ function scheme_settings() {
 						_top: 100,
 						_skip: 0,
 						_key: {
-							startkey: class_name,
-							endkey: class_name
+							startkey: [class_name],
+							endkey: [class_name + '|']
 						}
 					})
 						.then(function (data) {
 							// если существует с текущим пользователем, берём его, иначе - первый попавшийся
 							if(data.length == 1){
-								set_param_and_resolve(data[0])
+								set_default_and_resolve(data[0])
 
 							}else if(data.length){
-
-
-							}else{
+								if(!$p.current_user || !$p.current_user.name){
+									set_default_and_resolve(data[0])
+								}
+								else {
+									const {name} = $p.current_user;
+									if(!data.some((scheme) => {
+											if(scheme.user == name){
+												set_default_and_resolve(scheme);
+												return true;
+											}
+										})) {
+										set_default_and_resolve(data[0])
+									}
+								}
+							}
+							else{
 								create_scheme()
 							}
 						})
@@ -571,14 +670,14 @@ function scheme_settings() {
 							return obj.fill_default(class_name).save()
 						})
 						.then(function (obj) {
-							set_param_and_resolve(obj)
+							set_default_and_resolve(obj)
 						})
 				}
 
 				if(ref){
 					// получаем по гвиду
 					cat.scheme_settings.get(ref, "promise")
-						.then(function (scheme) {
+						.then((scheme) => {
 							if(scheme && !scheme.is_new()){
 								resolve(scheme)
 							}else{
@@ -595,6 +694,42 @@ function scheme_settings() {
 			})
 		}
 
+		/**
+		 * ### Имя сохраненных настроек
+		 * @param class_name
+		 */
+		scheme_name(class_name) {
+			return "scheme_settings_" + class_name.replace(/\./g, "_");
+		}
+
+	}
+
+	/**
+	 * ### Менеджер настроек отчетов и динсписков
+	 */
+	class SchemeSelectManager extends classes.DataProcessorsManager {
+
+		/**
+		 * ### Экземпляр обработки для выбора варианта
+		 * @param scheme
+		 * @return {_obj, _meta}
+		 */
+		dp(scheme) {
+
+			// экземпляр обработки для выбора варианта
+			const _obj =  dp.scheme_settings.create();
+			_obj.scheme = scheme;
+
+			// корректируем метаданные поля выбора варианта
+			const _meta = Object.assign({}, this.metadata("scheme"))
+			_meta.choice_params = [{
+				name: "obj",
+				path: scheme.obj
+			}]
+
+			return {_obj, _meta};
+
+		}
 	}
 
 	/**
@@ -604,12 +739,9 @@ function scheme_settings() {
 	 * @constructor
 	 */
 	this.DpScheme_settings = class DpScheme_settings extends classes.DataProcessorObj{
-		get scheme() {
-			return this._getter('scheme')
-		}
-		set scheme(v) {
-			this._setter('scheme', v)
-		}
+
+		get scheme() {return this._getter('scheme')}
+		set scheme(v) {this._setter('scheme', v)}
 	}
 
 	/**
@@ -621,75 +753,47 @@ function scheme_settings() {
 	 */
 	this.CatScheme_settings = class CatScheme_settings extends classes.CatObj {
 
-		get obj() {
-			return this._getter('obj')
-		}
-		set obj(v) {
-			this._setter('obj', v)
-		}
+		get obj() {return this._getter('obj')}
+		set obj(v) {this._setter('obj', v)}
 
-		get user() {
-			return this._getter('user')
-		}
-		set user(v) {
-			this._setter('user', v)
-		}
+		get user() {return this._getter('user')}
+		set user(v) {this._setter('user', v)}
 
-		get query() {
-			return this._getter('query')
-		}
-		set query(v) {
-			this._setter('query', v)
-		}
+		get order() {return this._getter('order')}
+		set order(v) {this._setter('order', v)}
 
-		get fields() {
-			return this._getter_ts('fields')
-		}
-		set fields(v) {
-			this._setter_ts('fields', v)
-		}
+		get formula() {return this._getter('formula')}
+		set formula(v) {this._setter('formula', v)}
 
-		get sorting() {
-			return this._getter_ts('sorting')
-		}
-		set sorting(v) {
-			this._setter_ts('sorting', v)
-		}
+		get query() {return this._getter('query')}
+		set query(v) {this._setter('query', v)}
 
-		get dimensions() {
-			return this._getter_ts('dimensions')
-		}
-		set dimensions(v) {
-			this._setter_ts('dimensions', v)
-		}
+		get date_from() {return this._getter('date_from')}
+		set date_from(v) {this._setter('date_from', v)}
 
-		get resources() {
-			return this._getter_ts('resources')
-		}
-		set resources(v) {
-			this._setter_ts('resources', v)
-		}
+		get date_till() {return this._getter('date_till')}
+		set date_till(v) {this._setter('date_till', v)}
 
-		get selection() {
-			return this._getter_ts('selection')
-		}
-		set selection(v) {
-			this._setter_ts('selection', v)
-		}
+		get fields() {return this._getter_ts('fields')}
+		set fields(v) {this._setter_ts('fields', v)}
 
-		get params() {
-			return this._getter_ts('params')
-		}
-		set params(v) {
-			this._setter_ts('params', v)
-		}
+		get sorting() {return this._getter_ts('sorting')}
+		set sorting(v) {this._setter_ts('sorting', v)}
 
-		get scheme() {
-			return this._getter_ts('scheme')
-		}
-		set scheme(v) {
-			this._setter_ts('scheme', v)
-		}
+		get dimensions() {return this._getter_ts('dimensions')}
+		set dimensions(v) {this._setter_ts('dimensions', v)}
+
+		get resources() {return this._getter_ts('resources')}
+		set resources(v) {this._setter_ts('resources', v)}
+
+		get selection() {return this._getter_ts('selection')}
+		set selection(v) {this._setter_ts('selection', v)}
+
+		get params() {return this._getter_ts('params')}
+		set params(v) {this._setter_ts('params', v)}
+
+		get scheme() {return this._getter_ts('scheme')}
+		set scheme(v) {this._setter_ts('scheme', v)}
 
 		/**
 		 * ### Заполняет настройки по метаданным
@@ -701,7 +805,6 @@ function scheme_settings() {
 			const parts = class_name.split("."),
 				_mgr = md.mgr_by_class_name(class_name),
 				_meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]),
-				fields = this.fields,
 				columns = [];
 
 			function add_column(fld, use) {
@@ -761,23 +864,42 @@ function scheme_settings() {
 			}
 
 			// заполняем табчасть доступных полей
-			columns.forEach(function (column) {
-				fields.add(column)
+			columns.forEach((column) => {
+				this.fields.add(column)
 			})
+
+			// если для объекта определены измерения по умолчанию - используем
+			const {resources} = _mgr.obj_constructor('', true)
+			if(resources){
+				resources.forEach(function (column) {
+					this.resources.add({field: column})
+				})
+			}
 
 			this.obj = class_name
 
+			// наименование и период по умолчанию
 			if(!this.name){
 				this.name = "Основная"
+				this.date_from = new Date((new Date()).getFullYear().toFixed() + "-01-01");
+				this.date_till = utils.date_add_day(new Date(), 1);
 			}
 
 			return this
 		}
 
 		/**
+		 * ### Устанавливает текущую настройку по умолчанию
+		 */
+		set_default() {
+			wsql.set_user_param(this._manager.scheme_name(this.obj), this.ref);
+			return this;
+		}
+
+		/**
 		 * ### Устанавливает _view и _key в параметрах запроса
 		 */
-		fix_select(select, key0){
+		fix_select(select, key0) {
 
 			const keys = this.query.split("/")
 			const {_key, _view} = select
@@ -801,6 +923,17 @@ function scheme_settings() {
 			}
 
 			// если есть параметр период, установим значения ключа
+			if(this.query.match('date')){
+				const {date_from, date_till} = this;
+
+				_key.startkey[1] = date_from.getFullYear();
+				_key.startkey[2] = date_from.getMonth()+1;
+				_key.startkey[3] = date_from.getDate();
+
+				_key.endkey[1] = date_till.getFullYear();
+				_key.endkey[2] = date_till.getMonth()+1;
+				_key.endkey[3] = date_till.getDate();
+			}
 
 			return res
 		}
@@ -810,7 +943,7 @@ function scheme_settings() {
 		 * @param mode {String} - режим формирования колонок
 		 * @return {Array}
 		 */
-		columns(mode){
+		columns(mode) {
 
 			const parts = this.obj.split("."),
 				_mgr = md.mgr_by_class_name(this.obj),
@@ -846,10 +979,20 @@ function scheme_settings() {
 		}
 
 		/**
-		 * ### Возвращает массив имён используемых колонок
+		 * ### Возвращает массив измерений группировки
+		 * @param [parent] - родитель, для многоуровневой группировки
 		 * @return {Array}
 		 */
-		used_fields(){
+		dims(parent) {
+			return this.dimensions._obj.map((row) => row.field)
+		}
+
+		/**
+		 * ### Возвращает массив имён используемых колонок
+		 * @param [parent] - родитель, для многоуровневой группировки
+		 * @return {Array}
+		 */
+		used_fields(parent) {
 			const res = []
 			this.fields.find_rows({use: true}, (row) => {
 				res.push(row.field)
@@ -861,7 +1004,7 @@ function scheme_settings() {
 		 * ### Возвращает массив элементов для поля выбора
 		 * @return {Array}
 		 */
-		used_fields_list(){
+		used_fields_list() {
 			return this.fields._obj.map((row) => ({
 				id: row.field,
 				value: row.field,
@@ -1042,7 +1185,7 @@ function scheme_settings() {
 
 	Object.defineProperties(dp, {
 		scheme_settings: {
-			value: new classes.DataProcessorsManager('dp.scheme_settings')
+			value: new SchemeSelectManager('dp.scheme_settings')
 		}
 	})
 
@@ -1066,6 +1209,7 @@ export default {
 	 */
 	proto(constructor, classes) {
 		ui(constructor, classes)
+		tabulars(constructor, classes)
 	},
 
 	/**

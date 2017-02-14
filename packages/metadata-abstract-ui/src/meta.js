@@ -179,6 +179,17 @@ export default {
 								str_len: 50
 							}
 						},
+						order: {
+							synonym: "Порядок",
+							tooltip: "Порядок варианта",
+							type: {
+								types: [
+									"number"
+								],
+								digits: 6,
+								fraction_figits: 0,
+							}
+						},
 						query: {
 							synonym: "Запрос",
 							tooltip: "Индекс CouchDB или текст SQL",
@@ -187,6 +198,36 @@ export default {
 									"string"
 								],
 								str_len: 0
+							}
+						},
+						date_from: {
+							"synonym": "Начало периода",
+							"tooltip": "",
+							"type": {
+								"types": [
+									"date"
+								],
+								"date_part": "date"
+							}
+						},
+						date_till: {
+							"synonym": "Конец периода",
+							"tooltip": "",
+							"type": {
+								"types": [
+									"date"
+								],
+								"date_part": "date"
+							}
+						},
+						formula: {
+							synonym: "Формула",
+							tooltip: "Формула инициализации",
+							type: {
+								types: [
+									"cat.formulas"
+								],
+								is_ref: true
 							}
 						}
 					},

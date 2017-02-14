@@ -63,7 +63,7 @@ gulp.task('build-metadata', function () {
 		'./lib/aes/aes.js',
 		'./lib/rubles/rubles.js',
 		'./lib/daterangepicker/daterangepicker.js',
-		'./lib/mime-types/db.js'
+		'./lib/mime-types/db.js',
 	])
 		.pipe(concat('metadata.js'))
 		.pipe(umd({
@@ -378,4 +378,16 @@ gulp.task('build-codex', function(){
 		.pipe(concat('main.js'))
 		.pipe(gulp.dest('./examples/codex/js'));
 });
+
+gulp.task('paper-minify', () => {
+	return gulp.src(['./lib/paper-core.js'])
+		.pipe(rename('paper-core.min.js'))
+		.pipe(uglify({
+			preserveComments: function (node, comment) {
+				return comment.value[0]=="!";
+			}
+		}))
+		.pipe(gulp.dest('./lib'))
+	}
+);
 

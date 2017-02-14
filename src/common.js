@@ -8,6 +8,8 @@
  */
 
 
+"use strict";
+
 /**
  * Фреймворк добавляет в прототипы _Object_ и _Number_<br />
  * несколько методов - синтаксический сахар для _наследования_ и работы со _свойствами_
@@ -155,7 +157,10 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 		 */
 		observe: {
 			value: function(target, observer) {
-				if(!target._observers)
+				if(!target){
+					return;
+				}
+				if(!target._observers){
 					target.__define({
 						_observers: {
 							value: [],
@@ -166,6 +171,7 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 							enumerable: false
 						}
 					});
+				}
 				target._observers.push(observer);
 			},
 			enumerable: false
@@ -178,17 +184,17 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 		 */
 		unobserve: {
 			value: function(target, observer) {
+				if(target && target._observers){
 
-				if(!target._observers)
-					return;
+					if(!observer){
+						target._observers.length = 0;
+					}
 
-				if(!observer)
-					target._observers.length = 0;
-
-				for(var i=0; i<target._observers.length; i++){
-					if(target._observers[i]===observer){
-						target._observers.splice(i, 1);
-						break;
+					for(var i=0; i<target._observers.length; i++){
+						if(target._observers[i]===observer){
+							target._observers.splice(i, 1);
+							break;
+						}
 					}
 				}
 			},
@@ -215,8 +221,9 @@ if(!Object.observe && !Object.unobserve && !Object.getNotifier){
 						target._notis.push(noti);
 						noti = null;
 
-						if(timer)
+						if(timer){
 							clearTimeout(timer);
+						}
 
 						timer = setTimeout(function () {
 							//TODO: свернуть массив оповещений перед отправкой
@@ -465,7 +472,7 @@ function MetaEngine() {
 						for(j in selection){
 
 							sel = selection[j];
-							is_obj = typeof(sel) === "object";
+							is_obj = sel && typeof(sel) === "object";
 
 							// пропускаем служебные свойства
 							if(j.substr(0, 1) == "_")
@@ -1171,16 +1178,19 @@ function Utils() {
 	 * @return {*}
 	 */
 	this.fetch_type = function(str, mtype){
-		var v = str;
-		if(mtype.is_ref)
-			v = this.fix_guid(str);
-		else if(mtype.date_part)
-			v = this.fix_date(str, true);
-		else if(mtype["digits"])
-			v = this.fix_number(str, true);
-		else if(mtype.types[0]=="boolean")
-			v = this.fix_boolean(str);
-		return v;
+		if (mtype.is_ref){
+			return this.fix_guid(str);
+		}
+		if (mtype.date_part){
+			return this.fix_date(str, true)
+		}
+		if (mtype["digits"]){
+			return this.fix_number(str, true)
+		}
+		if (mtype.types && mtype.types[0] == "boolean"){
+			return this.fix_boolean(str)
+		}
+		return str;
 	};
 
 	/**

@@ -18,6 +18,7 @@ export default {
 	 */
 	proto(constructor, classes) {
 		ui(constructor, classes)
+		tabulars(constructor, classes)
 	},
 
 	/**

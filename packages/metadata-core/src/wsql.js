@@ -73,6 +73,8 @@ class WSQL {
 			init: {
 				value: function (settings, meta) {
 
+					alasql.utils.isBrowserify = false;
+
 					$p.job_prm.init(settings);
 
 					// префикс параметров LocalStorage
@@ -120,17 +122,16 @@ class WSQL {
 							zone: this.get_user_param("zone", "number"),
 							prefix: $p.job_prm.local_storage_prefix,
 							suffix: this.get_user_param("couch_suffix", "string") || "",
+							direct: this.get_user_param("couch_direct", "boolean"),
 							user_node: $p.job_prm.user_node,
-							noreplicate: $p.job_prm.noreplicate
+							noreplicate: $p.job_prm.noreplicate,
 						};
 						if (pouch_prm.path) {
-
 							$p.adapters.pouch.init(pouch_prm)
 						}
 					}
 
 					meta($p);
-
 				}
 			},
 
@@ -145,15 +146,19 @@ class WSQL {
 			set_user_param: {
 				value: function(prm_name, prm_value){
 
-					var str_prm = prm_value;
-					if(typeof prm_value == "object")
-						str_prm = JSON.stringify(prm_value);
+					if(typeof prm_value == "object"){
+						user_params[prm_name] = prm_value;
+						prm_value = JSON.stringify(prm_value);
+					}
+					else if(prm_value === false || prm_value === "false"){
+						user_params[prm_name] = false;
+						prm_value = "";
+					}
+					else{
+						user_params[prm_name] = prm_value;
+					}
 
-					else if(prm_value === false)
-						str_prm = "";
-
-					this._ls.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
-					user_params[prm_name] = prm_value;
+					this._ls.setItem($p.job_prm.local_storage_prefix+prm_name, prm_value);
 				}
 			},
 
@@ -168,10 +173,9 @@ class WSQL {
 			 */
 			get_user_param: {
 				value: function(prm_name, type){
-
-					if(!user_params.hasOwnProperty(prm_name) && this._ls)
+					if(!user_params.hasOwnProperty(prm_name) && this._ls){
 						user_params[prm_name] = this.fetch_type(this._ls.getItem($p.job_prm.local_storage_prefix+prm_name), type);
-
+					}
 					return user_params[prm_name];
 				}
 			},
@@ -243,15 +247,18 @@ class WSQL {
 	 * @param options {Object} - объект, в который будут записаны параметры
 	 */
 	restore_options(prefix, options){
-		var options_saved = this.get_user_param(prefix + "_" + options.name, "object");
-		for(var i in options_saved){
-			if(typeof options_saved[i] != "object")
+		const options_saved = this.get_user_param(prefix + "_" + options.name, "object");
+		for(let i in options_saved){
+			if(typeof options_saved[i] != "object"){
 				options[i] = options_saved[i];
+			}
 			else{
-				if(!options[i])
+				if(!options[i]){
 					options[i] = {};
-				for(var j in options_saved[i])
+				}
+				for(let j in options_saved[i]){
 					options[i][j] = options_saved[i][j];
+				}
 			}
 		}
 		return options;
@@ -272,14 +279,17 @@ class WSQL {
 				prm = {};
 			}
 			return prm;
-		}else if(type == "number")
+		}
+		else if(type == "number"){
 			return utils.fix_number(prm, true);
-		else if(type == "date")
+		}
+		else if(type == "date"){
 			return utils.fix_date(prm, true);
-		else if(type == "boolean")
+		}
+		else if(type == "boolean"){
 			return utils.fix_boolean(prm);
-		else
-			return prm;
+		}
+		return prm;
 	}
 
 }

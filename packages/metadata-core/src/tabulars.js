@@ -190,12 +190,11 @@ class TabularSection {
 	 */
 	find_rows(selection, callback) {
 
-		var t = this,
-			cb = callback ? function (row) {
-				return callback.call(t, row._row);
-			} : null;
+		const cb = callback ? (row) => {
+			return callback.call(this, row._row);
+		} : null;
 
-		return utils._find_rows.call(t, t._obj, selection, cb);
+		return utils._find_rows.call(this, this._obj, selection, cb);
 
 	}
 
@@ -206,9 +205,11 @@ class TabularSection {
 	 * @param rowid2 {number}
 	 */
 	swap(rowid1, rowid2) {
-		var tmp = this._obj[rowid1];
-		this._obj[rowid1] = this._obj[rowid2];
-		this._obj[rowid2] = tmp;
+
+		const {_obj} = this;
+		[_obj[rowid1], _obj[rowid2]] = [_obj[rowid2], _obj[rowid1]];
+		_obj[rowid1].row = rowid2 + 1
+		_obj[rowid2].row = rowid1 + 1
 
 		if (!this._owner._data._silent){
 			// TODO: observe
@@ -223,24 +224,24 @@ class TabularSection {
 	 * ### Добавляет строку табчасти
 	 * @method add
 	 * @param attr {object} - объект со значениями полей. если некого поля нет в attr, для него используется пустое значение типа
+	 * @param silent {Boolean} - тихий режим, без генерации событий изменения объекта
 	 * @return {TabularSectionRow}
 	 *
 	 * @example
 	 *     // Добавляет строку в табчасть и заполняет её значениями, переданными в аргументе
-	 *     var row = ts.add({field1: value1});
+	 *     const row = ts.add({field1: value1});
 	 */
-	add(attr, silent) {
+	add(attr = {}, silent) {
 
-		var row = this._owner._manager.obj_constructor(this._name, this);
-
-		if (!attr)
-			attr = {};
+		const {_owner, _name, _obj} = this
+		const row = _owner._manager.obj_constructor(_name, this);
 
 		// присваиваем типизированные значения по умолчанию
-		for (var f in row._metadata().fields)
+		for (let f in row._metadata().fields){
 			row[f] = attr[f] || "";
+		}
 
-		row._obj.row = this._obj.push(row._obj);
+		row._obj.row = _obj.push(row._obj);
 		Object.defineProperty(row._obj, "_row", {
 			value: row,
 			enumerable: false
@@ -254,9 +255,7 @@ class TabularSection {
 			// });
 		}
 
-		attr = null;
-
-		this._owner._data._modified = true;
+		_owner._data._modified = true;
 
 		return row;
 	}
@@ -289,10 +288,11 @@ class TabularSection {
 	group_by(dimensions, resources) {
 
 		try {
-			var res = this.aggregate(dimensions, resources, "SUM", true);
+			const res = this.aggregate(dimensions, resources, "SUM", true);
 			return this.clear(true).load(res);
-
-		} catch (err) {
+		}
+		catch (err) {
+			utils.record_log(err);
 		}
 	}
 
@@ -304,26 +304,35 @@ class TabularSection {
 	 */
 	sort(fields) {
 
-		if (typeof fields == "string")
-			fields = fields.split(",");
+		if (typeof fields == "string"){
+			fields = fields.split(",")
+		}
 
-		var sql = "select * from ? order by ", res = true;
+		let sql = "select * from ? order by ",
+			res = true
+			has_dot;
+
 		fields.forEach(function (f) {
+			has_dot = has_dot || f.match('.');
 			f = f.trim().replace(/\s{1,}/g, " ").split(" ");
-			if (res)
+			if (res){
 				res = false;
-			else
+			}
+			else{
 				sql += ", ";
+			}
+
 			sql += "`" + f[0] + "`";
-			if (f[1])
+			if (f[1]){
 				sql += " " + f[1];
+			}
 		});
 
 		try {
-			res = alasql(sql, [this._obj]);
+			res = alasql(sql, [has_dot ? this._obj.map((row) => row._row) : this._obj]);
 			return this.clear(true).load(res);
-
-		} catch (err) {
+		}
+		catch (err) {
 			utils.record_log(err);
 		}
 	}
@@ -349,14 +358,14 @@ class TabularSection {
 	 *     // вернёт массив объектов {nom, amount}
 	 *     var total = ts.aggregate("nom", "amount", "MAX", true);
 	 */
-	aggregate(dimensions, resources, aggr, ret_array) {
+	aggregate(dimensions, resources, aggr = "sum", ret_array) {
 
-		if (typeof dimensions == "string")
-			dimensions = dimensions.split(",");
-		if (typeof resources == "string")
-			resources = resources.split(",");
-		if (!aggr)
-			aggr = "sum";
+		if (typeof dimensions == "string"){
+			dimensions = dimensions.split(",")
+		}
+		if (typeof resources == "string"){
+			resources = resources.split(",")
+		}
 
 		// для простых агрегатных функций, sql не используем
 		if (!dimensions.length && resources.length == 1 && aggr == "sum") {
@@ -365,7 +374,7 @@ class TabularSection {
 			}, 0);
 		}
 
-		var sql, res = true;
+		let sql, res = true;
 
 		resources.forEach(function (f) {
 			if (!sql)
@@ -413,17 +422,22 @@ class TabularSection {
 	 */
 	load(aattr) {
 
-		var t = this, arr;
+		let arr;
 
-		t.clear(true);
-		if (aattr instanceof TabularSection)
-			arr = aattr._obj;
-		else if (Array.isArray(aattr))
-			arr = aattr;
-		if (arr)
-			arr.forEach(function (row) {
-				t.add(row, true);
-			});
+		this.clear(true);
+
+		if (aattr instanceof TabularSection){
+			arr = aattr._obj
+		}
+		else if (Array.isArray(aattr)){
+			arr = aattr
+		}
+
+		if (arr){
+			arr.forEach((row) => {
+				this.add(row, true)
+			})
+		}
 
 		if (!this._owner._data._silent){
 			// TODO: observe
@@ -433,42 +447,31 @@ class TabularSection {
 			// });
 		}
 
-		return t;
+		return this;
 	}
 
 	/**
-	 * ### Перезаполняет грид данными табчасти с учетом отбора
-	 * @method sync_grid
-	 * @param grid {dhtmlxGrid} - элемент управления
-	 * @param [selection] {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"}
+	 * ### Выгружает колонку табчасти в массив
+	 *
+	 * @method unload_column
+	 * @param column {String} - имя колонки
+	 * @return {Array}
 	 */
-	sync_grid(grid, selection) {
-		var grid_data = {rows: []},
-			columns = [];
+	unload_column(column) {
 
-		for (var i = 0; i < grid.getColumnCount(); i++)
-			columns.push(grid.getColumnId(i));
+		const res = [];
 
-		grid.clearAll();
-		this.find_rows(selection, function (r) {
-			var data = [];
-			columns.forEach(function (f) {
-				if (utils.is_data_obj(r[f]))
-					data.push(r[f].presentation);
-				else
-					data.push(r[f]);
-			});
-			grid_data.rows.push({id: r.row, data: data});
-		});
-		if (grid.objBox) {
-			try {
-				grid.parse(grid_data, "json");
-				//grid.callEvent("onGridReconstructed", []);
-			} catch (e) {
-			}
-		}
+		this.each((row) => {
+			res.push(row[column])
+		})
+
+		return res;
 	}
 
+	/**
+	 * Обработчик сериализации
+	 * @return {Object}
+	 */
 	toJSON() {
 		return this._obj;
 	}
@@ -498,8 +501,7 @@ class TabularSectionRow {
 			 * @type TabularSection
 			 */
 			_owner: {
-				get: () => owner
-
+				value: owner
 			},
 
 			/**
@@ -522,7 +524,8 @@ class TabularSectionRow {
 	 * @type Number
 	 */
 	_metadata(field_name) {
-		return field_name ? this._owner._owner._metadata(this._owner._name).fields[field_name] : this._owner._owner._metadata(this._owner._name)
+		const {_owner} = this
+		return field_name ? _owner._owner._metadata(_owner._name).fields[field_name] : _owner._owner._metadata(_owner._name)
 	}
 
 	/**
@@ -543,7 +546,8 @@ class TabularSectionRow {
 	 * @type Number
 	 */
 	_clone() {
-		return utils._mixin(this._owner._owner._manager.obj_constructor(this._owner._name, this._owner), this._obj)
+		const {_owner, _obj} = this
+		return utils._mixin(_owner._owner._manager.obj_constructor(_owner._name, _owner), _obj)
 	}
 
 	get _getter() {
@@ -551,10 +555,14 @@ class TabularSectionRow {
 	}
 
 	_setter(f, v) {
-		if (this._obj[f] == v || (!v && this._obj[f] == utils.blank.guid))
+
+		const {_owner, _obj} = this
+		const _meta = this._metadata(f)
+
+		if (_obj[f] == v || (!v && _obj[f] == utils.blank.guid))
 			return;
 
-		if (!this._owner._owner._data._silent){
+		if (!_owner._owner._data._silent){
 			// TODO: observe
 			// Object.getNotifier(this._owner._owner).notify({
 			// 	type: 'row',
@@ -566,18 +574,18 @@ class TabularSectionRow {
 		}
 
 		// учтём связь по типу
-		if (this._metadata(f).choice_type) {
-			var prop;
-			if (this._metadata(f).choice_type.path.length == 2)
-				prop = this[this._metadata(f).choice_type.path[1]];
+		if (_meta.choice_type) {
+			let prop;
+			if (_meta.choice_type.path.length == 2)
+				prop = this[_meta.choice_type.path[1]];
 			else
-				prop = this._owner._owner[this._metadata(f).choice_type.path[0]];
+				prop = _owner._owner[_meta.choice_type.path[0]];
 			if (prop && prop.type)
 				v = utils.fetch_type(v, prop.type);
 		}
 
 		DataObj.prototype.__setter.call(this, f, v);
-		this._owner._owner._data._modified = true;
+		_owner._owner._data._modified = true;
 	}
 
 }

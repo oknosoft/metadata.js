@@ -7,9 +7,7 @@
  */
 
 const exec = require('child_process').exec;
-
-var concat = require('concat-files');
-
+const concat = require('concat-files');
 const root = './packages/metadata-abstract-ui/';
 
 const exec_babel = (src, out, ignore) => {
@@ -33,6 +31,7 @@ exec_babel('src/meta.js', 'meta.js')
 
 		concat([
 			'ui',
+			'tabulars',
 			'meta_objs',
 			'log_manager',
 			'scheme_settings',

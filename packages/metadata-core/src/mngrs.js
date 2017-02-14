@@ -417,64 +417,7 @@ function mngrs($p) {
 			}
 		}
 
-		/**
-		 * Заполняет свойства в объекте source в соответствии с реквизитами табчасти
-		 * @param tabular {String} - имя табчасти
-		 * @param source {Object}
-		 */
-		tabular_captions(tabular, source) {
 
-		}
-
-		/**
-		 * Печатает объект
-		 * @method print
-		 * @param ref {DataObj|String} - guid ссылки на объект
-		 * @param model {String|DataObj.cat.formulas} - идентификатор команды печати
-		 * @param [wnd] {dhtmlXWindows} - окно, из которого вызываем печать
-		 */
-		print(ref, model, wnd){
-
-			function tune_wnd_print(wnd_print){
-				if(wnd && wnd.progressOff)
-					wnd.progressOff();
-				if(wnd_print)
-					wnd_print.focus();
-			}
-
-			if(wnd && wnd.progressOn)
-				wnd.progressOn();
-
-			setTimeout(tune_wnd_print, 3000);
-
-			// если _printing_plates содержит ссылку на обрабочтик печати, используем его
-			if(this._printing_plates[model] instanceof DataObj)
-				model = this._printing_plates[model];
-
-			// если существует локальный обработчик, используем его
-			if(model instanceof DataObj && model.execute){
-
-				if(ref instanceof DataObj)
-					return model.execute(ref)
-						.then(tune_wnd_print);
-				else
-					return this.get(ref, true)
-						.then(model.execute.bind(model))
-						.then(tune_wnd_print);
-
-			}else{
-
-				// иначе - печатаем средствами 1С или иного сервера
-				var rattr = {};
-				$p.ajax.default_attr(rattr, job_prm.irest_url());
-				rattr.url += this.rest_name + "(guid'" + utils.fix_guid(ref) + "')" +
-					"/Print(model=" + model + ", browser_uid=" + wsql.get_user_param("browser_uid") +")";
-
-				return $p.ajax.get_and_show_blob(rattr.url, rattr, "get")
-					.then(tune_wnd_print);
-			}
-
-		}
 
 		/**
 		 * Возвращает промис со структурой печатных форм объекта
@@ -720,8 +663,9 @@ function mngrs($p) {
 
 				}else{
 
-					if(o instanceof DocObj && o.date == utils.blank.date)
+					if(o instanceof DocObj && o.date == utils.blank.date){
 						o.date = new Date();
+					}
 
 					// Триггер после создания
 					let after_create_res = {};
@@ -2385,6 +2329,12 @@ function mngrs($p) {
 
 		Object.defineProperties(classes, {
 
+			$p: {
+				get: function () {
+					return $p
+				}
+			},
+
 			DataManager: { value: DataManager },
 
 			RefDataManager: { value: RefDataManager },
@@ -2532,13 +2482,17 @@ function mngrs($p) {
 		Object.defineProperty(utils, 'value_mgr', {
 
 			value: function(row, f, mf, array_enabled, v) {
-				var property, oproperty, tnames, rt, mgr;
-				if (mf._mgr)
+
+				let property, oproperty, tnames, rt, mgr;
+
+				if (mf._mgr){
 					return mf._mgr;
+				}
 
 				function mf_mgr(mgr) {
-					if (mgr && mf.types.length == 1)
+					if (mgr && mf.types.length == 1){
 						mf._mgr = mgr;
+					}
 					return mgr;
 				}
 
@@ -2546,8 +2500,8 @@ function mngrs($p) {
 					tnames = mf.types[0].split(".");
 					if (tnames.length > 1 && $p[tnames[0]])
 						return mf_mgr($p[tnames[0]][tnames[1]]);
-
-				} else if (v && v.type) {
+				}
+				else if (v && v.type) {
 					tnames = v.type.split(".");
 					if (tnames.length > 1 && $p[tnames[0]])
 						return mf_mgr($p[tnames[0]][tnames[1]]);
@@ -2559,50 +2513,89 @@ function mngrs($p) {
 					rt = [];
 					mf.types.forEach(function (v) {
 						tnames = v.split(".");
-						if (tnames.length > 1 && $p[tnames[0]][tnames[1]])
+						if (tnames.length > 1 && $p[tnames[0]][tnames[1]]){
 							rt.push($p[tnames[0]][tnames[1]]);
+						}
 					});
-					if (rt.length == 1 || row[f] == utils.blank.guid)
+					if (rt.length == 1 || row[f] == utils.blank.guid){
 						return mf_mgr(rt[0]);
-
-					else if (array_enabled)
+					}
+					else if (array_enabled){
 						return rt;
-
-					else if ((property = row[f]) instanceof DataObj)
+					}
+					else if ((property = row[f]) instanceof DataObj){
 						return property._manager;
-
+					}
 					else if (utils.is_guid(property) && property != utils.blank.guid) {
 						for (var i in rt) {
 							mgr = rt[i];
-							if (mgr.get(property, true))
+							if (mgr.get(property, true)){
 								return mgr;
+							}
 						}
 					}
 				} else {
 
 					// Получаем объект свойства
-					if (utils.is_data_obj(property))
+					if (utils.is_data_obj(property)){
 						oproperty = property;
-					else if (utils.is_guid(property))
+					}
+					else if (utils.is_guid(property)){
 						oproperty = $p.cch.properties.get(property);
-					else
+					}
+					else{
 						return;
+					}
 
 					if (utils.is_data_obj(oproperty)) {
 
-						if (oproperty.is_new())
+						if (oproperty.is_new()){
 							return $p.cat.property_values;
+						}
 
 						// и через его тип выходми на мнеджера значения
-						for (rt in oproperty.type.types)
+						for (rt in oproperty.type.types){
 							if (oproperty.type.types[rt].indexOf(".") > -1) {
 								tnames = oproperty.type.types[rt].split(".");
 								break;
 							}
-						if (tnames && tnames.length > 1 && $p[tnames[0]])
+						}
+						if (tnames && tnames.length > 1 && $p[tnames[0]]){
 							return mf_mgr($p[tnames[0]][tnames[1]]);
-						else
+						}
+						else{
 							return oproperty.type;
+						}
+
+						//---
+						rt = [];
+						oproperty.type.types.some((v) => {
+							tnames = v.split(".");
+							if(tnames.length > 1 && $p[tnames[0]][tnames[1]]){
+								rt.push($p[tnames[0]][tnames[1]]);
+							}
+							else if(v == "boolean"){
+								rt.push({types: ["boolean"]});
+								return true
+							}
+						});
+						if(rt.length == 1 || row[f] == utils.blank.guid){
+							return mf_mgr(rt[0]);
+						}
+						else if(array_enabled){
+							return rt;
+						}
+						else if((property = row[f]) instanceof DataObj){
+							return property._manager;
+						}
+						else if(utils.is_guid(property) && property != utils.blank.guid){
+							for(let i in rt){
+								mgr = rt[i];
+								if(mgr.get(property, false, true)){
+									return mgr;
+								}
+							}
+						}
 					}
 				}
 			}

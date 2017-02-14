@@ -1,15 +1,16 @@
 {
   "name": "metadata-abstract-ui",
   "description": "Abstract enums and methods for metadata.js",
-  "version": "2.0.0-beta.13",
+  "version": "2.0.0-beta.14",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
     "node": "^6.9",
     "npm": "^3.5"
   },
-  "dependencies": {},
-  "devDependencies": {},
+  "peerDependencies": {
+    "clipboard": "^1.5"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-abstract-ui/"
@@ -22,6 +23,7 @@
   "keywords": [
     "metadata",
     "spa",
-    "ui"
+    "ui",
+    "widget"
   ]
 }
