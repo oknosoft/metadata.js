@@ -349,6 +349,72 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		}
 	});
 
+
+  _grid.attachEvent("onHeaderClick", function(ind,obj){
+
+    var field = _source.fields[ind];
+    if(_grid.disable_sorting || field == 'row'){
+      return;
+    }
+    if(!_grid.sort_fields){
+      _grid.sort_fields = [];
+      _grid.sort_directions = [];
+    }
+
+    // есть ли уже такая колонка
+    var index = _grid.sort_fields.indexOf(field);
+
+    function add_field() {
+      if(index == -1){
+        _grid.sort_fields.push(field);
+        _grid.sort_directions.push("asc");
+      }
+      else{
+        if(_grid.sort_directions[index] == "asc"){
+          _grid.sort_directions[index] = "desc";
+        }
+        else{
+          _grid.sort_directions[index] = "asc";
+        }
+      }
+    }
+
+    // если кликнули с шифтом - добавляем
+    if(window.event && window.event.shiftKey){
+      add_field();
+    }
+    else{
+      if(index == -1){
+        _grid.sort_fields.length = 0;
+        _grid.sort_directions.length = 0;
+      }
+      add_field();
+    }
+
+    _ts.sort(_grid.sort_fields.map(function (field, index) {
+      return field + " " + _grid.sort_directions[index];
+    }));
+
+    _ts.sync_grid(_grid);
+
+    for(var col = 0; col < _source.fields.length; col++){
+      var field = _source.fields[col];
+      var index = _grid.sort_fields.indexOf(field);
+      if(index == -1){
+        _grid.setSortImgState(false, col);
+      }
+      else{
+        _grid.setSortImgState(true, col, _grid.sort_directions[index]);
+        setTimeout(function () {
+          if(_grid && _grid.sortImg){
+            _grid.sortImg.style.display="inline";
+          }
+        }, 200);
+        break;
+      }
+    }
+  });
+
 	// заполняем табчасть данными
 	observer_rows([{tabular: _tsname, type: "rows"}]);
 
