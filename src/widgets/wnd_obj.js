@@ -231,8 +231,9 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 * @param changes
 	 */
 	function observer(changes) {
-		if(o && wnd)
-			wnd.set_text();
+		if(o && wnd && wnd.set_text){
+      wnd.set_text();
+    }
 	}
 
 	/**
@@ -249,8 +250,9 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		 * Устанавливаем текст заголовка формы
 		 */
 		wnd.set_text();
-		if(!attr.hide_header && wnd.showHeader)
-			wnd.showHeader();
+		if(!attr.hide_header && wnd.showHeader){
+      wnd.showHeader();
+    }
 
 		/**
 		 * закладки табличных частей
