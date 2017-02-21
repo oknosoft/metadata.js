@@ -30,7 +30,7 @@
     "pouchdb-find": "^0.10",
     "react-data-grid": "^2.0",
     "react-data-grid-addons": "^2.0",
-    "react-virtualized": "^9.0",    
+    "react-virtualized": "^9.0",
     "superlogin-client": "^0.4",
     "yargs": "^6.6"
   },
@@ -70,6 +70,9 @@
 	"rimraf": "^2.6",
     "webpack": "^2.2",
     "yuidocjs": "^0.10"
+  },
+  "peerDependecies": {
+      "react": "^15.4.2"
   },
   "scripts": {
     "build:react-ui": "better-npm-run build:react-ui",
