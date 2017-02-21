@@ -39,10 +39,12 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		_meta = attr.metadata || _mgr.metadata().tabular_sections[_tsname].fields,
 		_cell = this,
 		_source = attr.ts_captions || {},
+    _input_filter_changed = 0,
 		_selection = attr.selection;
 
-	if(!attr.ts_captions && !_md.ts_captions(_mgr.class_name, _tsname, _source))
-		return;
+	if(!attr.ts_captions && !_md.ts_captions(_mgr.class_name, _tsname, _source)){
+    return;
+  }
 
 	var _grid = this.attachGrid(),
 		_toolbar = this.attachToolbar(),
@@ -137,7 +139,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	}
 
 
-
 	/**
 	 * обработчик изменения значения примитивного типа
 	 */
@@ -218,10 +219,52 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		}
 	}
 
+	function filter_change(event) {
+
+    if(_input_filter_changed){
+      clearTimeout(_input_filter_changed);
+      _input_filter_changed = 0;
+    }
+
+    //attr.onchange.call(t, t.get_filter());
+
+  }
+
+  function filter_click(event) {
+    var val = _cell.input_filter.value;
+    setTimeout(function () {
+      if(val != _cell.input_filter.value)
+        filter_change();
+    })
+  }
+
+  function filter_keydown(event) {
+
+    if(_input_filter_changed){
+      clearTimeout(_input_filter_changed);
+    }
+
+    _input_filter_changed = setTimeout(function () {
+      if(_input_filter_changed)
+        filter_change();
+    }, 500);
+
+  }
 
 	// панель инструментов табличной части
 	_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
 	_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_add_del.xml"], function(){
+
+    this.forEachItem(function(id) {
+      if(id == "input_filter"){
+        _cell.input_filter = _toolbar.getInput(id);
+        _cell.input_filter.onchange = filter_change;
+        _cell.input_filter.onclick = filter_click;
+        _cell.input_filter.onkeydown = filter_keydown;
+        _cell.input_filter.type = "search";
+        _cell.input_filter.setAttribute("placeholder", "Фильтр");
+      }
+    })
 
 		this.attachEvent("onclick", function(btn_id){
 
@@ -238,6 +281,8 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 		});
 	});
+
+	// поле фильтра в панели инструментов
 
 	// собственно табличная часть
 	_grid.setIconsPath(dhtmlx.image_path);
