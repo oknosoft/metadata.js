@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding='utf-8'?>
+<toolbar>
+    <item id="btn_add" type="button"  text="&lt;i class='fa fa-plus-circle fa-fw'&gt;&lt;/i&gt;" title="Добавить строку"  />
+    <item id="btn_delete" type="button" text="&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt;"  title="Удалить строку" />
+    <item id="sep1" type="separator"/>
+
+</toolbar>
