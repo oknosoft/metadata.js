@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-02-24 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-02-26 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -1875,33 +1875,30 @@ function WSQL(){
 				if(typeof localStorage === "undefined"){
 
 					// локальное хранилище внутри node.js
-					if(typeof WorkerGlobalScope === "undefined"){
-						ls = new require('node-localstorage').LocalStorage('./localstorage');
-
-					}else{
-						ls = {
-							setItem: function (name, value) {
-
-							},
-							getItem: function (name) {
-
-							}
-						};
-					}
-
-				} else
-					ls = localStorage;
+					// if(typeof WorkerGlobalScope === "undefined"){
+					// 	ls = new require('node-localstorage').LocalStorage('./localstorage');
+					// }
+          ls = {
+            setItem: function (name, value) {
+            },
+            getItem: function (name) {
+            }
+          };
+				}
+				else{
+          ls = localStorage;
+        }
 
 				// значения базовых параметров по умолчанию
 				var nesessery_params = [
-					{p: "user_name",		v: "", t:"string"},
-					{p: "user_pwd",			v: "", t:"string"},
+					{p: "user_name",      v: "", t:"string"},
+					{p: "user_pwd",       v: "", t:"string"},
 					{p: "browser_uid",		v: $p.utils.generate_guid(), t:"string"},
-					{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
-					{p: "enable_save_pwd",	v: $p.job_prm.enable_save_pwd,	t:"boolean"},
-					{p: "autologin",		v: "",	t:"boolean"},
+					{p: "zone",           v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
+					{p: "enable_save_pwd",v: $p.job_prm.enable_save_pwd,	t:"boolean"},
+					{p: "couch_path",		  v: $p.job_prm.couch_path,	t:"string"},
+          {p: "rest_path",		  v: "", t:"string"},
 					{p: "skin",		        v: "dhx_web", t:"string"},
-					{p: "rest_path",		v: "", t:"string"}
 				],	zone;
 
 				// подмешиваем к базовым параметрам настройки приложения
@@ -1919,7 +1916,7 @@ function WSQL(){
 
 				// дополняем хранилище недостающими параметрами
 				nesessery_params.forEach(function(o){
-					if(wsql.get_user_param(o.p, o.t) == undefined ||
+					if((o.t == "boolean" ? wsql.get_user_param(o.p) : wsql.get_user_param(o.p, o.t)) == undefined ||
 						(!wsql.get_user_param(o.p, o.t) && (o.p.indexOf("url") != -1)))
 						wsql.set_user_param(o.p, $p.job_prm.hasOwnProperty(o.p) ? $p.job_prm[o.p] : o.v);
 				});
@@ -3056,6 +3053,7 @@ function Pouch(){
  * @requires common
  */
 
+var _md;
 
 /**
  * ### Хранилище метаданных конфигурации
@@ -5921,115 +5919,120 @@ EnumManager.prototype.__define({
 					fn.call(this[v.ref]);
 			}.bind(this));
 		}
-	}
+	},
+
+  /**
+   * Bозаращает массив запросов для создания таблиц объекта и его табличных частей
+   * @param attr {Object}
+   * @param attr.action {String} - [create_table, drop, insert, update, replace, select, delete]
+   * @return {Object|String}
+   */
+  get_sql_struct: {
+	  value: function(attr){
+
+      var res = "CREATE TABLE IF NOT EXISTS ",
+        action = attr && attr.action ? attr.action : "create_table";
+
+      if(attr && attr.postgres){
+        if(action == "create_table")
+          res += this.table_name+
+            " (ref character varying(255) PRIMARY KEY NOT NULL, sequence INT, synonym character varying(255))";
+        else if(["insert", "update", "replace"].indexOf(action) != -1){
+          res = {};
+          res[this.table_name] = {
+            sql: "INSERT INTO "+this.table_name+" (ref, sequence, synonym) VALUES ($1, $2, $3)",
+            fields: ["ref", "sequence", "synonym"],
+            values: "($1, $2, $3)"
+          };
+
+        }else if(action == "delete")
+          res = "DELETE FROM "+this.table_name+" WHERE ref = $1";
+
+      }else {
+        if(action == "create_table")
+          res += "`"+this.table_name+
+            "` (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR)";
+
+        else if(["insert", "update", "replace"].indexOf(action) != -1){
+          res = {};
+          res[this.table_name] = {
+            sql: "INSERT INTO `"+this.table_name+"` (ref, sequence, synonym) VALUES (?, ?, ?)",
+            fields: ["ref", "sequence", "synonym"],
+            values: "(?, ?, ?)"
+          };
+
+        }else if(action == "delete")
+          res = "DELETE FROM `"+this.table_name+"` WHERE ref = ?";
+      }
+
+
+
+      return res;
+
+    }
+  },
+
+  /**
+   * Возвращает массив доступных значений для комбобокса
+   * @method get_option_list
+   * @param val {DataObj|String}
+   * @param [selection] {Object}
+   * @param [selection._top] {Number}
+   * @return {Promise.<Array>}
+   */
+  get_option_list: {
+    value: function(val, selection){
+      var l = [], synonym = "", sref;
+
+      function check(v){
+        if($p.utils.is_equal(v.value, val))
+          v.selected = true;
+        return v;
+      }
+
+      if(selection){
+        for(var i in selection){
+          if(i.substr(0,1)=="_")
+            continue;
+          else if(i == "ref"){
+            sref = selection[i].hasOwnProperty("in") ? selection[i].in : selection[i];
+          }
+          else
+            synonym = selection[i];
+        }
+      }
+
+      if(typeof synonym == "object"){
+        if(synonym.like)
+          synonym = synonym.like;
+        else
+          synonym = "";
+      }
+      synonym = synonym.toLowerCase();
+
+      this.alatable.forEach(function (v) {
+        if(synonym){
+          if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1)
+            return;
+        }
+        if(sref){
+          if(Array.isArray(sref)){
+            if(!sref.some(function (sv) {
+                return sv.name == v.ref || sv.ref == v.ref || sv == v.ref;
+              }))
+              return;
+          }else{
+            if(sref.name != v.ref && sref.ref != v.ref && sref != v.ref)
+              return;
+          }
+        }
+        l.push(check({text: v.synonym || "", value: v.ref}));
+      });
+      return Promise.resolve(l);
+    }
+  }
+
 });
-
-/**
- * Bозаращает массив запросов для создания таблиц объекта и его табличных частей
- * @param attr {Object}
- * @param attr.action {String} - [create_table, drop, insert, update, replace, select, delete]
- * @return {Object|String}
- */
-EnumManager.prototype.get_sql_struct = function(attr){
-
-	var res = "CREATE TABLE IF NOT EXISTS ",
-		action = attr && attr.action ? attr.action : "create_table";
-
-	if(attr && attr.postgres){
-		if(action == "create_table")
-			res += this.table_name+
-				" (ref character varying(255) PRIMARY KEY NOT NULL, sequence INT, synonym character varying(255))";
-		else if(["insert", "update", "replace"].indexOf(action) != -1){
-			res = {};
-			res[this.table_name] = {
-				sql: "INSERT INTO "+this.table_name+" (ref, sequence, synonym) VALUES ($1, $2, $3)",
-				fields: ["ref", "sequence", "synonym"],
-				values: "($1, $2, $3)"
-			};
-
-		}else if(action == "delete")
-			res = "DELETE FROM "+this.table_name+" WHERE ref = $1";
-
-	}else {
-		if(action == "create_table")
-			res += "`"+this.table_name+
-				"` (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR)";
-
-		else if(["insert", "update", "replace"].indexOf(action) != -1){
-			res = {};
-			res[this.table_name] = {
-				sql: "INSERT INTO `"+this.table_name+"` (ref, sequence, synonym) VALUES (?, ?, ?)",
-				fields: ["ref", "sequence", "synonym"],
-				values: "(?, ?, ?)"
-			};
-
-		}else if(action == "delete")
-			res = "DELETE FROM `"+this.table_name+"` WHERE ref = ?";
-	}
-
-
-
-	return res;
-
-};
-
-/**
- * Возвращает массив доступных значений для комбобокса
- * @method get_option_list
- * @param val {DataObj|String}
- * @param [selection] {Object}
- * @param [selection._top] {Number}
- * @return {Promise.<Array>}
- */
-EnumManager.prototype.get_option_list = function(val, selection){
-	var l = [], synonym = "", sref;
-
-	function check(v){
-		if($p.utils.is_equal(v.value, val))
-			v.selected = true;
-		return v;
-	}
-
-	if(selection){
-		for(var i in selection){
-			if(i.substr(0,1)=="_")
-				continue;
-			else if(i == "ref"){
-				sref = selection[i].hasOwnProperty("in") ? selection[i].in : selection[i];
-			}
-			else
-				synonym = selection[i];
-		}
-	}
-
-	if(typeof synonym == "object"){
-		if(synonym.like)
-			synonym = synonym.like;
-		else
-			synonym = "";
-	}
-	synonym = synonym.toLowerCase();
-
-	this.alatable.forEach(function (v) {
-		if(synonym){
-			if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1)
-				return;
-		}
-		if(sref){
-			if(Array.isArray(sref)){
-				if(!sref.some(function (sv) {
-						return sv.name == v.ref || sv.ref == v.ref || sv == v.ref;
-					}))
-					return;
-			}else{
-				if(sref.name != v.ref && sref.ref != v.ref && sref != v.ref)
-					return;
-			}
-		}
-		l.push(check({text: v.synonym || "", value: v.ref}));
-	});
-	return Promise.resolve(l);
-};
 
 
 /**
@@ -7129,11 +7132,16 @@ TabularSection.prototype.count = function(){return this._obj.length};
  *     ts.clear();
  *
  */
-TabularSection.prototype.clear = function(silent){
+TabularSection.prototype.clear = function(silent, selection){
 
-	for(var i in this._obj)
-		delete this._obj[i];
-	this._obj.length = 0;
+  if(!selection){
+    this._obj.length = 0;
+  }
+  else{
+    this.find_rows(selection).forEach(function (row) {
+      row._row._owner.del(row.row-1, true);
+    })
+  }
 
 	if(!silent && !this._owner._data._silent)
 		Object.getNotifier(this._owner).notify({
@@ -7150,18 +7158,18 @@ TabularSection.prototype.clear = function(silent){
  * @param val {Number|TabularSectionRow} - индекс или строка табчасти
  */
 TabularSection.prototype.del = function(val, silent){
-	
+
 	var index, _obj = this._obj;
-	
+
 	if(typeof val == "undefined")
 		return;
-		
+
 	else if(typeof val == "number")
 		index = val;
-		
+
 	else if(_obj[val.row-1]._row === val)
 		index = val.row-1;
-		
+
 	else{
 		for(var i in _obj)
 			if(_obj[i]._row === val){
@@ -7273,9 +7281,9 @@ TabularSection.prototype.add = function(attr, silent){
 		});
 
 	attr = null;
-	
+
 	this._owner._data._modified = true;
-	
+
 	return row;
 };
 
@@ -7491,7 +7499,7 @@ TabularSection.prototype.toJSON = function () {
 
 /**
  * ### Aбстрактная строка табличной части
- * 
+ *
  * @class TabularSectionRow
  * @constructor
  * @param owner {TabularSection} - табличная часть, которой принадлежит строка

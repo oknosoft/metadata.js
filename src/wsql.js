@@ -210,20 +210,19 @@ function WSQL(){
 				if(typeof localStorage === "undefined"){
 
 					// локальное хранилище внутри node.js
-					if(typeof WorkerGlobalScope === "undefined"){
-						ls = new require('node-localstorage').LocalStorage('./localstorage');
-
-					}else{
-						ls = {
-							setItem: function (name, value) {
-							},
-							getItem: function (name) {
-							}
-						};
-					}
-
-				} else
-					ls = localStorage;
+					// if(typeof WorkerGlobalScope === "undefined"){
+					// 	ls = new require('node-localstorage').LocalStorage('./localstorage');
+					// }
+          ls = {
+            setItem: function (name, value) {
+            },
+            getItem: function (name) {
+            }
+          };
+				}
+				else{
+          ls = localStorage;
+        }
 
 				// значения базовых параметров по умолчанию
 				var nesessery_params = [
