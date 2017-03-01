@@ -10,14 +10,17 @@
 import React, {Component, PropTypes} from "react";
 import IconButton from "material-ui/IconButton";
 import IconSettings from "material-ui/svg-icons/action/settings";
-import Dialog from "material-ui/Dialog";
+import RaisedButton from "material-ui/RaisedButton";
 import FlatButton from "material-ui/FlatButton";
 import TextField from "material-ui/TextField";
 import DropDownMenu from 'material-ui/DropDownMenu';
 import MenuItem from 'material-ui/MenuItem';
 
-import SchemeSettingsTabs from "./SchemeSettingsTabs";
+// import Dialog from "material-ui/Dialog";
+// import SchemeSettingsTabs from "./SchemeSettingsTabs";
 
+import Dialog from "metadata-ui/Dialog"
+import { getTabsContent } from "./SchemeSettingsTabs"
 
 export default class SchemeSettingsWrapper extends Component {
 
@@ -86,6 +89,12 @@ export default class SchemeSettingsWrapper extends Component {
     }
   }
 
+  handleCloseClick() {
+    this.setState({
+      open: false
+    })
+  }
+
   render() {
 
     const {props, state, handleOpen, handleOk, handleClose, handleSchemeChange, handleSearchChange, handleVariantChange} = this;
@@ -93,13 +102,15 @@ export default class SchemeSettingsWrapper extends Component {
     const {show_search, show_variants, tabParams} = props
 
     const actions = [
-      <FlatButton
+      <RaisedButton
+        key={0}
         label="Применить"
         primary={true}
         keyboardFocused={true}
         onTouchTap={handleOk}
       />,
       <FlatButton
+        key={1}
         label="Отмена"
         secondary={true}
         onTouchTap={handleClose}
@@ -114,9 +125,7 @@ export default class SchemeSettingsWrapper extends Component {
     }
 
     return (
-
       <div>
-
         {show_search ?
             <TextField
               name="search"
@@ -155,22 +164,13 @@ export default class SchemeSettingsWrapper extends Component {
         </IconButton>
 
         <Dialog
-          title="Настройка списка"
+          title={"Настройка списка"}
           actions={actions}
-          modal={false}
-          autoScrollBodyContent={true}
-          open={open}
-          onRequestClose={handleClose}
-        >
-
-          <SchemeSettingsTabs
-            handleSchemeChange={handleSchemeChange}
-            scheme={scheme}
-            tabParams={tabParams}
-          />
-
-        </Dialog>
-
+          tabs={getTabsContent(scheme, handleSchemeChange, tabParams)}
+          isVisible={open}
+          width={700}
+          height={800}
+          onCloseClick={() => this.handleCloseClick()} />
       </div>
     )
   }

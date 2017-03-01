@@ -15,8 +15,90 @@ import SchemeSettingsSelect from "./SchemeSettingsSelect"
 import DataField, {FieldSelect} from "../DataField";
 import Divider from 'material-ui/Divider';
 
+export function getTabsContent(scheme, handleSchemeChange, tabParams) {
+  return {
+    "Параметры": tabParams ? tabParams : (
+      scheme.query.match('date') ?
+        <div style={{height: 356}}>
+          <DataField
+            _obj={scheme}
+            _fld="date_from" />
 
-export default class SchemeSettingsTabs extends Component {
+          <DataField
+            _obj={scheme}
+            _fld="date_till" />
+        </div>
+        :
+        <TabularSection
+          _obj={scheme}
+          _tabular="params"
+          minHeight={308} />
+    ),
+
+    "Колонки": (<TabularSection
+      _obj={scheme}
+      _tabular="fields"
+      deny_add_del={true}
+      minHeight={308}
+
+      rowSelection={{
+        showCheckbox: true,
+        enableShiftSelect: true,
+        selectBy: {
+          keys: {
+            rowKey: "field",
+            markKey: "use",
+            values: scheme.used_fields()
+          }
+        }
+      }} />),
+
+    "Отбор": (<TabularSection
+      _obj={scheme}
+      _tabular="selection"
+      minHeight={308}
+
+      rowSelection={{
+        showCheckbox: true,
+        enableShiftSelect: true,
+        selectBy: {
+          keys: {
+            rowKey: "field",
+            markKey: "use",
+            values: scheme.used_fields()
+          }
+        }
+      }} />),
+
+    "Группировка": (<div>
+      <TabularSection
+        _obj={scheme}
+        _tabular="dimensions"
+        minHeight={130} />
+
+      <TabularSection
+        _obj={scheme}
+        _tabular="resources"
+        minHeight={130} />
+    </div>),
+
+    "Сортировка": (
+      <TabularSection
+        _obj={scheme}
+        _tabular="sorting"
+        minHeight={308} />
+    ),
+
+    "Вариант": (
+      <SchemeSettingsSelect
+        scheme={scheme}
+        handleSchemeChange={handleSchemeChange}
+        minHeight={356} />
+    )
+  }
+}
+
+export class SchemeSettingsTabs extends Component {
 
   static propTypes = {
     scheme: PropTypes.object.isRequired,
@@ -32,10 +114,7 @@ export default class SchemeSettingsTabs extends Component {
     this.setState({tab_value})
   }
 
-
-
   render() {
-
     const {handleSchemeChange, scheme, tabParams} = this.props;
 
 
