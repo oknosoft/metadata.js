@@ -26,7 +26,7 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 
 	var t = this,
 		input_filter_changed = 0,
-		input_filter_width = $p.job_prm.device_type == "desktop" ? 300 : 120,
+		input_filter_width = $p.job_prm.device_type == "desktop" ? 220 : 120,
 		custom_selection = {};
 
 	if(!attr.pos)

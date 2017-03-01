@@ -687,76 +687,78 @@ DataObj.prototype.__define({
  */
 function CatObj(attr, manager) {
 
-	var _presentation = "";
-
 	// выполняем конструктор родительского объекта
 	CatObj.superclass.constructor.call(this, attr, manager);
-
-	/**
-	 * Представление объекта
-	 * @property presentation
-	 * @for CatObj
-	 * @type String
-	 */
-	this.__define('presentation', {
-		get : function(){
-
-			if(this.name || this.id){
-				// return this._metadata.obj_presentation || this._metadata.synonym + " " + this.name || this.id;
-				return this.name || this.id || this._metadata.obj_presentation || this._metadata.synonym;
-			}else
-				return _presentation;
-
-		},
-		set : function(v){
-			if(v)
-				_presentation = String(v);
-		}
-	});
 
 	if(attr && typeof attr == "object"){
 		if(attr._not_set_loaded){
 			delete attr._not_set_loaded;
 			this._mixin(attr);
-		}else{
+		}
+		else{
 			this._mixin(attr);
 			if(!$p.utils.is_empty_guid(this.ref) && (attr.id || attr.name))
 				this._set_loaded(this.ref);
 		}
 	}
 
-	attr = null;
-
 }
 CatObj._extend(DataObj);
 
-/**
- * ### Код элемента справочника
- * @property id
- * @type String|Number
- */
-CatObj.prototype.__define('id', {
-	get : function(){ return this._obj.id || ""},
-	set : function(v){
-		this.__notify('id');
-		this._obj.id = v;
-	},
-	enumerable: true
-});
+CatObj.prototype.__define({
 
-/**
- * ### Наименование элемента справочника
- * @property name
- * @type String
- */
-CatObj.prototype.__define('name', {
-	get : function(){ return this._obj.name || ""},
-	set : function(v){
-		this.__notify('name');
-		this._obj.name = String(v);
-	},
-	enumerable: true
-});
+  /**
+   * ### Код элемента справочника
+   * @property id
+   * @type String|Number
+   */
+  id: {
+    get : function(){ return this._obj.id || ""},
+    set : function(v){
+      this.__notify('id');
+      this._obj.id = v;
+    },
+    enumerable: true
+  },
+
+  /**
+   * ### Наименование элемента справочника
+   * @property name
+   * @type String
+   */
+  name: {
+    get : function(){ return this._obj.name || ""},
+    set : function(v){
+      this.__notify('name');
+      this._obj.name = String(v);
+    },
+    enumerable: true
+  },
+
+  /**
+   * Представление объекта
+   * @property presentation
+   * @for CatObj
+   * @type String
+   */
+  presentation: {
+    get : function(){
+      if(this.name || this.id){
+        // return this._metadata.obj_presentation || this._metadata.synonym + " " + this.name || this.id;
+        return this.name || this.id || this._metadata.obj_presentation || this._metadata.synonym;
+      }else{
+        return this._presentation;
+      }
+    },
+    set : function(v){
+      if(v){
+        this._presentation = String(v);
+      }
+    }
+  }
+
+})
+
 
 
 /**
