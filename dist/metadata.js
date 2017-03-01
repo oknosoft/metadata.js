@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.225, built:2017-02-03 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-02-26 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -480,7 +480,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.12.225",
+			value: "0.12.226",
 			writable: false
 		},
 
@@ -2059,33 +2059,30 @@ function WSQL(){
 				if(typeof localStorage === "undefined"){
 
 					// локальное хранилище внутри node.js
-					if(typeof WorkerGlobalScope === "undefined"){
-						ls = new require('node-localstorage').LocalStorage('./localstorage');
-
-					}else{
-						ls = {
-							setItem: function (name, value) {
-
-							},
-							getItem: function (name) {
-
-							}
-						};
-					}
-
-				} else
-					ls = localStorage;
+					// if(typeof WorkerGlobalScope === "undefined"){
+					// 	ls = new require('node-localstorage').LocalStorage('./localstorage');
+					// }
+          ls = {
+            setItem: function (name, value) {
+            },
+            getItem: function (name) {
+            }
+          };
+				}
+				else{
+          ls = localStorage;
+        }
 
 				// значения базовых параметров по умолчанию
 				var nesessery_params = [
-					{p: "user_name",		v: "", t:"string"},
-					{p: "user_pwd",			v: "", t:"string"},
+					{p: "user_name",      v: "", t:"string"},
+					{p: "user_pwd",       v: "", t:"string"},
 					{p: "browser_uid",		v: $p.utils.generate_guid(), t:"string"},
-					{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
-					{p: "enable_save_pwd",	v: $p.job_prm.enable_save_pwd,	t:"boolean"},
-					{p: "autologin",		v: "",	t:"boolean"},
+					{p: "zone",           v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
+					{p: "enable_save_pwd",v: $p.job_prm.enable_save_pwd,	t:"boolean"},
+					{p: "couch_path",		  v: $p.job_prm.couch_path,	t:"string"},
+          {p: "rest_path",		  v: "", t:"string"},
 					{p: "skin",		        v: "dhx_web", t:"string"},
-					{p: "rest_path",		v: "", t:"string"}
 				],	zone;
 
 				// подмешиваем к базовым параметрам настройки приложения
@@ -2103,7 +2100,7 @@ function WSQL(){
 
 				// дополняем хранилище недостающими параметрами
 				nesessery_params.forEach(function(o){
-					if(wsql.get_user_param(o.p, o.t) == undefined ||
+					if((o.t == "boolean" ? wsql.get_user_param(o.p) : wsql.get_user_param(o.p, o.t)) == undefined ||
 						(!wsql.get_user_param(o.p, o.t) && (o.p.indexOf("url") != -1)))
 						wsql.set_user_param(o.p, $p.job_prm.hasOwnProperty(o.p) ? $p.job_prm[o.p] : o.v);
 				});
@@ -4015,6 +4012,7 @@ $p.fias = function FIAS(){};
  * @requires common
  */
 
+var _md;
 
 /**
  * ### Хранилище метаданных конфигурации
@@ -6880,115 +6878,120 @@ EnumManager.prototype.__define({
 					fn.call(this[v.ref]);
 			}.bind(this));
 		}
-	}
+	},
+
+  /**
+   * Bозаращает массив запросов для создания таблиц объекта и его табличных частей
+   * @param attr {Object}
+   * @param attr.action {String} - [create_table, drop, insert, update, replace, select, delete]
+   * @return {Object|String}
+   */
+  get_sql_struct: {
+	  value: function(attr){
+
+      var res = "CREATE TABLE IF NOT EXISTS ",
+        action = attr && attr.action ? attr.action : "create_table";
+
+      if(attr && attr.postgres){
+        if(action == "create_table")
+          res += this.table_name+
+            " (ref character varying(255) PRIMARY KEY NOT NULL, sequence INT, synonym character varying(255))";
+        else if(["insert", "update", "replace"].indexOf(action) != -1){
+          res = {};
+          res[this.table_name] = {
+            sql: "INSERT INTO "+this.table_name+" (ref, sequence, synonym) VALUES ($1, $2, $3)",
+            fields: ["ref", "sequence", "synonym"],
+            values: "($1, $2, $3)"
+          };
+
+        }else if(action == "delete")
+          res = "DELETE FROM "+this.table_name+" WHERE ref = $1";
+
+      }else {
+        if(action == "create_table")
+          res += "`"+this.table_name+
+            "` (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR)";
+
+        else if(["insert", "update", "replace"].indexOf(action) != -1){
+          res = {};
+          res[this.table_name] = {
+            sql: "INSERT INTO `"+this.table_name+"` (ref, sequence, synonym) VALUES (?, ?, ?)",
+            fields: ["ref", "sequence", "synonym"],
+            values: "(?, ?, ?)"
+          };
+
+        }else if(action == "delete")
+          res = "DELETE FROM `"+this.table_name+"` WHERE ref = ?";
+      }
+
+
+
+      return res;
+
+    }
+  },
+
+  /**
+   * Возвращает массив доступных значений для комбобокса
+   * @method get_option_list
+   * @param val {DataObj|String}
+   * @param [selection] {Object}
+   * @param [selection._top] {Number}
+   * @return {Promise.<Array>}
+   */
+  get_option_list: {
+    value: function(val, selection){
+      var l = [], synonym = "", sref;
+
+      function check(v){
+        if($p.utils.is_equal(v.value, val))
+          v.selected = true;
+        return v;
+      }
+
+      if(selection){
+        for(var i in selection){
+          if(i.substr(0,1)=="_")
+            continue;
+          else if(i == "ref"){
+            sref = selection[i].hasOwnProperty("in") ? selection[i].in : selection[i];
+          }
+          else
+            synonym = selection[i];
+        }
+      }
+
+      if(typeof synonym == "object"){
+        if(synonym.like)
+          synonym = synonym.like;
+        else
+          synonym = "";
+      }
+      synonym = synonym.toLowerCase();
+
+      this.alatable.forEach(function (v) {
+        if(synonym){
+          if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1)
+            return;
+        }
+        if(sref){
+          if(Array.isArray(sref)){
+            if(!sref.some(function (sv) {
+                return sv.name == v.ref || sv.ref == v.ref || sv == v.ref;
+              }))
+              return;
+          }else{
+            if(sref.name != v.ref && sref.ref != v.ref && sref != v.ref)
+              return;
+          }
+        }
+        l.push(check({text: v.synonym || "", value: v.ref}));
+      });
+      return Promise.resolve(l);
+    }
+  }
+
 });
-
-/**
- * Bозаращает массив запросов для создания таблиц объекта и его табличных частей
- * @param attr {Object}
- * @param attr.action {String} - [create_table, drop, insert, update, replace, select, delete]
- * @return {Object|String}
- */
-EnumManager.prototype.get_sql_struct = function(attr){
-
-	var res = "CREATE TABLE IF NOT EXISTS ",
-		action = attr && attr.action ? attr.action : "create_table";
-
-	if(attr && attr.postgres){
-		if(action == "create_table")
-			res += this.table_name+
-				" (ref character varying(255) PRIMARY KEY NOT NULL, sequence INT, synonym character varying(255))";
-		else if(["insert", "update", "replace"].indexOf(action) != -1){
-			res = {};
-			res[this.table_name] = {
-				sql: "INSERT INTO "+this.table_name+" (ref, sequence, synonym) VALUES ($1, $2, $3)",
-				fields: ["ref", "sequence", "synonym"],
-				values: "($1, $2, $3)"
-			};
-
-		}else if(action == "delete")
-			res = "DELETE FROM "+this.table_name+" WHERE ref = $1";
-
-	}else {
-		if(action == "create_table")
-			res += "`"+this.table_name+
-				"` (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR)";
-
-		else if(["insert", "update", "replace"].indexOf(action) != -1){
-			res = {};
-			res[this.table_name] = {
-				sql: "INSERT INTO `"+this.table_name+"` (ref, sequence, synonym) VALUES (?, ?, ?)",
-				fields: ["ref", "sequence", "synonym"],
-				values: "(?, ?, ?)"
-			};
-
-		}else if(action == "delete")
-			res = "DELETE FROM `"+this.table_name+"` WHERE ref = ?";
-	}
-
-
-
-	return res;
-
-};
-
-/**
- * Возвращает массив доступных значений для комбобокса
- * @method get_option_list
- * @param val {DataObj|String}
- * @param [selection] {Object}
- * @param [selection._top] {Number}
- * @return {Promise.<Array>}
- */
-EnumManager.prototype.get_option_list = function(val, selection){
-	var l = [], synonym = "", sref;
-
-	function check(v){
-		if($p.utils.is_equal(v.value, val))
-			v.selected = true;
-		return v;
-	}
-
-	if(selection){
-		for(var i in selection){
-			if(i.substr(0,1)=="_")
-				continue;
-			else if(i == "ref"){
-				sref = selection[i].hasOwnProperty("in") ? selection[i].in : selection[i];
-			}
-			else
-				synonym = selection[i];
-		}
-	}
-
-	if(typeof synonym == "object"){
-		if(synonym.like)
-			synonym = synonym.like;
-		else
-			synonym = "";
-	}
-	synonym = synonym.toLowerCase();
-
-	this.alatable.forEach(function (v) {
-		if(synonym){
-			if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1)
-				return;
-		}
-		if(sref){
-			if(Array.isArray(sref)){
-				if(!sref.some(function (sv) {
-						return sv.name == v.ref || sv.ref == v.ref || sv == v.ref;
-					}))
-					return;
-			}else{
-				if(sref.name != v.ref && sref.ref != v.ref && sref != v.ref)
-					return;
-			}
-		}
-		l.push(check({text: v.synonym || "", value: v.ref}));
-	});
-	return Promise.resolve(l);
-};
 
 
 /**
@@ -9162,11 +9165,16 @@ TabularSection.prototype.count = function(){return this._obj.length};
  *     ts.clear();
  *
  */
-TabularSection.prototype.clear = function(silent){
+TabularSection.prototype.clear = function(silent, selection){
 
-	for(var i in this._obj)
-		delete this._obj[i];
-	this._obj.length = 0;
+  if(!selection){
+    this._obj.length = 0;
+  }
+  else{
+    this.find_rows(selection).forEach(function (row) {
+      row._row._owner.del(row.row-1, true);
+    })
+  }
 
 	if(!silent && !this._owner._data._silent)
 		Object.getNotifier(this._owner).notify({
@@ -9183,18 +9191,18 @@ TabularSection.prototype.clear = function(silent){
  * @param val {Number|TabularSectionRow} - индекс или строка табчасти
  */
 TabularSection.prototype.del = function(val, silent){
-	
+
 	var index, _obj = this._obj;
-	
+
 	if(typeof val == "undefined")
 		return;
-		
+
 	else if(typeof val == "number")
 		index = val;
-		
+
 	else if(_obj[val.row-1]._row === val)
 		index = val.row-1;
-		
+
 	else{
 		for(var i in _obj)
 			if(_obj[i]._row === val){
@@ -9306,9 +9314,9 @@ TabularSection.prototype.add = function(attr, silent){
 		});
 
 	attr = null;
-	
+
 	this._owner._data._modified = true;
-	
+
 	return row;
 };
 
@@ -9524,7 +9532,7 @@ TabularSection.prototype.toJSON = function () {
 
 /**
  * ### Aбстрактная строка табличной части
- * 
+ *
  * @class TabularSectionRow
  * @constructor
  * @param owner {TabularSection} - табличная часть, которой принадлежит строка
@@ -10573,7 +10581,7 @@ DataManager.prototype.__define({
 
 							t.load_array(res);
 							res.length = 0;
-							
+
 							t.pouch_db.query(_view, options, process_docs);
 
 						}else{
@@ -10654,7 +10662,7 @@ DataManager.prototype.__define({
 					_view = selection._view;
 					delete selection._view;
 				}
-				
+
 				if(selection._key) {
 
 					if(selection._key._order_by == "des"){
@@ -10671,7 +10679,7 @@ DataManager.prototype.__define({
 					skip = selection._skip;
 					delete selection._skip;
 				}
-				
+
 				if(selection._attachments) {
 					options.attachments = true;
 					options.binary = true;
@@ -10751,9 +10759,9 @@ DataManager.prototype.__define({
 								};
 							})
 					}
-					
+
 				}
-				
+
 			}
 
 			// бежим по всем документам из ram
@@ -10785,7 +10793,7 @@ DataManager.prototype.__define({
 
 								if(calc_count)
 									_total_count++;
-								
+
 								// пропукскаем лишние (skip) элементы
 								if(skip) {
 									skip_count++;
@@ -10829,7 +10837,7 @@ DataManager.prototype.__define({
 
 					if(_view)
 						t.pouch_db.query(_view, options, process_docs);
-						
+
 					else
 						t.pouch_db.allDocs(options, process_docs);
 				}
@@ -10862,7 +10870,7 @@ DataManager.prototype.__define({
 					_skip: attr.start || 0
 				},   // условие см. find_rows()
 				ares = [], o, mf, fldsyn;
-			
+
 			// набираем поля
 			if(cmd.form && cmd.form.selection){
 				cmd.form.selection.fields.forEach(function (fld) {
@@ -10922,7 +10930,7 @@ DataManager.prototype.__define({
 				selection.date = {between: [attr.date_from, attr.date_till]};
 
 			}
-			
+
 			// фильтр по родителю
 			if(cmd["hierarchical"] && attr.parent)
 				selection.parent = attr.parent;
@@ -10957,21 +10965,21 @@ DataManager.prototype.__define({
 						flt[ifld] = {like: attr.filter};
 						selection.or.push(flt);
 					});
-				}	
+				}
 			}
 
 			// обратная сортировка по ключу, если есть признак сортировки в ключе и 'des' в атрибутах
 			if(selection._key && selection._key._order_by){
 				selection._key._order_by = attr.direction;
 			}
-			
+
 			// фильтр по владельцу
 			//if(cmd["has_owners"] && attr.owner)
 			//	selection.owner = attr.owner;
 
 			return t.pouch_find_rows(selection)
 				.then(function (rows) {
-					
+
 					if(rows.hasOwnProperty("_total_count") && rows.hasOwnProperty("rows")){
 						attr._total_count = rows._total_count;
 						rows = rows.rows
@@ -11155,7 +11163,7 @@ DataManager.prototype.__define({
 });
 
 DataObj.prototype.__define({
-	
+
 	/**
 	 * Устанавливает новый номер документа или код справочника
 	 */
@@ -13007,10 +13015,15 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		_meta = attr.metadata || _mgr.metadata().tabular_sections[_tsname].fields,
 		_cell = this,
 		_source = attr.ts_captions || {},
-		_selection = attr.selection;
+    _input_filter = "",
+    _input_filter_changed = 0,
+		_selection = attr.selection || {};
 
-	if(!attr.ts_captions && !_md.ts_captions(_mgr.class_name, _tsname, _source))
-		return;
+	if(!attr.ts_captions && !_md.ts_captions(_mgr.class_name, _tsname, _source)){
+    return;
+  }
+
+  _selection.filter_selection = filter_selection;
 
 	var _grid = this.attachGrid(),
 		_toolbar = this.attachToolbar(),
@@ -13035,7 +13048,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			var proto;
 			if(_selection){
 				for(var sel in _selection){
-					if(!_meta[sel] || (typeof _selection[sel] == 'object' && !$p.is_data_obj(_selection[sel]))){
+					if(!_meta[sel] || (typeof _selection[sel] == 'function') || (typeof _selection[sel] == 'object' && !$p.is_data_obj(_selection[sel]))){
 						continue;
 					}
 					if(!proto){
@@ -13103,7 +13116,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				title: (_obj._metadata.obj_presentation || _obj._metadata.synonym) + ': ' + _obj.presentation
 			});
 	}
-
 
 
 	/**
@@ -13186,10 +13198,82 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		}
 	}
 
+  function filter_selection(row) {
+
+	  if(!_input_filter){
+	    return true;
+    }
+
+    var res;
+    _source.fields.some(function (fld) {
+      var v = row._row[fld];
+      if($p.utils.is_data_obj(v)){
+        if(!v.is_new() && v.presentation.match(_input_filter)){
+          return res = true;
+        }
+      }
+      else if(typeof v == 'number'){
+        return res = v.toLocaleString().match(_input_filter);
+      }
+      else if(v instanceof Date){
+        return res = $p.moment(v).format($p.moment._masks.date_time).match(_input_filter);
+      }
+      else if(v.match){
+        return res = v.match(_input_filter);
+      }
+    })
+    return res;
+  }
+
+	function filter_change() {
+
+    if(_input_filter_changed){
+      clearTimeout(_input_filter_changed);
+      _input_filter_changed = 0;
+    }
+
+    if(_input_filter != _cell.input_filter.value){
+      _input_filter = new RegExp(_cell.input_filter.value, 'i');
+      observer_rows([{tabular: _tsname, type: "rows"}]);
+    }
+
+  }
+
+  function filter_click() {
+    var val = _cell.input_filter.value;
+    setTimeout(function () {
+      if(val != _cell.input_filter.value)
+        filter_change();
+    })
+  }
+
+  function filter_keydown() {
+
+    if(_input_filter_changed){
+      clearTimeout(_input_filter_changed);
+    }
+
+    _input_filter_changed = setTimeout(function () {
+      if(_input_filter_changed)
+        filter_change();
+    }, 500);
+
+  }
 
 	// панель инструментов табличной части
 	_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
 	_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_add_del.xml"], function(){
+
+    this.forEachItem(function(id) {
+      if(id == "input_filter"){
+        _cell.input_filter = _toolbar.getInput(id);
+        _cell.input_filter.onchange = filter_change;
+        _cell.input_filter.onclick = filter_click;
+        _cell.input_filter.onkeydown = filter_keydown;
+        _cell.input_filter.type = "search";
+        _cell.input_filter.setAttribute("placeholder", "Фильтр");
+      }
+    })
 
 		this.attachEvent("onclick", function(btn_id){
 
@@ -13206,6 +13290,8 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 		});
 	});
+
+	// поле фильтра в панели инструментов
 
 	// собственно табличная часть
 	_grid.setIconsPath(dhtmlx.image_path);
@@ -13316,6 +13402,72 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			}
 		}
 	});
+
+
+  _grid.attachEvent("onHeaderClick", function(ind,obj){
+
+    var field = _source.fields[ind];
+    if(_grid.disable_sorting || field == 'row'){
+      return;
+    }
+    if(!_grid.sort_fields){
+      _grid.sort_fields = [];
+      _grid.sort_directions = [];
+    }
+
+    // есть ли уже такая колонка
+    var index = _grid.sort_fields.indexOf(field);
+
+    function add_field() {
+      if(index == -1){
+        _grid.sort_fields.push(field);
+        _grid.sort_directions.push("asc");
+      }
+      else{
+        if(_grid.sort_directions[index] == "asc"){
+          _grid.sort_directions[index] = "desc";
+        }
+        else{
+          _grid.sort_directions[index] = "asc";
+        }
+      }
+    }
+
+    // если кликнули с шифтом - добавляем
+    if(window.event && window.event.shiftKey){
+      add_field();
+    }
+    else{
+      if(index == -1){
+        _grid.sort_fields.length = 0;
+        _grid.sort_directions.length = 0;
+      }
+      add_field();
+    }
+
+    _ts.sort(_grid.sort_fields.map(function (field, index) {
+      return field + " " + _grid.sort_directions[index];
+    }));
+
+    _ts.sync_grid(_grid);
+
+    for(var col = 0; col < _source.fields.length; col++){
+      var field = _source.fields[col];
+      var index = _grid.sort_fields.indexOf(field);
+      if(index == -1){
+        _grid.setSortImgState(false, col);
+      }
+      else{
+        _grid.setSortImgState(true, col, _grid.sort_directions[index]);
+        setTimeout(function () {
+          if(_grid && _grid.sortImg){
+            _grid.sortImg.style.display="inline";
+          }
+        }, 200);
+        break;
+      }
+    }
+  });
 
 	// заполняем табчасть данными
 	observer_rows([{tabular: _tsname, type: "rows"}]);
@@ -15292,8 +15444,9 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 * @param changes
 	 */
 	function observer(changes) {
-		if(o && wnd)
-			wnd.set_text();
+		if(o && wnd && wnd.set_text){
+      wnd.set_text();
+    }
 	}
 
 	/**
@@ -15310,8 +15463,9 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		 * Устанавливаем текст заголовка формы
 		 */
 		wnd.set_text();
-		if(!attr.hide_header && wnd.showHeader)
-			wnd.showHeader();
+		if(!attr.hide_header && wnd.showHeader){
+      wnd.showHeader();
+    }
 
 		/**
 		 * закладки табличных частей
@@ -18349,7 +18503,7 @@ function HandsontableDocument(container, attr) {
  * @type {function}
  */
 $p.HandsontableDocument = HandsontableDocument;
-$p.injected_data._mixin({"form_auth.xml":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<items>\n\t<item type=\"settings\" position=\"label-left\" labelWidth=\"80\" inputWidth=\"180\" noteWidth=\"180\"/>\n\t<item type=\"fieldset\" name=\"data\" inputWidth=\"auto\" label=\"Авторизация\">\n\n        <item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" checked=\"true\" value=\"guest\" label=\"Гостевой (демо) режим\">\n            <item type=\"select\" name=\"guest\" label=\"Роль\">\n                <option value=\"Дилер\" label=\"Дилер\"/>\n            </item>\n        </item>\n\n\t\t<item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" value=\"auth\" label=\"Есть учетная запись\">\n\t\t\t<item type=\"input\" value=\"\" name=\"login\" label=\"Логин\" validate=\"NotEmpty\" />\n\t\t\t<item type=\"password\" value=\"\" name=\"password\" label=\"Пароль\" validate=\"NotEmpty\" />\n\t\t</item>\n\n\t\t<item type=\"button\" value=\"Войти\" name=\"submit\"/>\n\n        <item type=\"template\" name=\"text_options\" className=\"order_dealer_options\" inputWidth=\"170\"\n              value=\"&lt;a href='#' onclick='$p.iface.open_settings();' title='Страница настроек программы' &gt; &lt;i class='fa fa-cog fa-lg'&gt;&lt;/i&gt; Настройки &lt;/a&gt; &lt;a href='//www.oknosoft.ru/feedback' target='_blank' style='margin-left: 9px;' title='Задать вопрос через форму обратной связи' &gt; &lt;i class='fa fa-question-circle fa-lg'&gt;&lt;/i&gt; Вопрос &lt;/a&gt;\"  />\n\n\t</item>\n</items>","toolbar_add_del.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_add\"    text=\"&lt;i class='fa fa-plus-circle fa-fw'&gt;&lt;/i&gt; Добавить\" title=\"Добавить строку\"  />\r\n    <item type=\"button\" id=\"btn_delete\" text=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt; Удалить\"  title=\"Удалить строку\" />\r\n</toolbar>","toolbar_obj.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"&lt;b&gt;Записать и закрыть&lt;/b&gt;\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"&lt;i class='fa fa-floppy-o fa-fw'&gt;&lt;/i&gt;\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_post\" enabled=\"false\" text=\"&lt;i class='fa fa-check-square-o fa-fw'&gt;&lt;/i&gt;\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" enabled=\"false\" text=\"&lt;i class='fa fa-square-o fa-fw'&gt;&lt;/i&gt;\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"&lt;i class='fa fa-paperclip fa-fw'&gt;&lt;/i&gt;\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt;\" title=\"Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"&lt;i class='fa fa-bolt fa-fw'&gt;&lt;/i&gt;\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"&lt;i class='fa fa-external-link fa-fw'&gt;&lt;/i&gt;\" title=\"Перейти\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"  text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\"  title=\"Дополнительно\" openAll=\"true\">\r\n\r\n        <item type=\"button\" id=\"btn_import\" text=\"&lt;i class='fa fa-upload fa-fw'&gt;&lt;/i&gt; Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" text=\"&lt;i class='fa fa-download fa-fw'&gt;&lt;/i&gt; Выгрузить в файл\" />\r\n    </item>\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_close\" text=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt;\" title=\"Закрыть форму\"/>\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n</toolbar>\r\n","toolbar_ok_cancel.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_ok\"       type=\"button\"   img=\"\"  imgdis=\"\"   text=\"&lt;b&gt;Ок&lt;/b&gt;\"  />\r\n    <item id=\"btn_cancel\"   type=\"button\"\timg=\"\"  imgdis=\"\"   text=\"Отмена\" />\r\n</toolbar>","toolbar_rep.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_run\" text=\"&lt;i class='fa fa-play fa-fw'&gt;&lt;/i&gt; Сформировать\" title=\"Сформировать отчет\"/>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"  text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\"  title=\"Дополнительно\" openAll=\"true\">\r\n\r\n        <item type=\"button\" id=\"btn_print\" text=\"&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt; Печать\" />\r\n\r\n        <item id=\"sep3\" type=\"separator\"/>\r\n\r\n        <item type=\"button\" id=\"btn_export\" text=\"&lt;i class='fa fa-file-excel-o fa-fw'&gt;&lt;/i&gt; Выгрузить в файл\" />\r\n\r\n        <item id=\"sep4\" type=\"separator\"/>\r\n\r\n        <item type=\"button\" id=\"btn_import\" text=\"&lt;i class='fa fa-folder-open-o fa-fw'&gt;&lt;/i&gt; Выбрать вариант\" />\r\n        <item type=\"button\" id=\"btn_export\" text=\"&lt;i class='fa fa-floppy-o fa-fw'&gt;&lt;/i&gt; Сохранить вариант\" />\r\n\r\n    </item>\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n\r\n</toolbar>\r\n","toolbar_selection.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n\r\n    <item id=\"btn_select\"   type=\"button\"   title=\"Выбрать элемент списка\" text=\"&lt;b&gt;Выбрать&lt;/b&gt;\"  />\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item id=\"btn_new\"      type=\"button\"\ttext=\"&lt;i class='fa fa-plus-circle fa-fw'&gt;&lt;/i&gt;\"\ttitle=\"Создать\" />\r\n    <item id=\"btn_edit\"     type=\"button\"\ttext=\"&lt;i class='fa fa-pencil fa-fw'&gt;&lt;/i&gt;\"\ttitle=\"Изменить\" />\r\n    <item id=\"btn_delete\"   type=\"button\"\ttext=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt;\"\ttitle=\"Удалить\" />\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt; Печать\" openAll=\"true\" >\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"    text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\" title=\"Дополнительно\" openAll=\"true\">\r\n        <item id=\"btn_requery\"  type=\"button\"\ttext=\"&lt;i class='fa fa-refresh fa-fw'&gt;&lt;/i&gt; Обновить список\" />\r\n    </item>\r\n\r\n    <item id=\"sep3\" type=\"separator\"/>\r\n\r\n</toolbar>"});
+$p.injected_data._mixin({"form_auth.xml":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<items>\n\t<item type=\"settings\" position=\"label-left\" labelWidth=\"80\" inputWidth=\"180\" noteWidth=\"180\"/>\n\t<item type=\"fieldset\" name=\"data\" inputWidth=\"auto\" label=\"Авторизация\">\n\n        <item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" checked=\"true\" value=\"guest\" label=\"Гостевой (демо) режим\">\n            <item type=\"select\" name=\"guest\" label=\"Роль\">\n                <option value=\"Дилер\" label=\"Дилер\"/>\n            </item>\n        </item>\n\n\t\t<item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" value=\"auth\" label=\"Есть учетная запись\">\n\t\t\t<item type=\"input\" value=\"\" name=\"login\" label=\"Логин\" validate=\"NotEmpty\" />\n\t\t\t<item type=\"password\" value=\"\" name=\"password\" label=\"Пароль\" validate=\"NotEmpty\" />\n\t\t</item>\n\n\t\t<item type=\"button\" value=\"Войти\" name=\"submit\"/>\n\n        <item type=\"template\" name=\"text_options\" className=\"order_dealer_options\" inputWidth=\"170\"\n              value=\"&lt;a href='#' onclick='$p.iface.open_settings();' title='Страница настроек программы' &gt; &lt;i class='fa fa-cog fa-lg'&gt;&lt;/i&gt; Настройки &lt;/a&gt; &lt;a href='//www.oknosoft.ru/feedback' target='_blank' style='margin-left: 9px;' title='Задать вопрос через форму обратной связи' &gt; &lt;i class='fa fa-question-circle fa-lg'&gt;&lt;/i&gt; Вопрос &lt;/a&gt;\"  />\n\n\t</item>\n</items>","toolbar_add_del.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\n<toolbar>\n    <item id=\"sep0\" type=\"separator\"/>\n    <item id=\"btn_add\" type=\"button\"  text=\"&lt;i class='fa fa-plus-circle fa-fw'&gt;&lt;/i&gt; Добавить\" title=\"Добавить строку\"  />\n    <item id=\"btn_delete\" type=\"button\" text=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt; Удалить\"  title=\"Удалить строку\" />\n    <item id=\"sep1\" type=\"separator\"/>\n\n    <item id=\"sp\" type=\"spacer\"/>\n    <item id=\"input_filter\" type=\"buttonInput\" width=\"200\" title=\"Поиск по подстроке\" />\n</toolbar>","toolbar_add_del_compact.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\n<toolbar>\n    <item id=\"btn_add\" type=\"button\"  text=\"&lt;i class='fa fa-plus-circle fa-fw'&gt;&lt;/i&gt;\" title=\"Добавить строку\"  />\n    <item id=\"btn_delete\" type=\"button\" text=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt;\"  title=\"Удалить строку\" />\n    <item id=\"sep1\" type=\"separator\"/>\n\n</toolbar>","toolbar_obj.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"&lt;b&gt;Записать и закрыть&lt;/b&gt;\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"&lt;i class='fa fa-floppy-o fa-fw'&gt;&lt;/i&gt;\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_post\" enabled=\"false\" text=\"&lt;i class='fa fa-check-square-o fa-fw'&gt;&lt;/i&gt;\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" enabled=\"false\" text=\"&lt;i class='fa fa-square-o fa-fw'&gt;&lt;/i&gt;\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"&lt;i class='fa fa-paperclip fa-fw'&gt;&lt;/i&gt;\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt;\" title=\"Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"&lt;i class='fa fa-bolt fa-fw'&gt;&lt;/i&gt;\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"&lt;i class='fa fa-external-link fa-fw'&gt;&lt;/i&gt;\" title=\"Перейти\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"  text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\"  title=\"Дополнительно\" openAll=\"true\">\r\n\r\n        <item type=\"button\" id=\"btn_import\" text=\"&lt;i class='fa fa-upload fa-fw'&gt;&lt;/i&gt; Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" text=\"&lt;i class='fa fa-download fa-fw'&gt;&lt;/i&gt; Выгрузить в файл\" />\r\n    </item>\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_close\" text=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt;\" title=\"Закрыть форму\"/>\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n</toolbar>\r\n","toolbar_ok_cancel.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_ok\"       type=\"button\"   img=\"\"  imgdis=\"\"   text=\"&lt;b&gt;Ок&lt;/b&gt;\"  />\r\n    <item id=\"btn_cancel\"   type=\"button\"\timg=\"\"  imgdis=\"\"   text=\"Отмена\" />\r\n</toolbar>","toolbar_rep.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_run\" text=\"&lt;i class='fa fa-play fa-fw'&gt;&lt;/i&gt; Сформировать\" title=\"Сформировать отчет\"/>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"  text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\"  title=\"Дополнительно\" openAll=\"true\">\r\n\r\n        <item type=\"button\" id=\"btn_print\" text=\"&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt; Печать\" />\r\n\r\n        <item id=\"sep3\" type=\"separator\"/>\r\n\r\n        <item type=\"button\" id=\"btn_export\" text=\"&lt;i class='fa fa-file-excel-o fa-fw'&gt;&lt;/i&gt; Выгрузить в файл\" />\r\n\r\n        <item id=\"sep4\" type=\"separator\"/>\r\n\r\n        <item type=\"button\" id=\"btn_save\" text=\"&lt;i class='fa fa-folder-open-o fa-fw'&gt;&lt;/i&gt; Выбрать вариант\" />\r\n        <item type=\"button\" id=\"btn_load\" text=\"&lt;i class='fa fa-floppy-o fa-fw'&gt;&lt;/i&gt; Сохранить вариант\" />\r\n\r\n    </item>\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n\r\n</toolbar>\r\n","toolbar_selection.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n\r\n    <item id=\"btn_select\"   type=\"button\"   title=\"Выбрать элемент списка\" text=\"&lt;b&gt;Выбрать&lt;/b&gt;\"  />\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item id=\"btn_new\"      type=\"button\"\ttext=\"&lt;i class='fa fa-plus-circle fa-fw'&gt;&lt;/i&gt;\"\ttitle=\"Создать\" />\r\n    <item id=\"btn_edit\"     type=\"button\"\ttext=\"&lt;i class='fa fa-pencil fa-fw'&gt;&lt;/i&gt;\"\ttitle=\"Изменить\" />\r\n    <item id=\"btn_delete\"   type=\"button\"\ttext=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt;\"\ttitle=\"Удалить\" />\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt; Печать\" openAll=\"true\" >\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"    text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\" title=\"Дополнительно\" openAll=\"true\">\r\n        <item id=\"btn_requery\"  type=\"button\"\ttext=\"&lt;i class='fa fa-refresh fa-fw'&gt;&lt;/i&gt; Обновить список\" />\r\n    </item>\r\n\r\n    <item id=\"sep3\" type=\"separator\"/>\r\n\r\n</toolbar>"});
 /* Copyright 2013 William Summers, metaTribal LLC
  * adapted from https://developer.mozilla.org/en-US/docs/JXON
  *

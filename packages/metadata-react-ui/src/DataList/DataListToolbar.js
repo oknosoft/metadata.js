@@ -72,28 +72,24 @@ export default class DataListToolbar extends Component {
         </ToolbarGroup>
 
         <ToolbarGroup className={"meta-toolbar-group"}>
-
           <SchemeSettings
             handleSchemeChange={props.handleSchemeChange}
             scheme={props.scheme}
             show_search={props.show_search}
-            show_variants={props.show_variants}
-          />
+            show_variants={props.show_variants} />
 
           <IconMenu
             iconButtonElement={
               <IconButton touch={true} tooltip="Дополнительно" tooltipPosition="bottom-left">
                 <MoreVertIcon />
               </IconButton>
-            }
-          >
+            }>
+
             <MenuItem primaryText="Печать" leftIcon={<PrintIcon />} onTouchTap={props.handlePrint}/>
             <MenuItem primaryText="Вложения" leftIcon={<AttachIcon />} onTouchTap={props.handleAttachment}/>
 
           </IconMenu>
-
         </ToolbarGroup>
-
       </Toolbar>
     )
   }

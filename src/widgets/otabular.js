@@ -39,10 +39,15 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		_meta = attr.metadata || _mgr.metadata().tabular_sections[_tsname].fields,
 		_cell = this,
 		_source = attr.ts_captions || {},
-		_selection = attr.selection;
+    _input_filter = "",
+    _input_filter_changed = 0,
+		_selection = attr.selection || {};
 
-	if(!attr.ts_captions && !_md.ts_captions(_mgr.class_name, _tsname, _source))
-		return;
+	if(!attr.ts_captions && !_md.ts_captions(_mgr.class_name, _tsname, _source)){
+    return;
+  }
+
+  _selection.filter_selection = filter_selection;
 
 	var _grid = this.attachGrid(),
 		_toolbar = this.attachToolbar(),
@@ -67,7 +72,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			var proto;
 			if(_selection){
 				for(var sel in _selection){
-					if(!_meta[sel] || (typeof _selection[sel] == 'object' && !$p.is_data_obj(_selection[sel]))){
+					if(!_meta[sel] || (typeof _selection[sel] == 'function') || (typeof _selection[sel] == 'object' && !$p.is_data_obj(_selection[sel]))){
 						continue;
 					}
 					if(!proto){
@@ -135,7 +140,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				title: (_obj._metadata.obj_presentation || _obj._metadata.synonym) + ': ' + _obj.presentation
 			});
 	}
-
 
 
 	/**
@@ -218,10 +222,82 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		}
 	}
 
+  function filter_selection(row) {
+
+	  if(!_input_filter){
+	    return true;
+    }
+
+    var res;
+    _source.fields.some(function (fld) {
+      var v = row._row[fld];
+      if($p.utils.is_data_obj(v)){
+        if(!v.is_new() && v.presentation.match(_input_filter)){
+          return res = true;
+        }
+      }
+      else if(typeof v == 'number'){
+        return res = v.toLocaleString().match(_input_filter);
+      }
+      else if(v instanceof Date){
+        return res = $p.moment(v).format($p.moment._masks.date_time).match(_input_filter);
+      }
+      else if(v.match){
+        return res = v.match(_input_filter);
+      }
+    })
+    return res;
+  }
+
+	function filter_change() {
+
+    if(_input_filter_changed){
+      clearTimeout(_input_filter_changed);
+      _input_filter_changed = 0;
+    }
+
+    if(_input_filter != _cell.input_filter.value){
+      _input_filter = new RegExp(_cell.input_filter.value, 'i');
+      observer_rows([{tabular: _tsname, type: "rows"}]);
+    }
+
+  }
+
+  function filter_click() {
+    var val = _cell.input_filter.value;
+    setTimeout(function () {
+      if(val != _cell.input_filter.value)
+        filter_change();
+    })
+  }
+
+  function filter_keydown() {
+
+    if(_input_filter_changed){
+      clearTimeout(_input_filter_changed);
+    }
+
+    _input_filter_changed = setTimeout(function () {
+      if(_input_filter_changed)
+        filter_change();
+    }, 500);
+
+  }
 
 	// панель инструментов табличной части
 	_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
 	_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_add_del.xml"], function(){
+
+    this.forEachItem(function(id) {
+      if(id == "input_filter"){
+        _cell.input_filter = _toolbar.getInput(id);
+        _cell.input_filter.onchange = filter_change;
+        _cell.input_filter.onclick = filter_click;
+        _cell.input_filter.onkeydown = filter_keydown;
+        _cell.input_filter.type = "search";
+        _cell.input_filter.setAttribute("placeholder", "Фильтр");
+      }
+    })
 
 		this.attachEvent("onclick", function(btn_id){
 
@@ -238,6 +314,8 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 		});
 	});
+
+	// поле фильтра в панели инструментов
 
 	// собственно табличная часть
 	_grid.setIconsPath(dhtmlx.image_path);
@@ -348,6 +426,72 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			}
 		}
 	});
+
+
+  _grid.attachEvent("onHeaderClick", function(ind,obj){
+
+    var field = _source.fields[ind];
+    if(_grid.disable_sorting || field == 'row'){
+      return;
+    }
+    if(!_grid.sort_fields){
+      _grid.sort_fields = [];
+      _grid.sort_directions = [];
+    }
+
+    // есть ли уже такая колонка
+    var index = _grid.sort_fields.indexOf(field);
+
+    function add_field() {
+      if(index == -1){
+        _grid.sort_fields.push(field);
+        _grid.sort_directions.push("asc");
+      }
+      else{
+        if(_grid.sort_directions[index] == "asc"){
+          _grid.sort_directions[index] = "desc";
+        }
+        else{
+          _grid.sort_directions[index] = "asc";
+        }
+      }
+    }
+
+    // если кликнули с шифтом - добавляем
+    if(window.event && window.event.shiftKey){
+      add_field();
+    }
+    else{
+      if(index == -1){
+        _grid.sort_fields.length = 0;
+        _grid.sort_directions.length = 0;
+      }
+      add_field();
+    }
+
+    _ts.sort(_grid.sort_fields.map(function (field, index) {
+      return field + " " + _grid.sort_directions[index];
+    }));
+
+    _ts.sync_grid(_grid);
+
+    for(var col = 0; col < _source.fields.length; col++){
+      var field = _source.fields[col];
+      var index = _grid.sort_fields.indexOf(field);
+      if(index == -1){
+        _grid.setSortImgState(false, col);
+      }
+      else{
+        _grid.setSortImgState(true, col, _grid.sort_directions[index]);
+        setTimeout(function () {
+          if(_grid && _grid.sortImg){
+            _grid.sortImg.style.display="inline";
+          }
+        }, 200);
+        break;
+      }
+    }
+  });
 
 	// заполняем табчасть данными
 	observer_rows([{tabular: _tsname, type: "rows"}]);

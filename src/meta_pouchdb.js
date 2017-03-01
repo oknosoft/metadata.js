@@ -73,7 +73,7 @@ DataManager.prototype.__define({
 
 							t.load_array(res);
 							res.length = 0;
-							
+
 							t.pouch_db.query(_view, options, process_docs);
 
 						}else{
@@ -154,7 +154,7 @@ DataManager.prototype.__define({
 					_view = selection._view;
 					delete selection._view;
 				}
-				
+
 				if(selection._key) {
 
 					if(selection._key._order_by == "des"){
@@ -171,7 +171,7 @@ DataManager.prototype.__define({
 					skip = selection._skip;
 					delete selection._skip;
 				}
-				
+
 				if(selection._attachments) {
 					options.attachments = true;
 					options.binary = true;
@@ -251,9 +251,9 @@ DataManager.prototype.__define({
 								};
 							})
 					}
-					
+
 				}
-				
+
 			}
 
 			// бежим по всем документам из ram
@@ -285,7 +285,7 @@ DataManager.prototype.__define({
 
 								if(calc_count)
 									_total_count++;
-								
+
 								// пропукскаем лишние (skip) элементы
 								if(skip) {
 									skip_count++;
@@ -329,7 +329,7 @@ DataManager.prototype.__define({
 
 					if(_view)
 						t.pouch_db.query(_view, options, process_docs);
-						
+
 					else
 						t.pouch_db.allDocs(options, process_docs);
 				}
@@ -362,7 +362,7 @@ DataManager.prototype.__define({
 					_skip: attr.start || 0
 				},   // условие см. find_rows()
 				ares = [], o, mf, fldsyn;
-			
+
 			// набираем поля
 			if(cmd.form && cmd.form.selection){
 				cmd.form.selection.fields.forEach(function (fld) {
@@ -422,7 +422,7 @@ DataManager.prototype.__define({
 				selection.date = {between: [attr.date_from, attr.date_till]};
 
 			}
-			
+
 			// фильтр по родителю
 			if(cmd["hierarchical"] && attr.parent)
 				selection.parent = attr.parent;
@@ -457,21 +457,21 @@ DataManager.prototype.__define({
 						flt[ifld] = {like: attr.filter};
 						selection.or.push(flt);
 					});
-				}	
+				}
 			}
 
 			// обратная сортировка по ключу, если есть признак сортировки в ключе и 'des' в атрибутах
 			if(selection._key && selection._key._order_by){
 				selection._key._order_by = attr.direction;
 			}
-			
+
 			// фильтр по владельцу
 			//if(cmd["has_owners"] && attr.owner)
 			//	selection.owner = attr.owner;
 
 			return t.pouch_find_rows(selection)
 				.then(function (rows) {
-					
+
 					if(rows.hasOwnProperty("_total_count") && rows.hasOwnProperty("rows")){
 						attr._total_count = rows._total_count;
 						rows = rows.rows
@@ -655,7 +655,7 @@ DataManager.prototype.__define({
 });
 
 DataObj.prototype.__define({
-	
+
 	/**
 	 * Устанавливает новый номер документа или код справочника
 	 */

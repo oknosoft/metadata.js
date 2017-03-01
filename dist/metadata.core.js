@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.225, built:2017-01-31 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-02-26 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -296,7 +296,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.12.225",
+			value: "0.12.226",
 			writable: false
 		},
 
@@ -1723,15 +1723,20 @@ function WSQL(){
 		set_user_param: {
 			value: function(prm_name, prm_value){
 
-				var str_prm = prm_value;
-				if(typeof prm_value == "object")
-					str_prm = JSON.stringify(prm_value);
+				if(typeof prm_value == "object"){
+					user_params[prm_name] = prm_value;
+					prm_value = JSON.stringify(prm_value);
+				}
+				else if(prm_value === false || prm_value === "false"){
+					user_params[prm_name] = false;
+					prm_value = "";
+				}
+				else{
+					user_params[prm_name] = prm_value;
+				}
 
-				else if(prm_value === false)
-					str_prm = "";
+				ls.setItem($p.job_prm.local_storage_prefix+prm_name, prm_value);
 
-				ls.setItem($p.job_prm.local_storage_prefix+prm_name, str_prm);
-				user_params[prm_name] = prm_value;
 			}
 		},
 
@@ -1747,8 +1752,9 @@ function WSQL(){
 		get_user_param: {
 			value: function(prm_name, type){
 
-				if(!user_params.hasOwnProperty(prm_name) && ls)
+				if(!user_params.hasOwnProperty(prm_name) && ls){
 					user_params[prm_name] = this.fetch_type(ls.getItem($p.job_prm.local_storage_prefix+prm_name), type);
+				}
 
 				return user_params[prm_name];
 			}
@@ -1869,33 +1875,30 @@ function WSQL(){
 				if(typeof localStorage === "undefined"){
 
 					// локальное хранилище внутри node.js
-					if(typeof WorkerGlobalScope === "undefined"){
-						ls = new require('node-localstorage').LocalStorage('./localstorage');
-
-					}else{
-						ls = {
-							setItem: function (name, value) {
-
-							},
-							getItem: function (name) {
-
-							}
-						};
-					}
-
-				} else
-					ls = localStorage;
+					// if(typeof WorkerGlobalScope === "undefined"){
+					// 	ls = new require('node-localstorage').LocalStorage('./localstorage');
+					// }
+          ls = {
+            setItem: function (name, value) {
+            },
+            getItem: function (name) {
+            }
+          };
+				}
+				else{
+          ls = localStorage;
+        }
 
 				// значения базовых параметров по умолчанию
 				var nesessery_params = [
-					{p: "user_name",		v: "", t:"string"},
-					{p: "user_pwd",			v: "", t:"string"},
+					{p: "user_name",      v: "", t:"string"},
+					{p: "user_pwd",       v: "", t:"string"},
 					{p: "browser_uid",		v: $p.utils.generate_guid(), t:"string"},
-					{p: "zone",             v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
-					{p: "enable_save_pwd",	v: $p.job_prm.enable_save_pwd,	t:"boolean"},
-					{p: "autologin",		v: "",	t:"boolean"},
+					{p: "zone",           v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
+					{p: "enable_save_pwd",v: $p.job_prm.enable_save_pwd,	t:"boolean"},
+					{p: "couch_path",		  v: $p.job_prm.couch_path,	t:"string"},
+          {p: "rest_path",		  v: "", t:"string"},
 					{p: "skin",		        v: "dhx_web", t:"string"},
-					{p: "rest_path",		v: "", t:"string"}
 				],	zone;
 
 				// подмешиваем к базовым параметрам настройки приложения
@@ -1913,7 +1916,7 @@ function WSQL(){
 
 				// дополняем хранилище недостающими параметрами
 				nesessery_params.forEach(function(o){
-					if(wsql.get_user_param(o.p, o.t) == undefined ||
+					if((o.t == "boolean" ? wsql.get_user_param(o.p) : wsql.get_user_param(o.p, o.t)) == undefined ||
 						(!wsql.get_user_param(o.p, o.t) && (o.p.indexOf("url") != -1)))
 						wsql.set_user_param(o.p, $p.job_prm.hasOwnProperty(o.p) ? $p.job_prm[o.p] : o.v);
 				});
@@ -1924,6 +1927,7 @@ function WSQL(){
 					zone: wsql.get_user_param("zone", "number"),
 					prefix: $p.job_prm.local_storage_prefix,
 					suffix: wsql.get_user_param("couch_suffix", "string") || "",
+					direct: wsql.get_user_param("couch_direct", "boolean"),
 					user_node: $p.job_prm.user_node,
 					noreplicate: $p.job_prm.noreplicate
 				};
@@ -2354,17 +2358,16 @@ function Pouch(){
 					.plugin(require('pouchdb-adapter-memory'))
 					.plugin(require('pouchdb-adapter-http'))
 					.plugin(require('pouchdb-replication'))
-					.plugin(require('pouchdb-mapreduce')) : PouchDB
+					.plugin(require('pouchdb-mapreduce'))
+					.plugin(require('pouchdb-find')) : PouchDB
 		},
 
 		init: {
-
 			value: function (attr) {
-
 				_paths._mixin(attr);
-
-				if(_paths.path && _paths.path.indexOf("http") != 0 && typeof location != "undefined")
+				if(_paths.path && _paths.path.indexOf("http") != 0 && typeof location != "undefined"){
 					_paths.path = location.protocol + "//" + location.host + _paths.path;
+				}
 			}
 		},
 
@@ -2378,11 +2381,20 @@ function Pouch(){
 			get: function () {
 				if(!_local){
 					var opts = {auto_compaction: true, revs_limit: 2};
-					_local = {
-						ram: new t.DB(_paths.prefix + _paths.zone + "_ram", opts),
-						doc: new t.DB(_paths.prefix + _paths.zone + "_doc", opts),
-						meta: new t.DB(_paths.prefix + "meta", opts),
-						sync: {}
+					if(_paths.direct){
+						_local = {
+							ram: this.remote.ram,
+							doc: this.remote.doc,
+							sync: {}
+						}
+					}
+					else{
+						_local = {
+							ram: new t.DB(_paths.prefix + _paths.zone + "_ram", opts),
+							doc: new t.DB(_paths.prefix + _paths.zone + "_doc", opts),
+							meta: new t.DB(_paths.prefix + "meta", opts),
+							sync: {}
+						}
 					}
 				}
 				if(_paths.path && !_local._meta){
@@ -2403,22 +2415,11 @@ function Pouch(){
 		 */
 		remote: {
 			get: function () {
-				if(!_remote && _auth){
+				if(!_remote){
+					var opts = {skip_setup: true, adapter: 'http'};
 					_remote = {
-						ram: new t.DB(_paths.path + _paths.zone + "_ram", {
-							auth: {
-								username: _auth.username,
-								password: _auth.password
-							},
-							skip_setup: true
-						}),
-						doc: new t.DB(_paths.path + _paths.zone + "_doc" + _paths.suffix, {
-							auth: {
-								username: _auth.username,
-								password: _auth.password
-							},
-							skip_setup: true
-						})
+						ram: new t.DB(_paths.path + _paths.zone + "_ram", opts),
+						doc: new t.DB(_paths.path + _paths.zone + "_doc" + (_paths.suffix ? "_" + _paths.suffix : ""), opts)
 					}
 				}
 				return _remote;
@@ -2436,29 +2437,84 @@ function Pouch(){
 			value: function (username, password) {
 
 				// реквизиты гостевого пользователя для демобаз
-				if(username == undefined && password == undefined){
-					username = $p.job_prm.guest_name;
-					password = $p.aes.Ctr.decrypt($p.job_prm.guest_pwd);
+				if (username == undefined && password == undefined){
+					if($p.job_prm.guests && $p.job_prm.guests.length) {
+						username = $p.job_prm.guests[0].username;
+						password = $p.aes.Ctr.decrypt($p.job_prm.guests[0].password);
+					}else{
+						return Promise.reject(new Error("username & password not defined"));
+					}
 				}
 
-				if(_auth){
-					if(_auth.username == username)
+				if (_auth) {
+					if (_auth.username == username){
 						return Promise.resolve();
-					else
-						return Promise.reject();
+					} else {
+						return Promise.reject(new Error("need logout first"));
+					}
 				}
 
-				return $p.ajax.get_ex(_paths.path + _paths.zone + "_ram", {username: username, password: password})
-					.then(function (req) {
-						_auth = {username: username, password: password};
-						setTimeout(function () {
-							dhx4.callEvent("log_in", [username]);
+				// авторизуемся во всех базах
+				var bases = ["ram", "doc"],
+					try_auth = [];
+
+				this.remote;
+
+				bases.forEach(function(name){
+					try_auth.push(
+						_remote[name].login(username, password)
+					)
+				})
+
+				return Promise.all(try_auth)
+					.then(function (){
+
+						_auth = {username: username};
+						setTimeout(function(){
+
+							// сохраняем имя пользователя в базе
+							if($p.wsql.get_user_param("user_name") != username){
+								$p.wsql.set_user_param("user_name", username)
+							}
+
+							// если настроено сохранение пароля - сохраняем и его
+							if($p.wsql.get_user_param("enable_save_pwd")){
+								if($p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")) != password){
+									$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password))   // сохраняем имя пользователя в базе
+								}
+							}
+							else if($p.wsql.get_user_param("user_pwd") != ""){
+								$p.wsql.set_user_param("user_pwd", "")
+							}
+
+							// излучаем событие
+							$p.eve.callEvent('user_log_in', [username]);
 						});
-						return {
-							ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),
-							doc: t.run_sync(t.local.doc, t.remote.doc, "doc")
+
+						if(!_paths.direct){
+							bases.forEach(function(dbid) {
+								t.run_sync(t.local[dbid], t.remote[dbid], dbid)
+							})
 						}
-					});
+						return t.local.sync;
+
+					})
+					.catch(function(err) {
+						// излучаем событие
+						$p.eve.callEvent("user_log_fault", [err])
+					})
+
+				// return $p.ajax.get_ex(_paths.path + _paths.zone + "_ram", {username: username, password: password})
+				// 	.then(function (req) {
+				// 		_auth = {username: username, password: password};
+				// 		setTimeout(function () {
+				// 			$p.eve.callEvent("log_in", [username]);
+				// 		});
+				// 		return {
+				// 			ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),
+				// 			doc: t.run_sync(t.local.doc, t.remote.doc, "doc")
+				// 		}
+				// 	});
 			}
 		},
 
@@ -2483,15 +2539,34 @@ function Pouch(){
 					_auth = null;
 				}
 
-				if(_remote && _remote.ram)
-					delete _remote.ram;
+				$p.eve.callEvent("log_out");
 
-				if(_remote && _remote.doc)
-					delete _remote.doc;
+				if(_paths.direct){
+					setTimeout(function () {
+						$p.eve.redirect = true;
+						location.reload(true);
+					}, 1000);
+				}
 
-				_remote = null;
-
-				dhx4.callEvent("log_out");
+				return _remote && _remote.ram ?
+					_remote.ram.logout()
+						.then(function () {
+							if(_remote && _remote.doc){
+								return _remote.doc.logout()
+							}
+						})
+						.then(function () {
+							if(_remote && _remote.ram){
+								delete _remote.ram;
+							}
+							if(_remote && _remote.doc){
+								delete _remote.doc;
+							}
+							_remote = null;
+							$p.eve.callEvent("user_log_out")
+						})
+					:
+					Promise.resolve();
 			}
 		},
 
@@ -2978,6 +3053,7 @@ function Pouch(){
  * @requires common
  */
 
+var _md;
 
 /**
  * ### Хранилище метаданных конфигурации
@@ -4770,32 +4846,40 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 					if(pref.mandatory)
 						ft += '" class="cell_mandatory';
 				}
-
-			}else if(typeof f === "object"){
+			}
+			else if(typeof f === "object"){
 				row_id = f.id;
 				mf = extra_fields && extra_fields.metadata && extra_fields.metadata[row_id];
-				if(!mf)
+				if(!mf){
 					mf = {synonym: f.synonym};
-				else if(f.synonym)
+				}
+				else if(f.synonym){
 					mf.synonym = f.synonym;
+				}
 
 				ft = f.type;
 				txt = "";
-				if(f.hasOwnProperty("txt"))
+				if(f.hasOwnProperty("txt")){
 					txt = f.txt;
-				else if((v = o[row_id]) !== undefined)
+				}
+				else if((v = o[row_id]) !== undefined){
 					txt_by_type(v, mf.type ? mf : _md.get(t.class_name, row_id));
-
-			}else if(extra_fields && extra_fields.metadata && ((mf = extra_fields.metadata[f]) !== undefined)){
+				}
+			}
+			else if(extra_fields && extra_fields.metadata && ((mf = extra_fields.metadata[f]) !== undefined)){
 				row_id = f;
 				by_type(v = o[f]);
-
-			}else if((v = o[f]) !== undefined){
+			}
+			else if((v = o[f]) !== undefined){
 				mf = _md.get(t.class_name, row_id = f);
+				if(!mf){
+					return;
+				}
 				by_type(v);
-
-			}else
+			}
+			else{
 				return;
+			}
 
 			gd += '<row id="' + row_id + '"><cell>' + (mf.synonym || mf.name) +
 				'</cell><cell type="' + ft + '">' + txt + '</cell></row>';
@@ -4804,11 +4888,13 @@ DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
 	default_oxml();
 
 	for(i in oxml){
-		if(i!=" ")
+		if(i!=" "){
 			gd += '<row open="1"><cell>' + i + '</cell>';   // если у блока есть заголовок, формируем блок иначе добавляем поля без иерархии
+		}
 
-		for(j in oxml[i])
+		for(j in oxml[i]){
 			add_xml_row(oxml[i][j]);                        // поля, описанные в текущем разделе
+		}
 
 		if(extra_fields && i == extra_fields.title && o[extra_fields.ts]){  // строки табчасти o.extra_fields
 			var added = false,
@@ -4870,14 +4956,16 @@ DataManager.prototype.print = function(ref, model, wnd){
 			wnd_print.focus();
 	}
 
-	if(wnd && wnd.progressOn)
+	if(wnd && wnd.progressOn){
 		wnd.progressOn();
+	}
 
 	setTimeout(tune_wnd_print, 3000);
 
 	// если _printing_plates содержит ссылку на обрабочтик печати, используем его
-	if(this._printing_plates[model] instanceof DataObj)
+	if(this._printing_plates[model] instanceof DataObj){
 		model = this._printing_plates[model];
+	}
 
 	// если существует локальный обработчик, используем его
 	if(model instanceof DataObj && model.execute){
@@ -5831,115 +5919,120 @@ EnumManager.prototype.__define({
 					fn.call(this[v.ref]);
 			}.bind(this));
 		}
-	}
+	},
+
+  /**
+   * Bозаращает массив запросов для создания таблиц объекта и его табличных частей
+   * @param attr {Object}
+   * @param attr.action {String} - [create_table, drop, insert, update, replace, select, delete]
+   * @return {Object|String}
+   */
+  get_sql_struct: {
+	  value: function(attr){
+
+      var res = "CREATE TABLE IF NOT EXISTS ",
+        action = attr && attr.action ? attr.action : "create_table";
+
+      if(attr && attr.postgres){
+        if(action == "create_table")
+          res += this.table_name+
+            " (ref character varying(255) PRIMARY KEY NOT NULL, sequence INT, synonym character varying(255))";
+        else if(["insert", "update", "replace"].indexOf(action) != -1){
+          res = {};
+          res[this.table_name] = {
+            sql: "INSERT INTO "+this.table_name+" (ref, sequence, synonym) VALUES ($1, $2, $3)",
+            fields: ["ref", "sequence", "synonym"],
+            values: "($1, $2, $3)"
+          };
+
+        }else if(action == "delete")
+          res = "DELETE FROM "+this.table_name+" WHERE ref = $1";
+
+      }else {
+        if(action == "create_table")
+          res += "`"+this.table_name+
+            "` (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR)";
+
+        else if(["insert", "update", "replace"].indexOf(action) != -1){
+          res = {};
+          res[this.table_name] = {
+            sql: "INSERT INTO `"+this.table_name+"` (ref, sequence, synonym) VALUES (?, ?, ?)",
+            fields: ["ref", "sequence", "synonym"],
+            values: "(?, ?, ?)"
+          };
+
+        }else if(action == "delete")
+          res = "DELETE FROM `"+this.table_name+"` WHERE ref = ?";
+      }
+
+
+
+      return res;
+
+    }
+  },
+
+  /**
+   * Возвращает массив доступных значений для комбобокса
+   * @method get_option_list
+   * @param val {DataObj|String}
+   * @param [selection] {Object}
+   * @param [selection._top] {Number}
+   * @return {Promise.<Array>}
+   */
+  get_option_list: {
+    value: function(val, selection){
+      var l = [], synonym = "", sref;
+
+      function check(v){
+        if($p.utils.is_equal(v.value, val))
+          v.selected = true;
+        return v;
+      }
+
+      if(selection){
+        for(var i in selection){
+          if(i.substr(0,1)=="_")
+            continue;
+          else if(i == "ref"){
+            sref = selection[i].hasOwnProperty("in") ? selection[i].in : selection[i];
+          }
+          else
+            synonym = selection[i];
+        }
+      }
+
+      if(typeof synonym == "object"){
+        if(synonym.like)
+          synonym = synonym.like;
+        else
+          synonym = "";
+      }
+      synonym = synonym.toLowerCase();
+
+      this.alatable.forEach(function (v) {
+        if(synonym){
+          if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1)
+            return;
+        }
+        if(sref){
+          if(Array.isArray(sref)){
+            if(!sref.some(function (sv) {
+                return sv.name == v.ref || sv.ref == v.ref || sv == v.ref;
+              }))
+              return;
+          }else{
+            if(sref.name != v.ref && sref.ref != v.ref && sref != v.ref)
+              return;
+          }
+        }
+        l.push(check({text: v.synonym || "", value: v.ref}));
+      });
+      return Promise.resolve(l);
+    }
+  }
+
 });
-
-/**
- * Bозаращает массив запросов для создания таблиц объекта и его табличных частей
- * @param attr {Object}
- * @param attr.action {String} - [create_table, drop, insert, update, replace, select, delete]
- * @return {Object|String}
- */
-EnumManager.prototype.get_sql_struct = function(attr){
-
-	var res = "CREATE TABLE IF NOT EXISTS ",
-		action = attr && attr.action ? attr.action : "create_table";
-
-	if(attr && attr.postgres){
-		if(action == "create_table")
-			res += this.table_name+
-				" (ref character varying(255) PRIMARY KEY NOT NULL, sequence INT, synonym character varying(255))";
-		else if(["insert", "update", "replace"].indexOf(action) != -1){
-			res = {};
-			res[this.table_name] = {
-				sql: "INSERT INTO "+this.table_name+" (ref, sequence, synonym) VALUES ($1, $2, $3)",
-				fields: ["ref", "sequence", "synonym"],
-				values: "($1, $2, $3)"
-			};
-
-		}else if(action == "delete")
-			res = "DELETE FROM "+this.table_name+" WHERE ref = $1";
-
-	}else {
-		if(action == "create_table")
-			res += "`"+this.table_name+
-				"` (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR)";
-
-		else if(["insert", "update", "replace"].indexOf(action) != -1){
-			res = {};
-			res[this.table_name] = {
-				sql: "INSERT INTO `"+this.table_name+"` (ref, sequence, synonym) VALUES (?, ?, ?)",
-				fields: ["ref", "sequence", "synonym"],
-				values: "(?, ?, ?)"
-			};
-
-		}else if(action == "delete")
-			res = "DELETE FROM `"+this.table_name+"` WHERE ref = ?";
-	}
-
-
-
-	return res;
-
-};
-
-/**
- * Возвращает массив доступных значений для комбобокса
- * @method get_option_list
- * @param val {DataObj|String}
- * @param [selection] {Object}
- * @param [selection._top] {Number}
- * @return {Promise.<Array>}
- */
-EnumManager.prototype.get_option_list = function(val, selection){
-	var l = [], synonym = "", sref;
-
-	function check(v){
-		if($p.utils.is_equal(v.value, val))
-			v.selected = true;
-		return v;
-	}
-
-	if(selection){
-		for(var i in selection){
-			if(i.substr(0,1)=="_")
-				continue;
-			else if(i == "ref"){
-				sref = selection[i].hasOwnProperty("in") ? selection[i].in : selection[i];
-			}
-			else
-				synonym = selection[i];
-		}
-	}
-
-	if(typeof synonym == "object"){
-		if(synonym.like)
-			synonym = synonym.like;
-		else
-			synonym = "";
-	}
-	synonym = synonym.toLowerCase();
-
-	this.alatable.forEach(function (v) {
-		if(synonym){
-			if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1)
-				return;
-		}
-		if(sref){
-			if(Array.isArray(sref)){
-				if(!sref.some(function (sv) {
-						return sv.name == v.ref || sv.ref == v.ref || sv == v.ref;
-					}))
-					return;
-			}else{
-				if(sref.name != v.ref && sref.ref != v.ref && sref != v.ref)
-					return;
-			}
-		}
-		l.push(check({text: v.synonym || "", value: v.ref}));
-	});
-	return Promise.resolve(l);
-};
 
 
 /**
@@ -7039,11 +7132,16 @@ TabularSection.prototype.count = function(){return this._obj.length};
  *     ts.clear();
  *
  */
-TabularSection.prototype.clear = function(silent){
+TabularSection.prototype.clear = function(silent, selection){
 
-	for(var i in this._obj)
-		delete this._obj[i];
-	this._obj.length = 0;
+  if(!selection){
+    this._obj.length = 0;
+  }
+  else{
+    this.find_rows(selection).forEach(function (row) {
+      row._row._owner.del(row.row-1, true);
+    })
+  }
 
 	if(!silent && !this._owner._data._silent)
 		Object.getNotifier(this._owner).notify({
@@ -7060,18 +7158,18 @@ TabularSection.prototype.clear = function(silent){
  * @param val {Number|TabularSectionRow} - индекс или строка табчасти
  */
 TabularSection.prototype.del = function(val, silent){
-	
+
 	var index, _obj = this._obj;
-	
+
 	if(typeof val == "undefined")
 		return;
-		
+
 	else if(typeof val == "number")
 		index = val;
-		
+
 	else if(_obj[val.row-1]._row === val)
 		index = val.row-1;
-		
+
 	else{
 		for(var i in _obj)
 			if(_obj[i]._row === val){
@@ -7183,9 +7281,9 @@ TabularSection.prototype.add = function(attr, silent){
 		});
 
 	attr = null;
-	
+
 	this._owner._data._modified = true;
-	
+
 	return row;
 };
 
@@ -7401,7 +7499,7 @@ TabularSection.prototype.toJSON = function () {
 
 /**
  * ### Aбстрактная строка табличной части
- * 
+ *
  * @class TabularSectionRow
  * @constructor
  * @param owner {TabularSection} - табличная часть, которой принадлежит строка
@@ -9524,7 +9622,7 @@ DataManager.prototype.__define({
 
 							t.load_array(res);
 							res.length = 0;
-							
+
 							t.pouch_db.query(_view, options, process_docs);
 
 						}else{
@@ -9605,7 +9703,7 @@ DataManager.prototype.__define({
 					_view = selection._view;
 					delete selection._view;
 				}
-				
+
 				if(selection._key) {
 
 					if(selection._key._order_by == "des"){
@@ -9622,7 +9720,7 @@ DataManager.prototype.__define({
 					skip = selection._skip;
 					delete selection._skip;
 				}
-				
+
 				if(selection._attachments) {
 					options.attachments = true;
 					options.binary = true;
@@ -9702,9 +9800,9 @@ DataManager.prototype.__define({
 								};
 							})
 					}
-					
+
 				}
-				
+
 			}
 
 			// бежим по всем документам из ram
@@ -9736,7 +9834,7 @@ DataManager.prototype.__define({
 
 								if(calc_count)
 									_total_count++;
-								
+
 								// пропукскаем лишние (skip) элементы
 								if(skip) {
 									skip_count++;
@@ -9780,7 +9878,7 @@ DataManager.prototype.__define({
 
 					if(_view)
 						t.pouch_db.query(_view, options, process_docs);
-						
+
 					else
 						t.pouch_db.allDocs(options, process_docs);
 				}
@@ -9813,7 +9911,7 @@ DataManager.prototype.__define({
 					_skip: attr.start || 0
 				},   // условие см. find_rows()
 				ares = [], o, mf, fldsyn;
-			
+
 			// набираем поля
 			if(cmd.form && cmd.form.selection){
 				cmd.form.selection.fields.forEach(function (fld) {
@@ -9873,7 +9971,7 @@ DataManager.prototype.__define({
 				selection.date = {between: [attr.date_from, attr.date_till]};
 
 			}
-			
+
 			// фильтр по родителю
 			if(cmd["hierarchical"] && attr.parent)
 				selection.parent = attr.parent;
@@ -9908,21 +10006,21 @@ DataManager.prototype.__define({
 						flt[ifld] = {like: attr.filter};
 						selection.or.push(flt);
 					});
-				}	
+				}
 			}
 
 			// обратная сортировка по ключу, если есть признак сортировки в ключе и 'des' в атрибутах
 			if(selection._key && selection._key._order_by){
 				selection._key._order_by = attr.direction;
 			}
-			
+
 			// фильтр по владельцу
 			//if(cmd["has_owners"] && attr.owner)
 			//	selection.owner = attr.owner;
 
 			return t.pouch_find_rows(selection)
 				.then(function (rows) {
-					
+
 					if(rows.hasOwnProperty("_total_count") && rows.hasOwnProperty("rows")){
 						attr._total_count = rows._total_count;
 						rows = rows.rows
@@ -10106,7 +10204,7 @@ DataManager.prototype.__define({
 });
 
 DataObj.prototype.__define({
-	
+
 	/**
 	 * Устанавливает новый номер документа или код справочника
 	 */
