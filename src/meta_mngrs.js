@@ -234,7 +234,14 @@ function DataManager(class_name){
 		 */
 		off: {
 			value: function (name, method) {
+        if(typeof name == "object"){
 
+        }else{
+          var index = _events[name].indexOf(method);
+          if(index != -1){
+            _events[name].splice(index, 1);
+          }
+        }
 			}
 		},
 

@@ -416,22 +416,22 @@ DataObj.prototype.__define({
 				}.bind(this);
 
 			if(this.ref == $p.utils.blank.guid){
-				if(this instanceof CatObj)
-					this.id = "000000000";
-				else
-					this.number_doc = "000000000";
-
+				if(this instanceof CatObj){
+          this.id = "000000000";
+        }
+				else{
+          this.number_doc = "000000000";
+        }
 				return Promise.resolve(this);
-
-			}else{
+			}
+			else{
 				if(this._manager.cachable && this._manager.cachable != "e1cib"){
 					return $p.wsql.pouch.load_obj(this).then(reset_modified);
-
-				} else
-					return _rest.load_obj(this).then(reset_modified);
+				}
+				else{
+          return _rest.load_obj(this).then(reset_modified);
+        }
 			}
-
-
 		}
 	},
 

@@ -8,7 +8,8 @@
 
 function scheme_settings() {
 
-	const {wsql, utils, cat, dp, md, classes} = this
+	const {wsql, utils, cat, dp, md} = this;
+	const classes = this.classes || this;
 
 	/**
 	 * ### Менеджер настроек отчетов и динсписков
@@ -29,50 +30,55 @@ function scheme_settings() {
 
 				// получаем сохраненную настройку
 				const scheme_name = this.scheme_name(class_name);
-				let ref = wsql.get_user_param(scheme_name, "string");
 
-				function set_default_and_resolve(obj){
-					resolve(obj.set_default());
-				}
+				const find_scheme = () => {
 
-				function find_scheme() {
-					cat.scheme_settings.find_rows_remote({
+					const opt = {
 						_view: 'doc/scheme_settings',
 						_top: 100,
 						_skip: 0,
 						_key: {
-							startkey: [class_name],
-							endkey: [class_name + '|']
+							startkey: [class_name, 0],
+							endkey: [class_name, 9999]
 						}
-					})
-						.then(function (data) {
-							// если существует с текущим пользователем, берём его, иначе - первый попавшийся
-							if(data.length == 1){
-								set_default_and_resolve(data[0])
+					}
 
-							}else if(data.length){
-								if(!$p.current_user || !$p.current_user.name){
+					const query = this.find_rows_remote ? this.find_rows_remote(opt) : this.pouch_find_rows(opt);
+
+					query.then((data) => {
+						// если существует с текущим пользователем, берём его, иначе - первый попавшийся
+						if(data.length == 1){
+							set_default_and_resolve(data[0])
+						}
+						else if(data.length){
+							if(!$p.current_user || !$p.current_user.name){
+								set_default_and_resolve(data[0])
+							}
+							else {
+								const {name} = $p.current_user;
+								if(!data.some((scheme) => {
+										if(scheme.user == name){
+											set_default_and_resolve(scheme);
+											return true;
+										}
+									})) {
 									set_default_and_resolve(data[0])
 								}
-								else {
-									const {name} = $p.current_user;
-									if(!data.some((scheme) => {
-											if(scheme.user == name){
-												set_default_and_resolve(scheme);
-												return true;
-											}
-										})) {
-										set_default_and_resolve(data[0])
-									}
-								}
 							}
-							else{
-								create_scheme()
-							}
-						})
-						.catch(function (err) {
+						}
+						else{
+							create_scheme()
+						}
+					})
+						.catch((err) => {
 							create_scheme()
 						})
+				}
+
+				let ref = wsql.get_user_param(scheme_name, "string");
+
+				function set_default_and_resolve(obj){
+					resolve(obj.set_default());
 				}
 
 				function create_scheme() {
@@ -80,12 +86,8 @@ function scheme_settings() {
 						ref = utils.generate_guid()
 					}
 					cat.scheme_settings.create({ref})
-						.then(function (obj) {
-							return obj.fill_default(class_name).save()
-						})
-						.then(function (obj) {
-							set_default_and_resolve(obj)
-						})
+						.then((obj) => obj.fill_default(class_name).save())
+						.then((obj) => set_default_and_resolve(obj))
 				}
 
 				if(ref){
@@ -94,11 +96,12 @@ function scheme_settings() {
 						.then((scheme) => {
 							if(scheme && !scheme.is_new()){
 								resolve(scheme)
-							}else{
+							}
+							else{
 								find_scheme()
 							}
 						})
-						.catch(function (err) {
+						.catch((err) => {
 							find_scheme()
 						})
 
@@ -364,7 +367,7 @@ function scheme_settings() {
 				_meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]),
 				res = [];
 
-			this.fields.find_rows({use: true}, function (row) {
+			this.fields.find_rows({use: true}, (row) => {
 
 				const fld_meta = _meta.fields[row.field] || _mgr.metadata(row.field)
 				let column
@@ -374,8 +377,8 @@ function scheme_settings() {
 						key: row.field,
 						name: row.caption,
 						resizable : true,
-						width: row.width == '*' ? 250 : (parseInt(row.width) || 140),
 						ctrl_type: row.ctrl_type,
+						width: row.width == '*' ? 250 : (parseInt(row.width) || 140),
 					}
 				}else{
 					column = {
@@ -603,4 +606,4 @@ function scheme_settings() {
 		}
 	})
 
-}
+};

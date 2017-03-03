@@ -196,9 +196,12 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 					if(!change.row || _grid.getSelectedRowId() != change.row.row)
 						_ts.sync_grid(_grid, _selection);
 					else{
-						if(_grid.getColIndexById(change.name) != undefined)
-							_grid.cells(change.row.row, _grid.getColIndexById(change.name))
-								.setCValue($p.utils.is_data_obj(change.row[change.name]) ? change.row[change.name].presentation : change.row[change.name]);
+						if(_grid.getColIndexById(change.name) != undefined){
+              if(typeof change.oldValue != "boolean" || typeof change.row[change.name] != "boolean"){
+                _grid.cells(change.row.row, _grid.getColIndexById(change.name))
+                  .setCValue($p.utils.is_data_obj(change.row[change.name]) ? change.row[change.name].presentation : change.row[change.name]);
+              }
+            }
 					}
 				}
 			});
@@ -418,6 +421,11 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 	_grid.attachEvent("onEditCell", tabular_on_edit);
 
+  _grid.attachEvent("onCheck", function(rId,cInd,state){
+    _grid.selectCell(rId-1, cInd);
+    tabular_on_edit(2, rId, cInd, state);
+  });
+
 	_grid.attachEvent("onRowSelect", function(rid,ind){
 		if(_ts){
 			_grid._last = {
@@ -426,7 +434,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			}
 		}
 	});
-
 
   _grid.attachEvent("onHeaderClick", function(ind,obj){
 
