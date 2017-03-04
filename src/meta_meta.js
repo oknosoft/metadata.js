@@ -191,6 +191,15 @@ function Meta() {
               ],
               is_ref: true
             }
+          },
+          tag: {
+            synonym: "Дополнительные свойства",
+            type: {
+              types: [
+                "string"
+              ],
+              str_len: 0
+            }
           }
         },
         tabular_sections: {

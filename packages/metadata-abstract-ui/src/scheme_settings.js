@@ -185,6 +185,9 @@ function scheme_settings() {
 		get query() {return this._getter('query')}
 		set query(v) {this._setter('query', v)}
 
+		get tag() {return this._getter('tag')}
+		set tag(v) {this._setter('tag', v)}
+
 		get date_from() {return this._getter('date_from')}
 		set date_from(v) {this._setter('date_from', v)}
 
