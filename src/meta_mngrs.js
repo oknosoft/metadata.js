@@ -1680,8 +1680,8 @@ DataProcessorsManager.prototype.__define({
 	 * @return {DataProcessorObj}
 	 */
 	create: {
-		value: function(){
-			return new $p[this.obj_constructor()]({}, this);
+		value: function(attr){
+			return new $p[this.obj_constructor()](attr || {}, this);
 		}
 	},
 

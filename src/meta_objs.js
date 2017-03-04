@@ -874,10 +874,16 @@ function DataProcessorObj(attr, manager) {
 	DataProcessorObj.superclass.constructor.call(this, attr, manager);
 
 	var f, cmd = manager.metadata();
-	for(f in cmd.fields)
-		attr[f] = $p.utils.fetch_type("", cmd.fields[f].type);
-	for(f in cmd["tabular_sections"])
-		attr[f] = [];
+	for(f in cmd.fields){
+	  if(!attr[f]){
+      attr[f] = $p.utils.fetch_type("", cmd.fields[f].type);
+    }
+  }
+	for(f in cmd["tabular_sections"]){
+	  if(!attr[f]){
+      attr[f] = [];
+    }
+  }
 
 	this._mixin(attr);
 

@@ -797,13 +797,15 @@ class DataProcessorObj extends DataObj {
 		const cmd = manager.metadata();
 
 		for(let f in cmd.fields){
-			attr[f] = utils.fetch_type("", cmd.fields[f].type);
+			if(!attr[f]){
+				attr[f] = utils.fetch_type("", cmd.fields[f].type);
+			}
 		}
-
 		for(let f in cmd["tabular_sections"]){
-			attr[f] = [];
+			if(!attr[f]){
+				attr[f] = [];
+			}
 		}
-
 		utils._mixin(this, attr);
 	}
 }
