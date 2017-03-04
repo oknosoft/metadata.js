@@ -747,7 +747,7 @@ CatObj.prototype.__define({
         // return this._metadata.obj_presentation || this._metadata.synonym + " " + this.name || this.id;
         return this.name || this.id || this._metadata.obj_presentation || this._metadata.synonym;
       }else{
-        return this._presentation;
+        return this._presentation || "";
       }
     },
     set : function(v){
@@ -788,7 +788,7 @@ function DocObj(attr, manager) {
 			if(this.number_doc)
 				return (this._metadata.obj_presentation || this._metadata.synonym) + ' №' + this.number_doc + " от " + $p.moment(this.date).format($p.moment._masks.ldt);
 			else
-				return _presentation;
+				return _presentation || "";
 
 		},
 		set : function(v){
