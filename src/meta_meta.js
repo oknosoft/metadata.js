@@ -297,7 +297,6 @@ function Meta() {
                   is_ref: true
                 }
               }
-
             }
           },
           sorting: {

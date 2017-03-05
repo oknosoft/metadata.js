@@ -67,7 +67,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	 * добавляет строку табчасти
 	 */
 	_grid._add_row = function(){
-		if(!attr.read_only){
+		if(!attr.read_only && !attr.disable_add_del){
 
 			var proto;
 			if(_selection){
@@ -103,7 +103,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	 * удаляет строку табчасти
 	 */
 	_grid._del_row = function(){
-		if(!attr.read_only){
+		if(!attr.read_only && !attr.disable_add_del){
 			var rId = get_sel_index();
 
 			if(rId != undefined){
@@ -337,8 +337,10 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	_grid.enableEditTabOnly(true);
 	_grid.init();
 
-	if(attr.read_only){
-		_grid.setEditable(false);
+	if(attr.read_only || attr.disable_add_del){
+	  if(attr.read_only){
+      _grid.setEditable(false);
+    }
 		_toolbar.forEachItem(function (name) {
 			if(["btn_add", "btn_delete"].indexOf(name) != -1)
 				_toolbar.disableItem(name);
