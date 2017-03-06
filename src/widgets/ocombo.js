@@ -538,3 +538,56 @@ $p.iface.select_from_list = function (list, multy) {
 
 	});
 };
+
+/**
+ * ### Форма ввода значения
+ * @method query_value
+ * @for InterfaceObjs
+ * @param initial
+ * @param caption
+ * @return {Promise}
+ */
+$p.iface.query_value = function (initial, caption) {
+
+  return new Promise(function(resolve, reject){
+
+    // создаём и показываем диалог со списком
+
+    // параметры открытия формы
+    var options = {
+        name: 'wnd_query_value',
+        wnd: {
+          width: 300,
+          height: 160,
+          modal: true,
+          center: true,
+          caption: caption || 'Введите значение',
+          allow_close: true,
+          on_close: function () {
+            reject();
+            return true;
+          }
+        }
+      },
+      wnd = $p.iface.dat_blank(null, options.wnd),
+      _toolbar = wnd.attachToolbar({
+        items:[
+          {id: "select", type: "button", text: "<b>Ok</b>"},
+          {id: "sp", type: "spacer"},
+          {id: "cancel", type: "button", text: "Отмена"}
+        ],
+        onClick: function (id){
+          if(id == "cancel"){
+            wnd.close()
+          }
+          else{
+            resolve(wnd.cell.querySelector('INPUT').value);
+            wnd.close();
+          }
+        }
+      });
+
+    wnd.attachHTMLString("<input type='text' style='width: 94%; padding: 4px;' value='" + initial + "' />");
+
+  });
+};

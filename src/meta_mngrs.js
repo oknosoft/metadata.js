@@ -1003,7 +1003,8 @@ RefDataManager.prototype.__define({
 					if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
 						if(!o.number_doc)
 							o.new_number_doc();
-					}else{
+					}
+					else{
 						if(!o.id && o._metadata.code_length)
 							o.new_number_doc();
 					}

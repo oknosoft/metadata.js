@@ -314,6 +314,15 @@ function Meta() {
                   str_len: 100
                 }
               },
+              use: {
+                synonym: "Использование",
+                tooltip: "",
+                type: {
+                  types: [
+                    "boolean"
+                  ]
+                }
+              },
               field: {
                 synonym: "Поле",
                 tooltip: "",
@@ -351,6 +360,15 @@ function Meta() {
                   str_len: 100
                 }
               },
+              use: {
+                synonym: "Использование",
+                tooltip: "",
+                type: {
+                  types: [
+                    "boolean"
+                  ]
+                }
+              },
               field: {
                 synonym: "Поле",
                 tooltip: "",
@@ -376,6 +394,15 @@ function Meta() {
                     "string"
                   ],
                   str_len: 100
+                }
+              },
+              use: {
+                synonym: "Использование",
+                tooltip: "",
+                type: {
+                  types: [
+                    "boolean"
+                  ]
                 }
               },
               field: {
@@ -499,12 +526,12 @@ function Meta() {
               }
             }
           },
-          scheme: {
-            "name": "scheme",
-            "synonym": "Структура",
-            "tooltip": "",
-            "fields": {
-              "parent": {
+          composition: {
+            name: "composition",
+            synonym: "Структура",
+            tooltip: "",
+            fields: {
+              parent: {
                 "synonym": "Родитель",
                 "multiline_mode": false,
                 "tooltip": "",
@@ -515,15 +542,43 @@ function Meta() {
                   "str_len": 10
                 }
               },
-              "kind": {
+              use: {
+                synonym: "Использование",
+                tooltip: "",
+                type: {
+                  types: [
+                    "boolean"
+                  ]
+                }
+              },
+              field: {
+                "synonym": "Элемент",
+                "tooltip": "Элемент структуры отчета",
+                "type": {
+                  "types": [
+                    "string"
+                  ],
+                  "str_len": 50
+                }
+              },
+              kind: {
                 "synonym": "Вид раздела отчета",
-                "multiline_mode": false,
                 "tooltip": "список, таблица, группировка строк, группировка колонок",
                 "type": {
                   "types": [
                     "string"
                   ],
-                  "str_len": 10
+                  "str_len": 50
+                }
+              },
+              definition: {
+                "synonym": "Описание",
+                "tooltip": "Описание раздела структуры",
+                "type": {
+                  "types": [
+                    "string"
+                  ],
+                  "str_len": 50
                 }
               }
             }

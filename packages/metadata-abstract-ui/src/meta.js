@@ -538,12 +538,12 @@ export default {
 								}
 							}
 						},
-						scheme: {
-							"name": "scheme",
-							"synonym": "Структура",
-							"tooltip": "",
-							"fields": {
-								"parent": {
+						composition: {
+							name: "composition",
+							synonym: "Структура",
+							tooltip: "",
+							fields: {
+								parent: {
 									"synonym": "Родитель",
 									"multiline_mode": false,
 									"tooltip": "",
@@ -554,15 +554,43 @@ export default {
 										"str_len": 10
 									}
 								},
-								"kind": {
+								use: {
+									synonym: "Использование",
+									tooltip: "",
+									type: {
+										types: [
+											"boolean"
+										]
+									}
+								},
+								elm: {
+									"synonym": "Элемент",
+									"tooltip": "Элемент структуры отчета",
+									"type": {
+										"types": [
+											"string"
+										],
+										"str_len": 50
+									}
+								},
+								kind: {
 									"synonym": "Вид раздела отчета",
-									"multiline_mode": false,
 									"tooltip": "список, таблица, группировка строк, группировка колонок",
 									"type": {
 										"types": [
 											"string"
 										],
-										"str_len": 10
+										"str_len": 50
+									}
+								},
+								definition: {
+									"synonym": "Описание",
+									"tooltip": "Описание раздела структуры",
+									"type": {
+										"types": [
+											"string"
+										],
+										"str_len": 50
 									}
 								}
 							}

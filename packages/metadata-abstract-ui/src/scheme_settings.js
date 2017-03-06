@@ -212,8 +212,8 @@ function scheme_settings() {
 		get params() {return this._getter_ts('params')}
 		set params(v) {this._setter_ts('params', v)}
 
-		get scheme() {return this._getter_ts('scheme')}
-		set scheme(v) {this._setter_ts('scheme', v)}
+		get composition() {return this._getter_ts('composition')}
+		set composition(v) {this._setter_ts('composition', v)}
 
 		/**
 		 * ### Заполняет настройки по метаданным
@@ -436,164 +436,84 @@ function scheme_settings() {
 
 	this.CatScheme_settingsDimensionsRow = class CatScheme_settingsDimensionsRow extends classes.TabularSectionRow {
 
-		get parent() {
-			return this._getter('parent')
-		}
-		set parent(v) {
-			this._setter('parent', v)
-		}
+		get parent() {return this._getter('parent')}
+		set parent(v) {this._setter('parent', v)}
 
-		get field() {
-			return this._getter('field')
-		}
-		set field(v) {
-			this._setter('field', v)
-		}
+		get use() {return this._getter('use')}
+		set use(v) {this._setter('use', v)}
+
+		get field() {return this._getter('field')}
+		set field(v) {this._setter('field', v)}
 	}
 
 	this.CatScheme_settingsResourcesRow = class CatScheme_settingsResourcesRow extends this.CatScheme_settingsDimensionsRow {
 
-		get formula() {
-			return this._getter('formula')
-		}
-		set formula(v) {
-			this._setter('formula', v)
-		}
+		get formula() {return this._getter('formula')}
+		set formula(v) {this._setter('formula', v)}
 	}
 
 	this.CatScheme_settingsFieldsRow = class CatScheme_settingsFieldsRow extends this.CatScheme_settingsDimensionsRow {
 
-		get use() {
-			return this._getter('use')
-		}
-		set use(v) {
-			this._setter('use', v)
-		}
+		get width() {return this._getter('width')}
+		set width(v) {this._setter('width', v)}
 
-		get width() {
-			return this._getter('width')
-		}
-		set width(v) {
-			this._setter('width', v)
-		}
+		get caption() {return this._getter('caption')}
+		set caption(v) {this._setter('caption', v)}
 
-		get caption() {
-			return this._getter('caption')
-		}
-		set caption(v) {
-			this._setter('caption', v)
-		}
+		get tooltip() {return this._getter('tooltip')}
+		set tooltip(v) {this._setter('tooltip', v)}
 
-		get tooltip() {
-			return this._getter('tooltip')
-		}
-		set tooltip(v) {
-			this._setter('tooltip', v)
-		}
+		get ctrl_type() {return this._getter('ctrl_type')}
+		set ctrl_type(v) {this._setter('ctrl_type', v)}
 
-		get ctrl_type() {
-			return this._getter('ctrl_type')
-		}
-		set ctrl_type(v) {
-			this._setter('ctrl_type', v)
-		}
+		get formatter() {return this._getter('formatter')}
+		set formatter(v) {this._setter('formatter', v)}
 
-		get formatter() {
-			return this._getter('formatter')
-		}
-		set formatter(v) {
-			this._setter('formatter', v)
-		}
-
-		get editor() {
-			return this._getter('editor')
-		}
-		set editor(v) {
-			this._setter('editor', v)
-		}
+		get editor() {return this._getter('editor')}
+		set editor(v) {this._setter('editor', v)}
 
 	}
 
 	this.CatScheme_settingsSortingRow = class CatScheme_settingsSortingRow extends this.CatScheme_settingsDimensionsRow {
 
-		get direction() {
-			return this._getter('direction')
-		}
-		set direction(v) {
-			this._setter('direction', v)
-		}
+		get direction() {return this._getter('direction')}
+		set direction(v) {this._setter('direction', v)}
 	}
 
 	this.CatScheme_settingsSelectionRow = class CatScheme_settingsSelectionRow extends classes.TabularSectionRow {
 
-		get parent() {
-			return this._getter('parent')
-		}
-		set parent(v) {
-			this._setter('parent', v)
-		}
+		get parent() {return this._getter('parent')}
+		set parent(v) {this._setter('parent', v)}
 
-		get use() {
-			return this._getter('use')
-		}
-		set use(v) {
-			this._setter('use', v)
-		}
+		get use() {return this._getter('use')}
+		set use(v) {this._setter('use', v)}
 
-		get left_value() {
-			return this._getter('left_value')
-		}
-		set left_value(v) {
-			this._setter('left_value', v)
-		}
+		get left_value() {return this._getter('left_value')}
+		set left_value(v) {this._setter('left_value', v)}
 
-		get comparison_type() {
-			return this._getter('comparison_type')
-		}
-		set comparison_type(v) {
-			this._setter('comparison_type', v)
-		}
+		get comparison_type() {return this._getter('comparison_type')}
+		set comparison_type(v) {this._setter('comparison_type', v)}
 
-		get right_value() {
-			return this._getter('right_value')
-		}
-		set right_value(v) {
-			this._setter('right_value', v)
-		}
+		get right_value() {return this._getter('right_value')}
+		set right_value(v) {this._setter('right_value', v)}
 	}
 
 	this.CatScheme_settingsParamsRow = class CatScheme_settingsParamsRow extends classes.TabularSectionRow {
 
-		get param() {
-			return this._getter('param')
-		}
-		set param(v) {
-			this._setter('param', v)
-		}
+		get param() {return this._getter('param')}
+		set param(v) {this._setter('param', v)}
 
-		get value() {
-			return this._getter('value')
-		}
-		set value(v) {
-			this._setter('value', v)
-		}
+		get value() {return this._getter('value')}
+		set value(v) {this._setter('value', v)}
 	}
 
-	this.CatScheme_settingsSchemeRow = class CatScheme_settingsSchemeRow extends classes.TabularSectionRow {
+	this.CatScheme_settingsCompositionRow = class CatScheme_settingsSchemeRow extends this.CatScheme_settingsDimensionsRow {
 
-		get parent() {
-			return this._getter('parent')
-		}
-		set parent(v) {
-			this._setter('parent', v)
-		}
+		get kind() {return this._getter('kind')}
+		set kind(v) {this._setter('kind', v)}
 
-		get kind() {
-			return this._getter('kind')
-		}
-		set kind(v) {
-			this._setter('kind', v)
-		}
+		get definition() {return this._getter('definition')}
+		set definition(v) {this._setter('definition', v)}
 
 	}
 

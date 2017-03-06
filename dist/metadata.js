@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-03-05 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-03-06 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -4301,7 +4301,6 @@ function Meta() {
                   is_ref: true
                 }
               }
-
             }
           },
           sorting: {
@@ -4317,6 +4316,15 @@ function Meta() {
                     "string"
                   ],
                   str_len: 100
+                }
+              },
+              use: {
+                synonym: "Использование",
+                tooltip: "",
+                type: {
+                  types: [
+                    "boolean"
+                  ]
                 }
               },
               field: {
@@ -4356,6 +4364,15 @@ function Meta() {
                   str_len: 100
                 }
               },
+              use: {
+                synonym: "Использование",
+                tooltip: "",
+                type: {
+                  types: [
+                    "boolean"
+                  ]
+                }
+              },
               field: {
                 synonym: "Поле",
                 tooltip: "",
@@ -4381,6 +4398,15 @@ function Meta() {
                     "string"
                   ],
                   str_len: 100
+                }
+              },
+              use: {
+                synonym: "Использование",
+                tooltip: "",
+                type: {
+                  types: [
+                    "boolean"
+                  ]
                 }
               },
               field: {
@@ -4504,12 +4530,12 @@ function Meta() {
               }
             }
           },
-          scheme: {
-            "name": "scheme",
-            "synonym": "Структура",
-            "tooltip": "",
-            "fields": {
-              "parent": {
+          composition: {
+            name: "composition",
+            synonym: "Структура",
+            tooltip: "",
+            fields: {
+              parent: {
                 "synonym": "Родитель",
                 "multiline_mode": false,
                 "tooltip": "",
@@ -4520,15 +4546,43 @@ function Meta() {
                   "str_len": 10
                 }
               },
-              "kind": {
+              use: {
+                synonym: "Использование",
+                tooltip: "",
+                type: {
+                  types: [
+                    "boolean"
+                  ]
+                }
+              },
+              field: {
+                "synonym": "Элемент",
+                "tooltip": "Элемент структуры отчета",
+                "type": {
+                  "types": [
+                    "string"
+                  ],
+                  "str_len": 50
+                }
+              },
+              kind: {
                 "synonym": "Вид раздела отчета",
-                "multiline_mode": false,
                 "tooltip": "список, таблица, группировка строк, группировка колонок",
                 "type": {
                   "types": [
                     "string"
                   ],
-                  "str_len": 10
+                  "str_len": 50
+                }
+              },
+              definition: {
+                "synonym": "Описание",
+                "tooltip": "Описание раздела структуры",
+                "type": {
+                  "types": [
+                    "string"
+                  ],
+                  "str_len": 50
                 }
               }
             }
@@ -6317,7 +6371,8 @@ RefDataManager.prototype.__define({
 					if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
 						if(!o.number_doc)
 							o.new_number_doc();
-					}else{
+					}
+					else{
 						if(!o.id && o._metadata.code_length)
 							o.new_number_doc();
 					}
@@ -9472,9 +9527,12 @@ TabularSection.prototype.find_rows = function(selection, callback){
  * @param rowid2 {number}
  */
 TabularSection.prototype.swap = function(rowid1, rowid2){
-	var tmp = this._obj[rowid1];
+
+	var row1 = this._obj[rowid1];
 	this._obj[rowid1] = this._obj[rowid2];
-	this._obj[rowid2] = tmp;
+	this._obj[rowid2] = row1;
+  this._obj[rowid1].row = rowid1 + 1;
+  this._obj[rowid2].row = rowid2 + 1;
 
 	if(!this._owner._data._silent)
 		Object.getNotifier(this._owner).notify({
@@ -12794,6 +12852,59 @@ $p.iface.select_from_list = function (list, multy) {
 
 	});
 };
+
+/**
+ * ### Форма ввода значения
+ * @method query_value
+ * @for InterfaceObjs
+ * @param initial
+ * @param caption
+ * @return {Promise}
+ */
+$p.iface.query_value = function (initial, caption) {
+
+  return new Promise(function(resolve, reject){
+
+    // создаём и показываем диалог со списком
+
+    // параметры открытия формы
+    var options = {
+        name: 'wnd_query_value',
+        wnd: {
+          width: 300,
+          height: 160,
+          modal: true,
+          center: true,
+          caption: caption || 'Введите значение',
+          allow_close: true,
+          on_close: function () {
+            reject();
+            return true;
+          }
+        }
+      },
+      wnd = $p.iface.dat_blank(null, options.wnd),
+      _toolbar = wnd.attachToolbar({
+        items:[
+          {id: "select", type: "button", text: "<b>Ok</b>"},
+          {id: "sp", type: "spacer"},
+          {id: "cancel", type: "button", text: "Отмена"}
+        ],
+        onClick: function (id){
+          if(id == "cancel"){
+            wnd.close()
+          }
+          else{
+            resolve(wnd.cell.querySelector('INPUT').value);
+            wnd.close();
+          }
+        }
+      });
+
+    wnd.attachHTMLString("<input type='text' style='width: 94%; padding: 4px;' value='" + initial + "' />");
+
+  });
+};
 /**
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
@@ -13279,10 +13390,38 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		}
 	};
 
+
+  _grid._move_row = function(direction){
+    if(attr.read_only){
+      return;
+    }
+    var rId = get_sel_index();
+
+    if(rId != undefined){
+      if(direction == "up"){
+        if(rId != 0){
+          _ts.swap(rId-1, rId);
+          setTimeout(function () {
+            _grid.selectRow(rId-1);
+          }, 100)
+        }
+      }
+      else{
+        if(rId < _ts.count()){
+          _ts.swap(rId, rId+1);
+          setTimeout(function () {
+            _grid.selectRow(rId+1);
+          }, 100)
+        }
+      }
+    }
+  }
+
 	/**
 	 * удаляет строку табчасти
 	 */
-	_grid._del_row = function(){
+	_grid._del_row = function(keydown){
+
 		if(!attr.read_only && !attr.disable_add_del){
 			var rId = get_sel_index();
 
@@ -13493,6 +13632,14 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				case "btn_delete":
 					_grid._del_row();
 					break;
+
+        case "btn_up":
+          _grid._move_row("up");
+          break;
+
+        case "btn_down":
+          _grid._move_row("down");
+          break;
 			}
 
 		});
@@ -13517,13 +13664,28 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	_grid.enableEditTabOnly(true);
 	_grid.init();
 
-	if(attr.read_only){
-		_grid.setEditable(false);
+	// гасим кнопки, если ro
+	if(attr.read_only || attr.disable_add_del){
+	  if(attr.read_only){
+      _grid.setEditable(false);
+    }
 		_toolbar.forEachItem(function (name) {
 			if(["btn_add", "btn_delete"].indexOf(name) != -1)
 				_toolbar.disableItem(name);
 		});
 	}
+
+  // добавляем кнопки сортировки, если reorder
+	if(attr.reorder){
+    var pos = _toolbar.getPosition("btn_delete");
+    if(pos){
+      _toolbar.addSeparator("sep_up", pos+1);
+      _toolbar.addButton("btn_up", pos+2, '<i class="fa fa-arrow-up fa-fw"></i>');
+      _toolbar.addButton("btn_down", pos+3, '<i class="fa fa-arrow-down fa-fw"></i>');
+      _toolbar.setItemToolTip("btn_up", "Переместить строку вверх");
+      _toolbar.setItemToolTip("btn_down", "Переместить строку вниз");
+    }
+  }
 
 	_grid.__define({
 
@@ -14053,6 +14215,8 @@ $p.iface.dat_blank = function(_dxw, attr) {
 
 	return wnd_dat;
 };
+
+
 
 /**
  * обработчик выбора значения в свойствах (ссылочные типы)
@@ -18538,7 +18702,7 @@ function IPInfo(){
  * @param [attr] {Object} - размер листа, ориентация, поля и т.д.
  * @constructor
  */
-function SpreadsheetDocument(attr) {
+function SpreadsheetDocument(attr, events) {
 
 	this._attr = {
 		orientation: "portrait",
@@ -18548,11 +18712,26 @@ function SpreadsheetDocument(attr) {
 
 	if(attr && typeof attr == "string"){
 		this.content = attr;
-
-	} else if(typeof attr == "object"){
+	}
+	else if(typeof attr == "object"){
 		this._mixin(attr);
 	}
 	attr = null;
+
+  this._events = {
+
+    /**
+     * ### При заполнении макета
+     * Возникает перед заполнением параметров макета. В обработчике можно дополнить, изменить или рассчитать любые массивы или поля
+     *
+     * @event fill_template
+     */
+    fill_template: null,
+
+  };
+  if(events && typeof events == "object"){
+    this._events._mixin(events);
+  }
 }
 SpreadsheetDocument.prototype.__define({
 
@@ -18594,6 +18773,175 @@ SpreadsheetDocument.prototype.__define({
 		}
 	},
 
+  /**
+   * Добавляет область и заполняет её данными
+   * @method append
+   * @param template {HTMLElement}
+   * @param data {Object}
+   */
+  append: {
+    value: function (template, data) {
+
+      if(this._events.fill_template){
+        data = this._events.fill_template(template, data);
+      }
+
+      switch (template.attributes.kind && template.attributes.kind.value){
+
+        case 'row':
+          this.draw_rows(template, data);
+          break;
+
+        case 'table':
+          this.draw_table(template, data);
+          break;
+
+        default:
+          this.put(dhx4.template(template.innerHTML, data), template.attributes);
+          break;
+      }
+    }
+  },
+
+  draw_table: {
+    value: function (template, data) {
+
+      var tabular = template.attributes.tabular && template.attributes.tabular.value;
+      if(!tabular){
+        console.error('Не указана табличная часть в шаблоне ' + template.id);
+        return;
+      }
+      var rows = data[tabular];
+      if(!Array.isArray(rows)){
+        console.error('В данных отсутствует массив ' + tabular);
+        return;
+      }
+
+      // контейнер таблицы
+      var cont = document.createElement("div");
+
+      // заполняем контейнер по шаблону
+      cont.innerHTML = template.innerHTML;
+
+      // собственно, таблица
+      var table = cont.querySelector("table");
+
+      // шаблон строки таблицы
+      var tpl_row = table.querySelector("[name=row]");
+
+      // удаляем пустую строку из итоговой таблицы
+      if(tpl_row){
+        tpl_row.parentElement.removeChild(tpl_row);
+      }
+      else{
+        console.error('Отсутствует <TR name="row"> в шаблоне таблицы');
+        return;
+      }
+
+      // находим все шаблоны группировок
+      var tpl_grouping = table.querySelector("tbody").querySelectorAll("tr");
+
+      // удаляем шаблоны группировок из итоговой таблицы
+      tpl_grouping.forEach(function (elm) {
+        elm.parentElement.removeChild(elm);
+      });
+
+
+      // подвал таблицы
+      var tfoot = table.querySelector("tfoot");
+      if(tfoot){
+
+      }
+
+      // есть ли итоги
+
+      function put_rows(rows) {
+        rows.forEach(function(row) {
+          var table_row = document.createElement("TR");
+          table_row.innerHTML = dhx4.template(tpl_row.innerHTML, row);
+          table.appendChild(table_row);
+        });
+      }
+
+      // есть ли группировка + цикл по табчасти
+      var grouping = data._grouping && data._grouping.find_rows({use: true, parent: tabular});
+      if(grouping && grouping.length == 1 && tpl_grouping.length){
+
+        var gfield = grouping[0].field;
+
+        $p.wsql.alasql("select distinct `"+gfield+"` from ? order by `"+gfield+"`", [rows])
+          .forEach(function (group) {
+            var table_row = document.createElement("TR");
+            table_row.innerHTML = dhx4.template(tpl_grouping[0].innerHTML, group);
+            table.appendChild(table_row);
+            put_rows(rows.filter(function (row) {
+              return row[gfield] == group[gfield];
+            }));
+          })
+      }
+      else{
+        put_rows(rows);
+      }
+
+      // собственно, вывод табличной части в отчет
+      this.put(cont.innerHTML, cont.attributes);
+    }
+  },
+
+  draw_rows: {
+    value: function (template, data) {
+
+      // цикл по табчасти
+    }
+  },
+
+  /**
+   * Показывает отчет в отдельном окне
+   */
+  print: {
+    value: function () {
+
+      try{
+
+        // создаём blob из шаблона пустой страницы
+        if(!($p.injected_data['view_blank.html'] instanceof Blob)){
+          $p.injected_data['view_blank.html'] = new Blob([$p.injected_data['view_blank.html']], {type: 'text/html'});
+        }
+
+        var doc = this,
+          url = window.URL.createObjectURL($p.injected_data['view_blank.html']),
+          wnd_print = window.open(
+          url, "wnd_print", "fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes");
+
+        if (wnd_print.outerWidth < screen.availWidth || wnd_print.outerHeight < screen.availHeight){
+          wnd_print.moveTo(0,0);
+          wnd_print.resizeTo(screen.availWidth, screen.availHeight);
+        }
+
+        wnd_print.onload = function(e) {
+          window.URL.revokeObjectURL(url);
+          wnd_print.document.body.appendChild(doc.content);
+          if(doc.title){
+            wnd_print.document.title = doc.title;
+          }
+          wnd_print.print();
+          doc = null;
+        };
+
+        return wnd_print;
+      }
+      catch(err){
+        window.URL.revokeObjectURL && window.URL.revokeObjectURL(url);
+        $p.msg.show_msg({
+          title: $p.msg.bld_title,
+          type: "alert-error",
+          text: err.message.match("outerWidth") ?
+            "Ошибка открытия окна печати<br />Вероятно, в браузере заблокированы всплывающие окна" : err.message
+        });
+      }
+    }
+  },
+
 	content: {
 		get: function () {
 			return this._attr.content
@@ -18621,6 +18969,7 @@ SpreadsheetDocument.prototype.__define({
 
 		}
 	}
+
 });
 
 /**
@@ -18635,20 +18984,20 @@ $p.SpreadsheetDocument = SpreadsheetDocument;
 /**
  * Табличный документ для экранных отчетов
  * @param container {HTMLElement|dhtmlXCellObject} - элемент DOM, в котором будет размещена таблица
- * @param [attr] {Object} - атрибуты инициплизации  
+ * @param [attr] {Object} - атрибуты инициплизации
  * @constructor
  */
 function HandsontableDocument(container, attr) {
 
 	var init = function () {
-		
+
 		if(this._then)
 			this._then(this);
 
 	}.bind(this);
-	
+
 	this._online = (attr && attr.allow_offline) || (navigator.onLine && $p.wsql.pouch.authorized);
-	
+
 	if(container instanceof dhtmlXCellObject){
 		this._cont = document.createElement('div');
 		container.detachObject(true);
@@ -18704,7 +19053,7 @@ function HandsontableDocument(container, attr) {
 	}else{
 		setTimeout(init);
 	}
-	
+
 }
 
 /**
