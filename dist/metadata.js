@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-02-26 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-03-06 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -2030,7 +2030,7 @@ function WSQL(){
 					return prm;
 			}
 		},
-
+    
 		/**
 		 * ### Указатель на alasql
 		 * @property alasql
@@ -4107,276 +4107,493 @@ function Meta() {
 			]
 		},
 		cat: {
-			meta_objs: {},
-			meta_fields: {},
-			scheme_settings: {
-				name: "scheme_settings",
-				splitted: true,
-				synonym: "Настройки отчетов и списков",
-				illustration: "",
-				obj_presentation: "",
-				list_presentation: "",
-				input_by_string: [
-					"name"
-				],
-				hierarchical: false,
-				has_owners: false,
-				group_hierarchy: true,
-				main_presentation_name: true,
-				code_length: 0,
-				fields: {
-					obj: {
-						synonym: "Объект",
-						multiline_mode: false,
-						tooltip: "Имя класса метаданных",
-						type: {
-							types: [
-								"string"
-							],
-							str_len: 250
-						}
-					},
-					user: {
-						synonym: "Пользователь",
-						multiline_mode: false,
-						tooltip: "Если пусто - публичная настройка",
-						type: {
-							types: [
-								"string"
-							],
-							str_len: 50
-						}
-					}
-				},
-				tabular_sections: {
-					available_fields: {
-						name: "available_fields",
-						synonym: "Доступные поля",
-						tooltip: "Состав, порядок и ширина колонок",
-						fields: {
-							parent: {
-								synonym: "Родитель",
-								multiline_mode: false,
-								tooltip: "Для плоского списка, родитель пустой",
-								type: {
-									types: [
-										"string"
-									],
-									str_len: 100
-								}
-							},
-							use: {
-								synonym: "Использование",
-								multiline_mode: false,
-								tooltip: "",
-								type: {
-									types: [
-										"boolean"
-									]
-								}
-							},
-							field: {
-								synonym: "Поле",
-								multiline_mode: false,
-								tooltip: "",
-								type: {
-									types: [
-										"string"
-									],
-									str_len: 100
-								}
-							},
-							width: {
-								synonym: "Ширина",
-								multiline_mode: false,
-								tooltip: "",
-								type: {
-									types: [
-										"number"
-									],
-									digits: 6,
-									fraction_figits: 0
-								}
-							},
-							caption: {
-								synonym: "Заголовок",
-								multiline_mode: false,
-								tooltip: "",
-								type: {
-									types: [
-										"string"
-									],
-									str_len: 100
-								}
-							}
-						}
-					},
-					sort_fields: {
-						name: "sort_fields",
-						synonym: "Поля сортировки",
-						tooltip: "",
-						fields: {
-							parent: {
-								synonym: "Родитель",
-								multiline_mode: false,
-								tooltip: "",
-								type: {
-									types: [
-										"string"
-									],
-									str_len: 100
-								}
-							},
-							field: {
-								synonym: "Поле",
-								multiline_mode: false,
-								tooltip: "",
-								type: {
-									types: [
-										"string"
-									],
-									str_len: 100
-								}
-							},
-							direction: {
-								synonym: "Направление",
-								multiline_mode: false,
-								tooltip: "",
-								type: {
-									types: [
-										"enm.sort_directions"
-									],
-									"is_ref": true
-								}
-							}
-						}
-					},
-					grouping_fields: {
-						name: "grouping_fields",
-						synonym: "Поля группировки",
-						tooltip: "",
-						fields: {
-							parent: {
-								synonym: "Родитель",
-								multiline_mode: false,
-								tooltip: "",
-								type: {
-									types: [
-										"string"
-									],
-									str_len: 100
-								}
-							},
-							field: {
-								synonym: "Поле",
-								multiline_mode: false,
-								tooltip: "",
-								type: {
-									types: [
-										"string"
-									],
-									str_len: 100
-								}
-							}
-						}
-					},
-					selection: {
-						name: "selection",
-						synonym: "Отбор",
-						tooltip: "",
-						fields: {
-							parent: {
-								synonym: "Родитель",
-								multiline_mode: false,
-								tooltip: "",
-								type: {
-									types: [
-										"string"
-									],
-									str_len: 100
-								}
-							},
-							use: {
-								synonym: "Использование",
-								multiline_mode: false,
-								tooltip: "",
-								type: {
-									types: [
-										"boolean"
-									]
-								}
-							},
-							left_value: {
-								synonym: "Левое значение",
-								multiline_mode: false,
-								tooltip: "",
-								type: {
-									types: [
-										"string"
-									],
-									str_len: 100
-								}
-							},
-							comparison_type: {
-								synonym: "Вид сравнения",
-								multiline_mode: false,
-								tooltip: "",
-								type: {
-									types: [
-										"enm.comparison_types"
-									],
-									is_ref: true
-								}
-							},
-							right_value: {
-								synonym: "Правое значение",
-								multiline_mode: false,
-								tooltip: "",
-								type: {
-									types: [
-										"string"
-									],
-									str_len: 100
-								}
-							}
-						}
-					},
-					scheme: {
-						"name": "scheme",
-						"synonym": "Структура",
-						"tooltip": "",
-						"fields": {
-							"parent": {
-								"synonym": "Родитель",
-								"multiline_mode": false,
-								"tooltip": "",
-								"type": {
-									"types": [
-										"string"
-									],
-									"str_len": 10
-								}
-							},
-							"kind": {
-								"synonym": "Вид раздела отчета",
-								"multiline_mode": false,
-								"tooltip": "список, таблица, группировка строк, группировка колонок",
-								"type": {
-									"types": [
-										"string"
-									],
-									"str_len": 10
-								}
-							}
-						}
-					}
-				},
-				cachable: "doc"
-			}
+      meta_objs: {
+        fields: {}
+      },
+      meta_fields: {
+        fields: {}
+      },
+      scheme_settings: {
+        name: "scheme_settings",
+        synonym: "Настройки отчетов и списков",
+        input_by_string: [
+          "name"
+        ],
+        hierarchical: false,
+        has_owners: false,
+        group_hierarchy: true,
+        main_presentation_name: true,
+        code_length: 0,
+        fields: {
+          obj: {
+            synonym: "Объект",
+            tooltip: "Имя класса метаданных",
+            type: {
+              types: [
+                "string"
+              ],
+              str_len: 250
+            }
+          },
+          user: {
+            synonym: "Пользователь",
+            tooltip: "Если пусто - публичная настройка",
+            type: {
+              types: [
+                "string"
+              ],
+              str_len: 50
+            }
+          },
+          order: {
+            synonym: "Порядок",
+            tooltip: "Порядок варианта",
+            type: {
+              types: [
+                "number"
+              ],
+              digits: 6,
+              fraction_figits: 0,
+            }
+          },
+          query: {
+            synonym: "Запрос",
+            tooltip: "Индекс CouchDB или текст SQL",
+            type: {
+              types: [
+                "string"
+              ],
+              str_len: 0
+            }
+          },
+          date_from: {
+            "synonym": "Начало периода",
+            "tooltip": "",
+            "type": {
+              "types": [
+                "date"
+              ],
+              "date_part": "date"
+            }
+          },
+          date_till: {
+            "synonym": "Конец периода",
+            "tooltip": "",
+            "type": {
+              "types": [
+                "date"
+              ],
+              "date_part": "date"
+            }
+          },
+          formula: {
+            synonym: "Формула",
+            tooltip: "Формула инициализации",
+            type: {
+              types: [
+                "cat.formulas"
+              ],
+              is_ref: true
+            }
+          },
+          tag: {
+            synonym: "Дополнительные свойства",
+            type: {
+              types: [
+                "string"
+              ],
+              str_len: 0
+            }
+          }
+        },
+        tabular_sections: {
+          fields: {
+            name: "fields",
+            synonym: "Доступные поля",
+            tooltip: "Состав, порядок и ширина колонок",
+            fields: {
+              parent: {
+                synonym: "Родитель",
+                tooltip: "Для плоского списка, родитель пустой",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 100
+                }
+              },
+              use: {
+                synonym: "Использование",
+                tooltip: "",
+                type: {
+                  types: [
+                    "boolean"
+                  ]
+                }
+              },
+              field: {
+                synonym: "Поле",
+                tooltip: "",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 100
+                }
+              },
+              width: {
+                synonym: "Ширина",
+                tooltip: "",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 6
+                }
+              },
+              caption: {
+                synonym: "Заголовок",
+                tooltip: "",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 100
+                }
+              },
+              tooltip: {
+                synonym: "Подсказка",
+                tooltip: "",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 100
+                }
+              },
+              ctrl_type: {
+                synonym: "Тип",
+                tooltip: "Тип элемента управления",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 100
+                }
+              },
+              formatter: {
+                synonym: "Формат",
+                tooltip: "Функция форматирования",
+                type: {
+                  types: [
+                    "cat.formulas"
+                  ],
+                  is_ref: true
+                }
+              },
+              editor: {
+                synonym: "Редактор",
+                tooltip: "Компонент редактирования",
+                type: {
+                  types: [
+                    "cat.formulas"
+                  ],
+                  is_ref: true
+                }
+              }
+            }
+          },
+          sorting: {
+            name: "sorting",
+            synonym: "Поля сортировки",
+            tooltip: "",
+            fields: {
+              parent: {
+                synonym: "Родитель",
+                tooltip: "",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 100
+                }
+              },
+              use: {
+                synonym: "Использование",
+                tooltip: "",
+                type: {
+                  types: [
+                    "boolean"
+                  ]
+                }
+              },
+              field: {
+                synonym: "Поле",
+                tooltip: "",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 100
+                }
+              },
+              direction: {
+                synonym: "Направление",
+                tooltip: "",
+                type: {
+                  types: [
+                    "enm.sort_directions"
+                  ],
+                  "is_ref": true
+                }
+              }
+            }
+          },
+          dimensions: {
+            name: "dimensions",
+            synonym: "Поля группировки",
+            tooltip: "",
+            fields: {
+              parent: {
+                synonym: "Родитель",
+                tooltip: "",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 100
+                }
+              },
+              use: {
+                synonym: "Использование",
+                tooltip: "",
+                type: {
+                  types: [
+                    "boolean"
+                  ]
+                }
+              },
+              field: {
+                synonym: "Поле",
+                tooltip: "",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 100
+                }
+              }
+            }
+          },
+          resources: {
+            name: "resources",
+            synonym: "Ресурсы",
+            tooltip: "",
+            fields: {
+              parent: {
+                synonym: "Родитель",
+                tooltip: "",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 100
+                }
+              },
+              use: {
+                synonym: "Использование",
+                tooltip: "",
+                type: {
+                  types: [
+                    "boolean"
+                  ]
+                }
+              },
+              field: {
+                synonym: "Поле",
+                tooltip: "",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 100
+                }
+              },
+              formula: {
+                synonym: "Формула",
+                tooltip: "По умолчанию - сумма",
+                type: {
+                  types: [
+                    "cat.formulas"
+                  ],
+                  is_ref: true
+                }
+              }
+            }
+          },
+          selection: {
+            name: "selection",
+            synonym: "Отбор",
+            tooltip: "",
+            fields: {
+              parent: {
+                synonym: "Родитель",
+                tooltip: "",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 100
+                }
+              },
+              use: {
+                synonym: "Использование",
+                tooltip: "",
+                type: {
+                  types: [
+                    "boolean"
+                  ]
+                }
+              },
+              left_value: {
+                synonym: "Левое значение",
+                tooltip: "",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 100
+                }
+              },
+              comparison_type: {
+                synonym: "Вид сравнения",
+                tooltip: "",
+                type: {
+                  types: [
+                    "enm.comparison_types"
+                  ],
+                  is_ref: true
+                }
+              },
+              right_value: {
+                synonym: "Правое значение",
+                tooltip: "",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 100
+                }
+              }
+            }
+          },
+          params: {
+            name: "params",
+            synonym: "Параметры",
+            tooltip: "",
+            fields: {
+              param: {
+                synonym: "Параметр",
+                tooltip: "",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 100
+                }
+              },
+              value_type: {
+                synonym: "Тип",
+                tooltip: "Тип значения",
+                type: {
+                  types: [
+                    "string"
+                  ],
+                  str_len: 100
+                }
+              },
+              value: {
+                synonym: "Значение",
+                tooltip: "Может иметь примитивный или ссылочный тип или массив",
+                type: {
+                  types: [
+                    "string",
+                    "number",
+                    // "date",
+                    // "array"
+                  ],
+                  str_len: 0,
+                  digits: 15,
+                  fraction_figits: 3,
+                  // date_part: "date"
+                }
+              }
+            }
+          },
+          composition: {
+            name: "composition",
+            synonym: "Структура",
+            tooltip: "",
+            fields: {
+              parent: {
+                "synonym": "Родитель",
+                "multiline_mode": false,
+                "tooltip": "",
+                "type": {
+                  "types": [
+                    "string"
+                  ],
+                  "str_len": 10
+                }
+              },
+              use: {
+                synonym: "Использование",
+                tooltip: "",
+                type: {
+                  types: [
+                    "boolean"
+                  ]
+                }
+              },
+              field: {
+                "synonym": "Элемент",
+                "tooltip": "Элемент структуры отчета",
+                "type": {
+                  "types": [
+                    "string"
+                  ],
+                  "str_len": 50
+                }
+              },
+              kind: {
+                "synonym": "Вид раздела отчета",
+                "tooltip": "список, таблица, группировка строк, группировка колонок",
+                "type": {
+                  "types": [
+                    "string"
+                  ],
+                  "str_len": 50
+                }
+              },
+              definition: {
+                "synonym": "Описание",
+                "tooltip": "Описание раздела структуры",
+                "type": {
+                  "types": [
+                    "string"
+                  ],
+                  "str_len": 50
+                }
+              }
+            }
+          }
+        },
+        cachable: "doc"
+      }
 		},
 		doc: {},
 		ireg: {
-			"log": {
+			log: {
 				name: "log",
 				note: "",
 				synonym: "Журнал событий",
@@ -4444,7 +4661,25 @@ function Meta() {
 			}
 		},
 		areg: {},
-		dp: {},
+		dp: {
+      scheme_settings: {
+        name: "scheme_settings",
+        synonym: "Варианты настроек",
+        fields: {
+          scheme: {
+            synonym: "Текущая настройка",
+            tooltip: "Текущий вариант настроек",
+            mandatory: true,
+            type: {
+              types: [
+                "cat.scheme_settings"
+              ],
+              is_ref: true
+            }
+          }
+        }
+      }
+    },
 		rep: {},
 		cch: {},
 		cacc: {}
@@ -5367,7 +5602,14 @@ function DataManager(class_name){
 		 */
 		off: {
 			value: function (name, method) {
+        if(typeof name == "object"){
 
+        }else{
+          var index = _events[name].indexOf(method);
+          if(index != -1){
+            _events[name].splice(index, 1);
+          }
+        }
 			}
 		},
 
@@ -5533,459 +5775,466 @@ DataManager.prototype.__define({
 			return ts_name ? fn_name + ts_name.charAt(0).toUpperCase() + ts_name.substr(1) + "Row" : fn_name;
 
 		}
-	}
+	},
+
+  /**
+   * ### Выводит фрагмент списка объектов данного менеджера, ограниченный фильтром attr в grid
+   *
+   * @method sync_grid
+   * @for DataManager
+   * @param grid {dhtmlXGridObject}
+   * @param attr {Object}
+   */
+  sync_grid: {
+	  value: function(attr, grid){
+
+      var mgr = this;
+
+      function request(){
+
+        if(typeof attr.custom_selection == "function"){
+          return attr.custom_selection(attr);
+
+        }else if(mgr.cachable == "ram"){
+
+          // запрос к alasql
+          if(attr.action == "get_tree")
+            return $p.wsql.promise(mgr.get_sql_struct(attr), [])
+              .then($p.iface.data_to_tree);
+
+          else if(attr.action == "get_selection")
+            return $p.wsql.promise(mgr.get_sql_struct(attr), [])
+              .then(function(data){
+                return $p.iface.data_to_grid.call(mgr, data, attr);
+              });
+
+        }else if(mgr.cachable.indexOf("doc") == 0){
+
+          // todo: запрос к pouchdb
+          if(attr.action == "get_tree")
+            return mgr.pouch_tree(attr);
+
+          else if(attr.action == "get_selection")
+            return mgr.pouch_selection(attr);
+
+        } else {
+
+          // запрос к серверу по сети
+          if(attr.action == "get_tree")
+            return mgr.rest_tree(attr);
+
+          else if(attr.action == "get_selection")
+            return mgr.rest_selection(attr);
+
+        }
+      }
+
+      function to_grid(res){
+
+        return new Promise(function(resolve, reject) {
+
+          if(typeof res == "string"){
+
+            if(res.substr(0,1) == "{")
+              res = JSON.parse(res);
+
+            // загружаем строку в грид
+            if(grid && grid.parse){
+              grid.xmlFileUrl = "exec";
+              grid.parse(res, function(){
+                resolve(res);
+              }, "xml");
+            }else
+              resolve(res);
+
+          }else if(grid instanceof dhtmlXTreeView && grid.loadStruct){
+            grid.loadStruct(res, function(){
+              resolve(res);
+            });
+
+          }else
+            resolve(res);
+
+        });
+
+      }
+
+      // TODO: переделать обработку catch()
+      return request()
+        .then(to_grid)
+        .catch($p.record_log);
+
+    }
+  },
+
+  /**
+   * ### Возвращает массив доступных значений для комбобокса
+   * @method get_option_list
+   * @for DataManager
+   * @param val {DataObj|String} - текущее значение
+   * @param [selection] {Object} - отбор, который будет наложен на список
+   * @param [selection._top] {Number} - ограничивает длину возвращаемого массива
+   * @return {Promise.<Array>}
+   */
+  get_option_list: {
+    value: function(val, selection){
+
+      var t = this, l = [], input_by_string, text, sel;
+
+      function check(v){
+        if($p.utils.is_equal(v.value, val))
+          v.selected = true;
+        return v;
+      }
+
+      // поиск по строке
+      if(selection.presentation && (input_by_string = t.metadata().input_by_string)){
+        text = selection.presentation.like;
+        delete selection.presentation;
+        selection.or = [];
+        input_by_string.forEach(function (fld) {
+          sel = {};
+          sel[fld] = {like: text};
+          selection.or.push(sel);
+        })
+      }
+
+      if(t.cachable == "ram" || (selection && selection._local)) {
+        t.find_rows(selection, function (v) {
+          l.push(check({text: v.presentation, value: v.ref}));
+        });
+        return Promise.resolve(l);
+
+      }else if(t.cachable != "e1cib"){
+        return t.pouch_find_rows(selection)
+          .then(function (data) {
+            data.forEach(function (v) {
+              l.push(check({
+                text: v.presentation,
+                value: v.ref}));
+            });
+            return l;
+          });
+
+      }else{
+        // для некешируемых выполняем запрос к серверу
+        var attr = { selection: selection, top: selection._top},
+          is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
+        delete selection._top;
+
+        if(is_doc)
+          attr.fields = ["ref", "date", "number_doc"];
+
+        else if(t.metadata().main_presentation_name)
+          attr.fields = ["ref", "name"];
+        else
+          attr.fields = ["ref", "id"];
+
+        return _rest.load_array(attr, t)
+          .then(function (data) {
+            data.forEach(function (v) {
+              l.push(check({
+                text: is_doc ? (v.number_doc + " от " + $p.moment(v.date).format($p.moment._masks.ldt)) : (v.name || v.id),
+                value: v.ref}));
+            });
+            return l;
+          });
+      }
+    }
+  },
+
+  /**
+   * Заполняет свойства в объекте source в соответствии с реквизитами табчасти
+   * @param tabular {String} - имя табчасти
+   * @param source {Object}
+   */
+  tabular_captions: {
+    value: function (tabular, source) {
+
+    }
+  },
+
+  /**
+   * ### Возаращает строку xml для инициализации PropertyGrid
+   * служебный метод, используется {{#crossLink "OHeadFields"}}{{/crossLink}}
+   * @method get_property_grid_xml
+   * @param oxml {Object} - объект с иерархией полей (входной параметр - правила)
+   * @param o {DataObj} - объект данных, из полей и табличных частей которого будут прочитаны значения
+   * @param extra_fields {Object} - объект с описанием допреквизитов
+   * @param extra_fields.ts {String} - имя табчасти
+   * @param extra_fields.title {String} - заголовок в oxml, под которым следует расположить допреквизиты // "Дополнительные реквизиты", "Свойства изделия", "Параметры"
+   * @param extra_fields.selection {Object} - отбор, который следует приминить к табчасти допреквизитов
+   * @return {String} - XML строка в терминах dhtml.PropertyGrid
+   * @private
+   */
+  get_property_grid_xml: {
+    value: function(oxml, o, extra_fields){
+
+      var t = this, i, j, mf, v, ft, txt, row_id, gd = '<rows>',
+
+        default_oxml = function () {
+          if(oxml)
+            return;
+          mf = t.metadata();
+
+          if(mf.form && mf.form.obj && mf.form.obj.head){
+            oxml = mf.form.obj.head;
+
+          }else{
+            oxml = {" ": []};
+
+            if(o instanceof CatObj){
+              if(mf.code_length)
+                oxml[" "].push("id");
+              if(mf.main_presentation_name)
+                oxml[" "].push("name");
+            }else if(o instanceof DocObj){
+              oxml[" "].push("number_doc");
+              oxml[" "].push("date");
+            }
+
+            if(!o.is_folder){
+              for(i in mf.fields)
+                if(i != "predefined_name" && !mf.fields[i].hide)
+                  oxml[" "].push(i);
+            }
+
+            if(mf.tabular_sections && mf.tabular_sections.extra_fields)
+              oxml["Дополнительные реквизиты"] = [];
+          }
+
+
+        },
+
+        txt_by_type = function (fv, mf) {
+
+          if($p.utils.is_data_obj(fv))
+            txt = fv.presentation;
+          else
+            txt = fv;
+
+          if(mf.type.is_ref){
+            ;
+          } else if(mf.type.date_part) {
+            txt = $p.moment(txt).format($p.moment._masks[mf.type.date_part]);
+
+          } else if(mf.type.types[0]=="boolean") {
+            txt = txt ? "1" : "0";
+          }
+        },
+
+        by_type = function(fv){
+
+          ft = _md.control_by_type(mf.type, fv);
+          txt_by_type(fv, mf);
+
+        },
+
+        add_xml_row = function(f, tabular){
+          if(tabular){
+            var pref = f.property || f.param || f.Параметр || f.Свойство,
+              pval = f.value != undefined ? f.value : f.Значение;
+            if(pref.empty()) {
+              row_id = tabular + "|" + "empty";
+              ft = "ro";
+              txt = "";
+              mf = {synonym: "?"};
+
+            }else{
+              mf = {synonym: pref.presentation, type: pref.type};
+              row_id = tabular + "|" + pref.ref;
+              by_type(pval);
+              if(ft == "edn")
+                ft = "calck";
+
+              if(pref.mandatory)
+                ft += '" class="cell_mandatory';
+            }
+          }
+          else if(typeof f === "object"){
+            row_id = f.id;
+            mf = extra_fields && extra_fields.metadata && extra_fields.metadata[row_id];
+            if(!mf){
+              mf = {synonym: f.synonym};
+            }
+            else if(f.synonym){
+              mf.synonym = f.synonym;
+            }
+
+            ft = f.type;
+            txt = "";
+            if(f.hasOwnProperty("txt")){
+              txt = f.txt;
+            }
+            else if((v = o[row_id]) !== undefined){
+              txt_by_type(v, mf.type ? mf : _md.get(t.class_name, row_id));
+            }
+          }
+          else if(extra_fields && extra_fields.metadata && ((mf = extra_fields.metadata[f]) !== undefined)){
+            row_id = f;
+            by_type(v = o[f]);
+          }
+          else if((v = o[f]) !== undefined){
+            mf = _md.get(t.class_name, row_id = f);
+            if(!mf){
+              return;
+            }
+            by_type(v);
+          }
+          else{
+            return;
+          }
+
+          gd += '<row id="' + row_id + '"><cell>' + (mf.synonym || mf.name) +
+            '</cell><cell type="' + ft + '">' + txt + '</cell></row>';
+        };
+
+      default_oxml();
+
+      for(i in oxml){
+        if(i!=" "){
+          gd += '<row open="1"><cell>' + i + '</cell>';   // если у блока есть заголовок, формируем блок иначе добавляем поля без иерархии
+        }
+
+        for(j in oxml[i]){
+          add_xml_row(oxml[i][j]);                        // поля, описанные в текущем разделе
+        }
+
+        if(extra_fields && i == extra_fields.title && o[extra_fields.ts]){  // строки табчасти o.extra_fields
+          var added = false,
+            destinations_extra_fields = t.extra_fields(o),
+            pnames = "property,param,Свойство,Параметр".split(","),
+            //meta_extra_fields = o._metadata.tabular_sections[extra_fields.ts].fields,
+            meta_extra_fields = o[extra_fields.ts]._owner._metadata.tabular_sections[o[extra_fields.ts]._name].fields,
+            pname;
+
+          // Если в объекте не найдены предопределенные свойства - добавляем
+          if(pnames.some(function (name) {
+              if(meta_extra_fields[name]){
+                pname = name;
+                return true;
+              }
+            })){
+            o[extra_fields.ts].forEach(function (row) {
+              var index = destinations_extra_fields.indexOf(row[pname]);
+              if(index != -1)
+                destinations_extra_fields.splice(index, 1);
+            });
+            destinations_extra_fields.forEach(function (property) {
+              var row = o[extra_fields.ts].add();
+              row[pname] = property;
+            });
+          };
+
+          // Добавляем строки в oxml с учетом отбора, который мог быть задан в extra_fields.selection
+          o[extra_fields.ts].find_rows(extra_fields.selection, function (row) {
+            add_xml_row(row, extra_fields.ts);
+
+          });
+          //if(!added)
+          //	add_xml_row({param: $p.cch.properties.get("", false)}, "params"); // fake-строка, если в табчасти нет допреквизитов
+
+        }
+
+        if(i!=" ") gd += '</row>';                          // если блок был открыт - закрываем
+      }
+      gd += '</rows>';
+      return gd;
+    }
+  },
+
+  /**
+   * Печатает объект
+   * @method print
+   * @param ref {DataObj|String} - guid ссылки на объект
+   * @param model {String|DataObj.cst.formulas} - идентификатор команды печати
+   * @param [wnd] {dhtmlXWindows} - окно, из которого вызываем печать
+   */
+  print: {
+    value: function(ref, model, wnd){
+
+      function tune_wnd_print(wnd_print){
+        if(wnd && wnd.progressOff)
+          wnd.progressOff();
+        if(wnd_print)
+          wnd_print.focus();
+      }
+
+      if(wnd && wnd.progressOn){
+        wnd.progressOn();
+      }
+
+      setTimeout(tune_wnd_print, 3000);
+
+      // если _printing_plates содержит ссылку на обрабочтик печати, используем его
+      if(this._printing_plates[model] instanceof DataObj){
+        model = this._printing_plates[model];
+      }
+
+      // если существует локальный обработчик, используем его
+      if(model instanceof DataObj && model.execute){
+
+        if(ref instanceof DataObj)
+          return model.execute(ref)
+            .then(tune_wnd_print);
+        else
+          return this.get(ref, true, true)
+            .then(model.execute.bind(model))
+            .then(tune_wnd_print);
+
+      }else{
+
+        // иначе - печатаем средствами 1С или иного сервера
+        var rattr = {};
+        $p.ajax.default_attr(rattr, $p.job_prm.irest_url());
+        rattr.url += this.rest_name + "(guid'" + $p.utils.fix_guid(ref) + "')" +
+          "/Print(model=" + model + ", browser_uid=" + $p.wsql.get_user_param("browser_uid") +")";
+
+        return $p.ajax.get_and_show_blob(rattr.url, rattr, "get")
+          .then(tune_wnd_print);
+      }
+
+    }
+  },
+
+  /**
+   * Возвращает промис со структурой печатных форм объекта
+   * @return {Promise.<Object>}
+   */
+  printing_plates: {
+    value: function(){
+      var rattr = {}, t = this;
+
+      if(!t._printing_plates){
+        if(t.metadata().printing_plates)
+          t._printing_plates = t.metadata().printing_plates;
+
+        else if(t.metadata().cachable == "ram" || (t.metadata().cachable && t.metadata().cachable.indexOf("doc") == 0)){
+          t._printing_plates = {};
+        }
+      }
+
+      if(!t._printing_plates && $p.ajax.authorized){
+        $p.ajax.default_attr(rattr, $p.job_prm.irest_url());
+        rattr.url += t.rest_name + "/Print()";
+        return $p.ajax.get_ex(rattr.url, rattr)
+          .then(function (req) {
+            t._printing_plates = JSON.parse(req.response);
+            return t._printing_plates;
+          })
+          .catch(function () {
+          })
+          .then(function (pp) {
+            return pp || (t._printing_plates = {});
+          });
+      }
+
+      return Promise.resolve(t._printing_plates);
+
+    }
+  }
 
 });
-
-
-
-/**
- * ### Выводит фрагмент списка объектов данного менеджера, ограниченный фильтром attr в grid
- *
- * @method sync_grid
- * @for DataManager
- * @param grid {dhtmlXGridObject}
- * @param attr {Object}
- */
-DataManager.prototype.sync_grid = function(attr, grid){
-
-	var mgr = this;
-
-	function request(){
-
-		if(typeof attr.custom_selection == "function"){
-			return attr.custom_selection(attr);
-
-		}else if(mgr.cachable == "ram"){
-
-			// запрос к alasql
-			if(attr.action == "get_tree")
-				return $p.wsql.promise(mgr.get_sql_struct(attr), [])
-					.then($p.iface.data_to_tree);
-
-			else if(attr.action == "get_selection")
-				return $p.wsql.promise(mgr.get_sql_struct(attr), [])
-					.then(function(data){
-						return $p.iface.data_to_grid.call(mgr, data, attr);
-					});
-
-		}else if(mgr.cachable.indexOf("doc") == 0){
-
-			// todo: запрос к pouchdb
-			if(attr.action == "get_tree")
-				return mgr.pouch_tree(attr);
-
-			else if(attr.action == "get_selection")
-				return mgr.pouch_selection(attr);
-
-		} else {
-
-			// запрос к серверу по сети
-			if(attr.action == "get_tree")
-				return mgr.rest_tree(attr);
-
-			else if(attr.action == "get_selection")
-				return mgr.rest_selection(attr);
-
-		}
-	}
-
-	function to_grid(res){
-
-		return new Promise(function(resolve, reject) {
-
-			if(typeof res == "string"){
-
-				if(res.substr(0,1) == "{")
-					res = JSON.parse(res);
-
-				// загружаем строку в грид
-				if(grid && grid.parse){
-					grid.xmlFileUrl = "exec";
-					grid.parse(res, function(){
-						resolve(res);
-					}, "xml");
-				}else
-					resolve(res);
-
-			}else if(grid instanceof dhtmlXTreeView && grid.loadStruct){
-				grid.loadStruct(res, function(){
-					resolve(res);
-				});
-
-			}else
-				resolve(res);
-
-		});
-
-	}
-
-	// TODO: переделать обработку catch()
-	return request()
-		.then(to_grid)
-		.catch($p.record_log);
-
-};
-
-/**
- * ### Возвращает массив доступных значений для комбобокса
- * @method get_option_list
- * @for DataManager
- * @param val {DataObj|String} - текущее значение
- * @param [selection] {Object} - отбор, который будет наложен на список
- * @param [selection._top] {Number} - ограничивает длину возвращаемого массива
- * @return {Promise.<Array>}
- */
-DataManager.prototype.get_option_list = function(val, selection){
-
-	var t = this, l = [], input_by_string, text, sel;
-
-	function check(v){
-		if($p.utils.is_equal(v.value, val))
-			v.selected = true;
-		return v;
-	}
-
-	// поиск по строке
-	if(selection.presentation && (input_by_string = t.metadata().input_by_string)){
-		text = selection.presentation.like;
-		delete selection.presentation;
-		selection.or = [];
-		input_by_string.forEach(function (fld) {
-			sel = {};
-			sel[fld] = {like: text};
-			selection.or.push(sel);
-		})
-	}
-
-	if(t.cachable == "ram" || (selection && selection._local)) {
-		t.find_rows(selection, function (v) {
-			l.push(check({text: v.presentation, value: v.ref}));
-		});
-		return Promise.resolve(l);
-
-	}else if(t.cachable != "e1cib"){
-		return t.pouch_find_rows(selection)
-			.then(function (data) {
-				data.forEach(function (v) {
-					l.push(check({
-						text: v.presentation,
-						value: v.ref}));
-				});
-				return l;
-			});
-
-	}else{
-		// для некешируемых выполняем запрос к серверу
-		var attr = { selection: selection, top: selection._top},
-			is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
-		delete selection._top;
-
-		if(is_doc)
-			attr.fields = ["ref", "date", "number_doc"];
-
-		else if(t.metadata().main_presentation_name)
-			attr.fields = ["ref", "name"];
-		else
-			attr.fields = ["ref", "id"];
-
-		return _rest.load_array(attr, t)
-			.then(function (data) {
-				data.forEach(function (v) {
-					l.push(check({
-						text: is_doc ? (v.number_doc + " от " + $p.moment(v.date).format($p.moment._masks.ldt)) : (v.name || v.id),
-						value: v.ref}));
-				});
-				return l;
-			});
-	}
-};
-
-/**
- * Заполняет свойства в объекте source в соответствии с реквизитами табчасти
- * @param tabular {String} - имя табчасти
- * @param source {Object}
- */
-DataManager.prototype.tabular_captions = function (tabular, source) {
-
-};
-
-/**
- * ### Возаращает строку xml для инициализации PropertyGrid
- * служебный метод, используется {{#crossLink "OHeadFields"}}{{/crossLink}}
- * @method get_property_grid_xml
- * @param oxml {Object} - объект с иерархией полей (входной параметр - правила)
- * @param o {DataObj} - объект данных, из полей и табличных частей которого будут прочитаны значения
- * @param extra_fields {Object} - объект с описанием допреквизитов
- * @param extra_fields.ts {String} - имя табчасти
- * @param extra_fields.title {String} - заголовок в oxml, под которым следует расположить допреквизиты // "Дополнительные реквизиты", "Свойства изделия", "Параметры"
- * @param extra_fields.selection {Object} - отбор, который следует приминить к табчасти допреквизитов
- * @return {String} - XML строка в терминах dhtml.PropertyGrid
- * @private
- */
-DataManager.prototype.get_property_grid_xml = function(oxml, o, extra_fields){
-
-	var t = this, i, j, mf, v, ft, txt, row_id, gd = '<rows>',
-
-		default_oxml = function () {
-			if(oxml)
-				return;
-			mf = t.metadata();
-
-			if(mf.form && mf.form.obj && mf.form.obj.head){
-				oxml = mf.form.obj.head;
-
-			}else{
-				oxml = {" ": []};
-
-				if(o instanceof CatObj){
-					if(mf.code_length)
-						oxml[" "].push("id");
-					if(mf.main_presentation_name)
-						oxml[" "].push("name");
-				}else if(o instanceof DocObj){
-					oxml[" "].push("number_doc");
-					oxml[" "].push("date");
-				}
-
-				if(!o.is_folder){
-					for(i in mf.fields)
-						if(i != "predefined_name" && !mf.fields[i].hide)
-							oxml[" "].push(i);
-				}
-
-				if(mf.tabular_sections && mf.tabular_sections.extra_fields)
-					oxml["Дополнительные реквизиты"] = [];
-			}
-
-
-		},
-
-		txt_by_type = function (fv, mf) {
-
-			if($p.utils.is_data_obj(fv))
-				txt = fv.presentation;
-			else
-				txt = fv;
-
-			if(mf.type.is_ref){
-				;
-			} else if(mf.type.date_part) {
-				txt = $p.moment(txt).format($p.moment._masks[mf.type.date_part]);
-
-			} else if(mf.type.types[0]=="boolean") {
-				txt = txt ? "1" : "0";
-			}
-		},
-
-		by_type = function(fv){
-
-			ft = _md.control_by_type(mf.type, fv);
-			txt_by_type(fv, mf);
-
-		},
-
-		add_xml_row = function(f, tabular){
-			if(tabular){
-				var pref = f.property || f.param || f.Параметр || f.Свойство,
-					pval = f.value != undefined ? f.value : f.Значение;
-				if(pref.empty()) {
-					row_id = tabular + "|" + "empty";
-					ft = "ro";
-					txt = "";
-					mf = {synonym: "?"};
-
-				}else{
-					mf = {synonym: pref.presentation, type: pref.type};
-					row_id = tabular + "|" + pref.ref;
-					by_type(pval);
-					if(ft == "edn")
-						ft = "calck";
-
-					if(pref.mandatory)
-						ft += '" class="cell_mandatory';
-				}
-			}
-			else if(typeof f === "object"){
-				row_id = f.id;
-				mf = extra_fields && extra_fields.metadata && extra_fields.metadata[row_id];
-				if(!mf){
-					mf = {synonym: f.synonym};
-				}
-				else if(f.synonym){
-					mf.synonym = f.synonym;
-				}
-
-				ft = f.type;
-				txt = "";
-				if(f.hasOwnProperty("txt")){
-					txt = f.txt;
-				}
-				else if((v = o[row_id]) !== undefined){
-					txt_by_type(v, mf.type ? mf : _md.get(t.class_name, row_id));
-				}
-			}
-			else if(extra_fields && extra_fields.metadata && ((mf = extra_fields.metadata[f]) !== undefined)){
-				row_id = f;
-				by_type(v = o[f]);
-			}
-			else if((v = o[f]) !== undefined){
-				mf = _md.get(t.class_name, row_id = f);
-				if(!mf){
-					return;
-				}
-				by_type(v);
-			}
-			else{
-				return;
-			}
-
-			gd += '<row id="' + row_id + '"><cell>' + (mf.synonym || mf.name) +
-				'</cell><cell type="' + ft + '">' + txt + '</cell></row>';
-		};
-
-	default_oxml();
-
-	for(i in oxml){
-		if(i!=" "){
-			gd += '<row open="1"><cell>' + i + '</cell>';   // если у блока есть заголовок, формируем блок иначе добавляем поля без иерархии
-		}
-
-		for(j in oxml[i]){
-			add_xml_row(oxml[i][j]);                        // поля, описанные в текущем разделе
-		}
-
-		if(extra_fields && i == extra_fields.title && o[extra_fields.ts]){  // строки табчасти o.extra_fields
-			var added = false,
-				destinations_extra_fields = t.extra_fields(o),
-				pnames = "property,param,Свойство,Параметр".split(","),
-				//meta_extra_fields = o._metadata.tabular_sections[extra_fields.ts].fields,
-				meta_extra_fields = o[extra_fields.ts]._owner._metadata.tabular_sections[o[extra_fields.ts]._name].fields,
-				pname;
-
-			// Если в объекте не найдены предопределенные свойства - добавляем
-			if(pnames.some(function (name) {
-				if(meta_extra_fields[name]){
-					pname = name;
-					return true;
-				}
-			})){
-				o[extra_fields.ts].forEach(function (row) {
-					var index = destinations_extra_fields.indexOf(row[pname]);
-					if(index != -1)
-						destinations_extra_fields.splice(index, 1);
-				});
-				destinations_extra_fields.forEach(function (property) {
-					var row = o[extra_fields.ts].add();
-					row[pname] = property;
-				});
-			};
-
-			// Добавляем строки в oxml с учетом отбора, который мог быть задан в extra_fields.selection
-			o[extra_fields.ts].find_rows(extra_fields.selection, function (row) {
-				add_xml_row(row, extra_fields.ts);
-
-			});
-			//if(!added)
-			//	add_xml_row({param: $p.cch.properties.get("", false)}, "params"); // fake-строка, если в табчасти нет допреквизитов
-
-		}
-
-		if(i!=" ") gd += '</row>';                          // если блок был открыт - закрываем
-	}
-	gd += '</rows>';
-	return gd;
-};
-
-
-
-/**
- * Печатает объект
- * @method print
- * @param ref {DataObj|String} - guid ссылки на объект
- * @param model {String|DataObj.cst.formulas} - идентификатор команды печати
- * @param [wnd] {dhtmlXWindows} - окно, из которого вызываем печать
- */
-DataManager.prototype.print = function(ref, model, wnd){
-
-	function tune_wnd_print(wnd_print){
-		if(wnd && wnd.progressOff)
-			wnd.progressOff();
-		if(wnd_print)
-			wnd_print.focus();
-	}
-
-	if(wnd && wnd.progressOn){
-		wnd.progressOn();
-	}
-
-	setTimeout(tune_wnd_print, 3000);
-
-	// если _printing_plates содержит ссылку на обрабочтик печати, используем его
-	if(this._printing_plates[model] instanceof DataObj){
-		model = this._printing_plates[model];
-	}
-
-	// если существует локальный обработчик, используем его
-	if(model instanceof DataObj && model.execute){
-
-		if(ref instanceof DataObj)
-			return model.execute(ref)
-				.then(tune_wnd_print);
-		else
-			return this.get(ref, true, true)
-				.then(model.execute.bind(model))
-				.then(tune_wnd_print);
-
-	}else{
-
-		// иначе - печатаем средствами 1С или иного сервера
-		var rattr = {};
-		$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
-		rattr.url += this.rest_name + "(guid'" + $p.utils.fix_guid(ref) + "')" +
-			"/Print(model=" + model + ", browser_uid=" + $p.wsql.get_user_param("browser_uid") +")";
-
-		return $p.ajax.get_and_show_blob(rattr.url, rattr, "get")
-			.then(tune_wnd_print);
-	}
-
-};
-
-/**
- * Возвращает промис со структурой печатных форм объекта
- * @return {Promise.<Object>}
- */
-DataManager.prototype.printing_plates = function(){
-	var rattr = {}, t = this;
-
-	if(!t._printing_plates){
-		if(t.metadata().printing_plates)
-			t._printing_plates = t.metadata().printing_plates;
-
-		else if(t.metadata().cachable == "ram" || (t.metadata().cachable && t.metadata().cachable.indexOf("doc") == 0)){
-			t._printing_plates = {};
-		}
-	}
-
-	if(!t._printing_plates && $p.ajax.authorized){
-		$p.ajax.default_attr(rattr, $p.job_prm.irest_url());
-		rattr.url += t.rest_name + "/Print()";
-		return $p.ajax.get_ex(rattr.url, rattr)
-			.then(function (req) {
-				t._printing_plates = JSON.parse(req.response);
-				return t._printing_plates;
-			})
-			.catch(function () {
-			})
-			.then(function (pp) {
-				return pp || (t._printing_plates = {});
-			});
-	}
-
-	return Promise.resolve(t._printing_plates);
-
-};
-
 
 
 /**
@@ -6122,7 +6371,8 @@ RefDataManager.prototype.__define({
 					if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
 						if(!o.number_doc)
 							o.new_number_doc();
-					}else{
+					}
+					else{
 						if(!o.id && o._metadata.code_length)
 							o.new_number_doc();
 					}
@@ -6806,8 +7056,8 @@ DataProcessorsManager.prototype.__define({
 	 * @return {DataProcessorObj}
 	 */
 	create: {
-		value: function(){
-			return new $p[this.obj_constructor()]({}, this);
+		value: function(attr){
+			return new $p[this.obj_constructor()](attr || {}, this);
 		}
 	},
 
@@ -8412,22 +8662,22 @@ DataObj.prototype.__define({
 				}.bind(this);
 
 			if(this.ref == $p.utils.blank.guid){
-				if(this instanceof CatObj)
-					this.id = "000000000";
-				else
-					this.number_doc = "000000000";
-
+				if(this instanceof CatObj){
+          this.id = "000000000";
+        }
+				else{
+          this.number_doc = "000000000";
+        }
 				return Promise.resolve(this);
-
-			}else{
+			}
+			else{
 				if(this._manager.cachable && this._manager.cachable != "e1cib"){
 					return $p.wsql.pouch.load_obj(this).then(reset_modified);
-
-				} else
-					return _rest.load_obj(this).then(reset_modified);
+				}
+				else{
+          return _rest.load_obj(this).then(reset_modified);
+        }
 			}
-
-
 		}
 	},
 
@@ -8683,76 +8933,78 @@ DataObj.prototype.__define({
  */
 function CatObj(attr, manager) {
 
-	var _presentation = "";
-
 	// выполняем конструктор родительского объекта
 	CatObj.superclass.constructor.call(this, attr, manager);
-
-	/**
-	 * Представление объекта
-	 * @property presentation
-	 * @for CatObj
-	 * @type String
-	 */
-	this.__define('presentation', {
-		get : function(){
-
-			if(this.name || this.id){
-				// return this._metadata.obj_presentation || this._metadata.synonym + " " + this.name || this.id;
-				return this.name || this.id || this._metadata.obj_presentation || this._metadata.synonym;
-			}else
-				return _presentation;
-
-		},
-		set : function(v){
-			if(v)
-				_presentation = String(v);
-		}
-	});
 
 	if(attr && typeof attr == "object"){
 		if(attr._not_set_loaded){
 			delete attr._not_set_loaded;
 			this._mixin(attr);
-		}else{
+		}
+		else{
 			this._mixin(attr);
 			if(!$p.utils.is_empty_guid(this.ref) && (attr.id || attr.name))
 				this._set_loaded(this.ref);
 		}
 	}
 
-	attr = null;
-
 }
 CatObj._extend(DataObj);
 
-/**
- * ### Код элемента справочника
- * @property id
- * @type String|Number
- */
-CatObj.prototype.__define('id', {
-	get : function(){ return this._obj.id || ""},
-	set : function(v){
-		this.__notify('id');
-		this._obj.id = v;
-	},
-	enumerable: true
-});
+CatObj.prototype.__define({
 
-/**
- * ### Наименование элемента справочника
- * @property name
- * @type String
- */
-CatObj.prototype.__define('name', {
-	get : function(){ return this._obj.name || ""},
-	set : function(v){
-		this.__notify('name');
-		this._obj.name = String(v);
-	},
-	enumerable: true
-});
+  /**
+   * ### Код элемента справочника
+   * @property id
+   * @type String|Number
+   */
+  id: {
+    get : function(){ return this._obj.id || ""},
+    set : function(v){
+      this.__notify('id');
+      this._obj.id = v;
+    },
+    enumerable: true
+  },
+
+  /**
+   * ### Наименование элемента справочника
+   * @property name
+   * @type String
+   */
+  name: {
+    get : function(){ return this._obj.name || ""},
+    set : function(v){
+      this.__notify('name');
+      this._obj.name = String(v);
+    },
+    enumerable: true
+  },
+
+  /**
+   * Представление объекта
+   * @property presentation
+   * @for CatObj
+   * @type String
+   */
+  presentation: {
+    get : function(){
+      if(this.name || this.id){
+        // return this._metadata.obj_presentation || this._metadata.synonym + " " + this.name || this.id;
+        return this.name || this.id || this._metadata.obj_presentation || this._metadata.synonym;
+      }else{
+        return this._presentation || "";
+      }
+    },
+    set : function(v){
+      if(v){
+        this._presentation = String(v);
+      }
+    }
+  }
+
+})
+
 
 
 /**
@@ -8782,7 +9034,7 @@ function DocObj(attr, manager) {
 			if(this.number_doc)
 				return (this._metadata.obj_presentation || this._metadata.synonym) + ' №' + this.number_doc + " от " + $p.moment(this.date).format($p.moment._masks.ldt);
 			else
-				return _presentation;
+				return _presentation || "";
 
 		},
 		set : function(v){
@@ -8868,10 +9120,16 @@ function DataProcessorObj(attr, manager) {
 	DataProcessorObj.superclass.constructor.call(this, attr, manager);
 
 	var f, cmd = manager.metadata();
-	for(f in cmd.fields)
-		attr[f] = $p.utils.fetch_type("", cmd.fields[f].type);
-	for(f in cmd["tabular_sections"])
-		attr[f] = [];
+	for(f in cmd.fields){
+	  if(!attr[f]){
+      attr[f] = $p.utils.fetch_type("", cmd.fields[f].type);
+    }
+  }
+	for(f in cmd["tabular_sections"]){
+	  if(!attr[f]){
+      attr[f] = [];
+    }
+  }
 
 	this._mixin(attr);
 
@@ -9269,9 +9527,12 @@ TabularSection.prototype.find_rows = function(selection, callback){
  * @param rowid2 {number}
  */
 TabularSection.prototype.swap = function(rowid1, rowid2){
-	var tmp = this._obj[rowid1];
+
+	var row1 = this._obj[rowid1];
 	this._obj[rowid1] = this._obj[rowid2];
-	this._obj[rowid2] = tmp;
+	this._obj[rowid2] = row1;
+  this._obj[rowid1].row = rowid1 + 1;
+  this._obj[rowid2].row = rowid2 + 1;
 
 	if(!this._owner._data._silent)
 		Object.getNotifier(this._owner).notify({
@@ -10835,11 +11096,12 @@ DataManager.prototype.__define({
 
 				function fetch_next_page() {
 
-					if(_view)
-						t.pouch_db.query(_view, options, process_docs);
-
-					else
-						t.pouch_db.allDocs(options, process_docs);
+					if(_view){
+            t.pouch_db.query(_view, options, process_docs);
+          }
+					else{
+            t.pouch_db.allDocs(options, process_docs);
+          }
 				}
 
 				fetch_next_page();
@@ -12590,6 +12852,59 @@ $p.iface.select_from_list = function (list, multy) {
 
 	});
 };
+
+/**
+ * ### Форма ввода значения
+ * @method query_value
+ * @for InterfaceObjs
+ * @param initial
+ * @param caption
+ * @return {Promise}
+ */
+$p.iface.query_value = function (initial, caption) {
+
+  return new Promise(function(resolve, reject){
+
+    // создаём и показываем диалог со списком
+
+    // параметры открытия формы
+    var options = {
+        name: 'wnd_query_value',
+        wnd: {
+          width: 300,
+          height: 160,
+          modal: true,
+          center: true,
+          caption: caption || 'Введите значение',
+          allow_close: true,
+          on_close: function () {
+            reject();
+            return true;
+          }
+        }
+      },
+      wnd = $p.iface.dat_blank(null, options.wnd),
+      _toolbar = wnd.attachToolbar({
+        items:[
+          {id: "select", type: "button", text: "<b>Ok</b>"},
+          {id: "sp", type: "spacer"},
+          {id: "cancel", type: "button", text: "Отмена"}
+        ],
+        onClick: function (id){
+          if(id == "cancel"){
+            wnd.close()
+          }
+          else{
+            resolve(wnd.cell.querySelector('INPUT').value);
+            wnd.close();
+          }
+        }
+      });
+
+    wnd.attachHTMLString("<input type='text' style='width: 94%; padding: 4px;' value='" + initial + "' />");
+
+  });
+};
 /**
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
@@ -13043,7 +13358,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	 * добавляет строку табчасти
 	 */
 	_grid._add_row = function(){
-		if(!attr.read_only){
+		if(!attr.read_only && !attr.disable_add_del){
 
 			var proto;
 			if(_selection){
@@ -13075,11 +13390,39 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		}
 	};
 
+
+  _grid._move_row = function(direction){
+    if(attr.read_only){
+      return;
+    }
+    var rId = get_sel_index();
+
+    if(rId != undefined){
+      if(direction == "up"){
+        if(rId != 0){
+          _ts.swap(rId-1, rId);
+          setTimeout(function () {
+            _grid.selectRow(rId-1);
+          }, 100)
+        }
+      }
+      else{
+        if(rId < _ts.count()){
+          _ts.swap(rId, rId+1);
+          setTimeout(function () {
+            _grid.selectRow(rId+1);
+          }, 100)
+        }
+      }
+    }
+  }
+
 	/**
 	 * удаляет строку табчасти
 	 */
-	_grid._del_row = function(){
-		if(!attr.read_only){
+	_grid._del_row = function(keydown){
+
+		if(!attr.read_only && !attr.disable_add_del){
 			var rId = get_sel_index();
 
 			if(rId != undefined){
@@ -13172,9 +13515,12 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 					if(!change.row || _grid.getSelectedRowId() != change.row.row)
 						_ts.sync_grid(_grid, _selection);
 					else{
-						if(_grid.getColIndexById(change.name) != undefined)
-							_grid.cells(change.row.row, _grid.getColIndexById(change.name))
-								.setCValue($p.utils.is_data_obj(change.row[change.name]) ? change.row[change.name].presentation : change.row[change.name]);
+						if(_grid.getColIndexById(change.name) != undefined){
+              if(typeof change.oldValue != "boolean" || typeof change.row[change.name] != "boolean"){
+                _grid.cells(change.row.row, _grid.getColIndexById(change.name))
+                  .setCValue($p.utils.is_data_obj(change.row[change.name]) ? change.row[change.name].presentation : change.row[change.name]);
+              }
+            }
 					}
 				}
 			});
@@ -13286,6 +13632,14 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				case "btn_delete":
 					_grid._del_row();
 					break;
+
+        case "btn_up":
+          _grid._move_row("up");
+          break;
+
+        case "btn_down":
+          _grid._move_row("down");
+          break;
 			}
 
 		});
@@ -13310,13 +13664,28 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	_grid.enableEditTabOnly(true);
 	_grid.init();
 
-	if(attr.read_only){
-		_grid.setEditable(false);
+	// гасим кнопки, если ro
+	if(attr.read_only || attr.disable_add_del){
+	  if(attr.read_only){
+      _grid.setEditable(false);
+    }
 		_toolbar.forEachItem(function (name) {
 			if(["btn_add", "btn_delete"].indexOf(name) != -1)
 				_toolbar.disableItem(name);
 		});
 	}
+
+  // добавляем кнопки сортировки, если reorder
+	if(attr.reorder){
+    var pos = _toolbar.getPosition("btn_delete");
+    if(pos){
+      _toolbar.addSeparator("sep_up", pos+1);
+      _toolbar.addButton("btn_up", pos+2, '<i class="fa fa-arrow-up fa-fw"></i>');
+      _toolbar.addButton("btn_down", pos+3, '<i class="fa fa-arrow-down fa-fw"></i>');
+      _toolbar.setItemToolTip("btn_up", "Переместить строку вверх");
+      _toolbar.setItemToolTip("btn_down", "Переместить строку вниз");
+    }
+  }
 
 	_grid.__define({
 
@@ -13394,6 +13763,11 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 	_grid.attachEvent("onEditCell", tabular_on_edit);
 
+  _grid.attachEvent("onCheck", function(rId,cInd,state){
+    _grid.selectCell(rId-1, cInd);
+    tabular_on_edit(2, rId, cInd, state);
+  });
+
 	_grid.attachEvent("onRowSelect", function(rid,ind){
 		if(_ts){
 			_grid._last = {
@@ -13402,7 +13776,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			}
 		}
 	});
-
 
   _grid.attachEvent("onHeaderClick", function(ind,obj){
 
@@ -13511,7 +13884,7 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 
 	var t = this,
 		input_filter_changed = 0,
-		input_filter_width = $p.job_prm.device_type == "desktop" ? 300 : 120,
+		input_filter_width = $p.job_prm.device_type == "desktop" ? 220 : 120,
 		custom_selection = {};
 
 	if(!attr.pos)
@@ -13842,6 +14215,8 @@ $p.iface.dat_blank = function(_dxw, attr) {
 
 	return wnd_dat;
 };
+
+
 
 /**
  * обработчик выбора значения в свойствах (ссылочные типы)
@@ -18327,7 +18702,7 @@ function IPInfo(){
  * @param [attr] {Object} - размер листа, ориентация, поля и т.д.
  * @constructor
  */
-function SpreadsheetDocument(attr) {
+function SpreadsheetDocument(attr, events) {
 
 	this._attr = {
 		orientation: "portrait",
@@ -18337,11 +18712,26 @@ function SpreadsheetDocument(attr) {
 
 	if(attr && typeof attr == "string"){
 		this.content = attr;
-
-	} else if(typeof attr == "object"){
+	}
+	else if(typeof attr == "object"){
 		this._mixin(attr);
 	}
 	attr = null;
+
+  this._events = {
+
+    /**
+     * ### При заполнении макета
+     * Возникает перед заполнением параметров макета. В обработчике можно дополнить, изменить или рассчитать любые массивы или поля
+     *
+     * @event fill_template
+     */
+    fill_template: null,
+
+  };
+  if(events && typeof events == "object"){
+    this._events._mixin(events);
+  }
 }
 SpreadsheetDocument.prototype.__define({
 
@@ -18383,6 +18773,175 @@ SpreadsheetDocument.prototype.__define({
 		}
 	},
 
+  /**
+   * Добавляет область и заполняет её данными
+   * @method append
+   * @param template {HTMLElement}
+   * @param data {Object}
+   */
+  append: {
+    value: function (template, data) {
+
+      if(this._events.fill_template){
+        data = this._events.fill_template(template, data);
+      }
+
+      switch (template.attributes.kind && template.attributes.kind.value){
+
+        case 'row':
+          this.draw_rows(template, data);
+          break;
+
+        case 'table':
+          this.draw_table(template, data);
+          break;
+
+        default:
+          this.put(dhx4.template(template.innerHTML, data), template.attributes);
+          break;
+      }
+    }
+  },
+
+  draw_table: {
+    value: function (template, data) {
+
+      var tabular = template.attributes.tabular && template.attributes.tabular.value;
+      if(!tabular){
+        console.error('Не указана табличная часть в шаблоне ' + template.id);
+        return;
+      }
+      var rows = data[tabular];
+      if(!Array.isArray(rows)){
+        console.error('В данных отсутствует массив ' + tabular);
+        return;
+      }
+
+      // контейнер таблицы
+      var cont = document.createElement("div");
+
+      // заполняем контейнер по шаблону
+      cont.innerHTML = template.innerHTML;
+
+      // собственно, таблица
+      var table = cont.querySelector("table");
+
+      // шаблон строки таблицы
+      var tpl_row = table.querySelector("[name=row]");
+
+      // удаляем пустую строку из итоговой таблицы
+      if(tpl_row){
+        tpl_row.parentElement.removeChild(tpl_row);
+      }
+      else{
+        console.error('Отсутствует <TR name="row"> в шаблоне таблицы');
+        return;
+      }
+
+      // находим все шаблоны группировок
+      var tpl_grouping = table.querySelector("tbody").querySelectorAll("tr");
+
+      // удаляем шаблоны группировок из итоговой таблицы
+      tpl_grouping.forEach(function (elm) {
+        elm.parentElement.removeChild(elm);
+      });
+
+
+      // подвал таблицы
+      var tfoot = table.querySelector("tfoot");
+      if(tfoot){
+
+      }
+
+      // есть ли итоги
+
+      function put_rows(rows) {
+        rows.forEach(function(row) {
+          var table_row = document.createElement("TR");
+          table_row.innerHTML = dhx4.template(tpl_row.innerHTML, row);
+          table.appendChild(table_row);
+        });
+      }
+
+      // есть ли группировка + цикл по табчасти
+      var grouping = data._grouping && data._grouping.find_rows({use: true, parent: tabular});
+      if(grouping && grouping.length == 1 && tpl_grouping.length){
+
+        var gfield = grouping[0].field;
+
+        $p.wsql.alasql("select distinct `"+gfield+"` from ? order by `"+gfield+"`", [rows])
+          .forEach(function (group) {
+            var table_row = document.createElement("TR");
+            table_row.innerHTML = dhx4.template(tpl_grouping[0].innerHTML, group);
+            table.appendChild(table_row);
+            put_rows(rows.filter(function (row) {
+              return row[gfield] == group[gfield];
+            }));
+          })
+      }
+      else{
+        put_rows(rows);
+      }
+
+      // собственно, вывод табличной части в отчет
+      this.put(cont.innerHTML, cont.attributes);
+    }
+  },
+
+  draw_rows: {
+    value: function (template, data) {
+
+      // цикл по табчасти
+    }
+  },
+
+  /**
+   * Показывает отчет в отдельном окне
+   */
+  print: {
+    value: function () {
+
+      try{
+
+        // создаём blob из шаблона пустой страницы
+        if(!($p.injected_data['view_blank.html'] instanceof Blob)){
+          $p.injected_data['view_blank.html'] = new Blob([$p.injected_data['view_blank.html']], {type: 'text/html'});
+        }
+
+        var doc = this,
+          url = window.URL.createObjectURL($p.injected_data['view_blank.html']),
+          wnd_print = window.open(
+          url, "wnd_print", "fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes");
+
+        if (wnd_print.outerWidth < screen.availWidth || wnd_print.outerHeight < screen.availHeight){
+          wnd_print.moveTo(0,0);
+          wnd_print.resizeTo(screen.availWidth, screen.availHeight);
+        }
+
+        wnd_print.onload = function(e) {
+          window.URL.revokeObjectURL(url);
+          wnd_print.document.body.appendChild(doc.content);
+          if(doc.title){
+            wnd_print.document.title = doc.title;
+          }
+          wnd_print.print();
+          doc = null;
+        };
+
+        return wnd_print;
+      }
+      catch(err){
+        window.URL.revokeObjectURL && window.URL.revokeObjectURL(url);
+        $p.msg.show_msg({
+          title: $p.msg.bld_title,
+          type: "alert-error",
+          text: err.message.match("outerWidth") ?
+            "Ошибка открытия окна печати<br />Вероятно, в браузере заблокированы всплывающие окна" : err.message
+        });
+      }
+    }
+  },
+
 	content: {
 		get: function () {
 			return this._attr.content
@@ -18410,6 +18969,7 @@ SpreadsheetDocument.prototype.__define({
 
 		}
 	}
+
 });
 
 /**
@@ -18424,20 +18984,20 @@ $p.SpreadsheetDocument = SpreadsheetDocument;
 /**
  * Табличный документ для экранных отчетов
  * @param container {HTMLElement|dhtmlXCellObject} - элемент DOM, в котором будет размещена таблица
- * @param [attr] {Object} - атрибуты инициплизации  
+ * @param [attr] {Object} - атрибуты инициплизации
  * @constructor
  */
 function HandsontableDocument(container, attr) {
 
 	var init = function () {
-		
+
 		if(this._then)
 			this._then(this);
 
 	}.bind(this);
-	
+
 	this._online = (attr && attr.allow_offline) || (navigator.onLine && $p.wsql.pouch.authorized);
-	
+
 	if(container instanceof dhtmlXCellObject){
 		this._cont = document.createElement('div');
 		container.detachObject(true);
@@ -18493,7 +19053,7 @@ function HandsontableDocument(container, attr) {
 	}else{
 		setTimeout(init);
 	}
-	
+
 }
 
 /**
@@ -19532,1625 +20092,6 @@ if (typeof module != 'undefined' && module.exports) module.exports = Aes;
 		};
 
 })();
-/*!
-* @version: 2.1.24
-* @author: Dan Grossman http://www.dangrossman.info/
-* @copyright: Copyright (c) 2012-2016 Dan Grossman. All rights reserved.
-* @license: Licensed under the MIT license. See http://www.opensource.org/licenses/mit-license.php
-* @website: https://www.improvely.com/
-*/
-// Follow the UMD template https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
-(function (root, factory) {
-    if (typeof define === 'function' && define.amd) {
-        // AMD. Make globaly available as well
-        define(['moment', 'jquery'], function (moment, jquery) {
-            return (root.daterangepicker = factory(moment, jquery));
-        });
-    } else if (typeof module === 'object' && module.exports) {
-        // Node / Browserify
-        //isomorphic issue
-        var jQuery = (typeof window != 'undefined') ? window.jQuery : undefined;
-        if (!jQuery) {
-            jQuery = require('jquery');
-            if (!jQuery.fn) jQuery.fn = {};
-        }
-        module.exports = factory(require('moment'), jQuery);
-    } else {
-        // Browser globals
-        root.daterangepicker = factory(root.moment, root.jQuery);
-    }
-}(this, function(moment, $) {
-    var DateRangePicker = function(element, options, cb) {
-
-        //default settings for options
-        this.parentEl = 'body';
-        this.element = $(element);
-        this.startDate = moment().startOf('day');
-        this.endDate = moment().endOf('day');
-        this.minDate = false;
-        this.maxDate = false;
-        this.dateLimit = false;
-        this.autoApply = false;
-        this.singleDatePicker = false;
-        this.showDropdowns = false;
-        this.showWeekNumbers = false;
-        this.showISOWeekNumbers = false;
-        this.showCustomRangeLabel = true;
-        this.timePicker = false;
-        this.timePicker24Hour = false;
-        this.timePickerIncrement = 1;
-        this.timePickerSeconds = false;
-        this.linkedCalendars = true;
-        this.autoUpdateInput = true;
-        this.alwaysShowCalendars = false;
-        this.ranges = {};
-
-        this.opens = 'right';
-        if (this.element.hasClass('pull-right'))
-            this.opens = 'left';
-
-        this.drops = 'down';
-        if (this.element.hasClass('dropup'))
-            this.drops = 'up';
-
-        this.buttonClasses = 'btn btn-sm';
-        this.applyClass = 'btn-success';
-        this.cancelClass = 'btn-default';
-
-        this.locale = {
-            direction: 'ltr',
-            format: 'DD.MM.YYYY',
-            separator: ' - ',
-            applyLabel: 'Применить',
-            cancelLabel: 'Отмена',
-            weekLabel: 'W',
-            customRangeLabel: 'Произвольные даты',
-            daysOfWeek: moment.weekdaysMin(),
-            monthNames: moment.monthsShort(),
-            firstDay: moment.localeData().firstDayOfWeek()
-        };
-
-        this.callback = function() { };
-
-        //some state information
-        this.isShowing = false;
-        this.leftCalendar = {};
-        this.rightCalendar = {};
-
-        //custom options from user
-        if (typeof options !== 'object' || options === null)
-            options = {};
-
-        //allow setting options with data attributes
-        //data-api options will be overwritten with custom javascript options
-        options = $.extend(this.element.data(), options);
-
-        //html template for the picker UI
-        if (typeof options.template !== 'string' && !(options.template instanceof $))
-            options.template = '<div class="daterangepicker dropdown-menu">' +
-                '<div class="calendar left">' +
-                    '<div class="daterangepicker_input">' +
-                      '<input class="input-mini form-control" type="text" name="daterangepicker_start" value="" />' +
-                      '<i class="fa fa-calendar glyphicon glyphicon-calendar"></i>' +
-                      '<div class="calendar-time">' +
-                        '<div></div>' +
-                        '<i class="fa fa-clock-o glyphicon glyphicon-time"></i>' +
-                      '</div>' +
-                    '</div>' +
-                    '<div class="calendar-table"></div>' +
-                '</div>' +
-                '<div class="calendar right">' +
-                    '<div class="daterangepicker_input">' +
-                      '<input class="input-mini form-control" type="text" name="daterangepicker_end" value="" />' +
-                      '<i class="fa fa-calendar glyphicon glyphicon-calendar"></i>' +
-                      '<div class="calendar-time">' +
-                        '<div></div>' +
-                        '<i class="fa fa-clock-o glyphicon glyphicon-time"></i>' +
-                      '</div>' +
-                    '</div>' +
-                    '<div class="calendar-table"></div>' +
-                '</div>' +
-                '<div class="ranges">' +
-                    '<div class="range_inputs">' +
-                        '<button class="applyBtn" disabled="disabled" type="button"></button> ' +
-                        '<button class="cancelBtn" type="button"></button>' +
-                    '</div>' +
-                '</div>' +
-            '</div>';
-
-        this.parentEl = (options.parentEl && $(options.parentEl).length) ? $(options.parentEl) : $(this.parentEl);
-        this.container = $(options.template).appendTo(this.parentEl);
-
-        //
-        // handle all the possible options overriding defaults
-        //
-
-        if (typeof options.locale === 'object') {
-
-            if (typeof options.locale.direction === 'string')
-                this.locale.direction = options.locale.direction;
-
-            if (typeof options.locale.format === 'string')
-                this.locale.format = options.locale.format;
-
-            if (typeof options.locale.separator === 'string')
-                this.locale.separator = options.locale.separator;
-
-            if (typeof options.locale.daysOfWeek === 'object')
-                this.locale.daysOfWeek = options.locale.daysOfWeek.slice();
-
-            if (typeof options.locale.monthNames === 'object')
-              this.locale.monthNames = options.locale.monthNames.slice();
-
-            if (typeof options.locale.firstDay === 'number')
-              this.locale.firstDay = options.locale.firstDay;
-
-            if (typeof options.locale.applyLabel === 'string')
-              this.locale.applyLabel = options.locale.applyLabel;
-
-            if (typeof options.locale.cancelLabel === 'string')
-              this.locale.cancelLabel = options.locale.cancelLabel;
-
-            if (typeof options.locale.weekLabel === 'string')
-              this.locale.weekLabel = options.locale.weekLabel;
-
-            if (typeof options.locale.customRangeLabel === 'string')
-              this.locale.customRangeLabel = options.locale.customRangeLabel;
-
-        }
-        this.container.addClass(this.locale.direction);
-
-        if (typeof options.startDate === 'string')
-            this.startDate = moment(options.startDate, this.locale.format);
-
-        if (typeof options.endDate === 'string')
-            this.endDate = moment(options.endDate, this.locale.format);
-
-        if (typeof options.minDate === 'string')
-            this.minDate = moment(options.minDate, this.locale.format);
-
-        if (typeof options.maxDate === 'string')
-            this.maxDate = moment(options.maxDate, this.locale.format);
-
-        if (typeof options.startDate === 'object')
-            this.startDate = moment(options.startDate);
-
-        if (typeof options.endDate === 'object')
-            this.endDate = moment(options.endDate);
-
-        if (typeof options.minDate === 'object')
-            this.minDate = moment(options.minDate);
-
-        if (typeof options.maxDate === 'object')
-            this.maxDate = moment(options.maxDate);
-
-        // sanity check for bad options
-        if (this.minDate && this.startDate.isBefore(this.minDate))
-            this.startDate = this.minDate.clone();
-
-        // sanity check for bad options
-        if (this.maxDate && this.endDate.isAfter(this.maxDate))
-            this.endDate = this.maxDate.clone();
-
-        if (typeof options.applyClass === 'string')
-            this.applyClass = options.applyClass;
-
-        if (typeof options.cancelClass === 'string')
-            this.cancelClass = options.cancelClass;
-
-        if (typeof options.dateLimit === 'object')
-            this.dateLimit = options.dateLimit;
-
-        if (typeof options.opens === 'string')
-            this.opens = options.opens;
-
-        if (typeof options.drops === 'string')
-            this.drops = options.drops;
-
-        if (typeof options.showWeekNumbers === 'boolean')
-            this.showWeekNumbers = options.showWeekNumbers;
-
-        if (typeof options.showISOWeekNumbers === 'boolean')
-            this.showISOWeekNumbers = options.showISOWeekNumbers;
-
-        if (typeof options.buttonClasses === 'string')
-            this.buttonClasses = options.buttonClasses;
-
-        if (typeof options.buttonClasses === 'object')
-            this.buttonClasses = options.buttonClasses.join(' ');
-
-        if (typeof options.showDropdowns === 'boolean')
-            this.showDropdowns = options.showDropdowns;
-
-        if (typeof options.showCustomRangeLabel === 'boolean')
-            this.showCustomRangeLabel = options.showCustomRangeLabel;
-
-        if (typeof options.singleDatePicker === 'boolean') {
-            this.singleDatePicker = options.singleDatePicker;
-            if (this.singleDatePicker)
-                this.endDate = this.startDate.clone();
-        }
-
-        if (typeof options.timePicker === 'boolean')
-            this.timePicker = options.timePicker;
-
-        if (typeof options.timePickerSeconds === 'boolean')
-            this.timePickerSeconds = options.timePickerSeconds;
-
-        if (typeof options.timePickerIncrement === 'number')
-            this.timePickerIncrement = options.timePickerIncrement;
-
-        if (typeof options.timePicker24Hour === 'boolean')
-            this.timePicker24Hour = options.timePicker24Hour;
-
-        if (typeof options.autoApply === 'boolean')
-            this.autoApply = options.autoApply;
-
-        if (typeof options.autoUpdateInput === 'boolean')
-            this.autoUpdateInput = options.autoUpdateInput;
-
-        if (typeof options.linkedCalendars === 'boolean')
-            this.linkedCalendars = options.linkedCalendars;
-
-        if (typeof options.isInvalidDate === 'function')
-            this.isInvalidDate = options.isInvalidDate;
-
-        if (typeof options.isCustomDate === 'function')
-            this.isCustomDate = options.isCustomDate;
-
-        if (typeof options.alwaysShowCalendars === 'boolean')
-            this.alwaysShowCalendars = options.alwaysShowCalendars;
-
-        // update day names order to firstDay
-        if (this.locale.firstDay != 0) {
-            var iterator = this.locale.firstDay;
-            while (iterator > 0) {
-                this.locale.daysOfWeek.push(this.locale.daysOfWeek.shift());
-                iterator--;
-            }
-        }
-
-        var start, end, range;
-
-        //if no start/end dates set, check if an input element contains initial values
-        if (typeof options.startDate === 'undefined' && typeof options.endDate === 'undefined') {
-            if ($(this.element).is('input[type=text]')) {
-                var val = $(this.element).val(),
-                    split = val.split(this.locale.separator);
-
-                start = end = null;
-
-                if (split.length == 2) {
-                    start = moment(split[0], this.locale.format);
-                    end = moment(split[1], this.locale.format);
-                } else if (this.singleDatePicker && val !== "") {
-                    start = moment(val, this.locale.format);
-                    end = moment(val, this.locale.format);
-                }
-                if (start !== null && end !== null) {
-                    this.setStartDate(start);
-                    this.setEndDate(end);
-                }
-            }
-        }
-
-        if (typeof options.ranges === 'object') {
-            for (range in options.ranges) {
-
-                if (typeof options.ranges[range][0] === 'string')
-                    start = moment(options.ranges[range][0], this.locale.format);
-                else
-                    start = moment(options.ranges[range][0]);
-
-                if (typeof options.ranges[range][1] === 'string')
-                    end = moment(options.ranges[range][1], this.locale.format);
-                else
-                    end = moment(options.ranges[range][1]);
-
-                // If the start or end date exceed those allowed by the minDate or dateLimit
-                // options, shorten the range to the allowable period.
-                if (this.minDate && start.isBefore(this.minDate))
-                    start = this.minDate.clone();
-
-                var maxDate = this.maxDate;
-                if (this.dateLimit && maxDate && start.clone().add(this.dateLimit).isAfter(maxDate))
-                    maxDate = start.clone().add(this.dateLimit);
-                if (maxDate && end.isAfter(maxDate))
-                    end = maxDate.clone();
-
-                // If the end of the range is before the minimum or the start of the range is
-                // after the maximum, don't display this range option at all.
-                if ((this.minDate && end.isBefore(this.minDate, this.timepicker ? 'minute' : 'day')) 
-                  || (maxDate && start.isAfter(maxDate, this.timepicker ? 'minute' : 'day')))
-                    continue;
-
-                //Support unicode chars in the range names.
-                var elem = document.createElement('textarea');
-                elem.innerHTML = range;
-                var rangeHtml = elem.value;
-
-                this.ranges[rangeHtml] = [start, end];
-            }
-
-            var list = '<ul>';
-            for (range in this.ranges) {
-                list += '<li data-range-key="' + range + '">' + range + '</li>';
-            }
-            if (this.showCustomRangeLabel) {
-                list += '<li data-range-key="' + this.locale.customRangeLabel + '">' + this.locale.customRangeLabel + '</li>';
-            }
-            list += '</ul>';
-            this.container.find('.ranges').prepend(list);
-        }
-
-        if (typeof cb === 'function') {
-            this.callback = cb;
-        }
-
-        if (!this.timePicker) {
-            this.startDate = this.startDate.startOf('day');
-            this.endDate = this.endDate.endOf('day');
-            this.container.find('.calendar-time').hide();
-        }
-
-        //can't be used together for now
-        if (this.timePicker && this.autoApply)
-            this.autoApply = false;
-
-        if (this.autoApply && typeof options.ranges !== 'object') {
-            this.container.find('.ranges').hide();
-        } else if (this.autoApply) {
-            this.container.find('.applyBtn, .cancelBtn').addClass('hide');
-        }
-
-        if (this.singleDatePicker) {
-            this.container.addClass('single');
-            this.container.find('.calendar.left').addClass('single');
-            this.container.find('.calendar.left').show();
-            this.container.find('.calendar.right').hide();
-            this.container.find('.daterangepicker_input input, .daterangepicker_input > i').hide();
-            if (this.timePicker) {
-                this.container.find('.ranges ul').hide();
-            } else {
-                this.container.find('.ranges').hide();
-            }
-        }
-
-        if ((typeof options.ranges === 'undefined' && !this.singleDatePicker) || this.alwaysShowCalendars) {
-            this.container.addClass('show-calendar');
-        }
-
-        this.container.addClass('opens' + this.opens);
-
-        //swap the position of the predefined ranges if opens right
-        if (typeof options.ranges !== 'undefined' && this.opens == 'right') {
-            this.container.find('.ranges').prependTo( this.container.find('.calendar.left').parent() );
-        }
-
-        //apply CSS classes and labels to buttons
-        this.container.find('.applyBtn, .cancelBtn').addClass(this.buttonClasses);
-        if (this.applyClass.length)
-            this.container.find('.applyBtn').addClass(this.applyClass);
-        if (this.cancelClass.length)
-            this.container.find('.cancelBtn').addClass(this.cancelClass);
-        this.container.find('.applyBtn').html(this.locale.applyLabel);
-        this.container.find('.cancelBtn').html(this.locale.cancelLabel);
-
-        //
-        // event listeners
-        //
-
-        this.container.find('.calendar')
-            .on('click.daterangepicker', '.prev', $.proxy(this.clickPrev, this))
-            .on('click.daterangepicker', '.next', $.proxy(this.clickNext, this))
-            .on('mousedown.daterangepicker', 'td.available', $.proxy(this.clickDate, this))
-            .on('mouseenter.daterangepicker', 'td.available', $.proxy(this.hoverDate, this))
-            .on('mouseleave.daterangepicker', 'td.available', $.proxy(this.updateFormInputs, this))
-            .on('change.daterangepicker', 'select.yearselect', $.proxy(this.monthOrYearChanged, this))
-            .on('change.daterangepicker', 'select.monthselect', $.proxy(this.monthOrYearChanged, this))
-            .on('change.daterangepicker', 'select.hourselect,select.minuteselect,select.secondselect,select.ampmselect', $.proxy(this.timeChanged, this))
-            .on('click.daterangepicker', '.daterangepicker_input input', $.proxy(this.showCalendars, this))
-            .on('focus.daterangepicker', '.daterangepicker_input input', $.proxy(this.formInputsFocused, this))
-            .on('blur.daterangepicker', '.daterangepicker_input input', $.proxy(this.formInputsBlurred, this))
-            .on('change.daterangepicker', '.daterangepicker_input input', $.proxy(this.formInputsChanged, this));
-
-        this.container.find('.ranges')
-            .on('click.daterangepicker', 'button.applyBtn', $.proxy(this.clickApply, this))
-            .on('click.daterangepicker', 'button.cancelBtn', $.proxy(this.clickCancel, this))
-            .on('click.daterangepicker', 'li', $.proxy(this.clickRange, this))
-            .on('mouseenter.daterangepicker', 'li', $.proxy(this.hoverRange, this))
-            .on('mouseleave.daterangepicker', 'li', $.proxy(this.updateFormInputs, this));
-
-        if (this.element.is('input') || this.element.is('button')) {
-            this.element.on({
-                'click.daterangepicker': $.proxy(this.show, this),
-                'focus.daterangepicker': $.proxy(this.show, this),
-                'keyup.daterangepicker': $.proxy(this.elementChanged, this),
-                'keydown.daterangepicker': $.proxy(this.keydown, this)
-            });
-        } else {
-            this.element.on('click.daterangepicker', $.proxy(this.toggle, this));
-        }
-
-        //
-        // if attached to a text input, set the initial value
-        //
-
-        if (this.element.is('input') && !this.singleDatePicker && this.autoUpdateInput) {
-            this.element.val(this.startDate.format(this.locale.format) + this.locale.separator + this.endDate.format(this.locale.format));
-            this.element.trigger('change');
-        } else if (this.element.is('input') && this.autoUpdateInput) {
-            this.element.val(this.startDate.format(this.locale.format));
-            this.element.trigger('change');
-        }
-
-    };
-
-    DateRangePicker.prototype = {
-
-        constructor: DateRangePicker,
-
-        setStartDate: function(startDate) {
-            if (typeof startDate === 'string')
-                this.startDate = moment(startDate, this.locale.format);
-
-            if (typeof startDate === 'object')
-                this.startDate = moment(startDate);
-
-            if (!this.timePicker)
-                this.startDate = this.startDate.startOf('day');
-
-            if (this.timePicker && this.timePickerIncrement)
-                this.startDate.minute(Math.round(this.startDate.minute() / this.timePickerIncrement) * this.timePickerIncrement);
-
-            if (this.minDate && this.startDate.isBefore(this.minDate)) {
-                this.startDate = this.minDate;
-                if (this.timePicker && this.timePickerIncrement)
-                    this.startDate.minute(Math.round(this.startDate.minute() / this.timePickerIncrement) * this.timePickerIncrement);
-            }
-
-            if (this.maxDate && this.startDate.isAfter(this.maxDate)) {
-                this.startDate = this.maxDate;
-                if (this.timePicker && this.timePickerIncrement)
-                    this.startDate.minute(Math.floor(this.startDate.minute() / this.timePickerIncrement) * this.timePickerIncrement);
-            }
-
-            if (!this.isShowing)
-                this.updateElement();
-
-            this.updateMonthsInView();
-        },
-
-        setEndDate: function(endDate) {
-            if (typeof endDate === 'string')
-                this.endDate = moment(endDate, this.locale.format);
-
-            if (typeof endDate === 'object')
-                this.endDate = moment(endDate);
-
-            if (!this.timePicker)
-                this.endDate = this.endDate.endOf('day');
-
-            if (this.timePicker && this.timePickerIncrement)
-                this.endDate.minute(Math.round(this.endDate.minute() / this.timePickerIncrement) * this.timePickerIncrement);
-
-            if (this.endDate.isBefore(this.startDate))
-                this.endDate = this.startDate.clone();
-
-            if (this.maxDate && this.endDate.isAfter(this.maxDate))
-                this.endDate = this.maxDate;
-
-            if (this.dateLimit && this.startDate.clone().add(this.dateLimit).isBefore(this.endDate))
-                this.endDate = this.startDate.clone().add(this.dateLimit);
-
-            this.previousRightTime = this.endDate.clone();
-
-            if (!this.isShowing)
-                this.updateElement();
-
-            this.updateMonthsInView();
-        },
-
-        isInvalidDate: function() {
-            return false;
-        },
-
-        isCustomDate: function() {
-            return false;
-        },
-
-        updateView: function() {
-            if (this.timePicker) {
-                this.renderTimePicker('left');
-                this.renderTimePicker('right');
-                if (!this.endDate) {
-                    this.container.find('.right .calendar-time select').attr('disabled', 'disabled').addClass('disabled');
-                } else {
-                    this.container.find('.right .calendar-time select').removeAttr('disabled').removeClass('disabled');
-                }
-            }
-            if (this.endDate) {
-                this.container.find('input[name="daterangepicker_end"]').removeClass('active');
-                this.container.find('input[name="daterangepicker_start"]').addClass('active');
-            } else {
-                this.container.find('input[name="daterangepicker_end"]').addClass('active');
-                this.container.find('input[name="daterangepicker_start"]').removeClass('active');
-            }
-            this.updateMonthsInView();
-            this.updateCalendars();
-            this.updateFormInputs();
-        },
-
-        updateMonthsInView: function() {
-            if (this.endDate) {
-
-                //if both dates are visible already, do nothing
-                if (!this.singleDatePicker && this.leftCalendar.month && this.rightCalendar.month &&
-                    (this.startDate.format('YYYY-MM') == this.leftCalendar.month.format('YYYY-MM') || this.startDate.format('YYYY-MM') == this.rightCalendar.month.format('YYYY-MM'))
-                    &&
-                    (this.endDate.format('YYYY-MM') == this.leftCalendar.month.format('YYYY-MM') || this.endDate.format('YYYY-MM') == this.rightCalendar.month.format('YYYY-MM'))
-                    ) {
-                    return;
-                }
-
-                this.leftCalendar.month = this.startDate.clone().date(2);
-                if (!this.linkedCalendars && (this.endDate.month() != this.startDate.month() || this.endDate.year() != this.startDate.year())) {
-                    this.rightCalendar.month = this.endDate.clone().date(2);
-                } else {
-                    this.rightCalendar.month = this.startDate.clone().date(2).add(1, 'month');
-                }
-
-            } else {
-                if (this.leftCalendar.month.format('YYYY-MM') != this.startDate.format('YYYY-MM') && this.rightCalendar.month.format('YYYY-MM') != this.startDate.format('YYYY-MM')) {
-                    this.leftCalendar.month = this.startDate.clone().date(2);
-                    this.rightCalendar.month = this.startDate.clone().date(2).add(1, 'month');
-                }
-            }
-            if (this.maxDate && this.linkedCalendars && !this.singleDatePicker && this.rightCalendar.month > this.maxDate) {
-              this.rightCalendar.month = this.maxDate.clone().date(2);
-              this.leftCalendar.month = this.maxDate.clone().date(2).subtract(1, 'month');
-            }
-        },
-
-        updateCalendars: function() {
-
-            if (this.timePicker) {
-                var hour, minute, second;
-                if (this.endDate) {
-                    hour = parseInt(this.container.find('.left .hourselect').val(), 10);
-                    minute = parseInt(this.container.find('.left .minuteselect').val(), 10);
-                    second = this.timePickerSeconds ? parseInt(this.container.find('.left .secondselect').val(), 10) : 0;
-                    if (!this.timePicker24Hour) {
-                        var ampm = this.container.find('.left .ampmselect').val();
-                        if (ampm === 'PM' && hour < 12)
-                            hour += 12;
-                        if (ampm === 'AM' && hour === 12)
-                            hour = 0;
-                    }
-                } else {
-                    hour = parseInt(this.container.find('.right .hourselect').val(), 10);
-                    minute = parseInt(this.container.find('.right .minuteselect').val(), 10);
-                    second = this.timePickerSeconds ? parseInt(this.container.find('.right .secondselect').val(), 10) : 0;
-                    if (!this.timePicker24Hour) {
-                        var ampm = this.container.find('.right .ampmselect').val();
-                        if (ampm === 'PM' && hour < 12)
-                            hour += 12;
-                        if (ampm === 'AM' && hour === 12)
-                            hour = 0;
-                    }
-                }
-                this.leftCalendar.month.hour(hour).minute(minute).second(second);
-                this.rightCalendar.month.hour(hour).minute(minute).second(second);
-            }
-
-            this.renderCalendar('left');
-            this.renderCalendar('right');
-
-            //highlight any predefined range matching the current start and end dates
-            this.container.find('.ranges li').removeClass('active');
-            if (this.endDate == null) return;
-
-            this.calculateChosenLabel();
-        },
-
-        renderCalendar: function(side) {
-
-            //
-            // Build the matrix of dates that will populate the calendar
-            //
-
-            var calendar = side == 'left' ? this.leftCalendar : this.rightCalendar;
-            var month = calendar.month.month();
-            var year = calendar.month.year();
-            var hour = calendar.month.hour();
-            var minute = calendar.month.minute();
-            var second = calendar.month.second();
-            var daysInMonth = moment([year, month]).daysInMonth();
-            var firstDay = moment([year, month, 1]);
-            var lastDay = moment([year, month, daysInMonth]);
-            var lastMonth = moment(firstDay).subtract(1, 'month').month();
-            var lastYear = moment(firstDay).subtract(1, 'month').year();
-            var daysInLastMonth = moment([lastYear, lastMonth]).daysInMonth();
-            var dayOfWeek = firstDay.day();
-
-            //initialize a 6 rows x 7 columns array for the calendar
-            var calendar = [];
-            calendar.firstDay = firstDay;
-            calendar.lastDay = lastDay;
-
-            for (var i = 0; i < 6; i++) {
-                calendar[i] = [];
-            }
-
-            //populate the calendar with date objects
-            var startDay = daysInLastMonth - dayOfWeek + this.locale.firstDay + 1;
-            if (startDay > daysInLastMonth)
-                startDay -= 7;
-
-            if (dayOfWeek == this.locale.firstDay)
-                startDay = daysInLastMonth - 6;
-
-            var curDate = moment([lastYear, lastMonth, startDay, 12, minute, second]);
-
-            var col, row;
-            for (var i = 0, col = 0, row = 0; i < 42; i++, col++, curDate = moment(curDate).add(24, 'hour')) {
-                if (i > 0 && col % 7 === 0) {
-                    col = 0;
-                    row++;
-                }
-                calendar[row][col] = curDate.clone().hour(hour).minute(minute).second(second);
-                curDate.hour(12);
-
-                if (this.minDate && calendar[row][col].format('YYYY-MM-DD') == this.minDate.format('YYYY-MM-DD') && calendar[row][col].isBefore(this.minDate) && side == 'left') {
-                    calendar[row][col] = this.minDate.clone();
-                }
-
-                if (this.maxDate && calendar[row][col].format('YYYY-MM-DD') == this.maxDate.format('YYYY-MM-DD') && calendar[row][col].isAfter(this.maxDate) && side == 'right') {
-                    calendar[row][col] = this.maxDate.clone();
-                }
-
-            }
-
-            //make the calendar object available to hoverDate/clickDate
-            if (side == 'left') {
-                this.leftCalendar.calendar = calendar;
-            } else {
-                this.rightCalendar.calendar = calendar;
-            }
-
-            //
-            // Display the calendar
-            //
-
-            var minDate = side == 'left' ? this.minDate : this.startDate;
-            var maxDate = this.maxDate;
-            var selected = side == 'left' ? this.startDate : this.endDate;
-            var arrow = this.locale.direction == 'ltr' ? {left: 'chevron-left', right: 'chevron-right'} : {left: 'chevron-right', right: 'chevron-left'};
-
-            var html = '<table class="table-condensed">';
-            html += '<thead>';
-            html += '<tr>';
-
-            // add empty cell for week number
-            if (this.showWeekNumbers || this.showISOWeekNumbers)
-                html += '<th></th>';
-
-            if ((!minDate || minDate.isBefore(calendar.firstDay)) && (!this.linkedCalendars || side == 'left')) {
-                html += '<th class="prev available"><i class="fa fa-' + arrow.left + ' glyphicon glyphicon-' + arrow.left + '"></i></th>';
-            } else {
-                html += '<th></th>';
-            }
-
-            var dateHtml = this.locale.monthNames[calendar[1][1].month()] + calendar[1][1].format(" YYYY");
-
-            if (this.showDropdowns) {
-                var currentMonth = calendar[1][1].month();
-                var currentYear = calendar[1][1].year();
-                var maxYear = (maxDate && maxDate.year()) || (currentYear + 5);
-                var minYear = (minDate && minDate.year()) || (currentYear - 50);
-                var inMinYear = currentYear == minYear;
-                var inMaxYear = currentYear == maxYear;
-
-                var monthHtml = '<select class="monthselect">';
-                for (var m = 0; m < 12; m++) {
-                    if ((!inMinYear || m >= minDate.month()) && (!inMaxYear || m <= maxDate.month())) {
-                        monthHtml += "<option value='" + m + "'" +
-                            (m === currentMonth ? " selected='selected'" : "") +
-                            ">" + this.locale.monthNames[m] + "</option>";
-                    } else {
-                        monthHtml += "<option value='" + m + "'" +
-                            (m === currentMonth ? " selected='selected'" : "") +
-                            " disabled='disabled'>" + this.locale.monthNames[m] + "</option>";
-                    }
-                }
-                monthHtml += "</select>";
-
-                var yearHtml = '<select class="yearselect">';
-                for (var y = minYear; y <= maxYear; y++) {
-                    yearHtml += '<option value="' + y + '"' +
-                        (y === currentYear ? ' selected="selected"' : '') +
-                        '>' + y + '</option>';
-                }
-                yearHtml += '</select>';
-
-                dateHtml = monthHtml + yearHtml;
-            }
-
-            html += '<th colspan="5" class="month">' + dateHtml + '</th>';
-            if ((!maxDate || maxDate.isAfter(calendar.lastDay)) && (!this.linkedCalendars || side == 'right' || this.singleDatePicker)) {
-                html += '<th class="next available"><i class="fa fa-' + arrow.right + ' glyphicon glyphicon-' + arrow.right + '"></i></th>';
-            } else {
-                html += '<th></th>';
-            }
-
-            html += '</tr>';
-            html += '<tr>';
-
-            // add week number label
-            if (this.showWeekNumbers || this.showISOWeekNumbers)
-                html += '<th class="week">' + this.locale.weekLabel + '</th>';
-
-            $.each(this.locale.daysOfWeek, function(index, dayOfWeek) {
-                html += '<th>' + dayOfWeek + '</th>';
-            });
-
-            html += '</tr>';
-            html += '</thead>';
-            html += '<tbody>';
-
-            //adjust maxDate to reflect the dateLimit setting in order to
-            //grey out end dates beyond the dateLimit
-            if (this.endDate == null && this.dateLimit) {
-                var maxLimit = this.startDate.clone().add(this.dateLimit).endOf('day');
-                if (!maxDate || maxLimit.isBefore(maxDate)) {
-                    maxDate = maxLimit;
-                }
-            }
-
-            for (var row = 0; row < 6; row++) {
-                html += '<tr>';
-
-                // add week number
-                if (this.showWeekNumbers)
-                    html += '<td class="week">' + calendar[row][0].week() + '</td>';
-                else if (this.showISOWeekNumbers)
-                    html += '<td class="week">' + calendar[row][0].isoWeek() + '</td>';
-
-                for (var col = 0; col < 7; col++) {
-
-                    var classes = [];
-
-                    //highlight today's date
-                    if (calendar[row][col].isSame(new Date(), "day"))
-                        classes.push('today');
-
-                    //highlight weekends
-                    if (calendar[row][col].isoWeekday() > 5)
-                        classes.push('weekend');
-
-                    //grey out the dates in other months displayed at beginning and end of this calendar
-                    if (calendar[row][col].month() != calendar[1][1].month())
-                        classes.push('off');
-
-                    //don't allow selection of dates before the minimum date
-                    if (this.minDate && calendar[row][col].isBefore(this.minDate, 'day'))
-                        classes.push('off', 'disabled');
-
-                    //don't allow selection of dates after the maximum date
-                    if (maxDate && calendar[row][col].isAfter(maxDate, 'day'))
-                        classes.push('off', 'disabled');
-
-                    //don't allow selection of date if a custom function decides it's invalid
-                    if (this.isInvalidDate(calendar[row][col]))
-                        classes.push('off', 'disabled');
-
-                    //highlight the currently selected start date
-                    if (calendar[row][col].format('YYYY-MM-DD') == this.startDate.format('YYYY-MM-DD'))
-                        classes.push('active', 'start-date');
-
-                    //highlight the currently selected end date
-                    if (this.endDate != null && calendar[row][col].format('YYYY-MM-DD') == this.endDate.format('YYYY-MM-DD'))
-                        classes.push('active', 'end-date');
-
-                    //highlight dates in-between the selected dates
-                    if (this.endDate != null && calendar[row][col] > this.startDate && calendar[row][col] < this.endDate)
-                        classes.push('in-range');
-
-                    //apply custom classes for this date
-                    var isCustom = this.isCustomDate(calendar[row][col]);
-                    if (isCustom !== false) {
-                        if (typeof isCustom === 'string')
-                            classes.push(isCustom);
-                        else
-                            Array.prototype.push.apply(classes, isCustom);
-                    }
-
-                    var cname = '', disabled = false;
-                    for (var i = 0; i < classes.length; i++) {
-                        cname += classes[i] + ' ';
-                        if (classes[i] == 'disabled')
-                            disabled = true;
-                    }
-                    if (!disabled)
-                        cname += 'available';
-
-                    html += '<td class="' + cname.replace(/^\s+|\s+$/g, '') + '" data-title="' + 'r' + row + 'c' + col + '">' + calendar[row][col].date() + '</td>';
-
-                }
-                html += '</tr>';
-            }
-
-            html += '</tbody>';
-            html += '</table>';
-
-            this.container.find('.calendar.' + side + ' .calendar-table').html(html);
-
-        },
-
-        renderTimePicker: function(side) {
-
-            // Don't bother updating the time picker if it's currently disabled
-            // because an end date hasn't been clicked yet
-            if (side == 'right' && !this.endDate) return;
-
-            var html, selected, minDate, maxDate = this.maxDate;
-
-            if (this.dateLimit && (!this.maxDate || this.startDate.clone().add(this.dateLimit).isAfter(this.maxDate)))
-                maxDate = this.startDate.clone().add(this.dateLimit);
-
-            if (side == 'left') {
-                selected = this.startDate.clone();
-                minDate = this.minDate;
-            } else if (side == 'right') {
-                selected = this.endDate.clone();
-                minDate = this.startDate;
-
-                //Preserve the time already selected
-                var timeSelector = this.container.find('.calendar.right .calendar-time div');
-                if (!this.endDate && timeSelector.html() != '') {
-
-                    selected.hour(timeSelector.find('.hourselect option:selected').val() || selected.hour());
-                    selected.minute(timeSelector.find('.minuteselect option:selected').val() || selected.minute());
-                    selected.second(timeSelector.find('.secondselect option:selected').val() || selected.second());
-
-                    if (!this.timePicker24Hour) {
-                        var ampm = timeSelector.find('.ampmselect option:selected').val();
-                        if (ampm === 'PM' && selected.hour() < 12)
-                            selected.hour(selected.hour() + 12);
-                        if (ampm === 'AM' && selected.hour() === 12)
-                            selected.hour(0);
-                    }
-
-                }
-
-                if (selected.isBefore(this.startDate))
-                    selected = this.startDate.clone();
-
-                if (maxDate && selected.isAfter(maxDate))
-                    selected = maxDate.clone();
-
-            }
-
-            //
-            // hours
-            //
-
-            html = '<select class="hourselect">';
-
-            var start = this.timePicker24Hour ? 0 : 1;
-            var end = this.timePicker24Hour ? 23 : 12;
-
-            for (var i = start; i <= end; i++) {
-                var i_in_24 = i;
-                if (!this.timePicker24Hour)
-                    i_in_24 = selected.hour() >= 12 ? (i == 12 ? 12 : i + 12) : (i == 12 ? 0 : i);
-
-                var time = selected.clone().hour(i_in_24);
-                var disabled = false;
-                if (minDate && time.minute(59).isBefore(minDate))
-                    disabled = true;
-                if (maxDate && time.minute(0).isAfter(maxDate))
-                    disabled = true;
-
-                if (i_in_24 == selected.hour() && !disabled) {
-                    html += '<option value="' + i + '" selected="selected">' + i + '</option>';
-                } else if (disabled) {
-                    html += '<option value="' + i + '" disabled="disabled" class="disabled">' + i + '</option>';
-                } else {
-                    html += '<option value="' + i + '">' + i + '</option>';
-                }
-            }
-
-            html += '</select> ';
-
-            //
-            // minutes
-            //
-
-            html += ': <select class="minuteselect">';
-
-            for (var i = 0; i < 60; i += this.timePickerIncrement) {
-                var padded = i < 10 ? '0' + i : i;
-                var time = selected.clone().minute(i);
-
-                var disabled = false;
-                if (minDate && time.second(59).isBefore(minDate))
-                    disabled = true;
-                if (maxDate && time.second(0).isAfter(maxDate))
-                    disabled = true;
-
-                if (selected.minute() == i && !disabled) {
-                    html += '<option value="' + i + '" selected="selected">' + padded + '</option>';
-                } else if (disabled) {
-                    html += '<option value="' + i + '" disabled="disabled" class="disabled">' + padded + '</option>';
-                } else {
-                    html += '<option value="' + i + '">' + padded + '</option>';
-                }
-            }
-
-            html += '</select> ';
-
-            //
-            // seconds
-            //
-
-            if (this.timePickerSeconds) {
-                html += ': <select class="secondselect">';
-
-                for (var i = 0; i < 60; i++) {
-                    var padded = i < 10 ? '0' + i : i;
-                    var time = selected.clone().second(i);
-
-                    var disabled = false;
-                    if (minDate && time.isBefore(minDate))
-                        disabled = true;
-                    if (maxDate && time.isAfter(maxDate))
-                        disabled = true;
-
-                    if (selected.second() == i && !disabled) {
-                        html += '<option value="' + i + '" selected="selected">' + padded + '</option>';
-                    } else if (disabled) {
-                        html += '<option value="' + i + '" disabled="disabled" class="disabled">' + padded + '</option>';
-                    } else {
-                        html += '<option value="' + i + '">' + padded + '</option>';
-                    }
-                }
-
-                html += '</select> ';
-            }
-
-            //
-            // AM/PM
-            //
-
-            if (!this.timePicker24Hour) {
-                html += '<select class="ampmselect">';
-
-                var am_html = '';
-                var pm_html = '';
-
-                if (minDate && selected.clone().hour(12).minute(0).second(0).isBefore(minDate))
-                    am_html = ' disabled="disabled" class="disabled"';
-
-                if (maxDate && selected.clone().hour(0).minute(0).second(0).isAfter(maxDate))
-                    pm_html = ' disabled="disabled" class="disabled"';
-
-                if (selected.hour() >= 12) {
-                    html += '<option value="AM"' + am_html + '>AM</option><option value="PM" selected="selected"' + pm_html + '>PM</option>';
-                } else {
-                    html += '<option value="AM" selected="selected"' + am_html + '>AM</option><option value="PM"' + pm_html + '>PM</option>';
-                }
-
-                html += '</select>';
-            }
-
-            this.container.find('.calendar.' + side + ' .calendar-time div').html(html);
-
-        },
-
-        updateFormInputs: function() {
-
-            //ignore mouse movements while an above-calendar text input has focus
-            if (this.container.find('input[name=daterangepicker_start]').is(":focus") || this.container.find('input[name=daterangepicker_end]').is(":focus"))
-                return;
-
-            this.container.find('input[name=daterangepicker_start]').val(this.startDate.format(this.locale.format));
-            if (this.endDate)
-                this.container.find('input[name=daterangepicker_end]').val(this.endDate.format(this.locale.format));
-
-            if (this.singleDatePicker || (this.endDate && (this.startDate.isBefore(this.endDate) || this.startDate.isSame(this.endDate)))) {
-                this.container.find('button.applyBtn').removeAttr('disabled');
-            } else {
-                this.container.find('button.applyBtn').attr('disabled', 'disabled');
-            }
-
-        },
-
-        move: function() {
-            var parentOffset = { top: 0, left: 0 },
-                containerTop;
-            var parentRightEdge = $(window).width();
-            if (!this.parentEl.is('body')) {
-                parentOffset = {
-                    top: this.parentEl.offset().top - this.parentEl.scrollTop(),
-                    left: this.parentEl.offset().left - this.parentEl.scrollLeft()
-                };
-                parentRightEdge = this.parentEl[0].clientWidth + this.parentEl.offset().left;
-            }
-
-            if (this.drops == 'up')
-                containerTop = this.element.offset().top - this.container.outerHeight() - parentOffset.top;
-            else
-                containerTop = this.element.offset().top + this.element.outerHeight() - parentOffset.top;
-            this.container[this.drops == 'up' ? 'addClass' : 'removeClass']('dropup');
-
-            if (this.opens == 'left') {
-                this.container.css({
-                    top: containerTop,
-                    right: parentRightEdge - this.element.offset().left - this.element.outerWidth(),
-                    left: 'auto'
-                });
-                if (this.container.offset().left < 0) {
-                    this.container.css({
-                        right: 'auto',
-                        left: 9
-                    });
-                }
-            } else if (this.opens == 'center') {
-                this.container.css({
-                    top: containerTop,
-                    left: this.element.offset().left - parentOffset.left + this.element.outerWidth() / 2
-                            - this.container.outerWidth() / 2,
-                    right: 'auto'
-                });
-                if (this.container.offset().left < 0) {
-                    this.container.css({
-                        right: 'auto',
-                        left: 9
-                    });
-                }
-            } else {
-                this.container.css({
-                    top: containerTop,
-                    left: this.element.offset().left - parentOffset.left,
-                    right: 'auto'
-                });
-                if (this.container.offset().left + this.container.outerWidth() > $(window).width()) {
-                    this.container.css({
-                        left: 'auto',
-                        right: 0
-                    });
-                }
-            }
-        },
-
-        show: function(e) {
-            if (this.isShowing) return;
-
-            // Create a click proxy that is private to this instance of datepicker, for unbinding
-            this._outsideClickProxy = $.proxy(function(e) { this.outsideClick(e); }, this);
-
-            // Bind global datepicker mousedown for hiding and
-            $(document)
-              .on('mousedown.daterangepicker', this._outsideClickProxy)
-              // also support mobile devices
-              .on('touchend.daterangepicker', this._outsideClickProxy)
-              // also explicitly play nice with Bootstrap dropdowns, which stopPropagation when clicking them
-              .on('click.daterangepicker', '[data-toggle=dropdown]', this._outsideClickProxy)
-              // and also close when focus changes to outside the picker (eg. tabbing between controls)
-              .on('focusin.daterangepicker', this._outsideClickProxy);
-
-            // Reposition the picker if the window is resized while it's open
-            $(window).on('resize.daterangepicker', $.proxy(function(e) { this.move(e); }, this));
-
-            this.oldStartDate = this.startDate.clone();
-            this.oldEndDate = this.endDate.clone();
-            this.previousRightTime = this.endDate.clone();
-
-            this.updateView();
-            this.container.show();
-            this.move();
-            this.element.trigger('show.daterangepicker', this);
-            this.isShowing = true;
-        },
-
-        hide: function(e) {
-            if (!this.isShowing) return;
-
-            //incomplete date selection, revert to last values
-            if (!this.endDate) {
-                this.startDate = this.oldStartDate.clone();
-                this.endDate = this.oldEndDate.clone();
-            }
-
-            //if a new date range was selected, invoke the user callback function
-            if (!this.startDate.isSame(this.oldStartDate) || !this.endDate.isSame(this.oldEndDate))
-                this.callback(this.startDate, this.endDate, this.chosenLabel);
-
-            //if picker is attached to a text input, update it
-            this.updateElement();
-
-            $(document).off('.daterangepicker');
-            $(window).off('.daterangepicker');
-            this.container.hide();
-            this.element.trigger('hide.daterangepicker', this);
-            this.isShowing = false;
-        },
-
-        toggle: function(e) {
-            if (this.isShowing) {
-                this.hide();
-            } else {
-                this.show();
-            }
-        },
-
-        outsideClick: function(e) {
-            var target = $(e.target);
-            // if the page is clicked anywhere except within the daterangerpicker/button
-            // itself then call this.hide()
-            if (
-                // ie modal dialog fix
-                e.type == "focusin" ||
-                target.closest(this.element).length ||
-                target.closest(this.container).length ||
-                target.closest('.calendar-table').length
-                ) return;
-            this.hide();
-            this.element.trigger('outsideClick.daterangepicker', this);
-        },
-
-        showCalendars: function() {
-            this.container.addClass('show-calendar');
-            this.move();
-            this.element.trigger('showCalendar.daterangepicker', this);
-        },
-
-        hideCalendars: function() {
-            this.container.removeClass('show-calendar');
-            this.element.trigger('hideCalendar.daterangepicker', this);
-        },
-
-        hoverRange: function(e) {
-
-            //ignore mouse movements while an above-calendar text input has focus
-            if (this.container.find('input[name=daterangepicker_start]').is(":focus") || this.container.find('input[name=daterangepicker_end]').is(":focus"))
-                return;
-
-            var label = e.target.getAttribute('data-range-key');
-
-            if (label == this.locale.customRangeLabel) {
-                this.updateView();
-            } else {
-                var dates = this.ranges[label];
-                this.container.find('input[name=daterangepicker_start]').val(dates[0].format(this.locale.format));
-                this.container.find('input[name=daterangepicker_end]').val(dates[1].format(this.locale.format));
-            }
-
-        },
-
-        clickRange: function(e) {
-            var label = e.target.getAttribute('data-range-key');
-            this.chosenLabel = label;
-            if (label == this.locale.customRangeLabel) {
-                this.showCalendars();
-            } else {
-                var dates = this.ranges[label];
-                this.startDate = dates[0];
-                this.endDate = dates[1];
-
-                if (!this.timePicker) {
-                    this.startDate.startOf('day');
-                    this.endDate.endOf('day');
-                }
-
-                if (!this.alwaysShowCalendars)
-                    this.hideCalendars();
-                this.clickApply();
-            }
-        },
-
-        clickPrev: function(e) {
-            var cal = $(e.target).parents('.calendar');
-            if (cal.hasClass('left')) {
-                this.leftCalendar.month.subtract(1, 'month');
-                if (this.linkedCalendars)
-                    this.rightCalendar.month.subtract(1, 'month');
-            } else {
-                this.rightCalendar.month.subtract(1, 'month');
-            }
-            this.updateCalendars();
-        },
-
-        clickNext: function(e) {
-            var cal = $(e.target).parents('.calendar');
-            if (cal.hasClass('left')) {
-                this.leftCalendar.month.add(1, 'month');
-            } else {
-                this.rightCalendar.month.add(1, 'month');
-                if (this.linkedCalendars)
-                    this.leftCalendar.month.add(1, 'month');
-            }
-            this.updateCalendars();
-        },
-
-        hoverDate: function(e) {
-
-            //ignore mouse movements while an above-calendar text input has focus
-            //if (this.container.find('input[name=daterangepicker_start]').is(":focus") || this.container.find('input[name=daterangepicker_end]').is(":focus"))
-            //    return;
-
-            //ignore dates that can't be selected
-            if (!$(e.target).hasClass('available')) return;
-
-            //have the text inputs above calendars reflect the date being hovered over
-            var title = $(e.target).attr('data-title');
-            var row = title.substr(1, 1);
-            var col = title.substr(3, 1);
-            var cal = $(e.target).parents('.calendar');
-            var date = cal.hasClass('left') ? this.leftCalendar.calendar[row][col] : this.rightCalendar.calendar[row][col];
-
-            if (this.endDate && !this.container.find('input[name=daterangepicker_start]').is(":focus")) {
-                this.container.find('input[name=daterangepicker_start]').val(date.format(this.locale.format));
-            } else if (!this.endDate && !this.container.find('input[name=daterangepicker_end]').is(":focus")) {
-                this.container.find('input[name=daterangepicker_end]').val(date.format(this.locale.format));
-            }
-
-            //highlight the dates between the start date and the date being hovered as a potential end date
-            var leftCalendar = this.leftCalendar;
-            var rightCalendar = this.rightCalendar;
-            var startDate = this.startDate;
-            if (!this.endDate) {
-                this.container.find('.calendar td').each(function(index, el) {
-
-                    //skip week numbers, only look at dates
-                    if ($(el).hasClass('week')) return;
-
-                    var title = $(el).attr('data-title');
-                    var row = title.substr(1, 1);
-                    var col = title.substr(3, 1);
-                    var cal = $(el).parents('.calendar');
-                    var dt = cal.hasClass('left') ? leftCalendar.calendar[row][col] : rightCalendar.calendar[row][col];
-
-                    if ((dt.isAfter(startDate) && dt.isBefore(date)) || dt.isSame(date, 'day')) {
-                        $(el).addClass('in-range');
-                    } else {
-                        $(el).removeClass('in-range');
-                    }
-
-                });
-            }
-
-        },
-
-        clickDate: function(e) {
-
-            if (!$(e.target).hasClass('available')) return;
-
-            var title = $(e.target).attr('data-title');
-            var row = title.substr(1, 1);
-            var col = title.substr(3, 1);
-            var cal = $(e.target).parents('.calendar');
-            var date = cal.hasClass('left') ? this.leftCalendar.calendar[row][col] : this.rightCalendar.calendar[row][col];
-
-            //
-            // this function needs to do a few things:
-            // * alternate between selecting a start and end date for the range,
-            // * if the time picker is enabled, apply the hour/minute/second from the select boxes to the clicked date
-            // * if autoapply is enabled, and an end date was chosen, apply the selection
-            // * if single date picker mode, and time picker isn't enabled, apply the selection immediately
-            // * if one of the inputs above the calendars was focused, cancel that manual input
-            //
-
-            if (this.endDate || date.isBefore(this.startDate, 'day')) { //picking start
-                if (this.timePicker) {
-                    var hour = parseInt(this.container.find('.left .hourselect').val(), 10);
-                    if (!this.timePicker24Hour) {
-                        var ampm = this.container.find('.left .ampmselect').val();
-                        if (ampm === 'PM' && hour < 12)
-                            hour += 12;
-                        if (ampm === 'AM' && hour === 12)
-                            hour = 0;
-                    }
-                    var minute = parseInt(this.container.find('.left .minuteselect').val(), 10);
-                    var second = this.timePickerSeconds ? parseInt(this.container.find('.left .secondselect').val(), 10) : 0;
-                    date = date.clone().hour(hour).minute(minute).second(second);
-                }
-                this.endDate = null;
-                this.setStartDate(date.clone());
-            } else if (!this.endDate && date.isBefore(this.startDate)) {
-                //special case: clicking the same date for start/end,
-                //but the time of the end date is before the start date
-                this.setEndDate(this.startDate.clone());
-            } else { // picking end
-                if (this.timePicker) {
-                    var hour = parseInt(this.container.find('.right .hourselect').val(), 10);
-                    if (!this.timePicker24Hour) {
-                        var ampm = this.container.find('.right .ampmselect').val();
-                        if (ampm === 'PM' && hour < 12)
-                            hour += 12;
-                        if (ampm === 'AM' && hour === 12)
-                            hour = 0;
-                    }
-                    var minute = parseInt(this.container.find('.right .minuteselect').val(), 10);
-                    var second = this.timePickerSeconds ? parseInt(this.container.find('.right .secondselect').val(), 10) : 0;
-                    date = date.clone().hour(hour).minute(minute).second(second);
-                }
-                this.setEndDate(date.clone());
-                if (this.autoApply) {
-                  this.calculateChosenLabel();
-                  this.clickApply();
-                }
-            }
-
-            if (this.singleDatePicker) {
-                this.setEndDate(this.startDate);
-                if (!this.timePicker)
-                    this.clickApply();
-            }
-
-            this.updateView();
-
-            //This is to cancel the blur event handler if the mouse was in one of the inputs
-            e.stopPropagation();
-
-        },
-
-        calculateChosenLabel: function() {
-          var customRange = true;
-          var i = 0;
-          for (var range in this.ranges) {
-              if (this.timePicker) {
-                  if (this.startDate.isSame(this.ranges[range][0]) && this.endDate.isSame(this.ranges[range][1])) {
-                      customRange = false;
-                      this.chosenLabel = this.container.find('.ranges li:eq(' + i + ')').addClass('active').html();
-                      break;
-                  }
-              } else {
-                  //ignore times when comparing dates if time picker is not enabled
-                  if (this.startDate.format('YYYY-MM-DD') == this.ranges[range][0].format('YYYY-MM-DD') && this.endDate.format('YYYY-MM-DD') == this.ranges[range][1].format('YYYY-MM-DD')) {
-                      customRange = false;
-                      this.chosenLabel = this.container.find('.ranges li:eq(' + i + ')').addClass('active').html();
-                      break;
-                  }
-              }
-              i++;
-          }
-          if (customRange && this.showCustomRangeLabel) {
-              this.chosenLabel = this.container.find('.ranges li:last').addClass('active').html();
-              this.showCalendars();
-          }
-        },
-
-        clickApply: function(e) {
-            this.hide();
-            this.element.trigger('apply.daterangepicker', this);
-        },
-
-        clickCancel: function(e) {
-            this.startDate = this.oldStartDate;
-            this.endDate = this.oldEndDate;
-            this.hide();
-            this.element.trigger('cancel.daterangepicker', this);
-        },
-
-        monthOrYearChanged: function(e) {
-            var isLeft = $(e.target).closest('.calendar').hasClass('left'),
-                leftOrRight = isLeft ? 'left' : 'right',
-                cal = this.container.find('.calendar.'+leftOrRight);
-
-            // Month must be Number for new moment versions
-            var month = parseInt(cal.find('.monthselect').val(), 10);
-            var year = cal.find('.yearselect').val();
-
-            if (!isLeft) {
-                if (year < this.startDate.year() || (year == this.startDate.year() && month < this.startDate.month())) {
-                    month = this.startDate.month();
-                    year = this.startDate.year();
-                }
-            }
-
-            if (this.minDate) {
-                if (year < this.minDate.year() || (year == this.minDate.year() && month < this.minDate.month())) {
-                    month = this.minDate.month();
-                    year = this.minDate.year();
-                }
-            }
-
-            if (this.maxDate) {
-                if (year > this.maxDate.year() || (year == this.maxDate.year() && month > this.maxDate.month())) {
-                    month = this.maxDate.month();
-                    year = this.maxDate.year();
-                }
-            }
-
-            if (isLeft) {
-                this.leftCalendar.month.month(month).year(year);
-                if (this.linkedCalendars)
-                    this.rightCalendar.month = this.leftCalendar.month.clone().add(1, 'month');
-            } else {
-                this.rightCalendar.month.month(month).year(year);
-                if (this.linkedCalendars)
-                    this.leftCalendar.month = this.rightCalendar.month.clone().subtract(1, 'month');
-            }
-            this.updateCalendars();
-        },
-
-        timeChanged: function(e) {
-
-            var cal = $(e.target).closest('.calendar'),
-                isLeft = cal.hasClass('left');
-
-            var hour = parseInt(cal.find('.hourselect').val(), 10);
-            var minute = parseInt(cal.find('.minuteselect').val(), 10);
-            var second = this.timePickerSeconds ? parseInt(cal.find('.secondselect').val(), 10) : 0;
-
-            if (!this.timePicker24Hour) {
-                var ampm = cal.find('.ampmselect').val();
-                if (ampm === 'PM' && hour < 12)
-                    hour += 12;
-                if (ampm === 'AM' && hour === 12)
-                    hour = 0;
-            }
-
-            if (isLeft) {
-                var start = this.startDate.clone();
-                start.hour(hour);
-                start.minute(minute);
-                start.second(second);
-                this.setStartDate(start);
-                if (this.singleDatePicker) {
-                    this.endDate = this.startDate.clone();
-                } else if (this.endDate && this.endDate.format('YYYY-MM-DD') == start.format('YYYY-MM-DD') && this.endDate.isBefore(start)) {
-                    this.setEndDate(start.clone());
-                }
-            } else if (this.endDate) {
-                var end = this.endDate.clone();
-                end.hour(hour);
-                end.minute(minute);
-                end.second(second);
-                this.setEndDate(end);
-            }
-
-            //update the calendars so all clickable dates reflect the new time component
-            this.updateCalendars();
-
-            //update the form inputs above the calendars with the new time
-            this.updateFormInputs();
-
-            //re-render the time pickers because changing one selection can affect what's enabled in another
-            this.renderTimePicker('left');
-            this.renderTimePicker('right');
-
-        },
-
-        formInputsChanged: function(e) {
-            var isRight = $(e.target).closest('.calendar').hasClass('right');
-            var start = moment(this.container.find('input[name="daterangepicker_start"]').val(), this.locale.format);
-            var end = moment(this.container.find('input[name="daterangepicker_end"]').val(), this.locale.format);
-
-            if (start.isValid() && end.isValid()) {
-
-                if (isRight && end.isBefore(start))
-                    start = end.clone();
-
-                this.setStartDate(start);
-                this.setEndDate(end);
-
-                if (isRight) {
-                    this.container.find('input[name="daterangepicker_start"]').val(this.startDate.format(this.locale.format));
-                } else {
-                    this.container.find('input[name="daterangepicker_end"]').val(this.endDate.format(this.locale.format));
-                }
-
-            }
-
-            this.updateView();
-        },
-
-        formInputsFocused: function(e) {
-
-            // Highlight the focused input
-            this.container.find('input[name="daterangepicker_start"], input[name="daterangepicker_end"]').removeClass('active');
-            $(e.target).addClass('active');
-
-            // Set the state such that if the user goes back to using a mouse, 
-            // the calendars are aware we're selecting the end of the range, not
-            // the start. This allows someone to edit the end of a date range without
-            // re-selecting the beginning, by clicking on the end date input then
-            // using the calendar.
-            var isRight = $(e.target).closest('.calendar').hasClass('right');
-            if (isRight) {
-                this.endDate = null;
-                this.setStartDate(this.startDate.clone());
-                this.updateView();
-            }
-
-        },
-
-        formInputsBlurred: function(e) {
-
-            // this function has one purpose right now: if you tab from the first
-            // text input to the second in the UI, the endDate is nulled so that
-            // you can click another, but if you tab out without clicking anything
-            // or changing the input value, the old endDate should be retained
-
-            if (!this.endDate) {
-                var val = this.container.find('input[name="daterangepicker_end"]').val();
-                var end = moment(val, this.locale.format);
-                if (end.isValid()) {
-                    this.setEndDate(end);
-                    this.updateView();
-                }
-            }
-
-        },
-
-        elementChanged: function() {
-            if (!this.element.is('input')) return;
-            if (!this.element.val().length) return;
-            if (this.element.val().length < this.locale.format.length) return;
-
-            var dateString = this.element.val().split(this.locale.separator),
-                start = null,
-                end = null;
-
-            if (dateString.length === 2) {
-                start = moment(dateString[0], this.locale.format);
-                end = moment(dateString[1], this.locale.format);
-            }
-
-            if (this.singleDatePicker || start === null || end === null) {
-                start = moment(this.element.val(), this.locale.format);
-                end = start;
-            }
-
-            if (!start.isValid() || !end.isValid()) return;
-
-            this.setStartDate(start);
-            this.setEndDate(end);
-            this.updateView();
-        },
-
-        keydown: function(e) {
-            //hide on tab or enter
-            if ((e.keyCode === 9) || (e.keyCode === 13)) {
-                this.hide();
-            }
-        },
-
-        updateElement: function() {
-            if (this.element.is('input') && !this.singleDatePicker && this.autoUpdateInput) {
-                this.element.val(this.startDate.format(this.locale.format) + this.locale.separator + this.endDate.format(this.locale.format));
-                this.element.trigger('change');
-            } else if (this.element.is('input') && this.autoUpdateInput) {
-                this.element.val(this.startDate.format(this.locale.format));
-                this.element.trigger('change');
-            }
-        },
-
-        remove: function() {
-            this.container.remove();
-            this.element.off('.daterangepicker');
-            this.element.removeData();
-        }
-
-    };
-
-    $.fn.daterangepicker = function(options, callback) {
-        this.each(function() {
-            var el = $(this);
-            if (el.data('daterangepicker'))
-                el.data('daterangepicker').remove();
-            el.data('daterangepicker', new DateRangePicker(el, options, callback));
-        });
-        return this;
-    };
-
-    return DateRangePicker;
-
-}));
-
 /*!
  * mime-db
  * Copyright(c) 2014 Jonathan Ong

@@ -181,7 +181,7 @@ function WSQL(){
 					return prm;
 			}
 		},
-
+    
 		/**
 		 * ### Указатель на alasql
 		 * @property alasql

@@ -199,9 +199,12 @@ TabularSection.prototype.find_rows = function(selection, callback){
  * @param rowid2 {number}
  */
 TabularSection.prototype.swap = function(rowid1, rowid2){
-	var tmp = this._obj[rowid1];
+
+	var row1 = this._obj[rowid1];
 	this._obj[rowid1] = this._obj[rowid2];
-	this._obj[rowid2] = tmp;
+	this._obj[rowid2] = row1;
+  this._obj[rowid1].row = rowid1 + 1;
+  this._obj[rowid2].row = rowid2 + 1;
 
 	if(!this._owner._data._silent)
 		Object.getNotifier(this._owner).notify({

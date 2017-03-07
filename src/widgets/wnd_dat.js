@@ -139,6 +139,8 @@ $p.iface.dat_blank = function(_dxw, attr) {
 	return wnd_dat;
 };
 
+
+
 /**
  * обработчик выбора значения в свойствах (ссылочные типы)
  * вызывается в контексте this = pgrid

@@ -327,11 +327,12 @@ DataManager.prototype.__define({
 
 				function fetch_next_page() {
 
-					if(_view)
-						t.pouch_db.query(_view, options, process_docs);
-
-					else
-						t.pouch_db.allDocs(options, process_docs);
+					if(_view){
+            t.pouch_db.query(_view, options, process_docs);
+          }
+					else{
+            t.pouch_db.allDocs(options, process_docs);
+          }
 				}
 
 				fetch_next_page();
