@@ -30,16 +30,15 @@
     "pouchdb-replication": "^6.1",
     "react-data-grid": "^2.0",
     "react-data-grid-addons": "^2.0",
-    "react-virtualized": "^9.0",
+    "react-virtualized": "^9.2",
     "react-panels": "git+https://github.com/nikches/react-panels",
-    "superlogin-client": "^0.4",
-    "yargs": "^6.6"
+    "superlogin-client": "^0.5"
   },
   "devDependencies": {
     "babel-cli": "^6.23",
     "babel-core": "^6.23",
     "babel-eslint": "^7.1",
-    "babel-loader": "^6.3",
+    "babel-loader": "^6.4",
     "babel-plugin-css-modules-transform": "^1.2",
     "babel-plugin-transform-async-to-generator": "6.22",
     "babel-plugin-transform-dev-warning": "^0.1",
@@ -70,7 +69,8 @@
     "lerna": "2.0.0-beta.37",
     "rimraf": "^2.6",
     "webpack": "^2.2",
-    "yuidocjs": "^0.10"
+    "yuidocjs": "^0.10",
+    "yargs": "^7.0"
   },
   "peerDependecies": {
     "react": "^15.4.2",

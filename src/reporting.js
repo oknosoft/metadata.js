@@ -160,7 +160,9 @@ SpreadsheetDocument.prototype.__define({
       // подвал таблицы
       var tfoot = table.querySelector("tfoot");
       if(tfoot){
-
+        tfoot.parentElement.removeChild(tfoot);
+        tfoot.innerHTML = dhx4.template(tfoot.innerHTML, data);
+        table.appendChild(tfoot);
       }
 
       // есть ли итоги
@@ -201,7 +203,21 @@ SpreadsheetDocument.prototype.__define({
   draw_rows: {
     value: function (template, data) {
 
-      // цикл по табчасти
+      var tabular = template.attributes.tabular && template.attributes.tabular.value;
+      if(!tabular){
+        console.error('Не указана табличная часть в шаблоне ' + template.id);
+        return;
+      }
+      var rows = data[tabular];
+      if(!Array.isArray(rows)){
+        console.error('В данных отсутствует массив ' + tabular);
+        return;
+      }
+
+      // цикл по табчасти - выводим строку
+      for(var i = 0; i < rows.length; i++){
+        this.put(dhx4.template(template.innerHTML, rows[i]), template.attributes);
+      }
     }
   },
 
