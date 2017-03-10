@@ -33,14 +33,13 @@ export default class SchemeSettingsWrapper extends Component {
   }
 
   constructor(props, context) {
-
     super(props, context);
-
     const {scheme} = props
 
     this.state = {
       scheme,
       open: false,
+      isFullscreen: false,
       variants: [scheme]
     }
 
@@ -48,10 +47,9 @@ export default class SchemeSettingsWrapper extends Component {
       _top: 40,
       obj: scheme.obj,
     })
-      .then((variants) => {
-        this.setState({variants})
-      })
-
+    .then((variants) => {
+      this.setState({variants})
+    });
   }
 
   handleOpen = () => {
@@ -95,8 +93,13 @@ export default class SchemeSettingsWrapper extends Component {
     })
   }
 
-  render() {
+  handleFullscreenClick() {
+    this.setState({
+      isFullscreen: !this.state.isFullscreen
+    });
+  }
 
+  render() {
     const {props, state, handleOpen, handleOk, handleClose, handleSchemeChange, handleSearchChange, handleVariantChange} = this;
     const {open, scheme, variants} = state
     const {show_search, show_variants, tabParams} = props
@@ -107,14 +110,13 @@ export default class SchemeSettingsWrapper extends Component {
         label="Применить"
         primary={true}
         keyboardFocused={true}
-        onTouchTap={handleOk}
-      />,
+        onTouchTap={handleOk} />,
+
       <FlatButton
         key={1}
         label="Отмена"
         secondary={true}
-        onTouchTap={handleClose}
-      />,
+        onTouchTap={handleClose} />,
     ];
 
     const menuitems = [];
@@ -164,15 +166,17 @@ export default class SchemeSettingsWrapper extends Component {
         </IconButton>
 
         <Dialog
-          title={"Настройка списка"}
+          title={"Настройка моего списка"}
           actions={actions}
           tabs={getTabsContent(scheme, handleSchemeChange, tabParams)}
+          isResizable={true}
           isVisible={open}
           width={700}
-          height={800}
+          height={300}
+          isFullscreen={this.state.isFullscreen}
+          onFullScreenClick={() => this.handleFullscreenClick()}
           onCloseClick={() => this.handleCloseClick()} />
       </div>
     )
   }
-
 }

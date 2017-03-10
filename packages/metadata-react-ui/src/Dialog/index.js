@@ -1,7 +1,10 @@
 import React, {Component, PropTypes} from "react";
+import ReactDOM from "react-dom";
 import IconButton from "material-ui/IconButton";
 import FullscreenIcon from "material-ui/svg-icons/navigation/fullscreen";
+import FullscreenExitIcon from "material-ui/svg-icons/navigation/fullscreen-exit";
 import CloseIcon from "material-ui/svg-icons/navigation/close";
+import ReactPortal from "react-portal";
 
 import {
   Button,
@@ -12,17 +15,22 @@ import {
   Toolbar,
 } from "react-panels";
 
+/**
+ * Dialog
+ * This component use portal for mounting self into document.body.
+ */
 export default class Dialog extends Component {
   static get defaultProps() {
     return {
       title: "",
       tabs: {},
-      actions: [],
-      width: 420,
-      height: 500,
-      isVisible: false,
       left: 0,
-      top: 0,
+      top: 50,
+      width: 420,
+      height: 400,
+      isVisible: false,
+      isFullscreen: false,
+      isResizable: false,
       onCloseClick: null,
       onFullScreenClick: null
     }
@@ -32,8 +40,9 @@ export default class Dialog extends Component {
     return {
       title: PropTypes.string,
       tabs: PropTypes.object, // Object with title:tab pairs.
-      actions: PropTypes.array,
       isVisible: PropTypes.bool,
+      isFullscreen: PropTypes.bool,
+      isResizable: PropTypes.bool,
       width: PropTypes.number,
       height: PropTypes.number,
       left: PropTypes.number,
@@ -44,7 +53,7 @@ export default class Dialog extends Component {
   }
 
   constructor(props) {
-    super(props)
+    super(props);
   }
 
   renderTabs() {
@@ -55,10 +64,6 @@ export default class Dialog extends Component {
         <Content>
           {this.props.tabs[tabName]}
         </Content>
-
-        <Footer>
-          {this.props.actions}
-        </Footer>
       </Tab>);
     }
 
@@ -78,33 +83,30 @@ export default class Dialog extends Component {
   }
 
   render() {
-    if (this.props.isVisible === false) {
-      return null
-    }
-
     return (
-      <FloatingPanel
-        theme={"flexbox"}
-        skin={"material-ui"}
+      <ReactPortal isOpened={this.props.isVisible}>
+        <FloatingPanel
+          theme={"material-ui"}
+          isResizable={this.props.isResizable}
+          isFullscreen={this.props.isFullscreen}
+          title={this.props.title}
+          width={this.props.width}
+          height={this.props.height}
+          left={this.props.left}
+          top={this.props.top}
+          buttons={[
+            <IconButton tooltip={"развернуть"} onTouchTap={() => this.handleFullscreenClick()}>
+              {this.props.isFullscreen ? <FullscreenExitIcon color={"white"} /> : <FullscreenIcon color={"white"} />}
+            </IconButton>,
 
-        title={this.props.title}
-        width={this.props.width}
-        height={this.props.height}
-        left={this.props.left}
-        top={this.props.top}
+            <IconButton tooltip={"закрыть"} onTouchTap={() => this.handleCloseClick()}>
+              <CloseIcon color={"white"} />
+            </IconButton>,
+          ]}>
 
-        buttons={[
-          <IconButton tooltip={"развернуть"} onTouchTap={() => this.handleFullscreenClick()}>
-            <FullscreenIcon color={"white"} />
-          </IconButton>,
-
-          <IconButton tooltip={"закрыть"} onTouchTap={() => this.handleCloseClick()}>
-            <CloseIcon color={"white"} />
-          </IconButton>,
-        ]}>
-
-        {this.renderTabs()}
-      </FloatingPanel>
-    )
+          {this.renderTabs()}
+        </FloatingPanel>
+      </ReactPortal>
+    );
   }
 }
