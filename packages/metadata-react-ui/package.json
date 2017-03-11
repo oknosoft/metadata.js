@@ -9,7 +9,8 @@
     "npm": "^3.5"
   },
   "dependencies": {
-    "metadata-abstract-ui": "^2.0.0-beta.14"
+    "metadata-abstract-ui": "^2.0.0-beta.14",
+    "react-portal": "^3.0.0"
   },
   "devDependencies": {},
   "peerDependencies": {
