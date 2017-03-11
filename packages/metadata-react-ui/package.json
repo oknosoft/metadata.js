@@ -9,15 +9,15 @@
     "npm": "^3.5"
   },
   "dependencies": {
-    "metadata-abstract-ui": "^2.0.0-beta.14",
-    "react-portal": "^3.0.0"
+    "metadata-abstract-ui": "^2.0.0-beta.14"
   },
   "devDependencies": {},
   "peerDependencies": {
     "material-ui": "^0.17",
     "react-data-grid": "^2.0",
     "react-data-grid-addons": "^2.0",
-    "react-virtualized": "^9.0"
+    "react-virtualized": "^9.2",
+    "react-portal": "^3.0"
   },
   "main": "dist/index.js",
   "repository": {
