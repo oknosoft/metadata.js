@@ -24,10 +24,10 @@ export default class Dialog extends Component {
     return {
       title: "",
       tabs: {},
-      left: 0,
-      top: 50,
-      width: 420,
-      height: 400,
+      left: 50,
+      top: 70,
+      width: 620,
+      height: 420,
       isVisible: false,
       isFullscreen: false,
       isResizable: false,
@@ -95,11 +95,11 @@ export default class Dialog extends Component {
           left={this.props.left}
           top={this.props.top}
           buttons={[
-            <IconButton tooltip={"развернуть"} onTouchTap={() => this.handleFullscreenClick()}>
+            <IconButton touch={true} tooltip={"развернуть"} onTouchTap={() => this.handleFullscreenClick()}>
               {this.props.isFullscreen ? <FullscreenExitIcon color={"white"} /> : <FullscreenIcon color={"white"} />}
             </IconButton>,
 
-            <IconButton tooltip={"закрыть"} onTouchTap={() => this.handleCloseClick()}>
+            <IconButton touch={true} tooltip={"закрыть"} onTouchTap={() => this.handleCloseClick()}>
               <CloseIcon color={"white"} />
             </IconButton>,
           ]}>
