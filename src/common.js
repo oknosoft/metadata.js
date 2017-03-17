@@ -647,9 +647,7 @@ function MetaEngine() {
 		 */
 		record_log: {
 			value: function (err) {
-				if($p.ireg && $p.ireg.log)
-					$p.ireg.log.record(err);
-				console.log(err);
+				$p.ireg && $p.ireg.log && $p.ireg.log.record(err);
 			}
 		},
 

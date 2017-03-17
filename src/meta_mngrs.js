@@ -2672,21 +2672,26 @@ function LogManager(){
 		record: {
 			value: function(msg){
 
+        if(console){
+          console.log(msg);
+        }
+
 				if(msg instanceof Error){
-					if(console)
-						console.log(msg);
 					msg = {
 						class: "error",
 						note: msg.toString()
 					}
-				}else if(typeof msg == "object" && !msg.class && !msg.obj){
+				}
+				else if(typeof msg == "object" && !msg.class && !msg.obj){
 					msg = {
 						class: "obj",
 						obj: msg,
 						note: msg.note
 					};
-				}else if(typeof msg != "object")
-					msg = {note: msg};
+				}
+				else if(typeof msg != "object"){
+          msg = {note: msg};
+        }
 
 				msg.date = Date.now() + $p.wsql.time_diff;
 
@@ -2700,11 +2705,14 @@ function LogManager(){
 					msg.sequence = parseInt(res[0].sequence) + 1;
 
 				// класс сообщения
-				if(!msg.class)
-					msg.class = "note";
+				if(!msg.class){
+          msg.class = "note";
+        }
 
 				$p.wsql.alasql("insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)",
 					[msg.date + "¶" + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
+
+        msg.note && $p.msg && $p.msg.show_msg && $p.msg.show_msg([msg.class, msg.note]);
 
 			}
 		},
