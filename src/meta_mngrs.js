@@ -2672,11 +2672,10 @@ function LogManager(){
 		record: {
 			value: function(msg){
 
-        if(console){
-          console.log(msg);
-        }
-
 				if(msg instanceof Error){
+          if(console){
+            console.log(msg);
+          }
 					msg = {
 						class: "error",
 						note: msg.toString()
@@ -2696,13 +2695,11 @@ function LogManager(){
 				msg.date = Date.now() + $p.wsql.time_diff;
 
 				// уникальность ключа
-				if(!smax)
-					smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?");
+				if(!smax){
+          smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?");
+        }
 				var res = smax([msg.date]);
-				if(!res.length || res[0].sequence === undefined)
-					msg.sequence = 0;
-				else
-					msg.sequence = parseInt(res[0].sequence) + 1;
+        msg.sequence = (!res.length || res[0].sequence === undefined) ? 0 : parseInt(res[0].sequence) + 1;
 
 				// класс сообщения
 				if(!msg.class){
