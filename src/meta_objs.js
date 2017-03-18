@@ -755,6 +755,32 @@ CatObj.prototype.__define({
         this._presentation = String(v);
       }
     }
+  },
+
+  /**
+   * ### В иерархии
+   * Выясняет, находится ли текущий объект в указанной группе
+   *
+   * @param group {Object|Array} - папка или массив папок
+   *
+   */
+  in_hierarchy: {
+    value: function (group) {
+      var t = this;
+      if(Array.isArray(group)){
+        return group.some(function (v) {
+          return t.in_hierarchy(v);
+        });
+      }
+      if(this == group || t.parent == group){
+        return true;
+      }
+      var parent = t.parent;
+      if(parent && !parent.empty()){
+        return parent.in_hierarchy(group);
+      }
+      return group == $p.utils.blank.guid;
+    }
   }
 
 })
