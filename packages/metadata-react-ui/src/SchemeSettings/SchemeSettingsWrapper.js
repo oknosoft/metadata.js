@@ -23,7 +23,6 @@ import Dialog from "metadata-ui/Dialog"
 import { getTabsContent } from "./SchemeSettingsTabs"
 
 export default class SchemeSettingsWrapper extends Component {
-
   static propTypes = {
     scheme: PropTypes.object.isRequired,
     handleSchemeChange: PropTypes.func.isRequired,
@@ -39,7 +38,7 @@ export default class SchemeSettingsWrapper extends Component {
     this.state = {
       scheme,
       open: false,
-      isFullscreen: false,
+      fullscreen: false,
       variants: [scheme]
     }
 
@@ -53,11 +52,15 @@ export default class SchemeSettingsWrapper extends Component {
   }
 
   handleOpen = () => {
-    this.setState({open: true});
+    this.setState({
+      open: true
+    });
   }
 
   handleClose = () => {
-    this.setState({open: false});
+    this.setState({
+      open: false
+    });
   }
 
   handleOk = () => {
@@ -71,14 +74,11 @@ export default class SchemeSettingsWrapper extends Component {
   }
 
   handleSearchChange = (event, newValue) => {
-
   }
 
   handleVariantChange = (event, index, value) => {
-
     const {_manager} = this.state.scheme;
     this.handleSchemeChange(_manager.get(value));
-
   }
 
   componentDidMount = () => {
@@ -95,7 +95,7 @@ export default class SchemeSettingsWrapper extends Component {
 
   handleFullscreenClick() {
     this.setState({
-      isFullscreen: !this.state.isFullscreen
+      fullscreen: !this.state.fullscreen
     });
   }
 
@@ -169,11 +169,11 @@ export default class SchemeSettingsWrapper extends Component {
           title={"Настройка моего списка"}
           actions={actions}
           tabs={getTabsContent(scheme, handleSchemeChange, tabParams)}
-          isResizable={true}
-          isVisible={open}
+          resizable={true}
+          visible={open}
           width={700}
           height={300}
-          isFullscreen={this.state.isFullscreen}
+          fullscreen={this.state.fullscreen}
           onFullScreenClick={() => this.handleFullscreenClick()}
           onCloseClick={() => this.handleCloseClick()} />
       </div>
