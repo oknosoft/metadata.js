@@ -402,6 +402,10 @@ function OCombo(attr){
 
 	};
 
+  this.open_selection = function () {
+    aclick.call({name: "select"});
+  }
+
 	var _unload = this.unload;
 	this.unload = function () {
 
