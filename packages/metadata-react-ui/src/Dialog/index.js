@@ -24,13 +24,13 @@ export default class Dialog extends Component {
     return {
       title: "",
       tabs: {},
-      left: 50,
-      top: 70,
-      width: 620,
-      height: 420,
-      isVisible: false,
-      isFullscreen: false,
-      isResizable: false,
+      left: null,
+      top: null,
+      width: 420,
+      height: 400,
+      visible: false,
+      fullscreen: false,
+      resizable: false,
       onCloseClick: null,
       onFullScreenClick: null
     }
@@ -40,9 +40,9 @@ export default class Dialog extends Component {
     return {
       title: PropTypes.string,
       tabs: PropTypes.object, // Object with title:tab pairs.
-      isVisible: PropTypes.bool,
-      isFullscreen: PropTypes.bool,
-      isResizable: PropTypes.bool,
+      visible: PropTypes.bool,
+      fullscreen: PropTypes.bool,
+      resizable: PropTypes.bool,
       width: PropTypes.number,
       height: PropTypes.number,
       left: PropTypes.number,
@@ -84,11 +84,11 @@ export default class Dialog extends Component {
 
   render() {
     return (
-      <ReactPortal isOpened={this.props.isVisible}>
+      <ReactPortal isOpened={this.props.visible}>
         <FloatingPanel
           theme={"material-ui"}
-          isResizable={this.props.isResizable}
-          isFullscreen={this.props.isFullscreen}
+          resizable={this.props.resizable}
+          fullscreen={this.props.fullscreen}
           title={this.props.title}
           width={this.props.width}
           height={this.props.height}
@@ -96,7 +96,7 @@ export default class Dialog extends Component {
           top={this.props.top}
           buttons={[
             <IconButton touch={true} tooltip={"развернуть"} onTouchTap={() => this.handleFullscreenClick()}>
-              {this.props.isFullscreen ? <FullscreenExitIcon color={"white"} /> : <FullscreenIcon color={"white"} />}
+              {this.props.fullscreen ? <FullscreenExitIcon color={"white"} /> : <FullscreenIcon color={"white"} />}
             </IconButton>,
 
             <IconButton touch={true} tooltip={"закрыть"} onTouchTap={() => this.handleCloseClick()}>

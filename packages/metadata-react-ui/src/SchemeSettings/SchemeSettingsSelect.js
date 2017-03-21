@@ -50,10 +50,9 @@ export default class SchemeSettingsSelect extends Component {
     proto.name = proto.name.replace(/[0-9]/g, '') + Math.floor(10 + Math.random() * 21);
     proto.ref = "";
 
-    scheme._manager.create(proto)
-       .then((scheme) => {
-         handleSchemeChange(scheme)
-       })
+    scheme._manager.create(proto).then((scheme) => {
+      handleSchemeChange(scheme)
+    })
   }
 
   handleNameChange = () => {
