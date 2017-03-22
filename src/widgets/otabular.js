@@ -116,7 +116,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
         }
       }
       else{
-        if(rId < _ts.count()){
+        if(rId < _ts.count() - 1){
           _ts.swap(rId, rId+1);
           setTimeout(function () {
             _grid.selectRow(rId+1);
