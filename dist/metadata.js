@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-03-21 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-03-24 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -2229,18 +2229,6 @@ function Col_struct(id,width,type,align,sort,caption){
 function InterfaceObjs(){
 
 	var iface = this;
-
-	/**
-	 * Очищает область (например, удаляет из div все дочерние элементы)
-	 * @method clear_svgs
-	 * @param area {HTMLElement|String}
-	 */
-	this.clear_svgs = function(area){
-		if(typeof area === "string")
-			area = document.getElementById(area);
-		while (area.firstChild)
-			area.removeChild(area.firstChild);
-	};
 
 	/**
 	 * Возвращает координату левого верхнего угла элемента относительно документа
@@ -13458,7 +13446,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
         }
       }
       else{
-        if(rId < _ts.count()){
+        if(rId < _ts.count() - 1){
           _ts.swap(rId, rId+1);
           setTimeout(function () {
             _grid.selectRow(rId+1);

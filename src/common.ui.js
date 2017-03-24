@@ -40,18 +40,6 @@ function InterfaceObjs(){
 	var iface = this;
 
 	/**
-	 * Очищает область (например, удаляет из div все дочерние элементы)
-	 * @method clear_svgs
-	 * @param area {HTMLElement|String}
-	 */
-	this.clear_svgs = function(area){
-		if(typeof area === "string")
-			area = document.getElementById(area);
-		while (area.firstChild)
-			area.removeChild(area.firstChild);
-	};
-
-	/**
 	 * Возвращает координату левого верхнего угла элемента относительно документа
 	 * @method get_offset
 	 * @param elm {HTMLElement} - элемент, координату которого, необходимо определить
