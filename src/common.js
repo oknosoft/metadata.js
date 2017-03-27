@@ -68,8 +68,9 @@ Object.defineProperties(Object.prototype, {
 			if(include && include.length){
 				for(i = 0; i<include.length; i++){
 					f = include[i];
-					if(exclude && exclude.indexOf(f)!=-1)
-						continue;
+					if(exclude && exclude.indexOf(f)!=-1){
+            continue;
+          }
 					// копируем в dst свойства src, кроме тех, которые унаследованы от Object
 					if((typeof tobj[f] == "undefined") || (tobj[f] != src[f]))
 						this[f] = src[f];
@@ -92,15 +93,18 @@ Object.defineProperties(Object.prototype, {
 	 * @method _clone
 	 * @for Object
 	 * @param src {Object|Array} - исходный объект
-	 * @param [exclude_propertyes] {Object} - объект, в ключах которого имена свойств, которые не надо копировать
+	 * @param [exclude] {Array} - объект, в ключах которого имена свойств, которые не надо копировать
 	 * @returns {Object|Array} - копия объекта
 	 */
 	_clone: {
-		value: function() {
+		value: function(exclude) {
 			if(!this || "object" !== typeof this)
 				return this;
 			var p, v, c = "function" === typeof this.pop ? [] : {};
 			for(p in this){
+        if(exclude && exclude.indexOf(p)!=-1){
+          continue;
+        }
 				if (this.hasOwnProperty(p)){
 					v = this[p];
 					if(v){
@@ -108,7 +112,7 @@ Object.defineProperties(Object.prototype, {
 							c[p] = v;
 
 						else if("object" === typeof v)
-							c[p] = v._clone();
+							c[p] = v._clone(exclude);
 
 						else
 							c[p] = v;
