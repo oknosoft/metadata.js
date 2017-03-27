@@ -15,12 +15,9 @@ import FlatButton from "material-ui/FlatButton";
 import TextField from "material-ui/TextField";
 import DropDownMenu from 'material-ui/DropDownMenu';
 import MenuItem from 'material-ui/MenuItem';
-
-// import Dialog from "material-ui/Dialog";
-// import SchemeSettingsTabs from "./SchemeSettingsTabs";
-
 import Dialog from "metadata-ui/Dialog"
-import { getTabsContent } from "./SchemeSettingsTabs"
+import { getTabsContent, SchemeSettingsTabs } from "./SchemeSettingsTabs"
+import styles from "./styles/SchemeSettingsWrapper.scss";
 
 export default class SchemeSettingsWrapper extends Component {
   static propTypes = {
@@ -105,18 +102,17 @@ export default class SchemeSettingsWrapper extends Component {
     const {show_search, show_variants, tabParams} = props
 
     const actions = [
-      <RaisedButton
-        key={0}
-        label="Применить"
-        primary={true}
-        keyboardFocused={true}
-        onTouchTap={handleOk} />,
-
       <FlatButton
-        key={1}
+        key={0}
         label="Отмена"
         secondary={true}
         onTouchTap={handleClose} />,
+
+      <RaisedButton
+        key={1}
+        label="Применить"
+        primary={true}
+        onTouchTap={handleOk} />,
     ];
 
     const menuitems = [];
@@ -127,40 +123,33 @@ export default class SchemeSettingsWrapper extends Component {
     }
 
     return (
-      <div>
-        {show_search ?
-            <TextField
-              name="search"
-              ref={(search) => {this.searchInput = search;}}
-              width={300}
-              underlineShow={false}
-              style={{backgroundColor: 'white', height: 36, top: -6, padding: 6}}
-              onChange={handleSearchChange}
-              disabled
-            />
-          :
-          null
+      <div className={styles.schemeSettingsWrapper}>
+        {/* Search box */}
+        {show_search ? <TextField
+          name="search"
+          ref={(search) => {this.searchInput = search;}}
+          width={300}
+          underlineShow={false}
+          className={styles.searchBox}
+          onChange={handleSearchChange}
+          disabled /> : null
         }
 
-        {
-          show_variants && scheme ?
-            <DropDownMenu
-              ref={(ref) => {
-                if(ref){
-                  const {style} = ref.rootNode.firstChild.children[1];
-                  style.lineHeight = '36px';
-                  style.top = '6px';
-                }
-              }}
-              maxHeight={300}
-              value={scheme.ref}
-              onChange={handleVariantChange}>
-              {menuitems}
-            </DropDownMenu>
-            :
-            null
-        }
 
+        {/* Variants */}
+        {show_variants && scheme ? <DropDownMenu
+          className={styles.schemeVariants}
+          maxHeight={300}
+          labelStyle={{
+            lineHeight: "48px"
+          }}
+          value={scheme.ref}
+          onChange={handleVariantChange}>
+          {menuitems}
+        </DropDownMenu> : null}
+
+
+        {/* Show list configuration button */}
         <IconButton touch={true} tooltip="Настройка списка" onTouchTap={handleOpen}>
           <IconSettings />
         </IconButton>

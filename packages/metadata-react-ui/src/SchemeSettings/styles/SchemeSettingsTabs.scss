@@ -1,0 +1,13 @@
+.groups {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.groupDimensions {
+    flex: 1;
+}
+
+.groupResources {
+    flex: 1;
+}

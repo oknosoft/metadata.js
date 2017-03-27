@@ -4,8 +4,8 @@ import ReactDataGrid from "react-data-grid";
 import DumbLoader from "../DumbLoader";
 import DataCell from '../DataField/DataCell'
 import DefaultToolbar from "./TabularSectionToolbar"
-
-
+import { AutoSizer } from "react-virtualized";
+import styles from "./TabularSection.scss";
 
 // // Import the necessary modules.
 // import { Menu } from "react-data-grid-addons";
@@ -181,7 +181,6 @@ export default class TabularSection extends Component {
   }
 
   render() {
-
     const {props, state, context, rowGetter, onRowsSelected, onRowsDeselected, handleAdd, handleRemove, handleUp, handleDown, handleRowUpdated} = this;
     const {_meta, _tabular, _columns, scheme, selectedIds, Toolbar} = state;
     const {_obj, rowSelection, deny_add_del, deny_reorder, minHeight, handleCustom} = props;
@@ -190,6 +189,7 @@ export default class TabularSection extends Component {
       if (!scheme) {
         return <DumbLoader title="Чтение настроек компоновки..."/>
       }
+
       return <DumbLoader title="Ошибка настроек компоновки..."/>
     }
 
@@ -204,45 +204,44 @@ export default class TabularSection extends Component {
     //   handleRemove={}
     // />
 
-    const gridProps = {
-      ref: "grid",
-      columns: _columns,
-      enableCellSelect: true,
-      rowGetter: rowGetter,
-      rowsCount: _tabular.count(),
-      onRowUpdated: handleRowUpdated,
-      minHeight: minHeight || 200
-    }
-
-    if(rowSelection){
+    if (rowSelection) {
       rowSelection.onRowsSelected = onRowsSelected
       rowSelection.onRowsDeselected = onRowsDeselected
       rowSelection.selectBy.keys.values = selectedIds
-      gridProps.rowSelection = rowSelection
     }
 
     return (
-      <div>
+      <div className={styles.tabularSection}>
+        <div className={styles.tabularSectionToolbar}>
+          <Toolbar
+            handleAdd={handleAdd}
+            handleRemove={handleRemove}
+            handleUp={handleUp}
+            handleDown={handleDown}
+            handleCustom={handleCustom}
+            deny_add_del={deny_add_del}
+            deny_reorder={deny_reorder}
+            scheme={scheme} />
+        </div>
 
-        <Toolbar
-          handleAdd={handleAdd}
-          handleRemove={handleRemove}
-          handleUp={handleUp}
-          handleDown={handleDown}
-          handleCustom={handleCustom}
+        <div className={styles.tabularSectionContent}>
+          <AutoSizer>
+            {({width, height}) => (
+              <ReactDataGrid
+                minWidth={width}
+                minHeight={height}
 
-          deny_add_del={deny_add_del}
-          deny_reorder={deny_reorder}
-
-          scheme={scheme}
-
-        />
-
-        <ReactDataGrid {...gridProps} />
-
+                ref={"grid"}
+                columns={_columns}
+                enableCellSelect={true}
+                rowGetter={rowGetter}
+                rowsCount={_tabular.count()}
+                onRowUpdated={handleRowUpdated}
+                rowSelection={rowSelection} />
+            )}
+          </AutoSizer>
+        </div>
       </div>
     )
-
-
   }
 }
