@@ -9,9 +9,9 @@ import {Toolbar, ToolbarGroup, ToolbarTitle} from "material-ui/Toolbar";
 import IconButton from "material-ui/IconButton";
 import DataField, {FieldSelect} from "../DataField";
 import Divider from 'material-ui/Divider';
-
 import SaveIcon from "material-ui/svg-icons/content/save";
 import CopyIcon from "material-ui/svg-icons/content/content-copy";
+import styles from "./styles/SchemeSettingsSelect.scss";
 
 export default class SchemeSettingsSelect extends Component {
 
@@ -26,22 +26,18 @@ export default class SchemeSettingsSelect extends Component {
   }
 
   constructor(props, context) {
-
     super(props, context);
-
     const {scheme} = props;
     const {$p} = context;
 
     this.state = $p.dp.scheme_settings.dp(scheme);
-
   }
 
   handleSave = () => {
     const {scheme, handleSchemeChange} = this.props
-    scheme.save()
-      .then(() => {
-        handleSchemeChange(scheme)
-      })
+    scheme.save().then(() => {
+      handleSchemeChange(scheme)
+    })
   }
 
   handleCreate = () => {
@@ -66,50 +62,43 @@ export default class SchemeSettingsSelect extends Component {
     const {scheme, handleSchemeChange, minHeight} = props
 
     return (
-      <div style={{height: minHeight}}>
+      <div className={styles.schemesSettingsSelect}>
+        <div className={styles.schemesSettingsSelectToolbar}>
+          <Toolbar>
+            <ToolbarGroup className={"meta-toolbar-group"} firstChild={true}>
+              <IconButton touch={true} tooltip="Сохранить вариант настроек" tooltipPosition="bottom-right" onTouchTap={handleSave}>
+                <SaveIcon />
+              </IconButton>
 
-        <Toolbar>
-          <ToolbarGroup className={"meta-toolbar-group"} firstChild={true}>
-            <IconButton touch={true} tooltip="Сохранить вариант настроек" tooltipPosition="bottom-right" onTouchTap={handleSave}>
-              <SaveIcon />
-            </IconButton>
+              <IconButton touch={true} tooltip="Создать копию настроек" tooltipPosition="bottom-right" onTouchTap={handleCreate}>
+                <CopyIcon />
+              </IconButton>
+            </ToolbarGroup>
 
-            <IconButton touch={true} tooltip="Создать копию настроек" tooltipPosition="bottom-right" onTouchTap={handleCreate}>
-              <CopyIcon />
-            </IconButton>
+            <ToolbarGroup className={"meta-toolbar-group"}>
+              <ToolbarTitle text="Настройка" />
+              <div style={{width: 200}}>
+                <FieldSelect
+                  ref="fld_scheme"
+                  _obj={_obj}
+                  _fld="scheme"
+                  _meta={_meta}
+                  handleValueChange={handleSchemeChange} />
+              </div>
+            </ToolbarGroup>
+          </Toolbar>
+        </div>
 
-          </ToolbarGroup>
+        <div className={styles.schemesSettingsSelectContent}>
+          <DataField
+            _obj={scheme}
+            _fld="name"
+            handleValueChange={handleNameChange} />
 
-          <ToolbarGroup className={"meta-toolbar-group"}>
-
-            <ToolbarTitle text="Настройка" />
-
-            <div style={{width: 200}}>
-              <FieldSelect
-                ref="fld_scheme"
-                _obj={_obj}
-                _fld="scheme"
-                _meta={_meta}
-                handleValueChange={handleSchemeChange}
-              />
-            </div>
-
-          </ToolbarGroup>
-
-        </Toolbar>
-
-        <div style={{marginTop: 16}}></div>
-
-        <DataField
-          _obj={scheme}
-          _fld="name"
-          handleValueChange={handleNameChange}
-        />
-        <DataField
-          _obj={scheme}
-          _fld="query"
-        />
-
+          <DataField
+            _obj={scheme}
+            _fld="query" />
+        </div>
       </div>
     )
 

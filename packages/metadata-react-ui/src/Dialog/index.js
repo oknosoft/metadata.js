@@ -7,12 +7,10 @@ import CloseIcon from "material-ui/svg-icons/navigation/close";
 import ReactPortal from "react-portal";
 
 import {
-  Button,
   Content,
   FloatingPanel,
-  Footer,
   Tab,
-  Toolbar,
+  Footer
 } from "react-panels";
 
 /**
@@ -32,7 +30,8 @@ export default class Dialog extends Component {
       fullscreen: false,
       resizable: false,
       onCloseClick: null,
-      onFullScreenClick: null
+      onFullScreenClick: null,
+      actions: [],
     }
   }
 
@@ -49,11 +48,20 @@ export default class Dialog extends Component {
       top: PropTypes.number,
       onCloseClick: PropTypes.func,
       onFullScreenClick: PropTypes.func,
+      actions: PropTypes.array,
     }
   }
 
-  constructor(props) {
-    super(props);
+  renderActions() {
+    if (this.props.actions.length === 0) {
+      return null;
+    }
+
+    return (
+      <Footer>
+        {this.props.actions}
+      </Footer>
+    );
   }
 
   renderTabs() {
@@ -64,6 +72,8 @@ export default class Dialog extends Component {
         <Content>
           {this.props.tabs[tabName]}
         </Content>
+
+        {this.renderActions()}
       </Tab>);
     }
 
