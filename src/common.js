@@ -576,7 +576,7 @@ function MetaEngine() {
 						top = selection._top;
 						delete selection._top;
 					}else
-						top = 300;
+						top = 1000;
 				}
 
 				for(var i in arr){
