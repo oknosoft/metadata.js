@@ -112,9 +112,15 @@ export default class AbstracrAdapter extends MetaEventEmitter{
 	 * @return {Promise.<Array>}
 	 */
 	find_rows(_mgr, selection) {
-
 		return Promise.resolve([]);
-
 	}
 
+	/**
+	 * ### Получить количество документов, принадлежащих данному менеджеру.
+	 * @param  {DataManager} _mgr Менеджер данных.
+	 * @return {Promise}
+	 */
+	get_total_rows(_mgr) {
+		return Promise.resolve(0);
+	}
 }

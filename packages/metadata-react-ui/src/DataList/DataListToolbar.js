@@ -12,11 +12,11 @@ import PrintIcon from "material-ui/svg-icons/action/print";
 import AttachIcon from "material-ui/svg-icons/editor/attach-file";
 import SelectIcon from "material-ui/svg-icons/av/playlist-add-check";
 import SchemeSettings from "../SchemeSettings";
+import styles from "./DataListToolbar.scss";
 
 export default class DataListToolbar extends Component {
 
   static propTypes = {
-
     selection_mode: PropTypes.bool,                   // режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
     deny_add_del: PropTypes.bool,                     // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
 
@@ -57,16 +57,14 @@ export default class DataListToolbar extends Component {
         </IconButton>
       );
       buttons.push(
-        <IconButton key="del" touch={true} tooltip="Пометить на удаление" tooltipPosition="bottom-center"
-                    onTouchTap={props.handleRemove}>
+        <IconButton key="del" touch={true} tooltip="Пометить на удаление" tooltipPosition="bottom-center" onTouchTap={props.handleRemove}>
           <RemoveIcon />
         </IconButton>
       );
     }
 
     return (
-
-      <Toolbar>
+      <Toolbar className={styles.dataListToolbar}>
         <ToolbarGroup className={"meta-toolbar-group"} firstChild={true}>
           {buttons}
         </ToolbarGroup>

@@ -903,6 +903,10 @@ function mngrs($p) {
 			return this.adapter.find_rows(this, selection);
 		}
 
+		get_total_rows() {
+			return this.adapter.get_total_rows(this);
+		}
+
 		extra_fields(obj) {
 			var destinations = $p.cat.destinations || $p.cch.destinations,
 			    pn = md.class_name_to_1c(this.class_name).replace(".", "_"),
@@ -2826,13 +2830,15 @@ class DataProcessorObj extends DataObj {
 		const cmd = manager.metadata();
 
 		for (let f in cmd.fields) {
-			attr[f] = utils.fetch_type("", cmd.fields[f].type);
+			if (!attr[f]) {
+				attr[f] = utils.fetch_type("", cmd.fields[f].type);
+			}
 		}
-
 		for (let f in cmd["tabular_sections"]) {
-			attr[f] = [];
+			if (!attr[f]) {
+				attr[f] = [];
+			}
 		}
-
 		utils._mixin(this, attr);
 	}
 }

@@ -532,7 +532,8 @@ function log_manager() {
 
 function scheme_settings() {
 
-	const { wsql, utils, cat, dp, md, classes } = this;
+	const { wsql, utils, cat, dp, md } = this;
+	const classes = this.classes || this;
 
 	/**
   * ### Менеджер настроек отчетов и динсписков
@@ -552,22 +553,22 @@ function scheme_settings() {
 
 				// получаем сохраненную настройку
 				const scheme_name = this.scheme_name(class_name);
-				let ref = wsql.get_user_param(scheme_name, "string");
 
-				function set_default_and_resolve(obj) {
-					resolve(obj.set_default());
-				}
+				const find_scheme = () => {
 
-				function find_scheme() {
-					cat.scheme_settings.find_rows_remote({
+					const opt = {
 						_view: 'doc/scheme_settings',
 						_top: 100,
 						_skip: 0,
 						_key: {
-							startkey: [class_name],
-							endkey: [class_name + '|']
+							startkey: [class_name, 0],
+							endkey: [class_name, 9999]
 						}
-					}).then(function (data) {
+					};
+
+					const query = this.find_rows_remote ? this.find_rows_remote(opt) : this.pouch_find_rows(opt);
+
+					query.then(data => {
 						// если существует с текущим пользователем, берём его, иначе - первый попавшийся
 						if (data.length == 1) {
 							set_default_and_resolve(data[0]);
@@ -588,20 +589,22 @@ function scheme_settings() {
 						} else {
 							create_scheme();
 						}
-					}).catch(function (err) {
+					}).catch(err => {
 						create_scheme();
 					});
+				};
+
+				let ref = wsql.get_user_param(scheme_name, "string");
+
+				function set_default_and_resolve(obj) {
+					resolve(obj.set_default());
 				}
 
 				function create_scheme() {
 					if (!utils.is_guid(ref)) {
 						ref = utils.generate_guid();
 					}
-					cat.scheme_settings.create({ ref }).then(function (obj) {
-						return obj.fill_default(class_name).save();
-					}).then(function (obj) {
-						set_default_and_resolve(obj);
-					});
+					cat.scheme_settings.create({ ref }).then(obj => obj.fill_default(class_name).save()).then(obj => set_default_and_resolve(obj));
 				}
 
 				if (ref) {
@@ -612,7 +615,7 @@ function scheme_settings() {
 						} else {
 							find_scheme();
 						}
-					}).catch(function (err) {
+					}).catch(err => {
 						find_scheme();
 					});
 				} else {
@@ -718,6 +721,13 @@ function scheme_settings() {
 			this._setter('query', v);
 		}
 
+		get tag() {
+			return this._getter('tag');
+		}
+		set tag(v) {
+			this._setter('tag', v);
+		}
+
 		get date_from() {
 			return this._getter('date_from');
 		}
@@ -774,11 +784,11 @@ function scheme_settings() {
 			this._setter_ts('params', v);
 		}
 
-		get scheme() {
-			return this._getter_ts('scheme');
+		get composition() {
+			return this._getter_ts('composition');
 		}
-		set scheme(v) {
-			this._setter_ts('scheme', v);
+		set composition(v) {
+			this._setter_ts('composition', v);
 		}
 
 		/**
@@ -937,7 +947,7 @@ function scheme_settings() {
 			      _meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]),
 			      res = [];
 
-			this.fields.find_rows({ use: true }, function (row) {
+			this.fields.find_rows({ use: true }, row => {
 
 				const fld_meta = _meta.fields[row.field] || _mgr.metadata(row.field);
 				let column;
@@ -947,8 +957,8 @@ function scheme_settings() {
 						key: row.field,
 						name: row.caption,
 						resizable: true,
-						width: row.width == '*' ? 250 : parseInt(row.width) || 140,
-						ctrl_type: row.ctrl_type
+						ctrl_type: row.ctrl_type,
+						width: row.width == '*' ? 250 : parseInt(row.width) || 140
 					};
 				} else {
 					column = {
@@ -1010,6 +1020,13 @@ function scheme_settings() {
 			this._setter('parent', v);
 		}
 
+		get use() {
+			return this._getter('use');
+		}
+		set use(v) {
+			this._setter('use', v);
+		}
+
 		get field() {
 			return this._getter('field');
 		}
@@ -1029,13 +1046,6 @@ function scheme_settings() {
 	};
 
 	this.CatScheme_settingsFieldsRow = class CatScheme_settingsFieldsRow extends this.CatScheme_settingsDimensionsRow {
-
-		get use() {
-			return this._getter('use');
-		}
-		set use(v) {
-			this._setter('use', v);
-		}
 
 		get width() {
 			return this._getter('width');
@@ -1146,20 +1156,20 @@ function scheme_settings() {
 		}
 	};
 
-	this.CatScheme_settingsSchemeRow = class CatScheme_settingsSchemeRow extends classes.TabularSectionRow {
-
-		get parent() {
-			return this._getter('parent');
-		}
-		set parent(v) {
-			this._setter('parent', v);
-		}
+	this.CatScheme_settingsCompositionRow = class CatScheme_settingsSchemeRow extends this.CatScheme_settingsDimensionsRow {
 
 		get kind() {
 			return this._getter('kind');
 		}
 		set kind(v) {
 			this._setter('kind', v);
+		}
+
+		get definition() {
+			return this._getter('definition');
+		}
+		set definition(v) {
+			this._setter('definition', v);
 		}
 
 	};
@@ -1175,13 +1185,13 @@ function scheme_settings() {
 			value: new SchemeSelectManager('dp.scheme_settings')
 		}
 	});
-} /**
-  * Плагин-модификатор abstract-ui для metadata.js
-  *
-  * @module plugin
-  *
-  * Created 05.10.2016
-  */
+}; /**
+   * Плагин-модификатор abstract-ui для metadata.js
+   *
+   * @module plugin
+   *
+   * Created 05.10.2016
+   */
 
 /**
  * Экспортируем объект-плагин для модификации metadata.js
