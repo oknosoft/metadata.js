@@ -73,7 +73,6 @@ export default class DataList extends MetaComponent {
     $p.cat.scheme_settings.get_scheme(class_name).then(this.handleSchemeChange);
 
     this._isMounted = false;
-    this._multiGridReference = null;
   }
 
   // обработчик выбора значения в списке
@@ -243,10 +242,7 @@ export default class DataList extends MetaComponent {
                 <AutoSizer>
                   {({ width, height }) => (
                     <MultiGrid
-                      ref={(reference) => {
-                        this._multiGridReference = reference;
-                        return registerChild;
-                      }}
+                      ref={registerChild}
                       width={width}
                       height={height}
                       rowCount={this.state.rowsLoaded}
