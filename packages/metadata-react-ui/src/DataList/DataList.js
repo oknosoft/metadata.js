@@ -397,9 +397,12 @@ export default class DataList extends MetaComponent {
     scheme.fix_select(select, params && params.options || _mgr.class_name);
     // выполняем запрос
     return _mgr.find_rows_remote(select).then((data) => {
+
+      let reallyLoadedRows = 0;
       // обновляем массив результата
       for (var i = 0; i < data.length; i++) {
         if (this._list.has(i + startIndex) === false) {
+          reallyLoadedRows++;
           this._list.set(i + startIndex, data[i]);
         }
       }
@@ -407,7 +410,7 @@ export default class DataList extends MetaComponent {
       if (this._isMounted) {
         // Обновить количество записей.
         this.setState({
-          rowsLoaded: this.state.rowsLoaded + data.length
+          rowsLoaded: this.state.rowsLoaded + reallyLoadedRows
         });
       }
     });
