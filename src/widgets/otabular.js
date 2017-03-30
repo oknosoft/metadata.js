@@ -111,7 +111,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
         if(rId != 0){
           _ts.swap(rId-1, rId);
           setTimeout(function () {
-            _grid.selectRow(rId-1);
+            _grid.selectRow(rId-1, true);
           }, 100)
         }
       }
@@ -119,7 +119,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
         if(rId < _ts.count() - 1){
           _ts.swap(rId, rId+1);
           setTimeout(function () {
-            _grid.selectRow(rId+1);
+            _grid.selectRow(rId+1, true);
           }, 100)
         }
       }
@@ -148,7 +148,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				_ts.del(rId);
 
 				setTimeout(function () {
-					_grid.selectRowById(rId < _ts.count() ? rId + 1 : rId);
+					_grid.selectRowById(rId < _ts.count() ? rId + 1 : rId, true);
 				}, 100);
 			}
 		}
