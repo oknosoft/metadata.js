@@ -216,12 +216,12 @@ export default class DataList extends MetaComponent {
     }
 
     return (
-      <div className={styles.dataList}>
-        <div className={styles.dataListToolbar}>
+      <div className={"content-with-toolbar-layout"}>
+        <div className={"content-with-toolbar-layout__toolbar"}>
           <Toolbar {...toolbar_props} />
         </div>
 
-        <div className={styles.dataListContent}>
+        <div className={"content-with-toolbar-layout__content"}>
           <InfiniteLoader
             isRowLoaded={_isRowLoaded}
             loadMoreRows={_loadMoreRows}

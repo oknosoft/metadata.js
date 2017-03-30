@@ -211,8 +211,8 @@ export default class TabularSection extends Component {
     }
 
     return (
-      <div className={styles.tabularSection}>
-        <div className={styles.tabularSectionToolbar}>
+      <div className={"content-with-toolbar-layout"}>
+        <div className={"content-with-toolbar-layout__toolbar"}>
           <Toolbar
             handleAdd={handleAdd}
             handleRemove={handleRemove}
@@ -224,7 +224,7 @@ export default class TabularSection extends Component {
             scheme={scheme} />
         </div>
 
-        <div className={styles.tabularSectionContent}>
+        <div className={"content-with-toolbar-layout__content"}>
           <AutoSizer>
             {({width, height}) => (
               <ReactDataGrid
