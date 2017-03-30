@@ -903,10 +903,6 @@ function mngrs($p) {
 			return this.adapter.find_rows(this, selection);
 		}
 
-		get_total_rows() {
-			return this.adapter.get_total_rows(this);
-		}
-
 		extra_fields(obj) {
 			var destinations = $p.cat.destinations || $p.cch.destinations,
 			    pn = md.class_name_to_1c(this.class_name).replace(".", "_"),

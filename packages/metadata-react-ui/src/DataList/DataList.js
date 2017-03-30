@@ -52,8 +52,6 @@ export default class DataList extends MetaComponent {
 
     const state = this.state = {
       rowsLoaded: 0,
-      remoteRowsCount: 0,
-      isRemoteRowsCountLoaded: false,
       selectedRowIndex: 0,
       _meta: props._meta || props._mgr.metadata(),
 
@@ -122,11 +120,11 @@ export default class DataList extends MetaComponent {
     scheme.set_default().fix_select(state.select, params && params.options || _mgr.class_name);
     this._list.clear();
 
-    /** Create header row. */
+    // Create header row.
     const columns = scheme.columns();
     const headerColumns = columns.map(column => (column.synonym));
 
-    /** Set first row as header. */
+    // Set first row as header.
     this._list.set(0, headerColumns);
     this.setState({
       scheme,
@@ -134,11 +132,10 @@ export default class DataList extends MetaComponent {
       rowsLoaded: 1,
     });
 
-    if (this._multiGridReference !== null) {
-      /** TODO Доработать обновление сетки после изменения схемы. */
-      console.log("forceUpdateGrids()");
-      this._multiGridReference.forceUpdateGrids();
-    }
+    this._loadMoreRows({
+      startIndex: 1,
+      stopIndex: DataList.LIMIT
+    });
   }
 
   // обработчик печати теущей строки
@@ -161,16 +158,6 @@ export default class DataList extends MetaComponent {
 
   componentDidMount() {
     this._isMounted = true;
-    this.props._mgr.get_total_rows().then((remoteRowsCount) => {
-      console.log(`Remote rows count: ${remoteRowsCount}`);
-
-      if (this._isMounted) {
-        this.setState({
-          isRemoteRowsCountLoaded: true,
-          remoteRowsCount: remoteRowsCount
-        });
-      }
-    });
   }
 
   componentWillUnmount() {
@@ -239,7 +226,7 @@ export default class DataList extends MetaComponent {
           <InfiniteLoader
             isRowLoaded={_isRowLoaded}
             loadMoreRows={_loadMoreRows}
-            rowCount={this.state.remoteRowsCount}
+            rowCount={this.state.rowsLoaded + DataList.LIMIT}
             minimumBatchSize={DataList.LIMIT}>
 
             {({onRowsRendered, registerChild}) => {
@@ -262,7 +249,7 @@ export default class DataList extends MetaComponent {
                       }}
                       width={width}
                       height={height}
-                      rowCount={this.state.remoteRowsCount}
+                      rowCount={this.state.rowsLoaded}
                       columnCount={this.state.columns.length}
                       fixedColumnCount={0}
                       fixedRowCount={1}
@@ -288,6 +275,7 @@ export default class DataList extends MetaComponent {
   }
 
   _getColumnWidth = ({ index }) => {
+    // todo: Take remaining space if width of column equal '*'
     if (!isNaN(parseInt(this.state.columns[index].width))) {
       return DataList.COLUMN_DEFAULT_WIDTH;
     } else {
@@ -296,12 +284,7 @@ export default class DataList extends MetaComponent {
   }
 
   _noContentRendered = () => {
-    let message = "";
-    if (this.state.isRemoteRowsCountLoaded && this.state.remoteRowsCount === 0) {
-      message = "нет данных";
-    } else {
-      message = "загрузка...";
-    }
+    const message = "загрузка...";
 
     return (
       <div className={styles.noContentRenderer}>
@@ -339,11 +322,11 @@ export default class DataList extends MetaComponent {
     // текст ячейки
     let content = null;
     if (rowIndex === 0) {
-      content = (<div> {row[columnIndex]} </div>); /** header */
+      content = <div> {row[columnIndex]} </div>; // header
     } else if (row) {
-      content = this._formatter(row, columnIndex); /** data cell */
+      content = this._formatter(row, columnIndex); // data cell
     } else {
-      content = null; /** empty cell */
+      content = null; // empty cell
     }
 
     const onMouseOver = () => {
@@ -404,10 +387,9 @@ export default class DataList extends MetaComponent {
     const {_mgr, params} = this.props
     const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);
 
-    /** FIXME Проверить, и при необходимости установить правильные значения increment и startIndex. */
     Object.assign(select, {
-      _top: increment + 1,
-      _skip: startIndex - 1, /** Substract one because first row is header. */
+      _top: increment,
+      _skip: startIndex, // Substract one because first row is header.
       _view: 'doc/by_date',
       _raw: true
     });
@@ -415,8 +397,6 @@ export default class DataList extends MetaComponent {
     scheme.fix_select(select, params && params.options || _mgr.class_name);
     // выполняем запрос
     return _mgr.find_rows_remote(select).then((data) => {
-      console.log(`Real loaded rows: ${data.length}`);
-
       // обновляем массив результата
       for (var i = 0; i < data.length; i++) {
         if (this._list.has(i + startIndex) === false) {
@@ -427,7 +407,7 @@ export default class DataList extends MetaComponent {
       if (this._isMounted) {
         // Обновить количество записей.
         this.setState({
-          rowsLoaded: this.state.rowsLoaded + increment
+          rowsLoaded: this.state.rowsLoaded + data.length
         });
       }
     });

@@ -1008,38 +1008,6 @@ class AdapterPouch extends AbstracrAdapter{
 	}
 
 	/**
-	 * ### Получить количество документов, принадлежащих данному менеджеру.
-	 * @param  {DataManager} _mgr Менеджер данных.
-	 * @return {Promise}
-	 */
-	get_total_rows(_mgr) {
-		return new Promise((resolve, reject) => {
-			const db = this.db(_mgr);
-			const mapFunction = (doc) => {
-				emit(doc._id.split("|")[0]); // eslint-disable-line
-			};
-
-			db.query({
-				map: mapFunction,
-				reduce: "_count",
-			}, {
-				key: _mgr.class_name,
-				include_docs: false
-			}).then((response) => {
-				let total_rows = 0;
-
-				if (response.rows.length > 0) {
-					total_rows = response.rows[0].value;
-				}
-
-				resolve(total_rows);
-			}).catch((error) => {
-				reject(error);
-			});
-		});
-	}
-
-	/**
 	 * ### Сохраняет присоединенный файл
 	 *
 	 * @method save_attachment
