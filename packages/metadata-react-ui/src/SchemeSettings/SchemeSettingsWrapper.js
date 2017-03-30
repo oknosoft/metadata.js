@@ -161,7 +161,7 @@ export default class SchemeSettingsWrapper extends Component {
           resizable={true}
           visible={open}
           width={700}
-          height={300}
+          height={500}
           fullscreen={this.state.fullscreen}
           onFullScreenClick={() => this.handleFullscreenClick()}
           onCloseClick={() => this.handleCloseClick()} />

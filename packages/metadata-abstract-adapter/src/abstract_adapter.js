@@ -112,9 +112,6 @@ export default class AbstracrAdapter extends MetaEventEmitter{
 	 * @return {Promise.<Array>}
 	 */
 	find_rows(_mgr, selection) {
-
 		return Promise.resolve([]);
-
 	}
-
 }
