@@ -132,7 +132,7 @@ export default class DataList extends MetaComponent {
     });
 
     this._loadMoreRows({
-      startIndex: 1,
+      startIndex: 0,
       stopIndex: DataList.LIMIT
     });
   }
@@ -216,12 +216,12 @@ export default class DataList extends MetaComponent {
     }
 
     return (
-      <div className={styles.dataList}>
-        <div className={styles.dataListToolbar}>
+      <div className={"content-with-toolbar-layout"}>
+        <div className={"content-with-toolbar-layout__toolbar"}>
           <Toolbar {...toolbar_props} />
         </div>
 
-        <div className={styles.dataListContent}>
+        <div className={"content-with-toolbar-layout__content"}>
           <InfiniteLoader
             isRowLoaded={_isRowLoaded}
             loadMoreRows={_loadMoreRows}
@@ -385,7 +385,7 @@ export default class DataList extends MetaComponent {
 
     Object.assign(select, {
       _top: increment,
-      _skip: startIndex, // Substract one because first row is header.
+      _skip: startIndex,
       _view: 'doc/by_date',
       _raw: true
     });
@@ -397,9 +397,10 @@ export default class DataList extends MetaComponent {
       let reallyLoadedRows = 0;
       // обновляем массив результата
       for (var i = 0; i < data.length; i++) {
-        if (this._list.has(i + startIndex) === false) {
+        // Append one because first row is header.
+        if (this._list.has(1 + i + startIndex) === false) {
           reallyLoadedRows++;
-          this._list.set(i + startIndex, data[i]);
+          this._list.set(1 + i + startIndex, data[i]);
         }
       }
 

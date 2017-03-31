@@ -80,38 +80,31 @@ export default class DataObj extends Component {
 
 
   render() {
-
     const { width, height, _obj } = this.props
 
+    if (!_obj) {
+      return <div><CircularProgress size={120} thickness={5} className={classes.progress} /></div>;
+    }
+
     return (
-
-      _obj
-        ?
-      <div>
-
-        <Toolbar
-          handleSave={::this.handleSave}
-          handleSend={::this.handleSend}
-          handleMarkDeleted={::this.handleMarkDeleted}
-          handlePrint={::this.handlePrint}
-          handleAttachment={::this.handleAttachment}
-          handleClose={this.props.handleClose}
-        />
-
-        <div className={classes.cont} style={{ width }}>
-
-          {/*
-          <DataField _obj={_obj} _fld="note" handleValueChange={this.handleValueChange("note")} />
-
-          <TabularSection _obj={_obj} _tabular="cashboxes"/>
-           */}
-
+      <div className={"content-with-toolbar-layout"}>
+        <div className={"content-with-toolbar-layout__toolbar"}>
+          <Toolbar
+            handleSave={::this.handleSave}
+            handleSend={::this.handleSend}
+            handleMarkDeleted={::this.handleMarkDeleted}
+            handlePrint={::this.handlePrint}
+            handleAttachment={::this.handleAttachment}
+            handleClose={this.props.handleClose} />
         </div>
 
+        <div className={"content-with-toolbar-layout__content"}>
+          {/*
+            <DataField _obj={_obj} _fld="note" handleValueChange={this.handleValueChange("note")} />
+            <TabularSection _obj={_obj} _tabular="cashboxes"/>
+          */}
+        </div>
       </div>
-        :
-      <div ><CircularProgress size={120} thickness={5} className={classes.progress} /></div>
-
     );
   }
 }
