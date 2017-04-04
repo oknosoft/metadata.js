@@ -299,23 +299,26 @@ gulp.task('build-metadata-core', function(){
 		.pipe(gulp.dest('./dist'));
 });
 
+
+const metadataCoreFiles = [
+    './packages/metadata-core/src/utils.js',
+    './packages/metadata-core/src/i18n.ru.js',
+    './packages/metadata-core/src/jobprm.js',
+    './packages/metadata-core/src/wsql.js',
+    './packages/metadata-core/src/mngrs.js',
+    './packages/metadata-core/src/objs.js',
+    './packages/metadata-core/src/tabulars.js',
+    './packages/metadata-core/src/meta.js',
+    './packages/metadata-core/lib/aes.js',
+    './packages/metadata-core/src/common.js'
+];
+
 // metadata-core
 gulp.task('build--core', function(){
 
 	package_data = JSON.parse(require('fs').readFileSync('./packages/metadata-core/package.json', 'utf8'));
 
-	return gulp.src([
-		'./packages/metadata-core/src/utils.js',
-		'./packages/metadata-core/src/i18n.ru.js',
-		'./packages/metadata-core/src/jobprm.js',
-		'./packages/metadata-core/src/wsql.js',
-		'./packages/metadata-core/src/mngrs.js',
-		'./packages/metadata-core/src/objs.js',
-		'./packages/metadata-core/src/tabulars.js',
-		'./packages/metadata-core/src/meta.js',
-		'./packages/metadata-core/lib/aes.js',
-		'./packages/metadata-core/src/common.js'
-	])
+	return gulp.src(metadataCoreFiles)
 
 		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
 		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
@@ -329,6 +332,10 @@ gulp.task('build--core', function(){
             comments: false
         }))
         .pipe(gulp.dest('./packages/metadata-core'));
+});
+
+gulp.task("watch-metadata-core", function () {
+    gulp.watch(metadataCoreFiles,["build--core"]);
 });
 
 
