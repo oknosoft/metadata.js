@@ -3,19 +3,26 @@ import React, { Component, PropTypes } from 'react';
 import {GridList, GridTile} from 'material-ui/GridList';
 import Layout from '../FlexPanel/react-flex-layout/react-flex-layout'
 import LayoutSplitter from '../FlexPanel/react-flex-layout/react-flex-layout-splitter'
-
 import Toolbar from "./Toolbar";
 import DataField from '../DataField'
-
 import TabularSection from '../TabularSection'
-
 import classes from './DataObj.scss'
-
-
+import classnames from "classnames"
 import CircularProgress from 'material-ui/CircularProgress';
-
+import Paper from "material-ui/Paper"
 
 export default class DataObj extends Component {
+  static PAPER_STYLE = {
+    margin: "10px",
+  }
+
+  static PAPER_STYLE_FIELDS = {
+    padding: "10px",
+  }
+
+  static PAPER_STYLE_TABULAR_SECTION = {
+    height: "100%",
+  }
 
   static contextTypes = {
     $p: React.PropTypes.object.isRequired
@@ -40,33 +47,30 @@ export default class DataObj extends Component {
   }
 
   constructor(props) {
-
     super(props);
+    const metadata = this.props._obj._manager.metadata();
 
-    this.state = {};
+    this.state = {
+      fields: metadata.fields || {},
+      tabularSections: metadata.tabular_sections || {},
+    };
   }
 
-  handleSave(){
-
+  handleSave() {
     this.props.handleSave(this.props._obj)
   }
 
-  handleSend(){
-
+  handleSend() {
     this.props.handleSave(this.props._obj)
-
   }
 
-  handleMarkDeleted(){
-
+  handleMarkDeleted() {
   }
 
-  handlePrint(){
-
+  handlePrint() {
   }
 
-  handleAttachment(){
-
+  handleAttachment() {
   }
 
   handleValueChange(_fld){
@@ -78,12 +82,68 @@ export default class DataObj extends Component {
     }
   }
 
+  /**
+   * Render part with fields.
+   * @return {Element}
+   */
+  renderFields() {
+    const elements = [];
+
+    for (const fieldName in this.state.fields) {
+      elements.push(
+        <div key={fieldName} className={classes.field}>
+          <DataField _obj={this.props._obj} _fld={fieldName} />
+        </div>
+      );
+    }
+
+    if (elements.length === 0) {
+      return null;
+    }
+
+    return (
+      <Paper style={Object.assign({}, DataObj.PAPER_STYLE, DataObj.PAPER_STYLE_FIELDS)}>
+        <div className={classes.fields}>
+          {elements}
+        </div>
+      </Paper>
+    );
+  }
+
+  /**
+   * Render part with tabular sections.
+   * @return {Element} [description]
+   */
+  renderTabularSections() {
+    const elements = [];
+    const style = Object.assign({}, DataObj.PAPER_STYLE, DataObj.PAPER_STYLE_TABULAR_SECTION);
+
+    for (const tabularSectionName in this.state.tabularSections) {
+      elements.push(
+        <Paper key={tabularSectionName} style={style}>
+          <TabularSection _obj={this.props._obj} _tabular={tabularSectionName} />
+        </Paper>
+      );
+    }
+
+    if (elements.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className={classes.tabularSections}>
+        {elements}
+      </div>
+    );
+  }
 
   render() {
-    const { width, height, _obj } = this.props
-
-    if (!_obj) {
-      return <div><CircularProgress size={120} thickness={5} className={classes.progress} /></div>;
+    if (!this.props._obj) {
+      return (
+        <div>
+          <CircularProgress size={120} thickness={5} className={classes.progress} />
+        </div>
+      );
     }
 
     return (
@@ -99,10 +159,8 @@ export default class DataObj extends Component {
         </div>
 
         <div className={"content-with-toolbar-layout__content"}>
-          {/*
-            <DataField _obj={_obj} _fld="note" handleValueChange={this.handleValueChange("note")} />
-            <TabularSection _obj={_obj} _tabular="cashboxes"/>
-          */}
+          {this.renderFields()}
+          {this.renderTabularSections()}
         </div>
       </div>
     );

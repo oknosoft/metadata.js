@@ -4,6 +4,7 @@ import MetaComponent from "../common/MetaComponent";
 
 import { InfiniteLoader, AutoSizer, MultiGrid } from "react-virtualized";
 import DumbLoader from "../DumbLoader";
+import SimpleLoadingMessage from "../SimpleLoadingMessage";
 import Toolbar from "./DataListToolbar";
 import cn from "classnames";
 import styles from "./DataList.scss";
@@ -280,15 +281,7 @@ export default class DataList extends MetaComponent {
   }
 
   _noContentRendered = () => {
-    const message = "загрузка...";
-
-    return (
-      <div className={styles.noContentRenderer}>
-        <div className={styles.noContentRenderer__text}>
-          {message}
-        </div>
-      </div>
-    );
+    return <SimpleLoadingMessage />;
   }
 
   _cellRenderer = ({ columnIndex, rowIndex, isScrolling, isVisible, key, parent, style }) => {
