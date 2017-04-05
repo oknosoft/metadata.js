@@ -16,7 +16,7 @@ export default class CalculatorButton extends Component {
     style: PropTypes.object,
     onClick: PropTypes.func.isRequired,
     red: PropTypes.bool,
-    menu: PropTypes.object,
+    menu: PropTypes.element,
     disabled: PropTypes.bool,
   }
 

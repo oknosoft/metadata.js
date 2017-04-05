@@ -39,6 +39,10 @@ class Calculator extends Component {
     ]),
   }
 
+  static defaultProps = {
+    position: "bottom",
+  }
+
   constructor(props) {
     super(props);
 
@@ -57,11 +61,6 @@ class Calculator extends Component {
 
       history: []
     };
-  }
-
-  static defaultProps = {
-    position: "bottom",
-    onClose: null,
   }
 
   appendExpression(value) {
@@ -130,7 +129,7 @@ class Calculator extends Component {
     });
   }
 
-  applyPersents() {
+  applyPercents() {
     if (this.state.firstArgumentValue === null) {
       this.clearExpression();
     } else {
@@ -372,7 +371,7 @@ class Calculator extends Component {
             isExpression={this.state.isExpressionCalculator}
             value={this.props.value.toString()}
             onRemoveKeyPress={() => { this.removeLast() }}
-            onPersentsKeyPress={() => { this.applyPersents() }}
+            onPercentsKeyPress={() => { this.applyPercents() }}
             onOperationKeyPress={(operationCode) => { this.handleOperationKeyPress(operationCode) }}
             onChange={(value) => { this.handleCalculatorInputChange(value); }}
             onMenuToggleClick={() => { this.setState({ historyMenuVisible: !this.state.historyMenuVisible })}}
@@ -396,7 +395,7 @@ class Calculator extends Component {
           <CalculatorButton text={"5"}   onClick={() => { this.appendExpression("5")   }} />
           <CalculatorButton text={"6"}   onClick={() => { this.appendExpression("6")   }} />
           <CalculatorButton text={"-"}   onClick={() => { this.setOperation("-")       }} red={true} />
-          <CalculatorButton text={"%"}   onClick={() => { this.applyPersents()         }} disabled={this.state.isExpressionCalculator} />
+          <CalculatorButton text={"%"}   onClick={() => { this.applyPercents()         }} disabled={this.state.isExpressionCalculator} />
           <CalculatorButton text={"CE"}  onClick={() => { this.clearExpression()       }} red={true} />
         </div>
 

@@ -19,22 +19,21 @@ export default class CalculatorInput extends PureComponent {
       React.PropTypes.number
     ]).isRequired,
 
-    onOperationKeyPress: PropTypes.func.isRequired,
-    onRemoveKeyPress: PropTypes.func,
-    onPersentsKeyPress: PropTypes.func,
     onChange: PropTypes.func.isRequired,
+    onOperationKeyPress: PropTypes.func,
+    onRemoveKeyPress: PropTypes.func,
+    onPercentsKeyPress: PropTypes.func,
     onInputCleared: PropTypes.func,
     onMenuToggleClick: PropTypes.func,
     clearInputRequired: PropTypes.bool,
-
     menu: PropTypes.element,
   }
 
   static defaultProps = {
+    onOperationKeyPress: null,
     onRemoveKeyPress: null,
-    onPersentsKeyPress: null,
+    onPercentsKeyPress: null,
     isExpression: false,
-    isMenuVisible: false,
     onMenuToggleClick: null,
     onInputCleared: null,
     clearInputRequired: false,
@@ -76,11 +75,15 @@ export default class CalculatorInput extends PureComponent {
       event.stopPropagation();
 
       if (["+", "-", "/", "*"].indexOf(event.key) !== -1) {
-        this.props.onOperationKeyPress(event.key);
+        if (this.props.onOperationKeyPress !== null) {
+          this.props.onOperationKeyPress(event.key);
+        }
       }
 
       if (event.key === "%") {
-        this.props.onPersentsKeyPress();
+        if (this.props.onPercentsKeyPress !== null) {
+          this.props.onPercentsKeyPress();
+        }
       }
 
     } else {
