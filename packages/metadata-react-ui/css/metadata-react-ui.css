@@ -27,19 +27,21 @@
 }
 
 /* DataField */
+.meta-datafield-field {
+	min-width: 320px;
+	display: flex;
+	flex-direction: row;
+}
+
 .meta-datafield-label {
-	width: 40%;
-	display: inline-block;
+	display: flex;
+	flex: 4;
+	justify-content: flex-start;
+	align-items: center;
 }
 
 .meta-datafield-data {
-	width: 60%;
-	display: inline-block;
-}
-
-.meta-datafield-field {
-	min-width: 320px;
-	margin-right: 8px;
+	flex: 6;
 }
 
 .meta-datafield-dataselect {

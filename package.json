@@ -14,6 +14,7 @@
   "dependencies": {
     "alasql": "^0.3",
     "clipboard": "^1.5",
+    "debug": "^2.6.3",
     "decompress": "^4.0",
     "material-ui": "^0.17",
     "moment": "^2.17",
@@ -28,10 +29,11 @@
     "pouchdb-find": "^0.10",
     "pouchdb-mapreduce": "^6.1",
     "pouchdb-replication": "^6.1",
+    "react-click-outside": "^2.2.0",
     "react-data-grid": "^2.0",
     "react-data-grid-addons": "^2.0",
-    "react-virtualized": "^9.2",
     "react-panels": "git+https://github.com/nikches/react-panels",
+    "react-virtualized": "^9.2",
     "superlogin-client": "^0.5"
   },
   "devDependencies": {
