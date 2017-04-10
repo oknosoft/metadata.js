@@ -337,10 +337,6 @@ gulp.task('build--core', function(){
         .pipe(gulp.dest('./packages/metadata-core'));
 });
 
-gulp.task("watch-metadata-core", function () {
-    gulp.watch(metadataCoreFiles,["build--core"]);
-});
-
 
 // Ресурсы для codres
 gulp.task('injected-codres', function(){

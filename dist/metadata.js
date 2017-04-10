@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-03-30 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-04-10 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -173,8 +173,8 @@ var ru = moment.defineLocale('ru', {
         }
     },
     week : {
-        dow : 1, 
-        doy : 7  
+        dow : 1,
+        doy : 7
     }
 });
 
@@ -216,7 +216,7 @@ Object.defineProperties(Object.prototype, {
 
 	_mixin: {
 		value: function(src, include, exclude ) {
-			var tobj = {}, i, f; 
+			var tobj = {}, i, f;
 			if(include && include.length){
 				for(i = 0; i<include.length; i++){
 					f = include[i];
@@ -440,7 +440,7 @@ function MetaEngine() {
 			value: function(a, val, columns){
 				var o, i, finded;
 				if(typeof val != "object"){
-					for(i in a){ 
+					for(i in a){
 						o = a[i];
 						for(var j in o){
 							if(typeof o[j] !== "function" && $p.utils.is_equal(o[j], val))
@@ -448,7 +448,7 @@ function MetaEngine() {
 						}
 					}
 				}else{
-					for(i in a){ 
+					for(i in a){
 						o = a[i];
 						finded = true;
 						for(var j in val){
@@ -2135,7 +2135,7 @@ function Pouch(){
 
 							if($p.wsql.get_user_param("enable_save_pwd")){
 								if($p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")) != password){
-									$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password))   
+									$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password))
 								}
 							}
 							else if($p.wsql.get_user_param("user_pwd") != ""){
@@ -3928,7 +3928,7 @@ function Meta() {
 		var synJS = {
 			DeletionMark: '_deleted',
 			Description: 'name',
-			DataVersion: 'data_version',    
+			DataVersion: 'data_version',
 			IsFolder: 'is_folder',
 			Number: 'number_doc',
 			Date: 'date',
@@ -4529,14 +4529,14 @@ DataManager.prototype.__define({
 
       for(i in oxml){
         if(i!=" "){
-          gd += '<row open="1"><cell>' + i + '</cell>';   
+          gd += '<row open="1"><cell>' + i + '</cell>';
         }
 
         for(j in oxml[i]){
-          add_xml_row(oxml[i][j]);                        
+          add_xml_row(oxml[i][j]);
         }
 
-        if(extra_fields && i == extra_fields.title && o[extra_fields.ts]){  
+        if(extra_fields && i == extra_fields.title && o[extra_fields.ts]){
           var added = false,
             destinations_extra_fields = t.extra_fields(o),
             pnames = "property,param,Свойство,Параметр".split(","),
@@ -4567,7 +4567,7 @@ DataManager.prototype.__define({
 
         }
 
-        if(i!=" ") gd += '</row>';                          
+        if(i!=" ") gd += '</row>';
       }
       gd += '</rows>';
       return gd;
@@ -4709,7 +4709,7 @@ RefDataManager.prototype.__define({
 				return o;
 
 			if(o.is_new()){
-				return o.load();	
+				return o.load();
 
 			}else if(force_promise)
 				return Promise.resolve(o);
@@ -7407,8 +7407,10 @@ TabularSectionRow.prototype._setter = function (f, v) {
 	if(this._obj[f] == v || (!v && this._obj[f] == $p.utils.blank.guid))
 		return;
 
-	if(!this._owner._owner._data._silent)
-		Object.getNotifier(this._owner._owner).notify({
+	var _owner = this._owner._owner;
+
+	if(!_owner._data._silent)
+		Object.getNotifier(_owner).notify({
 			type: 'row',
 			row: this,
 			tabular: this._owner._name,
@@ -7421,13 +7423,13 @@ TabularSectionRow.prototype._setter = function (f, v) {
 		if(this._metadata.fields[f].choice_type.path.length == 2)
 			prop = this[this._metadata.fields[f].choice_type.path[1]];
 		else
-			prop = this._owner._owner[this._metadata.fields[f].choice_type.path[0]];
+			prop = _owner[this._metadata.fields[f].choice_type.path[0]];
 		if(prop && prop.type)
 			v = $p.utils.fetch_type(v, prop.type);
 	}
 
 	DataObj.prototype.__setter.call(this, f, v);
-	this._owner._owner._data._modified = true;
+  _owner._data._modified = true;
 
 };
 
@@ -7759,20 +7761,20 @@ function Rest(){
 			})
 			.then(function (req) {
 				var data = xmlToJSON.parseString(req.response, {
-					mergeCDATA: false, 
-					grokAttr: true, 
-					grokText: false, 
-					normalize: true, 
-					xmlns: false, 
-					namespaceKey: '_ns', 
-					textKey: '_text', 
-					valueKey: '_value', 
-					attrKey: '_attr', 
-					cdataKey: '_cdata', 
-					attrsAsObject: false, 
-					stripAttrPrefix: true, 
-					stripElemPrefix: true, 
-					childrenAsArray: false 
+					mergeCDATA: false,
+					grokAttr: true,
+					grokText: false,
+					normalize: true,
+					xmlns: false,
+					namespaceKey: '_ns',
+					textKey: '_text',
+					valueKey: '_value',
+					attrKey: '_attr',
+					cdataKey: '_cdata',
+					attrsAsObject: false,
+					stripAttrPrefix: true,
+					stripElemPrefix: true,
+					childrenAsArray: false
 				});
 				if(data.entry && data.entry.content && data.entry.updated){
 					var p = data.entry.content.properties, r = {}, v;
@@ -8474,13 +8476,13 @@ DataManager.prototype.__define({
 
 			var t = this,
 				cmd = attr.metadata || t.metadata(),
-				flds = ["ref", "_deleted"], 
+				flds = ["ref", "_deleted"],
 				selection = {
 					_raw: true,
 					_total_count: true,
 					_top: attr.count || 30,
 					_skip: attr.start || 0
-				},   
+				},
 				ares = [], o, mf, fldsyn;
 
 			if(cmd.form && cmd.form.selection){
@@ -8963,19 +8965,19 @@ eXcell_proto.input_keydown = function(e, t){
 			t.source.on_select.call(t.source, v);
 	}
 
-	if(e.keyCode === 8 || e.keyCode === 46){          
+	if(e.keyCode === 8 || e.keyCode === 46){
 		t.setValue("");
 		t.grid.editStop();
 		if(t.source.on_select)
 			t.source.on_select.call(t.source, "");
 
 	}else if(e.keyCode === 9 || e.keyCode === 13)
-		t.grid.editStop();                          
+		t.grid.editStop();
 
 	else if(e.keyCode === 115)
-		t.cell.firstChild.childNodes[1].onclick(e); 
+		t.cell.firstChild.childNodes[1].onclick(e);
 
-	else if(e.keyCode === 113){                      
+	else if(e.keyCode === 113){
 		if(t.source.tabular_section){
 			t.mgr = _md.value_mgr(t.source.row, t.source.col, t.source.row._metadata.fields[t.source.col].type);
 			if(t.mgr){
@@ -9029,7 +9031,7 @@ function eXcell_ocombo(cell){
 		if(t.combo)
 			return;
 
-		t.val = t.getValue();		
+		t.val = t.getValue();
 		t.cell.innerHTML = "";
 		t.combo = new OCombo({
 			parent: t.cell,
@@ -9047,7 +9049,7 @@ function eXcell_ocombo(cell){
 		if(t.combo){
 
 			if(t.combo.getComboText){
-				t.setValue(t.combo.getComboText());         
+				t.setValue(t.combo.getComboText());
 				if(!t.combo.getSelectedValue())
 					t.combo.callEvent("onChange");
 				var res = !$p.utils.is_equal(t.val, t.getValue());
@@ -9068,13 +9070,13 @@ window.eXcell_ref = eXcell_ocombo;
 
 window.eXcell_refc = eXcell_ocombo;
 
-function eXcell_pwd(cell){ 
+function eXcell_pwd(cell){
 
 	var fnedit;
-	if (cell){                
+	if (cell){
 		this.cell = cell;
 		this.grid = cell.parentNode.grid;
-		eXcell_ed.call(this); 
+		eXcell_ed.call(this);
 		fnedit = this.edit;
 		this.edit = function(){
 			fnedit.call(this);
@@ -9175,13 +9177,13 @@ eXcell_dhxCalendar.prototype.setCValue = function(val, val2){
 
 		if (async == true) {
 			t.onreadystatechange = function() {
-				if ((t.readyState == 4) || (isQt == true && t.readyState == 3)) { 
+				if ((t.readyState == 4) || (isQt == true && t.readyState == 3)) {
 					if (t.status != 200 || t.responseText == "")
 						if (!dhx4.callEvent("onAjaxError", [{xmlDoc:t, filePath:url, async:async}])) return;
 
 					window.setTimeout(function(){
 						if (typeof(onLoad) == "function") {
-							onLoad.apply(window, [{xmlDoc:t, filePath:url, async:async}]); 
+							onLoad.apply(window, [{xmlDoc:t, filePath:url, async:async}]);
 						}
 						if (longParams != null) {
 							if (typeof(longParams.postData) != "undefined") {
@@ -9223,7 +9225,7 @@ eXcell_dhxCalendar.prototype.setCValue = function(val, val2){
 			}
 		}
 
-		return {xmlDoc:t, filePath:url, async:async}; 
+		return {xmlDoc:t, filePath:url, async:async};
 
 	};
 
@@ -9255,16 +9257,16 @@ eXcell_dhxCalendar.prototype.setCValue = function(val, val2){
 		x.onreadystatechange= function(){
 			if (!x.readyState || x.readyState == 4){
 				if (call && self)
-					for (var i=0; i < call.length; i++)	
+					for (var i=0; i < call.length; i++)
 						if (call[i])
 							call[i].call((self.master||self),x.responseText,x.responseXML,x);
 				self.master=null;
-				call=self=null;	
+				call=self=null;
 			}
 		};
 
 		x.send(params||null);
-		return x; 
+		return x;
 	}
 
 })();
@@ -9399,7 +9401,7 @@ function ODropdownList(attr){
 	};
 
 	document.body.addEventListener("keydown", function (e) {
-		if(e.keyCode == 27) { 
+		if(e.keyCode == 27) {
 			div.classList.remove("open");
 		}
 	});
@@ -9705,7 +9707,7 @@ function OCombo(attr){
       return;
     }
 
-		if(e.keyCode == 115){ 
+		if(e.keyCode == 115){
 			if(e.ctrlKey && e.shiftKey){
 				if(!_obj[_field].empty())
 					_obj[_field].form_obj(attr.pwnd);
@@ -10133,7 +10135,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 	_grid.setSizes();
 	_grid.attachEvent("onPropertyChanged", function(pname, new_value, old_value){
     if(pname || _grid && _grid.getSelectedRowId()){
-      return _pwnd.on_select(new_value); 
+      return _pwnd.on_select(new_value);
     }
 	});
 	_grid.attachEvent("onCheckbox", function(rId, cInd, state){
@@ -10146,13 +10148,13 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 	_grid.attachEvent("onKeyPress", function(code,cFlag,sFlag){
 
 		switch(code) {
-			case 13:    
-			case 9:     
+			case 13:
+			case 9:
 				if (_grid.editStop)
 					_grid.editStop();
 				break;
 
-			case 46:    
+			case 46:
 				break;
 		};
 
@@ -11266,14 +11268,14 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 		if(login){
 
 			if($p.wsql.get_user_param("user_name") != login)
-				$p.wsql.set_user_param("user_name", login);					
+				$p.wsql.set_user_param("user_name", login);
 
 			$p.wsql.pouch.log_in(login, password)
 				.then(function () {
 
 					if($p.wsql.get_user_param("enable_save_pwd")){
 						if($p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")) != password)
-							$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password));   
+							$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password));
 
 					}else if($p.wsql.get_user_param("user_pwd") != "")
 						$p.wsql.set_user_param("user_pwd", "");
@@ -11825,13 +11827,13 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 
 		t.edit=function(){
 			var ti;
-			t.val = t.getValue();		
+			t.val = t.getValue();
 			t.cell.innerHTML = '<div class="ref_div21"><input type="text" class="dhx_combo_edit" style="height: 20px;"><div class="ref_field21">&nbsp;</div></div>';
 
 			td = t.cell.firstChild;
 			ti = td.childNodes[0];
 			ti.value=t.val;
-			ti.onclick=$p.iface.cancel_bubble;		
+			ti.onclick=$p.iface.cancel_bubble;
 			ti.readOnly = true;
 			ti.focus();
 			ti.onkeydown=ti_keydown;
@@ -11841,7 +11843,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 
 		t.detach=function(){
 			t.setValue(t.getValue());
-			return !$p.utils.is_equal(t.val, t.getValue());				
+			return !$p.utils.is_equal(t.val, t.getValue());
 		}
 	}
 	eXcell_addr.prototype = eXcell_proto;
@@ -11849,11 +11851,11 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 
 	function wnd_address(source){
 
-		var wnd,		
+		var wnd,
 			obj = source.obj,
 			pwnd = source.pwnd,
 			_delivery_area = obj.delivery_area,
-			v = {		
+			v = {
 				coordinates: obj.coordinates ? JSON.parse(obj.coordinates) : [],
 				country: "Россия",
 				region: "",
@@ -11979,7 +11981,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 
 
 		function toolbar_click(btn_id){
-			if(btn_id=="btn_select"){					
+			if(btn_id=="btn_select"){
 
 				obj.delivery_area = v.delivery_area;
 
@@ -12253,7 +12255,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 												if(google_ready){
 							$p.eve.detachEvent(google_ready);
 							google_ready = null;
-							resolve();	
+							resolve();
 						}
 					});
 
@@ -12299,7 +12301,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 						$p.msg.show_msg($p.msg.empty_geocoding);
 					}
 
-									});			
+									});
 
 		}
 
@@ -13189,7 +13191,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 
 		if(wnd && wnd.is_visible && wnd.is_visible()){
-			if (evt.ctrlKey && evt.keyCode == 70){ 
+			if (evt.ctrlKey && evt.keyCode == 70){
 				if(!check_exit()){
 					setTimeout(function(){
 						if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == "desktop")
@@ -13198,7 +13200,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 					return $p.iface.cancel_bubble(evt);
 				}
 
-			} else if(evt.shiftKey && evt.keyCode == 116){ 
+			} else if(evt.shiftKey && evt.keyCode == 116){
 				if(!check_exit()){
 					setTimeout(function(){
 						wnd.elmnts.grid.reload();
@@ -13208,7 +13210,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 					return $p.iface.cancel_bubble(evt);
 				}
 
-			} else if(evt.keyCode == 27){ 
+			} else if(evt.keyCode == 27){
 				if(!check_exit()){
 					setTimeout(function(){
 						wnd.close();
@@ -13249,7 +13251,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 						grid.reload();
 				}, 20);
 			});
-			tree.attachEvent("onSelect", function(id, mode){	
+			tree.attachEvent("onSelect", function(id, mode){
 				if(!mode)
 					return;
 				if(this.do_not_reload)
@@ -14213,7 +14215,7 @@ function JobPrm(){
 
 				pairs = decodeURI(url_prm).split('&');
 
-				for (var i in pairs){   
+				for (var i in pairs){
 					tmp = pairs[i].split('=');
 					if(tmp[0] == "m"){
 						try{
@@ -14383,14 +14385,14 @@ $p.eve.__define({
 
 	steps: {
 		value: {
-			load_meta: 0,           
-			authorization: 1,       
-			create_managers: 2,     
-			process_access:  3,     
-			load_data_files: 4,     
-			load_data_db: 5,        
-			load_data_wsql: 6,      
-			save_data_wsql: 7       
+			load_meta: 0,
+			authorization: 1,
+			create_managers: 2,
+			process_access:  3,
+			load_data_files: 4,
+			load_data_db: 5,
+			load_data_wsql: 6,
+			save_data_wsql: 7
 		}
 	},
 
@@ -15215,21 +15217,21 @@ var xmlToJSON = (function () {
 
 	this.version = "1.3";
 
-	var options = { 
-		mergeCDATA: true, 
-		grokAttr: true, 
-		grokText: true, 
-		normalize: true, 
-		xmlns: true, 
-		namespaceKey: '_ns', 
-		textKey: '_text', 
-		valueKey: '_value', 
-		attrKey: '_attr', 
-		cdataKey: '_cdata', 
-		attrsAsObject: true, 
-		stripAttrPrefix: true, 
-		stripElemPrefix: true, 
-		childrenAsArray: true 
+	var options = {
+		mergeCDATA: true,
+		grokAttr: true,
+		grokText: true,
+		normalize: true,
+		xmlns: true,
+		namespaceKey: '_ns',
+		textKey: '_text',
+		valueKey: '_value',
+		attrKey: '_attr',
+		cdataKey: '_cdata',
+		attrsAsObject: true,
+		stripAttrPrefix: true,
+		stripElemPrefix: true,
+		childrenAsArray: true
 	};
 
 	var prefixMatch = new RegExp(/(?!xmlns)^.*:/);
@@ -15291,7 +15293,7 @@ var xmlToJSON = (function () {
 					vContent[options.namespaceKey] = oAttrib.namespaceURI;
 				}
 
-				if (options.attrsAsObject) { 
+				if (options.attrsAsObject) {
 					vAttribs[attribName] = vContent;
 				} else {
 					vResult[options.attrKey + attribName] = vContent;
@@ -15326,11 +15328,11 @@ var xmlToJSON = (function () {
 							}
 						}
 					}
-				} 
+				}
 				else if (oNode.nodeType === 3) {
 					sCollectedTxt += oNode.nodeValue;
-				} 
-				else if (oNode.nodeType === 1) { 
+				}
+				else if (oNode.nodeType === 1) {
 
 					if (nLength === 0) {
 						vResult = {};
@@ -15361,7 +15363,7 @@ var xmlToJSON = (function () {
 					}
 				}
 			}
-		} else if (!sCollectedTxt) { 
+		} else if (!sCollectedTxt) {
 			if (options.childrenAsArray) {
 				vResult[options.textKey] = [];
 				vResult[options.textKey].push(null);
@@ -15451,12 +15453,12 @@ var saveAs = saveAs || (function(view) {
 			}, 0);
 		}
 		, force_saveable_type = "application/octet-stream"
-		, arbitrary_revoke_timeout = 1000 * 40 
+		, arbitrary_revoke_timeout = 1000 * 40
 		, revoke = function(file) {
 			var revoker = function() {
-				if (typeof file === "string") { 
+				if (typeof file === "string") {
 					get_URL().revokeObjectURL(file);
-				} else { 
+				} else {
 					file.remove();
 				}
 			};
@@ -15501,7 +15503,7 @@ var saveAs = saveAs || (function(view) {
 							var url = is_chrome_ios ? reader.result : reader.result.replace(/^data:[^;]*;/, 'data:attachment/file;');
 							var popup = view.open(url, '_blank');
 							if(!popup) view.location.href = url;
-							url=undefined; 
+							url=undefined;
 							filesaver.readyState = filesaver.DONE;
 							dispatch_all();
 						};
@@ -15602,10 +15604,10 @@ function Aes(default_key) {
 
 
 	Aes.cipher = function(input, w) {
-		var Nb = 4;               
-		var Nr = w.length/Nb - 1; 
+		var Nb = 4;
+		var Nr = w.length/Nb - 1;
 
-		var state = [[],[],[],[]];  
+		var state = [[],[],[],[]];
 		for (var i=0; i<4*Nb; i++) state[i%4][Math.floor(i/4)] = input[i];
 
 		state = Aes.addRoundKey(state, w, 0, Nb);
@@ -15621,7 +15623,7 @@ function Aes(default_key) {
 		state = Aes.shiftRows(state, Nb);
 		state = Aes.addRoundKey(state, w, Nr, Nb);
 
-		var output = new Array(4*Nb);  
+		var output = new Array(4*Nb);
 		for (var i=0; i<4*Nb; i++) output[i] = state[i%4][Math.floor(i/4)];
 
 		return output;
@@ -15630,9 +15632,9 @@ function Aes(default_key) {
 
 
 	Aes.keyExpansion = function(key) {
-		var Nb = 4;            
-		var Nk = key.length/4; 
-		var Nr = Nk + 6;       
+		var Nb = 4;
+		var Nk = key.length/4;
+		var Nr = Nk + 6;
 
 		var w = new Array(Nb*(Nr+1));
 		var temp = new Array(4);
@@ -15672,26 +15674,26 @@ function Aes(default_key) {
 	Aes.shiftRows = function(s, Nb) {
 		var t = new Array(4);
 		for (var r=1; r<4; r++) {
-			for (var c=0; c<4; c++) t[c] = s[r][(c+r)%Nb];  
-			for (var c=0; c<4; c++) s[r][c] = t[c];         
-		}          
-		return s;  
+			for (var c=0; c<4; c++) t[c] = s[r][(c+r)%Nb];
+			for (var c=0; c<4; c++) s[r][c] = t[c];
+		}
+		return s;
 	};
 
 
 
 	Aes.mixColumns = function(s, Nb) {
 		for (var c=0; c<4; c++) {
-			var a = new Array(4);  
-			var b = new Array(4);  
+			var a = new Array(4);
+			var b = new Array(4);
 			for (var i=0; i<4; i++) {
 				a[i] = s[i][c];
 				b[i] = s[i][c]&0x80 ? s[i][c]<<1 ^ 0x011b : s[i][c]<<1;
 			}
-			s[0][c] = b[0] ^ a[1] ^ b[1] ^ a[2] ^ a[3]; 
-			s[1][c] = a[0] ^ b[1] ^ a[2] ^ b[2] ^ a[3]; 
-			s[2][c] = a[0] ^ a[1] ^ b[2] ^ a[3] ^ b[3]; 
-			s[3][c] = a[0] ^ b[0] ^ a[1] ^ a[2] ^ b[3]; 
+			s[0][c] = b[0] ^ a[1] ^ b[1] ^ a[2] ^ a[3];
+			s[1][c] = a[0] ^ b[1] ^ a[2] ^ b[2] ^ a[3];
+			s[2][c] = a[0] ^ a[1] ^ b[2] ^ a[3] ^ b[3];
+			s[3][c] = a[0] ^ b[0] ^ a[1] ^ a[2] ^ b[3];
 		}
 		return s;
 	};
@@ -15759,23 +15761,23 @@ function Aes(default_key) {
 
 
 	Aes.Ctr.encrypt = function(plaintext, password, nBits) {
-		var blockSize = 16;  
+		var blockSize = 16;
 		if (!(nBits==128 || nBits==192 || nBits==256))
 			nBits = 128;
 		plaintext = utf8Encode(plaintext);
 		password = utf8Encode(password || default_key);
 
-		var nBytes = nBits/8;  
+		var nBytes = nBits/8;
 		var pwBytes = new Array(nBytes);
-		for (var i=0; i<nBytes; i++) {  
+		for (var i=0; i<nBytes; i++) {
 			pwBytes[i] = i<password.length ?  password.charCodeAt(i) : 0;
 		}
-		var key = Aes.cipher(pwBytes, Aes.keyExpansion(pwBytes)); 
-		key = key.concat(key.slice(0, nBytes-16));  
+		var key = Aes.cipher(pwBytes, Aes.keyExpansion(pwBytes));
+		key = key.concat(key.slice(0, nBytes-16));
 
 		var counterBlock = new Array(blockSize);
 
-		var nonce = (new Date()).getTime();  
+		var nonce = (new Date()).getTime();
 		var nonceMs = nonce%1000;
 		var nonceSec = Math.floor(nonce/1000);
 		var nonceRnd = Math.floor(Math.random()*0xffff);
@@ -15796,7 +15798,7 @@ function Aes(default_key) {
 			for (var c=0; c<4; c++) counterBlock[15-c] = (b >>> c*8) & 0xff;
 			for (var c=0; c<4; c++) counterBlock[15-c-4] = (b/0x100000000 >>> c*8);
 
-			var cipherCntr = Aes.cipher(counterBlock, keySchedule);  
+			var cipherCntr = Aes.cipher(counterBlock, keySchedule);
 
 			var blockLength = b<blockCount-1 ? blockSize : (plaintext.length-1)%blockSize+1;
 			var cipherChar = new Array(blockLength);
@@ -15820,19 +15822,19 @@ function Aes(default_key) {
 
 
 	Aes.Ctr.decrypt = function(ciphertext, password, nBits) {
-		var blockSize = 16;  
+		var blockSize = 16;
 		if (!(nBits==128 || nBits==192 || nBits==256))
 			nBits = 128;
 		ciphertext = base64Decode(ciphertext);
 		password = utf8Encode(password || default_key);
 
-		var nBytes = nBits/8;  
+		var nBytes = nBits/8;
 		var pwBytes = new Array(nBytes);
 		for (var i=0; i<nBytes; i++) {
 			pwBytes[i] = i<password.length ?  password.charCodeAt(i) : 0;
 		}
 		var key = Aes.cipher(pwBytes, Aes.keyExpansion(pwBytes));
-		key = key.concat(key.slice(0, nBytes-16));  
+		key = key.concat(key.slice(0, nBytes-16));
 
 		var counterBlock = new Array(8);
 		var ctrTxt = ciphertext.slice(0, 8);
@@ -15843,7 +15845,7 @@ function Aes(default_key) {
 		var nBlocks = Math.ceil((ciphertext.length-8) / blockSize);
 		var ct = new Array(nBlocks);
 		for (var b=0; b<nBlocks; b++) ct[b] = ciphertext.slice(8+b*blockSize, 8+b*blockSize+blockSize);
-		ciphertext = ct;  
+		ciphertext = ct;
 
 		var plaintext = '';
 
@@ -15851,7 +15853,7 @@ function Aes(default_key) {
 			for (var c=0; c<4; c++) counterBlock[15-c] = ((b) >>> c*8) & 0xff;
 			for (var c=0; c<4; c++) counterBlock[15-c-4] = (((b+1)/0x100000000-1) >>> c*8) & 0xff;
 
-			var cipherCntr = Aes.cipher(counterBlock, keySchedule);  
+			var cipherCntr = Aes.cipher(counterBlock, keySchedule);
 
 			var plaintxtByte = new Array(ciphertext[b].length);
 			for (var i=0; i<ciphertext[b].length; i++) {
@@ -15865,7 +15867,7 @@ function Aes(default_key) {
 			}
 		}
 
-		plaintext = utf8Decode(plaintext);  
+		plaintext = utf8Decode(plaintext);
 
 		return plaintext;
 	};
@@ -15884,21 +15886,21 @@ function Aes(default_key) {
 		try {
 			return decodeURIComponent( escape( str ) );
 		} catch (e) {
-			return str; 
+			return str;
 		}
 	}
 
 
 	function base64Encode(str) {
-		if (typeof btoa != 'undefined') return btoa(str); 
-		if (typeof Buffer != 'undefined') return new Buffer(str, 'binary').toString('base64'); 
+		if (typeof btoa != 'undefined') return btoa(str);
+		if (typeof Buffer != 'undefined') return new Buffer(str, 'binary').toString('base64');
 		throw new Error('No Base64 Encode');
 	}
 
 
 	function base64Decode(str) {
-		if (typeof atob != 'undefined') return atob(str); 
-		if (typeof Buffer != 'undefined') return new Buffer(str, 'base64').toString('binary'); 
+		if (typeof atob != 'undefined') return atob(str);
+		if (typeof Buffer != 'undefined') return new Buffer(str, 'base64').toString('binary');
 		throw new Error('No Base64 Decode');
 	}
 
