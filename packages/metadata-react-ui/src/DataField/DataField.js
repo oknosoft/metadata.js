@@ -82,7 +82,10 @@ export default class DataField extends MetaComponent {
     } else {
       return (
         <div className={'meta-datafield-field'}>
-          <div className={'meta-datafield-label'}>{_meta.synonym}</div>
+          <div className={'meta-datafield-label'}>
+            {_meta.synonym}
+          </div>
+
           <div className={'meta-datafield-data'}>
             <Control {...subProps} />
           </div>

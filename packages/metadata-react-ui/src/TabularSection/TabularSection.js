@@ -6,44 +6,12 @@ import DataCell from '../DataField/DataCell'
 import DefaultToolbar from "./TabularSectionToolbar"
 import { AutoSizer } from "react-virtualized";
 import styles from "./TabularSection.scss";
-
-// // Import the necessary modules.
-// import { Menu } from "react-data-grid-addons";
-// // Create the context menu.
-// // Use this.props.rowIdx and this.props.idx to get the row/column where the menu is shown.
-// class MyContextMenu extends Component {
-//
-//   onRowDelete(e, data) {
-//     if (typeof(this.props.onRowDelete) === 'function') {
-//       this.props.onRowDelete(e, data);
-//     }
-//   }
-//
-//   onRowAdd(e, data) {
-//     if (typeof(this.props.onRowAdd) === 'function') {
-//       this.props.onRowAdd(e, data);
-//     }
-//   }
-//
-//   render() {
-//
-//     let { ContextMenu, MenuItem} = Menu;
-//
-//     return (
-//       <ContextMenu>
-//         <MenuItem data={{rowIdx: this.props.rowIdx, idx: this.props.idx}} onClick={::this.onRowDelete}>Delete Row</MenuItem>
-//         <MenuItem data={{rowIdx: this.props.rowIdx, idx: this.props.idx}} onClick={::this.onRowAdd}>Add Row</MenuItem>
-//       </ContextMenu>
-//     );
-//   }
-//
-// }
-
+import { DataFieldFactory } from "../DataField";
+import SimpleLoadingMessage from "../SimpleLoadingMessage";
 
 export default class TabularSection extends Component {
 
   static propTypes = {
-
     _obj: PropTypes.object.isRequired,
     _tabular: PropTypes.string.isRequired,
     _meta: PropTypes.object,
@@ -75,9 +43,7 @@ export default class TabularSection extends Component {
   }
 
   constructor(props, context) {
-
     super(props, context);
-
     const {$p} = context
     const {_obj} = props
     const class_name = _obj._manager.class_name + "." + props._tabular
@@ -86,23 +52,41 @@ export default class TabularSection extends Component {
       _meta: props._meta || _obj._metadata(props._tabular),
       _tabular: _obj[props._tabular],
       _columns: props._columns || [],
-
       Toolbar: props.Toolbar || DefaultToolbar,
-
       selectedIds: props.rowSelection ? props.rowSelection.selectBy.keys.values : []
     }
 
     if (!this.state._columns.length) {
-
-      $p.cat.scheme_settings.get_scheme(class_name)
-        .then(this.handleSchemeChange)
-
+      $p.cat.scheme_settings.get_scheme(class_name).then(this.handleSchemeChange)
     }
   }
 
   rowGetter = (i) => {
-    //return this.state._tabular.get(i)._obj;
-    return this.state._tabular.get(i);
+    const rowData = this.state._tabular.get(i);
+    const fields = this.state._meta.fields;
+    const row = new Map();
+
+    let rowObject = null;
+    if (this.state._tabular._obj.length > 0) {
+      rowObject = this.state._tabular._obj[0];
+    }
+
+    for (const fieldName in fields) {
+      if (fields.hasOwnProperty(fieldName) === false) {
+        continue;
+      }
+      const field = fields[fieldName];
+
+      // Create DataField for current cell.
+      const dataFieldClassName = DataFieldFactory.getClassNameForType(field.type);
+      row.set(fieldName, DataFieldFactory.create(dataFieldClassName, {
+        _obj: rowObject,
+        _fld: fieldName,
+        _meta: this.state._meta
+      }));
+    }
+
+    return row;
   }
 
   handleRemove = (e, data) => {
@@ -151,6 +135,7 @@ export default class TabularSection extends Component {
       fields: state._meta.fields,
       _obj: props._obj
     })
+
     this.setState({scheme, _columns})
   }
 
@@ -187,10 +172,10 @@ export default class TabularSection extends Component {
 
     if (!_columns || !_columns.length) {
       if (!scheme) {
-        return <DumbLoader title="Чтение настроек компоновки..."/>
+        return <SimpleLoadingMessage text="Чтение настроек компоновки..." />;
       }
 
-      return <DumbLoader title="Ошибка настроек компоновки..."/>
+      return <SimpleLoadingMessage text="Ошибка настроек компоновки..."/>;
     }
 
     // contextMenu={<MyContextMenu
@@ -211,8 +196,8 @@ export default class TabularSection extends Component {
     }
 
     return (
-      <div className={styles.tabularSection}>
-        <div className={styles.tabularSectionToolbar}>
+      <div className={"content-with-toolbar-layout"}>
+        <div className={"content-with-toolbar-layout__toolbar"}>
           <Toolbar
             handleAdd={handleAdd}
             handleRemove={handleRemove}
@@ -224,7 +209,7 @@ export default class TabularSection extends Component {
             scheme={scheme} />
         </div>
 
-        <div className={styles.tabularSectionContent}>
+        <div className={"content-with-toolbar-layout__content"}>
           <AutoSizer>
             {({width, height}) => (
               <ReactDataGrid

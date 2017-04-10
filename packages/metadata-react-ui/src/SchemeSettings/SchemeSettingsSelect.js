@@ -62,8 +62,8 @@ export default class SchemeSettingsSelect extends Component {
     const {scheme, handleSchemeChange, minHeight} = props
 
     return (
-      <div className={styles.schemesSettingsSelect}>
-        <div className={styles.schemesSettingsSelectToolbar}>
+      <div className={"content-with-toolbar-layout"}>
+        <div className={"content-with-toolbar-layout__toolbar"}>
           <Toolbar>
             <ToolbarGroup className={"meta-toolbar-group"} firstChild={true}>
               <IconButton touch={true} tooltip="Сохранить вариант настроек" tooltipPosition="bottom-right" onTouchTap={handleSave}>
@@ -89,7 +89,7 @@ export default class SchemeSettingsSelect extends Component {
           </Toolbar>
         </div>
 
-        <div className={styles.schemesSettingsSelectContent}>
+        <div className={"content-with-toolbar-layout__content"}>
           <DataField
             _obj={scheme}
             _fld="name"

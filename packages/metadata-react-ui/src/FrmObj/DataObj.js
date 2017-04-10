@@ -3,19 +3,26 @@ import React, { Component, PropTypes } from 'react';
 import {GridList, GridTile} from 'material-ui/GridList';
 import Layout from '../FlexPanel/react-flex-layout/react-flex-layout'
 import LayoutSplitter from '../FlexPanel/react-flex-layout/react-flex-layout-splitter'
-
 import Toolbar from "./Toolbar";
 import DataField from '../DataField'
-
 import TabularSection from '../TabularSection'
-
 import classes from './DataObj.scss'
-
-
+import classnames from "classnames"
 import CircularProgress from 'material-ui/CircularProgress';
-
+import Paper from "material-ui/Paper"
 
 export default class DataObj extends Component {
+  static PAPER_STYLE = {
+    margin: "10px",
+  }
+
+  static PAPER_STYLE_FIELDS = {
+    padding: "10px",
+  }
+
+  static PAPER_STYLE_TABULAR_SECTION = {
+    height: "100%",
+  }
 
   static contextTypes = {
     $p: React.PropTypes.object.isRequired
@@ -40,33 +47,30 @@ export default class DataObj extends Component {
   }
 
   constructor(props) {
-
     super(props);
+    const metadata = this.props._obj._manager.metadata();
 
-    this.state = {};
+    this.state = {
+      fields: metadata.fields || {},
+      tabularSections: metadata.tabular_sections || {},
+    };
   }
 
-  handleSave(){
-
+  handleSave() {
     this.props.handleSave(this.props._obj)
   }
 
-  handleSend(){
-
+  handleSend() {
     this.props.handleSave(this.props._obj)
-
   }
 
-  handleMarkDeleted(){
-
+  handleMarkDeleted() {
   }
 
-  handlePrint(){
-
+  handlePrint() {
   }
 
-  handleAttachment(){
-
+  handleAttachment() {
   }
 
   handleValueChange(_fld){
@@ -78,40 +82,87 @@ export default class DataObj extends Component {
     }
   }
 
+  /**
+   * Render part with fields.
+   * @return {Element}
+   */
+  renderFields() {
+    const elements = [];
 
-  render() {
+    for (const fieldName in this.state.fields) {
+      elements.push(
+        <div key={fieldName} className={classes.field}>
+          <DataField _obj={this.props._obj} _fld={fieldName} />
+        </div>
+      );
+    }
 
-    const { width, height, _obj } = this.props
+    if (elements.length === 0) {
+      return null;
+    }
 
     return (
+      <Paper style={Object.assign({}, DataObj.PAPER_STYLE, DataObj.PAPER_STYLE_FIELDS)}>
+        <div className={classes.fields}>
+          {elements}
+        </div>
+      </Paper>
+    );
+  }
 
-      _obj
-        ?
-      <div>
+  /**
+   * Render part with tabular sections.
+   * @return {Element} [description]
+   */
+  renderTabularSections() {
+    const elements = [];
+    const style = Object.assign({}, DataObj.PAPER_STYLE, DataObj.PAPER_STYLE_TABULAR_SECTION);
 
-        <Toolbar
-          handleSave={::this.handleSave}
-          handleSend={::this.handleSend}
-          handleMarkDeleted={::this.handleMarkDeleted}
-          handlePrint={::this.handlePrint}
-          handleAttachment={::this.handleAttachment}
-          handleClose={this.props.handleClose}
-        />
+    for (const tabularSectionName in this.state.tabularSections) {
+      elements.push(
+        <Paper key={tabularSectionName} style={style}>
+          <TabularSection _obj={this.props._obj} _tabular={tabularSectionName} />
+        </Paper>
+      );
+    }
 
-        <div className={classes.cont} style={{ width }}>
+    if (elements.length === 0) {
+      return null;
+    }
 
-          {/*
-          <DataField _obj={_obj} _fld="note" handleValueChange={this.handleValueChange("note")} />
+    return (
+      <div className={classes.tabularSections}>
+        {elements}
+      </div>
+    );
+  }
 
-          <TabularSection _obj={_obj} _tabular="cashboxes"/>
-           */}
+  render() {
+    if (!this.props._obj) {
+      return (
+        <div>
+          <CircularProgress size={120} thickness={5} className={classes.progress} />
+        </div>
+      );
+    }
 
+    return (
+      <div className={"content-with-toolbar-layout"}>
+        <div className={"content-with-toolbar-layout__toolbar"}>
+          <Toolbar
+            handleSave={::this.handleSave}
+            handleSend={::this.handleSend}
+            handleMarkDeleted={::this.handleMarkDeleted}
+            handlePrint={::this.handlePrint}
+            handleAttachment={::this.handleAttachment}
+            handleClose={this.props.handleClose} />
         </div>
 
+        <div className={"content-with-toolbar-layout__content"}>
+          {this.renderFields()}
+          {this.renderTabularSections()}
+        </div>
       </div>
-        :
-      <div ><CircularProgress size={120} thickness={5} className={classes.progress} /></div>
-
     );
   }
 }

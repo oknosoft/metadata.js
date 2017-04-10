@@ -1,0 +1,13 @@
+.simple-loading-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.simple-loading-message__text {
+  padding: .4em 1em;
+  font-size: 1.2em;
+  background-color: #f9f9f9;
+  border: 2px solid #e0e0e0;
+}

@@ -14,7 +14,7 @@ export default class FieldText extends Component {
     _obj: PropTypes.object.isRequired,
     _fld: PropTypes.string.isRequired,
     _meta: PropTypes.object.isRequired,
-    handleValueChange: PropTypes.func
+    handleValueChange: PropTypes.func,
   }
 
   onChange = (event, newValue) => {
@@ -25,14 +25,11 @@ export default class FieldText extends Component {
     }
   }
 
-
   render() {
-
     const {onChange, props} = this;
     const {_obj, _fld, _meta} = props;
 
     return (
-
       <TextField
         name={_fld}
         fullWidth={true}
@@ -40,7 +37,6 @@ export default class FieldText extends Component {
         hintText={_meta.tooltip || _meta.synonym}
         onChange={onChange}
       />
-
     );
   }
 }
