@@ -398,6 +398,12 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
 	_grid.__define({
 
+    _obj: {
+      get: function () {
+        return _obj;
+      }
+    },
+
 		selection: {
 			get: function () {
 				return _selection;
