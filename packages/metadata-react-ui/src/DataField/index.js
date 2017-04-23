@@ -1,3 +1,4 @@
+export DataFieldFactory from "./DataFieldFactory"
 export DataCell from './DataCell'
 export FieldDate from './FieldDate'
 export FieldNumber from './FieldNumber'
@@ -6,7 +7,3 @@ export FieldText from './FieldText'
 export FieldToggle from './FieldToggle'
 
 export default from "./DataField";
-
-
-
-

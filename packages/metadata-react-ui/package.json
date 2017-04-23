@@ -16,7 +16,9 @@
     "material-ui": "^0.17",
     "react-data-grid": "^2.0",
     "react-data-grid-addons": "^2.0",
-    "react-virtualized": "^9.0"
+    "react-panels": "git+https://github.com/nikches/react-panels",
+    "react-portal": "^3.0",
+    "react-virtualized": "^9.2"
   },
   "main": "dist/index.js",
   "repository": {

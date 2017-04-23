@@ -8,9 +8,7 @@
 
 import React, {Component, PropTypes} from "react";
 import DatePicker from 'material-ui/DatePicker';
-
 const DateTimeFormat = global.Intl.DateTimeFormat;
-
 
 export default class FieldDate extends Component {
 
@@ -22,9 +20,7 @@ export default class FieldDate extends Component {
   }
 
   constructor(props) {
-
     super(props);
-
     const {_obj, _fld} = this.props;
 
     this.state = {

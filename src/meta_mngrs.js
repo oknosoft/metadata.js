@@ -2673,38 +2673,43 @@ function LogManager(){
 			value: function(msg){
 
 				if(msg instanceof Error){
-					if(console)
-						console.log(msg);
+          if(console){
+            console.log(msg);
+          }
 					msg = {
 						class: "error",
 						note: msg.toString()
 					}
-				}else if(typeof msg == "object" && !msg.class && !msg.obj){
+				}
+				else if(typeof msg == "object" && !msg.class && !msg.obj){
 					msg = {
 						class: "obj",
 						obj: msg,
 						note: msg.note
 					};
-				}else if(typeof msg != "object")
-					msg = {note: msg};
+				}
+				else if(typeof msg != "object"){
+          msg = {note: msg};
+        }
 
 				msg.date = Date.now() + $p.wsql.time_diff;
 
 				// уникальность ключа
-				if(!smax)
-					smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?");
+				if(!smax){
+          smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?");
+        }
 				var res = smax([msg.date]);
-				if(!res.length || res[0].sequence === undefined)
-					msg.sequence = 0;
-				else
-					msg.sequence = parseInt(res[0].sequence) + 1;
+        msg.sequence = (!res.length || res[0].sequence === undefined) ? 0 : parseInt(res[0].sequence) + 1;
 
 				// класс сообщения
-				if(!msg.class)
-					msg.class = "note";
+				if(!msg.class){
+          msg.class = "note";
+        }
 
 				$p.wsql.alasql("insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)",
 					[msg.date + "¶" + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
+
+        msg.note && $p.msg && $p.msg.show_msg && $p.msg.show_msg([msg.class, msg.note]);
 
 			}
 		},

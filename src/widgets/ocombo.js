@@ -70,9 +70,12 @@ function OCombo(attr){
 
 	this.attachEvent("onDynXLS", function (text) {
 
-		if(!_mgr)
-			_mgr = _md.value_mgr(_obj, _field, _meta.type);
-
+	  if(!_meta){
+	    return;
+    }
+		if(!_mgr){
+      _mgr = _md.value_mgr(_obj, _field, _meta.type);
+    }
 		if(_mgr){
 			t.clearAll();
 			(attr.get_option_list || _mgr.get_option_list).call(_mgr, null, get_filter(text))
@@ -232,8 +235,9 @@ function OCombo(attr){
 
 	function popup_show(){
 
-		if(_mgr instanceof EnumManager)
-			return;
+		if(!_mgr || !_mgr.class_name || _mgr instanceof EnumManager){
+      return;
+    }
 
 		popup_focused = true;
 		var div = document.createElement('div'),
@@ -277,8 +281,10 @@ function OCombo(attr){
 	}
 
 	function onkeyup(e) {
-		if(_mgr instanceof EnumManager)
-			return;
+
+		if(!_mgr || _mgr instanceof EnumManager){
+      return;
+    }
 
 		if(e.keyCode == 115){ // F4
 			if(e.ctrlKey && e.shiftKey){
@@ -395,6 +401,10 @@ function OCombo(attr){
 			Object.observe(_obj, observer, ["update"]);
 
 	};
+
+  this.open_selection = function () {
+    aclick.call({name: "select"});
+  }
 
 	var _unload = this.unload;
 	this.unload = function () {

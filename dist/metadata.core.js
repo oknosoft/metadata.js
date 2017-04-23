@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-03-06 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-04-23 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -81,8 +81,9 @@ Object.defineProperties(Object.prototype, {
 			if(include && include.length){
 				for(i = 0; i<include.length; i++){
 					f = include[i];
-					if(exclude && exclude.indexOf(f)!=-1)
-						continue;
+					if(exclude && exclude.indexOf(f)!=-1){
+            continue;
+          }
 					// копируем в dst свойства src, кроме тех, которые унаследованы от Object
 					if((typeof tobj[f] == "undefined") || (tobj[f] != src[f]))
 						this[f] = src[f];
@@ -105,15 +106,18 @@ Object.defineProperties(Object.prototype, {
 	 * @method _clone
 	 * @for Object
 	 * @param src {Object|Array} - исходный объект
-	 * @param [exclude_propertyes] {Object} - объект, в ключах которого имена свойств, которые не надо копировать
+	 * @param [exclude] {Array} - объект, в ключах которого имена свойств, которые не надо копировать
 	 * @returns {Object|Array} - копия объекта
 	 */
 	_clone: {
-		value: function() {
+		value: function(exclude) {
 			if(!this || "object" !== typeof this)
 				return this;
 			var p, v, c = "function" === typeof this.pop ? [] : {};
 			for(p in this){
+        if(exclude && exclude.indexOf(p)!=-1){
+          continue;
+        }
 				if (this.hasOwnProperty(p)){
 					v = this[p];
 					if(v){
@@ -121,7 +125,7 @@ Object.defineProperties(Object.prototype, {
 							c[p] = v;
 
 						else if("object" === typeof v)
-							c[p] = v._clone();
+							c[p] = v._clone(exclude);
 
 						else
 							c[p] = v;
@@ -585,7 +589,7 @@ function MetaEngine() {
 						top = selection._top;
 						delete selection._top;
 					}else
-						top = 300;
+						top = 1000;
 				}
 
 				for(var i in arr){
@@ -660,9 +664,7 @@ function MetaEngine() {
 		 */
 		record_log: {
 			value: function (err) {
-				if($p.ireg && $p.ireg.log)
-					$p.ireg.log.record(err);
-				console.log(err);
+				$p.ireg && $p.ireg.log && $p.ireg.log.record(err);
 			}
 		},
 
@@ -2029,7 +2031,7 @@ function Messages(){
 
 	this.toString = function(){return "Интернационализация сообщений"};
 
-	
+
 	/**
 	 * расширяем мессанджер
 	 */
@@ -2047,8 +2049,9 @@ function Messages(){
 		 *      text:"Error"});
 		 */
 		this.show_msg = function(attr, delm){
-			if(!attr)
-				return;
+			if(!attr){
+        return;
+      }
 			if(typeof attr == "string"){
 				if($p.iface.synctxt){
 					$p.iface.synctxt.show_message(attr);
@@ -2056,10 +2059,15 @@ function Messages(){
 				}
 				attr = {type:"info", text:attr };
 			}
-			if(delm && typeof delm.setText == "function")
-				delm.setText(attr.text);
+			else if(Array.isArray(attr) && attr.length > 1){
+        attr = {type: "info", text: '<b>' + attr[0] + '</b><br />' + attr[1]};
+      }
+			if(delm && typeof delm.setText == "function"){
+        delm.setText(attr.text);
+      }
 			dhtmlx.message(attr);
 		};
+    dhtmlx.message.position = "bottom";
 
 		/**
 		 * Проверяет корректность ответа сервера
@@ -2299,7 +2307,7 @@ $p.fias = function FIAS(){};
 	msg.select_grp = "Укажите группу, а не элемент";
 	msg.select_elm = "Укажите элемент, а не группу";
 	msg.select_file_import = "Укажите файл для импорта";
-		
+
 	msg.srv_overload = "Сервер перегружен";
 	msg.sub_row_change_disabled = "Текущая строка подчинена продукции.<br/>Строку нельзя изменить-удалить в документе<br/>только через построитель";
 	msg.sync_script = "Обновление скриптов приложения:";
@@ -7082,38 +7090,43 @@ function LogManager(){
 			value: function(msg){
 
 				if(msg instanceof Error){
-					if(console)
-						console.log(msg);
+          if(console){
+            console.log(msg);
+          }
 					msg = {
 						class: "error",
 						note: msg.toString()
 					}
-				}else if(typeof msg == "object" && !msg.class && !msg.obj){
+				}
+				else if(typeof msg == "object" && !msg.class && !msg.obj){
 					msg = {
 						class: "obj",
 						obj: msg,
 						note: msg.note
 					};
-				}else if(typeof msg != "object")
-					msg = {note: msg};
+				}
+				else if(typeof msg != "object"){
+          msg = {note: msg};
+        }
 
 				msg.date = Date.now() + $p.wsql.time_diff;
 
 				// уникальность ключа
-				if(!smax)
-					smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?");
+				if(!smax){
+          smax = alasql.compile("select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?");
+        }
 				var res = smax([msg.date]);
-				if(!res.length || res[0].sequence === undefined)
-					msg.sequence = 0;
-				else
-					msg.sequence = parseInt(res[0].sequence) + 1;
+        msg.sequence = (!res.length || res[0].sequence === undefined) ? 0 : parseInt(res[0].sequence) + 1;
 
 				// класс сообщения
-				if(!msg.class)
-					msg.class = "note";
+				if(!msg.class){
+          msg.class = "note";
+        }
 
 				$p.wsql.alasql("insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)",
 					[msg.date + "¶" + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : ""]);
+
+        msg.note && $p.msg && $p.msg.show_msg && $p.msg.show_msg([msg.class, msg.note]);
 
 			}
 		},
@@ -7830,8 +7843,10 @@ TabularSectionRow.prototype._setter = function (f, v) {
 	if(this._obj[f] == v || (!v && this._obj[f] == $p.utils.blank.guid))
 		return;
 
-	if(!this._owner._owner._data._silent)
-		Object.getNotifier(this._owner._owner).notify({
+	var _owner = this._owner._owner;
+
+	if(!_owner._data._silent)
+		Object.getNotifier(_owner).notify({
 			type: 'row',
 			row: this,
 			tabular: this._owner._name,
@@ -7845,13 +7860,13 @@ TabularSectionRow.prototype._setter = function (f, v) {
 		if(this._metadata.fields[f].choice_type.path.length == 2)
 			prop = this[this._metadata.fields[f].choice_type.path[1]];
 		else
-			prop = this._owner._owner[this._metadata.fields[f].choice_type.path[0]];
+			prop = _owner[this._metadata.fields[f].choice_type.path[0]];
 		if(prop && prop.type)
 			v = $p.utils.fetch_type(v, prop.type);
 	}
 
 	DataObj.prototype.__setter.call(this, f, v);
-	this._owner._owner._data._modified = true;
+  _owner._data._modified = true;
 
 };
 
@@ -8612,6 +8627,32 @@ CatObj.prototype.__define({
       if(v){
         this._presentation = String(v);
       }
+    }
+  },
+
+  /**
+   * ### В иерархии
+   * Выясняет, находится ли текущий объект в указанной группе
+   *
+   * @param group {Object|Array} - папка или массив папок
+   *
+   */
+  in_hierarchy: {
+    value: function (group) {
+      var t = this;
+      if(Array.isArray(group)){
+        return group.some(function (v) {
+          return t.in_hierarchy(v);
+        });
+      }
+      if(this == group || t.parent == group){
+        return true;
+      }
+      var parent = t.parent;
+      if(parent && !parent.empty()){
+        return parent.in_hierarchy(group);
+      }
+      return group == $p.utils.blank.guid;
     }
   }
 

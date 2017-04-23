@@ -2,40 +2,21 @@
 import React, {Component, PropTypes} from "react";
 import MetaComponent from "../common/MetaComponent";
 
-import {InfiniteLoader, Grid} from "react-virtualized";
+import { InfiniteLoader, AutoSizer, MultiGrid } from "react-virtualized";
 import DumbLoader from "../DumbLoader";
+import SimpleLoadingMessage from "../SimpleLoadingMessage";
 import Toolbar from "./DataListToolbar";
 import cn from "classnames";
 import styles from "./DataList.scss";
 
-
-const limit = 30,
-  totalRows = 999999;
-
-class DataListStorage {
-
-  constructor() {
-    this._data = []
-  }
-
-  get size() {
-    return this._data.length
-  }
-
-  get(index) {
-    return this._data[index]
-  }
-
-  clear() {
-    this._data.length = 0
-  }
-
-}
-
 export default class DataList extends MetaComponent {
+  static LIMIT = 10;
+  static OVERSCAN_ROW_COUNT = 2;
+  static OVERSCAN_COLUMN_COUNT = 2;
+  static COLUMN_HEIGHT = 40;
+  static COLUMN_DEFAULT_WIDTH = 250;
 
   static propTypes = {
-
     // данные
     _mgr: PropTypes.object.isRequired,    // Менеджер данных
     _meta: PropTypes.object,              // Описание метаданных. Если не указано, используем метаданные менеджера
@@ -44,15 +25,12 @@ export default class DataList extends MetaComponent {
     select: PropTypes.object,             // todo: переместить в scheme // Параметры запроса к couchdb. Если не указано - генерируем по метаданным
 
     // настройки внешнего вида и поведения
-    selection_mode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
+    selection_mode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисуем кнопку выбора
     read_only: PropTypes.object,          // Элемент только для чтения
     deny_add_del: PropTypes.bool,         // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
     show_search: PropTypes.bool,          // Показывать поле поиска
     show_variants: PropTypes.bool,        // Показывать список вариантов настройки динсписка
     modal: PropTypes.bool,                // Показывать список в модальном диалоге
-    width: PropTypes.number.isRequired,   // Ширина элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
-    height: PropTypes.number.isRequired,  // Высота элемента управления - вычисляется родительским компонентом с помощью `react-virtualized/AutoSizer`
-
     Toolbar: PropTypes.func,              // Индивидуальная панель инструментов. Если не указана, рисуем типовую
 
     // Redux actions
@@ -67,21 +45,15 @@ export default class DataList extends MetaComponent {
     handleAttachment: PropTypes.func,     // обработчик открытия диалога присоединенных файлов
   }
 
-  static defaultProps = {
-    width: 1000,
-    height: 400
-  }
-
   constructor(props, context) {
-
     super(props, context);
 
     const {class_name} = props._mgr;
     const {$p} = context;
+
     const state = this.state = {
-      totalRowCount: totalRows,
+      rowsLoaded: 0,
       selectedRowIndex: 0,
-      do_reload: false,
       _meta: props._meta || props._mgr.metadata(),
 
       // готовим фильтры для запроса couchdb
@@ -97,22 +69,11 @@ export default class DataList extends MetaComponent {
       }
     }
 
-    this._list = new DataListStorage();
+    /** Set of grid rows. */
+    this._list = new Map();
+    $p.cat.scheme_settings.get_scheme(class_name).then(this.handleSchemeChange);
 
-    $p.cat.scheme_settings.get_scheme(class_name)
-      .then(this.handleSchemeChange);
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    // If props/state signals that the underlying collection has changed,
-    // Reload the most recently requested batch of rows:
-    if (this.state.do_reload) {
-      this.state.do_reload = false;
-      this._loadMoreRows({
-        startIndex: 0,
-        stopIndex: 30
-      })
-    }
+    this._isMounted = false;
   }
 
   // обработчик выбора значения в списке
@@ -144,28 +105,37 @@ export default class DataList extends MetaComponent {
   // обработчик удаления элемента списка
   handleRemove = () => {
     const row = this._list.get(this.state.selectedRowIndex)
-    const {handleRemove, _mgr} = this.props
-    if (row && handleRemove) {
-      handleRemove(row, _mgr)
+    const {handleMarkDeleted, _mgr} = this.props
+
+    if (row && handleMarkDeleted) {
+      handleMarkDeleted(row, _mgr)
     }
   }
 
   // обработчик при изменении настроек компоновки
   handleSchemeChange = (scheme) => {
-
-    const {state, props, _list} = this
-    const {_mgr, params} = props
+    const {state, props} = this;
+    const {_mgr, params} = props;
 
     scheme.set_default().fix_select(state.select, params && params.options || _mgr.class_name);
+    this._list.clear();
 
-    _list.clear()
+    // Create header row.
+    const columns = scheme.columns();
+    const headerColumns = columns.map(column => (column.synonym));
+
+    // Set first row as header.
+    this._list.set(0, headerColumns);
     this.setState({
       scheme,
-      columns: scheme.columns(),
-      totalRowCount: 0,
-      do_reload: true,
+      columns,
+      rowsLoaded: 1,
     });
 
+    this._loadMoreRows({
+      startIndex: 0,
+      stopIndex: DataList.LIMIT
+    });
   }
 
   // обработчик печати теущей строки
@@ -186,238 +156,253 @@ export default class DataList extends MetaComponent {
     }
   }
 
-  render() {
+  componentDidMount() {
+    this._isMounted = true;
+  }
 
-    const {state, props, handleSelect, handleAdd, handleEdit, handleRemove, handlePrint, handleAttachment,
-      handleSchemeChange, _isRowLoaded, _loadMoreRows, _cellRenderer} = this
-    const {columns, totalRowCount, scheme} = state
-    const {width, height, selection_mode, deny_add_del, show_search, show_variants} = props
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
+
+  render() {
+    const {
+      state,
+      props,
+      handleSelect,
+      handleAdd,
+      handleEdit,
+      handleRemove,
+      handlePrint,
+      handleAttachment,
+      handleSchemeChange,
+      _isRowLoaded,
+      _loadMoreRows,
+      _cellRenderer
+    } = this;
+
+    const {
+      columns,
+      rowsLoaded,
+      scheme
+    } = state;
+
+    const {
+      selection_mode,
+      deny_add_del,
+      show_search,
+      show_variants
+    } = props;
 
     if (!scheme) {
       return <DumbLoader title="Чтение настроек компоновки..."/>
     }
+
     else if (!columns || !columns.length) {
       return <DumbLoader title="Ошибка настроек компоновки..."/>
     }
 
-    const toolbar_props = {scheme, selection_mode, deny_add_del, show_search, show_variants, handleSelect, handleAdd,
-      handleEdit, handleRemove, handlePrint, handleAttachment, handleSchemeChange}
+    const toolbar_props = {
+      scheme,
+      selection_mode,
+      deny_add_del,
+      show_search,
+      show_variants,
+      handleSelect,
+      handleAdd,
+      handleEdit,
+      handleRemove,
+      handlePrint,
+      handleAttachment,
+      handleSchemeChange
+    }
 
     return (
-      <div>
+      <div className={"content-with-toolbar-layout"}>
+        <div className={"content-with-toolbar-layout__toolbar"}>
+          <Toolbar {...toolbar_props} />
+        </div>
 
-        <Toolbar {...toolbar_props} />
+        <div className={"content-with-toolbar-layout__content"}>
+          <InfiniteLoader
+            isRowLoaded={_isRowLoaded}
+            loadMoreRows={_loadMoreRows}
+            rowCount={this.state.rowsLoaded + DataList.LIMIT}
+            minimumBatchSize={DataList.LIMIT}>
 
-        <InfiniteLoader
-          isRowLoaded={_isRowLoaded}
-          loadMoreRows={_loadMoreRows}
-          rowCount={totalRowCount}
-          minimumBatchSize={limit}
-        >
-          {({onRowsRendered, registerChild}) => {
+            {({onRowsRendered, registerChild}) => {
+              const onSectionRendered = ({rowOverscanStartIndex, rowOverscanStopIndex, rowStartIndex, rowStopIndex, columnStartIndex, columnStopIndex }) => {
+                onRowsRendered({
+                  overscanStartIndex: rowOverscanStartIndex,
+                  overscanStopIndex: rowOverscanStopIndex,
+                  startIndex: rowStartIndex * this.state.columns.length + columnStartIndex,
+                  stopIndex:  rowStopIndex  * this.state.columns.length + columnStopIndex
+                })
+              }
 
-            const onSectionRendered = ({rowOverscanStartIndex, rowOverscanStopIndex, rowStartIndex, rowStopIndex}) => {
-
-              onRowsRendered({
-                overscanStartIndex: rowOverscanStartIndex,
-                overscanStopIndex: rowOverscanStopIndex,
-                startIndex: rowStartIndex,
-                stopIndex: rowStopIndex
-              })
-            }
-
-            let left = 0;
-
-            return (
-
-              <div>
-
-                <div
-                  //className={styles.BodyGrid}
-                  style={{position: 'relative', zIndex: -1}}>
-                  {
-                    columns.map(function (column, index) {
-
-                      let res = <div
-                        key={'caption_' + column.id}
-                        className={ cn(styles.oddRow, styles.cell)}
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          height: 30,
-                          width: column.width,
-                          left: left
-                        }}>{column.synonym}</div>
-
-                      left += column.width
-
-                      return res;
-                    })
-
-                  }
-                </div>
-
-                <Grid
-                  ref={registerChild}
-                  //className={styles.BodyGrid}
-                  onSectionRendered={onSectionRendered}
-                  cellRenderer={_cellRenderer}
-                  columnCount={columns.length}
-                  columnWidth={({index}) => columns[index].width }
-                  rowCount={totalRowCount}
-                  rowHeight={30}
-                  width={width}
-                  height={height - 90}
-                  style={{top: 30}}
-                />
-
-              </div>
-
-            )
-          }
-
-          }
-
-        </InfiniteLoader>
-
+              return (
+                <AutoSizer>
+                  {({ width, height }) => (
+                    <MultiGrid
+                      ref={registerChild}
+                      width={width}
+                      height={height}
+                      rowCount={this.state.rowsLoaded}
+                      columnCount={this.state.columns.length}
+                      fixedColumnCount={0}
+                      fixedRowCount={1}
+                      noContentRenderer={this._noContentRendered}
+                      cellRenderer={this._cellRenderer}
+                      overscanColumnCount={DataList.OVERSCAN_COLUMN_COUNT}
+                      overscanRowCount={DataList.OVERSCAN_ROW_COUNT}
+                      columnWidth={this._getColumnWidth}
+                      rowHeight={DataList.COLUMN_HEIGHT}
+                      onSectionRendered={onSectionRendered}
+                      styleTopRightGrid={{
+                          backgroundColor: "#fffbdc",
+                          borderBottom: "1px solid #e0e0e0",
+                      }} />
+                  )}
+                </AutoSizer>
+              )
+            }}
+          </InfiniteLoader>
+        </div>
       </div>
     )
   }
 
-  _formatter(row, index) {
-
-    const {$p} = this.context
-    const {columns} = this.state
-    const column = columns[index]
-    const v = row[column.id]
-
-    switch ($p.UI.control_by_type(column.type, v)) {
-
-      case 'ocombo':
-        return $p.utils.value_mgr(row, column.id, column.type, false, v).get(v).presentation
-
-      case 'dhxCalendar':
-        return $p.utils.moment(v).format($p.utils.moment._masks.date)
-
-      default:
-        return v
-
+  _getColumnWidth = ({ index }) => {
+    // todo: Take remaining space if width of column equal '*'
+    if (!isNaN(parseInt(this.state.columns[index].width))) {
+      return DataList.COLUMN_DEFAULT_WIDTH;
+    } else {
+      return parseInt(this.state.columns[index].width);
     }
   }
 
-  _isRowLoaded = ({index}) => {
-    const res = !!this._list.get(index)
-    return res
+  _noContentRendered = () => {
+    return <SimpleLoadingMessage />;
   }
 
-  _getRowClassName(row) {
-    return row % 2 === 0 ? styles.evenRow : styles.oddRow
-  }
+  _cellRenderer = ({ columnIndex, rowIndex, isScrolling, isVisible, key, parent, style }) => {
+    const {
+      state,
+      props,
+      handleEdit,
+      handleSelect
+    } = this;
 
-  _loadMoreRows = ({startIndex, stopIndex}) => {
-
-    const {select, scheme, totalRowCount} = this.state
-    const {_mgr, params} = this.props
-    const increment = Math.max(limit, stopIndex - startIndex + 1)
-
-    Object.assign(select, {
-      _top: increment,
-      _skip: startIndex,
-      _view: 'doc/by_date',
-      _raw: true
-    })
-    scheme.fix_select(select, params && params.options || _mgr.class_name)
-
-    // выполняем запрос
-    return _mgr.find_rows_remote(select)
-
-      .then((data) => {
-
-        // обновляем массив результата
-        for (var i = 0; i < data.length; i++) {
-          if (!this._list._data[i + startIndex]) {
-            this._list._data[i + startIndex] = data[i];
-          }
-        }
-
-        // обновляем состояние - изменилось количество записей
-        if (totalRowCount != startIndex + data.length + (data.length < increment ? 0 : increment )) {
-          this.setState({
-            totalRowCount: startIndex + data.length + (data.length < increment ? 0 : increment )
-          })
-        } else {
-          this.forceUpdate()
-        }
-
-      })
-  }
-
-  /**
-   *
-   * @param columnIndex - Horizontal (column) index of cell
-   * @param isScrolling - The Grid is currently being scrolled
-   * @param key - Unique key within array of cells
-   * @param rowIndex - Vertical (row) index of cell
-   * @param style - Style object to be applied to cell
-   * @return {Component}
-   * @private
-   */
-  _cellRenderer = ({columnIndex, isScrolling, key, rowIndex, style}) => {
-
-    const {state, props, _list, handleEdit, handleSelect} = this
-    const {hoveredColumnIndex, hoveredRowIndex, selectedRowIndex} = state
+    const {
+      hoveredColumnIndex,
+      hoveredRowIndex,
+      selectedRowIndex
+    } = state;
 
     // оформление ячейки
-    const classNames = cn(
-      this._getRowClassName(rowIndex),
-      styles.cell,
-      {
-        //[styles.centeredCell]: columnIndex > 3, // выравнивание текста по центру
-        [styles.hoveredItem]: rowIndex == hoveredRowIndex && rowIndex != selectedRowIndex, // || columnIndex === this.state.hoveredColumnIndex
-        [styles.selectedItem]: rowIndex == selectedRowIndex
-      }
-    )
+    const classNames = cn(this._getRowClassName(rowIndex), styles.cell, {
+      //[styles.centeredCell]: columnIndex > 3, // выравнивание текста по центру
+      [styles.hoveredItem]: rowIndex == hoveredRowIndex && rowIndex != selectedRowIndex, // || columnIndex === this.state.hoveredColumnIndex
+      [styles.selectedItem]: rowIndex == selectedRowIndex
+    });
 
     // данные строки
-    const row = _list.get(rowIndex)
+    const row = this._list.get(rowIndex);
 
     // текст ячейки
-    const content = row ? this._formatter(row, columnIndex) : (
-        <div
-          className={styles.placeholder}
-          style={{width: 10 + Math.random() * 80}}
-        />
-      )
+    let content = null;
+    if (rowIndex === 0) {
+      content = <div> {row[columnIndex]} </div>; // header
+    } else if (row) {
+      content = this._formatter(row, columnIndex); // data cell
+    } else {
+      content = null; // empty cell
+    }
 
     const onMouseOver = () => {
       this.setState({
         hoveredColumnIndex: columnIndex,
         hoveredRowIndex: rowIndex
       })
-    }
+    };
 
     const onTouchTap = () => {
       this.setState({
         selectedRowIndex: rowIndex
       })
-    }
+    };
 
-    // It is important to attach the style specified as it controls the cell's position.
-    // You can add additional class names or style properties as you would like.
-    // Key is also required by React to more efficiently manage the array of cells.
     return (
       <div
         className={classNames}
-        key={key}
+        key={`cell-${rowIndex}-${columnIndex}`}
         style={style}
         onMouseOver={onMouseOver}
         onTouchTap={onTouchTap}
         onDoubleClick={props.selection_mode ? handleSelect : handleEdit}
-        title={hoveredColumnIndex == columnIndex && hoveredRowIndex == rowIndex ? content : ''}
-      >
+        title={hoveredColumnIndex == columnIndex && hoveredRowIndex == rowIndex ? content : ''}>
         {content}
       </div>
-    )
+    );
   }
 
+  _formatter(rowData, columnIndex) {
+    const {$p} = this.context
+    const {columns} = this.state
+    const column = columns[columnIndex]
+    const v = rowData[column.id]
+
+    switch ($p.UI.control_by_type(column.type, v)) {
+      case 'ocombo':
+        return $p.utils.value_mgr(rowData, column.id, column.type, false, v).get(v).presentation
+
+      case 'dhxCalendar':
+        return $p.utils.moment(v).format($p.utils.moment._masks.date)
+
+      default:
+        return v
+    }
+  }
+
+  _getRowClassName(row) {
+    return row % 2 === 0 ? styles.evenRow : styles.oddRow
+  }
+
+  _isRowLoaded = ({ index }) => {
+    return this._list.has(index);
+  }
+
+  _loadMoreRows = ({ startIndex, stopIndex }) => {
+    const {select, scheme, rowsLoaded} = this.state
+    const {_mgr, params} = this.props
+    const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);
+
+    Object.assign(select, {
+      _top: increment,
+      _skip: startIndex,
+      _view: 'doc/by_date',
+      _raw: true
+    });
+
+    scheme.fix_select(select, params && params.options || _mgr.class_name);
+    // выполняем запрос
+    return _mgr.find_rows_remote(select).then((data) => {
+
+      let reallyLoadedRows = 0;
+      // обновляем массив результата
+      for (var i = 0; i < data.length; i++) {
+        // Append one because first row is header.
+        if (this._list.has(1 + i + startIndex) === false) {
+          reallyLoadedRows++;
+          this._list.set(1 + i + startIndex, data[i]);
+        }
+      }
+
+      if (this._isMounted) {
+        // Обновить количество записей.
+        this.setState({
+          rowsLoaded: this.state.rowsLoaded + reallyLoadedRows
+        });
+      }
+    });
+  }
 }

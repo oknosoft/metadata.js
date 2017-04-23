@@ -976,12 +976,12 @@ function Meta() {
 
 		var property, oproperty, tnames, rt, mgr;
 
-		if(mf._mgr){
+		if(mf._mgr instanceof DataManager){
 			return mf._mgr;
 		}
 
 		function mf_mgr(mgr){
-			if(mgr && mf.types.length == 1){
+			if(mgr instanceof DataManager && mf.types.length == 1){
 				mf._mgr = mgr;
 			}
 			return mgr;

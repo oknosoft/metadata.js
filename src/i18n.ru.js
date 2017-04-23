@@ -20,7 +20,7 @@ function Messages(){
 
 	this.toString = function(){return "Интернационализация сообщений"};
 
-	
+
 	/**
 	 * расширяем мессанджер
 	 */
@@ -38,8 +38,9 @@ function Messages(){
 		 *      text:"Error"});
 		 */
 		this.show_msg = function(attr, delm){
-			if(!attr)
-				return;
+			if(!attr){
+        return;
+      }
 			if(typeof attr == "string"){
 				if($p.iface.synctxt){
 					$p.iface.synctxt.show_message(attr);
@@ -47,10 +48,15 @@ function Messages(){
 				}
 				attr = {type:"info", text:attr };
 			}
-			if(delm && typeof delm.setText == "function")
-				delm.setText(attr.text);
+			else if(Array.isArray(attr) && attr.length > 1){
+        attr = {type: "info", text: '<b>' + attr[0] + '</b><br />' + attr[1]};
+      }
+			if(delm && typeof delm.setText == "function"){
+        delm.setText(attr.text);
+      }
 			dhtmlx.message(attr);
 		};
+    dhtmlx.message.position = "bottom";
 
 		/**
 		 * Проверяет корректность ответа сервера
@@ -290,7 +296,7 @@ $p.fias = function FIAS(){};
 	msg.select_grp = "Укажите группу, а не элемент";
 	msg.select_elm = "Укажите элемент, а не группу";
 	msg.select_file_import = "Укажите файл для импорта";
-		
+
 	msg.srv_overload = "Сервер перегружен";
 	msg.sub_row_change_disabled = "Текущая строка подчинена продукции.<br/>Строку нельзя изменить-удалить в документе<br/>только через построитель";
 	msg.sync_script = "Обновление скриптов приложения:";

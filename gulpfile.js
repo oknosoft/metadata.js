@@ -13,6 +13,7 @@ const gulp = require('gulp'),
 	rename = require('gulp-rename'),
 	resources = require('./src/utils/resource-concat.js'),
 	path = require('path'),
+  strip = require('gulp-strip-comments'),
 	umd = require('gulp-umd'),
 	replace = require('gulp-replace'),
 	babel = require('gulp-babel');
@@ -77,6 +78,7 @@ gulp.task('build-metadata', function () {
 		}))
 		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
 		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
+    .pipe(strip({safe: true}))
 		.pipe(gulp.dest('./lib'))
 		.pipe(gulp.dest('./dist'))
 		.pipe(rename('metadata.min.js'))
@@ -203,6 +205,7 @@ gulp.task('build-dhtmlx', function(){
 
 		])
 		.pipe(concat('dhtmlx_debug.js'))
+    //.pipe(strip({safe: true}))
 		.pipe(gulp.dest('./lib'))
 		.pipe(rename('dhtmlx.min.js'))
 		.pipe(uglify({
@@ -299,23 +302,26 @@ gulp.task('build-metadata-core', function(){
 		.pipe(gulp.dest('./dist'));
 });
 
+
+const metadataCoreFiles = [
+    './packages/metadata-core/src/utils.js',
+    './packages/metadata-core/src/i18n.ru.js',
+    './packages/metadata-core/src/jobprm.js',
+    './packages/metadata-core/src/wsql.js',
+    './packages/metadata-core/src/mngrs.js',
+    './packages/metadata-core/src/objs.js',
+    './packages/metadata-core/src/tabulars.js',
+    './packages/metadata-core/src/meta.js',
+    './packages/metadata-core/lib/aes.js',
+    './packages/metadata-core/src/common.js'
+];
+
 // metadata-core
 gulp.task('build--core', function(){
 
 	package_data = JSON.parse(require('fs').readFileSync('./packages/metadata-core/package.json', 'utf8'));
 
-	return gulp.src([
-		'./packages/metadata-core/src/utils.js',
-		'./packages/metadata-core/src/i18n.ru.js',
-		'./packages/metadata-core/src/jobprm.js',
-		'./packages/metadata-core/src/wsql.js',
-		'./packages/metadata-core/src/mngrs.js',
-		'./packages/metadata-core/src/objs.js',
-		'./packages/metadata-core/src/tabulars.js',
-		'./packages/metadata-core/src/meta.js',
-		'./packages/metadata-core/lib/aes.js',
-		'./packages/metadata-core/src/common.js'
-	])
+	return gulp.src(metadataCoreFiles)
 
 		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
 		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))

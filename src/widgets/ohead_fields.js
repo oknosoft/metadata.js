@@ -101,8 +101,9 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 	//t.enableAutoHeight(false,_cell._getHeight()-20,true);
 	_grid.setSizes();
 	_grid.attachEvent("onPropertyChanged", function(pname, new_value, old_value){
-		if(pname || _grid && _grid.getSelectedRowId())
-			return _pwnd.on_select(new_value);
+    if(pname || _grid && _grid.getSelectedRowId()){
+      return _pwnd.on_select(new_value); // , _grid.getSelectedRowId()
+    }
 	});
 	_grid.attachEvent("onCheckbox", function(rId, cInd, state){
 		if(_obj[rId] != undefined)

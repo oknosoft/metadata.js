@@ -784,7 +784,6 @@ class AdapterPouch extends AbstracrAdapter{
 	 * @return {Promise.<Array>}
 	 */
 	find_rows(_mgr, selection) {
-
 		var doc, res = [], utils = this.$p.utils,
 			db = this.db(_mgr),
 			_raw, _view, _total_count, top, calc_count,
@@ -1005,10 +1004,7 @@ class AdapterPouch extends AbstracrAdapter{
 			}
 
 			fetch_next_page();
-
 		});
-
-
 	}
 
 	/**

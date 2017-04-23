@@ -15,15 +15,11 @@ import FlatButton from "material-ui/FlatButton";
 import TextField from "material-ui/TextField";
 import DropDownMenu from 'material-ui/DropDownMenu';
 import MenuItem from 'material-ui/MenuItem';
-
-// import Dialog from "material-ui/Dialog";
-// import SchemeSettingsTabs from "./SchemeSettingsTabs";
-
 import Dialog from "metadata-ui/Dialog"
-import { getTabsContent } from "./SchemeSettingsTabs"
+import { getTabsContent, SchemeSettingsTabs } from "./SchemeSettingsTabs"
+import styles from "./styles/SchemeSettingsWrapper.scss";
 
 export default class SchemeSettingsWrapper extends Component {
-
   static propTypes = {
     scheme: PropTypes.object.isRequired,
     handleSchemeChange: PropTypes.func.isRequired,
@@ -33,14 +29,13 @@ export default class SchemeSettingsWrapper extends Component {
   }
 
   constructor(props, context) {
-
     super(props, context);
-
     const {scheme} = props
 
     this.state = {
       scheme,
       open: false,
+      fullscreen: false,
       variants: [scheme]
     }
 
@@ -48,18 +43,21 @@ export default class SchemeSettingsWrapper extends Component {
       _top: 40,
       obj: scheme.obj,
     })
-      .then((variants) => {
-        this.setState({variants})
-      })
-
+    .then((variants) => {
+      this.setState({variants})
+    });
   }
 
   handleOpen = () => {
-    this.setState({open: true});
+    this.setState({
+      open: true
+    });
   }
 
   handleClose = () => {
-    this.setState({open: false});
+    this.setState({
+      open: false
+    });
   }
 
   handleOk = () => {
@@ -73,14 +71,11 @@ export default class SchemeSettingsWrapper extends Component {
   }
 
   handleSearchChange = (event, newValue) => {
-
   }
 
   handleVariantChange = (event, index, value) => {
-
     const {_manager} = this.state.scheme;
     this.handleSchemeChange(_manager.get(value));
-
   }
 
   componentDidMount = () => {
@@ -95,26 +90,29 @@ export default class SchemeSettingsWrapper extends Component {
     })
   }
 
-  render() {
+  handleFullscreenClick() {
+    this.setState({
+      fullscreen: !this.state.fullscreen
+    });
+  }
 
+  render() {
     const {props, state, handleOpen, handleOk, handleClose, handleSchemeChange, handleSearchChange, handleVariantChange} = this;
     const {open, scheme, variants} = state
     const {show_search, show_variants, tabParams} = props
 
     const actions = [
-      <RaisedButton
-        key={0}
-        label="Применить"
-        primary={true}
-        keyboardFocused={true}
-        onTouchTap={handleOk}
-      />,
       <FlatButton
-        key={1}
+        key={0}
         label="Отмена"
         secondary={true}
-        onTouchTap={handleClose}
-      />,
+        onTouchTap={handleClose} />,
+
+      <RaisedButton
+        key={1}
+        label="Применить"
+        primary={true}
+        onTouchTap={handleOk} />,
     ];
 
     const menuitems = [];
@@ -125,54 +123,49 @@ export default class SchemeSettingsWrapper extends Component {
     }
 
     return (
-      <div>
-        {show_search ?
-            <TextField
-              name="search"
-              ref={(search) => {this.searchInput = search;}}
-              width={300}
-              underlineShow={false}
-              style={{backgroundColor: 'white', height: 36, top: -6, padding: 6}}
-              onChange={handleSearchChange}
-              disabled
-            />
-          :
-          null
+      <div className={styles.schemeSettingsWrapper}>
+        {/* Search box */}
+        {show_search ? <TextField
+          name="search"
+          ref={(search) => {this.searchInput = search;}}
+          width={300}
+          underlineShow={false}
+          className={styles.searchBox}
+          onChange={handleSearchChange}
+          disabled /> : null
         }
 
-        {
-          show_variants && scheme ?
-            <DropDownMenu
-              ref={(ref) => {
-                if(ref){
-                  const {style} = ref.rootNode.firstChild.children[1];
-                  style.lineHeight = '36px';
-                  style.top = '6px';
-                }
-              }}
-              maxHeight={300}
-              value={scheme.ref}
-              onChange={handleVariantChange}>
-              {menuitems}
-            </DropDownMenu>
-            :
-            null
-        }
 
+        {/* Variants */}
+        {show_variants && scheme ? <DropDownMenu
+          className={styles.schemeVariants}
+          maxHeight={300}
+          labelStyle={{
+            lineHeight: "48px"
+          }}
+          value={scheme.ref}
+          onChange={handleVariantChange}>
+          {menuitems}
+        </DropDownMenu> : null}
+
+
+        {/* Show list configuration button */}
         <IconButton touch={true} tooltip="Настройка списка" onTouchTap={handleOpen}>
           <IconSettings />
         </IconButton>
 
         <Dialog
-          title={"Настройка списка"}
+          title={"Настройка моего списка"}
           actions={actions}
           tabs={getTabsContent(scheme, handleSchemeChange, tabParams)}
-          isVisible={open}
+          resizable={true}
+          visible={open}
           width={700}
-          height={800}
+          height={500}
+          fullscreen={this.state.fullscreen}
+          onFullScreenClick={() => this.handleFullscreenClick()}
           onCloseClick={() => this.handleCloseClick()} />
       </div>
     )
   }
-
 }

@@ -115,6 +115,11 @@ function eXcell_ocombo(cell){
 		t.combo.getInput().focus();
 	};
 
+  t.open_selection = function () {
+    t.edit();
+    t.combo && t.combo.open_selection && t.combo.open_selection();
+  }
+
 	/**
 	 * вызывается при отключении редактора
 	 * @return {boolean} - если "истина", значит объект был изменён
