@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-04-22 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-04-23 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -3744,12 +3744,12 @@ function Meta() {
 
 		var property, oproperty, tnames, rt, mgr;
 
-		if(mf._mgr){
+		if(mf._mgr instanceof DataManager){
 			return mf._mgr;
 		}
 
 		function mf_mgr(mgr){
-			if(mgr && mf.types.length == 1){
+			if(mgr instanceof DataManager && mf.types.length == 1){
 				mf._mgr = mgr;
 			}
 			return mgr;
@@ -9660,7 +9660,7 @@ function OCombo(attr){
 
 	function popup_show(){
 
-		if(!_mgr || _mgr instanceof EnumManager){
+		if(!_mgr || !_mgr.class_name || _mgr instanceof EnumManager){
       return;
     }
 

@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-03-30 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-04-23 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -7843,8 +7843,10 @@ TabularSectionRow.prototype._setter = function (f, v) {
 	if(this._obj[f] == v || (!v && this._obj[f] == $p.utils.blank.guid))
 		return;
 
-	if(!this._owner._owner._data._silent)
-		Object.getNotifier(this._owner._owner).notify({
+	var _owner = this._owner._owner;
+
+	if(!_owner._data._silent)
+		Object.getNotifier(_owner).notify({
 			type: 'row',
 			row: this,
 			tabular: this._owner._name,
@@ -7858,13 +7860,13 @@ TabularSectionRow.prototype._setter = function (f, v) {
 		if(this._metadata.fields[f].choice_type.path.length == 2)
 			prop = this[this._metadata.fields[f].choice_type.path[1]];
 		else
-			prop = this._owner._owner[this._metadata.fields[f].choice_type.path[0]];
+			prop = _owner[this._metadata.fields[f].choice_type.path[0]];
 		if(prop && prop.type)
 			v = $p.utils.fetch_type(v, prop.type);
 	}
 
 	DataObj.prototype.__setter.call(this, f, v);
-	this._owner._owner._data._modified = true;
+  _owner._data._modified = true;
 
 };
 

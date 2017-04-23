@@ -235,7 +235,7 @@ function OCombo(attr){
 
 	function popup_show(){
 
-		if(!_mgr || _mgr instanceof EnumManager){
+		if(!_mgr || !_mgr.class_name || _mgr instanceof EnumManager){
       return;
     }
 
