@@ -616,7 +616,21 @@ function InterfaceObjs(){
 
 		do_reload();
 	}
+
+  /**
+   * Проверяет, нет ли других модальных форм
+   */
+  this.check_exit = function (wnd){
+    var do_exit;
+    // если есть внешнее модальное, ничего обрабатывать не надо
+    this.w.forEachWindow(function (w) {
+      if(w != wnd && (w.isModal() || this.w.getTopmostWindow() == w))
+        do_exit = true;
+    });
+    return do_exit;
+  }
 }
+
 
 $p.__define({
 

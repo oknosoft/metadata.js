@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-04-23 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-04-25 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -1912,7 +1912,17 @@ function InterfaceObjs(){
 
 		do_reload();
 	}
+
+  this.check_exit = function (wnd){
+    var do_exit;
+    this.w.forEachWindow(function (w) {
+      if(w != wnd && (w.isModal() || this.w.getTopmostWindow() == w))
+        do_exit = true;
+    });
+    return do_exit;
+  }
 }
+
 
 $p.__define({
 
@@ -8636,6 +8646,7 @@ DataManager.prototype.__define({
 		}
 	},
 
+
 	pouch_tree: {
 		value: function (attr) {
 
@@ -9308,7 +9319,8 @@ $p.iface.data_to_grid = function (data, attr){
 	}
 
 	var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
-			.replace("%1", attr._total_count || data.length).replace("%2", attr.start)
+			.replace("%1", attr._total_count || data.length)
+      .replace("%2", attr.start)
 			.replace("%3", attr.set_parent || "" ),
 		caption = this.caption_flds(attr);
 
@@ -10861,17 +10873,13 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 		custom_selection: {
 			get: function () {
 				return custom_selection;
-			},
-			enumerable: false,
-			configurable: false
+			}
 		},
 
 		toolbar: {
 			get: function () {
 				return attr.toolbar;
-			},
-			enumerable: false,
-			configurable: false
+			}
 		},
 
 		call_event: {
@@ -10894,8 +10902,7 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 			clearTimeout(input_filter_changed);
 
 		input_filter_changed = setTimeout(function () {
-			if(input_filter_changed)
-				t.call_event();
+      input_filter_changed && t._prev_input_filter != t.input_filter.value && t.call_event();
 		}, 500);
 	}
 
@@ -10967,7 +10974,9 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 
 		t.toolbar.addInput("input_filter", attr.pos, "", input_filter_width);
 		t.input_filter = t.toolbar.getInput("input_filter");
-		t.input_filter.onchange = t.call_event;
+		t.input_filter.onchange = function () {
+		  t._prev_input_filter != t.input_filter.value && t.call_event();
+    };
 		t.input_filter.onclick = function () {
 			var val = t.input_filter.value;
 			setTimeout(function () {
@@ -10993,6 +11002,10 @@ $p.iface.Toolbar_filter.prototype.__define({
 
 	get_filter: {
 		value: function (exclude_custom) {
+
+		  if(this.input_filter){
+        this._prev_input_filter = this.input_filter.value;
+      }
 
 			var res = {
 				date_from: this.input_date_from ? $p.utils.date_add_day(dhx4.str2date(this.input_date_from.value), 0, true) : "",
@@ -13103,6 +13116,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 
 		$p.iface.bind_help(wnd);
+
 		if(wnd.setText && !attr.hide_text)
 			wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (_meta["list_presentation"] || _meta.synonym) + '"');
 
@@ -13187,18 +13201,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 	function body_keydown(evt){
 
-		function check_exit(){
-			var do_exit;
-			$p.iface.w.forEachWindow(function (w) {
-				if(w != wnd && (w.isModal() || $p.iface.w.getTopmostWindow() == w))
-					do_exit = true;
-			});
-			return do_exit;
-		}
-
 		if(wnd && wnd.is_visible && wnd.is_visible()){
 			if (evt.ctrlKey && evt.keyCode == 70){ 
-				if(!check_exit()){
+				if(!$p.iface.check_exit(wnd)){
 					setTimeout(function(){
 						if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == "desktop")
 							wnd.elmnts.filter.input_filter.focus();
@@ -13207,7 +13212,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				}
 
 			} else if(evt.shiftKey && evt.keyCode == 116){ 
-				if(!check_exit()){
+				if(!$p.iface.check_exit(wnd)){
 					setTimeout(function(){
 						wnd.elmnts.grid.reload();
 					});
@@ -13217,7 +13222,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				}
 
 			} else if(evt.keyCode == 27){ 
-				if(!check_exit()){
+				if(!$p.iface.check_exit(wnd)){
 					setTimeout(function(){
 						wnd.close();
 					});
@@ -14031,12 +14036,9 @@ DataManager.prototype.import = function(file, obj){
 };
 
 
-
-
 function AppEvents() {
 
 	this.__define({
-
 
 		init: {
 			value: function () {
@@ -14047,7 +14049,6 @@ function AppEvents() {
 				$p.wsql.init_params();
 			}
 		},
-
 
 		do_eventable: {
 			value: function (obj) {
@@ -14202,50 +14203,9 @@ function AppEvents() {
 
 }
 
-
 function JobPrm(){
 
-	function base_url(){
-		return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
-	}
-
-	function parse_url(){
-
-		function parse(url_prm){
-			var prm = {}, tmp = [], pairs;
-
-			if(url_prm.substr(0, 1) === "#" || url_prm.substr(0, 1) === "?")
-				url_prm = url_prm.substr(1);
-
-			if(url_prm.length > 2){
-
-				pairs = decodeURI(url_prm).split('&');
-
-				for (var i in pairs){   
-					tmp = pairs[i].split('=');
-					if(tmp[0] == "m"){
-						try{
-							prm[tmp[0]] = JSON.parse(tmp[1]);
-						}catch(e){
-							prm[tmp[0]] = {};
-						}
-					}else
-						prm[tmp[0]] = tmp[1] || "";
-				}
-			}
-
-			return prm;
-		}
-
-		return parse(location.search)._mixin(parse(location.hash));
-	}
-
 	this.__define({
-
-
-		parse_url: {
-			value: parse_url
-		},
 
 		offline: {
 			value: false,
@@ -14262,35 +14222,10 @@ function JobPrm(){
 			writable: true
 		},
 
-
 		url_prm: {
-			value: typeof window != "undefined" ? parse_url() : {}
-		},
-
-
-		rest_url: {
-			value: function () {
-				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
-				if(zone)
-					return url.replace("%1", zone);
-				else
-					return url.replace("%1/", "");
-			}
-		},
-
-
-		irest_url: {
-			value: function () {
-				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
-				url = url.replace("odata/standard.odata", "hs/rest");
-				if(zone)
-					return url.replace("%1", zone);
-				else
-					return url.replace("%1/", "");
-			}
+			value: typeof window != "undefined" ? this.parse_url() : {}
 		}
+
 	});
 
 	$p.eve.callEvent("settings", [this]);
@@ -14300,18 +14235,76 @@ function JobPrm(){
 			this[prm_name] = this.url_prm[prm_name];
 	}
 
-}
+};
+
+JobPrm.prototype.__define({
+
+  base_url: {
+    value: function (){
+      return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
+    }
+  },
+
+  parse_url_str: {
+    value: function (prm_str) {
+      var prm = {}, tmp = [], pairs;
+
+      if (prm_str[0] === "#" || prm_str[0] === "?")
+        prm_str = prm_str.substr(1);
+
+      if (prm_str.length > 2) {
+
+        pairs = decodeURI(prm_str).split('&');
+
+        for (var i in pairs) {   
+          tmp = pairs[i].split('=');
+          if (tmp[0] == "m") {
+            try {
+              prm[tmp[0]] = JSON.parse(tmp[1]);
+            } catch (e) {
+              prm[tmp[0]] = {};
+            }
+          } else
+            prm[tmp[0]] = tmp[1] || "";
+        }
+      }
+
+      return prm;
+    }
+  },
+
+  parse_url: {
+    value: function () {
+      return this.parse_url_str(location.search)._mixin(this.parse_url_str(location.hash));
+    }
+  },
+
+  rest_url: {
+    value: function () {
+      var url = this.base_url(),
+        zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
+      return zone ? url.replace("%1", zone) : url.replace("%1/", "");
+    }
+  },
+
+  irest_url: {
+    value: function () {
+      var url = this.base_url().replace("odata/standard.odata", "hs/rest"),
+        zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
+      return zone ? url.replace("%1", zone) : url.replace("%1/", "");
+    }
+  }
+
+});
 
 
 function Modifiers(){
 
 	var methods = [];
 
-
 	this.push = function (method) {
 		methods.push(method);
 	};
-
 
 	this.detache = function (method) {
 		var index = methods.indexOf(method);
@@ -14319,11 +14312,9 @@ function Modifiers(){
 			methods.splice(index, 1);
 	};
 
-
 	this.clear = function () {
 		methods.length = 0;
 	};
-
 
 	this.execute = function (context) {
 
@@ -14338,7 +14329,6 @@ function Modifiers(){
 		});
 		return res;
 	};
-
 
 	this.execute_external = function (data) {
 

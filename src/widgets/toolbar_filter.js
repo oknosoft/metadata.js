@@ -37,17 +37,13 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 		custom_selection: {
 			get: function () {
 				return custom_selection;
-			},
-			enumerable: false,
-			configurable: false
+			}
 		},
 
 		toolbar: {
 			get: function () {
 				return attr.toolbar;
-			},
-			enumerable: false,
-			configurable: false
+			}
 		},
 
 		call_event: {
@@ -70,8 +66,7 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 			clearTimeout(input_filter_changed);
 
 		input_filter_changed = setTimeout(function () {
-			if(input_filter_changed)
-				t.call_event();
+      input_filter_changed && t._prev_input_filter != t.input_filter.value && t.call_event();
 		}, 500);
 	}
 
@@ -153,7 +148,9 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 
 		t.toolbar.addInput("input_filter", attr.pos, "", input_filter_width);
 		t.input_filter = t.toolbar.getInput("input_filter");
-		t.input_filter.onchange = t.call_event;
+		t.input_filter.onchange = function () {
+		  t._prev_input_filter != t.input_filter.value && t.call_event();
+    };
 		t.input_filter.onclick = function () {
 			var val = t.input_filter.value;
 			setTimeout(function () {
@@ -179,6 +176,10 @@ $p.iface.Toolbar_filter.prototype.__define({
 
 	get_filter: {
 		value: function (exclude_custom) {
+
+		  if(this.input_filter){
+        this._prev_input_filter = this.input_filter.value;
+      }
 
 			var res = {
 				date_from: this.input_date_from ? $p.utils.date_add_day(dhx4.str2date(this.input_date_from.value), 0, true) : "",
