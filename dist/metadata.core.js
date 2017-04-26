@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-04-24 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-04-26 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -7090,14 +7090,25 @@ function LogManager(){
 			value: function(msg){
 
 				if(msg instanceof Error){
-          if(console){
-            console.log(msg);
-          }
+          console && console.log(msg);
 					msg = {
 						class: "error",
 						note: msg.toString()
 					}
 				}
+        else if(msg instanceof DataObj){
+          console && console.log(msg);
+          var _err = msg._data._err;
+          msg = {
+            class: "error",
+            obj: {
+              type: msg.class_name,
+              ref: msg.ref,
+              presentation: msg.presentation
+            },
+            note: _err ? _err.text : ''
+          }
+        }
 				else if(typeof msg == "object" && !msg.class && !msg.obj){
 					msg = {
 						class: "obj",
@@ -8367,49 +8378,44 @@ DataObj.prototype.__define({
 				before_save_res = this._manager.handle_event(this, "before_save"),
 
 				reset_modified = function () {
-
 					if(before_save_res === false){
 						if(this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted){
 							this.posted = initial_posted;
 						}
-					}else
-						this._data._modified = false;
-
+					}else{
+            this._data._modified = false;
+          }
 					saver = null;
 					before_save_res = null;
 					reset_modified = null;
-
 					return this;
 				}.bind(this);
 
 			// если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
 			if(before_save_res === false){
 				return Promise.reject(reset_modified());
-
-			}else if(before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then){
-				// если пользовательский обработчик перед записью вернул промис, его и возвращаем
+			}
+      // если пользовательский обработчик перед записью вернул промис, его и возвращаем
+			else if(before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then){
 				return before_save_res.then(reset_modified);
 			}
 
-
 			// для объектов с иерархией установим пустого родителя, если иной не указан
-			if(this._metadata.hierarchical && !this._obj.parent)
-				this._obj.parent = $p.utils.blank.guid;
+			if(this._metadata.hierarchical && !this._obj.parent){
+        this._obj.parent = $p.utils.blank.guid;
+      }
 
 			// для документов, контролируем заполненность даты
 			if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj){
-
 				if($p.utils.blank.date == this.date)
 					this.date = new Date();
-
 				if(!this.number_doc)
 					this.new_number_doc();
-
-			}else{
+			}
+			else{
 				if(!this.id)
 					this.new_number_doc();
 			}
-
 
 			// если не указаны обязательные реквизиты
 			if($p.msg && $p.msg.show_msg){
@@ -8429,11 +8435,10 @@ DataObj.prototype.__define({
 			// в зависимости от типа кеширования, получаем saver
 			if(this._manager.cachable && this._manager.cachable != "e1cib"){
 				saver = $p.wsql.pouch.save_obj;
-
-			} else {
-				// запрос к серверу 1C по сети
+			}
+      // запрос к серверу 1C по сети
+			else {
 				saver = _rest.save_irest;
-
 			}
 
 			// Сохраняем во внешней базе
@@ -10831,52 +10836,7 @@ function AppEvents() {
  */
 function JobPrm(){
 
-	function base_url(){
-		return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
-	}
-
-	function parse_url(){
-
-		function parse(url_prm){
-			var prm = {}, tmp = [], pairs;
-
-			if(url_prm.substr(0, 1) === "#" || url_prm.substr(0, 1) === "?")
-				url_prm = url_prm.substr(1);
-
-			if(url_prm.length > 2){
-
-				pairs = decodeURI(url_prm).split('&');
-
-				// берём параметры из url
-				for (var i in pairs){   //разбиваем пару на ключ и значение, добавляем в их объект
-					tmp = pairs[i].split('=');
-					if(tmp[0] == "m"){
-						try{
-							prm[tmp[0]] = JSON.parse(tmp[1]);
-						}catch(e){
-							prm[tmp[0]] = {};
-						}
-					}else
-						prm[tmp[0]] = tmp[1] || "";
-				}
-			}
-
-			return prm;
-		}
-
-		return parse(location.search)._mixin(parse(location.hash));
-	}
-
 	this.__define({
-
-		/**
-		 * Осуществляет синтаксический разбор параметров url
-		 * @method parse_url
-		 * @return {Object}
-		 */
-		parse_url: {
-			value: parse_url
-		},
 
 		offline: {
 			value: false,
@@ -10900,41 +10860,9 @@ function JobPrm(){
 		 * @static
 		 */
 		url_prm: {
-			value: typeof window != "undefined" ? parse_url() : {}
-		},
-
-		/**
-		 * Адрес стандартного интерфейса 1С OData
-		 * @method rest_url
-		 * @return {string}
-		 */
-		rest_url: {
-			value: function () {
-				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
-				if(zone)
-					return url.replace("%1", zone);
-				else
-					return url.replace("%1/", "");
-			}
-		},
-
-		/**
-		 * Адрес http интерфейса библиотеки интеграции
-		 * @method irest_url
-		 * @return {string}
-		 */
-		irest_url: {
-			value: function () {
-				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
-				url = url.replace("odata/standard.odata", "hs/rest");
-				if(zone)
-					return url.replace("%1", zone);
-				else
-					return url.replace("%1/", "");
-			}
+			value: typeof window != "undefined" ? this.parse_url() : {}
 		}
+
 	});
 
 	// подмешиваем параметры, заданные в файле настроек сборки
@@ -10947,7 +10875,89 @@ function JobPrm(){
 			this[prm_name] = this.url_prm[prm_name];
 	}
 
-}
+};
+
+JobPrm.prototype.__define({
+
+  base_url: {
+    value: function (){
+      return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
+    }
+  },
+
+  /**
+   * Осуществляет синтаксический разбор параметров url
+   * @method parse_url
+   * @return {Object}
+   */
+  parse_url_str: {
+    value: function (prm_str) {
+      var prm = {}, tmp = [], pairs;
+
+      if (prm_str[0] === "#" || prm_str[0] === "?")
+        prm_str = prm_str.substr(1);
+
+      if (prm_str.length > 2) {
+
+        pairs = decodeURI(prm_str).split('&');
+
+        // берём параметры из url
+        for (var i in pairs) {   //разбиваем пару на ключ и значение, добавляем в их объект
+          tmp = pairs[i].split('=');
+          if (tmp[0] == "m") {
+            try {
+              prm[tmp[0]] = JSON.parse(tmp[1]);
+            } catch (e) {
+              prm[tmp[0]] = {};
+            }
+          } else
+            prm[tmp[0]] = tmp[1] || "";
+        }
+      }
+
+      return prm;
+    }
+  },
+
+  /**
+   * Осуществляет синтаксический разбор параметров url
+   * @method parse_url
+   * @return {Object}
+   */
+  parse_url: {
+    value: function () {
+      return this.parse_url_str(location.search)._mixin(this.parse_url_str(location.hash));
+    }
+  },
+
+  /**
+   * Адрес стандартного интерфейса 1С OData
+   * @method rest_url
+   * @return {string}
+   */
+  rest_url: {
+    value: function () {
+      var url = this.base_url(),
+        zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
+      return zone ? url.replace("%1", zone) : url.replace("%1/", "");
+    }
+  },
+
+  /**
+   * Адрес http интерфейса библиотеки интеграции
+   * @method irest_url
+   * @return {string}
+   */
+  irest_url: {
+    value: function () {
+      var url = this.base_url().replace("odata/standard.odata", "hs/rest"),
+        zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
+      return zone ? url.replace("%1", zone) : url.replace("%1/", "");
+    }
+  }
+
+});
+
 
 /**
  * ### Модификатор отложенного запуска

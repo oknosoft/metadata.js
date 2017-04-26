@@ -494,49 +494,44 @@ DataObj.prototype.__define({
 				before_save_res = this._manager.handle_event(this, "before_save"),
 
 				reset_modified = function () {
-
 					if(before_save_res === false){
 						if(this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted){
 							this.posted = initial_posted;
 						}
-					}else
-						this._data._modified = false;
-
+					}else{
+            this._data._modified = false;
+          }
 					saver = null;
 					before_save_res = null;
 					reset_modified = null;
-
 					return this;
 				}.bind(this);
 
 			// если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
 			if(before_save_res === false){
 				return Promise.reject(reset_modified());
-
-			}else if(before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then){
-				// если пользовательский обработчик перед записью вернул промис, его и возвращаем
+			}
+      // если пользовательский обработчик перед записью вернул промис, его и возвращаем
+			else if(before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then){
 				return before_save_res.then(reset_modified);
 			}
 
-
 			// для объектов с иерархией установим пустого родителя, если иной не указан
-			if(this._metadata.hierarchical && !this._obj.parent)
-				this._obj.parent = $p.utils.blank.guid;
+			if(this._metadata.hierarchical && !this._obj.parent){
+        this._obj.parent = $p.utils.blank.guid;
+      }
 
 			// для документов, контролируем заполненность даты
 			if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj){
-
 				if($p.utils.blank.date == this.date)
 					this.date = new Date();
-
 				if(!this.number_doc)
 					this.new_number_doc();
-
-			}else{
+			}
+			else{
 				if(!this.id)
 					this.new_number_doc();
 			}
-
 
 			// если не указаны обязательные реквизиты
 			if($p.msg && $p.msg.show_msg){
@@ -556,11 +551,10 @@ DataObj.prototype.__define({
 			// в зависимости от типа кеширования, получаем saver
 			if(this._manager.cachable && this._manager.cachable != "e1cib"){
 				saver = $p.wsql.pouch.save_obj;
-
-			} else {
-				// запрос к серверу 1C по сети
+			}
+      // запрос к серверу 1C по сети
+			else {
 				saver = _rest.save_irest;
-
 			}
 
 			// Сохраняем во внешней базе

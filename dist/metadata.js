@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-04-25 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-04-26 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -6125,14 +6125,25 @@ function LogManager(){
 			value: function(msg){
 
 				if(msg instanceof Error){
-          if(console){
-            console.log(msg);
-          }
+          console && console.log(msg);
 					msg = {
 						class: "error",
 						note: msg.toString()
 					}
 				}
+        else if(msg instanceof DataObj){
+          console && console.log(msg);
+          var _err = msg._data._err;
+          msg = {
+            class: "error",
+            obj: {
+              type: msg.class_name,
+              ref: msg.ref,
+              presentation: msg.presentation
+            },
+            note: _err ? _err.text : ''
+          }
+        }
 				else if(typeof msg == "object" && !msg.class && !msg.obj){
 					msg = {
 						class: "obj",
@@ -6664,45 +6675,40 @@ DataObj.prototype.__define({
 				before_save_res = this._manager.handle_event(this, "before_save"),
 
 				reset_modified = function () {
-
 					if(before_save_res === false){
 						if(this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted){
 							this.posted = initial_posted;
 						}
-					}else
-						this._data._modified = false;
-
+					}else{
+            this._data._modified = false;
+          }
 					saver = null;
 					before_save_res = null;
 					reset_modified = null;
-
 					return this;
 				}.bind(this);
 
 			if(before_save_res === false){
 				return Promise.reject(reset_modified());
-
-			}else if(before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then){
+			}
+			else if(before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then){
 				return before_save_res.then(reset_modified);
 			}
 
-
-			if(this._metadata.hierarchical && !this._obj.parent)
-				this._obj.parent = $p.utils.blank.guid;
+			if(this._metadata.hierarchical && !this._obj.parent){
+        this._obj.parent = $p.utils.blank.guid;
+      }
 
 			if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj){
-
 				if($p.utils.blank.date == this.date)
 					this.date = new Date();
-
 				if(!this.number_doc)
 					this.new_number_doc();
-
-			}else{
+			}
+			else{
 				if(!this.id)
 					this.new_number_doc();
 			}
-
 
 			if($p.msg && $p.msg.show_msg){
 				for(var mf in this._metadata.fields){
@@ -6720,10 +6726,9 @@ DataObj.prototype.__define({
 
 			if(this._manager.cachable && this._manager.cachable != "e1cib"){
 				saver = $p.wsql.pouch.save_obj;
-
-			} else {
+			}
+			else {
 				saver = _rest.save_irest;
-
 			}
 
 			return saver(

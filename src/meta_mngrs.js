@@ -2673,14 +2673,25 @@ function LogManager(){
 			value: function(msg){
 
 				if(msg instanceof Error){
-          if(console){
-            console.log(msg);
-          }
+          console && console.log(msg);
 					msg = {
 						class: "error",
 						note: msg.toString()
 					}
 				}
+        else if(msg instanceof DataObj){
+          console && console.log(msg);
+          var _err = msg._data._err;
+          msg = {
+            class: "error",
+            obj: {
+              type: msg.class_name,
+              ref: msg.ref,
+              presentation: msg.presentation
+            },
+            note: _err ? _err.text : ''
+          }
+        }
 				else if(typeof msg == "object" && !msg.class && !msg.obj){
 					msg = {
 						class: "obj",
