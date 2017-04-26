@@ -427,7 +427,7 @@ DataManager.prototype.__define({
         if(typeof attr.custom_selection == "function"){
           return attr.custom_selection(attr);
 
-        }else if(mgr.cachable == "ram"){
+        }else if(mgr.cachable == "ram" || mgr.cachable == "doc_ram"){
 
           // запрос к alasql
           if(attr.action == "get_tree")

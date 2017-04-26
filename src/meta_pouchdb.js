@@ -98,10 +98,11 @@ DataManager.prototype.__define({
 	 */
 	pouch_db: {
 		get: function () {
-			if(this.cachable.indexOf("_remote") != -1)
-				return $p.wsql.pouch.remote[this.cachable.replace("_remote", "")];
+		  const cachable = this.cachable.replace("_ram", "");
+			if(cachable.indexOf("remote") != -1)
+				return $p.wsql.pouch.remote[cachable.replace("_remote", "")];
 			else
-				return $p.wsql.pouch.local[this.cachable] || $p.wsql.pouch.remote[this.cachable];
+				return $p.wsql.pouch.local[cachable] || $p.wsql.pouch.remote[cachable];
 		}
 	},
 
