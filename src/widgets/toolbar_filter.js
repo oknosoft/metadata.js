@@ -26,7 +26,7 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 
 	var t = this,
 		input_filter_changed = 0,
-		input_filter_width = $p.job_prm.device_type == "desktop" ? 220 : 120,
+		input_filter_width = $p.job_prm.device_type == "desktop" ? 200 : 120,
 		custom_selection = {};
 
 	if(!attr.pos)
@@ -88,13 +88,13 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 				t.сalendar.setSensitiveRange(null, inp.value);
 		}
 
-		input_filter_width = $p.job_prm.device_type == "desktop" ? 180 : 120;
+		input_filter_width = $p.job_prm.device_type == "desktop" ? 160 : 120;
 
-		t.toolbar.addInput("input_date_from", attr.pos, "", $p.job_prm.device_type == "desktop" ? 80 : 72);
+		t.toolbar.addInput("input_date_from", attr.pos, "", $p.job_prm.device_type == "desktop" ? 78 : 72);
 		attr.pos++;
 		t.toolbar.addText("lbl_date_till", attr.pos, "-");
 		attr.pos++;
-		t.toolbar.addInput("input_date_till", attr.pos, "", $p.job_prm.device_type == "desktop" ? 80 : 72);
+		t.toolbar.addInput("input_date_till", attr.pos, "", $p.job_prm.device_type == "desktop" ? 78 : 72);
 		attr.pos++;
 
 		t.input_date_from = t.toolbar.getInput("input_date_from");

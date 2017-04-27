@@ -531,10 +531,19 @@ DataManager.prototype.__define({
         })
       }
 
-      if(t.cachable == "ram" || (selection && selection._local)) {
+      if(t.cachable.indexOf("ram") != -1 || (selection && selection._local)) {
         t.find_rows(selection, function (v) {
           l.push(check({text: v.presentation, value: v.ref}));
         });
+        l.sort(function(a, b) {
+          if (a.text < b.text){
+            return -1;
+          }
+          else if (a.text > b.text){
+            return 1;
+          }
+          return 0;
+        })
         return Promise.resolve(l);
 
       }else if(t.cachable != "e1cib"){
@@ -547,8 +556,8 @@ DataManager.prototype.__define({
             });
             return l;
           });
-
-      }else{
+      }
+      else{
         // для некешируемых выполняем запрос к серверу
         var attr = { selection: selection, top: selection._top},
           is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
@@ -1081,20 +1090,18 @@ RefDataManager.prototype.__define({
 				obj = this.by_ref[ref];
 
 				if(!obj){
-
 					if(forse == "update_only"){
 						continue;
 					}
-
 					obj = new $p[this.obj_constructor()](aattr[i], this);
-					if(forse)
-						obj._set_loaded();
-
-				}else if(obj.is_new() || forse){
+					if(forse){
+            obj._set_loaded();
+          }
+				}
+				else if(obj.is_new() || forse){
 					obj._mixin(aattr[i]);
 					obj._set_loaded();
 				}
-
 				res.push(obj);
 			}
 			return res;
@@ -1869,6 +1876,15 @@ EnumManager.prototype.__define({
         }
         l.push(check({text: v.synonym || "", value: v.ref}));
       });
+      l.sort(function(a, b) {
+        if (a.text < b.text){
+          return -1;
+        }
+        else if (a.text > b.text){
+          return 1;
+        }
+        return 0;
+      })
       return Promise.resolve(l);
     }
   }

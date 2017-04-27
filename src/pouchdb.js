@@ -55,26 +55,15 @@ function Pouch(){
 			get: function () {
 				if(!_local){
 					var opts = {auto_compaction: true, revs_limit: 2};
-					if(_paths.direct){
-						_local = {
-							ram: this.remote.ram,
-							doc: this.remote.doc,
-							sync: {}
-						}
-					}
-					else{
-						_local = {
-							ram: new t.DB(_paths.prefix + _paths.zone + "_ram", opts),
-							doc: new t.DB(_paths.prefix + _paths.zone + "_doc", opts),
-							meta: new t.DB(_paths.prefix + "meta", opts),
-							sync: {}
-						}
-					}
+          _local = {
+            ram: new t.DB(_paths.prefix + _paths.zone + "_ram", opts),
+            doc: _paths.direct ? t.remote.doc : new t.DB(_paths.prefix + _paths.zone + "_doc", opts),
+            meta: new t.DB(_paths.prefix + "meta", opts),
+            sync: {}
+          }
 				}
 				if(_paths.path && !_local._meta){
-					_local._meta = new t.DB(_paths.path + "meta", {
-						skip_setup: true
-					});
+					_local._meta = new t.DB(_paths.path + "meta", {skip_setup: true});
 					t.run_sync(_local.meta, _local._meta, "meta");
 				}
 				return _local;
@@ -165,11 +154,12 @@ function Pouch(){
 							$p.eve.callEvent('user_log_in', [username]);
 						});
 
-						if(!_paths.direct){
-							bases.forEach(function(dbid) {
-								t.run_sync(t.local[dbid], t.remote[dbid], dbid)
-							})
-						}
+            bases.forEach(function(dbid) {
+              if(t.local[dbid] && t.local[dbid] != t.remote[dbid]){
+                t.run_sync(t.local[dbid], t.remote[dbid], dbid)
+              }
+            })
+
 						return t.local.sync;
 
 					})
@@ -177,18 +167,6 @@ function Pouch(){
 						// излучаем событие
 						$p.eve.callEvent("user_log_fault", [err])
 					})
-
-				// return $p.ajax.get_ex(_paths.path + _paths.zone + "_ram", {username: username, password: password})
-				// 	.then(function (req) {
-				// 		_auth = {username: username, password: password};
-				// 		setTimeout(function () {
-				// 			$p.eve.callEvent("log_in", [username]);
-				// 		});
-				// 		return {
-				// 			ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),
-				// 			doc: t.run_sync(t.local.doc, t.remote.doc, "doc")
-				// 		}
-				// 	});
 			}
 		},
 
@@ -663,7 +641,8 @@ function Pouch(){
 					for(var mgr in res){
 						for(cn in res[mgr]){
 							if($p[mgr] && $p[mgr][cn]){
-								$p[mgr][cn].load_array(res[mgr][cn], changes.update_only ? "update_only" : true);
+								$p[mgr][cn].load_array(res[mgr][cn],
+                  changes.update_only && $p[mgr][cn].cachable.indexOf("ram") == -1 ? "update_only" : true);
 							}
 						}
 					}
