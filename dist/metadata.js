@@ -1612,12 +1612,13 @@ function InterfaceObjs(){
 			return iface.cancel_bubble(event);
 	};
 
-	this.cancel_bubble = function(e) {
+	this.cancel_bubble = function(e, prevent) {
 		var evt = (e || event);
-		if (evt && evt.stopPropagation)
-			evt.stopPropagation();
-		if (evt && !evt.cancelBubble)
-			evt.cancelBubble = true;
+    evt && prevent && evt.preventDefault && evt.preventDefault();
+		evt && evt.stopPropagation && evt.stopPropagation();
+		if (evt && !evt.cancelBubble){
+      evt.cancelBubble = true;
+    }
 		return false
 	};
 
@@ -13234,7 +13235,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				}
 
 			} else if(evt.keyCode == 27){ 
-				if(!$p.iface.check_exit(wnd)){
+				if(wnd instanceof dhtmlXWindowsCell && !$p.iface.check_exit(wnd)){
 					setTimeout(function(){
 						wnd.close();
 					});

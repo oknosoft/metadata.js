@@ -260,12 +260,13 @@ function InterfaceObjs(){
 	 * @param e {MouseEvent|KeyboardEvent}
 	 * @returns {Boolean}
 	 */
-	this.cancel_bubble = function(e) {
+	this.cancel_bubble = function(e, prevent) {
 		var evt = (e || event);
-		if (evt && evt.stopPropagation)
-			evt.stopPropagation();
-		if (evt && !evt.cancelBubble)
-			evt.cancelBubble = true;
+    evt && prevent && evt.preventDefault && evt.preventDefault();
+		evt && evt.stopPropagation && evt.stopPropagation();
+		if (evt && !evt.cancelBubble){
+      evt.cancelBubble = true;
+    }
 		return false
 	};
 

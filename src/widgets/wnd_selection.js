@@ -200,7 +200,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				}
 
 			} else if(evt.keyCode == 27){ // закрытие по {ESC}
-				if(!$p.iface.check_exit(wnd)){
+				if(wnd instanceof dhtmlXWindowsCell && !$p.iface.check_exit(wnd)){
 					setTimeout(function(){
 						wnd.close();
 					});
