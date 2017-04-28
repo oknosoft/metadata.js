@@ -121,7 +121,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 					allow_close: true,
 					allow_minmax: true,
 					on_close: frm_close,
-					caption: obj.shipping_address
+					caption: obj.shipping_address || 'Адрес доставки'
 				}
 			};
 
@@ -151,7 +151,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 					{id: "delivery_area", path: "o.delivery_area", synonym: "Район доставки", type: "ref", txt: v.delivery_area.presentation},
 					{id: "region", path: "o.region", synonym: "Регион", type: "ro", txt: v.region},
 					{id: "city", path: "o.city", synonym: "Населенный пункт", type: "ed", txt: v.city},
-					{id: "street", path: "o.street", synonym: "Улица, дом, корпус, литера, квартира", type: "ed", txt: v.street}
+					{id: "street", path: "o.street", synonym: "Улица, дом, корп., лит., кварт.", type: "ed", txt: v.street}
 				]
 			}, v), function(){
 				wnd.elmnts.pgrid.enableAutoHeight(true);
@@ -481,7 +481,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 					v.street+= " " + building_room[i];
 				}
 			}
-			
+
 			return new Promise(function(resolve, reject){
 
 				if(!$p.ipinfo)
@@ -493,14 +493,14 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 					$p.load_script("//maps.google.com/maps/api/js?callback=$p.ipinfo.location_callback", "script", function(){});
 
 					var google_ready = $p.eve.attachEvent("geo_google_ready", function () {
-						
+
 						if(watch_dog)
 							clearTimeout(watch_dog);
-						
+
 						if(google_ready){
 							$p.eve.detachEvent(google_ready);
 							google_ready = null;
-							resolve();	
+							resolve();
 						}
 					});
 
@@ -550,8 +550,8 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 						v.longitude = 37.6066379;
 						$p.msg.show_msg($p.msg.empty_geocoding);
 					}
-					
-				});			
+
+				});
 
 		}
 
@@ -596,6 +596,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 		}
 
 		function pgrid_on_changed(pname, new_value, old_value){
+      pname = wnd.elmnts.pgrid.getSelectedRowId();
 			if(pname){
 				if(v.delivery_area.empty()){
 					new_value = old_value;
@@ -610,7 +611,7 @@ if(typeof window !== "undefined" && "dhtmlx" in window){
 				} else if(pname == "delivery_area")
 					pgrid_on_select(new_value);
 				else{
-					v[wnd.elmnts.pgrid.getSelectedRowId()] = new_value;
+					v[pname] = new_value;
 					addr_changed();
 				}
 			}

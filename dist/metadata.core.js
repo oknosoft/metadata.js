@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-04-26 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-04-28 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -2150,47 +2150,6 @@ if(typeof window !== "undefined" && window.dhx4){
 	};
 }
 
-/**
- *  строки ФИАС адресного классификатора
- */
-$p.fias = function FIAS(){};
-(function (fias){
-
-	fias.toString = function(){return "Коды адресного классификатора"};
-
-	fias.types = ["владение", "здание", "помещение"];
-
-	// Код, Наименование, Тип, Порядок, КодФИАС
-	fias["1010"] = {name: "дом",			type: 1, order: 1, fid: 2, syn: [" д.", " д ", " дом"]};
-	fias["1020"] = {name: "владение",		type: 1, order: 2, fid: 1, syn: [" вл.", " вл ", " влад.", " влад ", " владен.", " владен ", " владение"]};
-	fias["1030"] = {name: "домовладение",	type: 1, order: 3, fid: 3};
-
-	fias["1050"] = {name: "корпус",		type: 2, order: 1, syn: [" к.", " к ", " корп.", " корп ", "корпус"]};
-	fias["1060"] = {name: "строение",	type: 2, order: 2, fid: 1, syn: [" стр.", " стр ", " строен.", " строен ", "строение"]};
-	fias["1080"] = {name: "литера",		type: 2, order: 3, fid: 3, syn: [" л.", " л ", " лит.", " лит ", "литера"]};
-	fias["1070"] = {name: "сооружение",	type: 2, order: 4, fid: 2, syn: [" соор.", " соор ", " сооруж.", " сооруж ", "сооружение"]};
-	fias["1040"] = {name: "участок",	type: 2, order: 5, syn: [" уч.", " уч ", "участок"]};
-
-	fias["2010"] = {name: "квартира",	type: 3, order: 1, syn: ["кв.", "кв ", "кварт.", "кварт ", "квартира", "-"]};
-	fias["2030"] = {name: "офис",		type: 3, order: 2, syn: ["оф.", "оф ", "офис", "-"]};
-	fias["2040"] = {name: "бокс",		type: 3, order: 3};
-	fias["2020"] = {name: "помещение",	type: 3, order: 4};
-	fias["2050"] = {name: "комната",	type: 3, order: 5, syn: ["комн.", "комн ", "комната"]};
-
-	//	//  сокращения 1C для поддержки обратной совместимости при парсинге
-	//	fias["2010"] = {name: "кв.",	type: 3, order: 6};
-	//	fias["2030"] = {name: "оф.",	type: 3, order: 7};
-
-	// Уточняющие объекты
-	fias["10100000"] = {name: "Почтовый индекс"};
-	fias["10200000"] = {name: "Адресная точка"};
-	fias["10300000"] = {name: "Садовое товарищество"};
-	fias["10400000"] = {name: "Элемент улично-дорожной сети, планировочной структуры дополнительного адресного элемента"};
-	fias["10500000"] = {name: "Промышленная зона"};
-	fias["10600000"] = {name: "Гаражно-строительный кооператив"};
-	fias["10700000"] = {name: "Территория"};
-
-})($p.fias);
 
 /**
  * Строки сообщений и элементов интерфейса
@@ -2389,26 +2348,15 @@ function Pouch(){
 			get: function () {
 				if(!_local){
 					var opts = {auto_compaction: true, revs_limit: 2};
-					if(_paths.direct){
-						_local = {
-							ram: this.remote.ram,
-							doc: this.remote.doc,
-							sync: {}
-						}
-					}
-					else{
-						_local = {
-							ram: new t.DB(_paths.prefix + _paths.zone + "_ram", opts),
-							doc: new t.DB(_paths.prefix + _paths.zone + "_doc", opts),
-							meta: new t.DB(_paths.prefix + "meta", opts),
-							sync: {}
-						}
-					}
+          _local = {
+            ram: new t.DB(_paths.prefix + _paths.zone + "_ram", opts),
+            doc: _paths.direct ? t.remote.doc : new t.DB(_paths.prefix + _paths.zone + "_doc", opts),
+            meta: new t.DB(_paths.prefix + "meta", opts),
+            sync: {}
+          }
 				}
 				if(_paths.path && !_local._meta){
-					_local._meta = new t.DB(_paths.path + "meta", {
-						skip_setup: true
-					});
+					_local._meta = new t.DB(_paths.path + "meta", {skip_setup: true});
 					t.run_sync(_local.meta, _local._meta, "meta");
 				}
 				return _local;
@@ -2499,11 +2447,12 @@ function Pouch(){
 							$p.eve.callEvent('user_log_in', [username]);
 						});
 
-						if(!_paths.direct){
-							bases.forEach(function(dbid) {
-								t.run_sync(t.local[dbid], t.remote[dbid], dbid)
-							})
-						}
+            bases.forEach(function(dbid) {
+              if(t.local[dbid] && t.local[dbid] != t.remote[dbid]){
+                t.run_sync(t.local[dbid], t.remote[dbid], dbid)
+              }
+            })
+
 						return t.local.sync;
 
 					})
@@ -2511,18 +2460,6 @@ function Pouch(){
 						// излучаем событие
 						$p.eve.callEvent("user_log_fault", [err])
 					})
-
-				// return $p.ajax.get_ex(_paths.path + _paths.zone + "_ram", {username: username, password: password})
-				// 	.then(function (req) {
-				// 		_auth = {username: username, password: password};
-				// 		setTimeout(function () {
-				// 			$p.eve.callEvent("log_in", [username]);
-				// 		});
-				// 		return {
-				// 			ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),
-				// 			doc: t.run_sync(t.local.doc, t.remote.doc, "doc")
-				// 		}
-				// 	});
 			}
 		},
 
@@ -2997,7 +2934,8 @@ function Pouch(){
 					for(var mgr in res){
 						for(cn in res[mgr]){
 							if($p[mgr] && $p[mgr][cn]){
-								$p[mgr][cn].load_array(res[mgr][cn], changes.update_only ? "update_only" : true);
+								$p[mgr][cn].load_array(res[mgr][cn],
+                  changes.update_only && $p[mgr][cn].cachable.indexOf("ram") == -1 ? "update_only" : true);
 							}
 						}
 					}
@@ -4948,10 +4886,19 @@ DataManager.prototype.__define({
         })
       }
 
-      if(t.cachable == "ram" || (selection && selection._local)) {
+      if(t.cachable.indexOf("ram") != -1 || (selection && selection._local)) {
         t.find_rows(selection, function (v) {
           l.push(check({text: v.presentation, value: v.ref}));
         });
+        l.sort(function(a, b) {
+          if (a.text < b.text){
+            return -1;
+          }
+          else if (a.text > b.text){
+            return 1;
+          }
+          return 0;
+        })
         return Promise.resolve(l);
 
       }else if(t.cachable != "e1cib"){
@@ -4964,8 +4911,8 @@ DataManager.prototype.__define({
             });
             return l;
           });
-
-      }else{
+      }
+      else{
         // для некешируемых выполняем запрос к серверу
         var attr = { selection: selection, top: selection._top},
           is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
@@ -5498,20 +5445,18 @@ RefDataManager.prototype.__define({
 				obj = this.by_ref[ref];
 
 				if(!obj){
-
 					if(forse == "update_only"){
 						continue;
 					}
-
 					obj = new $p[this.obj_constructor()](aattr[i], this);
-					if(forse)
-						obj._set_loaded();
-
-				}else if(obj.is_new() || forse){
+					if(forse){
+            obj._set_loaded();
+          }
+				}
+				else if(obj.is_new() || forse){
 					obj._mixin(aattr[i]);
 					obj._set_loaded();
 				}
-
 				res.push(obj);
 			}
 			return res;
@@ -6286,6 +6231,15 @@ EnumManager.prototype.__define({
         }
         l.push(check({text: v.synonym || "", value: v.ref}));
       });
+      l.sort(function(a, b) {
+        if (a.text < b.text){
+          return -1;
+        }
+        else if (a.text > b.text){
+          return 1;
+        }
+        return 0;
+      })
       return Promise.resolve(l);
     }
   }
