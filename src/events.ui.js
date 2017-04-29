@@ -429,12 +429,13 @@ $p.eve.__define({
 				if(!window.google || !window.google.maps){
 					$p.on("iface_init", function () {
 						setTimeout(function(){
-							$p.load_script("//maps.google.com/maps/api/js?callback=$p.ipinfo.location_callback", "script", function(){});
+							$p.load_script("https://maps.google.com/maps/api/js?key=" + $p.job_prm.use_google_geo + "&callback=$p.ipinfo.location_callback", "script", function(){});
 						}, 100);
 					});
-
-				}else
-					location_callback();
+				}
+				else{
+          $p.ipinfo.location_callback();
+        }
 			}
 
 			/**
