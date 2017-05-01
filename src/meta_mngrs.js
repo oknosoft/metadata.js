@@ -440,7 +440,7 @@ DataManager.prototype.__define({
                 return $p.iface.data_to_grid.call(mgr, data, attr);
               });
 
-        }else if(mgr.cachable.indexOf("doc") == 0){
+        }else if(mgr.cachable.indexOf("doc") == 0 || mgr.cachable.indexOf("remote") == 0){
 
           // todo: запрос к pouchdb
           if(attr.action == "get_tree")

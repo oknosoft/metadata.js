@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-04-29 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-05-01 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -2083,10 +2083,12 @@ function Pouch(){
 			get: function () {
 				if(!_remote){
 					var opts = {skip_setup: true, adapter: 'http'};
-					_remote = {
-						ram: new t.DB(_paths.path + _paths.zone + "_ram", opts),
-						doc: new t.DB(_paths.path + _paths.zone + "_doc" + (_paths.suffix ? "_" + _paths.suffix : ""), opts)
-					}
+          _remote = {};
+          $p.md.bases().forEach(function (db) {
+            _remote[db] = db == 'ram' ?
+              new t.DB(_paths.path + _paths.zone + "_" + db, opts) :
+              new t.DB(_paths.path + _paths.zone + "_" + db + (_paths.suffix ? "_" + _paths.suffix : ""), opts)
+          })
 				}
 				return _remote;
 			}
@@ -2112,7 +2114,7 @@ function Pouch(){
 					}
 				}
 
-				var bases = ["ram", "doc"],
+				var bases = $p.md.bases(),
 					try_auth = [];
 
 				this.remote;
@@ -2233,6 +2235,18 @@ function Pouch(){
 			}
 		},
 
+    call_data_loaded: {
+		  value: function (page) {
+        _data_loaded = true;
+        setTimeout(function () {
+          $p.md.load_doc_ram().then(function () {
+            $p.eve.callEvent(page.note = "pouch_load_data_loaded", [page]);
+            $p.record_log(page);
+          });
+        }, 1000);
+      }
+    },
+
 		load_data: {
 			value: function () {
 
@@ -2263,10 +2277,7 @@ function Pouch(){
 									fetchNextPage();
 								else{
 									resolve();
-									_data_loaded = true;
-									$p.eve.callEvent("pouch_load_data_loaded", [_page]);
-									_page.note = "pouch_load_data_loaded";
-									$p.record_log(_page);
+                  t.call_data_loaded(_page);
 								}
 
 							} else if(err){
@@ -2396,13 +2407,8 @@ function Pouch(){
 										$p.eve.callEvent("pouch_load_data_page", [_page]);
 
 										if(_page.docs_written >= _page.total_rows){
-
-											_data_loaded = true;
-											$p.eve.callEvent("pouch_load_data_loaded", [_page]);
-											_page.note = "pouch_load_data_loaded";
-											$p.record_log(_page);
+                      t.call_data_loaded(_page);
 										}
-
 									}
 								}else{
 									change.update_only = true;
@@ -3514,6 +3520,32 @@ function Meta() {
 
 	_md.create_managers = function(){};
 
+  _md.bases = function () {
+    var res = {};
+    for(var i in _m){
+      for(var j in _m[i]){
+        if(_m[i][j].cachable){
+          var _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '');
+          if(_name != 'meta' && _name != 'e1cib' && !res[_name])
+            res[_name] = _name;
+        }
+      }
+    }
+    return Object.keys(res);
+  }
+
+  _md.load_doc_ram = function(){
+    var res = [];
+    ['cat','cch'].forEach(function (kind) {
+      for(var name in _m[kind]){
+        if(_m[kind][name].cachable == 'doc_ram'){
+          res.push($p[kind][name].pouch_find_rows({_top: 1000, _skip: 0}));
+        }
+      }
+    });
+    return Promise.all(res);
+  };
+
 	_md.init = function (meta_db) {
 
 		var is_local = !meta_db || ($p.wsql.pouch && meta_db == $p.wsql.pouch.local.meta),
@@ -4245,7 +4277,7 @@ DataManager.prototype.__define({
                 return $p.iface.data_to_grid.call(mgr, data, attr);
               });
 
-        }else if(mgr.cachable.indexOf("doc") == 0){
+        }else if(mgr.cachable.indexOf("doc") == 0 || mgr.cachable.indexOf("remote") == 0){
 
           if(attr.action == "get_tree")
             return mgr.pouch_tree(attr);

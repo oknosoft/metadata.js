@@ -80,10 +80,12 @@ function Pouch(){
 			get: function () {
 				if(!_remote){
 					var opts = {skip_setup: true, adapter: 'http'};
-					_remote = {
-						ram: new t.DB(_paths.path + _paths.zone + "_ram", opts),
-						doc: new t.DB(_paths.path + _paths.zone + "_doc" + (_paths.suffix ? "_" + _paths.suffix : ""), opts)
-					}
+          _remote = {};
+          $p.md.bases().forEach(function (db) {
+            _remote[db] = db == 'ram' ?
+              new t.DB(_paths.path + _paths.zone + "_" + db, opts) :
+              new t.DB(_paths.path + _paths.zone + "_" + db + (_paths.suffix ? "_" + _paths.suffix : ""), opts)
+          })
 				}
 				return _remote;
 			}
@@ -118,7 +120,7 @@ function Pouch(){
 				}
 
 				// авторизуемся во всех базах
-				var bases = ["ram", "doc"],
+				var bases = $p.md.bases(),
 					try_auth = [];
 
 				this.remote;
@@ -253,6 +255,18 @@ function Pouch(){
 			}
 		},
 
+    call_data_loaded: {
+		  value: function (page) {
+        _data_loaded = true;
+        setTimeout(function () {
+          $p.md.load_doc_ram().then(function () {
+            $p.eve.callEvent(page.note = "pouch_load_data_loaded", [page]);
+            $p.record_log(page);
+          });
+        }, 1000);
+      }
+    },
+
 		/**
 		 * ### Загружает условно-постоянные данные из базы ram в alasql
 		 * Используется при инициализации данных на старте приложения
@@ -292,10 +306,7 @@ function Pouch(){
 								else{
 									resolve();
 									// широковещательное оповещение об окончании загрузки локальных данных
-									_data_loaded = true;
-									$p.eve.callEvent("pouch_load_data_loaded", [_page]);
-									_page.note = "pouch_load_data_loaded";
-									$p.record_log(_page);
+                  t.call_data_loaded(_page);
 								}
 
 							} else if(err){
@@ -456,14 +467,9 @@ function Pouch(){
 										$p.eve.callEvent("pouch_load_data_page", [_page]);
 
 										if(_page.docs_written >= _page.total_rows){
-
 											// широковещательное оповещение об окончании загрузки локальных данных
-											_data_loaded = true;
-											$p.eve.callEvent("pouch_load_data_loaded", [_page]);
-											_page.note = "pouch_load_data_loaded";
-											$p.record_log(_page);
+                      t.call_data_loaded(_page);
 										}
-
 									}
 								}else{
 									change.update_only = true;
