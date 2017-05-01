@@ -2464,7 +2464,8 @@ function Pouch(){
 				var tmp = tObj._obj._clone(),
 					db = attr.db || tObj._manager.pouch_db;
 
-				tmp._id = tObj._manager.class_name + "|" + tObj.ref;
+        tmp.class_name = tObj._manager.class_name;
+				tmp._id = tmp.class_name + "|" + tObj.ref;
 				delete tmp.ref;
 
 				if(attr.attachments)
