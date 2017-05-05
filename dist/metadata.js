@@ -2442,7 +2442,7 @@ function Pouch(){
 		load_obj: {
 			value: function (tObj) {
 
-				return tObj._manager.pouch_db.get(tObj._manager.class_name + "|" + tObj.ref)
+				return tObj._manager.pouch_db.get(tObj.class_name + "|" + tObj.ref)
 					.then(function (res) {
 						delete res._id;
 						delete res._rev;
@@ -2464,7 +2464,7 @@ function Pouch(){
 				var tmp = tObj._obj._clone(),
 					db = attr.db || tObj._manager.pouch_db;
 
-        tmp.class_name = tObj._manager.class_name;
+        tmp.class_name = tObj.class_name;
 				tmp._id = tmp.class_name + "|" + tObj.ref;
 				delete tmp.ref;
 
@@ -7120,7 +7120,7 @@ function TabularSection(name, owner){
 }
 
 TabularSection.prototype.toString = function(){
-	return "Табличная часть " + this._owner._manager.class_name + "." + this._name
+	return "Табличная часть " + this._owner.class_name + "." + this._name
 };
 
 TabularSection.prototype.get = function(index){
@@ -8793,8 +8793,8 @@ DataObj.prototype.__define({
 				{
 					limit : 1,
 					include_docs: false,
-					startkey: [obj._manager.class_name, year, prefix + '\uffff'],
-					endkey: [obj._manager.class_name, year, prefix],
+					startkey: [obj.class_name, year, prefix + '\uffff'],
+					endkey: [obj.class_name, year, prefix],
 					descending: true
 				})
 				.then(function (res) {

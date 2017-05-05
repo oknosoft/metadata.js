@@ -515,7 +515,7 @@ function Pouch(){
 		load_obj: {
 			value: function (tObj) {
 
-				return tObj._manager.pouch_db.get(tObj._manager.class_name + "|" + tObj.ref)
+				return tObj._manager.pouch_db.get(tObj.class_name + "|" + tObj.ref)
 					.then(function (res) {
 						delete res._id;
 						delete res._rev;
@@ -545,7 +545,7 @@ function Pouch(){
 				var tmp = tObj._obj._clone(),
 					db = attr.db || tObj._manager.pouch_db;
 
-        tmp.class_name = tObj._manager.class_name;
+        tmp.class_name = tObj.class_name;
 				tmp._id = tmp.class_name + "|" + tObj.ref;
 				delete tmp.ref;
 

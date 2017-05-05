@@ -687,8 +687,8 @@ DataObj.prototype.__define({
 				{
 					limit : 1,
 					include_docs: false,
-					startkey: [obj._manager.class_name, year, prefix + '\uffff'],
-					endkey: [obj._manager.class_name, year, prefix],
+					startkey: [obj.class_name, year, prefix + '\uffff'],
+					endkey: [obj.class_name, year, prefix],
 					descending: true
 				})
 				.then(function (res) {
