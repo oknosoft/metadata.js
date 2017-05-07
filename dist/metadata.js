@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-05-06 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-05-07 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -2147,15 +2147,24 @@ function Pouch(){
 							$p.eve.callEvent('user_log_in', [username]);
 						});
 
+            try_auth.length = 0;
             bases.forEach(function(dbid) {
               if(t.local[dbid] && t.local[dbid] != t.remote[dbid]){
-                t.run_sync(t.local[dbid], t.remote[dbid], dbid)
+                try_auth.push(t.run_sync(t.local[dbid], t.remote[dbid], dbid));
               }
-            })
-
-						return t.local.sync;
-
+            });
+            return Promise.all(try_auth);
 					})
+          .then(function () {
+            if(t.local._loading){
+              return new Promise(function (resolve, reject) {
+                $p.eve.attachEvent("pouch_load_data_loaded", resolve);
+              });
+            }
+            else{
+              return t.call_data_loaded();
+            }
+          })
 					.catch(function(err) {
 						$p.eve.callEvent("user_log_fault", [err])
 					})
@@ -2238,12 +2247,14 @@ function Pouch(){
     call_data_loaded: {
 		  value: function (page) {
         _data_loaded = true;
-        setTimeout(function () {
-          $p.md.load_doc_ram().then(function () {
+        if(!page){
+          page = _local.sync._page || {};
+        }
+        return $p.md.load_doc_ram().then(function () {
+          setTimeout(function () {
             $p.eve.callEvent(page.note = "pouch_load_data_loaded", [page]);
-            $p.record_log(page);
-          });
-        }, 1000);
+          }, 1000);
+        });
       }
     },
 
@@ -2291,6 +2302,7 @@ function Pouch(){
 						.then(function (info) {
 							if(info.doc_count >= ($p.job_prm.pouch_ram_doc_count || 10)){
 								$p.eve.callEvent("pouch_load_data_start", [_page]);
+                t.local._loading = true;
 								fetchNextPage();
 							}else{
 								$p.eve.callEvent("pouch_load_data_error", [info]);
@@ -2322,15 +2334,14 @@ function Pouch(){
 
 				return local.info()
 					.then(function (info) {
-
 						linfo = info;
 						return remote.info()
-
 					})
 					.then(function (rinfo) {
 
-						if(id != "ram")
-							return rinfo;
+						if(id != "ram"){
+              return rinfo;
+            }
 
 						return remote.get("data_version")
 							.then(function (v) {
@@ -2354,87 +2365,93 @@ function Pouch(){
 					})
 					.then(function (rinfo) {
 
-						if(!rinfo)
-							return;
+						if(!rinfo){
+              return;
+            }
+
+            _page = {
+              id: id,
+              total_rows: rinfo.doc_count + rinfo.doc_del_count,
+              local_rows: linfo.doc_count,
+              docs_written: 0,
+              limit: 200,
+              page: 0,
+              start: Date.now()
+            };
 
 						if(id == "ram" && linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
-							_page = {
-								total_rows: rinfo.doc_count,
-								local_rows: linfo.doc_count,
-								docs_written: 0,
-								limit: 200,
-								page: 0,
-								start: Date.now()
-							};
 							$p.eve.callEvent("pouch_load_data_start", [_page]);
-
-						}else if(id == "doc"){
-							setTimeout(function () {
-								$p.eve.callEvent("pouch_doc_sync_start");
-							});
+						}
+						else{
+              $p.eve.callEvent("pouch_" + id + "_sync_start");
 						}
 
-						var options = {
-								live: true,
-								retry: true,
-								batch_size: 200,
-								batches_limit: 6
-							};
+            return new Promise(function(resolve, reject){
 
-						if(id == "meta"){
-							options.filter = "auth/meta";
+              var options = {
+                batch_size: 200,
+                batches_limit: 6
+              };
 
-						}else if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id]){
-							options.filter = $p.job_prm.pouch_filter[id];
-						}
+              function sync_events(sync, options) {
 
-						if(id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo){
-							_local.sync[id] = local.replicate.from(remote, options);
-						}else{
-							_local.sync[id] = local.sync(remote, options);
-						}
+                return sync.on('change', function (change) {
 
-						_local.sync[id]
-							.on('change', function (change) {
-								if(id == "ram"){
-									t.load_changes(change);
+                  if(!_data_loaded && linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
+                    _page.page++;
+                    _page.docs_written = change.docs_written;
+                    _page.duration = Date.now() - _page.start;
+                    $p.eve.callEvent("pouch_load_data_page", [_page]);
+                  }
 
-									if(linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
+                  if(id != "ram"){
+                    change.update_only = true;
+                  }
+                  t.load_changes(change);
+                  $p.eve.callEvent("pouch_change", [id, change]);
 
-										_page.page++;
-										_page.docs_written = change.docs_written;
-										_page.duration = Date.now() - _page.start;
-										$p.eve.callEvent("pouch_load_data_page", [_page]);
+                })
+                  .on('paused', function (info) {
+                    $p.eve.callEvent("pouch_paused", [id, info]);
+                  })
+                  .on('active', function (info) {
+                    $p.eve.callEvent("pouch_active", [id, info]);
+                  })
+                  .on('denied', function (info) {
+                    $p.eve.callEvent("pouch_denied", [id, info]);
+                  })
+                  .on('complete', function (info) {
+                    if(options){
+                      options.live = true;
+                      options.retry = true;
 
-										if(_page.docs_written >= _page.total_rows){
-                      t.call_data_loaded(_page);
-										}
-									}
-								}else{
-									change.update_only = true;
-									t.load_changes(change);
-								}
-								$p.eve.callEvent("pouch_change", [id, change]);
+                      if(id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo){
+                        _local.sync[id] = sync_events(local.replicate.from(remote, options));
+                      }else{
+                        _local.sync[id] = sync_events(local.sync(remote, options));
+                      }
+                      resolve(id);
+                    }
+                  })
+                  .on('error', function (err) {
+                    reject([id, err]);
+                    $p.eve.callEvent("pouch_error", [id, err]);
+                  });
+              }
 
-							}).on('paused', function (info) {
-							if(info)
-								$p.eve.callEvent("pouch_paused", [id, info]);
+              if(id == "meta"){
+                options.filter = "auth/meta";
+                options.live = true;
+                options.retry = true;
+              }
+              else if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id]){
+                options.filter = $p.job_prm.pouch_filter[id];
+              }
 
-						}).on('active', function (info) {
-							$p.eve.callEvent("pouch_active", [id, info]);
+              sync_events(local.replicate.from(remote, options), options)
 
-						}).on('denied', function (info) {
-							$p.eve.callEvent("pouch_denied", [id, info]);
+            });
 
-						}).on('complete', function (info) {
-							$p.eve.callEvent("pouch_complete", [id, info]);
-
-						}).on('error', function (err) {
-							$p.eve.callEvent("pouch_error", [id, err]);
-
-						});
-
-						return _local.sync[id];
 					});
 			}
 		},
@@ -2565,7 +2582,6 @@ function Pouch(){
 						}
 					}
 
-					res	= changes = docs = doc = null;
 					return true;
 				}
 
@@ -8950,10 +8966,30 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 
 		pouch_load_data_page: function (page) {
 			set_spin(true);
-			if($p.eve.stepper.wnd_sync){
-				var docs_written = page.docs_written || page.page * page.limit;
-				$p.eve.stepper.frm_sync.setItemValue("text_current", "Обработано элементов: " + docs_written + " из " + page.total_rows);
-				$p.eve.stepper.frm_sync.setItemValue("text_bottom", "Текущий запрос: " + page.page + " (" + (100 * docs_written/page.total_rows).toFixed(0) + "%)");
+			var stepper = $p.eve.stepper;
+			if(stepper.wnd_sync){
+			  var curr = stepper[page.id || "ram"];
+        curr.total_rows = page.total_rows;
+        curr.page = page.page;
+        curr.docs_written = page.docs_written || page.page * page.limit;
+        if(curr.docs_written > curr.total_rows){
+          curr.total_rows = (curr.docs_written * 1.05).round(0);
+        }
+        var text_current, text_bottom;
+        if(!stepper.doc.docs_written){
+          text_current = "Обработано элементов: " + curr.docs_written + " из " + curr.total_rows;
+          text_bottom = "Текущий запрос: " + curr.page + " (" + (100 * curr.docs_written/curr.total_rows).toFixed(0) + "%)";
+        }
+        else{
+          var docs_written = stepper.ram.docs_written + stepper.doc.docs_written;
+          var total_rows = stepper.ram.total_rows + stepper.doc.total_rows;
+          curr = stepper.ram.page + stepper.doc.page;
+          text_current = "Обработано ram: " + stepper.ram.docs_written + " из " + stepper.ram.total_rows + "<br />" +
+            "Обработано doc: " + stepper.doc.docs_written + " из " + stepper.doc.total_rows;
+          text_bottom = "Текущий запрос: " + curr + " (" + (100 * docs_written/total_rows).toFixed(0) + "%)";
+        };
+        stepper.frm_sync.setItemValue("text_current", text_current);
+        stepper.frm_sync.setItemValue("text_bottom", text_bottom);
 			}
 		},
 
@@ -8962,19 +8998,12 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 		},
 
 		pouch_load_data_loaded: function (page) {
-			if($p.eve.stepper.wnd_sync){
-				if(page.docs_written){
-					$p.iface.sync.close();
-				}else{
-					$p.iface.sync.close();
-				}
-			}
+			$p.eve.stepper.wnd_sync && $p.iface.sync.close();
 		},
 
 		pouch_load_data_error: function (err) {
 			set_spin();
-			if($p.eve.stepper.wnd_sync)
-				$p.iface.sync.close();
+			$p.eve.stepper.wnd_sync && $p.iface.sync.close();
 		},
 
 		user_log_in: function (username) {
@@ -11316,6 +11345,11 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 			if($p.wsql.get_user_param("user_name") != login)
 				$p.wsql.set_user_param("user_name", login);					
 
+      var observer = $p.eve.attachEvent("user_log_in", function () {
+        $p.eve.detachEvent(observer);
+        _cell && _cell.close && _cell.close();
+      });
+
 			$p.wsql.pouch.log_in(login, password)
 				.then(function () {
 
@@ -11328,14 +11362,14 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 
 					$p.eve.logged_in = true;
 					if(attr.modal_dialog)
-						_cell.close();
+            _cell && _cell.close && _cell.close();
 					else if(resolve)
 						resolve();
 
 				})
 				.catch(function (err) {
 					were_errors = true;
-					_frm.onerror(err);
+          _frm && _frm.onerror &&_frm.onerror(err);
 				})
 				.then(function () {
 					if($p.iface.sync)
@@ -13793,7 +13827,8 @@ function Modifiers(){
 			}.bind(this));
 	};
 
-}
+};
+
 
 
 
@@ -13908,9 +13943,7 @@ $p.eve.__define({
 				})
 
 				.then(function () {
-
 					_md.printing_plates(mdd.printing_plates);
-
 				});
 		}
 	}
@@ -14014,7 +14047,9 @@ $p.eve.__define({
 					step: 0,
 					count_all: 0,
 					step_size: 57,
-					files: 0
+					files: 0,
+          ram: {},
+          doc: {},
 				};
 
 				eve.set_offline(!navigator.onLine);

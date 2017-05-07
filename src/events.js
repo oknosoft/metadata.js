@@ -439,5 +439,6 @@ function Modifiers(){
 			}.bind(this));
 	};
 
-}
+};
+
 

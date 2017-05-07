@@ -284,6 +284,11 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 			if($p.wsql.get_user_param("user_name") != login)
 				$p.wsql.set_user_param("user_name", login);					// сохраняем имя пользователя в базе
 
+      var observer = $p.eve.attachEvent("user_log_in", function () {
+        $p.eve.detachEvent(observer);
+        _cell && _cell.close && _cell.close();
+      });
+
 			//$p.eve.log_in(attr.onstep)
 			$p.wsql.pouch.log_in(login, password)
 				.then(function () {
@@ -297,14 +302,14 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 
 					$p.eve.logged_in = true;
 					if(attr.modal_dialog)
-						_cell.close();
+            _cell && _cell.close && _cell.close();
 					else if(resolve)
 						resolve();
 
 				})
 				.catch(function (err) {
 					were_errors = true;
-					_frm.onerror(err);
+          _frm && _frm.onerror &&_frm.onerror(err);
 				})
 				.then(function () {
 					if($p.iface.sync)

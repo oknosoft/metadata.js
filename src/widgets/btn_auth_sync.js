@@ -123,10 +123,30 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 
 		pouch_load_data_page: function (page) {
 			set_spin(true);
-			if($p.eve.stepper.wnd_sync){
-				var docs_written = page.docs_written || page.page * page.limit;
-				$p.eve.stepper.frm_sync.setItemValue("text_current", "Обработано элементов: " + docs_written + " из " + page.total_rows);
-				$p.eve.stepper.frm_sync.setItemValue("text_bottom", "Текущий запрос: " + page.page + " (" + (100 * docs_written/page.total_rows).toFixed(0) + "%)");
+			var stepper = $p.eve.stepper;
+			if(stepper.wnd_sync){
+			  var curr = stepper[page.id || "ram"];
+        curr.total_rows = page.total_rows;
+        curr.page = page.page;
+        curr.docs_written = page.docs_written || page.page * page.limit;
+        if(curr.docs_written > curr.total_rows){
+          curr.total_rows = (curr.docs_written * 1.05).round(0);
+        }
+        var text_current, text_bottom;
+        if(!stepper.doc.docs_written){
+          text_current = "Обработано элементов: " + curr.docs_written + " из " + curr.total_rows;
+          text_bottom = "Текущий запрос: " + curr.page + " (" + (100 * curr.docs_written/curr.total_rows).toFixed(0) + "%)";
+        }
+        else{
+          var docs_written = stepper.ram.docs_written + stepper.doc.docs_written;
+          var total_rows = stepper.ram.total_rows + stepper.doc.total_rows;
+          curr = stepper.ram.page + stepper.doc.page;
+          text_current = "Обработано ram: " + stepper.ram.docs_written + " из " + stepper.ram.total_rows + "<br />" +
+            "Обработано doc: " + stepper.doc.docs_written + " из " + stepper.doc.total_rows;
+          text_bottom = "Текущий запрос: " + curr + " (" + (100 * docs_written/total_rows).toFixed(0) + "%)";
+        };
+        stepper.frm_sync.setItemValue("text_current", text_current);
+        stepper.frm_sync.setItemValue("text_bottom", text_bottom);
 			}
 		},
 
@@ -135,24 +155,12 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 		},
 
 		pouch_load_data_loaded: function (page) {
-			if($p.eve.stepper.wnd_sync){
-				if(page.docs_written){
-					$p.iface.sync.close();
-					// setTimeout(function () {
-					// 	$p.iface.sync.close();
-					// 	$p.eve.redirect = true;
-					// 	location.reload(true);
-					// }, 2000);
-				}else{
-					$p.iface.sync.close();
-				}
-			}
+			$p.eve.stepper.wnd_sync && $p.iface.sync.close();
 		},
 
 		pouch_load_data_error: function (err) {
 			set_spin();
-			if($p.eve.stepper.wnd_sync)
-				$p.iface.sync.close();
+			$p.eve.stepper.wnd_sync && $p.iface.sync.close();
 		},
 
 		user_log_in: function (username) {
