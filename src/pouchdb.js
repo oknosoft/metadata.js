@@ -158,7 +158,7 @@ function Pouch(){
 
             try_auth.length = 0;
             bases.forEach(function(dbid) {
-              if(t.local[dbid] && t.local[dbid] != t.remote[dbid]){
+              if(t.local[dbid] && t.remote[dbid] && t.local[dbid] != t.remote[dbid]){
                 try_auth.push(t.run_sync(t.local[dbid], t.remote[dbid], dbid));
               }
             });

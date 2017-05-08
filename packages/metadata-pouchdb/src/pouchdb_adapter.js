@@ -232,20 +232,18 @@ class AdapterPouch extends AbstracrAdapter{
 
 							const sync = {};
 							if(_paths.direct) {
-								t.load_data();
+								return t.load_data();
 							}
-							else{
-								$p.md.bases().forEach((dbid) => {
-									if(t.local[dbid] && t.remote[dbid]){
-										if(_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1){
-											return
-										}
-										sync[dbid] = t.run_sync(dbid)
+							try_auth.length = 0;
+							$p.md.bases().forEach((dbid) => {
+								if(t.local[dbid] && t.remote[dbid] && t.local[dbid] != t.remote[dbid]){
+									if(_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1){
+										return
 									}
-								})
-							}
-							return sync;
-
+									try_auth.push(t.run_sync(t.local[dbid], t.remote[dbid], dbid));
+								}
+							});
+							return Promise.all(try_auth);
 						})
 						.catch(err => {
 							// излучаем событие
