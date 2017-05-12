@@ -430,7 +430,11 @@ function obj_save(class_name, ref, post, mark_deleted) {
 			_obj = class_name;
 			class_name = _obj._manager.class_name;
 			ref = _obj.ref;
-			if (mark_deleted) _obj._obj._deleted = true;
+
+			if (mark_deleted) {
+				_obj._obj._deleted = true;
+			}
+
 			_obj.save(post).then(() => {
 				dispatch({
 					type: OBJ_SAVE,

@@ -84,6 +84,14 @@ export default class MetaEngine{
 
 	}
 
+	on(type, listener) {
+		this.md.on(type, listener);
+	}
+
+	off(type, listener) {
+		this.md.off(type, listener);
+	}
+
 	get version() {
 		return "PACKAGE_VERSION"
 	}

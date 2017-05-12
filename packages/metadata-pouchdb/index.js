@@ -634,12 +634,16 @@ class AdapterPouch extends _metadataAbstractAdapter2.default {
   */
 	load_array(_mgr, refs, with_attachments) {
 
-		var options = {
+		if (!refs.length) {
+			return Promise.resolve(false);
+		}
+
+		const options = {
 			limit: refs.length + 1,
 			include_docs: true,
 			keys: refs.map(v => _mgr.class_name + "|" + v)
 		},
-		    db = this.db(_mgr);
+		      db = this.db(_mgr);
 
 		if (with_attachments) {
 			options.attachments = true;
@@ -1005,7 +1009,7 @@ class AdapterPouch extends _metadataAbstractAdapter2.default {
   */
 	load_changes(changes, options) {
 
-		var docs,
+		let docs,
 		    doc,
 		    res = {},
 		    cn,
@@ -1016,8 +1020,12 @@ class AdapterPouch extends _metadataAbstractAdapter2.default {
 			if (changes.direction) {
 				if (changes.direction != "pull") return;
 				docs = changes.change.docs;
-			} else docs = changes.docs;
-		} else docs = changes.rows;
+			} else {
+				docs = changes.docs;
+			}
+		} else {
+			docs = changes.rows;
+		}
 
 		if (docs.length > 0) {
 			if (options) {
@@ -1043,7 +1051,7 @@ class AdapterPouch extends _metadataAbstractAdapter2.default {
 				res[cn[0]][cn[1]].push(doc);
 			});
 
-			for (var mgr in res) {
+			for (let mgr in res) {
 				for (cn in res[mgr]) {
 					if ($p[mgr] && $p[mgr][cn]) {
 						$p[mgr][cn].load_array(res[mgr][cn], changes.update_only ? "update_only" : true);

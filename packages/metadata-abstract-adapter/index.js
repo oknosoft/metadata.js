@@ -23,11 +23,13 @@ class MetaEventEmitter extends _events2.default {
   */
 	on(type, listener) {
 
-		if (arguments.length > 1 || typeof type != 'object') {
+		if (typeof listener == 'function' && typeof type != 'object') {
 			super.on(type, listener);
 		} else {
-			for (var fld in type) {
-				if (type.hasOwnProperty(fld)) super.on(fld, type[fld]);
+			for (let fld in type) {
+				if (typeof type[fld] == 'function') {
+					super.on(fld, type[fld]);
+				}
 			}
 		}
 	}

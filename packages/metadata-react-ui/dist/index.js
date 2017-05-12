@@ -3,15 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = exports.MetaComponent = exports.TabularSection = exports.SchemeSettings = exports.MetaTree = exports.MetaList = exports.MetaDesigner = exports.FrmSuperLogin = exports.FrmObj = exports.FrmLogin = exports.DumbLoader = exports.DataTree = exports.DataListField = exports.DataList = exports.DataHead = exports.DataField = undefined;
+exports.default = exports.MetaComponent = exports.TabularSection = exports.Tabs = exports.SchemeSettings = exports.NavList = exports.MetaTree = exports.MetaList = exports.MetaDesigner = exports.FrmSuperLogin = exports.FrmReport = exports.FrmObj = exports.FrmLogin = exports.FlexPanel = exports.FieldsSet = exports.DumbLoader = exports.Dialog = exports.DataTree = exports.DataListField = exports.DataList = exports.DataField = undefined;
 
 var _DataField2 = require('./DataField');
 
 var _DataField3 = _interopRequireDefault(_DataField2);
-
-var _DataHead2 = require('./FieldsSet');
-
-var _DataHead3 = _interopRequireDefault(_DataHead2);
 
 var _DataList2 = require('./DataList');
 
@@ -25,9 +21,21 @@ var _DataTree2 = require('./DataTree');
 
 var _DataTree3 = _interopRequireDefault(_DataTree2);
 
+var _Dialog2 = require('./Dialog');
+
+var _Dialog3 = _interopRequireDefault(_Dialog2);
+
 var _DumbLoader2 = require('./DumbLoader');
 
 var _DumbLoader3 = _interopRequireDefault(_DumbLoader2);
+
+var _FieldsSet2 = require('./FieldsSet');
+
+var _FieldsSet3 = _interopRequireDefault(_FieldsSet2);
+
+var _FlexPanel2 = require('./FlexPanel');
+
+var _FlexPanel3 = _interopRequireDefault(_FlexPanel2);
 
 var _FrmLogin2 = require('./FrmLogin');
 
@@ -36,6 +44,10 @@ var _FrmLogin3 = _interopRequireDefault(_FrmLogin2);
 var _FrmObj2 = require('./FrmObj');
 
 var _FrmObj3 = _interopRequireDefault(_FrmObj2);
+
+var _FrmReport2 = require('./FrmReport');
+
+var _FrmReport3 = _interopRequireDefault(_FrmReport2);
 
 var _FrmSuperLogin2 = require('./FrmSuperLogin');
 
@@ -53,9 +65,17 @@ var _MetaTree2 = require('./MetaTree');
 
 var _MetaTree3 = _interopRequireDefault(_MetaTree2);
 
+var _NavList2 = require('./NavList');
+
+var _NavList3 = _interopRequireDefault(_NavList2);
+
 var _SchemeSettings2 = require('./SchemeSettings');
 
 var _SchemeSettings3 = _interopRequireDefault(_SchemeSettings2);
+
+var _Tabs2 = require('./Tabs');
+
+var _Tabs3 = _interopRequireDefault(_Tabs2);
 
 var _TabularSection2 = require('./TabularSection');
 
@@ -72,18 +92,23 @@ var _plugin2 = _interopRequireDefault(_plugin);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.DataField = _DataField3.default;
-exports.DataHead = _DataHead3.default;
 exports.DataList = _DataList3.default;
 exports.DataListField = _DataListField3.default;
 exports.DataTree = _DataTree3.default;
+exports.Dialog = _Dialog3.default;
 exports.DumbLoader = _DumbLoader3.default;
+exports.FieldsSet = _FieldsSet3.default;
+exports.FlexPanel = _FlexPanel3.default;
 exports.FrmLogin = _FrmLogin3.default;
 exports.FrmObj = _FrmObj3.default;
+exports.FrmReport = _FrmReport3.default;
 exports.FrmSuperLogin = _FrmSuperLogin3.default;
 exports.MetaDesigner = _MetaDesigner3.default;
 exports.MetaList = _MetaList3.default;
 exports.MetaTree = _MetaTree3.default;
+exports.NavList = _NavList3.default;
 exports.SchemeSettings = _SchemeSettings3.default;
+exports.Tabs = _Tabs3.default;
 exports.TabularSection = _TabularSection3.default;
 exports.MetaComponent = _MetaComponent3.default;
 exports.default = _plugin2.default;

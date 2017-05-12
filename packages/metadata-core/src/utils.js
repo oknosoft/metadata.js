@@ -49,6 +49,56 @@ if(!Number.prototype.pad){
 	};
 }
 
+/**
+ * Создаёт копию объекта
+ * @method _clone
+ * @for Object
+ * @param src {Object|Array} - исходный объект
+ * @param [exclude] {Array} - объект, в ключах которого имена свойств, которые не надо копировать
+ * @returns {Object|Array} - копия объекта
+ */
+if(!Object.prototype._clone){
+	Object.defineProperty(Object.prototype, '_clone', {
+		value: function() {
+			return utils._clone(this);
+		}
+	})
+}
+
+/**
+ * Копирует все свойства из src в текущий объект исключая те, что в цепочке прототипов src до Object
+ * @method _mixin
+ * @for Object
+ * @param src {Object} - источник
+ * @param include {Array}
+ * @param exclude {Array}
+ * @return {Object}
+ */
+if(!Object.prototype._mixin){
+	Object.defineProperty(Object.prototype, '_mixin', {
+		value: function(src, include, exclude) {
+			return utils._mixin(this, src, include, exclude);
+		}
+	})
+}
+
+/**
+ * Синтаксический сахар для defineProperty
+ * @method __define
+ * @for Object
+ */
+if(!Object.prototype.__define){
+	Object.defineProperty(Object.prototype, '__define', {
+		value: function(key, descriptor) {
+			if( descriptor ) {
+				Object.defineProperty( this, key, descriptor );
+			} else {
+				Object.defineProperties( this, key );
+			}
+			return this;
+		}
+	})
+}
 
 
 /**
@@ -179,7 +229,6 @@ class Utils{
 		}
 		return !!str;
 	}
-
 
 	/**
 	 * ### Приводит тип значения v к типу метаданных
@@ -446,7 +495,7 @@ class Utils{
 	}
 
 	/**
-	 * Создаёт копию объекта
+	 * Создаёт копию объекта и вложенных объектов
 	 * @method _clone
 	 * @for Object
 	 * @param obj {Object|Array} - исходный объект

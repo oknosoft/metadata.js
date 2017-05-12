@@ -35,6 +35,35 @@ if (!Number.prototype.pad) {
 	};
 }
 
+if (!Object.prototype._clone) {
+	Object.defineProperty(Object.prototype, '_clone', {
+		value: function () {
+			return utils._clone(this);
+		}
+	});
+}
+
+if (!Object.prototype._mixin) {
+	Object.defineProperty(Object.prototype, '_mixin', {
+		value: function (src, include, exclude) {
+			return utils._mixin(this, src, include, exclude);
+		}
+	});
+}
+
+if (!Object.prototype.__define) {
+	Object.defineProperty(Object.prototype, '__define', {
+		value: function (key, descriptor) {
+			if (descriptor) {
+				Object.defineProperty(this, key, descriptor);
+			} else {
+				Object.defineProperties(this, key);
+			}
+			return this;
+		}
+	});
+}
+
 class Utils {
 
 	constructor() {
@@ -3859,8 +3888,16 @@ class MetaEngine {
 		MetaEngine._plugins.length = 0;
 	}
 
+	on(type, listener) {
+		this.md.on(type, listener);
+	}
+
+	off(type, listener) {
+		this.md.off(type, listener);
+	}
+
 	get version() {
-		return "2.0.0-beta.14";
+		return "2.0.0-beta.15";
 	}
 
 	toString() {
