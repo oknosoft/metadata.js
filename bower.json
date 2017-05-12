@@ -36,8 +36,8 @@
     "node"
   ],
   "dependencies": {
-    "alasql": "^0.3",
-    "pouchdb": "^5.4"
+    "alasql": "^0.4",
+    "pouchdb": "^6.2"
   },
   "devDependencies": {
     "gulp": ">=3.9",

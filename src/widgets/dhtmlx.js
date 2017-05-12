@@ -415,7 +415,8 @@ $p.iface.data_to_grid = function (data, attr){
 	}
 
 	var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
-			.replace("%1", attr._total_count || data.length).replace("%2", attr.start)
+			.replace("%1", attr._total_count || data.length)
+      .replace("%2", attr.start)
 			.replace("%3", attr.set_parent || "" ),
 		caption = this.caption_flds(attr);
 

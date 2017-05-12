@@ -228,52 +228,7 @@ function AppEvents() {
  */
 function JobPrm(){
 
-	function base_url(){
-		return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
-	}
-
-	function parse_url(){
-
-		function parse(url_prm){
-			var prm = {}, tmp = [], pairs;
-
-			if(url_prm.substr(0, 1) === "#" || url_prm.substr(0, 1) === "?")
-				url_prm = url_prm.substr(1);
-
-			if(url_prm.length > 2){
-
-				pairs = decodeURI(url_prm).split('&');
-
-				// берём параметры из url
-				for (var i in pairs){   //разбиваем пару на ключ и значение, добавляем в их объект
-					tmp = pairs[i].split('=');
-					if(tmp[0] == "m"){
-						try{
-							prm[tmp[0]] = JSON.parse(tmp[1]);
-						}catch(e){
-							prm[tmp[0]] = {};
-						}
-					}else
-						prm[tmp[0]] = tmp[1] || "";
-				}
-			}
-
-			return prm;
-		}
-
-		return parse(location.search)._mixin(parse(location.hash));
-	}
-
 	this.__define({
-
-		/**
-		 * Осуществляет синтаксический разбор параметров url
-		 * @method parse_url
-		 * @return {Object}
-		 */
-		parse_url: {
-			value: parse_url
-		},
 
 		offline: {
 			value: false,
@@ -297,41 +252,9 @@ function JobPrm(){
 		 * @static
 		 */
 		url_prm: {
-			value: typeof window != "undefined" ? parse_url() : {}
-		},
-
-		/**
-		 * Адрес стандартного интерфейса 1С OData
-		 * @method rest_url
-		 * @return {string}
-		 */
-		rest_url: {
-			value: function () {
-				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
-				if(zone)
-					return url.replace("%1", zone);
-				else
-					return url.replace("%1/", "");
-			}
-		},
-
-		/**
-		 * Адрес http интерфейса библиотеки интеграции
-		 * @method irest_url
-		 * @return {string}
-		 */
-		irest_url: {
-			value: function () {
-				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
-				url = url.replace("odata/standard.odata", "hs/rest");
-				if(zone)
-					return url.replace("%1", zone);
-				else
-					return url.replace("%1/", "");
-			}
+			value: typeof window != "undefined" ? this.parse_url() : {}
 		}
+
 	});
 
 	// подмешиваем параметры, заданные в файле настроек сборки
@@ -344,7 +267,89 @@ function JobPrm(){
 			this[prm_name] = this.url_prm[prm_name];
 	}
 
-}
+};
+
+JobPrm.prototype.__define({
+
+  base_url: {
+    value: function (){
+      return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
+    }
+  },
+
+  /**
+   * Осуществляет синтаксический разбор параметров url
+   * @method parse_url
+   * @return {Object}
+   */
+  parse_url_str: {
+    value: function (prm_str) {
+      var prm = {}, tmp = [], pairs;
+
+      if (prm_str[0] === "#" || prm_str[0] === "?")
+        prm_str = prm_str.substr(1);
+
+      if (prm_str.length > 2) {
+
+        pairs = decodeURI(prm_str).split('&');
+
+        // берём параметры из url
+        for (var i in pairs) {   //разбиваем пару на ключ и значение, добавляем в их объект
+          tmp = pairs[i].split('=');
+          if (tmp[0] == "m") {
+            try {
+              prm[tmp[0]] = JSON.parse(tmp[1]);
+            } catch (e) {
+              prm[tmp[0]] = {};
+            }
+          } else
+            prm[tmp[0]] = tmp[1] || "";
+        }
+      }
+
+      return prm;
+    }
+  },
+
+  /**
+   * Осуществляет синтаксический разбор параметров url
+   * @method parse_url
+   * @return {Object}
+   */
+  parse_url: {
+    value: function () {
+      return this.parse_url_str(location.search)._mixin(this.parse_url_str(location.hash));
+    }
+  },
+
+  /**
+   * Адрес стандартного интерфейса 1С OData
+   * @method rest_url
+   * @return {string}
+   */
+  rest_url: {
+    value: function () {
+      var url = this.base_url(),
+        zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
+      return zone ? url.replace("%1", zone) : url.replace("%1/", "");
+    }
+  },
+
+  /**
+   * Адрес http интерфейса библиотеки интеграции
+   * @method irest_url
+   * @return {string}
+   */
+  irest_url: {
+    value: function () {
+      var url = this.base_url().replace("odata/standard.odata", "hs/rest"),
+        zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
+      return zone ? url.replace("%1", zone) : url.replace("%1/", "");
+    }
+  }
+
+});
+
 
 /**
  * ### Модификатор отложенного запуска
@@ -434,5 +439,6 @@ function Modifiers(){
 			}.bind(this));
 	};
 
-}
+};
+
 

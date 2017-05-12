@@ -98,10 +98,11 @@ DataManager.prototype.__define({
 	 */
 	pouch_db: {
 		get: function () {
-			if(this.cachable.indexOf("_remote") != -1)
-				return $p.wsql.pouch.remote[this.cachable.replace("_remote", "")];
+		  const cachable = this.cachable.replace("_ram", "");
+			if(cachable.indexOf("remote") != -1)
+				return $p.wsql.pouch.remote[cachable.replace("_remote", "")];
 			else
-				return $p.wsql.pouch.local[this.cachable] || $p.wsql.pouch.remote[this.cachable];
+				return $p.wsql.pouch.local[cachable] || $p.wsql.pouch.remote[cachable];
 		}
 	},
 
@@ -527,6 +528,7 @@ DataManager.prototype.__define({
 		}
 	},
 
+
 	/**
 	 * ### Возвращает набор данных для дерева динсписка
 	 *
@@ -685,8 +687,8 @@ DataObj.prototype.__define({
 				{
 					limit : 1,
 					include_docs: false,
-					startkey: [obj._manager.class_name, year, prefix + '\uffff'],
-					endkey: [obj._manager.class_name, year, prefix],
+					startkey: [obj.class_name, year, prefix + '\uffff'],
+					endkey: [obj.class_name, year, prefix],
 					descending: true
 				})
 				.then(function (res) {

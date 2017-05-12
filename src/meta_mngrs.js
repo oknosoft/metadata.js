@@ -427,7 +427,7 @@ DataManager.prototype.__define({
         if(typeof attr.custom_selection == "function"){
           return attr.custom_selection(attr);
 
-        }else if(mgr.cachable == "ram"){
+        }else if(mgr.cachable == "ram" || mgr.cachable == "doc_ram"){
 
           // запрос к alasql
           if(attr.action == "get_tree")
@@ -440,7 +440,7 @@ DataManager.prototype.__define({
                 return $p.iface.data_to_grid.call(mgr, data, attr);
               });
 
-        }else if(mgr.cachable.indexOf("doc") == 0){
+        }else if(mgr.cachable.indexOf("doc") == 0 || mgr.cachable.indexOf("remote") == 0){
 
           // todo: запрос к pouchdb
           if(attr.action == "get_tree")
@@ -531,10 +531,19 @@ DataManager.prototype.__define({
         })
       }
 
-      if(t.cachable == "ram" || (selection && selection._local)) {
+      if(t.cachable.indexOf("ram") != -1 || (selection && selection._local)) {
         t.find_rows(selection, function (v) {
           l.push(check({text: v.presentation, value: v.ref}));
         });
+        l.sort(function(a, b) {
+          if (a.text < b.text){
+            return -1;
+          }
+          else if (a.text > b.text){
+            return 1;
+          }
+          return 0;
+        })
         return Promise.resolve(l);
 
       }else if(t.cachable != "e1cib"){
@@ -547,8 +556,8 @@ DataManager.prototype.__define({
             });
             return l;
           });
-
-      }else{
+      }
+      else{
         // для некешируемых выполняем запрос к серверу
         var attr = { selection: selection, top: selection._top},
           is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
@@ -1081,20 +1090,18 @@ RefDataManager.prototype.__define({
 				obj = this.by_ref[ref];
 
 				if(!obj){
-
 					if(forse == "update_only"){
 						continue;
 					}
-
 					obj = new $p[this.obj_constructor()](aattr[i], this);
-					if(forse)
-						obj._set_loaded();
-
-				}else if(obj.is_new() || forse){
+					if(forse){
+            obj._set_loaded();
+          }
+				}
+				else if(obj.is_new() || forse){
 					obj._mixin(aattr[i]);
 					obj._set_loaded();
 				}
-
 				res.push(obj);
 			}
 			return res;
@@ -1869,6 +1876,15 @@ EnumManager.prototype.__define({
         }
         l.push(check({text: v.synonym || "", value: v.ref}));
       });
+      l.sort(function(a, b) {
+        if (a.text < b.text){
+          return -1;
+        }
+        else if (a.text > b.text){
+          return 1;
+        }
+        return 0;
+      })
       return Promise.resolve(l);
     }
   }
@@ -2673,14 +2689,25 @@ function LogManager(){
 			value: function(msg){
 
 				if(msg instanceof Error){
-          if(console){
-            console.log(msg);
-          }
+          console && console.log(msg);
 					msg = {
 						class: "error",
 						note: msg.toString()
 					}
 				}
+        else if(msg instanceof DataObj){
+          console && console.log(msg);
+          var _err = msg._data._err;
+          msg = {
+            class: "error",
+            obj: {
+              type: msg.class_name,
+              ref: msg.ref,
+              presentation: msg.presentation
+            },
+            note: _err ? _err.text : ''
+          }
+        }
 				else if(typeof msg == "object" && !msg.class && !msg.obj){
 					msg = {
 						class: "obj",

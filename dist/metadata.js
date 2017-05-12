@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-04-23 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-05-10 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -1612,12 +1612,13 @@ function InterfaceObjs(){
 			return iface.cancel_bubble(event);
 	};
 
-	this.cancel_bubble = function(e) {
+	this.cancel_bubble = function(e, prevent) {
 		var evt = (e || event);
-		if (evt && evt.stopPropagation)
-			evt.stopPropagation();
-		if (evt && !evt.cancelBubble)
-			evt.cancelBubble = true;
+    evt && prevent && evt.preventDefault && evt.preventDefault();
+		evt && evt.stopPropagation && evt.stopPropagation();
+		if (evt && !evt.cancelBubble){
+      evt.cancelBubble = true;
+    }
 		return false
 	};
 
@@ -1912,7 +1913,17 @@ function InterfaceObjs(){
 
 		do_reload();
 	}
+
+  this.check_exit = function (wnd){
+    var do_exit;
+    this.w.forEachWindow(function (w) {
+      if(w != wnd && (w.isModal() || this.w.getTopmostWindow() == w))
+        do_exit = true;
+    });
+    return do_exit;
+  }
 }
+
 
 $p.__define({
 
@@ -2053,26 +2064,15 @@ function Pouch(){
 			get: function () {
 				if(!_local){
 					var opts = {auto_compaction: true, revs_limit: 2};
-					if(_paths.direct){
-						_local = {
-							ram: this.remote.ram,
-							doc: this.remote.doc,
-							sync: {}
-						}
-					}
-					else{
-						_local = {
-							ram: new t.DB(_paths.prefix + _paths.zone + "_ram", opts),
-							doc: new t.DB(_paths.prefix + _paths.zone + "_doc", opts),
-							meta: new t.DB(_paths.prefix + "meta", opts),
-							sync: {}
-						}
-					}
+          _local = {
+            ram: new t.DB(_paths.prefix + _paths.zone + "_ram", opts),
+            doc: _paths.direct ? t.remote.doc : new t.DB(_paths.prefix + _paths.zone + "_doc", opts),
+            meta: new t.DB(_paths.prefix + "meta", opts),
+            sync: {}
+          }
 				}
 				if(_paths.path && !_local._meta){
-					_local._meta = new t.DB(_paths.path + "meta", {
-						skip_setup: true
-					});
+					_local._meta = new t.DB(_paths.path + "meta", {skip_setup: true});
 					t.run_sync(_local.meta, _local._meta, "meta");
 				}
 				return _local;
@@ -2083,10 +2083,12 @@ function Pouch(){
 			get: function () {
 				if(!_remote){
 					var opts = {skip_setup: true, adapter: 'http'};
-					_remote = {
-						ram: new t.DB(_paths.path + _paths.zone + "_ram", opts),
-						doc: new t.DB(_paths.path + _paths.zone + "_doc" + (_paths.suffix ? "_" + _paths.suffix : ""), opts)
-					}
+          _remote = {};
+          $p.md.bases().forEach(function (db) {
+            _remote[db] = db == 'ram' ?
+              new t.DB(_paths.path + _paths.zone + "_" + db, opts) :
+              new t.DB(_paths.path + _paths.zone + "_" + db + (_paths.suffix ? "_" + _paths.suffix : ""), opts)
+          })
 				}
 				return _remote;
 			}
@@ -2112,7 +2114,7 @@ function Pouch(){
 					}
 				}
 
-				var bases = ["ram", "doc"],
+				var bases = $p.md.bases(),
 					try_auth = [];
 
 				this.remote;
@@ -2145,18 +2147,27 @@ function Pouch(){
 							$p.eve.callEvent('user_log_in', [username]);
 						});
 
-						if(!_paths.direct){
-							bases.forEach(function(dbid) {
-								t.run_sync(t.local[dbid], t.remote[dbid], dbid)
-							})
-						}
-						return t.local.sync;
-
+            try_auth.length = 0;
+            bases.forEach(function(dbid) {
+              if(t.local[dbid] && t.remote[dbid] && t.local[dbid] != t.remote[dbid]){
+                try_auth.push(t.run_sync(t.local[dbid], t.remote[dbid], dbid));
+              }
+            });
+            return Promise.all(try_auth);
 					})
+          .then(function () {
+            if(t.local._loading){
+              return new Promise(function (resolve, reject) {
+                $p.eve.attachEvent("pouch_load_data_loaded", resolve);
+              });
+            }
+            else{
+              return t.call_data_loaded();
+            }
+          })
 					.catch(function(err) {
 						$p.eve.callEvent("user_log_fault", [err])
 					})
-
 			}
 		},
 
@@ -2233,6 +2244,20 @@ function Pouch(){
 			}
 		},
 
+    call_data_loaded: {
+		  value: function (page) {
+        _data_loaded = true;
+        if(!page){
+          page = _local.sync._page || {};
+        }
+        return $p.md.load_doc_ram().then(function () {
+          setTimeout(function () {
+            $p.eve.callEvent(page.note = "pouch_load_data_loaded", [page]);
+          }, 1000);
+        });
+      }
+    },
+
 		load_data: {
 			value: function () {
 
@@ -2263,10 +2288,7 @@ function Pouch(){
 									fetchNextPage();
 								else{
 									resolve();
-									_data_loaded = true;
-									$p.eve.callEvent("pouch_load_data_loaded", [_page]);
-									_page.note = "pouch_load_data_loaded";
-									$p.record_log(_page);
+                  t.call_data_loaded(_page);
 								}
 
 							} else if(err){
@@ -2280,6 +2302,7 @@ function Pouch(){
 						.then(function (info) {
 							if(info.doc_count >= ($p.job_prm.pouch_ram_doc_count || 10)){
 								$p.eve.callEvent("pouch_load_data_start", [_page]);
+                t.local._loading = true;
 								fetchNextPage();
 							}else{
 								$p.eve.callEvent("pouch_load_data_error", [info]);
@@ -2311,15 +2334,14 @@ function Pouch(){
 
 				return local.info()
 					.then(function (info) {
-
 						linfo = info;
 						return remote.info()
-
 					})
 					.then(function (rinfo) {
 
-						if(id != "ram")
-							return rinfo;
+						if(id != "ram"){
+              return rinfo;
+            }
 
 						return remote.get("data_version")
 							.then(function (v) {
@@ -2343,92 +2365,93 @@ function Pouch(){
 					})
 					.then(function (rinfo) {
 
-						if(!rinfo)
-							return;
+						if(!rinfo){
+              return;
+            }
+
+            _page = {
+              id: id,
+              total_rows: rinfo.doc_count + rinfo.doc_del_count,
+              local_rows: linfo.doc_count,
+              docs_written: 0,
+              limit: 200,
+              page: 0,
+              start: Date.now()
+            };
 
 						if(id == "ram" && linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
-							_page = {
-								total_rows: rinfo.doc_count,
-								local_rows: linfo.doc_count,
-								docs_written: 0,
-								limit: 200,
-								page: 0,
-								start: Date.now()
-							};
 							$p.eve.callEvent("pouch_load_data_start", [_page]);
-
-						}else if(id == "doc"){
-							setTimeout(function () {
-								$p.eve.callEvent("pouch_doc_sync_start");
-							});
+						}
+						else{
+              $p.eve.callEvent("pouch_" + id + "_sync_start");
 						}
 
-						var options = {
-								live: true,
-								retry: true,
-								batch_size: 200,
-								batches_limit: 6
-							};
+            return new Promise(function(resolve, reject){
 
-						if(id == "meta"){
-							options.filter = "auth/meta";
+              var options = {
+                batch_size: 200,
+                batches_limit: 6
+              };
 
-						}else if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id]){
-							options.filter = $p.job_prm.pouch_filter[id];
-						}
+              function sync_events(sync, options) {
 
-						if(id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo){
-							_local.sync[id] = local.replicate.from(remote, options);
-						}else{
-							_local.sync[id] = local.sync(remote, options);
-						}
+                return sync.on('change', function (change) {
 
-						_local.sync[id]
-							.on('change', function (change) {
-								if(id == "ram"){
-									t.load_changes(change);
+                  if(!_data_loaded && linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
+                    _page.page++;
+                    _page.docs_written = change.docs_written;
+                    _page.duration = Date.now() - _page.start;
+                    $p.eve.callEvent("pouch_load_data_page", [_page]);
+                  }
 
-									if(linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
+                  if(id != "ram"){
+                    change.update_only = true;
+                  }
+                  t.load_changes(change);
+                  $p.eve.callEvent("pouch_change", [id, change]);
 
-										_page.page++;
-										_page.docs_written = change.docs_written;
-										_page.duration = Date.now() - _page.start;
-										$p.eve.callEvent("pouch_load_data_page", [_page]);
+                })
+                  .on('paused', function (info) {
+                    $p.eve.callEvent("pouch_paused", [id, info]);
+                  })
+                  .on('active', function (info) {
+                    $p.eve.callEvent("pouch_active", [id, info]);
+                  })
+                  .on('denied', function (info) {
+                    $p.eve.callEvent("pouch_denied", [id, info]);
+                  })
+                  .on('complete', function (info) {
+                    if(options){
+                      options.live = true;
+                      options.retry = true;
 
-										if(_page.docs_written >= _page.total_rows){
+                      if(id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo){
+                        _local.sync[id] = sync_events(local.replicate.from(remote, options));
+                      }else{
+                        _local.sync[id] = sync_events(local.sync(remote, options));
+                      }
+                      resolve(id);
+                    }
+                  })
+                  .on('error', function (err) {
+                    reject([id, err]);
+                    $p.eve.callEvent("pouch_error", [id, err]);
+                  });
+              }
 
-											_data_loaded = true;
-											$p.eve.callEvent("pouch_load_data_loaded", [_page]);
-											_page.note = "pouch_load_data_loaded";
-											$p.record_log(_page);
-										}
+              if(id == "meta"){
+                options.filter = "auth/meta";
+                options.live = true;
+                options.retry = true;
+              }
+              else if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id]){
+                options.filter = $p.job_prm.pouch_filter[id];
+              }
 
-									}
-								}else{
-									change.update_only = true;
-									t.load_changes(change);
-								}
-								$p.eve.callEvent("pouch_change", [id, change]);
+              sync_events(local.replicate.from(remote, options), options)
 
-							}).on('paused', function (info) {
-							if(info)
-								$p.eve.callEvent("pouch_paused", [id, info]);
+            });
 
-						}).on('active', function (info) {
-							$p.eve.callEvent("pouch_active", [id, info]);
-
-						}).on('denied', function (info) {
-							$p.eve.callEvent("pouch_denied", [id, info]);
-
-						}).on('complete', function (info) {
-							$p.eve.callEvent("pouch_complete", [id, info]);
-
-						}).on('error', function (err) {
-							$p.eve.callEvent("pouch_error", [id, err]);
-
-						});
-
-						return _local.sync[id];
 					});
 			}
 		},
@@ -2436,7 +2459,7 @@ function Pouch(){
 		load_obj: {
 			value: function (tObj) {
 
-				return tObj._manager.pouch_db.get(tObj._manager.class_name + "|" + tObj.ref)
+				return tObj._manager.pouch_db.get(tObj.class_name + "|" + tObj.ref)
 					.then(function (res) {
 						delete res._id;
 						delete res._rev;
@@ -2458,7 +2481,8 @@ function Pouch(){
 				var tmp = tObj._obj._clone(),
 					db = attr.db || tObj._manager.pouch_db;
 
-				tmp._id = tObj._manager.class_name + "|" + tObj.ref;
+        tmp.class_name = tObj.class_name;
+				tmp._id = tmp.class_name + "|" + tObj.ref;
 				delete tmp.ref;
 
 				if(attr.attachments)
@@ -2552,12 +2576,12 @@ function Pouch(){
 					for(var mgr in res){
 						for(cn in res[mgr]){
 							if($p[mgr] && $p[mgr][cn]){
-								$p[mgr][cn].load_array(res[mgr][cn], changes.update_only ? "update_only" : true);
+								$p[mgr][cn].load_array(res[mgr][cn],
+                  changes.update_only && $p[mgr][cn].cachable.indexOf("ram") == -1 ? "update_only" : true);
 							}
 						}
 					}
 
-					res	= changes = docs = doc = null;
 					return true;
 				}
 
@@ -2690,39 +2714,6 @@ if(typeof window !== "undefined" && window.dhx4){
 	};
 }
 
-$p.fias = function FIAS(){};
-(function (fias){
-
-	fias.toString = function(){return "Коды адресного классификатора"};
-
-	fias.types = ["владение", "здание", "помещение"];
-
-	fias["1010"] = {name: "дом",			type: 1, order: 1, fid: 2, syn: [" д.", " д ", " дом"]};
-	fias["1020"] = {name: "владение",		type: 1, order: 2, fid: 1, syn: [" вл.", " вл ", " влад.", " влад ", " владен.", " владен ", " владение"]};
-	fias["1030"] = {name: "домовладение",	type: 1, order: 3, fid: 3};
-
-	fias["1050"] = {name: "корпус",		type: 2, order: 1, syn: [" к.", " к ", " корп.", " корп ", "корпус"]};
-	fias["1060"] = {name: "строение",	type: 2, order: 2, fid: 1, syn: [" стр.", " стр ", " строен.", " строен ", "строение"]};
-	fias["1080"] = {name: "литера",		type: 2, order: 3, fid: 3, syn: [" л.", " л ", " лит.", " лит ", "литера"]};
-	fias["1070"] = {name: "сооружение",	type: 2, order: 4, fid: 2, syn: [" соор.", " соор ", " сооруж.", " сооруж ", "сооружение"]};
-	fias["1040"] = {name: "участок",	type: 2, order: 5, syn: [" уч.", " уч ", "участок"]};
-
-	fias["2010"] = {name: "квартира",	type: 3, order: 1, syn: ["кв.", "кв ", "кварт.", "кварт ", "квартира", "-"]};
-	fias["2030"] = {name: "офис",		type: 3, order: 2, syn: ["оф.", "оф ", "офис", "-"]};
-	fias["2040"] = {name: "бокс",		type: 3, order: 3};
-	fias["2020"] = {name: "помещение",	type: 3, order: 4};
-	fias["2050"] = {name: "комната",	type: 3, order: 5, syn: ["комн.", "комн ", "комната"]};
-
-
-	fias["10100000"] = {name: "Почтовый индекс"};
-	fias["10200000"] = {name: "Адресная точка"};
-	fias["10300000"] = {name: "Садовое товарищество"};
-	fias["10400000"] = {name: "Элемент улично-дорожной сети, планировочной структуры дополнительного адресного элемента"};
-	fias["10500000"] = {name: "Промышленная зона"};
-	fias["10600000"] = {name: "Гаражно-строительный кооператив"};
-	fias["10700000"] = {name: "Территория"};
-
-})($p.fias);
 
 (function (msg){
 
@@ -3546,6 +3537,32 @@ function Meta() {
 
 	_md.create_managers = function(){};
 
+  _md.bases = function () {
+    var res = {};
+    for(var i in _m){
+      for(var j in _m[i]){
+        if(_m[i][j].cachable){
+          var _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '');
+          if(_name != 'meta' && _name != 'e1cib' && !res[_name])
+            res[_name] = _name;
+        }
+      }
+    }
+    return Object.keys(res);
+  }
+
+  _md.load_doc_ram = function(){
+    var res = [];
+    ['cat','cch'].forEach(function (kind) {
+      for(var name in _m[kind]){
+        if(_m[kind][name].cachable == 'doc_ram'){
+          res.push($p[kind][name].pouch_find_rows({_top: 1000, _skip: 0}));
+        }
+      }
+    });
+    return Promise.all(res);
+  };
+
 	_md.init = function (meta_db) {
 
 		var is_local = !meta_db || ($p.wsql.pouch && meta_db == $p.wsql.pouch.local.meta),
@@ -4265,7 +4282,7 @@ DataManager.prototype.__define({
         if(typeof attr.custom_selection == "function"){
           return attr.custom_selection(attr);
 
-        }else if(mgr.cachable == "ram"){
+        }else if(mgr.cachable == "ram" || mgr.cachable == "doc_ram"){
 
           if(attr.action == "get_tree")
             return $p.wsql.promise(mgr.get_sql_struct(attr), [])
@@ -4277,7 +4294,7 @@ DataManager.prototype.__define({
                 return $p.iface.data_to_grid.call(mgr, data, attr);
               });
 
-        }else if(mgr.cachable.indexOf("doc") == 0){
+        }else if(mgr.cachable.indexOf("doc") == 0 || mgr.cachable.indexOf("remote") == 0){
 
           if(attr.action == "get_tree")
             return mgr.pouch_tree(attr);
@@ -4354,10 +4371,19 @@ DataManager.prototype.__define({
         })
       }
 
-      if(t.cachable == "ram" || (selection && selection._local)) {
+      if(t.cachable.indexOf("ram") != -1 || (selection && selection._local)) {
         t.find_rows(selection, function (v) {
           l.push(check({text: v.presentation, value: v.ref}));
         });
+        l.sort(function(a, b) {
+          if (a.text < b.text){
+            return -1;
+          }
+          else if (a.text > b.text){
+            return 1;
+          }
+          return 0;
+        })
         return Promise.resolve(l);
 
       }else if(t.cachable != "e1cib"){
@@ -4370,8 +4396,8 @@ DataManager.prototype.__define({
             });
             return l;
           });
-
-      }else{
+      }
+      else{
         var attr = { selection: selection, top: selection._top},
           is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
         delete selection._top;
@@ -4802,20 +4828,18 @@ RefDataManager.prototype.__define({
 				obj = this.by_ref[ref];
 
 				if(!obj){
-
 					if(forse == "update_only"){
 						continue;
 					}
-
 					obj = new $p[this.obj_constructor()](aattr[i], this);
-					if(forse)
-						obj._set_loaded();
-
-				}else if(obj.is_new() || forse){
+					if(forse){
+            obj._set_loaded();
+          }
+				}
+				else if(obj.is_new() || forse){
 					obj._mixin(aattr[i]);
 					obj._set_loaded();
 				}
-
 				res.push(obj);
 			}
 			return res;
@@ -5501,6 +5525,15 @@ EnumManager.prototype.__define({
         }
         l.push(check({text: v.synonym || "", value: v.ref}));
       });
+      l.sort(function(a, b) {
+        if (a.text < b.text){
+          return -1;
+        }
+        else if (a.text > b.text){
+          return 1;
+        }
+        return 0;
+      })
       return Promise.resolve(l);
     }
   }
@@ -6115,14 +6148,25 @@ function LogManager(){
 			value: function(msg){
 
 				if(msg instanceof Error){
-          if(console){
-            console.log(msg);
-          }
+          console && console.log(msg);
 					msg = {
 						class: "error",
 						note: msg.toString()
 					}
 				}
+        else if(msg instanceof DataObj){
+          console && console.log(msg);
+          var _err = msg._data._err;
+          msg = {
+            class: "error",
+            obj: {
+              type: msg.class_name,
+              ref: msg.ref,
+              presentation: msg.presentation
+            },
+            note: _err ? _err.text : ''
+          }
+        }
 				else if(typeof msg == "object" && !msg.class && !msg.obj){
 					msg = {
 						class: "obj",
@@ -6358,155 +6402,6 @@ function DataObj(attr, manager) {
 
 }
 
-
-DataObj.prototype._getter = function (f) {
-
-	var mf = this._metadata.fields[f].type,
-		res = this._obj ? this._obj[f] : "",
-		mgr, ref;
-
-	if(f == "type" && typeof res == "object")
-		return res;
-
-	else if(f == "ref"){
-		return res;
-
-	}else if(mf.is_ref){
-
-		if(mf.digits && typeof res === "number"){
-			return res;
-		}
-
-		if(mf.hasOwnProperty("str_len") && !$p.utils.is_guid(res)){
-			return res;
-		}
-
-		if(mgr = _md.value_mgr(this._obj, f, mf)){
-			if($p.utils.is_data_mgr(mgr)){
-				return mgr.get(res, false);
-			}
-			else{
-				return $p.utils.fetch_type(res, mgr);
-			}
-		}
-
-		if(res){
-			console.log([f, mf, this._obj]);
-			return null;
-		}
-
-	}else if(mf.date_part)
-		return $p.utils.fix_date(this._obj[f], true);
-
-	else if(mf.digits)
-		return $p.utils.fix_number(this._obj[f], !mf.hasOwnProperty("str_len"));
-
-	else if(mf.types[0]=="boolean")
-		return $p.utils.fix_boolean(this._obj[f]);
-
-	else
-		return this._obj[f] || "";
-};
-
-DataObj.prototype.__setter = function (f, v) {
-
-	var mf = this._metadata.fields[f].type,
-		mgr;
-
-	if(f == "type" && v.types)
-		this._obj[f] = v;
-
-	else if(f == "ref")
-
-		this._obj[f] = $p.utils.fix_guid(v);
-
-	else if(mf.is_ref){
-
-		if(mf.digits && typeof v == "number" || mf.hasOwnProperty("str_len") && typeof v == "string" && !$p.utils.is_guid(v)){
-			this._obj[f] = v;
-		}
-		else if(typeof v == "boolean" && mf.types.indexOf("boolean") != -1){
-			this._obj[f] = v;
-		}
-		else {
-			this._obj[f] = $p.utils.fix_guid(v);
-
-			mgr = _md.value_mgr(this._obj, f, mf, false, v);
-
-			if(mgr){
-				if(mgr instanceof EnumManager){
-					if(typeof v == "string"){
-						this._obj[f] = v;
-					}
-					else if(!v){
-						this._obj[f] = "";
-					}
-					else if(typeof v == "object"){
-						this._obj[f] = v.ref || v.name || "";
-					}
-				}
-				else if(v && v.presentation){
-					if(v.type && !(v instanceof DataObj)){
-						delete v.type;
-					}
-					mgr.create(v);
-				}
-				else if(!$p.utils.is_data_mgr(mgr)){
-					this._obj[f] = $p.utils.fetch_type(v, mgr);
-				}
-			}
-			else{
-				if(typeof v != "object"){
-					this._obj[f] = v;
-				}
-			}
-		}
-	}
-	else if(mf.date_part){
-		this._obj[f] = $p.utils.fix_date(v, true);
-	}
-	else if(mf.digits){
-		this._obj[f] = $p.utils.fix_number(v, !mf.hasOwnProperty("str_len"));
-	}
-	else if(mf.types[0]=="boolean"){
-		this._obj[f] = $p.utils.fix_boolean(v);
-	}
-	else{
-		this._obj[f] = v;
-	}
-
-};
-
-DataObj.prototype.__notify = function (f) {
-	if(!this._data._silent)
-		Object.getNotifier(this).notify({
-			type: 'update',
-			name: f,
-			oldValue: this._obj[f]
-		});
-};
-
-DataObj.prototype._setter = function (f, v) {
-
-	if(this._obj[f] == v)
-		return;
-
-	this.__notify(f);
-	this.__setter(f, v);
-	this._data._modified = true;
-
-};
-
-DataObj.prototype._getter_ts = function (f) {
-	return this._ts_(f);
-};
-
-DataObj.prototype._setter_ts = function (f, v) {
-	var ts = this._ts_(f);
-	if(ts instanceof TabularSection && Array.isArray(v))
-		ts.load(v);
-};
-
 DataObj.prototype.__define({
 
 	valueOf: {
@@ -6526,6 +6421,164 @@ DataObj.prototype.__define({
 			return this.presentation;
 		}
 	},
+
+  __notify: {
+	  value: function (f) {
+      if(!this._data._silent)
+        Object.getNotifier(this).notify({
+          type: 'update',
+          name: f,
+          oldValue: this._obj[f]
+        });
+    }
+  },
+
+  _getter: {
+	  value: function (f) {
+
+      var mf = this._metadata.fields[f].type,
+        res = this._obj ? this._obj[f] : "",
+        mgr, ref;
+
+      if(f == "type" && typeof res == "object")
+        return res;
+
+      else if(f == "ref"){
+        return res;
+
+      }else if(mf.is_ref){
+
+        if(mf.digits && typeof res === "number"){
+          return res;
+        }
+
+        if(mf.hasOwnProperty("str_len") && !$p.utils.is_guid(res)){
+          return res;
+        }
+
+        if(mgr = _md.value_mgr(this._obj, f, mf)){
+          if($p.utils.is_data_mgr(mgr)){
+            return mgr.get(res, false);
+          }
+          else{
+            return $p.utils.fetch_type(res, mgr);
+          }
+        }
+
+        if(res){
+          console.log([f, mf, this._obj]);
+          return null;
+        }
+
+      }else if(mf.date_part)
+        return $p.utils.fix_date(this._obj[f], true);
+
+      else if(mf.digits)
+        return $p.utils.fix_number(this._obj[f], !mf.hasOwnProperty("str_len"));
+
+      else if(mf.types[0]=="boolean")
+        return $p.utils.fix_boolean(this._obj[f]);
+
+      else
+        return this._obj[f] || "";
+    }
+  },
+
+  _getter_ts: {
+	  value: function (f) {return this._ts_(f)}
+  },
+
+  _setter: {
+	  value: function (f, v) {
+
+      if(this._obj[f] == v)
+        return;
+
+      this.__notify(f);
+      this.__setter(f, v);
+      this._data._modified = true;
+
+    }
+  },
+
+  __setter: {
+    value: function (f, v) {
+
+      var mf = this._metadata.fields[f].type,
+        mgr;
+
+      if(f == "type" && v.types)
+        this._obj[f] = v;
+
+      else if(f == "ref")
+
+        this._obj[f] = $p.utils.fix_guid(v);
+
+      else if(mf.is_ref){
+
+        if(mf.digits && typeof v == "number" || mf.hasOwnProperty("str_len") && typeof v == "string" && !$p.utils.is_guid(v)){
+          this._obj[f] = v;
+        }
+        else if(typeof v == "boolean" && mf.types.indexOf("boolean") != -1){
+          this._obj[f] = v;
+        }
+        else {
+          this._obj[f] = $p.utils.fix_guid(v);
+
+          mgr = _md.value_mgr(this._obj, f, mf, false, v);
+
+          if(mgr){
+            if(mgr instanceof EnumManager){
+              if(typeof v == "string"){
+                this._obj[f] = v;
+              }
+              else if(!v){
+                this._obj[f] = "";
+              }
+              else if(typeof v == "object"){
+                this._obj[f] = v.ref || v.name || "";
+              }
+            }
+            else if(v && v.presentation){
+              if(v.type && !(v instanceof DataObj)){
+                delete v.type;
+              }
+              mgr.create(v);
+            }
+            else if(!$p.utils.is_data_mgr(mgr)){
+              this._obj[f] = $p.utils.fetch_type(v, mgr);
+            }
+          }
+          else{
+            if(typeof v != "object"){
+              this._obj[f] = v;
+            }
+          }
+        }
+      }
+      else if(mf.date_part){
+        this._obj[f] = $p.utils.fix_date(v, true);
+      }
+      else if(mf.digits){
+        this._obj[f] = $p.utils.fix_number(v, !mf.hasOwnProperty("str_len"));
+      }
+      else if(mf.types[0]=="boolean"){
+        this._obj[f] = $p.utils.fix_boolean(v);
+      }
+      else{
+        this._obj[f] = v;
+      }
+
+    }
+  },
+
+  _setter_ts: {
+	  value: function (f, v) {
+      var ts = this._ts_(f);
+      ts instanceof TabularSection && Array.isArray(v) && ts.load(v);
+    }
+  },
+
 
 	_metadata: {
 		get : function(){
@@ -6572,11 +6625,16 @@ DataObj.prototype.__define({
 	},
 
 	ref: {
-		get : function(){ return this._obj.ref},
-		set : function(v){ this._obj.ref = $p.utils.fix_guid(v)},
+		get : function(){return this._obj.ref},
+		set : function(v){this._obj.ref = $p.utils.fix_guid(v)},
 		enumerable : true,
 		configurable: true
 	},
+
+  class_name: {
+    get : function(){return this._manager.class_name},
+    set : function(v){this._obj.class_name = v}
+  },
 
 	empty: {
 		value: function(){
@@ -6654,45 +6712,40 @@ DataObj.prototype.__define({
 				before_save_res = this._manager.handle_event(this, "before_save"),
 
 				reset_modified = function () {
-
 					if(before_save_res === false){
 						if(this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted){
 							this.posted = initial_posted;
 						}
-					}else
-						this._data._modified = false;
-
+					}else{
+            this._data._modified = false;
+          }
 					saver = null;
 					before_save_res = null;
 					reset_modified = null;
-
 					return this;
 				}.bind(this);
 
 			if(before_save_res === false){
 				return Promise.reject(reset_modified());
-
-			}else if(before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then){
+			}
+			else if(before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then){
 				return before_save_res.then(reset_modified);
 			}
 
-
-			if(this._metadata.hierarchical && !this._obj.parent)
-				this._obj.parent = $p.utils.blank.guid;
+			if(this._metadata.hierarchical && !this._obj.parent){
+        this._obj.parent = $p.utils.blank.guid;
+      }
 
 			if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj){
-
 				if($p.utils.blank.date == this.date)
 					this.date = new Date();
-
 				if(!this.number_doc)
 					this.new_number_doc();
-
-			}else{
+			}
+			else{
 				if(!this.id)
 					this.new_number_doc();
 			}
-
 
 			if($p.msg && $p.msg.show_msg){
 				for(var mf in this._metadata.fields){
@@ -6710,10 +6763,9 @@ DataObj.prototype.__define({
 
 			if(this._manager.cachable && this._manager.cachable != "e1cib"){
 				saver = $p.wsql.pouch.save_obj;
-
-			} else {
+			}
+			else {
 				saver = _rest.save_irest;
-
 			}
 
 			return saver(
@@ -7084,7 +7136,7 @@ function TabularSection(name, owner){
 }
 
 TabularSection.prototype.toString = function(){
-	return "Табличная часть " + this._owner._manager.class_name + "." + this._name
+	return "Табличная часть " + this._owner.class_name + "." + this._name
 };
 
 TabularSection.prototype.get = function(index){
@@ -8252,10 +8304,11 @@ DataManager.prototype.__define({
 
 	pouch_db: {
 		get: function () {
-			if(this.cachable.indexOf("_remote") != -1)
-				return $p.wsql.pouch.remote[this.cachable.replace("_remote", "")];
+		  const cachable = this.cachable.replace("_ram", "");
+			if(cachable.indexOf("remote") != -1)
+				return $p.wsql.pouch.remote[cachable.replace("_remote", "")];
 			else
-				return $p.wsql.pouch.local[this.cachable] || $p.wsql.pouch.remote[this.cachable];
+				return $p.wsql.pouch.local[cachable] || $p.wsql.pouch.remote[cachable];
 		}
 	},
 
@@ -8636,6 +8689,7 @@ DataManager.prototype.__define({
 		}
 	},
 
+
 	pouch_tree: {
 		value: function (attr) {
 
@@ -8755,8 +8809,8 @@ DataObj.prototype.__define({
 				{
 					limit : 1,
 					include_docs: false,
-					startkey: [obj._manager.class_name, year, prefix + '\uffff'],
-					endkey: [obj._manager.class_name, year, prefix],
+					startkey: [obj.class_name, year, prefix + '\uffff'],
+					endkey: [obj.class_name, year, prefix],
 					descending: true
 				})
 				.then(function (res) {
@@ -8912,10 +8966,30 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 
 		pouch_load_data_page: function (page) {
 			set_spin(true);
-			if($p.eve.stepper.wnd_sync){
-				var docs_written = page.docs_written || page.page * page.limit;
-				$p.eve.stepper.frm_sync.setItemValue("text_current", "Обработано элементов: " + docs_written + " из " + page.total_rows);
-				$p.eve.stepper.frm_sync.setItemValue("text_bottom", "Текущий запрос: " + page.page + " (" + (100 * docs_written/page.total_rows).toFixed(0) + "%)");
+			var stepper = $p.eve.stepper;
+			if(stepper.wnd_sync){
+			  var curr = stepper[page.id || "ram"];
+        curr.total_rows = page.total_rows;
+        curr.page = page.page;
+        curr.docs_written = page.docs_written || page.page * page.limit;
+        if(curr.docs_written > curr.total_rows){
+          curr.total_rows = (curr.docs_written * 1.05).round(0);
+        }
+        var text_current, text_bottom;
+        if(!stepper.doc.docs_written){
+          text_current = "Обработано элементов: " + curr.docs_written + " из " + curr.total_rows;
+          text_bottom = "Текущий запрос: " + curr.page + " (" + (100 * curr.docs_written/curr.total_rows).toFixed(0) + "%)";
+        }
+        else{
+          var docs_written = stepper.ram.docs_written + stepper.doc.docs_written;
+          var total_rows = stepper.ram.total_rows + stepper.doc.total_rows;
+          curr = stepper.ram.page + stepper.doc.page;
+          text_current = "Обработано ram: " + stepper.ram.docs_written + " из " + stepper.ram.total_rows + "<br />" +
+            "Обработано doc: " + stepper.doc.docs_written + " из " + stepper.doc.total_rows;
+          text_bottom = "Текущий запрос: " + curr + " (" + (100 * docs_written/total_rows).toFixed(0) + "%)";
+        };
+        stepper.frm_sync.setItemValue("text_current", text_current);
+        stepper.frm_sync.setItemValue("text_bottom", text_bottom);
 			}
 		},
 
@@ -8924,19 +8998,12 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 		},
 
 		pouch_load_data_loaded: function (page) {
-			if($p.eve.stepper.wnd_sync){
-				if(page.docs_written){
-					$p.iface.sync.close();
-				}else{
-					$p.iface.sync.close();
-				}
-			}
+			$p.eve.stepper.wnd_sync && $p.iface.sync.close();
 		},
 
 		pouch_load_data_error: function (err) {
 			set_spin();
-			if($p.eve.stepper.wnd_sync)
-				$p.iface.sync.close();
+			$p.eve.stepper.wnd_sync && $p.iface.sync.close();
 		},
 
 		user_log_in: function (username) {
@@ -9308,7 +9375,8 @@ $p.iface.data_to_grid = function (data, attr){
 	}
 
 	var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
-			.replace("%1", attr._total_count || data.length).replace("%2", attr.start)
+			.replace("%1", attr._total_count || data.length)
+      .replace("%2", attr.start)
 			.replace("%3", attr.set_parent || "" ),
 		caption = this.caption_flds(attr);
 
@@ -10850,7 +10918,7 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 
 	var t = this,
 		input_filter_changed = 0,
-		input_filter_width = $p.job_prm.device_type == "desktop" ? 220 : 120,
+		input_filter_width = $p.job_prm.device_type == "desktop" ? 200 : 120,
 		custom_selection = {};
 
 	if(!attr.pos)
@@ -10861,17 +10929,13 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 		custom_selection: {
 			get: function () {
 				return custom_selection;
-			},
-			enumerable: false,
-			configurable: false
+			}
 		},
 
 		toolbar: {
 			get: function () {
 				return attr.toolbar;
-			},
-			enumerable: false,
-			configurable: false
+			}
 		},
 
 		call_event: {
@@ -10894,8 +10958,7 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 			clearTimeout(input_filter_changed);
 
 		input_filter_changed = setTimeout(function () {
-			if(input_filter_changed)
-				t.call_event();
+      input_filter_changed && t._prev_input_filter != t.input_filter.value && t.call_event();
 		}, 500);
 	}
 
@@ -10913,13 +10976,13 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 				t.сalendar.setSensitiveRange(null, inp.value);
 		}
 
-		input_filter_width = $p.job_prm.device_type == "desktop" ? 180 : 120;
+		input_filter_width = $p.job_prm.device_type == "desktop" ? 160 : 120;
 
-		t.toolbar.addInput("input_date_from", attr.pos, "", $p.job_prm.device_type == "desktop" ? 80 : 72);
+		t.toolbar.addInput("input_date_from", attr.pos, "", $p.job_prm.device_type == "desktop" ? 78 : 72);
 		attr.pos++;
 		t.toolbar.addText("lbl_date_till", attr.pos, "-");
 		attr.pos++;
-		t.toolbar.addInput("input_date_till", attr.pos, "", $p.job_prm.device_type == "desktop" ? 80 : 72);
+		t.toolbar.addInput("input_date_till", attr.pos, "", $p.job_prm.device_type == "desktop" ? 78 : 72);
 		attr.pos++;
 
 		t.input_date_from = t.toolbar.getInput("input_date_from");
@@ -10967,7 +11030,9 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 
 		t.toolbar.addInput("input_filter", attr.pos, "", input_filter_width);
 		t.input_filter = t.toolbar.getInput("input_filter");
-		t.input_filter.onchange = t.call_event;
+		t.input_filter.onchange = function () {
+		  t._prev_input_filter != t.input_filter.value && t.call_event();
+    };
 		t.input_filter.onclick = function () {
 			var val = t.input_filter.value;
 			setTimeout(function () {
@@ -10993,6 +11058,10 @@ $p.iface.Toolbar_filter.prototype.__define({
 
 	get_filter: {
 		value: function (exclude_custom) {
+
+		  if(this.input_filter){
+        this._prev_input_filter = this.input_filter.value;
+      }
 
 			var res = {
 				date_from: this.input_date_from ? $p.utils.date_add_day(dhx4.str2date(this.input_date_from.value), 0, true) : "",
@@ -11276,6 +11345,11 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 			if($p.wsql.get_user_param("user_name") != login)
 				$p.wsql.set_user_param("user_name", login);					
 
+      var observer = $p.eve.attachEvent("user_log_in", function () {
+        $p.eve.detachEvent(observer);
+        _cell && _cell.close && _cell.close();
+      });
+
 			$p.wsql.pouch.log_in(login, password)
 				.then(function () {
 
@@ -11288,14 +11362,14 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 
 					$p.eve.logged_in = true;
 					if(attr.modal_dialog)
-						_cell.close();
+            _cell && _cell.close && _cell.close();
 					else if(resolve)
 						resolve();
 
 				})
 				.catch(function (err) {
 					were_errors = true;
-					_frm.onerror(err);
+          _frm && _frm.onerror &&_frm.onerror(err);
 				})
 				.then(function () {
 					if($p.iface.sync)
@@ -11796,592 +11870,6 @@ $p.iface.add_button = function(parent, attr, battr) {
 	return bdiv;
 };
 
-
-
-if(typeof window !== "undefined" && "dhtmlx" in window){
-
-
-	function eXcell_addr(cell){
-
-		if (!cell)
-			return;
-
-		var t = this, td,
-
-			ti_keydown=function(e){
-				return eXcell_proto.input_keydown(e, t);
-			},
-
-			open_selection=function(e) {
-				var source = {grid: t.grid}._mixin(t.grid.get_cell_field());
-				wnd_address(source);
-				return $p.iface.cancel_bubble(e);
-			};
-
-		t.cell = cell;
-		t.grid = t.cell.parentNode.grid;
-		t.open_selection = open_selection;
-
-
-		t.setValue=function(val){ t.setCValue(val); };
-
-
-		t.getValue=function(){
-			return t.grid.get_cell_value();
-		};
-
-
-		t.edit=function(){
-			var ti;
-			t.val = t.getValue();		
-			t.cell.innerHTML = '<div class="ref_div21"><input type="text" class="dhx_combo_edit" style="height: 20px;"><div class="ref_field21">&nbsp;</div></div>';
-
-			td = t.cell.firstChild;
-			ti = td.childNodes[0];
-			ti.value=t.val;
-			ti.onclick=$p.iface.cancel_bubble;		
-			ti.readOnly = true;
-			ti.focus();
-			ti.onkeydown=ti_keydown;
-			td.childNodes[1].onclick=open_selection;
-		};
-
-
-		t.detach=function(){
-			t.setValue(t.getValue());
-			return !$p.utils.is_equal(t.val, t.getValue());				
-		}
-	}
-	eXcell_addr.prototype = eXcell_proto;
-	window.eXcell_addr = eXcell_addr;
-
-	function wnd_address(source){
-
-		var wnd,		
-			obj = source.obj,
-			pwnd = source.pwnd,
-			_delivery_area = obj.delivery_area,
-			v = {		
-				coordinates: obj.coordinates ? JSON.parse(obj.coordinates) : [],
-				country: "Россия",
-				region: "",
-				city: "",
-				street:	"",
-				postal_code: "",
-				marker: {}
-			};
-		v.__define("delivery_area", {
-			get: function () {
-				return _delivery_area;
-			},
-			set: function (selv) {
-				pgrid_on_select(selv);
-
-			}
-		});
-
-		process_address_fields().then(frm_create);
-
-
-
-		function frm_create(){
-
-			var options = {
-				name: 'wnd_addr',
-				wnd: {
-					id: 'wnd_addr',
-					top: 130,
-					left: 200,
-					width: 800,
-					height: 560,
-					modal: true,
-					center: true,
-					pwnd: pwnd,
-					allow_close: true,
-					allow_minmax: true,
-					on_close: frm_close,
-					caption: obj.shipping_address
-				}
-			};
-
-			if(pwnd && pwnd.getHeight){
-				if(options.wnd.height > pwnd.getHeight())
-					options.wnd.height = pwnd.getHeight();
-			}
-
-			wnd = $p.iface.dat_blank(null, options.wnd);
-
-
-			wnd.elmnts.layout = wnd.attachLayout('2E');
-			wnd.elmnts.cell_frm = wnd.elmnts.layout.cells('a');
-			wnd.elmnts.cell_frm.setHeight('110');
-			wnd.elmnts.cell_frm.hideHeader();
-			wnd.elmnts.cell_frm.fixSize(0,1);
-
-			wnd.elmnts.pgrid = wnd.elmnts.cell_frm.attachPropertyGrid();
-			wnd.elmnts.pgrid.setDateFormat("%d.%m.%Y %H:%i");
-			wnd.elmnts.pgrid.init();
-			wnd.elmnts.pgrid.parse(obj._manager.get_property_grid_xml({
-				" ": [
-					{id: "delivery_area", path: "o.delivery_area", synonym: "Район доставки", type: "ref", txt: v.delivery_area.presentation},
-					{id: "region", path: "o.region", synonym: "Регион", type: "ro", txt: v.region},
-					{id: "city", path: "o.city", synonym: "Населенный пункт", type: "ed", txt: v.city},
-					{id: "street", path: "o.street", synonym: "Улица, дом, корпус, литера, квартира", type: "ed", txt: v.street}
-				]
-			}, v), function(){
-				wnd.elmnts.pgrid.enableAutoHeight(true);
-				wnd.elmnts.pgrid.setInitWidthsP("40,60");
-				wnd.elmnts.pgrid.setSizes();
-				wnd.elmnts.pgrid.attachEvent("onPropertyChanged", pgrid_on_changed );
-
-			}, "xml");
-			wnd.elmnts.pgrid.get_cell_field = function () {
-				return {
-					obj: v,
-					field: "delivery_area",
-					on_select: pgrid_on_select,
-					pwnd: wnd,
-					metadata: {
-						"synonym": "Район",
-						"tooltip": "Район (зона, направление) доставки для группировки при планировании и оптимизации маршрута геокодером",
-						"choice_groups_elm": "elm",
-						"type": {
-							"types": [
-								"cat.delivery_areas"
-							],
-							"is_ref": true
-						}
-					}};
-			};
-
-			wnd.elmnts.toolbar = wnd.attachToolbar({
-				icons_path: dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix()
-			});
-			wnd.elmnts.toolbar.loadStruct('<toolbar><item id="btn_select" type="button" title="Установить адрес" text="&lt;b&gt;Выбрать&lt;/b&gt;" /></toolbar>',
-				function(){
-					this.attachEvent("onclick", toolbar_click);
-				});
-
-
-			wnd.elmnts.cell_map = wnd.elmnts.layout.cells('b');
-			wnd.elmnts.cell_map.hideHeader();
-
-			var mapParams = {
-				center: new google.maps.LatLng(v.latitude, v.longitude),
-				zoom: v.street ? 15 : 12,
-				mapTypeId: google.maps.MapTypeId.ROADMAP
-			};
-			wnd.elmnts.map = wnd.elmnts.cell_map.attachMap(mapParams);
-
-			v.marker = new google.maps.Marker({
-				map: wnd.elmnts.map,
-				draggable: true,
-				animation: google.maps.Animation.DROP,
-				position: mapParams.center
-			});
-			google.maps.event.addListener(v.marker, 'click', marker_toggle_bounce);
-			google.maps.event.addListener(v.marker, 'dragend', marker_dragend);
-
-			refresh_grid();
-		}
-
-
-		function toolbar_click(btn_id){
-			if(btn_id=="btn_select"){					
-
-				obj.delivery_area = v.delivery_area;
-
-				assemble_address_fields();
-
-				obj.coordinates = JSON.stringify([v.latitude, v.longitude]);
-
-			}
-			wnd.close();
-		}
-
-
-		function pgrid_on_select(selv){
-
-			if(selv===undefined)
-				return;
-
-			var old = _delivery_area, clear_street;
-
-			if($p.utils.is_data_obj(selv))
-				_delivery_area = selv;
-			else
-				_delivery_area = $p.cat.delivery_areas.get(selv, false);
-
-			clear_street = old != _delivery_area;
-
-			if(!$p.utils.is_data_obj(_delivery_area))
-				_delivery_area = $p.cat.delivery_areas.get();
-
-			wnd.elmnts.pgrid.cells().setValue(selv.presentation);
-			delivery_area_changed(clear_street);
-		}
-
-		function delivery_area_changed(clear_street){
-			if(!v.delivery_area.empty() && clear_street )
-				v.street = "";
-
-			if(v.delivery_area.region){
-				v.region = v.delivery_area.region;
-				wnd.elmnts.pgrid.cells("region", 1).setValue(v.region);
-
-			}else if(clear_street)
-				v.region = "";
-
-			if(v.delivery_area.city){
-				v.city = v.delivery_area.city;
-				wnd.elmnts.pgrid.cells("city", 1).setValue(v.city);
-
-			}else if(clear_street)
-				v.city = "";
-
-			if(v.delivery_area.latitude && v.delivery_area.longitude){
-				var LatLng = new google.maps.LatLng(v.delivery_area.latitude, v.delivery_area.longitude);
-				wnd.elmnts.map.setCenter(LatLng);
-				v.marker.setPosition(LatLng);
-			}
-
-			refresh_grid();
-		}
-
-		function refresh_grid(){
-			wnd.elmnts.pgrid.cells("region", 1).setValue(v.region);
-			wnd.elmnts.pgrid.cells("city", 1).setValue(v.city);
-			wnd.elmnts.pgrid.cells("street", 1).setValue(v.street);
-		}
-
-		function addr_changed() {
-			var zoom = v.street ? 15 : 12;
-
-			if(wnd.elmnts.map.getZoom() != zoom)
-				wnd.elmnts.map.setZoom(zoom);
-
-			do_geocoding(function (results, status) {
-				if (status == google.maps.GeocoderStatus.OK) {
-					var loc = results[0].geometry.location;
-					wnd.elmnts.map.setCenter(loc);
-					v.marker.setPosition(loc);
-					v.latitude = loc.lat();
-					v.longitude = loc.lng();
-
-					v.postal_code = $p.ipinfo.components({}, results[0].address_components).postal_code || "";
-				}
-			});
-		}
-
-		function assemble_addr(){
-			return (v.street ? (v.street.replace(/,/g," ") + ", ") : "") +
-				(v.city ? (v.city + ", ") : "") +
-				(v.region ? (v.region + ", ") : "") + v.country +
-				(v.postal_code ? (", " + v.postal_code) : "");
-		}
-
-		function assemble_address_fields(){
-
-			obj.shipping_address = assemble_addr();
-
-			var fields = '<КонтактнаяИнформация  \
-				xmlns="http://www.v8.1c.ru/ssl/contactinfo" \
-				xmlns:xs="http://www.w3.org/2001/XMLSchema" \
-				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"   \
-				Представление="%1">   \
-					<Комментарий/>  \
-					<Состав xsi:type="Адрес" Страна="РОССИЯ">   \
-						<Состав xsi:type="АдресРФ">'.replace('%1', obj.shipping_address);
-
-			if(v.region)
-				fields += '\n<СубъектРФ>' + v.region + '</СубъектРФ>';
-
-			if(v.city){
-				if(v.city.indexOf('г.') != -1 || v.city.indexOf('г ') != -1 || v.city.indexOf(' г') != -1)
-					fields += '\n<Город>' + v.city + '</Город>';
-				else
-					fields += '\n<НаселПункт>' + v.city + '</НаселПункт>';
-			}
-
-			if(v.street){
-				var street = (v.street.replace(/,/g," ")),
-					suffix, index, house, bld, house_type, flat_type, bld_type;
-
-				for(var i in $p.fias){
-					if($p.fias[i].type == 1){
-						for(var j in $p.fias[i].syn){
-							if((index = street.indexOf($p.fias[i].syn[j])) != -1){
-								house_type = i;
-								suffix = street.substr(index + $p.fias[i].syn[j].length).trim();
-								street = street.substr(0, index).trim();
-								break;
-							}
-						}
-					}
-					if(house_type)
-						break;
-				}
-				if(!house_type){
-					house_type = "1010";
-					if((index = street.indexOf(" ")) != -1){
-						suffix = street.substr(index);
-						street = street.substr(0, index);
-					}
-				}
-				fields += '\n<Улица>' + street.trim() + '</Улица>';
-
-				if(suffix){
-
-					house = suffix.toLowerCase();
-					suffix = "";
-
-					for(var i in $p.fias){
-						if($p.fias[i].type == 3){
-							for(var j in $p.fias[i].syn){
-								if((index = house.indexOf($p.fias[i].syn[j])) != -1){
-									flat_type = i;
-									suffix = house.substr(index + $p.fias[i].syn[j].length);
-									house = house.substr(0, index);
-									break;
-								}
-							}
-						}
-						if(flat_type)
-							break;
-					}
-
-					if(!flat_type){
-						flat_type = "2010";
-						if((index = house.indexOf(" ")) != -1){
-							suffix = house.substr(index);
-							house = house.substr(0, index);
-						}
-					}
-
-					fields += '\n<ДопАдрЭл><Номер Тип="' + house_type +  '" Значение="' + house.trim() + '"/></ДопАдрЭл>';
-
-				}
-
-				if(suffix)
-					fields += '\n<ДопАдрЭл><Номер Тип="' + flat_type +  '" Значение="' + suffix.trim() + '"/></ДопАдрЭл>';
-
-			}
-
-			if(v.postal_code)
-				fields += '<ДопАдрЭл ТипАдрЭл="10100000" Значение="' + v.postal_code + '"/>';
-
-			fields += '</Состав> \
-					</Состав></КонтактнаяИнформация>';
-
-			obj.address_fields = fields;
-		}
-
-		function process_address_fields(){
-
-			if(obj.address_fields){
-				v.xml = ( new DOMParser() ).parseFromString(obj.address_fields, "text/xml");
-				var tmp = {}, res = {"building_room": ""}, tattr, building_room = [],
-					nss = "СубъектРФ,Округ,СвРайМО,СвРайМО,ВнутригРайон,НаселПункт,Улица,Город,ДопАдрЭл,Адрес_по_документу,Местоположение".split(",");
-
-				function get_aatributes(ca){
-					if(ca.attributes && ca.attributes.length == 2){
-						var res = {};
-						res[ca.attributes[0].value] = ca.attributes[1].value;
-						return res;
-					}
-				}
-
-				for(var i in nss){
-					tmp[nss[i]] = v.xml.getElementsByTagName(nss[i]);
-				}
-				for(var i in tmp){
-					for(var j in tmp[i]){
-						if(j == "length" || !tmp[i].hasOwnProperty(j))
-							continue;
-						if(tattr = get_aatributes(tmp[i][j])){
-							if(!res[i])
-								res[i] = [];
-							res[i].push(tattr);
-						}else if(tmp[i][j].childNodes.length){
-							for(var k in tmp[i][j].childNodes){
-								if(k == "length" || !tmp[i][j].childNodes.hasOwnProperty(k))
-									continue;
-								if(tattr = get_aatributes(tmp[i][j].childNodes[k])){
-									if(!res[i])
-										res[i] = [];
-									res[i].push(tattr);
-								}else if(tmp[i][j].childNodes[k].nodeValue){
-									if(!res[i])
-										res[i] = tmp[i][j].childNodes[k].nodeValue;
-									else
-										res[i] += " " + tmp[i][j].childNodes[k].nodeValue;
-								}
-							}
-						}
-					}
-				}
-				for(var i in res["ДопАдрЭл"]){
-
-					for(var j in $p.fias){
-						if(j.length != 4)
-							continue;
-						if(res["ДопАдрЭл"][i][j])
-							building_room[$p.fias[j].type] = $p.fias[j].name + " " + res["ДопАдрЭл"][i][j];
-					}
-
-					if(res["ДопАдрЭл"][i]["10100000"])
-						v.postal_code = res["ДопАдрЭл"][i]["10100000"];
-				}
-
-				v.address_fields = res;
-
-				v.region = res["СубъектРФ"] || res["Округ"] || "";
-				v.city = res["Город"] || res["НаселПункт"] || "";
-				v.street = (res["Улица"] || "");
-				for(var i in building_room){
-					v.street+= " " + building_room[i];
-				}
-			}
-
-						return new Promise(function(resolve, reject){
-
-				if(!$p.ipinfo)
-					$p.ipinfo = new IPInfo();
-
-				if(window.google && window.google.maps)
-					resolve();
-				else{
-					$p.load_script("//maps.google.com/maps/api/js?callback=$p.ipinfo.location_callback", "script", function(){});
-
-					var google_ready = $p.eve.attachEvent("geo_google_ready", function () {
-
-												if(watch_dog)
-							clearTimeout(watch_dog);
-
-												if(google_ready){
-							$p.eve.detachEvent(google_ready);
-							google_ready = null;
-							resolve();	
-						}
-					});
-
-					var watch_dog = setTimeout(function () {
-
-						if(google_ready){
-							$p.eve.detachEvent(google_ready);
-							google_ready = null;
-						}
-						$p.msg.show_msg({
-							type: "alert-warning",
-							text: $p.msg.error_geocoding + " Google",
-							title: $p.msg.main_title
-						});
-
-						resolve();
-
-					}, 10000);
-				}
-
-			})
-				.then(function () {
-
-					if(v.coordinates.length){
-						v.latitude = v.coordinates[0];
-						v.longitude = v.coordinates[1];
-
-					}else if(obj.shipping_address){
-						do_geocoding(function (results, status) {
-							if (status == google.maps.GeocoderStatus.OK) {
-								v.latitude = results[0].geometry.location.lat();
-								v.longitude = results[0].geometry.location.lng();
-							}
-						});
-
-					}else if($p.ipinfo.latitude && $p.ipinfo.longitude ){
-						v.latitude = $p.ipinfo.latitude;
-						v.longitude = $p.ipinfo.longitude;
-
-					}else{
-						v.latitude = 55.635924;
-						v.longitude = 37.6066379;
-						$p.msg.show_msg($p.msg.empty_geocoding);
-					}
-
-									});			
-
-		}
-
-		function do_geocoding(callback){
-			var address = assemble_addr();
-
-			$p.ipinfo.ggeocoder.geocode({ 'address': address}, callback);
-		}
-
-		function marker_toggle_bounce() {
-
-			if (v.marker.getAnimation() != null) {
-				v.marker.setAnimation(null);
-			} else {
-				v.marker.setAnimation(google.maps.Animation.BOUNCE);
-				setTimeout(function(){v.marker.setAnimation(null)}, 1500);
-			}
-		}
-
-		function marker_dragend(e) {
-			$p.ipinfo.ggeocoder.geocode({'latLng': e.latLng}, function(results, status) {
-				if (status == google.maps.GeocoderStatus.OK) {
-					if (results[0]) {
-						var addr = results[0];
-
-						wnd.setText(addr.formatted_address);
-						$p.ipinfo.components(v, addr.address_components);
-
-						refresh_grid();
-
-						var zoom = v.street ? 15 : 12;
-						if(wnd.elmnts.map.getZoom() != zoom){
-							wnd.elmnts.map.setZoom(zoom);
-							wnd.elmnts.map.setCenter(e.latLng);
-						}
-
-						v.latitude = e.latLng.lat();
-						v.longitude = e.latLng.lng();
-					}
-				}
-			});
-		}
-
-		function pgrid_on_changed(pname, new_value, old_value){
-			if(pname){
-				if(v.delivery_area.empty()){
-					new_value = old_value;
-					$p.msg.show_msg({
-						type: "alert",
-						text: $p.msg.delivery_area_empty,
-						title: $p.msg.addr_title});
-					setTimeout(function(){
-						wnd.elmnts.pgrid.selectRowById("delivery_area");
-					}, 50);
-
-				} else if(pname == "delivery_area")
-					pgrid_on_select(new_value);
-				else{
-					v[wnd.elmnts.pgrid.getSelectedRowId()] = new_value;
-					addr_changed();
-				}
-			}
-		}
-
-		function frm_close(win){
-			source.grid.editStop();
-			return !win.error;
-		}
-
-		return wnd;
-
-	}
-
-}
 
 
 DataManager.prototype.form_obj = function(pwnd, attr){
@@ -13103,6 +12591,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 
 		$p.iface.bind_help(wnd);
+
 		if(wnd.setText && !attr.hide_text)
 			wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (_meta["list_presentation"] || _meta.synonym) + '"');
 
@@ -13187,18 +12676,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 	function body_keydown(evt){
 
-		function check_exit(){
-			var do_exit;
-			$p.iface.w.forEachWindow(function (w) {
-				if(w != wnd && (w.isModal() || $p.iface.w.getTopmostWindow() == w))
-					do_exit = true;
-			});
-			return do_exit;
-		}
-
 		if(wnd && wnd.is_visible && wnd.is_visible()){
 			if (evt.ctrlKey && evt.keyCode == 70){ 
-				if(!check_exit()){
+				if(!$p.iface.check_exit(wnd)){
 					setTimeout(function(){
 						if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == "desktop")
 							wnd.elmnts.filter.input_filter.focus();
@@ -13207,7 +12687,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				}
 
 			} else if(evt.shiftKey && evt.keyCode == 116){ 
-				if(!check_exit()){
+				if(!$p.iface.check_exit(wnd)){
 					setTimeout(function(){
 						wnd.elmnts.grid.reload();
 					});
@@ -13217,7 +12697,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				}
 
 			} else if(evt.keyCode == 27){ 
-				if(!check_exit()){
+				if(wnd instanceof dhtmlXWindowsCell && !$p.iface.check_exit(wnd)){
 					setTimeout(function(){
 						wnd.close();
 					});
@@ -14031,12 +13511,9 @@ DataManager.prototype.import = function(file, obj){
 };
 
 
-
-
 function AppEvents() {
 
 	this.__define({
-
 
 		init: {
 			value: function () {
@@ -14047,7 +13524,6 @@ function AppEvents() {
 				$p.wsql.init_params();
 			}
 		},
-
 
 		do_eventable: {
 			value: function (obj) {
@@ -14202,50 +13678,9 @@ function AppEvents() {
 
 }
 
-
 function JobPrm(){
 
-	function base_url(){
-		return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
-	}
-
-	function parse_url(){
-
-		function parse(url_prm){
-			var prm = {}, tmp = [], pairs;
-
-			if(url_prm.substr(0, 1) === "#" || url_prm.substr(0, 1) === "?")
-				url_prm = url_prm.substr(1);
-
-			if(url_prm.length > 2){
-
-				pairs = decodeURI(url_prm).split('&');
-
-				for (var i in pairs){   
-					tmp = pairs[i].split('=');
-					if(tmp[0] == "m"){
-						try{
-							prm[tmp[0]] = JSON.parse(tmp[1]);
-						}catch(e){
-							prm[tmp[0]] = {};
-						}
-					}else
-						prm[tmp[0]] = tmp[1] || "";
-				}
-			}
-
-			return prm;
-		}
-
-		return parse(location.search)._mixin(parse(location.hash));
-	}
-
 	this.__define({
-
-
-		parse_url: {
-			value: parse_url
-		},
 
 		offline: {
 			value: false,
@@ -14262,35 +13697,10 @@ function JobPrm(){
 			writable: true
 		},
 
-
 		url_prm: {
-			value: typeof window != "undefined" ? parse_url() : {}
-		},
-
-
-		rest_url: {
-			value: function () {
-				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
-				if(zone)
-					return url.replace("%1", zone);
-				else
-					return url.replace("%1/", "");
-			}
-		},
-
-
-		irest_url: {
-			value: function () {
-				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
-				url = url.replace("odata/standard.odata", "hs/rest");
-				if(zone)
-					return url.replace("%1", zone);
-				else
-					return url.replace("%1/", "");
-			}
+			value: typeof window != "undefined" ? this.parse_url() : {}
 		}
+
 	});
 
 	$p.eve.callEvent("settings", [this]);
@@ -14300,18 +13710,76 @@ function JobPrm(){
 			this[prm_name] = this.url_prm[prm_name];
 	}
 
-}
+};
+
+JobPrm.prototype.__define({
+
+  base_url: {
+    value: function (){
+      return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
+    }
+  },
+
+  parse_url_str: {
+    value: function (prm_str) {
+      var prm = {}, tmp = [], pairs;
+
+      if (prm_str[0] === "#" || prm_str[0] === "?")
+        prm_str = prm_str.substr(1);
+
+      if (prm_str.length > 2) {
+
+        pairs = decodeURI(prm_str).split('&');
+
+        for (var i in pairs) {   
+          tmp = pairs[i].split('=');
+          if (tmp[0] == "m") {
+            try {
+              prm[tmp[0]] = JSON.parse(tmp[1]);
+            } catch (e) {
+              prm[tmp[0]] = {};
+            }
+          } else
+            prm[tmp[0]] = tmp[1] || "";
+        }
+      }
+
+      return prm;
+    }
+  },
+
+  parse_url: {
+    value: function () {
+      return this.parse_url_str(location.search)._mixin(this.parse_url_str(location.hash));
+    }
+  },
+
+  rest_url: {
+    value: function () {
+      var url = this.base_url(),
+        zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
+      return zone ? url.replace("%1", zone) : url.replace("%1/", "");
+    }
+  },
+
+  irest_url: {
+    value: function () {
+      var url = this.base_url().replace("odata/standard.odata", "hs/rest"),
+        zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
+      return zone ? url.replace("%1", zone) : url.replace("%1/", "");
+    }
+  }
+
+});
 
 
 function Modifiers(){
 
 	var methods = [];
 
-
 	this.push = function (method) {
 		methods.push(method);
 	};
-
 
 	this.detache = function (method) {
 		var index = methods.indexOf(method);
@@ -14319,11 +13787,9 @@ function Modifiers(){
 			methods.splice(index, 1);
 	};
 
-
 	this.clear = function () {
 		methods.length = 0;
 	};
-
 
 	this.execute = function (context) {
 
@@ -14338,7 +13804,6 @@ function Modifiers(){
 		});
 		return res;
 	};
-
 
 	this.execute_external = function (data) {
 
@@ -14362,7 +13827,8 @@ function Modifiers(){
 			}.bind(this));
 	};
 
-}
+};
+
 
 
 
@@ -14477,9 +13943,7 @@ $p.eve.__define({
 				})
 
 				.then(function () {
-
 					_md.printing_plates(mdd.printing_plates);
-
 				});
 		}
 	}
@@ -14583,7 +14047,9 @@ $p.eve.__define({
 					step: 0,
 					count_all: 0,
 					step_size: 57,
-					files: 0
+					files: 0,
+          ram: {},
+          doc: {},
 				};
 
 				eve.set_offline(!navigator.onLine);
@@ -14659,12 +14125,13 @@ $p.eve.__define({
 				if(!window.google || !window.google.maps){
 					$p.on("iface_init", function () {
 						setTimeout(function(){
-							$p.load_script("//maps.google.com/maps/api/js?callback=$p.ipinfo.location_callback", "script", function(){});
+							$p.load_script("https://maps.google.com/maps/api/js?key=" + $p.job_prm.use_google_geo + "&callback=$p.ipinfo.location_callback", "script", function(){});
 						}, 100);
 					});
-
-				}else
-					location_callback();
+				}
+				else{
+          $p.ipinfo.location_callback();
+        }
 			}
 
 			if($p.job_prm.allow_post_message){
@@ -14726,8 +14193,6 @@ $p.eve.__define({
 })(window, $p.eve, $p.msg);
 
 
-
-
 function IPInfo(){
 
 	var _yageocoder,
@@ -14736,9 +14201,7 @@ function IPInfo(){
 		_addr = "",
 		_parts;
 
-
 	function YaGeocoder(){
-
 
 		this.geocode = function (attr) {
 
@@ -14760,7 +14223,6 @@ function IPInfo(){
 			}
 		},
 
-
 		yageocoder: {
 			get : function(){
 
@@ -14772,7 +14234,6 @@ function IPInfo(){
 			configurable : false
 		},
 
-
 		ggeocoder: {
 			get : function(){
 				return _ggeocoder;
@@ -14780,7 +14241,6 @@ function IPInfo(){
 			enumerable : false,
 			configurable : false
 		},
-
 
 		addr: {
 			get : function(){
@@ -14793,7 +14253,6 @@ function IPInfo(){
 				return _parts;
 			}
 		},
-
 
 		components: {
 			value : function(v, components){
@@ -14819,7 +14278,7 @@ function IPInfo(){
 								locality = (locality ? (locality + " ") : "") + c.short_name;
 								break;
 							case "street_number":
-								street = (street ? (street + " ") : "") + c.short_name;
+								street = (street ? (street + " ") : "") + "дом " + c.short_name;
 								break;
 							case "postal_code":
 								v.postal_code = c.short_name;
@@ -14846,7 +14305,6 @@ function IPInfo(){
 			}
 		},
 
-
 		location_callback: {
 			value: function(){
 
@@ -14857,9 +14315,7 @@ function IPInfo(){
 				if(navigator.geolocation)
 					navigator.geolocation.getCurrentPosition(function(position){
 
-
 						$p.ipinfo.latitude = position.coords.latitude;
-
 
 						$p.ipinfo.longitude = position.coords.longitude;
 
@@ -14885,7 +14341,7 @@ function IPInfo(){
 		}
 	});
 
-	}
+}
 
 
 function SpreadsheetDocument(attr, events) {

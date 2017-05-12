@@ -164,11 +164,11 @@ class Meta extends MetaEventEmitter{
 		 */
 		this.bases = function () {
 			var res = {};
-			for(var i in _m){
-				for(var j in _m[i]){
+			for(let i in _m){
+				for(let j in _m[i]){
 					if(_m[i][j].cachable){
-						let _name = _m[i][j].cachable.replace('_remote', '');
-						if(!res[_name])
+						let _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '');
+						if(_name != 'meta' && _name != 'e1cib' && !res[_name])
 							res[_name] = _name;
 					}
 				}

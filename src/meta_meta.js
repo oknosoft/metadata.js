@@ -709,9 +709,44 @@ function Meta() {
 	/**
 	 * ### Cоздаёт объекты менеджеров
 	 * @method create_managers
-	 * @for Meta
 	 */
 	_md.create_managers = function(){};
+
+  /**
+   * ### Возвращает массив используемых баз
+   *
+   * @method bases
+   * @return {Array}
+   */
+  _md.bases = function () {
+    var res = {};
+    for(var i in _m){
+      for(var j in _m[i]){
+        if(_m[i][j].cachable){
+          var _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '');
+          if(_name != 'meta' && _name != 'e1cib' && !res[_name])
+            res[_name] = _name;
+        }
+      }
+    }
+    return Object.keys(res);
+  }
+
+  /**
+   * ### Загружает объекты с типом кеширования doc_ram в ОЗУ
+   * @method load_doc_ram
+   */
+  _md.load_doc_ram = function(){
+    var res = [];
+    ['cat','cch'].forEach(function (kind) {
+      for(var name in _m[kind]){
+        if(_m[kind][name].cachable == 'doc_ram'){
+          res.push($p[kind][name].pouch_find_rows({_top: 1000, _skip: 0}));
+        }
+      }
+    });
+    return Promise.all(res);
+  };
 
 	/**
 	 * ### Инициализирует метаданные

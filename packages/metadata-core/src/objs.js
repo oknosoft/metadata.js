@@ -697,7 +697,7 @@ class CatObj extends DataObj {
  * @param superclass
  * @constructor
  */
-let NumberDocAndDate = (superclass) => class extends superclass {
+const NumberDocAndDate = (superclass) => class extends superclass {
 
 	/**
 	 * Номер документа

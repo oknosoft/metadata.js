@@ -35,6 +35,35 @@ if (!Number.prototype.pad) {
 	};
 }
 
+if (!Object.prototype._clone) {
+	Object.defineProperty(Object.prototype, '_clone', {
+		value: function () {
+			return utils._clone(this);
+		}
+	});
+}
+
+if (!Object.prototype._mixin) {
+	Object.defineProperty(Object.prototype, '_mixin', {
+		value: function (src, include, exclude) {
+			return utils._mixin(this, src, include, exclude);
+		}
+	});
+}
+
+if (!Object.prototype.__define) {
+	Object.defineProperty(Object.prototype, '__define', {
+		value: function (key, descriptor) {
+			if (descriptor) {
+				Object.defineProperty(this, key, descriptor);
+			} else {
+				Object.defineProperties(this, key);
+			}
+			return this;
+		}
+	});
+}
+
 class Utils {
 
 	constructor() {
@@ -730,7 +759,7 @@ class WSQL {
 							zone: this.get_user_param("zone", "number"),
 							prefix: $p.job_prm.local_storage_prefix,
 							suffix: this.get_user_param("couch_suffix", "string") || "",
-							direct: this.get_user_param("couch_direct", "boolean"),
+							direct: $p.job_prm.couch_direct || this.get_user_param("couch_direct", "boolean"),
 							user_node: $p.job_prm.user_node,
 							noreplicate: $p.job_prm.noreplicate
 						};
@@ -3334,11 +3363,11 @@ class Meta extends _metadataAbstractAdapter.MetaEventEmitter {
 
 		this.bases = function () {
 			var res = {};
-			for (var i in _m) {
-				for (var j in _m[i]) {
+			for (let i in _m) {
+				for (let j in _m[i]) {
 					if (_m[i][j].cachable) {
-						let _name = _m[i][j].cachable.replace('_remote', '');
-						if (!res[_name]) res[_name] = _name;
+						let _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '');
+						if (_name != 'meta' && _name != 'e1cib' && !res[_name]) res[_name] = _name;
 					}
 				}
 			}
@@ -3859,8 +3888,16 @@ class MetaEngine {
 		MetaEngine._plugins.length = 0;
 	}
 
+	on(type, listener) {
+		this.md.on(type, listener);
+	}
+
+	off(type, listener) {
+		this.md.off(type, listener);
+	}
+
 	get version() {
-		return "2.0.0-beta.14";
+		return "2.0.0-beta.15";
 	}
 
 	toString() {

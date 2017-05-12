@@ -1,7 +1,7 @@
 {
   "name": "metadata-pouchdb",
   "description": "PouchDB data adapter for metadata.js",
-  "version": "2.0.0-beta.14",
+  "version": "2.0.0-beta.15",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
@@ -9,19 +9,19 @@
     "npm": "^3.5"
   },
   "dependencies": {
-    "metadata-abstract-adapter": "^2.0.0-beta.14"
+    "metadata-abstract-adapter": "^2.0.0-beta.15"
   },
   "devDependencies": {},
   "peerDependencies": {
-    "pouchdb-core": "^6.1",
-    "pouchdb-adapter-http": "^6.1",
-    "pouchdb-adapter-memory": "^6.1",
-    "pouchdb-adapter-idb": "^6.1",
-    "pouchdb-adapter-websql": "^6.1",
-    "pouchdb-mapreduce": "^6.1",
-    "pouchdb-replication": "^6.1",
+    "pouchdb-adapter-http": "^6.2",
+    "pouchdb-adapter-idb": "^6.2",
+    "pouchdb-adapter-memory": "^6.2",
+    "pouchdb-adapter-websql": "^6.2",
     "pouchdb-authentication": "^0.5",
-    "pouchdb-find": "^0.10"
+    "pouchdb-core": "^6.2",
+    "pouchdb-find": "^6.2",
+    "pouchdb-mapreduce": "^6.2",
+    "pouchdb-replication": "^6.2"
   },
   "repository": {
     "type": "git",

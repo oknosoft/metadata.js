@@ -232,20 +232,18 @@ class AdapterPouch extends AbstracrAdapter{
 
 							const sync = {};
 							if(_paths.direct) {
-								t.load_data();
+								return t.load_data();
 							}
-							else{
-								$p.md.bases().forEach((dbid) => {
-									if(t.local[dbid] && t.remote[dbid]){
-										if(_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1){
-											return
-										}
-										sync[dbid] = t.run_sync(dbid)
+							try_auth.length = 0;
+							$p.md.bases().forEach((dbid) => {
+								if(t.local[dbid] && t.remote[dbid] && t.local[dbid] != t.remote[dbid]){
+									if(_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1){
+										return
 									}
-								})
-							}
-							return sync;
-
+									try_auth.push(t.run_sync(t.local[dbid], t.remote[dbid], dbid));
+								}
+							});
+							return Promise.all(try_auth);
 						})
 						.catch(err => {
 							// излучаем событие
@@ -701,7 +699,11 @@ class AdapterPouch extends AbstracrAdapter{
 	 */
 	load_array(_mgr, refs, with_attachments) {
 
-		var options = {
+		if(!refs.length){
+			return Promise.resolve(false);
+		}
+
+		const options = {
 			limit: refs.length + 1,
 			include_docs: true,
 			keys: refs.map((v) => _mgr.class_name + "|" + v)
@@ -713,8 +715,7 @@ class AdapterPouch extends AbstracrAdapter{
 			options.binary = true;
 		}
 
-		return db.allDocs(options)
-			.then((result) => this.load_changes(result, {}))
+		return db.allDocs(options).then((result) => this.load_changes(result, {}));
 	}
 
 	/**
@@ -1100,18 +1101,20 @@ class AdapterPouch extends AbstracrAdapter{
 	 */
 	load_changes(changes, options) {
 
-		var docs, doc, res = {}, cn, key, {$p} = this;
+		let docs, doc, res = {}, cn, key, {$p} = this;
 
-		if (!options) {
+		if(!options) {
 			if (changes.direction) {
 				if (changes.direction != "pull")
 					return;
 				docs = changes.change.docs;
-			} else
+			}
+			else{
 				docs = changes.docs;
-
-		} else
+			}
+		}else{
 			docs = changes.rows;
+		}
 
 		if (docs.length > 0) {
 			if (options) {
@@ -1142,7 +1145,7 @@ class AdapterPouch extends AbstracrAdapter{
 				res[cn[0]][cn[1]].push(doc);
 			});
 
-			for (var mgr in res) {
+			for (let mgr in res) {
 				for (cn in res[mgr]) {
 					if ($p[mgr] && $p[mgr][cn]) {
 						$p[mgr][cn].load_array(res[mgr][cn], changes.update_only ? "update_only" : true);

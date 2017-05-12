@@ -1,7 +1,7 @@
 {
   "name": "metadata-react-ui",
   "description": "React UI components for metadata.js",
-  "version": "2.0.0-beta.14",
+  "version": "2.0.0-beta.15",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
@@ -9,14 +9,14 @@
     "npm": "^3.5"
   },
   "dependencies": {
-    "metadata-abstract-ui": "^2.0.0-beta.14"
+    "metadata-abstract-ui": "^2.0.0-beta.15"
   },
   "devDependencies": {},
   "peerDependencies": {
-    "material-ui": "^0.17",
+    "material-ui": "^0.18",
     "react-data-grid": "^2.0",
     "react-data-grid-addons": "^2.0",
-    "react-panels": "git+https://github.com/nikches/react-panels",
+    "react-panels": "git+https://github.com/unpete/react-panels",
     "react-portal": "^3.0",
     "react-virtualized": "^9.2"
   },

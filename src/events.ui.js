@@ -163,12 +163,9 @@ $p.eve.__define({
 
 				})
 
-				// читаем справочники с ограниченным доступом, которые могли прибежать вместе с метаданными
+        // читаем справочники с ограниченным доступом, которые могли прибежать вместе с метаданными, здесь же, уточняем список печатных форм
 				.then(function () {
-
-					// здесь же, уточняем список печатных форм
 					_md.printing_plates(mdd.printing_plates);
-
 				});
 		}
 	}
@@ -320,7 +317,9 @@ $p.eve.__define({
 					step: 0,
 					count_all: 0,
 					step_size: 57,
-					files: 0
+					files: 0,
+          ram: {},
+          doc: {},
 				};
 
 				eve.set_offline(!navigator.onLine);
@@ -429,12 +428,13 @@ $p.eve.__define({
 				if(!window.google || !window.google.maps){
 					$p.on("iface_init", function () {
 						setTimeout(function(){
-							$p.load_script("//maps.google.com/maps/api/js?callback=$p.ipinfo.location_callback", "script", function(){});
+							$p.load_script("https://maps.google.com/maps/api/js?key=" + $p.job_prm.use_google_geo + "&callback=$p.ipinfo.location_callback", "script", function(){});
 						}, 100);
 					});
-
-				}else
-					location_callback();
+				}
+				else{
+          $p.ipinfo.location_callback();
+        }
 			}
 
 			/**

@@ -82,6 +82,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 
 		$p.iface.bind_help(wnd);
+
 		if(wnd.setText && !attr.hide_text)
 			wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (_meta["list_presentation"] || _meta.synonym) + '"');
 
@@ -178,22 +179,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 */
 	function body_keydown(evt){
 
-		/**
-		 * Проверяет, нет ли других модальных форм
-		 */
-		function check_exit(){
-			var do_exit;
-			// если есть внешнее модальное, ничего обрабатывать не надо
-			$p.iface.w.forEachWindow(function (w) {
-				if(w != wnd && (w.isModal() || $p.iface.w.getTopmostWindow() == w))
-					do_exit = true;
-			});
-			return do_exit;
-		}
-
 		if(wnd && wnd.is_visible && wnd.is_visible()){
 			if (evt.ctrlKey && evt.keyCode == 70){ // фокус на поиск по {Ctrl+F}
-				if(!check_exit()){
+				if(!$p.iface.check_exit(wnd)){
 					setTimeout(function(){
 						if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == "desktop")
 							wnd.elmnts.filter.input_filter.focus();
@@ -202,7 +190,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				}
 
 			} else if(evt.shiftKey && evt.keyCode == 116){ // requery по {Shift+F5}
-				if(!check_exit()){
+				if(!$p.iface.check_exit(wnd)){
 					setTimeout(function(){
 						wnd.elmnts.grid.reload();
 					});
@@ -212,7 +200,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				}
 
 			} else if(evt.keyCode == 27){ // закрытие по {ESC}
-				if(!check_exit()){
+				if(wnd instanceof dhtmlXWindowsCell && !$p.iface.check_exit(wnd)){
 					setTimeout(function(){
 						wnd.close();
 					});

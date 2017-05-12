@@ -61,7 +61,7 @@ function TabularSection(name, owner){
 }
 
 TabularSection.prototype.toString = function(){
-	return "Табличная часть " + this._owner._manager.class_name + "." + this._name
+	return "Табличная часть " + this._owner.class_name + "." + this._name
 };
 
 /**
