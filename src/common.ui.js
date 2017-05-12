@@ -773,6 +773,17 @@ $p.__define({
 
 			});
 		}
-	}
+	},
+
+  docxtemplater: {
+	  value: function () {
+      return window.Docxtemplater ?
+        Promise.resolve() :
+        Promise.all([
+          this.load_script("https://cdn.jsdelivr.net/jszip/2/jszip.min.js", "script"),
+          this.load_script("https://cdn.jsdelivr.net/combine/gh/open-xml-templating/docxtemplater-build/build/docxtemplater-latest.min.js,gh/open-xml-templating/docxtemplater-image-module-build/build/docxtemplater-image-module-latest.min.js", "script"),
+        ]);
+    }
+  }
 
 });
