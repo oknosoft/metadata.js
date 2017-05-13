@@ -9,7 +9,7 @@
     "npm": "^3.5"
   },
   "peerDependencies": {
-    "clipboard": "^1.5"
+    "clipboard": "^1.6"
   },
   "repository": {
     "type": "git",

@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-05-12 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-05-13 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -977,10 +977,16 @@ function Utils() {
 			reader.onerror = function(err){
 				reject(err);
 			};
-			if(type == "data_url")
-				reader.readAsDataURL(blob);
-			else
-				reader.readAsText(blob);
+			switch (type) {
+        case "array" :
+          reader.readAsArrayBuffer(blob);
+          break;
+        case "data_url":
+          reader.readAsDataURL(blob);
+          break;
+        default:
+          reader.readAsText(blob);
+      }
 		});
 
 	};
@@ -1154,19 +1160,23 @@ function Ajax() {
 			return wnd_print;
 		}
 
-		if(!method || (typeof method == "string" && method.toLowerCase().indexOf("post")!=-1))
-			return this.post_ex(url,
-				typeof post_data == "object" ? JSON.stringify(post_data) : post_data,
-				true,
-				function(xhr){
-					xhr.responseType = "blob";
-				})
-				.then(show_blob);
-		else
-			return this.get_ex(url, true, function(xhr){
-					xhr.responseType = "blob";
-				})
-				.then(show_blob);
+    if(url instanceof Blob){
+      Promise.resolve(show_blob({response: url}));
+    }
+    else if(!method || (typeof method == "string" && method.toLowerCase().indexOf("post")!=-1))
+      return this.post_ex(url,
+        typeof post_data == "object" ? JSON.stringify(post_data) : post_data,
+        true,
+        function(xhr){
+          xhr.responseType = "blob";
+        })
+        .then(show_blob);
+    else{
+      return this.get_ex(url, true, function(xhr){
+        xhr.responseType = "blob";
+      })
+        .then(show_blob);
+    }
 	};
 
 	this.get_and_save_blob = function(url, post_data, file_name){
@@ -2029,20 +2039,36 @@ $p.__define({
 
 			});
 		}
-	},
+	}
+
+});
+
+$p.utils.__define({
 
   docxtemplater: {
-	  value: function () {
-      return window.Docxtemplater ?
+    value: function (blob) {
+      return (window.Docxtemplater ?
         Promise.resolve() :
         Promise.all([
-          this.load_script("https://cdn.jsdelivr.net/jszip/2/jszip.min.js", "script"),
-          this.load_script("https://cdn.jsdelivr.net/combine/gh/open-xml-templating/docxtemplater-build/build/docxtemplater-latest.min.js,gh/open-xml-templating/docxtemplater-image-module-build/build/docxtemplater-image-module-latest.min.js", "script"),
-        ]);
+          $p.load_script("https://cdn.jsdelivr.net/jszip/2/jszip.min.js", "script"),
+          $p.load_script("https://cdn.jsdelivr.net/combine/gh/open-xml-templating/docxtemplater-build/build/docxtemplater-latest.min.js,gh/open-xml-templating/docxtemplater-image-module-build/build/docxtemplater-image-module-latest.min.js", "script"),
+        ]))
+        .then(function () {
+          if(!Docxtemplater.prototype.saveAs){
+            Docxtemplater.prototype.saveAs = function (name) {
+              var out = this.getZip().generate({type: "blob", mimeType: $p.utils.mime_lookup('docx')});
+              $p.wsql.alasql.utils.saveAs(out, name);
+            };
+          }
+          return $p.utils.blob_as_text(blob, 'array');
+        })
+        .then(function (buffer) {
+          return new Docxtemplater().loadZip(new JSZip(buffer));
+        });
     }
   }
 
-});
+})
 
 function Pouch(){
 
