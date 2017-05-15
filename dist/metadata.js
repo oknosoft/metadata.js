@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-05-13 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-05-15 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -9595,13 +9595,25 @@ function OCombo(attr){
 		t.getBase().style.left = left + "px";
 
 	this.attachEvent("onChange", function(){
-		if(_obj && _field)
-			_obj[_field] = this.getSelectedValue();
+		if(_obj && _field){
+		  var val = this.getSelectedValue();
+		  if(!val && this.getComboText()){
+        val = this.getOptionByLabel(this.getComboText());
+        if(val){
+          val = val.value;
+        }
+        else{
+          this.setComboText("");
+        }
+      }
+      _obj[_field] = val;
+    }
 	});
 
 	this.attachEvent("onBlur", function(){
-		if(!this.getSelectedValue() && this.getComboText())
-			this.setComboText("");
+		if(!this.getSelectedValue() && this.getComboText()){
+      this.setComboText("");
+    }
 	});
 
 	this.attachEvent("onDynXLS", function (text) {

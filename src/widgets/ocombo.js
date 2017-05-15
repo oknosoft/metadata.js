@@ -59,13 +59,25 @@ function OCombo(attr){
 		t.getBase().style.left = left + "px";
 
 	this.attachEvent("onChange", function(){
-		if(_obj && _field)
-			_obj[_field] = this.getSelectedValue();
+		if(_obj && _field){
+		  var val = this.getSelectedValue();
+		  if(!val && this.getComboText()){
+        val = this.getOptionByLabel(this.getComboText());
+        if(val){
+          val = val.value;
+        }
+        else{
+          this.setComboText("");
+        }
+      }
+      _obj[_field] = val;
+    }
 	});
 
 	this.attachEvent("onBlur", function(){
-		if(!this.getSelectedValue() && this.getComboText())
-			this.setComboText("");
+		if(!this.getSelectedValue() && this.getComboText()){
+      this.setComboText("");
+    }
 	});
 
 	this.attachEvent("onDynXLS", function (text) {
