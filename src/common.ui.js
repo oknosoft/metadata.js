@@ -355,7 +355,7 @@ function InterfaceObjs(){
 	 */
 	function All_meta_objs(cont, classes, frm_attr) {
 
-		this.layout = cont.attachLayout({
+		var layout = this.layout = cont.attachLayout({
 			pattern: "2U",
 			cells: [{
 				id: "a",
@@ -371,18 +371,18 @@ function InterfaceObjs(){
 		});
 
 		// дерево используемых метаданных
-		this.tree = this.layout.cells("a").attachTreeView();
-		this.tree.attachEvent("onSelect", function (name, mode) {
+		var tree = this.tree = layout.cells("a").attachTreeView();
+    tree.attachEvent("onSelect", function (name, mode) {
 			if(!mode)
 				return;
 			var mgr = $p.md.mgr_by_class_name(name);
 			if(mgr instanceof DataProcessorsManager){
 				// для отчетов и обработок используем форму отчета
-				mgr.form_rep(this.layout.cells("b"), frm_attr || {hide_header: true});
+				mgr.form_rep(layout.cells("b"), frm_attr || {hide_header: true});
 
 			}else if(mgr){
 				// для остальных объектов показываем форму списка
-				mgr.form_list(this.layout.cells("b"), frm_attr || {hide_header: true});
+				mgr.form_list(layout.cells("b"), frm_attr || {hide_header: true});
 			}
 
 		}.bind(this));
@@ -403,24 +403,24 @@ function InterfaceObjs(){
 				var key = classes[0]+"."+name,
 					meta = $p.md.get(key);
 				if(!meta.hide){
-					this.tree.addItem(key, meta.list_presentation || meta.synonym);
-					this.tree.setItemIcons(key, {file: "icon_1c_"+classes[0]});
+          tree.addItem(key, meta.list_presentation || meta.synonym);
+          tree.setItemIcons(key, {file: "icon_1c_"+classes[0]});
 				}
 			}.bind(this));
 
 		}else{
 			classes.forEach(function (id) {
-				this.tree.addItem(id, $p.msg["meta_"+id]);
-				this.tree.setItemIcons(id, {file: "icon_1c_"+id, folder_opened: "icon_1c_"+id, folder_closed: "icon_1c_"+id});
+        tree.addItem(id, $p.msg["meta_"+id]);
+        tree.setItemIcons(id, {file: "icon_1c_"+id, folder_opened: "icon_1c_"+id, folder_closed: "icon_1c_"+id});
 				$p.md.get_classes()[id].forEach(function (name) {
 					var key = id+"."+name,
 						meta = $p.md.get(key);
 					if(!meta.hide){
-						this.tree.addItem(key, meta.list_presentation || meta.synonym, id);
-						this.tree.setItemIcons(key, {file: "icon_1c_"+id});
+            tree.addItem(key, meta.list_presentation || meta.synonym, id);
+            tree.setItemIcons(key, {file: "icon_1c_"+id});
 					}
-				}.bind(this));
-			}.bind(this));
+				});
+			});
 		}
 	}
 
@@ -625,7 +625,7 @@ function InterfaceObjs(){
     var do_exit;
     // если есть внешнее модальное, ничего обрабатывать не надо
     this.w.forEachWindow(function (w) {
-      if(w != wnd && (w.isModal() || this.w.getTopmostWindow() == w))
+      if(w != wnd && (w.isModal() || $p.iface.w.getTopmostWindow() == w))
         do_exit = true;
     });
     return do_exit;
