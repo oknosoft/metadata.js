@@ -852,7 +852,7 @@ function MetaEngine() {
 				 * @static
 				 */
 					function ChartsOfAccounts(){
-					this.toString = function(){return $p.msg.meta_charts_of_accounts_mgr};
+					this.toString = function(){return $p.msg.meta_cacc_mgr};
 				})
 		},
 
@@ -874,7 +874,7 @@ function MetaEngine() {
 				 * @static
 				 */
 					function ChartsOfCharacteristics(){
-					this.toString = function(){return $p.msg.meta_charts_of_characteristic_mgr};
+					this.toString = function(){return $p.msg.meta_cch_mgr};
 				})
 		},
 

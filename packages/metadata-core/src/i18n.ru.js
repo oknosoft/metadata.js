@@ -157,8 +157,8 @@ msg.i18n = {
 		meta_task_mgr: "Менеджер задач",
 		meta_bp_mgr: "Менеджер бизнес-процессов",
 		meta_reports_mgr: "Менеджер отчетов",
-		meta_charts_of_accounts_mgr: "Менеджер планов счетов",
-		meta_charts_of_characteristic_mgr: "Менеджер планов видов характеристик",
+		meta_cch_mgr: "Менеджер планов счетов",
+		meta_cch_mgr: "Менеджер планов видов характеристик",
 		meta_extender: "Модификаторы объектов и менеджеров",
 
 		modified_close: "Объект изменен<br/>Закрыть без сохранения?",

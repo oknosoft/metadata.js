@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-05-13 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-05-16 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -865,7 +865,7 @@ function MetaEngine() {
 				 * @static
 				 */
 					function ChartsOfAccounts(){
-					this.toString = function(){return $p.msg.meta_charts_of_accounts_mgr};
+					this.toString = function(){return $p.msg.meta_cacc_mgr};
 				})
 		},
 
@@ -887,7 +887,7 @@ function MetaEngine() {
 				 * @static
 				 */
 					function ChartsOfCharacteristics(){
-					this.toString = function(){return $p.msg.meta_charts_of_characteristic_mgr};
+					this.toString = function(){return $p.msg.meta_cch_mgr};
 				})
 		},
 
@@ -2246,8 +2246,8 @@ if(typeof window !== "undefined" && window.dhx4){
 	msg.meta_task_mgr = "Менеджер задач";
 	msg.meta_bp_mgr = "Менеджер бизнес-процессов";
 	msg.meta_reports_mgr = "Менеджер отчетов";
-	msg.meta_charts_of_accounts_mgr = "Менеджер планов счетов";
-	msg.meta_charts_of_characteristic_mgr = "Менеджер планов видов характеристик";
+	msg.meta_cacc_mgr = "Менеджер планов счетов";
+	msg.meta_cch_mgr = "Менеджер планов видов характеристик";
 	msg.meta_extender = "Модификаторы объектов и менеджеров";
 
 	msg.modified_close = "Объект изменен<br/>Закрыть без сохранения?";
@@ -6124,7 +6124,7 @@ DataProcessorsManager.prototype.__define({
 	},
 
 	/**
-	 * fake-метод, не имеет смысла для обработок, т.к. они не кешируются в alasql. Добавлен, чтобы не ругалась форма обхекта при закрытии
+	 * fake-метод, не имеет смысла для обработок, т.к. они не кешируются в alasql. Добавлен, чтобы не ругалась форма объекта при закрытии
 	 * @method unload_obj
 	 * @param ref
 	 */
