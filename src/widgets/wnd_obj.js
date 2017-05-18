@@ -172,7 +172,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			this.attachEvent("onclick", attr.toolbar_click || toolbar_click);
 
 			// учтём права для каждой роли на каждый объект
-			var _acl = $p.current_acl.get_acl(_mgr.class_name);
+			var _acl = $p.current_user.get_acl(_mgr.class_name);
 
 			if(_mgr instanceof DocManager && _acl.indexOf("p") != -1){
 				this.enableItem("btn_post");
@@ -287,7 +287,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		else{
 
 			// учтём права для каждой роли на каждый объект
-			var _acl = $p.current_acl.get_acl(_mgr.class_name);
+			var _acl = $p.current_user.get_acl(_mgr.class_name);
 
 			wnd.elmnts.pg_header = wnd.elmnts.tabs.tab_header.attachHeadFields({
 				obj: o,
@@ -382,7 +382,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.elmnts.tabs['tab_'+name] = wnd.elmnts.frm_tabs.cells('tab_'+name);
 
 		// учтём права для каждой роли на каждый объект
-		var _acl = $p.current_acl.get_acl(_mgr.class_name);
+		var _acl = $p.current_user.get_acl(_mgr.class_name);
 
 		wnd.elmnts.grids[name] = wnd.elmnts.tabs['tab_'+name].attachTabular({
 			obj: o,
@@ -417,7 +417,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 				post = false;
 
 			else if(action == "close"){
-				if($p.current_acl.get_acl(_mgr.class_name).indexOf("p") != -1)
+				if($p.current_user.get_acl(_mgr.class_name).indexOf("p") != -1)
 					post = true;
 			}
 		}

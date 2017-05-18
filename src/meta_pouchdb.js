@@ -671,7 +671,7 @@ DataObj.prototype.__define({
 
 			// если не указан явно, рассчитываем префикс по умолчанию
 			if(!prefix)
-				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
+				prefix = (($p.current_user && $p.current_user.prefix) || "") +
 					(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
 
 			var obj = this,
@@ -722,7 +722,7 @@ DataObj.prototype.__define({
 		value: function (prefix) {
 
 			if(!prefix)
-				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
+				prefix = (($p.current_user && $p.current_user.prefix) || "") +
 					(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
 
 			var code_length = this._metadata.code_length - prefix.length,

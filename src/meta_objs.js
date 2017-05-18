@@ -705,6 +705,7 @@ function CatObj(attr, manager) {
 	CatObj.superclass.constructor.call(this, attr, manager);
 
 	if(attr && typeof attr == "object"){
+	  this._data._silent = true;
 		if(attr._not_set_loaded){
 			delete attr._not_set_loaded;
 			this._mixin(attr);
@@ -714,6 +715,7 @@ function CatObj(attr, manager) {
 			if(!$p.utils.is_empty_guid(this.ref) && (attr.id || attr.name))
 				this._set_loaded(this.ref);
 		}
+    this._data._silent = false;
 	}
 
 }
@@ -837,8 +839,11 @@ function DocObj(attr, manager) {
 		}
 	});
 
-	if(attr && typeof attr == "object")
-		this._mixin(attr);
+	if(attr && typeof attr == "object"){
+    this._data._silent = true;
+    this._mixin(attr);
+    this._data._silent = false;
+  }
 
 	if(!$p.utils.is_empty_guid(this.ref) && attr.number_doc)
 		this._set_loaded(this.ref);

@@ -656,86 +656,48 @@ $p.__define({
 	 */
 	current_user: {
 		get: function () {
-			return $p.cat && $p.cat.users ?
-				$p.cat.users.by_id($p.wsql.get_user_param("user_name")) :
-				$p.utils.blank.guid;
-		}
-	},
 
-	/**
-	 * ### Права доступа текущего пользователя.
-	 * Свойство определено после загрузки метаданных и входа впрограмму
-	 * @property current_acl
-	 * @type CatUsers_acl
-	 * @final
-	 */
-	current_acl: {
-		get: function () {
+      if($p.CatUsers && !$p.CatUsers.prototype.hasOwnProperty("role_available")){
 
-			var res, proto;
-
-			if($p.cat && $p.cat.users_acl){
-
-				$p.cat.users_acl.find_rows({owner: $p.current_user}, function (o) {
-					res = o;
-					return false;
-				});
-
-				proto = $p.CatUsers_acl.prototype;
-			}
-
-			if(!proto){
-				proto = {};
-			}
-
-			if(!res) {
-				if(this.utils.blank.users_acl){
-					res = this.utils.blank.users_acl;
-				}else{
-					res = this.utils.blank.users_acl = Object.create(proto);
-					res.__define({
-						acl_objs: {
-							value: {
-								_obj: [],
-								each: function () {},
-								find_rows: function () {}
-							}
-						}
-					});
-				}
-			}
+        $p.CatUsers.prototype.__define({
 
 
-			if(!proto.hasOwnProperty("role_available")){
-				proto.__define({
+          /**
+           * ### Роль доступна
+           *
+           * @param name {String}
+           * @returns {Boolean}
+           */
+          role_available: {
+            value: function (name) {
+              return true;
+            }
+          },
 
-					/**
-					 * ### Роль доступна
-					 *
-					 * @param name {String}
-					 * @returns {Boolean}
-					 */
-					role_available: {
-						value: function (name) {
-							return this.acl_objs._obj.some(function (row) {
-								return row.type == name;
-							});
-						}
-					},
+          /**
+           * ### Права на объект
+           * Если не задано в модификаторе, разрешаем полный доступ
+           */
+          get_acl: {
+            value: function(class_name) {
+              return "rvuidepo";
+            }
+          },
 
-					get_acl: {
-						value: function(class_name) {
-							var acn = class_name.split(".");
-							return this._acl && this._acl[acn[0]] && this._acl[acn[0]][acn[1]] ? this._acl[acn[0]][acn[1]] : "e";
-						}
-					}
+        });
+      }
 
-				});
-			}
+      if(!$p.cat || !$p.cat.users){
+        return $p.utils.blank.guid;
+      }
+      var res = $p.cat.users.by_id($p.wsql.get_user_param("user_name"));
+
 
 			return res;
 		}
 	},
+
+
 
 	/**
 	 * Загружает скрипты и стили синхронно и асинхронно

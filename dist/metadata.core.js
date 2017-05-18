@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-05-16 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-05-18 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -21,7 +21,7 @@
  */
 
 
-"use strict";
+;"use strict";
 
 /**
  * Фреймворк добавляет в прототипы _Object_ и _Number_<br />
@@ -8611,6 +8611,7 @@ function CatObj(attr, manager) {
 	CatObj.superclass.constructor.call(this, attr, manager);
 
 	if(attr && typeof attr == "object"){
+	  this._data._silent = true;
 		if(attr._not_set_loaded){
 			delete attr._not_set_loaded;
 			this._mixin(attr);
@@ -8620,6 +8621,7 @@ function CatObj(attr, manager) {
 			if(!$p.utils.is_empty_guid(this.ref) && (attr.id || attr.name))
 				this._set_loaded(this.ref);
 		}
+    this._data._silent = false;
 	}
 
 }
@@ -8743,8 +8745,11 @@ function DocObj(attr, manager) {
 		}
 	});
 
-	if(attr && typeof attr == "object")
-		this._mixin(attr);
+	if(attr && typeof attr == "object"){
+    this._data._silent = true;
+    this._mixin(attr);
+    this._data._silent = false;
+  }
 
 	if(!$p.utils.is_empty_guid(this.ref) && attr.number_doc)
 		this._set_loaded(this.ref);
@@ -10569,7 +10574,7 @@ DataObj.prototype.__define({
 
 			// если не указан явно, рассчитываем префикс по умолчанию
 			if(!prefix)
-				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
+				prefix = (($p.current_user && $p.current_user.prefix) || "") +
 					(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
 
 			var obj = this,
@@ -10620,7 +10625,7 @@ DataObj.prototype.__define({
 		value: function (prefix) {
 
 			if(!prefix)
-				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
+				prefix = (($p.current_user && $p.current_user.prefix) || "") +
 					(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
 
 			var code_length = this._metadata.code_length - prefix.length,

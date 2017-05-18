@@ -40,7 +40,6 @@ gulp.task('prebuild', function(){
 
 gulp.task('build-metadata', function () {
 	return gulp.src([
-		'./node_modules/moment/locale/ru.js',
 		'./src/common.js',
 		'./src/wsql.js',
 		'./src/common.ui.js',
@@ -329,7 +328,7 @@ gulp.task('build--core', function(){
 		.pipe(concat('index.js'))
 
 		.pipe(babel({
-			presets: ['es2016'],
+			//presets: ['es2016'],
 			plugins: ['transform-es2015-modules-commonjs'],
 			compact: false,
             comments: false

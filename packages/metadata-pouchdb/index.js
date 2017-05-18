@@ -1112,7 +1112,7 @@ function proto_data_obj(data_obj, adapter, classes) {
 				}
 
 				// если не указан явно, рассчитываем префикс по умолчанию
-				if (!prefix) prefix = ($p.current_acl && $p.current_acl.prefix || "") + (this.organization && this.organization.prefix ? this.organization.prefix : $p.wsql.get_user_param("zone") + "-");
+				if (!prefix) prefix = ($p.current_user && $p.current_user.prefix || "") + (this.organization && this.organization.prefix ? this.organization.prefix : $p.wsql.get_user_param("zone") + "-");
 
 				var obj = this,
 				    part = "",
@@ -1154,7 +1154,7 @@ function proto_data_obj(data_obj, adapter, classes) {
 
 			value: function (prefix) {
 
-				if (!prefix) prefix = ($p.current_acl && $p.current_acl.prefix || "") + (this.organization && this.organization.prefix ? this.organization.prefix : $p.wsql.get_user_param("zone") + "-");
+				if (!prefix) prefix = ($p.current_user && $p.current_user.prefix || "") + (this.organization && this.organization.prefix ? this.organization.prefix : $p.wsql.get_user_param("zone") + "-");
 
 				var code_length = this._metadata().code_length - prefix.length,
 				    field = this instanceof classes.DocObj || this instanceof classes.TaskObj || this instanceof classes.BusinessProcessObj ? "number_doc" : "id",

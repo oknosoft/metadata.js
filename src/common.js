@@ -8,7 +8,7 @@
  */
 
 
-"use strict";
+;"use strict";
 
 /**
  * Фреймворк добавляет в прототипы _Object_ и _Number_<br />

@@ -259,7 +259,7 @@ function OCombo(attr){
 		// для полных прав разрешаем добавление элементов
 		// TODO: учесть реальные права на добавление
 		if(!attr.hide_frm){
-			var _acl = $p.current_acl.get_acl(_mgr.class_name);
+			var _acl = $p.current_user.get_acl(_mgr.class_name);
 			if(_acl.indexOf("i") != -1)
 				innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><i class='fa fa-plus fa-fwfa-fw'></i></a>";
 		}
