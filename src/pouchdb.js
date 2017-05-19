@@ -559,15 +559,16 @@ function Pouch(){
 		save_obj: {
 			value: function (tObj, attr) {
 
-				var tmp = tObj._obj._clone(),
+				var tmp = tObj._obj._clone(void 0, true),
 					db = attr.db || tObj._manager.pouch_db;
 
         tmp.class_name = tObj.class_name;
 				tmp._id = tmp.class_name + "|" + tObj.ref;
 				delete tmp.ref;
 
-				if(attr.attachments)
-					tmp._attachments = attr.attachments;
+				if(attr.attachments){
+          tmp._attachments = attr.attachments;
+        }
 
 				return (tObj.is_new() ? Promise.resolve() : db.get(tmp._id))
 					.then(function (res) {

@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-05-18 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-05-19 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -110,7 +110,7 @@ Object.defineProperties(Object.prototype, {
 	 * @returns {Object|Array} - копия объекта
 	 */
 	_clone: {
-		value: function(exclude) {
+		value: function(exclude, str_date) {
 			if(!this || "object" !== typeof this)
 				return this;
 			var p, v, c = "function" === typeof this.pop ? [] : {};
@@ -121,22 +121,39 @@ Object.defineProperties(Object.prototype, {
 				if (this.hasOwnProperty(p)){
 					v = this[p];
 					if(v){
-						if("function" === typeof v || v instanceof DataObj || v instanceof DataManager || v instanceof Date)
-							c[p] = v;
-
-						else if("object" === typeof v)
-							c[p] = v._clone(exclude);
-
-						else
-							c[p] = v;
-					} else
-						c[p] = v;
+						if("function" === typeof v || v instanceof DataObj || v instanceof DataManager){
+              c[p] = v;
+            }
+						else if("object" === typeof v){
+              if(v instanceof Date){
+                c[p] = str_date ? v.toJSON() : v;
+              }
+              else{
+                c[p] = v._clone(exclude, str_date);
+              }
+            }
+						else{
+              c[p] = v;
+            }
+					}
+					else{
+            c[p] = v;
+          }
 				}
 			}
 			return c;
 		}
 	}
 });
+
+/**
+ * Отбрасываем часовой пояс при сериализации даты
+ * @method toJSON
+ * @for Date
+ */
+Date.prototype.toJSON = function () {
+  return $p.moment(this).format($p.moment._masks.iso);
+}
 
 /**
  * Метод округления в прототип числа
@@ -1210,7 +1227,7 @@ function Utils() {
 
 	/**
 	 * ### Добавляет days дней к дате
-	 *
+	 * и сбрасывает время в 00:00:00
 	 * @method date_add_day
 	 * @param date {Date} - исходная дата
 	 * @param days {Number} - число дней, добавляемых к дате (может быть отрицательным)
@@ -2862,15 +2879,16 @@ function Pouch(){
 		save_obj: {
 			value: function (tObj, attr) {
 
-				var tmp = tObj._obj._clone(),
+				var tmp = tObj._obj._clone(void 0, true),
 					db = attr.db || tObj._manager.pouch_db;
 
         tmp.class_name = tObj.class_name;
 				tmp._id = tmp.class_name + "|" + tObj.ref;
 				delete tmp.ref;
 
-				if(attr.attachments)
-					tmp._attachments = attr.attachments;
+				if(attr.attachments){
+          tmp._attachments = attr.attachments;
+        }
 
 				return (tObj.is_new() ? Promise.resolve() : db.get(tmp._id))
 					.then(function (res) {
