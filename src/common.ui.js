@@ -582,15 +582,15 @@ function InterfaceObjs(){
 	 */
 	this.Setting2col = Setting2col;
 
-	this.do_reload = function () {
+	this.do_reload = function (text, title) {
 
 		var confirm_count = 0;
 
 		function do_reload(){
 
 			dhtmlx.confirm({
-				title: $p.msg.file_new_date_title,
-				text: $p.msg.file_new_date,
+				title: title || $p.msg.file_new_date_title,
+				text: text || $p.msg.file_new_date,
 				ok: "Перезагрузка",
 				cancel: "Продолжить",
 				callback: function(btn) {

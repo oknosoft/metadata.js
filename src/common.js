@@ -126,6 +126,15 @@ Object.defineProperties(Object.prototype, {
 });
 
 /**
+ * Отбрасываем часовой пояс при сериализации даты
+ * @method toJSON
+ * @for Date
+ */
+Date.prototype.toJSON = function () {
+  return this.toISOString().substr(0,19);
+}
+
+/**
  * Метод округления в прототип числа
  * @method round
  * @for Number
