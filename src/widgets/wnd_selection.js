@@ -128,7 +128,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 
 			// учтём права для каждой роли на каждый объект
-			var _acl = $p.current_acl.get_acl(_mgr.class_name);
+			var _acl = $p.current_user.get_acl(_mgr.class_name);
 
 			if(_acl.indexOf("i") == -1)
 				this.hideItem("btn_new");

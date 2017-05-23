@@ -225,8 +225,8 @@ if(typeof window !== "undefined" && window.dhx4){
 	msg.meta_task_mgr = "Менеджер задач";
 	msg.meta_bp_mgr = "Менеджер бизнес-процессов";
 	msg.meta_reports_mgr = "Менеджер отчетов";
-	msg.meta_charts_of_accounts_mgr = "Менеджер планов счетов";
-	msg.meta_charts_of_characteristic_mgr = "Менеджер планов видов характеристик";
+	msg.meta_cacc_mgr = "Менеджер планов счетов";
+	msg.meta_cch_mgr = "Менеджер планов видов характеристик";
 	msg.meta_extender = "Модификаторы объектов и менеджеров";
 
 	msg.modified_close = "Объект изменен<br/>Закрыть без сохранения?";

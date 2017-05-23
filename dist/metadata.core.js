@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-05-10 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-05-19 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -21,7 +21,7 @@
  */
 
 
-"use strict";
+;"use strict";
 
 /**
  * Фреймворк добавляет в прототипы _Object_ и _Number_<br />
@@ -110,7 +110,7 @@ Object.defineProperties(Object.prototype, {
 	 * @returns {Object|Array} - копия объекта
 	 */
 	_clone: {
-		value: function(exclude) {
+		value: function(exclude, str_date) {
 			if(!this || "object" !== typeof this)
 				return this;
 			var p, v, c = "function" === typeof this.pop ? [] : {};
@@ -121,22 +121,39 @@ Object.defineProperties(Object.prototype, {
 				if (this.hasOwnProperty(p)){
 					v = this[p];
 					if(v){
-						if("function" === typeof v || v instanceof DataObj || v instanceof DataManager || v instanceof Date)
-							c[p] = v;
-
-						else if("object" === typeof v)
-							c[p] = v._clone(exclude);
-
-						else
-							c[p] = v;
-					} else
-						c[p] = v;
+						if("function" === typeof v || v instanceof DataObj || v instanceof DataManager){
+              c[p] = v;
+            }
+						else if("object" === typeof v){
+              if(v instanceof Date){
+                c[p] = str_date ? v.toJSON() : v;
+              }
+              else{
+                c[p] = v._clone(exclude, str_date);
+              }
+            }
+						else{
+              c[p] = v;
+            }
+					}
+					else{
+            c[p] = v;
+          }
 				}
 			}
 			return c;
 		}
 	}
 });
+
+/**
+ * Отбрасываем часовой пояс при сериализации даты
+ * @method toJSON
+ * @for Date
+ */
+Date.prototype.toJSON = function () {
+  return $p.moment(this).format($p.moment._masks.iso);
+}
 
 /**
  * Метод округления в прототип числа
@@ -865,7 +882,7 @@ function MetaEngine() {
 				 * @static
 				 */
 					function ChartsOfAccounts(){
-					this.toString = function(){return $p.msg.meta_charts_of_accounts_mgr};
+					this.toString = function(){return $p.msg.meta_cacc_mgr};
 				})
 		},
 
@@ -887,7 +904,7 @@ function MetaEngine() {
 				 * @static
 				 */
 					function ChartsOfCharacteristics(){
-					this.toString = function(){return $p.msg.meta_charts_of_characteristic_mgr};
+					this.toString = function(){return $p.msg.meta_cch_mgr};
 				})
 		},
 
@@ -1210,7 +1227,7 @@ function Utils() {
 
 	/**
 	 * ### Добавляет days дней к дате
-	 *
+	 * и сбрасывает время в 00:00:00
 	 * @method date_add_day
 	 * @param date {Date} - исходная дата
 	 * @param days {Number} - число дней, добавляемых к дате (может быть отрицательным)
@@ -1323,10 +1340,16 @@ function Utils() {
 			reader.onerror = function(err){
 				reject(err);
 			};
-			if(type == "data_url")
-				reader.readAsDataURL(blob);
-			else
-				reader.readAsText(blob);
+			switch (type) {
+        case "array" :
+          reader.readAsArrayBuffer(blob);
+          break;
+        case "data_url":
+          reader.readAsDataURL(blob);
+          break;
+        default:
+          reader.readAsText(blob);
+      }
 		});
 
 	};
@@ -1612,19 +1635,23 @@ function Ajax() {
 			return wnd_print;
 		}
 
-		if(!method || (typeof method == "string" && method.toLowerCase().indexOf("post")!=-1))
-			return this.post_ex(url,
-				typeof post_data == "object" ? JSON.stringify(post_data) : post_data,
-				true,
-				function(xhr){
-					xhr.responseType = "blob";
-				})
-				.then(show_blob);
-		else
-			return this.get_ex(url, true, function(xhr){
-					xhr.responseType = "blob";
-				})
-				.then(show_blob);
+    if(url instanceof Blob){
+      Promise.resolve(show_blob({response: url}));
+    }
+    else if(!method || (typeof method == "string" && method.toLowerCase().indexOf("post")!=-1))
+      return this.post_ex(url,
+        typeof post_data == "object" ? JSON.stringify(post_data) : post_data,
+        true,
+        function(xhr){
+          xhr.responseType = "blob";
+        })
+        .then(show_blob);
+    else{
+      return this.get_ex(url, true, function(xhr){
+        xhr.responseType = "blob";
+      })
+        .then(show_blob);
+    }
 	};
 
 	/**
@@ -2236,8 +2263,8 @@ if(typeof window !== "undefined" && window.dhx4){
 	msg.meta_task_mgr = "Менеджер задач";
 	msg.meta_bp_mgr = "Менеджер бизнес-процессов";
 	msg.meta_reports_mgr = "Менеджер отчетов";
-	msg.meta_charts_of_accounts_mgr = "Менеджер планов счетов";
-	msg.meta_charts_of_characteristic_mgr = "Менеджер планов видов характеристик";
+	msg.meta_cacc_mgr = "Менеджер планов счетов";
+	msg.meta_cch_mgr = "Менеджер планов видов характеристик";
 	msg.meta_extender = "Модификаторы объектов и менеджеров";
 
 	msg.modified_close = "Объект изменен<br/>Закрыть без сохранения?";
@@ -2852,15 +2879,16 @@ function Pouch(){
 		save_obj: {
 			value: function (tObj, attr) {
 
-				var tmp = tObj._obj._clone(),
+				var tmp = tObj._obj._clone(void 0, true),
 					db = attr.db || tObj._manager.pouch_db;
 
         tmp.class_name = tObj.class_name;
 				tmp._id = tmp.class_name + "|" + tObj.ref;
 				delete tmp.ref;
 
-				if(attr.attachments)
-					tmp._attachments = attr.attachments;
+				if(attr.attachments){
+          tmp._attachments = attr.attachments;
+        }
 
 				return (tObj.is_new() ? Promise.resolve() : db.get(tmp._id))
 					.then(function (res) {
@@ -6114,7 +6142,7 @@ DataProcessorsManager.prototype.__define({
 	},
 
 	/**
-	 * fake-метод, не имеет смысла для обработок, т.к. они не кешируются в alasql. Добавлен, чтобы не ругалась форма обхекта при закрытии
+	 * fake-метод, не имеет смысла для обработок, т.к. они не кешируются в alasql. Добавлен, чтобы не ругалась форма объекта при закрытии
 	 * @method unload_obj
 	 * @param ref
 	 */
@@ -8601,6 +8629,7 @@ function CatObj(attr, manager) {
 	CatObj.superclass.constructor.call(this, attr, manager);
 
 	if(attr && typeof attr == "object"){
+	  this._data._silent = true;
 		if(attr._not_set_loaded){
 			delete attr._not_set_loaded;
 			this._mixin(attr);
@@ -8610,6 +8639,7 @@ function CatObj(attr, manager) {
 			if(!$p.utils.is_empty_guid(this.ref) && (attr.id || attr.name))
 				this._set_loaded(this.ref);
 		}
+    this._data._silent = false;
 	}
 
 }
@@ -8733,8 +8763,11 @@ function DocObj(attr, manager) {
 		}
 	});
 
-	if(attr && typeof attr == "object")
-		this._mixin(attr);
+	if(attr && typeof attr == "object"){
+    this._data._silent = true;
+    this._mixin(attr);
+    this._data._silent = false;
+  }
 
 	if(!$p.utils.is_empty_guid(this.ref) && attr.number_doc)
 		this._set_loaded(this.ref);
@@ -10559,7 +10592,7 @@ DataObj.prototype.__define({
 
 			// если не указан явно, рассчитываем префикс по умолчанию
 			if(!prefix)
-				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
+				prefix = (($p.current_user && $p.current_user.prefix) || "") +
 					(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
 
 			var obj = this,
@@ -10610,7 +10643,7 @@ DataObj.prototype.__define({
 		value: function (prefix) {
 
 			if(!prefix)
-				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
+				prefix = (($p.current_user && $p.current_user.prefix) || "") +
 					(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
 
 			var code_length = this._metadata.code_length - prefix.length,
