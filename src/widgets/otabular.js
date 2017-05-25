@@ -82,6 +82,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				}
 			}
 
+      _ts._owner._silent(false);
 			var row = _ts.add(proto);
 
 			if(_mgr.handle_event(_obj, "add_row",
@@ -99,7 +100,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		}
 	};
 
-
   _grid._move_row = function(direction){
     if(attr.read_only){
       return;
@@ -107,6 +107,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
     var rId = get_sel_index();
 
     if(rId != undefined){
+      _ts._owner._silent(false);
       if(direction == "up"){
         if(rId != 0){
           _ts.swap(rId-1, rId);
@@ -135,7 +136,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			var rId = get_sel_index();
 
 			if(rId != undefined){
-
+        _ts._owner._silent(false);
 				if(_mgr.handle_event(_obj, "del_row",
 						{
 							tabular_section: _tsname,
