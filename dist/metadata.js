@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-05-25 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-05-26 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -6733,12 +6733,12 @@ CatObj.prototype.__define({
     }
   },
 
-  in_hierarchy: {
+  _hierarchy: {
     value: function (group) {
       var t = this;
       if(Array.isArray(group)){
         return group.some(function (v) {
-          return t.in_hierarchy(v);
+          return t._hierarchy(v);
         });
       }
       if(this == group || t.parent == group){
@@ -6746,9 +6746,21 @@ CatObj.prototype.__define({
       }
       var parent = t.parent;
       if(parent && !parent.empty()){
-        return parent.in_hierarchy(group);
+        return parent._hierarchy(group);
       }
       return group == $p.utils.blank.guid;
+    }
+  },
+
+  _children: {
+    get: function () {
+      var  t = this, res = [];
+      this._manager.forEach(function (o) {
+        if(o != t && o._hierarchy(t)){
+          res.push(o);
+        }
+      });
+      return res;
     }
   }
 

@@ -780,12 +780,12 @@ CatObj.prototype.__define({
    * @param group {Object|Array} - папка или массив папок
    *
    */
-  in_hierarchy: {
+  _hierarchy: {
     value: function (group) {
       var t = this;
       if(Array.isArray(group)){
         return group.some(function (v) {
-          return t.in_hierarchy(v);
+          return t._hierarchy(v);
         });
       }
       if(this == group || t.parent == group){
@@ -793,9 +793,25 @@ CatObj.prototype.__define({
       }
       var parent = t.parent;
       if(parent && !parent.empty()){
-        return parent.in_hierarchy(group);
+        return parent._hierarchy(group);
       }
       return group == $p.utils.blank.guid;
+    }
+  },
+
+  /**
+   * ### Дети
+   * Возвращает массив элементов, находящихся в иерархии текущего
+   */
+  _children: {
+    get: function () {
+      var  t = this, res = [];
+      this._manager.forEach(function (o) {
+        if(o != t && o._hierarchy(t)){
+          res.push(o);
+        }
+      });
+      return res;
     }
   }
 
