@@ -693,7 +693,7 @@ function CatObj(attr, manager) {
 	// выполняем конструктор родительского объекта
 	CatObj.superclass.constructor.call(this, attr, manager);
 
-	if(attr && typeof attr == "object"){
+	if(this._data && attr && typeof attr == "object"){
 	  this._data._silent = true;
 		if(attr._not_set_loaded){
 			delete attr._not_set_loaded;

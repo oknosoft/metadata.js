@@ -181,7 +181,7 @@ function WSQL(){
 					return prm;
 			}
 		},
-    
+
 		/**
 		 * ### Указатель на alasql
 		 * @property alasql
@@ -231,6 +231,7 @@ function WSQL(){
 					{p: "browser_uid",		v: $p.utils.generate_guid(), t:"string"},
 					{p: "zone",           v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
 					{p: "enable_save_pwd",v: $p.job_prm.enable_save_pwd,	t:"boolean"},
+          {p: "couch_direct",   v: $p.job_prm.hasOwnProperty("couch_direct") ? $p.job_prm.couch_direct : true,	t:"boolean"},
 					{p: "couch_path",		  v: $p.job_prm.couch_path,	t:"string"},
           {p: "rest_path",		  v: "", t:"string"},
 					{p: "skin",		        v: "dhx_web", t:"string"},

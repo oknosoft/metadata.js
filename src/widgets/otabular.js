@@ -179,8 +179,11 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		if(stage != 2 || nValue == oValue)
 			return true;
 
-		var cell_field = _grid.get_cell_field(),
-			ret_code = _mgr.handle_event(_obj, "value_change", {
+		var cell_field = _grid.get_cell_field();
+		if(!cell_field){
+      return true;
+    }
+		var	ret_code = _mgr.handle_event(_obj, "value_change", {
 				field: cell_field.field,
 				value: nValue,
 				tabular_section: _tsname,

@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-05-26 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-05-28 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -1875,7 +1875,7 @@ function WSQL(){
 					return prm;
 			}
 		},
-    
+
 		/**
 		 * ### Указатель на alasql
 		 * @property alasql
@@ -1925,6 +1925,7 @@ function WSQL(){
 					{p: "browser_uid",		v: $p.utils.generate_guid(), t:"string"},
 					{p: "zone",           v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
 					{p: "enable_save_pwd",v: $p.job_prm.enable_save_pwd,	t:"boolean"},
+          {p: "couch_direct",   v: $p.job_prm.hasOwnProperty("couch_direct") ? $p.job_prm.couch_direct : true,	t:"boolean"},
 					{p: "couch_path",		  v: $p.job_prm.couch_path,	t:"string"},
           {p: "rest_path",		  v: "", t:"string"},
 					{p: "skin",		        v: "dhx_web", t:"string"},
@@ -6422,28 +6423,24 @@ function RegisterManager(class_name){
 	 * @async
 	 */
 	this.load_array = function(aattr, forse){
-
 		var ref, obj, res = [];
 
 		for(var i=0; i<aattr.length; i++){
-
 			ref = this.get_ref(aattr[i]);
 			obj = this.by_ref[ref];
 
 			if(!obj && !aattr[i]._deleted){
 				obj = new $p[this.obj_constructor()](aattr[i], this);
-				if(forse)
-					obj._set_loaded();
-
-			}else if(obj && aattr[i]._deleted){
-				obj.unload();
+				forse && obj._set_loaded();
+			}
+			else if(aattr[i]._deleted){
+        obj && obj.unload();
 				continue;
-
-			}else if(obj.is_new() || forse){
+			}
+			else if(obj.is_new() || forse){
 				obj._mixin(aattr[i]);
 				obj._set_loaded();
 			}
-
 			res.push(obj);
 		}
 		return res;
@@ -7955,15 +7952,12 @@ TabularSectionRow.prototype._setter = function (f, v) {
 function DataObj(attr, manager) {
 
 	var tmp,
-		_ts_ = {},
-		_obj = {},
-		_data = {
-			_is_new: !(this instanceof EnumObj)
-		};
+		_ts_ = {};
 
 	// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
-	if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager))
-		tmp = manager.get(attr, false, true);
+	if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)){
+    tmp = manager.get(attr, false, true);
+  }
 
 	if(tmp){
 		attr = null;
@@ -7971,29 +7965,7 @@ function DataObj(attr, manager) {
 	}
 
 
-	if(manager instanceof EnumManager)
-		_obj.ref = attr.name;
-
-	else if(!(manager instanceof RegisterManager)){
-		_obj.ref = $p.utils.fix_guid(attr);
-
-	}else
-		_obj.ref = manager.get_ref(attr);
-
-
 	this.__define({
-
-		/**
-		 * ### Фактическое хранилище данных объекта
-		 * Оно же, запись в таблице объекта локальной базы данных
-		 * @property _obj
-		 * @type Object
-		 * @final
-		 */
-		_obj: {
-			value: _obj,
-			configurable: true
-		},
 
 		/**
 		 * Хранилище ссылок на табличные части - не сохраняется в базе данных
@@ -8019,23 +7991,37 @@ function DataObj(attr, manager) {
 			value : manager
 		},
 
-		/**
-		 * Пользовательские данные - аналог `AdditionalProperties` _Дополнительные cвойства_ в 1С
-		 * @property _data
-		 * @type DataManager
-		 * @final
-		 */
-		_data: {
-			value : _data,
-			configurable: true
-		}
+    /**
+     * Пользовательские данные - аналог `AdditionalProperties` _Дополнительные cвойства_ в 1С
+     * @property _data
+     * @type DataManager
+     * @final
+     */
+    _data: {
+		  value: {
+        _is_new: !(this instanceof EnumObj)
+      }
+    },
+
+    /**
+     * ### Фактическое хранилище данных объекта
+     * Оно же, запись в таблице объекта локальной базы данных
+     * @property _obj
+     * @type Object
+     * @final
+     */
+    _obj: {
+		  value: {
+        ref: manager instanceof EnumManager ? attr.name : (manager instanceof RegisterManager ? manager.get_ref(attr) : $p.utils.fix_guid(attr))
+      }
+    }
 
 	});
 
 
 	if(manager.alatable && manager.push){
-		manager.alatable.push(_obj);
-		manager.push(this, _obj.ref);
+		manager.alatable.push(this._obj);
+		manager.push(this, this._obj.ref);
 	}
 
 	attr = null;
@@ -8628,7 +8614,7 @@ function CatObj(attr, manager) {
 	// выполняем конструктор родительского объекта
 	CatObj.superclass.constructor.call(this, attr, manager);
 
-	if(attr && typeof attr == "object"){
+	if(this._data && attr && typeof attr == "object"){
 	  this._data._silent = true;
 		if(attr._not_set_loaded){
 			delete attr._not_set_loaded;

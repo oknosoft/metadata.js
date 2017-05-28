@@ -1189,6 +1189,7 @@ function WSQL(){
 					{p: "browser_uid",		v: $p.utils.generate_guid(), t:"string"},
 					{p: "zone",           v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
 					{p: "enable_save_pwd",v: $p.job_prm.enable_save_pwd,	t:"boolean"},
+          {p: "couch_direct",   v: $p.job_prm.hasOwnProperty("couch_direct") ? $p.job_prm.couch_direct : true,	t:"boolean"},
 					{p: "couch_path",		  v: $p.job_prm.couch_path,	t:"string"},
           {p: "rest_path",		  v: "", t:"string"},
 					{p: "skin",		        v: "dhx_web", t:"string"},
@@ -5439,28 +5440,24 @@ function RegisterManager(class_name){
 	};
 
 	this.load_array = function(aattr, forse){
-
 		var ref, obj, res = [];
 
 		for(var i=0; i<aattr.length; i++){
-
 			ref = this.get_ref(aattr[i]);
 			obj = this.by_ref[ref];
 
 			if(!obj && !aattr[i]._deleted){
 				obj = new $p[this.obj_constructor()](aattr[i], this);
-				if(forse)
-					obj._set_loaded();
-
-			}else if(obj && aattr[i]._deleted){
-				obj.unload();
+				forse && obj._set_loaded();
+			}
+			else if(aattr[i]._deleted){
+        obj && obj.unload();
 				continue;
-
-			}else if(obj.is_new() || forse){
+			}
+			else if(obj.is_new() || forse){
 				obj._mixin(aattr[i]);
 				obj._set_loaded();
 			}
-
 			res.push(obj);
 		}
 		return res;
@@ -6670,7 +6667,7 @@ function CatObj(attr, manager) {
 
 	CatObj.superclass.constructor.call(this, attr, manager);
 
-	if(attr && typeof attr == "object"){
+	if(this._data && attr && typeof attr == "object"){
 	  this._data._silent = true;
 		if(attr._not_set_loaded){
 			delete attr._not_set_loaded;
@@ -10401,8 +10398,11 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		if(stage != 2 || nValue == oValue)
 			return true;
 
-		var cell_field = _grid.get_cell_field(),
-			ret_code = _mgr.handle_event(_obj, "value_change", {
+		var cell_field = _grid.get_cell_field();
+		if(!cell_field){
+      return true;
+    }
+		var	ret_code = _mgr.handle_event(_obj, "value_change", {
 				field: cell_field.field,
 				value: nValue,
 				tabular_section: _tsname,
@@ -13934,7 +13934,7 @@ $p.eve.__define({
 					setTimeout(function () {
 						$p.iface.frm_auth({
 							modal_dialog: true,
-							try_auto: true
+							try_auto: false
 						});
 					}, 100);
 				}
