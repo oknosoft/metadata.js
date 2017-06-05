@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-06-01 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-06-05 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -2951,8 +2951,8 @@ function Pouch(){
 						docs = changes.change.docs;
 					}else
 						docs = changes.docs;
-
-				}else
+				}
+				else
 					docs = changes.rows;
 
 				if (docs.length > 0) {
@@ -3779,17 +3779,21 @@ function Meta() {
    * ### Загружает объекты с типом кеширования doc_ram в ОЗУ
    * @method load_doc_ram
    */
-  _md.load_doc_ram = function(){
+  _md.load_doc_ram = function() {
     var res = [];
-    ['cat','cch'].forEach(function (kind) {
-      for(var name in _m[kind]){
-        if(_m[kind][name].cachable == 'doc_ram'){
-          res.push($p[kind][name].pouch_find_rows({_top: 1000, _skip: 0}));
+    ['cat','cch','ireg'].forEach(function (kind) {
+      for (var name in _m[kind]) {
+        if (_m[kind][name].cachable == 'doc_ram') {
+          res.push(kind + '.' + name);
         }
       }
     });
-    return Promise.all(res);
-  };
+    return $p.wsql.pouch.local.doc.find({
+      selector: {class_name: {$in: res}},
+      limit: 10000
+    })
+      .then($p.wsql.pouch.load_changes);
+  }
 
 	/**
 	 * ### Инициализирует метаданные

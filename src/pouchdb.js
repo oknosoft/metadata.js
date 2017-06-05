@@ -630,8 +630,8 @@ function Pouch(){
 						docs = changes.change.docs;
 					}else
 						docs = changes.docs;
-
-				}else
+				}
+				else
 					docs = changes.rows;
 
 				if (docs.length > 0) {
