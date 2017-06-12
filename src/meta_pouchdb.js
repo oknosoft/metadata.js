@@ -670,9 +670,9 @@ DataObj.prototype.__define({
 				return;
 
 			// если не указан явно, рассчитываем префикс по умолчанию
-			if(!prefix)
-				prefix = (($p.current_user && $p.current_user.prefix) || "") +
-					(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
+			if(!prefix){
+        prefix = (($p.current_user && $p.current_user.prefix) || "") + ((this.organization && this.organization.prefix) || "");
+      }
 
 			var obj = this,
 				part = "",
