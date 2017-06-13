@@ -649,14 +649,20 @@ function MetaEngine() {
 		 */
 		off: {
 			value: function (id) {
+			  if(arguments.length == 2){
+          id = arguments[1];
+        }
 				if(typeof id == "function" && id._evnts){
 					id._evnts.forEach(function (id) {
 						$p.eve.detachEvent(id);
 					});
-				}else if(!id)
-					$p.eve.detachAllEvents();
-				else
-					$p.eve.detachEvent(id);
+				}
+				else if(!id){
+          $p.eve.detachAllEvents();
+        }
+				else{
+          $p.eve.detachEvent(id);
+        }
 			}
 		},
 
