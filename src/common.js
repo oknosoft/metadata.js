@@ -510,7 +510,7 @@ function MetaEngine() {
 								ok = sel.some(function (element) {
 									var key = Object.keys(element)[0];
 									if(element[key].hasOwnProperty("like"))
-										return o[key] && o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
+										return typeof o[key] == "string" && o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
 									else
 										return $p.utils.is_equal(o[key], element[key]);
 								});

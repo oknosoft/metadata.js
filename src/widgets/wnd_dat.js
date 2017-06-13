@@ -256,20 +256,19 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 				allow_minmax: true,
 				modal: true
 			};
-		_cell = $p.iface.dat_blank(attr._dxw, attr.options);
-		_cell.attachEvent("onClose",function(win){
+		_cell = this.auth = this.dat_blank(attr._dxw, attr.options);
+		_cell.attachEvent("onClose", function(win){
 			if(were_errors){
-				if(reject)
-					reject(err);
+				reject && reject(err);
 			}else if(resolve)
 				resolve();
 			return true;
 		});
-		_frm = _cell.attachForm();
+    _frm = _cell.attachForm();
 
 	}else{
-		_cell = attr.cell || $p.iface.docs;
-		_frm = $p.iface.auth = _cell.attachForm();
+		_cell = attr.cell || this.docs;
+		_frm = this.auth = _cell.attachForm();
 		$p.msg.show_msg($p.msg.init_login, _cell);
 	}
 

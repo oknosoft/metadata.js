@@ -31,15 +31,12 @@
 function DataObj(attr, manager) {
 
 	var tmp,
-		_ts_ = {},
-		_obj = {},
-		_data = {
-			_is_new: !(this instanceof EnumObj)
-		};
+		_ts_ = {};
 
 	// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
-	if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager))
-		tmp = manager.get(attr, false, true);
+	if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)){
+    tmp = manager.get(attr, false, true);
+  }
 
 	if(tmp){
 		attr = null;
@@ -47,29 +44,7 @@ function DataObj(attr, manager) {
 	}
 
 
-	if(manager instanceof EnumManager)
-		_obj.ref = attr.name;
-
-	else if(!(manager instanceof RegisterManager)){
-		_obj.ref = $p.utils.fix_guid(attr);
-
-	}else
-		_obj.ref = manager.get_ref(attr);
-
-
 	this.__define({
-
-		/**
-		 * ### Фактическое хранилище данных объекта
-		 * Оно же, запись в таблице объекта локальной базы данных
-		 * @property _obj
-		 * @type Object
-		 * @final
-		 */
-		_obj: {
-			value: _obj,
-			configurable: true
-		},
 
 		/**
 		 * Хранилище ссылок на табличные части - не сохраняется в базе данных
@@ -95,23 +70,37 @@ function DataObj(attr, manager) {
 			value : manager
 		},
 
-		/**
-		 * Пользовательские данные - аналог `AdditionalProperties` _Дополнительные cвойства_ в 1С
-		 * @property _data
-		 * @type DataManager
-		 * @final
-		 */
-		_data: {
-			value : _data,
-			configurable: true
-		}
+    /**
+     * Пользовательские данные - аналог `AdditionalProperties` _Дополнительные cвойства_ в 1С
+     * @property _data
+     * @type DataManager
+     * @final
+     */
+    _data: {
+		  value: {
+        _is_new: !(this instanceof EnumObj)
+      }
+    },
+
+    /**
+     * ### Фактическое хранилище данных объекта
+     * Оно же, запись в таблице объекта локальной базы данных
+     * @property _obj
+     * @type Object
+     * @final
+     */
+    _obj: {
+		  value: {
+        ref: manager instanceof EnumManager ? attr.name : (manager instanceof RegisterManager ? manager.get_ref(attr) : $p.utils.fix_guid(attr))
+      }
+    }
 
 	});
 
 
 	if(manager.alatable && manager.push){
-		manager.alatable.push(_obj);
-		manager.push(this, _obj.ref);
+		manager.alatable.push(this._obj);
+		manager.push(this, this._obj.ref);
 	}
 
 	attr = null;
@@ -704,7 +693,7 @@ function CatObj(attr, manager) {
 	// выполняем конструктор родительского объекта
 	CatObj.superclass.constructor.call(this, attr, manager);
 
-	if(attr && typeof attr == "object"){
+	if(this._data && attr && typeof attr == "object"){
 	  this._data._silent = true;
 		if(attr._not_set_loaded){
 			delete attr._not_set_loaded;
@@ -780,12 +769,12 @@ CatObj.prototype.__define({
    * @param group {Object|Array} - папка или массив папок
    *
    */
-  in_hierarchy: {
+  _hierarchy: {
     value: function (group) {
       var t = this;
       if(Array.isArray(group)){
         return group.some(function (v) {
-          return t.in_hierarchy(v);
+          return t._hierarchy(v);
         });
       }
       if(this == group || t.parent == group){
@@ -793,9 +782,25 @@ CatObj.prototype.__define({
       }
       var parent = t.parent;
       if(parent && !parent.empty()){
-        return parent.in_hierarchy(group);
+        return parent._hierarchy(group);
       }
       return group == $p.utils.blank.guid;
+    }
+  },
+
+  /**
+   * ### Дети
+   * Возвращает массив элементов, находящихся в иерархии текущего
+   */
+  _children: {
+    get: function () {
+      var  t = this, res = [];
+      this._manager.forEach(function (o) {
+        if(o != t && o._hierarchy(t)){
+          res.push(o);
+        }
+      });
+      return res;
     }
   }
 

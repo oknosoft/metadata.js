@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-05-19 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-06-12 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -332,7 +332,7 @@ function MetaEngine() {
 								ok = sel.some(function (element) {
 									var key = Object.keys(element)[0];
 									if(element[key].hasOwnProperty("like"))
-										return o[key] && o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
+										return typeof o[key] == "string" && o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
 									else
 										return $p.utils.is_equal(o[key], element[key]);
 								});
@@ -1189,6 +1189,7 @@ function WSQL(){
 					{p: "browser_uid",		v: $p.utils.generate_guid(), t:"string"},
 					{p: "zone",           v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
 					{p: "enable_save_pwd",v: $p.job_prm.enable_save_pwd,	t:"boolean"},
+          {p: "couch_direct",   v: $p.job_prm.hasOwnProperty("couch_direct") ? $p.job_prm.couch_direct : true,	t:"boolean"},
 					{p: "couch_path",		  v: $p.job_prm.couch_path,	t:"string"},
           {p: "rest_path",		  v: "", t:"string"},
 					{p: "skin",		        v: "dhx_web", t:"string"},
@@ -2384,8 +2385,8 @@ function Pouch(){
 						docs = changes.change.docs;
 					}else
 						docs = changes.docs;
-
-				}else
+				}
+				else
 					docs = changes.rows;
 
 				if (docs.length > 0) {
@@ -3395,17 +3396,21 @@ function Meta() {
     return Object.keys(res);
   }
 
-  _md.load_doc_ram = function(){
+  _md.load_doc_ram = function() {
     var res = [];
-    ['cat','cch'].forEach(function (kind) {
-      for(var name in _m[kind]){
-        if(_m[kind][name].cachable == 'doc_ram'){
-          res.push($p[kind][name].pouch_find_rows({_top: 1000, _skip: 0}));
+    ['cat','cch','ireg'].forEach(function (kind) {
+      for (var name in _m[kind]) {
+        if (_m[kind][name].cachable == 'doc_ram') {
+          res.push(kind + '.' + name);
         }
       }
     });
-    return Promise.all(res);
-  };
+    return $p.wsql.pouch.local.doc.find({
+      selector: {class_name: {$in: res}},
+      limit: 10000
+    })
+      .then($p.wsql.pouch.load_changes);
+  }
 
 	_md.init = function (meta_db) {
 
@@ -5439,28 +5444,24 @@ function RegisterManager(class_name){
 	};
 
 	this.load_array = function(aattr, forse){
-
 		var ref, obj, res = [];
 
 		for(var i=0; i<aattr.length; i++){
-
 			ref = this.get_ref(aattr[i]);
 			obj = this.by_ref[ref];
 
 			if(!obj && !aattr[i]._deleted){
 				obj = new $p[this.obj_constructor()](aattr[i], this);
-				if(forse)
-					obj._set_loaded();
-
-			}else if(obj && aattr[i]._deleted){
-				obj.unload();
+				forse && obj._set_loaded();
+			}
+			else if(aattr[i]._deleted){
+        obj && obj.unload();
 				continue;
-
-			}else if(obj.is_new() || forse){
+			}
+			else if(obj.is_new() || forse){
 				obj._mixin(aattr[i]);
 				obj._set_loaded();
 			}
-
 			res.push(obj);
 		}
 		return res;
@@ -6183,14 +6184,11 @@ SchemeSettingsManager._extend(CatManager);
 function DataObj(attr, manager) {
 
 	var tmp,
-		_ts_ = {},
-		_obj = {},
-		_data = {
-			_is_new: !(this instanceof EnumObj)
-		};
+		_ts_ = {};
 
-	if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager))
-		tmp = manager.get(attr, false, true);
+	if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)){
+    tmp = manager.get(attr, false, true);
+  }
 
 	if(tmp){
 		attr = null;
@@ -6198,22 +6196,7 @@ function DataObj(attr, manager) {
 	}
 
 
-	if(manager instanceof EnumManager)
-		_obj.ref = attr.name;
-
-	else if(!(manager instanceof RegisterManager)){
-		_obj.ref = $p.utils.fix_guid(attr);
-
-	}else
-		_obj.ref = manager.get_ref(attr);
-
-
 	this.__define({
-
-		_obj: {
-			value: _obj,
-			configurable: true
-		},
 
 		_ts_: {
 			value: function( name ) {
@@ -6229,17 +6212,24 @@ function DataObj(attr, manager) {
 			value : manager
 		},
 
-		_data: {
-			value : _data,
-			configurable: true
-		}
+    _data: {
+		  value: {
+        _is_new: !(this instanceof EnumObj)
+      }
+    },
+
+    _obj: {
+		  value: {
+        ref: manager instanceof EnumManager ? attr.name : (manager instanceof RegisterManager ? manager.get_ref(attr) : $p.utils.fix_guid(attr))
+      }
+    }
 
 	});
 
 
 	if(manager.alatable && manager.push){
-		manager.alatable.push(_obj);
-		manager.push(this, _obj.ref);
+		manager.alatable.push(this._obj);
+		manager.push(this, this._obj.ref);
 	}
 
 	attr = null;
@@ -6681,7 +6671,7 @@ function CatObj(attr, manager) {
 
 	CatObj.superclass.constructor.call(this, attr, manager);
 
-	if(attr && typeof attr == "object"){
+	if(this._data && attr && typeof attr == "object"){
 	  this._data._silent = true;
 		if(attr._not_set_loaded){
 			delete attr._not_set_loaded;
@@ -6733,12 +6723,12 @@ CatObj.prototype.__define({
     }
   },
 
-  in_hierarchy: {
+  _hierarchy: {
     value: function (group) {
       var t = this;
       if(Array.isArray(group)){
         return group.some(function (v) {
-          return t.in_hierarchy(v);
+          return t._hierarchy(v);
         });
       }
       if(this == group || t.parent == group){
@@ -6746,9 +6736,21 @@ CatObj.prototype.__define({
       }
       var parent = t.parent;
       if(parent && !parent.empty()){
-        return parent.in_hierarchy(group);
+        return parent._hierarchy(group);
       }
       return group == $p.utils.blank.guid;
+    }
+  },
+
+  _children: {
+    get: function () {
+      var  t = this, res = [];
+      this._manager.forEach(function (o) {
+        if(o != t && o._hierarchy(t)){
+          res.push(o);
+        }
+      });
+      return res;
     }
   }
 
@@ -8642,9 +8644,9 @@ DataObj.prototype.__define({
 			if(!this._metadata.code_length)
 				return;
 
-			if(!prefix)
-				prefix = (($p.current_user && $p.current_user.prefix) || "") +
-					(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
+			if(!prefix){
+        prefix = (($p.current_user && $p.current_user.prefix) || "") + ((this.organization && this.organization.prefix) || "");
+      }
 
 			var obj = this,
 				part = "",
@@ -9527,12 +9529,12 @@ function OCombo(attr){
 						o._set_loaded(o.ref);
 						o.form_obj(attr.pwnd);
 					});
-
-		} else if(this.name == "open"){
+		}
+		else if(this.name == "open"){
 			if(_obj && _obj[_field] && !_obj[_field].empty())
 				_obj[_field].form_obj(attr.pwnd);
-
-		} else if(this.name == "type"){
+		}
+		else if(_meta && this.name == "type"){
 			var tlist = [], tmgr, tmeta, tobj = _obj, tfield = _field;
 			_meta.type.types.forEach(function (o) {
 				tmgr = _md.mgr_by_class_name(o);
@@ -10309,6 +10311,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				}
 			}
 
+      _ts._owner._silent(false);
 			var row = _ts.add(proto);
 
 			if(_mgr.handle_event(_obj, "add_row",
@@ -10326,7 +10329,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		}
 	};
 
-
   _grid._move_row = function(direction){
     if(attr.read_only){
       return;
@@ -10334,6 +10336,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
     var rId = get_sel_index();
 
     if(rId != undefined){
+      _ts._owner._silent(false);
       if(direction == "up"){
         if(rId != 0){
           _ts.swap(rId-1, rId);
@@ -10359,7 +10362,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			var rId = get_sel_index();
 
 			if(rId != undefined){
-
+        _ts._owner._silent(false);
 				if(_mgr.handle_event(_obj, "del_row",
 						{
 							tabular_section: _tsname,
@@ -10399,8 +10402,11 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		if(stage != 2 || nValue == oValue)
 			return true;
 
-		var cell_field = _grid.get_cell_field(),
-			ret_code = _mgr.handle_event(_obj, "value_change", {
+		var cell_field = _grid.get_cell_field();
+		if(!cell_field){
+      return true;
+    }
+		var	ret_code = _mgr.handle_event(_obj, "value_change", {
 				field: cell_field.field,
 				value: nValue,
 				tabular_section: _tsname,
@@ -11178,20 +11184,19 @@ $p.iface.frm_auth = function (attr, resolve, reject) {
 				allow_minmax: true,
 				modal: true
 			};
-		_cell = $p.iface.dat_blank(attr._dxw, attr.options);
-		_cell.attachEvent("onClose",function(win){
+		_cell = this.auth = this.dat_blank(attr._dxw, attr.options);
+		_cell.attachEvent("onClose", function(win){
 			if(were_errors){
-				if(reject)
-					reject(err);
+				reject && reject(err);
 			}else if(resolve)
 				resolve();
 			return true;
 		});
-		_frm = _cell.attachForm();
+    _frm = _cell.attachForm();
 
 	}else{
-		_cell = attr.cell || $p.iface.docs;
-		_frm = $p.iface.auth = _cell.attachForm();
+		_cell = attr.cell || this.docs;
+		_frm = this.auth = _cell.attachForm();
 		$p.msg.show_msg($p.msg.init_login, _cell);
 	}
 
@@ -13932,7 +13937,7 @@ $p.eve.__define({
 					setTimeout(function () {
 						$p.iface.frm_auth({
 							modal_dialog: true,
-							try_auto: true
+							try_auto: false
 						});
 					}, 100);
 				}
@@ -14382,7 +14387,7 @@ SpreadsheetDocument.prototype.__define({
       }
 
       for(var i = 0; i < rows.length; i++){
-        this.put(dhx4.template(template.innerHTML, rows[i]), template.attributes);
+        this.put(dhx4.template(template.innerHTML.replace(/<!---/g, '').replace(/--->/g, ''), rows[i]), template.attributes);
       }
     }
   },

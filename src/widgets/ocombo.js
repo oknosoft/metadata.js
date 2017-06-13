@@ -185,12 +185,12 @@ function OCombo(attr){
 						o._set_loaded(o.ref);
 						o.form_obj(attr.pwnd);
 					});
-
-		} else if(this.name == "open"){
+		}
+		else if(this.name == "open"){
 			if(_obj && _obj[_field] && !_obj[_field].empty())
 				_obj[_field].form_obj(attr.pwnd);
-
-		} else if(this.name == "type"){
+		}
+		else if(_meta && this.name == "type"){
 			var tlist = [], tmgr, tmeta, tobj = _obj, tfield = _field;
 			_meta.type.types.forEach(function (o) {
 				tmgr = _md.mgr_by_class_name(o);

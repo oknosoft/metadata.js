@@ -343,7 +343,7 @@ $p.eve.__define({
 					setTimeout(function () {
 						$p.iface.frm_auth({
 							modal_dialog: true,
-							try_auto: true
+							try_auto: false
 						});
 					}, 100);
 				}

@@ -216,7 +216,7 @@ SpreadsheetDocument.prototype.__define({
 
       // цикл по табчасти - выводим строку
       for(var i = 0; i < rows.length; i++){
-        this.put(dhx4.template(template.innerHTML, rows[i]), template.attributes);
+        this.put(dhx4.template(template.innerHTML.replace(/<!---/g, '').replace(/--->/g, ''), rows[i]), template.attributes);
       }
     }
   },
