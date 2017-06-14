@@ -3537,6 +3537,21 @@ class Meta extends _metadataAbstractAdapter.MetaEventEmitter {
 		return name + this.syns_1с(pn[1]);
 	}
 
+	load_doc_ram() {
+		const res = [];
+		['cat', 'cch', 'ireg'].forEach(kind => {
+			for (var name in _m[kind]) {
+				if (_m[kind][name].cachable == 'doc_ram') {
+					res.push(kind + '.' + name);
+				}
+			}
+		});
+		return $p.wsql.pouch.local.doc.find({
+			selector: { class_name: { $in: res } },
+			limit: 10000
+		}).then($p.wsql.pouch.load_changes);
+	}
+
 }
 
 Meta._sys = [{

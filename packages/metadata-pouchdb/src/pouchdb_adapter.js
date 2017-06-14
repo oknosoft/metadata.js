@@ -729,7 +729,7 @@ class AdapterPouch extends AbstracrAdapter{
 				limit: 1000,
 				include_docs: true,
 				startkey: _mgr.class_name + "|",
-				endkey: _mgr.class_name + '|\uffff'
+				endkey: _mgr.class_name + '|\ufff0'
 			};
 
 		return new Promise((resolve, reject) => {
@@ -793,7 +793,7 @@ class AdapterPouch extends AbstracrAdapter{
 				limit: 100,
 				include_docs: true,
 				startkey: _mgr.class_name + "|",
-				endkey: _mgr.class_name + '|\uffff'
+				endkey: _mgr.class_name + '|\ufff0'
 			};
 
 
@@ -823,12 +823,12 @@ class AdapterPouch extends AbstracrAdapter{
 			if (selection._key) {
 
 				if (selection._key._order_by == "des") {
-					options.startkey = selection._key.endkey || selection._key + '\uffff';
+					options.startkey = selection._key.endkey || selection._key + '\ufff0';
 					options.endkey = selection._key.startkey || selection._key;
 					options.descending = true;
 				} else {
 					options.startkey = selection._key.startkey || selection._key;
-					options.endkey = selection._key.endkey || selection._key + '\uffff';
+					options.endkey = selection._key.endkey || selection._key + '\ufff0';
 				}
 			}
 
@@ -1224,7 +1224,7 @@ function proto_data_obj(data_obj, adapter, classes) {
 					{
 						limit : 1,
 						include_docs: false,
-						startkey: [obj._manager.class_name, year, prefix + '\uffff'],
+						startkey: [obj._manager.class_name, year, prefix + '\ufff0'],
 						endkey: [obj._manager.class_name, year, prefix],
 						descending: true
 					})

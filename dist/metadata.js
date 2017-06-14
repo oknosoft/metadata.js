@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-06-13 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-06-14 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -8118,7 +8118,7 @@ DataManager.prototype.__define({
 					limit : 1000,
 					include_docs: true,
 					startkey: t.class_name + "|",
-					endkey: t.class_name + '|\uffff'
+					endkey: t.class_name + '|\ufff0'
 				};
 
 			return new Promise(function(resolve, reject){
@@ -8179,7 +8179,7 @@ DataManager.prototype.__define({
 					limit : 100,
 					include_docs: true,
 					startkey: t.class_name + "|",
-					endkey: t.class_name + '|\uffff'
+					endkey: t.class_name + '|\ufff0'
 				};
 
 			if(selection){
@@ -8208,12 +8208,12 @@ DataManager.prototype.__define({
 				if(selection._key) {
 
 					if(selection._key._order_by == "des"){
-						options.startkey = selection._key.endkey || selection._key + '\uffff';
+						options.startkey = selection._key.endkey || selection._key + '\ufff0';
 						options.endkey = selection._key.startkey || selection._key;
 						options.descending = true;
 					}else{
 						options.startkey = selection._key.startkey || selection._key;
-						options.endkey = selection._key.endkey || selection._key + '\uffff';
+						options.endkey = selection._key.endkey || selection._key + '\ufff0';
 					}
 				}
 
@@ -8666,7 +8666,7 @@ DataObj.prototype.__define({
 				{
 					limit : 1,
 					include_docs: false,
-					startkey: [obj.class_name, year, prefix + '\uffff'],
+					startkey: [obj.class_name, year, prefix + '\ufff0'],
 					endkey: [obj.class_name, year, prefix],
 					descending: true
 				})
