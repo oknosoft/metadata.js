@@ -690,6 +690,42 @@ class CatObj extends DataObj {
 		this._obj.name = String(v);
 	}
 
+	/**
+	 * ### Дети
+	 * Возвращает массив элементов, находящихся в иерархии текущего
+	 */
+	get _children() {
+		const res = [];
+		this._manager.forEach((o) => {
+			if(o != this && o._hierarchy(this)){
+				res.push(o);
+			}
+		});
+		return res;
+	}
+
+	/**
+	 * ### В иерархии
+	 * Выясняет, находится ли текущий объект в указанной группе
+	 *
+	 * @param group {Object|Array} - папка или массив папок
+	 *
+	 */
+	_hierarchy(group) {
+		if(Array.isArray(group)){
+			return group.some((v) => this._hierarchy(v));
+		}
+		const {parent} = this;
+		if(this == group || parent == group){
+			return true;
+		}
+		if(parent && !parent.empty()){
+			return parent._hierarchy(group);
+		}
+		return group == utils.blank.guid;
+	}
+
+
 }
 
 /**

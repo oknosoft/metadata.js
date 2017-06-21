@@ -1106,6 +1106,7 @@ function mngrs($p) {
 				case "ram":
 				case "doc":
 				case "doc_remote":
+				case "doc_ram":
 				case "remote":
 				case "user":
 				case "meta":
@@ -1252,28 +1253,18 @@ function mngrs($p) {
 		}
 
 		load_array(aattr, forse) {
-
-			var ref,
-			    obj,
-			    res = [];
-
-			for (var i = 0; i < aattr.length; i++) {
-
-				ref = utils.fix_guid(aattr[i]);
-				obj = this.by_ref[ref];
-
+			const res = [];
+			for (let attr of aattr) {
+				let obj = this.by_ref[utils.fix_guid(attr)];
 				if (!obj) {
-
 					if (forse == "update_only") {
 						continue;
 					}
-
-					obj = this.obj_constructor('', [aattr[i], this]);
-					if (forse) obj._set_loaded();
+					obj = this.obj_constructor('', [attr, this]);
+					forse && obj._set_loaded();
 				} else if (obj.is_new() || forse) {
-					utils._mixin(obj, aattr[i])._set_loaded();
+					utils._mixin(obj, attr)._set_loaded();
 				}
-
 				res.push(obj);
 			}
 			return res;
@@ -2799,6 +2790,30 @@ class CatObj extends DataObj {
 	set name(v) {
 		this.__notify('name');
 		this._obj.name = String(v);
+	}
+
+	get _children() {
+		const res = [];
+		this._manager.forEach(o => {
+			if (o != this && o._hierarchy(this)) {
+				res.push(o);
+			}
+		});
+		return res;
+	}
+
+	_hierarchy(group) {
+		if (Array.isArray(group)) {
+			return group.some(v => this._hierarchy(v));
+		}
+		const { parent } = this;
+		if (this == group || parent == group) {
+			return true;
+		}
+		if (parent && !parent.empty()) {
+			return parent._hierarchy(group);
+		}
+		return group == utils.blank.guid;
 	}
 
 }

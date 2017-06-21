@@ -157,7 +157,7 @@ class AdapterPouch extends AbstracrAdapter{
 			 */
 			db: {
 				value: function(_mgr) {
-					const dbid = _mgr.cachable;
+					const dbid = _mgr.cachable.replace('_remote', '').replace('_ram', '');
 					if (dbid.indexOf("remote") != -1 || (
 							_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1
 						))
@@ -1190,9 +1190,11 @@ class AdapterPouch extends AbstracrAdapter{
 
 }
 
-function proto_data_obj(data_obj, adapter, classes) {
+function proto_data_obj($p) {
 
-	Object.defineProperties(data_obj, {
+	const {classes, adapters} = $p;
+
+	Object.defineProperties(classes.DataObj.prototype, {
 
 		/**
 		 * Устанавливает новый номер документа или код справочника
@@ -1206,13 +1208,15 @@ function proto_data_obj(data_obj, adapter, classes) {
 				}
 
 				// если не указан явно, рассчитываем префикс по умолчанию
-				if(!prefix)
-					prefix = (($p.current_user && $p.current_user.prefix) || "") +
-						(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
+				const {current_user, wsql} = $p;
+				const {date, organization, _manager} = this;
+				if(!prefix){
+					prefix = ((current_user && current_user.prefix) || "") + ((organization && organization.prefix) || "");
+				}
 
-				var obj = this,
+				let obj = this,
 					part = "",
-					year = (this.date instanceof Date) ? this.date.getFullYear() : 0,
+					year = (date instanceof Date) ? date.getFullYear() : 0,
 					code_length = this._metadata().code_length - prefix.length;
 
 				// для кешируемых в озу, вычисляем без индекса
@@ -1220,17 +1224,17 @@ function proto_data_obj(data_obj, adapter, classes) {
 					return Promise.resolve(this.new_cat_id(prefix))
 				}
 
-				return adapter.db(obj._manager).query("doc/number_doc",
+				return adapters.pouch.db(_manager).query("doc/number_doc",
 					{
 						limit : 1,
 						include_docs: false,
-						startkey: [obj._manager.class_name, year, prefix + '\ufff0'],
-						endkey: [obj._manager.class_name, year, prefix],
+						startkey: [_manager.class_name, year, prefix + '\ufff0'],
+						endkey: [_manager.class_name, year, prefix],
 						descending: true
 					})
 					.then((res) => {
 						if(res.rows.length){
-							var num0 = res.rows[0].key[2];
+							const num0 = res.rows[0].key[2];
 							for(var i = num0.length-1; i>0; i--){
 								if(isNaN(parseInt(num0[i])))
 									break;
@@ -1258,17 +1262,20 @@ function proto_data_obj(data_obj, adapter, classes) {
 
 			value: function (prefix) {
 
-				if(!prefix)
-					prefix = (($p.current_user && $p.current_user.prefix) || "") +
-						(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
+				const {current_user, wsql} = $p;
+				const {organization, _manager} = this;
 
-				var code_length = this._metadata().code_length - prefix.length,
+				if(!prefix)
+					prefix = ((current_user && current_user.prefix) || "") +
+						(organization && organization.prefix ? organization.prefix : (wsql.get_user_param("zone") + "-"));
+
+				let code_length = this._metadata().code_length - prefix.length,
 					field = (this instanceof classes.DocObj || this instanceof classes.TaskObj || this instanceof classes.BusinessProcessObj) ? "number_doc" : "id",
 					part = "",
-					res = $p.wsql.alasql("select top 1 " + field + " as id from ? where " + field + " like '" + prefix + "%' order by " + field + " desc", [this._manager.alatable]);
+					res = wsql.alasql("select top 1 " + field + " as id from ? where " + field + " like '" + prefix + "%' order by " + field + " desc", [_manager.alatable]);
 
 				if(res.length){
-					var num0 = res[0].id || "";
+					const num0 = res[0].id || "";
 					for(var i = num0.length-1; i>0; i--){
 						if(isNaN(parseInt(num0[i])))
 							break;
@@ -1296,7 +1303,7 @@ const plugin = {
 		Object.defineProperty(this.adapters, 'pouch', {value: new AdapterPouch(this)})
 		Object.defineProperty(this.classes, 'PouchDB', {value: PouchDB})
 
-		proto_data_obj(this.classes.DataObj.prototype, this.adapters.pouch, this.classes)
+		proto_data_obj(this);
 
 	}
 }
