@@ -623,12 +623,11 @@ class AdapterPouch extends AbstracrAdapter{
 	 */
 	save_obj(tObj, attr) {
 
-		const {_manager, _obj, ref} = tObj;
+		const {_manager, _obj, ref, class_name} = tObj;
 		const db = this.db(_manager);
-		const tmp = Object.assign({_id: _manager.class_name + "|" + ref}, _obj);
+		const tmp = Object.assign({_id: class_name + "|" + ref, class_name}, _obj);
 
 		delete tmp.ref;
-
 		if (attr.attachments){
 			tmp._attachments = attr.attachments;
 		}
