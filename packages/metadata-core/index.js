@@ -2393,14 +2393,13 @@ class DataObj {
 			}
 		}
 
-		const _obj = {
-			ref: manager instanceof classes.EnumManager ? attr.name : !(manager instanceof classes.RegisterManager) ? utils.fix_guid(attr) : manager.get_ref(attr)
-		};
 		const _ts_ = {};
 
 		Object.defineProperties(this, {
 			_obj: {
-				value: _obj,
+				value: {
+					ref: manager instanceof classes.EnumManager ? attr.name : manager instanceof classes.RegisterManager ? manager.get_ref(attr) : utils.fix_guid(attr)
+				},
 				configurable: true
 			},
 
@@ -2423,8 +2422,8 @@ class DataObj {
 		});
 
 		if (manager.alatable && manager.push) {
-			manager.alatable.push(_obj);
-			manager.push(this, _obj.ref);
+			manager.alatable.push(this._obj);
+			manager.push(this, this._obj.ref);
 		}
 
 		attr = null;
@@ -2564,7 +2563,7 @@ class DataObj {
 	}
 
 	is_new() {
-		return this._data._is_new;
+		return !this._data || this._data._is_new;
 	}
 
 	_set_loaded(ref) {
@@ -2579,8 +2578,15 @@ class DataObj {
 		return this.save();
 	}
 
+	get class_name() {
+		return this._manager.class_name;
+	}
+	set class_name(v) {
+		return this._obj.class_name = v;
+	}
+
 	empty() {
-		return utils.is_empty_guid(this._obj.ref);
+		return !this._obj || utils.is_empty_guid(this._obj.ref);
 	}
 
 	load() {
@@ -2604,7 +2610,7 @@ class DataObj {
 
 	unload() {
 
-		const { obj, ref, _observers, _notis, _manager } = this;
+		const { _obj, ref, _observers, _notis, _manager } = this;
 
 		_manager.unload_obj(ref);
 
@@ -2626,13 +2632,11 @@ class DataObj {
 			}
 		}
 
-		for (let f in obj) {
-			delete obj[f];
+		for (let f in _obj) {
+			delete _obj[f];
 		}
 
-		["_ts_", "_obj", "_data"].forEach(f => {
-			delete this[f];
-		});
+		["_ts_", "_obj", "_data"].forEach(f => delete this[f]);
 	}
 
 	save(post, operational, attachments) {

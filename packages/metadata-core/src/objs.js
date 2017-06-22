@@ -37,11 +37,6 @@ class DataObj {
 			}
 		}
 
-		const _obj = {
-			ref: manager instanceof classes.EnumManager ? attr.name : (
-					!(manager instanceof classes.RegisterManager) ? utils.fix_guid(attr) : manager.get_ref(attr)
-				)
-		};
 		const _ts_ = {};
 
 		Object.defineProperties(this, {
@@ -54,7 +49,9 @@ class DataObj {
 			 * @final
 			 */
 			_obj: {
-				value: _obj,
+				value: {
+					ref: manager instanceof classes.EnumManager ? attr.name : (manager instanceof classes.RegisterManager ? manager.get_ref(attr) : utils.fix_guid(attr))
+				},
 				configurable: true
 			},
 
@@ -93,8 +90,8 @@ class DataObj {
 		})
 
 		if(manager.alatable && manager.push){
-			manager.alatable.push(_obj);
-			manager.push(this, _obj.ref);
+			manager.alatable.push(this._obj);
+			manager.push(this, this._obj.ref);
 		}
 
 		attr = null;
@@ -299,7 +296,7 @@ class DataObj {
 	 * @return {boolean}
 	 */
 	is_new(){
-		return this._data._is_new
+		return !this._data || this._data._is_new
 	}
 
 	/**
@@ -323,13 +320,20 @@ class DataObj {
 		return this.save();
 	}
 
+	get class_name() {
+		return this._manager.class_name
+	}
+	set class_name(v) {
+		return this._obj.class_name = v
+	}
+
 	/**
 	 * Проверяет, является ли ссылка объекта пустой
 	 * @method empty
 	 * @return {boolean} - true, если ссылка пустая
 	 */
 	empty(){
-		return utils.is_empty_guid(this._obj.ref)
+		return !this._obj || utils.is_empty_guid(this._obj.ref)
 	}
 
 	/**
@@ -370,7 +374,7 @@ class DataObj {
 	 */
 	unload() {
 
-		const {obj, ref, _observers, _notis, _manager} = this;
+		const {_obj, ref, _observers, _notis, _manager} = this;
 
 		_manager.unload_obj(ref)
 
@@ -392,11 +396,11 @@ class DataObj {
 			}
 		}
 
-		for (let f in obj){
-			delete obj[f]
+		for (let f in _obj){
+			delete _obj[f]
 		}
 
-		["_ts_", "_obj", "_data"].forEach((f) => { delete this[f]; })
+		["_ts_", "_obj", "_data"].forEach((f) => delete this[f]);
 	}
 
 	/**
