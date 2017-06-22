@@ -168,7 +168,7 @@ function Pouch(){
             // широковещательное оповещение об окончании загрузки локальных данных
             if(t.local._loading){
               return new Promise(function (resolve, reject) {
-                $p.eve.attachEvent("pouch_load_data_loaded", resolve);
+                $p.eve.attachEvent("pouch_data_loaded", resolve);
               });
             }
             else{
@@ -273,7 +273,7 @@ function Pouch(){
         }
         return $p.md.load_doc_ram().then(function () {
           setTimeout(function () {
-            $p.eve.callEvent(page.note = "pouch_load_data_loaded", [page]);
+            $p.eve.callEvent(page.note = "pouch_data_loaded", [page]);
           }, 1000);
         });
       }

@@ -25,6 +25,21 @@ export class MetaEventEmitter extends EventEmitter{
 			}
 		}
 	}
+
+	off(type, listener){
+		if(super.off){
+			super.off(type, listener);
+		}
+		else{
+			if(listener){
+				super.removeListener(type, listener);
+			}
+			else{
+				super.removeAllListeners(type);
+			}
+		}
+	}
+
 }
 
 export default class AbstracrAdapter extends MetaEventEmitter{

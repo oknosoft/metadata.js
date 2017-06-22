@@ -1,7 +1,7 @@
 {
   "name": "metadata-pouchdb",
   "description": "PouchDB data adapter for metadata.js",
-  "version": "2.0.0-beta.15",
+  "version": "2.0.0-beta.16",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
@@ -9,9 +9,8 @@
     "npm": "^3.5"
   },
   "dependencies": {
-    "metadata-abstract-adapter": "^2.0.0-beta.15"
+    "metadata-abstract-adapter": "^2.0.0-beta.16"
   },
-  "devDependencies": {},
   "peerDependencies": {
     "pouchdb-adapter-http": "^6.2",
     "pouchdb-adapter-idb": "^6.2",

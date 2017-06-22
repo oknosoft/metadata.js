@@ -154,7 +154,7 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 			set_spin(true);
 		},
 
-		pouch_load_data_loaded: function (page) {
+		pouch_data_loaded: function (page) {
 			$p.eve.stepper.wnd_sync && $p.iface.sync.close();
 		},
 

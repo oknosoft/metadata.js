@@ -1,6 +1,6 @@
 /*!
- metadata.js v0.12.226, built:2017-06-12 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
+ metadata.js v0.12.231, built:2017-06-22 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2017
+ metadata.js may be freely distributed under the MIT. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
@@ -212,7 +212,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.12.226",
+			value: "0.12.231",
 			writable: false
 		},
 
@@ -438,14 +438,20 @@ function MetaEngine() {
 
 		off: {
 			value: function (id) {
+			  if(arguments.length == 2){
+          id = arguments[1];
+        }
 				if(typeof id == "function" && id._evnts){
 					id._evnts.forEach(function (id) {
 						$p.eve.detachEvent(id);
 					});
-				}else if(!id)
-					$p.eve.detachAllEvents();
-				else
-					$p.eve.detachEvent(id);
+				}
+				else if(!id){
+          $p.eve.detachAllEvents();
+        }
+				else{
+          $p.eve.detachEvent(id);
+        }
 			}
 		},
 
@@ -2002,7 +2008,7 @@ function Pouch(){
           .then(function () {
             if(t.local._loading){
               return new Promise(function (resolve, reject) {
-                $p.eve.attachEvent("pouch_load_data_loaded", resolve);
+                $p.eve.attachEvent("pouch_data_loaded", resolve);
               });
             }
             else{
@@ -2096,7 +2102,7 @@ function Pouch(){
         }
         return $p.md.load_doc_ram().then(function () {
           setTimeout(function () {
-            $p.eve.callEvent(page.note = "pouch_load_data_loaded", [page]);
+            $p.eve.callEvent(page.note = "pouch_data_loaded", [page]);
           }, 1000);
         });
       }
@@ -8112,7 +8118,7 @@ DataManager.prototype.__define({
 					limit : 1000,
 					include_docs: true,
 					startkey: t.class_name + "|",
-					endkey: t.class_name + '|\uffff'
+					endkey: t.class_name + '|\ufff0'
 				};
 
 			return new Promise(function(resolve, reject){
@@ -8173,7 +8179,7 @@ DataManager.prototype.__define({
 					limit : 100,
 					include_docs: true,
 					startkey: t.class_name + "|",
-					endkey: t.class_name + '|\uffff'
+					endkey: t.class_name + '|\ufff0'
 				};
 
 			if(selection){
@@ -8202,12 +8208,12 @@ DataManager.prototype.__define({
 				if(selection._key) {
 
 					if(selection._key._order_by == "des"){
-						options.startkey = selection._key.endkey || selection._key + '\uffff';
+						options.startkey = selection._key.endkey || selection._key + '\ufff0';
 						options.endkey = selection._key.startkey || selection._key;
 						options.descending = true;
 					}else{
 						options.startkey = selection._key.startkey || selection._key;
-						options.endkey = selection._key.endkey || selection._key + '\uffff';
+						options.endkey = selection._key.endkey || selection._key + '\ufff0';
 					}
 				}
 
@@ -8660,7 +8666,7 @@ DataObj.prototype.__define({
 				{
 					limit : 1,
 					include_docs: false,
-					startkey: [obj.class_name, year, prefix + '\uffff'],
+					startkey: [obj.class_name, year, prefix + '\ufff0'],
 					endkey: [obj.class_name, year, prefix],
 					descending: true
 				})
@@ -8848,7 +8854,7 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 			set_spin(true);
 		},
 
-		pouch_load_data_loaded: function (page) {
+		pouch_data_loaded: function (page) {
 			$p.eve.stepper.wnd_sync && $p.iface.sync.close();
 		},
 

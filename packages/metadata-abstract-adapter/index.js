@@ -33,6 +33,19 @@ class MetaEventEmitter extends _events2.default {
 			}
 		}
 	}
+
+	off(type, listener) {
+		if (super.off) {
+			super.off(type, listener);
+		} else {
+			if (listener) {
+				super.removeListener(type, listener);
+			} else {
+				super.removeAllListeners(type);
+			}
+		}
+	}
+
 }
 
 exports.MetaEventEmitter = MetaEventEmitter;

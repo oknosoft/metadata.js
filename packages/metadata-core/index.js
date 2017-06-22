@@ -1106,6 +1106,7 @@ function mngrs($p) {
 				case "ram":
 				case "doc":
 				case "doc_remote":
+				case "doc_ram":
 				case "remote":
 				case "user":
 				case "meta":
@@ -1252,28 +1253,18 @@ function mngrs($p) {
 		}
 
 		load_array(aattr, forse) {
-
-			var ref,
-			    obj,
-			    res = [];
-
-			for (var i = 0; i < aattr.length; i++) {
-
-				ref = utils.fix_guid(aattr[i]);
-				obj = this.by_ref[ref];
-
+			const res = [];
+			for (let attr of aattr) {
+				let obj = this.by_ref[utils.fix_guid(attr)];
 				if (!obj) {
-
 					if (forse == "update_only") {
 						continue;
 					}
-
-					obj = this.obj_constructor('', [aattr[i], this]);
-					if (forse) obj._set_loaded();
+					obj = this.obj_constructor('', [attr, this]);
+					forse && obj._set_loaded();
 				} else if (obj.is_new() || forse) {
-					utils._mixin(obj, aattr[i])._set_loaded();
+					utils._mixin(obj, attr)._set_loaded();
 				}
-
 				res.push(obj);
 			}
 			return res;
@@ -2402,14 +2393,13 @@ class DataObj {
 			}
 		}
 
-		const _obj = {
-			ref: manager instanceof classes.EnumManager ? attr.name : !(manager instanceof classes.RegisterManager) ? utils.fix_guid(attr) : manager.get_ref(attr)
-		};
 		const _ts_ = {};
 
 		Object.defineProperties(this, {
 			_obj: {
-				value: _obj,
+				value: {
+					ref: manager instanceof classes.EnumManager ? attr.name : manager instanceof classes.RegisterManager ? manager.get_ref(attr) : utils.fix_guid(attr)
+				},
 				configurable: true
 			},
 
@@ -2432,8 +2422,8 @@ class DataObj {
 		});
 
 		if (manager.alatable && manager.push) {
-			manager.alatable.push(_obj);
-			manager.push(this, _obj.ref);
+			manager.alatable.push(this._obj);
+			manager.push(this, this._obj.ref);
 		}
 
 		attr = null;
@@ -2573,7 +2563,7 @@ class DataObj {
 	}
 
 	is_new() {
-		return this._data._is_new;
+		return !this._data || this._data._is_new;
 	}
 
 	_set_loaded(ref) {
@@ -2588,8 +2578,15 @@ class DataObj {
 		return this.save();
 	}
 
+	get class_name() {
+		return this._manager.class_name;
+	}
+	set class_name(v) {
+		return this._obj.class_name = v;
+	}
+
 	empty() {
-		return utils.is_empty_guid(this._obj.ref);
+		return !this._obj || utils.is_empty_guid(this._obj.ref);
 	}
 
 	load() {
@@ -2613,7 +2610,7 @@ class DataObj {
 
 	unload() {
 
-		const { obj, ref, _observers, _notis, _manager } = this;
+		const { _obj, ref, _observers, _notis, _manager } = this;
 
 		_manager.unload_obj(ref);
 
@@ -2635,13 +2632,11 @@ class DataObj {
 			}
 		}
 
-		for (let f in obj) {
-			delete obj[f];
+		for (let f in _obj) {
+			delete _obj[f];
 		}
 
-		["_ts_", "_obj", "_data"].forEach(f => {
-			delete this[f];
-		});
+		["_ts_", "_obj", "_data"].forEach(f => delete this[f]);
 	}
 
 	save(post, operational, attachments) {
@@ -2799,6 +2794,30 @@ class CatObj extends DataObj {
 	set name(v) {
 		this.__notify('name');
 		this._obj.name = String(v);
+	}
+
+	get _children() {
+		const res = [];
+		this._manager.forEach(o => {
+			if (o != this && o._hierarchy(this)) {
+				res.push(o);
+			}
+		});
+		return res;
+	}
+
+	_hierarchy(group) {
+		if (Array.isArray(group)) {
+			return group.some(v => this._hierarchy(v));
+		}
+		const { parent } = this;
+		if (this == group || parent == group) {
+			return true;
+		}
+		if (parent && !parent.empty()) {
+			return parent._hierarchy(group);
+		}
+		return group == utils.blank.guid;
 	}
 
 }
@@ -3461,6 +3480,22 @@ class Meta extends _metadataAbstractAdapter.MetaEventEmitter {
 				}
 			}
 		};
+
+		this.load_doc_ram = function () {
+			const res = [];
+			const { pouch } = $p.adapters;
+			['cat', 'cch', 'ireg'].forEach(kind => {
+				for (let name in _m[kind]) {
+					if (_m[kind][name].cachable == 'doc_ram') {
+						res.push(kind + '.' + name);
+					}
+				}
+			});
+			return pouch.local.doc.find({
+				selector: { class_name: { $in: res } },
+				limit: 10000
+			}).then(data => pouch.load_changes(data));
+		};
 	}
 
 	sql_type(mgr, f, mf, pg) {
@@ -3897,7 +3932,7 @@ class MetaEngine {
 	}
 
 	get version() {
-		return "2.0.0-beta.15";
+		return "2.0.0-beta.16";
 	}
 
 	toString() {
