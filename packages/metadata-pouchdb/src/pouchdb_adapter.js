@@ -346,10 +346,9 @@ class AdapterPouch extends AbstracrAdapter{
 					return new Promise((resolve, reject) => {
 
 						function fetchNextPage() {
-							t.local.ram.allDocs(options, function (err, response) {
+							t.local.ram.allDocs(options, (err, response) => {
 
 								if (response) {
-
 									// широковещательное оповещение о загрузке порции локальных данных
 									_page.page++;
 									_page.total_rows = response.total_rows;
@@ -357,18 +356,16 @@ class AdapterPouch extends AbstracrAdapter{
 
 									t.emit('pouch_data_page', Object.assign({}, _page))
 
-									if (t.load_changes(response, options))
+									if (t.load_changes(response, options)){
 										fetchNextPage();
-									else{
-										resolve();
-										// широковещательное оповещение об окончании загрузки локальных данных
-										_data_loaded = true;
-
-										t.emit('pouch_data_loaded', _page)
-
 									}
-
-								} else if(err){
+									// широковещательное оповещение об окончании загрузки локальных данных
+									else{
+										t.call_data_loaded(_page);
+										resolve();
+									}
+								}
+								else if(err){
 									reject(err);
 									// широковещательное оповещение об ошибке загрузки
 									t.emit('pouch_data_error', "ram", err)
@@ -415,6 +412,17 @@ class AdapterPouch extends AbstracrAdapter{
 			data_loaded: {
 				get: function () {
 					return !!_data_loaded;
+				}
+			},
+
+			call_data_loaded: {
+				value: function (page) {
+					_data_loaded = true;
+					if(!page){
+						page = _local.sync._page || {};
+					}
+					return $p.md.load_doc_ram()
+						.then(() => setTimeout(() => t.emit(page.note = 'pouch_data_loaded', page), 1000));
 				}
 			},
 
@@ -533,11 +541,9 @@ class AdapterPouch extends AbstracrAdapter{
 
 											t.emit('pouch_data_page', Object.assign({}, _page));
 
+											// широковещательное оповещение об окончании загрузки локальных данных
 											if(change.docs.length < _page.limit){
-
-												// широковещательное оповещение об окончании загрузки локальных данных
-												_data_loaded = true;
-												t.emit('pouch_data_loaded', _page);
+												t.call_data_loaded(_page);
 											}
 
 										}
@@ -617,52 +623,51 @@ class AdapterPouch extends AbstracrAdapter{
 	 */
 	save_obj(tObj, attr) {
 
-		var tmp = Object.assign({}, tObj._obj),
-			db = this.db(tObj._manager);
+		const {_manager, _obj, ref} = tObj;
+		const db = this.db(_manager);
+		const tmp = Object.assign({_id: _manager.class_name + "|" + ref}, _obj);
 
-		tmp._id = tObj._manager.class_name + "|" + tObj.ref;
 		delete tmp.ref;
 
-		if (attr.attachments)
+		if (attr.attachments){
 			tmp._attachments = attr.attachments;
+		}
 
-		return (tObj.is_new() ? Promise.resolve() : db.get(tmp._id))
-			.then((res) => {
-				if (res) {
-					tmp._rev = res._rev;
-					for (var att in res._attachments) {
-						if (!tmp._attachments)
-							tmp._attachments = {};
-						if (!tmp._attachments[att])
-							tmp._attachments[att] = res._attachments[att];
+		return new Promise((resolve, reject) => {
+			const getter = tObj.is_new() ? Promise.resolve() : db.get(tmp._id);
+			getter.then((res) => {
+					if (res) {
+						tmp._rev = res._rev;
+						for (var att in res._attachments) {
+							if (!tmp._attachments)
+								tmp._attachments = {};
+							if (!tmp._attachments[att])
+								tmp._attachments[att] = res._attachments[att];
+						}
 					}
-				}
-			})
-			.catch((err) => {
-				if (err.status != 404)
-					throw err;
-			})
-			.then(() => {
-				return db.put(tmp);
-			})
-			.then(() => {
-
-				if (tObj.is_new())
-					tObj._set_loaded(tObj.ref);
-
-				if (tmp._attachments) {
-					if (!tObj._attachments)
-						tObj._attachments = {};
-					for (var att in tmp._attachments) {
-						if (!tObj._attachments[att] || !tmp._attachments[att].stub)
-							tObj._attachments[att] = tmp._attachments[att];
+				})
+				.catch((err) => {
+					err && err.status != 404 && reject(err)
+				})
+				.then(() => {
+					return db.put(tmp);
+				})
+				.then(() => {
+					tObj.is_new() && tObj._set_loaded(tObj.ref);
+					if (tmp._attachments) {
+						if (!tObj._attachments)
+							tObj._attachments = {};
+						for (var att in tmp._attachments) {
+							if (!tObj._attachments[att] || !tmp._attachments[att].stub)
+								tObj._attachments[att] = tmp._attachments[att];
+						}
 					}
-				}
-
-				tmp = null;
-				attr = null;
-				return tObj;
-			});
+					resolve(tObj);
+				})
+				.catch((err) => {
+					err && err.status != 404 && reject(err)
+				});
+		});
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*!
- metadata.js v0.12.226, built:2017-06-14 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ metadata.js v0.12.226, built:2017-06-22 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
@@ -2495,7 +2495,7 @@ function Pouch(){
             // широковещательное оповещение об окончании загрузки локальных данных
             if(t.local._loading){
               return new Promise(function (resolve, reject) {
-                $p.eve.attachEvent("pouch_load_data_loaded", resolve);
+                $p.eve.attachEvent("pouch_data_loaded", resolve);
               });
             }
             else{
@@ -2600,7 +2600,7 @@ function Pouch(){
         }
         return $p.md.load_doc_ram().then(function () {
           setTimeout(function () {
-            $p.eve.callEvent(page.note = "pouch_load_data_loaded", [page]);
+            $p.eve.callEvent(page.note = "pouch_data_loaded", [page]);
           }, 1000);
         });
       }

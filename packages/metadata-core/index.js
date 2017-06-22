@@ -3476,6 +3476,22 @@ class Meta extends _metadataAbstractAdapter.MetaEventEmitter {
 				}
 			}
 		};
+
+		this.load_doc_ram = function () {
+			const res = [];
+			const { pouch } = $p.adapters;
+			['cat', 'cch', 'ireg'].forEach(kind => {
+				for (let name in _m[kind]) {
+					if (_m[kind][name].cachable == 'doc_ram') {
+						res.push(kind + '.' + name);
+					}
+				}
+			});
+			return pouch.local.doc.find({
+				selector: { class_name: { $in: res } },
+				limit: 10000
+			}).then(data => pouch.load_changes(data));
+		};
 	}
 
 	sql_type(mgr, f, mf, pg) {
@@ -3550,21 +3566,6 @@ class Meta extends _metadataAbstractAdapter.MetaEventEmitter {
 		if (pn.length == 1) return "Перечисление." + name;else if (pn[0] == "enm") name = "Перечисление.";else if (pn[0] == "cat") name = "Справочник.";else if (pn[0] == "doc") name = "Документ.";else if (pn[0] == "ireg") name = "РегистрСведений.";else if (pn[0] == "areg") name = "РегистрНакопления.";else if (pn[0] == "accreg") name = "РегистрБухгалтерии.";else if (pn[0] == "cch") name = "ПланВидовХарактеристик.";else if (pn[0] == "cacc") name = "ПланСчетов.";else if (pn[0] == "dp") name = "Обработка.";else if (pn[0] == "rep") name = "Отчет.";
 
 		return name + this.syns_1с(pn[1]);
-	}
-
-	load_doc_ram() {
-		const res = [];
-		['cat', 'cch', 'ireg'].forEach(kind => {
-			for (var name in _m[kind]) {
-				if (_m[kind][name].cachable == 'doc_ram') {
-					res.push(kind + '.' + name);
-				}
-			}
-		});
-		return $p.wsql.pouch.local.doc.find({
-			selector: { class_name: { $in: res } },
-			limit: 10000
-		}).then($p.wsql.pouch.load_changes);
 	}
 
 }

@@ -307,6 +307,27 @@ class Meta extends MetaEventEmitter{
 			}
 		}
 
+		/**
+		 * ### Загружает объекты с типом кеширования doc_ram в ОЗУ
+		 * @method load_doc_ram
+		 */
+		this.load_doc_ram = function () {
+			const res = [];
+			const {pouch} = $p.adapters;
+			['cat','cch','ireg'].forEach((kind) => {
+				for (let name in _m[kind]) {
+					if (_m[kind][name].cachable == 'doc_ram') {
+						res.push(kind + '.' + name);
+					}
+				}
+			});
+			return pouch.local.doc.find({
+				selector: {class_name: {$in: res}},
+				limit: 10000
+			})
+				.then((data) => pouch.load_changes(data));
+		}
+
 	}
 
 	/**
@@ -600,22 +621,6 @@ class Meta extends MetaEventEmitter{
 
 		return name + this.syns_1с(pn[1]);
 
-	}
-
-	load_doc_ram() {
-		const res = [];
-		['cat','cch','ireg'].forEach((kind) => {
-			for (var name in _m[kind]) {
-				if (_m[kind][name].cachable == 'doc_ram') {
-					res.push(kind + '.' + name);
-				}
-			}
-		});
-		return $p.wsql.pouch.local.doc.find({
-			selector: {class_name: {$in: res}},
-			limit: 10000
-		})
-			.then($p.wsql.pouch.load_changes);
 	}
 
 }
