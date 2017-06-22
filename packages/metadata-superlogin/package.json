@@ -4,11 +4,11 @@
   "version": "2.0.0-beta.16",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "engines": {
-    "node": "^6.9",
-    "npm": "^3.5"
+    "node": "^7.10",
+    "npm": "^5.0"
   },
   "peerDependencies": {
-    "superlogin-client": "^0.4"
+    "superlogin-client": "^0.6"
   },
   "repository": {
     "type": "git",
