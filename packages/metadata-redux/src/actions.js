@@ -350,7 +350,5 @@ const actions = {
 	obj_mark_deleted: obj_mark_deleted,
 	obj_unmark_deleted: obj_unmark_deleted
 
-}
-
-
+};
 

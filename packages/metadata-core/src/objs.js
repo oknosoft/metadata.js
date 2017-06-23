@@ -627,7 +627,7 @@ class DataObj {
  * @type String
  */
 Object.defineProperty(DataObj.prototype, "ref", {
-	get : function(){ return this._obj.ref},
+	get : function(){ return this._obj ? this._obj.ref : utils.blank.guid},
 	set : function(v){ this._obj.ref = utils.fix_guid(v)},
 	enumerable : true,
 	configurable: true

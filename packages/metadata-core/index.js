@@ -8,12 +8,16 @@ exports.classes = undefined;
 var _metadataAbstractAdapter = require('metadata-abstract-adapter');
 
 const moment = require('moment');
-const moment_ru = require('moment/locale/ru.js');
+require('moment/locale/ru.js');
 moment._masks = {
 	date: "DD.MM.YY",
 	date_time: "DD.MM.YYYY HH:mm",
 	ldt: "DD MMMM YYYY, HH:mm",
 	iso: "YYYY-MM-DDTHH:mm:ss"
+};
+
+Date.prototype.toJSON = function () {
+	return moment(this).format(moment._masks.iso);
 };
 
 const alasql = require("alasql/dist/alasql.js");
@@ -2340,18 +2344,6 @@ function mngrs($p) {
 							return $p.cat.property_values;
 						}
 
-						for (rt in oproperty.type.types) {
-							if (oproperty.type.types[rt].indexOf(".") > -1) {
-								tnames = oproperty.type.types[rt].split(".");
-								break;
-							}
-						}
-						if (tnames && tnames.length > 1 && $p[tnames[0]]) {
-							return mf_mgr($p[tnames[0]][tnames[1]]);
-						} else {
-							return oproperty.type;
-						}
-
 						rt = [];
 						oproperty.type.types.some(v => {
 							tnames = v.split(".");
@@ -2371,7 +2363,7 @@ function mngrs($p) {
 						} else if (utils.is_guid(property) && property != utils.blank.guid) {
 							for (let i in rt) {
 								mgr = rt[i];
-								if (mgr.get(property, false, true)) {
+								if (mgr.get(property, false)) {
 									return mgr;
 								}
 							}
@@ -2754,7 +2746,7 @@ class DataObj {
 
 Object.defineProperty(DataObj.prototype, "ref", {
 	get: function () {
-		return this._obj.ref;
+		return this._obj ? this._obj.ref : utils.blank.guid;
 	},
 	set: function (v) {
 		this._obj.ref = utils.fix_guid(v);
@@ -3917,7 +3909,7 @@ class MetaEngine {
 
 		mngrs(this);
 
-		utils.record_log = this.record_log;
+		utils.record_log = this.record_log = this.record_log.bind(this);
 
 		MetaEngine._plugins.forEach(plugin => plugin.call(this));
 		MetaEngine._plugins.length = 0;
@@ -3932,7 +3924,7 @@ class MetaEngine {
 	}
 
 	get version() {
-		return "2.0.0-beta.16";
+		return "2.0.0-beta.17";
 	}
 
 	toString() {
@@ -3940,11 +3932,8 @@ class MetaEngine {
 	}
 
 	record_log(err) {
-		const { ireg } = this;
-		if (ireg && ireg.log) {
-			ireg.log.record(err);
-		}
-		console.log(err);
+		this && this.ireg && this.ireg.log && this.ireg.log.record(err);
+		console && console.log(err);
 	}
 
 	get utils() {

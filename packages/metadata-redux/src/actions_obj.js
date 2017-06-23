@@ -155,5 +155,3 @@ function obj_value_change(class_name, ref) {
 	}
 }
 
-
-

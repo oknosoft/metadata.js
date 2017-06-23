@@ -9,5 +9,5 @@ const ACTION_HANDLERS_OBJ = {
 	[OBJ_CHANGE]:       (state, action) => Object.assign({}, state, {obj_change: action.payload}),
 
 
-}
+};
 

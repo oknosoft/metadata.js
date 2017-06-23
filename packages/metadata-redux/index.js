@@ -580,7 +580,7 @@ function rx_reducer(state = initialState, action) {
 	if (!handler) handler = ACTION_HANDLERS_OBJ[action.type];
 
 	return handler ? handler(state, action) : state;
-}
+};
 
 /**
  * Подключает диспетчеризацию событий redux к pouchdb
@@ -648,7 +648,7 @@ function rx_events(store) {
 			store.dispatch(obj_change(_obj._manager.class_name, _obj.ref));
 		}
 	});
-}
+};
 
 /**
  * Экспортируем объект-плагин для модификации metadata.js

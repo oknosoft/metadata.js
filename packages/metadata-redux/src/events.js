@@ -56,7 +56,7 @@ const ACTION_HANDLERS = {
 	sync_started: false
 	})
 
-}
+};
 
 /**
  * ### Reducer
@@ -73,7 +73,7 @@ const initialState = {
 		name: "",
 		logged_in: false
 	}
-}
+};
 function rx_reducer (state = initialState, action) {
 
 	let handler = ACTION_HANDLERS[action.type];
@@ -82,7 +82,7 @@ function rx_reducer (state = initialState, action) {
 		handler = ACTION_HANDLERS_OBJ[action.type]
 
 	return handler ? handler(state, action) : state
-}
+};
 
 
 /**
@@ -124,7 +124,7 @@ function rx_events(store) {
 		obj_loaded: (_obj) => {store.dispatch(obj_change(_obj._manager.class_name, _obj.ref))}
 	});
 
-}
+};
 
 /**
  * Экспортируем объект-плагин для модификации metadata.js
@@ -172,5 +172,5 @@ const plugin = {
 	constructor(){
 
 	}
-}
+};
 export default plugin;

@@ -13,7 +13,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 /**
  * Содержит методы и подписки на события PouchDB
  *
- * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2017
  * @module common
  * @submodule pouchdb
  */
@@ -575,7 +575,18 @@ class AdapterPouch extends _metadataAbstractAdapter2.default {
   */
 	save_obj(tObj, attr) {
 
-		const { _manager, _obj, ref, class_name } = tObj;
+		const { _manager, _obj, _data, ref, class_name } = tObj;
+
+		if (!_data || _data._saving && !_data._modified) {
+			return Promise.resolve(tObj);
+		}
+		if (_data._saving && _data._modified) {
+			return new Promise((resolve, reject) => {
+				setTimeout(() => resolve(this.save_obj(tObj, attr)), 100);
+			});
+		}
+		_data._saving = true;
+
 		const db = this.db(_manager);
 		const tmp = Object.assign({ _id: class_name + "|" + ref, class_name }, _obj);
 
@@ -606,8 +617,10 @@ class AdapterPouch extends _metadataAbstractAdapter2.default {
 						if (!tObj._attachments[att] || !tmp._attachments[att].stub) tObj._attachments[att] = tmp._attachments[att];
 					}
 				}
+				delete _data._saving;
 				resolve(tObj);
 			}).catch(err => {
+				delete _data._saving;
 				err && err.status != 404 && reject(err);
 			});
 		});

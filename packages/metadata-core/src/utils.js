@@ -7,13 +7,21 @@
  * @final
  */
 const moment = require('moment');
-const moment_ru = require('moment/locale/ru.js');
+require('moment/locale/ru.js');
 moment._masks = {
 	date:       "DD.MM.YY",
 	date_time:  "DD.MM.YYYY HH:mm",
 	ldt:        "DD MMMM YYYY, HH:mm",
 	iso:        "YYYY-MM-DDTHH:mm:ss"
 };
+/**
+ * Отбрасываем часовой пояс при сериализации даты
+ * @method toJSON
+ * @for Date
+ */
+Date.prototype.toJSON = function () {
+	return moment(this).format(moment._masks.iso);
+}
 
 /**
  * ### alasql для работы с кешируемым данным

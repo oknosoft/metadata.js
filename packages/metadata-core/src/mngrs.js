@@ -2546,20 +2546,6 @@ function mngrs($p) {
 						}
 
 						// и через его тип выходми на мнеджера значения
-						for (rt in oproperty.type.types){
-							if (oproperty.type.types[rt].indexOf(".") > -1) {
-								tnames = oproperty.type.types[rt].split(".");
-								break;
-							}
-						}
-						if (tnames && tnames.length > 1 && $p[tnames[0]]){
-							return mf_mgr($p[tnames[0]][tnames[1]]);
-						}
-						else{
-							return oproperty.type;
-						}
-
-						//---
 						rt = [];
 						oproperty.type.types.some((v) => {
 							tnames = v.split(".");
@@ -2583,7 +2569,7 @@ function mngrs($p) {
 						else if(utils.is_guid(property) && property != utils.blank.guid){
 							for(let i in rt){
 								mgr = rt[i];
-								if(mgr.get(property, false, true)){
+								if(mgr.get(property, false)){
 									return mgr;
 								}
 							}

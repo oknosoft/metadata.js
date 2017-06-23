@@ -440,6 +440,7 @@ exports.default = {
 										str_len: 0,
 										digits: 15,
 										fraction_figits: 3
+										// date_part: "date"
 									}
 								}
 							}
