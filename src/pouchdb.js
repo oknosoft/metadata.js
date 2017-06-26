@@ -559,6 +559,19 @@ function Pouch(){
 		save_obj: {
 			value: function (tObj, attr) {
 
+			  var _data = tObj._data;
+        if(!_data || (_data._saving && !_data._modified)){
+          return Promise.resolve(tObj);
+        }
+        if(_data._saving && _data._modified){
+          return new Promise(function(resolve, reject) {
+            setTimeout(function(){
+              resolve(t.save_obj(tObj, attr));
+            }, 100);
+          });
+        }
+        _data._saving = true;
+
 				var tmp = tObj._obj._clone(void 0, true),
 					db = attr.db || tObj._manager.pouch_db;
 
@@ -583,8 +596,9 @@ function Pouch(){
 						}
 					})
 					.catch(function (err) {
-						if(err.status != 404)
-							throw err;
+						if(err && err.status != 404){
+              throw err;
+            }
 					})
 					.then(function () {
 						return db.put(tmp);
@@ -603,10 +617,15 @@ function Pouch(){
 							}
 						}
 
-						tmp = null;
-						attr = null;
+            delete _data._saving;
 						return tObj;
-					});
+					})
+          .catch(function (err) {
+            delete _data._saving;
+            if(err && err.status != 404){
+              throw err;
+            }
+          });
 			}
 		},
 
