@@ -1,22 +1,18 @@
-import {
-  default as React,
-  PureComponent,
-  PropTypes
-} from "react";
+import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
 
-import ArrowDropDown from "material-ui/svg-icons/navigation/arrow-drop-down";
-import CalculatorButton from "./CalculatorButton";
-import DropDownMenu from "material-ui/DropDownMenu";
-import classnames from "classnames";
-import classes from "./styles/CalculatorInput.scss";
+import ArrowDropDown from 'material-ui-icons/ArrowDropDown';
+import CalculatorButton from './CalculatorButton';
+import classnames from 'classnames';
+import classes from './styles/CalculatorInput.scss';
 
 export default class CalculatorInput extends PureComponent {
 
   static propTypes = {
     isExpression: PropTypes.bool,
     value: PropTypes.oneOfType([
-      React.PropTypes.string,
-      React.PropTypes.number
+      PropTypes.string,
+      PropTypes.number,
     ]).isRequired,
 
     onChange: PropTypes.func.isRequired,
@@ -27,7 +23,7 @@ export default class CalculatorInput extends PureComponent {
     onMenuToggleClick: PropTypes.func,
     clearInputRequired: PropTypes.bool,
     menu: PropTypes.element,
-  }
+  };
 
   static defaultProps = {
     onOperationKeyPress: null,
@@ -38,7 +34,7 @@ export default class CalculatorInput extends PureComponent {
     onInputCleared: null,
     clearInputRequired: false,
     menu: null,
-  }
+  };
 
   handleToggleButtonClick() {
     if (this.props.onMenuToggleClick !== null) {
@@ -55,7 +51,7 @@ export default class CalculatorInput extends PureComponent {
    * @param  {SynteticEvent} event
    */
   handleKeyPress(event) {
-    if (event.key === "=" || event.key === "Enter") {
+    if (event.key === '=' || event.key === 'Enter') {
       event.preventDefault();
       event.stopPropagation();
 
@@ -74,13 +70,13 @@ export default class CalculatorInput extends PureComponent {
       event.preventDefault();
       event.stopPropagation();
 
-      if (["+", "-", "/", "*"].indexOf(event.key) !== -1) {
+      if (['+', '-', '/', '*'].indexOf(event.key) !== -1) {
         if (this.props.onOperationKeyPress !== null) {
           this.props.onOperationKeyPress(event.key);
         }
       }
 
-      if (event.key === "%") {
+      if (event.key === '%') {
         if (this.props.onPercentsKeyPress !== null) {
           this.props.onPercentsKeyPress();
         }
@@ -100,7 +96,7 @@ export default class CalculatorInput extends PureComponent {
   }
 
   handleKeyDown(event) {
-    if (event.key === "Backspace") {
+    if (event.key === 'Backspace') {
       event.preventDefault();
       event.stopPropagation();
 
@@ -112,32 +108,38 @@ export default class CalculatorInput extends PureComponent {
 
   render() {
     const inputClassNames = classnames({
-      [classes["meta-calculator-input__input"]]: true,
-      [classes["meta-calculator-input__input--expression"]]: this.props.isExpression
+      [classes['meta-calculator-input__input']]: true,
+      [classes['meta-calculator-input__input--expression']]: this.props.isExpression,
     });
 
     return (
-      <div className={classes["meta-calculator-input"]}>
+      <div className={classes['meta-calculator-input']}>
         <input
           className={inputClassNames}
-          onKeyDown={(event) => { this.handleKeyDown(event) }}
-          onKeyPress={(event) => { this.handleKeyPress(event) }}
-          onChange={(event) => { this.handleChange(event) }}
-          value={this.props.value} />
+          onKeyDown={(event) => {
+            this.handleKeyDown(event);
+          }}
+          onKeyPress={(event) => {
+            this.handleKeyPress(event);
+          }}
+          onChange={(event) => {
+            this.handleChange(event);
+          }}
+          value={this.props.value}/>
 
         <CalculatorButton
-          icon={<ArrowDropDown style={{ width: "1em", height: "1em" }} />}
+          icon={<ArrowDropDown style={{width: '1em', height: '1em'}}/>}
           onClick={() => this.handleToggleButtonClick()}
           menu={this.props.menu}
           style={{
-            position: "absolute",
-            right: "0",
-            top: "0",
-            width: "32px",
-            height: "100%",
-            margin: "0",
-            padding: "0"
-          }} />
+            position: 'absolute',
+            right: '0',
+            top: '0',
+            width: '32px',
+            height: '100%',
+            margin: '0',
+            padding: '0',
+          }}/>
       </div>
     );
   }

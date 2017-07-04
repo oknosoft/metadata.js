@@ -1,5 +1,5 @@
-
-import React, {PropTypes} from "react";
+import React from "react";
+import PropTypes from 'prop-types'
 import MetaComponent from "../common/MetaComponent";
 
 import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from "material-ui/Toolbar";
@@ -8,12 +8,12 @@ import FlatButton from "material-ui/FlatButton";
 import IconMenu from "material-ui/IconMenu";
 import MenuItem from "material-ui/MenuItem";
 
-import RunIcon from "material-ui/svg-icons/av/play-arrow";
-import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert";
-import PrintIcon from "material-ui/svg-icons/action/print";
-import CopyIcon from "material-ui/svg-icons/content/content-copy";
-import CloudDownloadIcon from "material-ui/svg-icons/file/cloud-download";
-import FileDownloadIcon from "material-ui/svg-icons/file/file-download";
+import RunIcon from "material-ui-icons/PlayArrow";
+import MoreVertIcon from "material-ui-icons/MoreVert";
+import PrintIcon from "material-ui-icons/Print";
+import CopyIcon from "material-ui-icons/ContentCopy";
+import CloudDownloadIcon from "material-ui-icons/CloudDownload";
+import FileDownloadIcon from "material-ui-icons/FileDownload";
 
 import SchemeSettings from "../SchemeSettings";
 
@@ -36,7 +36,7 @@ export default class RepToolbar extends MetaComponent {
 
   }
 
-  constructor (props, context) {
+  constructor(props, context) {
 
     super(props, context);
 
@@ -72,7 +72,7 @@ export default class RepToolbar extends MetaComponent {
                 _obj={_obj}
                 scheme={scheme}
               />
-              : null
+                : null
             }
             show_variants={true}
           />

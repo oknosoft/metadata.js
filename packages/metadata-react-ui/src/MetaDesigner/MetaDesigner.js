@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, {Component, PropTypes} from 'react';
 
 import ReactGridLayout from 'react-grid-layout';
 import LayoutCSS from 'react-grid-layout/css/styles.css';
@@ -11,11 +11,11 @@ import MetaTree from './MetaTree';
 
 export default class MetaDesigner extends Component {
 
-  render () {
+  render() {
     return (
       <ReactGridLayout
         className="layout"
-        draggableHandle={"."+classes.draggableHandle}
+        draggableHandle={"." + classes.draggableHandle}
         cols={10}
         rowHeight={100}
         width={1600}

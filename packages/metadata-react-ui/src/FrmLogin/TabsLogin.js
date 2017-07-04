@@ -1,4 +1,5 @@
-import React, {Component, PropTypes} from "react";
+import React, {Component} from "react";
+import PropTypes from 'prop-types';
 import {Tabs, Tab} from 'material-ui/Tabs';
 import Paper from 'material-ui/Paper';
 import TextField from 'material-ui/TextField';
@@ -33,7 +34,7 @@ export default class TabsLogin extends Component {
   }
 
   tabChange = (tab_value) => {
-    if(tab_value === 'a' || tab_value === 'b'){
+    if (tab_value === 'a' || tab_value === 'b') {
       this.setState({
         tab_value: tab_value,
       });
@@ -52,21 +53,21 @@ export default class TabsLogin extends Component {
 
   render() {
 
-    const { props, state, handleTextChange, handleLogin } = this;
+    const {props, state, handleTextChange, handleLogin} = this;
 
     return (
 
       <div className={'meta-paper'}>
 
-        <Paper  zDepth={3} rounded={false}>
+        <Paper zDepth={3} rounded={false}>
 
           <Tabs
             value={state.tab_value}
-            onChange={this.tabChange} >
+            onChange={this.tabChange}>
 
-            <Tab label="Вход" value="a" >
+            <Tab label="Вход" value="a">
 
-              <div className={'meta-padding-18'} >
+              <div className={'meta-padding-18'}>
 
                 <TextField
                   ref="login"
@@ -97,13 +98,13 @@ export default class TabsLogin extends Component {
                     <RaisedButton label="Войти"
                                   disabled={state.btn_login_disabled}
                                   className={'meta-button-18-0'}
-                                  onTouchTap={handleLogin} />
+                                  onTouchTap={handleLogin}/>
                 }
 
 
                 <RaisedButton label="Забыли пароль?"
                               disabled={true}
-                              className={'meta-button-18-0'} />
+                              className={'meta-button-18-0'}/>
 
               </div>
 

@@ -5,10 +5,11 @@
  *
  * Created 22.09.2016
  */
-import React, {Component, PropTypes} from "react";
-import TextField from "material-ui/TextField";
-import Calculator from "../Calculator";
-import classes from "./styles/FieldNumber.scss";
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import TextField from 'material-ui/TextField';
+import Calculator from '../Calculator';
+import classes from './styles/FieldNumber.scss';
 
 export default class FieldNumber extends Component {
 
@@ -18,33 +19,33 @@ export default class FieldNumber extends Component {
     _meta: PropTypes.object.isRequired,
     handleValueChange: PropTypes.func,
     partOfTabularSection: PropTypes.bool,
-  }
+  };
 
   static defaultProps = {
-    partOfTabularSection: false
-  }
+    partOfTabularSection: false,
+  };
 
   constructor(props) {
     super(props);
     this.state = {
       isCalculatorVisible: false,
-      value: this.props._obj[this.props._fld]
+      value: this.props._obj[this.props._fld],
     };
   }
 
   onChange = (event, newValue) => {
     this.setState({
-      value: newValue
+      value: newValue,
     }, () => {
       if (this.props.handleValueChange) {
         this.props.handleValueChange(this.state.value);
       }
     });
-  }
+  };
 
   handleInputClick() {
     this.setState({
-      isCalculatorVisible: true
+      isCalculatorVisible: true,
     });
   }
 
@@ -75,13 +76,17 @@ export default class FieldNumber extends Component {
       // Render plain html input in cell of table.
       input = (
         <input
-          type={"text"}
+          type={'text'}
           name={name}
           value={this.state.value}
 
-          className={classes["meta-field-number__input"]}
-          onChange={(event, value) => { this.handleValueChange(value);}}
-          onClick={() => { this.handleInputClick(); }} />
+          className={classes['meta-field-number__input']}
+          onChange={(event, value) => {
+            this.handleValueChange(value);
+          }}
+          onClick={() => {
+            this.handleInputClick();
+          }}/>
       );
     } else {
       input = (
@@ -91,19 +96,27 @@ export default class FieldNumber extends Component {
 
           fullWidth={true}
           hintText={this.props._meta.tooltip || this.props._meta.synonym}
-          onChange={(event, value) => { this.handleValueChange(value); }}
-          onClick={() => { this.handleInputClick(); }} />
+          onChange={(event, value) => {
+            this.handleValueChange(value);
+          }}
+          onClick={() => {
+            this.handleInputClick();
+          }}/>
       );
     }
 
     return (
-      <div className={classes["meta-field-number"]}>
+      <div className={classes['meta-field-number']}>
         <Calculator
-          position={"bottom"}
+          position={'bottom'}
           visible={this.state.isCalculatorVisible}
           value={this.state.value}
-          onChange={(value) => { this.setState({ value }); }}
-          onClose={(value) => { this.handleCalculatorClose(value); }} />
+          onChange={(value) => {
+            this.setState({value});
+          }}
+          onClose={(value) => {
+            this.handleCalculatorClose(value);
+          }}/>
         {input}
       </div>
     );

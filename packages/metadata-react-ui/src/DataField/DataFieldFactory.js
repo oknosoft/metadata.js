@@ -1,10 +1,10 @@
-import DataCell from './DataCell'
-import FieldDate from './FieldDate'
-import FieldNumber from './FieldNumber'
-import FieldSelect from './FieldSelect'
-import FieldText from './FieldText'
-import FieldToggle from './FieldToggle'
-import React from "react";
+import DataCell from './DataCell';
+import FieldDate from './FieldDate';
+import FieldNumber from './FieldNumber';
+import FieldSelect from './FieldSelect';
+import FieldText from './FieldText';
+import FieldToggle from './FieldToggle';
+import React from 'react';
 
 /**
  * This class provides static method for instancing DataField elements.
@@ -14,14 +14,14 @@ export default class DataFieldFactory {
    * Mapping from string to data field constructor.
    * @return {DataField} Data field constructor.
    */
-  static get _availableFields () {
+  static get _availableFields() {
     return {
       DataCell,
       FieldDate,
       FieldNumber,
       FieldSelect,
       FieldText,
-      FieldToggle
+      FieldToggle,
     };
   }
 
@@ -31,10 +31,10 @@ export default class DataFieldFactory {
    */
   static get _dataFieldsByType() {
     return {
-      "date": "FieldDate",
-      "number": "FieldNumber",
-      "string": "FieldText",
-      "boolean": "FieldToggle"
+      'date': 'FieldDate',
+      'number': 'FieldNumber',
+      'string': 'FieldText',
+      'boolean': 'FieldToggle',
     };
   }
 
@@ -63,7 +63,7 @@ export default class DataFieldFactory {
    */
   static getClassNameForType(type) {
     if (type.is_ref !== undefined && type.is_ref === true) {
-      return "FieldText";
+      return 'FieldText';
     }
 
     /** @type {string} 1C data type. */
@@ -77,6 +77,6 @@ export default class DataFieldFactory {
   }
 
   static objectKeysToString(object) {
-    return Object.keys(object).reduce((result, typeName) => (result + "\t" + typeName + "\n"), "");
+    return Object.keys(object).reduce((result, typeName) => (result + '\t' + typeName + '\n'), '');
   }
 }

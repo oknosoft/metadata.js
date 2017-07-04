@@ -1,7 +1,8 @@
-import React, {Component, PropTypes} from "react";
+import React, {Component} from "react";
+import PropTypes from 'prop-types';
 import Drawer from "material-ui/Drawer";
 import IconButton from "material-ui/IconButton";
-import NavigationMenu from "material-ui/svg-icons/navigation/menu";
+import NavigationMenu from "material-ui-icons/Menu";
 import AppBar from "material-ui/AppBar";
 import {white} from "material-ui/styles/colors";
 import {List, ListItem} from "material-ui/List";
@@ -19,7 +20,7 @@ export default class NavList extends Component {
     $p: React.PropTypes.object.isRequired
   }
 
-  constructor (props) {
+  constructor(props) {
 
     super(props)
 
@@ -27,9 +28,9 @@ export default class NavList extends Component {
 
     const addItem = (item, recipient) => {
 
-      key+= 1;
+      key += 1;
 
-      if(item.items){
+      if (item.items) {
         const items = []
         item.items.forEach(item => {
           addItem(item, items)
@@ -45,7 +46,7 @@ export default class NavList extends Component {
           />
         )
 
-      }else{
+      } else {
         recipient.push(
           <ListItem
             key={key}
@@ -72,9 +73,9 @@ export default class NavList extends Component {
     this.props.handleNavlistOpen(!this.props.navlist_open)
   }
 
-  handleNavigate (path) {
+  handleNavigate(path) {
 
-    if(typeof path == "function"){
+    if (typeof path == "function") {
       return path.bind(this)
     }
 
@@ -89,20 +90,20 @@ export default class NavList extends Component {
     return (
       <div>
 
-        <IconButton onTouchTap={this.handleToggle} >
-          <NavigationMenu color={white} />
+        <IconButton onTouchTap={this.handleToggle}>
+          <NavigationMenu color={white}/>
         </IconButton>
 
         <Drawer
           docked={false}
           width={300}
           open={this.props.navlist_open}
-          onRequestChange={(open) => this.props.handleNavlistOpen(open)} >
+          onRequestChange={(open) => this.props.handleNavlistOpen(open)}>
 
           <AppBar
             onLeftIconButtonTouchTap={this.handleClose}
             title={this.props.title}
-            titleStyle={{fontSize: 18}} />
+            titleStyle={{fontSize: 18}}/>
 
           <List>
             {this._list}

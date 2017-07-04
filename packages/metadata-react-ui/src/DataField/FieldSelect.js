@@ -5,7 +5,8 @@
  *
  */
 
-import React, {Component, PropTypes} from "react";
+import React, {Component} from "react";
+import PropTypes from 'prop-types';
 import VirtualizedSelect from "./VirtualizedSelect";
 
 export default class FieldSelect extends Component {

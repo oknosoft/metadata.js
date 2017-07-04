@@ -12,7 +12,7 @@
     "metadata-abstract-ui": "^2.0.0-beta.17"
   },
   "peerDependencies": {
-    "material-ui": "^0.18",
+    "material-ui": "^1.0.0-alpha.20",
     "react-data-grid": "^2.0",
     "react-data-grid-addons": "^2.0",
     "react-panels": "git+https://github.com/unpete/react-panels",

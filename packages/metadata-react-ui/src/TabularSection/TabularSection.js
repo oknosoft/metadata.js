@@ -1,12 +1,13 @@
-import React, {Component, PropTypes} from "react";
+import React, {Component} from "react";
+import PropTypes from 'prop-types';
 import ReactDataGrid from "react-data-grid";
 
 import DumbLoader from "../DumbLoader";
 import DataCell from '../DataField/DataCell'
 import DefaultToolbar from "./TabularSectionToolbar"
-import { AutoSizer } from "react-virtualized";
+import {AutoSizer} from "react-virtualized";
 import styles from "./TabularSection.scss";
-import { DataFieldFactory } from "../DataField";
+import {DataFieldFactory} from "../DataField";
 import SimpleLoadingMessage from "../SimpleLoadingMessage";
 
 export default class TabularSection extends Component {
@@ -104,7 +105,7 @@ export default class TabularSection extends Component {
 
   handleUp = () => {
     const data = this.refs.grid.state.selected
-    if(data && data.hasOwnProperty("rowIdx") && data.rowIdx > 0){
+    if (data && data.hasOwnProperty("rowIdx") && data.rowIdx > 0) {
       this.state._tabular.swap(data.rowIdx, data.rowIdx - 1)
       data.rowIdx = data.rowIdx - 1
       this.forceUpdate()
@@ -113,7 +114,7 @@ export default class TabularSection extends Component {
 
   handleDown = () => {
     const data = this.refs.grid.state.selected
-    if(data && data.hasOwnProperty("rowIdx") && data.rowIdx < this.state._tabular.count() - 1){
+    if (data && data.hasOwnProperty("rowIdx") && data.rowIdx < this.state._tabular.count() - 1) {
       this.state._tabular.swap(data.rowIdx, data.rowIdx + 1)
       data.rowIdx = data.rowIdx + 1
       this.forceUpdate()
@@ -144,7 +145,7 @@ export default class TabularSection extends Component {
     this.setState({
       selectedIds: this.state.selectedIds.concat(
         rows.map(r => {
-          if(rowSelection.selectBy.keys.markKey){
+          if (rowSelection.selectBy.keys.markKey) {
             r.row[rowSelection.selectBy.keys.markKey] = true
           }
           return r.row[rowSelection.selectBy.keys.rowKey]
@@ -155,13 +156,13 @@ export default class TabularSection extends Component {
   onRowsDeselected = (rows) => {
     const {rowSelection} = this.props
     let rowIds = rows.map(r => {
-      if(rowSelection.selectBy.keys.markKey){
+      if (rowSelection.selectBy.keys.markKey) {
         r.row[rowSelection.selectBy.keys.markKey] = false
       }
       return r.row[rowSelection.selectBy.keys.rowKey]
     })
     this.setState({
-      selectedIds: this.state.selectedIds.filter(i => rowIds.indexOf(i) === -1 )
+      selectedIds: this.state.selectedIds.filter(i => rowIds.indexOf(i) === -1)
     })
   }
 
@@ -172,7 +173,7 @@ export default class TabularSection extends Component {
 
     if (!_columns || !_columns.length) {
       if (!scheme) {
-        return <SimpleLoadingMessage text="Чтение настроек компоновки..." />;
+        return <SimpleLoadingMessage text="Чтение настроек компоновки..."/>;
       }
 
       return <SimpleLoadingMessage text="Ошибка настроек компоновки..."/>;
@@ -206,7 +207,7 @@ export default class TabularSection extends Component {
             handleCustom={handleCustom}
             deny_add_del={deny_add_del}
             deny_reorder={deny_reorder}
-            scheme={scheme} />
+            scheme={scheme}/>
         </div>
 
         <div className={"content-with-toolbar-layout__content"}>
@@ -222,7 +223,7 @@ export default class TabularSection extends Component {
                 rowGetter={rowGetter}
                 rowsCount={_tabular.count()}
                 onRowUpdated={handleRowUpdated}
-                rowSelection={rowSelection} />
+                rowSelection={rowSelection}/>
             )}
           </AutoSizer>
         </div>

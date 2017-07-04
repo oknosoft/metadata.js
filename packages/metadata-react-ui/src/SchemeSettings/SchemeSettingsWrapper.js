@@ -7,16 +7,17 @@
  * Created 31.12.2016
  */
 
-import React, {Component, PropTypes} from "react";
+import React, {Component} from "react";
+import PropTypes from 'prop-types';
 import IconButton from "material-ui/IconButton";
-import IconSettings from "material-ui/svg-icons/action/settings";
+import IconSettings from "material-ui-icons/Settings";
 import RaisedButton from "material-ui/RaisedButton";
 import FlatButton from "material-ui/FlatButton";
 import TextField from "material-ui/TextField";
 import DropDownMenu from 'material-ui/DropDownMenu';
 import MenuItem from 'material-ui/MenuItem';
 import Dialog from "metadata-ui/Dialog"
-import { getTabsContent, SchemeSettingsTabs } from "./SchemeSettingsTabs"
+import {getTabsContent, SchemeSettingsTabs} from "./SchemeSettingsTabs"
 import styles from "./styles/SchemeSettingsWrapper.scss";
 
 export default class SchemeSettingsWrapper extends Component {
@@ -43,9 +44,9 @@ export default class SchemeSettingsWrapper extends Component {
       _top: 40,
       obj: scheme.obj,
     })
-    .then((variants) => {
-      this.setState({variants})
-    });
+      .then((variants) => {
+        this.setState({variants})
+      });
   }
 
   handleOpen = () => {
@@ -79,7 +80,7 @@ export default class SchemeSettingsWrapper extends Component {
   }
 
   componentDidMount = () => {
-    if(this.searchInput){
+    if (this.searchInput) {
       this.searchInput.input.placeholder = "Найти..."
     }
   }
@@ -106,19 +107,19 @@ export default class SchemeSettingsWrapper extends Component {
         key={0}
         label="Отмена"
         secondary={true}
-        onTouchTap={handleClose} />,
+        onTouchTap={handleClose}/>,
 
       <RaisedButton
         key={1}
         label="Применить"
         primary={true}
-        onTouchTap={handleOk} />,
+        onTouchTap={handleOk}/>,
     ];
 
     const menuitems = [];
-    if(show_variants && scheme){
+    if (show_variants && scheme) {
       variants.forEach((v) => {
-        menuitems.push(<MenuItem value={v.ref} key={v.ref} primaryText={v.name} />);
+        menuitems.push(<MenuItem value={v.ref} key={v.ref} primaryText={v.name}/>);
       })
     }
 
@@ -127,12 +128,14 @@ export default class SchemeSettingsWrapper extends Component {
         {/* Search box */}
         {show_search ? <TextField
           name="search"
-          ref={(search) => {this.searchInput = search;}}
+          ref={(search) => {
+            this.searchInput = search;
+          }}
           width={300}
           underlineShow={false}
           className={styles.searchBox}
           onChange={handleSearchChange}
-          disabled /> : null
+          disabled/> : null
         }
 
 
@@ -164,7 +167,7 @@ export default class SchemeSettingsWrapper extends Component {
           height={500}
           fullscreen={this.state.fullscreen}
           onFullScreenClick={() => this.handleFullscreenClick()}
-          onCloseClick={() => this.handleCloseClick()} />
+          onCloseClick={() => this.handleCloseClick()}/>
       </div>
     )
   }

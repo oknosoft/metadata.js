@@ -1,4 +1,5 @@
-import React, {PropTypes} from "react";
+import React from "react";
+import PropTypes from 'prop-types';
 import MetaComponent from "../common/MetaComponent";
 
 import ReactDataGrid from "react-data-grid";
@@ -11,36 +12,36 @@ const {Selectors} = Data;
 // const { AdvancedToolbar, GroupedColumnsPanel }   = ToolsPanel;
 // const DraggableContainer  = ReactDataGridPlugins.Draggable.Container;
 
-  // // Import the necessary modules.
-  // // Create the context menu.
-  // // Use this.props.rowIdx and this.props.idx to get the row/column where the menu is shown.
-  // class MyContextMenu extends Component {
-  //
-  //   onRowDelete(e, data) {
-  //     if (typeof(this.props.onRowDelete) === 'function') {
-  //       this.props.onRowDelete(e, data);
-  //     }
-  //   }
-  //
-  //   onRowAdd(e, data) {
-  //     if (typeof(this.props.onRowAdd) === 'function') {
-  //       this.props.onRowAdd(e, data);
-  //     }
-  //   }
-  //
-  //   render() {
-  //
-  //     let { ContextMenu, MenuItem} = Menu;
-  //
-  //     return (
-  //       <ContextMenu>
-  //         <MenuItem data={{rowIdx: this.props.rowIdx, idx: this.props.idx}} onClick={::this.onRowDelete}>Delete Row</MenuItem>
-  //         <MenuItem data={{rowIdx: this.props.rowIdx, idx: this.props.idx}} onClick={::this.onRowAdd}>Add Row</MenuItem>
-  //       </ContextMenu>
-  //     );
-  //   }
-  //
-  // }
+// // Import the necessary modules.
+// // Create the context menu.
+// // Use this.props.rowIdx and this.props.idx to get the row/column where the menu is shown.
+// class MyContextMenu extends Component {
+//
+//   onRowDelete(e, data) {
+//     if (typeof(this.props.onRowDelete) === 'function') {
+//       this.props.onRowDelete(e, data);
+//     }
+//   }
+//
+//   onRowAdd(e, data) {
+//     if (typeof(this.props.onRowAdd) === 'function') {
+//       this.props.onRowAdd(e, data);
+//     }
+//   }
+//
+//   render() {
+//
+//     let { ContextMenu, MenuItem} = Menu;
+//
+//     return (
+//       <ContextMenu>
+//         <MenuItem data={{rowIdx: this.props.rowIdx, idx: this.props.idx}} onClick={::this.onRowDelete}>Delete Row</MenuItem>
+//         <MenuItem data={{rowIdx: this.props.rowIdx, idx: this.props.idx}} onClick={::this.onRowAdd}>Add Row</MenuItem>
+//       </ContextMenu>
+//     );
+//   }
+//
+// }
 
 // class CustomToolbar extends Component {
 //   render() {
@@ -69,7 +70,7 @@ export default class RepTabularSection extends MetaComponent {
     handleRowChange: PropTypes.func,
   }
 
-  constructor (props, context) {
+  constructor(props, context) {
 
     super(props, context);
 
@@ -80,7 +81,7 @@ export default class RepTabularSection extends MetaComponent {
       _meta: _meta || _obj._metadata(_tabular),
       _tabular: _obj[_tabular],
 
-      get rows(){
+      get rows() {
         return this._tabular._rows || []
       },
 

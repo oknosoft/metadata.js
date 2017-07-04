@@ -23,7 +23,7 @@ export default class TabsLogin extends React.Component {
   }
 
   tabChange = (tab_value) => {
-    if(tab_value === 'a' || tab_value === 'b'){
+    if (tab_value === 'a' || tab_value === 'b') {
       this.setState({
         tab_value: tab_value,
       });
@@ -36,7 +36,7 @@ export default class TabsLogin extends React.Component {
     });
   }
 
-  buttonTouchTap(provider){
+  buttonTouchTap(provider) {
     return () => {
       this.props.handleSocialAuth(provider)
     }
@@ -63,15 +63,15 @@ export default class TabsLogin extends React.Component {
 
       <div className={classes.paper}>
 
-        <Paper  zDepth={3} rounded={false}>
+        <Paper zDepth={3} rounded={false}>
 
           <Tabs
             value={this.state.tab_value}
             onChange={this.tabChange}
           >
-            <Tab label="Вход" value="a" >
+            <Tab label="Вход" value="a">
 
-              <div className={classes.sub_paper} >
+              <div className={classes.sub_paper}>
 
                 <TextField
                   ref="login"
@@ -94,17 +94,17 @@ export default class TabsLogin extends React.Component {
                 <RaisedButton label="Войти"
                               disabled={this.state.btn_login_disabled}
                               className={classes.button}
-                              onTouchTap={this.handleLogin} />
+                              onTouchTap={this.handleLogin}/>
 
                 <RaisedButton label="Забыли пароль?"
                               disabled={true}
-                              className={classes.button} />
+                              className={classes.button}/>
 
               </div>
 
-              <div className={classes.sub_paper} >
+              <div className={classes.sub_paper}>
 
-                <Subheader className={classes.subheader} >Вы можете авторизоваться при помощи учетных записей социальных сетей:</Subheader>
+                <Subheader className={classes.subheader}>Вы можете авторизоваться при помощи учетных записей социальных сетей:</Subheader>
 
                 <RaisedButton
                   label="Google"
@@ -117,7 +117,7 @@ export default class TabsLogin extends React.Component {
                   label="Яндекс"
                   className={classes.social_button}
                   labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
-                  icon={<YandexIcon viewBox="0 0 180 190" style={{width: 18, height: 18}} color={red500} />}
+                  icon={<YandexIcon viewBox="0 0 180 190" style={{width: 18, height: 18}} color={red500}/>}
                   onTouchTap={this.buttonTouchTap("yandex")}
                 /><br />
                 <RaisedButton
@@ -131,7 +131,7 @@ export default class TabsLogin extends React.Component {
                   label="В контакте"
                   className={classes.social_button}
                   labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
-                  icon={<VkontakteIcon viewBox="50 50 400 400" style={{width: 18, height: 18}} color="#4c75a3" />}
+                  icon={<VkontakteIcon viewBox="50 50 400 400" style={{width: 18, height: 18}} color="#4c75a3"/>}
                   onTouchTap={this.buttonTouchTap("vkontakte")}
                 />
 
@@ -187,7 +187,7 @@ export default class TabsLogin extends React.Component {
 
                 <RaisedButton label="Регистрация"
                               className={classes.button}
-                              onTouchTap={this.handleRegister} />
+                              onTouchTap={this.handleRegister}/>
 
               </div>
 

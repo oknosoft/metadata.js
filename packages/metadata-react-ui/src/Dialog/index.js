@@ -1,9 +1,10 @@
-import React, {Component, PropTypes} from "react";
+import React, {Component} from "react";
+import PropTypes from 'prop-types';
 import ReactDOM from "react-dom";
 import IconButton from "material-ui/IconButton";
-import FullscreenIcon from "material-ui/svg-icons/navigation/fullscreen";
-import FullscreenExitIcon from "material-ui/svg-icons/navigation/fullscreen-exit";
-import CloseIcon from "material-ui/svg-icons/navigation/close";
+import FullscreenIcon from "material-ui-icons/Fullscreen";
+import FullscreenExitIcon from "material-ui-icons/FullscreenExit";
+import CloseIcon from "material-ui-icons/Close";
 import ReactPortal from "react-portal";
 
 import {
@@ -106,11 +107,11 @@ export default class Dialog extends Component {
           top={this.props.top}
           buttons={[
             <IconButton touch={true} tooltip={"развернуть"} onTouchTap={() => this.handleFullscreenClick()}>
-              {this.props.fullscreen ? <FullscreenExitIcon color={"white"} /> : <FullscreenIcon color={"white"} />}
+              {this.props.fullscreen ? <FullscreenExitIcon color={"white"}/> : <FullscreenIcon color={"white"}/>}
             </IconButton>,
 
             <IconButton touch={true} tooltip={"закрыть"} onTouchTap={() => this.handleCloseClick()}>
-              <CloseIcon color={"white"} />
+              <CloseIcon color={"white"}/>
             </IconButton>,
           ]}>
 

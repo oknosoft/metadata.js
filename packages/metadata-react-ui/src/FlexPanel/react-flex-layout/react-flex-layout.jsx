@@ -9,7 +9,7 @@ export default class Layout extends React.Component {
     hideSelection: React.PropTypes.bool,
     minWidth: React.PropTypes.number,
     minHeight: React.PropTypes.number,
-    onResize:React.PropTypes.func
+    onResize: React.PropTypes.func
   }
 
   static defaultProps = {
@@ -57,13 +57,13 @@ export default class Layout extends React.Component {
       newWidth = window.innerWidth
       newHeight = window.innerHeight
     } else if (!this.props.layoutWidth && !this.props.layoutHeight) {
-        const domNode = ReactDOM.findDOMNode(this)
-        newHeight = domNode.parentElement.clientHeight
-        newWidth = domNode.parentElement.clientWidth
+      const domNode = ReactDOM.findDOMNode(this)
+      newHeight = domNode.parentElement.clientHeight
+      newWidth = domNode.parentElement.clientWidth
     }
     // Only setState if the available size has actually changed.
     if (this.state.layoutWidth !== newWidth ||
-        this.state.layoutHeight !== newHeight) {
+      this.state.layoutHeight !== newHeight) {
       this.state.layoutWidth = newWidth
       this.state.layoutHeight = newHeight
       this.setState(this.state)
@@ -118,13 +118,25 @@ export default class Layout extends React.Component {
           numberOfSplitters++
         } else if (childType === Layout) {
           let child = this.refs['layout' + i]
-          if (childDefinition.props.layoutWidth === 'flex') { numberOfFlexWidths++ }
-          else if (!child && this.isNumber(childDefinition.props.layoutWidth)) { totalAllocatedWidth += childDefinition.props.layoutWidth }
-          else if (child && this.isNumber(child.state.layoutWidth)) { totalAllocatedWidth += child.state.layoutWidth }
+          if (childDefinition.props.layoutWidth === 'flex') {
+            numberOfFlexWidths++
+          }
+          else if (!child && this.isNumber(childDefinition.props.layoutWidth)) {
+            totalAllocatedWidth += childDefinition.props.layoutWidth
+          }
+          else if (child && this.isNumber(child.state.layoutWidth)) {
+            totalAllocatedWidth += child.state.layoutWidth
+          }
 
-          if (childDefinition.props.layoutHeight === 'flex') { numberOfFlexHeights++ }
-          else if (!child && this.isNumber(childDefinition.props.layoutHeight)) { totalAllocatedHeight += childDefinition.props.layoutHeight }
-          else if (child && this.isNumber(child.state.layoutHeight)) { totalAllocatedHeight += child.state.layoutHeight }
+          if (childDefinition.props.layoutHeight === 'flex') {
+            numberOfFlexHeights++
+          }
+          else if (!child && this.isNumber(childDefinition.props.layoutHeight)) {
+            totalAllocatedHeight += childDefinition.props.layoutHeight
+          }
+          else if (child && this.isNumber(child.state.layoutHeight)) {
+            totalAllocatedHeight += child.state.layoutHeight
+          }
         }
         i++
       })
@@ -194,11 +206,11 @@ export default class Layout extends React.Component {
             containerWidth: width,
             ref: 'layout' + count,
             hideSelection: () => {
-              this.setState({ hideSelection: true })
+              this.setState({hideSelection: true})
             },
             restoreSelection: () => {
               this.clearSelection()
-              this.setState({ hideSelection: false })
+              this.setState({hideSelection: false})
             },
             getPreviousLayout: () => {
               let index = this.props.children.indexOf(child)
@@ -220,13 +232,15 @@ export default class Layout extends React.Component {
       className = this.props.className
     }
     if (this.state.hideSelection) {
-      if (className) { className += ' ' }
+      if (className) {
+        className += ' '
+      }
       className += 'hideSelection'
     }
     const style = Object.assign({},
-       this.props.style,
-       {overflow: 'auto', width: width, height: height},
-       this.props.fill === 'window' ? {position: 'absolute', top: 0, left:0}: {}
+      this.props.style,
+      {overflow: 'auto', width: width, height: height},
+      this.props.fill === 'window' ? {position: 'absolute', top: 0, left: 0} : {}
     )
 
     return <div style={style} className={className}>{children}</div>

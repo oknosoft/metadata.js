@@ -7,7 +7,8 @@
  * Created 19.12.2016
  */
 
-import React, {Component, PropTypes} from "react";
+import React, {Component} from "react";
+import PropTypes from 'prop-types';
 import {Tabs, Tab} from "material-ui/Tabs";
 import TabularSection from "../TabularSection";
 import SchemeSettingsSelect from "./SchemeSettingsSelect"
@@ -18,56 +19,56 @@ import styles from "./styles/SchemeSettingsTabs.scss";
 export function getTabsContent(scheme, handleSchemeChange, tabParams) {
   return {
     "Параметры": tabParams ? tabParams : (scheme.query.match('date') ?
-      <div style={{height: 356}}>
-        <DataField _obj={scheme} _fld="date_from" />
-        <DataField _obj={scheme} _fld="date_till" />
-      </div>
-      :
-      <TabularSection _obj={scheme} _tabular="params" minHeight={308} />
+        <div style={{height: 356}}>
+          <DataField _obj={scheme} _fld="date_from"/>
+          <DataField _obj={scheme} _fld="date_till"/>
+        </div>
+        :
+        <TabularSection _obj={scheme} _tabular="params" minHeight={308}/>
     ),
 
     "Колонки": (<TabularSection _obj={scheme} _tabular="fields" deny_add_del={true} minHeight={308}
-      rowSelection={{
-        showCheckbox: true,
-        enableShiftSelect: true,
-        selectBy: {
-          keys: {
-            rowKey: "field",
-            markKey: "use",
-            values: scheme.used_fields()
-          }
-        }
-      }} />),
+                                rowSelection={{
+                                  showCheckbox: true,
+                                  enableShiftSelect: true,
+                                  selectBy: {
+                                    keys: {
+                                      rowKey: "field",
+                                      markKey: "use",
+                                      values: scheme.used_fields()
+                                    }
+                                  }
+                                }}/>),
 
     "Отбор": (<TabularSection _obj={scheme} _tabular="selection" minHeight={308}
-      rowSelection={{
-        showCheckbox: true,
-        enableShiftSelect: true,
-        selectBy: {
-          keys: {
-            rowKey: "field",
-            markKey: "use",
-            values: scheme.used_fields()
-          }
-        }
-      }} />),
+                              rowSelection={{
+                                showCheckbox: true,
+                                enableShiftSelect: true,
+                                selectBy: {
+                                  keys: {
+                                    rowKey: "field",
+                                    markKey: "use",
+                                    values: scheme.used_fields()
+                                  }
+                                }
+                              }}/>),
 
     "Группировка": (<div className={styles.groups}>
       <div className={styles.groupDimensions}>
-        <TabularSection _obj={scheme} _tabular="dimensions" minHeight={130} />
+        <TabularSection _obj={scheme} _tabular="dimensions" minHeight={130}/>
       </div>
 
       <div className={styles.groupResources}>
-        <TabularSection _obj={scheme} _tabular="resources"  minHeight={130} />
+        <TabularSection _obj={scheme} _tabular="resources" minHeight={130}/>
       </div>
     </div>),
 
     "Сортировка": (
-      <TabularSection _obj={scheme} _tabular="sorting" minHeight={308} />
+      <TabularSection _obj={scheme} _tabular="sorting" minHeight={308}/>
     ),
 
     "Вариант": (
-      <SchemeSettingsSelect scheme={scheme} handleSchemeChange={handleSchemeChange} minHeight={356} />
+      <SchemeSettingsSelect scheme={scheme} handleSchemeChange={handleSchemeChange} minHeight={356}/>
     )
   }
 }

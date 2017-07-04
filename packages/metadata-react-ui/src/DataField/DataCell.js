@@ -1,25 +1,25 @@
 import React, {Component} from "react";
-import ReactDOM from "react-dom";
+import PropTypes from 'prop-types';
 import DataField from "./DataField";
 
 
 const ExcelColumn = {
-  name: React.PropTypes.string.isRequired,
-  key: React.PropTypes.string.isRequired,
-  width: React.PropTypes.number.isRequired,
-  filterable: React.PropTypes.bool
+  name: PropTypes.string.isRequired,
+  key: PropTypes.string.isRequired,
+  width: PropTypes.number.isRequired,
+  filterable: PropTypes.bool
 };
 
 class DataCell extends Component {
 
   static contextTypes = {
-    $p: React.PropTypes.object.isRequired
+    $p: PropTypes.object.isRequired
   }
 
   static propTypes = {
-    options: React.PropTypes.array,
-    column: React.PropTypes.shape(ExcelColumn),
-    value: React.PropTypes.array
+    options: PropTypes.array,
+    column: PropTypes.shape(ExcelColumn),
+    value: PropTypes.array
   }
 
   // props.column.key, props.rowData(._row)
@@ -35,10 +35,6 @@ class DataCell extends Component {
     this.handleSelectChange = this.handleSelectChange.bind(this);
   }
 
-  getInputNode() {
-    return ReactDOM.findDOMNode(this);
-  }
-
   getValue() {
     let updated = {};
     updated[this.props.column.key] = this.state.value;
@@ -51,7 +47,7 @@ class DataCell extends Component {
 
   render() {
 
-    const { $p } = this.context;
+    const {$p} = this.context;
 
     const _obj = this.props.rowData;
     const _fld = this.props.column.key
@@ -66,7 +62,7 @@ class DataCell extends Component {
     }
 
     return (
-      <DataField {...subProps} />
+      <DataField ref={node => this.node = node} {...subProps} />
     );
   }
 }

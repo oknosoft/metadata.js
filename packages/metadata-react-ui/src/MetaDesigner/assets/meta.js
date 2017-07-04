@@ -25,23 +25,25 @@ const meta = {
 
 const classes = $p.md.classes();
 
-for(let key in struct){
+for (let key in struct) {
   meta.children.push({
     name: $p[key].toString(),
     icon: struct[key].icon,
     children: classes[key].map(name => ({
       meta: $p.md.get(key + "." + name),
-      get name(){ return this.meta.name || $p.md.syns_1с(name)},
+      get name() {
+        return this.meta.name || $p.md.syns_1с(name)
+      },
       icon: struct[key].icon,
       children: []
     }))
   });
-  meta.children[meta.children.length-1].children.forEach(elm => {
-    if(key == 'enm'){
+  meta.children[meta.children.length - 1].children.forEach(elm => {
+    if (key == 'enm') {
 
-    }else if(key.indexOf('reg') != -1){
+    } else if (key.indexOf('reg') != -1) {
 
-    }else{
+    } else {
       elm.children.push({
         name: 'Реквизиты',
         icon: 'icon_1c_props',

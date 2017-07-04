@@ -16,7 +16,7 @@ function export_handlers(constructor, classes) {
    */
   Object.defineProperty(constructor.prototype.UI, 'export_handlers', {
 
-    value: function() {
+    value: function () {
 
       this.doExport = (format) => {
         const {_obj, _tabular, _columns} = this.props;
@@ -29,8 +29,7 @@ function export_handlers(constructor, classes) {
       }
 
       this.handleExportXLS = () => {
-        const {$p} = this.context
-        const doExport = ::this.doExport
+        const doExport = this.doExport.bind(this);
         require.ensure(["xlsx"], function () {
           if (!window.XLSX) {
             window.XLSX = require("xlsx");

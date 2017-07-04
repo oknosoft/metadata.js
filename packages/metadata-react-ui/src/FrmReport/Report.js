@@ -1,4 +1,5 @@
-import React, {PropTypes} from "react";
+import React from "react";
+import PropTypes from 'prop-types';
 import MetaComponent from "../common/MetaComponent";
 import DumbLoader from "../DumbLoader";
 
@@ -63,7 +64,7 @@ export default class Report extends MetaComponent {
       _obj: _obj
     });
 
-    if(handleSchemeChange){
+    if (handleSchemeChange) {
       handleSchemeChange.call(this, scheme);
     }
 

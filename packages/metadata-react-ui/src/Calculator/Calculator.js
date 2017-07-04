@@ -1,18 +1,14 @@
-import {
-  default as React,
-  Component,
-  PropTypes
-} from "react";
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 
-import PlayArrow from "material-ui/svg-icons/av/play-arrow";
-import ArrowBack from "material-ui/svg-icons/navigation/arrow-back";
-import CalculatorInput from "./CalculatorInput";
-import CalculatorButton from "./CalculatorButton";
-import Menu from "material-ui/Menu";
-import MenuItem from "material-ui/MenuItem";
-import ReactClickOutside from "react-click-outside";
-import classnames from "classnames";
-import classes from "./styles/Calculator.scss";
+import PlayArrow from 'material-ui-icons/PlayArrow';
+import ArrowBack from 'material-ui-icons/ArrowBack';
+import CalculatorInput from './CalculatorInput';
+import CalculatorButton from './CalculatorButton';
+import Menu, {MenuItem} from 'material-ui/Menu';
+import ReactClickOutside from 'react-click-outside';
+import classnames from 'classnames';
+import classes from './styles/Calculator.scss';
 
 /**
  * 1C like calculator.
@@ -20,28 +16,28 @@ import classes from "./styles/Calculator.scss";
 class Calculator extends Component {
   static HISTORY_SIZE = 10;
   static MENU_ITEM_INNER_DIV_STYLE = {
-    textAlign: "left"
+    textAlign: 'left',
   };
 
   static propTypes = {
     visible: PropTypes.bool.isRequired,
     value: PropTypes.oneOfType([
       PropTypes.string,
-      PropTypes.number
+      PropTypes.number,
     ]).isRequired,
     onClose: PropTypes.func.isRequired,
     onChange: PropTypes.func.isRequired,
     position: PropTypes.oneOf([
-      "bottom",
-      "left",
-      "right",
-      "top",
+      'bottom',
+      'left',
+      'right',
+      'top',
     ]),
-  }
+  };
 
   static defaultProps = {
-    position: "bottom",
-  }
+    position: 'bottom',
+  };
 
   constructor(props) {
     super(props);
@@ -59,7 +55,7 @@ class Calculator extends Component {
       firstArgumentValue: null,
       operation: null,
 
-      history: []
+      history: [],
     };
   }
 
@@ -78,7 +74,7 @@ class Calculator extends Component {
 
   appendInverseFunction() {
     this.setState({
-      expression: "1 / (" + this.props.value + ")"
+      expression: '1 / (' + this.props.value + ')',
     });
   }
 
@@ -87,7 +83,7 @@ class Calculator extends Component {
       this.appendInverseFunction();
     } else {
       this.setState({
-        operation: "1/x",
+        operation: '1/x',
         firstArgumentValue: null,
         availableRepeat: false,
       }, () => {
@@ -99,7 +95,7 @@ class Calculator extends Component {
 
   swapSign() {
     this.setState({
-      availableRepeat: false
+      availableRepeat: false,
     }, () => {
       const value = parseFloat(this.props.value);
       this.props.onChange(-value);
@@ -111,7 +107,7 @@ class Calculator extends Component {
       clearInputRequired: true,
       availableRepeat: false,
     }, () => {
-      this.props.onChange("0");
+      this.props.onChange('0');
     });
   }
 
@@ -122,7 +118,7 @@ class Calculator extends Component {
       clearInputRequired: true,
       availableRepeat: false,
     }, () => {
-      this.props.onChange("0");
+      this.props.onChange('0');
       if (afterClearCallback !== null) {
         afterClearCallback();
       }
@@ -145,16 +141,16 @@ class Calculator extends Component {
   removeLast() {
     let value = this.props.value.toString().slice(0, -1);
 
-    if (this.state.isExpressionCalculator === false && ["", "-", "+"].indexOf(value) !== -1) {
-      value = "0";
+    if (this.state.isExpressionCalculator === false && ['', '-', '+'].indexOf(value) !== -1) {
+      value = '0';
       this.setState({
         clearInputRequired: true,
-        availableRepeat: false
+        availableRepeat: false,
       });
     } else {
       this.setState({
         clearInputRequired: true,
-        availableRepeat: false
+        availableRepeat: false,
       });
     }
 
@@ -216,9 +212,9 @@ class Calculator extends Component {
     if (this.state.firstArgumentValue === null) {
 
       switch (this.state.operation) {
-        case "1/x":
-        result = 1 / secondArgument;
-        break;
+        case '1/x':
+          result = 1 / secondArgument;
+          break;
       }
 
       this.calculatorHistoryPush({
@@ -233,21 +229,21 @@ class Calculator extends Component {
       }
 
       switch (this.state.operation) {
-        case "*":
-        result = firstArgument * secondArgument;
-        break;
+        case '*':
+          result = firstArgument * secondArgument;
+          break;
 
-        case "-":
-        result = firstArgument - secondArgument;
-        break;
+        case '-':
+          result = firstArgument - secondArgument;
+          break;
 
-        case "+":
-        result = firstArgument + secondArgument;
-        break;
+        case '+':
+          result = firstArgument + secondArgument;
+          break;
 
-        case "/":
-        result = firstArgument / secondArgument;
-        break;
+        case '/':
+          result = firstArgument / secondArgument;
+          break;
       }
 
       if (this.state.availableRepeat === false) {
@@ -310,17 +306,21 @@ class Calculator extends Component {
       <Menu desktop={true}>
         <MenuItem
           key={0}
-          onTouchTap={() => { this.setState({ isExpressionCalculator: !this.state.isExpressionCalculator }) }}
-          primaryText={"формульный калькулятор"}
+          onTouchTap={() => {
+            this.setState({isExpressionCalculator: !this.state.isExpressionCalculator});
+          }}
+          primaryText={'формульный калькулятор'}
           checked={this.state.isExpressionCalculator}
-          innerDivStyle={Calculator.MENU_ITEM_INNER_DIV_STYLE} />
+          innerDivStyle={Calculator.MENU_ITEM_INNER_DIV_STYLE}/>
 
         <MenuItem
           key={1}
-          onTouchTap={() => { this.setState({ isMicroCalculator: !this.state.isMicroCalculator }) }}
-          primaryText={"микрокалькулятор"}
+          onTouchTap={() => {
+            this.setState({isMicroCalculator: !this.state.isMicroCalculator});
+          }}
+          primaryText={'микрокалькулятор'}
           checked={this.state.isMicroCalculator}
-          innerDivStyle={Calculator.MENU_ITEM_INNER_DIV_STYLE} />
+          innerDivStyle={Calculator.MENU_ITEM_INNER_DIV_STYLE}/>
       </Menu>
     );
   }
@@ -331,7 +331,9 @@ class Calculator extends Component {
     }
 
     return (
-      <Menu desktop={true} onChange={(event, value) => { this.handleHistoryMenuClick(event, value); }}>
+      <Menu desktop={true} onChange={(event, value) => {
+        this.handleHistoryMenuClick(event, value);
+      }}>
         {this.state.history.map((historyItem, key) => {
           return (<MenuItem
             key={key}
@@ -350,71 +352,135 @@ class Calculator extends Component {
     }
 
     const calculatorClassNames = classnames([
-      classes["meta-calculator"],
-      classes["meta-calculator--" + this.props.position]
+      classes['meta-calculator'],
+      classes['meta-calculator--' + this.props.position],
     ]);
 
     const keyboardRowClassNames = classnames({
-      [classes["meta-calculator__row"]]: true,
-      [classes["meta-calculator__row--hidden"]]: this.state.isMicroCalculator,
+      [classes['meta-calculator__row']]: true,
+      [classes['meta-calculator__row--hidden']]: this.state.isMicroCalculator,
     });
 
     return (
       <div className={calculatorClassNames}>
-        <div className={classes["meta-calculator__row"]}>
+        <div className={classes['meta-calculator__row']}>
           <CalculatorButton
-            icon={<PlayArrow style={{ width: "1em", height: "1em" }} />}
-            onClick={() => { this.setState({ calculatorTypeMenuVisible: !this.state.calculatorTypeMenuVisible }) }}
-            menu={this.renderCalculatorTypeMenu()} />
+            icon={<PlayArrow style={{width: '1em', height: '1em'}}/>}
+            onClick={() => {
+              this.setState({calculatorTypeMenuVisible: !this.state.calculatorTypeMenuVisible});
+            }}
+            menu={this.renderCalculatorTypeMenu()}/>
 
           <CalculatorInput
             isExpression={this.state.isExpressionCalculator}
             value={this.props.value.toString()}
-            onRemoveKeyPress={() => { this.removeLast() }}
-            onPercentsKeyPress={() => { this.applyPercents() }}
-            onOperationKeyPress={(operationCode) => { this.handleOperationKeyPress(operationCode) }}
-            onChange={(value) => { this.handleCalculatorInputChange(value); }}
-            onMenuToggleClick={() => { this.setState({ historyMenuVisible: !this.state.historyMenuVisible })}}
-            onInputCleared={() => { this.handleCalculatorInputCleared() }}
-            onEqualSignPres={() => { this.calculate() }}
+            onRemoveKeyPress={() => {
+              this.removeLast();
+            }}
+            onPercentsKeyPress={() => {
+              this.applyPercents();
+            }}
+            onOperationKeyPress={(operationCode) => {
+              this.handleOperationKeyPress(operationCode);
+            }}
+            onChange={(value) => {
+              this.handleCalculatorInputChange(value);
+            }}
+            onMenuToggleClick={() => {
+              this.setState({historyMenuVisible: !this.state.historyMenuVisible});
+            }}
+            onInputCleared={() => {
+              this.handleCalculatorInputCleared();
+            }}
+            onEqualSignPres={() => {
+              this.calculate();
+            }}
             clearInputRequired={this.state.clearInputRequired}
-            menu={this.renderHistoryMenu()} />
+            menu={this.renderHistoryMenu()}/>
         </div>
 
         <div className={keyboardRowClassNames}>
-          <CalculatorButton text={"7"}   onClick={() => { this.appendExpression("7")   }} />
-          <CalculatorButton text={"8"}   onClick={() => { this.appendExpression("8")   }} />
-          <CalculatorButton text={"9"}   onClick={() => { this.appendExpression("9")   }} />
-          <CalculatorButton text={"+"}   onClick={() => { this.setOperation("+")       }} red={true} />
-          <CalculatorButton text={"+/-"} onClick={() => { this.swapSign()              }} disabled={this.state.isExpressionCalculator} />
-          <CalculatorButton text={"C"}   onClick={() => { this.clearAll()              }} red={true} />
+          <CalculatorButton text={'7'} onClick={() => {
+            this.appendExpression('7');
+          }}/>
+          <CalculatorButton text={'8'} onClick={() => {
+            this.appendExpression('8');
+          }}/>
+          <CalculatorButton text={'9'} onClick={() => {
+            this.appendExpression('9');
+          }}/>
+          <CalculatorButton text={'+'} onClick={() => {
+            this.setOperation('+');
+          }} red={true}/>
+          <CalculatorButton text={'+/-'} onClick={() => {
+            this.swapSign();
+          }} disabled={this.state.isExpressionCalculator}/>
+          <CalculatorButton text={'C'} onClick={() => {
+            this.clearAll();
+          }} red={true}/>
         </div>
 
         <div className={keyboardRowClassNames}>
-          <CalculatorButton text={"4"}   onClick={() => { this.appendExpression("4")   }} />
-          <CalculatorButton text={"5"}   onClick={() => { this.appendExpression("5")   }} />
-          <CalculatorButton text={"6"}   onClick={() => { this.appendExpression("6")   }} />
-          <CalculatorButton text={"-"}   onClick={() => { this.setOperation("-")       }} red={true} />
-          <CalculatorButton text={"%"}   onClick={() => { this.applyPercents()         }} disabled={this.state.isExpressionCalculator} />
-          <CalculatorButton text={"CE"}  onClick={() => { this.clearExpression()       }} red={true} />
+          <CalculatorButton text={'4'} onClick={() => {
+            this.appendExpression('4');
+          }}/>
+          <CalculatorButton text={'5'} onClick={() => {
+            this.appendExpression('5');
+          }}/>
+          <CalculatorButton text={'6'} onClick={() => {
+            this.appendExpression('6');
+          }}/>
+          <CalculatorButton text={'-'} onClick={() => {
+            this.setOperation('-');
+          }} red={true}/>
+          <CalculatorButton text={'%'} onClick={() => {
+            this.applyPercents();
+          }} disabled={this.state.isExpressionCalculator}/>
+          <CalculatorButton text={'CE'} onClick={() => {
+            this.clearExpression();
+          }} red={true}/>
         </div>
 
         <div className={keyboardRowClassNames}>
-          <CalculatorButton text={"1"}   onClick={() => { this.appendExpression("1")   }} />
-          <CalculatorButton text={"2"}   onClick={() => { this.appendExpression("2")   }} />
-          <CalculatorButton text={"3"}   onClick={() => { this.appendExpression("3")   }} />
-          <CalculatorButton text={"*"}   onClick={() => { this.setOperation("*")       }} red={true}/>
-          <CalculatorButton text={"1/x"} onClick={() => { this.inverse()               }} />
-          <CalculatorButton icon={<ArrowBack style={{ width: "1em", height: "1em" }} />} onClick={() => { this.removeLast() }} />
+          <CalculatorButton text={'1'} onClick={() => {
+            this.appendExpression('1');
+          }}/>
+          <CalculatorButton text={'2'} onClick={() => {
+            this.appendExpression('2');
+          }}/>
+          <CalculatorButton text={'3'} onClick={() => {
+            this.appendExpression('3');
+          }}/>
+          <CalculatorButton text={'*'} onClick={() => {
+            this.setOperation('*');
+          }} red={true}/>
+          <CalculatorButton text={'1/x'} onClick={() => {
+            this.inverse();
+          }}/>
+          <CalculatorButton icon={<ArrowBack style={{width: '1em', height: '1em'}}/>} onClick={() => {
+            this.removeLast();
+          }}/>
         </div>
 
         <div className={keyboardRowClassNames}>
-          <CalculatorButton text={"0"}   onClick={() => { this.appendExpression("0")   }} />
-          <CalculatorButton text={"00"}  onClick={() => { this.appendExpression("00")  }} />
-          <CalculatorButton text={"."}   onClick={() => { this.appendExpression(".")   }} />
-          <CalculatorButton text={"/"}   onClick={() => { this.setOperation("/")       }} red={true} />
-          <CalculatorButton text={"="}   onClick={() => { this.calculate()             }} red={true} />
-          <CalculatorButton text={"OK"}  onClick={() => { this.handleOKTap()           }} red={true} />
+          <CalculatorButton text={'0'} onClick={() => {
+            this.appendExpression('0');
+          }}/>
+          <CalculatorButton text={'00'} onClick={() => {
+            this.appendExpression('00');
+          }}/>
+          <CalculatorButton text={'.'} onClick={() => {
+            this.appendExpression('.');
+          }}/>
+          <CalculatorButton text={'/'} onClick={() => {
+            this.setOperation('/');
+          }} red={true}/>
+          <CalculatorButton text={'='} onClick={() => {
+            this.calculate();
+          }} red={true}/>
+          <CalculatorButton text={'OK'} onClick={() => {
+            this.handleOKTap();
+          }} red={true}/>
         </div>
       </div>
     );

@@ -6,7 +6,8 @@
  * Created 10.01.2017
  */
 
-import React, {Component, PropTypes} from "react";
+import React, {Component} from "react";
+import PropTypes from 'prop-types';
 import {DataCell} from "./DataField";
 import {Editors, Formatters} from "react-data-grid-addons";
 
@@ -49,7 +50,7 @@ function rx_columns($p) {
           if (_fld.type.is_ref) {
             column.formatter = presentation_formatter
           }
-          else if(_fld.type.date_part){
+          else if (_fld.type.date_part) {
             column.formatter = date_formatter[_fld.type.date_part]
           }
         }

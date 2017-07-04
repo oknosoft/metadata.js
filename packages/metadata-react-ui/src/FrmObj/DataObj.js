@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, {Component, PropTypes} from 'react';
 
 import {GridList, GridTile} from 'material-ui/GridList';
 import Layout from '../FlexPanel/react-flex-layout/react-flex-layout'
@@ -73,9 +73,9 @@ export default class DataObj extends Component {
   handleAttachment() {
   }
 
-  handleValueChange(_fld){
+  handleValueChange(_fld) {
     return (event, value) => {
-      const { _obj, handleValueChange } = this.props
+      const {_obj, handleValueChange} = this.props
       const old_value = _obj[_fld]
       _obj[_fld] = (value || (event && event.target ? event.target.value : ''))
       handleValueChange(_fld, old_value)
@@ -92,7 +92,7 @@ export default class DataObj extends Component {
     for (const fieldName in this.state.fields) {
       elements.push(
         <div key={fieldName} className={classes.field}>
-          <DataField _obj={this.props._obj} _fld={fieldName} />
+          <DataField _obj={this.props._obj} _fld={fieldName}/>
         </div>
       );
     }
@@ -121,7 +121,7 @@ export default class DataObj extends Component {
     for (const tabularSectionName in this.state.tabularSections) {
       elements.push(
         <Paper key={tabularSectionName} style={style}>
-          <TabularSection _obj={this.props._obj} _tabular={tabularSectionName} />
+          <TabularSection _obj={this.props._obj} _tabular={tabularSectionName}/>
         </Paper>
       );
     }
@@ -141,7 +141,7 @@ export default class DataObj extends Component {
     if (!this.props._obj) {
       return (
         <div>
-          <CircularProgress size={120} thickness={5} className={classes.progress} />
+          <CircularProgress size={120} thickness={5} className={classes.progress}/>
         </div>
       );
     }
@@ -150,12 +150,12 @@ export default class DataObj extends Component {
       <div className={"content-with-toolbar-layout"}>
         <div className={"content-with-toolbar-layout__toolbar"}>
           <Toolbar
-            handleSave={::this.handleSave}
-            handleSend={::this.handleSend}
-            handleMarkDeleted={::this.handleMarkDeleted}
-            handlePrint={::this.handlePrint}
-            handleAttachment={::this.handleAttachment}
-            handleClose={this.props.handleClose} />
+            handleSave={this.handleSave.bind(this)}
+            handleSend={this.handleSend.bind(this)}
+            handleMarkDeleted={this.handleMarkDeleted.bind(this)}
+            handlePrint={this.handlePrint.bind(this)}
+            handleAttachment={this.handleAttachment.bind(this)}
+            handleClose={this.props.handleClose}/>
         </div>
 
         <div className={"content-with-toolbar-layout__content"}>

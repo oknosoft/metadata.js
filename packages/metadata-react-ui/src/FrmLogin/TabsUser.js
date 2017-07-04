@@ -1,4 +1,5 @@
-import React, {Component, PropTypes} from "react";
+import React, {Component} from "react";
+import PropTypes from 'prop-types';
 
 import {Tabs, Tab} from 'material-ui/Tabs';
 import Paper from 'material-ui/Paper';
@@ -51,93 +52,93 @@ export default class TabsUser extends Component {
   }
 
   tabChange = (tab_value) => {
-    if(tab_value === 'a' || tab_value === 'b'){
+    if (tab_value === 'a' || tab_value === 'b') {
       this.setState({
         tab_value: tab_value,
       });
     }
   };
 
-  handleSave(){
+  handleSave() {
 
   }
 
-  handleSend(){
+  handleSend() {
 
   }
 
-  handleMarkDeleted(){
+  handleMarkDeleted() {
 
   }
 
-  handlePrint(){
+  handlePrint() {
 
   }
 
-  handleAttachment(){
+  handleAttachment() {
 
   }
 
 
   render() {
 
-    const { props } = this
+    const {props} = this
 
     return (
 
 
-        <div className={'meta-paper'}>
+      <div className={'meta-paper'}>
 
-          {
-            this.props._obj
+        {
+          this.props._obj
 
-              ?
+            ?
 
-              <Paper zDepth={3} rounded={false}>
+            <Paper zDepth={3} rounded={false}>
 
-                <Tabs
-                  value={this.state.tab_value}
-                  onChange={this.tabChange}
-                >
-                  <Tab label="Профиль" value="a">
+              <Tabs
+                value={this.state.tab_value}
+                onChange={this.tabChange}
+              >
+                <Tab label="Профиль" value="a">
 
-                    <div className={'meta-padding-18'}>
+                  <div className={'meta-padding-18'}>
 
-                      <div className={'meta-padding-8'}>
+                    <div className={'meta-padding-8'}>
 
-                        <DataField _obj={this.props._obj} _fld="id" />
-                        <DataField _obj={this.props._obj} _fld="name" />
-
-                      </div>
-
-                      <br />
-                      <Divider />
-
-                      <RaisedButton label="Выйти"
-                                    className={'meta-button-18-0'}
-                                    onTouchTap={props.handleLogOut}/>
+                      <DataField _obj={this.props._obj} _fld="id"/>
+                      <DataField _obj={this.props._obj} _fld="name"/>
 
                     </div>
 
-                  </Tab>
+                    <br />
+                    <Divider />
 
-                  <Tab label="Подключение" value="b">
+                    <RaisedButton label="Выйти"
+                                  className={'meta-button-18-0'}
+                                  onTouchTap={props.handleLogOut}/>
 
-                    <CnnSettings {...props} />
+                  </div>
 
-                  </Tab>
+                </Tab>
 
-                </Tabs>
+                <Tab label="Подключение" value="b">
 
-              </Paper>
+                  <CnnSettings {...props} />
 
-              :
-              <div >
-                <CircularProgress size={120} thickness={5} className={'meta-progress'} />
-              </div>
-          }
+                </Tab>
 
-        </div>
+              </Tabs>
+
+            </Paper>
+
+            :
+            <div >
+              <CircularProgress size={120} thickness={5} className={'meta-progress'}/>
+            </div>
+        }
+
+      </div>
 
     );
   }

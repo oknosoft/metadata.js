@@ -7,7 +7,7 @@
  * Created 09.01.2017
  */
 
-import React, { Component, PropTypes } from 'react';
+import React, {Component, PropTypes} from 'react';
 import MetaComponent from "../common/MetaComponent";
 import {Async} from "react-select";
 //import Select from "../DataField/FieldVirtualizedSelect";
@@ -49,10 +49,10 @@ export default class DataListField extends MetaComponent {
     const {_mgr} = this.state
 
 
-    if(input){
+    if (input) {
       selection.presentation = {like: input}
     }
-    if(_meta.choice_params){
+    if (_meta.choice_params) {
       _meta.choice_params.forEach((cp) => {
         selection[cp.name] = cp.path
       })
@@ -74,8 +74,8 @@ export default class DataListField extends MetaComponent {
     // удаляем-добавляем строки в _tabular
     _tabular.load(value.map((row) => ({[_fld]: row})));
 
-    if(handleValueChange){
-       handleValueChange(value)
+    if (handleValueChange) {
+      handleValueChange(value)
     }
   }
 
@@ -99,10 +99,10 @@ export default class DataListField extends MetaComponent {
       value={value}
     />
 
-    if(label_position == this.context.$p.enm.label_positions.hide){
+    if (label_position == this.context.$p.enm.label_positions.hide) {
       return control
 
-    }else{
+    } else {
       return (
         <div className={'meta-datafield-field'}>
           <div className={'meta-datafield-label'}>{_meta.synonym}</div>

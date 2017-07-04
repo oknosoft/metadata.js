@@ -5,8 +5,9 @@
  *
  */
 
-import React, {Component, PropTypes} from "react";
-import TextField from "material-ui/TextField";
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import TextField from 'material-ui/TextField';
 
 export default class FieldText extends Component {
 
@@ -15,15 +16,15 @@ export default class FieldText extends Component {
     _fld: PropTypes.string.isRequired,
     _meta: PropTypes.object.isRequired,
     handleValueChange: PropTypes.func,
-  }
+  };
 
   onChange = (event, newValue) => {
     const {_obj, _fld, handleValueChange} = this.props;
-    _obj[_fld] = newValue
-    if(handleValueChange){
-      handleValueChange(newValue)
+    _obj[_fld] = newValue;
+    if (handleValueChange) {
+      handleValueChange(newValue);
     }
-  }
+  };
 
   render() {
     const {onChange, props} = this;

@@ -1,17 +1,18 @@
-import React, {Component, PropTypes} from "react";
+import React, {Component} from "react";
+import PropTypes from 'prop-types'
 import {Toolbar, ToolbarGroup} from "material-ui/Toolbar";
 
 import IconButton from "material-ui/IconButton";
 import IconMenu from "material-ui/IconMenu";
-
-import SaveIcon from "material-ui/svg-icons/content/save";
-import SendIcon from "material-ui/svg-icons/content/send";
-import RemoveIcon from "material-ui/svg-icons/action/delete";
-import CloseIcon from "material-ui/svg-icons/navigation/close";
-import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert";
 import MenuItem from "material-ui/MenuItem";
-import PrintIcon from "material-ui/svg-icons/action/print";
-import AttachIcon from "material-ui/svg-icons/editor/attach-file";
+
+import SaveIcon from "material-ui-icons/Save";
+import SendIcon from "material-ui-icons/Send";
+import RemoveIcon from "material-ui-icons/Delete";
+import CloseIcon from "material-ui-icons/Close";
+import MoreVertIcon from "material-ui-icons/MoreVert";
+import PrintIcon from "material-ui-icons/Print";
+import AttachIcon from "material-ui-icons/AttachFile";
 
 
 export default class DataObjToolbar extends Component {

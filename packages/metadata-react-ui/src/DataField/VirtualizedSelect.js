@@ -1,7 +1,8 @@
 /** @flow */
-import React, {Component, PropTypes} from "react";
-import Select from "react-select";
-import {AutoSizer, List} from "react-virtualized";
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import Select from 'react-select';
+import {AutoSizer, List} from 'react-virtualized';
 
 
 export default class VirtualizedSelect extends Component {
@@ -12,24 +13,24 @@ export default class VirtualizedSelect extends Component {
     maxHeight: PropTypes.number.isRequired,
     optionHeight: PropTypes.oneOfType([PropTypes.number, PropTypes.func]).isRequired,
     optionRenderer: PropTypes.func,
-    selectComponent: PropTypes.func
+    selectComponent: PropTypes.func,
   };
 
   static defaultProps = {
     async: false,
     maxHeight: 200,
-    optionHeight: 35
+    optionHeight: 35,
   };
 
   /** See List#recomputeRowHeights */
   recomputeOptionHeights(index = 0) {
     if (this._virtualScroll) {
-      this._virtualScroll.recomputeRowHeights(index)
+      this._virtualScroll.recomputeRowHeights(index);
     }
   }
 
   render() {
-    const SelectComponent = this._getSelectComponent()
+    const SelectComponent = this._getSelectComponent();
 
     return (
       <SelectComponent
@@ -37,15 +38,15 @@ export default class VirtualizedSelect extends Component {
         menuRenderer={this._renderMenu}
         menuStyle={{overflow: 'hidden'}}
       />
-    )
+    );
   }
 
   // See https://github.com/JedWatson/react-select/#effeciently-rendering-large-lists-with-windowing
   _renderMenu = ({focusedOption, focusOption, labelKey, onSelect, options, selectValue, valueArray}) => {
-    const {listProps, optionRenderer} = this.props
-    const focusedOptionIndex = options.indexOf(focusedOption)
-    const height = this._calculateListHeight({options})
-    const innerRowRenderer = optionRenderer || this._optionRenderer
+    const {listProps, optionRenderer} = this.props;
+    const focusedOptionIndex = options.indexOf(focusedOption);
+    const height = this._calculateListHeight({options});
+    const innerRowRenderer = optionRenderer || this._optionRenderer;
 
     // react-select 1.0.0-rc2 passes duplicate `onSelect` and `selectValue` props to `menuRenderer`
     // The `Creatable` HOC only overrides `onSelect` which breaks an edge-case
@@ -54,7 +55,7 @@ export default class VirtualizedSelect extends Component {
     // See issue #33
 
     function wrappedRowRenderer({index, key, style}) {
-      const option = options[index]
+      const option = options[index];
 
       return innerRowRenderer({
         focusedOption,
@@ -68,8 +69,8 @@ export default class VirtualizedSelect extends Component {
         options,
         selectValue: onSelect,
         style,
-        valueArray
-      })
+        valueArray,
+      });
     }
 
     return (
@@ -81,7 +82,7 @@ export default class VirtualizedSelect extends Component {
             ref={(ref) => this._virtualScroll = ref}
             rowCount={options.length}
             rowHeight={({index}) => this._getOptionHeight({
-              option: options[index]
+              option: options[index],
             })}
             rowRenderer={wrappedRowRenderer}
             scrollToIndex={focusedOptionIndex}
@@ -90,64 +91,64 @@ export default class VirtualizedSelect extends Component {
           />
         )}
       </AutoSizer>
-    )
-  }
+    );
+  };
 
   _calculateListHeight({options}) {
-    const {maxHeight} = this.props
+    const {maxHeight} = this.props;
 
-    let height = 0
+    let height = 0;
 
     for (let optionIndex = 0; optionIndex < options.length; optionIndex++) {
-      let option = options[optionIndex]
+      let option = options[optionIndex];
 
-      height += this._getOptionHeight({option})
+      height += this._getOptionHeight({option});
 
       if (height > maxHeight) {
-        return maxHeight
+        return maxHeight;
       }
     }
 
-    return height
+    return height;
   }
 
   _getOptionHeight({option}) {
-    const {optionHeight} = this.props
+    const {optionHeight} = this.props;
 
     return optionHeight instanceof Function
       ? optionHeight({option})
-      : optionHeight
+      : optionHeight;
   }
 
   _getSelectComponent() {
-    const {async, selectComponent} = this.props
+    const {async, selectComponent} = this.props;
 
     if (selectComponent) {
-      return selectComponent
+      return selectComponent;
     } else if (async) {
-      return Select.Async
+      return Select.Async;
     } else {
-      return Select
+      return Select;
     }
   }
 
   _optionRenderer = ({focusedOption, focusOption, key, labelKey, option, selectValue, style}) => {
-    const className = ['VirtualizedSelectOption']
+    const className = ['VirtualizedSelectOption'];
 
     if (option === focusedOption) {
-      className.push('VirtualizedSelectFocusedOption')
+      className.push('VirtualizedSelectFocusedOption');
     }
 
     if (option.disabled) {
-      className.push('VirtualizedSelectDisabledOption')
+      className.push('VirtualizedSelectDisabledOption');
     }
 
     const events = option.disabled
       ? {}
       : {
         onClick: () => selectValue(option),
-        onMouseOver: () => focusOption(option)
-      }
+        onMouseOver: () => focusOption(option),
+      };
 
     return (
       <div
@@ -158,6 +159,6 @@ export default class VirtualizedSelect extends Component {
       >
         {option[labelKey]}
       </div>
-    )
-  }
+    );
+  };
 }

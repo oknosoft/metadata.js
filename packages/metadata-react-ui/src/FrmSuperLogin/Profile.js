@@ -1,4 +1,5 @@
-import React, {Component, PropTypes} from "react";
+import React, {Component} from "react";
+import PropTypes from 'prop-types';
 import {Tabs, Tab} from 'material-ui/Tabs';
 import Paper from 'material-ui/Paper';
 import TextField from 'material-ui/TextField';
@@ -58,7 +59,7 @@ export default class UserObj extends Component {
   }
 
   tabChange = (tab_value) => {
-    if(tab_value === 'a' || tab_value === 'b'){
+    if (tab_value === 'a' || tab_value === 'b') {
       this.setState({
         tab_value: tab_value,
       });
@@ -69,31 +70,31 @@ export default class UserObj extends Component {
     this.props.handleLogOut()
   }
 
-  handleSave(){
+  handleSave() {
 
   }
 
-  handleSend(){
+  handleSend() {
 
   }
 
-  handleMarkDeleted(){
+  handleMarkDeleted() {
 
   }
 
-  handlePrint(){
+  handlePrint() {
 
   }
 
-  handleAttachment(){
+  handleAttachment() {
 
   }
 
 
   render() {
 
-    const { screen } = this.context
-    const { _obj } = this.props
+    const {screen} = this.context
+    const {_obj} = this.props
 
 
     return (
@@ -115,23 +116,23 @@ export default class UserObj extends Component {
 
                   <div className={classes.padding18}>
 
-                    <DataField _obj={_obj} _fld="id" />
-                    <DataField _obj={_obj} _fld="name" />
-                    <DataField _obj={_obj} _fld="sex" />
-                    <DataField _obj={_obj} _fld="birth_date" />
-                    <DataField _obj={_obj} _fld="birth_place" />
-                    <DataField _obj={_obj} _fld="category" />
-                    <DataField _obj={_obj} _fld="inn" />
-                    <DataField _obj={_obj} _fld="snils" />
-                    <DataField _obj={_obj} _fld="citizenship" />
-                    <DataField _obj={_obj} _fld="ОсновноеУдостоверение" />
-                    <DataField _obj={_obj} _fld="стрМестоРаботы" />
-                    <DataField _obj={_obj} _fld="стрДолжность" />
-                    <DataField _obj={_obj} _fld="АдресРегистрации" />
-                    <DataField _obj={_obj} _fld="АдресФактический" />
-                    <DataField _obj={_obj} _fld="phone" />
-                    <DataField _obj={_obj} _fld="email" />
-                    <DataField _obj={_obj} _fld="rank" />
+                    <DataField _obj={_obj} _fld="id"/>
+                    <DataField _obj={_obj} _fld="name"/>
+                    <DataField _obj={_obj} _fld="sex"/>
+                    <DataField _obj={_obj} _fld="birth_date"/>
+                    <DataField _obj={_obj} _fld="birth_place"/>
+                    <DataField _obj={_obj} _fld="category"/>
+                    <DataField _obj={_obj} _fld="inn"/>
+                    <DataField _obj={_obj} _fld="snils"/>
+                    <DataField _obj={_obj} _fld="citizenship"/>
+                    <DataField _obj={_obj} _fld="ОсновноеУдостоверение"/>
+                    <DataField _obj={_obj} _fld="стрМестоРаботы"/>
+                    <DataField _obj={_obj} _fld="стрДолжность"/>
+                    <DataField _obj={_obj} _fld="АдресРегистрации"/>
+                    <DataField _obj={_obj} _fld="АдресФактический"/>
+                    <DataField _obj={_obj} _fld="phone"/>
+                    <DataField _obj={_obj} _fld="email"/>
+                    <DataField _obj={_obj} _fld="rank"/>
 
                     <br />
                     <Divider />
@@ -165,7 +166,7 @@ export default class UserObj extends Component {
                       label="Яндекс"
                       className={classes.social_button}
                       labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
-                      icon={<YandexIcon viewBox="0 0 180 190" style={{width: 18, height: 18}} color={red500} />}
+                      icon={<YandexIcon viewBox="0 0 180 190" style={{width: 18, height: 18}} color={red500}/>}
                       //onTouchTap={this.buttonTouchTap("yandex")}
                     /><br />
                     <RaisedButton
@@ -179,7 +180,7 @@ export default class UserObj extends Component {
                       label="В контакте"
                       className={classes.social_button}
                       labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
-                      icon={<VkontakteIcon viewBox="50 50 400 400" style={{width: 18, height: 18}} color="#4c75a3" />}
+                      icon={<VkontakteIcon viewBox="50 50 400 400" style={{width: 18, height: 18}} color="#4c75a3"/>}
                       //onTouchTap={this.buttonTouchTap("vkontakte")}
                     />
 
@@ -193,7 +194,7 @@ export default class UserObj extends Component {
 
             :
             <div >
-              <CircularProgress size={120} thickness={5} className={classes.progress} />
+              <CircularProgress size={120} thickness={5} className={classes.progress}/>
             </div>
         }
 

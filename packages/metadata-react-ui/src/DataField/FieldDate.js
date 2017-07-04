@@ -6,8 +6,9 @@
  * Created 22.09.2016
  */
 
-import React, {Component, PropTypes} from "react";
-import DatePicker from 'material-ui/DatePicker';
+import React, {Component} from "react";
+import PropTypes from 'prop-types';
+import TextField from 'material-ui/TextField';
 const DateTimeFormat = global.Intl.DateTimeFormat;
 
 export default class FieldDate extends Component {
@@ -36,7 +37,7 @@ export default class FieldDate extends Component {
 
     const {_obj, _fld, handleValueChange} = this.props;
     _obj[_fld] = newValue
-    if(handleValueChange){
+    if (handleValueChange) {
       handleValueChange(newValue)
     }
 
@@ -48,15 +49,13 @@ export default class FieldDate extends Component {
     const {props, state, handleChange} = this;
     const {_obj, _fld, _meta} = props;
 
-    return <DatePicker
+    return <TextField
       name={_fld}
+      type="date"
       hintText="_meta.tooltip || _meta.synonym"
       value={state.controlledDate}
       onChange={handleChange}
       DateTimeFormat={DateTimeFormat}
-      autoOk
-      mode="landscape"
-      cancelLabel="Отмена"
       locale="ru-RU"
     />
   }

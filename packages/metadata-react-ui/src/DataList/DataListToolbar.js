@@ -1,16 +1,18 @@
-import React, {Component, PropTypes} from "react";
+import React, {Component} from "react";
+import PropTypes from 'prop-types';
 import {Toolbar, ToolbarGroup, ToolbarSeparator} from "material-ui/Toolbar";
 import IconButton from "material-ui/IconButton";
-
-import AddIcon from "material-ui/svg-icons/content/add-circle-outline";
-import RemoveIcon from "material-ui/svg-icons/action/delete";
-import EditIcon from "material-ui/svg-icons/image/edit";
-import IconMenu from "material-ui/IconMenu";
-import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert";
 import MenuItem from "material-ui/MenuItem";
-import PrintIcon from "material-ui/svg-icons/action/print";
-import AttachIcon from "material-ui/svg-icons/editor/attach-file";
-import SelectIcon from "material-ui/svg-icons/av/playlist-add-check";
+import IconMenu from "material-ui/IconMenu";
+
+import AddIcon from "material-ui-icons/AddCircleOutline";
+import RemoveIcon from "material-ui-icons/Delete";
+import EditIcon from "material-ui-icons/Edit";
+import MoreVertIcon from "material-ui-icons/MoreVert";
+import PrintIcon from "material-ui-icons/Print";
+import AttachIcon from "material-ui-icons/AttachFile";
+import SelectIcon from "material-ui-icons/PlaylistAddCheck";
+
 import SchemeSettings from "../SchemeSettings";
 import styles from "./DataListToolbar.scss";
 
@@ -37,7 +39,7 @@ export default class DataListToolbar extends Component {
 
     const buttons = [];
 
-    if(props.selection_mode){
+    if (props.selection_mode) {
       buttons.push(
         <IconButton key="select" touch={true} tooltip="Выбрать из списка" tooltipPosition="bottom-right" onTouchTap={props.handleSelect}>
           <SelectIcon />
@@ -45,7 +47,7 @@ export default class DataListToolbar extends Component {
       );
     }
 
-    if(!props.deny_add_del){
+    if (!props.deny_add_del) {
       buttons.push(
         <IconButton key="create" touch={true} tooltip="Создать объект" tooltipPosition="bottom-right" onTouchTap={props.handleAdd}>
           <AddIcon />
@@ -74,7 +76,7 @@ export default class DataListToolbar extends Component {
             handleSchemeChange={props.handleSchemeChange}
             scheme={props.scheme}
             show_search={props.show_search}
-            show_variants={props.show_variants} />
+            show_variants={props.show_variants}/>
 
           <IconMenu
             iconButtonElement={

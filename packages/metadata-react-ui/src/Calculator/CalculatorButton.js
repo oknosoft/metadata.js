@@ -1,13 +1,8 @@
-import {
-  default as React,
-  Component,
-  PropTypes
-} from "react";
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 
-import SvgIcon from "material-ui/SvgIcon";
-import DropDownMenu from "material-ui/DropDownMenu";
-import classnames from "classnames";
-import classes from "./styles/CalculatorButton.scss";
+import classnames from 'classnames';
+import classes from './styles/CalculatorButton.scss';
 
 export default class CalculatorButton extends Component {
   static propTypes = {
@@ -18,7 +13,7 @@ export default class CalculatorButton extends Component {
     red: PropTypes.bool,
     menu: PropTypes.element,
     disabled: PropTypes.bool,
-  }
+  };
 
   static defaultProps = {
     style: null,
@@ -26,15 +21,15 @@ export default class CalculatorButton extends Component {
     icon: null,
     red: false,
     menu: null,
-    disabled: false
-  }
+    disabled: false,
+  };
 
   constructor(props) {
     super(props);
     this.state = {
       isPressed: false,
-      isMenuVisible: false
-    }
+      isMenuVisible: false,
+    };
   }
 
   handleMouseDown() {
@@ -43,16 +38,16 @@ export default class CalculatorButton extends Component {
     }
 
     this.setState({
-      isPressed: true
+      isPressed: true,
     });
   }
 
   handleMouseUp() {
-    this.setState({ isPressed: false });
+    this.setState({isPressed: false});
   }
 
   handleMouseOut() {
-    this.setState({ isPressed: false });
+    this.setState({isPressed: false});
   }
 
   handleClick() {
@@ -65,10 +60,10 @@ export default class CalculatorButton extends Component {
 
   render() {
     const calculatorButtonClasses = classnames({
-      [classes["meta-calculator-button"]]: true,
-      [classes["meta-calculator-button--red"]]: this.props.red,
-      [classes["meta-calculator-button--is-pressed"]]: this.state.isPressed,
-      [classes["meta-calculator-button--disabled"]]: this.props.disabled,
+      [classes['meta-calculator-button']]: true,
+      [classes['meta-calculator-button--red']]: this.props.red,
+      [classes['meta-calculator-button--is-pressed']]: this.state.isPressed,
+      [classes['meta-calculator-button--disabled']]: this.props.disabled,
     });
 
     return (
@@ -83,7 +78,7 @@ export default class CalculatorButton extends Component {
         {this.props.icon}
         {this.props.text}
 
-        <div className={classes["meta-calculator-button__menu"]}>
+        <div className={classes['meta-calculator-button__menu']}>
           {this.props.menu}
         </div>
       </div>

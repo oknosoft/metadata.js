@@ -1,8 +1,9 @@
 /** @flow */
-import React, {Component, PropTypes} from "react";
+import React, {Component} from "react";
+import PropTypes from 'prop-types';
 import MetaComponent from "../common/MetaComponent";
 
-import { InfiniteLoader, AutoSizer, MultiGrid } from "react-virtualized";
+import {InfiniteLoader, AutoSizer, MultiGrid} from "react-virtualized";
 import DumbLoader from "../DumbLoader";
 import SimpleLoadingMessage from "../SimpleLoadingMessage";
 import Toolbar from "./DataListToolbar";
@@ -230,18 +231,18 @@ export default class DataList extends MetaComponent {
             minimumBatchSize={DataList.LIMIT}>
 
             {({onRowsRendered, registerChild}) => {
-              const onSectionRendered = ({rowOverscanStartIndex, rowOverscanStopIndex, rowStartIndex, rowStopIndex, columnStartIndex, columnStopIndex }) => {
+              const onSectionRendered = ({rowOverscanStartIndex, rowOverscanStopIndex, rowStartIndex, rowStopIndex, columnStartIndex, columnStopIndex}) => {
                 onRowsRendered({
                   overscanStartIndex: rowOverscanStartIndex,
                   overscanStopIndex: rowOverscanStopIndex,
                   startIndex: rowStartIndex * this.state.columns.length + columnStartIndex,
-                  stopIndex:  rowStopIndex  * this.state.columns.length + columnStopIndex
+                  stopIndex: rowStopIndex * this.state.columns.length + columnStopIndex
                 })
               }
 
               return (
                 <AutoSizer>
-                  {({ width, height }) => (
+                  {({width, height}) => (
                     <MultiGrid
                       ref={registerChild}
                       width={width}
@@ -258,9 +259,9 @@ export default class DataList extends MetaComponent {
                       rowHeight={DataList.COLUMN_HEIGHT}
                       onSectionRendered={onSectionRendered}
                       styleTopRightGrid={{
-                          backgroundColor: "#fffbdc",
-                          borderBottom: "1px solid #e0e0e0",
-                      }} />
+                        backgroundColor: "#fffbdc",
+                        borderBottom: "1px solid #e0e0e0",
+                      }}/>
                   )}
                 </AutoSizer>
               )
@@ -271,7 +272,7 @@ export default class DataList extends MetaComponent {
     )
   }
 
-  _getColumnWidth = ({ index }) => {
+  _getColumnWidth = ({index}) => {
     // todo: Take remaining space if width of column equal '*'
     if (!isNaN(parseInt(this.state.columns[index].width))) {
       return DataList.COLUMN_DEFAULT_WIDTH;
@@ -284,7 +285,7 @@ export default class DataList extends MetaComponent {
     return <SimpleLoadingMessage />;
   }
 
-  _cellRenderer = ({ columnIndex, rowIndex, isScrolling, isVisible, key, parent, style }) => {
+  _cellRenderer = ({columnIndex, rowIndex, isScrolling, isVisible, key, parent, style}) => {
     const {
       state,
       props,
@@ -367,11 +368,11 @@ export default class DataList extends MetaComponent {
     return row % 2 === 0 ? styles.evenRow : styles.oddRow
   }
 
-  _isRowLoaded = ({ index }) => {
+  _isRowLoaded = ({index}) => {
     return this._list.has(index);
   }
 
-  _loadMoreRows = ({ startIndex, stopIndex }) => {
+  _loadMoreRows = ({startIndex, stopIndex}) => {
     const {select, scheme, rowsLoaded} = this.state
     const {_mgr, params} = this.props
     const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);

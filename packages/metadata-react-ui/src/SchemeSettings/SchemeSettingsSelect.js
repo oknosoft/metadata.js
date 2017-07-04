@@ -4,13 +4,14 @@
  *
  * Created 19.12.2016
  */
-import React, {Component, PropTypes} from "react";
+import React, {Component} from "react";
+import PropTypes from 'prop-types';
 import {Toolbar, ToolbarGroup, ToolbarTitle} from "material-ui/Toolbar";
 import IconButton from "material-ui/IconButton";
 import DataField, {FieldSelect} from "../DataField";
 import Divider from 'material-ui/Divider';
-import SaveIcon from "material-ui/svg-icons/content/save";
-import CopyIcon from "material-ui/svg-icons/content/content-copy";
+import SaveIcon from "material-ui-icons/Save";
+import CopyIcon from "material-ui-icons/ContentCopy";
 import styles from "./styles/SchemeSettingsSelect.scss";
 
 export default class SchemeSettingsSelect extends Component {
@@ -76,14 +77,14 @@ export default class SchemeSettingsSelect extends Component {
             </ToolbarGroup>
 
             <ToolbarGroup className={"meta-toolbar-group"}>
-              <ToolbarTitle text="Настройка" />
+              <ToolbarTitle text="Настройка"/>
               <div style={{width: 200}}>
                 <FieldSelect
                   ref="fld_scheme"
                   _obj={_obj}
                   _fld="scheme"
                   _meta={_meta}
-                  handleValueChange={handleSchemeChange} />
+                  handleValueChange={handleSchemeChange}/>
               </div>
             </ToolbarGroup>
           </Toolbar>
@@ -93,11 +94,11 @@ export default class SchemeSettingsSelect extends Component {
           <DataField
             _obj={scheme}
             _fld="name"
-            handleValueChange={handleNameChange} />
+            handleValueChange={handleNameChange}/>
 
           <DataField
             _obj={scheme}
-            _fld="query" />
+            _fld="query"/>
         </div>
       </div>
     )

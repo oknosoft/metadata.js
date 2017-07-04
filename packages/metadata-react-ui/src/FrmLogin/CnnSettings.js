@@ -1,4 +1,5 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 
 import TextField from 'material-ui/TextField';
 import RaisedButton from 'material-ui/RaisedButton';
@@ -24,15 +25,15 @@ export default class CnnSettings extends Component {
     super(props)
 
     const {zone, couch_path, enable_save_pwd, couch_suffix, couch_direct} = props;
-    this.state = {zone, couch_path, couch_suffix, enable_save_pwd,  couch_direct};
+    this.state = {zone, couch_path, couch_suffix, enable_save_pwd, couch_direct};
   }
 
   handleSetPrm = () => {
     this.props.handleSetPrm(this.state)
   }
 
-  valueToState(name){
-    return (event) => this.setState({ [name]: event.target.value })
+  valueToState(name) {
+    return (event) => this.setState({[name]: event.target.value})
   }
 
   render() {
@@ -40,7 +41,7 @@ export default class CnnSettings extends Component {
     const {zone, couch_path, enable_save_pwd, couch_suffix, couch_direct} = this.state;
 
     return (
-      <div className={'meta-padding-18'} >
+      <div className={'meta-padding-18'}>
 
         <TextField
           floatingLabelText="Адрес CouchDB"
@@ -54,32 +55,32 @@ export default class CnnSettings extends Component {
           hintText="zone"
           fullWidth={true}
           onChange={this.valueToState("zone")}
-          value={zone} />
+          value={zone}/>
 
         <TextField
           floatingLabelText="Суффикс пользователя"
           hintText="couch_suffix"
           fullWidth={true}
           onChange={this.valueToState("couch_suffix")}
-          value={couch_suffix} />
+          value={couch_suffix}/>
 
         <Toggle
           label="Прямое подключение без кеширования"
           className={'meta-toggle'}
-          onToggle={() => this.setState({ couch_direct: !couch_direct })}
-          toggled={couch_direct} />
+          onToggle={() => this.setState({couch_direct: !couch_direct})}
+          toggled={couch_direct}/>
 
         <Toggle
           label="Разрешить сохранение пароля"
           className={'meta-toggle'}
-          onToggle={() => this.setState({ enable_save_pwd: !enable_save_pwd })}
-          toggled={enable_save_pwd} />
+          onToggle={() => this.setState({enable_save_pwd: !enable_save_pwd})}
+          toggled={enable_save_pwd}/>
 
         <Divider />
 
         <RaisedButton label="Сохранить настройки"
                       className={'meta-button-18-0'}
-                      onTouchTap={this.handleSetPrm} />
+                      onTouchTap={this.handleSetPrm}/>
 
       </div>
     )
