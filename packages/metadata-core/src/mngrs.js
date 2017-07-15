@@ -83,11 +83,11 @@ export class DataManager extends MetaEventEmitter{
 	metadata(field_name) {
 
 		if(!this._meta){
-			this._meta = md.get(this.class_name)
+			this._meta = this._owner.$p.md.get(this.class_name)
 		}
 
 		if(field_name){
-			return this._meta && this._meta.fields && this._meta.fields[field_name] || md.get(this.class_name, field_name);
+			return this._meta && this._meta.fields && this._meta.fields[field_name] || this._owner.$p.md.get(this.class_name, field_name);
 		}
 		else{
 			return this._meta;
@@ -907,7 +907,7 @@ export class RefDataManager extends DataManager{
 	 * @return {Object|String}
 	 */
 	get_sql_struct(attr){
-		const {md} = this._owner.$p;
+		const {sql_mask, sql_type} = this._owner.$p.md;
 		var t = this,
 			cmd = t.metadata(),
 			res = {}, f, f0, trunc_index = 0,
@@ -969,7 +969,7 @@ export class RefDataManager extends DataManager{
 					if(fld.indexOf(" as ") != -1)
 						s += ", " + fld;
 					else
-						s += md.sql_mask(fld, true);
+						s += sql_mask(fld, true);
 				});
 				return s;
 
@@ -1205,7 +1205,7 @@ export class RefDataManager extends DataManager{
 						}
 					}else
 						f0 = f;
-					sql += ", " + f0 + md.sql_type(t, f, cmd.fields[f].type, true);
+					sql += ", " + f0 + sql_type(t, f, cmd.fields[f].type, true);
 				}
 
 				for(f in cmd["tabular_sections"])
@@ -1220,7 +1220,7 @@ export class RefDataManager extends DataManager{
 					sql += ", id CHAR, name CHAR, is_folder BOOLEAN";
 
 				for(f in cmd.fields)
-					sql += md.sql_mask(f) + md.sql_type(t, f, cmd.fields[f].type);
+					sql += sql_mask(f) + sql_type(t, f, cmd.fields[f].type);
 
 				for(f in cmd["tabular_sections"])
 					sql += ", " + "`ts_" + f + "` JSON";
@@ -1251,7 +1251,7 @@ export class RefDataManager extends DataManager{
 
 			}
 			for(f in cmd.fields){
-				sql += md.sql_mask(f);
+				sql += sql_mask(f);
 				fields.push(f);
 			}
 			for(f in cmd["tabular_sections"]){
@@ -1709,6 +1709,7 @@ export class RegisterManager extends DataManager{
 	 * @return {Object|String}
 	 */
 	get_sql_struct(attr) {
+		const {sql_mask, sql_type} = this._owner.$p.md;
 		var t = this,
 			cmd = t.metadata(),
 			res = {}, f,
@@ -1735,7 +1736,7 @@ export class RegisterManager extends DataManager{
 					if(fld.indexOf(" as ") != -1)
 						s += ", " + fld;
 					else
-						s += md.sql_mask(fld, true);
+						s += sql_mask(fld, true);
 				});
 				return s;
 
@@ -1873,14 +1874,14 @@ export class RegisterManager extends DataManager{
 						first_field = false;
 					}else
 						sql += ", " + f;
-					sql += md.sql_type(t, f, cmd.dimensions[f].type, true);
+					sql += sql_type(t, f, cmd.dimensions[f].type, true);
 				}
 
 				for(f in cmd.resources)
-					sql += ", " + f + md.sql_type(t, f, cmd.resources[f].type, true);
+					sql += ", " + f + sql_type(t, f, cmd.resources[f].type, true);
 
 				for(f in cmd.attributes)
-					sql += ", " + f + md.sql_type(t, f, cmd.attributes[f].type, true);
+					sql += ", " + f + sql_type(t, f, cmd.attributes[f].type, true);
 
 				sql += ", PRIMARY KEY (";
 				first_field = true;
@@ -1902,13 +1903,13 @@ export class RegisterManager extends DataManager{
 				//sql += md.sql_mask(f) + md.sql_type(t, f, cmd.dimensions[f].type);
 
 				for(f in cmd.dimensions)
-					sql += md.sql_mask(f) + md.sql_type(t, f, cmd.dimensions[f].type);
+					sql += sql_mask(f) + sql_type(t, f, cmd.dimensions[f].type);
 
 				for(f in cmd.resources)
-					sql += md.sql_mask(f) + md.sql_type(t, f, cmd.resources[f].type);
+					sql += sql_mask(f) + sql_type(t, f, cmd.resources[f].type);
 
 				for(f in cmd.attributes)
-					sql += md.sql_mask(f) + md.sql_type(t, f, cmd.attributes[f].type);
+					sql += sql_mask(f) + sql_type(t, f, cmd.attributes[f].type);
 
 				// sql += ", PRIMARY KEY (";
 				// first_field = true;

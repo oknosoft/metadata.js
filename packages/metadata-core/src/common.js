@@ -66,7 +66,7 @@ class MetaEngine{
 			 * @type JobPrm
 			 * @final
 			 */
-			job_prm: {value: new JobPrm()},
+			job_prm: {value: new JobPrm(this)},
 
 			/**
 			 * Интерфейс к данным в LocalStorage, AlaSQL и IndexedDB
@@ -209,7 +209,7 @@ class MetaEngine{
 /**
  * Конструкторы объектов данных
  */
-MetaEngine.classes = Object.assign({}, data_managers, data_objs, data_tabulars);
+MetaEngine.classes = Object.assign({Meta}, data_managers, data_objs, data_tabulars);
 
 /**
  * Хранилище плагинов

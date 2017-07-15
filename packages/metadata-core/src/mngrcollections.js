@@ -11,7 +11,7 @@ class ManagersCollection {
 	}
 
 	create(name, constructor) {
-		this[name] = new (constructor || this.constructor)(this, this.name + '.' + name);
+		this[name] = new (constructor || this._constructor)(this, this.name + '.' + name);
 	}
 }
 
@@ -27,7 +27,7 @@ class Enumerations extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'enm';
-		this.constructor = EnumManager;
+		this._constructor = EnumManager;
 	}
 
 }
@@ -44,7 +44,7 @@ class Catalogs extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'cat';
-		this.constructor = CatManager;
+		this._constructor = CatManager;
 	}
 }
 
@@ -60,7 +60,7 @@ class Documents extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'doc';
-		this.constructor = DocManager;
+		this._constructor = DocManager;
 	}
 }
 
@@ -76,7 +76,7 @@ class InfoRegs extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'ireg';
-		this.constructor = InfoRegManager;
+		this._constructor = InfoRegManager;
 	}
 }
 
@@ -92,7 +92,7 @@ class AccumRegs extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'areg';
-		this.constructor = AccumRegManager;
+		this._constructor = AccumRegManager;
 	}
 }
 
@@ -108,7 +108,7 @@ class AccountsRegs extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'accreg';
-		this.constructor = AccumRegManager;
+		this._constructor = AccumRegManager;
 	}
 }
 
@@ -124,7 +124,7 @@ class DataProcessors extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'dp';
-		this.constructor = DataProcessorsManager;
+		this._constructor = DataProcessorsManager;
 	}
 }
 
@@ -140,7 +140,7 @@ class Reports extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'rep';
-		this.constructor = DataProcessorsManager;
+		this._constructor = DataProcessorsManager;
 	}
 }
 
@@ -156,7 +156,7 @@ class ChartsOfAccounts extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'cacc';
-		this.constructor = ChartOfAccountManager;
+		this._constructor = ChartOfAccountManager;
 	}
 }
 
@@ -172,7 +172,7 @@ class ChartsOfCharacteristics extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'cch';
-		this.constructor = ChartOfCharacteristicManager;
+		this._constructor = ChartOfCharacteristicManager;
 	}
 }
 
@@ -188,7 +188,7 @@ class Tasks extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'tsk';
-		this.constructor = TaskManager;
+		this._constructor = TaskManager;
 	}
 }
 
@@ -204,7 +204,7 @@ class BusinessProcesses extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'bp';
-		this.constructor = BusinessProcessManager;
+		this._constructor = BusinessProcessManager;
 	}
 }
 

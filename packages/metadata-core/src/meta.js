@@ -352,9 +352,7 @@ class Meta extends MetaEventEmitter {
 			if (!pg)
 				sql = ' CHAR';
 
-			else if (mf.types.every(function (v) {
-					return v.indexOf('enm.') == 0;
-				}))
+			else if (mf.types.every((v) => v.indexOf('enm.') == 0))
 				sql = ' character varying(100)';
 
 			else if (!mf.hasOwnProperty('str_len'))

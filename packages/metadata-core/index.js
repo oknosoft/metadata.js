@@ -195,10 +195,10 @@ class DataManager extends metadataAbstractAdapter.MetaEventEmitter{
 	}
 	metadata(field_name) {
 		if(!this._meta){
-			this._meta = md.get(this.class_name);
+			this._meta = this._owner.$p.md.get(this.class_name);
 		}
 		if(field_name){
-			return this._meta && this._meta.fields && this._meta.fields[field_name] || md.get(this.class_name, field_name);
+			return this._meta && this._meta.fields && this._meta.fields[field_name] || this._owner.$p.md.get(this.class_name, field_name);
 		}
 		else{
 			return this._meta;
@@ -652,7 +652,7 @@ class RefDataManager extends DataManager{
 		return this.get();
 	}
 	get_sql_struct(attr){
-		const {md} = this._owner.$p;
+		const {sql_mask, sql_type} = this._owner.$p.md;
 		var t = this,
 			cmd = t.metadata(),
 			res = {}, f, f0, trunc_index = 0,
@@ -699,7 +699,7 @@ class RefDataManager extends DataManager{
 					if(fld.indexOf(" as ") != -1)
 						s += ", " + fld;
 					else
-						s += md.sql_mask(fld, true);
+						s += sql_mask(fld, true);
 				});
 				return s;
 			}
@@ -873,7 +873,7 @@ class RefDataManager extends DataManager{
 						}
 					}else
 						f0 = f;
-					sql += ", " + f0 + md.sql_type(t, f, cmd.fields[f].type, true);
+					sql += ", " + f0 + sql_type(t, f, cmd.fields[f].type, true);
 				}
 				for(f in cmd["tabular_sections"])
 					sql += ", " + "ts_" + f + " JSON";
@@ -884,7 +884,7 @@ class RefDataManager extends DataManager{
 				else
 					sql += ", id CHAR, name CHAR, is_folder BOOLEAN";
 				for(f in cmd.fields)
-					sql += md.sql_mask(f) + md.sql_type(t, f, cmd.fields[f].type);
+					sql += sql_mask(f) + sql_type(t, f, cmd.fields[f].type);
 				for(f in cmd["tabular_sections"])
 					sql += ", " + "`ts_" + f + "` JSON";
 			}
@@ -907,7 +907,7 @@ class RefDataManager extends DataManager{
 				fields.push("number_doc");
 			}
 			for(f in cmd.fields){
-				sql += md.sql_mask(f);
+				sql += sql_mask(f);
 				fields.push(f);
 			}
 			for(f in cmd["tabular_sections"]){
@@ -1177,6 +1177,7 @@ class RegisterManager extends DataManager{
 		return res;
 	};
 	get_sql_struct(attr) {
+		const {sql_mask, sql_type} = this._owner.$p.md;
 		var t = this,
 			cmd = t.metadata(),
 			res = {}, f,
@@ -1196,7 +1197,7 @@ class RegisterManager extends DataManager{
 					if(fld.indexOf(" as ") != -1)
 						s += ", " + fld;
 					else
-						s += md.sql_mask(fld, true);
+						s += sql_mask(fld, true);
 				});
 				return s;
 			}
@@ -1292,12 +1293,12 @@ class RegisterManager extends DataManager{
 						first_field = false;
 					}else
 						sql += ", " + f;
-					sql += md.sql_type(t, f, cmd.dimensions[f].type, true);
+					sql += sql_type(t, f, cmd.dimensions[f].type, true);
 				}
 				for(f in cmd.resources)
-					sql += ", " + f + md.sql_type(t, f, cmd.resources[f].type, true);
+					sql += ", " + f + sql_type(t, f, cmd.resources[f].type, true);
 				for(f in cmd.attributes)
-					sql += ", " + f + md.sql_type(t, f, cmd.attributes[f].type, true);
+					sql += ", " + f + sql_type(t, f, cmd.attributes[f].type, true);
 				sql += ", PRIMARY KEY (";
 				first_field = true;
 				if(cmd.splitted){
@@ -1314,11 +1315,11 @@ class RegisterManager extends DataManager{
 			}else{
 				sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `_deleted` BOOLEAN";
 				for(f in cmd.dimensions)
-					sql += md.sql_mask(f) + md.sql_type(t, f, cmd.dimensions[f].type);
+					sql += sql_mask(f) + sql_type(t, f, cmd.dimensions[f].type);
 				for(f in cmd.resources)
-					sql += md.sql_mask(f) + md.sql_type(t, f, cmd.resources[f].type);
+					sql += sql_mask(f) + sql_type(t, f, cmd.resources[f].type);
 				for(f in cmd.attributes)
-					sql += md.sql_mask(f) + md.sql_type(t, f, cmd.attributes[f].type);
+					sql += sql_mask(f) + sql_type(t, f, cmd.attributes[f].type);
 			}
 			sql += ")";
 			return sql;
@@ -3052,9 +3053,7 @@ class Meta extends metadataAbstractAdapter.MetaEventEmitter {
 		else if (mf.is_ref || mf.types.indexOf('guid') != -1) {
 			if (!pg)
 				sql = ' CHAR';
-			else if (mf.types.every(function (v) {
-					return v.indexOf('enm.') == 0;
-				}))
+			else if (mf.types.every((v) => v.indexOf('enm.') == 0))
 				sql = ' character varying(100)';
 			else if (!mf.hasOwnProperty('str_len'))
 				sql = ' uuid';
@@ -3262,91 +3261,91 @@ class ManagersCollection {
 		return msg('meta_classes')[this.name];
 	}
 	create(name, constructor) {
-		this[name] = new (constructor || this.constructor)(this, this.name + '.' + name);
+		this[name] = new (constructor || this._constructor)(this, this.name + '.' + name);
 	}
 }
 class Enumerations extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'enm';
-		this.constructor = EnumManager;
+		this._constructor = EnumManager;
 	}
 }
 class Catalogs extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'cat';
-		this.constructor = CatManager;
+		this._constructor = CatManager;
 	}
 }
 class Documents extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'doc';
-		this.constructor = DocManager;
+		this._constructor = DocManager;
 	}
 }
 class InfoRegs extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'ireg';
-		this.constructor = InfoRegManager;
+		this._constructor = InfoRegManager;
 	}
 }
 class AccumRegs extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'areg';
-		this.constructor = AccumRegManager;
+		this._constructor = AccumRegManager;
 	}
 }
 class AccountsRegs extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'accreg';
-		this.constructor = AccumRegManager;
+		this._constructor = AccumRegManager;
 	}
 }
 class DataProcessors extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'dp';
-		this.constructor = DataProcessorsManager;
+		this._constructor = DataProcessorsManager;
 	}
 }
 class Reports extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'rep';
-		this.constructor = DataProcessorsManager;
+		this._constructor = DataProcessorsManager;
 	}
 }
 class ChartsOfAccounts extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'cacc';
-		this.constructor = ChartOfAccountManager;
+		this._constructor = ChartOfAccountManager;
 	}
 }
 class ChartsOfCharacteristics extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'cch';
-		this.constructor = ChartOfCharacteristicManager;
+		this._constructor = ChartOfCharacteristicManager;
 	}
 }
 class Tasks extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'tsk';
-		this.constructor = TaskManager;
+		this._constructor = TaskManager;
 	}
 }
 class BusinessProcesses extends ManagersCollection {
 	constructor($p) {
 		super($p);
 		this.name = 'bp';
-		this.constructor = BusinessProcessManager;
+		this._constructor = BusinessProcessManager;
 	}
 }
 function mngrs($p) {
@@ -3642,7 +3641,7 @@ class MetaEngine$1{
 			adapters: {
 				value: {}
 			},
-			job_prm: {value: new JobPrm()},
+			job_prm: {value: new JobPrm(this)},
 			wsql: { value: new WSQL(this) },
 			aes: { value: new Aes("metadata.js") },
 			md: { value: new Meta(this) }
@@ -3706,7 +3705,7 @@ class MetaEngine$1{
 		return MetaEngine$1;
     }
 }
-MetaEngine$1.classes = Object.assign({}, data_managers, data_objs, data_tabulars);
+MetaEngine$1.classes = Object.assign({Meta}, data_managers, data_objs, data_tabulars);
 MetaEngine$1._plugins = [];
 
 module.exports = MetaEngine$1;
