@@ -8,12 +8,8 @@ const cleanup = require('rollup-plugin-cleanup');
 const path = require('path');
 const package_data = require(path.resolve(__dirname, './package.json'));
 
-const external = ['clipboard'];
-const plugins = [
-	resolve({jsnext: true, main: true}),
-	replace({PACKAGE_VERSION: package_data.version}),
-	cleanup(),
-];
+const depsToSkip = ['events'];
+
 const header = `/*!
  ${package_data.name} v${package_data.version}, built:${new Date().toISOString().split('T')[0]}
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
@@ -21,25 +17,27 @@ const header = `/*!
  */\n\n`;
 
 return rollup({
-	entry: path.resolve(__dirname, './src/plugin.js'),
-	external,
-	plugins,
+	entry: path.resolve(__dirname, './src/abstract_adapter.js'),
+	external: depsToSkip,
+	plugins: [
+		resolve({jsnext: true, main: true}),
+		replace({
+			PACKAGE_VERSION: package_data.version,
+		}),
+		cleanup(),
+	],
 })
 	.then((bundle) => bundle.generate({
 		format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
-		moduleName: package_data.name.replace(/-/g, '_') + '_plugin',
+		moduleName: package_data.name.replace(/-/g, '_'),
 		//sourceMap: true,
 	}))
-	.then((result) => fs.writeFileSync(path.resolve(__dirname, './index.js'), header + result.code))
-	.then(() => rollup({
-		entry: path.resolve(__dirname, './src/meta.js'),
-		external,
-		plugins,
-	}))
-	.then((bundle) => bundle.generate({
-		format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
-		moduleName: package_data.name.replace(/-/g, '_') + '_meta',
-		//sourceMap: true,
-	}))
-	.then((result) => fs.writeFileSync(path.resolve(__dirname, './meta.js'), header + result.code));
+	.then((result) => fs.writeFileSync(path.resolve(__dirname, './index.js'), header + result.code));
+
+// bundle.write({
+// 	format: 'umd', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
+// 	moduleName: package_data.name.replace(/-/g, '_'),
+// 	dest: path.resolve(__dirname, './index.js'),
+// 	//sourceMap: true,
+// });
 

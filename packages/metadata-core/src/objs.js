@@ -5,6 +5,8 @@
  * @submodule meta_objs
  */
 
+import utils from './utils';
+import {DataProcessorsManager, EnumManager, RegisterManager} from './mngrs'
 
 /**
  * ### Абстрактный объект данных
@@ -25,12 +27,12 @@
  * @menuorder 20
  * @tooltip Объект данных
  */
-class DataObj {
+export class DataObj {
 
 	constructor(attr, manager) {
 
 		// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
-		if(!(manager instanceof classes.DataProcessorsManager) && !(manager instanceof classes.EnumManager)){
+		if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)){
 			const tmp = manager.get(attr, true);
 			if(tmp){
 				return tmp;
@@ -50,7 +52,7 @@ class DataObj {
 			 */
 			_obj: {
 				value: {
-					ref: manager instanceof classes.EnumManager ? attr.name : (manager instanceof classes.RegisterManager ? manager.get_ref(attr) : utils.fix_guid(attr))
+					ref: manager instanceof EnumManager ? attr.name : (manager instanceof RegisterManager ? manager.get_ref(attr) : utils.fix_guid(attr))
 				},
 				configurable: true
 			},
@@ -100,7 +102,8 @@ class DataObj {
 	_getter(f) {
 
 		const mf = this._metadata(f).type;
-		const res = this._obj ? this._obj[f] : "";
+		const {_obj} = this;
+		const res = _obj ? _obj[f] : "";
 
 		if(f == "type" && typeof res == "object"){
 			return res;
@@ -118,7 +121,7 @@ class DataObj {
 				return res;
 			}
 
-			let	mgr = utils.value_mgr(this._obj, f, mf)
+			let	mgr = this._manager.value_mgr(_obj, f, mf)
 			if(mgr){
 				if(utils.is_data_mgr(mgr)){
 					return mgr.get(res);
@@ -129,28 +132,28 @@ class DataObj {
 			}
 
 			if(res){
-				console.log([f, mf, this._obj]);
+				console.log([f, mf, _obj]);
 				return null;
 			}
 
 		}else if(mf.date_part){
-			return utils.fix_date(this._obj[f], true);
+			return utils.fix_date(_obj[f], true);
 		}
 		else if(mf.digits){
-			return utils.fix_number(this._obj[f], !mf.hasOwnProperty("str_len"));
+			return utils.fix_number(_obj[f], !mf.hasOwnProperty("str_len"));
 		}
 		else if(mf.types[0]=="boolean"){
-			return utils.fix_boolean(this._obj[f]);
+			return utils.fix_boolean(_obj[f]);
 		}
 		else{
-			return this._obj[f] || "";
+			return _obj[f] || "";
 		}
 	}
 
 	__setter(f, v) {
 
-		const {_obj} = this;
 		const mf = this._metadata(f).type;
+		const {_obj} = this;
 
 		if(f == "type" && v.types){
 			_obj[f] = v;
@@ -172,9 +175,9 @@ class DataObj {
 				if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1){
 
 				}else{
-					let mgr = utils.value_mgr(_obj, f, mf, false, v);
+					let mgr = this._manager.value_mgr(_obj, f, mf, false, v);
 					if(mgr){
-						if(mgr instanceof classes.EnumManager){
+						if(mgr instanceof EnumManager){
 							if(typeof v == "string")
 								_obj[f] = v;
 
@@ -634,7 +637,6 @@ Object.defineProperty(DataObj.prototype, "ref", {
 })
 
 
-
 /**
  * ### Абстрактный класс СправочникОбъект
  * @class CatObj
@@ -643,7 +645,7 @@ Object.defineProperty(DataObj.prototype, "ref", {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
  */
-class CatObj extends DataObj {
+export class CatObj extends DataObj {
 
 	constructor(attr, manager){
 
@@ -737,7 +739,7 @@ class CatObj extends DataObj {
  * @param superclass
  * @constructor
  */
-const NumberDocAndDate = (superclass) => class extends superclass {
+export const NumberDocAndDate = (superclass) => class extends superclass {
 
 	/**
 	 * Номер документа
@@ -775,7 +777,7 @@ const NumberDocAndDate = (superclass) => class extends superclass {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
  */
-class DocObj extends NumberDocAndDate(DataObj) {
+export class DocObj extends NumberDocAndDate(DataObj) {
 
 	constructor(attr, manager){
 
@@ -827,7 +829,7 @@ class DocObj extends NumberDocAndDate(DataObj) {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {DataManager}
  */
-class DataProcessorObj extends DataObj {
+export class DataProcessorObj extends DataObj {
 
 	constructor(attr, manager) {
 
@@ -859,7 +861,7 @@ class DataProcessorObj extends DataObj {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {DataManager}
  */
-class TaskObj extends NumberDocAndDate(CatObj) {
+export class TaskObj extends NumberDocAndDate(CatObj) {
 
 }
 
@@ -872,7 +874,7 @@ class TaskObj extends NumberDocAndDate(CatObj) {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {DataManager}
  */
-class BusinessProcessObj extends NumberDocAndDate(CatObj) {
+export class BusinessProcessObj extends NumberDocAndDate(CatObj) {
 
 }
 
@@ -887,7 +889,7 @@ class BusinessProcessObj extends NumberDocAndDate(CatObj) {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {EnumManager}
  */
-class EnumObj extends DataObj {
+export class EnumObj extends DataObj {
 
 	constructor(attr, manager) {
 
@@ -980,7 +982,7 @@ class EnumObj extends DataObj {
  * @param attr {object} - объект, по которому запись будет заполнена
  * @param manager {InfoRegManager|AccumRegManager}
  */
-class RegisterRow extends DataObj {
+export class RegisterRow extends DataObj {
 
 	constructor(attr, manager) {
 
@@ -1037,11 +1039,5 @@ class RegisterRow extends DataObj {
 	}
 }
 
-
-/**
- * Здесь живут ссылки на конструкторы классов
- * @type {{}}
- */
-export const classes = {DataObj, CatObj, DocObj, DataProcessorObj, TaskObj, BusinessProcessObj, EnumObj, RegisterRow};
 
 

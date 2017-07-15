@@ -10,53 +10,22 @@
  * @menuorder 04
  * @tooltip Параметры приложения
  */
-class JobPrm{
+export default class JobPrm {
 
-	constructor(){
-
-		Object.defineProperties(this, {
-
-			local_storage_prefix: {
-				value: "",
-				writable: true
-			},
-
-			create_tables: {
-				value: true,
-				writable: true
-			},
-
-
-			/**
-			 * Адрес http интерфейса библиотеки интеграции
-			 * @method irest_url
-			 * @return {string}
-			 */
-			irest_url: {
-				value: function () {
-					var url = base_url(),
-						zone = $p.wsql.get_user_param("zone", this.zone_is_string ? "string" : "number");
-					url = url.replace("odata/standard.odata", "hs/rest");
-					if(zone)
-						return url.replace("%1", zone);
-					else
-						return url.replace("%1/", "");
-				}
-			}
-		})
-
+	constructor($p) {
+		this.$p = $p;
+		this.local_storage_prefix = '';
+		this.create_tables = true;
 	}
 
-	init(settings){
-
+	init(settings) {
 		// подмешиваем параметры, заданные в файле настроек сборки
-		if(typeof settings == "function")
+		if (typeof settings == 'function')
 			settings(this);
-
 	}
 
-	base_url(){
-		return $p.wsql.get_user_param("rest_path") || this.rest_path || "/a/zd/%1/odata/standard.odata/";
+	base_url() {
+		return this.$p.wsql.get_user_param('rest_path') || this.rest_path || '/a/zd/%1/odata/standard.odata/';
 	}
 
 	/**
@@ -65,12 +34,20 @@ class JobPrm{
 	 * @return {string}
 	 */
 	rest_url() {
-		var url = this.base_url(),
-		zone = $p.wsql.get_user_param("zone", this.zone_is_string ? "string" : "number");
-		if(zone)
-		return url.replace("%1", zone);
-		else
-		return url.replace("%1/", "");
+		const url = this.base_url();
+		const zone = this.$p.wsql.get_user_param('zone', this.zone_is_string ? 'string' : 'number');
+		return zone ? url.replace('%1', zone) : url.replace('%1/', '');
+	}
+
+	/**
+	 * Адрес http интерфейса библиотеки интеграции
+	 * @method irest_url
+	 * @return {string}
+	 */
+	irest_url() {
+		const url = this.base_url().replace('odata/standard.odata', 'hs/rest');
+		const zone = this.$p.wsql.get_user_param('zone', this.zone_is_string ? 'string' : 'number');
+		return zone ? url.replace('%1', zone) : url.replace('%1/', '');
 	}
 
 	/**

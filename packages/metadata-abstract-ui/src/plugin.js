@@ -6,6 +6,12 @@
  * Created 05.10.2016
  */
 
+import tabulars from './tabulars';
+import ui from './ui';
+import meta_objs from './meta_objs';
+import log_manager from './log_manager';
+import scheme_settings from './scheme_settings';
+
 /**
  * Экспортируем объект-плагин для модификации metadata.js
  */
@@ -16,9 +22,9 @@ export default {
 	 * @param constructor {MetaEngine}
 	 * @param classes {Object}
 	 */
-	proto(constructor, classes) {
-		ui(constructor, classes)
-		tabulars(constructor, classes)
+	proto(constructor) {
+		ui(constructor)
+		tabulars(constructor)
 	},
 
 	/**

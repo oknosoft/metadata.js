@@ -42,15 +42,15 @@ export class MetaEventEmitter extends EventEmitter{
 
 }
 
-export default class AbstracrAdapter extends MetaEventEmitter{
+export class AbstracrAdapter extends MetaEventEmitter{
 
 	constructor($p) {
 		super();
-		Object.defineProperty(this, '$p', {value: $p});
+		this.$p = $p;
 	}
 
 	/**
-	 * ### Читает объект из pouchdb
+	 * ### Читает объект из внешней базы
 	 *
 	 * @method load_obj
 	 * @param tObj {DataObj} - объект данных, который необходимо прочитать - дозаполнить

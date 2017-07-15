@@ -315,27 +315,6 @@ const metadataCoreFiles = [
     './packages/metadata-core/src/common.js'
 ];
 
-// metadata-core
-gulp.task('build--core', function(){
-
-	package_data = JSON.parse(require('fs').readFileSync('./packages/metadata-core/package.json', 'utf8'));
-
-	return gulp.src(metadataCoreFiles)
-
-		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
-		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
-
-		.pipe(concat('index.js'))
-
-		.pipe(babel({
-			//presets: ['es2016'],
-			plugins: ['transform-es2015-modules-commonjs'],
-			compact: false,
-            comments: false
-        }))
-        .pipe(gulp.dest('./packages/metadata-core'));
-});
-
 
 // Ресурсы для codres
 gulp.task('injected-codres', function(){

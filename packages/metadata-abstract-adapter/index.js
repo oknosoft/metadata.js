@@ -1,141 +1,68 @@
+/*!
+ metadata-abstract-adapter v2.0.1-beta.18, built:2017-07-15
+ © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
+ metadata.js may be freely distributed under the MIT. To obtain "Commercial License", contact info@oknosoft.ru
+ */
+
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-exports.MetaEventEmitter = undefined;
+Object.defineProperty(exports, '__esModule', { value: true });
 
-var _events = require('events');
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var _events2 = _interopRequireDefault(_events);
+var EventEmitter = _interopDefault(require('events'));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/**
- * ### MetaEventEmitter будет прототипом менеджеров данных
- */
-class MetaEventEmitter extends _events2.default {
-
-	/**
-  * Расширяем метод _on_, чтобы в него можно было передать объект
-  * @param type
-  * @param listener
-  */
-	on(type, listener) {
-
-		if (typeof listener == 'function' && typeof type != 'object') {
+class MetaEventEmitter extends EventEmitter{
+	on(type, listener){
+		if(typeof listener == 'function' && typeof type != 'object'){
 			super.on(type, listener);
-		} else {
-			for (let fld in type) {
-				if (typeof type[fld] == 'function') {
+		}
+		else{
+			for(let fld in type){
+				if(typeof type[fld] == 'function'){
 					super.on(fld, type[fld]);
 				}
 			}
 		}
 	}
-
-	off(type, listener) {
-		if (super.off) {
+	off(type, listener){
+		if(super.off){
 			super.off(type, listener);
-		} else {
-			if (listener) {
+		}
+		else{
+			if(listener){
 				super.removeListener(type, listener);
-			} else {
+			}
+			else{
 				super.removeAllListeners(type);
 			}
 		}
 	}
-
 }
-
-exports.MetaEventEmitter = MetaEventEmitter;
-class AbstracrAdapter extends MetaEventEmitter {
-
+class AbstracrAdapter extends MetaEventEmitter{
 	constructor($p) {
 		super();
-		Object.defineProperty(this, '$p', { value: $p });
+		this.$p = $p;
 	}
-
-	/**
-  * ### Читает объект из pouchdb
-  *
-  * @method load_obj
-  * @param tObj {DataObj} - объект данных, который необходимо прочитать - дозаполнить
-  * @return {Promise.<DataObj>} - промис с загруженным объектом
-  */
 	load_obj(tObj) {
-
 		return Promise.resolve(tObj);
 	}
-
-	/**
-  * Загружает объекты из базы данных по массиву ссылок
-  *
-  * @method load_array
-  * @param _mgr {DataManager}
-  * @param refs {Array}
-  * @param with_attachments {Boolean}
-  * @return {*}
-  */
 	load_array(_mgr, refs, with_attachments) {
-
 		return Promise.resolve([]);
 	}
-
-	/**
-  * ### Записывает объект в pouchdb
-  *
-  * @method save_obj
-  * @param tObj {DataObj} - записываемый объект
-  * @param attr {Object} - ополнительные параметры записи
-  * @return {Promise.<DataObj>} - промис с записанным объектом
-  */
 	save_obj(tObj, attr) {
-
 		return Promise.resolve(tObj);
 	}
-
-	/**
-  * ### Возвращает набор данных для дерева динсписка
-  *
-  * @method get_tree
-  * @param _mgr {DataManager}
-  * @param attr
-  * @return {Promise.<Array>}
-  */
-	get_tree(_mgr, attr) {
-
+	get_tree(_mgr, attr){
 		return Promise.resolve([]);
 	}
-
-	/**
-  * ### Возвращает набор данных для динсписка
-  *
-  * @method get_selection
-  * @param _mgr {DataManager}
-  * @param attr
-  * @return {Promise.<Array>}
-  */
-	get_selection(_mgr, attr) {
+	get_selection(_mgr, attr){
 		return Promise.resolve([]);
 	}
-
-	/**
-  * ### Найти строки
-  * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
-  * Eсли отбор пустой, возвращаются все строки из PouchDB.
-  *
-  * @method find_rows
-  * @param _mgr {DataManager}
-  * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
-  * @param [selection._top] {Number}
-  * @param [selection._skip] {Number}
-  * @param [selection._raw] {Boolean} - если _истина_, возвращаются сырые данные, а не дата-объекты
-  * @param [selection._total_count] {Boolean} - если _истина_, вычисляет общее число записей под фильтром, без учета _skip и _top
-  * @return {Promise.<Array>}
-  */
 	find_rows(_mgr, selection) {
 		return Promise.resolve([]);
 	}
 }
-exports.default = AbstracrAdapter;
+
+exports.MetaEventEmitter = MetaEventEmitter;
+exports.AbstracrAdapter = AbstracrAdapter;

@@ -7,9 +7,9 @@
  * Created 08.01.2017
  */
 
-function log_manager() {
+export default function log_manager() {
 
-	const {classes} = this
+	const {classes} = this.constructor;
 
 	/**
 	 * ### Журнал событий

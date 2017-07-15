@@ -1,28 +1,29 @@
 /**
- * ### Действия и типы действий в терминах redux
- *
- * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- * @module actions.js
+ * ### Действия и типы действий объектов данных в терминах redux
  *
  * Created 05.09.2016
  */
 
-// ------------------------------------
-// Actions - функции - генераторы действий. Они передаются в диспетчер redux
-// ------------------------------------
+export const ADD           = 'OBJ_ADD'             // Команда создать объект
+export const ADD_ROW       = 'OBJ_ADD_ROW'         // Команда добавить строку в табчасть объекта
+export const DEL_ROW       = 'OBJ_DEL_ROW'         // Команда удалить строку табчасти объекта
+export const EDIT          = 'OBJ_EDIT'            // Команда открыть форму редактирования объекта
+export const REVERT        = 'OBJ_REVERT'          // Команда вернуть объект в состояние до редактирования (перечитать из базы данных)
+export const SAVE          = 'OBJ_SAVE'            // Команда записать изменённый объект (пометка удаления, проведение и отмена проведения - это так же, запись)
+export const CHANGE        = 'OBJ_CHANGE'          // Записан изменённый объект (по команде интерфейса или в результате репликации)
+export const VALUE_CHANGE  = 'OBJ_VALUE_CHANGE'    // Изменён реквизит шапки или строки табчасти
 
-
-function obj_add(_mgr) {
+export function add(_mgr) {
 	const _obj = _mgr.create()
 	return {
-		type: OBJ_ADD,
+		type: ADD,
 		payload: {class_name: _mgr.class_name, ref: _obj.ref}
 	}
 }
 
-function obj_add_row(class_name, ref, tabular, proto) {
+export function add_row(class_name, ref, tabular, proto) {
 	return {
-		type: OBJ_ADD_ROW,
+		type: ADD_ROW,
 		payload: {
 			class_name: class_name,
 			ref: ref,
@@ -40,7 +41,7 @@ function obj_add_row(class_name, ref, tabular, proto) {
  * @param index
  * @return {function(): Promise.<T>}
  */
-function obj_del_row(class_name, ref, tabular, index) {
+export function del_row(class_name, ref, tabular, index) {
 	// удаляем строку
 
 	// возвращаем thunk
@@ -54,9 +55,9 @@ function obj_del_row(class_name, ref, tabular, index) {
  * @param frm
  * @return {{type: string, payload: {class_name: *, ref: *, frm: *}}}
  */
-function obj_edit(class_name, ref, frm) {
+export function edit(class_name, ref, frm) {
 	return {
-		type: OBJ_EDIT,
+		type: EDIT,
 		payload: {
 			class_name: class_name,
 			ref: ref,
@@ -65,12 +66,12 @@ function obj_edit(class_name, ref, frm) {
 	}
 }
 
-function obj_revert(class_name, ref) {
+export function revert(class_name, ref) {
 	return (dispatch, getState) => {
 		return new Promise((resolve) => {
 			setTimeout(() => {
 				dispatch(dispatch({
-					type: OBJ_REVERT,
+					type: REVERT,
 					payload: {
 						class_name: class_name,
 						ref: ref
@@ -82,7 +83,7 @@ function obj_revert(class_name, ref) {
 	}
 }
 
-function obj_save(class_name, ref, post, mark_deleted) {
+export function save(class_name, ref, post, mark_deleted) {
 	return (dispatch, getState) => {
 		let _obj
 		if(typeof class_name == 'object'){
@@ -98,7 +99,7 @@ function obj_save(class_name, ref, post, mark_deleted) {
 				.then(
 					() => {
 						dispatch({
-							type: OBJ_SAVE,
+							type: SAVE,
 							payload: {
 								class_name: class_name,
 								ref: ref,
@@ -112,25 +113,25 @@ function obj_save(class_name, ref, post, mark_deleted) {
 	}
 }
 
-function obj_post(class_name, ref) {
-	return obj_save(class_name, ref, true)
+export function post(class_name, ref) {
+	return save(class_name, ref, true)
 }
 
-function obj_unpost(class_name, ref) {
-	return obj_save(class_name, ref, false)
+export function unpost(class_name, ref) {
+	return save(class_name, ref, false)
 }
 
-function obj_mark_deleted(class_name, ref) {
-	return obj_save(class_name, ref, undefined, true)
+export function mark_deleted(class_name, ref) {
+	return save(class_name, ref, undefined, true)
 }
 
-function obj_unmark_deleted(class_name, ref) {
-	return obj_save(class_name, ref, undefined, false)
+export function unmark_deleted(class_name, ref) {
+	return save(class_name, ref, undefined, false)
 }
 
-function obj_change(class_name, ref) {
+export function change(class_name, ref) {
 	return {
-		type: OBJ_CHANGE,
+		type: CHANGE,
 		payload: {
 			class_name: class_name,
 			ref: ref
@@ -138,12 +139,12 @@ function obj_change(class_name, ref) {
 	}
 }
 
-function obj_value_change(class_name, ref) {
+export function value_change(class_name, ref) {
 	return (dispatch, getState) => {
 		return new Promise((resolve) => {
 			setTimeout(() => {
 				dispatch(dispatch({
-					type: OBJ_VALUE_CHANGE,
+					type: VALUE_CHANGE,
 					payload: {
 						class_name: class_name,
 						ref: ref
@@ -154,4 +155,3 @@ function obj_value_change(class_name, ref) {
 		})
 	}
 }
-

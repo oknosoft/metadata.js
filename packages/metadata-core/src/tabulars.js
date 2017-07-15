@@ -5,6 +5,7 @@
  * @submodule meta_tabulars
  */
 
+import utils from './utils';
 
 /**
  * ### Абстрактный объект табличной части
@@ -18,7 +19,7 @@
  * @menuorder 21
  * @tooltip Табличная часть
  */
-class TabularSection {
+export class TabularSection {
 
 	constructor(name, owner) {
 
@@ -292,7 +293,7 @@ class TabularSection {
 			return this.clear(true).load(res);
 		}
 		catch (err) {
-			utils.record_log(err);
+			this._owner._manager._owner.$p.record_log(err);
 		}
 	}
 
@@ -333,7 +334,7 @@ class TabularSection {
 			return this.clear(true).load(res);
 		}
 		catch (err) {
-			utils.record_log(err);
+			this._owner._manager._owner.$p.record_log(err);
 		}
 	}
 
@@ -410,7 +411,7 @@ class TabularSection {
 			return res;
 
 		} catch (err) {
-			utils.record_log(err);
+			this._owner._manager._owner.$p.record_log(err);
 		}
 	};
 
@@ -487,7 +488,7 @@ class TabularSection {
  * @menuorder 22
  * @tooltip Строка табчасти
  */
-class TabularSectionRow {
+export class TabularSectionRow {
 
 	constructor(owner) {
 
@@ -590,5 +591,3 @@ class TabularSectionRow {
 
 }
 
-classes.TabularSection = TabularSection;
-classes.TabularSectionRow = TabularSectionRow;

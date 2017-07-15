@@ -1,5 +1,5 @@
 
-function ui(constructor, classes) {
+export default function ui(constructor) {
 
 	Object.defineProperty(constructor.prototype, 'UI', {
 

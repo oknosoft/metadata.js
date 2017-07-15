@@ -15,24 +15,24 @@
     "alasql": "^0.4",
     "clipboard": "^1.6",
     "debug": "^2.6",
-    "material-ui": "^1.0.0-alpha.20",
+    "material-ui": "^1.0.0-alpha.21",
     "moment": "^2.18",
     "node-localstorage": "^1.3",
-    "pouchdb": "^6.2",
-    "pouchdb-adapter-http": "^6.2",
-    "pouchdb-adapter-idb": "^6.2",
-    "pouchdb-adapter-memory": "^6.2",
-    "pouchdb-adapter-websql": "^6.2",
+    "pouchdb": "^6.3.4",
+    "pouchdb-adapter-http": "^6.3.4",
+    "pouchdb-adapter-idb": "^6.3.4",
+    "pouchdb-adapter-memory": "^6.3.4",
+    "pouchdb-adapter-websql": "^6.3.4",
     "pouchdb-authentication": "^0.5",
-    "pouchdb-core": "^6.2",
-    "pouchdb-find": "^6.2",
-    "pouchdb-mapreduce": "^6.2",
-    "pouchdb-replication": "^6.2",
+    "pouchdb-core": "^6.3.4",
+    "pouchdb-find": "^6.3.4",
+    "pouchdb-mapreduce": "^6.3.4",
+    "pouchdb-replication": "^6.3.4",
     "react-click-outside": "^2.2",
-    "react-data-grid": "^2.0.49",
-    "react-data-grid-addons": "^2.0.49",
+    "react-data-grid": "^2.0.53",
+    "react-data-grid-addons": "^2.0.53",
     "react-panels": "git+https://github.com/unpete/react-panels.git",
-    "react-virtualized": "^9.8.0",
+    "react-virtualized": "^9.9.0",
     "superlogin-client": "^0.6.1"
   },
   "devDependencies": {
@@ -48,7 +48,6 @@
     "babel-plugin-transform-react-remove-prop-types": "^0.4.6",
     "babel-plugin-transform-runtime": "^6.23",
     "babel-polyfill": "^6.23",
-    "babel-preset-es2015": "^6.24",
     "babel-preset-es2016": "^6.24",
     "babel-preset-react": "^6.24",
     "babel-preset-stage-0": "^6.24",
@@ -67,9 +66,12 @@
     "gulp-strip-comments": "^2.4",
     "gulp-uglify": "^2.1",
     "gulp-umd": "^0.2",
-    "lerna": "2.0.0-rc.5",
     "rimraf": "^2.6",
-    "webpack": "^2.6",
+    "rollup": "^0.45.2",
+    "rollup-plugin-cleanup": "^1.0.1",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-replace": "^1.1.1",
+    "webpack": "^2.7.0",
     "yargs": "^8.0.2",
     "yuidocjs": "^0.10"
   },
@@ -82,34 +84,17 @@
     "react-addons-transition-group": "^15.5"
   },
   "scripts": {
+    "build:core": "node ./packages/metadata-core/build.js",
     "build:react-ui": "better-npm-run build:react-ui",
-    "build:abstract-adapter": "better-npm-run build:abstract-adapter",
-    "build:abstract-ui": "better-npm-run build:abstract-ui",
-    "build:adapter-pouchdb": "better-npm-run build:adapter-pouchdb",
-    "build:redux": "better-npm-run build:redux",
+    "build:abstract-adapter": "node ./packages/metadata-abstract-adapter/build.js",
+    "build:abstract-ui": "node ./packages/metadata-abstract-ui/build.js",
+    "build:adapter-pouchdb": "node ./packages/metadata-pouchdb/build.js",
+    "build:redux": "node ./packages/metadata-redux/build.js",
     "build:superlogin": "better-npm-run build:superlogin"
   },
   "betterScripts": {
     "build:react-ui": {
       "command": "node ./packages/metadata-react-ui/src/build.js",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    },
-    "build:abstract-adapter": {
-      "command": "babel ./packages/metadata-abstract-adapter/src/abstract_adapter.js --out-file ./packages/metadata-abstract-adapter/index.js",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    },
-    "build:abstract-ui": {
-      "command": "node ./packages/metadata-abstract-ui/build.js",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    },
-    "build:adapter-pouchdb": {
-      "command": "babel ./packages/metadata-pouchdb/src/pouchdb_adapter.js --out-file ./packages/metadata-pouchdb/index.js",
       "env": {
         "NODE_ENV": "production"
       }

@@ -8,7 +8,7 @@ const cleanup = require('rollup-plugin-cleanup');
 const path = require('path');
 const package_data = require(path.resolve(__dirname, './package.json'));
 
-const external = ['clipboard'];
+const external = ['events', 'pouchdb-*', 'metadata-abstract-adapter'];
 const plugins = [
 	resolve({jsnext: true, main: true}),
 	replace({PACKAGE_VERSION: package_data.version}),
@@ -21,25 +21,14 @@ const header = `/*!
  */\n\n`;
 
 return rollup({
-	entry: path.resolve(__dirname, './src/plugin.js'),
+	entry: path.resolve(__dirname, './src/pouchdb_adapter.js'),
 	external,
 	plugins,
 })
 	.then((bundle) => bundle.generate({
 		format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
-		moduleName: package_data.name.replace(/-/g, '_') + '_plugin',
+		moduleName: package_data.name.replace(/-/g, '_'),
 		//sourceMap: true,
 	}))
-	.then((result) => fs.writeFileSync(path.resolve(__dirname, './index.js'), header + result.code))
-	.then(() => rollup({
-		entry: path.resolve(__dirname, './src/meta.js'),
-		external,
-		plugins,
-	}))
-	.then((bundle) => bundle.generate({
-		format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
-		moduleName: package_data.name.replace(/-/g, '_') + '_meta',
-		//sourceMap: true,
-	}))
-	.then((result) => fs.writeFileSync(path.resolve(__dirname, './meta.js'), header + result.code));
+	.then((result) => fs.writeFileSync(path.resolve(__dirname, './index.js'), header + result.code));
 

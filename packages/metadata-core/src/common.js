@@ -7,6 +7,19 @@
  * @module  metadata
  */
 
+import utils from './utils';
+import Aes from '../lib/aes';
+import JobPrm from './jobprm';
+import WSQL from './wsql';
+import Meta from './meta';
+import msg from './i18n.ru';
+import mngrs from './mngrcollections';
+
+import * as data_managers from './mngrs';
+import * as data_objs from './objs';
+import * as data_tabulars from './tabulars';
+
+
 /**
  * ### Metadata.js - проект с открытым кодом
  * Приглашаем к сотрудничеству всех желающих. Будем благодарны за любую помощь
@@ -30,12 +43,22 @@
  * @menuorder 00
  * @tooltip Контекст metadata.js
  */
-export default class MetaEngine{
+class MetaEngine{
 
 	constructor() {
 
 		// инициируем базовые свойства
 		Object.defineProperties(this, {
+
+			/**
+			 * ### Адаптеры для PouchDB, 1С и т.д.
+			 * @property adapters
+			 * @type Object
+			 * @final
+			 */
+			adapters: {
+				value: {}
+			},
 
 			/**
 			 * ### Параметры работы программы
@@ -76,7 +99,7 @@ export default class MetaEngine{
 		mngrs(this);
 
 		// дублируем метод record_log в utils
-		utils.record_log = this.record_log = this.record_log.bind(this);
+		this.record_log = this.record_log.bind(this);
 
 		// при налчии расширений, выполняем их методы инициализации
 		MetaEngine._plugins.forEach((plugin) => plugin.call(this));
@@ -100,13 +123,6 @@ export default class MetaEngine{
 		return "Oknosoft data engine. v:" + this.version
 	}
 
-	/**
-	 * ### Адаптеры для PouchDB, 1С и т.д.
-	 * @property adapters
-	 * @type Object
-	 * @final
-	 */
-	adapters = {}
 
 	/**
 	 * ### Запись журнала регистрации
@@ -119,6 +135,7 @@ export default class MetaEngine{
 		console && console.log(err);
 	}
 
+
 	/**
 	 * Вспомогательные методы
 	 */
@@ -128,12 +145,6 @@ export default class MetaEngine{
 	 * i18n
 	 */
 	get msg(){ return msg }
-
-	/**
-	 * Конструкторы объектов данных
-	 */
-	get classes(){//noinspection JSUnresolvedVariable
-		return classes }
 
 	/**
 	 * ### Текущий пользователь
@@ -168,14 +179,6 @@ export default class MetaEngine{
 		return user && !user.empty() ? user : null;
 	}
 
-
-	/**
-	 * Хранилище плагинов
-	 * @type {Array}
-	 * @private
-	 */
-	static _plugins = [];
-
 	/**
 	 * ### Подключает расширения metadata
 	 * Принимает в качестве параметра объект с полями `proto` и `constructor` типа _function_
@@ -187,12 +190,10 @@ export default class MetaEngine{
 	static plugin(obj){
 
 		if(typeof obj.proto == "function"){         // function style for plugins
-			obj.proto(MetaEngine, classes);
+			obj.proto(MetaEngine);
 		}
 		else if (typeof obj.proto == 'object'){     // object style for plugins
-			Object.keys(obj.proto).forEach(function (id) {
-				MetaEngine.prototype[id] = obj.proto[id];
-			});
+			Object.keys(obj.proto).forEach((id) => MetaEngine.prototype[id] = obj.proto[id]);
 		}
 
 		if(obj.constructor){
@@ -205,3 +206,16 @@ export default class MetaEngine{
 		return MetaEngine;
     }
 }
+/**
+ * Конструкторы объектов данных
+ */
+MetaEngine.classes = Object.assign({}, data_managers, data_objs, data_tabulars);
+
+/**
+ * Хранилище плагинов
+ * @type {Array}
+ * @private
+ */
+MetaEngine._plugins = [];
+
+export default MetaEngine;
