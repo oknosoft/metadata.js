@@ -699,16 +699,7 @@ export default function scheme_settings() {
 
 	};
 
-	Object.defineProperties(cat, {
-		scheme_settings: {
-			value: new SchemeSettingsManager('cat.scheme_settings'),
-		},
-	});
-
-	Object.defineProperties(dp, {
-		scheme_settings: {
-			value: new SchemeSelectManager('dp.scheme_settings'),
-		},
-	});
+	cat.create('scheme_settings', SchemeSettingsManager);
+	dp.create('scheme_settings', SchemeSelectManager);
 
 };

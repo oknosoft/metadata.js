@@ -43,7 +43,7 @@ import * as data_tabulars from './tabulars';
  * @menuorder 00
  * @tooltip Контекст metadata.js
  */
-class MetaEngine{
+class MetaEngine {
 
 	constructor() {
 
@@ -57,7 +57,7 @@ class MetaEngine{
 			 * @final
 			 */
 			adapters: {
-				value: {}
+				value: {},
 			},
 
 			/**
@@ -74,7 +74,7 @@ class MetaEngine{
 			 * @type WSQL
 			 * @final
 			 */
-			wsql: { value: new WSQL(this) },
+			wsql: {value: new WSQL(this)},
 
 			/**
 			 * Aes для шифрования - дешифрования данных
@@ -83,7 +83,7 @@ class MetaEngine{
 			 * @type Aes
 			 * @final
 			 */
-			aes: { value: new Aes("metadata.js") },
+			aes: {value: new Aes('metadata.js')},
 
 			/**
 			 * ### Mетаданные конфигурации
@@ -91,7 +91,7 @@ class MetaEngine{
 			 * @type Meta
 			 * @static
 			 */
-			md: { value: new Meta(this) }
+			md: {value: new Meta(this)},
 
 		});
 
@@ -116,11 +116,11 @@ class MetaEngine{
 	}
 
 	get version() {
-		return "PACKAGE_VERSION"
+		return 'PACKAGE_VERSION';
 	}
 
 	toString() {
-		return "Oknosoft data engine. v:" + this.version
+		return 'Oknosoft data engine. v:' + this.version;
 	}
 
 
@@ -139,12 +139,16 @@ class MetaEngine{
 	/**
 	 * Вспомогательные методы
 	 */
-	get utils(){ return utils }
+	get utils() {
+		return utils;
+	}
 
 	/**
 	 * i18n
 	 */
-	get msg(){ return msg }
+	get msg() {
+		return msg;
+	}
 
 	/**
 	 * ### Текущий пользователь
@@ -157,21 +161,21 @@ class MetaEngine{
 
 		let user_name, user;
 
-		if(this.superlogin){
+		if (this.superlogin) {
 			const session = this.superlogin.getSession();
-			user_name =  session ? session.user_id : "";
+			user_name = session ? session.user_id : '';
 		}
 
-		if(!user_name){
-			user_name = this.wsql.get_user_param("user_name");
+		if (!user_name) {
+			user_name = this.wsql.get_user_param('user_name');
 		}
 
-		if(this.cat && this.cat.users){
+		if (this.cat && this.cat.users) {
 			user = this.cat.users.by_id(user_name);
-			if(!user || user.empty()){
+			if (!user || user.empty()) {
 				this.cat.users.find_rows_remote({
 					_top: 1,
-					id: user_name
+					id: user_name,
 				});
 			}
 		}
@@ -187,24 +191,26 @@ class MetaEngine{
 	 * @param obj
 	 * @return {MetaEngine}
 	 */
-	static plugin(obj){
+	static plugin(obj) {
 
-		if(typeof obj.proto == "function"){         // function style for plugins
-			obj.proto(MetaEngine);
-		}
-		else if (typeof obj.proto == 'object'){     // object style for plugins
-			Object.keys(obj.proto).forEach((id) => MetaEngine.prototype[id] = obj.proto[id]);
+		if (obj.hasOwnProperty('proto')) {
+			if (typeof obj.proto == 'function') {         // function style for plugins
+				obj.proto(MetaEngine);
+			}
+			else if (typeof obj.proto == 'object') {     // object style for plugins
+				Object.keys(obj.proto).forEach((id) => MetaEngine.prototype[id] = obj.proto[id]);
+			}
 		}
 
-		if(obj.constructor){
-			if(typeof obj.constructor != "function"){
+		if (obj.hasOwnProperty('constructor')) {
+			if (typeof obj.constructor != 'function') {
 				throw new Error('Invalid plugin: constructor must be a function');
 			}
 			MetaEngine._plugins.push(obj.constructor);
 		}
 
 		return MetaEngine;
-    }
+	}
 }
 /**
  * Конструкторы объектов данных
