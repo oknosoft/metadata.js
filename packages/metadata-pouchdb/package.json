@@ -9,7 +9,6 @@
     "npm": "^5.0"
   },
   "dependencies": {
-    "metadata-abstract-adapter": "^2.0.1-beta.18"
   },
   "peerDependencies": {
     "pouchdb-adapter-http": "^6.3",

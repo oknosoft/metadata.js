@@ -1,4 +1,5 @@
-### Abstract data adapter for metadata.js
+### Dhtmlx UI components for metadata.js
 
-Virtual class
+[README in Russian](README.md)
+
 For details, see [metadata.js](https://github.com/oknosoft/metadata.js)

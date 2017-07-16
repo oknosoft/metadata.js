@@ -5,8 +5,11 @@
  * @type Function
  * @final
  */
-const moment = require('moment');
-require('moment/locale/ru');
+
+const moment = (typeof window != 'undefined' && window.moment) || (moment => {
+	require('moment/locale/ru');
+	return moment;
+})(require('moment'));
 moment._masks = {
 	date: 'DD.MM.YY',
 	date_time: 'DD.MM.YYYY HH:mm',

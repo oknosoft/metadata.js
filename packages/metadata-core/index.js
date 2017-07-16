@@ -1,12 +1,15 @@
 /*!
- metadata-core v2.0.1-beta.18, built:2017-07-15
+ metadata-core v2.0.1-beta.18, built:2017-07-16
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
- metadata.js may be freely distributed under the MIT. To obtain "Commercial License", contact info@oknosoft.ru
+ metadata.js may be freely distributed under the MIT
+ To obtain commercial license and technical support, contact info@oknosoft.ru
  */
 
 'use strict';
 
-var metadataAbstractAdapter = require('metadata-abstract-adapter');
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+
+var EventEmitter = _interopDefault(require('events'));
 
 function msg$1(id) {
 	return msg$1.i18n[msg$1.lang][id];
@@ -707,7 +710,35 @@ var data_objs = Object.freeze({
 	RegisterRow: RegisterRow$1
 });
 
-class DataManager extends metadataAbstractAdapter.MetaEventEmitter{
+class MetaEventEmitter extends EventEmitter{
+	on(type, listener){
+		if(typeof listener == 'function' && typeof type != 'object'){
+			super.on(type, listener);
+		}
+		else{
+			for(let fld in type){
+				if(typeof type[fld] == 'function'){
+					super.on(fld, type[fld]);
+				}
+			}
+		}
+	}
+	off(type, listener){
+		if(super.off){
+			super.off(type, listener);
+		}
+		else{
+			if(listener){
+				super.removeListener(type, listener);
+			}
+			else{
+				super.removeAllListeners(type);
+			}
+		}
+	}
+}
+
+class DataManager extends MetaEventEmitter{
 	constructor(owner, class_name) {
 		super();
 		this._owner = owner;
@@ -2037,8 +2068,10 @@ var data_managers = Object.freeze({
 	BusinessProcessManager: BusinessProcessManager
 });
 
-const moment$1 = require('moment');
-require('moment/locale/ru');
+const moment$1 = (typeof window != 'undefined' && window.moment) ? window.moment : (moment => {
+	require('moment/locale/ru');
+	return moment;
+})(require('moment'));
 moment$1._masks = {
 	date: 'DD.MM.YY',
 	date_time: 'DD.MM.YYYY HH:mm',
@@ -2716,7 +2749,7 @@ class JobPrm {
 	}
 }
 
-const alasql$1 = require('alasql/dist/alasql.min');
+const alasql$1 = (typeof window != 'undefined' && window.alasql) ? window.alasql : require('alasql/dist/alasql.min');
 const fake_ls = {
 	setItem(name, value) {},
 	getItem(name) {}
@@ -2854,7 +2887,7 @@ class MetaObj {
 }
 class MetaField {
 }
-class Meta extends metadataAbstractAdapter.MetaEventEmitter {
+class Meta extends MetaEventEmitter {
 	constructor($p) {
 		super();
 		const _m = {};
@@ -3635,17 +3668,41 @@ var data_tabulars = Object.freeze({
 	TabularSectionRow: TabularSectionRow
 });
 
+class AbstracrAdapter extends MetaEventEmitter{
+	constructor($p) {
+		super();
+		this.$p = $p;
+	}
+	load_obj(tObj) {
+		return Promise.resolve(tObj);
+	}
+	load_array(_mgr, refs, with_attachments) {
+		return Promise.resolve([]);
+	}
+	save_obj(tObj, attr) {
+		return Promise.resolve(tObj);
+	}
+	get_tree(_mgr, attr){
+		return Promise.resolve([]);
+	}
+	get_selection(_mgr, attr){
+		return Promise.resolve([]);
+	}
+	find_rows(_mgr, selection) {
+		return Promise.resolve([]);
+	}
+}
+
+const classes = Object.assign({Meta, MetaEventEmitter, AbstracrAdapter}, data_managers, data_objs, data_tabulars);
+
 class MetaEngine$1 {
 	constructor() {
-		Object.defineProperties(this, {
-			adapters: {
-				value: {},
-			},
-			job_prm: {value: new JobPrm(this)},
-			wsql: {value: new WSQL(this)},
-			aes: {value: new Aes('metadata.js')},
-			md: {value: new Meta(this)},
-		});
+		this.classes = classes;
+		this.adapters = {};
+		this.aes = new Aes('metadata.js');
+		this.job_prm = new JobPrm(this);
+		this.wsql = new WSQL(this);
+		this.md = new Meta(this);
 		mngrs(this);
 		this.record_log = this.record_log.bind(this);
 		MetaEngine$1._plugins.forEach((plugin) => plugin.call(this));
@@ -3674,18 +3731,29 @@ class MetaEngine$1 {
 		return msg$1;
 	}
 	get current_user() {
+		const {CatUsers, cat, superlogin, wsql} = this;
+		if(CatUsers && !CatUsers.prototype.hasOwnProperty("role_available")){
+			CatUsers.prototype.__define({
+				role_available: {
+					value: (name) => true
+				},
+				get_acl: {
+					value: (class_name) => "rvuidepo"
+				},
+			});
+		}
 		let user_name, user;
-		if (this.superlogin) {
-			const session = this.superlogin.getSession();
+		if (superlogin) {
+			const session = superlogin.getSession();
 			user_name = session ? session.user_id : '';
 		}
 		if (!user_name) {
-			user_name = this.wsql.get_user_param('user_name');
+			user_name = wsql.get_user_param('user_name');
 		}
-		if (this.cat && this.cat.users) {
-			user = this.cat.users.by_id(user_name);
+		if (cat && cat.users) {
+			user = cat.users.by_id(user_name);
 			if (!user || user.empty()) {
-				this.cat.users.find_rows_remote({
+				cat.users.find_rows_remote({
 					_top: 1,
 					id: user_name,
 				});
@@ -3711,7 +3779,7 @@ class MetaEngine$1 {
 		return MetaEngine$1;
 	}
 }
-MetaEngine$1.classes = Object.assign({Meta}, data_managers, data_objs, data_tabulars);
+MetaEngine$1.classes = classes;
 MetaEngine$1._plugins = [];
 
 module.exports = MetaEngine$1;

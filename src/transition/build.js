@@ -3,14 +3,16 @@
 const fs = require('fs');
 const rollup = require('rollup').rollup;
 const resolve = require('rollup-plugin-node-resolve');
+const builtins = require('rollup-plugin-node-builtins');
 const replace = require('rollup-plugin-replace');
 const cleanup = require('rollup-plugin-cleanup');
 const path = require('path');
-const package_data = require(path.resolve(__dirname, './package.json'));
+const package_data = require(path.resolve(__dirname, '../../package.json'));
 
-const external = [];
+const external = ['moment', 'alasql', 'pouchdb*'];
 const plugins = [
-	resolve({jsnext: true, main: true}),
+	resolve({jsnext: true, main: true, preferBuiltins: true}),
+  builtins(),
 	replace({PACKAGE_VERSION: package_data.version}),
 	cleanup(),
 ];
@@ -19,17 +21,22 @@ const header = `/*!
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
- */\n\n`;
+ */\n`;
 
 return rollup({
-	entry: path.resolve(__dirname, './src/index.js'),
+	entry: path.resolve(__dirname, './src.js'),
 	external,
 	plugins,
 })
-	.then((bundle) => bundle.generate({
-		format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
-		moduleName: package_data.name.replace(/-/g, '_'),
+	.then((bundle) => bundle.write({
+		format: 'iife', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
+		moduleName: '$p',
+    banner: header,
+    globals: {
+      'alasql': 'alasql',
+      'moment': 'moment',
+    },
+    dest: path.resolve(__dirname, './metadata.js')
 		//sourceMap: true,
-	}))
-	.then((result) => fs.writeFileSync(path.resolve(__dirname, './index.js'), header + result.code));
+	}));
 

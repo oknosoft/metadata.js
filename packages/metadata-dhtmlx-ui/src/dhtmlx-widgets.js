@@ -1,0 +1,5058 @@
+export default ($p) => {
+	const {DataManager, DataObj} = $p.classes;
+	/**
+ * ### Кнопки авторизации и синхронизации
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ *
+ * @module  widgets
+ * @submodule btn_auth_sync
+ * @requires common
+ */
+
+/**
+ * ### Невизуальный компонент для управления кнопками авторизации и синхронизации на панелях инструментов
+ * Изменяет текст, всплывающие подсказки и обработчики нажатий кнопок в зависимости от ...
+ *
+ * @class OBtnAuthSync
+ * @constructor
+ * @menuorder 57
+ * @tooltip Кнопки авторизации
+ */
+$p.iface.OBtnAuthSync = function OBtnAuthSync() {
+
+	var bars = [], spin_timer;
+
+	//$(t.tb_nav.buttons.bell).addClass("disabledbutton");
+
+	function btn_click(){
+
+		if($p.wsql.pouch.authorized)
+			dhtmlx.confirm({
+				title: $p.msg.log_out_title,
+				text: $p.msg.logged_in + $p.wsql.pouch.authorized + $p.msg.log_out_break,
+				cancel: $p.msg.cancel,
+				callback: function(btn) {
+					if(btn){
+						$p.wsql.pouch.log_out();
+					}
+				}
+			});
+		else
+			$p.iface.frm_auth({
+				modal_dialog: true
+				//, try_auto: true
+			});
+	}
+
+	function set_spin(spin){
+
+		if(spin && spin_timer){
+			clearTimeout(spin_timer);
+
+		}else{
+			bars.forEach(function (bar) {
+				if(spin)
+					bar.buttons.sync.innerHTML = '<i class="fa fa-refresh fa-spin md-fa-lg"></i>';
+				else{
+					if($p.wsql.pouch.authorized)
+						bar.buttons.sync.innerHTML = '<i class="fa fa-refresh md-fa-lg"></i>';
+					else
+						bar.buttons.sync.innerHTML = '<i class="fa fa-ban md-fa-lg"></i>';
+				}
+			});
+		}
+		spin_timer = spin ? setTimeout(set_spin, 3000) : 0;
+	}
+
+	function set_auth(){
+
+		bars.forEach(function (bar) {
+
+			if($p.wsql.pouch.authorized){
+				// bar.buttons.auth.title = $p.msg.logged_in + $p.wsql.pouch.authorized;
+				// bar.buttons.auth.innerHTML = '<i class="fa fa-sign-out md-fa-lg"></i>';
+				bar.buttons.auth.title = "Отключиться от сервера";
+				bar.buttons.auth.innerHTML = '<span class="span_user">' + $p.wsql.pouch.authorized + '</span>';
+				bar.buttons.sync.title = "Синхронизация выполняется...";
+				bar.buttons.sync.innerHTML = '<i class="fa fa-refresh md-fa-lg"></i>';
+			}else{
+				bar.buttons.auth.title = "Войти на сервер и включить синхронизацию данных";
+				bar.buttons.auth.innerHTML = '&nbsp;<i class="fa fa-sign-in md-fa-lg"></i><span class="span_user">Вход...</span>';
+				bar.buttons.sync.title = "Синхронизация не выполняется - пользователь не авторизован на сервере";
+				bar.buttons.sync.innerHTML = '<i class="fa fa-ban md-fa-lg"></i>';
+					//'<i class="fa fa-refresh fa-stack-1x"></i>' +
+					//'<i class="fa fa-ban fa-stack-2x text-danger"></i>' +
+					//'</span>';
+			}
+		})
+	}
+
+	/**
+	 * Привязывает обработчики к кнопке
+	 * @param btn
+	 */
+	this.bind = function (bar) {
+		bar.buttons.auth.onclick = btn_click;
+		//bar.buttons.auth.onmouseover = null;
+		//bar.buttons.auth.onmouseout = null;
+		bar.buttons.sync.onclick = null;
+		// bar.buttons.sync.onmouseover = sync_mouseover;
+		// bar.buttons.sync.onmouseout = sync_mouseout;
+		bars.push(bar);
+		setTimeout(set_auth);
+		return bar;
+	};
+
+	$p.on({
+
+		pouch_load_data_start: function (page) {
+
+			if(!$p.iface.sync)
+				$p.iface.wnd_sync();
+			$p.iface.sync.create($p.eve.stepper);
+			$p.eve.stepper.frm_sync.setItemValue("text_bottom", "Читаем справочники");
+
+			if(page.hasOwnProperty("local_rows") && page.local_rows < 10){
+				$p.eve.stepper.wnd_sync.setText("Первый запуск - подготовка данных");
+				$p.eve.stepper.frm_sync.setItemValue("text_processed", "Загрузка начального образа");
+			}else{
+				$p.eve.stepper.wnd_sync.setText("Загрузка данных из IndexedDB");
+				$p.eve.stepper.frm_sync.setItemValue("text_processed", "Извлечение начального образа");
+			}
+
+			set_spin(true);
+		},
+
+		pouch_load_data_page: function (page) {
+			set_spin(true);
+			var stepper = $p.eve.stepper;
+			if(stepper.wnd_sync){
+			  var curr = stepper[page.id || "ram"];
+        curr.total_rows = page.total_rows;
+        curr.page = page.page;
+        curr.docs_written = page.docs_written || page.page * page.limit;
+        if(curr.docs_written > curr.total_rows){
+          curr.total_rows = (curr.docs_written * 1.05).round(0);
+        }
+        var text_current, text_bottom;
+        if(!stepper.doc.docs_written){
+          text_current = "Обработано элементов: " + curr.docs_written + " из " + curr.total_rows;
+          text_bottom = "Текущий запрос: " + curr.page + " (" + (100 * curr.docs_written/curr.total_rows).toFixed(0) + "%)";
+        }
+        else{
+          var docs_written = stepper.ram.docs_written + stepper.doc.docs_written;
+          var total_rows = stepper.ram.total_rows + stepper.doc.total_rows;
+          curr = stepper.ram.page + stepper.doc.page;
+          text_current = "Обработано ram: " + stepper.ram.docs_written + " из " + stepper.ram.total_rows + "<br />" +
+            "Обработано doc: " + stepper.doc.docs_written + " из " + stepper.doc.total_rows;
+          text_bottom = "Текущий запрос: " + curr + " (" + (100 * docs_written/total_rows).toFixed(0) + "%)";
+        };
+        stepper.frm_sync.setItemValue("text_current", text_current);
+        stepper.frm_sync.setItemValue("text_bottom", text_bottom);
+			}
+		},
+
+		pouch_change: function (id, page) {
+			set_spin(true);
+		},
+
+		pouch_data_loaded: function (page) {
+			$p.eve.stepper.wnd_sync && $p.iface.sync.close();
+		},
+
+		pouch_load_data_error: function (err) {
+			set_spin();
+			$p.eve.stepper.wnd_sync && $p.iface.sync.close();
+		},
+
+		user_log_in: function (username) {
+			set_auth();
+		},
+
+		user_log_fault: function () {
+			set_auth();
+		},
+
+		user_log_out: function () {
+			set_auth();
+		}
+	});
+};
+
+
+
+/**
+ * Расширение типов ячеек dhtmlXGrid
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ *
+ * Экспортирует конструкторы:
+ * * **eXcell_ref** - поля ввода значений ссылочных типов
+ * * **eXcell_refc** - комбобокс ссылочных типов (перечисления и короткие справочники)
+ *
+ * @module  wdg_dhtmlx
+ * @requires common
+ */
+
+// Прототип кустомных ячеек для грида
+var eXcell_proto = new eXcell();
+
+/**
+ * Обработчик клавиш {tab}, {enter} и {F4} в поле ввода
+ */
+eXcell_proto.input_keydown = function(e, t){
+
+	function obj_on_select(v){
+		if(t.source.on_select)
+			t.source.on_select.call(t.source, v);
+	}
+
+	if(e.keyCode === 8 || e.keyCode === 46){          // по {del} и {bs} очищаем значение
+		t.setValue("");
+		t.grid.editStop();
+		if(t.source.on_select)
+			t.source.on_select.call(t.source, "");
+
+	}else if(e.keyCode === 9 || e.keyCode === 13)
+		t.grid.editStop();                          // по {tab} и {enter} заканчиваем редактирование
+
+	else if(e.keyCode === 115)
+		t.cell.firstChild.childNodes[1].onclick(e); // по {F4} открываем редактор
+
+	else if(e.keyCode === 113){                      // по {F2} открываем форму объекта
+		if(t.source.tabular_section){
+			t.mgr = _md.value_mgr(t.source.row, t.source.col, t.source.row._metadata.fields[t.source.col].type);
+			if(t.mgr){
+				var tv = t.source.row[t.source.col];
+				t.mgr.form_obj(t.source.wnd, {
+					o: tv,
+					on_select: obj_on_select
+				});
+			}
+
+		}else if(t.fpath.length==1){
+			t.mgr = _md.value_mgr(t.source.o._obj, t.fpath[0], t.source.o._metadata.fields[t.fpath[0]].type);
+			if(t.mgr){
+				var tv = t.source.o[t.fpath[0]];
+				t.mgr.form_obj(t.source.wnd, {
+					o: tv,
+					on_select: obj_on_select
+				});
+			}
+		}
+	}
+
+	return $p.iface.cancel_bubble(e);
+};
+
+/**
+ * Конструктор поля ввода со списком OCombo
+ * @param cell
+ */
+function eXcell_ocombo(cell){
+
+	if (!cell)
+		return;
+
+	var t = this;
+
+	t.cell = cell;
+	t.grid = cell.parentNode.grid;
+
+	/**
+	 * устанавливает текст в ячейке. например, this.setCValue("<input type='button' value='"+val+"'>",val);
+	 */
+	t.setValue=function(val){
+		t.setCValue(val instanceof DataObj ? val.presentation : (val || ""));
+	};
+
+	/**
+	 * получает значение ячейки из табличной части или поля объекта или допполя допобъекта, а не из грида
+	 */
+	t.getValue=function(){
+		return t.grid.get_cell_value();
+
+	};
+
+	/**
+	 * Обрабатывает событие перехода к следующему полю (окончание редактирования)
+	 */
+	t.shiftNext = function () {
+		t.grid.editStop();
+	};
+
+	/**
+	 * Cоздаёт элементы управления редактора и назначает им обработчики
+	 */
+	t.edit=function(){
+
+		if(t.combo)
+			return;
+
+		t.val = t.getValue();		//save current value
+		t.cell.innerHTML = "";
+		t.combo = new OCombo({
+			parent: t.cell,
+			grid: t.grid
+		}._mixin(t.grid.get_cell_field()));
+		t.combo.getInput().focus();
+	};
+
+  t.open_selection = function () {
+    t.edit();
+    t.combo && t.combo.open_selection && t.combo.open_selection();
+  }
+
+	/**
+	 * вызывается при отключении редактора
+	 * @return {boolean} - если "истина", значит объект был изменён
+	 */
+	t.detach=function(){
+		if(t.combo){
+
+			if(t.combo.getComboText){
+				t.setValue(t.combo.getComboText());         // текст в элементе управления
+				if(!t.combo.getSelectedValue())
+					t.combo.callEvent("onChange");
+				var res = !$p.utils.is_equal(t.val, t.getValue());// compares the new and the old values
+				t.combo.unload();
+				return res;
+
+			} else if(t.combo.unload){
+				t.combo.unload();
+			}
+		}
+		return true;
+	}
+}
+eXcell_ocombo.prototype = eXcell_proto;
+window.eXcell_ocombo = eXcell_ocombo;
+
+/**
+ * Конструктор поля ввода значений ссылочных типов для грида
+ * @param cell
+ */
+window.eXcell_ref = eXcell_ocombo;
+
+/**
+ * Конструктор комбобокса кешируемых ссылочных типов для грида
+ */
+window.eXcell_refc = eXcell_ocombo;
+
+/**
+ * Конструктор поля пароля
+ */
+function eXcell_pwd(cell){ //the eXcell name is defined here
+
+	var fnedit;
+	if (cell){                //the default pattern, just copy it
+		this.cell = cell;
+		this.grid = cell.parentNode.grid;
+		eXcell_ed.call(this); //uses methods of the "ed" type
+		fnedit = this.edit;
+		this.edit = function(){
+			fnedit.call(this);
+			this.obj.type="password";
+		};
+		this.setValue=function(){
+			this.setCValue("*********");
+		};
+		this.getValue=function(){
+			return this.grid.get_cell_value();
+
+		};
+		this.detach=function(){
+			if(this.grid.get_cell_field){
+				var cf = this.grid.get_cell_field();
+				cf.obj[cf.field] = this.obj.value;
+			}
+			this.setValue();
+			fnedit = null;
+			return this.val != this.getValue();
+		}
+	}
+}
+eXcell_pwd.prototype = eXcell_proto;
+window.eXcell_pwd = eXcell_pwd;
+
+
+dhtmlXCalendarObject.prototype._dateToStr = function(val, format) {
+	if(val instanceof Date && val.getFullYear() < 1000)
+		return "";
+	else
+		return window.dhx4.date2str(val, format||this._dateFormat, this._dateStrings());
+};
+
+eXcell_dhxCalendar.prototype.edit = function() {
+
+	var arPos = this.grid.getPosition(this.cell);
+	this.grid._grid_calendarA._show(false, false);
+	this.grid._grid_calendarA.setPosition(arPos[0],arPos[1]+this.cell.offsetHeight);
+	this.grid._grid_calendarA._last_operation_calendar = false;
+
+
+	this.grid.callEvent("onCalendarShow", [this.grid._grid_calendarA, this.cell.parentNode.idd, this.cell._cellIndex]);
+	this.cell._cediton = true;
+	this.val = this.cell.val;
+	if(this.val instanceof Date && this.val.getFullYear() < 1000)
+		this.val = new Date();
+	this._val = this.cell.innerHTML;
+	var t = this.grid._grid_calendarA.draw;
+	this.grid._grid_calendarA.draw = function(){};
+	this.grid._grid_calendarA.setDateFormat((this.grid._dtmask||"%d.%m.%Y"));
+	this.grid._grid_calendarA.setDate(this.val||(new Date()));
+	this.grid._grid_calendarA.draw = t;
+
+};
+
+eXcell_dhxCalendar.prototype.setCValue = function(val, val2){
+	this.cell.innerHTML = val instanceof Date ? this.grid._grid_calendarA._dateToStr(val) : val;
+	this.grid._grid_calendarA.getFormatedDate((this.grid._dtmask||"%d/%m/%Y"),val).toString()
+//#__pro_feature:21092006{
+//#on_cell_changed:23102006{
+	this.grid.callEvent("onCellChanged", [
+		this.cell.parentNode.idd,
+		this.cell._cellIndex,
+		(arguments.length > 1 ? val2 : val)
+	]);
+//#}
+//#}
+};
+
+/**
+ * fix ajax
+ */
+(function(){
+
+	function fix_auth(t, method, url, async){
+		if(url.indexOf("odata/standard.odata") != -1 || url.indexOf("/hs/rest") != -1){
+			var username, password;
+			if($p.ajax.authorized){
+				username = $p.ajax.username;
+				password = $p.aes.Ctr.decrypt($p.ajax.password);
+
+			}else{
+				if($p.job_prm.guest_name){
+					username = $p.job_prm.guest_name;
+					password = $p.aes.Ctr.decrypt($p.job_prm.guest_pwd);
+
+				}else{
+					username = $p.wsql.get_user_param("user_name");
+					password = $p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd"));
+				}
+			}
+			t.open(method, url, async, username, password);
+			t.withCredentials = true;
+			t.setRequestHeader("Authorization", "Basic " +
+				btoa(unescape(encodeURIComponent(username + ":" + password))));
+		}else
+			t.open(method, url, async);
+	}
+
+	dhx4.ajax._call = function(method, url, postData, async, onLoad, longParams, headers) {
+
+		var t = (window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+		var isQt = (navigator.userAgent.match(/AppleWebKit/) != null && navigator.userAgent.match(/Qt/) != null && navigator.userAgent.match(/Safari/) != null);
+
+		if (async == true) {
+			t.onreadystatechange = function() {
+				if ((t.readyState == 4) || (isQt == true && t.readyState == 3)) { // what for long response and status 404?
+					if (t.status != 200 || t.responseText == "")
+						if (!dhx4.callEvent("onAjaxError", [{xmlDoc:t, filePath:url, async:async}])) return;
+
+					window.setTimeout(function(){
+						if (typeof(onLoad) == "function") {
+							onLoad.apply(window, [{xmlDoc:t, filePath:url, async:async}]); // dhtmlx-compat, response.xmlDoc.responseXML/responseText
+						}
+						if (longParams != null) {
+							if (typeof(longParams.postData) != "undefined") {
+								dhx4.ajax.postLong(longParams.url, longParams.postData, onLoad);
+							} else {
+								dhx4.ajax.getLong(longParams.url, onLoad);
+							}
+						}
+						onLoad = null;
+						t = null;
+					},1);
+				}
+			}
+		}
+
+		if (method == "GET") {
+			url += this._dhxr(url);
+		}
+
+		t.open(method, url, async);
+
+		// если обращение по rest или irest, добавляем авторизацию
+		fix_auth(t, method, url, async);
+
+		if (headers != null) {
+			for (var key in headers) t.setRequestHeader(key, headers[key]);
+		} else if (method == "POST" || method == "PUT" || method == "DELETE") {
+			t.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		} else if (method == "GET") {
+			postData = null;
+		}
+
+		t.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+
+		t.send(postData);
+
+		if (async != true) {
+			if ((t.readyState == 4) || (isQt == true && t.readyState == 3)) {
+				if (t.status != 200 || t.responseText == "") dhx4.callEvent("onAjaxError", [{xmlDoc:t, filePath:url, async:async}]);
+			}
+		}
+
+		return {xmlDoc:t, filePath:url, async:async}; // dhtmlx-compat, response.xmlDoc.responseXML/responseText
+
+	};
+
+	dhtmlx.ajax.prototype.send = function(url,params,call){
+		var x=this.getXHR();
+		if (typeof call == "function")
+			call = [call];
+		//add extra params to the url
+		if (typeof params == "object"){
+			var t=[];
+			for (var a in params){
+				var value = params[a];
+				if (value === null || value === dhtmlx.undefined)
+					value = "";
+				t.push(a+"="+encodeURIComponent(value));// utf-8 escaping
+			}
+			params=t.join("&");
+		}
+		if (params && !this.post){
+			url=url+(url.indexOf("?")!=-1 ? "&" : "?")+params;
+			params=null;
+		}
+
+		//x.open(this.post?"POST":"GET",url,!this._sync);
+		fix_auth(x, this.post?"POST":"GET",url,!this._sync);
+
+		if (this.post)
+			x.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+
+		//async mode, define loading callback
+		//if (!this._sync){
+		var self=this;
+		x.onreadystatechange= function(){
+			if (!x.readyState || x.readyState == 4){
+				//dhtmlx.log_full_time("data_loading");	//log rendering time
+				if (call && self)
+					for (var i=0; i < call.length; i++)	//there can be multiple callbacks
+						if (call[i])
+							call[i].call((self.master||self),x.responseText,x.responseXML,x);
+				self.master=null;
+				call=self=null;	//anti-leak
+			}
+		};
+		//}
+
+		x.send(params||null);
+		return x; //return XHR, which can be used in case of sync. mode
+	}
+
+})();
+
+/**
+ * Проверяет, видна ли ячейка
+ * TODO: учесть слой, модальность и т.д.
+ */
+dhtmlXCellObject.prototype.is_visible = function () {
+	var rect = this.cell.getBoundingClientRect();
+	return rect.right > 0 && rect.bottom > 0;
+};
+
+
+$p.iface.data_to_grid = function (data, attr){
+
+	if(this.data_to_grid)
+		return this.data_to_grid(data, attr);
+
+	function cat_picture_class(r){
+		var res;
+		if(r.hasOwnProperty("posted")){
+			res = r.posted ? "cell_doc_posted" : "cell_doc";
+		}else{
+			res = r.is_folder ? "cell_ref_folder" : "cell_ref_elm";
+		}
+
+		if(r._deleted)
+			res = res + "_deleted";
+		return res ;
+	}
+
+	function do_format(v){
+
+		if(v instanceof Date){
+			if(v.getHours() || v.getMinutes())
+				return $p.moment(v).format($p.moment._masks.date_time);
+			else
+				return $p.moment(v).format($p.moment._masks.date);
+
+		}else
+			return typeof v == "number" ? v : $p.iface.normalize_xml(v || "");
+	}
+
+	var xml = "<?xml version='1.0' encoding='UTF-8'?><rows total_count='%1' pos='%2' set_parent='%3'>"
+			.replace("%1", attr._total_count || data.length)
+      .replace("%2", attr.start)
+			.replace("%3", attr.set_parent || "" ),
+		caption = this.caption_flds(attr);
+
+	// при первом обращении к методу добавляем описание колонок
+	xml += caption.head;
+
+	data.forEach(function(r){
+		xml +=  "<row id=\"" + r.ref + "\"><cell class=\"" + cat_picture_class(r) + "\">" + do_format(r[caption.acols[0].id]) + "</cell>";
+		for(var col=1; col < caption.acols.length; col++ )
+			xml += "<cell>" + do_format(r[caption.acols[col].id]) + "</cell>";
+
+		xml += "</row>";
+	});
+
+	return xml + "</rows>";
+};
+
+/**
+ * Создаёт иерархический объект для построения dhtmlxTreeView
+ * @param data
+ * @return {*[]}
+ */
+$p.iface.data_to_tree = function (data) {
+
+	var res = [{id: $p.utils.blank.guid, text: "..."}];
+
+	function add_hierarchically(arr, row){
+		var curr = {id: row.ref, text: row.presentation, items: []};
+		arr.push(curr);
+		$p._find_rows(data, {parent: row.ref}, function(r){
+			add_hierarchically(curr.items, r);
+		});
+		if(!curr.items.length)
+			delete curr.items;
+	}
+	$p._find_rows(data, {parent: $p.utils.blank.guid}, function(r){
+		add_hierarchically(res, r);
+	});
+
+	return res;
+};
+
+
+
+/**
+ * ### Визуальный компонент - гиперссылка с выпадающим списком для выбора значения
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ *
+ * @module  widgets
+ * @submodule  wdg_dropdown_list
+ * @requires common
+ */
+
+/**
+ * ### Визуальный компонент - гиперссылка с выпадающим списком
+ * - Предназначен для отображения и редактирования значения перечислимого типа (короткий список)
+ *
+ * @class ODropdownList
+ * @param attr
+ * @param attr.container {HTMLElement} - контейнер, в котором будет размещен элемент
+ * @param attr.title {String} - заголовок элемента
+ * @param attr.values {Array} - список строковых представлений перечисления или объект, в ключах которого ключи, а в значениях - представления значений
+ * @param attr.event_name {String} - имя события, которое будет генерировать элемент при изменении значения
+ * @param [attr.class_name] {String} - имя класса CSS, добавляемое к стилям элемета
+ * @constructor
+ * @menuorder 57
+ * @tooltip Гиперссылка со списком
+ */
+function ODropdownList(attr){
+
+	var ul = document.createElement('ul'), li, div, a;
+
+	function set_order_text(silent){
+		a.innerHTML = attr.values[a.getAttribute("current")];
+		if(attr.event_name && !silent)
+			dhx4.callEvent(attr.event_name, [a.getAttribute("current")]);
+	}
+
+	function body_click(){
+		div.classList.remove("open");
+	}
+
+	attr.container.innerHTML = '<div class="dropdown_list">' + attr.title + '<a href="#" class="dropdown_list"></a></div>';
+	div = attr.container.firstChild;
+	a = div.querySelector("a");
+	a.setAttribute("current", Array.isArray(attr.values) ? "0" : Object.keys(attr.values)[0]);
+	div.onclick = function (e) {
+		if(!div.classList.contains("open")){
+			div.classList.add("open");
+		}else{
+			if(e.target.tagName == "LI"){
+				for(var i in ul.childNodes){
+					if(ul.childNodes[i] == e.target){
+						a.setAttribute("current", e.target.getAttribute("current"));
+						set_order_text();
+						break;
+					}
+				}
+			}
+			body_click();
+		}
+		return $p.iface.cancel_bubble(e);
+	};
+	div.appendChild(ul);
+	ul.className = "dropdown_menu";
+	if(attr.class_name){
+		div.classList.add(attr.class_name);
+		ul.classList.add(attr.class_name);
+	}
+
+	for(var i in attr.values){
+		li = document.createElement('li');
+		var pos = attr.values[i].indexOf('<i');
+		li.innerHTML = attr.values[i].substr(pos) + " " + attr.values[i].substr(0, pos);
+		li.setAttribute("current", i);
+		ul.appendChild(li);
+	};
+
+	document.body.addEventListener("keydown", function (e) {
+		if(e.keyCode == 27) { // закрытие по {ESC}
+			div.classList.remove("open");
+		}
+	});
+	document.body.addEventListener("click", body_click);
+
+	this.unload = function () {
+		var child;
+		while (child = div.lastChild)
+			div.removeChild(child);
+		attr.container.removeChild(div);
+		li = ul = div = a = attr = null;
+	};
+
+	set_order_text(true);
+
+}
+$p.iface.ODropdownList = ODropdownList;
+/**
+ * ### Динамическое дерево иерархического справочника
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ *
+ * @module  widgets
+ * @submodule wdg_dyn_tree
+ * @requires common
+ */
+
+/**
+ * ### Визуальный компонент - динамическое дерево иерархического справочника
+ *
+ * Особенность dhtmlx: экземпляр создаётся не конструктором, а функцией `attachDynTree` (без `new`) и размещается в ячейке dhtmlXCellObject
+ *
+ * @class ODynTree
+ * @param mgr {DataManager}
+ * @param [callback] Function
+ * @constructor
+ * @menuorder 54
+ * @tooltip Дерево справочника
+ */
+dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
+
+	if(this.setCollapsedText)
+		this.setCollapsedText("Дерево");
+
+	if(!filter)
+		filter = {is_folder: true};
+
+	var tree = this.attachTreeView();
+
+	// tree.setImagePath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
+	// tree.setIconsPath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
+	// if($p.job_prm.device_type == "desktop")
+	// 	tree.enableKeyboardNavigation(true);
+
+	tree.__define({
+		/**
+		 * Фильтр, налагаемый на дерево
+		 */
+		filter: {
+			get: function () {
+
+			},
+			set: function (v) {
+				filter = v;
+			},
+			enumerable: false,
+			configurable: false
+		}
+	});
+
+	// !!! проверить закешированность дерева
+	// !!! для неиерархических справочников дерево можно спрятать
+	setTimeout(function () {
+
+		mgr.sync_grid({
+			action: "get_tree",
+			filter: filter
+		}, tree)
+			.then(function (res) {
+				if(callback)
+					callback(res);
+			});
+
+	});
+
+	return tree;
+};
+/**
+ * ### Визуальный компонент OCombo
+ * Поле с выпадающим списком + функция выбора из списка
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ *
+ * @module widgets
+ * @submodule wdg_ocombo
+ * @requires common
+ */
+
+/**
+ * ### Визуальный компонент - поле с выпадающим списком
+ * - Предназначен для отображения и редактирования ссылочных, в том числе, составных типов данных
+ * - Унаследован от [dhtmlXCombo](http://docs.dhtmlx.com/combo__index.html)
+ * - Строки списка формируются автоматически по описанию метаданных
+ * - Автоматическая привязка к данным (байндинг) - при изменении значения в поле объекта, синхронно изменяются данные в элементе управления
+ * - Автоматическая фильтрация по части кода или наименования
+ * - Лаконичный код инициализации компонента [см. пример в Codex](http://www.oknosoft.ru/metadata/codex/#obj=0116&view=js)
+ *
+ * @class OCombo
+ * @param attr
+ * @param attr.parent {HTMLElement} - контейнер, в котором будет размещен элемент
+ * @param attr.obj {DataObj|TabularSectionRow} - ссылка на редактируемый объект
+ * @param attr.field {String} - имя поля редактируемого объекта
+ * @param [attr.metadata] {Object} - описание метаданных поля. Если не указано, описание запрашивается у объекта
+ * @param [attr.width] {Number} - если указано, фиксирует ширину элемента
+ * @constructor
+ * @menuorder 51
+ * @tooltip Поле со списком
+ */
+function OCombo(attr){
+
+	var _obj, _field, _meta, _mgr, _property, popup_focused,
+		t = this,
+		_pwnd = {
+			on_select: attr.on_select || function (selv) {
+				_obj[_field] = selv;
+			}
+		};
+
+	// если нас открыли из окна,
+	// которое может быть модальным - сохраняем указатель на метод модальности родительского окна
+	if(attr.pwnd && attr.pwnd.setModal)
+		_pwnd.setModal = attr.pwnd.setModal.bind(attr.pwnd);
+
+	// выполняем конструктор родительского объекта
+	OCombo.superclass.constructor.call(t, attr);
+
+	if(attr.on_select){
+		t.getBase().style.border = "none";
+		t.getInput().style.left = "-3px";
+		if(!attr.is_tabular)
+			t.getButton().style.right = "9px";
+	} else
+		t.getBase().style.marginBottom = "4px";
+
+	if(attr.left)
+		t.getBase().style.left = left + "px";
+
+	this.attachEvent("onChange", function(){
+		if(_obj && _field){
+		  var val = this.getSelectedValue();
+		  if(!val && this.getComboText()){
+        val = this.getOptionByLabel(this.getComboText());
+        if(val){
+          val = val.value;
+        }
+        else{
+          this.setComboText("");
+        }
+      }
+      _obj[_field] = val;
+    }
+	});
+
+	this.attachEvent("onBlur", function(){
+		if(!this.getSelectedValue() && this.getComboText()){
+      this.setComboText("");
+    }
+	});
+
+	this.attachEvent("onDynXLS", function (text) {
+
+	  if(!_meta){
+	    return;
+    }
+		if(!_mgr){
+      _mgr = _md.value_mgr(_obj, _field, _meta.type);
+    }
+		if(_mgr){
+			t.clearAll();
+			(attr.get_option_list || _mgr.get_option_list).call(_mgr, null, get_filter(text))
+				.then(function (l) {
+					if(t.addOption){
+						t.addOption(l);
+						t.openSelect();
+					}
+				});
+		}
+
+	});
+
+	function get_filter(text){
+		var filter = {_top: 30}, choice;
+
+		if(_mgr && _mgr.metadata().hierarchical && _mgr.metadata().group_hierarchy){
+			if(_meta.choice_groups_elm == "elm")
+				filter.is_folder = false;
+			else if(_meta.choice_groups_elm == "grp" || _field == "parent")
+				filter.is_folder = true;
+		}
+
+		// для связей параметров выбора, значение берём из объекта
+		if(_meta.choice_links)
+			_meta.choice_links.forEach(function (choice) {
+				if(choice.name && choice.name[0] == "selection"){
+					if(_obj instanceof TabularSectionRow){
+						if(choice.path.length < 2)
+							filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj._owner._owner[choice.path[0]];
+						else{
+							if(choice.name[1] == "owner" && !_mgr.metadata().has_owners){
+								return;
+							}
+							filter[choice.name[1]] = _obj[choice.path[1]];
+						}
+					}else{
+						filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj[choice.path[0]];
+					}
+				}
+			});
+
+		// у параметров выбора, значение живёт внутри отбора
+		if(_meta.choice_params)
+			_meta.choice_params.forEach(function (choice) {
+
+				var fval = Array.isArray(choice.path) ? {in: choice.path} : choice.path;
+
+				if(!filter[choice.name])
+					filter[choice.name] = fval;
+
+				else if(Array.isArray(filter[choice.name]))
+					filter[choice.name].push(fval);
+
+				else{
+					filter[choice.name] = [filter[choice.name]];
+					filter[choice.name].push(fval);
+				}
+			});
+
+		// если в метаданных указано строить список по локальным данным, подмешиваем эту информацию в фильтр
+		if(_meta._option_list_local){
+			filter._local = true;
+		}
+
+		// навешиваем фильтр по подстроке
+		if(text){
+			filter.presentation = {like: text};
+		}
+
+		// если включен справочник связей параметров - дополнительно фильтруем результат
+		if(attr.property && attr.property.filter_params_links){
+			attr.property.filter_params_links(filter, attr);
+		}
+
+		return filter;
+	}
+
+	// обработчики событий
+
+	function aclick(e){
+		if(this.name == "select"){
+			if(_mgr)
+				_mgr.form_selection(_pwnd, {
+					initial_value: _obj[_field].ref,
+					selection: [get_filter()]
+				});
+			else
+				aclick.call({name: "type"});
+
+		} else if(this.name == "add"){
+			if(_mgr)
+				_mgr.create({}, true)
+					.then(function (o) {
+						o._set_loaded(o.ref);
+						o.form_obj(attr.pwnd);
+					});
+		}
+		else if(this.name == "open"){
+			if(_obj && _obj[_field] && !_obj[_field].empty())
+				_obj[_field].form_obj(attr.pwnd);
+		}
+		else if(_meta && this.name == "type"){
+			var tlist = [], tmgr, tmeta, tobj = _obj, tfield = _field;
+			_meta.type.types.forEach(function (o) {
+				tmgr = _md.mgr_by_class_name(o);
+				tmeta = tmgr.metadata();
+				tlist.push({
+					presentation: tmeta.synonym || tmeta.name,
+					mgr: tmgr,
+					selected: _mgr === tmgr
+				});
+			});
+			$p.iface.select_from_list(tlist)
+				.then(function(v){
+					if(tobj[tfield] && ((tobj[tfield].empty && tobj[tfield].empty()) || tobj[tfield]._manager != v.mgr)){
+						_mgr = v.mgr;
+						_obj = tobj;
+						_field = tfield;
+						_meta = _obj._metadata.fields[_field];
+						_mgr.form_selection({
+							on_select: function (selv) {
+								_obj[_field] = selv;
+								_obj = null;
+								_field = null;
+								_meta = null;
+
+							}}, {
+							selection: [get_filter()]
+						});
+					}
+					_mgr = null;
+					tmgr = null;
+					tmeta = null;
+					tobj = null;
+					tfield = null;
+				});
+		}
+
+		if(e)
+			return $p.iface.cancel_bubble(e);
+	}
+
+	function popup_hide(){
+		popup_focused = false;
+		setTimeout(function () {
+			if(!popup_focused){
+				if($p.iface.popup.p && $p.iface.popup.p.onmouseover)
+					$p.iface.popup.p.onmouseover = null;
+				if($p.iface.popup.p && $p.iface.popup.p.onmouseout)
+					$p.iface.popup.p.onmouseout = null;
+				$p.iface.popup.clear();
+				$p.iface.popup.hide();
+			}
+		}, 300);
+	}
+
+	function popup_show(){
+
+		if(!_mgr || !_mgr.class_name || _mgr instanceof EnumManager){
+      return;
+    }
+
+		popup_focused = true;
+		var div = document.createElement('div'),
+			innerHTML = attr.hide_frm ? "" : "<a href='#' name='select' title='Форма выбора {F4}'>Показать все</a>" +
+				"<a href='#' name='open' style='margin-left: 9px;' title='Открыть форму элемента {Ctrl+Shift+F4}'><i class='fa fa-external-link fa-fw'></i></a>";
+
+		// для полных прав разрешаем добавление элементов
+		// TODO: учесть реальные права на добавление
+		if(!attr.hide_frm){
+			var _acl = $p.current_user.get_acl(_mgr.class_name);
+			if(_acl.indexOf("i") != -1)
+				innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><i class='fa fa-plus fa-fwfa-fw'></i></a>";
+		}
+
+		// для составных типов разрешаем выбор типа
+		// TODO: реализовать поддержку примитивных типов
+		if(_meta.type.types.length > 1)
+			innerHTML += "&nbsp;<a href='#' name='type' title='Выбрать тип значения {Alt+T}'><i class='fa fa-level-up fa-fw'></i></a>";
+
+		if(innerHTML){
+			div.innerHTML = innerHTML;
+			for(var i=0; i<div.children.length; i++)
+				div.children[i].onclick = aclick;
+
+			$p.iface.popup.clear();
+			$p.iface.popup.attachObject(div);
+			$p.iface.popup.show(dhx4.absLeft(t.getButton())-77, dhx4.absTop(t.getButton()), t.getButton().offsetWidth, t.getButton().offsetHeight);
+
+			$p.iface.popup.p.onmouseover = function(){
+				popup_focused = true;
+			};
+
+			$p.iface.popup.p.onmouseout = popup_hide;
+		}
+	}
+
+	function oncontextmenu(e) {
+		setTimeout(popup_show, 10);
+		e.preventDefault();
+		return false;
+	}
+
+	function onkeyup(e) {
+
+		if(!_mgr || _mgr instanceof EnumManager){
+      return;
+    }
+
+		if(e.keyCode == 115){ // F4
+			if(e.ctrlKey && e.shiftKey){
+				if(!_obj[_field].empty())
+					_obj[_field].form_obj(attr.pwnd);
+
+			}else if(!e.ctrlKey && !e.shiftKey){
+				if(_mgr)
+					_mgr.form_selection(_pwnd, {
+						initial_value: _obj[_field].ref,
+						selection: [get_filter()]
+					});
+			}
+			return $p.iface.cancel_bubble(e);
+		}
+	}
+
+	function onfocus(e) {
+		setTimeout(function () {
+			if(t && t.getInput)
+				t.getInput().select();
+		}, 50);
+	}
+
+	t.getButton().addEventListener("mouseover", popup_show);
+
+	t.getButton().addEventListener("mouseout", popup_hide);
+
+	t.getBase().addEventListener("click", $p.iface.cancel_bubble);
+
+	t.getBase().addEventListener("contextmenu", oncontextmenu);
+
+	t.getInput().addEventListener("keyup", onkeyup);
+
+	t.getInput().addEventListener("focus", onfocus);
+
+
+	function observer(changes){
+		if(!t || !t.getBase)
+			return;
+		else if(!t.getBase().parentElement)
+			setTimeout(t.unload);
+		else{
+			if(_obj instanceof TabularSectionRow){
+
+			}else
+				changes.forEach(function(change){
+					if(change.name == _field){
+						set_value(_obj[_field]);
+					}
+				});
+		}
+	}
+
+	function set_value(v){
+		if(v && v instanceof DataObj && !v.empty()){
+			if(!t.getOption(v.ref))
+				t.addOption(v.ref, v.presentation);
+			if(t.getSelectedValue() == v.ref)
+				return;
+			t.setComboValue(v.ref);
+		}else if(!t.getSelectedValue()){
+			t.setComboValue("");
+			t.setComboText("")
+		}
+	}
+
+	/**
+	 * Подключает поле объекта к элементу управления<br />
+	 * Параметры аналогичны конструктору
+	 */
+	this.attach = function (attr) {
+
+		if(_obj){
+			if(_obj instanceof TabularSectionRow)
+				Object.unobserve(_obj._owner._owner, observer);
+			else
+				Object.unobserve(_obj, observer);
+		}
+
+		_obj = attr.obj;
+		_field = attr.field;
+		_property = attr.property;
+
+		if(attr.metadata)
+			_meta = attr.metadata;
+
+		else if(_property){
+			_meta = _obj._metadata.fields[_field]._clone();
+			_meta.type = _property.type;
+
+		}else
+			_meta = _obj._metadata.fields[_field];
+
+		t.clearAll();
+		_mgr = _md.value_mgr(_obj, _field, _meta.type);
+
+		if(_mgr || attr.get_option_list){
+			// загружаем список в 30 строк
+			(attr.get_option_list || _mgr.get_option_list).call(_mgr, _obj[_field], get_filter())
+				.then(function (l) {
+					if(t.addOption){
+						t.addOption(l);
+						// если поле имеет значение - устанавливаем
+						set_value(_obj[_field]);
+					}
+				});
+		}
+
+		// начинаем следить за объектом
+		if(_obj instanceof TabularSectionRow)
+			Object.observe(_obj._owner._owner, observer, ["row"]);
+		else
+			Object.observe(_obj, observer, ["update"]);
+
+	};
+
+  this.open_selection = function () {
+    aclick.call({name: "select"});
+  }
+
+	var _unload = this.unload;
+	this.unload = function () {
+
+		popup_hide();
+
+		t.getButton().removeEventListener("mouseover", popup_show);
+
+		t.getButton().removeEventListener("mouseout", popup_hide);
+
+		t.getBase().removeEventListener("click", $p.iface.cancel_bubble);
+
+		t.getBase().removeEventListener("contextmenu", oncontextmenu);
+
+		t.getInput().removeEventListener("keyup", onkeyup);
+
+		t.getInput().removeEventListener("focus", onfocus);
+
+		if(_obj){
+			if(_obj instanceof TabularSectionRow)
+				Object.unobserve(_obj._owner._owner, observer);
+			else
+				Object.unobserve(_obj, observer);
+		}
+
+		if(t.conf && t.conf.tm_confirm_blur)
+			clearTimeout(t.conf.tm_confirm_blur);
+
+		_obj = null;
+		_field = null;
+		_meta = null;
+		_mgr = null;
+		_pwnd = null;
+
+		try{ _unload.call(t); }catch(e){}
+	};
+
+	// биндим поле объекта
+	if(attr.obj && attr.field)
+		this.attach(attr);
+	// устанавливаем url фильтрации
+	this.enableFilteringMode("between", "dummy", false, false);
+
+	// свойство для единообразного доступа к значению
+	this.__define({
+		value: {
+			get: function () {
+				if(_obj)
+					return _obj[_field];
+			}
+		}
+	});
+
+}
+OCombo._extend(dhtmlXCombo);
+$p.iface.OCombo = OCombo;
+
+/**
+ * ### Форма выбора из списка значений
+ * @method select_from_list
+ * @for InterfaceObjs
+ * @param list
+ * @param multy
+ * @return {Promise}
+ */
+$p.iface.select_from_list = function (list, multy) {
+
+	return new Promise(function(resolve, reject){
+
+		if(!Array.isArray(list) || !list.length)
+			resolve(undefined);
+
+		else if(list.length == 1)
+			resolve(list[0]);
+
+		// создаём и показываем диалог со списком
+
+		// параметры открытия формы
+		var options = {
+				name: 'wnd_select_from_list',
+				wnd: {
+					id: 'wnd_select_from_list',
+					width: 300,
+					height: 300,
+					modal: true,
+					center: true,
+					caption: $p.msg.select_from_list,
+					allow_close: true,
+					on_close: function () {
+						if(rid)
+							resolve(list[parseInt(rid)-1]);
+						return true;
+					}
+				}
+			},
+			rid, sid,
+			wnd = $p.iface.dat_blank(null, options.wnd),
+			_grid = wnd.attachGrid(),
+			_toolbar = wnd.attachToolbar({
+				items:[
+					{id: "select", type: "button", text: $p.msg.select_from_list},
+					{id: "cancel", type: "button", text: "Отмена"}
+				],
+				onClick: do_select
+			});
+
+		function do_select(id){
+			if(id != "cancel")
+				rid = _grid.getSelectedRowId();
+			wnd.close();
+		}
+
+		_grid.setIconsPath(dhtmlx.image_path);
+		_grid.setImagePath(dhtmlx.image_path);
+		_grid.setHeader($p.msg.value);
+		_grid.setColTypes("ro");
+		_grid.enableAutoWidth(true, 1200, 600);
+		_grid.attachEvent("onRowDblClicked", do_select);
+		_grid.enableMultiselect(!!multy);
+		_grid.setNoHeader(true);
+		_grid.init();
+
+		_toolbar.addSpacer("select");
+
+		wnd.hideHeader();
+		wnd.cell.offsetParent.querySelector(".dhxwin_brd").style.border = "none"
+
+		// заполняем его данными
+		list.forEach(function (o, i) {
+			var text;
+			if(typeof o == "object")
+				text = o.presentation || o.text || o.toString();
+			else
+				text = o.toString();
+			_grid.addRow(1+i, text);
+			if(o.selected)
+				sid = 1+i;
+		});
+		if(sid)
+			_grid.selectRowById(sid);
+
+	});
+};
+
+/**
+ * ### Форма ввода значения
+ * @method query_value
+ * @for InterfaceObjs
+ * @param initial
+ * @param caption
+ * @return {Promise}
+ */
+$p.iface.query_value = function (initial, caption) {
+
+  return new Promise(function(resolve, reject){
+
+    // создаём и показываем диалог со списком
+
+    // параметры открытия формы
+    var options = {
+        name: 'wnd_query_value',
+        wnd: {
+          width: 300,
+          height: 160,
+          modal: true,
+          center: true,
+          caption: caption || 'Введите значение',
+          allow_close: true,
+          on_close: function () {
+            reject();
+            return true;
+          }
+        }
+      },
+      wnd = $p.iface.dat_blank(null, options.wnd),
+      _toolbar = wnd.attachToolbar({
+        items:[
+          {id: "select", type: "button", text: "<b>Ok</b>"},
+          {id: "sp", type: "spacer"},
+          {id: "cancel", type: "button", text: "Отмена"}
+        ],
+        onClick: function (id){
+          if(id == "cancel"){
+            wnd.close()
+          }
+          else{
+            resolve(wnd.cell.querySelector('INPUT').value);
+            wnd.close();
+          }
+        }
+      });
+
+    wnd.attachHTMLString("<input type='text' style='width: 94%; padding: 4px;' value='" + initial + "' />");
+
+  });
+};
+/**
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ * @module odaterangepicker
+ *
+ * Created 02.08.2016
+ */
+
+function ODateRangePicker(container, attr) {
+
+	var _cont = this._cont = document.createElement('div');
+
+	if(container instanceof dhtmlXCellObject){
+		container.appendObject(this._cont);
+	}else{
+		container.appendChild(this._cont);
+	}
+
+	this._cont.className = "odaterangepicker";
+	this._cont.innerHTML = '<i class="fa fa-calendar"></i>&nbsp; <span></span> &nbsp;<i class="fa fa-caret-down"></i>';
+
+	this.__define({
+
+		set_text: {
+			value: 	function() {
+				$('span', _cont).html(this.date_from.format('DD MMM YY') + ' - ' + this.date_till.format('DD MMM YY'));
+			}
+		},
+
+		on: {
+			value: function (event, fn) {
+				return $(_cont).on(event, fn);
+			}
+		},
+
+		date_from: {
+			get: function () {
+				return $(_cont).data('daterangepicker').startDate;
+			},
+			set: function (v) {
+				$(_cont).data('daterangepicker').setStartDate(v);
+				this.set_text()
+			}
+		},
+
+		date_till: {
+			get: function () {
+				return $(_cont).data('daterangepicker').endDate;
+			},
+			set: function (v) {
+				$(_cont).data('daterangepicker').setEndDate(v);
+				this.set_text()
+			}
+		}
+	});
+
+	$(_cont).daterangepicker({
+		startDate: attr.date_from ? moment(attr.date_from) : moment().subtract(29, 'days'),
+		endDate: moment(attr.date_till),
+		showDropdowns: true,
+		alwaysShowCalendars: true,
+		opens: "left",
+		ranges: {
+			'Сегодня': [moment(), moment()],
+			'Вчера': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+			'Последние 7 дней': [moment().subtract(6, 'days'), moment()],
+			'Последние 30 дней': [moment().subtract(29, 'days'), moment()],
+			'Этот месяц': [moment().startOf('month'), moment().endOf('month')],
+			'Прошлый месяц': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+		}
+	}, this.set_text.bind(this));
+
+	this.set_text();
+
+}
+
+$p.iface.ODateRangePicker = ODateRangePicker;
+/**
+ * ### Визуальный компонент - реквизиты шапки объекта
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ *
+ * @module  widgets
+ * @submodule wdg_ohead_fields
+ * @requires common
+ */
+
+/**
+ * ### Визуальный компонент - реквизиты шапки объекта
+ * - Предназначен для отображения и редактирования полей {{#crossLink "DataObj"}}объекта данных{{/crossLink}}
+ * - Унаследован от [dhtmlXGridObject](http://docs.dhtmlx.com/grid__index.html)
+ * - Состав и типы элементов управления в дереве реквизитов формируются автоматически по описанию метаданных
+ * - Программное изменение значений реквизитов объекта данных, синхронно отображается в элементе управления
+ * - Редактирование в элементе управления синхронно изменяет свойства связанного объекта
+ *
+ * Особенность dhtmlx: экземпляр создаётся не конструктором, а функцией `attachHeadFields` (без `new`) и размещается в ячейке dhtmlXCellObject
+ *
+ * @class OHeadFields
+ * @param attr
+ * @param attr.parent {HTMLElement} - контейнер, в котором будет размещен элемент
+ * @param attr.obj {DataObj} - ссылка на редактируемый объект
+ * @param attr.ts {String} - имя табличной части c дополнительными реквизитами
+ * @param [attr.metadata] {Object} - описание метаданных реквизитов. Если не указано, описание запрашивается у объекта
+ * @constructor
+ * @menuorder 52
+ * @tooltip Редактор полей DataObj
+ */
+dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
+
+	var _obj,
+		_oxml,
+		_meta,
+		_mgr,
+		_selection,
+		_tsname,
+		_extra_fields,
+		_pwnd,
+		_cell = this,
+		_grid = _cell.attachGrid(),
+		_destructor = _grid.destructor;
+
+	// задача обсервера - перерисовать поле при изменении свойств объекта
+	function observer(changes){
+		if(!_obj){
+			var stack = [];
+			changes.forEach(function(change){
+				if(stack.indexOf[change.object]==-1){
+					stack.push(change.object);
+					Object.unobserve(change.object, observer);
+					if(_extra_fields && _extra_fields instanceof TabularSection)
+						Object.unobserve(change.object, observer_rows);
+				}
+			});
+			stack = null;
+
+		}else if(_grid.entBox && !_grid.entBox.parentElement)
+			setTimeout(_grid.destructor);
+
+		else
+			changes.forEach(function(change){
+				if(change.type == "unload"){
+					if(_cell && _cell.close)
+						_cell.close();
+					else
+						_grid.destructor();
+				}else
+					_grid.forEachRow(function(id){
+						if (id == change.name)
+							_grid.cells(id,1).setValue(_obj[change.name]);
+					});
+			});
+	}
+
+	function observer_rows(changes){
+		var synced;
+		changes.forEach(function(change){
+			if (!synced && _grid.clearAll && _tsname == change.tabular){
+				synced = true;
+				_grid.clearAll();
+				_grid.parse(_mgr.get_property_grid_xml(_oxml, _obj, {
+					title: attr.ts_title,
+					ts: _tsname,
+					selection: _selection,
+					metadata: _meta
+				}), function(){
+
+				}, "xml");
+			}
+		});
+	}
+
+
+	new dhtmlXPropertyGrid(_grid);
+
+	_grid.setInitWidthsP("40,60");
+	_grid.setDateFormat("%d.%m.%Y %H:%i");
+	_grid.init();
+	//t.enableAutoHeight(false,_cell._getHeight()-20,true);
+	_grid.setSizes();
+	_grid.attachEvent("onPropertyChanged", function(pname, new_value, old_value){
+    if(pname || _grid && _grid.getSelectedRowId()){
+      return _pwnd.on_select(new_value); // , _grid.getSelectedRowId()
+    }
+	});
+	_grid.attachEvent("onCheckbox", function(rId, cInd, state){
+		if(_obj[rId] != undefined)
+			return _pwnd.on_select(state, {obj: _obj, field: rId});
+
+		if(rId.split("|").length > 1)
+			return _pwnd.on_select(state, _grid.get_cell_field(rId));
+	});
+	_grid.attachEvent("onKeyPress", function(code,cFlag,sFlag){
+
+		switch(code) {
+			case 13:    //  enter
+			case 9:     //  tab
+				if (_grid.editStop)
+					_grid.editStop();
+				break;
+
+			case 46:    //  del
+				break;
+		};
+
+	});
+	if(attr.read_only){
+		_grid.setEditable(false);
+	}
+
+	_grid.__define({
+
+		selection: {
+			get: function () {
+				return _selection;
+			},
+			set: function (sel) {
+				_selection = sel;
+				this.reload();
+			}
+		},
+
+		reload: {
+			value: function () {
+				observer_rows([{tabular: _tsname}]);
+			}
+		},
+
+		get_cell_field: {
+			value: function (rId) {
+
+				if(!_obj)
+					return;
+
+				var res = {row_id: rId || _grid.getSelectedRowId()},
+					fpath = res.row_id.split("|");
+
+				if(fpath.length < 2){
+					return {obj: _obj, field: fpath[0]}._mixin(_pwnd);
+
+				}else {
+					var vr;
+					if(_selection){
+						_obj[fpath[0]].find_rows(_selection, function (row) {
+							if(row.property == fpath[1] || row.param == fpath[1] || row.Свойство == fpath[1] || row.Параметр == fpath[1]){
+								vr = row;
+								return false;
+							}
+						});
+
+					}else{
+						vr = _obj[fpath[0]].find(fpath[1]);
+					}
+
+					if(vr){
+						res.obj = vr;
+						if(vr["Значение"]){
+							res.field = "Значение";
+							res.property = vr.Свойство || vr.Параметр;
+						} else{
+							res.field = "value";
+							res.property = vr.property || vr.param;
+						}
+						return res._mixin(_pwnd);
+					}
+				}
+			},
+			enumerable: false
+		},
+
+		_obj: {
+			get: function () {
+				return _obj;
+			}
+		},
+
+		_owner_cell: {
+			get: function () {
+				return _cell;
+			}
+		},
+
+		destructor: {
+			value: function () {
+
+				if(_obj)
+					Object.unobserve(_obj, observer);
+				if(_extra_fields && _extra_fields instanceof TabularSection)
+					Object.unobserve(_extra_fields, observer_rows);
+
+				_obj = null;
+				_extra_fields = null;
+				_meta = null;
+				_mgr = null;
+				_pwnd = null;
+
+				_destructor.call(_grid);
+			}
+		},
+
+		/**
+		 * Подключает поле объекта к элементу управления<br />
+		 * Параметры аналогичны конструктору
+		 */
+		attach: {
+			value: function (attr) {
+
+				if (_obj)
+					Object.unobserve(_obj, observer);
+
+				if(_extra_fields && _extra_fields instanceof TabularSection)
+					Object.unobserve(_obj, observer_rows);
+
+				if(attr.oxml)
+					_oxml = attr.oxml;
+
+				if(attr.selection)
+					_selection = attr.selection;
+
+				_obj = attr.obj;
+				_meta = attr.metadata || _obj._metadata.fields;
+				_mgr = _obj._manager;
+				_tsname = attr.ts || "";
+				_extra_fields = _tsname ? _obj[_tsname] : (_obj.extra_fields || _obj["ДополнительныеРеквизиты"]);
+				if(_extra_fields && !_tsname)
+					_tsname = _obj.extra_fields ? "extra_fields" :  "ДополнительныеРеквизиты";
+				_pwnd = {
+					// обработчик выбора ссылочных значений из внешних форм, открываемых полями со списками
+					on_select: function (selv, cell_field) {
+						if(!cell_field)
+							cell_field = _grid.get_cell_field();
+						if(cell_field){
+
+							var ret_code = _mgr.handle_event(_obj, "value_change", {
+								field: cell_field.field,
+								value: selv,
+								tabular_section: cell_field.row_id ? _tsname : "",
+								grid: _grid,
+								cell: _grid.cells(cell_field.row_id || cell_field.field, 1),
+								wnd: _pwnd.pwnd
+							});
+							if(typeof ret_code !== "boolean"){
+								cell_field.obj[cell_field.field] = selv;
+								ret_code = true;
+							}
+							return ret_code;
+						}
+					},
+					pwnd: attr.pwnd || _cell
+				};
+
+
+				// начинаем следить за объектом и, его табчастью допреквизитов
+				Object.observe(_obj, observer, ["update", "unload"]);
+
+				if(_extra_fields && _extra_fields instanceof TabularSection)
+					Object.observe(_obj, observer_rows, ["row", "rows"]);
+
+				// заполняем табчасть данными
+				if(_tsname && !attr.ts_title)
+					attr.ts_title = _obj._metadata.tabular_sections[_tsname].synonym;
+				observer_rows([{tabular: _tsname}]);
+
+			}
+		}
+
+	});
+
+
+	//TODO: контекстные меню для элементов и табличных частей
+
+	//TODO: HeadFields для редактирования строки табчасти. Она ведь - тоже DataObj
+
+	if(attr)
+		_grid.attach(attr);
+
+	return _grid;
+};
+
+dhtmlXGridObject.prototype.get_cell_value = function () {
+	var cell_field = this.get_cell_field();
+	if(cell_field && cell_field.obj)
+		return cell_field.obj[cell_field.field];
+};
+
+
+/**
+ * ### Визуальный компонент - табличное поле объекта
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ *
+ * @module  widgets
+ * @submodule wdg_otabular
+ * @requires common
+ */
+
+
+/**
+ * ### Визуальный компонент - табличное поле объекта
+ * - Предназначен для отображения и редактирования {{#crossLink "TabularSection"}}табличной части{{/crossLink}}
+ * - Унаследован от [dhtmlXGridObject](http://docs.dhtmlx.com/grid__index.html)
+ * - Состав и типы колонок формируются автоматически по описанию метаданны
+ * - Программное изменение состава строк и значений в полях строк синхронно отображается в элементе управления
+ * - Редактирование в элементе управления синхронно изменяет свойства табличной части связанного объекта
+ *
+ * Особенность dhtmlx: экземпляр создаётся не конструктором, а функцией `attachTabular` (без `new`) и размещается в ячейке dhtmlXCellObject
+ *
+ * @class OTabular
+ * @param attr
+ * @param attr.parent {HTMLElement} - контейнер, в котором будет размещен элемент
+ * @param attr.obj {DataObj} - ссылка на редактируемый объект
+ * @param attr.ts {String} - имя табличной части
+ * @param [attr.metadata] {Object} - описание метаданных табличной части. Если не указано, описание запрашивается у объекта
+ * @param [attr.selection] {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
+ * @constructor
+ * @menuorder 53
+ * @tooltip Редактор таличной части
+ */
+dhtmlXCellObject.prototype.attachTabular = function(attr) {
+
+	var _obj = attr.obj,
+		_tsname = attr.ts,
+		_ts = _obj[_tsname],
+		_mgr = _obj._manager,
+		_meta = attr.metadata || _mgr.metadata().tabular_sections[_tsname].fields,
+		_cell = this,
+		_source = attr.ts_captions || {},
+    _input_filter = "",
+    _input_filter_changed = 0,
+		_selection = attr.selection || {};
+
+	if(!attr.ts_captions && !_md.ts_captions(_mgr.class_name, _tsname, _source)){
+    return;
+  }
+
+  _selection.filter_selection = filter_selection;
+
+	var _grid = this.attachGrid(),
+		_toolbar = this.attachToolbar(),
+		_destructor = _grid.destructor,
+		_pwnd = {
+			// обработчик выбора ссылочных значений из внешних форм, открываемых полями со списками
+			on_select: function (selv) {
+				tabular_on_edit(2, null, null, selv);
+			},
+			pwnd: attr.pwnd || _cell,
+			is_tabular: true
+		};
+	_grid.setDateFormat("%d.%m.%Y %H:%i");
+	_grid.enableAccessKeyMap();
+
+	/**
+	 * добавляет строку табчасти
+	 */
+	_grid._add_row = function(){
+		if(!attr.read_only && !attr.disable_add_del){
+
+			var proto;
+			if(_selection){
+				for(var sel in _selection){
+					if(!_meta[sel] || (typeof _selection[sel] == 'function') || (typeof _selection[sel] == 'object' && !$p.is_data_obj(_selection[sel]))){
+						continue;
+					}
+					if(!proto){
+						proto = {};
+					}
+					proto[sel] = _selection[sel];
+				}
+			}
+
+      _ts._owner._silent(false);
+			var row = _ts.add(proto);
+
+			if(_mgr.handle_event(_obj, "add_row",
+					{
+						tabular_section: _tsname,
+						grid: _grid,
+						row: row,
+						wnd: _pwnd.pwnd
+					}) === false)
+				return;
+
+			setTimeout(function () {
+				_grid.selectRowById(row.row);
+			}, 100);
+		}
+	};
+
+  _grid._move_row = function(direction){
+    if(attr.read_only){
+      return;
+    }
+    var rId = get_sel_index();
+
+    if(rId != undefined){
+      _ts._owner._silent(false);
+      if(direction == "up"){
+        if(rId != 0){
+          _ts.swap(rId-1, rId);
+          setTimeout(function () {
+            _grid.selectRow(rId-1, true);
+          }, 100)
+        }
+      }
+      else{
+        if(rId < _ts.count() - 1){
+          _ts.swap(rId, rId+1);
+          setTimeout(function () {
+            _grid.selectRow(rId+1, true);
+          }, 100)
+        }
+      }
+    }
+  }
+
+	/**
+	 * удаляет строку табчасти
+	 */
+	_grid._del_row = function(keydown){
+
+		if(!attr.read_only && !attr.disable_add_del){
+			var rId = get_sel_index();
+
+			if(rId != undefined){
+        _ts._owner._silent(false);
+				if(_mgr.handle_event(_obj, "del_row",
+						{
+							tabular_section: _tsname,
+							grid: _grid,
+							row: rId,
+							wnd: _pwnd.pwnd
+						}) === false)
+					return;
+
+				_ts.del(rId);
+
+				setTimeout(function () {
+					_grid.selectRowById(rId < _ts.count() ? rId + 1 : rId, true);
+				}, 100);
+			}
+		}
+	};
+
+
+	function get_sel_index(silent){
+		var selId = _grid.getSelectedRowId();
+
+		if(selId && !isNaN(Number(selId)))
+			return Number(selId)-1;
+
+		if(!silent)
+			$p.msg.show_msg({
+				type: "alert-warning",
+				text: $p.msg.no_selected_row.replace("%1", _obj._metadata.tabular_sections[_tsname].synonym || _tsname),
+				title: (_obj._metadata.obj_presentation || _obj._metadata.synonym) + ': ' + _obj.presentation
+			});
+	}
+
+
+	/**
+	 * обработчик изменения значения примитивного типа
+	 */
+	function tabular_on_edit(stage, rId, cInd, nValue, oValue){
+
+		if(stage != 2 || nValue == oValue)
+			return true;
+
+		var cell_field = _grid.get_cell_field();
+		if(!cell_field){
+      return true;
+    }
+		var	ret_code = _mgr.handle_event(_obj, "value_change", {
+				field: cell_field.field,
+				value: nValue,
+				tabular_section: _tsname,
+				grid: _grid,
+				row: cell_field.obj,
+				cell: (rId && cInd) ? _grid.cells(rId, cInd) : (_grid.getSelectedCellIndex() >=0 ? _grid.cells() : null),
+				wnd: _pwnd.pwnd
+			});
+
+		if(typeof ret_code !== "boolean"){
+			cell_field.obj[cell_field.field] = nValue;
+			ret_code = true;
+		}
+		return ret_code;
+	}
+
+	/**
+	 * наблюдатель за изменениями насбор строк табчасти
+	 * @param changes
+	 */
+	function observer_rows(changes){
+		if(_grid.clearAll){
+			changes.some(function(change){
+				if (change.type == "rows" && change.tabular == _tsname){
+					_ts.sync_grid(_grid, _selection);
+					return true;
+				}
+			});
+		}
+	}
+
+	/**
+	 * наблюдатель за изменениями значений в строках табчасти
+	 * @param changes
+	 */
+	function observer(changes){
+		if(changes.length > 20){
+			try{_ts.sync_grid(_grid, _selection);} catch(err){}
+		} else
+			changes.forEach(function(change){
+				if (_tsname == change.tabular){
+					if(!change.row || _grid.getSelectedRowId() != change.row.row)
+						_ts.sync_grid(_grid, _selection);
+					else{
+						if(_grid.getColIndexById(change.name) != undefined){
+              if(typeof change.oldValue != "boolean" || typeof change.row[change.name] != "boolean"){
+                _grid.cells(change.row.row, _grid.getColIndexById(change.name))
+                  .setCValue($p.utils.is_data_obj(change.row[change.name]) ? change.row[change.name].presentation : change.row[change.name]);
+              }
+            }
+					}
+				}
+			});
+	}
+
+	function onpaste(e) {
+
+		if(e.clipboardData.types.indexOf('text/plain') != -1){
+			try{
+				$p.eve.callEvent("tabular_paste", [{
+					obj: _obj,
+					grid: _grid,
+					tsname: _tsname,
+					e: e,
+					data: e.clipboardData.getData('text/plain')
+				}]);
+
+			}catch(e){
+				return;
+			}
+		}
+	}
+
+  function filter_selection(row) {
+
+	  if(!_input_filter){
+	    return true;
+    }
+
+    var res;
+    _source.fields.some(function (fld) {
+      var v = row._row[fld];
+      if($p.utils.is_data_obj(v)){
+        if(!v.is_new() && v.presentation.match(_input_filter)){
+          return res = true;
+        }
+      }
+      else if(typeof v == 'number'){
+        return res = v.toLocaleString().match(_input_filter);
+      }
+      else if(v instanceof Date){
+        return res = $p.moment(v).format($p.moment._masks.date_time).match(_input_filter);
+      }
+      else if(v.match){
+        return res = v.match(_input_filter);
+      }
+    })
+    return res;
+  }
+
+	function filter_change() {
+
+    if(_input_filter_changed){
+      clearTimeout(_input_filter_changed);
+      _input_filter_changed = 0;
+    }
+
+    if(_input_filter != _cell.input_filter.value){
+      _input_filter = new RegExp(_cell.input_filter.value, 'i');
+      observer_rows([{tabular: _tsname, type: "rows"}]);
+    }
+
+  }
+
+  function filter_click() {
+    var val = _cell.input_filter.value;
+    setTimeout(function () {
+      if(val != _cell.input_filter.value)
+        filter_change();
+    })
+  }
+
+  function filter_keydown() {
+
+    if(_input_filter_changed){
+      clearTimeout(_input_filter_changed);
+    }
+
+    _input_filter_changed = setTimeout(function () {
+      if(_input_filter_changed)
+        filter_change();
+    }, 500);
+
+  }
+
+	// панель инструментов табличной части
+	_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
+	_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_add_del.xml"], function(){
+
+    this.forEachItem(function(id) {
+      if(id == "input_filter"){
+        _cell.input_filter = _toolbar.getInput(id);
+        _cell.input_filter.onchange = filter_change;
+        _cell.input_filter.onclick = filter_click;
+        _cell.input_filter.onkeydown = filter_keydown;
+        _cell.input_filter.type = "search";
+        _cell.input_filter.setAttribute("placeholder", "Фильтр");
+      }
+    })
+
+		this.attachEvent("onclick", function(btn_id){
+
+			switch(btn_id) {
+
+				case "btn_add":
+					_grid._add_row();
+					break;
+
+				case "btn_delete":
+					_grid._del_row();
+					break;
+
+        case "btn_up":
+          _grid._move_row("up");
+          break;
+
+        case "btn_down":
+          _grid._move_row("down");
+          break;
+			}
+
+		});
+	});
+
+	// поле фильтра в панели инструментов
+
+	// собственно табличная часть
+	_grid.setIconsPath(dhtmlx.image_path);
+	_grid.setImagePath(dhtmlx.image_path);
+	_grid.setHeader(_source.headers);
+	if(_source.min_widths)
+		_grid.setInitWidths(_source.widths);
+	if(_source.min_widths)
+		_grid.setColumnMinWidth(_source.min_widths);
+	if(_source.aligns)
+		_grid.setColAlign(_source.aligns);
+	_grid.setColSorting(_source.sortings);
+	_grid.setColTypes(_source.types);
+	_grid.setColumnIds(_source.fields.join(","));
+	_grid.enableAutoWidth(true, 1200, 600);
+	_grid.enableEditTabOnly(true);
+	_grid.init();
+
+	// гасим кнопки, если ro
+	if(attr.read_only || attr.disable_add_del){
+	  if(attr.read_only){
+      _grid.setEditable(false);
+    }
+		_toolbar.forEachItem(function (name) {
+			if(["btn_add", "btn_delete"].indexOf(name) != -1)
+				_toolbar.disableItem(name);
+		});
+	}
+
+  // добавляем кнопки сортировки, если reorder
+	if(attr.reorder){
+    var pos = _toolbar.getPosition("btn_delete");
+    if(pos){
+      _toolbar.addSeparator("sep_up", pos+1);
+      _toolbar.addButton("btn_up", pos+2, '<i class="fa fa-arrow-up fa-fw"></i>');
+      _toolbar.addButton("btn_down", pos+3, '<i class="fa fa-arrow-down fa-fw"></i>');
+      _toolbar.setItemToolTip("btn_up", "Переместить строку вверх");
+      _toolbar.setItemToolTip("btn_down", "Переместить строку вниз");
+    }
+  }
+
+	_grid.__define({
+
+    _obj: {
+      get: function () {
+        return _obj;
+      }
+    },
+
+		selection: {
+			get: function () {
+				return _selection;
+			},
+			set: function (sel) {
+				_selection = sel;
+				observer_rows([{tabular: _tsname, type: "rows"}]);
+			}
+		},
+
+		destructor: {
+			value: function () {
+
+				if(_obj){
+					Object.unobserve(_obj, observer);
+					Object.unobserve(_obj, observer_rows);
+				}
+
+				_obj = null;
+				_ts = null;
+				_meta = null;
+				_mgr = null;
+				_pwnd = null;
+				_cell.detachToolbar();
+
+				_grid.entBox.removeEventListener("paste", onpaste);
+
+				_destructor.call(_grid);
+			}
+		},
+
+		get_cell_field: {
+			value: function () {
+
+				if(_ts){
+
+					var rindex = get_sel_index(true),
+						cindex = _grid.getSelectedCellIndex(),
+						row, col;
+
+					if(rindex != undefined){
+						row = _ts.get(rindex);
+
+					}else if(_grid._last){
+						row = _ts.get(_grid._last.row);
+					}
+
+					if(cindex >=0){
+						col = _grid.getColumnId(cindex);
+					}else if(_grid._last){
+						col = _grid.getColumnId(_grid._last.cindex);
+					}
+
+					if(row && col){
+						return {obj: row, field: col, metadata: _meta[col]}._mixin(_pwnd);
+					}
+
+				}
+			}
+		},
+
+		refresh_row: {
+			value: function (row) {
+				_grid.selectRowById(row.row);
+				_grid.forEachCell(row.row, function(cellObj,ind){
+					var val = row[_grid.getColumnId(ind)];
+					cellObj.setCValue($p.utils.is_data_obj(val) ? val.presentation : val);
+				});
+			}
+		}
+	});
+
+	_grid.attachEvent("onEditCell", tabular_on_edit);
+
+  _grid.attachEvent("onCheck", function(rId,cInd,state){
+    _grid.selectCell(rId-1, cInd);
+    tabular_on_edit(2, rId, cInd, state);
+  });
+
+	_grid.attachEvent("onRowSelect", function(rid,ind){
+		if(_ts){
+			_grid._last = {
+				row: rid-1,
+				cindex: ind
+			}
+		}
+	});
+
+  _grid.attachEvent("onHeaderClick", function(ind,obj){
+
+    var field = _source.fields[ind];
+    if(_grid.disable_sorting || field == 'row'){
+      return;
+    }
+    if(!_grid.sort_fields){
+      _grid.sort_fields = [];
+      _grid.sort_directions = [];
+    }
+
+    // есть ли уже такая колонка
+    var index = _grid.sort_fields.indexOf(field);
+
+    function add_field() {
+      if(index == -1){
+        _grid.sort_fields.push(field);
+        _grid.sort_directions.push("asc");
+      }
+      else{
+        if(_grid.sort_directions[index] == "asc"){
+          _grid.sort_directions[index] = "desc";
+        }
+        else{
+          _grid.sort_directions[index] = "asc";
+        }
+      }
+    }
+
+    // если кликнули с шифтом - добавляем
+    if(window.event && window.event.shiftKey){
+      add_field();
+    }
+    else{
+      if(index == -1){
+        _grid.sort_fields.length = 0;
+        _grid.sort_directions.length = 0;
+      }
+      add_field();
+    }
+
+    _ts.sort(_grid.sort_fields.map(function (field, index) {
+      return field + " " + _grid.sort_directions[index];
+    }));
+
+    _ts.sync_grid(_grid);
+
+    for(var col = 0; col < _source.fields.length; col++){
+      var field = _source.fields[col];
+      var index = _grid.sort_fields.indexOf(field);
+      if(index == -1){
+        _grid.setSortImgState(false, col);
+      }
+      else{
+        _grid.setSortImgState(true, col, _grid.sort_directions[index]);
+        setTimeout(function () {
+          if(_grid && _grid.sortImg){
+            _grid.sortImg.style.display="inline";
+          }
+        }, 200);
+        break;
+      }
+    }
+  });
+
+	// заполняем табчасть данными
+	observer_rows([{tabular: _tsname, type: "rows"}]);
+
+	// начинаем следить за объектом и, его табчастью допреквизитов
+	Object.observe(_obj, observer, ["row"]);
+	Object.observe(_obj, observer_rows, ["rows"]);
+
+	// начинаем следить за буфером обмена
+	_grid.entBox.addEventListener('paste', onpaste);
+
+	return _grid;
+};
+
+
+/**
+ * ### Виджет элементов фильтра для панели инструментов форм списка и выбора
+ * объединяет поля выбора периода и поле ввода фильтра
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ *
+ * @module  widgets
+ * @submodule wdg_filter
+ * @requires common
+ */
+
+/**
+ * Виджет для панели инструментов форм списка и выбора,
+ * объединяет поля выбора периода и поле ввода фильтра
+ * @param attr {Object} - параметры создаваемого виджета
+ * @param attr.manager {DataManager}
+ * @param attr.toolbar {dhtmlXToolbarObject}
+ * @param [attr.pos=7] {Number} - номер элемента на тулбаре, после которого вставлять виджет
+ * @param [attr.date_from]
+ * @param [attr.date_till]
+ * @constructor
+ * @menuorder 57
+ * @tooltip Фильтр динсписка
+ */
+$p.iface.Toolbar_filter = function Toolbar_filter(attr) {
+
+	var t = this,
+		input_filter_changed = 0,
+		input_filter_width = $p.job_prm.device_type == "desktop" ? 200 : 120,
+		custom_selection = {};
+
+	if(!attr.pos)
+		attr.pos = 6;
+
+	t.__define({
+
+		custom_selection: {
+			get: function () {
+				return custom_selection;
+			}
+		},
+
+		toolbar: {
+			get: function () {
+				return attr.toolbar;
+			}
+		},
+
+		call_event: {
+			value: function () {
+
+				if(input_filter_changed){
+					clearTimeout(input_filter_changed);
+					input_filter_changed = 0;
+				}
+
+				attr.onchange.call(t, t.get_filter());
+			}
+		}
+
+	});
+
+	function onkeydown(){
+
+		if(input_filter_changed)
+			clearTimeout(input_filter_changed);
+
+		input_filter_changed = setTimeout(function () {
+      input_filter_changed && t._prev_input_filter != t.input_filter.value && t.call_event();
+		}, 500);
+	}
+
+	// заготовка для адаптивного фильтра
+	t.toolbar.addText("div_filter", attr.pos, "");
+	t.div = t.toolbar.objPull[t.toolbar.idPrefix + "div_filter"];
+	attr.pos++;
+
+	// Поля ввода периода
+	if(attr.manager instanceof DocManager || attr.manager instanceof BusinessProcessManager || attr.manager instanceof TaskManager || attr.period){
+
+		// TODO: подключить вместо календарей daterangepicker
+
+		// управляем доступностью дат в миникалендаре
+		function set_sens(inp, k) {
+			if (k == "min")
+				t.сalendar.setSensitiveRange(inp.value, null);
+			else
+				t.сalendar.setSensitiveRange(null, inp.value);
+		}
+
+		input_filter_width = $p.job_prm.device_type == "desktop" ? 160 : 120;
+
+		t.toolbar.addInput("input_date_from", attr.pos, "", $p.job_prm.device_type == "desktop" ? 78 : 72);
+		attr.pos++;
+		t.toolbar.addText("lbl_date_till", attr.pos, "-");
+		attr.pos++;
+		t.toolbar.addInput("input_date_till", attr.pos, "", $p.job_prm.device_type == "desktop" ? 78 : 72);
+		attr.pos++;
+
+		t.input_date_from = t.toolbar.getInput("input_date_from");
+		//t.input_date_from.setAttribute("readOnly", "true");
+		t.input_date_from.onclick = function(){ set_sens(t.input_date_till,"max"); };
+
+		t.input_date_till = t.toolbar.getInput("input_date_till");
+		//t.input_date_till.setAttribute("readOnly", "true");
+		t.input_date_till.onclick = function(){ set_sens(t.input_date_from,"min"); };
+
+		// подключаем календарь к инпутам
+		t.сalendar = new dhtmlXCalendarObject([t.input_date_from, t.input_date_till]);
+		t.сalendar.attachEvent("onclick", t.call_event);
+
+		// начальные значения периода
+		if(!attr.date_from)
+			attr.date_from = new Date((new Date()).getFullYear().toFixed() + "-01-01");
+		if(!attr.date_till)
+			attr.date_till = $p.utils.date_add_day(new Date(), 1);
+		t.input_date_from.value=$p.moment(attr.date_from).format("L");
+		t.input_date_till.value=$p.moment(attr.date_till).format("L");
+
+		// для документов, кешируемых в doc, добавляем фильтрацию по индексу
+		if(attr.manager.cachable == "doc" && !attr.custom_selection){
+
+			custom_selection._view = {
+				get value(){
+					return 'doc/by_date';
+				}
+			};
+			custom_selection._key = {
+				get value(){
+					var filter = t.get_filter(true);
+					return {
+						startkey: [attr.manager.class_name, filter.date_from.getFullYear(), filter.date_from.getMonth()+1, filter.date_from.getDate()],
+						endkey: [attr.manager.class_name, filter.date_till.getFullYear(), filter.date_till.getMonth()+1, filter.date_till.getDate()],
+						_drop_date: true,
+						_order_by: true,
+						_search: filter.filter.toLowerCase()
+					};
+				}
+			};
+		}
+	}
+
+	// текстовое поле фильтра по подстроке
+	if(!attr.hide_filter){
+
+		t.toolbar.addSeparator("filter_sep", attr.pos);
+		attr.pos++;
+
+		t.toolbar.addInput("input_filter", attr.pos, "", input_filter_width);
+		t.input_filter = t.toolbar.getInput("input_filter");
+		t.input_filter.onchange = function () {
+		  t._prev_input_filter != t.input_filter.value && t.call_event();
+    };
+		t.input_filter.onclick = function () {
+			var val = t.input_filter.value;
+			setTimeout(function () {
+				if(val != t.input_filter.value)
+					t.call_event();
+			})
+		};
+		t.input_filter.onkeydown = onkeydown;
+		t.input_filter.type = "search";
+		t.input_filter.setAttribute("placeholder", "Фильтр");
+
+		t.toolbar.addSpacer("input_filter");
+
+	}else if(t.input_date_till)
+		t.toolbar.addSpacer("input_date_till");
+
+	else
+		t.toolbar.addSpacer("div_filter");
+
+
+};
+$p.iface.Toolbar_filter.prototype.__define({
+
+	get_filter: {
+		value: function (exclude_custom) {
+
+		  if(this.input_filter){
+        this._prev_input_filter = this.input_filter.value;
+      }
+
+			var res = {
+				date_from: this.input_date_from ? $p.utils.date_add_day(dhx4.str2date(this.input_date_from.value), 0, true) : "",
+				date_till: this.input_date_till ? $p.utils.date_add_day(dhx4.str2date(this.input_date_till.value), 0, true) : "",
+				filter: this.input_filter ? this.input_filter.value : ""
+			}, fld, flt;
+
+			if(!exclude_custom){
+				for(fld in this.custom_selection){
+					if(!res.selection)
+						res.selection = [];
+					flt = {};
+					flt[fld] = this.custom_selection[fld].value;
+					res.selection.push(flt);
+				}
+			}
+
+			return res;
+		}
+	},
+
+	add_filter: {
+		value: function (elm) {
+
+			var pos = this.toolbar.getPosition("input_filter") - 2,
+				id = dhx4.newId(),
+				width = (this.toolbar.getWidth("input_filter") / 2).round(0);
+
+			this.toolbar.setWidth("input_filter", width);
+			this.toolbar.addText("lbl_"+id, pos, elm.text || "");
+			pos++;
+			this.toolbar.addInput("input_"+id, pos, "", width);
+
+			this.custom_selection[elm.name] = this.toolbar.getInput("input_"+id);
+		}
+	}
+});
+
+/**
+ * Формы визуализации и изменения параметров объекта
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ *
+ * @module common
+ * @submodule wnd_dat
+ */
+
+
+/**
+ * Форма dat - шаблон окна инструментов
+ */
+$p.iface.dat_blank = function(_dxw, attr) {
+
+	// TODO: реализовать undock для аккордиона
+
+	if(!attr)
+		attr = {};
+
+	var wnd_dat = (_dxw || $p.iface.w).createWindow({
+		id: dhx4.newId(),
+		left: attr.left || 700,
+		top: attr.top || 20,
+		width: attr.width || 220,
+		height: attr.height || 300,
+		move: true,
+		park: !attr.allow_close,
+		center: !!attr.center,
+		resize: true,
+		caption: attr.caption || "Tools"
+	});
+
+	// если окно не помещается в области - двигаем
+	var _dxw_area = {
+		x: (_dxw || $p.iface.w).vp.clientWidth,
+		y: (_dxw || $p.iface.w).vp.clientHeight
+	}, _move;
+
+	if(wnd_dat.getPosition()[0] + wnd_dat.getDimension()[0] > _dxw_area.x){
+		_dxw_area.x = _dxw_area.x - wnd_dat.getDimension()[0];
+		_move = true;
+	}else
+		_dxw_area.x = wnd_dat.getPosition()[0];
+
+	if(wnd_dat.getPosition()[1] + wnd_dat.getDimension()[1] > _dxw_area.y){
+		_dxw_area.y = _dxw_area.y - wnd_dat.getDimension()[1];
+		_move = true;
+	}else
+		_dxw_area.y = wnd_dat.getPosition()[1];
+
+	if(_move){
+		if(_dxw_area.x<0 || _dxw_area.y<0)
+			wnd_dat.maximize();
+		else
+			wnd_dat.setPosition(_dxw_area.x, _dxw_area.y);
+	}
+
+	_dxw = null;
+
+	if(attr.hasOwnProperty('allow_minmax') && !attr.allow_minmax)
+		wnd_dat.button('minmax').hide();
+
+	if(attr.allow_close)
+		wnd_dat.button('park').hide();
+	else
+		wnd_dat.button('close').hide();
+
+	// обработчик при закрытии - анализируем модальность
+	wnd_dat.attachEvent("onClose", function () {
+
+		var allow_close = typeof attr.on_close == "function" ? attr.on_close(wnd_dat) : true;
+
+		if(allow_close){
+
+			// восстанавливаем модальность родительского окна
+			if(attr.pwnd_modal && attr.pwnd && attr.pwnd.setModal)
+				attr.pwnd.setModal(1);
+
+			return allow_close;
+		}
+
+	});
+
+	wnd_dat.setIconCss('without_icon');
+	wnd_dat.cell.parentNode.children[1].classList.add('dat_gui');
+
+	$p.iface.bind_help(wnd_dat, attr.help_path);
+
+	wnd_dat.elmnts = {grids: {}};
+
+	wnd_dat.wnd_options = function (options) {
+		var pos = wnd_dat.getPosition(),
+			sizes = wnd_dat.getDimension(),
+			parked = wnd_dat.isParked();
+		options.left = pos[0];
+		options.top = pos[1];
+		options.width = sizes[0];
+		options.parked = parked;
+		if(!parked)
+			options.height = sizes[1];
+
+	};
+
+	wnd_dat.bottom_toolbar = function(oattr){
+
+		var attr = ({
+				wrapper: wnd_dat.cell,
+				width: '100%',
+				height: '28px',
+				bottom: '0px',
+				left: '0px',
+				name: 'tb_bottom',
+				buttons: [
+					{name: 'btn_cancel', text: 'Отмена', title: 'Закрыть без сохранения', width:'60px', float: 'right'},
+					{name: 'btn_ok', b: 'Ок', title: 'Применить изменения', width:'30px', float: 'right'}
+				],
+				onclick: function (name) {
+					return false;
+				}
+			})._mixin(oattr),
+
+			tb_bottom = new OTooolBar(attr),
+			sbar = wnd_dat.attachStatusBar({height: 12});
+		sbar.style.zIndex = -1000;
+		sbar.firstChild.style.backgroundColor = "transparent";
+		sbar.firstChild.style.border = "none";
+		return tb_bottom;
+	};
+
+	if(attr.modal){
+		if(attr.pwnd && attr.pwnd.setModal){
+			attr.pwnd_modal = attr.pwnd.isModal();
+			attr.pwnd.setModal(0);
+		}
+		wnd_dat.setModal(1);
+	}
+
+	return wnd_dat;
+};
+
+
+
+/**
+ * обработчик выбора значения в свойствах (ссылочные типы)
+ * вызывается в контексте this = pgrid
+ * @param selv {*} выбранное значение
+ */
+$p.iface.pgrid_on_select = function(selv){
+
+	if(selv===undefined)
+		return;
+
+	var pgrid = this.grid instanceof dhtmlXGridObject ? this.grid : this,
+		source = pgrid.getUserData("", "source"),
+		f = pgrid.getSelectedRowId();
+
+	if(source.o[f] != undefined){
+		if(typeof source.o[f] == "number")
+			source.o[f] = $p.utils.fix_number(selv, true);
+		else
+			source.o[f] = selv;
+
+	}else if(f.indexOf("fprms") > -1){
+		var row = $p._find(source.o.fprms, f.split("|")[1]);
+		row.value = selv;
+	}
+
+	pgrid.cells().setValue($p.utils.is_data_obj(selv) ? selv.presentation : selv || "");
+
+
+	if(source.grid_on_change)
+		source.grid_on_change.call(pgrid, f, selv);
+};
+
+/**
+ * обработчик изменения значения в свойствах (примитивные типы)
+ * @param pname {String} - имя измененного свойства
+ * @param new_value {*} - новое значение
+ * @param old_value {*} - предыдущее значение
+ */
+$p.iface.pgrid_on_change = function(pname, new_value, old_value){
+	if(pname)
+		$p.iface.pgrid_on_select.call(this, new_value);
+};
+
+/**
+ * обработчик изменения флажка в свойствах (bit)
+ * @param rId {String} - идентификатор строки
+ * @param cInd {Number} - идентификатор колонки
+ * @param state {Boolean} - состояние чекбокса
+ */
+$p.iface.pgrid_on_checkbox = function(rId, cInd, state){
+
+	var pgrid = this.grid instanceof dhtmlXGridObject ? this.grid : this,
+		source = pgrid.getUserData("", "source");
+
+	if(source.o[rId] != undefined)
+		source.o[rId] = state;
+
+	if(source.grid_on_change)
+		source.grid_on_change(rId, state);
+};
+
+
+function _clear_all(){
+	$p.iface.docs.__define({
+		clear_all: {
+			value: function () {
+				this.detachToolbar();
+				this.detachStatusBar();
+				this.detachObject(true);
+			},
+			enumerable: false
+		},
+		"Очистить": {
+			get: function () {
+				return this.clear_all;
+			},
+			enumerable: false
+		},
+		"Контейнер": {
+			get: function () {
+				return this.cell.querySelector(".dhx_cell_cont_layout");
+			},
+			enumerable: false
+		}
+	});
+}
+
+/**
+ * Создаёт форму авторизации с обработчиками перехода к фидбэку и настройкам,
+ * полем входа под гостевой ролью, полями логина и пароля и кнопкой входа
+ * @method frm_auth
+ * @for InterfaceObjs
+ * @param attr {Object} - параметры формы
+ * @param [attr.cell] {dhtmlXCellObject}
+ * @return {Promise}
+ */
+$p.iface.frm_auth = function (attr, resolve, reject) {
+
+	if(!attr)
+		attr = {};
+
+	var _cell, _frm, w, were_errors;
+
+	if(attr.modal_dialog){
+		if(!attr.options)
+			attr.options = {
+				name: "frm_auth",
+				caption: "Вход на сервер",
+				width: 360,
+				height: 300,
+				center: true,
+				allow_close: true,
+				allow_minmax: true,
+				modal: true
+			};
+		_cell = this.auth = this.dat_blank(attr._dxw, attr.options);
+		_cell.attachEvent("onClose", function(win){
+			if(were_errors){
+				reject && reject(err);
+			}else if(resolve)
+				resolve();
+			return true;
+		});
+    _frm = _cell.attachForm();
+
+	}else{
+		_cell = attr.cell || this.docs;
+		_frm = this.auth = _cell.attachForm();
+		$p.msg.show_msg($p.msg.init_login, _cell);
+	}
+
+
+	function do_auth(login, password){
+
+		$p.ajax.username = login;
+		$p.ajax.password = $p.aes.Ctr.encrypt(password);
+
+		if(login){
+
+			if($p.wsql.get_user_param("user_name") != login)
+				$p.wsql.set_user_param("user_name", login);					// сохраняем имя пользователя в базе
+
+      var observer = $p.eve.attachEvent("user_log_in", function () {
+        $p.eve.detachEvent(observer);
+        _cell && _cell.close && _cell.close();
+      });
+
+			//$p.eve.log_in(attr.onstep)
+			$p.wsql.pouch.log_in(login, password)
+				.then(function () {
+
+					if($p.wsql.get_user_param("enable_save_pwd")){
+						if($p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")) != password)
+							$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password));   // сохраняем имя пользователя в базе
+
+					}else if($p.wsql.get_user_param("user_pwd") != "")
+						$p.wsql.set_user_param("user_pwd", "");
+
+					$p.eve.logged_in = true;
+					if(attr.modal_dialog)
+            _cell && _cell.close && _cell.close();
+					else if(resolve)
+						resolve();
+
+				})
+				.catch(function (err) {
+					were_errors = true;
+          _frm && _frm.onerror &&_frm.onerror(err);
+				})
+				.then(function () {
+					if($p.iface.sync)
+						$p.iface.sync.close();
+					if(_cell && _cell.progressOff){
+						_cell.progressOff();
+						if(!were_errors && attr.hide_header)
+							_cell.hideHeader();
+					}
+					if($p.iface.cell_tree && !were_errors)
+						$p.iface.cell_tree.expand();
+				});
+
+		} else
+			this.validate();
+	}
+
+	// обработчик кнопки "войти" формы авторизации
+	function auth_click(name){
+
+		were_errors = false;
+		this.resetValidateCss();
+
+		if(this.getCheckedValue("type") == "guest"){
+
+			var login = this.getItemValue("guest"),
+				password = "";
+			if($p.job_prm.guests && $p.job_prm.guests.length){
+				$p.job_prm.guests.some(function (g) {
+					if(g.username == login){
+						password = $p.aes.Ctr.decrypt(g.password);
+						return true;
+					}
+				});
+			}
+			do_auth.call(this, login, password);
+
+		}else if(this.getCheckedValue("type") == "auth"){
+			do_auth.call(this, this.getItemValue("login"), this.getItemValue("password"));
+
+		}
+	}
+
+	// загружаем структуру формы
+	_frm.loadStruct($p.injected_data["form_auth.xml"], function(){
+
+		var selected;
+
+		// если указан список гостевых пользователей
+		if($p.job_prm.guests && $p.job_prm.guests.length){
+
+			var guests = $p.job_prm.guests.map(function (g) {
+					var v = {
+						text: g.username,
+						value: g.username
+					};
+					if($p.wsql.get_user_param("user_name") == g.username){
+						v.selected = true;
+						selected = g.username;
+					}
+					return v;
+				});
+
+			if(!selected){
+				guests[0].selected = true;
+				selected = guests[0].value;
+			}
+
+			_frm.reloadOptions("guest", guests);
+		}
+
+		// после готовности формы читаем пользователя из локальной датабазы
+		if($p.wsql.get_user_param("user_name") && $p.wsql.get_user_param("user_name") != selected){
+			_frm.setItemValue("login", $p.wsql.get_user_param("user_name"));
+			_frm.setItemValue("type", "auth");
+
+			if($p.wsql.get_user_param("enable_save_pwd") && $p.wsql.get_user_param("user_pwd")){
+				_frm.setItemValue("password", $p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")));
+			}
+		}
+
+		// позиционируем форму по центру
+		if(!attr.modal_dialog){
+			if((w = ((_cell.getWidth ? _cell.getWidth() : _cell.cell.offsetWidth) - 500)/2) >= 10)
+				_frm.cont.style.paddingLeft = w.toFixed() + "px";
+			else
+				_frm.cont.style.paddingLeft = "20px";
+		}
+
+		setTimeout(function () {
+
+			dhx4.callEvent("on_draw_auth", [_frm]);
+
+			if(($p.wsql.get_user_param("autologin") || attr.try_auto) && (selected || ($p.wsql.get_user_param("user_name") && $p.wsql.get_user_param("user_pwd"))))
+				auth_click.call(_frm);
+
+		});
+	});
+
+	// назначаем обработчик нажатия на кнопку
+	_frm.attachEvent("onButtonClick", auth_click);
+
+	_frm.attachEvent("onKeyDown",function(inp, ev, name, value){
+		if(ev.keyCode == 13){
+			if(name == "password" || this.getCheckedValue("type") == "guest"){
+				auth_click.call(this);
+			}
+		}
+	});
+
+
+	_frm.onerror = function (err) {
+
+		$p.ajax.authorized = false;
+
+		var emsg = err.message.toLowerCase();
+
+		if(emsg.indexOf("auth") != -1) {
+			$p.msg.show_msg({
+				title: $p.msg.main_title + $p.version,
+				type: "alert-error",
+				text: $p.msg.error_auth
+			});
+			_frm.setItemValue("password", "");
+			_frm.validate();
+
+		}else if(emsg.indexOf("gateway") != -1 || emsg.indexOf("net") != -1) {
+			$p.msg.show_msg({
+				title: $p.msg.main_title + $p.version,
+				type: "alert-error",
+				text: $p.msg.error_network
+			});
+		}
+	}
+
+
+
+};
+
+
+/**
+ * Служебная функция для открытия окна настроек из гиперссылки
+ * @param e
+ * @return {Boolean}
+ */
+$p.iface.open_settings = function (e) {
+	var evt = (e || (typeof event != "undefined" ? event : undefined));
+	if(evt)
+		evt.preventDefault();
+
+	var hprm = $p.job_prm.parse_url();
+	$p.iface.set_hash(hprm.obj, hprm.ref, hprm.frm, "settings");
+
+	return $p.iface.cancel_bubble(evt);
+};
+
+/**
+ * Переключает вид формы между списком, календаарём и отчетами
+ * @method swith_view
+ * @for InterfaceObjs
+ * @param name {String} - имя представления
+ */
+$p.iface.swith_view = function(name){
+
+	var state,
+		iface = $p.iface,
+
+		/**
+		 * Переключает состав элементов дерева
+		 * @param view
+		 */
+		swith_tree = function(name){
+
+			function compare_text(a, b) {
+				if (a.text > b.text) return 1;
+				if (a.text < b.text) return -1;
+			}
+
+			if(!iface.tree){
+
+				var hprm = $p.job_prm.parse_url();
+				if(hprm.obj) {
+					var parts = hprm.obj.split('.');
+					if(parts.length > 1){
+
+						var mgr = $p.md.mgr_by_class_name(hprm.obj);
+
+						if(typeof iface.docs.close === "function" )
+							iface.docs.close();
+
+						if(mgr)
+							mgr.form_list(iface.docs, {});
+					}
+				}
+				return;
+
+			}else if(iface.tree._view == name || ["rep", "cal"].indexOf(name) != -1)
+				return;
+
+			iface.tree.deleteChildItems(0);
+			if(name == "oper"){
+				var meta_tree = {id:0, item:[
+					{id:"oper_cat", text: $p.msg.meta_cat, open: true, item:[]},
+					{id:"oper_doc", text: $p.msg.meta_doc, item:[]},
+					{id:"oper_cch", text: $p.msg.meta_cch, item:[]},
+					{id:"oper_cacc", text: $p.msg.meta_cacc, item:[]},
+					{id:"oper_tsk", text: $p.msg.meta_tsk, item:[]}
+				]}, mdn, md,
+
+				// бежим по справочникам
+					tlist = meta_tree.item[0].item;
+				for(mdn in $p.cat){
+					if(typeof $p.cat[mdn] == "function")
+						continue;
+					md = $p.cat[mdn].metadata();
+					if(md.hide)
+						continue;
+					tlist.push({id: "oper.cat." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
+				}
+				tlist.sort(compare_text);
+
+				// бежим по документам
+				tlist = meta_tree.item[1].item;
+				for(mdn in $p.doc){
+					if(typeof $p.doc[mdn] == "function")
+						continue;
+					md = $p.doc[mdn].metadata();
+					if(md.hide)
+						continue;
+					tlist.push({id: "oper.doc." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
+				}
+				tlist.sort(compare_text);
+
+				// бежим по планам видов характеристик
+				tlist = meta_tree.item[2].item;
+				for(mdn in $p.cch){
+					if(typeof $p.cch[mdn] == "function")
+						continue;
+					md = $p.cch[mdn].metadata();
+					if(md.hide)
+						continue;
+					tlist.push({id: "oper.cch." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
+				}
+				tlist.sort(compare_text);
+
+				// бежим по планам счетов
+				tlist = meta_tree.item[3].item;
+				for(mdn in $p.cacc){
+					if(typeof $p.cacc[mdn] == "function")
+						continue;
+					md = $p.cacc[mdn].metadata();
+					if(md.hide)
+						continue;
+					tlist.push({id: "oper.cacc." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
+				}
+				tlist.sort(compare_text);
+
+				// бежим по задачам
+				tlist = meta_tree.item[4].item;
+				for(mdn in $p.tsk){
+					if(typeof $p.tsk[mdn] == "function")
+						continue;
+					md = $p.tsk[mdn].metadata();
+					if(md.hide)
+						continue;
+					tlist.push({id: "oper.tsk." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
+				}
+				tlist.sort(compare_text);
+
+				iface.tree.parse(meta_tree, function(){
+					var hprm = $p.job_prm.parse_url();
+					if(hprm.obj){
+						iface.tree.selectItem(hprm.view+"."+hprm.obj, true);
+					}
+				}, "json");
+
+			}else{
+				iface.tree.loadXML(iface.tree.tree_filteres, function(){
+
+				});
+
+			}
+
+			iface.tree._view = name;
+		};
+
+	if(name.indexOf(iface.docs.getViewName())==0)
+		return iface.docs.getViewName();
+
+	state = iface.docs.showView(name);
+	if (state == true) {
+		// first call, init corresponding components
+		// календарь
+		if(name=="cal" && !window.dhtmlXScheduler){
+			$p.load_script("dist/dhtmlxscheduler.min.js", "script", function(){
+				//scheduler.config.xml_date="%Y-%m-%d %H:%i";
+				scheduler.config.first_hour = 8;
+				scheduler.config.last_hour = 22;
+				iface.docs.scheduler = iface.docs.attachScheduler(new Date("2015-11-20"), "week", "scheduler_here");
+				iface.docs.scheduler.attachEvent("onBeforeViewChange", function(old_mode, old_date, mode, date){
+					if(mode == "timeline"){
+						$p.msg.show_not_implemented();
+						return false;
+					}
+					return true;
+				});
+			});
+
+			$p.load_script("dist/dhtmlxscheduler.css", "link");
+
+			//}else if(name=="rep"){
+			//	// подключаемый отчет
+			//
+			//}else if(name=="oper"){
+			//	// в дереве - список метаданных, в окне - список текущего метаданного
+			//
+
+		}
+	}
+
+	swith_tree(name);
+
+	if(name == "def")
+		iface.main.showStatusBar();
+	else
+		iface.main.hideStatusBar();
+};
+
+
+/**
+ * ### Визуальный компонент OTooolBar
+ * Панель инструментов рисовалки и альтернативная панель инструментов прочих форм
+ * - Гибкое управление размером, положением и выравниванием как самой панели, так и отдельных кнопок
+ * - Кнопки и группы кнопок, иконы и текст
+ * - Всплывающие подсказки с произвольным html
+ *
+ * @class OTooolBar
+ * @param attr {Object} - параметры создаваемой панели - родитель, положение, размер и ориентация
+ * @constructor
+ * @menuorder 54
+ * @tooltip Командная панель
+ */
+function OTooolBar(attr){
+	var _this = this,
+		div = document.createElement('div'),
+		offset, popup_focused, sub_focused, btn_focused;
+
+	if(!attr.image_path)
+		attr.image_path = dhtmlx.image_path;
+
+	if(attr.hasOwnProperty("class_name"))
+		div.className = attr.class_name;
+	else
+		div.className = 'md_otooolbar';
+
+	_this.cell = div;
+
+	_this.buttons = {};
+
+	function bselect(select){
+		for(var i=0; i<div.children.length; i++){
+			div.children[i].classList.remove('selected');
+		}
+		if(select && !this.classList.contains('selected'))
+			this.classList.add('selected');
+	}
+
+	function popup_hide(){
+		popup_focused = false;
+		setTimeout(function () {
+			if(!popup_focused)
+				$p.iface.popup.hide();
+		}, 300);
+	}
+
+	function btn_click(){
+		if(attr.onclick)
+			attr.onclick.call(_this, this.name.replace(attr.name + '_', ''), attr.name);
+	}
+
+	/**
+	 * Добавляет кнопку на панель инструментов
+	 * @method add
+	 * @param battr {Object} - атрибуты создаваемой кнопки
+	 */
+	this.add = function(battr){
+
+		var bdiv = $p.iface.add_button(div, attr, battr);
+
+		bdiv.onclick = btn_click;
+
+		bdiv.onmouseover = function(){
+			if(battr.title && !battr.sub){
+				popup_focused = true;
+
+				$p.iface.popup.clear();
+				$p.iface.popup.attachHTML(battr.title);
+				$p.iface.popup.show(dhx4.absLeft(bdiv), dhx4.absTop(bdiv), bdiv.offsetWidth, bdiv.offsetHeight);
+
+				$p.iface.popup.p.onmouseover = function(){
+					popup_focused = true;
+				};
+
+				$p.iface.popup.p.onmouseout = popup_hide;
+
+				if(attr.on_popup)
+					attr.on_popup($p.iface.popup, bdiv);
+			}
+		};
+
+		bdiv.onmouseout = popup_hide;
+
+		_this.buttons[battr.name] = bdiv;
+
+		if(battr.sub){
+
+			function remove_sub(parent){
+				if(!parent)
+					parent = bdiv;
+				if(parent.subdiv && !sub_focused && !btn_focused){
+					while(parent.subdiv.firstChild)
+						parent.subdiv.removeChild(parent.subdiv.firstChild);
+					parent.subdiv.parentNode.removeChild(parent.subdiv);
+					parent.subdiv = null;
+				}
+			}
+
+			bdiv.onmouseover = function(){
+
+				// нужно погасить сабдивы соседей
+				for(var i=0; i<bdiv.parentNode.children.length; i++){
+					if(bdiv.parentNode.children[i] != bdiv && bdiv.parentNode.children[i].subdiv){
+						remove_sub(bdiv.parentNode.children[i]);
+						break;
+					}
+				}
+
+				btn_focused = true;
+
+				if(!this.subdiv){
+					this.subdiv = document.createElement('div');
+					this.subdiv.className = 'md_otooolbar';
+					offset = $p.iface.get_offset(bdiv);
+					if(battr.sub.align == 'right')
+						this.subdiv.style.left = (offset.left + bdiv.offsetWidth - (parseInt(battr.sub.width.replace(/\D+/g,"")) || 56)) + 'px';
+					else
+						this.subdiv.style.left = offset.left + 'px';
+					this.subdiv.style.top = (offset.top + div.offsetHeight) + 'px';
+					this.subdiv.style.height = battr.sub.height || '198px';
+					this.subdiv.style.width = battr.sub.width || '56px';
+					for(var i in battr.sub.buttons){
+						var bsub = $p.iface.add_button(this.subdiv, attr, battr.sub.buttons[i]);
+						bsub.onclick = btn_click;
+					}
+					attr.wrapper.appendChild(this.subdiv);
+
+					this.subdiv.onmouseover = function () {
+						sub_focused = true;
+					};
+
+					this.subdiv.onmouseout = function () {
+						sub_focused = false;
+						setTimeout(remove_sub, 500);
+					};
+
+					if(battr.title)
+						$p.iface.popup.show(dhx4.absLeft(this.subdiv), dhx4.absTop(this.subdiv), this.subdiv.offsetWidth, this.subdiv.offsetHeight);
+				}
+
+			};
+
+			bdiv.onmouseout = function(){
+				btn_focused = false;
+				setTimeout(remove_sub, 500);
+			}
+		}
+	};
+
+	/**
+	 * Выделяет кнопку по событию mouseover и снимает выделение с остальных кнопок
+	 * @method select
+	 * @param name {String} - имя текущей кнопки
+	 */
+	this.select = function(name){
+		for(var i=0; i<div.children.length; i++){
+			var btn = div.children[i];
+			if(btn.name == attr.name + '_' + name){
+				bselect.call(btn, true);
+				return;
+			}
+		}
+	};
+
+	/**
+	 * Возвращает имя выделенной кнопки
+	 */
+	this.get_selected = function () {
+		for(var i=0; i<div.children.length; i++){
+			var btn = div.children[i];
+			if(btn.classList.contains('selected'))
+				return btn.name;
+		}
+	};
+
+	/**
+	 * Деструктор объекта
+	 * @method unload
+	 */
+	this.unload = function(){
+		while(div.firstChild)
+			div.removeChild(div.firstChild);
+		attr.wrapper.removeChild(div);
+	};
+
+
+	attr.wrapper.appendChild(div);
+	div.style.width = attr.width || '28px';
+	div.style.height = attr.height || '150px';
+	div.style.position = 'absolute';
+
+	if(attr.top) div.style.top = attr.top;
+	if(attr.left) div.style.left = attr.left;
+	if(attr.bottom) div.style.bottom = attr.bottom;
+	if(attr.right) div.style.right = attr.right;
+	if(attr.paddingRight) div.style.paddingRight = attr.paddingRight;
+	if(attr.paddingLeft) div.style.paddingLeft = attr.paddingLeft;
+
+	if(attr.buttons)
+		attr.buttons.forEach(function(battr){
+			_this.add(battr);
+		});
+
+};
+$p.iface.OTooolBar = OTooolBar;
+
+/**
+ * Добавляет кнопку на панель инструментов
+ * @method add_button
+ * @for InterfaceObjs
+ * @param parent {Element}
+ * @param attr {Object}
+ * @param battr {Object}
+ * @returns {Element}
+ */
+$p.iface.add_button = function(parent, attr, battr) {
+	var bdiv = document.createElement('div'), html = '';
+	bdiv.name = (attr ? attr.name + '_' : '') + battr.name;
+	parent.appendChild(bdiv);
+
+	// если имя начинается с sep_ - это разделитель
+	bdiv.className = (battr.name.indexOf("sep_") == 0) ? 'md_otooolbar_sep' : 'md_otooolbar_button';
+	if(battr.hasOwnProperty("class_name"))
+		bdiv.classList.add(battr.class_name);
+
+	if(battr.img)
+		html = '<img src="' + (attr ? attr.image_path : '') + battr.img + '">';
+	if(battr.b)
+		html +='<b style="vertical-align: super;"> ' + battr.b + '</b>';
+	else if(battr.text)
+		html +='<span style="vertical-align: super;"> ' + battr.text + '</span>';
+	else if(battr.css)
+		bdiv.classList.add(battr.css);
+	bdiv.innerHTML = html;
+
+	if(battr.float) bdiv.style.float = battr.float;
+	if(battr.clear) bdiv.style.clear = battr.clear;
+	if(battr.width) bdiv.style.width = battr.width;
+	if(battr.paddingRight) bdiv.style.paddingRight = battr.paddingRight;
+	if(battr.paddingLeft) bdiv.style.paddingLeft = battr.paddingLeft;
+
+	if(battr.tooltip)
+		bdiv.title = battr.tooltip;
+
+	return bdiv;
+};
+
+/**
+ * Форма абстрактного объекта данных {{#crossLink "DataObj"}}{{/crossLink}}, в том числе, записей регистров
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ *
+ * @module metadata
+ * @submodule wnd_obj
+ */
+
+
+/**
+ * ### Форма объекта данных
+ * По умолчанию, форма строится автоматически по описанию метаданных.<br />
+ * Метод можно переопределить для конкретного менеджера
+ *
+ * @method form_obj
+ * @for DataManager
+ * @param pwnd {dhtmlXWindows} - указатель на родительскую форму
+ * @param attr {Object|DataObj|String} - параметры инициализации формы
+ */
+DataManager.prototype.form_obj = function(pwnd, attr){
+
+	var _mgr = this,
+		_meta = _mgr.metadata(),
+		o = attr.o,
+		wnd, options, created, create_id, _title, close_confirmed;
+
+	/**
+	 * ПриСозданииНаСервере - инициализация при создании формы, до чтения объекта
+	 */
+	function frm_create(){
+
+		if(created)
+			return;
+
+		// создаём и настраиваем окно формы
+		if((pwnd instanceof dhtmlXLayoutCell || pwnd instanceof dhtmlXSideBarCell || pwnd instanceof dhtmlXCarouselCell)
+			&& (attr.bind_pwnd || attr.Приклеить)) {
+			// форма объекта приклеена к области контента или другой форме
+			if(typeof pwnd.close == "function")
+				pwnd.close(true);
+			wnd = pwnd;
+			wnd.close = function (on_create) {
+				var _wnd = wnd || pwnd;
+
+				if(on_create || check_modified()){
+
+					if(_wnd){
+
+						// выгружаем попапы
+						if(_wnd.elmnts)
+							["vault", "vault_pop"].forEach(function (elm) {
+								if (_wnd.elmnts[elm] && _wnd.elmnts[elm].unload)
+									_wnd.elmnts[elm].unload();
+							});
+
+						// информируем мир о закрытии формы
+						if(_mgr && _mgr.class_name)
+							$p.eve.callEvent("frm_close", [_mgr.class_name, (o && o._obj ? o.ref : "")]);
+
+						if(_wnd.conf){
+							_wnd.detachToolbar();
+							_wnd.detachStatusBar();
+							_wnd.conf.unloading = true;
+							_wnd.detachObject(true);
+						}
+					}
+					frm_unload(on_create);
+
+				}
+			};
+			wnd.elmnts = {grids: {}};
+
+		}else{
+			// форма в модальном диалоге
+			options = {
+				name: 'wnd_obj_' + _mgr.class_name,
+				wnd: {
+					top: 80 + Math.random()*40,
+					left: 120 + Math.random()*80,
+					width: 700,
+					height: 400,
+					modal: true,
+					center: false,
+					pwnd: pwnd,
+					allow_close: true,
+					allow_minmax: true,
+					on_close: frm_close,
+					caption: (_meta.obj_presentation || _meta.synonym)
+				}
+			};
+			wnd = $p.iface.dat_blank(null, options.wnd);
+		}
+
+		if(!wnd.ref)
+			wnd.__define({
+
+				/**
+				 * Возвращает ссылку текущего объекта
+				 */
+				ref: {
+					get: function(){
+						return o ? o.ref : $p.utils.blank.guid;
+					},
+					enumerable: false,
+					configurable: true
+				},
+
+				/**
+				 * Обновляет текст заголовка формы
+				 */
+				set_text: {
+					value: function(force) {
+						if(attr && attr.set_text || wnd && wnd.setText){
+
+							var title = o.presentation;
+
+							if(!title)
+								return;
+
+							if(o instanceof CatObj)
+								title = (_meta.obj_presentation || _meta.synonym) + ': ' + title;
+
+							else if(o instanceof DocObj)
+								title += o.posted ? " (проведен)" : " (не проведен)";
+
+							if(o._modified && title.lastIndexOf("*")!=title.length-1)
+								title += " *";
+
+							else if(!o._modified && title.lastIndexOf("*")==title.length-1)
+								title = title.replace(" *", "");
+
+							if(force || _title !== title){
+								_title = title;
+								if(attr.set_text)
+									attr.set_text(title);
+								else
+									wnd.setText(title);
+							}
+						}
+					},
+					enumerable: false,
+					configurable: true
+				}
+			});
+
+		/**
+		 *	Закладки: шапка и табличные части
+		 */
+		wnd.elmnts.frm_tabs = wnd.attachTabbar({
+			arrows_mode: "auto",
+			offsets: {
+				top: 0,
+				right: 0,
+				bottom: 0,
+				left: 0
+			}
+		});
+		wnd.elmnts.frm_tabs.addTab('tab_header','&nbsp;Реквизиты&nbsp;', null, null, true);
+		wnd.elmnts.tabs = {'tab_header': wnd.elmnts.frm_tabs.cells('tab_header')};
+
+		// панель инструментов формы
+		wnd.elmnts.frm_toolbar = wnd.attachToolbar();
+		wnd.elmnts.frm_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
+		wnd.elmnts.frm_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_obj.xml"], function(){
+
+			// если мы приклеены к ячейке, сдвигаем toolbar на 4px
+			if(wnd === pwnd)
+				this.cont.style.top = "4px";
+
+			this.addSpacer("btn_unpost");
+			this.attachEvent("onclick", attr.toolbar_click || toolbar_click);
+
+			// учтём права для каждой роли на каждый объект
+			var _acl = $p.current_user.get_acl(_mgr.class_name);
+
+			if(_mgr instanceof DocManager && _acl.indexOf("p") != -1){
+				this.enableItem("btn_post");
+				if(!attr.toolbar_struct)
+					this.setItemText("btn_save_close", "<b>Провести и закрыть</b>");
+			}else
+				this.hideItem("btn_post");
+
+			if(_mgr instanceof DocManager && _acl.indexOf("o") != -1)
+				this.enableItem("btn_unpost");
+			else
+				this.hideItem("btn_unpost");
+
+
+			if(_acl.indexOf("e") == -1){
+				this.hideItem("btn_save_close");
+				this.disableItem("btn_save");
+			}
+
+			if(attr.on_select)
+				this.setItemText("btn_save_close", "Записать и выбрать");
+
+			// для ссылочных типов
+			if(_mgr instanceof CatManager || _mgr instanceof DocManager){
+
+				// добавляем команды печати
+				_mgr.printing_plates().then(function (pp) {
+					for(var pid in pp)
+						wnd.elmnts.frm_toolbar.addListOption("bs_print", pid, "~", "button", pp[pid].toString());
+				});
+
+				// попап для присоединенных файлов
+				wnd.elmnts.vault_pop = new dhtmlXPopup({
+					toolbar: this,
+					id: "btn_files"
+				});
+				wnd.elmnts.vault_pop.attachEvent("onShow", show_vault);
+
+			}else
+				this.disableItem("bs_print");
+
+			// кнопка закрытия для приклеенной формы
+			if(wnd != pwnd){
+				this.hideItem("btn_close");
+			}
+
+		});
+
+		created = true;
+	}
+
+
+	/**
+	 * Наблюдатель за изменением объекта
+	 * Пока здесь только установка заголовка формы
+	 * @param changes
+	 */
+	function observer(changes) {
+		if(o && wnd && wnd.set_text){
+      wnd.set_text();
+    }
+	}
+
+	/**
+	 * ПриЧтенииНаСервере - инициализация при чтении объекта
+	 */
+	function frm_fill(){
+
+		if(!created){
+			clearTimeout(create_id);
+			frm_create();
+		}
+
+		/**
+		 * Устанавливаем текст заголовка формы
+		 */
+		wnd.set_text();
+		if(!attr.hide_header && wnd.showHeader){
+      wnd.showHeader();
+    }
+
+		/**
+		 * закладки табличных частей
+		 */
+		if(attr.draw_tabular_sections)
+			attr.draw_tabular_sections(o, wnd, tabular_init);
+
+		else if(!o.is_folder){
+			if(_meta.form && _meta.form.obj && _meta.form.obj.tabular_sections_order)
+				_meta.form.obj.tabular_sections_order.forEach(function (ts) {
+					tabular_init(ts);
+				});
+
+			else
+				for(var ts in _meta.tabular_sections){
+					if(ts==="extra_fields")
+						continue;
+
+					if(o[ts] instanceof TabularSection){
+						// настройка табличной части
+						tabular_init(ts);
+					}
+				}
+		}
+
+		/**
+		 *	закладка шапка
+		 */
+		if(attr.draw_pg_header)
+			attr.draw_pg_header(o, wnd);
+
+		else{
+
+			// учтём права для каждой роли на каждый объект
+			var _acl = $p.current_user.get_acl(_mgr.class_name);
+
+			wnd.elmnts.pg_header = wnd.elmnts.tabs.tab_header.attachHeadFields({
+				obj: o,
+				pwnd: wnd,
+				read_only: _acl.indexOf("e") == -1
+			});
+			wnd.attachEvent("onResizeFinish", function(win){
+				wnd.elmnts.pg_header.enableAutoHeight(false, wnd.elmnts.tabs.tab_header._getHeight()-20, true);
+			});
+		}
+
+		/**
+		 * начинаем следить за объектом
+		 */
+		Object.observe(o, observer, ["update", "row"]);
+
+
+		return {wnd: wnd, o: o};
+
+	}
+
+	/**
+	 * обработчик нажатия кнопок командных панелей
+	 */
+	function toolbar_click(btn_id){
+		if(btn_id=="btn_save_close")
+			save("close");
+
+		else if(btn_id=="btn_save")
+			save("save");
+
+		else if(btn_id=="btn_post")
+			save("post");
+
+		else if(btn_id=="btn_unpost")
+			save("unpost");
+
+		else if(btn_id=="btn_close")
+			wnd.close();
+
+		else if(btn_id=="btn_go_connection")
+			go_connection();
+
+		else if(btn_id.substr(0,4)=="prn_")
+			_mgr.print(o, btn_id, wnd);
+
+		else if(btn_id=="btn_import")
+			_mgr.import(null, o);
+
+		else if(btn_id=="btn_export")
+			_mgr.export({items: [o], pwnd: wnd, obj: true} );
+
+	}
+
+	/**
+	 * показывает список связанных документов
+	 */
+	function go_connection(){
+		$p.msg.show_not_implemented();
+	}
+
+	/**
+	 * создаёт и показывает диалог присоединенных файлов
+	 */
+	function show_vault(){
+
+		if (!wnd.elmnts.vault) {
+
+			wnd.elmnts.vault = wnd.elmnts.vault_pop.attachVault(400, 250, {
+				_obj:  o,
+				buttonClear: false,
+				autoStart: true,
+				filesLimit: 10,
+				mode: "pouch"
+			});
+			wnd.elmnts.vault.conf.wnd = wnd;
+		}
+	}
+
+
+	/**
+	 * настройка (инициализация) табличной части
+	 */
+	function tabular_init(name, toolbar_struct){
+
+		// с помощью метода ts_captions(), выясняем, надо ли добавлять данную ТЧ и формируем описание колонок табчасти
+		if(!_md.ts_captions(_mgr.class_name, name))
+			return;
+
+		// закладка табов табличной части
+		wnd.elmnts.frm_tabs.addTab('tab_'+name, '&nbsp;'+_meta.tabular_sections[name].synonym+'&nbsp;');
+		wnd.elmnts.tabs['tab_'+name] = wnd.elmnts.frm_tabs.cells('tab_'+name);
+
+		// учтём права для каждой роли на каждый объект
+		var _acl = $p.current_user.get_acl(_mgr.class_name);
+
+		wnd.elmnts.grids[name] = wnd.elmnts.tabs['tab_'+name].attachTabular({
+			obj: o,
+			ts: name,
+			pwnd: wnd,
+			read_only: _acl.indexOf("e") == -1,
+			toolbar_struct: toolbar_struct
+		});
+
+		if(_acl.indexOf("e") == -1){
+			var tabular = wnd.elmnts.tabs['tab_'+name].getAttachedToolbar();
+			tabular.disableItem("btn_add");
+			tabular.disableItem("btn_delete");
+		}
+
+	}
+
+	/**
+	 * действия при записи файла
+	 * @param action
+	 */
+	function save(action){
+
+		wnd.progressOn();
+
+		var post;
+		if(o instanceof DocObj){
+			if(action == "post")
+				post = true;
+
+			else if(action == "unpost")
+				post = false;
+
+			else if(action == "close"){
+				if($p.current_user.get_acl(_mgr.class_name).indexOf("p") != -1)
+					post = true;
+			}
+		}
+
+		o.save(post)
+			.then(function(){
+
+				wnd.progressOff();
+
+				if(action == "close"){
+					if(attr.on_select)
+						attr.on_select(o);
+					wnd.close();
+
+				}else
+					wnd.set_text();
+			})
+			.catch(function(err){
+				wnd.progressOff();
+				if(err instanceof Error)
+					$p.record_log(err);
+			});
+	}
+
+	/**
+	 * освобождает переменные после закрытия формы
+	 */
+	function frm_unload(on_create){
+
+		if(attr && attr.on_close && !on_create)
+			attr.on_close();
+
+		if(!on_create){
+			delete wnd.ref;
+			delete wnd.set_text;
+			Object.unobserve(o, observer);
+			_mgr = wnd = o = _meta = options = pwnd = attr = null;
+		}
+	}
+
+	/**
+	 * Задаёт вопрос о записи изменений и делает откат при необходимости
+	 */
+	function check_modified() {
+		if(o._modified && !close_confirmed){
+			dhtmlx.confirm({
+				title: o.presentation,
+				text: $p.msg.modified_close,
+				cancel: $p.msg.cancel,
+				callback: function(btn) {
+					if(btn){
+						close_confirmed = true;
+						// закрыть изменённый без сохранения - значит прочитать его из pouchdb
+						if(o._manager.cachable == "ram")
+							this.close();
+
+						else{
+							if(o.is_new()){
+								o.unload();
+								this.close();
+							}else{
+								setTimeout(o.load.bind(o), 100);
+								this.close();
+							}
+						}
+					}
+				}.bind(wnd)
+			});
+			return false;
+		}
+		return true;
+	}
+
+	function frm_close(wnd){
+
+		if(check_modified()){
+
+			setTimeout(frm_unload);
+
+			// выгружаем попапы
+			if(wnd && wnd.elmnts)
+				["vault", "vault_pop"].forEach(function (elm) {
+					if (wnd.elmnts[elm] && wnd.elmnts[elm].unload)
+						wnd.elmnts[elm].unload();
+				});
+
+			// информируем мир о закрытии формы
+			if(_mgr && _mgr.class_name)
+				$p.eve.callEvent("frm_close", [_mgr.class_name, (o && o._obj ? o.ref : "")]);
+
+			return true;
+		}
+	}
+
+
+	// (пере)создаём статическую часть формы
+	create_id = setTimeout(frm_create);
+
+	// читаем объект из локального SQL или получаем с сервера
+	if($p.utils.is_data_obj(o)){
+
+		if(o.is_new() && attr.on_select)
+			return _mgr.create({}, true)
+				.then(function (tObj) {
+					o = tObj;
+					tObj = null;
+					return frm_fill();
+				});
+		else if(o.is_new() && !o.empty()){
+			return o.load()
+				.then(frm_fill);
+		}else
+			return Promise.resolve(frm_fill());
+
+	}else{
+
+		if(pwnd && pwnd.progressOn)
+			pwnd.progressOn();
+
+		return _mgr.get(attr.hasOwnProperty("ref") ? attr.ref : attr, true, true)
+			.then(function(tObj){
+				o = tObj;
+				tObj = null;
+				if(pwnd && pwnd.progressOff)
+					pwnd.progressOff();
+				return frm_fill();
+			})
+			.catch(function (err) {
+				if(pwnd && pwnd.progressOff)
+					pwnd.progressOff();
+				wnd.close();
+				$p.record_log(err);
+			});
+	}
+
+};
+
+/**
+ * ### Форма объекта данных
+ * По умолчанию, форма строится автоматически по описанию метаданных.<br />
+ * Метод можно переопределить для конкретного менеджера
+ *
+ * @method form_obj
+ * @for DataObj
+ * @param pwnd {dhtmlXWindows} - указатель на родительскую форму
+ * @param attr {Object} - параметры инициализации формы
+ */
+DataObj.prototype.form_obj = function (pwnd, attr) {
+	if(!attr)
+		attr = {};
+	attr.o = this;
+	return this._manager.form_obj(pwnd, attr);
+};
+/**
+ * Форма абстрактного отчета {{#crossLink "DataProcessorsManager"}}{{/crossLink}}
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ * @module wnd_rep
+ *
+ * Created 03.08.2016
+ */
+
+DataProcessorsManager.prototype.form_rep = function(pwnd, attr) {
+
+	var _mgr = this,
+		_meta = _mgr.metadata(),
+		wnd, options, _title, close_confirmed;
+
+	if(!attr)
+		attr = {};
+	if(!attr.date_from)
+		attr.date_from = new Date((new Date()).getFullYear().toFixed() + "-01-01");
+	if(!attr.date_till)
+		attr.date_till = new Date((new Date()).getFullYear().toFixed() + "-12-31");
+
+	/**
+	 * ПриСозданииНаСервере - инициализация при создании формы, до чтения объекта
+	 */
+	function frm_create(){
+
+
+		// создаём и настраиваем окно формы
+		if((pwnd instanceof dhtmlXLayoutCell || pwnd instanceof dhtmlXSideBarCell || pwnd instanceof dhtmlXCarouselCell)
+			&& (attr.bind_pwnd || attr.Приклеить)) {
+
+			// если вернулись на ту же самую закладку, ничего делать не надо
+			if(wnd == pwnd && wnd._mgr == _mgr)
+				return;
+
+			// форма объекта приклеена к области контента или другой форме
+			if(typeof pwnd.close == "function")
+				pwnd.close(true);
+
+			wnd = pwnd;
+			wnd.close = function (on_create) {
+				var _wnd = wnd || pwnd;
+
+				if(on_create || check_modified()){
+
+					if(_wnd){
+
+						if(_wnd.conf){
+							_wnd.detachToolbar();
+							_wnd.detachStatusBar();
+							_wnd.conf.unloading = true;
+							_wnd.detachObject(true);
+						}
+					}
+					frm_unload(on_create);
+
+				}
+			};
+			wnd.elmnts = {grids: {}};
+
+		}else{
+			// форма в модальном диалоге
+			options = {
+				name: 'wnd_rep_' + _mgr.class_name,
+				wnd: {
+					top: 80 + Math.random()*40,
+					left: 120 + Math.random()*80,
+					width: 700,
+					height: 400,
+					modal: true,
+					center: false,
+					pwnd: pwnd,
+					allow_close: true,
+					allow_minmax: true,
+					on_close: frm_close,
+					caption: (_meta.obj_presentation || _meta.synonym)
+				}
+			};
+			wnd = $p.iface.dat_blank(null, options.wnd);
+		}
+
+		// указатели на объект и менеджер
+		wnd._mgr = _mgr;
+		wnd.report = _mgr.create();
+
+
+		if(!wnd.set_text)
+			wnd.__define({
+
+				/**
+				 * Обновляет текст заголовка формы
+				 */
+				set_text: {
+					value: function(force) {
+						if(attr && attr.set_text || wnd && wnd.setText){
+
+							var title = (_meta.obj_presentation || _meta.synonym);
+
+							if(force || _title !== title){
+								_title = title;
+								if(attr.set_text)
+									attr.set_text(title);
+								else
+									wnd.setText(title);
+							}
+						}
+					},
+					configurable: true
+				}
+			});
+
+		/**
+		 *	Разбивка на отчет и параметры
+		 */
+		wnd.elmnts.layout = wnd.attachLayout({
+			pattern: "2U",
+			cells: [{
+				id: "a",
+				text: "Отчет",
+				header: false
+			}, {
+				id: "b",
+				text: "Параметры",
+				collapsed_text: "Параметры",
+				width: 220
+
+			}],
+			offsets: { top: 0, right: 0, bottom: 0, left: 0}
+		});
+
+		// панель инструментов формы
+		wnd.elmnts.frm_toolbar = wnd.attachToolbar();
+		wnd.elmnts.frm_toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
+		wnd.elmnts.frm_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_rep.xml"], function(){
+
+			// если мы приклеены к ячейке, сдвигаем toolbar на 4px
+			if(wnd === pwnd)
+				this.cont.style.top = "4px";
+
+			this.addSpacer("btn_run");
+			this.attachEvent("onclick", attr.toolbar_click || toolbar_click);
+
+		});
+
+		// устанавливаем текст заголовка формы
+		wnd.set_text();
+		if(!attr.hide_header && wnd.showHeader)
+			wnd.showHeader();
+
+		// создаём HandsontableDocument
+		wnd.elmnts.table = new $p.HandsontableDocument(wnd.elmnts.layout.cells("a"),
+			{allow_offline: wnd.report.allow_offline, autorun: false})
+			.then(function (rep) {
+				if(!rep._online)
+					return wnd.elmnts.table = null;
+			});
+
+		// контейнер для элементов параметров отчета
+		wnd.elmnts.frm_prm = document.createElement("DIV");
+		wnd.elmnts.frm_prm.style = "height: 100%; min-height: 300px; width: 100%";
+		wnd.elmnts.layout.cells("b").attachObject(wnd.elmnts.frm_prm);
+
+		// daterangepicker
+		wnd.report.daterange = new $p.iface.ODateRangePicker(wnd.elmnts.frm_prm, attr);
+
+	}
+
+	/**
+	 * обработчик нажатия кнопок командных панелей
+	 */
+	function toolbar_click(btn_id){
+
+		if(btn_id=="btn_close"){
+			wnd.close();
+
+		}else if(btn_id=="btn_run"){
+			wnd.report.build().then(show).catch(show);
+
+		}else if(btn_id=="btn_print"){
+			//_mgr.import(null, wnd.report);
+
+		}else if(btn_id=="btn_save"){
+			//_mgr.import(null, wnd.report);
+
+		}else if(btn_id=="btn_load"){
+			//_mgr.import(null, wnd.report);
+
+		}else if(btn_id=="btn_export"){
+			//_mgr.export({items: [wnd.report], pwnd: wnd, obj: true} );
+		}
+
+	}
+
+	/**
+	 * показывает отчет или ошибку (если data instanceof error)
+	 */
+	function show(data) {
+		wnd.elmnts.table.requery(data);
+	}
+
+	/**
+	 * освобождает переменные после закрытия формы
+	 */
+	function frm_unload(on_create){
+
+		if(attr && attr.on_close && !on_create)
+			attr.on_close();
+
+		if(!on_create){
+			delete wnd.set_text;
+
+			// уничтожаем табличный документ
+			if(wnd.elmnts.table)
+				wnd.elmnts.table.hot.destroy();
+
+			// уничтожаем daterangepicker
+			if(wnd.report.daterange)
+				wnd.report.daterange.remove();
+
+			wnd.report = null;
+
+			_mgr = wnd = _meta = options = pwnd = attr = null;
+		}
+	}
+
+	frm_create();
+
+	return wnd;
+
+};
+
+/**
+ * Абстрактная форма списка и выбора выбора объектов ссылочного типа (документов и справочников)<br />
+ * Может быть переопределена в {{#crossLink "RefDataManager"}}менеджерах{{/crossLink}} конкретных классов
+ *
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
+ *
+ * @module  wnd_selection
+ */
+
+/**
+ * Форма выбора объекта данных
+ * @method form_selection
+ * @param pwnd {dhtmlXWindowsCell} - указатель на родительскую форму
+ * @param attr {Object} - параметры инициализации формы
+ * @param [attr.initial_value] {DataObj} - начальное значение выбора
+ * @param [attr.parent] {DataObj} - начальное значение родителя для иерархических справочников
+ * @param [attr.on_select] {Function} - callback при выборе значения
+ * @param [attr.on_grid_inited] {Function} - callback после инициализации грида
+ * @param [attr.on_new] {Function} - callback после создания нового объекта
+ * @param [attr.on_edit] {Function} - callback перед вызовом редактора
+ * @param [attr.on_close] {Function} - callback при закрытии формы
+ */
+DataManager.prototype.form_selection = function(pwnd, attr){
+
+	if(!pwnd)
+		pwnd = attr && attr.pwnd ? attr.pwnd : {};
+
+	if(!attr && !(pwnd instanceof dhtmlXCellObject)){
+		attr = pwnd;
+		pwnd = {};
+	}
+
+	if(!attr)
+		attr = {};
+
+
+	var _mgr = this,
+		_meta = attr.metadata || _mgr.metadata(),
+		has_tree = _meta["hierarchical"] && !(_mgr instanceof ChartOfAccountManager),
+		wnd, s_col = 0, a_direction = "asc",
+		previous_filter = {},
+		on_select = pwnd.on_select || attr.on_select;
+
+
+	/**
+	 *	раздел вспомогательных функций
+	 */
+
+	/**
+	 * аналог 1С-ного ПриСозданииНаСервере()
+	 */
+	function frm_create(){
+
+		// создаём и настраиваем окно формы
+		if(pwnd instanceof dhtmlXCellObject) {
+			if(!(pwnd instanceof dhtmlXTabBarCell) && (typeof pwnd.close == "function"))
+				pwnd.close(true);
+			wnd = pwnd;
+			wnd.close = function (on_create) {
+				if(wnd || pwnd){
+					(wnd || pwnd).detachToolbar();
+					(wnd || pwnd).detachStatusBar();
+					if((wnd || pwnd).conf)
+						(wnd || pwnd).conf.unloading = true;
+					(wnd || pwnd).detachObject(true);
+				}
+				frm_unload(on_create);
+			};
+			if(!attr.hide_header){
+				setTimeout(function () {
+					wnd.showHeader();
+				});
+			}
+		}else{
+			wnd = $p.iface.w.createWindow(null, 0, 0, 700, 500);
+			wnd.centerOnScreen();
+			wnd.setModal(1);
+			wnd.button('park').hide();
+			wnd.button('minmax').show();
+			wnd.button('minmax').enable();
+			wnd.attachEvent("onClose", frm_close);
+		}
+
+		$p.iface.bind_help(wnd);
+
+		if(wnd.setText && !attr.hide_text)
+			wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (_meta["list_presentation"] || _meta.synonym) + '"');
+
+		document.body.addEventListener("keydown", body_keydown, false);
+
+		// статусбар
+		wnd.elmnts = {}
+
+		if(attr.status_bar || !attr.smart_rendering){
+			wnd.elmnts.status_bar = wnd.attachStatusBar();
+		}
+
+		if(!attr.smart_rendering){
+			wnd.elmnts.status_bar.setText("<div id='" + _mgr.class_name.replace(".", "_") + "_select_recinfoArea'></div>");
+		}
+
+		// командная панель формы
+		wnd.elmnts.toolbar = wnd.attachToolbar();
+		wnd.elmnts.toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
+		wnd.elmnts.toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_selection.xml"], function(){
+
+			this.attachEvent("onclick", toolbar_click);
+
+			// если мы приклеены к ячейке, сдвигаем toolbar на 4px
+			if(wnd === pwnd){
+				this.cont.parentElement.classList.add("dhx_cell_toolbar_no_borders");
+				this.cont.parentElement.classList.remove("dhx_cell_toolbar_def");
+				this.cont.style.top = "4px";
+			}
+
+			// текстовое поле фильтра по подстроке
+			var tbattr = {
+				manager: _mgr,
+				toolbar: this,
+				onchange: input_filter_change,
+				hide_filter: attr.hide_filter,
+				custom_selection: attr.custom_selection
+			};
+			if(attr.date_from) tbattr.date_from = attr.date_from;
+			if(attr.date_till) tbattr.date_till = attr.date_till;
+			if(attr.period) tbattr.period = attr.period;
+			wnd.elmnts.filter = new $p.iface.Toolbar_filter(tbattr);
+
+
+			// учтём права для каждой роли на каждый объект
+			var _acl = $p.current_user.get_acl(_mgr.class_name);
+
+			if(_acl.indexOf("i") == -1)
+				this.hideItem("btn_new");
+
+			if(_acl.indexOf("v") == -1)
+				this.hideItem("btn_edit");
+
+			if(_acl.indexOf("d") == -1)
+				this.hideItem("btn_delete");
+
+			if(!on_select){
+				this.hideItem("btn_select");
+				this.hideItem("sep1");
+				if($p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper")
+					this.addListOption("bs_more", "btn_order_list", "~", "button", "<i class='fa fa-briefcase fa-lg fa-fw'></i> Список заказов");
+			}
+			this.addListOption("bs_more", "btn_import", "~", "button", "<i class='fa fa-upload fa-lg fa-fw'></i> Загрузить из файла");
+			this.addListOption("bs_more", "btn_export", "~", "button", "<i class='fa fa-download fa-lg fa-fw'></i> Выгрузить в файл");
+
+
+			// добавляем команды печати
+			if(_mgr.printing_plates)
+				_mgr.printing_plates().then(function (pp) {
+					var added;
+					for(var pid in pp){
+						wnd.elmnts.toolbar.addListOption("bs_print", pid, "~", "button", pp[pid].toString());
+						added = true;
+					}
+					if(!added)
+						wnd.elmnts.toolbar.hideItem("bs_print");
+				});
+			else
+				wnd.elmnts.toolbar.hideItem("bs_print");
+
+			//
+			create_tree_and_grid();
+		});
+
+		wnd._mgr = _mgr;
+
+		return wnd;
+	}
+
+	/**
+	 * Устанавливает фокус в поле фильтра
+	 * @param evt {KeyboardEvent}
+	 * @return {Boolean}
+	 */
+	function body_keydown(evt){
+
+		if(wnd && wnd.is_visible && wnd.is_visible()){
+			if (evt.ctrlKey && evt.keyCode == 70){ // фокус на поиск по {Ctrl+F}
+				if(!$p.iface.check_exit(wnd)){
+					setTimeout(function(){
+						if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == "desktop")
+							wnd.elmnts.filter.input_filter.focus();
+					});
+					return $p.iface.cancel_bubble(evt);
+				}
+
+			} else if(evt.shiftKey && evt.keyCode == 116){ // requery по {Shift+F5}
+				if(!$p.iface.check_exit(wnd)){
+					setTimeout(function(){
+						wnd.elmnts.grid.reload();
+					});
+					if(evt.preventDefault)
+						evt.preventDefault();
+					return $p.iface.cancel_bubble(evt);
+				}
+
+			} else if(evt.keyCode == 27){ // закрытие по {ESC}
+				if(wnd instanceof dhtmlXWindowsCell && !$p.iface.check_exit(wnd)){
+					setTimeout(function(){
+						wnd.close();
+					});
+				}
+			}
+		}
+	}
+
+	function input_filter_change(flt){
+		if(wnd && wnd.elmnts){
+			if(has_tree){
+				if(flt.filter || flt.hide_tree)
+					wnd.elmnts.cell_tree.collapse();
+				else
+					wnd.elmnts.cell_tree.expand();
+			}
+			wnd.elmnts.grid.reload();
+		}
+	}
+
+	function create_tree_and_grid(){
+		var layout, cell_tree, cell_grid, tree, grid, grid_inited;
+
+		if(has_tree){
+			layout = wnd.attachLayout('2U');
+
+			cell_grid = layout.cells('b');
+			cell_grid.hideHeader();
+
+			cell_tree = wnd.elmnts.cell_tree = layout.cells('a');
+			cell_tree.setWidth('220');
+			cell_tree.hideHeader();
+
+			tree = wnd.elmnts.tree = cell_tree.attachDynTree(_mgr, null, function(){
+				setTimeout(function(){
+					if(grid && grid.reload)
+						grid.reload();
+				}, 20);
+			});
+			tree.attachEvent("onSelect", function(id, mode){	// довешиваем обработчик на дерево
+				if(!mode)
+					return;
+				if(this.do_not_reload)
+					delete this.do_not_reload;
+				else
+					setTimeout(function(){
+						if(grid && grid.reload)
+							grid.reload();
+					}, 20);
+			});
+			tree.attachEvent("onDblClick", function(id){
+				select(id);
+			});
+
+		}else{
+			cell_grid = wnd;
+			setTimeout(function(){
+				if(grid && grid.reload)
+					grid.reload();
+			}, 20);
+		}
+
+		// настройка грида
+		grid = wnd.elmnts.grid = cell_grid.attachGrid();
+		grid.setIconsPath(dhtmlx.image_path);
+		grid.setImagePath(dhtmlx.image_path);
+		grid.attachEvent("onBeforeSorting", customColumnSort);
+		grid.attachEvent("onBeforePageChanged", function(){ return !!this.getRowsNum();});
+		grid.attachEvent("onXLE", function(){cell_grid.progressOff(); });
+		grid.attachEvent("onXLS", function(){cell_grid.progressOn(); });
+		grid.attachEvent("onDynXLS", function(start,count){
+			var filter = get_filter(start,count);
+			if(!filter)
+				return;
+			_mgr.sync_grid(filter, grid);
+			return false;
+		});
+		grid.attachEvent("onRowDblClicked", function(rId, cInd){
+			if(tree && tree.items[rId]){
+				tree.selectItem(rId);
+				var pid = tree.getParentId(rId);
+				if(pid && pid != $p.utils.blank.guid)
+					tree.openItem(pid);
+			}else
+				select(rId);
+		});
+
+		if(attr.smart_rendering){
+			grid.enableSmartRendering(true, 50);
+		}else{
+			grid.setPagingWTMode(true,true,true,[20,30,60]);
+			grid.enablePaging(true, 30, 8, _mgr.class_name.replace(".", "_") + "_select_recinfoArea");
+			grid.setPagingSkin("toolbar", dhtmlx.skin);
+		}
+
+		if($p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper")
+			grid.enableMultiselect(true);
+
+		// эту функцию будем вызывать снаружи, чтобы перечитать данные
+		grid.reload = function(){
+
+			var filter = get_filter();
+			if(!filter)
+				return Promise.resolve();
+
+			cell_grid.progressOn();
+			grid.clearAll();
+
+			return _mgr.sync_grid(filter, grid)
+				.then(function(xml){
+					if(typeof xml === "object"){
+						$p.msg.check_soap_result(xml);
+
+					}else if(!grid_inited){
+						if(filter.initial_value){
+							var xpos = xml.indexOf("set_parent"),
+								xpos2 = xml.indexOf("'>", xpos),
+								xh = xml.substr(xpos+12, xpos2-xpos-12);
+							if($p.utils.is_guid(xh)){
+								if(has_tree){
+									tree.do_not_reload = true;
+									tree.selectItem(xh, false);
+								}
+							}
+							grid.selectRowById(filter.initial_value);
+
+						}else if(filter.parent && $p.utils.is_guid(filter.parent) && has_tree){
+							tree.do_not_reload = true;
+							tree.selectItem(filter.parent, false);
+						}
+						grid.setColumnMinWidth(200, grid.getColIndexById("presentation"));
+						grid.enableAutoWidth(true, 1200, 600);
+						grid.setSizes();
+						grid_inited = true;
+						if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == "desktop")
+							wnd.elmnts.filter.input_filter.focus();
+
+						if(attr.on_grid_inited)
+							attr.on_grid_inited();
+					}
+
+					if (a_direction && grid_inited)
+						grid.setSortImgState(true, s_col, a_direction);
+
+					cell_grid.progressOff();
+
+				});
+		};
+	}
+
+	/**
+	 *	обработчик нажатия кнопок командных панелей
+	 */
+	function toolbar_click(btn_id){
+
+		// если внешний обработчик вернул false - выходим
+		if(attr.toolbar_click && attr.toolbar_click(btn_id, wnd, _mgr) === false){
+			return;
+		}
+
+		if(btn_id=="btn_select"){
+			select();
+
+		}else if(btn_id=="btn_new"){
+
+			_mgr.create({}, true)
+				.then(function (o) {
+
+					if(attr.on_new)
+						attr.on_new(o, wnd);
+
+					else if($p.job_prm.keep_hash){
+						o.form_obj(wnd);
+
+					} else{
+						o._set_loaded(o.ref);
+						$p.iface.set_hash(_mgr.class_name, o.ref);
+					}
+				});
+
+
+		}else if(btn_id=="btn_edit") {
+			var rId = wnd.elmnts.grid.getSelectedRowId();
+			if (rId){
+				if(attr.on_edit)
+					attr.on_edit(_mgr, rId, wnd);
+
+				else if($p.job_prm.keep_hash){
+
+					_mgr.form_obj(wnd, {ref: rId});
+
+				} else
+					$p.iface.set_hash(_mgr.class_name, rId);
+			}else
+				$p.msg.show_msg({
+					type: "alert-warning",
+					text: $p.msg.no_selected_row.replace("%1", ""),
+					title: $p.msg.main_title
+				});
+
+		}else if(btn_id.substr(0,4)=="prn_"){
+				print(btn_id);
+
+		}else if(btn_id=="btn_order_list"){
+			$p.iface.set_hash("", "", "", "def");
+
+		}else if(btn_id=="btn_delete"){
+			mark_deleted();
+
+		}else if(btn_id=="btn_import"){
+			_mgr.import();
+
+		}else if(btn_id=="btn_export"){
+			_mgr.export(wnd.elmnts.grid.getSelectedRowId());
+
+		}else if(btn_id=="btn_requery"){
+			previous_filter = {};
+			wnd.elmnts.grid.reload();
+
+		}
+	}
+
+	/**
+	 * выбор значения в гриде
+	 * @param rId - идентификтор строки грида или дерева
+	 */
+	function select(rId){
+
+		if(!rId)
+			rId = wnd.elmnts.grid.getSelectedRowId();
+
+		var folders;
+		if(attr.selection){
+			attr.selection.forEach(function(sel){
+				for(var key in sel){
+					if(key=="is_folder")
+						folders = sel[key];
+				}
+			});
+		}
+
+		// запрещаем выбирать папки
+		if(wnd.elmnts.tree &&
+			wnd.elmnts.tree.items[rId] &&
+			wnd.elmnts.tree.getSelectedId() != rId){
+			wnd.elmnts.tree.selectItem(rId, true);
+			return;
+		}
+
+		// запрещаем выбирать элементы, если в метаданных указано выбирать только папки
+		// TODO: спозиционировать сообщение над выбранным элементом
+		if(rId && folders === true && wnd.elmnts.grid.cells(rId, 0).cell.classList.contains("cell_ref_elm")){
+			$p.msg.show_msg($p.msg.select_grp);
+			return;
+		}
+
+
+		if((!rId && wnd.elmnts.tree) || (wnd.elmnts.tree && wnd.elmnts.tree.getSelectedId() == rId)){
+			if(folders === false){
+				$p.msg.show_msg($p.msg.select_elm);
+				return;
+			}
+			rId = wnd.elmnts.tree.getSelectedId();
+		}
+
+		if(rId){
+
+			if(attr.on_edit)
+				attr.on_edit(_mgr, rId, wnd);
+
+			else if(on_select){
+
+				_mgr.get(rId, true)
+					.then(function(selv){
+						wnd.close();
+						on_select.call(pwnd.grid || pwnd, selv);
+					});
+
+			} else if($p.job_prm.keep_hash){
+
+				_mgr.form_obj(wnd, {ref: rId});
+
+			} else
+				$p.iface.set_hash(_mgr.class_name, rId);
+
+		}
+	}
+
+	/**
+	 *	Печатает документ
+	 */
+	function print(pid){
+		var rId = wnd.elmnts.grid.getSelectedRowId();
+		if(rId)
+			_mgr.print(rId, pid, wnd);
+		else
+			$p.msg.show_msg({type: "alert-warning",
+				text: $p.msg.no_selected_row.replace("%1", ""),
+				title: $p.msg.main_title});
+	}
+
+	function mark_deleted(){
+		var rId = wnd.elmnts.grid.getSelectedRowId();
+		if(rId){
+			_mgr.get(rId, true, true)
+				.then(function (o) {
+
+					dhtmlx.confirm({
+						title: $p.msg.main_title,
+						text: o._deleted ? $p.msg.mark_undelete_confirm.replace("%1", o.presentation) : $p.msg.mark_delete_confirm.replace("%1", o.presentation),
+						cancel: "Отмена",
+						callback: function(btn) {
+							if(btn)
+								o.mark_deleted(!o._deleted);
+						}
+					});
+				});
+		}else
+			$p.msg.show_msg({type: "alert-warning",
+				text: $p.msg.no_selected_row.replace("%1", ""),
+				title: $p.msg.main_title});
+	}
+
+	/**
+	 * освобождает переменные после закрытия формы
+	 */
+	function frm_unload(on_create){
+
+		document.body.removeEventListener("keydown", body_keydown);
+
+		if(attr && attr.on_close && !on_create)
+			attr.on_close();
+
+		if(!on_create){
+			_mgr = wnd = _meta = previous_filter = on_select = pwnd = attr = null;
+		}
+	}
+
+	function frm_close(){
+
+		setTimeout(frm_unload, 10);
+
+		// если в родительском установлен обработчик выгрузки нашего - вызываем с контекстом грида
+		if(pwnd.on_unload)
+			pwnd.on_unload.call(pwnd.grid || pwnd);
+
+		if(_frm_close){
+			$p.eve.detachEvent(_frm_close);
+			_frm_close = null;
+		}
+
+		return true;
+	}
+
+	/**
+	 * формирует объект фильтра по значениям элементов формы и позиции пейджинга
+	 * @param start {Number} - начальная запись = skip
+	 * @param count {Number} - количество записей на странице
+	 * @return {*|{value, enumerable}}
+	 */
+	function get_filter(start, count){
+		var filter = wnd.elmnts.filter.get_filter()
+				._mixin({
+					action: "get_selection",
+					metadata: _meta,
+					class_name: _mgr.class_name,
+					order_by: wnd.elmnts.grid.columnIds[s_col] || s_col,
+					direction: a_direction,
+					start: start || ((wnd.elmnts.grid.currentPage || 1)-1)*wnd.elmnts.grid.rowsBufferOutSize,
+					count: count || wnd.elmnts.grid.rowsBufferOutSize,
+					get_header: (previous_filter.get_header == undefined)
+				}),
+			tparent = has_tree ? wnd.elmnts.tree.getSelectedId() : null;
+
+		if(attr.smart_rendering)
+			filter.smart_rendering = true;
+
+		if(attr.date_from && !filter.date_from)
+			filter.date_from = attr.date_from;
+
+		if(attr.date_till && !filter.date_till)
+			filter.date_till = attr.date_till;
+
+		if(attr.initial_value)
+			filter.initial_value = attr.initial_value;
+
+		if(attr.custom_selection)
+			filter.custom_selection = attr.custom_selection;
+
+		if(attr.selection){
+			if(!filter.selection)
+				filter.selection = attr.selection;
+
+			else if(Array.isArray(attr.selection)){
+				attr.selection.forEach(function (flt) {
+					filter.selection.push(flt);
+				});
+
+			}else{
+				for(var fld in attr.selection){
+					if(!res.selection)
+						res.selection = [];
+					var flt = {};
+					flt[fld] = attr.selection[fld];
+					filter.selection.push(flt);
+				}
+			}
+			//if(Array.isArray(attr.selection) && attr.selection.length){
+			//	filter._mixin(attr.selection[0]);
+			//}
+		}
+
+		if(attr.owner && !filter.owner)
+			filter.owner = attr.owner;
+
+		filter.parent = ((tparent  || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
+		if(has_tree && !filter.parent)
+			filter.parent = $p.utils.blank.guid;
+
+
+		for(var f in filter){
+			if(previous_filter[f] != filter[f]){
+				previous_filter = filter;
+				return filter;
+			}
+		}
+	}
+
+	function customColumnSort(ind){
+		var a_state = wnd.elmnts.grid.getSortingState();
+		s_col=ind;
+		a_direction = ((a_state[1] == "des")?"asc":"des");
+		wnd.elmnts.grid.reload();
+		return true;
+	}
+
+	/**
+	 * подписываемся на событие закрытия формы объекта, чтобы обновить список и попытаться спозиционироваться на нужной строке
+	 */
+	var _frm_close = $p.eve.attachEvent("frm_close", function (class_name, ref) {
+		if(_mgr && _mgr.class_name == class_name && wnd && wnd.elmnts){
+			wnd.elmnts.grid.reload()
+				.then(function () {
+					if(!$p.utils.is_empty_guid(ref))
+						wnd.elmnts.grid.selectRowById(ref, false, true, true);
+				});
+		}
+	});
+
+	// создаём и настраиваем форму
+	if(has_tree && attr.initial_value && attr.initial_value!= $p.utils.blank.guid && !attr.parent)
+		return _mgr.get(attr.initial_value, true)
+			.then(function (tObj) {
+				attr.parent = tObj.parent.ref;
+				attr.set_parent = attr.parent;
+				return frm_create();
+			});
+	else
+		return frm_create();
+};
+
+/**
+ * Форма списка объектов данных
+ * @method form_list
+ * @param pwnd {dhtmlXWindows} - указатель на родительскую форму
+ * @param attr {Object} - параметры инициализации формы
+ */
+DataManager.prototype.form_list = function(pwnd, attr){
+	return this.form_selection(pwnd, attr);
+};
+/**
+ * Форма окна длительной операции
+ */
+
+$p.iface.wnd_sync = function() {
+
+	var _sync = $p.iface.sync = {},
+		_stepper;
+
+	_sync.create = function(stepper){
+		_stepper = stepper;
+		frm_create();
+	};
+
+	_sync.update = function(cats){
+		_stepper.frm_sync.setItemValue("text_processed", "Обработано элементов: " + _stepper.step * _stepper.step_size + " из " + _stepper.count_all);
+		var cat_list = "", md, rcount = 0;
+		for(var cat_name in cats){
+			rcount++;
+			if(rcount > 4)
+				break;
+			if(cat_list)
+				cat_list+= "<br />";
+			md = $p.cat[cat_name].metadata();
+			cat_list+= (md.list_presentation || md.synonym) + " (" + cats[cat_name].length + ")";
+		}
+		_stepper.frm_sync.setItemValue("text_current", "Текущий запрос: " + _stepper.step + " (" + Math.round(_stepper.step * _stepper.step_size * 100 / _stepper.count_all) + "%)");
+		_stepper.frm_sync.setItemValue("text_bottom", cat_list);
+
+	};
+
+	_sync.close = function(){
+		if(_stepper && _stepper.wnd_sync){
+			_stepper.wnd_sync.close();
+			delete _stepper.wnd_sync;
+			delete _stepper.frm_sync;
+		}
+	};
+
+
+	/**
+	 *	Приватные методы
+	 */
+	function frm_create(){
+
+		// параметры открытия формы
+		var options = {
+			name: 'wnd_sync',
+			wnd: {
+				id: 'wnd_sync',
+				top: 130,
+				left: 200,
+				width: 496,
+				height: 290,
+				modal: true,
+				center: true,
+				caption: "Подготовка данных"
+			}
+		};
+
+		_stepper.wnd_sync = $p.iface.dat_blank(null, options.wnd);
+
+		var str = [
+			{ type:"block" , name:"form_block_1", list:[
+				{ type:"label" , name:"form_label_1", label: $p.msg.sync_data },
+				{ type:"block" , name:"form_block_2", list:[
+					{ type:"template",	name:"img_long", className: "img_long" },
+					{ type:"newcolumn"   },
+					{ type:"template",	name:"text_processed"},
+					{ type:"template",	name:"text_current"},
+					{ type:"template",	name:"text_bottom"}
+				]  }
+			]  },
+			{ type:"button" , name:"form_button_1", value: $p.msg.sync_break }
+		];
+		_stepper.frm_sync = _stepper.wnd_sync.attachForm(str);
+		_stepper.frm_sync.attachEvent("onButtonClick", function(name) {
+			if(_stepper)
+				_stepper.do_break = true;
+		});
+
+		_stepper.frm_sync.setItemValue("text_processed", "Инициализация");
+		_stepper.frm_sync.setItemValue("text_bottom", "Загружается структура таблиц...");
+	}
+};
+};

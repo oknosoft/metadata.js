@@ -5,7 +5,7 @@
  * @submodule meta_meta
  */
 
-import {MetaEventEmitter} from 'metadata-abstract-adapter';
+import MetaEventEmitter from './emitter';
 import utils from './utils';
 
 /**

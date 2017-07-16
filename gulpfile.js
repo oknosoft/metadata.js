@@ -15,6 +15,7 @@ const gulp = require('gulp'),
 	path = require('path'),
   strip = require('gulp-strip-comments'),
 	umd = require('gulp-umd'),
+  wrap = require('gulp-wrap'),
 	replace = require('gulp-replace'),
 	babel = require('gulp-babel');
 	// async = require('gulp-async-func-runner'),
@@ -37,6 +38,14 @@ gulp.task('prebuild', function(){
 
 });
 
+gulp.task('dhtmlx-ui', function () {
+  return gulp.src([
+    './src/widgets/*.js',
+  ])
+    .pipe(concat('dhtmlx-widgets.js'))
+    .pipe(wrap({ src: './packages/metadata-dhtmlx-ui/src/wrapper.js'}))
+    .pipe(gulp.dest('./packages/metadata-dhtmlx-ui/src'))
+});
 
 gulp.task('build-metadata', function () {
 	return gulp.src([

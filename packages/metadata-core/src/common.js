@@ -14,10 +14,7 @@ import WSQL from './wsql';
 import Meta from './meta';
 import msg from './i18n.ru';
 import mngrs from './mngrcollections';
-
-import * as data_managers from './mngrs';
-import * as data_objs from './objs';
-import * as data_tabulars from './tabulars';
+import classes from './classes';
 
 
 /**
@@ -47,53 +44,49 @@ class MetaEngine {
 
 	constructor() {
 
-		// инициируем базовые свойства
-		Object.defineProperties(this, {
+		// дублируем ссылку на конструкторы в объекте
+		this.classes = classes;
 
-			/**
-			 * ### Адаптеры для PouchDB, 1С и т.д.
-			 * @property adapters
-			 * @type Object
-			 * @final
-			 */
-			adapters: {
-				value: {},
-			},
+		/**
+		 * ### Адаптеры для PouchDB, 1С и т.д.
+		 * @property adapters
+		 * @type Object
+		 * @final
+		 */
+		this.adapters = {};
 
-			/**
-			 * ### Параметры работы программы
-			 * @property job_prm
-			 * @type JobPrm
-			 * @final
-			 */
-			job_prm: {value: new JobPrm(this)},
+		/**
+		 * Aes для шифрования - дешифрования строк
+		 *
+		 * @property aes
+		 * @type Aes
+		 * @final
+		 */
+		this.aes = new Aes('metadata.js');
 
-			/**
-			 * Интерфейс к данным в LocalStorage, AlaSQL и IndexedDB
-			 * @property wsql
-			 * @type WSQL
-			 * @final
-			 */
-			wsql: {value: new WSQL(this)},
+		/**
+		 * ### Параметры работы программы
+		 * @property job_prm
+		 * @type JobPrm
+		 * @final
+		 */
+		this.job_prm = new JobPrm(this);
 
-			/**
-			 * Aes для шифрования - дешифрования данных
-			 *
-			 * @property aes
-			 * @type Aes
-			 * @final
-			 */
-			aes: {value: new Aes('metadata.js')},
+		/**
+		 * Интерфейс к данным в LocalStorage, AlaSQL и IndexedDB
+		 * @property wsql
+		 * @type WSQL
+		 * @final
+		 */
+		this.wsql = new WSQL(this);
 
-			/**
-			 * ### Mетаданные конфигурации
-			 * @property md
-			 * @type Meta
-			 * @static
-			 */
-			md: {value: new Meta(this)},
-
-		});
+		/**
+		 * ### Mетаданные конфигурации
+		 * @property md
+		 * @type Meta
+		 * @static
+		 */
+		this.md = new Meta(this);
 
 		// создаём конструкторы менеджеров данных
 		mngrs(this);
@@ -159,21 +152,49 @@ class MetaEngine {
 	 */
 	get current_user() {
 
+		const {CatUsers, cat, superlogin, wsql} = this;
+		// заглушка "всё разрешено", если методы acl не переопределены внешним приложением
+		if(CatUsers && !CatUsers.prototype.hasOwnProperty("role_available")){
+
+			CatUsers.prototype.__define({
+
+
+				/**
+				 * ### Роль доступна
+				 *
+				 * @param name {String}
+				 * @returns {Boolean}
+				 */
+				role_available: {
+					value: (name) => true
+				},
+
+				/**
+				 * ### Права на объект
+				 * Если не задано в модификаторе, разрешаем полный доступ
+				 */
+				get_acl: {
+					value: (class_name) => "rvuidepo"
+				},
+
+			});
+		}
+
 		let user_name, user;
 
-		if (this.superlogin) {
-			const session = this.superlogin.getSession();
+		if (superlogin) {
+			const session = superlogin.getSession();
 			user_name = session ? session.user_id : '';
 		}
 
 		if (!user_name) {
-			user_name = this.wsql.get_user_param('user_name');
+			user_name = wsql.get_user_param('user_name');
 		}
 
-		if (this.cat && this.cat.users) {
-			user = this.cat.users.by_id(user_name);
+		if (cat && cat.users) {
+			user = cat.users.by_id(user_name);
 			if (!user || user.empty()) {
-				this.cat.users.find_rows_remote({
+				cat.users.find_rows_remote({
 					_top: 1,
 					id: user_name,
 				});
@@ -212,10 +233,11 @@ class MetaEngine {
 		return MetaEngine;
 	}
 }
+
 /**
  * Конструкторы объектов данных
  */
-MetaEngine.classes = Object.assign({Meta}, data_managers, data_objs, data_tabulars);
+MetaEngine.classes = classes;
 
 /**
  * Хранилище плагинов

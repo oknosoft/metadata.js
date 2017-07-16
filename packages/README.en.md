@@ -3,14 +3,14 @@
 [README in Russian](README.md)
 
 ### metadata-core
- 
-### metadata-abstract-adapter
 
 ### metadata-pouchdb
 
 ### metadata-redux
 
 ### metadata-react-ui
+
+### metadata-dhtmlx-ui
 
 ### metadata-angular-ui
 
