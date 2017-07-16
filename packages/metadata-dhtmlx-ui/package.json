@@ -1,7 +1,7 @@
 {
   "name": "metadata-dhtmlx-ui",
   "description": "Dhtmlx UI components for metadata.js",
-  "version": "2.0.1-beta.18",
+  "version": "2.0.1-beta.19",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
@@ -9,9 +9,7 @@
     "npm": "^5.0"
   },
   "dependencies": {
-    "metadata-abstract-ui": "^2.0.1-beta.18"
-  },
-  "peerDependencies": {
+    "metadata-abstract-ui": "^2.0.1-beta.19"
   },
   "main": "./index.js",
   "repository": {

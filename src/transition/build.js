@@ -29,7 +29,7 @@ return rollup({
 	plugins,
 })
 	.then((bundle) => bundle.write({
-		format: 'iife', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
+		format: 'umd', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
 		moduleName: '$p',
     banner: header,
     globals: {

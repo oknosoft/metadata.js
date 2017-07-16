@@ -1,5 +1,6 @@
 import InterfaceObjs from './iface'
 import widgets from './dhtmlx-widgets'
+import events from './events'
 
 export default {
 
@@ -99,6 +100,8 @@ export default {
 		};
 
 		widgets(this);
+
+		events(this);
 
 	}
 }
