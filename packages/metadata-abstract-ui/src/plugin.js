@@ -6,7 +6,6 @@
  * Created 05.10.2016
  */
 
-import tabulars from './tabulars';
 import ui from './ui';
 import meta_objs from './meta_objs';
 import log_manager from './log_manager';
@@ -24,7 +23,6 @@ export default {
 	 */
 	proto(constructor) {
 		ui(constructor)
-		tabulars(constructor)
 	},
 
 	/**

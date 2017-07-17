@@ -37,8 +37,16 @@ function adapter({AbstracrAdapter}) {
 			Object.defineProperties(this, {
 
 				init: {
-					value: function (attr) {
-						Object.assign(_paths, attr);
+					value: function (wsql, job_prm) {
+						Object.assign(_paths, {
+							path: wsql.get_user_param("couch_path", "string") || job_prm.couch_path || "",
+							zone: wsql.get_user_param("zone", "number"),
+							prefix: job_prm.local_storage_prefix,
+							suffix: wsql.get_user_param("couch_suffix", "string") || "",
+							direct: job_prm.couch_direct || wsql.get_user_param("couch_direct", "boolean"),
+							user_node: job_prm.user_node,
+							noreplicate: job_prm.noreplicate,
+						});
 						if(_paths.path && _paths.path.indexOf("http") != 0 && typeof location != "undefined"){
 							_paths.path = location.protocol + "//" + location.host + _paths.path;
 						}

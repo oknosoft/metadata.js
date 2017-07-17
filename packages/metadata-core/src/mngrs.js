@@ -33,7 +33,7 @@
 
 import utils from './utils';
 import msg from './i18n.ru';
-import {EnumObj} from './objs';
+import {EnumObj, RegisterRow} from './objs';
 import MetaEventEmitter from './emitter';
 
 

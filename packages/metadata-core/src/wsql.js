@@ -44,7 +44,6 @@ export default class WSQL {
 		 */
 		this.alasql = alasql;
 
-		Object.freeze(this);
 	}
 
 
@@ -95,7 +94,6 @@ export default class WSQL {
 		if (!job_prm.local_storage_prefix && !job_prm.create_tables)
 			return;
 
-
 		// значения базовых параметров по умолчанию
 		var nesessery_params = [
 			{p: "user_name", v: "", t: "string"},
@@ -128,23 +126,12 @@ export default class WSQL {
 				this.set_user_param(o.p, job_prm.hasOwnProperty(o.p) ? job_prm[o.p] : o.v);
 		});
 
-		// сообщяем движку pouch пути и префиксы
-		if(adapters.pouch){
-			const pouch_prm = {
-				path: this.get_user_param("couch_path", "string") || job_prm.couch_path || "",
-				zone: this.get_user_param("zone", "number"),
-				prefix: job_prm.local_storage_prefix,
-				suffix: this.get_user_param("couch_suffix", "string") || "",
-				direct: job_prm.couch_direct || this.get_user_param("couch_direct", "boolean"),
-				user_node: job_prm.user_node,
-				noreplicate: job_prm.noreplicate,
-			};
-			if (pouch_prm.path) {
-				adapters.pouch.init(pouch_prm)
-			}
+		// сообщяем адаптерам пути и префиксы
+		for(let i in adapters){
+			adapters[i].init(this, job_prm);
 		}
 
-		meta(this.$p);
+		meta && meta(this.$p);
 	};
 
 	/**

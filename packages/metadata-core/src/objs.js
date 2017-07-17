@@ -7,6 +7,8 @@
 
 import utils from './utils';
 import {DataProcessorsManager, EnumManager, RegisterManager} from './mngrs'
+import {TabularSection, TabularSectionRow} from './tabulars'
+
 
 /**
  * ### Абстрактный объект данных
@@ -636,6 +638,9 @@ Object.defineProperty(DataObj.prototype, "ref", {
 	configurable: true
 })
 
+TabularSectionRow.prototype._getter = DataObj.prototype._getter;
+TabularSectionRow.prototype.__setter = DataObj.prototype.__setter;
+
 
 /**
  * ### Абстрактный класс СправочникОбъект
@@ -1032,6 +1037,9 @@ export class RegisterRow extends DataObj {
 	 */
 	get ref() {
 		return this._manager.get_ref(this);
+	}
+	set ref(v) {
+
 	}
 
 	get presentation() {

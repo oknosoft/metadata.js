@@ -12,7 +12,7 @@ const plugin = {
 
 	constructor(){
 		// создаём экземпляр адаптера нашего типа
-		const {AdapterPouch} = constructor.classes;
+		const {AdapterPouch} = this.classes;
 		this.adapters.pouch = new AdapterPouch(this);
 	}
 }

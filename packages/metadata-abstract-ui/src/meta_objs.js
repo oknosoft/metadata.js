@@ -8,8 +8,8 @@
 
 export default function meta_objs() {
 
-	const {classes} = this.constructor;
-	const {CatManager, InfoRegManager, CatObj} = this.constructor.classes;
+	const {classes} = this;
+	const {CatManager, InfoRegManager, CatObj} = classes;
 
 	/**
 	 * ### Менеджер объектов метаданных

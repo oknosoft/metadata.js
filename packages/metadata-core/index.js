@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.1-beta.18, built:2017-07-16
+ metadata-core v2.0.1-beta.19, built:2017-07-17
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -184,6 +184,276 @@ for (let id in msg$1.i18n.ru) {
 		},
 	});
 }
+
+class TabularSection {
+	constructor(name, owner) {
+		if (!owner._obj[name]){
+			owner._obj[name] = [];
+		}
+		Object.defineProperties(this, {
+			_name: {
+				get: () => name
+			},
+			_owner: {
+				get: () => owner
+			},
+		});
+	}
+	toString() {
+		return "Табличная часть " + this._owner._manager.class_name + "." + this._name
+	}
+	get _obj(){
+		const {_owner, _name} = this;
+		return _owner._obj[_name]
+	}
+	get(index) {
+		const row = this._obj[index];
+		return row ? row._row : null
+	}
+	count() {
+		return this._obj.length
+	}
+	clear(silent) {
+		const {_obj, _owner} = this;
+		_obj.length = 0;
+		if (!silent && !_owner._data._silent){
+		}
+		return this;
+	}
+	del(val, silent) {
+		const {_obj, _owner} = this;
+		let index;
+		if (typeof val == "undefined")
+			return;
+		else if (typeof val == "number")
+			index = val;
+		else if (_obj[val.row - 1]._row === val)
+			index = val.row - 1;
+		else {
+			for (var i in _obj)
+				if (_obj[i]._row === val) {
+					index = Number(i);
+					delete _obj[i]._row;
+					break;
+				}
+		}
+		if (index == undefined)
+			return;
+		_obj.splice(index, 1);
+		_obj.forEach(function (row, index) {
+			row.row = index + 1;
+		});
+		if (!silent && !_owner._data._silent){
+		}
+		_owner._data._modified = true;
+	}
+	find(val, columns) {
+		var res = utils._find(this._obj, val, columns);
+		if (res)
+			return res._row;
+	}
+	find_rows(selection, callback) {
+		const cb = callback ? (row) => {
+			return callback.call(this, row._row);
+		} : null;
+		return utils._find_rows.call(this, this._obj, selection, cb);
+	}
+	swap(rowid1, rowid2) {
+		const {_obj} = this;
+		[_obj[rowid1], _obj[rowid2]] = [_obj[rowid2], _obj[rowid1]];
+		_obj[rowid1].row = rowid2 + 1;
+		_obj[rowid2].row = rowid1 + 1;
+		if (!this._owner._data._silent){
+		}
+	}
+	add(attr = {}, silent) {
+		const {_owner, _name, _obj} = this;
+		const row = _owner._manager.obj_constructor(_name, this);
+		for (let f in row._metadata().fields){
+			row[f] = attr[f] || "";
+		}
+		row._obj.row = _obj.push(row._obj);
+		Object.defineProperty(row._obj, "_row", {
+			value: row,
+			enumerable: false
+		});
+		if (!silent && !this._owner._data._silent){
+		}
+		_owner._data._modified = true;
+		return row;
+	}
+	each(fn) {
+		this._obj.forEach((row) => fn.call(this, row._row));
+	}
+	get forEach() {
+		return this.each
+	}
+	group_by(dimensions, resources) {
+		try {
+			const res = this.aggregate(dimensions, resources, "SUM", true);
+			return this.clear(true).load(res);
+		}
+		catch (err) {
+			this._owner._manager._owner.$p.record_log(err);
+		}
+	}
+	sort(fields) {
+		if (typeof fields == "string"){
+			fields = fields.split(",");
+		}
+		let sql = "select * from ? order by ",
+			res = true;
+			has_dot;
+		fields.forEach(function (f) {
+			has_dot = has_dot || f.match('.');
+			f = f.trim().replace(/\s{1,}/g, " ").split(" ");
+			if (res){
+				res = false;
+			}
+			else{
+				sql += ", ";
+			}
+			sql += "`" + f[0] + "`";
+			if (f[1]){
+				sql += " " + f[1];
+			}
+		});
+		try {
+			res = alasql(sql, [has_dot ? this._obj.map((row) => row._row) : this._obj]);
+			return this.clear(true).load(res);
+		}
+		catch (err) {
+			this._owner._manager._owner.$p.record_log(err);
+		}
+	}
+	aggregate(dimensions, resources, aggr = "sum", ret_array) {
+		if (typeof dimensions == "string"){
+			dimensions = dimensions.split(",");
+		}
+		if (typeof resources == "string"){
+			resources = resources.split(",");
+		}
+		if (!dimensions.length && resources.length == 1 && aggr == "sum") {
+			return this._obj.reduce(function (sum, row, index, array) {
+				return sum + row[resources[0]];
+			}, 0);
+		}
+		let sql, res = true;
+		resources.forEach(function (f) {
+			if (!sql)
+				sql = "select " + aggr + "(`" + f + "`) `" + f + "`";
+			else
+				sql += ", " + aggr + "(`" + f + "`) `" + f + "`";
+		});
+		dimensions.forEach(function (f) {
+			if (!sql)
+				sql = "select `" + f + "`";
+			else
+				sql += ", `" + f + "`";
+		});
+		sql += " from ? ";
+		dimensions.forEach(function (f) {
+			if (res) {
+				sql += "group by ";
+				res = false;
+			}
+			else
+				sql += ", ";
+			sql += "`" + f + "`";
+		});
+		try {
+			res = alasql(sql, [this._obj]);
+			if (!ret_array) {
+				if (resources.length == 1)
+					res = res.length ? res[0][resources[0]] : 0;
+				else
+					res = res.length ? res[0] : {};
+			}
+			return res;
+		} catch (err) {
+			this._owner._manager._owner.$p.record_log(err);
+		}
+	};
+	load(aattr) {
+		let arr;
+		this.clear(true);
+		if (aattr instanceof TabularSection){
+			arr = aattr._obj;
+		}
+		else if (Array.isArray(aattr)){
+			arr = aattr;
+		}
+		if (arr){
+			arr.forEach((row) => {
+				this.add(row, true);
+			});
+		}
+		if (!this._owner._data._silent){
+		}
+		return this;
+	}
+	unload_column(column) {
+		const res = [];
+		this.each((row) => {
+			res.push(row[column]);
+		});
+		return res;
+	}
+	toJSON() {
+		return this._obj;
+	}
+}
+class TabularSectionRow {
+	constructor(owner) {
+		Object.defineProperties(this, {
+			_owner: {
+				value: owner
+			},
+			_obj: {
+				value: {}
+			}
+		});
+	}
+	_metadata(field_name) {
+		const {_owner} = this;
+		return field_name ? _owner._owner._metadata(_owner._name).fields[field_name] : _owner._owner._metadata(_owner._name)
+	}
+	get _manager() {
+		return this._owner._owner._manager;
+	}
+	get row() {
+		return this._obj.row || 0
+	}
+	_clone() {
+		const {_owner, _obj} = this;
+		return utils._mixin(_owner._owner._manager.obj_constructor(_owner._name, _owner), _obj)
+	}
+	_setter(f, v) {
+		const {_owner, _obj} = this;
+		const _meta = this._metadata(f);
+		if (_obj[f] == v || (!v && _obj[f] == utils.blank.guid))
+			return;
+		if (!_owner._owner._data._silent){
+		}
+		if (_meta.choice_type) {
+			let prop;
+			if (_meta.choice_type.path.length == 2)
+				prop = this[_meta.choice_type.path[1]];
+			else
+				prop = _owner._owner[_meta.choice_type.path[0]];
+			if (prop && prop.type)
+				v = utils.fetch_type(v, prop.type);
+		}
+		this.__setter(f, v);
+		_owner._owner._data._modified = true;
+	}
+}
+
+
+var data_tabulars = Object.freeze({
+	TabularSection: TabularSection,
+	TabularSectionRow: TabularSectionRow
+});
 
 class DataObj$1 {
 	constructor(attr, manager) {
@@ -520,6 +790,8 @@ Object.defineProperty(DataObj$1.prototype, "ref", {
 	enumerable : true,
 	configurable: true
 });
+TabularSectionRow.prototype._getter = DataObj$1.prototype._getter;
+TabularSectionRow.prototype.__setter = DataObj$1.prototype.__setter;
 class CatObj extends DataObj$1 {
 	constructor(attr, manager){
 		super(attr, manager);
@@ -659,7 +931,7 @@ class EnumObj extends DataObj$1 {
 		return !this.ref || this.ref == "_";
 	}
 }
-class RegisterRow$1 extends DataObj$1 {
+class RegisterRow extends DataObj$1 {
 	constructor(attr, manager) {
 		super(attr, manager);
 		if (attr && typeof attr == "object"){
@@ -707,13 +979,14 @@ var data_objs = Object.freeze({
 	TaskObj: TaskObj,
 	BusinessProcessObj: BusinessProcessObj,
 	EnumObj: EnumObj,
-	RegisterRow: RegisterRow$1
+	RegisterRow: RegisterRow
 });
 
 class MetaEventEmitter extends EventEmitter{
 	on(type, listener){
 		if(typeof listener == 'function' && typeof type != 'object'){
 			super.on(type, listener);
+			return [type, listener];
 		}
 		else{
 			for(let fld in type){
@@ -724,16 +997,17 @@ class MetaEventEmitter extends EventEmitter{
 		}
 	}
 	off(type, listener){
-		if(super.off){
-			super.off(type, listener);
+		if(listener){
+			super.removeListener(type, listener);
+		}
+		else if(Array.isArray(type)){
+			super.removeListener(...type);
+		}
+		else if(typeof type == 'function'){
+			throw new TypeError('MetaEventEmitter.off: type must be a string')
 		}
 		else{
-			if(listener){
-				super.removeListener(type, listener);
-			}
-			else{
-				super.removeAllListeners(type);
-			}
+			super.removeAllListeners(type);
 		}
 	}
 }
@@ -2068,7 +2342,7 @@ var data_managers = Object.freeze({
 	BusinessProcessManager: BusinessProcessManager
 });
 
-const moment$1 = (typeof window != 'undefined' && window.moment) ? window.moment : (moment => {
+const moment$1 = (typeof window != 'undefined' && window.moment) || (moment => {
 	require('moment/locale/ru');
 	return moment;
 })(require('moment'));
@@ -2749,7 +3023,7 @@ class JobPrm {
 	}
 }
 
-const alasql$1 = (typeof window != 'undefined' && window.alasql) ? window.alasql : require('alasql/dist/alasql.min');
+const alasql$1 = (typeof window != 'undefined' && window.alasql) || require('alasql/dist/alasql.min');
 const fake_ls = {
 	setItem(name, value) {},
 	getItem(name) {}
@@ -2760,7 +3034,6 @@ class WSQL {
 		this._params = {};
 		this.aladb = new alasql$1.Database('md');
 		this.alasql = alasql$1;
-		Object.freeze(this);
 	}
 	get js_time_diff(){ return -(new Date("0001-01-01")).valueOf()}
 	get time_diff(){
@@ -2799,21 +3072,10 @@ class WSQL {
 			if (!this.prm_is_set(o.p))
 				this.set_user_param(o.p, job_prm.hasOwnProperty(o.p) ? job_prm[o.p] : o.v);
 		});
-		if(adapters.pouch){
-			const pouch_prm = {
-				path: this.get_user_param("couch_path", "string") || job_prm.couch_path || "",
-				zone: this.get_user_param("zone", "number"),
-				prefix: job_prm.local_storage_prefix,
-				suffix: this.get_user_param("couch_suffix", "string") || "",
-				direct: job_prm.couch_direct || this.get_user_param("couch_direct", "boolean"),
-				user_node: job_prm.user_node,
-				noreplicate: job_prm.noreplicate,
-			};
-			if (pouch_prm.path) {
-				adapters.pouch.init(pouch_prm);
-			}
+		for(let i in adapters){
+			adapters[i].init(this, job_prm);
 		}
-		meta(this.$p);
+		meta && meta(this.$p);
 	};
 	save_options(prefix, options){
 		return this.set_user_param(prefix + "_" + options.name, options);
@@ -3398,276 +3660,6 @@ function mngrs($p) {
 	});
 }
 
-class TabularSection$1 {
-	constructor(name, owner) {
-		if (!owner._obj[name]){
-			owner._obj[name] = [];
-		}
-		Object.defineProperties(this, {
-			_name: {
-				get: () => name
-			},
-			_owner: {
-				get: () => owner
-			},
-		});
-	}
-	toString() {
-		return "Табличная часть " + this._owner._manager.class_name + "." + this._name
-	}
-	get _obj(){
-		const {_owner, _name} = this;
-		return _owner._obj[_name]
-	}
-	get(index) {
-		const row = this._obj[index];
-		return row ? row._row : null
-	}
-	count() {
-		return this._obj.length
-	}
-	clear(silent) {
-		const {_obj, _owner} = this;
-		_obj.length = 0;
-		if (!silent && !_owner._data._silent){
-		}
-		return this;
-	}
-	del(val, silent) {
-		const {_obj, _owner} = this;
-		let index;
-		if (typeof val == "undefined")
-			return;
-		else if (typeof val == "number")
-			index = val;
-		else if (_obj[val.row - 1]._row === val)
-			index = val.row - 1;
-		else {
-			for (var i in _obj)
-				if (_obj[i]._row === val) {
-					index = Number(i);
-					delete _obj[i]._row;
-					break;
-				}
-		}
-		if (index == undefined)
-			return;
-		_obj.splice(index, 1);
-		_obj.forEach(function (row, index) {
-			row.row = index + 1;
-		});
-		if (!silent && !_owner._data._silent){
-		}
-		_owner._data._modified = true;
-	}
-	find(val, columns) {
-		var res = utils._find(this._obj, val, columns);
-		if (res)
-			return res._row;
-	}
-	find_rows(selection, callback) {
-		const cb = callback ? (row) => {
-			return callback.call(this, row._row);
-		} : null;
-		return utils._find_rows.call(this, this._obj, selection, cb);
-	}
-	swap(rowid1, rowid2) {
-		const {_obj} = this;
-		[_obj[rowid1], _obj[rowid2]] = [_obj[rowid2], _obj[rowid1]];
-		_obj[rowid1].row = rowid2 + 1;
-		_obj[rowid2].row = rowid1 + 1;
-		if (!this._owner._data._silent){
-		}
-	}
-	add(attr = {}, silent) {
-		const {_owner, _name, _obj} = this;
-		const row = _owner._manager.obj_constructor(_name, this);
-		for (let f in row._metadata().fields){
-			row[f] = attr[f] || "";
-		}
-		row._obj.row = _obj.push(row._obj);
-		Object.defineProperty(row._obj, "_row", {
-			value: row,
-			enumerable: false
-		});
-		if (!silent && !this._owner._data._silent){
-		}
-		_owner._data._modified = true;
-		return row;
-	}
-	each(fn) {
-		this._obj.forEach((row) => fn.call(this, row._row));
-	}
-	get forEach() {
-		return this.each
-	}
-	group_by(dimensions, resources) {
-		try {
-			const res = this.aggregate(dimensions, resources, "SUM", true);
-			return this.clear(true).load(res);
-		}
-		catch (err) {
-			this._owner._manager._owner.$p.record_log(err);
-		}
-	}
-	sort(fields) {
-		if (typeof fields == "string"){
-			fields = fields.split(",");
-		}
-		let sql = "select * from ? order by ",
-			res = true;
-			has_dot;
-		fields.forEach(function (f) {
-			has_dot = has_dot || f.match('.');
-			f = f.trim().replace(/\s{1,}/g, " ").split(" ");
-			if (res){
-				res = false;
-			}
-			else{
-				sql += ", ";
-			}
-			sql += "`" + f[0] + "`";
-			if (f[1]){
-				sql += " " + f[1];
-			}
-		});
-		try {
-			res = alasql(sql, [has_dot ? this._obj.map((row) => row._row) : this._obj]);
-			return this.clear(true).load(res);
-		}
-		catch (err) {
-			this._owner._manager._owner.$p.record_log(err);
-		}
-	}
-	aggregate(dimensions, resources, aggr = "sum", ret_array) {
-		if (typeof dimensions == "string"){
-			dimensions = dimensions.split(",");
-		}
-		if (typeof resources == "string"){
-			resources = resources.split(",");
-		}
-		if (!dimensions.length && resources.length == 1 && aggr == "sum") {
-			return this._obj.reduce(function (sum, row, index, array) {
-				return sum + row[resources[0]];
-			}, 0);
-		}
-		let sql, res = true;
-		resources.forEach(function (f) {
-			if (!sql)
-				sql = "select " + aggr + "(`" + f + "`) `" + f + "`";
-			else
-				sql += ", " + aggr + "(`" + f + "`) `" + f + "`";
-		});
-		dimensions.forEach(function (f) {
-			if (!sql)
-				sql = "select `" + f + "`";
-			else
-				sql += ", `" + f + "`";
-		});
-		sql += " from ? ";
-		dimensions.forEach(function (f) {
-			if (res) {
-				sql += "group by ";
-				res = false;
-			}
-			else
-				sql += ", ";
-			sql += "`" + f + "`";
-		});
-		try {
-			res = alasql(sql, [this._obj]);
-			if (!ret_array) {
-				if (resources.length == 1)
-					res = res.length ? res[0][resources[0]] : 0;
-				else
-					res = res.length ? res[0] : {};
-			}
-			return res;
-		} catch (err) {
-			this._owner._manager._owner.$p.record_log(err);
-		}
-	};
-	load(aattr) {
-		let arr;
-		this.clear(true);
-		if (aattr instanceof TabularSection$1){
-			arr = aattr._obj;
-		}
-		else if (Array.isArray(aattr)){
-			arr = aattr;
-		}
-		if (arr){
-			arr.forEach((row) => {
-				this.add(row, true);
-			});
-		}
-		if (!this._owner._data._silent){
-		}
-		return this;
-	}
-	unload_column(column) {
-		const res = [];
-		this.each((row) => {
-			res.push(row[column]);
-		});
-		return res;
-	}
-	toJSON() {
-		return this._obj;
-	}
-}
-class TabularSectionRow {
-	constructor(owner) {
-		Object.defineProperties(this, {
-			_owner: {
-				value: owner
-			},
-			_obj: {
-				value: {}
-			}
-		});
-	}
-	_metadata(field_name) {
-		const {_owner} = this;
-		return field_name ? _owner._owner._metadata(_owner._name).fields[field_name] : _owner._owner._metadata(_owner._name)
-	}
-	get row() {
-		return this._obj.row || 0
-	}
-	_clone() {
-		const {_owner, _obj} = this;
-		return utils._mixin(_owner._owner._manager.obj_constructor(_owner._name, _owner), _obj)
-	}
-	get _getter() {
-		return DataObj.prototype._getter
-	}
-	_setter(f, v) {
-		const {_owner, _obj} = this;
-		const _meta = this._metadata(f);
-		if (_obj[f] == v || (!v && _obj[f] == utils.blank.guid))
-			return;
-		if (!_owner._owner._data._silent){
-		}
-		if (_meta.choice_type) {
-			let prop;
-			if (_meta.choice_type.path.length == 2)
-				prop = this[_meta.choice_type.path[1]];
-			else
-				prop = _owner._owner[_meta.choice_type.path[0]];
-			if (prop && prop.type)
-				v = utils.fetch_type(v, prop.type);
-		}
-		DataObj.prototype.__setter.call(this, f, v);
-		_owner._owner._data._modified = true;
-	}
-}
-
-
-var data_tabulars = Object.freeze({
-	TabularSection: TabularSection$1,
-	TabularSectionRow: TabularSectionRow
-});
-
 class AbstracrAdapter extends MetaEventEmitter{
 	constructor($p) {
 		super();
@@ -3715,7 +3707,7 @@ class MetaEngine$1 {
 		this.md.off(type, listener);
 	}
 	get version() {
-		return '2.0.1-beta.18';
+		return '2.0.1-beta.19';
 	}
 	toString() {
 		return 'Oknosoft data engine. v:' + this.version;

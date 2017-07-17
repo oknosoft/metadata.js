@@ -16,6 +16,7 @@ export default class MetaEventEmitter extends EventEmitter{
 
 		if(typeof listener == 'function' && typeof type != 'object'){
 			super.on(type, listener);
+			return [type, listener];
 		}
 		else{
 			for(let fld in type){
@@ -27,16 +28,17 @@ export default class MetaEventEmitter extends EventEmitter{
 	}
 
 	off(type, listener){
-		if(super.off){
-			super.off(type, listener);
+		if(listener){
+			super.removeListener(type, listener);
+		}
+		else if(Array.isArray(type)){
+			super.removeListener(...type);
+		}
+		else if(typeof type == 'function'){
+			throw new TypeError('MetaEventEmitter.off: type must be a string')
 		}
 		else{
-			if(listener){
-				super.removeListener(type, listener);
-			}
-			else{
-				super.removeAllListeners(type);
-			}
+			super.removeAllListeners(type);
 		}
 	}
 

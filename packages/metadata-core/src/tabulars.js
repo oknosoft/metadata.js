@@ -529,6 +529,10 @@ export class TabularSectionRow {
 		return field_name ? _owner._owner._metadata(_owner._name).fields[field_name] : _owner._owner._metadata(_owner._name)
 	}
 
+	get _manager() {
+		return this._owner._owner._manager;
+	}
+
 	/**
 	 * ### Номер строки табличной части
 	 * @property row
@@ -549,10 +553,6 @@ export class TabularSectionRow {
 	_clone() {
 		const {_owner, _obj} = this
 		return utils._mixin(_owner._owner._manager.obj_constructor(_owner._name, _owner), _obj)
-	}
-
-	get _getter() {
-		return DataObj.prototype._getter
 	}
 
 	_setter(f, v) {
@@ -585,9 +585,10 @@ export class TabularSectionRow {
 				v = utils.fetch_type(v, prop.type);
 		}
 
-		DataObj.prototype.__setter.call(this, f, v);
+		this.__setter(f, v);
 		_owner._owner._data._modified = true;
 	}
 
-}
+};
+
 

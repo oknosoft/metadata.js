@@ -8,7 +8,7 @@
 
 const ClipboardAction = require('clipboard/lib/clipboard-action');
 
-export default function tabulars(constructor) {
+function tabulars(constructor) {
 
 	const {TabularSection} = constructor.classes;
 
@@ -85,4 +85,16 @@ export default function tabulars(constructor) {
 		},
 	});
 
+}
+
+export default {
+
+	/**
+	 * ### Модификатор прототипов
+	 * @param constructor {MetaEngine}
+	 * @param classes {Object}
+	 */
+	proto(constructor) {
+		tabulars(constructor)
+	},
 }

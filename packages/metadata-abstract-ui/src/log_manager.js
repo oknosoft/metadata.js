@@ -9,7 +9,7 @@
 
 export default function log_manager() {
 
-	const {classes} = this.constructor;
+	const {classes} = this;
 
 	/**
 	 * ### Журнал событий
@@ -31,6 +31,8 @@ export default function log_manager() {
 		 * @param [msg.obj] {Object} - дополнительный json объект
 		 */
 		record(msg) {
+
+			const {wsql} = this._owner.$p;
 
 			if (msg instanceof Error) {
 				if (console)
@@ -116,7 +118,7 @@ export default function log_manager() {
 					return undefined;
 
 				var parts = ref.split('¶');
-				wsql.alasql('select * from `ireg_log` where date=' + parts[0] + ' and sequence=' + parts[1])
+				this._owner.$p.wsql.alasql('select * from `ireg_log` where date=' + parts[0] + ' and sequence=' + parts[1])
 					.forEach(row => new RegisterRow(row, this));
 			}
 
@@ -159,6 +161,7 @@ export default function log_manager() {
 		}
 
 		data_to_grid(data, attr) {
+			const {time_diff} = this._owner.$p.wsql;
 			var xml = '<?xml version="1.0" encoding="UTF-8"?><rows total_count="%1" pos="%2" set_parent="%3">'
 					.replace('%1', data.length).replace('%2', attr.start)
 					.replace('%3', attr.set_parent || ''),
@@ -169,7 +172,7 @@ export default function log_manager() {
 
 			data.forEach(row => {
 				xml += '<row id="' + row.ref + '"><cell>' +
-					moment(row.date - wsql.time_diff).format('DD.MM.YYYY HH:mm:ss') + '.' + row.sequence + '</cell>' +
+					moment(row.date - time_diff).format('DD.MM.YYYY HH:mm:ss') + '.' + row.sequence + '</cell>' +
 					'<cell>' + (row.class || '') + '</cell><cell>' + (row.note || '') + '</cell></row>';
 			});
 

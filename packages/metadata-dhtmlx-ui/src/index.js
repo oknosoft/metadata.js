@@ -1,6 +1,12 @@
 import InterfaceObjs from './iface'
 import widgets from './dhtmlx-widgets'
 import events from './events'
+import mango_selection from './mango_selection'
+import geocoding from './geocoding'
+import ajax from './ajax'
+import docxtemplater from './docxtemplater'
+import jobprm from './jobprm'
+
 
 export default {
 
@@ -48,6 +54,10 @@ export default {
 
 			});
 		};
+
+		mango_selection(constructor);
+
+		geocoding(constructor);
 	},
 
 	/**
@@ -56,52 +66,30 @@ export default {
 	 */
 	constructor(){
 
-		/**
-		 * Объекты интерфейса пользователя
-		 * @property iface
-		 * @for MetaEngine
-		 * @type InterfaceObjs
-		 * @static
-		 */
-		this.iface =  new InterfaceObjs(this);
+		this.__define({
+			/**
+			 * Объекты интерфейса пользователя
+			 * @property iface
+			 * @for MetaEngine
+			 * @type InterfaceObjs
+			 * @static
+			 */
+			iface: {
+				value: new InterfaceObjs(this)
+			},
+			/**
+			 * Хранилище внедрённых строк
+			 */
+			injected_data: {
+				value: {}
+			},
+		});
 
-		const {load_script, wsql, utils} = this;
-
-		/**
-		 * ### Врзвращает объект Docxtemplater из blob
-		 * blob может быть получен из вложения DataObj
-		 *
-		 * @method docxtemplater
-		 * @for Utils
-		 * @param blob {Blob} - двоичные данные шаблона
-		 * @return {Docxtemplater} - объект open-xml-docx
-		 * @async
-		 */
-		utils.docxtemplater = function (blob) {
-
-			return (window.Docxtemplater ?
-				Promise.resolve() :
-				Promise.all([
-					load_script("https://cdn.jsdelivr.net/jszip/2/jszip.min.js", "script"),
-					load_script("https://cdn.jsdelivr.net/combine/gh/open-xml-templating/docxtemplater-build/build/docxtemplater-latest.min.js,gh/open-xml-templating/docxtemplater-image-module-build/build/docxtemplater-image-module-latest.min.js", "script"),
-				]))
-				.then(function () {
-					if(!Docxtemplater.prototype.saveAs){
-						Docxtemplater.prototype.saveAs = function (name) {
-							var out = this.getZip().generate({type: "blob", mimeType: utils.mime_lookup('docx')});
-							wsql.alasql.utils.saveAs(out, name);
-						};
-					}
-					return utils.blob_as_text(blob, 'array');
-				})
-				.then(function (buffer) {
-					return new Docxtemplater().loadZip(new JSZip(buffer));
-				});
-		};
-
+		docxtemplater(this);
 		widgets(this);
-
 		events(this);
+		ajax(this);
+		jobprm(this);
 
 	}
 }
