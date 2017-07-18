@@ -207,7 +207,7 @@ function OCombo(attr){
 						_mgr = v.mgr;
 						_obj = tobj;
 						_field = tfield;
-						_meta = _obj._metadata.fields[_field];
+						_meta = typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field];
 						_mgr.form_selection({
 							on_select: function (selv) {
 								_obj[_field] = selv;
@@ -385,11 +385,11 @@ function OCombo(attr){
 			_meta = attr.metadata;
 
 		else if(_property){
-			_meta = _obj._metadata.fields[_field]._clone();
+			_meta = (typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field])._clone();
 			_meta.type = _property.type;
 
 		}else
-			_meta = _obj._metadata.fields[_field];
+			_meta = typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field];
 
 		t.clearAll();
 		_mgr = _md.value_mgr(_obj, _field, _meta.type);

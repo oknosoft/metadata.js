@@ -41,6 +41,7 @@ gulp.task('prebuild', function(){
 gulp.task('dhtmlx-ui', function () {
   return gulp.src([
     './src/widgets/*.js',
+    './data/merged_data.js',
   ])
     .pipe(concat('dhtmlx-widgets.js'))
     .pipe(wrap({ src: './packages/metadata-dhtmlx-ui/src/wrapper.js'}))
@@ -68,7 +69,7 @@ gulp.task('build-metadata', function () {
 		'./src/reporting.js',
 		'./data/merged_data.js',
 		'./lib/xml_to_json.js',
-		'./lib/filesaver.js',
+		//'./lib/filesaver.js',
 		'./lib/aes/aes.js',
 		'./lib/rubles/rubles.js',
 		//'./lib/daterangepicker/daterangepicker.js',

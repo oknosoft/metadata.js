@@ -87,7 +87,7 @@
   },
   "scripts": {
     "build:core": "node ./packages/metadata-core/build.js",
-    "build:transition": "node ./src/transition/build.js",
+    "build:transition": "node ./packages/metadata-dhtmlx-ui/build.js",
     "build:react-ui": "better-npm-run build:react-ui",
     "build:abstract-ui": "node ./packages/metadata-abstract-ui/build.js",
     "build:adapter-pouchdb": "node ./packages/metadata-pouchdb/build.js",

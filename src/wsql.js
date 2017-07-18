@@ -96,29 +96,6 @@ function WSQL(){
 		},
 
 		/**
-		 * ### Выполняет sql запрос к локальной базе данных
-		 *
-		 * @method promise
-		 * @param sql
-		 * @param params
-		 * @return {Promise}
-		 * @async
-		 */
-		promise: {
-			value: function(sql, params) {
-				return new Promise(function(resolve, reject){
-					wsql.alasql(sql, params || [], function(data, err) {
-						if(err) {
-							reject(err);
-						} else {
-							resolve(data);
-						}
-					});
-				});
-			}
-		},
-
-		/**
 		 * ### Сохраняет настройки формы или иные параметры объекта _options_
 		 * @method save_options
 		 * @param prefix {String} - имя области

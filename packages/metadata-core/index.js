@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.1-beta.19, built:2017-07-17
+ metadata-core v2.0.1-beta.19, built:2017-07-18
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -455,7 +455,7 @@ var data_tabulars = Object.freeze({
 	TabularSectionRow: TabularSectionRow
 });
 
-class DataObj$1 {
+class DataObj {
 	constructor(attr, manager) {
 		if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)){
 			const tmp = manager.get(attr, true);
@@ -564,7 +564,7 @@ class DataObj$1 {
 							else if(typeof v == "object")
 								_obj[f] = v.ref || v.name || "";
 						}else if(v && v.presentation){
-							if(v.type && !(v instanceof DataObj$1))
+							if(v.type && !(v instanceof DataObj))
 								delete v.type;
 							mgr.create(v);
 						}else if(!utils.is_data_mgr(mgr))
@@ -784,15 +784,15 @@ class DataObj$1 {
 		return this._manager.print(this, model, wnd);
 	}
 }
-Object.defineProperty(DataObj$1.prototype, "ref", {
+Object.defineProperty(DataObj.prototype, "ref", {
 	get : function(){ return this._obj ? this._obj.ref : utils.blank.guid},
 	set : function(v){ this._obj.ref = utils.fix_guid(v);},
 	enumerable : true,
 	configurable: true
 });
-TabularSectionRow.prototype._getter = DataObj$1.prototype._getter;
-TabularSectionRow.prototype.__setter = DataObj$1.prototype.__setter;
-class CatObj extends DataObj$1 {
+TabularSectionRow.prototype._getter = DataObj.prototype._getter;
+TabularSectionRow.prototype.__setter = DataObj.prototype.__setter;
+class CatObj extends DataObj {
 	constructor(attr, manager){
 		super(attr, manager);
 		this._mixin_attr(attr);
@@ -856,7 +856,7 @@ const NumberDocAndDate = (superclass) => class extends superclass {
 		this._obj.date = utils.fix_date(v, true);
 	}
 };
-class DocObj$1 extends NumberDocAndDate(DataObj$1) {
+class DocObj$1 extends NumberDocAndDate(DataObj) {
 	constructor(attr, manager){
 		super(attr, manager);
 		this._mixin_attr(attr);
@@ -879,7 +879,7 @@ class DocObj$1 extends NumberDocAndDate(DataObj$1) {
 		this._obj.posted = utils.fix_boolean(v);
 	}
 }
-class DataProcessorObj extends DataObj$1 {
+class DataProcessorObj extends DataObj {
 	constructor(attr, manager) {
 		super(attr, manager);
 		const cmd = manager.metadata();
@@ -900,7 +900,7 @@ class TaskObj extends NumberDocAndDate(CatObj) {
 }
 class BusinessProcessObj extends NumberDocAndDate(CatObj) {
 }
-class EnumObj extends DataObj$1 {
+class EnumObj extends DataObj {
 	constructor(attr, manager) {
 		super(attr, manager);
 		if(attr && typeof attr == "object")
@@ -931,7 +931,7 @@ class EnumObj extends DataObj$1 {
 		return !this.ref || this.ref == "_";
 	}
 }
-class RegisterRow extends DataObj$1 {
+class RegisterRow extends DataObj {
 	constructor(attr, manager) {
 		super(attr, manager);
 		if (attr && typeof attr == "object"){
@@ -964,6 +964,8 @@ class RegisterRow extends DataObj$1 {
 	get ref() {
 		return this._manager.get_ref(this);
 	}
+	set ref(v) {
+	}
 	get presentation() {
 		return this._metadata().obj_presentation || this._metadata().synonym;
 	}
@@ -971,7 +973,7 @@ class RegisterRow extends DataObj$1 {
 
 
 var data_objs = Object.freeze({
-	DataObj: DataObj$1,
+	DataObj: DataObj,
 	CatObj: CatObj,
 	NumberDocAndDate: NumberDocAndDate,
 	DocObj: DocObj$1,
@@ -1119,81 +1121,46 @@ class DataManager extends MetaEventEmitter{
 		}
 		return new constructor(mode);
 	}
-	sync_grid(attr, grid){
-		const mgr = this;
-		const {iface, record_log, wsql} = this._owner.$p;
-		function request(){
-			if(typeof attr.custom_selection == "function"){
-				return attr.custom_selection(attr);
-			}else if(mgr.cachable == "ram"){
-				if(attr.action == "get_tree")
-					return wsql.promise(mgr.get_sql_struct(attr), [])
-						.then(iface.data_to_tree);
-				else if(attr.action == "get_selection")
-					return wsql.promise(mgr.get_sql_struct(attr), [])
-						.then(data => iface.data_to_grid.call(mgr, data, attr));
-			}else if(mgr.cachable.indexOf("doc") == 0){
-				if(attr.action == "get_tree")
-					return mgr.pouch_tree(attr);
-				else if(attr.action == "get_selection")
-					return mgr.pouch_selection(attr);
-			} else {
-				if(attr.action == "get_tree")
-					return mgr.rest_tree(attr);
-				else if(attr.action == "get_selection")
-					return mgr.rest_selection(attr);
-			}
-		}
-		function to_grid(res){
-			return new Promise(function(resolve, reject) {
-				if(typeof res == "string"){
-					if(res.substr(0,1) == "{")
-						res = JSON.parse(res);
-					if(grid && grid.parse){
-						grid.xmlFileUrl = "exec";
-						grid.parse(res, function(){
-							resolve(res);
-						}, "xml");
-					}else
-						resolve(res);
-				}else if(grid instanceof dhtmlXTreeView && grid.loadStruct){
-					grid.loadStruct(res, function(){
-						resolve(res);
-					});
-				}else
-					resolve(res);
-			});
-		}
-		return request()
-			.then(to_grid)
-			.catch(record_log);
-	}
 	get_option_list(selection){
-		var t = this, l = [], input_by_string, text, sel;
+		let t = this, l = [], input_by_string, text, val = null;
+		if(arguments.length = 2){
+			val = selection;
+			selection = arguments[1];
+		}
+		function push(v){
+			if(val !== null){
+				v = {
+					text: v.presentation,
+					value: v.ref
+				};
+				if(utils.is_equal(v.value, val)){
+					v.selected = true;
+				}
+			}
+			l.push(v);
+		}
 		if(selection.presentation && (input_by_string = t.metadata().input_by_string)){
 			text = selection.presentation.like;
 			delete selection.presentation;
 			selection.or = [];
-			input_by_string.forEach(function (fld) {
-				sel = {};
+			input_by_string.forEach((fld) => {
+				const sel = {};
 				sel[fld] = {like: text};
 				selection.or.push(sel);
 			});
 		}
 		if(t.cachable == "ram" || (selection && selection._local)) {
-			t.find_rows(selection, function (v) {
-				l.push(v);
-			});
+			t.find_rows(selection, push);
 			return Promise.resolve(l);
-		}else if(t.cachable != "e1cib"){
+		}
+		else if(t.cachable != "e1cib"){
 			return t.adapter.find_rows(t, selection)
-				.then(function (data) {
-					data.forEach(function (v) {
-						l.push(v);
-					});
+				.then((data) => {
+					data.forEach((v) => push);
 					return l;
 				});
-		}else{
+		}
+		else{
 			var attr = { selection: selection, top: selection._top},
 				is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
 			delete selection._top;
@@ -1204,17 +1171,14 @@ class DataManager extends MetaEventEmitter{
 			else
 				attr.fields = ["ref", "id"];
 			return _rest.load_array(attr, t)
-				.then(function (data) {
-					data.forEach(function (v) {
-						l.push({
-							text: is_doc ? (v.number_doc + " от " + moment(v.date).format(moment._masks.ldt)) : (v.name || v.id),
-							value: v.ref});
-					});
+				.then((data) => {
+					data.forEach(push);
 					return l;
 				});
 		}
 	}
 	value_mgr(row, f, mf, array_enabled, v) {
+		const {$p} = this._owner;
 		let property, oproperty, tnames, rt, mgr;
 		if (mf._mgr){
 			return mf._mgr;
@@ -1368,9 +1332,18 @@ class RefDataManager extends DataManager{
 		return this.each.call(this, fn);
 	}
 	get(ref, do_not_create){
+		const rp = 'promise';
 		let o = this.by_ref[ref] || this.by_ref[(ref = utils.fix_guid(ref))];
+		if(arguments.length == 3){
+			if(do_not_create){
+				do_not_create = rp;
+			}
+			else{
+				do_not_create = arguments[2];
+			}
+		}
 		if(!o){
-			if(do_not_create && do_not_create != 'promise'){
+			if(do_not_create && do_not_create != rp){
 				return;
 			}
 			else{
@@ -1378,17 +1351,17 @@ class RefDataManager extends DataManager{
 			}
 		}
 		if(ref === utils.blank.guid){
-			return do_not_create == 'promise' ? Promise.resolve(o) : o;
+			return do_not_create == rp ? Promise.resolve(o) : o;
 		}
 		if(o.is_new()){
-			if(do_not_create == 'promise'){
+			if(do_not_create == rp){
 				return o.load();
 			}
 			else{
 				return o;
 			}
 		}else{
-			return do_not_create == 'promise' ? Promise.resolve(o) : o;
+			return do_not_create == rp ? Promise.resolve(o) : o;
 		}
 	}
 	create(attr, fill_default){
@@ -1773,9 +1746,6 @@ class RefDataManager extends DataManager{
 		else if(action == "get_selection")
 			res = sql_selection();
 		return res;
-	}
-	caption_flds(attr){
-		return [];
 	}
 	load_cached_server_array(list, alt_rest_name) {
 		const {ajax, rest} = this._owner.$p;
@@ -2235,9 +2205,6 @@ class RegisterManager extends DataManager{
 		}
 		return key;
 	}
-	caption_flds(attr){
-		return [];
-	}
 	create(attr){
 		if(!attr || typeof attr != "object")
 			attr = {};
@@ -2409,7 +2376,7 @@ const utils = {
 	fix_guid(ref, generate) {
 		if (ref && typeof ref == 'string') {
 		}
-		else if (ref instanceof DataObj$1) {
+		else if (ref instanceof DataObj) {
 			return ref.ref;
 		}
 		else if (ref && typeof ref == 'object') {
@@ -2492,7 +2459,7 @@ const utils = {
 		return !v || v === this.blank.guid;
 	},
 	is_data_obj(v) {
-		return v && v instanceof DataObj$1;
+		return v && v instanceof DataObj;
 	},
 	is_data_mgr(v) {
 		return v && v instanceof DataManager;
@@ -2594,7 +2561,7 @@ const utils = {
 			if (obj.hasOwnProperty(p)) {
 				v = obj[p];
 				if (v) {
-					if ('function' === typeof v || v instanceof DataObj$1 || v instanceof DataManager || v instanceof Date)
+					if ('function' === typeof v || v instanceof DataObj || v instanceof DataManager || v instanceof Date)
 						c[p] = v;
 					else if ('object' === typeof v)
 						c[p] = this._clone(v);
@@ -3553,7 +3520,7 @@ class ManagersCollection {
 		this.$p = $p;
 	}
 	toString(){
-		return msg('meta_classes')[this.name];
+		return msg.meta_classes[this.name];
 	}
 	create(name, constructor) {
 		this[name] = new (constructor || this._constructor)(this, this.name + '.' + name);

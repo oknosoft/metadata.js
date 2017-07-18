@@ -7,7 +7,7 @@ class ManagersCollection {
 	}
 
 	toString(){
-		return msg('meta_classes')[this.name];
+		return msg.meta_classes[this.name];
 	}
 
 	create(name, constructor) {

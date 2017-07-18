@@ -33,7 +33,7 @@
 
 import utils from './utils';
 import msg from './i18n.ru';
-import {EnumObj, RegisterRow} from './objs';
+import {DataObj, EnumObj, DocObj, RegisterRow} from './objs';
 import MetaEventEmitter from './emitter';
 
 
@@ -70,7 +70,7 @@ export class DataManager extends MetaEventEmitter{
 	}
 
 	toString(){
-		return msg('meta_mgrs')[this._owner.name]
+		return msg.meta_mgrs[this._owner.name]
 	}
 
 	/**
@@ -170,7 +170,7 @@ export class DataManager extends MetaEventEmitter{
 	 * @final
 	 */
 	get family_name(){
-		return msg('meta_mgrs')[this.class_name.split(".")[0]].replace(msg('meta_mgrs').mgr+" ", "");
+		return msg.meta_mgrs[this.class_name.split(".")[0]].replace(msg.meta_mgrs.mgr+" ", "");
 	}
 
 	/**
@@ -284,93 +284,6 @@ export class DataManager extends MetaEventEmitter{
 	}
 
 	/**
-	 * ### Выводит фрагмент списка объектов данного менеджера, ограниченный фильтром attr в grid
-	 *
-	 * @method sync_grid
-	 * @for DataManager
-	 * @param grid {dhtmlXGridObject}
-	 * @param attr {Object}
-	 */
-	sync_grid(attr, grid){
-
-		const mgr = this;
-		const {iface, record_log, wsql} = this._owner.$p;
-
-		function request(){
-
-			if(typeof attr.custom_selection == "function"){
-				return attr.custom_selection(attr);
-
-			}else if(mgr.cachable == "ram"){
-
-				// запрос к alasql
-				if(attr.action == "get_tree")
-					return wsql.promise(mgr.get_sql_struct(attr), [])
-						.then(iface.data_to_tree);
-
-				else if(attr.action == "get_selection")
-					return wsql.promise(mgr.get_sql_struct(attr), [])
-						.then(data => iface.data_to_grid.call(mgr, data, attr));
-
-			}else if(mgr.cachable.indexOf("doc") == 0){
-
-				// todo: запрос к pouchdb
-				if(attr.action == "get_tree")
-					return mgr.pouch_tree(attr);
-
-				else if(attr.action == "get_selection")
-					return mgr.pouch_selection(attr);
-
-			} else {
-
-				// запрос к серверу по сети
-				if(attr.action == "get_tree")
-					return mgr.rest_tree(attr);
-
-				else if(attr.action == "get_selection")
-					return mgr.rest_selection(attr);
-
-			}
-		}
-
-		function to_grid(res){
-
-			return new Promise(function(resolve, reject) {
-
-				if(typeof res == "string"){
-
-					if(res.substr(0,1) == "{")
-						res = JSON.parse(res);
-
-					// загружаем строку в грид
-					if(grid && grid.parse){
-						grid.xmlFileUrl = "exec";
-						grid.parse(res, function(){
-							resolve(res);
-						}, "xml");
-					}else
-						resolve(res);
-
-				}else if(grid instanceof dhtmlXTreeView && grid.loadStruct){
-					grid.loadStruct(res, function(){
-						resolve(res);
-					});
-
-				}else
-					resolve(res);
-
-			});
-
-		}
-
-		// TODO: переделать обработку catch()
-		return request()
-			.then(to_grid)
-			.catch(record_log);
-
-	}
-
-	/**
 	 * ### Возвращает массив доступных значений для комбобокса
 	 * @method get_option_list
 	 * @for DataManager
@@ -380,36 +293,50 @@ export class DataManager extends MetaEventEmitter{
 	 */
 	get_option_list(selection){
 
-		var t = this, l = [], input_by_string, text, sel;
+		let t = this, l = [], input_by_string, text, val = null;
+
+		if(arguments.length = 2){
+			val = selection;
+			selection = arguments[1];
+		}
+
+		function push(v){
+			if(val !== null){
+				v = {
+					text: v.presentation,
+					value: v.ref
+				}
+				if(utils.is_equal(v.value, val)){
+					v.selected = true;
+				}
+			}
+			l.push(v);
+		}
 
 		// поиск по строке
 		if(selection.presentation && (input_by_string = t.metadata().input_by_string)){
 			text = selection.presentation.like;
 			delete selection.presentation;
 			selection.or = [];
-			input_by_string.forEach(function (fld) {
-				sel = {};
+			input_by_string.forEach((fld) => {
+				const sel = {};
 				sel[fld] = {like: text};
 				selection.or.push(sel);
 			})
 		}
 
 		if(t.cachable == "ram" || (selection && selection._local)) {
-			t.find_rows(selection, function (v) {
-				l.push(v);
-			});
+			t.find_rows(selection, push);
 			return Promise.resolve(l);
-
-		}else if(t.cachable != "e1cib"){
+		}
+		else if(t.cachable != "e1cib"){
 			return t.adapter.find_rows(t, selection)
-				.then(function (data) {
-					data.forEach(function (v) {
-						l.push(v);
-					});
+				.then((data) => {
+					data.forEach((v) => push);
 					return l;
 				});
-
-		}else{
+		}
+		else{
 			// для некешируемых выполняем запрос к серверу
 			var attr = { selection: selection, top: selection._top},
 				is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
@@ -424,12 +351,8 @@ export class DataManager extends MetaEventEmitter{
 				attr.fields = ["ref", "id"];
 
 			return _rest.load_array(attr, t)
-				.then(function (data) {
-					data.forEach(function (v) {
-						l.push({
-							text: is_doc ? (v.number_doc + " от " + moment(v.date).format(moment._masks.ldt)) : (v.name || v.id),
-							value: v.ref});
-					});
+				.then((data) => {
+					data.forEach(push);
 					return l;
 				});
 		}
@@ -446,6 +369,8 @@ export class DataManager extends MetaEventEmitter{
 	 * @return {DataManager|Array|undefined}
 	 */
 	value_mgr(row, f, mf, array_enabled, v) {
+
+		const {$p} = this._owner;
 
 		let property, oproperty, tnames, rt, mgr;
 
@@ -719,10 +644,19 @@ export class RefDataManager extends DataManager{
 	 */
 	get(ref, do_not_create){
 
+		const rp = 'promise';
 		let o = this.by_ref[ref] || this.by_ref[(ref = utils.fix_guid(ref))];
 
+		if(arguments.length == 3){
+			if(do_not_create){
+				do_not_create = rp;
+			}
+			else{
+				do_not_create = arguments[2];
+			}
+		}
 		if(!o){
-			if(do_not_create && do_not_create != 'promise'){
+			if(do_not_create && do_not_create != rp){
 				return;
 			}
 			else{
@@ -731,18 +665,18 @@ export class RefDataManager extends DataManager{
 		}
 
 		if(ref === utils.blank.guid){
-			return do_not_create == 'promise' ? Promise.resolve(o) : o;
+			return do_not_create == rp ? Promise.resolve(o) : o;
 		}
 
 		if(o.is_new()){
-			if(do_not_create == 'promise'){
+			if(do_not_create == rp){
 				return o.load();	// читаем из 1С или иного сервера
 			}
 			else{
 				return o;
 			}
 		}else{
-			return do_not_create == 'promise' ? Promise.resolve(o) : o;
+			return do_not_create == rp ? Promise.resolve(o) : o;
 		}
 	}
 
@@ -756,7 +690,7 @@ export class RefDataManager extends DataManager{
 	 * @param [fill_default] {Boolean} - признак, надо ли заполнять (инициализировать) создаваемый объект значениями полей по умолчанию
 	 * @return {Promise.<*>}
 	 */
-	create(attr, fill_default){
+	create(attr, fill_default, force_obj){
 
 		if(!attr || typeof attr != "object"){
 			attr = {};
@@ -774,6 +708,9 @@ export class RefDataManager extends DataManager{
 		if(!o){
 
 			o = this.obj_constructor('', [attr, this]);
+			if(force_obj){
+				return o;
+			}
 
 			if(!fill_default && attr.ref && attr.presentation && Object.keys(attr).length == 2){
 				// заглушка ссылки объекта
@@ -829,7 +766,7 @@ export class RefDataManager extends DataManager{
 
 		}
 
-		return Promise.resolve(o);
+		return force_obj ? o : Promise.resolve(o);
 
 	}
 
@@ -1301,12 +1238,6 @@ export class RefDataManager extends DataManager{
 		return res;
 	}
 
-	/**
-	 * ШапкаТаблицыПоИмениКласса
-	 */
-	caption_flds(attr){
-		return [];
-	}
 
 	/**
 	 * Догружает с сервера объекты, которых нет в локальном кеше
@@ -2038,9 +1969,6 @@ export class RegisterManager extends DataManager{
 		return key;
 	}
 
-	caption_flds(attr){
-		return [];
-	}
 
 	create(attr){
 

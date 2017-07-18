@@ -240,7 +240,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 					_selection = attr.selection;
 
 				_obj = attr.obj;
-				_meta = attr.metadata || _obj._metadata.fields;
+				_meta = attr.metadata || typeof _obj._metadata == 'function' ? _obj._metadata().fields : _obj._metadata.fields;
 				_mgr = _obj._manager;
 				_tsname = attr.ts || "";
 				_extra_fields = _tsname ? _obj[_tsname] : (_obj.extra_fields || _obj["ДополнительныеРеквизиты"]);
@@ -275,12 +275,14 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 				// начинаем следить за объектом и, его табчастью допреквизитов
 				Object.observe(_obj, observer, ["update", "unload"]);
 
-				if(_extra_fields && _extra_fields instanceof TabularSection)
-					Object.observe(_obj, observer_rows, ["row", "rows"]);
+				if(_extra_fields && _extra_fields instanceof TabularSection){
+          Object.observe(_obj, observer_rows, ["row", "rows"]);
+        }
 
 				// заполняем табчасть данными
-				if(_tsname && !attr.ts_title)
-					attr.ts_title = _obj._metadata.tabular_sections[_tsname].synonym;
+				if(_tsname && !attr.ts_title){
+          attr.ts_title = typeof _obj._metadata == 'function' ? _obj._metadata(_tsname).synonym : _obj._metadata.tabular_sections[_tsname].synonym;
+        }
 				observer_rows([{tabular: _tsname}]);
 
 			}

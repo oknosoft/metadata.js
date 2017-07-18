@@ -682,7 +682,7 @@ function adapter({AbstracrAdapter}) {
 		/**
 		 * ### Возвращает набор данных для динсписка
 		 *
-		 * @method pouch_selection
+		 * @method get_selection
 		 * @param _mgr {DataManager}
 		 * @param attr
 		 * @return {Promise.<Array>}
@@ -1198,5 +1198,7 @@ export default (constructor) => {
 	const {classes} = constructor;
 	classes.PouchDB = PouchDB;
 	classes.AdapterPouch = adapter(classes);
+
+
 }
 

@@ -159,15 +159,18 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	function get_sel_index(silent){
 		var selId = _grid.getSelectedRowId();
 
-		if(selId && !isNaN(Number(selId)))
-			return Number(selId)-1;
+		if(selId && !isNaN(Number(selId))){
+      return Number(selId)-1;
+    }
 
-		if(!silent)
-			$p.msg.show_msg({
-				type: "alert-warning",
-				text: $p.msg.no_selected_row.replace("%1", _obj._metadata.tabular_sections[_tsname].synonym || _tsname),
-				title: (_obj._metadata.obj_presentation || _obj._metadata.synonym) + ': ' + _obj.presentation
-			});
+		if(!silent){
+      var _tssynonym = (typeof _obj._metadata == 'function' ? _obj._metadata(_tsname) : _obj._metadata.tabular_sections[_tsname]).synonym;
+      $p.msg.show_msg({
+        type: "alert-warning",
+        text: $p.msg.no_selected_row.replace("%1", _tssynonym || _tsname),
+        title: (_meta.obj_presentation || _meta.synonym) + ': ' + _obj.presentation
+      });
+    }
 	}
 
 

@@ -5,6 +5,44 @@
  * @submodule i18n
  */
 
+class I18Handler {
+	get(target, name, receiver) {
+		switch (name){
+			case 'lang':
+				return target._lang;
+			case 'show_msg':
+				return target._show_msg || function () {
+					
+				};
+			default:
+				return target.i18n[target._lang][name];
+		}
+	}
+
+	set (target, name, val, receiver) {
+		switch (name){
+			case 'lang':
+				target._lang = val;
+				break;
+			case 'show_msg':
+				return true;
+			default:
+				target.i18n[target._lang][name] = val;
+		}
+		return true;
+	}
+}
+
+class I18n {
+
+	constructor(syn) {
+		this.i18n = syn;
+		this._lang = Object.keys(syn)[0];
+		return new Proxy(this, new I18Handler());
+	}
+
+
+}
 
 /**
  * Возвращает текст строковой константы с учетом текущего языка
@@ -12,13 +50,7 @@
  * @param id {String}
  * @return {String|Object}
  */
-function msg(id) {
-	return msg.i18n[msg.lang][id];
-}
-
-msg.lang = 'ru';
-
-msg.i18n = {
+const msg = new I18n({
 	ru: {
 
 		// публичные методы, экспортируемые, как свойства $p.msg
@@ -203,15 +235,19 @@ msg.i18n = {
 		value: 'Значение',
 
 	},
-};
+});
 
-// временная мера: дублируем свойсва i18n внутри msg()
-for (let id in msg.i18n.ru) {
-	Object.defineProperty(msg, id, {
-		get: function () {
-			return msg.i18n.ru[id];
-		},
-	});
-}
+// msg.lang = 'ru';
+//
+// msg.i18n = ;
+
+// // временная мера: дублируем свойсва i18n внутри msg()
+// for (let id in msg.i18n.ru) {
+// 	Object.defineProperty(msg, id, {
+// 		get: function () {
+// 			return msg.i18n.ru[id];
+// 		},
+// 	});
+// }
 
 export default msg;

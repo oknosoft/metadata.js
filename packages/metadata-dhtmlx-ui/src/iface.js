@@ -53,7 +53,20 @@ export default class InterfaceObjs {
 	     * @type {Col_struct}
 	     * @constructor
 	     */
-	    this.Col_struct = Col_struct;
+	    $p.classes.Col_struct = Col_struct;
+
+		if (typeof window !== 'undefined' && window.dhx4) {
+			dhx4.dateFormat.ru = "%d.%m.%Y";
+			dhx4.dateLang = "ru";
+			dhx4.dateStrings = {
+				ru: {
+					monthFullName:	["Январь","Февраль","Март","Апрель","Maй","Июнь","Июль","Август","Сентябрь","Oктябрь","Ноябрь","Декабрь"],
+					monthShortName:	["Янв","Фев","Maр","Aпр","Maй","Июн","Июл","Aвг","Сен","Окт","Ноя","Дек"],
+					dayFullName:	["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"],
+					dayShortName:	["Вс","Пн","Вт","Ср","Чт","Пт","Сб"]
+				}
+			};
+		}
 
 	  }
 

@@ -10,6 +10,7 @@
 export default function log_manager() {
 
 	const {classes} = this;
+	const {InfoRegManager, RegisterRow} = classes;
 
 	/**
 	 * ### Журнал событий
@@ -19,7 +20,7 @@ export default function log_manager() {
 	 * @class LogManager
 	 * @static
 	 */
-	class LogManager extends classes.InfoRegManager {
+	class LogManager extends InfoRegManager {
 
 		constructor(owner) {
 			super(owner, 'ireg.log');
@@ -140,43 +141,7 @@ export default function log_manager() {
 				return sql;
 
 			} else
-				return classes.InfoRegManager.prototype.get_sql_struct.call(this, attr);
-		}
-
-		caption_flds(attr) {
-
-			var _meta = (attr && attr.metadata) || this.metadata(),
-				acols = [];
-
-			if (_meta.form && _meta.form[attr.form || 'selection']) {
-				acols = _meta.form[attr.form || 'selection'].cols;
-
-			} else {
-				acols.push(new Col_struct('date', '200', 'ro', 'left', 'server', 'Дата'));
-				acols.push(new Col_struct('class', '100', 'ro', 'left', 'server', 'Класс'));
-				acols.push(new Col_struct('note', '*', 'ro', 'left', 'server', 'Событие'));
-			}
-
-			return acols;
-		}
-
-		data_to_grid(data, attr) {
-			const {time_diff} = this._owner.$p.wsql;
-			var xml = '<?xml version="1.0" encoding="UTF-8"?><rows total_count="%1" pos="%2" set_parent="%3">'
-					.replace('%1', data.length).replace('%2', attr.start)
-					.replace('%3', attr.set_parent || ''),
-				caption = this.caption_flds(attr);
-
-			// при первом обращении к методу добавляем описание колонок
-			xml += caption.head;
-
-			data.forEach(row => {
-				xml += '<row id="' + row.ref + '"><cell>' +
-					moment(row.date - time_diff).format('DD.MM.YYYY HH:mm:ss') + '.' + row.sequence + '</cell>' +
-					'<cell>' + (row.class || '') + '</cell><cell>' + (row.note || '') + '</cell></row>';
-			});
-
-			return xml + '</rows>';
+				return InfoRegManager.prototype.get_sql_struct.call(this, attr);
 		}
 
 	}
@@ -188,7 +153,7 @@ export default function log_manager() {
 	 * @extends RegisterRow
 	 * @constructor
 	 */
-	this.IregLog = class IregLog extends classes.RegisterRow {
+	this.IregLog = class IregLog extends RegisterRow {
 
 		get date() {
 			return this._getter('date');
@@ -233,7 +198,7 @@ export default function log_manager() {
 	};
 
 	// публикуем конструкторы системных менеджеров
-	Object.assign(classes, {LogManager});
+	classes.LogManager = LogManager;
 
 	// создаём менеджер журнала регистрации
 	this.ireg.create('log', LogManager);

@@ -431,11 +431,11 @@ DataManager.prototype.__define({
 
           // запрос к alasql
           if(attr.action == "get_tree")
-            return $p.wsql.promise(mgr.get_sql_struct(attr), [])
+            return $p.wsql.alasql.promise(mgr.get_sql_struct(attr), [])
               .then($p.iface.data_to_tree);
 
           else if(attr.action == "get_selection")
-            return $p.wsql.promise(mgr.get_sql_struct(attr), [])
+            return $p.wsql.alasql.promise(mgr.get_sql_struct(attr), [])
               .then(function(data){
                 return $p.iface.data_to_grid.call(mgr, data, attr);
               });
@@ -746,7 +746,9 @@ DataManager.prototype.__define({
             destinations_extra_fields = t.extra_fields(o),
             pnames = "property,param,Свойство,Параметр".split(","),
             //meta_extra_fields = o._metadata.tabular_sections[extra_fields.ts].fields,
-            meta_extra_fields = o[extra_fields.ts]._owner._metadata.tabular_sections[o[extra_fields.ts]._name].fields,
+            _owner = o[extra_fields.ts]._owner,
+            meta_extra_fields = typeof _owner._metadata == 'function' ?
+              _owner._metadata(o[extra_fields.ts]._name).fields : _owner._metadata.tabular_sections[o[extra_fields.ts]._name].fields,
             pname;
 
           // Если в объекте не найдены предопределенные свойства - добавляем

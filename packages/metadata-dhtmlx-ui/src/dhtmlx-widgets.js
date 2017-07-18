@@ -1,17 +1,476 @@
 export default ($p) => {
-	const {DataManager, EnumManager, BusinessProcessManager, DataProcessorsManager, ChartOfAccountManager, TaskManager, CatManager, DocManager,
-		DataObj, CatObj, DocObj, TabularSection, TabularSectionRow, } = $p.classes;
+	const {
+		DataManager, EnumManager, BusinessProcessManager, DataProcessorsManager, ChartOfAccountManager, TaskManager, CatManager, DocManager,
+		RegisterManager, RefDataManager, LogManager, DataObj, CatObj, DocObj, TabularSection, TabularSectionRow, Col_struct,
+	} = $p.classes;
+	const _md = $p.md;
+	$p.moment = $p.utils.moment;
 
-	Function.prototype._extend = function( Parent ) {
-		var F = function() { };
-		F.prototype = Parent.prototype;
-		this.prototype = new F();
-		this.prototype.constructor = this;
-		this.__define("superclass", {
-			value: Parent.prototype,
-			enumerable: false
+	/**
+	 * ### Возаращает строку xml для инициализации PropertyGrid
+	 * служебный метод, используется {{#crossLink "OHeadFields"}}{{/crossLink}}
+	 * @method get_property_grid_xml
+	 * @param oxml {Object} - объект с иерархией полей (входной параметр - правила)
+	 * @param o {DataObj} - объект данных, из полей и табличных частей которого будут прочитаны значения
+	 * @param extra_fields {Object} - объект с описанием допреквизитов
+	 * @param extra_fields.ts {String} - имя табчасти
+	 * @param extra_fields.title {String} - заголовок в oxml, под которым следует расположить допреквизиты // "Дополнительные реквизиты", "Свойства изделия", "Параметры"
+	 * @param extra_fields.selection {Object} - отбор, который следует приминить к табчасти допреквизитов
+	 * @return {String} - XML строка в терминах dhtml.PropertyGrid
+	 * @private
+	 */
+	DataManager.prototype.get_property_grid_xml = function (oxml, o, extra_fields) {
+
+		var t = this, i, j, mf, v, ft, txt, row_id, gd = '<rows>',
+
+			default_oxml = function () {
+				if (oxml)
+					return;
+				mf = t.metadata();
+
+				if (mf.form && mf.form.obj && mf.form.obj.head) {
+					oxml = mf.form.obj.head;
+
+				} else {
+					oxml = {' ': []};
+
+					if (o instanceof CatObj) {
+						if (mf.code_length)
+							oxml[' '].push('id');
+						if (mf.main_presentation_name)
+							oxml[' '].push('name');
+					} else if (o instanceof DocObj) {
+						oxml[' '].push('number_doc');
+						oxml[' '].push('date');
+					}
+
+					if (!o.is_folder) {
+						for (i in mf.fields)
+							if (i != 'predefined_name' && !mf.fields[i].hide)
+								oxml[' '].push(i);
+					}
+
+					if (mf.tabular_sections && mf.tabular_sections.extra_fields)
+						oxml['Дополнительные реквизиты'] = [];
+				}
+
+
+			},
+
+			txt_by_type = function (fv, mf) {
+
+				if ($p.utils.is_data_obj(fv))
+					txt = fv.presentation;
+				else
+					txt = fv;
+
+				if (mf.type.is_ref) {
+					;
+				} else if (mf.type.date_part) {
+					txt = moment(txt).format(moment._masks[mf.type.date_part]);
+
+				} else if (mf.type.types[0] == 'boolean') {
+					txt = txt ? '1' : '0';
+				}
+			},
+
+			by_type = function (fv) {
+
+				ft = _md.control_by_type(mf.type, fv);
+				txt_by_type(fv, mf);
+
+			},
+
+			add_xml_row = function (f, tabular) {
+				if (tabular) {
+					var pref = f.property || f.param || f.Параметр || f.Свойство,
+						pval = f.value != undefined ? f.value : f.Значение;
+					if (pref.empty()) {
+						row_id = tabular + '|' + 'empty';
+						ft = 'ro';
+						txt = '';
+						mf = {synonym: '?'};
+
+					} else {
+						mf = {synonym: pref.presentation, type: pref.type};
+						row_id = tabular + '|' + pref.ref;
+						by_type(pval);
+						if (ft == 'edn')
+							ft = 'calck';
+
+						if (pref.mandatory)
+							ft += '" class="cell_mandatory';
+					}
+				}
+				else if (typeof f === 'object') {
+					row_id = f.id;
+					mf = extra_fields && extra_fields.metadata && extra_fields.metadata[row_id];
+					if (!mf) {
+						mf = {synonym: f.synonym};
+					}
+					else if (f.synonym) {
+						mf.synonym = f.synonym;
+					}
+
+					ft = f.type;
+					txt = '';
+					if (f.hasOwnProperty('txt')) {
+						txt = f.txt;
+					}
+					else if ((v = o[row_id]) !== undefined) {
+						txt_by_type(v, mf.type ? mf : _md.get(t.class_name, row_id));
+					}
+				}
+				else if (extra_fields && extra_fields.metadata && ((mf = extra_fields.metadata[f]) !== undefined)) {
+					row_id = f;
+					by_type(v = o[f]);
+				}
+				else if ((v = o[f]) !== undefined) {
+					mf = _md.get(t.class_name, row_id = f);
+					if (!mf) {
+						return;
+					}
+					by_type(v);
+				}
+				else {
+					return;
+				}
+
+				gd += '<row id="' + row_id + '"><cell>' + (mf.synonym || mf.name) +
+					'</cell><cell type="' + ft + '">' + txt + '</cell></row>';
+			};
+
+		default_oxml();
+
+		for (i in oxml) {
+			if (i != ' ') {
+				gd += '<row open="1"><cell>' + i + '</cell>';   // если у блока есть заголовок, формируем блок иначе добавляем поля без иерархии
+			}
+
+			for (j in oxml[i]) {
+				add_xml_row(oxml[i][j]);                        // поля, описанные в текущем разделе
+			}
+
+			if (extra_fields && i == extra_fields.title && o[extra_fields.ts]) {  // строки табчасти o.extra_fields
+				var added = false,
+					destinations_extra_fields = t.extra_fields(o),
+					pnames = 'property,param,Свойство,Параметр'.split(','),
+					//meta_extra_fields = o._metadata.tabular_sections[extra_fields.ts].fields,
+					_owner = o[extra_fields.ts]._owner,
+					meta_extra_fields = typeof _owner._metadata == 'function' ?
+						_owner._metadata(o[extra_fields.ts]._name).fields : _owner._metadata.tabular_sections[o[extra_fields.ts]._name].fields,
+					pname;
+
+				// Если в объекте не найдены предопределенные свойства - добавляем
+				if (pnames.some(function (name) {
+						if (meta_extra_fields[name]) {
+							pname = name;
+							return true;
+						}
+					})) {
+					o[extra_fields.ts].forEach(function (row) {
+						var index = destinations_extra_fields.indexOf(row[pname]);
+						if (index != -1)
+							destinations_extra_fields.splice(index, 1);
+					});
+					destinations_extra_fields.forEach(function (property) {
+						var row = o[extra_fields.ts].add();
+						row[pname] = property;
+					});
+				}
+				;
+
+				// Добавляем строки в oxml с учетом отбора, который мог быть задан в extra_fields.selection
+				o[extra_fields.ts].find_rows(extra_fields.selection, function (row) {
+					add_xml_row(row, extra_fields.ts);
+
+				});
+				//if(!added)
+				//	add_xml_row({param: $p.cch.properties.get("", false)}, "params"); // fake-строка, если в табчасти нет допреквизитов
+
+			}
+
+			if (i != ' ') gd += '</row>';                          // если блок был открыт - закрываем
+		}
+		gd += '</rows>';
+		return gd;
+	};
+
+	/**
+	 * ### Выводит фрагмент списка объектов данного менеджера, ограниченный фильтром attr в grid
+	 *
+	 * @method sync_grid
+	 * @for DataManager
+	 * @param grid {dhtmlXGridObject}
+	 * @param attr {Object}
+	 */
+	DataManager.prototype.sync_grid = function (attr, grid) {
+
+		const mgr = this;
+		const {iface, record_log, wsql} = this._owner.$p;
+
+		function request() {
+
+			if (typeof attr.custom_selection == 'function') {
+				return attr.custom_selection(attr);
+
+			} else if (mgr.cachable == 'ram') {
+
+				// запрос к alasql
+				if (attr.action == 'get_tree')
+					return wsql.alasql.promise(mgr.get_sql_struct(attr), [])
+						.then(iface.data_to_tree);
+
+				else if (attr.action == 'get_selection')
+					return wsql.alasql.promise(mgr.get_sql_struct(attr), [])
+						.then(data => iface.data_to_grid.call(mgr, data, attr));
+
+			} else if (mgr.cachable.indexOf('doc') == 0) {
+
+				// todo: запрос к pouchdb
+				if (attr.action == 'get_tree')
+					return mgr.pouch_tree(attr);
+
+				else if (attr.action == 'get_selection')
+					return mgr.pouch_selection(attr);
+
+			} else {
+
+				// запрос к серверу по сети
+				if (attr.action == 'get_tree')
+					return mgr.rest_tree(attr);
+
+				else if (attr.action == 'get_selection')
+					return mgr.rest_selection(attr);
+
+			}
+		}
+
+		function to_grid(res) {
+
+			return new Promise(function (resolve, reject) {
+
+				if (typeof res == 'string') {
+
+					if (res.substr(0, 1) == '{')
+						res = JSON.parse(res);
+
+					// загружаем строку в грид
+					if (grid && grid.parse) {
+						grid.xmlFileUrl = 'exec';
+						grid.parse(res, function () {
+							resolve(res);
+						}, 'xml');
+					} else
+						resolve(res);
+
+				} else if (grid instanceof dhtmlXTreeView && grid.loadStruct) {
+					grid.loadStruct(res, function () {
+						resolve(res);
+					});
+
+				} else
+					resolve(res);
+
+			});
+
+		}
+
+		// TODO: переделать обработку catch()
+		return request()
+			.then(to_grid)
+			.catch(record_log);
+
+	};
+
+	/**
+	 * ### Перезаполняет грид данными табчасти с учетом отбора
+	 * @method sync_grid
+	 * @param grid {dhtmlxGrid} - элемент управления
+	 * @param [selection] {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"}
+	 */
+	TabularSection.prototype.sync_grid = function(grid, selection){
+		var grid_data = {rows: []},
+			columns = [];
+
+		for(var i = 0; i<grid.getColumnCount(); i++)
+			columns.push(grid.getColumnId(i));
+
+		grid.clearAll();
+		this.find_rows(selection, function(r){
+			var data = [];
+			columns.forEach(function (f) {
+				if($p.utils.is_data_obj(r[f]))
+					data.push(r[f].presentation);
+				else
+					data.push(r[f]);
+			});
+			grid_data.rows.push({ id: r.row, data: data });
 		});
-	}
+		if(grid.objBox){
+			try{
+				grid.parse(grid_data, "json");
+				grid.callEvent("onGridReconstructed", []);
+			} catch (e){}
+		}
+	};
+
+	RegisterManager.prototype.caption_flds = function (attr) {
+
+		var _meta = attr.metadata || this.metadata(),
+			str_def = '<column id="%1" width="%2" type="%3" align="%4" sort="%5">%6</column>',
+			acols = [], s = '';
+
+		if (_meta.form && _meta.form.selection) {
+			acols = _meta.form.selection.cols;
+
+		} else {
+
+			for (var f in _meta['dimensions']) {
+				acols.push(new Col_struct(f, '*', 'ro', 'left', 'server', _meta['dimensions'][f].synonym));
+			}
+		}
+
+		if (attr.get_header && acols.length) {
+			s = '<head>';
+			for (var col in acols) {
+				s += str_def.replace('%1', acols[col].id).replace('%2', acols[col].width).replace('%3', acols[col].type)
+					.replace('%4', acols[col].align).replace('%5', acols[col].sort).replace('%6', acols[col].caption);
+			}
+			s += '</head>';
+		}
+
+		return {head: s, acols: acols};
+	};
+
+	LogManager.prototype.caption_flds = function (attr) {
+
+		var _meta = (attr && attr.metadata) || this.metadata(),
+			acols = [];
+
+		if (_meta.form && _meta.form[attr.form || 'selection']) {
+			acols = _meta.form[attr.form || 'selection'].cols;
+
+		} else {
+			acols.push(new Col_struct('date', '200', 'ro', 'left', 'server', 'Дата'));
+			acols.push(new Col_struct('class', '100', 'ro', 'left', 'server', 'Класс'));
+			acols.push(new Col_struct('note', '*', 'ro', 'left', 'server', 'Событие'));
+		}
+
+		return acols;
+	};
+	LogManager.prototype.data_to_grid = function (data, attr) {
+		const {time_diff} = this._owner.$p.wsql;
+		var xml = '<?xml version="1.0" encoding="UTF-8"?><rows total_count="%1" pos="%2" set_parent="%3">'
+				.replace('%1', data.length).replace('%2', attr.start)
+				.replace('%3', attr.set_parent || ''),
+			caption = this.caption_flds(attr);
+
+		// при первом обращении к методу добавляем описание колонок
+		xml += caption.head;
+
+		data.forEach(row => {
+			xml += '<row id="' + row.ref + '"><cell>' +
+				moment(row.date - time_diff).format('DD.MM.YYYY HH:mm:ss') + '.' + row.sequence + '</cell>' +
+				'<cell>' + (row.class || '') + '</cell><cell>' + (row.note || '') + '</cell></row>';
+		});
+
+		return xml + '</rows>';
+	};
+
+	RefDataManager.prototype.caption_flds = function (attr) {
+
+		var _meta = attr.metadata || this.metadata(),
+			str_def = '<column id="%1" width="%2" type="%3" align="%4" sort="%5">%6</column>',
+			acols = [], s = '';
+
+		if (_meta.form && _meta.form.selection) {
+			acols = _meta.form.selection.cols;
+		}
+		else if (this instanceof DocManager) {
+			acols.push(new Col_struct('date', '160', 'ro', 'left', 'server', 'Дата'));
+			acols.push(new Col_struct('number_doc', '140', 'ro', 'left', 'server', 'Номер'));
+
+			if (_meta.fields.note)
+				acols.push(new Col_struct('note', '*', 'ro', 'left', 'server', _meta.fields.note.synonym));
+
+			if (_meta.fields.responsible)
+				acols.push(new Col_struct('responsible', '*', 'ro', 'left', 'server', _meta.fields.responsible.synonym));
+
+
+		}
+		else if (this instanceof ChartOfAccountManager) {
+			acols.push(new Col_struct('id', '140', 'ro', 'left', 'server', 'Код'));
+			acols.push(new Col_struct('presentation', '*', 'ro', 'left', 'server', 'Наименование'));
+
+		}
+		else {
+
+			acols.push(new Col_struct('presentation', '*', 'ro', 'left', 'server', 'Наименование'));
+			//if(_meta.has_owners){
+			//	acols.push(new Col_struct("owner", "*", "ro", "left", "server", _meta.fields.owner.synonym));
+			//}
+
+		}
+
+		if (attr.get_header && acols.length) {
+			s = '<head>';
+			for (var col in acols) {
+				s += str_def.replace('%1', acols[col].id).replace('%2', acols[col].width).replace('%3', acols[col].type)
+					.replace('%4', acols[col].align).replace('%5', acols[col].sort).replace('%6', acols[col].caption);
+			}
+			s += '</head>';
+		}
+
+		return {head: s, acols: acols};
+	};
+
+	/**
+	 * ### Возвращает имя типа элемента управления для типа поля
+	 * @method control_by_type
+	 * @param type
+	 * @return {*}
+	 */
+	_md.control_by_type = function (type, val) {
+		var ft;
+
+		if (typeof val == 'boolean' && type.types.indexOf('boolean') != -1) {
+			ft = 'ch';
+		}
+		else if (typeof val == 'number' && type.digits) {
+			if (type.fraction_figits < 5)
+				ft = 'calck';
+			else
+				ft = 'edn';
+		}
+		else if (val instanceof Date && type.date_part) {
+			ft = 'dhxCalendar';
+		}
+		else if (type.is_ref) {
+			ft = 'ocombo';
+
+		}
+		else if (type.date_part) {
+			ft = 'dhxCalendar';
+		}
+		else if (type.digits) {
+			if (type.fraction_figits < 5)
+				ft = 'calck';
+			else
+				ft = 'edn';
+		}
+		else if (type.types[0] == 'boolean') {
+			ft = 'ch';
+		}
+		else if (type.hasOwnProperty('str_len') && (type.str_len >= 100 || type.str_len == 0)) {
+			ft = 'txt';
+		}
+		else {
+			ft = 'ed';
+		}
+		return ft;
+	};
+
 
 	/**
  * ### Кнопки авторизации и синхронизации
@@ -234,7 +693,8 @@ eXcell_proto.input_keydown = function(e, t){
 
 	else if(e.keyCode === 113){                      // по {F2} открываем форму объекта
 		if(t.source.tabular_section){
-			t.mgr = _md.value_mgr(t.source.row, t.source.col, t.source.row._metadata.fields[t.source.col].type);
+			t.mgr = _md.value_mgr(t.source.row, t.source.col, typeof t.source.row._metadata == 'function' ?
+        t.source.row._metadata(t.source.col).type : t.source.row._metadata.fields[t.source.col].type);
 			if(t.mgr){
 				var tv = t.source.row[t.source.col];
 				t.mgr.form_obj(t.source.wnd, {
@@ -244,7 +704,8 @@ eXcell_proto.input_keydown = function(e, t){
 			}
 
 		}else if(t.fpath.length==1){
-			t.mgr = _md.value_mgr(t.source.o._obj, t.fpath[0], t.source.o._metadata.fields[t.fpath[0]].type);
+			t.mgr = _md.value_mgr(t.source.o._obj, t.fpath[0], typeof t.source.o._metadata == 'function' ?
+        t.source.o._metadata(t.fpath[0]).type : t.source.o._metadata.fields[t.fpath[0]].type);
 			if(t.mgr){
 				var tv = t.source.o[t.fpath[0]];
 				t.mgr.form_obj(t.source.wnd, {
@@ -755,7 +1216,7 @@ $p.iface.ODropdownList = ODropdownList;
  * ### Динамическое дерево иерархического справочника
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- *
+ * 
  * @module  widgets
  * @submodule wdg_dyn_tree
  * @requires common
@@ -1030,7 +1491,7 @@ function OCombo(attr){
 						_mgr = v.mgr;
 						_obj = tobj;
 						_field = tfield;
-						_meta = _obj._metadata.fields[_field];
+						_meta = typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field];
 						_mgr.form_selection({
 							on_select: function (selv) {
 								_obj[_field] = selv;
@@ -1208,11 +1669,11 @@ function OCombo(attr){
 			_meta = attr.metadata;
 
 		else if(_property){
-			_meta = _obj._metadata.fields[_field]._clone();
+			_meta = (typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field])._clone();
 			_meta.type = _property.type;
 
 		}else
-			_meta = _obj._metadata.fields[_field];
+			_meta = typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field];
 
 		t.clearAll();
 		_mgr = _md.value_mgr(_obj, _field, _meta.type);
@@ -1755,7 +2216,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 					_selection = attr.selection;
 
 				_obj = attr.obj;
-				_meta = attr.metadata || _obj._metadata.fields;
+				_meta = attr.metadata || typeof _obj._metadata == 'function' ? _obj._metadata().fields : _obj._metadata.fields;
 				_mgr = _obj._manager;
 				_tsname = attr.ts || "";
 				_extra_fields = _tsname ? _obj[_tsname] : (_obj.extra_fields || _obj["ДополнительныеРеквизиты"]);
@@ -1790,12 +2251,14 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 				// начинаем следить за объектом и, его табчастью допреквизитов
 				Object.observe(_obj, observer, ["update", "unload"]);
 
-				if(_extra_fields && _extra_fields instanceof TabularSection)
-					Object.observe(_obj, observer_rows, ["row", "rows"]);
+				if(_extra_fields && _extra_fields instanceof TabularSection){
+          Object.observe(_obj, observer_rows, ["row", "rows"]);
+        }
 
 				// заполняем табчасть данными
-				if(_tsname && !attr.ts_title)
-					attr.ts_title = _obj._metadata.tabular_sections[_tsname].synonym;
+				if(_tsname && !attr.ts_title){
+          attr.ts_title = typeof _obj._metadata == 'function' ? _obj._metadata(_tsname).synonym : _obj._metadata.tabular_sections[_tsname].synonym;
+        }
 				observer_rows([{tabular: _tsname}]);
 
 			}
@@ -1982,15 +2445,18 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	function get_sel_index(silent){
 		var selId = _grid.getSelectedRowId();
 
-		if(selId && !isNaN(Number(selId)))
-			return Number(selId)-1;
+		if(selId && !isNaN(Number(selId))){
+      return Number(selId)-1;
+    }
 
-		if(!silent)
-			$p.msg.show_msg({
-				type: "alert-warning",
-				text: $p.msg.no_selected_row.replace("%1", _obj._metadata.tabular_sections[_tsname].synonym || _tsname),
-				title: (_obj._metadata.obj_presentation || _obj._metadata.synonym) + ': ' + _obj.presentation
-			});
+		if(!silent){
+      var _tssynonym = (typeof _obj._metadata == 'function' ? _obj._metadata(_tsname) : _obj._metadata.tabular_sections[_tsname]).synonym;
+      $p.msg.show_msg({
+        type: "alert-warning",
+        text: $p.msg.no_selected_row.replace("%1", _tssynonym || _tsname),
+        title: (_meta.obj_presentation || _meta.synonym) + ': ' + _obj.presentation
+      });
+    }
 	}
 
 
@@ -5068,4 +5534,5 @@ $p.iface.wnd_sync = function() {
 		_stepper.frm_sync.setItemValue("text_bottom", "Загружается структура таблиц...");
 	}
 };
+$p.injected_data._mixin({"form_auth.xml":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<items>\n\t<item type=\"settings\" position=\"label-left\" labelWidth=\"80\" inputWidth=\"180\" noteWidth=\"180\"/>\n\t<item type=\"fieldset\" name=\"data\" inputWidth=\"auto\" label=\"Авторизация\">\n\n        <item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" checked=\"true\" value=\"guest\" label=\"Гостевой (демо) режим\">\n            <item type=\"select\" name=\"guest\" label=\"Роль\">\n                <option value=\"Дилер\" label=\"Дилер\"/>\n            </item>\n        </item>\n\n\t\t<item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" value=\"auth\" label=\"Есть учетная запись\">\n\t\t\t<item type=\"input\" value=\"\" name=\"login\" label=\"Логин\" validate=\"NotEmpty\" />\n\t\t\t<item type=\"password\" value=\"\" name=\"password\" label=\"Пароль\" validate=\"NotEmpty\" />\n\t\t</item>\n\n\t\t<item type=\"button\" value=\"Войти\" name=\"submit\"/>\n\n        <item type=\"template\" name=\"text_options\" className=\"order_dealer_options\" inputWidth=\"170\"\n              value=\"&lt;a href='#' onclick='$p.iface.open_settings();' title='Страница настроек программы' &gt; &lt;i class='fa fa-cog fa-lg'&gt;&lt;/i&gt; Настройки &lt;/a&gt; &lt;a href='//www.oknosoft.ru/feedback' target='_blank' style='margin-left: 9px;' title='Задать вопрос через форму обратной связи' &gt; &lt;i class='fa fa-question-circle fa-lg'&gt;&lt;/i&gt; Вопрос &lt;/a&gt;\"  />\n\n\t</item>\n</items>","toolbar_add_del.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\n<toolbar>\n    <item id=\"sep0\" type=\"separator\"/>\n    <item id=\"btn_add\" type=\"button\"  text=\"&lt;i class='fa fa-plus-circle fa-fw'&gt;&lt;/i&gt; Добавить\" title=\"Добавить строку\"  />\n    <item id=\"btn_delete\" type=\"button\" text=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt; Удалить\"  title=\"Удалить строку\" />\n    <item id=\"sep1\" type=\"separator\"/>\n\n    <item id=\"sp\" type=\"spacer\"/>\n    <item id=\"input_filter\" type=\"buttonInput\" width=\"200\" title=\"Поиск по подстроке\" />\n</toolbar>","toolbar_add_del_compact.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\n<toolbar>\n    <item id=\"btn_add\" type=\"button\"  text=\"&lt;i class='fa fa-plus-circle fa-fw'&gt;&lt;/i&gt;\" title=\"Добавить строку\"  />\n    <item id=\"btn_delete\" type=\"button\" text=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt;\"  title=\"Удалить строку\" />\n    <item id=\"sep1\" type=\"separator\"/>\n\n</toolbar>","toolbar_obj.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"&lt;b&gt;Записать и закрыть&lt;/b&gt;\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"&lt;i class='fa fa-floppy-o fa-fw'&gt;&lt;/i&gt;\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_post\" enabled=\"false\" text=\"&lt;i class='fa fa-check-square-o fa-fw'&gt;&lt;/i&gt;\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" enabled=\"false\" text=\"&lt;i class='fa fa-square-o fa-fw'&gt;&lt;/i&gt;\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"&lt;i class='fa fa-paperclip fa-fw'&gt;&lt;/i&gt;\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt;\" title=\"Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"&lt;i class='fa fa-bolt fa-fw'&gt;&lt;/i&gt;\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"&lt;i class='fa fa-external-link fa-fw'&gt;&lt;/i&gt;\" title=\"Перейти\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"  text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\"  title=\"Дополнительно\" openAll=\"true\">\r\n\r\n        <item type=\"button\" id=\"btn_import\" text=\"&lt;i class='fa fa-upload fa-fw'&gt;&lt;/i&gt; Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" text=\"&lt;i class='fa fa-download fa-fw'&gt;&lt;/i&gt; Выгрузить в файл\" />\r\n    </item>\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_close\" text=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt;\" title=\"Закрыть форму\"/>\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n</toolbar>\r\n","toolbar_ok_cancel.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_ok\"       type=\"button\"   img=\"\"  imgdis=\"\"   text=\"&lt;b&gt;Ок&lt;/b&gt;\"  />\r\n    <item id=\"btn_cancel\"   type=\"button\"\timg=\"\"  imgdis=\"\"   text=\"Отмена\" />\r\n</toolbar>","toolbar_rep.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_run\" text=\"&lt;i class='fa fa-play fa-fw'&gt;&lt;/i&gt; Сформировать\" title=\"Сформировать отчет\"/>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"  text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\"  title=\"Дополнительно\" openAll=\"true\">\r\n\r\n        <item type=\"button\" id=\"btn_print\" text=\"&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt; Печать\" />\r\n\r\n        <item id=\"sep3\" type=\"separator\"/>\r\n\r\n        <item type=\"button\" id=\"btn_export\" text=\"&lt;i class='fa fa-file-excel-o fa-fw'&gt;&lt;/i&gt; Выгрузить в файл\" />\r\n\r\n        <item id=\"sep4\" type=\"separator\"/>\r\n\r\n        <item type=\"button\" id=\"btn_save\" text=\"&lt;i class='fa fa-folder-open-o fa-fw'&gt;&lt;/i&gt; Выбрать вариант\" />\r\n        <item type=\"button\" id=\"btn_load\" text=\"&lt;i class='fa fa-floppy-o fa-fw'&gt;&lt;/i&gt; Сохранить вариант\" />\r\n\r\n    </item>\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n\r\n</toolbar>\r\n","toolbar_selection.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n\r\n    <item id=\"btn_select\"   type=\"button\"   title=\"Выбрать элемент списка\" text=\"&lt;b&gt;Выбрать&lt;/b&gt;\"  />\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item id=\"btn_new\"      type=\"button\"\ttext=\"&lt;i class='fa fa-plus-circle fa-fw'&gt;&lt;/i&gt;\"\ttitle=\"Создать\" />\r\n    <item id=\"btn_edit\"     type=\"button\"\ttext=\"&lt;i class='fa fa-pencil fa-fw'&gt;&lt;/i&gt;\"\ttitle=\"Изменить\" />\r\n    <item id=\"btn_delete\"   type=\"button\"\ttext=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt;\"\ttitle=\"Удалить\" />\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt; Печать\" openAll=\"true\" >\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"    text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\" title=\"Дополнительно\" openAll=\"true\">\r\n        <item id=\"btn_requery\"  type=\"button\"\ttext=\"&lt;i class='fa fa-refresh fa-fw'&gt;&lt;/i&gt; Обновить список\" />\r\n    </item>\r\n\r\n    <item id=\"sep3\" type=\"separator\"/>\r\n\r\n</toolbar>"});
 };

@@ -124,6 +124,94 @@ export default (constructor) => {
 			}
 		},
 
+		pouch_find_rows: {
+			value: function (selection) {
+				return this.adapter.find_rows(this, selection);
+			}
+		},
+
+		pouch_load_view: {
+			value: function (view) {
+				return this.adapter.load_view(this, view);
+			}
+		},
+
+		pouch_load_array: {
+			value: function (refs, with_attachments) {
+				return this.adapter.load_array(this, refs, with_attachments);
+			}
+		},
+
+		/**
+		 * ### Возвращает набор данных для динсписка
+		 *
+		 * @method pouch_selection
+		 * @for DataManager
+		 * @param attr
+		 * @return {Promise.<Array>}
+		 */
+		pouch_selection: {
+			value: function (attr) {
+				return this.adapter.get_selection(this, attr);
+			}
+		},
+
+		/**
+		 * ### Возвращает набор данных для дерева динсписка
+		 *
+		 * @method pouch_tree
+		 * @for DataManager
+		 * @param attr
+		 * @return {Promise.<Array>}
+		 */
+		pouch_tree: {
+			value: function (attr) {
+				return this.adapter.get_tree(this, attr);
+			}
+		},
+
+		/**
+		 * ### Сохраняет присоединенный файл
+		 *
+		 * @method save_attachment
+		 * @for DataManager
+		 * @param ref
+		 * @param att_id
+		 * @param attachment
+		 * @param type
+		 * @return {Promise}
+		 * @async
+		 */
+		save_attachment: {
+			value: function (ref, att_id, attachment, type) {
+				return this.adapter.save_attachment(this, att_id, attachment, type);
+			}
+		},
+
+		/**
+		 * Получает присоединенный к объекту файл
+		 * @param ref
+		 * @param att_id
+		 * @return {Promise}
+		 */
+		get_attachment: {
+			value: function (ref, att_id) {
+				return this.adapter.get_attachment(this, ref, att_id);
+			}
+		},
+
+		/**
+		 * Удаляет присоединенный к объекту файл
+		 * @param ref
+		 * @param att_id
+		 * @return {Promise}
+		 */
+		delete_attachment: {
+			value: function (ref, att_id) {
+				return this.adapter.delete_attachment(this, ref, att_id);
+			}
+		}
+
 	})
 
 }

@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.1-beta.19, built:2017-07-17
+ metadata-abstract-ui v2.0.1-beta.19, built:2017-07-18
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -60,12 +60,14 @@ function meta_objs() {
 }
 
 function log_manager() {
-	const {classes} = this.constructor;
-	class LogManager extends classes.InfoRegManager {
+	const {classes} = this;
+	const {InfoRegManager, RegisterRow} = classes;
+	class LogManager extends InfoRegManager {
 		constructor(owner) {
 			super(owner, 'ireg.log');
 		}
 		record(msg) {
+			const {wsql} = this._owner.$p;
 			if (msg instanceof Error) {
 				if (console)
 					console.log(msg);
@@ -112,7 +114,7 @@ function log_manager() {
 				if (force_promise === false)
 					return undefined;
 				var parts = ref.split('¶');
-				wsql.alasql('select * from `ireg_log` where date=' + parts[0] + ' and sequence=' + parts[1])
+				this._owner.$p.wsql.alasql('select * from `ireg_log` where date=' + parts[0] + ' and sequence=' + parts[1])
 					.forEach(row => new RegisterRow(row, this));
 			}
 			return force_promise ? Promise.resolve(this.by_ref[ref]) : this.by_ref[ref];
@@ -129,35 +131,10 @@ function log_manager() {
 					sql += ' where `date` <= ?';
 				return sql;
 			} else
-				return classes.InfoRegManager.prototype.get_sql_struct.call(this, attr);
-		}
-		caption_flds(attr) {
-			var _meta = (attr && attr.metadata) || this.metadata(),
-				acols = [];
-			if (_meta.form && _meta.form[attr.form || 'selection']) {
-				acols = _meta.form[attr.form || 'selection'].cols;
-			} else {
-				acols.push(new Col_struct('date', '200', 'ro', 'left', 'server', 'Дата'));
-				acols.push(new Col_struct('class', '100', 'ro', 'left', 'server', 'Класс'));
-				acols.push(new Col_struct('note', '*', 'ro', 'left', 'server', 'Событие'));
-			}
-			return acols;
-		}
-		data_to_grid(data, attr) {
-			var xml = '<?xml version="1.0" encoding="UTF-8"?><rows total_count="%1" pos="%2" set_parent="%3">'
-					.replace('%1', data.length).replace('%2', attr.start)
-					.replace('%3', attr.set_parent || ''),
-				caption = this.caption_flds(attr);
-			xml += caption.head;
-			data.forEach(row => {
-				xml += '<row id="' + row.ref + '"><cell>' +
-					moment(row.date - wsql.time_diff).format('DD.MM.YYYY HH:mm:ss') + '.' + row.sequence + '</cell>' +
-					'<cell>' + (row.class || '') + '</cell><cell>' + (row.note || '') + '</cell></row>';
-			});
-			return xml + '</rows>';
+				return InfoRegManager.prototype.get_sql_struct.call(this, attr);
 		}
 	}
-	this.IregLog = class IregLog extends classes.RegisterRow {
+	this.IregLog = class IregLog extends RegisterRow {
 		get date() {
 			return this._getter('date');
 		}
@@ -189,7 +166,7 @@ function log_manager() {
 			this._setter('obj', v);
 		}
 	};
-	Object.assign(classes, {LogManager});
+	classes.LogManager = LogManager;
 	this.ireg.create('log', LogManager);
 }
 

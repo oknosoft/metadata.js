@@ -7,7 +7,7 @@ const builtins = require('rollup-plugin-node-builtins');
 const replace = require('rollup-plugin-replace');
 const cleanup = require('rollup-plugin-cleanup');
 const path = require('path');
-const package_data = require(path.resolve(__dirname, '../../package.json'));
+const package_data = require(path.resolve(__dirname, './package.json'));
 
 const external = ['moment', 'alasql', 'pouchdb*'];
 const plugins = [
@@ -24,7 +24,7 @@ const header = `/*!
  */\n`;
 
 return rollup({
-	entry: path.resolve(__dirname, './src.js'),
+	entry: path.resolve(__dirname, './src/transition.js'),
 	external,
 	plugins,
 })
