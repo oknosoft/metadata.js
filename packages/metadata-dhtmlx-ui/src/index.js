@@ -18,6 +18,9 @@ export default {
 	 */
 	proto(constructor) {
 
+		// задаём основной скин
+		dhtmlx.skin = 'dhx_terrace';
+
 		constructor.classes.InterfaceObjs = InterfaceObjs;
 
 		/**

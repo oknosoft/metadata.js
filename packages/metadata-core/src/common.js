@@ -214,6 +214,10 @@ class MetaEngine {
 	 */
 	static plugin(obj) {
 
+		if(!obj){
+			throw new TypeError('Invalid empty plugin');
+		}
+
 		if (obj.hasOwnProperty('proto')) {
 			if (typeof obj.proto == 'function') {         // function style for plugins
 				obj.proto(MetaEngine);
@@ -225,7 +229,7 @@ class MetaEngine {
 
 		if (obj.hasOwnProperty('constructor')) {
 			if (typeof obj.constructor != 'function') {
-				throw new Error('Invalid plugin: constructor must be a function');
+				throw new TypeError('Invalid plugin: constructor must be a function');
 			}
 			MetaEngine._plugins.push(obj.constructor);
 		}

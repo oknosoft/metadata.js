@@ -17,7 +17,7 @@ const initialState = {
 		logged_in: false
 	}
 };
-export default function reducer (state = initialState, action) {
+export default function metaReducer (state = initialState, action) {
 	let handler = handlers[action.type];
 	return handler ? handler(state, action) : state
 };

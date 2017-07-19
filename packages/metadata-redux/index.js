@@ -1,7 +1,8 @@
 /*!
- metadata-redux v2.0.1-beta.18, built:2017-07-15
+ metadata-redux v2.0.1-beta.19, built:2017-07-19
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
- metadata.js may be freely distributed under the MIT. To obtain "Commercial License", contact info@oknosoft.ru
+ metadata.js may be freely distributed under the MIT
+ To obtain commercial license and technical support, contact info@oknosoft.ru
  */
 
 'use strict';
@@ -221,13 +222,13 @@ function data_loaded(page) {
 					name = $p.job_prm.guests[0].name;
 				}
 				if(name)
-					dispatch(user_defined(name));
+					dispatch(defined(name));
 				if(name && password && $p.wsql.get_user_param('enable_save_pwd')){
-					dispatch(user_try_log_in($p.adapters.pouch, name, $p.aes.Ctr.decrypt(password)));
+					dispatch(try_log_in($p.adapters.pouch, name, $p.aes.Ctr.decrypt(password)));
 					return;
 				}
 				if(name && $p.job_prm.zone_demo == $p.wsql.get_user_param('zone')){
-					dispatch(user_try_log_in($p.adapters.pouch, name,
+					dispatch(try_log_in($p.adapters.pouch, name,
 						$p.aes.Ctr.decrypt($p.job_prm.guests[0].password)));
 				}
 			}, 10);
@@ -411,32 +412,42 @@ const initialState = {
 		logged_in: false
 	}
 };
-function reducer (state = initialState, action) {
+function metaReducer (state = initialState, action) {
 	let handler = handlers[action.type];
 	return handler ? handler(state, action) : state
 }
 
-function events($p, store) {
-	$p.adapters.pouch.on({
-		user_log_in: (name) => {store.dispatch(log_in(name));},
-		user_log_out: () => {store.dispatch(log_out());},
-		pouch_data_page: (page) => {store.dispatch(data_page(page));},
-		pouch_data_loaded: (page) => {store.dispatch(data_loaded(page));},
-		pouch_data_error: (dbid, err) => {store.dispatch(data_error(dbid, err));},
-		pouch_load_start: (page) => {store.dispatch(load_start(page));},
-		pouch_no_data: (dbid, err) => {store.dispatch(no_data(dbid, err));},
-		pouch_sync_start: () => {store.dispatch(sync_start());},
-		pouch_sync_data: (dbid, change$$1) => {store.dispatch(sync_data(dbid, change$$1));},
-		pouch_sync_error: (dbid, err) => {store.dispatch(sync_error(dbid, err));},
-		pouch_sync_paused: (dbid, info) => {store.dispatch(sync_paused(dbid, info));},
-		pouch_sync_resumed: (dbid, info) => {store.dispatch(sync_resumed(dbid, info));},
-		pouch_sync_denied: (dbid, info) => {store.dispatch(sync_denied(dbid, info));},
-	});
-	$p.md.on({
-		obj_loaded: (_obj) => {store.dispatch(change(_obj._manager.class_name, _obj.ref));}
-	});
+let attached;
+function metaMiddleware({adapters, md}) {
+	return (store) => {
+		const {dispatch} = store;
+		return next => action => {
+			if(!attached){
+				attached = true;
+				adapters.pouch.on({
+					user_log_in: (name) => {dispatch(log_in(name));},
+					user_log_out: () => {dispatch(log_out());},
+					pouch_data_page: (page) => {dispatch(data_page(page));},
+					pouch_data_loaded: (page) => {dispatch(data_loaded(page));},
+					pouch_data_error: (dbid, err) => {dispatch(data_error(dbid, err));},
+					pouch_load_start: (page) => {dispatch(load_start(page));},
+					pouch_no_data: (dbid, err) => {dispatch(no_data(dbid, err));},
+					pouch_sync_start: () => {dispatch(sync_start());},
+					pouch_sync_data: (dbid, change$$1) => {dispatch(sync_data(dbid, change$$1));},
+					pouch_sync_error: (dbid, err) => {dispatch(sync_error(dbid, err));},
+					pouch_sync_paused: (dbid, info) => {dispatch(sync_paused(dbid, info));},
+					pouch_sync_resumed: (dbid, info) => {dispatch(sync_resumed(dbid, info));},
+					pouch_sync_denied: (dbid, info) => {dispatch(sync_denied(dbid, info));},
+				});
+				md.on({
+					obj_loaded: (_obj) => {dispatch(change(_obj._manager.class_name, _obj.ref));}
+				});
+			}
+			return next(action);
+		}
+	}
 }
 
-exports.actions = actions;
-exports.reducer = reducer;
-exports.events = events;
+exports.metaActions = actions;
+exports.metaReducer = metaReducer;
+exports.metaMiddleware = metaMiddleware;

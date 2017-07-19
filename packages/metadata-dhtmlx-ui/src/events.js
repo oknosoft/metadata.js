@@ -78,9 +78,6 @@ class AppEvents {
 							}
 						}
 
-						// задаём основной скин
-						dhtmlx.skin = wsql.get_user_param('skin') || job_prm.skin || 'dhx_web';
-
 						//str.replace(new RegExp(list[i] + '$'), 'finish')
 						if (load_dhtmlx)
 							$p.load_script(surl + (dhtmlx.skin == 'dhx_web' ? 'dhx_web.css' : 'dhx_terrace.css'), 'link');
@@ -112,11 +109,11 @@ class AppEvents {
 						 * @for InterfaceObjs
 						 * @type dhtmlXWindows
 						 */
-						iface.__define('w', {
-							value: new dhtmlXWindows(),
-							enumerable: false,
-						});
-						iface.w.setSkin(dhtmlx.skin);
+						// iface.__define('w', {
+						// 	value: new dhtmlXWindows(),
+						// 	enumerable: false,
+						// });
+						// iface.w.setSkin(dhtmlx.skin);
 
 						/**
 						 * ### Всплывающие подсказки

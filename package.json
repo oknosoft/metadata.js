@@ -79,11 +79,7 @@
   },
   "peerDependecies": {
     "jasmine": "^2.6",
-    "react": "^15.5",
-    "react-addons-create-fragment": "^15.5",
-    "react-addons-css-transition-group": "^15.5",
-    "react-addons-shallow-compare": "^15.5",
-    "react-addons-transition-group": "^15.5"
+    "react": "^15.6"
   },
   "scripts": {
     "build:core": "node ./packages/metadata-core/build.js",

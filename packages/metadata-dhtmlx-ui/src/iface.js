@@ -332,22 +332,22 @@ export default class InterfaceObjs {
 			}))
 		};
 
-		// основной сайдбар
-    this.main = new dhtmlXSideBar({
-			parent: document.body,
-			icons_path: icons_path || "dist/imgs/",
-			width: 180,
-			header: true,
-			template: "tiles",
-			autohide: true,
-			items: items,
-			offsets: {
-				top: 0,
-				right: 0,
-				bottom: 0,
-				left: 0
-			}
-		});
+    // основной сайдбар
+    // this.main = new dhtmlXSideBar({
+	   //  parent: document.body,
+	   //  icons_path: icons_path || "dist/imgs/",
+	   //  width: 180,
+	   //  header: true,
+	   //  template: "tiles",
+	   //  autohide: true,
+	   //  items: items,
+	   //  offsets: {
+	   //  	top: 0,
+		 //    right: 0,
+		 //    bottom: 0,
+		 //    left: 0
+	   //  }
+    // });
 
 		// подписываемся на событие навигации по сайдбару
     const {job_prm} = this.$p;

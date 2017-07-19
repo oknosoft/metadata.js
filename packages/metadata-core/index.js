@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.1-beta.19, built:2017-07-18
+ metadata-core v2.0.1-beta.19, built:2017-07-19
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -11,11 +11,39 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 
 var EventEmitter = _interopDefault(require('events'));
 
-function msg$1(id) {
-	return msg$1.i18n[msg$1.lang][id];
+class I18Handler {
+	get(target, name, receiver) {
+		switch (name){
+			case 'lang':
+				return target._lang;
+			case 'show_msg':
+				return target._show_msg || function () {
+				};
+			default:
+				return target.i18n[target._lang][name];
+		}
+	}
+	set (target, name, val, receiver) {
+		switch (name){
+			case 'lang':
+				target._lang = val;
+				break;
+			case 'show_msg':
+				return true;
+			default:
+				target.i18n[target._lang][name] = val;
+		}
+		return true;
+	}
 }
-msg$1.lang = 'ru';
-msg$1.i18n = {
+class I18n {
+	constructor(syn) {
+		this.i18n = syn;
+		this._lang = Object.keys(syn)[0];
+		return new Proxy(this, new I18Handler());
+	}
+}
+const msg$1 = new I18n({
 	ru: {
 		store_url_od: 'https://chrome.google.com/webstore/detail/hcncallbdlondnoadgjomnhifopfaage',
 		argument_is_not_ref: 'Аргумент не является ссылкой',
@@ -176,14 +204,7 @@ msg$1.i18n = {
 		unknown_error: 'Неизвестная ошибка в функции "%1"',
 		value: 'Значение',
 	},
-};
-for (let id in msg$1.i18n.ru) {
-	Object.defineProperty(msg$1, id, {
-		get: function () {
-			return msg$1.i18n.ru[id];
-		},
-	});
-}
+});
 
 class TabularSection {
 	constructor(name, owner) {
@@ -682,7 +703,7 @@ class DataObj {
 		["_ts_", "_obj", "_data"].forEach((f) => delete this[f]);
 	}
 	save(post, operational, attachments) {
-		if (this instanceof DocObj$1 && typeof post == "boolean") {
+		if (this instanceof DocObj && typeof post == "boolean") {
 			var initial_posted = this.posted;
 			this.posted = post;
 		}
@@ -690,7 +711,7 @@ class DataObj {
 			before_save_res = {},
 			reset_modified = () => {
 				if (before_save_res === false) {
-					if (this instanceof DocObj$1 && typeof initial_posted == "boolean" && this.posted != initial_posted) {
+					if (this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted) {
 						this.posted = initial_posted;
 					}
 				} else
@@ -708,7 +729,7 @@ class DataObj {
 		}
 		if (this._metadata().hierarchical && !this._obj.parent)
 			this._obj.parent = utils.blank.guid;
-		if (this instanceof DocObj$1 || this instanceof TaskObj || this instanceof BusinessProcessObj) {
+		if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
 			if (utils.blank.date == this.date){
 				this.date = new Date();
 			}
@@ -856,7 +877,7 @@ const NumberDocAndDate = (superclass) => class extends superclass {
 		this._obj.date = utils.fix_date(v, true);
 	}
 };
-class DocObj$1 extends NumberDocAndDate(DataObj) {
+class DocObj extends NumberDocAndDate(DataObj) {
 	constructor(attr, manager){
 		super(attr, manager);
 		this._mixin_attr(attr);
@@ -976,7 +997,7 @@ var data_objs = Object.freeze({
 	DataObj: DataObj,
 	CatObj: CatObj,
 	NumberDocAndDate: NumberDocAndDate,
-	DocObj: DocObj$1,
+	DocObj: DocObj,
 	DataProcessorObj: DataProcessorObj,
 	TaskObj: TaskObj,
 	BusinessProcessObj: BusinessProcessObj,
@@ -1023,7 +1044,7 @@ class DataManager extends MetaEventEmitter{
 		this.by_ref = {};
 	}
 	toString(){
-		return msg$1('meta_mgrs')[this._owner.name]
+		return msg$1.meta_mgrs[this._owner.name]
 	}
 	metadata(field_name) {
 		if(!this._meta){
@@ -1068,7 +1089,7 @@ class DataManager extends MetaEventEmitter{
 		return "ram";
 	}
 	get family_name(){
-		return msg$1('meta_mgrs')[this.class_name.split(".")[0]].replace(msg$1('meta_mgrs').mgr+" ", "");
+		return msg$1.meta_mgrs[this.class_name.split(".")[0]].replace(msg$1.meta_mgrs.mgr+" ", "");
 	}
 	get table_name(){
 		return this.class_name.replace(".", "_");
@@ -1364,7 +1385,7 @@ class RefDataManager extends DataManager{
 			return do_not_create == rp ? Promise.resolve(o) : o;
 		}
 	}
-	create(attr, fill_default){
+	create(attr, fill_default, force_obj){
 		if(!attr || typeof attr != "object"){
 			attr = {};
 		}
@@ -1377,6 +1398,9 @@ class RefDataManager extends DataManager{
 		let o = this.by_ref[attr.ref];
 		if(!o){
 			o = this.obj_constructor('', [attr, this]);
+			if(force_obj){
+				return o;
+			}
 			if(!fill_default && attr.ref && attr.presentation && Object.keys(attr).length == 2){
 			}else{
 				if(o instanceof DocObj && o.date == utils.blank.date){
@@ -1414,7 +1438,7 @@ class RefDataManager extends DataManager{
 					})
 			}
 		}
-		return Promise.resolve(o);
+		return force_obj ? o : Promise.resolve(o);
 	}
 	unload_obj(ref) {
 		delete this.by_ref[ref];
@@ -3721,6 +3745,9 @@ class MetaEngine$1 {
 		return user && !user.empty() ? user : null;
 	}
 	static plugin(obj) {
+		if(!obj){
+			throw new TypeError('Invalid empty plugin');
+		}
 		if (obj.hasOwnProperty('proto')) {
 			if (typeof obj.proto == 'function') {
 				obj.proto(MetaEngine$1);
@@ -3731,7 +3758,7 @@ class MetaEngine$1 {
 		}
 		if (obj.hasOwnProperty('constructor')) {
 			if (typeof obj.constructor != 'function') {
-				throw new Error('Invalid plugin: constructor must be a function');
+				throw new TypeError('Invalid plugin: constructor must be a function');
 			}
 			MetaEngine$1._plugins.push(obj.constructor);
 		}

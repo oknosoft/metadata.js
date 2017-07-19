@@ -1,5 +1,5 @@
-import actions from './actions';
-import reducer from './reducer';
-import events from './events';
+import metaActions from './actions';
+import metaReducer from './reducer';
+import metaMiddleware from './events';
 
-export {actions, reducer, events};
+export {metaActions, metaReducer, metaMiddleware};

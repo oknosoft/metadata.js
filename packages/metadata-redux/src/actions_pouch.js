@@ -4,6 +4,8 @@
  * Created 05.09.2016
  */
 
+import {defined, try_log_in} from './actions_auth';
+
 export const DATA_PAGE   = 'POUCH_DATA_PAGE'     // Оповещение о загрузке порции локальных данных
 export const LOAD_START  = 'POUCH_LOAD_START'    // Оповещение о начале загрузки локальных данных
 export const DATA_LOADED = 'POUCH_DATA_LOADED'   // Оповещение об окончании загрузки локальных данных
@@ -58,16 +60,16 @@ export function data_loaded(page) {
 
 				// устанавливаем текущего пользователя
 				if(name)
-					dispatch(user_defined(name));
+					dispatch(defined(name));
 
 				// если разрешено сохранение пароля или гостевая зона...
 				if(name && password && $p.wsql.get_user_param('enable_save_pwd')){
-					dispatch(user_try_log_in($p.adapters.pouch, name, $p.aes.Ctr.decrypt(password)));
+					dispatch(try_log_in($p.adapters.pouch, name, $p.aes.Ctr.decrypt(password)));
 					return;
 				}
 
 				if(name && $p.job_prm.zone_demo == $p.wsql.get_user_param('zone')){
-					dispatch(user_try_log_in($p.adapters.pouch, name,
+					dispatch(try_log_in($p.adapters.pouch, name,
 						$p.aes.Ctr.decrypt($p.job_prm.guests[0].password)));
 				}
 
