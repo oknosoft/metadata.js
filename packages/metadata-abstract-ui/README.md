@@ -14,7 +14,7 @@ ui-библиотеками ([metadata-react-ui](../metadata-react-ui), [metadat
 - `data_loaded` - данные из базы `ram` загружены в `ram`
 - `sync_started` - выполняется синхронизация либо начальная загрузка данных 
 
-|Свойство                              |meta_loaded|data_empty|data_loaded|sync_started|offline|try_log_in|path_log_in|couch_direct|
+|Свойство                              |meta loaded|data empty|data loaded|sync started|offline|try log_in|path log_in|couch direct|
 |:-----------------------------------------------------------------------|---|---|---|---|---|---|---|---|
 |Если скрипты не загружены, показываем splash                            | - | ? | ? | ? | ? | ? | ? | ? |
 |Если скрипты не загружены и offline - показваем дополнительный индикатор| - | ? | ? | ? | + | ? | ? | ? |
