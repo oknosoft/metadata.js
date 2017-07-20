@@ -18,14 +18,17 @@ ui-библиотеками ([metadata-react-ui](../metadata-react-ui), [metadat
 - `offline` - отсутствует подключение к сети либо сервер недоступен
 - `try_log_in` - запрос авторизации отправлен на сервер
 - `path_log_in` - мы на странице авторизации
+- `couch_direct` - прямое подключение к couchdb, offline запрещён
 
 
-|Свойство                              |<sub><sup>meta loaded</sup></sub>|<sub><sup>data empty</sup></sub>|<sub><sup>data loaded</sup></sub>|<sub><sup>has login</sup></sub>|<sub><sup>offline</sup></sub>|<sub><sup>try log_in</sup></sub>|<sub><sup>path log_in</sup></sub>|<sub><sup>couch direct</sup></sub>|
+|\                              |<sub><sup>meta loaded</sup></sub>|<sub><sup>data empty</sup></sub>|<sub><sup>data loaded</sup></sub>|<sub><sup>has login</sup></sub>|<sub><sup>offline</sup></sub>|<sub><sup>try log_in</sup></sub>|<sub><sup>path log_in</sup></sub>|<sub><sup>couch direct</sup></sub>|
 |:-----------------------------------------------------------------------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 |Если скрипты не загружены, показываем splash                            | - |   |   |   |   |   |   |   |
 |Если скрипты не загружены и offline - показваем дополнительный индикатор| - |   |   |   | + |   |   |   |
 |Если есть сохранённый пароль и online, пытаемся авторизоваться          | + |   |   | + | - | - |   |   |
 |Если пустые данные и не запущен процесс авторизации, переходим на страницу login| + | + |   |   | - | - |   |   |
+|Если couch_direct и offline, переходим на страницу login                | + | + |   |   | - | - |   |   |
+|Если мы на странице login и еще не авторизованы, никуда не переходим    | + |   |   |   |   |   | + |   |
 |Если данные загружены, передаём управление роутеру                      | + | - | + |   |   |   |   |   |
 |Если мы на странице автоизации и offline - блокируем кнопку login       |   |   |   |   | + |   | + |   |
 |                                                                        |   |   |   |   |   |   |   |   |
