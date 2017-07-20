@@ -575,31 +575,31 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
 		return bar;
 	};
 
-	$p.on({
+	this.listeners = {
 
-		pouch_load_data_start: function (page) {
+    pouch_load_data_start: function (page) {
 
-			if(!$p.iface.sync)
-				$p.iface.wnd_sync();
-			$p.iface.sync.create($p.eve.stepper);
-			$p.eve.stepper.frm_sync.setItemValue("text_bottom", "Читаем справочники");
+      if(!$p.iface.sync)
+        $p.iface.wnd_sync();
+      $p.iface.sync.create($p.eve.stepper);
+      $p.eve.stepper.frm_sync.setItemValue("text_bottom", "Читаем справочники");
 
-			if(page.hasOwnProperty("local_rows") && page.local_rows < 10){
-				$p.eve.stepper.wnd_sync.setText("Первый запуск - подготовка данных");
-				$p.eve.stepper.frm_sync.setItemValue("text_processed", "Загрузка начального образа");
-			}else{
-				$p.eve.stepper.wnd_sync.setText("Загрузка данных из IndexedDB");
-				$p.eve.stepper.frm_sync.setItemValue("text_processed", "Извлечение начального образа");
-			}
+      if(page.hasOwnProperty("local_rows") && page.local_rows < 10){
+        $p.eve.stepper.wnd_sync.setText("Первый запуск - подготовка данных");
+        $p.eve.stepper.frm_sync.setItemValue("text_processed", "Загрузка начального образа");
+      }else{
+        $p.eve.stepper.wnd_sync.setText("Загрузка данных из IndexedDB");
+        $p.eve.stepper.frm_sync.setItemValue("text_processed", "Извлечение начального образа");
+      }
 
-			set_spin(true);
-		},
+      set_spin(true);
+    },
 
-		pouch_load_data_page: function (page) {
-			set_spin(true);
-			var stepper = $p.eve.stepper;
-			if(stepper.wnd_sync){
-			  var curr = stepper[page.id || "ram"];
+    pouch_load_data_page: function (page) {
+      set_spin(true);
+      var stepper = $p.eve.stepper;
+      if(stepper.wnd_sync){
+        var curr = stepper[page.id || "ram"];
         curr.total_rows = page.total_rows;
         curr.page = page.page;
         curr.docs_written = page.docs_written || page.page * page.limit;
@@ -621,34 +621,45 @@ $p.iface.OBtnAuthSync = function OBtnAuthSync() {
         };
         stepper.frm_sync.setItemValue("text_current", text_current);
         stepper.frm_sync.setItemValue("text_bottom", text_bottom);
-			}
-		},
+      }
+    },
 
-		pouch_change: function (id, page) {
-			set_spin(true);
-		},
+    pouch_change: function (id, page) {
+      set_spin(true);
+    },
 
-		pouch_data_loaded: function (page) {
-			$p.eve.stepper.wnd_sync && $p.iface.sync.close();
-		},
+    pouch_data_loaded: function (page) {
+      $p.eve.stepper.wnd_sync && $p.iface.sync.close();
+    },
 
-		pouch_load_data_error: function (err) {
-			set_spin();
-			$p.eve.stepper.wnd_sync && $p.iface.sync.close();
-		},
+    pouch_load_data_error: function (err) {
+      set_spin();
+      $p.eve.stepper.wnd_sync && $p.iface.sync.close();
+    },
 
-		user_log_in: function (username) {
-			set_auth();
-		},
+    user_log_in: function (username) {
+      set_auth();
+    },
 
-		user_log_fault: function () {
-			set_auth();
-		},
+    user_log_fault: function () {
+      set_auth();
+    },
 
-		user_log_out: function () {
-			set_auth();
-		}
-	});
+    user_log_out: function () {
+      set_auth();
+    }
+  }
+
+  this.unload = function () {
+    for(var name in this.listeners){
+      $p.adapters.pouch.off(name, this.listeners[name]);
+    }
+    bars.forEach(function (bar) {
+
+    });
+  }
+
+	$p.adapters.pouch.on(this.listeners);
 };
 
 

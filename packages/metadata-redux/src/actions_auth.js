@@ -42,7 +42,7 @@ export function try_log_in(adapter, name, password) {
 	// Он передает метод действия в качестве аргумента функции,
 	// т.о, это позволяет отправить действие самостоятельно.
 
-	return function (dispatch, getState) {
+	return function (dispatch) {
 
 		// First dispatch: the app state is updated to inform
 		// that the API call is starting.
@@ -58,12 +58,10 @@ export function try_log_in(adapter, name, password) {
 				username: name,
 				password: password
 			})
-				.then(function (session) {
-					return adapter.log_in(session.token, session.password)
-				})
-
-		}else{
-			return adapter.log_in(name, password)
+				.then((session) => adapter.log_in(session.token, session.password));
+		}
+		else{
+			return adapter.log_in(name, password);
 		}
 
 		// In a real world app, you also want to

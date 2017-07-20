@@ -47,13 +47,22 @@ class AppEvents {
 			 */
 			setTimeout(() => {
 
-				/**
-				 * Метод может быть вызван сторонним сайтом через post_message
-				 * @param url
-				 */
-				function navigate(url) {
-					if (url && (location.origin + location.pathname).indexOf(url) == -1)
-						location.replace(url);
+				function load_data() {
+					// читаем локальные данные в ОЗУ
+					wsql.pouch.load_data()
+						.catch($p.record_log);
+
+					load_finish();
+
+				}
+
+				function load_finish() {
+					// если есть сплэш, удаляем его
+					if (document.querySelector('#splash')) {
+						document.querySelector('#splash').parentNode.removeChild(splash);
+					}
+
+					eve.emit('iface_init', $p);
 				}
 
 				/**
@@ -62,58 +71,14 @@ class AppEvents {
 				 */
 				function init_params() {
 
-					function load_css() {
-
-						var surl = dhtmlx.codebase, load_dhtmlx = true, load_meta = true;
-						if (surl.indexOf('cdn.jsdelivr.net') != -1)
-							surl = '//cdn.jsdelivr.net/metadata/latest/';
-
-						// стили загружаем только при необходимости
-						for (var i = 0; i < document.styleSheets.length; i++) {
-							if (document.styleSheets[i].href) {
-								if (document.styleSheets[i].href.indexOf('dhx_web') != -1 || document.styleSheets[i].href.indexOf('dhx_terrace') != -1)
-									load_dhtmlx = false;
-								if (document.styleSheets[i].href.indexOf('metadata.css') != -1)
-									load_meta = false;
-							}
-						}
-
-						//str.replace(new RegExp(list[i] + '$'), 'finish')
-						if (load_dhtmlx)
-							$p.load_script(surl + (dhtmlx.skin == 'dhx_web' ? 'dhx_web.css' : 'dhx_terrace.css'), 'link');
-						if (load_meta)
-							$p.load_script(surl + 'metadata.css', 'link');
-
-						// дополнительные стили
-						if (job_prm.additional_css)
-							job_prm.additional_css.forEach(function (name) {
-								if (dhx4.isIE || name.indexOf('ie_only') == -1)
-									$p.load_script(name, 'link');
-							});
-
+					// создавать dhtmlXWindows можно только после готовности документа
+					if ('dhtmlx' in window){
 						// задаём путь к картинкам
-						dhtmlx.image_path = '//oknosoft.github.io/metadata.js/lib/imgs/';
-
-						// суффикс скина
-						dhtmlx.skin_suffix = function () {
-							return dhtmlx.skin.replace('dhx', '') + '/';
-						};
+						dhtmlx.image_path = 'https://oknosoft.github.io/metadata.js/lib/imgs/';
 
 						// запрещаем добавлять dhxr+date() к запросам get внутри dhtmlx
 						dhx4.ajax.cache = true;
 
-						/**
-						 * ### Каркас оконного интерфейса
-						 * См. описание на сайте dhtmlx [dhtmlXWindows](http://docs.dhtmlx.com/windows__index.html)
-						 * @property w
-						 * @for InterfaceObjs
-						 * @type dhtmlXWindows
-						 */
-						// iface.__define('w', {
-						// 	value: new dhtmlXWindows(),
-						// 	enumerable: false,
-						// });
-						// iface.w.setSkin(dhtmlx.skin);
 
 						/**
 						 * ### Всплывающие подсказки
@@ -124,33 +89,8 @@ class AppEvents {
 						 */
 						iface.__define('popup', {
 							value: new dhtmlXPopup(),
-							enumerable: false,
 						});
-
 					}
-
-					function load_data() {
-						// читаем локальные данные в ОЗУ
-						wsql.pouch.load_data()
-							.catch($p.record_log);
-
-						load_finish();
-
-					}
-
-					function load_finish() {
-						// если есть сплэш, удаляем его
-						if (document.querySelector('#splash')) {
-							document.querySelector('#splash').parentNode.removeChild(splash);
-						}
-
-						eve.emit('iface_init', $p);
-					}
-
-
-					// создавать dhtmlXWindows можно только после готовности документа
-					if ('dhtmlx' in window)
-						load_css();
 
 					// разбираемся с ориентацией
 					if (typeof(window.orientation) == 'undefined') {
@@ -175,25 +115,25 @@ class AppEvents {
 					// инициализируем метаданные и обработчик при начале работы интерфейса
 					if (wsql.get_user_param('couch_direct')) {
 
-						const on_user_log_in = wsql.pouch.on('user_log_in', function () {
-							wsql.pouch.off(on_user_log_in);
+						wsql.pouch.once('user_log_in', () => {
 							load_finish();
 						});
 
 						// если это демо (zone === zone_demo), устанавливаем логин и пароль
 						if (wsql.get_user_param('zone') == job_prm.zone_demo &&
-							!wsql.get_user_param('user_name') && job_prm.guests.length) {
-							wsql.set_user_param('enable_save_pwd', true);
-							wsql.set_user_param('user_name', job_prm.guests[0].username);
-							wsql.set_user_param('user_pwd', job_prm.guests[0].password);
+							!wsql.get_user_param('user_name') &&
+							job_prm.guests.length) {
+								wsql.set_user_param('enable_save_pwd', true);
+								wsql.set_user_param('user_name', job_prm.guests[0].username);
+								wsql.set_user_param('user_pwd', job_prm.guests[0].password);
 						}
 
-						setTimeout(function () {
-							iface.frm_auth({
-								modal_dialog: true,
-								try_auto: false,
-							});
-						}, 100);
+						// setTimeout(function () {
+						// 	iface.frm_auth({
+						// 		modal_dialog: true,
+						// 		try_auto: false,
+						// 	});
+						// }, 100);
 					}
 					else {
 						setTimeout(load_data, 20);
@@ -253,11 +193,9 @@ class AppEvents {
 
 					// подгружаем скрипты google
 					if (!window.google || !window.google.maps) {
-						$p.on('iface_init', function () {
-							setTimeout(function () {
-								$p.load_script('https://maps.google.com/maps/api/js?key=' + job_prm.use_google_geo + '&callback=$p.ipinfo.location_callback', 'script', function () {
-								});
-							}, 100);
+						eve.once('iface_init', () => {
+							setTimeout( () =>
+								$p.load_script('https://maps.google.com/maps/api/js?key=' + job_prm.use_google_geo + '&callback=$p.ipinfo.location_callback', 'script'), 100);
 						});
 					}
 					else {
@@ -346,6 +284,7 @@ class AppEvents {
 		if (typeof(e) != 'undefined')
 			this.callEvent('onOrientationChange', [job_prm.device_orient]);
 	}
+
 
 	/**
 	 * ### Добавляет объекту методы генерации и обработки событий

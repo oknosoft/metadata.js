@@ -18,8 +18,9 @@ export default {
 	 */
 	proto(constructor) {
 
-		// задаём основной скин
+		// задаём основной скин и его суффикс
 		dhtmlx.skin = 'dhx_terrace';
+		dhtmlx.skin_suffix = () => dhtmlx.skin.replace('dhx', '') + '/';
 
 		constructor.classes.InterfaceObjs = InterfaceObjs;
 
@@ -34,27 +35,28 @@ export default {
 		 */
 		constructor.prototype.load_script = function (src, type, callback) {
 
-			return new Promise(function(resolve, reject){
+			return new Promise((resolve, reject) => {
 
-				var s = document.createElement(type);
+				const s = document.createElement(type);
 				if (type == "script") {
 					s.type = "text/javascript";
 					s.src = src;
 					s.async = true;
-					s.addEventListener('load', callback ? function () {
-						callback();
+					const listener = () => {
+						s.removeEventListener('load', listener);
+						callback && callback();
 						resolve();
-					} : resolve, false);
-
-				} else {
+					}
+					s.addEventListener('load', listener, false);
+				}
+				else {
 					s.type = "text/css";
 					s.rel = "stylesheet";
 					s.href = src;
 				}
 				document.head.appendChild(s);
 
-				if(type != "script")
-					resolve()
+				(type != "script") && resolve();
 
 			});
 		};

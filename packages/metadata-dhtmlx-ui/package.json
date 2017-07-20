@@ -9,7 +9,6 @@
     "npm": "^5.0"
   },
   "dependencies": {
-    "metadata-abstract-ui": "^2.0.1-beta.19"
   },
   "main": "./index.js",
   "repository": {

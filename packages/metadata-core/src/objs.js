@@ -592,7 +592,9 @@ export class DataObj {
 	}
 
 	_mixin_attr(attr){
-
+		if(Object.isFrozen(this)){
+			return;
+		}
 		if(attr && typeof attr == "object"){
 			if(attr._not_set_loaded){
 				delete attr._not_set_loaded;
@@ -600,9 +602,9 @@ export class DataObj {
 
 			}else{
 				utils._mixin(this, attr);
-
-				if(!utils.is_empty_guid(this.ref) && (attr.id || attr.name))
+				if(!utils.is_empty_guid(this.ref) && (attr.id || attr.name)){
 					this._set_loaded(this.ref);
+				}
 			}
 		}
 	}

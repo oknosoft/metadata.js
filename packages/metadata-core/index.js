@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.1-beta.19, built:2017-07-19
+ metadata-core v2.0.1-beta.19, built:2017-07-20
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -790,14 +790,18 @@ class DataObj {
 		}
 	}
 	_mixin_attr(attr){
+		if(Object.isFrozen(this)){
+			return;
+		}
 		if(attr && typeof attr == "object"){
 			if(attr._not_set_loaded){
 				delete attr._not_set_loaded;
 				utils._mixin(this, attr);
 			}else{
 				utils._mixin(this, attr);
-				if(!utils.is_empty_guid(this.ref) && (attr.id || attr.name))
+				if(!utils.is_empty_guid(this.ref) && (attr.id || attr.name)){
 					this._set_loaded(this.ref);
+				}
 			}
 		}
 	}
