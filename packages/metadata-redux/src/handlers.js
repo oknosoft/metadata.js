@@ -14,66 +14,91 @@ import {ADD, CHANGE} from './actions_obj';
 
 export default {
 
-	[META_LOADED]: (state, action) => Object.assign({}, state, {
-		$p: action.payload,
-		meta_loaded: true,
-	}),
+  [META_LOADED]: (state, action) => {
+    const {wsql, job_prm} = action.payload;
+    const {user} = state;
+    let has_login;
+    if (wsql.get_user_param('zone') == job_prm.zone_demo && !wsql.get_user_param('user_name') && job_prm.guests.length) {
+      wsql.set_user_param('enable_save_pwd', true);
+      wsql.set_user_param('user_name', job_prm.guests[0].username);
+      wsql.set_user_param('user_pwd', job_prm.guests[0].password);
+      has_login = true;
+    }
+    else if (wsql.get_user_param('enable_save_pwd') && wsql.get_user_param('user_name') && wsql.get_user_param('user_pwd')) {
+      has_login = true;
+    }
+    else {
+      has_login = false;
+    }
 
-	[PRM_CHANGE]: (state, action) => state,
+    return Object.assign({}, state, {
+      couch_direct: wsql.get_user_param('couch_direct', 'boolean'),
+      meta_loaded: true,
+      user: Object.assign({}, user, {has_login}),
+    });
+  },
 
-	[DATA_LOADED]: (state, action) => Object.assign({}, state, {data_loaded: true, fetch_local: false}),
+  [PRM_CHANGE]: (state, action) => state,
 
-	[DATA_PAGE]: (state, action) => Object.assign({}, state, {page: action.payload}),
+  [DATA_LOADED]: (state, action) => Object.assign({}, state, {data_loaded: true, fetch: false}),
 
-	[DATA_ERROR]: (state, action) => Object.assign({}, state, {err: action.payload, fetch_local: false}),
+  [DATA_PAGE]: (state, action) => Object.assign({}, state, {page: action.payload}),
 
-	[LOAD_START]: (state, action) => Object.assign({}, state, {data_empty: false, fetch_local: true}),
+  [DATA_ERROR]: (state, action) => Object.assign({}, state, {err: action.payload, fetch: false}),
 
-	[NO_DATA]: (state, action) => Object.assign({}, state, {data_empty: true, fetch_local: false}),
+  [LOAD_START]: (state, action) => Object.assign({}, state, {sync_started: true, data_empty: false, fetch: true}),
 
-	[SYNC_START]: (state, action) => Object.assign({}, state, {sync_started: true}),
+  [NO_DATA]: (state, action) => Object.assign({}, state, {data_empty: true, fetch: false}),
 
-	[SYNC_DATA]: (state, action) => Object.assign({}, state, {fetch_remote: action.payload ? true : false}),
+  [SYNC_START]: (state, action) => Object.assign({}, state, {sync_started: true}),
 
-	[DEFINED]: (state, action) => Object.assign({}, state, {
-		user: {
-			name: action.payload,
-			logged_in: state.user.logged_in,
-		},
-	}),
+  [SYNC_DATA]: (state, action) => Object.assign({}, state, {fetch: !!action.payload}),
 
-	[LOG_IN]: (state, action) => Object.assign({}, state, {
-		user: {
-			name: action.payload,
-			logged_in: true,
-		},
-	}),
+  [DEFINED]: (state, action) => Object.assign({}, state, {
+    user: {
+      name: action.payload,
+      logged_in: state.user.logged_in,
+    },
+  }),
 
-	[TRY_LOG_IN]: (state, action) => Object.assign({}, state, {
-		user: {
-			name: action.payload.name,
-			logged_in: state.user.logged_in,
-		},
-	}),
+  [LOG_IN]: (state, action) => Object.assign({}, state, {
+    user: {
+      name: action.payload,
+      logged_in: true,
+      try_log_in: false,
+    },
+  }),
 
-	[LOG_OUT]: (state, action) => Object.assign({}, state, {
-		user: {
-			name: state.user.name,
-			logged_in: false,
-		},
-		sync_started: false,
-	}),
+  [TRY_LOG_IN]: (state, action) => Object.assign({}, state, {
+    user: {
+      name: action.payload.name,
+      try_log_in: true,
+      logged_in: state.user.logged_in,
+    },
+  }),
 
-	[LOG_ERROR]: (state, action) => Object.assign({}, state, {
-		user: {
-			name: state.user.name,
-			logged_in: false,
-		},
-		sync_started: false,
-	}),
+  [LOG_OUT]: (state, action) => Object.assign({}, state, {
+    user: {
+      name: state.user.name,
+      logged_in: false,
+      has_login: false,
+      try_log_in: false,
+    },
+    sync_started: false,
+  }),
 
-	[ADD]: (state, action) => state,
+  [LOG_ERROR]: (state, action) => Object.assign({}, state, {
+    user: {
+      name: state.user.name,
+      logged_in: false,
+      has_login: false,
+      try_log_in: false,
+    },
+    sync_started: false,
+  }),
 
-	[CHANGE]: (state, action) => Object.assign({}, state, {obj_change: action.payload}),
+  [ADD]: (state, action) => state,
+
+  [CHANGE]: (state, action) => Object.assign({}, state, {obj_change: action.payload}),
 
 };

@@ -62,26 +62,28 @@ function adapter({AbstracrAdapter}) {
 				local: {
 					get: function () {
 						if(!_local){
+							const opts = {auto_compaction: true, revs_limit: 2};
+							const bases = $p.md.bases();
 
-							var opts = {auto_compaction: true, revs_limit: 2},
-								bases = $p.md.bases();
+							_local = {
+							  sync: {},
+                meta: new PouchDB(_paths.prefix + "meta", opts),
+							};
 
-							_local = { sync: {} };
+							for(const name of ["ram", "doc", "user"]){
+                if(bases.indexOf(name) != -1){
+                  if(_paths.direct && name != "ram"){
+                    _local[name] = this.remote[name];
+                  }else{
+                    _local[name] = new PouchDB(_paths.prefix + _paths.zone + "_" + name, opts);
+                  }
+                }
+              }
+              if(_paths.path && !_local._meta){
+                _local._meta = new PouchDB(_paths.path + "meta", {skip_setup: true});
+                setTimeout(() => t.run_sync("meta"));
+              }
 
-							["ram", "doc", "meta", "user"].forEach((name) => {
-								if(bases.indexOf(name) != -1){
-									if(name == "meta"){
-										_local[name] = new PouchDB(_paths.prefix + "meta", opts);
-									}
-									else{
-										if(_paths.direct){
-											_local[name] = this.remote[name];
-										}else{
-											_local[name] = new PouchDB(_paths.prefix + _paths.zone + "_" + name, opts);
-										}
-									}
-								}
-							})
 						}
 						return _local;
 					}
@@ -358,17 +360,13 @@ function adapter({AbstracrAdapter}) {
 								});
 							}
 
-							t.local.ram.info()
-								.then((info) => {
+							t.local.ram.info().then((info) => {
 									if(info.doc_count >= ($p.job_prm.pouch_ram_doc_count || 10)){
-
 										// широковещательное оповещение о начале загрузки локальных данных
-										t.emit('pouch_load_start', _page)
-
+										t.emit('pouch_load_start', Object.assign(_page, {local_rows: info.doc_count}));
 										fetchNextPage();
-
-									}else{
-
+									}
+									else{
 										t.emit('pouch_no_data', info)
 										resolve();
 									}

@@ -1,18 +1,46 @@
 import { connect } from 'react-redux';
+import {try_log_in, log_out} from './actions_auth'
+
+const {adapters, wsql, job_prm, aes, cat} = $p;
 
 const mapStateToProps = ({meta}) => {
-	const {meta_loaded, data_empty, data_loaded, fetch_local, sync_started, page} = meta;
-	return {meta_loaded, data_empty, data_loaded, fetch_local, sync_started, page};
+	return Object.assign(
+		{
+			offline: typeof navigator != 'undefined' && !navigator.onLine
+		},
+		meta,
+		{
+			_obj: $p.current_user,
+			_mgr: $p.cat.users,
+			_acl: 'e',
+		});
 };
 
 const mapDispatchToProps = (dispatch) => {
+
 	return {
-		loginSuccess: (profile) => dispatch(loginSuccess(profile)),
-		loginError: (error) => dispatch(loginError(error)),
-		navigate: (path) => dispatch(push(path)),
-		try_log_in: () => dispatch($p.rx_actions.USER_TRY_LOG_IN(
-			$p.adapters.pouch, $p.job_prm.guests[0].username, $p.aes.Ctr.decrypt($p.job_prm.guests[0].password))),
+		handleLogin(login, password) {
+			if(!login && !password){
+			  if(wsql.get_user_param('user_name') && wsql.get_user_param('user_pwd')){
+          login = wsql.get_user_param('user_name');
+          password = aes.Ctr.decrypt(wsql.get_user_param('user_pwd'));
+        }
+        else if(wsql.get_user_param('zone') == job_prm.zone_demo){
+          login = job_prm.guests[0].username;
+          password = aes.Ctr.decrypt(job_prm.guests[0].password);
+        }
+        else{
+          return dispatch(log_out(adapters.pouch));
+        }
+			}
+			return dispatch(try_log_in(adapters.pouch, login, password));
+		},
+		handleLogOut() {
+			return dispatch(log_out(adapters.pouch));
+		},
 	};
 };
 
-export default connect(mapStateToProps);
+
+
+export default connect(mapStateToProps, mapDispatchToProps);

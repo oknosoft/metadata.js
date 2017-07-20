@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.1-beta.19, built:2017-07-19
+ metadata-redux v2.0.1-beta.19, built:2017-07-20
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -30,7 +30,7 @@ function log_in(name) {
 	}
 }
 function try_log_in(adapter, name, password) {
-	return function (dispatch, getState) {
+	return function (dispatch) {
 		dispatch({
 			type: TRY_LOG_IN,
 			payload: {name: name, password: password, provider: 'local'}
@@ -40,11 +40,10 @@ function try_log_in(adapter, name, password) {
 				username: name,
 				password: password
 			})
-				.then(function (session) {
-					return adapter.log_in(session.token, session.password)
-				})
-		}else{
-			return adapter.log_in(name, password)
+				.then((session) => adapter.log_in(session.token, session.password));
+		}
+		else{
+			return adapter.log_in(name, password);
 		}
 	}
 }
@@ -352,64 +351,93 @@ var actions = {
 };
 
 var handlers = {
-	[META_LOADED]: (state, action) => Object.assign({}, state, {
-		$p: action.payload,
-		meta_loaded: true,
-	}),
-	[PRM_CHANGE]: (state, action) => state,
-	[DATA_LOADED]: (state, action) => Object.assign({}, state, {data_loaded: true, fetch_local: false}),
-	[DATA_PAGE]: (state, action) => Object.assign({}, state, {page: action.payload}),
-	[DATA_ERROR]: (state, action) => Object.assign({}, state, {err: action.payload, fetch_local: false}),
-	[LOAD_START]: (state, action) => Object.assign({}, state, {data_empty: false, fetch_local: true}),
-	[NO_DATA]: (state, action) => Object.assign({}, state, {data_empty: true, fetch_local: false}),
-	[SYNC_START]: (state, action) => Object.assign({}, state, {sync_started: true}),
-	[SYNC_DATA]: (state, action) => Object.assign({}, state, {fetch_remote: action.payload ? true : false}),
-	[DEFINED]: (state, action) => Object.assign({}, state, {
-		user: {
-			name: action.payload,
-			logged_in: state.user.logged_in,
-		},
-	}),
-	[LOG_IN]: (state, action) => Object.assign({}, state, {
-		user: {
-			name: action.payload,
-			logged_in: true,
-		},
-	}),
-	[TRY_LOG_IN]: (state, action) => Object.assign({}, state, {
-		user: {
-			name: action.payload.name,
-			logged_in: state.user.logged_in,
-		},
-	}),
-	[LOG_OUT]: (state, action) => Object.assign({}, state, {
-		user: {
-			name: state.user.name,
-			logged_in: false,
-		},
-		sync_started: false,
-	}),
-	[LOG_ERROR]: (state, action) => Object.assign({}, state, {
-		user: {
-			name: state.user.name,
-			logged_in: false,
-		},
-		sync_started: false,
-	}),
-	[ADD]: (state, action) => state,
-	[CHANGE]: (state, action) => Object.assign({}, state, {obj_change: action.payload}),
+  [META_LOADED]: (state, action) => {
+    const {wsql, job_prm} = action.payload;
+    const {user} = state;
+    let has_login;
+    if (wsql.get_user_param('zone') == job_prm.zone_demo && !wsql.get_user_param('user_name') && job_prm.guests.length) {
+      wsql.set_user_param('enable_save_pwd', true);
+      wsql.set_user_param('user_name', job_prm.guests[0].username);
+      wsql.set_user_param('user_pwd', job_prm.guests[0].password);
+      has_login = true;
+    }
+    else if (wsql.get_user_param('enable_save_pwd') && wsql.get_user_param('user_name') && wsql.get_user_param('user_pwd')) {
+      has_login = true;
+    }
+    else {
+      has_login = false;
+    }
+    return Object.assign({}, state, {
+      couch_direct: wsql.get_user_param('couch_direct', 'boolean'),
+      meta_loaded: true,
+      user: Object.assign({}, user, {has_login}),
+    });
+  },
+  [PRM_CHANGE]: (state, action) => state,
+  [DATA_LOADED]: (state, action) => Object.assign({}, state, {data_loaded: true, fetch: false}),
+  [DATA_PAGE]: (state, action) => Object.assign({}, state, {page: action.payload}),
+  [DATA_ERROR]: (state, action) => Object.assign({}, state, {err: action.payload, fetch: false}),
+  [LOAD_START]: (state, action) => Object.assign({}, state, {sync_started: true, data_empty: false, fetch: true}),
+  [NO_DATA]: (state, action) => Object.assign({}, state, {data_empty: true, fetch: false}),
+  [SYNC_START]: (state, action) => Object.assign({}, state, {sync_started: true}),
+  [SYNC_DATA]: (state, action) => Object.assign({}, state, {fetch: !!action.payload}),
+  [DEFINED]: (state, action) => Object.assign({}, state, {
+    user: {
+      name: action.payload,
+      logged_in: state.user.logged_in,
+    },
+  }),
+  [LOG_IN]: (state, action) => Object.assign({}, state, {
+    user: {
+      name: action.payload,
+      logged_in: true,
+      try_log_in: false,
+    },
+  }),
+  [TRY_LOG_IN]: (state, action) => Object.assign({}, state, {
+    user: {
+      name: action.payload.name,
+      try_log_in: true,
+      logged_in: state.user.logged_in,
+    },
+  }),
+  [LOG_OUT]: (state, action) => Object.assign({}, state, {
+    user: {
+      name: state.user.name,
+      logged_in: false,
+      has_login: false,
+      try_log_in: false,
+    },
+    sync_started: false,
+  }),
+  [LOG_ERROR]: (state, action) => Object.assign({}, state, {
+    user: {
+      name: state.user.name,
+      logged_in: false,
+      has_login: false,
+      try_log_in: false,
+    },
+    sync_started: false,
+  }),
+  [ADD]: (state, action) => state,
+  [CHANGE]: (state, action) => Object.assign({}, state, {obj_change: action.payload}),
 };
 
 const initialState = {
 	meta_loaded: false,
 	data_loaded: false,
-	data_empty: false,
+	data_empty: undefined,
 	sync_started: false,
-	fetch_local: false,
-	fetch_remote: false,
+	fetch: false,
+	offline: false,
+	path_log_in: false,
+	couch_direct: true,
 	user: {
 		name: "",
-		logged_in: false
+		has_login: false,
+		try_log_in: false,
+		logged_in: false,
+		log_error: false,
 	}
 };
 function metaReducer (state = initialState, action) {

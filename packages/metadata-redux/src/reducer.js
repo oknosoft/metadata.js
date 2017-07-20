@@ -8,13 +8,18 @@ import handlers from './handlers'
 const initialState = {
 	meta_loaded: false,
 	data_loaded: false,
-	data_empty: false,
+	data_empty: undefined,
 	sync_started: false,
-	fetch_local: false,
-	fetch_remote: false,
+	fetch: false,
+	offline: false,
+	path_log_in: false,
+	couch_direct: true,
 	user: {
 		name: "",
-		logged_in: false
+		has_login: false,
+		try_log_in: false,
+		logged_in: false,
+		log_error: false,
 	}
 };
 export default function metaReducer (state = initialState, action) {

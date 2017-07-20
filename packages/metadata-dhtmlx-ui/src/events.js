@@ -29,13 +29,6 @@ class AppEvents {
 			save_data_wsql: 7       // кеширование данных из озу в локальную датабазу
 		};
 
-
-		/**
-		 * Отслеживаем онлайн
-		 */
-		window.addEventListener('online', this.set_offline.bind(this));
-		window.addEventListener('offline', this.set_offline.bind(this, true));
-
 		/**
 		 * ждём готовности документа
 		 */
@@ -47,23 +40,6 @@ class AppEvents {
 			 */
 			setTimeout(() => {
 
-				function load_data() {
-					// читаем локальные данные в ОЗУ
-					wsql.pouch.load_data()
-						.catch($p.record_log);
-
-					load_finish();
-
-				}
-
-				function load_finish() {
-					// если есть сплэш, удаляем его
-					if (document.querySelector('#splash')) {
-						document.querySelector('#splash').parentNode.removeChild(splash);
-					}
-
-					eve.emit('iface_init', $p);
-				}
 
 				/**
 				 * Инициализируем параметры пользователя,
@@ -109,35 +85,6 @@ class AppEvents {
 						ram: {},
 						doc: {},
 					};
-
-					eve.set_offline(!navigator.onLine);
-
-					// инициализируем метаданные и обработчик при начале работы интерфейса
-					if (wsql.get_user_param('couch_direct')) {
-
-						wsql.pouch.once('user_log_in', () => {
-							load_finish();
-						});
-
-						// если это демо (zone === zone_demo), устанавливаем логин и пароль
-						if (wsql.get_user_param('zone') == job_prm.zone_demo &&
-							!wsql.get_user_param('user_name') &&
-							job_prm.guests.length) {
-								wsql.set_user_param('enable_save_pwd', true);
-								wsql.set_user_param('user_name', job_prm.guests[0].username);
-								wsql.set_user_param('user_pwd', job_prm.guests[0].password);
-						}
-
-						// setTimeout(function () {
-						// 	iface.frm_auth({
-						// 		modal_dialog: true,
-						// 		try_auto: false,
-						// 	});
-						// }, 100);
-					}
-					else {
-						setTimeout(load_data, 20);
-					}
 
 					// TODO: переписать управление appcache на сервисворкерах
 					if (window.applicationCache) {
@@ -193,7 +140,7 @@ class AppEvents {
 
 					// подгружаем скрипты google
 					if (!window.google || !window.google.maps) {
-						eve.once('iface_init', () => {
+            $p.md.once('iface_init', () => {
 							setTimeout( () =>
 								$p.load_script('https://maps.google.com/maps/api/js?key=' + job_prm.use_google_geo + '&callback=$p.ipinfo.location_callback', 'script'), 100);
 						});
@@ -253,23 +200,6 @@ class AppEvents {
 		 */
 		window.addEventListener('hashchange', iface.hash_route);
 
-	}
-
-	/**
-	 * Устанавливает состояние online/offline в параметрах работы программы
-	 * @method set_offline
-	 * @for AppEvents
-	 * @param offline {Boolean}
-	 */
-	set_offline(offline) {
-		const {job_prm} = this.$p;
-		var current_offline = job_prm['offline'];
-		job_prm['offline'] = !!(offline || $p.wsql.get_user_param('offline', 'boolean'));
-		if (current_offline != job_prm['offline']) {
-			// предпринять действия
-			current_offline = job_prm['offline'];
-
-		}
 	}
 
 	/**
