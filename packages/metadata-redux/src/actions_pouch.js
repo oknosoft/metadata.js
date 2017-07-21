@@ -39,44 +39,44 @@ export function data_loaded(page) {
 			payload: page
 		});
 
+		if(page != 'doc_ram'){
+      const { meta } = getState();
 
-		const { meta } = getState(),
-			{ $p } = meta;
+      // если вход еще не выполнен...
+      if(!meta.user.logged_in && meta.user.has_login){
+        const { job_prm, wsql, adapters, aes } = $p;
+        setTimeout(() => {
 
-		// если вход еще не выполнен...
-		if(!meta.user.logged_in){
+          // получаем имя сохраненного или гостевого пользователя
+          let name = wsql.get_user_param('user_name');
+          let password = wsql.get_user_param('user_pwd');
 
-			setTimeout(function () {
+          if(!name &&
+            job_prm.zone_demo == wsql.get_user_param('zone') &&
+            job_prm.guests.length){
+            name = job_prm.guests[0].name
+          }
 
-				// получаем имя сохраненного или гостевого пользователя
-				let name = $p.wsql.get_user_param('user_name');
-				let password = $p.wsql.get_user_param('user_pwd');
+          // устанавливаем текущего пользователя
+          if(name){
+            dispatch(defined(name));
+          }
 
-				if(!name &&
-					$p.job_prm.zone_demo == $p.wsql.get_user_param('zone') &&
-					$p.job_prm.guests.length){
-					name = $p.job_prm.guests[0].name
-				}
+          // если разрешено сохранение пароля или гостевая зона...
+          if(name && password && wsql.get_user_param('enable_save_pwd')){
+            return dispatch(try_log_in(adapters.pouch, name, aes.Ctr.decrypt(password)));
+          }
 
-				// устанавливаем текущего пользователя
-				if(name)
-					dispatch(defined(name));
+          if(name && job_prm.zone_demo == wsql.get_user_param('zone')){
+            dispatch(try_log_in(adapters.pouch, name, aes.Ctr.decrypt(job_prm.guests[0].password)));
+          }
 
-				// если разрешено сохранение пароля или гостевая зона...
-				if(name && password && $p.wsql.get_user_param('enable_save_pwd')){
-					dispatch(try_log_in($p.adapters.pouch, name, $p.aes.Ctr.decrypt(password)));
-					return;
-				}
+        });
 
-				if(name && $p.job_prm.zone_demo == $p.wsql.get_user_param('zone')){
-					dispatch(try_log_in($p.adapters.pouch, name,
-						$p.aes.Ctr.decrypt($p.job_prm.guests[0].password)));
-				}
+      }
+    }
 
-			}, 10)
-		}
 	}
-
 }
 
 export function sync_data(dbid, change) {

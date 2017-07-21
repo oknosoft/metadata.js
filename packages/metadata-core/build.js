@@ -26,10 +26,11 @@ return rollup({
 	external,
 	plugins,
 })
-	.then((bundle) => bundle.generate({
+	.then((bundle) => bundle.write({
 		format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
 		moduleName: package_data.name.replace(/-/g, '_'),
+    banner: header,
+    dest: path.resolve(__dirname, './index.js')
 		//sourceMap: true,
-	}))
-	.then((result) => fs.writeFileSync(path.resolve(__dirname, './index.js'), header + result.code));
+	}));
 

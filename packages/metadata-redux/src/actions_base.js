@@ -5,11 +5,11 @@ export const PRM_CHANGE = 'PRM_CHANGE';          // Изменены глоба�
 
 // Actions - функции - генераторы действий. Они передаются в диспетчер redux
 
-export function meta_loaded($p) {
+export function meta_loaded({version}) {
 
 	return {
 		type: META_LOADED,
-		payload: $p,
+		payload: version,
 	};
 }
 

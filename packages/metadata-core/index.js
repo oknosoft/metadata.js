@@ -1,9 +1,10 @@
 /*!
- metadata-core v2.0.1-beta.19, built:2017-07-20
+ metadata-core v2.0.1-beta.19, built:2017-07-21
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */
+
 
 'use strict';
 
@@ -3057,12 +3058,15 @@ class WSQL {
 			{p: "rest_path", v: "", t: "string"},
 			{p: "couch_path", v: "", t: "string"}
 		], zone;
-		if (job_prm.additional_params)
-			nesessery_params = nesessery_params.concat(job_prm.additional_params);
-		if (!this._ls.getItem(job_prm.local_storage_prefix + "zone"))
-			zone = job_prm.hasOwnProperty("zone") ? job_prm.zone : 1;
-		if (zone !== undefined)
-			this.set_user_param("zone", zone);
+		if (job_prm.additional_params){
+      nesessery_params = nesessery_params.concat(job_prm.additional_params);
+    }
+		if (!this._ls.getItem(job_prm.local_storage_prefix + "zone")){
+      zone = job_prm.hasOwnProperty("zone") ? job_prm.zone : 1;
+    }
+		if (zone !== undefined){
+      this.set_user_param("zone", zone);
+    }
 		nesessery_params.forEach((o) => {
 			if (!this.prm_is_set(o.p))
 				this.set_user_param(o.p, job_prm.hasOwnProperty(o.p) ? job_prm[o.p] : o.v);
@@ -3147,195 +3151,180 @@ class MetaField {
 class Meta extends MetaEventEmitter {
 	constructor($p) {
 		super();
-		const _m = {};
-		Meta._sys.forEach((patch) => {
-			utils._patch(_m, patch);
-		});
+		Object.defineProperty(this, '_m', {value: {}});
+		Meta._sys.forEach((patch) => utils._patch(this._m, patch));
 		Meta._sys.length = 0;
-		this.init = function (patch) {
-			return utils._patch(_m, patch);
-		};
-		this.get = function (class_name, field_name) {
-			const np = class_name.split('.');
-			if (!_m || !_m[np[0]]) {
-				return;
-			}
-			const _meta = _m[np[0]][np[1]];
-			if (!field_name) {
-				return _meta;
-			}
-			else if (_meta && _meta.fields[field_name]) {
-				return _meta.fields[field_name];
-			}
-			else if (_meta && _meta.tabular_sections && _meta.tabular_sections[field_name]) {
-				return _meta.tabular_sections[field_name];
-			}
-			const res = {
-					multiline_mode: false,
-					note: '',
-					synonym: '',
-					tooltip: '',
-					type: {
-						is_ref: false,
-						types: ['string'],
-					},
-				},
-				is_doc = 'doc,tsk,bp'.indexOf(np[0]) != -1,
-				is_cat = 'cat,cch,cacc,tsk'.indexOf(np[0]) != -1;
-			if (is_doc && field_name == 'number_doc') {
-				res.synonym = 'Номер';
-				res.tooltip = 'Номер документа';
-				res.type.str_len = 11;
-			} else if (is_doc && field_name == 'date') {
-				res.synonym = 'Дата';
-				res.tooltip = 'Дата документа';
-				res.type.date_part = 'date_time';
-				res.type.types[0] = 'date';
-			} else if (is_doc && field_name == 'posted') {
-				res.synonym = 'Проведен';
-				res.type.types[0] = 'boolean';
-			} else if (is_cat && field_name == 'id') {
-				res.synonym = 'Код';
-			} else if (is_cat && field_name == 'name') {
-				res.synonym = 'Наименование';
-			} else if (field_name == '_deleted') {
-				res.synonym = 'Пометка удаления';
-				res.type.types[0] = 'boolean';
-			} else if (field_name == 'is_folder') {
-				res.synonym = 'Это группа';
-				res.type.types[0] = 'boolean';
-			} else if (field_name == 'ref') {
-				res.synonym = 'Ссылка';
-				res.type.is_ref = true;
-				res.type.types[0] = class_name;
-			} else {
-				return;
-			}
-			return res;
-		};
-		this.classes = function () {
-			var res = {};
-			for (var i in _m) {
-				res[i] = [];
-				for (var j in _m[i])
-					res[i].push(j);
-			}
-			return res;
-		};
-		this.bases = function () {
-			var res = {};
-			for (let i in _m) {
-				for (let j in _m[i]) {
-					if (_m[i][j].cachable) {
-						let _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '');
-						if (_name != 'meta' && _name != 'e1cib' && !res[_name])
-							res[_name] = _name;
-					}
-				}
-			}
-			return Object.keys(res);
-		};
-		this.create_tables = function (callback, attr) {
-			let cstep = 0, data_names = [], managers = this.classes(),
-				create = (attr && attr.postgres) ? '' : 'USE md; ';
-			function on_table_created() {
-				cstep--;
-				if (cstep == 0) {
-					if (callback)
-						callback(create);
-					else
-						$p.wsql.alasql.utils.saveFile('create_tables.sql', create);
-				} else
-					iteration();
-			}
-			function iteration() {
-				var data = data_names[cstep - 1];
-				create += data['class'][data.name].get_sql_struct(attr) + '; ';
-				on_table_created();
-			}
-			for (let mgr of 'enm,cch,cacc,cat,bp,tsk,doc,ireg,areg'.split(',')) {
-				for (let class_name in managers[mgr]) {
-					data_names.push({'class': $p[mgr], 'name': managers[mgr][class_name]});
-				}
-			}
-			cstep = data_names.length;
-			iteration();
-		};
-		this.syns_js = function (v) {
-			var synJS = {
-				DeletionMark: '_deleted',
-				Description: 'name',
-				DataVersion: 'data_version',
-				IsFolder: 'is_folder',
-				Number: 'number_doc',
-				Date: 'date',
-				Дата: 'date',
-				Posted: 'posted',
-				Code: 'id',
-				Parent_Key: 'parent',
-				Owner_Key: 'owner',
-				Owner: 'owner',
-				Ref_Key: 'ref',
-				Ссылка: 'ref',
-				LineNumber: 'row',
-			};
-			if (synJS[v])
-				return synJS[v];
-			return _m.syns_js[_m.syns_1с.indexOf(v)] || v;
-		};
-		this.syns_1с = function (v) {
-			var syn1c = {
-				_deleted: 'DeletionMark',
-				name: 'Description',
-				is_folder: 'IsFolder',
-				number_doc: 'Number',
-				date: 'Date',
-				posted: 'Posted',
-				id: 'Code',
-				ref: 'Ref_Key',
-				parent: 'Parent_Key',
-				owner: 'Owner_Key',
-				row: 'LineNumber',
-			};
-			if (syn1c[v])
-				return syn1c[v];
-			return _m.syns_1с[_m.syns_js.indexOf(v)] || v;
-		};
-		this.printing_plates = function (pp) {
-			if (pp)
-				for (var i in pp.doc)
-					_m.doc[i].printing_plates = pp.doc[i];
-		};
-		this.mgr_by_class_name = function (class_name) {
-			if (class_name) {
-				let np = class_name.split('.');
-				if (np[1] && $p[np[0]])
-					return $p[np[0]][np[1]];
-				const pos = class_name.indexOf('_');
-				if (pos) {
-					np = [class_name.substr(0, pos), class_name.substr(pos + 1)];
-					if (np[1] && $p[np[0]])
-						return $p[np[0]][np[1]];
-				}
-			}
-		};
-		this.load_doc_ram = function () {
-			const res = [];
-			const {pouch} = $p.adapters;
-			['cat', 'cch', 'ireg'].forEach((kind) => {
-				for (let name in _m[kind]) {
-					if (_m[kind][name].cachable == 'doc_ram') {
-						res.push(kind + '.' + name);
-					}
-				}
-			});
-			return pouch.local.doc.find({
-				selector: {class_name: {$in: res}},
-				limit: 10000,
-			})
-				.then((data) => pouch.load_changes(data));
-		};
 	}
+  init(patch) {
+    return utils._patch(this._m, patch);
+  }
+  get(class_name, field_name) {
+    const np = class_name.split('.');
+    if (!this._m[np[0]]) {
+      return;
+    }
+    const _meta = this._m[np[0]][np[1]];
+    if (!field_name) {
+      return _meta;
+    }
+    else if (_meta && _meta.fields[field_name]) {
+      return _meta.fields[field_name];
+    }
+    else if (_meta && _meta.tabular_sections && _meta.tabular_sections[field_name]) {
+      return _meta.tabular_sections[field_name];
+    }
+    const res = {
+        multiline_mode: false,
+        note: '',
+        synonym: '',
+        tooltip: '',
+        type: {
+          is_ref: false,
+          types: ['string'],
+        },
+      },
+      is_doc = 'doc,tsk,bp'.indexOf(np[0]) != -1,
+      is_cat = 'cat,cch,cacc,tsk'.indexOf(np[0]) != -1;
+    if (is_doc && field_name == 'number_doc') {
+      res.synonym = 'Номер';
+      res.tooltip = 'Номер документа';
+      res.type.str_len = 11;
+    } else if (is_doc && field_name == 'date') {
+      res.synonym = 'Дата';
+      res.tooltip = 'Дата документа';
+      res.type.date_part = 'date_time';
+      res.type.types[0] = 'date';
+    } else if (is_doc && field_name == 'posted') {
+      res.synonym = 'Проведен';
+      res.type.types[0] = 'boolean';
+    } else if (is_cat && field_name == 'id') {
+      res.synonym = 'Код';
+    } else if (is_cat && field_name == 'name') {
+      res.synonym = 'Наименование';
+    } else if (field_name == '_deleted') {
+      res.synonym = 'Пометка удаления';
+      res.type.types[0] = 'boolean';
+    } else if (field_name == 'is_folder') {
+      res.synonym = 'Это группа';
+      res.type.types[0] = 'boolean';
+    } else if (field_name == 'ref') {
+      res.synonym = 'Ссылка';
+      res.type.is_ref = true;
+      res.type.types[0] = class_name;
+    } else {
+      return;
+    }
+    return res;
+  }
+  classes() {
+    const res = {};
+    for (const i in this._m) {
+      res[i] = [];
+      for (const j in this._m[i])
+        res[i].push(j);
+    }
+    return res;
+  }
+  bases() {
+    const res = {};
+    const {_m} = this;
+    for (let i in _m) {
+      for (let j in _m[i]) {
+        if (_m[i][j].cachable) {
+          let _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '');
+          if (_name != 'meta' && _name != 'e1cib' && !res[_name])
+            res[_name] = _name;
+        }
+      }
+    }
+    return Object.keys(res);
+  }
+  syns_js(v) {
+    const synJS = {
+      DeletionMark: '_deleted',
+      Description: 'name',
+      DataVersion: 'data_version',
+      IsFolder: 'is_folder',
+      Number: 'number_doc',
+      Date: 'date',
+      Дата: 'date',
+      Posted: 'posted',
+      Code: 'id',
+      Parent_Key: 'parent',
+      Owner_Key: 'owner',
+      Owner: 'owner',
+      Ref_Key: 'ref',
+      Ссылка: 'ref',
+      LineNumber: 'row',
+    };
+    return synJS[v] || this._m.syns_js[this._m.syns_1с.indexOf(v)] || v;
+  }
+  syns_1с(v) {
+    const syn1c = {
+      _deleted: 'DeletionMark',
+      name: 'Description',
+      is_folder: 'IsFolder',
+      number_doc: 'Number',
+      date: 'Date',
+      posted: 'Posted',
+      id: 'Code',
+      ref: 'Ref_Key',
+      parent: 'Parent_Key',
+      owner: 'Owner_Key',
+      row: 'LineNumber',
+    };
+    return syn1c[v] || this._m.syns_1с[this._m.syns_js.indexOf(v)] || v;
+  }
+  printing_plates(pp) {
+    if (pp){
+      for (const i in pp.doc){
+        this._m.doc[i].printing_plates = pp.doc[i];
+      }
+    }
+  }
+  mgr_by_class_name(class_name) {
+    if (class_name) {
+      const {$p} = this;
+      let np = class_name.split('.');
+      if (np[1] && $p[np[0]]){
+        return $p[np[0]][np[1]];
+      }
+      const pos = class_name.indexOf('_');
+      if (pos) {
+        np = [class_name.substr(0, pos), class_name.substr(pos + 1)];
+        if (np[1] && $p[np[0]])
+          return $p[np[0]][np[1]];
+      }
+    }
+  }
+  create_tables(callback, attr) {
+    const {$p} = this;
+    const data_names = [];
+    const managers = this.classes();
+    let cstep = 0, create = (attr && attr.postgres) ? '' : 'USE md; ';
+    function on_table_created() {
+      cstep--;
+      if (cstep == 0) {
+        if (callback)
+          callback(create);
+        else
+          $p.wsql.alasql.utils.saveFile('create_tables.sql', create);
+      } else
+        iteration();
+    }
+    function iteration() {
+      var data = data_names[cstep - 1];
+      create += data['class'][data.name].get_sql_struct(attr) + '; ';
+      on_table_created();
+    }
+    for (let mgr of 'enm,cch,cacc,cat,bp,tsk,doc,ireg,areg'.split(',')) {
+      for (let class_name in managers[mgr]) {
+        data_names.push({'class': $p[mgr], 'name': managers[mgr][class_name]});
+      }
+    }
+    cstep = data_names.length;
+    iteration();
+  }
 	sql_type(mgr, f, mf, pg) {
 		var sql;
 		if ((f == 'type' && mgr.table_name == 'cch_properties') || (f == 'svg' && mgr.table_name == 'cat_production_params'))
@@ -3720,14 +3709,8 @@ class MetaEngine$1 {
 	get current_user() {
 		const {CatUsers, cat, superlogin, wsql} = this;
 		if(CatUsers && !CatUsers.prototype.hasOwnProperty("role_available")){
-			CatUsers.prototype.__define({
-				role_available: {
-					value: (name) => true
-				},
-				get_acl: {
-					value: (class_name) => "rvuidepo"
-				},
-			});
+      CatUsers.prototype.role_available = (name) => true;
+      CatUsers.prototype.get_acl = (class_name) => "rvuidepo";
 		}
 		let user_name, user;
 		if (superlogin) {

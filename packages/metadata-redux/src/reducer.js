@@ -8,6 +8,7 @@ import handlers from './handlers'
 const initialState = {
 	meta_loaded: false,
 	data_loaded: false,
+  doc_ram_loaded: false,
 	data_empty: undefined,
 	sync_started: false,
 	fetch: false,

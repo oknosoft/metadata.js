@@ -1,9 +1,7 @@
 /**
  * Action Handlers - обработчики событий - вызываются из корневого редюсера
- *
- * @module handlers
- *
- * Created by Evgeniy Malyarov on 15.07.2017.
+ * Задача обработчиков - измеять state
+ * Активные действия и работа с данными происходит в actions
  */
 
 import {META_LOADED, PRM_CHANGE} from './actions_base';
@@ -15,7 +13,7 @@ import {ADD, CHANGE} from './actions_obj';
 export default {
 
   [META_LOADED]: (state, action) => {
-    const {wsql, job_prm} = action.payload;
+    const {wsql, job_prm} = $p;
     const {user} = state;
     let has_login;
     if (wsql.get_user_param('zone') == job_prm.zone_demo && !wsql.get_user_param('user_name') && job_prm.guests.length) {
@@ -40,7 +38,13 @@ export default {
 
   [PRM_CHANGE]: (state, action) => state,
 
-  [DATA_LOADED]: (state, action) => Object.assign({}, state, {data_loaded: true, fetch: false}),
+  [DATA_LOADED]: (state, action) => {
+    const payload = {data_loaded: true, fetch: false};
+    if(action.payload == 'doc_ram'){
+      payload.doc_ram_loaded = true;
+    }
+    return Object.assign({}, state, payload);
+  },
 
   [DATA_PAGE]: (state, action) => Object.assign({}, state, {page: action.payload}),
 
@@ -54,48 +58,40 @@ export default {
 
   [SYNC_DATA]: (state, action) => Object.assign({}, state, {fetch: !!action.payload}),
 
-  [DEFINED]: (state, action) => Object.assign({}, state, {
-    user: {
-      name: action.payload,
-      logged_in: state.user.logged_in,
-    },
-  }),
+  [DEFINED]: (state, action) => {
+    const user = Object.assign({}, state.user);
+    user.name = action.payload;
+    return Object.assign({}, state, {user});
+  },
 
-  [LOG_IN]: (state, action) => Object.assign({}, state, {
-    user: {
-      name: action.payload,
-      logged_in: true,
-      try_log_in: false,
-    },
-  }),
+  [LOG_IN]: (state, action) => {
+    const user = Object.assign({}, state.user);
+    user.logged_in = true;
+    user.try_log_in = false;
+    return Object.assign({}, state, {user});
+  },
 
-  [TRY_LOG_IN]: (state, action) => Object.assign({}, state, {
-    user: {
-      name: action.payload.name,
-      try_log_in: true,
-      logged_in: state.user.logged_in,
-    },
-  }),
+  [TRY_LOG_IN]: (state, action) => {
+    const user = Object.assign({}, state.user);
+    user.try_log_in = true;
+    return Object.assign({}, state, {user});
+  },
 
-  [LOG_OUT]: (state, action) => Object.assign({}, state, {
-    user: {
-      name: state.user.name,
-      logged_in: false,
-      has_login: false,
-      try_log_in: false,
-    },
-    sync_started: false,
-  }),
+  [LOG_OUT]: (state, action) => {
+    const user = Object.assign({}, state.user);
+    user.logged_in = false;
+    user.has_login = false;
+    user.try_log_in = false;
+    return Object.assign({}, state, {user});
+  },
 
-  [LOG_ERROR]: (state, action) => Object.assign({}, state, {
-    user: {
-      name: state.user.name,
-      logged_in: false,
-      has_login: false,
-      try_log_in: false,
-    },
-    sync_started: false,
-  }),
+  [LOG_ERROR]: (state, action) => {
+    const user = Object.assign({}, state.user);
+    user.logged_in = false;
+    user.has_login = false;
+    user.try_log_in = false;
+    return Object.assign({}, state, {user});
+  },
 
   [ADD]: (state, action) => state,
 

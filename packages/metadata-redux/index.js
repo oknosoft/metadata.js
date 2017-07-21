@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.1-beta.19, built:2017-07-20
+ metadata-redux v2.0.1-beta.19, built:2017-07-21
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -209,29 +209,30 @@ function data_loaded(page) {
 			type: DATA_LOADED,
 			payload: page
 		});
-		const { meta } = getState(),
-			{ $p } = meta;
-		if(!meta.user.logged_in){
-			setTimeout(function () {
-				let name = $p.wsql.get_user_param('user_name');
-				let password = $p.wsql.get_user_param('user_pwd');
-				if(!name &&
-					$p.job_prm.zone_demo == $p.wsql.get_user_param('zone') &&
-					$p.job_prm.guests.length){
-					name = $p.job_prm.guests[0].name;
-				}
-				if(name)
-					dispatch(defined(name));
-				if(name && password && $p.wsql.get_user_param('enable_save_pwd')){
-					dispatch(try_log_in($p.adapters.pouch, name, $p.aes.Ctr.decrypt(password)));
-					return;
-				}
-				if(name && $p.job_prm.zone_demo == $p.wsql.get_user_param('zone')){
-					dispatch(try_log_in($p.adapters.pouch, name,
-						$p.aes.Ctr.decrypt($p.job_prm.guests[0].password)));
-				}
-			}, 10);
-		}
+		if(page != 'doc_ram'){
+      const { meta } = getState();
+      if(!meta.user.logged_in && meta.user.has_login){
+        const { job_prm, wsql, adapters, aes } = $p;
+        setTimeout(() => {
+          let name = wsql.get_user_param('user_name');
+          let password = wsql.get_user_param('user_pwd');
+          if(!name &&
+            job_prm.zone_demo == wsql.get_user_param('zone') &&
+            job_prm.guests.length){
+            name = job_prm.guests[0].name;
+          }
+          if(name){
+            dispatch(defined(name));
+          }
+          if(name && password && wsql.get_user_param('enable_save_pwd')){
+            return dispatch(try_log_in(adapters.pouch, name, aes.Ctr.decrypt(password)));
+          }
+          if(name && job_prm.zone_demo == wsql.get_user_param('zone')){
+            dispatch(try_log_in(adapters.pouch, name, aes.Ctr.decrypt(job_prm.guests[0].password)));
+          }
+        });
+      }
+    }
 	}
 }
 function sync_data(dbid, change) {
@@ -309,10 +310,10 @@ function no_data(dbid, err) {
 
 const META_LOADED = 'META_LOADED';
 const PRM_CHANGE = 'PRM_CHANGE';
-function meta_loaded($p) {
+function meta_loaded({version}) {
 	return {
 		type: META_LOADED,
-		payload: $p,
+		payload: version,
 	};
 }
 function prm_change(prms) {
@@ -352,7 +353,7 @@ var actions = {
 
 var handlers = {
   [META_LOADED]: (state, action) => {
-    const {wsql, job_prm} = action.payload;
+    const {wsql, job_prm} = $p;
     const {user} = state;
     let has_login;
     if (wsql.get_user_param('zone') == job_prm.zone_demo && !wsql.get_user_param('user_name') && job_prm.guests.length) {
@@ -374,51 +375,49 @@ var handlers = {
     });
   },
   [PRM_CHANGE]: (state, action) => state,
-  [DATA_LOADED]: (state, action) => Object.assign({}, state, {data_loaded: true, fetch: false}),
+  [DATA_LOADED]: (state, action) => {
+    const payload = {data_loaded: true, fetch: false};
+    if(action.payload == 'doc_ram'){
+      payload.doc_ram_loaded = true;
+    }
+    return Object.assign({}, state, payload);
+  },
   [DATA_PAGE]: (state, action) => Object.assign({}, state, {page: action.payload}),
   [DATA_ERROR]: (state, action) => Object.assign({}, state, {err: action.payload, fetch: false}),
   [LOAD_START]: (state, action) => Object.assign({}, state, {sync_started: true, data_empty: false, fetch: true}),
   [NO_DATA]: (state, action) => Object.assign({}, state, {data_empty: true, fetch: false}),
   [SYNC_START]: (state, action) => Object.assign({}, state, {sync_started: true}),
   [SYNC_DATA]: (state, action) => Object.assign({}, state, {fetch: !!action.payload}),
-  [DEFINED]: (state, action) => Object.assign({}, state, {
-    user: {
-      name: action.payload,
-      logged_in: state.user.logged_in,
-    },
-  }),
-  [LOG_IN]: (state, action) => Object.assign({}, state, {
-    user: {
-      name: action.payload,
-      logged_in: true,
-      try_log_in: false,
-    },
-  }),
-  [TRY_LOG_IN]: (state, action) => Object.assign({}, state, {
-    user: {
-      name: action.payload.name,
-      try_log_in: true,
-      logged_in: state.user.logged_in,
-    },
-  }),
-  [LOG_OUT]: (state, action) => Object.assign({}, state, {
-    user: {
-      name: state.user.name,
-      logged_in: false,
-      has_login: false,
-      try_log_in: false,
-    },
-    sync_started: false,
-  }),
-  [LOG_ERROR]: (state, action) => Object.assign({}, state, {
-    user: {
-      name: state.user.name,
-      logged_in: false,
-      has_login: false,
-      try_log_in: false,
-    },
-    sync_started: false,
-  }),
+  [DEFINED]: (state, action) => {
+    const user = Object.assign({}, state.user);
+    user.name = action.payload;
+    return Object.assign({}, state, {user});
+  },
+  [LOG_IN]: (state, action) => {
+    const user = Object.assign({}, state.user);
+    user.logged_in = true;
+    user.try_log_in = false;
+    return Object.assign({}, state, {user});
+  },
+  [TRY_LOG_IN]: (state, action) => {
+    const user = Object.assign({}, state.user);
+    user.try_log_in = true;
+    return Object.assign({}, state, {user});
+  },
+  [LOG_OUT]: (state, action) => {
+    const user = Object.assign({}, state.user);
+    user.logged_in = false;
+    user.has_login = false;
+    user.try_log_in = false;
+    return Object.assign({}, state, {user});
+  },
+  [LOG_ERROR]: (state, action) => {
+    const user = Object.assign({}, state.user);
+    user.logged_in = false;
+    user.has_login = false;
+    user.try_log_in = false;
+    return Object.assign({}, state, {user});
+  },
   [ADD]: (state, action) => state,
   [CHANGE]: (state, action) => Object.assign({}, state, {obj_change: action.payload}),
 };
@@ -426,6 +425,7 @@ var handlers = {
 const initialState = {
 	meta_loaded: false,
 	data_loaded: false,
+  doc_ram_loaded: false,
 	data_empty: undefined,
 	sync_started: false,
 	fetch: false,
@@ -457,6 +457,7 @@ function metaMiddleware({adapters, md}) {
 					user_log_out: () => {dispatch(log_out());},
 					pouch_data_page: (page) => {dispatch(data_page(page));},
 					pouch_data_loaded: (page) => {dispatch(data_loaded(page));},
+          pouch_doc_ram_loaded: () => {dispatch(data_loaded('doc_ram'));},
 					pouch_data_error: (dbid, err) => {dispatch(data_error(dbid, err));},
 					pouch_load_start: (page) => {dispatch(load_start(page));},
 					pouch_no_data: (dbid, err) => {dispatch(no_data(dbid, err));},

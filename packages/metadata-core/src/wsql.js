@@ -110,15 +110,18 @@ export default class WSQL {
 		], zone;
 
 		// подмешиваем к базовым параметрам настройки приложения
-		if (job_prm.additional_params)
-			nesessery_params = nesessery_params.concat(job_prm.additional_params);
+		if (job_prm.additional_params){
+      nesessery_params = nesessery_params.concat(job_prm.additional_params);
+    }
 
 		// если зона не указана, устанавливаем "1"
-		if (!this._ls.getItem(job_prm.local_storage_prefix + "zone"))
-			zone = job_prm.hasOwnProperty("zone") ? job_prm.zone : 1;
+		if (!this._ls.getItem(job_prm.local_storage_prefix + "zone")){
+      zone = job_prm.hasOwnProperty("zone") ? job_prm.zone : 1;
+    }
 
-		if (zone !== undefined)
-			this.set_user_param("zone", zone);
+		if (zone !== undefined){
+      this.set_user_param("zone", zone);
+    }
 
 		// дополняем хранилище недостающими параметрами
 		nesessery_params.forEach((o) => {

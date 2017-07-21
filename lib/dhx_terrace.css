@@ -1,5 +1,5 @@
 
-		
+
 .dhtmlxcalendar_dhx_terrace {
   position: absolute;
   display: block;
@@ -5592,9 +5592,11 @@ span.dhxtabbar_tabs_text_test_dhx_terrace {
   position: relative;
   cursor: default;
 }
+/*
 .dhxwins_vp_auto {
   overflow: auto!important;
 }
+*/
 .dhxwins_vp_dhx_terrace div.dhxwin_active {
   position: absolute;
   overflow: hidden;
@@ -6566,4 +6568,3 @@ div.dhx_modal_cover {
 }
 
 
-	

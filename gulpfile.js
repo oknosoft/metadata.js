@@ -251,14 +251,14 @@ gulp.task('css-metadata', function () {
 	return gulp.src([
 		'./src/dhtmlx/patches/dhtmlxtreegrid_property.css',
 		'./src/dhtmlx/dhtmlxTreeView/codebase/skins/dhtmlxtreeview_dhx_terrace.css',
-		'./lib/daterangepicker/daterangepicker.css',
+		//'./lib/daterangepicker/daterangepicker.css',
 		'./src/css/upzp20.css'
 			//'./src/css/options.css'
 		])
 		.pipe(base64())
-		.pipe(concat('metadata.css'))
+		.pipe(concat('metadata.transition.css'))
 		.pipe(gulp.dest('./lib'))
-		.pipe(csso())
+    .pipe(csso())
 		.pipe(gulp.dest('./dist'));
 });
 

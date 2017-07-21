@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.1-beta.19, built:2017-07-19
+ metadata-pouchdb v2.0.1-beta.19, built:2017-07-21
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -198,23 +198,25 @@ function adapter({AbstracrAdapter}) {
 				local: {
 					get: function () {
 						if(!_local){
-							var opts = {auto_compaction: true, revs_limit: 2},
-								bases = $p.md.bases();
-							_local = { sync: {} };
-							["ram", "doc", "meta", "user"].forEach((name) => {
-								if(bases.indexOf(name) != -1){
-									if(name == "meta"){
-										_local[name] = new PouchDB$1(_paths.prefix + "meta", opts);
-									}
-									else{
-										if(_paths.direct){
-											_local[name] = this.remote[name];
-										}else{
-											_local[name] = new PouchDB$1(_paths.prefix + _paths.zone + "_" + name, opts);
-										}
-									}
-								}
-							});
+							const opts = {auto_compaction: true, revs_limit: 2};
+							const bases = this.$p.md.bases();
+							_local = {
+							  sync: {},
+                meta: new PouchDB$1(_paths.prefix + "meta", opts),
+							};
+							for(const name of ["ram", "doc", "user"]){
+                if(bases.indexOf(name) != -1){
+                  if(_paths.direct && name != "ram"){
+                    _local[name] = this.remote[name];
+                  }else{
+                    _local[name] = new PouchDB$1(_paths.prefix + _paths.zone + "_" + name, opts);
+                  }
+                }
+              }
+              if(_paths.path && !_local._meta){
+                _local._meta = new PouchDB$1(_paths.path + "meta", {skip_setup: true});
+                setTimeout(() => t.run_sync("meta"));
+              }
 						}
 						return _local;
 					}
@@ -227,9 +229,10 @@ function adapter({AbstracrAdapter}) {
 								opts.auth = _paths.user_node;
 							}
 							_remote = { };
+              const {superlogin, md} = this.$p;
 							function dbpath(name) {
-								if($p.superlogin){
-									return $p.superlogin.getDbUrl(_paths.prefix + (name == "meta" ? name : (_paths.zone + "_" + name)))
+								if(superlogin){
+									return superlogin.getDbUrl(_paths.prefix + (name == "meta" ? name : (_paths.zone + "_" + name)))
 								}
 								else{
 									if(name == "meta"){
@@ -243,7 +246,7 @@ function adapter({AbstracrAdapter}) {
 									}
 								}
 							}
-							$p.md.bases().forEach((name) => {
+              md.bases().forEach((name) => {
 								if(name == 'e1cib' || name == 'pgsql'){
 									return;
 								}
@@ -266,10 +269,11 @@ function adapter({AbstracrAdapter}) {
 				},
 				log_in: {
 					value: function (username, password) {
+					  const {job_prm, wsql, aes, md} = this.$p;
 						if (username == undefined && password == undefined){
-							if($p.job_prm.guests && $p.job_prm.guests.length) {
-								username = $p.job_prm.guests[0].username;
-								password = $p.aes.Ctr.decrypt($p.job_prm.guests[0].password);
+							if(job_prm.guests && job_prm.guests.length) {
+								username = job_prm.guests[0].username;
+								password = aes.Ctr.decrypt(job_prm.guests[0].password);
 							}else{
 								return Promise.reject(new Error("username & password not defined"));
 							}
@@ -282,7 +286,7 @@ function adapter({AbstracrAdapter}) {
 							}
 						}
 						const try_auth = [];
-						$p.md.bases().forEach((name) => {
+						md.bases().forEach((name) => {
 							if(t.remote[name]){
 								try_auth.push(
 									_paths.user_node ? this.remote[name].info() : this.remote[name].login(username, password)
@@ -293,16 +297,16 @@ function adapter({AbstracrAdapter}) {
 							.then(() => {
 								_auth = {username: username};
 								setTimeout(() => {
-									if($p.wsql.get_user_param("user_name") != username){
-										$p.wsql.set_user_param("user_name", username);
+									if(wsql.get_user_param("user_name") != username){
+										wsql.set_user_param("user_name", username);
 									}
-									if($p.wsql.get_user_param("enable_save_pwd")){
-										if($p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")) != password){
-											$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password));
+									if(wsql.get_user_param("enable_save_pwd")){
+										if(aes.Ctr.decrypt(wsql.get_user_param("user_pwd")) != password){
+											wsql.set_user_param("user_pwd", aes.Ctr.encrypt(password));
 										}
 									}
-									else if($p.wsql.get_user_param("user_pwd") != ""){
-										$p.wsql.set_user_param("user_pwd", "");
+									else if(wsql.get_user_param("user_pwd") != ""){
+										wsql.set_user_param("user_pwd", "");
 									}
 									t.emit('user_log_in', username);
 								});
@@ -311,7 +315,7 @@ function adapter({AbstracrAdapter}) {
 									return t.load_data();
 								}
 								try_auth.length = 0;
-								$p.md.bases().forEach((dbid) => {
+								md.bases().forEach((dbid) => {
 									if(t.local[dbid] && t.remote[dbid] && t.local[dbid] != t.remote[dbid]){
 										if(_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1){
 											return
@@ -380,6 +384,7 @@ function adapter({AbstracrAdapter}) {
 				},
 				load_data: {
 					value: function () {
+					  const {job_prm} = this.$p;
 						var options = {
 								limit : 800,
 								include_docs: true
@@ -412,12 +417,12 @@ function adapter({AbstracrAdapter}) {
 									}
 								});
 							}
-							t.local.ram.info()
-								.then((info) => {
-									if(info.doc_count >= ($p.job_prm.pouch_ram_doc_count || 10)){
-										t.emit('pouch_load_start', _page);
+							t.local.ram.info().then((info) => {
+									if(info.doc_count >= (job_prm.pouch_ram_doc_count || 10)){
+										t.emit('pouch_load_start', Object.assign(_page, {local_rows: info.doc_count}));
 										fetchNextPage();
-									}else{
+									}
+									else{
 										t.emit('pouch_no_data', info);
 										resolve();
 									}
@@ -437,50 +442,49 @@ function adapter({AbstracrAdapter}) {
 				},
 				call_data_loaded: {
 					value: function (page) {
-						_data_loaded = true;
-						if(!page){
-							page = _local.sync._page || {};
-						}
-						return $p.md.load_doc_ram()
-							.then(() => setTimeout(() => t.emit(page.note = 'pouch_data_loaded', page), 1000));
+					  if(!_data_loaded){
+              _data_loaded = true;
+              if(!page){
+                page = _local.sync._page || {};
+              }
+              t.emit(page.note = 'pouch_data_loaded', page);
+              this.authorized && this.load_doc_ram();
+            }
 					}
 				},
 				run_sync: {
 					value: function (id){
-						let local = t.local[id],
-							remote = t.remote[id],
-							linfo, _page;
+					  const {wsql, job_prm} = this.$p;
+						const local = t.local[id];
+						const remote = id == 'meta' ? t.local._meta : t.remote[id];
+						let linfo, _page;
 						return local.info()
 							.then((info) => {
 								linfo = info;
 								return remote.info()
 							})
 							.then((rinfo) => {
-								if(id != "ram"){
-									return rinfo;
+								if(id == "ram"){
+                  return remote.get("data_version")
+                    .then((v) => {
+                      if(v.version != wsql.get_user_param("couch_ram_data_version")){
+                        if(wsql.get_user_param("couch_ram_data_version")){
+                          rinfo = t.reset_local_data();
+                        }
+                        wsql.set_user_param("couch_ram_data_version", v.version);
+                      }
+                      return rinfo;
+                    })
+                    .catch(this.$p.record_log)
+                    .then(() => rinfo);
 								}
-								return remote.get("data_version")
-									.then((v) => {
-										if(v.version != $p.wsql.get_user_param("couch_ram_data_version")){
-											if($p.wsql.get_user_param("couch_ram_data_version")){
-												rinfo = t.reset_local_data();
-											}
-											$p.wsql.set_user_param("couch_ram_data_version", v.version);
-										}
-										return rinfo;
-									})
-									.catch((err) => {
-										$p.record_log(err);
-									})
-									.then(() => {
-										return rinfo;
-									});
+                return rinfo;
 							})
 							.then((rinfo) => {
 								if(!rinfo){
 									return;
 								}
-								if(id == "ram" && linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
+								if(id == "ram" && linfo.doc_count < (job_prm.pouch_ram_doc_count || 10)){
 									_page = {
 										total_rows: rinfo.doc_count,
 										local_rows: linfo.doc_count,
@@ -501,13 +505,13 @@ function adapter({AbstracrAdapter}) {
 									batch_size: 200,
 									batches_limit: 6
 								};
-								if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id]){
-									options.filter = $p.job_prm.pouch_filter[id];
+								if(job_prm.pouch_filter && job_prm.pouch_filter[id]){
+									options.filter = job_prm.pouch_filter[id];
 								}
 								else if(id == "meta"){
 									options.filter = "auth/meta";
 								}
-								if(id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo){
+								if(id == "ram" || id == "meta" || wsql.get_user_param("zone") == job_prm.zone_demo){
 									_local.sync[id] = local.replicate.from(remote, options);
 								}else{
 									_local.sync[id] = local.sync(remote, options);
@@ -516,7 +520,7 @@ function adapter({AbstracrAdapter}) {
 									.on('change', (change) => {
 										if(id == "ram"){
 											t.load_changes(change);
-											if(linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
+											if(linfo.doc_count < (job_prm.pouch_ram_doc_count || 10)){
 												_page.page++;
 												_page.docs_written = change.docs_written;
 												_page.duration = Date.now() - _page.start;
@@ -676,17 +680,34 @@ function adapter({AbstracrAdapter}) {
 				db.query(_view, options, process_docs);
 			});
 		}
+    load_doc_ram() {
+      const res = [];
+      const {_m} = this.$p.md;
+      ['cat', 'cch', 'ireg'].forEach((kind) => {
+        for (let name in _m[kind]) {
+          if (_m[kind][name].cachable == 'doc_ram') {
+            res.push(kind + '.' + name);
+          }
+        }
+      });
+      return this.local.doc.find({
+        selector: {class_name: {$in: res}},
+        limit: 10000,
+      })
+        .then((data) => this.load_changes(data))
+        .then(() => this.emit('pouch_doc_ram_loaded'));
+    }
 		find_rows(_mgr, selection) {
-			var doc, res = [], utils = this.$p.utils,
-				db = this.db(_mgr),
-				_raw, _view, _total_count, top, calc_count,
-				top_count = 0, skip = 0, skip_count = 0,
-				options = {
-					limit: 100,
-					include_docs: true,
-					startkey: _mgr.class_name + "|",
-					endkey: _mgr.class_name + '|\ufff0'
-				};
+		  const {utils} = this.$p;
+		  const db = this.db(_mgr);
+		  const res = [];
+		  const options = {
+        limit: 100,
+        include_docs: true,
+        startkey: _mgr.class_name + "|",
+        endkey: _mgr.class_name + '|\ufff0'
+      };
+			let doc, _raw, _view, _total_count, top, calc_count, top_count = 0, skip = 0, skip_count = 0;
 			if (selection) {
 				if (selection._top) {
 					top = selection._top;

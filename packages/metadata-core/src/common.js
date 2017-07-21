@@ -153,31 +153,11 @@ class MetaEngine {
 	get current_user() {
 
 		const {CatUsers, cat, superlogin, wsql} = this;
+
 		// заглушка "всё разрешено", если методы acl не переопределены внешним приложением
 		if(CatUsers && !CatUsers.prototype.hasOwnProperty("role_available")){
-
-			CatUsers.prototype.__define({
-
-
-				/**
-				 * ### Роль доступна
-				 *
-				 * @param name {String}
-				 * @returns {Boolean}
-				 */
-				role_available: {
-					value: (name) => true
-				},
-
-				/**
-				 * ### Права на объект
-				 * Если не задано в модификаторе, разрешаем полный доступ
-				 */
-				get_acl: {
-					value: (class_name) => "rvuidepo"
-				},
-
-			});
+      CatUsers.prototype.role_available = (name) => true;
+      CatUsers.prototype.get_acl = (class_name) => "rvuidepo";
 		}
 
 		let user_name, user;
