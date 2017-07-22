@@ -48,7 +48,8 @@ export default function metaMiddleware({adapters, md}) {
 				});
 
 				md.on({
-					obj_loaded: (_obj) => {dispatch(change(_obj._manager.class_name, _obj.ref))}
+					obj_loaded: (_obj) => {dispatch(change(_obj._manager.class_name, _obj.ref))},
+          setting_changed: () => {},
 				});
 			}
 			return next(action);
