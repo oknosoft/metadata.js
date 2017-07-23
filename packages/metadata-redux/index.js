@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.1-beta.19, built:2017-07-22
+ metadata-redux v2.0.1-beta.19, built:2017-07-23
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -316,10 +316,10 @@ function meta_loaded({version}) {
 		payload: version,
 	};
 }
-function prm_change(prms) {
+function prm_change(name, value) {
 	return {
 		type: PRM_CHANGE,
-		payload: prms,
+		payload: {name, value},
 	};
 }
 
@@ -353,28 +353,27 @@ var actions = {
 
 var handlers = {
   [META_LOADED]: (state, action) => {
-    const {wsql, job_prm} = $p;
-    const {user} = state;
-    let has_login;
-    if (wsql.get_user_param('zone') == job_prm.zone_demo && !wsql.get_user_param('user_name') && job_prm.guests.length) {
-      wsql.set_user_param('enable_save_pwd', true);
-      wsql.set_user_param('user_name', job_prm.guests[0].username);
-      wsql.set_user_param('user_pwd', job_prm.guests[0].password);
-      has_login = true;
-    }
-    else if (wsql.get_user_param('enable_save_pwd') && wsql.get_user_param('user_name') && wsql.get_user_param('user_pwd')) {
-      has_login = true;
-    }
-    else {
-      has_login = false;
-    }
-    return Object.assign({}, state, {
-      couch_direct: wsql.get_user_param('couch_direct', 'boolean'),
-      meta_loaded: true,
-      user: Object.assign({}, user, {has_login}),
-    });
+    return Object.assign({}, state, {meta_loaded: true});
   },
-  [PRM_CHANGE]: (state, action) => state,
+  [PRM_CHANGE]: (state, action) => {
+    const {name, value} = action.payload;
+    const {wsql} = $p;
+    if(typeof Array.isArray(name)){
+      for(const {prm, value} of name){
+        $p.wsql.set_user_param(prm, value);
+      }
+    }
+    else if(typeof name == 'object'){
+      for(const prm in name){
+        $p.wsql.set_user_param(prm, name[prm]);
+      }
+    }
+    else if(wsql.get_user_param(name) == value){
+      return state;
+    }
+    $p.wsql.set_user_param(name, value);
+    return Object.assign({}, state);
+  },
   [DATA_LOADED]: (state, action) => {
     const payload = {data_loaded: true, fetch: false};
     if(action.payload == 'doc_ram'){
@@ -422,25 +421,45 @@ var handlers = {
   [CHANGE]: (state, action) => Object.assign({}, state, {obj_change: action.payload}),
 };
 
-const initialState = {
-	meta_loaded: false,
-	data_loaded: false,
-  doc_ram_loaded: false,
-	data_empty: undefined,
-	sync_started: false,
-	fetch: false,
-	offline: false,
-	path_log_in: false,
-	couch_direct: true,
-	user: {
-		name: "",
-		has_login: false,
-		try_log_in: false,
-		logged_in: false,
-		log_error: false,
-	}
-};
-function metaReducer (state = initialState, action) {
+function metaInitialState(){
+  const {wsql, job_prm} = $p;
+  let user_name = wsql.get_user_param('user_name');
+  let has_login;
+  if (wsql.get_user_param('zone') == job_prm.zone_demo && !user_name && job_prm.guests.length) {
+    wsql.set_user_param('enable_save_pwd', true);
+    wsql.set_user_param('user_name', user_name = job_prm.guests[0].username);
+    wsql.set_user_param('user_pwd', job_prm.guests[0].password);
+    has_login = true;
+  }
+  else if (wsql.get_user_param('enable_save_pwd') && user_name && wsql.get_user_param('user_pwd')) {
+    has_login = true;
+  }
+  else {
+    has_login = false;
+  }
+  return {
+    meta_loaded: false,
+    data_loaded: false,
+    doc_ram_loaded: false,
+    data_empty: undefined,
+    sync_started: false,
+    fetch: false,
+    offline: typeof navigator != 'undefined' && !navigator.onLine,
+    path_log_in: false,
+    couch_direct: true,
+    user: {
+      name: user_name,
+      has_login: has_login,
+      try_log_in: false,
+      logged_in: false,
+      log_error: false,
+    }
+  }
+}
+function metaReducer (state, action) {
+  if(!state){
+    return metaInitialState();
+  }
 	let handler = handlers[action.type];
 	return handler ? handler(state, action) : state
 }
@@ -469,7 +488,8 @@ function metaMiddleware({adapters, md}) {
 					pouch_sync_denied: (dbid, info) => {dispatch(sync_denied(dbid, info));},
 				});
 				md.on({
-					obj_loaded: (_obj) => {dispatch(change(_obj._manager.class_name, _obj.ref));}
+					obj_loaded: (_obj) => {dispatch(change(_obj._manager.class_name, _obj.ref));},
+          setting_changed: () => {},
 				});
 			}
 			return next(action);

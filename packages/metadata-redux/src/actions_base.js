@@ -1,7 +1,7 @@
 // Action types - имена типов действий
 
-export const META_LOADED = 'META_LOADED';         // Инициализирует параметры и создаёт менеджеры объектов данных
-export const PRM_CHANGE = 'PRM_CHANGE';          // Изменены глобальные параметры (couch_path, zone и т.д.)
+export const META_LOADED = 'META_LOADED'; // Инициализирует параметры и создаёт менеджеры объектов данных
+export const PRM_CHANGE = 'PRM_CHANGE';   // Изменено значение настроек программы (couch_path, zone и т.д.)
 
 // Actions - функции - генераторы действий. Они передаются в диспетчер redux
 
@@ -13,10 +13,9 @@ export function meta_loaded({version}) {
 	};
 }
 
-export function prm_change(prms) {
-
+export function prm_change(name, value) {
 	return {
 		type: PRM_CHANGE,
-		payload: prms,
+		payload: {name, value},
 	};
 }

@@ -13,30 +13,28 @@ import {ADD, CHANGE} from './actions_obj';
 export default {
 
   [META_LOADED]: (state, action) => {
-    const {wsql, job_prm} = $p;
-    const {user} = state;
-    let has_login;
-    if (wsql.get_user_param('zone') == job_prm.zone_demo && !wsql.get_user_param('user_name') && job_prm.guests.length) {
-      wsql.set_user_param('enable_save_pwd', true);
-      wsql.set_user_param('user_name', job_prm.guests[0].username);
-      wsql.set_user_param('user_pwd', job_prm.guests[0].password);
-      has_login = true;
-    }
-    else if (wsql.get_user_param('enable_save_pwd') && wsql.get_user_param('user_name') && wsql.get_user_param('user_pwd')) {
-      has_login = true;
-    }
-    else {
-      has_login = false;
-    }
-
-    return Object.assign({}, state, {
-      couch_direct: wsql.get_user_param('couch_direct', 'boolean'),
-      meta_loaded: true,
-      user: Object.assign({}, user, {has_login}),
-    });
+    return Object.assign({}, state, {meta_loaded: true});
   },
 
-  [PRM_CHANGE]: (state, action) => state,
+  [PRM_CHANGE]: (state, action) => {
+    const {name, value} = action.payload;
+    const {wsql} = $p;
+    if(typeof Array.isArray(name)){
+      for(const {prm, value} of name){
+        $p.wsql.set_user_param(prm, value);
+      }
+    }
+    else if(typeof name == 'object'){
+      for(const prm in name){
+        $p.wsql.set_user_param(prm, name[prm]);
+      }
+    }
+    else if(wsql.get_user_param(name) == value){
+      return state;
+    }
+    $p.wsql.set_user_param(name, value);
+    return Object.assign({}, state);
+  },
 
   [DATA_LOADED]: (state, action) => {
     const payload = {data_loaded: true, fetch: false};
