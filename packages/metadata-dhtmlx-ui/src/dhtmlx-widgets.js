@@ -4149,8 +4149,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.elmnts.frm_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_obj.xml"], function(){
 
 			// если мы приклеены к ячейке, сдвигаем toolbar на 4px
-			if(wnd === pwnd)
-				this.cont.style.top = "4px";
+			// if(wnd === pwnd)
+			// 	this.cont.style.top = "4px";
 
 			this.addSpacer("btn_unpost");
 			this.attachEvent("onclick", attr.toolbar_click || toolbar_click);
@@ -4555,6 +4555,7 @@ DataObj.prototype.form_obj = function (pwnd, attr) {
 	attr.o = this;
 	return this._manager.form_obj(pwnd, attr);
 };
+
 /**
  * Форма абстрактного отчета {{#crossLink "DataProcessorsManager"}}{{/crossLink}}
  *
@@ -4692,8 +4693,8 @@ DataProcessorsManager.prototype.form_rep = function(pwnd, attr) {
 		wnd.elmnts.frm_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_rep.xml"], function(){
 
 			// если мы приклеены к ячейке, сдвигаем toolbar на 4px
-			if(wnd === pwnd)
-				this.cont.style.top = "4px";
+			// if(wnd === pwnd)
+			// 	this.cont.style.top = "4px";
 
 			this.addSpacer("btn_run");
 			this.attachEvent("onclick", attr.toolbar_click || toolbar_click);
@@ -4899,7 +4900,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			if(wnd === pwnd){
 				this.cont.parentElement.classList.add("dhx_cell_toolbar_no_borders");
 				this.cont.parentElement.classList.remove("dhx_cell_toolbar_def");
-				this.cont.style.top = "4px";
+				//this.cont.style.top = "4px";
 			}
 
 			// текстовое поле фильтра по подстроке
@@ -5460,6 +5461,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 DataManager.prototype.form_list = function(pwnd, attr){
 	return this.form_selection(pwnd, attr);
 };
+
 /**
  * Форма окна длительной операции
  */

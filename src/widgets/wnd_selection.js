@@ -110,7 +110,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			if(wnd === pwnd){
 				this.cont.parentElement.classList.add("dhx_cell_toolbar_no_borders");
 				this.cont.parentElement.classList.remove("dhx_cell_toolbar_def");
-				this.cont.style.top = "4px";
+				//this.cont.style.top = "4px";
 			}
 
 			// текстовое поле фильтра по подстроке

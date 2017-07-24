@@ -122,7 +122,7 @@ class MangoSelection {
       if (wnd === _pwnd) {
         toolbar.cont.parentElement.classList.add("dhx_cell_toolbar_no_borders");
         toolbar.cont.parentElement.classList.remove("dhx_cell_toolbar_def");
-        toolbar.cont.style.top = "4px";
+        //toolbar.cont.style.top = "4px";
       }
 
       // текстовое поле фильтра по подстроке
