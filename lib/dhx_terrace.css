@@ -1394,14 +1394,15 @@ div.dhtmlxMenu_dhx_terrace_SubLevelArea_ArrowDown_Disabled {
 .dhx_toolbar_dhx_terrace {
   background-color: #ffffff;
   position: relative;
-  padding: 0px 5px;
-  height: 34px;
+  padding: 2px 5px;
   cursor: default;
   overflow: hidden;
-  /* font */
-  line-height: normal;
+  /*
+  height: 34px;
   font-family: Arial;
   font-size: 13px;
+   */
+  line-height: normal;
   color: #333333;
 }
 .dhx_toolbar_dhx_terrace div.dhxtoolbar_float_left {

@@ -19,8 +19,6 @@ class MangoSelection {
 
     this.select = this.select.bind(this);
     this.body_keydown = this.body_keydown.bind(this);
-    this.other_frm_close = this.other_frm_close.bind(this);
-    this._frm_close = $p.eve.attachEvent("frm_close", this.other_frm_close);
 
     // создаём и настраиваем форму
     if (this.has_tree && attr.initial_value && attr.initial_value != $p.utils.blank.guid && !attr.parent) {
@@ -636,11 +634,10 @@ class MangoSelection {
     }
     delete this.select;
     delete this.body_keydown;
-    delete this.other_frm_close;
   }
 
   frm_close(){
-    const {_pwnd, _frm_close} = this;
+    const {_pwnd} = this;
 
     setTimeout(this.frm_unload.bind, 10);
 
@@ -649,24 +646,7 @@ class MangoSelection {
       _pwnd.on_unload.call(_pwnd.grid || _pwnd);
     }
 
-    if(_frm_close){
-      $p.eve.detachEvent(_frm_close);
-      _frm_close = null;
-    }
-
     return true;
-  }
-
-  other_frm_close(class_name, ref) {
-    const {wnd, _mgr} = this;
-    const rId = wnd.elmnts.grid.getSelectedRowId();
-    if (_mgr && _mgr.class_name == class_name && wnd && wnd.elmnts) {
-      this.reload(true, () => {
-        if (!$p.utils.is_empty_guid(ref) && wnd.elmnts && wnd.elmnts.grid){
-          wnd.elmnts.grid.selectRowById(ref, false, true, true);
-        }
-      });
-    }
   }
 
 };
