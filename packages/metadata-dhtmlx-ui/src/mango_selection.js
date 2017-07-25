@@ -627,8 +627,10 @@ class MangoSelection {
    * освобождает переменные после закрытия формы
    */
   frm_unload(on_create) {
+    if(this.body_keydown){
+      document.body.removeEventListener("keydown", this.body_keydown);
+    }
     const {_attr} = this;
-    document.body.removeEventListener("keydown", this.body_keydown);
     if (_attr && _attr.on_close && !on_create){
       _attr.on_close();
     }

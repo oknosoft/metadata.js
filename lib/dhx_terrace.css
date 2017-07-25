@@ -1397,8 +1397,8 @@ div.dhtmlxMenu_dhx_terrace_SubLevelArea_ArrowDown_Disabled {
   padding: 2px 5px;
   cursor: default;
   overflow: hidden;
+  min-height: 30px;
   /*
-  height: 34px;
   font-family: Arial;
   font-size: 13px;
    */
