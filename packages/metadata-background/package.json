@@ -1,6 +1,6 @@
 {
-  "name": "metadata-dhtmlx-ui",
-  "description": "Dhtmlx UI components for metadata.js",
+  "name": "metadata-background",
+  "description": "Background tasks for metadata.js",
   "version": "2.0.1-beta.19",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
@@ -13,7 +13,7 @@
   "main": "./index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-dhtmlx-ui"
+    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-background"
   },
   "bugs": {
     "url": "https://github.com/oknosoft/metadata.js/issues"

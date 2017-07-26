@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-superlogin/"
+    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-superlogin"
   },
   "bugs": {
     "url": "https://github.com/oknosoft/metadata.js/issues"
