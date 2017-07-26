@@ -283,6 +283,66 @@ export default ($p) => {
 
 	};
 
+  /**
+   * ### Печатает объект
+   * @method print
+   * @param ref {DataObj|String} - guid ссылки на объект
+   * @param model {String|DataObj.cst.formulas} - идентификатор команды печати
+   * @param [wnd] {dhtmlXWindows} - окно, из которого вызываем печать
+   */
+  DataManager.prototype.print = function (ref, model, wnd) {
+    function tune_wnd_print(wnd_print){
+      if(wnd && wnd.progressOff)
+        wnd.progressOff();
+      if(wnd_print)
+        wnd_print.focus();
+    }
+
+    if(wnd && wnd.progressOn){
+      wnd.progressOn();
+    }
+
+    setTimeout(tune_wnd_print, 3000);
+
+    // если _printing_plates содержит ссылку на обрабочтик печати, используем его
+    if(this._printing_plates[model] instanceof DataObj){
+      model = this._printing_plates[model];
+    }
+
+    // если существует локальный обработчик, используем его
+    if(model instanceof DataObj && model.execute){
+
+      if(ref instanceof DataObj)
+        return model.execute(ref)
+          .then(tune_wnd_print);
+      else
+        return this.get(ref, true, true)
+          .then(model.execute.bind(model))
+          .then(tune_wnd_print);
+
+    }else{
+
+      // иначе - печатаем средствами 1С или иного сервера
+      var rattr = {};
+      $p.ajax.default_attr(rattr, $p.job_prm.irest_url());
+      rattr.url += this.rest_name + "(guid'" + $p.utils.fix_guid(ref) + "')" +
+        "/Print(model=" + model + ", browser_uid=" + $p.wsql.get_user_param("browser_uid") +")";
+
+      return $p.ajax.get_and_show_blob(rattr.url, rattr, "get")
+        .then(tune_wnd_print);
+    }
+  }
+
+  /**
+   * Алиас для  emit
+   * @param obj
+   * @param name
+   * @param attr
+   */
+  DataManager.prototype.handle_event = function (obj, name, attr) {
+    this.emit(name, attr, obj);
+  }
+
 	/**
 	 * ### Перезаполняет грид данными табчасти с учетом отбора
 	 * @method sync_grid

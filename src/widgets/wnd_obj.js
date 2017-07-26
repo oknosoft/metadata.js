@@ -450,9 +450,11 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			attr.on_close();
 
 		if(!on_create){
-			delete wnd.ref;
-			delete wnd.set_text;
-			Object.unobserve(o, observer);
+      o && Object.unobserve(o, observer);
+      if(wnd){
+        delete wnd.ref;
+        delete wnd.set_text;
+      }
 			_mgr = wnd = o = _meta = options = pwnd = attr = null;
 		}
 	}
@@ -461,7 +463,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 * Задаёт вопрос о записи изменений и делает откат при необходимости
 	 */
 	function check_modified() {
-		if(o._modified && !close_confirmed){
+		if(o && o._modified && !close_confirmed){
 			dhtmlx.confirm({
 				title: o.presentation,
 				text: $p.msg.modified_close,

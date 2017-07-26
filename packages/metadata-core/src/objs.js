@@ -448,7 +448,7 @@ export class DataObj {
 				return this;
 			};
 
-		this._manager.emit("before_save", this, before_save_res);
+		this._manager.emit("before_save", before_save_res, this);
 
 		// если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
 		if (before_save_res === false) {
@@ -506,7 +506,7 @@ export class DataObj {
 			})
 		// и выполняем обработку после записи
 			.then(function (obj) {
-				obj._manager.emit("after_save", obj);
+				obj._manager.emit("after_save", {}, obj);
 				return obj;
 			})
 			.then(reset_modified);

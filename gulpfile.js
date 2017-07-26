@@ -41,6 +41,7 @@ gulp.task('prebuild', function(){
 gulp.task('dhtmlx-ui', function () {
   return gulp.src([
     './src/widgets/*.js',
+    './src/reporting.js',
     './data/merged_data.js',
   ])
     .pipe(concat('dhtmlx-widgets.js'))

@@ -1,103 +1,102 @@
-import InterfaceObjs from './iface'
-import widgets from './dhtmlx-widgets'
-import events from './events'
-import mango_selection from './mango_selection'
-import geocoding from './geocoding'
-import ajax from './ajax'
-import docxtemplater from './docxtemplater'
-import jobprm from './jobprm'
-import oo from './object_proto'
-
+import InterfaceObjs from './iface';
+import widgets from './dhtmlx-widgets';
+import events from './events';
+import mango_selection from './mango_selection';
+import geocoding from './geocoding';
+import ajax from './ajax';
+import docxtemplater from './docxtemplater';
+import jobprm from './jobprm';
+import oo from './object_proto';
 
 export default {
 
-	/**
-	 * ### Модификатор прототипов
-	 * @param constructor {MetaEngine}
-	 * @param classes {Object}
-	 */
-	proto(constructor) {
+  /**
+   * ### Модификатор прототипов
+   * @param constructor {MetaEngine}
+   * @param classes {Object}
+   */
+  proto(constructor) {
 
-		// задаём основной скин и его суффикс
-		dhtmlx.skin = 'dhx_terrace';
-		dhtmlx.skin_suffix = () => dhtmlx.skin.replace('dhx', '') + '/';
+    // задаём основной скин и его суффикс
+    dhtmlx.skin = 'dhx_terrace';
+    dhtmlx.skin_suffix = () => dhtmlx.skin.replace('dhx', '') + '/';
 
-		constructor.classes.InterfaceObjs = InterfaceObjs;
+    constructor.classes.InterfaceObjs = InterfaceObjs;
 
-		/**
-		 * Загружает скрипты и стили синхронно и асинхронно
-		 * @method load_script
-		 * @for MetaEngine
-		 * @param src {String} - url ресурса
-		 * @param type {String} - "link" или "script"
-		 * @param [callback] {Function} - функция обратного вызова после загрузки скрипта
-		 * @async
-		 */
-		constructor.prototype.load_script = function (src, type, callback) {
+    /**
+     * Загружает скрипты и стили синхронно и асинхронно
+     * @method load_script
+     * @for MetaEngine
+     * @param src {String} - url ресурса
+     * @param type {String} - "link" или "script"
+     * @param [callback] {Function} - функция обратного вызова после загрузки скрипта
+     * @async
+     */
+    constructor.prototype.load_script = function (src, type, callback) {
 
-			return new Promise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
 
-				const s = document.createElement(type);
-				if (type == "script") {
-					s.type = "text/javascript";
-					s.src = src;
-					s.async = true;
-					const listener = () => {
-						s.removeEventListener('load', listener);
-						callback && callback();
-						resolve();
-					}
-					s.addEventListener('load', listener, false);
-				}
-				else {
-					s.type = "text/css";
-					s.rel = "stylesheet";
-					s.href = src;
-				}
-				document.head.appendChild(s);
+        const s = document.createElement(type);
+        if (type == 'script') {
+          s.type = 'text/javascript';
+          s.src = src;
+          s.async = true;
+          const listener = () => {
+            s.removeEventListener('load', listener);
+            callback && callback();
+            resolve();
+          };
+          s.addEventListener('load', listener, false);
+        }
+        else {
+          s.type = 'text/css';
+          s.rel = 'stylesheet';
+          s.href = src;
+        }
+        document.head.appendChild(s);
 
-				(type != "script") && resolve();
+        (type != 'script') && resolve();
 
-			});
-		};
+      });
+    };
 
-		mango_selection(constructor);
+    mango_selection(constructor);
 
-		geocoding(constructor);
-	},
+    geocoding(constructor);
+  },
 
-	/**
-	 * ### Модификатор конструктора MetaEngine
-	 * Вызывается в контексте экземпляра MetaEngine
-	 */
-	constructor(){
+  /**
+   * ### Модификатор конструктора MetaEngine
+   * Вызывается в контексте экземпляра MetaEngine
+   */
+  constructor() {
 
-		this.__define({
-			/**
-			 * Объекты интерфейса пользователя
-			 * @property iface
-			 * @for MetaEngine
-			 * @type InterfaceObjs
-			 * @static
-			 */
-			iface: {
-				value: new InterfaceObjs(this)
-			},
-			/**
-			 * Хранилище внедрённых строк
-			 */
-			injected_data: {
-				value: {}
-			},
-		});
+    this.__define({
+      /**
+       * Объекты интерфейса пользователя
+       * @property iface
+       * @for MetaEngine
+       * @type InterfaceObjs
+       * @static
+       */
+      iface: {
+        value: new InterfaceObjs(this),
+      },
+      /**
+       * Хранилище внедрённых строк
+       */
+      injected_data: {
+        value: {},
+      },
+    });
 
-		this.md.value_mgr = this.classes.DataManager.prototype.value_mgr.bind(this.cat.meta_fields);
+    this.md.value_mgr = this.classes.DataManager.prototype.value_mgr.bind(this.cat.meta_fields);
 
-		docxtemplater(this);
-		widgets(this);
-		events(this);
-		ajax(this);
-		jobprm(this);
+    docxtemplater(this);
+    widgets(this);
+    events(this);
+    ajax(this);
+    jobprm(this);
 
-	}
-}
+  },
+};

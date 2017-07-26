@@ -283,6 +283,66 @@ export default ($p) => {
 
 	};
 
+  /**
+   * ### Печатает объект
+   * @method print
+   * @param ref {DataObj|String} - guid ссылки на объект
+   * @param model {String|DataObj.cst.formulas} - идентификатор команды печати
+   * @param [wnd] {dhtmlXWindows} - окно, из которого вызываем печать
+   */
+  DataManager.prototype.print = function (ref, model, wnd) {
+    function tune_wnd_print(wnd_print){
+      if(wnd && wnd.progressOff)
+        wnd.progressOff();
+      if(wnd_print)
+        wnd_print.focus();
+    }
+
+    if(wnd && wnd.progressOn){
+      wnd.progressOn();
+    }
+
+    setTimeout(tune_wnd_print, 3000);
+
+    // если _printing_plates содержит ссылку на обрабочтик печати, используем его
+    if(this._printing_plates[model] instanceof DataObj){
+      model = this._printing_plates[model];
+    }
+
+    // если существует локальный обработчик, используем его
+    if(model instanceof DataObj && model.execute){
+
+      if(ref instanceof DataObj)
+        return model.execute(ref)
+          .then(tune_wnd_print);
+      else
+        return this.get(ref, true, true)
+          .then(model.execute.bind(model))
+          .then(tune_wnd_print);
+
+    }else{
+
+      // иначе - печатаем средствами 1С или иного сервера
+      var rattr = {};
+      $p.ajax.default_attr(rattr, $p.job_prm.irest_url());
+      rattr.url += this.rest_name + "(guid'" + $p.utils.fix_guid(ref) + "')" +
+        "/Print(model=" + model + ", browser_uid=" + $p.wsql.get_user_param("browser_uid") +")";
+
+      return $p.ajax.get_and_show_blob(rattr.url, rattr, "get")
+        .then(tune_wnd_print);
+    }
+  }
+
+  /**
+   * Алиас для  emit
+   * @param obj
+   * @param name
+   * @param attr
+   */
+  DataManager.prototype.handle_event = function (obj, name, attr) {
+    this.emit(name, attr, obj);
+  }
+
 	/**
 	 * ### Перезаполняет грид данными табчасти с учетом отбора
 	 * @method sync_grid
@@ -4434,9 +4494,11 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			attr.on_close();
 
 		if(!on_create){
-			delete wnd.ref;
-			delete wnd.set_text;
-			Object.unobserve(o, observer);
+      o && Object.unobserve(o, observer);
+      if(wnd){
+        delete wnd.ref;
+        delete wnd.set_text;
+      }
 			_mgr = wnd = o = _meta = options = pwnd = attr = null;
 		}
 	}
@@ -4445,7 +4507,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 * Задаёт вопрос о записи изменений и делает откат при необходимости
 	 */
 	function check_modified() {
-		if(o._modified && !close_confirmed){
+		if(o && o._modified && !close_confirmed){
 			dhtmlx.confirm({
 				title: o.presentation,
 				text: $p.msg.modified_close,
@@ -4599,7 +4661,7 @@ DataProcessorsManager.prototype.form_rep = function(pwnd, attr) {
 			wnd.close = function (on_create) {
 				var _wnd = wnd || pwnd;
 
-				if(on_create || check_modified()){
+				if(on_create){
 
 					if(_wnd){
 
@@ -4761,19 +4823,23 @@ DataProcessorsManager.prototype.form_rep = function(pwnd, attr) {
 	 */
 	function frm_unload(on_create){
 
-		if(attr && attr.on_close && !on_create)
-			attr.on_close();
+		if(attr && attr.on_close && !on_create){
+      attr.on_close();
+    }
 
-		if(!on_create){
-			delete wnd.set_text;
+		if(!on_create && wnd){
+
+		  delete wnd.set_text;
 
 			// уничтожаем табличный документ
-			if(wnd.elmnts.table)
-				wnd.elmnts.table.hot.destroy();
+			if(wnd.elmnts.table){
+        wnd.elmnts.table.hot.destroy();
+      }
 
 			// уничтожаем daterangepicker
-			if(wnd.report.daterange)
-				wnd.report.daterange.remove();
+			if(wnd.report.daterange){
+        wnd.report.daterange.remove();
+      }
 
 			wnd.report = null;
 
@@ -5320,8 +5386,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		document.body.removeEventListener("keydown", body_keydown);
 
-		if(attr && attr.on_close && !on_create)
-			attr.on_close();
+		if(attr && attr.on_close && !on_create){
+      attr.on_close();
+    }
 
 		if(!on_create){
 			_mgr = wnd = _meta = previous_filter = on_select = pwnd = attr = null;
@@ -5546,5 +5613,397 @@ $p.iface.wnd_sync = function() {
 		_stepper.frm_sync.setItemValue("text_bottom", "Загружается структура таблиц...");
 	}
 };
+/**
+ * Конструкторы табличных документов печатных форм и отчетов<br/>
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016<br/>
+ * Created 17.04.2016
+ *
+ * @module reporting
+ */
+
+/**
+ * Объект для построения печатных форм и отчетов
+ *
+ * @param [attr] {Object} - размер листа, ориентация, поля и т.д.
+ * @constructor
+ */
+function SpreadsheetDocument(attr, events) {
+
+	this._attr = {
+		orientation: "portrait",
+		title: "",
+		content: document.createElement("DIV")
+	};
+
+	if(attr && typeof attr == "string"){
+		this.content = attr;
+	}
+	else if(typeof attr == "object"){
+		this._mixin(attr);
+	}
+	attr = null;
+
+  this._events = {
+
+    /**
+     * ### При заполнении макета
+     * Возникает перед заполнением параметров макета. В обработчике можно дополнить, изменить или рассчитать любые массивы или поля
+     *
+     * @event fill_template
+     */
+    fill_template: null,
+
+  };
+  if(events && typeof events == "object"){
+    this._events._mixin(events);
+  }
+}
+SpreadsheetDocument.prototype.__define({
+
+	clear: {
+		value: function () {
+			while (this._attr.content.firstChild) {
+				this._attr.content.removeChild(this._attr.content.firstChild);
+			}
+		}
+	},
+
+	/**
+	 * Выводит область ячеек в табличный документ
+	 */
+	put: {
+		value: function (range, attr) {
+
+			var elm;
+
+			if(range instanceof HTMLElement){
+				elm = document.createElement(range.tagName);
+				elm.innerHTML = range.innerHTML;
+				if(!attr)
+					attr = range.attributes;
+			}else{
+				elm = document.createElement("DIV");
+				elm.innerHTML = range;
+			}
+
+			if(attr){
+				Object.keys(attr).forEach(function (key) {
+					if(key == "id" || attr[key].name == "id")
+						return;
+					elm.setAttribute(attr[key].name || key, attr[key].value || attr[key]);
+				});
+			}
+
+			this._attr.content.appendChild(elm);
+		}
+	},
+
+  /**
+   * Добавляет область и заполняет её данными
+   * @method append
+   * @param template {HTMLElement}
+   * @param data {Object}
+   */
+  append: {
+    value: function (template, data) {
+
+      if(this._events.fill_template){
+        data = this._events.fill_template(template, data);
+      }
+
+      switch (template.attributes.kind && template.attributes.kind.value){
+
+        case 'row':
+          this.draw_rows(template, data);
+          break;
+
+        case 'table':
+          this.draw_table(template, data);
+          break;
+
+        default:
+          this.put(dhx4.template(template.innerHTML, data), template.attributes);
+          break;
+      }
+    }
+  },
+
+  draw_table: {
+    value: function (template, data) {
+
+      var tabular = template.attributes.tabular && template.attributes.tabular.value;
+      if(!tabular){
+        console.error('Не указана табличная часть в шаблоне ' + template.id);
+        return;
+      }
+      var rows = data[tabular];
+      if(!Array.isArray(rows)){
+        console.error('В данных отсутствует массив ' + tabular);
+        return;
+      }
+
+      // контейнер таблицы
+      var cont = document.createElement("div");
+
+      // заполняем контейнер по шаблону
+      cont.innerHTML = template.innerHTML;
+
+      // собственно, таблица
+      var table = cont.querySelector("table");
+
+      // шаблон строки таблицы
+      var tpl_row = table.querySelector("[name=row]");
+
+      // удаляем пустую строку из итоговой таблицы
+      if(tpl_row){
+        tpl_row.parentElement.removeChild(tpl_row);
+      }
+      else{
+        console.error('Отсутствует <TR name="row"> в шаблоне таблицы');
+        return;
+      }
+
+      // находим все шаблоны группировок
+      var tpl_grouping = table.querySelector("tbody").querySelectorAll("tr");
+
+      // удаляем шаблоны группировок из итоговой таблицы
+      tpl_grouping.forEach(function (elm) {
+        elm.parentElement.removeChild(elm);
+      });
+
+
+      // подвал таблицы
+      var tfoot = table.querySelector("tfoot");
+      if(tfoot){
+        tfoot.parentElement.removeChild(tfoot);
+        tfoot.innerHTML = dhx4.template(tfoot.innerHTML, data);
+        table.appendChild(tfoot);
+      }
+
+      // есть ли итоги
+
+      function put_rows(rows) {
+        rows.forEach(function(row) {
+          var table_row = document.createElement("TR");
+          table_row.innerHTML = dhx4.template(tpl_row.innerHTML, row);
+          table.appendChild(table_row);
+        });
+      }
+
+      // есть ли группировка + цикл по табчасти
+      var grouping = data._grouping && data._grouping.find_rows({use: true, parent: tabular});
+      if(grouping && grouping.length == 1 && tpl_grouping.length){
+
+        var gfield = grouping[0].field;
+
+        $p.wsql.alasql("select distinct `"+gfield+"` from ? order by `"+gfield+"`", [rows])
+          .forEach(function (group) {
+            var table_row = document.createElement("TR");
+            table_row.innerHTML = dhx4.template(tpl_grouping[0].innerHTML, group);
+            table.appendChild(table_row);
+            put_rows(rows.filter(function (row) {
+              return row[gfield] == group[gfield];
+            }));
+          })
+      }
+      else{
+        put_rows(rows);
+      }
+
+      // собственно, вывод табличной части в отчет
+      this.put(cont.innerHTML, cont.attributes);
+    }
+  },
+
+  draw_rows: {
+    value: function (template, data) {
+
+      var tabular = template.attributes.tabular && template.attributes.tabular.value;
+      if(!tabular){
+        console.error('Не указана табличная часть в шаблоне ' + template.id);
+        return;
+      }
+      var rows = data[tabular];
+      if(!Array.isArray(rows)){
+        console.error('В данных отсутствует массив ' + tabular);
+        return;
+      }
+
+      // цикл по табчасти - выводим строку
+      for(var i = 0; i < rows.length; i++){
+        this.put(dhx4.template(template.innerHTML.replace(/<!---/g, '').replace(/--->/g, ''), rows[i]), template.attributes);
+      }
+    }
+  },
+
+  /**
+   * Показывает отчет в отдельном окне
+   */
+  print: {
+    value: function () {
+
+      try{
+
+        // создаём blob из шаблона пустой страницы
+        if(!($p.injected_data['view_blank.html'] instanceof Blob)){
+          $p.injected_data['view_blank.html'] = new Blob([$p.injected_data['view_blank.html']], {type: 'text/html'});
+        }
+
+        var doc = this,
+          url = window.URL.createObjectURL($p.injected_data['view_blank.html']),
+          wnd_print = window.open(
+          url, "_blank", "fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes");
+
+        if (wnd_print.outerWidth < screen.availWidth || wnd_print.outerHeight < screen.availHeight){
+          wnd_print.moveTo(0,0);
+          wnd_print.resizeTo(screen.availWidth, screen.availHeight);
+        }
+
+        wnd_print.onload = function(e) {
+          window.URL.revokeObjectURL(url);
+          wnd_print.document.body.appendChild(doc.content);
+          if(doc.title){
+            wnd_print.document.title = doc.title;
+          }
+          wnd_print.print();
+          doc = null;
+        };
+
+        return wnd_print;
+      }
+      catch(err){
+        window.URL.revokeObjectURL && window.URL.revokeObjectURL(url);
+        $p.msg.show_msg({
+          title: $p.msg.bld_title,
+          type: "alert-error",
+          text: err.message.match("outerWidth") ?
+            "Ошибка открытия окна печати<br />Вероятно, в браузере заблокированы всплывающие окна" : err.message
+        });
+      }
+    }
+  },
+
+	content: {
+		get: function () {
+			return this._attr.content
+		},
+		set: function (v) {
+
+			this.clear();
+
+			if(typeof v == "string")
+				this._attr.content.innerHTML = v;
+
+			else if(v instanceof HTMLElement)
+				this._attr.content.innerHTML = v.innerHTML;
+
+		}
+	},
+
+	title: {
+		get: function () {
+			return this._attr.title
+		},
+		set: function (v) {
+
+			this._attr.title = v;
+
+		}
+	}
+
+});
+
+/**
+ * Экспортируем конструктор SpreadsheetDocument, чтобы экземпляры печатного документа можно было создать снаружи
+ * @property SpreadsheetDocument
+ * @for MetaEngine
+ * @type {function}
+ */
+$p.SpreadsheetDocument = SpreadsheetDocument;
+
+
+/**
+ * Табличный документ для экранных отчетов
+ * @param container {HTMLElement|dhtmlXCellObject} - элемент DOM, в котором будет размещена таблица
+ * @param [attr] {Object} - атрибуты инициплизации
+ * @constructor
+ */
+function HandsontableDocument(container, attr) {
+
+	var init = function () {
+
+		if(this._then)
+			this._then(this);
+
+	}.bind(this);
+
+	this._online = (attr && attr.allow_offline) || (navigator.onLine && $p.wsql.pouch.authorized);
+
+	if(container instanceof dhtmlXCellObject){
+		this._cont = document.createElement('div');
+		container.detachObject(true);
+		container.attachObject(this._cont);
+	}else{
+		this._cont = container;
+	}
+
+	this._cont.classList.add("handsontable_wrapper");
+	if(!this._online){
+		this._cont.innerHTML = $p.msg.report_need_online;
+	}else{
+		this._cont.innerHTML = attr.autorun ? $p.msg.report_prepare : $p.msg.report_need_prepare;
+	}
+
+	this.then = function (callback) {
+		this._then = callback;
+		return this;
+	};
+
+	this.requery = function (opt) {
+
+		if(this.hot)
+			this.hot.destroy();
+
+		if(opt instanceof Error){
+			this._cont.innerHTML = $p.msg.report_error + (opt.name ? " <b>" + opt.name + "</b>" : "") + (opt.message ? " " + opt.message : "");
+		}else{
+			this._cont.innerHTML = "";
+			this.hot = new Handsontable(this._cont, opt);
+		}
+	};
+
+
+	// отложенная загрузка handsontable и зависимостей
+	if(typeof Handsontable != "function" && this._online){
+
+		$p.load_script("https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.4.0/pikaday.min.js","script")
+			.then(function () {
+				return $p.load_script("https://cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/numbro.min.js","script")
+			})
+			.then(function () {
+				return $p.load_script("https://cdn.jsdelivr.net/g/zeroclipboard,handsontable@0.26(handsontable.min.js)","script")
+			})
+			.then(function () {
+				return Promise.all([
+					$p.load_script("https://cdn.jsdelivr.net/handsontable/0.26/handsontable.min.css","link"),
+					$p.load_script("https://cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/languages/ru-RU.min.js","script")
+				]);
+			})
+			.then(init);
+
+	}else{
+		setTimeout(init);
+	}
+
+}
+
+/**
+ * Экспортируем конструктор HandsontableDocument, чтобы экземпляры табличного документа можно было создать снаружи
+ * @property HandsontableDocument
+ * @for MetaEngine
+ * @type {function}
+ */
+$p.HandsontableDocument = HandsontableDocument;
+
 $p.injected_data._mixin({"form_auth.xml":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<items>\n\t<item type=\"settings\" position=\"label-left\" labelWidth=\"80\" inputWidth=\"180\" noteWidth=\"180\"/>\n\t<item type=\"fieldset\" name=\"data\" inputWidth=\"auto\" label=\"Авторизация\">\n\n        <item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" checked=\"true\" value=\"guest\" label=\"Гостевой (демо) режим\">\n            <item type=\"select\" name=\"guest\" label=\"Роль\">\n                <option value=\"Дилер\" label=\"Дилер\"/>\n            </item>\n        </item>\n\n\t\t<item type=\"radio\" name=\"type\" labelWidth=\"auto\" position=\"label-right\" value=\"auth\" label=\"Есть учетная запись\">\n\t\t\t<item type=\"input\" value=\"\" name=\"login\" label=\"Логин\" validate=\"NotEmpty\" />\n\t\t\t<item type=\"password\" value=\"\" name=\"password\" label=\"Пароль\" validate=\"NotEmpty\" />\n\t\t</item>\n\n\t\t<item type=\"button\" value=\"Войти\" name=\"submit\"/>\n\n        <item type=\"template\" name=\"text_options\" className=\"order_dealer_options\" inputWidth=\"170\"\n              value=\"&lt;a href='#' onclick='$p.iface.open_settings();' title='Страница настроек программы' &gt; &lt;i class='fa fa-cog fa-lg'&gt;&lt;/i&gt; Настройки &lt;/a&gt; &lt;a href='//www.oknosoft.ru/feedback' target='_blank' style='margin-left: 9px;' title='Задать вопрос через форму обратной связи' &gt; &lt;i class='fa fa-question-circle fa-lg'&gt;&lt;/i&gt; Вопрос &lt;/a&gt;\"  />\n\n\t</item>\n</items>","toolbar_add_del.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\n<toolbar>\n    <item id=\"sep0\" type=\"separator\"/>\n    <item id=\"btn_add\" type=\"button\"  text=\"&lt;i class='fa fa-plus-circle fa-fw'&gt;&lt;/i&gt; Добавить\" title=\"Добавить строку\"  />\n    <item id=\"btn_delete\" type=\"button\" text=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt; Удалить\"  title=\"Удалить строку\" />\n    <item id=\"sep1\" type=\"separator\"/>\n\n    <item id=\"sp\" type=\"spacer\"/>\n    <item id=\"input_filter\" type=\"buttonInput\" width=\"200\" title=\"Поиск по подстроке\" />\n</toolbar>","toolbar_add_del_compact.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\n<toolbar>\n    <item id=\"btn_add\" type=\"button\"  text=\"&lt;i class='fa fa-plus-circle fa-fw'&gt;&lt;/i&gt;\" title=\"Добавить строку\"  />\n    <item id=\"btn_delete\" type=\"button\" text=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt;\"  title=\"Удалить строку\" />\n    <item id=\"sep1\" type=\"separator\"/>\n\n</toolbar>","toolbar_obj.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_save_close\" text=\"&lt;b&gt;Записать и закрыть&lt;/b&gt;\" title=\"Рассчитать, записать и закрыть\" />\r\n    <item type=\"button\" id=\"btn_save\" text=\"&lt;i class='fa fa-floppy-o fa-fw'&gt;&lt;/i&gt;\" title=\"Рассчитать и записать данные\"/>\r\n    <item type=\"button\" id=\"btn_post\" enabled=\"false\" text=\"&lt;i class='fa fa-check-square-o fa-fw'&gt;&lt;/i&gt;\" title=\"Провести документ\" />\r\n    <item type=\"button\" id=\"btn_unpost\" enabled=\"false\" text=\"&lt;i class='fa fa-square-o fa-fw'&gt;&lt;/i&gt;\" title=\"Отмена проведения\" />\r\n\r\n    <item type=\"button\" id=\"btn_files\" text=\"&lt;i class='fa fa-paperclip fa-fw'&gt;&lt;/i&gt;\" title=\"Присоединенные файлы\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt;\" title=\"Печать\" openAll=\"true\">\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_create_by_virtue\" text=\"&lt;i class='fa fa-bolt fa-fw'&gt;&lt;/i&gt;\" title=\"Создать на основании\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_message\" enabled=\"false\" text=\"Сообщение\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_go_to\" text=\"&lt;i class='fa fa-external-link fa-fw'&gt;&lt;/i&gt;\" title=\"Перейти\" openAll=\"true\" >\r\n        <item type=\"button\" id=\"btn_go_connection\" enabled=\"false\" text=\"Связи\" />\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"  text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\"  title=\"Дополнительно\" openAll=\"true\">\r\n\r\n        <item type=\"button\" id=\"btn_import\" text=\"&lt;i class='fa fa-upload fa-fw'&gt;&lt;/i&gt; Загрузить из файла\" />\r\n        <item type=\"button\" id=\"btn_export\" text=\"&lt;i class='fa fa-download fa-fw'&gt;&lt;/i&gt; Выгрузить в файл\" />\r\n    </item>\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_close\" text=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt;\" title=\"Закрыть форму\"/>\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n</toolbar>\r\n","toolbar_ok_cancel.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"btn_ok\"       type=\"button\"   img=\"\"  imgdis=\"\"   text=\"&lt;b&gt;Ок&lt;/b&gt;\"  />\r\n    <item id=\"btn_cancel\"   type=\"button\"\timg=\"\"  imgdis=\"\"   text=\"Отмена\" />\r\n</toolbar>","toolbar_rep.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n    <item type=\"button\" id=\"btn_run\" text=\"&lt;i class='fa fa-play fa-fw'&gt;&lt;/i&gt; Сформировать\" title=\"Сформировать отчет\"/>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"  text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\"  title=\"Дополнительно\" openAll=\"true\">\r\n\r\n        <item type=\"button\" id=\"btn_print\" text=\"&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt; Печать\" />\r\n\r\n        <item id=\"sep3\" type=\"separator\"/>\r\n\r\n        <item type=\"button\" id=\"btn_export\" text=\"&lt;i class='fa fa-file-excel-o fa-fw'&gt;&lt;/i&gt; Выгрузить в файл\" />\r\n\r\n        <item id=\"sep4\" type=\"separator\"/>\r\n\r\n        <item type=\"button\" id=\"btn_save\" text=\"&lt;i class='fa fa-folder-open-o fa-fw'&gt;&lt;/i&gt; Выбрать вариант\" />\r\n        <item type=\"button\" id=\"btn_load\" text=\"&lt;i class='fa fa-floppy-o fa-fw'&gt;&lt;/i&gt; Сохранить вариант\" />\r\n\r\n    </item>\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n\r\n</toolbar>\r\n","toolbar_selection.xml":"<?xml version=\"1.0\" encoding='utf-8'?>\r\n<toolbar>\r\n\r\n    <item id=\"sep0\" type=\"separator\"/>\r\n\r\n    <item id=\"btn_select\"   type=\"button\"   title=\"Выбрать элемент списка\" text=\"&lt;b&gt;Выбрать&lt;/b&gt;\"  />\r\n\r\n    <item id=\"sep1\" type=\"separator\"/>\r\n    <item id=\"btn_new\"      type=\"button\"\ttext=\"&lt;i class='fa fa-plus-circle fa-fw'&gt;&lt;/i&gt;\"\ttitle=\"Создать\" />\r\n    <item id=\"btn_edit\"     type=\"button\"\ttext=\"&lt;i class='fa fa-pencil fa-fw'&gt;&lt;/i&gt;\"\ttitle=\"Изменить\" />\r\n    <item id=\"btn_delete\"   type=\"button\"\ttext=\"&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt;\"\ttitle=\"Удалить\" />\r\n    <item id=\"sep2\" type=\"separator\"/>\r\n\r\n    <item type=\"buttonSelect\" id=\"bs_print\" text=\"&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt; Печать\" openAll=\"true\" >\r\n    </item>\r\n\r\n    <item type=\"buttonSelect\"   id=\"bs_more\"    text=\"&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;\" title=\"Дополнительно\" openAll=\"true\">\r\n        <item id=\"btn_requery\"  type=\"button\"\ttext=\"&lt;i class='fa fa-refresh fa-fw'&gt;&lt;/i&gt; Обновить список\" />\r\n    </item>\r\n\r\n    <item id=\"sep3\" type=\"separator\"/>\r\n\r\n</toolbar>"});
 };

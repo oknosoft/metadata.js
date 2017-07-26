@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.1-beta.19, built:2017-07-21
+ metadata-core v2.0.1-beta.19, built:2017-07-26
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -722,7 +722,7 @@ class DataObj {
 				reset_modified = null;
 				return this;
 			};
-		this._manager.emit("before_save", this, before_save_res);
+		this._manager.emit("before_save", before_save_res, this);
 		if (before_save_res === false) {
 			return Promise.reject(reset_modified());
 		} else if (before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then) {
@@ -749,7 +749,7 @@ class DataObj {
 				attachments: attachments
 			})
 			.then(function (obj) {
-				obj._manager.emit("after_save", obj);
+				obj._manager.emit("after_save", {}, obj);
 				return obj;
 			})
 			.then(reset_modified);
@@ -3151,7 +3151,10 @@ class MetaField {
 class Meta extends MetaEventEmitter {
 	constructor($p) {
 		super();
-		Object.defineProperty(this, '_m', {value: {}});
+		Object.defineProperties(this, {
+      _m: {value: {}},
+      $p: {value: $p},
+    });
 		Meta._sys.forEach((patch) => utils._patch(this._m, patch));
 		Meta._sys.length = 0;
 	}

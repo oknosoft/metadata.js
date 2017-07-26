@@ -531,8 +531,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		document.body.removeEventListener("keydown", body_keydown);
 
-		if(attr && attr.on_close && !on_create)
-			attr.on_close();
+		if(attr && attr.on_close && !on_create){
+      attr.on_close();
+    }
 
 		if(!on_create){
 			_mgr = wnd = _meta = previous_filter = on_select = pwnd = attr = null;
