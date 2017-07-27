@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.1-beta.19, built:2017-07-26
+ metadata-core v2.0.1-beta.19, built:2017-07-27
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -235,44 +235,51 @@ class TabularSection {
 	count() {
 		return this._obj.length
 	}
-	clear(silent) {
-		const {_obj, _owner} = this;
-		_obj.length = 0;
-		if (!silent && !_owner._data._silent){
-		}
+	clear(selection) {
+		const {_obj, _owner, _name, _manager} = this;
+    if(!selection){
+      _obj.length = 0;
+      _manager.emit_async('rows', _owner, {[_name]: null});
+    }
+    else{
+      this.find_rows(selection).forEach((row) => this.del(row.row-1));
+    }
 		return this;
 	}
-	del(val, silent) {
-		const {_obj, _owner} = this;
+	del(val) {
+		const {_obj, _owner, _name} = this;
 		let index;
-		if (typeof val == "undefined")
-			return;
-		else if (typeof val == "number")
-			index = val;
-		else if (_obj[val.row - 1]._row === val)
-			index = val.row - 1;
+		if (typeof val == "undefined"){
+      return;
+    }
+		else if (typeof val == "number"){
+      index = val;
+    }
+		else if (_obj[val.row - 1]._row === val){
+      index = val.row - 1;
+    }
 		else {
-			for (var i in _obj)
-				if (_obj[i]._row === val) {
-					index = Number(i);
-					delete _obj[i]._row;
-					break;
-				}
+		  for(const i = 0; i < _obj.length; i++){
+        if (_obj[i]._row === val) {
+          index = i;
+          break;
+        }
+      }
 		}
-		if (index == undefined)
-			return;
+		if (index == undefined){
+      return;
+    }
+    if(_owner.del_row(_obj[index]._row) === false){
+      return;
+    }
 		_obj.splice(index, 1);
-		_obj.forEach(function (row, index) {
-			row.row = index + 1;
-		});
-		if (!silent && !_owner._data._silent){
-		}
+		_obj.forEach((row, index) => row.row = index + 1);
+    _owner._manager.emit_async('rows', _owner, {[_name]: null});
 		_owner._data._modified = true;
 	}
 	find(val, columns) {
-		var res = utils._find(this._obj, val, columns);
-		if (res)
-			return res._row;
+		const res = utils._find(this._obj, val, columns);
+		return res && res._row;
 	}
 	find_rows(selection, callback) {
 		const cb = callback ? (row) => {
@@ -281,16 +288,18 @@ class TabularSection {
 		return utils._find_rows.call(this, this._obj, selection, cb);
 	}
 	swap(rowid1, rowid2) {
-		const {_obj} = this;
+    const {_obj, _owner, _name} = this;
 		[_obj[rowid1], _obj[rowid2]] = [_obj[rowid2], _obj[rowid1]];
 		_obj[rowid1].row = rowid2 + 1;
 		_obj[rowid2].row = rowid1 + 1;
-		if (!this._owner._data._silent){
-		}
+    _owner._manager.emit_async('rows', _owner, {[_name]: null});
 	}
-	add(attr = {}, silent) {
+	add(attr = {}) {
 		const {_owner, _name, _obj} = this;
 		const row = _owner._manager.obj_constructor(_name, this);
+		if(_owner.add_row(row) === false){
+		  return;
+    }
 		for (let f in row._metadata().fields){
 			row[f] = attr[f] || "";
 		}
@@ -299,8 +308,7 @@ class TabularSection {
 			value: row,
 			enumerable: false
 		});
-		if (!silent && !this._owner._data._silent){
-		}
+    _owner._manager.emit_async('rows', _owner, {[_name]: null});
 		_owner._data._modified = true;
 		return row;
 	}
@@ -313,7 +321,7 @@ class TabularSection {
 	group_by(dimensions, resources) {
 		try {
 			const res = this.aggregate(dimensions, resources, "SUM", true);
-			return this.clear(true).load(res);
+			return this.clear().load(res);
 		}
 		catch (err) {
 			this._owner._manager._owner.$p.record_log(err);
@@ -326,20 +334,20 @@ class TabularSection {
 		let sql = "select * from ? order by ",
 			res = true;
 			has_dot;
-		fields.forEach(function (f) {
-			has_dot = has_dot || f.match('.');
-			f = f.trim().replace(/\s{1,}/g, " ").split(" ");
-			if (res){
-				res = false;
-			}
-			else{
-				sql += ", ";
-			}
-			sql += "`" + f[0] + "`";
-			if (f[1]){
-				sql += " " + f[1];
-			}
-		});
+		for(let f of fields){
+      has_dot = has_dot || f.match('.');
+      f = f.trim().replace(/\s{1,}/g, " ").split(" ");
+      if (res){
+        res = false;
+      }
+      else{
+        sql += ", ";
+      }
+      sql += "`" + f[0] + "`";
+      if (f[1]){
+        sql += " " + f[1];
+      }
+    }
 		try {
 			res = alasql(sql, [has_dot ? this._obj.map((row) => row._row) : this._obj]);
 			return this.clear(true).load(res);
@@ -406,12 +414,10 @@ class TabularSection {
 			arr = aattr;
 		}
 		if (arr){
-			arr.forEach((row) => {
-				this.add(row, true);
-			});
+			arr.forEach((row) => this.add(row, true));
 		}
-		if (!this._owner._data._silent){
-		}
+    const {_owner, _name, _obj} = this;
+    _owner._manager.emit_async('rows', _owner, {[_name]: null});
 		return this;
 	}
 	unload_column(column) {
@@ -455,8 +461,7 @@ class TabularSectionRow {
 		const _meta = this._metadata(f);
 		if (_obj[f] == v || (!v && _obj[f] == utils.blank.guid))
 			return;
-		if (!_owner._owner._data._silent){
-		}
+    _owner._owner._manager.emit_async('update', this, {[f]: _obj[f]});
 		if (_meta.choice_type) {
 			let prop;
 			if (_meta.choice_type.path.length == 2)
@@ -469,6 +474,9 @@ class TabularSectionRow {
 		this.__setter(f, v);
 		_owner._owner._data._modified = true;
 	}
+  value_change(f, v, old) {
+    return this;
+  }
 }
 
 
@@ -511,7 +519,6 @@ class DataObj {
 			manager.alatable.push(this._obj);
 			manager.push(this, this._obj.ref);
 		}
-		attr = null;
 	}
 	_getter(f) {
 		const mf = this._metadata(f).type;
@@ -558,7 +565,10 @@ class DataObj {
 	}
 	__setter(f, v) {
 		const mf = this._metadata(f).type;
-		const {_obj} = this;
+		if(this.value_change(f, mf, v) === false){
+		  return;
+    }
+    const {_obj} = this;
 		if(f == "type" && v.types){
 			_obj[f] = v;
 		}
@@ -612,8 +622,7 @@ class DataObj {
 		}
 	}
 	__notify(f) {
-		if(!this._data._silent){
-		}
+    this._manager.emit_async('update', this, {[f]: this._obj[f]});
 	}
 	_setter(f, v) {
 		if(this._obj[f] != v){
@@ -676,22 +685,16 @@ class DataObj {
 			return this._manager.adapter.load_obj(this)
 				.then(() => {
 					this._data._modified = false;
-					setTimeout(() => {this._manager.brodcast_event("obj_loaded", this);});
-					return this;
+					return this.after_load()
 				});
 		}
 	}
 	unload() {
-		const {_obj, ref, _observers, _notis, _manager} = this;
+		const {_obj, ref, _manager} = this;
 		_manager.unload_obj(ref);
-		if (_observers){
-			_observers.length = 0;
-		}
-		if (_notis){
-			_notis.length = 0;
-		}
+    _manager.emit_async('unload', this);
 		for (let f in this._metadata().tabular_sections){
-			this[f].clear(true);
+			this[f].clear();
 		}
 		for (let f in this) {
 			if (this.hasOwnProperty(f)){
@@ -778,37 +781,43 @@ class DataObj {
 				return att;
 			});
 	}
-	_silent(v) {
-		const {_data} = this;
-		if (typeof v == "boolean"){
-			_data._silent = v;
-		}
-		else {
-			_data._silent = true;
-			setTimeout(() => {
-				_data._silent = false;
-			});
-		}
-	}
-	_mixin_attr(attr){
+	_mixin(attr){
 		if(Object.isFrozen(this)){
 			return;
 		}
 		if(attr && typeof attr == "object"){
-			if(attr._not_set_loaded){
-				delete attr._not_set_loaded;
-				utils._mixin(this, attr);
-			}else{
-				utils._mixin(this, attr);
-				if(!utils.is_empty_guid(this.ref) && (attr.id || attr.name)){
-					this._set_loaded(this.ref);
-				}
+		  const {_not_set_loaded} = attr;
+      delete attr._not_set_loaded;
+      utils._mixin(this, attr);
+			if(!_not_set_loaded && !utils.is_empty_guid(this.ref) && (attr.id || attr.name)){
+        this._set_loaded(this.ref);
 			}
 		}
 	}
 	print(model, wnd) {
 		return this._manager.print(this, model, wnd);
 	}
+  after_create() {
+    return this;
+  }
+  after_load() {
+    return this;
+  }
+  before_save() {
+    return this;
+  }
+  after_save() {
+    return this;
+  }
+  value_change(f, v, old) {
+    return this;
+  }
+  add_row(row) {
+    return this;
+  }
+  del_row(row) {
+    return this;
+  }
 }
 Object.defineProperty(DataObj.prototype, "ref", {
 	get : function(){ return this._obj ? this._obj.ref : utils.blank.guid},
@@ -821,7 +830,7 @@ TabularSectionRow.prototype.__setter = DataObj.prototype.__setter;
 class CatObj extends DataObj {
 	constructor(attr, manager){
 		super(attr, manager);
-		this._mixin_attr(attr);
+		this._mixin(attr);
 	}
 	get presentation(){
 		if(this.name || this.id){
@@ -885,7 +894,7 @@ const NumberDocAndDate = (superclass) => class extends superclass {
 class DocObj extends NumberDocAndDate(DataObj) {
 	constructor(attr, manager){
 		super(attr, manager);
-		this._mixin_attr(attr);
+		this._mixin(attr);
 	}
 	get presentation(){
 		if(this.number_doc)
@@ -1038,6 +1047,62 @@ class MetaEventEmitter extends EventEmitter{
 			super.removeAllListeners(type);
 		}
 	}
+  _distinct(type, handler) {
+    const res = [];
+    switch (type){
+      case 'update':
+      case 'rows':
+        for(const arg of handler.args){
+          if(res.some(row => {
+              if(row[0] == arg[0]){
+                if(!row[1].hasOwnProperty(Object.keys(arg[1])[0])){
+                  Object.assign(row[1], arg[1]);
+                }
+                return true;
+              }
+            })){
+            continue;
+          }
+          res.push(arg);
+        }
+        break;
+      default:
+        let len = 0;
+        for(const arg of handler.args){
+          len = Math.max(len, arg.length);
+          if(res.some(row => {
+              for(let i = 0; i < len; i++){
+                if(arg[i] != row[i]){
+                  return true;
+                }
+              }
+            })){
+            continue;
+          }
+          res.push(arg);
+        }
+    }
+    handler.timer = 0;
+    handler.args.length = 0;
+    return res;
+  }
+	_emit(type) {
+    for(const args of this._distinct(this._async[type])){
+      this.emit(type, ...args);
+    }
+  }
+  emit_async(type, ...args) {
+    if (!this._events || !this._events[type]){
+      return;
+    }
+    if (!this._async){
+      this._async = {};
+    }
+    handler = this._async[type] || {'args': []};
+    handler.timer && clearTimeout(handler.timer);
+    handler.args.push(args);
+    handler.timer = setTimeout(this.do_emit.bind(this, type), 4);
+  }
 }
 
 class DataManager extends MetaEventEmitter{
@@ -1323,20 +1388,6 @@ class DataManager extends MetaEventEmitter{
 		}
 		return Promise.resolve(t._printing_plates);
 	}
-	brodcast_event(name, attr){
-		this._owner.$p.md.emit(name, attr);
-	}
-	static get EVENTS(){
-		return {
-			AFTER_CREATE: "AFTER_CREATE",
-			AFTER_LOAD: "AFTER_LOAD",
-			BEFORE_SAVE: "BEFORE_SAVE",
-			BEFORE_SAVE: "BEFORE_SAVE",
-			VALUE_CHANGE: "VALUE_CHANGE",
-			ADD_ROW: "ADD_ROW",
-			DEL_ROW: "DEL_ROW"
-		}
-	}
 }
 class RefDataManager extends DataManager{
 	push(o, new_ref){
@@ -1411,19 +1462,18 @@ class RefDataManager extends DataManager{
 				if(o instanceof DocObj && o.date == utils.blank.date){
 					o.date = new Date();
 				}
-				let after_create_res = {};
-				this.emit("after_create", o, after_create_res);
+				const after_create_res = o.after_create();
 				let call_new_number_doc;
 				if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
 					if(!o.number_doc){
 						call_new_number_doc = true;
 					}
-				}else{
+				}
+				else{
 					if(!o.id){
 						call_new_number_doc = true;
 					}
 				}
-				const {ajax} = this._owner.$p;
 				return (call_new_number_doc ? o.new_number_doc() : Promise.resolve(o))
 					.then(() => {
 						if(after_create_res === false)
@@ -1431,7 +1481,8 @@ class RefDataManager extends DataManager{
 						else if(typeof after_create_res === "object" && after_create_res.then)
 							return after_create_res;
 						if(this.cachable == "e1cib" && fill_default){
-							var rattr = {};
+              const {ajax} = this._owner.$p;
+              const rattr = {};
 							ajax.default_attr(rattr, job_prm.irest_url());
 							rattr.url += this.rest_name + "/Create()";
 							return ajax.get_ex(rattr.url, rattr)

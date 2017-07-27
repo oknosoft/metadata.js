@@ -1,106 +1,4 @@
 
-function distinct(notis) {
-  const res = [];
-  for(const noti of notis){
-    if(res.some(row => row.type === noti.type && row.tabular === noti.tabular && row.name === noti.name && row.object === noti.object)){
-      continue;
-    }
-    res.push(noti);
-  }
-  notis.length = 0;
-  return res;
-}
-
-Object.defineProperties(Object.prototype, {
-
-  /**
-   * Подключает наблюдателя
-   * @method observe
-   * @for Object
-   */
-  observe: {
-    value: function(target, observer) {
-      if(!target){
-        return;
-      }
-      if(!target._observers){
-        Object.defineProperties(target, {
-          _observers: {
-            value: []
-          },
-          _notis: {
-            value: []
-          }
-        });
-      }
-      target._observers.push(observer);
-    }
-  },
-
-  /**
-   * Отключает наблюдателя
-   * @method unobserve
-   * @for Object
-   */
-  unobserve: {
-    value: function(target, observer) {
-      if(target && target._observers){
-
-        if(!observer){
-          target._observers.length = 0;
-        }
-
-        for(let i=0; i<target._observers.length; i++){
-          if(target._observers[i]===observer){
-            target._observers.splice(i, 1);
-            break;
-          }
-        }
-      }
-    }
-  },
-
-  /**
-   * Возвращает объект нотификатора
-   * @method getNotifier
-   * @for Object
-   */
-  getNotifier: {
-    value: function(target) {
-      var timer;
-      return {
-        notify(noti) {
-          if(!target._observers || !noti){
-            return;
-          }
-          if(!noti.object){
-            noti.object = target;
-          }
-          target._notis.push(noti);
-          noti = null;
-
-          if(timer){
-            clearTimeout(timer);
-          }
-
-          timer = setTimeout(() => {
-            //TODO: свернуть массив оповещений перед отправкой
-            if(target._notis.length){
-              const notis = distinct(target._notis);
-              for(const observer of target._observers){
-                observer(notis)
-              }
-            }
-            timer = false;
-
-          }, 4);
-        }
-      }
-    }
-  }
-
-});
-
 Function.prototype._extend = function( Parent ) {
 	var F = function() { };
 	F.prototype = Parent.prototype;
@@ -117,7 +15,6 @@ Function.prototype._extend = function( Parent ) {
  * &copy; [Алексей Симоненко](mailto:alexey@simonenko.su), [simonenko.su](http://simonenko.su)
  * @module rubles.js
  */
-
 (function() {
   'use strict';
 

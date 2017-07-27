@@ -301,7 +301,10 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		/**
 		 * начинаем следить за объектом
 		 */
-		Object.observe(o, observer, ["update", "row"]);
+    _mgr.on({
+      update: observer,
+      row: observer,
+    });
 
 
 		return {wnd: wnd, o: o};
@@ -450,7 +453,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			attr.on_close();
 
 		if(!on_create){
-      o && Object.unobserve(o, observer);
+      _mgr.off('update', observer);
+      _mgr.off('row', observer);
       if(wnd){
         delete wnd.ref;
         delete wnd.set_text;

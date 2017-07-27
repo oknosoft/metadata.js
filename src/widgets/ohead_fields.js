@@ -45,18 +45,9 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 	// задача обсервера - перерисовать поле при изменении свойств объекта
 	function observer(changes){
 		if(!_obj){
-			var stack = [];
-			changes.forEach(function(change){
-				if(stack.indexOf[change.object]==-1){
-					stack.push(change.object);
-					Object.unobserve(change.object, observer);
-					if(_extra_fields && _extra_fields instanceof TabularSection)
-						Object.unobserve(change.object, observer_rows);
-				}
-			});
-			stack = null;
-
-		}else if(_grid.entBox && !_grid.entBox.parentElement)
+			throw new Error('observer');
+		}
+		else if(_grid.entBox && !_grid.entBox.parentElement)
 			setTimeout(_grid.destructor);
 
 		else
@@ -205,10 +196,10 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		destructor: {
 			value: function () {
 
-				if(_obj)
-					Object.unobserve(_obj, observer);
-				if(_extra_fields && _extra_fields instanceof TabularSection)
-					Object.unobserve(_extra_fields, observer_rows);
+			  _mgr.off('update', observer);
+        _mgr.off('unload', observer);
+        _mgr.off('update', observer_rows);
+        _mgr.off('rows', observer_rows);
 
 				_obj = null;
 				_extra_fields = null;
@@ -227,14 +218,14 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		attach: {
 			value: function (attr) {
 
-				if (_obj)
-					Object.unobserve(_obj, observer);
+        _mgr.off('update', observer);
+        _mgr.off('unload', observer);
+        _mgr.off('update', observer_rows);
+        _mgr.off('rows', observer_rows);
 
-				if(_extra_fields && _extra_fields instanceof TabularSection)
-					Object.unobserve(_obj, observer_rows);
-
-				if(attr.oxml)
-					_oxml = attr.oxml;
+				if(attr.oxml){
+          _oxml = attr.oxml;
+        }
 
 				if(attr.selection)
 					_selection = attr.selection;
@@ -273,10 +264,16 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 
 
 				// начинаем следить за объектом и, его табчастью допреквизитов
-				Object.observe(_obj, observer, ["update", "unload"]);
+				_mgr.on({
+          update: observer,
+          unload: observer,
+        })
 
 				if(_extra_fields && _extra_fields instanceof TabularSection){
-          Object.observe(_obj, observer_rows, ["row", "rows"]);
+          _mgr.on({
+            update: observer_rows,
+            rows: observer_rows,
+          })
         }
 
 				// заполняем табчасть данными

@@ -511,81 +511,6 @@ export class DataManager extends MetaEventEmitter{
 
 	}
 
-	/**
-	 * Широковещательное событие на объекте `md`
-	 * @param name
-	 * @param attr
-	 */
-	brodcast_event(name, attr){
-		this._owner.$p.md.emit(name, attr)
-	}
-
-	static get EVENTS(){
-		return {
-
-			/**
-			 * ### После создания
-			 * Возникает после создания объекта. В обработчике можно установить значения по умолчанию для полей и табличных частей
-			 * или заполнить объект на основании данных связанного объекта
-			 *
-			 * @event AFTER_CREATE
-			 * @for DataManager
-			 */
-			AFTER_CREATE: "AFTER_CREATE",
-
-			/**
-			 * ### После чтения объекта с сервера
-			 * Имеет смысл для объектов с типом кеширования ("doc", "doc_remote", "meta", "e1cib").
-			 * т.к. структура _DataObj_ может отличаться от прототипа в базе-источнике, в обработчике можно дозаполнить или пересчитать реквизиты прочитанного объекта
-			 *
-			 * @event AFTER_LOAD
-			 * @for DataManager
-			 */
-			AFTER_LOAD: "AFTER_LOAD",
-
-			/**
-			 * ### Перед записью
-			 * Возникает перед записью объекта. В обработчике можно проверить корректность данных, рассчитать итоги и т.д.
-			 * Запись можно отклонить, если у пользователя недостаточно прав, либо введены некорректные данные
-			 *
-			 * @event BEFORE_SAVE
-			 * @for DataManager
-			 */
-			BEFORE_SAVE: "BEFORE_SAVE",
-
-			/**
-			 * ### После записи
-			 *
-			 * @event AFTER_SAVE
-			 * @for DataManager
-			 */
-			BEFORE_SAVE: "BEFORE_SAVE",
-
-			/**
-			 * ### При изменении реквизита шапки или табличной части
-			 *
-			 * @event VALUE_CHANGE
-			 * @for DataManager
-			 */
-			VALUE_CHANGE: "VALUE_CHANGE",
-
-			/**
-			 * ### При добавлении строки табличной части
-			 *
-			 * @event ADD_ROW
-			 * @for DataManager
-			 */
-			ADD_ROW: "ADD_ROW",
-
-			/**
-			 * ### При удалении строки табличной части
-			 *
-			 * @event DEL_ROW
-			 * @for DataManager
-			 */
-			DEL_ROW: "DEL_ROW"
-		}
-	}
 
 }
 
@@ -722,8 +647,7 @@ export class RefDataManager extends DataManager{
 				}
 
 				// Триггер после создания
-				let after_create_res = {};
-				this.emit("after_create", o, after_create_res);
+				const after_create_res = o.after_create();
 
 				// Если новый код или номер не были назначены в триггере - устанавливаем стандартное значение
 				let call_new_number_doc;
@@ -731,14 +655,12 @@ export class RefDataManager extends DataManager{
 					if(!o.number_doc){
 						call_new_number_doc = true;
 					}
-
-				}else{
+				}
+				else{
 					if(!o.id){
 						call_new_number_doc = true;
 					}
 				}
-
-				const {ajax} = this._owner.$p;
 
 				return (call_new_number_doc ? o.new_number_doc() : Promise.resolve(o))
 					.then(() => {
@@ -751,7 +673,8 @@ export class RefDataManager extends DataManager{
 
 						// выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
 						if(this.cachable == "e1cib" && fill_default){
-							var rattr = {};
+              const {ajax} = this._owner.$p;
+              const rattr = {};
 							ajax.default_attr(rattr, job_prm.irest_url());
 							rattr.url += this.rest_name + "/Create()";
 							return ajax.get_ex(rattr.url, rattr)

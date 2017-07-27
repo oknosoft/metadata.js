@@ -369,14 +369,6 @@ function OCombo(attr){
 	 * Параметры аналогичны конструктору
 	 */
 	this.attach = function (attr) {
-
-		if(_obj){
-			if(_obj instanceof TabularSectionRow)
-				Object.unobserve(_obj._owner._owner, observer);
-			else
-				Object.unobserve(_obj, observer);
-		}
-
 		_obj = attr.obj;
 		_field = attr.field;
 		_property = attr.property;
@@ -407,10 +399,8 @@ function OCombo(attr){
 		}
 
 		// начинаем следить за объектом
-		if(_obj instanceof TabularSectionRow)
-			Object.observe(_obj._owner._owner, observer, ["row"]);
-		else
-			Object.observe(_obj, observer, ["update"]);
+    _mgr.off('update', observer);
+    _mgr.on('update', observer);
 
 	};
 
@@ -435,12 +425,7 @@ function OCombo(attr){
 
 		t.getInput().removeEventListener("focus", onfocus);
 
-		if(_obj){
-			if(_obj instanceof TabularSectionRow)
-				Object.unobserve(_obj._owner._owner, observer);
-			else
-				Object.unobserve(_obj, observer);
-		}
+		_mgr.off('update', observer);
 
 		if(t.conf && t.conf.tm_confirm_blur)
 			clearTimeout(t.conf.tm_confirm_blur);

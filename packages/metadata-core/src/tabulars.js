@@ -100,22 +100,16 @@ export class TabularSection {
 	 *     ts.clear();
 	 *
 	 */
-	clear(silent) {
-
-		const {_obj, _owner} = this;
-
-		// for (var i = 0; i < _obj.length; i++){
-		// 	delete _obj[i]
-		// }
-		_obj.length = 0;
-
-		if (!silent && !_owner._data._silent){
-			// TODO: observe
-			// Object.getNotifier(this._owner).notify({
-			// 	type: 'rows',
-			// 	tabular: this._name
-			// });
-		}
+	clear(selection) {
+		const {_obj, _owner, _name, _manager} = this;
+    if(!selection){
+      _obj.length = 0;
+      // obj, ts_name
+      _manager.emit_async('rows', _owner, {[_name]: null});
+    }
+    else{
+      this.find_rows(selection).forEach((row) => this.del(row.row-1))
+    }
 		return this;
 	}
 
@@ -124,45 +118,44 @@ export class TabularSection {
 	 * @method del
 	 * @param val {Number|TabularSectionRow} - индекс или строка табчасти
 	 */
-	del(val, silent) {
+	del(val) {
 
-		const {_obj, _owner} = this;
+		const {_obj, _owner, _name} = this;
 
 		let index;
 
-		if (typeof val == "undefined")
-			return;
-
-		else if (typeof val == "number")
-			index = val;
-
-		else if (_obj[val.row - 1]._row === val)
-			index = val.row - 1;
-
+		if (typeof val == "undefined"){
+      return;
+    }
+		else if (typeof val == "number"){
+      index = val;
+    }
+		else if (_obj[val.row - 1]._row === val){
+      index = val.row - 1;
+    }
 		else {
-			for (var i in _obj)
-				if (_obj[i]._row === val) {
-					index = Number(i);
-					delete _obj[i]._row;
-					break;
-				}
+		  for(const i = 0; i < _obj.length; i++){
+        if (_obj[i]._row === val) {
+          index = i;
+          break;
+        }
+      }
 		}
-		if (index == undefined)
-			return;
+		if (index == undefined){
+      return;
+    }
+
+		// триггер
+    if(_owner.del_row(_obj[index]._row) === false){
+      return;
+    }
 
 		_obj.splice(index, 1);
 
-		_obj.forEach(function (row, index) {
-			row.row = index + 1;
-		});
+		_obj.forEach((row, index) => row.row = index + 1);
 
-		if (!silent && !_owner._data._silent){
-			// TODO: observe
-			// Object.getNotifier(_owner).notify({
-			// 	type: 'rows',
-			// 	tabular: this._name
-			// });
-		}
+    // obj, {ts_name: null}
+    _owner._manager.emit_async('rows', _owner, {[_name]: null});
 
 		_owner._data._modified = true;
 	}
@@ -175,9 +168,8 @@ export class TabularSection {
 	 * @return {TabularSectionRow}
 	 */
 	find(val, columns) {
-		var res = utils._find(this._obj, val, columns);
-		if (res)
-			return res._row;
+		const res = utils._find(this._obj, val, columns);
+		return res && res._row;
 	}
 
 	/**
@@ -190,13 +182,11 @@ export class TabularSection {
 	 * @return {Array}
 	 */
 	find_rows(selection, callback) {
-
 		const cb = callback ? (row) => {
 			return callback.call(this, row._row);
 		} : null;
 
 		return utils._find_rows.call(this, this._obj, selection, cb);
-
 	}
 
 	/**
@@ -206,19 +196,12 @@ export class TabularSection {
 	 * @param rowid2 {number}
 	 */
 	swap(rowid1, rowid2) {
-
-		const {_obj} = this;
+    const {_obj, _owner, _name} = this;
 		[_obj[rowid1], _obj[rowid2]] = [_obj[rowid2], _obj[rowid1]];
-		_obj[rowid1].row = rowid2 + 1
-		_obj[rowid2].row = rowid1 + 1
-
-		if (!this._owner._data._silent){
-			// TODO: observe
-			// Object.getNotifier(this._owner).notify({
-			// 	type: 'rows',
-			// 	tabular: this._name
-			// });
-		}
+		_obj[rowid1].row = rowid2 + 1;
+		_obj[rowid2].row = rowid1 + 1;
+    // obj, {ts_name: null}
+    _owner._manager.emit_async('rows', _owner, {[_name]: null});
 	}
 
 	/**
@@ -232,10 +215,15 @@ export class TabularSection {
 	 *     // Добавляет строку в табчасть и заполняет её значениями, переданными в аргументе
 	 *     const row = ts.add({field1: value1});
 	 */
-	add(attr = {}, silent) {
+	add(attr = {}) {
 
-		const {_owner, _name, _obj} = this
+		const {_owner, _name, _obj} = this;
 		const row = _owner._manager.obj_constructor(_name, this);
+
+    // триггер
+		if(_owner.add_row(row) === false){
+		  return;
+    }
 
 		// присваиваем типизированные значения по умолчанию
 		for (let f in row._metadata().fields){
@@ -248,13 +236,8 @@ export class TabularSection {
 			enumerable: false
 		})
 
-		if (!silent && !this._owner._data._silent){
-			// TODO: observe
-			// Object.getNotifier(this._owner).notify({
-			// 	type: 'rows',
-			// 	tabular: this._name
-			// });
-		}
+    // obj, {ts_name: null}
+    _owner._manager.emit_async('rows', _owner, {[_name]: null});
 
 		_owner._data._modified = true;
 
@@ -290,7 +273,7 @@ export class TabularSection {
 
 		try {
 			const res = this.aggregate(dimensions, resources, "SUM", true);
-			return this.clear(true).load(res);
+			return this.clear().load(res);
 		}
 		catch (err) {
 			this._owner._manager._owner.$p.record_log(err);
@@ -313,21 +296,21 @@ export class TabularSection {
 			res = true
 			has_dot;
 
-		fields.forEach(function (f) {
-			has_dot = has_dot || f.match('.');
-			f = f.trim().replace(/\s{1,}/g, " ").split(" ");
-			if (res){
-				res = false;
-			}
-			else{
-				sql += ", ";
-			}
+		for(let f of fields){
+      has_dot = has_dot || f.match('.');
+      f = f.trim().replace(/\s{1,}/g, " ").split(" ");
+      if (res){
+        res = false;
+      }
+      else{
+        sql += ", ";
+      }
 
-			sql += "`" + f[0] + "`";
-			if (f[1]){
-				sql += " " + f[1];
-			}
-		});
+      sql += "`" + f[0] + "`";
+      if (f[1]){
+        sql += " " + f[1];
+      }
+    }
 
 		try {
 			res = alasql(sql, [has_dot ? this._obj.map((row) => row._row) : this._obj]);
@@ -435,18 +418,12 @@ export class TabularSection {
 		}
 
 		if (arr){
-			arr.forEach((row) => {
-				this.add(row, true)
-			})
+			arr.forEach((row) => this.add(row, true));
 		}
 
-		if (!this._owner._data._silent){
-			// TODO: observe
-			// Object.getNotifier(t._owner).notify({
-			// 	type: 'rows',
-			// 	tabular: t._name
-			// });
-		}
+    const {_owner, _name, _obj} = this;
+    // obj, {ts_name: null}
+    _owner._manager.emit_async('rows', _owner, {[_name]: null});
 
 		return this;
 	}
@@ -563,16 +540,8 @@ export class TabularSectionRow {
 		if (_obj[f] == v || (!v && _obj[f] == utils.blank.guid))
 			return;
 
-		if (!_owner._owner._data._silent){
-			// TODO: observe
-			// Object.getNotifier(this._owner._owner).notify({
-			// 	type: 'row',
-			// 	row: this,
-			// 	tabular: this._owner._name,
-			// 	name: f,
-			// 	oldValue: this._obj[f]
-			// });
-		}
+    // obj, {f: oldValue}
+    _owner._owner._manager.emit_async('update', this, {[f]: _obj[f]});
 
 		// учтём связь по типу
 		if (_meta.choice_type) {
@@ -588,6 +557,15 @@ export class TabularSectionRow {
 		this.__setter(f, v);
 		_owner._owner._data._modified = true;
 	}
+
+  /**
+   * ### При изменении реквизита шапки или табличной части
+   *
+   * @event VALUE_CHANGE
+   */
+  value_change(f, v, old) {
+    return this;
+  }
 
 };
 

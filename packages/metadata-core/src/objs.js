@@ -98,7 +98,6 @@ export class DataObj {
 			manager.push(this, this._obj.ref);
 		}
 
-		attr = null;
 	}
 
 	_getter(f) {
@@ -152,10 +151,21 @@ export class DataObj {
 		}
 	}
 
+  /**
+   * Устанваливает значение реквизита с приведением типов без проверки, отличается ли оно от предыдущего
+   * @param f
+   * @param v
+   * @private
+   */
 	__setter(f, v) {
 
 		const mf = this._metadata(f).type;
-		const {_obj} = this;
+
+		if(this.value_change(f, mf, v) === false){
+		  return;
+    }
+
+    const {_obj} = this;
 
 		if(f == "type" && v.types){
 			_obj[f] = v;
@@ -218,16 +228,16 @@ export class DataObj {
 	}
 
 	__notify(f) {
-		if(!this._data._silent){
-			// TODO: observe
-			// Object.getNotifier(this).notify({
-			// 	type: 'update',
-			// 	name: f,
-			// 	oldValue: this._obj[f]
-			// });
-		}
+	  // obj, {f: oldValue}
+    this._manager.emit_async('update', this, {[f]: this._obj[f]});
 	}
 
+  /**
+   * Устанваливает значение, если оно отличается от предыдущего
+   * @param f
+   * @param v
+   * @private
+   */
 	_setter(f, v) {
 		if(this._obj[f] != v){
 			this.__notify(f);
@@ -365,8 +375,7 @@ export class DataObj {
 			return this._manager.adapter.load_obj(this)
 				.then(() => {
 					this._data._modified = false;
-					setTimeout(() => {this._manager.brodcast_event("obj_loaded", this)})
-					return this;
+					return this.after_load()
 				});
 		}
 
@@ -378,33 +387,20 @@ export class DataObj {
 	 * @for DataObj
 	 */
 	unload() {
-
-		const {_obj, ref, _observers, _notis, _manager} = this;
-
-		_manager.unload_obj(ref)
-
-		if (_observers){
-			_observers.length = 0
-		}
-
-		if (_notis){
-			_notis.length = 0
-		}
-
+		const {_obj, ref, _manager} = this;
+		_manager.unload_obj(ref);
+    _manager.emit_async('unload', this);
 		for (let f in this._metadata().tabular_sections){
-			this[f].clear(true)
+			this[f].clear()
 		}
-
 		for (let f in this) {
 			if (this.hasOwnProperty(f)){
 				delete this[f]
 			}
 		}
-
 		for (let f in _obj){
 			delete _obj[f]
 		}
-
 		["_ts_", "_obj", "_data"].forEach((f) => delete this[f]);
 	}
 
@@ -568,43 +564,21 @@ export class DataObj {
 			});
 	}
 
-
-	/**
-	 * ### Включает тихий режим
-	 * Режим, при котором объект не информирует мир об изменениях своих свойств.<br />
-	 * Полезно, например, при групповых изменениях, чтобы следящие за объектом формы не тратили время на перерисовку при изменении каждого совйтсва
-	 *
-	 * @method _silent
-	 * @for DataObj
-	 * @param [v] {Boolean}
-	 */
-	_silent(v) {
-		const {_data} = this
-		if (typeof v == "boolean"){
-			_data._silent = v
-		}
-		else {
-			_data._silent = true;
-			setTimeout(() => {
-				_data._silent = false
-			})
-		}
-	}
-
-	_mixin_attr(attr){
+  /**
+   * Применяет атрибуты к объекту
+   * @param attr
+   * @private
+   */
+	_mixin(attr){
 		if(Object.isFrozen(this)){
 			return;
 		}
 		if(attr && typeof attr == "object"){
-			if(attr._not_set_loaded){
-				delete attr._not_set_loaded;
-				utils._mixin(this, attr);
-
-			}else{
-				utils._mixin(this, attr);
-				if(!utils.is_empty_guid(this.ref) && (attr.id || attr.name)){
-					this._set_loaded(this.ref);
-				}
+		  const {_not_set_loaded} = attr;
+      delete attr._not_set_loaded;
+      utils._mixin(this, attr);
+			if(!_not_set_loaded && !utils.is_empty_guid(this.ref) && (attr.id || attr.name)){
+        this._set_loaded(this.ref);
 			}
 		}
 	}
@@ -624,6 +598,75 @@ export class DataObj {
 	print(model, wnd) {
 		return this._manager.print(this, model, wnd);
 	}
+
+  /**
+   * ### После создания
+   * Возникает после создания объекта. В обработчике можно установить значения по умолчанию для полей и табличных частей
+   * или заполнить объект на основании данных связанного объекта
+   *
+   * @event AFTER_CREATE
+   */
+  after_create() {
+    return this;
+  }
+
+  /**
+   * ### После чтения объекта с сервера
+   * Имеет смысл для объектов с типом кеширования ("doc", "doc_remote", "meta", "e1cib").
+   * т.к. структура _DataObj_ может отличаться от прототипа в базе-источнике, в обработчике можно дозаполнить или пересчитать реквизиты прочитанного объекта
+   *
+   * @event AFTER_LOAD
+   */
+  after_load() {
+    return this;
+  }
+
+  /**
+   * ### Перед записью
+   * Возникает перед записью объекта. В обработчике можно проверить корректность данных, рассчитать итоги и т.д.
+   * Запись можно отклонить, если у пользователя недостаточно прав, либо введены некорректные данные
+   *
+   * @event BEFORE_SAVE
+   */
+  before_save() {
+    return this;
+  }
+
+  /**
+   * ### После записи
+   *
+   * @event AFTER_SAVE
+   */
+  after_save() {
+    return this;
+  }
+
+  /**
+   * ### При изменении реквизита шапки или табличной части
+   *
+   * @event VALUE_CHANGE
+   */
+  value_change(f, v, old) {
+    return this;
+  }
+
+  /**
+   * ### При добавлении строки табличной части
+   *
+   * @event ADD_ROW
+   */
+  add_row(row) {
+    return this;
+  }
+
+  /**
+   * ### При удалении строки табличной части
+   *
+   * @event DEL_ROW
+   */
+  del_row(row) {
+    return this;
+  }
 
 }
 
@@ -659,7 +702,7 @@ export class CatObj extends DataObj {
 		// выполняем конструктор родительского объекта
 		super(attr, manager);
 
-		this._mixin_attr(attr);
+		this._mixin(attr);
 
 	}
 
@@ -791,7 +834,7 @@ export class DocObj extends NumberDocAndDate(DataObj) {
 		// выполняем конструктор родительского объекта
 		super(attr, manager);
 
-		this._mixin_attr(attr);
+		this._mixin(attr);
 
 	}
 

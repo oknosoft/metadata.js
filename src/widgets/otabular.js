@@ -424,10 +424,8 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 		destructor: {
 			value: function () {
 
-				if(_obj){
-					Object.unobserve(_obj, observer);
-					Object.unobserve(_obj, observer_rows);
-				}
+        _mgr.off('update', observer);
+        _mgr.off('rows', observer_rows);
 
 				_obj = null;
 				_ts = null;
@@ -568,8 +566,10 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	observer_rows([{tabular: _tsname, type: "rows"}]);
 
 	// начинаем следить за объектом и, его табчастью допреквизитов
-	Object.observe(_obj, observer, ["row"]);
-	Object.observe(_obj, observer_rows, ["rows"]);
+  _mgr.on({
+    update: observer,
+    rows: observer_rows,
+  });
 
 	// начинаем следить за буфером обмена
 	_grid.entBox.addEventListener('paste', onpaste);
