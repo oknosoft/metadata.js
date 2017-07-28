@@ -20,7 +20,7 @@ function metaInitialState(){
     wsql.set_user_param('user_pwd', job_prm.guests[0].password);
     has_login = true;
   }
-  else if (wsql.get_user_param('enable_save_pwd') && user_name && wsql.get_user_param('user_pwd')) {
+  else if (wsql.get_user_param('enable_save_pwd', 'boolean') && user_name && wsql.get_user_param('user_pwd')) {
     has_login = true;
   }
   else {

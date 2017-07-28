@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.1-beta.19, built:2017-07-26
+ metadata-redux v2.0.1-beta.19, built:2017-07-28
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -196,7 +196,7 @@ const LOAD_START  = 'POUCH_LOAD_START';
 const DATA_LOADED = 'POUCH_DATA_LOADED';
 const DATA_ERROR  = 'POUCH_DATA_ERROR';
 const NO_DATA     = 'POUCH_NO_DATA';
-const SYNC_START  = 'POUCH_SYNC_START';
+
 const SYNC_ERROR  = 'POUCH_SYNC_ERROR';
 const SYNC_DATA   = 'POUCH_SYNC_DATA';
 const SYNC_PAUSED = 'POUCH_SYNC_PAUSED';
@@ -268,9 +268,6 @@ function load_start(page) {
 		payload: page
 	}
 }
-function sync_start() {
-	return { type: SYNC_START }
-}
 function sync_error(dbid, err) {
 	return {
 		type: SYNC_ERROR,
@@ -279,7 +276,7 @@ function sync_error(dbid, err) {
 }
 function sync_paused(dbid, info) {
 	return {
-		type: SYNC_PAUSED,
+    type: info ? SYNC_PAUSED : SYNC_RESUMED,
 		payload: { dbid, info }
 	}
 }
@@ -358,9 +355,9 @@ var handlers = {
   [PRM_CHANGE]: (state, action) => {
     const {name, value} = action.payload;
     const {wsql} = $p;
-    if(typeof Array.isArray(name)){
+    if(Array.isArray(name)){
       for(const {prm, value} of name){
-        $p.wsql.set_user_param(prm, value);
+        value !== null && $p.wsql.set_user_param(prm, value);
       }
     }
     else if(typeof name == 'object'){
@@ -383,9 +380,10 @@ var handlers = {
   },
   [DATA_PAGE]: (state, action) => Object.assign({}, state, {page: action.payload}),
   [DATA_ERROR]: (state, action) => Object.assign({}, state, {err: action.payload, fetch: false}),
-  [LOAD_START]: (state, action) => Object.assign({}, state, {sync_started: true, data_empty: false, fetch: true}),
+  [LOAD_START]: (state, action) => Object.assign({}, state, {data_empty: false, fetch: true}),
   [NO_DATA]: (state, action) => Object.assign({}, state, {data_empty: true, fetch: false}),
-  [SYNC_START]: (state, action) => Object.assign({}, state, {sync_started: true}),
+  [SYNC_PAUSED]: (state, action) => Object.assign({}, state, {sync_started: false}),
+  [SYNC_RESUMED]: (state, action) => Object.assign({}, state, {sync_started: true}),
   [SYNC_DATA]: (state, action) => Object.assign({}, state, {fetch: !!action.payload}),
   [DEFINED]: (state, action) => {
     const user = Object.assign({}, state.user);
@@ -431,7 +429,7 @@ function metaInitialState(){
     wsql.set_user_param('user_pwd', job_prm.guests[0].password);
     has_login = true;
   }
-  else if (wsql.get_user_param('enable_save_pwd') && user_name && wsql.get_user_param('user_pwd')) {
+  else if (wsql.get_user_param('enable_save_pwd', 'boolean') && user_name && wsql.get_user_param('user_pwd')) {
     has_login = true;
   }
   else {
@@ -480,7 +478,6 @@ function metaMiddleware({adapters, md}) {
 					pouch_data_error: (dbid, err) => {dispatch(data_error(dbid, err));},
 					pouch_load_start: (page) => {dispatch(load_start(page));},
 					pouch_no_data: (dbid, err) => {dispatch(no_data(dbid, err));},
-					pouch_sync_start: () => {dispatch(sync_start());},
 					pouch_sync_data: (dbid, change$$1) => {dispatch(sync_data(dbid, change$$1));},
 					pouch_sync_error: (dbid, err) => {dispatch(sync_error(dbid, err));},
 					pouch_sync_paused: (dbid, info) => {dispatch(sync_paused(dbid, info));},

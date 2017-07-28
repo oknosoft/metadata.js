@@ -221,10 +221,6 @@ function adapter({AbstracrAdapter}) {
 									t.emit('user_log_in', username)
 								});
 
-								const sync = {};
-								if(_paths.direct) {
-									return t.load_data();
-								}
 								try_auth.length = 0;
 								md.bases().forEach((dbid) => {
 									if(t.local[dbid] && t.remote[dbid] && t.local[dbid] != t.remote[dbid]){
@@ -236,6 +232,7 @@ function adapter({AbstracrAdapter}) {
 								});
 								return Promise.all(try_auth);
 							})
+              .then(() => t.load_data())
 							.catch(err => {
 								// излучаем событие
 								t.emit('user_log_fault', err)
@@ -252,66 +249,23 @@ function adapter({AbstracrAdapter}) {
 
 						if(_auth){
 							if(_local.sync.doc){
-								try{
-									_local.sync.doc.cancel();
-								}catch(err){}
+								try{_local.sync.doc.cancel()}catch(err){}
 							}
 							if(_local.sync.ram){
-								try{
-									_local.sync.ram.cancel();
-								}catch(err){}
+								try{_local.sync.ram.cancel()}catch(err){}
 							}
 							_auth = null;
 						}
 
-						return _remote.ram.logout()
-							.then(() => {
-								if(_remote && _remote.doc){
-									return _remote.doc.logout()
-								}
-							})
-							.then(() => {
-								if(_remote && _remote.ram){
-									delete _remote.ram;
-								}
-								if(_remote && _remote.doc){
-									delete _remote.doc;
-								}
-								_remote = null;
-								t.emit('user_log_out')
-							})
+            return Promise.all(this.$p.md.bases().map((id) => {
+              if(id != 'meta' && _remote && _remote[id] && _remote[id] != _local[id]){
+                return _remote[id].logout();
+              }
+            }))
+              .then(() => t.emit('user_log_out'));
 					}
 				},
 
-				/**
-				 * ### Уничтожает локальные данные
-				 * Используется при изменении структуры данных на сервере
-				 *
-				 * @method reset_local_data
-				 */
-				reset_local_data: {
-					value: function () {
-
-						var destroy_ram = t.local.ram.destroy.bind(t.local.ram),
-							destroy_doc = t.local.doc.destroy.bind(t.local.doc),
-							do_reload = () => {
-								setTimeout(() => {
-									location.reload(true);
-								}, 1000);
-							};
-
-						t.log_out();
-
-						setTimeout(() => {
-							destroy_ram()
-								.then(destroy_doc)
-								.catch(destroy_doc)
-								.then(do_reload)
-								.catch(do_reload);
-						}, 1000);
-
-					}
-				},
 
 				/**
 				 * ### Загружает условно-постоянные данные из базы ram в alasql
@@ -471,7 +425,6 @@ function adapter({AbstracrAdapter}) {
 								}
 
 								if(id == "ram" && linfo.doc_count < (job_prm.pouch_ram_doc_count || 10)){
-
 									// широковещательное оповещение о начале загрузки локальных данных
 									_page = {
 										total_rows: rinfo.doc_count,
@@ -482,12 +435,6 @@ function adapter({AbstracrAdapter}) {
 										start: Date.now()
 									};
 									t.emit('pouch_load_start', _page)
-
-								}else if(id == "doc"){
-									// широковещательное оповещение о начале синхронизации базы doc
-									setTimeout(() => {
-										t.emit('pouch_sync_start')
-									});
 								}
 
 								var options = {
@@ -543,16 +490,6 @@ function adapter({AbstracrAdapter}) {
 										t.emit('pouch_sync_data', id, change);
 
 									})
-									.on('paused', (info) => {
-										// replication was paused, usually because of a lost connection
-										t.emit('pouch_sync_paused', id, info);
-
-									})
-									.on('active', (info) => {
-										// replication was resumed
-										t.emit('pouch_sync_resumed', id, info);
-
-									})
 									.on('denied', (info) => {
 										// a document failed to replicate, e.g. due to permissions
 										t.emit('pouch_sync_denied', id, info);
@@ -564,6 +501,19 @@ function adapter({AbstracrAdapter}) {
 
 									});
 
+								if(id == 'ram'){
+                  _local.sync[id]
+                    .on('paused', (info) => {
+                      // replication was paused, usually because of a lost connection
+                      t.emit('pouch_sync_paused', id, info);
+
+                    })
+                    .on('active', (info) => {
+                      // replication was resumed
+                      t.emit('pouch_sync_resumed', id, info);
+                    })
+                }
+
 								return _local.sync[id];
 							});
 					}
@@ -572,6 +522,27 @@ function adapter({AbstracrAdapter}) {
 			})
 
 		}
+
+    /**
+     * ### Уничтожает локальные данные
+     * Используется при изменении структуры данных на сервере
+     *
+     * @method reset_local_data
+     */
+    reset_local_data() {
+      const {doc, ram} = this.local;
+      const do_reload = () => {
+        setTimeout(() => {
+          location.reload(true);
+        }, 1000);
+      };
+
+      return this.log_out()
+        .then(ram.destroy.bind(ram))
+        .then(doc.destroy.bind(doc))
+        .then(do_reload)
+        .catch(do_reload);
+    }
 
 		/**
 		 * ### Читает объект из pouchdb

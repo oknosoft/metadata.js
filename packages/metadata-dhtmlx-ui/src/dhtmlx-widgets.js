@@ -2244,7 +2244,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				}
 			}
 
-      _ts._owner._silent(false);
 			var row = _ts.add(proto);
 
 			if(_mgr.handle_event(_obj, "add_row",
@@ -2269,7 +2268,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
     var rId = get_sel_index();
 
     if(rId != undefined){
-      _ts._owner._silent(false);
       if(direction == "up"){
         if(rId != 0){
           _ts.swap(rId-1, rId);
@@ -2298,7 +2296,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			var rId = get_sel_index();
 
 			if(rId != undefined){
-        _ts._owner._silent(false);
 				if(_mgr.handle_event(_obj, "del_row",
 						{
 							tabular_section: _tsname,
@@ -2452,7 +2449,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
     if(_input_filter != _cell.input_filter.value){
       _input_filter = new RegExp(_cell.input_filter.value, 'i');
-      listener_rows(_obj, {[_tsname]: null});
+      listener_rows(_obj, {[_tsname]: true});
     }
 
   }
@@ -2573,7 +2570,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			},
 			set: function (sel) {
 				_selection = sel;
-        listener_rows(_obj, {[_tsname]: null});
+        listener_rows(_obj, {[_tsname]: true});
 			}
 		},
 
@@ -2721,7 +2718,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
   });
 
 	// заполняем табчасть данными
-  listener_rows(_obj, {[_tsname]: null});
+  listener_rows(_obj, {[_tsname]: true});
 
 	// начинаем следить за объектом и, его табчастью допреквизитов
   _mgr.on({
@@ -3640,7 +3637,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 * @param changes
 	 */
 	function listener(obj, fields) {
-		if(obj === o && wnd && wnd.set_text){
+		if(wnd && wnd.set_text && ((obj === o) || (obj._owner && obj._owner._owner === o))){
       wnd.set_text();
     }
 	}
@@ -3889,16 +3886,17 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 					if(btn){
 						close_confirmed = true;
 						// закрыть изменённый без сохранения - значит прочитать его из pouchdb
-						if(o._manager.cachable == "ram")
-							this.close();
-
+						if(o._manager.cachable == "ram"){
+              this.close && this.close();
+            }
 						else{
 							if(o.is_new()){
 								o.unload();
-								this.close();
-							}else{
+                this.close &&this.close();
+							}
+							else{
 								setTimeout(o.load.bind(o), 100);
-								this.close();
+                this.close && this.close();
 							}
 						}
 					}
@@ -3937,23 +3935,22 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	// читаем объект из локального SQL или получаем с сервера
 	if($p.utils.is_data_obj(o)){
 
-		if(o.is_new() && attr.on_select)
-			return _mgr.create({}, true)
-				.then(function (tObj) {
-					o = tObj;
-					tObj = null;
-					return frm_fill();
-				});
+		if(o.is_new() && attr.on_select){
+      return _mgr.create({}, true)
+        .then(function (tObj) {
+          o = tObj;
+          tObj = null;
+          return frm_fill();
+        });
+    }
 		else if(o.is_new() && !o.empty()){
 			return o.load()
 				.then(frm_fill);
 		}else
 			return Promise.resolve(frm_fill());
-
-	}else{
-
-		if(pwnd && pwnd.progressOn)
-			pwnd.progressOn();
+	}
+	else{
+		pwnd && pwnd.progressOn && pwnd.progressOn();
 
 		return _mgr.get(attr.hasOwnProperty("ref") ? attr.ref : attr, true, true)
 			.then(function(tObj){

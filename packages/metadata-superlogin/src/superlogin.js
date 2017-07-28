@@ -253,7 +253,7 @@ function attach($p){
 				handleForgotPassword,
 				handleCheckUsername,
 				handlecheckEmail,
-				handleSetPrm
+				handleSetPrm,
 			}
 		}
 	});

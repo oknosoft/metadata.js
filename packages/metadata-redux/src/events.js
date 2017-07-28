@@ -1,6 +1,6 @@
 
 import {log_in, log_out} from './actions_auth';
-import {data_page, data_loaded, data_error, load_start, no_data, sync_start, sync_data, sync_error, sync_paused, sync_resumed, sync_denied} from './actions_pouch';
+import {data_page, data_loaded, data_error, load_start, no_data, sync_data, sync_error, sync_paused, sync_resumed, sync_denied} from './actions_pouch';
 import {change} from './actions_obj';
 
 
@@ -32,8 +32,6 @@ export default function metaMiddleware({adapters, md}) {
 					pouch_load_start: (page) => {dispatch(load_start(page))},
 
 					pouch_no_data: (dbid, err) => {dispatch(no_data(dbid, err))},
-
-					pouch_sync_start: () => {dispatch(sync_start())},
 
 					pouch_sync_data: (dbid, change) => {dispatch(sync_data(dbid, change))},
 

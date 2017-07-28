@@ -1031,6 +1031,7 @@ class MetaEventEmitter extends EventEmitter{
 					super.on(fld, type[fld]);
 				}
 			}
+			return this;
 		}
 	}
 	off(type, listener){
@@ -1215,14 +1216,10 @@ class DataManager extends MetaEventEmitter{
 		}
 		return new constructor(mode);
 	}
-	get_option_list(selection){
-		let t = this, l = [], input_by_string, text, val = null;
-		if(arguments.length = 2){
-			val = selection;
-			selection = arguments[1];
-		}
+	get_option_list(selection = {}, val){
+		let t = this, l = [], input_by_string, text;
 		function push(v){
-			if(val !== null){
+			if(selection._dhtmlx){
 				v = {
 					text: v.presentation,
 					value: v.ref
@@ -1960,8 +1957,20 @@ class EnumManager extends RefDataManager{
 		}
 		return res;
 	}
-	get_option_list(selection){
+	get_option_list(selection = {}, val){
 		var l = [], synonym = "", sref;
+    function push(v){
+      if(selection._dhtmlx){
+        v = {
+          text: v.presentation,
+          value: v.ref
+        };
+        if(utils.is_equal(v.value, val)){
+          v.selected = true;
+        }
+      }
+      l.push(v);
+    }
 		if(selection){
 			for(var i in selection){
 				if(i.substr(0,1)!="_"){
@@ -1994,7 +2003,7 @@ class EnumManager extends RefDataManager{
 						return;
 				}
 			}
-			l.push(this[v.ref]);
+			push(this[v.ref]);
 		});
 		return Promise.resolve(l);
 	}

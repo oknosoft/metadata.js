@@ -130,10 +130,6 @@ export function load_start(page) {
 	}
 }
 
-export function sync_start() {
-	return { type: SYNC_START }
-}
-
 export function sync_error(dbid, err) {
 	return {
 		type: SYNC_ERROR,
@@ -143,7 +139,7 @@ export function sync_error(dbid, err) {
 
 export function sync_paused(dbid, info) {
 	return {
-		type: SYNC_PAUSED,
+    type: info ? SYNC_PAUSED : SYNC_RESUMED,
 		payload: { dbid, info }
 	}
 }

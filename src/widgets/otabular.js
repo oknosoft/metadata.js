@@ -82,7 +82,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				}
 			}
 
-      _ts._owner._silent(false);
 			var row = _ts.add(proto);
 
 			if(_mgr.handle_event(_obj, "add_row",
@@ -107,7 +106,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
     var rId = get_sel_index();
 
     if(rId != undefined){
-      _ts._owner._silent(false);
       if(direction == "up"){
         if(rId != 0){
           _ts.swap(rId-1, rId);
@@ -136,7 +134,6 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			var rId = get_sel_index();
 
 			if(rId != undefined){
-        _ts._owner._silent(false);
 				if(_mgr.handle_event(_obj, "del_row",
 						{
 							tabular_section: _tsname,
@@ -290,7 +287,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
     if(_input_filter != _cell.input_filter.value){
       _input_filter = new RegExp(_cell.input_filter.value, 'i');
-      listener_rows(_obj, {[_tsname]: null});
+      listener_rows(_obj, {[_tsname]: true});
     }
 
   }
@@ -411,7 +408,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			},
 			set: function (sel) {
 				_selection = sel;
-        listener_rows(_obj, {[_tsname]: null});
+        listener_rows(_obj, {[_tsname]: true});
 			}
 		},
 
@@ -559,7 +556,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
   });
 
 	// заполняем табчасть данными
-  listener_rows(_obj, {[_tsname]: null});
+  listener_rows(_obj, {[_tsname]: true});
 
 	// начинаем следить за объектом и, его табчастью допреквизитов
   _mgr.on({

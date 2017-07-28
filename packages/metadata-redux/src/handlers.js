@@ -5,7 +5,7 @@
  */
 
 import {META_LOADED, PRM_CHANGE} from './actions_base';
-import {DATA_LOADED, DATA_PAGE, DATA_ERROR, LOAD_START, NO_DATA, SYNC_START, SYNC_DATA} from './actions_pouch';
+import {DATA_LOADED, DATA_PAGE, DATA_ERROR, LOAD_START, NO_DATA, SYNC_PAUSED, SYNC_RESUMED, SYNC_DATA} from './actions_pouch';
 import {DEFINED, LOG_IN, TRY_LOG_IN, LOG_OUT, LOG_ERROR} from './actions_auth';
 import {ADD, CHANGE} from './actions_obj';
 
@@ -19,7 +19,7 @@ export default {
   [PRM_CHANGE]: (state, action) => {
     const {name, value} = action.payload;
     const {wsql} = $p;
-    if(typeof Array.isArray(name)){
+    if(Array.isArray(name)){
       for(const {prm, value} of name){
         $p.wsql.set_user_param(prm, value);
       }
@@ -48,11 +48,13 @@ export default {
 
   [DATA_ERROR]: (state, action) => Object.assign({}, state, {err: action.payload, fetch: false}),
 
-  [LOAD_START]: (state, action) => Object.assign({}, state, {sync_started: true, data_empty: false, fetch: true}),
+  [LOAD_START]: (state, action) => Object.assign({}, state, {data_empty: false, fetch: true}),
 
   [NO_DATA]: (state, action) => Object.assign({}, state, {data_empty: true, fetch: false}),
 
-  [SYNC_START]: (state, action) => Object.assign({}, state, {sync_started: true}),
+  [SYNC_PAUSED]: (state, action) => Object.assign({}, state, {sync_started: false}),
+
+  [SYNC_RESUMED]: (state, action) => Object.assign({}, state, {sync_started: true}),
 
   [SYNC_DATA]: (state, action) => Object.assign({}, state, {fetch: !!action.payload}),
 
