@@ -340,7 +340,7 @@ DataManager.prototype.__define({
 	 */
 	find_rows: {
 		value: function(selection, callback){
-			return $p._find_rows.call(this, this.by_ref, selection, callback);
+			return $p.utils._find_rows.call(this, this.by_ref, selection, callback);
 		}
 	},
 
@@ -509,7 +509,7 @@ DataManager.prototype.__define({
    * @return {Promise.<Array>}
    */
   get_option_list: {
-    value: function(val, selection){
+    value: function(selection, val){
 
       var t = this, l = [], input_by_string, text, sel;
 
@@ -1831,7 +1831,7 @@ EnumManager.prototype.__define({
    * @return {Promise.<Array>}
    */
   get_option_list: {
-    value: function(val, selection){
+    value: function(selection, val){
       var l = [], synonym = "", sref;
 
       function check(v){

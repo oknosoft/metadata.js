@@ -24,6 +24,7 @@ export default class MetaEventEmitter extends EventEmitter{
 					super.on(fld, type[fld]);
 				}
 			}
+			return this;
 		}
 	}
 

@@ -455,12 +455,6 @@ DataObj.prototype.__define({
 
 			this._manager.unload_obj(this.ref);
 
-			if(this._observers)
-				this._observers.length = 0;
-
-			if(this._notis)
-				this._notis.length = 0;
-
 			for(f in this._metadata.tabular_sections)
 				this[f].clear(true);
 

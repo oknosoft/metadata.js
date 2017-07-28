@@ -90,7 +90,7 @@ function OCombo(attr){
     }
 		if(_mgr){
 			t.clearAll();
-			(attr.get_option_list || _mgr.get_option_list).call(_mgr, null, get_filter(text))
+			(attr.get_option_list || _mgr.get_option_list).call(_mgr, get_filter(text))
 				.then(function (l) {
 					if(t.addOption){
 						t.addOption(l);
@@ -102,7 +102,7 @@ function OCombo(attr){
 	});
 
 	function get_filter(text){
-		var filter = {_top: 30}, choice;
+		var filter = {_top: 50, _dhtmlx: true}, choice;
 
 		if(_mgr && _mgr.metadata().hierarchical && _mgr.metadata().group_hierarchy){
 			if(_meta.choice_groups_elm == "elm")
@@ -334,22 +334,15 @@ function OCombo(attr){
 	t.getInput().addEventListener("focus", onfocus);
 
 
-	function observer(changes){
-		if(!t || !t.getBase)
-			return;
-		else if(!t.getBase().parentElement)
-			setTimeout(t.unload);
-		else{
-			if(_obj instanceof TabularSectionRow){
-
-			}else
-				changes.forEach(function(change){
-					if(change.name == _field){
-						set_value(_obj[_field]);
-					}
-				});
-		}
-	}
+	function listener(obj, fields){
+	  if(!_obj || !t.getBase().parentElement){
+      setTimeout(t.unload);
+    }
+		if(!t || !t.getBase || obj !== _obj){
+      return;
+    }
+    fields[_field] && set_value(_obj[_field]);
+  }
 
 	function set_value(v){
 		if(v && v instanceof DataObj && !v.empty()){
@@ -358,7 +351,8 @@ function OCombo(attr){
 			if(t.getSelectedValue() == v.ref)
 				return;
 			t.setComboValue(v.ref);
-		}else if(!t.getSelectedValue()){
+		}
+		else if(!t.getSelectedValue()){
 			t.setComboValue("");
 			t.setComboText("")
 		}
@@ -388,7 +382,7 @@ function OCombo(attr){
 
 		if(_mgr || attr.get_option_list){
 			// загружаем список в 30 строк
-			(attr.get_option_list || _mgr.get_option_list).call(_mgr, _obj[_field], get_filter())
+			(attr.get_option_list || _mgr.get_option_list).call(_mgr, get_filter(), _obj[_field])
 				.then(function (l) {
 					if(t.addOption){
 						t.addOption(l);
@@ -399,8 +393,10 @@ function OCombo(attr){
 		}
 
 		// начинаем следить за объектом
-    _mgr.off('update', observer);
-    _mgr.on('update', observer);
+    if(_mgr){
+      _mgr.off('update', listener);
+      _mgr.on('update', listener);
+    }
 
 	};
 
@@ -425,10 +421,12 @@ function OCombo(attr){
 
 		t.getInput().removeEventListener("focus", onfocus);
 
-		_mgr.off('update', observer);
+    _mgr && _mgr.off('update', listener);
 
 		if(t.conf && t.conf.tm_confirm_blur)
 			clearTimeout(t.conf.tm_confirm_blur);
+
+    this.list.parentElement.removeChild(this.list);
 
 		_obj = null;
 		_field = null;
@@ -436,7 +434,7 @@ function OCombo(attr){
 		_mgr = null;
 		_pwnd = null;
 
-		try{ _unload.call(t); }catch(e){}
+		try{ _unload && _unload.call(t); }catch(e){}
 	};
 
 	// биндим поле объекта

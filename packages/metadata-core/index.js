@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.1-beta.19, built:2017-07-27
+ metadata-core v2.0.1-beta.19, built:2017-07-28
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -236,10 +236,10 @@ class TabularSection {
 		return this._obj.length
 	}
 	clear(selection) {
-		const {_obj, _owner, _name, _manager} = this;
+		const {_obj, _owner, _name} = this;
     if(!selection){
       _obj.length = 0;
-      _manager.emit_async('rows', _owner, {[_name]: null});
+      _owner._manager.emit_async('rows', _owner, {[_name]: true});
     }
     else{
       this.find_rows(selection).forEach((row) => this.del(row.row-1));
@@ -274,7 +274,7 @@ class TabularSection {
     }
 		_obj.splice(index, 1);
 		_obj.forEach((row, index) => row.row = index + 1);
-    _owner._manager.emit_async('rows', _owner, {[_name]: null});
+    _owner._manager.emit_async('rows', _owner, {[_name]: true});
 		_owner._data._modified = true;
 	}
 	find(val, columns) {
@@ -292,7 +292,7 @@ class TabularSection {
 		[_obj[rowid1], _obj[rowid2]] = [_obj[rowid2], _obj[rowid1]];
 		_obj[rowid1].row = rowid2 + 1;
 		_obj[rowid2].row = rowid1 + 1;
-    _owner._manager.emit_async('rows', _owner, {[_name]: null});
+    _owner._manager.emit_async('rows', _owner, {[_name]: true});
 	}
 	add(attr = {}) {
 		const {_owner, _name, _obj} = this;
@@ -308,7 +308,7 @@ class TabularSection {
 			value: row,
 			enumerable: false
 		});
-    _owner._manager.emit_async('rows', _owner, {[_name]: null});
+    _owner._manager.emit_async('rows', _owner, {[_name]: true});
 		_owner._data._modified = true;
 		return row;
 	}
@@ -417,7 +417,7 @@ class TabularSection {
 			arr.forEach((row) => this.add(row, true));
 		}
     const {_owner, _name, _obj} = this;
-    _owner._manager.emit_async('rows', _owner, {[_name]: null});
+    _owner._manager.emit_async('rows', _owner, {[_name]: true});
 		return this;
 	}
 	unload_column(column) {
@@ -1087,7 +1087,7 @@ class MetaEventEmitter extends EventEmitter{
     return res;
   }
 	_emit(type) {
-    for(const args of this._distinct(this._async[type])){
+    for(const args of this._distinct(type, this._async[type])){
       this.emit(type, ...args);
     }
   }
@@ -1098,10 +1098,13 @@ class MetaEventEmitter extends EventEmitter{
     if (!this._async){
       this._async = {};
     }
-    handler = this._async[type] || {'args': []};
+    if (!this._async[type]){
+      this._async[type] = {'args': []};
+    }
+    const handler = this._async[type];
     handler.timer && clearTimeout(handler.timer);
     handler.args.push(args);
-    handler.timer = setTimeout(this.do_emit.bind(this, type), 4);
+    handler.timer = setTimeout(this._emit.bind(this, type), 4);
   }
 }
 

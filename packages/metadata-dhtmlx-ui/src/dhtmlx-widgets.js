@@ -533,198 +533,6 @@ export default ($p) => {
 
 
 	/**
- * ### Кнопки авторизации и синхронизации
- * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- *
- * @module  widgets
- * @submodule btn_auth_sync
- * @requires common
- */
-
-/**
- * ### Невизуальный компонент для управления кнопками авторизации и синхронизации на панелях инструментов
- * Изменяет текст, всплывающие подсказки и обработчики нажатий кнопок в зависимости от ...
- *
- * @class OBtnAuthSync
- * @constructor
- * @menuorder 57
- * @tooltip Кнопки авторизации
- */
-$p.iface.OBtnAuthSync = function OBtnAuthSync() {
-
-	var bars = [], spin_timer;
-
-	//$(t.tb_nav.buttons.bell).addClass("disabledbutton");
-
-	function btn_click(){
-
-		if($p.wsql.pouch.authorized)
-			dhtmlx.confirm({
-				title: $p.msg.log_out_title,
-				text: $p.msg.logged_in + $p.wsql.pouch.authorized + $p.msg.log_out_break,
-				cancel: $p.msg.cancel,
-				callback: function(btn) {
-					if(btn){
-						$p.wsql.pouch.log_out();
-					}
-				}
-			});
-		else
-			$p.iface.frm_auth({
-				modal_dialog: true
-				//, try_auto: true
-			});
-	}
-
-	function set_spin(spin){
-
-		if(spin && spin_timer){
-			clearTimeout(spin_timer);
-
-		}else{
-			bars.forEach(function (bar) {
-				if(spin)
-					bar.buttons.sync.innerHTML = '<i class="fa fa-refresh fa-spin md-fa-lg"></i>';
-				else{
-					if($p.wsql.pouch.authorized)
-						bar.buttons.sync.innerHTML = '<i class="fa fa-refresh md-fa-lg"></i>';
-					else
-						bar.buttons.sync.innerHTML = '<i class="fa fa-ban md-fa-lg"></i>';
-				}
-			});
-		}
-		spin_timer = spin ? setTimeout(set_spin, 3000) : 0;
-	}
-
-	function set_auth(){
-
-		bars.forEach(function (bar) {
-
-			if($p.wsql.pouch.authorized){
-				// bar.buttons.auth.title = $p.msg.logged_in + $p.wsql.pouch.authorized;
-				// bar.buttons.auth.innerHTML = '<i class="fa fa-sign-out md-fa-lg"></i>';
-				bar.buttons.auth.title = "Отключиться от сервера";
-				bar.buttons.auth.innerHTML = '<span class="span_user">' + $p.wsql.pouch.authorized + '</span>';
-				bar.buttons.sync.title = "Синхронизация выполняется...";
-				bar.buttons.sync.innerHTML = '<i class="fa fa-refresh md-fa-lg"></i>';
-			}else{
-				bar.buttons.auth.title = "Войти на сервер и включить синхронизацию данных";
-				bar.buttons.auth.innerHTML = '&nbsp;<i class="fa fa-sign-in md-fa-lg"></i><span class="span_user">Вход...</span>';
-				bar.buttons.sync.title = "Синхронизация не выполняется - пользователь не авторизован на сервере";
-				bar.buttons.sync.innerHTML = '<i class="fa fa-ban md-fa-lg"></i>';
-					//'<i class="fa fa-refresh fa-stack-1x"></i>' +
-					//'<i class="fa fa-ban fa-stack-2x text-danger"></i>' +
-					//'</span>';
-			}
-		})
-	}
-
-	/**
-	 * Привязывает обработчики к кнопке
-	 * @param btn
-	 */
-	this.bind = function (bar) {
-		bar.buttons.auth.onclick = btn_click;
-		//bar.buttons.auth.onmouseover = null;
-		//bar.buttons.auth.onmouseout = null;
-		bar.buttons.sync.onclick = null;
-		// bar.buttons.sync.onmouseover = sync_mouseover;
-		// bar.buttons.sync.onmouseout = sync_mouseout;
-		bars.push(bar);
-		setTimeout(set_auth);
-		return bar;
-	};
-
-	this.listeners = {
-
-    pouch_load_data_start: function (page) {
-
-      if(!$p.iface.sync)
-        $p.iface.wnd_sync();
-      $p.iface.sync.create($p.eve.stepper);
-      $p.eve.stepper.frm_sync.setItemValue("text_bottom", "Читаем справочники");
-
-      if(page.hasOwnProperty("local_rows") && page.local_rows < 10){
-        $p.eve.stepper.wnd_sync.setText("Первый запуск - подготовка данных");
-        $p.eve.stepper.frm_sync.setItemValue("text_processed", "Загрузка начального образа");
-      }else{
-        $p.eve.stepper.wnd_sync.setText("Загрузка данных из IndexedDB");
-        $p.eve.stepper.frm_sync.setItemValue("text_processed", "Извлечение начального образа");
-      }
-
-      set_spin(true);
-    },
-
-    pouch_load_data_page: function (page) {
-      set_spin(true);
-      var stepper = $p.eve.stepper;
-      if(stepper.wnd_sync){
-        var curr = stepper[page.id || "ram"];
-        curr.total_rows = page.total_rows;
-        curr.page = page.page;
-        curr.docs_written = page.docs_written || page.page * page.limit;
-        if(curr.docs_written > curr.total_rows){
-          curr.total_rows = (curr.docs_written * 1.05).round(0);
-        }
-        var text_current, text_bottom;
-        if(!stepper.doc.docs_written){
-          text_current = "Обработано элементов: " + curr.docs_written + " из " + curr.total_rows;
-          text_bottom = "Текущий запрос: " + curr.page + " (" + (100 * curr.docs_written/curr.total_rows).toFixed(0) + "%)";
-        }
-        else{
-          var docs_written = stepper.ram.docs_written + stepper.doc.docs_written;
-          var total_rows = stepper.ram.total_rows + stepper.doc.total_rows;
-          curr = stepper.ram.page + stepper.doc.page;
-          text_current = "Обработано ram: " + stepper.ram.docs_written + " из " + stepper.ram.total_rows + "<br />" +
-            "Обработано doc: " + stepper.doc.docs_written + " из " + stepper.doc.total_rows;
-          text_bottom = "Текущий запрос: " + curr + " (" + (100 * docs_written/total_rows).toFixed(0) + "%)";
-        };
-        stepper.frm_sync.setItemValue("text_current", text_current);
-        stepper.frm_sync.setItemValue("text_bottom", text_bottom);
-      }
-    },
-
-    pouch_change: function (id, page) {
-      set_spin(true);
-    },
-
-    pouch_data_loaded: function (page) {
-      $p.eve.stepper.wnd_sync && $p.iface.sync.close();
-    },
-
-    pouch_load_data_error: function (err) {
-      set_spin();
-      $p.eve.stepper.wnd_sync && $p.iface.sync.close();
-    },
-
-    user_log_in: function (username) {
-      set_auth();
-    },
-
-    user_log_fault: function () {
-      set_auth();
-    },
-
-    user_log_out: function () {
-      set_auth();
-    }
-  }
-
-  this.unload = function () {
-    for(var name in this.listeners){
-      $p.adapters.pouch.off(name, this.listeners[name]);
-    }
-    bars.forEach(function (bar) {
-
-    });
-  }
-
-	$p.adapters.pouch.on(this.listeners);
-};
-
-
-
-/**
  * Расширение типов ячеек dhtmlXGrid
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
@@ -1174,13 +982,13 @@ $p.iface.data_to_tree = function (data) {
 	function add_hierarchically(arr, row){
 		var curr = {id: row.ref, text: row.presentation, items: []};
 		arr.push(curr);
-		$p._find_rows(data, {parent: row.ref}, function(r){
+		$p.utils._find_rows(data, {parent: row.ref}, function(r){
 			add_hierarchically(curr.items, r);
 		});
 		if(!curr.items.length)
 			delete curr.items;
 	}
-	$p._find_rows(data, {parent: $p.utils.blank.guid}, function(r){
+	$p.utils._find_rows(data, {parent: $p.utils.blank.guid}, function(r){
 		add_hierarchically(res, r);
 	});
 
@@ -1445,7 +1253,7 @@ function OCombo(attr){
     }
 		if(_mgr){
 			t.clearAll();
-			(attr.get_option_list || _mgr.get_option_list).call(_mgr, null, get_filter(text))
+			(attr.get_option_list || _mgr.get_option_list).call(_mgr, get_filter(text))
 				.then(function (l) {
 					if(t.addOption){
 						t.addOption(l);
@@ -1457,7 +1265,7 @@ function OCombo(attr){
 	});
 
 	function get_filter(text){
-		var filter = {_top: 30}, choice;
+		var filter = {_top: 50, _dhtmlx: true}, choice;
 
 		if(_mgr && _mgr.metadata().hierarchical && _mgr.metadata().group_hierarchy){
 			if(_meta.choice_groups_elm == "elm")
@@ -1689,22 +1497,15 @@ function OCombo(attr){
 	t.getInput().addEventListener("focus", onfocus);
 
 
-	function observer(changes){
-		if(!t || !t.getBase)
-			return;
-		else if(!t.getBase().parentElement)
-			setTimeout(t.unload);
-		else{
-			if(_obj instanceof TabularSectionRow){
-
-			}else
-				changes.forEach(function(change){
-					if(change.name == _field){
-						set_value(_obj[_field]);
-					}
-				});
-		}
-	}
+	function listener(obj, fields){
+	  if(!_obj || !t.getBase().parentElement){
+      setTimeout(t.unload);
+    }
+		if(!t || !t.getBase || obj !== _obj){
+      return;
+    }
+    fields[_field] && set_value(_obj[_field]);
+  }
 
 	function set_value(v){
 		if(v && v instanceof DataObj && !v.empty()){
@@ -1713,7 +1514,8 @@ function OCombo(attr){
 			if(t.getSelectedValue() == v.ref)
 				return;
 			t.setComboValue(v.ref);
-		}else if(!t.getSelectedValue()){
+		}
+		else if(!t.getSelectedValue()){
 			t.setComboValue("");
 			t.setComboText("")
 		}
@@ -1743,7 +1545,7 @@ function OCombo(attr){
 
 		if(_mgr || attr.get_option_list){
 			// загружаем список в 30 строк
-			(attr.get_option_list || _mgr.get_option_list).call(_mgr, _obj[_field], get_filter())
+			(attr.get_option_list || _mgr.get_option_list).call(_mgr, get_filter(), _obj[_field])
 				.then(function (l) {
 					if(t.addOption){
 						t.addOption(l);
@@ -1754,8 +1556,10 @@ function OCombo(attr){
 		}
 
 		// начинаем следить за объектом
-    _mgr.off('update', observer);
-    _mgr.on('update', observer);
+    if(_mgr){
+      _mgr.off('update', listener);
+      _mgr.on('update', listener);
+    }
 
 	};
 
@@ -1780,10 +1584,12 @@ function OCombo(attr){
 
 		t.getInput().removeEventListener("focus", onfocus);
 
-		_mgr.off('update', observer);
+    _mgr && _mgr.off('update', listener);
 
 		if(t.conf && t.conf.tm_confirm_blur)
 			clearTimeout(t.conf.tm_confirm_blur);
+
+    this.list.parentElement.removeChild(this.list);
 
 		_obj = null;
 		_field = null;
@@ -1791,7 +1597,7 @@ function OCombo(attr){
 		_mgr = null;
 		_pwnd = null;
 
-		try{ _unload.call(t); }catch(e){}
+		try{ _unload && _unload.call(t); }catch(e){}
 	};
 
 	// биндим поле объекта
@@ -2075,45 +1881,58 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		_grid = _cell.attachGrid(),
 		_destructor = _grid.destructor;
 
+  function listener_unload(obj, fields){
+    if(!_obj){
+      _grid.destructor && _grid.destructor();
+    }
+    else if(_grid.entBox && !_grid.entBox.parentElement){
+      setTimeout(_grid.destructor);
+    }
+    else if(_obj === obj){
+      if(_cell && _cell.close)
+        _cell.close();
+      else
+        _grid.destructor();
+    }
+  }
+
 	// задача обсервера - перерисовать поле при изменении свойств объекта
-	function observer(changes){
+	function listener(obj, fields){
 		if(!_obj){
+      _grid.destructor && _grid.destructor();
 			throw new Error('observer');
 		}
-		else if(_grid.entBox && !_grid.entBox.parentElement)
-			setTimeout(_grid.destructor);
+		else if(_grid.entBox && !_grid.entBox.parentElement){
+      setTimeout(_grid.destructor);
+    }
+		else if(_obj === obj){
 
-		else
-			changes.forEach(function(change){
-				if(change.type == "unload"){
-					if(_cell && _cell.close)
-						_cell.close();
-					else
-						_grid.destructor();
-				}else
-					_grid.forEachRow(function(id){
-						if (id == change.name)
-							_grid.cells(id,1).setValue(_obj[change.name]);
-					});
-			});
+    }
+    _grid.forEachRow((id) => {
+      if (fields[id])
+        _grid.cells(id,1).setValue(_obj[id]);
+    });
 	}
 
-	function observer_rows(changes){
-		var synced;
-		changes.forEach(function(change){
-			if (!synced && _grid.clearAll && _tsname == change.tabular){
-				synced = true;
-				_grid.clearAll();
-				_grid.parse(_mgr.get_property_grid_xml(_oxml, _obj, {
-					title: attr.ts_title,
-					ts: _tsname,
-					selection: _selection,
-					metadata: _meta
-				}), function(){
+	function listener_rows(obj, fields){
 
-				}, "xml");
-			}
-		});
+    if(!_obj){
+      _grid.destructor && _grid.destructor();
+    }
+    else if(_grid.entBox && !_grid.entBox.parentElement){
+      setTimeout(_grid.destructor);
+    }
+    else if((_obj === obj && fields[_tsname]) || (obj._owner && obj._owner._owner === _obj && obj._owner.name == _tsname)){
+      _grid.clearAll();
+      _grid.parse(_mgr.get_property_grid_xml(_oxml, _obj, {
+        title: attr.ts_title,
+        ts: _tsname,
+        selection: _selection,
+        metadata: _meta
+      }), function(){
+
+      }, "xml");
+    }
 	}
 
 
@@ -2168,7 +1987,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 
 		reload: {
 			value: function () {
-				observer_rows([{tabular: _tsname}]);
+        listener_rows(_obj, {[_tsname]: true});
 			}
 		},
 
@@ -2229,10 +2048,12 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		destructor: {
 			value: function () {
 
-			  _mgr.off('update', observer);
-        _mgr.off('unload', observer);
-        _mgr.off('update', observer_rows);
-        _mgr.off('rows', observer_rows);
+        if(_mgr){
+          _mgr.off('update', listener);
+          _mgr.off('unload', listener_unload);
+          _mgr.off('update', listener_rows);
+          _mgr.off('rows', listener_rows);
+        }
 
 				_obj = null;
 				_extra_fields = null;
@@ -2250,11 +2071,12 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		 */
 		attach: {
 			value: function (attr) {
-
-        _mgr.off('update', observer);
-        _mgr.off('unload', observer);
-        _mgr.off('update', observer_rows);
-        _mgr.off('rows', observer_rows);
+			  if(_mgr){
+          _mgr.off('update', listener);
+          _mgr.off('unload', listener_unload);
+          _mgr.off('update', listener_rows);
+          _mgr.off('rows', listener_rows);
+        }
 
 				if(attr.oxml){
           _oxml = attr.oxml;
@@ -2298,14 +2120,14 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 
 				// начинаем следить за объектом и, его табчастью допреквизитов
 				_mgr.on({
-          update: observer,
-          unload: observer,
+          update: listener,
+          unload: listener_unload,
         })
 
 				if(_extra_fields && _extra_fields instanceof TabularSection){
           _mgr.on({
-            update: observer_rows,
-            rows: observer_rows,
+            update: listener_rows,
+            rows: listener_rows,
           })
         }
 
@@ -2313,7 +2135,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 				if(_tsname && !attr.ts_title){
           attr.ts_title = typeof _obj._metadata == 'function' ? _obj._metadata(_tsname).synonym : _obj._metadata.tabular_sections[_tsname].synonym;
         }
-				observer_rows([{tabular: _tsname}]);
+				listener_rows(_obj, {[_tsname]: true});
 
 			}
 		}
@@ -2547,14 +2369,9 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	 * наблюдатель за изменениями насбор строк табчасти
 	 * @param changes
 	 */
-	function observer_rows(changes){
-		if(_grid.clearAll){
-			changes.some(function(change){
-				if (change.type == "rows" && change.tabular == _tsname){
-					_ts.sync_grid(_grid, _selection);
-					return true;
-				}
-			});
+	function listener_rows(obj, fields){
+		if(_obj === obj && fields[_tsname] && _grid.clearAll){
+      _ts.sync_grid(_grid, _selection);
 		}
 	}
 
@@ -2562,24 +2379,23 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	 * наблюдатель за изменениями значений в строках табчасти
 	 * @param changes
 	 */
-	function observer(changes){
-		if(changes.length > 20){
-			try{_ts.sync_grid(_grid, _selection);} catch(err){}
-		} else
-			changes.forEach(function(change){
-				if (_tsname == change.tabular){
-					if(!change.row || _grid.getSelectedRowId() != change.row.row)
-						_ts.sync_grid(_grid, _selection);
-					else{
-						if(_grid.getColIndexById(change.name) != undefined){
-              if(typeof change.oldValue != "boolean" || typeof change.row[change.name] != "boolean"){
-                _grid.cells(change.row.row, _grid.getColIndexById(change.name))
-                  .setCValue($p.utils.is_data_obj(change.row[change.name]) ? change.row[change.name].presentation : change.row[change.name]);
-              }
-            }
-					}
-				}
-			});
+	function listener(obj, fields){
+	  const {_owner} = obj;
+	  if(!_owner || !_owner._owner || _owner._owner._obj !== obj || _owner.name != _tsname){
+	    return;
+    }
+    if(_grid.getSelectedRowId() != obj.row)
+      _ts.sync_grid(_grid, _selection);
+    else{
+      for(let field in fields){
+        const col_index = _grid.getColIndexById(field);
+        if(col_index != undefined){
+          if(typeof obj[field] != "boolean" || typeof fields[field] != "boolean"){
+            _grid.cells(obj.row, col_index).setCValue($p.utils.is_data_obj(obj[field]) ? obj[field].presentation : obj[field]);
+          }
+        }
+      }
+    }
 	}
 
 	function onpaste(e) {
@@ -2636,7 +2452,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 
     if(_input_filter != _cell.input_filter.value){
       _input_filter = new RegExp(_cell.input_filter.value, 'i');
-      observer_rows([{tabular: _tsname, type: "rows"}]);
+      listener_rows(_obj, {[_tsname]: null});
     }
 
   }
@@ -2757,15 +2573,17 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 			},
 			set: function (sel) {
 				_selection = sel;
-				observer_rows([{tabular: _tsname, type: "rows"}]);
+        listener_rows(_obj, {[_tsname]: null});
 			}
 		},
 
 		destructor: {
 			value: function () {
 
-        _mgr.off('update', observer);
-        _mgr.off('rows', observer_rows);
+			  if(_mgr){
+          _mgr.off('update', listener);
+          _mgr.off('rows', listener_rows);
+        }
 
 				_obj = null;
 				_ts = null;
@@ -2903,12 +2721,12 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
   });
 
 	// заполняем табчасть данными
-	observer_rows([{tabular: _tsname, type: "rows"}]);
+  listener_rows(_obj, {[_tsname]: null});
 
 	// начинаем следить за объектом и, его табчастью допреквизитов
   _mgr.on({
-    update: observer,
-    rows: observer_rows,
+    update: listener,
+    rows: listener_rows,
   });
 
 	// начинаем следить за буфером обмена
@@ -3340,441 +3158,6 @@ $p.iface.pgrid_on_checkbox = function(rId, cInd, state){
 
 	if(source.grid_on_change)
 		source.grid_on_change(rId, state);
-};
-
-
-function _clear_all(){
-	$p.iface.docs.__define({
-		clear_all: {
-			value: function () {
-				this.detachToolbar();
-				this.detachStatusBar();
-				this.detachObject(true);
-			},
-			enumerable: false
-		},
-		"Очистить": {
-			get: function () {
-				return this.clear_all;
-			},
-			enumerable: false
-		},
-		"Контейнер": {
-			get: function () {
-				return this.cell.querySelector(".dhx_cell_cont_layout");
-			},
-			enumerable: false
-		}
-	});
-}
-
-/**
- * Создаёт форму авторизации с обработчиками перехода к фидбэку и настройкам,
- * полем входа под гостевой ролью, полями логина и пароля и кнопкой входа
- * @method frm_auth
- * @for InterfaceObjs
- * @param attr {Object} - параметры формы
- * @param [attr.cell] {dhtmlXCellObject}
- * @return {Promise}
- */
-$p.iface.frm_auth = function (attr, resolve, reject) {
-
-	if(!attr)
-		attr = {};
-
-	var _cell, _frm, w, were_errors;
-
-	if(attr.modal_dialog){
-		if(!attr.options)
-			attr.options = {
-				name: "frm_auth",
-				caption: "Вход на сервер",
-				width: 360,
-				height: 300,
-				center: true,
-				allow_close: true,
-				allow_minmax: true,
-				modal: true
-			};
-		_cell = this.auth = this.dat_blank(attr._dxw, attr.options);
-		_cell.attachEvent("onClose", function(win){
-			if(were_errors){
-				reject && reject(err);
-			}else if(resolve)
-				resolve();
-			return true;
-		});
-    _frm = _cell.attachForm();
-
-	}else{
-		_cell = attr.cell || this.docs;
-		_frm = this.auth = _cell.attachForm();
-		$p.msg.show_msg($p.msg.init_login, _cell);
-	}
-
-
-	function do_auth(login, password){
-
-		$p.ajax.username = login;
-		$p.ajax.password = $p.aes.Ctr.encrypt(password);
-
-		if(login){
-
-			if($p.wsql.get_user_param("user_name") != login)
-				$p.wsql.set_user_param("user_name", login);					// сохраняем имя пользователя в базе
-
-      var observer = $p.eve.attachEvent("user_log_in", function () {
-        $p.eve.detachEvent(observer);
-        _cell && _cell.close && _cell.close();
-      });
-
-			//$p.eve.log_in(attr.onstep)
-			$p.wsql.pouch.log_in(login, password)
-				.then(function () {
-
-					if($p.wsql.get_user_param("enable_save_pwd")){
-						if($p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")) != password)
-							$p.wsql.set_user_param("user_pwd", $p.aes.Ctr.encrypt(password));   // сохраняем имя пользователя в базе
-
-					}else if($p.wsql.get_user_param("user_pwd") != "")
-						$p.wsql.set_user_param("user_pwd", "");
-
-					$p.eve.logged_in = true;
-					if(attr.modal_dialog)
-            _cell && _cell.close && _cell.close();
-					else if(resolve)
-						resolve();
-
-				})
-				.catch(function (err) {
-					were_errors = true;
-          _frm && _frm.onerror &&_frm.onerror(err);
-				})
-				.then(function () {
-					if($p.iface.sync)
-						$p.iface.sync.close();
-					if(_cell && _cell.progressOff){
-						_cell.progressOff();
-						if(!were_errors && attr.hide_header)
-							_cell.hideHeader();
-					}
-					if($p.iface.cell_tree && !were_errors)
-						$p.iface.cell_tree.expand();
-				});
-
-		} else
-			this.validate();
-	}
-
-	// обработчик кнопки "войти" формы авторизации
-	function auth_click(name){
-
-		were_errors = false;
-		this.resetValidateCss();
-
-		if(this.getCheckedValue("type") == "guest"){
-
-			var login = this.getItemValue("guest"),
-				password = "";
-			if($p.job_prm.guests && $p.job_prm.guests.length){
-				$p.job_prm.guests.some(function (g) {
-					if(g.username == login){
-						password = $p.aes.Ctr.decrypt(g.password);
-						return true;
-					}
-				});
-			}
-			do_auth.call(this, login, password);
-
-		}else if(this.getCheckedValue("type") == "auth"){
-			do_auth.call(this, this.getItemValue("login"), this.getItemValue("password"));
-
-		}
-	}
-
-	// загружаем структуру формы
-	_frm.loadStruct($p.injected_data["form_auth.xml"], function(){
-
-		var selected;
-
-		// если указан список гостевых пользователей
-		if($p.job_prm.guests && $p.job_prm.guests.length){
-
-			var guests = $p.job_prm.guests.map(function (g) {
-					var v = {
-						text: g.username,
-						value: g.username
-					};
-					if($p.wsql.get_user_param("user_name") == g.username){
-						v.selected = true;
-						selected = g.username;
-					}
-					return v;
-				});
-
-			if(!selected){
-				guests[0].selected = true;
-				selected = guests[0].value;
-			}
-
-			_frm.reloadOptions("guest", guests);
-		}
-
-		// после готовности формы читаем пользователя из локальной датабазы
-		if($p.wsql.get_user_param("user_name") && $p.wsql.get_user_param("user_name") != selected){
-			_frm.setItemValue("login", $p.wsql.get_user_param("user_name"));
-			_frm.setItemValue("type", "auth");
-
-			if($p.wsql.get_user_param("enable_save_pwd") && $p.wsql.get_user_param("user_pwd")){
-				_frm.setItemValue("password", $p.aes.Ctr.decrypt($p.wsql.get_user_param("user_pwd")));
-			}
-		}
-
-		// позиционируем форму по центру
-		if(!attr.modal_dialog){
-			if((w = ((_cell.getWidth ? _cell.getWidth() : _cell.cell.offsetWidth) - 500)/2) >= 10)
-				_frm.cont.style.paddingLeft = w.toFixed() + "px";
-			else
-				_frm.cont.style.paddingLeft = "20px";
-		}
-
-		setTimeout(function () {
-
-			dhx4.callEvent("on_draw_auth", [_frm]);
-
-			if(($p.wsql.get_user_param("autologin") || attr.try_auto) && (selected || ($p.wsql.get_user_param("user_name") && $p.wsql.get_user_param("user_pwd"))))
-				auth_click.call(_frm);
-
-		});
-	});
-
-	// назначаем обработчик нажатия на кнопку
-	_frm.attachEvent("onButtonClick", auth_click);
-
-	_frm.attachEvent("onKeyDown",function(inp, ev, name, value){
-		if(ev.keyCode == 13){
-			if(name == "password" || this.getCheckedValue("type") == "guest"){
-				auth_click.call(this);
-			}
-		}
-	});
-
-
-	_frm.onerror = function (err) {
-
-		$p.ajax.authorized = false;
-
-		var emsg = err.message.toLowerCase();
-
-		if(emsg.indexOf("auth") != -1) {
-			$p.msg.show_msg({
-				title: $p.msg.main_title + $p.version,
-				type: "alert-error",
-				text: $p.msg.error_auth
-			});
-			_frm.setItemValue("password", "");
-			_frm.validate();
-
-		}else if(emsg.indexOf("gateway") != -1 || emsg.indexOf("net") != -1) {
-			$p.msg.show_msg({
-				title: $p.msg.main_title + $p.version,
-				type: "alert-error",
-				text: $p.msg.error_network
-			});
-		}
-	}
-
-
-
-};
-
-
-/**
- * Служебная функция для открытия окна настроек из гиперссылки
- * @param e
- * @return {Boolean}
- */
-$p.iface.open_settings = function (e) {
-	var evt = (e || (typeof event != "undefined" ? event : undefined));
-	if(evt)
-		evt.preventDefault();
-
-	var hprm = $p.job_prm.parse_url();
-	$p.iface.set_hash(hprm.obj, hprm.ref, hprm.frm, "settings");
-
-	return $p.iface.cancel_bubble(evt);
-};
-
-/**
- * Переключает вид формы между списком, календаарём и отчетами
- * @method swith_view
- * @for InterfaceObjs
- * @param name {String} - имя представления
- */
-$p.iface.swith_view = function(name){
-
-	var state,
-		iface = $p.iface,
-
-		/**
-		 * Переключает состав элементов дерева
-		 * @param view
-		 */
-		swith_tree = function(name){
-
-			function compare_text(a, b) {
-				if (a.text > b.text) return 1;
-				if (a.text < b.text) return -1;
-			}
-
-			if(!iface.tree){
-
-				var hprm = $p.job_prm.parse_url();
-				if(hprm.obj) {
-					var parts = hprm.obj.split('.');
-					if(parts.length > 1){
-
-						var mgr = $p.md.mgr_by_class_name(hprm.obj);
-
-						if(typeof iface.docs.close === "function" )
-							iface.docs.close();
-
-						if(mgr)
-							mgr.form_list(iface.docs, {});
-					}
-				}
-				return;
-
-			}else if(iface.tree._view == name || ["rep", "cal"].indexOf(name) != -1)
-				return;
-
-			iface.tree.deleteChildItems(0);
-			if(name == "oper"){
-				var meta_tree = {id:0, item:[
-					{id:"oper_cat", text: $p.msg.meta_cat, open: true, item:[]},
-					{id:"oper_doc", text: $p.msg.meta_doc, item:[]},
-					{id:"oper_cch", text: $p.msg.meta_cch, item:[]},
-					{id:"oper_cacc", text: $p.msg.meta_cacc, item:[]},
-					{id:"oper_tsk", text: $p.msg.meta_tsk, item:[]}
-				]}, mdn, md,
-
-				// бежим по справочникам
-					tlist = meta_tree.item[0].item;
-				for(mdn in $p.cat){
-					if(typeof $p.cat[mdn] == "function")
-						continue;
-					md = $p.cat[mdn].metadata();
-					if(md.hide)
-						continue;
-					tlist.push({id: "oper.cat." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
-				}
-				tlist.sort(compare_text);
-
-				// бежим по документам
-				tlist = meta_tree.item[1].item;
-				for(mdn in $p.doc){
-					if(typeof $p.doc[mdn] == "function")
-						continue;
-					md = $p.doc[mdn].metadata();
-					if(md.hide)
-						continue;
-					tlist.push({id: "oper.doc." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
-				}
-				tlist.sort(compare_text);
-
-				// бежим по планам видов характеристик
-				tlist = meta_tree.item[2].item;
-				for(mdn in $p.cch){
-					if(typeof $p.cch[mdn] == "function")
-						continue;
-					md = $p.cch[mdn].metadata();
-					if(md.hide)
-						continue;
-					tlist.push({id: "oper.cch." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
-				}
-				tlist.sort(compare_text);
-
-				// бежим по планам счетов
-				tlist = meta_tree.item[3].item;
-				for(mdn in $p.cacc){
-					if(typeof $p.cacc[mdn] == "function")
-						continue;
-					md = $p.cacc[mdn].metadata();
-					if(md.hide)
-						continue;
-					tlist.push({id: "oper.cacc." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
-				}
-				tlist.sort(compare_text);
-
-				// бежим по задачам
-				tlist = meta_tree.item[4].item;
-				for(mdn in $p.tsk){
-					if(typeof $p.tsk[mdn] == "function")
-						continue;
-					md = $p.tsk[mdn].metadata();
-					if(md.hide)
-						continue;
-					tlist.push({id: "oper.tsk." + mdn, text: md.synonym || md.name, tooltip: md.illustration || md.list_presentation});
-				}
-				tlist.sort(compare_text);
-
-				iface.tree.parse(meta_tree, function(){
-					var hprm = $p.job_prm.parse_url();
-					if(hprm.obj){
-						iface.tree.selectItem(hprm.view+"."+hprm.obj, true);
-					}
-				}, "json");
-
-			}else{
-				iface.tree.loadXML(iface.tree.tree_filteres, function(){
-
-				});
-
-			}
-
-			iface.tree._view = name;
-		};
-
-	if(name.indexOf(iface.docs.getViewName())==0)
-		return iface.docs.getViewName();
-
-	state = iface.docs.showView(name);
-	if (state == true) {
-		// first call, init corresponding components
-		// календарь
-		if(name=="cal" && !window.dhtmlXScheduler){
-			$p.load_script("dist/dhtmlxscheduler.min.js", "script", function(){
-				//scheduler.config.xml_date="%Y-%m-%d %H:%i";
-				scheduler.config.first_hour = 8;
-				scheduler.config.last_hour = 22;
-				iface.docs.scheduler = iface.docs.attachScheduler(new Date("2015-11-20"), "week", "scheduler_here");
-				iface.docs.scheduler.attachEvent("onBeforeViewChange", function(old_mode, old_date, mode, date){
-					if(mode == "timeline"){
-						$p.msg.show_not_implemented();
-						return false;
-					}
-					return true;
-				});
-			});
-
-			$p.load_script("dist/dhtmlxscheduler.css", "link");
-
-			//}else if(name=="rep"){
-			//	// подключаемый отчет
-			//
-			//}else if(name=="oper"){
-			//	// в дереве - список метаданных, в окне - список текущего метаданного
-			//
-
-		}
-	}
-
-	swith_tree(name);
-
-	if(name == "def")
-		iface.main.showStatusBar();
-	else
-		iface.main.hideStatusBar();
 };
 
 
@@ -4256,8 +3639,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 * Пока здесь только установка заголовка формы
 	 * @param changes
 	 */
-	function observer(changes) {
-		if(o && wnd && wnd.set_text){
+	function listener(obj, fields) {
+		if(obj === o && wnd && wnd.set_text){
       wnd.set_text();
     }
 	}
@@ -4329,8 +3712,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		 * начинаем следить за объектом
 		 */
     _mgr.on({
-      update: observer,
-      row: observer,
+      update: listener,
+      row: listener,
     });
 
 
@@ -4476,12 +3859,15 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 */
 	function frm_unload(on_create){
 
-		if(attr && attr.on_close && !on_create)
-			attr.on_close();
+		if(attr && attr.on_close && !on_create){
+      attr.on_close();
+    }
 
 		if(!on_create){
-      _mgr.off('update', observer);
-      _mgr.off('row', observer);
+		  if(_mgr){
+        _mgr.off('update', listener);
+        _mgr.off('row', listener);
+      }
       if(wnd){
         delete wnd.ref;
         delete wnd.set_text;
@@ -5315,7 +4701,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 			else if(on_select){
 
-				_mgr.get(rId, true)
+				_mgr.get(rId, 'promise')
 					.then(function(selv){
 						wnd.close();
 						on_select.call(pwnd.grid || pwnd, selv);
@@ -5347,7 +4733,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	function mark_deleted(){
 		var rId = wnd.elmnts.grid.getSelectedRowId();
 		if(rId){
-			_mgr.get(rId, true, true)
+			_mgr.get(rId, 'promise')
 				.then(function (o) {
 
 					dhtmlx.confirm({
@@ -5495,7 +4881,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 	// создаём и настраиваем форму
 	if(has_tree && attr.initial_value && attr.initial_value!= $p.utils.blank.guid && !attr.parent)
-		return _mgr.get(attr.initial_value, true)
+		return _mgr.get(attr.initial_value, 'promise')
 			.then(function (tObj) {
 				attr.parent = tObj.parent.ref;
 				attr.set_parent = attr.parent;

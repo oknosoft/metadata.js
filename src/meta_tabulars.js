@@ -188,7 +188,7 @@ TabularSection.prototype.find_rows = function(selection, callback){
 			return callback.call(t, row._row);
 		} : null;
 
-	return $p._find_rows.call(t, t._obj, selection, cb);
+	return $p.utils._find_rows.call(t, t._obj, selection, cb);
 
 };
 

@@ -101,11 +101,11 @@ export class TabularSection {
 	 *
 	 */
 	clear(selection) {
-		const {_obj, _owner, _name, _manager} = this;
+		const {_obj, _owner, _name} = this;
     if(!selection){
       _obj.length = 0;
       // obj, ts_name
-      _manager.emit_async('rows', _owner, {[_name]: null});
+      _owner._manager.emit_async('rows', _owner, {[_name]: true});
     }
     else{
       this.find_rows(selection).forEach((row) => this.del(row.row-1))
@@ -155,7 +155,7 @@ export class TabularSection {
 		_obj.forEach((row, index) => row.row = index + 1);
 
     // obj, {ts_name: null}
-    _owner._manager.emit_async('rows', _owner, {[_name]: null});
+    _owner._manager.emit_async('rows', _owner, {[_name]: true});
 
 		_owner._data._modified = true;
 	}
@@ -201,7 +201,7 @@ export class TabularSection {
 		_obj[rowid1].row = rowid2 + 1;
 		_obj[rowid2].row = rowid1 + 1;
     // obj, {ts_name: null}
-    _owner._manager.emit_async('rows', _owner, {[_name]: null});
+    _owner._manager.emit_async('rows', _owner, {[_name]: true});
 	}
 
 	/**
@@ -237,7 +237,7 @@ export class TabularSection {
 		})
 
     // obj, {ts_name: null}
-    _owner._manager.emit_async('rows', _owner, {[_name]: null});
+    _owner._manager.emit_async('rows', _owner, {[_name]: true});
 
 		_owner._data._modified = true;
 
@@ -423,7 +423,7 @@ export class TabularSection {
 
     const {_owner, _name, _obj} = this;
     // obj, {ts_name: null}
-    _owner._manager.emit_async('rows', _owner, {[_name]: null});
+    _owner._manager.emit_async('rows', _owner, {[_name]: true});
 
 		return this;
 	}

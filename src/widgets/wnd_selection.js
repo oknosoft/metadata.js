@@ -473,7 +473,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 			else if(on_select){
 
-				_mgr.get(rId, true)
+				_mgr.get(rId, 'promise')
 					.then(function(selv){
 						wnd.close();
 						on_select.call(pwnd.grid || pwnd, selv);
@@ -505,7 +505,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	function mark_deleted(){
 		var rId = wnd.elmnts.grid.getSelectedRowId();
 		if(rId){
-			_mgr.get(rId, true, true)
+			_mgr.get(rId, 'promise')
 				.then(function (o) {
 
 					dhtmlx.confirm({
@@ -653,7 +653,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 	// создаём и настраиваем форму
 	if(has_tree && attr.initial_value && attr.initial_value!= $p.utils.blank.guid && !attr.parent)
-		return _mgr.get(attr.initial_value, true)
+		return _mgr.get(attr.initial_value, 'promise')
 			.then(function (tObj) {
 				attr.parent = tObj.parent.ref;
 				attr.set_parent = attr.parent;

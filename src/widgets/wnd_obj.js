@@ -229,8 +229,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 * Пока здесь только установка заголовка формы
 	 * @param changes
 	 */
-	function observer(changes) {
-		if(o && wnd && wnd.set_text){
+	function listener(obj, fields) {
+		if(obj === o && wnd && wnd.set_text){
       wnd.set_text();
     }
 	}
@@ -302,8 +302,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		 * начинаем следить за объектом
 		 */
     _mgr.on({
-      update: observer,
-      row: observer,
+      update: listener,
+      row: listener,
     });
 
 
@@ -449,12 +449,15 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 */
 	function frm_unload(on_create){
 
-		if(attr && attr.on_close && !on_create)
-			attr.on_close();
+		if(attr && attr.on_close && !on_create){
+      attr.on_close();
+    }
 
 		if(!on_create){
-      _mgr.off('update', observer);
-      _mgr.off('row', observer);
+		  if(_mgr){
+        _mgr.off('update', listener);
+        _mgr.off('row', listener);
+      }
       if(wnd){
         delete wnd.ref;
         delete wnd.set_text;

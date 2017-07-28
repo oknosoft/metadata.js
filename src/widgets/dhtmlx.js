@@ -448,13 +448,13 @@ $p.iface.data_to_tree = function (data) {
 	function add_hierarchically(arr, row){
 		var curr = {id: row.ref, text: row.presentation, items: []};
 		arr.push(curr);
-		$p._find_rows(data, {parent: row.ref}, function(r){
+		$p.utils._find_rows(data, {parent: row.ref}, function(r){
 			add_hierarchically(curr.items, r);
 		});
 		if(!curr.items.length)
 			delete curr.items;
 	}
-	$p._find_rows(data, {parent: $p.utils.blank.guid}, function(r){
+	$p.utils._find_rows(data, {parent: $p.utils.blank.guid}, function(r){
 		add_hierarchically(res, r);
 	});
 
