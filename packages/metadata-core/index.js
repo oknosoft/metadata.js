@@ -239,7 +239,7 @@ class TabularSection {
 		const {_obj, _owner, _name} = this;
     if(!selection){
       _obj.length = 0;
-      _owner._manager.emit_async('rows', _owner, {[_name]: true});
+      !_owner._data._loading && _owner._manager.emit_async('rows', _owner, {[_name]: true});
     }
     else{
       this.find_rows(selection).forEach((row) => this.del(row.row-1));
@@ -248,6 +248,7 @@ class TabularSection {
 	}
 	del(val) {
 		const {_obj, _owner, _name} = this;
+    const {_data, _manager} = _owner;
 		let index;
 		if (typeof val == "undefined"){
       return;
@@ -269,13 +270,13 @@ class TabularSection {
 		if (index == undefined){
       return;
     }
-    if(_owner.del_row(_obj[index]._row) === false){
+    if(!_data._loading && _owner.del_row(_obj[index]._row) === false){
       return;
     }
 		_obj.splice(index, 1);
 		_obj.forEach((row, index) => row.row = index + 1);
-    _owner._manager.emit_async('rows', _owner, {[_name]: true});
-		_owner._data._modified = true;
+    !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});
+		_data._modified = true;
 	}
 	find(val, columns) {
 		const res = utils._find(this._obj, val, columns);
@@ -292,12 +293,15 @@ class TabularSection {
 		[_obj[rowid1], _obj[rowid2]] = [_obj[rowid2], _obj[rowid1]];
 		_obj[rowid1].row = rowid2 + 1;
 		_obj[rowid2].row = rowid1 + 1;
-    _owner._manager.emit_async('rows', _owner, {[_name]: true});
+    const {_data, _manager} = _owner;
+    !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});
+    _data._modified = true;
 	}
-	add(attr = {}) {
+	add(attr = {}, silent) {
 		const {_owner, _name, _obj} = this;
-		const row = _owner._manager.obj_constructor(_name, this);
-		if(_owner.add_row(row) === false){
+    const {_manager, _data} = _owner;
+		const row = _manager.obj_constructor(_name, this);
+		if(!_data._loading && _owner.add_row(row) === false){
 		  return;
     }
 		for (let f in row._metadata().fields){
@@ -308,8 +312,8 @@ class TabularSection {
 			value: row,
 			enumerable: false
 		});
-    _owner._manager.emit_async('rows', _owner, {[_name]: true});
-		_owner._data._modified = true;
+    !_data._loading && !silent && _manager.emit_async('rows', _owner, {[_name]: true});
+		_data._modified = true;
 		return row;
 	}
 	each(fn) {
@@ -321,7 +325,7 @@ class TabularSection {
 	group_by(dimensions, resources) {
 		try {
 			const res = this.aggregate(dimensions, resources, "SUM", true);
-			return this.clear().load(res);
+			return this.load(res);
 		}
 		catch (err) {
 			this._owner._manager._owner.$p.record_log(err);
@@ -350,7 +354,7 @@ class TabularSection {
     }
 		try {
 			res = alasql(sql, [has_dot ? this._obj.map((row) => row._row) : this._obj]);
-			return this.clear(true).load(res);
+			return this.load(res);
 		}
 		catch (err) {
 			this._owner._manager._owner.$p.record_log(err);
@@ -405,19 +409,18 @@ class TabularSection {
 		}
 	};
 	load(aattr) {
-		let arr;
-		this.clear(true);
-		if (aattr instanceof TabularSection){
-			arr = aattr._obj;
-		}
-		else if (Array.isArray(aattr)){
-			arr = aattr;
-		}
-		if (arr){
-			arr.forEach((row) => this.add(row, true));
-		}
     const {_owner, _name, _obj} = this;
-    _owner._manager.emit_async('rows', _owner, {[_name]: true});
+    const {_manager, _data} = _owner;
+    const {_loading} = _data;
+    if(!_loading){
+      _data._loading = true;
+    }
+    this.clear();
+		for(let row of aattr instanceof TabularSection ? aattr._obj : (Array.isArray(aattr) ? aattr : [])){
+      this.add(row);
+    }
+    _data._loading = _loading;
+    !_loading && _manager.emit_async('rows', _owner, {[_name]: true});
 		return this;
 	}
 	unload_column(column) {
@@ -465,18 +468,20 @@ class TabularSectionRow {
 		if (_obj[f] == v || (!v && _obj[f] == utils.blank.guid)){
       return;
     }
-    _owner._owner._manager.emit_async('update', this, {[f]: _obj[f]});
+    const {_manager, _data} = _owner._owner;
+    !_data._loading && _manager.emit_async('update', this, {[f]: _obj[f]});
 		if (_meta.choice_type) {
 			let prop;
 			if (_meta.choice_type.path.length == 2)
 				prop = this[_meta.choice_type.path[1]];
 			else
 				prop = _owner._owner[_meta.choice_type.path[0]];
-			if (prop && prop.type)
-				v = utils.fetch_type(v, prop.type);
+			if (prop && prop.type){
+        v = utils.fetch_type(v, prop.type);
+      }
 		}
 		this.__setter(f, v);
-		_owner._owner._data._modified = true;
+		_data._modified = true;
 	}
   value_change(f, mf, v) {
     return this;
@@ -632,7 +637,7 @@ class DataObj {
 		}
 	}
 	__notify(f) {
-    this._manager.emit_async('update', this, {[f]: this._obj[f]});
+    !this._data._loading && this._manager.emit_async('update', this, {[f]: this._obj[f]});
 	}
 	_setter(f, v) {
 		if(this._obj[f] != v){

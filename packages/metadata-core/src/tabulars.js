@@ -105,7 +105,7 @@ export class TabularSection {
     if(!selection){
       _obj.length = 0;
       // obj, ts_name
-      _owner._manager.emit_async('rows', _owner, {[_name]: true});
+      !_owner._data._loading && _owner._manager.emit_async('rows', _owner, {[_name]: true});
     }
     else{
       this.find_rows(selection).forEach((row) => this.del(row.row-1))
@@ -121,6 +121,7 @@ export class TabularSection {
 	del(val) {
 
 		const {_obj, _owner, _name} = this;
+    const {_data, _manager} = _owner;
 
 		let index;
 
@@ -146,7 +147,7 @@ export class TabularSection {
     }
 
 		// триггер
-    if(_owner.del_row(_obj[index]._row) === false){
+    if(!_data._loading && _owner.del_row(_obj[index]._row) === false){
       return;
     }
 
@@ -155,9 +156,8 @@ export class TabularSection {
 		_obj.forEach((row, index) => row.row = index + 1);
 
     // obj, {ts_name: null}
-    _owner._manager.emit_async('rows', _owner, {[_name]: true});
-
-		_owner._data._modified = true;
+    !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});
+		_data._modified = true;
 	}
 
 	/**
@@ -200,8 +200,11 @@ export class TabularSection {
 		[_obj[rowid1], _obj[rowid2]] = [_obj[rowid2], _obj[rowid1]];
 		_obj[rowid1].row = rowid2 + 1;
 		_obj[rowid2].row = rowid1 + 1;
+
     // obj, {ts_name: null}
-    _owner._manager.emit_async('rows', _owner, {[_name]: true});
+    const {_data, _manager} = _owner;
+    !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});
+    _data._modified = true;
 	}
 
 	/**
@@ -215,13 +218,14 @@ export class TabularSection {
 	 *     // Добавляет строку в табчасть и заполняет её значениями, переданными в аргументе
 	 *     const row = ts.add({field1: value1});
 	 */
-	add(attr = {}) {
+	add(attr = {}, silent) {
 
 		const {_owner, _name, _obj} = this;
-		const row = _owner._manager.obj_constructor(_name, this);
+    const {_manager, _data} = _owner;
+		const row = _manager.obj_constructor(_name, this);
 
     // триггер
-		if(_owner.add_row(row) === false){
+		if(!_data._loading && _owner.add_row(row) === false){
 		  return;
     }
 
@@ -237,9 +241,8 @@ export class TabularSection {
 		})
 
     // obj, {ts_name: null}
-    _owner._manager.emit_async('rows', _owner, {[_name]: true});
-
-		_owner._data._modified = true;
+    !_data._loading && !silent && _manager.emit_async('rows', _owner, {[_name]: true});
+		_data._modified = true;
 
 		return row;
 	}
@@ -273,7 +276,7 @@ export class TabularSection {
 
 		try {
 			const res = this.aggregate(dimensions, resources, "SUM", true);
-			return this.clear().load(res);
+			return this.load(res);
 		}
 		catch (err) {
 			this._owner._manager._owner.$p.record_log(err);
@@ -314,7 +317,7 @@ export class TabularSection {
 
 		try {
 			res = alasql(sql, [has_dot ? this._obj.map((row) => row._row) : this._obj]);
-			return this.clear(true).load(res);
+			return this.load(res);
 		}
 		catch (err) {
 			this._owner._manager._owner.$p.record_log(err);
@@ -406,24 +409,23 @@ export class TabularSection {
 	 */
 	load(aattr) {
 
-		let arr;
-
-		this.clear(true);
-
-		if (aattr instanceof TabularSection){
-			arr = aattr._obj
-		}
-		else if (Array.isArray(aattr)){
-			arr = aattr
-		}
-
-		if (arr){
-			arr.forEach((row) => this.add(row, true));
-		}
-
     const {_owner, _name, _obj} = this;
+    const {_manager, _data} = _owner;
+    const {_loading} = _data;
+
+    if(!_loading){
+      _data._loading = true;
+    }
+
+    this.clear();
+
+		for(let row of aattr instanceof TabularSection ? aattr._obj : (Array.isArray(aattr) ? aattr : [])){
+      this.add(row);
+    }
+
     // obj, {ts_name: null}
-    _owner._manager.emit_async('rows', _owner, {[_name]: true});
+    _data._loading = _loading;
+    !_loading && _manager.emit_async('rows', _owner, {[_name]: true});
 
 		return this;
 	}
@@ -538,15 +540,16 @@ export class TabularSectionRow {
 
 	_setter(f, v) {
 
-		const {_owner, _obj} = this
-		const _meta = this._metadata(f)
+		const {_owner, _obj} = this;
+		const _meta = this._metadata(f);
 
 		if (_obj[f] == v || (!v && _obj[f] == utils.blank.guid)){
       return;
     }
 
     // obj, {f: oldValue}
-    _owner._owner._manager.emit_async('update', this, {[f]: _obj[f]});
+    const {_manager, _data} = _owner._owner;
+    !_data._loading && _manager.emit_async('update', this, {[f]: _obj[f]});
 
 		// учтём связь по типу
 		if (_meta.choice_type) {
@@ -555,12 +558,13 @@ export class TabularSectionRow {
 				prop = this[_meta.choice_type.path[1]];
 			else
 				prop = _owner._owner[_meta.choice_type.path[0]];
-			if (prop && prop.type)
-				v = utils.fetch_type(v, prop.type);
+			if (prop && prop.type){
+        v = utils.fetch_type(v, prop.type);
+      }
 		}
 
 		this.__setter(f, v);
-		_owner._owner._data._modified = true;
+		_data._modified = true;
 	}
 
   /**

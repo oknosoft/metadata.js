@@ -237,7 +237,7 @@ export class DataObj {
 
 	__notify(f) {
 	  // obj, {f: oldValue}
-    this._manager.emit_async('update', this, {[f]: this._obj[f]});
+    !this._data._loading && this._manager.emit_async('update', this, {[f]: this._obj[f]});
 	}
 
   /**
