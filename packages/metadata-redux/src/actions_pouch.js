@@ -39,7 +39,7 @@ export function data_loaded(page) {
 			payload: page
 		});
 
-		if(page != 'doc_ram'){
+		if(typeof page == 'object'){
       const { meta } = getState();
 
       // если вход еще не выполнен...

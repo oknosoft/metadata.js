@@ -228,11 +228,12 @@ DataManager.prototype.__define({
 
               if(top && top_count > top && !calc_count) {
                 resolve(_raw ? res : t.load_array(res));
-
-              }else
+              }
+              else{
                 fetch_next_page();
-
-            }else{
+              }
+            }
+            else{
               if(calc_count){
                 resolve({
                   rows: _raw ? res : t.load_array(res),

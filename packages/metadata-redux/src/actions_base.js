@@ -2,6 +2,7 @@
 
 export const META_LOADED = 'META_LOADED'; // Инициализирует параметры и создаёт менеджеры объектов данных
 export const PRM_CHANGE = 'PRM_CHANGE';   // Изменено значение настроек программы (couch_path, zone и т.д.)
+export const OFFLINE = 'OFFLINE';   // Изменено значение настроек программы (couch_path, zone и т.д.)
 
 // Actions - функции - генераторы действий. Они передаются в диспетчер redux
 
@@ -18,4 +19,11 @@ export function prm_change(name, value) {
 		type: PRM_CHANGE,
 		payload: {name, value},
 	};
+}
+
+export function offline(state) {
+  return {
+    type: OFFLINE,
+    payload: state,
+  };
 }

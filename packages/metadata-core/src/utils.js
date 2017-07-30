@@ -19,6 +19,7 @@ moment._masks = {
 
 import {DataManager} from './mngrs';
 import {DataObj} from './objs';
+import {TabularSection} from './tabulars';
 
 /**
  * Отбрасываем часовой пояс при сериализации даты
@@ -304,7 +305,7 @@ const utils = {
 	 * @return {Boolean} - true, если значение является ссылкой
 	 */
 	is_data_obj(v) {
-		return v && v instanceof DataObj;
+		return v instanceof DataObj;
 	},
 
 	/**
@@ -312,11 +313,22 @@ const utils = {
 	 *
 	 * @method is_data_mgr
 	 * @param v {*} - проверяемое значение
-	 * @return {Boolean} - true, если значение является ссылкой
+	 * @return {Boolean} - true, если значение является менеджером данных
 	 */
 	is_data_mgr(v) {
-		return v && v instanceof DataManager;
+		return v instanceof DataManager;
 	},
+
+  /**
+   * ### Проверяет, является ли значенние табличной частью
+   *
+   * @method is_tabular
+   * @param v {*} - проверяемое значение
+   * @return {Boolean} - true, если значение является табличной частью
+   */
+  is_tabular(v) {
+    return v instanceof TabularSection;
+  },
 
 	/**
 	 * ### Сравнивает на равенство ссылочные типы и примитивные значения

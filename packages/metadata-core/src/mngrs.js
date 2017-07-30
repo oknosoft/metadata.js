@@ -580,7 +580,7 @@ export class RefDataManager extends DataManager{
 				return;
 			}
 			else{
-				o = this.obj_constructor('', [ref, this, true])
+				o = this.obj_constructor('', [ref, this])
 			}
 		}
 
@@ -674,7 +674,7 @@ export class RefDataManager extends DataManager{
 							rattr.url += this.rest_name + "/Create()";
 							return ajax.get_ex(rattr.url, rattr)
 								.then(function (req) {
-									return utils._mixin(o, JSON.parse(req.response), undefined, ["ref"]);
+									return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
 								});
 						}else
 							return o;
@@ -720,6 +720,7 @@ export class RefDataManager extends DataManager{
 	 * @method load_array
 	 * @param aattr {Array} - массив объектов для трансформации в объекты ссылочного типа
 	 * @param [forse] {Boolean|String} - перезаполнять объект
+   * при forse == "update_only", новые объекты не создаются, а только перезаполняются ранее загруженные в озу
 	 */
 	load_array(aattr, forse){
 		const res = [];
@@ -729,11 +730,12 @@ export class RefDataManager extends DataManager{
 				if(forse == "update_only"){
 					continue;
 				}
-				obj = this.obj_constructor('', [attr, this]);
-				forse && obj._set_loaded();
+				obj = this.obj_constructor('', [attr, this, true]);
+				forse && obj.is_new() && obj._set_loaded();
 			}
 			else if(obj.is_new() || forse){
-				utils._mixin(obj, attr)._set_loaded();
+        obj._data._loading = true;
+				obj._mixin(attr);
 			}
 			res.push(obj);
 		}
@@ -1546,16 +1548,17 @@ export class RegisterManager extends DataManager{
 			obj = this.by_ref[ref];
 
 			if (!obj && !aattr[i]._deleted) {
-				obj = this.obj_constructor('', [aattr[i], this]);
-				if (forse)
-					obj._set_loaded();
-
-			} else if (obj && aattr[i]._deleted) {
+				obj = this.obj_constructor('', [aattr[i], this, true]);
+				forse && obj.is_new() && obj._set_loaded();
+			}
+			else if (obj && aattr[i]._deleted) {
 				obj.unload();
 				continue;
 
-			} else if (obj.is_new() || forse) {
-				utils._mixin(obj, aattr[i])._set_loaded();
+			}
+			else if (obj.is_new() || forse) {
+        obj._data._loading = true;
+				obj._mixin(aattr[i]);
 			}
 
 			res.push(obj);

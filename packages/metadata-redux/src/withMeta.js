@@ -1,12 +1,10 @@
 import { connect } from 'react-redux';
 import {try_log_in, log_out} from './actions_auth'
+import {offline} from './actions_base'
 
 const {adapters, wsql, job_prm, aes, cat} = $p;
 
 const mapStateToProps = ({meta}) => {
-  if(!meta.offline && typeof navigator != 'undefined' && !navigator.onLine){
-    meta.offline = true;
-  }
 	return Object.assign({}, meta, {
 			_obj: $p.current_user,
 			_mgr: $p.cat.users,
@@ -36,9 +34,10 @@ const mapDispatchToProps = (dispatch) => {
 		handleLogOut() {
 			return dispatch(log_out(adapters.pouch));
 		},
+    handleOffline(state) {
+      return dispatch(offline(state));
+    }
 	};
 };
-
-
 
 export default connect(mapStateToProps, mapDispatchToProps);

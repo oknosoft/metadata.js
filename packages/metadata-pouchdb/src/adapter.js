@@ -482,7 +482,7 @@ function adapter({AbstracrAdapter}) {
 
 											}
 										}else{
-											// если прибежали изменения базы doc - обновляем те объекты, которые уже прочитаны в озу
+											// если прибежали изменения базы doc - обновляем только те объекты, которые уже прочитаны в озу
 											change.update_only = true;
 											t.load_changes(change);
 										}
@@ -558,13 +558,16 @@ function adapter({AbstracrAdapter}) {
 				.then((res) => {
 					delete res._id;
 					delete res._rev;
-					Object.assign(tObj, res)._set_loaded();
+          tObj._data._loading = true;
+					tObj._mixin(res);
 				})
 				.catch((err) => {
-					if (err.status != 404)
-						throw err;
-					else
-						console.log({tObj, db})
+					if (err.status != 404){
+            throw err;
+          }
+					else{
+            this.$p.record_log(db + ":" + tObj._manager.class_name + "|" + tObj.ref)
+          }
 				})
 				.then((res) => {
 					return tObj;
@@ -574,7 +577,7 @@ function adapter({AbstracrAdapter}) {
 		/**
 		 * ### Записывает объект в pouchdb
 		 *
-		 * @method load_obj
+		 * @method save_obj
 		 * @param tObj {DataObj} - записываемый объект
 		 * @param attr {Object} - ополнительные параметры записи
 		 * @return {Promise.<DataObj>} - промис с записанным объектом
@@ -661,6 +664,190 @@ function adapter({AbstracrAdapter}) {
 		 * @return {Promise.<Array>}
 		 */
 		get_selection(_mgr, attr){
+
+      const {utils, classes} = this.$p;
+      const db = this.db(_mgr);
+      const cmd = attr.metadata || _mgr.metadata();
+      const flds = ["ref", "_deleted"]; // поля запроса
+      const selection = {
+        _raw: true,
+        _total_count: true,
+        _top: attr.count || 30,
+        _skip: attr.start || 0
+      };   // условие см. find_rows()
+      const ares = [];
+
+
+      // набираем поля
+      if(cmd.form && cmd.form.selection){
+        cmd.form.selection.fields.forEach((fld) => flds.push(fld));
+      }
+      else if(_mgr instanceof classes.DocManager){
+        flds.push("posted");
+        flds.push("date");
+        flds.push("number_doc");
+      }
+      else if(_mgr instanceof classes.TaskManager){
+        flds.push("name as presentation");
+        flds.push("date");
+        flds.push("number_doc");
+        flds.push("completed");
+      }
+      else if(_mgr instanceof classes.BusinessProcessManager){
+        flds.push("date");
+        flds.push("number_doc");
+        flds.push("started");
+        flds.push("finished");
+      }
+      else{
+        if(cmd["hierarchical"] && cmd["group_hierarchy"])
+          flds.push("is_folder");
+        else
+          flds.push("0 as is_folder");
+
+        if(cmd["main_presentation_name"])
+          flds.push("name as presentation");
+        else{
+          if(cmd["code_length"])
+            flds.push("id as presentation");
+          else
+            flds.push("'...' as presentation");
+        }
+
+        if(cmd["has_owners"])
+          flds.push("owner");
+
+        if(cmd["code_length"])
+          flds.push("id");
+
+      }
+
+      // набираем условие
+      // фильтр по дате
+      if(_mgr.metadata("date") && (attr.date_from || attr.date_till)){
+
+        if(!attr.date_from){
+          attr.date_from = new Date("2017-01-01");
+        }
+        if(!attr.date_till){
+          attr.date_till = $p.utils.date_add_day(new Date(), 1);
+        }
+
+        selection.date = {between: [attr.date_from, attr.date_till]};
+      }
+
+      // фильтр по родителю
+      if(cmd["hierarchical"] && attr.parent){
+        selection.parent = attr.parent;
+      }
+
+      // добавляем условия из attr.selection
+      if(attr.selection){
+        if(Array.isArray(attr.selection)){
+          attr.selection.forEach((asel) => {
+            for(const fld in asel){
+              if(fld[0] != "_" || fld == "_view" || fld == "_key"){
+                selection[fld] = asel[fld];
+              }
+            }
+          });
+        }
+        else{
+          for(const fld in attr.selection){
+            if(fld[0] != "_" || fld == "_view" || fld == "_key"){
+              selection[fld] = attr.selection[fld];
+            }
+          }
+        }
+      }
+
+      // прибиваем фильтр по дате, если он встроен в ключ
+      if(selection._key && selection._key._drop_date && selection.date) {
+        delete selection.date;
+      }
+
+      // строковый фильтр по полям поиска, если он не описан в ключе
+      if(attr.filter && (!selection._key || !selection._key._search)) {
+        if(cmd.input_by_string.length == 1)
+          selection[cmd.input_by_string] = {like: attr.filter};
+        else{
+          selection.or = [];
+          cmd.input_by_string.forEach((ifld) => {
+            const flt = {};
+            flt[ifld] = {like: attr.filter};
+            selection.or.push(flt);
+          });
+        }
+      }
+
+      // обратная сортировка по ключу, если есть признак сортировки в ключе и 'des' в атрибутах
+      if(selection._key && selection._key._order_by){
+        selection._key._order_by = attr.direction;
+      }
+
+      // фильтр по владельцу
+      //if(cmd["has_owners"] && attr.owner)
+      //	selection.owner = attr.owner;
+
+      return this.find_rows(_mgr, selection)
+        .then((rows) => {
+
+          if(rows.hasOwnProperty("_total_count") && rows.hasOwnProperty("rows")){
+            attr._total_count = rows._total_count;
+            rows = rows.rows
+          }
+
+          rows.forEach((doc) => {
+
+            // наполняем
+            const o = {};
+            flds.forEach((fld) => {
+
+              let fldsyn;
+
+              if(fld == "ref") {
+                o[fld] = doc[fld];
+                return;
+              }
+              else if(fld.indexOf(" as ") != -1){
+                fldsyn = fld.split(" as ")[1];
+                fld = fld.split(" as ")[0].split(".");
+                fld = fld[fld.length-1];
+              }
+              else{
+                fldsyn = fld;
+              }
+
+              const mf = _mgr.metadata(fld);
+              if(mf){
+                if(mf.type.date_part){
+                  o[fldsyn] = $p.moment(doc[fld]).format($p.moment._masks[mf.type.date_part]);
+                }
+                else if(mf.type.is_ref){
+                  if(!doc[fld] || doc[fld] == $p.utils.blank.guid)
+                    o[fldsyn] = "";
+                  else{
+                    var mgr	= _mgr.value_mgr(o, fld, mf.type, false, doc[fld]);
+                    if(mgr)
+                      o[fldsyn] = mgr.get(doc[fld]).presentation;
+                    else
+                      o[fldsyn] = "";
+                  }
+                }
+                else if(typeof doc[fld] === "number" && mf.type.fraction_figits){
+                  o[fldsyn] = doc[fld].toFixed(mf.type.fraction_figits);
+                }
+                else{
+                  o[fldsyn] = doc[fld];
+                }
+              }
+            });
+            ares.push(o);
+          });
+
+          return $p.iface.data_to_grid.call(_mgr, ares, attr);
+        })
+        .catch($p.record_log);
 
 		}
 
@@ -871,16 +1058,13 @@ function adapter({AbstracrAdapter}) {
 												return;
 										}
 
-										res.push(row.id);
-
-										// ограничиваем кол-во возвращаемых элементов
-										if (top) {
-											top_count++;
-											if (top_count >= top){
-												return;
-											}
-										}
-
+                    // ограничиваем кол-во возвращаемых элементов
+                    if(top) {
+                      top_count++;
+                      if (top_count > top)
+                        return;
+                    }
+                    res.push(row.id);
 									}
 								});
 
@@ -957,26 +1141,25 @@ function adapter({AbstracrAdapter}) {
 										return;
 								}
 
-								// наполняем
-								res.push(doc);
+                // ограничиваем кол-во возвращаемых элементов
+                if(top) {
+                  top_count++;
+                  if (top_count > top)
+                    return;
+                }
 
-								// ограничиваем кол-во возвращаемых элементов
-								if (top) {
-									top_count++;
-									if (top_count >= top){
-										return;
-									}
-								}
+                // наполняем
+                res.push(doc);
 							});
 
-							if (top && (top_count >= top || result.rows.length < options.limit) && !calc_count) {
+              if(top && top_count > top && !calc_count) {
 								resolve(_raw ? res : _mgr.load_array(res));
 							}
 							else{
 								fetch_next_page();
 							}
-
-						} else {
+						}
+						else {
 							if (calc_count) {
 								resolve({
 									rows: _raw ? res : _mgr.load_array(res),

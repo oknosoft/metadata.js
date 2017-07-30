@@ -510,6 +510,10 @@ export class TabularSectionRow {
 		return this._owner._owner._manager;
 	}
 
+	get _data() {
+    return this._owner._owner._data;
+  }
+
 	/**
 	 * ### Номер строки табличной части
 	 * @property row
@@ -537,8 +541,9 @@ export class TabularSectionRow {
 		const {_owner, _obj} = this
 		const _meta = this._metadata(f)
 
-		if (_obj[f] == v || (!v && _obj[f] == utils.blank.guid))
-			return;
+		if (_obj[f] == v || (!v && _obj[f] == utils.blank.guid)){
+      return;
+    }
 
     // obj, {f: oldValue}
     _owner._owner._manager.emit_async('update', this, {[f]: _obj[f]});
@@ -563,7 +568,7 @@ export class TabularSectionRow {
    *
    * @event VALUE_CHANGE
    */
-  value_change(f, v, old) {
+  value_change(f, mf, v) {
     return this;
   }
 

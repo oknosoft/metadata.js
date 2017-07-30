@@ -2363,7 +2363,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	}
 
 	/**
-	 * наблюдатель за изменениями насбор строк табчасти
+	 * наблюдатель за изменениями строк табчасти
 	 * @param changes
 	 */
 	function listener_rows(obj, fields){
@@ -2377,18 +2377,19 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	 * @param changes
 	 */
 	function listener(obj, fields){
-	  const {_owner} = obj;
-	  if(!_owner || !_owner._owner || _owner._owner._obj !== obj || _owner.name != _tsname){
+	  if(obj._owner !== _ts){
 	    return;
     }
-    if(_grid.getSelectedRowId() != obj.row)
+    const {row} = obj;
+    if(_grid.getSelectedRowId() != row)
       _ts.sync_grid(_grid, _selection);
     else{
-      for(let field in fields){
-        const col_index = _grid.getColIndexById(field);
-        if(col_index != undefined){
-          if(typeof obj[field] != "boolean" || typeof fields[field] != "boolean"){
-            _grid.cells(obj.row, col_index).setCValue($p.utils.is_data_obj(obj[field]) ? obj[field].presentation : obj[field]);
+      const cc = _grid.getColumnCount();
+      for(let i = 0; i < cc; i++){
+        if(!_grid.isColumnHidden(i)){
+          const val = obj[_grid.getColumnId(i)];
+          if(typeof val != "boolean"){
+            _grid.cells(row, i).setCValue(val.toString());
           }
         }
       }

@@ -7,6 +7,11 @@ import EventEmitter from 'events'
  */
 export default class MetaEventEmitter extends EventEmitter{
 
+  constructor() {
+    super();
+    this.setMaxListeners(20);
+  }
+
 	/**
 	 * Расширяем метод _on_, чтобы в него можно было передать объект
 	 * @param type

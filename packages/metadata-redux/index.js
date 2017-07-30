@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.1-beta.19, built:2017-07-28
+ metadata-redux v2.0.1-beta.19, built:2017-07-30
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -209,7 +209,7 @@ function data_loaded(page) {
 			type: DATA_LOADED,
 			payload: page
 		});
-		if(page != 'doc_ram'){
+		if(typeof page == 'object'){
       const { meta } = getState();
       if(!meta.user.logged_in && meta.user.has_login){
         const { job_prm, wsql, adapters, aes } = $p;
@@ -307,6 +307,7 @@ function no_data(dbid, err) {
 
 const META_LOADED = 'META_LOADED';
 const PRM_CHANGE = 'PRM_CHANGE';
+const OFFLINE = 'OFFLINE';
 function meta_loaded({version}) {
 	return {
 		type: META_LOADED,
@@ -357,7 +358,7 @@ var handlers = {
     const {wsql} = $p;
     if(Array.isArray(name)){
       for(const {prm, value} of name){
-        value !== null && $p.wsql.set_user_param(prm, value);
+        $p.wsql.set_user_param(prm, value);
       }
     }
     else if(typeof name == 'object'){
@@ -371,10 +372,14 @@ var handlers = {
     $p.wsql.set_user_param(name, value);
     return Object.assign({}, state);
   },
+  [OFFLINE]: (state, action) => Object.assign({}, state, {offline: action.payload}),
   [DATA_LOADED]: (state, action) => {
     const payload = {data_loaded: true, fetch: false};
     if(action.payload == 'doc_ram'){
       payload.doc_ram_loaded = true;
+    }
+    else if(action.payload == 'complete'){
+      payload.complete_loaded = true;
     }
     return Object.assign({}, state, payload);
   },
@@ -439,6 +444,7 @@ function metaInitialState(){
     meta_loaded: false,
     data_loaded: false,
     doc_ram_loaded: false,
+    complete_loaded: false,
     data_empty: undefined,
     sync_started: false,
     fetch: false,
@@ -475,6 +481,7 @@ function metaMiddleware({adapters, md}) {
 					pouch_data_page: (page) => {dispatch(data_page(page));},
 					pouch_data_loaded: (page) => {dispatch(data_loaded(page));},
           pouch_doc_ram_loaded: () => {dispatch(data_loaded('doc_ram'));},
+          pouch_complete_loaded: () => {dispatch(data_loaded('complete'));},
 					pouch_data_error: (dbid, err) => {dispatch(data_error(dbid, err));},
 					pouch_load_start: (page) => {dispatch(load_start(page));},
 					pouch_no_data: (dbid, err) => {dispatch(no_data(dbid, err));},

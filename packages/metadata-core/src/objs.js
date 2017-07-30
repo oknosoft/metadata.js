@@ -25,13 +25,14 @@ import {TabularSection, TabularSectionRow} from './tabulars'
  * @class DataObj
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
+ * @param [loading] {Boolean}
  * @constructor
  * @menuorder 20
  * @tooltip Объект данных
  */
 export class DataObj {
 
-	constructor(attr, manager) {
+	constructor(attr, manager, loading) {
 
 		// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
 		if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)){
@@ -86,12 +87,13 @@ export class DataObj {
 			 */
 			_data: {
 				value: {
-					_is_new: !(this instanceof EnumObj)
+					_is_new: !(this instanceof EnumObj),
+          _loading: !!loading
 				},
 				configurable: true
 			}
 
-		})
+		});
 
 		if(manager.alatable && manager.push){
 			manager.alatable.push(this._obj);
@@ -161,11 +163,17 @@ export class DataObj {
 
 		const mf = this._metadata(f).type;
 
-		if(this.value_change(f, mf, v) === false){
-		  return;
-    }
+    const {_obj, _data} = this;
 
-    const {_obj} = this;
+    // выполняем value_change с блокировкой эскалации
+		if(!_data._loading){
+      _data._loading = true;
+      const res = this.value_change(f, mf, v);
+      _data._loading = false;
+      if(res === false){
+        return;
+      }
+    }
 
 		if(f == "type" && v.types){
 			_obj[f] = v;
@@ -319,8 +327,10 @@ export class DataObj {
 	 */
 	_set_loaded(ref){
 		this._manager.push(this, ref);
-		this._data._modified = false;
-		this._data._is_new = false;
+		const {_data} = this;
+		_data._modified = false;
+		_data._is_new = false;
+		_data._loading = false;
 		return this;
 	}
 
@@ -577,7 +587,7 @@ export class DataObj {
 		  const {_not_set_loaded} = attr;
       delete attr._not_set_loaded;
       utils._mixin(this, attr);
-			if(!_not_set_loaded && !utils.is_empty_guid(this.ref) && (attr.id || attr.name)){
+			if(!_not_set_loaded && (this._data._loading || (!utils.is_empty_guid(this.ref) && (attr.id || attr.name || attr.number_doc)))){
         this._set_loaded(this.ref);
 			}
 		}
@@ -646,7 +656,7 @@ export class DataObj {
    *
    * @event VALUE_CHANGE
    */
-  value_change(f, v, old) {
+  value_change(f, mf, v) {
     return this;
   }
 
@@ -697,10 +707,10 @@ TabularSectionRow.prototype.__setter = DataObj.prototype.__setter;
  */
 export class CatObj extends DataObj {
 
-	constructor(attr, manager){
+	constructor(attr, manager, loading){
 
 		// выполняем конструктор родительского объекта
-		super(attr, manager);
+		super(attr, manager, loading);
 
 		this._mixin(attr);
 
@@ -829,10 +839,10 @@ export const NumberDocAndDate = (superclass) => class extends superclass {
  */
 export class DocObj extends NumberDocAndDate(DataObj) {
 
-	constructor(attr, manager){
+	constructor(attr, manager, loading){
 
 		// выполняем конструктор родительского объекта
-		super(attr, manager);
+		super(attr, manager, loading);
 
 		this._mixin(attr);
 
@@ -881,10 +891,10 @@ export class DocObj extends NumberDocAndDate(DataObj) {
  */
 export class DataProcessorObj extends DataObj {
 
-	constructor(attr, manager) {
+	constructor(attr, manager, loading) {
 
 		// выполняем конструктор родительского объекта
-		super(attr, manager);
+		super(attr, manager, loading);
 
 		const cmd = manager.metadata();
 
@@ -941,10 +951,10 @@ export class BusinessProcessObj extends NumberDocAndDate(CatObj) {
  */
 export class EnumObj extends DataObj {
 
-	constructor(attr, manager) {
+	constructor(attr, manager, loading) {
 
 		// выполняем конструктор родительского объекта
-		super(attr, manager);
+		super(attr, manager, loading);
 
 		if(attr && typeof attr == "object")
 			utils._mixin(this, attr);
@@ -1034,10 +1044,10 @@ export class EnumObj extends DataObj {
  */
 export class RegisterRow extends DataObj {
 
-	constructor(attr, manager) {
+	constructor(attr, manager, loading) {
 
 		// выполняем конструктор родительского объекта
-		super(attr, manager);
+		super(attr, manager, loading);
 
 		if (attr && typeof attr == "object"){
 			let tref = attr.ref;

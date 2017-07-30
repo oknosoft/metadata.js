@@ -4,7 +4,7 @@
  * Активные действия и работа с данными происходит в actions
  */
 
-import {META_LOADED, PRM_CHANGE} from './actions_base';
+import {META_LOADED, PRM_CHANGE, OFFLINE} from './actions_base';
 import {DATA_LOADED, DATA_PAGE, DATA_ERROR, LOAD_START, NO_DATA, SYNC_PAUSED, SYNC_RESUMED, SYNC_DATA} from './actions_pouch';
 import {DEFINED, LOG_IN, TRY_LOG_IN, LOG_OUT, LOG_ERROR} from './actions_auth';
 import {ADD, CHANGE} from './actions_obj';
@@ -36,10 +36,15 @@ export default {
     return Object.assign({}, state);
   },
 
+  [OFFLINE]: (state, action) => Object.assign({}, state, {offline: action.payload}),
+
   [DATA_LOADED]: (state, action) => {
     const payload = {data_loaded: true, fetch: false};
     if(action.payload == 'doc_ram'){
       payload.doc_ram_loaded = true;
+    }
+    else if(action.payload == 'complete'){
+      payload.complete_loaded = true;
     }
     return Object.assign({}, state, payload);
   },

@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.1-beta.19, built:2017-07-26
+ metadata-pouchdb v2.0.1-beta.19, built:2017-07-30
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -310,10 +310,6 @@ function adapter({AbstracrAdapter}) {
 									}
 									t.emit('user_log_in', username);
 								});
-								const sync = {};
-								if(_paths.direct) {
-									return t.load_data();
-								}
 								try_auth.length = 0;
 								md.bases().forEach((dbid) => {
 									if(t.local[dbid] && t.remote[dbid] && t.local[dbid] != t.remote[dbid]){
@@ -325,6 +321,7 @@ function adapter({AbstracrAdapter}) {
 								});
 								return Promise.all(try_auth);
 							})
+              .then(() => t.load_data())
 							.catch(err => {
 								t.emit('user_log_fault', err);
 							})
@@ -334,52 +331,19 @@ function adapter({AbstracrAdapter}) {
 					value: function () {
 						if(_auth){
 							if(_local.sync.doc){
-								try{
-									_local.sync.doc.cancel();
-								}catch(err){}
+								try{_local.sync.doc.cancel();}catch(err){}
 							}
 							if(_local.sync.ram){
-								try{
-									_local.sync.ram.cancel();
-								}catch(err){}
+								try{_local.sync.ram.cancel();}catch(err){}
 							}
 							_auth = null;
 						}
-						return _remote.ram.logout()
-							.then(() => {
-								if(_remote && _remote.doc){
-									return _remote.doc.logout()
-								}
-							})
-							.then(() => {
-								if(_remote && _remote.ram){
-									delete _remote.ram;
-								}
-								if(_remote && _remote.doc){
-									delete _remote.doc;
-								}
-								_remote = null;
-								t.emit('user_log_out');
-							})
-					}
-				},
-				reset_local_data: {
-					value: function () {
-						var destroy_ram = t.local.ram.destroy.bind(t.local.ram),
-							destroy_doc = t.local.doc.destroy.bind(t.local.doc),
-							do_reload = () => {
-								setTimeout(() => {
-									location.reload(true);
-								}, 1000);
-							};
-						t.log_out();
-						setTimeout(() => {
-							destroy_ram()
-								.then(destroy_doc)
-								.catch(destroy_doc)
-								.then(do_reload)
-								.catch(do_reload);
-						}, 1000);
+            return Promise.all(this.$p.md.bases().map((id) => {
+              if(id != 'meta' && _remote && _remote[id] && _remote[id] != _local[id]){
+                return _remote[id].logout();
+              }
+            }))
+              .then(() => t.emit('user_log_out'));
 					}
 				},
 				load_data: {
@@ -494,10 +458,6 @@ function adapter({AbstracrAdapter}) {
 										start: Date.now()
 									};
 									t.emit('pouch_load_start', _page);
-								}else if(id == "doc"){
-									setTimeout(() => {
-										t.emit('pouch_sync_start');
-									});
 								}
 								var options = {
 									live: true,
@@ -535,37 +495,56 @@ function adapter({AbstracrAdapter}) {
 										}
 										t.emit('pouch_sync_data', id, change);
 									})
-									.on('paused', (info) => {
-										t.emit('pouch_sync_paused', id, info);
-									})
-									.on('active', (info) => {
-										t.emit('pouch_sync_resumed', id, info);
-									})
 									.on('denied', (info) => {
 										t.emit('pouch_sync_denied', id, info);
 									})
 									.on('error', (err) => {
 										t.emit('pouch_sync_error', id, err);
 									});
+								if(id == 'ram'){
+                  _local.sync[id]
+                    .on('paused', (info) => {
+                      t.emit('pouch_sync_paused', id, info);
+                    })
+                    .on('active', (info) => {
+                      t.emit('pouch_sync_resumed', id, info);
+                    });
+                }
 								return _local.sync[id];
 							});
 					}
 				}
 			});
 		}
+    reset_local_data() {
+      const {doc, ram} = this.local;
+      const do_reload = () => {
+        setTimeout(() => {
+          location.reload(true);
+        }, 1000);
+      };
+      return this.log_out()
+        .then(ram.destroy.bind(ram))
+        .then(doc.destroy.bind(doc))
+        .then(do_reload)
+        .catch(do_reload);
+    }
 		load_obj(tObj) {
 			const db = this.db(tObj._manager);
 			return db.get(tObj._manager.class_name + "|" + tObj.ref)
 				.then((res) => {
 					delete res._id;
 					delete res._rev;
-					Object.assign(tObj, res)._set_loaded();
+          tObj._data._loading = true;
+					tObj._mixin(res);
 				})
 				.catch((err) => {
-					if (err.status != 404)
-						throw err;
-					else
-						console.log({tObj, db});
+					if (err.status != 404){
+            throw err;
+          }
+					else{
+            this.$p.record_log(db + ":" + tObj._manager.class_name + "|" + tObj.ref);
+          }
 				})
 				.then((res) => {
 					return tObj;
@@ -629,6 +608,154 @@ function adapter({AbstracrAdapter}) {
 		get_tree(_mgr, attr){
 		}
 		get_selection(_mgr, attr){
+      const {utils, classes} = this.$p;
+      const db = this.db(_mgr);
+      const cmd = attr.metadata || _mgr.metadata();
+      const flds = ["ref", "_deleted"];
+      const selection = {
+        _raw: true,
+        _total_count: true,
+        _top: attr.count || 30,
+        _skip: attr.start || 0
+      };
+      const ares = [];
+      if(cmd.form && cmd.form.selection){
+        cmd.form.selection.fields.forEach((fld) => flds.push(fld));
+      }
+      else if(_mgr instanceof classes.DocManager){
+        flds.push("posted");
+        flds.push("date");
+        flds.push("number_doc");
+      }
+      else if(_mgr instanceof classes.TaskManager){
+        flds.push("name as presentation");
+        flds.push("date");
+        flds.push("number_doc");
+        flds.push("completed");
+      }
+      else if(_mgr instanceof classes.BusinessProcessManager){
+        flds.push("date");
+        flds.push("number_doc");
+        flds.push("started");
+        flds.push("finished");
+      }
+      else{
+        if(cmd["hierarchical"] && cmd["group_hierarchy"])
+          flds.push("is_folder");
+        else
+          flds.push("0 as is_folder");
+        if(cmd["main_presentation_name"])
+          flds.push("name as presentation");
+        else{
+          if(cmd["code_length"])
+            flds.push("id as presentation");
+          else
+            flds.push("'...' as presentation");
+        }
+        if(cmd["has_owners"])
+          flds.push("owner");
+        if(cmd["code_length"])
+          flds.push("id");
+      }
+      if(_mgr.metadata("date") && (attr.date_from || attr.date_till)){
+        if(!attr.date_from){
+          attr.date_from = new Date("2017-01-01");
+        }
+        if(!attr.date_till){
+          attr.date_till = $p.utils.date_add_day(new Date(), 1);
+        }
+        selection.date = {between: [attr.date_from, attr.date_till]};
+      }
+      if(cmd["hierarchical"] && attr.parent){
+        selection.parent = attr.parent;
+      }
+      if(attr.selection){
+        if(Array.isArray(attr.selection)){
+          attr.selection.forEach((asel) => {
+            for(const fld in asel){
+              if(fld[0] != "_" || fld == "_view" || fld == "_key"){
+                selection[fld] = asel[fld];
+              }
+            }
+          });
+        }
+        else{
+          for(const fld in attr.selection){
+            if(fld[0] != "_" || fld == "_view" || fld == "_key"){
+              selection[fld] = attr.selection[fld];
+            }
+          }
+        }
+      }
+      if(selection._key && selection._key._drop_date && selection.date) {
+        delete selection.date;
+      }
+      if(attr.filter && (!selection._key || !selection._key._search)) {
+        if(cmd.input_by_string.length == 1)
+          selection[cmd.input_by_string] = {like: attr.filter};
+        else{
+          selection.or = [];
+          cmd.input_by_string.forEach((ifld) => {
+            const flt = {};
+            flt[ifld] = {like: attr.filter};
+            selection.or.push(flt);
+          });
+        }
+      }
+      if(selection._key && selection._key._order_by){
+        selection._key._order_by = attr.direction;
+      }
+      return this.find_rows(_mgr, selection)
+        .then((rows) => {
+          if(rows.hasOwnProperty("_total_count") && rows.hasOwnProperty("rows")){
+            attr._total_count = rows._total_count;
+            rows = rows.rows;
+          }
+          rows.forEach((doc) => {
+            const o = {};
+            flds.forEach((fld) => {
+              let fldsyn;
+              if(fld == "ref") {
+                o[fld] = doc[fld];
+                return;
+              }
+              else if(fld.indexOf(" as ") != -1){
+                fldsyn = fld.split(" as ")[1];
+                fld = fld.split(" as ")[0].split(".");
+                fld = fld[fld.length-1];
+              }
+              else{
+                fldsyn = fld;
+              }
+              const mf = _mgr.metadata(fld);
+              if(mf){
+                if(mf.type.date_part){
+                  o[fldsyn] = $p.moment(doc[fld]).format($p.moment._masks[mf.type.date_part]);
+                }
+                else if(mf.type.is_ref){
+                  if(!doc[fld] || doc[fld] == $p.utils.blank.guid)
+                    o[fldsyn] = "";
+                  else{
+                    var mgr	= _mgr.value_mgr(o, fld, mf.type, false, doc[fld]);
+                    if(mgr)
+                      o[fldsyn] = mgr.get(doc[fld]).presentation;
+                    else
+                      o[fldsyn] = "";
+                  }
+                }
+                else if(typeof doc[fld] === "number" && mf.type.fraction_figits){
+                  o[fldsyn] = doc[fld].toFixed(mf.type.fraction_figits);
+                }
+                else{
+                  o[fldsyn] = doc[fld];
+                }
+              }
+            });
+            ares.push(o);
+          });
+          return $p.iface.data_to_grid.call(_mgr, ares, attr);
+        })
+        .catch($p.record_log);
 		}
 		load_array(_mgr, refs, with_attachments) {
 			if(!refs.length){
@@ -695,7 +822,7 @@ function adapter({AbstracrAdapter}) {
         limit: 10000,
       })
         .then((data) => this.load_changes(data))
-        .then(() => setTimeout(() => this.emit('pouch_doc_ram_loaded'), 500));
+        .then(() => this.emit('pouch_doc_ram_loaded'));
     }
 		find_rows(_mgr, selection) {
 		  const {utils} = this.$p;
@@ -763,13 +890,12 @@ function adapter({AbstracrAdapter}) {
 											if (skip_count < skip)
 												return;
 										}
-										res.push(row.id);
-										if (top) {
-											top_count++;
-											if (top_count >= top){
-												return;
-											}
-										}
+                    if(top) {
+                      top_count++;
+                      if (top_count > top)
+                        return;
+                    }
+                    res.push(row.id);
 									}
 								});
 								delete options.startkey;
@@ -822,21 +948,21 @@ function adapter({AbstracrAdapter}) {
 									if (skip_count < skip)
 										return;
 								}
-								res.push(doc);
-								if (top) {
-									top_count++;
-									if (top_count >= top){
-										return;
-									}
-								}
+                if(top) {
+                  top_count++;
+                  if (top_count > top)
+                    return;
+                }
+                res.push(doc);
 							});
-							if (top && (top_count >= top || result.rows.length < options.limit) && !calc_count) {
+              if(top && top_count > top && !calc_count) {
 								resolve(_raw ? res : _mgr.load_array(res));
 							}
 							else{
 								fetch_next_page();
 							}
-						} else {
+						}
+						else {
 							if (calc_count) {
 								resolve({
 									rows: _raw ? res : _mgr.load_array(res),

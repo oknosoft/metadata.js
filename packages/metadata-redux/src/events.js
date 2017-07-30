@@ -27,6 +27,8 @@ export default function metaMiddleware({adapters, md}) {
 
           pouch_doc_ram_loaded: () => {dispatch(data_loaded('doc_ram'))},
 
+          pouch_complete_loaded: () => {dispatch(data_loaded('complete'))},
+
 					pouch_data_error: (dbid, err) => {dispatch(data_error(dbid, err))},
 
 					pouch_load_start: (page) => {dispatch(load_start(page))},

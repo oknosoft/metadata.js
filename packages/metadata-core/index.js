@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.1-beta.19, built:2017-07-28
+ metadata-core v2.0.1-beta.19, built:2017-07-30
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -449,6 +449,9 @@ class TabularSectionRow {
 	get _manager() {
 		return this._owner._owner._manager;
 	}
+	get _data() {
+    return this._owner._owner._data;
+  }
 	get row() {
 		return this._obj.row || 0
 	}
@@ -459,8 +462,9 @@ class TabularSectionRow {
 	_setter(f, v) {
 		const {_owner, _obj} = this;
 		const _meta = this._metadata(f);
-		if (_obj[f] == v || (!v && _obj[f] == utils.blank.guid))
-			return;
+		if (_obj[f] == v || (!v && _obj[f] == utils.blank.guid)){
+      return;
+    }
     _owner._owner._manager.emit_async('update', this, {[f]: _obj[f]});
 		if (_meta.choice_type) {
 			let prop;
@@ -474,7 +478,7 @@ class TabularSectionRow {
 		this.__setter(f, v);
 		_owner._owner._data._modified = true;
 	}
-  value_change(f, v, old) {
+  value_change(f, mf, v) {
     return this;
   }
 }
@@ -486,7 +490,7 @@ var data_tabulars = Object.freeze({
 });
 
 class DataObj {
-	constructor(attr, manager) {
+	constructor(attr, manager, loading) {
 		if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)){
 			const tmp = manager.get(attr, true);
 			if(tmp){
@@ -510,7 +514,8 @@ class DataObj {
 			},
 			_data: {
 				value: {
-					_is_new: !(this instanceof EnumObj)
+					_is_new: !(this instanceof EnumObj),
+          _loading: !!loading
 				},
 				configurable: true
 			}
@@ -565,10 +570,15 @@ class DataObj {
 	}
 	__setter(f, v) {
 		const mf = this._metadata(f).type;
-		if(this.value_change(f, mf, v) === false){
-		  return;
+    const {_obj, _data} = this;
+		if(!_data._loading){
+      _data._loading = true;
+      const res = this.value_change(f, mf, v);
+      _data._loading = false;
+      if(res === false){
+        return;
+      }
     }
-    const {_obj} = this;
 		if(f == "type" && v.types){
 			_obj[f] = v;
 		}
@@ -657,8 +667,10 @@ class DataObj {
 	}
 	_set_loaded(ref){
 		this._manager.push(this, ref);
-		this._data._modified = false;
-		this._data._is_new = false;
+		const {_data} = this;
+		_data._modified = false;
+		_data._is_new = false;
+		_data._loading = false;
 		return this;
 	}
 	mark_deleted(deleted){
@@ -789,7 +801,7 @@ class DataObj {
 		  const {_not_set_loaded} = attr;
       delete attr._not_set_loaded;
       utils._mixin(this, attr);
-			if(!_not_set_loaded && !utils.is_empty_guid(this.ref) && (attr.id || attr.name)){
+			if(!_not_set_loaded && (this._data._loading || (!utils.is_empty_guid(this.ref) && (attr.id || attr.name || attr.number_doc)))){
         this._set_loaded(this.ref);
 			}
 		}
@@ -809,7 +821,7 @@ class DataObj {
   after_save() {
     return this;
   }
-  value_change(f, v, old) {
+  value_change(f, mf, v) {
     return this;
   }
   add_row(row) {
@@ -828,8 +840,8 @@ Object.defineProperty(DataObj.prototype, "ref", {
 TabularSectionRow.prototype._getter = DataObj.prototype._getter;
 TabularSectionRow.prototype.__setter = DataObj.prototype.__setter;
 class CatObj extends DataObj {
-	constructor(attr, manager){
-		super(attr, manager);
+	constructor(attr, manager, loading){
+		super(attr, manager, loading);
 		this._mixin(attr);
 	}
 	get presentation(){
@@ -892,8 +904,8 @@ const NumberDocAndDate = (superclass) => class extends superclass {
 	}
 };
 class DocObj extends NumberDocAndDate(DataObj) {
-	constructor(attr, manager){
-		super(attr, manager);
+	constructor(attr, manager, loading){
+		super(attr, manager, loading);
 		this._mixin(attr);
 	}
 	get presentation(){
@@ -915,8 +927,8 @@ class DocObj extends NumberDocAndDate(DataObj) {
 	}
 }
 class DataProcessorObj extends DataObj {
-	constructor(attr, manager) {
-		super(attr, manager);
+	constructor(attr, manager, loading) {
+		super(attr, manager, loading);
 		const cmd = manager.metadata();
 		for(let f in cmd.fields){
 			if(!attr[f]){
@@ -936,8 +948,8 @@ class TaskObj extends NumberDocAndDate(CatObj) {
 class BusinessProcessObj extends NumberDocAndDate(CatObj) {
 }
 class EnumObj extends DataObj {
-	constructor(attr, manager) {
-		super(attr, manager);
+	constructor(attr, manager, loading) {
+		super(attr, manager, loading);
 		if(attr && typeof attr == "object")
 			utils._mixin(this, attr);
 	}
@@ -967,8 +979,8 @@ class EnumObj extends DataObj {
 	}
 }
 class RegisterRow extends DataObj {
-	constructor(attr, manager) {
-		super(attr, manager);
+	constructor(attr, manager, loading) {
+		super(attr, manager, loading);
 		if (attr && typeof attr == "object"){
 			let tref = attr.ref;
 			if(tref){
@@ -1020,6 +1032,10 @@ var data_objs = Object.freeze({
 });
 
 class MetaEventEmitter extends EventEmitter{
+  constructor() {
+    super();
+    this.setMaxListeners(20);
+  }
 	on(type, listener){
 		if(typeof listener == 'function' && typeof type != 'object'){
 			super.on(type, listener);
@@ -1424,7 +1440,7 @@ class RefDataManager extends DataManager{
 				return;
 			}
 			else{
-				o = this.obj_constructor('', [ref, this, true]);
+				o = this.obj_constructor('', [ref, this]);
 			}
 		}
 		if(ref === utils.blank.guid){
@@ -1487,7 +1503,7 @@ class RefDataManager extends DataManager{
 							rattr.url += this.rest_name + "/Create()";
 							return ajax.get_ex(rattr.url, rattr)
 								.then(function (req) {
-									return utils._mixin(o, JSON.parse(req.response), undefined, ["ref"]);
+									return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
 								});
 						}else
 							return o;
@@ -1516,11 +1532,12 @@ class RefDataManager extends DataManager{
 				if(forse == "update_only"){
 					continue;
 				}
-				obj = this.obj_constructor('', [attr, this]);
-				forse && obj._set_loaded();
+				obj = this.obj_constructor('', [attr, this, true]);
+				forse && obj.is_new() && obj._set_loaded();
 			}
 			else if(obj.is_new() || forse){
-				utils._mixin(obj, attr)._set_loaded();
+        obj._data._loading = true;
+				obj._mixin(attr);
 			}
 			res.push(obj);
 		}
@@ -2055,14 +2072,16 @@ class RegisterManager extends DataManager{
 			ref = this.get_ref(aattr[i]);
 			obj = this.by_ref[ref];
 			if (!obj && !aattr[i]._deleted) {
-				obj = this.obj_constructor('', [aattr[i], this]);
-				if (forse)
-					obj._set_loaded();
-			} else if (obj && aattr[i]._deleted) {
+				obj = this.obj_constructor('', [aattr[i], this, true]);
+				forse && obj.is_new() && obj._set_loaded();
+			}
+			else if (obj && aattr[i]._deleted) {
 				obj.unload();
 				continue;
-			} else if (obj.is_new() || forse) {
-				utils._mixin(obj, aattr[i])._set_loaded();
+			}
+			else if (obj.is_new() || forse) {
+        obj._data._loading = true;
+				obj._mixin(aattr[i]);
 			}
 			res.push(obj);
 		}
@@ -2551,11 +2570,14 @@ const utils = {
 		return !v || v === this.blank.guid;
 	},
 	is_data_obj(v) {
-		return v && v instanceof DataObj;
+		return v instanceof DataObj;
 	},
 	is_data_mgr(v) {
-		return v && v instanceof DataManager;
+		return v instanceof DataManager;
 	},
+  is_tabular(v) {
+    return v instanceof TabularSection;
+  },
 	is_equal(v1, v2) {
 		if (v1 == v2) {
 			return true;
