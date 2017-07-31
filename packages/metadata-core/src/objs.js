@@ -370,25 +370,24 @@ export class DataObj {
 	 * @async
 	 */
 	load() {
-
 		if (this.ref == utils.blank.guid) {
-
-			if (this instanceof CatObj)
-				this.id = "000000000";
-			else
-				this.number_doc = "000000000";
-
+			if (this instanceof CatObj){
+        this.id = "000000000";
+      }
+			else{
+        this.number_doc = "000000000";
+      }
 			return Promise.resolve(this);
-
-		} else {
-
+		}
+		else {
+		  this._data._loading = true;
 			return this._manager.adapter.load_obj(this)
 				.then(() => {
+          this._data._loading = false;
 					this._data._modified = false;
 					return this.after_load()
 				});
 		}
-
 	}
 
 	/**
@@ -430,57 +429,49 @@ export class DataObj {
 	save(post, operational, attachments) {
 
 		if (this instanceof DocObj && typeof post == "boolean") {
-			var initial_posted = this.posted;
+			const initial_posted = this.posted;
 			this.posted = post;
 		}
 
-		let saver,
+		const before_save_res = this.before_save();
+		const reset_modified = () => {
+      if (before_save_res === false) {
+        if (this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted) {
+          this.posted = initial_posted;
+        }
+      }
+      else{
+        this._data._modified = false;
+      }
+      return this;
+    };
 
-			before_save_res = {},
-
-			reset_modified = () => {
-
-				if (before_save_res === false) {
-					if (this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted) {
-						this.posted = initial_posted;
-					}
-				} else
-					this._data._modified = false;
-
-				saver = null;
-				before_save_res = null;
-				reset_modified = null;
-
-				return this;
-			};
-
-		this._manager.emit("before_save", before_save_res, this);
+		let saver;
 
 		// если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
 		if (before_save_res === false) {
 			return Promise.reject(reset_modified());
-
-		} else if (before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then) {
-			// если пользовательский обработчик перед записью вернул промис, его и возвращаем
+		}
+    // если пользовательский обработчик перед записью вернул промис, его и возвращаем
+		else if (before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then) {
 			return before_save_res.then(reset_modified);
 		}
 
 		// для объектов с иерархией установим пустого родителя, если иной не указан
-		if (this._metadata().hierarchical && !this._obj.parent)
-			this._obj.parent = utils.blank.guid;
+		if (this._metadata().hierarchical && !this._obj.parent){
+      this._obj.parent = utils.blank.guid;
+    }
 
 		// для документов, контролируем заполненность даты
 		if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
-
 			if (utils.blank.date == this.date){
 				this.date = new Date();
 			}
-
 			if (!this.number_doc){
 				this.new_number_doc();
 			}
-
-		} else {
+		}
+		else {
 			if (!this.id){
 				this.new_number_doc();
 			}
@@ -504,18 +495,17 @@ export class DataObj {
 		// }
 
 		// в зависимости от типа кеширования, получаем saver и сохраняем объект во внешней базе
-		return this._manager.adapter.save_obj(
-			this, {
-				post: post,
-				operational: operational,
-				attachments: attachments
-			})
-		// и выполняем обработку после записи
-			.then(function (obj) {
-				obj._manager.emit("after_save", {}, obj);
-				return obj;
-			})
-			.then(reset_modified);
+		return this._manager.adapter.save_obj(this, {
+		  post: post,
+      operational: operational,
+      attachments: attachments
+		})
+    // и выполняем обработку после записи
+      .then(() => {
+		  this.after_save();
+		  return this;
+		})
+      .then(reset_modified);
 	}
 
 

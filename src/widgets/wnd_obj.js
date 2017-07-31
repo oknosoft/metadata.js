@@ -23,7 +23,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	var _mgr = this,
 		_meta = _mgr.metadata(),
 		o = attr.o,
-		wnd, options, created, create_id, _title, close_confirmed;
+		wnd, options, created, create_id, _title;
 
 	/**
 	 * ПриСозданииНаСервере - инициализация при создании формы, до чтения объекта
@@ -470,14 +470,14 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 * Задаёт вопрос о записи изменений и делает откат при необходимости
 	 */
 	function check_modified() {
-		if(o && o._modified && !close_confirmed){
+		if(o && o._modified && !wnd.close_confirmed){
 			dhtmlx.confirm({
 				title: o.presentation,
 				text: $p.msg.modified_close,
 				cancel: $p.msg.cancel,
 				callback: function(btn) {
 					if(btn){
-						close_confirmed = true;
+            wnd.close_confirmed = true;
 						// закрыть изменённый без сохранения - значит прочитать его из pouchdb
 						if(o._manager.cachable == "ram"){
               this.close && this.close();
@@ -485,7 +485,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 						else{
 							if(o.is_new()){
 								o.unload();
-                this.close &&this.close();
+                this.close && this.close();
 							}
 							else{
 								setTimeout(o.load.bind(o), 100);

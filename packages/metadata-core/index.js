@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.1-beta.19, built:2017-07-30
+ metadata-core v2.0.1-beta.19, built:2017-07-31
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -693,14 +693,19 @@ class DataObj {
 	}
 	load() {
 		if (this.ref == utils.blank.guid) {
-			if (this instanceof CatObj)
-				this.id = "000000000";
-			else
-				this.number_doc = "000000000";
+			if (this instanceof CatObj){
+        this.id = "000000000";
+      }
+			else{
+        this.number_doc = "000000000";
+      }
 			return Promise.resolve(this);
-		} else {
+		}
+		else {
+		  this._data._loading = true;
 			return this._manager.adapter.load_obj(this)
 				.then(() => {
+          this._data._loading = false;
 					this._data._modified = false;
 					return this.after_load()
 				});
@@ -725,31 +730,31 @@ class DataObj {
 	}
 	save(post, operational, attachments) {
 		if (this instanceof DocObj && typeof post == "boolean") {
-			var initial_posted = this.posted;
+			const initial_posted = this.posted;
 			this.posted = post;
 		}
-		let saver,
-			before_save_res = {},
-			reset_modified = () => {
-				if (before_save_res === false) {
-					if (this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted) {
-						this.posted = initial_posted;
-					}
-				} else
-					this._data._modified = false;
-				saver = null;
-				before_save_res = null;
-				reset_modified = null;
-				return this;
-			};
-		this._manager.emit("before_save", before_save_res, this);
+		const before_save_res = this.before_save();
+		const reset_modified = () => {
+      if (before_save_res === false) {
+        if (this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted) {
+          this.posted = initial_posted;
+        }
+      }
+      else{
+        this._data._modified = false;
+      }
+      return this;
+    };
+		let saver;
 		if (before_save_res === false) {
 			return Promise.reject(reset_modified());
-		} else if (before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then) {
+		}
+		else if (before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then) {
 			return before_save_res.then(reset_modified);
 		}
-		if (this._metadata().hierarchical && !this._obj.parent)
-			this._obj.parent = utils.blank.guid;
+		if (this._metadata().hierarchical && !this._obj.parent){
+      this._obj.parent = utils.blank.guid;
+    }
 		if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
 			if (utils.blank.date == this.date){
 				this.date = new Date();
@@ -757,22 +762,22 @@ class DataObj {
 			if (!this.number_doc){
 				this.new_number_doc();
 			}
-		} else {
+		}
+		else {
 			if (!this.id){
 				this.new_number_doc();
 			}
 		}
-		return this._manager.adapter.save_obj(
-			this, {
-				post: post,
-				operational: operational,
-				attachments: attachments
-			})
-			.then(function (obj) {
-				obj._manager.emit("after_save", {}, obj);
-				return obj;
-			})
-			.then(reset_modified);
+		return this._manager.adapter.save_obj(this, {
+		  post: post,
+      operational: operational,
+      attachments: attachments
+		})
+      .then(() => {
+		  this.after_save();
+		  return this;
+		})
+      .then(reset_modified);
 	}
 	get_attachment(att_id) {
 		const {_manager, ref} = this;

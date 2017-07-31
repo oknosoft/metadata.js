@@ -150,7 +150,6 @@ class AppEvents {
 					}
 				}
 
-
 				job_prm.__define('device_type', {
 					get: function () {
 						var device_type = wsql.get_user_param('device_type');
@@ -166,11 +165,6 @@ class AppEvents {
 						wsql.set_user_param('device_type', v);
 					},
 				});
-
-				/**
-				 * слушаем события клавиатуры
-				 */
-				document.body.addEventListener('keydown', (ev) => eve.callEvent('keydown', [ev]), false);
 
 				setTimeout(init_params, 10);
 

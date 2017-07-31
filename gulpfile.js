@@ -42,6 +42,7 @@ gulp.task('dhtmlx-ui', function () {
   return gulp.src([
     './src/widgets/*.js',
     './src/reporting.js',
+    './src/import_export.js',
     './data/merged_data.js',
   ])
     .pipe(concat('dhtmlx-widgets.js'))

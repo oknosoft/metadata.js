@@ -423,10 +423,11 @@ function OCombo(attr){
 
     _mgr && _mgr.off('update', listener);
 
-		if(t.conf && t.conf.tm_confirm_blur)
-			clearTimeout(t.conf.tm_confirm_blur);
+		if(t.conf && t.conf.tm_confirm_blur){
+      clearTimeout(t.conf.tm_confirm_blur);
+    }
 
-    this.list.parentElement.removeChild(this.list);
+    this.list && this.list.parentElement && this.list.parentElement.removeChild(this.list);
 
 		_obj = null;
 		_field = null;
@@ -438,8 +439,8 @@ function OCombo(attr){
 	};
 
 	// биндим поле объекта
-	if(attr.obj && attr.field)
-		this.attach(attr);
+	attr.obj && attr.field && this.attach(attr);
+
 	// устанавливаем url фильтрации
 	this.enableFilteringMode("between", "dummy", false, false);
 
