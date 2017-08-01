@@ -569,15 +569,25 @@ export class DataObj {
    * @param attr
    * @private
    */
-	_mixin(attr){
+	_mixin(attr, include, exclude, silent){
 		if(Object.isFrozen(this)){
 			return;
 		}
 		if(attr && typeof attr == "object"){
 		  const {_not_set_loaded} = attr;
       delete attr._not_set_loaded;
-      utils._mixin(this, attr);
-			if(!_not_set_loaded && (this._data._loading || (!utils.is_empty_guid(this.ref) && (attr.id || attr.name || attr.number_doc)))){
+      const {_data} = this;
+      if(silent){
+        if(_data._loading){
+          silent = false;
+        }
+        _data._loading = true;
+      }
+      utils._mixin(this, attr, include, exclude);
+      if(silent){
+        _data._loading = false;
+      }
+			if(!_not_set_loaded && (_data._loading || (!utils.is_empty_guid(this.ref) && (attr.id || attr.name || attr.number_doc)))){
         this._set_loaded(this.ref);
 			}
 		}
