@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.1-beta.19, built:2017-07-31
+ metadata-core v2.0.1-beta.19, built:2017-08-01
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -803,15 +803,25 @@ class DataObj {
 				return att;
 			});
 	}
-	_mixin(attr){
+	_mixin(attr, include, exclude, silent){
 		if(Object.isFrozen(this)){
 			return;
 		}
 		if(attr && typeof attr == "object"){
 		  const {_not_set_loaded} = attr;
       delete attr._not_set_loaded;
-      utils._mixin(this, attr);
-			if(!_not_set_loaded && (this._data._loading || (!utils.is_empty_guid(this.ref) && (attr.id || attr.name || attr.number_doc)))){
+      const {_data} = this;
+      if(silent){
+        if(_data._loading){
+          silent = false;
+        }
+        _data._loading = true;
+      }
+      utils._mixin(this, attr, include, exclude);
+      if(silent){
+        _data._loading = false;
+      }
+			if(!_not_set_loaded && (_data._loading || (!utils.is_empty_guid(this.ref) && (attr.id || attr.name || attr.number_doc)))){
         this._set_loaded(this.ref);
 			}
 		}
@@ -1132,6 +1142,19 @@ class MetaEventEmitter extends EventEmitter{
     handler.timer && clearTimeout(handler.timer);
     handler.args.push(args);
     handler.timer = setTimeout(this._emit.bind(this, type), 4);
+  }
+  emit_add_fields(obj, fields){
+    const {_async} = this;
+    _async.update && _async.update.args.some(attr => {
+      if(attr[0] === obj) {
+        for(const fld of fields){
+          if(!attr[1].hasOwnProperty(fld)){
+            attr[1][fld] = undefined;
+          }
+        }
+        return true;
+      }
+    });
   }
 }
 

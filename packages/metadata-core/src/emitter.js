@@ -136,4 +136,24 @@ export default class MetaEventEmitter extends EventEmitter{
     handler.timer = setTimeout(this._emit.bind(this, type), 4);
   }
 
+  /**
+   * Дополняет список изменённых полей
+   * Полезен в обработчиках value_change, внутри которых по умолчанию отключена регистрация изенений полей объекта
+   * @param obj
+   * @param fields
+   */
+  emit_add_fields(obj, fields){
+    const {_async} = this;
+    _async.update && _async.update.args.some(attr => {
+      if(attr[0] === obj) {
+        for(const fld of fields){
+          if(!attr[1].hasOwnProperty(fld)){
+            attr[1][fld] = undefined;
+          }
+        }
+        return true;
+      }
+    })
+  }
+
 }

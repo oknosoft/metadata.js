@@ -1602,8 +1602,8 @@ function OCombo(attr){
 	};
 
 	// биндим поле объекта
-	if(attr.obj && attr.field)
-		this.attach(attr);
+	attr.obj && attr.field && this.attach(attr);
+
 	// устанавливаем url фильтрации
 	this.enableFilteringMode("between", "dummy", false, false);
 
@@ -1906,11 +1906,8 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		else if(_grid.entBox && !_grid.entBox.parentElement){
       setTimeout(_grid.destructor);
     }
-		else if(_obj === obj){
-
-    }
     _grid.forEachRow((id) => {
-      if (fields[id])
+      if (fields.hasOwnProperty(id))
         _grid.cells(id,1).setValue(_obj[id]);
     });
 	}
