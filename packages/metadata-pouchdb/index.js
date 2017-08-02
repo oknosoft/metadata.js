@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.1-beta.19, built:2017-07-30
+ metadata-pouchdb v2.0.1-beta.19, built:2017-08-02
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -175,9 +175,9 @@ function adapter({AbstracrAdapter}) {
 	return class AdapterPouch extends AbstracrAdapter {
 		constructor($p){
 			super($p);
-			var t = this,
-				_paths = {},
-				_local, _remote, _auth, _data_loaded;
+			const t = this;
+			const _paths = {};
+			let _local, _remote, _auth, _data_loaded;
 			Object.defineProperties(this, {
 				init: {
 					value: function (wsql, job_prm) {
@@ -286,30 +286,30 @@ function adapter({AbstracrAdapter}) {
 							}
 						}
 						const try_auth = [];
-						md.bases().forEach((name) => {
-							if(t.remote[name]){
-								try_auth.push(
-									_paths.user_node ? this.remote[name].info() : this.remote[name].login(username, password)
-								);
-							}
-						});
+            if(!_paths.user_node){
+              md.bases().forEach((name) => {
+                if(t.remote[name]){
+                  try_auth.push(
+                    _paths.user_node ? this.remote[name].info() : this.remote[name].login(username, password)
+                  );
+                }
+              });
+            }
 						return Promise.all(try_auth)
 							.then(() => {
-								_auth = {username: username};
-								setTimeout(() => {
-									if(wsql.get_user_param("user_name") != username){
-										wsql.set_user_param("user_name", username);
-									}
-									if(wsql.get_user_param("enable_save_pwd")){
-										if(aes.Ctr.decrypt(wsql.get_user_param("user_pwd")) != password){
-											wsql.set_user_param("user_pwd", aes.Ctr.encrypt(password));
-										}
-									}
-									else if(wsql.get_user_param("user_pwd") != ""){
-										wsql.set_user_param("user_pwd", "");
-									}
-									t.emit('user_log_in', username);
-								});
+								_auth = {username};
+                if(wsql.get_user_param("user_name") != username){
+                  wsql.set_user_param("user_name", username);
+                }
+                if(wsql.get_user_param("enable_save_pwd")){
+                  if(aes.Ctr.decrypt(wsql.get_user_param("user_pwd")) != password){
+                    wsql.set_user_param("user_pwd", aes.Ctr.encrypt(password));
+                  }
+                }
+                else if(wsql.get_user_param("user_pwd") != ""){
+                  wsql.set_user_param("user_pwd", "");
+                }
+                t.emit_async('user_log_in', username);
 								try_auth.length = 0;
 								md.bases().forEach((dbid) => {
 									if(t.local[dbid] && t.remote[dbid] && t.local[dbid] != t.remote[dbid]){
@@ -349,16 +349,16 @@ function adapter({AbstracrAdapter}) {
 				load_data: {
 					value: function () {
 					  const {job_prm} = this.$p;
-						var options = {
-								limit : 800,
-								include_docs: true
-							},
-							_page = {
-								total_rows: 0,
-								limit: options.limit,
-								page: 0,
-								start: Date.now()
-							};
+            const options = {
+              limit : 800,
+              include_docs: true
+            };
+            const _page = {
+              total_rows: 0,
+              limit: options.limit,
+              page: 0,
+              start: Date.now()
+            };
 						return new Promise((resolve, reject) => {
 							function fetchNextPage() {
 								t.local.ram.allDocs(options, (err, response) => {
@@ -462,7 +462,7 @@ function adapter({AbstracrAdapter}) {
 								var options = {
 									live: true,
 									retry: true,
-									batch_size: 200,
+									batch_size: 300,
 									batches_limit: 6
 								};
 								if(job_prm.pouch_filter && job_prm.pouch_filter[id]){
@@ -519,9 +519,7 @@ function adapter({AbstracrAdapter}) {
     reset_local_data() {
       const {doc, ram} = this.local;
       const do_reload = () => {
-        setTimeout(() => {
-          location.reload(true);
-        }, 1000);
+        setTimeout(() => typeof location != 'undefined' && location.reload(true), 1000);
       };
       return this.log_out()
         .then(ram.destroy.bind(ram))
@@ -543,7 +541,7 @@ function adapter({AbstracrAdapter}) {
             throw err;
           }
 					else{
-            this.$p.record_log(db + ":" + tObj._manager.class_name + "|" + tObj.ref);
+            this.$p.record_log(db.name + ":" + tObj._manager.class_name + "|" + tObj.ref);
           }
 				})
 				.then((res) => {

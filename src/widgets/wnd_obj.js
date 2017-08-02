@@ -303,7 +303,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		 */
     _mgr.on({
       update: listener,
-      row: listener,
+      rows: listener,
     });
 
 
@@ -456,7 +456,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		if(!on_create){
 		  if(_mgr){
         _mgr.off('update', listener);
-        _mgr.off('row', listener);
+        _mgr.off('rows', listener);
       }
       if(wnd){
         delete wnd.ref;

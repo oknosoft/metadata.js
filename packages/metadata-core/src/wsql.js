@@ -99,14 +99,12 @@ export default class WSQL {
 			{p: "user_name", v: "", t: "string"},
 			{p: "user_pwd", v: "", t: "string"},
 			{p: "browser_uid", v: utils.generate_guid(), t: "string"},
-			{
-				p: "zone",
-				v: job_prm.hasOwnProperty("zone") ? job_prm.zone : 1,
-				t: job_prm.zone_is_string ? "string" : "number"
-			},
-			{p: "enable_save_pwd", v: true, t: "boolean"},
+			{p: "zone", v: job_prm.hasOwnProperty("zone") ? job_prm.zone : 1, t: job_prm.zone_is_string ? "string" : "number"},
 			{p: "rest_path", v: "", t: "string"},
-			{p: "couch_path", v: "", t: "string"}
+			{p: "couch_path", v: "", t: "string"},
+      {p: "couch_suffix", v: "", t: "string"},
+      {p: "couch_direct", v: true, t: "boolean"},
+      {p: "enable_save_pwd", v: true, t: "boolean"},
 		], zone;
 
 		// подмешиваем к базовым параметрам настройки приложения
@@ -124,9 +122,13 @@ export default class WSQL {
     }
 
 		// дополняем хранилище недостающими параметрами
-		nesessery_params.forEach((o) => {
-			if (!this.prm_is_set(o.p))
-				this.set_user_param(o.p, job_prm.hasOwnProperty(o.p) ? job_prm[o.p] : o.v);
+		nesessery_params.forEach((prm) => {
+		  if(job_prm.url_prm.hasOwnProperty(prm.p)) {
+        this.set_user_param(prm.p, this.fetch_type(job_prm.url_prm[prm.p], prm.t));
+      }
+			else if (!this.prm_is_set(prm.p)){
+        this.set_user_param(prm.p, this.fetch_type(job_prm.hasOwnProperty(prm.p) ? job_prm[prm.p] : prm.v, prm.t));
+      }
 		});
 
 		// сообщяем адаптерам пути и префиксы

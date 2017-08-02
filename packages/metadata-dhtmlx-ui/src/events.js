@@ -178,7 +178,7 @@ class AppEvents {
 		 * @for AppEvents
 		 * @returns {string} - если не путсто, браузер показывает диалог с вопросом, можно ли закрывать
 		 */
-		window.onbeforeunload = () => !eve.redirect && msg.onbeforeunload;
+		window.onbeforeunload = () => eve.redirect ? undefined : msg.onbeforeunload;
 
 		/**
 		 * Обработчик back/forward событий браузера

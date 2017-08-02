@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.1-beta.19, built:2017-08-01
+ metadata-core v2.0.1-beta.19, built:2017-08-02
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1145,7 +1145,7 @@ class MetaEventEmitter extends EventEmitter{
   }
   emit_add_fields(obj, fields){
     const {_async} = this;
-    _async.update && _async.update.args.some(attr => {
+    _async && _async.update && _async.update.args.some(attr => {
       if(attr[0] === obj) {
         for(const fld of fields){
           if(!attr[1].hasOwnProperty(fld)){
@@ -3167,14 +3167,12 @@ class WSQL {
 			{p: "user_name", v: "", t: "string"},
 			{p: "user_pwd", v: "", t: "string"},
 			{p: "browser_uid", v: utils.generate_guid(), t: "string"},
-			{
-				p: "zone",
-				v: job_prm.hasOwnProperty("zone") ? job_prm.zone : 1,
-				t: job_prm.zone_is_string ? "string" : "number"
-			},
-			{p: "enable_save_pwd", v: true, t: "boolean"},
+			{p: "zone", v: job_prm.hasOwnProperty("zone") ? job_prm.zone : 1, t: job_prm.zone_is_string ? "string" : "number"},
 			{p: "rest_path", v: "", t: "string"},
-			{p: "couch_path", v: "", t: "string"}
+			{p: "couch_path", v: "", t: "string"},
+      {p: "couch_suffix", v: "", t: "string"},
+      {p: "couch_direct", v: true, t: "boolean"},
+      {p: "enable_save_pwd", v: true, t: "boolean"},
 		], zone;
 		if (job_prm.additional_params){
       nesessery_params = nesessery_params.concat(job_prm.additional_params);
@@ -3185,9 +3183,13 @@ class WSQL {
 		if (zone !== undefined){
       this.set_user_param("zone", zone);
     }
-		nesessery_params.forEach((o) => {
-			if (!this.prm_is_set(o.p))
-				this.set_user_param(o.p, job_prm.hasOwnProperty(o.p) ? job_prm[o.p] : o.v);
+		nesessery_params.forEach((prm) => {
+		  if(job_prm.url_prm.hasOwnProperty(prm.p)) {
+        this.set_user_param(prm.p, this.fetch_type(job_prm.url_prm[prm.p], prm.t));
+      }
+			else if (!this.prm_is_set(prm.p)){
+        this.set_user_param(prm.p, this.fetch_type(job_prm.hasOwnProperty(prm.p) ? job_prm[prm.p] : prm.v, prm.t));
+      }
 		});
 		for(let i in adapters){
 			adapters[i].init(this, job_prm);
@@ -3793,85 +3795,102 @@ class AbstracrAdapter extends MetaEventEmitter{
 const classes = Object.assign({Meta, MetaEventEmitter, AbstracrAdapter}, data_managers, data_objs, data_tabulars);
 
 class MetaEngine$1 {
-	constructor() {
-		this.classes = classes;
-		this.adapters = {};
-		this.aes = new Aes('metadata.js');
-		this.job_prm = new JobPrm(this);
-		this.wsql = new WSQL(this);
-		this.md = new Meta(this);
-		mngrs(this);
-		this.record_log = this.record_log.bind(this);
-		MetaEngine$1._plugins.forEach((plugin) => plugin.call(this));
-		MetaEngine$1._plugins.length = 0;
-	}
-	on(type, listener) {
-		this.md.on(type, listener);
-	}
-	off(type, listener) {
-		this.md.off(type, listener);
-	}
-	get version() {
-		return '2.0.1-beta.19';
-	}
-	toString() {
-		return 'Oknosoft data engine. v:' + this.version;
-	}
-	record_log(err) {
-		this && this.ireg && this.ireg.log && this.ireg.log.record(err);
-		console && console.log(err);
-	}
-	get utils() {
-		return utils;
-	}
-	get msg() {
-		return msg$1;
-	}
-	get current_user() {
-		const {CatUsers, cat, superlogin, wsql} = this;
-		if(CatUsers && !CatUsers.prototype.hasOwnProperty("role_available")){
-      CatUsers.prototype.role_available = (name) => true;
-      CatUsers.prototype.get_acl = (class_name) => "rvuidepo";
-		}
-		let user_name, user;
-		if (superlogin) {
-			const session = superlogin.getSession();
-			user_name = session ? session.user_id : '';
-		}
-		if (!user_name) {
-			user_name = wsql.get_user_param('user_name');
-		}
-		if (cat && cat.users) {
-			user = cat.users.by_id(user_name);
-			if (!user || user.empty()) {
-				cat.users.find_rows_remote({
-					_top: 1,
-					id: user_name,
-				});
-			}
-		}
-		return user && !user.empty() ? user : null;
-	}
-	static plugin(obj) {
-		if(!obj){
-			throw new TypeError('Invalid empty plugin');
-		}
-		if (obj.hasOwnProperty('proto')) {
-			if (typeof obj.proto == 'function') {
-				obj.proto(MetaEngine$1);
-			}
-			else if (typeof obj.proto == 'object') {
-				Object.keys(obj.proto).forEach((id) => MetaEngine$1.prototype[id] = obj.proto[id]);
-			}
-		}
-		if (obj.hasOwnProperty('constructor')) {
-			if (typeof obj.constructor != 'function') {
-				throw new TypeError('Invalid plugin: constructor must be a function');
-			}
-			MetaEngine$1._plugins.push(obj.constructor);
-		}
-		return MetaEngine$1;
-	}
+  constructor() {
+    this.classes = classes;
+    this.adapters = {};
+    this.aes = new Aes('metadata.js');
+    this.job_prm = new JobPrm(this);
+    this.wsql = new WSQL(this);
+    this.md = new Meta(this);
+    mngrs(this);
+    this.record_log = this.record_log.bind(this);
+    MetaEngine$1._plugins.forEach((plugin) => plugin.call(this));
+    MetaEngine$1._plugins.length = 0;
+  }
+  on(type, listener) {
+    this.md.on(type, listener);
+  }
+  off(type, listener) {
+    this.md.off(type, listener);
+  }
+  get version() {
+    return '2.0.1-beta.19';
+  }
+  toString() {
+    return 'Oknosoft data engine. v:' + this.version;
+  }
+  record_log(err) {
+    this && this.ireg && this.ireg.log && this.ireg.log.record(err);
+    console && console.log(err);
+  }
+  get utils() {
+    return utils;
+  }
+  get msg() {
+    return msg$1;
+  }
+  get current_user() {
+    const {CatUsers, cat, superlogin, wsql} = this;
+    if (CatUsers && !CatUsers.prototype.hasOwnProperty('role_available')) {
+      CatUsers.prototype.role_available = function (name) {
+        return this.acl_objs ? this.acl_objs._obj.some((row) => row.type == name) : true;
+      };
+      CatUsers.prototype.get_acl = function(class_name) {
+        const acn = class_name.split('.');
+        const {_acl} = this._obj;
+        return _acl && _acl[acn[0]] && _acl[acn[0]][acn[1]] ? _acl[acn[0]][acn[1]] : 'rvuidepo';
+      };
+      Object.defineProperty(CatUsers.prototype, 'partners_uids', {
+        get: function () {
+          const res = [];
+          this.acl_objs && this.acl_objs.each((row) => {
+            if (row.acl_obj instanceof $p.CatPartners) {
+              res.push(row.acl_obj.ref);
+            }
+          });
+          return res;
+        },
+      });
+    }
+    let user_name, user;
+    if (superlogin) {
+      const session = superlogin.getSession();
+      user_name = session ? session.user_id : '';
+    }
+    if (!user_name) {
+      user_name = wsql.get_user_param('user_name');
+    }
+    if (cat && cat.users) {
+      user = cat.users.by_id(user_name);
+      if (!user || user.empty()) {
+        cat.users.find_rows_remote({
+          _top: 1,
+          id: user_name,
+        });
+      }
+    }
+    return user && !user.empty() ? user : null;
+  }
+  static plugin(obj) {
+    if (!obj) {
+      throw new TypeError('Invalid empty plugin');
+    }
+    if (obj.hasOwnProperty('proto')) {
+      if (typeof obj.proto == 'function') {
+        obj.proto(MetaEngine$1);
+      }
+      else if (typeof obj.proto == 'object') {
+        Object.keys(obj.proto).forEach((id) => MetaEngine$1.prototype[id] = obj.proto[id]);
+      }
+    }
+    if (obj.hasOwnProperty('constructor')) {
+      if (typeof obj.constructor != 'function') {
+        throw new TypeError('Invalid plugin: constructor must be a function');
+      }
+      MetaEngine$1._plugins.push(obj.constructor);
+    }
+    return MetaEngine$1;
+  }
 }
 MetaEngine$1.classes = classes;
 MetaEngine$1._plugins = [];

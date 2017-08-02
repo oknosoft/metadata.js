@@ -30,9 +30,9 @@ function adapter({AbstracrAdapter}) {
 
 			super($p);
 
-			var t = this,
-				_paths = {},
-				_local, _remote, _auth, _data_loaded;
+			const t = this;
+			const _paths = {};
+			let _local, _remote, _auth, _data_loaded;
 
 			Object.defineProperties(this, {
 
@@ -186,41 +186,43 @@ function adapter({AbstracrAdapter}) {
 							}
 						}
 
-						// авторизуемся во всех базах
+						// если мы в браузере - авторизуемся во всех базах, в node - мы уже авторизованы
 						const try_auth = [];
-						md.bases().forEach((name) => {
-							if(t.remote[name]){
-								try_auth.push(
-									_paths.user_node ? this.remote[name].info() : this.remote[name].login(username, password)
-								)
-							}
-						})
+            if(!_paths.user_node){
+              md.bases().forEach((name) => {
+                if(t.remote[name]){
+                  try_auth.push(
+                    _paths.user_node ? this.remote[name].info() : this.remote[name].login(username, password)
+                  )
+                }
+              })
+            }
 
 						return Promise.all(try_auth)
 							.then(() => {
 
-								_auth = {username: username};
-								setTimeout(() => {
+								_auth = {username};
 
-									// сохраняем имя пользователя в базе
-									if(wsql.get_user_param("user_name") != username){
-										wsql.set_user_param("user_name", username)
-									}
+                // сохраняем имя пользователя в базе
+                if(wsql.get_user_param("user_name") != username){
+                  wsql.set_user_param("user_name", username)
+                }
 
-									// если настроено сохранение пароля - сохраняем и его
-									if(wsql.get_user_param("enable_save_pwd")){
-										if(aes.Ctr.decrypt(wsql.get_user_param("user_pwd")) != password){
-											wsql.set_user_param("user_pwd", aes.Ctr.encrypt(password))   // сохраняем имя пользователя в базе
-										}
-									}
-									else if(wsql.get_user_param("user_pwd") != ""){
-										wsql.set_user_param("user_pwd", "")
-									}
+                // если настроено сохранение пароля - сохраняем и его
+                if(wsql.get_user_param("enable_save_pwd")){
+                  if(aes.Ctr.decrypt(wsql.get_user_param("user_pwd")) != password){
+                    wsql.set_user_param("user_pwd", aes.Ctr.encrypt(password))   // сохраняем имя пользователя в базе
+                  }
+                }
+                else if(wsql.get_user_param("user_pwd") != ""){
+                  wsql.set_user_param("user_pwd", "")
+                }
 
-									// излучаем событие
-									t.emit('user_log_in', username)
-								});
+                // излучаем событие
+                //t.emit('user_log_in', username)
+                t.emit_async('user_log_in', username);
 
+                // запускаем синхронизацию для нужных баз
 								try_auth.length = 0;
 								md.bases().forEach((dbid) => {
 									if(t.local[dbid] && t.remote[dbid] && t.local[dbid] != t.remote[dbid]){
@@ -277,17 +279,16 @@ function adapter({AbstracrAdapter}) {
 					value: function () {
 
 					  const {job_prm} = this.$p;
-
-						var options = {
-								limit : 800,
-								include_docs: true
-							},
-							_page = {
-								total_rows: 0,
-								limit: options.limit,
-								page: 0,
-								start: Date.now()
-							};
+            const options = {
+              limit : 800,
+              include_docs: true
+            };
+            const _page = {
+              total_rows: 0,
+              limit: options.limit,
+              page: 0,
+              start: Date.now()
+            };
 
 						// бежим по всем документам из ram
 						return new Promise((resolve, reject) => {
@@ -440,7 +441,7 @@ function adapter({AbstracrAdapter}) {
 								var options = {
 									live: true,
 									retry: true,
-									batch_size: 200,
+									batch_size: 300,
 									batches_limit: 6
 								};
 
@@ -532,9 +533,7 @@ function adapter({AbstracrAdapter}) {
     reset_local_data() {
       const {doc, ram} = this.local;
       const do_reload = () => {
-        setTimeout(() => {
-          location.reload(true);
-        }, 1000);
+        setTimeout(() => typeof location != 'undefined' && location.reload(true), 1000);
       };
 
       return this.log_out()
@@ -566,7 +565,7 @@ function adapter({AbstracrAdapter}) {
             throw err;
           }
 					else{
-            this.$p.record_log(db + ":" + tObj._manager.class_name + "|" + tObj.ref)
+            this.$p.record_log(db.name + ":" + tObj._manager.class_name + "|" + tObj.ref)
           }
 				})
 				.then((res) => {

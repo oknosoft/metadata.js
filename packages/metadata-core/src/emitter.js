@@ -144,7 +144,7 @@ export default class MetaEventEmitter extends EventEmitter{
    */
   emit_add_fields(obj, fields){
     const {_async} = this;
-    _async.update && _async.update.args.some(attr => {
+    _async && _async.update && _async.update.args.some(attr => {
       if(attr[0] === obj) {
         for(const fld of fields){
           if(!attr[1].hasOwnProperty(fld)){

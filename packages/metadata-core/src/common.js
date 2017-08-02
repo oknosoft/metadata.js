@@ -42,180 +42,217 @@ import classes from './classes';
  */
 class MetaEngine {
 
-	constructor() {
+  constructor() {
 
-		// дублируем ссылку на конструкторы в объекте
-		this.classes = classes;
+    // дублируем ссылку на конструкторы в объекте
+    this.classes = classes;
 
-		/**
-		 * ### Адаптеры для PouchDB, 1С и т.д.
-		 * @property adapters
-		 * @type Object
-		 * @final
-		 */
-		this.adapters = {};
+    /**
+     * ### Адаптеры для PouchDB, 1С и т.д.
+     * @property adapters
+     * @type Object
+     * @final
+     */
+    this.adapters = {};
 
-		/**
-		 * Aes для шифрования - дешифрования строк
-		 *
-		 * @property aes
-		 * @type Aes
-		 * @final
-		 */
-		this.aes = new Aes('metadata.js');
+    /**
+     * Aes для шифрования - дешифрования строк
+     *
+     * @property aes
+     * @type Aes
+     * @final
+     */
+    this.aes = new Aes('metadata.js');
 
-		/**
-		 * ### Параметры работы программы
-		 * @property job_prm
-		 * @type JobPrm
-		 * @final
-		 */
-		this.job_prm = new JobPrm(this);
+    /**
+     * ### Параметры работы программы
+     * @property job_prm
+     * @type JobPrm
+     * @final
+     */
+    this.job_prm = new JobPrm(this);
 
-		/**
-		 * Интерфейс к данным в LocalStorage, AlaSQL и IndexedDB
-		 * @property wsql
-		 * @type WSQL
-		 * @final
-		 */
-		this.wsql = new WSQL(this);
+    /**
+     * Интерфейс к данным в LocalStorage, AlaSQL и IndexedDB
+     * @property wsql
+     * @type WSQL
+     * @final
+     */
+    this.wsql = new WSQL(this);
 
-		/**
-		 * ### Mетаданные конфигурации
-		 * @property md
-		 * @type Meta
-		 * @static
-		 */
-		this.md = new Meta(this);
+    /**
+     * ### Mетаданные конфигурации
+     * @property md
+     * @type Meta
+     * @static
+     */
+    this.md = new Meta(this);
 
-		// создаём конструкторы менеджеров данных
-		mngrs(this);
+    // создаём конструкторы менеджеров данных
+    mngrs(this);
 
-		// дублируем метод record_log в utils
-		this.record_log = this.record_log.bind(this);
+    // дублируем метод record_log в utils
+    this.record_log = this.record_log.bind(this);
 
-		// при налчии расширений, выполняем их методы инициализации
-		MetaEngine._plugins.forEach((plugin) => plugin.call(this));
-		MetaEngine._plugins.length = 0;
+    // при налчии расширений, выполняем их методы инициализации
+    MetaEngine._plugins.forEach((plugin) => plugin.call(this));
+    MetaEngine._plugins.length = 0;
 
-	}
+  }
 
-	on(type, listener) {
-		this.md.on(type, listener);
-	}
+  on(type, listener) {
+    this.md.on(type, listener);
+  }
 
-	off(type, listener) {
-		this.md.off(type, listener);
-	}
+  off(type, listener) {
+    this.md.off(type, listener);
+  }
 
-	get version() {
-		return 'PACKAGE_VERSION';
-	}
+  get version() {
+    return 'PACKAGE_VERSION';
+  }
 
-	toString() {
-		return 'Oknosoft data engine. v:' + this.version;
-	}
-
-
-	/**
-	 * ### Запись журнала регистрации
-	 *
-	 * @method record_log
-	 * @param err
-	 */
-	record_log(err) {
-		this && this.ireg && this.ireg.log && this.ireg.log.record(err);
-		console && console.log(err);
-	}
+  toString() {
+    return 'Oknosoft data engine. v:' + this.version;
+  }
 
 
-	/**
-	 * Вспомогательные методы
-	 */
-	get utils() {
-		return utils;
-	}
+  /**
+   * ### Запись журнала регистрации
+   *
+   * @method record_log
+   * @param err
+   */
+  record_log(err) {
+    this && this.ireg && this.ireg.log && this.ireg.log.record(err);
+    console && console.log(err);
+  }
 
-	/**
-	 * i18n
-	 */
-	get msg() {
-		return msg;
-	}
 
-	/**
-	 * ### Текущий пользователь
-	 * Свойство определено после загрузки метаданных и входа впрограмму
-	 * @property current_user
-	 * @type CatUsers
-	 * @final
-	 */
-	get current_user() {
+  /**
+   * Вспомогательные методы
+   */
+  get utils() {
+    return utils;
+  }
 
-		const {CatUsers, cat, superlogin, wsql} = this;
+  /**
+   * i18n
+   */
+  get msg() {
+    return msg;
+  }
 
-		// заглушка "всё разрешено", если методы acl не переопределены внешним приложением
-		if(CatUsers && !CatUsers.prototype.hasOwnProperty("role_available")){
-      CatUsers.prototype.role_available = (name) => true;
-      CatUsers.prototype.get_acl = (class_name) => "rvuidepo";
-		}
+  /**
+   * ### Текущий пользователь
+   * Свойство определено после загрузки метаданных и входа впрограмму
+   * @property current_user
+   * @type CatUsers
+   * @final
+   */
+  get current_user() {
 
-		let user_name, user;
+    const {CatUsers, cat, superlogin, wsql} = this;
 
-		if (superlogin) {
-			const session = superlogin.getSession();
-			user_name = session ? session.user_id : '';
-		}
+    // заглушка "всё разрешено", если методы acl не переопределены внешним приложением
+    if (CatUsers && !CatUsers.prototype.hasOwnProperty('role_available')) {
 
-		if (!user_name) {
-			user_name = wsql.get_user_param('user_name');
-		}
+      /**
+       * ### Роль доступна
+       *
+       * @param name {String}
+       * @returns {Boolean}
+       */
+      CatUsers.prototype.role_available = function (name) {
+        return this.acl_objs ? this.acl_objs._obj.some((row) => row.type == name) : true;
+      };
 
-		if (cat && cat.users) {
-			user = cat.users.by_id(user_name);
-			if (!user || user.empty()) {
-				cat.users.find_rows_remote({
-					_top: 1,
-					id: user_name,
-				});
-			}
-		}
+      /**
+       * ### Права на класс данных
+       * @param class_name
+       * @return {string}
+       */
+      CatUsers.prototype.get_acl = function(class_name) {
+        const acn = class_name.split('.');
+        const {_acl} = this._obj;
+        return _acl && _acl[acn[0]] && _acl[acn[0]][acn[1]] ? _acl[acn[0]][acn[1]] : 'rvuidepo';
+      };
 
-		return user && !user.empty() ? user : null;
-	}
+      /**
+       * ### Идентификаторы доступных контрагентов
+       * Для пользователей с ограниченным доступом
+       *
+       * @returns {Array}
+       */
+      Object.defineProperty(CatUsers.prototype, 'partners_uids', {
+        get: function () {
+          const res = [];
+          this.acl_objs && this.acl_objs.each((row) => {
+            if (row.acl_obj instanceof $p.CatPartners) {
+              res.push(row.acl_obj.ref);
+            }
+          });
+          return res;
+        },
+      });
+    }
 
-	/**
-	 * ### Подключает расширения metadata
-	 * Принимает в качестве параметра объект с полями `proto` и `constructor` типа _function_
-	 * proto выполняется в момент подключения, constructor - после основного конструктора при создании объекта
-	 *
-	 * @param obj
-	 * @return {MetaEngine}
-	 */
-	static plugin(obj) {
+    let user_name, user;
 
-		if(!obj){
-			throw new TypeError('Invalid empty plugin');
-		}
+    if (superlogin) {
+      const session = superlogin.getSession();
+      user_name = session ? session.user_id : '';
+    }
 
-		if (obj.hasOwnProperty('proto')) {
-			if (typeof obj.proto == 'function') {         // function style for plugins
-				obj.proto(MetaEngine);
-			}
-			else if (typeof obj.proto == 'object') {     // object style for plugins
-				Object.keys(obj.proto).forEach((id) => MetaEngine.prototype[id] = obj.proto[id]);
-			}
-		}
+    if (!user_name) {
+      user_name = wsql.get_user_param('user_name');
+    }
 
-		if (obj.hasOwnProperty('constructor')) {
-			if (typeof obj.constructor != 'function') {
-				throw new TypeError('Invalid plugin: constructor must be a function');
-			}
-			MetaEngine._plugins.push(obj.constructor);
-		}
+    if (cat && cat.users) {
+      user = cat.users.by_id(user_name);
+      if (!user || user.empty()) {
+        cat.users.find_rows_remote({
+          _top: 1,
+          id: user_name,
+        });
+      }
+    }
 
-		return MetaEngine;
-	}
+    return user && !user.empty() ? user : null;
+  }
+
+  /**
+   * ### Подключает расширения metadata
+   * Принимает в качестве параметра объект с полями `proto` и `constructor` типа _function_
+   * proto выполняется в момент подключения, constructor - после основного конструктора при создании объекта
+   *
+   * @param obj
+   * @return {MetaEngine}
+   */
+  static plugin(obj) {
+
+    if (!obj) {
+      throw new TypeError('Invalid empty plugin');
+    }
+
+    if (obj.hasOwnProperty('proto')) {
+      if (typeof obj.proto == 'function') {         // function style for plugins
+        obj.proto(MetaEngine);
+      }
+      else if (typeof obj.proto == 'object') {     // object style for plugins
+        Object.keys(obj.proto).forEach((id) => MetaEngine.prototype[id] = obj.proto[id]);
+      }
+    }
+
+    if (obj.hasOwnProperty('constructor')) {
+      if (typeof obj.constructor != 'function') {
+        throw new TypeError('Invalid plugin: constructor must be a function');
+      }
+      MetaEngine._plugins.push(obj.constructor);
+    }
+
+    return MetaEngine;
+  }
 }
 
 /**

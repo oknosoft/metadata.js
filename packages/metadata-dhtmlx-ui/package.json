@@ -8,8 +8,6 @@
     "node": "^7.10",
     "npm": "^5.0"
   },
-  "dependencies": {
-  },
   "main": "./index.js",
   "repository": {
     "type": "git",
