@@ -55,7 +55,7 @@ export default {
 
   [LOAD_START]: (state, action) => Object.assign({}, state, {data_empty: false, fetch: true}),
 
-  [NO_DATA]: (state, action) => Object.assign({}, state, {data_empty: true, fetch: false}),
+  [NO_DATA]: (state, action) => Object.assign({}, state, {data_empty: true, first_run: true, fetch: false}),
 
   [SYNC_PAUSED]: (state, action) => Object.assign({}, state, {sync_started: false}),
 

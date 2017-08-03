@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.1-beta.19, built:2017-07-30
+ metadata-redux v2.0.1-beta.19, built:2017-08-03
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -386,7 +386,7 @@ var handlers = {
   [DATA_PAGE]: (state, action) => Object.assign({}, state, {page: action.payload}),
   [DATA_ERROR]: (state, action) => Object.assign({}, state, {err: action.payload, fetch: false}),
   [LOAD_START]: (state, action) => Object.assign({}, state, {data_empty: false, fetch: true}),
-  [NO_DATA]: (state, action) => Object.assign({}, state, {data_empty: true, fetch: false}),
+  [NO_DATA]: (state, action) => Object.assign({}, state, {data_empty: true, first_run: true, fetch: false}),
   [SYNC_PAUSED]: (state, action) => Object.assign({}, state, {sync_started: false}),
   [SYNC_RESUMED]: (state, action) => Object.assign({}, state, {sync_started: true}),
   [SYNC_DATA]: (state, action) => Object.assign({}, state, {fetch: !!action.payload}),
@@ -445,6 +445,7 @@ function metaInitialState(){
     data_loaded: false,
     doc_ram_loaded: false,
     complete_loaded: false,
+    first_run: false,
     data_empty: undefined,
     sync_started: false,
     fetch: false,

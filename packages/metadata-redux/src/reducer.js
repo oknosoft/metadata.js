@@ -32,6 +32,7 @@ function metaInitialState(){
     data_loaded: false,
     doc_ram_loaded: false,
     complete_loaded: false,
+    first_run: false,
     data_empty: undefined,
     sync_started: false,
     fetch: false,
