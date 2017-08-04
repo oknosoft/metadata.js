@@ -295,12 +295,12 @@ export class TabularSection {
 			fields = fields.split(",")
 		}
 
-		let sql = "select * from ? order by ",
-			res = true
-			has_dot;
+		let sql = "select * from ? order by ";
+		let	res = true;
+		let	has_dot;
 
 		for(let f of fields){
-      has_dot = has_dot || f.match('.');
+      has_dot = has_dot || f.indexOf('.') !== -1;
       f = f.trim().replace(/\s{1,}/g, " ").split(" ");
       if (res){
         res = false;
