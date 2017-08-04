@@ -21,6 +21,8 @@ import {DataManager} from './mngrs';
 import {DataObj} from './objs';
 import {TabularSection} from './tabulars';
 
+import mime from './mime'
+
 /**
  * Отбрасываем часовой пояс при сериализации даты
  * @method toJSON
@@ -120,7 +122,7 @@ if (!Object.prototype.__define) {
  * @menuorder 35
  * @tooltip Вспомогательные методы
  */
-const utils = {
+const utils = mime({
 
 	moment,
 
@@ -361,19 +363,21 @@ const utils = {
 	 */
 	blob_as_text(blob, type) {
 
-		return new Promise(function (resolve, reject) {
-			var reader = new FileReader();
-			reader.onload = function (event) {
-				resolve(reader.result);
-			};
-			reader.onerror = function (err) {
-				reject(err);
-			};
-			if (type == 'data_url')
-				reader.readAsDataURL(blob);
-			else
-				reader.readAsText(blob);
-		});
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => resolve(reader.result);
+      reader.onerror = (err) => reject(err);
+      switch (type) {
+        case "array" :
+          reader.readAsArrayBuffer(blob);
+          break;
+        case "data_url":
+          reader.readAsDataURL(blob);
+          break;
+        default:
+          reader.readAsText(blob);
+      }
+    });
 
 	},
 
@@ -702,7 +706,7 @@ const utils = {
 		return res;
 	},
 
-};
+});
 
 /**
  * ### Пустые значения даты и уникального идентификатора

@@ -191,9 +191,7 @@ function adapter({AbstracrAdapter}) {
             if (!_paths.user_node) {
               md.bases().forEach((name) => {
                 if (t.remote[name]) {
-                  try_auth.push(
-                    _paths.user_node ? this.remote[name].info() : this.remote[name].login(username, password),
-                  );
+                  try_auth.push(this.remote[name].login(username, password));
                 }
               });
             }
