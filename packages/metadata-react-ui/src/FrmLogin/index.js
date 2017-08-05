@@ -1,3 +1,2 @@
-import FrmLogin from './FrmLogin'
-
-export default FrmLogin
+import FrmLogin from './FrmLogin';
+export default FrmLogin;

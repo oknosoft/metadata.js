@@ -12,7 +12,7 @@ class I18Handler {
 				return target._lang;
 			case 'show_msg':
 				return target._show_msg || function () {
-					
+
 				};
 			default:
 				return target.i18n[target._lang][name];
@@ -25,7 +25,8 @@ class I18Handler {
 				target._lang = val;
 				break;
 			case 'show_msg':
-				return true;
+        target._show_msg = val;
+        break;
 			default:
 				target.i18n[target._lang][name] = val;
 		}

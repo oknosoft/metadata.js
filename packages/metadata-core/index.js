@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.1-beta.19, built:2017-08-04
+ metadata-core v2.0.1-beta.19, built:2017-08-05
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -30,7 +30,8 @@ class I18Handler {
 				target._lang = val;
 				break;
 			case 'show_msg':
-				return true;
+        target._show_msg = val;
+        break;
 			default:
 				target.i18n[target._lang][name] = val;
 		}
@@ -5801,7 +5802,7 @@ class WSQL {
       this.set_user_param("zone", zone);
     }
 		nesessery_params.forEach((prm) => {
-		  if(job_prm.url_prm.hasOwnProperty(prm.p)) {
+		  if(job_prm.url_prm && job_prm.url_prm.hasOwnProperty(prm.p)) {
         this.set_user_param(prm.p, this.fetch_type(job_prm.url_prm[prm.p], prm.t));
       }
 			else if (!this.prm_is_set(prm.p)){

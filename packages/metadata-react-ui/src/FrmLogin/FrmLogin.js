@@ -1,21 +1,23 @@
-import React, {Component} from "react";
-import PropTypes from 'prop-types';
+import React, {Component} from 'react';
 
 import TabsLogin from './TabsLogin';
-import User from './TabsUser';
+import TabsUser from './TabsUser';
 
-export default class FrmLogin extends Component {
+import withMeta from 'metadata-redux/src/withMeta';
+import withIface from '../../redux/withIface';
 
+class FrmLogin extends Component {
 
   render() {
 
-    const {props} = this
+    const {props} = this;
 
-    if (props.state_user.logged_in && props._obj) {
-      return < User { ...props } />
-    } else {
-      return < TabsLogin { ...props } />
-    }
+    return (props.user.logged_in && props._obj) ?
+      < TabsUser {...props} />
+      :
+      < TabsLogin {...props} />;
   }
 
 }
+
+export default withIface(withMeta(FrmLogin));

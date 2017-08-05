@@ -123,7 +123,7 @@ export default class WSQL {
 
 		// дополняем хранилище недостающими параметрами
 		nesessery_params.forEach((prm) => {
-		  if(job_prm.url_prm.hasOwnProperty(prm.p)) {
+		  if(job_prm.url_prm && job_prm.url_prm.hasOwnProperty(prm.p)) {
         this.set_user_param(prm.p, this.fetch_type(job_prm.url_prm[prm.p], prm.t));
       }
 			else if (!this.prm_is_set(prm.p)){

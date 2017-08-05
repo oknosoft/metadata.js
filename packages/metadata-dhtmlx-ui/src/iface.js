@@ -66,6 +66,39 @@ export default class InterfaceObjs {
 					dayShortName:	["Вс","Пн","Вт","Ср","Чт","Пт","Сб"]
 				}
 			};
+
+      /**
+       * Показывает информационное сообщение или confirm
+       * @method show_msg
+       * @param attr {object} - атрибуты сообщения attr.type - [info, alert, confirm, modalbox, info-error, alert-warning, confirm-error]
+       * @param [delm] - элемент html в тексте которого сообщение будет продублировано
+       * @example
+       *  $p.msg.show_msg({
+		 *      title:"Important!",
+		 *      type:"alert-error",
+		 *      text:"Error"});
+       */
+			$p.msg.show_msg = (attr, delm) => {
+        if(!attr){
+          return;
+        }
+        if(typeof attr == "string"){
+          if(this.synctxt){
+            this.synctxt.show_message(attr);
+            return;
+          }
+          attr = {type:"info", text:attr };
+        }
+        else if(Array.isArray(attr) && attr.length > 1){
+          attr = {type: "info", text: '<b>' + attr[0] + '</b><br />' + attr[1]};
+        }
+        if(delm && typeof delm.setText == "function"){
+          delm.setText(attr.text);
+        }
+        dhtmlx.message(attr);
+      }
+
+      dhtmlx.message.position = "bottom";
 		}
 
 	  }
@@ -303,8 +336,6 @@ export default class InterfaceObjs {
 		return false
 	};
 
-
-
 	/**
 	 * ### Один из вариантов основного интерфейса: sidebar
 	 *
@@ -371,8 +402,6 @@ export default class InterfaceObjs {
 		} else
 			setTimeout(this.hash_route);
 	};
-
-
 
 	/**
 	 * ### Страница общих настроек
@@ -520,7 +549,11 @@ export default class InterfaceObjs {
 
 	}
 
-
+  /**
+   * Перезагружает интерфейс
+   * @param text
+   * @param title
+   */
 	do_reload(text, title) {
 
     const {eve, wsql, msg} = this.$p;
