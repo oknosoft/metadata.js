@@ -19,17 +19,17 @@ export default {
   [PRM_CHANGE]: (state, action) => {
     const {name, value} = action.payload;
     const {wsql} = $p;
-    if(Array.isArray(name)){
-      for(const {prm, value} of name){
+    if(Array.isArray(name)) {
+      for (const {prm, value} of name) {
         $p.wsql.set_user_param(prm, value);
       }
     }
-    else if(typeof name == 'object'){
-      for(const prm in name){
+    else if(typeof name == 'object') {
+      for (const prm in name) {
         $p.wsql.set_user_param(prm, name[prm]);
       }
     }
-    else if(wsql.get_user_param(name) == value){
+    else if(wsql.get_user_param(name) == value) {
       return state;
     }
     $p.wsql.set_user_param(name, value);
@@ -40,10 +40,10 @@ export default {
 
   [DATA_LOADED]: (state, action) => {
     const payload = {data_loaded: true, fetch: false};
-    if(action.payload == 'doc_ram'){
+    if(action.payload == 'doc_ram') {
       payload.doc_ram_loaded = true;
     }
-    else if(action.payload == 'complete'){
+    else if(action.payload == 'complete') {
       payload.complete_loaded = true;
     }
     return Object.assign({}, state, payload);

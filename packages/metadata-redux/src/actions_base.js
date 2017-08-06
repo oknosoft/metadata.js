@@ -8,17 +8,17 @@ export const OFFLINE = 'OFFLINE';   // Изменено значение нас�
 
 export function meta_loaded({version}) {
 
-	return {
-		type: META_LOADED,
-		payload: version,
-	};
+  return {
+    type: META_LOADED,
+    payload: version,
+  };
 }
 
 export function prm_change(name, value) {
-	return {
-		type: PRM_CHANGE,
-		payload: {name, value},
-	};
+  return {
+    type: PRM_CHANGE,
+    payload: {name, value},
+  };
 }
 
 export function offline(state) {

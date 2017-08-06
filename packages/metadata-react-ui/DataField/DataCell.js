@@ -1,36 +1,30 @@
-import React, {Component} from "react";
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import DataField from "./DataField";
+import DataField from './DataField';
 
 
 const ExcelColumn = {
   name: PropTypes.string.isRequired,
   key: PropTypes.string.isRequired,
   width: PropTypes.number.isRequired,
-  filterable: PropTypes.bool
+  filterable: PropTypes.bool,
 };
 
 class DataCell extends Component {
 
   static contextTypes = {
-    $p: PropTypes.object.isRequired
-  }
-
-  static propTypes = {
-    options: PropTypes.array,
-    column: PropTypes.shape(ExcelColumn),
-    value: PropTypes.array
-  }
+    $p: PropTypes.object.isRequired,
+  };
 
   // props.column.key, props.rowData(._row)
 
   constructor(props, context) {
 
-    super(props, context)
+    super(props, context);
 
     this.state = {
       value: [],
-      _meta: props._meta || props.rowData._metadata(props.column.key)
+      _meta: props._meta || props.rowData._metadata(props.column.key),
     };
     this.handleSelectChange = this.handleSelectChange.bind(this);
   }
@@ -50,7 +44,7 @@ class DataCell extends Component {
     const {$p} = this.context;
 
     const _obj = this.props.rowData;
-    const _fld = this.props.column.key
+    const _fld = this.props.column.key;
     const _val = _obj[_fld];
     const subProps = {
       _meta: this.state._meta,
@@ -58,13 +52,21 @@ class DataCell extends Component {
       _fld: _fld,
       _val: _val,
       label_position: $p.enm.label_positions.hide,
-      handleValueChange: this.handleSelectChange
-    }
+      handleValueChange: this.handleSelectChange,
+    };
 
     return (
       <DataField ref={node => this.node = node} {...subProps} />
     );
   }
 }
+
+DataCell.propTypes = {
+  options: PropTypes.array,
+  column: PropTypes.shape(ExcelColumn),
+  value: PropTypes.array,
+  rowData: PropTypes.object,
+  _meta: PropTypes.object,
+};
 
 export default DataCell;

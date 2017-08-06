@@ -1,47 +1,11 @@
 /*!
- metadata-abstract-ui v2.0.1-beta.19, built:2017-07-19
+ metadata-abstract-ui v2.0.1-beta.19, built:2017-08-06
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */
 
 'use strict';
-
-function ui(constructor) {
-	Object.defineProperty(constructor.prototype, 'UI', {
-		value: {
-			control_by_type (type, val) {
-				let ft;
-				if (typeof val == "boolean" && type.types.indexOf("boolean") != -1) {
-					ft = "ch";
-				} else if (typeof val == "number" && type.digits) {
-					if (type.fraction_figits < 5)
-						ft = "calck";
-					else
-						ft = "edn";
-				} else if (val instanceof Date && type.date_part) {
-					ft = "dhxCalendar";
-				} else if (type.is_ref) {
-					ft = "ocombo";
-				} else if (type.date_part) {
-					ft = "dhxCalendar";
-				} else if (type.digits) {
-					if (type.fraction_figits < 5)
-						ft = "calck";
-					else
-						ft = "edn";
-				} else if (type.types[0] == "boolean") {
-					ft = "ch";
-				} else if (type.hasOwnProperty("str_len") && (type.str_len >= 100 || type.str_len == 0)) {
-					ft = "txt";
-				} else {
-					ft = "ed";
-				}
-				return ft;
-			}
-		}
-	});
-}
 
 function meta_objs() {
 	const {classes} = this;
@@ -648,9 +612,6 @@ function scheme_settings() {
 }
 
 var plugin = {
-	proto(constructor) {
-		ui(constructor);
-	},
 	constructor(){
 		meta_objs.call(this);
 		log_manager.call(this);

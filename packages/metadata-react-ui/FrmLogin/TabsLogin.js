@@ -7,7 +7,7 @@ import Button from 'material-ui/Button';
 
 import CnnSettings from './Settings';
 import withPrm from 'metadata-redux/src/withPrm';
-import withStyles from '../../styles/paper600';
+import withStyles from '../styles/paper600';
 
 class TabsLogin extends Component {
 

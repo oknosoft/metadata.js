@@ -1,5 +1,9 @@
-import metaActions from './actions';
-import metaReducer from './reducer';
-import metaMiddleware from './events';
+import metaActions from './actions_meta';
+import metaReducer from './reducer_meta';
+import metaMiddleware from './events_meta';
 
-export {metaActions, metaReducer, metaMiddleware};
+import ifaceActions from './actions_iface';
+import getIfaceReducer from './reducer_iface';
+import ifaceMiddleware from './events_iface';
+
+export {metaActions, metaReducer, metaMiddleware, ifaceActions, getIfaceReducer, ifaceMiddleware};

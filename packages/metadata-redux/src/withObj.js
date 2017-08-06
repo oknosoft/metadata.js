@@ -1,10 +1,10 @@
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 import * as obj from './actions_obj';
 
 
 const mapDispatchToProps = (dispatch) => {
 
-	return {
+  return {
     handleAdd() {
 
     },
@@ -38,9 +38,8 @@ const mapDispatchToProps = (dispatch) => {
     handleAttachment() {
 
     }
-	};
+  };
 };
-
 
 
 export default connect(null, mapDispatchToProps);

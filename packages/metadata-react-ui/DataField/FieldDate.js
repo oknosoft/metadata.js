@@ -6,9 +6,10 @@
  * Created 22.09.2016
  */
 
-import React, {Component} from "react";
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import TextField from 'material-ui/TextField';
+
 const DateTimeFormat = global.Intl.DateTimeFormat;
 
 export default class FieldDate extends Component {
@@ -17,8 +18,8 @@ export default class FieldDate extends Component {
     _obj: PropTypes.object.isRequired,
     _fld: PropTypes.string.isRequired,
     _meta: PropTypes.object.isRequired,
-    handleValueChange: PropTypes.func
-  }
+    handleValueChange: PropTypes.func,
+  };
 
   constructor(props) {
     super(props);
@@ -36,9 +37,9 @@ export default class FieldDate extends Component {
     });
 
     const {_obj, _fld, handleValueChange} = this.props;
-    _obj[_fld] = newValue
-    if (handleValueChange) {
-      handleValueChange(newValue)
+    _obj[_fld] = newValue;
+    if(handleValueChange) {
+      handleValueChange(newValue);
     }
 
   };
@@ -47,17 +48,18 @@ export default class FieldDate extends Component {
   render() {
 
     const {props, state, handleChange} = this;
-    const {_obj, _fld, _meta} = props;
+    const {tooltip, synonym} = props._meta;
+    //const {_obj, _fld, _meta} = props;
 
     return <TextField
-      name={_fld}
+      name={props._fld}
       type="date"
-      hintText="_meta.tooltip || _meta.synonym"
+      hintText={tooltip || synonym}
       value={state.controlledDate}
       onChange={handleChange}
       DateTimeFormat={DateTimeFormat}
       locale="ru-RU"
-    />
+    />;
   }
 
 }

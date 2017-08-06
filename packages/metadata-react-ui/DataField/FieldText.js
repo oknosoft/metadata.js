@@ -16,6 +16,7 @@ export default class FieldText extends Component {
     _fld: PropTypes.string.isRequired,
     _meta: PropTypes.object.isRequired,
     handleValueChange: PropTypes.func,
+    read_only: PropTypes.bool,          // поле только для чтения
   };
 
   onChange = (event, newValue) => {
@@ -28,14 +29,18 @@ export default class FieldText extends Component {
 
   render() {
     const {onChange, props} = this;
-    const {_obj, _fld, _meta} = props;
+    const {_obj, _fld, _meta, classes, read_only} = props;
 
     return (
       <TextField
+        className={classes.textField}
+        disabled={read_only}
+        label={_meta.synonym}
+        InputProps={{ placeholder: _fld }}
         name={_fld}
         fullWidth={true}
         defaultValue={_obj[_fld]}
-        hintText={_meta.tooltip || _meta.synonym}
+        title={_meta.tooltip || _meta.synonym}
         onChange={onChange}
       />
     );

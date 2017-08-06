@@ -1,58 +1,48 @@
 
-export default function ui(constructor) {
+/**
+ * ### Возвращает имя типа элемента управления для типа поля
+ * TODO: перенести этот метод в плагин
+ *
+ * @method control_by_type
+ * @param type
+ * @return {*}
+ */
+export default function control_by_type (type, val) {
+  let ft;
 
-	Object.defineProperty(constructor.prototype, 'UI', {
+  if (typeof val == "boolean" && type.types.indexOf("boolean") != -1) {
+    ft = "ch";
 
-		value: {
+  } else if (typeof val == "number" && type.digits) {
+    if (type.fraction_figits < 5)
+      ft = "calck";
+    else
+      ft = "edn";
 
-			/**
-			 * ### Возвращает имя типа элемента управления для типа поля
-			 * TODO: перенести этот метод в плагин
-			 *
-			 * @method control_by_type
-			 * @param type
-			 * @return {*}
-			 */
-			control_by_type (type, val) {
-				let ft;
+  } else if (val instanceof Date && type.date_part) {
+    ft = "dhxCalendar";
 
-				if (typeof val == "boolean" && type.types.indexOf("boolean") != -1) {
-					ft = "ch";
+  } else if (type.is_ref) {
+    ft = "ocombo";
 
-				} else if (typeof val == "number" && type.digits) {
-					if (type.fraction_figits < 5)
-						ft = "calck";
-					else
-						ft = "edn";
+  } else if (type.date_part) {
+    ft = "dhxCalendar";
 
-				} else if (val instanceof Date && type.date_part) {
-					ft = "dhxCalendar";
+  } else if (type.digits) {
+    if (type.fraction_figits < 5)
+      ft = "calck";
+    else
+      ft = "edn";
 
-				} else if (type.is_ref) {
-					ft = "ocombo";
+  } else if (type.types[0] == "boolean") {
+    ft = "ch";
 
-				} else if (type.date_part) {
-					ft = "dhxCalendar";
+  } else if (type.hasOwnProperty("str_len") && (type.str_len >= 100 || type.str_len == 0)) {
+    ft = "txt";
 
-				} else if (type.digits) {
-					if (type.fraction_figits < 5)
-						ft = "calck";
-					else
-						ft = "edn";
+  } else {
+    ft = "ed";
 
-				} else if (type.types[0] == "boolean") {
-					ft = "ch";
-
-				} else if (type.hasOwnProperty("str_len") && (type.str_len >= 100 || type.str_len == 0)) {
-					ft = "txt";
-
-				} else {
-					ft = "ed";
-
-				}
-				return ft;
-			}
-		}
-
-	})
+  }
+  return ft;
 }

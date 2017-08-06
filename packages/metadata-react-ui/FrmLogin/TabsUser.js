@@ -9,7 +9,7 @@ import DataField from '../DataField';
 
 import CnnSettings from './Settings';
 import withPrm from 'metadata-redux/src/withPrm';
-import withStyles from '../../styles/paper600';
+import withStyles from '../styles/paper600';
 
 class TabsUser extends Component {
 
@@ -59,7 +59,7 @@ class TabsUser extends Component {
   handleNavigate() {
     const {handleNavigate, first_run} = this.props;
     if (first_run) {
-      $p.eve.redirect = true;
+      $p.eve && ($p.eve.redirect = true);
       location.replace('/');
     }
     else {

@@ -5,9 +5,9 @@
  *
  */
 
-import React, {Component} from "react";
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import VirtualizedSelect from "./VirtualizedSelect";
+import VirtualizedSelect from './VirtualizedSelect';
 
 export default class FieldSelect extends Component {
 
@@ -19,15 +19,15 @@ export default class FieldSelect extends Component {
     multi: PropTypes.bool,              // множественный выбор - значение является массивом
     mandatory: PropTypes.bool,          // поле обязательно для заполнения
 
-    handleValueChange: PropTypes.func
-  }
+    handleValueChange: PropTypes.func,
+  };
 
   constructor(props, context) {
 
-    super(props, context)
+    super(props, context);
 
-    const {_obj, _fld, _meta, mandatory} = props
-    const _val = _obj[_fld]
+    const {_obj, _fld, _meta, mandatory} = props;
+    const _val = _obj[_fld];
 
     this.state = {
       clearable: true,
@@ -37,44 +37,44 @@ export default class FieldSelect extends Component {
       multi: props.multi || false,
       searchable: true,
       selectedCreatable: null,
-      mandatory: mandatory || _meta.mandatory
-    }
+      mandatory: mandatory || _meta.mandatory,
+    };
   }
 
   _loadOptions = (input) => {
 
     const selection = {_top: 40};
-    const {_obj, _fld, _meta} = this.props
+    const {_obj, _fld, _meta} = this.props;
 
     if (input) {
-      selection.presentation = {like: input}
+      selection.presentation = {like: input};
     }
     if (_meta.choice_params) {
       _meta.choice_params.forEach((cp) => {
-        selection[cp.name] = cp.path
-      })
+        selection[cp.name] = cp.path;
+      });
     }
 
     return _obj[_fld]._manager.get_option_list(selection)
       .then((options) => {
-        this.setState({options})
-        return {options}
-      })
-  }
+        this.setState({options});
+        return {options};
+      });
+  };
 
   _onChange = (value) => {
-    const {handleValueChange} = this.props
-    this.setState({value})
+    const {handleValueChange} = this.props;
+    this.setState({value});
     if (handleValueChange) {
-      handleValueChange(value)
+      handleValueChange(value);
     }
-  }
+  };
 
   render() {
 
-    const {props, state, _loadOptions, _onChange} = this
-    const {_obj, _fld} = props
-    const {options, value, mandatory} = state
+    const {props, state, _loadOptions, _onChange} = this;
+    const {_fld} = props;
+    const {options, value, mandatory} = state;
 
     return (
       <VirtualizedSelect
