@@ -6,7 +6,7 @@ import withMeta from './withMeta';
 
 // Redux action creator
 const mapDispatchToProps = (dispatch) => ({
-  navigate: (path) => dispatch(push(path)),
+  handleNavigate: (path) => dispatch(push(path)),
 });
 
 const mapStateToProps = (state, props) => {
