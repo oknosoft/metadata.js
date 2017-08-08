@@ -1,6 +1,5 @@
 import React, {Component} from "react";
 import PropTypes from 'prop-types';
-import CircularProgress from "material-ui/CircularProgress";
 import classes from "./DumbLoader.scss";
 
 export default class DumbLoader extends Component {
@@ -24,7 +23,7 @@ export default class DumbLoader extends Component {
     return (
       <div className={classes.dumbLoader}>
         <div className={classes.progress} style={{position: 'relative', width: 300}}>{this.props.title}</div>
-        <CircularProgress size={120} thickness={5} className={classes.progress}/>
+        loading
       </div>
     );
   }

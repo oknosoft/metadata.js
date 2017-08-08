@@ -75,7 +75,7 @@ export default class TabsLogin extends React.Component {
                   labelStyle={{width: 110, textAlign: 'left', display: 'inline-block'}}
                   icon={<GoogleIcon viewBox="0 0 256 262" style={{width: 18, height: 18}}
                                     color={blue500}/>}
-                  onTouchTap={this.buttonTouchTap("google")}
+                  onClick={this.buttonTouchTap("google")}
                 /><br />
                 <RaisedButton
                   label="Yandex"
@@ -83,7 +83,7 @@ export default class TabsLogin extends React.Component {
                   labelStyle={{width: 110, textAlign: 'left', display: 'inline-block'}}
                   icon={<YandexIcon viewBox="0 0 180 190" style={{width: 18, height: 18}}
                                     color={red500}/>}
-                  onTouchTap={this.buttonTouchTap("yandex")}
+                  onClick={this.buttonTouchTap("yandex")}
                 /><br />
                 <RaisedButton
                   label="Facebook"
@@ -91,14 +91,14 @@ export default class TabsLogin extends React.Component {
                   labelStyle={{width: 110, textAlign: 'left', display: 'inline-block'}}
                   icon={<FacebookIcon viewBox="0 0 420 420" style={{width: 18, height: 18}}
                                       color={blue500}/>}
-                  onTouchTap={this.buttonTouchTap("facebook")}
+                  onClick={this.buttonTouchTap("facebook")}
                 /><br />
                 <RaisedButton
                   label="В контакте"
                   className={classes.social_button}
                   labelStyle={{width: 110, textAlign: 'left', display: 'inline-block'}}
                   icon={<GitHubIcon viewBox="0 0 256 250" style={{width: 18, height: 18}}/>}
-                  onTouchTap={this.buttonTouchTap("vkontakte")}
+                  onClick={this.buttonTouchTap("vkontakte")}
                 />
                 {/*
                  <RaisedButton
@@ -106,7 +106,7 @@ export default class TabsLogin extends React.Component {
                  className={classes.social_button}
                  labelStyle={{width: 110, textAlign: 'left', display: 'inline-block'}}
                  icon={<GitHubIcon viewBox="0 0 256 250" style={{width: 18, height: 18}}/>}
-                 onTouchTap={this.buttonTouchTap("github")}
+                 onClick={this.buttonTouchTap("github")}
                  />
                  */}
 

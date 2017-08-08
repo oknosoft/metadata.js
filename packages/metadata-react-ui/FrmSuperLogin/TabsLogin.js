@@ -94,7 +94,7 @@ export default class TabsLogin extends React.Component {
                 <RaisedButton label="Войти"
                               disabled={this.state.btn_login_disabled}
                               className={classes.button}
-                              onTouchTap={this.handleLogin}/>
+                              onClick={this.handleLogin}/>
 
                 <RaisedButton label="Забыли пароль?"
                               disabled={true}
@@ -111,28 +111,28 @@ export default class TabsLogin extends React.Component {
                   className={classes.social_button}
                   labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
                   icon={<GoogleIcon viewBox="0 0 256 262" style={{width: 18, height: 18}} color={blue500}/>}
-                  onTouchTap={this.buttonTouchTap("google")}
+                  onClick={this.buttonTouchTap("google")}
                 /><br />
                 <RaisedButton
                   label="Яндекс"
                   className={classes.social_button}
                   labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
                   icon={<YandexIcon viewBox="0 0 180 190" style={{width: 18, height: 18}} color={red500}/>}
-                  onTouchTap={this.buttonTouchTap("yandex")}
+                  onClick={this.buttonTouchTap("yandex")}
                 /><br />
                 <RaisedButton
                   label="Facebook"
                   className={classes.social_button}
                   labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
                   icon={<FacebookIcon viewBox="0 0 450 450" style={{width: 18, height: 18}} color="#3A559F"/>}
-                  onTouchTap={this.buttonTouchTap("facebook")}
+                  onClick={this.buttonTouchTap("facebook")}
                 /><br />
                 <RaisedButton
                   label="В контакте"
                   className={classes.social_button}
                   labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
                   icon={<VkontakteIcon viewBox="50 50 400 400" style={{width: 18, height: 18}} color="#4c75a3"/>}
-                  onTouchTap={this.buttonTouchTap("vkontakte")}
+                  onClick={this.buttonTouchTap("vkontakte")}
                 />
 
                 {/*
@@ -141,7 +141,7 @@ export default class TabsLogin extends React.Component {
                  className={classes.social_button}
                  labelStyle={{width: 110, textAlign: 'left', display: 'inline-block'}}
                  icon={<GitHubIcon viewBox="0 0 256 250" style={{width: 18, height: 18}}/>}
-                 onTouchTap={this.buttonTouchTap("github")}
+                 onClick={this.buttonTouchTap("github")}
                  />
                  */}
 
@@ -187,7 +187,7 @@ export default class TabsLogin extends React.Component {
 
                 <RaisedButton label="Регистрация"
                               className={classes.button}
-                              onTouchTap={this.handleRegister}/>
+                              onClick={this.handleRegister}/>
 
               </div>
 

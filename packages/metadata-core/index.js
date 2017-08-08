@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.1-beta.19, built:2017-08-06
+ metadata-core v2.0.1-beta.19, built:2017-08-08
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -353,12 +353,13 @@ class TabularSection {
         sql += " " + f[1];
       }
     }
+    const {$p} = this._owner._manager._owner;
 		try {
-			res = alasql(sql, [has_dot ? this._obj.map((row) => row._row) : this._obj]);
+			res = $p.wsql.alasql(sql, [has_dot ? this._obj.map((row) => row._row) : this._obj]);
 			return this.load(res);
 		}
 		catch (err) {
-			this._owner._manager._owner.$p.record_log(err);
+			$p.record_log(err);
 		}
 	}
 	aggregate(dimensions, resources, aggr = "sum", ret_array) {
@@ -374,11 +375,14 @@ class TabularSection {
 			}, 0);
 		}
 		let sql, res = true;
-		resources.forEach(function (f) {
-			if (!sql)
-				sql = "select " + aggr + "(`" + f + "`) `" + f + "`";
-			else
-				sql += ", " + aggr + "(`" + f + "`) `" + f + "`";
+		resources.forEach((f) => {
+			if (!sql){
+        sql = "select ";
+      }
+      else{
+        sql += ", ";
+      }
+      sql += aggr + "(`" + f + "`) `" + f + "`";
 		});
 		dimensions.forEach(function (f) {
 			if (!sql)
@@ -396,8 +400,9 @@ class TabularSection {
 				sql += ", ";
 			sql += "`" + f + "`";
 		});
+		const {$p} = this._owner._manager._owner;
 		try {
-			res = alasql(sql, [this._obj]);
+			res = $p.wsql.alasql(sql, [this._obj]);
 			if (!ret_array) {
 				if (resources.length == 1)
 					res = res.length ? res[0][resources[0]] : 0;
@@ -406,7 +411,7 @@ class TabularSection {
 			}
 			return res;
 		} catch (err) {
-			this._owner._manager._owner.$p.record_log(err);
+			$p.record_log(err);
 		}
 	};
 	load(aattr) {
@@ -5755,7 +5760,7 @@ class JobPrm {
 	}
 }
 
-const alasql$1 = (typeof window != 'undefined' && window.alasql) || require('alasql/dist/alasql.min');
+const alasql = (typeof window != 'undefined' && window.alasql) || require('alasql/dist/alasql.min');
 const fake_ls = {
 	setItem(name, value) {},
 	getItem(name) {}
@@ -5764,8 +5769,8 @@ class WSQL {
 	constructor($p) {
 		this.$p = $p;
 		this._params = {};
-		this.aladb = new alasql$1.Database('md');
-		this.alasql = alasql$1;
+		this.aladb = new alasql.Database('md');
+		this.alasql = alasql;
 	}
 	get js_time_diff(){ return -(new Date("0001-01-01")).valueOf()}
 	get time_diff(){
@@ -5776,7 +5781,7 @@ class WSQL {
 		return typeof localStorage === "undefined" ? fake_ls : localStorage;
 	}
 	init(settings, meta) {
-		alasql$1.utils.isBrowserify = false;
+		alasql.utils.isBrowserify = false;
 		const {job_prm, adapters} = this.$p;
 		job_prm.init(settings);
 		if (!job_prm.local_storage_prefix && !job_prm.create_tables)
@@ -6462,7 +6467,7 @@ class MetaEngine$1 {
         get: function () {
           const res = [];
           this.acl_objs && this.acl_objs.each((row) => {
-            if (row.acl_obj instanceof $p.CatPartners) {
+            if (row.acl_obj instanceof this._manager._owner.$p.CatPartners) {
               res.push(row.acl_obj.ref);
             }
           });

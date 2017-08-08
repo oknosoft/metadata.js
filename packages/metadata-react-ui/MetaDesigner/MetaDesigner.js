@@ -1,4 +1,5 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 
 import ReactGridLayout from 'react-grid-layout';
 import LayoutCSS from 'react-grid-layout/css/styles.css';

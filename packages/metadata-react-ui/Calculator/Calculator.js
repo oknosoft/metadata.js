@@ -306,18 +306,14 @@ class Calculator extends Component {
       <Menu desktop={true}>
         <MenuItem
           key={0}
-          onTouchTap={() => {
-            this.setState({isExpressionCalculator: !this.state.isExpressionCalculator});
-          }}
+          onClick={() => this.setState({isExpressionCalculator: !this.state.isExpressionCalculator})}
           primaryText={'формульный калькулятор'}
           checked={this.state.isExpressionCalculator}
           innerDivStyle={Calculator.MENU_ITEM_INNER_DIV_STYLE}/>
 
         <MenuItem
           key={1}
-          onTouchTap={() => {
-            this.setState({isMicroCalculator: !this.state.isMicroCalculator});
-          }}
+          onClick={() => this.setState({isMicroCalculator: !this.state.isMicroCalculator})}
           primaryText={'микрокалькулятор'}
           checked={this.state.isMicroCalculator}
           innerDivStyle={Calculator.MENU_ITEM_INNER_DIV_STYLE}/>

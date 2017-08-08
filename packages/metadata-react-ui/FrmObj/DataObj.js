@@ -1,4 +1,5 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 
 import {GridList, GridTile} from 'material-ui/GridList';
 import Layout from '../FlexPanel/react-flex-layout/react-flex-layout'
@@ -8,7 +9,7 @@ import DataField from '../DataField'
 import TabularSection from '../TabularSection'
 import classes from './DataObj.scss'
 import classnames from "classnames"
-import CircularProgress from 'material-ui/CircularProgress';
+
 import Paper from "material-ui/Paper"
 
 export default class DataObj extends Component {
@@ -140,9 +141,7 @@ export default class DataObj extends Component {
   render() {
     if (!this.props._obj) {
       return (
-        <div>
-          <CircularProgress size={120} thickness={5} className={classes.progress}/>
-        </div>
+        <div>loading</div>
       );
     }
 

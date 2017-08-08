@@ -7,7 +7,7 @@ import DataCell from '../DataField/DataCell'
 import DefaultToolbar from "./TabularSectionToolbar"
 import {AutoSizer} from "react-virtualized";
 import styles from "./TabularSection.scss";
-import {DataFieldFactory} from "../DataField";
+import DataFieldFactory from "../DataField/DataFieldFactory";
 import SimpleLoadingMessage from "../SimpleLoadingMessage";
 
 export default class TabularSection extends Component {

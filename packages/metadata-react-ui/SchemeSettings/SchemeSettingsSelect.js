@@ -8,7 +8,8 @@ import React, {Component} from "react";
 import PropTypes from 'prop-types';
 import {Toolbar, ToolbarGroup, ToolbarTitle} from "material-ui/Toolbar";
 import IconButton from "material-ui/IconButton";
-import DataField, {FieldSelect} from "../DataField";
+import DataField from "../DataField";
+import FieldSelect from "../DataField/FieldSelect";
 import Divider from 'material-ui/Divider';
 import SaveIcon from "material-ui-icons/Save";
 import CopyIcon from "material-ui-icons/ContentCopy";
@@ -67,11 +68,11 @@ export default class SchemeSettingsSelect extends Component {
         <div className={"content-with-toolbar-layout__toolbar"}>
           <Toolbar>
             <ToolbarGroup className={"meta-toolbar-group"} firstChild={true}>
-              <IconButton touch={true} tooltip="Сохранить вариант настроек" tooltipPosition="bottom-right" onTouchTap={handleSave}>
+              <IconButton tooltip="Сохранить вариант настроек" tooltipPosition="bottom-right" onClick={handleSave}>
                 <SaveIcon />
               </IconButton>
 
-              <IconButton touch={true} tooltip="Создать копию настроек" tooltipPosition="bottom-right" onTouchTap={handleCreate}>
+              <IconButton tooltip="Создать копию настроек" tooltipPosition="bottom-right" onClick={handleCreate}>
                 <CopyIcon />
               </IconButton>
             </ToolbarGroup>

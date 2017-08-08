@@ -3,8 +3,7 @@ import PropTypes from 'prop-types'
 import {Toolbar, ToolbarGroup} from "material-ui/Toolbar";
 
 import IconButton from "material-ui/IconButton";
-import IconMenu from "material-ui/IconMenu";
-import MenuItem from "material-ui/MenuItem";
+import Menu, { MenuItem } from 'material-ui/Menu';
 
 import SaveIcon from "material-ui-icons/Save";
 import SendIcon from "material-ui-icons/Send";
@@ -29,20 +28,32 @@ export default class DataObjToolbar extends Component {
 
   }
 
+  state = {
+    anchorEl: undefined,
+    open: false,
+  };
+
+  handleClick = event => {
+    this.setState({ open: true, anchorEl: event.currentTarget });
+  };
+
+  handleRequestClose = () => {
+    this.setState({ open: false });
+  };
+
   render() {
     const props = this.props;
     return (
 
       <Toolbar>
         <ToolbarGroup className={"meta-toolbar-group"} firstChild={true}>
-          <IconButton touch={true} tooltip="Записать" tooltipPosition="bottom-right" onTouchTap={props.handleSave}>
+          <IconButton touch={true} title="Записать" onClick={props.handleSave}>
             <SaveIcon />
           </IconButton>
-          <IconButton touch={true} tooltip="Отправить на согласование" tooltipPosition="bottom-right"
-                      onTouchTap={props.handleSend}>
+          <IconButton touch={true} title="Отправить на согласование" onClick={props.handleSend}>
             <SendIcon />
           </IconButton>
-          <IconButton touch={true} tooltip="Отозвать заказ" onTouchTap={props.handleMarkDeleted}>
+          <IconButton touch={true} title="Отозвать заказ" onClick={props.handleMarkDeleted}>
             <RemoveIcon />
           </IconButton>
 
@@ -50,19 +61,21 @@ export default class DataObjToolbar extends Component {
 
         <ToolbarGroup className={"meta-toolbar-group"}>
 
-          <IconMenu
-            iconButtonElement={
-              <IconButton touch={true} tooltip="Дополнительно">
-                <MoreVertIcon />
-              </IconButton>
-            }
+          <IconButton onClick={this.handleClick} title="Дополнительно" >
+            <MoreVertIcon />
+          </IconButton>
+
+          <Menu
+            anchorEl={this.state.anchorEl}
+            open={this.state.open}
+            onRequestClose={this.handleRequestClose}
           >
-            <MenuItem primaryText="Печать" leftIcon={<PrintIcon />} onTouchTap={props.handlePrint}/>
-            <MenuItem primaryText="Вложения" leftIcon={<AttachIcon />} onTouchTap={props.handleAttachment}/>
+            <MenuItem primaryText="Печать" leftIcon={<PrintIcon />} onClick={props.handlePrint}/>
+            <MenuItem primaryText="Вложения" leftIcon={<AttachIcon />} onClick={props.handleAttachment}/>
 
-          </IconMenu>
+          </Menu>
 
-          <IconButton touch={true} tooltip="Закрыть форму" tooltipPosition="bottom-left" onTouchTap={props.handleClose}>
+          <IconButton touch={true} title="Закрыть форму" onClick={props.handleClose}>
             <CloseIcon />
           </IconButton>
 

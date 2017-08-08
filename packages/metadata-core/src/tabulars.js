@@ -315,12 +315,13 @@ export class TabularSection {
       }
     }
 
+    const {$p} = this._owner._manager._owner;
 		try {
-			res = alasql(sql, [has_dot ? this._obj.map((row) => row._row) : this._obj]);
+			res = $p.wsql.alasql(sql, [has_dot ? this._obj.map((row) => row._row) : this._obj]);
 			return this.load(res);
 		}
 		catch (err) {
-			this._owner._manager._owner.$p.record_log(err);
+			$p.record_log(err);
 		}
 	}
 
@@ -363,11 +364,14 @@ export class TabularSection {
 
 		let sql, res = true;
 
-		resources.forEach(function (f) {
-			if (!sql)
-				sql = "select " + aggr + "(`" + f + "`) `" + f + "`";
-			else
-				sql += ", " + aggr + "(`" + f + "`) `" + f + "`";
+		resources.forEach((f) => {
+			if (!sql){
+        sql = "select ";
+      }
+      else{
+        sql += ", ";
+      }
+      sql += aggr + "(`" + f + "`) `" + f + "`";
 		});
 		dimensions.forEach(function (f) {
 			if (!sql)
@@ -386,8 +390,9 @@ export class TabularSection {
 			sql += "`" + f + "`";
 		});
 
+		const {$p} = this._owner._manager._owner;
 		try {
-			res = alasql(sql, [this._obj]);
+			res = $p.wsql.alasql(sql, [this._obj]);
 			if (!ret_array) {
 				if (resources.length == 1)
 					res = res.length ? res[0][resources[0]] : 0;
@@ -397,7 +402,7 @@ export class TabularSection {
 			return res;
 
 		} catch (err) {
-			this._owner._manager._owner.$p.record_log(err);
+			$p.record_log(err);
 		}
 	};
 

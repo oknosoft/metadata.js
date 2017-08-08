@@ -7,7 +7,8 @@
  * Created 09.01.2017
  */
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import MetaComponent from "../common/MetaComponent";
 import {Async} from "react-select";
 //import Select from "../DataField/FieldVirtualizedSelect";

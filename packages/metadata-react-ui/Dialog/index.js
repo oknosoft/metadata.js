@@ -106,11 +106,11 @@ export default class Dialog extends Component {
           left={this.props.left}
           top={this.props.top}
           buttons={[
-            <IconButton touch={true} tooltip={"развернуть"} onTouchTap={() => this.handleFullscreenClick()}>
+            <IconButton touch={true} title="развернуть" onClick={() => this.handleFullscreenClick()}>
               {this.props.fullscreen ? <FullscreenExitIcon color={"white"}/> : <FullscreenIcon color={"white"}/>}
             </IconButton>,
 
-            <IconButton touch={true} tooltip={"закрыть"} onTouchTap={() => this.handleCloseClick()}>
+            <IconButton touch={true} title="закрыть" onClick={() => this.handleCloseClick()}>
               <CloseIcon color={"white"}/>
             </IconButton>,
           ]}>

@@ -1,2 +1,3 @@
-export SchemeSettingsTabs from './SchemeSettingsTabs'
-export default from './SchemeSettingsWrapper'
+import SchemeSettingsWrapper from './SchemeSettingsWrapper';
+
+export default SchemeSettingsWrapper;

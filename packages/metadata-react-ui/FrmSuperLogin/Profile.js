@@ -137,13 +137,9 @@ export default class UserObj extends Component {
                     <br />
                     <Divider />
 
-                    <RaisedButton label="Сохранить"
-                                  className={classes.button}
-                                  onTouchTap={this.handleSave}/>
+                    <Button className={classes.button} onClick={this.handleSave}>Сохранить</Button>
 
-                    <RaisedButton label="Выйти"
-                                  className={classes.button}
-                                  onTouchTap={this.handleLogOut}/>
+                    <Button className={classes.button} onClick={this.handleLogOut}>Выйти</Button>
 
                   </div>
 
@@ -160,28 +156,28 @@ export default class UserObj extends Component {
                       className={classes.social_button}
                       labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
                       icon={<GoogleIcon viewBox="0 0 256 262" style={{width: 18, height: 18}} color={blue500}/>}
-                      //onTouchTap={this.buttonTouchTap("google")}
+                      //onClick={this.buttonTouchTap("google")}
                     /><br />
                     <RaisedButton
                       label="Яндекс"
                       className={classes.social_button}
                       labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
                       icon={<YandexIcon viewBox="0 0 180 190" style={{width: 18, height: 18}} color={red500}/>}
-                      //onTouchTap={this.buttonTouchTap("yandex")}
+                      //onClick={this.buttonTouchTap("yandex")}
                     /><br />
                     <RaisedButton
                       label="Facebook"
                       className={classes.social_button}
                       labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
                       icon={<FacebookIcon viewBox="0 0 450 450" style={{width: 18, height: 18}} color="#3A559F"/>}
-                      //onTouchTap={this.buttonTouchTap("facebook")}
+                      //onClick={this.buttonTouchTap("facebook")}
                     /><br />
                     <RaisedButton
                       label="В контакте"
                       className={classes.social_button}
                       labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
                       icon={<VkontakteIcon viewBox="50 50 400 400" style={{width: 18, height: 18}} color="#4c75a3"/>}
-                      //onTouchTap={this.buttonTouchTap("vkontakte")}
+                      //onClick={this.buttonTouchTap("vkontakte")}
                     />
 
                   </div>

@@ -56,7 +56,7 @@ export default class RepToolbar extends MetaComponent {
 
           <FlatButton
             label="Сформировать"
-            onTouchTap={handleSave}
+            onClick={handleSave}
             icon={<RunIcon />}
           />
 
@@ -84,10 +84,10 @@ export default class RepToolbar extends MetaComponent {
               </IconButton>
             }
           >
-            <MenuItem primaryText="Печать" leftIcon={<PrintIcon />} disabled onTouchTap={handlePrint}/>
-            <MenuItem primaryText="Копировать CSV" leftIcon={<CopyIcon />} onTouchTap={handleExportCSV}/>
-            <MenuItem primaryText="Копировать JSON" leftIcon={<CloudDownloadIcon />} onTouchTap={handleExportJSON}/>
-            <MenuItem primaryText="Экспорт в XLS" leftIcon={<FileDownloadIcon />} onTouchTap={handleExportXLS}/>
+            <MenuItem primaryText="Печать" leftIcon={<PrintIcon />} disabled onClick={handlePrint}/>
+            <MenuItem primaryText="Копировать CSV" leftIcon={<CopyIcon />} onClick={handleExportCSV}/>
+            <MenuItem primaryText="Копировать JSON" leftIcon={<CloudDownloadIcon />} onClick={handleExportJSON}/>
+            <MenuItem primaryText="Экспорт в XLS" leftIcon={<FileDownloadIcon />} onClick={handleExportXLS}/>
 
           </IconMenu>
 

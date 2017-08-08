@@ -30,11 +30,11 @@ export default class TabularSectionToolbar extends Component {
 
     if (!deny_add_del) {
       first_group.push(
-        <IconButton key="btn_add" touch={true} tooltip="Добавить строку" tooltipPosition="bottom-right" onTouchTap={handleAdd}>
+        <IconButton key="btn_add" touch={true} title="Добавить строку" onClick={handleAdd}>
           <AddIcon key="icon_add"/>
         </IconButton>)
       first_group.push(
-        <IconButton key="btn_del" touch={true} tooltip="Удалить строку" tooltipPosition="bottom-right" onTouchTap={handleRemove}>
+        <IconButton key="btn_del" touch={true} title="Удалить строку" onClick={handleRemove}>
           <RemoveIcon key="icon_del"/>
         </IconButton>)
 
@@ -45,12 +45,12 @@ export default class TabularSectionToolbar extends Component {
 
     if (!deny_reorder) {
       first_group.push(
-        <IconButton key="btn_up" touch={true} tooltip="Переместить вверх" tooltipPosition="bottom-right" onTouchTap={handleUp}>
+        <IconButton key="btn_up" touch={true} title="Переместить вверх" onClick={handleUp}>
           <ArrowUpIcon key="icon_up"/>
         </IconButton>
       )
       first_group.push(
-        <IconButton key="btn_down" touch={true} tooltip="Переместить вниз" tooltipPosition="bottom-right" onTouchTap={handleDown}>
+        <IconButton key="btn_down" touch={true} title="Переместить вниз" onClick={handleDown}>
           <ArrowDownIcon key="icon_down"/>
         </IconButton>
       )

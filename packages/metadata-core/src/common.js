@@ -188,7 +188,7 @@ class MetaEngine {
         get: function () {
           const res = [];
           this.acl_objs && this.acl_objs.each((row) => {
-            if (row.acl_obj instanceof $p.CatPartners) {
+            if (row.acl_obj instanceof this._manager._owner.$p.CatPartners) {
               res.push(row.acl_obj.ref);
             }
           });
