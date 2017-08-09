@@ -8,7 +8,7 @@
 
 const exec = require('child_process').exec;
 const concat = require('concat-files');
-const root = './packages/metadata-react-ui/';
+const root = './packages/metadata-react/';
 
 const exec_babel = (src, out, ignore) => {
   return new Promise((resolve, reject) => {

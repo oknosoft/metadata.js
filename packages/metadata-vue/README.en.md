@@ -1,4 +1,4 @@
-### PostgreSQL data adapter for metadata.js
+### Vue JS components for metadata.js
 
 [README in Russian](README.md)
 

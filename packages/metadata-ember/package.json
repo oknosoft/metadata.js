@@ -1,23 +1,15 @@
 {
-  "name": "metadata-react-ui",
-  "description": "React UI components for metadata.js",
-  "version": "2.0.1-beta.19",
+  "name": "metadata-ember",
+  "description": "Ember UI components for metadata.js",
+  "version": "2.0.1-beta.20",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
     "node": "^7.10",
     "npm": "^5.0"
   },
-  "dependencies": {
-    "metadata-abstract-ui": "^2.0.1-beta.19"
-  },
   "peerDependencies": {
-    "material-ui": "^1.0.0-alpha.20",
-    "react-data-grid": "^2.0",
-    "react-data-grid-addons": "^2.0",
-    "react-panels": "git+https://github.com/unpete/react-panels",
-    "react-portal": "^3.0",
-    "react-virtualized": "^9.8"
+    "metadata-abstract-ui": "^2.0.1-beta.19"
   },
   "main": "dist/index.js",
   "repository": {

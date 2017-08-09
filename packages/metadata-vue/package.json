@@ -1,33 +1,27 @@
 {
-  "name": "metadata-superlogin",
-  "description": "Social auth & session manager for metadata.js",
+  "name": "metadata-vue",
+  "description": "Vue JS components for metadata.js",
   "version": "2.0.1-beta.20",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
+  "license": "MIT",
   "engines": {
     "node": "^7.10",
     "npm": "^5.0"
   },
   "peerDependencies": {
-    "superlogin-client": "^0.6"
+    "metadata-abstract-ui": "^2.0.1-beta.19"
   },
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-superlogin"
+    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-react-ui"
   },
   "bugs": {
     "url": "https://github.com/oknosoft/metadata.js/issues"
   },
   "homepage": "http://www.oknosoft.ru/metadata/",
-  "main": "./index.js",
   "keywords": [
     "metadata",
-    "couchdb",
-    "pouchdb",
-    "login",
-    "oauth2",
-    "authentication",
-    "authorization",
-    "social auth"
-  ],
-  "license": "MIT"
+    "react"
+  ]
 }

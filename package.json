@@ -14,7 +14,7 @@
   "dependencies": {
     "alasql": "^0.4.1",
     "clipboard": "^1.6",
-    "debug": "^2.6",
+    "debug": "^3.0.0",
     "material-ui": "^1.0.0-beta.4",
     "material-ui-icons": "^1.0.0-alpha.19",
     "moment": "^2.18",
@@ -57,7 +57,7 @@
     "decompress": "^4.2",
     "graceful-fs": "^4.1",
     "gulp": "^3.9",
-    "gulp-babel": "^6.1",
+    "gulp-babel": "^7.0",
     "gulp-base64": "^0.1",
     "gulp-concat": "^2.6",
     "gulp-csso": "^3.0",
@@ -83,7 +83,7 @@
   },
   "scripts": {
     "build:core": "node ./packages/metadata-core/build.js",
-    "build:transition": "node ./packages/metadata-dhtmlx-ui/build.js",
+    "build:transition": "node ./packages/metadata-dhtmlx/build.js",
     "build:react-ui": "better-npm-run build:react-ui",
     "build:abstract-ui": "node ./packages/metadata-abstract-ui/build.js",
     "build:adapter-pouchdb": "node ./packages/metadata-pouchdb/build.js",

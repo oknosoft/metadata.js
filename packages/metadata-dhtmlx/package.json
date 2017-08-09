@@ -1,7 +1,7 @@
 {
-  "name": "metadata-dhtmlx-ui",
+  "name": "metadata-dhtmlx",
   "description": "Dhtmlx UI components for metadata.js",
-  "version": "2.0.1-beta.19",
+  "version": "2.0.1-beta.20",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
@@ -11,7 +11,7 @@
   "main": "./index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-dhtmlx-ui"
+    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-dhtmlx"
   },
   "bugs": {
     "url": "https://github.com/oknosoft/metadata.js/issues"

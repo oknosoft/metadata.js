@@ -428,8 +428,13 @@ export class DataObj {
 	 */
 	save(post, operational, attachments) {
 
+	  if(utils.is_empty_guid(this.ref)){
+	    return Promise.resolve(this);
+    }
+
+    let initial_posted;
 		if (this instanceof DocObj && typeof post == "boolean") {
-			const initial_posted = this.posted;
+			initial_posted = this.posted;
 			this.posted = post;
 		}
 
@@ -445,8 +450,6 @@ export class DataObj {
       }
       return this;
     };
-
-		let saver;
 
 		// если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
 		if (before_save_res === false) {

@@ -5,7 +5,7 @@
 For details, see [metadata.js](https://github.com/oknosoft/metadata.js)
 
 Библиотека экспортирует плагин для metadata-core и описывет перечислимые типы и методы, востребованные всеми
-ui-библиотеками ([metadata-react-ui](../metadata-react-ui), [metadata-ember-ui](../metadata-ember-ui), [metadata-angular-ui](../metadata-angular-ui) и т.д.)
+ui-библиотеками ([metadata-react](../metadata-react), [metadata-ember](../metadata-ember), [metadata-angular](../metadata-angular) и т.д.)
 
 #### События при старте приложения
 

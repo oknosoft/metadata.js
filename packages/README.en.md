@@ -8,10 +8,10 @@
 
 ### metadata-redux
 
-### metadata-react-ui
+### metadata-react
 
-### metadata-dhtmlx-ui
+### metadata-dhtmlx
 
-### metadata-angular-ui
+### metadata-angular
 
-### metadata-ember-ui
+### metadata-ember
