@@ -1,3 +1,3 @@
-import DumbLoader from './DumbLoader'
+import DumbScreen from './DumbScreen';
 
-export default DumbLoader
+export default DumbScreen;

@@ -69,6 +69,7 @@
     "gulp-wrap": "^0.13.0",
     "rimraf": "^2.6",
     "rollup": "^0.45.2",
+    "rollup-plugin-babel": "^3.0.1",
     "rollup-plugin-cleanup": "^1.0.1",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^3.0.0",
@@ -84,11 +85,11 @@
   "scripts": {
     "build:core": "node ./packages/metadata-core/build.js",
     "build:transition": "node ./packages/metadata-dhtmlx/build.js",
-    "build:react-ui": "better-npm-run build:react-ui",
+    "build:react-ui": "node ./packages/metadata-react/build.js",
     "build:abstract-ui": "node ./packages/metadata-abstract-ui/build.js",
     "build:adapter-pouchdb": "node ./packages/metadata-pouchdb/build.js",
     "build:redux": "node ./packages/metadata-redux/build.js",
-    "build:superlogin": "better-npm-run build:superlogin"
+    "build:superlogin": "node ./packages/metadata-superlogin/build.js"
   },
   "bin": {
     "metadata": "./bin/metadata-cli.js"

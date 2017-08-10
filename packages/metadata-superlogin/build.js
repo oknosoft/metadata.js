@@ -8,11 +8,11 @@ const cleanup = require('rollup-plugin-cleanup');
 const path = require('path');
 const package_data = require(path.resolve(__dirname, './package.json'));
 
-const external = ['events', 'pouchdb-*'];
+const external = [];
 const plugins = [
-	resolve({jsnext: true, main: true}),
-	replace({PACKAGE_VERSION: package_data.version}),
-	cleanup(),
+  resolve({jsnext: true, main: true}),
+  replace({PACKAGE_VERSION: package_data.version}),
+  cleanup(),
 ];
 const header = `/*!
  ${package_data.name} v${package_data.version}, built:${new Date().toISOString().split('T')[0]}
@@ -22,15 +22,15 @@ const header = `/*!
  */\n\n`;
 
 return rollup({
-	entry: path.resolve(__dirname, './src/index.js'),
-	external,
-	plugins,
+  entry: path.resolve(__dirname, './src/superlogin.js'),
+  external,
+  plugins,
 })
-	.then((bundle) => bundle.write({
-		format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
-		moduleName: package_data.name.replace(/-/g, '_'),
-		banner: header,
-		dest: path.resolve(__dirname, './index.js'),
-		sourceMap: true,
-	}));
+  .then((bundle) => bundle.write({
+    format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
+    moduleName: package_data.name.replace(/-/g, '_'),
+    banner: header,
+    dest: path.resolve(__dirname, './index.js'),
+    sourceMap: true,
+  }));
 

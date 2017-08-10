@@ -1,47 +1,57 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import Paper from 'material-ui/Paper';
-import Divider from 'material-ui/Divider';
-import Subheader from 'material-ui/Subheader';
-import CircularProgress from 'material-ui/CircularProgress';
 
-import classes from './DumbLoader.scss'
-
-
-export default class DumbScreen extends Component {
-
-  static propTypes = {
-    step: PropTypes.number,
-    step_size: PropTypes.number,
-    count_all: PropTypes.number,
-
-    title: PropTypes.string,
-    processed: PropTypes.string,
-    current: PropTypes.string,
-    bottom: PropTypes.string,
-    page: PropTypes.object
-  }
+class DumbScreen extends Component {
 
   render() {
 
-    let {title, img, page} = this.props;
+    let {title, page, top, first_run} = this.props;
+    const over = page && page.limit * page.page > page.total_rows;
+    if (!title) {
+      title = (first_run || over) ? 'Первый запуск требует дополнительного времени...' : 'Загрузка модулей...';
+    }
+    const footer = page ? (over ?
+      <div>{`Такт №${page.page}, загружено ${page.total_rows} объектов - чтение изменений `} <i className="fa fa-spinner fa-pulse"></i></div>
+      :
+      page.text || `Такт №${page.page}, загружено ${Math.min(page.page * page.limit, page.total_rows)} из ${page.total_rows} объектов`)
+    : '';
 
-    if (!title)
-      title = "Загрузка модулей...";
-
-    return (
-      <div className={classes.splash}>
-
-        <div style={{position: 'absolute', bottom: '-20px'}}>{title}</div>
-
-        { img }
-
-        { page ? <div style={{position: 'absolute', bottom: '-44px'}}>{
-          `Страница №${page.page}, загружено ${Math.min(page.page * page.limit, page.total_rows)} из ${page.total_rows} объектов`
-        }</div> : null }
-
+    return <div className='splash' style={{marginTop: top}}>
+      <div className="description">
+        <h1 itemProp="name">Hello world for metadata.js</h1>
+        <p>Категория: <span itemProp="applicationSubCategory">CRM, E-Commerce</span></p>
+        <p>Платформа: <i className="fa fa-chrome" aria-hidden="true"></i> браузер Chrome для <span itemProp="operatingSystem">Windows 8, 10 | Android | Mac | iOS</span>
+        </p>
+        <div itemProp="description">
+          <p>Веб-приложение на базе <a href="http://www.oknosoft.ru/metadata/" target="_blank" rel="noopener noreferrer">Metadata.js</a>
+            для демонстрации базовых возможностей фреймворка:</p>
+          <ul>
+            <li>Ввод и редактирование докумнтов поступления - выбытия - перемещения денег</li>
+            <li>Формирование отчета о движении денег</li>
+            <li>Автономная работа при отсутствии доступа к Интернет</li>
+            <li>Фоновая синхронизация с ИБ 1С</li>
+          </ul>
+        </div>
       </div>
 
-    );
+      <div style={{position: 'absolute', bottom: '-24px'}}>{title}</div>
+      {page && <div style={{position: 'absolute', bottom: '-52px'}}>{footer}</div>}
+
+    </div>;
   }
 }
+
+DumbScreen.propTypes = {
+  step: PropTypes.number,
+  step_size: PropTypes.number,
+  count_all: PropTypes.number,
+  top: PropTypes.number,
+  first_run: PropTypes.bool,
+  title: PropTypes.string,
+  processed: PropTypes.string,
+  current: PropTypes.string,
+  bottom: PropTypes.string,
+  page: PropTypes.object,
+};
+
+export default DumbScreen;

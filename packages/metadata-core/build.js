@@ -30,7 +30,7 @@ return rollup({
 		format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
 		moduleName: package_data.name.replace(/-/g, '_'),
     banner: header,
-    dest: path.resolve(__dirname, './index.js')
-		//sourceMap: true,
+    dest: path.resolve(__dirname, './index.js'),
+		sourceMap: true,
 	}));
 

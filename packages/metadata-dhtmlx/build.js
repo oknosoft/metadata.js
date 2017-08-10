@@ -36,7 +36,7 @@ return rollup({
       'alasql': 'alasql',
       'moment': 'moment',
     },
-    dest: path.resolve(__dirname, '../../lib/metadata.transition.js')
-		//sourceMap: true,
+    dest: path.resolve(__dirname, '../../lib/metadata.transition.js'),
+		sourceMap: true,
 	}));
 
