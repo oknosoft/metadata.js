@@ -643,7 +643,8 @@ class DataObj {
 		}
 	}
 	__notify(f) {
-    !this._data._loading && this._manager.emit_async('update', this, {[f]: this._obj[f]});
+	  const {_data, _manager} = this;
+    _data && !_data._loading && _manager.emit_async('update', this, {[f]: this._obj[f]});
 	}
 	_setter(f, v) {
 		if(this._obj[f] != v){
@@ -2121,7 +2122,7 @@ class RegisterManager extends DataManager{
 				obj.unload();
 				continue;
 			}
-			else if (obj.is_new() || forse) {
+			else if (forse) {
         obj._data._loading = true;
 				obj._mixin(aattr[i]);
 			}

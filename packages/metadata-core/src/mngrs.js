@@ -1556,7 +1556,7 @@ export class RegisterManager extends DataManager{
 				continue;
 
 			}
-			else if (obj.is_new() || forse) {
+			else if (forse) {
         obj._data._loading = true;
 				obj._mixin(aattr[i]);
 			}
