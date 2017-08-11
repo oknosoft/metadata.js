@@ -506,6 +506,21 @@ export class DataManager extends MetaEventEmitter{
 
 	}
 
+  /**
+   * Удаляет объект из alasql и локального кеша
+   * @method unload_obj
+   * @param ref
+   */
+  unload_obj(ref) {
+    delete this.by_ref[ref];
+    this.alatable.some((o, i, a) => {
+      if(o.ref == ref){
+        a.splice(i, 1);
+        return true;
+      }
+    });
+  }
+
 
 }
 
@@ -686,21 +701,6 @@ export class RefDataManager extends DataManager{
 
 		return force_obj ? o : Promise.resolve(o);
 
-	}
-
-	/**
-	 * Удаляет объект из alasql и локального кеша
-	 * @method unload_obj
-	 * @param ref
-	 */
-	unload_obj(ref) {
-		delete this.by_ref[ref];
-		this.alatable.some(function (o, i, a) {
-			if(o.ref == ref){
-				a.splice(i, 1);
-				return true;
-			}
-		});
 	}
 
 	/**
@@ -1285,9 +1285,8 @@ export class DataProcessorsManager extends DataManager{
 	/**
 	 * fake-метод, не имеет смысла для обработок, т.к. они не кешируются в alasql. Добавлен, чтобы не ругалась форма объекта при закрытии
 	 * @method unload_obj
-	 * @param [ref]
 	 */
-	unload_obj(ref) {	}
+	unload_obj() {	}
 }
 
 /**
@@ -1514,21 +1513,6 @@ export class RegisterManager extends DataManager{
 		}
 
 		return res;
-	};
-
-	/**
-	 * Удаляет объект из alasql и локального кеша
-	 * @method unload_obj
-	 * @param ref
-	 */
-	unload_obj(ref) {
-		delete this.by_ref[ref];
-		this.alatable.some((o, i, a) => {
-			if (o.ref == ref) {
-				a.splice(i, 1);
-				return true;
-			}
-		});
 	};
 
 	/**

@@ -371,11 +371,10 @@ export class DataObj {
 	 */
 	load() {
 		if (this.ref == utils.blank.guid) {
-			if (this instanceof CatObj){
-        this.id = "000000000";
-      }
-			else{
-        this.number_doc = "000000000";
+		  const {_data} = this;
+			if (_data){
+        _data._loading = false;
+        _data._modified = false;
       }
 			return Promise.resolve(this);
 		}
@@ -396,21 +395,23 @@ export class DataObj {
 	 * @for DataObj
 	 */
 	unload() {
-		const {_obj, ref, _manager} = this;
+		const {_obj, ref, _data, _manager} = this;
 		_manager.unload_obj(ref);
-    _manager.emit_async('unload', this);
-		for (let f in this._metadata().tabular_sections){
-			this[f].clear()
+    _data._loading = true;
+    //_manager.emit_async('unload', this);
+		for (const ts in this._metadata().tabular_sections){
+			this[ts].clear()
 		}
-		for (let f in this) {
+		for (const f in this) {
 			if (this.hasOwnProperty(f)){
 				delete this[f]
 			}
 		}
-		for (let f in _obj){
+		for (const f in _obj){
 			delete _obj[f]
 		}
-		["_ts_", "_obj", "_data"].forEach((f) => delete this[f]);
+    delete this._ts_;
+    delete this._obj;
 	}
 
 	/**

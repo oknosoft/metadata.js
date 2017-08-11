@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.1-beta.21, built:2017-08-10
+ metadata-core v2.0.1-beta.22, built:2017-08-11
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -700,11 +700,10 @@ class DataObj {
 	}
 	load() {
 		if (this.ref == utils.blank.guid) {
-			if (this instanceof CatObj){
-        this.id = "000000000";
-      }
-			else{
-        this.number_doc = "000000000";
+		  const {_data} = this;
+			if (_data){
+        _data._loading = false;
+        _data._modified = false;
       }
 			return Promise.resolve(this);
 		}
@@ -719,21 +718,22 @@ class DataObj {
 		}
 	}
 	unload() {
-		const {_obj, ref, _manager} = this;
+		const {_obj, ref, _data, _manager} = this;
 		_manager.unload_obj(ref);
-    _manager.emit_async('unload', this);
-		for (let f in this._metadata().tabular_sections){
-			this[f].clear();
+    _data._loading = true;
+		for (const ts in this._metadata().tabular_sections){
+			this[ts].clear();
 		}
-		for (let f in this) {
+		for (const f in this) {
 			if (this.hasOwnProperty(f)){
 				delete this[f];
 			}
 		}
-		for (let f in _obj){
+		for (const f in _obj){
 			delete _obj[f];
 		}
-		["_ts_", "_obj", "_data"].forEach((f) => delete this[f]);
+    delete this._ts_;
+    delete this._obj;
 	}
 	save(post, operational, attachments) {
 	  if(utils.is_empty_guid(this.ref)){
@@ -1447,6 +1447,15 @@ class DataManager extends MetaEventEmitter{
 		}
 		return Promise.resolve(t._printing_plates);
 	}
+  unload_obj(ref) {
+    delete this.by_ref[ref];
+    this.alatable.some((o, i, a) => {
+      if(o.ref == ref){
+        a.splice(i, 1);
+        return true;
+      }
+    });
+  }
 }
 class RefDataManager extends DataManager{
 	push(o, new_ref){
@@ -1554,15 +1563,6 @@ class RefDataManager extends DataManager{
 			}
 		}
 		return force_obj ? o : Promise.resolve(o);
-	}
-	unload_obj(ref) {
-		delete this.by_ref[ref];
-		this.alatable.some(function (o, i, a) {
-			if(o.ref == ref){
-				a.splice(i, 1);
-				return true;
-			}
-		});
 	}
 	find(val, columns){
 		return utils._find(this.by_ref, val, columns);
@@ -1955,7 +1955,7 @@ class DataProcessorsManager extends DataManager{
 		}else
 			return this.create();
 	}
-	unload_obj(ref) {	}
+	unload_obj() {	}
 }
 class EnumManager extends RefDataManager{
 	constructor(owner, class_name) {
@@ -2099,15 +2099,6 @@ class RegisterManager extends DataManager{
 			}
 		}
 		return res;
-	};
-	unload_obj(ref) {
-		delete this.by_ref[ref];
-		this.alatable.some((o, i, a) => {
-			if (o.ref == ref) {
-				a.splice(i, 1);
-				return true;
-			}
-		});
 	};
 	load_array(aattr, forse) {
 		var ref, obj, res = [];
@@ -6441,7 +6432,7 @@ class MetaEngine$1 {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.1-beta.21';
+    return '2.0.1-beta.22';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
