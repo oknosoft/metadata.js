@@ -47,8 +47,13 @@ function adapter({AbstracrAdapter}) {
               user_node: job_prm.user_node,
               noreplicate: job_prm.noreplicate,
             });
-            if (_paths.path && _paths.path.indexOf('http') != 0 && typeof location != 'undefined') {
+            if(_paths.path && _paths.path.indexOf('http') != 0 && typeof location != 'undefined') {
               _paths.path = location.protocol + '//' + location.host + _paths.path;
+            }
+            if(_paths.suffix) {
+              while (_paths.suffix.length < 4) {
+                _paths.suffix = '0' + _paths.suffix;
+              }
             }
           },
         },
@@ -61,7 +66,7 @@ function adapter({AbstracrAdapter}) {
          */
         local: {
           get: function () {
-            if (!_local) {
+            if(!_local) {
               const opts = {auto_compaction: true, revs_limit: 2};
               const bases = this.$p.md.bases();
 
@@ -71,15 +76,16 @@ function adapter({AbstracrAdapter}) {
               };
 
               for (const name of ['ram', 'doc', 'user']) {
-                if (bases.indexOf(name) != -1) {
-                  if (_paths.direct && name != 'ram') {
+                if(bases.indexOf(name) != -1) {
+                  if(_paths.direct && name != 'ram') {
                     _local[name] = this.remote[name];
-                  } else {
+                  }
+                  else {
                     _local[name] = new PouchDB(_paths.prefix + _paths.zone + '_' + name, opts);
                   }
                 }
               }
-              if (_paths.path && !_local._meta) {
+              if(_paths.path && !_local._meta) {
                 _local._meta = new PouchDB(_paths.path + 'meta', {skip_setup: true});
                 setTimeout(() => t.run_sync('meta'));
               }
@@ -97,11 +103,11 @@ function adapter({AbstracrAdapter}) {
          */
         remote: {
           get: function () {
-            if (!_remote) {
+            if(!_remote) {
 
               const opts = {skip_setup: true, adapter: 'http'};
 
-              if (_paths.user_node) {
+              if(_paths.user_node) {
                 opts.auth = _paths.user_node;
               }
 
@@ -110,14 +116,14 @@ function adapter({AbstracrAdapter}) {
               const {superlogin, md} = this.$p;
 
               function dbpath(name) {
-                if (superlogin) {
+                if(superlogin) {
                   return superlogin.getDbUrl(_paths.prefix + (name == 'meta' ? name : (_paths.zone + '_' + name)));
                 }
                 else {
-                  if (name == 'meta') {
+                  if(name == 'meta') {
                     return _paths.path + 'meta';
                   }
-                  else if (name == 'ram') {
+                  else if(name == 'ram') {
                     return _paths.path + _paths.zone + '_ram';
                   }
                   else {
@@ -127,7 +133,7 @@ function adapter({AbstracrAdapter}) {
               }
 
               md.bases().forEach((name) => {
-                if (name == 'e1cib' || name == 'pgsql') {
+                if(name == 'e1cib' || name == 'pgsql') {
                   return;
                 }
                 _remote[name] = new PouchDB(dbpath(name), opts);
@@ -147,12 +153,14 @@ function adapter({AbstracrAdapter}) {
         db: {
           value: function (_mgr) {
             const dbid = _mgr.cachable.replace('_remote', '').replace('_ram', '');
-            if (dbid.indexOf('remote') != -1 || (
+            if(dbid.indexOf('remote') != -1 || (
                 _paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1
-              ))
+              )) {
               return this.remote[dbid.replace('_remote', '')];
-            else
+            }
+            else {
               return this.local[dbid] || this.remote[dbid];
+            }
           },
         },
 
@@ -169,28 +177,30 @@ function adapter({AbstracrAdapter}) {
             const {job_prm, wsql, aes, md} = this.$p;
 
             // реквизиты гостевого пользователя для демобаз
-            if (username == undefined && password == undefined) {
-              if (job_prm.guests && job_prm.guests.length) {
+            if(username == undefined && password == undefined) {
+              if(job_prm.guests && job_prm.guests.length) {
                 username = job_prm.guests[0].username;
                 password = aes.Ctr.decrypt(job_prm.guests[0].password);
-              } else {
+              }
+              else {
                 return Promise.reject(new Error('username & password not defined'));
               }
             }
 
-            if (_auth) {
-              if (_auth.username == username) {
+            if(_auth) {
+              if(_auth.username == username) {
                 return Promise.resolve();
-              } else {
+              }
+              else {
                 return Promise.reject(new Error('need logout first'));
               }
             }
 
             // если мы в браузере - авторизуемся во всех базах, в node - мы уже авторизованы
             const try_auth = [];
-            if (!_paths.user_node) {
+            if(!_paths.user_node) {
               md.bases().forEach((name) => {
-                if (t.remote[name]) {
+                if(t.remote[name]) {
                   try_auth.push(this.remote[name].login(username, password));
                 }
               });
@@ -202,17 +212,17 @@ function adapter({AbstracrAdapter}) {
                 _auth = {username};
 
                 // сохраняем имя пользователя в базе
-                if (wsql.get_user_param('user_name') != username) {
+                if(wsql.get_user_param('user_name') != username) {
                   wsql.set_user_param('user_name', username);
                 }
 
                 // если настроено сохранение пароля - сохраняем и его
-                if (wsql.get_user_param('enable_save_pwd')) {
-                  if (aes.Ctr.decrypt(wsql.get_user_param('user_pwd')) != password) {
+                if(wsql.get_user_param('enable_save_pwd')) {
+                  if(aes.Ctr.decrypt(wsql.get_user_param('user_pwd')) != password) {
                     wsql.set_user_param('user_pwd', aes.Ctr.encrypt(password));   // сохраняем имя пользователя в базе
                   }
                 }
-                else if (wsql.get_user_param('user_pwd') != '') {
+                else if(wsql.get_user_param('user_pwd') != '') {
                   wsql.set_user_param('user_pwd', '');
                 }
 
@@ -223,8 +233,8 @@ function adapter({AbstracrAdapter}) {
                 // запускаем синхронизацию для нужных баз
                 try_auth.length = 0;
                 md.bases().forEach((dbid) => {
-                  if (t.local[dbid] && t.remote[dbid] && t.local[dbid] != t.remote[dbid]) {
-                    if (_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1) {
+                  if(t.local[dbid] && t.remote[dbid] && t.local[dbid] != t.remote[dbid]) {
+                    if(_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1) {
                       return;
                     }
                     try_auth.push(t.run_sync(dbid));
@@ -234,7 +244,7 @@ function adapter({AbstracrAdapter}) {
               })
               .then(() => {
                 // широковещательное оповещение об окончании загрузки локальных данных
-                if (t.local._loading) {
+                if(t.local._loading) {
                   return new Promise(function (resolve, reject) {
                     t.on('pouch_data_loaded', resolve);
                   });
@@ -257,27 +267,29 @@ function adapter({AbstracrAdapter}) {
         log_out: {
           value: function () {
 
-            if (_auth) {
+            if(_auth) {
               const {doc, ram} = _local.sync;
-              if (doc) {
+              if(doc) {
                 try {
                   doc.cancel();
                   doc.removeAllListeners();
                 }
-                catch (err) {}
+                catch (err) {
+                }
               }
-              if (ram) {
+              if(ram) {
                 try {
                   ram.cancel();
                   ram.removeAllListeners();
                 }
-                catch (err) {}
+                catch (err) {
+                }
               }
               _auth = null;
             }
 
             return Promise.all(this.$p.md.bases().map((id) => {
-              if (id != 'meta' && _remote && _remote[id] && _remote[id] != _local[id]) {
+              if(id != 'meta' && _remote && _remote[id] && _remote[id] != _local[id]) {
                 return _remote[id].logout();
               }
             }))
@@ -313,7 +325,7 @@ function adapter({AbstracrAdapter}) {
               function fetchNextPage() {
                 t.local.ram.allDocs(options, (err, response) => {
 
-                  if (response) {
+                  if(response) {
                     // широковещательное оповещение о загрузке порции локальных данных
                     _page.page++;
                     _page.total_rows = response.total_rows;
@@ -321,7 +333,7 @@ function adapter({AbstracrAdapter}) {
 
                     t.emit('pouch_data_page', Object.assign({}, _page));
 
-                    if (t.load_changes(response, options)) {
+                    if(t.load_changes(response, options)) {
                       fetchNextPage();
                     }
                     // широковещательное оповещение об окончании загрузки локальных данных
@@ -330,7 +342,7 @@ function adapter({AbstracrAdapter}) {
                       resolve();
                     }
                   }
-                  else if (err) {
+                  else if(err) {
                     reject(err);
                     // широковещательное оповещение об ошибке загрузки
                     t.emit('pouch_data_error', 'ram', err);
@@ -339,7 +351,7 @@ function adapter({AbstracrAdapter}) {
               }
 
               t.local.ram.info().then((info) => {
-                if (info.doc_count >= (job_prm.pouch_ram_doc_count || 10)) {
+                if(info.doc_count >= (job_prm.pouch_ram_doc_count || 10)) {
                   // широковещательное оповещение о начале загрузки локальных данных
                   t.emit('pouch_load_start', Object.assign(_page, {local_rows: info.doc_count}));
                   t.local._loading = true;
@@ -379,9 +391,9 @@ function adapter({AbstracrAdapter}) {
 
         call_data_loaded: {
           value: function (page) {
-            if (!_data_loaded) {
+            if(!_data_loaded) {
               _data_loaded = true;
-              if (!page) {
+              if(!page) {
                 page = _local.sync._page || {};
               }
               // информируем мир о загруженности данных
@@ -426,12 +438,12 @@ function adapter({AbstracrAdapter}) {
 
           // для базы "ram", сервер мог указать тотальную перезагрузку данных
           // в этом случае - очищаем базы и перезапускаем браузер
-          if (id == 'ram') {
+          if(id == 'ram') {
             return db_remote.get('data_version')
               .then((v) => {
-                if (v.version != wsql.get_user_param('couch_ram_data_version')) {
+                if(v.version != wsql.get_user_param('couch_ram_data_version')) {
                   // если это не первый запуск - перезагружаем
-                  if (wsql.get_user_param('couch_ram_data_version')) {
+                  if(wsql.get_user_param('couch_ram_data_version')) {
                     rinfo = this.reset_local_data();
                   }
                   // сохраняем версию в localStorage
@@ -447,11 +459,11 @@ function adapter({AbstracrAdapter}) {
         })
         .then((rinfo) => {
 
-          if (!rinfo) {
+          if(!rinfo) {
             return;
           }
 
-          if (id == 'ram' && linfo.doc_count < (job_prm.pouch_ram_doc_count || 10)) {
+          if(id == 'ram' && linfo.doc_count < (job_prm.pouch_ram_doc_count || 10)) {
             // широковещательное оповещение о начале загрузки локальных данных
             _page = {
               total_rows: rinfo.doc_count,
@@ -473,10 +485,10 @@ function adapter({AbstracrAdapter}) {
             };
 
             // если указан клиентский или серверный фильтр - подключаем
-            if (job_prm.pouch_filter && job_prm.pouch_filter[id]) {
+            if(job_prm.pouch_filter && job_prm.pouch_filter[id]) {
               options.filter = job_prm.pouch_filter[id];
             }
-            else if (id == 'meta') {
+            else if(id == 'meta') {
               // если для базы meta фильтр не задан, используем умолчание
               options.filter = 'auth/meta';
             }
@@ -485,10 +497,10 @@ function adapter({AbstracrAdapter}) {
 
               sync.on('change', (change) => {
                 // yo, something changed!
-                if (id == 'ram') {
+                if(id == 'ram') {
                   this.load_changes(change);
 
-                  if (linfo.doc_count < (job_prm.pouch_ram_doc_count || 10)) {
+                  if(linfo.doc_count < (job_prm.pouch_ram_doc_count || 10)) {
 
                     // широковещательное оповещение о загрузке порции данных
                     _page.page++;
@@ -529,13 +541,14 @@ function adapter({AbstracrAdapter}) {
                   sync.cancel();
                   sync.removeAllListeners();
 
-                  if (options) {
+                  if(options) {
                     options.live = true;
 
                     // ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
-                    if (id == 'ram' || id == 'meta' || wsql.get_user_param('zone') == job_prm.zone_demo) {
+                    if(id == 'ram' || id == 'meta' || wsql.get_user_param('zone') == job_prm.zone_demo) {
                       local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
-                    } else {
+                    }
+                    else {
                       local.sync[id] = sync_events(db_local.sync(db_remote, options));
                     }
 
@@ -543,7 +556,7 @@ function adapter({AbstracrAdapter}) {
                   }
                 });
 
-              if (id == 'ram') {
+              if(id == 'ram') {
                 sync.on('paused', (info) => {
                   // replication was paused, usually because of a lost connection
                   this.emit('pouch_sync_paused', id, info);
@@ -602,7 +615,7 @@ function adapter({AbstracrAdapter}) {
           tObj._mixin(res);
         })
         .catch((err) => {
-          if (err.status != 404) {
+          if(err.status != 404) {
             throw err;
           }
           else {
@@ -626,10 +639,10 @@ function adapter({AbstracrAdapter}) {
 
       const {_manager, _obj, _data, ref, class_name} = tObj;
 
-      if (!_data || (_data._saving && !_data._modified)) {
+      if(!_data || (_data._saving && !_data._modified)) {
         return Promise.resolve(tObj);
       }
-      if (_data._saving && _data._modified) {
+      if(_data._saving && _data._modified) {
         return new Promise((resolve, reject) => {
           setTimeout(() => resolve(this.save_obj(tObj, attr)), 100);
         });
@@ -640,20 +653,22 @@ function adapter({AbstracrAdapter}) {
       const tmp = Object.assign({_id: class_name + '|' + ref, class_name}, _obj);
 
       delete tmp.ref;
-      if (attr.attachments) {
+      if(attr.attachments) {
         tmp._attachments = attr.attachments;
       }
 
       return new Promise((resolve, reject) => {
         const getter = tObj.is_new() ? Promise.resolve() : db.get(tmp._id);
         getter.then((res) => {
-          if (res) {
+          if(res) {
             tmp._rev = res._rev;
             for (var att in res._attachments) {
-              if (!tmp._attachments)
+              if(!tmp._attachments) {
                 tmp._attachments = {};
-              if (!tmp._attachments[att])
+              }
+              if(!tmp._attachments[att]) {
                 tmp._attachments[att] = res._attachments[att];
+              }
             }
           }
         })
@@ -665,12 +680,14 @@ function adapter({AbstracrAdapter}) {
           })
           .then(() => {
             tObj.is_new() && tObj._set_loaded(tObj.ref);
-            if (tmp._attachments) {
-              if (!tObj._attachments)
+            if(tmp._attachments) {
+              if(!tObj._attachments) {
                 tObj._attachments = {};
+              }
               for (var att in tmp._attachments) {
-                if (!tObj._attachments[att] || !tmp._attachments[att].stub)
+                if(!tObj._attachments[att] || !tmp._attachments[att].stub) {
                   tObj._attachments[att] = tmp._attachments[att];
+                }
               }
             }
             delete _data._saving;
@@ -719,57 +736,64 @@ function adapter({AbstracrAdapter}) {
 
 
       // набираем поля
-      if (cmd.form && cmd.form.selection) {
+      if(cmd.form && cmd.form.selection) {
         cmd.form.selection.fields.forEach((fld) => flds.push(fld));
       }
-      else if (_mgr instanceof classes.DocManager) {
+      else if(_mgr instanceof classes.DocManager) {
         flds.push('posted');
         flds.push('date');
         flds.push('number_doc');
       }
-      else if (_mgr instanceof classes.TaskManager) {
+      else if(_mgr instanceof classes.TaskManager) {
         flds.push('name as presentation');
         flds.push('date');
         flds.push('number_doc');
         flds.push('completed');
       }
-      else if (_mgr instanceof classes.BusinessProcessManager) {
+      else if(_mgr instanceof classes.BusinessProcessManager) {
         flds.push('date');
         flds.push('number_doc');
         flds.push('started');
         flds.push('finished');
       }
       else {
-        if (cmd['hierarchical'] && cmd['group_hierarchy'])
+        if(cmd['hierarchical'] && cmd['group_hierarchy']) {
           flds.push('is_folder');
-        else
-          flds.push('0 as is_folder');
-
-        if (cmd['main_presentation_name'])
-          flds.push('name as presentation');
+        }
         else {
-          if (cmd['code_length'])
-            flds.push('id as presentation');
-          else
-            flds.push('\'...\' as presentation');
+          flds.push('0 as is_folder');
         }
 
-        if (cmd['has_owners'])
-          flds.push('owner');
+        if(cmd['main_presentation_name']) {
+          flds.push('name as presentation');
+        }
+        else {
+          if(cmd['code_length']) {
+            flds.push('id as presentation');
+          }
+          else {
+            flds.push('... as presentation');
+          }
+        }
 
-        if (cmd['code_length'])
+        if(cmd['has_owners']) {
+          flds.push('owner');
+        }
+
+        if(cmd['code_length']) {
           flds.push('id');
+        }
 
       }
 
       // набираем условие
       // фильтр по дате
-      if (_mgr.metadata('date') && (attr.date_from || attr.date_till)) {
+      if(_mgr.metadata('date') && (attr.date_from || attr.date_till)) {
 
-        if (!attr.date_from) {
+        if(!attr.date_from) {
           attr.date_from = new Date('2017-01-01');
         }
-        if (!attr.date_till) {
+        if(!attr.date_till) {
           attr.date_till = $p.utils.date_add_day(new Date(), 1);
         }
 
@@ -777,16 +801,16 @@ function adapter({AbstracrAdapter}) {
       }
 
       // фильтр по родителю
-      if (cmd['hierarchical'] && attr.parent) {
+      if(cmd['hierarchical'] && attr.parent) {
         selection.parent = attr.parent;
       }
 
       // добавляем условия из attr.selection
-      if (attr.selection) {
-        if (Array.isArray(attr.selection)) {
+      if(attr.selection) {
+        if(Array.isArray(attr.selection)) {
           attr.selection.forEach((asel) => {
             for (const fld in asel) {
-              if (fld[0] != '_' || fld == '_view' || fld == '_key') {
+              if(fld[0] != '_' || fld == '_view' || fld == '_key') {
                 selection[fld] = asel[fld];
               }
             }
@@ -794,7 +818,7 @@ function adapter({AbstracrAdapter}) {
         }
         else {
           for (const fld in attr.selection) {
-            if (fld[0] != '_' || fld == '_view' || fld == '_key') {
+            if(fld[0] != '_' || fld == '_view' || fld == '_key') {
               selection[fld] = attr.selection[fld];
             }
           }
@@ -802,14 +826,15 @@ function adapter({AbstracrAdapter}) {
       }
 
       // прибиваем фильтр по дате, если он встроен в ключ
-      if (selection._key && selection._key._drop_date && selection.date) {
+      if(selection._key && selection._key._drop_date && selection.date) {
         delete selection.date;
       }
 
       // строковый фильтр по полям поиска, если он не описан в ключе
-      if (attr.filter && (!selection._key || !selection._key._search)) {
-        if (cmd.input_by_string.length == 1)
+      if(attr.filter && (!selection._key || !selection._key._search)) {
+        if(cmd.input_by_string.length == 1) {
           selection[cmd.input_by_string] = {like: attr.filter};
+        }
         else {
           selection.or = [];
           cmd.input_by_string.forEach((ifld) => {
@@ -821,7 +846,7 @@ function adapter({AbstracrAdapter}) {
       }
 
       // обратная сортировка по ключу, если есть признак сортировки в ключе и 'des' в атрибутах
-      if (selection._key && selection._key._order_by) {
+      if(selection._key && selection._key._order_by) {
         selection._key._order_by = attr.direction;
       }
 
@@ -832,7 +857,7 @@ function adapter({AbstracrAdapter}) {
       return this.find_rows(_mgr, selection)
         .then((rows) => {
 
-          if (rows.hasOwnProperty('_total_count') && rows.hasOwnProperty('rows')) {
+          if(rows.hasOwnProperty('_total_count') && rows.hasOwnProperty('rows')) {
             attr._total_count = rows._total_count;
             rows = rows.rows;
           }
@@ -845,11 +870,11 @@ function adapter({AbstracrAdapter}) {
 
               let fldsyn;
 
-              if (fld == 'ref') {
+              if(fld == 'ref') {
                 o[fld] = doc[fld];
                 return;
               }
-              else if (fld.indexOf(' as ') != -1) {
+              else if(fld.indexOf(' as ') != -1) {
                 fldsyn = fld.split(' as ')[1];
                 fld = fld.split(' as ')[0].split('.');
                 fld = fld[fld.length - 1];
@@ -859,22 +884,25 @@ function adapter({AbstracrAdapter}) {
               }
 
               const mf = _mgr.metadata(fld);
-              if (mf) {
-                if (mf.type.date_part) {
+              if(mf) {
+                if(mf.type.date_part) {
                   o[fldsyn] = $p.moment(doc[fld]).format($p.moment._masks[mf.type.date_part]);
                 }
-                else if (mf.type.is_ref) {
-                  if (!doc[fld] || doc[fld] == $p.utils.blank.guid)
+                else if(mf.type.is_ref) {
+                  if(!doc[fld] || doc[fld] == $p.utils.blank.guid) {
                     o[fldsyn] = '';
+                  }
                   else {
                     var mgr = _mgr.value_mgr(o, fld, mf.type, false, doc[fld]);
-                    if (mgr)
+                    if(mgr) {
                       o[fldsyn] = mgr.get(doc[fld]).presentation;
-                    else
+                    }
+                    else {
                       o[fldsyn] = '';
+                    }
                   }
                 }
-                else if (typeof doc[fld] === 'number' && mf.type.fraction_figits) {
+                else if(typeof doc[fld] === 'number' && mf.type.fraction_figits) {
                   o[fldsyn] = doc[fld].toFixed(mf.type.fraction_figits);
                 }
                 else {
@@ -901,7 +929,7 @@ function adapter({AbstracrAdapter}) {
      */
     load_array(_mgr, refs, with_attachments) {
 
-      if (!refs.length) {
+      if(!refs.length) {
         return Promise.resolve(false);
       }
 
@@ -912,7 +940,7 @@ function adapter({AbstracrAdapter}) {
         },
         db = this.db(_mgr);
 
-      if (with_attachments) {
+      if(with_attachments) {
         options.attachments = true;
         options.binary = true;
       }
@@ -938,9 +966,9 @@ function adapter({AbstracrAdapter}) {
 
         function process_docs(err, result) {
 
-          if (result) {
+          if(result) {
 
-            if (result.rows.length) {
+            if(result.rows.length) {
 
               options.startkey = result.rows[result.rows.length - 1].key;
               options.skip = 1;
@@ -958,11 +986,13 @@ function adapter({AbstracrAdapter}) {
 
               db.query(_view, options, process_docs);
 
-            } else {
+            }
+            else {
               resolve();
             }
 
-          } else if (err) {
+          }
+          else if(err) {
             reject(err);
           }
         }
@@ -981,7 +1011,7 @@ function adapter({AbstracrAdapter}) {
       const {_m} = this.$p.md;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
         for (let name in _m[kind]) {
-          if (_m[kind][name].cachable == 'doc_ram') {
+          if(_m[kind][name].cachable == 'doc_ram') {
             res.push(kind + '.' + name);
           }
         }
@@ -1020,47 +1050,50 @@ function adapter({AbstracrAdapter}) {
       };
       let doc, _raw, _view, _total_count, top, calc_count, top_count = 0, skip = 0, skip_count = 0;
 
-      if (selection) {
+      if(selection) {
 
-        if (selection._top) {
+        if(selection._top) {
           top = selection._top;
           delete selection._top;
-        } else
+        }
+        else {
           top = 300;
+        }
 
-        if (selection._raw) {
+        if(selection._raw) {
           _raw = selection._raw;
           delete selection._raw;
         }
 
-        if (selection._total_count) {
+        if(selection._total_count) {
           _total_count = selection._total_count;
           delete selection._total_count;
         }
 
-        if (selection._view) {
+        if(selection._view) {
           _view = selection._view;
           delete selection._view;
         }
 
-        if (selection._key) {
+        if(selection._key) {
 
-          if (selection._key._order_by == 'des') {
+          if(selection._key._order_by == 'des') {
             options.startkey = selection._key.endkey || selection._key + '\ufff0';
             options.endkey = selection._key.startkey || selection._key;
             options.descending = true;
-          } else {
+          }
+          else {
             options.startkey = selection._key.startkey || selection._key;
             options.endkey = selection._key.endkey || selection._key + '\ufff0';
           }
         }
 
-        if (typeof selection._skip == 'number') {
+        if(typeof selection._skip == 'number') {
           skip = selection._skip;
           delete selection._skip;
         }
 
-        if (selection._attachments) {
+        if(selection._attachments) {
           options.attachments = true;
           options.binary = true;
           delete selection._attachments;
@@ -1068,16 +1101,16 @@ function adapter({AbstracrAdapter}) {
       }
 
       // если сказано посчитать все строки...
-      if (_total_count) {
+      if(_total_count) {
 
         calc_count = true;
         _total_count = 0;
 
         // если нет фильтра по строке или фильтр растворён в ключе
-        if (Object.keys(selection).length <= 1) {
+        if(Object.keys(selection).length <= 1) {
 
           // если фильтр в ключе, получаем все строки без документов
-          if (selection._key && selection._key.hasOwnProperty('_search')) {
+          if(selection._key && selection._key.hasOwnProperty('_search')) {
             options.include_docs = false;
             options.limit = 100000;
 
@@ -1087,22 +1120,24 @@ function adapter({AbstracrAdapter}) {
                 result.rows.forEach((row) => {
 
                   // фильтруем
-                  if (!selection._key._search || row.key[row.key.length - 1].toLowerCase().indexOf(selection._key._search) != -1) {
+                  if(!selection._key._search || row.key[row.key.length - 1].toLowerCase().indexOf(selection._key._search) != -1) {
 
                     _total_count++;
 
                     // пропукскаем лишние (skip) элементы
-                    if (skip) {
+                    if(skip) {
                       skip_count++;
-                      if (skip_count < skip)
+                      if(skip_count < skip) {
                         return;
+                      }
                     }
 
                     // ограничиваем кол-во возвращаемых элементов
-                    if (top) {
+                    if(top) {
                       top_count++;
-                      if (top_count > top)
+                      if(top_count > top) {
                         return;
+                      }
                     }
                     res.push(row.id);
                   }
@@ -1110,8 +1145,9 @@ function adapter({AbstracrAdapter}) {
 
                 delete options.startkey;
                 delete options.endkey;
-                if (options.descending)
+                if(options.descending) {
                   delete options.descending;
+                }
                 options.keys = res;
                 options.include_docs = true;
 
@@ -1126,7 +1162,7 @@ function adapter({AbstracrAdapter}) {
 
                     doc.ref = doc._id.split('|')[1];
 
-                    if (!_raw) {
+                    if(!_raw) {
                       delete doc._id;
                       delete doc._rev;
                     }
@@ -1147,9 +1183,9 @@ function adapter({AbstracrAdapter}) {
 
         function process_docs(err, result) {
 
-          if (result) {
+          if(result) {
 
-            if (result.rows.length) {
+            if(result.rows.length) {
 
               options.startkey = result.rows[result.rows.length - 1].key;
               options.skip = 1;
@@ -1160,39 +1196,41 @@ function adapter({AbstracrAdapter}) {
                 let key = doc._id.split('|');
                 doc.ref = key[1];
 
-                if (!_raw) {
+                if(!_raw) {
                   delete doc._id;
                   delete doc._rev;
                 }
 
                 // фильтруем
-                if (!utils._selection.call(_mgr, doc, selection)) {
+                if(!utils._selection.call(_mgr, doc, selection)) {
                   return;
                 }
 
-                if (calc_count) {
+                if(calc_count) {
                   _total_count++;
                 }
 
                 // пропукскаем лишние (skip) элементы
-                if (skip) {
+                if(skip) {
                   skip_count++;
-                  if (skip_count < skip)
+                  if(skip_count < skip) {
                     return;
+                  }
                 }
 
                 // ограничиваем кол-во возвращаемых элементов
-                if (top) {
+                if(top) {
                   top_count++;
-                  if (top_count > top)
+                  if(top_count > top) {
                     return;
+                  }
                 }
 
                 // наполняем
                 res.push(doc);
               });
 
-              if (top && top_count > top && !calc_count) {
+              if(top && top_count > top && !calc_count) {
                 resolve(_raw ? res : _mgr.load_array(res));
               }
               else {
@@ -1200,27 +1238,31 @@ function adapter({AbstracrAdapter}) {
               }
             }
             else {
-              if (calc_count) {
+              if(calc_count) {
                 resolve({
                   rows: _raw ? res : _mgr.load_array(res),
                   _total_count: _total_count,
                 });
-              } else
+              }
+              else {
                 resolve(_raw ? res : _mgr.load_array(res));
+              }
             }
 
-          } else if (err) {
+          }
+          else if(err) {
             reject(err);
           }
         }
 
         function fetch_next_page() {
 
-          if (_view)
+          if(_view) {
             db.query(_view, options, process_docs);
-
-          else
+          }
+          else {
             db.allDocs(options, process_docs);
+          }
         }
 
         fetch_next_page();
@@ -1241,11 +1283,13 @@ function adapter({AbstracrAdapter}) {
      */
     save_attachment(_mgr, ref, att_id, attachment, type) {
 
-      if (!type)
+      if(!type) {
         type = {type: 'text/plain'};
+      }
 
-      if (!(attachment instanceof Blob) && type.indexOf('text') == -1)
+      if(!(attachment instanceof Blob) && type.indexOf('text') == -1) {
         attachment = new Blob([attachment], {type: type});
+      }
 
       // получаем ревизию документа
       var _rev,
@@ -1255,12 +1299,14 @@ function adapter({AbstracrAdapter}) {
 
       return db.get(ref)
         .then((res) => {
-          if (res)
+          if(res) {
             _rev = res._rev;
+          }
         })
         .catch((err) => {
-          if (err.status != 404)
+          if(err.status != 404) {
             throw err;
+          }
         })
         .then(() => {
           return db.putAttachment(ref, att_id, _rev, attachment, type);
@@ -1298,12 +1344,14 @@ function adapter({AbstracrAdapter}) {
 
       return db.get(ref)
         .then((res) => {
-          if (res)
+          if(res) {
             _rev = res._rev;
+          }
         })
         .catch((err) => {
-          if (err.status != 404)
+          if(err.status != 404) {
             throw err;
+          }
         })
         .then(() => {
           return db.removeAttachment(ref, att_id, _rev);
@@ -1322,51 +1370,57 @@ function adapter({AbstracrAdapter}) {
 
       let docs, doc, res = {}, cn, key, {$p} = this;
 
-      if (!options) {
-        if (changes.direction) {
-          if (changes.direction != 'pull')
+      if(!options) {
+        if(changes.direction) {
+          if(changes.direction != 'pull') {
             return;
+          }
           docs = changes.change.docs;
         }
         else {
           docs = changes.docs;
         }
-      } else {
+      }
+      else {
         docs = changes.rows;
       }
 
-      if (docs.length > 0) {
-        if (options) {
+      if(docs.length > 0) {
+        if(options) {
           options.startkey = docs[docs.length - 1].key;
           options.skip = 1;
         }
 
         docs.forEach((rev) => {
           doc = options ? rev.doc : rev;
-          if (!doc) {
-            if ((rev.value && rev.value.deleted))
+          if(!doc) {
+            if((rev.value && rev.value.deleted)) {
               doc = {
                 _id: rev.id,
                 _deleted: true,
               };
-            else if (rev.error)
+            }
+            else if(rev.error) {
               return;
+            }
           }
           key = doc._id.split('|');
           cn = key[0].split('.');
           doc.ref = key[1];
           delete doc._id;
           delete doc._rev;
-          if (!res[cn[0]])
+          if(!res[cn[0]]) {
             res[cn[0]] = {};
-          if (!res[cn[0]][cn[1]])
+          }
+          if(!res[cn[0]][cn[1]]) {
             res[cn[0]][cn[1]] = [];
+          }
           res[cn[0]][cn[1]].push(doc);
         });
 
         for (let mgr in res) {
           for (cn in res[mgr]) {
-            if ($p[mgr] && $p[mgr][cn]) {
+            if($p[mgr] && $p[mgr][cn]) {
               $p[mgr][cn].load_array(res[mgr][cn], changes.update_only ? 'update_only' : true);
             }
           }
