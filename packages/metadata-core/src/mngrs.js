@@ -413,7 +413,7 @@ export class DataManager extends MetaEventEmitter{
 			else if (utils.is_guid(property) && property != utils.blank.guid) {
 				for (var i in rt) {
 					mgr = rt[i];
-					if (mgr.get(property, true)){
+					if (mgr.by_ref[property]){
 						return mgr;
 					}
 				}
@@ -461,7 +461,7 @@ export class DataManager extends MetaEventEmitter{
 				else if(utils.is_guid(property) && property != utils.blank.guid){
 					for(let i in rt){
 						mgr = rt[i];
-						if(mgr.get(property, false)){
+						if(mgr.by_ref[property]){
 							return mgr;
 						}
 					}
