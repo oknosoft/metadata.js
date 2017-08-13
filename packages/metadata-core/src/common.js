@@ -173,9 +173,21 @@ class MetaEngine {
        * @return {string}
        */
       CatUsers.prototype.get_acl = function(class_name) {
-        const acn = class_name.split('.');
         const {_acl} = this._obj;
-        return _acl && _acl[acn[0]] && _acl[acn[0]][acn[1]] ? _acl[acn[0]][acn[1]] : 'rvuidepo';
+        let res = 'rvuidepo';
+        if(Array.isArray(_acl)){
+          _acl.some((acl) => {
+            if(acl.hasOwnProperty(class_name)) {
+              res = acl[class_name];
+              return true;
+            }
+          });
+          return res;
+        }
+        else{
+          const acn = class_name.split('.');
+          return _acl && _acl[acn[0]] && _acl[acn[0]][acn[1]] ? _acl[acn[0]][acn[1]] : res;
+        }
       };
 
       /**

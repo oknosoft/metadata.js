@@ -6454,9 +6454,21 @@ class MetaEngine$1 {
         return this.acl_objs ? this.acl_objs._obj.some((row) => row.type == name) : true;
       };
       CatUsers.prototype.get_acl = function(class_name) {
-        const acn = class_name.split('.');
         const {_acl} = this._obj;
-        return _acl && _acl[acn[0]] && _acl[acn[0]][acn[1]] ? _acl[acn[0]][acn[1]] : 'rvuidepo';
+        let res = 'rvuidepo';
+        if(Array.isArray(_acl)){
+          _acl.some((acl) => {
+            if(acl.hasOwnProperty(class_name)) {
+              res = acl[class_name];
+              return true;
+            }
+          });
+          return res;
+        }
+        else{
+          const acn = class_name.split('.');
+          return _acl && _acl[acn[0]] && _acl[acn[0]][acn[1]] ? _acl[acn[0]][acn[1]] : res;
+        }
       };
       Object.defineProperty(CatUsers.prototype, 'partners_uids', {
         get: function () {
