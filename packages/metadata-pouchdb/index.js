@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.1-beta.22, built:2017-08-11
+ metadata-pouchdb v2.0.1-beta.23, built:2017-08-13
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -211,7 +211,7 @@ function adapter({AbstracrAdapter}) {
               };
               for (const name of ['ram', 'doc', 'user']) {
                 if(bases.indexOf(name) != -1) {
-                  if(_paths.direct && name != 'ram') {
+                  if(_paths.user_node || (_paths.direct && name != 'ram')) {
                     _local[name] = this.remote[name];
                   }
                   else {
@@ -331,11 +331,11 @@ function adapter({AbstracrAdapter}) {
               })
               .then(() => {
                 if(t.local._loading) {
-                  return new Promise(function (resolve, reject) {
-                    t.on('pouch_data_loaded', resolve);
+                  return new Promise((resolve, reject) => {
+                    t.once('pouch_data_loaded', resolve);
                   });
                 }
-                else {
+                else if(!_paths.user_node) {
                   return t.call_data_loaded();
                 }
               })
@@ -440,7 +440,7 @@ function adapter({AbstracrAdapter}) {
               if(!page) {
                 page = _local.sync._page || {};
               }
-              t.emit(page.note = 'pouch_data_loaded', page);
+              Promise.resolve().then(() => this.emit(page.note = 'pouch_data_loaded', page));
               this.authorized && this.load_doc_ram();
             }
           },

@@ -77,7 +77,9 @@ function adapter({AbstracrAdapter}) {
 
               for (const name of ['ram', 'doc', 'user']) {
                 if(bases.indexOf(name) != -1) {
-                  if(_paths.direct && name != 'ram') {
+                  // в Node, локальные базы - это алиасы удалённых
+                  // если direct, то все базы, кроме ram, так же - удалённые
+                  if(_paths.user_node || (_paths.direct && name != 'ram')) {
                     _local[name] = this.remote[name];
                   }
                   else {
@@ -245,11 +247,11 @@ function adapter({AbstracrAdapter}) {
               .then(() => {
                 // широковещательное оповещение об окончании загрузки локальных данных
                 if(t.local._loading) {
-                  return new Promise(function (resolve, reject) {
-                    t.on('pouch_data_loaded', resolve);
+                  return new Promise((resolve, reject) => {
+                    t.once('pouch_data_loaded', resolve);
                   });
                 }
-                else {
+                else if(!_paths.user_node) {
                   return t.call_data_loaded();
                 }
               })
@@ -397,7 +399,7 @@ function adapter({AbstracrAdapter}) {
                 page = _local.sync._page || {};
               }
               // информируем мир о загруженности данных
-              t.emit(page.note = 'pouch_data_loaded', page);
+              Promise.resolve().then(() => this.emit(page.note = 'pouch_data_loaded', page));
               // пытаемся загрузить load_doc_ram
               this.authorized && this.load_doc_ram();
             }
