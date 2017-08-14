@@ -33,14 +33,14 @@ export default class FieldText extends Component {
 
     return (
       <TextField
-        className={classes.textField}
+        name={_fld}
+        className={classes && classes.textField}
+        fullWidth={true}
         disabled={read_only}
         label={_meta.synonym}
-        InputProps={{ placeholder: _fld }}
-        name={_fld}
-        fullWidth={true}
-        defaultValue={_obj[_fld]}
         title={_meta.tooltip || _meta.synonym}
+        InputProps={{ placeholder: _fld }}
+        defaultValue={_obj[_fld]}
         onChange={onChange}
       />
     );

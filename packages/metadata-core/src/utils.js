@@ -126,6 +126,43 @@ const utils = mime({
 
 	moment,
 
+  /**
+   * Загружает скрипты и стили синхронно и асинхронно
+   * @method load_script
+   * @for MetaEngine
+   * @param src {String} - url ресурса
+   * @param type {String} - "link" или "script"
+   * @param [callback] {Function} - функция обратного вызова после загрузки скрипта
+   * @async
+   */
+  load_script(src, type, callback) {
+
+    return new Promise((resolve, reject) => {
+
+      const s = document.createElement(type);
+      if (type == 'script') {
+        s.type = 'text/javascript';
+        s.src = src;
+        s.async = true;
+        const listener = () => {
+          s.removeEventListener('load', listener);
+          callback && callback();
+          resolve();
+        };
+        s.addEventListener('load', listener, false);
+      }
+      else {
+        s.type = 'text/css';
+        s.rel = 'stylesheet';
+        s.href = src;
+      }
+      document.head.appendChild(s);
+
+      (type != 'script') && resolve();
+
+    });
+  },
+
 	/**
 	 * ### Приводит значение к типу Дата
 	 *

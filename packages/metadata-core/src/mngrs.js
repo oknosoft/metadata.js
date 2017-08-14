@@ -580,7 +580,10 @@ export class RefDataManager extends DataManager{
 	get(ref, do_not_create){
 
 		const rp = 'promise';
-		let o = this.by_ref[ref] || this.by_ref[(ref = utils.fix_guid(ref))];
+		if(typeof ref === 'object'){
+      ref = utils.fix_guid(ref);
+    }
+		let o = this.by_ref[ref];
 
 		if(arguments.length == 3){
 			if(do_not_create){
@@ -627,7 +630,7 @@ export class RefDataManager extends DataManager{
 	 */
 	create(attr, fill_default, force_obj){
 
-		if(!attr || typeof attr != "object"){
+		if(!attr || typeof attr !== "object"){
 			attr = {};
 		}
 		else if(utils.is_data_obj(attr)){
@@ -893,7 +896,7 @@ export class RefDataManager extends DataManager{
 
 				// допфильтры форм и связей параметров выбора
 				if(attr.selection){
-					if(typeof attr.selection == "function"){
+					if(typeof attr.selection === "function"){
 
 					}else
 						attr.selection.forEach(sel => {
@@ -1024,15 +1027,9 @@ export class RefDataManager extends DataManager{
 
 			selection_prms();
 
-			var sql;
-			if(t.sql_selection_list_flds)
-				sql = t.sql_selection_list_flds(initial_value);
-			else
-				sql = ("SELECT %2, case when _t_.ref = '" + initial_value +
-				"' then 0 else 1 end as is_initial_value FROM `" + t.table_name + "` AS _t_ %j %3 %4 LIMIT 300")
-					.replace("%2", list_flds())
-					.replace("%j", join_flds())
-				;
+			const sql = t.sql_selection_list_flds ? t.sql_selection_list_flds(initial_value) :
+        `SELECT ${list_flds()}, case when _t_.ref = '${initial_value}' then 0 else 1 end as is_initial_value
+				 FROM '${t.table_name}' AS _t_ ${join_flds()} %3 %4 LIMIT 300`;
 
 			return sql.replace("%3", where_flds()).replace("%4", order_flds());
 

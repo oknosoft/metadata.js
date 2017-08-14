@@ -2,9 +2,9 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
 import classnames from 'classnames';
-import classes from './styles/CalculatorButton.scss';
+import withStyles from './styles';
 
-export default class CalculatorButton extends Component {
+class CalculatorButton extends Component {
   static propTypes = {
     text: PropTypes.string,
     icon: PropTypes.object,
@@ -59,29 +59,33 @@ export default class CalculatorButton extends Component {
   }
 
   render() {
+    const {props, state} = this;
+    const {classes} = props;
     const calculatorButtonClasses = classnames({
-      [classes['meta-calculator-button']]: true,
-      [classes['meta-calculator-button--red']]: this.props.red,
-      [classes['meta-calculator-button--is-pressed']]: this.state.isPressed,
-      [classes['meta-calculator-button--disabled']]: this.props.disabled,
+      [classes.button]: true,
+      [classes.buttonRed]: props.red,
+      [classes.buttonIsPressed]: state.isPressed,
+      [classes.buttonDisabled]: props.disabled,
     });
 
     return (
       <div
-        style={this.props.style}
+        style={props.style}
         className={calculatorButtonClasses}
         onClick={() => this.handleClick()}
         onMouseDown={() => this.handleMouseDown()}
         onMouseUp={() => this.handleMouseUp()}
         onMouseOut={() => this.handleMouseOut()}>
 
-        {this.props.icon}
-        {this.props.text}
+        {props.icon}
+        {props.text}
 
-        <div className={classes['meta-calculator-button__menu']}>
-          {this.props.menu}
+        <div className={classes.buttonMenu}>
+          {props.menu}
         </div>
       </div>
     );
   }
-}
+};
+
+export default withStyles(CalculatorButton);

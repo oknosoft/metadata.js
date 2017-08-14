@@ -23,43 +23,6 @@ export default {
 
     constructor.classes.InterfaceObjs = InterfaceObjs;
 
-    /**
-     * Загружает скрипты и стили синхронно и асинхронно
-     * @method load_script
-     * @for MetaEngine
-     * @param src {String} - url ресурса
-     * @param type {String} - "link" или "script"
-     * @param [callback] {Function} - функция обратного вызова после загрузки скрипта
-     * @async
-     */
-    constructor.prototype.load_script = function (src, type, callback) {
-
-      return new Promise((resolve, reject) => {
-
-        const s = document.createElement(type);
-        if (type == 'script') {
-          s.type = 'text/javascript';
-          s.src = src;
-          s.async = true;
-          const listener = () => {
-            s.removeEventListener('load', listener);
-            callback && callback();
-            resolve();
-          };
-          s.addEventListener('load', listener, false);
-        }
-        else {
-          s.type = 'text/css';
-          s.rel = 'stylesheet';
-          s.href = src;
-        }
-        document.head.appendChild(s);
-
-        (type != 'script') && resolve();
-
-      });
-    };
-
     mango_selection(constructor);
 
     geocoding(constructor);
@@ -88,6 +51,9 @@ export default {
       injected_data: {
         value: {},
       },
+      load_script: {
+        value: this.utils.load_script,
+      }
     });
 
     this.md.value_mgr = this.classes.DataManager.prototype.value_mgr.bind(this.cat.meta_fields);

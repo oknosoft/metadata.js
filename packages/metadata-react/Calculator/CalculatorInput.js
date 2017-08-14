@@ -4,9 +4,9 @@ import PropTypes from 'prop-types';
 import ArrowDropDown from 'material-ui-icons/ArrowDropDown';
 import CalculatorButton from './CalculatorButton';
 import classnames from 'classnames';
-import classes from './styles/CalculatorInput.scss';
+import withStyles from './styles';
 
-export default class CalculatorInput extends PureComponent {
+class CalculatorInput extends PureComponent {
 
   static propTypes = {
     isExpression: PropTypes.bool,
@@ -107,13 +107,15 @@ export default class CalculatorInput extends PureComponent {
   }
 
   render() {
+    const {props, state} = this;
+    const {classes} = props;
     const inputClassNames = classnames({
-      [classes['meta-calculator-input__input']]: true,
-      [classes['meta-calculator-input__input--expression']]: this.props.isExpression,
+      [classes.inputInput]: true,
+      [classes.inputExpression]: props.isExpression,
     });
 
     return (
-      <div className={classes['meta-calculator-input']}>
+      <div className={classes.input}>
         <input
           className={inputClassNames}
           onKeyDown={(event) => {
@@ -143,4 +145,6 @@ export default class CalculatorInput extends PureComponent {
       </div>
     );
   }
-}
+};
+
+export default withStyles(CalculatorInput);

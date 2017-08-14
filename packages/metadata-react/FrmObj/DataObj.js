@@ -25,13 +25,12 @@ export default class DataObj extends Component {
     height: "100%",
   }
 
-  static contextTypes = {
-    $p: React.PropTypes.object.isRequired
-  }
 
   static propTypes = {
-    _obj: PropTypes.object,             // DataObj, с которым будет связан компонент
+    _mgr: PropTypes.object,             // DataManager, с которым будет связан компонент
     _acl: PropTypes.string.isRequired,  // Права на чтение-изменение
+    _meta: PropTypes.object,            // Здесь можно переопределить метаданные
+    _layout: PropTypes.object,          // Состав и расположение полей, если не задано - рисуем типовую форму
 
     read_only: PropTypes.object,        // Элемент только для чтения
 
@@ -49,20 +48,23 @@ export default class DataObj extends Component {
 
   constructor(props) {
     super(props);
-    const metadata = this.props._obj._manager.metadata();
+    const {_mgr, _meta, match} = props;
 
     this.state = {
-      fields: metadata.fields || {},
-      tabularSections: metadata.tabular_sections || {},
+      _meta: _meta || _mgr.metadata(),
+      _obj: _mgr.get(match.params.ref),
     };
   }
 
   handleSave() {
-    this.props.handleSave(this.props._obj)
+    this.props.handleSave(this.state._obj)
   }
 
   handleSend() {
-    this.props.handleSave(this.props._obj)
+    this.props.handleSave(this.state._obj)
+  }
+
+  handleClose() {
   }
 
   handleMarkDeleted() {
@@ -89,11 +91,12 @@ export default class DataObj extends Component {
    */
   renderFields() {
     const elements = [];
+    const {_meta, _obj} = this.state;
 
-    for (const fieldName in this.state.fields) {
+    for (const fieldName in _meta.fields) {
       elements.push(
         <div key={fieldName} className={classes.field}>
-          <DataField _obj={this.props._obj} _fld={fieldName}/>
+          <DataField _obj={_obj} _fld={fieldName}/>
         </div>
       );
     }
@@ -117,12 +120,13 @@ export default class DataObj extends Component {
    */
   renderTabularSections() {
     const elements = [];
+    const {_meta, _obj} = this.state;
     const style = Object.assign({}, DataObj.PAPER_STYLE, DataObj.PAPER_STYLE_TABULAR_SECTION);
 
-    for (const tabularSectionName in this.state.tabularSections) {
+    for (const tabularSectionName in _meta.tabular_sections) {
       elements.push(
         <Paper key={tabularSectionName} style={style}>
-          <TabularSection _obj={this.props._obj} _tabular={tabularSectionName}/>
+          <TabularSection _obj={_obj} _tabular={tabularSectionName}/>
         </Paper>
       );
     }
@@ -139,7 +143,7 @@ export default class DataObj extends Component {
   }
 
   render() {
-    if (!this.props._obj) {
+    if (!this.state._obj) {
       return (
         <div>loading</div>
       );
@@ -147,15 +151,13 @@ export default class DataObj extends Component {
 
     return (
       <div className={"content-with-toolbar-layout"}>
-        <div className={"content-with-toolbar-layout__toolbar"}>
-          <Toolbar
-            handleSave={this.handleSave.bind(this)}
-            handleSend={this.handleSend.bind(this)}
-            handleMarkDeleted={this.handleMarkDeleted.bind(this)}
-            handlePrint={this.handlePrint.bind(this)}
-            handleAttachment={this.handleAttachment.bind(this)}
-            handleClose={this.props.handleClose}/>
-        </div>
+        <Toolbar
+          handleSave={this.handleSave.bind(this)}
+          handleSend={this.handleSend.bind(this)}
+          handleMarkDeleted={this.handleMarkDeleted.bind(this)}
+          handlePrint={this.handlePrint.bind(this)}
+          handleAttachment={this.handleAttachment.bind(this)}
+          handleClose={this.handleClose.bind(this)}/>
 
         <div className={"content-with-toolbar-layout__content"}>
           {this.renderFields()}

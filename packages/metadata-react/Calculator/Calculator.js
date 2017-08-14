@@ -8,7 +8,8 @@ import CalculatorButton from './CalculatorButton';
 import Menu, {MenuItem} from 'material-ui/Menu';
 import ReactClickOutside from 'react-click-outside';
 import classnames from 'classnames';
-import classes from './styles/Calculator.scss';
+
+import withStyles from './styles';
 
 /**
  * 1C like calculator.
@@ -343,23 +344,27 @@ class Calculator extends Component {
   }
 
   render() {
-    if (this.props.visible === false) {
+
+    const {classes, position, visible} = this.props;
+
+    if (visible === false) {
       return null;
     }
 
+
     const calculatorClassNames = classnames([
-      classes['meta-calculator'],
-      classes['meta-calculator--' + this.props.position],
+      classes.calculator,
+      classes[this.props.position],
     ]);
 
     const keyboardRowClassNames = classnames({
-      [classes['meta-calculator__row']]: true,
-      [classes['meta-calculator__row--hidden']]: this.state.isMicroCalculator,
+      [classes.row]: true,
+      [classes.rowHidden]: this.state.isMicroCalculator,
     });
 
     return (
       <div className={calculatorClassNames}>
-        <div className={classes['meta-calculator__row']}>
+        <div className={classes.row}>
           <CalculatorButton
             icon={<PlayArrow style={{width: '1em', height: '1em'}}/>}
             onClick={() => {
@@ -483,4 +488,4 @@ class Calculator extends Component {
   }
 }
 
-export default ReactClickOutside(Calculator);
+export default ReactClickOutside(withStyles(Calculator));

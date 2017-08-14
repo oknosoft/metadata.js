@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.1-beta.23, built:2017-08-13
+ metadata-core v2.0.1-beta.23, built:2017-08-14
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1478,7 +1478,10 @@ class RefDataManager extends DataManager{
 	}
 	get(ref, do_not_create){
 		const rp = 'promise';
-		let o = this.by_ref[ref] || this.by_ref[(ref = utils.fix_guid(ref))];
+		if(typeof ref === 'object'){
+      ref = utils.fix_guid(ref);
+    }
+		let o = this.by_ref[ref];
 		if(arguments.length == 3){
 			if(do_not_create){
 				do_not_create = rp;
@@ -1510,7 +1513,7 @@ class RefDataManager extends DataManager{
 		}
 	}
 	create(attr, fill_default, force_obj){
-		if(!attr || typeof attr != "object"){
+		if(!attr || typeof attr !== "object"){
 			attr = {};
 		}
 		else if(utils.is_data_obj(attr)){
@@ -1691,7 +1694,7 @@ class RefDataManager extends DataManager{
 				}
 				s += ") AND (_t_.ref != '" + utils.blank.guid + "')";
 				if(attr.selection){
-					if(typeof attr.selection == "function"){
+					if(typeof attr.selection === "function"){
 					}else
 						attr.selection.forEach(sel => {
 							for(var key in sel){
@@ -1784,15 +1787,9 @@ class RefDataManager extends DataManager{
 					on_parent();
 			}
 			selection_prms();
-			var sql;
-			if(t.sql_selection_list_flds)
-				sql = t.sql_selection_list_flds(initial_value);
-			else
-				sql = ("SELECT %2, case when _t_.ref = '" + initial_value +
-				"' then 0 else 1 end as is_initial_value FROM `" + t.table_name + "` AS _t_ %j %3 %4 LIMIT 300")
-					.replace("%2", list_flds())
-					.replace("%j", join_flds())
-				;
+			const sql = t.sql_selection_list_flds ? t.sql_selection_list_flds(initial_value) :
+        `SELECT ${list_flds()}, case when _t_.ref = '${initial_value}' then 0 else 1 end as is_initial_value
+				 FROM '${t.table_name}' AS _t_ ${join_flds()} %3 %4 LIMIT 300`;
 			return sql.replace("%3", where_flds()).replace("%4", order_flds());
 		}
 		function sql_create(){
@@ -5125,6 +5122,29 @@ if (!Object.prototype.__define) {
 }
 const utils = mime({
 	moment: moment$1,
+  load_script(src, type, callback) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement(type);
+      if (type == 'script') {
+        s.type = 'text/javascript';
+        s.src = src;
+        s.async = true;
+        const listener = () => {
+          s.removeEventListener('load', listener);
+          callback && callback();
+          resolve();
+        };
+        s.addEventListener('load', listener, false);
+      }
+      else {
+        s.type = 'text/css';
+        s.rel = 'stylesheet';
+        s.href = src;
+      }
+      document.head.appendChild(s);
+      (type != 'script') && resolve();
+    });
+  },
 	fix_date(str, strict) {
 		if (str instanceof Date)
 			return str;

@@ -9,7 +9,6 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import TextField from 'material-ui/TextField';
 import Calculator from '../Calculator';
-import classes from './styles/FieldNumber.scss';
 
 export default class FieldNumber extends Component {
 
@@ -29,7 +28,7 @@ export default class FieldNumber extends Component {
     super(props);
     this.state = {
       isCalculatorVisible: false,
-      value: this.props._obj[this.props._fld],
+      value: props._obj[props._fld],
     };
   }
 
@@ -69,7 +68,8 @@ export default class FieldNumber extends Component {
   }
 
   render() {
-    const name = this.props._fld;
+
+    const {_obj, _fld, _meta, classes, read_only} = this.props;
 
     let input = null;
     if (this.props.partOfTabularSection) {
@@ -77,10 +77,9 @@ export default class FieldNumber extends Component {
       input = (
         <input
           type={'text'}
-          name={name}
+          name={_fld}
           value={this.state.value}
 
-          className={classes['meta-field-number__input']}
           onChange={(event, value) => {
             this.handleValueChange(value);
           }}
@@ -91,11 +90,15 @@ export default class FieldNumber extends Component {
     } else {
       input = (
         <TextField
-          name={name}
+          name={_fld}
+          className={classes && classes.textField}
+          fullWidth={true}
+          disabled={read_only}
+          label={_meta.synonym}
+          title={_meta.tooltip || _meta.synonym}
+
           value={this.state.value}
 
-          fullWidth={true}
-          hintText={this.props._meta.tooltip || this.props._meta.synonym}
           onChange={(event, value) => {
             this.handleValueChange(value);
           }}
@@ -106,7 +109,7 @@ export default class FieldNumber extends Component {
     }
 
     return (
-      <div className={classes['meta-field-number']}>
+      <div style={{position: 'relative'}}>
         <Calculator
           position={'bottom'}
           visible={this.state.isCalculatorVisible}

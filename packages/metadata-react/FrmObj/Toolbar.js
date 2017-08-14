@@ -1,7 +1,8 @@
 import React, {Component} from "react";
 import PropTypes from 'prop-types'
-import {Toolbar, ToolbarGroup} from "material-ui/Toolbar";
 
+import Toolbar from 'material-ui/Toolbar';
+import Typography from 'material-ui/Typography';
 import IconButton from "material-ui/IconButton";
 import Menu, { MenuItem } from 'material-ui/Menu';
 
@@ -13,8 +14,10 @@ import MoreVertIcon from "material-ui-icons/MoreVert";
 import PrintIcon from "material-ui-icons/Print";
 import AttachIcon from "material-ui-icons/AttachFile";
 
+import withStyles from '../Header/toolbar';
 
-export default class DataObjToolbar extends Component {
+
+class DataObjToolbar extends Component {
 
   static propTypes = {
 
@@ -42,47 +45,45 @@ export default class DataObjToolbar extends Component {
   };
 
   render() {
-    const props = this.props;
+    const {props} = this;
     return (
 
-      <Toolbar>
-        <ToolbarGroup className={"meta-toolbar-group"} firstChild={true}>
-          <IconButton touch={true} title="Записать" onClick={props.handleSave}>
-            <SaveIcon />
-          </IconButton>
-          <IconButton touch={true} title="Отправить на согласование" onClick={props.handleSend}>
-            <SendIcon />
-          </IconButton>
-          <IconButton touch={true} title="Отозвать заказ" onClick={props.handleMarkDeleted}>
-            <RemoveIcon />
-          </IconButton>
+      <Toolbar className={props.classes.bar}>
 
-        </ToolbarGroup>
+        <IconButton title="Записать" onClick={props.handleSave}>
+          <SaveIcon />
+        </IconButton>
+        <IconButton title="Отправить на согласование" onClick={props.handleSend}>
+          <SendIcon />
+        </IconButton>
+        <IconButton title="Отозвать заказ" onClick={props.handleMarkDeleted}>
+          <RemoveIcon />
+        </IconButton>
 
-        <ToolbarGroup className={"meta-toolbar-group"}>
+        <Typography type="title" color="inherit" className={props.classes.flex} > </Typography>
 
-          <IconButton onClick={this.handleClick} title="Дополнительно" >
-            <MoreVertIcon />
-          </IconButton>
+        <IconButton onClick={this.handleClick} title="Дополнительно" >
+          <MoreVertIcon />
+        </IconButton>
 
-          <Menu
-            anchorEl={this.state.anchorEl}
-            open={this.state.open}
-            onRequestClose={this.handleRequestClose}
-          >
-            <MenuItem primaryText="Печать" leftIcon={<PrintIcon />} onClick={props.handlePrint}/>
-            <MenuItem primaryText="Вложения" leftIcon={<AttachIcon />} onClick={props.handleAttachment}/>
+        <Menu
+          anchorEl={this.state.anchorEl}
+          open={this.state.open}
+          onRequestClose={this.handleRequestClose}
+        >
+          <MenuItem primaryText="Печать" leftIcon={<PrintIcon />} onClick={props.handlePrint}/>
+          <MenuItem primaryText="Вложения" leftIcon={<AttachIcon />} onClick={props.handleAttachment}/>
 
-          </Menu>
+        </Menu>
 
-          <IconButton touch={true} title="Закрыть форму" onClick={props.handleClose}>
-            <CloseIcon />
-          </IconButton>
-
-        </ToolbarGroup>
+        <IconButton title="Закрыть форму" onClick={props.handleClose}>
+          <CloseIcon />
+        </IconButton>
 
       </Toolbar>
     )
   }
-}
+};
+
+export default withStyles(DataObjToolbar);
 
