@@ -1029,7 +1029,7 @@ export class RefDataManager extends DataManager{
 
 			const sql = t.sql_selection_list_flds ? t.sql_selection_list_flds(initial_value) :
         `SELECT ${list_flds()}, case when _t_.ref = '${initial_value}' then 0 else 1 end as is_initial_value
-				 FROM '${t.table_name}' AS _t_ ${join_flds()} %3 %4 LIMIT 300`;
+				 FROM ${t.table_name} AS _t_ ${join_flds()} %3 %4 LIMIT 300`;
 
 			return sql.replace("%3", where_flds()).replace("%4", order_flds());
 

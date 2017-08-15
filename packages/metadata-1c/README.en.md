@@ -1,4 +1,4 @@
-### Vue JS components for metadata.js
+### 1C data adapter for metadata.js
 
 [README in Russian](README.md)
 

@@ -16,7 +16,6 @@ export default function scheme_settings() {
 	 */
 	class SchemeSettingsManager extends CatManager {
 
-
 		/**
 		 * ### Возвращает объект текущих настроек
 		 * - если не существует ни одной настройки для _class_name_, создаёт элемент справочника _SchemeSettings_
@@ -679,7 +678,7 @@ export default function scheme_settings() {
 		}
 	};
 
-	this.CatScheme_settingsCompositionRow = class CatScheme_settingsSchemeRow extends this.CatScheme_settingsDimensionsRow {
+	this.CatScheme_settingsCompositionRow = class CatScheme_settingsCompositionRow extends this.CatScheme_settingsDimensionsRow {
 
 		get kind() {
 			return this._getter('kind');

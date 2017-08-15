@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.1-beta.23, built:2017-08-13
+ metadata-abstract-ui v2.0.2-beta.24, built:2017-08-15
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -348,6 +348,15 @@ var meta = {
 										str_len: 100
 									}
 								},
+                use: {
+                  synonym: "Использование",
+                  tooltip: "",
+                  type: {
+                    types: [
+                      "boolean"
+                    ]
+                  }
+                },
 								field: {
 									synonym: "Поле",
 									tooltip: "",
@@ -385,6 +394,15 @@ var meta = {
 										str_len: 100
 									}
 								},
+                use: {
+                  synonym: "Использование",
+                  tooltip: "",
+                  type: {
+                    types: [
+                      "boolean"
+                    ]
+                  }
+                },
 								field: {
 									synonym: "Поле",
 									tooltip: "",
@@ -412,6 +430,15 @@ var meta = {
 										str_len: 100
 									}
 								},
+                use: {
+                  synonym: "Использование",
+                  tooltip: "",
+                  type: {
+                    types: [
+                      "boolean"
+                    ]
+                  }
+                },
 								field: {
 									synonym: "Поле",
 									tooltip: "",
@@ -555,7 +582,7 @@ var meta = {
 										]
 									}
 								},
-								elm: {
+                field: {
 									"synonym": "Элемент",
 									"tooltip": "Элемент структуры отчета",
 									"type": {

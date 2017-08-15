@@ -1,8 +1,8 @@
-### Vue JS components for metadata.js
+### 1C data adapter for metadata.js
 
 [English version](README.en.md)
 
-Компоненты визуального интерфейса metadata.js на базе [Vue](https://vuejs.org/)
+Адаптер данных metadata.js для подключения к 1С
 
 Не реализовано в текущей версии
 

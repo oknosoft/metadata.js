@@ -711,7 +711,31 @@ function adapter({AbstracrAdapter}) {
      * @return {Promise.<Array>}
      */
     get_tree(_mgr, attr) {
-
+      return this.find_rows(_mgr, {
+        is_folder: true,
+        _raw: true,
+        _top: attr.count || 300,
+        _skip: attr.start || 0
+      })
+        .then((rows) => {
+          rows.sort((a, b) => {
+            if (a.parent == $p.utils.blank.guid && b.parent != $p.utils.blank.guid)
+              return -1;
+            if (b.parent == $p.utils.blank.guid && a.parent != $p.utils.blank.guid)
+              return 1;
+            if (a.name < b.name)
+              return -1;
+            if (a.name > b.name)
+              return 1;
+            return 0;
+          });
+          return rows.map((row) => ({
+            ref: row.ref,
+            parent: row.parent,
+            presentation: row.name
+          }));
+        })
+        .then((ares) => $p.iface.data_to_tree.call(_mgr, ares, attr));
     }
 
     /**

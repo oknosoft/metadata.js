@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.1-beta.23, built:2017-08-14
+ metadata-core v2.0.2-beta.24, built:2017-08-15
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1789,7 +1789,7 @@ class RefDataManager extends DataManager{
 			selection_prms();
 			const sql = t.sql_selection_list_flds ? t.sql_selection_list_flds(initial_value) :
         `SELECT ${list_flds()}, case when _t_.ref = '${initial_value}' then 0 else 1 end as is_initial_value
-				 FROM '${t.table_name}' AS _t_ ${join_flds()} %3 %4 LIMIT 300`;
+				 FROM ${t.table_name} AS _t_ ${join_flds()} %3 %4 LIMIT 300`;
 			return sql.replace("%3", where_flds()).replace("%4", order_flds());
 		}
 		function sql_create(){
@@ -6452,7 +6452,7 @@ class MetaEngine$1 {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.1-beta.23';
+    return '2.0.2-beta.24';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

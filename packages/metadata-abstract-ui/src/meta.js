@@ -355,6 +355,15 @@ export default {
 										str_len: 100
 									}
 								},
+                use: {
+                  synonym: "Использование",
+                  tooltip: "",
+                  type: {
+                    types: [
+                      "boolean"
+                    ]
+                  }
+                },
 								field: {
 									synonym: "Поле",
 									tooltip: "",
@@ -392,6 +401,15 @@ export default {
 										str_len: 100
 									}
 								},
+                use: {
+                  synonym: "Использование",
+                  tooltip: "",
+                  type: {
+                    types: [
+                      "boolean"
+                    ]
+                  }
+                },
 								field: {
 									synonym: "Поле",
 									tooltip: "",
@@ -419,6 +437,15 @@ export default {
 										str_len: 100
 									}
 								},
+                use: {
+                  synonym: "Использование",
+                  tooltip: "",
+                  type: {
+                    types: [
+                      "boolean"
+                    ]
+                  }
+                },
 								field: {
 									synonym: "Поле",
 									tooltip: "",
@@ -565,7 +592,7 @@ export default {
 										]
 									}
 								},
-								elm: {
+                field: {
 									"synonym": "Элемент",
 									"tooltip": "Элемент структуры отчета",
 									"type": {

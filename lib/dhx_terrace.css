@@ -2010,7 +2010,7 @@ div.dhx_toolbar_slider_label_dhx_terrace {
 /*style of dataview's item, when drag is moved other it*/
 .dhx_drag_over {
   background-color: #faf768;
-  background-image: url("../imgs/dhxdataview_terrace/marker.png");
+  background-image: url("imgs/dhxdataview_terrace/marker.png");
   background-repeat: repeat-x;
 }
 /*paging related styles*/
@@ -3776,7 +3776,7 @@ div.dhx_form_skin_detect {
   z-index: 0;
 }
 .dhx_vault_dhx_terrace div.dhx_vault_f_pr {
-  background-image: url("../imgs/dhxvault_terrace/dhxvault_progress.gif");
+  background-image: url("imgs/dhxvault_terrace/dhxvault_progress.gif");
   background-position: center center;
   background-repeat: no-repeat;
   opacity: 0.5;

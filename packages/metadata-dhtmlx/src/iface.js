@@ -45,7 +45,6 @@ export default class InterfaceObjs {
 
 		this.set_hash = this.set_hash.bind(this);
 		this.hash_route = this.hash_route.bind(this);
-		this.init_sidebar = this.init_sidebar.bind(this);
 		this.check_exit = this.check_exit.bind(this);
 
 	    /**
@@ -334,73 +333,6 @@ export default class InterfaceObjs {
       evt.cancelBubble = true;
     }
 		return false
-	};
-
-	/**
-	 * ### Один из вариантов основного интерфейса: sidebar
-	 *
-	 * @method init_sidebar
-	 * @param items {Array} - закладки сайдбара
-	 * @param buttons {Array} - кнопки дополнительной навигации
-	 * @param [icons_path] {String} - путь к иконам сайдбара
-	 */
-	init_sidebar(items, buttons, icons_path) {
-
-		// наблюдатель за событиями авторизации и синхронизации
-		this.btn_auth_sync = new this.OBtnAuthSync();
-
-		// кнопки навигации справа сверху
-    this.btns_nav = function (wrapper) {
-			return this.btn_auth_sync.bind(new this.OTooolBar({
-				wrapper: wrapper,
-				class_name: 'md_otbnav',
-				width: '260px', height: '28px', top: '3px', right: '3px', name: 'right',
-				buttons: buttons,
-				onclick: function (name) {
-          this.main.cells(name).setActive(true);
-					return false;
-				}
-			}))
-		};
-
-    // основной сайдбар
-    // this.main = new dhtmlXSideBar({
-	   //  parent: document.body,
-	   //  icons_path: icons_path || "dist/imgs/",
-	   //  width: 180,
-	   //  header: true,
-	   //  template: "tiles",
-	   //  autohide: true,
-	   //  items: items,
-	   //  offsets: {
-	   //  	top: 0,
-		 //    right: 0,
-		 //    bottom: 0,
-		 //    left: 0
-	   //  }
-    // });
-
-		// подписываемся на событие навигации по сайдбару
-    const {job_prm} = this.$p;
-    this.main.attachEvent("onSelect", (id) => {
-
-			var hprm = job_prm.parse_url();
-			if(hprm.view != id)
-        this.set_hash(hprm.obj, hprm.ref, hprm.frm, id);
-
-      this["view_" + id](this.main.cells(id));
-
-		});
-
-		// включаем индикатор загрузки
-    this.main.progressOn();
-
-		// активируем страницу
-		var hprm = job_prm.parse_url();
-		if(!hprm.view || this.main.getAllItems().indexOf(hprm.view) == -1){
-      this.set_hash(hprm.obj, hprm.ref, hprm.frm, "doc");
-		} else
-			setTimeout(this.hash_route);
 	};
 
 	/**

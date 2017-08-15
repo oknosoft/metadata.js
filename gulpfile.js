@@ -225,7 +225,7 @@ gulp.task('build-dhtmlx', function(){
 			}
 		}))
 		.pipe(gulp.dest('./lib'))
-		.pipe(gulp.dest('./dist'));
+		.pipe(gulp.dest('./packages/metadata-dhtmlx'));
 });
 
 // dhtmlx css
@@ -236,7 +236,7 @@ gulp.task('css-dhtmlx', function () {
 		])
 		.pipe(base64())
 		.pipe(csso())
-		.pipe(gulp.dest('./dist'));
+		.pipe(gulp.dest('./packages/metadata-dhtmlx'));
 });
 
 gulp.task('css-dhtmlx-images', function () {
@@ -258,10 +258,10 @@ gulp.task('css-metadata', function () {
 			//'./src/css/options.css'
 		])
 		.pipe(base64())
-		.pipe(concat('metadata.transition.css'))
-		.pipe(gulp.dest('./lib'))
+		.pipe(concat('metadata.css'))
+		//.pipe(gulp.dest('./lib'))
     .pipe(csso())
-		.pipe(gulp.dest('./dist'));
+		.pipe(gulp.dest('./packages/metadata-dhtmlx'));
 });
 
 // metadata css
