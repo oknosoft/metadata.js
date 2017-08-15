@@ -9,8 +9,8 @@
     "npm": "^5.0"
   },
   "peerDependencies": {
-    "material-ui": "^1.0.0-alpha.20",
-    "metadata-abstract-ui": "^2.0.1-beta.19",
+    "material-ui": "^1.0.0-beta.5",
+    "metadata-abstract-ui": "^2.0.2-beta.24",
     "react-data-grid": "^2.0",
     "react-data-grid-addons": "^2.0",
     "react-panels": "git+https://github.com/unpete/react-panels",

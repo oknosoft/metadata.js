@@ -307,7 +307,7 @@ function InterfaceObjs(){
 		// основной сайдбар
 		iface.main = new dhtmlXSideBar({
 			parent: document.body,
-			icons_path: icons_path || "dist/imgs/",
+			icons_path: icons_path || "imgs/",
 			width: 180,
 			header: true,
 			template: "tiles",

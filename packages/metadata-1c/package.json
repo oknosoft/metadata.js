@@ -1,6 +1,6 @@
 {
-  "name": "metadata-vue",
-  "description": "Vue JS components for metadata.js",
+  "name": "metadata-1c",
+  "description": "1C data adapter for metadata.js",
   "version": "2.0.2-beta.24",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
@@ -8,13 +8,10 @@
     "node": "^7.10",
     "npm": "^5.0"
   },
-  "peerDependencies": {
-    "metadata-abstract-ui": "^2.0.2-beta.24"
-  },
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-vue"
+    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-1c"
   },
   "bugs": {
     "url": "https://github.com/oknosoft/metadata.js/issues"
