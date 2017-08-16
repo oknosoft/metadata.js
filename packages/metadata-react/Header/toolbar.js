@@ -1,7 +1,7 @@
-import {createStyleSheet, withStyles} from 'material-ui/styles';
+import withStyles from 'material-ui/styles/withStyles';
 import colors from 'material-ui/colors/common';
 
-export default withStyles(createStyleSheet('toolbar', {
+export default withStyles({
   root: {
     marginTop: 20,
     width: '100%',
@@ -38,4 +38,4 @@ export default withStyles(createStyleSheet('toolbar', {
       transform: 'rotate(-90deg)',
     },
   },
-}));
+});

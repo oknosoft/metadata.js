@@ -1,12 +1,12 @@
-import React from "react";
+import React, {Component} from "react";
 import PropTypes from 'prop-types'
-import MetaComponent from "../common/MetaComponent";
 
-import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from "material-ui/Toolbar";
+import Toolbar from 'material-ui/Toolbar';
+import Typography from 'material-ui/Typography';
+
 import IconButton from "material-ui/IconButton";
-import FlatButton from "material-ui/FlatButton";
-import IconMenu from "material-ui/IconMenu";
-import MenuItem from "material-ui/MenuItem";
+import Button from "material-ui/Button";
+import Menu, {MenuItem} from 'material-ui/Menu';
 
 import RunIcon from "material-ui-icons/PlayArrow";
 import MoreVertIcon from "material-ui-icons/MoreVert";
@@ -15,10 +15,14 @@ import CopyIcon from "material-ui-icons/ContentCopy";
 import CloudDownloadIcon from "material-ui-icons/CloudDownload";
 import FileDownloadIcon from "material-ui-icons/FileDownload";
 
+import {export_handlers} from '../plugin'
+
 import SchemeSettings from "../SchemeSettings";
 
+import withStyles from '../Header/toolbar';
 
-export default class RepToolbar extends MetaComponent {
+
+class RepToolbar extends Component {
 
   static propTypes = {
 
@@ -40,61 +44,73 @@ export default class RepToolbar extends MetaComponent {
 
     super(props, context);
 
-    context.$p.UI.export_handlers.call(this);
+    this.state = {
+      anchorEl: undefined,
+      open: false,
+    };
+
+    this.handleClick = this.handleClick.bind(this);
+    this.handleRequestClose = this.handleRequestClose.bind(this);
+
+    export_handlers.call(this);
 
   }
+
+  handleClick(event){
+    this.setState({open: true, anchorEl: event.currentTarget})
+  };
+
+  handleRequestClose() {
+    this.setState({open: false});
+  };
 
   render() {
 
     const {handleExportXLS, handleExportJSON, handleExportCSV, props} = this;
-    const {handleSave, handleClose, handleSchemeChange, handlePrint, scheme, _obj, _tabular, TabParams} = props;
+    const {handleSave, handleClose, handleSchemeChange, handlePrint, scheme, _obj, _tabular, TabParams, classes} = props;
 
     return (
 
-      <Toolbar>
-        <ToolbarGroup className={"meta-toolbar-group"} firstChild={true}>
+      <Toolbar className={classes.bar}>
+        <Button
+          onClick={handleSave}
+          icon={<RunIcon />}
+        >Сформировать</Button>
 
-          <FlatButton
-            label="Сформировать"
-            onClick={handleSave}
-            icon={<RunIcon />}
-          />
+        <Typography type="title" color="inherit" className={classes.flex}> </Typography>
 
-        </ToolbarGroup>
-
-        <ToolbarGroup className={"meta-toolbar-group"}>
-
-          <SchemeSettings
-            handleSchemeChange={handleSchemeChange}
-            scheme={scheme}
-            tabParams={
-              TabParams ? <TabParams
+        <SchemeSettings
+          handleSchemeChange={handleSchemeChange}
+          scheme={scheme}
+          tabParams={
+            TabParams ? <TabParams
                 _obj={_obj}
                 scheme={scheme}
               />
-                : null
-            }
-            show_variants={true}
-          />
+              : null
+          }
+          show_variants={true}
+        />
 
-          <IconMenu
-            iconButtonElement={
-              <IconButton touch={true} tooltip="Дополнительно" tooltipPosition="bottom-left">
-                <MoreVertIcon />
-              </IconButton>
-            }
-          >
-            <MenuItem primaryText="Печать" leftIcon={<PrintIcon />} disabled onClick={handlePrint}/>
-            <MenuItem primaryText="Копировать CSV" leftIcon={<CopyIcon />} onClick={handleExportCSV}/>
-            <MenuItem primaryText="Копировать JSON" leftIcon={<CloudDownloadIcon />} onClick={handleExportJSON}/>
-            <MenuItem primaryText="Экспорт в XLS" leftIcon={<FileDownloadIcon />} onClick={handleExportXLS}/>
+        <IconButton onClick={this.handleClick} title="Дополнительно">
+          <MoreVertIcon />
+        </IconButton>
+        <Menu
+          anchorEl={this.state.anchorEl}
+          open={this.state.open}
+          onRequestClose={this.handleRequestClose}
+        >
+          <MenuItem primaryText="Печать" leftIcon={<PrintIcon />} disabled onClick={handlePrint}/>
+          <MenuItem primaryText="Копировать CSV" leftIcon={<CopyIcon />} onClick={handleExportCSV}/>
+          <MenuItem primaryText="Копировать JSON" leftIcon={<CloudDownloadIcon />} onClick={handleExportJSON}/>
+          <MenuItem primaryText="Экспорт в XLS" leftIcon={<FileDownloadIcon />} onClick={handleExportXLS}/>
 
-          </IconMenu>
-
-        </ToolbarGroup>
+        </Menu>
 
       </Toolbar>
     )
   }
-}
+};
+
+export default withStyles(RepToolbar);
 

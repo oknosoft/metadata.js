@@ -1,6 +1,5 @@
-import React from "react";
+import React, {Component} from "react";
 import PropTypes from 'prop-types';
-import MetaComponent from "../common/MetaComponent";
 
 import ReactDataGrid from "react-data-grid";
 
@@ -57,7 +56,7 @@ const {Selectors} = Data;
 //   }
 // }
 
-export default class RepTabularSection extends MetaComponent {
+export default class RepTabularSection extends Component {
 
   static propTypes = {
 

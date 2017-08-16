@@ -325,11 +325,13 @@ export class DataManager extends MetaEventEmitter{
 			return Promise.resolve(l);
 		}
 		else if(t.cachable != "e1cib"){
-			return t.adapter.find_rows(t, selection)
-				.then((data) => {
-					data.forEach((v) => push);
-					return l;
-				});
+		  return t.adapter.find_rows(t, selection)
+        .then((data) => {
+		    for(const v of data){
+		      push(v)
+		    };
+		    return l;
+		  });
 		}
 		else{
 			// для некешируемых выполняем запрос к серверу

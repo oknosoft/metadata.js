@@ -1,1 +1,3 @@
-export default from './Report'
+import Report from './Report';
+
+export default Report;

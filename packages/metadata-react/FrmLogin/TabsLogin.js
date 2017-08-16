@@ -54,7 +54,7 @@ class TabsLogin extends Component {
 
       <Paper className={classes.root} elevation={4}>
 
-        <Tabs index={state.index} onChange={(event, index) => this.setState({index})}>
+        <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
           <Tab label="Вход"/>
           <Tab label="Подключение"/>
         </Tabs>

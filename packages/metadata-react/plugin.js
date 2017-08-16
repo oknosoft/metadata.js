@@ -8,7 +8,7 @@
 
 import React, {Component} from "react";
 import PropTypes from 'prop-types';
-import {DataCell} from "./DataField";
+import DataCell from "./DataField/DataCell";
 import {Editors, Formatters} from "react-data-grid-addons";
 
 const AutoCompleteEditor = Editors.AutoComplete;
@@ -94,48 +94,35 @@ function rx_columns($p) {
  * Created 10.01.2017
  */
 
+export function export_handlers() {
 
-function export_handlers(constructor, classes) {
+  this.doExport = (format) => {
+    const {_obj, _tabular, _columns} = this.props;
+    _obj[_tabular].export(format, _columns.map((column) => column.key))
+      .then((res) => {
+        if (res == 'success') {
+          console.log(res)
+        }
+      })
+  }
 
-  /**
-   * mixin свойств дата и номер документа к базовому классу
-   * @param superclass
-   * @constructor
-   */
-  Object.defineProperty(constructor.prototype.UI, 'export_handlers', {
-
-    value: function () {
-
-      this.doExport = (format) => {
-        const {_obj, _tabular, _columns} = this.props;
-        _obj[_tabular].export(format, _columns.map((column) => column.key))
-          .then((res) => {
-            if (res == 'success') {
-              console.log(res)
-            }
-          })
+  this.handleExportXLS = () => {
+    const doExport = this.doExport.bind(this);
+    require.ensure(["xlsx"], function () {
+      if (!window.XLSX) {
+        window.XLSX = require("xlsx");
       }
+      doExport('xls')
+    });
+  }
 
-      this.handleExportXLS = () => {
-        const doExport = this.doExport.bind(this);
-        require.ensure(["xlsx"], function () {
-          if (!window.XLSX) {
-            window.XLSX = require("xlsx");
-          }
-          doExport('xls')
-        });
-      }
+  this.handleExportJSON = () => {
+    this.doExport('json')
+  }
 
-      this.handleExportJSON = () => {
-        this.doExport('json')
-      }
-
-      this.handleExportCSV = () => {
-        this.doExport('csv')
-      }
-
-    }
-  })
+  this.handleExportCSV = () => {
+    this.doExport('csv')
+  }
 
 }
 
@@ -209,17 +196,6 @@ function print(ref, model, wnd) {
  * Экспортируем объект-плагин для модификации metadata.js
  */
 export default {
-
-  /**
-   * ### Модификатор прототипов
-   * @param constructor {MetaEngine}
-   * @param classes {Object}
-   */
-  proto(constructor, classes) {
-
-    export_handlers(constructor, classes)
-
-  },
 
   /**
    * ### Модификатор конструктора MetaEngine

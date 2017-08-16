@@ -1,7 +1,7 @@
-import {createStyleSheet, withStyles} from 'material-ui/styles';
+import withStyles from 'material-ui/styles/withStyles';
 import colors from 'material-ui/colors/common';
 
-export default withStyles(createStyleSheet('calculator', {
+export default withStyles({
   calculator: {
     fontSize: '.8em',
     position: 'absolute',
@@ -90,4 +90,4 @@ export default withStyles(createStyleSheet('calculator', {
     textAlign: 'left',
   },
 
-}));
+});

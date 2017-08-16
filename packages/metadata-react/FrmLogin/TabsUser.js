@@ -69,7 +69,7 @@ class TabsUser extends Component {
 
   render() {
 
-    const {props, handleNavigate} = this;
+    const {props, state, handleNavigate} = this;
     const {classes, handleLogOut} = props;
 
     return (
@@ -80,12 +80,12 @@ class TabsUser extends Component {
           this.props._obj
             ?
             <Paper className={classes.root} elevation={4}>
-              <Tabs index={this.state.index} onChange={(event, index) => this.setState({index})}>
+              <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
                 <Tab label="Профиль"/>
                 <Tab label="Подключение"/>
               </Tabs>
 
-              {this.state.index === 0 &&
+              {state.index === 0 &&
               <div>
 
                 <DataField _obj={this.props._obj} _fld="id" read_only classes={classes}/>
@@ -106,7 +106,7 @@ class TabsUser extends Component {
 
               </div>}
 
-              {this.state.index === 1 && <CnnSettings {...props}/>}
+              {state.index === 1 && <CnnSettings {...props}/>}
 
             </Paper>
 

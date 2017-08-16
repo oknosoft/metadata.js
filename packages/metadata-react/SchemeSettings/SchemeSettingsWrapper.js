@@ -34,7 +34,8 @@ export default class SchemeSettingsWrapper extends Component {
 
     this.state = {
       scheme,
-      open: false,
+      dialog_open: false,
+      menu_open: false,
       fullscreen: false,
       variants: [scheme]
     };
@@ -48,20 +49,30 @@ export default class SchemeSettingsWrapper extends Component {
       });
   }
 
-  handleOpen = () => {
+  handleDialogOpen = () => {
     this.setState({
-      open: true
+      dialog_open: true
     });
   };
 
-  handleClose = () => {
+  handleDialogClose = () => {
     this.setState({
-      open: false
+      dialog_open: false
+    });
+  };
+
+  handleMenuOpen = (event) => {
+    this.setState({menu_open: true, anchorEl: event.currentTarget});
+  };
+
+  handleMenuClose = () => {
+    this.setState({
+      menu_open: false
     });
   };
 
   handleOk = () => {
-    this.handleClose();
+    this.handleDialogClose();
     this.props.handleSchemeChange(this.state.scheme);
   };
 
@@ -84,11 +95,6 @@ export default class SchemeSettingsWrapper extends Component {
     }
   };
 
-  handleCloseClick() {
-    this.setState({
-      open: false
-    });
-  }
 
   handleFullscreenClick() {
     this.setState({
@@ -96,16 +102,31 @@ export default class SchemeSettingsWrapper extends Component {
     });
   }
 
+  Variants() {
+    const {variants, scheme, menu_open, anchorEl} = this.state;
+    const menuitems = variants.map(v => <MenuItem value={v.ref} key={v.ref} primaryText={v.name}/>);
+    return <div>
+      <Button onClick={this.handleMenuOpen} value={scheme.ref} >{scheme.name}</Button>
+      <Menu
+        anchorEl={anchorEl}
+        open={menu_open}
+        onRequestClose={this.handleMenuClose}
+        onChange={this.handleVariantChange}>
+        {menuitems}
+      </Menu>
+    </div>
+  }
+
   render() {
-    const {props, state, handleOpen, handleOk, handleClose, handleSchemeChange, handleSearchChange, handleVariantChange} = this;
-    const {open, scheme, variants} = state;
+    const {props, state, handleDialogOpen, handleOk, handleDialogClose, handleSchemeChange, handleSearchChange} = this;
+    const {dialog_open, menu_open, scheme} = state;
     const {show_search, show_variants, tabParams} = props;
 
     const actions = [
       <Button
         key={0}
         raised
-        onClick={handleClose}>Отмена</Button>,
+        onClick={handleDialogClose}>Отмена</Button>,
 
       <Button
         key={1}
@@ -113,15 +134,9 @@ export default class SchemeSettingsWrapper extends Component {
         onClick={handleOk}>Применить</Button>,
     ];
 
-    const menuitems = [];
-    if(show_variants && scheme) {
-      variants.forEach((v) => {
-        menuitems.push(<MenuItem value={v.ref} key={v.ref} primaryText={v.name}/>);
-      });
-    }
 
     return (
-      <div style={{display: 'inline'}}>
+      <div style={{display: 'inherit'}}>
         {/* Search box */}
         {show_search ? <TextField
           name="search"
@@ -136,21 +151,13 @@ export default class SchemeSettingsWrapper extends Component {
         }
 
 
-        {/* Variants */}
-        {show_variants && scheme ? <DropDownMenu
-          className={styles.schemeVariants}
-          maxHeight={300}
-          labelStyle={{
-            lineHeight: '48px'
-          }}
-          value={scheme.ref}
-          onChange={handleVariantChange}>
-          {menuitems}
-        </DropDownMenu> : null}
+        {/* Variants */
+          show_variants && scheme && this.Variants()
+        }
 
 
         {/* Show list configuration button */}
-        <IconButton title="Настройка списка" onClick={handleOpen}>
+        <IconButton title="Настройка списка" onClick={handleDialogOpen}>
           <IconSettings/>
         </IconButton>
 
@@ -159,12 +166,12 @@ export default class SchemeSettingsWrapper extends Component {
           actions={actions}
           tabs={getTabsContent(scheme, handleSchemeChange, tabParams)}
           resizable={true}
-          visible={open}
+          visible={dialog_open}
           width={700}
           height={500}
           fullscreen={this.state.fullscreen}
           onFullScreenClick={() => this.handleFullscreenClick()}
-          onCloseClick={() => this.handleCloseClick()}/>
+          onCloseClick={this.handleDialogClose}/>
       </div>
     );
   }

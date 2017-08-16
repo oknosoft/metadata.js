@@ -1,13 +1,12 @@
-import React from "react";
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import MetaComponent from "../common/MetaComponent";
-import DumbLoader from "../DumbLoader";
+import DumbLoader from '../DumbLoader';
 
-import RepToolbar from "./RepToolbar";
-import RepTabularSection from "./RepTabularSection";
+import RepToolbar from './RepToolbar';
+import RepTabularSection from './RepTabularSection';
 
 
-export default class Report extends MetaComponent {
+export default class Report extends Component {
 
   static propTypes = {
     _obj: PropTypes.object,               // объект данных - отчет DataProcessorObj
@@ -19,39 +18,42 @@ export default class Report extends MetaComponent {
     handlePrint: PropTypes.func,          // внешний обработчик печати
     handleSchemeChange: PropTypes.func,   // внешний обработчик при изменении настроек компоновки
 
-  }
+  };
 
   constructor(props, context) {
 
     super(props, context);
-
-    const {$p} = context;
-    const {_obj} = props;
-    const _tabular = props._tabular || "data";
+    const {_mgr, _meta} = props;
+    const _tabular = props._tabular || 'data';
 
     this.state = {
+      _obj: _mgr.create(),
       _tabular,
-      _meta: _obj._metadata(_tabular),
+      _meta: _meta || _mgr.metadata(_tabular),
     };
 
-    $p.cat.scheme_settings.get_scheme(_obj._manager.class_name + `.${_tabular}`)
-      .then(this.handleSchemeChange)
+    $p.cat.scheme_settings.get_scheme(_mgr.class_name + `.${_tabular}`)
+      .then(this.handleSchemeChange);
 
   }
 
   handleSave = () => {
 
-    const {scheme} = this.state;
+    const {scheme, _obj, _columns} = this.state;
 
-    this.props._obj.calculate(this.state._columns)
+    _obj.calculate(_columns)
       .then(() => {
-        this.refs.data.setState({groupBy: scheme.dims()})
-      })
-  }
+        this._result.setState({groupBy: scheme.dims()});
+      });
+  };
 
   handlePrint = () => {
 
-  }
+  };
+
+  handleClose = () => {
+
+  };
 
   // обработчик при изменении настроек компоновки
   handleSchemeChange = (scheme) => {
@@ -59,35 +61,34 @@ export default class Report extends MetaComponent {
     const {props, state} = this;
     const {_obj, handleSchemeChange} = props;
     const _columns = scheme.rx_columns({
-      mode: "ts",
+      mode: 'ts',
       fields: state._meta.fields,
       _obj: _obj
     });
 
-    if (handleSchemeChange) {
-      handleSchemeChange.call(this, scheme);
-    }
+    // в этом методе
+    handleSchemeChange && handleSchemeChange(this, scheme);
 
     this.setState({
       scheme,
       _columns
     });
-  }
+  };
 
   render() {
 
-    const {props, state, handleSave, handlePrint, handleSchemeChange} = this;
-    const {_obj, height, width, handleClose, TabParams} = props;
-    const {_columns, scheme, _tabular} = state;
+    const {props, state, handleClose, handleSave, handlePrint, handleSchemeChange} = this;
+    const {_obj, _columns, scheme, _tabular} = state;
+    let {TabParams} = props;
 
-    if (!scheme) {
-      return <DumbLoader title="Чтение настроек компоновки..."/>
+    if(!scheme) {
+      return <DumbLoader title="Чтение настроек компоновки..."/>;
     }
-    else if (!_obj) {
-      return <DumbLoader title="Чтение объекта данных..."/>
+    else if(!_obj) {
+      return <DumbLoader title="Чтение объекта данных..."/>;
     }
-    else if (!_columns || !_columns.length) {
-      return <DumbLoader title="Ошибка настроек компоновки..."/>
+    else if(!_columns || !_columns.length) {
+      return <DumbLoader title="Ошибка настроек компоновки..."/>;
     }
 
     return (
@@ -110,17 +111,13 @@ export default class Report extends MetaComponent {
 
         />
 
-        <div className="meta-padding-8" style={{width: width - 20, height: height - 50}}>
-
-          <RepTabularSection
-            ref="data"
-            _obj={_obj}
-            _tabular={_tabular}
-            _columns={_columns}
-            minHeight={height - 60}
-          />
-
-        </div>
+        <RepTabularSection
+          ref={(el) => this._result = el}
+          _obj={_obj}
+          _tabular={_tabular}
+          _columns={_columns}
+          minHeight={500 - 60}
+        />
 
       </div>
 

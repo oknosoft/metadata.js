@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.2-beta.24, built:2017-08-15
+ metadata-core v2.0.2-beta.25, built:2017-08-16
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1304,11 +1304,13 @@ class DataManager extends MetaEventEmitter{
 			return Promise.resolve(l);
 		}
 		else if(t.cachable != "e1cib"){
-			return t.adapter.find_rows(t, selection)
-				.then((data) => {
-					data.forEach((v) => push);
-					return l;
-				});
+		  return t.adapter.find_rows(t, selection)
+        .then((data) => {
+		    for(const v of data){
+		      push(v);
+		    }
+		    return l;
+		  });
 		}
 		else{
 			var attr = { selection: selection, top: selection._top},
@@ -6452,7 +6454,7 @@ class MetaEngine$1 {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.2-beta.24';
+    return '2.0.2-beta.25';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
