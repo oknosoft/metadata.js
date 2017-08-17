@@ -1,11 +1,12 @@
-import React, {Component} from "react";
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import ReactDataGrid from "react-data-grid";
+import ReactDataGrid from 'react-data-grid';
 
 //import {Menu, Data, Editors, ToolsPanel} from "react-data-grid-addons";
 
-import {Data} from "react-data-grid-addons";
+import {Data} from 'react-data-grid-addons';
+
 const {Selectors} = Data;
 
 // const { AdvancedToolbar, GroupedColumnsPanel }   = ToolsPanel;
@@ -67,13 +68,13 @@ export default class RepTabularSection extends Component {
     _columns: PropTypes.array.isRequired,   // колонки
 
     handleRowChange: PropTypes.func,
-  }
+  };
 
   constructor(props, context) {
 
     super(props, context);
 
-    const {_obj, _tabular, _meta} = props
+    const {_obj, _tabular, _meta} = props;
 
     this.state = {
 
@@ -81,33 +82,33 @@ export default class RepTabularSection extends Component {
       _tabular: _obj[_tabular],
 
       get rows() {
-        return this._tabular._rows || []
+        return this._tabular._rows || [];
       },
 
       groupBy: [],
       expandedRows: {}
-    }
+    };
   }
 
   getRows = () => {
     return Selectors.getRows(this.state);
-  }
+  };
 
   getRowAt = (index) => {
     const rows = this.getRows();
     return rows[index];
-  }
+  };
 
   getSize = () => {
     return this.getRows().length;
-  }
+  };
 
   onRowExpandToggle = (args) => {
     var expandedRows = Object.assign({}, this.state.expandedRows);
     expandedRows[args.columnGroupName] = Object.assign({}, expandedRows[args.columnGroupName]);
     expandedRows[args.columnGroupName][args.name] = {isExpanded: args.shouldExpand};
     this.setState({expandedRows: expandedRows});
-  }
+  };
 
   render() {
 
@@ -128,7 +129,7 @@ export default class RepTabularSection extends Component {
 
       />
 
-    )
+    );
 
   }
 }

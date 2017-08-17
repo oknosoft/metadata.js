@@ -1,26 +1,25 @@
-import React, {Component} from "react";
-import PropTypes from 'prop-types'
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
 
-import IconButton from "material-ui/IconButton";
-import Button from "material-ui/Button";
+import IconButton from 'material-ui/IconButton';
+import Button from 'material-ui/Button';
 import Menu, {MenuItem} from 'material-ui/Menu';
 
-import RunIcon from "material-ui-icons/PlayArrow";
-import MoreVertIcon from "material-ui-icons/MoreVert";
-import PrintIcon from "material-ui-icons/Print";
-import CopyIcon from "material-ui-icons/ContentCopy";
-import CloudDownloadIcon from "material-ui-icons/CloudDownload";
-import FileDownloadIcon from "material-ui-icons/FileDownload";
+import RunIcon from 'material-ui-icons/PlayArrow';
+import MoreVertIcon from 'material-ui-icons/MoreVert';
+import PrintIcon from 'material-ui-icons/Print';
+import CopyIcon from 'material-ui-icons/ContentCopy';
+import CloudDownloadIcon from 'material-ui-icons/CloudDownload';
+import FileDownloadIcon from 'material-ui-icons/FileDownload';
 
-import {export_handlers} from '../plugin'
+import {export_handlers} from '../plugin';
 
-import SchemeSettings from "../SchemeSettings";
+import SchemeSettings from '../SchemeSettings';
 
 import withStyles from '../Header/toolbar';
-
 
 class RepToolbar extends Component {
 
@@ -38,7 +37,7 @@ class RepToolbar extends Component {
     _obj: PropTypes.object,
     _tabular: PropTypes.string.isRequired,
 
-  }
+  };
 
   constructor(props, context) {
 
@@ -56,8 +55,8 @@ class RepToolbar extends Component {
 
   }
 
-  handleClick(event){
-    this.setState({open: true, anchorEl: event.currentTarget})
+  handleClick(event) {
+    this.setState({open: true, anchorEl: event.currentTarget});
   };
 
   handleRequestClose() {
@@ -74,7 +73,7 @@ class RepToolbar extends Component {
       <Toolbar className={classes.bar}>
         <Button
           onClick={handleSave}
-          icon={<RunIcon />}
+          icon={<RunIcon/>}
         >Сформировать</Button>
 
         <Typography type="title" color="inherit" className={classes.flex}> </Typography>
@@ -93,22 +92,22 @@ class RepToolbar extends Component {
         />
 
         <IconButton onClick={this.handleClick} title="Дополнительно">
-          <MoreVertIcon />
+          <MoreVertIcon/>
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}
           open={this.state.open}
           onRequestClose={this.handleRequestClose}
         >
-          <MenuItem primaryText="Печать" leftIcon={<PrintIcon />} disabled onClick={handlePrint}/>
-          <MenuItem primaryText="Копировать CSV" leftIcon={<CopyIcon />} onClick={handleExportCSV}/>
-          <MenuItem primaryText="Копировать JSON" leftIcon={<CloudDownloadIcon />} onClick={handleExportJSON}/>
-          <MenuItem primaryText="Экспорт в XLS" leftIcon={<FileDownloadIcon />} onClick={handleExportXLS}/>
+          <MenuItem primaryText="Печать" leftIcon={<PrintIcon/>} disabled onClick={handlePrint}/>
+          <MenuItem primaryText="Копировать CSV" leftIcon={<CopyIcon/>} onClick={handleExportCSV}/>
+          <MenuItem primaryText="Копировать JSON" leftIcon={<CloudDownloadIcon/>} onClick={handleExportJSON}/>
+          <MenuItem primaryText="Экспорт в XLS" leftIcon={<FileDownloadIcon/>} onClick={handleExportXLS}/>
 
         </Menu>
 
       </Toolbar>
-    )
+    );
   }
 };
 

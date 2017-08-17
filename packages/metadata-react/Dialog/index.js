@@ -7,12 +7,9 @@ import FullscreenExitIcon from "material-ui-icons/FullscreenExit";
 import CloseIcon from "material-ui-icons/Close";
 import ReactPortal from "react-portal";
 
-import {
-  Content,
-  FloatingPanel,
-  Tab,
-  Footer
-} from "react-panels";
+import {Content, Footer} from "../Panels/mixins";
+import {FloatingPanel} from "../Panels/panel";
+import {Tab} from "../Panels/tab";
 
 /**
  * Dialog
