@@ -9,8 +9,10 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import TextField from 'material-ui/TextField';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
-const DateTimeFormat = global.Intl.DateTimeFormat;
+const formater = new global.Intl.DateTimeFormat();
 
 export default class FieldDate extends Component {
 
@@ -23,23 +25,23 @@ export default class FieldDate extends Component {
 
   constructor(props) {
     super(props);
-    const {_obj, _fld} = this.props;
+    const {_obj, _fld, _meta} = props;
 
     this.state = {
-      controlledDate: _obj[_fld],
+      controlledDate: moment(_obj[_fld]),
     };
   }
 
-  handleChange = (event, newValue) => {
+  handleChange = (newValue) => {
+
+    const {_obj, _fld, _meta, handleValueChange} = this.props;
 
     this.setState({
-      controlledDate: newValue,
+      controlledDate: moment(_obj[_fld] = newValue),
     });
 
-    const {_obj, _fld, handleValueChange} = this.props;
-    _obj[_fld] = newValue;
     if(handleValueChange) {
-      handleValueChange(newValue);
+      handleValueChange(_obj[_fld]);
     }
 
   };
@@ -51,15 +53,20 @@ export default class FieldDate extends Component {
     const {tooltip, synonym} = props._meta;
     //const {_obj, _fld, _meta} = props;
 
-    return <TextField
-      name={props._fld}
-      type="date"
-      hintText={tooltip || synonym}
-      value={state.controlledDate}
-      onChange={handleChange}
-      DateTimeFormat={DateTimeFormat}
+    // return <TextField
+    //   name={props._fld}
+    //   type="date"
+    //   title={tooltip || synonym}
+    //   value={state.controlledDate}
+    //   onChange={handleChange}
+    // />;
+
+    return <DatePicker
+      todayButton={"Сегодня"}
       locale="ru-RU"
-    />;
+      selected={state.controlledDate}
+      onChange={handleChange}
+    />
   }
 
 }

@@ -20,7 +20,7 @@ var ScrollableTabContent = React.createClass({
   },
 
   componentDidMount: function () {
-    $(this.refs.content.getDOMNode()).niceScroll(this.refs.wrapper.getDOMNode(), this.props.opts);
+    $(this._content.getDOMNode()).niceScroll(this._wrapper.getDOMNode(), this.props.opts);
   },
 
   render: function() {
@@ -30,8 +30,8 @@ var ScrollableTabContent = React.createClass({
       overflow: "scroll"
     };
     return (
-      React.createElement("div", {ref:"content", style:contentStyle},
-        React.createElement("div",{ref:"wrapper"},
+      React.createElement("div", {ref: (el) => this._content = el, style:contentStyle},
+        React.createElement("div",{ref: (el) => this._wrapper = el},
           this.props.children
         )
       )

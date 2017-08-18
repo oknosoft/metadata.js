@@ -7,7 +7,7 @@ import FullscreenExitIcon from "material-ui-icons/FullscreenExit";
 import CloseIcon from "material-ui-icons/Close";
 import ReactPortal from "react-portal";
 
-import {Content, Footer} from "../Panels/mixins";
+import {Content, Toolbar, Footer} from "../Panels/ext";
 import {FloatingPanel} from "../Panels/panel";
 import {Tab} from "../Panels/tab";
 
@@ -16,6 +16,7 @@ import {Tab} from "../Panels/tab";
  * This component use portal for mounting self into document.body.
  */
 export default class Dialog extends Component {
+
   static get defaultProps() {
     return {
       title: "",
@@ -91,28 +92,43 @@ export default class Dialog extends Component {
   }
 
   render() {
+
+    const {props} = this;
+
     return (
-      <ReactPortal isOpened={this.props.visible}>
+      <ReactPortal isOpened={props.visible}>
         <FloatingPanel
           theme={"material-ui"}
-          resizable={this.props.resizable}
-          fullscreen={this.props.fullscreen}
-          title={this.props.title}
-          width={this.props.width}
-          height={this.props.height}
-          left={this.props.left}
-          top={this.props.top}
+          resizable={props.resizable}
+          fullscreen={props.fullscreen}
+          title={props.title}
+          width={props.width}
+          height={props.height}
+          left={props.left}
+          top={props.top}
           buttons={[
-            <IconButton touch={true} title="развернуть" onClick={() => this.handleFullscreenClick()}>
-              {this.props.fullscreen ? <FullscreenExitIcon color={"white"}/> : <FullscreenIcon color={"white"}/>}
+            <IconButton title={props.fullscreen ? "свернуть" : "развернуть"} onClick={() => this.handleFullscreenClick()}>
+              {props.fullscreen ? <FullscreenExitIcon color={"white"}/> : <FullscreenIcon color={"white"}/>}
             </IconButton>,
 
-            <IconButton touch={true} title="закрыть" onClick={() => this.handleCloseClick()}>
+            <IconButton title="закрыть" onClick={() => this.handleCloseClick()}>
               <CloseIcon color={"white"}/>
             </IconButton>,
           ]}>
 
+          {/**
+           <Tab title="One" icon="fa fa-plane" key="One">
+           <Toolbar>Toolbar content of One</Toolbar>
+           <Content>Content of One</Content>
+           <Footer>Footer content of One</Footer>
+           </Tab>
+           <Tab title="Two" icon="fa fa-fire" key="Two">
+           <Content>Content of Two</Content>
+           </Tab>
+           **/}
+
           {this.renderTabs()}
+
         </FloatingPanel>
       </ReactPortal>
     );

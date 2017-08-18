@@ -89,8 +89,8 @@ class DataListToolbar extends Component {
             onRequestClose={this.handleRequestClose}
           >
 
-            <MenuItem primaryText="Печать" leftIcon={<PrintIcon/>} onClick={props.handlePrint}/>
-            <MenuItem primaryText="Вложения" leftIcon={<AttachIcon/>} onClick={props.handleAttachment}/>
+            <MenuItem onClick={props.handlePrint}><PrintIcon/> &nbsp;Печать</MenuItem>
+            <MenuItem onClick={props.handleAttachment}><AttachIcon/> &nbsp;Вложения</MenuItem>
 
           </Menu>
         </div>

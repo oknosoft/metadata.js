@@ -32,7 +32,7 @@
     "react-click-outside": "^2.2",
     "react-data-grid": "^2.0.56",
     "react-data-grid-addons": "^2.0.56",
-    "react-panels": "git+https://github.com/unpete/react-panels.git",
+    "react-datepicker": "^0.53.0",
     "react-transition-group": "^1.2.0",
     "react-virtualized": "^9.9.0",
     "superlogin-client": "^0.6.1"

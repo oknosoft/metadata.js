@@ -10,12 +10,13 @@
   },
   "peerDependencies": {
     "material-ui": "^1.0.0-beta.5",
-    "metadata-abstract-ui": "^2.0.2-beta.24",
+    "metadata-abstract-ui": "^2.0.2-beta.25",
     "react-data-grid": "^2.0",
     "react-data-grid-addons": "^2.0",
-    "react-transition-group": "^2.2.0",
+    "react-datepicker": "^0.53",
+    "react-transition-group": "^2.2",
     "react-portal": "^3.0",
-    "react-virtualized": "^9.8"
+    "react-virtualized": "^9.9"
   },
   "main": "dist/index.js",
   "repository": {

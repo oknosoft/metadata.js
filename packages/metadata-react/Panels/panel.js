@@ -5,20 +5,20 @@ import {Utils} from './utils'
 import {PanelWrapper, Transitions} from './mixins';
 import {TabGroup} from './tab';
 
+const MIN_WIDTH = 100;
+const MIN_HEIGHT = 100;
+
 export class FloatingPanel extends PanelWrapper {
 
-  constructor(props, state) {
-    super(props, state);
+  constructor(props, context) {
+    super(props, context);
     this.wrapperRef = null;
     this.tempLeft = 0;
     this.tempTop = 0;
     this.tempWidth = 0;
     this.tempHeight = 0;
 
-    this.MIN_WIDTH = 100;
-    this.MIN_HEIGHT = 100;
-
-    this.documentMouseDownHandler = null;
+    this.documentMouseDownHandler = this.documentMouseDownHandler.bind(this);
 
     var top = 0;
     var left = 0;
@@ -43,7 +43,7 @@ export class FloatingPanel extends PanelWrapper {
       left = props.left;
     }
 
-    this.state = {
+    Object.assign(this.state, {
       top: top,
       left: left,
       width: parseInt(props.width),
@@ -53,11 +53,10 @@ export class FloatingPanel extends PanelWrapper {
       dragModeOn: false,
       resizeModeOn: false,
       focused: false,
-    };
+    });
   }
 
   componentDidMount() {
-    this.documentMouseDownHandler = this.documentMouseDownHandler.bind(this);
     document.addEventListener("mousedown", this.documentMouseDownHandler);
   }
 
@@ -167,7 +166,7 @@ export class FloatingPanel extends PanelWrapper {
 
     const mouseMoveEventListener = (e) => {
       if (this.wrapperRef !== null) {
-        if (this.tempWidth + e.movementX < this.MIN_WIDTH || this.tempHeight + e.movementY < this.MIN_HEIGHT) {
+        if (this.tempWidth + e.movementX < MIN_WIDTH || this.tempHeight + e.movementY < MIN_HEIGHT) {
           return;
         }
 
@@ -228,8 +227,8 @@ export class FloatingPanel extends PanelWrapper {
     var inner = (React.createElement(ReactPanel, Object.assign({}, {
       key: "key0",
       floating: true,
-      onDragStart: this.dragStart,
-      onDragEnd: this.dragEnd,
+      onDragStart: this.dragStart.bind(this),
+      onDragEnd: this.dragEnd.bind(this),
       title: this.props.title,
       icon: this.props.icon,
       buttons: this.props.buttons,
@@ -239,7 +238,7 @@ export class FloatingPanel extends PanelWrapper {
     if (this.props.resizable === true) {
       corner = React.createElement("div", {
         key: "key1",
-        onMouseDown: this.handleMouseDown,
+        onMouseDown: this.handleMouseDown.bind(this),
         style: {
           position: "absolute",
           right: 0,
@@ -261,10 +260,7 @@ export class FloatingPanel extends PanelWrapper {
     }
 
     return React.createElement("div", {
-      ref: function (reference) {
-        this.wrapperRef = reference;
-      }.bind(this),
-
+      ref: (el) => this.wrapperRef = el,
       style: Object.assign({}, {
         position: "fixed",
         top: 0,
@@ -272,31 +268,30 @@ export class FloatingPanel extends PanelWrapper {
         zIndex: this.props.zIndex + (this.state.focused ? 10 : 0),
         width: Utils.pixelsOf(this.state.width),
         height: Utils.pixelsOf(this.state.height),
-        minWidth: Utils.pixelsOf(this.MIN_WIDTH),
-        minHeight: Utils.pixelsOf(this.MIN_HEIGHT),
+        minWidth: Utils.pixelsOf(MIN_WIDTH),
+        minHeight: Utils.pixelsOf(MIN_HEIGHT),
       },
-
       this.props.style,
       this.getTransform(this.state.left, this.state.top),
       fullscreenStyle),
 
-      onClick: this.handleMouseClick,
-      onMouseDown: this.handleWrapperMouseDown
+      onClick: this.handleMouseClick.bind(this),
+      onMouseDown: this.handleWrapperMouseDown.bind(this)
     }, [ inner, corner ]);
   }
 
   static propTypes = {
-    buttons: React.PropTypes.array,
-    height: React.PropTypes.number,
-    fullscreen: React.PropTypes.bool,
-    resizable: React.PropTypes.bool,
-    left: React.PropTypes.number,
-    onClick: React.PropTypes.func,
-    style: React.PropTypes.object,
-    title: React.PropTypes.string,
-    top: React.PropTypes.number,
-    width: React.PropTypes.number,
-    zIndex: React.PropTypes.number
+    buttons: PropTypes.array,
+    height: PropTypes.number,
+    fullscreen: PropTypes.bool,
+    resizable: PropTypes.bool,
+    left: PropTypes.number,
+    onClick: PropTypes.func,
+    style: PropTypes.object,
+    title: PropTypes.string,
+    top: PropTypes.number,
+    width: PropTypes.number,
+    zIndex: PropTypes.number
   }
 
   static defaultProps = {
@@ -314,7 +309,7 @@ export class FloatingPanel extends PanelWrapper {
 
 export class Panel extends PanelWrapper {
   render() {
-    var props = update({}, {$merge: this.config}),
+    var props = Object.assign({}, this.config),
       keys = Object.keys(this.props);
 
     for (var i = keys.length; --i >= 0;) {
@@ -329,8 +324,8 @@ export class Panel extends PanelWrapper {
 
 export class ReactPanel extends Transitions {
 
-  constructor(props, state) {
-    super(props, state);
+  constructor(props, context) {
+    super(props, context);
     this. state = {
       compacted: (props.autocompact)
     };
@@ -346,9 +341,9 @@ export class ReactPanel extends Transitions {
 
   componentDidMount () {
     if (this.props.autocompact) {
-      var tabsStart = this.refs['tabs-start'],
-        tabsEnd = this.refs['tabs-end'],
-        using = this.refs.tabs.offsetWidth,
+      var tabsStart = this['tabs-start'],
+        tabsEnd = this['tabs-end'],
+        using = this._tabs.offsetWidth,
         total = tabsEnd.offsetLeft - (tabsStart.offsetLeft + tabsStart.offsetWidth);
 
       if (using * 2 <= total) {   // TODO: ... * 2 is obviously not what it should be
@@ -363,9 +358,9 @@ export class ReactPanel extends Transitions {
         next_childs = React.Children.count(nextProps.children);
 
       if (next_childs > childs && this.props.autocompact && !this.state.compacted) {
-        var tabsStart = this.refs['tabs-start'],
-          tabsEnd = this.refs['tabs-end'],
-          using = this.refs.tabs.offsetWidth,
+        var tabsStart = this['tabs-start'],
+          tabsEnd = this['tabs-end'],
+          using = this._tabs.offsetWidth,
           total = tabsEnd.offsetLeft - (tabsStart.offsetLeft + tabsStart.offsetWidth),
           maxTabWidth = this.props.maxTitleWidth + 35;
 
@@ -421,10 +416,9 @@ export class ReactPanel extends Transitions {
   }
 
   render() {
-    var self = this,
-      draggable = (this.props.floating) ? "true" : "false",
-      sheet = this.getSheet("Panel"),
-      transitionProps = this.getTransitionProps("Panel");
+    const draggable = (this.props.floating) ? "true" : "false";
+    const sheet = this.getSheet("Panel");
+    const transitionProps = this.getTransitionProps("Panel");
 
     var icon = (this.props.icon) ? (
         React.createElement("span", {style:sheet.icon.style},
@@ -445,9 +439,9 @@ export class ReactPanel extends Transitions {
       tabs = [],
       groupIndex = 0;
 
-    React.Children.forEach(self.props.children, function(child) {
-      var ref = "tabb-" + tabIndex,
-        tabKey = (typeof child.key !== "undefined" && child.key != null) ? child.key : ref,
+    React.Children.forEach(this.props.children, (child) => {
+      var ref = (el) => this["tabb-" + tabIndex] = el,
+        tabKey = (typeof child.key !== "undefined" && child.key != null) ? child.key : ("tabb-" + tabIndex),
         showTitle = true,
         props = {
           "icon": child.props.icon,
@@ -455,15 +449,22 @@ export class ReactPanel extends Transitions {
           "pinned": child.props.pinned
         };
 
-      if (self.state.compacted) {
+      if (this.state.compacted) {
         if (!(props.pinned || selectedIndex == tabIndex)) {
           showTitle = false;
         }
       }
 
       tabButtons.push({
-        key: tabKey, title: props.title, icon: props.icon, index: tabIndex, ref: ref, showTitle: showTitle,
-        onClick: self.handleClick, "data-index": tabIndex, "data-key": tabKey
+        key: tabKey,
+        title: props.title,
+        icon: props.icon,
+        index: tabIndex,
+        ref: ref,
+        showTitle: showTitle,
+        onClick: this.handleClick.bind(this),
+        "data-index": tabIndex,
+        "data-key": tabKey
       });
 
       tabs.push(
@@ -479,21 +480,34 @@ export class ReactPanel extends Transitions {
 
     return (
       React.createElement("div", {style: sheet.style},
-        React.createElement("header", {draggable: draggable, onDragEnd: self.handleDragEnd,
-          onDragStart: self.handleDragStart, ref: "header", style: sheet.header.style},
+        React.createElement("header", {
+            draggable: draggable,
+            onDragEnd: this.handleDragEnd.bind(this),
+            onDragStart: this.handleDragStart.bind(this),
+            ref: (el) => this._header = el,
+            style: sheet.header.style
+          },
           icon, title,
-          React.createElement("div", {style: sheet.tabsStart.style, ref: "tabs-start"}),
+          React.createElement("div", {
+            style: sheet.tabsStart.style,
+            ref: (el) => this["tabs-start"] = el
+          }),
           this._getGroupedButtons(this.props.leftButtons).map(function (group) {
             return React.createElement("ul", {style: sheet.group.style, key: groupIndex++}, group );
           }),
 
           React.createElement(TabGroup, {
-            style: sheet.tabs.style, ref: "tabs", data: tabButtons,
+            style: sheet.tabs.style,
+            ref: (el) => this._tabs = el,
+            data: tabButtons,
             dragAndDropHandler: this.props.dragAndDropHandler || false,
             transitionProps: transitionProps
           }),
 
-          React.createElement("div", {style: sheet.tabsEnd.style, ref: "tabs-end"}),
+          React.createElement("div", {
+            style: sheet.tabsEnd.style,
+            ref: (el) => this["tabs-end"] = el
+          }),
           this._getGroupedButtons(this.props.rightButtons||this.props.buttons).map(function (group) {
             return React.createElement("ul", {style: sheet.group.style, key: groupIndex++}, group );
           })

@@ -18,7 +18,6 @@ import SchemeSettings from './SchemeSettings'
 import Tabs from './Tabs'
 import TabularSection from './TabularSection'
 
-export MetaComponent from './common/MetaComponent'
 
 export default {
   DataField,

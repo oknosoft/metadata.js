@@ -6,10 +6,6 @@ import Profile from './Profile';
 
 export default class SuperLogin extends Component {
 
-  static contextTypes = {
-    $p: React.PropTypes.func.isRequired
-  }
-
   constructor(props) {
     super(props);
     this.state = {

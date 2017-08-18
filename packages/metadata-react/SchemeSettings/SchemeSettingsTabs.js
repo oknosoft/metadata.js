@@ -28,40 +28,40 @@ export function getTabsContent(scheme, handleSchemeChange, tabParams) {
     ),
 
     "Колонки": (<TabularSection _obj={scheme} _tabular="fields" deny_add_del={true} minHeight={308}
-                                rowSelection={{
-                                  showCheckbox: true,
-                                  enableShiftSelect: true,
-                                  selectBy: {
-                                    keys: {
-                                      rowKey: "field",
-                                      markKey: "use",
-                                      values: scheme.used_fields()
-                                    }
-                                  }
-                                }}/>),
+                rowSelection={{
+                  showCheckbox: true,
+                  enableShiftSelect: true,
+                  selectBy: {
+                    keys: {
+                      rowKey: "field",
+                      markKey: "use",
+                      values: scheme.used_fields()
+                    }
+                  }
+                }}/>),
 
     "Отбор": (<TabularSection _obj={scheme} _tabular="selection" minHeight={308}
-                              rowSelection={{
-                                showCheckbox: true,
-                                enableShiftSelect: true,
-                                selectBy: {
-                                  keys: {
-                                    rowKey: "field",
-                                    markKey: "use",
-                                    values: scheme.used_fields()
-                                  }
-                                }
-                              }}/>),
+              rowSelection={{
+                showCheckbox: true,
+                enableShiftSelect: true,
+                selectBy: {
+                  keys: {
+                    rowKey: "field",
+                    markKey: "use",
+                    values: scheme.used_fields()
+                  }
+                }
+              }}/>),
 
     "Группировка": (<div className={styles.groups}>
-      <div className={styles.groupDimensions}>
-        <TabularSection _obj={scheme} _tabular="dimensions" minHeight={130}/>
-      </div>
+              <div className={styles.groupDimensions}>
+                <TabularSection _obj={scheme} _tabular="dimensions" minHeight={130}/>
+              </div>
 
-      <div className={styles.groupResources}>
-        <TabularSection _obj={scheme} _tabular="resources" minHeight={130}/>
-      </div>
-    </div>),
+              <div className={styles.groupResources}>
+                <TabularSection _obj={scheme} _tabular="resources" minHeight={130}/>
+              </div>
+            </div>),
 
     "Сортировка": (
       <TabularSection _obj={scheme} _tabular="sorting" minHeight={308}/>

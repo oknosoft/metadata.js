@@ -20,13 +20,14 @@ import {getTabsContent, SchemeSettingsTabs} from './SchemeSettingsTabs';
 import styles from './styles/SchemeSettingsWrapper.scss';
 
 export default class SchemeSettingsWrapper extends Component {
+
   static propTypes = {
     scheme: PropTypes.object.isRequired,
     handleSchemeChange: PropTypes.func.isRequired,
     tabParams: PropTypes.object,                    // конструктор пользовательской панели параметров
     show_search: PropTypes.bool,                    // показывать поле поиска
     show_variants: PropTypes.bool,                  // показывать список вариантов настройки динсписка
-  };
+  }
 
   constructor(props, context) {
     super(props, context);
@@ -38,7 +39,7 @@ export default class SchemeSettingsWrapper extends Component {
       menu_open: false,
       fullscreen: false,
       variants: [scheme]
-    };
+    }
 
     scheme._manager.get_option_list({
       _top: 40,
@@ -53,48 +54,43 @@ export default class SchemeSettingsWrapper extends Component {
     this.setState({
       dialog_open: true
     });
-  };
+  }
 
   handleDialogClose = () => {
     this.setState({
       dialog_open: false
     });
-  };
+  }
 
   handleMenuOpen = (event) => {
     this.setState({menu_open: true, anchorEl: event.currentTarget});
-  };
+  }
 
   handleMenuClose = () => {
     this.setState({
       menu_open: false
     });
-  };
+  }
 
   handleOk = () => {
     this.handleDialogClose();
     this.props.handleSchemeChange(this.state.scheme);
-  };
+  }
 
   handleSchemeChange = (scheme) => {
     this.props.handleSchemeChange(scheme);
     this.setState({scheme});
-  };
+  }
 
   handleSearchChange = (event, newValue) => {
-  };
 
-  handleVariantChange = (event, index, value) => {
-    const {_manager} = this.state.scheme;
-    this.handleSchemeChange(_manager.get(value));
-  };
+  }
 
   componentDidMount = () => {
     if(this.searchInput) {
       this.searchInput.input.placeholder = 'Найти...';
     }
-  };
-
+  }
 
   handleFullscreenClick() {
     this.setState({
@@ -104,14 +100,18 @@ export default class SchemeSettingsWrapper extends Component {
 
   Variants() {
     const {variants, scheme, menu_open, anchorEl} = this.state;
-    const menuitems = variants.map(v => <MenuItem value={v.ref} key={v.ref} primaryText={v.name}/>);
+    const menuitems = variants.map((v, index) => <MenuItem
+      selected = {v == scheme}
+      key = {v.ref}
+      onClick = {() => {
+        this.handleSchemeChange(variants[index]);
+        this.handleMenuClose();
+      }}
+    >{v.name}</MenuItem>);
+
     return <div>
-      <Button onClick={this.handleMenuOpen} value={scheme.ref} >{scheme.name}</Button>
-      <Menu
-        anchorEl={anchorEl}
-        open={menu_open}
-        onRequestClose={this.handleMenuClose}
-        onChange={this.handleVariantChange}>
+      <Button onClick={this.handleMenuOpen} >{scheme.name}</Button>
+      <Menu anchorEl={anchorEl} open={menu_open} onRequestClose={this.handleMenuClose}>
         {menuitems}
       </Menu>
     </div>

@@ -34,17 +34,17 @@ var flexbox2Skin = function (skin) {
 
 var flexbox2Style = function (_opts, skin) {
   var colors,
-    opts = update({
+    opts = Object.assign({
       skin: "default",
       renderPanelBorder: true,
       activeTabHeaderBorder: true
-    }, {$merge: _opts}),
+    }, _opts),
     isSafari = /Safari/.test(window.navigator.userAgent) && /Apple Computer/.test(window.navigator.vendor);
 
   skin = skin || opts.skin;
 
   if (typeof skin === "object") {
-    colors = update(flexbox2Skin(), {$merge: skin});
+    colors = Object.assign({}, flexbox2Skin(), skin);
   } else {
     colors = flexbox2Skin(skin);
   }

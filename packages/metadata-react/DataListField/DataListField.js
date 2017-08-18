@@ -9,12 +9,11 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import MetaComponent from "../common/MetaComponent";
-import {Async} from "react-select";
+import {Async} from 'react-select';
 //import Select from "../DataField/FieldVirtualizedSelect";
 
 
-export default class DataListField extends MetaComponent {
+export default class DataListField extends Component {
 
   static propTypes = {
     _tabular: PropTypes.object.isRequired,  // TabularSection, к которой будет привязано поле
@@ -25,38 +24,38 @@ export default class DataListField extends MetaComponent {
     read_only: PropTypes.bool,              // поле только для чтения
 
     handleValueChange: PropTypes.func   // обработчик при изменении значения в поле
-  }
+  };
 
   constructor(props, context) {
 
-    super(props, context)
+    super(props, context);
 
-    const {_fld, _tabular} = props
-    const _meta = props._meta || _tabular._metadata(_fld)
+    const {_fld, _tabular} = props;
+    const _meta = props._meta || _tabular._metadata(_fld);
 
     this.state = {
       _meta,
-      _mgr: context.$p.utils.value_mgr({}, _fld, _meta.fields[_fld].type, false),
+      _mgr: _tabular._owner._manager.value_mgr({}, _fld, _meta.fields[_fld].type, false),
       options: [],
       value: _tabular.unload_column(_fld),
       multi: true
-    }
+    };
   }
 
   _loadOptions = (input, callback) => {
 
     const selection = {_top: 40};
-    const {_fld, _meta} = this.props
-    const {_mgr} = this.state
+    const {_fld, _meta} = this.props;
+    const {_mgr} = this.state;
 
 
-    if (input) {
-      selection.presentation = {like: input}
+    if(input) {
+      selection.presentation = {like: input};
     }
-    if (_meta.choice_params) {
+    if(_meta.choice_params) {
       _meta.choice_params.forEach((cp) => {
-        selection[cp.name] = cp.path
-      })
+        selection[cp.name] = cp.path;
+      });
     }
 
     return _mgr.get_option_list(selection)
@@ -64,9 +63,9 @@ export default class DataListField extends MetaComponent {
         callback(null, {
           options: options,
           complete: true,
-        })
-      })
-  }
+        });
+      });
+  };
 
   _onChange = (value) => {
     const {handleValueChange, _fld, _tabular} = this.props;
@@ -75,15 +74,15 @@ export default class DataListField extends MetaComponent {
     // удаляем-добавляем строки в _tabular
     _tabular.load(value.map((row) => ({[_fld]: row})));
 
-    if (handleValueChange) {
-      handleValueChange(value)
+    if(handleValueChange) {
+      handleValueChange(value);
     }
-  }
+  };
 
   render() {
 
     const {props, state, _loadOptions, _onChange} = this;
-    const {_obj, _fld, label_position} = props;
+    const {_fld, label_position} = props;
     const {options, value, _meta} = state;
 
     const control = <Async
@@ -98,12 +97,13 @@ export default class DataListField extends MetaComponent {
       onChange={_onChange}
       options={options}
       value={value}
-    />
+    />;
 
-    if (label_position == this.context.$p.enm.label_positions.hide) {
-      return control
+    if(label_position == $p.enm.label_positions.hide) {
+      return control;
 
-    } else {
+    }
+    else {
       return (
         <div className={'meta-datafield-field'}>
           <div className={'meta-datafield-label'}>{_meta.synonym}</div>
@@ -111,7 +111,7 @@ export default class DataListField extends MetaComponent {
             {control}
           </div>
         </div>
-      )
+      );
     }
   }
 }

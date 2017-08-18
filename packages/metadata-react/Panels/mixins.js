@@ -8,8 +8,8 @@ import createSheet from './styles/base';
 
 export class Styleable extends Component {
 
-  constructor(props, state) {
-    super(props, state);
+  constructor(props, context) {
+    super(props, context);
     this.__ssv = {};
     this.__ssvh = false;
     this.__ssa = {target: '', mods: [], alter: {}};
@@ -149,16 +149,16 @@ export class Footer extends Component {
 
 export class StyleableWithEvents extends Styleable {
 
-  constructor(props, state) {
-    super(props, state);
+  constructor(props, context) {
+    super(props, context);
     this.listeners = {
-      onMouseEnter: this.handleMouseEnter,
-      onMouseLeave: this.handleMouseLeave
+      onMouseEnter: this.handleMouseEnter.bind(this),
+      onMouseLeave: this.handleMouseLeave.bind(this)
     };
-    this.state = {
+    Object.assign(this.state, {
       _hover: false,
       _focus: false
-    };
+    });
   }
 
   static defaultProps = {
@@ -185,8 +185,8 @@ export class StyleableWithEvents extends Styleable {
 
 export class PanelWrapper extends Component {
 
-  constructor(props, state) {
-    super(props, state);
+  constructor(props, context) {
+    super(props, context);
     const opts = {
       theme: props.theme,
       skin: props.skin,
@@ -201,7 +201,7 @@ export class PanelWrapper extends Component {
     this._sheet = createSheet(opts);
     this.config = this._sheet('PanelWrapper').config;
     this.state = {
-      selectedIndex: parseInt(props.selectedIndex)
+      selectedIndex: parseInt(props.selectedIndex || 0)
     };
   }
 
@@ -272,8 +272,8 @@ export class PanelWrapper extends Component {
     /** Additional props specific to transitionComponent. */
     transitionCustomProps: PropTypes.object,
     dragAndDropHandler: PropTypes.oneOfType([
-      React.PropTypes.object,
-      React.PropTypes.bool
+      PropTypes.object,
+      PropTypes.bool
     ])
   };
 
@@ -302,10 +302,8 @@ export class PanelWrapper extends Component {
 export class TabWrapper extends Component {
 
   getChildContext() {
-    return {
-      index: this.props.index,
-      tabKey: this.props.tabKey
-    };
+    const {index, tabKey} = this.props;
+    return {index, tabKey};
   }
 
   static propTypes = {
@@ -335,21 +333,22 @@ export class TabWrapper extends Component {
 
 export class Button extends StyleableWithEvents {
 
-  constructor(props, state) {
+  constructor(props, context) {
     super(props, state);
-    this.listeners.onClick = this._handleClick;
-    this.listeners.onDoubleClick = this._handleDoubleClick;
-    this.listeners.onContextMenu = this._handleContextMenu;
-    this.state = {
-      visible: this.props.visible,
-      enabled: this.props.enabled,
-      active: this.props.active,
-      highlighted: this.props.highlighted
-    };
+    this.listeners.onClick = this._handleClick.bind(this);
+    this.listeners.onDoubleClick = this._handleDoubleClick.bind(this);
+    this.listeners.onContextMenu = this._handleContextMenu.bind(this);
+    Object.assign(this.state, {
+      visible: props.visible,
+      enabled: props.enabled,
+      active: props.active,
+      highlighted: props.highlighted
+    });
   }
 
   _handleDoubleClick(ev) {
-    if(typeof this.props.onDoubleClick === 'function' && this.props.onDoubleClick(ev, this) === false) return;
+    const {onDoubleClick} = this.props;
+    if(typeof onDoubleClick === 'function' && onDoubleClick(ev, this) === false) return;
 
     if(typeof this['handleDoubleClick'] === 'function') {
       return this['handleDoubleClick'](ev);
@@ -357,7 +356,8 @@ export class Button extends StyleableWithEvents {
   }
 
   _handleClick(ev) {
-    if(typeof this.props.onClick === 'function' && this.props.onClick(ev, this) === false) return;
+    const {onClick} = this.props;
+    if(typeof onClick === 'function' && onClick(ev, this) === false) return;
 
     if(typeof this['handleClick'] === 'function') {
       return this['handleClick'](ev);
@@ -365,7 +365,8 @@ export class Button extends StyleableWithEvents {
   }
 
   _handleContextMenu(ev) {
-    if(typeof this.props.onContextMenu === 'function' && this.props.onContextMenu(ev, this) === false) return;
+    const {onContextMenu} = this.props;
+    if(typeof onContextMenu === 'function' && onContextMenu(ev, this) === false) return;
 
     if(typeof this['handleContextMenu'] === 'function') {
       return this['handleContextMenu'](ev);

@@ -99,10 +99,10 @@ class RepToolbar extends Component {
           open={this.state.open}
           onRequestClose={this.handleRequestClose}
         >
-          <MenuItem primaryText="Печать" leftIcon={<PrintIcon/>} disabled onClick={handlePrint}/>
-          <MenuItem primaryText="Копировать CSV" leftIcon={<CopyIcon/>} onClick={handleExportCSV}/>
-          <MenuItem primaryText="Копировать JSON" leftIcon={<CloudDownloadIcon/>} onClick={handleExportJSON}/>
-          <MenuItem primaryText="Экспорт в XLS" leftIcon={<FileDownloadIcon/>} onClick={handleExportXLS}/>
+          <MenuItem disabled onClick={handlePrint}><PrintIcon/> &nbsp;Печать</MenuItem>
+          <MenuItem onClick={handleExportCSV}><CopyIcon/> &nbsp;Копировать CSV</MenuItem>
+          <MenuItem onClick={handleExportJSON}><CloudDownloadIcon/> &nbsp;Копировать JSON</MenuItem>
+          <MenuItem onClick={handleExportXLS}><FileDownloadIcon/> &nbsp;Экспорт в XLS</MenuItem>
 
         </Menu>
 

@@ -30,7 +30,7 @@ var StickyButton = React.createClass({
     var sheet = this.getSheet('Button');
 
     return (
-      React.createElement("li", React.__spread({style: sheet.style},  this.listeners, {title: this.props.title}),
+      React.createElement("li", Object.assign({style: sheet.style},  this.listeners, {title: this.props.title}),
         React.createElement("span", {style: sheet.children.style},
           this.props.children
         )

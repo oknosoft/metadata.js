@@ -30,7 +30,7 @@ const styles = {
 export default class UserObj extends Component {
 
   static contextTypes = {
-    screen: React.PropTypes.object.isRequired
+    screen: PropTypes.object.isRequired
   }
 
   static propTypes = {

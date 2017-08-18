@@ -285,12 +285,12 @@ export default function createSheet(opts) {
     alter = alter || {}
     if (alter.skin || false) {
       if (!(_skin[alter.skin] || false)) {
-        _skin[alter.skin] = buildStyle(update(opts, {$merge: {skin: alter.skin}}));
+        _skin[alter.skin] = buildStyle(Object.assign({}, opts, {skin: alter.skin}));
       }
       using = _skin[alter.skin];
     }
     if (!mods.length) return using[target];
-    var sheet = update(using[target], {$merge: {}}),
+    var sheet = Object.assign({}, using[target]),
       i;
     for (i = 0; i < mods.length; ++i) {
       if ((sheet.mods || false) && (sheet.mods[mods[i]] || false)) {

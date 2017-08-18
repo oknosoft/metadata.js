@@ -35,7 +35,7 @@ export default class TabularSection extends Component {
   }
 
   static contextTypes = {
-    $p: React.PropTypes.object.isRequired
+    $p: PropTypes.object.isRequired
   }
 
   static defaultProps = {

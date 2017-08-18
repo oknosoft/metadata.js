@@ -1,15 +1,16 @@
 import React from 'react'
+import PropTypes from 'prop-types';
 import layoutEvents from './react-flex-layout-events.jsx'
 //import splittercss from './react-flex-layout-splitter.css'
 
 export default class LayoutSplitter extends React.Component {
 
   static propTypes = {
-    orientation: React.PropTypes.string,
-    getPreviousLayout: React.PropTypes.func,
-    getNextLayout: React.PropTypes.func,
-    onResizing: React.PropTypes.func,
-    onResizeComplete: React.PropTypes.func
+    orientation: PropTypes.string,
+    getPreviousLayout: PropTypes.func,
+    getNextLayout: PropTypes.func,
+    onResizing: PropTypes.func,
+    onResizeComplete: PropTypes.func
   }
 
   static defaultSize = 11

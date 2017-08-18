@@ -17,10 +17,6 @@ import styles from "./styles/SchemeSettingsSelect.scss";
 
 export default class SchemeSettingsSelect extends Component {
 
-  static contextTypes = {
-    $p: React.PropTypes.object.isRequired
-  }
-
   static propTypes = {
     scheme: PropTypes.object.isRequired,
     handleSchemeChange: PropTypes.func.isRequired,

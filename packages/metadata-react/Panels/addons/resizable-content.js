@@ -13,10 +13,10 @@ var ResizableContent = React.createClass({
   },
 
   propTypes: {
-    triggersClass: React.PropTypes.string,
-    expandClass: React.PropTypes.string,
-    contractClass: React.PropTypes.string,
-    onResize: React.PropTypes.func.isRequired
+    triggersClass: PropTypes.string,
+    expandClass: PropTypes.string,
+    contractClass: PropTypes.string,
+    onResize: PropTypes.func.isRequired
   },
 
   getDefaultProps: function () {
@@ -90,10 +90,10 @@ var ResizableContent = React.createClass({
   },
 
   render: function() {
-    var props = React.addons.update(this.props, {$merge: {
+    var props = Object.assign({}, this.props, {
       onScroll: this.onScroll,
       ref: 'resizable'
-    }});
+    });
     props.style = props.style || {};
     props.style.width = props.style.height = "100%";
     props.style.display = "block";

@@ -1,47 +1,39 @@
+import React from "react";
 
-var Toolbar = React.createClass({
-  displayName: 'Toolbar',
-  mixins: [Mixins.Toolbar],
+import {Toolbar as MToolbar, Content as MContent, Footer as MFooter} from './mixins'
 
-  render: function () {
+export class Toolbar extends MToolbar {
+  render () {
     return React.createElement("div", {}, this.props.children );
   }
+}
 
-});
-
-var Content = React.createClass({
-  displayName: 'Content',
-  mixins: [Mixins.Content],
-
-  render: function () {
+export class Content extends MContent {
+  render () {
     return React.createElement("div", {}, this.props.children );
   }
+}
 
-});
-
-var Footer = React.createClass({
-  displayName: 'Footer',
-  mixins: [Mixins.Footer],
-
-  render: function () {
+export class Footer extends MFooter {
+  render () {
     return React.createElement("div", {}, this.props.children );
   }
+}
 
-});
 
-var PanelAddons = {};
-
-var ReactPanels = {
-  Panel: Panel,
-  FloatingPanel: FloatingPanel,
-  ReactPanel: ReactPanel,
-  Tab: Tab,
-  Mixins: Mixins,
-  Toolbar: Toolbar,
-  Content: Content,
-  Footer: Footer,
-  ToggleButton: ToggleButton,
-  Button: Button,
-  addons: PanelAddons,
-  DragAndDropHandler: DragAndDropHandler
-};
+// var PanelAddons = {};
+//
+// var ReactPanels = {
+//   Panel: Panel,
+//   FloatingPanel: FloatingPanel,
+//   ReactPanel: ReactPanel,
+//   Tab: Tab,
+//   Mixins: Mixins,
+//   Toolbar: Toolbar,
+//   Content: Content,
+//   Footer: Footer,
+//   ToggleButton: ToggleButton,
+//   Button: Button,
+//   addons: PanelAddons,
+//   DragAndDropHandler: DragAndDropHandler
+// };

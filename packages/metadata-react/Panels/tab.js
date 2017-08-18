@@ -57,14 +57,14 @@ export class TabGroup extends Component {
   handleDragStart(e) {
     if (this.ctx.sortable) {
 
-      var node = ReactDOM.findDOMNode(this),
-        tabWidth = node.offsetWidth / this.tabKeys.length,
-        distance = e.pageX - node.getBoundingClientRect().left,
-        index = parseInt(distance / tabWidth),
-        targetKey = this.tabKeys[index] || false;
+      var node = ReactDOM.findDOMNode(this);
+      var tabWidth = node.offsetWidth / this.tabKeys.length;
+      var distance = e.pageX - node.getBoundingClientRect().left;
+      var index = parseInt(distance / tabWidth);
+      var targetKey = this.tabKeys[index] || false;
 
       if (targetKey !== false) {
-        var tabComponent = this.refs[targetKey + "-tabbref"] || false;
+        var tabComponent = this[targetKey + "-tabbref"] || false;
         if (tabComponent !== false) {
           this.ctx.ownerId = this.ctx.parentId = this.memberId || false;
           var clone = React.cloneElement(tabComponent.render(), {
@@ -162,20 +162,17 @@ export class TabGroup extends Component {
         });
       }
     }
-    var tabProps = this.props.data[this.constKeyMap.indexOf(tabKey)] || false;
-
-    return (tabProps === false) ? null : React.createElement(
-      TabButton, Object.assign({}, tabProps, {ref: tabKey + "-tabbref"})
-    );
+    const tabProps = this.props.data[this.constKeyMap.indexOf(tabKey)];
+    return tabProps ? null : <TabButton {...tabProps} ref={(el) => this[tabKey + "-tabbref"] = el} />;
   }
 
   render () {
     var tp = this.props.transitionProps,
       sp = (this.ctx.sortable || false) ? {
         draggable: true,
-        onDragEnd: this.handleDragEnd,
-        onDragStart: this.handleDragStart,
-        onDragOver: this.handleDragOver,
+        onDragEnd: this.handleDragEnd.bind(this),
+        onDragStart: this.handleDragStart.bind(this),
+        onDragOver: this.handleDragOver.bind(this),
         "data-key": "get-target-stop"
       } : {};
 
@@ -248,13 +245,12 @@ export class TabButton extends StyleableWithEvents {
     }
 
     return (
-      React.createElement("li", React.__spread({
+      React.createElement("li", Object.assign({
           onClick: this.handleClick,
           style: sheet.style,
           "data-index": this.props["data-index"],
           "data-key": this.props["data-key"]
-        },
-        this.listeners),
+        }, this.listeners),
         React.createElement("div", {title: this.props.title},
           icon, React.createElement("div", {style: sheet.box.style}, title)
         )
@@ -274,10 +270,10 @@ export class TabButton extends StyleableWithEvents {
     "showTitle": true
   }
 
-  static contextTypes = {
+  static contextTypes = Object.assign({
     selectedIndex: PropTypes.number,
     numTabs: PropTypes.number
-  }
+  }, StyleableWithEvents.contextTypes);
 }
 
 export class Tab extends Transitions {
@@ -341,35 +337,63 @@ export class Tab extends Transitions {
       numChilds = React.Children.count(this.props.children),
       active = this.isActive(),
       tp = this.getTransitionProps(),
-      mods = (active) ? ['active'] : [],
+      mods = (active) ? ["active"] : [],
       sheet = {};
 
     this.mounted = (this.mounted || false) || this.props.automount || active;
-    this.hasToolbar=this.hasFooter=false;
+    this.hasToolbar = this.hasFooter = false;
+
+    // Check if tab has Footer
+    var tabHasFooter = false;
+    for (var i = numChilds - 1; i >=0; i--) {
+      var child = this.props.children[i];
+
+      if (React.isValidElement(child) === false) {
+        continue;
+      }
+
+      if (typeof child.props.panelComponentType === "undefined") {
+        continue;
+      }
+
+      if (String(child.props.panelComponentType) !== "Footer") {
+        continue;
+      }
+
+      tabHasFooter = true;
+      break;
+    }
 
     var innerContent = (this.mounted) ? React.Children.map(self.props.children, function(child, i) {
+      if (child === null) {
+        return null;
+      }
+
       var type = (i == 0 && numChilds >= 2) ? 0 : 1;   // 0: Toolbar, 1: Content, 2: Footer
       if (React.isValidElement(child) && (typeof child.props.panelComponentType !== "undefined")) {
         switch (String(child.props.panelComponentType)) {
         case "Toolbar": type = 0; break;
         case "Content": type = 1; break;
-        case "Footer": type = 2; break;
+        case "Footer":  type = 2; break;
         }
       }
+
       if (i == 0) {
         if (type == 0) {
           this.hasToolbar = true;
-          if (self.props.showToolbar) mods.push('withToolbar');
+          if (self.props.showToolbar) mods.push("withToolbar");
         }
         sheet = self.getSheet("Tab", mods);
       }
+
       if (i == self.props.children.length-1 && type == 2) {
         this.hasFooter = true;
         if (self.props.showFooter) {
-          mods.push('withFooter');
+          mods.push("withFooter");
           sheet = self.getSheet("Tab", mods);
         }
       }
+
       switch (type) {
       case 0:
         return (self.props.showToolbar) ? (
@@ -380,11 +404,12 @@ export class Tab extends Transitions {
           )
         ) : null;
       case 1:
-        var contentStyle = update({
-          maxHeight : this.props.maxContentHeight || "none",
-          overflowX :"hidden",
-          overflowY : this.props.maxContentHeight?"auto":"hidden"
-        }, {$merge: sheet.content.style});
+        var contentStyle = Object.assign({
+          maxHeight: this.props.maxContentHeight || "none",
+          overflowX: "hidden",
+          overflowY: this.props.maxContentHeight ? "auto" : "hidden",
+          paddingBottom: tabHasFooter === true ? sheet.footer.footerHeight : "0",
+        }, sheet.content.style);
 
         return (
           React.createElement("div", {key: i, style: contentStyle},
@@ -405,10 +430,18 @@ export class Tab extends Transitions {
     }.bind(this)) : null;
 
     return (
-      React.createElement(tp.transitionComponent, React.__spread({component: "div", style: sheet.style,
-          transitionName: tp.transitionName, transitionAppear: tp.transitionAppear && active,
-          transitionEnter: tp.transitionEnter && active, transitionLeave: tp.transitionLeave && active},
-        tp.transitionCustomProps),
+      React.createElement(
+        tp.transitionComponent,
+        Object.assign({}, {
+          component: "div",
+          style: sheet.style,
+          transitionName: tp.transitionName,
+          transitionAppear: tp.transitionAppear && active,
+          transitionEnter: tp.transitionEnter && active,
+          transitionLeave: tp.transitionLeave && active
+        },
+        tp.transitionCustomProps
+        ),
         innerContent
       )
     );
@@ -431,9 +464,9 @@ export class Tab extends Transitions {
     "maxContentHeight": 0
   }
 
-  static contextTypes = {
+  static contextTypes = Object.assign({}, Transitions.contextTypes, {
     selectedIndex: PropTypes.number,
     index: PropTypes.number,
     globals: PropTypes.object
-  }
+  })
 }
