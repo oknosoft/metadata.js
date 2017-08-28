@@ -13,6 +13,23 @@ import IconExpandMore from 'material-ui-icons/ExpandMore';
 
 class NavList extends Component {
 
+  constructor(props) {
+    super(props);
+    // при создании компонента, устанавливаем open для открытых по умолчанию пунктов меню
+    const handleIfaceState = props.handleIfaceState.bind(this);
+    const open = {
+      component: this.constructor.name,
+      name: '',
+      value: true,
+    }
+    for (const item of props.items) {
+      if(item.open && item.id){
+        open.name = item.id;
+        handleIfaceState(open);
+      }
+    }
+  }
+
   getItems() {
     this.key = 0;
     const items = [];

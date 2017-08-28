@@ -136,7 +136,7 @@ export default class SchemeSettingsWrapper extends Component {
 
 
     return (
-      <div style={{display: 'inherit'}}>
+      <div style={{display: 'inline-flex'}}>
         {/* Search box */}
         {show_search ? <TextField
           name="search"
