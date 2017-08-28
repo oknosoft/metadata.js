@@ -19,6 +19,8 @@ import Dialog from '../Dialog';
 import {getTabsContent, SchemeSettingsTabs} from './SchemeSettingsTabs';
 import styles from './styles/SchemeSettingsWrapper.scss';
 
+import spacing from 'material-ui/styles/spacing';
+
 export default class SchemeSettingsWrapper extends Component {
 
   static propTypes = {
@@ -123,15 +125,8 @@ export default class SchemeSettingsWrapper extends Component {
     const {show_search, show_variants, tabParams} = props;
 
     const actions = [
-      <Button
-        key={0}
-        raised
-        onClick={handleDialogClose}>Отмена</Button>,
-
-      <Button
-        key={1}
-        raised
-        onClick={handleOk}>Применить</Button>,
+      <Button key={0} raised onClick={handleDialogClose} style={{margin: spacing.unit}}>Отмена</Button>,
+      <Button key={1} raised onClick={handleOk} style={{margin: spacing.unit}}>Применить</Button>,
     ];
 
 

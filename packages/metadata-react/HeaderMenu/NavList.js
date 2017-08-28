@@ -21,9 +21,9 @@ class NavList extends Component {
       component: this.constructor.name,
       name: '',
       value: true,
-    }
+    };
     for (const item of props.items) {
-      if(item.open && item.id){
+      if(item.open && item.id) {
         open.name = item.id;
         handleIfaceState(open);
       }
@@ -41,7 +41,7 @@ class NavList extends Component {
 
   addItem(item, recipient) {
     this.key += 1;
-    if (item.items) {
+    if(item.items) {
       const items = [];
       item.items.forEach(item => {
         this.addItem(item, items);
@@ -83,7 +83,7 @@ class NavList extends Component {
 
   handleNavigate(path, id) {
 
-    if (typeof path == 'function') {
+    if(typeof path == 'function') {
       return path.bind(this, id);
     }
 
@@ -95,10 +95,10 @@ class NavList extends Component {
 
   handleExpanded(name) {
     return this.props.handleIfaceState.bind(this, {
-        component: this.constructor.name,
-        name: name,
-        value: 'invert',
-      });
+      component: this.constructor.name,
+      name: name,
+      value: 'invert',
+    });
   }
 
   render() {

@@ -46,7 +46,7 @@ class DataListToolbar extends Component {
       );
     }
 
-    if(!props.deny_add_del) {
+    if(!props.denyAddDel) {
       buttons.push(
         <IconButton key="create" title="Создать объект" onClick={props.handleAdd}>
           <AddIcon/>
@@ -101,7 +101,7 @@ class DataListToolbar extends Component {
 
 DataListToolbar.propTypes = {
   selection_mode: PropTypes.bool,                   // режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
-  deny_add_del: PropTypes.bool,                     // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+  denyAddDel: PropTypes.bool,                     // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
 
   handleAdd: PropTypes.func.isRequired,             // обработчик добавления объекта
   handleEdit: PropTypes.func.isRequired,            // обработчик открфтия формы редактора

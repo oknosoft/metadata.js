@@ -11,8 +11,5 @@ import PropTypes from 'prop-types';
 
 export default class MetaComponent extends Component {
 
-  static contextTypes = {
-    $p: PropTypes.object.isRequired
-  }
 
 }

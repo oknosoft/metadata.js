@@ -1,7 +1,7 @@
-import React, {Component} from "react";
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import {Utils} from './utils'
+import {Utils} from './utils';
 import {PanelWrapper, Transitions} from './mixins';
 import {TabGroup} from './tab';
 
@@ -23,23 +23,25 @@ export class FloatingPanel extends PanelWrapper {
     var top = 0;
     var left = 0;
 
-    if (props.top === null) {
+    if(props.top === null) {
       var windowHeight = window.innerHeight
         || document.documentElement.clientHeight
         || document.body.clientHeight;
 
       top = (windowHeight / 2) - (props.height / 2);
-    } else {
+    }
+    else {
       top = props.top;
     }
 
-    if (props.left === null) {
+    if(props.left === null) {
       var windowWidth = window.innerWidth
         || document.documentElement.clientWidth
         || document.body.clientWidth;
 
       left = (windowWidth / 2) - (props.width / 2);
-    } else {
+    }
+    else {
       left = props.left;
     }
 
@@ -57,11 +59,11 @@ export class FloatingPanel extends PanelWrapper {
   }
 
   componentDidMount() {
-    document.addEventListener("mousedown", this.documentMouseDownHandler);
+    document.addEventListener('mousedown', this.documentMouseDownHandler);
   }
 
   componentWillUnmount() {
-    document.removeEventListener("mousedown", this.documentMouseDownHandler);
+    document.removeEventListener('mousedown', this.documentMouseDownHandler);
   }
 
   enable() {
@@ -71,7 +73,7 @@ export class FloatingPanel extends PanelWrapper {
   }
 
   documentMouseDownHandler(e) {
-    if (this.wrapperRef === null) {
+    if(this.wrapperRef === null) {
       return;
     }
 
@@ -79,7 +81,7 @@ export class FloatingPanel extends PanelWrapper {
     var wrapperFound = false;
 
     while (target) {
-      if (target === this.wrapperRef) {
+      if(target === this.wrapperRef) {
         wrapperFound = true;
         break;
       }
@@ -87,14 +89,14 @@ export class FloatingPanel extends PanelWrapper {
       target = target.parentNode;
     }
 
-    if (wrapperFound === false) {
+    if(wrapperFound === false) {
       this.setState({
         focused: false,
       });
     }
   }
 
-  dragStart (e) {
+  dragStart(e) {
     this.panelBounds = {
       startLeft: this.state.left,
       startTop: this.state.top,
@@ -102,13 +104,11 @@ export class FloatingPanel extends PanelWrapper {
       startPageY: e.pageY
     };
 
-    try {
-      const img = document.createElement("img");
-      img.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABmJLR0QA/wD/AP+gvaeTAAAADUlEQVQI12NgYGBgAAAABQABXvMqOgAAAABJRU5ErkJggg==";
-      img.width = 1;
-      e.dataTransfer.setData('text/plain', "Panel");
-      e.dataTransfer.setDragImage(img, -1000, -1000);
-    } catch (err) { /* Fix for IE */ }
+    const img = document.createElement('img');
+    img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABmJLR0QA/wD/AP+gvaeTAAAADUlEQVQI12NgYGBgAAAABQABXvMqOgAAAABJRU5ErkJggg==';
+    img.width = 1;
+    e.dataTransfer.setData('text/plain', 'Panel');
+    e.dataTransfer.setDragImage(img, -1000, -1000);
 
     window.addEventListener('dragover', this.dragOver);
 
@@ -119,7 +119,7 @@ export class FloatingPanel extends PanelWrapper {
       dragModeOn: true
     };
 
-    if (this.props.fullscreen === true) {
+    if(this.props.fullscreen === true) {
       newState.floating = false;
     }
 
@@ -128,7 +128,7 @@ export class FloatingPanel extends PanelWrapper {
 
   dragEnd() {
     delete this.panelBounds;
-    window.removeEventListener("dragover", this.dragOver);
+    window.removeEventListener('dragover', this.dragOver);
 
     this.setState({
       top: this.tempTop,
@@ -139,48 +139,48 @@ export class FloatingPanel extends PanelWrapper {
   }
 
   dragOver(e) {
-    if (this.panelBounds || false) {
+    if(this.panelBounds || false) {
       this.tempLeft = this.panelBounds.startLeft + (e.pageX - this.panelBounds.startPageX);
       this.tempTop = this.panelBounds.startTop + (e.pageY - this.panelBounds.startPageY);
 
-      if (this.wrapperRef !== null) {
+      if(this.wrapperRef !== null) {
         Object.assign(this.wrapperRef.style, this.getTransform(this.tempLeft, this.tempTop));
       }
     }
   }
 
-  shouldComponentUpdate () {
+  shouldComponentUpdate() {
     return (false === (this.state.dragModeOn || this.state.resizeModeOn));
   }
 
-  handleMouseClick (e) {
-    if (typeof this.props.onClick === "function") {
+  handleMouseClick(e) {
+    if(typeof this.props.onClick === 'function') {
       this.props.onClick(e);
     }
   }
 
   handleMouseDown() {
-    if (this.props.fullscreen === true) {
+    if(this.props.fullscreen === true) {
       return;
     }
 
     const mouseMoveEventListener = (e) => {
-      if (this.wrapperRef !== null) {
-        if (this.tempWidth + e.movementX < MIN_WIDTH || this.tempHeight + e.movementY < MIN_HEIGHT) {
+      if(this.wrapperRef !== null) {
+        if(this.tempWidth + e.movementX < MIN_WIDTH || this.tempHeight + e.movementY < MIN_HEIGHT) {
           return;
         }
 
-        this.tempWidth  += e.movementX;
+        this.tempWidth += e.movementX;
         this.tempHeight += e.movementY;
 
-        this.wrapperRef.style.width  = Utils.pixelsOf(this.tempWidth);
+        this.wrapperRef.style.width = Utils.pixelsOf(this.tempWidth);
         this.wrapperRef.style.height = Utils.pixelsOf(this.tempHeight);
       }
     };
 
     const mouseUpEventListener = () => {
-      document.removeEventListener("mouseup", mouseUpEventListener);
-      document.removeEventListener("mousemove", mouseMoveEventListener);
+      document.removeEventListener('mouseup', mouseUpEventListener);
+      document.removeEventListener('mousemove', mouseMoveEventListener);
 
       this.setState({
         width: this.tempWidth,
@@ -190,8 +190,8 @@ export class FloatingPanel extends PanelWrapper {
 
     };
 
-    document.addEventListener("mouseup", mouseUpEventListener);
-    document.addEventListener("mousemove", mouseMoveEventListener);
+    document.addEventListener('mouseup', mouseUpEventListener);
+    document.addEventListener('mousemove', mouseMoveEventListener);
 
     this.tempWidth = this.state.width;
     this.tempHeight = this.state.height;
@@ -201,13 +201,13 @@ export class FloatingPanel extends PanelWrapper {
     });
   }
 
-  getTransform (left, top) {
-    if (this.props.fullscreen === true) {
+  getTransform(left, top) {
+    if(this.props.fullscreen === true) {
       left = 0;
       top = 0;
     }
 
-    var transform = "translate3d(" + Utils.pixelsOf(left) + ", " + Utils.pixelsOf(top)  + ", 0)";
+    var transform = 'translate3d(' + Utils.pixelsOf(left) + ', ' + Utils.pixelsOf(top) + ', 0)';
 
     return {
       WebkitTransform: transform,
@@ -224,8 +224,8 @@ export class FloatingPanel extends PanelWrapper {
   }
 
   render() {
-    var inner = (React.createElement(ReactPanel, Object.assign({}, {
-      key: "key0",
+    const inner = (React.createElement(ReactPanel, Object.assign({}, {
+      key: 'key0',
       floating: true,
       onDragStart: this.dragStart.bind(this),
       onDragEnd: this.dragEnd.bind(this),
@@ -234,50 +234,40 @@ export class FloatingPanel extends PanelWrapper {
       buttons: this.props.buttons,
     }, this.config), this.props.children));
 
-    var corner = null;
-    if (this.props.resizable === true) {
-      corner = React.createElement("div", {
-        key: "key1",
-        onMouseDown: this.handleMouseDown.bind(this),
-        style: {
-          position: "absolute",
-          right: 0,
-          bottom: 0,
-          cursor: "se-resize",
-          border: "10px solid #00bcd4",
-          borderLeft: "10px solid transparent",
-          borderTop: "10px solid transparent",
-        },
-      });
-    }
+    const corner = this.props.resizable === true ? React.createElement('div', {
+      key: 'key1',
+      onMouseDown: this.handleMouseDown.bind(this),
+      style: {
+        position: 'absolute',
+        right: 0,
+        bottom: 0,
+        cursor: 'se-resize',
+        border: '10px solid #00bcd4',
+        borderLeft: '10px solid transparent',
+        borderTop: '10px solid transparent',
+      },
+    }) : null;
 
-    var fullscreenStyle = {};
-    if (this.props.fullscreen === true) {
-      fullscreenStyle = {
-        width: "100%",
-        height: "100%"
-      };
-    }
+    const fullscreenStyle = this.props.fullscreen === true ? {width: '100%', height: '100%'} : {};
 
-    return React.createElement("div", {
+    return React.createElement('div', {
       ref: (el) => this.wrapperRef = el,
       style: Object.assign({}, {
-        position: "fixed",
-        top: 0,
-        left: 0,
-        zIndex: this.props.zIndex + (this.state.focused ? 10 : 0),
-        width: Utils.pixelsOf(this.state.width),
-        height: Utils.pixelsOf(this.state.height),
-        minWidth: Utils.pixelsOf(MIN_WIDTH),
-        minHeight: Utils.pixelsOf(MIN_HEIGHT),
-      },
-      this.props.style,
-      this.getTransform(this.state.left, this.state.top),
-      fullscreenStyle),
-
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          zIndex: this.props.zIndex + (this.state.focused ? 10 : 0),
+          width: Utils.pixelsOf(this.state.width),
+          height: Utils.pixelsOf(this.state.height),
+          minWidth: Utils.pixelsOf(MIN_WIDTH),
+          minHeight: Utils.pixelsOf(MIN_HEIGHT),
+        },
+        this.props.style,
+        this.getTransform(this.state.left, this.state.top),
+        fullscreenStyle),
       onClick: this.handleMouseClick.bind(this),
       onMouseDown: this.handleWrapperMouseDown.bind(this)
-    }, [ inner, corner ]);
+    }, [inner, corner]);
   }
 
   static propTypes = {
@@ -292,9 +282,9 @@ export class FloatingPanel extends PanelWrapper {
     top: PropTypes.number,
     width: PropTypes.number,
     zIndex: PropTypes.number
-  }
+  };
 
-  static defaultProps = {
+  static defaultProps = Object.assign({}, PanelWrapper.defaultProps, {
     fullscreen: false,
     resizable: true,
     top: null,
@@ -304,21 +294,19 @@ export class FloatingPanel extends PanelWrapper {
     width: 420,
     height: 500,
     zIndex: 2000
-  }
+  });
 }
 
 export class Panel extends PanelWrapper {
   render() {
-    var props = Object.assign({}, this.config),
-      keys = Object.keys(this.props);
+    const props = Object.assign({}, this.config);
+    const keys = Object.keys(this.props);
 
-    for (var i = keys.length; --i >= 0;) {
-      if (["children"].indexOf(keys[i]) != -1) continue;
+    for (let i = keys.length; --i >= 0;) {
+      if(['children'].indexOf(keys[i]) != -1) continue;
       props[keys[i]] = this.props[keys[i]];
     }
-    return React.createElement(ReactPanel, props,
-      this.props.children
-    );
+    return React.createElement(ReactPanel, props, this.props.children);
   }
 }
 
@@ -326,89 +314,91 @@ export class ReactPanel extends Transitions {
 
   constructor(props, context) {
     super(props, context);
-    this. state = {
+    this.state = {
       compacted: (props.autocompact)
     };
   }
 
-  getSelectedIndex () {
+  getSelectedIndex() {
     return this.context.selectedIndex;
   }
 
-  handleClick (event, index) {
+  handleClick(event, index) {
     this.context.onTabChange(parseInt(index));
   }
 
-  componentDidMount () {
-    if (this.props.autocompact) {
+  componentDidMount() {
+    if(this.props.autocompact) {
       var tabsStart = this['tabs-start'],
         tabsEnd = this['tabs-end'],
         using = this._tabs.offsetWidth,
         total = tabsEnd.offsetLeft - (tabsStart.offsetLeft + tabsStart.offsetWidth);
 
-      if (using * 2 <= total) {   // TODO: ... * 2 is obviously not what it should be
+      if(using * 2 <= total) {   // TODO: ... * 2 is obviously not what it should be
         this.setState({compacted: false});
       }
     }
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.autocompact) {
+    if(this.props.autocompact) {
       var childs = React.Children.count(this.props.children),
         next_childs = React.Children.count(nextProps.children);
 
-      if (next_childs > childs && this.props.autocompact && !this.state.compacted) {
+      if(next_childs > childs && this.props.autocompact && !this.state.compacted) {
         var tabsStart = this['tabs-start'],
           tabsEnd = this['tabs-end'],
           using = this._tabs.offsetWidth,
           total = tabsEnd.offsetLeft - (tabsStart.offsetLeft + tabsStart.offsetWidth),
           maxTabWidth = this.props.maxTitleWidth + 35;
 
-        if (using + maxTabWidth >= total) {
+        if(using + maxTabWidth >= total) {
           this.setState({compacted: true});
         }
-      } else {
+      }
+      else {
         // TODO
       }
     }
   }
 
-  handleDragStart (e) {
-    if (typeof this.props.onDragStart === "function") {
+  handleDragStart(e) {
+    if(typeof this.props.onDragStart === 'function') {
       this.props.onDragStart(e);
     }
   }
 
-  handleDragEnd () {
-    if (typeof this.props.onDragEnd === "function") {
+  handleDragEnd() {
+    if(typeof this.props.onDragEnd === 'function') {
       this.props.onDragEnd();
     }
   }
 
-  _getGroupedButtons (buttons) {
+  _getGroupedButtons(buttons) {
     var len = buttons.length,
       i, j, item, group = [], groups = [];
 
     for (i = 0; i < len; ++i) {
       item = buttons[i];
 
-      if (typeof item === "object" && item instanceof Array) {
-        if (group.length) {
+      if(typeof item === 'object' && item instanceof Array) {
+        if(group.length) {
           groups.push(group);
           group = [];
         }
         for (j = 0; j < item.length; ++j) {
           group.push(React.cloneElement(item[j], {key: j}));
         }
-        if (group.length) {
+        if(group.length) {
           groups.push(group);
           group = [];
         }
-      } else {
+      }
+      else {
         group.push(React.cloneElement(item, {key: i}));
       }
     }
-    if (group.length) {
+    if(group.length) {
       groups.push(group);
     }
 
@@ -416,55 +406,33 @@ export class ReactPanel extends Transitions {
   }
 
   render() {
-    const draggable = (this.props.floating) ? "true" : "false";
-    const sheet = this.getSheet("Panel");
-    const transitionProps = this.getTransitionProps("Panel");
+    const {props} = this;
+    const draggable = (props.floating) ? 'true' : 'false';
+    const sheet = this.getSheet('Panel');
+    const transitionProps = this.getTransitionProps('Panel');
+    const icon = props.icon ? React.createElement('span', {style: sheet.icon.style}, React.createElement('i', {className: props.icon})) : null;
+    const title = props.title.length ?
+      React.createElement('div', {style: sheet.box.style}, React.createElement('div', {style: sheet.title.style}, props.title)) : null;
+    const selectedIndex = this.getSelectedIndex();
+    const tabButtons = [];
+    const tabs = [];
 
-    var icon = (this.props.icon) ? (
-        React.createElement("span", {style:sheet.icon.style},
-          React.createElement("i", {className:this.props.icon})
-        )
-      ) : null,
-      title = (this.props.title.length) ? (
-        React.createElement("div", {style:sheet.box.style},
-          React.createElement("div", {style:sheet.title.style},
-            this.props.title
-          )
-        )
-      ) : null;
+    let tabIndex = 0, groupIndex = 0;
 
-    var tabIndex = 0,
-      selectedIndex = this.getSelectedIndex(),
-      tabButtons = [],
-      tabs = [],
-      groupIndex = 0;
-
-    React.Children.forEach(this.props.children, (child) => {
-      var ref = (el) => this["tabb-" + tabIndex] = el,
-        tabKey = (typeof child.key !== "undefined" && child.key != null) ? child.key : ("tabb-" + tabIndex),
-        showTitle = true,
-        props = {
-          "icon": child.props.icon,
-          "title": child.props.title,
-          "pinned": child.props.pinned
-        };
-
-      if (this.state.compacted) {
-        if (!(props.pinned || selectedIndex == tabIndex)) {
-          showTitle = false;
-        }
-      }
+    React.Children.forEach(props.children, (child) => {
+      const {icon, title, pinned} = child.props;
+      const tabKey = (typeof child.key !== 'undefined' && child.key != null) ? child.key : ('tabb-' + tabIndex);
 
       tabButtons.push({
         key: tabKey,
-        title: props.title,
-        icon: props.icon,
+        title: title,
+        icon: icon,
         index: tabIndex,
-        ref: ref,
-        showTitle: showTitle,
+        ref: (el) => this['tabb-' + tabIndex] = el,
+        showTitle: this.state.compacted && !(pinned || selectedIndex == tabIndex) ? false : true,
         onClick: this.handleClick.bind(this),
-        "data-index": tabIndex,
-        "data-key": tabKey
+        'data-index': tabIndex,
+        'data-key': tabKey
       });
 
       tabs.push(
@@ -479,8 +447,8 @@ export class ReactPanel extends Transitions {
     });
 
     return (
-      React.createElement("div", {style: sheet.style},
-        React.createElement("header", {
+      React.createElement('div', {style: sheet.style},
+        React.createElement('header', {
             draggable: draggable,
             onDragEnd: this.handleDragEnd.bind(this),
             onDragStart: this.handleDragStart.bind(this),
@@ -488,59 +456,57 @@ export class ReactPanel extends Transitions {
             style: sheet.header.style
           },
           icon, title,
-          React.createElement("div", {
+          React.createElement('div', {
             style: sheet.tabsStart.style,
-            ref: (el) => this["tabs-start"] = el
+            ref: (el) => this['tabs-start'] = el
           }),
-          this._getGroupedButtons(this.props.leftButtons).map(function (group) {
-            return React.createElement("ul", {style: sheet.group.style, key: groupIndex++}, group );
+          this._getGroupedButtons(props.leftButtons).map(function (group) {
+            return React.createElement('ul', {style: sheet.group.style, key: groupIndex++}, group);
           }),
 
           React.createElement(TabGroup, {
             style: sheet.tabs.style,
             ref: (el) => this._tabs = el,
             data: tabButtons,
-            dragAndDropHandler: this.props.dragAndDropHandler || false,
+            dragAndDropHandler: props.dragAndDropHandler || false,
             transitionProps: transitionProps
           }),
 
-          React.createElement("div", {
+          React.createElement('div', {
             style: sheet.tabsEnd.style,
-            ref: (el) => this["tabs-end"] = el
+            ref: (el) => this['tabs-end'] = el
           }),
-          this._getGroupedButtons(this.props.rightButtons||this.props.buttons).map(function (group) {
-            return React.createElement("ul", {style: sheet.group.style, key: groupIndex++}, group );
-          })
+          this._getGroupedButtons(props.rightButtons || props.buttons)
+            .map((group) => React.createElement('ul', {style: sheet.group.style, key: groupIndex++}, group))
         ),
-        React.createElement("div", {style: sheet.body.style}, tabs )
+        React.createElement('div', {style: sheet.body.style}, tabs)
       )
     );
   }
 
   static defaultProps = {
-    "icon": false,
-    "title": "",
-    "autocompact": true,
-    "floating": false,
-    "onDragStart": null,
-    "onDragEnd": null,
-    "maxTitleWidth": 130,
-    "buttons": [],
-    "leftButtons": []
-  }
+    icon: false,
+    title: '',
+    autocompact: true,
+    floating: false,
+    onDragStart: null,
+    onDragEnd: null,
+    maxTitleWidth: 130,
+    buttons: [],
+    leftButtons: []
+  };
 
   static propTypes = {
     dragAndDropHandler: PropTypes.oneOfType([
       PropTypes.object,
       PropTypes.bool
     ])
-  }
+  };
 
-  static contextTypes = {
+  static contextTypes = Object.assign({}, Transitions.contextTypes, {
     selectedIndex: PropTypes.number,
-    sheet: PropTypes.func,
     onTabChange: PropTypes.func,
     globals: PropTypes.object
-  }
+  });
 }
 

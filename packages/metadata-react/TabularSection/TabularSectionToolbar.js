@@ -1,14 +1,17 @@
 import React, {Component} from "react";
 import PropTypes from 'prop-types';
-import {Toolbar, ToolbarGroup, ToolbarSeparator} from "material-ui/Toolbar";
+import Toolbar from 'material-ui/Toolbar';
+import Typography from 'material-ui/Typography';
 import IconButton from "material-ui/IconButton";
 import AddIcon from "material-ui-icons/AddCircleOutline";
 import RemoveIcon from "material-ui-icons/Delete";
 import ArrowUpIcon from "material-ui-icons/ArrowUpward";
 import ArrowDownIcon from "material-ui-icons/ArrowDownward";
 
+import withStyles from '../Header/toolbar';
 
-export default class TabularSectionToolbar extends Component {
+
+class TabularSectionToolbar extends Component {
 
   static propTypes = {
 
@@ -17,51 +20,41 @@ export default class TabularSectionToolbar extends Component {
     handleUp: PropTypes.func.isRequired,      // обработчик удаления строки
     handleDown: PropTypes.func.isRequired,    // обработчик удаления строки
 
-    deny_add_del: PropTypes.bool,             // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
-    deny_reorder: PropTypes.bool,             // Запрет изменения порядка строк
+    denyAddDel: PropTypes.bool,             // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+    denyReorder: PropTypes.bool,             // Запрет изменения порядка строк
 
   }
 
   render() {
 
-    const {handleAdd, handleRemove, handleUp, handleDown, deny_add_del, deny_reorder} = this.props
+    const {handleAdd, handleRemove, handleUp, handleDown, denyAddDel, denyReorder, classes} = this.props
 
     const first_group = [];
 
-    if (!deny_add_del) {
-      first_group.push(
-        <IconButton key="btn_add" title="Добавить строку" onClick={handleAdd}>
-          <AddIcon key="icon_add"/>
-        </IconButton>)
-      first_group.push(
-        <IconButton key="btn_del" title="Удалить строку" onClick={handleRemove}>
-          <RemoveIcon key="icon_del"/>
-        </IconButton>)
+    if (!denyAddDel) {
+      first_group.push(<IconButton key="btn_add" title="Добавить строку" onClick={handleAdd}><AddIcon /></IconButton>)
+      first_group.push(<IconButton key="btn_del" title="Удалить строку" onClick={handleRemove}><RemoveIcon /></IconButton>)
 
-      if (!deny_reorder) {
-        first_group.push(<ToolbarSeparator key="sep1"/>)
+      if (!denyReorder) {
+        first_group.push(<IconButton key="sep1" disabled>|</IconButton>)
       }
     }
 
-    if (!deny_reorder) {
+    if (!denyReorder) {
       first_group.push(
-        <IconButton key="btn_up" title="Переместить вверх" onClick={handleUp}>
-          <ArrowUpIcon key="icon_up"/>
-        </IconButton>
+        <IconButton key="btn_up" title="Переместить вверх" onClick={handleUp}><ArrowUpIcon/></IconButton>
       )
       first_group.push(
-        <IconButton key="btn_down"  title="Переместить вниз" onClick={handleDown}>
-          <ArrowDownIcon key="icon_down"/>
-        </IconButton>
+        <IconButton key="btn_down"  title="Переместить вниз" onClick={handleDown}><ArrowDownIcon/></IconButton>
       )
     }
 
     return (
-      <Toolbar>
-        <ToolbarGroup className={"meta-toolbar-group"} firstChild={true}>
-          {first_group}
-        </ToolbarGroup>
+      <Toolbar className={classes.bar}>
+        {first_group}
       </Toolbar>
     )
   }
 }
+
+export default withStyles(TabularSectionToolbar);

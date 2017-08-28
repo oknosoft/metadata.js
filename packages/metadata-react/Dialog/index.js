@@ -1,15 +1,15 @@
-import React, {Component} from "react";
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import ReactDOM from "react-dom";
-import IconButton from "material-ui/IconButton";
-import FullscreenIcon from "material-ui-icons/Fullscreen";
-import FullscreenExitIcon from "material-ui-icons/FullscreenExit";
-import CloseIcon from "material-ui-icons/Close";
-import ReactPortal from "react-portal";
+import ReactDOM from 'react-dom';
+import IconButton from 'material-ui/IconButton';
+import FullscreenIcon from 'material-ui-icons/Fullscreen';
+import FullscreenExitIcon from 'material-ui-icons/FullscreenExit';
+import CloseIcon from 'material-ui-icons/Close';
+import ReactPortal from 'react-portal';
 
-import {Content, Toolbar, Footer} from "../Panels/ext";
-import {FloatingPanel} from "../Panels/panel";
-import {Tab} from "../Panels/tab";
+import {Content, Toolbar, Footer} from '../Panels/ext';
+import {FloatingPanel} from '../Panels/panel';
+import {Tab} from '../Panels/tab';
 
 /**
  * Dialog
@@ -17,50 +17,39 @@ import {Tab} from "../Panels/tab";
  */
 export default class Dialog extends Component {
 
-  static get defaultProps() {
-    return {
-      title: "",
-      tabs: {},
-      left: null,
-      top: null,
-      width: 420,
-      height: 400,
-      visible: false,
-      fullscreen: false,
-      resizable: false,
-      onCloseClick: null,
-      onFullScreenClick: null,
-      actions: [],
-    }
-  }
+  static defaultProps = {
+    title: '',
+    tabs: {},
+    left: null,
+    top: null,
+    width: 420,
+    height: 400,
+    visible: false,
+    fullscreen: false,
+    resizable: false,
+    onCloseClick: null,
+    onFullScreenClick: null,
+    actions: [],
+  };
 
-  static get propTypes() {
-    return {
-      title: PropTypes.string,
-      tabs: PropTypes.object, // Object with title:tab pairs.
-      visible: PropTypes.bool,
-      fullscreen: PropTypes.bool,
-      resizable: PropTypes.bool,
-      width: PropTypes.number,
-      height: PropTypes.number,
-      left: PropTypes.number,
-      top: PropTypes.number,
-      onCloseClick: PropTypes.func,
-      onFullScreenClick: PropTypes.func,
-      actions: PropTypes.array,
-    }
-  }
+  static propTypes = {
+    title: PropTypes.string,
+    tabs: PropTypes.object, // Object with title:tab pairs.
+    visible: PropTypes.bool,
+    fullscreen: PropTypes.bool,
+    resizable: PropTypes.bool,
+    width: PropTypes.number,
+    height: PropTypes.number,
+    left: PropTypes.number,
+    top: PropTypes.number,
+    onCloseClick: PropTypes.func,
+    onFullScreenClick: PropTypes.func,
+    actions: PropTypes.array,
+  };
 
   renderActions() {
-    if (this.props.actions.length === 0) {
-      return null;
-    }
-
-    return (
-      <Footer>
-        {this.props.actions}
-      </Footer>
-    );
+    const {actions} = this.props;
+    return actions.length === 0 ? null : <Footer>{actions}</Footer>;
   }
 
   renderTabs() {
@@ -80,13 +69,13 @@ export default class Dialog extends Component {
   }
 
   handleFullscreenClick() {
-    if (this.props.onFullScreenClick !== null) {
+    if(this.props.onFullScreenClick !== null) {
       this.props.onFullScreenClick();
     }
   }
 
   handleCloseClick() {
-    if (this.props.onCloseClick !== null) {
+    if(this.props.onCloseClick !== null) {
       this.props.onCloseClick();
     }
   }
@@ -98,7 +87,7 @@ export default class Dialog extends Component {
     return (
       <ReactPortal isOpened={props.visible}>
         <FloatingPanel
-          theme={"material-ui"}
+          theme={'material-ui'}
           resizable={props.resizable}
           fullscreen={props.fullscreen}
           title={props.title}
@@ -107,12 +96,12 @@ export default class Dialog extends Component {
           left={props.left}
           top={props.top}
           buttons={[
-            <IconButton title={props.fullscreen ? "свернуть" : "развернуть"} onClick={() => this.handleFullscreenClick()}>
-              {props.fullscreen ? <FullscreenExitIcon color={"white"}/> : <FullscreenIcon color={"white"}/>}
+            <IconButton title={props.fullscreen ? 'свернуть' : 'развернуть'} onClick={() => this.handleFullscreenClick()}>
+              {props.fullscreen ? <FullscreenExitIcon color={'white'}/> : <FullscreenIcon color={'white'}/>}
             </IconButton>,
 
             <IconButton title="закрыть" onClick={() => this.handleCloseClick()}>
-              <CloseIcon color={"white"}/>
+              <CloseIcon color={'white'}/>
             </IconButton>,
           ]}>
 

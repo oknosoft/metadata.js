@@ -12,10 +12,6 @@ const ExcelColumn = {
 
 class DataCell extends Component {
 
-  static contextTypes = {
-    $p: PropTypes.object.isRequired,
-  };
-
   // props.column.key, props.rowData(._row)
 
   constructor(props, context) {
@@ -40,8 +36,6 @@ class DataCell extends Component {
   }
 
   render() {
-
-    const {$p} = this.context;
 
     const _obj = this.props.rowData;
     const _fld = this.props.column.key;

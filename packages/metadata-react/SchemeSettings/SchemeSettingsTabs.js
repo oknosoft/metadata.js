@@ -16,6 +16,8 @@ import DataField, {FieldSelect} from "../DataField";
 import Divider from 'material-ui/Divider';
 import styles from "./styles/SchemeSettingsTabs.scss";
 
+
+
 export function getTabsContent(scheme, handleSchemeChange, tabParams) {
   return {
     "Параметры": tabParams ? tabParams : (scheme.query.match('date') ?
@@ -27,7 +29,7 @@ export function getTabsContent(scheme, handleSchemeChange, tabParams) {
         <TabularSection _obj={scheme} _tabular="params" minHeight={308}/>
     ),
 
-    "Колонки": (<TabularSection _obj={scheme} _tabular="fields" deny_add_del={true} minHeight={308}
+    "Колонки": (<TabularSection _obj={scheme} _tabular="fields" denyAddDel={true} minHeight={308}
                 rowSelection={{
                   showCheckbox: true,
                   enableShiftSelect: true,

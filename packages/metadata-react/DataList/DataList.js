@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 import {InfiniteLoader, AutoSizer, MultiGrid} from 'react-virtualized';
 import DumbLoader from '../DumbLoader';
-import SimpleLoadingMessage from '../SimpleLoadingMessage';
+import SimpleLoadingMessage from '../DumbLoader/LoadingMessage';
 import Toolbar from './DataListToolbar';
 import cn from 'classnames';
 import styles from './DataList.scss';
@@ -160,7 +160,7 @@ export default class DataList extends Component {
 
     const {
       selection_mode,
-      deny_add_del,
+      denyAddDel,
       show_search,
       show_variants
     } = props;
@@ -176,7 +176,7 @@ export default class DataList extends Component {
     const toolbar_props = {
       scheme,
       selection_mode,
-      deny_add_del,
+      denyAddDel,
       show_search,
       show_variants,
       handleSelect,
@@ -385,7 +385,7 @@ DataList.propTypes = {
   // настройки внешнего вида и поведения
   selection_mode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисуем кнопку выбора
   read_only: PropTypes.object,          // Элемент только для чтения
-  deny_add_del: PropTypes.bool,         // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+  denyAddDel: PropTypes.bool,         // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
   show_search: PropTypes.bool,          // Показывать поле поиска
   show_variants: PropTypes.bool,        // Показывать список вариантов настройки динсписка
   modal: PropTypes.bool,                // Показывать список в модальном диалоге

@@ -72,29 +72,23 @@ export class Styleable extends Component {
 export class Transitions extends Styleable {
 
   getTransitionProps(pcType) {
-    pcType = pcType || this.props.panelComponentType;
 
-    var props = {},
-      globals = (this.context && this.context.globals && this.context.globals[pcType]) ?
-        this.context.globals[pcType] : {},
-      transitionName = (typeof this.props.transitionName === 'string') ?
-        this.props.transitionName : globals.transitionName || '';
-    if(transitionName.length) {
-      props = {
+    const {props, context} = this;
+    pcType = pcType || props.panelComponentType;
+    const globals = (context && context.globals && context.globals[pcType]) ? context.globals[pcType] : {};
+    const transitionName = (typeof props.transitionName === 'string') ? props.transitionName : globals.transitionName || '';
+
+    return transitionName.length ?
+      {
         transitionName: transitionName,
-        transitionEnter: (typeof this.props.transitionEnter === 'boolean') ?
-          this.props.transitionEnter : globals.transitionEnter || false,
-        transitionLeave: (typeof this.props.transitionLeave === 'boolean') ?
-          this.props.transitionLeave : globals.transitionLeave || false,
-        transitionAppear: (typeof this.props.transitionAppear === 'boolean') ?
-          this.props.transitionAppear : globals.transitionAppear || false,
-        transitionComponent: (typeof this.props.transitionComponent !== 'undefined') ?
-          this.props.transitionComponent : globals.transitionComponent || CSSTransitionGroup,
-        transitionCustomProps: this.props.transitionCustomProps || globals.transitionCustomProps || {}
-      };
-    }
-    else {
-      props = {
+        transitionEnter: (typeof props.transitionEnter === 'boolean') ? props.transitionEnter : globals.transitionEnter || false,
+        transitionLeave: (typeof props.transitionLeave === 'boolean') ? props.transitionLeave : globals.transitionLeave || false,
+        transitionAppear: (typeof props.transitionAppear === 'boolean') ? props.transitionAppear : globals.transitionAppear || false,
+        transitionComponent: (typeof props.transitionComponent !== 'undefined') ? props.transitionComponent : globals.transitionComponent || CSSTransitionGroup,
+        transitionCustomProps: props.transitionCustomProps || globals.transitionCustomProps || {}
+      }
+      :
+      {
         transitionName: 'none',
         transitionEnter: false,
         transitionLeave: false,
@@ -102,8 +96,6 @@ export class Transitions extends Styleable {
         transitionComponent: CSSTransitionGroup,
         transitionCustomProps: {}
       };
-    }
-    return props;
   }
 
   static propTypes = {
@@ -278,16 +270,16 @@ export class PanelWrapper extends Component {
   };
 
   static defaultProps = {
-    'icon': false,
-    'title': '',
-    'selectedIndex': 0,
+    icon: false,
+    title: '',
+    selectedIndex: 0,
     /** Triggered before a change tab event propagated from within the Panel (e.g., user's click).
      *  Optionally, return false to stop it.
      */
-    'onTabChange': null,
-    'buttons': [],
-    'leftButtons': [],
-    'globals': {}
+    onTabChange: null,
+    buttons: [],
+    leftButtons: [],
+    globals: {}
   };
 
   static childContextTypes = {
@@ -334,7 +326,7 @@ export class TabWrapper extends Component {
 export class Button extends StyleableWithEvents {
 
   constructor(props, context) {
-    super(props, state);
+    super(props, context);
     this.listeners.onClick = this._handleClick.bind(this);
     this.listeners.onDoubleClick = this._handleDoubleClick.bind(this);
     this.listeners.onContextMenu = this._handleContextMenu.bind(this);
@@ -384,11 +376,12 @@ export class Button extends StyleableWithEvents {
   }
 
   getChildContext() {
+    const {props, state} = this;
     return {
-      btnTitle: this.props.title,
-      btnVisible: this.state.visible,
-      btnEnabled: this.state.enabled,
-      btnActive: this.state.active
+      btnTitle: props.title,
+      btnVisible: state.visible,
+      btnEnabled: state.enabled,
+      btnActive: state.active
     };
   }
 
