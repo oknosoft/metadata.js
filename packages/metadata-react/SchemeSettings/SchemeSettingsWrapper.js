@@ -16,6 +16,7 @@ import TextField from 'material-ui/TextField';
 import Menu, {MenuItem} from 'material-ui/Menu';
 
 import Dialog from '../Dialog';
+
 import {getTabsContent, SchemeSettingsTabs} from './SchemeSettingsTabs';
 import styles from './styles/SchemeSettingsWrapper.scss';
 
@@ -157,12 +158,13 @@ export default class SchemeSettingsWrapper extends Component {
         </IconButton>
 
         <Dialog
-          title={'Настройка моего списка'}
+          title={'Настройка'}
           actions={actions}
           tabs={getTabsContent(scheme, handleSchemeChange, tabParams)}
-          resizable={true}
+          resizable
+          draggable
           visible={dialog_open}
-          width={700}
+          width={760}
           height={500}
           fullscreen={this.state.fullscreen}
           onFullScreenClick={() => this.handleFullscreenClick()}

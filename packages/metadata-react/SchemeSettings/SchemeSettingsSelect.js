@@ -25,10 +25,7 @@ export default class SchemeSettingsSelect extends Component {
 
   constructor(props, context) {
     super(props, context);
-    const {scheme} = props;
-    const {$p} = context;
-
-    this.state = $p.dp.scheme_settings.dp(scheme);
+    this.state = $p.dp.scheme_settings.dp(props.scheme);
   }
 
   handleSave = () => {
@@ -50,7 +47,7 @@ export default class SchemeSettingsSelect extends Component {
   }
 
   handleNameChange = () => {
-    this.refs.fld_scheme.forceUpdate()
+    this.fld_scheme.forceUpdate()
   }
 
   render() {
@@ -77,7 +74,7 @@ export default class SchemeSettingsSelect extends Component {
               <ToolbarTitle text="Настройка"/>
               <div style={{width: 200}}>
                 <FieldSelect
-                  ref="fld_scheme"
+                  ref={(el) => this.fld_scheme = el}
                   _obj={_obj}
                   _fld="scheme"
                   _meta={_meta}

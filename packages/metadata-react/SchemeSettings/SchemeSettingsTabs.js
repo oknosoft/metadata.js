@@ -9,7 +9,9 @@
 
 import React, {Component} from "react";
 import PropTypes from 'prop-types';
+
 import {Tabs, Tab} from "material-ui/Tabs";
+
 import TabularSection from "../TabularSection";
 import SchemeSettingsSelect from "./SchemeSettingsSelect"
 import DataField, {FieldSelect} from "../DataField";
@@ -96,7 +98,9 @@ export class SchemeSettingsTabs extends Component {
   }
 
   render() {
-    const tabs = getTabsContent(this.props.scheme, this.props.handleSchemeChange, this.props.tabParams);
+
+    const {props} = this;
+    const tabs = getTabsContent(props.scheme, props.handleSchemeChange, props.tabParams);
 
     // если панель параметров передали снаружи, показываем её
     // если в scheme.query есть 'date', показываем выбор периода

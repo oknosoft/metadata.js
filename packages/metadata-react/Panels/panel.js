@@ -202,9 +202,18 @@ export class FloatingPanel extends PanelWrapper {
   }
 
   getTransform(left, top) {
+
     if(this.props.fullscreen === true) {
       left = 0;
       top = 0;
+    }
+    else{
+      if(left < 0){
+        left = 0
+      }
+      if(top < 0){
+        top = 0
+      }
     }
 
     var transform = 'translate3d(' + Utils.pixelsOf(left) + ', ' + Utils.pixelsOf(top) + ', 0)';
@@ -224,50 +233,55 @@ export class FloatingPanel extends PanelWrapper {
   }
 
   render() {
-    const inner = (React.createElement(ReactPanel, Object.assign({}, {
-      key: 'key0',
-      floating: true,
-      onDragStart: this.dragStart.bind(this),
-      onDragEnd: this.dragEnd.bind(this),
-      title: this.props.title,
-      icon: this.props.icon,
-      buttons: this.props.buttons,
-    }, this.config), this.props.children));
-
-    const corner = this.props.resizable === true ? React.createElement('div', {
-      key: 'key1',
-      onMouseDown: this.handleMouseDown.bind(this),
-      style: {
-        position: 'absolute',
-        right: 0,
-        bottom: 0,
-        cursor: 'se-resize',
-        border: '10px solid #00bcd4',
-        borderLeft: '10px solid transparent',
-        borderTop: '10px solid transparent',
-      },
-    }) : null;
 
     const fullscreenStyle = this.props.fullscreen === true ? {width: '100%', height: '100%'} : {};
 
-    return React.createElement('div', {
-      ref: (el) => this.wrapperRef = el,
-      style: Object.assign({}, {
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          zIndex: this.props.zIndex + (this.state.focused ? 10 : 0),
-          width: Utils.pixelsOf(this.state.width),
-          height: Utils.pixelsOf(this.state.height),
-          minWidth: Utils.pixelsOf(MIN_WIDTH),
-          minHeight: Utils.pixelsOf(MIN_HEIGHT),
+    return <div
+      style={Object.assign({}, {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        zIndex: this.props.zIndex + (this.state.focused ? 10 : 0),
+        width: Utils.pixelsOf(this.state.width),
+        height: Utils.pixelsOf(this.state.height),
+        minWidth: Utils.pixelsOf(MIN_WIDTH),
+        minHeight: Utils.pixelsOf(MIN_HEIGHT),
         },
         this.props.style,
         this.getTransform(this.state.left, this.state.top),
-        fullscreenStyle),
-      onClick: this.handleMouseClick.bind(this),
-      onMouseDown: this.handleWrapperMouseDown.bind(this)
-    }, [inner, corner]);
+        fullscreenStyle)}
+      ref={(el) => this.wrapperRef = el}
+      onClick={this.handleMouseClick.bind(this)}
+      onMouseDown={this.handleWrapperMouseDown.bind(this)}
+    >
+      <ReactPanel
+        key="key0"
+        floating
+        onDragStart={this.dragStart.bind(this)}
+        onDragEnd={this.dragEnd.bind(this)}
+        title={this.props.title}
+        icon={this.props.icon}
+        buttons={this.props.buttons}
+        {...this.config}
+      >
+        {this.props.children}
+      </ReactPanel>
+
+      {this.props.resizable === true && <div
+        style={{
+          position: 'absolute',
+          right: 0,
+          bottom: 0,
+          cursor: 'se-resize',
+          border: '10px solid rgba(0, 0, 0, 0.54)',
+          borderLeft: '10px solid transparent',
+          borderTop: '10px solid transparent',
+        }}
+        key="key1"
+        onMouseDown={this.handleMouseDown.bind(this)}
+      />}
+
+    </div>
   }
 
   static propTypes = {

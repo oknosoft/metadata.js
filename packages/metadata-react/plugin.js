@@ -68,7 +68,7 @@ function rx_columns($p) {
           case 'ofields':
             const options = _obj.used_fields_list()
             column.editor = <DropDownEditor options={options}/>
-            column.formatter = <DropDownFormatter options={options}/>
+            column.formatter = <DropDownFormatter options={options} value=""/>
             break;
 
           case 'dhxCalendar':

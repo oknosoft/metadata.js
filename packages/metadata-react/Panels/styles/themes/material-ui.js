@@ -1,33 +1,34 @@
 import {Utils} from '../../utils';
 
 export default function materialUiStyle(opts) {
-  var isSafari = /Safari/.test(window.navigator.userAgent) && /Apple Computer/.test(window.navigator.vendor);
-  var colors = {
-    activeButtonBackgroundColor: '#00bcd4',
+  const isSafari = /Safari/.test(window.navigator.userAgent) && /Apple Computer/.test(window.navigator.vendor);
+  const lightBlack = 'rgba(0, 0, 0, 0.54)';
+  const colors = {
+    activeButtonBackgroundColor: lightBlack,
     activeButtonColor: '#f72121',
-    activeTabBackgroundColor: '#00bcd4',
+    activeTabBackgroundColor: lightBlack,
     activeTabColor: '#ffffff',
     activeTabTextShadow: 'initial',
     activeTabUnderlineColor: '#ff5722',
-    buttonBackgroundColor: '#00bcd4',
+    buttonBackgroundColor: lightBlack,
     buttonColor: '#eaeaea',
     buttonTextShadow: 'initial',
     contentBackgroundColor: '#ffffff',
     footerBackgroundColor: '#ffffff',
-    hoverButtonBackgroundColor: '#00bcd4',
+    hoverButtonBackgroundColor: lightBlack,
     hoverButtonColor: '#ffffff',
-    hoverTabBackgroundColor: '#00bcd4',
-    panelBackgroundColor: '#00bcd4',
+    hoverTabBackgroundColor: lightBlack,
+    panelBackgroundColor: lightBlack,
     iconColor: '#ffffff',
     iconTextShadow: 'initial',
-    tabBackgroundColor: '#00bcd4',
+    tabBackgroundColor: lightBlack,
     tabColor: '#ffffff',
     tabIconColor: '#616161',
     tabTextShadow: 'initial',
-    tabUnderlineColor: '#00bcd4',
+    tabUnderlineColor: lightBlack,
     titleColor: '#ffffff',
     titleTextShadow: 'initial',
-    toolbarBackgroundColor: '#00bcd4',
+    toolbarBackgroundColor: lightBlack,
   };
 
   return {
@@ -39,7 +40,7 @@ export default function materialUiStyle(opts) {
     Panel: {
       style: {
         backgroundColor: colors.panelBackgroundColor,
-        border: '4px solid ' + colors.panelBackgroundColor,
+        //border: '4px solid ' + colors.panelBackgroundColor,
         boxShadow: 'rgba(0, 0, 0, 0.2) 0px 14px 45px, rgba(0, 0, 0, 0.2) 0px 10px 18px',
         position: 'relative',
         boxSizing: 'border-box'
@@ -112,7 +113,7 @@ export default function materialUiStyle(opts) {
     },
     TabButton: {
       style: {
-        backgroundColor: colors.tabBackgroundColor,
+        //backgroundColor: colors.tabBackgroundColor,
         borderColor: colors.tabUnderlineColor,
         borderStyle: 'solid',
         borderWidth: '0 0 2px 0',

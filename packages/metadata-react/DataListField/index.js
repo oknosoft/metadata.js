@@ -1,3 +1,3 @@
-import DataListField from "./DataListField";
+import DataListField from './DataListField';
 
-export default DataListField
+export default DataListField;

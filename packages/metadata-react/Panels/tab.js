@@ -163,12 +163,14 @@ export class TabGroup extends Component {
       }
     }
     const tabProps = this.props.data[this.constKeyMap.indexOf(tabKey)];
-    return tabProps ? null : <TabButton {...tabProps} ref={(el) => this[tabKey + "-tabbref"] = el} />;
+    return tabProps ? <TabButton {...tabProps} ref={(el) => this[tabKey + "-tabbref"] = el} /> : null;
   }
 
   render () {
-    var tp = this.props.transitionProps,
-      sp = (this.ctx.sortable || false) ? {
+    const {props, ctx} = this;
+    const tp = props.transitionProps;
+    const TransitionComponent = tp.transitionComponent;
+    const sp = (ctx.sortable || false) ? {
         draggable: true,
         onDragEnd: this.handleDragEnd.bind(this),
         onDragStart: this.handleDragStart.bind(this),
@@ -176,26 +178,25 @@ export class TabGroup extends Component {
         "data-key": "get-target-stop"
       } : {};
 
-    if (!this.ctx.dragging) {
+    if (!ctx.dragging) {
       this.tabKeys = [];
-
-      for (var i = 0; i < this.props.data.length; ++i) {
-        this.tabKeys.push(this.props.data[i]["data-key"]);
+      for (var i = 0; i < props.data.length; ++i) {
+        this.tabKeys.push(props.data[i]["data-key"]);
       }
     }
 
-    var tabs = this.tabKeys.map(function (tabKey) {
-      return this.createTabElement(tabKey);
-    }.bind(this));
-
-    return (
-      React.createElement(tp.transitionComponent, Object.assign({}, {component: "ul",
-        style: this.props.style, transitionName: tp.transitionName,
-        transitionAppear: tp.transitionAppear, transitionEnter: tp.transitionEnter,
-        transitionLeave: tp.transitionLeave}, tp.transitionCustomProps, sp),
-        tabs
-      )
-    );
+    return <TransitionComponent
+      style={props.style}
+      component="ul"
+      transitionName={tp.transitionName}
+      transitionAppear={tp.transitionAppear}
+      transitionEnter={tp.transitionEnter}
+      transitionLeave={tp.transitionLeave}
+      {...tp.transitionCustomProps}
+      {...sp}
+    >
+      {this.tabKeys.map((tabKey) => this.createTabElement(tabKey))}
+    </TransitionComponent>;
   }
 
   static propTypes = {
@@ -244,18 +245,20 @@ export class TabButton extends StyleableWithEvents {
       );
     }
 
-    return (
-      React.createElement("li", Object.assign({
-          onClick: this.handleClick,
-          style: sheet.style,
-          "data-index": this.props["data-index"],
-          "data-key": this.props["data-key"]
-        }, this.listeners),
-        React.createElement("div", {title: this.props.title},
-          icon, React.createElement("div", {style: sheet.box.style}, title)
-        )
-      )
-    );
+    return <li
+      onClick={this.handleClick.bind(this)}
+      style={sheet.style}
+      data-index={this.props["data-index"]}
+      data-key={this.props["data-key"]}
+      {...this.listeners}
+    >
+      <div title={this.props.title}>
+        {icon}
+        <div style={sheet.box.style}>
+          {title}
+        </div>
+      </div>
+    </li>;
   }
 
   static propTypes = {

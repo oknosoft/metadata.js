@@ -243,7 +243,7 @@ export class PanelWrapper extends Component {
     return {
       selectedIndex: this.state.selectedIndex,
       sheet: this._sheet,
-      onTabChange: this.handleTabChange,
+      onTabChange: this.handleTabChange.bind(this),
       globals: this.props.globals,
       numTabs: React.Children.count(this.props.children)
     };
