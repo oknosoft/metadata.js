@@ -6,16 +6,18 @@
  * @final
  */
 
-const moment = (typeof window != 'undefined' && window.moment) || (moment => {
-	require('moment/locale/ru');
-	return moment;
-})(require('moment'));
+const moment = require('moment');
+require('moment/locale/ru');
+moment.locale('ru');
 moment._masks = {
 	date: 'DD.MM.YY',
 	date_time: 'DD.MM.YYYY HH:mm',
 	ldt: 'DD MMMM YYYY, HH:mm',
 	iso: 'YYYY-MM-DDTHH:mm:ss',
 };
+if(typeof global != 'undefined'){
+  global.moment = moment;
+}
 
 import {DataManager} from './mngrs';
 import {DataObj} from './objs';

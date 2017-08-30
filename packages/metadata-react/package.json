@@ -1,7 +1,7 @@
 {
   "name": "metadata-react",
   "description": "React UI components for metadata.js",
-  "version": "2.0.2-beta.25",
+  "version": "2.0.2-beta.26",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
@@ -14,8 +14,8 @@
     "react-data-grid": "^2.0",
     "react-data-grid-addons": "^2.0",
     "react-datepicker": "^0.53",
-    "react-transition-group": "^2.2",
     "react-portal": "^3.0",
+    "react-transition-group": "^2.2",
     "react-virtualized": "^9.9"
   },
   "main": "dist/index.js",

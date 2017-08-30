@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.2-beta.25, built:2017-08-16
+ metadata-core v2.0.2-beta.26, built:2017-08-30
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -5068,16 +5068,18 @@ var mime = function (target) {
   return target;
 };
 
-const moment$1 = (typeof window != 'undefined' && window.moment) || (moment => {
-	require('moment/locale/ru');
-	return moment;
-})(require('moment'));
+const moment$1 = require('moment');
+require('moment/locale/ru');
+moment$1.locale('ru');
 moment$1._masks = {
 	date: 'DD.MM.YY',
 	date_time: 'DD.MM.YYYY HH:mm',
 	ldt: 'DD MMMM YYYY, HH:mm',
 	iso: 'YYYY-MM-DDTHH:mm:ss',
 };
+if(typeof global != 'undefined'){
+  global.moment = moment$1;
+}
 Date.prototype.toJSON = function () {
 	return moment$1(this).format(moment$1._masks.iso);
 };
@@ -6454,7 +6456,7 @@ class MetaEngine$1 {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.2-beta.25';
+    return '2.0.2-beta.26';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

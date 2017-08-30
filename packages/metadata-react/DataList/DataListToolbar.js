@@ -36,39 +36,13 @@ class DataListToolbar extends Component {
 
     const {props} = this;
 
-    const buttons = [];
-
-    if(props.selection_mode) {
-      buttons.push(
-        <IconButton key="select" title="Выбрать из списка" onClick={props.handleSelect}>
-          <SelectIcon/>
-        </IconButton>
-      );
-    }
-
-    if(!props.denyAddDel) {
-      buttons.push(
-        <IconButton key="create" title="Создать объект" onClick={props.handleAdd}>
-          <AddIcon/>
-        </IconButton>
-      );
-      buttons.push(
-        <IconButton key="edit" title="Открыть форму объекта" onClick={props.handleEdit}>
-          <EditIcon/>
-        </IconButton>
-      );
-      buttons.push(
-        <IconButton key="del" title="Пометить на удаление" onClick={props.handleRemove}>
-          <RemoveIcon/>
-        </IconButton>
-      );
-    }
-
     return (
       <Toolbar className={props.classes.bar}>
-        <div>
-          {buttons}
-        </div>
+
+        {props.selection_mode && <IconButton key="select" title="Выбрать из списка" onClick={props.handleSelect}><SelectIcon/></IconButton>}
+        {!props.denyAddDel && <IconButton key="create" title="Создать объект" onClick={props.handleAdd}><AddIcon/></IconButton>}
+        {!props.denyAddDel && <IconButton key="edit" title="Открыть форму объекта" onClick={props.handleEdit}><EditIcon/></IconButton>}
+        {!props.denyAddDel && <IconButton key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}
 
         <Typography type="title" color="inherit" className={props.classes.flex} > </Typography>
 

@@ -4,24 +4,27 @@
  *
  * Created 19.12.2016
  */
-import React, {Component} from "react";
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {Toolbar, ToolbarGroup, ToolbarTitle} from "material-ui/Toolbar";
-import IconButton from "material-ui/IconButton";
-import DataField from "../DataField";
-import FieldSelect from "../DataField/FieldSelect";
+import Toolbar from 'material-ui/Toolbar';
+import Typography from 'material-ui/Typography';
+import IconButton from 'material-ui/IconButton';
+import DataField from '../DataField';
+import FieldSelect from '../DataField/FieldSelect';
 import Divider from 'material-ui/Divider';
-import SaveIcon from "material-ui-icons/Save";
-import CopyIcon from "material-ui-icons/ContentCopy";
-import styles from "./styles/SchemeSettingsSelect.scss";
+import SaveIcon from 'material-ui-icons/Save';
+import CopyIcon from 'material-ui-icons/ContentCopy';
 
-export default class SchemeSettingsSelect extends Component {
+import styles from './styles/SchemeSettingsSelect.scss';
+import withStyles from '../Header/toolbar';
+
+class SchemeSettingsSelect extends Component {
 
   static propTypes = {
     scheme: PropTypes.object.isRequired,
     handleSchemeChange: PropTypes.func.isRequired,
     minHeight: PropTypes.number,
-  }
+  };
 
   constructor(props, context) {
     super(props, context);
@@ -29,62 +32,54 @@ export default class SchemeSettingsSelect extends Component {
   }
 
   handleSave = () => {
-    const {scheme, handleSchemeChange} = this.props
+    const {scheme, handleSchemeChange} = this.props;
     scheme.save().then(() => {
-      handleSchemeChange(scheme)
-    })
-  }
+      handleSchemeChange(scheme);
+    });
+  };
 
   handleCreate = () => {
     const {scheme, handleSchemeChange} = this.props;
     const proto = Object.assign({}, scheme._obj);
     proto.name = proto.name.replace(/[0-9]/g, '') + Math.floor(10 + Math.random() * 21);
-    proto.ref = "";
+    proto.ref = '';
 
     scheme._manager.create(proto).then((scheme) => {
-      handleSchemeChange(scheme)
-    })
-  }
+      handleSchemeChange(scheme);
+    });
+  };
 
   handleNameChange = () => {
-    this.fld_scheme.forceUpdate()
-  }
+    this.fld_scheme.forceUpdate();
+  };
 
   render() {
 
-    const {state, props, handleCreate, handleSave, handleNameChange} = this
-    const {_obj, _meta} = state
-    const {scheme, handleSchemeChange, minHeight} = props
+    const {state, props, handleCreate, handleSave, handleNameChange} = this;
+    const {_obj, _meta} = state;
+    const {scheme, classes, handleSchemeChange, minHeight} = props;
 
     return (
-      <div className={"content-with-toolbar-layout"}>
-        <div className={"content-with-toolbar-layout__toolbar"}>
-          <Toolbar>
-            <ToolbarGroup className={"meta-toolbar-group"} firstChild={true}>
-              <IconButton tooltip="Сохранить вариант настроек" tooltipPosition="bottom-right" onClick={handleSave}>
-                <SaveIcon />
-              </IconButton>
+      <div className={'content-with-toolbar-layout'}>
+        <Toolbar className={classes.bar}>
 
-              <IconButton tooltip="Создать копию настроек" tooltipPosition="bottom-right" onClick={handleCreate}>
-                <CopyIcon />
-              </IconButton>
-            </ToolbarGroup>
+          <IconButton title="Сохранить вариант настроек" onClick={handleSave}><SaveIcon/></IconButton>
+          <IconButton title="Создать копию настроек" onClick={handleCreate}><CopyIcon/></IconButton>
 
-            <ToolbarGroup className={"meta-toolbar-group"}>
-              <ToolbarTitle text="Настройка"/>
-              <div style={{width: 200}}>
-                <FieldSelect
-                  ref={(el) => this.fld_scheme = el}
-                  _obj={_obj}
-                  _fld="scheme"
-                  _meta={_meta}
-                  handleValueChange={handleSchemeChange}/>
-              </div>
-            </ToolbarGroup>
-          </Toolbar>
-        </div>
+          <Typography type="title" color="inherit" className={props.classes.flex} > </Typography>
 
-        <div className={"content-with-toolbar-layout__content"}>
+          <Typography type="caption">Настройка</Typography>
+          <div style={{width: 200}}>
+            <FieldSelect
+              ref={(el) => this.fld_scheme = el}
+              _obj={_obj}
+              _fld="scheme"
+              _meta={_meta}
+              handleValueChange={handleSchemeChange}/>
+          </div>
+        </Toolbar>
+
+        <div className={'content-with-toolbar-layout__content'}>
           <DataField
             _obj={scheme}
             _fld="name"
@@ -95,7 +90,9 @@ export default class SchemeSettingsSelect extends Component {
             _fld="query"/>
         </div>
       </div>
-    )
+    );
 
   }
-}
+};
+
+export default withStyles(SchemeSettingsSelect);

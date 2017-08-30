@@ -59,31 +59,7 @@ export default class TabularSection extends Component {
   }
 
   rowGetter = (i) => {
-    const rowData = this.state._tabular.get(i);
-    const fields = this.state._meta.fields;
-    const row = new Map();
-
-    let rowObject = null;
-    if(this.state._tabular._obj.length > 0) {
-      rowObject = this.state._tabular._obj[0];
-    }
-
-    for (const fieldName in fields) {
-      if(fields.hasOwnProperty(fieldName) === false) {
-        continue;
-      }
-      const field = fields[fieldName];
-
-      // Create DataField for current cell.
-      const dataFieldClassName = DataFieldFactory.getClassNameForType(field.type);
-      row.set(fieldName, DataFieldFactory.create(dataFieldClassName, {
-        _obj: rowObject,
-        _fld: fieldName,
-        _meta: this.state._meta
-      }));
-    }
-
-    return row;
+    return this.state._tabular.get(i);
   };
 
   handleRemove = (e, data) => {
@@ -182,25 +158,23 @@ export default class TabularSection extends Component {
     }
 
     return (
-      <div className={'content-with-toolbar-layout'}>
-        <div className={'content-with-toolbar-layout__toolbar'}>
-          <Toolbar
-            handleAdd={handleAdd}
-            handleRemove={handleRemove}
-            handleUp={handleUp}
-            handleDown={handleDown}
-            handleCustom={handleCustom}
-            denyAddDel={denyAddDel}
-            denyReorder={denyReorder}
-            scheme={scheme}/>
-        </div>
+        <AutoSizer>
+          {({width, height}) => {
 
-        <div className={'content-with-toolbar-layout__content'}>
-          <AutoSizer>
-            {({width, height}) => (
+            return <div>
+              <Toolbar
+                handleAdd={handleAdd}
+                handleRemove={handleRemove}
+                handleUp={handleUp}
+                handleDown={handleDown}
+                handleCustom={handleCustom}
+                denyAddDel={denyAddDel}
+                denyReorder={denyReorder}
+                scheme={scheme}/>
+
               <ReactDataGrid
                 minWidth={width}
-                minHeight={height}
+                minHeight={height < minHeight ? minHeight : height}
 
                 ref={(el) => this._grid = el}
                 columns={_columns}
@@ -209,10 +183,11 @@ export default class TabularSection extends Component {
                 rowsCount={_tabular.count()}
                 onRowUpdated={handleRowUpdated}
                 rowSelection={rowSelection}/>
-            )}
-          </AutoSizer>
-        </div>
-      </div>
+            </div>
+          }
+          }
+        </AutoSizer>
+
     );
   }
 }
