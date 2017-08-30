@@ -23,6 +23,14 @@
 	opacity: 0.5;
 }
 
+/**
+ * React Virtualized Grid
+ * ========================
+ * MIT License: https://github.com/bvaughn/react-virtualized/
+*/
+.ReactVirtualized__Grid {
+  outline: none;
+}
 
 /**
  * React Select

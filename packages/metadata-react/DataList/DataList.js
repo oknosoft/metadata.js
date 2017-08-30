@@ -3,20 +3,22 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
 import {InfiniteLoader, AutoSizer, MultiGrid} from 'react-virtualized';
-import DumbLoader from '../DumbLoader';
-import SimpleLoadingMessage from '../DumbLoader/LoadingMessage';
+import LoadingMessage from '../DumbLoader/LoadingMessage';
 import Toolbar from './DataListToolbar';
 import cn from 'classnames';
-import styles from './DataList.scss';
+
+import withStyles from './styles';
 
 import control_by_type from 'metadata-abstract-ui/src/ui';
 
-export default class DataList extends Component {
+
+class DataList extends Component {
+
   static LIMIT = 10;
   static OVERSCAN_ROW_COUNT = 2;
   static OVERSCAN_COLUMN_COUNT = 2;
-  static COLUMN_HEIGHT = 40;
-  static COLUMN_DEFAULT_WIDTH = 250;
+  static COLUMN_HEIGHT = 32;
+  static COLUMN_DEFAULT_WIDTH = 220;
 
   constructor(props, context) {
     super(props, context);
@@ -152,25 +154,15 @@ export default class DataList extends Component {
       _cellRenderer
     } = this;
 
-    const {
-      columns,
-      rowsLoaded,
-      scheme
-    } = state;
+    const {columns, rowsLoaded, scheme} = state;
 
-    const {
-      selection_mode,
-      denyAddDel,
-      show_search,
-      show_variants
-    } = props;
+    const {selection_mode, denyAddDel, show_search, show_variants, width, height} = props;
 
     if(!scheme) {
-      return <DumbLoader title="Чтение настроек компоновки..."/>;
+      return <LoadingMessage title="Чтение настроек компоновки..."/>;
     }
-
     else if(!columns || !columns.length) {
-      return <DumbLoader title="Ошибка настроек компоновки..."/>;
+      return <LoadingMessage title="Ошибка настроек компоновки..."/>;
     }
 
     const toolbar_props = {
@@ -189,7 +181,8 @@ export default class DataList extends Component {
     };
 
     return (
-      <div style={{height: 300}}>
+      <div style={{height}}>
+
         <Toolbar {...toolbar_props} />
 
         <InfiniteLoader
@@ -209,29 +202,26 @@ export default class DataList extends Component {
             };
 
             return (
-              <AutoSizer>
-                {({width, height}) => (
-                  <MultiGrid
-                    ref={registerChild}
-                    width={width}
-                    height={height}
-                    rowCount={this.state.rowsLoaded}
-                    columnCount={this.state.columns.length}
-                    fixedColumnCount={0}
-                    fixedRowCount={1}
-                    noContentRenderer={this._noContentRendered}
-                    cellRenderer={this._cellRenderer}
-                    overscanColumnCount={DataList.OVERSCAN_COLUMN_COUNT}
-                    overscanRowCount={DataList.OVERSCAN_ROW_COUNT}
-                    columnWidth={this._getColumnWidth}
-                    rowHeight={DataList.COLUMN_HEIGHT}
-                    onSectionRendered={onSectionRendered}
-                    styleTopRightGrid={{
-                      backgroundColor: '#fffbdc',
-                      borderBottom: '1px solid #e0e0e0',
-                    }}/>
-                )}
-              </AutoSizer>
+              <MultiGrid
+                ref={registerChild}
+                width={width}
+                height={height - 52}
+                rowCount={this.state.rowsLoaded}
+                columnCount={this.state.columns.length}
+                fixedColumnCount={0}
+                fixedRowCount={1}
+                noContentRenderer={this._noContentRendered}
+                cellRenderer={this._cellRenderer}
+                overscanColumnCount={DataList.OVERSCAN_COLUMN_COUNT}
+                overscanRowCount={DataList.OVERSCAN_ROW_COUNT}
+                columnWidth={this._getColumnWidth}
+                rowHeight={DataList.COLUMN_HEIGHT}
+                onSectionRendered={onSectionRendered}
+                styleTopRightGrid={{
+                  backgroundColor: '#eeeeee',
+                  borderBottom: '1px solid #e0e0e0',
+                  //height: 36
+                }}/>
             );
           }}
         </InfiniteLoader>
@@ -250,44 +240,26 @@ export default class DataList extends Component {
   };
 
   _noContentRendered = () => {
-    return <SimpleLoadingMessage/>;
+    return <LoadingMessage/>;
   };
 
   _cellRenderer = ({columnIndex, rowIndex, isScrolling, isVisible, key, parent, style}) => {
-    const {
-      state,
-      props,
-      handleEdit,
-      handleSelect
-    } = this;
-
-    const {
-      hoveredColumnIndex,
-      hoveredRowIndex,
-      selectedRowIndex
-    } = state;
+    const {state, props, handleEdit, handleSelect} = this;
+    const {hoveredColumnIndex, hoveredRowIndex, selectedRowIndex} = state;
+    const {cell, headerCell, hoveredItem, selectedItem} = props.classes;
 
     // оформление ячейки
-    const classNames = cn(this._getRowClassName(rowIndex), styles.cell, {
-      //[styles.centeredCell]: columnIndex > 3, // выравнивание текста по центру
-      [styles.hoveredItem]: rowIndex == hoveredRowIndex && rowIndex != selectedRowIndex, // || columnIndex === this.state.hoveredColumnIndex
-      [styles.selectedItem]: rowIndex == selectedRowIndex
+    const classNames = cn(this._getRowClassName(rowIndex), cell, {
+      [headerCell]: rowIndex === 0, // выравнивание текста по центру
+      [hoveredItem]: rowIndex != 0 && rowIndex == hoveredRowIndex && rowIndex != selectedRowIndex, // || columnIndex === this.state.hoveredColumnIndex
+      [selectedItem]: rowIndex != 0 && rowIndex == selectedRowIndex
     });
 
     // данные строки
     const row = this._list.get(rowIndex);
 
-    // текст ячейки
-    let content = null;
-    if(rowIndex === 0) {
-      content = <div> {row[columnIndex]} </div>; // header
-    }
-    else if(row) {
-      content = this._formatter(row, columnIndex); // data cell
-    }
-    else {
-      content = null; // empty cell
-    }
+    // текст ячейки (header - data cell - empty cell)
+    const content = rowIndex === 0 ? row[columnIndex] : row && this._formatter(row, columnIndex);
 
     const onMouseOver = () => {
       this.setState({
@@ -330,7 +302,8 @@ export default class DataList extends Component {
   }
 
   _getRowClassName(row) {
-    return row % 2 === 0 ? styles.evenRow : styles.oddRow;
+    const {classes} = this.props;
+    return row % 2 === 0 ? classes.evenRow : classes.oddRow;
   }
 
   _isRowLoaded = ({index}) => {
@@ -402,3 +375,5 @@ DataList.propTypes = {
   handlePrint: PropTypes.func,          // обработчик открытия диалога печати
   handleAttachment: PropTypes.func,     // обработчик открытия диалога присоединенных файлов
 };
+
+export default withStyles(DataList);

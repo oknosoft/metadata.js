@@ -19,6 +19,7 @@ export class FloatingPanel extends PanelWrapper {
     this.tempHeight = 0;
 
     this.documentMouseDownHandler = this.documentMouseDownHandler.bind(this);
+    this.dragOver = this.dragOver.bind(this);
 
     var top = 0;
     var left = 0;
@@ -139,12 +140,13 @@ export class FloatingPanel extends PanelWrapper {
   }
 
   dragOver(e) {
-    if(this.panelBounds || false) {
-      this.tempLeft = this.panelBounds.startLeft + (e.pageX - this.panelBounds.startPageX);
-      this.tempTop = this.panelBounds.startTop + (e.pageY - this.panelBounds.startPageY);
+    const {panelBounds, wrapperRef} = this;
+    if(panelBounds) {
+      this.tempLeft = panelBounds.startLeft + (e.pageX - panelBounds.startPageX);
+      this.tempTop = panelBounds.startTop + (e.pageY - panelBounds.startPageY);
 
-      if(this.wrapperRef !== null) {
-        Object.assign(this.wrapperRef.style, this.getTransform(this.tempLeft, this.tempTop));
+      if(wrapperRef) {
+        Object.assign(wrapperRef.style, this.getTransform(this.tempLeft, this.tempTop));
       }
     }
   }
