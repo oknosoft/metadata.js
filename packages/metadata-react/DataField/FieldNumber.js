@@ -32,14 +32,11 @@ export default class FieldNumber extends Component {
     };
   }
 
-  onChange = (event, newValue) => {
-    this.setState({
-      value: newValue,
-    }, () => {
-      if (this.props.handleValueChange) {
-        this.props.handleValueChange(this.state.value);
-      }
-    });
+  onChange = (event) => {
+    const {_obj, _fld, handleValueChange} = this.props;
+    const {value} = event.target;
+    _obj[_fld] = value;
+    this.setState({value}, () => handleValueChange && handleValueChange(value));
   };
 
   handleInputClick() {
@@ -48,44 +45,27 @@ export default class FieldNumber extends Component {
     });
   }
 
-  handleValueChange(value) {
-    let floatValue = parseFloat(value);
-
-    if (isNaN(floatValue)) {
-      floatValue = 0.0;
-    }
-
-    this.setState({
-      value: floatValue,
-    });
-  }
-
   handleCalculatorClose(value) {
-    this.setState({
-      value: value,
-      isCalculatorVisible: false,
-    });
+    this.setState({isCalculatorVisible: false});
+    this.onChange({target: {value}});
   }
 
   render() {
 
-    const {_obj, _fld, _meta, classes, read_only} = this.props;
+    const {state, props} = this;
+    const {_obj, _fld, _meta, classes, read_only} = props;
 
     let input = null;
-    if (this.props.partOfTabularSection) {
+    if (props.partOfTabularSection) {
       // Render plain html input in cell of table.
       input = (
         <input
           type={'text'}
           name={_fld}
-          value={this.state.value}
-
-          onChange={(event, value) => {
-            this.handleValueChange(value);
-          }}
-          onClick={() => {
-            this.handleInputClick();
-          }}/>
+          value={state.value}
+          onChange={this.onChange.bind(this)}
+          onClick={this.handleInputClick.bind(this)}
+        />
       );
     } else {
       input = (
@@ -97,14 +77,11 @@ export default class FieldNumber extends Component {
           label={_meta.synonym}
           title={_meta.tooltip || _meta.synonym}
 
-          value={this.state.value}
+          value={state.value}
 
-          onChange={(event, value) => {
-            this.handleValueChange(value);
-          }}
-          onClick={() => {
-            this.handleInputClick();
-          }}/>
+          onChange={this.onChange.bind(this)}
+          onClick={this.handleInputClick.bind(this)}
+        />
       );
     }
 
@@ -112,8 +89,8 @@ export default class FieldNumber extends Component {
       <div style={{position: 'relative'}}>
         <Calculator
           position={'bottom'}
-          visible={this.state.isCalculatorVisible}
-          value={this.state.value}
+          visible={state.isCalculatorVisible}
+          value={state.value}
           onChange={(value) => {
             this.setState({value});
           }}

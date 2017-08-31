@@ -7,22 +7,20 @@ export default withStyles({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     padding: '.3em',
+    boxSizing: 'border-box'
   },
   headerCell: {
     borderLeft: '1px solid #e0e0e0',
-    fontWeight: 'bold',
-    padding: '.3em',
   },
-  evenRow: {
-
-  },
+  evenRow: {},
   oddRow: {
     backgroundColor: '#fafafa'
   },
   hoveredItem: {
-    backgroundColor: '#f2f2fc'
+    backgroundColor: '#f5f2f2'
   },
   selectedItem: {
     backgroundColor: '#fffbdc'
   },
+
 });

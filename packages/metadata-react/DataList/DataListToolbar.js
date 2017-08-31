@@ -15,7 +15,9 @@ import AttachIcon from 'material-ui-icons/AttachFile';
 import SelectIcon from 'material-ui-icons/PlaylistAddCheck';
 
 import SchemeSettings from '../SchemeSettings';
+
 import withStyles from '../Header/toolbar';
+import classnames from 'classnames';
 
 class DataListToolbar extends Component {
 
@@ -37,7 +39,7 @@ class DataListToolbar extends Component {
     const {props} = this;
 
     return (
-      <Toolbar className={props.classes.bar}>
+      <Toolbar className={classnames([props.classes.bar, props.classes.toolbar])}>
 
         {props.selection_mode && <IconButton key="select" title="Выбрать из списка" onClick={props.handleSelect}><SelectIcon/></IconButton>}
         {!props.denyAddDel && <IconButton key="create" title="Создать объект" onClick={props.handleAdd}><AddIcon/></IconButton>}

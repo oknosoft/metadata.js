@@ -1,29 +1,31 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import {GridList, GridTile} from 'material-ui/GridList';
-import Layout from '../FlexPanel/react-flex-layout/react-flex-layout'
-import LayoutSplitter from '../FlexPanel/react-flex-layout/react-flex-layout-splitter'
-import Toolbar from "./Toolbar";
-import DataField from '../DataField'
-import TabularSection from '../TabularSection'
-import classes from './DataObj.scss'
-import classnames from "classnames"
+import Layout from '../FlexPanel/react-flex-layout/react-flex-layout';
+import LayoutSplitter from '../FlexPanel/react-flex-layout/react-flex-layout-splitter';
+import LoadingMessage from '../DumbLoader/LoadingMessage';
 
-import Paper from "material-ui/Paper"
+import Toolbar from './Toolbar';
+import DataField from '../DataField';
+import TabularSection from '../TabularSection';
+
+import classes from './DataObj.scss';
+import classnames from 'classnames';
+
+import Paper from 'material-ui/Paper';
 
 export default class DataObj extends Component {
   static PAPER_STYLE = {
-    margin: "10px",
-  }
+    margin: '10px',
+  };
 
   static PAPER_STYLE_FIELDS = {
-    padding: "10px",
-  }
+    padding: '10px',
+  };
 
   static PAPER_STYLE_TABULAR_SECTION = {
-    height: "100%",
-  }
+    height: '100%',
+  };
 
 
   static propTypes = {
@@ -34,37 +36,45 @@ export default class DataObj extends Component {
 
     read_only: PropTypes.object,        // Элемент только для чтения
 
-    handleSave: PropTypes.func,
-    handleRevert: PropTypes.func,
-    handleMarkDeleted: PropTypes.func,
-    handlePost: PropTypes.func,
-    handleUnPost: PropTypes.func,
-    handlePrint: PropTypes.func,
-    handleAttachment: PropTypes.func,
-    handleValueChange: PropTypes.func,
-    handleAddRow: PropTypes.func,
-    handleDelRow: PropTypes.func
-  }
+    handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
+  };
 
   constructor(props) {
     super(props);
     const {_mgr, _meta, match} = props;
-
-    this.state = {
-      _meta: _meta || _mgr.metadata(),
-      _obj: _mgr.get(match.params.ref),
+    this._handlers = {
+      handleSave: this.handleSave.bind(this),
+      handleSend: this.handleSend.bind(this),
+      handleMarkDeleted: this.handleMarkDeleted.bind(this),
+      handlePrint: this.handlePrint.bind(this),
+      handleAttachment: this.handleAttachment.bind(this),
+      handleClose: this.handleClose.bind(this),
     };
+    this.state = {_meta: _meta || _mgr.metadata()};
+    _mgr.get(match.params.ref, 'promise').then((_obj) => {
+      if(this._isMounted){
+        this.setState({_obj});
+      }
+      else{
+        this.state._obj = _obj;
+      }
+    })
   }
 
   handleSave() {
-    this.props.handleSave(this.state._obj)
+    //this.props.handleSave(this.state._obj);
+    const {_obj} = this.state;
+    _obj && _obj.save();
   }
 
   handleSend() {
-    this.props.handleSave(this.state._obj)
+    this.props.handlers.handleSave(this.state._obj);
   }
 
   handleClose() {
+    const {handlers, _mgr} = this.props;
+    const {_obj} = this.state;
+    handlers.handleNavigate(`/${_mgr.class_name}/list${_obj ? '/?ref=' + _obj.ref : ''}`);
   }
 
   handleMarkDeleted() {
@@ -78,11 +88,11 @@ export default class DataObj extends Component {
 
   handleValueChange(_fld) {
     return (event, value) => {
-      const {_obj, handleValueChange} = this.props
-      const old_value = _obj[_fld]
-      _obj[_fld] = (value || (event && event.target ? event.target.value : ''))
-      handleValueChange(_fld, old_value)
-    }
+      const {_obj, handlers} = this.props;
+      const old_value = _obj[_fld];
+      _obj[_fld] = (value || (event && event.target ? event.target.value : ''));
+      handlers.handleValueChange(_fld, old_value);
+    };
   }
 
   /**
@@ -101,7 +111,7 @@ export default class DataObj extends Component {
       );
     }
 
-    if (elements.length === 0) {
+    if(elements.length === 0) {
       return null;
     }
 
@@ -131,7 +141,7 @@ export default class DataObj extends Component {
       );
     }
 
-    if (elements.length === 0) {
+    if(elements.length === 0) {
       return null;
     }
 
@@ -142,24 +152,25 @@ export default class DataObj extends Component {
     );
   }
 
+  componentDidMount() {
+    this._isMounted = true;
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
+
   render() {
-    if (!this.state._obj) {
-      return (
-        <div>loading</div>
-      );
+
+    if(!this.state._obj) {
+      return <LoadingMessage />;
     }
 
     return (
-      <div className={"content-with-toolbar-layout"}>
-        <Toolbar
-          handleSave={this.handleSave.bind(this)}
-          handleSend={this.handleSend.bind(this)}
-          handleMarkDeleted={this.handleMarkDeleted.bind(this)}
-          handlePrint={this.handlePrint.bind(this)}
-          handleAttachment={this.handleAttachment.bind(this)}
-          handleClose={this.handleClose.bind(this)}/>
+      <div>
+        <Toolbar {...this._handlers} />
 
-        <div className={"content-with-toolbar-layout__content"}>
+        <div className={'content-with-toolbar-layout__content'}>
           {this.renderFields()}
           {this.renderTabularSections()}
         </div>

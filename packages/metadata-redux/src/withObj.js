@@ -1,10 +1,13 @@
 import {connect} from 'react-redux';
 import * as obj from './actions_obj';
-
+import {push} from 'react-router-redux';
 
 const mapDispatchToProps = (dispatch) => {
 
-  return {
+  const handlers = {
+    handleNavigate(path) {
+      dispatch(push(path))
+    },
     handleAdd() {
 
     },
@@ -13,6 +16,9 @@ const mapDispatchToProps = (dispatch) => {
     },
     handleDelRow() {
 
+    },
+    handleEdit({ref, _mgr}) {
+      dispatch(push(`/${_mgr.class_name}/${ref}`));
     },
     handlePost() {
 
@@ -39,6 +45,7 @@ const mapDispatchToProps = (dispatch) => {
 
     }
   };
+  return Object.assign({handlers}, handlers);
 };
 
 

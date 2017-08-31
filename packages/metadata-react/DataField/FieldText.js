@@ -19,11 +19,11 @@ export default class FieldText extends Component {
     read_only: PropTypes.bool,          // поле только для чтения
   };
 
-  onChange = (event, newValue) => {
+  onChange = (event) => {
     const {_obj, _fld, handleValueChange} = this.props;
-    _obj[_fld] = newValue;
+    _obj[_fld] = event.target.value;
     if (handleValueChange) {
-      handleValueChange(newValue);
+      handleValueChange(event.target.value);
     }
   };
 

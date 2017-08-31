@@ -15,7 +15,7 @@ import PrintIcon from "material-ui-icons/Print";
 import AttachIcon from "material-ui-icons/AttachFile";
 
 import withStyles from '../Header/toolbar';
-
+import classnames from 'classnames';
 
 class DataObjToolbar extends Component {
 
@@ -48,23 +48,15 @@ class DataObjToolbar extends Component {
     const {props} = this;
     return (
 
-      <Toolbar className={props.classes.bar}>
+      <Toolbar className={classnames([props.classes.bar, props.classes.toolbar])} >
 
-        <IconButton title="Записать" onClick={props.handleSave}>
-          <SaveIcon />
-        </IconButton>
-        <IconButton title="Отправить на согласование" onClick={props.handleSend}>
-          <SendIcon />
-        </IconButton>
-        <IconButton title="Отозвать заказ" onClick={props.handleMarkDeleted}>
-          <RemoveIcon />
-        </IconButton>
+        <IconButton title="Записать" onClick={props.handleSave}><SaveIcon /></IconButton>
+        <IconButton title="Отправить на согласование" onClick={props.handleSend}><SendIcon /></IconButton>
+        <IconButton title="Отозвать заказ" onClick={props.handleMarkDeleted}><RemoveIcon /></IconButton>
 
         <Typography type="title" color="inherit" className={props.classes.flex} > </Typography>
 
-        <IconButton onClick={this.handleClick} title="Дополнительно" >
-          <MoreVertIcon />
-        </IconButton>
+        <IconButton onClick={this.handleClick} title="Дополнительно" ><MoreVertIcon /></IconButton>
 
         <Menu
           anchorEl={this.state.anchorEl}
@@ -76,9 +68,7 @@ class DataObjToolbar extends Component {
 
         </Menu>
 
-        <IconButton title="Закрыть форму" onClick={props.handleClose}>
-          <CloseIcon />
-        </IconButton>
+        <IconButton title="Закрыть форму" onClick={props.handleClose}><CloseIcon /></IconButton>
 
       </Toolbar>
     )

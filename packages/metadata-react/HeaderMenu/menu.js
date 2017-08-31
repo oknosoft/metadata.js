@@ -1,5 +1,5 @@
 import withStyles from 'material-ui/styles/withStyles';
-import {light} from 'material-ui/styles/palette';
+import {light} from 'material-ui/styles/createPalette';
 import transitions from 'material-ui/styles/transitions';
 
 export default withStyles({

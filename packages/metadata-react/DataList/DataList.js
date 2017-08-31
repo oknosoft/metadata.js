@@ -14,7 +14,7 @@ import control_by_type from 'metadata-abstract-ui/src/ui';
 
 class DataList extends Component {
 
-  static LIMIT = 10;
+  static LIMIT = 40;
   static OVERSCAN_ROW_COUNT = 2;
   static OVERSCAN_COLUMN_COUNT = 2;
   static COLUMN_HEIGHT = 32;
@@ -25,7 +25,7 @@ class DataList extends Component {
 
     const {class_name} = props._mgr;
 
-    const state = this.state = {
+    this.state = {
       rowsLoaded: 0,
       selectedRowIndex: 0,
       _meta: props._meta || props._mgr.metadata(),
@@ -53,36 +53,36 @@ class DataList extends Component {
   // обработчик выбора значения в списке
   handleSelect = () => {
     const row = this._list.get(this.state.selectedRowIndex);
-    const {handleSelect, _mgr} = this.props;
-    if(row && handleSelect) {
-      handleSelect(row, _mgr);
+    const {handlers, _mgr} = this.props;
+    if(row && handlers.handleSelect) {
+      handlers.handleSelect(row, _mgr);
     }
   };
 
   // обработчик добавления элемента списка
   handleAdd = () => {
-    const {handleAdd, _mgr} = this.props;
-    if(handleAdd) {
-      handleAdd(_mgr);
+    const {handlers, _mgr} = this.props;
+    if(handlers.handleAdd) {
+      handlers.handleAdd(_mgr);
     }
   };
 
   // обработчик редактирования элемента списка
   handleEdit = () => {
     const row = this._list.get(this.state.selectedRowIndex);
-    const {handleEdit, _mgr} = this.props;
-    if(row && handleEdit) {
-      handleEdit(row, _mgr);
+    const {handlers, _mgr} = this.props;
+    if(row && handlers.handleEdit) {
+      handlers.handleEdit({ref: row.ref, _mgr});
     }
   };
 
   // обработчик удаления элемента списка
   handleRemove = () => {
     const row = this._list.get(this.state.selectedRowIndex);
-    const {handleMarkDeleted, _mgr} = this.props;
+    const {handlers, _mgr} = this.props;
 
-    if(row && handleMarkDeleted) {
-      handleMarkDeleted(row, _mgr);
+    if(row && handlers.handleMarkDeleted) {
+      handlers.handleMarkDeleted(row, _mgr);
     }
   };
 
@@ -96,15 +96,16 @@ class DataList extends Component {
 
     // Create header row.
     const columns = scheme.columns();
-    const headerColumns = columns.map(column => (column.synonym));
-
     // Set first row as header.
-    this._list.set(0, headerColumns);
-    this.setState({
-      scheme,
-      columns,
-      rowsLoaded: 1,
-    });
+    this._list.set(0, columns.map(column => (column.synonym)));
+
+
+    if(this._isMounted){
+      this.setState({scheme, columns, rowsLoaded: 1});
+    }
+    else{
+      Object.assign(state, {scheme, columns, rowsLoaded: 1});
+    }
 
     this._loadMoreRows({
       startIndex: 0,
@@ -115,17 +116,17 @@ class DataList extends Component {
   // обработчик печати теущей строки
   handlePrint = () => {
     const row = this._list.get(this.state.selectedRowIndex);
-    const {handlePrint, _mgr} = this.props;
-    if(row && handlePrint) {
-      handlePrint(row, _mgr);
+    const {handlers, _mgr} = this.props;
+    if(row && handlers.handlePrint) {
+      handlers.handlePrint(row, _mgr);
     }
   };
 
   // обработчик вложений теущей строки
   handleAttachment = () => {
     const row = this._list.get(this.state.selectedRowIndex);
-    const {handleAttachment, _mgr} = this.props;
-    if(row && handleAttachment) {
+    const {handlers, _mgr} = this.props;
+    if(row && handlers.handleAttachment) {
       handleAttachment(row, _mgr);
     }
   };
@@ -154,9 +155,9 @@ class DataList extends Component {
       _cellRenderer
     } = this;
 
-    const {columns, rowsLoaded, scheme} = state;
+    const {columns, rowsLoaded, scheme, colResize} = state;
 
-    const {selection_mode, denyAddDel, show_search, show_variants, width, height} = props;
+    const {selection_mode, denyAddDel, show_search, show_variants, width, height, classes} = props;
 
     if(!scheme) {
       return <LoadingMessage title="Чтение настроек компоновки..."/>;
@@ -178,6 +179,12 @@ class DataList extends Component {
       handlePrint,
       handleAttachment,
       handleSchemeChange
+    };
+
+    const styleTopRightGrid = {
+      backgroundColor: '#eeeeee',
+      borderBottom: '1px solid #e0e0e0',
+      cursor: colResize ? 'col-resize' : 'default',
     };
 
     return (
@@ -217,11 +224,7 @@ class DataList extends Component {
                 columnWidth={this._getColumnWidth}
                 rowHeight={DataList.COLUMN_HEIGHT}
                 onSectionRendered={onSectionRendered}
-                styleTopRightGrid={{
-                  backgroundColor: '#eeeeee',
-                  borderBottom: '1px solid #e0e0e0',
-                  //height: 36
-                }}/>
+                styleTopRightGrid={styleTopRightGrid}/>
             );
           }}
         </InfiniteLoader>
@@ -267,6 +270,11 @@ class DataList extends Component {
         hoveredRowIndex: rowIndex
       });
     };
+    const onMouseMove = ({target, clientX}) => {
+      const br = target.getBoundingClientRect();
+      const colResize = (Math.abs(br.left - clientX) < 6) || (Math.abs(br.right - clientX) < 6);
+      colResize != this.state.colResize && this.setState({colResize});
+    };
 
     const onClick = () => this.setState({selectedRowIndex: rowIndex});
 
@@ -276,6 +284,7 @@ class DataList extends Component {
         key={`cell-${rowIndex}-${columnIndex}`}
         style={style}
         onMouseOver={onMouseOver}
+        onMouseMove={rowIndex == 0 && onMouseMove}
         onClick={onClick}
         onDoubleClick={props.selection_mode ? handleSelect : handleEdit}
         title={hoveredColumnIndex == columnIndex && hoveredRowIndex == rowIndex ? content : ''}>
@@ -297,7 +306,7 @@ class DataList extends Component {
       return $p.utils.moment(v).format($p.utils.moment._masks.date);
 
     default:
-      return v;
+      return v ? v.toString() : '';
     }
   }
 
@@ -336,12 +345,9 @@ class DataList extends Component {
         }
       }
 
-      if(this._isMounted) {
-        // Обновить количество записей.
-        this.setState({
-          rowsLoaded: this.state.rowsLoaded + reallyLoadedRows
-        });
-      }
+      // Обновить количество записей.
+      this._isMounted && reallyLoadedRows && this.setState({rowsLoaded: this.state.rowsLoaded + reallyLoadedRows});
+
     });
   };
 }
@@ -358,22 +364,15 @@ DataList.propTypes = {
   // настройки внешнего вида и поведения
   selection_mode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисуем кнопку выбора
   read_only: PropTypes.object,          // Элемент только для чтения
-  denyAddDel: PropTypes.bool,         // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+  denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
   show_search: PropTypes.bool,          // Показывать поле поиска
   show_variants: PropTypes.bool,        // Показывать список вариантов настройки динсписка
   modal: PropTypes.bool,                // Показывать список в модальном диалоге
   Toolbar: PropTypes.func,              // Индивидуальная панель инструментов. Если не указана, рисуем типовую
 
   // Redux actions
-  handleSelect: PropTypes.func,         // обработчик выбора значения в списке
-  handleAdd: PropTypes.func,            // обработчик добавления объекта
-  handleEdit: PropTypes.func,           // обработчик открытия формы редактора
-  handleRevert: PropTypes.func,         // откатить изменения - перечитать объект из базы данных
-  handleMarkDeleted: PropTypes.func,    // обработчик удаления строки
-  handlePost: PropTypes.func,           // обработчик проведения документа
-  handleUnPost: PropTypes.func,         // отмена проведения
-  handlePrint: PropTypes.func,          // обработчик открытия диалога печати
-  handleAttachment: PropTypes.func,     // обработчик открытия диалога присоединенных файлов
+  handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
+
 };
 
 export default withStyles(DataList);

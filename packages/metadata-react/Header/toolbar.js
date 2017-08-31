@@ -21,6 +21,9 @@ export default withStyles({
   bar: {
     minHeight: 48,
   },
+  toolbar: {
+    backgroundColor: '#f5f5f5',
+  },
   appbar: {
     backgroundColor: colors.lightBlack,
   },
