@@ -351,16 +351,9 @@ class Calculator extends Component {
       return null;
     }
 
+    const calculatorClassNames = classnames([classes.calculator, classes[this.props.position]]);
 
-    const calculatorClassNames = classnames([
-      classes.calculator,
-      classes[this.props.position],
-    ]);
-
-    const keyboardRowClassNames = classnames({
-      [classes.row]: true,
-      [classes.rowHidden]: this.state.isMicroCalculator,
-    });
+    const keyboardRowClassNames = classnames({[classes.row]: true, [classes.rowHidden]: this.state.isMicroCalculator});
 
     return (
       <div className={calculatorClassNames}>
@@ -397,7 +390,8 @@ class Calculator extends Component {
               this.calculate();
             }}
             clearInputRequired={this.state.clearInputRequired}
-            menu={this.renderHistoryMenu()}/>
+            menu={this.renderHistoryMenu()}
+          />
         </div>
 
         <div className={keyboardRowClassNames}>

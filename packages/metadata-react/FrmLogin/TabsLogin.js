@@ -66,7 +66,7 @@ class TabsLogin extends Component {
             label="Имя пользователя"
             InputProps={{placeholder: 'login'}}
             fullWidth
-            margin="normal"
+            margin="dense"
             value={state.login}
             onChange={event => this.setState({ login: event.target.value })}
           />
@@ -75,7 +75,7 @@ class TabsLogin extends Component {
             label="Пароль"
             InputProps={{placeholder: 'password'}}
             fullWidth
-            margin="normal"
+            margin="dense"
             type="password"
             value={state.password}
             onChange={event => this.setState({ password: event.target.value })}

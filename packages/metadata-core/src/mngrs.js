@@ -118,7 +118,6 @@ export class DataManager extends MetaEventEmitter{
 	 * ### Указатель на массив, сопоставленный с таблицей локальной базы данных
 	 * Фактически - хранилище объектов данного класса
 	 * @property alatable
-	 * @for DataManager
 	 * @type Array
 	 * @final
 	 */
@@ -127,6 +126,17 @@ export class DataManager extends MetaEventEmitter{
 		const {tables} = _owner.$p.wsql.aladb;
 		return tables[table_name] ? tables[table_name].data : []
 	}
+
+  /**
+   * ### Права текущего пользователя на объекты этого менеджера
+   * @property acl
+   * @type Array
+   * @final
+   */
+	get acl() {
+	  const {current_user} = this._owner.$p;
+    return current_user ? current_user.get_acl(this.class_name) : 'r';
+  }
 
 	/**
 	 * ### Способ кеширования объектов этого менеджера
@@ -159,18 +169,6 @@ export class DataManager extends MetaEventEmitter{
 
 		// остальные классы по умолчанию кешируем и загружаем в память при старте
 		return "ram";
-	}
-
-	/**
-	 * ### Имя семейства объектов данного менеджера
-	 * Примеры: "справочников", "документов", "регистров сведений"
-	 * @property family_name
-	 * @for DataManager
-	 * @type String
-	 * @final
-	 */
-	get family_name(){
-		return msg.meta_mgrs[this.class_name.split(".")[0]].replace(msg.meta_mgrs.mgr+" ", "");
 	}
 
 	/**
@@ -522,7 +520,6 @@ export class DataManager extends MetaEventEmitter{
       }
     });
   }
-
 
 }
 

@@ -28,6 +28,7 @@
     "pouchdb-find": "^6.3.4",
     "pouchdb-mapreduce": "^6.3.4",
     "pouchdb-replication": "^6.3.4",
+    "react-autosuggest": "^9.3.2",
     "react-click-outside": "^2.3",
     "react-data-grid": "^2.0.58",
     "react-data-grid-addons": "^2.0.58",

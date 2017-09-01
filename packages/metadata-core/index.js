@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.2-beta.26, built:2017-08-31
+ metadata-core v2.0.2-beta.26, built:2017-09-01
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -102,6 +102,21 @@ const msg$1 = new I18n({
 			dp: 'Обработка',
 			rep: 'Отчет',
 		},
+    meta_parents: {
+      enm: 'перечисления',
+      cat: 'справочника',
+      doc: 'документа',
+      cch: 'плана видов характеристик',
+      cacc: 'плана счетов',
+      tsk: 'задачи',
+      ireg: 'регистра сведений',
+      areg: 'регистра накопления',
+      accreg: 'регистра бухгалтерии',
+      bp: 'бизнес процесса',
+      ts_row: 'строки табличной части',
+      dp: 'обработки',
+      rep: 'отчета',
+    },
 		meta_classes: {
 			enm: 'Перечисления',
 			cat: 'Справочники',
@@ -175,8 +190,10 @@ const msg$1 = new I18n({
 		no_selected_row: 'Не выбрана строка табличной части "%1"',
 		no_dhtmlx: 'Библиотека dhtmlx не загружена',
 		not_implemented: 'Не реализовано в текущей версии',
+    obj_parent: 'объекта',
 		offline_request: 'Запрос к серверу в автономном режиме',
 		onbeforeunload: 'Окнософт: легкий клиент. Закрыть программу?',
+    open_frm: 'Открыть форму',
 		order_sent_title: 'Подтвердите отправку заказа',
 		order_sent_message: 'Отправленный заказ нельзя изменить.<br/>После проверки менеджером<br/>он будет запущен в работу',
 		report_error: '<i class="fa fa-exclamation-circle fa-2x fa-fw"></i> Ошибка',
@@ -185,6 +202,7 @@ const msg$1 = new I18n({
 		report_need_online: '<i class="fa fa-plug fa-2x fa-fw"></i> Нет подключения. Отчет недоступен в автономном режиме',
 		request_title: 'Запрос регистрации',
 		request_message: 'Заявка зарегистрирована. После обработки менеджером будет сформировано ответное письмо',
+    selection_parent: 'выбора',
 		select_from_list: 'Выбор из списка',
 		select_grp: 'Укажите группу, а не элемент',
 		select_elm: 'Укажите элемент, а не группу',
@@ -1210,6 +1228,10 @@ class DataManager extends MetaEventEmitter{
 		const {tables} = _owner.$p.wsql.aladb;
 		return tables[table_name] ? tables[table_name].data : []
 	}
+	get acl() {
+	  const {current_user} = this._owner.$p;
+    return current_user ? current_user.get_acl(this.class_name) : 'r';
+  }
 	get cachable(){
 		const {class_name} = this;
 		const _meta = this.metadata();
@@ -1220,9 +1242,6 @@ class DataManager extends MetaEventEmitter{
 		if(class_name.indexOf("doc.") != -1 || class_name.indexOf("dp.") != -1 || class_name.indexOf("rep.") != -1)
 			return "doc";
 		return "ram";
-	}
-	get family_name(){
-		return msg$1.meta_mgrs[this.class_name.split(".")[0]].replace(msg$1.meta_mgrs.mgr+" ", "");
 	}
 	get table_name(){
 		return this.class_name.replace(".", "_");
@@ -5248,8 +5267,11 @@ const utils = mime({
 	is_data_mgr(v) {
 		return v instanceof DataManager;
 	},
+  is_enm_mgr(v) {
+    return v instanceof EnumManager;
+  },
   is_tabular(v) {
-    return v instanceof TabularSection;
+    return v instanceof TabularSectionRow || v instanceof TabularSection;
   },
 	is_equal(v1, v2) {
 		if (v1 == v2) {

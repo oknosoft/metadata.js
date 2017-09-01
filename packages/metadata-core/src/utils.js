@@ -6,6 +6,7 @@
  * @final
  */
 
+
 const moment = require('moment');
 require('moment/locale/ru');
 moment.locale('ru');
@@ -19,9 +20,9 @@ if(typeof global != 'undefined'){
   global.moment = moment;
 }
 
-import {DataManager} from './mngrs';
+import {DataManager, EnumManager} from './mngrs';
 import {DataObj} from './objs';
-import {TabularSection} from './tabulars';
+import {TabularSection, TabularSectionRow} from './tabulars';
 
 import mime from './mime'
 
@@ -361,14 +362,25 @@ const utils = mime({
 	},
 
   /**
-   * ### Проверяет, является ли значенние табличной частью
+   * ### Проверяет, является ли значенние менеджером перечисления
+   *
+   * @method is_enm_mgr
+   * @param v {*} - проверяемое значение
+   * @return {Boolean} - true, если значение является менеджером данных
+   */
+  is_enm_mgr(v) {
+    return v instanceof EnumManager;
+  },
+
+  /**
+   * ### Проверяет, является ли значенние табличной частью или строкой табличной части
    *
    * @method is_tabular
    * @param v {*} - проверяемое значение
    * @return {Boolean} - true, если значение является табличной частью
    */
   is_tabular(v) {
-    return v instanceof TabularSection;
+    return v instanceof TabularSectionRow || v instanceof TabularSection;
   },
 
 	/**

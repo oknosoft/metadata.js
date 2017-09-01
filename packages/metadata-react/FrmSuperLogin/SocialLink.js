@@ -119,28 +119,33 @@ export default class TabsLogin extends React.Component {
               <div style={{padding: 18}}>
                 <TextField
                   hintText="name"
-                  fullWidth={true}
+                  fullWidth
+                  margin="dense"
                   floatingLabelText="Полное имя"
                 /><br />
                 <TextField
                   hintText="login"
-                  fullWidth={true}
+                  fullWidth
+                  margin="dense"
                   floatingLabelText="Имя пользователя"
                 /><br />
                 <TextField
                   hintText="email"
-                  fullWidth={true}
+                  fullWidth
+                  margin="dense"
                   floatingLabelText="Электронная почта"
                 /><br />
                 <TextField
                   hintText="password"
-                  fullWidth={true}
+                  fullWidth
+                  margin="dense"
                   floatingLabelText="Пароль"
                   type="password"
                 /><br />
                 <TextField
                   hintText="confirm_password"
-                  fullWidth={true}
+                  fullWidth
+                  margin="dense"
                   floatingLabelText="Подтвердить пароль"
                   type="password"
                 />

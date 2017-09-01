@@ -8,25 +8,15 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import VirtualizedSelect from './VirtualizedSelect';
+import AbstractField from './AbstractField';
 
-export default class FieldSelect extends Component {
-
-  static propTypes = {
-    _obj: PropTypes.object.isRequired,
-    _fld: PropTypes.string.isRequired,
-    _meta: PropTypes.object,
-
-    multi: PropTypes.bool,              // множественный выбор - значение является массивом
-    mandatory: PropTypes.bool,          // поле обязательно для заполнения
-
-    handleValueChange: PropTypes.func,
-  };
+export default class FieldSelect extends AbstractField {
 
   constructor(props, context) {
 
     super(props, context);
 
-    const {_obj, _fld, _meta, mandatory} = props;
+    const {_obj, _fld, mandatory} = props;
     const _val = _obj[_fld];
 
     this.state = {
@@ -37,20 +27,21 @@ export default class FieldSelect extends Component {
       multi: props.multi || false,
       searchable: true,
       selectedCreatable: null,
-      mandatory: mandatory || _meta.mandatory,
+      mandatory: typeof mandatory === 'boolean' ? mandatory : this._meta.mandatory,
     };
   }
 
   _loadOptions = (input) => {
 
     const selection = {_top: 40};
-    const {_obj, _fld, _meta} = this.props;
+    const {_obj, _fld} = this.props;
+    const {choice_params} = this._meta;
 
     if (input) {
       selection.presentation = {like: input};
     }
-    if (_meta.choice_params) {
-      _meta.choice_params.forEach((cp) => {
+    if (choice_params) {
+      choice_params.forEach((cp) => {
         selection[cp.name] = cp.path;
       });
     }

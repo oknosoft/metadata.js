@@ -46,7 +46,7 @@ class DataListToolbar extends Component {
         {!props.denyAddDel && <IconButton key="edit" title="Открыть форму объекта" onClick={props.handleEdit}><EditIcon/></IconButton>}
         {!props.denyAddDel && <IconButton key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}
 
-        <Typography type="title" color="inherit" className={props.classes.flex} > </Typography>
+        <Typography type="caption" color="inherit" className={props.classes.flex} > </Typography>
 
         <div>
           <SchemeSettings

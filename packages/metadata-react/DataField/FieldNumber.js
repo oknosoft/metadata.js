@@ -10,22 +10,12 @@ import PropTypes from 'prop-types';
 import TextField from 'material-ui/TextField';
 import Calculator from '../Calculator';
 
-export default class FieldNumber extends Component {
+import AbstractField from './AbstractField';
 
-  static propTypes = {
-    _obj: PropTypes.object.isRequired,
-    _fld: PropTypes.string.isRequired,
-    _meta: PropTypes.object.isRequired,
-    handleValueChange: PropTypes.func,
-    partOfTabularSection: PropTypes.bool,
-  };
+export default class FieldNumber extends AbstractField {
 
-  static defaultProps = {
-    partOfTabularSection: false,
-  };
-
-  constructor(props) {
-    super(props);
+  constructor(props, context) {
+    super(props, context);
     this.state = {
       isCalculatorVisible: false,
       value: props._obj[props._fld],
@@ -52,52 +42,44 @@ export default class FieldNumber extends Component {
 
   render() {
 
-    const {state, props} = this;
-    const {_obj, _fld, _meta, classes, read_only} = props;
+    const {state, props, _meta, isTabular} = this;
+    const {_obj, _fld, classes, read_only} = props;
 
-    let input = null;
-    if (props.partOfTabularSection) {
-      // Render plain html input in cell of table.
-      input = (
-        <input
-          type={'text'}
-          name={_fld}
-          value={state.value}
-          onChange={this.onChange.bind(this)}
-          onClick={this.handleInputClick.bind(this)}
-        />
-      );
-    } else {
-      input = (
-        <TextField
-          name={_fld}
-          className={classes && classes.textField}
-          fullWidth={true}
-          disabled={read_only}
-          label={_meta.synonym}
-          title={_meta.tooltip || _meta.synonym}
-
-          value={state.value}
-
-          onChange={this.onChange.bind(this)}
-          onClick={this.handleInputClick.bind(this)}
-        />
-      );
-    }
-
+    // Render plain html input in cell of table.
     return (
       <div style={{position: 'relative'}}>
+
         <Calculator
           position={'bottom'}
           visible={state.isCalculatorVisible}
           value={state.value}
-          onChange={(value) => {
-            this.setState({value});
-          }}
-          onClose={(value) => {
-            this.handleCalculatorClose(value);
-          }}/>
-        {input}
+          onChange={(value) => this.setState({value})}
+          onClose={(value) => this.handleCalculatorClose(value)}/>
+
+        {isTabular ?
+          <input
+            type="text"
+            name={_fld}
+            value={state.value}
+            onChange={this.onChange.bind(this)}
+            onClick={this.handleInputClick.bind(this)}
+          />
+          :
+          <TextField
+            name={_fld}
+            className={classes && classes.textField}
+            fullWidth
+            margin="dense"
+            disabled={read_only}
+            label={_meta.synonym}
+            title={_meta.tooltip || _meta.synonym}
+
+            value={state.value}
+
+            onChange={this.onChange.bind(this)}
+            onClick={this.handleInputClick.bind(this)}
+          />
+        }
       </div>
     );
   }

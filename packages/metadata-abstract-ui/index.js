@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.2-beta.26, built:2017-08-31
+ metadata-abstract-ui v2.0.2-beta.26, built:2017-09-01
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -611,12 +611,34 @@ function scheme_settings() {
 	dp.create('scheme_settings', SchemeSelectManager);
 }
 
+function mngrs() {
+  const {classes, msg} = this;
+  Object.defineProperties(classes.DataManager.prototype, {
+    family_name: {
+      get: function () {
+        return msg.meta_mgrs[this.class_name.split('.')[0]].replace(msg.meta_mgrs.mgr + ' ', '');
+      }
+    },
+    frm_selection_name: {
+      get: function () {
+        return `${msg.open_frm} ${msg.selection_parent} ${msg.meta_parents[this.class_name.split('.')[0]]} '${this._meta.synonym || this._meta.name}'`;
+      }
+    },
+    frm_obj_name: {
+      get: function () {
+        return `${msg.open_frm} ${msg.obj_parent} ${msg.meta_parents[this.class_name.split('.')[0]]} '${this._meta.synonym || this._meta.name}'`;
+      }
+    }
+  });
+}
+
 var plugin = {
-	constructor(){
-		meta_objs.call(this);
-		log_manager.call(this);
-		scheme_settings.call(this);
-	}
+  constructor() {
+    meta_objs.call(this);
+    log_manager.call(this);
+    scheme_settings.call(this);
+    mngrs.call(this);
+  }
 };
 
 module.exports = plugin;

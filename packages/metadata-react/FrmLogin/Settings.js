@@ -51,28 +51,31 @@ class CnnSettings extends Component {
 
         <TextField
           className={classes.textField}
+          fullWidth
+          margin="dense"
           label="Адрес CouchDB"
           InputProps={{ placeholder: 'couch_path' }}
           helperText="Абсолютный либо относительный путь CouchDB"
-          fullWidth={true}
           onChange={this.valueToState('couch_path')}
           value={couch_path}/>
 
         <TextField
           className={classes.textField}
+          fullWidth
+          margin="dense"
           label="Область данных"
           InputProps={{ placeholder: 'zone' }}
           helperText="Значение разделителя данных"
-          fullWidth={true}
           onChange={this.valueToState('zone')}
           value={zone}/>
 
         <TextField
           className={classes.textField}
+          fullWidth
+          margin="dense"
           label="Суффикс пользователя"
           InputProps={{ placeholder: 'couch_suffix' }}
           helperText="Назначается дилеру при регистрации"
-          fullWidth={true}
           onChange={this.valueToState('couch_suffix')}
           value={couch_suffix}/>
 

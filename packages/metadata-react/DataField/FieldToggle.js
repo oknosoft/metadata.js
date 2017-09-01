@@ -34,7 +34,8 @@ export default class FieldToggle extends Component {
     return (
       <TextField
         name={_fld}
-        fullWidth={true}
+        fullWidth
+        margin="dense"
         defaultValue={_obj[_fld]}
         hintText={_meta.tooltip || _meta.synonym}
         onChange={onChange}/>

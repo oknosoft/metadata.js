@@ -3,13 +3,13 @@ import colors from 'material-ui/colors/common';
 
 export default withStyles({
   calculator: {
-    fontSize: '.8em',
+    fontSize: '.9em',
     position: 'absolute',
     display: 'flex',
-    border: '.4em solid #C0D4D8',
+    border: '.2em solid #C0D4D8',
     flexDirection: 'column',
     zIndex: 1000,
-    padding: '.4em',
+    padding: '.2em',
     backgroundColor: 'white',
     boxShadow: '0 2px 10px 0 gray'
   },
@@ -46,11 +46,12 @@ export default withStyles({
     outline: 'none',
     background: 'linear-gradient(to bottom, white, #F0F4F0)',
     color: '#484C48',
-    padding: '.2em',
+    padding: '.1em',
     margin: '.2em',
     textAlign: 'center',
     userSelect: 'none',
     cursor: 'default',
+    boxSizing: 'border-box',
   },
   buttonRed: {
     color: '#F80000'
@@ -61,7 +62,7 @@ export default withStyles({
   },
   buttonIsPressed: {
     background: '#f0f4f0 !important',
-    padding: '.3em .1em .1em .3em',
+    padding: '.2em 0 0 .2em',
   },
   buttonMenu: {
     position: 'absolute',
@@ -77,7 +78,7 @@ export default withStyles({
   },
   inputInput: {
     height: '100%',
-    width: '100%',
+    //width: '100%',
     borderRadius: '2px',
     border: '1px solid #A0A0A0',
     color: '#484C48',
@@ -85,6 +86,7 @@ export default withStyles({
     padding: '.2em',
     paddingRight: '35px',
     textAlign: 'right',
+    boxSizing: 'border-box',
   },
   inputExpression: {
     textAlign: 'left',
