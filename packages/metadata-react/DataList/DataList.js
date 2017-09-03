@@ -7,6 +7,8 @@ import LoadingMessage from '../DumbLoader/LoadingMessage';
 import Toolbar from './DataListToolbar';
 import cn from 'classnames';
 
+import Confirm from '../Confirm';
+
 import withStyles from './styles';
 
 import control_by_type from 'metadata-abstract-ui/src/ui';
@@ -71,7 +73,14 @@ class DataList extends Component {
   handleEdit = () => {
     const row = this._list.get(this.state.selectedRowIndex);
     const {handlers, _mgr} = this.props;
-    if(row && handlers.handleEdit) {
+    if(!row || $p.utils.is_empty_guid(row.ref)){
+      handlers.handleIfaceState({
+        component: '',
+        name: 'alert',
+        value: {open: true, text: 'Укажите строку для редактирования', title: this.state._meta.synonym}
+      })
+    }
+    else if(handlers.handleEdit) {
       handlers.handleEdit({ref: row.ref, _mgr});
     }
   };
@@ -81,8 +90,18 @@ class DataList extends Component {
     const row = this._list.get(this.state.selectedRowIndex);
     const {handlers, _mgr} = this.props;
 
-    if(row && handlers.handleMarkDeleted) {
-      handlers.handleMarkDeleted(row, _mgr);
+    if(!row || $p.utils.is_empty_guid(row.ref)){
+      handlers.handleIfaceState({
+        component: '',
+        name: 'alert',
+        value: {open: true, text: 'Укажите строку для удаления', title: this.state._meta.synonym}
+      })
+    }
+    else if(handlers.handleMarkDeleted) {
+      this._handleRemove = function () {
+        handlers.handleMarkDeleted(row.ref, _mgr);
+      }
+      this.setState({confirm_text: 'Удалить объект?'});
     }
   };
 
@@ -155,7 +174,7 @@ class DataList extends Component {
       _cellRenderer
     } = this;
 
-    const {columns, rowsLoaded, scheme, colResize} = state;
+    const {columns, rowsLoaded, scheme, colResize, confirm_text, _meta} = state;
 
     const {selection_mode, denyAddDel, show_search, show_variants, width, height, classes} = props;
 
@@ -189,6 +208,16 @@ class DataList extends Component {
 
     return (
       <div style={{height}}>
+
+        {
+          confirm_text && <Confirm
+            title={_meta.synonym}
+            text={confirm_text}
+            handleOk={this._handleRemove}
+            handleCancel={() => this.setState({confirm_text: ''})}
+            open
+          />
+        }
 
         <Toolbar {...toolbar_props} />
 

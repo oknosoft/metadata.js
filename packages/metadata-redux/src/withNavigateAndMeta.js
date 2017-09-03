@@ -3,16 +3,10 @@ import {withRouter} from 'react-router';
 import {push} from 'react-router-redux';
 
 import withMeta from './withMeta';
+import {mapDispatchToProps} from './withIface'
 
-// Redux action creator
-const mapDispatchToProps = (dispatch) => ({
-  handleNavigate: (path) => dispatch(push(path)),
-});
-
-const mapStateToProps = (state, props) => {
-  return {
-    path_log_in: !!props.location.pathname.match(/\/(login|about|settings)$/),
-  };
+const mapStateToProps = ({iface}, {location}) => {
+  return Object.assign({path_log_in: !!location.pathname.match(/\/(login|about|settings)$/)}, iface.common);
 };
 
 

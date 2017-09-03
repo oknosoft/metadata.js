@@ -1,12 +1,16 @@
 import {connect} from 'react-redux';
 import * as obj from './actions_obj';
 import {push} from 'react-router-redux';
+import {iface_state} from './actions_iface';
 
 const mapDispatchToProps = (dispatch) => {
 
   const handlers = {
     handleNavigate(path) {
-      dispatch(push(path))
+      return dispatch(push(path));
+    },
+    handleIfaceState(state) {
+      return dispatch(iface_state(state));
     },
     handleAdd() {
 
@@ -18,7 +22,7 @@ const mapDispatchToProps = (dispatch) => {
 
     },
     handleEdit({ref, _mgr}) {
-      dispatch(push(`/${_mgr.class_name}/${ref}`));
+      return dispatch(push(`/${_mgr.class_name}/${ref}`));
     },
     handlePost() {
 

@@ -1,38 +1,30 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import Button from 'material-ui/Button';
-import Dialog, {
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from 'material-ui/Dialog';
+import Dialog, {DialogActions, DialogContent, DialogContentText, DialogTitle} from 'material-ui/Dialog';
 
-export default class Confirm extends Component {
+export default function Confirm({text, title, handleOk, handleCancel, open}) {
 
-  render() {
-    const {text, title, handleOk, handleCancel, open} = this.props;
-    return (
-      <Dialog open={open} onRequestClose={handleCancel}>
-        <DialogTitle>
-          {title}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {text}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCancel} color="primary">
-            Отмена
-          </Button>
-          <Button onClick={handleOk} color="primary">
-            Ок
-          </Button>
-        </DialogActions>
-      </Dialog>
-    );
-  }
+  return (
+    <Dialog open={open} onRequestClose={handleCancel}>
+      <DialogTitle>
+        {title}
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          {text}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleCancel} color="primary">
+          Отмена
+        </Button>
+        <Button onClick={handleOk} color="primary">
+          Ок
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 }
 
 Confirm.propTypes = {
