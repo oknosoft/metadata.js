@@ -5219,6 +5219,9 @@ const utils = mime({
 	},
 	fetch_type(str, mtype) {
 		if (mtype.is_ref) {
+      if(mtype.types.some((type) => type.indexOf('enm') == 0 || type.indexOf('string') == 0)){
+        return str;
+      }
 			return this.fix_guid(str);
 		}
 		if (mtype.date_part) {
