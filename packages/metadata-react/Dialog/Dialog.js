@@ -20,31 +20,31 @@ export default class Dialog extends Component {
   static defaultProps = {
     title: '',
     tabs: {},
+    actions: [],
     left: null,
     top: null,
-    width: 420,
+    width: 480,
     height: 400,
     visible: false,
     fullscreen: false,
     resizable: false,
     onCloseClick: null,
     onFullScreenClick: null,
-    actions: [],
   };
 
   static propTypes = {
     title: PropTypes.string,
     tabs: PropTypes.object, // Object with title:tab pairs.
+    actions: PropTypes.array,
+    left: PropTypes.number,
+    top: PropTypes.number,
+    width: PropTypes.number,
+    height: PropTypes.number,
     visible: PropTypes.bool,
     fullscreen: PropTypes.bool,
     resizable: PropTypes.bool,
-    width: PropTypes.number,
-    height: PropTypes.number,
-    left: PropTypes.number,
-    top: PropTypes.number,
     onCloseClick: PropTypes.func,
     onFullScreenClick: PropTypes.func,
-    actions: PropTypes.array,
   };
 
   renderActions() {
@@ -93,6 +93,8 @@ export default class Dialog extends Component {
 
     const {props} = this;
 
+    //{props.visible && props.children}
+
     return (
       <ReactPortal isOpened={props.visible}>
         <FloatingPanel
@@ -105,18 +107,6 @@ export default class Dialog extends Component {
           left={props.left}
           top={props.top}
           buttons={this.headerButtons()}>
-
-          {/**[
-            <Tab title="One" icon="fa fa-plane" key="One">
-              <Toolbar>Toolbar of One</Toolbar>
-              <Content>Content of One</Content>
-              <Footer>Footer of One</Footer>
-            </Tab>,
-            <Tab title="Two" icon="fa fa-fire" key="Two">
-              <Toolbar>Toolbar of Two</Toolbar>
-              <Content>Content of Two</Content>
-            </Tab>
-          ]**/}
 
           {props.visible && this.renderTabs()}
 

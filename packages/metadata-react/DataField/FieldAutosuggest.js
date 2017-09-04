@@ -11,13 +11,15 @@ import Autosuggest from 'react-autosuggest';
 import TextField from 'material-ui/TextField';
 import Paper from 'material-ui/Paper';
 import Divider from 'material-ui/Divider';
-import Typography from 'material-ui/Typography';
 import MenuItem from 'material-ui/Menu/MenuItem';
+import {ListItem, ListItemIcon, ListItemText} from 'material-ui/List';
 import IconButton from 'material-ui/IconButton';
-//import IconCheckboxMultipleBlankOutline from './IconCheckboxMultipleBlankOutline'
 import OpenInNew from 'material-ui-icons/OpenInNew';
 import AddIcon from 'material-ui-icons/AddCircleOutline';
 import TitleIcon from 'material-ui-icons/Title';
+
+// окно диалога, чтобы показать всплывающие формы
+import Dialog from '../Dialog';
 
 // import match from 'autosuggest-highlight/match';
 // import parse from 'autosuggest-highlight/parse';
@@ -25,18 +27,6 @@ import {withStyles} from 'material-ui/styles';
 
 import AbstractField from './AbstractField';
 
-function renderSuggestion(suggestion, { query, isHighlighted }) {
-  // const matches = match(suggestion.label, query);
-  // const parts = parse(suggestion.label, matches);
-
-  return (
-    <MenuItem selected={isHighlighted} component="div">
-      <div>
-        {getSuggestionValue(suggestion)}
-      </div>
-    </MenuItem>
-  );
-}
 
 function getSuggestionValue(suggestion) {
   return suggestion.toString();
@@ -68,9 +58,11 @@ const styles = theme => ({
     flex: 1,
   },
   a: {
-    paddingLeft: theme.spacing.unit * 2,
-    paddingTop: theme.spacing.unit * 3,
+    width: 'inherit',
     whiteSpace: 'nowrap',
+    textDecoration: 'underline',
+    cursor: 'pointer',
+    color: '#0b0080'
   },
   button: {
     marginTop: theme.spacing.unit,
@@ -90,7 +82,7 @@ class FieldAutosuggest extends AbstractField {
       value: _obj[_fld],
       suggestions: [],
     };
-    if(_obj[_fld].is_new && _obj[_fld].is_new()){
+    if(_obj[_fld].is_new && _obj[_fld].is_new()) {
 
     }
   }
@@ -101,10 +93,10 @@ class FieldAutosuggest extends AbstractField {
     const {_obj, _fld} = this.props;
     const {choice_params} = this._meta;
 
-    if (event && event.value) {
+    if(event && event.value) {
       selection.presentation = {like: event.value};
     }
-    if (choice_params) {
+    if(choice_params) {
       choice_params.forEach((choice) => {
         selection[choice.name] = choice.path;
       });
@@ -116,10 +108,11 @@ class FieldAutosuggest extends AbstractField {
 
     return _obj[_fld]._manager.get_option_list(selection)
       .then((suggestions) => {
+        suggestions.push({_footer: true});
         this.setState({suggestions, _loading: false});
         return {suggestions};
       });
-  }
+  };
 
   onChange = (event) => {
     const {_obj, _fld, handleValueChange} = this.props;
@@ -135,42 +128,65 @@ class FieldAutosuggest extends AbstractField {
     });
   };
 
-  handleChange = (event, { newValue }) => {
-    this.setState({
+  handleChange = (event, {newValue}) => {
+    !newValue._footer && this.setState({
       value: newValue,
     });
   };
 
-  handleFocus = () => this.setState({focused: true});
-  handleBlur = () => this.setState({focused: false});
+  handleOpenList = (e) => {
+    this.setState({dialog_open: 'list'});
+  };
 
-  renderSuggestionsContainer = (options) => {
+  handleOpenObj = (e) => {
+    this.setState({dialog_open: 'obj'});
+  };
 
-    if(this.state.focused){
-      const { containerProps, children } = options;
+  handleCloseDialog = (e) => {
+    this.setState({dialog_open: false});
+  };
+
+  renderSuggestionsContainer(options) {
+
+    const {containerProps, children} = options;
+
+    return (
+      <Paper {...containerProps} square>
+        {children}
+      </Paper>
+    );
+  };
+
+  renderSuggestion = (suggestion, {query, isHighlighted}) => {
+    // const matches = match(suggestion.label, query);
+    // const parts = parse(suggestion.label, matches);
+
+    if(suggestion._footer) {
       const {_meta, props} = this;
       const {_obj, _fld, classes} = props;
       const {_manager} = _obj[_fld];
       const is_enm = $p.utils.is_enm_mgr(_manager);
 
-      return <Paper {...containerProps} square>
-        {children}
-        {children && <Divider />}
-        <div style={{display: 'flex'}}>
-          {is_enm && <div>...</div>}
-          {!is_enm && <a href="#" className={classes.a} title={_manager.frm_selection_name}>Показать все</a>}
-          <Typography type="caption" color="inherit" className={classes.flex} > </Typography>
-          {_meta.type.types.length > 1 && <IconButton className={classes.button} title="Выбрать тип значения"><TitleIcon /></IconButton>}
-          {!is_enm && _manager.acl.indexOf('i') != -1 && <IconButton className={classes.button} title="Создать элемент"><AddIcon /></IconButton>}
-          {!is_enm && <IconButton className={classes.button} title={_manager.frm_obj_name}><OpenInNew /></IconButton>}
-        </div>
-      </Paper>
+      return <div>
+        <Divider/>
+        <ListItem>
+          <ListItemIcon onClick={this.handleOpenList}><div className={classes.a}>{is_enm ? '...' : 'Показать все'}</div></ListItemIcon>
+          <ListItemText inset primary=' '/>
+          {_meta.type.types.length > 1 && <IconButton title="Выбрать тип значения"><TitleIcon/></IconButton>}
+          {!is_enm && _manager.acl.indexOf('i') != -1 && <IconButton title="Создать элемент"><AddIcon/></IconButton>}
+          {!is_enm && <IconButton title={_manager.frm_obj_name} onClick={this.handleOpenObj}><OpenInNew/></IconButton>}
+        </ListItem>
+      </div>;
     }
-    return null;
-  }
+
+    return <MenuItem selected={isHighlighted} component="div">
+      {getSuggestionValue(suggestion)}
+    </MenuItem>;
+  };
 
   renderInput = (inputProps) => {
-    const { classes, home, value, ref, _meta, _fld, ...other } = inputProps;
+    const {classes, home, value, ref, _meta, _fld, ...other} = inputProps;
+    //autoFocus={home}
 
     return this.isTabular ?
       <input
@@ -180,7 +196,6 @@ class FieldAutosuggest extends AbstractField {
       />
       :
       <TextField
-        autoFocus={home}
         className={classes && classes.textField}
         fullWidth
         margin="dense"
@@ -194,6 +209,26 @@ class FieldAutosuggest extends AbstractField {
           ...other,
         }}
       />;
+  };
+
+  renderDialog() {
+    const {props, state, context} = this;
+
+    if(state.dialog_open) {
+      const {_obj, _fld, classes} = props;
+      const {_manager} = _obj[_fld];
+      const _acl = $p.current_user.get_acl(_manager.class_name);
+      const {DataList, DataObj} = context.components;
+
+      return <Dialog
+        visible
+        resizable
+        draggable
+        tabs={{Форма: <DataList _mgr={_manager} _acl={_acl}/>}}
+        onCloseClick={this.handleCloseDialog}
+        ref={(el) => this._dialog = el}
+      />;
+    }
   }
 
   render() {
@@ -202,34 +237,44 @@ class FieldAutosuggest extends AbstractField {
     const {classes, _fld} = props;
 
     //focusInputOnSuggestionClick
-    return (
+    //autoFocus: true,
+    //shouldRenderSuggestions
+    //
+
+    return <div>
       <Autosuggest
+        id={`field_${_fld}`}
         theme={{
           container: classes.container,
           suggestionsContainerOpen: classes.suggestionsContainerOpen,
           suggestionsList: classes.suggestionsList,
           suggestion: classes.suggestion,
         }}
+        suggestions={state.suggestions}
+        getSuggestionValue={getSuggestionValue}
         renderSuggestionsContainer={this.renderSuggestionsContainer}
         renderInputComponent={this.renderInput}
-        suggestions={state.suggestions}
+        renderSuggestion={this.renderSuggestion}
         onSuggestionsFetchRequested={this.loadSuggestions}
         onSuggestionsClearRequested={this.handleSuggestionsClearRequested}
-        getSuggestionValue={getSuggestionValue}
-        renderSuggestion={renderSuggestion}
+        focusInputOnSuggestionClick={false}
+        shouldRenderSuggestions={() => true}
         inputProps={{
-          autoFocus: true,
           classes,
           _meta,
           _fld,
           value: getSuggestionValue(state.value),
           onChange: this.handleChange,
-          onFocus: this.handleFocus,
-          onBlur: this.handleBlur,
         }}
       />
-    );
+      {this.renderDialog()}
+    </div>
+    ;
   }
+
+  static contextTypes = {
+    components: PropTypes.object,       // конструкторы DataList и FrmObj передаём через контекст, чтобы исключить зацикливание
+  };
 
 }
 

@@ -15,6 +15,7 @@ import classnames from 'classnames';
 import Paper from 'material-ui/Paper';
 
 export default class DataObj extends Component {
+
   static PAPER_STYLE = {
     margin: '10px',
   };
@@ -27,7 +28,6 @@ export default class DataObj extends Component {
     height: '100%',
   };
 
-
   static propTypes = {
     _mgr: PropTypes.object,             // DataManager, с которым будет связан компонент
     _acl: PropTypes.string.isRequired,  // Права на чтение-изменение
@@ -39,8 +39,8 @@ export default class DataObj extends Component {
     handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
   };
 
-  constructor(props) {
-    super(props);
+  constructor(props, context) {
+    super(props, context);
     const {_mgr, _meta, match} = props;
     this._handlers = {
       handleSave: this.handleSave.bind(this),
@@ -52,13 +52,13 @@ export default class DataObj extends Component {
     };
     this.state = {_meta: _meta || _mgr.metadata()};
     _mgr.get(match.params.ref, 'promise').then((_obj) => {
-      if(this._isMounted){
+      if(this._isMounted) {
         this.setState({_obj});
       }
-      else{
+      else {
         this.state._obj = _obj;
       }
-    })
+    });
   }
 
   handleSave() {
@@ -95,6 +95,7 @@ export default class DataObj extends Component {
     };
   }
 
+
   /**
    * Render part with fields.
    * @return {Element}
@@ -103,25 +104,18 @@ export default class DataObj extends Component {
     const elements = [];
     const {_meta, _obj} = this.state;
 
-    for (const fieldName in _meta.fields) {
+    for (const _fld in _meta.fields) {
       elements.push(
-        <div key={fieldName} className={classes.field}>
-          <DataField _obj={_obj} _fld={fieldName}/>
-        </div>
+        <DataField key={`field_${_fld}`} _obj={_obj} _fld={_fld}/>
       );
     }
 
-    if(elements.length === 0) {
-      return null;
-    }
-
-    return (
+    return elements.length === 0 ? null :
       <Paper style={Object.assign({}, DataObj.PAPER_STYLE, DataObj.PAPER_STYLE_FIELDS)}>
         <div className={classes.fields}>
           {elements}
         </div>
-      </Paper>
-    );
+      </Paper>;
   }
 
   /**
@@ -141,16 +135,13 @@ export default class DataObj extends Component {
       );
     }
 
-    if(elements.length === 0) {
-      return null;
-    }
-
-    return (
+    return elements.length === 0 ? null :
       <div className={classes.tabularSections}>
         {elements}
       </div>
-    );
+      ;
   }
+
 
   componentDidMount() {
     this._isMounted = true;
@@ -163,19 +154,19 @@ export default class DataObj extends Component {
   render() {
 
     if(!this.state._obj) {
-      return <LoadingMessage />;
+      return <LoadingMessage/>;
     }
 
-    return (
-      <div>
-        <Toolbar {...this._handlers} />
+    return <div>
+      <Toolbar {...this._handlers} />
 
-        <div className={'content-with-toolbar-layout__content'}>
-          {this.renderFields()}
-          {this.renderTabularSections()}
-        </div>
+      <div className={'content-with-toolbar-layout__content'}>
+        {this.renderFields()}
+        {this.renderTabularSections()}
       </div>
-    );
+
+    </div>;
   }
+
 }
 

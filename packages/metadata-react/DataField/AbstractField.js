@@ -20,7 +20,7 @@ export default class AbstractField extends Component {
     read_only: PropTypes.bool,          // поле только для чтения
     mandatory: PropTypes.bool,          // поле обязательно для заполнения
     multi: PropTypes.bool,              // множественный выбор - значение является массивом
-    handleValueChange: PropTypes.func,   // обработчик при изменении значения в поле
+    handleValueChange: PropTypes.func,  // обработчик при изменении значения в поле
   };
 
   constructor(props, context) {
