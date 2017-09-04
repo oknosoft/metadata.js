@@ -216,7 +216,7 @@ class FieldAutosuggest extends AbstractField {
 
     if(state.dialog_open) {
       const {_obj, _fld, classes} = props;
-      const {_manager} = _obj[_fld];
+      const {_manager, ref} = _obj[_fld];
       const _acl = $p.current_user.get_acl(_manager.class_name);
       const {DataList, DataObj} = context.components;
 
@@ -224,7 +224,13 @@ class FieldAutosuggest extends AbstractField {
         visible
         resizable
         draggable
-        tabs={{Форма: <DataList _mgr={_manager} _acl={_acl}/>}}
+        selection_mode
+        show_search
+        tabs={{Форма: state.dialog_open == 'list' ?
+          <DataList _mgr={_manager} _acl={_acl} height={320} width={420} handlers={{}}/>
+          :
+          <DataObj _mgr={_manager} _acl={_acl} match={{params: {ref}}} handlers={{}}/>
+        }}
         onCloseClick={this.handleCloseDialog}
         ref={(el) => this._dialog = el}
       />;

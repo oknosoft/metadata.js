@@ -176,7 +176,7 @@ class DataList extends Component {
 
     const {columns, rowsLoaded, scheme, colResize, confirm_text, _meta} = state;
 
-    const {selection_mode, denyAddDel, show_search, show_variants, width, height, classes} = props;
+    let {selection_mode, denyAddDel, show_search, show_variants, width, height, classes} = props;
 
     if(!scheme) {
       return <LoadingMessage title="Чтение настроек компоновки..."/>;
