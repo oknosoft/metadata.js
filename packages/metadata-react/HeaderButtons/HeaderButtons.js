@@ -13,14 +13,10 @@ import CloudOff from 'material-ui-icons/CloudOff';
 
 import SyncIcon from 'material-ui-icons/Sync';
 import SyncIconDisabled from 'material-ui-icons/SyncDisabled';
-
-// import NotificationsIcon from 'material-ui-icons/Notifications';
-// import NotificationsIconActive from 'material-ui-icons/NotificationsActive';
-import NotificationsIconNone from 'material-ui-icons/NotificationsNone';
-
 import PersonOutline from 'material-ui-icons/PersonOutline';
-
 import AccountOff from './AccountOff';
+
+import Notifications from '../Notifications';
 
 import classnames from 'classnames';
 import withStyles from '../Header/toolbar';
@@ -35,20 +31,13 @@ class NavUserButtons extends Component {
   render() {
 
     const {handleLogin, props} = this;
-    const {
-      sync_started,
-      classes,
-      fetch,
-      offline,
-      user,
-    } = props;
+    const {sync_started, classes, fetch, offline, user} = props;
     const offline_tooltip = offline ? 'Сервер недоступен' : 'Подключение установлено';
     const sync_tooltip = `Синхронизация ${user.logged_in && sync_started ? 'выполняется' : 'отключена'}`;
-    const notifications_tooltip = 'Нет непрочитанных сообщений';
     const login_tooltip = `${user.name}${user.logged_in ? '\n(подключен к серверу)' : '\n(автономный режим)'}`;
 
     return (
-      <div>
+      <div style={{display: 'flex'}}>
 
         <IconButton title={offline_tooltip}>
           {offline ?
@@ -75,10 +64,7 @@ class NavUserButtons extends Component {
           }
         </IconButton>
 
-        <IconButton title={notifications_tooltip}>
-          <NotificationsIconNone className={classes.white}/>
-        </IconButton>
-
+        <Notifications classes={classes} />
 
       </div>
     );

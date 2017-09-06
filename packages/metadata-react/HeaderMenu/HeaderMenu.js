@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
+
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
@@ -11,13 +12,11 @@ import withIface from 'metadata-redux/src/withIface';
 
 import NavList from './NavList';
 
-import withStyles from '../Header/toolbar';
-
 
 class NavDrawer extends Component {
 
-  constructor(props) {
-    super(props);
+  constructor(props, context) {
+    super(props, context);
 
     this.handleToggle = props.handleIfaceState.bind(this, {
       component: this.constructor.name,
@@ -31,7 +30,6 @@ class NavDrawer extends Component {
       value: false,
     });
   }
-
 
   render() {
 
@@ -49,7 +47,7 @@ class NavDrawer extends Component {
 
           <AppBar position="static" className={classes.appbar}>
             <Toolbar className={classes.bar}>
-              <IconButton onClick={handleToggle}>
+              <IconButton onClick={handleClose}>
                 <IconNavigationMenu className={classes.white}/>
               </IconButton>
               <Typography type="title" color="inherit" className={classes.flex}>{title}</Typography>
@@ -63,13 +61,16 @@ class NavDrawer extends Component {
       </div>
     );
   }
-}
-NavDrawer.propTypes = {
-  open: PropTypes.bool,
-  title: PropTypes.string.isRequired,
-  handleIfaceState: PropTypes.func.isRequired,
-  items: PropTypes.array.isRequired,  // список элементов меню получеам от родительского компонента
-};
 
-export default withStyles(withIface(NavDrawer));
+  static propTypes = {
+    open: PropTypes.bool,
+    classes: PropTypes.object.isRequired,
+    title: PropTypes.string.isRequired,
+    handleIfaceState: PropTypes.func.isRequired,
+    items: PropTypes.array.isRequired,  // список элементов меню получеам от родительского компонента
+  };
+}
+
+
+export default withIface(NavDrawer);
 

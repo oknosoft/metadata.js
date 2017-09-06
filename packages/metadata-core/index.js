@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.2-beta.26, built:2017-09-03
+ metadata-core v2.0.2-beta.26, built:2017-09-05
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -279,7 +279,7 @@ class TabularSection {
       index = val.row - 1;
     }
 		else {
-		  for(const i = 0; i < _obj.length; i++){
+		  for(let i = 0; i < _obj.length; i++){
         if (_obj[i]._row === val) {
           index = i;
           break;
@@ -5219,7 +5219,7 @@ const utils = mime({
 	},
 	fetch_type(str, mtype) {
 		if (mtype.is_ref) {
-      if(mtype.types.some((type) => type.indexOf('enm') == 0 || type.indexOf('string') == 0)){
+      if(mtype.types && mtype.types.some((type) => type.indexOf('enm') == 0 || type.indexOf('string') == 0)){
         return str;
       }
 			return this.fix_guid(str);

@@ -135,7 +135,7 @@ export class TabularSection {
       index = val.row - 1;
     }
 		else {
-		  for(const i = 0; i < _obj.length; i++){
+		  for(let i = 0; i < _obj.length; i++){
         if (_obj[i]._row === val) {
           index = i;
           break;

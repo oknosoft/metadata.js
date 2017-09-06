@@ -8,24 +8,30 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import TextField from 'material-ui/TextField';
-import DatePicker from 'react-datepicker';
+
+import Input from 'material-ui/Input';
+import InputLabel from 'material-ui/Input/InputLabel';
+import FormControl from 'material-ui/Form/FormControl';
+import DatePicker from 'react-datepicker/dist/react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import {withStyles} from 'material-ui/styles';
+
+import AbstractField from './AbstractField';
 
 const formater = new global.Intl.DateTimeFormat();
 
-export default class FieldDate extends Component {
+const styles = theme => ({
+  formControl: {
+    margin: theme.spacing.unit,
+    minWidth: 280
+  },
+});
 
-  static propTypes = {
-    _obj: PropTypes.object.isRequired,
-    _fld: PropTypes.string.isRequired,
-    _meta: PropTypes.object.isRequired,
-    handleValueChange: PropTypes.func,
-  };
+class FieldDate extends AbstractField {
 
-  constructor(props) {
-    super(props);
-    const {_obj, _fld, _meta} = props;
+  constructor(props, context) {
+    super(props, context);
+    const {_obj, _fld} = props;
 
     this.state = {
       controlledDate: moment(_obj[_fld]),
@@ -34,7 +40,8 @@ export default class FieldDate extends Component {
 
   handleChange = (newValue) => {
 
-    const {_obj, _fld, _meta, handleValueChange} = this.props;
+    const {props, _meta} = this;
+    const {_obj, _fld, handleValueChange} = props;
 
     this.setState({
       controlledDate: moment(_obj[_fld] = newValue),
@@ -49,9 +56,8 @@ export default class FieldDate extends Component {
 
   render() {
 
-    const {props, state, handleChange} = this;
-    const {tooltip, synonym} = props._meta;
-    //const {_obj, _fld, _meta} = props;
+    const {props, state, _meta, handleChange} = this;
+    const {_fld, classes} = props;
 
     // return <TextField
     //   name={props._fld}
@@ -61,12 +67,34 @@ export default class FieldDate extends Component {
     //   onChange={handleChange}
     // />;
 
-    return <DatePicker
-      todayButton={"Сегодня"}
-      locale="ru-RU"
-      selected={state.controlledDate}
-      onChange={handleChange}
-    />
+    // popperPlacement="bottom-end"
+    // popperModifiers={{
+    //   offset: {
+    //     enabled: true,
+    //       offset: '5px, 10px'
+    //   },
+    //   preventOverflow: {
+    //     enabled: true,
+    //       escapeWithReference: false, // force popper to stay in viewport (even when input is scrolled out of view)
+    //       boundariesElement: 'viewport'
+    //   }
+    // }}
+    // showYearDropdown
+
+    return <FormControl className={classes.formControl}>
+      <InputLabel htmlFor={`fdate${_fld}`}>{_meta.synonym}</InputLabel>
+      <DatePicker
+        customInput={<Input id={`fdate${_fld}`} value={state.controlledDate.format('DD.MM.YYYY')}/>}
+        todayButton={'Сегодня'}
+        locale="ru-RU"
+        disabledKeyboardNavigation
+        placeholderText={_meta.tooltip || _meta.synonym}
+        selected={state.controlledDate}
+        onChange={handleChange}
+      />
+    </FormControl>;
   }
 
 }
+
+export default withStyles(styles)(FieldDate);
