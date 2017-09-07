@@ -25,6 +25,27 @@ const styles = theme => ({
     margin: theme.spacing.unit,
     minWidth: 280
   },
+  icon: {
+    '&:after': {
+      backgroundColor: '#216ba5',
+      borderRadius: '50%',
+      bottom: 0,
+      boxSizing: 'border-box',
+      color: '#fff',
+      content: 'х',
+      cursor: 'pointer',
+      fontSize: 12,
+      height: 16,
+      width: 16,
+      lineHeight: 1,
+      margin: '-8px auto 0',
+      padding: 2,
+      position: 'absolute',
+      right: 17,
+      textAlign: 'center',
+      top: '50%'
+    },
+  }
 });
 
 class FieldDate extends AbstractField {
@@ -84,7 +105,7 @@ class FieldDate extends AbstractField {
     return <FormControl className={classes.formControl}>
       <InputLabel htmlFor={`fdate${_fld}`}>{_meta.synonym}</InputLabel>
       <DatePicker
-        customInput={<Input id={`fdate${_fld}`} value={state.controlledDate.format('DD.MM.YYYY')}/>}
+        customInput={<Input id={`fdate${_fld}`} value={state.controlledDate.format('DD.MM.YYYY')} />}
         todayButton={'Сегодня'}
         locale="ru-RU"
         disabledKeyboardNavigation
