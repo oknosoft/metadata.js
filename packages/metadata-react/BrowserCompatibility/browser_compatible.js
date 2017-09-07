@@ -7,5 +7,5 @@
  */
 
 export default function browser_compatible() {
-  return navigator.userAgent.match(/(Chrome|Opera|Yandex)/);
+  return navigator.userAgent.match(/(Chrome|Opera|YaBrowser)/) && !navigator.userAgent.match(/Edge/);
 }
