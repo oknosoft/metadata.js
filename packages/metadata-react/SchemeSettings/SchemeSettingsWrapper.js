@@ -30,7 +30,7 @@ export default class SchemeSettingsWrapper extends Component {
     tabParams: PropTypes.object,                    // конструктор пользовательской панели параметров
     show_search: PropTypes.bool,                    // показывать поле поиска
     show_variants: PropTypes.bool,                  // показывать список вариантов настройки динсписка
-  }
+  };
 
   constructor(props, context) {
     super(props, context);
@@ -42,7 +42,7 @@ export default class SchemeSettingsWrapper extends Component {
       menu_open: false,
       fullscreen: false,
       variants: [scheme]
-    }
+    };
 
     scheme._manager.get_option_list({
       _top: 40,
@@ -57,43 +57,43 @@ export default class SchemeSettingsWrapper extends Component {
     this.setState({
       dialog_open: true
     });
-  }
+  };
 
   handleDialogClose = () => {
     this.setState({
       dialog_open: false
     });
-  }
+  };
 
   handleMenuOpen = (event) => {
     this.setState({menu_open: true, anchorEl: event.currentTarget});
-  }
+  };
 
   handleMenuClose = () => {
     this.setState({
       menu_open: false
     });
-  }
+  };
 
   handleOk = () => {
     this.handleDialogClose();
     this.props.handleSchemeChange(this.state.scheme);
-  }
+  };
 
   handleSchemeChange = (scheme) => {
     this.props.handleSchemeChange(scheme);
     this.setState({scheme});
-  }
+  };
 
   handleSearchChange = (event, newValue) => {
 
-  }
+  };
 
   componentDidMount = () => {
     if(this.searchInput) {
       this.searchInput.input.placeholder = 'Найти...';
     }
-  }
+  };
 
   handleFullscreenClick() {
     this.setState({
@@ -104,20 +104,15 @@ export default class SchemeSettingsWrapper extends Component {
   Variants() {
     const {variants, scheme, menu_open, anchorEl} = this.state;
     const menuitems = variants.map((v, index) => <MenuItem
-      selected = {v == scheme}
-      key = {v.ref}
-      onClick = {() => {
+      selected={v == scheme}
+      key={v.ref}
+      onClick={() => {
         this.handleSchemeChange(variants[index]);
         this.handleMenuClose();
       }}
     >{v.name}</MenuItem>);
 
-    return <div>
-      <Button onClick={this.handleMenuOpen} >{scheme.name}</Button>
-      <Menu anchorEl={anchorEl} open={menu_open} onRequestClose={this.handleMenuClose}>
-        {menuitems}
-      </Menu>
-    </div>
+    return <Menu anchorEl={anchorEl} open={menu_open} onRequestClose={this.handleMenuClose}>{menuitems}</Menu>;
   }
 
   render() {
@@ -126,13 +121,12 @@ export default class SchemeSettingsWrapper extends Component {
     const {show_search, show_variants, tabParams} = props;
 
     const actions = [
-      <Button key={0} raised onClick={handleDialogClose} style={{margin: spacing.unit}}>Отмена</Button>,
-      <Button key={1} raised onClick={handleOk} style={{margin: spacing.unit}}>Применить</Button>,
+      <Button key={0} raised dense onClick={handleDialogClose} style={{margin: spacing.unit}}>Отмена</Button>,
+      <Button key={1} raised dense onClick={handleOk} style={{margin: spacing.unit}}>Применить</Button>,
     ];
 
-
     return (
-      <div style={{display: 'inline-flex'}}>
+      <div style={{display: 'flex'}}>
         {/* Search box */}
         {show_search ? <TextField
           name="search"
@@ -147,6 +141,9 @@ export default class SchemeSettingsWrapper extends Component {
         }
 
 
+        {/* Variants */
+          show_variants && scheme && <Button dense onClick={this.handleMenuOpen}>{scheme.name}</Button>
+        }
         {/* Variants */
           show_variants && scheme && this.Variants()
         }
@@ -169,6 +166,7 @@ export default class SchemeSettingsWrapper extends Component {
           fullscreen={this.state.fullscreen}
           onFullScreenClick={() => this.handleFullscreenClick()}
           onCloseClick={this.handleDialogClose}/>
+
       </div>
     );
   }

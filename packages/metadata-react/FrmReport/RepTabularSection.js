@@ -124,7 +124,7 @@ export default class RepTabularSection extends Component {
         rowGetter={getRowAt}
         rowsCount={this.getSize()}
         minHeight={minHeight || 200}
-
+        rowHeight={33}
         onRowExpandToggle={onRowExpandToggle}
 
       />

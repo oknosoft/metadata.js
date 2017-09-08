@@ -95,7 +95,7 @@ export default class TabularSection extends Component {
 
   handleRowUpdated(e) {
     //merge updated row with current row and rerender by setting state
-    var row = this.rowGetter(e.rowIdx);
+    const row = this.rowGetter(e.rowIdx);
     Object.assign(row._row || row, e.updated);
   }
 
@@ -175,6 +175,7 @@ export default class TabularSection extends Component {
               <ReactDataGrid
                 minWidth={width}
                 minHeight={height < minHeight ? minHeight : height}
+                rowHeight={33}
 
                 ref={(el) => this._grid = el}
                 columns={_columns}

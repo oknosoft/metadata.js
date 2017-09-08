@@ -19,7 +19,7 @@ class DataList extends Component {
   static LIMIT = 40;
   static OVERSCAN_ROW_COUNT = 2;
   static OVERSCAN_COLUMN_COUNT = 2;
-  static COLUMN_HEIGHT = 32;
+  static COLUMN_HEIGHT = 33;
   static COLUMN_DEFAULT_WIDTH = 220;
 
   constructor(props, context) {
