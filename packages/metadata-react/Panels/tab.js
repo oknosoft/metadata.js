@@ -203,10 +203,7 @@ export class TabGroup extends Component {
     style: PropTypes.object.isRequired,
     data: PropTypes.array.isRequired,
     transitionProps: PropTypes.object.isRequired,
-    dragAndDropHandler: PropTypes.oneOfType([
-      PropTypes.object,
-      PropTypes.bool
-    ])
+    dragAndDropHandler: PropTypes.oneOfType([PropTypes.object, PropTypes.bool])
   }
 
   static contextTypes = {

@@ -37,7 +37,7 @@ class NavUserButtons extends Component {
     const login_tooltip = `${user.name}${user.logged_in ? '\n(подключен к серверу)' : '\n(автономный режим)'}`;
 
     return (
-      <div style={{display: 'flex'}}>
+      <div style={{display: 'inline-flex'}}>
 
         <IconButton title={offline_tooltip}>
           {offline ?

@@ -16,9 +16,8 @@ export default class FieldText extends AbstractField {
   onChange = (event) => {
     const {_obj, _fld, handleValueChange} = this.props;
     _obj[_fld] = event.target.value;
-    if (handleValueChange) {
-      handleValueChange(event.target.value);
-    }
+    handleValueChange && handleValueChange(event.target.value);
+
   };
 
   render() {

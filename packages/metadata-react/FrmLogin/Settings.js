@@ -99,8 +99,8 @@ class CnnSettings extends Component {
 
         <Divider/>
 
-        <Button raised className={classes.button} onClick={this.handleSetPrm}>Сохранить настройки</Button>
-        <Button raised className={classes.button} onClick={this.openConfirm}>Сбросить данные</Button>
+        <Button raised dense className={classes.button} onClick={this.handleSetPrm}>Сохранить настройки</Button>
+        <Button raised dense className={classes.button} onClick={this.openConfirm}>Сбросить данные</Button>
 
       </div>
     );
@@ -109,10 +109,7 @@ class CnnSettings extends Component {
 
 CnnSettings.propTypes = {
   classes: PropTypes.object.isRequired,
-  zone: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-  ]).isRequired,
+  zone: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   couch_path: PropTypes.string.isRequired,
   couch_suffix: PropTypes.string,
   couch_direct: PropTypes.bool,

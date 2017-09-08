@@ -22,9 +22,7 @@ export default class FieldToggle extends Component {
   onChange = (event, newValue) => {
     const {_obj, _fld, handleValueChange} = this.props;
     _obj[_fld] = newValue;
-    if (handleValueChange) {
-      handleValueChange(newValue);
-    }
+    handleValueChange && handleValueChange(newValue);
   };
 
   render() {

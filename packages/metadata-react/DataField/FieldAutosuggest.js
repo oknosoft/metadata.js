@@ -28,10 +28,6 @@ import {withStyles} from 'material-ui/styles';
 import AbstractField from './AbstractField';
 
 
-function getSuggestionValue(suggestion) {
-  return suggestion.toString();
-}
-
 const styles = theme => ({
   container: {
     flexGrow: 1,
@@ -78,11 +74,9 @@ class FieldAutosuggest extends AbstractField {
   constructor(props, context) {
     super(props, context);
     const {_obj, _fld, mandatory} = props;
-    this.state = {
-      value: _obj[_fld],
-      suggestions: [],
-    };
-    if(_obj[_fld].is_new && _obj[_fld].is_new()) {
+    const value = _obj[_fld];
+    this.state = {value, suggestions: []};
+    if(value.is_new && value.is_new()) {
 
     }
   }
@@ -114,24 +108,28 @@ class FieldAutosuggest extends AbstractField {
       });
   };
 
-  onChange = (event) => {
-    const {_obj, _fld, handleValueChange} = this.props;
-    _obj[_fld] = event.target.value;
-    if(handleValueChange) {
-      handleValueChange(event.target.value);
+  getSuggestionValue = (suggestion) => {
+    const text = (suggestion._footer ? this.props._obj[this.props._fld] : suggestion).toString();
+    return text === '_' ? '' : text;
+  };
+
+  handleSuggestionSelected = (event, {suggestion}) => {
+    if(suggestion._footer){
+      return;
     }
+    const {_obj, _fld, handleValueChange} = this.props;
+    _obj[_fld] = suggestion;
+    handleValueChange && handleValueChange(suggestion);
+
   };
 
   handleSuggestionsClearRequested = () => {
-    this.setState({
-      suggestions: [],
-    });
+    this.setState({suggestions: []});
   };
 
+  // декоративное событие для перерисовки
   handleChange = (event, {newValue}) => {
-    !newValue._footer && this.setState({
-      value: newValue,
-    });
+    this.setState({value: newValue});
   };
 
   handleOpenList = (e) => {
@@ -179,9 +177,7 @@ class FieldAutosuggest extends AbstractField {
       </div>;
     }
 
-    return <MenuItem selected={isHighlighted} component="div">
-      {getSuggestionValue(suggestion)}
-    </MenuItem>;
+    return <MenuItem selected={isHighlighted} component="div">{this.getSuggestionValue(suggestion)}</MenuItem>;
   };
 
   renderInput = (inputProps) => {
@@ -191,8 +187,10 @@ class FieldAutosuggest extends AbstractField {
     return this.isTabular ?
       <input
         type="text"
-        name={_fld}
         value={value}
+        title={_meta.tooltip || _meta.synonym}
+        placeholder={_fld}
+        {...other}
       />
       :
       <TextField
@@ -257,19 +255,20 @@ class FieldAutosuggest extends AbstractField {
           suggestion: classes.suggestion,
         }}
         suggestions={state.suggestions}
-        getSuggestionValue={getSuggestionValue}
+        getSuggestionValue={this.getSuggestionValue}
         renderSuggestionsContainer={this.renderSuggestionsContainer}
         renderInputComponent={this.renderInput}
         renderSuggestion={this.renderSuggestion}
         onSuggestionsFetchRequested={this.loadSuggestions}
         onSuggestionsClearRequested={this.handleSuggestionsClearRequested}
+        onSuggestionSelected={this.handleSuggestionSelected}
         focusInputOnSuggestionClick={false}
         shouldRenderSuggestions={() => true}
         inputProps={{
           classes,
           _meta,
           _fld,
-          value: getSuggestionValue(state.value),
+          value: this.getSuggestionValue(state.value),
           onChange: this.handleChange,
         }}
       />

@@ -159,12 +159,8 @@ export default class DataObj extends Component {
 
     return <div>
       <Toolbar {...this._handlers} />
-
-      <div className={'content-with-toolbar-layout__content'}>
-        {this.renderFields()}
-        {this.renderTabularSections()}
-      </div>
-
+      {this.renderFields()}
+      {this.renderTabularSections()}
     </div>;
   }
 

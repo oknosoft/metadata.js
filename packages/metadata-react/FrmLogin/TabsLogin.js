@@ -84,17 +84,12 @@ class TabsLogin extends Component {
 
           {
             props.user.logged_in ?
-              <Button raised
-                      className={classes.button}
-                      onClick={handleLogOut}>Выйти</Button>
+              <Button raised dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
               :
-              <Button raised
-                      className={classes.button}
-                      disabled={!state.login || !state.password}
-                      onClick={handleLogin}>Войти</Button>
+              <Button raised dense className={classes.button} disabled={!state.login || !state.password} onClick={handleLogin}>Войти</Button>
           }
 
-          <Button disabled={true} className={classes.button}>Забыли пароль?</Button>
+          <Button raised dense disabled={true} className={classes.button}>Забыли пароль?</Button>
 
         </div>
         }

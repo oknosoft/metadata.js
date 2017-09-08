@@ -56,9 +56,7 @@ export default class FieldSelect extends AbstractField {
   _onChange = (value) => {
     const {handleValueChange} = this.props;
     this.setState({value});
-    if (handleValueChange) {
-      handleValueChange(value);
-    }
+    handleValueChange && handleValueChange(value);
   };
 
   render() {

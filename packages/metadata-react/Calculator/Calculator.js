@@ -22,18 +22,10 @@ class Calculator extends Component {
 
   static propTypes = {
     visible: PropTypes.bool.isRequired,
-    value: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.number,
-    ]).isRequired,
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     onClose: PropTypes.func.isRequired,
     onChange: PropTypes.func.isRequired,
-    position: PropTypes.oneOf([
-      'bottom',
-      'left',
-      'right',
-      'top',
-    ]),
+    position: PropTypes.oneOf(['bottom', 'left', 'right', 'top']),
   };
 
   static defaultProps = {

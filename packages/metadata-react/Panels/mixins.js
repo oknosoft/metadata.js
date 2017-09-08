@@ -263,10 +263,7 @@ export class PanelWrapper extends Component {
     transitionComponent: PropTypes.any,
     /** Additional props specific to transitionComponent. */
     transitionCustomProps: PropTypes.object,
-    dragAndDropHandler: PropTypes.oneOfType([
-      PropTypes.object,
-      PropTypes.bool
-    ])
+    dragAndDropHandler: PropTypes.oneOfType([PropTypes.object, PropTypes.bool])
   };
 
   static defaultProps = {

@@ -63,21 +63,16 @@ class FieldDate extends AbstractField {
 
     const {props, _meta} = this;
     const {_obj, _fld, handleValueChange} = props;
-
     this.setState({
       controlledDate: moment(_obj[_fld] = newValue),
     });
-
-    if(handleValueChange) {
-      handleValueChange(_obj[_fld]);
-    }
-
+    handleValueChange && handleValueChange(_obj[_fld]);
   };
 
 
   render() {
 
-    const {props, state, _meta, handleChange} = this;
+    const {props, state, _meta, isTabular, handleChange} = this;
     const {_fld, classes} = props;
 
     // return <TextField
@@ -102,10 +97,8 @@ class FieldDate extends AbstractField {
     // }}
     // showYearDropdown
 
-    return <FormControl className={classes.formControl}>
-      <InputLabel htmlFor={`fdate${_fld}`}>{_meta.synonym}</InputLabel>
+    return isTabular ?
       <DatePicker
-        customInput={<Input id={`fdate${_fld}`} value={state.controlledDate.format('DD.MM.YYYY')} />}
         todayButton={'Сегодня'}
         locale="ru-RU"
         disabledKeyboardNavigation
@@ -113,7 +106,19 @@ class FieldDate extends AbstractField {
         selected={state.controlledDate}
         onChange={handleChange}
       />
-    </FormControl>;
+      :
+      <DatePicker
+        customInput={<FormControl className={classes.formControl}>
+          <InputLabel htmlFor={`fdate${_fld}`}>{_meta.synonym}</InputLabel>
+          <Input id={`fdate${_fld}`} value={state.controlledDate.format('DD.MM.YYYY')} />
+        </FormControl>}
+        todayButton={'Сегодня'}
+        locale="ru-RU"
+        disabledKeyboardNavigation
+        placeholderText={_meta.tooltip || _meta.synonym}
+        selected={state.controlledDate}
+        onChange={handleChange}
+      />;
   }
 
 }

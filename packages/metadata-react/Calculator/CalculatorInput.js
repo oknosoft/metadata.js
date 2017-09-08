@@ -10,10 +10,7 @@ class CalculatorInput extends PureComponent {
 
   static propTypes = {
     isExpression: PropTypes.bool,
-    value: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.number,
-    ]).isRequired,
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 
     onChange: PropTypes.func.isRequired,
     onOperationKeyPress: PropTypes.func,

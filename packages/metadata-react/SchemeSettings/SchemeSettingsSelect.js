@@ -15,6 +15,8 @@ import Divider from 'material-ui/Divider';
 import SaveIcon from 'material-ui-icons/Save';
 import CopyIcon from 'material-ui-icons/ContentCopy';
 
+import {FormGroup} from 'material-ui/Form';
+
 import styles from './styles/SchemeSettingsSelect.scss';
 import withStyles from '../Header/toolbar';
 
@@ -60,13 +62,13 @@ class SchemeSettingsSelect extends Component {
     const {scheme, classes, handleSchemeChange, minHeight} = props;
 
     return (
-      <div className={'content-with-toolbar-layout'}>
+      <div>
         <Toolbar className={classes.bar}>
 
           <IconButton title="Сохранить вариант настроек" onClick={handleSave}><SaveIcon/></IconButton>
           <IconButton title="Создать копию настроек" onClick={handleCreate}><CopyIcon/></IconButton>
 
-          <Typography type="title" color="inherit" className={props.classes.flex} > </Typography>
+          <Typography type="title" color="inherit" className={props.classes.flex}> </Typography>
 
           <Typography type="caption">Настройка</Typography>
           <div style={{width: 200}}>
@@ -79,16 +81,12 @@ class SchemeSettingsSelect extends Component {
           </div>
         </Toolbar>
 
-        <div className={'content-with-toolbar-layout__content'}>
-          <DataField
-            _obj={scheme}
-            _fld="name"
-            handleValueChange={handleNameChange}/>
+        <FormGroup style={{margin: 16}}>
+          <DataField _obj={scheme} _fld="name" handleValueChange={handleNameChange}/>
+          <DataField _obj={scheme} _fld="query"/>
+        </FormGroup>
 
-          <DataField
-            _obj={scheme}
-            _fld="query"/>
-        </div>
+
       </div>
     );
 

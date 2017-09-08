@@ -513,10 +513,7 @@ export class ReactPanel extends Transitions {
   };
 
   static propTypes = {
-    dragAndDropHandler: PropTypes.oneOfType([
-      PropTypes.object,
-      PropTypes.bool
-    ])
+    dragAndDropHandler: PropTypes.oneOfType([PropTypes.object, PropTypes.bool])
   };
 
   static contextTypes = Object.assign({}, Transitions.contextTypes, {

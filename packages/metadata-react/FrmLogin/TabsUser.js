@@ -94,15 +94,8 @@ class TabsUser extends Component {
                 <br/>
                 <Divider/>
 
-                <Button
-                  raised
-                  className={classes.button}
-                  onClick={handleLogOut}>Выйти</Button>
-
-                <Button
-                  raised
-                  className={classes.button}
-                  onClick={handleNavigate}>К списку заказов</Button>
+                <Button raised dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
+                <Button raised dense className={classes.button} onClick={handleNavigate}>К списку заказов</Button>
 
               </div>}
 

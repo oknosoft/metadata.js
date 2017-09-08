@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import DataField from './DataField';
 
+import {Editors} from 'react-data-grid-addons';
 
 const ExcelColumn = {
   name: PropTypes.string.isRequired,
@@ -10,7 +11,7 @@ const ExcelColumn = {
   filterable: PropTypes.bool,
 };
 
-class DataCell extends Component {
+class DataCell extends Editors.SimpleTextEditor {
 
   // props.column.key, props.rowData(._row)
 
@@ -49,16 +50,14 @@ class DataCell extends Component {
       handleValueChange: this.handleSelectChange,
     };
 
-    return (
-      <DataField ref={node => this.node = node} {...subProps} />
-    );
+    return <DataField ref={node => this.node = node} {...subProps} />;
   }
 }
 
 DataCell.propTypes = {
   options: PropTypes.array,
   column: PropTypes.shape(ExcelColumn),
-  value: PropTypes.array,
+  value: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
   rowData: PropTypes.object,
   _meta: PropTypes.object,
 };
