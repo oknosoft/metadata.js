@@ -23,10 +23,10 @@ const formater = new global.Intl.DateTimeFormat();
 const styles = theme => ({
   formControl: {
     margin: theme.spacing.unit,
-    minWidth: 280
+    minWidth: 200
   },
   icon: {
-    '&:after': {
+    '&:before': {
       backgroundColor: '#216ba5',
       borderRadius: '50%',
       bottom: 0,
@@ -48,7 +48,30 @@ const styles = theme => ({
   }
 });
 
-class FieldDate extends AbstractField {
+class CustomField extends Component {
+
+  focus() {
+    this._input && this._input.focus();
+  }
+
+  render() {
+    const {classes, _fld, _meta, fullWidth, ...others} = this.props;
+
+    return <FormControl fullWidth={fullWidth} className={classes.formControl}>
+      <InputLabel htmlFor={`fdate${_fld}`}>{_meta.synonym}</InputLabel>
+      <Input ref={(el) => this._input = el} id={`fdate${_fld}`} {...others} />
+    </FormControl>;
+  }
+
+  static propTypes = {
+    onClick: PropTypes.func,
+    value: PropTypes.string
+  };
+}
+
+const StyledCustomField = withStyles(styles)(CustomField);
+
+export default class FieldDate extends AbstractField {
 
   constructor(props, context) {
     super(props, context);
@@ -60,20 +83,29 @@ class FieldDate extends AbstractField {
   }
 
   handleChange = (newValue) => {
+    if(newValue){
+      const {props, _meta} = this;
+      const {_obj, _fld, handleValueChange} = props;
+      _obj[_fld] = newValue.toDate();
+      this.setState({controlledDate: newValue});
+      handleValueChange && handleValueChange(_obj[_fld]);
+    }
+  };
 
-    const {props, _meta} = this;
-    const {_obj, _fld, handleValueChange} = props;
-    this.setState({
-      controlledDate: moment(_obj[_fld] = newValue),
-    });
-    handleValueChange && handleValueChange(_obj[_fld]);
+  handleChangeRaw = ({target}) => {
+    if(target.value === 'tomorrow') {
+      const tomorrow = moment().add(1, 'day');
+      const formatted = tomorrow.format(this.dateFormat);
+      target.value = formatted;
+      this.handleChange(tomorrow);
+    }
   };
 
 
   render() {
 
-    const {props, state, _meta, isTabular, handleChange} = this;
-    const {_fld, classes} = props;
+    const {props, state, _meta, isTabular, handleChange, handleChangeRaw} = this;
+    const {_fld, classes, fullWidth} = props;
 
     // return <TextField
     //   name={props._fld}
@@ -105,22 +137,19 @@ class FieldDate extends AbstractField {
         placeholderText={_meta.tooltip || _meta.synonym}
         selected={state.controlledDate}
         onChange={handleChange}
+        onChangeRaw={handleChangeRaw}
       />
       :
       <DatePicker
-        customInput={<FormControl className={classes.formControl}>
-          <InputLabel htmlFor={`fdate${_fld}`}>{_meta.synonym}</InputLabel>
-          <Input id={`fdate${_fld}`} value={state.controlledDate.format('DD.MM.YYYY')} />
-        </FormControl>}
+        customInput={<StyledCustomField _fld={_fld} _meta={_meta} classes={classes} fullWidth={fullWidth}/>}
         todayButton={'Сегодня'}
         locale="ru-RU"
         disabledKeyboardNavigation
         placeholderText={_meta.tooltip || _meta.synonym}
         selected={state.controlledDate}
         onChange={handleChange}
+        onChangeRaw={handleChangeRaw}
       />;
   }
 
 }
-
-export default withStyles(styles)(FieldDate);

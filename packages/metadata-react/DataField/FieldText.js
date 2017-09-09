@@ -22,13 +22,13 @@ export default class FieldText extends AbstractField {
 
   render() {
     const {onChange, props, _meta} = this;
-    const {_obj, _fld, classes, read_only} = props;
+    const {_obj, _fld, classes, read_only, fullWidth} = props;
 
     return (
       <TextField
         name={_fld}
         className={classes && classes.textField}
-        fullWidth
+        fullWidth={fullWidth}
         margin="dense"
         disabled={read_only}
         label={_meta.synonym}

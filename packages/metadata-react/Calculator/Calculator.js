@@ -6,7 +6,7 @@ import ArrowBack from 'material-ui-icons/ArrowBack';
 import CalculatorInput from './CalculatorInput';
 import CalculatorButton from './CalculatorButton';
 import Menu, {MenuItem} from 'material-ui/Menu';
-import ReactClickOutside from 'react-click-outside';
+import ReactClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
 
 import withStyles from './styles';
@@ -284,10 +284,9 @@ class Calculator extends Component {
     });
   }
 
-  handleClickOutside() {
-    if (this.props.onClose !== null) {
-      this.props.onClose(this.props.value);
-    }
+  handleClickOutside = (evt) => {
+    const {onClose, value} = this.props;
+    onClose && onClose(value);
   }
 
   renderCalculatorTypeMenu() {
@@ -474,4 +473,4 @@ class Calculator extends Component {
   }
 }
 
-export default ReactClickOutside(withStyles(Calculator));
+export default withStyles(ReactClickOutside(Calculator));

@@ -3,8 +3,10 @@ import PropTypes from 'prop-types';
 
 import Layout from '../FlexPanel/react-flex-layout/react-flex-layout';
 import LayoutSplitter from '../FlexPanel/react-flex-layout/react-flex-layout-splitter';
-import LoadingMessage from '../DumbLoader/LoadingMessage';
 
+import {FormGroup} from 'material-ui/Form';
+
+import LoadingMessage from '../DumbLoader/LoadingMessage';
 import Toolbar from './Toolbar';
 import DataField from '../DataField';
 import TabularSection from '../TabularSection';
@@ -102,19 +104,28 @@ export default class DataObj extends Component {
    */
   renderFields() {
     const elements = [];
+    const {struct} = this.props;
     const {_meta, _obj} = this.state;
 
-    for (const _fld in _meta.fields) {
-      elements.push(
-        <DataField key={`field_${_fld}`} _obj={_obj} _fld={_fld}/>
-      );
+    if(!struct){
+      if(_obj instanceof $p.classes.DocObj){
+        elements.push(
+        <FormGroup row key={`group_sys`}>
+          <DataField _obj={_obj} key={`field_number_doc`} _fld="number_doc" />
+          <DataField _obj={_obj} key={`field_date`} _fld="date" />
+        </FormGroup>);
+      }
+      else if(_obj instanceof $p.classes.CatObj){
+
+      }
+      for (const _fld in _meta.fields) {
+        _fld != 'predefined_name' && elements.push(<DataField fullWidth key={`field_${_fld}`} _obj={_obj} _fld={_fld} />);
+      }
     }
 
     return elements.length === 0 ? null :
       <Paper style={Object.assign({}, DataObj.PAPER_STYLE, DataObj.PAPER_STYLE_FIELDS)}>
-        <div className={classes.fields}>
-          {elements}
-        </div>
+        {elements}
       </Paper>;
   }
 

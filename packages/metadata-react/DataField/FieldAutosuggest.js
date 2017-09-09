@@ -181,7 +181,7 @@ class FieldAutosuggest extends AbstractField {
   };
 
   renderInput = (inputProps) => {
-    const {classes, home, value, ref, _meta, _fld, ...other} = inputProps;
+    const {classes, home, value, ref, _meta, _fld, fullWidth, ...other} = inputProps;
     //autoFocus={home}
 
     return this.isTabular ?
@@ -195,7 +195,7 @@ class FieldAutosuggest extends AbstractField {
       :
       <TextField
         className={classes && classes.textField}
-        fullWidth
+        fullWidth={fullWidth}
         margin="dense"
         value={value}
         inputRef={ref}
@@ -238,7 +238,7 @@ class FieldAutosuggest extends AbstractField {
   render() {
 
     const {props, state, _meta} = this;
-    const {classes, _fld} = props;
+    const {classes, _fld, fullWidth} = props;
 
     //focusInputOnSuggestionClick
     //autoFocus: true,
@@ -268,6 +268,7 @@ class FieldAutosuggest extends AbstractField {
           classes,
           _meta,
           _fld,
+          fullWidth,
           value: this.getSuggestionValue(state.value),
           onChange: this.handleChange,
         }}

@@ -30,20 +30,18 @@ export default class FieldNumber extends AbstractField {
   };
 
   handleInputClick() {
-    this.setState({
-      isCalculatorVisible: true,
-    });
+    this.setState({isCalculatorVisible: true});
   }
 
   handleCalculatorClose(value) {
     this.setState({isCalculatorVisible: false});
-    this.onChange({target: {value}});
+    //this.onChange({target: {value}});
   }
 
   render() {
 
     const {state, props, _meta, isTabular} = this;
-    const {_obj, _fld, classes, read_only} = props;
+    const {_obj, _fld, classes, read_only, fullWidth} = props;
 
     // Render plain html input in cell of table.
     return (
@@ -59,16 +57,14 @@ export default class FieldNumber extends AbstractField {
         {isTabular ?
           <input
             type="text"
-            name={_fld}
             value={state.value}
             onChange={this.onChange.bind(this)}
             onClick={this.handleInputClick.bind(this)}
           />
           :
           <TextField
-            name={_fld}
             className={classes && classes.textField}
-            fullWidth
+            fullWidth={fullWidth}
             margin="dense"
             disabled={read_only}
             label={_meta.synonym}
