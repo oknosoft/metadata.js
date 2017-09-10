@@ -4,7 +4,6 @@ import events from './events';
 import mango_selection from './mango_selection';
 import geocoding from './geocoding';
 import ajax from './ajax';
-import docxtemplater from './docxtemplater';
 import jobprm from './jobprm';
 import oo from './object_proto';
 
@@ -58,7 +57,6 @@ export default {
 
     this.md.value_mgr = this.classes.DataManager.prototype.value_mgr.bind(this.cat.meta_fields);
 
-    docxtemplater(this);
     widgets(this);
     events(this);
     ajax(this);

@@ -45,27 +45,16 @@ class RepToolbar extends Component {
 
     this.state = {
       anchorEl: undefined,
-      open: false,
+      menuOpen: false,
     };
 
-    this.handleClick = this.handleClick.bind(this);
-    this.handleRequestClose = this.handleRequestClose.bind(this);
-
     export_handlers.call(this);
-
   }
 
-  handleClick(event) {
-    this.setState({open: true, anchorEl: event.currentTarget});
-  };
-
-  handleRequestClose() {
-    this.setState({open: false});
-  };
 
   render() {
 
-    const {handleExportXLS, handleExportJSON, handleExportCSV, props} = this;
+    const {props, state} = this;
     const {handleSave, handleClose, handleSchemeChange, handlePrint, scheme, _obj, _tabular, TabParams, classes} = props;
 
     return (
@@ -88,18 +77,18 @@ class RepToolbar extends Component {
           show_variants={true}
         />
 
-        <IconButton onClick={this.handleClick} title="Дополнительно">
+        <IconButton onClick={this.handleMenuOpen} title="Дополнительно">
           <MoreVertIcon/>
         </IconButton>
         <Menu
-          anchorEl={this.state.anchorEl}
-          open={this.state.open}
-          onRequestClose={this.handleRequestClose}
+          anchorEl={state.anchorEl}
+          open={state.menuOpen}
+          onRequestClose={this.handleMenuClose}
         >
           <MenuItem disabled onClick={handlePrint}><PrintIcon/> &nbsp;Печать</MenuItem>
-          <MenuItem onClick={handleExportCSV}><CopyIcon/> &nbsp;Копировать CSV</MenuItem>
-          <MenuItem onClick={handleExportJSON}><CloudDownloadIcon/> &nbsp;Копировать JSON</MenuItem>
-          <MenuItem onClick={handleExportXLS}><FileDownloadIcon/> &nbsp;Экспорт в XLS</MenuItem>
+          <MenuItem onClick={this.handleExportCSV}><CopyIcon/> &nbsp;Копировать CSV</MenuItem>
+          <MenuItem onClick={this.handleExportJSON}><CloudDownloadIcon/> &nbsp;Копировать JSON</MenuItem>
+          <MenuItem onClick={this.handleExportXLS}><FileDownloadIcon/> &nbsp;Экспорт в XLS</MenuItem>
 
         </Menu>
 

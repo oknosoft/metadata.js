@@ -46,8 +46,8 @@ gulp.task('dhtmlx-ui', function () {
     './data/merged_data.js',
   ])
     .pipe(concat('dhtmlx-widgets.js'))
-    .pipe(wrap({ src: './packages/metadata-dhtmlx-ui/src/wrapper.js'}))
-    .pipe(gulp.dest('./packages/metadata-dhtmlx-ui/src'))
+    .pipe(wrap({ src: './packages/metadata-dhtmlx/src/wrapper.js'}))
+    .pipe(gulp.dest('./packages/metadata-dhtmlx/src'))
 });
 
 gulp.task('build-metadata', function () {

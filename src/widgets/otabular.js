@@ -348,6 +348,18 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
         case "btn_down":
           _grid._move_row("down");
           break;
+
+      case "btn_csv":
+        _ts.export("csv");
+        break;
+
+      case "btn_json":
+        _ts.export("json");
+        break;
+
+      case "btn_xls":
+        _ts.export("xls");
+        break;
 			}
 
 		});

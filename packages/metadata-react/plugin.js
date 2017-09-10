@@ -6,10 +6,11 @@
  * Created 10.01.2017
  */
 
-import React, {Component} from "react";
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import DataCell from "./DataField/DataCell";
-import {Editors, Formatters} from "react-data-grid-addons";
+
+import DataCell from './DataField/DataCell';
+import {Editors, Formatters} from 'react-data-grid-addons';
 
 const AutoCompleteEditor = Editors.AutoComplete;
 const DropDownEditor = Editors.DropDownEditor;
@@ -23,67 +24,67 @@ function rx_columns($p) {
   const date_formatter = {
     date: (v) => {
       const {presentation} = moment(v).format(moment._masks.date);
-      return <div title={presentation}>{presentation}</div>
+      return <div title={presentation}>{presentation}</div>;
     },
     date_time: (v) => {
       const {presentation} = moment(v).format(moment._masks.date_time);
-      return <div title={presentation}>{presentation}</div>
+      return <div title={presentation}>{presentation}</div>;
     }
-  }
+  };
 
   const presentation_formatter = (v) => {
-    const {presentation} = v.value
-    return <div title={presentation}>{presentation}</div>
-  }
+    const {presentation} = v.value;
+    return <div title={presentation}>{presentation}</div>;
+  };
 
   return function columns({mode, fields, _obj}) {
 
     const res = this.columns(mode);
 
-    if (fields) {
+    if(fields) {
       res.forEach((column) => {
 
-        const _fld = fields[column.key]
+        const _fld = fields[column.key];
 
-        if (!column.formatter) {
+        if(!column.formatter) {
 
-          if (_fld.type.is_ref) {
-            column.formatter = presentation_formatter
+          if(_fld.type.is_ref) {
+            column.formatter = presentation_formatter;
           }
-          else if (_fld.type.date_part) {
-            column.formatter = date_formatter[_fld.type.date_part]
+          else if(_fld.type.date_part) {
+            column.formatter = date_formatter[_fld.type.date_part];
           }
         }
 
         switch (column.ctrl_type) {
 
-          case 'input':
-            column.editable = true;
-            break;
+        case 'input':
+          column.editable = true;
+          break;
 
-          case 'ocombo':
-            column.editor = <DataCell />;
-            break;
+        case 'ocombo':
+          column.editor = <DataCell/>;
+          break;
 
-          case 'ofields':
-            const options = _obj.used_fields_list()
-            column.editor = <DropDownEditor options={options}/>
-            column.formatter = <DropDownFormatter options={options} value=""/>
-            break;
+        case 'ofields':
+          const options = _obj.used_fields_list();
+          column.editor = <DropDownEditor options={options}/>;
+          column.formatter = <DropDownFormatter options={options} value=""/>;
+          break;
 
-          case 'dhxCalendar':
-            column.editor = <DataCell />;
-            break;
+        case 'dhxCalendar':
+          column.editor = <DataCell/>;
+          break;
 
-          default:
-            ;
+        default:
+          ;
         }
 
-      })
+      });
     }
 
     return res;
-  }
+  };
 }
 
 /**
@@ -97,32 +98,19 @@ function rx_columns($p) {
 export function export_handlers() {
 
   this.doExport = (format) => {
-    const {_obj, _tabular, _columns} = this.props;
-    _obj[_tabular].export(format, _columns.map((column) => column.key))
-      .then((res) => {
-        if (res == 'success') {
-          console.log(res)
-        }
-      })
-  }
-
-  this.handleExportXLS = () => {
-    const doExport = this.doExport.bind(this);
-    require.ensure(["xlsx"], function () {
-      if (!window.XLSX) {
-        window.XLSX = require("xlsx");
-      }
-      doExport('xls')
+    setTimeout(() => {
+      const {_obj, _tabular, _columns} = this.props;
+      _obj[_tabular].export(format, _columns.map((column) => column.key));
     });
-  }
+    this.handleMenuClose && this.handleMenuClose();
+  };
 
-  this.handleExportJSON = () => {
-    this.doExport('json')
-  }
+  this.handleExportXLS = (evt) => this.doExport('xls');
+  this.handleExportJSON = (evt) => this.doExport('json');
+  this.handleExportCSV = (evt) => this.doExport('csv');
 
-  this.handleExportCSV = () => {
-    this.doExport('csv')
-  }
+  this.handleMenuOpen = (evt) => this.setState({menuOpen: true, anchorEl: evt.currentTarget});
+  this.handleMenuClose = (evt) => this.setState({menuOpen: false});
 
 }
 
@@ -145,45 +133,54 @@ export function export_handlers() {
 function print(ref, model, wnd) {
 
   function tune_wnd_print(wnd_print) {
-    if (wnd && wnd.progressOff)
+    if(wnd && wnd.progressOff) {
       wnd.progressOff();
-    if (wnd_print)
+    }
+    if(wnd_print) {
       wnd_print.focus();
+    }
   }
 
-  if (wnd && wnd.progressOn)
+  if(wnd && wnd.progressOn) {
     wnd.progressOn();
+  }
 
   setTimeout(tune_wnd_print, 3000);
 
   // если _printing_plates содержит ссылку на обрабочтик печати, используем его
-  if (this._printing_plates[model] instanceof DataObj)
+  if(this._printing_plates[model] instanceof DataObj) {
     model = this._printing_plates[model];
+  }
 
   // если существует локальный обработчик, используем его
-  if (model instanceof DataObj && model.execute) {
+  if(model instanceof DataObj && model.execute) {
 
-    if (ref instanceof DataObj)
+    if(ref instanceof DataObj) {
       return model.execute(ref)
         .then(tune_wnd_print);
-    else
+    }
+    else {
       return this.get(ref, true)
         .then(model.execute.bind(model))
         .then(tune_wnd_print);
+    }
 
-  } else {
+  }
+  else {
 
     // иначе - печатаем средствами 1С или иного сервера
     var rattr = {};
     $p.ajax.default_attr(rattr, job_prm.irest_url());
-    rattr.url += this.rest_name + "(guid'" + utils.fix_guid(ref) + "')" +
-      "/Print(model=" + model + ", browser_uid=" + wsql.get_user_param("browser_uid") + ")";
+    rattr.url += this.rest_name + '(guid\'' + utils.fix_guid(ref) + '\')' +
+      '/Print(model=' + model + ', browser_uid=' + wsql.get_user_param('browser_uid') + ')';
 
-    return $p.ajax.get_and_show_blob(rattr.url, rattr, "get")
+    return $p.ajax.get_and_show_blob(rattr.url, rattr, 'get')
       .then(tune_wnd_print);
   }
 
-}/**
+}
+
+/**
  * Плагин-модификатор react-ui для metadata.js
  *
  * @module plugin
@@ -201,17 +198,17 @@ export default {
    * ### Модификатор конструктора MetaEngine
    * Вызывается в контексте экземпляра MetaEngine
    */
-  constructor(){
+  constructor() {
 
     // модифицируем метод columns() справочника scheme_settings - добавляем форматтеры и редакторы
     Object.defineProperty(this.CatScheme_settings.prototype, 'rx_columns', {
       value: rx_columns(this)
-    })
+    });
 
     // методы печати в прототип DataManager
     Object.defineProperties(this.classes.DataManager, {
       value: print
-    })
+    });
 
   }
-}
+};
