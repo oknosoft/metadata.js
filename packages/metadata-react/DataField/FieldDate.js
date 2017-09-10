@@ -7,6 +7,7 @@
  */
 
 import React, {Component} from 'react';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 
 import Input from 'material-ui/Input';
@@ -14,52 +15,26 @@ import InputLabel from 'material-ui/Input/InputLabel';
 import FormControl from 'material-ui/Form/FormControl';
 import DatePicker from 'react-datepicker/dist/react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import {withStyles} from 'material-ui/styles';
+
+import withStyles from './styles';
 
 import AbstractField from './AbstractField';
 
 const formater = new global.Intl.DateTimeFormat();
 
-const styles = theme => ({
-  formControl: {
-    margin: theme.spacing.unit,
-    minWidth: 200
-  },
-  icon: {
-    '&:before': {
-      backgroundColor: '#216ba5',
-      borderRadius: '50%',
-      bottom: 0,
-      boxSizing: 'border-box',
-      color: '#fff',
-      content: 'х',
-      cursor: 'pointer',
-      fontSize: 12,
-      height: 16,
-      width: 16,
-      lineHeight: 1,
-      margin: '-8px auto 0',
-      padding: 2,
-      position: 'absolute',
-      right: 17,
-      textAlign: 'center',
-      top: '50%'
-    },
-  }
-});
 
 class CustomField extends Component {
 
-  focus() {
-    this._input && this._input.focus();
-  }
 
   render() {
     const {classes, _fld, _meta, fullWidth, ...others} = this.props;
 
-    return <FormControl fullWidth={fullWidth} className={classes.formControl}>
-      <InputLabel htmlFor={`fdate${_fld}`}>{_meta.synonym}</InputLabel>
-      <Input ref={(el) => this._input = el} id={`fdate${_fld}`} {...others} />
+    return <FormControl
+      className={classes.formControl}
+      fullWidth={fullWidth}
+      margin="dense">
+      <InputLabel>{_meta.synonym}</InputLabel>
+      <Input {...others} />
     </FormControl>;
   }
 
@@ -69,7 +44,7 @@ class CustomField extends Component {
   };
 }
 
-const StyledCustomField = withStyles(styles)(CustomField);
+const StyledCustomField = withStyles(CustomField);
 
 export default class FieldDate extends AbstractField {
 
@@ -101,6 +76,11 @@ export default class FieldDate extends AbstractField {
     }
   };
 
+  componentDidMount() {
+    const {input} = this._picker;
+    const node = ReactDOM.findDOMNode(input);
+    input.focus = () => node.focus();
+  }
 
   render() {
 
@@ -131,6 +111,7 @@ export default class FieldDate extends AbstractField {
 
     return isTabular ?
       <DatePicker
+        ref={(el) => this._picker = el}
         todayButton={'Сегодня'}
         locale="ru-RU"
         disabledKeyboardNavigation
@@ -141,7 +122,8 @@ export default class FieldDate extends AbstractField {
       />
       :
       <DatePicker
-        customInput={<StyledCustomField _fld={_fld} _meta={_meta} classes={classes} fullWidth={fullWidth}/>}
+        ref={(el) => this._picker = el}
+        customInput={<StyledCustomField _fld={_fld} _meta={_meta} classes={classes} fullWidth={fullWidth} />}
         todayButton={'Сегодня'}
         locale="ru-RU"
         disabledKeyboardNavigation
