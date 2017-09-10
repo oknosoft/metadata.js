@@ -18,7 +18,7 @@ export default function ({wsql, utils}) {
     }
     else {
       docx = ('JSZip' in window ? Promise.resolve() : utils.load_script('https://cdn.jsdelivr.net/jszip/2/jszip.min.js', 'script'))
-        .then(() => utils.load_script('https://cdn.jsdelivr.net/combine/npm/docxtemplater@3.1.7/build/docxtemplater.min.js,npm/docxtemplater-image-module@3.1.0/build/imagemodule.min.js', 'script'));
+        .then(() => utils.load_script('https://cdn.jsdelivr.net/combine/gh/open-xml-templating/docxtemplater-build@3.1.5/build/docxtemplater-latest.min.js,gh/open-xml-templating/docxtemplater-image-module-build@3.0.2/build/docxtemplater-image-module-latest.min.js', 'script'));
     }
 
     return docx.then(function () {
@@ -38,6 +38,6 @@ export default function ({wsql, utils}) {
       return Promise.resolve();
     }
     return ('JSZip' in window ? Promise.resolve() : utils.load_script('https://cdn.jsdelivr.net/jszip/2/jszip.min.js', 'script'))
-      .then(() => utils.load_script('https://cdn.jsdelivr.net/npm/xlsx@0.11.3/xlsx.js', 'script'));
+      .then(() => utils.load_script('https://cdn.jsdelivr.net/npm/xlsx@0.11.3/dist/xlsx.min.js', 'script'));
   };
 }
