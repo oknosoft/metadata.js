@@ -638,14 +638,14 @@ const utils = mime({
 					// пропускаем служебные свойства
 					if (j.substr(0, 1) == '_') {
 						continue;
-
-					} // если свойство отбора является функцией, выполняем её, передав контекст
+					}
+					// если свойство отбора является функцией, выполняем её, передав контекст
 					else if (typeof sel == 'function') {
 						ok = sel.call(this, o, j);
 						if (!ok)
 							break;
-
-					} // если свойство отбора является объектом `or`, выполняем Array.some() TODO: здесь напрашивается рекурсия
+					}
+					// если свойство отбора является объектом `or`, выполняем Array.some() TODO: здесь напрашивается рекурсия
 					else if (j == 'or' && Array.isArray(sel)) {
 						ok = sel.some(function (element) {
 							var key = Object.keys(element)[0];
@@ -657,41 +657,42 @@ const utils = mime({
 						if (!ok)
 							break;
 
-					} // если свойство отбора является объектом `like`, сравниваем подстроку
+					}
+					// если свойство отбора является объектом `like`, сравниваем подстроку
 					else if (is_obj && sel.hasOwnProperty('like')) {
 						if (!o[j] || o[j].toLowerCase().indexOf(sel.like.toLowerCase()) == -1) {
 							ok = false;
 							break;
 						}
-
-					} // если свойство отбора является объектом `not`, сравниваем на неравенство
+					}
+					// если свойство отбора является объектом `not`, сравниваем на неравенство
 					else if (is_obj && sel.hasOwnProperty('not')) {
 						if (utils.is_equal(o[j], sel.not)) {
 							ok = false;
 							break;
 						}
-
-					} // если свойство отбора является объектом `in`, выполняем Array.some()
+					}
+					// если свойство отбора является объектом `in`, выполняем Array.some()
 					else if (is_obj && sel.hasOwnProperty('in')) {
 						ok = sel.in.some(function (element) {
 							return utils.is_equal(element, o[j]);
 						});
 						if (!ok)
 							break;
-
-					} // если свойство отбора является объектом `lt`, сравниваем на _меньше_
+					}
+					// если свойство отбора является объектом `lt`, сравниваем на _меньше_
 					else if (is_obj && sel.hasOwnProperty('lt')) {
 						ok = o[j] < sel.lt;
 						if (!ok)
 							break;
-
-					} // если свойство отбора является объектом `gt`, сравниваем на _больше_
+					}
+					// если свойство отбора является объектом `gt`, сравниваем на _больше_
 					else if (is_obj && sel.hasOwnProperty('gt')) {
 						ok = o[j] > sel.gt;
 						if (!ok)
 							break;
-
-					} // если свойство отбора является объектом `between`, сравниваем на _вхождение_
+					}
+					// если свойство отбора является объектом `between`, сравниваем на _вхождение_
 					else if (is_obj && sel.hasOwnProperty('between')) {
 						var tmp = o[j];
 						if (typeof tmp != 'number')
@@ -725,21 +726,33 @@ const utils = mime({
 	_find_rows(src, selection, callback) {
 
 		const res = [];
-		let top, count = 0;
+		let top, skip, count = 0, skipped = 0;
 
 		if (selection) {
-			if (selection._top) {
+			if (selection.hasOwnProperty('_top')) {
 				top = selection._top;
 				delete selection._top;
 			} else {
 				top = 300;
 			}
+      if (selection.hasOwnProperty('_skip')) {
+        skip = selection._skip;
+        delete selection._skip;
+      } else {
+        skip = 0;
+      }
 		}
 
 		for (let i in src) {
 			const o = src[i];
 			// выполняем колбэк с элементом и пополняем итоговый массив
 			if (utils._selection.call(this, o, selection)) {
+			  if(skip){
+          skipped++;
+          if (skipped <= skip) {
+            continue;
+          }
+        }
 				if (callback) {
 					if (callback.call(this, o) === false) {
 						break;

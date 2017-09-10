@@ -1223,20 +1223,12 @@ export class RefDataManager extends DataManager{
 	 * @return {DataObj}
 	 */
 	predefined(name){
-
-		if(!this._predefined)
-			this._predefined = {};
-
-		if(!this._predefined[name]){
-
-			this._predefined[name] = this.get();
-
-			this.find_rows({predefined_name: name}, function (el) {
-				this._predefined[name] = el;
-				return false;
-			});
-		}
-
+		if(!this._predefined){
+      const predefined = this._predefined = {};
+      this.find_rows({predefined_name: {not: ''}}, (el) => {
+        predefined[el.predefined_name] = el;
+      });
+    }
 		return this._predefined[name];
 	}
 
@@ -2001,18 +1993,12 @@ export class CatManager extends RefDataManager{
 	 * @return {DataObj}
 	 */
 	by_name(name) {
-
-		var o;
-
+		let o;
 		this.find_rows({name: name}, obj => {
 			o = obj;
 			return false;
 		});
-
-		if (!o)
-			o = this.get();
-
-		return o;
+		return o || this.get();
 	}
 
 	/**
@@ -2022,18 +2008,12 @@ export class CatManager extends RefDataManager{
 	 * @return {DataObj}
 	 */
 	by_id(id) {
-
-		var o;
-
+    let o;
 		this.find_rows({id: id}, obj => {
 			o = obj;
 			return false;
 		});
-
-		if (!o)
-			o = this.get();
-
-		return o;
+    return o || this.get();
 	};
 
 	/**

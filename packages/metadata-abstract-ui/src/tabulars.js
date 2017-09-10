@@ -79,6 +79,7 @@ function tabulars(constructor) {
 						action: 'copy',
 						text,
 						emitter: {emit: resolve},
+            container: document.body,
 					});
 				});
 			}

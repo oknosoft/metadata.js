@@ -25,10 +25,10 @@ class DataList extends Component {
   constructor(props, context) {
     super(props, context);
 
-    const {class_name} = props._mgr;
+    const {class_name, cachable, alatable} = props._mgr;
 
     this.state = {
-      rowsLoaded: 0,
+      rowsLoaded: cachable === 'ram' ? alatable.length : 0,
       selectedRowIndex: 0,
       _meta: props._meta || props._mgr.metadata(),
 
@@ -71,13 +71,14 @@ class DataList extends Component {
 
   // обработчик редактирования элемента списка
   handleEdit = () => {
-    const row = this._list.get(this.state.selectedRowIndex);
-    const {handlers, _mgr} = this.props;
+    const {_list, state, props} = this;
+    const {handlers, _mgr} = props;
+    const row = _list.get(state.selectedRowIndex);
     if(!row || $p.utils.is_empty_guid(row.ref)){
       handlers.handleIfaceState({
         component: '',
         name: 'alert',
-        value: {open: true, text: 'Укажите строку для редактирования', title: this.state._meta.synonym}
+        value: {open: true, text: 'Укажите строку для редактирования', title: state._meta.synonym}
       })
     }
     else if(handlers.handleEdit) {
@@ -87,14 +88,15 @@ class DataList extends Component {
 
   // обработчик удаления элемента списка
   handleRemove = () => {
-    const row = this._list.get(this.state.selectedRowIndex);
-    const {handlers, _mgr} = this.props;
+    const {_list, state, props} = this;
+    const {handlers, _mgr} = props;
+    const row = _list.get(state.selectedRowIndex);
 
     if(!row || $p.utils.is_empty_guid(row.ref)){
       handlers.handleIfaceState({
         component: '',
         name: 'alert',
-        value: {open: true, text: 'Укажите строку для удаления', title: this.state._meta.synonym}
+        value: {open: true, text: 'Укажите строку для удаления', title: state._meta.synonym}
       })
     }
     else if(handlers.handleMarkDeleted) {
@@ -353,31 +355,39 @@ class DataList extends Component {
     const {_mgr, params} = this.props;
     const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);
 
-    Object.assign(select, {
-      _top: increment,
-      _skip: startIndex,
-      _view: 'doc/by_date',
-      _raw: true
-    });
-
-    scheme.fix_select(select, params && params.options || _mgr.class_name);
-    // выполняем запрос
-    return _mgr.find_rows_remote(select).then((data) => {
-
+    const update_state = (data) => {
       let reallyLoadedRows = 0;
       // обновляем массив результата
-      for (var i = 0; i < data.length; i++) {
+      for (let i = 0; i < data.length; i++) {
         // Append one because first row is header.
         if(this._list.has(1 + i + startIndex) === false) {
           reallyLoadedRows++;
           this._list.set(1 + i + startIndex, data[i]);
         }
       }
-
       // Обновить количество записей.
       this._isMounted && reallyLoadedRows && this.setState({rowsLoaded: this.state.rowsLoaded + reallyLoadedRows});
+    };
 
+    Object.assign(select, {
+      _top: increment,
+      _skip: startIndex ? startIndex - 1 : 0,
+      _view: 'doc/by_date',
+      _raw: true
     });
+
+    scheme.fix_select(select, params && params.options || _mgr.class_name);
+
+    if(_mgr.cachable === 'ram') {
+      // фильтруем в озу
+      update_state(_mgr.find_rows(select));
+      return Promise.resolve();
+    }
+    else{
+      // выполняем запрос
+      return _mgr.find_rows_remote(select).then(update_state);
+    }
+
   };
 }
 

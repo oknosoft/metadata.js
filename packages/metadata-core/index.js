@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.2-beta.26, built:2017-09-05
+ metadata-core v2.0.2-beta.26, built:2017-09-10
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1948,15 +1948,12 @@ class RefDataManager extends DataManager{
 			return Promise.resolve(list);
 	}
 	predefined(name){
-		if(!this._predefined)
-			this._predefined = {};
-		if(!this._predefined[name]){
-			this._predefined[name] = this.get();
-			this.find_rows({predefined_name: name}, function (el) {
-				this._predefined[name] = el;
-				return false;
-			});
-		}
+		if(!this._predefined){
+      const predefined = this._predefined = {};
+      this.find_rows({predefined_name: {not: ''}}, (el) => {
+        predefined[el.predefined_name] = el;
+      });
+    }
 		return this._predefined[name];
 	}
 }
@@ -2406,24 +2403,20 @@ class CatManager extends RefDataManager{
 		}
 	}
 	by_name(name) {
-		var o;
+		let o;
 		this.find_rows({name: name}, obj => {
 			o = obj;
 			return false;
 		});
-		if (!o)
-			o = this.get();
-		return o;
+		return o || this.get();
 	}
 	by_id(id) {
-		var o;
+    let o;
 		this.find_rows({id: id}, obj => {
 			o = obj;
 			return false;
 		});
-		if (!o)
-			o = this.get();
-		return o;
+    return o || this.get();
 	};
 	path(ref) {
 		var res = [], tobj;
@@ -5490,18 +5483,30 @@ const utils = mime({
 	},
 	_find_rows(src, selection, callback) {
 		const res = [];
-		let top, count = 0;
+		let top, skip, count = 0, skipped = 0;
 		if (selection) {
-			if (selection._top) {
+			if (selection.hasOwnProperty('_top')) {
 				top = selection._top;
 				delete selection._top;
 			} else {
 				top = 300;
 			}
+      if (selection.hasOwnProperty('_skip')) {
+        skip = selection._skip;
+        delete selection._skip;
+      } else {
+        skip = 0;
+      }
 		}
 		for (let i in src) {
 			const o = src[i];
 			if (utils._selection.call(this, o, selection)) {
+			  if(skip){
+          skipped++;
+          if (skipped <= skip) {
+            continue;
+          }
+        }
 				if (callback) {
 					if (callback.call(this, o) === false) {
 						break;

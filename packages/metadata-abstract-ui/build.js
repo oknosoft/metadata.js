@@ -26,21 +26,37 @@ return rollup({
 	external,
 	plugins,
 })
-	.then((bundle) => bundle.generate({
-		format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
-		moduleName: package_data.name.replace(/-/g, '_') + '_plugin',
-		//sourceMap: true,
-	}))
-	.then((result) => fs.writeFileSync(path.resolve(__dirname, './index.js'), header + result.code))
+  .then((bundle) => bundle.write({
+    format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
+    moduleName: package_data.name.replace(/-/g, '_') + '_plugin',
+    banner: header,
+    dest: path.resolve(__dirname, './index.js'),
+    sourceMap: true,
+  }))
+
 	.then(() => rollup({
 		entry: path.resolve(__dirname, './src/meta.js'),
 		external,
 		plugins,
 	}))
-	.then((bundle) => bundle.generate({
-		format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
-		moduleName: package_data.name.replace(/-/g, '_') + '_meta',
-		//sourceMap: true,
-	}))
-	.then((result) => fs.writeFileSync(path.resolve(__dirname, './meta.js'), header + result.code));
+  .then((bundle) => bundle.write({
+    format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
+    moduleName: package_data.name.replace(/-/g, '_') + '_meta',
+    banner: header,
+    dest: path.resolve(__dirname, './meta.js'),
+    sourceMap: true,
+  }))
+
+  .then(() => rollup({
+    entry: path.resolve(__dirname, './src/tabulars.js'),
+    external,
+    plugins,
+  }))
+  .then((bundle) => bundle.write({
+    format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
+    moduleName: package_data.name.replace(/-/g, '_') + '_tabulars',
+    banner: header,
+    dest: path.resolve(__dirname, './tabulars.js'),
+    sourceMap: true,
+  }));
 
