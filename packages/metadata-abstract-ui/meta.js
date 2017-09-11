@@ -1,122 +1,141 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-/**
- * Плагин-модификатор abstract-ui для metadata.js
- *
- * @module meta
- *
- * Created 08.01.2017
+/*!
+ metadata-abstract-ui v2.0.2-beta.26, built:2017-09-10
+ © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
+ metadata.js may be freely distributed under the MIT
+ To obtain commercial license and technical support, contact info@oknosoft.ru
  */
 
-/**
- * Экспортируем объект-плагин для модификации metadata.js
- */
-exports.default = {
 
-	proto(constructor, classes) {
+'use strict';
 
-		// метаданные абстрактных интерфейсов
-		classes.Meta._sys.push({
+var meta = {
+	proto(constructor) {
+		const {Meta} = constructor.classes;
+		Meta._sys.push({
 			enm: {
-				sort_directions: [{
-					order: 0,
-					name: "asc",
-					synonym: "По возрастанию"
-				}, {
-					order: 1,
-					name: "desc",
-					synonym: "По убыванию"
-				}],
-				comparison_types: [{
-					order: 0,
-					name: "gt",
-					synonym: "Больше"
-				}, {
-					order: 1,
-					name: "gte",
-					synonym: "Больше или равно"
-				}, {
-					order: 2,
-					name: "lt",
-					synonym: "Меньше"
-				}, {
-					order: 3,
-					name: "lte",
-					synonym: "Меньше или равно "
-				}, {
-					order: 4,
-					name: "eq",
-					synonym: "Равно"
-				}, {
-					order: 5,
-					name: "ne",
-					synonym: "Не равно"
-				}, {
-					"order": 6,
-					"name": "in",
-					"synonym": "В списке"
-				}, {
-					order: 7,
-					name: "nin",
-					synonym: "Не в списке"
-				}, {
-					order: 8,
-					name: "lke",
-					synonym: "Подобно "
-				}, {
-					order: 9,
-					name: "nlk",
-					synonym: "Не подобно"
-				}],
-				label_positions: [{
-					order: 0,
-					name: "auto",
-					synonym: "Авто"
-				}, {
-					order: 1,
-					name: "hide",
-					synonym: "Скрыть"
-				}, {
-					order: 2,
-					name: "left",
-					synonym: "Лево"
-				}, {
-					order: 3,
-					name: "right",
-					synonym: "Право"
-				}, {
-					order: 4,
-					name: "top",
-					synonym: "Верх"
-				}, {
-					order: 5,
-					name: "bottom",
-					synonym: "Низ"
-				}],
-				data_field_kinds: [{
-					order: 0,
-					name: "input",
-					synonym: "Поле ввода"
-				}, {
-					order: 1,
-					name: "label",
-					synonym: "Поле надписи"
-				}, {
-					order: 2,
-					name: "toggle",
-					synonym: "Поле переключателя"
-				}, {
-					order: 3,
-					name: "image",
-					synonym: "Поле картинки"
-				}, {
-					order: 4,
-					name: "text",
-					synonym: "Редактор многострочного текста"
-				}]
+				sort_directions: [
+					{
+						order: 0,
+						name: "asc",
+						synonym: "По возрастанию"
+					},
+					{
+						order: 1,
+						name: "desc",
+						synonym: "По убыванию"
+					}
+				],
+				comparison_types: [
+					{
+						order: 0,
+						name: "gt",
+						synonym: "Больше"
+					},
+					{
+						order: 1,
+						name: "gte",
+						synonym: "Больше или равно"
+					},
+					{
+						order: 2,
+						name: "lt",
+						synonym: "Меньше"
+					},
+					{
+						order: 3,
+						name: "lte",
+						synonym: "Меньше или равно "
+					},
+					{
+						order: 4,
+						name: "eq",
+						synonym: "Равно"
+					},
+					{
+						order: 5,
+						name: "ne",
+						synonym: "Не равно"
+					},
+					{
+						"order": 6,
+						"name": "in",
+						"synonym": "В списке"
+					},
+					{
+						order: 7,
+						name: "nin",
+						synonym: "Не в списке"
+					},
+					{
+						order: 8,
+						name: "lke",
+						synonym: "Содержит "
+					},
+					{
+						order: 9,
+						name: "nlk",
+						synonym: "Не содержит"
+					}
+				],
+				label_positions: [
+					{
+						order: 0,
+						name: "auto",
+						synonym: "Авто"
+					},
+					{
+						order: 1,
+						name: "hide",
+						synonym: "Скрыть"
+					},
+					{
+						order: 2,
+						name: "left",
+						synonym: "Лево"
+					},
+					{
+						order: 3,
+						name: "right",
+						synonym: "Право"
+					},
+					{
+						order: 4,
+						name: "top",
+						synonym: "Верх"
+					},
+					{
+						order: 5,
+						name: "bottom",
+						synonym: "Низ"
+					},
+				],
+				data_field_kinds: [
+					{
+						order: 0,
+						name: "input",
+						synonym: "Поле ввода"
+					},
+					{
+						order: 1,
+						name: "label",
+						synonym: "Поле надписи"
+					},
+					{
+						order: 2,
+						name: "toggle",
+						synonym: "Поле переключателя"
+					},
+					{
+						order: 3,
+						name: "image",
+						synonym: "Поле картинки"
+					},
+					{
+						order: 4,
+						name: "text",
+						synonym: "Редактор многострочного текста"
+					},
+				]
 			},
 			cat: {
 				meta_objs: {
@@ -128,7 +147,9 @@ exports.default = {
 				scheme_settings: {
 					name: "scheme_settings",
 					synonym: "Настройки отчетов и списков",
-					input_by_string: ["name"],
+					input_by_string: [
+						"name"
+					],
 					hierarchical: false,
 					has_owners: false,
 					group_hierarchy: true,
@@ -139,7 +160,9 @@ exports.default = {
 							synonym: "Объект",
 							tooltip: "Имя класса метаданных",
 							type: {
-								types: ["string"],
+								types: [
+									"string"
+								],
 								str_len: 250
 							}
 						},
@@ -147,7 +170,9 @@ exports.default = {
 							synonym: "Пользователь",
 							tooltip: "Если пусто - публичная настройка",
 							type: {
-								types: ["string"],
+								types: [
+									"string"
+								],
 								str_len: 50
 							}
 						},
@@ -155,16 +180,20 @@ exports.default = {
 							synonym: "Порядок",
 							tooltip: "Порядок варианта",
 							type: {
-								types: ["number"],
+								types: [
+									"number"
+								],
 								digits: 6,
-								fraction_figits: 0
+								fraction_figits: 0,
 							}
 						},
 						query: {
 							synonym: "Запрос",
 							tooltip: "Индекс CouchDB или текст SQL",
 							type: {
-								types: ["string"],
+								types: [
+									"string"
+								],
 								str_len: 0
 							}
 						},
@@ -172,7 +201,9 @@ exports.default = {
 							"synonym": "Начало периода",
 							"tooltip": "",
 							"type": {
-								"types": ["date"],
+								"types": [
+									"date"
+								],
 								"date_part": "date"
 							}
 						},
@@ -180,7 +211,9 @@ exports.default = {
 							"synonym": "Конец периода",
 							"tooltip": "",
 							"type": {
-								"types": ["date"],
+								"types": [
+									"date"
+								],
 								"date_part": "date"
 							}
 						},
@@ -188,14 +221,18 @@ exports.default = {
 							synonym: "Формула",
 							tooltip: "Формула инициализации",
 							type: {
-								types: ["cat.formulas"],
+								types: [
+									"cat.formulas"
+								],
 								is_ref: true
 							}
 						},
 						tag: {
 							synonym: "Дополнительные свойства",
 							type: {
-								types: ["string"],
+								types: [
+									"string"
+								],
 								str_len: 0
 							}
 						}
@@ -210,7 +247,9 @@ exports.default = {
 									synonym: "Родитель",
 									tooltip: "Для плоского списка, родитель пустой",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 100
 									}
 								},
@@ -218,14 +257,18 @@ exports.default = {
 									synonym: "Использование",
 									tooltip: "",
 									type: {
-										types: ["boolean"]
+										types: [
+											"boolean"
+										]
 									}
 								},
 								field: {
 									synonym: "Поле",
 									tooltip: "",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 100
 									}
 								},
@@ -233,7 +276,9 @@ exports.default = {
 									synonym: "Ширина",
 									tooltip: "",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 6
 									}
 								},
@@ -241,7 +286,9 @@ exports.default = {
 									synonym: "Заголовок",
 									tooltip: "",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 100
 									}
 								},
@@ -249,7 +296,9 @@ exports.default = {
 									synonym: "Подсказка",
 									tooltip: "",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 100
 									}
 								},
@@ -257,7 +306,9 @@ exports.default = {
 									synonym: "Тип",
 									tooltip: "Тип элемента управления",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 100
 									}
 								},
@@ -265,7 +316,9 @@ exports.default = {
 									synonym: "Формат",
 									tooltip: "Функция форматирования",
 									type: {
-										types: ["cat.formulas"],
+										types: [
+											"cat.formulas"
+										],
 										is_ref: true
 									}
 								},
@@ -273,11 +326,12 @@ exports.default = {
 									synonym: "Редактор",
 									tooltip: "Компонент редактирования",
 									type: {
-										types: ["cat.formulas"],
+										types: [
+											"cat.formulas"
+										],
 										is_ref: true
 									}
 								}
-
 							}
 						},
 						sorting: {
@@ -289,15 +343,28 @@ exports.default = {
 									synonym: "Родитель",
 									tooltip: "",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 100
 									}
 								},
+                use: {
+                  synonym: "Использование",
+                  tooltip: "",
+                  type: {
+                    types: [
+                      "boolean"
+                    ]
+                  }
+                },
 								field: {
 									synonym: "Поле",
 									tooltip: "",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 100
 									}
 								},
@@ -305,7 +372,9 @@ exports.default = {
 									synonym: "Направление",
 									tooltip: "",
 									type: {
-										types: ["enm.sort_directions"],
+										types: [
+											"enm.sort_directions"
+										],
 										"is_ref": true
 									}
 								}
@@ -320,15 +389,28 @@ exports.default = {
 									synonym: "Родитель",
 									tooltip: "",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 100
 									}
 								},
+                use: {
+                  synonym: "Использование",
+                  tooltip: "",
+                  type: {
+                    types: [
+                      "boolean"
+                    ]
+                  }
+                },
 								field: {
 									synonym: "Поле",
 									tooltip: "",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 100
 									}
 								}
@@ -343,15 +425,28 @@ exports.default = {
 									synonym: "Родитель",
 									tooltip: "",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 100
 									}
 								},
+                use: {
+                  synonym: "Использование",
+                  tooltip: "",
+                  type: {
+                    types: [
+                      "boolean"
+                    ]
+                  }
+                },
 								field: {
 									synonym: "Поле",
 									tooltip: "",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 100
 									}
 								},
@@ -359,7 +454,9 @@ exports.default = {
 									synonym: "Формула",
 									tooltip: "По умолчанию - сумма",
 									type: {
-										types: ["cat.formulas"],
+										types: [
+											"cat.formulas"
+										],
 										is_ref: true
 									}
 								}
@@ -374,7 +471,9 @@ exports.default = {
 									synonym: "Родитель",
 									tooltip: "",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 100
 									}
 								},
@@ -382,14 +481,18 @@ exports.default = {
 									synonym: "Использование",
 									tooltip: "",
 									type: {
-										types: ["boolean"]
+										types: [
+											"boolean"
+										]
 									}
 								},
 								left_value: {
 									synonym: "Левое значение",
 									tooltip: "",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 100
 									}
 								},
@@ -397,7 +500,9 @@ exports.default = {
 									synonym: "Вид сравнения",
 									tooltip: "",
 									type: {
-										types: ["enm.comparison_types"],
+										types: [
+											"enm.comparison_types"
+										],
 										is_ref: true
 									}
 								},
@@ -405,7 +510,9 @@ exports.default = {
 									synonym: "Правое значение",
 									tooltip: "",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 100
 									}
 								}
@@ -420,7 +527,9 @@ exports.default = {
 									synonym: "Параметр",
 									tooltip: "",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 100
 									}
 								},
@@ -428,7 +537,9 @@ exports.default = {
 									synonym: "Тип",
 									tooltip: "Тип значения",
 									type: {
-										types: ["string"],
+										types: [
+											"string"
+										],
 										str_len: 100
 									}
 								},
@@ -436,10 +547,13 @@ exports.default = {
 									synonym: "Значение",
 									tooltip: "Может иметь примитивный или ссылочный тип или массив",
 									type: {
-										types: ["string", "number"],
+										types: [
+											"string",
+											"number",
+										],
 										str_len: 0,
 										digits: 15,
-										fraction_figits: 3
+										fraction_figits: 3,
 									}
 								}
 							}
@@ -454,7 +568,9 @@ exports.default = {
 									"multiline_mode": false,
 									"tooltip": "",
 									"type": {
-										"types": ["string"],
+										"types": [
+											"string"
+										],
 										"str_len": 10
 									}
 								},
@@ -462,14 +578,18 @@ exports.default = {
 									synonym: "Использование",
 									tooltip: "",
 									type: {
-										types: ["boolean"]
+										types: [
+											"boolean"
+										]
 									}
 								},
-								elm: {
+                field: {
 									"synonym": "Элемент",
 									"tooltip": "Элемент структуры отчета",
 									"type": {
-										"types": ["string"],
+										"types": [
+											"string"
+										],
 										"str_len": 50
 									}
 								},
@@ -477,7 +597,9 @@ exports.default = {
 									"synonym": "Вид раздела отчета",
 									"tooltip": "список, таблица, группировка строк, группировка колонок",
 									"type": {
-										"types": ["string"],
+										"types": [
+											"string"
+										],
 										"str_len": 50
 									}
 								},
@@ -485,7 +607,9 @@ exports.default = {
 									"synonym": "Описание",
 									"tooltip": "Описание раздела структуры",
 									"type": {
-										"types": ["string"],
+										"types": [
+											"string"
+										],
 										"str_len": 50
 									}
 								}
@@ -505,7 +629,9 @@ exports.default = {
 							tooltip: "Текущий вариант настроек",
 							mandatory: true,
 							type: {
-								types: ["cat.scheme_settings"],
+								types: [
+									"cat.scheme_settings"
+								],
 								is_ref: true
 							}
 						}
@@ -515,3 +641,6 @@ exports.default = {
 		});
 	}
 };
+
+module.exports = meta;
+//# sourceMappingURL=meta.js.map

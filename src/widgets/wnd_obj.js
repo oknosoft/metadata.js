@@ -23,7 +23,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	var _mgr = this,
 		_meta = _mgr.metadata(),
 		o = attr.o,
-		wnd, options, created, create_id, _title, close_confirmed;
+		wnd, options, created, create_id, _title;
 
 	/**
 	 * ПриСозданииНаСервере - инициализация при создании формы, до чтения объекта
@@ -118,24 +118,23 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 							if(!title)
 								return;
 
-							if(o instanceof CatObj)
-								title = (_meta.obj_presentation || _meta.synonym) + ': ' + title;
+							if(o instanceof CatObj){
+                title = (_meta.obj_presentation || _meta.synonym) + ': ' + title;
+              }
+							else if(o instanceof DocObj){
+                title += o.posted ? " (проведен)" : " (не проведен)";
+              }
 
-							else if(o instanceof DocObj)
-								title += o.posted ? " (проведен)" : " (не проведен)";
-
-							if(o._modified && title.lastIndexOf("*")!=title.length-1)
-								title += " *";
-
-							else if(!o._modified && title.lastIndexOf("*")==title.length-1)
-								title = title.replace(" *", "");
+							if(o._modified && title.lastIndexOf("*")!=title.length-1){
+                title += " *";
+              }
+							else if(!o._modified && title.lastIndexOf("*")==title.length-1){
+                title = title.replace(" *", "");
+              }
 
 							if(force || _title !== title){
 								_title = title;
-								if(attr.set_text)
-									attr.set_text(title);
-								else
-									wnd.setText(title);
+								attr.set_text ? attr.set_text(title) : wnd.setText(title);
 							}
 						}
 					},
@@ -165,8 +164,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		wnd.elmnts.frm_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_obj.xml"], function(){
 
 			// если мы приклеены к ячейке, сдвигаем toolbar на 4px
-			if(wnd === pwnd)
-				this.cont.style.top = "4px";
+			// if(wnd === pwnd)
+			// 	this.cont.style.top = "4px";
 
 			this.addSpacer("btn_unpost");
 			this.attachEvent("onclick", attr.toolbar_click || toolbar_click);
@@ -230,8 +229,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 * Пока здесь только установка заголовка формы
 	 * @param changes
 	 */
-	function observer(changes) {
-		if(o && wnd && wnd.set_text){
+	function listener(obj, fields) {
+		if(wnd && wnd.set_text && ((obj === o) || (obj._owner && obj._owner._owner === o))){
       wnd.set_text();
     }
 	}
@@ -302,7 +301,10 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 		/**
 		 * начинаем следить за объектом
 		 */
-		Object.observe(o, observer, ["update", "row"]);
+    _mgr.on({
+      update: listener,
+      rows: listener,
+    });
 
 
 		return {wnd: wnd, o: o};
@@ -447,13 +449,19 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 */
 	function frm_unload(on_create){
 
-		if(attr && attr.on_close && !on_create)
-			attr.on_close();
+		if(attr && attr.on_close && !on_create){
+      attr.on_close();
+    }
 
 		if(!on_create){
-			delete wnd.ref;
-			delete wnd.set_text;
-			Object.unobserve(o, observer);
+		  if(_mgr){
+        _mgr.off('update', listener);
+        _mgr.off('rows', listener);
+      }
+      if(wnd){
+        delete wnd.ref;
+        delete wnd.set_text;
+      }
 			_mgr = wnd = o = _meta = options = pwnd = attr = null;
 		}
 	}
@@ -462,25 +470,26 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 * Задаёт вопрос о записи изменений и делает откат при необходимости
 	 */
 	function check_modified() {
-		if(o._modified && !close_confirmed){
+		if(o && o._modified && !wnd.close_confirmed){
 			dhtmlx.confirm({
 				title: o.presentation,
 				text: $p.msg.modified_close,
 				cancel: $p.msg.cancel,
 				callback: function(btn) {
 					if(btn){
-						close_confirmed = true;
+            wnd.close_confirmed = true;
 						// закрыть изменённый без сохранения - значит прочитать его из pouchdb
-						if(o._manager.cachable == "ram")
-							this.close();
-
+						if(o._manager.cachable == "ram"){
+              this.close && this.close();
+            }
 						else{
 							if(o.is_new()){
 								o.unload();
-								this.close();
-							}else{
+                this.close && this.close();
+							}
+							else{
 								setTimeout(o.load.bind(o), 100);
-								this.close();
+                this.close && this.close();
 							}
 						}
 					}
@@ -519,23 +528,22 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	// читаем объект из локального SQL или получаем с сервера
 	if($p.utils.is_data_obj(o)){
 
-		if(o.is_new() && attr.on_select)
-			return _mgr.create({}, true)
-				.then(function (tObj) {
-					o = tObj;
-					tObj = null;
-					return frm_fill();
-				});
+		if(o.is_new() && attr.on_select){
+      return _mgr.create({}, true)
+        .then(function (tObj) {
+          o = tObj;
+          tObj = null;
+          return frm_fill();
+        });
+    }
 		else if(o.is_new() && !o.empty()){
 			return o.load()
 				.then(frm_fill);
 		}else
 			return Promise.resolve(frm_fill());
-
-	}else{
-
-		if(pwnd && pwnd.progressOn)
-			pwnd.progressOn();
+	}
+	else{
+		pwnd && pwnd.progressOn && pwnd.progressOn();
 
 		return _mgr.get(attr.hasOwnProperty("ref") ? attr.ref : attr, true, true)
 			.then(function(tObj){

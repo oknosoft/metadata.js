@@ -38,7 +38,8 @@ eXcell_proto.input_keydown = function(e, t){
 
 	else if(e.keyCode === 113){                      // по {F2} открываем форму объекта
 		if(t.source.tabular_section){
-			t.mgr = _md.value_mgr(t.source.row, t.source.col, t.source.row._metadata.fields[t.source.col].type);
+			t.mgr = _md.value_mgr(t.source.row, t.source.col, typeof t.source.row._metadata == 'function' ?
+        t.source.row._metadata(t.source.col).type : t.source.row._metadata.fields[t.source.col].type);
 			if(t.mgr){
 				var tv = t.source.row[t.source.col];
 				t.mgr.form_obj(t.source.wnd, {
@@ -48,7 +49,8 @@ eXcell_proto.input_keydown = function(e, t){
 			}
 
 		}else if(t.fpath.length==1){
-			t.mgr = _md.value_mgr(t.source.o._obj, t.fpath[0], t.source.o._metadata.fields[t.fpath[0]].type);
+			t.mgr = _md.value_mgr(t.source.o._obj, t.fpath[0], typeof t.source.o._metadata == 'function' ?
+        t.source.o._metadata(t.fpath[0]).type : t.source.o._metadata.fields[t.fpath[0]].type);
 			if(t.mgr){
 				var tv = t.source.o[t.fpath[0]];
 				t.mgr.form_obj(t.source.wnd, {
@@ -446,13 +448,13 @@ $p.iface.data_to_tree = function (data) {
 	function add_hierarchically(arr, row){
 		var curr = {id: row.ref, text: row.presentation, items: []};
 		arr.push(curr);
-		$p._find_rows(data, {parent: row.ref}, function(r){
+		$p.utils._find_rows(data, {parent: row.ref}, function(r){
 			add_hierarchically(curr.items, r);
 		});
 		if(!curr.items.length)
 			delete curr.items;
 	}
-	$p._find_rows(data, {parent: $p.utils.blank.guid}, function(r){
+	$p.utils._find_rows(data, {parent: $p.utils.blank.guid}, function(r){
 		add_hierarchically(res, r);
 	});
 

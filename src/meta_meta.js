@@ -1083,17 +1083,6 @@ function Meta() {
 				}
 
 				// и через его тип выходми на мнеджера значения
-				// for(rt in oproperty.type.types)
-				// 	if(oproperty.type.types[rt].indexOf(".") > -1){
-				// 		tnames = oproperty.type.types[rt].split(".");
-				// 		break;
-				// 	}
-				// if(tnames && tnames.length > 1 && $p[tnames[0]])
-				// 	return mf_mgr($p[tnames[0]][tnames[1]]);
-				// else
-				// 	return oproperty.type;
-
-				//---
 				rt = [];
 				oproperty.type.types.some(function(v){
 					tnames = v.split(".");

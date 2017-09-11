@@ -5,6 +5,10 @@
  * @submodule meta_objs
  */
 
+import utils from './utils';
+import {DataProcessorsManager, EnumManager, RegisterManager} from './mngrs'
+import {TabularSection, TabularSectionRow} from './tabulars'
+
 
 /**
  * ### Абстрактный объект данных
@@ -21,16 +25,17 @@
  * @class DataObj
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
+ * @param [loading] {Boolean}
  * @constructor
  * @menuorder 20
  * @tooltip Объект данных
  */
-class DataObj {
+export class DataObj {
 
-	constructor(attr, manager) {
+	constructor(attr, manager, loading) {
 
 		// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
-		if(!(manager instanceof classes.DataProcessorsManager) && !(manager instanceof classes.EnumManager)){
+		if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)){
 			const tmp = manager.get(attr, true);
 			if(tmp){
 				return tmp;
@@ -50,7 +55,7 @@ class DataObj {
 			 */
 			_obj: {
 				value: {
-					ref: manager instanceof classes.EnumManager ? attr.name : (manager instanceof classes.RegisterManager ? manager.get_ref(attr) : utils.fix_guid(attr))
+					ref: manager instanceof EnumManager ? attr.name : (manager instanceof RegisterManager ? manager.get_ref(attr) : utils.fix_guid(attr))
 				},
 				configurable: true
 			},
@@ -82,25 +87,26 @@ class DataObj {
 			 */
 			_data: {
 				value: {
-					_is_new: !(this instanceof EnumObj)
+					_is_new: !(this instanceof EnumObj),
+          _loading: !!loading
 				},
 				configurable: true
 			}
 
-		})
+		});
 
 		if(manager.alatable && manager.push){
 			manager.alatable.push(this._obj);
 			manager.push(this, this._obj.ref);
 		}
 
-		attr = null;
 	}
 
 	_getter(f) {
 
 		const mf = this._metadata(f).type;
-		const res = this._obj ? this._obj[f] : "";
+		const {_obj} = this;
+		const res = _obj ? _obj[f] : "";
 
 		if(f == "type" && typeof res == "object"){
 			return res;
@@ -118,7 +124,7 @@ class DataObj {
 				return res;
 			}
 
-			let	mgr = utils.value_mgr(this._obj, f, mf)
+			let	mgr = this._manager.value_mgr(_obj, f, mf)
 			if(mgr){
 				if(utils.is_data_mgr(mgr)){
 					return mgr.get(res);
@@ -129,28 +135,45 @@ class DataObj {
 			}
 
 			if(res){
-				console.log([f, mf, this._obj]);
+				console.log([f, mf, _obj]);
 				return null;
 			}
 
 		}else if(mf.date_part){
-			return utils.fix_date(this._obj[f], true);
+			return utils.fix_date(_obj[f], true);
 		}
 		else if(mf.digits){
-			return utils.fix_number(this._obj[f], !mf.hasOwnProperty("str_len"));
+			return utils.fix_number(_obj[f], !mf.hasOwnProperty("str_len"));
 		}
 		else if(mf.types[0]=="boolean"){
-			return utils.fix_boolean(this._obj[f]);
+			return utils.fix_boolean(_obj[f]);
 		}
 		else{
-			return this._obj[f] || "";
+			return _obj[f] || "";
 		}
 	}
 
+  /**
+   * Устанваливает значение реквизита с приведением типов без проверки, отличается ли оно от предыдущего
+   * @param f
+   * @param v
+   * @private
+   */
 	__setter(f, v) {
 
-		const {_obj} = this;
 		const mf = this._metadata(f).type;
+
+    const {_obj, _data} = this;
+
+    // выполняем value_change с блокировкой эскалации
+		if(!_data._loading){
+      _data._loading = true;
+      const res = this.value_change(f, mf, v);
+      _data._loading = false;
+      if(res === false){
+        return;
+      }
+    }
 
 		if(f == "type" && v.types){
 			_obj[f] = v;
@@ -172,9 +195,9 @@ class DataObj {
 				if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1){
 
 				}else{
-					let mgr = utils.value_mgr(_obj, f, mf, false, v);
+					let mgr = this._manager.value_mgr(_obj, f, mf, false, v);
 					if(mgr){
-						if(mgr instanceof classes.EnumManager){
+						if(mgr instanceof EnumManager){
 							if(typeof v == "string")
 								_obj[f] = v;
 
@@ -213,16 +236,16 @@ class DataObj {
 	}
 
 	__notify(f) {
-		if(!this._data._silent){
-			// TODO: observe
-			// Object.getNotifier(this).notify({
-			// 	type: 'update',
-			// 	name: f,
-			// 	oldValue: this._obj[f]
-			// });
-		}
+	  const {_data, _manager} = this;
+    _data && !_data._loading && _manager.emit_async('update', this, {[f]: this._obj[f]});
 	}
 
+  /**
+   * Устанваливает значение, если оно отличается от предыдущего
+   * @param f
+   * @param v
+   * @private
+   */
 	_setter(f, v) {
 		if(this._obj[f] != v){
 			this.__notify(f);
@@ -304,8 +327,10 @@ class DataObj {
 	 */
 	_set_loaded(ref){
 		this._manager.push(this, ref);
-		this._data._modified = false;
-		this._data._is_new = false;
+		const {_data} = this;
+		_data._modified = false;
+		_data._is_new = false;
+		_data._loading = false;
 		return this;
 	}
 
@@ -345,26 +370,23 @@ class DataObj {
 	 * @async
 	 */
 	load() {
-
 		if (this.ref == utils.blank.guid) {
-
-			if (this instanceof CatObj)
-				this.id = "000000000";
-			else
-				this.number_doc = "000000000";
-
+		  const {_data} = this;
+			if (_data){
+        _data._loading = false;
+        _data._modified = false;
+      }
 			return Promise.resolve(this);
-
-		} else {
-
+		}
+		else {
+		  this._data._loading = true;
 			return this._manager.adapter.load_obj(this)
 				.then(() => {
+          this._data._loading = false;
 					this._data._modified = false;
-					setTimeout(() => {this._manager.brodcast_event("obj_loaded", this)})
-					return this;
+					return this.after_load()
 				});
 		}
-
 	}
 
 	/**
@@ -373,34 +395,23 @@ class DataObj {
 	 * @for DataObj
 	 */
 	unload() {
-
-		const {_obj, ref, _observers, _notis, _manager} = this;
-
-		_manager.unload_obj(ref)
-
-		if (_observers){
-			_observers.length = 0
+		const {_obj, ref, _data, _manager} = this;
+		_manager.unload_obj(ref);
+    _data._loading = true;
+    //_manager.emit_async('unload', this);
+		for (const ts in this._metadata().tabular_sections){
+			this[ts].clear()
 		}
-
-		if (_notis){
-			_notis.length = 0
-		}
-
-		for (let f in this._metadata().tabular_sections){
-			this[f].clear(true)
-		}
-
-		for (let f in this) {
+		for (const f in this) {
 			if (this.hasOwnProperty(f)){
 				delete this[f]
 			}
 		}
-
-		for (let f in _obj){
+		for (const f in _obj){
 			delete _obj[f]
 		}
-
-		["_ts_", "_obj", "_data"].forEach((f) => delete this[f]);
+    delete this._ts_;
+    delete this._obj;
 	}
 
 	/**
@@ -418,58 +429,53 @@ class DataObj {
 	 */
 	save(post, operational, attachments) {
 
+	  if(utils.is_empty_guid(this.ref)){
+	    return Promise.resolve(this);
+    }
+
+    let initial_posted;
 		if (this instanceof DocObj && typeof post == "boolean") {
-			var initial_posted = this.posted;
+			initial_posted = this.posted;
 			this.posted = post;
 		}
 
-		let saver,
-
-			before_save_res = {},
-
-			reset_modified = () => {
-
-				if (before_save_res === false) {
-					if (this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted) {
-						this.posted = initial_posted;
-					}
-				} else
-					this._data._modified = false;
-
-				saver = null;
-				before_save_res = null;
-				reset_modified = null;
-
-				return this;
-			};
-
-		this._manager.emit("before_save", this, before_save_res);
+		const before_save_res = this.before_save();
+		const reset_modified = () => {
+      if (before_save_res === false) {
+        if (this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted) {
+          this.posted = initial_posted;
+        }
+      }
+      else{
+        this._data._modified = false;
+      }
+      return this;
+    };
 
 		// если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
 		if (before_save_res === false) {
 			return Promise.reject(reset_modified());
-
-		} else if (before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then) {
-			// если пользовательский обработчик перед записью вернул промис, его и возвращаем
+		}
+    // если пользовательский обработчик перед записью вернул промис, его и возвращаем
+		else if (before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then) {
 			return before_save_res.then(reset_modified);
 		}
 
 		// для объектов с иерархией установим пустого родителя, если иной не указан
-		if (this._metadata().hierarchical && !this._obj.parent)
-			this._obj.parent = utils.blank.guid;
+		if (this._metadata().hierarchical && !this._obj.parent){
+      this._obj.parent = utils.blank.guid;
+    }
 
 		// для документов, контролируем заполненность даты
 		if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
-
 			if (utils.blank.date == this.date){
 				this.date = new Date();
 			}
-
 			if (!this.number_doc){
 				this.new_number_doc();
 			}
-
-		} else {
+		}
+		else {
 			if (!this.id){
 				this.new_number_doc();
 			}
@@ -493,18 +499,17 @@ class DataObj {
 		// }
 
 		// в зависимости от типа кеширования, получаем saver и сохраняем объект во внешней базе
-		return this._manager.adapter.save_obj(
-			this, {
-				post: post,
-				operational: operational,
-				attachments: attachments
-			})
-		// и выполняем обработку после записи
-			.then(function (obj) {
-				obj._manager.emit("after_save", obj);
-				return obj;
-			})
-			.then(reset_modified);
+		return this._manager.adapter.save_obj(this, {
+		  post: post,
+      operational: operational,
+      attachments: attachments
+		})
+    // и выполняем обработку после записи
+      .then(() => {
+		  this.after_save();
+		  return this;
+		})
+      .then(reset_modified);
 	}
 
 
@@ -563,41 +568,31 @@ class DataObj {
 			});
 	}
 
-
-	/**
-	 * ### Включает тихий режим
-	 * Режим, при котором объект не информирует мир об изменениях своих свойств.<br />
-	 * Полезно, например, при групповых изменениях, чтобы следящие за объектом формы не тратили время на перерисовку при изменении каждого совйтсва
-	 *
-	 * @method _silent
-	 * @for DataObj
-	 * @param [v] {Boolean}
-	 */
-	_silent(v) {
-		const {_data} = this
-		if (typeof v == "boolean"){
-			_data._silent = v
+  /**
+   * Применяет атрибуты к объекту
+   * @param attr
+   * @private
+   */
+	_mixin(attr, include, exclude, silent){
+		if(Object.isFrozen(this)){
+			return;
 		}
-		else {
-			_data._silent = true;
-			setTimeout(() => {
-				_data._silent = false
-			})
-		}
-	}
-
-	_mixin_attr(attr){
-
 		if(attr && typeof attr == "object"){
-			if(attr._not_set_loaded){
-				delete attr._not_set_loaded;
-				utils._mixin(this, attr);
-
-			}else{
-				utils._mixin(this, attr);
-
-				if(!utils.is_empty_guid(this.ref) && (attr.id || attr.name))
-					this._set_loaded(this.ref);
+		  const {_not_set_loaded} = attr;
+      delete attr._not_set_loaded;
+      const {_data} = this;
+      if(silent){
+        if(_data._loading){
+          silent = false;
+        }
+        _data._loading = true;
+      }
+      utils._mixin(this, attr, include, exclude);
+      if(silent){
+        _data._loading = false;
+      }
+			if(!_not_set_loaded && (_data._loading || (!utils.is_empty_guid(this.ref) && (attr.id || attr.name || attr.number_doc)))){
+        this._set_loaded(this.ref);
 			}
 		}
 	}
@@ -618,6 +613,75 @@ class DataObj {
 		return this._manager.print(this, model, wnd);
 	}
 
+  /**
+   * ### После создания
+   * Возникает после создания объекта. В обработчике можно установить значения по умолчанию для полей и табличных частей
+   * или заполнить объект на основании данных связанного объекта
+   *
+   * @event AFTER_CREATE
+   */
+  after_create() {
+    return this;
+  }
+
+  /**
+   * ### После чтения объекта с сервера
+   * Имеет смысл для объектов с типом кеширования ("doc", "doc_remote", "meta", "e1cib").
+   * т.к. структура _DataObj_ может отличаться от прототипа в базе-источнике, в обработчике можно дозаполнить или пересчитать реквизиты прочитанного объекта
+   *
+   * @event AFTER_LOAD
+   */
+  after_load() {
+    return this;
+  }
+
+  /**
+   * ### Перед записью
+   * Возникает перед записью объекта. В обработчике можно проверить корректность данных, рассчитать итоги и т.д.
+   * Запись можно отклонить, если у пользователя недостаточно прав, либо введены некорректные данные
+   *
+   * @event BEFORE_SAVE
+   */
+  before_save() {
+    return this;
+  }
+
+  /**
+   * ### После записи
+   *
+   * @event AFTER_SAVE
+   */
+  after_save() {
+    return this;
+  }
+
+  /**
+   * ### При изменении реквизита шапки или табличной части
+   *
+   * @event VALUE_CHANGE
+   */
+  value_change(f, mf, v) {
+    return this;
+  }
+
+  /**
+   * ### При добавлении строки табличной части
+   *
+   * @event ADD_ROW
+   */
+  add_row(row) {
+    return this;
+  }
+
+  /**
+   * ### При удалении строки табличной части
+   *
+   * @event DEL_ROW
+   */
+  del_row(row) {
+    return this;
+  }
+
 }
 
 /**
@@ -627,12 +691,14 @@ class DataObj {
  * @type String
  */
 Object.defineProperty(DataObj.prototype, "ref", {
-	get : function(){ return this._obj.ref},
+	get : function(){ return this._obj ? this._obj.ref : utils.blank.guid},
 	set : function(v){ this._obj.ref = utils.fix_guid(v)},
 	enumerable : true,
 	configurable: true
 })
 
+TabularSectionRow.prototype._getter = DataObj.prototype._getter;
+TabularSectionRow.prototype.__setter = DataObj.prototype.__setter;
 
 
 /**
@@ -643,14 +709,14 @@ Object.defineProperty(DataObj.prototype, "ref", {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
  */
-class CatObj extends DataObj {
+export class CatObj extends DataObj {
 
-	constructor(attr, manager){
+	constructor(attr, manager, loading){
 
 		// выполняем конструктор родительского объекта
-		super(attr, manager);
+		super(attr, manager, loading);
 
-		this._mixin_attr(attr);
+		this._mixin(attr);
 
 	}
 
@@ -737,7 +803,7 @@ class CatObj extends DataObj {
  * @param superclass
  * @constructor
  */
-const NumberDocAndDate = (superclass) => class extends superclass {
+export const NumberDocAndDate = (superclass) => class extends superclass {
 
 	/**
 	 * Номер документа
@@ -775,14 +841,14 @@ const NumberDocAndDate = (superclass) => class extends superclass {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {RefDataManager}
  */
-class DocObj extends NumberDocAndDate(DataObj) {
+export class DocObj extends NumberDocAndDate(DataObj) {
 
-	constructor(attr, manager){
+	constructor(attr, manager, loading){
 
 		// выполняем конструктор родительского объекта
-		super(attr, manager);
+		super(attr, manager, loading);
 
-		this._mixin_attr(attr);
+		this._mixin(attr);
 
 	}
 
@@ -827,12 +893,12 @@ class DocObj extends NumberDocAndDate(DataObj) {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {DataManager}
  */
-class DataProcessorObj extends DataObj {
+export class DataProcessorObj extends DataObj {
 
-	constructor(attr, manager) {
+	constructor(attr, manager, loading) {
 
 		// выполняем конструктор родительского объекта
-		super(attr, manager);
+		super(attr, manager, loading);
 
 		const cmd = manager.metadata();
 
@@ -859,7 +925,7 @@ class DataProcessorObj extends DataObj {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {DataManager}
  */
-class TaskObj extends NumberDocAndDate(CatObj) {
+export class TaskObj extends NumberDocAndDate(CatObj) {
 
 }
 
@@ -872,7 +938,7 @@ class TaskObj extends NumberDocAndDate(CatObj) {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {DataManager}
  */
-class BusinessProcessObj extends NumberDocAndDate(CatObj) {
+export class BusinessProcessObj extends NumberDocAndDate(CatObj) {
 
 }
 
@@ -887,12 +953,12 @@ class BusinessProcessObj extends NumberDocAndDate(CatObj) {
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {EnumManager}
  */
-class EnumObj extends DataObj {
+export class EnumObj extends DataObj {
 
-	constructor(attr, manager) {
+	constructor(attr, manager, loading) {
 
 		// выполняем конструктор родительского объекта
-		super(attr, manager);
+		super(attr, manager, loading);
 
 		if(attr && typeof attr == "object")
 			utils._mixin(this, attr);
@@ -980,12 +1046,12 @@ class EnumObj extends DataObj {
  * @param attr {object} - объект, по которому запись будет заполнена
  * @param manager {InfoRegManager|AccumRegManager}
  */
-class RegisterRow extends DataObj {
+export class RegisterRow extends DataObj {
 
-	constructor(attr, manager) {
+	constructor(attr, manager, loading) {
 
 		// выполняем конструктор родительского объекта
-		super(attr, manager);
+		super(attr, manager, loading);
 
 		if (attr && typeof attr == "object"){
 			let tref = attr.ref;
@@ -1031,17 +1097,14 @@ class RegisterRow extends DataObj {
 	get ref() {
 		return this._manager.get_ref(this);
 	}
+	set ref(v) {
+
+	}
 
 	get presentation() {
 		return this._metadata().obj_presentation || this._metadata().synonym;
 	}
 }
 
-
-/**
- * Здесь живут ссылки на конструкторы классов
- * @type {{}}
- */
-export const classes = {DataObj, CatObj, DocObj, DataProcessorObj, TaskObj, BusinessProcessObj, EnumObj, RegisterRow};
 
 

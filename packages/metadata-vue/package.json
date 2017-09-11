@@ -1,0 +1,27 @@
+{
+  "name": "metadata-vue",
+  "description": "Vue JS components for metadata.js",
+  "version": "2.0.2-beta.26",
+  "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
+  "license": "MIT",
+  "engines": {
+    "node": "^7.10",
+    "npm": "^5.0"
+  },
+  "peerDependencies": {
+    "metadata-abstract-ui": "^2.0.2-beta.26"
+  },
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-vue"
+  },
+  "bugs": {
+    "url": "https://github.com/oknosoft/metadata.js/issues"
+  },
+  "homepage": "http://www.oknosoft.ru/metadata/",
+  "keywords": [
+    "metadata",
+    "react"
+  ]
+}

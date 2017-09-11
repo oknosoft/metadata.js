@@ -1,15 +1,12 @@
 {
   "name": "metadata-core",
   "description": "The core of metadata.js as a standalone package",
-  "version": "2.0.0-beta.16",
+  "version": "2.0.2-beta.26",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
-    "node": "^6.9",
-    "npm": "^3.5"
-  },
-  "dependencies": {
-    "metadata-abstract-adapter": "^2.0.0-beta.16"
+    "node": "^7.10",
+    "npm": "^5.0"
   },
   "peerDependencies": {
     "alasql": "^0.4",
@@ -17,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-core/"
+    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-core"
   },
   "bugs": {
     "url": "https://github.com/oknosoft/metadata.js/issues"

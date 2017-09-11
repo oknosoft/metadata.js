@@ -6,3 +6,16 @@ localstorage
 npm-debug.log
 npm-debug.log.*
 lerna-debug.log
+zarchive/
+/packages/metadata-redux/index.js
+/packages/metadata-redux/index.js.map
+/packages/metadata-superlogin/index.js
+/packages/metadata-pouchdb/index.js
+/packages/metadata-pouchdb/index.js.map
+/packages/metadata-dhtmlx/index.js
+/packages/metadata-dhtmlx/metadata.css
+/packages/metadata-dhtmlx/dhx_web.css
+/packages/metadata-dhtmlx/dhx_terrace.css
+/packages/metadata-dhtmlx/index.js.map
+/packages/metadata-core/index.js.map
+/packages/metadata-core/index.js

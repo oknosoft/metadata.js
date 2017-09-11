@@ -15,6 +15,7 @@ const gulp = require('gulp'),
 	path = require('path'),
   strip = require('gulp-strip-comments'),
 	umd = require('gulp-umd'),
+  wrap = require('gulp-wrap'),
 	replace = require('gulp-replace'),
 	babel = require('gulp-babel');
 	// async = require('gulp-async-func-runner'),
@@ -37,6 +38,17 @@ gulp.task('prebuild', function(){
 
 });
 
+gulp.task('dhtmlx-ui', function () {
+  return gulp.src([
+    './src/widgets/*.js',
+    './src/reporting.js',
+    './src/import_export.js',
+    './data/merged_data.js',
+  ])
+    .pipe(concat('dhtmlx-widgets.js'))
+    .pipe(wrap({ src: './packages/metadata-dhtmlx/src/wrapper.js'}))
+    .pipe(gulp.dest('./packages/metadata-dhtmlx/src'))
+});
 
 gulp.task('build-metadata', function () {
 	return gulp.src([
@@ -59,7 +71,7 @@ gulp.task('build-metadata', function () {
 		'./src/reporting.js',
 		'./data/merged_data.js',
 		'./lib/xml_to_json.js',
-		'./lib/filesaver.js',
+		//'./lib/filesaver.js',
 		'./lib/aes/aes.js',
 		'./lib/rubles/rubles.js',
 		//'./lib/daterangepicker/daterangepicker.js',
@@ -213,7 +225,7 @@ gulp.task('build-dhtmlx', function(){
 			}
 		}))
 		.pipe(gulp.dest('./lib'))
-		.pipe(gulp.dest('./dist'));
+		.pipe(gulp.dest('./packages/metadata-dhtmlx'));
 });
 
 // dhtmlx css
@@ -224,7 +236,7 @@ gulp.task('css-dhtmlx', function () {
 		])
 		.pipe(base64())
 		.pipe(csso())
-		.pipe(gulp.dest('./dist'));
+		.pipe(gulp.dest('./packages/metadata-dhtmlx'));
 });
 
 gulp.task('css-dhtmlx-images', function () {
@@ -241,15 +253,15 @@ gulp.task('css-metadata', function () {
 	return gulp.src([
 		'./src/dhtmlx/patches/dhtmlxtreegrid_property.css',
 		'./src/dhtmlx/dhtmlxTreeView/codebase/skins/dhtmlxtreeview_dhx_terrace.css',
-		'./lib/daterangepicker/daterangepicker.css',
+		//'./lib/daterangepicker/daterangepicker.css',
 		'./src/css/upzp20.css'
 			//'./src/css/options.css'
 		])
 		.pipe(base64())
 		.pipe(concat('metadata.css'))
-		.pipe(gulp.dest('./lib'))
-		.pipe(csso())
-		.pipe(gulp.dest('./dist'));
+		//.pipe(gulp.dest('./lib'))
+    .pipe(csso())
+		.pipe(gulp.dest('./packages/metadata-dhtmlx'));
 });
 
 // metadata css
@@ -314,27 +326,6 @@ const metadataCoreFiles = [
     './packages/metadata-core/lib/aes.js',
     './packages/metadata-core/src/common.js'
 ];
-
-// metadata-core
-gulp.task('build--core', function(){
-
-	package_data = JSON.parse(require('fs').readFileSync('./packages/metadata-core/package.json', 'utf8'));
-
-	return gulp.src(metadataCoreFiles)
-
-		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
-		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
-
-		.pipe(concat('index.js'))
-
-		.pipe(babel({
-			//presets: ['es2016'],
-			plugins: ['transform-es2015-modules-commonjs'],
-			compact: false,
-            comments: false
-        }))
-        .pipe(gulp.dest('./packages/metadata-core'));
-});
 
 
 // Ресурсы для codres

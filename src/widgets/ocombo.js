@@ -90,7 +90,7 @@ function OCombo(attr){
     }
 		if(_mgr){
 			t.clearAll();
-			(attr.get_option_list || _mgr.get_option_list).call(_mgr, null, get_filter(text))
+			(attr.get_option_list || _mgr.get_option_list).call(_mgr, get_filter(text))
 				.then(function (l) {
 					if(t.addOption){
 						t.addOption(l);
@@ -102,7 +102,7 @@ function OCombo(attr){
 	});
 
 	function get_filter(text){
-		var filter = {_top: 30}, choice;
+		var filter = {_top: 50, _dhtmlx: true}, choice;
 
 		if(_mgr && _mgr.metadata().hierarchical && _mgr.metadata().group_hierarchy){
 			if(_meta.choice_groups_elm == "elm")
@@ -207,7 +207,7 @@ function OCombo(attr){
 						_mgr = v.mgr;
 						_obj = tobj;
 						_field = tfield;
-						_meta = _obj._metadata.fields[_field];
+						_meta = typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field];
 						_mgr.form_selection({
 							on_select: function (selv) {
 								_obj[_field] = selv;
@@ -334,22 +334,15 @@ function OCombo(attr){
 	t.getInput().addEventListener("focus", onfocus);
 
 
-	function observer(changes){
-		if(!t || !t.getBase)
-			return;
-		else if(!t.getBase().parentElement)
-			setTimeout(t.unload);
-		else{
-			if(_obj instanceof TabularSectionRow){
-
-			}else
-				changes.forEach(function(change){
-					if(change.name == _field){
-						set_value(_obj[_field]);
-					}
-				});
-		}
-	}
+	function listener(obj, fields){
+	  if(!_obj || !t.getBase().parentElement){
+      setTimeout(t.unload);
+    }
+		if(!t || !t.getBase || obj !== _obj){
+      return;
+    }
+    fields[_field] && set_value(_obj[_field]);
+  }
 
 	function set_value(v){
 		if(v && v instanceof DataObj && !v.empty()){
@@ -358,7 +351,8 @@ function OCombo(attr){
 			if(t.getSelectedValue() == v.ref)
 				return;
 			t.setComboValue(v.ref);
-		}else if(!t.getSelectedValue()){
+		}
+		else if(!t.getSelectedValue()){
 			t.setComboValue("");
 			t.setComboText("")
 		}
@@ -369,14 +363,6 @@ function OCombo(attr){
 	 * Параметры аналогичны конструктору
 	 */
 	this.attach = function (attr) {
-
-		if(_obj){
-			if(_obj instanceof TabularSectionRow)
-				Object.unobserve(_obj._owner._owner, observer);
-			else
-				Object.unobserve(_obj, observer);
-		}
-
 		_obj = attr.obj;
 		_field = attr.field;
 		_property = attr.property;
@@ -385,18 +371,18 @@ function OCombo(attr){
 			_meta = attr.metadata;
 
 		else if(_property){
-			_meta = _obj._metadata.fields[_field]._clone();
+			_meta = (typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field])._clone();
 			_meta.type = _property.type;
 
 		}else
-			_meta = _obj._metadata.fields[_field];
+			_meta = typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field];
 
 		t.clearAll();
 		_mgr = _md.value_mgr(_obj, _field, _meta.type);
 
 		if(_mgr || attr.get_option_list){
 			// загружаем список в 30 строк
-			(attr.get_option_list || _mgr.get_option_list).call(_mgr, _obj[_field], get_filter())
+			(attr.get_option_list || _mgr.get_option_list).call(_mgr, get_filter(), _obj[_field])
 				.then(function (l) {
 					if(t.addOption){
 						t.addOption(l);
@@ -407,10 +393,10 @@ function OCombo(attr){
 		}
 
 		// начинаем следить за объектом
-		if(_obj instanceof TabularSectionRow)
-			Object.observe(_obj._owner._owner, observer, ["row"]);
-		else
-			Object.observe(_obj, observer, ["update"]);
+    if(_mgr){
+      _mgr.off('update', listener);
+      _mgr.on('update', listener);
+    }
 
 	};
 
@@ -435,15 +421,13 @@ function OCombo(attr){
 
 		t.getInput().removeEventListener("focus", onfocus);
 
-		if(_obj){
-			if(_obj instanceof TabularSectionRow)
-				Object.unobserve(_obj._owner._owner, observer);
-			else
-				Object.unobserve(_obj, observer);
-		}
+    _mgr && _mgr.off('update', listener);
 
-		if(t.conf && t.conf.tm_confirm_blur)
-			clearTimeout(t.conf.tm_confirm_blur);
+		if(t.conf && t.conf.tm_confirm_blur){
+      clearTimeout(t.conf.tm_confirm_blur);
+    }
+
+    this.list && this.list.parentElement && this.list.parentElement.removeChild(this.list);
 
 		_obj = null;
 		_field = null;
@@ -451,12 +435,12 @@ function OCombo(attr){
 		_mgr = null;
 		_pwnd = null;
 
-		try{ _unload.call(t); }catch(e){}
+		try{ _unload && _unload.call(t); }catch(e){}
 	};
 
 	// биндим поле объекта
-	if(attr.obj && attr.field)
-		this.attach(attr);
+	attr.obj && attr.field && this.attach(attr);
+
 	// устанавливаем url фильтрации
 	this.enableFilteringMode("between", "dummy", false, false);
 

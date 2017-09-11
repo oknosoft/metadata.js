@@ -110,7 +110,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			if(wnd === pwnd){
 				this.cont.parentElement.classList.add("dhx_cell_toolbar_no_borders");
 				this.cont.parentElement.classList.remove("dhx_cell_toolbar_def");
-				this.cont.style.top = "4px";
+				//this.cont.style.top = "4px";
 			}
 
 			// текстовое поле фильтра по подстроке
@@ -473,7 +473,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 			else if(on_select){
 
-				_mgr.get(rId, true)
+				_mgr.get(rId, 'promise')
 					.then(function(selv){
 						wnd.close();
 						on_select.call(pwnd.grid || pwnd, selv);
@@ -505,7 +505,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	function mark_deleted(){
 		var rId = wnd.elmnts.grid.getSelectedRowId();
 		if(rId){
-			_mgr.get(rId, true, true)
+			_mgr.get(rId, 'promise')
 				.then(function (o) {
 
 					dhtmlx.confirm({
@@ -531,8 +531,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		document.body.removeEventListener("keydown", body_keydown);
 
-		if(attr && attr.on_close && !on_create)
-			attr.on_close();
+		if(attr && attr.on_close && !on_create){
+      attr.on_close();
+    }
 
 		if(!on_create){
 			_mgr = wnd = _meta = previous_filter = on_select = pwnd = attr = null;
@@ -652,7 +653,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 	// создаём и настраиваем форму
 	if(has_tree && attr.initial_value && attr.initial_value!= $p.utils.blank.guid && !attr.parent)
-		return _mgr.get(attr.initial_value, true)
+		return _mgr.get(attr.initial_value, 'promise')
 			.then(function (tObj) {
 				attr.parent = tObj.parent.ref;
 				attr.set_parent = attr.parent;

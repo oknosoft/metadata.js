@@ -211,7 +211,7 @@ DataObj.prototype.__define({
       if(this._obj[f] == v)
         return;
 
-      this.__notify(f);
+      !this._data._loading && this.__notify(f);
       this.__setter(f, v);
       this._data._modified = true;
 
@@ -221,8 +221,7 @@ DataObj.prototype.__define({
   __setter: {
     value: function (f, v) {
 
-      var mf = this._metadata.fields[f].type,
-        mgr;
+      const mf = this._metadata.fields[f].type;
 
       if(f == "type" && v.types)
         this._obj[f] = v;
@@ -242,7 +241,7 @@ DataObj.prototype.__define({
         else {
           this._obj[f] = $p.utils.fix_guid(v);
 
-          mgr = _md.value_mgr(this._obj, f, mf, false, v);
+          const mgr = _md.value_mgr(this._obj, f, mf, false, v);
 
           if(mgr){
             if(mgr instanceof EnumManager){
@@ -350,9 +349,11 @@ DataObj.prototype.__define({
 	 */
 	_set_loaded: {
 		value: function(ref){
-			this._manager.push(this, ref);
-			this._data._modified = false;
-			this._data._is_new = false;
+		  const {_manager, _data} = this;
+			_manager.push(this, ref);
+			_data._modified = false;
+			_data._is_new = false;
+			delete _data._loading;
 			return this;
 		}
 	},
@@ -454,12 +455,6 @@ DataObj.prototype.__define({
 			var f, obj = this._obj;
 
 			this._manager.unload_obj(this.ref);
-
-			if(this._observers)
-				this._observers.length = 0;
-
-			if(this._notis)
-				this._notis.length = 0;
 
 			for(f in this._metadata.tabular_sections)
 				this[f].clear(true);

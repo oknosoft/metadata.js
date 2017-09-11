@@ -42,7 +42,7 @@ DataProcessorsManager.prototype.form_rep = function(pwnd, attr) {
 			wnd.close = function (on_create) {
 				var _wnd = wnd || pwnd;
 
-				if(on_create || check_modified()){
+				if(on_create){
 
 					if(_wnd){
 
@@ -135,8 +135,8 @@ DataProcessorsManager.prototype.form_rep = function(pwnd, attr) {
 		wnd.elmnts.frm_toolbar.loadStruct(attr.toolbar_struct || $p.injected_data["toolbar_rep.xml"], function(){
 
 			// если мы приклеены к ячейке, сдвигаем toolbar на 4px
-			if(wnd === pwnd)
-				this.cont.style.top = "4px";
+			// if(wnd === pwnd)
+			// 	this.cont.style.top = "4px";
 
 			this.addSpacer("btn_run");
 			this.attachEvent("onclick", attr.toolbar_click || toolbar_click);
@@ -204,19 +204,23 @@ DataProcessorsManager.prototype.form_rep = function(pwnd, attr) {
 	 */
 	function frm_unload(on_create){
 
-		if(attr && attr.on_close && !on_create)
-			attr.on_close();
+		if(attr && attr.on_close && !on_create){
+      attr.on_close();
+    }
 
-		if(!on_create){
-			delete wnd.set_text;
+		if(!on_create && wnd){
+
+		  delete wnd.set_text;
 
 			// уничтожаем табличный документ
-			if(wnd.elmnts.table)
-				wnd.elmnts.table.hot.destroy();
+			if(wnd.elmnts.table){
+        wnd.elmnts.table.hot.destroy();
+      }
 
 			// уничтожаем daterangepicker
-			if(wnd.report.daterange)
-				wnd.report.daterange.remove();
+			if(wnd.report.daterange){
+        wnd.report.daterange.remove();
+      }
 
 			wnd.report = null;
 

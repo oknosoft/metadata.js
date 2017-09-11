@@ -1,46 +1,62 @@
-/**
- * Компилятор metadata-abstract-ui
- *
- * @module build
- *
- * Created 07.01.2017
- */
+'use strict';
 
-const exec = require('child_process').exec;
-const concat = require('concat-files');
-const root = './packages/metadata-abstract-ui/';
+const fs = require('fs');
+const rollup = require('rollup').rollup;
+const resolve = require('rollup-plugin-node-resolve');
+const replace = require('rollup-plugin-replace');
+const cleanup = require('rollup-plugin-cleanup');
+const path = require('path');
+const package_data = require(path.resolve(__dirname, './package.json'));
 
-const exec_babel = (src, out, ignore) => {
-	return new Promise((resolve, reject) => {
-		const cmd = `babel ${root}${src}${out == 'dir' ? `/src --out-dir ${root}${src}` : ` --out-file ${root}${out}`} ${ignore ? '--ignore ' + ignore : ''}`;
-		console.log(`to be executed: "${cmd}"`);
-		exec(cmd, (error, stdout, stderr) => {
-			if (error) {
-				console.log(`stderr: ${stderr}`);
-				return reject(error);
-			}
-			console.log(`${stdout}\n`);
-			resolve(stdout)
-		});
-	})
-}
+const external = ['clipboard'];
+const plugins = [
+	resolve({jsnext: true, main: true}),
+	replace({PACKAGE_VERSION: package_data.version}),
+	cleanup(),
+];
+const header = `/*!
+ ${package_data.name} v${package_data.version}, built:${new Date().toISOString().split('T')[0]}
+ © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
+ metadata.js may be freely distributed under the MIT
+ To obtain commercial license and technical support, contact info@oknosoft.ru
+ */\n\n`;
 
+return rollup({
+	entry: path.resolve(__dirname, './src/plugin.js'),
+	external,
+	plugins,
+})
+  .then((bundle) => bundle.write({
+    format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
+    moduleName: package_data.name.replace(/-/g, '_') + '_plugin',
+    banner: header,
+    dest: path.resolve(__dirname, './index.js'),
+    sourceMap: true,
+  }))
 
-exec_babel('src/meta.js', 'meta.js')
-	.then(() => {
+	.then(() => rollup({
+		entry: path.resolve(__dirname, './src/meta.js'),
+		external,
+		plugins,
+	}))
+  .then((bundle) => bundle.write({
+    format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
+    moduleName: package_data.name.replace(/-/g, '_') + '_meta',
+    banner: header,
+    dest: path.resolve(__dirname, './meta.js'),
+    sourceMap: true,
+  }))
 
-		concat([
-			'ui',
-			'tabulars',
-			'meta_objs',
-			'log_manager',
-			'scheme_settings',
-			'plugin',
-		].map((name => `${root}src/${name}.js`)), `${root}src/index.js`, function(err) {
-			if (err){
-				throw err
-			}
-			exec_babel('src/index.js', 'index.js')
-		});
+  .then(() => rollup({
+    entry: path.resolve(__dirname, './src/tabulars.js'),
+    external,
+    plugins,
+  }))
+  .then((bundle) => bundle.write({
+    format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
+    moduleName: package_data.name.replace(/-/g, '_') + '_tabulars',
+    banner: header,
+    dest: path.resolve(__dirname, './tabulars.js'),
+    sourceMap: true,
+  }));
 
-	})

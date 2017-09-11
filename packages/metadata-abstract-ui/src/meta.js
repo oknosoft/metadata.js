@@ -11,10 +11,12 @@
  */
 export default {
 
-	proto(constructor, classes) {
+	proto(constructor) {
+
+		const {Meta} = constructor.classes;
 
 		// метаданные абстрактных интерфейсов
-		classes.Meta._sys.push({
+		Meta._sys.push({
 			enm: {
 				sort_directions: [
 					{
@@ -72,12 +74,12 @@ export default {
 					{
 						order: 8,
 						name: "lke",
-						synonym: "Подобно "
+						synonym: "Содержит "
 					},
 					{
 						order: 9,
 						name: "nlk",
-						synonym: "Не подобно"
+						synonym: "Не содержит"
 					}
 				],
 				label_positions: [
@@ -353,6 +355,15 @@ export default {
 										str_len: 100
 									}
 								},
+                use: {
+                  synonym: "Использование",
+                  tooltip: "",
+                  type: {
+                    types: [
+                      "boolean"
+                    ]
+                  }
+                },
 								field: {
 									synonym: "Поле",
 									tooltip: "",
@@ -390,6 +401,15 @@ export default {
 										str_len: 100
 									}
 								},
+                use: {
+                  synonym: "Использование",
+                  tooltip: "",
+                  type: {
+                    types: [
+                      "boolean"
+                    ]
+                  }
+                },
 								field: {
 									synonym: "Поле",
 									tooltip: "",
@@ -417,6 +437,15 @@ export default {
 										str_len: 100
 									}
 								},
+                use: {
+                  synonym: "Использование",
+                  tooltip: "",
+                  type: {
+                    types: [
+                      "boolean"
+                    ]
+                  }
+                },
 								field: {
 									synonym: "Поле",
 									tooltip: "",
@@ -563,7 +592,7 @@ export default {
 										]
 									}
 								},
-								elm: {
+                field: {
 									"synonym": "Элемент",
 									"tooltip": "Элемент структуры отчета",
 									"type": {

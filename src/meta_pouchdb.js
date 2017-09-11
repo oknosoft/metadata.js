@@ -10,10 +10,315 @@
  */
 
 
-
 DataManager.prototype.__define({
 
-	/**
+  /**
+   * Возвращает базу PouchDB, связанную с объектами данного менеджера
+   * @property pouch_db
+   * @for DataManager
+   */
+  pouch_db: {
+    get: function () {
+      const cachable = this.cachable.replace("_ram", "");
+      if(cachable.indexOf("remote") != -1)
+        return $p.wsql.pouch.remote[cachable.replace("_remote", "")];
+      else
+        return $p.wsql.pouch.local[cachable] || $p.wsql.pouch.remote[cachable];
+    }
+  },
+
+  /**
+   * ### Найти строки
+   * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
+   * Eсли отбор пустой, возвращаются все строки из PouchDB.
+   *
+   * @method pouch_find_rows
+   * @for DataManager
+   * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
+   * @param [selection._top] {Number}
+   * @param [selection._skip] {Number}
+   * @param [selection._raw] {Boolean} - если _истина_, возвращаются сырые данные, а не дата-объекты
+   * @param [selection._total_count] {Boolean} - если _истина_, вычисляет общее число записей под фильтром, без учета _skip и _top
+   * @return {Promise.<Array>}
+   */
+  pouch_find_rows: {
+    value: function (selection) {
+
+      var t = this, doc, res = [],
+        _raw, _view, _total_count, top, calc_count,
+        top_count = 0, skip = 0, skip_count = 0,
+        options = {
+          limit : 100,
+          include_docs: true,
+          startkey: t.class_name + "|",
+          endkey: t.class_name + '|\ufff0'
+        };
+
+      if(selection){
+
+        if(selection._top){
+          top = selection._top;
+          delete selection._top;
+        }else
+          top = 300;
+
+        if(selection._raw) {
+          _raw = selection._raw;
+          delete selection._raw;
+        }
+
+        if(selection._total_count) {
+          _total_count = selection._total_count;
+          delete selection._total_count;
+        }
+
+        if(selection._view) {
+          _view = selection._view;
+          delete selection._view;
+        }
+
+        if(selection._key) {
+
+          if(selection._key._order_by == "des"){
+            options.startkey = selection._key.endkey || selection._key + '\ufff0';
+            options.endkey = selection._key.startkey || selection._key;
+            options.descending = true;
+          }else{
+            options.startkey = selection._key.startkey || selection._key;
+            options.endkey = selection._key.endkey || selection._key + '\ufff0';
+          }
+        }
+
+        if(typeof selection._skip == "number") {
+          skip = selection._skip;
+          delete selection._skip;
+        }
+
+        if(selection._attachments) {
+          options.attachments = true;
+          options.binary = true;
+          delete selection._attachments;
+        }
+
+      }
+
+      // если сказано посчитать все строки...
+      if(_total_count){
+
+        calc_count = true;
+        _total_count = 0;
+
+        // если нет фильтра по строке или фильтр растворён в ключе
+        if(Object.keys(selection).length <= 1){
+
+          // если фильтр в ключе, получаем все строки без документов
+          if(selection._key && selection._key.hasOwnProperty("_search")){
+            options.include_docs = false;
+            options.limit = 100000;
+
+            return t.pouch_db.query(_view, options)
+              .then(function (result) {
+
+                result.rows.forEach(function (row) {
+
+                  // фильтруем
+                  if(!selection._key._search || row.key[row.key.length-1].toLowerCase().indexOf(selection._key._search) != -1){
+
+                    _total_count++;
+
+                    // пропукскаем лишние (skip) элементы
+                    if(skip) {
+                      skip_count++;
+                      if (skip_count < skip)
+                        return;
+                    }
+
+                    // ограничиваем кол-во возвращаемых элементов
+                    if(top) {
+                      top_count++;
+                      if (top_count > top)
+                        return;
+                    }
+
+                    res.push(row.id);
+                  }
+                });
+
+                delete options.startkey;
+                delete options.endkey;
+                if(options.descending)
+                  delete options.descending;
+                options.keys = res;
+                options.include_docs = true;
+
+                return t.pouch_db.allDocs(options);
+
+              })
+              .then(function (result) {
+                return {
+                  rows: result.rows.map(function (row) {
+
+                    var doc = row.doc;
+
+                    doc.ref = doc._id.split("|")[1];
+
+                    if(!_raw){
+                      delete doc._id;
+                      delete doc._rev;
+                    }
+
+                    return doc;
+                  }),
+                  _total_count: _total_count
+                };
+              })
+          }
+
+        }
+
+      }
+
+      // бежим по всем документам из ram
+      return new Promise(function(resolve, reject){
+
+        function process_docs(err, result) {
+
+          if (result) {
+
+            if (result.rows.length){
+
+              options.startkey = result.rows[result.rows.length - 1].key;
+              options.skip = 1;
+
+              result.rows.forEach(function (rev) {
+                doc = rev.doc;
+
+                key = doc._id.split("|");
+                doc.ref = key[1];
+
+                if(!_raw){
+                  delete doc._id;
+                  delete doc._rev;
+                }
+
+                // фильтруем
+                if(!$p._selection.call(t, doc, selection))
+                  return;
+
+                if(calc_count)
+                  _total_count++;
+
+                // пропукскаем лишние (skip) элементы
+                if(skip) {
+                  skip_count++;
+                  if (skip_count < skip)
+                    return;
+                }
+
+                // ограничиваем кол-во возвращаемых элементов
+                if(top) {
+                  top_count++;
+                  if (top_count > top)
+                    return;
+                }
+
+                // наполняем
+                res.push(doc);
+              });
+
+              if(top && top_count > top && !calc_count) {
+                resolve(_raw ? res : t.load_array(res));
+              }
+              else{
+                fetch_next_page();
+              }
+            }
+            else{
+              if(calc_count){
+                resolve({
+                  rows: _raw ? res : t.load_array(res),
+                  _total_count: _total_count
+                });
+              }else
+                resolve(_raw ? res : t.load_array(res));
+            }
+
+          } else if(err){
+            reject(err);
+          }
+        }
+
+        function fetch_next_page() {
+
+          if(_view){
+            t.pouch_db.query(_view, options, process_docs);
+          }
+          else{
+            t.pouch_db.allDocs(options, process_docs);
+          }
+        }
+
+        fetch_next_page();
+
+      });
+
+    }
+  },
+
+  /**
+   * Загружает объекты из PouchDB, обрезанные по view
+   */
+  pouch_load_view: {
+    value: function (_view) {
+
+      var t = this, doc, res = [],
+        options = {
+          limit : 1000,
+          include_docs: true,
+          startkey: t.class_name + "|",
+          endkey: t.class_name + '|\ufff0'
+        };
+
+      return new Promise(function(resolve, reject){
+
+        function process_docs(err, result) {
+
+          if (result) {
+
+            if (result.rows.length){
+
+              options.startkey = result.rows[result.rows.length - 1].key;
+              options.skip = 1;
+
+              result.rows.forEach(function (rev) {
+                doc = rev.doc;
+                key = doc._id.split("|");
+                doc.ref = key[1];
+                // наполняем
+                res.push(doc);
+              });
+
+              t.load_array(res);
+              res.length = 0;
+
+              t.pouch_db.query(_view, options, process_docs);
+
+            }else{
+              resolve();
+            }
+
+          } else if(err){
+            reject(err);
+          }
+        }
+
+        t.pouch_db.query(_view, options, process_docs);
+
+      });
+    }
+  },
+
+  /**
 	 * Загружает объекты из PouchDB по массиву ссылок
 	 */
 	pouch_load_array: {
@@ -35,311 +340,6 @@ DataManager.prototype.__define({
 				.then(function (result) {
 					return $p.wsql.pouch.load_changes(result, {});
 				})
-		}
-	},
-
-	/**
-	 * Загружает объекты из PouchDB, обрезанные по view
-	 */
-	pouch_load_view: {
-		value: function (_view) {
-
-			var t = this, doc, res = [],
-				options = {
-					limit : 1000,
-					include_docs: true,
-					startkey: t.class_name + "|",
-					endkey: t.class_name + '|\ufff0'
-				};
-
-			return new Promise(function(resolve, reject){
-
-				function process_docs(err, result) {
-
-					if (result) {
-
-						if (result.rows.length){
-
-							options.startkey = result.rows[result.rows.length - 1].key;
-							options.skip = 1;
-
-							result.rows.forEach(function (rev) {
-								doc = rev.doc;
-								key = doc._id.split("|");
-								doc.ref = key[1];
-								// наполняем
-								res.push(doc);
-							});
-
-							t.load_array(res);
-							res.length = 0;
-
-							t.pouch_db.query(_view, options, process_docs);
-
-						}else{
-							resolve();
-						}
-
-					} else if(err){
-						reject(err);
-					}
-				}
-
-				t.pouch_db.query(_view, options, process_docs);
-
-			});
-		}
-	},
-
-	/**
-	 * Возвращает базу PouchDB, связанную с объектами данного менеджера
-	 * @property pouch_db
-	 * @for DataManager
-	 */
-	pouch_db: {
-		get: function () {
-		  const cachable = this.cachable.replace("_ram", "");
-			if(cachable.indexOf("remote") != -1)
-				return $p.wsql.pouch.remote[cachable.replace("_remote", "")];
-			else
-				return $p.wsql.pouch.local[cachable] || $p.wsql.pouch.remote[cachable];
-		}
-	},
-
-	/**
-	 * ### Найти строки
-	 * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
-	 * Eсли отбор пустой, возвращаются все строки из PouchDB.
-	 *
-	 * @method pouch_find_rows
-	 * @for DataManager
-	 * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
-	 * @param [selection._top] {Number}
-	 * @param [selection._skip] {Number}
-	 * @param [selection._raw] {Boolean} - если _истина_, возвращаются сырые данные, а не дата-объекты
-	 * @param [selection._total_count] {Boolean} - если _истина_, вычисляет общее число записей под фильтром, без учета _skip и _top
-	 * @return {Promise.<Array>}
-	 */
-	pouch_find_rows: {
-		value: function (selection) {
-
-			var t = this, doc, res = [],
-				_raw, _view, _total_count, top, calc_count,
-				top_count = 0, skip = 0, skip_count = 0,
-				options = {
-					limit : 100,
-					include_docs: true,
-					startkey: t.class_name + "|",
-					endkey: t.class_name + '|\ufff0'
-				};
-
-			if(selection){
-
-				if(selection._top){
-					top = selection._top;
-					delete selection._top;
-				}else
-					top = 300;
-
-				if(selection._raw) {
-					_raw = selection._raw;
-					delete selection._raw;
-				}
-
-				if(selection._total_count) {
-					_total_count = selection._total_count;
-					delete selection._total_count;
-				}
-
-				if(selection._view) {
-					_view = selection._view;
-					delete selection._view;
-				}
-
-				if(selection._key) {
-
-					if(selection._key._order_by == "des"){
-						options.startkey = selection._key.endkey || selection._key + '\ufff0';
-						options.endkey = selection._key.startkey || selection._key;
-						options.descending = true;
-					}else{
-						options.startkey = selection._key.startkey || selection._key;
-						options.endkey = selection._key.endkey || selection._key + '\ufff0';
-					}
-				}
-
-				if(typeof selection._skip == "number") {
-					skip = selection._skip;
-					delete selection._skip;
-				}
-
-				if(selection._attachments) {
-					options.attachments = true;
-					options.binary = true;
-					delete selection._attachments;
-				}
-
-			}
-
-			// если сказано посчитать все строки...
-			if(_total_count){
-
-				calc_count = true;
-				_total_count = 0;
-
-				// если нет фильтра по строке или фильтр растворён в ключе
-				if(Object.keys(selection).length <= 1){
-
-					// если фильтр в ключе, получаем все строки без документов
-					if(selection._key && selection._key.hasOwnProperty("_search")){
-						options.include_docs = false;
-						options.limit = 100000;
-
-						return t.pouch_db.query(_view, options)
-							.then(function (result) {
-
-								result.rows.forEach(function (row) {
-
-									// фильтруем
-									if(!selection._key._search || row.key[row.key.length-1].toLowerCase().indexOf(selection._key._search) != -1){
-
-										_total_count++;
-
-										// пропукскаем лишние (skip) элементы
-										if(skip) {
-											skip_count++;
-											if (skip_count < skip)
-												return;
-										}
-
-										// ограничиваем кол-во возвращаемых элементов
-										if(top) {
-											top_count++;
-											if (top_count > top)
-												return;
-										}
-
-										res.push(row.id);
-									}
-								});
-
-								delete options.startkey;
-								delete options.endkey;
-								if(options.descending)
-									delete options.descending;
-								options.keys = res;
-								options.include_docs = true;
-
-								return t.pouch_db.allDocs(options);
-
-							})
-							.then(function (result) {
-								return {
-									rows: result.rows.map(function (row) {
-
-										var doc = row.doc;
-
-										doc.ref = doc._id.split("|")[1];
-
-										if(!_raw){
-											delete doc._id;
-											delete doc._rev;
-										}
-
-										return doc;
-									}),
-									_total_count: _total_count
-								};
-							})
-					}
-
-				}
-
-			}
-
-			// бежим по всем документам из ram
-			return new Promise(function(resolve, reject){
-
-				function process_docs(err, result) {
-
-					if (result) {
-
-						if (result.rows.length){
-
-							options.startkey = result.rows[result.rows.length - 1].key;
-							options.skip = 1;
-
-							result.rows.forEach(function (rev) {
-								doc = rev.doc;
-
-								key = doc._id.split("|");
-								doc.ref = key[1];
-
-								if(!_raw){
-									delete doc._id;
-									delete doc._rev;
-								}
-
-								// фильтруем
-								if(!$p._selection.call(t, doc, selection))
-									return;
-
-								if(calc_count)
-									_total_count++;
-
-								// пропукскаем лишние (skip) элементы
-								if(skip) {
-									skip_count++;
-									if (skip_count < skip)
-										return;
-								}
-
-								// ограничиваем кол-во возвращаемых элементов
-								if(top) {
-									top_count++;
-									if (top_count > top)
-										return;
-								}
-
-								// наполняем
-								res.push(doc);
-							});
-
-							if(top && top_count > top && !calc_count) {
-								resolve(_raw ? res : t.load_array(res));
-
-							}else
-								fetch_next_page();
-
-						}else{
-							if(calc_count){
-								resolve({
-									rows: _raw ? res : t.load_array(res),
-									_total_count: _total_count
-								});
-							}else
-								resolve(_raw ? res : t.load_array(res));
-						}
-
-					} else if(err){
-						reject(err);
-					}
-				}
-
-				function fetch_next_page() {
-
-					if(_view){
-            t.pouch_db.query(_view, options, process_docs);
-          }
-					else{
-            t.pouch_db.allDocs(options, process_docs);
-          }
-				}
-
-				fetch_next_page();
-
-			});
-
 		}
 	},
 
@@ -527,7 +527,6 @@ DataManager.prototype.__define({
 
 		}
 	},
-
 
 	/**
 	 * ### Возвращает набор данных для дерева динсписка

@@ -13,7 +13,7 @@
  *
  * @namespace
  */
-function Aes(default_key) {
+export default function Aes(default_key) {
 
 	'use strict';
 
@@ -421,5 +421,4 @@ function Aes(default_key) {
 
 }
 
-//if (typeof module != 'undefined' && module.exports) module.exports = Aes;
 
