@@ -109,8 +109,10 @@ export function export_handlers() {
   this.handleExportJSON = (evt) => this.doExport('json');
   this.handleExportCSV = (evt) => this.doExport('csv');
 
-  this.handleMenuOpen = (evt) => this.setState({menuOpen: true, anchorEl: evt.currentTarget});
-  this.handleMenuClose = (evt) => this.setState({menuOpen: false});
+  this.handleMenuOpen = (evt) =>
+    this.setState({menuOpen: true, anchorEl: evt.currentTarget});
+  this.handleMenuClose = (evt) =>
+    this.setState({menuOpen: false});
 
 }
 

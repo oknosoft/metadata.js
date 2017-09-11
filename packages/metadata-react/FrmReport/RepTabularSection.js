@@ -7,10 +7,8 @@ import ReactDataGrid from 'react-data-grid';
 
 import {Data} from 'react-data-grid-addons';
 
+const {Row} = ReactDataGrid;
 const {Selectors} = Data;
-
-// const { AdvancedToolbar, GroupedColumnsPanel }   = ToolsPanel;
-// const DraggableContainer  = ReactDataGridPlugins.Draggable.Container;
 
 // // Import the necessary modules.
 // // Create the context menu.
@@ -43,19 +41,71 @@ const {Selectors} = Data;
 //
 // }
 
-// class CustomToolbar extends Component {
-//   render() {
-//     return (
-//       <AdvancedToolbar>
-//         <GroupedColumnsPanel
-//           groupBy={this.props.groupBy}
-//           onColumnGroupAdded={this.props.onColumnGroupAdded}
-//           onColumnGroupDeleted={this.props.onColumnGroupDeleted}
-//         />
-//       </AdvancedToolbar>
-//     )
-//   }
-// }
+
+class RowRenderer extends Component {
+
+  static propTypes = {
+    idx: React.PropTypes.string.isRequired
+  };
+
+  // setScrollLeft(scrollBy) {
+  //   // if you want freeze columns to work, you need to make sure you implement this as apass through
+  //   this.row.setScrollLeft(scrollBy);
+  // },
+
+  getRowStyle() {
+    return {
+      color: this.getRowBackground()
+    };
+  }
+
+  getRowBackground() {
+    return this.props.idx % 2 ? 'green' : 'blue';
+  }
+
+  render() {
+    // here we are just changing the style
+    // but we could replace this with anything we liked, cards, images, etc
+    // usually though it will just be a matter of wrapping a div, and then calling back through to the grid
+    return (<div style={this.getRowStyle()}><Row ref={node => this.row = node} {...this.props}/></div>);
+  }
+};
+
+const  RowGroupRenderer = (props) => {
+  let treeDepth = props.treeDepth || 0;
+  let marginLeft = treeDepth * 20;
+
+  let style = {
+    height: props.height,
+    border: '1px solid #dddddd',
+    paddingTop: '5px',
+    paddingLeft: '5px'
+  };
+
+  let onKeyDown = (e) => {
+    if (e.key === 'ArrowLeft') {
+      props.onRowExpandToggle(false);
+    }
+    if (e.key === 'ArrowRight') {
+      props.onRowExpandToggle(true);
+    }
+    if (e.key === 'Enter') {
+      props.onRowExpandToggle(!props.isExpanded);
+    }
+  };
+
+  //const {row, ...other} = props;
+  //const grouping = new Map([[row.__metaData.columnGroupName, row.name]]);
+  //const grouping = {cashbox: {presentation: `Группировка${row.name ? ': ' + row.name : ''}`}};
+  //return (<Row ref={node => this.row = node} {...other} row={grouping} idx={0}/>);
+  return (
+    <div style={style} onKeyDown={onKeyDown} tabIndex={0}>
+      <span className="row-expand-icon" style={{float: 'left', marginLeft: marginLeft, cursor: 'pointer'}} onClick={props.onRowExpandClick} >{props.isExpanded ? String.fromCharCode('9660') : String.fromCharCode('9658')}</span>
+      <strong>{props.columnGroupName}: {props.name}</strong>
+    </div>
+  );
+};
+
 
 export default class RepTabularSection extends Component {
 
@@ -75,6 +125,7 @@ export default class RepTabularSection extends Component {
     super(props, context);
 
     const {_obj, _tabular, _meta} = props;
+    const that = this;
 
     this.state = {
 
@@ -85,7 +136,11 @@ export default class RepTabularSection extends Component {
         return this._tabular._rows || [];
       },
 
-      groupBy: [],
+      get groupBy() {
+        const {scheme} = that.props;
+        return scheme ? scheme.dims() : [];
+      },
+
       expandedRows: {}
     };
   }
@@ -104,7 +159,7 @@ export default class RepTabularSection extends Component {
   };
 
   onRowExpandToggle = (args) => {
-    var expandedRows = Object.assign({}, this.state.expandedRows);
+    const expandedRows = Object.assign({}, this.state.expandedRows);
     expandedRows[args.columnGroupName] = Object.assign({}, expandedRows[args.columnGroupName]);
     expandedRows[args.columnGroupName][args.name] = {isExpanded: args.shouldExpand};
     this.setState({expandedRows: expandedRows});
@@ -115,6 +170,9 @@ export default class RepTabularSection extends Component {
     const {props, getRowAt, onRowExpandToggle} = this;
     const {_columns, minHeight} = props;
 
+    // rowRenderer={RowRenderer}
+    //
+
     return (
 
       <ReactDataGrid
@@ -123,10 +181,10 @@ export default class RepTabularSection extends Component {
         enableCellSelect={true}
         rowGetter={getRowAt}
         rowsCount={this.getSize()}
+        rowGroupRenderer={RowGroupRenderer}
         minHeight={minHeight || 200}
         rowHeight={33}
         onRowExpandToggle={onRowExpandToggle}
-
       />
 
     );

@@ -38,13 +38,8 @@ export default class Report extends Component {
   }
 
   handleSave = () => {
-
-    const {scheme, _obj, _columns} = this.state;
-
-    _obj.calculate(_columns)
-      .then(() => {
-        this._result.setState({groupBy: scheme.dims()});
-      });
+    const {_obj, _columns, scheme} = this.state;
+    _obj.calculate(scheme).then(() => this._result.forceUpdate());
   };
 
   handlePrint = () => {
@@ -59,11 +54,11 @@ export default class Report extends Component {
   handleSchemeChange = (scheme) => {
 
     const {props, state} = this;
-    const {_obj, handleSchemeChange} = props;
+    const {handleSchemeChange} = props;
     const _columns = scheme.rx_columns({
       mode: 'ts',
       fields: state._meta.fields,
-      _obj: _obj
+      _obj: state._obj
     });
 
     // в этом методе
@@ -102,7 +97,6 @@ export default class Report extends Component {
 
           _obj={_obj}
           _tabular={_tabular}
-          _columns={_columns}
 
           TabParams={TabParams}
 
@@ -116,6 +110,7 @@ export default class Report extends Component {
           _obj={_obj}
           _tabular={_tabular}
           _columns={_columns}
+          scheme={scheme}
           minHeight={500 - 60}
         />
 
