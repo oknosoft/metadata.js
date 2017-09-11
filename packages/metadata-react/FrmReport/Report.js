@@ -55,19 +55,23 @@ export default class Report extends Component {
 
     const {props, state} = this;
     const {handleSchemeChange} = props;
-    const _columns = scheme.rx_columns({
-      mode: 'ts',
-      fields: state._meta.fields,
-      _obj: state._obj
-    });
+    const {_obj, _meta} = state;
+    const _columns = scheme.rx_columns({mode: 'ts', fields: _meta.fields, _obj});
 
     // в этом методе
     handleSchemeChange && handleSchemeChange(this, scheme);
 
-    this.setState({
-      scheme,
-      _columns
-    });
+    // в случае непустого результата - чистим
+    if(_obj.data && _obj.data.count()){
+      _obj.data.clear();
+      if(_obj.data._rows){
+        _obj.data._rows.length = 0;
+      }
+    }
+
+    // обновляем state
+    this.setState({scheme, _columns});
+
   };
 
   render() {
@@ -91,18 +95,17 @@ export default class Report extends Component {
       <div>
 
         <RepToolbar
-          handleSave={handleSave}
-          handlePrint={handlePrint}
-          handleClose={handleClose}
-
           _obj={_obj}
           _tabular={_tabular}
+          _columns={_columns}
+          scheme={scheme}
 
           TabParams={TabParams}
 
-          scheme={scheme}
           handleSchemeChange={handleSchemeChange}
-
+          handleSave={handleSave}
+          handlePrint={handlePrint}
+          handleClose={handleClose}
         />
 
         <RepTabularSection

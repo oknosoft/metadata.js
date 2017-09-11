@@ -42,12 +42,12 @@ export default class TabularSection extends Component {
 
   constructor(props, context) {
     super(props, context);
-    const {_obj} = props;
-    const class_name = _obj._manager.class_name + '.' + props._tabular;
+    const {_obj, _tabular} = props;
+    const class_name = _obj._manager.class_name + '.' + _tabular;
 
     this.state = {
-      _meta: props._meta || _obj._metadata(props._tabular),
-      _tabular: _obj[props._tabular],
+      _meta: props._meta || _obj._metadata(_tabular),
+      _tabular: _obj[_tabular],
       _columns: props._columns || [],
       Toolbar: props.Toolbar || DefaultToolbar,
       selectedIds: props.rowSelection ? props.rowSelection.selectBy.keys.values : []
@@ -62,33 +62,33 @@ export default class TabularSection extends Component {
     return this.state._tabular.get(i);
   };
 
-  handleRemove = (e, data) => {
-    if(!data) {
-      data = this._grid.state.selected;
+  handleRemove = () => {
+    const {selected} = this._grid.state;
+    if(selected && selected.hasOwnProperty('rowIdx')) {
+      this.state._tabular.del(selected.rowIdx);
+      this.forceUpdate();
     }
-    this.state._tabular.del(data.rowIdx);
-    this.forceUpdate();
   };
 
-  handleAdd = (e, data) => {
+  handleAdd = () => {
     this.state._tabular.add();
     this.forceUpdate();
   };
 
   handleUp = () => {
-    const data = this._grid.state.selected;
-    if(data && data.hasOwnProperty('rowIdx') && data.rowIdx > 0) {
-      this.state._tabular.swap(data.rowIdx, data.rowIdx - 1);
-      data.rowIdx = data.rowIdx - 1;
+    const {selected} = this._grid.state;
+    if(selected && selected.hasOwnProperty('rowIdx') && selected.rowIdx > 0) {
+      this.state._tabular.swap(selected.rowIdx, selected.rowIdx - 1);
+      selected.rowIdx = selected.rowIdx - 1;
       this.forceUpdate();
     }
   };
 
   handleDown = () => {
-    const data = this._grid.state.selected;
-    if(data && data.hasOwnProperty('rowIdx') && data.rowIdx < this.state._tabular.count() - 1) {
-      this.state._tabular.swap(data.rowIdx, data.rowIdx + 1);
-      data.rowIdx = data.rowIdx + 1;
+    const {selected} = this._grid.state;
+    if(selected && selected.hasOwnProperty('rowIdx') && selected.rowIdx < this.state._tabular.count() - 1) {
+      this.state._tabular.swap(selected.rowIdx, selected.rowIdx + 1);
+      selected.rowIdx = selected.rowIdx + 1;
       this.forceUpdate();
     }
   };

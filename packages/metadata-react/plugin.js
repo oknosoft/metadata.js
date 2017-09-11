@@ -22,18 +22,18 @@ function rx_columns($p) {
   const {moment} = $p.utils;
 
   const date_formatter = {
-    date: (v) => {
-      const {presentation} = moment(v).format(moment._masks.date);
+    date: ({value}) => {
+      const presentation = moment(value).format(moment._masks.date);
       return <div title={presentation}>{presentation}</div>;
     },
-    date_time: (v) => {
-      const {presentation} = moment(v).format(moment._masks.date_time);
+    date_time: ({value}) => {
+      const presentation = moment(value).format(moment._masks.date_time);
       return <div title={presentation}>{presentation}</div>;
     }
   };
 
-  const presentation_formatter = (v) => {
-    const {presentation} = v.value;
+  const presentation_formatter = ({value}) => {
+    const {presentation} = value;
     return <div title={presentation}>{presentation}</div>;
   };
 
@@ -100,7 +100,7 @@ export function export_handlers() {
   this.doExport = (format) => {
     setTimeout(() => {
       const {_obj, _tabular, _columns} = this.props;
-      _obj[_tabular].export(format, _columns.map((column) => column.key));
+      _obj[_tabular].export(format, _columns.map((column) => column.key))
     });
     this.handleMenuClose && this.handleMenuClose();
   };
