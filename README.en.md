@@ -38,7 +38,7 @@ npm install                     # install dependencies
 For the browser, include:
 ```html
 <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css">
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/combine/npm/metadata-js/dist/dhx_terrace.min.css,npm/metadata-js/dist/metadata.min.css">
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/combine/npm/metadata-js/dist/dhx_terrace.min.css,npm/metadata-js/dist/metadata.min.css">
 <script src="//cdn.jsdelivr.net/combine/npm/moment,npm/alasql,npm/pouchdb,npm/jquery,npm/metadata-js/dist/dhtmlx.min.js,npm/metadata-js/dist/metadata.min.js"></script>
 ```
 
