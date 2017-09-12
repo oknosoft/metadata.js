@@ -16,15 +16,14 @@ import FormControl from 'material-ui/Form/FormControl';
 import DatePicker from 'react-datepicker/dist/react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-import withStyles from './styles';
 
 import AbstractField from './AbstractField';
+import withStyles from './styles';
 
 const formater = new global.Intl.DateTimeFormat();
 
 
 class CustomField extends Component {
-
 
   render() {
     const {classes, _fld, _meta, fullWidth, ...others} = this.props;

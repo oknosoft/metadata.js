@@ -13,11 +13,12 @@ import DnR from './DnR';
 import {WindowsTheme} from './themes';
 
 const paneStyle = {
-  width: '80%',
-  height: '50%',
+  width: '60%',
+  height: '60%',
   top: '25%',
   left: '10%',
-  backgroundColor: 'rgba(0, 0, 0, 0.2)'
+  backgroundColor: 'white',
+  border: '1px solid #e0e0e0'
 };
 
 export default class Dialog extends Component {
@@ -29,19 +30,29 @@ export default class Dialog extends Component {
     };
     this.Windows = WindowsTheme({
       title: props.title || 'React DnR',
-      onClose: ()=>this.refs.dnr.minimize(),
-      onMinimize: ()=>this.refs.dnr.minimize(),
-      onMaximize: ()=>this.refs.dnr.maximize(),
+      onClose: this.onClose.bind(this),
+      onMinimize: ()=>this._dnr.restore(),
+      onMaximize: ()=>this._dnr.maximize(),
     });
+  }
+
+  onClose() {
+    const {_dnr, props} = this;
+    if(_dnr.state.cursor && _dnr.state.cursor.indexOf('resize') == -1){
+      _dnr.minimize();
+      props.onClose && setTimeout(props.onClose, 200);
+    }
   }
 
   render() {
     return <Portal isOpened>
       <DnR
-        ref='dnr'
+        ref={(el) => this._dnr = el}
         {...this.Windows}
         cursorRemap={(c) => c === 'move' ? 'default' : null}
-        style={paneStyle}>
+        style={paneStyle}
+        contentStyle={{overflow: 'auto'}}
+      >
         {this.props.children}
       </DnR>
     </Portal>

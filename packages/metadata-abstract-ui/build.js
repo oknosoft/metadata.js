@@ -22,41 +22,41 @@ const header = `/*!
  */\n\n`;
 
 return rollup({
-	entry: path.resolve(__dirname, './src/plugin.js'),
+  input: path.resolve(__dirname, './src/plugin.js'),
 	external,
 	plugins,
 })
   .then((bundle) => bundle.write({
     format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
-    moduleName: package_data.name.replace(/-/g, '_') + '_plugin',
+    name: package_data.name.replace(/-/g, '_') + '_plugin',
     banner: header,
-    dest: path.resolve(__dirname, './index.js'),
-    sourceMap: true,
+    file: path.resolve(__dirname, './index.js'),
+    sourcemap: true,
   }))
 
 	.then(() => rollup({
-		entry: path.resolve(__dirname, './src/meta.js'),
+    input: path.resolve(__dirname, './src/meta.js'),
 		external,
 		plugins,
 	}))
   .then((bundle) => bundle.write({
     format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
-    moduleName: package_data.name.replace(/-/g, '_') + '_meta',
+    name: package_data.name.replace(/-/g, '_') + '_meta',
     banner: header,
-    dest: path.resolve(__dirname, './meta.js'),
-    sourceMap: true,
+    file: path.resolve(__dirname, './meta.js'),
+    sourcemap: true,
   }))
 
   .then(() => rollup({
-    entry: path.resolve(__dirname, './src/tabulars.js'),
+    input: path.resolve(__dirname, './src/tabulars.js'),
     external,
     plugins,
   }))
   .then((bundle) => bundle.write({
     format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
-    moduleName: package_data.name.replace(/-/g, '_') + '_tabulars',
+    name: package_data.name.replace(/-/g, '_') + '_tabulars',
     banner: header,
-    dest: path.resolve(__dirname, './tabulars.js'),
-    sourceMap: true,
+    file: path.resolve(__dirname, './tabulars.js'),
+    sourcemap: true,
   }));
 

@@ -19,14 +19,12 @@ import SchemeSettings from '../SchemeSettings';
 import withStyles from '../Header/toolbar';
 import classnames from 'classnames';
 
-import DnR from '../DnR/Dialog'
 
 class DataListToolbar extends Component {
 
   state = {
     anchorEl: undefined,
     open: false,
-    dnr: false,
   };
 
   handleClick = event => {
@@ -35,14 +33,6 @@ class DataListToolbar extends Component {
 
   handleRequestClose = () => {
     this.setState({open: false});
-  };
-
-  handleDnROpen = event => {
-    this.setState({dnr: true});
-  };
-
-  handleDnRClose = () => {
-    this.setState({dnr: false});
   };
 
   render() {
@@ -58,8 +48,6 @@ class DataListToolbar extends Component {
         {!props.denyAddDel && <IconButton key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}
 
         <Typography type="caption" color="inherit" className={props.classes.flex} > </Typography>
-
-        {state.dnr && <DnR><Typography>12</Typography></DnR>}
 
         <div>
           <SchemeSettings

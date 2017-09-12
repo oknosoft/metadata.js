@@ -19,55 +19,14 @@ import AddIcon from 'material-ui-icons/AddCircleOutline';
 import TitleIcon from 'material-ui-icons/Title';
 
 // окно диалога, чтобы показать всплывающие формы
-import Dialog from '../Dialog';
+import DnR from '../DnR/Dialog'
 
 // import match from 'autosuggest-highlight/match';
 // import parse from 'autosuggest-highlight/parse';
-import {withStyles} from 'material-ui/styles';
 
 import AbstractField from './AbstractField';
+import withStyles from './styles';
 
-
-const styles = theme => ({
-  container: {
-    flexGrow: 1,
-    position: 'relative',
-    //height: 200,
-  },
-  suggestionsContainerOpen: {
-    position: 'absolute',
-    marginTop: theme.spacing.unit,
-    marginBottom: theme.spacing.unit * 3,
-    left: 0,
-    right: 0,
-    zIndex: 3000,
-  },
-  suggestion: {
-    display: 'block',
-  },
-  suggestionsList: {
-    margin: 0,
-    padding: 0,
-    listStyleType: 'none',
-  },
-  flex: {
-    flex: 1,
-  },
-  a: {
-    width: 'inherit',
-    whiteSpace: 'nowrap',
-    textDecoration: 'underline',
-    cursor: 'pointer',
-    color: '#0b0080'
-  },
-  button: {
-    marginTop: theme.spacing.unit,
-    marginBottom: theme.spacing.unit,
-  },
-  textField: {
-    width: '100%',
-  },
-});
 
 class FieldAutosuggest extends AbstractField {
 
@@ -194,7 +153,7 @@ class FieldAutosuggest extends AbstractField {
       />
       :
       <TextField
-        className={classes && classes.textField}
+        className={classes.formControl}
         fullWidth={fullWidth}
         margin="dense"
         value={value}
@@ -217,21 +176,18 @@ class FieldAutosuggest extends AbstractField {
       const {_manager, ref} = _obj[_fld];
       const _acl = $p.current_user.get_acl(_manager.class_name);
       const {DataList, DataObj} = context.components;
+      const title = state.dialog_open == 'list' ?
+        (_manager.metadata().list_presentation || _manager.metadata().synonym)
+        :
+        (_manager.metadata().obj_presentation || _manager.metadata().synonym);
 
-      return <Dialog
-        visible
-        resizable
-        draggable
-        selection_mode
-        show_search
-        tabs={{Форма: state.dialog_open == 'list' ?
-          <DataList _mgr={_manager} _acl={_acl} height={320} width={420} handlers={{}}/>
+      return <DnR title={title} onClose={this.handleCloseDialog}>
+        {state.dialog_open == 'list' ?
+          <DataList _mgr={_manager} _acl={_acl} handlers={{}}/>
           :
           <DataObj _mgr={_manager} _acl={_acl} match={{params: {ref}}} handlers={{}}/>
-        }}
-        onCloseClick={this.handleCloseDialog}
-        ref={(el) => this._dialog = el}
-      />;
+        }
+      </DnR>;
     }
   }
 
@@ -284,4 +240,4 @@ class FieldAutosuggest extends AbstractField {
 
 }
 
-export default withStyles(styles)(FieldAutosuggest);
+export default withStyles(FieldAutosuggest);

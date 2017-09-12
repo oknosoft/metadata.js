@@ -37,7 +37,8 @@ export default class TabularSection extends Component {
 
   static defaultProps = {
     denyAddDel: false,
-    read_only: false
+    read_only: false,
+    minHeight: 300,
   };
 
   constructor(props, context) {
@@ -174,7 +175,7 @@ export default class TabularSection extends Component {
 
               <ReactDataGrid
                 minWidth={width}
-                minHeight={height < minHeight ? minHeight : height}
+                minHeight={(height < minHeight ? minHeight : height) - 52}
                 rowHeight={33}
 
                 ref={(el) => this._grid = el}

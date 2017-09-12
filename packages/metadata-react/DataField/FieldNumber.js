@@ -11,8 +11,9 @@ import TextField from 'material-ui/TextField';
 import Calculator from '../Calculator';
 
 import AbstractField from './AbstractField';
+import withStyles from './styles';
 
-export default class FieldNumber extends AbstractField {
+class FieldNumber extends AbstractField {
 
   constructor(props, context) {
     super(props, context);
@@ -63,7 +64,7 @@ export default class FieldNumber extends AbstractField {
           />
           :
           <TextField
-            className={classes && classes.textField}
+            className={classes.formControl}
             fullWidth={fullWidth}
             margin="dense"
             disabled={read_only}
@@ -80,3 +81,5 @@ export default class FieldNumber extends AbstractField {
     );
   }
 }
+
+export default withStyles(FieldNumber);

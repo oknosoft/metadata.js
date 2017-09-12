@@ -26,15 +26,15 @@ const header = `/*!
  */\n\n`;
 
 return rollup({
-  entry: path.resolve(__dirname, './bandle.js'),
+  input: path.resolve(__dirname, './bandle.js'),
   external,
   plugins,
 })
   .then((bundle) => bundle.write({
     format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
-    moduleName: package_data.name.replace(/-/g, '_'),
+    name: package_data.name.replace(/-/g, '_'),
     banner: header,
-    dest: path.resolve(__dirname, './index.js'),
-    sourceMap: true,
+    file: path.resolve(__dirname, './index.js'),
+    sourcemap: true,
   }));
 

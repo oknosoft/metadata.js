@@ -68,7 +68,7 @@ class DataObjToolbar extends Component {
 
         </Menu>
 
-        <IconButton title="Закрыть форму" onClick={props.handleClose}><CloseIcon /></IconButton>
+        {props.closeButton && <IconButton title="Закрыть форму" onClick={props.handleClose}><CloseIcon /></IconButton>}
 
       </Toolbar>
     )

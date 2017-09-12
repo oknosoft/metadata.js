@@ -28,10 +28,10 @@ export function getTabsContent(scheme, handleSchemeChange, tabParams) {
           <DataField _obj={scheme} _fld="date_till"/>
         </div>
         :
-        <TabularSection _obj={scheme} _tabular="params" minHeight={308}/>
+        <TabularSection _obj={scheme} _tabular="params" />
     ),
 
-    'Колонки': (<TabularSection _obj={scheme} _tabular="fields" denyAddDel={true} minHeight={308}
+    'Колонки': (<TabularSection _obj={scheme} _tabular="fields" denyAddDel={true}
                                 rowSelection={{
                                   showCheckbox: true,
                                   enableShiftSelect: true,
@@ -44,7 +44,7 @@ export function getTabsContent(scheme, handleSchemeChange, tabParams) {
                                   }
                                 }}/>),
 
-    'Отбор': (<TabularSection _obj={scheme} _tabular="selection" minHeight={308}
+    'Отбор': (<TabularSection _obj={scheme} _tabular="selection"
                               rowSelection={{
                                 showCheckbox: true,
                                 enableShiftSelect: true,
@@ -68,7 +68,7 @@ export function getTabsContent(scheme, handleSchemeChange, tabParams) {
     </FormGroup>),
 
     'Сортировка': (
-      <TabularSection _obj={scheme} _tabular="sorting" minHeight={308}/>
+      <TabularSection _obj={scheme} _tabular="sorting" />
     ),
 
     'Вариант': (

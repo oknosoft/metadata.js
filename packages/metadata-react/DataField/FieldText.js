@@ -10,8 +10,9 @@ import PropTypes from 'prop-types';
 import TextField from 'material-ui/TextField';
 
 import AbstractField from './AbstractField';
+import withStyles from './styles';
 
-export default class FieldText extends AbstractField {
+class FieldText extends AbstractField {
 
   onChange = (event) => {
     const {_obj, _fld, handleValueChange} = this.props;
@@ -27,7 +28,7 @@ export default class FieldText extends AbstractField {
     return (
       <TextField
         name={_fld}
-        className={classes && classes.textField}
+        className={classes.formControl}
         fullWidth={fullWidth}
         margin="dense"
         disabled={read_only}
@@ -40,3 +41,5 @@ export default class FieldText extends AbstractField {
     );
   }
 }
+
+export default withStyles(FieldText);

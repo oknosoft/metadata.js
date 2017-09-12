@@ -74,12 +74,12 @@ class DataList extends Component {
     const {_list, state, props} = this;
     const {handlers, _mgr} = props;
     const row = _list.get(state.selectedRowIndex);
-    if(!row || $p.utils.is_empty_guid(row.ref)){
+    if(!row || $p.utils.is_empty_guid(row.ref)) {
       handlers.handleIfaceState({
         component: '',
         name: 'alert',
         value: {open: true, text: 'Укажите строку для редактирования', title: state._meta.synonym}
-      })
+      });
     }
     else if(handlers.handleEdit) {
       handlers.handleEdit({ref: row.ref, _mgr});
@@ -92,17 +92,17 @@ class DataList extends Component {
     const {handlers, _mgr} = props;
     const row = _list.get(state.selectedRowIndex);
 
-    if(!row || $p.utils.is_empty_guid(row.ref)){
+    if(!row || $p.utils.is_empty_guid(row.ref)) {
       handlers.handleIfaceState({
         component: '',
         name: 'alert',
         value: {open: true, text: 'Укажите строку для удаления', title: state._meta.synonym}
-      })
+      });
     }
     else if(handlers.handleMarkDeleted) {
       this._handleRemove = function () {
         handlers.handleMarkDeleted(row.ref, _mgr);
-      }
+      };
       this.setState({confirm_text: 'Удалить объект?'});
     }
   };
@@ -121,10 +121,10 @@ class DataList extends Component {
     this._list.set(0, columns.map(column => (column.synonym)));
 
 
-    if(this._isMounted){
+    if(this._isMounted) {
       this.setState({scheme, columns, rowsLoaded: 1});
     }
-    else{
+    else {
       Object.assign(state, {scheme, columns, rowsLoaded: 1});
     }
 
@@ -160,10 +160,29 @@ class DataList extends Component {
     this._isMounted = false;
   }
 
+  get sizes() {
+    const {dnr} = this.context;
+    let {width, height} = this.props;
+    if(!height) {
+      height = dnr && parseInt(dnr.frameRect.height);
+    }
+    if(!height || height < 320) {
+      height = 320;
+    }
+    if(!width) {
+      width = dnr && parseInt(dnr.frameRect.width);
+    }
+    if(!width || width < 480) {
+      width = 480;
+    }
+    return {width, height};
+  }
+
   render() {
     const {
       state,
       props,
+      sizes,
       handleSelect,
       handleAdd,
       handleEdit,
@@ -178,7 +197,7 @@ class DataList extends Component {
 
     const {columns, rowsLoaded, scheme, colResize, confirm_text, _meta} = state;
 
-    let {selection_mode, denyAddDel, show_search, show_variants, width, height, classes} = props;
+    let {selection_mode, denyAddDel, show_search, show_variants, classes} = props;
 
     if(!scheme) {
       return <LoadingMessage title="Чтение настроек компоновки..."/>;
@@ -208,8 +227,9 @@ class DataList extends Component {
       cursor: colResize ? 'col-resize' : 'default',
     };
 
+
     return (
-      <div style={{height}}>
+      <div style={{height: sizes.height}}>
 
         {
           confirm_text && <Confirm
@@ -226,7 +246,7 @@ class DataList extends Component {
         <InfiniteLoader
           isRowLoaded={_isRowLoaded}
           loadMoreRows={_loadMoreRows}
-          rowCount={this.state.rowsLoaded + DataList.LIMIT}
+          rowCount={rowsLoaded + DataList.LIMIT}
           minimumBatchSize={DataList.LIMIT}>
 
           {({onRowsRendered, registerChild}) => {
@@ -242,10 +262,10 @@ class DataList extends Component {
             return (
               <MultiGrid
                 ref={registerChild}
-                width={width}
-                height={height - 52}
-                rowCount={this.state.rowsLoaded}
-                columnCount={this.state.columns.length}
+                width={sizes.width}
+                height={sizes.height - 52}
+                rowCount={rowsLoaded}
+                columnCount={columns.length}
                 fixedColumnCount={0}
                 fixedRowCount={1}
                 noContentRenderer={this._noContentRendered}
@@ -383,7 +403,7 @@ class DataList extends Component {
       update_state(_mgr.find_rows(select));
       return Promise.resolve();
     }
-    else{
+    else {
       // выполняем запрос
       return _mgr.find_rows_remote(select).then(update_state);
     }
@@ -412,6 +432,10 @@ DataList.propTypes = {
   // Redux actions
   handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
 
+};
+
+DataList.contextTypes = {
+  dnr: PropTypes.object
 };
 
 export default withStyles(DataList);

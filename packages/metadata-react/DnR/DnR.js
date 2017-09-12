@@ -19,7 +19,7 @@ export const defaultTheme = {
     OUserSelect: 'none',
     overflow: 'hidden',
     width: '100%',
-    height: 25,
+    height: 30,
   },
   frame: {
     position: 'absolute',
@@ -144,6 +144,7 @@ export default class DnR extends React.Component {
     const {
       style,
       contentStyle,
+      contentClassName,
       titleStyle,
       theme,
       minWidth,
@@ -277,12 +278,16 @@ export default class DnR extends React.Component {
            }}>
         {titleBar}
         <div ref='content'
-             className='contentClassName'
+             className={contentClassName}
              style={{position: 'absolute', width: '100%', top: theme.title.height, bottom: 0, ...contentStyle}}>
           {childrenWithProps}
         </div>
       </div>
     );
+  }
+
+  getChildContext() {
+    return {dnr: this};
   }
 
   getFrameRect() {
@@ -409,4 +414,8 @@ DnR.defaultProps = {
   initialLeft: null,
   animate: true,
   attachedTo: window,
+};
+
+DnR.childContextTypes = {
+  dnr: PropTypes.object
 };

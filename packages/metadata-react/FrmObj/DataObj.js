@@ -5,30 +5,17 @@ import Layout from '../FlexPanel/react-flex-layout/react-flex-layout';
 import LayoutSplitter from '../FlexPanel/react-flex-layout/react-flex-layout-splitter';
 
 import {FormGroup} from 'material-ui/Form';
+import Divider from 'material-ui/Divider';
+import Paper from 'material-ui/Paper';
 
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 import Toolbar from './Toolbar';
 import DataField from '../DataField';
 import TabularSection from '../TabularSection';
 
-import classes from './DataObj.scss';
-import classnames from 'classnames';
+import withStyles from '../styles/paper600'
 
-import Paper from 'material-ui/Paper';
-
-export default class DataObj extends Component {
-
-  static PAPER_STYLE = {
-    margin: '10px',
-  };
-
-  static PAPER_STYLE_FIELDS = {
-    padding: '10px',
-  };
-
-  static PAPER_STYLE_TABULAR_SECTION = {
-    height: '100%',
-  };
+class DataObj extends Component {
 
   static propTypes = {
     _mgr: PropTypes.object,             // DataManager, с которым будет связан компонент
@@ -39,6 +26,10 @@ export default class DataObj extends Component {
     read_only: PropTypes.object,        // Элемент только для чтения
 
     handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
+  };
+
+  static contextTypes = {
+    dnr: PropTypes.object
   };
 
   constructor(props, context) {
@@ -123,10 +114,7 @@ export default class DataObj extends Component {
       }
     }
 
-    return elements.length === 0 ? null :
-      <Paper style={Object.assign({}, DataObj.PAPER_STYLE, DataObj.PAPER_STYLE_FIELDS)}>
-        {elements}
-      </Paper>;
+    return elements.length === 0 ? null : <FormGroup>{elements}</FormGroup>;
   }
 
   /**
@@ -136,21 +124,17 @@ export default class DataObj extends Component {
   renderTabularSections() {
     const elements = [];
     const {_meta, _obj} = this.state;
-    const style = Object.assign({}, DataObj.PAPER_STYLE, DataObj.PAPER_STYLE_TABULAR_SECTION);
 
-    for (const tabularSectionName in _meta.tabular_sections) {
-      elements.push(
-        <Paper key={tabularSectionName} style={style}>
-          <TabularSection _obj={_obj} _tabular={tabularSectionName}/>
-        </Paper>
-      );
+    for (const ts in _meta.tabular_sections) {
+      if(elements.length || Object.keys(_meta.fields).length){
+        elements.push(<Divider light key={`dv_${ts}`}/>);
+      }
+      elements.push(<div style={{height: 300}}>
+        <TabularSection key={`ts_${ts}`} _obj={_obj} _tabular={ts} />
+      </div>);
     }
 
-    return elements.length === 0 ? null :
-      <div className={classes.tabularSections}>
-        {elements}
-      </div>
-      ;
+    return elements.length === 0 ? null : <FormGroup>{elements}</FormGroup>;
   }
 
 
@@ -163,17 +147,22 @@ export default class DataObj extends Component {
   }
 
   render() {
+    const {props, state, context, _handlers} = this;
 
-    if(!this.state._obj) {
+    if(!state._obj) {
       return <LoadingMessage/>;
     }
 
     return <div>
-      <Toolbar {...this._handlers} />
-      {this.renderFields()}
-      {this.renderTabularSections()}
+      <Toolbar {..._handlers} closeButton={!context.dnr}/>
+      <FormGroup className={props.classes.spaceLeft}>
+        {this.renderFields()}
+        {this.renderTabularSections()}
+      </FormGroup>
     </div>;
   }
 
 }
+
+export default withStyles(DataObj)
 
