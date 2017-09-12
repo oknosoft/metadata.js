@@ -19,11 +19,14 @@ import SchemeSettings from '../SchemeSettings';
 import withStyles from '../Header/toolbar';
 import classnames from 'classnames';
 
+import DnR from '../DnR/Dialog'
+
 class DataListToolbar extends Component {
 
   state = {
     anchorEl: undefined,
     open: false,
+    dnr: false,
   };
 
   handleClick = event => {
@@ -34,9 +37,17 @@ class DataListToolbar extends Component {
     this.setState({open: false});
   };
 
+  handleDnROpen = event => {
+    this.setState({dnr: true});
+  };
+
+  handleDnRClose = () => {
+    this.setState({dnr: false});
+  };
+
   render() {
 
-    const {props} = this;
+    const {props, state} = this;
 
     return (
       <Toolbar className={classnames([props.classes.bar, props.classes.toolbar])}>
@@ -47,6 +58,8 @@ class DataListToolbar extends Component {
         {!props.denyAddDel && <IconButton key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}
 
         <Typography type="caption" color="inherit" className={props.classes.flex} > </Typography>
+
+        {state.dnr && <DnR><Typography>12</Typography></DnR>}
 
         <div>
           <SchemeSettings
@@ -60,12 +73,12 @@ class DataListToolbar extends Component {
           </IconButton>
 
           <Menu
-            anchorEl={this.state.anchorEl}
-            open={this.state.open}
+            anchorEl={state.anchorEl}
+            open={state.open}
             onRequestClose={this.handleRequestClose}
           >
 
-            <MenuItem onClick={props.handlePrint}><PrintIcon/> &nbsp;Печать</MenuItem>
+            <MenuItem onClick={this.handleDnROpen}><PrintIcon/> &nbsp;Печать</MenuItem>
             <MenuItem onClick={props.handleAttachment}><AttachIcon/> &nbsp;Вложения</MenuItem>
 
           </Menu>
