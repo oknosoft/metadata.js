@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.2-beta.27, built:2017-09-12
+ metadata-core v2.0.2-beta.27, built:2017-09-13
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1958,8 +1958,8 @@ class RefDataManager extends DataManager{
 	}
 }
 class DataProcessorsManager extends DataManager{
-	create(){
-		return this.obj_constructor('', [{}, this]);
+	create(attr = {}){
+		return this.obj_constructor('', [attr, this]);
 	}
 	get(ref){
 		if(ref){

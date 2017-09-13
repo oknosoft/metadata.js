@@ -24,19 +24,13 @@ import withStyles from '../Header/toolbar';
 class RepToolbar extends Component {
 
   static propTypes = {
-
     handleSave: PropTypes.func.isRequired,          // обработчик формирования отчета
     handlePrint: PropTypes.func.isRequired,         // обработчик открытия диалога печати
     handleClose: PropTypes.func.isRequired,         // команда закрытия формы
-
     handleSchemeChange: PropTypes.func.isRequired,  // обработчик при изменении настроек компоновки
-    scheme: PropTypes.object.isRequired,            // значение настроек компоновки
-
-    TabParams: PropTypes.func,                      // внешний компонент страницы параметров
-
-    _obj: PropTypes.object,
-    _tabular: PropTypes.string.isRequired,
-
+    scheme: PropTypes.object.isRequired,            // значение настроек компоновки CatSchemeSettings
+    _obj: PropTypes.object,                         // объект данных - отчет DataProcessorObj
+    _tabular: PropTypes.string.isRequired,          // имя табчасти с данными
   };
 
   constructor(props, context) {
@@ -55,7 +49,8 @@ class RepToolbar extends Component {
   render() {
 
     const {props, state} = this;
-    const {handleSave, handleClose, handleSchemeChange, handlePrint, scheme, _obj, _tabular, TabParams, classes} = props;
+    const {handleSave, handleClose, handleSchemeChange, handlePrint, scheme, _obj, _tabular, classes} = props;
+    const {RepParams} = _obj._manager;
 
     return (
 
@@ -67,13 +62,7 @@ class RepToolbar extends Component {
         <SchemeSettings
           handleSchemeChange={handleSchemeChange}
           scheme={scheme}
-          tabParams={
-            TabParams ? <TabParams
-                _obj={_obj}
-                scheme={scheme}
-              />
-              : null
-          }
+          tabParams={RepParams && <RepParams _obj={_obj} scheme={scheme} />}
           show_variants={true}
         />
 

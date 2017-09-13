@@ -1,9 +1,6 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Layout from '../FlexPanel/react-flex-layout/react-flex-layout';
-import LayoutSplitter from '../FlexPanel/react-flex-layout/react-flex-layout-splitter';
-
 import {FormGroup} from 'material-ui/Form';
 import Divider from 'material-ui/Divider';
 import Paper from 'material-ui/Paper';

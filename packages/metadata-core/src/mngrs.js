@@ -1251,8 +1251,8 @@ export class DataProcessorsManager extends DataManager{
 	 * @method create
 	 * @return {DataProcessorObj}
 	 */
-	create(){
-		return this.obj_constructor('', [{}, this]);
+	create(attr = {}){
+		return this.obj_constructor('', [attr, this]);
 	}
 
 	/**
