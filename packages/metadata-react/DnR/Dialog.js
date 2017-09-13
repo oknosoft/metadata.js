@@ -37,6 +37,7 @@ export default class Dialog extends Component {
   }
 
   onClose() {
+
     const {_dnr, props} = this;
     if(_dnr.state.cursor && _dnr.state.cursor.indexOf('resize') == -1){
       _dnr.minimize();
@@ -45,6 +46,7 @@ export default class Dialog extends Component {
   }
 
   render() {
+    const {children, ...others} = this.props;
     return <Portal isOpened>
       <DnR
         ref={(el) => this._dnr = el}
@@ -52,8 +54,9 @@ export default class Dialog extends Component {
         cursorRemap={(c) => c === 'move' ? 'default' : null}
         style={paneStyle}
         contentStyle={{overflow: 'auto'}}
+        {...others}
       >
-        {this.props.children}
+        {children}
       </DnR>
     </Portal>
   }

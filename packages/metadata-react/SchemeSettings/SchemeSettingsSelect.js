@@ -1,6 +1,6 @@
 /**
  * ### Выбор варианта сохраненных настроек
- * @module SchemeSettingsSelect
+ * страница формы справочника SchemeSettings
  *
  * Created 19.12.2016
  */
@@ -25,7 +25,6 @@ class SchemeSettingsSelect extends Component {
   static propTypes = {
     scheme: PropTypes.object.isRequired,
     handleSchemeChange: PropTypes.func.isRequired,
-    minHeight: PropTypes.number,
   };
 
   constructor(props, context) {
@@ -59,7 +58,7 @@ class SchemeSettingsSelect extends Component {
 
     const {state, props, handleCreate, handleSave, handleNameChange} = this;
     const {_obj, _meta} = state;
-    const {scheme, classes, handleSchemeChange, minHeight} = props;
+    const {scheme, classes, handleSchemeChange} = props;
 
     return (
       <div>

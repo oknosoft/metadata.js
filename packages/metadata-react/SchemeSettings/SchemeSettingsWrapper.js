@@ -2,8 +2,6 @@
  * ### Контейнер сохраненных настроек
  * Кнопка открытия + диалог
  *
- * @module SchemeSettingsWrapper
- *
  * Created 31.12.2016
  */
 
@@ -15,12 +13,10 @@ import Button from 'material-ui/Button';
 import TextField from 'material-ui/TextField';
 import Menu, {MenuItem} from 'material-ui/Menu';
 
-import Dialog from '../Dialog';
+// окно диалога, чтобы показать всплывающие формы
+import DnR from '../DnR/Dialog'
 
-import {getTabsContent, SchemeSettingsTabs} from './SchemeSettingsTabs';
-import styles from './styles/SchemeSettingsWrapper.scss';
-
-import spacing from 'material-ui/styles/spacing';
+import SchemeSettingsTabs from './SchemeSettingsTabs';
 
 export default class SchemeSettingsWrapper extends Component {
 
@@ -120,22 +116,15 @@ export default class SchemeSettingsWrapper extends Component {
     const {dialog_open, menu_open, scheme} = state;
     const {show_search, show_variants, tabParams} = props;
 
-    const actions = [
-      <Button key={0} raised dense onClick={handleDialogClose} style={{margin: spacing.unit}}>Отмена</Button>,
-      <Button key={1} raised dense onClick={handleOk} style={{margin: spacing.unit}}>Применить</Button>,
-    ];
-
     return (
       <div style={{display: 'inline-flex'}}>
-        {/* Search box */}
-        {show_search ? <TextField
-          name="search"
+        {/* Search box */
+          show_search ? <TextField
           ref={(search) => {
             this.searchInput = search;
           }}
           width={300}
           underlineShow={false}
-          className={styles.searchBox}
           onChange={handleSearchChange}
           disabled/> : null
         }
@@ -149,23 +138,20 @@ export default class SchemeSettingsWrapper extends Component {
         }
 
 
-        {/* Show list configuration button */}
+        {/* List configuration button */}
         <IconButton title="Настройка списка" onClick={handleDialogOpen}>
           <IconSettings/>
         </IconButton>
 
-        <Dialog
-          title={'Настройка'}
-          actions={actions}
-          tabs={getTabsContent(scheme, handleSchemeChange, tabParams)}
-          resizable
-          draggable
-          visible={dialog_open}
-          width={760}
-          height={500}
-          fullscreen={this.state.fullscreen}
-          onFullScreenClick={() => this.handleFullscreenClick()}
-          onCloseClick={this.handleDialogClose}/>
+        {dialog_open && <DnR title={`${scheme.name} (вариант настроек)`} onClose={handleDialogClose} minHeight={433} initialHeight={440}>
+          <SchemeSettingsTabs
+            scheme={scheme}
+            handleSchemeChange={handleSchemeChange}
+            tabParams={tabParams}
+            handleDialogClose={handleDialogClose}
+            handleOk={handleOk}
+          />
+        </DnR>}
 
       </div>
     );

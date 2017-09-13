@@ -10,115 +10,132 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import {Tabs, Tab} from 'material-ui/Tabs';
+import AppBar from 'material-ui/AppBar';
+import Button from 'material-ui/Button';
+import {DialogActions, DialogContent} from 'material-ui/Dialog';
 import {FormGroup} from 'material-ui/Form';
+import Tabs, {Tab} from 'material-ui/Tabs';
 
 import TabularSection from '../TabularSection';
 import SchemeSettingsSelect from './SchemeSettingsSelect';
 import DataField, {FieldSelect} from '../DataField';
 import Divider from 'material-ui/Divider';
-import styles from './styles/SchemeSettingsTabs.scss';
 
+import spacing from 'material-ui/styles/spacing';
 
-export function getTabsContent(scheme, handleSchemeChange, tabParams) {
-  return {
-    'Параметры': tabParams ? tabParams : (scheme.query.match('date') ?
-        <div style={{height: 356}}>
-          <DataField _obj={scheme} _fld="date_from"/>
-          <DataField _obj={scheme} _fld="date_till"/>
-        </div>
-        :
-        <TabularSection _obj={scheme} _tabular="params" />
-    ),
-
-    'Колонки': (<TabularSection _obj={scheme} _tabular="fields" denyAddDel={true}
-                                rowSelection={{
-                                  showCheckbox: true,
-                                  enableShiftSelect: true,
-                                  selectBy: {
-                                    keys: {
-                                      rowKey: 'field',
-                                      markKey: 'use',
-                                      values: scheme.used_fields()
-                                    }
-                                  }
-                                }}/>),
-
-    'Отбор': (<TabularSection _obj={scheme} _tabular="selection"
-                              rowSelection={{
-                                showCheckbox: true,
-                                enableShiftSelect: true,
-                                selectBy: {
-                                  keys: {
-                                    rowKey: 'field',
-                                    markKey: 'use',
-                                    values: scheme.used_fields()
-                                  }
-                                }
-                              }}/>),
-
-    'Группировка': (<FormGroup style={{minHeight: 356, margin: 8}}>
-      <FormGroup row style={{minHeight: 180, height: '50%'}}>
-        <TabularSection _obj={scheme} _tabular="dimensions" minHeight={130}/>
-      </FormGroup>
-
-      <FormGroup row>
-        <TabularSection _obj={scheme} _tabular="resources" minHeight={130}/>
-      </FormGroup>
-    </FormGroup>),
-
-    'Сортировка': (
-      <TabularSection _obj={scheme} _tabular="sorting" />
-    ),
-
-    'Вариант': (
-      <SchemeSettingsSelect scheme={scheme} handleSchemeChange={handleSchemeChange} minHeight={356}/>
-    )
-  };
-}
 
 /**
  * Wrapper for tabs whitch returned function above.
  */
-export class SchemeSettingsTabs extends Component {
+export default class SchemeSettingsTabs extends Component {
+
   static propTypes = {
     scheme: PropTypes.object.isRequired,
     handleSchemeChange: PropTypes.func.isRequired,
-    tabParams: PropTypes.object
+    handleDialogClose: PropTypes.func.isRequired,
+    handleOk: PropTypes.func.isRequired,
+    tabParams: PropTypes.object,
   };
 
-  state = {
-    tab_value: 0
+  static contextTypes = {
+    dnr: PropTypes.object
   };
 
-  handleTabChange = (tab_value) => {
-    this.setState({
-      tab_value
-    });
+  state = {value: 0};
+
+  handleTabChange = (event, value) => {
+    this.setState({value});
   };
+
+  get sizes() {
+    const {dnr} = this.context;
+    let {width, height} = this.props;
+    if(!height) {
+      height = dnr && parseInt(dnr.frameRect.height) - 130;
+    }
+    if(!height || height < 260) {
+      height = 260;
+    }
+    if(!width) {
+      width = dnr && parseInt(dnr.frameRect.width);
+    }
+    if(!width || width < 480) {
+      width = 480;
+    }
+    return {width, height};
+  }
 
   render() {
 
-    const {props} = this;
-    const tabs = getTabsContent(props.scheme, props.handleSchemeChange, props.tabParams);
-
-    // если панель параметров передали снаружи, показываем её
-    // если в scheme.query есть 'date', показываем выбор периода
-    // по умолчанию, показываем табчать параметров
-
-    const elements = [];
-    let tabIndex = 0;
-
-    for (const tabName in tabs) {
-      if(tabs.hasOwnProperty(tabName)) {
-        elements.push(<Tab label={tabName} value={tabIndex++} key={tabIndex}>{tabs[tabName]}</Tab>);
+    const {state, props, sizes} = this;
+    const {scheme, handleSchemeChange, handleDialogClose, handleOk, tabParams} = props;
+    const {value} = state;
+    const rowSelection = {
+      showCheckbox: true,
+      enableShiftSelect: true,
+      selectBy: {
+        keys: {
+          rowKey: 'field',
+          markKey: 'use',
+          values: scheme.used_fields()
+        }
       }
-    }
+    };
 
-    return (
-      <Tabs value={this.state.tab_value} onChange={this.handleTabChange}>
-        {elements}
-      </Tabs>
-    );
+    return <div>
+      <AppBar position="static" color="default">
+        <Tabs
+          value={value}
+          onChange={this.handleTabChange}
+          indicatorColor="primary"
+          textColor="primary"
+          scrollable
+          scrollButtons="auto"
+        >
+          <Tab label="Параметры"/>
+          <Tab label="Колонки"/>
+          <Tab label="Отбор"/>
+          <Tab label="Группировка"/>
+          <Tab label="Сортировка"/>
+          <Tab label="Вариант"/>
+        </Tabs>
+      </AppBar>
+
+      <div style={{height: sizes.height}}>
+        {value === 0 &&
+        (tabParams ? tabParams : (
+          scheme.query.match('date') ?
+            <div>
+              <DataField _obj={scheme} _fld="date_from"/>
+              <DataField _obj={scheme} _fld="date_till"/>
+            </div>
+            :
+            <TabularSection _obj={scheme} _tabular="params"/>
+        ))}
+
+        {value === 1 && <TabularSection _obj={scheme} _tabular="fields" rowSelection={rowSelection} denyAddDel={true}/>}
+
+        {value === 2 && <TabularSection _obj={scheme} _tabular="selection" rowSelection={rowSelection}/>}
+
+        {value === 3 && <FormGroup style={{minHeight: 340, margin: 8}}>
+          <FormGroup row style={{minHeight: 160, height: '50%'}}>
+            <TabularSection _obj={scheme} _tabular="dimensions" rowSelection={rowSelection} minHeight={130} />
+          </FormGroup>
+          <FormGroup row>
+            <TabularSection _obj={scheme} _tabular="resources" minHeight={130}/>
+          </FormGroup>
+        </FormGroup>}
+
+        {value === 4 && <TabularSection _obj={scheme} _tabular="sorting" rowSelection={rowSelection}/>}
+
+        {value === 5 && <SchemeSettingsSelect scheme={scheme} handleSchemeChange={handleSchemeChange} />}
+      </div>
+
+      <DialogActions style={{margin: 0}}>
+        <Button dense onClick={handleDialogClose} style={{margin: spacing.unit}}>Отмена</Button>
+        <Button dense onClick={handleOk} style={{margin: spacing.unit}}>Применить</Button>
+      </DialogActions>
+
+    </div>;
   }
 }

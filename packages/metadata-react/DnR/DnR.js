@@ -41,6 +41,7 @@ function prefixedTransition(transition) {
 }
 
 export default class DnR extends React.Component {
+
   constructor(props) {
     super(props);
     const {
@@ -404,9 +405,9 @@ DnR.propTypes = {
 };
 
 DnR.defaultProps = {
-  minWidth: 20,
-  minHeight: 20,
-  edgeDetectionRange: 4,
+  minWidth: 300,
+  minHeight: 200,
+  edgeDetectionRange: 5,
   theme: defaultTheme,
   initialWidth: null,
   initialHeight: null,
