@@ -6,7 +6,7 @@ import withMeta from './withMeta';
 import {mapDispatchToProps} from './withIface'
 
 const mapStateToProps = ({iface}, {location}) => {
-  return Object.assign({path_log_in: !!location.pathname.match(/\/(login|about|settings)$/)}, iface.common);
+  return Object.assign({path_log_in: !!location.pathname.match(/\/(login|about)$/)}, iface.common);
 };
 
 
