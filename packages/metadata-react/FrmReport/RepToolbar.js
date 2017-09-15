@@ -55,7 +55,7 @@ class RepToolbar extends Component {
     return (
 
       <Toolbar className={classes.bar}>
-        <Button dense onClick={handleSave}><RunIcon/> Сформировать</Button>
+        <Button dense onClick={handleSave}><i className="fa fa-play fa-fw"></i> Сформировать</Button>
 
         <Typography type="title" color="inherit" className={classes.flex}> </Typography>
 

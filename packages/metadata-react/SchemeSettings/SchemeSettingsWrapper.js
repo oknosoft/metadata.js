@@ -17,6 +17,7 @@ import Menu, {MenuItem} from 'material-ui/Menu';
 import DnR from '../DnR/Dialog'
 
 import SchemeSettingsTabs from './SchemeSettingsTabs';
+import SearchBox from './SearchBox';
 
 export default class SchemeSettingsWrapper extends Component {
 
@@ -85,12 +86,6 @@ export default class SchemeSettingsWrapper extends Component {
 
   };
 
-  componentDidMount = () => {
-    if(this.searchInput) {
-      this.searchInput.input.placeholder = 'Найти...';
-    }
-  };
-
   handleFullscreenClick() {
     this.setState({
       fullscreen: !this.state.fullscreen
@@ -117,21 +112,14 @@ export default class SchemeSettingsWrapper extends Component {
     const {show_search, show_variants, tabParams} = props;
 
     return (
-      <div style={{display: 'inline-flex'}}>
+      <div style={{display: 'inline-flex', alignItems: 'baseline'}}>
         {/* Search box */
-          show_search ? <TextField
-          ref={(search) => {
-            this.searchInput = search;
-          }}
-          width={300}
-          underlineShow={false}
-          onChange={handleSearchChange}
-          disabled/> : null
+          show_search && <SearchBox onChange={handleSearchChange}/>
         }
 
 
         {/* Variants */
-          show_variants && scheme && <Button dense onClick={this.handleMenuOpen}>{scheme.name}</Button>
+          show_variants && scheme && <Button dense onClick={this.handleMenuOpen} style={{alignSelf: 'center'}}>{scheme.name}</Button>
         }
         {/* Variants */
           show_variants && scheme && this.Variants()
