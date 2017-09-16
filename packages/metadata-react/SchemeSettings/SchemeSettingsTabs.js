@@ -65,22 +65,25 @@ export default class SchemeSettingsTabs extends Component {
     return {width, height};
   }
 
-  render() {
-
-    const {state, props, sizes} = this;
-    const {scheme, handleSchemeChange, handleDialogClose, handleOk, tabParams} = props;
-    const {value} = state;
-    const rowSelection = {
+  rowSelection() {
+    return {
       showCheckbox: true,
       enableShiftSelect: true,
       selectBy: {
         keys: {
           rowKey: 'field',
           markKey: 'use',
-          values: scheme.used_fields()
+          values: this.scheme.used_fields()
         }
       }
-    };
+    }
+  }
+
+  render() {
+
+    const {state, props, sizes} = this;
+    const {scheme, handleSchemeChange, handleDialogClose, handleOk, tabParams} = props;
+    const {value} = state;
 
     return <div>
       <AppBar position="static" color="default">
@@ -113,20 +116,20 @@ export default class SchemeSettingsTabs extends Component {
             <TabularSection _obj={scheme} _tabular="params"/>
         ))}
 
-        {value === 1 && <TabularSection _obj={scheme} _tabular="fields" rowSelection={rowSelection} denyAddDel={true}/>}
+        {value === 1 && <TabularSection _obj={scheme} _tabular="fields" rowSelection={this.rowSelection()} denyAddDel={true}/>}
 
-        {value === 2 && <TabularSection _obj={scheme} _tabular="selection" rowSelection={rowSelection}/>}
+        {value === 2 && <TabularSection _obj={scheme} _tabular="selection" rowSelection={this.rowSelection()}/>}
 
         {value === 3 && <FormGroup style={{minHeight: 340, margin: 8}}>
           <FormGroup row style={{minHeight: 160, height: '50%'}}>
-            <TabularSection _obj={scheme} _tabular="dimensions" rowSelection={rowSelection} minHeight={130} />
+            <TabularSection _obj={scheme} _tabular="dimensions" rowSelection={this.rowSelection()} minHeight={130} />
           </FormGroup>
           <FormGroup row>
             <TabularSection _obj={scheme} _tabular="resources" minHeight={130}/>
           </FormGroup>
         </FormGroup>}
 
-        {value === 4 && <TabularSection _obj={scheme} _tabular="sorting" rowSelection={rowSelection}/>}
+        {value === 4 && <TabularSection _obj={scheme} _tabular="sorting" rowSelection={this.rowSelection()}/>}
 
         {value === 5 && <SchemeSettingsSelect scheme={scheme} handleSchemeChange={handleSchemeChange} />}
       </div>

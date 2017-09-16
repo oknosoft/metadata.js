@@ -4,16 +4,16 @@
  * Created by Evgeniy Malyarov on 15.09.2017.
  */
 
-// @flow
 
 import React from 'react';
-import compose from 'recompose/compose';
-import pure from 'recompose/pure';
 import PropTypes from 'prop-types';
-import withWidth, { isWidthUp } from 'material-ui/utils/withWidth';
+
+import compose from 'recompose/compose';
+import onlyUpdateForKeys from 'recompose/onlyUpdateForKeys';
+import withWidth, {isWidthUp} from 'material-ui/utils/withWidth';
 import SearchIcon from 'material-ui-icons/Search';
-import { fade } from 'material-ui/styles/colorManipulator';
-import { withStyles } from 'material-ui/styles';
+import {fade} from 'material-ui/styles/colorManipulator';
+import {withStyles} from 'material-ui/styles';
 
 const styles = theme => ({
   wrapper: {
@@ -31,7 +31,7 @@ const styles = theme => ({
       '&:focus': {
         width: 220,
         background: theme.palette.common.white,
-       // border: '1px solid #e0e0e0',
+        // border: '1px solid #e0e0e0',
       },
     },
   },
@@ -63,17 +63,17 @@ const styles = theme => ({
 });
 
 function SearchBox(props) {
-  const { classes, width } = props;
+  const {classes, width} = props;
 
-  if (!isWidthUp('sm', width)) {
+  if(!isWidthUp('sm', width)) {
     return null;
   }
 
   return (
     <div className={classes.wrapper}>
-      <input className={classes.input} placeholder="Поиск..." onChange={props.onChange} />
+      <input className={classes.input} placeholder="Поиск..." onChange={props.onChange}/>
       <div className={classes.search}>
-        <SearchIcon />
+        <SearchIcon/>
       </div>
     </div>
   );
@@ -88,5 +88,5 @@ SearchBox.propTypes = {
 export default compose(
   withStyles(styles, {name: 'SearchBox'}),
   withWidth(),
-  pure,
+  onlyUpdateForKeys(['width', 'value']),
 )(SearchBox);

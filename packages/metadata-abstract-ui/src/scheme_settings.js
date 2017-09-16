@@ -618,53 +618,38 @@ export default function scheme_settings() {
 
 	this.CatScheme_settingsSelectionRow = class CatScheme_settingsSelectionRow extends TabularSectionRow {
 
-		get parent() {
-			return this._getter('parent');
-		}
+		get parent() {return this._getter('parent')}
+		set parent(v) {this._setter('parent', v)}
 
-		set parent(v) {
-			this._setter('parent', v);
-		}
+		get use() {return this._getter('use')}
+		set use(v) {this._setter('use', v)}
 
-		get use() {
-			return this._getter('use');
-		}
+		get left_value() {return this._getter('left_value')}
+		set left_value(v) {this._setter('left_value', v)}
 
-		set use(v) {
-			this._setter('use', v);
-		}
+    get left_value_type() {return this._getter('left_value_type')}
+    set left_value_type(v) {this._setter('left_value_type', v)}
 
-		get left_value() {
-			return this._getter('left_value');
-		}
+    get left_is_path() {return this._getter('left_is_path')}
+    set left_is_path(v) {this._setter('left_is_path', v)}
 
-		set left_value(v) {
-			this._setter('left_value', v);
-		}
+		get comparison_type() {return this._getter('comparison_type')}
+		set comparison_type(v) {this._setter('comparison_type', v)}
 
-		get comparison_type() {
-			return this._getter('comparison_type');
-		}
+		get right_value() {return this._getter('right_value')}
+		set right_value(v) {this._setter('right_value', v)}
 
-		set comparison_type(v) {
-			this._setter('comparison_type', v);
-		}
+    get right_value_type() {return this._getter('right_value_type')}
+    set right_value_type(v) {this._setter('right_value_type', v)}
 
-		get right_value() {
-			return this._getter('right_value');
-		}
-
-		set right_value(v) {
-			this._setter('right_value', v);
-		}
+    get right_is_path() {return this._getter('right_is_path')}
+    set right_is_path(v) {this._setter('right_is_path', v)}
 	};
 
 	this.CatScheme_settingsParamsRow = class CatScheme_settingsParamsRow extends TabularSectionRow {
-
 		get param() {
 			return this._getter('param');
 		}
-
 		set param(v) {
 			this._setter('param', v);
 		}
@@ -672,10 +657,15 @@ export default function scheme_settings() {
 		get value() {
 			return this._getter('value');
 		}
-
 		set value(v) {
 			this._setter('value', v);
 		}
+
+    get value_type() {return this._getter('value_type')}
+    set value_type(v) {this._setter('value_type', v)}
+
+    get quick_access() {return this._getter('quick_access')}
+    set quick_access(v) {this._setter('quick_access', v)}
 	};
 
 	this.CatScheme_settingsCompositionRow = class CatScheme_settingsCompositionRow extends this.CatScheme_settingsDimensionsRow {

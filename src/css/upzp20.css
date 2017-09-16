@@ -24,10 +24,8 @@ html, body {
 }
 
 .svgs-area {
-    width: 100%;
-    height: 88px;
-    clear: both;
-    overflow: hidden;
+    max-height: 180px;
+    overflow: auto;
 }
 
 .svgs-minmax {

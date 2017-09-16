@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.2-beta.28, built:2017-09-14
+ metadata-abstract-ui v2.0.2-beta.28, built:2017-09-16
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -549,36 +549,24 @@ function scheme_settings() {
 		}
 	};
 	this.CatScheme_settingsSelectionRow = class CatScheme_settingsSelectionRow extends TabularSectionRow {
-		get parent() {
-			return this._getter('parent');
-		}
-		set parent(v) {
-			this._setter('parent', v);
-		}
-		get use() {
-			return this._getter('use');
-		}
-		set use(v) {
-			this._setter('use', v);
-		}
-		get left_value() {
-			return this._getter('left_value');
-		}
-		set left_value(v) {
-			this._setter('left_value', v);
-		}
-		get comparison_type() {
-			return this._getter('comparison_type');
-		}
-		set comparison_type(v) {
-			this._setter('comparison_type', v);
-		}
-		get right_value() {
-			return this._getter('right_value');
-		}
-		set right_value(v) {
-			this._setter('right_value', v);
-		}
+		get parent() {return this._getter('parent')}
+		set parent(v) {this._setter('parent', v);}
+		get use() {return this._getter('use')}
+		set use(v) {this._setter('use', v);}
+		get left_value() {return this._getter('left_value')}
+		set left_value(v) {this._setter('left_value', v);}
+    get left_value_type() {return this._getter('left_value_type')}
+    set left_value_type(v) {this._setter('left_value_type', v);}
+    get left_is_path() {return this._getter('left_is_path')}
+    set left_is_path(v) {this._setter('left_is_path', v);}
+		get comparison_type() {return this._getter('comparison_type')}
+		set comparison_type(v) {this._setter('comparison_type', v);}
+		get right_value() {return this._getter('right_value')}
+		set right_value(v) {this._setter('right_value', v);}
+    get right_value_type() {return this._getter('right_value_type')}
+    set right_value_type(v) {this._setter('right_value_type', v);}
+    get right_is_path() {return this._getter('right_is_path')}
+    set right_is_path(v) {this._setter('right_is_path', v);}
 	};
 	this.CatScheme_settingsParamsRow = class CatScheme_settingsParamsRow extends TabularSectionRow {
 		get param() {
@@ -593,6 +581,10 @@ function scheme_settings() {
 		set value(v) {
 			this._setter('value', v);
 		}
+    get value_type() {return this._getter('value_type')}
+    set value_type(v) {this._setter('value_type', v);}
+    get quick_access() {return this._getter('quick_access')}
+    set quick_access(v) {this._setter('quick_access', v);}
 	};
 	this.CatScheme_settingsCompositionRow = class CatScheme_settingsCompositionRow extends this.CatScheme_settingsDimensionsRow {
 		get kind() {
