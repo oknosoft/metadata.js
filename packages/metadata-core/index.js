@@ -336,7 +336,9 @@ class TabularSection {
 		return row;
 	}
 	each(fn) {
-		this._obj.forEach((row) => fn.call(this, row._row));
+	  for(let row of this._obj){
+	    if(fn.call(this, row._row) === false) break;
+    }
 	}
 	get forEach() {
 		return this.each
