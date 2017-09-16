@@ -286,7 +286,7 @@ class TabularSection {
         }
       }
 		}
-		if (index == undefined){
+		if (index == undefined || !_obj[index]){
       return;
     }
     if(!_data._loading && _owner.del_row(_obj[index]._row) === false){

@@ -142,7 +142,7 @@ export class TabularSection {
         }
       }
 		}
-		if (index == undefined){
+		if (index == undefined || !_obj[index]){
       return;
     }
 

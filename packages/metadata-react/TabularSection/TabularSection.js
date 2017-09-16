@@ -114,25 +114,25 @@ export default class TabularSection extends Component {
   };
 
   onRowsSelected = (rows) => {
-    const {rowSelection} = this.props;
+    const {keys} = this.props.rowSelection.selectBy;
     this.setState({
       selectedIds: this.state.selectedIds.concat(
         rows.map(r => {
-          if(rowSelection.selectBy.keys.markKey) {
-            r.row[rowSelection.selectBy.keys.markKey] = true;
+          if(keys.markKey) {
+            r.row[keys.markKey] = true;
           }
-          return r.row[rowSelection.selectBy.keys.rowKey];
+          return r.row[keys.rowKey];
         }))
     });
   };
 
   onRowsDeselected = (rows) => {
-    const {rowSelection} = this.props;
+    const {keys} = this.props.rowSelection.selectBy;
     let rowIds = rows.map(r => {
-      if(rowSelection.selectBy.keys.markKey) {
-        r.row[rowSelection.selectBy.keys.markKey] = false;
+      if(keys.markKey) {
+        r.row[keys.markKey] = false;
       }
-      return r.row[rowSelection.selectBy.keys.rowKey];
+      return r.row[keys.rowKey];
     });
     this.setState({
       selectedIds: this.state.selectedIds.filter(i => rowIds.indexOf(i) === -1)
