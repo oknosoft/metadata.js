@@ -41,6 +41,7 @@ function rx_columns($p) {
   return function columns({mode, fields, _obj}) {
 
     const res = this.columns(mode);
+    const {input, text, label, link, cascader, toggle, image, type, path} = $p.enm.data_field_kinds;
 
     if(fields) {
       res.forEach((column) => {
@@ -57,38 +58,31 @@ function rx_columns($p) {
           }
         }
 
+        let options;
         switch (column.ctrl_type) {
 
-        case 'input':
+        case input:
+        case text:
+        case label:
+        case link:
+        case cascader:
+        case toggle:
           column.editable = true;
           break;
 
-        case 'ocombo':
-          column.editor = <DataCell />;
-          break;
-
-        case 'ofields':
-          const options = _obj.used_fields_list();
+        case path:
+          options = _obj.used_fields_list();
           column.editor = <DropDownEditor options={options}/>;
           column.formatter = <DropDownFormatter options={options} value=""/>;
           break;
 
-        case 'path':
-          column.editor = <DropDownEditor options={options}/>;
-          //column.formatter = <DropDownFormatter options={[]} value=""/>;
-          break;
-
-        case 'type':
+        case type:
           column.editor = <TypeFieldCell />;
           //column.formatter = <DropDownFormatter options={[]} value=""/>;
           break;
 
-        case 'dhxCalendar':
-          column.editor = <DataCell />;
-          break;
-
         default:
-          ;
+          column.editor = <DataCell />;
         }
 
       });
