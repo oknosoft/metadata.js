@@ -112,62 +112,60 @@ var meta = {
         data_field_kinds: [
           {
             order: 0,
-            name: 'input',
+            name: 'field',
             synonym: 'Поле ввода'
           },
           {
             order: 1,
-            name: 'label',
-            synonym: 'Поле надписи'
+            name: 'input',
+            synonym: 'Простой текст'
           },
           {
             order: 2,
-            name: 'toggle',
-            synonym: 'Переключатель'
-          },
-          {
-            order: 3,
-            name: 'image',
-            synonym: 'Картинка'
-          },
-          {
-            order: 4,
-            name: 'svg',
-            synonym: 'Картинка SVG'
-          },
-          {
-            order: 5,
             name: 'text',
             synonym: 'Многострочный текст'
           },
           {
+            order: 3,
+            name: 'label',
+            synonym: 'Поле надписи'
+          },
+          {
+            order: 4,
+            name: 'link',
+            synonym: 'Гиперссылка'
+          },
+          {
+            order: 5,
+            name: 'cascader',
+            synonym: 'Каскадер'
+          },
+          {
             order: 6,
+            name: 'toggle',
+            synonym: 'Переключатель'
+          },
+          {
+            order: 7,
+            name: 'image',
+            synonym: 'Картинка'
+          },
+          {
+            order: 8,
             name: 'type',
             synonym: 'Тип значения'
           },
           {
-            order: 7,
+            order: 9,
             name: 'path',
             synonym: 'Путь к данным'
           },
           {
-            order: 8,
-            name: 'cascader',
-            synonym: 'Каскадер'
+            order: 10,
+            name: 'typed_field',
+            synonym: 'Поле связи по типу'
           },
         ],
-        value_kinds: [
-          {
-            order: 0,
-            name: 'value',
-            synonym: 'Значение'
-          },
-          {
-            order: 1,
-            name: 'path',
-            synonym: 'Путь к данным'
-          },
-        ]
       },
       cat: {
         meta_objs: {

@@ -1,5 +1,6 @@
-import React, {Component} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
+import MComponent from '../common/MComponent';
 
 import ReactDataGrid from 'react-data-grid';
 import DataCell from '../DataField/DataCell';
@@ -11,7 +12,7 @@ import LoadingMessage from '../DumbLoader/LoadingMessage';
 // import withStyles from 'material-ui/styles/withStyles';
 // import styles from './TabularSection.scss';
 
-export default class TabularSection extends Component {
+export default class TabularSection extends MComponent {
 
   static propTypes = {
     _obj: PropTypes.object.isRequired,
@@ -110,7 +111,14 @@ export default class TabularSection extends Component {
       _obj: props._obj
     });
 
-    this.setState({scheme, _columns});
+    if(this._mounted) {
+      this.setState({scheme, _columns});
+    }
+    else {
+      Object.assign(state, {scheme, _columns});
+    }
+
+
   };
 
   onRowsSelected = (rows) => {

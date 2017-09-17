@@ -1,5 +1,6 @@
-import React, {Component} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
+import MComponent from '../common/MComponent';
 
 import {FormGroup} from 'material-ui/Form';
 import Divider from 'material-ui/Divider';
@@ -12,11 +13,11 @@ import TabularSection from '../TabularSection';
 
 import withStyles from '../styles/paper600'
 
-class DataObj extends Component {
+class DataObj extends MComponent {
 
   static propTypes = {
     _mgr: PropTypes.object,             // DataManager, с которым будет связан компонент
-    _acl: PropTypes.string.isRequired,  // Права на чтение-изменение
+    _acl: PropTypes.string,             // Права на чтение-изменение
     _meta: PropTypes.object,            // Здесь можно переопределить метаданные
     _layout: PropTypes.object,          // Состав и расположение полей, если не задано - рисуем типовую форму
 
@@ -25,9 +26,7 @@ class DataObj extends Component {
     handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
   };
 
-  static contextTypes = {
-    dnr: PropTypes.object
-  };
+
 
   constructor(props, context) {
     super(props, context);
@@ -42,7 +41,7 @@ class DataObj extends Component {
     };
     this.state = {_meta: _meta || _mgr.metadata()};
     _mgr.get(match.params.ref, 'promise').then((_obj) => {
-      if(this._isMounted) {
+      if(this._mounted) {
         this.setState({_obj});
       }
       else {
@@ -132,15 +131,6 @@ class DataObj extends Component {
     }
 
     return elements.length === 0 ? null : <FormGroup>{elements}</FormGroup>;
-  }
-
-
-  componentDidMount() {
-    this._isMounted = true;
-  }
-
-  componentWillUnmount() {
-    this._isMounted = false;
   }
 
   render() {

@@ -10,12 +10,12 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
 import {Editors, Formatters} from 'react-data-grid-addons';
-const AutoCompleteEditor = Editors.AutoComplete;
-const DropDownEditor = Editors.DropDownEditor;
-const DropDownFormatter = Formatters.DropDownFormatter;
+const {CheckboxEditor, DropDownEditor} = Editors;
+const {DropDownFormatter, ImageFormatter} = Formatters;
 
 import DataCell from './DataField/DataCell';
 import TypeFieldCell from './TypeField/TypeFieldCell';
+import PathFieldCell from './PathField/PathFieldCell';
 
 
 function rx_columns($p) {
@@ -66,14 +66,18 @@ function rx_columns($p) {
         case label:
         case link:
         case cascader:
-        case toggle:
           column.editable = true;
           break;
 
+        case toggle:
+          column.editor = <CheckboxEditor />;
+          break;
+
         case path:
-          options = _obj.used_fields_list();
-          column.editor = <DropDownEditor options={options}/>;
-          column.formatter = <DropDownFormatter options={options} value=""/>;
+          // options = _obj.used_fields_list();
+          // column.editor = <DropDownEditor options={options}/>;
+          // column.formatter = <DropDownFormatter options={options} value=""/>;
+          column.editor = <PathFieldCell />;
           break;
 
         case type:

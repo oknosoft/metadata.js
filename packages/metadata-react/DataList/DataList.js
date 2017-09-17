@@ -1,6 +1,7 @@
 /** @flow */
-import React, {Component} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
+import MComponent from '../common/MComponent';
 
 import {InfiniteLoader, AutoSizer, MultiGrid} from 'react-virtualized';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
@@ -14,13 +15,37 @@ import withStyles from './styles';
 import control_by_type from 'metadata-abstract-ui/src/ui';
 
 
-class DataList extends Component {
+class DataList extends MComponent {
 
   static LIMIT = 40;
   static OVERSCAN_ROW_COUNT = 2;
   static OVERSCAN_COLUMN_COUNT = 2;
   static COLUMN_HEIGHT = 33;
   static COLUMN_DEFAULT_WIDTH = 220;
+
+  static propTypes = {
+
+    // данные
+    _mgr: PropTypes.object.isRequired,    // Менеджер данных
+    _acl: PropTypes.string,               // Права на чтение-изменение
+    _meta: PropTypes.object,              // Описание метаданных. Если не указано, используем метаданные менеджера
+
+    // настройки компоновки
+    select: PropTypes.object,             // todo: переместить в scheme // Параметры запроса к couchdb. Если не указано - генерируем по метаданным
+
+    // настройки внешнего вида и поведения
+    selection_mode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисуем кнопку выбора
+    read_only: PropTypes.object,          // Элемент только для чтения
+    denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+    show_search: PropTypes.bool,          // Показывать поле поиска
+    show_variants: PropTypes.bool,        // Показывать список вариантов настройки динсписка
+    modal: PropTypes.bool,                // Показывать список в модальном диалоге
+    Toolbar: PropTypes.func,              // Индивидуальная панель инструментов. Если не указана, рисуем типовую
+
+    // Redux actions
+    handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
+
+  }
 
   constructor(props, context) {
     super(props, context);
@@ -49,7 +74,6 @@ class DataList extends Component {
     this._list = new Map();
     $p.cat.scheme_settings.get_scheme(class_name).then(this.handleSchemeChange);
 
-    this._isMounted = false;
   }
 
   // обработчик выбора значения в списке
@@ -121,7 +145,7 @@ class DataList extends Component {
     this._list.set(0, columns.map(column => (column.synonym)));
 
 
-    if(this._isMounted) {
+    if(this._mounted) {
       this.setState({scheme, columns, rowsLoaded: 1});
     }
     else {
@@ -151,14 +175,6 @@ class DataList extends Component {
       handleAttachment(row, _mgr);
     }
   };
-
-  componentDidMount() {
-    this._isMounted = true;
-  }
-
-  componentWillUnmount() {
-    this._isMounted = false;
-  }
 
   get sizes() {
     const {dnr} = this.context;
@@ -386,7 +402,7 @@ class DataList extends Component {
         }
       }
       // Обновить количество записей.
-      this._isMounted && reallyLoadedRows && this.setState({rowsLoaded: this.state.rowsLoaded + reallyLoadedRows});
+      this._mounted && reallyLoadedRows && this.setState({rowsLoaded: this.state.rowsLoaded + reallyLoadedRows});
     };
 
     Object.assign(select, {
@@ -411,31 +427,5 @@ class DataList extends Component {
   };
 }
 
-DataList.propTypes = {
-
-  // данные
-  _mgr: PropTypes.object.isRequired,    // Менеджер данных
-  _meta: PropTypes.object,              // Описание метаданных. Если не указано, используем метаданные менеджера
-
-  // настройки компоновки
-  select: PropTypes.object,             // todo: переместить в scheme // Параметры запроса к couchdb. Если не указано - генерируем по метаданным
-
-  // настройки внешнего вида и поведения
-  selection_mode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисуем кнопку выбора
-  read_only: PropTypes.object,          // Элемент только для чтения
-  denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
-  show_search: PropTypes.bool,          // Показывать поле поиска
-  show_variants: PropTypes.bool,        // Показывать список вариантов настройки динсписка
-  modal: PropTypes.bool,                // Показывать список в модальном диалоге
-  Toolbar: PropTypes.func,              // Индивидуальная панель инструментов. Если не указана, рисуем типовую
-
-  // Redux actions
-  handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
-
-};
-
-DataList.contextTypes = {
-  dnr: PropTypes.object
-};
 
 export default withStyles(DataList);

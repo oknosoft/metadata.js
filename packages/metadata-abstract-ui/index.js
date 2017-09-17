@@ -328,10 +328,8 @@ function scheme_settings() {
       this._setter_ts('composition', v);
     }
     fill_default(class_name) {
-      const parts = class_name.split('.'),
-        _mgr = md.mgr_by_class_name(class_name),
-        _meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]),
-        columns = [];
+      const {parts, _mgr, _meta} = this.child_meta(class_name);
+      const columns = [];
       function add_column(fld, use) {
         const id = fld.id || fld,
           fld_meta = _meta.fields[id] || _mgr.metadata(id);
@@ -395,6 +393,15 @@ function scheme_settings() {
         this.date_till = utils.date_add_day(new Date(), 1);
       }
       return this;
+    }
+    child_meta(class_name) {
+      if(!class_name){
+        class_name = this.obj;
+      }
+      const parts = class_name.split('.'),
+        _mgr = md.mgr_by_class_name(class_name),
+        _meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]);
+      return {parts, _mgr, _meta}
     }
     set_default() {
       wsql.set_user_param(this._manager.scheme_name(this.obj), this.ref);
@@ -465,17 +472,15 @@ function scheme_settings() {
     }
     used_fields(parent) {
       const res = [];
-      this.fields.find_rows({use: true}, (row) => {
-        res.push(row.field);
-      });
+      this.fields.find_rows({use: true}, ({field}) => res.push(field));
       return res;
     }
     used_fields_list() {
-      return this.fields._obj.map((row) => ({
-        id: row.field,
-        value: row.field,
-        text: row.caption,
-        title: row.caption,
+      return this.fields._obj.map(({field, caption}) => ({
+        id: field,
+        value: field,
+        text: caption,
+        title: caption,
       }));
     }
   };
