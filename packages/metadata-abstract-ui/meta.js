@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.2-beta.28, built:2017-09-16
+ metadata-abstract-ui v2.0.2-beta.28, built:2017-09-17
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -123,17 +123,37 @@ var meta = {
           {
             order: 2,
             name: 'toggle',
-            synonym: 'Поле переключателя'
+            synonym: 'Переключатель'
           },
           {
             order: 3,
             name: 'image',
-            synonym: 'Поле картинки'
+            synonym: 'Картинка'
           },
           {
             order: 4,
+            name: 'svg',
+            synonym: 'Картинка SVG'
+          },
+          {
+            order: 5,
             name: 'text',
-            synonym: 'Редактор многострочного текста'
+            synonym: 'Многострочный текст'
+          },
+          {
+            order: 6,
+            name: 'type',
+            synonym: 'Тип значения'
+          },
+          {
+            order: 7,
+            name: 'path',
+            synonym: 'Путь к данным'
+          },
+          {
+            order: 8,
+            name: 'cascader',
+            synonym: 'Каскадер'
           },
         ],
         value_kinds: [
@@ -172,9 +192,7 @@ var meta = {
               synonym: 'Объект',
               tooltip: 'Имя класса метаданных',
               type: {
-                types: [
-                  'string'
-                ],
+                types: ['string'],
                 str_len: 250
               }
             },
@@ -182,9 +200,7 @@ var meta = {
               synonym: 'Пользователь',
               tooltip: 'Если пусто - публичная настройка',
               type: {
-                types: [
-                  'string'
-                ],
+                types: ['string'],
                 str_len: 50
               }
             },
@@ -192,9 +208,7 @@ var meta = {
               synonym: 'Порядок',
               tooltip: 'Порядок варианта',
               type: {
-                types: [
-                  'number'
-                ],
+                types: ['number'],
                 digits: 6,
                 fraction_figits: 0,
               }
@@ -203,9 +217,7 @@ var meta = {
               synonym: 'Запрос',
               tooltip: 'Индекс CouchDB или текст SQL',
               type: {
-                types: [
-                  'string'
-                ],
+                types: ['string'],
                 str_len: 0
               }
             },
@@ -213,9 +225,7 @@ var meta = {
               'synonym': 'Начало периода',
               'tooltip': '',
               'type': {
-                'types': [
-                  'date'
-                ],
+                'types': ['date'],
                 'date_part': 'date'
               }
             },
@@ -223,9 +233,7 @@ var meta = {
               'synonym': 'Конец периода',
               'tooltip': '',
               'type': {
-                'types': [
-                  'date'
-                ],
+                'types': ['date'],
                 'date_part': 'date'
               }
             },
@@ -233,18 +241,14 @@ var meta = {
               synonym: 'Формула',
               tooltip: 'Формула инициализации',
               type: {
-                types: [
-                  'cat.formulas'
-                ],
+                types: ['cat.formulas'],
                 is_ref: true
               }
             },
             tag: {
               synonym: 'Дополнительные свойства',
               type: {
-                types: [
-                  'string'
-                ],
+                types: ['string'],
                 str_len: 0
               }
             }
@@ -259,9 +263,7 @@ var meta = {
                   synonym: 'Родитель',
                   tooltip: 'Для плоского списка, родитель пустой',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 100
                   }
                 },
@@ -269,18 +271,14 @@ var meta = {
                   synonym: 'Использование',
                   tooltip: '',
                   type: {
-                    types: [
-                      'boolean'
-                    ]
+                    types: ['boolean']
                   }
                 },
                 field: {
                   synonym: 'Поле',
                   tooltip: '',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 100
                   }
                 },
@@ -288,9 +286,7 @@ var meta = {
                   synonym: 'Ширина',
                   tooltip: '',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 6
                   }
                 },
@@ -298,9 +294,7 @@ var meta = {
                   synonym: 'Заголовок',
                   tooltip: '',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 100
                   }
                 },
@@ -308,9 +302,7 @@ var meta = {
                   synonym: 'Подсказка',
                   tooltip: '',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 100
                   }
                 },
@@ -318,19 +310,15 @@ var meta = {
                   synonym: 'Тип',
                   tooltip: 'Тип элемента управления',
                   type: {
-                    types: [
-                      'string'
-                    ],
-                    str_len: 100
+                    types: ['enm.data_field_kinds'],
+                    is_ref: true
                   }
                 },
                 formatter: {
                   synonym: 'Формат',
                   tooltip: 'Функция форматирования',
                   type: {
-                    types: [
-                      'cat.formulas'
-                    ],
+                    types: ['cat.formulas'],
                     is_ref: true
                   }
                 },
@@ -338,9 +326,7 @@ var meta = {
                   synonym: 'Редактор',
                   tooltip: 'Компонент редактирования',
                   type: {
-                    types: [
-                      'cat.formulas'
-                    ],
+                    types: ['cat.formulas'],
                     is_ref: true
                   }
                 }
@@ -355,9 +341,7 @@ var meta = {
                   synonym: 'Родитель',
                   tooltip: '',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 100
                   }
                 },
@@ -365,18 +349,14 @@ var meta = {
                   synonym: 'Использование',
                   tooltip: '',
                   type: {
-                    types: [
-                      'boolean'
-                    ]
+                    types: ['boolean']
                   }
                 },
                 field: {
                   synonym: 'Поле',
                   tooltip: '',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 100
                   }
                 },
@@ -384,10 +364,8 @@ var meta = {
                   synonym: 'Направление',
                   tooltip: '',
                   type: {
-                    types: [
-                      'enm.sort_directions'
-                    ],
-                    'is_ref': true
+                    types: ['enm.sort_directions'],
+                    is_ref: true
                   }
                 }
               }
@@ -401,9 +379,7 @@ var meta = {
                   synonym: 'Родитель',
                   tooltip: '',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 100
                   }
                 },
@@ -411,18 +387,14 @@ var meta = {
                   synonym: 'Использование',
                   tooltip: '',
                   type: {
-                    types: [
-                      'boolean'
-                    ]
+                    types: ['boolean']
                   }
                 },
                 field: {
                   synonym: 'Поле',
                   tooltip: '',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 100
                   }
                 }
@@ -437,9 +409,7 @@ var meta = {
                   synonym: 'Родитель',
                   tooltip: '',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 100
                   }
                 },
@@ -447,18 +417,14 @@ var meta = {
                   synonym: 'Использование',
                   tooltip: '',
                   type: {
-                    types: [
-                      'boolean'
-                    ]
+                    types: ['boolean']
                   }
                 },
                 field: {
                   synonym: 'Поле',
                   tooltip: '',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 100
                   }
                 },
@@ -466,9 +432,7 @@ var meta = {
                   synonym: 'Формула',
                   tooltip: 'По умолчанию - сумма',
                   type: {
-                    types: [
-                      'cat.formulas'
-                    ],
+                    types: ['cat.formulas'],
                     is_ref: true
                   }
                 }
@@ -483,9 +447,7 @@ var meta = {
                   synonym: 'Родитель',
                   tooltip: '',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 100
                   }
                 },
@@ -493,48 +455,31 @@ var meta = {
                   synonym: 'Использование',
                   tooltip: '',
                   type: {
-                    types: [
-                      'boolean'
-                    ]
+                    types: ['boolean']
                   }
                 },
                 left_value: {
                   synonym: 'Левое значение',
                   tooltip: 'Путь к данным',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 255
                   }
                 },
                 left_value_type: {
                   synonym: 'Тип слева',
                   tooltip: 'Тип значения слева',
+                  default: 'path',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 100
-                  }
-                },
-                left_is_path: {
-                  synonym: 'Путь слева',
-                  tooltip: 'Слева значение или путь к данным',
-                  type: {
-                    types: [
-                      'enm.value_kinds'
-                    ],
-                    'is_ref': true
                   }
                 },
                 comparison_type: {
                   synonym: 'Вид сравнения',
                   tooltip: '',
                   type: {
-                    types: [
-                      'enm.comparison_types'
-                    ],
+                    types: ['enm.comparison_types'],
                     is_ref: true
                   }
                 },
@@ -542,30 +487,17 @@ var meta = {
                   synonym: 'Правое значение',
                   tooltip: '',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 100
                   }
                 },
                 right_value_type: {
                   synonym: 'Тип справа',
                   tooltip: 'Тип значения справа',
+                  default: 'path',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 100
-                  }
-                },
-                right_is_path: {
-                  synonym: 'Путь справа',
-                  tooltip: 'Cправа значение или путь к данным',
-                  type: {
-                    types: [
-                      'enm.value_kinds'
-                    ],
-                    'is_ref': true
                   }
                 },
               }
@@ -579,9 +511,7 @@ var meta = {
                   synonym: 'Параметр',
                   tooltip: '',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 100
                   }
                 },
@@ -589,9 +519,7 @@ var meta = {
                   synonym: 'Тип',
                   tooltip: 'Тип значения',
                   type: {
-                    types: [
-                      'string'
-                    ],
+                    types: ['string'],
                     str_len: 100
                   }
                 },
@@ -602,7 +530,6 @@ var meta = {
                     types: [
                       'string',
                       'number',
-                      'date',
                     ],
                     str_len: 0,
                     digits: 15,
@@ -614,9 +541,7 @@ var meta = {
                   synonym: 'Быстрый доступ',
                   tooltip: 'Размещать на нанели инструментов',
                   type: {
-                    types: [
-                      'boolean'
-                    ]
+                    types: ['boolean']
                   }
                 }
               }
@@ -631,9 +556,7 @@ var meta = {
                   'multiline_mode': false,
                   'tooltip': '',
                   'type': {
-                    'types': [
-                      'string'
-                    ],
+                    'types': ['string'],
                     'str_len': 10
                   }
                 },
@@ -641,18 +564,14 @@ var meta = {
                   synonym: 'Использование',
                   tooltip: '',
                   type: {
-                    types: [
-                      'boolean'
-                    ]
+                    types: ['boolean']
                   }
                 },
                 field: {
                   'synonym': 'Элемент',
                   'tooltip': 'Элемент структуры отчета',
                   'type': {
-                    'types': [
-                      'string'
-                    ],
+                    'types': ['string'],
                     'str_len': 50
                   }
                 },
@@ -660,9 +579,7 @@ var meta = {
                   'synonym': 'Вид раздела отчета',
                   'tooltip': 'список, таблица, группировка строк, группировка колонок',
                   'type': {
-                    'types': [
-                      'string'
-                    ],
+                    'types': ['string'],
                     'str_len': 50
                   }
                 },
@@ -670,9 +587,7 @@ var meta = {
                   'synonym': 'Описание',
                   'tooltip': 'Описание раздела структуры',
                   'type': {
-                    'types': [
-                      'string'
-                    ],
+                    'types': ['string'],
                     'str_len': 50
                   }
                 }
@@ -692,9 +607,7 @@ var meta = {
               tooltip: 'Текущий вариант настроек',
               mandatory: true,
               type: {
-                types: [
-                  'cat.scheme_settings'
-                ],
+                types: ['cat.scheme_settings'],
                 is_ref: true
               }
             }
