@@ -40,20 +40,29 @@ class PathField extends Component {
     this.state = {defaultValue, inputValue, options};
   }
 
+  /**
+   * Заполняет нулевой и первый уровни
+   * @return {Array}
+   */
   fill_options() {
     const options = [];
     const {_obj} = this.props;
     if(_obj._manager == $p.cat.scheme_settings){
       const {parts, _mgr, _meta} = _obj._owner._owner.child_meta();
       for(const fld in _meta.fields){
-        const {synonym, type} = _meta.fields[fld];
+        if(fld == predefined_name){
+          continue;
+        }
+        const {synonym, tooltip, type} = _meta.fields[fld];
         const option = {
-          label: synonym,
+          label: synonym || tooltip || fld,
           value: fld,
           type: type,
-          isLeaf: !type.is_ref
         };
         options.push(option);
+        if(type.is_ref){
+          this.loadData([option], 1);
+        }
       }
     }
     else{
@@ -73,22 +82,31 @@ class PathField extends Component {
     }
   };
 
-  loadData = (selectedOptions) => {
-    const targetOption = selectedOptions[selectedOptions.length - 1];
-    targetOption.loading = true;
-    setTimeout(() => {
-      targetOption.loading = false;
-      targetOption.children = [{
-        label: `${targetOption.label}м1`,
-        value: 'dynamic1',
-      }, {
-        label: `${targetOption.label}м2`,
-        value: 'dynamic2',
-      }];
-      this.setState({
-        options: [...this.state.options],
-      });
-    }, 1000);
+  loadData = (selected, init) => {
+    const targetOption = selected[selected.length - 1];
+    targetOption.children = [];
+    for(const name of targetOption.type.types){
+      const _meta = $p.md.get(name);
+      if(_meta){
+        for(const fld in _meta.fields){
+          if(fld == predefined_name){
+            continue;
+          }
+          const {synonym, tooltip, type} = _meta.fields[fld];
+          const option = {
+            label: synonym || tooltip || fld,
+            value: fld,
+            type: type,
+            isLeaf: !type.is_ref
+          };
+          targetOption.children.push(option);
+          if (option.isLeaf === false && init && init < 2){
+            this.loadData([option], 2);
+          }
+        }
+      }
+    }
+    !init && this.setState({options: [...this.state.options]});
   };
 
   prevent(e) {

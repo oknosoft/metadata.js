@@ -22,23 +22,30 @@ class FieldText extends AbstractField {
   };
 
   render() {
-    const {onChange, props, _meta} = this;
+    const {onChange, props, _meta, isTabular} = this;
     const {_obj, _fld, classes, read_only, fullWidth} = props;
 
-    return (
+    return isTabular ?
+      <input
+        type="text"
+        disabled={read_only}
+        title={_meta.tooltip || _meta.synonym}
+        placeholder={_fld}
+        defaultValue={_obj[_fld]}
+        onChange={onChange}
+      />
+      :
       <TextField
-        name={_fld}
         className={classes.formControl}
         fullWidth={fullWidth}
         margin="dense"
         disabled={read_only}
         label={_meta.synonym}
         title={_meta.tooltip || _meta.synonym}
-        InputProps={{ placeholder: _fld }}
+        InputProps={{placeholder: _fld}}
         defaultValue={_obj[_fld]}
         onChange={onChange}
-      />
-    );
+      />;
   }
 }
 

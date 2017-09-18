@@ -1,7 +1,6 @@
 /**
- * ### Поле ввода ссылочных данных
+ * ### Поле ввода ссылочных данных на базе Autosuggest
  *
- * @module FieldText
  *
  */
 
@@ -11,7 +10,7 @@ import Autosuggest from 'react-autosuggest';
 import TextField from 'material-ui/TextField';
 import Paper from 'material-ui/Paper';
 import Divider from 'material-ui/Divider';
-import MenuItem from 'material-ui/Menu/MenuItem';
+import Menu, {MenuItem} from 'material-ui/Menu';
 import {ListItem, ListItemIcon, ListItemText} from 'material-ui/List';
 import IconButton from 'material-ui/IconButton';
 import OpenInNew from 'material-ui-icons/OpenInNew';
@@ -103,29 +102,23 @@ class FieldAutosuggest extends AbstractField {
     this.setState({dialog_open: false});
   };
 
-  renderSuggestionsContainer(options) {
+  renderSuggestionsContainer = ({containerProps, children}) => {
 
-    const {containerProps, children} = options;
+    const { ref, ...restContainerProps } = containerProps;
+    const callRef = isolatedScroll => {
+      if (isolatedScroll !== null) {
+        ref(isolatedScroll.component);
+      }
+    };
+
+    const {_meta, props} = this;
+    const {_obj, _fld, classes} = props;
+    const {_manager} = _obj[_fld];
+    const is_enm = $p.utils.is_enm_mgr(_manager);
 
     return (
-      <Paper {...containerProps} square>
+      children && <Paper {...containerProps} square>
         {children}
-      </Paper>
-    );
-  };
-
-  renderSuggestion = (suggestion, {query, isHighlighted}) => {
-    // const matches = match(suggestion.label, query);
-    // const parts = parse(suggestion.label, matches);
-
-    if(suggestion._footer) {
-      const {_meta, props} = this;
-      const {_obj, _fld, classes} = props;
-      const {_manager} = _obj[_fld];
-      const is_enm = $p.utils.is_enm_mgr(_manager);
-
-      return <div>
-        <Divider/>
         <ListItem>
           <ListItemIcon onClick={this.handleOpenList}><div className={classes.a}>{is_enm ? '...' : 'Показать все'}</div></ListItemIcon>
           <ListItemText inset primary=' '/>
@@ -133,15 +126,20 @@ class FieldAutosuggest extends AbstractField {
           {!is_enm && _manager.acl.indexOf('i') != -1 && <IconButton title="Создать элемент"><AddIcon/></IconButton>}
           {!is_enm && <IconButton title={_manager.frm_obj_name} onClick={this.handleOpenObj}><OpenInNew/></IconButton>}
         </ListItem>
-      </div>;
-    }
+      </Paper>
+    );
+  };
 
-    return <MenuItem selected={isHighlighted} component="div">{this.getSuggestionValue(suggestion)}</MenuItem>;
+  renderSuggestion = (suggestion, {query, isHighlighted}) => {
+    // const matches = match(suggestion.label, query);
+    // const parts = parse(suggestion.label, matches);
+    return suggestion._footer ? <Divider /> : <MenuItem selected={isHighlighted} component="div">{this.getSuggestionValue(suggestion)}</MenuItem>;
   };
 
   renderInput = (inputProps) => {
+
     const {classes, home, value, ref, _meta, _fld, fullWidth, ...other} = inputProps;
-    //autoFocus={home}
+    //
 
     return this.isTabular ?
       <input
@@ -149,17 +147,20 @@ class FieldAutosuggest extends AbstractField {
         value={value}
         title={_meta.tooltip || _meta.synonym}
         placeholder={_fld}
+        onBlur={this.prevent}
         {...other}
       />
       :
       <TextField
         className={classes.formControl}
+        autoFocus={home}
         fullWidth={fullWidth}
         margin="dense"
         value={value}
         inputRef={ref}
         label={_meta.synonym}
         title={_meta.tooltip || _meta.synonym}
+        onBlur={this.prevent}
         InputProps={{
           classes: {input: classes.input},
           placeholder: _fld,
@@ -167,6 +168,11 @@ class FieldAutosuggest extends AbstractField {
         }}
       />;
   };
+
+  prevent(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
 
   renderDialog() {
     const {props, state, context} = this;

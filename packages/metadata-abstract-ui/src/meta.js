@@ -171,6 +171,198 @@ export default {
             synonym: 'Поле связи по типу'
           },
         ],
+        standard_period: [
+          {
+            order: 0,
+            name: 'custom',
+            synonym: 'Произвольный'
+          },
+          {
+            order: 1,
+            name: 'yesterday',
+            synonym: 'Вчера'
+          },
+          {
+            order: 2,
+            name: 'today',
+            synonym: 'Сегодня'
+          },
+          {
+            order: 3,
+            name: 'tomorrow',
+            synonym: 'Завтра'
+          },
+          {
+            order: 4,
+            name: 'last7days',
+            synonym: 'Последние 7 дней'
+          },
+          {
+            order: 5,
+            name: 'last30days',
+            synonym: 'Последние 30 дней'
+          },
+          {
+            order: 6,
+            name: 'last3Month',
+            synonym: 'Последние 3 месяца'
+          },
+          {
+            order: 7,
+            name: 'lastWeek',
+            synonym: 'Прошлая неделя'
+          },
+          {
+            order: 8,
+            name: 'lastTendays',
+            synonym: 'Прошлая декада'
+          },
+          {
+            order: 9,
+            name: 'lastMonth',
+            synonym: 'Прошлый месяц'
+          },
+          {
+            order: 10,
+            name: 'lastQuarter',
+            synonym: 'Прошлый квартал'
+          },
+          {
+            order: 11,
+            name: 'lastHalfYear',
+            synonym: 'Прошлое полугодие'
+          },
+          {
+            order: 12,
+            name: 'lastYear',
+            synonym: 'Прошлый год'
+          },
+          {
+            order: 13,
+            name: 'next7Days',
+            synonym: 'Следующие 7 дней'
+          },
+          {
+            order: 14,
+            name: 'nextTendays',
+            synonym: 'Следующая декада'
+          },
+          {
+            order: 15,
+            name: 'nextWeek',
+            synonym: 'Следующая неделя'
+          },
+          {
+            order: 16,
+            name: 'nextMonth',
+            synonym: 'Следующий месяц'
+          },
+          {
+            order: 17,
+            name: 'nextQuarter',
+            synonym: 'Следующий квартал'
+          },
+          {
+            order: 18,
+            name: 'nextHalfYear',
+            synonym: 'Следующее полугодие'
+          },
+          {
+            order: 19,
+            name: 'nextYear',
+            synonym: 'Следующий год'
+          },
+          {
+            order: 20,
+            name: 'tillEndOfThisYear',
+            synonym: 'До конца этого года'
+          },
+          {
+            order: 21,
+            name: 'tillEndOfThisQuarter',
+            synonym: 'До конца этого квартала'
+          },
+          {
+            order: 22,
+            name: 'tillEndOfThisMonth',
+            synonym: 'До конца этого месяца'
+          },
+          {
+            order: 23,
+            name: 'tillEndOfThisHalfYear',
+            synonym: 'До конца этого полугодия'
+          },
+          {
+            order: 24,
+            name: 'tillEndOfThistendays',
+            synonym: 'До конца этой декады'
+          },
+          {
+            order: 25,
+            name: 'tillEndOfThisweek',
+            synonym: 'До конца этой недели'
+          },
+          {
+            order: 26,
+            name: 'fromBeginningOfThisYear',
+            synonym: 'С начала этого года'
+          },
+          {
+            order: 27,
+            name: 'fromBeginningOfThisQuarter',
+            synonym: 'С начала этого квартала'
+          },
+          {
+            order: 28,
+            name: 'fromBeginningOfThisMonth',
+            synonym: 'С начала этого месяца'
+          },
+          {
+            order: 29,
+            name: 'fromBeginningOfThisHalfYear',
+            synonym: 'С начала этого полугодия'
+          },
+          {
+            order: 30,
+            name: 'fromBeginningOfThisTendays',
+            synonym: 'С начала этой декады'
+          },
+          {
+            order: 31,
+            name: 'fromBeginningOfThisWeek',
+            synonym: 'С начала этой недели'
+          },
+          {
+            order: 32,
+            name: 'thisTenDays',
+            synonym: 'Эта декада'
+          },
+          {
+            order: 33,
+            name: 'thisWeek',
+            synonym: 'Эта неделя'
+          },
+          {
+            order: 34,
+            name: 'thisHalfYear',
+            synonym: 'Это полугодие'
+          },
+          {
+            order: 35,
+            name: 'thisYear',
+            synonym: 'Этот год'
+          },
+          {
+            order: 36,
+            name: 'thisQuarter',
+            synonym: 'Этот квартал'
+          },
+          {
+            order: 37,
+            name: 'thisMonth',
+            synonym: 'Этот месяц'
+          },
+        ],
       },
       cat: {
         meta_objs: {
@@ -225,19 +417,27 @@ export default {
               }
             },
             date_from: {
-              'synonym': 'Начало периода',
-              'tooltip': '',
-              'type': {
-                'types': ['date'],
-                'date_part': 'date'
+              synonym: 'Начало периода',
+              tooltip: '',
+              type: {
+                types: ['date'],
+                date_part: 'date'
               }
             },
             date_till: {
-              'synonym': 'Конец периода',
-              'tooltip': '',
-              'type': {
-                'types': ['date'],
-                'date_part': 'date'
+              synonym: 'Конец периода',
+              tooltip: '',
+              type: {
+                types: ['date'],
+                date_part: 'date'
+              }
+            },
+            standard_period: {
+              synonym: 'Стандартный период',
+              tooltip: 'Использование стандартного периода',
+              type: {
+                types: ['enm.standard_period'],
+                is_ref: true
               }
             },
             formula: {
@@ -598,6 +798,12 @@ export default {
                   }
                 }
               }
+            },
+            conditional_appearance: {
+              name: 'conditional_appearance',
+              synonym: 'Условное оформление',
+              tooltip: '',
+              fields: {}
             }
           },
           cachable: 'doc'

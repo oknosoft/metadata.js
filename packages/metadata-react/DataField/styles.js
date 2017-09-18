@@ -33,10 +33,11 @@ const styles = theme => ({
   },
   suggestionsContainerOpen: {
     position: 'absolute',
-    marginTop: theme.spacing.unit,
-    marginBottom: theme.spacing.unit * 3,
+    overflow: 'auto',
+    marginBottom: theme.spacing.unit * 2,
     left: 0,
     right: 0,
+    maxHeight: 280,
     zIndex: 3000,
   },
   suggestion: {
@@ -54,6 +55,7 @@ const styles = theme => ({
     width: 'inherit',
     whiteSpace: 'nowrap',
     textDecoration: 'underline',
+    textTransform: 'none',
     cursor: 'pointer',
     color: '#0b0080'
   },

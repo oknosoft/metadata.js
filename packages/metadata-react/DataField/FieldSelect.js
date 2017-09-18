@@ -1,5 +1,5 @@
 /**
- * ### Поле ввода ссылочных данных
+ * ### Поле ввода ссылочных данных на базе react-select
  *
  * @module FieldSelect
  *
@@ -61,7 +61,7 @@ export default class FieldSelect extends AbstractField {
 
   render() {
 
-    const {props, state, _loadOptions, _onChange} = this;
+    const {props, state, loadOptions, onChange} = this;
     const {_fld} = props;
     const {options, value, mandatory} = state;
 

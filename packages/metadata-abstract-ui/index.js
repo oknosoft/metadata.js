@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.2-beta.28, built:2017-09-17
+ metadata-abstract-ui v2.0.2-beta.28, built:2017-09-18
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -285,6 +285,12 @@ function scheme_settings() {
     set date_till(v) {
       this._setter('date_till', v);
     }
+    get standard_period() {
+      return this._getter('standard_period');
+    }
+    set standard_period(v) {
+      this._setter('standard_period', v);
+    }
     get fields() {
       return this._getter_ts('fields');
     }
@@ -326,6 +332,12 @@ function scheme_settings() {
     }
     set composition(v) {
       this._setter_ts('composition', v);
+    }
+    get conditional_appearance() {
+      return this._getter_ts('conditional_appearance');
+    }
+    set conditional_appearance(v) {
+      this._setter_ts('conditional_appearance', v);
     }
     fill_default(class_name) {
       const {parts, _mgr, _meta} = this.child_meta(class_name);

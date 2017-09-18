@@ -239,6 +239,15 @@ export default function scheme_settings() {
       this._setter('date_till', v);
     }
 
+    get standard_period() {
+      return this._getter('standard_period');
+    }
+
+    set standard_period(v) {
+      this._setter('standard_period', v);
+    }
+
+
     get fields() {
       return this._getter_ts('fields');
     }
@@ -293,6 +302,14 @@ export default function scheme_settings() {
 
     set composition(v) {
       this._setter_ts('composition', v);
+    }
+
+    get conditional_appearance() {
+      return this._getter_ts('conditional_appearance');
+    }
+
+    set conditional_appearance(v) {
+      this._setter_ts('conditional_appearance', v);
     }
 
     /**

@@ -17,6 +17,23 @@ import DataCell from './DataField/DataCell';
 import TypeFieldCell from './TypeField/TypeFieldCell';
 import PathFieldCell from './PathField/PathFieldCell';
 
+class ToggleEditor extends CheckboxEditor {
+
+  getInputNode() {
+
+  }
+
+  getValue() {
+    return this.props.rowData[this.props.column.key];
+  }
+
+  handleChange(e) {
+    const {rowData, column} = this.props;
+    rowData[column.key] = !rowData[column.key];
+    //this.props.column.onCellChange(this.props.rowIdx, this.props.column.key, this.props.dependentValues, e);
+  }
+}
+
 
 function rx_columns($p) {
 
@@ -70,7 +87,22 @@ function rx_columns($p) {
           break;
 
         case toggle:
-          column.editor = <CheckboxEditor />;
+          const toggle_options = [
+            {
+              id: false,
+              value: false,
+              text: 'Нет',
+              title: 'Нет',
+            },
+            {
+              id: true,
+              value: true,
+              text: 'Да',
+              title: 'Да',
+            }
+          ];
+          column.editor = <DropDownEditor options={toggle_options}/>;
+          column.formatter = <DropDownFormatter options={toggle_options} value={false}/>;
           break;
 
         case path:
