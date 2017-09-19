@@ -29,6 +29,10 @@ import withStyles from './styles';
 
 class FieldAutosuggest extends AbstractField {
 
+  static contextTypes = {
+    components: PropTypes.object,       // конструкторы DataList и FrmObj передаём через контекст, чтобы исключить зацикливание
+  };
+
   constructor(props, context) {
     super(props, context);
     const {_obj, _fld, mandatory} = props;
@@ -239,10 +243,6 @@ class FieldAutosuggest extends AbstractField {
     </div>
     ;
   }
-
-  static contextTypes = {
-    components: PropTypes.object,       // конструкторы DataList и FrmObj передаём через контекст, чтобы исключить зацикливание
-  };
 
 }
 

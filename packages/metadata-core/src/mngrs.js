@@ -318,7 +318,7 @@ export class DataManager extends MetaEventEmitter{
 			})
 		}
 
-		if(t.cachable == "ram" || (selection && selection._local)) {
+		if(t.cachable == "ram" || t.cachable == "doc_ram" || (selection && selection._local)) {
 			t.find_rows(selection, push);
 			return Promise.resolve(l);
 		}
@@ -1154,6 +1154,76 @@ export class RefDataManager extends DataManager{
 		return res;
 	}
 
+  /**
+   * Возвращает объект фильтра для find_rows или find_rows_remote
+   */
+  get_search_selector({_obj, _meta, search, top, skip}) {
+
+    const {cachable, _owner} = this;
+    const {md} = _owner.$p;
+    const select = {};
+    if(cachable == 'ram' || cachable == 'doc_ram') {
+
+      select._top = top;
+      select._skip = skip;
+
+      // поиск по строке
+      const {input_by_string} = this.metadata();
+      if(search && input_by_string) {
+        if(input_by_string.length > 1) {
+          select.or = [];
+          input_by_string.forEach((fld) => {
+            select.or.push({[fld]: {like: search}});
+          });
+        }
+        else {
+          select[input_by_string[0]] = {like: search};
+        }
+      }
+
+      // для связей параметров выбора, значение берём из объекта
+      if(_meta.choice_links) {
+        _meta.choice_links.forEach((choice) => {
+          if(choice.name && choice.name[0] == 'selection') {
+            if(_obj instanceof TabularSectionRow) {
+              if(choice.path.length < 2) {
+                select[choice.name[1]] = typeof choice.path[0] == 'function' ? choice.path[0] : _obj._owner._owner[choice.path[0]];
+              }
+              else {
+                if(choice.name[1] == 'owner' && !_mgr.metadata().has_owners) {
+                  return;
+                }
+                select[choice.name[1]] = _obj[choice.path[1]];
+              }
+            }
+            else {
+              select[choice.name[1]] = typeof choice.path[0] == 'function' ? choice.path[0] : _obj[choice.path[0]];
+            }
+          }
+        });
+      }
+
+      // у параметров выбора, значение живёт внутри отбора
+      if(_meta.choice_params) {
+        _meta.choice_params.forEach((choice) => {
+          const fval = Array.isArray(choice.path) ? {in: choice.path} : choice.path;
+          if(!select[choice.name]) {
+            select[choice.name] = fval;
+          }
+          else if(Array.isArray(select[choice.name])) {
+            select[choice.name].push(fval);
+          }
+          else {
+            select[choice.name] = [select[choice.name]];
+            select[choice.name].push(fval);
+          }
+        });
+      }
+
+      return select;
+    }
+
+  }
 
 	/**
 	 * Догружает с сервера объекты, которых нет в локальном кеше

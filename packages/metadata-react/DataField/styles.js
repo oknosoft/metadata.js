@@ -31,31 +31,49 @@ const styles = theme => ({
     flexGrow: 1,
     position: 'relative',
   },
+  root: {
+    outline: 'none'
+  },
   suggestionsContainerOpen: {
     position: 'absolute',
-    overflow: 'auto',
+    //overflow: 'auto',
     marginBottom: theme.spacing.unit * 2,
-    left: 0,
-    right: 0,
-    maxHeight: 280,
+    marginRight: theme.spacing.unit,
+    //left: 0,
+    //right: 0,
+    //maxHeight: 280,
     zIndex: 3000,
   },
   suggestion: {
-    display: 'block',
+    padding: '4px 8px',
+  },
+  suggestionSelected: {
+    backgroundColor: 'rgba(0, 0, 0, 0.12)'
   },
   suggestionsList: {
     margin: 0,
     padding: 0,
     listStyleType: 'none',
   },
+  placeholder: {
+    display: 'inline-block',
+    height: '1em',
+    backgroundColor: '#ddd'
+  },
+  bar: {
+    minHeight: 48,
+    paddingLeft: theme.spacing.unit,
+    paddingRight: theme.spacing.unit,
+  },
   flex: {
     flex: 1,
+    whiteSpace: 'nowrap',
   },
   a: {
-    width: 'inherit',
     whiteSpace: 'nowrap',
     textDecoration: 'underline',
     textTransform: 'none',
+    fontSize: 'inherit',
     cursor: 'pointer',
     color: '#0b0080'
   },
