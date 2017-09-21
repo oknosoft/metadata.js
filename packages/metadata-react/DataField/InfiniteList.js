@@ -13,8 +13,12 @@ import {ListItem, ListItemIcon, ListItemText} from 'material-ui/List';
 import classnames from 'classnames';
 
 const limit = 30;
-const totalRows = 999999;
 const rowHeight = 32;
+
+function prevent(evt) {
+  evt.stopPropagation();
+  evt.preventDefault();
+}
 
 export default class InfiniteList extends PureComponent {
 
@@ -31,7 +35,10 @@ export default class InfiniteList extends PureComponent {
 
   constructor(props, context) {
     super(props, context);
-    this.state = {totalRowCount: limit};
+    this.state = {
+      totalRows: 2,
+      selectedItem: -1,
+    };
     this.list = [props._obj[props._fld]];
     this.search = props.search;
   }
@@ -43,11 +50,8 @@ export default class InfiniteList extends PureComponent {
     if(this.props.search != nextProps.search) {
       this.updateTimer = setTimeout(() => {
         this.list.length = 0;
-        this.setState({totalRowCount: this.state.totalRowCount <= 1 ? 2 : 1});
-      }, 100);
-    }
-    else if(this.props.selectedItem != nextProps.selectedItem){
-      this.listContainer.forceUpdateGrid();
+        this.setState({totalRows: this.state.totalRows <= 1 ? 2 : 1});
+      }, 10);
     }
   }
 
@@ -57,15 +61,15 @@ export default class InfiniteList extends PureComponent {
 
   loadMoreRows = ({startIndex, stopIndex}) => {
     const {_mgr, _obj, _fld, _meta, search} = this.props;
-    const {totalRowCount} = this.state;
+    const {totalRows} = this.state;
     const increment = Math.max(limit, stopIndex - startIndex + 1);
     const select = _mgr.get_search_selector({_obj, _meta, search, top: increment, skip: startIndex});
 
     const update_state = (length) => {
       // обновляем состояние - изменилось количество записей
       const rowsCount = startIndex + length + (length < increment ? 0 : increment );
-      if(totalRowCount != rowsCount) {
-        this.setState({totalRowCount: rowsCount});
+      if(totalRows != rowsCount) {
+        this.setState({totalRows: rowsCount});
       }
       // else {
       //   // refs.Grid
@@ -112,24 +116,57 @@ export default class InfiniteList extends PureComponent {
 
   };
 
-  rowRenderer = ({
-                   index,       // Index of row
-                   isScrolling, // The List is currently being scrolled
-                   isVisible,   // This row is visible within the List (eg it is not an overscanned row)
-                   key,         // Unique key within array of rendered rows
-                   parent,      // Reference to the parent List (instance)
-                   style        // Style object to be applied to row (to position it);
-                                // This must be passed through to the rendered row element.
-                 }) => {
-    const {suggestionText, classes, selectedItem, handleSelect} = this.props;
+  next(evt) {
+    let {selectedItem} = this.state;
+    if(selectedItem < this.list.length - 1){
+      selectedItem++;
+    }
+    this.setState({selectedItem});
+    this.listContainer.forceUpdateGrid();
+    prevent(evt);
+  }
+
+  prev(evt) {
+    let {selectedItem} = this.state;
+    if(selectedItem >= 0){
+      selectedItem--;
+    }
+    this.setState({selectedItem});
+    this.listContainer.forceUpdateGrid();
+    prevent(evt);
+  }
+
+  handleSelect = (evt) => {
+    const value = this.list[this.state.selectedItem];
+    prevent(evt);
+    value && this.props.handleSelect(value);
+  };
+
+
+  /**
+   *
+   * @param index {Number} - Index of row
+   * @param isScrolling {Boolean} - The List is currently being scrolled
+   * @param isVisible {Boolean} - This row is visible within the List (eg it is not an overscanned row)
+   * @param key {String} - Unique key within array of rendered rows
+   * @param parent {Object} - Reference to the parent List (instance)
+   * @param style {Object} - Style object to be applied to row (to position it)
+   * @return {Object}
+   */
+  rowRenderer = ({index, isScrolling, isVisible, key, parent, style}) => {
+    const {suggestionText, classes} = this.props;
     const suggestion = this.list[index];
 
     return (
       <ListItem
         button
         key={key}
-        className={classnames({[classes.suggestion]: true, [classes.suggestionSelected]: index == selectedItem})}
-        onClick={() => handleSelect(index)}
+        className={classnames({[classes.suggestion]: true, [classes.suggestionSelected]: index == this.state.selectedItem})}
+        style={style}
+        onClick={this.handleSelect}
+        onMouseOver ={() => {
+          this.setState({selectedItem: index})
+        }}
       >
         {suggestion && !isScrolling && isVisible ?
           <ListItemText primary={suggestionText(suggestion)}/>
@@ -141,17 +178,18 @@ export default class InfiniteList extends PureComponent {
   };
 
   listRenderer = ({onRowsRendered, registerChild}) => {
-    const {totalRowCount} = this.state;
-    const rowCount = Math.min(this.list.length || 1, totalRowCount) + 0.6;
+    const {totalRows} = this.state;
+    const rowCount = Math.min(this.list.length || 1, totalRows) + 0.6;
     const height = rowCount < 7 ? rowCount * rowHeight : 220;
     return <List
       ref={(el) => registerChild(this.listContainer = el)}
       height={height}
       onRowsRendered={onRowsRendered}
-      rowCount={totalRowCount}
+      rowCount={totalRows}
       rowHeight={rowHeight}
       rowRenderer={this.rowRenderer}
       width={300}
+      containerStyle={{}}
     />;
   };
 
@@ -159,7 +197,7 @@ export default class InfiniteList extends PureComponent {
     return <InfiniteLoader
       isRowLoaded={this.isRowLoaded}
       loadMoreRows={this.loadMoreRows}
-      rowCount={this.state.totalRowCount}
+      rowCount={this.state.totalRows}
       minimumBatchSize={limit}
     >
       {this.listRenderer}

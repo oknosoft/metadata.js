@@ -50,7 +50,7 @@ class PathField extends Component {
     if(_obj._manager == $p.cat.scheme_settings){
       const {parts, _mgr, _meta} = _obj._owner._owner.child_meta();
       for(const fld in _meta.fields){
-        if(fld == predefined_name){
+        if(fld == 'predefined_name'){
           continue;
         }
         const {synonym, tooltip, type} = _meta.fields[fld];
@@ -89,7 +89,7 @@ class PathField extends Component {
       const _meta = $p.md.get(name);
       if(_meta){
         for(const fld in _meta.fields){
-          if(fld == predefined_name){
+          if(fld == 'predefined_name'){
             continue;
           }
           const {synonym, tooltip, type} = _meta.fields[fld];

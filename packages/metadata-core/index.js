@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.2-beta.28, built:2017-09-19
+ metadata-core v2.0.2-beta.28, built:2017-09-21
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1908,7 +1908,7 @@ class RefDataManager extends DataManager{
 		return res;
 	}
   get_search_selector({_obj, _meta, search, top, skip}) {
-    const {cachable, class_name, _owner} = this;
+    const {cachable, _owner} = this;
     const {md} = _owner.$p;
     const select = {};
     if(cachable == 'ram' || cachable == 'doc_ram') {

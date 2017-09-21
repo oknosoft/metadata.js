@@ -120,7 +120,9 @@ class Report extends Component {
       <RepToolbar
         _obj={_obj}
         _tabular={_tabular}
+        _columns={_columns}
         scheme={scheme}
+
         handleSchemeChange={handleSchemeChange}
         handleSave={handleSave}
         handlePrint={handlePrint}

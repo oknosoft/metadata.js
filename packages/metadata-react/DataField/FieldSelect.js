@@ -31,7 +31,7 @@ export default class FieldSelect extends AbstractField {
     };
   }
 
-  _loadOptions = (input) => {
+  loadOptions = (input) => {
 
     const selection = {_top: 40};
     const {_obj, _fld} = this.props;
@@ -53,7 +53,7 @@ export default class FieldSelect extends AbstractField {
       });
   };
 
-  _onChange = (value) => {
+  onChange = (value) => {
     const {handleValueChange} = this.props;
     this.setState({value});
     handleValueChange && handleValueChange(value);
@@ -74,9 +74,9 @@ export default class FieldSelect extends AbstractField {
         backspaceRemoves={false}
         labelKey='presentation'
         valueKey='ref'
-        loadOptions={_loadOptions}
+        loadOptions={loadOptions}
         minimumInput={0}
-        onChange={_onChange}
+        onChange={onChange}
         //onValueClick={this._goToGithubUser}
         options={options}
         value={value}

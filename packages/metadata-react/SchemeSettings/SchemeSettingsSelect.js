@@ -81,8 +81,9 @@ class SchemeSettingsSelect extends Component {
         </Toolbar>
 
         <FormGroup style={{margin: 16}}>
-          <DataField _obj={scheme} _fld="name" handleValueChange={handleNameChange}/>
-          <DataField _obj={scheme} _fld="query"/>
+          <DataField _obj={scheme} _fld="name" fullWidth handleValueChange={handleNameChange}/>
+          <DataField _obj={scheme} _fld="query" fullWidth/>
+          <DataField _obj={scheme} _fld="standard_period" fullWidth/>
         </FormGroup>
 
 

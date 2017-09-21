@@ -47,7 +47,6 @@ class FieldInfinit extends AbstractField {
       inputValue,
       focused: false,
       search: inputValue,
-      selectedItem: -1,
     };
   }
 
@@ -85,25 +84,19 @@ class FieldInfinit extends AbstractField {
     });
   };
 
-  handleSelect = (index) => {
-    const {props, infinite} = this;
-    if(infinite) {
-      const val = infinite.list[index];
-      if(val) {
-        props._obj[props._fld] = val;
+  handleSelect = (value) => {
+    if(value) {
+      const {_obj, _fld, handleValueChange} = this.props;
+      _obj[_fld] = value;
+      setTimeout(() => {
         this.setState({
-          inputValue: suggestionText(val),
+          inputValue: suggestionText(value),
           focused: false,
         });
-      }
+        handleValueChange && handleValueChange(value);
+      });
     }
   };
-
-  // onChange = (value) => {
-  //   const {handleValueChange} = this.props;
-  //   this.setState({value});
-  //   handleValueChange && handleValueChange(value);
-  // };
 
   onFocus = (evt) => {
     this.resetBlurTimeout();
@@ -123,28 +116,18 @@ class FieldInfinit extends AbstractField {
   }
 
   onKeyDown = (evt) => {
-
     switch (evt.key) {
     case 'ArrowDown':
-      this.setState({selectedItem: this.state.selectedItem + 1});
-      evt.stopPropagation();
-      evt.preventDefault();
+      this.infinite.next(evt);
       break;
 
     case 'ArrowUp':
-      this.setState({selectedItem: this.state.selectedItem - 1});
-      evt.stopPropagation();
-      evt.preventDefault();
+      this.infinite.prev(evt);
       break;
 
     case 'Enter':
-      if(highlightedItemIndex !== null) {
-        //dispatch(updateInputValue(exampleId, items[highlightedSectionIndex].items[highlightedItemIndex].text + ' selected'));
-      }
+      this.infinite.handleSelect(evt);
       break;
-
-    default:
-      //inputProps.onKeyDown(event, { highlightedSectionIndex, highlightedItemIndex });
     }
   };
 
@@ -203,7 +186,6 @@ class FieldInfinit extends AbstractField {
             search={state.search}
             suggestionText={suggestionText}
             handleSelect={handleSelect}
-            selectedItem={state.selectedItem}
           />
           {footer && <Divider/>}
           {footer && <Toolbar className={classes.bar}>

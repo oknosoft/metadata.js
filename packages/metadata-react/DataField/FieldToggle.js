@@ -27,12 +27,12 @@ export default class FieldToggle extends Component {
 
   render() {
     const {onChange, props} = this;
-    const {_obj, _fld, _meta} = props;
+    const {_obj, _fld, _meta, fullWidth} = props;
 
     return (
       <TextField
         name={_fld}
-        fullWidth
+        fullWidth={fullWidth}
         margin="dense"
         defaultValue={_obj[_fld]}
         hintText={_meta.tooltip || _meta.synonym}

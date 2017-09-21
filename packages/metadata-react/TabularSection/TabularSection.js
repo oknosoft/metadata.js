@@ -6,7 +6,6 @@ import ReactDataGrid from 'react-data-grid';
 import DataCell from '../DataField/DataCell';
 import DefaultToolbar from './TabularSectionToolbar';
 import {AutoSizer} from 'react-virtualized';
-import DataFieldFactory from '../DataField/DataFieldFactory';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 
 // import withStyles from 'material-ui/styles/withStyles';
@@ -51,9 +50,10 @@ export default class TabularSection extends MComponent {
       _meta: props._meta || _obj._metadata(_tabular),
       _tabular: _obj[_tabular],
       _columns: props._columns || [],
-      Toolbar: props.Toolbar || DefaultToolbar,
       selectedIds: props.rowSelection ? props.rowSelection.selectBy.keys.values : []
     };
+
+    this.Toolbar = props.Toolbar || DefaultToolbar;
 
     if(!this.state._columns.length) {
       $p.cat.scheme_settings.get_scheme(class_name).then(this.handleSchemeChange.bind(this));
@@ -148,8 +148,8 @@ export default class TabularSection extends MComponent {
   };
 
   render() {
-    const {props, state, rowGetter, onRowsSelected, onRowsDeselected, handleAdd, handleRemove, handleUp, handleDown, handleRowUpdated} = this;
-    const {_meta, _tabular, _columns, scheme, selectedIds, Toolbar} = state;
+    const {props, state, Toolbar, rowGetter, onRowsSelected, onRowsDeselected, handleAdd, handleRemove, handleUp, handleDown, handleRowUpdated} = this;
+    const {_meta, _tabular, _columns, scheme, selectedIds} = state;
     const {_obj, rowSelection, denyAddDel, denyReorder, minHeight, handleCustom, classes} = props;
 
     if(!_columns || !_columns.length) {
@@ -172,6 +172,11 @@ export default class TabularSection extends MComponent {
 
             return <div>
               <Toolbar
+                _obj={_obj}
+                _tabular={_tabular}
+                _columns={_columns}
+                scheme={scheme}
+
                 handleAdd={handleAdd}
                 handleRemove={handleRemove}
                 handleUp={handleUp}
@@ -179,7 +184,7 @@ export default class TabularSection extends MComponent {
                 handleCustom={handleCustom}
                 denyAddDel={denyAddDel}
                 denyReorder={denyReorder}
-                scheme={scheme}/>
+              />
 
               <ReactDataGrid
                 minWidth={width}
