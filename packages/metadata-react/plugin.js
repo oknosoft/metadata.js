@@ -14,8 +14,8 @@ const {CheckboxEditor, DropDownEditor} = Editors;
 const {DropDownFormatter, ImageFormatter} = Formatters;
 
 import DataCell from './DataField/DataCell';
-import TypeFieldCell from './TypeField/TypeFieldCell';
-import PathFieldCell from './PathField/PathFieldCell';
+import TypeFieldCell from './DataField/FieldTypeCell';
+import PathFieldCell from './DataField/FieldPathCell';
 
 class ToggleEditor extends CheckboxEditor {
 

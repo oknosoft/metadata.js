@@ -2,9 +2,9 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
 import {Editors} from 'react-data-grid-addons';
-import PathField from './PathField';
+import PathField from './FieldPath';
 
-class PathFieldCell extends Editors.SimpleTextEditor {
+class FieldPathCell extends Editors.SimpleTextEditor {
 
   // props.column.key, props.rowData(._row)
 
@@ -29,11 +29,11 @@ class PathFieldCell extends Editors.SimpleTextEditor {
   }
 }
 
-PathFieldCell.propTypes = {
+FieldPathCell.propTypes = {
   options: PropTypes.array,
   column: Editors.CheckboxEditor.propTypes.column,
   value: PropTypes.oneOfType([PropTypes.array, PropTypes.object, PropTypes.string]),
   rowData: PropTypes.object,
 };
 
-export default PathFieldCell;
+export default FieldPathCell;

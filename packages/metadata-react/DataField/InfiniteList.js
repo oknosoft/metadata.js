@@ -35,12 +35,33 @@ export default class InfiniteList extends PureComponent {
 
   constructor(props, context) {
     super(props, context);
+    const val = props._obj[props._fld];
+    this.list = [];
+    if(val && !val.empty()){
+      this.list.push(val);
+    }
+    this.search = props.search;
     this.state = {
       totalRows: 2,
       selectedItem: -1,
     };
-    this.list = [props._obj[props._fld]];
-    this.search = props.search;
+    // для перечислений заполняем сразу
+    if(props.is_enm){
+      if(this.list.length){
+        this.state.totalRows = 1;
+      }
+      else{
+        this.loadMoreRows({startIndex: 0, stopIndex: 999});
+      }
+    }
+  }
+
+  componentDidMount() {
+    this._mounted = true;
+  }
+
+  componentWillUnmount() {
+    this._mounted = false;
   }
 
   componentWillReceiveProps(nextProps) {
@@ -69,12 +90,13 @@ export default class InfiniteList extends PureComponent {
       // обновляем состояние - изменилось количество записей
       const rowsCount = startIndex + length + (length < increment ? 0 : increment );
       if(totalRows != rowsCount) {
-        this.setState({totalRows: rowsCount});
+        if(this._mounted) {
+          this.setState({totalRows: rowsCount});
+        }
+        else {
+          this.state.totalRows = rowsCount;
+        }
       }
-      // else {
-      //   // refs.Grid
-      //   this.infinit.forceUpdate();
-      // }
     };
 
     // если объекты живут в ram

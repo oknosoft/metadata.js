@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.2-beta.28, built:2017-09-21
+ metadata-core v2.0.2-beta.28, built:2017-09-22
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2038,6 +2038,13 @@ class EnumManager extends RefDataManager{
 			new EnumObj(v, this);
 		}
 	}
+  metadata(field_name) {
+	  const res = super.metadata(field_name);
+	  if(!res.input_by_string){
+      res.input_by_string = ['ref', 'synonym'];
+    }
+    return res;
+  }
 	get(ref, do_not_create){
 		if(ref instanceof EnumObj)
 			return ref;
@@ -2048,10 +2055,9 @@ class EnumManager extends RefDataManager{
 			o = new EnumObj({name: ref}, this);
 		return o;
 	}
-	push(o, new_ref){
-		Object.defineProperty(this, new_ref, {
-			value : o
-		});
+	push(value, new_ref){
+    this.by_ref[new_ref] = value;
+		Object.defineProperty(this, new_ref, {value});
 	}
 	each(fn) {
 		this.alatable.forEach(v => {

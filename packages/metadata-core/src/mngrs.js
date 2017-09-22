@@ -1366,6 +1366,18 @@ export class EnumManager extends RefDataManager{
 		}
 	}
 
+  /**
+   * Метаданные перечисления
+   * @param field_name
+   */
+  metadata(field_name) {
+	  const res = super.metadata(field_name);
+	  if(!res.input_by_string){
+      res.input_by_string = ['ref', 'synonym'];
+    }
+    return res;
+  }
+
 	get(ref, do_not_create){
 
 		if(ref instanceof EnumObj)
@@ -1381,10 +1393,9 @@ export class EnumManager extends RefDataManager{
 		return o;
 	}
 
-	push(o, new_ref){
-		Object.defineProperty(this, new_ref, {
-			value : o
-		});
+	push(value, new_ref){
+    this.by_ref[new_ref] = value;
+		Object.defineProperty(this, new_ref, {value});
 	}
 
 	each(fn) {

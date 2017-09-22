@@ -182,6 +182,7 @@ class FieldInfinit extends AbstractField {
             _obj={_obj}
             _fld={_fld}
             _meta={_meta}
+            is_enm={is_enm}
             classes={classes}
             search={state.search}
             suggestionText={suggestionText}
@@ -224,7 +225,6 @@ class FieldInfinit extends AbstractField {
   }
 
   render() {
-    //tabIndex="-1"
     return (
       <div
         className={this.props.classes.root}

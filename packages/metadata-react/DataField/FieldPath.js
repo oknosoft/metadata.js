@@ -11,7 +11,7 @@ import Cascader from 'rc-cascader';
 import '../styles/cascader.css';
 
 
-class PathField extends Component {
+class FieldPath extends Component {
 
   constructor(props, context) {
 
@@ -135,4 +135,4 @@ class PathField extends Component {
 
 }
 
-export default PathField;
+export default FieldPath;
