@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.2-beta.28, built:2017-09-20
+ metadata-pouchdb v2.0.2-beta.28, built:2017-09-22
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -16,14 +16,16 @@ var proto = (constructor) => {
 				if (!this._metadata().code_length) {
 					return Promise.resolve(this);
 				}
-				const {date, organization, _manager} = this;
-				const {current_user} = _manager._owner.$p;
+        const {organization, _manager} = this;
+        const {current_user, utils} = _manager._owner.$p;
+        if(this.date === utils.blank.date) {
+          this.date = new Date();
+        }
+        const year = (this.date instanceof Date) ? this.date.getFullYear() : 0;
 				if (!prefix) {
 					prefix = ((current_user && current_user.prefix) || '') + ((organization && organization.prefix) || '');
 				}
-				let obj = this,
-					part = '',
-					year = (date instanceof Date) ? date.getFullYear() : 0,
+				let part = '',
 					code_length = this._metadata().code_length - prefix.length;
 				if (_manager.cachable == 'ram') {
 					return Promise.resolve(this.new_cat_id(prefix));
@@ -50,11 +52,11 @@ var proto = (constructor) => {
 						}
 						while (part.length < code_length)
 							part = '0' + part;
-						if (obj instanceof DocObj || obj instanceof TaskObj || obj instanceof BusinessProcessObj)
-							obj.number_doc = prefix + part;
+						if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj)
+              this.number_doc = prefix + part;
 						else
-							obj.id = prefix + part;
-						return obj;
+              this.id = prefix + part;
+						return this;
 					});
 			},
 		},
