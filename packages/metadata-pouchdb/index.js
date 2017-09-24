@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.2-beta.28, built:2017-09-22
+ metadata-pouchdb v2.0.2-beta.29, built:2017-09-24
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -41,7 +41,7 @@ var proto = (constructor) => {
 					.then((res) => {
 						if (res.rows.length) {
 							const num0 = res.rows[0].key[2];
-							for (var i = num0.length - 1; i > 0; i--) {
+							for (let i = num0.length - 1; i > 0; i--) {
 								if (isNaN(parseInt(num0[i])))
 									break;
 								part = num0[i] + part;
@@ -73,7 +73,7 @@ var proto = (constructor) => {
 					res = wsql.alasql('select top 1 ' + field + ' as id from ? where ' + field + ' like "' + prefix + '%" order by ' + field + ' desc', [_manager.alatable]);
 				if (res.length) {
 					const num0 = res[0].id || '';
-					for (var i = num0.length - 1; i > 0; i--) {
+					for (let i = num0.length - 1; i > 0; i--) {
 						if (isNaN(parseInt(num0[i])))
 							break;
 						part = num0[i] + part;
