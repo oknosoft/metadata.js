@@ -1,7 +1,7 @@
 {
   "name": "metadata-react",
   "description": "React UI components for metadata.js",
-  "version": "2.0.2-beta.28",
+  "version": "2.0.2-beta.29",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
@@ -11,16 +11,16 @@
   "peerDependencies": {
     "material-ui": "^1.0.0-beta.11",
     "material-ui-icons": "^1.0.0-beta.10",
-    "metadata-abstract-ui": "^2.0.2-beta.28",
-    "rc-calendar": "^9.1.5",
+    "metadata-abstract-ui": "^2.0.2-beta.29",
+    "rc-calendar": "^9.1.8",
     "rc-cascader": "^0.11.5",
     "react-autosuggest": "^9.3",
-    "react-data-grid": "^2.0.59",
-    "react-data-grid-addons": "^2.0.59",
+    "react-data-grid": "^2.0.60",
+    "react-data-grid-addons": "^2.0.60",
     "react-datepicker": "^0.54",
     "react-onclickoutside": "^6.5",
     "react-portal": "^3.1",
-    "react-virtualized": "^9.9"
+    "react-virtualized": "^9.10"
   },
   "main": "dist/index.js",
   "repository": {
