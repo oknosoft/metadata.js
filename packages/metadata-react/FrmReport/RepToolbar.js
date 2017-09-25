@@ -18,6 +18,7 @@ import FileDownloadIcon from 'material-ui-icons/FileDownload';
 import {export_handlers} from '../plugin';
 
 import SchemeSettings from '../SchemeSettings';
+import DateRange from '../SchemeSettings/DateRange';
 
 import withStyles from '../Header/toolbar';
 
@@ -54,13 +55,18 @@ class RepToolbar extends Component {
 
     return (
 
-      <Toolbar className={classes.bar}>
+      <Toolbar disableGutters className={classes.bar}>
         <Button dense onClick={handleSave}><i className="fa fa-play fa-fw"></i> Сформировать</Button>
+
+        <IconButton disabled>|</IconButton>
+
+        <DateRange _obj={scheme} _fld={'date'} _meta={{synonym: 'Период'}} classes={classes} />
 
         <Typography type="title" color="inherit" className={classes.flex}> </Typography>
 
         <SchemeSettings
           handleSchemeChange={handleSchemeChange}
+          classes={classes}
           scheme={scheme}
           tabParams={RepParams && <RepParams _obj={_obj} scheme={scheme} />}
           show_variants={true}
@@ -69,6 +75,7 @@ class RepToolbar extends Component {
         <IconButton onClick={this.handleMenuOpen} title="Дополнительно">
           <MoreVertIcon/>
         </IconButton>
+
         <Menu
           anchorEl={state.anchorEl}
           open={state.menuOpen}

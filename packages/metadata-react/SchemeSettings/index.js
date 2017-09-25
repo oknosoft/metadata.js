@@ -1,3 +1,3 @@
-import SchemeSettingsWrapper from './SchemeSettingsWrapper';
+import SchemeSettings from './SchemeSettings';
 
-export default SchemeSettingsWrapper;
+export default SchemeSettings;

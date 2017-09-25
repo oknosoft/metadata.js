@@ -62,7 +62,7 @@ class SchemeSettingsSelect extends Component {
 
     return (
       <div>
-        <Toolbar className={classes.bar}>
+        <Toolbar disableGutters className={classes.bar}>
 
           <IconButton title="Сохранить вариант настроек" onClick={handleSave}><SaveIcon/></IconButton>
           <IconButton title="Создать копию настроек" onClick={handleCreate}><CopyIcon/></IconButton>

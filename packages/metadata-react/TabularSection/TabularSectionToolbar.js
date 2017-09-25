@@ -47,10 +47,10 @@ class TabularSectionToolbar extends Component {
   render() {
 
     const {props, state} = this;
-    const {handleAdd, handleRemove, handleUp, handleDown, denyAddDel, denyReorder, classes} = props;
+    const {handleAdd, handleRemove, handleUp, handleDown, denyAddDel, denyReorder, classes, width} = props;
 
     return (
-      <Toolbar className={classes.bar}>
+      <Toolbar disableGutters className={classes.bar} style={{width: width || '100%'}}>
         {!denyAddDel && <IconButton key="btn_add" title="Добавить строку" onClick={handleAdd}><AddIcon /></IconButton>}
         {!denyAddDel && <IconButton key="btn_del" title="Удалить строку" onClick={handleRemove}><RemoveIcon /></IconButton>}
         {!denyAddDel && !denyReorder && <IconButton key="sep1" disabled>|</IconButton>}

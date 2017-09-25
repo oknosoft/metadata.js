@@ -22,7 +22,8 @@ export default {
           {
             order: 0,
             name: 'asc',
-            synonym: 'По возрастанию'
+            synonym: 'По возрастанию',
+            'default': true,
           },
           {
             order: 1,
@@ -54,7 +55,8 @@ export default {
           {
             order: 4,
             name: 'eq',
-            synonym: 'Равно'
+            synonym: 'Равно',
+            'default': true,
           },
           {
             order: 5,
@@ -85,8 +87,9 @@ export default {
         label_positions: [
           {
             order: 0,
-            name: 'auto',
-            synonym: 'Авто'
+            name: 'inherit',
+            synonym: 'Наследовать',
+            'default': true,
           },
           {
             order: 1,
@@ -118,7 +121,8 @@ export default {
           {
             order: 0,
             name: 'field',
-            synonym: 'Поле ввода'
+            synonym: 'Поле ввода',
+            'default': true,
           },
           {
             order: 1,
@@ -175,7 +179,8 @@ export default {
           {
             order: 0,
             name: 'custom',
-            synonym: 'Произвольный'
+            synonym: 'Произвольный',
+            'default': true,
           },
           {
             order: 1,
@@ -363,6 +368,24 @@ export default {
             synonym: 'Этот месяц'
           },
         ],
+        quick_access: [
+          {
+            order: 0,
+            name: 'none',
+            synonym: 'Нет',
+            'default': true,
+          },
+          {
+            order: 1,
+            name: 'toolbar',
+            synonym: 'Панель инструментов'
+          },
+          {
+            order: 2,
+            name: 'drawer',
+            synonym: 'Панель формы'
+          },
+        ]
       },
       cat: {
         meta_objs: {

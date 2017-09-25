@@ -4,7 +4,7 @@ import MComponent from '../common/MComponent';
 
 import ReactDataGrid from 'react-data-grid';
 import DataCell from '../DataField/DataCell';
-import DefaultToolbar from './TabularSectionToolbar';
+import TabularSectionToolbar from './TabularSectionToolbar';
 import {AutoSizer} from 'react-virtualized';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 
@@ -23,8 +23,6 @@ export default class TabularSection extends MComponent {
     denyAddDel: PropTypes.bool,         // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
     denyReorder: PropTypes.bool,         // Запрет изменения порядка строк
     minHeight: PropTypes.number,
-
-    Toolbar: PropTypes.func,              // Конструктор индивидуальной панели инструментов. Если не указан, рисуем типовую
 
     handleValueChange: PropTypes.func,    // Обработчик изменения значения в ячейке
     handleRowChange: PropTypes.func,      // При окончании редактирования строки
@@ -52,8 +50,6 @@ export default class TabularSection extends MComponent {
       _columns: props._columns || [],
       selectedIds: props.rowSelection ? props.rowSelection.selectBy.keys.values : []
     };
-
-    this.Toolbar = props.Toolbar || DefaultToolbar;
 
     if(!this.state._columns.length) {
       $p.cat.scheme_settings.get_scheme(class_name).then(this.handleSchemeChange.bind(this));
@@ -148,7 +144,7 @@ export default class TabularSection extends MComponent {
   };
 
   render() {
-    const {props, state, Toolbar, rowGetter, onRowsSelected, onRowsDeselected, handleAdd, handleRemove, handleUp, handleDown, handleRowUpdated} = this;
+    const {props, state, rowGetter, onRowsSelected, onRowsDeselected, handleAdd, handleRemove, handleUp, handleDown, handleRowUpdated} = this;
     const {_meta, _tabular, _columns, scheme, selectedIds} = state;
     const {_obj, rowSelection, denyAddDel, denyReorder, minHeight, handleCustom, classes} = props;
 
@@ -171,11 +167,13 @@ export default class TabularSection extends MComponent {
           {({width, height}) => {
 
             return <div>
-              <Toolbar
+              <TabularSectionToolbar
                 _obj={_obj}
                 _tabular={_tabular}
                 _columns={_columns}
                 scheme={scheme}
+
+                width={width}
 
                 handleAdd={handleAdd}
                 handleRemove={handleRemove}
@@ -207,14 +205,3 @@ export default class TabularSection extends MComponent {
   }
 }
 
-// export default withStyles({
-//   layout: {
-//
-//   },
-//   toolbar: {
-//
-//   },
-//   content: {
-//
-//   },
-// })(TabularSection);

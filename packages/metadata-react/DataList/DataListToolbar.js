@@ -15,12 +15,32 @@ import AttachIcon from 'material-ui-icons/AttachFile';
 import SelectIcon from 'material-ui-icons/PlaylistAddCheck';
 
 import SchemeSettings from '../SchemeSettings';
+import DateRange from '../SchemeSettings/DateRange';
 
 import withStyles from '../Header/toolbar';
 import classnames from 'classnames';
 
 
 class DataListToolbar extends Component {
+
+  static propTypes = {
+    selection_mode: PropTypes.bool,                   // режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
+    denyAddDel: PropTypes.bool,                     // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+
+    handleAdd: PropTypes.func.isRequired,             // обработчик добавления объекта
+    handleEdit: PropTypes.func.isRequired,            // обработчик открфтия формы редактора
+    handleRemove: PropTypes.func.isRequired,          // обработчик удаления строки
+
+    handleSchemeChange: PropTypes.func.isRequired,    // обработчик при изменении настроек компоновки
+    scheme: PropTypes.object.isRequired,              // значение настроек компоновки
+
+    handlePrint: PropTypes.func.isRequired,           // обработчик открытия диалога печати
+    handleAttachment: PropTypes.func.isRequired,      // обработчик открытия диалога присоединенных файлов
+  };
+
+  static defaultProps = {
+    show_search: true
+  };
 
   state = {
     anchorEl: undefined,
@@ -38,23 +58,30 @@ class DataListToolbar extends Component {
   render() {
 
     const {props, state} = this;
+    const {classes} = props;
 
     return (
-      <Toolbar className={classnames([props.classes.bar, props.classes.toolbar])}>
+      <Toolbar disableGutters className={classnames([classes.bar, classes.toolbar])}>
 
         {props.selection_mode && <IconButton key="select" title="Выбрать из списка" onClick={props.handleSelect}><SelectIcon/></IconButton>}
         {!props.denyAddDel && <IconButton key="create" title="Создать объект" onClick={props.handleAdd}><AddIcon/></IconButton>}
         {!props.denyAddDel && <IconButton key="edit" title="Открыть форму объекта" onClick={props.handleEdit}><EditIcon/></IconButton>}
         {!props.denyAddDel && <IconButton key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}
 
-        <Typography type="caption" color="inherit" className={props.classes.flex} > </Typography>
+        <IconButton disabled>|</IconButton>
+
+        <DateRange _obj={props.scheme} _fld={'date'} _meta={{synonym: 'Период'}} classes={classes} />
+
+        <Typography type="caption" color="inherit" className={classes.flex} > </Typography>
 
         <div>
           <SchemeSettings
             handleSchemeChange={props.handleSchemeChange}
+            classes={classes}
             scheme={props.scheme}
             show_search={props.show_search}
-            show_variants={props.show_variants}/>
+            show_variants={props.show_variants}
+          />
 
           <IconButton onClick={this.handleClick} title="Дополнительно">
             <MoreVertIcon/>
@@ -76,20 +103,7 @@ class DataListToolbar extends Component {
   }
 }
 
-DataListToolbar.propTypes = {
-  selection_mode: PropTypes.bool,                   // режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
-  denyAddDel: PropTypes.bool,                     // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
 
-  handleAdd: PropTypes.func.isRequired,             // обработчик добавления объекта
-  handleEdit: PropTypes.func.isRequired,            // обработчик открфтия формы редактора
-  handleRemove: PropTypes.func.isRequired,          // обработчик удаления строки
-
-  handleSchemeChange: PropTypes.func.isRequired,    // обработчик при изменении настроек компоновки
-  scheme: PropTypes.object.isRequired,              // значение настроек компоновки
-
-  handlePrint: PropTypes.func.isRequired,           // обработчик открытия диалога печати
-  handleAttachment: PropTypes.func.isRequired,      // обработчик открытия диалога присоединенных файлов
-};
 
 export default withStyles(DataListToolbar);
 

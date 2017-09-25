@@ -5,7 +5,7 @@ import MComponent from '../common/MComponent';
 
 import {InfiniteLoader, AutoSizer, MultiGrid} from 'react-virtualized';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
-import Toolbar from './DataListToolbar';
+import DataListToolbar from './DataListToolbar';
 import cn from 'classnames';
 
 import Confirm from '../Confirm';
@@ -40,7 +40,6 @@ class DataList extends MComponent {
     show_search: PropTypes.bool,          // Показывать поле поиска
     show_variants: PropTypes.bool,        // Показывать список вариантов настройки динсписка
     modal: PropTypes.bool,                // Показывать список в модальном диалоге
-    Toolbar: PropTypes.func,              // Индивидуальная панель инструментов. Если не указана, рисуем типовую
 
     // Redux actions
     handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
@@ -208,7 +207,7 @@ class DataList extends MComponent {
       handleSchemeChange,
       _isRowLoaded,
       _loadMoreRows,
-      _cellRenderer
+      _cellRenderer,
     } = this;
 
     const {columns, rowsLoaded, scheme, colResize, confirm_text, _meta} = state;
@@ -257,7 +256,7 @@ class DataList extends MComponent {
           />
         }
 
-        <Toolbar {...toolbar_props} />
+        <DataListToolbar {...toolbar_props} />
 
         <InfiniteLoader
           isRowLoaded={_isRowLoaded}

@@ -5,13 +5,14 @@
  * Created 31.12.2016
  */
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import IconButton from 'material-ui/IconButton';
 import IconSettings from 'material-ui-icons/Settings';
 import Button from 'material-ui/Button';
 import TextField from 'material-ui/TextField';
 import Menu, {MenuItem} from 'material-ui/Menu';
+import Typography from 'material-ui/Typography';
 
 // окно диалога, чтобы показать всплывающие формы
 import DnR from '../DnR/Dialog'
@@ -19,7 +20,8 @@ import DnR from '../DnR/Dialog'
 import SchemeSettingsTabs from './SchemeSettingsTabs';
 import SearchBox from './SearchBox';
 
-export default class SchemeSettingsWrapper extends Component {
+
+export default class SchemeSettingsWrapper extends PureComponent {
 
   static propTypes = {
     scheme: PropTypes.object.isRequired,
@@ -109,10 +111,10 @@ export default class SchemeSettingsWrapper extends Component {
   render() {
     const {props, state, handleDialogOpen, handleOk, handleDialogClose, handleSchemeChange, handleSearchChange} = this;
     const {dialog_open, menu_open, scheme} = state;
-    const {show_search, show_variants, tabParams} = props;
+    const {show_search, show_variants, tabParams, classes} = props;
 
     return (
-      <div style={{display: 'inline-flex', alignItems: 'baseline'}}>
+      <div className={classes.inline}>
         {/* Search box */
           show_search && <SearchBox onChange={handleSearchChange}/>
         }
@@ -142,6 +144,7 @@ export default class SchemeSettingsWrapper extends Component {
         </DnR>}
 
       </div>
+
     );
   }
 }

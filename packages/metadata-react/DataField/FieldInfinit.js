@@ -189,7 +189,7 @@ class FieldInfinit extends AbstractField {
             handleSelect={handleSelect}
           />
           {footer && <Divider/>}
-          {footer && <Toolbar className={classes.bar}>
+          {footer && <Toolbar disableGutters className={classes.bar}>
             <Button dense className={classes.a} onClick={this.handleOpenList} title={_manager.frm_selection_name}>{is_enm ? '...' : 'Показать все'}</Button>
             <Typography type="title" color="inherit" className={classes.flex}> </Typography>
             {_meta.type.types.length > 1 && <IconButton title="Выбрать тип значения"><TitleIcon/></IconButton>}

@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.2-beta.29, built:2017-09-24
+ metadata-abstract-ui v2.0.2-beta.29, built:2017-09-25
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -17,7 +17,8 @@ var meta = {
           {
             order: 0,
             name: 'asc',
-            synonym: 'По возрастанию'
+            synonym: 'По возрастанию',
+            'default': true,
           },
           {
             order: 1,
@@ -49,7 +50,8 @@ var meta = {
           {
             order: 4,
             name: 'eq',
-            synonym: 'Равно'
+            synonym: 'Равно',
+            'default': true,
           },
           {
             order: 5,
@@ -80,8 +82,9 @@ var meta = {
         label_positions: [
           {
             order: 0,
-            name: 'auto',
-            synonym: 'Авто'
+            name: 'inherit',
+            synonym: 'Наследовать',
+            'default': true,
           },
           {
             order: 1,
@@ -113,7 +116,8 @@ var meta = {
           {
             order: 0,
             name: 'field',
-            synonym: 'Поле ввода'
+            synonym: 'Поле ввода',
+            'default': true,
           },
           {
             order: 1,
@@ -170,7 +174,8 @@ var meta = {
           {
             order: 0,
             name: 'custom',
-            synonym: 'Произвольный'
+            synonym: 'Произвольный',
+            'default': true,
           },
           {
             order: 1,
@@ -358,6 +363,24 @@ var meta = {
             synonym: 'Этот месяц'
           },
         ],
+        quick_access: [
+          {
+            order: 0,
+            name: 'none',
+            synonym: 'Нет',
+            'default': true,
+          },
+          {
+            order: 1,
+            name: 'toolbar',
+            synonym: 'Панель инструментов'
+          },
+          {
+            order: 2,
+            name: 'divider',
+            synonym: 'Панель формы'
+          },
+        ]
       },
       cat: {
         meta_objs: {

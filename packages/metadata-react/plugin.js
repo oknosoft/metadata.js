@@ -89,20 +89,20 @@ function rx_columns($p) {
         case toggle:
           const toggle_options = [
             {
-              id: false,
+              id: 0,
               value: false,
               text: 'Нет',
               title: 'Нет',
             },
             {
-              id: true,
+              id: 1,
               value: true,
               text: 'Да',
               title: 'Да',
             }
           ];
           column.editor = <DropDownEditor options={toggle_options}/>;
-          column.formatter = <DropDownFormatter options={toggle_options} value={false}/>;
+          column.formatter = <DropDownFormatter options={toggle_options} value={''}/>;
           break;
 
         case path:

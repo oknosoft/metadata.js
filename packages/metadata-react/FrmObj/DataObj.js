@@ -7,7 +7,7 @@ import Divider from 'material-ui/Divider';
 import Paper from 'material-ui/Paper';
 
 import LoadingMessage from '../DumbLoader/LoadingMessage';
-import Toolbar from './Toolbar';
+import DataObjToolbar from './DataObjToolbar';
 import DataField from '../DataField';
 import TabularSection from '../TabularSection';
 
@@ -141,7 +141,7 @@ class DataObj extends MComponent {
     }
 
     return <div>
-      <Toolbar {..._handlers} closeButton={!context.dnr}/>
+      <DataObjToolbar {..._handlers} closeButton={!context.dnr}/>
       <FormGroup className={props.classes.spaceLeft}>
         {this.renderFields()}
         {this.renderTabularSections()}
