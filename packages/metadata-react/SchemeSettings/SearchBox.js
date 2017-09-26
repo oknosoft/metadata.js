@@ -29,7 +29,7 @@ const styles = theme => ({
       transition: theme.transitions.create('width'),
       width: 80,
       '&:focus': {
-        width: 220,
+        width: 160,
         background: theme.palette.common.white,
         // border: '1px solid #e0e0e0',
       },
@@ -71,7 +71,7 @@ function SearchBox(props) {
 
   return (
     <div className={classes.wrapper}>
-      <input className={classes.input} placeholder="Поиск..." onChange={props.onChange}/>
+      <input className={classes.input} placeholder="Поиск..." value={props.value} onChange={props.onChange}/>
       <div className={classes.search}>
         <SearchIcon/>
       </div>
@@ -82,6 +82,7 @@ function SearchBox(props) {
 SearchBox.propTypes = {
   classes: PropTypes.object.isRequired,
   width: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
 };
 

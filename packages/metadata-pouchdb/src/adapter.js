@@ -644,6 +644,7 @@ function adapter({AbstracrAdapter}) {
       if(!_data || (_data._saving && !_data._modified)) {
         return Promise.resolve(tObj);
       }
+      // TODO: опасное место с гонками при одновременной записи
       if(_data._saving && _data._modified) {
         return new Promise((resolve, reject) => {
           setTimeout(() => resolve(this.save_obj(tObj, attr)), 100);
@@ -652,7 +653,19 @@ function adapter({AbstracrAdapter}) {
       _data._saving = true;
 
       const db = this.db(_manager);
+
+      // подмешиваем class_name
       const tmp = Object.assign({_id: class_name + '|' + ref, class_name}, _obj);
+
+      // формируем строку поиска
+      if(this.$p.utils.is_doc_obj(tObj) || _manager.build_search){
+        if(_manager.build_search){
+          _manager.build_search(tmp, tObj);
+        }
+        else{
+          tmp.search = (_obj.number_doc + (_obj.note ? ' ' + _obj.note : '')).toLowerCase();
+        }
+      }
 
       delete tmp.ref;
       if(attr.attachments) {
@@ -1293,6 +1306,13 @@ function adapter({AbstracrAdapter}) {
 
         fetch_next_page();
       });
+    }
+
+    /**
+     * ### Найти строки с помощью MangoQuery
+     */
+    find_rows_mango() {
+
     }
 
     /**

@@ -11,7 +11,6 @@ import PropTypes from 'prop-types';
 
 import AbstractField from './AbstractField';
 import FieldSelect from './FieldSelect';
-import FieldAutosuggest from './FieldAutosuggest';
 import FieldInfinit from './FieldInfinit';
 import FieldText from './FieldText';
 import FieldDate from './FieldDate';

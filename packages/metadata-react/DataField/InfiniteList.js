@@ -81,6 +81,7 @@ export default class InfiniteList extends PureComponent {
   };
 
   loadMoreRows = ({startIndex, stopIndex}) => {
+
     const {_mgr, _obj, _fld, _meta, search} = this.props;
     const {totalRows} = this.state;
     const increment = Math.max(limit, stopIndex - startIndex + 1);

@@ -54,7 +54,6 @@ class DataList extends MComponent {
     this.state = {
       rowsLoaded: cachable === 'ram' ? alatable.length : 0,
       selectedRowIndex: 0,
-      _meta: props._meta || props._mgr.metadata(),
 
       // готовим фильтры для запроса couchdb
       select: props.select || {
@@ -68,6 +67,8 @@ class DataList extends MComponent {
         }
       }
     };
+
+    this._meta = props._meta || props._mgr.metadata();
 
     /** Set of grid rows. */
     this._list = new Map();
@@ -94,14 +95,14 @@ class DataList extends MComponent {
 
   // обработчик редактирования элемента списка
   handleEdit = () => {
-    const {_list, state, props} = this;
+    const {_list, _meta, state, props} = this;
     const {handlers, _mgr} = props;
     const row = _list.get(state.selectedRowIndex);
     if(!row || $p.utils.is_empty_guid(row.ref)) {
       handlers.handleIfaceState({
         component: '',
         name: 'alert',
-        value: {open: true, text: 'Укажите строку для редактирования', title: state._meta.synonym}
+        value: {open: true, text: 'Укажите строку для редактирования', title: _meta.synonym}
       });
     }
     else if(handlers.handleEdit) {
@@ -111,7 +112,7 @@ class DataList extends MComponent {
 
   // обработчик удаления элемента списка
   handleRemove = () => {
-    const {_list, state, props} = this;
+    const {_list, _meta, state, props} = this;
     const {handlers, _mgr} = props;
     const row = _list.get(state.selectedRowIndex);
 
@@ -119,7 +120,7 @@ class DataList extends MComponent {
       handlers.handleIfaceState({
         component: '',
         name: 'alert',
-        value: {open: true, text: 'Укажите строку для удаления', title: state._meta.synonym}
+        value: {open: true, text: 'Укажите строку для удаления', title: _meta.synonym}
       });
     }
     else if(handlers.handleMarkDeleted) {
@@ -130,21 +131,33 @@ class DataList extends MComponent {
     }
   };
 
-  // обработчик при изменении настроек компоновки
+  // при изменении настроек или варианта компоновки
   handleSchemeChange = (scheme) => {
-    const {state, props} = this;
-    const {_mgr, params} = props;
 
-    scheme.set_default().fix_select(state.select, params && params.options || _mgr.class_name);
-    this._list.clear();
+    scheme.set_default();
 
-    // Create header row.
-    const columns = scheme.columns();
+    // пересчитываем и перерисовываем динсписок
+    this.handleFilterChange(scheme, scheme.columns());
+  };
+
+  // при изменении параметров компоновки - схему не меняем, но выполняем пересчет
+  handleFilterChange = (scheme, columns) => {
+
+    const {state, _list, _mounted} = this;
+
+    if(!(scheme instanceof $p.CatScheme_settings)){
+      scheme = state.scheme;
+    }
+
+    if(!columns){
+      columns = state.columns;
+    }
+
     // Set first row as header.
-    this._list.set(0, columns.map(column => (column.synonym)));
+    _list.clear();
+    _list.set(0, columns.map(column => (column.synonym)));
 
-
-    if(this._mounted) {
+    if(_mounted) {
       this.setState({scheme, columns, rowsLoaded: 1});
     }
     else {
@@ -155,7 +168,7 @@ class DataList extends MComponent {
       startIndex: 0,
       stopIndex: DataList.LIMIT
     });
-  };
+  }
 
   // обработчик печати теущей строки
   handlePrint = () => {
@@ -197,6 +210,7 @@ class DataList extends MComponent {
     const {
       state,
       props,
+      _meta,
       sizes,
       handleSelect,
       handleAdd,
@@ -205,12 +219,13 @@ class DataList extends MComponent {
       handlePrint,
       handleAttachment,
       handleSchemeChange,
+      handleFilterChange,
       _isRowLoaded,
       _loadMoreRows,
       _cellRenderer,
     } = this;
 
-    const {columns, rowsLoaded, scheme, colResize, confirm_text, _meta} = state;
+    const {columns, rowsLoaded, scheme, colResize, confirm_text} = state;
 
     let {selection_mode, denyAddDel, show_search, show_variants, classes} = props;
 
@@ -233,7 +248,8 @@ class DataList extends MComponent {
       handleRemove,
       handlePrint,
       handleAttachment,
-      handleSchemeChange
+      handleSchemeChange,
+      handleFilterChange,
     };
 
     const styleTopRightGrid = {
@@ -386,8 +402,9 @@ class DataList extends MComponent {
   };
 
   _loadMoreRows = ({startIndex, stopIndex}) => {
-    const {select, scheme, rowsLoaded} = this.state;
     const {_mgr, params} = this.props;
+    const {select, scheme, rowsLoaded} = this.state;
+
     const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);
 
     const update_state = (data) => {

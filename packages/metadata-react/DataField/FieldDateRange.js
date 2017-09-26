@@ -24,8 +24,12 @@ function format(v) {
   return v ? v.format(formatStr) : '';
 }
 
-function isValidRange(v) {
+export function isValidRange(v) {
   return v && v[0] && v[1];
+}
+
+export function formatRange(v) {
+  return isValidRange(v) && `${format(v[0])} - ${format(v[1])}` || ''
 }
 
 export default class FieldDateRange extends AbstractField {
@@ -36,7 +40,7 @@ export default class FieldDateRange extends AbstractField {
 
     this.state = {
       value: [moment(_obj[`${_fld}_from`]),moment(_obj[`${_fld}_till`])],
-      hoverValue: [],
+      hoverValue: [moment(_obj[`${_fld}_from`]),moment(_obj[`${_fld}_till`])],
     };
   }
 
@@ -73,7 +77,7 @@ export default class FieldDateRange extends AbstractField {
         hoverValue={state.hoverValue}
         defaultValue={state.value}
         onHoverChange={this.handleHoverChange}
-        showWeekNumber={false}
+        showOk
         locale={ruRU}
         dateInputPlaceholder={['Начало', 'Конец']}
       />
@@ -92,14 +96,14 @@ export default class FieldDateRange extends AbstractField {
               <input
                 disabled={state.disabled}
                 readOnly
-                value={isValidRange(value) && `${format(value[0])} - ${format(value[1])}` || ''}
+                value={formatRange(value)}
               />
             :
               <StyledCustomField
                 placeholder={_meta.tooltip || _meta.synonym}
                 disabled={state.disabled}
                 readOnly
-                value={isValidRange(value) && `${format(value[0])} - ${format(value[1])}` || ''}
+                value={formatRange(value)}
                 _fld={_fld}
                 _meta={_meta}
                 classes={classes}

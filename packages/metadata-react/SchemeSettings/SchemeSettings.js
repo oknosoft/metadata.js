@@ -39,7 +39,6 @@ export default class SchemeSettingsWrapper extends PureComponent {
       scheme,
       dialog_open: false,
       menu_open: false,
-      fullscreen: false,
       variants: [scheme]
     };
 
@@ -80,19 +79,15 @@ export default class SchemeSettingsWrapper extends PureComponent {
   };
 
   handleSchemeChange = (scheme) => {
-    this.props.handleSchemeChange(scheme);
+    scheme._search = '';
     this.setState({scheme});
+    this.props.handleSchemeChange(scheme);
   };
 
-  handleSearchChange = (event, newValue) => {
-
+  handleSearchChange = (event) => {
+    this.state.scheme._search = event.target.value;
+    this.props.handleFilterChange();
   };
-
-  handleFullscreenClick() {
-    this.setState({
-      fullscreen: !this.state.fullscreen
-    });
-  }
 
   Variants() {
     const {variants, scheme, menu_open, anchorEl} = this.state;
@@ -109,14 +104,14 @@ export default class SchemeSettingsWrapper extends PureComponent {
   }
 
   render() {
-    const {props, state, handleDialogOpen, handleOk, handleDialogClose, handleSchemeChange, handleSearchChange} = this;
+    const {props, state, handleDialogOpen, handleOk, handleDialogClose} = this;
     const {dialog_open, menu_open, scheme} = state;
     const {show_search, show_variants, tabParams, classes} = props;
 
     return (
       <div className={classes.inline}>
         {/* Search box */
-          show_search && <SearchBox onChange={handleSearchChange}/>
+          show_search && <SearchBox value={scheme._search || ''} onChange={this.handleSearchChange}/>
         }
 
 
@@ -136,7 +131,7 @@ export default class SchemeSettingsWrapper extends PureComponent {
         {dialog_open && <DnR title={`${scheme.name} (вариант настроек)`} onClose={handleDialogClose} minHeight={433} initialHeight={440}>
           <SchemeSettingsTabs
             scheme={scheme}
-            handleSchemeChange={handleSchemeChange}
+            handleSchemeChange={this.handleSchemeChange}
             tabParams={tabParams}
             handleDialogClose={handleDialogClose}
             handleOk={handleOk}

@@ -425,7 +425,7 @@ export default function scheme_settings() {
     }
 
     /**
-     * ### Устанавливает _view и _key в параметрах запроса
+     * ### Формирует манго селектор
      */
     fix_select(select, key0) {
 
@@ -450,8 +450,8 @@ export default function scheme_settings() {
         }
       }
 
-      // если есть параметр период, установим значения ключа
-      if(this.query.match('date')) {
+      // если задано использование периода, установим значения фильтра
+      if(!this.standard_period.empty()) {
         const {date_from, date_till} = this;
 
         _key.startkey[1] = date_from.getFullYear();

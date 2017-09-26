@@ -5325,6 +5325,9 @@ const utils = mime({
 	is_data_obj(v) {
 		return v instanceof DataObj;
 	},
+  is_doc_obj(v) {
+    return v instanceof DocObj;
+  },
 	is_data_mgr(v) {
 		return v instanceof DataManager;
 	},

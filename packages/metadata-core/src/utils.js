@@ -21,7 +21,7 @@ if(typeof global != 'undefined'){
 }
 
 import {DataManager, EnumManager} from './mngrs';
-import {DataObj} from './objs';
+import {DataObj, DocObj} from './objs';
 import {TabularSection, TabularSectionRow} from './tabulars';
 
 import mime from './mime'
@@ -352,6 +352,17 @@ const utils = mime({
 	is_data_obj(v) {
 		return v instanceof DataObj;
 	},
+
+  /**
+   * ### Проверяет, является ли значенние Data-документом
+   *
+   * @method is_doc_obj
+   * @param v {*} - проверяемое значение
+   * @return {Boolean} - true, если значение является ссылкой
+   */
+  is_doc_obj(v) {
+    return v instanceof DocObj;
+  },
 
 	/**
 	 * ### Проверяет, является ли значенние менеджером объектов данных

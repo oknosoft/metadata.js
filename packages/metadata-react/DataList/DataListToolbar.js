@@ -70,34 +70,40 @@ class DataListToolbar extends Component {
 
         <IconButton disabled>|</IconButton>
 
-        <DateRange _obj={props.scheme} _fld={'date'} _meta={{synonym: 'Период'}} classes={classes} />
+        <DateRange
+          _obj={props.scheme}
+          _fld={'date'}
+          _meta={{synonym: 'Период'}}
+          classes={classes}
+          handleChange={props.handleFilterChange}
+        />
 
         <Typography type="caption" color="inherit" className={classes.flex} > </Typography>
 
-        <div>
-          <SchemeSettings
-            handleSchemeChange={props.handleSchemeChange}
-            classes={classes}
-            scheme={props.scheme}
-            show_search={props.show_search}
-            show_variants={props.show_variants}
-          />
+        <SchemeSettings
+          handleSchemeChange={props.handleSchemeChange}
+          handleFilterChange={props.handleFilterChange}
+          classes={classes}
+          scheme={props.scheme}
+          show_search={props.show_search}
+          show_variants={props.show_variants}
+        />
 
-          <IconButton onClick={this.handleClick} title="Дополнительно">
-            <MoreVertIcon/>
-          </IconButton>
+        <IconButton onClick={this.handleClick} title="Дополнительно">
+          <MoreVertIcon/>
+        </IconButton>
 
-          <Menu
-            anchorEl={state.anchorEl}
-            open={state.open}
-            onRequestClose={this.handleRequestClose}
-          >
+        <Menu
+          anchorEl={state.anchorEl}
+          open={state.open}
+          onRequestClose={this.handleRequestClose}
+        >
 
-            <MenuItem onClick={this.handleDnROpen}><PrintIcon/> &nbsp;Печать</MenuItem>
-            <MenuItem onClick={props.handleAttachment}><AttachIcon/> &nbsp;Вложения</MenuItem>
+          <MenuItem onClick={this.handleDnROpen}><PrintIcon/> &nbsp;Печать</MenuItem>
+          <MenuItem onClick={props.handleAttachment}><AttachIcon/> &nbsp;Вложения</MenuItem>
 
-          </Menu>
-        </div>
+        </Menu>
+
       </Toolbar>
     );
   }
