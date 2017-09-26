@@ -29,7 +29,7 @@
     "pouchdb-mapreduce": "^6.3.4",
     "pouchdb-replication": "^6.3.4",
     "rc-calendar": "^9.1.8",
-    "rc-cascader": "^0.11.5",
+    "rc-cascader": "^0.11.6",
     "rc-time-picker": "^2.4.1",
     "react-autosuggest": "^9.3.2",
     "react-data-grid": "^2.0.60",

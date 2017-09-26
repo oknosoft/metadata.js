@@ -579,7 +579,7 @@ export class RefDataManager extends DataManager{
 	get(ref, do_not_create){
 
 		const rp = 'promise';
-		if(typeof ref === 'object'){
+		if(typeof ref !== 'string'){
       ref = utils.fix_guid(ref);
     }
 		let o = this.by_ref[ref];

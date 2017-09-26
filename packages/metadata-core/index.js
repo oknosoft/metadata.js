@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.2-beta.29, built:2017-09-24
+ metadata-core v2.0.2-beta.29, built:2017-09-26
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1501,7 +1501,7 @@ class RefDataManager extends DataManager{
 	}
 	get(ref, do_not_create){
 		const rp = 'promise';
-		if(typeof ref === 'object'){
+		if(typeof ref !== 'string'){
       ref = utils.fix_guid(ref);
     }
 		let o = this.by_ref[ref];
