@@ -187,35 +187,48 @@ export default function scheme_settings() {
 
     set_standard_period() {
       const {standard_period} = enm;
-      const now = utils.moment();
+      const from = utils.moment();
+      const till = from.clone();
       switch (this.standard_period){
       case standard_period.yesterday:
-        this.date_from = now.subtract(1, 'days').startOf('date').toDate();
-        this.date_till = now.subtract(1, 'days').endOf('date').toDate();
+        this.date_from = from.subtract(1, 'days').startOf('date').toDate();
+        this.date_till = till.subtract(1, 'days').endOf('date').toDate();
         break;
       case standard_period.today:
-        this.date_from = now.startOf('date').toDate();
-        this.date_till = now.endOf('date').toDate();
+        this.date_from = from.startOf('date').toDate();
+        this.date_till = till.endOf('date').toDate();
         break;
       case standard_period.tomorrow:
-        this.date_from = now.add(1, 'days').startOf('date').toDate();
-        this.date_till = now.add(1, 'days').endOf('date').toDate();
+        this.date_from = from.add(1, 'days').startOf('date').toDate();
+        this.date_till = till.add(1, 'days').endOf('date').toDate();
         break;
       case standard_period.last7days:
-        this.date_from = now.subtract(7, 'days').startOf('date').toDate();
-        this.date_till = now.endOf('date').toDate();
+        this.date_from = from.subtract(7, 'days').startOf('date').toDate();
+        this.date_till = till.endOf('date').toDate();
+        break;
+      case standard_period.lastTendays:
+        this.date_from = from.subtract(10, 'days').startOf('date').toDate();
+        this.date_till = till.endOf('date').toDate();
         break;
       case standard_period.last30days:
-        this.date_from = now.subtract(30, 'days').startOf('date').toDate();
-        this.date_till = now.endOf('date').toDate();
+        this.date_from = from.subtract(30, 'days').startOf('date').toDate();
+        this.date_till = till.endOf('date').toDate();
         break;
       case standard_period.last3Month:
-        this.date_from = now.subtract(3, 'month').startOf('month').toDate();
-        this.date_till = now.startOf('month').subtract(1, 'ms').toDate();
+        this.date_from = from.subtract(3, 'month').startOf('month').toDate();
+        this.date_till = till.subtract(1, 'month').endOf('month').toDate();
         break;
       case standard_period.lastWeek:
-        this.date_from = now.subtract(1, 'weeks').startOf('week').toDate();
-        this.date_till = now.subtract(1, 'weeks').endOf('week').toDate();
+        this.date_from = from.subtract(1, 'weeks').startOf('week').toDate();
+        this.date_till = till.subtract(1, 'weeks').endOf('week').toDate();
+        break;
+      case standard_period.lastMonth:
+        this.date_from = from.subtract(1, 'month').startOf('month').toDate();
+        this.date_till = till.subtract(1, 'month').endOf('month').toDate();
+        break;
+      case standard_period.lastQuarter:
+        this.date_from = from.subtract(1, 'quarters').startOf('quarter').toDate();
+        this.date_till = till.subtract(1, 'quarters').endOf('quarter').toDate();
         break;
 
       }
