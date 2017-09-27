@@ -407,13 +407,13 @@ export default function scheme_settings() {
     }
 
     child_meta(class_name) {
-      if(!class_name){
+      if(!class_name) {
         class_name = this.obj;
       }
       const parts = class_name.split('.'),
         _mgr = md.mgr_by_class_name(class_name),
         _meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]);
-      return {parts, _mgr, _meta}
+      return {parts, _mgr, _meta};
     }
 
     /**
@@ -462,6 +462,61 @@ export default function scheme_settings() {
         _key.endkey[2] = date_till.getMonth() + 1;
         _key.endkey[3] = date_till.getDate();
       }
+
+      return res;
+    }
+
+    /**
+     * ### Формирует манго селектор
+     */
+    mango_selector({columns, skip, limit}) {
+
+      function format(date) {
+        return utils.moment(date).format('YYYY-MM-DD');
+      }
+
+      const res = {
+        selector: {
+          class_name: {$eq: this.obj}
+        },
+        fields: ['_id', 'posted']
+      };
+
+      for (const column of (columns || this.columns())) {
+        if(res.fields.indexOf(column.id) == -1) {
+          res.fields.push(column.id);
+        }
+      }
+
+      if(!this.standard_period.empty()) {
+        res.selector.$and = [
+          {date: {$gte: format(this.date_from)}},
+          {date: {$lte: format(this.date_till) + '\ufff0'}}
+        ];
+      }
+
+      if(this._search) {
+        res.selector.search = {$regex: this._search};
+      }
+
+      // пока сортируем только по дате
+      this.sorting.find_rows({use: true, field: 'date'}, (row) => {
+        let direction = row.direction.toString();
+        if(!direction || direction == '_') {
+          direction = 'asc';
+        }
+        res.sort = [{class_name: direction}, {date: direction}];
+      });
+
+      if(skip){
+        res.skip = skip;
+      }
+
+      if(limit){
+        res.limit = limit;
+      }
+
+      Object.defineProperty(res, '_mango', {value: true});
 
       return res;
     }

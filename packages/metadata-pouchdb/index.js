@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.2-beta.29, built:2017-09-24
+ metadata-pouchdb v2.0.2-beta.29, built:2017-09-27
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -602,6 +602,14 @@ function adapter({AbstracrAdapter}) {
       _data._saving = true;
       const db = this.db(_manager);
       const tmp = Object.assign({_id: class_name + '|' + ref, class_name}, _obj);
+      if(this.$p.utils.is_doc_obj(tObj) || _manager.build_search) {
+        if(_manager.build_search) {
+          _manager.build_search(tmp, tObj);
+        }
+        else {
+          tmp.search = (_obj.number_doc + (_obj.note ? ' ' + _obj.note : '')).toLowerCase();
+        }
+      }
       delete tmp.ref;
       if(attr.attachments) {
         tmp._attachments = attr.attachments;
@@ -657,14 +665,18 @@ function adapter({AbstracrAdapter}) {
       })
         .then((rows) => {
           rows.sort((a, b) => {
-            if (a.parent == $p.utils.blank.guid && b.parent != $p.utils.blank.guid)
+            if(a.parent == $p.utils.blank.guid && b.parent != $p.utils.blank.guid) {
               return -1;
-            if (b.parent == $p.utils.blank.guid && a.parent != $p.utils.blank.guid)
+            }
+            if(b.parent == $p.utils.blank.guid && a.parent != $p.utils.blank.guid) {
               return 1;
-            if (a.name < b.name)
+            }
+            if(a.name < b.name) {
               return -1;
-            if (a.name > b.name)
+            }
+            if(a.name > b.name) {
               return 1;
+            }
             return 0;
           });
           return rows.map((row) => ({
@@ -906,8 +918,20 @@ function adapter({AbstracrAdapter}) {
         .then(() => this.emit('pouch_doc_ram_loaded'));
     }
     find_rows(_mgr, selection) {
-      const {utils} = this.$p;
       const db = this.db(_mgr);
+      if(selection && selection._mango) {
+        return db.find(selection)
+          .then(({docs}) => {
+            if(!docs) {
+              docs = [];
+            }
+            for (const doc of docs) {
+              doc.ref = doc._id.split('|')[1];
+            }
+            return docs;
+          });
+      }
+      const {utils} = this.$p;
       const res = [];
       const options = {
         limit: 100,

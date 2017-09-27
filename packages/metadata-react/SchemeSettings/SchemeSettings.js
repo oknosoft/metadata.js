@@ -36,7 +36,6 @@ export default class SchemeSettingsWrapper extends PureComponent {
     const {scheme} = props;
 
     this.state = {
-      scheme,
       dialog_open: false,
       menu_open: false,
       variants: [scheme]
@@ -52,15 +51,11 @@ export default class SchemeSettingsWrapper extends PureComponent {
   }
 
   handleDialogOpen = () => {
-    this.setState({
-      dialog_open: true
-    });
+    this.setState({dialog_open: true});
   };
 
   handleDialogClose = () => {
-    this.setState({
-      dialog_open: false
-    });
+    this.setState({dialog_open: false});
   };
 
   handleMenuOpen = (event) => {
@@ -68,31 +63,34 @@ export default class SchemeSettingsWrapper extends PureComponent {
   };
 
   handleMenuClose = () => {
-    this.setState({
-      menu_open: false
-    });
+    this.setState({menu_open: false});
   };
 
   handleOk = () => {
     this.handleDialogClose();
-    this.props.handleSchemeChange(this.state.scheme);
+    this.props.handleSchemeChange(this.props.scheme);
   };
 
   handleSchemeChange = (scheme) => {
     scheme._search = '';
-    this.setState({scheme});
     this.props.handleSchemeChange(scheme);
   };
 
   handleSearchChange = (event) => {
-    this.state.scheme._search = event.target.value;
+    this.props.scheme._search = event.target.value;
+    this._timer && clearTimeout(this._timer);
+    this._timer = setTimeout(this.handleSearchTimer, 500);
+    this.forceUpdate();
+  };
+
+  handleSearchTimer = () => {
     this.props.handleFilterChange();
   };
 
   Variants() {
-    const {variants, scheme, menu_open, anchorEl} = this.state;
+    const {variants, menu_open, anchorEl} = this.state;
     const menuitems = variants.map((v, index) => <MenuItem
-      selected={v == scheme}
+      selected={v == this.props.scheme}
       key={v.ref}
       onClick={() => {
         this.handleSchemeChange(variants[index]);
@@ -105,8 +103,8 @@ export default class SchemeSettingsWrapper extends PureComponent {
 
   render() {
     const {props, state, handleDialogOpen, handleOk, handleDialogClose} = this;
-    const {dialog_open, menu_open, scheme} = state;
-    const {show_search, show_variants, tabParams, classes} = props;
+    const {dialog_open, menu_open} = state;
+    const {scheme, show_search, show_variants, tabParams, classes} = props;
 
     return (
       <div className={classes.inline}>

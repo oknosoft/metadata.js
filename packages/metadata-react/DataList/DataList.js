@@ -49,10 +49,7 @@ class DataList extends MComponent {
   constructor(props, context) {
     super(props, context);
 
-    const {class_name, cachable, alatable} = props._mgr;
-
     this.state = {
-      rowsLoaded: cachable === 'ram' ? alatable.length : 0,
       selectedRowIndex: 0,
 
       // готовим фильтры для запроса couchdb
@@ -62,16 +59,42 @@ class DataList extends MComponent {
         _top: 30,
         _skip: 0,
         _key: {
-          startkey: [props.params && props.params.options || class_name, 2000],
-          endkey: [props.params && props.params.options || class_name, 2020]
+          startkey: [props.params && props.params.options || props._mgr.class_name, 2000],
+          endkey: [props.params && props.params.options || props._mgr.class_name, 2020]
         }
       }
     };
 
-    this._meta = props._meta || props._mgr.metadata();
-
     /** Set of grid rows. */
     this._list = new Map();
+
+    this.handleManagerChange(props);
+  }
+
+  shouldComponentUpdate({_mgr, _meta}) {
+    if (this.props._mgr != _mgr) {
+      this.handleManagerChange({_mgr, _meta});
+      return false;
+    }
+    return true;
+  }
+
+  // при изменении менеджера данных
+  handleManagerChange({_mgr, _meta}) {
+
+    const {class_name, cachable, alatable} = _mgr;
+
+    this._meta = _meta || _mgr.metadata();
+
+    const state = {rowsLoaded: cachable === 'ram' ? alatable.length : 0};
+
+    if(this._mounted) {
+      this.setState(state);
+    }
+    else {
+      Object.assign(this.state, state);
+    }
+
     $p.cat.scheme_settings.get_scheme(class_name).then(this.handleSchemeChange);
 
   }
@@ -88,9 +111,7 @@ class DataList extends MComponent {
   // обработчик добавления элемента списка
   handleAdd = () => {
     const {handlers, _mgr} = this.props;
-    if(handlers.handleAdd) {
-      handlers.handleAdd(_mgr);
-    }
+    handlers.handleAdd && handlers.handleAdd(_mgr);
   };
 
   // обработчик редактирования элемента списка
@@ -133,9 +154,7 @@ class DataList extends MComponent {
 
   // при изменении настроек или варианта компоновки
   handleSchemeChange = (scheme) => {
-
     scheme.set_default();
-
     // пересчитываем и перерисовываем динсписок
     this.handleFilterChange(scheme, scheme.columns());
   };
@@ -174,18 +193,14 @@ class DataList extends MComponent {
   handlePrint = () => {
     const row = this._list.get(this.state.selectedRowIndex);
     const {handlers, _mgr} = this.props;
-    if(row && handlers.handlePrint) {
-      handlers.handlePrint(row, _mgr);
-    }
+    row && handlers.handlePrint && handlers.handlePrint(row, _mgr);
   };
 
   // обработчик вложений теущей строки
   handleAttachment = () => {
     const row = this._list.get(this.state.selectedRowIndex);
     const {handlers, _mgr} = this.props;
-    if(row && handlers.handleAttachment) {
-      handleAttachment(row, _mgr);
-    }
+    row && handlers.handleAttachment && handleAttachment(row, _mgr);
   };
 
   get sizes() {
@@ -401,25 +416,28 @@ class DataList extends MComponent {
     return this._list.has(index);
   };
 
+  _updateList = (data, startIndex) => {
+    const {_list} = this;
+
+    let reallyLoadedRows = 0;
+
+    // обновляем массив результата
+    for (let i = 0; i < data.length; i++) {
+      // Append one because first row is header.
+      if(_list.has(1 + i + startIndex) === false) {
+        reallyLoadedRows++;
+        _list.set(1 + i + startIndex, data[i]);
+      }
+    }
+    // Обновить количество записей.
+    this._mounted && reallyLoadedRows && this.setState({rowsLoaded: this.state.rowsLoaded + reallyLoadedRows});
+  }
+
   _loadMoreRows = ({startIndex, stopIndex}) => {
     const {_mgr, params} = this.props;
-    const {select, scheme, rowsLoaded} = this.state;
+    const {select, scheme, columns, rowsLoaded} = this.state;
 
     const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);
-
-    const update_state = (data) => {
-      let reallyLoadedRows = 0;
-      // обновляем массив результата
-      for (let i = 0; i < data.length; i++) {
-        // Append one because first row is header.
-        if(this._list.has(1 + i + startIndex) === false) {
-          reallyLoadedRows++;
-          this._list.set(1 + i + startIndex, data[i]);
-        }
-      }
-      // Обновить количество записей.
-      this._mounted && reallyLoadedRows && this.setState({rowsLoaded: this.state.rowsLoaded + reallyLoadedRows});
-    };
 
     Object.assign(select, {
       _top: increment,
@@ -430,15 +448,18 @@ class DataList extends MComponent {
 
     scheme.fix_select(select, params && params.options || _mgr.class_name);
 
-    if(_mgr.cachable === 'ram') {
+    // в зависимости от типа кеширования...
+    return _mgr.cachable === 'ram' ?
       // фильтруем в озу
-      update_state(_mgr.find_rows(select));
-      return Promise.resolve();
-    }
-    else {
+      Promise.resolve(this._updateList(_mgr.find_rows(select), startIndex))
+      :
       // выполняем запрос
-      return _mgr.find_rows_remote(select).then(update_state);
-    }
+      //_mgr.find_rows_remote(select).then((data) => this._updateList(data, startIndex));
+      _mgr.find_rows_remote(scheme.mango_selector({
+        columns,
+        skip: startIndex ? startIndex - 1 : 0,
+        limit: increment,
+      })).then((data) => this._updateList(data, startIndex));
 
   };
 }
