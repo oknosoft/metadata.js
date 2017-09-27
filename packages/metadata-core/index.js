@@ -520,6 +520,15 @@ var data_tabulars = Object.freeze({
 	TabularSectionRow: TabularSectionRow$1
 });
 
+class InnerData {
+  constructor(owner, loading) {
+    this._ts_ = {};
+    this._is_new = !(owner instanceof EnumObj);
+    this._loading = !!loading;
+    this._saving = false;
+    this._modified = false;
+  }
+}
 class DataObj {
 	constructor(attr, manager, loading) {
 		if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)){
@@ -528,7 +537,6 @@ class DataObj {
 				return tmp;
 			}
 		}
-		const _ts_ = {};
 		Object.defineProperties(this, {
 			_obj: {
 				value: {
@@ -536,18 +544,11 @@ class DataObj {
 				},
 				configurable: true
 			},
-			_ts_: {
-				value: (name) => _ts_[name] || (_ts_[name] = new TabularSection(name, this)),
-				configurable: true
-			},
 			_manager: {
 				value : manager
 			},
 			_data: {
-				value: {
-					_is_new: !(this instanceof EnumObj),
-          _loading: !!loading
-				},
+				value: new InnerData(this, loading),
 				configurable: true
 			}
 		});
@@ -674,13 +675,12 @@ class DataObj {
 		}
 	}
 	_getter_ts(f) {
-		return this._ts_(f)
+	  const {_ts_} = this._data;
+		return _ts_[f] || (_ts_[f] = new TabularSection(f, this));
 	}
 	_setter_ts(f, v) {
-		const ts = this._ts_(f);
-		if(ts instanceof TabularSection && Array.isArray(v)){
-			ts.load(v);
-		}
+		const ts = this._getter_ts(f);
+    ts instanceof TabularSection && Array.isArray(v) && ts.load(v);
 	}
 	valueOf(){ return this.ref }
 	toJSON(){ return this._obj }
@@ -752,7 +752,6 @@ class DataObj {
 		for (const f in _obj){
 			delete _obj[f];
 		}
-    delete this._ts_;
     delete this._obj;
 	}
 	save(post, operational, attachments) {
@@ -1501,7 +1500,7 @@ class RefDataManager extends DataManager{
 	}
 	get(ref, do_not_create){
 		const rp = 'promise';
-		if(typeof ref !== 'string'){
+		if(!ref || typeof ref !== 'string'){
       ref = utils.fix_guid(ref);
     }
 		let o = this.by_ref[ref];
@@ -1911,7 +1910,7 @@ class RefDataManager extends DataManager{
     const {cachable, _owner} = this;
     const {md} = _owner.$p;
     const select = {};
-    if(cachable == 'ram' || cachable == 'doc_ram') {
+    if(cachable === 'ram' || cachable === 'doc_ram') {
       select._top = top;
       select._skip = skip;
       const {input_by_string} = this.metadata();

@@ -9,6 +9,17 @@ import utils from './utils';
 import {DataProcessorsManager, EnumManager, RegisterManager} from './mngrs'
 import {TabularSection, TabularSectionRow} from './tabulars'
 
+class InnerData {
+
+  constructor(owner, loading) {
+    this._ts_ = {};
+    this._is_new = !(owner instanceof EnumObj);
+    this._loading = !!loading;
+    this._saving = false;
+    this._modified = false;
+  }
+
+}
 
 /**
  * ### Абстрактный объект данных
@@ -42,8 +53,6 @@ export class DataObj {
 			}
 		}
 
-		const _ts_ = {};
-
 		Object.defineProperties(this, {
 
 			/**
@@ -61,15 +70,6 @@ export class DataObj {
 			},
 
 			/**
-			 * Хранилище ссылок на табличные части - не сохраняется в базе данных
-			 * @property _ts_
-			 */
-			_ts_: {
-				value: (name) => _ts_[name] || (_ts_[name] = new TabularSection(name, this)),
-				configurable: true
-			},
-
-			/**
 			 * Указатель на менеджер данного объекта
 			 * @property _manager
 			 * @type DataManager
@@ -80,16 +80,13 @@ export class DataObj {
 			},
 
 			/**
-			 * Пользовательские данные - аналог `AdditionalProperties` _Дополнительные cвойства_ в 1С
+			 * Внутренние и пользовательские данные - аналог `AdditionalProperties` _Дополнительные cвойства_ в 1С
 			 * @property _data
-			 * @type DataManager
+			 * @type InnerData
 			 * @final
 			 */
 			_data: {
-				value: {
-					_is_new: !(this instanceof EnumObj),
-          _loading: !!loading
-				},
+				value: new InnerData(this, loading),
 				configurable: true
 			}
 
@@ -254,15 +251,20 @@ export class DataObj {
 		}
 	}
 
+  /**
+   * Получает (при необходимости - конструирует) табличную часть
+   * @param f {String} - имя табчасти
+   * @return {TabularSection}
+   * @private
+   */
 	_getter_ts(f) {
-		return this._ts_(f)
+	  const {_ts_} = this._data;
+		return _ts_[f] || (_ts_[f] = new TabularSection(f, this));
 	}
 
 	_setter_ts(f, v) {
-		const ts = this._ts_(f);
-		if(ts instanceof TabularSection && Array.isArray(v)){
-			ts.load(v)
-		}
+		const ts = this._getter_ts(f);
+    ts instanceof TabularSection && Array.isArray(v) && ts.load(v);
 	}
 
 	/**
@@ -410,7 +412,6 @@ export class DataObj {
 		for (const f in _obj){
 			delete _obj[f]
 		}
-    delete this._ts_;
     delete this._obj;
 	}
 

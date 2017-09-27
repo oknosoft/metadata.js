@@ -705,11 +705,11 @@ function adapter({AbstracrAdapter}) {
                 }
               }
             }
-            delete _data._saving;
+            _data._saving = false;
             resolve(tObj);
           })
           .catch((err) => {
-            delete _data._saving;
+            _data._saving = false;
             err && err.status != 404 && reject(err);
           });
       });
