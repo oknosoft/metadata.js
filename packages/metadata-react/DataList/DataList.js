@@ -30,8 +30,8 @@ class DataList extends MComponent {
     _acl: PropTypes.string,               // Права на чтение-изменение
     _meta: PropTypes.object,              // Описание метаданных. Если не указано, используем метаданные менеджера
 
-    // настройки компоновки
-    select: PropTypes.object,             // todo: переместить в scheme // Параметры запроса к couchdb. Если не указано - генерируем по метаданным
+    _owner: PropTypes.object,             // Поле - родитель. У него должны быть _obj, _fld и _meta
+                                          // а внутри _meta могут быть choice_params и choice_links
 
     // настройки внешнего вида и поведения
     selection_mode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисуем кнопку выбора
@@ -49,21 +49,7 @@ class DataList extends MComponent {
   constructor(props, context) {
     super(props, context);
 
-    this.state = {
-      selectedRowIndex: 0,
-
-      // готовим фильтры для запроса couchdb
-      select: props.select || {
-        _view: 'doc/by_date',
-        _raw: true,
-        _top: 30,
-        _skip: 0,
-        _key: {
-          startkey: [props.params && props.params.options || props._mgr.class_name, 2000],
-          endkey: [props.params && props.params.options || props._mgr.class_name, 2020]
-        }
-      }
-    };
+    this.state = {selectedRowIndex: 0};
 
     /** Set of grid rows. */
     this._list = new Map();
@@ -434,32 +420,31 @@ class DataList extends MComponent {
   }
 
   _loadMoreRows = ({startIndex, stopIndex}) => {
-    const {_mgr, params} = this.props;
-    const {select, scheme, columns, rowsLoaded} = this.state;
+    const {_mgr, _owner} = this.props;
+    const {scheme, columns, rowsLoaded} = this.state;
 
     const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);
 
-    Object.assign(select, {
-      _top: increment,
-      _skip: startIndex ? startIndex - 1 : 0,
-      _view: 'doc/by_date',
-      _raw: true
-    });
-
-    scheme.fix_select(select, params && params.options || _mgr.class_name);
-
     // в зависимости от типа кеширования...
-    return _mgr.cachable === 'ram' ?
+    if(_mgr.cachable === 'ram' || _mgr.cachable === 'doc_ram'){
       // фильтруем в озу
-      Promise.resolve(this._updateList(_mgr.find_rows(select), startIndex))
-      :
+      const selector = _mgr.get_search_selector({
+        _obj: _owner ? _owner._obj : null,
+        _meta: _owner ? _owner._meta : {},
+        search: scheme._search,
+        top: increment,
+        skip: startIndex ? startIndex - 1 : 0,
+      });
+      return Promise.resolve(this._updateList(_mgr.find_rows(selector), startIndex))
+    }
+    else{
       // выполняем запрос
-      //_mgr.find_rows_remote(select).then((data) => this._updateList(data, startIndex));
-      _mgr.find_rows_remote(scheme.mango_selector({
+      return _mgr.find_rows_remote(scheme.mango_selector({
         columns,
         skip: startIndex ? startIndex - 1 : 0,
         limit: increment,
       })).then((data) => this._updateList(data, startIndex));
+    }
 
   };
 }

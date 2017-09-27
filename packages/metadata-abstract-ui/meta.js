@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.2-beta.29, built:2017-09-25
+ metadata-abstract-ui v2.0.2-beta.29, built:2017-09-27
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -377,7 +377,7 @@ var meta = {
           },
           {
             order: 2,
-            name: 'divider',
+            name: 'drawer',
             synonym: 'Панель формы'
           },
         ]

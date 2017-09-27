@@ -1163,7 +1163,7 @@ export class RefDataManager extends DataManager{
     const {md} = _owner.$p;
     const select = {};
 
-    if(cachable == 'ram' || cachable == 'doc_ram') {
+    if(cachable === 'ram' || cachable === 'doc_ram') {
 
       select._top = top;
       select._skip = skip;

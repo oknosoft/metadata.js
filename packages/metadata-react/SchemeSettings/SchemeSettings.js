@@ -79,7 +79,7 @@ export default class SchemeSettingsWrapper extends PureComponent {
   handleSearchChange = (event) => {
     this.props.scheme._search = event.target.value;
     this._timer && clearTimeout(this._timer);
-    this._timer = setTimeout(this.handleSearchTimer, 500);
+    this._timer = setTimeout(this.handleSearchTimer, 600);
     this.forceUpdate();
   };
 

@@ -425,7 +425,7 @@ export default function scheme_settings() {
     }
 
     /**
-     * ### Формирует манго селектор
+     * ### Формирует селектор для find_rows
      */
     fix_select(select, key0) {
 

@@ -68,15 +68,14 @@ class DataListToolbar extends Component {
         {!props.denyAddDel && <IconButton key="edit" title="Открыть форму объекта" onClick={props.handleEdit}><EditIcon/></IconButton>}
         {!props.denyAddDel && <IconButton key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}
 
-        <IconButton disabled>|</IconButton>
-
-        <DateRange
+        {!props.scheme.standard_period.empty() && <IconButton disabled>|</IconButton>}
+        {!props.scheme.standard_period.empty() && <DateRange
           _obj={props.scheme}
           _fld={'date'}
           _meta={{synonym: 'Период'}}
           classes={classes}
           handleChange={props.handleFilterChange}
-        />
+        />}
 
         <Typography type="caption" color="inherit" className={classes.flex} > </Typography>
 
