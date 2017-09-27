@@ -191,28 +191,28 @@ export default function scheme_settings() {
       const till = from.clone();
       switch (this.standard_period){
       case standard_period.yesterday:
-        this.date_from = from.subtract(1, 'days').startOf('date').toDate();
-        this.date_till = till.subtract(1, 'days').endOf('date').toDate();
+        this.date_from = from.subtract(1, 'days').startOf('day').toDate();
+        this.date_till = till.subtract(1, 'days').endOf('day').toDate();
         break;
       case standard_period.today:
-        this.date_from = from.startOf('date').toDate();
-        this.date_till = till.endOf('date').toDate();
+        this.date_from = from.startOf('day').toDate();
+        this.date_till = till.endOf('day').toDate();
         break;
       case standard_period.tomorrow:
-        this.date_from = from.add(1, 'days').startOf('date').toDate();
-        this.date_till = till.add(1, 'days').endOf('date').toDate();
+        this.date_from = from.add(1, 'days').startOf('day').toDate();
+        this.date_till = till.add(1, 'days').endOf('day').toDate();
         break;
       case standard_period.last7days:
-        this.date_from = from.subtract(7, 'days').startOf('date').toDate();
-        this.date_till = till.endOf('date').toDate();
+        this.date_from = from.subtract(7, 'days').startOf('day').toDate();
+        this.date_till = till.endOf('day').toDate();
         break;
       case standard_period.lastTendays:
-        this.date_from = from.subtract(10, 'days').startOf('date').toDate();
-        this.date_till = till.endOf('date').toDate();
+        this.date_from = from.subtract(10, 'days').startOf('day').toDate();
+        this.date_till = till.endOf('day').toDate();
         break;
       case standard_period.last30days:
-        this.date_from = from.subtract(30, 'days').startOf('date').toDate();
-        this.date_till = till.endOf('date').toDate();
+        this.date_from = from.subtract(30, 'days').startOf('day').toDate();
+        this.date_till = till.endOf('day').toDate();
         break;
       case standard_period.last3Month:
         this.date_from = from.subtract(3, 'month').startOf('month').toDate();
