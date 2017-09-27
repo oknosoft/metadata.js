@@ -11,7 +11,7 @@ import PropTypes from 'prop-types';
 
 import AbstractField from './AbstractField';
 import FieldSelect from './FieldSelect';
-import FieldAutosuggest from './FieldAutosuggest';
+import FieldInfinit from './FieldInfinit';
 import FieldText from './FieldText';
 import FieldDate from './FieldDate';
 import FieldNumber from './FieldNumber';
@@ -32,7 +32,7 @@ export default class DataField extends AbstractField {
     switch (control_by_type(_meta.type, _obj[_fld])) {
 
     case 'ocombo':
-      return <FieldAutosuggest {...props} />;
+      return <FieldInfinit {...props} />;
 
     case 'calck':
     case 'edn':

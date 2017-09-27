@@ -13,6 +13,10 @@ export default withStyles({
     flex: 1,
     whiteSpace: 'nowrap',
   },
+  inline: {
+    display: 'inline-flex',
+    alignItems: 'baseline'
+  },
   progress: {
     color: colors.white,
     position: 'absolute',

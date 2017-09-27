@@ -9,12 +9,30 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import DataCell from './DataField/DataCell';
 import {Editors, Formatters} from 'react-data-grid-addons';
+const {CheckboxEditor, DropDownEditor} = Editors;
+const {DropDownFormatter, ImageFormatter} = Formatters;
 
-const AutoCompleteEditor = Editors.AutoComplete;
-const DropDownEditor = Editors.DropDownEditor;
-const DropDownFormatter = Formatters.DropDownFormatter;
+import DataCell from './DataField/DataCell';
+import TypeFieldCell from './DataField/FieldTypeCell';
+import PathFieldCell from './DataField/FieldPathCell';
+
+class ToggleEditor extends CheckboxEditor {
+
+  getInputNode() {
+
+  }
+
+  getValue() {
+    return this.props.rowData[this.props.column.key];
+  }
+
+  handleChange(e) {
+    const {rowData, column} = this.props;
+    rowData[column.key] = !rowData[column.key];
+    //this.props.column.onCellChange(this.props.rowIdx, this.props.column.key, this.props.dependentValues, e);
+  }
+}
 
 
 function rx_columns($p) {
@@ -22,24 +40,25 @@ function rx_columns($p) {
   const {moment} = $p.utils;
 
   const date_formatter = {
-    date: (v) => {
-      const {presentation} = moment(v).format(moment._masks.date);
+    date: ({value}) => {
+      const presentation = moment(value).format(moment._masks.date);
       return <div title={presentation}>{presentation}</div>;
     },
-    date_time: (v) => {
-      const {presentation} = moment(v).format(moment._masks.date_time);
+    date_time: ({value}) => {
+      const presentation = moment(value).format(moment._masks.date_time);
       return <div title={presentation}>{presentation}</div>;
     }
   };
 
-  const presentation_formatter = (v) => {
-    const {presentation} = v.value;
+  const presentation_formatter = ({value}) => {
+    const {presentation} = value;
     return <div title={presentation}>{presentation}</div>;
   };
 
   return function columns({mode, fields, _obj}) {
 
     const res = this.columns(mode);
+    const {input, text, label, link, cascader, toggle, image, type, path} = $p.enm.data_field_kinds;
 
     if(fields) {
       res.forEach((column) => {
@@ -56,28 +75,50 @@ function rx_columns($p) {
           }
         }
 
+        let options;
         switch (column.ctrl_type) {
 
-        case 'input':
+        case input:
+        case text:
+        case label:
+        case link:
+        case cascader:
           column.editable = true;
           break;
 
-        case 'ocombo':
-          column.editor = <DataCell/>;
+        case toggle:
+          const toggle_options = [
+            {
+              id: 0,
+              value: false,
+              text: 'Нет',
+              title: 'Нет',
+            },
+            {
+              id: 1,
+              value: true,
+              text: 'Да',
+              title: 'Да',
+            }
+          ];
+          column.editor = <DropDownEditor options={toggle_options}/>;
+          column.formatter = <DropDownFormatter options={toggle_options} value={''}/>;
           break;
 
-        case 'ofields':
-          const options = _obj.used_fields_list();
-          column.editor = <DropDownEditor options={options}/>;
-          column.formatter = <DropDownFormatter options={options} value=""/>;
+        case path:
+          // options = _obj.used_fields_list();
+          // column.editor = <DropDownEditor options={options}/>;
+          // column.formatter = <DropDownFormatter options={options} value=""/>;
+          column.editor = <PathFieldCell />;
           break;
 
-        case 'dhxCalendar':
-          column.editor = <DataCell/>;
+        case type:
+          column.editor = <TypeFieldCell />;
+          //column.formatter = <DropDownFormatter options={[]} value=""/>;
           break;
 
         default:
-          ;
+          column.editor = <DataCell />;
         }
 
       });
@@ -100,7 +141,7 @@ export function export_handlers() {
   this.doExport = (format) => {
     setTimeout(() => {
       const {_obj, _tabular, _columns} = this.props;
-      _obj[_tabular].export(format, _columns.map((column) => column.key));
+      _obj[_tabular].export(format, _columns.map((column) => column.key))
     });
     this.handleMenuClose && this.handleMenuClose();
   };

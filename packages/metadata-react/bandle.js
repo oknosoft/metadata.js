@@ -2,10 +2,8 @@ import DataField from './DataField'
 import DataList from './DataList'
 import DataListField from './DataListField'
 import DataTree from './DataTree'
-import Dialog from './Dialog'
 import DumbLoader from './DumbLoader'
 import FieldsSet from './FieldsSet'
-import FlexPanel from './FlexPanel'
 import FrmLogin from './FrmLogin'
 import FrmObj from './FrmObj'
 import FrmReport from './FrmReport'
@@ -24,10 +22,8 @@ export default {
   DataList,
   DataListField,
   DataTree,
-  Dialog,
   DumbLoader,
   FieldsSet,
-  FlexPanel,
   FrmLogin,
   FrmObj,
   FrmReport,

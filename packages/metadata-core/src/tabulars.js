@@ -142,7 +142,7 @@ export class TabularSection {
         }
       }
 		}
-		if (index == undefined){
+		if (index == undefined || !_obj[index]){
       return;
     }
 
@@ -253,7 +253,9 @@ export class TabularSection {
 	 * @param fn {Function} - callback, в который передается строка табчасти
 	 */
 	each(fn) {
-		this._obj.forEach((row) => fn.call(this, row._row));
+	  for(let row of this._obj){
+	    if(fn.call(this, row._row) === false) break;
+    }
 	}
 
 	/**

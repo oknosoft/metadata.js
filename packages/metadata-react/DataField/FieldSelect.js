@@ -1,5 +1,5 @@
 /**
- * ### Поле ввода ссылочных данных
+ * ### Поле ввода ссылочных данных на базе react-select
  *
  * @module FieldSelect
  *
@@ -31,7 +31,7 @@ export default class FieldSelect extends AbstractField {
     };
   }
 
-  _loadOptions = (input) => {
+  loadOptions = (input) => {
 
     const selection = {_top: 40};
     const {_obj, _fld} = this.props;
@@ -53,7 +53,7 @@ export default class FieldSelect extends AbstractField {
       });
   };
 
-  _onChange = (value) => {
+  onChange = (value) => {
     const {handleValueChange} = this.props;
     this.setState({value});
     handleValueChange && handleValueChange(value);
@@ -61,7 +61,7 @@ export default class FieldSelect extends AbstractField {
 
   render() {
 
-    const {props, state, _loadOptions, _onChange} = this;
+    const {props, state, loadOptions, onChange} = this;
     const {_fld} = props;
     const {options, value, mandatory} = state;
 
@@ -74,9 +74,9 @@ export default class FieldSelect extends AbstractField {
         backspaceRemoves={false}
         labelKey='presentation'
         valueKey='ref'
-        loadOptions={_loadOptions}
+        loadOptions={loadOptions}
         minimumInput={0}
-        onChange={_onChange}
+        onChange={onChange}
         //onValueClick={this._goToGithubUser}
         options={options}
         value={value}

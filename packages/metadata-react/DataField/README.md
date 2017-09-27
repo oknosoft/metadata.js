@@ -16,7 +16,7 @@
 | Свойство       | Тип                                                                                                                | Описание                |
 | :---           | :---                                                                                                               | :---                    |
 | _meta          | MetaField                                                                                                          | Метаданные поля         |
-| kind           | [DATA_FIELD_KINDS](https://github.com/oknosoft/metadata.js/blob/master/packages/metadata-abstract-ui/src/enums.js) | Тип элемента управления |
+| kind           | [DATA_FIELD_KINDS](https://github.com/oknosoft/metadata.js/blob/master/packages/metadata-abstract-ui/src/meta.js) | Тип элемента управления |
 | read_only      | Bool                                                                                                               | Поле только для чтения  |
-| label_position | [LABEL_POSITIONS](https://github.com/oknosoft/metadata.js/blob/master/packages/metadata-abstract-ui/src/enums.js)  | Положение заголовка     |
+| label_position | [LABEL_POSITIONS](https://github.com/oknosoft/metadata.js/blob/master/packages/metadata-abstract-ui/src/meta.js)  | Положение заголовка     |
 

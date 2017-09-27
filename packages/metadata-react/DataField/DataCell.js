@@ -4,13 +4,6 @@ import DataField from './DataField';
 
 import {Editors} from 'react-data-grid-addons';
 
-const ExcelColumn = {
-  name: PropTypes.string.isRequired,
-  key: PropTypes.string.isRequired,
-  width: PropTypes.number.isRequired,
-  filterable: PropTypes.bool,
-};
-
 class DataCell extends Editors.SimpleTextEditor {
 
   // props.column.key, props.rowData(._row)
@@ -27,9 +20,7 @@ class DataCell extends Editors.SimpleTextEditor {
   }
 
   getValue() {
-    let updated = {};
-    updated[this.props.column.key] = this.state.value;
-    return updated;
+    return {[this.props.column.key]: this.state.value};
   }
 
   handleSelectChange(value) {
@@ -56,7 +47,7 @@ class DataCell extends Editors.SimpleTextEditor {
 
 DataCell.propTypes = {
   options: PropTypes.array,
-  column: PropTypes.shape(ExcelColumn),
+  column: Editors.CheckboxEditor.propTypes.column,
   value: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
   rowData: PropTypes.object,
   _meta: PropTypes.object,

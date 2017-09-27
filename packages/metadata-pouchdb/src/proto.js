@@ -16,17 +16,20 @@ export default (constructor) => {
 					return Promise.resolve(this);
 				}
 
-				// если не указан явно, рассчитываем префикс по умолчанию
-				const {date, organization, _manager} = this;
-				const {current_user} = _manager._owner.$p;
+        const {organization, _manager} = this;
+        const {current_user, utils} = _manager._owner.$p;
 
+        if(this.date === utils.blank.date) {
+          this.date = new Date();
+        }
+        const year = (this.date instanceof Date) ? this.date.getFullYear() : 0
+
+				// если не указан явно, рассчитываем префикс по умолчанию
 				if (!prefix) {
 					prefix = ((current_user && current_user.prefix) || '') + ((organization && organization.prefix) || '');
 				}
 
-				let obj = this,
-					part = '',
-					year = (date instanceof Date) ? date.getFullYear() : 0,
+				let part = '',
 					code_length = this._metadata().code_length - prefix.length;
 
 				// для кешируемых в озу, вычисляем без индекса
@@ -45,7 +48,7 @@ export default (constructor) => {
 					.then((res) => {
 						if (res.rows.length) {
 							const num0 = res.rows[0].key[2];
-							for (var i = num0.length - 1; i > 0; i--) {
+							for (let i = num0.length - 1; i > 0; i--) {
 								if (isNaN(parseInt(num0[i])))
 									break;
 								part = num0[i] + part;
@@ -57,12 +60,12 @@ export default (constructor) => {
 						while (part.length < code_length)
 							part = '0' + part;
 
-						if (obj instanceof DocObj || obj instanceof TaskObj || obj instanceof BusinessProcessObj)
-							obj.number_doc = prefix + part;
+						if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj)
+              this.number_doc = prefix + part;
 						else
-							obj.id = prefix + part;
+              this.id = prefix + part;
 
-						return obj;
+						return this;
 
 					});
 			},
@@ -86,7 +89,7 @@ export default (constructor) => {
 
 				if (res.length) {
 					const num0 = res[0].id || '';
-					for (var i = num0.length - 1; i > 0; i--) {
+					for (let i = num0.length - 1; i > 0; i--) {
 						if (isNaN(parseInt(num0[i])))
 							break;
 						part = num0[i] + part;

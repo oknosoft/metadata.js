@@ -1,6 +1,6 @@
 /**
  * ### Выбор варианта сохраненных настроек
- * @module SchemeSettingsSelect
+ * страница формы справочника SchemeSettings
  *
  * Created 19.12.2016
  */
@@ -25,7 +25,6 @@ class SchemeSettingsSelect extends Component {
   static propTypes = {
     scheme: PropTypes.object.isRequired,
     handleSchemeChange: PropTypes.func.isRequired,
-    minHeight: PropTypes.number,
   };
 
   constructor(props, context) {
@@ -59,11 +58,11 @@ class SchemeSettingsSelect extends Component {
 
     const {state, props, handleCreate, handleSave, handleNameChange} = this;
     const {_obj, _meta} = state;
-    const {scheme, classes, handleSchemeChange, minHeight} = props;
+    const {scheme, classes, handleSchemeChange} = props;
 
     return (
       <div>
-        <Toolbar className={classes.bar}>
+        <Toolbar disableGutters className={classes.bar}>
 
           <IconButton title="Сохранить вариант настроек" onClick={handleSave}><SaveIcon/></IconButton>
           <IconButton title="Создать копию настроек" onClick={handleCreate}><CopyIcon/></IconButton>
@@ -82,8 +81,9 @@ class SchemeSettingsSelect extends Component {
         </Toolbar>
 
         <FormGroup style={{margin: 16}}>
-          <DataField _obj={scheme} _fld="name" handleValueChange={handleNameChange}/>
-          <DataField _obj={scheme} _fld="query"/>
+          <DataField _obj={scheme} _fld="name" fullWidth handleValueChange={handleNameChange}/>
+          <DataField _obj={scheme} _fld="query" fullWidth/>
+          <DataField _obj={scheme} _fld="standard_period" fullWidth/>
         </FormGroup>
 
 

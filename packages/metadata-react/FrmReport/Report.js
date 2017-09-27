@@ -5,15 +5,16 @@ import DumbLoader from '../DumbLoader';
 import RepToolbar from './RepToolbar';
 import RepTabularSection from './RepTabularSection';
 
+import withIface from 'metadata-redux/src/withIface';
 
-export default class Report extends Component {
+
+class Report extends Component {
 
   static propTypes = {
+    _mgr: PropTypes.object.isRequired,    // менеджер отчета
     _obj: PropTypes.object,               // объект данных - отчет DataProcessorObj
     _tabular: PropTypes.string,           // имя табчасти, в которой живут данные отчета
     _acl: PropTypes.string.isRequired,    // права текущего пользователя
-
-    TabParams: PropTypes.func,            // внешний компонент страницы параметров - транслируется в RepToolbar
 
     handlePrint: PropTypes.func,          // внешний обработчик печати
     handleSchemeChange: PropTypes.func,   // внешний обработчик при изменении настроек компоновки
@@ -23,13 +24,13 @@ export default class Report extends Component {
   constructor(props, context) {
 
     super(props, context);
-    const {_mgr, _meta} = props;
-    const _tabular = props._tabular || 'data';
+    const {_mgr, _meta, _obj} = props;
+    const _tabular = props._tabular || _mgr._tabular || 'data';
 
     this.state = {
-      _obj: _mgr.create(),
-      _tabular,
+      _obj: _obj || _mgr.create(),
       _meta: _meta || _mgr.metadata(_tabular),
+      _tabular,
     };
 
     $p.cat.scheme_settings.get_scheme(_mgr.class_name + `.${_tabular}`)
@@ -37,9 +38,34 @@ export default class Report extends Component {
 
   }
 
+  componentDidMount() {
+    this.shouldComponentUpdate(this.props, this.state);
+  }
+
+  shouldComponentUpdate({handleIfaceState, title, _mgr}, {scheme}) {
+    const ltitle = _mgr.metadata().synonym + (scheme && scheme.name ? ` (${scheme.name})` : '');
+    if (title != ltitle) {
+      handleIfaceState({
+        component: '',
+        name: 'title',
+        value: ltitle,
+      });
+      return false;
+    }
+    return true;
+  }
+
   handleSave = () => {
     const {_obj, _columns, scheme} = this.state;
-    _obj.calculate(scheme).then(() => this._result.forceUpdate());
+    if(scheme && !scheme.empty()){
+      if(_obj.scheme !== scheme){
+        _obj.scheme = scheme;
+      }
+      _obj.calculate().then(() => this._result.forceUpdate());
+    }
+    else{
+      $p.record_log({class: 'info', note: 'Пустая схема компоновки', obj: this.props._mgr.class_name});
+    }
   };
 
   handlePrint = () => {
@@ -55,26 +81,29 @@ export default class Report extends Component {
 
     const {props, state} = this;
     const {handleSchemeChange} = props;
-    const _columns = scheme.rx_columns({
-      mode: 'ts',
-      fields: state._meta.fields,
-      _obj: state._obj
-    });
+    const {_obj, _meta} = state;
+    const _columns = scheme.rx_columns({mode: 'ts', fields: _meta.fields, _obj});
 
     // в этом методе
     handleSchemeChange && handleSchemeChange(this, scheme);
 
-    this.setState({
-      scheme,
-      _columns
-    });
+    // в случае непустого результата - чистим
+    if(_obj.data && _obj.data.count()){
+      _obj.data.clear();
+      if(_obj.data._rows){
+        _obj.data._rows.length = 0;
+      }
+    }
+
+    // обновляем state
+    this.setState({scheme, _columns});
+
   };
 
   render() {
 
     const {props, state, handleClose, handleSave, handlePrint, handleSchemeChange} = this;
     const {_obj, _columns, scheme, _tabular} = state;
-    let {TabParams} = props;
 
     if(!scheme) {
       return <DumbLoader title="Чтение настроек компоновки..."/>;
@@ -86,37 +115,32 @@ export default class Report extends Component {
       return <DumbLoader title="Ошибка настроек компоновки..."/>;
     }
 
-    return (
+    return <div>
 
-      <div>
+      <RepToolbar
+        _obj={_obj}
+        _tabular={_tabular}
+        _columns={_columns}
+        scheme={scheme}
 
-        <RepToolbar
-          handleSave={handleSave}
-          handlePrint={handlePrint}
-          handleClose={handleClose}
+        handleSchemeChange={handleSchemeChange}
+        handleSave={handleSave}
+        handlePrint={handlePrint}
+        handleClose={handleClose}
+      />
 
-          _obj={_obj}
-          _tabular={_tabular}
+      <RepTabularSection
+        ref={(el) => this._result = el}
+        _obj={_obj}
+        _tabular={_tabular}
+        _columns={_columns}
+        scheme={scheme}
+        minHeight={(props.height || 500) - 52}
+      />
 
-          TabParams={TabParams}
-
-          scheme={scheme}
-          handleSchemeChange={handleSchemeChange}
-
-        />
-
-        <RepTabularSection
-          ref={(el) => this._result = el}
-          _obj={_obj}
-          _tabular={_tabular}
-          _columns={_columns}
-          scheme={scheme}
-          minHeight={500 - 60}
-        />
-
-      </div>
-
-    );
+    </div>;
   }
 }
+
+export default withIface(Report);
 

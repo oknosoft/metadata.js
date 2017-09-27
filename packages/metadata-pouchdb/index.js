@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.2-beta.26, built:2017-09-10
+ metadata-pouchdb v2.0.2-beta.29, built:2017-09-27
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -16,14 +16,16 @@ var proto = (constructor) => {
 				if (!this._metadata().code_length) {
 					return Promise.resolve(this);
 				}
-				const {date, organization, _manager} = this;
-				const {current_user} = _manager._owner.$p;
+        const {organization, _manager} = this;
+        const {current_user, utils} = _manager._owner.$p;
+        if(this.date === utils.blank.date) {
+          this.date = new Date();
+        }
+        const year = (this.date instanceof Date) ? this.date.getFullYear() : 0;
 				if (!prefix) {
 					prefix = ((current_user && current_user.prefix) || '') + ((organization && organization.prefix) || '');
 				}
-				let obj = this,
-					part = '',
-					year = (date instanceof Date) ? date.getFullYear() : 0,
+				let part = '',
 					code_length = this._metadata().code_length - prefix.length;
 				if (_manager.cachable == 'ram') {
 					return Promise.resolve(this.new_cat_id(prefix));
@@ -39,7 +41,7 @@ var proto = (constructor) => {
 					.then((res) => {
 						if (res.rows.length) {
 							const num0 = res.rows[0].key[2];
-							for (var i = num0.length - 1; i > 0; i--) {
+							for (let i = num0.length - 1; i > 0; i--) {
 								if (isNaN(parseInt(num0[i])))
 									break;
 								part = num0[i] + part;
@@ -50,11 +52,11 @@ var proto = (constructor) => {
 						}
 						while (part.length < code_length)
 							part = '0' + part;
-						if (obj instanceof DocObj || obj instanceof TaskObj || obj instanceof BusinessProcessObj)
-							obj.number_doc = prefix + part;
+						if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj)
+              this.number_doc = prefix + part;
 						else
-							obj.id = prefix + part;
-						return obj;
+              this.id = prefix + part;
+						return this;
 					});
 			},
 		},
@@ -71,7 +73,7 @@ var proto = (constructor) => {
 					res = wsql.alasql('select top 1 ' + field + ' as id from ? where ' + field + ' like "' + prefix + '%" order by ' + field + ' desc', [_manager.alatable]);
 				if (res.length) {
 					const num0 = res[0].id || '';
-					for (var i = num0.length - 1; i > 0; i--) {
+					for (let i = num0.length - 1; i > 0; i--) {
 						if (isNaN(parseInt(num0[i])))
 							break;
 						part = num0[i] + part;
@@ -600,6 +602,14 @@ function adapter({AbstracrAdapter}) {
       _data._saving = true;
       const db = this.db(_manager);
       const tmp = Object.assign({_id: class_name + '|' + ref, class_name}, _obj);
+      if(this.$p.utils.is_doc_obj(tObj) || _manager.build_search) {
+        if(_manager.build_search) {
+          _manager.build_search(tmp, tObj);
+        }
+        else {
+          tmp.search = (_obj.number_doc + (_obj.note ? ' ' + _obj.note : '')).toLowerCase();
+        }
+      }
       delete tmp.ref;
       if(attr.attachments) {
         tmp._attachments = attr.attachments;
@@ -655,14 +665,18 @@ function adapter({AbstracrAdapter}) {
       })
         .then((rows) => {
           rows.sort((a, b) => {
-            if (a.parent == $p.utils.blank.guid && b.parent != $p.utils.blank.guid)
+            if(a.parent == $p.utils.blank.guid && b.parent != $p.utils.blank.guid) {
               return -1;
-            if (b.parent == $p.utils.blank.guid && a.parent != $p.utils.blank.guid)
+            }
+            if(b.parent == $p.utils.blank.guid && a.parent != $p.utils.blank.guid) {
               return 1;
-            if (a.name < b.name)
+            }
+            if(a.name < b.name) {
               return -1;
-            if (a.name > b.name)
+            }
+            if(a.name > b.name) {
               return 1;
+            }
             return 0;
           });
           return rows.map((row) => ({
@@ -904,8 +918,20 @@ function adapter({AbstracrAdapter}) {
         .then(() => this.emit('pouch_doc_ram_loaded'));
     }
     find_rows(_mgr, selection) {
-      const {utils} = this.$p;
       const db = this.db(_mgr);
+      if(selection && selection._mango) {
+        return db.find(selection)
+          .then(({docs}) => {
+            if(!docs) {
+              docs = [];
+            }
+            for (const doc of docs) {
+              doc.ref = doc._id.split('|')[1];
+            }
+            return docs;
+          });
+      }
+      const {utils} = this.$p;
       const res = [];
       const options = {
         limit: 100,

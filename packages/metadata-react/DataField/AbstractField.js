@@ -32,4 +32,4 @@ export default class AbstractField extends Component {
   get isTabular() {
     return $p.utils.is_tabular(this.props._obj);
   }
-}
+};

@@ -1,7 +1,6 @@
 /**
- * ### Поле ввода ссылочных данных
+ * ### Поле ввода ссылочных данных на базе Autosuggest
  *
- * @module FieldText
  *
  */
 
@@ -11,7 +10,7 @@ import Autosuggest from 'react-autosuggest';
 import TextField from 'material-ui/TextField';
 import Paper from 'material-ui/Paper';
 import Divider from 'material-ui/Divider';
-import MenuItem from 'material-ui/Menu/MenuItem';
+import Menu, {MenuItem} from 'material-ui/Menu';
 import {ListItem, ListItemIcon, ListItemText} from 'material-ui/List';
 import IconButton from 'material-ui/IconButton';
 import OpenInNew from 'material-ui-icons/OpenInNew';
@@ -19,57 +18,20 @@ import AddIcon from 'material-ui-icons/AddCircleOutline';
 import TitleIcon from 'material-ui-icons/Title';
 
 // окно диалога, чтобы показать всплывающие формы
-import Dialog from '../Dialog';
+import DnR from '../DnR/Dialog'
 
 // import match from 'autosuggest-highlight/match';
 // import parse from 'autosuggest-highlight/parse';
-import {withStyles} from 'material-ui/styles';
 
 import AbstractField from './AbstractField';
+import withStyles from './styles';
 
-
-const styles = theme => ({
-  container: {
-    flexGrow: 1,
-    position: 'relative',
-    //height: 200,
-  },
-  suggestionsContainerOpen: {
-    position: 'absolute',
-    marginTop: theme.spacing.unit,
-    marginBottom: theme.spacing.unit * 3,
-    left: 0,
-    right: 0,
-    zIndex: 3000,
-  },
-  suggestion: {
-    display: 'block',
-  },
-  suggestionsList: {
-    margin: 0,
-    padding: 0,
-    listStyleType: 'none',
-  },
-  flex: {
-    flex: 1,
-  },
-  a: {
-    width: 'inherit',
-    whiteSpace: 'nowrap',
-    textDecoration: 'underline',
-    cursor: 'pointer',
-    color: '#0b0080'
-  },
-  button: {
-    marginTop: theme.spacing.unit,
-    marginBottom: theme.spacing.unit,
-  },
-  textField: {
-    width: '100%',
-  },
-});
 
 class FieldAutosuggest extends AbstractField {
+
+  static contextTypes = {
+    components: PropTypes.object,       // конструкторы DataList и FrmObj передаём через контекст, чтобы исключить зацикливание
+  };
 
   constructor(props, context) {
     super(props, context);
@@ -144,29 +106,23 @@ class FieldAutosuggest extends AbstractField {
     this.setState({dialog_open: false});
   };
 
-  renderSuggestionsContainer(options) {
+  renderSuggestionsContainer = ({containerProps, children}) => {
 
-    const {containerProps, children} = options;
+    const { ref, ...restContainerProps } = containerProps;
+    const callRef = isolatedScroll => {
+      if (isolatedScroll !== null) {
+        ref(isolatedScroll.component);
+      }
+    };
+
+    const {_meta, props} = this;
+    const {_obj, _fld, classes} = props;
+    const {_manager} = _obj[_fld];
+    const is_enm = $p.utils.is_enm_mgr(_manager);
 
     return (
-      <Paper {...containerProps} square>
+      children && <Paper {...containerProps} square>
         {children}
-      </Paper>
-    );
-  };
-
-  renderSuggestion = (suggestion, {query, isHighlighted}) => {
-    // const matches = match(suggestion.label, query);
-    // const parts = parse(suggestion.label, matches);
-
-    if(suggestion._footer) {
-      const {_meta, props} = this;
-      const {_obj, _fld, classes} = props;
-      const {_manager} = _obj[_fld];
-      const is_enm = $p.utils.is_enm_mgr(_manager);
-
-      return <div>
-        <Divider/>
         <ListItem>
           <ListItemIcon onClick={this.handleOpenList}><div className={classes.a}>{is_enm ? '...' : 'Показать все'}</div></ListItemIcon>
           <ListItemText inset primary=' '/>
@@ -174,15 +130,20 @@ class FieldAutosuggest extends AbstractField {
           {!is_enm && _manager.acl.indexOf('i') != -1 && <IconButton title="Создать элемент"><AddIcon/></IconButton>}
           {!is_enm && <IconButton title={_manager.frm_obj_name} onClick={this.handleOpenObj}><OpenInNew/></IconButton>}
         </ListItem>
-      </div>;
-    }
+      </Paper>
+    );
+  };
 
-    return <MenuItem selected={isHighlighted} component="div">{this.getSuggestionValue(suggestion)}</MenuItem>;
+  renderSuggestion = (suggestion, {query, isHighlighted}) => {
+    // const matches = match(suggestion.label, query);
+    // const parts = parse(suggestion.label, matches);
+    return suggestion._footer ? <Divider /> : <MenuItem selected={isHighlighted} component="div">{this.getSuggestionValue(suggestion)}</MenuItem>;
   };
 
   renderInput = (inputProps) => {
+
     const {classes, home, value, ref, _meta, _fld, fullWidth, ...other} = inputProps;
-    //autoFocus={home}
+    //
 
     return this.isTabular ?
       <input
@@ -190,17 +151,20 @@ class FieldAutosuggest extends AbstractField {
         value={value}
         title={_meta.tooltip || _meta.synonym}
         placeholder={_fld}
+        onBlur={this.prevent}
         {...other}
       />
       :
       <TextField
-        className={classes && classes.textField}
+        className={classes.formControl}
+        autoFocus={home}
         fullWidth={fullWidth}
         margin="dense"
         value={value}
         inputRef={ref}
         label={_meta.synonym}
         title={_meta.tooltip || _meta.synonym}
+        onBlur={this.prevent}
         InputProps={{
           classes: {input: classes.input},
           placeholder: _fld,
@@ -208,6 +172,11 @@ class FieldAutosuggest extends AbstractField {
         }}
       />;
   };
+
+  prevent(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
 
   renderDialog() {
     const {props, state, context} = this;
@@ -217,21 +186,18 @@ class FieldAutosuggest extends AbstractField {
       const {_manager, ref} = _obj[_fld];
       const _acl = $p.current_user.get_acl(_manager.class_name);
       const {DataList, DataObj} = context.components;
+      const title = state.dialog_open == 'list' ?
+        (_manager.metadata().list_presentation || _manager.metadata().synonym)
+        :
+        (_manager.metadata().obj_presentation || _manager.metadata().synonym);
 
-      return <Dialog
-        visible
-        resizable
-        draggable
-        selection_mode
-        show_search
-        tabs={{Форма: state.dialog_open == 'list' ?
-          <DataList _mgr={_manager} _acl={_acl} height={320} width={420} handlers={{}}/>
+      return <DnR title={title} onClose={this.handleCloseDialog}>
+        {state.dialog_open == 'list' ?
+          <DataList _mgr={_manager} _acl={_acl} handlers={{}}/>
           :
           <DataObj _mgr={_manager} _acl={_acl} match={{params: {ref}}} handlers={{}}/>
-        }}
-        onCloseClick={this.handleCloseDialog}
-        ref={(el) => this._dialog = el}
-      />;
+        }
+      </DnR>;
     }
   }
 
@@ -278,10 +244,6 @@ class FieldAutosuggest extends AbstractField {
     ;
   }
 
-  static contextTypes = {
-    components: PropTypes.object,       // конструкторы DataList и FrmObj передаём через контекст, чтобы исключить зацикливание
-  };
-
 }
 
-export default withStyles(styles)(FieldAutosuggest);
+export default withStyles(FieldAutosuggest);

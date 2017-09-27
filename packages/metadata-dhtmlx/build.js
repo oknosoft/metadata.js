@@ -11,10 +11,10 @@ const package_data = require(path.resolve(__dirname, './package.json'));
 
 const external = ['moment', 'alasql', 'pouchdb*'];
 const plugins = [
-	resolve({jsnext: true, main: true, preferBuiltins: true}),
+  resolve({jsnext: true, main: true, preferBuiltins: true}),
   builtins(),
-	replace({PACKAGE_VERSION: package_data.version}),
-	cleanup(),
+  replace({PACKAGE_VERSION: package_data.version}),
+  cleanup(),
 ];
 const header = `/*!
  ${package_data.name} v${package_data.version}, built:${new Date().toISOString().split('T')[0]}
@@ -24,19 +24,19 @@ const header = `/*!
  */\n`;
 
 return rollup({
-	entry: path.resolve(__dirname, './src/transition.js'),
+  input: path.resolve(__dirname, './src/transition.js'),
 	external,
 	plugins,
 })
 	.then((bundle) => bundle.write({
 		format: 'umd', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
-		moduleName: '$p',
+    name: '$p',
     banner: header,
     globals: {
       'alasql': 'alasql',
       'moment': 'moment',
     },
-    dest: path.resolve(__dirname, './index.js'),
-		sourceMap: true,
+    file: path.resolve(__dirname, './index.js'),
+    sourcemap: true,
 	}));
 

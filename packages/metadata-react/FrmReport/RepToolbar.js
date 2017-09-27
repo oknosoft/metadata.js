@@ -18,25 +18,20 @@ import FileDownloadIcon from 'material-ui-icons/FileDownload';
 import {export_handlers} from '../plugin';
 
 import SchemeSettings from '../SchemeSettings';
+import DateRange from '../SchemeSettings/DateRange';
 
 import withStyles from '../Header/toolbar';
 
 class RepToolbar extends Component {
 
   static propTypes = {
-
     handleSave: PropTypes.func.isRequired,          // обработчик формирования отчета
     handlePrint: PropTypes.func.isRequired,         // обработчик открытия диалога печати
     handleClose: PropTypes.func.isRequired,         // команда закрытия формы
-
     handleSchemeChange: PropTypes.func.isRequired,  // обработчик при изменении настроек компоновки
-    scheme: PropTypes.object.isRequired,            // значение настроек компоновки
-
-    TabParams: PropTypes.func,                      // внешний компонент страницы параметров
-
-    _obj: PropTypes.object,
-    _tabular: PropTypes.string.isRequired,
-
+    scheme: PropTypes.object.isRequired,            // значение настроек компоновки CatSchemeSettings
+    _obj: PropTypes.object,                         // объект данных - отчет DataProcessorObj
+    _tabular: PropTypes.string.isRequired,          // имя табчасти с данными
   };
 
   constructor(props, context) {
@@ -55,31 +50,32 @@ class RepToolbar extends Component {
   render() {
 
     const {props, state} = this;
-    const {handleSave, handleClose, handleSchemeChange, handlePrint, scheme, _obj, _tabular, TabParams, classes} = props;
+    const {handleSave, handleClose, handleSchemeChange, handlePrint, scheme, _obj, _tabular, classes} = props;
+    const {RepParams} = _obj._manager;
 
     return (
 
-      <Toolbar className={classes.bar}>
-        <Button dense onClick={handleSave}><RunIcon/> Сформировать</Button>
+      <Toolbar disableGutters className={classes.bar}>
+        <Button dense onClick={handleSave}><i className="fa fa-play fa-fw"></i> Сформировать</Button>
+
+        <IconButton disabled>|</IconButton>
+
+        <DateRange _obj={scheme} _fld={'date'} _meta={{synonym: 'Период'}} classes={classes} />
 
         <Typography type="title" color="inherit" className={classes.flex}> </Typography>
 
         <SchemeSettings
           handleSchemeChange={handleSchemeChange}
+          classes={classes}
           scheme={scheme}
-          tabParams={
-            TabParams ? <TabParams
-                _obj={_obj}
-                scheme={scheme}
-              />
-              : null
-          }
+          tabParams={RepParams && <RepParams _obj={_obj} scheme={scheme} />}
           show_variants={true}
         />
 
         <IconButton onClick={this.handleMenuOpen} title="Дополнительно">
           <MoreVertIcon/>
         </IconButton>
+
         <Menu
           anchorEl={state.anchorEl}
           open={state.menuOpen}

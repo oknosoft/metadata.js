@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.2-beta.26, built:2017-09-10
+ metadata-core v2.0.2-beta.29, built:2017-09-27
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -286,7 +286,7 @@ class TabularSection {
         }
       }
 		}
-		if (index == undefined){
+		if (index == undefined || !_obj[index]){
       return;
     }
     if(!_data._loading && _owner.del_row(_obj[index]._row) === false){
@@ -336,7 +336,9 @@ class TabularSection {
 		return row;
 	}
 	each(fn) {
-		this._obj.forEach((row) => fn.call(this, row._row));
+	  for(let row of this._obj){
+	    if(fn.call(this, row._row) === false) break;
+    }
 	}
 	get forEach() {
 		return this.each
@@ -458,7 +460,7 @@ class TabularSection {
 		return this._obj;
 	}
 }
-class TabularSectionRow {
+class TabularSectionRow$1 {
 	constructor(owner) {
 		Object.defineProperties(this, {
 			_owner: {
@@ -515,7 +517,7 @@ class TabularSectionRow {
 
 var data_tabulars = Object.freeze({
 	TabularSection: TabularSection,
-	TabularSectionRow: TabularSectionRow
+	TabularSectionRow: TabularSectionRow$1
 });
 
 class DataObj {
@@ -885,8 +887,8 @@ Object.defineProperty(DataObj.prototype, "ref", {
 	enumerable : true,
 	configurable: true
 });
-TabularSectionRow.prototype._getter = DataObj.prototype._getter;
-TabularSectionRow.prototype.__setter = DataObj.prototype.__setter;
+TabularSectionRow$1.prototype._getter = DataObj.prototype._getter;
+TabularSectionRow$1.prototype.__setter = DataObj.prototype.__setter;
 class CatObj extends DataObj {
 	constructor(attr, manager, loading){
 		super(attr, manager, loading);
@@ -1318,7 +1320,7 @@ class DataManager extends MetaEventEmitter{
 				selection.or.push(sel);
 			});
 		}
-		if(t.cachable == "ram" || (selection && selection._local)) {
+		if(t.cachable == "ram" || t.cachable == "doc_ram" || (selection && selection._local)) {
 			t.find_rows(selection, push);
 			return Promise.resolve(l);
 		}
@@ -1499,7 +1501,7 @@ class RefDataManager extends DataManager{
 	}
 	get(ref, do_not_create){
 		const rp = 'promise';
-		if(typeof ref === 'object'){
+		if(typeof ref !== 'string'){
       ref = utils.fix_guid(ref);
     }
 		let o = this.by_ref[ref];
@@ -1905,6 +1907,63 @@ class RefDataManager extends DataManager{
 			res = sql_selection();
 		return res;
 	}
+  get_search_selector({_obj, _meta, search, top, skip}) {
+    const {cachable, _owner} = this;
+    const {md} = _owner.$p;
+    const select = {};
+    if(cachable == 'ram' || cachable == 'doc_ram') {
+      select._top = top;
+      select._skip = skip;
+      const {input_by_string} = this.metadata();
+      if(search && input_by_string) {
+        if(input_by_string.length > 1) {
+          select.or = [];
+          input_by_string.forEach((fld) => {
+            select.or.push({[fld]: {like: search}});
+          });
+        }
+        else {
+          select[input_by_string[0]] = {like: search};
+        }
+      }
+      if(_meta.choice_links) {
+        _meta.choice_links.forEach((choice) => {
+          if(choice.name && choice.name[0] == 'selection') {
+            if(_obj instanceof TabularSectionRow) {
+              if(choice.path.length < 2) {
+                select[choice.name[1]] = typeof choice.path[0] == 'function' ? choice.path[0] : _obj._owner._owner[choice.path[0]];
+              }
+              else {
+                if(choice.name[1] == 'owner' && !_mgr.metadata().has_owners) {
+                  return;
+                }
+                select[choice.name[1]] = _obj[choice.path[1]];
+              }
+            }
+            else {
+              select[choice.name[1]] = typeof choice.path[0] == 'function' ? choice.path[0] : _obj[choice.path[0]];
+            }
+          }
+        });
+      }
+      if(_meta.choice_params) {
+        _meta.choice_params.forEach((choice) => {
+          const fval = Array.isArray(choice.path) ? {in: choice.path} : choice.path;
+          if(!select[choice.name]) {
+            select[choice.name] = fval;
+          }
+          else if(Array.isArray(select[choice.name])) {
+            select[choice.name].push(fval);
+          }
+          else {
+            select[choice.name] = [select[choice.name]];
+            select[choice.name].push(fval);
+          }
+        });
+      }
+      return select;
+    }
+  }
 	load_cached_server_array(list, alt_rest_name) {
 		const {ajax, rest} = this._owner.$p;
 		var query = [], obj,
@@ -1958,8 +2017,8 @@ class RefDataManager extends DataManager{
 	}
 }
 class DataProcessorsManager extends DataManager{
-	create(){
-		return this.obj_constructor('', [{}, this]);
+	create(attr = {}){
+		return this.obj_constructor('', [attr, this]);
 	}
 	get(ref){
 		if(ref){
@@ -1979,6 +2038,13 @@ class EnumManager extends RefDataManager{
 			new EnumObj(v, this);
 		}
 	}
+  metadata(field_name) {
+	  const res = super.metadata(field_name);
+	  if(!res.input_by_string){
+      res.input_by_string = ['ref', 'synonym'];
+    }
+    return res;
+  }
 	get(ref, do_not_create){
 		if(ref instanceof EnumObj)
 			return ref;
@@ -1989,10 +2055,9 @@ class EnumManager extends RefDataManager{
 			o = new EnumObj({name: ref}, this);
 		return o;
 	}
-	push(o, new_ref){
-		Object.defineProperty(this, new_ref, {
-			value : o
-		});
+	push(value, new_ref){
+    this.by_ref[new_ref] = value;
+		Object.defineProperty(this, new_ref, {value});
 	}
 	each(fn) {
 		this.alatable.forEach(v => {
@@ -5260,6 +5325,9 @@ const utils = mime({
 	is_data_obj(v) {
 		return v instanceof DataObj;
 	},
+  is_doc_obj(v) {
+    return v instanceof DocObj;
+  },
 	is_data_mgr(v) {
 		return v instanceof DataManager;
 	},
@@ -5267,7 +5335,7 @@ const utils = mime({
     return v instanceof EnumManager;
   },
   is_tabular(v) {
-    return v instanceof TabularSectionRow || v instanceof TabularSection;
+    return v instanceof TabularSectionRow$1 || v instanceof TabularSection;
   },
 	is_equal(v1, v2) {
 		if (v1 == v2) {
@@ -6486,7 +6554,7 @@ class MetaEngine$1 {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.2-beta.26';
+    return '2.0.2-beta.29';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

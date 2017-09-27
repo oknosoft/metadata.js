@@ -1,10 +1,11 @@
 /** @flow */
-import React, {Component} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
+import MComponent from '../common/MComponent';
 
 import {InfiniteLoader, AutoSizer, MultiGrid} from 'react-virtualized';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
-import Toolbar from './DataListToolbar';
+import DataListToolbar from './DataListToolbar';
 import cn from 'classnames';
 
 import Confirm from '../Confirm';
@@ -14,7 +15,7 @@ import withStyles from './styles';
 import control_by_type from 'metadata-abstract-ui/src/ui';
 
 
-class DataList extends Component {
+class DataList extends MComponent {
 
   static LIMIT = 40;
   static OVERSCAN_ROW_COUNT = 2;
@@ -22,34 +23,66 @@ class DataList extends Component {
   static COLUMN_HEIGHT = 33;
   static COLUMN_DEFAULT_WIDTH = 220;
 
+  static propTypes = {
+
+    // данные
+    _mgr: PropTypes.object.isRequired,    // Менеджер данных
+    _acl: PropTypes.string,               // Права на чтение-изменение
+    _meta: PropTypes.object,              // Описание метаданных. Если не указано, используем метаданные менеджера
+
+    _owner: PropTypes.object,             // Поле - родитель. У него должны быть _obj, _fld и _meta
+                                          // а внутри _meta могут быть choice_params и choice_links
+
+    // настройки внешнего вида и поведения
+    selection_mode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисуем кнопку выбора
+    read_only: PropTypes.object,          // Элемент только для чтения
+    denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+    show_search: PropTypes.bool,          // Показывать поле поиска
+    show_variants: PropTypes.bool,        // Показывать список вариантов настройки динсписка
+    modal: PropTypes.bool,                // Показывать список в модальном диалоге
+
+    // Redux actions
+    handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
+
+  }
+
   constructor(props, context) {
     super(props, context);
 
-    const {class_name, cachable, alatable} = props._mgr;
-
-    this.state = {
-      rowsLoaded: cachable === 'ram' ? alatable.length : 0,
-      selectedRowIndex: 0,
-      _meta: props._meta || props._mgr.metadata(),
-
-      // готовим фильтры для запроса couchdb
-      select: props.select || {
-        _view: 'doc/by_date',
-        _raw: true,
-        _top: 30,
-        _skip: 0,
-        _key: {
-          startkey: [props.params && props.params.options || class_name, 2000],
-          endkey: [props.params && props.params.options || class_name, 2020]
-        }
-      }
-    };
+    this.state = {selectedRowIndex: 0};
 
     /** Set of grid rows. */
     this._list = new Map();
+
+    this.handleManagerChange(props);
+  }
+
+  shouldComponentUpdate({_mgr, _meta}) {
+    if (this.props._mgr != _mgr) {
+      this.handleManagerChange({_mgr, _meta});
+      return false;
+    }
+    return true;
+  }
+
+  // при изменении менеджера данных
+  handleManagerChange({_mgr, _meta}) {
+
+    const {class_name, cachable, alatable} = _mgr;
+
+    this._meta = _meta || _mgr.metadata();
+
+    const state = {rowsLoaded: cachable === 'ram' ? alatable.length : 0};
+
+    if(this._mounted) {
+      this.setState(state);
+    }
+    else {
+      Object.assign(this.state, state);
+    }
+
     $p.cat.scheme_settings.get_scheme(class_name).then(this.handleSchemeChange);
 
-    this._isMounted = false;
   }
 
   // обработчик выбора значения в списке
@@ -64,22 +97,20 @@ class DataList extends Component {
   // обработчик добавления элемента списка
   handleAdd = () => {
     const {handlers, _mgr} = this.props;
-    if(handlers.handleAdd) {
-      handlers.handleAdd(_mgr);
-    }
+    handlers.handleAdd && handlers.handleAdd(_mgr);
   };
 
   // обработчик редактирования элемента списка
   handleEdit = () => {
-    const {_list, state, props} = this;
+    const {_list, _meta, state, props} = this;
     const {handlers, _mgr} = props;
     const row = _list.get(state.selectedRowIndex);
-    if(!row || $p.utils.is_empty_guid(row.ref)){
+    if(!row || $p.utils.is_empty_guid(row.ref)) {
       handlers.handleIfaceState({
         component: '',
         name: 'alert',
-        value: {open: true, text: 'Укажите строку для редактирования', title: state._meta.synonym}
-      })
+        value: {open: true, text: 'Укажите строку для редактирования', title: _meta.synonym}
+      });
     }
     else if(handlers.handleEdit) {
       handlers.handleEdit({ref: row.ref, _mgr});
@@ -88,43 +119,53 @@ class DataList extends Component {
 
   // обработчик удаления элемента списка
   handleRemove = () => {
-    const {_list, state, props} = this;
+    const {_list, _meta, state, props} = this;
     const {handlers, _mgr} = props;
     const row = _list.get(state.selectedRowIndex);
 
-    if(!row || $p.utils.is_empty_guid(row.ref)){
+    if(!row || $p.utils.is_empty_guid(row.ref)) {
       handlers.handleIfaceState({
         component: '',
         name: 'alert',
-        value: {open: true, text: 'Укажите строку для удаления', title: state._meta.synonym}
-      })
+        value: {open: true, text: 'Укажите строку для удаления', title: _meta.synonym}
+      });
     }
     else if(handlers.handleMarkDeleted) {
       this._handleRemove = function () {
         handlers.handleMarkDeleted(row.ref, _mgr);
-      }
+      };
       this.setState({confirm_text: 'Удалить объект?'});
     }
   };
 
-  // обработчик при изменении настроек компоновки
+  // при изменении настроек или варианта компоновки
   handleSchemeChange = (scheme) => {
-    const {state, props} = this;
-    const {_mgr, params} = props;
+    scheme.set_default();
+    // пересчитываем и перерисовываем динсписок
+    this.handleFilterChange(scheme, scheme.columns());
+  };
 
-    scheme.set_default().fix_select(state.select, params && params.options || _mgr.class_name);
-    this._list.clear();
+  // при изменении параметров компоновки - схему не меняем, но выполняем пересчет
+  handleFilterChange = (scheme, columns) => {
 
-    // Create header row.
-    const columns = scheme.columns();
+    const {state, _list, _mounted} = this;
+
+    if(!(scheme instanceof $p.CatScheme_settings)){
+      scheme = state.scheme;
+    }
+
+    if(!columns){
+      columns = state.columns;
+    }
+
     // Set first row as header.
-    this._list.set(0, columns.map(column => (column.synonym)));
+    _list.clear();
+    _list.set(0, columns.map(column => (column.synonym)));
 
-
-    if(this._isMounted){
+    if(_mounted) {
       this.setState({scheme, columns, rowsLoaded: 1});
     }
-    else{
+    else {
       Object.assign(state, {scheme, columns, rowsLoaded: 1});
     }
 
@@ -132,38 +173,46 @@ class DataList extends Component {
       startIndex: 0,
       stopIndex: DataList.LIMIT
     });
-  };
+  }
 
   // обработчик печати теущей строки
   handlePrint = () => {
     const row = this._list.get(this.state.selectedRowIndex);
     const {handlers, _mgr} = this.props;
-    if(row && handlers.handlePrint) {
-      handlers.handlePrint(row, _mgr);
-    }
+    row && handlers.handlePrint && handlers.handlePrint(row, _mgr);
   };
 
   // обработчик вложений теущей строки
   handleAttachment = () => {
     const row = this._list.get(this.state.selectedRowIndex);
     const {handlers, _mgr} = this.props;
-    if(row && handlers.handleAttachment) {
-      handleAttachment(row, _mgr);
-    }
+    row && handlers.handleAttachment && handleAttachment(row, _mgr);
   };
 
-  componentDidMount() {
-    this._isMounted = true;
-  }
-
-  componentWillUnmount() {
-    this._isMounted = false;
+  get sizes() {
+    const {dnr} = this.context;
+    let {width, height} = this.props;
+    if(!height) {
+      height = dnr && parseInt(dnr.frameRect.height);
+    }
+    if(!height || height < 320) {
+      height = 320;
+    }
+    if(!width) {
+      width = dnr && parseInt(dnr.frameRect.width);
+    }
+    if(!width || width < 480) {
+      width = 480;
+    }
+    return {width, height};
   }
 
   render() {
     const {
       state,
       props,
+      _meta,
+      sizes,
       handleSelect,
       handleAdd,
       handleEdit,
@@ -171,14 +220,15 @@ class DataList extends Component {
       handlePrint,
       handleAttachment,
       handleSchemeChange,
+      handleFilterChange,
       _isRowLoaded,
       _loadMoreRows,
-      _cellRenderer
+      _cellRenderer,
     } = this;
 
-    const {columns, rowsLoaded, scheme, colResize, confirm_text, _meta} = state;
+    const {columns, rowsLoaded, scheme, colResize, confirm_text} = state;
 
-    let {selection_mode, denyAddDel, show_search, show_variants, width, height, classes} = props;
+    let {selection_mode, denyAddDel, show_search, show_variants, classes} = props;
 
     if(!scheme) {
       return <LoadingMessage title="Чтение настроек компоновки..."/>;
@@ -199,7 +249,8 @@ class DataList extends Component {
       handleRemove,
       handlePrint,
       handleAttachment,
-      handleSchemeChange
+      handleSchemeChange,
+      handleFilterChange,
     };
 
     const styleTopRightGrid = {
@@ -208,8 +259,9 @@ class DataList extends Component {
       cursor: colResize ? 'col-resize' : 'default',
     };
 
+
     return (
-      <div style={{height}}>
+      <div style={{height: sizes.height}}>
 
         {
           confirm_text && <Confirm
@@ -221,12 +273,12 @@ class DataList extends Component {
           />
         }
 
-        <Toolbar {...toolbar_props} />
+        <DataListToolbar {...toolbar_props} />
 
         <InfiniteLoader
           isRowLoaded={_isRowLoaded}
           loadMoreRows={_loadMoreRows}
-          rowCount={this.state.rowsLoaded + DataList.LIMIT}
+          rowCount={rowsLoaded + DataList.LIMIT}
           minimumBatchSize={DataList.LIMIT}>
 
           {({onRowsRendered, registerChild}) => {
@@ -242,10 +294,10 @@ class DataList extends Component {
             return (
               <MultiGrid
                 ref={registerChild}
-                width={width}
-                height={height - 52}
-                rowCount={this.state.rowsLoaded}
-                columnCount={this.state.columns.length}
+                width={sizes.width}
+                height={sizes.height - 52}
+                rowCount={rowsLoaded}
+                columnCount={columns.length}
                 fixedColumnCount={0}
                 fixedRowCount={1}
                 noContentRenderer={this._noContentRendered}
@@ -350,68 +402,52 @@ class DataList extends Component {
     return this._list.has(index);
   };
 
+  _updateList = (data, startIndex) => {
+    const {_list} = this;
+
+    let reallyLoadedRows = 0;
+
+    // обновляем массив результата
+    for (let i = 0; i < data.length; i++) {
+      // Append one because first row is header.
+      if(_list.has(1 + i + startIndex) === false) {
+        reallyLoadedRows++;
+        _list.set(1 + i + startIndex, data[i]);
+      }
+    }
+    // Обновить количество записей.
+    this._mounted && reallyLoadedRows && this.setState({rowsLoaded: this.state.rowsLoaded + reallyLoadedRows});
+  }
+
   _loadMoreRows = ({startIndex, stopIndex}) => {
-    const {select, scheme, rowsLoaded} = this.state;
-    const {_mgr, params} = this.props;
+    const {_mgr, _owner} = this.props;
+    const {scheme, columns, rowsLoaded} = this.state;
+
     const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);
 
-    const update_state = (data) => {
-      let reallyLoadedRows = 0;
-      // обновляем массив результата
-      for (let i = 0; i < data.length; i++) {
-        // Append one because first row is header.
-        if(this._list.has(1 + i + startIndex) === false) {
-          reallyLoadedRows++;
-          this._list.set(1 + i + startIndex, data[i]);
-        }
-      }
-      // Обновить количество записей.
-      this._isMounted && reallyLoadedRows && this.setState({rowsLoaded: this.state.rowsLoaded + reallyLoadedRows});
-    };
-
-    Object.assign(select, {
-      _top: increment,
-      _skip: startIndex ? startIndex - 1 : 0,
-      _view: 'doc/by_date',
-      _raw: true
-    });
-
-    scheme.fix_select(select, params && params.options || _mgr.class_name);
-
-    if(_mgr.cachable === 'ram') {
+    // в зависимости от типа кеширования...
+    if(_mgr.cachable === 'ram' || _mgr.cachable === 'doc_ram'){
       // фильтруем в озу
-      update_state(_mgr.find_rows(select));
-      return Promise.resolve();
+      const selector = _mgr.get_search_selector({
+        _obj: _owner ? _owner._obj : null,
+        _meta: _owner ? _owner._meta : {},
+        search: scheme._search,
+        top: increment,
+        skip: startIndex ? startIndex - 1 : 0,
+      });
+      return Promise.resolve(this._updateList(_mgr.find_rows(selector), startIndex))
     }
     else{
       // выполняем запрос
-      return _mgr.find_rows_remote(select).then(update_state);
+      return _mgr.find_rows_remote(scheme.mango_selector({
+        columns,
+        skip: startIndex ? startIndex - 1 : 0,
+        limit: increment,
+      })).then((data) => this._updateList(data, startIndex));
     }
 
   };
 }
 
-DataList.propTypes = {
-
-  // данные
-  _mgr: PropTypes.object.isRequired,    // Менеджер данных
-  _meta: PropTypes.object,              // Описание метаданных. Если не указано, используем метаданные менеджера
-
-  // настройки компоновки
-  select: PropTypes.object,             // todo: переместить в scheme // Параметры запроса к couchdb. Если не указано - генерируем по метаданным
-
-  // настройки внешнего вида и поведения
-  selection_mode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисуем кнопку выбора
-  read_only: PropTypes.object,          // Элемент только для чтения
-  denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
-  show_search: PropTypes.bool,          // Показывать поле поиска
-  show_variants: PropTypes.bool,        // Показывать список вариантов настройки динсписка
-  modal: PropTypes.bool,                // Показывать список в модальном диалоге
-  Toolbar: PropTypes.func,              // Индивидуальная панель инструментов. Если не указана, рисуем типовую
-
-  // Redux actions
-  handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
-
-};
 
 export default withStyles(DataList);

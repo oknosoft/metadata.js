@@ -10,7 +10,10 @@ export default withStyles(theme => ({
   textField: {
     marginTop: 24,
   },
+  spaceLeft: {
+    marginLeft: theme.spacing.unit,
+  },
   button: {
     margin: theme.spacing.unit,
   },
-}), {withTheme: true});
+}));

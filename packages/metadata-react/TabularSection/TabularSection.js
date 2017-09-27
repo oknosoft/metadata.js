@@ -1,17 +1,17 @@
-import React, {Component} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
+import MComponent from '../common/MComponent';
 
 import ReactDataGrid from 'react-data-grid';
 import DataCell from '../DataField/DataCell';
-import DefaultToolbar from './TabularSectionToolbar';
+import TabularSectionToolbar from './TabularSectionToolbar';
 import {AutoSizer} from 'react-virtualized';
-import DataFieldFactory from '../DataField/DataFieldFactory';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 
 // import withStyles from 'material-ui/styles/withStyles';
 // import styles from './TabularSection.scss';
 
-export default class TabularSection extends Component {
+export default class TabularSection extends MComponent {
 
   static propTypes = {
     _obj: PropTypes.object.isRequired,
@@ -24,8 +24,6 @@ export default class TabularSection extends Component {
     denyReorder: PropTypes.bool,         // Запрет изменения порядка строк
     minHeight: PropTypes.number,
 
-    Toolbar: PropTypes.func,              // Конструктор индивидуальной панели инструментов. Если не указан, рисуем типовую
-
     handleValueChange: PropTypes.func,    // Обработчик изменения значения в ячейке
     handleRowChange: PropTypes.func,      // При окончании редактирования строки
     handleCustom: PropTypes.func,         // Внешний дополнительный подключаемый обработчик
@@ -37,19 +35,19 @@ export default class TabularSection extends Component {
 
   static defaultProps = {
     denyAddDel: false,
-    read_only: false
+    read_only: false,
+    minHeight: 300,
   };
 
   constructor(props, context) {
     super(props, context);
-    const {_obj} = props;
-    const class_name = _obj._manager.class_name + '.' + props._tabular;
+    const {_obj, _tabular} = props;
+    const class_name = _obj._manager.class_name + '.' + _tabular;
 
     this.state = {
-      _meta: props._meta || _obj._metadata(props._tabular),
-      _tabular: _obj[props._tabular],
+      _meta: props._meta || _obj._metadata(_tabular),
+      _tabular: _obj[_tabular],
       _columns: props._columns || [],
-      Toolbar: props.Toolbar || DefaultToolbar,
       selectedIds: props.rowSelection ? props.rowSelection.selectBy.keys.values : []
     };
 
@@ -62,33 +60,33 @@ export default class TabularSection extends Component {
     return this.state._tabular.get(i);
   };
 
-  handleRemove = (e, data) => {
-    if(!data) {
-      data = this._grid.state.selected;
+  handleRemove = () => {
+    const {selected} = this._grid.state;
+    if(selected && selected.hasOwnProperty('rowIdx')) {
+      this.state._tabular.del(selected.rowIdx);
+      this.forceUpdate();
     }
-    this.state._tabular.del(data.rowIdx);
-    this.forceUpdate();
   };
 
-  handleAdd = (e, data) => {
+  handleAdd = () => {
     this.state._tabular.add();
     this.forceUpdate();
   };
 
   handleUp = () => {
-    const data = this._grid.state.selected;
-    if(data && data.hasOwnProperty('rowIdx') && data.rowIdx > 0) {
-      this.state._tabular.swap(data.rowIdx, data.rowIdx - 1);
-      data.rowIdx = data.rowIdx - 1;
+    const {selected} = this._grid.state;
+    if(selected && selected.hasOwnProperty('rowIdx') && selected.rowIdx > 0) {
+      this.state._tabular.swap(selected.rowIdx, selected.rowIdx - 1);
+      selected.rowIdx = selected.rowIdx - 1;
       this.forceUpdate();
     }
   };
 
   handleDown = () => {
-    const data = this._grid.state.selected;
-    if(data && data.hasOwnProperty('rowIdx') && data.rowIdx < this.state._tabular.count() - 1) {
-      this.state._tabular.swap(data.rowIdx, data.rowIdx + 1);
-      data.rowIdx = data.rowIdx + 1;
+    const {selected} = this._grid.state;
+    if(selected && selected.hasOwnProperty('rowIdx') && selected.rowIdx < this.state._tabular.count() - 1) {
+      this.state._tabular.swap(selected.rowIdx, selected.rowIdx + 1);
+      selected.rowIdx = selected.rowIdx + 1;
       this.forceUpdate();
     }
   };
@@ -109,29 +107,36 @@ export default class TabularSection extends Component {
       _obj: props._obj
     });
 
-    this.setState({scheme, _columns});
+    if(this._mounted) {
+      this.setState({scheme, _columns});
+    }
+    else {
+      Object.assign(state, {scheme, _columns});
+    }
+
+
   };
 
   onRowsSelected = (rows) => {
-    const {rowSelection} = this.props;
+    const {keys} = this.props.rowSelection.selectBy;
     this.setState({
       selectedIds: this.state.selectedIds.concat(
         rows.map(r => {
-          if(rowSelection.selectBy.keys.markKey) {
-            r.row[rowSelection.selectBy.keys.markKey] = true;
+          if(keys.markKey) {
+            r.row[keys.markKey] = true;
           }
-          return r.row[rowSelection.selectBy.keys.rowKey];
+          return r.row[keys.rowKey];
         }))
     });
   };
 
   onRowsDeselected = (rows) => {
-    const {rowSelection} = this.props;
+    const {keys} = this.props.rowSelection.selectBy;
     let rowIds = rows.map(r => {
-      if(rowSelection.selectBy.keys.markKey) {
-        r.row[rowSelection.selectBy.keys.markKey] = false;
+      if(keys.markKey) {
+        r.row[keys.markKey] = false;
       }
-      return r.row[rowSelection.selectBy.keys.rowKey];
+      return r.row[keys.rowKey];
     });
     this.setState({
       selectedIds: this.state.selectedIds.filter(i => rowIds.indexOf(i) === -1)
@@ -140,7 +145,7 @@ export default class TabularSection extends Component {
 
   render() {
     const {props, state, rowGetter, onRowsSelected, onRowsDeselected, handleAdd, handleRemove, handleUp, handleDown, handleRowUpdated} = this;
-    const {_meta, _tabular, _columns, scheme, selectedIds, Toolbar} = state;
+    const {_meta, _tabular, _columns, scheme, selectedIds} = state;
     const {_obj, rowSelection, denyAddDel, denyReorder, minHeight, handleCustom, classes} = props;
 
     if(!_columns || !_columns.length) {
@@ -162,7 +167,14 @@ export default class TabularSection extends Component {
           {({width, height}) => {
 
             return <div>
-              <Toolbar
+              <TabularSectionToolbar
+                _obj={_obj}
+                _tabular={_tabular}
+                _columns={_columns}
+                scheme={scheme}
+
+                width={width}
+
                 handleAdd={handleAdd}
                 handleRemove={handleRemove}
                 handleUp={handleUp}
@@ -170,11 +182,11 @@ export default class TabularSection extends Component {
                 handleCustom={handleCustom}
                 denyAddDel={denyAddDel}
                 denyReorder={denyReorder}
-                scheme={scheme}/>
+              />
 
               <ReactDataGrid
                 minWidth={width}
-                minHeight={height < minHeight ? minHeight : height}
+                minHeight={(height < minHeight ? minHeight : height) - 52}
                 rowHeight={33}
 
                 ref={(el) => this._grid = el}
@@ -193,14 +205,3 @@ export default class TabularSection extends Component {
   }
 }
 
-// export default withStyles({
-//   layout: {
-//
-//   },
-//   toolbar: {
-//
-//   },
-//   content: {
-//
-//   },
-// })(TabularSection);
