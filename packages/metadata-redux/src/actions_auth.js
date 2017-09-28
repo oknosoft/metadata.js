@@ -106,3 +106,11 @@ export function log_error() {
     type: LOG_ERROR
   };
 }
+
+export function reset_user(state) {
+  const user = Object.assign({}, state.user);
+  user.logged_in = false;
+  user.has_login = false;
+  user.try_log_in = false;
+  return Object.assign({}, state, {user});
+}

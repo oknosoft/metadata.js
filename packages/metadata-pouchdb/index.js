@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.2-beta.29, built:2017-09-27
+ metadata-pouchdb v2.0.2-beta.30, built:2017-09-28
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -448,8 +448,6 @@ function adapter({AbstracrAdapter}) {
           },
         },
       });
-    }
-    sync_events(sync, options) {
     }
     run_sync(id) {
       const {local, remote, $p} = this;
@@ -914,11 +912,16 @@ function adapter({AbstracrAdapter}) {
         selector: {class_name: {$in: res}},
         limit: 10000,
       })
+        .catch((err) => {
+          this.emit('pouch_sync_error', 'doc', err);
+          return {docs: []};
+        })
         .then((data) => this.load_changes(data))
         .then(() => this.emit('pouch_doc_ram_loaded'));
     }
     find_rows(_mgr, selection) {
       const db = this.db(_mgr);
+      const err_handler = this.emit.bind(this, 'pouch_sync_error', _mgr.cachable);
       if(selection && selection._mango) {
         return db.find(selection)
           .then(({docs}) => {
@@ -929,6 +932,10 @@ function adapter({AbstracrAdapter}) {
               doc.ref = doc._id.split('|')[1];
             }
             return docs;
+          })
+          .catch((err) => {
+            err_handler(err);
+            return [];
           });
       }
       const {utils} = this.$p;
@@ -1017,10 +1024,13 @@ function adapter({AbstracrAdapter}) {
                 options.include_docs = true;
                 return db.allDocs(options);
               })
+              .catch((err) => {
+                err_handler(err);
+                return {rows: []};
+              })
               .then((result) => {
                 return {
-                  rows: result.rows.map((row) => {
-                    var doc = row.doc;
+                  rows: result.rows.map(({doc}) => {
                     doc.ref = doc._id.split('|')[1];
                     if(!_raw) {
                       delete doc._id;
@@ -1035,69 +1045,64 @@ function adapter({AbstracrAdapter}) {
         }
       }
       return new Promise((resolve, reject) => {
-        function process_docs(err, result) {
-          if(result) {
-            if(result.rows.length) {
-              options.startkey = result.rows[result.rows.length - 1].key;
-              options.skip = 1;
-              result.rows.forEach((rev) => {
-                doc = rev.doc;
-                let key = doc._id.split('|');
-                doc.ref = key[1];
-                if(!_raw) {
-                  delete doc._id;
-                  delete doc._rev;
-                }
-                if(!utils._selection.call(_mgr, doc, selection)) {
+        function process_docs(result) {
+          if(result.rows.length) {
+            options.startkey = result.rows[result.rows.length - 1].key;
+            options.skip = 1;
+            result.rows.forEach((rev) => {
+              doc = rev.doc;
+              let key = doc._id.split('|');
+              doc.ref = key[1];
+              if(!_raw) {
+                delete doc._id;
+                delete doc._rev;
+              }
+              if(!utils._selection.call(_mgr, doc, selection)) {
+                return;
+              }
+              if(calc_count) {
+                _total_count++;
+              }
+              if(skip) {
+                skip_count++;
+                if(skip_count < skip) {
                   return;
                 }
-                if(calc_count) {
-                  _total_count++;
-                }
-                if(skip) {
-                  skip_count++;
-                  if(skip_count < skip) {
-                    return;
-                  }
-                }
-                if(top) {
-                  top_count++;
-                  if(top_count > top) {
-                    return;
-                  }
-                }
-                res.push(doc);
-              });
-              if(top && top_count > top && !calc_count) {
-                resolve(_raw ? res : _mgr.load_array(res));
               }
-              else {
-                fetch_next_page();
+              if(top) {
+                top_count++;
+                if(top_count > top) {
+                  return;
+                }
               }
+              res.push(doc);
+            });
+            if(top && top_count > top && !calc_count) {
+              resolve(_raw ? res : _mgr.load_array(res));
             }
             else {
-              if(calc_count) {
-                resolve({
-                  rows: _raw ? res : _mgr.load_array(res),
-                  _total_count: _total_count,
-                });
-              }
-              else {
-                resolve(_raw ? res : _mgr.load_array(res));
-              }
+              fetch_next_page();
             }
           }
-          else if(err) {
-            reject(err);
+          else {
+            if(calc_count) {
+              resolve({
+                rows: _raw ? res : _mgr.load_array(res),
+                _total_count: _total_count,
+              });
+            }
+            else {
+              resolve(_raw ? res : _mgr.load_array(res));
+            }
           }
         }
         function fetch_next_page() {
-          if(_view) {
-            db.query(_view, options, process_docs);
-          }
-          else {
-            db.allDocs(options, process_docs);
-          }
+          (_view ? db.query(_view, options) : db.allDocs(options))
+            .catch((err) => {
+              err_handler(err);
+              reject(err);
+            })
+            .then(process_docs);
         }
         fetch_next_page();
       });
