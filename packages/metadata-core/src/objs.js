@@ -234,7 +234,10 @@ export class DataObj {
 
 	__notify(f) {
 	  const {_data, _manager} = this;
-    _data && !_data._loading && _manager.emit_async('update', this, {[f]: this._obj[f]});
+	  if(_data && !_data._loading){
+      _data._modified = true;
+      _manager.emit_async('update', this, {[f]: this._obj[f]});
+    }
 	}
 
   /**
@@ -247,7 +250,6 @@ export class DataObj {
 		if(this._obj[f] != v){
 			this.__notify(f);
 			this.__setter(f, v);
-			this._data._modified = true;
 		}
 	}
 

@@ -1567,38 +1567,29 @@ function OCombo(attr){
     aclick.call({name: "select"});
   }
 
-	var _unload = this.unload;
+	const _unload = this.unload;
 	this.unload = function () {
-
-		popup_hide();
-
-		t.getButton().removeEventListener("mouseover", popup_show);
-
-		t.getButton().removeEventListener("mouseout", popup_hide);
-
-		t.getBase().removeEventListener("click", $p.iface.cancel_bubble);
-
-		t.getBase().removeEventListener("contextmenu", oncontextmenu);
-
-		t.getInput().removeEventListener("keyup", onkeyup);
-
-		t.getInput().removeEventListener("focus", onfocus);
-
-    _mgr && _mgr.off('update', listener);
-
-		if(t.conf && t.conf.tm_confirm_blur){
+    popup_hide();
+    if(t.getButton){
+      t.getButton().removeEventListener("mouseover", popup_show);
+      t.getButton().removeEventListener("mouseout", popup_hide);
+      t.getBase().removeEventListener("click", $p.iface.cancel_bubble);
+      t.getBase().removeEventListener("contextmenu", oncontextmenu);
+      t.getInput().removeEventListener("keyup", onkeyup);
+      t.getInput().removeEventListener("focus", onfocus);
+    }
+    if(t.conf && t.conf.tm_confirm_blur){
       clearTimeout(t.conf.tm_confirm_blur);
     }
-
+    _mgr && _mgr.off('update', listener);
     this.list && this.list.parentElement && this.list.parentElement.removeChild(this.list);
+    _obj = null;
+    _field = null;
+    _meta = null;
+    _mgr = null;
+    _pwnd = null;
 
-		_obj = null;
-		_field = null;
-		_meta = null;
-		_mgr = null;
-		_pwnd = null;
-
-		try{ _unload && _unload.call(t); }catch(e){}
+    try{ _unload && _unload.call(t); }catch(e){}
 	};
 
 	// биндим поле объекта

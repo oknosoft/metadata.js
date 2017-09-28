@@ -1,7 +1,7 @@
 {
   "name": "metadata-ember",
   "description": "Ember UI components for metadata.js",
-  "version": "2.0.2-beta.29",
+  "version": "2.0.2-beta.30",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
@@ -14,7 +14,7 @@
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-react-ui"
+    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-ember"
   },
   "bugs": {
     "url": "https://github.com/oknosoft/metadata.js/issues"

@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.2-beta.29, built:2017-09-27
+ metadata-redux v2.0.2-beta.30, built:2017-09-28
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru

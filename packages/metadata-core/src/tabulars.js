@@ -556,7 +556,6 @@ export class TabularSectionRow {
 
     // obj, {f: oldValue}
     const {_manager, _data} = _owner._owner;
-    !_data._loading && _manager.emit_async('update', this, {[f]: _obj[f]});
 
 		// учтём связь по типу
 		if (_meta.choice_type) {
@@ -570,8 +569,14 @@ export class TabularSectionRow {
       }
 		}
 
+		// установим модифицированность и оповестим мир
+		if(!_data._loading){
+      _manager.emit_async('update', this, {[f]: _obj[f]});
+      _data._modified = true;
+    }
+
 		this.__setter(f, v);
-		_data._modified = true;
+
 	}
 
   /**

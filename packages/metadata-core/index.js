@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.2-beta.29, built:2017-09-28
+ metadata-core v2.0.2-beta.30, built:2017-09-28
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -495,7 +495,6 @@ class TabularSectionRow$1 {
       return;
     }
     const {_manager, _data} = _owner._owner;
-    !_data._loading && _manager.emit_async('update', this, {[f]: _obj[f]});
 		if (_meta.choice_type) {
 			let prop;
 			if (_meta.choice_type.path.length == 2)
@@ -506,8 +505,11 @@ class TabularSectionRow$1 {
         v = utils.fetch_type(v, prop.type);
       }
 		}
+		if(!_data._loading){
+      _manager.emit_async('update', this, {[f]: _obj[f]});
+      _data._modified = true;
+    }
 		this.__setter(f, v);
-		_data._modified = true;
 	}
   value_change(f, mf, v) {
     return this;
@@ -665,13 +667,15 @@ class DataObj {
 	}
 	__notify(f) {
 	  const {_data, _manager} = this;
-    _data && !_data._loading && _manager.emit_async('update', this, {[f]: this._obj[f]});
+	  if(_data && !_data._loading){
+      _data._modified = true;
+      _manager.emit_async('update', this, {[f]: this._obj[f]});
+    }
 	}
 	_setter(f, v) {
 		if(this._obj[f] != v){
 			this.__notify(f);
 			this.__setter(f, v);
-			this._data._modified = true;
 		}
 	}
 	_getter_ts(f) {
@@ -6553,7 +6557,7 @@ class MetaEngine$1 {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.2-beta.29';
+    return '2.0.2-beta.30';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

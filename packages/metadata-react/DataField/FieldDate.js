@@ -25,8 +25,6 @@ function getFormat(time) {
   return time ? format : 'DD.MM.YYYY';
 }
 
-const timePickerElement = <TimePickerPanel defaultValue={moment('00:00:00', 'HH:mm:ss')} />;
-
 export default class FieldDate extends AbstractField {
 
   constructor(props, context) {
@@ -52,6 +50,13 @@ export default class FieldDate extends AbstractField {
     }
   };
 
+  get timePickerElement() {
+    if(!FieldDate.timePickerElement) {
+      FieldDate.timePickerElement = <TimePickerPanel defaultValue={moment('00:00:00', 'HH:mm:ss')} />;
+    }
+    return FieldDate.timePickerElement;
+  }
+
   render() {
 
     const {props, state, _meta, isTabular, handleChange} = this;
@@ -62,7 +67,7 @@ export default class FieldDate extends AbstractField {
       style={{ zIndex: 1000 }}
       dateInputPlaceholder={_meta.tooltip || _meta.synonym}
       formatter={getFormat(state.showTime)}
-      timePicker={state.showTime ? timePickerElement : null}
+      timePicker={state.showTime ? this.timePickerElement : null}
       defaultValue={state.defaultCalendarValue}
       showDateInput={state.showDateInput}
     />);
