@@ -46,10 +46,13 @@ class RepToolbar extends Component {
     export_handlers.call(this);
   }
 
+  handleChange = () => {
+    this.props.handleSchemeChange(this.props.scheme);
+  }
 
   render() {
 
-    const {props, state} = this;
+    const {props, state, handleChange} = this;
     const {handleSave, handleClose, handleSchemeChange, handlePrint, scheme, _obj, _tabular, classes} = props;
     const {RepParams} = _obj._manager;
 
@@ -60,7 +63,13 @@ class RepToolbar extends Component {
 
         <IconButton disabled>|</IconButton>
 
-        <DateRange _obj={scheme} _fld={'date'} _meta={{synonym: 'Период'}} classes={classes} />
+        <DateRange
+          _obj={scheme}
+          _fld={'date'}
+          _meta={{synonym: 'Период'}}
+          classes={classes}
+          handleChange={handleChange}
+        />
 
         <Typography type="title" color="inherit" className={classes.flex}> </Typography>
 

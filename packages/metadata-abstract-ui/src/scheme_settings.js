@@ -472,6 +472,32 @@ export default function scheme_settings() {
       const parts = class_name.split('.'),
         _mgr = md.mgr_by_class_name(class_name),
         _meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]);
+
+      // добавляем предопределенные реквизиты
+      if(parts.length < 3 && !_meta.fields._deleted){
+        const {fields} = _meta;
+        fields._deleted = _mgr.metadata('_deleted');
+        // для документов
+        if(_mgr instanceof DocManager && !fields.date){
+          fields.posted = _mgr.metadata('posted');
+          fields.date = _mgr.metadata('date');
+          fields.number_doc = _mgr.metadata('number_doc');
+        }
+        // для справочникоа
+        if(_mgr instanceof CatManager && !fields.name && !fields.id){
+          if(_meta.code_length) {
+            fields.id = _mgr.metadata('id');
+          }
+          if(_meta.has_owners){
+            fields.owner = _mgr.metadata('owner');
+          }
+          fields.name = _mgr.metadata('name');
+        }
+
+      }
+      if(parts.length > 2 && !_meta.fields.ref){
+        _meta.fields.ref = _mgr.metadata('ref');
+      }
       return {parts, _mgr, _meta};
     }
 
@@ -560,7 +586,7 @@ export default function scheme_settings() {
 
       // пока сортируем только по дате
       this.sorting.find_rows({use: true, field: 'date'}, (row) => {
-        let direction = row.direction.toString();
+        let direction = row.direction.valueOf();
         if(!direction || direction == '_') {
           direction = 'asc';
         }

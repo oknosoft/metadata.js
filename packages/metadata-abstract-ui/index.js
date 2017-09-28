@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.2-beta.29, built:2017-09-27
+ metadata-abstract-ui v2.0.2-beta.29, built:2017-09-28
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -465,6 +465,27 @@ function scheme_settings() {
       const parts = class_name.split('.'),
         _mgr = md.mgr_by_class_name(class_name),
         _meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]);
+      if(parts.length < 3 && !_meta.fields._deleted){
+        const {fields} = _meta;
+        fields._deleted = _mgr.metadata('_deleted');
+        if(_mgr instanceof DocManager && !fields.date){
+          fields.posted = _mgr.metadata('posted');
+          fields.date = _mgr.metadata('date');
+          fields.number_doc = _mgr.metadata('number_doc');
+        }
+        if(_mgr instanceof CatManager && !fields.name && !fields.id){
+          if(_meta.code_length) {
+            fields.id = _mgr.metadata('id');
+          }
+          if(_meta.has_owners){
+            fields.owner = _mgr.metadata('owner');
+          }
+          fields.name = _mgr.metadata('name');
+        }
+      }
+      if(parts.length > 2 && !_meta.fields.ref){
+        _meta.fields.ref = _mgr.metadata('ref');
+      }
       return {parts, _mgr, _meta};
     }
     set_default() {
@@ -525,7 +546,7 @@ function scheme_settings() {
         res.selector.search = {$regex: this._search};
       }
       this.sorting.find_rows({use: true, field: 'date'}, (row) => {
-        let direction = row.direction.toString();
+        let direction = row.direction.valueOf();
         if(!direction || direction == '_') {
           direction = 'asc';
         }
