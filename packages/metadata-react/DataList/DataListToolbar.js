@@ -61,7 +61,7 @@ class DataListToolbar extends Component {
     const {classes} = props;
 
     return (
-      <Toolbar disableGutters className={classnames([classes.bar, classes.toolbar])}>
+      <Toolbar disableGutters className={classes.toolbar}>
 
         {props.selection_mode && <IconButton key="select" title="Выбрать из списка" onClick={props.handleSelect}><SelectIcon/></IconButton>}
         {!props.denyAddDel && <IconButton key="create" title="Создать объект" onClick={props.handleAdd}><AddIcon/></IconButton>}

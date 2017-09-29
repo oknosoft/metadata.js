@@ -48,7 +48,7 @@ class DataObjToolbar extends Component {
     const {props} = this;
     return (
 
-      <Toolbar disableGutters className={classnames([props.classes.bar, props.classes.toolbar])} >
+      <Toolbar disableGutters className={props.classes.toolbar} >
 
         <IconButton title="Записать" onClick={props.handleSave}><SaveIcon /></IconButton>
         <IconButton title="Отправить на согласование" onClick={props.handleSend}><SendIcon /></IconButton>

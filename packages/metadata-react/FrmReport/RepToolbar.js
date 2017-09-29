@@ -58,7 +58,7 @@ class RepToolbar extends Component {
 
     return (
 
-      <Toolbar disableGutters className={classes.bar}>
+      <Toolbar disableGutters className={classes.toolbar}>
         <Button dense onClick={handleSave}><i className="fa fa-play fa-fw"></i> Сформировать</Button>
 
         <IconButton disabled>|</IconButton>
