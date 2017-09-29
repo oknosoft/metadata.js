@@ -89,7 +89,8 @@
     "build:abstract-ui": "node ./packages/metadata-abstract-ui/build.js",
     "build:adapter-pouchdb": "node ./packages/metadata-pouchdb/build.js",
     "build:redux": "node ./packages/metadata-redux/build.js",
-    "build:superlogin": "node ./packages/metadata-superlogin/build.js"
+    "build:superlogin": "node ./packages/metadata-superlogin/build.js",
+    "react-data-grid:link": "npm link react-data-grid react-data-grid-addons"
   },
   "bin": {
     "metadata": "./bin/metadata-cli.js"

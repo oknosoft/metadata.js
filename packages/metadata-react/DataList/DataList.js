@@ -228,6 +228,10 @@ class DataList extends MComponent {
 
     const {columns, rowsLoaded, scheme, colResize, confirm_text} = state;
 
+    const styleTopRightGrid = {
+      cursor: colResize ? 'col-resize' : 'default',
+    }
+
     let {selection_mode, denyAddDel, show_search, show_variants, classes} = props;
 
     if(!scheme) {
@@ -251,12 +255,6 @@ class DataList extends MComponent {
       handleAttachment,
       handleSchemeChange,
       handleFilterChange,
-    };
-
-    const styleTopRightGrid = {
-      backgroundColor: '#eeeeee',
-      borderBottom: '1px solid #e0e0e0',
-      cursor: colResize ? 'col-resize' : 'default',
     };
 
 
@@ -307,7 +305,8 @@ class DataList extends MComponent {
                 columnWidth={this._getColumnWidth}
                 rowHeight={DataList.COLUMN_HEIGHT}
                 onSectionRendered={onSectionRendered}
-                styleTopRightGrid={styleTopRightGrid}/>
+                styleTopRightGrid={styleTopRightGrid}
+                classNameTopRightGrid={classes.topRightGrid}/>
             );
           }}
         </InfiniteLoader>
