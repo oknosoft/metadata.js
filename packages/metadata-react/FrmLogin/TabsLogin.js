@@ -4,6 +4,8 @@ import Tabs, {Tab} from 'material-ui/Tabs';
 import Paper from 'material-ui/Paper';
 import TextField from 'material-ui/TextField';
 import Button from 'material-ui/Button';
+import {FormGroup} from 'material-ui/Form';
+import {DialogActions} from 'material-ui/Dialog';
 
 import CnnSettings from './Settings';
 import withPrm from 'metadata-redux/src/withPrm';
@@ -60,7 +62,7 @@ class TabsLogin extends Component {
         </Tabs>
 
         {state.index === 0 &&
-        <div>
+        <FormGroup>
 
           <TextField
             label="Имя пользователя"
@@ -80,19 +82,19 @@ class TabsLogin extends Component {
             value={state.password}
             onChange={event => this.setState({ password: event.target.value })}
           />
-          <br/>
 
-          {
-            props.user.logged_in ?
+        </FormGroup>
+        }
+
+        {state.index === 0 &&
+        <DialogActions>
+          {props.user.logged_in ?
               <Button raised dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
               :
               <Button raised dense className={classes.button} disabled={!state.login || !state.password} onClick={handleLogin}>Войти</Button>
           }
-
           <Button raised dense disabled={true} className={classes.button}>Забыли пароль?</Button>
-
-        </div>
-        }
+        </DialogActions>}
 
         {state.index === 1 && <CnnSettings {...props}/>}
 
