@@ -9,7 +9,7 @@ import {FormGroup} from 'material-ui/Form';
 import {DialogActions} from 'material-ui/Dialog';
 
 import DataField from '../DataField';
-import CnnSettings from './Settings';
+import CnnSettings from './CnnSettings';
 import withPrm from 'metadata-redux/src/withPrm';
 import withStyles from '../styles/paper600';
 
@@ -96,8 +96,8 @@ class TabsUser extends Component {
 
               {state.index === 0 &&
               <DialogActions>
-                <Button raised dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
-                <Button raised dense className={classes.button} onClick={handleNavigate}>К списку заказов</Button>
+                <Button color="primary" dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
+                <Button color="primary" dense className={classes.button} onClick={handleNavigate}>К списку заказов</Button>
               </DialogActions>}
 
               {state.index === 1 && <CnnSettings {...props}/>}

@@ -10,38 +10,6 @@ import {Data} from 'react-data-grid-addons';
 const {Row} = ReactDataGrid;
 const {Selectors} = Data;
 
-// // Import the necessary modules.
-// // Create the context menu.
-// // Use this.props.rowIdx and this.props.idx to get the row/column where the menu is shown.
-// class MyContextMenu extends Component {
-//
-//   onRowDelete(e, data) {
-//     if (typeof(this.props.onRowDelete) === 'function') {
-//       this.props.onRowDelete(e, data);
-//     }
-//   }
-//
-//   onRowAdd(e, data) {
-//     if (typeof(this.props.onRowAdd) === 'function') {
-//       this.props.onRowAdd(e, data);
-//     }
-//   }
-//
-//   render() {
-//
-//     let { ContextMenu, MenuItem} = Menu;
-//
-//     return (
-//       <ContextMenu>
-//         <MenuItem data={{rowIdx: this.props.rowIdx, idx: this.props.idx}} onClick={::this.onRowDelete}>Delete Row</MenuItem>
-//         <MenuItem data={{rowIdx: this.props.rowIdx, idx: this.props.idx}} onClick={::this.onRowAdd}>Add Row</MenuItem>
-//       </ContextMenu>
-//     );
-//   }
-//
-// }
-
-
 class RowRenderer extends Component {
 
   static propTypes = {
@@ -72,8 +40,10 @@ class RowRenderer extends Component {
 };
 
 const  RowGroupRenderer = (props) => {
-  let treeDepth = props.treeDepth || 0;
-  let marginLeft = treeDepth * 20;
+
+  const {idx, row, name, renderer, isGroup, isExpanded, treeDepth, ...other} = props;
+
+  let marginLeft = (treeDepth || 0) * 20;
 
   let style = {
     height: props.height,
@@ -94,16 +64,21 @@ const  RowGroupRenderer = (props) => {
     }
   };
 
-  //const {row, ...other} = props;
-  //const grouping = new Map([[row.__metaData.columnGroupName, row.name]]);
+
+  const grouping = new Map([['', props.columnGroupName]]); //[[props.columnGroupName, row.name]]
+
+  for(const column of props.columns){
+    grouping.set(column.key, column.key);
+  }
+
   //const grouping = {cashbox: {presentation: `Группировка${row.name ? ': ' + row.name : ''}`}};
-  //return (<Row ref={node => this.row = node} {...other} row={grouping} idx={0}/>);
-  return (
-    <div style={style} onKeyDown={onKeyDown} tabIndex={0}>
-      <span className="row-expand-icon" style={{float: 'left', marginLeft: marginLeft, cursor: 'pointer'}} onClick={props.onRowExpandClick} >{props.isExpanded ? String.fromCharCode('9660') : String.fromCharCode('9658')}</span>
-      <strong>{props.columnGroupName}: {props.name}</strong>
-    </div>
-  );
+  return (<Row ref={node => this.row = node} {...other} row={grouping} idx={idx.toString()} />);
+  // return (
+  //   <div style={style} onKeyDown={onKeyDown} tabIndex={0}>
+  //     <span className="row-expand-icon" style={{float: 'left', marginLeft: marginLeft, cursor: 'pointer'}} onClick={props.onRowExpandClick} >{props.isExpanded ? String.fromCharCode('9660') : String.fromCharCode('9658')}</span>
+  //     <strong>{props.columnGroupName}: {props.name}</strong>
+  //   </div>
+  // );
 };
 
 
@@ -182,6 +157,7 @@ export default class RepTabularSection extends Component {
         rowGetter={getRowAt}
         rowsCount={this.getSize()}
         rowGroupRenderer={RowGroupRenderer}
+        rowRenderer={RowRenderer}
         minHeight={minHeight || 200}
         rowHeight={33}
         onRowExpandToggle={onRowExpandToggle}

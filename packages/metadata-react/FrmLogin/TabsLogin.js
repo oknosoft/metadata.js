@@ -7,7 +7,7 @@ import Button from 'material-ui/Button';
 import {FormGroup} from 'material-ui/Form';
 import {DialogActions} from 'material-ui/Dialog';
 
-import CnnSettings from './Settings';
+import CnnSettings from './CnnSettings';
 import withPrm from 'metadata-redux/src/withPrm';
 import withStyles from '../styles/paper600';
 
@@ -89,9 +89,9 @@ class TabsLogin extends Component {
         {state.index === 0 &&
         <DialogActions>
           {props.user.logged_in ?
-              <Button raised dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
+              <Button color="primary" dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
               :
-              <Button raised dense className={classes.button} disabled={!state.login || !state.password} onClick={handleLogin}>Войти</Button>
+              <Button color="primary" dense className={classes.button} disabled={!state.login || !state.password} onClick={handleLogin}>Войти</Button>
           }
           <Button raised dense disabled={true} className={classes.button}>Забыли пароль?</Button>
         </DialogActions>}

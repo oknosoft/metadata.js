@@ -292,11 +292,11 @@ class DataList extends MComponent {
             return (
               <MultiGrid
                 ref={registerChild}
+                tabIndex={0}
                 width={sizes.width}
                 height={sizes.height - 52}
                 rowCount={rowsLoaded}
                 columnCount={columns.length}
-                fixedColumnCount={0}
                 fixedRowCount={1}
                 noContentRenderer={this._noContentRendered}
                 cellRenderer={this._cellRenderer}
