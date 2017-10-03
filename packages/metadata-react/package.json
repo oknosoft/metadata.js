@@ -11,7 +11,7 @@
   "peerDependencies": {
     "material-ui": "^1.0.0-beta.13",
     "material-ui-icons": "^1.0.0-beta.14",
-    "metadata-abstract-ui": "^2.0.2-beta.29",
+    "metadata-abstract-ui": "^2.0.2-beta.30",
     "rc-calendar": "^9.1.8",
     "rc-cascader": "^0.11.6",
     "rc-time-picker": "^2.4.1",

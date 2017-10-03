@@ -9,7 +9,7 @@
     "npm": "^5.0"
   },
   "peerDependencies": {
-    "metadata-abstract-ui": "^2.0.2-beta.28"
+    "metadata-abstract-ui": "^2.0.2-beta.30"
   },
   "main": "dist/index.js",
   "repository": {
