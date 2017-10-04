@@ -648,12 +648,24 @@ export default function scheme_settings() {
     }
 
     /**
+     * Фильтрует табчасть
+     * @param collection
+     * @param parent
+     * @return {Array}
+     */
+    used(collection, parent) {
+      const res = [];
+      collection.find_rows({use: true}, ({field}) => res.push(field));
+      return res;
+    }
+
+    /**
      * ### Возвращает массив измерений группировки
      * @param [parent] - родитель, для многоуровневой группировки
      * @return {Array}
      */
     dims(parent) {
-      return this.dimensions._obj.map((row) => row.field);
+      return this.used(this.dimensions, parent);
     }
 
     /**
@@ -662,9 +674,7 @@ export default function scheme_settings() {
      * @return {Array}
      */
     used_fields(parent) {
-      const res = [];
-      this.fields.find_rows({use: true}, ({field}) => res.push(field));
-      return res;
+      return this.used(this.fields, parent);
     }
 
     /**

@@ -3,12 +3,7 @@ import PropTypes from 'prop-types';
 
 import ReactDataGrid from 'react-data-grid';
 
-//import {Menu, Data, Editors, ToolsPanel} from "react-data-grid-addons";
-
-import {Data} from 'react-data-grid-addons';
-
 const {Row} = ReactDataGrid;
-const {Selectors} = Data;
 
 class RowRenderer extends Component {
 
@@ -39,49 +34,6 @@ class RowRenderer extends Component {
   }
 };
 
-const  RowGroupRenderer = (props) => {
-
-  const {idx, row, name, renderer, isGroup, isExpanded, treeDepth, ...other} = props;
-
-  let marginLeft = (treeDepth || 0) * 20;
-
-  let style = {
-    height: props.height,
-    border: '1px solid #dddddd',
-    paddingTop: '5px',
-    paddingLeft: '5px'
-  };
-
-  let onKeyDown = (e) => {
-    if (e.key === 'ArrowLeft') {
-      props.onRowExpandToggle(false);
-    }
-    if (e.key === 'ArrowRight') {
-      props.onRowExpandToggle(true);
-    }
-    if (e.key === 'Enter') {
-      props.onRowExpandToggle(!props.isExpanded);
-    }
-  };
-
-
-  const grouping = new Map([['', props.columnGroupName]]); //[[props.columnGroupName, row.name]]
-
-  for(const column of props.columns){
-    grouping.set(column.key, column.key);
-  }
-
-  //const grouping = {cashbox: {presentation: `Группировка${row.name ? ': ' + row.name : ''}`}};
-  return (<Row ref={node => this.row = node} {...other} row={grouping} idx={idx.toString()} />);
-  // return (
-  //   <div style={style} onKeyDown={onKeyDown} tabIndex={0}>
-  //     <span className="row-expand-icon" style={{float: 'left', marginLeft: marginLeft, cursor: 'pointer'}} onClick={props.onRowExpandClick} >{props.isExpanded ? String.fromCharCode('9660') : String.fromCharCode('9658')}</span>
-  //     <strong>{props.columnGroupName}: {props.name}</strong>
-  //   </div>
-  // );
-};
-
-
 export default class RepTabularSection extends Component {
 
   static propTypes = {
@@ -111,56 +63,89 @@ export default class RepTabularSection extends Component {
         return this._tabular._rows || [];
       },
 
-      get groupBy() {
-        const {scheme} = that.props;
-        return scheme ? scheme.dims() : [];
-      },
+      // get groupBy() {
+      //   const {scheme} = that.props;
+      //   return scheme ? scheme.dims() : [];
+      // },
 
-      expandedRows: {}
+      expanded: {}
     };
   }
 
-  getRows = () => {
-    return Selectors.getRows(this.state);
-  };
-
-  getRowAt = (index) => {
-    const rows = this.getRows();
-    return rows[index];
-  };
-
-  getSize = () => {
-    return this.getRows().length;
+  getRows = (i) => {
+    return this.state.rows[i];
   };
 
   onRowExpandToggle = (args) => {
-    const expandedRows = Object.assign({}, this.state.expandedRows);
-    expandedRows[args.columnGroupName] = Object.assign({}, expandedRows[args.columnGroupName]);
-    expandedRows[args.columnGroupName][args.name] = {isExpanded: args.shouldExpand};
-    this.setState({expandedRows: expandedRows});
+    const expanded = Object.assign({}, this.state.expanded);
+    expanded[args.columnGroupName] = Object.assign({}, expanded[args.columnGroupName]);
+    expanded[args.columnGroupName][args.row] = {isExpanded: args.shouldExpand};
+    this.setState({expanded: expanded});
+  };
+
+  onCellExpand = (args) => {
+    let rows = this.state.rows.slice(0);
+    let rowKey = args.rowData.name;
+    let rowIndex = rows.indexOf(args.rowData);
+    let subRows = args.expandArgs.children;
+
+    let expanded = Object.assign({}, this.state.expanded);
+    if (expanded && !expanded[rowKey]) {
+      expanded[rowKey] = true;
+      this.updateSubRowDetails(subRows, args.rowData.treeDepth);
+      rows.splice(rowIndex + 1, 0, ...subRows);
+    }
+    else if (expanded[rowKey]) {
+      expanded[rowKey] = false;
+      rows.splice(rowIndex + 1, subRows.length);
+    }
+
+    this.setState({ expanded: expanded, rows: rows });
+  };
+
+  getSubRowDetails = (rowItem) => {
+    const {scheme} = this.props;
+    let isExpanded = this.state.expanded[rowItem.row] ? this.state.expanded[rowItem.row] : false;
+    return {
+      group: rowItem.children && rowItem.children.length > 0,
+      expanded: isExpanded,
+      children: rowItem.children,
+      field: 'cashbox',
+      treeDepth: rowItem.treeDepth || 0,
+      siblingIndex: rowItem.siblingIndex,
+      numberSiblings: rowItem.numberSiblings
+    };
+  };
+
+  updateSubRowDetails = (subRows, parentTreeDepth) => {
+    let treeDepth = parentTreeDepth || 0;
+    subRows.forEach((sr, i) => {
+      sr.treeDepth = treeDepth + 1;
+      sr.siblingIndex = i;
+      sr.numberSiblings = subRows.length;
+    });
   };
 
   render() {
 
-    const {props, getRowAt, onRowExpandToggle} = this;
+    const {props, state} = this;
     const {_columns, minHeight} = props;
 
     // rowRenderer={RowRenderer}
-    //
+    // onRowExpandToggle={onRowExpandToggle}
+    // rowGroupRenderer={RowGroupRenderer}
 
     return (
 
       <ReactDataGrid
-        ref="grid"
         columns={_columns}
         enableCellSelect={true}
-        rowGetter={getRowAt}
-        rowsCount={this.getSize()}
-        rowGroupRenderer={RowGroupRenderer}
-        rowRenderer={RowRenderer}
-        minHeight={minHeight || 200}
+        rowGetter={this.getRows}
+        rowsCount={state.rows.length}
+        getSubRowDetails={this.getSubRowDetails}
+        onCellExpand={this.onCellExpand}
+        minHeight={minHeight || 220}
         rowHeight={33}
-        onRowExpandToggle={onRowExpandToggle}
       />
 
     );

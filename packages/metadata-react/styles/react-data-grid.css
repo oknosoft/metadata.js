@@ -40,7 +40,7 @@
  * https://twitter.com/jedwatson https://twitter.com/jossmackison https://twitter.com/keystonejs
  * MIT License: https://github.com/JedWatson/react-select
 */
-/*
+
 .Select {
   position: relative;
 }
@@ -62,7 +62,8 @@
   cursor: default;
   pointer-events: none;
 }
-*/
+
+
 .Select-control {
   border: 0;
   border-radius: 0;
@@ -91,7 +92,7 @@
   border-bottom-width: 2px;
   box-shadow: none;
 }
-/*
+
 .Select-control .Select-input:focus {
   outline: none;
 }
@@ -394,4 +395,4 @@
     -webkit-transform: rotate(1turn);
   }
 }
-*/
+

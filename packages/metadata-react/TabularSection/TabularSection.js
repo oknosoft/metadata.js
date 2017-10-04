@@ -36,7 +36,7 @@ export default class TabularSection extends MComponent {
   static defaultProps = {
     denyAddDel: false,
     read_only: false,
-    minHeight: 300,
+    minHeight: 220,
   };
 
   constructor(props, context) {

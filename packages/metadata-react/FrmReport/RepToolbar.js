@@ -28,10 +28,13 @@ class RepToolbar extends Component {
     handleSave: PropTypes.func.isRequired,          // обработчик формирования отчета
     handlePrint: PropTypes.func.isRequired,         // обработчик открытия диалога печати
     handleClose: PropTypes.func.isRequired,         // команда закрытия формы
+    handleSettingsOpen: PropTypes.func.isRequired,
+    handleSettingsClose: PropTypes.func.isRequired,
     handleSchemeChange: PropTypes.func.isRequired,  // обработчик при изменении настроек компоновки
-    scheme: PropTypes.object.isRequired,            // значение настроек компоновки CatSchemeSettings
     _obj: PropTypes.object,                         // объект данных - отчет DataProcessorObj
     _tabular: PropTypes.string.isRequired,          // имя табчасти с данными
+    scheme: PropTypes.object.isRequired,            // значение настроек компоновки CatSchemeSettings
+    settings_open: PropTypes.bool,                  // открыта панель настроек
   };
 
   constructor(props, context) {
@@ -53,31 +56,32 @@ class RepToolbar extends Component {
   render() {
 
     const {props, state, handleChange} = this;
-    const {handleSave, handleClose, handleSchemeChange, handlePrint, scheme, _obj, _tabular, classes} = props;
-    const {RepParams} = _obj._manager;
+    const {handleSave, handleClose, handlePrint, _obj, _tabular, classes, scheme, settings_open} = props;
+
 
     return (
 
       <Toolbar disableGutters className={classes.toolbar}>
-        <Button dense onClick={handleSave}><i className="fa fa-play fa-fw"></i> Сформировать</Button>
+        <Button dense onClick={handleSave} disabled={settings_open}><i className="fa fa-play fa-fw"></i> Сформировать</Button>
 
-        <IconButton disabled>|</IconButton>
-
-        <DateRange
+        {!scheme.standard_period.empty() && <IconButton disabled>|</IconButton>}
+        {!scheme.standard_period.empty() && <DateRange
           _obj={scheme}
           _fld={'date'}
           _meta={{synonym: 'Период'}}
           classes={classes}
           handleChange={handleChange}
-        />
+        />}
 
         <Typography type="title" color="inherit" className={classes.flex}> </Typography>
 
         <SchemeSettings
-          handleSchemeChange={handleSchemeChange}
+          handleSettingsOpen={props.handleSettingsOpen}
+          handleSettingsClose={props.handleSettingsClose}
+          handleSchemeChange={props.handleSchemeChange}
+          settings_open={settings_open}
           classes={classes}
           scheme={scheme}
-          tabParams={RepParams && <RepParams _obj={_obj} scheme={scheme} />}
           show_variants={true}
         />
 
