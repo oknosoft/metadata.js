@@ -17,10 +17,7 @@ class FieldNumber extends AbstractField {
 
   constructor(props, context) {
     super(props, context);
-    this.state = {
-      isCalculatorVisible: false,
-      value: props._obj[props._fld],
-    };
+    Object.assign(this.state, {isCalculatorVisible: false});
   }
 
   onChange = (event) => {

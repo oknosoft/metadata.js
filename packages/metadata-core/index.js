@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.2-beta.30, built:2017-10-04
+ metadata-core v2.0.2-beta.30, built:2017-10-05
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2136,7 +2136,7 @@ class EnumManager extends RefDataManager{
 		return res;
 	}
 	get_option_list(selection = {}, val){
-		var l = [], synonym = "", sref;
+		let l = [], synonym = "", sref;
     function push(v){
       if(selection._dhtmlx){
         v = {
@@ -2146,31 +2146,33 @@ class EnumManager extends RefDataManager{
         if(utils.is_equal(v.value, val)){
           v.selected = true;
         }
+        l.push(v);
       }
-      l.push(v);
+      else if(!v.empty()){
+        l.push(v);
+      }
     }
-		if(selection){
-			for(var i in selection){
-				if(i.substr(0,1)!="_"){
-					if(i == "ref"){
-						sref = selection[i].hasOwnProperty("in") ? selection[i].in : selection[i];
-					}
-					else
-						synonym = selection[i];
-				}
-			}
+    for(const i in selection){
+      if(i.substr(0,1)!="_"){
+        if(i == "ref"){
+          sref = selection[i].hasOwnProperty("in") ? selection[i].in : selection[i];
+        }
+        else
+          synonym = selection[i];
+      }
+    }
+		if(!selection._dhtmlx){
+      l.push(this.get());
 		}
 		if(typeof synonym == "object"){
-			if(synonym.like)
-				synonym = synonym.like;
-			else
-				synonym = "";
+      synonym = synonym.like ? synonym.like : '';
 		}
 		synonym = synonym.toLowerCase();
 		this.alatable.forEach(v => {
 			if(synonym){
-				if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1)
-					return;
+				if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1){
+          return;
+        }
 			}
 			if(sref){
 				if(Array.isArray(sref)){

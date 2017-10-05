@@ -7,81 +7,80 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import VirtualizedSelect from './VirtualizedSelect';
-import AbstractField from './AbstractField';
 
-export default class FieldSelect extends AbstractField {
+import Input, { InputLabel } from 'material-ui/Input';
+import { FormControl, FormHelperText } from 'material-ui/Form';
+import Select from 'material-ui/Select';
+
+import AbstractField, {suggestionText} from './AbstractField';
+import withStyles from './styles';
+
+class FieldSelect extends AbstractField {
 
   constructor(props, context) {
-
     super(props, context);
-
-    const {_obj, _fld, mandatory} = props;
-    const _val = _obj[_fld];
-
-    this.state = {
-      clearable: true,
-      disabled: false,
-      options: [_val],
-      value: _val,
-      multi: props.multi || false,
-      searchable: true,
-      selectedCreatable: null,
-      mandatory: typeof mandatory === 'boolean' ? mandatory : this._meta.mandatory,
-    };
+    const {_obj, _fld} = props;
+    Object.assign(this.state, {options: [_obj[_fld]]});
+    this.loadOptions(_obj);
   }
 
-  loadOptions = (input) => {
-
-    const selection = {_top: 40};
-    const {_obj, _fld} = this.props;
-    const {choice_params} = this._meta;
-
-    if (input) {
-      selection.presentation = {like: input};
+  shouldComponentUpdate({_obj}){
+    if(this.props._obj != _obj){
+      this.loadOptions(_obj);
+      return false;
     }
-    if (choice_params) {
-      choice_params.forEach((cp) => {
-        selection[cp.name] = cp.path;
-      });
-    }
+    return true;
+  }
 
-    return _obj[_fld]._manager.get_option_list(selection)
+  loadOptions(_obj) {
+
+    const {_meta, props, state} = this;
+    const {_manager} = _obj[props._fld];
+    const select = _manager.get_search_selector({_obj, _meta, top: 999, skip: 0});
+
+    return _manager.get_option_list(select)
       .then((options) => {
-        this.setState({options});
-        return {options};
+        if(this._mounted) {
+          this.setState({options});
+        }
+        else {
+          Object.assign(state, {options})
+        }
       });
   };
 
-  onChange = (value) => {
-    const {handleValueChange} = this.props;
-    this.setState({value});
-    handleValueChange && handleValueChange(value);
-  };
+  renderOptions() {
+    return this.state.options.map((v) => {
+      const key = v.valueOf();
+      return <option key={key} value={key}>{suggestionText(v)}</option>
+    });
+  }
 
   render() {
 
-    const {props, state, loadOptions, onChange} = this;
-    const {_fld} = props;
-    const {options, value, mandatory} = state;
+    const {props, _meta, isTabular, onChange} = this;
+    const {_obj, _fld, classes} = props;
 
-    return (
-      <VirtualizedSelect
-        name={_fld}
-        async
-        cache={false}
-        clearable={!mandatory}
-        backspaceRemoves={false}
-        labelKey='presentation'
-        valueKey='ref'
-        loadOptions={loadOptions}
-        minimumInput={0}
+    return isTabular ?
+      <select
+        value={_obj[_fld].valueOf()}
         onChange={onChange}
-        //onValueClick={this._goToGithubUser}
-        options={options}
-        value={value}
-      />
-    );
+      >
+        {this.renderOptions()}
+      </select>
+      :
+      <FormControl className={classes.formControl}>
+        <InputLabel>{_meta.tooltip || _meta.synonym}</InputLabel>
+        <Select
+          native
+          value={_obj[_fld].valueOf()}
+          onChange={onChange}
+          input={<Input />}
+        >
+          {this.renderOptions()}
+        </Select>
+      </FormControl>;
   }
 }
 
+export default withStyles(FieldSelect);

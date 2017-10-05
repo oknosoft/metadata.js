@@ -14,15 +14,8 @@ import withStyles from './styles';
 
 class FieldText extends AbstractField {
 
-  onChange = (event) => {
-    const {_obj, _fld, handleValueChange} = this.props;
-    _obj[_fld] = event.target.value;
-    handleValueChange && handleValueChange(event.target.value);
-
-  };
-
   render() {
-    const {onChange, props, _meta, isTabular} = this;
+    const {props, _meta, isTabular, onChange} = this;
     const {_obj, _fld, classes, read_only, fullWidth} = props;
 
     return isTabular ?
@@ -31,7 +24,7 @@ class FieldText extends AbstractField {
         disabled={read_only}
         title={_meta.tooltip || _meta.synonym}
         placeholder={_fld}
-        defaultValue={_obj[_fld]}
+        value={_obj[_fld]}
         onChange={onChange}
       />
       :
@@ -43,7 +36,7 @@ class FieldText extends AbstractField {
         label={_meta.synonym}
         title={_meta.tooltip || _meta.synonym}
         InputProps={{placeholder: _fld}}
-        defaultValue={_obj[_fld]}
+        value={_obj[_fld]}
         onChange={onChange}
       />;
   }

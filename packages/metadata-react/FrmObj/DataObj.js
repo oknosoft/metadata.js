@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import MComponent from '../common/MComponent';
+import MDNRComponent from '../common/MDNRComponent';
 
 import {FormGroup} from 'material-ui/Form';
 import Divider from 'material-ui/Divider';
@@ -13,7 +13,7 @@ import TabularSection from '../TabularSection';
 
 import withStyles from '../styles/paper600'
 
-class DataObj extends MComponent {
+class DataObj extends MDNRComponent {
 
   static propTypes = {
     _mgr: PropTypes.object,             // DataManager, с которым будет связан компонент
@@ -25,8 +25,6 @@ class DataObj extends MComponent {
 
     handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
   };
-
-
 
   constructor(props, context) {
     super(props, context);

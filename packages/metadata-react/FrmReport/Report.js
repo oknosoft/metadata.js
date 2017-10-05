@@ -126,6 +126,8 @@ class Report extends Component {
       return <DumbLoader title="Ошибка настроек компоновки..."/>;
     }
 
+    const show_grid = !settings_open || (props.height || 500) > 572;
+
     return <div>
 
       <RepToolbar
@@ -145,20 +147,22 @@ class Report extends Component {
 
       { settings_open &&
       <SchemeSettingsTabs
-        height={272}
+        height={show_grid ? 272 : (props.height || 500) - 104}
         scheme={scheme}
         tabParams={RepParams && <RepParams _obj={_obj} scheme={scheme} />}
         handleSchemeChange={this.handleSchemeChange}
       />}
 
-      <RepTabularSection
+      {show_grid && <RepTabularSection
         ref={(el) => this._result = el}
         _obj={_obj}
         _tabular={_tabular}
         _columns={_columns}
         scheme={scheme}
         minHeight={(props.height || 500) - 52 - (settings_open ? 320 : 0)}
-      />
+      />}
+
+
 
     </div>;
   }

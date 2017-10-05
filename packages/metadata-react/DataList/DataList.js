@@ -1,7 +1,7 @@
 /** @flow */
 import React from 'react';
 import PropTypes from 'prop-types';
-import MComponent from '../common/MComponent';
+import MDNRComponent from '../common/MDNRComponent';
 
 import {InfiniteLoader, AutoSizer, MultiGrid} from 'react-virtualized';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
@@ -15,7 +15,7 @@ import withStyles from './styles';
 import control_by_type from 'metadata-abstract-ui/src/ui';
 
 
-class DataList extends MComponent {
+class DataList extends MDNRComponent {
 
   static LIMIT = 40;
   static OVERSCAN_ROW_COUNT = 2;
