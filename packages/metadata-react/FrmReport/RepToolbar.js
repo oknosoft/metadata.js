@@ -17,7 +17,7 @@ import FileDownloadIcon from 'material-ui-icons/FileDownload';
 
 import {export_handlers} from '../plugin';
 
-import SchemeSettings from '../SchemeSettings';
+import SchemeSettingsButtons from '../SchemeSettings/SchemeSettingsButtons';
 import DateRange from '../SchemeSettings/DateRange';
 
 import withStyles from '../Header/toolbar';
@@ -75,7 +75,7 @@ class RepToolbar extends Component {
 
         <Typography type="title" color="inherit" className={classes.flex}> </Typography>
 
-        <SchemeSettings
+        <SchemeSettingsButtons
           handleSettingsOpen={props.handleSettingsOpen}
           handleSettingsClose={props.handleSettingsClose}
           handleSchemeChange={props.handleSchemeChange}

@@ -124,6 +124,7 @@ export default class RepTabularSection extends Component {
       sr.treeDepth = treeDepth + 1;
       sr.siblingIndex = i;
       sr.numberSiblings = subRows.length;
+      sr.children && this.updateSubRowDetails(sr.children, sr.treeDepth);
     });
   };
 

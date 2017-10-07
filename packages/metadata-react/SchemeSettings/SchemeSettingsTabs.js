@@ -84,6 +84,7 @@ export default class SchemeSettingsTabs extends Component {
     const {state, props, sizes} = this;
     const {scheme, handleSchemeChange, tabParams} = props;
     const {value} = state;
+    const is_tabular = scheme.obj.split('.').length > 2;
 
     return <div>
       <AppBar position="static" color="default">
@@ -98,8 +99,8 @@ export default class SchemeSettingsTabs extends Component {
           <Tab label="Параметры"/>
           <Tab label="Колонки"/>
           <Tab label="Отбор"/>
-          <Tab label="Группировка"/>
-          <Tab label="Ресурсы"/>
+          {is_tabular && <Tab label="Группировка"/>}
+          {is_tabular && <Tab label="Ресурсы"/>}
           <Tab label="Сортировка"/>
           <Tab label="Вариант"/>
         </Tabs>
@@ -121,13 +122,14 @@ export default class SchemeSettingsTabs extends Component {
 
         {value === 2 && <TabularSection _obj={scheme} _tabular="selection" rowSelection={this.rowSelection(scheme, 'selection')} />}
 
-        {value === 3 && <TabularSection _obj={scheme} _tabular="dimensions" rowSelection={this.rowSelection(scheme, 'dimensions')} />}
+        {is_tabular && (value === 3) && <TabularSection _obj={scheme} _tabular="dimensions" rowSelection={this.rowSelection(scheme, 'dimensions')} />}
 
-        {value === 4 && <TabularSection _obj={scheme} _tabular="resources"/> }
+        {is_tabular && (value === 4) && <TabularSection _obj={scheme} _tabular="resources"/> }
 
-        {value === 5 && <TabularSection _obj={scheme} _tabular="sorting" rowSelection={this.rowSelection(scheme, 'sorting')} />}
+        {value === (is_tabular ? 5 : 3) && <TabularSection _obj={scheme} _tabular="sorting" rowSelection={this.rowSelection(scheme, 'sorting')} />}
 
-        {value === 6 && <SchemeSettingsSelect scheme={scheme} handleSchemeChange={handleSchemeChange} />}
+        {value === (is_tabular ? 6 : 4) && <SchemeSettingsSelect scheme={scheme} handleSchemeChange={handleSchemeChange} />}
+
       </div>
 
     </div>;

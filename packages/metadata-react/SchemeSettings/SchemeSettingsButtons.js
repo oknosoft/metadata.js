@@ -1,6 +1,5 @@
 /**
- * ### Контейнер сохраненных настроек
- * Кнопка открытия + диалог
+ * ### Кнопка открытия + строка поиска для сохраненных настроек
  *
  * Created 31.12.2016
  */
@@ -19,7 +18,7 @@ import Typography from 'material-ui/Typography';
 
 import SearchBox from './SearchBox';
 
-export default class SchemeSettingsWrapper extends PureComponent {
+export default class SchemeSettingsButtons extends PureComponent {
 
   static propTypes = {
     scheme: PropTypes.object.isRequired,

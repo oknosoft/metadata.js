@@ -4,16 +4,14 @@ import PropTypes from 'prop-types';
 import MDNRComponent from '../common/MDNRComponent';
 
 import {InfiniteLoader, AutoSizer, MultiGrid} from 'react-virtualized';
-import LoadingMessage from '../DumbLoader/LoadingMessage';
-import DataListToolbar from './DataListToolbar';
 import cn from 'classnames';
 
+import LoadingMessage from '../DumbLoader/LoadingMessage';
+import DataListToolbar from './DataListToolbar';
+import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
 import Confirm from '../Confirm';
-
 import withStyles from './styles';
-
 import control_by_type from 'metadata-abstract-ui/src/ui';
-
 
 class DataList extends MDNRComponent {
 
@@ -30,7 +28,7 @@ class DataList extends MDNRComponent {
     _acl: PropTypes.string,               // Права на чтение-изменение
     _meta: PropTypes.object,              // Описание метаданных. Если не указано, используем метаданные менеджера
 
-    _owner: PropTypes.object,             // Поле - родитель. У него должны быть _obj, _fld и _meta
+    _owner: PropTypes.object,             // Поле - владелец. У него должны быть _obj, _fld и _meta
                                           // а внутри _meta могут быть choice_params и choice_links
 
     // настройки внешнего вида и поведения
@@ -49,7 +47,10 @@ class DataList extends MDNRComponent {
   constructor(props, context) {
     super(props, context);
 
-    this.state = {selectedRowIndex: 0};
+    this.state = {
+      selectedRowIndex: 0,
+      settings_open: false,
+    };
 
     /** Set of grid rows. */
     this._list = new Map();
@@ -189,6 +190,14 @@ class DataList extends MDNRComponent {
     row && handlers.handleAttachment && handleAttachment(row, _mgr);
   };
 
+  handleSettingsOpen = () => {
+    this.setState({settings_open: true});
+  };
+
+  handleSettingsClose = () => {
+    this.setState({settings_open: false});
+  };
+
   get sizes() {
     const {dnr} = this.context;
     let {width, height} = this.props;
@@ -208,25 +217,9 @@ class DataList extends MDNRComponent {
   }
 
   render() {
-    const {
-      state,
-      props,
-      _meta,
-      sizes,
-      handleSelect,
-      handleAdd,
-      handleEdit,
-      handleRemove,
-      handlePrint,
-      handleAttachment,
-      handleSchemeChange,
-      handleFilterChange,
-      _isRowLoaded,
-      _loadMoreRows,
-      _cellRenderer,
-    } = this;
-
-    const {columns, rowsLoaded, scheme, colResize, confirm_text} = state;
+    const {state, props, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer} = this;
+    const {columns, rowsLoaded, scheme, colResize, confirm_text, settings_open} = state;
+    const {RepParams} = props._mgr;
 
     const styleTopRightGrid = {
       cursor: colResize ? 'col-resize' : 'default',
@@ -241,27 +234,32 @@ class DataList extends MDNRComponent {
       return <LoadingMessage title="Ошибка настроек компоновки..."/>;
     }
 
+    const show_grid = !settings_open || sizes.height > 572;
+
     const toolbar_props = {
       scheme,
       selection_mode,
       denyAddDel,
       show_search,
       show_variants,
-      handleSelect,
-      handleAdd,
-      handleEdit,
-      handleRemove,
-      handlePrint,
-      handleAttachment,
-      handleSchemeChange,
-      handleFilterChange,
+      settings_open,
+      handleSelect: this.handleSelect,
+      handleAdd: this.handleAdd,
+      handleEdit: this.handleEdit,
+      handleRemove: this.handleRemove,
+      handlePrint: this.handlePrint,
+      handleAttachment: this.handleAttachment,
+      handleSettingsOpen: this.handleSettingsOpen,
+      handleSettingsClose: this.handleSettingsClose,
+      handleSchemeChange: this.handleSchemeChange,
+      handleFilterChange: this.handleFilterChange,
     };
 
 
     return (
       <div style={{height: sizes.height}}>
 
-        {
+        { // диалог предупреждений при удалении
           confirm_text && <Confirm
             title={_meta.synonym}
             text={confirm_text}
@@ -273,6 +271,16 @@ class DataList extends MDNRComponent {
 
         <DataListToolbar {...toolbar_props} />
 
+        { // панель настроек компоновки
+          settings_open &&
+          <SchemeSettingsTabs
+            height={show_grid ? 272 : (sizes.height || 500) - 104}
+            scheme={scheme}
+            tabParams={RepParams && <RepParams scheme={scheme} />}
+            handleSchemeChange={this.handleSchemeChange}
+          />}
+
+        {show_grid &&
         <InfiniteLoader
           isRowLoaded={_isRowLoaded}
           loadMoreRows={_loadMoreRows}
@@ -294,7 +302,7 @@ class DataList extends MDNRComponent {
                 ref={registerChild}
                 tabIndex={0}
                 width={sizes.width}
-                height={sizes.height - 52}
+                height={sizes.height - 52 - (settings_open ? 320 : 0)}
                 rowCount={rowsLoaded}
                 columnCount={columns.length}
                 fixedRowCount={1}
@@ -310,6 +318,7 @@ class DataList extends MDNRComponent {
             );
           }}
         </InfiniteLoader>
+        }
       </div>
     );
   }

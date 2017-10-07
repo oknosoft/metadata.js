@@ -14,7 +14,7 @@ class DataCell extends Editors.SimpleTextEditor {
 
     this.state = {
       value: [],
-      _meta: props._meta || props.rowData._metadata(props.column.key),
+      _meta: props._meta || (props.rowData._metadata && props.rowData._metadata(props.column.key)) || {type: {types: ['string']}},
     };
     this.handleSelectChange = this.handleSelectChange.bind(this);
   }

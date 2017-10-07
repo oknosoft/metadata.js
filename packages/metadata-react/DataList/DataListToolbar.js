@@ -14,7 +14,7 @@ import PrintIcon from 'material-ui-icons/Print';
 import AttachIcon from 'material-ui-icons/AttachFile';
 import SelectIcon from 'material-ui-icons/PlaylistAddCheck';
 
-import SchemeSettings from '../SchemeSettings';
+import SchemeSettingsButtons from '../SchemeSettings/SchemeSettingsButtons';
 import DateRange from '../SchemeSettings/DateRange';
 
 import withStyles from '../Header/toolbar';
@@ -79,9 +79,12 @@ class DataListToolbar extends Component {
 
         <Typography type="caption" color="inherit" className={classes.flex} > </Typography>
 
-        <SchemeSettings
+        <SchemeSettingsButtons
+          handleSettingsOpen={props.handleSettingsOpen}
+          handleSettingsClose={props.handleSettingsClose}
           handleSchemeChange={props.handleSchemeChange}
           handleFilterChange={props.handleFilterChange}
+          settings_open={props.settings_open}
           classes={classes}
           scheme={props.scheme}
           show_search={props.show_search}
