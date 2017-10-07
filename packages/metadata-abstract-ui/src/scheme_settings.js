@@ -665,7 +665,13 @@ export default function scheme_settings() {
      * @return {Array}
      */
     dims(parent) {
-      return this.used(this.dimensions, parent);
+      const res = [];
+      for(const dims of this.used(this.dimensions, parent)){
+        for (const key of dims.split(',').map(v => v.trim())) {
+          res.indexOf(key) == -1 && res.push(key);
+        }
+      }
+      return res;
     }
 
     /**

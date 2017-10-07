@@ -51,8 +51,11 @@ function rx_columns($p) {
   };
 
   const presentation_formatter = ({value}) => {
-    const {presentation} = value;
-    return <div title={presentation}>{presentation}</div>;
+    let text = (value && value.presentation) || '';
+    if(text === '_'){
+      text = '';
+    }
+    return <div title={text}>{text}</div>;
   };
 
   return function columns({mode, fields, _obj}) {

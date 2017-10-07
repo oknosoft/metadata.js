@@ -104,13 +104,14 @@ export default class RepTabularSection extends Component {
   };
 
   getSubRowDetails = (rowItem) => {
-    const {scheme} = this.props;
+    const {scheme, _columns} = this.props;
+    const {key} = _columns[0];
     let isExpanded = this.state.expanded[rowItem.row] ? this.state.expanded[rowItem.row] : false;
     return {
       group: rowItem.children && rowItem.children.length > 0,
       expanded: isExpanded,
       children: rowItem.children,
-      field: 'cashbox',
+      field: key,
       treeDepth: rowItem.treeDepth || 0,
       siblingIndex: rowItem.siblingIndex,
       numberSiblings: rowItem.numberSiblings

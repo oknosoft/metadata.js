@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.2-beta.30, built:2017-10-05
+ metadata-abstract-ui v2.0.2-beta.30, built:2017-10-07
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -598,7 +598,13 @@ function scheme_settings() {
       return res;
     }
     dims(parent) {
-      return this.used(this.dimensions, parent);
+      const res = [];
+      for(const dims of this.used(this.dimensions, parent)){
+        for (const key of dims.split(',').map(v => v.trim())) {
+          res.indexOf(key) == -1 && res.push(key);
+        }
+      }
+      return res;
     }
     used_fields(parent) {
       return this.used(this.fields, parent);
