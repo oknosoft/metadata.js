@@ -155,13 +155,16 @@ export class DataObj {
    * Устанваливает значение реквизита с приведением типов без проверки, отличается ли оно от предыдущего
    * @param f
    * @param v
+   * @param [mf]
    * @private
    */
-  __setter(f, v) {
-
-    const mf = this._metadata(f).type;
+  __setter(f, v, mf) {
 
     const {_obj, _data} = this;
+
+    if(!mf){
+      mf = this._metadata(f).type;
+    }
 
     // выполняем value_change с блокировкой эскалации
     if(!_data._loading) {
@@ -185,6 +188,9 @@ export class DataObj {
         _obj[f] = v;
       }
       else if(typeof v == 'boolean' && mf.types.indexOf('boolean') != -1) {
+        _obj[f] = v;
+      }
+      else if(mf.date_part && v instanceof Date) {
         _obj[f] = v;
       }
       else {
@@ -227,7 +233,7 @@ export class DataObj {
       }
     }
     else if(mf.date_part) {
-      _obj[f] = utils.fix_date(v, true);
+      _obj[f] = utils.fix_date(v, !mf.hasOwnProperty('str_len'));
     }
     else if(mf.digits) {
       _obj[f] = utils.fix_number(v, !mf.hasOwnProperty('str_len'));

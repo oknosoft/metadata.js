@@ -557,15 +557,15 @@ export class TabularSectionRow {
     // obj, {f: oldValue}
     const {_manager, _data} = _owner._owner;
 
+		// признак того, что тип уже приведён
+		let fetched_type;
+
 		// учтём связь по типу
 		if (_meta.choice_type) {
-			let prop;
-			if (_meta.choice_type.path.length == 2)
-				prop = this[_meta.choice_type.path[1]];
-			else
-				prop = _owner._owner[_meta.choice_type.path[0]];
+			const prop = _meta.choice_type.path.length == 2 ? this[_meta.choice_type.path[1]] : _owner._owner[_meta.choice_type.path[0]];
 			if (prop && prop.type){
-        v = utils.fetch_type(v, prop.type);
+        fetched_type = prop.type;
+        v = utils.fetch_type(v, fetched_type);
       }
 		}
 
@@ -575,7 +575,7 @@ export class TabularSectionRow {
       _data._modified = true;
     }
 
-		this.__setter(f, v);
+		this.__setter(f, v, fetched_type);
 
 	}
 

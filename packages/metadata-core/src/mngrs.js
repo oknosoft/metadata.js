@@ -212,27 +212,27 @@ export class DataManager extends MetaEventEmitter{
 	 * @property extra_fields
 	 * @type Array
 	 */
-	extra_fields(obj){
-		const {cat, cch, md} = this._owner.$p;
-		// ищем предопределенный элемент, сответствующий классу данных
-		const dests = cat.destinations || cch.destinations,
-			predefined_name = md.class_name_to_1c(this.class_name).replace(".", "_"),
-			res = [];
-		if(dests){
-			dests.find_rows({predefined_name}, destination => {
-				const ts = destination.extra_fields || destination.ДополнительныеРеквизиты;
-				if(ts){
-					ts.each(row => {
-						if(!row._deleted && !row.ПометкаУдаления){
-							res.push(row.property || row.Свойство);
-						}
-					});
-				}
-				return false;
-			})
-		}
-		return res;
-	}
+  extra_fields(obj) {
+    const {cat, cch, md} = this._owner.$p;
+    // ищем предопределенный элемент, сответствующий классу данных
+    const dests = cat.destinations || cch.destinations;
+    const res = [];
+    if(dests) {
+      const condition = this._destinations_condition || {predefined_name: md.class_name_to_1c(this.class_name).replace('.', '_')};
+      dests.find_rows(condition, destination => {
+        const ts = destination.extra_fields || destination.ДополнительныеРеквизиты;
+        if(ts) {
+          ts.each(row => {
+            if(!row._deleted && !row.ПометкаУдаления) {
+              res.push(row.property || row.Свойство);
+            }
+          });
+        }
+        return false;
+      });
+    }
+    return res;
+  }
 
 	/**
 	 * ### Дополнительные свойства

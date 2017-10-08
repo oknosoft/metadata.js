@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.2-beta.30, built:2017-10-05
+ metadata-core v2.0.2-beta.30, built:2017-10-08
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -495,21 +495,19 @@ class TabularSectionRow$1 {
       return;
     }
     const {_manager, _data} = _owner._owner;
+		let fetched_type;
 		if (_meta.choice_type) {
-			let prop;
-			if (_meta.choice_type.path.length == 2)
-				prop = this[_meta.choice_type.path[1]];
-			else
-				prop = _owner._owner[_meta.choice_type.path[0]];
+			const prop = _meta.choice_type.path.length == 2 ? this[_meta.choice_type.path[1]] : _owner._owner[_meta.choice_type.path[0]];
 			if (prop && prop.type){
-        v = utils.fetch_type(v, prop.type);
+        fetched_type = prop.type;
+        v = utils.fetch_type(v, fetched_type);
       }
 		}
 		if(!_data._loading){
       _manager.emit_async('update', this, {[f]: _obj[f]});
       _data._modified = true;
     }
-		this.__setter(f, v);
+		this.__setter(f, v, fetched_type);
 	}
   value_change(f, mf, v) {
     return this;
@@ -603,9 +601,11 @@ class DataObj {
       return _obj[f] || '';
     }
   }
-  __setter(f, v) {
-    const mf = this._metadata(f).type;
+  __setter(f, v, mf) {
     const {_obj, _data} = this;
+    if(!mf){
+      mf = this._metadata(f).type;
+    }
     if(!_data._loading) {
       _data._loading = true;
       const res = this.value_change(f, mf, v);
@@ -625,6 +625,9 @@ class DataObj {
         _obj[f] = v;
       }
       else if(typeof v == 'boolean' && mf.types.indexOf('boolean') != -1) {
+        _obj[f] = v;
+      }
+      else if(mf.date_part && v instanceof Date) {
         _obj[f] = v;
       }
       else {
@@ -664,7 +667,7 @@ class DataObj {
       }
     }
     else if(mf.date_part) {
-      _obj[f] = utils.fix_date(v, true);
+      _obj[f] = utils.fix_date(v, !mf.hasOwnProperty('str_len'));
     }
     else if(mf.digits) {
       _obj[f] = utils.fix_number(v, !mf.hasOwnProperty('str_len'));
@@ -1292,26 +1295,26 @@ class DataManager extends MetaEventEmitter{
 	find_rows_remote(selection) {
 		return this.adapter.find_rows(this, selection);
 	}
-	extra_fields(obj){
-		const {cat, cch, md} = this._owner.$p;
-		const dests = cat.destinations || cch.destinations,
-			predefined_name = md.class_name_to_1c(this.class_name).replace(".", "_"),
-			res = [];
-		if(dests){
-			dests.find_rows({predefined_name}, destination => {
-				const ts = destination.extra_fields || destination.ДополнительныеРеквизиты;
-				if(ts){
-					ts.each(row => {
-						if(!row._deleted && !row.ПометкаУдаления){
-							res.push(row.property || row.Свойство);
-						}
-					});
-				}
-				return false;
-			});
-		}
-		return res;
-	}
+  extra_fields(obj) {
+    const {cat, cch, md} = this._owner.$p;
+    const dests = cat.destinations || cch.destinations;
+    const res = [];
+    if(dests) {
+      const condition = this._destinations_condition || {predefined_name: md.class_name_to_1c(this.class_name).replace('.', '_')};
+      dests.find_rows(condition, destination => {
+        const ts = destination.extra_fields || destination.ДополнительныеРеквизиты;
+        if(ts) {
+          ts.each(row => {
+            if(!row._deleted && !row.ПометкаУдаления) {
+              res.push(row.property || row.Свойство);
+            }
+          });
+        }
+        return false;
+      });
+    }
+    return res;
+  }
 	extra_properties(obj){
 		return [];
 	}
