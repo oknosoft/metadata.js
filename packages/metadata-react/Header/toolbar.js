@@ -1,7 +1,7 @@
 import withStyles from 'material-ui/styles/withStyles';
 import colors from 'material-ui/colors/common';
 
-export default withStyles({
+export default withStyles(theme => ({
   root: {
     marginTop: 20,
     width: '100%',
@@ -22,14 +22,8 @@ export default withStyles({
     position: 'absolute',
     top: 8,
   },
-  bar: {
-    minHeight: 48,
-  },
   toolbar: {
-    backgroundColor: '#f5f5f5',
-  },
-  appbar: {
-    backgroundColor: colors.lightBlack,
+    backgroundColor: theme.palette.primary[50],
   },
   white: {
     color: colors.white
@@ -45,4 +39,4 @@ export default withStyles({
       transform: 'rotate(-90deg)',
     },
   },
-});
+}));

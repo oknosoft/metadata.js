@@ -5,9 +5,10 @@
  */
 
 import {META_LOADED, PRM_CHANGE, OFFLINE} from './actions_base';
-import {DATA_LOADED, DATA_PAGE, DATA_ERROR, LOAD_START, NO_DATA, SYNC_PAUSED, SYNC_RESUMED, SYNC_DATA} from './actions_pouch';
-import {DEFINED, LOG_IN, TRY_LOG_IN, LOG_OUT, LOG_ERROR} from './actions_auth';
+import {DATA_LOADED, DATA_PAGE, DATA_ERROR, LOAD_START, NO_DATA, SYNC_DATA, SYNC_ERROR, SYNC_PAUSED, SYNC_RESUMED} from './actions_pouch';
+import {DEFINED, LOG_IN, TRY_LOG_IN, LOG_OUT, LOG_ERROR, reset_user} from './actions_auth';
 import {ADD, CHANGE} from './actions_obj';
+
 
 
 export default {
@@ -57,11 +58,19 @@ export default {
 
   [NO_DATA]: (state, action) => Object.assign({}, state, {data_empty: true, first_run: true, fetch: false}),
 
+  [SYNC_DATA]: (state, action) => Object.assign({}, state, {fetch: !!action.payload}),
+
   [SYNC_PAUSED]: (state, action) => Object.assign({}, state, {sync_started: false}),
 
   [SYNC_RESUMED]: (state, action) => Object.assign({}, state, {sync_started: true}),
 
-  [SYNC_DATA]: (state, action) => Object.assign({}, state, {fetch: !!action.payload}),
+  [SYNC_ERROR]: (state, action) => {
+    const {err} = action.payload;
+    if(err && err.error == 'forbidden') {
+      return reset_user(state);
+    }
+    return state;
+  },
 
   [DEFINED]: (state, action) => {
     const user = Object.assign({}, state.user);
@@ -83,19 +92,11 @@ export default {
   },
 
   [LOG_OUT]: (state, action) => {
-    const user = Object.assign({}, state.user);
-    user.logged_in = false;
-    user.has_login = false;
-    user.try_log_in = false;
-    return Object.assign({}, state, {user});
+    return reset_user(state);
   },
 
   [LOG_ERROR]: (state, action) => {
-    const user = Object.assign({}, state.user);
-    user.logged_in = false;
-    user.has_login = false;
-    user.try_log_in = false;
-    return Object.assign({}, state, {user});
+    return reset_user(state);
   },
 
   [ADD]: (state, action) => state,

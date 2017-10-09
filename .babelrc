@@ -27,7 +27,7 @@
               ".scss",
               ".less"
             ],
-            "extractCss": "./packages/metadata-react-ui/combined.css"
+            "extractCss": "./packages/metadata-react/combined.css"
           }
         ]
       ],

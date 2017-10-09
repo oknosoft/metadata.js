@@ -556,22 +556,27 @@ export class TabularSectionRow {
 
     // obj, {f: oldValue}
     const {_manager, _data} = _owner._owner;
-    !_data._loading && _manager.emit_async('update', this, {[f]: _obj[f]});
+
+		// признак того, что тип уже приведён
+		let fetched_type;
 
 		// учтём связь по типу
 		if (_meta.choice_type) {
-			let prop;
-			if (_meta.choice_type.path.length == 2)
-				prop = this[_meta.choice_type.path[1]];
-			else
-				prop = _owner._owner[_meta.choice_type.path[0]];
+			const prop = _meta.choice_type.path.length == 2 ? this[_meta.choice_type.path[1]] : _owner._owner[_meta.choice_type.path[0]];
 			if (prop && prop.type){
-        v = utils.fetch_type(v, prop.type);
+        fetched_type = prop.type;
+        v = utils.fetch_type(v, fetched_type);
       }
 		}
 
-		this.__setter(f, v);
-		_data._modified = true;
+		// установим модифицированность и оповестим мир
+		if(!_data._loading){
+      _manager.emit_async('update', this, {[f]: _obj[f]});
+      _data._modified = true;
+    }
+
+		this.__setter(f, v, fetched_type);
+
 	}
 
   /**

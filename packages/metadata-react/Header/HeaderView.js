@@ -23,8 +23,8 @@ class Header extends Component {
     const {classes, title} = this.props;
 
     return (
-      <AppBar position="static" className={classes.appbar}>
-        <Toolbar disableGutters className={classes.bar}>
+      <AppBar position="static" >
+        <Toolbar disableGutters >
           <HeaderMenu {...props} classes={classes} />
           <Typography type="title" color="inherit" className={classes.flex}>{title}</Typography>
           <HeaderButtons {...props} />

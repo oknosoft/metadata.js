@@ -8,11 +8,10 @@
 
 import React, {Component} from "react";
 import PropTypes from 'prop-types';
-import {DataCell} from "./DataField";
-import {Editors, Formatters} from "react-data-grid-addons";
+import DataCell from "../DataField/DataCell";
+import FieldPathCell from "../DataField/FieldPathCell";
+import {Formatters} from "react-data-grid-addons";
 
-const AutoCompleteEditor = Editors.AutoComplete;
-const DropDownEditor = Editors.DropDownEditor;
 const DropDownFormatter = Formatters.DropDownFormatter;
 
 
@@ -66,9 +65,8 @@ function rx_columns($p) {
             break;
 
           case 'ofields':
-            const options = _obj.used_fields_list()
-            column.editor = <DropDownEditor options={options}/>
-            column.formatter = <DropDownFormatter options={options}/>
+            column.editor = <FieldPathCell />
+            column.formatter = <DropDownFormatter options={_obj.used_fields_list()}/>
             break;
 
           case 'dhxCalendar':

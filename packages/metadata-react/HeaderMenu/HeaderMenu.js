@@ -45,8 +45,8 @@ class NavDrawer extends Component {
 
         <Drawer open={props.open} onRequestClose={handleClose} classes={{paper: classes.drawer}} >
 
-          <AppBar position="static" className={classes.appbar}>
-            <Toolbar disableGutters className={classes.bar}>
+          <AppBar position="static" >
+            <Toolbar disableGutters >
               <IconButton onClick={handleClose}>
                 <IconNavigationMenu className={classes.white}/>
               </IconButton>

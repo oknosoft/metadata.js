@@ -12,6 +12,8 @@ import {InfiniteLoader, List, AutoSizer} from 'react-virtualized';
 import {ListItem, ListItemIcon, ListItemText} from 'material-ui/List';
 import classnames from 'classnames';
 
+import {suggestionText} from './AbstractField';
+
 const limit = 30;
 const rowHeight = 32;
 
@@ -177,7 +179,7 @@ export default class InfiniteList extends PureComponent {
    * @return {Object}
    */
   rowRenderer = ({index, isScrolling, isVisible, key, parent, style}) => {
-    const {suggestionText, classes} = this.props;
+    const {classes} = this.props;
     const suggestion = this.list[index];
 
     return (

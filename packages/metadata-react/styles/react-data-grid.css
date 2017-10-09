@@ -32,46 +32,6 @@
   outline: none;
 }
 
-/**
- * React React Data Grid
- * ========================
- * MIT License: https://github.com/adazzle/react-data-grid
-*/
-
-.react-grid-Cell {
-  box-sizing: border-box;
-}
-.react-grid-HeaderCell {
-  box-sizing: border-box;
-  font-weight: normal;
-  padding: 6px 8px;
-}
-.radio-custom + .radio-custom-label:before, .react-grid-checkbox + .react-grid-checkbox-label:before {
-  border: 1px solid #ddd;
-  width: 16px;
-  height: 16px;
-}
-.react-grid-checkbox:checked + .react-grid-checkbox-label:before {
-  box-shadow: inset 0 0 0 3px #fff
-}
-.react-grid-Cell input.editor-main, select.editor-main {
-  box-sizing: border-box;
-  padding: 6px 8px !important;
-  font-size: inherit;
-  border-radius: 0;
-  border-width: 1px;
-}
-.react-grid-Cell input.editor-main, fieldset[disabled] select.editor-main, select.editor-main[disabled], select.editor-main[readonly] {
-  background-color: #fff;
-}
-input.editor-main:focus, select.editor-main:focus {
-  border-color: #66afe9;
-  border: 1px solid #66afe9;
-  background: #fff;
-  border-radius: 0;
-}
-
-
 
 /**
  * React Select
@@ -80,7 +40,7 @@ input.editor-main:focus, select.editor-main:focus {
  * https://twitter.com/jedwatson https://twitter.com/jossmackison https://twitter.com/keystonejs
  * MIT License: https://github.com/JedWatson/react-select
 */
-/*
+
 .Select {
   position: relative;
 }
@@ -102,7 +62,8 @@ input.editor-main:focus, select.editor-main:focus {
   cursor: default;
   pointer-events: none;
 }
-*/
+
+
 .Select-control {
   border: 0;
   border-radius: 0;
@@ -131,7 +92,7 @@ input.editor-main:focus, select.editor-main:focus {
   border-bottom-width: 2px;
   box-shadow: none;
 }
-/*
+
 .Select-control .Select-input:focus {
   outline: none;
 }
@@ -434,4 +395,4 @@ input.editor-main:focus, select.editor-main:focus {
     -webkit-transform: rotate(1turn);
   }
 }
-*/
+

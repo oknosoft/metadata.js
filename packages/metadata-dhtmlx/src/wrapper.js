@@ -162,31 +162,16 @@ export default ($p) => {
 					pname;
 
 				// Если в объекте не найдены предопределенные свойства - добавляем
-				if (pnames.some(function (name) {
-						if (meta_extra_fields[name]) {
-							pname = name;
-							return true;
-						}
-					})) {
-					o[extra_fields.ts].forEach(function (row) {
-						var index = destinations_extra_fields.indexOf(row[pname]);
-						if (index != -1)
-							destinations_extra_fields.splice(index, 1);
+				if (pnames.some((name) => meta_extra_fields[name] && (pname = name))) {
+					o[extra_fields.ts].forEach((row) => {
+						const index = destinations_extra_fields.indexOf(row[pname]);
+            index != -1 && destinations_extra_fields.splice(index, 1);
 					});
-					destinations_extra_fields.forEach(function (property) {
-						var row = o[extra_fields.ts].add();
-						row[pname] = property;
-					});
-				}
-				;
+					destinations_extra_fields.forEach((property) => row = o[extra_fields.ts].add()[pname] = property);
+				};
 
 				// Добавляем строки в oxml с учетом отбора, который мог быть задан в extra_fields.selection
-				o[extra_fields.ts].find_rows(extra_fields.selection, function (row) {
-					add_xml_row(row, extra_fields.ts);
-
-				});
-				//if(!added)
-				//	add_xml_row({param: $p.cch.properties.get("", false)}, "params"); // fake-строка, если в табчасти нет допреквизитов
+				o[extra_fields.ts].find_rows(extra_fields.selection, (row) => add_xml_row(row, extra_fields.ts));
 
 			}
 

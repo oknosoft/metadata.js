@@ -6,10 +6,16 @@
  *
  */
 
-import React, {Component} from 'react';
+import React, {} from 'react';
 import PropTypes from 'prop-types';
+import MComponent from '../common/MComponent';
 
-export default class AbstractField extends Component {
+export function suggestionText(suggestion) {
+  const text = suggestion.toString();
+  return text === '_' ? '' : text;
+};
+
+export class FieldWithMeta extends MComponent {
 
   static propTypes = {
     _obj: PropTypes.object.isRequired,  // DataObj, к реквизиту которого будет привязано поле
@@ -26,10 +32,29 @@ export default class AbstractField extends Component {
 
   constructor(props, context) {
     super(props, context);
-    this._meta = props._meta || props._obj._metadata(props._fld);
+    const {_obj, _fld, _meta} = props;
+    this._meta = _meta || _obj._metadata(_fld);
+  }
+
+}
+
+export default class AbstractField extends FieldWithMeta {
+
+  constructor(props, context) {
+    super(props, context);
+    const {_obj, _fld} = props;
+    this.state = {value: _obj[_fld]};
+    this.onChange = this.onChange.bind(this);
   }
 
   get isTabular() {
     return $p.utils.is_tabular(this.props._obj);
   }
+
+  onChange({target}) {
+    const {_obj, _fld, handleValueChange} = this.props;
+    _obj[_fld] = target.value;
+    handleValueChange && handleValueChange(target.value);
+    this._mounted && this.setState({value: _obj[_fld]});
+  };
 };

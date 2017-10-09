@@ -1,3 +1,3 @@
-import SchemeSettings from './SchemeSettings';
+import SchemeSettings from './SchemeSettingsButtons';
 
 export default SchemeSettings;

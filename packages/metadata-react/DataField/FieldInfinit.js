@@ -7,7 +7,6 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import AbstractField from './AbstractField';
 
 import TextField from 'material-ui/TextField';
 import InfiniteList from './InfiniteList';
@@ -25,12 +24,8 @@ import Typography from 'material-ui/Typography';
 // окно диалога, чтобы показать всплывающие формы
 import DnR from '../DnR/Dialog';
 
+import AbstractField, {suggestionText} from './AbstractField';
 import withStyles from './styles';
-
-function suggestionText(suggestion) {
-  const text = suggestion.toString();
-  return text === '_' ? '' : text;
-};
 
 class FieldInfinit extends AbstractField {
 
@@ -40,14 +35,12 @@ class FieldInfinit extends AbstractField {
 
   constructor(props, context) {
     super(props, context);
-    const {_obj, _fld} = props;
-    const inputValue = suggestionText(_obj[_fld]);
-    this.state = {
-      value: _obj[_fld],
+    const inputValue = suggestionText(this.state.value);
+    Object.assign(this.state, {
       inputValue,
       focused: false,
       search: inputValue,
-    };
+    });
   }
 
   inputRef = el => {
@@ -185,11 +178,10 @@ class FieldInfinit extends AbstractField {
             is_enm={is_enm}
             classes={classes}
             search={state.search}
-            suggestionText={suggestionText}
             handleSelect={handleSelect}
           />
           {footer && <Divider/>}
-          {footer && <Toolbar disableGutters className={classes.bar}>
+          {footer && <Toolbar disableGutters >
             <Button dense className={classes.a} onClick={this.handleOpenList} title={_manager.frm_selection_name}>{is_enm ? '...' : 'Показать все'}</Button>
             <Typography type="title" color="inherit" className={classes.flex}> </Typography>
             {_meta.type.types.length > 1 && <IconButton title="Выбрать тип значения"><TitleIcon/></IconButton>}

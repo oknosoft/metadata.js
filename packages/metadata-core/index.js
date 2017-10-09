@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.2-beta.29, built:2017-09-27
+ metadata-core v2.0.2-beta.30, built:2017-10-08
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -495,19 +495,19 @@ class TabularSectionRow$1 {
       return;
     }
     const {_manager, _data} = _owner._owner;
-    !_data._loading && _manager.emit_async('update', this, {[f]: _obj[f]});
+		let fetched_type;
 		if (_meta.choice_type) {
-			let prop;
-			if (_meta.choice_type.path.length == 2)
-				prop = this[_meta.choice_type.path[1]];
-			else
-				prop = _owner._owner[_meta.choice_type.path[0]];
+			const prop = _meta.choice_type.path.length == 2 ? this[_meta.choice_type.path[1]] : _owner._owner[_meta.choice_type.path[0]];
 			if (prop && prop.type){
-        v = utils.fetch_type(v, prop.type);
+        fetched_type = prop.type;
+        v = utils.fetch_type(v, fetched_type);
       }
 		}
-		this.__setter(f, v);
-		_data._modified = true;
+		if(!_data._loading){
+      _manager.emit_async('update', this, {[f]: _obj[f]});
+      _data._modified = true;
+    }
+		this.__setter(f, v, fetched_type);
 	}
   value_change(f, mf, v) {
     return this;
@@ -520,345 +520,371 @@ var data_tabulars = Object.freeze({
 	TabularSectionRow: TabularSectionRow$1
 });
 
+class InnerData {
+  constructor(owner, loading) {
+    this._ts_ = {};
+    this._is_new = !(owner instanceof EnumObj);
+    this._loading = !!loading;
+    this._saving = false;
+    this._modified = false;
+  }
+}
 class DataObj {
-	constructor(attr, manager, loading) {
-		if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)){
-			const tmp = manager.get(attr, true);
-			if(tmp){
-				return tmp;
-			}
-		}
-		const _ts_ = {};
-		Object.defineProperties(this, {
-			_obj: {
-				value: {
-					ref: manager instanceof EnumManager ? attr.name : (manager instanceof RegisterManager ? manager.get_ref(attr) : utils.fix_guid(attr))
-				},
-				configurable: true
-			},
-			_ts_: {
-				value: (name) => _ts_[name] || (_ts_[name] = new TabularSection(name, this)),
-				configurable: true
-			},
-			_manager: {
-				value : manager
-			},
-			_data: {
-				value: {
-					_is_new: !(this instanceof EnumObj),
-          _loading: !!loading
-				},
-				configurable: true
-			}
-		});
-		if(manager.alatable && manager.push){
-			manager.alatable.push(this._obj);
-			manager.push(this, this._obj.ref);
-		}
-	}
-	_getter(f) {
-		const mf = this._metadata(f).type;
-		const {_obj} = this;
-		const res = _obj ? _obj[f] : "";
-		if(f == "type" && typeof res == "object"){
-			return res;
-		}
-		else if(f == "ref"){
-			return res;
-		}
-		else if(mf.is_ref){
-			if(mf.digits && typeof res === "number"){
-				return res;
-			}
-			if(mf.hasOwnProperty("str_len") && !utils.is_guid(res)){
-				return res;
-			}
-			let	mgr = this._manager.value_mgr(_obj, f, mf);
-			if(mgr){
-				if(utils.is_data_mgr(mgr)){
-					return mgr.get(res);
-				}
-				else{
-					return utils.fetch_type(res, mgr);
-				}
-			}
-			if(res){
-				console.log([f, mf, _obj]);
-				return null;
-			}
-		}else if(mf.date_part){
-			return utils.fix_date(_obj[f], true);
-		}
-		else if(mf.digits){
-			return utils.fix_number(_obj[f], !mf.hasOwnProperty("str_len"));
-		}
-		else if(mf.types[0]=="boolean"){
-			return utils.fix_boolean(_obj[f]);
-		}
-		else{
-			return _obj[f] || "";
-		}
-	}
-	__setter(f, v) {
-		const mf = this._metadata(f).type;
+  constructor(attr, manager, loading) {
+    if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)) {
+      const tmp = manager.get(attr, true);
+      if(tmp) {
+        return tmp;
+      }
+    }
+    Object.defineProperties(this, {
+      _obj: {
+        value: {
+          ref: manager instanceof EnumManager ? attr.name : (manager instanceof RegisterManager ? manager.get_ref(attr) : utils.fix_guid(attr))
+        },
+        configurable: true
+      },
+      _manager: {
+        value: manager
+      },
+      _data: {
+        value: new InnerData(this, loading),
+        configurable: true
+      }
+    });
+    if(manager.alatable && manager.push) {
+      manager.alatable.push(this._obj);
+      manager.push(this, this._obj.ref);
+    }
+  }
+  _getter(f) {
+    const mf = this._metadata(f).type;
+    const {_obj} = this;
+    const res = _obj ? _obj[f] : '';
+    if(f == 'type' && typeof res == 'object') {
+      return res;
+    }
+    else if(f == 'ref') {
+      return res;
+    }
+    else if(mf.is_ref) {
+      if(mf.digits && typeof res === 'number') {
+        return res;
+      }
+      if(mf.hasOwnProperty('str_len') && !utils.is_guid(res)) {
+        return res;
+      }
+      let mgr = this._manager.value_mgr(_obj, f, mf);
+      if(mgr) {
+        if(utils.is_data_mgr(mgr)) {
+          return mgr.get(res);
+        }
+        else {
+          return utils.fetch_type(res, mgr);
+        }
+      }
+      if(res) {
+        console.log([f, mf, _obj]);
+        return null;
+      }
+    }
+    else if(mf.date_part) {
+      return utils.fix_date(_obj[f], true);
+    }
+    else if(mf.digits) {
+      return utils.fix_number(_obj[f], !mf.hasOwnProperty('str_len'));
+    }
+    else if(mf.types[0] == 'boolean') {
+      return utils.fix_boolean(_obj[f]);
+    }
+    else {
+      return _obj[f] || '';
+    }
+  }
+  __setter(f, v, mf) {
     const {_obj, _data} = this;
-		if(!_data._loading){
+    if(!mf){
+      mf = this._metadata(f).type;
+    }
+    if(!_data._loading) {
       _data._loading = true;
       const res = this.value_change(f, mf, v);
       _data._loading = false;
-      if(res === false){
+      if(res === false) {
         return;
       }
     }
-		if(f == "type" && v.types){
-			_obj[f] = v;
-		}
-		else if(f == "ref"){
-			_obj[f] = utils.fix_guid(v);
-		}
-		else if(mf.is_ref){
-			if(mf.digits && typeof v == "number" || mf.hasOwnProperty("str_len") && typeof v == "string" && !utils.is_guid(v)){
-				_obj[f] = v;
-			}
-			else if(typeof v == "boolean" && mf.types.indexOf("boolean") != -1){
-				_obj[f] = v;
-			}
-			else {
-				_obj[f] = utils.fix_guid(v);
-				if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1){
-				}else{
-					let mgr = this._manager.value_mgr(_obj, f, mf, false, v);
-					if(mgr){
-						if(mgr instanceof EnumManager){
-							if(typeof v == "string")
-								_obj[f] = v;
-							else if(!v)
-								_obj[f] = "";
-							else if(typeof v == "object")
-								_obj[f] = v.ref || v.name || "";
-						}else if(v && v.presentation){
-							if(v.type && !(v instanceof DataObj))
-								delete v.type;
-							mgr.create(v);
-						}else if(!utils.is_data_mgr(mgr))
-							_obj[f] = utils.fetch_type(v, mgr);
-					}else{
-						if(typeof v != "object")
-							_obj[f] = v;
-					}
-				}
-			}
-		}
-		else if(mf.date_part){
-			_obj[f] = utils.fix_date(v, true);
-		}
-		else if(mf.digits){
-			_obj[f] = utils.fix_number(v, !mf.hasOwnProperty("str_len"));
-		}
-		else if(mf.types[0]=="boolean"){
-			_obj[f] = utils.fix_boolean(v);
-		}
-		else{
-			_obj[f] = v;
-		}
-	}
-	__notify(f) {
-	  const {_data, _manager} = this;
-    _data && !_data._loading && _manager.emit_async('update', this, {[f]: this._obj[f]});
-	}
-	_setter(f, v) {
-		if(this._obj[f] != v){
-			this.__notify(f);
-			this.__setter(f, v);
-			this._data._modified = true;
-		}
-	}
-	_getter_ts(f) {
-		return this._ts_(f)
-	}
-	_setter_ts(f, v) {
-		const ts = this._ts_(f);
-		if(ts instanceof TabularSection && Array.isArray(v)){
-			ts.load(v);
-		}
-	}
-	valueOf(){ return this.ref }
-	toJSON(){ return this._obj }
-	toString(){ return this.presentation }
-	_metadata(field_name){
-		return this._manager.metadata(field_name)
-	}
-	get _deleted(){
-		return !!this._obj._deleted
-	}
-	get _modified(){
-		return !!this._data._modified
-	}
-	is_new(){
-		return !this._data || this._data._is_new
-	}
-	_set_loaded(ref){
-		this._manager.push(this, ref);
-		const {_data} = this;
-		_data._modified = false;
-		_data._is_new = false;
-		_data._loading = false;
-		return this;
-	}
-	mark_deleted(deleted){
-		this._obj._deleted = !!deleted;
-		return this.save();
-	}
-	get class_name() {
-		return this._manager.class_name
-	}
-	set class_name(v) {
-		return this._obj.class_name = v
-	}
-	empty(){
-		return !this._obj || utils.is_empty_guid(this._obj.ref)
-	}
-	load() {
-		if (this.ref == utils.blank.guid) {
-		  const {_data} = this;
-			if (_data){
+    if(f == 'type' && v.types) {
+      _obj[f] = v;
+    }
+    else if(f == 'ref') {
+      _obj[f] = utils.fix_guid(v);
+    }
+    else if(mf.is_ref) {
+      if(mf.digits && typeof v == 'number' || mf.hasOwnProperty('str_len') && typeof v == 'string' && !utils.is_guid(v)) {
+        _obj[f] = v;
+      }
+      else if(typeof v == 'boolean' && mf.types.indexOf('boolean') != -1) {
+        _obj[f] = v;
+      }
+      else if(mf.date_part && v instanceof Date) {
+        _obj[f] = v;
+      }
+      else {
+        _obj[f] = utils.fix_guid(v);
+        if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1) {
+        }
+        else {
+          let mgr = this._manager.value_mgr(_obj, f, mf, false, v);
+          if(mgr) {
+            if(mgr instanceof EnumManager) {
+              if(typeof v == 'string') {
+                _obj[f] = v;
+              }
+              else if(!v) {
+                _obj[f] = '';
+              }
+              else if(typeof v == 'object') {
+                _obj[f] = v.ref || v.name || '';
+              }
+            }
+            else if(v && v.presentation) {
+              if(v.type && !(v instanceof DataObj)) {
+                delete v.type;
+              }
+              mgr.create(v);
+            }
+            else if(!utils.is_data_mgr(mgr)) {
+              _obj[f] = utils.fetch_type(v, mgr);
+            }
+          }
+          else {
+            if(typeof v != 'object') {
+              _obj[f] = v;
+            }
+          }
+        }
+      }
+    }
+    else if(mf.date_part) {
+      _obj[f] = utils.fix_date(v, !mf.hasOwnProperty('str_len'));
+    }
+    else if(mf.digits) {
+      _obj[f] = utils.fix_number(v, !mf.hasOwnProperty('str_len'));
+    }
+    else if(mf.types[0] == 'boolean') {
+      _obj[f] = utils.fix_boolean(v);
+    }
+    else {
+      _obj[f] = v;
+    }
+  }
+  __notify(f) {
+    const {_data, _manager} = this;
+    if(_data && !_data._loading) {
+      _data._modified = true;
+      _manager.emit_async('update', this, {[f]: this._obj[f]});
+    }
+  }
+  _setter(f, v) {
+    if(this._obj[f] != v) {
+      this.__notify(f);
+      this.__setter(f, v);
+    }
+  }
+  _getter_ts(f) {
+    const {_ts_} = this._data;
+    return _ts_[f] || (_ts_[f] = new TabularSection(f, this));
+  }
+  _setter_ts(f, v) {
+    const ts = this._getter_ts(f);
+    ts instanceof TabularSection && Array.isArray(v) && ts.load(v);
+  }
+  valueOf() {
+    return this.ref;
+  }
+  toJSON() {
+    return this._obj;
+  }
+  toString() {
+    return this.presentation;
+  }
+  _metadata(field_name) {
+    return this._manager.metadata(field_name);
+  }
+  get _deleted() {
+    return !!this._obj._deleted;
+  }
+  get _modified() {
+    return !!this._data._modified;
+  }
+  is_new() {
+    return !this._data || this._data._is_new;
+  }
+  _set_loaded(ref) {
+    this._manager.push(this, ref);
+    const {_data} = this;
+    _data._modified = false;
+    _data._is_new = false;
+    _data._loading = false;
+    return this;
+  }
+  mark_deleted(deleted) {
+    this._obj._deleted = !!deleted;
+    return this.save();
+  }
+  get class_name() {
+    return this._manager.class_name;
+  }
+  set class_name(v) {
+    return this._obj.class_name = v;
+  }
+  empty() {
+    return !this._obj || utils.is_empty_guid(this._obj.ref);
+  }
+  load() {
+    if(this.ref == utils.blank.guid) {
+      const {_data} = this;
+      if(_data) {
         _data._loading = false;
         _data._modified = false;
       }
-			return Promise.resolve(this);
-		}
-		else {
-		  this._data._loading = true;
-			return this._manager.adapter.load_obj(this)
-				.then(() => {
+      return Promise.resolve(this);
+    }
+    else {
+      this._data._loading = true;
+      return this._manager.adapter.load_obj(this)
+        .then(() => {
           this._data._loading = false;
-					this._data._modified = false;
-					return this.after_load()
-				});
-		}
-	}
-	unload() {
-		const {_obj, ref, _data, _manager} = this;
-		_manager.unload_obj(ref);
+          this._data._modified = false;
+          return this.after_load();
+        });
+    }
+  }
+  unload() {
+    const {_obj, ref, _data, _manager} = this;
+    _manager.unload_obj(ref);
     _data._loading = true;
-		for (const ts in this._metadata().tabular_sections){
-			this[ts].clear();
-		}
-		for (const f in this) {
-			if (this.hasOwnProperty(f)){
-				delete this[f];
-			}
-		}
-		for (const f in _obj){
-			delete _obj[f];
-		}
-    delete this._ts_;
+    for (const ts in this._metadata().tabular_sections) {
+      this[ts].clear();
+    }
+    for (const f in this) {
+      if(this.hasOwnProperty(f)) {
+        delete this[f];
+      }
+    }
+    for (const f in _obj) {
+      delete _obj[f];
+    }
     delete this._obj;
-	}
-	save(post, operational, attachments) {
-	  if(utils.is_empty_guid(this.ref)){
-	    return Promise.resolve(this);
+  }
+  save(post, operational, attachments) {
+    if(utils.is_empty_guid(this.ref)) {
+      return Promise.resolve(this);
     }
     let initial_posted;
-		if (this instanceof DocObj && typeof post == "boolean") {
-			initial_posted = this.posted;
-			this.posted = post;
-		}
-		const before_save_res = this.before_save();
-		const reset_modified = () => {
-      if (before_save_res === false) {
-        if (this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted) {
+    if(this instanceof DocObj && typeof post == 'boolean') {
+      initial_posted = this.posted;
+      this.posted = post;
+    }
+    const before_save_res = this.before_save();
+    const reset_modified = () => {
+      if(before_save_res === false) {
+        if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted != initial_posted) {
           this.posted = initial_posted;
         }
       }
-      else{
+      else {
         this._data._modified = false;
       }
       return this;
     };
-		if (before_save_res === false) {
-			return Promise.reject(reset_modified());
-		}
-		else if (before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then) {
-			return before_save_res.then(reset_modified);
-		}
-		if (this._metadata().hierarchical && !this._obj.parent){
+    if(before_save_res === false) {
+      return Promise.reject(reset_modified());
+    }
+    else if(before_save_res instanceof Promise || typeof before_save_res === 'object' && before_save_res.then) {
+      return before_save_res.then(reset_modified);
+    }
+    if(this._metadata().hierarchical && !this._obj.parent) {
       this._obj.parent = utils.blank.guid;
     }
-		if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
-			if (utils.blank.date == this.date){
-				this.date = new Date();
-			}
-			if (!this.number_doc){
-				this.new_number_doc();
-			}
-		}
-		else {
-			if (!this.id){
-				this.new_number_doc();
-			}
-		}
-		return this._manager.adapter.save_obj(this, {
-		  post: post,
+    if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
+      if(utils.blank.date == this.date) {
+        this.date = new Date();
+      }
+      if(!this.number_doc) {
+        this.new_number_doc();
+      }
+    }
+    else {
+      if(!this.id) {
+        this.new_number_doc();
+      }
+    }
+    return this._manager.adapter.save_obj(this, {
+      post: post,
       operational: operational,
       attachments: attachments
-		})
+    })
       .then(() => {
-		  this.after_save();
-		  return this;
-		})
+        this.after_save();
+        return this;
+      })
       .then(reset_modified);
-	}
-	get_attachment(att_id) {
-		const {_manager, ref} = this;
-		return _manager.adapter.get_attachment(_manager, ref, att_id);
-	}
-	save_attachment(att_id, attachment, type) {
-		const {_manager, ref, _attachments} = this;
-		return _manager.save_attachment(ref, att_id, attachment, type)
-			.then((att) => {
-				if (!_attachments)
-					this._attachments = {};
-				if (!this._attachments[att_id] || !att.stub)
-					this._attachments[att_id] = att;
-				return att;
-			});
-	}
-	delete_attachment(att_id) {
-		const {_manager, ref, _attachments} = this;
-		return _manager.delete_attachment(ref, att_id)
-			.then((att) => {
-				if (_attachments)
-					delete _attachments[att_id];
-				return att;
-			});
-	}
-	_mixin(attr, include, exclude, silent){
-		if(Object.isFrozen(this)){
-			return;
-		}
-		if(attr && typeof attr == "object"){
-		  const {_not_set_loaded} = attr;
+  }
+  get_attachment(att_id) {
+    const {_manager, ref} = this;
+    return _manager.adapter.get_attachment(_manager, ref, att_id);
+  }
+  save_attachment(att_id, attachment, type) {
+    const {_manager, ref, _attachments} = this;
+    return _manager.save_attachment(ref, att_id, attachment, type)
+      .then((att) => {
+        if(!_attachments) {
+          this._attachments = {};
+        }
+        if(!this._attachments[att_id] || !att.stub) {
+          this._attachments[att_id] = att;
+        }
+        return att;
+      });
+  }
+  delete_attachment(att_id) {
+    const {_manager, ref, _attachments} = this;
+    return _manager.delete_attachment(ref, att_id)
+      .then((att) => {
+        if(_attachments) {
+          delete _attachments[att_id];
+        }
+        return att;
+      });
+  }
+  _mixin(attr, include, exclude, silent) {
+    if(Object.isFrozen(this)) {
+      return;
+    }
+    if(attr && typeof attr == 'object') {
+      const {_not_set_loaded} = attr;
       delete attr._not_set_loaded;
       const {_data} = this;
-      if(silent){
-        if(_data._loading){
+      if(silent) {
+        if(_data._loading) {
           silent = false;
         }
         _data._loading = true;
       }
       utils._mixin(this, attr, include, exclude);
-      if(silent){
+      if(silent) {
         _data._loading = false;
       }
-			if(!_not_set_loaded && (_data._loading || (!utils.is_empty_guid(this.ref) && (attr.id || attr.name || attr.number_doc)))){
+      if(!_not_set_loaded && (_data._loading || (!utils.is_empty_guid(this.ref) && (attr.id || attr.name || attr.number_doc)))) {
         this._set_loaded(this.ref);
-			}
-		}
-	}
-	print(model, wnd) {
-		return this._manager.print(this, model, wnd);
-	}
+      }
+    }
+  }
+  print(model, wnd) {
+    return this._manager.print(this, model, wnd);
+  }
   after_create() {
     return this;
   }
@@ -881,191 +907,206 @@ class DataObj {
     return this;
   }
 }
-Object.defineProperty(DataObj.prototype, "ref", {
-	get : function(){ return this._obj ? this._obj.ref : utils.blank.guid},
-	set : function(v){ this._obj.ref = utils.fix_guid(v);},
-	enumerable : true,
-	configurable: true
+Object.defineProperty(DataObj.prototype, 'ref', {
+  get: function () {
+    return this._obj ? this._obj.ref : utils.blank.guid;
+  },
+  set: function (v) {
+    this._obj.ref = utils.fix_guid(v);
+  },
+  enumerable: true,
+  configurable: true
 });
 TabularSectionRow$1.prototype._getter = DataObj.prototype._getter;
 TabularSectionRow$1.prototype.__setter = DataObj.prototype.__setter;
 class CatObj extends DataObj {
-	constructor(attr, manager, loading){
-		super(attr, manager, loading);
-		this._mixin(attr);
-	}
-	get presentation(){
-		if(this.name || this.id){
-			return this.name || this.id || this._metadata().obj_presentation || this._metadata().synonym;
-		}else
-			return this._presentation || '';
-	}
-	set presentation(v){
-		if(v)
-			this._presentation = String(v);
-	}
-	get id() {return this._obj.id || ""}
-	set id(v) {
-		this.__notify('id');
-		this._obj.id = v;
-	}
-	get name() {return this._obj.name || ""}
-	set name(v) {
-		this.__notify('name');
-		this._obj.name = String(v);
-	}
-	get _children() {
-		const res = [];
-		this._manager.forEach((o) => {
-			if(o != this && o._hierarchy(this)){
-				res.push(o);
-			}
-		});
-		return res;
-	}
-	_hierarchy(group) {
-		if(Array.isArray(group)){
-			return group.some((v) => this._hierarchy(v));
-		}
-		const {parent} = this;
-		if(this == group || parent == group){
-			return true;
-		}
-		if(parent && !parent.empty()){
-			return parent._hierarchy(group);
-		}
-		return group == utils.blank.guid;
-	}
+  constructor(attr, manager, loading) {
+    super(attr, manager, loading);
+    this._mixin(attr);
+  }
+  get presentation() {
+    if(this.name || this.id) {
+      return this.name || this.id || this._metadata().obj_presentation || this._metadata().synonym;
+    }
+    else {
+      return this._presentation || '';
+    }
+  }
+  set presentation(v) {
+    if(v) {
+      this._presentation = String(v);
+    }
+  }
+  get id() {
+    return this._obj.id || '';
+  }
+  set id(v) {
+    this.__notify('id');
+    this._obj.id = v;
+  }
+  get name() {
+    return this._obj.name || '';
+  }
+  set name(v) {
+    this.__notify('name');
+    this._obj.name = String(v);
+  }
+  get _children() {
+    const res = [];
+    this._manager.forEach((o) => {
+      if(o != this && o._hierarchy(this)) {
+        res.push(o);
+      }
+    });
+    return res;
+  }
+  _hierarchy(group) {
+    if(Array.isArray(group)) {
+      return group.some((v) => this._hierarchy(v));
+    }
+    const {parent} = this;
+    if(this == group || parent == group) {
+      return true;
+    }
+    if(parent && !parent.empty()) {
+      return parent._hierarchy(group);
+    }
+    return group == utils.blank.guid;
+  }
 }
 const NumberDocAndDate = (superclass) => class extends superclass {
-	get number_doc() {
-		return this._obj.number_doc || ""
-	}
-	set number_doc(v) {
-		this.__notify('number_doc');
-		this._obj.number_doc = v;
-	}
-	get date() {
-		return this._obj.date instanceof Date ? this._obj.date : utils.blank.date
-	}
-	set date(v) {
-		this.__notify('date');
-		this._obj.date = utils.fix_date(v, true);
-	}
+  get number_doc() {
+    return this._obj.number_doc || '';
+  }
+  set number_doc(v) {
+    this.__notify('number_doc');
+    this._obj.number_doc = v;
+  }
+  get date() {
+    return this._obj.date instanceof Date ? this._obj.date : utils.blank.date;
+  }
+  set date(v) {
+    this.__notify('date');
+    this._obj.date = utils.fix_date(v, true);
+  }
 };
 class DocObj extends NumberDocAndDate(DataObj) {
-	constructor(attr, manager, loading){
-		super(attr, manager, loading);
-		this._mixin(attr);
-	}
-	get presentation(){
-		if(this.number_doc)
-			return (this._metadata().obj_presentation || this._metadata().synonym) + ' №' + this.number_doc + " от " + moment(this.date).format(moment._masks.ldt);
-		else
-			return this._presentation || "";
-	}
-	set presentation(v){
-		if(v)
-			this._presentation = String(v);
-	}
-	get posted() {
-		return this._obj.posted || false
-	}
-	set posted(v) {
-		this.__notify('posted');
-		this._obj.posted = utils.fix_boolean(v);
-	}
+  constructor(attr, manager, loading) {
+    super(attr, manager, loading);
+    this._mixin(attr);
+  }
+  get presentation() {
+    if(this.number_doc) {
+      return (this._metadata().obj_presentation || this._metadata().synonym) + ' №' + this.number_doc + ' от ' + moment(this.date).format(moment._masks.ldt);
+    }
+    else {
+      return this._presentation || '';
+    }
+  }
+  set presentation(v) {
+    if(v) {
+      this._presentation = String(v);
+    }
+  }
+  get posted() {
+    return this._obj.posted || false;
+  }
+  set posted(v) {
+    this.__notify('posted');
+    this._obj.posted = utils.fix_boolean(v);
+  }
 }
 class DataProcessorObj extends DataObj {
-	constructor(attr, manager, loading) {
-		super(attr, manager, loading);
-		const cmd = manager.metadata();
-		for(let f in cmd.fields){
-			if(!attr[f]){
-				attr[f] = utils.fetch_type("", cmd.fields[f].type);
-			}
-		}
-		for(let f in cmd["tabular_sections"]){
-			if(!attr[f]){
-				attr[f] = [];
-			}
-		}
-		utils._mixin(this, attr);
-	}
+  constructor(attr, manager, loading) {
+    super(attr, manager, loading);
+    const cmd = manager.metadata();
+    for (let f in cmd.fields) {
+      if(!attr[f]) {
+        attr[f] = utils.fetch_type('', cmd.fields[f].type);
+      }
+    }
+    for (let f in cmd['tabular_sections']) {
+      if(!attr[f]) {
+        attr[f] = [];
+      }
+    }
+    utils._mixin(this, attr);
+  }
 }
 class TaskObj extends NumberDocAndDate(CatObj) {
 }
 class BusinessProcessObj extends NumberDocAndDate(CatObj) {
 }
 class EnumObj extends DataObj {
-	constructor(attr, manager, loading) {
-		super(attr, manager, loading);
-		if(attr && typeof attr == "object")
-			utils._mixin(this, attr);
-	}
-	get order() {
-		return this._obj.sequence
-	}
-	set order(v) {
-		this._obj.sequence = parseInt(v);
-	}
-	get name() {
-		return this._obj.ref
-	}
-	set name(v) {
-		this._obj.ref = String(v);
-	}
-	get synonym() {
-		return this._obj.synonym || ""
-	}
-	set synonym(v) {
-		this._obj.synonym = String(v);
-	}
-	get presentation() {
-		return this.synonym || this.name;
-	}
-	empty() {
-		return !this.ref || this.ref == "_";
-	}
+  constructor(attr, manager, loading) {
+    super(attr, manager, loading);
+    if(attr && typeof attr == 'object') {
+      utils._mixin(this, attr);
+    }
+  }
+  get order() {
+    return this._obj.sequence;
+  }
+  set order(v) {
+    this._obj.sequence = parseInt(v);
+  }
+  get name() {
+    return this._obj.ref;
+  }
+  set name(v) {
+    this._obj.ref = String(v);
+  }
+  get synonym() {
+    return this._obj.synonym || '';
+  }
+  set synonym(v) {
+    this._obj.synonym = String(v);
+  }
+  get presentation() {
+    return this.synonym || this.name;
+  }
+  empty() {
+    return !this.ref || this.ref == '_';
+  }
 }
 class RegisterRow extends DataObj {
-	constructor(attr, manager, loading) {
-		super(attr, manager, loading);
-		if (attr && typeof attr == "object"){
-			let tref = attr.ref;
-			if(tref){
-				delete attr.ref;
-			}
-			utils._mixin(this, attr);
-			if(tref){
-				attr.ref = tref;
-			}
-		}
-		for (var check in manager.metadata().dimensions) {
-			if (!attr.hasOwnProperty(check) && attr.ref) {
-				var keys = attr.ref.split("¶");
-				Object.keys(manager.metadata().dimensions).forEach((fld, ind) => {
-					this[fld] = keys[ind];
-				});
-				break;
-			}
-		}
-	}
-	_metadata(field_name) {
-		const _meta = this._manager.metadata();
-		if (!_meta.fields){
-			_meta.fields = Object.assign({}, _meta.dimensions, _meta.resources, _meta.attributes);
-		}
-		return field_name ? _meta.fields[field_name] : _meta;
-	}
-	get ref() {
-		return this._manager.get_ref(this);
-	}
-	set ref(v) {
-	}
-	get presentation() {
-		return this._metadata().obj_presentation || this._metadata().synonym;
-	}
+  constructor(attr, manager, loading) {
+    super(attr, manager, loading);
+    if(attr && typeof attr == 'object') {
+      let tref = attr.ref;
+      if(tref) {
+        delete attr.ref;
+      }
+      utils._mixin(this, attr);
+      if(tref) {
+        attr.ref = tref;
+      }
+    }
+    for (var check in manager.metadata().dimensions) {
+      if(!attr.hasOwnProperty(check) && attr.ref) {
+        var keys = attr.ref.split('¶');
+        Object.keys(manager.metadata().dimensions).forEach((fld, ind) => {
+          this[fld] = keys[ind];
+        });
+        break;
+      }
+    }
+  }
+  _metadata(field_name) {
+    const _meta = this._manager.metadata();
+    if(!_meta.fields) {
+      _meta.fields = Object.assign({}, _meta.dimensions, _meta.resources, _meta.attributes);
+    }
+    return field_name ? _meta.fields[field_name] : _meta;
+  }
+  get ref() {
+    return this._manager.get_ref(this);
+  }
+  set ref(v) {
+  }
+  get presentation() {
+    return this._metadata().obj_presentation || this._metadata().synonym;
+  }
 }
 
 
@@ -1254,26 +1295,26 @@ class DataManager extends MetaEventEmitter{
 	find_rows_remote(selection) {
 		return this.adapter.find_rows(this, selection);
 	}
-	extra_fields(obj){
-		const {cat, cch, md} = this._owner.$p;
-		const dests = cat.destinations || cch.destinations,
-			predefined_name = md.class_name_to_1c(this.class_name).replace(".", "_"),
-			res = [];
-		if(dests){
-			dests.find_rows({predefined_name}, destination => {
-				const ts = destination.extra_fields || destination.ДополнительныеРеквизиты;
-				if(ts){
-					ts.each(row => {
-						if(!row._deleted && !row.ПометкаУдаления){
-							res.push(row.property || row.Свойство);
-						}
-					});
-				}
-				return false;
-			});
-		}
-		return res;
-	}
+  extra_fields(obj) {
+    const {cat, cch, md} = this._owner.$p;
+    const dests = cat.destinations || cch.destinations;
+    const res = [];
+    if(dests) {
+      const condition = this._destinations_condition || {predefined_name: md.class_name_to_1c(this.class_name).replace('.', '_')};
+      dests.find_rows(condition, destination => {
+        const ts = destination.extra_fields || destination.ДополнительныеРеквизиты;
+        if(ts) {
+          ts.each(row => {
+            if(!row._deleted && !row.ПометкаУдаления) {
+              res.push(row.property || row.Свойство);
+            }
+          });
+        }
+        return false;
+      });
+    }
+    return res;
+  }
 	extra_properties(obj){
 		return [];
 	}
@@ -1501,7 +1542,7 @@ class RefDataManager extends DataManager{
 	}
 	get(ref, do_not_create){
 		const rp = 'promise';
-		if(typeof ref !== 'string'){
+		if(!ref || typeof ref !== 'string'){
       ref = utils.fix_guid(ref);
     }
 		let o = this.by_ref[ref];
@@ -1911,7 +1952,7 @@ class RefDataManager extends DataManager{
     const {cachable, _owner} = this;
     const {md} = _owner.$p;
     const select = {};
-    if(cachable == 'ram' || cachable == 'doc_ram') {
+    if(cachable === 'ram' || cachable === 'doc_ram') {
       select._top = top;
       select._skip = skip;
       const {input_by_string} = this.metadata();
@@ -2098,7 +2139,7 @@ class EnumManager extends RefDataManager{
 		return res;
 	}
 	get_option_list(selection = {}, val){
-		var l = [], synonym = "", sref;
+		let l = [], synonym = "", sref;
     function push(v){
       if(selection._dhtmlx){
         v = {
@@ -2108,31 +2149,33 @@ class EnumManager extends RefDataManager{
         if(utils.is_equal(v.value, val)){
           v.selected = true;
         }
+        l.push(v);
       }
-      l.push(v);
+      else if(!v.empty()){
+        l.push(v);
+      }
     }
-		if(selection){
-			for(var i in selection){
-				if(i.substr(0,1)!="_"){
-					if(i == "ref"){
-						sref = selection[i].hasOwnProperty("in") ? selection[i].in : selection[i];
-					}
-					else
-						synonym = selection[i];
-				}
-			}
+    for(const i in selection){
+      if(i.substr(0,1)!="_"){
+        if(i == "ref"){
+          sref = selection[i].hasOwnProperty("in") ? selection[i].in : selection[i];
+        }
+        else
+          synonym = selection[i];
+      }
+    }
+		if(!selection._dhtmlx){
+      l.push(this.get());
 		}
 		if(typeof synonym == "object"){
-			if(synonym.like)
-				synonym = synonym.like;
-			else
-				synonym = "";
+      synonym = synonym.like ? synonym.like : '';
 		}
 		synonym = synonym.toLowerCase();
 		this.alatable.forEach(v => {
 			if(synonym){
-				if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1)
-					return;
+				if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1){
+          return;
+        }
 			}
 			if(sref){
 				if(Array.isArray(sref)){
@@ -6554,7 +6597,7 @@ class MetaEngine$1 {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.2-beta.29';
+    return '2.0.2-beta.30';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

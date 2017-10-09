@@ -1,6 +1,6 @@
 {
-  "name": "metadata-postgres",
-  "description": "PostgreSQL data adapter for metadata.js",
+  "name": "metadata-angular",
+  "description": "Angular UI components for metadata.js",
   "version": "2.0.2-beta.30",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
@@ -8,21 +8,17 @@
     "node": "^7.10",
     "npm": "^5.0"
   },
-  "peerDependencies": {
-    "pg": "^7.2"
-  },
+  "main": "./index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-postgres"
+    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-angular"
   },
   "bugs": {
     "url": "https://github.com/oknosoft/metadata.js/issues"
   },
   "homepage": "http://www.oknosoft.ru/metadata/",
-  "main": "./index.js",
   "keywords": [
     "metadata",
-    "postgres",
-    "postgresql"
+    "dhtmlx"
   ]
 }

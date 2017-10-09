@@ -6,17 +6,13 @@
  */
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
+
 import Toolbar from 'material-ui/Toolbar';
-import Typography from 'material-ui/Typography';
 import IconButton from 'material-ui/IconButton';
-import DataField from '../DataField';
-import FieldSelect from '../DataField/FieldSelect';
-import Divider from 'material-ui/Divider';
 import SaveIcon from 'material-ui-icons/Save';
 import CopyIcon from 'material-ui-icons/ContentCopy';
-
 import {FormGroup} from 'material-ui/Form';
-
+import DataField from '../DataField';
 import styles from './styles/SchemeSettingsSelect.scss';
 import withStyles from '../Header/toolbar';
 
@@ -30,6 +26,14 @@ class SchemeSettingsSelect extends Component {
   constructor(props, context) {
     super(props, context);
     this.state = $p.dp.scheme_settings.dp(props.scheme);
+  }
+
+  shouldComponentUpdate({scheme}, {_obj}){
+    if(scheme != _obj.scheme){
+      this.setState($p.dp.scheme_settings.dp(scheme), () => this.forceUpdate());
+      return false;
+    }
+    return true;
   }
 
   handleSave = () => {
@@ -62,22 +66,12 @@ class SchemeSettingsSelect extends Component {
 
     return (
       <div>
-        <Toolbar disableGutters className={classes.bar}>
+        <Toolbar disableGutters className={classes.toolbar}>
 
           <IconButton title="Сохранить вариант настроек" onClick={handleSave}><SaveIcon/></IconButton>
           <IconButton title="Создать копию настроек" onClick={handleCreate}><CopyIcon/></IconButton>
 
-          <Typography type="title" color="inherit" className={props.classes.flex}> </Typography>
 
-          <Typography type="caption">Настройка</Typography>
-          <div style={{width: 200}}>
-            <FieldSelect
-              ref={(el) => this.fld_scheme = el}
-              _obj={_obj}
-              _fld="scheme"
-              _meta={_meta}
-              handleValueChange={handleSchemeChange}/>
-          </div>
         </Toolbar>
 
         <FormGroup style={{margin: 16}}>

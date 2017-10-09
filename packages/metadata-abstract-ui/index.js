@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.2-beta.29, built:2017-09-27
+ metadata-abstract-ui v2.0.2-beta.30, built:2017-10-08
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -136,7 +136,7 @@ function log_manager() {
 }
 
 function scheme_settings() {
-  const {wsql, utils, cat, dp, md, constructor} = this;
+  const {wsql, utils, cat, enm, dp, md, constructor} = this;
   const {CatManager, DataProcessorsManager, DataProcessorObj, CatObj, DocManager, TabularSectionRow} = constructor.classes || this;
   class SchemeSettingsManager extends CatManager {
     get_scheme(class_name) {
@@ -237,6 +237,57 @@ function scheme_settings() {
     }
   };
   this.CatScheme_settings = class CatScheme_settings extends CatObj {
+    constructor(attr, manager, loading){
+      super(attr, manager, loading);
+      this.set_standard_period();
+    }
+    set_standard_period() {
+      const {standard_period} = enm;
+      const from = utils.moment();
+      const till = from.clone();
+      switch (this.standard_period){
+      case standard_period.yesterday:
+        this.date_from = from.subtract(1, 'days').startOf('day').toDate();
+        this.date_till = till.subtract(1, 'days').endOf('day').toDate();
+        break;
+      case standard_period.today:
+        this.date_from = from.startOf('day').toDate();
+        this.date_till = till.endOf('day').toDate();
+        break;
+      case standard_period.tomorrow:
+        this.date_from = from.add(1, 'days').startOf('day').toDate();
+        this.date_till = till.add(1, 'days').endOf('day').toDate();
+        break;
+      case standard_period.last7days:
+        this.date_from = from.subtract(7, 'days').startOf('day').toDate();
+        this.date_till = till.endOf('day').toDate();
+        break;
+      case standard_period.lastTendays:
+        this.date_from = from.subtract(10, 'days').startOf('day').toDate();
+        this.date_till = till.endOf('day').toDate();
+        break;
+      case standard_period.last30days:
+        this.date_from = from.subtract(30, 'days').startOf('day').toDate();
+        this.date_till = till.endOf('day').toDate();
+        break;
+      case standard_period.last3Month:
+        this.date_from = from.subtract(3, 'month').startOf('month').toDate();
+        this.date_till = till.subtract(1, 'month').endOf('month').toDate();
+        break;
+      case standard_period.lastWeek:
+        this.date_from = from.subtract(1, 'weeks').startOf('week').toDate();
+        this.date_till = till.subtract(1, 'weeks').endOf('week').toDate();
+        break;
+      case standard_period.lastMonth:
+        this.date_from = from.subtract(1, 'month').startOf('month').toDate();
+        this.date_till = till.subtract(1, 'month').endOf('month').toDate();
+        break;
+      case standard_period.lastQuarter:
+        this.date_from = from.subtract(1, 'quarters').startOf('quarter').toDate();
+        this.date_till = till.subtract(1, 'quarters').endOf('quarter').toDate();
+        break;
+      }
+    }
     get obj() {
       return this._getter('obj');
     }
@@ -290,6 +341,7 @@ function scheme_settings() {
     }
     set standard_period(v) {
       this._setter('standard_period', v);
+      !this._data._loading && this.set_standard_period();
     }
     get fields() {
       return this._getter_ts('fields');
@@ -413,6 +465,27 @@ function scheme_settings() {
       const parts = class_name.split('.'),
         _mgr = md.mgr_by_class_name(class_name),
         _meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]);
+      if(parts.length < 3 && !_meta.fields._deleted){
+        const {fields} = _meta;
+        fields._deleted = _mgr.metadata('_deleted');
+        if(_mgr instanceof DocManager && !fields.date){
+          fields.posted = _mgr.metadata('posted');
+          fields.date = _mgr.metadata('date');
+          fields.number_doc = _mgr.metadata('number_doc');
+        }
+        if(_mgr instanceof CatManager && !fields.name && !fields.id){
+          if(_meta.code_length) {
+            fields.id = _mgr.metadata('id');
+          }
+          if(_meta.has_owners){
+            fields.owner = _mgr.metadata('owner');
+          }
+          fields.name = _mgr.metadata('name');
+        }
+      }
+      if(parts.length > 2 && !_meta.fields.ref){
+        _meta.fields.ref = _mgr.metadata('ref');
+      }
       return {parts, _mgr, _meta};
     }
     set_default() {
@@ -473,7 +546,7 @@ function scheme_settings() {
         res.selector.search = {$regex: this._search};
       }
       this.sorting.find_rows({use: true, field: 'date'}, (row) => {
-        let direction = row.direction.toString();
+        let direction = row.direction.valueOf();
         if(!direction || direction == '_') {
           direction = 'asc';
         }
@@ -519,13 +592,22 @@ function scheme_settings() {
       });
       return res;
     }
+    used(collection, parent) {
+      const res = [];
+      collection.find_rows({use: true}, ({field}) => res.push(field));
+      return res;
+    }
     dims(parent) {
-      return this.dimensions._obj.map((row) => row.field);
+      const res = [];
+      for(const dims of this.used(this.dimensions, parent)){
+        for (const key of dims.split(',').map(v => v.trim())) {
+          res.indexOf(key) == -1 && res.push(key);
+        }
+      }
+      return res;
     }
     used_fields(parent) {
-      const res = [];
-      this.fields.find_rows({use: true}, ({field}) => res.push(field));
-      return res;
+      return this.used(this.fields, parent);
     }
     used_fields_list() {
       return this.fields._obj.map(({field, caption}) => ({

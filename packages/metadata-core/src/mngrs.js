@@ -212,27 +212,27 @@ export class DataManager extends MetaEventEmitter{
 	 * @property extra_fields
 	 * @type Array
 	 */
-	extra_fields(obj){
-		const {cat, cch, md} = this._owner.$p;
-		// ищем предопределенный элемент, сответствующий классу данных
-		const dests = cat.destinations || cch.destinations,
-			predefined_name = md.class_name_to_1c(this.class_name).replace(".", "_"),
-			res = [];
-		if(dests){
-			dests.find_rows({predefined_name}, destination => {
-				const ts = destination.extra_fields || destination.ДополнительныеРеквизиты;
-				if(ts){
-					ts.each(row => {
-						if(!row._deleted && !row.ПометкаУдаления){
-							res.push(row.property || row.Свойство);
-						}
-					});
-				}
-				return false;
-			})
-		}
-		return res;
-	}
+  extra_fields(obj) {
+    const {cat, cch, md} = this._owner.$p;
+    // ищем предопределенный элемент, сответствующий классу данных
+    const dests = cat.destinations || cch.destinations;
+    const res = [];
+    if(dests) {
+      const condition = this._destinations_condition || {predefined_name: md.class_name_to_1c(this.class_name).replace('.', '_')};
+      dests.find_rows(condition, destination => {
+        const ts = destination.extra_fields || destination.ДополнительныеРеквизиты;
+        if(ts) {
+          ts.each(row => {
+            if(!row._deleted && !row.ПометкаУдаления) {
+              res.push(row.property || row.Свойство);
+            }
+          });
+        }
+        return false;
+      });
+    }
+    return res;
+  }
 
 	/**
 	 * ### Дополнительные свойства
@@ -579,7 +579,7 @@ export class RefDataManager extends DataManager{
 	get(ref, do_not_create){
 
 		const rp = 'promise';
-		if(typeof ref !== 'string'){
+		if(!ref || typeof ref !== 'string'){
       ref = utils.fix_guid(ref);
     }
 		let o = this.by_ref[ref];
@@ -1463,7 +1463,7 @@ export class EnumManager extends RefDataManager{
 	 * @return {Promise.<Array>}
 	 */
 	get_option_list(selection = {}, val){
-		var l = [], synonym = "", sref;
+		let l = [], synonym = "", sref;
 
     function push(v){
       if(selection._dhtmlx){
@@ -1474,34 +1474,37 @@ export class EnumManager extends RefDataManager{
         if(utils.is_equal(v.value, val)){
           v.selected = true;
         }
+        l.push(v);
       }
-      l.push(v);
+      else if(!v.empty()){
+        l.push(v);
+      }
     }
 
-		if(selection){
-			for(var i in selection){
-				if(i.substr(0,1)!="_"){
-					if(i == "ref"){
-						sref = selection[i].hasOwnProperty("in") ? selection[i].in : selection[i];
-					}
-					else
-						synonym = selection[i];
-				}
-			}
+    for(const i in selection){
+      if(i.substr(0,1)!="_"){
+        if(i == "ref"){
+          sref = selection[i].hasOwnProperty("in") ? selection[i].in : selection[i];
+        }
+        else
+          synonym = selection[i];
+      }
+    }
+
+		if(!selection._dhtmlx){
+      l.push(this.get());
 		}
 
 		if(typeof synonym == "object"){
-			if(synonym.like)
-				synonym = synonym.like;
-			else
-				synonym = "";
+      synonym = synonym.like ? synonym.like : '';
 		}
 		synonym = synonym.toLowerCase();
 
 		this.alatable.forEach(v => {
 			if(synonym){
-				if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1)
-					return;
+				if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1){
+          return;
+        }
 			}
 			if(sref){
 				if(Array.isArray(sref)){

@@ -1,6 +1,5 @@
 /**
- * ### Контейнер сохраненных настроек
- * Кнопка открытия + диалог
+ * ### Кнопка открытия + строка поиска для сохраненных настроек
  *
  * Created 31.12.2016
  */
@@ -9,19 +8,17 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import IconButton from 'material-ui/IconButton';
 import IconSettings from 'material-ui-icons/Settings';
+import IconSettingsCancel from 'material-ui-icons/HighlightOff';
+import IconSettingsDone from 'material-ui-icons/Done';
+
 import Button from 'material-ui/Button';
 import TextField from 'material-ui/TextField';
 import Menu, {MenuItem} from 'material-ui/Menu';
 import Typography from 'material-ui/Typography';
 
-// окно диалога, чтобы показать всплывающие формы
-import DnR from '../DnR/Dialog'
-
-import SchemeSettingsTabs from './SchemeSettingsTabs';
 import SearchBox from './SearchBox';
 
-
-export default class SchemeSettingsWrapper extends PureComponent {
+export default class SchemeSettingsButtons extends PureComponent {
 
   static propTypes = {
     scheme: PropTypes.object.isRequired,
@@ -36,7 +33,6 @@ export default class SchemeSettingsWrapper extends PureComponent {
     const {scheme} = props;
 
     this.state = {
-      dialog_open: false,
       menu_open: false,
       variants: [scheme]
     };
@@ -50,13 +46,6 @@ export default class SchemeSettingsWrapper extends PureComponent {
       });
   }
 
-  handleDialogOpen = () => {
-    this.setState({dialog_open: true});
-  };
-
-  handleDialogClose = () => {
-    this.setState({dialog_open: false});
-  };
 
   handleMenuOpen = (event) => {
     this.setState({menu_open: true, anchorEl: event.currentTarget});
@@ -66,10 +55,9 @@ export default class SchemeSettingsWrapper extends PureComponent {
     this.setState({menu_open: false});
   };
 
-  handleOk = () => {
-    this.handleDialogClose();
-    this.props.handleSchemeChange(this.props.scheme);
-  };
+  // handleOk = () => {
+  //   this.props.handleSchemeChange(this.props.scheme);
+  // };
 
   handleSchemeChange = (scheme) => {
     scheme._search = '';
@@ -102,16 +90,15 @@ export default class SchemeSettingsWrapper extends PureComponent {
   }
 
   render() {
-    const {props, state, handleDialogOpen, handleOk, handleDialogClose} = this;
-    const {dialog_open, menu_open} = state;
-    const {scheme, show_search, show_variants, tabParams, classes} = props;
+    const {props, state} = this;
+    const {menu_open} = state;
+    const {scheme, show_search, show_variants, tabParams, classes, settings_open} = props;
 
     return (
       <div className={classes.inline}>
         {/* Search box */
           show_search && <SearchBox value={scheme._search || ''} onChange={this.handleSearchChange}/>
         }
-
 
         {/* Variants */
           show_variants && scheme && <Button dense onClick={this.handleMenuOpen} style={{alignSelf: 'center'}}>{scheme.name}</Button>
@@ -120,21 +107,23 @@ export default class SchemeSettingsWrapper extends PureComponent {
           show_variants && scheme && this.Variants()
         }
 
-
-        {/* List configuration button */}
-        <IconButton title="Настройка списка" onClick={handleDialogOpen}>
+        {/* Кнопка открытия настроек */ !settings_open &&
+        <IconButton title="Настройка списка" onClick={props.handleSettingsOpen}>
           <IconSettings/>
         </IconButton>
+        }
 
-        {dialog_open && <DnR title={`${scheme.name} (вариант настроек)`} onClose={handleDialogClose} minHeight={433} initialHeight={440}>
-          <SchemeSettingsTabs
-            scheme={scheme}
-            handleSchemeChange={this.handleSchemeChange}
-            tabParams={tabParams}
-            handleDialogClose={handleDialogClose}
-            handleOk={handleOk}
-          />
-        </DnR>}
+        {/* Кнопки Ок или Отмена настроек */ settings_open &&
+        <IconButton title="Применить настройки" onClick={props.handleSettingsClose}>
+          <IconSettingsDone/>
+        </IconButton>
+        }
+
+        {/* Кнопки Ок или Отмена настроек */ settings_open &&
+        <IconButton title="Скрыть настройки" onClick={props.handleSettingsClose}>
+          <IconSettingsCancel/>
+        </IconButton>
+        }
 
       </div>
 

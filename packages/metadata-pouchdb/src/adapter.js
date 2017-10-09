@@ -410,10 +410,6 @@ function adapter({AbstracrAdapter}) {
 
     }
 
-    sync_events(sync, options) {
-
-    }
-
     /**
      * ### Запускает процесс синхронизвации
      *
@@ -705,11 +701,11 @@ function adapter({AbstracrAdapter}) {
                 }
               }
             }
-            delete _data._saving;
+            _data._saving = false;
             resolve(tObj);
           })
           .catch((err) => {
-            delete _data._saving;
+            _data._saving = false;
             err && err.status != 404 && reject(err);
           });
       });
@@ -1063,6 +1059,10 @@ function adapter({AbstracrAdapter}) {
         selector: {class_name: {$in: res}},
         limit: 10000,
       })
+        .catch((err) => {
+          this.emit('pouch_sync_error', 'doc', err);
+          return {docs: []};
+        })
         .then((data) => this.load_changes(data))
         .then(() => this.emit('pouch_doc_ram_loaded'));
     }
@@ -1084,6 +1084,7 @@ function adapter({AbstracrAdapter}) {
     find_rows(_mgr, selection) {
 
       const db = this.db(_mgr);
+      const err_handler = this.emit.bind(this, 'pouch_sync_error', _mgr.cachable);
 
       // если указан MangoQuery, выполняем его без лишних церемоний
       if(selection && selection._mango) {
@@ -1096,6 +1097,10 @@ function adapter({AbstracrAdapter}) {
               doc.ref = doc._id.split('|')[1];
             }
             return docs;
+          })
+          .catch((err) => {
+            err_handler(err);
+            return [];
           });
       }
 
@@ -1213,19 +1218,18 @@ function adapter({AbstracrAdapter}) {
                 return db.allDocs(options);
 
               })
+              .catch((err) => {
+                err_handler(err);
+                return {rows: []};
+              })
               .then((result) => {
                 return {
-                  rows: result.rows.map((row) => {
-
-                    var doc = row.doc;
-
+                  rows: result.rows.map(({doc}) => {
                     doc.ref = doc._id.split('|')[1];
-
                     if(!_raw) {
                       delete doc._id;
                       delete doc._rev;
                     }
-
                     return doc;
                   }),
                   _total_count: _total_count,
@@ -1240,88 +1244,79 @@ function adapter({AbstracrAdapter}) {
       // бежим по всем документам из ram
       return new Promise((resolve, reject) => {
 
-        function process_docs(err, result) {
+        function process_docs(result) {
+          if(result.rows.length) {
 
-          if(result) {
+            options.startkey = result.rows[result.rows.length - 1].key;
+            options.skip = 1;
 
-            if(result.rows.length) {
+            result.rows.forEach((rev) => {
+              doc = rev.doc;
 
-              options.startkey = result.rows[result.rows.length - 1].key;
-              options.skip = 1;
+              let key = doc._id.split('|');
+              doc.ref = key[1];
 
-              result.rows.forEach((rev) => {
-                doc = rev.doc;
+              if(!_raw) {
+                delete doc._id;
+                delete doc._rev;
+              }
 
-                let key = doc._id.split('|');
-                doc.ref = key[1];
+              // фильтруем
+              if(!utils._selection.call(_mgr, doc, selection)) {
+                return;
+              }
 
-                if(!_raw) {
-                  delete doc._id;
-                  delete doc._rev;
-                }
+              if(calc_count) {
+                _total_count++;
+              }
 
-                // фильтруем
-                if(!utils._selection.call(_mgr, doc, selection)) {
+              // пропукскаем лишние (skip) элементы
+              if(skip) {
+                skip_count++;
+                if(skip_count < skip) {
                   return;
                 }
-
-                if(calc_count) {
-                  _total_count++;
-                }
-
-                // пропукскаем лишние (skip) элементы
-                if(skip) {
-                  skip_count++;
-                  if(skip_count < skip) {
-                    return;
-                  }
-                }
-
-                // ограничиваем кол-во возвращаемых элементов
-                if(top) {
-                  top_count++;
-                  if(top_count > top) {
-                    return;
-                  }
-                }
-
-                // наполняем
-                res.push(doc);
-              });
-
-              if(top && top_count > top && !calc_count) {
-                resolve(_raw ? res : _mgr.load_array(res));
               }
-              else {
-                fetch_next_page();
+
+              // ограничиваем кол-во возвращаемых элементов
+              if(top) {
+                top_count++;
+                if(top_count > top) {
+                  return;
+                }
               }
+
+              // наполняем
+              res.push(doc);
+            });
+
+            if(top && top_count > top && !calc_count) {
+              resolve(_raw ? res : _mgr.load_array(res));
             }
             else {
-              if(calc_count) {
-                resolve({
-                  rows: _raw ? res : _mgr.load_array(res),
-                  _total_count: _total_count,
-                });
-              }
-              else {
-                resolve(_raw ? res : _mgr.load_array(res));
-              }
+              fetch_next_page();
             }
-
           }
-          else if(err) {
-            reject(err);
+          else {
+            if(calc_count) {
+              resolve({
+                rows: _raw ? res : _mgr.load_array(res),
+                _total_count: _total_count,
+              });
+            }
+            else {
+              resolve(_raw ? res : _mgr.load_array(res));
+            }
           }
         }
 
         function fetch_next_page() {
-
-          if(_view) {
-            db.query(_view, options, process_docs);
-          }
-          else {
-            db.allDocs(options, process_docs);
-          }
+          (_view ? db.query(_view, options) : db.allDocs(options))
+            .catch((err) => {
+              err_handler(err);
+              reject(err);
+            })
+            .then(process_docs);
         }
 
         fetch_next_page();

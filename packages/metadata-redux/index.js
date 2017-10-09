@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.2-beta.29, built:2017-09-24
+ metadata-redux v2.0.2-beta.30, built:2017-10-03
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -72,6 +72,13 @@ function log_error() {
   return {
     type: LOG_ERROR
   };
+}
+function reset_user(state) {
+  const user = Object.assign({}, state.user);
+  user.logged_in = false;
+  user.has_login = false;
+  user.try_log_in = false;
+  return Object.assign({}, state, {user});
 }
 
 const ADD = 'OBJ_ADD';
@@ -390,9 +397,16 @@ var handlers_meta = {
   [DATA_ERROR]: (state, action) => Object.assign({}, state, {err: action.payload, fetch: false}),
   [LOAD_START]: (state, action) => Object.assign({}, state, {data_empty: false, fetch: true}),
   [NO_DATA]: (state, action) => Object.assign({}, state, {data_empty: true, first_run: true, fetch: false}),
+  [SYNC_DATA]: (state, action) => Object.assign({}, state, {fetch: !!action.payload}),
   [SYNC_PAUSED]: (state, action) => Object.assign({}, state, {sync_started: false}),
   [SYNC_RESUMED]: (state, action) => Object.assign({}, state, {sync_started: true}),
-  [SYNC_DATA]: (state, action) => Object.assign({}, state, {fetch: !!action.payload}),
+  [SYNC_ERROR]: (state, action) => {
+    const {err} = action.payload;
+    if(err && err.error == 'forbidden') {
+      return reset_user(state);
+    }
+    return state;
+  },
   [DEFINED]: (state, action) => {
     const user = Object.assign({}, state.user);
     user.name = action.payload;
@@ -410,18 +424,10 @@ var handlers_meta = {
     return Object.assign({}, state, {user});
   },
   [LOG_OUT]: (state, action) => {
-    const user = Object.assign({}, state.user);
-    user.logged_in = false;
-    user.has_login = false;
-    user.try_log_in = false;
-    return Object.assign({}, state, {user});
+    return reset_user(state);
   },
   [LOG_ERROR]: (state, action) => {
-    const user = Object.assign({}, state.user);
-    user.logged_in = false;
-    user.has_login = false;
-    user.try_log_in = false;
-    return Object.assign({}, state, {user});
+    return reset_user(state);
   },
   [ADD]: (state, action) => state,
   [CHANGE]: (state, action) => Object.assign({}, state, {obj_change: action.payload}),

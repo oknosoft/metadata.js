@@ -1,9 +1,10 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import DumbLoader from '../DumbLoader';
 
+import DumbLoader from '../DumbLoader';
 import RepToolbar from './RepToolbar';
 import RepTabularSection from './RepTabularSection';
+import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
 
 import withIface from 'metadata-redux/src/withIface';
 
@@ -31,6 +32,7 @@ class Report extends Component {
       _obj: _obj || _mgr.create(),
       _meta: _meta || _mgr.metadata(_tabular),
       _tabular,
+      settings_open: false,
     };
 
     $p.cat.scheme_settings.get_scheme(_mgr.class_name + `.${_tabular}`)
@@ -76,6 +78,14 @@ class Report extends Component {
 
   };
 
+  handleSettingsOpen = () => {
+    this.setState({settings_open: true});
+  };
+
+  handleSettingsClose = () => {
+    this.setState({settings_open: false});
+  };
+
   // обработчик при изменении настроек компоновки
   handleSchemeChange = (scheme) => {
 
@@ -102,8 +112,9 @@ class Report extends Component {
 
   render() {
 
-    const {props, state, handleClose, handleSave, handlePrint, handleSchemeChange} = this;
-    const {_obj, _columns, scheme, _tabular} = state;
+    const {props, state} = this;
+    const {_obj, _columns, _tabular, scheme, settings_open} = state;
+    const {RepParams} = _obj._manager;
 
     if(!scheme) {
       return <DumbLoader title="Чтение настроек компоновки..."/>;
@@ -115,6 +126,8 @@ class Report extends Component {
       return <DumbLoader title="Ошибка настроек компоновки..."/>;
     }
 
+    const show_grid = !settings_open || (props.height || 500) > 572;
+
     return <div>
 
       <RepToolbar
@@ -122,21 +135,34 @@ class Report extends Component {
         _tabular={_tabular}
         _columns={_columns}
         scheme={scheme}
+        settings_open={settings_open}
 
-        handleSchemeChange={handleSchemeChange}
-        handleSave={handleSave}
-        handlePrint={handlePrint}
-        handleClose={handleClose}
+        handleSettingsOpen={this.handleSettingsOpen}
+        handleSettingsClose={this.handleSettingsClose}
+        handleSchemeChange={this.handleSchemeChange}
+        handleSave={this.handleSave}
+        handlePrint={this.handlePrint}
+        handleClose={this.handleClose}
       />
 
-      <RepTabularSection
+      { settings_open &&
+      <SchemeSettingsTabs
+        height={show_grid ? 272 : (props.height || 500) - 104}
+        scheme={scheme}
+        tabParams={RepParams && <RepParams _obj={_obj} scheme={scheme} />}
+        handleSchemeChange={this.handleSchemeChange}
+      />}
+
+      {show_grid && <RepTabularSection
         ref={(el) => this._result = el}
         _obj={_obj}
         _tabular={_tabular}
         _columns={_columns}
         scheme={scheme}
-        minHeight={(props.height || 500) - 52}
-      />
+        minHeight={(props.height || 500) - 52 - (settings_open ? 320 : 0)}
+      />}
+
+
 
     </div>;
   }

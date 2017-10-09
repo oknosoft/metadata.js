@@ -32,8 +32,6 @@ export default class SchemeSettingsTabs extends Component {
   static propTypes = {
     scheme: PropTypes.object.isRequired,
     handleSchemeChange: PropTypes.func.isRequired,
-    handleDialogClose: PropTypes.func.isRequired,
-    handleOk: PropTypes.func.isRequired,
     tabParams: PropTypes.object,
   };
 
@@ -84,8 +82,9 @@ export default class SchemeSettingsTabs extends Component {
   render() {
 
     const {state, props, sizes} = this;
-    const {scheme, handleSchemeChange, handleDialogClose, handleOk, tabParams} = props;
+    const {scheme, handleSchemeChange, tabParams} = props;
     const {value} = state;
+    const is_tabular = scheme.obj.split('.').length > 2;
 
     return <div>
       <AppBar position="static" color="default">
@@ -100,7 +99,8 @@ export default class SchemeSettingsTabs extends Component {
           <Tab label="Параметры"/>
           <Tab label="Колонки"/>
           <Tab label="Отбор"/>
-          <Tab label="Группировка"/>
+          {is_tabular && <Tab label="Группировка"/>}
+          {is_tabular && <Tab label="Ресурсы"/>}
           <Tab label="Сортировка"/>
           <Tab label="Вариант"/>
         </Tabs>
@@ -118,28 +118,19 @@ export default class SchemeSettingsTabs extends Component {
             <TabularSection _obj={scheme} _tabular="params"/>
         ))}
 
-        {value === 1 && <TabularSection _obj={scheme} _tabular="fields" rowSelection={this.rowSelection(scheme)} denyAddDel={true}/>}
+        {value === 1 && <TabularSection _obj={scheme} _tabular="fields" rowSelection={this.rowSelection(scheme)} denyAddDel />}
 
-        {value === 2 && <TabularSection _obj={scheme} _tabular="selection" rowSelection={this.rowSelection(scheme, 'selection')}/>}
+        {value === 2 && <TabularSection _obj={scheme} _tabular="selection" rowSelection={this.rowSelection(scheme, 'selection')} />}
 
-        {value === 3 && <FormGroup style={{minHeight: 340, margin: 8}}>
-          <FormGroup row style={{minHeight: 160, height: '50%'}}>
-            <TabularSection _obj={scheme} _tabular="dimensions" rowSelection={this.rowSelection(scheme, 'dimensions')} minHeight={130} />
-          </FormGroup>
-          <FormGroup row>
-            <TabularSection _obj={scheme} _tabular="resources" minHeight={130}/>
-          </FormGroup>
-        </FormGroup>}
+        {is_tabular && (value === 3) && <TabularSection _obj={scheme} _tabular="dimensions" rowSelection={this.rowSelection(scheme, 'dimensions')} />}
 
-        {value === 4 && <TabularSection _obj={scheme} _tabular="sorting" rowSelection={this.rowSelection(scheme, 'sorting')}/>}
+        {is_tabular && (value === 4) && <TabularSection _obj={scheme} _tabular="resources"/> }
 
-        {value === 5 && <SchemeSettingsSelect scheme={scheme} handleSchemeChange={handleSchemeChange} />}
+        {value === (is_tabular ? 5 : 3) && <TabularSection _obj={scheme} _tabular="sorting" rowSelection={this.rowSelection(scheme, 'sorting')} />}
+
+        {value === (is_tabular ? 6 : 4) && <SchemeSettingsSelect scheme={scheme} handleSchemeChange={handleSchemeChange} />}
+
       </div>
-
-      <DialogActions style={{margin: 0}}>
-        <Button dense onClick={handleDialogClose} style={{margin: spacing.unit}}>Отмена</Button>
-        <Button dense onClick={handleOk} style={{margin: spacing.unit}}>Применить</Button>
-      </DialogActions>
 
     </div>;
   }

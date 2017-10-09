@@ -1,21 +1,19 @@
 /** @flow */
 import React from 'react';
 import PropTypes from 'prop-types';
-import MComponent from '../common/MComponent';
+import MDNRComponent from '../common/MDNRComponent';
 
 import {InfiniteLoader, AutoSizer, MultiGrid} from 'react-virtualized';
-import LoadingMessage from '../DumbLoader/LoadingMessage';
-import DataListToolbar from './DataListToolbar';
 import cn from 'classnames';
 
+import LoadingMessage from '../DumbLoader/LoadingMessage';
+import DataListToolbar from './DataListToolbar';
+import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
 import Confirm from '../Confirm';
-
 import withStyles from './styles';
-
 import control_by_type from 'metadata-abstract-ui/src/ui';
 
-
-class DataList extends MComponent {
+class DataList extends MDNRComponent {
 
   static LIMIT = 40;
   static OVERSCAN_ROW_COUNT = 2;
@@ -30,7 +28,7 @@ class DataList extends MComponent {
     _acl: PropTypes.string,               // Права на чтение-изменение
     _meta: PropTypes.object,              // Описание метаданных. Если не указано, используем метаданные менеджера
 
-    _owner: PropTypes.object,             // Поле - родитель. У него должны быть _obj, _fld и _meta
+    _owner: PropTypes.object,             // Поле - владелец. У него должны быть _obj, _fld и _meta
                                           // а внутри _meta могут быть choice_params и choice_links
 
     // настройки внешнего вида и поведения
@@ -49,7 +47,10 @@ class DataList extends MComponent {
   constructor(props, context) {
     super(props, context);
 
-    this.state = {selectedRowIndex: 0};
+    this.state = {
+      selectedRowIndex: 0,
+      settings_open: false,
+    };
 
     /** Set of grid rows. */
     this._list = new Map();
@@ -189,6 +190,14 @@ class DataList extends MComponent {
     row && handlers.handleAttachment && handleAttachment(row, _mgr);
   };
 
+  handleSettingsOpen = () => {
+    this.setState({settings_open: true});
+  };
+
+  handleSettingsClose = () => {
+    this.setState({settings_open: false});
+  };
+
   get sizes() {
     const {dnr} = this.context;
     let {width, height} = this.props;
@@ -208,25 +217,13 @@ class DataList extends MComponent {
   }
 
   render() {
-    const {
-      state,
-      props,
-      _meta,
-      sizes,
-      handleSelect,
-      handleAdd,
-      handleEdit,
-      handleRemove,
-      handlePrint,
-      handleAttachment,
-      handleSchemeChange,
-      handleFilterChange,
-      _isRowLoaded,
-      _loadMoreRows,
-      _cellRenderer,
-    } = this;
+    const {state, props, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer} = this;
+    const {columns, rowsLoaded, scheme, colResize, confirm_text, settings_open} = state;
+    const {RepParams} = props._mgr;
 
-    const {columns, rowsLoaded, scheme, colResize, confirm_text} = state;
+    const styleTopRightGrid = {
+      cursor: colResize ? 'col-resize' : 'default',
+    }
 
     let {selection_mode, denyAddDel, show_search, show_variants, classes} = props;
 
@@ -237,33 +234,32 @@ class DataList extends MComponent {
       return <LoadingMessage title="Ошибка настроек компоновки..."/>;
     }
 
+    const show_grid = !settings_open || sizes.height > 572;
+
     const toolbar_props = {
       scheme,
       selection_mode,
       denyAddDel,
       show_search,
       show_variants,
-      handleSelect,
-      handleAdd,
-      handleEdit,
-      handleRemove,
-      handlePrint,
-      handleAttachment,
-      handleSchemeChange,
-      handleFilterChange,
-    };
-
-    const styleTopRightGrid = {
-      backgroundColor: '#eeeeee',
-      borderBottom: '1px solid #e0e0e0',
-      cursor: colResize ? 'col-resize' : 'default',
+      settings_open,
+      handleSelect: this.handleSelect,
+      handleAdd: this.handleAdd,
+      handleEdit: this.handleEdit,
+      handleRemove: this.handleRemove,
+      handlePrint: this.handlePrint,
+      handleAttachment: this.handleAttachment,
+      handleSettingsOpen: this.handleSettingsOpen,
+      handleSettingsClose: this.handleSettingsClose,
+      handleSchemeChange: this.handleSchemeChange,
+      handleFilterChange: this.handleFilterChange,
     };
 
 
     return (
       <div style={{height: sizes.height}}>
 
-        {
+        { // диалог предупреждений при удалении
           confirm_text && <Confirm
             title={_meta.synonym}
             text={confirm_text}
@@ -275,6 +271,16 @@ class DataList extends MComponent {
 
         <DataListToolbar {...toolbar_props} />
 
+        { // панель настроек компоновки
+          settings_open &&
+          <SchemeSettingsTabs
+            height={show_grid ? 272 : (sizes.height || 500) - 104}
+            scheme={scheme}
+            tabParams={RepParams && <RepParams scheme={scheme} />}
+            handleSchemeChange={this.handleSchemeChange}
+          />}
+
+        {show_grid &&
         <InfiniteLoader
           isRowLoaded={_isRowLoaded}
           loadMoreRows={_loadMoreRows}
@@ -294,11 +300,11 @@ class DataList extends MComponent {
             return (
               <MultiGrid
                 ref={registerChild}
+                tabIndex={0}
                 width={sizes.width}
-                height={sizes.height - 52}
+                height={sizes.height - 52 - (settings_open ? 320 : 0)}
                 rowCount={rowsLoaded}
                 columnCount={columns.length}
-                fixedColumnCount={0}
                 fixedRowCount={1}
                 noContentRenderer={this._noContentRendered}
                 cellRenderer={this._cellRenderer}
@@ -307,10 +313,12 @@ class DataList extends MComponent {
                 columnWidth={this._getColumnWidth}
                 rowHeight={DataList.COLUMN_HEIGHT}
                 onSectionRendered={onSectionRendered}
-                styleTopRightGrid={styleTopRightGrid}/>
+                styleTopRightGrid={styleTopRightGrid}
+                classNameTopRightGrid={classes.topRightGrid}/>
             );
           }}
         </InfiniteLoader>
+        }
       </div>
     );
   }

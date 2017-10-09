@@ -1,12 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+
 import MComponent from '../common/MComponent';
+import TabularSectionToolbar from './TabularSectionToolbar';
+import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
+import LoadingMessage from '../DumbLoader/LoadingMessage';
 
 import ReactDataGrid from 'react-data-grid';
-import DataCell from '../DataField/DataCell';
-import TabularSectionToolbar from './TabularSectionToolbar';
 import {AutoSizer} from 'react-virtualized';
-import LoadingMessage from '../DumbLoader/LoadingMessage';
 
 // import withStyles from 'material-ui/styles/withStyles';
 // import styles from './TabularSection.scss';
@@ -17,11 +18,11 @@ export default class TabularSection extends MComponent {
     _obj: PropTypes.object.isRequired,
     _tabular: PropTypes.string.isRequired,
     _meta: PropTypes.object,
-    _columns: PropTypes.array,
+    scheme: PropTypes.object,             // Вариант настроек
 
     read_only: PropTypes.bool,            // Элемент только для чтения
-    denyAddDel: PropTypes.bool,         // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
-    denyReorder: PropTypes.bool,         // Запрет изменения порядка строк
+    denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+    denyReorder: PropTypes.bool,          // Запрет изменения порядка строк
     minHeight: PropTypes.number,
 
     handleValueChange: PropTypes.func,    // Обработчик изменения значения в ячейке
@@ -36,23 +37,46 @@ export default class TabularSection extends MComponent {
   static defaultProps = {
     denyAddDel: false,
     read_only: false,
-    minHeight: 300,
+    minHeight: 220,
   };
 
   constructor(props, context) {
     super(props, context);
-    const {_obj, _tabular} = props;
-    const class_name = _obj._manager.class_name + '.' + _tabular;
+    this.handleObjChange(props, true);
+  }
 
-    this.state = {
+  shouldComponentUpdate(props, {_tabular}){
+    if(_tabular._owner != props._obj){
+      this.handleObjChange(props);
+      return false;
+    }
+    return true;
+  }
+
+  handleObjChange(props, init) {
+
+    const {_obj, _tabular} = props;
+
+    const state = {
       _meta: props._meta || _obj._metadata(_tabular),
       _tabular: _obj[_tabular],
-      _columns: props._columns || [],
-      selectedIds: props.rowSelection ? props.rowSelection.selectBy.keys.values : []
+      _columns: [],
+      selectedIds: props.rowSelection ? props.rowSelection.selectBy.keys.values : [],
+      settings_open: false,
     };
 
-    if(!this.state._columns.length) {
-      $p.cat.scheme_settings.get_scheme(class_name).then(this.handleSchemeChange.bind(this));
+    if(init){
+      this.state = state;
+    }
+    else{
+      this.setState(state);
+    }
+
+    if(props.scheme) {
+      this.handleSchemeChange(props.scheme)
+    }
+    else {
+      $p.cat.scheme_settings.get_scheme(_obj._manager.class_name + '.' + _tabular).then(this.handleSchemeChange);
     }
   }
 
@@ -97,8 +121,16 @@ export default class TabularSection extends MComponent {
     Object.assign(row._row || row, e.updated);
   }
 
+  handleSettingsOpen = () => {
+    this.setState({settings_open: true});
+  };
+
+  handleSettingsClose = () => {
+    this.setState({settings_open: false});
+  };
+
   // обработчик при изменении настроек компоновки
-  handleSchemeChange(scheme) {
+  handleSchemeChange = (scheme) => {
 
     const {props, state} = this;
     const _columns = scheme.rx_columns({
@@ -113,7 +145,6 @@ export default class TabularSection extends MComponent {
     else {
       Object.assign(state, {scheme, _columns});
     }
-
 
   };
 
@@ -144,9 +175,9 @@ export default class TabularSection extends MComponent {
   };
 
   render() {
-    const {props, state, rowGetter, onRowsSelected, onRowsDeselected, handleAdd, handleRemove, handleUp, handleDown, handleRowUpdated} = this;
-    const {_meta, _tabular, _columns, scheme, selectedIds} = state;
-    const {_obj, rowSelection, denyAddDel, denyReorder, minHeight, handleCustom, classes} = props;
+    const {props, state, rowGetter, onRowsSelected, onRowsDeselected, handleRowUpdated} = this;
+    const {_meta, _tabular, _columns, scheme, selectedIds, settings_open} = state;
+    const {_obj, rowSelection, denyAddDel, denyReorder, minHeight, classes} = props;
 
     if(!_columns || !_columns.length) {
       if(!scheme) {
@@ -166,27 +197,39 @@ export default class TabularSection extends MComponent {
         <AutoSizer>
           {({width, height}) => {
 
+            const show_grid = !settings_open || Math.max(minHeight, height) > 372;
+
             return <div>
               <TabularSectionToolbar
+                width={width}
                 _obj={_obj}
                 _tabular={_tabular}
                 _columns={_columns}
                 scheme={scheme}
-
-                width={width}
-
-                handleAdd={handleAdd}
-                handleRemove={handleRemove}
-                handleUp={handleUp}
-                handleDown={handleDown}
-                handleCustom={handleCustom}
                 denyAddDel={denyAddDel}
                 denyReorder={denyReorder}
+                settings_open={settings_open}
+
+                handleSettingsOpen={this.handleSettingsOpen}
+                handleSettingsClose={this.handleSettingsClose}
+                handleSchemeChange={this.handleSchemeChange}
+                handleAdd={this.handleAdd}
+                handleRemove={this.handleRemove}
+                handleUp={this.handleUp}
+                handleDown={this.handleDown}
+                handleCustom={this.handleCustom}
               />
+
+              { settings_open &&
+              <SchemeSettingsTabs
+                height={show_grid ? 272 : Math.max(minHeight, height)}
+                scheme={scheme}
+                handleSchemeChange={this.handleSchemeChange}
+              />}
 
               <ReactDataGrid
                 minWidth={width}
-                minHeight={(height < minHeight ? minHeight : height) - 52}
+                minHeight={Math.max(minHeight, height) - 52 - (settings_open ? 320 : 0)}
                 rowHeight={33}
 
                 ref={(el) => this._grid = el}

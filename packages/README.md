@@ -29,7 +29,7 @@ _Не реализовано в текущей версии_
 ### metadata-react
 Визуальный интерфейс к данным metadata.js можно реализовать с использованием любого js-фреймворка или на чистом javascript.
 
-Библиотека [metadata-react-ui](metadata-react) содержит набор высокоуровневых визуальных компонентов, использует [React](https://github.com/facebook/react) для рендеринга UI и [Redux](https://github.com/reactjs/redux) для хранения состояния приложения.
+Библиотека [metadata-react](metadata-react) содержит набор высокоуровневых визуальных компонентов, использует [React](https://github.com/facebook/react) для рендеринга UI и [Redux](https://github.com/reactjs/redux) для хранения состояния приложения.
 
 ### metadata-angular
 Компоненты интерфейса пользователя на базе [Angular](https://angularjs.org/)  

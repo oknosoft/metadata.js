@@ -5,9 +5,11 @@ import Tabs, {Tab} from 'material-ui/Tabs';
 import Paper from 'material-ui/Paper';
 import Button from 'material-ui/Button';
 import Divider from 'material-ui/Divider';
-import DataField from '../DataField';
+import {FormGroup} from 'material-ui/Form';
+import {DialogActions} from 'material-ui/Dialog';
 
-import CnnSettings from './Settings';
+import DataField from '../DataField';
+import CnnSettings from './CnnSettings';
 import withPrm from 'metadata-redux/src/withPrm';
 import withStyles from '../styles/paper600';
 
@@ -80,24 +82,23 @@ class TabsUser extends Component {
           this.props._obj
             ?
             <Paper className={classes.root} elevation={4}>
+
               <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
                 <Tab label="Профиль"/>
                 <Tab label="Подключение"/>
               </Tabs>
 
               {state.index === 0 &&
-              <div>
+              <FormGroup>
+                <DataField _obj={this.props._obj} _fld="id" read_only />
+                <DataField _obj={this.props._obj} _fld="name" read_only />
+              </FormGroup>}
 
-                <DataField _obj={this.props._obj} _fld="id" read_only classes={classes}/>
-                <DataField _obj={this.props._obj} _fld="name" read_only classes={classes}/>
-
-                <br/>
-                <Divider/>
-
-                <Button raised dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
-                <Button raised dense className={classes.button} onClick={handleNavigate}>К списку заказов</Button>
-
-              </div>}
+              {state.index === 0 &&
+              <DialogActions>
+                <Button color="primary" dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
+                <Button color="primary" dense className={classes.button} onClick={handleNavigate}>К списку заказов</Button>
+              </DialogActions>}
 
               {state.index === 1 && <CnnSettings {...props}/>}
 
