@@ -2,7 +2,7 @@ import withStyles from 'material-ui/styles/withStyles';
 import {light} from 'material-ui/styles/createPalette';
 import transitions from 'material-ui/styles/transitions';
 
-export default withStyles({
+export default withStyles(theme => ({
   list: {
     width: 300,
     flex: 'initial',
@@ -31,4 +31,7 @@ export default withStyles({
     transform: 'rotate(180deg)',
   },
   pointer: {cursor: 'pointer'},
-});
+  nested: {
+    paddingLeft: theme.spacing.unit * 4,
+  },
+}));
