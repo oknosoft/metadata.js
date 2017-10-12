@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.2-beta.30, built:2017-10-09
+ metadata-core v2.0.2-beta.31, built:2017-10-12
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -5200,7 +5200,7 @@ moment$1._masks = {
 if(typeof global != 'undefined'){
   global.moment = moment$1;
 }
-Date.prototype.toJSON = function () {
+Date.prototype.toJSON = Date.prototype.toISOString = function () {
 	return moment$1(this).format(moment$1._masks.iso);
 };
 if (!Number.prototype.round) {
@@ -5536,12 +5536,12 @@ const utils = mime({
 							break;
 					}
 					else if (j == 'or' && Array.isArray(sel)) {
-						ok = sel.some(function (element) {
-							var key = Object.keys(element)[0];
-							if (element[key].hasOwnProperty('like'))
-								return o[key] && o[key].toLowerCase().indexOf(element[key].like.toLowerCase()) != -1;
+						ok = sel.some((el) => {
+							const key = Object.keys(el)[0];
+							if (el[key].hasOwnProperty('like'))
+								return o[key] && o[key].toLowerCase().indexOf(el[key].like.toLowerCase()) != -1;
 							else
-								return utils.is_equal(o[key], element[key]);
+								return utils.is_equal(o[key], el[key]);
 						});
 						if (!ok)
 							break;
@@ -5552,6 +5552,18 @@ const utils = mime({
 							break;
 						}
 					}
+          else if (is_obj && sel.hasOwnProperty('lke')) {
+            if (!o[j] || o[j].toLowerCase().indexOf(sel.lke.toLowerCase()) == -1) {
+              ok = false;
+              break;
+            }
+          }
+          else if (is_obj && sel.hasOwnProperty('nlk')) {
+            if (o[j] && o[j].toLowerCase().indexOf(sel.nlk.toLowerCase()) != -1) {
+              ok = false;
+              break;
+            }
+          }
 					else if (is_obj && sel.hasOwnProperty('not')) {
 						if (utils.is_equal(o[j], sel.not)) {
 							ok = false;
@@ -5559,12 +5571,20 @@ const utils = mime({
 						}
 					}
 					else if (is_obj && sel.hasOwnProperty('in')) {
-						ok = sel.in.some(function (element) {
-							return utils.is_equal(element, o[j]);
-						});
+						ok = sel.in.some((el) => utils.is_equal(el, o[j]));
 						if (!ok)
 							break;
 					}
+          else if (is_obj && sel.hasOwnProperty('inh')) {
+            ok = j === 'ref' ? o._hierarchy && o._hierarchy(sel.inh) : o[j]._hierarchy && o[j]._hierarchy(sel.inh);
+            if (!ok)
+              break;
+          }
+          else if (is_obj && sel.hasOwnProperty('ninh')) {
+            ok = !(j === 'ref' ? o._hierarchy && o._hierarchy(sel.inh) : o[j]._hierarchy && o[j]._hierarchy(sel.inh));
+            if (!ok)
+              break;
+          }
 					else if (is_obj && sel.hasOwnProperty('lt')) {
 						ok = o[j] < sel.lt;
 						if (!ok)
@@ -6597,7 +6617,7 @@ class MetaEngine$1 {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.2-beta.30';
+    return '2.0.2-beta.31';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

@@ -1,7 +1,7 @@
 {
   "name": "metadata-postgres",
   "description": "PostgreSQL data adapter for metadata.js",
-  "version": "2.0.2-beta.30",
+  "version": "2.0.2-beta.31",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {

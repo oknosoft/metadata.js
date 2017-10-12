@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import ReactDataGrid from 'react-data-grid';
+import ReactDataGrid from '../react-data-grid/react-data-grid';
 
 const {Row} = ReactDataGrid;
 
