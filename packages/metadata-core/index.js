@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.2-beta.31, built:2017-10-12
+ metadata-core v2.0.2-beta.31, built:2017-10-13
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -951,10 +951,10 @@ class CatObj extends DataObj {
     this.__notify('name');
     this._obj.name = String(v);
   }
-  get _children() {
+  _children(folders) {
     const res = [];
     this._manager.forEach((o) => {
-      if(o != this && o._hierarchy(this)) {
+      if(o != this && (!folders || o.is_folder) && o._hierarchy(this)) {
         res.push(o);
       }
     });
@@ -1759,52 +1759,79 @@ class RefDataManager extends DataManager{
 				s += ") AND (_t_.ref != '" + utils.blank.guid + "')";
 				if(attr.selection){
 					if(typeof attr.selection === "function"){
-					}else
-						attr.selection.forEach(sel => {
-							for(var key in sel){
-								if(typeof sel[key] == "function"){
-									s += "\n AND " + sel[key](t, key) + " ";
-								}else if(cmd.fields.hasOwnProperty(key) || key === "ref"){
-									if(sel[key] === true)
-										s += "\n AND _t_." + key + " ";
-									else if(sel[key] === false)
-										s += "\n AND (not _t_." + key + ") ";
-									else if(typeof sel[key] == "object"){
-										if(utils.is_data_obj(sel[key]) || utils.is_guid(sel[key]))
-											s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
-										else{
-											var keys = Object.keys(sel[key]),
-												val = sel[key][keys[0]],
-												mf = cmd.fields[key],
-												vmgr;
-											if(mf && mf.type.is_ref){
-												vmgr = t.value_mgr({}, key, mf.type, true, val);
-											}
-											if(keys[0] == "not")
-												s += "\n AND (not _t_." + key + " = '" + val + "') ";
-											else if(keys[0] == "in")
-												s += "\n AND (_t_." + key + " in (" + sel[key].in.reduce((sum, val) => {
-														if(sum){
-															sum+=",";
-														}
-														if(typeof val == "number"){
-															sum+=val.toString();
-														}else{
-															sum+="'" + val + "'";
-														}
-														return  sum;
-													}, "") + ")) ";
-											else
-												s += "\n AND (_t_." + key + " = '" + val + "') ";
-										}
-									}else if(typeof sel[key] == "string")
-										s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
-									else
-										s += "\n AND (_t_." + key + " = " + sel[key] + ") ";
-								} else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
-								}
-							}
-						});
+            attr.selection(s);
+					}
+					else{
+					  const and = "\n AND ";
+            attr.selection.forEach(sel => {
+              for(var key in sel){
+                if(typeof sel[key] == "function"){
+                  s += and + sel[key](t, key) + " ";
+                }
+                else if(cmd.fields.hasOwnProperty(key) || key === "ref"){
+                  if(sel[key] === true){
+                    s += and + "_t_." + key + " ";
+                  }
+                  else if(sel[key] === false){
+                    s += and + "(not _t_." + key + ") ";
+                  }
+                  else if(typeof sel[key] == "object"){
+                    if(utils.is_data_obj(sel[key]) || utils.is_guid(sel[key])){
+                      s += and + "(_t_." + key + " = '" + sel[key] + "') ";
+                    }
+                    else{
+                      var keys = Object.keys(sel[key]),
+                        val = sel[key][keys[0]],
+                        mf = cmd.fields[key] || t.metadata(key),
+                        vmgr;
+                      if(mf && mf.type.is_ref){
+                        vmgr = t.value_mgr({}, key, mf.type, true, val);
+                      }
+                      if(keys[0] == "not"){
+                        s += and + "(not _t_." + key + " = '" + val + "') ";
+                      }
+                      else if(keys[0] == "in"){
+                        s += and +  "(_t_." + key + " in (" + (Array.isArray(val) ? val : [val]).reduce((sum, val) => {
+                          if(sum){
+                            sum+=",";
+                          }
+                          sum+= typeof val == "number" ? val.toString() : "'" + val + "'";
+                          return  sum;
+                        }, "") + ")) ";
+                      }
+                      else if(keys[0] == "inh"){
+                        const folders = [];
+                        (Array.isArray(val) ? val : [val]).forEach((val) => {
+                          const folder = vmgr.get(val, true);
+                          if(folder && folder.is_folder) {
+                            if(folders.indexOf(folder) === -1){
+                              folders.push(folder);
+                              folder._children(true).forEach((child) => folders.indexOf(child) === -1 && folders.push(child));
+                            }
+                          }
+                        });
+                        s += and +  "(_t_." + key + " in (" + folders.reduce((sum, val) => {
+                          if(sum){
+                            sum+=",";
+                          }
+                          sum+= "'" + val.ref + "'";
+                          return  sum;
+                        }, "") + ")) ";
+                      }
+                      else{
+                        s += and + "(_t_." + key + " = '" + val + "') ";
+                      }
+                    }
+                  }else if(typeof sel[key] == "string")
+                    s += and + "(_t_." + key + " = '" + sel[key] + "') ";
+                  else
+                    s += and + "(_t_." + key + " = " + sel[key] + ") ";
+                }
+                else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
+                }
+              }
+            });
+          }
 				}
 				return s;
 			}
@@ -2087,14 +2114,13 @@ class EnumManager extends RefDataManager{
     return res;
   }
 	get(ref, do_not_create){
-		if(ref instanceof EnumObj)
-			return ref;
-		else if(!ref || ref == utils.blank.guid)
-			ref = "_";
-		var o = this[ref];
-		if(!o)
-			o = new EnumObj({name: ref}, this);
-		return o;
+		if(ref instanceof EnumObj){
+      return ref;
+    }
+		else if(!ref || ref == utils.blank.guid){
+      ref = "_";
+    }
+		return this[ref] || new EnumObj({name: ref}, this);
 	}
 	push(value, new_ref){
     this.by_ref[new_ref] = value;

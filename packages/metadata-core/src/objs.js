@@ -802,14 +802,15 @@ export class CatObj extends DataObj {
     this._obj.name = String(v);
   }
 
+
   /**
    * ### Дети
    * Возвращает массив элементов, находящихся в иерархии текущего
    */
-  get _children() {
+  _children(folders) {
     const res = [];
     this._manager.forEach((o) => {
-      if(o != this && o._hierarchy(this)) {
+      if(o != this && (!folders || o.is_folder) && o._hierarchy(this)) {
         res.push(o);
       }
     });
