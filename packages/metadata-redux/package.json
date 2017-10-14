@@ -1,7 +1,7 @@
 {
   "name": "metadata-redux",
   "description": "Actions and reducers for metadata.js",
-  "version": "2.0.2-beta.31",
+  "version": "2.0.3-beta.32",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {

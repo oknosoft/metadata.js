@@ -24,8 +24,6 @@ import {DataManager, EnumManager} from './mngrs';
 import {DataObj, DocObj} from './objs';
 import {TabularSection, TabularSectionRow} from './tabulars';
 
-import mime from './mime'
-
 /**
  * Отбрасываем часовой пояс при сериализации даты
  * @method toJSON
@@ -125,7 +123,7 @@ if (!Object.prototype.__define) {
  * @menuorder 35
  * @tooltip Вспомогательные методы
  */
-const utils = mime({
+const utils = {
 
 	moment,
 
@@ -808,7 +806,7 @@ const utils = mime({
 		return res;
 	},
 
-});
+};
 
 /**
  * ### Пустые значения даты и уникального идентификатора
@@ -822,7 +820,7 @@ utils.__define('blank', {
 		date: utils.fix_date('0001-01-01T00:00:00'),
 		guid: '00000000-0000-0000-0000-000000000000',
 		by_type: function (mtype) {
-			var v;
+			let v;
 			if (mtype.is_ref)
 				v = this.guid;
 			else if (mtype.date_part)

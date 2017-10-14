@@ -6,7 +6,6 @@
  * Created 05.10.2016
  */
 
-import meta from './meta';
 import meta_objs from './meta_objs';
 import log_manager from './log_manager';
 import scheme_settings from './scheme_settings';

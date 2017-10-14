@@ -35,14 +35,14 @@ class I18Handler {
 }
 
 class I18n {
-
 	constructor(syn) {
-		this.i18n = syn;
 		this._lang = Object.keys(syn)[0];
-		return new Proxy(this, new I18Handler());
+		if(typeof Proxy == 'function'){
+      this.i18n = syn;
+      return new Proxy(this, new I18Handler());
+    };
+    return syn[this._lang];
 	}
-
-
 }
 
 /**
@@ -255,18 +255,5 @@ const msg = new I18n({
 
 	},
 });
-
-// msg.lang = 'ru';
-//
-// msg.i18n = ;
-
-// // временная мера: дублируем свойсва i18n внутри msg()
-// for (let id in msg.i18n.ru) {
-// 	Object.defineProperty(msg, id, {
-// 		get: function () {
-// 			return msg.i18n.ru[id];
-// 		},
-// 	});
-// }
 
 export default msg;

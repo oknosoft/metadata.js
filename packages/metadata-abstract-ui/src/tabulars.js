@@ -1,7 +1,6 @@
 /**
- * ### Расширение функциональности TabularSection + docx + xlsx
- *
- * @module tabulars
+ * Плагин-модификатор для metadata.js
+ * Расширение функциональности TabularSection + docx + xlsx
  *
  * Created 09.01.2017
  */

@@ -7,6 +7,7 @@
 
 import utils from './utils';
 
+//import alasql from 'alasql/dist/alasql.min';
 const alasql = (typeof window != 'undefined' && window.alasql) || require('alasql/dist/alasql.min');
 
 const fake_ls = {
