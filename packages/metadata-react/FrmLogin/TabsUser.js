@@ -10,7 +10,7 @@ import {DialogActions} from 'material-ui/Dialog';
 
 import DataField from '../DataField';
 import CnnSettings from './CnnSettings';
-import withPrm from 'metadata-redux/src/withPrm';
+import {withPrm} from 'metadata-redux/with.min';
 import withStyles from '../styles/paper600';
 
 class TabsUser extends Component {

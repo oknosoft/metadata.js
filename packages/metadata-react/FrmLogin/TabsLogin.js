@@ -8,7 +8,7 @@ import {FormGroup} from 'material-ui/Form';
 import {DialogActions} from 'material-ui/Dialog';
 
 import CnnSettings from './CnnSettings';
-import withPrm from 'metadata-redux/src/withPrm';
+import {withPrm} from 'metadata-redux/with.min';
 import withStyles from '../styles/paper600';
 
 class TabsLogin extends Component {

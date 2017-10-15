@@ -61,6 +61,9 @@
     "gulp-uglify": "^2.1",
     "gulp-umd": "^0.2",
     "gulp-wrap": "^0.13.0",
+    "react-redux": "^5.0.6",
+    "react-router-dom": "^4.2.2",
+    "react-router-redux": "^5.0.0-alpha.6",
     "rimraf": "^2.6.2",
     "rollup": "0.48.2",
     "rollup-plugin-cleanup": "^1.0.1",
@@ -81,8 +84,7 @@
     "build:abstract-ui": "node ./packages/metadata-abstract-ui/build.js",
     "build:adapter-pouchdb": "node ./packages/metadata-pouchdb/build.js",
     "build:redux": "node ./packages/metadata-redux/build.js",
-    "build:superlogin": "node ./packages/metadata-superlogin/build.js",
-    "react-data-grid:link": "npm link react-data-grid react-data-grid-addons"
+    "build:superlogin": "node ./packages/metadata-superlogin/build.js"
   },
   "bin": {
     "metadata": "./bin/metadata-cli.js"

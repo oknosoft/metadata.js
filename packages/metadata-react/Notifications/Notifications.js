@@ -14,7 +14,7 @@ import NotificationsIcon from 'material-ui-icons/Notifications';
 import NotificationsIconActive from 'material-ui-icons/NotificationsActive';
 import NotificationsIconNone from 'material-ui-icons/NotificationsNone';
 
-import withIface from 'metadata-redux/src/withIface';
+import {withIface} from 'metadata-redux/with.min';
 
 class Notifications extends Component {
 

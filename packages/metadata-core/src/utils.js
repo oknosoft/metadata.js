@@ -115,7 +115,6 @@ if (!Object.prototype.__define) {
 	});
 }
 
-
 /**
  * ### Коллекция вспомогательных методов
  * @class Utils

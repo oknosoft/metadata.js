@@ -3,8 +3,7 @@ import React, {Component} from 'react';
 import TabsLogin from './TabsLogin';
 import TabsUser from './TabsUser';
 
-import withMeta from 'metadata-redux/src/withMeta';
-import withIface from 'metadata-redux/src/withIface';
+import {withMeta, withIface} from 'metadata-redux/with.min';
 
 class FrmLogin extends Component {
 

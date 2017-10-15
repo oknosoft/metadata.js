@@ -29,7 +29,6 @@ const config = {
     //library: ['MetaEngine'],
     libraryTarget: 'umd'
   },
-  //externals: Object.keys(package_data.dependencies),
   externals: {
     'react': {
       root: 'React',
