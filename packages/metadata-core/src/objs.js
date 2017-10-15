@@ -329,12 +329,18 @@ export class DataObj {
   get _deleted() {
     return !!this._obj._deleted;
   }
+  set _deleted(v) {
+    return this._obj._deleted = !!v;
+  }
 
   /**
    * Признак модифицированности
    */
   get _modified() {
     return !!this._data._modified;
+  }
+  set _modified(v) {
+    this._data._modified = !!v;
   }
 
   /**
@@ -373,7 +379,6 @@ export class DataObj {
   get class_name() {
     return this._manager.class_name;
   }
-
   set class_name(v) {
     return this._obj.class_name = v;
   }
@@ -767,7 +772,6 @@ export class CatObj extends DataObj {
       return this._presentation || '';
     }
   }
-
   set presentation(v) {
     if(v) {
       this._presentation = String(v);
@@ -782,7 +786,6 @@ export class CatObj extends DataObj {
   get id() {
     return this._obj.id || '';
   }
-
   set id(v) {
     this.__notify('id');
     this._obj.id = v;
@@ -796,7 +799,6 @@ export class CatObj extends DataObj {
   get name() {
     return this._obj.name || '';
   }
-
   set name(v) {
     this.__notify('name');
     this._obj.name = String(v);

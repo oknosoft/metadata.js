@@ -718,8 +718,13 @@ class DataObj {
   get _deleted() {
     return !!this._obj._deleted;
   }
+  set _deleted(v) {
+    return this._obj._deleted = !!v;
+  }
   get _modified() {
     return !!this._data._modified;
+  }
+  set _modified(v) {
   }
   is_new() {
     return !this._data || this._data._is_new;
