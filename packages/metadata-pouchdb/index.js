@@ -144,32 +144,28 @@ var proto = (constructor) => {
 };
 
 let PouchDB;
-if(typeof process !== 'undefined' && process.versions && process.versions.node){
-	PouchDB = require('pouchdb-core')
-		.plugin(require('pouchdb-adapter-http'))
-		.plugin(require('pouchdb-replication'))
-		.plugin(require('pouchdb-mapreduce'))
-		.plugin(require('pouchdb-find'))
-		.plugin(require('pouchdb-adapter-memory'));
+if(typeof process !== 'undefined' && process.versions && process.versions.node) {
+  PouchDB = require('pouchdb-core')
+    .plugin(require('pouchdb-adapter-http'))
+    .plugin(require('pouchdb-replication'))
+    .plugin(require('pouchdb-mapreduce'))
+    .plugin(require('pouchdb-find'))
+    .plugin(require('pouchdb-adapter-memory'));
 }
-else{
-	if(window.PouchDB){
-		PouchDB = window.PouchDB;
-	}
-	else{
-		PouchDB = require('pouchdb-core')
-			.plugin(require('pouchdb-adapter-http'))
-			.plugin(require('pouchdb-replication'))
-			.plugin(require('pouchdb-mapreduce'))
-			.plugin(require('pouchdb-find'))
-			.plugin(require('pouchdb-authentication'));
-		const ua = (navigator && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
-		if(ua.match('safari') && !ua.match('chrome')){
-			PouchDB.plugin(require('pouchdb-adapter-websql'));
-		}else{
-			PouchDB.plugin(require('pouchdb-adapter-idb'));
-		}
-	}
+else {
+  if(window.PouchDB) {
+    PouchDB = window.PouchDB;
+  }
+  else {
+    const ua = (navigator && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
+    PouchDB = window.PouchDB = require('pouchdb-core').default
+      .plugin(require('pouchdb-adapter-http').default)
+      .plugin(require('pouchdb-replication').default)
+      .plugin(require('pouchdb-mapreduce').default)
+      .plugin(require('pouchdb-find').default)
+      .plugin(require('pouchdb-authentication'))
+      .plugin(ua.match('safari') && !ua.match('chrome') ? require('pouchdb-adapter-websql').default : require('pouchdb-adapter-idb').default);
+  }
 }
 var PouchDB$1 = PouchDB;
 

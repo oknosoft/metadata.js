@@ -10,10 +10,10 @@ function getPlugins() {
 
   if(RELEASE) {
     pluginsBase.push(new webpack.optimize.AggressiveMergingPlugin());
-    pluginsBase.push(new webpack.optimize.UglifyJsPlugin({
-      include: /\.min\.js$/,
-      compress: {warnings: false}
-    }));
+    // pluginsBase.push(new webpack.optimize.UglifyJsPlugin({
+    //   include: /\.min\.js$/,
+    //   compress: {warnings: false}
+    // }));
   }
   return pluginsBase;
 }

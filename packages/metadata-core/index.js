@@ -725,6 +725,7 @@ class DataObj {
     return !!this._data._modified;
   }
   set _modified(v) {
+    this._data._modified = !!v;
   }
   is_new() {
     return !this._data || this._data._is_new;
