@@ -14,10 +14,10 @@
   },
   "peerDependencies": {
     "classnames": "^2.2",
-    "material-ui": "^1.0.0-beta.16",
-    "material-ui-icons": "^1.0.0-beta.15",
+    "material-ui": "^1.0.0-beta.17",
+    "material-ui-icons": "^1.0.0-beta.17",
     "metadata-abstract-ui": "^2.0.3-beta.32",
-    "rc-calendar": "^9.1.9",
+    "rc-calendar": "^9.1.10",
     "rc-cascader": "^0.11.6",
     "rc-time-picker": "^2.4.1",
     "react-onclickoutside": "^6.5",
