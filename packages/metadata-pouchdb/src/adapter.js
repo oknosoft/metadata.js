@@ -118,7 +118,7 @@ function adapter({AbstracrAdapter}) {
               const {superlogin, md} = this.$p;
 
               function dbpath(name) {
-                if(superlogin) {
+                if(superlogin && superlogin._session) {
                   return superlogin.getDbUrl(_paths.prefix + (name == 'meta' ? name : (_paths.zone + '_' + name)));
                 }
                 else {
@@ -176,7 +176,7 @@ function adapter({AbstracrAdapter}) {
         log_in: {
           value: function (username, password) {
 
-            const {job_prm, wsql, aes, md} = this.$p;
+            const {job_prm, wsql, aes, superlogin, md} = this.$p;
 
             // реквизиты гостевого пользователя для демобаз
             if(username == undefined && password == undefined) {
@@ -229,8 +229,7 @@ function adapter({AbstracrAdapter}) {
                 }
 
                 // излучаем событие
-                //t.emit('user_log_in', username)
-                t.emit_async('user_log_in', username);
+                t.emit_async(superlogin ? 'superlogin_log_in' : 'user_log_in', username);
 
                 // запускаем синхронизацию для нужных баз
                 try_auth.length = 0;

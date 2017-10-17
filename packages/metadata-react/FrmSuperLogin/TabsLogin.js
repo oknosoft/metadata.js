@@ -1,204 +1,189 @@
 import React from 'react';
-import {Tabs, Tab} from 'material-ui/Tabs';
+import Tabs, {Tab} from 'material-ui/Tabs';
 import Paper from 'material-ui/Paper';
 import TextField from 'material-ui/TextField';
-import RaisedButton from 'material-ui/RaisedButton';
+import Button from 'material-ui/Button';
+import {FormGroup} from 'material-ui/Form';
+import {DialogActions} from 'material-ui/Dialog';
+import Grid from 'material-ui/Grid';
 import Divider from 'material-ui/Divider';
-import Subheader from 'material-ui/Subheader';
+import Typography from 'material-ui/Typography';
 
-import {blue500, red500} from 'material-ui/styles/colors';
-import {YandexIcon, GoogleIcon, FacebookIcon, VkontakteIcon} from './assets/icons';
+import {blue, red} from 'material-ui/colors';
+import {FacebookIcon, GitHubIcon, GoogleIcon, YandexIcon} from './assets/icons';
 
+import withStyles from '../styles/paper600';
+import classnames from 'classnames';
 
-import classes from "./FrmSuperLogin.scss";
+import {connect} from 'react-redux';
 
-export default class TabsLogin extends React.Component {
+class TabsLogin extends React.Component {
 
   constructor(props) {
     super(props);
+    let password = '';
+    try {
+      password = props.user_pwd && $p.aes.Ctr.decrypt(props.user_pwd);
+    }
+    catch (e) {
+    }
     this.state = {
-      tab_value: 'a',
-      btn_login_disabled: !this.props.login || !this.props.password
+      index: 0,
+      login: props.user_name,
+      password,
     };
   }
 
-  tabChange = (tab_value) => {
-    if (tab_value === 'a' || tab_value === 'b') {
-      this.setState({
-        tab_value: tab_value,
-      });
-    }
-  };
-
   handleTextChange = () => {
     this.setState({
-      btn_login_disabled: !this.refs.login.input.value || !this.refs.password.input.value
+      btn_login_disabled: !this.state.login || !this.state.password
     });
-  }
+  };
 
-  buttonTouchTap(provider) {
-    return () => {
-      this.props.handleSocialAuth(provider)
-    }
+  handleChange = name => event => {
+    this.setState({
+      [name]: event.target.value,
+    }, this.handleTextChange);
+  };
+
+  oauthClick(provider) {
+    return this.props.handleSocialAuth(provider);
   }
 
   handleLogin = () => {
-    this.props.handleLogin(this.refs.login.input.value, this.refs.password.input.value)
-  }
+    this.props.handleLogin(this.state.login, this.state.password);
+  };
 
   handleRegister = () => {
-
     this.props.handleRegister({
-      name: this.refs.reg_name.input.value,
-      username: this.refs.reg_username.input.value,
-      email: this.refs.reg_email.input.value,
-      password: this.refs.reg_password.input.value,
-      confirmPassword: this.refs.reg_confirmPassword.input.value
-    })
-  }
+      name: this.state.name,
+      username: this.state.username,
+      email: this.state.email,
+      password: this.state.password,
+      confirmPassword: this.state.confirmPassword,
+    });
+  };
 
 
   render() {
+    const {props, state, handleLogin} = this;
+    const {classes, handleLogOut} = props;
+    const btn = classnames(classes.button, classes.fullWidth);
+
     return (
 
-      <div className={classes.paper}>
+      <Paper className={classes.root} elevation={4}>
 
-        <Paper zDepth={3} rounded={false}>
+        <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
+          <Tab label="Вход"/>
+          <Tab label="Регистрация"/>
+        </Tabs>
 
-          <Tabs
-            value={this.state.tab_value}
-            onChange={this.tabChange}
-          >
-            <Tab label="Вход" value="a">
+        {state.index === 0 &&
+        <FormGroup>
+          <TextField
+            placeholder="Имя пользователя"
+            label="Имя пользователя (login)"
+            defaultValue={this.props.login}
+            onChange={this.handleChange('login')}
+          />
 
-              <div className={classes.sub_paper}>
+          <TextField
+            placeholder="Пароль"
+            label="Пароль"
+            type="password"
+            defaultValue={this.props.password}
+            onChange={this.handleChange('password')}
+          />
 
-                <TextField
-                  ref="login"
-                  hintText="login"
-                  floatingLabelText="Имя пользователя"
-                  defaultValue={this.props.login}
-                  onChange={this.handleTextChange}
-                />
+          <DialogActions>
+            <Button color="primary" dense disabled={state.btn_login_disabled} className={classes.button} onClick={this.handleLogin}>Войти</Button>
+            <Button color="primary" dense disabled={true} className={classes.button}>Забыли пароль?</Button>
+          </DialogActions>
 
-                <TextField
-                  ref="password"
-                  hintText="password"
-                  floatingLabelText="Пароль"
-                  type="password"
-                  defaultValue={this.props.password}
-                  onChange={this.handleTextChange}
-                />
-                <br />
+        </FormGroup>
+        }
+        {state.index === 0 &&
+        <FormGroup>
+          <Divider/>
+          <Typography type="subheading" color="inherit">Вы можете авторизоваться при помощи учетных записей социальных сетей:</Typography>
+          <Grid container spacing={24}>
+            <Grid item xs={12} sm={6}>
+              <Button raised dense className={btn} onClick={this.oauthClick('google')}>
+                <GoogleIcon viewBox="0 0 256 262" style={{height: 18}} color={blue[500]}/> Google
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Button raised dense className={btn} onClick={this.oauthClick('yandex')}>
+                <YandexIcon viewBox="0 0 180 190" style={{height: 18}} color={red[500]}/> Яндекс
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Button raised dense className={btn} onClick={this.oauthClick('facebook')}>
+                <FacebookIcon viewBox="0 0 450 450" style={{height: 18}} color="#3A559F"/> Facebook
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Button raised dense className={btn} onClick={this.oauthClick('github')}>
+                <GitHubIcon viewBox="0 0 256 250" style={{height: 18}}/> GitHub
+              </Button>
+            </Grid>
+          </Grid>
 
-                <RaisedButton label="Войти"
-                              disabled={this.state.btn_login_disabled}
-                              className={classes.button}
-                              onClick={this.handleLogin}/>
+        </FormGroup>
+        }
 
-                <RaisedButton label="Забыли пароль?"
-                              disabled={true}
-                              className={classes.button}/>
+        {state.index === 1 &&
+        <FormGroup>
+          <TextField
+            onChange={this.handleChange('name')}
+            fullWidth
+            placeholder="Полное имя"
+            label="Полное имя"
+          /><br/>
+          <TextField
+            onChange={this.handleChange('username')}
+            fullWidth
+            placeholder="Имя пользователя"
+            label="Имя пользователя (login)"
+          /><br/>
+          <TextField
+            onChange={this.handleChange('email')}
+            fullWidth
+            placeholder="Электронная почта"
+            label="Электронная почта"
+          /><br/>
+          <TextField
+            onChange={this.handleChange('password')}
+            fullWidth
+            placeholder="Пароль"
+            label="Пароль"
+            type="password"
+          /><br/>
+          <TextField
+            onChange={this.handleChange('confirmPassword')}
+            fullWidth
+            placeholder="Подтвердить пароль"
+            label="Подтвердить пароль"
+            type="password"
+          />
 
-              </div>
+          <DialogActions>
+            <Button color="primary" dense className={classes.button} onClick={this.handleRegister}>Регистрация</Button>
+          </DialogActions>
+        </FormGroup>
+        }
 
-              <div className={classes.sub_paper}>
-
-                <Subheader className={classes.subheader}>Вы можете авторизоваться при помощи учетных записей социальных сетей:</Subheader>
-
-                <RaisedButton
-                  label="Google"
-                  className={classes.social_button}
-                  labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
-                  icon={<GoogleIcon viewBox="0 0 256 262" style={{width: 18, height: 18}} color={blue500}/>}
-                  onClick={this.buttonTouchTap("google")}
-                /><br />
-                <RaisedButton
-                  label="Яндекс"
-                  className={classes.social_button}
-                  labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
-                  icon={<YandexIcon viewBox="0 0 180 190" style={{width: 18, height: 18}} color={red500}/>}
-                  onClick={this.buttonTouchTap("yandex")}
-                /><br />
-                <RaisedButton
-                  label="Facebook"
-                  className={classes.social_button}
-                  labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
-                  icon={<FacebookIcon viewBox="0 0 450 450" style={{width: 18, height: 18}} color="#3A559F"/>}
-                  onClick={this.buttonTouchTap("facebook")}
-                /><br />
-                <RaisedButton
-                  label="В контакте"
-                  className={classes.social_button}
-                  labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
-                  icon={<VkontakteIcon viewBox="50 50 400 400" style={{width: 18, height: 18}} color="#4c75a3"/>}
-                  onClick={this.buttonTouchTap("vkontakte")}
-                />
-
-                {/*
-                 <RaisedButton
-                 label="GitHub"
-                 className={classes.social_button}
-                 labelStyle={{width: 110, textAlign: 'left', display: 'inline-block'}}
-                 icon={<GitHubIcon viewBox="0 0 256 250" style={{width: 18, height: 18}}/>}
-                 onClick={this.buttonTouchTap("github")}
-                 />
-                 */}
-
-              </div>
-
-            </Tab>
-
-            <Tab label="Регистрация" value="b">
-
-              <div style={{padding: 18}}>
-                <TextField
-                  ref="reg_name"
-                  hintText="name"
-                  fullWidth={true}
-                  floatingLabelText="Полное имя"
-                /><br />
-                <TextField
-                  ref="reg_username"
-                  hintText="username"
-                  fullWidth={true}
-                  floatingLabelText="Имя пользователя"
-                /><br />
-                <TextField
-                  ref="reg_email"
-                  hintText="email"
-                  fullWidth={true}
-                  floatingLabelText="Электронная почта"
-                /><br />
-                <TextField
-                  ref="reg_password"
-                  hintText="password"
-                  fullWidth={true}
-                  floatingLabelText="Пароль"
-                  type="password"
-                /><br />
-                <TextField
-                  ref="reg_confirmPassword"
-                  hintText="confirmPassword"
-                  fullWidth={true}
-                  floatingLabelText="Подтвердить пароль"
-                  type="password"
-                />
-
-                <RaisedButton label="Регистрация"
-                              className={classes.button}
-                              onClick={this.handleRegister}/>
-
-              </div>
-
-            </Tab>
-
-          </Tabs>
-
-        </Paper>
-
-      </div>
+      </Paper>
 
     );
   }
 }
+
+
+export default withStyles(connect(null, (dispatch) => ({
+  handleSocialAuth: (provider) => {
+    const fn = $p.superlogin._actions.handleSocialAuth(provider);
+    return () => fn(dispatch);
+  },
+}))(TabsLogin));

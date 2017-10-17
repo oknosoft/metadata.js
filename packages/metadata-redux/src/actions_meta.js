@@ -12,8 +12,29 @@ import * as obj from './actions_obj';
 import * as pouch from './actions_pouch';
 import * as base from './actions_base';
 
-
 export default {
+
+  types: {
+    [auth.TRY_LOG_IN]: auth.TRY_LOG_IN,
+    [auth.LOG_IN]: auth.LOG_IN,
+    [auth.DEFINED]: auth.DEFINED,
+    [auth.LOG_OUT]: auth.LOG_OUT,
+    [auth.LOG_ERROR]: auth.LOG_ERROR,
+    [auth.SOCIAL_TRY_LINK]: auth.SOCIAL_TRY_LINK,
+    [auth.SOCIAL_LINKED]: auth.SOCIAL_LINKED,
+    [auth.SOCIAL_UNLINKED]: auth.SOCIAL_UNLINKED,
+
+    [pouch.DATA_LOADED]: pouch.DATA_LOADED,
+    [pouch.DATA_PAGE]: pouch.DATA_PAGE,
+    [pouch.DATA_ERROR]: pouch.DATA_ERROR,
+    [pouch.LOAD_START]: pouch.LOAD_START,
+    [pouch.NO_DATA]: pouch.NO_DATA,
+    [pouch.SYNC_DATA]: pouch.SYNC_DATA,
+    [pouch.SYNC_ERROR]: pouch.SYNC_ERROR,
+    [pouch.SYNC_PAUSED]: pouch.SYNC_PAUSED,
+    [pouch.SYNC_RESUMED]: pouch.SYNC_RESUMED,
+
+  },
 
   [base.META_LOADED]: base.meta_loaded,
   [base.PRM_CHANGE]: base.prm_change,

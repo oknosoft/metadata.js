@@ -2,20 +2,14 @@ import React, {Component} from 'react';
 
 import TabsLogin from './TabsLogin';
 import TabsUser from './TabsUser';
-
+import compose from 'recompose/compose';
 import {withMeta, withIface} from 'metadata-redux/with.min';
 
-class FrmLogin extends Component {
+function FrmLogin({ classes, ...other}) {
+  return (other.user.logged_in && other._obj) ?
+    < TabsUser {...other} />
+    :
+    < TabsLogin {...other} />;
+};
 
-  render() {
-    const {props} = this;
-
-    return (props.user.logged_in && props._obj) ?
-      < TabsUser {...props} />
-      :
-      < TabsLogin {...props} />;
-  }
-
-}
-
-export default withIface(withMeta(FrmLogin));
+export default compose(withIface, withMeta)(FrmLogin);

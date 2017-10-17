@@ -3,7 +3,7 @@ import withStyles from 'material-ui/styles/withStyles';
 export default withStyles(theme => ({
   root: theme.mixins.gutters({
     maxWidth: 600,
-    marginTop: 24,
+    marginTop: theme.custom && theme.custom.appbar.position == 'fixed' ? 72 : 24,
     marginLeft: 'auto',
     marginRight: 'auto',
   }),
@@ -16,4 +16,7 @@ export default withStyles(theme => ({
   button: {
     margin: theme.spacing.unit,
   },
-}));
+  fullWidth: {
+    width: '100%',
+  }
+}), {name: 'Paper600'});

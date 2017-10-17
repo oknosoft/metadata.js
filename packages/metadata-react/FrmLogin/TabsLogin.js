@@ -15,10 +15,16 @@ class TabsLogin extends Component {
 
   constructor(props) {
     super(props);
+    let password = '';
+    try{
+      password = props.user_pwd && $p.aes.Ctr.decrypt(props.user_pwd);
+    }
+    catch(e){
+    }
     this.state = {
       index: 0,
       login: props.user_name,
-      password: $p.aes.Ctr.decrypt(props.user_pwd),
+      password,
     };
 
     this.handleLogin = this.handleLogin.bind(this);

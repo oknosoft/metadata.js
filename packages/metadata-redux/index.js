@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.3-beta.32, built:2017-10-15
+ metadata-redux v2.0.3-beta.32, built:2017-10-17
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -15,9 +15,9 @@ const LOG_IN = 'USER_LOG_IN';
 const DEFINED = 'USER_DEFINED';
 const LOG_OUT = 'USER_LOG_OUT';
 const LOG_ERROR = 'USER_LOG_ERROR';
-
-
-
+const SOCIAL_TRY_LINK = 'USER_SOCIAL_TRY_LINK';
+const SOCIAL_LINKED = 'USER_SOCIAL_LINKED';
+const SOCIAL_UNLINKED = 'USER_SOCIAL_UNLINKED';
 function defined(name) {
   return {
     type: DEFINED,
@@ -332,6 +332,25 @@ function prm_change(name, value) {
 }
 
 var actions_meta = {
+  types: {
+    [TRY_LOG_IN]: TRY_LOG_IN,
+    [LOG_IN]: LOG_IN,
+    [DEFINED]: DEFINED,
+    [LOG_OUT]: LOG_OUT,
+    [LOG_ERROR]: LOG_ERROR,
+    [SOCIAL_TRY_LINK]: SOCIAL_TRY_LINK,
+    [SOCIAL_LINKED]: SOCIAL_LINKED,
+    [SOCIAL_UNLINKED]: SOCIAL_UNLINKED,
+    [DATA_LOADED]: DATA_LOADED,
+    [DATA_PAGE]: DATA_PAGE,
+    [DATA_ERROR]: DATA_ERROR,
+    [LOAD_START]: LOAD_START,
+    [NO_DATA]: NO_DATA,
+    [SYNC_DATA]: SYNC_DATA,
+    [SYNC_ERROR]: SYNC_ERROR,
+    [SYNC_PAUSED]: SYNC_PAUSED,
+    [SYNC_RESUMED]: SYNC_RESUMED,
+  },
   [META_LOADED]: meta_loaded,
   [PRM_CHANGE]: prm_change,
   [TRY_LOG_IN]: try_log_in,

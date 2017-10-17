@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.3-beta.32, built:2017-10-15
+ metadata-pouchdb v2.0.3-beta.32, built:2017-10-17
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -235,7 +235,7 @@ function adapter({AbstracrAdapter}) {
               _remote = {};
               const {superlogin, md} = this.$p;
               function dbpath(name) {
-                if(superlogin) {
+                if(superlogin && superlogin._session) {
                   return superlogin.getDbUrl(_paths.prefix + (name == 'meta' ? name : (_paths.zone + '_' + name)));
                 }
                 else {
@@ -275,7 +275,7 @@ function adapter({AbstracrAdapter}) {
         },
         log_in: {
           value: function (username, password) {
-            const {job_prm, wsql, aes, md} = this.$p;
+            const {job_prm, wsql, aes, superlogin, md} = this.$p;
             if(username == undefined && password == undefined) {
               if(job_prm.guests && job_prm.guests.length) {
                 username = job_prm.guests[0].username;
@@ -315,7 +315,7 @@ function adapter({AbstracrAdapter}) {
                 else if(wsql.get_user_param('user_pwd') != '') {
                   wsql.set_user_param('user_pwd', '');
                 }
-                t.emit_async('user_log_in', username);
+                t.emit_async(superlogin ? 'superlogin_log_in' : 'user_log_in', username);
                 try_auth.length = 0;
                 md.bases().forEach((dbid) => {
                   if(t.local[dbid] && t.remote[dbid] && t.local[dbid] != t.remote[dbid]) {

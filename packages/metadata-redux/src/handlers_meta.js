@@ -9,8 +9,6 @@ import {DATA_LOADED, DATA_PAGE, DATA_ERROR, LOAD_START, NO_DATA, SYNC_DATA, SYNC
 import {DEFINED, LOG_IN, TRY_LOG_IN, LOG_OUT, LOG_ERROR, reset_user} from './actions_auth';
 import {ADD, CHANGE} from './actions_obj';
 
-
-
 export default {
 
   [META_LOADED]: (state, action) => {

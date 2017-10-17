@@ -1,73 +1,52 @@
-import React, {Component} from "react";
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {Tabs, Tab} from 'material-ui/Tabs';
+import Tabs, {Tab} from 'material-ui/Tabs';
 import Paper from 'material-ui/Paper';
 import TextField from 'material-ui/TextField';
-import RaisedButton from 'material-ui/RaisedButton';
+import Button from 'material-ui/Button';
+import Grid from 'material-ui/Grid';
 import Divider from 'material-ui/Divider';
 import DataField from '../DataField';
-import Subheader from 'material-ui/Subheader';
-import {blue500, red500} from 'material-ui/styles/colors';
-import {YandexIcon, GoogleIcon, FacebookIcon, VkontakteIcon} from './assets/icons';
+import Typography from 'material-ui/Typography';
+import {FacebookIcon, GitHubIcon, GoogleIcon, YandexIcon} from './assets/icons';
 
-import CircularProgress from "material-ui/CircularProgress";
+import {FormGroup} from 'material-ui/Form';
+import {DialogActions} from 'material-ui/Dialog';
 
-import classes from "./FrmSuperLogin.scss";
+import {red, blue} from 'material-ui/colors';
 
-const styles = {
-  root: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-    padding: '8px'
-  },
-  block: {
-    //flex: '1 100%',
-    fontWeight: 'bold'
-  }
-}
+import withStyles from '../styles/paper600';
+import classnames from 'classnames';
 
-export default class UserObj extends Component {
-
-  static contextTypes = {
-    screen: PropTypes.object.isRequired
-  }
+class UserObj extends Component {
 
   static propTypes = {
 
     _obj: PropTypes.object,
     _acl: PropTypes.string.isRequired,
 
-    handleSave: PropTypes.func.isRequired,
-    handleRevert: PropTypes.func.isRequired,
-    handleMarkDeleted: PropTypes.func.isRequired,
-    handlePost: PropTypes.func.isRequired,
-    handleUnPost: PropTypes.func.isRequired,
-    handlePrint: PropTypes.func.isRequired,
-    handleAttachment: PropTypes.func.isRequired,
-    handleValueChange: PropTypes.func.isRequired,
-    handleAddRow: PropTypes.func.isRequired,
-    handleDelRow: PropTypes.func.isRequired
-  }
+    handleSave: PropTypes.func,
+    handleRevert: PropTypes.func,
+    handleMarkDeleted: PropTypes.func,
+    handlePost: PropTypes.func,
+    handleUnPost: PropTypes.func,
+    handlePrint: PropTypes.func,
+    handleAttachment: PropTypes.func,
+    handleValueChange: PropTypes.func,
+    handleAddRow: PropTypes.func,
+    handleDelRow: PropTypes.func,
+  };
 
   constructor(props) {
     super(props);
     this.state = {
-      tab_value: 'a',
-      btn_login_disabled: !this.props.login || !this.props.password
+      index: 0,
+      login: props.user_name,
     };
   }
 
-  tabChange = (tab_value) => {
-    if (tab_value === 'a' || tab_value === 'b') {
-      this.setState({
-        tab_value: tab_value,
-      });
-    }
-  };
-
-  handleLogOut = () => {
-    this.props.handleLogOut()
+  oauthClick(provider) {
+    return () => $p.superlogin._actions.handleSocialAuth(provider);
   }
 
   handleSave() {
@@ -93,109 +72,76 @@ export default class UserObj extends Component {
 
   render() {
 
-    const {screen} = this.context
-    const {_obj} = this.props
+    const {props, state} = this;
+    const {classes, handleLogOut, _obj} = props;
+    const btn = classnames(classes.button, classes.fullWidth);
 
+    return _obj ?
 
-    return (
+      <Paper className={classes.root} elevation={4}>
 
+        <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
+          <Tab label="Пользователь"/>
+          <Tab label="Социальные сети"/>
+        </Tabs>
 
-      <div className={classes.paper}>
-
-        {
-          _obj
-
-            ?
-            <Paper zDepth={3} rounded={false}>
-
-              <Tabs
-                value={this.state.tab_value}
-                onChange={this.tabChange}
-              >
-                <Tab label="Физлицо" value="a">
-
-                  <div className={classes.padding18}>
-
-                    <DataField _obj={_obj} _fld="id"/>
-                    <DataField _obj={_obj} _fld="name"/>
-                    <DataField _obj={_obj} _fld="sex"/>
-                    <DataField _obj={_obj} _fld="birth_date"/>
-                    <DataField _obj={_obj} _fld="birth_place"/>
-                    <DataField _obj={_obj} _fld="category"/>
-                    <DataField _obj={_obj} _fld="inn"/>
-                    <DataField _obj={_obj} _fld="snils"/>
-                    <DataField _obj={_obj} _fld="citizenship"/>
-                    <DataField _obj={_obj} _fld="ОсновноеУдостоверение"/>
-                    <DataField _obj={_obj} _fld="стрМестоРаботы"/>
-                    <DataField _obj={_obj} _fld="стрДолжность"/>
-                    <DataField _obj={_obj} _fld="АдресРегистрации"/>
-                    <DataField _obj={_obj} _fld="АдресФактический"/>
-                    <DataField _obj={_obj} _fld="phone"/>
-                    <DataField _obj={_obj} _fld="email"/>
-                    <DataField _obj={_obj} _fld="rank"/>
-
-                    <br />
-                    <Divider />
-
-                    <Button className={classes.button} onClick={this.handleSave}>Сохранить</Button>
-
-                    <Button className={classes.button} onClick={this.handleLogOut}>Выйти</Button>
-
-                  </div>
-
-                </Tab>
-
-                <Tab label="Социальные сети" value="b">
-
-                  <div className={classes.padding18}>
-
-                    <Subheader>Привязка профилей социальных сетей</Subheader>
-
-                    <RaisedButton
-                      label="Google"
-                      className={classes.social_button}
-                      labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
-                      icon={<GoogleIcon viewBox="0 0 256 262" style={{width: 18, height: 18}} color={blue500}/>}
-                      //onClick={this.buttonTouchTap("google")}
-                    /><br />
-                    <RaisedButton
-                      label="Яндекс"
-                      className={classes.social_button}
-                      labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
-                      icon={<YandexIcon viewBox="0 0 180 190" style={{width: 18, height: 18}} color={red500}/>}
-                      //onClick={this.buttonTouchTap("yandex")}
-                    /><br />
-                    <RaisedButton
-                      label="Facebook"
-                      className={classes.social_button}
-                      labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
-                      icon={<FacebookIcon viewBox="0 0 450 450" style={{width: 18, height: 18}} color="#3A559F"/>}
-                      //onClick={this.buttonTouchTap("facebook")}
-                    /><br />
-                    <RaisedButton
-                      label="В контакте"
-                      className={classes.social_button}
-                      labelStyle={{width: 120, textAlign: 'left', display: 'inline-block'}}
-                      icon={<VkontakteIcon viewBox="50 50 400 400" style={{width: 18, height: 18}} color="#4c75a3"/>}
-                      //onClick={this.buttonTouchTap("vkontakte")}
-                    />
-
-                  </div>
-
-                </Tab>
-
-              </Tabs>
-
-            </Paper>
-
-            :
-            <div >
-              <CircularProgress size={120} thickness={5} className={classes.progress}/>
-            </div>
+        {state.index === 0 &&
+        <div>
+          <DataField _obj={_obj} _fld="id"/>
+          <DataField _obj={_obj} _fld="name"/>
+          <DataField _obj={_obj} _fld="sex"/>
+          <DataField _obj={_obj} _fld="email"/>
+          <DialogActions>
+            <Button color="primary" dense className={classes.button} onClick={this.handleSave}>Сохранить</Button>
+            <Button color="primary" dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
+          </DialogActions>
+        </div>
         }
 
-      </div>
+        {state.index === 1 &&
+        <div>
 
-    );
+          <FormGroup>
+            <Typography type="subheading" color="inherit">Вы можете авторизоваться либо связать свою учетную запись с учетными данными социальных сетей:</Typography>
+
+            <Grid container spacing={24}>
+              <Grid item xs={12} sm={6}>
+                <Button raised dense className={btn} onClick={this.oauthClick('google')}>
+                  <GoogleIcon viewBox="0 0 256 262" style={{height: 18}} color={blue[500]}/> Google
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button raised dense className={btn} onClick={this.oauthClick('yandex')}>
+                  <YandexIcon viewBox="0 0 180 190" style={{height: 18}} color={red[500]}/> Яндекс
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button raised dense className={btn} onClick={this.oauthClick('facebook')}>
+                  <FacebookIcon viewBox="0 0 450 450" style={{height: 18}} color="#3A559F"/> Facebook
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button raised dense className={btn} onClick={this.oauthClick('github')}>
+                  <GitHubIcon viewBox="0 0 256 250" style={{height: 18}}/> GitHub
+                </Button>
+              </Grid>
+            </Grid>
+          </FormGroup>
+
+          <DialogActions>
+            <Button color="primary" dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
+          </DialogActions>
+
+        </div>
+        }
+
+      </Paper>
+
+      :
+      <div>
+        Нет данных
+      </div>;
   }
 }
+
+export default withStyles(UserObj);
