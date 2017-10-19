@@ -9,6 +9,9 @@ import utils from './utils';
 
 //import alasql from 'alasql/dist/alasql.min';
 const alasql = (typeof window != 'undefined' && window.alasql) || require('alasql/dist/alasql.min');
+if(typeof window != 'undefined' && !window.alasql){
+  window.alasql = alasql;
+}
 
 const fake_ls = {
 	setItem(name, value) {},

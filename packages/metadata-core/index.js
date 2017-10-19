@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.3-beta.32, built:2017-10-15
+ metadata-core v2.0.3-beta.32, built:2017-10-19
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3361,6 +3361,9 @@ class JobPrm {
 }
 
 const alasql = (typeof window != 'undefined' && window.alasql) || require('alasql/dist/alasql.min');
+if(typeof window != 'undefined' && !window.alasql){
+  window.alasql = alasql;
+}
 const fake_ls = {
 	setItem(name, value) {},
 	getItem(name) {}

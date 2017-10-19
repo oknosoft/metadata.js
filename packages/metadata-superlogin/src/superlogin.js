@@ -151,7 +151,7 @@ function attach($p) {
   // регистрация нового пользователя
   function handleRegister(registration) {
 
-    return function (dispatch, getState) {
+    return function (dispatch) {
 
       superlogin.register(registration)
         .then(function () {

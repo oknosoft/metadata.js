@@ -55,13 +55,14 @@ class TabsLogin extends React.Component {
   };
 
   handleRegister = () => {
-    this.props.handleRegister({
-      name: this.state.name,
-      username: this.state.username,
-      email: this.state.email,
-      password: this.state.password,
-      confirmPassword: this.state.confirmPassword,
-    });
+    const {props, state} = this;
+    props.dispatch($p.superlogin._actions.handleRegister({
+        name: state.name,
+        username: state.username,
+        email: state.email,
+        password: state.password,
+        confirmPassword: state.confirmPassword,
+      }));
   };
 
 
@@ -186,4 +187,5 @@ export default withStyles(connect(null, (dispatch) => ({
     const fn = $p.superlogin._actions.handleSocialAuth(provider);
     return () => fn(dispatch);
   },
+  dispatch
 }))(TabsLogin));

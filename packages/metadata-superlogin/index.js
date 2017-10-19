@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.3-beta.32, built:2017-10-17
+ metadata-superlogin v2.0.3-beta.32, built:2017-10-19
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -396,7 +396,7 @@ function attach($p) {
     };
   }
   function handleRegister(registration) {
-    return function (dispatch, getState) {
+    return function (dispatch) {
       superlogin.register(registration)
         .then(function () {
           if(superlogin.authenticated()) {
