@@ -1,7 +1,7 @@
 {
   "name": "metadata-redux",
   "description": "Actions and reducers for metadata.js",
-  "version": "2.0.3-beta.32",
+  "version": "2.0.4-beta.33",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
@@ -12,7 +12,7 @@
     "react-redux": "^5.0.6",
     "react-router": "^4.2",
     "react-router-dom": "^4.2",
-    "react-router-redux": "^5.0.0-alpha.6"
+    "react-router-redux": "^5.0.0-alpha.8"
   },
   "repository": {
     "type": "git",

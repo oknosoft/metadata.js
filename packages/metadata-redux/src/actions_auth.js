@@ -58,7 +58,12 @@ export function try_log_in(adapter, name, password) {
         username: name,
         password: password
       })
-        .then((session) => adapter.log_in(session.token, session.password));
+        .then((session) => {
+          adapter.log_in();
+        })
+        .catch((err) => {
+          $p.record_log(err);
+        });
     }
     else {
       return adapter.log_in(name, password);

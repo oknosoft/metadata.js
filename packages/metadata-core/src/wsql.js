@@ -135,12 +135,15 @@ export default class WSQL {
       }
 		});
 
-		// сообщяем адаптерам пути и префиксы
-		for(let i in adapters){
-			adapters[i].init(this, job_prm);
-		}
+		// инициализируем метаданные
+    if(meta) {
+      meta(this.$p);
+      // сообщяем адаптерам пути и префиксы
+      for(let i in adapters){
+        adapters[i].init(this, job_prm);
+      }
+    }
 
-		meta && meta(this.$p);
 	};
 
 	/**

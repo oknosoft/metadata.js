@@ -4,11 +4,12 @@
  *
  */
 
-import metaActions from 'metadata-redux/src/actions_meta';
-
 import superlogin from 'superlogin-client';
 
-import default_config from './default.config'
+import adapter from './adapter';
+import default_config from './default.config';
+
+const {metaActions} = require('metadata-redux');
 
 // переопределяем getDbUrl
 // const default_getDbUrl = superlogin.getDbUrl.bind(superlogin);
@@ -274,6 +275,11 @@ export default function plugin(config = default_config) {
   superlogin.configure(config);
 
   return {
+
+    proto(constructor) {
+      // дополняем и модифицируем конструкторы
+      adapter(constructor);
+    },
 
     constructor() {
 

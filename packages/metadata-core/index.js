@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.3-beta.32, built:2017-10-19
+ metadata-core v2.0.4-beta.33, built:2017-10-22
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3417,10 +3417,12 @@ class WSQL {
         this.set_user_param(prm.p, this.fetch_type(job_prm.hasOwnProperty(prm.p) ? job_prm[prm.p] : prm.v, prm.t));
       }
 		});
-		for(let i in adapters){
-			adapters[i].init(this, job_prm);
-		}
-		meta && meta(this.$p);
+    if(meta) {
+      meta(this.$p);
+      for(let i in adapters){
+        adapters[i].init(this, job_prm);
+      }
+    }
 	};
 	save_options(prefix, options){
 		return this.set_user_param(prefix + "_" + options.name, options);
@@ -4040,7 +4042,7 @@ class MetaEngine$1 {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.3-beta.32';
+    return '2.0.4-beta.33';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
