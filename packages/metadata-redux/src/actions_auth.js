@@ -103,9 +103,21 @@ export function log_out(adapter) {
   };
 }
 
-export function log_error() {
+export function log_error(err) {
+  const msg = $p.msg.login;
+  let text = msg.error;
+  if(err.message.match('suffix')){
+    text = msg.suffix;
+  }
+  else if(err.message.match('empty')){
+    text = msg.empty;
+  }
+  else if(err.message.match('logout')){
+    text = msg.need_logout;
+  }
   return {
-    type: LOG_ERROR
+    type: LOG_ERROR,
+    payload: text
   };
 }
 
@@ -114,5 +126,6 @@ export function reset_user(state) {
   user.logged_in = false;
   user.has_login = false;
   user.try_log_in = false;
+  user.log_error = '';
   return Object.assign({}, state, {user});
 }

@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.4-beta.33, built:2017-10-22
+ metadata-pouchdb v2.0.4-beta.33, built:2017-10-23
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -261,42 +261,60 @@ function adapter({AbstracrAdapter}) {
     }
     log_in(username, password) {
       const {props, local, remote, $p} = this;
-      const {job_prm, wsql, aes, md} = $p;
+      const {job_prm, wsql, aes, md, cat} = $p;
       if(username == undefined && password == undefined) {
         if(job_prm.guests && job_prm.guests.length) {
           username = job_prm.guests[0].username;
           password = aes.Ctr.decrypt(job_prm.guests[0].password);
         }
         else {
-          return Promise.reject(new Error('username & password not defined'));
+          const err = new Error('empty login or password');
+          this.emit('user_log_fault', err);
+          return Promise.reject(err);
         }
+      }
+      else if(!username || !password){
+        const err = new Error('empty login or password');
+        this.emit('user_log_fault', err);
+        return Promise.reject(err);
       }
       if(props._auth) {
         if(props._auth.username == username) {
           return Promise.resolve();
         }
         else {
-          return Promise.reject(new Error('need logout first'));
+          const err = new Error('need logout first');
+          this.emit('user_log_fault', err);
+          return Promise.reject(err);
         }
       }
-      const try_auth = [];
-      let tryed;
+      let try_auth = Promise.resolve();
       if(!props.user_node) {
         md.bases().forEach((dbid) => {
           if(dbid !== 'meta' && remote[dbid]) {
-            if(tryed) {
-              try_auth.push(remote[dbid].info());
-            }
-            else {
-              try_auth.push(remote[dbid].login(username, password)
-                .then(() => try_auth.push(remote[dbid].info())));
-              tryed = true;
-            }
+            try_auth = try_auth.then(() => remote[dbid].login(username, password)
+              .then(() => {
+                if(dbid == 'ram' && cat.users && cat.users.cachable == dbid){
+                  return this.find_rows(cat.users, {_raw: true, _top: 1, id: username})
+                    .then((rows) => {
+                      if(rows && rows.length){
+                        const {suffix} = rows[0];
+                        if((wsql.get_user_param('couch_suffix', 'string') || '') != suffix){
+                          wsql.set_user_param('couch_suffix', suffix);
+                          throw new Error('couch_suffix');
+                        }
+                      }
+                    });
+                }
+                else{
+                  return remote[dbid].info();
+                }
+              })
+            );
           }
         });
       }
-      return Promise.all(try_auth)
-        .then(() => {
+      return try_auth.then(() => {
           props._auth = {username};
           if(wsql.get_user_param('user_name') != username) {
             wsql.set_user_param('user_name', username);

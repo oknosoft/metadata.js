@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.4-beta.33, built:2017-10-22
+ metadata-core v2.0.4-beta.33, built:2017-10-23
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -57,11 +57,9 @@ const msg$1 = new I18n({
 		cache_update: 'Выполняется загрузка измененных файлов<br/>и их кеширование в хранилище браузера',
 		cancel: 'Отмена',
 		delivery_area_empty: 'Укажите район доставки',
-		empty_login_password: 'Не указаны имя пользователя или пароль',
 		empty_response: 'Пустой ответ сервера',
 		empty_geocoding: 'Пустой ответ геокодера. Вероятно, отслеживание адреса запрещено в настройках браузера',
 		error_geocoding: 'Ошибка геокодера',
-		error_auth: 'Авторизация пользователя не выполнена',
 		error_critical: 'Критическая ошибка',
 		error_metadata: 'Ошибка загрузки метаданных конфигурации',
 		error_network: 'Ошибка сети или сервера - запрос отклонен',
@@ -81,6 +79,13 @@ const msg$1 = new I18n({
 		get limit_query() {
 			return 'Превышено число обращений к серверу<br/>Запросов за минуту:%1<br/>Лимит запросов:%2<br/>' + this.requery;
 		},
+    login: {
+		  title: 'Вход на сервер',
+      empty: 'Не указаны имя пользователя или пароль',
+      need_logout: 'Для авторизации под новым именем, завершите сеанс текущего пользователя',
+      error: 'Ошибка авторизации. Проверьте имя пользователя, пароль и параметры подключения',
+      suffix: 'Суффикс пользователя не совпадает с суффиксом подключения',
+    },
 		long_operation: 'Длительная операция',
 		logged_in: 'Авторизован под именем: ',
 		log_out_title: 'Отключиться от сервера?',

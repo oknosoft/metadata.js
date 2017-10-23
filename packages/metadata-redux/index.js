@@ -72,9 +72,21 @@ function log_out(adapter) {
     }
   };
 }
-function log_error() {
+function log_error(err) {
+  const msg = $p.msg.login;
+  let text = msg.error;
+  if(err.message.match('suffix')){
+    text = msg.suffix;
+  }
+  else if(err.message.match('empty')){
+    text = msg.empty;
+  }
+  else if(err.message.match('logout')){
+    text = msg.need_logout;
+  }
   return {
-    type: LOG_ERROR
+    type: LOG_ERROR,
+    payload: text
   };
 }
 function reset_user(state) {
@@ -82,6 +94,7 @@ function reset_user(state) {
   user.logged_in = false;
   user.has_login = false;
   user.try_log_in = false;
+  user.log_error = '';
   return Object.assign({}, state, {user});
 }
 
@@ -436,21 +449,20 @@ var handlers_meta = {
     return Object.assign({}, state, {user});
   },
   [LOG_IN]: (state, action) => {
-    const user = Object.assign({}, state.user);
-    user.logged_in = true;
-    user.try_log_in = false;
+    const user = Object.assign({}, state.user, {logged_in: true, try_log_in: false, log_error: ''});
     return Object.assign({}, state, {user});
   },
   [TRY_LOG_IN]: (state, action) => {
-    const user = Object.assign({}, state.user);
-    user.try_log_in = true;
+    const user = Object.assign({}, state.user, {try_log_in: true, log_error: ''});
     return Object.assign({}, state, {user});
   },
   [LOG_OUT]: (state, action) => {
     return reset_user(state);
   },
   [LOG_ERROR]: (state, action) => {
-    return reset_user(state);
+    const reseted = reset_user(state);
+    reseted.user.log_error = action.payload;
+    return reseted;
   },
   [ADD]: (state, action) => state,
   [CHANGE]: (state, action) => Object.assign({}, state, {obj_change: action.payload}),
@@ -489,7 +501,7 @@ function metaInitialState() {
       has_login: has_login,
       try_log_in: false,
       logged_in: false,
-      log_error: false,
+      log_error: '',
     }
   };
 }
@@ -503,54 +515,26 @@ function metaReducer(state, action) {
 
 let attached;
 function metaMiddleware({adapters, md}) {
-  return (store) => {
-    const {dispatch} = store;
+  return ({dispatch}) => {
     return next => action => {
       if(!attached) {
         attached = true;
         adapters.pouch.on({
-          user_log_in: (name) => {
-            dispatch(log_in(name));
-          },
-          user_log_out: () => {
-            dispatch(log_out());
-          },
-          pouch_data_page: (page) => {
-            dispatch(data_page(page));
-          },
-          pouch_data_loaded: (page) => {
-            dispatch(data_loaded(page));
-          },
-          pouch_doc_ram_loaded: () => {
-            dispatch(data_loaded('doc_ram'));
-          },
-          pouch_complete_loaded: () => {
-            dispatch(data_loaded('complete'));
-          },
-          pouch_data_error: (dbid, err) => {
-            dispatch(data_error(dbid, err));
-          },
-          pouch_load_start: (page) => {
-            dispatch(load_start(page));
-          },
-          pouch_no_data: (dbid, err) => {
-            dispatch(no_data(dbid, err));
-          },
-          pouch_sync_data: (dbid, change$$1) => {
-            dispatch(sync_data(dbid, change$$1));
-          },
-          pouch_sync_error: (dbid, err) => {
-            dispatch(sync_error(dbid, err));
-          },
-          pouch_sync_paused: (dbid, info) => {
-            dispatch(sync_paused(dbid, info));
-          },
-          pouch_sync_resumed: (dbid, info) => {
-            dispatch(sync_resumed(dbid, info));
-          },
-          pouch_sync_denied: (dbid, info) => {
-            dispatch(sync_denied(dbid, info));
-          },
+          user_log_in: (name) => dispatch(log_in(name)),
+          user_log_out: () => dispatch(log_out()),
+          user_log_fault: (err) => dispatch(log_error(err)),
+          pouch_data_page: (page) => dispatch(data_page(page)),
+          pouch_data_loaded: (page) => dispatch(data_loaded(page)),
+          pouch_doc_ram_loaded: () => dispatch(data_loaded('doc_ram')),
+          pouch_complete_loaded: () => dispatch(data_loaded('complete')),
+          pouch_data_error: (dbid, err) => dispatch(data_error(dbid, err)),
+          pouch_load_start: (page) => dispatch(load_start(page)),
+          pouch_no_data: (dbid, err) => dispatch(no_data(dbid, err)),
+          pouch_sync_data: (dbid, change$$1) => dispatch(sync_data(dbid, change$$1)),
+          pouch_sync_error: (dbid, err) => dispatch(sync_error(dbid, err)),
+          pouch_sync_paused: (dbid, info) => dispatch(sync_paused(dbid, info)),
+          pouch_sync_resumed: (dbid, info) => dispatch(sync_resumed(dbid, info)),
+          pouch_sync_denied: (dbid, info) => dispatch(sync_denied(dbid, info)),
         });
         md.on({
           obj_loaded: (_obj) => {

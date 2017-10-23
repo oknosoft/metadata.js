@@ -44,7 +44,7 @@ function metaInitialState() {
       has_login: has_login,
       try_log_in: false,
       logged_in: false,
-      log_error: false,
+      log_error: '',
     }
   };
 };
