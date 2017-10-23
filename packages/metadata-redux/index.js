@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.4-beta.33, built:2017-10-22
+ metadata-redux v2.0.4-beta.33, built:2017-10-23
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -36,8 +36,8 @@ function try_log_in(adapter, name, password) {
       type: TRY_LOG_IN,
       payload: {name: name, password: password, provider: 'local'}
     });
-    if(adapter.$p.superlogin) {
-      return adapter.$p.superlogin.login({
+    if($p.superlogin) {
+      return $p.superlogin.login({
         username: name,
         password: password
       })
@@ -55,18 +55,17 @@ function try_log_in(adapter, name, password) {
 }
 function log_out(adapter) {
   return function (dispatch, getState) {
-    const disp_log_out = () => {
+    function disp_log_out() {
       dispatch({
         type: LOG_OUT,
         payload: {name: getState().meta.user.name}
       });
-    };
-    if(!adapter) {
-      disp_log_out();
     }
-    else if(adapter.$p.superlogin) {
-      adapter.$p.superlogin.logOut()
-        .then(disp_log_out);
+    if($p.superlogin) {
+      $p.superlogin.logout().then(disp_log_out);
+    }
+    else if(!adapter) {
+      disp_log_out();
     }
     else {
       adapter.log_out();

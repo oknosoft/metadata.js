@@ -53,8 +53,8 @@ export function try_log_in(adapter, name, password) {
     });
 
     // в зависимости от использования суперлогина, разные действия
-    if(adapter.$p.superlogin) {
-      return adapter.$p.superlogin.login({
+    if($p.superlogin) {
+      return $p.superlogin.login({
         username: name,
         password: password
       })
@@ -83,7 +83,7 @@ export function log_out(adapter) {
 
   return function (dispatch, getState) {
 
-    const disp_log_out = () => {
+    function disp_log_out() {
       dispatch({
         type: LOG_OUT,
         payload: {name: getState().meta.user.name}
@@ -91,14 +91,11 @@ export function log_out(adapter) {
     };
 
     // в зависимости от использования суперлогина, разные действия
-    if(!adapter) {
-      disp_log_out();
-
+    if($p.superlogin) {
+      $p.superlogin.logout().then(disp_log_out);
     }
-    else if(adapter.$p.superlogin) {
-      adapter.$p.superlogin.logOut()
-        .then(disp_log_out);
-
+    else if(!adapter) {
+      disp_log_out();
     }
     else {
       adapter.log_out();
