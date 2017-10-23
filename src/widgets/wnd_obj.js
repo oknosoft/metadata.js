@@ -315,33 +315,33 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 * обработчик нажатия кнопок командных панелей
 	 */
 	function toolbar_click(btn_id){
-		if(btn_id=="btn_save_close")
-			save("close");
-
-		else if(btn_id=="btn_save")
-			save("save");
-
-		else if(btn_id=="btn_post")
-			save("post");
-
-		else if(btn_id=="btn_unpost")
-			save("unpost");
-
-		else if(btn_id=="btn_close")
-			wnd.close();
-
-		else if(btn_id=="btn_go_connection")
-			go_connection();
-
-		else if(btn_id.substr(0,4)=="prn_")
-			_mgr.print(o, btn_id, wnd);
-
-		else if(btn_id=="btn_import")
-			_mgr.import(null, o);
-
-		else if(btn_id=="btn_export")
-			_mgr.export({items: [o], pwnd: wnd, obj: true} );
-
+		if(btn_id=="btn_save_close"){
+      save("close");
+    }
+    else if(btn_id=="btn_save"){
+      save("save");
+    }
+    else if(btn_id=="btn_post"){
+      save("post");
+    }
+    else if(btn_id=="btn_unpost"){
+      save("unpost");
+    }
+    else if(btn_id=="btn_close"){
+      wnd.close();
+    }
+    else if(btn_id=="btn_go_connection"){
+      go_connection();
+    }
+    else if(btn_id.substr(0,4)=="prn_"){
+      _mgr.print(o, btn_id, wnd);
+    }
+    else if(btn_id=="btn_import"){
+      _mgr.import(null, o);
+    }
+    else if(btn_id=="btn_export"){
+      _mgr.export({items: [o], pwnd: wnd, obj: true} );
+    }
 	}
 
 	/**

@@ -363,63 +363,62 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		if(btn_id=="btn_select"){
 			select();
-
-		}else if(btn_id=="btn_new"){
-
+		}
+		else if(btn_id=="btn_new"){
 			_mgr.create({}, true)
 				.then(function (o) {
-
-					if(attr.on_new)
-						attr.on_new(o, wnd);
-
+					if(attr.on_new){
+            attr.on_new(o, wnd);
+          }
 					else if($p.job_prm.keep_hash){
 						o.form_obj(wnd);
-
-					} else{
+					}
+					else{
 						o._set_loaded(o.ref);
 						$p.iface.set_hash(_mgr.class_name, o.ref);
 					}
 				});
-
-
-		}else if(btn_id=="btn_edit") {
-			var rId = wnd.elmnts.grid.getSelectedRowId();
+		}
+		else if(btn_id=="btn_edit") {
+			const rId = wnd.elmnts.grid.getSelectedRowId();
 			if (rId){
-				if(attr.on_edit)
-					attr.on_edit(_mgr, rId, wnd);
-
-				else if($p.job_prm.keep_hash){
-
+				if(attr.on_edit){
+          attr.on_edit(_mgr, rId, wnd);
+        }
+        else if($p.job_prm.keep_hash){
 					_mgr.form_obj(wnd, {ref: rId});
 
-				} else
-					$p.iface.set_hash(_mgr.class_name, rId);
-			}else
-				$p.msg.show_msg({
-					type: "alert-warning",
-					text: $p.msg.no_selected_row.replace("%1", ""),
-					title: $p.msg.main_title
-				});
-
-		}else if(btn_id.substr(0,4)=="prn_"){
+				}
+				else{
+          $p.iface.set_hash(_mgr.class_name, rId);
+        }
+			}
+			else{
+        $p.msg.show_msg({
+          type: "alert-warning",
+          text: $p.msg.no_selected_row.replace("%1", ""),
+          title: $p.msg.main_title
+        });
+      }
+		}
+		else if(btn_id.substr(0,4)=="prn_"){
 				print(btn_id);
-
-		}else if(btn_id=="btn_order_list"){
+		}
+		else if(btn_id=="btn_order_list"){
 			$p.iface.set_hash("", "", "", "def");
-
-		}else if(btn_id=="btn_delete"){
+		}
+		else if(btn_id=="btn_delete"){
 			mark_deleted();
-
-		}else if(btn_id=="btn_import"){
+		}
+		else if(btn_id=="btn_import"){
 			_mgr.import();
-
-		}else if(btn_id=="btn_export"){
+		}
+		else if(btn_id=="btn_export"){
 			_mgr.export(wnd.elmnts.grid.getSelectedRowId());
-
-		}else if(btn_id=="btn_requery"){
+		}
+		else if(btn_id=="btn_requery"){
 			previous_filter = {};
 			wnd.elmnts.grid.reload();
-
 		}
 	}
 
