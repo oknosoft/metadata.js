@@ -259,6 +259,9 @@ export default class WSQL {
 		else if(type == "boolean"){
 			return utils.fix_boolean(prm);
 		}
+    else if(type == "string"){
+      return prm ? prm.toString() : '';
+    }
 		return prm;
 	}
 

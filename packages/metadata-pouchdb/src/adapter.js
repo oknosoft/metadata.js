@@ -222,8 +222,8 @@ function adapter({AbstracrAdapter}) {
                   return this.find_rows(cat.users, {_raw: true, _top: 1, id: username})
                     .then((rows) => {
                       if(rows && rows.length){
-                        const {suffix} = rows[0];
-                        if((wsql.get_user_param('couch_suffix', 'string') || '') != suffix){
+                        const suffix = rows[0].suffix || '';
+                        if(wsql.get_user_param('couch_suffix', 'string') != suffix){
                           wsql.set_user_param('couch_suffix', suffix);
                           throw new Error('couch_suffix');
                         }
