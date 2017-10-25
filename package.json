@@ -15,7 +15,7 @@
     "alasql": "^0.4.3",
     "clipboard": "^1.7",
     "debug": "^3.1.0",
-    "material-ui": "^1.0.0-beta.17",
+    "material-ui": "^1.0.0-beta.18",
     "material-ui-icons": "^1.0.0-beta.17",
     "moment": "^2.19.1",
     "pouchdb": "^6.3.4",

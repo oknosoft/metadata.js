@@ -580,7 +580,12 @@ function adapter({AbstracrAdapter}) {
         Promise.resolve().then(() => this.emit(page.note = 'pouch_data_loaded', page));
 
         // пытаемся загрузить load_doc_ram
-        this.authorized && this.load_doc_ram();
+        if(this.authorized){
+          this.load_doc_ram();
+        }
+        else{
+          setTimeout(() => this.authorized && this.load_doc_ram(), 3000);
+        };
       }
     }
 

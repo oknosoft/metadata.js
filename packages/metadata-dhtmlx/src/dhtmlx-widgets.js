@@ -162,16 +162,22 @@ export default ($p) => {
 					pname;
 
 				// Если в объекте не найдены предопределенные свойства - добавляем
-				if (pnames.some((name) => meta_extra_fields[name] && (pname = name))) {
+				if (pnames.some((name) => {
+						if (meta_extra_fields[name]) {
+							pname = name;
+							return true;
+						}
+					})) {
 					o[extra_fields.ts].forEach((row) => {
 						const index = destinations_extra_fields.indexOf(row[pname]);
-            index != -1 && destinations_extra_fields.splice(index, 1);
+						index != -1 && destinations_extra_fields.splice(index, 1);
 					});
-					destinations_extra_fields.forEach((property) => row = o[extra_fields.ts].add()[pname] = property);
+					destinations_extra_fields.forEach((property) => o[extra_fields.ts].add()[pname] = property);
 				};
 
 				// Добавляем строки в oxml с учетом отбора, который мог быть задан в extra_fields.selection
 				o[extra_fields.ts].find_rows(extra_fields.selection, (row) => add_xml_row(row, extra_fields.ts));
+
 
 			}
 
@@ -1080,7 +1086,7 @@ $p.iface.ODropdownList = ODropdownList;
  * ### Динамическое дерево иерархического справочника
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- * 
+ *
  * @module  widgets
  * @submodule wdg_dyn_tree
  * @requires common
