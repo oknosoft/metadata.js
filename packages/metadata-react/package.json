@@ -19,7 +19,7 @@
     "metadata-abstract-ui": "^2.0.4-beta.33",
     "rc-calendar": "^9.1.10",
     "rc-cascader": "^0.11.6",
-    "rc-time-picker": "^2.4.1",
+    "rc-time-picker": "^3.0",
     "react-onclickoutside": "^6.6",
     "react-portal": "^3.1",
     "react-virtualized": "^9.12"
