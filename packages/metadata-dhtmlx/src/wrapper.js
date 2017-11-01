@@ -167,7 +167,7 @@ export default ($p) => {
 						const index = destinations_extra_fields.indexOf(row[pname]);
             index != -1 && destinations_extra_fields.splice(index, 1);
 					});
-					destinations_extra_fields.forEach((property) => row = o[extra_fields.ts].add()[pname] = property);
+					destinations_extra_fields.forEach((property) => o[extra_fields.ts].add()[pname] = property);
 				};
 
 				// Добавляем строки в oxml с учетом отбора, который мог быть задан в extra_fields.selection
