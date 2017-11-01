@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.4-beta.33, built:2017-10-25
+ metadata-pouchdb v2.0.4-beta.34, built:2017-10-31
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -298,8 +298,8 @@ function adapter({AbstracrAdapter}) {
                   return this.find_rows(cat.users, {_raw: true, _top: 1, id: username})
                     .then((rows) => {
                       if(rows && rows.length){
-                        const {suffix} = rows[0];
-                        if((wsql.get_user_param('couch_suffix', 'string') || '') != suffix){
+                        const suffix = rows[0].suffix || '';
+                        if(wsql.get_user_param('couch_suffix', 'string') != suffix){
                           wsql.set_user_param('couch_suffix', suffix);
                           throw new Error('couch_suffix');
                         }

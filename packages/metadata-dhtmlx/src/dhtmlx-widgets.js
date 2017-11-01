@@ -162,22 +162,16 @@ export default ($p) => {
 					pname;
 
 				// Если в объекте не найдены предопределенные свойства - добавляем
-				if (pnames.some((name) => {
-						if (meta_extra_fields[name]) {
-							pname = name;
-							return true;
-						}
-					})) {
+				if (pnames.some((name) => meta_extra_fields[name] && (pname = name))) {
 					o[extra_fields.ts].forEach((row) => {
 						const index = destinations_extra_fields.indexOf(row[pname]);
-						index != -1 && destinations_extra_fields.splice(index, 1);
+            index != -1 && destinations_extra_fields.splice(index, 1);
 					});
-					destinations_extra_fields.forEach((property) => o[extra_fields.ts].add()[pname] = property);
+					destinations_extra_fields.forEach((property) => row = o[extra_fields.ts].add()[pname] = property);
 				};
 
 				// Добавляем строки в oxml с учетом отбора, который мог быть задан в extra_fields.selection
 				o[extra_fields.ts].find_rows(extra_fields.selection, (row) => add_xml_row(row, extra_fields.ts));
-
 
 			}
 
@@ -1086,7 +1080,7 @@ $p.iface.ODropdownList = ODropdownList;
  * ### Динамическое дерево иерархического справочника
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- *
+ * 
  * @module  widgets
  * @submodule wdg_dyn_tree
  * @requires common
@@ -2524,6 +2518,12 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	_grid.setColumnIds(_source.fields.join(","));
 	_grid.enableAutoWidth(true, 1200, 600);
 	_grid.enableEditTabOnly(true);
+	if(attr.footer){
+	  for(var fn in attr.footer){
+      fn !== 'columns' && (_grid[fn] = attr.footer[fn]);
+    }
+    _grid.attachFooter(attr.footer.columns);
+  }
 	_grid.init();
 
 	// гасим кнопки, если ro
@@ -3773,7 +3773,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	/**
 	 * настройка (инициализация) табличной части
 	 */
-	function tabular_init(name, toolbar_struct){
+	function tabular_init(name, toolbar_struct, footer){
 
 		// с помощью метода ts_captions(), выясняем, надо ли добавлять данную ТЧ и формируем описание колонок табчасти
 		if(!_md.ts_captions(_mgr.class_name, name))
@@ -3791,7 +3791,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			ts: name,
 			pwnd: wnd,
 			read_only: _acl.indexOf("e") == -1,
-			toolbar_struct: toolbar_struct
+			toolbar_struct,
+      footer
 		});
 
 		if(_acl.indexOf("e") == -1){

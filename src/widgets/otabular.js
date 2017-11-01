@@ -382,6 +382,12 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	_grid.setColumnIds(_source.fields.join(","));
 	_grid.enableAutoWidth(true, 1200, 600);
 	_grid.enableEditTabOnly(true);
+	if(attr.footer){
+	  for(var fn in attr.footer){
+      fn !== 'columns' && (_grid[fn] = attr.footer[fn]);
+    }
+    _grid.attachFooter(attr.footer.columns);
+  }
 	_grid.init();
 
 	// гасим кнопки, если ro

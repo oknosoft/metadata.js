@@ -373,7 +373,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	/**
 	 * настройка (инициализация) табличной части
 	 */
-	function tabular_init(name, toolbar_struct){
+	function tabular_init(name, toolbar_struct, footer){
 
 		// с помощью метода ts_captions(), выясняем, надо ли добавлять данную ТЧ и формируем описание колонок табчасти
 		if(!_md.ts_captions(_mgr.class_name, name))
@@ -391,7 +391,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			ts: name,
 			pwnd: wnd,
 			read_only: _acl.indexOf("e") == -1,
-			toolbar_struct: toolbar_struct
+			toolbar_struct,
+      footer
 		});
 
 		if(_acl.indexOf("e") == -1){
