@@ -1,13 +1,13 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory(require("react"), require("prop-types"), require("react-dom"), require("react-contextmenu"));
+		module.exports = factory(require("react"), require("prop-types"), require("react-dom"), require("metadata-external/react-data-grid"), require("react-contextmenu"));
 	else if(typeof define === 'function' && define.amd)
-		define(["react", "prop-types", "react-dom", "react-contextmenu"], factory);
+		define(["react", "prop-types", "react-dom", "metadata-external/react-data-grid", "react-contextmenu"], factory);
 	else if(typeof exports === 'object')
-		exports["ReactDataGrid"] = factory(require("react"), require("prop-types"), require("react-dom"), require("react-contextmenu"));
+		exports["ReactDataGrid"] = factory(require("react"), require("prop-types"), require("react-dom"), require("metadata-external/react-data-grid"), require("react-contextmenu"));
 	else
-		root["ReactDataGrid"] = factory(root["React"], root["PropTypes"], root["ReactDOM"], root["react-contextmenu"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_6__, __WEBPACK_EXTERNAL_MODULE_19__) {
+		root["ReactDataGrid"] = factory(root["React"], root["PropTypes"], root["ReactDOM"], root["metadata-external/react-data-grid"], root["react-contextmenu"]);
+})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_7__, __WEBPACK_EXTERNAL_MODULE_20__, __WEBPACK_EXTERNAL_MODULE_21__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -50,38 +50,38 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	return __webpack_require__(0);
 /******/ })
 /************************************************************************/
-/******/ ({
-
-/***/ 0:
+/******/ ([
+/* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(1071);
+	module.exports = __webpack_require__(33);
 
 
 /***/ }),
-
-/***/ 2:
+/* 1 */,
+/* 2 */
 /***/ (function(module, exports) {
 
 	module.exports = __WEBPACK_EXTERNAL_MODULE_2__;
 
 /***/ }),
-
-/***/ 3:
+/* 3 */
 /***/ (function(module, exports) {
 
 	module.exports = __WEBPACK_EXTERNAL_MODULE_3__;
 
 /***/ }),
-
-/***/ 6:
+/* 4 */,
+/* 5 */,
+/* 6 */,
+/* 7 */
 /***/ (function(module, exports) {
 
-	module.exports = __WEBPACK_EXTERNAL_MODULE_6__;
+	module.exports = __WEBPACK_EXTERNAL_MODULE_7__;
 
 /***/ }),
-
-/***/ 9:
+/* 8 */,
+/* 9 */
 /***/ (function(module, exports) {
 
 	/*
@@ -137,8 +137,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-
-/***/ 10:
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -390,248 +389,33 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-
-/***/ 12:
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _propTypes = __webpack_require__(3);
-
-	var _propTypes2 = _interopRequireDefault(_propTypes);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var ExcelColumnShape = {
-	  name: _propTypes2['default'].node.isRequired,
-	  key: _propTypes2['default'].string.isRequired,
-	  width: _propTypes2['default'].number.isRequired,
-	  filterable: _propTypes2['default'].bool
-	};
-
-	module.exports = ExcelColumnShape;
-
-/***/ }),
-
-/***/ 19:
+/* 11 */,
+/* 12 */,
+/* 13 */,
+/* 14 */,
+/* 15 */,
+/* 16 */,
+/* 17 */,
+/* 18 */,
+/* 19 */,
+/* 20 */
 /***/ (function(module, exports) {
 
-	module.exports = __WEBPACK_EXTERNAL_MODULE_19__;
+	module.exports = __WEBPACK_EXTERNAL_MODULE_20__;
 
 /***/ }),
+/* 21 */
+/***/ (function(module, exports) {
 
-/***/ 23:
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _propTypes = __webpack_require__(3);
-
-	var _propTypes2 = _interopRequireDefault(_propTypes);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var React = __webpack_require__(2);
-	var ReactDOM = __webpack_require__(6);
-	var ExcelColumn = __webpack_require__(12);
-
-	var EditorBase = function (_React$Component) {
-	  _inherits(EditorBase, _React$Component);
-
-	  function EditorBase() {
-	    _classCallCheck(this, EditorBase);
-
-	    return _possibleConstructorReturn(this, _React$Component.apply(this, arguments));
-	  }
-
-	  EditorBase.prototype.getStyle = function getStyle() {
-	    return {
-	      width: '100%'
-	    };
-	  };
-
-	  EditorBase.prototype.getValue = function getValue() {
-	    var updated = {};
-	    updated[this.props.column.key] = this.getInputNode().value;
-	    return updated;
-	  };
-
-	  EditorBase.prototype.getInputNode = function getInputNode() {
-	    var domNode = ReactDOM.findDOMNode(this);
-	    if (domNode.tagName === 'INPUT' || domNode.tagName === 'SELECT') {
-	      return domNode;
-	    }
-
-	    return domNode.querySelector('input:not([type=hidden])');
-	  };
-
-	  EditorBase.prototype.inheritContainerStyles = function inheritContainerStyles() {
-	    return true;
-	  };
-
-	  return EditorBase;
-	}(React.Component);
-
-	EditorBase.propTypes = {
-	  onKeyDown: _propTypes2['default'].func.isRequired,
-	  value: _propTypes2['default'].any.isRequired,
-	  onBlur: _propTypes2['default'].func.isRequired,
-	  column: _propTypes2['default'].shape(ExcelColumn).isRequired,
-	  commit: _propTypes2['default'].func.isRequired
-	};
-
-	module.exports = EditorBase;
+	module.exports = __WEBPACK_EXTERNAL_MODULE_21__;
 
 /***/ }),
-
-/***/ 27:
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _propTypes = __webpack_require__(3);
-
-	var _propTypes2 = _interopRequireDefault(_propTypes);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var React = __webpack_require__(2);
-
-	__webpack_require__(31);
-
-	var CheckboxEditor = React.createClass({
-	  displayName: 'CheckboxEditor',
-
-
-	  propTypes: {
-	    value: _propTypes2['default'].bool,
-	    rowIdx: _propTypes2['default'].number,
-	    column: _propTypes2['default'].shape({
-	      key: _propTypes2['default'].string,
-	      onCellChange: _propTypes2['default'].func
-	    }),
-	    dependentValues: _propTypes2['default'].object
-	  },
-
-	  handleChange: function handleChange(e) {
-	    this.props.column.onCellChange(this.props.rowIdx, this.props.column.key, this.props.dependentValues, e);
-	  },
-	  render: function render() {
-	    var checked = this.props.value != null ? this.props.value : false;
-	    var checkboxName = 'checkbox' + this.props.rowIdx;
-	    return React.createElement(
-	      'div',
-	      { className: 'react-grid-checkbox-container checkbox-align', onClick: this.handleChange },
-	      React.createElement('input', { className: 'react-grid-checkbox', type: 'checkbox', name: checkboxName, checked: checked }),
-	      React.createElement('label', { htmlFor: checkboxName, className: 'react-grid-checkbox-label' })
-	    );
-	  }
-	});
-
-	module.exports = CheckboxEditor;
-
-/***/ }),
-
-/***/ 28:
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var React = __webpack_require__(2);
-	var EditorBase = __webpack_require__(23);
-
-	var SimpleTextEditor = function (_EditorBase) {
-	  _inherits(SimpleTextEditor, _EditorBase);
-
-	  function SimpleTextEditor() {
-	    _classCallCheck(this, SimpleTextEditor);
-
-	    return _possibleConstructorReturn(this, _EditorBase.apply(this, arguments));
-	  }
-
-	  SimpleTextEditor.prototype.render = function render() {
-	    var _this2 = this;
-
-	    return React.createElement('input', { ref: function ref(node) {
-	        return _this2.input = node;
-	      }, type: 'text', onBlur: this.props.onBlur, className: 'form-control', defaultValue: this.props.value });
-	  };
-
-	  return SimpleTextEditor;
-	}(EditorBase);
-
-	module.exports = SimpleTextEditor;
-
-/***/ }),
-
-/***/ 29:
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	module.exports = {
-	  CheckboxEditor: __webpack_require__(27),
-	  EditorBase: __webpack_require__(23),
-	  SimpleTextEditor: __webpack_require__(28)
-	};
-
-/***/ }),
-
-/***/ 31:
-/***/ (function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-
-	// load the styles
-	var content = __webpack_require__(42);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(10)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../node_modules/css-loader/index.js!./react-data-grid-checkbox.css", function() {
-				var newContent = require("!!../node_modules/css-loader/index.js!./react-data-grid-checkbox.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ }),
-
-/***/ 42:
-/***/ (function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(9)();
-	// imports
-
-
-	// module
-	exports.push([module.id, ".radio-custom,.react-grid-checkbox{opacity:0;position:absolute}.radio-custom,.radio-custom-label,.react-grid-checkbox,.react-grid-checkbox-label{display:inline-block;vertical-align:middle;cursor:pointer}.radio-custom-label,.react-grid-checkbox-label{position:relative}.radio-custom+.radio-custom-label:before,.react-grid-checkbox+.react-grid-checkbox-label:before{content:\"\";background:#fff;border:1px solid #ddd;display:inline-block;vertical-align:middle;width:16px;height:16px;text-align:center}.react-grid-checkbox:checked+.react-grid-checkbox-label:before{background:#005295;box-shadow:inset 0 0 0 3px #fff}.radio-custom:focus+.radio-custom-label,.react-grid-checkbox:focus+.react-grid-checkbox-label{outline:1px solid #ddd}.react-grid-HeaderCell input[type=checkbox]{z-index:99999}.react-grid-HeaderCell>.react-grid-checkbox-container{padding:0 10px;height:100%}.react-grid-HeaderCell>.react-grid-checkbox-container>.react-grid-checkbox-label{margin:0;position:relative;top:50%;transform:translateY(-50%)}.radio-custom+.radio-custom-label:before{border-radius:50%}.radio-custom:checked+.radio-custom-label:before{background:#ccc;box-shadow:inset 0 0 0 4px #fff}.checkbox-align{text-align:center}", ""]);
-
-	// exports
-
-
-/***/ }),
-
-/***/ 1065:
+/* 22 */,
+/* 23 */,
+/* 24 */,
+/* 25 */,
+/* 26 */,
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -686,8 +470,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ }),
-
-/***/ 1066:
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -696,7 +479,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _propTypes2 = _interopRequireDefault(_propTypes);
 
-	var _reactDom = __webpack_require__(6);
+	var _reactDom = __webpack_require__(7);
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
@@ -710,8 +493,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var React = __webpack_require__(2);
 
-	var editors = __webpack_require__(29);
-	var EditorBase = editors.EditorBase;
+	var _require = __webpack_require__(20),
+	    EditorBase = _require.editors.EditorBase;
 
 	var DropDownEditor = function (_EditorBase) {
 	  _inherits(DropDownEditor, _EditorBase);
@@ -777,21 +560,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = DropDownEditor;
 
 /***/ }),
-
-/***/ 1067:
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var editors = __webpack_require__(29);
-	var SimpleTextEditor = editors.SimpleTextEditor,
-	    CheckboxEditor = editors.CheckboxEditor;
-
+	var _require = __webpack_require__(20),
+	    _require$editors = _require.editors,
+	    SimpleTextEditor = _require$editors.SimpleTextEditor,
+	    CheckboxEditor = _require$editors.CheckboxEditor;
 
 	var Editors = {
 	  //AutoComplete: require('./AutoCompleteEditor'),
-	  DropDownEditor: __webpack_require__(1066),
-	  ContainerEditorWrapper: __webpack_require__(1065),
+	  DropDownEditor: __webpack_require__(28),
+	  ContainerEditorWrapper: __webpack_require__(27),
 	  SimpleTextEditor: SimpleTextEditor,
 	  CheckboxEditor: CheckboxEditor
 	};
@@ -799,8 +581,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Editors;
 
 /***/ }),
-
-/***/ 1068:
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -811,28 +592,30 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 	// Used for displaying the value of a dropdown (using DropDownEditor) when not editing it.
 	// Accepts the same parameters as the DropDownEditor.
 	var React = __webpack_require__(2);
 
+	var DropDownFormatter = function (_React$Component) {
+	  _inherits(DropDownFormatter, _React$Component);
 
-	var DropDownFormatter = React.createClass({
-	  displayName: 'DropDownFormatter',
+	  function DropDownFormatter() {
+	    _classCallCheck(this, DropDownFormatter);
 
-	  propTypes: {
-	    options: _propTypes2['default'].arrayOf(_propTypes2['default'].oneOfType([_propTypes2['default'].string, _propTypes2['default'].shape({
-	      id: _propTypes2['default'].string,
-	      title: _propTypes2['default'].string,
-	      value: _propTypes2['default'].string,
-	      text: _propTypes2['default'].string
-	    })])).isRequired,
-	    value: _propTypes2['default'].string.isRequired
-	  },
+	    return _possibleConstructorReturn(this, _React$Component.apply(this, arguments));
+	  }
 
-	  shouldComponentUpdate: function shouldComponentUpdate(nextProps) {
+	  DropDownFormatter.prototype.shouldComponentUpdate = function shouldComponentUpdate(nextProps) {
 	    return nextProps.value !== this.props.value;
-	  },
-	  render: function render() {
+	  };
+
+	  DropDownFormatter.prototype.render = function render() {
 	    var value = this.props.value;
 	    var option = this.props.options.filter(function (v) {
 	      return v === value || v.value === value;
@@ -847,14 +630,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	      { title: title },
 	      text
 	    );
-	  }
-	});
+	  };
+
+	  return DropDownFormatter;
+	}(React.Component);
+
+	DropDownFormatter.propTypes = {
+	  options: _propTypes2['default'].arrayOf(_propTypes2['default'].oneOfType([_propTypes2['default'].string, _propTypes2['default'].shape({
+	    id: _propTypes2['default'].string,
+	    title: _propTypes2['default'].string,
+	    value: _propTypes2['default'].string,
+	    text: _propTypes2['default'].string
+	  })])).isRequired,
+	  value: _propTypes2['default'].string.isRequired
+	};
+
 
 	module.exports = DropDownFormatter;
 
 /***/ }),
-
-/***/ 1069:
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -865,92 +660,111 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 	var React = __webpack_require__(2);
 
-	__webpack_require__(1116);
+	__webpack_require__(41);
 
 	var PendingPool = {};
 	var ReadyPool = {};
 
-	var ImageFormatter = React.createClass({
-	  displayName: 'ImageFormatter',
+	var ImageFormatter = function (_React$Component) {
+	  _inherits(ImageFormatter, _React$Component);
 
-	  propTypes: {
-	    value: _propTypes2['default'].string.isRequired
-	  },
+	  function ImageFormatter() {
+	    var _temp, _this, _ret;
 
-	  getInitialState: function getInitialState() {
-	    return {
+	    _classCallCheck(this, ImageFormatter);
+
+	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	      args[_key] = arguments[_key];
+	    }
+
+	    return _ret = (_temp = (_this = _possibleConstructorReturn(this, _React$Component.call.apply(_React$Component, [this].concat(args))), _this), _this.state = {
 	      ready: false
-	    };
-	  },
-	  componentWillMount: function componentWillMount() {
+	    }, _this._load = function (src) {
+	      var imageSrc = src;
+	      if (ReadyPool[imageSrc]) {
+	        _this.setState({ value: imageSrc });
+	        return;
+	      }
+
+	      if (PendingPool[imageSrc]) {
+	        PendingPool[imageSrc].push(_this._onLoad);
+	        return;
+	      }
+
+	      PendingPool[imageSrc] = [_this._onLoad];
+
+	      var img = new Image();
+	      img.onload = function () {
+	        PendingPool[imageSrc].forEach(function (callback) {
+	          callback(imageSrc);
+	        });
+	        delete PendingPool[imageSrc];
+	        img.onload = null;
+	        imageSrc = undefined;
+	      };
+	      img.src = imageSrc;
+	    }, _this._onLoad = function (src) {
+	      if (_this._isMounted && src === _this.props.value) {
+	        _this.setState({
+	          value: src
+	        });
+	      }
+	    }, _temp), _possibleConstructorReturn(_this, _ret);
+	  }
+
+	  ImageFormatter.prototype.componentWillMount = function componentWillMount() {
 	    this._load(this.props.value);
-	  },
-	  componentDidMount: function componentDidMount() {
+	  };
+
+	  ImageFormatter.prototype.componentDidMount = function componentDidMount() {
 	    this._isMounted = true;
-	  },
-	  componentWillUnmount: function componentWillUnmount() {
+	  };
+
+	  ImageFormatter.prototype.componentWillUnmount = function componentWillUnmount() {
 	    this._isMounted = false;
-	  },
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	  };
+
+	  ImageFormatter.prototype.componentWillReceiveProps = function componentWillReceiveProps(nextProps) {
 	    if (nextProps.value !== this.props.value) {
 	      this.setState({ value: null });
 	      this._load(nextProps.value);
 	    }
-	  },
-	  _load: function _load(src) {
-	    var imageSrc = src;
-	    if (ReadyPool[imageSrc]) {
-	      this.setState({ value: imageSrc });
-	      return;
-	    }
+	  };
 
-	    if (PendingPool[imageSrc]) {
-	      PendingPool[imageSrc].push(this._onLoad);
-	      return;
-	    }
-
-	    PendingPool[imageSrc] = [this._onLoad];
-
-	    var img = new Image();
-	    img.onload = function () {
-	      PendingPool[imageSrc].forEach(function (callback) {
-	        callback(imageSrc);
-	      });
-	      delete PendingPool[imageSrc];
-	      img.onload = null;
-	      imageSrc = undefined;
-	    };
-	    img.src = imageSrc;
-	  },
-	  _onLoad: function _onLoad(src) {
-	    if (this._isMounted && src === this.props.value) {
-	      this.setState({
-	        value: src
-	      });
-	    }
-	  },
-	  render: function render() {
+	  ImageFormatter.prototype.render = function render() {
 	    var style = this.state.value ? { backgroundImage: 'url(' + this.state.value + ')' } : undefined;
 
 	    return React.createElement('div', { className: 'react-grid-image', style: style });
-	  }
-	});
+	  };
+
+	  return ImageFormatter;
+	}(React.Component);
+
+	ImageFormatter.propTypes = {
+	  value: _propTypes2['default'].string.isRequired
+	};
+
 
 	module.exports = ImageFormatter;
 
 /***/ }),
-
-/***/ 1070:
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	// not including this
 	// it currently requires the whole of moment, which we dont want to take as a dependency
-	var ImageFormatter = __webpack_require__(1069);
-	var DropDownFormatter = __webpack_require__(1068);
+	var ImageFormatter = __webpack_require__(31);
+	var DropDownFormatter = __webpack_require__(30);
 
 	var Formatters = {
 	  ImageFormatter: ImageFormatter,
@@ -960,22 +774,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Formatters;
 
 /***/ }),
-
-/***/ 1071:
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var Editors = __webpack_require__(1067);
-	var Formatters = __webpack_require__(1070);
+	var Editors = __webpack_require__(29);
+	var Formatters = __webpack_require__(32);
 	//const Toolbar = require('./toolbars/Toolbar');
 	//const ToolsPanel = require('./toolbars');
 	//const Data = require('./data');
-	var Menu = __webpack_require__(1074);
+	var Menu = __webpack_require__(36);
 	//const Draggable = require('./draggable');
 	//const DraggableHeader = require('./draggable-header');
 	//const Filters = require('./cells/headerCells/filters');
-	//const { RowComparer: rowComparer } = require('react-data-grid');
+	//const { RowComparer: rowComparer } = require('metadata-external/react-data-grid');
 	//const performance = require('./performance');
 	//const Utils = { rowComparer, performance };
 
@@ -983,8 +796,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = { Editors: Editors, Formatters: Formatters, Menu: Menu };
 
 /***/ }),
-
-/***/ 1072:
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -999,7 +811,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _propTypes2 = _interopRequireDefault(_propTypes);
 
-	var _reactContextmenu = __webpack_require__(19);
+	var _reactContextmenu = __webpack_require__(21);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -1036,8 +848,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = ReactDataGridContextMenu;
 
 /***/ }),
-
-/***/ 1073:
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1087,8 +898,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = MenuHeader;
 
 /***/ }),
-
-/***/ 1074:
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1096,13 +906,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.__esModule = true;
 	exports.ContextMenuLayer = exports.connect = exports.SubMenu = exports.monitor = exports.MenuItem = exports.MenuHeader = exports.ContextMenu = undefined;
 
-	var _reactContextmenu = __webpack_require__(19);
+	var _reactContextmenu = __webpack_require__(21);
 
-	var _ContextMenu = __webpack_require__(1072);
+	var _ContextMenu = __webpack_require__(34);
 
 	var _ContextMenu2 = _interopRequireDefault(_ContextMenu);
 
-	var _MenuHeader = __webpack_require__(1073);
+	var _MenuHeader = __webpack_require__(35);
 
 	var _MenuHeader2 = _interopRequireDefault(_MenuHeader);
 
@@ -1117,8 +927,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ContextMenuLayer = _reactContextmenu.ContextMenuLayer;
 
 /***/ }),
-
-/***/ 1112:
+/* 37 */,
+/* 38 */,
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(9)();
@@ -1132,14 +943,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-
-/***/ 1116:
+/* 40 */,
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(1112);
+	var content = __webpack_require__(39);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(10)(content, {});
@@ -1159,7 +970,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ })
-
-/******/ })
+/******/ ])
 });
 ;

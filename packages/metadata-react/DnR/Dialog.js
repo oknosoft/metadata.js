@@ -8,7 +8,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Portal from 'react-portal';
+import {Portal} from 'react-portal';
 import DnR from './DnR';
 import {WindowsTheme} from './themes';
 

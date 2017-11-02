@@ -30,7 +30,12 @@ function adapter({AbstracrAdapter}) {
 
       super($p);
 
-      this.props = {_data_loaded: false, _auth: null};
+      this.props = {
+        _data_loaded: false,
+        _doc_ram_loading: false,
+        _doc_ram_loaded: false,
+        _auth: null
+      };
 
       /**
        * ### Локальные базы PouchDB
@@ -260,6 +265,8 @@ function adapter({AbstracrAdapter}) {
 
           // излучаем событие
           this.emit_async('user_log_in', username);
+
+          props._data_loaded && !props._doc_ram_loading && !props._doc_ram_loaded && this.load_doc_ram();
 
           // запускаем синхронизацию для нужных баз
           return this.after_log_in();
@@ -566,6 +573,7 @@ function adapter({AbstracrAdapter}) {
 
     /**
      * ### Информирует о загруженности данных
+     * если к этому моменту мы уже авторизованы, запускает load_doc_ram
      *
      * @method call_data_loaded
      */
@@ -577,15 +585,11 @@ function adapter({AbstracrAdapter}) {
           page = local.sync._page || {};
         }
         // информируем мир о загруженности данных
-        Promise.resolve().then(() => this.emit(page.note = 'pouch_data_loaded', page));
-
-        // пытаемся загрузить load_doc_ram
-        if(this.authorized){
-          this.load_doc_ram();
-        }
-        else{
-          setTimeout(() => this.authorized && this.load_doc_ram(), 3000);
-        };
+        Promise.resolve().then(() => {
+          this.emit(page.note = 'pouch_data_loaded', page);
+          // пытаемся загрузить doc_ram
+          this.authorized && this.load_doc_ram();
+        });
       }
     }
 
@@ -1054,11 +1058,10 @@ function adapter({AbstracrAdapter}) {
     load_doc_ram() {
       const res = [];
       const {_m} = this.$p.md;
+      this.props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
-        for (let name in _m[kind]) {
-          if(_m[kind][name].cachable == 'doc_ram') {
-            res.push(kind + '.' + name);
-          }
+        for (const name in _m[kind]) {
+          _m[kind][name].cachable === 'doc_ram' && res.push(kind + '.' + name);
         }
       });
       return this.local.doc.find({
@@ -1070,7 +1073,11 @@ function adapter({AbstracrAdapter}) {
           return {docs: []};
         })
         .then((data) => this.load_changes(data))
-        .then(() => this.emit('pouch_doc_ram_loaded'));
+        .then(() => {
+          this.props._doc_ram_loading = false;
+          this.props._doc_ram_loaded = true;
+          this.emit('pouch_doc_ram_loaded');
+        });
     }
 
     /**

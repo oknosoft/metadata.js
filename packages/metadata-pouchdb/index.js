@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.4-beta.34, built:2017-10-31
+ metadata-pouchdb v2.0.16-beta.35, built:2017-11-02
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -172,7 +172,12 @@ function adapter({AbstracrAdapter}) {
   return class AdapterPouch extends AbstracrAdapter {
     constructor($p) {
       super($p);
-      this.props = {_data_loaded: false, _auth: null};
+      this.props = {
+        _data_loaded: false,
+        _doc_ram_loading: false,
+        _doc_ram_loaded: false,
+        _auth: null
+      };
       this.local = {_loading: false, sync: {}};
       this.remote = {};
     }
@@ -328,6 +333,7 @@ function adapter({AbstracrAdapter}) {
             wsql.set_user_param('user_pwd', '');
           }
           this.emit_async('user_log_in', username);
+          props._data_loaded && !props._doc_ram_loading && !props._doc_ram_loaded && this.load_doc_ram();
           return this.after_log_in();
         })
         .catch(err => {
@@ -534,13 +540,10 @@ function adapter({AbstracrAdapter}) {
         if(!page) {
           page = local.sync._page || {};
         }
-        Promise.resolve().then(() => this.emit(page.note = 'pouch_data_loaded', page));
-        if(this.authorized){
-          this.load_doc_ram();
-        }
-        else{
-          setTimeout(() => this.authorized && this.load_doc_ram(), 3000);
-        }
+        Promise.resolve().then(() => {
+          this.emit(page.note = 'pouch_data_loaded', page);
+          this.authorized && this.load_doc_ram();
+        });
       }
     }
     reset_local_data() {
@@ -884,11 +887,10 @@ function adapter({AbstracrAdapter}) {
     load_doc_ram() {
       const res = [];
       const {_m} = this.$p.md;
+      this.props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
-        for (let name in _m[kind]) {
-          if(_m[kind][name].cachable == 'doc_ram') {
-            res.push(kind + '.' + name);
-          }
+        for (const name in _m[kind]) {
+          _m[kind][name].cachable === 'doc_ram' && res.push(kind + '.' + name);
         }
       });
       return this.local.doc.find({
@@ -900,7 +902,11 @@ function adapter({AbstracrAdapter}) {
           return {docs: []};
         })
         .then((data) => this.load_changes(data))
-        .then(() => this.emit('pouch_doc_ram_loaded'));
+        .then(() => {
+          this.props._doc_ram_loading = false;
+          this.props._doc_ram_loaded = true;
+          this.emit('pouch_doc_ram_loaded');
+        });
     }
     find_rows(_mgr, selection) {
       const db = this.db(_mgr);

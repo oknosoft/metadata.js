@@ -8,7 +8,7 @@ const {Row} = ReactDataGrid;
 class RowRenderer extends Component {
 
   static propTypes = {
-    idx: React.PropTypes.string.isRequired
+    idx: PropTypes.string.isRequired
   };
 
   // setScrollLeft(scrollBy) {
