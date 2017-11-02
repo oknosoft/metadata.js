@@ -7,7 +7,6 @@ export const OFFLINE = 'OFFLINE';   // Изменено значение нас�
 // Actions - функции - генераторы действий. Они передаются в диспетчер redux
 
 export function meta_loaded({version}) {
-
   return {
     type: META_LOADED,
     payload: version,

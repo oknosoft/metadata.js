@@ -7,7 +7,11 @@
 
 import utils from './utils';
 
+//import alasql from 'alasql/dist/alasql.min';
 const alasql = (typeof window != 'undefined' && window.alasql) || require('alasql/dist/alasql.min');
+if(typeof window != 'undefined' && !window.alasql){
+  window.alasql = alasql;
+}
 
 const fake_ls = {
 	setItem(name, value) {},
@@ -131,12 +135,15 @@ export default class WSQL {
       }
 		});
 
-		// сообщяем адаптерам пути и префиксы
-		for(let i in adapters){
-			adapters[i].init(this, job_prm);
-		}
+		// инициализируем метаданные
+    if(meta) {
+      meta(this.$p);
+      // сообщяем адаптерам пути и префиксы
+      for(let i in adapters){
+        adapters[i].init(this, job_prm);
+      }
+    }
 
-		meta && meta(this.$p);
 	};
 
 	/**
@@ -252,6 +259,9 @@ export default class WSQL {
 		else if(type == "boolean"){
 			return utils.fix_boolean(prm);
 		}
+    else if(type == "string"){
+      return prm ? prm.toString() : '';
+    }
 		return prm;
 	}
 

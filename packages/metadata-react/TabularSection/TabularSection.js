@@ -6,7 +6,7 @@ import TabularSectionToolbar from './TabularSectionToolbar';
 import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 
-import ReactDataGrid from 'react-data-grid';
+import ReactDataGrid from 'metadata-external/react-data-grid';
 import {AutoSizer} from 'react-virtualized';
 
 // import withStyles from 'material-ui/styles/withStyles';

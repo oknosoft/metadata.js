@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.2-beta.30, built:2017-10-03
+ metadata-redux v2.0.16-beta.35, built:2017-11-02
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -15,9 +15,9 @@ const LOG_IN = 'USER_LOG_IN';
 const DEFINED = 'USER_DEFINED';
 const LOG_OUT = 'USER_LOG_OUT';
 const LOG_ERROR = 'USER_LOG_ERROR';
-
-
-
+const SOCIAL_TRY_LINK = 'USER_SOCIAL_TRY_LINK';
+const SOCIAL_LINKED = 'USER_SOCIAL_LINKED';
+const SOCIAL_UNLINKED = 'USER_SOCIAL_UNLINKED';
 function defined(name) {
   return {
     type: DEFINED,
@@ -36,12 +36,17 @@ function try_log_in(adapter, name, password) {
       type: TRY_LOG_IN,
       payload: {name: name, password: password, provider: 'local'}
     });
-    if(adapter.$p.superlogin) {
-      return adapter.$p.superlogin.login({
+    if($p.superlogin) {
+      return $p.superlogin.login({
         username: name,
         password: password
       })
-        .then((session) => adapter.log_in(session.token, session.password));
+        .then((session) => {
+          adapter.log_in();
+        })
+        .catch((err) => {
+          $p.record_log(err);
+        });
     }
     else {
       return adapter.log_in(name, password);
@@ -50,27 +55,38 @@ function try_log_in(adapter, name, password) {
 }
 function log_out(adapter) {
   return function (dispatch, getState) {
-    const disp_log_out = () => {
+    function disp_log_out() {
       dispatch({
         type: LOG_OUT,
         payload: {name: getState().meta.user.name}
       });
-    };
-    if(!adapter) {
-      disp_log_out();
     }
-    else if(adapter.$p.superlogin) {
-      adapter.$p.superlogin.logOut()
-        .then(disp_log_out);
+    if($p.superlogin) {
+      $p.superlogin.logout().then(disp_log_out);
+    }
+    else if(!adapter) {
+      disp_log_out();
     }
     else {
       adapter.log_out();
     }
   };
 }
-function log_error() {
+function log_error(err) {
+  const msg = $p.msg.login;
+  let text = msg.error;
+  if(err.message.match('suffix')){
+    text = msg.suffix;
+  }
+  else if(err.message.match('empty')){
+    text = msg.empty;
+  }
+  else if(err.message.match('logout')){
+    text = msg.need_logout;
+  }
   return {
-    type: LOG_ERROR
+    type: LOG_ERROR,
+    payload: text
   };
 }
 function reset_user(state) {
@@ -78,6 +94,7 @@ function reset_user(state) {
   user.logged_in = false;
   user.has_login = false;
   user.try_log_in = false;
+  user.log_error = '';
   return Object.assign({}, state, {user});
 }
 
@@ -332,6 +349,25 @@ function prm_change(name, value) {
 }
 
 var actions_meta = {
+  types: {
+    [TRY_LOG_IN]: TRY_LOG_IN,
+    [LOG_IN]: LOG_IN,
+    [DEFINED]: DEFINED,
+    [LOG_OUT]: LOG_OUT,
+    [LOG_ERROR]: LOG_ERROR,
+    [SOCIAL_TRY_LINK]: SOCIAL_TRY_LINK,
+    [SOCIAL_LINKED]: SOCIAL_LINKED,
+    [SOCIAL_UNLINKED]: SOCIAL_UNLINKED,
+    [DATA_LOADED]: DATA_LOADED,
+    [DATA_PAGE]: DATA_PAGE,
+    [DATA_ERROR]: DATA_ERROR,
+    [LOAD_START]: LOAD_START,
+    [NO_DATA]: NO_DATA,
+    [SYNC_DATA]: SYNC_DATA,
+    [SYNC_ERROR]: SYNC_ERROR,
+    [SYNC_PAUSED]: SYNC_PAUSED,
+    [SYNC_RESUMED]: SYNC_RESUMED,
+  },
   [META_LOADED]: meta_loaded,
   [PRM_CHANGE]: prm_change,
   [TRY_LOG_IN]: try_log_in,
@@ -413,21 +449,20 @@ var handlers_meta = {
     return Object.assign({}, state, {user});
   },
   [LOG_IN]: (state, action) => {
-    const user = Object.assign({}, state.user);
-    user.logged_in = true;
-    user.try_log_in = false;
+    const user = Object.assign({}, state.user, {logged_in: true, try_log_in: false, log_error: ''});
     return Object.assign({}, state, {user});
   },
   [TRY_LOG_IN]: (state, action) => {
-    const user = Object.assign({}, state.user);
-    user.try_log_in = true;
+    const user = Object.assign({}, state.user, {try_log_in: true, log_error: ''});
     return Object.assign({}, state, {user});
   },
   [LOG_OUT]: (state, action) => {
     return reset_user(state);
   },
   [LOG_ERROR]: (state, action) => {
-    return reset_user(state);
+    const reseted = reset_user(state);
+    reseted.user.log_error = action.payload;
+    return reseted;
   },
   [ADD]: (state, action) => state,
   [CHANGE]: (state, action) => Object.assign({}, state, {obj_change: action.payload}),
@@ -466,7 +501,7 @@ function metaInitialState() {
       has_login: has_login,
       try_log_in: false,
       logged_in: false,
-      log_error: false,
+      log_error: '',
     }
   };
 }
@@ -480,54 +515,26 @@ function metaReducer(state, action) {
 
 let attached;
 function metaMiddleware({adapters, md}) {
-  return (store) => {
-    const {dispatch} = store;
+  return ({dispatch}) => {
     return next => action => {
       if(!attached) {
         attached = true;
         adapters.pouch.on({
-          user_log_in: (name) => {
-            dispatch(log_in(name));
-          },
-          user_log_out: () => {
-            dispatch(log_out());
-          },
-          pouch_data_page: (page) => {
-            dispatch(data_page(page));
-          },
-          pouch_data_loaded: (page) => {
-            dispatch(data_loaded(page));
-          },
-          pouch_doc_ram_loaded: () => {
-            dispatch(data_loaded('doc_ram'));
-          },
-          pouch_complete_loaded: () => {
-            dispatch(data_loaded('complete'));
-          },
-          pouch_data_error: (dbid, err) => {
-            dispatch(data_error(dbid, err));
-          },
-          pouch_load_start: (page) => {
-            dispatch(load_start(page));
-          },
-          pouch_no_data: (dbid, err) => {
-            dispatch(no_data(dbid, err));
-          },
-          pouch_sync_data: (dbid, change$$1) => {
-            dispatch(sync_data(dbid, change$$1));
-          },
-          pouch_sync_error: (dbid, err) => {
-            dispatch(sync_error(dbid, err));
-          },
-          pouch_sync_paused: (dbid, info) => {
-            dispatch(sync_paused(dbid, info));
-          },
-          pouch_sync_resumed: (dbid, info) => {
-            dispatch(sync_resumed(dbid, info));
-          },
-          pouch_sync_denied: (dbid, info) => {
-            dispatch(sync_denied(dbid, info));
-          },
+          user_log_in: (name) => dispatch(log_in(name)),
+          user_log_out: () => dispatch(log_out()),
+          user_log_fault: (err) => dispatch(log_error(err)),
+          pouch_data_page: (page) => dispatch(data_page(page)),
+          pouch_data_loaded: (page) => dispatch(data_loaded(page)),
+          pouch_doc_ram_loaded: () => dispatch(data_loaded('doc_ram')),
+          pouch_complete_loaded: () => dispatch(data_loaded('complete')),
+          pouch_data_error: (dbid, err) => dispatch(data_error(dbid, err)),
+          pouch_load_start: (page) => dispatch(load_start(page)),
+          pouch_no_data: (dbid, err) => dispatch(no_data(dbid, err)),
+          pouch_sync_data: (dbid, change$$1) => dispatch(sync_data(dbid, change$$1)),
+          pouch_sync_error: (dbid, err) => dispatch(sync_error(dbid, err)),
+          pouch_sync_paused: (dbid, info) => dispatch(sync_paused(dbid, info)),
+          pouch_sync_resumed: (dbid, info) => dispatch(sync_resumed(dbid, info)),
+          pouch_sync_denied: (dbid, info) => dispatch(sync_denied(dbid, info)),
         });
         md.on({
           obj_loaded: (_obj) => {

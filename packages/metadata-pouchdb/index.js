@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.2-beta.30, built:2017-10-03
+ metadata-pouchdb v2.0.16-beta.35, built:2017-11-02
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -144,32 +144,27 @@ var proto = (constructor) => {
 };
 
 let PouchDB;
-if(typeof process !== 'undefined' && process.versions && process.versions.node){
-	PouchDB = require('pouchdb-core')
-		.plugin(require('pouchdb-adapter-http'))
-		.plugin(require('pouchdb-replication'))
-		.plugin(require('pouchdb-mapreduce'))
-		.plugin(require('pouchdb-find'))
-		.plugin(require('pouchdb-adapter-memory'));
+if(typeof process !== 'undefined' && process.versions && process.versions.node) {
+  PouchDB = require('pouchdb-core')
+    .plugin(require('pouchdb-adapter-http'))
+    .plugin(require('pouchdb-replication'))
+    .plugin(require('pouchdb-mapreduce'))
+    .plugin(require('pouchdb-find'))
+    .plugin(require('pouchdb-adapter-memory'));
 }
-else{
-	if(window.PouchDB){
-		PouchDB = window.PouchDB;
-	}
-	else{
-		PouchDB = require('pouchdb-core')
-			.plugin(require('pouchdb-adapter-http'))
-			.plugin(require('pouchdb-replication'))
-			.plugin(require('pouchdb-mapreduce'))
-			.plugin(require('pouchdb-find'))
-			.plugin(require('pouchdb-authentication'));
-		const ua = (navigator && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
-		if(ua.match('safari') && !ua.match('chrome')){
-			PouchDB.plugin(require('pouchdb-adapter-websql'));
-		}else{
-			PouchDB.plugin(require('pouchdb-adapter-idb'));
-		}
-	}
+else {
+  if(window.PouchDB) {
+    PouchDB = window.PouchDB;
+  }
+  else {
+    const ua = (navigator && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
+    PouchDB = window.PouchDB = require('pouchdb-core').default
+      .plugin(require('pouchdb-adapter-http').default)
+      .plugin(require('pouchdb-replication').default)
+      .plugin(require('pouchdb-mapreduce').default)
+      .plugin(require('pouchdb-find').default)
+      .plugin(ua.match('safari') && !ua.match('chrome') ? require('pouchdb-adapter-websql').default : require('pouchdb-adapter-idb').default);
+  }
 }
 var PouchDB$1 = PouchDB;
 
@@ -177,283 +172,266 @@ function adapter({AbstracrAdapter}) {
   return class AdapterPouch extends AbstracrAdapter {
     constructor($p) {
       super($p);
-      const t = this;
-      const _paths = {};
-      let _local, _remote, _auth, _data_loaded;
-      Object.defineProperties(this, {
-        init: {
-          value: function (wsql, job_prm) {
-            Object.assign(_paths, {
-              path: wsql.get_user_param('couch_path', 'string') || job_prm.couch_path || '',
-              zone: wsql.get_user_param('zone', 'number'),
-              prefix: job_prm.local_storage_prefix,
-              suffix: wsql.get_user_param('couch_suffix', 'string') || '',
-              direct: job_prm.couch_direct || wsql.get_user_param('couch_direct', 'boolean'),
-              user_node: job_prm.user_node,
-              noreplicate: job_prm.noreplicate,
-            });
-            if(_paths.path && _paths.path.indexOf('http') != 0 && typeof location != 'undefined') {
-              _paths.path = location.protocol + '//' + location.host + _paths.path;
-            }
-            if(_paths.suffix) {
-              while (_paths.suffix.length < 4) {
-                _paths.suffix = '0' + _paths.suffix;
-              }
-            }
-          },
-        },
-        local: {
-          get: function () {
-            if(!_local) {
-              const opts = {auto_compaction: true, revs_limit: 2};
-              const bases = this.$p.md.bases();
-              _local = {
-                sync: {},
-                meta: new PouchDB$1(_paths.prefix + 'meta', opts),
-              };
-              for (const name of ['ram', 'doc', 'user']) {
-                if(bases.indexOf(name) != -1) {
-                  if(_paths.user_node || (_paths.direct && name != 'ram')) {
-                    _local[name] = this.remote[name];
-                  }
-                  else {
-                    _local[name] = new PouchDB$1(_paths.prefix + _paths.zone + '_' + name, opts);
-                  }
-                }
-              }
-              if(_paths.path && !_local._meta) {
-                _local._meta = new PouchDB$1(_paths.path + 'meta', {skip_setup: true});
-                setTimeout(() => t.run_sync('meta'));
-              }
-            }
-            return _local;
-          },
-        },
-        remote: {
-          get: function () {
-            if(!_remote) {
-              const opts = {skip_setup: true, adapter: 'http'};
-              if(_paths.user_node) {
-                opts.auth = _paths.user_node;
-              }
-              _remote = {};
-              const {superlogin, md} = this.$p;
-              function dbpath(name) {
-                if(superlogin) {
-                  return superlogin.getDbUrl(_paths.prefix + (name == 'meta' ? name : (_paths.zone + '_' + name)));
-                }
-                else {
-                  if(name == 'meta') {
-                    return _paths.path + 'meta';
-                  }
-                  else if(name == 'ram') {
-                    return _paths.path + _paths.zone + '_ram';
-                  }
-                  else {
-                    return _paths.path + _paths.zone + '_' + name + (_paths.suffix ? '_' + _paths.suffix : '');
-                  }
-                }
-              }
-              md.bases().forEach((name) => {
-                if(name == 'e1cib' || name == 'pgsql') {
-                  return;
-                }
-                _remote[name] = new PouchDB$1(dbpath(name), opts);
-              });
-            }
-            return _remote;
-          },
-        },
-        db: {
-          value: function (_mgr) {
-            const dbid = _mgr.cachable.replace('_remote', '').replace('_ram', '');
-            if(dbid.indexOf('remote') != -1 || (
-                _paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1
-              )) {
-              return this.remote[dbid.replace('_remote', '')];
-            }
-            else {
-              return this.local[dbid] || this.remote[dbid];
-            }
-          },
-        },
-        log_in: {
-          value: function (username, password) {
-            const {job_prm, wsql, aes, md} = this.$p;
-            if(username == undefined && password == undefined) {
-              if(job_prm.guests && job_prm.guests.length) {
-                username = job_prm.guests[0].username;
-                password = aes.Ctr.decrypt(job_prm.guests[0].password);
-              }
-              else {
-                return Promise.reject(new Error('username & password not defined'));
-              }
-            }
-            if(_auth) {
-              if(_auth.username == username) {
-                return Promise.resolve();
-              }
-              else {
-                return Promise.reject(new Error('need logout first'));
-              }
-            }
-            const try_auth = [];
-            if(!_paths.user_node) {
-              md.bases().forEach((name) => {
-                if(t.remote[name]) {
-                  try_auth.push(this.remote[name].login(username, password));
-                }
-              });
-            }
-            return Promise.all(try_auth)
-              .then(() => {
-                _auth = {username};
-                if(wsql.get_user_param('user_name') != username) {
-                  wsql.set_user_param('user_name', username);
-                }
-                if(wsql.get_user_param('enable_save_pwd')) {
-                  if(aes.Ctr.decrypt(wsql.get_user_param('user_pwd')) != password) {
-                    wsql.set_user_param('user_pwd', aes.Ctr.encrypt(password));
-                  }
-                }
-                else if(wsql.get_user_param('user_pwd') != '') {
-                  wsql.set_user_param('user_pwd', '');
-                }
-                t.emit_async('user_log_in', username);
-                try_auth.length = 0;
-                md.bases().forEach((dbid) => {
-                  if(t.local[dbid] && t.remote[dbid] && t.local[dbid] != t.remote[dbid]) {
-                    if(_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1) {
-                      return;
-                    }
-                    try_auth.push(t.run_sync(dbid));
-                  }
-                });
-                return Promise.all(try_auth);
-              })
-              .then(() => {
-                if(t.local._loading) {
-                  return new Promise((resolve, reject) => {
-                    t.once('pouch_data_loaded', resolve);
-                  });
-                }
-                else if(!_paths.user_node) {
-                  return t.call_data_loaded();
-                }
-              })
-              .catch(err => {
-                t.emit('user_log_fault', err);
-              });
-          },
-        },
-        log_out: {
-          value: function () {
-            if(_auth) {
-              const {doc, ram} = _local.sync;
-              if(doc) {
-                try {
-                  doc.cancel();
-                  doc.removeAllListeners();
-                }
-                catch (err) {
-                }
-              }
-              if(ram) {
-                try {
-                  ram.cancel();
-                  ram.removeAllListeners();
-                }
-                catch (err) {
-                }
-              }
-              _auth = null;
-            }
-            return Promise.all(this.$p.md.bases().map((id) => {
-              if(id != 'meta' && _remote && _remote[id] && _remote[id] != _local[id]) {
-                return _remote[id].logout();
-              }
-            }))
-              .then(() => t.emit('user_log_out'));
-          },
-        },
-        load_data: {
-          value: function () {
-            const {job_prm} = this.$p;
-            const options = {
-              limit: 800,
-              include_docs: true,
-            };
-            const _page = {
-              total_rows: 0,
-              limit: options.limit,
-              page: 0,
-              start: Date.now(),
-            };
-            return new Promise((resolve, reject) => {
-              function fetchNextPage() {
-                t.local.ram.allDocs(options, (err, response) => {
-                  if(response) {
-                    _page.page++;
-                    _page.total_rows = response.total_rows;
-                    _page.duration = Date.now() - _page.start;
-                    t.emit('pouch_data_page', Object.assign({}, _page));
-                    if(t.load_changes(response, options)) {
-                      fetchNextPage();
-                    }
-                    else {
-                      t.call_data_loaded(_page);
-                      resolve();
-                    }
-                  }
-                  else if(err) {
-                    reject(err);
-                    t.emit('pouch_data_error', 'ram', err);
-                  }
-                });
-              }
-              t.local.ram.info().then((info) => {
-                if(info.doc_count >= (job_prm.pouch_ram_doc_count || 10)) {
-                  t.emit('pouch_load_start', Object.assign(_page, {local_rows: info.doc_count}));
-                  t.local._loading = true;
-                  fetchNextPage();
-                }
-                else {
-                  t.emit('pouch_no_data', info);
-                  resolve();
-                }
-              });
-            });
-          },
-        },
-        authorized: {
-          get: function () {
-            return _auth && _auth.username;
-          },
-        },
-        data_loaded: {
-          get: function () {
-            return !!_data_loaded;
-          },
-        },
-        call_data_loaded: {
-          value: function (page) {
-            if(!_data_loaded) {
-              _data_loaded = true;
-              if(!page) {
-                page = _local.sync._page || {};
-              }
-              Promise.resolve().then(() => this.emit(page.note = 'pouch_data_loaded', page));
-              this.authorized && this.load_doc_ram();
-            }
-          },
-        },
+      this.props = {
+        _data_loaded: false,
+        _doc_ram_loading: false,
+        _doc_ram_loaded: false,
+        _auth: null
+      };
+      this.local = {_loading: false, sync: {}};
+      this.remote = {};
+    }
+    init(wsql, job_prm) {
+      const {props, local, remote, $p} = this;
+      Object.assign(props, {
+        path: wsql.get_user_param('couch_path', 'string') || job_prm.couch_path || '',
+        zone: wsql.get_user_param('zone', 'number'),
+        prefix: job_prm.local_storage_prefix,
+        suffix: wsql.get_user_param('couch_suffix', 'string') || '',
+        direct: job_prm.couch_direct || wsql.get_user_param('couch_direct', 'boolean'),
+        user_node: job_prm.user_node,
+        noreplicate: job_prm.noreplicate,
       });
+      if(props.path && props.path.indexOf('http') != 0 && typeof location != 'undefined') {
+        props.path = location.protocol + '//' + location.host + props.path;
+      }
+      if(props.suffix) {
+        while (props.suffix.length < 4) {
+          props.suffix = '0' + props.suffix;
+        }
+      }
+      if(job_prm.use_meta === false) {
+        props.use_meta = false;
+      }
+      const opts = {auto_compaction: true, revs_limit: 2};
+      const bases = $p.md.bases();
+      if(props.use_meta !== false) {
+        local.meta = new PouchDB$1(props.prefix + 'meta', opts);
+        if(props.path) {
+          remote.meta = new PouchDB$1(props.path + 'meta', {skip_setup: true});
+          setTimeout(() => this.run_sync('meta'));
+        }
+      }
+      for (const name of ['ram', 'doc', 'user']) {
+        if(bases.indexOf(name) != -1) {
+          if(props.user_node || (props.direct && name != 'ram')) {
+            Object.defineProperty(local, name, {
+              get: function () {
+                return remote[name];
+              }
+            });
+          }
+          else {
+            local[name] = new PouchDB$1(props.prefix + props.zone + '_' + name, opts);
+          }
+        }
+      }
+      this.after_init();
+    }
+    after_init(bases) {
+      const {props, remote, $p} = this;
+      const opts = {skip_setup: true, adapter: 'http'};
+      if(props.user_node) {
+        opts.auth = props.user_node;
+      }
+      (bases || $p.md.bases()).forEach((name) => {
+        if(name == 'e1cib' || name == 'pgsql' || name == 'github') {
+          return;
+        }
+        remote[name] = new PouchDB$1(this.dbpath(name), opts);
+      });
+    }
+    after_log_in() {
+      const {props, local, remote, $p} = this;
+      const try_auth = [];
+      $p.md.bases().forEach((dbid) => {
+        if(dbid !== 'meta' && local[dbid] && remote[dbid] && local[dbid] != remote[dbid]) {
+          if(props.noreplicate && props.noreplicate.indexOf(dbid) != -1) {
+            return;
+          }
+          try_auth.push(this.run_sync(dbid));
+        }
+      });
+      return Promise.all(try_auth)
+        .then(() => {
+          if(local._loading) {
+            return new Promise((resolve, reject) => {
+              this.once('pouch_data_loaded', resolve);
+            });
+          }
+          else if(!props.user_node) {
+            return this.call_data_loaded();
+          }
+        });
+    }
+    log_in(username, password) {
+      const {props, local, remote, $p} = this;
+      const {job_prm, wsql, aes, md, cat} = $p;
+      if(username == undefined && password == undefined) {
+        if(job_prm.guests && job_prm.guests.length) {
+          username = job_prm.guests[0].username;
+          password = aes.Ctr.decrypt(job_prm.guests[0].password);
+        }
+        else {
+          const err = new Error('empty login or password');
+          this.emit('user_log_fault', err);
+          return Promise.reject(err);
+        }
+      }
+      else if(!username || !password){
+        const err = new Error('empty login or password');
+        this.emit('user_log_fault', err);
+        return Promise.reject(err);
+      }
+      if(props._auth) {
+        if(props._auth.username == username) {
+          return Promise.resolve();
+        }
+        else {
+          const err = new Error('need logout first');
+          this.emit('user_log_fault', err);
+          return Promise.reject(err);
+        }
+      }
+      let try_auth = Promise.resolve();
+      if(!props.user_node) {
+        md.bases().forEach((dbid) => {
+          if(dbid !== 'meta' && remote[dbid]) {
+            try_auth = try_auth.then(() => remote[dbid].login(username, password)
+              .then(() => {
+                if(dbid == 'ram' && cat.users && cat.users.cachable == dbid){
+                  return this.find_rows(cat.users, {_raw: true, _top: 1, id: username})
+                    .then((rows) => {
+                      if(rows && rows.length){
+                        const suffix = rows[0].suffix || '';
+                        if(wsql.get_user_param('couch_suffix', 'string') != suffix){
+                          wsql.set_user_param('couch_suffix', suffix);
+                          throw new Error('couch_suffix');
+                        }
+                      }
+                    });
+                }
+                else{
+                  return remote[dbid].info();
+                }
+              })
+            );
+          }
+        });
+      }
+      return try_auth.then(() => {
+          props._auth = {username};
+          if(wsql.get_user_param('user_name') != username) {
+            wsql.set_user_param('user_name', username);
+          }
+          if(wsql.get_user_param('enable_save_pwd')) {
+            if(aes.Ctr.decrypt(wsql.get_user_param('user_pwd')) != password) {
+              wsql.set_user_param('user_pwd', aes.Ctr.encrypt(password));
+            }
+          }
+          else if(wsql.get_user_param('user_pwd') != '') {
+            wsql.set_user_param('user_pwd', '');
+          }
+          this.emit_async('user_log_in', username);
+          props._data_loaded && !props._doc_ram_loading && !props._doc_ram_loaded && this.load_doc_ram();
+          return this.after_log_in();
+        })
+        .catch(err => {
+          this.emit('user_log_fault', err);
+        });
+    }
+    log_out() {
+      const {props, local, remote, authorized, $p} = this;
+      if(authorized) {
+        for (const name in local.sync) {
+          if(name != 'meta') {
+            try {
+              local.sync[name].cancel();
+              doc.removeAllListeners();
+            }
+            catch (err) {
+            }
+          }
+        }
+        props._auth = null;
+      }
+      return Promise.all($p.md.bases().map((id) => id != 'meta' && remote[id] && remote[id].logout()))
+        .then(() => this.emit('user_log_out'));
+    }
+    load_data() {
+      const {local, $p} = this;
+      const options = {
+        limit: 800,
+        include_docs: true,
+      };
+      const _page = {
+        total_rows: 0,
+        limit: options.limit,
+        page: 0,
+        start: Date.now(),
+      };
+      return new Promise((resolve, reject) => {
+        const fetchNextPage = () => {
+          local.ram.allDocs(options, (err, response) => {
+            if(response) {
+              _page.page++;
+              _page.total_rows = response.total_rows;
+              _page.duration = Date.now() - _page.start;
+              this.emit('pouch_data_page', Object.assign({}, _page));
+              if(this.load_changes(response, options)) {
+                fetchNextPage();
+              }
+              else {
+                this.call_data_loaded(_page);
+                resolve();
+              }
+            }
+            else if(err) {
+              reject(err);
+              this.emit('pouch_data_error', 'ram', err);
+            }
+          });
+        };
+        local.ram.info().then((info) => {
+          if(info.doc_count >= ($p.job_prm.pouch_ram_doc_count || 10)) {
+            this.emit('pouch_load_start', Object.assign(_page, {local_rows: info.doc_count}));
+            local._loading = true;
+            fetchNextPage();
+          }
+          else {
+            this.emit('pouch_no_data', info);
+            resolve();
+          }
+        });
+      });
+    }
+    dbpath(name) {
+      const {props} = this;
+      if(name == 'meta') {
+        return props.path + 'meta';
+      }
+      else if(name == 'ram') {
+        return props.path + props.zone + '_ram';
+      }
+      else {
+        return props.path + props.zone + '_' + name + (props.suffix ? '_' + props.suffix : '');
+      }
+    }
+    db(_mgr) {
+      const dbid = _mgr.cachable.replace('_remote', '').replace('_ram', '');
+      const {props, local, remote} = this;
+      if(dbid.indexOf('remote') != -1 || (props.noreplicate && props.noreplicate.indexOf(dbid) != -1)) {
+        return remote[dbid.replace('_remote', '')];
+      }
+      else {
+        return local[dbid] || remote[dbid];
+      }
     }
     run_sync(id) {
       const {local, remote, $p} = this;
       const {wsql, job_prm} = $p;
       const db_local = local[id];
-      const db_remote = id == 'meta' ? local._meta : remote[id];
+      const db_remote = remote[id];
       let linfo, _page;
       return db_local.info()
         .then((info) => {
@@ -472,7 +450,7 @@ function adapter({AbstracrAdapter}) {
                 }
                 return rinfo;
               })
-              .catch(this.$p.record_log)
+              .catch($p.record_log)
               .then(() => rinfo);
           }
           return rinfo;
@@ -554,6 +532,19 @@ function adapter({AbstracrAdapter}) {
             sync_events(db_local.replicate.from(db_remote, options), options);
           });
         });
+    }
+    call_data_loaded(page) {
+      const {local, props} = this;
+      if(!props._data_loaded) {
+        props._data_loaded = true;
+        if(!page) {
+          page = local.sync._page || {};
+        }
+        Promise.resolve().then(() => {
+          this.emit(page.note = 'pouch_data_loaded', page);
+          this.authorized && this.load_doc_ram();
+        });
+      }
     }
     reset_local_data() {
       const {doc, ram} = this.local;
@@ -863,28 +854,23 @@ function adapter({AbstracrAdapter}) {
       return db.allDocs(options).then((result) => this.load_changes(result, {}));
     }
     load_view(_mgr, _view) {
-      var doc, res = [],
-        db = this.db(_mgr),
-        options = {
+      return new Promise((resolve, reject) => {
+        const db = this.db(_mgr);
+        const options = {
           limit: 1000,
           include_docs: true,
           startkey: _mgr.class_name + '|',
           endkey: _mgr.class_name + '|\ufff0',
         };
-      return new Promise((resolve, reject) => {
         function process_docs(err, result) {
           if(result) {
             if(result.rows.length) {
               options.startkey = result.rows[result.rows.length - 1].key;
               options.skip = 1;
-              result.rows.forEach((rev) => {
-                doc = rev.doc;
-                let key = doc._id.split('|');
-                doc.ref = key[1];
-                res.push(doc);
-              });
-              _mgr.load_array(res);
-              res.length = 0;
+              _mgr.load_array(result.rows.map(({doc}) => {
+                doc.ref = doc._id.split('|')[1];
+                return doc;
+              }));
               db.query(_view, options, process_docs);
             }
             else {
@@ -901,11 +887,10 @@ function adapter({AbstracrAdapter}) {
     load_doc_ram() {
       const res = [];
       const {_m} = this.$p.md;
+      this.props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
-        for (let name in _m[kind]) {
-          if(_m[kind][name].cachable == 'doc_ram') {
-            res.push(kind + '.' + name);
-          }
+        for (const name in _m[kind]) {
+          _m[kind][name].cachable === 'doc_ram' && res.push(kind + '.' + name);
         }
       });
       return this.local.doc.find({
@@ -917,10 +902,17 @@ function adapter({AbstracrAdapter}) {
           return {docs: []};
         })
         .then((data) => this.load_changes(data))
-        .then(() => this.emit('pouch_doc_ram_loaded'));
+        .then(() => {
+          this.props._doc_ram_loading = false;
+          this.props._doc_ram_loaded = true;
+          this.emit('pouch_doc_ram_loaded');
+        });
     }
     find_rows(_mgr, selection) {
       const db = this.db(_mgr);
+      if(!db) {
+        return Promise.resolve([]);
+      }
       const err_handler = this.emit.bind(this, 'pouch_sync_error', _mgr.cachable);
       if(selection && selection._mango) {
         return db.find(selection)
@@ -1215,6 +1207,10 @@ function adapter({AbstracrAdapter}) {
     backup_database(do_zip) {
     }
     restore_database(do_zip) {
+    }
+    get authorized() {
+      const {_auth} = this.props;
+      return _auth && _auth.username;
     }
   };
 }

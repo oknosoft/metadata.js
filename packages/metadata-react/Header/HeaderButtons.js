@@ -16,10 +16,10 @@ import SyncIconDisabled from 'material-ui-icons/SyncDisabled';
 import PersonOutline from 'material-ui-icons/PersonOutline';
 import AccountOff from './AccountOff';
 
-import Notifications from '../Notifications';
+import Notifications from '../Notifications/index';
 
 import classnames from 'classnames';
-import withStyles from '../Header/toolbar';
+import withStyles from './toolbar';
 
 class NavUserButtons extends Component {
 

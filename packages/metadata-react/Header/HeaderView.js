@@ -8,10 +8,10 @@ import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
 
-import withIface from 'metadata-redux/src/withIface';
+import {withIface} from 'metadata-redux/with.min';
 
-import HeaderButtons from '../HeaderButtons';
-import HeaderMenu from '../HeaderMenu';
+import HeaderButtons from './HeaderButtons';
+import HeaderMenu from './HeaderMenu';
 
 import withStyles from './toolbar';
 

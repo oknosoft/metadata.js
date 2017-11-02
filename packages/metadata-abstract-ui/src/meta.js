@@ -1,7 +1,5 @@
 /**
- * Плагин-модификатор abstract-ui для metadata.js
- *
- * @module meta
+ * Плагин-модификатор системных метаданных для metadata.js
  *
  * Created 08.01.2017
  */

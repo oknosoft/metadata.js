@@ -6,7 +6,7 @@ import RepToolbar from './RepToolbar';
 import RepTabularSection from './RepTabularSection';
 import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
 
-import withIface from 'metadata-redux/src/withIface';
+import {withIface} from 'metadata-redux/with.min';
 
 
 class Report extends Component {

@@ -1,3 +1,11 @@
+/**
+ * ### Переопределяет методы менеджеров данных
+ *
+ * @module proto
+ *
+ */
+
+
 export default (constructor) => {
 
 	const {DataManager, DataObj, DocObj, TaskObj, BusinessProcessObj} = constructor.classes;

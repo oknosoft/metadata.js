@@ -337,6 +337,7 @@ class DataList extends MDNRComponent {
     return <LoadingMessage/>;
   };
 
+
   _cellRenderer = ({columnIndex, rowIndex, isScrolling, isVisible, key, parent, style}) => {
     const {state, props, handleEdit, handleSelect} = this;
     const {hoveredColumnIndex, hoveredRowIndex, selectedRowIndex} = state;
@@ -369,18 +370,21 @@ class DataList extends MDNRComponent {
 
     const onClick = () => this.setState({selectedRowIndex: rowIndex});
 
+    const dprops = {
+      className: classNames,
+      key: `cell-${rowIndex}-${columnIndex}`,
+      style,
+      onMouseOver,
+      onClick,
+      onDoubleClick: props.selection_mode ? handleSelect : handleEdit,
+      title: hoveredColumnIndex == columnIndex && hoveredRowIndex == rowIndex ? content : '',
+    };
+    if(rowIndex == 0){
+      dprops.onMouseMove = onMouseMove;
+    };
+
     return (
-      <div
-        className={classNames}
-        key={`cell-${rowIndex}-${columnIndex}`}
-        style={style}
-        onMouseOver={onMouseOver}
-        onMouseMove={rowIndex == 0 && onMouseMove}
-        onClick={onClick}
-        onDoubleClick={props.selection_mode ? handleSelect : handleEdit}
-        title={hoveredColumnIndex == columnIndex && hoveredRowIndex == rowIndex ? content : ''}>
-        {content}
-      </div>
+      <div {...dprops}>{content}</div>
     );
   };
 

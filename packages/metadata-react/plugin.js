@@ -9,7 +9,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import {Editors, Formatters} from 'react-data-grid-addons';
+import {Editors, Formatters} from 'metadata-external/react-data-grid-addons';
 const {CheckboxEditor, DropDownEditor} = Editors;
 const {DropDownFormatter, ImageFormatter} = Formatters;
 

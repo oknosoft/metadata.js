@@ -9,8 +9,6 @@ import {DATA_LOADED, DATA_PAGE, DATA_ERROR, LOAD_START, NO_DATA, SYNC_DATA, SYNC
 import {DEFINED, LOG_IN, TRY_LOG_IN, LOG_OUT, LOG_ERROR, reset_user} from './actions_auth';
 import {ADD, CHANGE} from './actions_obj';
 
-
-
 export default {
 
   [META_LOADED]: (state, action) => {
@@ -79,15 +77,12 @@ export default {
   },
 
   [LOG_IN]: (state, action) => {
-    const user = Object.assign({}, state.user);
-    user.logged_in = true;
-    user.try_log_in = false;
+    const user = Object.assign({}, state.user, {logged_in: true, try_log_in: false, log_error: ''});
     return Object.assign({}, state, {user});
   },
 
   [TRY_LOG_IN]: (state, action) => {
-    const user = Object.assign({}, state.user);
-    user.try_log_in = true;
+    const user = Object.assign({}, state.user, {try_log_in: true, log_error: ''});
     return Object.assign({}, state, {user});
   },
 
@@ -96,7 +91,9 @@ export default {
   },
 
   [LOG_ERROR]: (state, action) => {
-    return reset_user(state);
+    const reseted = reset_user(state);
+    reseted.user.log_error = action.payload;
+    return reseted;
   },
 
   [ADD]: (state, action) => state,

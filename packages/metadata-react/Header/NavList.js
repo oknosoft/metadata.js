@@ -7,7 +7,7 @@ import Collapse from 'material-ui/transitions/Collapse';
 
 import classnames from 'classnames';
 import withStyles from './menu';
-import withIface from 'metadata-redux/src/withIface';
+import {withIface} from 'metadata-redux/with.min';
 
 import IconExpandMore from 'material-ui-icons/ExpandMore';
 
@@ -39,23 +39,32 @@ class NavList extends Component {
     return items;
   }
 
-  addItem(item, recipient) {
+  addItem(item, recipient, ident) {
     this.key += 1;
     if(item.items) {
       const items = [];
       item.items.forEach(item => {
-        this.addItem(item, items);
+        this.addItem(item, items, true);
       });
       recipient.push(this.menuGroup(item, items));
     }
     else {
-      recipient.push(this.menuItem(item));
+      recipient.push(this.menuItem(item, ident));
     }
   }
 
-  menuItem(item) {
-    return <ListItem button key={this.key} onClick={this.handleNavigate(item.navigate, item.id)}>
-      <ListItemIcon>{item.icon}</ListItemIcon>
+  menuItem(item, inset) {
+    const props = {
+      button: true,
+      key: this.key,
+      onClick: this.handleNavigate(item.navigate, item.id),
+    };
+    if(inset){
+      props.className = this.props.classes.nested;
+    }
+    //inset={inset}
+    return <ListItem {...props} >
+      {item.icon && <ListItemIcon>{item.icon}</ListItemIcon>}
       <ListItemText primary={item.text}/>
     </ListItem>;
   }

@@ -162,31 +162,16 @@ export default ($p) => {
 					pname;
 
 				// Если в объекте не найдены предопределенные свойства - добавляем
-				if (pnames.some(function (name) {
-						if (meta_extra_fields[name]) {
-							pname = name;
-							return true;
-						}
-					})) {
-					o[extra_fields.ts].forEach(function (row) {
-						var index = destinations_extra_fields.indexOf(row[pname]);
-						if (index != -1)
-							destinations_extra_fields.splice(index, 1);
+				if (pnames.some((name) => meta_extra_fields[name] && (pname = name))) {
+					o[extra_fields.ts].forEach((row) => {
+						const index = destinations_extra_fields.indexOf(row[pname]);
+            index != -1 && destinations_extra_fields.splice(index, 1);
 					});
-					destinations_extra_fields.forEach(function (property) {
-						var row = o[extra_fields.ts].add();
-						row[pname] = property;
-					});
-				}
-				;
+					destinations_extra_fields.forEach((property) => o[extra_fields.ts].add()[pname] = property);
+				};
 
 				// Добавляем строки в oxml с учетом отбора, который мог быть задан в extra_fields.selection
-				o[extra_fields.ts].find_rows(extra_fields.selection, function (row) {
-					add_xml_row(row, extra_fields.ts);
-
-				});
-				//if(!added)
-				//	add_xml_row({param: $p.cch.properties.get("", false)}, "params"); // fake-строка, если в табчасти нет допреквизитов
+				o[extra_fields.ts].find_rows(extra_fields.selection, (row) => add_xml_row(row, extra_fields.ts));
 
 			}
 
@@ -2533,6 +2518,12 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	_grid.setColumnIds(_source.fields.join(","));
 	_grid.enableAutoWidth(true, 1200, 600);
 	_grid.enableEditTabOnly(true);
+	if(attr.footer){
+	  for(var fn in attr.footer){
+      fn !== 'columns' && (_grid[fn] = attr.footer[fn]);
+    }
+    _grid.attachFooter(attr.footer.columns);
+  }
 	_grid.init();
 
 	// гасим кнопки, если ro
@@ -3724,33 +3715,33 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	 * обработчик нажатия кнопок командных панелей
 	 */
 	function toolbar_click(btn_id){
-		if(btn_id=="btn_save_close")
-			save("close");
-
-		else if(btn_id=="btn_save")
-			save("save");
-
-		else if(btn_id=="btn_post")
-			save("post");
-
-		else if(btn_id=="btn_unpost")
-			save("unpost");
-
-		else if(btn_id=="btn_close")
-			wnd.close();
-
-		else if(btn_id=="btn_go_connection")
-			go_connection();
-
-		else if(btn_id.substr(0,4)=="prn_")
-			_mgr.print(o, btn_id, wnd);
-
-		else if(btn_id=="btn_import")
-			_mgr.import(null, o);
-
-		else if(btn_id=="btn_export")
-			_mgr.export({items: [o], pwnd: wnd, obj: true} );
-
+		if(btn_id=="btn_save_close"){
+      save("close");
+    }
+    else if(btn_id=="btn_save"){
+      save("save");
+    }
+    else if(btn_id=="btn_post"){
+      save("post");
+    }
+    else if(btn_id=="btn_unpost"){
+      save("unpost");
+    }
+    else if(btn_id=="btn_close"){
+      wnd.close();
+    }
+    else if(btn_id=="btn_go_connection"){
+      go_connection();
+    }
+    else if(btn_id.substr(0,4)=="prn_"){
+      _mgr.print(o, btn_id, wnd);
+    }
+    else if(btn_id=="btn_import"){
+      _mgr.import(null, o);
+    }
+    else if(btn_id=="btn_export"){
+      _mgr.export({items: [o], pwnd: wnd, obj: true} );
+    }
 	}
 
 	/**
@@ -3782,7 +3773,7 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 	/**
 	 * настройка (инициализация) табличной части
 	 */
-	function tabular_init(name, toolbar_struct){
+	function tabular_init(name, toolbar_struct, footer){
 
 		// с помощью метода ts_captions(), выясняем, надо ли добавлять данную ТЧ и формируем описание колонок табчасти
 		if(!_md.ts_captions(_mgr.class_name, name))
@@ -3800,7 +3791,8 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 			ts: name,
 			pwnd: wnd,
 			read_only: _acl.indexOf("e") == -1,
-			toolbar_struct: toolbar_struct
+			toolbar_struct,
+      footer
 		});
 
 		if(_acl.indexOf("e") == -1){
@@ -4590,63 +4582,62 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		if(btn_id=="btn_select"){
 			select();
-
-		}else if(btn_id=="btn_new"){
-
+		}
+		else if(btn_id=="btn_new"){
 			_mgr.create({}, true)
 				.then(function (o) {
-
-					if(attr.on_new)
-						attr.on_new(o, wnd);
-
+					if(attr.on_new){
+            attr.on_new(o, wnd);
+          }
 					else if($p.job_prm.keep_hash){
 						o.form_obj(wnd);
-
-					} else{
+					}
+					else{
 						o._set_loaded(o.ref);
 						$p.iface.set_hash(_mgr.class_name, o.ref);
 					}
 				});
-
-
-		}else if(btn_id=="btn_edit") {
-			var rId = wnd.elmnts.grid.getSelectedRowId();
+		}
+		else if(btn_id=="btn_edit") {
+			const rId = wnd.elmnts.grid.getSelectedRowId();
 			if (rId){
-				if(attr.on_edit)
-					attr.on_edit(_mgr, rId, wnd);
-
-				else if($p.job_prm.keep_hash){
-
+				if(attr.on_edit){
+          attr.on_edit(_mgr, rId, wnd);
+        }
+        else if($p.job_prm.keep_hash){
 					_mgr.form_obj(wnd, {ref: rId});
 
-				} else
-					$p.iface.set_hash(_mgr.class_name, rId);
-			}else
-				$p.msg.show_msg({
-					type: "alert-warning",
-					text: $p.msg.no_selected_row.replace("%1", ""),
-					title: $p.msg.main_title
-				});
-
-		}else if(btn_id.substr(0,4)=="prn_"){
+				}
+				else{
+          $p.iface.set_hash(_mgr.class_name, rId);
+        }
+			}
+			else{
+        $p.msg.show_msg({
+          type: "alert-warning",
+          text: $p.msg.no_selected_row.replace("%1", ""),
+          title: $p.msg.main_title
+        });
+      }
+		}
+		else if(btn_id.substr(0,4)=="prn_"){
 				print(btn_id);
-
-		}else if(btn_id=="btn_order_list"){
+		}
+		else if(btn_id=="btn_order_list"){
 			$p.iface.set_hash("", "", "", "def");
-
-		}else if(btn_id=="btn_delete"){
+		}
+		else if(btn_id=="btn_delete"){
 			mark_deleted();
-
-		}else if(btn_id=="btn_import"){
+		}
+		else if(btn_id=="btn_import"){
 			_mgr.import();
-
-		}else if(btn_id=="btn_export"){
+		}
+		else if(btn_id=="btn_export"){
 			_mgr.export(wnd.elmnts.grid.getSelectedRowId());
-
-		}else if(btn_id=="btn_requery"){
+		}
+		else if(btn_id=="btn_requery"){
 			previous_filter = {};
 			wnd.elmnts.grid.reload();
-
 		}
 	}
 

@@ -1,12 +1,15 @@
 import React from "react";
 import {Tabs, Tab} from "material-ui/Tabs";
 import TextField from "material-ui/TextField";
-import RaisedButton from "material-ui/RaisedButton";
-import Subheader from "material-ui/Subheader";
-import {blue500, red500} from "material-ui/styles/colors";
+import Button from 'material-ui/Button';
+import Typography from 'material-ui/Typography';
+import { red, blue } from 'material-ui/colors';
 import {YandexIcon, GoogleIcon, GitHubIcon, FacebookIcon} from "./assets/icons";
+
 import superlogin from "./client";
+
 import classes from "./FrmSuperLogin.scss";
+
 
 // https://github.com/micky2be/superlogin-client
 
@@ -40,7 +43,7 @@ export default class TabsLogin extends React.Component {
 
       <div className={classes.paper}>
 
-        <div zDepth={3} rounded={false}>
+        <div >
 
           <Tabs
             value={this.state.value}
@@ -66,44 +69,44 @@ export default class TabsLogin extends React.Component {
 
               <div className={classes.sub_paper}>
 
-                <Subheader className={classes.subheader}>Вы можете авторизоваться при помощи учетных
-                  записей социальных сетей:</Subheader>
+                <Typography type="title" color="inherit" >Вы можете авторизоваться при помощи учетных
+                  записей социальных сетей:</Typography>
 
                 <RaisedButton
                   label="Google"
-                  className={classes.social_button}
+                  className={classes.button}
                   labelStyle={{width: 110, textAlign: 'left', display: 'inline-block'}}
                   icon={<GoogleIcon viewBox="0 0 256 262" style={{width: 18, height: 18}}
-                                    color={blue500}/>}
+                                    color={blue[500]}/>}
                   onClick={this.buttonTouchTap("google")}
                 /><br />
                 <RaisedButton
                   label="Yandex"
-                  className={classes.social_button}
+                  className={classes.button}
                   labelStyle={{width: 110, textAlign: 'left', display: 'inline-block'}}
-                  icon={<YandexIcon viewBox="0 0 180 190" style={{width: 18, height: 18}}
-                                    color={red500}/>}
+                  icon={<YandexIcon viewBox="0 0 180 190" style={{height: 18}}
+                                    color={red[500]}/>}
                   onClick={this.buttonTouchTap("yandex")}
                 /><br />
                 <RaisedButton
                   label="Facebook"
-                  className={classes.social_button}
+                  className={classes.button}
                   labelStyle={{width: 110, textAlign: 'left', display: 'inline-block'}}
-                  icon={<FacebookIcon viewBox="0 0 420 420" style={{width: 18, height: 18}}
-                                      color={blue500}/>}
+                  icon={<FacebookIcon viewBox="0 0 420 420" style={{height: 18}}
+                                      color={blue[500]}/>}
                   onClick={this.buttonTouchTap("facebook")}
                 /><br />
                 <RaisedButton
                   label="В контакте"
-                  className={classes.social_button}
+                  className={classes.button}
                   labelStyle={{width: 110, textAlign: 'left', display: 'inline-block'}}
-                  icon={<GitHubIcon viewBox="0 0 256 250" style={{width: 18, height: 18}}/>}
+                  icon={<GitHubIcon viewBox="0 0 256 250" style={{height: 18}}/>}
                   onClick={this.buttonTouchTap("vkontakte")}
                 />
                 {/*
                  <RaisedButton
                  label="GitHub"
-                 className={classes.social_button}
+                 className={classes.button}
                  labelStyle={{width: 110, textAlign: 'left', display: 'inline-block'}}
                  icon={<GitHubIcon viewBox="0 0 256 250" style={{width: 18, height: 18}}/>}
                  onClick={this.buttonTouchTap("github")}

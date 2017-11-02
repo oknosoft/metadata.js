@@ -35,14 +35,14 @@ class I18Handler {
 }
 
 class I18n {
-
 	constructor(syn) {
-		this.i18n = syn;
 		this._lang = Object.keys(syn)[0];
-		return new Proxy(this, new I18Handler());
+		if(typeof Proxy == 'function'){
+      this.i18n = syn;
+      return new Proxy(this, new I18Handler());
+    };
+    return syn[this._lang];
 	}
-
-
 }
 
 /**
@@ -66,12 +66,10 @@ const msg = new I18n({
 
 		delivery_area_empty: 'Укажите район доставки',
 
-		empty_login_password: 'Не указаны имя пользователя или пароль',
 		empty_response: 'Пустой ответ сервера',
 		empty_geocoding: 'Пустой ответ геокодера. Вероятно, отслеживание адреса запрещено в настройках браузера',
 		error_geocoding: 'Ошибка геокодера',
 
-		error_auth: 'Авторизация пользователя не выполнена',
 		error_critical: 'Критическая ошибка',
 		error_metadata: 'Ошибка загрузки метаданных конфигурации',
 		error_network: 'Ошибка сети или сервера - запрос отклонен',
@@ -96,6 +94,13 @@ const msg = new I18n({
 			return 'Превышено число обращений к серверу<br/>Запросов за минуту:%1<br/>Лимит запросов:%2<br/>' + this.requery;
 		},
 
+    login: {
+		  title: 'Вход на сервер',
+      empty: 'Не указаны имя пользователя или пароль',
+      need_logout: 'Для авторизации под новым именем, завершите сеанс текущего пользователя',
+      error: 'Ошибка авторизации. Проверьте имя пользователя, пароль и параметры подключения',
+      suffix: 'Суффикс пользователя не совпадает с суффиксом подключения',
+    },
 		long_operation: 'Длительная операция',
 		logged_in: 'Авторизован под именем: ',
 		log_out_title: 'Отключиться от сервера?',
@@ -255,18 +260,5 @@ const msg = new I18n({
 
 	},
 });
-
-// msg.lang = 'ru';
-//
-// msg.i18n = ;
-
-// // временная мера: дублируем свойсва i18n внутри msg()
-// for (let id in msg.i18n.ru) {
-// 	Object.defineProperty(msg, id, {
-// 		get: function () {
-// 			return msg.i18n.ru[id];
-// 		},
-// 	});
-// }
 
 export default msg;

@@ -1,14 +1,14 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import ReactDataGrid from 'react-data-grid';
+import ReactDataGrid from 'metadata-external/react-data-grid';
 
 const {Row} = ReactDataGrid;
 
 class RowRenderer extends Component {
 
   static propTypes = {
-    idx: React.PropTypes.string.isRequired
+    idx: PropTypes.string.isRequired
   };
 
   // setScrollLeft(scrollBy) {

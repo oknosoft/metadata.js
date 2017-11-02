@@ -24,14 +24,12 @@ import {DataManager, EnumManager} from './mngrs';
 import {DataObj, DocObj} from './objs';
 import {TabularSection, TabularSectionRow} from './tabulars';
 
-import mime from './mime'
-
 /**
  * Отбрасываем часовой пояс при сериализации даты
  * @method toJSON
  * @for Date
  */
-Date.prototype.toJSON = function () {
+Date.prototype.toJSON = Date.prototype.toISOString = function () {
 	return moment(this).format(moment._masks.iso);
 };
 
@@ -117,7 +115,6 @@ if (!Object.prototype.__define) {
 	});
 }
 
-
 /**
  * ### Коллекция вспомогательных методов
  * @class Utils
@@ -125,7 +122,7 @@ if (!Object.prototype.__define) {
  * @menuorder 35
  * @tooltip Вспомогательные методы
  */
-const utils = mime({
+const utils = {
 
 	moment,
 
@@ -658,12 +655,12 @@ const utils = mime({
 					}
 					// если свойство отбора является объектом `or`, выполняем Array.some() TODO: здесь напрашивается рекурсия
 					else if (j == 'or' && Array.isArray(sel)) {
-						ok = sel.some(function (element) {
-							var key = Object.keys(element)[0];
-							if (element[key].hasOwnProperty('like'))
-								return o[key] && o[key].toLowerCase().indexOf(element[key].like.toLowerCase()) != -1;
+						ok = sel.some((el) => {
+							const key = Object.keys(el)[0];
+							if (el[key].hasOwnProperty('like'))
+								return o[key] && o[key].toLowerCase().indexOf(el[key].like.toLowerCase()) != -1;
 							else
-								return utils.is_equal(o[key], element[key]);
+								return utils.is_equal(o[key], el[key]);
 						});
 						if (!ok)
 							break;
@@ -676,6 +673,20 @@ const utils = mime({
 							break;
 						}
 					}
+					// это синоним `like`
+          else if (is_obj && sel.hasOwnProperty('lke')) {
+            if (!o[j] || o[j].toLowerCase().indexOf(sel.lke.toLowerCase()) == -1) {
+              ok = false;
+              break;
+            }
+          }
+          // это вид сравнения `не содержит`
+          else if (is_obj && sel.hasOwnProperty('nlk')) {
+            if (o[j] && o[j].toLowerCase().indexOf(sel.nlk.toLowerCase()) != -1) {
+              ok = false;
+              break;
+            }
+          }
 					// если свойство отбора является объектом `not`, сравниваем на неравенство
 					else if (is_obj && sel.hasOwnProperty('not')) {
 						if (utils.is_equal(o[j], sel.not)) {
@@ -685,12 +696,22 @@ const utils = mime({
 					}
 					// если свойство отбора является объектом `in`, выполняем Array.some()
 					else if (is_obj && sel.hasOwnProperty('in')) {
-						ok = sel.in.some(function (element) {
-							return utils.is_equal(element, o[j]);
-						});
+						ok = sel.in.some((el) => utils.is_equal(el, o[j]));
 						if (!ok)
 							break;
 					}
+          // если свойство отбора является объектом `inh`, вычисляем иерархию
+          else if (is_obj && sel.hasOwnProperty('inh')) {
+            ok = j === 'ref' ? o._hierarchy && o._hierarchy(sel.inh) : o[j]._hierarchy && o[j]._hierarchy(sel.inh);
+            if (!ok)
+              break;
+          }
+          // если свойство отбора является объектом `ninh`, вычисляем иерархию
+          else if (is_obj && sel.hasOwnProperty('ninh')) {
+            ok = !(j === 'ref' ? o._hierarchy && o._hierarchy(sel.inh) : o[j]._hierarchy && o[j]._hierarchy(sel.inh));
+            if (!ok)
+              break;
+          }
 					// если свойство отбора является объектом `lt`, сравниваем на _меньше_
 					else if (is_obj && sel.hasOwnProperty('lt')) {
 						ok = o[j] < sel.lt;
@@ -784,7 +805,7 @@ const utils = mime({
 		return res;
 	},
 
-});
+};
 
 /**
  * ### Пустые значения даты и уникального идентификатора
@@ -798,7 +819,7 @@ utils.__define('blank', {
 		date: utils.fix_date('0001-01-01T00:00:00'),
 		guid: '00000000-0000-0000-0000-000000000000',
 		by_type: function (mtype) {
-			var v;
+			let v;
 			if (mtype.is_ref)
 				v = this.guid;
 			else if (mtype.date_part)

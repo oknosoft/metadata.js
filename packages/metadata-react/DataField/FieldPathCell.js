@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import {Editors} from 'react-data-grid-addons';
+import {Editors} from 'metadata-external/react-data-grid-addons';
 import PathField from './FieldPath';
 
 class FieldPathCell extends Editors.SimpleTextEditor {

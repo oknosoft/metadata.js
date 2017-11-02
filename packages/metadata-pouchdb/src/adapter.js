@@ -30,384 +30,379 @@ function adapter({AbstracrAdapter}) {
 
       super($p);
 
-      const t = this;
-      const _paths = {};
-      let _local, _remote, _auth, _data_loaded;
+      this.props = {
+        _data_loaded: false,
+        _doc_ram_loading: false,
+        _doc_ram_loaded: false,
+        _auth: null
+      };
 
-      Object.defineProperties(this, {
+      /**
+       * ### Локальные базы PouchDB
+       *
+       * @property local
+       * @type {{ram: PouchDB, doc: PouchDB, meta: PouchDB, sync: {}}}
+       */
+      this.local = {_loading: false, sync: {}};
 
-        init: {
-          value: function (wsql, job_prm) {
-            Object.assign(_paths, {
-              path: wsql.get_user_param('couch_path', 'string') || job_prm.couch_path || '',
-              zone: wsql.get_user_param('zone', 'number'),
-              prefix: job_prm.local_storage_prefix,
-              suffix: wsql.get_user_param('couch_suffix', 'string') || '',
-              direct: job_prm.couch_direct || wsql.get_user_param('couch_direct', 'boolean'),
-              user_node: job_prm.user_node,
-              noreplicate: job_prm.noreplicate,
+      /**
+       * ### Базы PouchDB на сервере
+       *
+       * @property remote
+       * @type {{ram: PouchDB, doc: PouchDB}}
+       */
+      this.remote = {};
+
+    }
+
+    /**
+     * Инициализация адаптера
+     * @param wsql
+     * @param job_prm
+     */
+    init(wsql, job_prm) {
+
+      const {props, local, remote, $p} = this;
+
+      // настриваем параметры
+      Object.assign(props, {
+        path: wsql.get_user_param('couch_path', 'string') || job_prm.couch_path || '',
+        zone: wsql.get_user_param('zone', 'number'),
+        prefix: job_prm.local_storage_prefix,
+        suffix: wsql.get_user_param('couch_suffix', 'string') || '',
+        direct: job_prm.couch_direct || wsql.get_user_param('couch_direct', 'boolean'),
+        user_node: job_prm.user_node,
+        noreplicate: job_prm.noreplicate,
+      });
+      if(props.path && props.path.indexOf('http') != 0 && typeof location != 'undefined') {
+        props.path = location.protocol + '//' + location.host + props.path;
+      }
+      if(props.suffix) {
+        while (props.suffix.length < 4) {
+          props.suffix = '0' + props.suffix;
+        }
+      }
+      if(job_prm.use_meta === false) {
+        props.use_meta = false;
+      }
+
+      // создаём локальные базы
+      const opts = {auto_compaction: true, revs_limit: 2};
+      const bases = $p.md.bases();
+
+      // если используется meta, вместе с локальной создаём удалённую, т.к. для неё не нужна авторизация
+      if(props.use_meta !== false) {
+        local.meta = new PouchDB(props.prefix + 'meta', opts);
+        if(props.path) {
+          remote.meta = new PouchDB(props.path + 'meta', {skip_setup: true});
+          setTimeout(() => this.run_sync('meta'));
+        }
+      }
+
+      for (const name of ['ram', 'doc', 'user']) {
+        if(bases.indexOf(name) != -1) {
+          // в Node, локальные базы - это алиасы удалённых
+          // если direct, то все базы, кроме ram, так же - удалённые
+          if(props.user_node || (props.direct && name != 'ram')) {
+            Object.defineProperty(local, name, {
+              get: function () {
+                return remote[name];
+              }
             });
-            if(_paths.path && _paths.path.indexOf('http') != 0 && typeof location != 'undefined') {
-              _paths.path = location.protocol + '//' + location.host + _paths.path;
-            }
-            if(_paths.suffix) {
-              while (_paths.suffix.length < 4) {
-                _paths.suffix = '0' + _paths.suffix;
-              }
-            }
-          },
-        },
+          }
+          else {
+            local[name] = new PouchDB(props.prefix + props.zone + '_' + name, opts);
+          }
+        }
+      }
 
-        /**
-         * ### Локальные базы PouchDB
-         *
-         * @property local
-         * @type {{ram: PouchDB, doc: PouchDB, meta: PouchDB, sync: {}}}
-         */
-        local: {
-          get: function () {
-            if(!_local) {
-              const opts = {auto_compaction: true, revs_limit: 2};
-              const bases = this.$p.md.bases();
+      // В штатном режиме, серверные базы создаём сразу
+      // superlogin переопределяем метод after_init и создаёт базы после авторизации
+      this.after_init();
 
-              _local = {
-                sync: {},
-                meta: new PouchDB(_paths.prefix + 'meta', opts),
-              };
+    }
 
-              for (const name of ['ram', 'doc', 'user']) {
-                if(bases.indexOf(name) != -1) {
-                  // в Node, локальные базы - это алиасы удалённых
-                  // если direct, то все базы, кроме ram, так же - удалённые
-                  if(_paths.user_node || (_paths.direct && name != 'ram')) {
-                    _local[name] = this.remote[name];
-                  }
-                  else {
-                    _local[name] = new PouchDB(_paths.prefix + _paths.zone + '_' + name, opts);
-                  }
-                }
-              }
-              if(_paths.path && !_local._meta) {
-                _local._meta = new PouchDB(_paths.path + 'meta', {skip_setup: true});
-                setTimeout(() => t.run_sync('meta'));
-              }
+    /**
+     * В штатном режиме (без суперлогина), серверные базы создаём сразу
+     */
+    after_init(bases) {
 
-            }
-            return _local;
-          },
-        },
+      const {props, remote, $p} = this;
+      const opts = {skip_setup: true, adapter: 'http'};
 
-        /**
-         * ### Базы PouchDB на сервере
-         *
-         * @property remote
-         * @type {{ram: PouchDB, doc: PouchDB}}
-         */
-        remote: {
-          get: function () {
-            if(!_remote) {
+      if(props.user_node) {
+        opts.auth = props.user_node;
+      }
 
-              const opts = {skip_setup: true, adapter: 'http'};
+      (bases || $p.md.bases()).forEach((name) => {
+        if(name == 'e1cib' || name == 'pgsql' || name == 'github') {
+          return;
+        }
+        remote[name] = new PouchDB(this.dbpath(name), opts);
+      });
+    }
 
-              if(_paths.user_node) {
-                opts.auth = _paths.user_node;
-              }
+    /**
+     * запускает репликацию
+     */
+    after_log_in() {
 
-              _remote = {};
+      const {props, local, remote, $p} = this;
+      const try_auth = [];
 
-              const {superlogin, md} = this.$p;
-
-              function dbpath(name) {
-                if(superlogin) {
-                  return superlogin.getDbUrl(_paths.prefix + (name == 'meta' ? name : (_paths.zone + '_' + name)));
-                }
-                else {
-                  if(name == 'meta') {
-                    return _paths.path + 'meta';
-                  }
-                  else if(name == 'ram') {
-                    return _paths.path + _paths.zone + '_ram';
-                  }
-                  else {
-                    return _paths.path + _paths.zone + '_' + name + (_paths.suffix ? '_' + _paths.suffix : '');
-                  }
-                }
-              }
-
-              md.bases().forEach((name) => {
-                if(name == 'e1cib' || name == 'pgsql') {
-                  return;
-                }
-                _remote[name] = new PouchDB(dbpath(name), opts);
-              });
-
-            }
-            return _remote;
-          },
-        },
-
-        /**
-         * Возвращает базу PouchDB, связанную с объектами данного менеджера
-         * @method db
-         * @param _mgr {DataManager}
-         * @return {PouchDB}
-         */
-        db: {
-          value: function (_mgr) {
-            const dbid = _mgr.cachable.replace('_remote', '').replace('_ram', '');
-            if(dbid.indexOf('remote') != -1 || (
-                _paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1
-              )) {
-              return this.remote[dbid.replace('_remote', '')];
-            }
-            else {
-              return this.local[dbid] || this.remote[dbid];
-            }
-          },
-        },
-
-        /**
-         * ### Выполняет авторизацию и запускает репликацию
-         * @method log_in
-         * @param username {String}
-         * @param password {String}
-         * @return {Promise}
-         */
-        log_in: {
-          value: function (username, password) {
-
-            const {job_prm, wsql, aes, md} = this.$p;
-
-            // реквизиты гостевого пользователя для демобаз
-            if(username == undefined && password == undefined) {
-              if(job_prm.guests && job_prm.guests.length) {
-                username = job_prm.guests[0].username;
-                password = aes.Ctr.decrypt(job_prm.guests[0].password);
-              }
-              else {
-                return Promise.reject(new Error('username & password not defined'));
-              }
-            }
-
-            if(_auth) {
-              if(_auth.username == username) {
-                return Promise.resolve();
-              }
-              else {
-                return Promise.reject(new Error('need logout first'));
-              }
-            }
-
-            // если мы в браузере - авторизуемся во всех базах, в node - мы уже авторизованы
-            const try_auth = [];
-            if(!_paths.user_node) {
-              md.bases().forEach((name) => {
-                if(t.remote[name]) {
-                  try_auth.push(this.remote[name].login(username, password));
-                }
-              });
-            }
-
-            return Promise.all(try_auth)
-              .then(() => {
-
-                _auth = {username};
-
-                // сохраняем имя пользователя в базе
-                if(wsql.get_user_param('user_name') != username) {
-                  wsql.set_user_param('user_name', username);
-                }
-
-                // если настроено сохранение пароля - сохраняем и его
-                if(wsql.get_user_param('enable_save_pwd')) {
-                  if(aes.Ctr.decrypt(wsql.get_user_param('user_pwd')) != password) {
-                    wsql.set_user_param('user_pwd', aes.Ctr.encrypt(password));   // сохраняем имя пользователя в базе
-                  }
-                }
-                else if(wsql.get_user_param('user_pwd') != '') {
-                  wsql.set_user_param('user_pwd', '');
-                }
-
-                // излучаем событие
-                //t.emit('user_log_in', username)
-                t.emit_async('user_log_in', username);
-
-                // запускаем синхронизацию для нужных баз
-                try_auth.length = 0;
-                md.bases().forEach((dbid) => {
-                  if(t.local[dbid] && t.remote[dbid] && t.local[dbid] != t.remote[dbid]) {
-                    if(_paths.noreplicate && _paths.noreplicate.indexOf(dbid) != -1) {
-                      return;
-                    }
-                    try_auth.push(t.run_sync(dbid));
-                  }
-                });
-                return Promise.all(try_auth);
-              })
-              .then(() => {
-                // широковещательное оповещение об окончании загрузки локальных данных
-                if(t.local._loading) {
-                  return new Promise((resolve, reject) => {
-                    t.once('pouch_data_loaded', resolve);
-                  });
-                }
-                else if(!_paths.user_node) {
-                  return t.call_data_loaded();
-                }
-              })
-              .catch(err => {
-                // излучаем событие
-                t.emit('user_log_fault', err);
-              });
-          },
-        },
-
-        /**
-         * ### Останавливает синхронизацию и снимает признак авторизованности
-         * @method log_out
-         */
-        log_out: {
-          value: function () {
-
-            if(_auth) {
-              const {doc, ram} = _local.sync;
-              if(doc) {
-                try {
-                  doc.cancel();
-                  doc.removeAllListeners();
-                }
-                catch (err) {
-                }
-              }
-              if(ram) {
-                try {
-                  ram.cancel();
-                  ram.removeAllListeners();
-                }
-                catch (err) {
-                }
-              }
-              _auth = null;
-            }
-
-            return Promise.all(this.$p.md.bases().map((id) => {
-              if(id != 'meta' && _remote && _remote[id] && _remote[id] != _local[id]) {
-                return _remote[id].logout();
-              }
-            }))
-              .then(() => t.emit('user_log_out'));
-          },
-        },
-
-
-        /**
-         * ### Загружает условно-постоянные данные из базы ram в alasql
-         * Используется при инициализации данных на старте приложения
-         *
-         * @method load_data
-         */
-        load_data: {
-          value: function () {
-
-            const {job_prm} = this.$p;
-            const options = {
-              limit: 800,
-              include_docs: true,
-            };
-            const _page = {
-              total_rows: 0,
-              limit: options.limit,
-              page: 0,
-              start: Date.now(),
-            };
-
-            // бежим по всем документам из ram
-            return new Promise((resolve, reject) => {
-
-              function fetchNextPage() {
-                t.local.ram.allDocs(options, (err, response) => {
-
-                  if(response) {
-                    // широковещательное оповещение о загрузке порции локальных данных
-                    _page.page++;
-                    _page.total_rows = response.total_rows;
-                    _page.duration = Date.now() - _page.start;
-
-                    t.emit('pouch_data_page', Object.assign({}, _page));
-
-                    if(t.load_changes(response, options)) {
-                      fetchNextPage();
-                    }
-                    // широковещательное оповещение об окончании загрузки локальных данных
-                    else {
-                      t.call_data_loaded(_page);
-                      resolve();
-                    }
-                  }
-                  else if(err) {
-                    reject(err);
-                    // широковещательное оповещение об ошибке загрузки
-                    t.emit('pouch_data_error', 'ram', err);
-                  }
-                });
-              }
-
-              t.local.ram.info().then((info) => {
-                if(info.doc_count >= (job_prm.pouch_ram_doc_count || 10)) {
-                  // широковещательное оповещение о начале загрузки локальных данных
-                  t.emit('pouch_load_start', Object.assign(_page, {local_rows: info.doc_count}));
-                  t.local._loading = true;
-                  fetchNextPage();
-                }
-                else {
-                  t.emit('pouch_no_data', info);
-                  resolve();
-                }
-              });
-            });
-
-          },
-        },
-
-        /**
-         * ### Информирует об авторизованности на сервере CouchDB
-         *
-         * @property authorized
-         */
-        authorized: {
-          get: function () {
-            return _auth && _auth.username;
-          },
-        },
-
-        /**
-         * ### Информирует о загруженности данных
-         *
-         * @property data_loaded
-         */
-        data_loaded: {
-          get: function () {
-            return !!_data_loaded;
-          },
-        },
-
-        call_data_loaded: {
-          value: function (page) {
-            if(!_data_loaded) {
-              _data_loaded = true;
-              if(!page) {
-                page = _local.sync._page || {};
-              }
-              // информируем мир о загруженности данных
-              Promise.resolve().then(() => this.emit(page.note = 'pouch_data_loaded', page));
-              // пытаемся загрузить load_doc_ram
-              this.authorized && this.load_doc_ram();
-            }
-          },
-        },
-
+      $p.md.bases().forEach((dbid) => {
+        if(dbid !== 'meta' && local[dbid] && remote[dbid] && local[dbid] != remote[dbid]) {
+          if(props.noreplicate && props.noreplicate.indexOf(dbid) != -1) {
+            return;
+          }
+          try_auth.push(this.run_sync(dbid));
+        }
       });
 
+      return Promise.all(try_auth)
+        .then(() => {
+          // широковещательное оповещение об окончании загрузки локальных данных
+          if(local._loading) {
+            return new Promise((resolve, reject) => {
+              this.once('pouch_data_loaded', resolve);
+            });
+          }
+          else if(!props.user_node) {
+            return this.call_data_loaded();
+          }
+        });
+    }
+
+    /**
+     * ### Выполняет авторизацию и запускает репликацию
+     * @method log_in
+     * @param username {String}
+     * @param password {String}
+     * @return {Promise}
+     */
+    log_in(username, password) {
+      const {props, local, remote, $p} = this;
+      const {job_prm, wsql, aes, md, cat} = $p;
+
+      // реквизиты гостевого пользователя для демобаз
+      if(username == undefined && password == undefined) {
+        if(job_prm.guests && job_prm.guests.length) {
+          username = job_prm.guests[0].username;
+          password = aes.Ctr.decrypt(job_prm.guests[0].password);
+        }
+        else {
+          const err = new Error('empty login or password');
+          this.emit('user_log_fault', err);
+          return Promise.reject(err);
+        }
+      }
+      else if(!username || !password){
+        const err = new Error('empty login or password');
+        this.emit('user_log_fault', err);
+        return Promise.reject(err);
+      }
+
+      // если уже авторизованы под тем же пользователем, выходим с успешным результатом
+      if(props._auth) {
+        if(props._auth.username == username) {
+          return Promise.resolve();
+        }
+        else {
+          const err = new Error('need logout first');
+          this.emit('user_log_fault', err);
+          return Promise.reject(err);
+        }
+      }
+
+      // в node - мы уже авторизованы
+      // браузере - авторизуемся в первой попавшейся базе, а из остальных получаем info()
+      let try_auth = Promise.resolve();
+      if(!props.user_node) {
+        md.bases().forEach((dbid) => {
+          if(dbid !== 'meta' && remote[dbid]) {
+            try_auth = try_auth.then(() => remote[dbid].login(username, password)
+              .then(() => {
+                if(dbid == 'ram' && cat.users && cat.users.cachable == dbid){
+                  // проверим суффикс пользователя, при необходимости - перелогинемся
+                  return this.find_rows(cat.users, {_raw: true, _top: 1, id: username})
+                    .then((rows) => {
+                      if(rows && rows.length){
+                        const suffix = rows[0].suffix || '';
+                        if(wsql.get_user_param('couch_suffix', 'string') != suffix){
+                          wsql.set_user_param('couch_suffix', suffix);
+                          throw new Error('couch_suffix');
+                        }
+                      }
+                    });
+                }
+                else{
+                  return remote[dbid].info();
+                }
+              })
+            );
+          }
+        });
+      }
+
+      return try_auth.then(() => {
+
+          props._auth = {username};
+
+          // сохраняем имя пользователя в localstorage
+          if(wsql.get_user_param('user_name') != username) {
+            wsql.set_user_param('user_name', username);
+          }
+
+          // если настроено сохранение пароля - сохраняем и его
+          if(wsql.get_user_param('enable_save_pwd')) {
+            if(aes.Ctr.decrypt(wsql.get_user_param('user_pwd')) != password) {
+              wsql.set_user_param('user_pwd', aes.Ctr.encrypt(password));   // сохраняем имя пользователя в базе
+            }
+          }
+          else if(wsql.get_user_param('user_pwd') != '') {
+            wsql.set_user_param('user_pwd', '');
+          }
+
+          // излучаем событие
+          this.emit_async('user_log_in', username);
+
+          props._data_loaded && !props._doc_ram_loading && !props._doc_ram_loaded && this.load_doc_ram();
+
+          // запускаем синхронизацию для нужных баз
+          return this.after_log_in();
+        })
+        .catch(err => {
+          // излучаем событие
+          this.emit('user_log_fault', err);
+        });
+    }
+
+    /**
+     * ### Останавливает синхронизацию и снимает признак авторизованности
+     * @method log_out
+     */
+    log_out() {
+      const {props, local, remote, authorized, $p} = this;
+
+      if(authorized) {
+        for (const name in local.sync) {
+          if(name != 'meta') {
+            try {
+              local.sync[name].cancel();
+              doc.removeAllListeners();
+            }
+            catch (err) {
+            }
+          }
+        }
+        props._auth = null;
+      }
+
+      return Promise.all($p.md.bases().map((id) => id != 'meta' && remote[id] && remote[id].logout()))
+        .then(() => this.emit('user_log_out'));
+    }
+
+    /**
+     * ### Загружает условно-постоянные данные из базы ram в alasql
+     * Используется при инициализации данных на старте приложения
+     *
+     * @method load_data
+     */
+    load_data() {
+
+      const {local, $p} = this;
+      const options = {
+        limit: 800,
+        include_docs: true,
+      };
+      const _page = {
+        total_rows: 0,
+        limit: options.limit,
+        page: 0,
+        start: Date.now(),
+      };
+
+      // бежим по всем документам из ram
+      return new Promise((resolve, reject) => {
+
+        const fetchNextPage = () => {
+          local.ram.allDocs(options, (err, response) => {
+
+            if(response) {
+              // широковещательное оповещение о загрузке порции локальных данных
+              _page.page++;
+              _page.total_rows = response.total_rows;
+              _page.duration = Date.now() - _page.start;
+
+              this.emit('pouch_data_page', Object.assign({}, _page));
+
+              if(this.load_changes(response, options)) {
+                fetchNextPage();
+              }
+              // широковещательное оповещение об окончании загрузки локальных данных
+              else {
+                this.call_data_loaded(_page);
+                resolve();
+              }
+            }
+            else if(err) {
+              reject(err);
+              // широковещательное оповещение об ошибке загрузки
+              this.emit('pouch_data_error', 'ram', err);
+            }
+          });
+        };
+
+        local.ram.info().then((info) => {
+          if(info.doc_count >= ($p.job_prm.pouch_ram_doc_count || 10)) {
+            // широковещательное оповещение о начале загрузки локальных данных
+            this.emit('pouch_load_start', Object.assign(_page, {local_rows: info.doc_count}));
+            local._loading = true;
+            fetchNextPage();
+          }
+          else {
+            this.emit('pouch_no_data', info);
+            resolve();
+          }
+        });
+      });
+
+    }
+
+    /**
+     * ### Путь к базе couchdb
+     * внешние плагины, например, superlogin, могут переопределить этот метод
+     * @param name
+     * @return {*}
+     */
+    dbpath(name) {
+      const {props} = this;
+      if(name == 'meta') {
+        return props.path + 'meta';
+      }
+      else if(name == 'ram') {
+        return props.path + props.zone + '_ram';
+      }
+      else {
+        return props.path + props.zone + '_' + name + (props.suffix ? '_' + props.suffix : '');
+      }
+    }
+
+    /**
+     * Возвращает базу PouchDB, связанную с объектами данного менеджера
+     * @method db
+     * @param _mgr {DataManager}
+     * @return {PouchDB}
+     */
+    db(_mgr) {
+      const dbid = _mgr.cachable.replace('_remote', '').replace('_ram', '');
+      const {props, local, remote} = this;
+      if(dbid.indexOf('remote') != -1 || (props.noreplicate && props.noreplicate.indexOf(dbid) != -1)) {
+        return remote[dbid.replace('_remote', '')];
+      }
+      else {
+        return local[dbid] || remote[dbid];
+      }
     }
 
     /**
@@ -424,7 +419,7 @@ function adapter({AbstracrAdapter}) {
       const {local, remote, $p} = this;
       const {wsql, job_prm} = $p;
       const db_local = local[id];
-      const db_remote = id == 'meta' ? local._meta : remote[id];
+      const db_remote = remote[id];
       let linfo, _page;
 
       return db_local.info()
@@ -449,7 +444,7 @@ function adapter({AbstracrAdapter}) {
                 }
                 return rinfo;
               })
-              .catch(this.$p.record_log)
+              .catch($p.record_log)
               .then(() => rinfo);
           }
 
@@ -574,6 +569,28 @@ function adapter({AbstracrAdapter}) {
           });
 
         });
+    }
+
+    /**
+     * ### Информирует о загруженности данных
+     * если к этому моменту мы уже авторизованы, запускает load_doc_ram
+     *
+     * @method call_data_loaded
+     */
+    call_data_loaded(page) {
+      const {local, props} = this;
+      if(!props._data_loaded) {
+        props._data_loaded = true;
+        if(!page) {
+          page = local.sync._page || {};
+        }
+        // информируем мир о загруженности данных
+        Promise.resolve().then(() => {
+          this.emit(page.note = 'pouch_data_loaded', page);
+          // пытаемся загрузить doc_ram
+          this.authorized && this.load_doc_ram();
+        });
+      }
     }
 
     /**
@@ -991,17 +1008,15 @@ function adapter({AbstracrAdapter}) {
      * Загружает объекты из PouchDB, обрезанные по view
      */
     load_view(_mgr, _view) {
+      return new Promise((resolve, reject) => {
 
-      var doc, res = [],
-        db = this.db(_mgr),
-        options = {
+        const db = this.db(_mgr);
+        const options = {
           limit: 1000,
           include_docs: true,
           startkey: _mgr.class_name + '|',
           endkey: _mgr.class_name + '|\ufff0',
         };
-
-      return new Promise((resolve, reject) => {
 
         function process_docs(err, result) {
 
@@ -1012,16 +1027,11 @@ function adapter({AbstracrAdapter}) {
               options.startkey = result.rows[result.rows.length - 1].key;
               options.skip = 1;
 
-              result.rows.forEach((rev) => {
-                doc = rev.doc;
-                let key = doc._id.split('|');
-                doc.ref = key[1];
-                // наполняем
-                res.push(doc);
-              });
-
-              _mgr.load_array(res);
-              res.length = 0;
+              // наполняем
+              _mgr.load_array(result.rows.map(({doc}) => {
+                doc.ref = doc._id.split('|')[1];
+                return doc;
+              }));
 
               db.query(_view, options, process_docs);
 
@@ -1048,11 +1058,10 @@ function adapter({AbstracrAdapter}) {
     load_doc_ram() {
       const res = [];
       const {_m} = this.$p.md;
+      this.props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
-        for (let name in _m[kind]) {
-          if(_m[kind][name].cachable == 'doc_ram') {
-            res.push(kind + '.' + name);
-          }
+        for (const name in _m[kind]) {
+          _m[kind][name].cachable === 'doc_ram' && res.push(kind + '.' + name);
         }
       });
       return this.local.doc.find({
@@ -1064,7 +1073,11 @@ function adapter({AbstracrAdapter}) {
           return {docs: []};
         })
         .then((data) => this.load_changes(data))
-        .then(() => this.emit('pouch_doc_ram_loaded'));
+        .then(() => {
+          this.props._doc_ram_loading = false;
+          this.props._doc_ram_loaded = true;
+          this.emit('pouch_doc_ram_loaded');
+        });
     }
 
     /**
@@ -1084,6 +1097,12 @@ function adapter({AbstracrAdapter}) {
     find_rows(_mgr, selection) {
 
       const db = this.db(_mgr);
+
+      // если базы не инициализированы, возвращаем пустой массив
+      if(!db) {
+        return Promise.resolve([]);
+      }
+
       const err_handler = this.emit.bind(this, 'pouch_sync_error', _mgr.cachable);
 
       // если указан MangoQuery, выполняем его без лишних церемоний
@@ -1515,6 +1534,16 @@ function adapter({AbstracrAdapter}) {
       // складываем все части в файл
     }
 
+    /**
+     * ### Информирует об авторизованности на сервере CouchDB
+     *
+     * @property authorized
+     */
+    get authorized() {
+      const {_auth} = this.props;
+      return _auth && _auth.username;
+    }
+
   };
 }
 
@@ -1523,7 +1552,6 @@ export default (constructor) => {
   const {classes} = constructor;
   classes.PouchDB = PouchDB;
   classes.AdapterPouch = adapter(classes);
-
 
 }
 

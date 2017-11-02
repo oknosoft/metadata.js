@@ -2534,8 +2534,11 @@ div.gridbox_dhx_terrace.gridbox .ftr table td {
   font-style: normal;
   color: #333;
   border-color: #cccccc;
-  padding-left: 20px;
-  line-height: 41px;
+  /*padding-left: 10px;*/
+  line-height: 23px;
+  font-size: 90%;
+  font-weight: bold;
+  text-align: right;
   width: 100%;
 }
 div.gridbox_dhx_terrace.gridbox table.hdr td {

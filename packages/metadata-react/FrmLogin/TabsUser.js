@@ -10,7 +10,7 @@ import {DialogActions} from 'material-ui/Dialog';
 
 import DataField from '../DataField';
 import CnnSettings from './CnnSettings';
-import withPrm from 'metadata-redux/src/withPrm';
+import {withPrm} from 'metadata-redux/with.min';
 import withStyles from '../styles/paper600';
 
 class TabsUser extends Component {
@@ -74,45 +74,34 @@ class TabsUser extends Component {
     const {props, state, handleNavigate} = this;
     const {classes, handleLogOut} = props;
 
-    return (
+    return this.props._obj ?
 
-      <div className={'meta-paper'}>
+      <Paper className={classes.root} elevation={4}>
 
-        {
-          this.props._obj
-            ?
-            <Paper className={classes.root} elevation={4}>
+        <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
+          <Tab label="Профиль"/>
+          <Tab label="Подключение"/>
+        </Tabs>
 
-              <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
-                <Tab label="Профиль"/>
-                <Tab label="Подключение"/>
-              </Tabs>
+        {state.index === 0 &&
+        <FormGroup>
+          <DataField _obj={this.props._obj} _fld="id" read_only />
+          <DataField _obj={this.props._obj} _fld="name" read_only />
+        </FormGroup>}
 
-              {state.index === 0 &&
-              <FormGroup>
-                <DataField _obj={this.props._obj} _fld="id" read_only />
-                <DataField _obj={this.props._obj} _fld="name" read_only />
-              </FormGroup>}
+        {state.index === 0 &&
+        <DialogActions>
+          <Button color="primary" dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
+          <Button color="primary" dense className={classes.button} onClick={handleNavigate}>К списку заказов</Button>
+        </DialogActions>}
 
-              {state.index === 0 &&
-              <DialogActions>
-                <Button color="primary" dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
-                <Button color="primary" dense className={classes.button} onClick={handleNavigate}>К списку заказов</Button>
-              </DialogActions>}
+        {state.index === 1 && <CnnSettings {...props}/>}
 
-              {state.index === 1 && <CnnSettings {...props}/>}
-
-            </Paper>
-
-            :
-            <div>
-              нет данных
-            </div>
-        }
-
-      </div>
-
-    );
+      </Paper>
+      :
+      <div>
+        нет данных
+      </div>;
   }
 }
 
