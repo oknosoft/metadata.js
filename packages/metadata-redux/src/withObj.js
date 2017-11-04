@@ -13,7 +13,7 @@ const mapDispatchToProps = (dispatch) => {
       return dispatch(iface_state(state));
     },
     handleAdd() {
-
+      return dispatch(push(`/${_mgr.class_name}/${$p.utils.generate_guid()}`));
     },
     handleAddRow() {
 

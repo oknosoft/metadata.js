@@ -54,8 +54,10 @@ function getExternals() {
 
 const config = {
   entry: {
+    'packages/metadata-redux/index': ['./packages/metadata-redux/src'],
     'packages/metadata-redux/index.min': ['./packages/metadata-redux/src'],
-    'packages/metadata-redux/with.min': ['./packages/metadata-redux/src/with'],
+    // 'packages/metadata-redux/with': ['./packages/metadata-redux/src/with'],
+    // 'packages/metadata-redux/with.min': ['./packages/metadata-redux/src/with'],
   },
   output: {
     path: path.resolve('.'),

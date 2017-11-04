@@ -1,17 +1,5 @@
 import {connect} from 'react-redux';
-import {iface_state} from './actions_iface';
-import {push} from 'react-router-redux';
-
-export const mapDispatchToProps = (dispatch) => {
-  return {
-    handleIfaceState(state) {
-      return dispatch(iface_state(state));
-    },
-    handleNavigate(path) {
-      return dispatch(push(path));
-    },
-  };
-};
+import mapDispatchToProps from './dispatchIface';
 
 export default (Component) => {
   const area = Component.name;

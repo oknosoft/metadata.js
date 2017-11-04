@@ -43,7 +43,7 @@ function getExternals() {
     'moment/locale/ru': true,
     'alasql/dist/alasql.min': true,
     'clipboard/lib/clipboard-action': true,
-    'metadata-redux/src/actions_meta': true,
+    'metadata-redux': true,
   };
   for (const key in package_data.peerDependencies) {
     if(!externals[key]) {
