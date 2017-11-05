@@ -86,7 +86,7 @@ export default class SchemeSettingsTabs extends Component {
     const {value} = state;
     const is_tabular = scheme.obj.split('.').length > 2;
 
-    return <div>
+    return [
       <AppBar position="static" color="default">
         <Tabs
           value={value}
@@ -104,7 +104,7 @@ export default class SchemeSettingsTabs extends Component {
           <Tab label="Сортировка"/>
           <Tab label="Вариант"/>
         </Tabs>
-      </AppBar>
+      </AppBar>,
 
       <div style={{height: sizes.height}}>
         {value === 0 &&
@@ -118,20 +118,19 @@ export default class SchemeSettingsTabs extends Component {
             <TabularSection _obj={scheme} _tabular="params"/>
         ))}
 
-        {value === 1 && <TabularSection _obj={scheme} _tabular="fields" rowSelection={this.rowSelection(scheme)} denyAddDel />}
+        {value === 1 && <TabularSection _obj={scheme} _tabular="fields" rowSelection={this.rowSelection(scheme)} denyAddDel/>}
 
-        {value === 2 && <TabularSection _obj={scheme} _tabular="selection" rowSelection={this.rowSelection(scheme, 'selection')} />}
+        {value === 2 && <TabularSection _obj={scheme} _tabular="selection" rowSelection={this.rowSelection(scheme, 'selection')}/>}
 
-        {is_tabular && (value === 3) && <TabularSection _obj={scheme} _tabular="dimensions" rowSelection={this.rowSelection(scheme, 'dimensions')} />}
+        {is_tabular && (value === 3) && <TabularSection _obj={scheme} _tabular="dimensions" rowSelection={this.rowSelection(scheme, 'dimensions')}/>}
 
-        {is_tabular && (value === 4) && <TabularSection _obj={scheme} _tabular="resources"/> }
+        {is_tabular && (value === 4) && <TabularSection _obj={scheme} _tabular="resources"/>}
 
-        {value === (is_tabular ? 5 : 3) && <TabularSection _obj={scheme} _tabular="sorting" rowSelection={this.rowSelection(scheme, 'sorting')} />}
+        {value === (is_tabular ? 5 : 3) && <TabularSection _obj={scheme} _tabular="sorting" rowSelection={this.rowSelection(scheme, 'sorting')}/>}
 
-        {value === (is_tabular ? 6 : 4) && <SchemeSettingsSelect scheme={scheme} handleSchemeChange={handleSchemeChange} />}
+        {value === (is_tabular ? 6 : 4) && <SchemeSettingsSelect scheme={scheme} handleSchemeChange={handleSchemeChange}/>}
 
       </div>
-
-    </div>;
+    ];
   }
 }
