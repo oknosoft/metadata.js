@@ -4,7 +4,7 @@ import transitions from 'material-ui/styles/transitions';
 
 export default withStyles(theme => ({
   list: {
-    width: 300,
+    width: 279,
     flex: 'initial',
   },
   root: {
