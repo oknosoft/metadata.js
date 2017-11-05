@@ -65,12 +65,12 @@ class SchemeSettingsSelect extends Component {
     const {scheme, classes, handleSchemeChange} = props;
 
     return [
-      <Toolbar disableGutters className={classes.toolbar}>
+      <Toolbar key="bar" disableGutters className={classes.toolbar}>
         <IconButton title="Сохранить вариант настроек" onClick={handleSave}><SaveIcon/></IconButton>
         <IconButton title="Создать копию настроек" onClick={handleCreate}><CopyIcon/></IconButton>
       </Toolbar>,
 
-      <FormGroup style={{margin: 16}}>
+      <FormGroup key="body" style={{margin: 16}}>
         <DataField _obj={scheme} _fld="name" fullWidth handleValueChange={handleNameChange}/>
         <DataField _obj={scheme} _fld="query" fullWidth/>
         <DataField _obj={scheme} _fld="standard_period" fullWidth/>
