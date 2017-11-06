@@ -51,11 +51,6 @@ function getExternals() {
       externals[key] = true;
     }
   }
-  for (const key in package_data.peerDependencies) {
-    if(!externals[key]) {
-      externals[key] = true;
-    }
-  }
   return externals;
 }
 

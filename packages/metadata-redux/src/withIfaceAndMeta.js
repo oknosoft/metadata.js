@@ -5,6 +5,6 @@ import ifaceDispatchToProps from './dispatchIface';
 
 export default (Component) => {
   return connect(
-    (state) => metaStateToProps(ifaceStateToProps(Component)),
+    (state) => Object.assign({}, metaStateToProps(state), ifaceStateToProps(Component)(state)),
     (dispatch) => Object.assign({}, metaDispatchToProps(dispatch), ifaceDispatchToProps(dispatch)))(Component);
 };

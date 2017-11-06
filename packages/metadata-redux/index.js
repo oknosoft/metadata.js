@@ -7055,7 +7055,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = function (Component) {
   return (0, _reactRedux.connect)(function (state) {
-    return (0, _withMeta.mapStateToProps)((0, _withIface.mapStateToProps)(Component));
+    return Object.assign({}, (0, _withMeta.mapStateToProps)(state), (0, _withIface.mapStateToProps)(Component)(state));
   }, function (dispatch) {
     return Object.assign({}, (0, _withMeta.mapDispatchToProps)(dispatch), (0, _dispatchIface2.default)(dispatch));
   })(Component);
@@ -7093,7 +7093,7 @@ var mapDispatchToProps = function mapDispatchToProps(dispatch) {
     handleIfaceState: function handleIfaceState(state) {
       return dispatch((0, _actions_iface.iface_state)(state));
     },
-    handleAdd: function handleAdd() {
+    handleAdd: function handleAdd(_mgr) {
       return dispatch((0, _reactRouterRedux.push)('/' + _mgr.class_name + '/' + $p.utils.generate_guid()));
     },
     handleAddRow: function handleAddRow() {},

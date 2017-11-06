@@ -45,11 +45,6 @@ function getExternals() {
     'clipboard/lib/clipboard-action': true,
     'metadata-redux': true,
   };
-  for (const key in package_data.peerDependencies) {
-    if(!externals[key]) {
-      externals[key] = true;
-    }
-  }
   for (const key in package_data.dependencies) {
     if(!externals[key]) {
       externals[key] = true;
