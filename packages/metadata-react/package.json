@@ -15,10 +15,10 @@
   "peerDependencies": {
     "classnames": "^2.2",
     "create-react-class": "^15.6.2",
-    "material-ui": "^1.0.0-beta.19",
+    "material-ui": "^1.0.0-beta.20",
     "material-ui-icons": "^1.0.0-beta.17",
     "metadata-abstract-ui": "^2.0.16-beta.35",
-    "rc-calendar": "^9.1.11",
+    "rc-calendar": "^9.1.12",
     "rc-cascader": "^0.11.6",
     "rc-time-picker": "^3.0",
     "react-onclickoutside": "^6.6",
