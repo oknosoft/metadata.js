@@ -8,7 +8,7 @@ import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
 
-import {withIface} from 'metadata-redux/with.min';
+import {withIface} from 'metadata-redux';
 
 import HeaderButtons from './HeaderButtons';
 import HeaderMenu from './HeaderMenu';

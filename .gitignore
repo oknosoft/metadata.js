@@ -32,7 +32,6 @@ packages/metadata-react/plugin.min.js
 packages/metadata-redux/index.js
 packages/metadata-redux/index.js.map
 packages/metadata-redux/index.min.js
-packages/metadata-redux/with.min.js
 
 packages/metadata-superlogin/index.js
 packages/metadata-superlogin/index.js.map

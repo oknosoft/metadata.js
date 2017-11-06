@@ -9,6 +9,7 @@ import ifaceMiddleware from './events_iface';
 import withIface from './withIface';
 import withMeta from './withMeta';
 import withNavigateAndMeta from './withNavigateAndMeta';
+import withIfaceAndMeta from './withIfaceAndMeta';
 import withObj from './withObj';
 import withPrm from './withPrm';
 
@@ -24,7 +25,7 @@ export {
   withIface,
   withMeta,
   withNavigateAndMeta,
+  withIfaceAndMeta,
   withObj,
   withPrm,
-
 };

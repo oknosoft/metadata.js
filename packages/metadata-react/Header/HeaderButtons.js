@@ -75,7 +75,6 @@ NavUserButtons.propTypes = {
   user: PropTypes.object,  // пользователь
   handleNavigate: PropTypes.func.isRequired,
   classes: PropTypes.object.isRequired,
-
 };
 
 export default withStyles(NavUserButtons);

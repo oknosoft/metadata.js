@@ -25,11 +25,9 @@ class RootView extends Component {
     };
   }
 
-  shouldComponentUpdate(props, state) {
+  shouldComponentUpdate(props, {need_user, need_meta}) {
     const {meta_loaded, user, data_empty, couch_direct, offline, history, item_props} = props;
-    const {need_user, need_meta} = state;
     const iprops = item_props();
-
     let res = true;
 
     if(need_user != !!iprops.need_user) {
