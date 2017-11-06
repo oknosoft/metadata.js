@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
 import List, {ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction} from 'material-ui/List';
+import Divider from 'material-ui/Divider';
 import IconButton from 'material-ui/IconButton';
 import Collapse from 'material-ui/transitions/Collapse';
 
@@ -48,6 +49,9 @@ class NavList extends Component {
       });
       recipient.push(this.menuGroup(item, items));
     }
+    else if(item.divider) {
+      recipient.push(<Divider key={this.key}/>);
+    }
     else {
       recipient.push(this.menuItem(item, ident));
     }
@@ -59,7 +63,7 @@ class NavList extends Component {
       key: this.key,
       onClick: this.handleNavigate(item.navigate, item.id),
     };
-    if(inset){
+    if(inset) {
       props.className = this.props.classes.nested;
     }
     //inset={inset}
