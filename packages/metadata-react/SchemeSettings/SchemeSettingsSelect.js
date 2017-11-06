@@ -28,8 +28,8 @@ class SchemeSettingsSelect extends Component {
     this.state = $p.dp.scheme_settings.dp(props.scheme);
   }
 
-  shouldComponentUpdate({scheme}, {_obj}){
-    if(scheme != _obj.scheme){
+  shouldComponentUpdate({scheme}, {_obj}) {
+    if(scheme != _obj.scheme) {
       this.setState($p.dp.scheme_settings.dp(scheme), () => this.forceUpdate());
       return false;
     }
@@ -64,25 +64,18 @@ class SchemeSettingsSelect extends Component {
     const {_obj, _meta} = state;
     const {scheme, classes, handleSchemeChange} = props;
 
-    return (
-      <div>
-        <Toolbar disableGutters className={classes.toolbar}>
+    return [
+      <Toolbar key="bar" disableGutters className={classes.toolbar}>
+        <IconButton title="Сохранить вариант настроек" onClick={handleSave}><SaveIcon/></IconButton>
+        <IconButton title="Создать копию настроек" onClick={handleCreate}><CopyIcon/></IconButton>
+      </Toolbar>,
 
-          <IconButton title="Сохранить вариант настроек" onClick={handleSave}><SaveIcon/></IconButton>
-          <IconButton title="Создать копию настроек" onClick={handleCreate}><CopyIcon/></IconButton>
-
-
-        </Toolbar>
-
-        <FormGroup style={{margin: 16}}>
-          <DataField _obj={scheme} _fld="name" fullWidth handleValueChange={handleNameChange}/>
-          <DataField _obj={scheme} _fld="query" fullWidth/>
-          <DataField _obj={scheme} _fld="standard_period" fullWidth/>
-        </FormGroup>
-
-
-      </div>
-    );
+      <FormGroup key="body" style={{margin: 16}}>
+        <DataField _obj={scheme} _fld="name" fullWidth handleValueChange={handleNameChange}/>
+        <DataField _obj={scheme} _fld="query" fullWidth/>
+        <DataField _obj={scheme} _fld="standard_period" fullWidth/>
+      </FormGroup>
+    ];
 
   }
 };

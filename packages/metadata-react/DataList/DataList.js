@@ -237,6 +237,7 @@ class DataList extends MDNRComponent {
     const show_grid = !settings_open || sizes.height > 572;
 
     const toolbar_props = {
+      key: 'toolbar',
       scheme,
       selection_mode,
       denyAddDel,
@@ -256,71 +257,70 @@ class DataList extends MDNRComponent {
     };
 
 
-    return (
-      <div style={{height: sizes.height}}>
+    return [
 
-        { // диалог предупреждений при удалении
-          confirm_text && <Confirm
-            title={_meta.synonym}
-            text={confirm_text}
-            handleOk={this._handleRemove}
-            handleCancel={() => this.setState({confirm_text: ''})}
-            open
-          />
-        }
+      // диалог предупреждений при удалении
+      confirm_text && <Confirm
+        key="confirm"
+        title={_meta.synonym}
+        text={confirm_text}
+        handleOk={this._handleRemove}
+        handleCancel={() => this.setState({confirm_text: ''})}
+        open
+      />,
 
-        <DataListToolbar {...toolbar_props} />
+      // панель инструментов табчасти
+      <DataListToolbar {...toolbar_props} />,
 
-        { // панель настроек компоновки
-          settings_open &&
-          <SchemeSettingsTabs
-            height={show_grid ? 272 : (sizes.height || 500) - 104}
-            scheme={scheme}
-            tabParams={RepParams && <RepParams scheme={scheme} />}
-            handleSchemeChange={this.handleSchemeChange}
-          />}
+      // панель настроек компоновки
+      settings_open && <SchemeSettingsTabs
+        key="tabs"
+        height={show_grid ? 272 : (sizes.height || 500) - 104}
+        scheme={scheme}
+        tabParams={RepParams && <RepParams scheme={scheme} />}
+        handleSchemeChange={this.handleSchemeChange}
+      />,
 
-        {show_grid &&
-        <InfiniteLoader
-          isRowLoaded={_isRowLoaded}
-          loadMoreRows={_loadMoreRows}
-          rowCount={rowsLoaded + DataList.LIMIT}
-          minimumBatchSize={DataList.LIMIT}>
+      // собственно, InfiniteLoader, внутри которого MultiGrid
+      show_grid && <InfiniteLoader
+        key="infinite"
+        isRowLoaded={_isRowLoaded}
+        loadMoreRows={_loadMoreRows}
+        rowCount={rowsLoaded + DataList.LIMIT}
+        minimumBatchSize={DataList.LIMIT}>
 
-          {({onRowsRendered, registerChild}) => {
-            const onSectionRendered = ({rowOverscanStartIndex, rowOverscanStopIndex, rowStartIndex, rowStopIndex, columnStartIndex, columnStopIndex}) => {
-              onRowsRendered({
-                overscanStartIndex: rowOverscanStartIndex,
-                overscanStopIndex: rowOverscanStopIndex,
-                startIndex: rowStartIndex * this.state.columns.length + columnStartIndex,
-                stopIndex: rowStopIndex * this.state.columns.length + columnStopIndex
-              });
-            };
+        {({onRowsRendered, registerChild}) => {
+          const onSectionRendered = ({rowOverscanStartIndex, rowOverscanStopIndex, rowStartIndex, rowStopIndex, columnStartIndex, columnStopIndex}) => {
+            onRowsRendered({
+              overscanStartIndex: rowOverscanStartIndex,
+              overscanStopIndex: rowOverscanStopIndex,
+              startIndex: rowStartIndex * this.state.columns.length + columnStartIndex,
+              stopIndex: rowStopIndex * this.state.columns.length + columnStopIndex
+            });
+          };
 
-            return (
-              <MultiGrid
-                ref={registerChild}
-                tabIndex={0}
-                width={sizes.width}
-                height={sizes.height - 52 - (settings_open ? 320 : 0)}
-                rowCount={rowsLoaded}
-                columnCount={columns.length}
-                fixedRowCount={1}
-                noContentRenderer={this._noContentRendered}
-                cellRenderer={this._cellRenderer}
-                overscanColumnCount={DataList.OVERSCAN_COLUMN_COUNT}
-                overscanRowCount={DataList.OVERSCAN_ROW_COUNT}
-                columnWidth={this._getColumnWidth}
-                rowHeight={DataList.COLUMN_HEIGHT}
-                onSectionRendered={onSectionRendered}
-                styleTopRightGrid={styleTopRightGrid}
-                classNameTopRightGrid={classes.topRightGrid}/>
-            );
-          }}
-        </InfiniteLoader>
-        }
-      </div>
-    );
+          return (
+            <MultiGrid
+              ref={registerChild}
+              tabIndex={0}
+              width={sizes.width}
+              height={sizes.height - 52 - (settings_open ? 320 : 0)}
+              rowCount={rowsLoaded}
+              columnCount={columns.length}
+              fixedRowCount={1}
+              noContentRenderer={this._noContentRendered}
+              cellRenderer={this._cellRenderer}
+              overscanColumnCount={DataList.OVERSCAN_COLUMN_COUNT}
+              overscanRowCount={DataList.OVERSCAN_ROW_COUNT}
+              columnWidth={this._getColumnWidth}
+              rowHeight={DataList.COLUMN_HEIGHT}
+              onSectionRendered={onSectionRendered}
+              styleTopRightGrid={styleTopRightGrid}
+              classNameTopRightGrid={classes.topRightGrid}/>
+          );
+        }}
+      </InfiniteLoader>
+    ];
   }
 
   _getColumnWidth = ({index}) => {
@@ -333,10 +333,9 @@ class DataList extends MDNRComponent {
     }
   };
 
-  _noContentRendered = () => {
+  _noContentRendered() {
     return <LoadingMessage/>;
   };
-
 
   _cellRenderer = ({columnIndex, rowIndex, isScrolling, isVisible, key, parent, style}) => {
     const {state, props, handleEdit, handleSelect} = this;

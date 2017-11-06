@@ -12,8 +12,8 @@ const mapDispatchToProps = (dispatch) => {
     handleIfaceState(state) {
       return dispatch(iface_state(state));
     },
-    handleAdd() {
-
+    handleAdd(_mgr) {
+      return dispatch(push(`/${_mgr.class_name}/${$p.utils.generate_guid()}`));
     },
     handleAddRow() {
 

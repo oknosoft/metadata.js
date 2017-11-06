@@ -1,10 +1,10 @@
 import {connect} from 'react-redux';
 import {withRouter} from 'react-router';
-import {push} from 'react-router-redux';
 
 import withMeta from './withMeta';
-import {mapDispatchToProps} from './withIface'
+import mapDispatchToProps from './dispatchIface';
 
+// deprecated
 const mapStateToProps = ({iface}, {location}) => {
   return Object.assign({path_log_in: !!location.pathname.match(/\/(login|about)$/)}, iface.common);
 };

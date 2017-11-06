@@ -2,9 +2,7 @@ import {connect} from 'react-redux';
 import {try_log_in, log_out} from './actions_auth';
 import {offline} from './actions_base';
 
-const {adapters, wsql, job_prm, aes, cat} = $p;
-
-const mapStateToProps = ({meta}) => {
+export function mapStateToProps({meta}) {
   return Object.assign({}, meta, {
     _obj: $p.current_user,
     _mgr: $p.cat.users,
@@ -12,7 +10,9 @@ const mapStateToProps = ({meta}) => {
   });
 };
 
-const mapDispatchToProps = (dispatch) => {
+export function mapDispatchToProps(dispatch) {
+
+  const {adapters, wsql, job_prm, aes, cat} = $p;
 
   return {
     handleLogin(login, password) {

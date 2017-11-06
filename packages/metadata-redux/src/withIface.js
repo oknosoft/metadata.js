@@ -1,22 +1,9 @@
 import {connect} from 'react-redux';
-import {iface_state} from './actions_iface';
-import {push} from 'react-router-redux';
+import mapDispatchToProps from './dispatchIface';
 
-export const mapDispatchToProps = (dispatch) => {
-  return {
-    handleIfaceState(state) {
-      return dispatch(iface_state(state));
-    },
-    handleNavigate(path) {
-      return dispatch(push(path));
-    },
-  };
-};
-
-export default (Component) => {
+export function mapStateToProps(Component) {
   const area = Component.name;
-  const mapStateToProps = ({iface}) => {
-    return Object.assign({}, iface.common, iface[area]);
-  };
-  return connect(mapStateToProps, mapDispatchToProps)(Component);
-};
+  return ({iface}) => Object.assign({}, iface.common, iface[area]);
+}
+
+export default (Component) => connect(mapStateToProps(Component), mapDispatchToProps)(Component);

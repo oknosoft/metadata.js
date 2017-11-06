@@ -8,7 +8,7 @@ import Typography from 'material-ui/Typography';
 import IconButton from 'material-ui/IconButton';
 import IconNavigationMenu from 'material-ui-icons/Menu';
 
-import {withIface} from 'metadata-redux/with.min';
+import {withIface} from 'metadata-redux';
 
 import NavList from './NavList';
 

@@ -44,7 +44,7 @@ function getExternals() {
     'alasql/dist/alasql.min': true,
     'clipboard/lib/clipboard-action': true,
   };
-  for (const key in package_data.peerDependencies) {
+  for (const key in package_data.dependencies) {
     if(!externals[key]) {
       externals[key] = true;
     }

@@ -20,18 +20,18 @@ export default {
     const {wsql} = $p;
     if(Array.isArray(name)) {
       for (const {prm, value} of name) {
-        $p.wsql.set_user_param(prm, value);
+        wsql.set_user_param(prm, value);
       }
     }
     else if(typeof name == 'object') {
       for (const prm in name) {
-        $p.wsql.set_user_param(prm, name[prm]);
+        wsql.set_user_param(prm, name[prm]);
       }
     }
     else if(wsql.get_user_param(name) == value) {
       return state;
     }
-    $p.wsql.set_user_param(name, value);
+    wsql.set_user_param(name, value);
     return Object.assign({}, state);
   },
 

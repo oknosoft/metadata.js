@@ -23,4 +23,4 @@ export function iface_state(state) {
 
 export default {
   [IFACE_STATE]: iface_state,
-}
+};
