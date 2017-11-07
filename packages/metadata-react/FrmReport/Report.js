@@ -5,9 +5,8 @@ import DumbLoader from '../DumbLoader';
 import RepToolbar from './RepToolbar';
 import RepTabularSection from './RepTabularSection';
 import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
-
+import Helmet from 'react-helmet';
 import {withIface} from 'metadata-redux';
-
 
 class Report extends Component {
 
@@ -128,9 +127,11 @@ class Report extends Component {
 
     const show_grid = !settings_open || (props.height || 500) > 572;
 
-    return <div>
+    return [
+      <Helmet key="helmet" title={props.title}/>,
 
       <RepToolbar
+        key="toolbar"
         _obj={_obj}
         _tabular={_tabular}
         _columns={_columns}
@@ -143,28 +144,26 @@ class Report extends Component {
         handleSave={this.handleSave}
         handlePrint={this.handlePrint}
         handleClose={this.handleClose}
-      />
+      />,
 
-      { settings_open &&
-      <SchemeSettingsTabs
+      settings_open && <SchemeSettingsTabs
+        key="tabs"
         height={show_grid ? 272 : (props.height || 500) - 104}
         scheme={scheme}
-        tabParams={RepParams && <RepParams _obj={_obj} scheme={scheme} />}
+        tabParams={RepParams && <RepParams _obj={_obj} scheme={scheme}/>}
         handleSchemeChange={this.handleSchemeChange}
-      />}
+      />,
 
-      {show_grid && <RepTabularSection
+      show_grid && <RepTabularSection
+        key="tabular"
         ref={(el) => this._result = el}
         _obj={_obj}
         _tabular={_tabular}
         _columns={_columns}
         scheme={scheme}
         minHeight={(props.height || 500) - 52 - (settings_open ? 320 : 0)}
-      />}
-
-
-
-    </div>;
+      />
+    ];
   }
 }
 

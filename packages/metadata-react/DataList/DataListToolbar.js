@@ -79,6 +79,7 @@ class DataListToolbar extends Component {
 
         <Typography type="caption" color="inherit" className={classes.flex} > </Typography>
 
+        {/* кнопки настройки компоновки */}
         <SchemeSettingsButtons
           handleSettingsOpen={props.handleSettingsOpen}
           handleSettingsClose={props.handleSettingsClose}
@@ -91,19 +92,15 @@ class DataListToolbar extends Component {
           show_variants={props.show_variants}
         />
 
-        <IconButton onClick={this.handleClick} title="Дополнительно">
-          <MoreVertIcon/>
-        </IconButton>
-
+        {/* меню дополнительных действий */}
+        <IconButton onClick={this.handleClick} title="Дополнительно"><MoreVertIcon/></IconButton>
         <Menu
           anchorEl={state.anchorEl}
           open={state.open}
           onRequestClose={this.handleRequestClose}
         >
-
           <MenuItem onClick={this.handleDnROpen}><PrintIcon/> &nbsp;Печать</MenuItem>
           <MenuItem onClick={props.handleAttachment}><AttachIcon/> &nbsp;Вложения</MenuItem>
-
         </Menu>
 
       </Toolbar>

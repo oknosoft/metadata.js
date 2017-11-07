@@ -20,13 +20,20 @@ export default withStyles(theme => ({
   progress: {
     color: colors.white,
     position: 'absolute',
-    top: 8,
+    top: theme.spacing.unit,
   },
   toolbar: {
     backgroundColor: theme.palette.primary[50],
   },
   white: {
     color: colors.white
+  },
+  title: {
+    marginLeft: theme.spacing.unit * 3,
+  },
+  select: {
+    width: 180,
+    marginLeft: theme.spacing.unit,
   },
   rotation: {
     animation: 'rotate-progress-circle 1733ms linear infinite',

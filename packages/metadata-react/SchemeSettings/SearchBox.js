@@ -27,7 +27,7 @@ const styles = theme => ({
     },
     '& $input': {
       transition: theme.transitions.create('width'),
-      width: 80,
+      width: 100,
       '&:focus': {
         width: 160,
         background: theme.palette.common.white,

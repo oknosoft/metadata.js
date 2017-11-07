@@ -6,7 +6,7 @@ import TextField from 'material-ui/TextField';
 import Button from 'material-ui/Button';
 import {FormGroup} from 'material-ui/Form';
 import {DialogActions} from 'material-ui/Dialog';
-
+import Helmet from 'react-helmet';
 import CnnSettings from './CnnSettings';
 import {withPrm} from 'metadata-redux';
 import withStyles from '../styles/paper600';
@@ -58,9 +58,9 @@ class TabsLogin extends Component {
     const {props, state, handleLogin} = this;
     const {classes, handleLogOut} = props;
 
-    return (
+    return <Paper className={classes.root} elevation={4}>
 
-      <Paper className={classes.root} elevation={4}>
+        <Helmet title={props.title} />
 
         <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
           <Tab label="Вход"/>
@@ -92,8 +92,7 @@ class TabsLogin extends Component {
         </FormGroup>
         }
 
-        {state.index === 0 &&
-        <DialogActions>
+        {state.index === 0 && <DialogActions>
           {props.user.logged_in ?
               <Button color="primary" dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
               :
@@ -104,9 +103,7 @@ class TabsLogin extends Component {
 
         {state.index === 1 && <CnnSettings {...props}/>}
 
-      </Paper>
-
-    );
+      </Paper>;
   }
 }
 

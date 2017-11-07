@@ -5,6 +5,7 @@ import kebabCase from 'lodash/kebabCase';
 import warning from 'warning';
 import Helmet from 'react-helmet';
 import {withStyles} from 'material-ui/styles';
+import {withIface} from 'metadata-redux';
 //import Button from 'material-ui/Button';
 import AppContent from '../App/AppContent';
 import MarkdownElement from './MarkdownElement';
@@ -27,7 +28,7 @@ const demoRegexp = /^demo='(.*)'$/;
 type Props = {
   classes: Object,
   demos?: { [key: string]: any },
-  markdown: string,
+markdown: string,
   // You can define the direction location of the markdown file.
   // Otherwise, we try to determine it with an heuristic.
   sourceLocation?: string,
@@ -38,7 +39,7 @@ type Props = {
 };
 
 function MarkdownDocs(props: Props) {
-  const {classes, demos, markdown, subtitle, sourceLocation: sourceLocationProp} = props;
+  const {classes, demos, markdown, subtitle, sourceLocation: sourceLocationProp, title, handleIfaceState} = props;
   const contents = getContents(markdown);
   const headers = getHeaders(markdown);
 
@@ -61,15 +62,22 @@ function MarkdownDocs(props: Props) {
     }
   }
 
+  const ltitle = `${getTitle(markdown)}${subtitle ? ' - ' + subtitle : ''}`;
+  if (title != ltitle) {
+    handleIfaceState({
+      component: '',
+      name: 'title',
+      value: ltitle,
+    });
+  }
+
   return (
     <AppContent className={classes.root}>
-      <Helmet title={`${getTitle(markdown)} - ${subtitle || 'metadata.js'}`} />
+      <Helmet title={ltitle} />
 
       {/*
         <div className={classes.header}>
-          <Button component="a" href={`${sourceCodeRootUrl}${sourceLocation}`}>
-            {'Edit this page'}
-          </Button>
+          <Button component="a" href={`${sourceCodeRootUrl}${sourceLocation}`}>Edit this page</Button>
         </div>
       */}
 
@@ -99,4 +107,4 @@ ${headers.components
   );
 }
 
-export default withStyles(styles)(MarkdownDocs);
+export default withStyles(styles)(withIface(MarkdownDocs));
