@@ -36,38 +36,31 @@ class NavUserButtons extends Component {
     const sync_tooltip = `Синхронизация ${user.logged_in && sync_started ? 'выполняется' : 'отключена'}`;
     const login_tooltip = `${user.name}${user.logged_in ? '\n(подключен к серверу)' : '\n(автономный режим)'}`;
 
-    return (
-      <div style={{display: 'inline-flex'}}>
+    return [
+      <IconButton key="offline" title={offline_tooltip}>
+        {offline ? <CloudOff className={classes.white}/> : <CloudQueue className={classes.white}/>}
+      </IconButton>,
 
-        <IconButton title={offline_tooltip}>
-          {offline ?
-            <CloudOff className={classes.white}/>
-            :
-            <CloudQueue className={classes.white}/>
-          }
-        </IconButton>
+      <IconButton key="sync_started" title={sync_tooltip}>
+        {user.logged_in && sync_started ?
+          <SyncIcon className={classnames(classes.white, {[classes.rotation]: fetch || user.try_log_in})} />
+          :
+          <SyncIconDisabled className={classes.white}/>
+        }
+      </IconButton>,
 
-        <IconButton title={sync_tooltip}>
-          {user.logged_in && sync_started ?
-            <SyncIcon className={classnames(classes.white, {[classes.rotation]: fetch || user.try_log_in})} />
-            :
-            <SyncIconDisabled className={classes.white}/>
-          }
-        </IconButton>
+      <IconButton key="logged_in" title={login_tooltip} onClick={handleLogin}>
+        {user.logged_in ? <PersonOutline className={classes.white}/> : <AccountOff className={classes.white}/>}
+      </IconButton>,
 
-        <IconButton title={login_tooltip} onClick={handleLogin}>
-          {
-            user.logged_in ?
-              <PersonOutline className={classes.white}/>
-              :
-              <AccountOff className={classes.white}/>
-          }
-        </IconButton>
+      <Notifications key="noti" classes={classes} />
 
-        <Notifications classes={classes} />
-
-      </div>
-    );
+    ];
+    // (
+    //   <div style={{display: 'inline-flex'}}>
+    //
+    //   </div>
+    // );
   }
 }
 NavUserButtons.propTypes = {

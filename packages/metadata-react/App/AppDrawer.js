@@ -39,16 +39,14 @@ const styles = theme => ({
 });
 
 function AppDrawer(props) {
-  const {classes, className, disablePermanent, mobileOpen, onRequestClose, handleNavigate, isHome, items} = props;
+  const {classes, className, disablePermanent, mobileOpen, onRequestClose, handleNavigate, isHome, items, title} = props;
 
   const drawer = (
     <div className={classes.nav}>
       <div className={classes.toolbarIe11}>
         <Toolbar className={classes.toolbar}>
           <div className={classes.title} onClick={() => isHome ? onRequestClose() : handleNavigate('/')}>
-            <Typography type="title" color="inherit">
-              Flowcon
-            </Typography>
+            <Typography type="title" color="inherit">{title}</Typography>
           </div>
           <Divider absolute/>
         </Toolbar>
@@ -98,6 +96,7 @@ AppDrawer.propTypes = {
   onRequestClose: PropTypes.func.isRequired,
   handleNavigate: PropTypes.func.isRequired,// action для навигации
   items: PropTypes.array.isRequired,        // массив элементов меню
+  title: PropTypes.string,
 };
 
 export default withStyles(styles)(AppDrawer);

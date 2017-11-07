@@ -7,7 +7,7 @@ export default withStyles(theme => ({
     width: '100%',
   },
   drawer: {
-    maxWidth: 300,
+    width: 280,
   },
   flex: {
     flex: 1,
