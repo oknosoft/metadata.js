@@ -497,17 +497,18 @@ export class DataObj {
     }
 
     // для документов, контролируем заполненность даты
+    let numerator;
     if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
       if(utils.blank.date == this.date) {
         this.date = new Date();
       }
       if(!this.number_doc) {
-        this.new_number_doc();
+        numerator = this.new_number_doc();
       }
     }
     else {
       if(!this.id) {
-        this.new_number_doc();
+        numerator = this.new_number_doc();
       }
     }
 
@@ -529,17 +530,20 @@ export class DataObj {
     // }
 
     // в зависимости от типа кеширования, получаем saver и сохраняем объект во внешней базе
-    return this._manager.adapter.save_obj(this, {
-      post: post,
-      operational: operational,
-      attachments: attachments
-    })
-    // и выполняем обработку после записи
+    return (numerator || Promise.resolve())
       .then(() => {
-        this.after_save();
-        return this;
-      })
-      .then(reset_modified);
+        this._manager.adapter.save_obj(this, {
+          post: post,
+          operational: operational,
+          attachments: attachments
+        })
+        // и выполняем обработку после записи
+          .then(() => {
+            this.after_save();
+            return this;
+          })
+          .then(reset_modified);
+      });
   }
 
 

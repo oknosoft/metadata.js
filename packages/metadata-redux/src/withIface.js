@@ -1,9 +1,17 @@
 import {connect} from 'react-redux';
 import mapDispatchToProps from './dispatchIface';
 
-export function mapStateToProps(Component) {
-  const area = Component.name;
-  return ({iface}) => Object.assign({}, iface.common, iface[area]);
+// TODO: реализовать освобождение индивидуальной области компонента в iface
+function disconnect(iface, area) {
+  return () => {
+  };
+}
+
+export function mapStateToProps(Component, area) {
+  if(!area) {
+    area = Component.name;
+  }
+  return ({iface}) => Object.assign({disconnect: disconnect(iface, area)}, iface.common, iface[area]);
 }
 
 export default (Component) => connect(mapStateToProps(Component), mapDispatchToProps)(Component);

@@ -94,22 +94,22 @@ export default class WSQL {
 		job_prm.init(settings);
 
 		// префикс параметров LocalStorage
-		// TODO: отразить в документации, что если префикс пустой, то параметры не инициализируются
-		if (!job_prm.local_storage_prefix && !job_prm.create_tables)
-			return;
+		if (!job_prm.local_storage_prefix){
+      throw new Error('local_storage_prefix unset in job_prm settings');
+    }
 
 		// значения базовых параметров по умолчанию
-		var nesessery_params = [
-			{p: "user_name", v: "", t: "string"},
-			{p: "user_pwd", v: "", t: "string"},
-			{p: "browser_uid", v: utils.generate_guid(), t: "string"},
-			{p: "zone", v: job_prm.hasOwnProperty("zone") ? job_prm.zone : 1, t: job_prm.zone_is_string ? "string" : "number"},
-			{p: "rest_path", v: "", t: "string"},
-			{p: "couch_path", v: "", t: "string"},
-      {p: "couch_suffix", v: "", t: "string"},
-      {p: "couch_direct", v: true, t: "boolean"},
-      {p: "enable_save_pwd", v: true, t: "boolean"},
-		], zone;
+    const nesessery_params = [
+      {p: 'user_name', v: '', t: 'string'},
+      {p: 'user_pwd', v: '', t: 'string'},
+      {p: 'browser_uid', v: utils.generate_guid(), t: 'string'},
+      {p: 'zone', v: job_prm.hasOwnProperty('zone') ? job_prm.zone : 1, t: job_prm.zone_is_string ? 'string' : 'number'},
+      {p: 'rest_path', v: '', t: 'string'},
+      {p: 'couch_path', v: '', t: 'string'},
+      {p: 'couch_suffix', v: '', t: 'string'},
+      {p: 'couch_direct', v: true, t: 'boolean'},
+      {p: 'enable_save_pwd', v: true, t: 'boolean'},
+    ];
 
 		// подмешиваем к базовым параметрам настройки приложения
 		if (job_prm.additional_params){
@@ -117,12 +117,22 @@ export default class WSQL {
     }
 
 		// если зона не указана, устанавливаем "1"
+    let zone;
 		if (!this._ls.getItem(job_prm.local_storage_prefix + "zone")){
       zone = job_prm.hasOwnProperty("zone") ? job_prm.zone : 1;
     }
-
 		if (zone !== undefined){
       this.set_user_param("zone", zone);
+    }
+
+    // для гостевой зоны, couch_direct по умолчанию сброшен
+    if(zone == job_prm.zone_demo){
+      nesessery_params.some((prm) => {
+        if(prm.p == 'couch_suffix'){
+          prm.v = false;
+          return true;
+        }
+      })
     }
 
 		// дополняем хранилище недостающими параметрами

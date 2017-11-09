@@ -175,7 +175,7 @@ export default function scheme_settings() {
    */
   this.CatScheme_settings = class CatScheme_settings extends CatObj {
 
-    constructor(attr, manager, loading){
+    constructor(attr, manager, loading) {
 
       // выполняем конструктор родительского объекта
       super(attr, manager, loading);
@@ -189,7 +189,7 @@ export default function scheme_settings() {
       const {standard_period} = enm;
       const from = utils.moment();
       const till = from.clone();
-      switch (this.standard_period){
+      switch (this.standard_period) {
       case standard_period.yesterday:
         this.date_from = from.subtract(1, 'days').startOf('day').toDate();
         this.date_till = till.subtract(1, 'days').endOf('day').toDate();
@@ -474,28 +474,28 @@ export default function scheme_settings() {
         _meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]);
 
       // добавляем предопределенные реквизиты
-      if(parts.length < 3 && !_meta.fields._deleted){
+      if(parts.length < 3 && !_meta.fields._deleted) {
         const {fields} = _meta;
         fields._deleted = _mgr.metadata('_deleted');
         // для документов
-        if(_mgr instanceof DocManager && !fields.date){
+        if(_mgr instanceof DocManager && !fields.date) {
           fields.posted = _mgr.metadata('posted');
           fields.date = _mgr.metadata('date');
           fields.number_doc = _mgr.metadata('number_doc');
         }
         // для справочникоа
-        if(_mgr instanceof CatManager && !fields.name && !fields.id){
+        if(_mgr instanceof CatManager && !fields.name && !fields.id) {
           if(_meta.code_length) {
             fields.id = _mgr.metadata('id');
           }
-          if(_meta.has_owners){
+          if(_meta.has_owners) {
             fields.owner = _mgr.metadata('owner');
           }
           fields.name = _mgr.metadata('name');
         }
 
       }
-      if(parts.length > 2 && !_meta.fields.ref){
+      if(parts.length > 2 && !_meta.fields.ref) {
         _meta.fields.ref = _mgr.metadata('ref');
       }
       return {parts, _mgr, _meta};
@@ -574,11 +574,15 @@ export default function scheme_settings() {
       }
 
       if(!this.standard_period.empty()) {
-        res.selector.$and = [
-          {date: {$gte: format(this.date_from)}},
-          {date: {$lte: format(this.date_till) + '\ufff0'}}
-        ];
+        res.selector.date =  {$and: [{$gte: format(this.date_from)}, {$lte: format(this.date_till) + '\ufff0'}]};
       }
+      // if(!this.standard_period.empty()) {
+      //   res.selector.$and = [
+      //     {date: {$gte: format(this.date_from)}},
+      //     {date: {$lte: format(this.date_till) + '\ufff0'}}
+      //   ];
+      //   res.use_index = '_design/mango';
+      // }
 
       if(this._search) {
         res.selector.search = {$regex: this._search};
@@ -593,11 +597,11 @@ export default function scheme_settings() {
         res.sort = [{class_name: direction}, {date: direction}];
       });
 
-      if(skip){
+      if(skip) {
         res.skip = skip;
       }
 
-      if(limit){
+      if(limit) {
         res.limit = limit;
       }
 
@@ -666,7 +670,7 @@ export default function scheme_settings() {
      */
     dims(parent) {
       const res = [];
-      for(const dims of this.used(this.dimensions, parent)){
+      for (const dims of this.used(this.dimensions, parent)) {
         for (const key of dims.split(',').map(v => v.trim())) {
           res.indexOf(key) == -1 && res.push(key);
         }

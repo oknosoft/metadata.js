@@ -106,7 +106,10 @@ export function log_out(adapter) {
 export function log_error(err) {
   const msg = $p.msg.login;
   let text = msg.error;
-  if(err.message.match('suffix')){
+  if(!err.message || err.message.match(/time/i)){
+    text = msg.network;
+  }
+  else if(err.message.match('suffix')){
     text = msg.suffix;
   }
   else if(err.message.match('empty')){

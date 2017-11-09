@@ -348,7 +348,9 @@ function log_out(adapter) {
 function log_error(err) {
   var msg = $p.msg.login;
   var text = msg.error;
-  if (err.message.match('suffix')) {
+  if (!err.message || err.message.match(/time/i)) {
+    text = msg.network;
+  } else if (err.message.match('suffix')) {
     text = msg.suffix;
   } else if (err.message.match('empty')) {
     text = msg.empty;
@@ -1515,8 +1517,6 @@ var _reactRedux = __webpack_require__(4);
 
 var _actions_auth = __webpack_require__(5);
 
-var _actions_base = __webpack_require__(9);
-
 function mapStateToProps(_ref) {
   var meta = _ref.meta;
 
@@ -1553,9 +1553,6 @@ function mapDispatchToProps(dispatch) {
     },
     handleLogOut: function handleLogOut() {
       return dispatch((0, _actions_auth.log_out)(adapters.pouch));
-    },
-    handleOffline: function handleOffline(state) {
-      return dispatch((0, _actions_base.offline)(state));
     }
   };
 };
@@ -1582,11 +1579,18 @@ var _dispatchIface2 = _interopRequireDefault(_dispatchIface);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function mapStateToProps(Component) {
-  var area = Component.name;
+// TODO: реализовать освобождение индивидуальной области компонента в iface
+function disconnect(iface, area) {
+  return function () {};
+}
+
+function mapStateToProps(Component, area) {
+  if (!area) {
+    area = Component.name;
+  }
   return function (_ref) {
     var iface = _ref.iface;
-    return Object.assign({}, iface.common, iface[area]);
+    return Object.assign({ disconnect: disconnect(iface, area) }, iface.common, iface[area]);
   };
 }
 
@@ -3223,6 +3227,9 @@ exports.default = (_META_LOADED$PRM_CHAN = {}, _defineProperty(_META_LOADED$PRM_
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 exports.default = metaMiddleware;
 
 var _actions_auth = __webpack_require__(5);
@@ -3230,6 +3237,8 @@ var _actions_auth = __webpack_require__(5);
 var _actions_pouch = __webpack_require__(11);
 
 var _actions_obj = __webpack_require__(8);
+
+var _actions_base = __webpack_require__(9);
 
 var attached = void 0;
 
@@ -3247,6 +3256,8 @@ function metaMiddleware(_ref) {
       return function (action) {
         if (!attached) {
           attached = true;
+
+          // события pouchdb
           adapters.pouch.on({
 
             user_log_in: function user_log_in(name) {
@@ -3311,6 +3322,7 @@ function metaMiddleware(_ref) {
 
           });
 
+          // события metaengine
           md.on({
             obj_loaded: function obj_loaded(_obj) {
               dispatch((0, _actions_obj.change)(_obj._manager.class_name, _obj.ref));
@@ -3319,7 +3331,18 @@ function metaMiddleware(_ref) {
             setting_changed: function setting_changed() {}
           });
 
-          // TODO: здесь можно подписаться на online-offline, rotate и т.д.
+          // события window online-offline
+          // TODO: дополнить периодическим опросом couchdb
+          if ((typeof window === 'undefined' ? 'undefined' : _typeof(window)) != undefined && window.addEventListener) {
+            window.addEventListener('online', function () {
+              return dispatch((0, _actions_base.offline)(false));
+            }, false);
+            window.addEventListener('offline', function () {
+              return dispatch((0, _actions_base.offline)(true));
+            }, false);
+          }
+
+          // TODO: здесь можно подписаться на rotate и т.д.
         }
         return next(action);
       };

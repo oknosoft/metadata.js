@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.38, built:2017-11-06
+ metadata-core v2.0.16-beta.39, built:2017-11-09
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -82,6 +82,7 @@ const msg$1 = new I18n({
     login: {
 		  title: 'Вход на сервер',
       empty: 'Не указаны имя пользователя или пароль',
+      network: 'Сервер недоступен или ошибка сервера',
       need_logout: 'Для авторизации под новым именем, завершите сеанс текущего пользователя',
       error: 'Ошибка авторизации. Проверьте имя пользователя, пароль и параметры подключения',
       suffix: 'Суффикс пользователя не совпадает с суффиксом подключения',
@@ -822,29 +823,33 @@ class DataObj {
     if(this._metadata().hierarchical && !this._obj.parent) {
       this._obj.parent = utils.blank.guid;
     }
+    let numerator;
     if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
       if(utils.blank.date == this.date) {
         this.date = new Date();
       }
       if(!this.number_doc) {
-        this.new_number_doc();
+        numerator = this.new_number_doc();
       }
     }
     else {
       if(!this.id) {
-        this.new_number_doc();
+        numerator = this.new_number_doc();
       }
     }
-    return this._manager.adapter.save_obj(this, {
-      post: post,
-      operational: operational,
-      attachments: attachments
-    })
+    return (numerator || Promise.resolve())
       .then(() => {
-        this.after_save();
-        return this;
-      })
-      .then(reset_modified);
+        this._manager.adapter.save_obj(this, {
+          post: post,
+          operational: operational,
+          attachments: attachments
+        })
+          .then(() => {
+            this.after_save();
+            return this;
+          })
+          .then(reset_modified);
+      });
   }
   get_attachment(att_id) {
     const {_manager, ref} = this;
@@ -3392,27 +3397,37 @@ class WSQL {
 		alasql.utils.isBrowserify = false;
 		const {job_prm, adapters} = this.$p;
 		job_prm.init(settings);
-		if (!job_prm.local_storage_prefix && !job_prm.create_tables)
-			return;
-		var nesessery_params = [
-			{p: "user_name", v: "", t: "string"},
-			{p: "user_pwd", v: "", t: "string"},
-			{p: "browser_uid", v: utils.generate_guid(), t: "string"},
-			{p: "zone", v: job_prm.hasOwnProperty("zone") ? job_prm.zone : 1, t: job_prm.zone_is_string ? "string" : "number"},
-			{p: "rest_path", v: "", t: "string"},
-			{p: "couch_path", v: "", t: "string"},
-      {p: "couch_suffix", v: "", t: "string"},
-      {p: "couch_direct", v: true, t: "boolean"},
-      {p: "enable_save_pwd", v: true, t: "boolean"},
-		], zone;
+		if (!job_prm.local_storage_prefix){
+      throw new Error('local_storage_prefix unset in job_prm settings');
+    }
+    const nesessery_params = [
+      {p: 'user_name', v: '', t: 'string'},
+      {p: 'user_pwd', v: '', t: 'string'},
+      {p: 'browser_uid', v: utils.generate_guid(), t: 'string'},
+      {p: 'zone', v: job_prm.hasOwnProperty('zone') ? job_prm.zone : 1, t: job_prm.zone_is_string ? 'string' : 'number'},
+      {p: 'rest_path', v: '', t: 'string'},
+      {p: 'couch_path', v: '', t: 'string'},
+      {p: 'couch_suffix', v: '', t: 'string'},
+      {p: 'couch_direct', v: true, t: 'boolean'},
+      {p: 'enable_save_pwd', v: true, t: 'boolean'},
+    ];
 		if (job_prm.additional_params){
       nesessery_params = nesessery_params.concat(job_prm.additional_params);
     }
+    let zone;
 		if (!this._ls.getItem(job_prm.local_storage_prefix + "zone")){
       zone = job_prm.hasOwnProperty("zone") ? job_prm.zone : 1;
     }
 		if (zone !== undefined){
       this.set_user_param("zone", zone);
+    }
+    if(zone == job_prm.zone_demo){
+      nesessery_params.some((prm) => {
+        if(prm.p == 'couch_suffix'){
+          prm.v = false;
+          return true;
+        }
+      });
     }
 		nesessery_params.forEach((prm) => {
 		  if(job_prm.url_prm && job_prm.url_prm.hasOwnProperty(prm.p)) {
@@ -4050,7 +4065,7 @@ class MetaEngine$1 {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.38';
+    return '2.0.16-beta.39';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

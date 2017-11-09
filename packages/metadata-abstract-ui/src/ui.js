@@ -8,7 +8,7 @@
  * @return {*}
  */
 export default function control_by_type (type, val) {
-  let ft;
+  var ft;
 
   if (typeof val == "boolean" && type.types.indexOf("boolean") != -1) {
     ft = "ch";

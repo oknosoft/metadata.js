@@ -1,6 +1,7 @@
 import {log_in, log_out, log_error} from './actions_auth';
 import {data_page, data_loaded, data_error, load_start, no_data, sync_data, sync_error, sync_paused, sync_resumed, sync_denied} from './actions_pouch';
 import {change} from './actions_obj';
+import {offline} from './actions_base';
 
 
 let attached;
@@ -13,6 +14,8 @@ export default function metaMiddleware({adapters, md}) {
     return next => action => {
       if(!attached) {
         attached = true;
+
+        // события pouchdb
         adapters.pouch.on({
 
           user_log_in: (name) => dispatch(log_in(name)),
@@ -47,6 +50,7 @@ export default function metaMiddleware({adapters, md}) {
 
         });
 
+        // события metaengine
         md.on({
           obj_loaded: (_obj) => {
             dispatch(change(_obj._manager.class_name, _obj.ref));
@@ -56,7 +60,14 @@ export default function metaMiddleware({adapters, md}) {
           },
         });
 
-        // TODO: здесь можно подписаться на online-offline, rotate и т.д.
+        // события window online-offline
+        // TODO: дополнить периодическим опросом couchdb
+        if(typeof window != undefined && window.addEventListener){
+          window.addEventListener('online', () => dispatch(offline(false)), false);
+          window.addEventListener('offline', () => dispatch(offline(true)), false);
+        }
+
+        // TODO: здесь можно подписаться на rotate и т.д.
 
       }
       return next(action);

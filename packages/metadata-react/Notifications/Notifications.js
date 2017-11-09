@@ -19,6 +19,7 @@ import Select from 'material-ui/Select';
 import classnames from 'classnames';
 
 import {withIface} from 'metadata-redux';
+import withStyles from '../Header/toolbar';
 
 class Notifications extends Component {
 
@@ -49,7 +50,7 @@ class Notifications extends Component {
     }
     const any = value.indexOf('any');
     if(any != -1){
-      if(value.indexOf('error') != -1 || value.indexOf('alert') != -1 || value.indexOf('info') != -1){
+      if(value.indexOf('hight') != -1 || value.indexOf('alert') != -1 || value.indexOf('info') != -1){
         value.splice(any, 1);
       }
     }
@@ -102,7 +103,7 @@ class Notifications extends Component {
           >
             <MenuItem value="any" className={classnames({[classes.bold]: filter.indexOf('any') !== -1})}>Все</MenuItem>
             <MenuItem value="new" className={classnames({[classes.bold]: filter.indexOf('new') !== -1})}>Новые</MenuItem>
-            <MenuItem value="error" className={classnames({[classes.bold]: filter.indexOf('error') !== -1})}>Ошибка</MenuItem>
+            <MenuItem value="hight" className={classnames({[classes.bold]: filter.indexOf('hight') !== -1})}>Важно</MenuItem>
             <MenuItem value="alert" className={classnames({[classes.bold]: filter.indexOf('alert') !== -1})}>Замечание</MenuItem>
             <MenuItem value="info" className={classnames({[classes.bold]: filter.indexOf('info') !== -1})}>Инфо</MenuItem>
           </Select>
@@ -130,4 +131,4 @@ class Notifications extends Component {
   }
 }
 
-export default withIface(Notifications);
+export default withStyles(withIface(Notifications));

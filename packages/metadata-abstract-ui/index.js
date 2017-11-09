@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.38, built:2017-11-06
+ metadata-abstract-ui v2.0.16-beta.39, built:2017-11-09
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -237,7 +237,7 @@ function scheme_settings() {
     }
   };
   this.CatScheme_settings = class CatScheme_settings extends CatObj {
-    constructor(attr, manager, loading){
+    constructor(attr, manager, loading) {
       super(attr, manager, loading);
       this.set_standard_period();
     }
@@ -245,7 +245,7 @@ function scheme_settings() {
       const {standard_period} = enm;
       const from = utils.moment();
       const till = from.clone();
-      switch (this.standard_period){
+      switch (this.standard_period) {
       case standard_period.yesterday:
         this.date_from = from.subtract(1, 'days').startOf('day').toDate();
         this.date_till = till.subtract(1, 'days').endOf('day').toDate();
@@ -465,25 +465,25 @@ function scheme_settings() {
       const parts = class_name.split('.'),
         _mgr = md.mgr_by_class_name(class_name),
         _meta = parts.length < 3 ? _mgr.metadata() : _mgr.metadata(parts[2]);
-      if(parts.length < 3 && !_meta.fields._deleted){
+      if(parts.length < 3 && !_meta.fields._deleted) {
         const {fields} = _meta;
         fields._deleted = _mgr.metadata('_deleted');
-        if(_mgr instanceof DocManager && !fields.date){
+        if(_mgr instanceof DocManager && !fields.date) {
           fields.posted = _mgr.metadata('posted');
           fields.date = _mgr.metadata('date');
           fields.number_doc = _mgr.metadata('number_doc');
         }
-        if(_mgr instanceof CatManager && !fields.name && !fields.id){
+        if(_mgr instanceof CatManager && !fields.name && !fields.id) {
           if(_meta.code_length) {
             fields.id = _mgr.metadata('id');
           }
-          if(_meta.has_owners){
+          if(_meta.has_owners) {
             fields.owner = _mgr.metadata('owner');
           }
           fields.name = _mgr.metadata('name');
         }
       }
-      if(parts.length > 2 && !_meta.fields.ref){
+      if(parts.length > 2 && !_meta.fields.ref) {
         _meta.fields.ref = _mgr.metadata('ref');
       }
       return {parts, _mgr, _meta};
@@ -537,10 +537,7 @@ function scheme_settings() {
         }
       }
       if(!this.standard_period.empty()) {
-        res.selector.$and = [
-          {date: {$gte: format(this.date_from)}},
-          {date: {$lte: format(this.date_till) + '\ufff0'}}
-        ];
+        res.selector.date =  {$and: [{$gte: format(this.date_from)}, {$lte: format(this.date_till) + '\ufff0'}]};
       }
       if(this._search) {
         res.selector.search = {$regex: this._search};
@@ -552,10 +549,10 @@ function scheme_settings() {
         }
         res.sort = [{class_name: direction}, {date: direction}];
       });
-      if(skip){
+      if(skip) {
         res.skip = skip;
       }
-      if(limit){
+      if(limit) {
         res.limit = limit;
       }
       Object.defineProperty(res, '_mango', {value: true});
@@ -599,7 +596,7 @@ function scheme_settings() {
     }
     dims(parent) {
       const res = [];
-      for(const dims of this.used(this.dimensions, parent)){
+      for (const dims of this.used(this.dimensions, parent)) {
         for (const key of dims.split(',').map(v => v.trim())) {
           res.indexOf(key) == -1 && res.push(key);
         }

@@ -1,6 +1,5 @@
 import {connect} from 'react-redux';
 import {try_log_in, log_out} from './actions_auth';
-import {offline} from './actions_base';
 
 export function mapStateToProps({meta}) {
   return Object.assign({}, meta, {
@@ -33,9 +32,6 @@ export function mapDispatchToProps(dispatch) {
     },
     handleLogOut() {
       return dispatch(log_out(adapters.pouch));
-    },
-    handleOffline(state) {
-      return dispatch(offline(state));
     }
   };
 };

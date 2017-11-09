@@ -26,10 +26,13 @@ export default withStyles(theme => ({
     backgroundColor: theme.palette.primary[50],
   },
   white: {
-    color: colors.white
+    color: colors.white,
   },
   title: {
     marginLeft: theme.spacing.unit * 3,
+  },
+  bold: {
+    fontWeight: 'bold',
   },
   select: {
     width: 180,

@@ -20,19 +20,18 @@ class RootView extends Component {
     const iprops = props.item_props();
     this.state = {
       need_meta: !!iprops.need_meta,
-      need_user: !!iprops.need_user,
       browser_compatible: browser_compatible(),
     };
+
+    this.shouldComponentUpdate(props, this.state, iprops)
   }
 
-  shouldComponentUpdate(props, {need_user, need_meta}) {
-    const {meta_loaded, user, data_empty, couch_direct, offline, history, item_props} = props;
-    const iprops = item_props();
+  shouldComponentUpdate(props, {need_meta}, iprops) {
+    const {meta_loaded, user, data_empty, couch_direct, offline, history, item_props, first_run, path_log_in} = props;
     let res = true;
 
-    if(need_user != !!iprops.need_user) {
-      this.setState({need_user: !!iprops.need_user});
-      res = false;
+    if(!iprops || !iprops.hasOwnProperty('need_meta')){
+      iprops = item_props();
     }
 
     if(need_meta != !!iprops.need_meta) {
@@ -47,7 +46,9 @@ class RootView extends Component {
     }
 
     // если это первый запуск или couch_direct и offline, переходим на страницу login
-    if(meta_loaded && res && need_user && ((data_empty === true && !user.try_log_in && !user.logged_in) || (couch_direct && offline))) {
+    if(!path_log_in && meta_loaded && res && iprops.need_user && (
+      first_run || (data_empty === true && !user.try_log_in && !user.logged_in) || (couch_direct && offline)
+      )) {
       history.push('/login');
       this.setState({pathname: '/login'});
       res = false;
@@ -60,7 +61,8 @@ class RootView extends Component {
 
     const {props, state} = this;
     const {meta_loaded, data_empty, data_loaded, history, DumbScreen, AppView, theme} = props;
-    const show_dumb = state.need_meta && (
+
+    const show_dumb = DumbScreen && state.need_meta && (
       !meta_loaded ||
       (data_empty === undefined) ||
       (data_empty === false && !data_loaded)
@@ -84,7 +86,7 @@ class RootView extends Component {
 }
 
 RootView.propTypes = {
-  DumbScreen: PropTypes.func.isRequired,
+  DumbScreen: PropTypes.func,
   AppView: PropTypes.func.isRequired,
   history: PropTypes.object.isRequired,
   item_props: PropTypes.func.isRequired,
