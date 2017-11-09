@@ -768,13 +768,7 @@ export class CatObj extends DataObj {
    * @type String
    */
   get presentation() {
-    if(this.name || this.id) {
-      // return this._metadata().obj_presentation || this._metadata().synonym + " " + this.name || this.id;
-      return this.name || this.id || this._metadata().obj_presentation || this._metadata().synonym;
-    }
-    else {
-      return this._presentation || '';
-    }
+    return this.name || this.id || this._presentation || '';
   }
   set presentation(v) {
     if(v) {
@@ -910,12 +904,9 @@ export class DocObj extends NumberDocAndDate(DataObj) {
    * @type String
    */
   get presentation() {
-    if(this.number_doc) {
-      return (this._metadata().obj_presentation || this._metadata().synonym) + ' №' + this.number_doc + ' от ' + moment(this.date).format(moment._masks.ldt);
-    }
-    else {
-      return this._presentation || '';
-    }
+    const meta = this._metadata();
+    const {number_doc, date, posted, _modified} = this;
+    return `${meta.obj_presentation || meta.synonym}  №${number_doc || 'б/н'} от ${moment(date).format(moment._masks.ldt)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`;
   }
 
   set presentation(v) {

@@ -59,15 +59,6 @@ class DataList extends MDNRComponent {
     this.handleManagerChange(props);
   }
 
-  shouldComponentUpdate({_mgr, _meta}) {
-    if(this.props._mgr != _mgr) {
-      this.handleManagerChange({_mgr, _meta});
-      return false;
-    }
-
-    return true;
-  }
-
   // при изменении менеджера данных
   handleManagerChange({_mgr, _meta}) {
 
@@ -218,6 +209,11 @@ class DataList extends MDNRComponent {
     return {width, height};
   }
 
+  get ltitle() {
+    const {_mgr} = this.props;
+    return `${_mgr.metadata().list_presentation || _mgr.metadata().synonym} (список)`;
+  }
+
   render() {
     const {state, props, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer} = this;
     const {columns, rowsLoaded, scheme, colResize, confirm_text, settings_open} = state;
@@ -227,7 +223,7 @@ class DataList extends MDNRComponent {
       cursor: colResize ? 'col-resize' : 'default',
     };
 
-    let {selection_mode, denyAddDel, show_search, show_variants, classes} = props;
+    let {selection_mode, denyAddDel, show_search, show_variants, classes, title} = props;
 
     if(!scheme) {
       return <LoadingMessage title="Чтение настроек компоновки..."/>;
@@ -260,6 +256,8 @@ class DataList extends MDNRComponent {
 
 
     return [
+
+      <Helmet key="helmet" title={title}/>,
 
       // диалог предупреждений при удалении
       confirm_text && <Confirm

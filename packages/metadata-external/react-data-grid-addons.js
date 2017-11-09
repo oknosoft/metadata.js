@@ -7,7 +7,7 @@
 		exports["ReactDataGrid"] = factory(require("react"), require("prop-types"), require("react-dom"), require("metadata-external/react-data-grid"), require("react-contextmenu"));
 	else
 		root["ReactDataGrid"] = factory(root["React"], root["PropTypes"], root["ReactDOM"], root["metadata-external/react-data-grid"], root["react-contextmenu"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_7__, __WEBPACK_EXTERNAL_MODULE_20__, __WEBPACK_EXTERNAL_MODULE_21__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_7__, __WEBPACK_EXTERNAL_MODULE_21__, __WEBPACK_EXTERNAL_MODULE_22__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -54,7 +54,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(33);
+	module.exports = __webpack_require__(34);
 
 
 /***/ }),
@@ -398,24 +398,25 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 17 */,
 /* 18 */,
 /* 19 */,
-/* 20 */
-/***/ (function(module, exports) {
-
-	module.exports = __WEBPACK_EXTERNAL_MODULE_20__;
-
-/***/ }),
+/* 20 */,
 /* 21 */
 /***/ (function(module, exports) {
 
 	module.exports = __WEBPACK_EXTERNAL_MODULE_21__;
 
 /***/ }),
-/* 22 */,
+/* 22 */
+/***/ (function(module, exports) {
+
+	module.exports = __WEBPACK_EXTERNAL_MODULE_22__;
+
+/***/ }),
 /* 23 */,
 /* 24 */,
 /* 25 */,
 /* 26 */,
-/* 27 */
+/* 27 */,
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -470,7 +471,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -493,7 +494,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var React = __webpack_require__(2);
 
-	var _require = __webpack_require__(20),
+	var _require = __webpack_require__(21),
 	    EditorBase = _require.editors.EditorBase;
 
 	var DropDownEditor = function (_EditorBase) {
@@ -560,20 +561,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = DropDownEditor;
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var _require = __webpack_require__(20),
+	var _require = __webpack_require__(21),
 	    _require$editors = _require.editors,
 	    SimpleTextEditor = _require$editors.SimpleTextEditor,
 	    CheckboxEditor = _require$editors.CheckboxEditor;
 
 	var Editors = {
 	  //AutoComplete: require('./AutoCompleteEditor'),
-	  DropDownEditor: __webpack_require__(28),
-	  ContainerEditorWrapper: __webpack_require__(27),
+	  DropDownEditor: __webpack_require__(29),
+	  ContainerEditorWrapper: __webpack_require__(28),
 	  SimpleTextEditor: SimpleTextEditor,
 	  CheckboxEditor: CheckboxEditor
 	};
@@ -581,7 +582,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Editors;
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -649,7 +650,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = DropDownFormatter;
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -668,7 +669,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var React = __webpack_require__(2);
 
-	__webpack_require__(41);
+	__webpack_require__(42);
 
 	var PendingPool = {};
 	var ReadyPool = {};
@@ -756,15 +757,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = ImageFormatter;
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	// not including this
 	// it currently requires the whole of moment, which we dont want to take as a dependency
-	var ImageFormatter = __webpack_require__(31);
-	var DropDownFormatter = __webpack_require__(30);
+	var ImageFormatter = __webpack_require__(32);
+	var DropDownFormatter = __webpack_require__(31);
 
 	var Formatters = {
 	  ImageFormatter: ImageFormatter,
@@ -774,17 +775,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Formatters;
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var Editors = __webpack_require__(29);
-	var Formatters = __webpack_require__(32);
+	var Editors = __webpack_require__(30);
+	var Formatters = __webpack_require__(33);
 	//const Toolbar = require('./toolbars/Toolbar');
 	//const ToolsPanel = require('./toolbars');
 	//const Data = require('./data');
-	var Menu = __webpack_require__(36);
+	var Menu = __webpack_require__(37);
 	//const Draggable = require('./draggable');
 	//const DraggableHeader = require('./draggable-header');
 	//const Filters = require('./cells/headerCells/filters');
@@ -796,7 +797,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = { Editors: Editors, Formatters: Formatters, Menu: Menu };
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -811,7 +812,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _propTypes2 = _interopRequireDefault(_propTypes);
 
-	var _reactContextmenu = __webpack_require__(21);
+	var _reactContextmenu = __webpack_require__(22);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -848,7 +849,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = ReactDataGridContextMenu;
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -898,7 +899,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = MenuHeader;
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -906,13 +907,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.__esModule = true;
 	exports.ContextMenuLayer = exports.connect = exports.SubMenu = exports.monitor = exports.MenuItem = exports.MenuHeader = exports.ContextMenu = undefined;
 
-	var _reactContextmenu = __webpack_require__(21);
+	var _reactContextmenu = __webpack_require__(22);
 
-	var _ContextMenu = __webpack_require__(34);
+	var _ContextMenu = __webpack_require__(35);
 
 	var _ContextMenu2 = _interopRequireDefault(_ContextMenu);
 
-	var _MenuHeader = __webpack_require__(35);
+	var _MenuHeader = __webpack_require__(36);
 
 	var _MenuHeader2 = _interopRequireDefault(_MenuHeader);
 
@@ -927,9 +928,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.ContextMenuLayer = _reactContextmenu.ContextMenuLayer;
 
 /***/ }),
-/* 37 */,
 /* 38 */,
-/* 39 */
+/* 39 */,
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(9)();
@@ -943,14 +944,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 40 */,
-/* 41 */
+/* 41 */,
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(39);
+	var content = __webpack_require__(40);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(10)(content, {});

@@ -16,6 +16,7 @@ export default class MComponent extends Component {
 
   componentDidMount() {
     this._mounted = true;
+    this.shouldComponentUpdate && this.shouldComponentUpdate(this.props, this.state);
   }
 
   componentWillUnmount() {

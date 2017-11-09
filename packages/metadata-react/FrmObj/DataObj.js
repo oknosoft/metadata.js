@@ -11,7 +11,8 @@ import DataObjToolbar from './DataObjToolbar';
 import DataField from '../DataField';
 import TabularSection from '../TabularSection';
 
-import withStyles from '../styles/paper600'
+import withStyles from '../styles/paper600';
+import {withIface} from 'metadata-redux';
 
 class DataObj extends MDNRComponent {
 
@@ -40,10 +41,11 @@ class DataObj extends MDNRComponent {
     this.state = {_meta: _meta || _mgr.metadata()};
     _mgr.get(match.params.ref, 'promise').then((_obj) => {
       if(this._mounted) {
-        this.setState({_obj});
+        this.setState({_obj}, () => this.shouldComponentUpdate(props));
       }
       else {
         this.state._obj = _obj;
+        this.shouldComponentUpdate(props);
       }
     });
   }
@@ -92,19 +94,19 @@ class DataObj extends MDNRComponent {
     const {struct} = this.props;
     const {_meta, _obj} = this.state;
 
-    if(!struct){
-      if(_obj instanceof $p.classes.DocObj){
+    if(!struct) {
+      if(_obj instanceof $p.classes.DocObj) {
         elements.push(
-        <FormGroup row key={`group_sys`}>
-          <DataField _obj={_obj} key={`field_number_doc`} _fld="number_doc" />
-          <DataField _obj={_obj} key={`field_date`} _fld="date" />
-        </FormGroup>);
+          <FormGroup row key={`group_sys`}>
+            <DataField _obj={_obj} key={`field_number_doc`} _fld="number_doc"/>
+            <DataField _obj={_obj} key={`field_date`} _fld="date"/>
+          </FormGroup>);
       }
-      else if(_obj instanceof $p.classes.CatObj){
+      else if(_obj instanceof $p.classes.CatObj) {
 
       }
       for (const _fld in _meta.fields) {
-        _fld != 'predefined_name' && elements.push(<DataField fullWidth key={`field_${_fld}`} _obj={_obj} _fld={_fld} />);
+        _fld != 'predefined_name' && elements.push(<DataField fullWidth key={`field_${_fld}`} _obj={_obj} _fld={_fld}/>);
       }
     }
 
@@ -120,15 +122,20 @@ class DataObj extends MDNRComponent {
     const {_meta, _obj} = this.state;
 
     for (const ts in _meta.tabular_sections) {
-      if(elements.length || Object.keys(_meta.fields).length){
+      if(elements.length || Object.keys(_meta.fields).length) {
         elements.push(<Divider light key={`dv_${ts}`}/>);
       }
       elements.push(<div style={{height: 300}}>
-        <TabularSection key={`ts_${ts}`} _obj={_obj} _tabular={ts} />
+        <TabularSection key={`ts_${ts}`} _obj={_obj} _tabular={ts}/>
       </div>);
     }
 
     return elements.length === 0 ? null : <FormGroup>{elements}</FormGroup>;
+  }
+
+  get ltitle() {
+    const {_meta, _obj} = this.state;
+    return (_obj && _obj.presentation) || _meta.obj_presentation || _meta.synonym;
   }
 
   render() {
@@ -149,5 +156,5 @@ class DataObj extends MDNRComponent {
 
 }
 
-export default withStyles(DataObj)
+export default withStyles(withIface(DataObj));
 

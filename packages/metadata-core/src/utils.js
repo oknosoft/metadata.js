@@ -13,7 +13,7 @@ moment.locale('ru');
 moment._masks = {
 	date: 'DD.MM.YY',
 	date_time: 'DD.MM.YYYY HH:mm',
-	ldt: 'DD MMMM YYYY, HH:mm',
+	ldt: 'DD MMM YYYY, HH:mm',
 	iso: 'YYYY-MM-DDTHH:mm:ss',
 };
 if(typeof global != 'undefined'){

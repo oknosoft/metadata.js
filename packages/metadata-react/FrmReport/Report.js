@@ -1,5 +1,6 @@
-import React, {Component} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
+import MDNRComponent from '../common/MDNRComponent';
 
 import DumbLoader from '../DumbLoader';
 import RepToolbar from './RepToolbar';
@@ -8,7 +9,7 @@ import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
 import Helmet from 'react-helmet';
 import {withIface} from 'metadata-redux';
 
-class Report extends Component {
+class Report extends MDNRComponent {
 
   static propTypes = {
     _mgr: PropTypes.object.isRequired,    // менеджер отчета
@@ -37,23 +38,6 @@ class Report extends Component {
     $p.cat.scheme_settings.get_scheme(_mgr.class_name + `.${_tabular}`)
       .then(this.handleSchemeChange);
 
-  }
-
-  componentDidMount() {
-    this.shouldComponentUpdate(this.props, this.state);
-  }
-
-  shouldComponentUpdate({handleIfaceState, title, _mgr}, {scheme}) {
-    const ltitle = _mgr.metadata().synonym + (scheme && scheme.name ? ` (${scheme.name})` : '');
-    if (title != ltitle) {
-      handleIfaceState({
-        component: '',
-        name: 'title',
-        value: ltitle,
-      });
-      return false;
-    }
-    return true;
   }
 
   handleSave = () => {
@@ -105,9 +89,15 @@ class Report extends Component {
     }
 
     // обновляем state
-    this.setState({scheme, _columns});
+    this.setState({scheme, _columns}, () => this.shouldComponentUpdate(props));
 
   };
+
+  get ltitle() {
+    const {_mgr} = this.props;
+    const {scheme} = this.state;
+    return _mgr.metadata().synonym + (scheme && scheme.name ? ` (${scheme.name})` : '');
+  }
 
   render() {
 

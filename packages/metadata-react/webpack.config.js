@@ -43,8 +43,11 @@ function getExternals() {
     'moment/locale/ru': true,
     'alasql/dist/alasql.min': true,
     'clipboard/lib/clipboard-action': true,
-    'metadata-external/react-data-grid': true,
-    'metadata-external/react-data-grid-addons': true
+    'metadata-react/DataField/DataCell': true,
+    'metadata-react/DataField/FieldTypeCell': true,
+    'metadata-react/DataField/FieldPathCell': true,
+    'metadata-external/react-data-grid.min': true,
+    'metadata-external/react-data-grid-addons.min': true,
   };
   for (const key in package_data.dependencies) {
     if(!externals[key]) {
