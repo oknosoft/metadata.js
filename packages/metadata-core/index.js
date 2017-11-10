@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.39, built:2017-11-09
+ metadata-core v2.0.16-beta.39, built:2017-11-10
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -817,39 +817,46 @@ class DataObj {
     if(before_save_res === false) {
       return Promise.reject(reset_modified());
     }
-    else if(before_save_res instanceof Promise || typeof before_save_res === 'object' && before_save_res.then) {
-      return before_save_res.then(reset_modified);
-    }
     if(this._metadata().hierarchical && !this._obj.parent) {
       this._obj.parent = utils.blank.guid;
     }
-    let numerator;
+    let numerator = before_save_res instanceof Promise ? before_save_res : Promise.resolve();
     if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
       if(utils.blank.date == this.date) {
         this.date = new Date();
       }
       if(!this.number_doc) {
-        numerator = this.new_number_doc();
+        numerator = numerator.then(() => this.new_number_doc());
       }
     }
     else {
       if(!this.id) {
-        numerator = this.new_number_doc();
+        numerator = numerator.then(() => this.new_number_doc());
       }
     }
-    return (numerator || Promise.resolve())
+    for (const mf in this._metadata().fields) {
+      if (this._metadata().fields[mf].mandatory && !this._obj[mf]) {
+        const {msg, md} = this._manager.$p;
+        md.emit('alert', {
+          title: msg.mandatory_title,
+          type: "alert-error",
+          text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
+        });
+        before_save_res = false;
+        return Promise.reject(reset_modified());
+      }
+    }
+    return numerator.then(() => this._manager.adapter.save_obj(this, {
+      post: post,
+      operational: operational,
+      attachments: attachments
+    })
       .then(() => {
-        this._manager.adapter.save_obj(this, {
-          post: post,
-          operational: operational,
-          attachments: attachments
-        })
-          .then(() => {
-            this.after_save();
-            return this;
-          })
-          .then(reset_modified);
-      });
+        this.after_save();
+        return this;
+      })
+      .then(reset_modified)
+    );
   }
   get_attachment(att_id) {
     const {_manager, ref} = this;
