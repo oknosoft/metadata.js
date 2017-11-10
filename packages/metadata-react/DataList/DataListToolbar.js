@@ -17,8 +17,10 @@ import SelectIcon from 'material-ui-icons/PlaylistAddCheck';
 import SchemeSettingsButtons from '../SchemeSettings/SchemeSettingsButtons';
 import DateRange from '../SchemeSettings/DateRange';
 
-import withStyles from '../Header/toolbar';
+import compose from 'recompose/compose';
 import classnames from 'classnames';
+import withStyles from '../Header/toolbar';
+import withWidth, {isWidthUp} from 'material-ui/utils/withWidth';
 
 
 class DataListToolbar extends Component {
@@ -58,7 +60,7 @@ class DataListToolbar extends Component {
   render() {
 
     const {props, state} = this;
-    const {classes} = props;
+    const {classes, width} = props;
 
     return (
       <Toolbar disableGutters className={classes.toolbar}>
@@ -68,7 +70,7 @@ class DataListToolbar extends Component {
         {!props.denyAddDel && <IconButton key="edit" title="Открыть форму объекта" onClick={props.handleEdit}><EditIcon/></IconButton>}
         {!props.denyAddDel && <IconButton key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}
 
-        {!props.scheme.standard_period.empty() && <IconButton disabled>|</IconButton>}
+        {!props.scheme.standard_period.empty() && isWidthUp('sm', width) && <IconButton disabled>|</IconButton>}
         {!props.scheme.standard_period.empty() && <DateRange
           _obj={props.scheme}
           _fld={'date'}
@@ -109,6 +111,5 @@ class DataListToolbar extends Component {
 }
 
 
-
-export default withStyles(DataListToolbar);
+export default compose(withStyles, withWidth())(DataListToolbar);
 

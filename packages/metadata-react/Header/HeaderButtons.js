@@ -18,17 +18,20 @@ import AccountOff from './AccountOff';
 
 import Notifications from '../Notifications';
 
+import compose from 'recompose/compose';
 import classnames from 'classnames';
 import withStyles from './toolbar';
+import withWidth, {isWidthUp} from 'material-ui/utils/withWidth';
 
-function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavigate}) {
+function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavigate, width}) {
 
   const offline_tooltip = offline ? 'Сервер недоступен' : 'Подключение установлено';
   const sync_tooltip = `Синхронизация ${user.logged_in && sync_started ? 'выполняется' : 'отключена'}`;
   const login_tooltip = `${user.name}${user.logged_in ? '\n(подключен к серверу)' : '\n(автономный режим)'}`;
 
   return [
-    <IconButton key="offline" title={offline_tooltip}>
+    // индикатор доступности облака показываем только на экране шире 'sm'
+    isWidthUp('sm', width) && <IconButton key="offline" title={offline_tooltip}>
       {offline ? <CloudOff className={classes.white}/> : <CloudQueue className={classes.white}/>}
     </IconButton>,
 
@@ -58,4 +61,4 @@ HeaderButtons.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(HeaderButtons);
+export default compose(withStyles, withWidth())(HeaderButtons);
