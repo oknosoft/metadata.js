@@ -8,8 +8,8 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Input, { InputLabel } from 'material-ui/Input';
-import { FormControl, FormHelperText } from 'material-ui/Form';
+import Input, {InputLabel} from 'material-ui/Input';
+import {FormControl, FormHelperText} from 'material-ui/Form';
 import Select from 'material-ui/Select';
 
 import AbstractField, {suggestionText} from './AbstractField';
@@ -24,8 +24,8 @@ class FieldSelect extends AbstractField {
     this.loadOptions(_obj);
   }
 
-  shouldComponentUpdate({_obj}){
-    if(this.props._obj != _obj){
+  shouldComponentUpdate({_obj}) {
+    if(this.props._obj != _obj) {
       this.loadOptions(_obj);
       return false;
     }
@@ -44,7 +44,7 @@ class FieldSelect extends AbstractField {
           this.setState({options});
         }
         else {
-          Object.assign(state, {options})
+          Object.assign(state, {options});
         }
       });
   };
@@ -52,7 +52,7 @@ class FieldSelect extends AbstractField {
   renderOptions() {
     return this.state.options.map((v) => {
       const key = v.valueOf();
-      return <option key={key} value={key}>{suggestionText(v)}</option>
+      return <option key={key} value={key}>{suggestionText(v)}</option>;
     });
   }
 
@@ -75,7 +75,7 @@ class FieldSelect extends AbstractField {
           native
           value={_obj[_fld].valueOf()}
           onChange={onChange}
-          input={<Input />}
+          input={<Input/>}
         >
           {this.renderOptions()}
         </Select>

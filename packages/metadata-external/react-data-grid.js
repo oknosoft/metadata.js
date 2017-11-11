@@ -7339,7 +7339,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  EditorBase.prototype.getInputNode = function getInputNode() {
 	    var domNode = ReactDOM.findDOMNode(this);
-	    if (domNode.tagName === 'INPUT') {
+	    if (domNode.tagName === 'INPUT' || domNode.tagName === 'SELECT') {
 	      return domNode;
 	    }
 
