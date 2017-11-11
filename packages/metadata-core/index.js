@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.39, built:2017-11-10
+ metadata-core v2.0.16-beta.39, built:2017-11-11
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -851,10 +851,7 @@ class DataObj {
       operational: operational,
       attachments: attachments
     })
-      .then(() => {
-        this.after_save();
-        return this;
-      })
+      .then(() => this.after_save())
       .then(reset_modified)
     );
   }

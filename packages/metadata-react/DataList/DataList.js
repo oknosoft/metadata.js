@@ -226,10 +226,10 @@ class DataList extends MDNRComponent {
     let {selection_mode, denyAddDel, show_search, show_variants, classes, title} = props;
 
     if(!scheme) {
-      return <LoadingMessage title="Чтение настроек компоновки..."/>;
+      return <LoadingMessage text="Чтение настроек компоновки..."/>;
     }
     else if(!columns || !columns.length) {
-      return <LoadingMessage title="Ошибка настроек компоновки..."/>;
+      return <LoadingMessage text="Ошибка настроек компоновки..."/>;
     }
 
     const show_grid = !settings_open || sizes.height > 572;

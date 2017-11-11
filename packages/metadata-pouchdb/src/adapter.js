@@ -1318,7 +1318,7 @@ function adapter({AbstracrAdapter}) {
               res.push(doc);
             });
 
-            if(top && top_count > top && !calc_count) {
+            if((result.rows.length < options.limit) || top && top_count > top && !calc_count) {
               resolve(_raw ? res : _mgr.load_array(res));
             }
             else {

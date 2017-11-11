@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import MDNRComponent from '../common/MDNRComponent';
 
-import DumbLoader from '../DumbLoader';
+import LoadingMessage from '../DumbLoader/LoadingMessage';
 import RepToolbar from './RepToolbar';
 import RepTabularSection from './RepTabularSection';
 import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
@@ -106,13 +106,13 @@ class Report extends MDNRComponent {
     const {RepParams} = _obj._manager;
 
     if(!scheme) {
-      return <DumbLoader title="Чтение настроек компоновки..."/>;
+      return <LoadingMessage text="Чтение настроек компоновки..."/>;
     }
     else if(!_obj) {
-      return <DumbLoader title="Чтение объекта данных..."/>;
+      return <LoadingMessage text="Чтение объекта данных..."/>;
     }
     else if(!_columns || !_columns.length) {
-      return <DumbLoader title="Ошибка настроек компоновки..."/>;
+      return <LoadingMessage text="Ошибка настроек компоновки..."/>;
     }
 
     const show_grid = !settings_open || (props.height || 500) > 572;

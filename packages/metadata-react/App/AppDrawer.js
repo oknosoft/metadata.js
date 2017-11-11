@@ -18,6 +18,7 @@ const styles = theme => ({
     backgroundColor: theme.palette.background.paper,
   },
   title: {
+    cursor: 'pointer',
     color: theme.palette.text.secondary,
     '&:hover': {
       color: theme.palette.primary[500],
@@ -41,11 +42,14 @@ const styles = theme => ({
 function AppDrawer(props) {
   const {classes, className, disablePermanent, mobileOpen, onRequestClose, handleNavigate, isHome, items, title} = props;
 
-  const drawer = (
+  const navigation = (
     <div className={classes.nav}>
       <div className={classes.toolbarIe11}>
         <Toolbar className={classes.toolbar}>
-          <div className={classes.title} onClick={() => isHome ? onRequestClose() : handleNavigate('/')}>
+          <div className={classes.title} onClick={() => {
+            onRequestClose();
+            !isHome && handleNavigate('/');
+          }}>
             <Typography type="title" color="inherit">{title}</Typography>
           </div>
           <Divider absolute/>
@@ -67,7 +71,7 @@ function AppDrawer(props) {
             keepMounted: true,
           }}
         >
-          {drawer}
+          {navigation}
         </Drawer>
       </Hidden>
       {disablePermanent ? null : (
@@ -79,7 +83,7 @@ function AppDrawer(props) {
             type="permanent"
             open
           >
-            {drawer}
+            {navigation}
           </Drawer>
         </Hidden>
       )}
