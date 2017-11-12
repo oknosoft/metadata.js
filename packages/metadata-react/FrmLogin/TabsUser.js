@@ -94,7 +94,7 @@ class TabsUser extends Component {
         {state.index === 0 &&
         <DialogActions>
           <Button color="primary" dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
-          <Button color="primary" dense className={classes.button} onClick={handleNavigate}>К списку заказов</Button>
+          <Button color="primary" dense className={classes.button} onClick={handleNavigate} title="Перейти к списку документов">К документам</Button>
         </DialogActions>}
 
         {state.index === 1 && <CnnSettings {...props}/>}

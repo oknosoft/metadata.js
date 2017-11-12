@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.39, built:2017-11-10
+ metadata-abstract-ui v2.0.16-beta.39, built:2017-11-12
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -529,19 +529,16 @@ function scheme_settings() {
         selector: {
           class_name: {$eq: this.obj}
         },
-        fields: ['_id', 'posted']
+        fields: ['_id', 'posted'],
+        use_index: '_design/mango',
       };
       for (const column of (columns || this.columns())) {
         if(res.fields.indexOf(column.id) == -1) {
           res.fields.push(column.id);
         }
       }
-      if(!this.standard_period.empty()) {
-        res.selector.date =  {$and: [{$gte: format(this.date_from)}, {$lte: format(this.date_till) + '\ufff0'}]};
-      }
-      if(this._search) {
-        res.selector.search = {$regex: this._search};
-      }
+      res.selector.date = this.standard_period.empty() ? {$ne: null} : {$and: [{$gte: format(this.date_from)}, {$lte: format(this.date_till) + '\ufff0'}]};
+      res.selector.search = this._search ? {$regex: this._search} : {$ne: null};
       this.sorting.find_rows({use: true, field: 'date'}, (row) => {
         let direction = row.direction.valueOf();
         if(!direction || direction == '_') {

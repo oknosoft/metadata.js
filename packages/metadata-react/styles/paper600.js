@@ -15,8 +15,11 @@ export default withStyles(theme => ({
   error: {
     color: theme.palette.error.A400,
   },
+  errorText: {
+    maxWidth: 500,
+  },
   textField: {
-    marginTop: 24,
+    marginTop: theme.spacing.unit * 3,
   },
   spaceLeft: {
     marginLeft: theme.spacing.unit,

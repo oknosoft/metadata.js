@@ -8,13 +8,14 @@ import {DialogActions} from 'material-ui/Dialog';
 import Grid from 'material-ui/Grid';
 import Divider from 'material-ui/Divider';
 import Typography from 'material-ui/Typography';
-import IconError from 'material-ui-icons/ErrorOutline'
+import IconError from 'material-ui-icons/ErrorOutline';
+import classnames from 'classnames';
 
 import {blue, red} from 'material-ui/colors';
 import {FacebookIcon, GitHubIcon, GoogleIcon, YandexIcon} from './assets/icons';
 
 import withStyles from '../styles/paper600';
-import classnames from 'classnames';
+
 
 import connect from './connect';
 
@@ -126,9 +127,20 @@ class TabsLogin extends Component {
 
         </FormGroup>
         }
+
+        {state.index === 0 && !user.log_error && user.try_log_in &&
+        <FormGroup row>
+          <CircularProgress size={24}/>
+          <Typography type="subheading" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+            {`${$p.msg.login.title}, ${$p.msg.login.wait}...`}
+          </Typography>
+        </FormGroup>
+        }
+
         {state.index === 0 && user.log_error &&
         <FormGroup row>
-          <IconError className={classes.error} /><Typography type="subheading" color="error" gutterBottom>&nbsp;{user.log_error}</Typography>
+          <IconError className={classes.error}/>
+          <Typography type="subheading" color="error" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>{user.log_error}</Typography>
         </FormGroup>
         }
 
