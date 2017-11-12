@@ -24,43 +24,55 @@ export default (constructor) => {
      * @method log_in
      * @return {Promise}
      */
-    log_in() {
+    log_in(username, password) {
 
       const {props, local, remote, $p} = this;
       const {job_prm, wsql, aes, md, superlogin} = $p;
 
-      // при пустой сесии, дальше не движемся
-      if(!superlogin._session) {
-        return Promise.reject(new Error('Empty superlogin session'));
-      }
-
-      // если уже авторизованы под тем же пользователем, выходим с успешным результатом
-      if(this.props._auth) {
-        if(this.props._auth.username == username) {
-          return Promise.resolve();
-        }
-        else {
-          return Promise.reject(new Error('need logout first'));
-        }
-      }
-
-      // создаём базы
-      super.after_init();
-
-      // сохраняем имя пользователя в localstorage
-      if(wsql.get_user_param('user_name') != superlogin._session.user_id) {
-        wsql.set_user_param('user_name', superlogin._session.user_id);
-      }
-
-      // излучаем событие
-      this.emit_async('user_log_in', superlogin._session.user_id);
-
-      // запускаем синхронизацию для нужных баз
-      return this.after_log_in()
-        .catch(err => {
-          // излучаем событие
+      const start = superlogin.getSession() ? Promise.resolve(superlogin.getSession()) : superlogin.login({username, password})
+        .catch((err) => {
           this.emit('user_log_fault', err);
+          return Promise.reject(err);
         });
+
+      return start.then((session) => {
+        // при пустой сесии, дальше не движемся
+        if(!session) {
+          const err = new Error('empty login or password');
+          this.emit('user_log_fault', err);
+          return Promise.reject(err);
+        }
+
+        // если уже авторизованы под тем же пользователем, выходим с успешным результатом
+        if(this.props._auth) {
+          if(this.props._auth.username == username) {
+            return Promise.resolve();
+          }
+          else {
+            const err = new Error('need logout first');
+            this.emit('user_log_fault', err);
+            return Promise.reject(err);
+          }
+        }
+
+        // создаём базы
+        super.after_init();
+
+        // сохраняем имя пользователя в localstorage
+        if(wsql.get_user_param('user_name') != session.user_id) {
+          wsql.set_user_param('user_name', session.user_id);
+        }
+
+        // излучаем событие
+        this.emit_async('user_log_in', session.user_id);
+
+        // запускаем синхронизацию для нужных баз
+        return this.after_log_in()
+          .catch(err => {
+            // излучаем событие
+            this.emit('user_log_fault', err);
+          });
+      });
     }
 
     /**
@@ -81,8 +93,8 @@ export default (constructor) => {
      * @property authorized
      */
     get authorized() {
-      return !!this.$p.superlogin._session;
+      return !!this.$p.superlogin.getSession();
     }
-  }
+  };
 
 }

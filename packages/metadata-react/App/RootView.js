@@ -20,7 +20,7 @@ class RootView extends Component {
     const iprops = props.item_props();
     this.state = {
       need_meta: !!iprops.need_meta,
-      browser_compatible: browser_compatible(),
+      browser_compatible: browser_compatible(props.ie11),
     };
 
     this.shouldComponentUpdate(props, this.state, iprops)
@@ -91,6 +91,7 @@ RootView.propTypes = {
   history: PropTypes.object.isRequired,
   item_props: PropTypes.func.isRequired,
   theme: PropTypes.object.isRequired,
+  ie11: PropTypes.bool,
 };
 
 export default withMeta(RootView);

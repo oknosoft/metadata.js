@@ -299,19 +299,9 @@ function try_log_in(adapter, name, password) {
       payload: { name: name, password: password, provider: 'local' }
     });
 
-    // в зависимости от использования суперлогина, разные действия
-    if ($p.superlogin) {
-      return $p.superlogin.login({
-        username: name,
-        password: password
-      }).then(function (session) {
-        adapter.log_in();
-      }).catch(function (err) {
-        $p.record_log(err);
-      });
-    } else {
-      return adapter.log_in(name, password);
-    }
+    return adapter.log_in(name, password).catch(function (err) {
+      $p.record_log(err);
+    });
 
     // In a real world app, you also want to
     // catch any error in the network call.
@@ -348,7 +338,7 @@ function log_out(adapter) {
 function log_error(err) {
   var msg = $p.msg.login;
   var text = msg.error;
-  if (!err.message || err.message.match(/time/i)) {
+  if (!err.message || err.message.match(/(time|network)/i)) {
     text = msg.network;
   } else if (err.message.match('suffix')) {
     text = msg.suffix;

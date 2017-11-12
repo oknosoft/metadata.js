@@ -471,7 +471,7 @@ export class DataObj {
     }
 
     // выполняем обработчик перед записью
-    const before_save_res = this.before_save();
+    let before_save_res = this.before_save();
 
     // этот код выполним в самом конце, после записи и после обработчика after_save
     const reset_modified = () => {

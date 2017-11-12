@@ -49,25 +49,13 @@ export function try_log_in(adapter, name, password) {
 
     dispatch({
       type: TRY_LOG_IN,
-      payload: {name: name, password: password, provider: 'local'}
+      payload: {name, password, provider: 'local'}
     });
 
-    // в зависимости от использования суперлогина, разные действия
-    if($p.superlogin) {
-      return $p.superlogin.login({
-        username: name,
-        password: password
-      })
-        .then((session) => {
-          adapter.log_in();
-        })
-        .catch((err) => {
-          $p.record_log(err);
-        });
-    }
-    else {
-      return adapter.log_in(name, password);
-    }
+    return adapter.log_in(name, password)
+      .catch((err) => {
+        $p.record_log(err);
+      });
 
     // In a real world app, you also want to
     // catch any error in the network call.
@@ -106,7 +94,7 @@ export function log_out(adapter) {
 export function log_error(err) {
   const msg = $p.msg.login;
   let text = msg.error;
-  if(!err.message || err.message.match(/time/i)){
+  if(!err.message || err.message.match(/(time|network)/i)){
     text = msg.network;
   }
   else if(err.message.match('suffix')){

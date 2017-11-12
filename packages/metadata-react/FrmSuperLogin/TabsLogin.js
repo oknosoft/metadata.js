@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Component} from 'react';
 import Tabs, {Tab} from 'material-ui/Tabs';
 import Paper from 'material-ui/Paper';
 import TextField from 'material-ui/TextField';
@@ -8,6 +8,7 @@ import {DialogActions} from 'material-ui/Dialog';
 import Grid from 'material-ui/Grid';
 import Divider from 'material-ui/Divider';
 import Typography from 'material-ui/Typography';
+import IconError from 'material-ui-icons/ErrorOutline'
 
 import {blue, red} from 'material-ui/colors';
 import {FacebookIcon, GitHubIcon, GoogleIcon, YandexIcon} from './assets/icons';
@@ -15,9 +16,9 @@ import {FacebookIcon, GitHubIcon, GoogleIcon, YandexIcon} from './assets/icons';
 import withStyles from '../styles/paper600';
 import classnames from 'classnames';
 
-import {connect} from 'react-redux';
+import connect from './connect';
 
-class TabsLogin extends React.Component {
+class TabsLogin extends Component {
 
   constructor(props) {
     super(props);
@@ -34,21 +35,39 @@ class TabsLogin extends React.Component {
     };
   }
 
+  componentDidMount() {
+    this.shouldComponentUpdate(this.props, this.state);
+  }
+
+  // если изменили state - не перерисовываем
+  shouldComponentUpdate({handleIfaceState, title}, {index}) {
+    const ltitle = index ? 'Регистрация...' : 'Авторизация...';
+    if(title != ltitle) {
+      handleIfaceState({
+        component: '',
+        name: 'title',
+        value: ltitle,
+      });
+      return false;
+    }
+    return true;
+  }
+
+  oauthClick(provider) {
+    return this.props.handleSocialAuth(provider);
+  }
+
   handleTextChange = () => {
     this.setState({
       btn_login_disabled: !this.state.login || !this.state.password
     });
   };
 
-  handleChange = name => event => {
+  handleChange = (name) => event => {
     this.setState({
       [name]: event.target.value,
     }, this.handleTextChange);
   };
-
-  oauthClick(provider) {
-    return this.props.handleSocialAuth(provider);
-  }
 
   handleLogin = () => {
     this.props.handleLogin(this.state.login, this.state.password);
@@ -57,23 +76,23 @@ class TabsLogin extends React.Component {
   handleRegister = () => {
     const {props, state} = this;
     props.dispatch($p.superlogin._actions.handleRegister({
-        name: state.name,
-        username: state.username,
-        email: state.email,
-        password: state.password,
-        confirmPassword: state.confirmPassword,
-      }));
+      name: state.name,
+      username: state.username,
+      email: state.email,
+      password: state.password,
+      confirmPassword: state.confirmPassword,
+    }));
   };
 
 
   render() {
     const {props, state, handleLogin} = this;
-    const {classes, handleLogOut} = props;
+    const {classes, user, handleLogOut} = props;
     const btn = classnames(classes.button, classes.fullWidth);
 
     return (
 
-      <Paper className={classes.root} elevation={4}>
+      <Paper disabled={user.try_log_in} className={classes.root} elevation={4}>
 
         <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
           <Tab label="Вход"/>
@@ -102,6 +121,11 @@ class TabsLogin extends React.Component {
             <Button color="primary" dense disabled={true} className={classes.button}>Забыли пароль?</Button>
           </DialogActions>
 
+        </FormGroup>
+        }
+        {state.index === 0 && user.log_error &&
+        <FormGroup row>
+          <IconError className={classes.error} /><Typography type="subheading" color="error" gutterBottom>&nbsp;{user.log_error}</Typography>
         </FormGroup>
         }
         {state.index === 0 &&
@@ -181,11 +205,4 @@ class TabsLogin extends React.Component {
   }
 }
 
-
-export default withStyles(connect(null, (dispatch) => ({
-  handleSocialAuth: (provider) => {
-    const fn = $p.superlogin._actions.handleSocialAuth(provider);
-    return () => fn(dispatch);
-  },
-  dispatch
-}))(TabsLogin));
+export default withStyles(connect(TabsLogin));

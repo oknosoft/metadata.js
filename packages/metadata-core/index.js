@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.39, built:2017-11-11
+ metadata-core v2.0.16-beta.39, built:2017-11-12
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -802,7 +802,7 @@ class DataObj {
       initial_posted = this.posted;
       this.posted = post;
     }
-    const before_save_res = this.before_save();
+    let before_save_res = this.before_save();
     const reset_modified = () => {
       if(before_save_res === false) {
         if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted != initial_posted) {
@@ -3407,9 +3407,7 @@ class WSQL {
       {p: 'couch_direct', v: true, t: 'boolean'},
       {p: 'enable_save_pwd', v: true, t: 'boolean'},
     ];
-		if (job_prm.additional_params){
-      nesessery_params = nesessery_params.concat(job_prm.additional_params);
-    }
+		Array.isArray(job_prm.additional_params) && job_prm.additional_params.forEach((v) => nesessery_params.push(v));
     let zone;
 		if (!this._ls.getItem(job_prm.local_storage_prefix + "zone")){
       zone = job_prm.hasOwnProperty("zone") ? job_prm.zone : 1;

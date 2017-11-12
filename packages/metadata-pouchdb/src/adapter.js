@@ -117,7 +117,7 @@ function adapter({AbstracrAdapter}) {
       }
 
       // В штатном режиме, серверные базы создаём сразу
-      // superlogin переопределяем метод after_init и создаёт базы после авторизации
+      // superlogin переопределяет метод after_init и создаёт базы после авторизации
       this.after_init();
 
     }

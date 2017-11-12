@@ -112,9 +112,7 @@ export default class WSQL {
     ];
 
 		// подмешиваем к базовым параметрам настройки приложения
-		if (job_prm.additional_params){
-      nesessery_params = nesessery_params.concat(job_prm.additional_params);
-    }
+		Array.isArray(job_prm.additional_params) && job_prm.additional_params.forEach((v) => nesessery_params.push(v));
 
 		// если зона не указана, устанавливаем "1"
     let zone;
