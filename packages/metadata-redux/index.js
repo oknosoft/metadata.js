@@ -7148,10 +7148,11 @@ var _actions_base = __webpack_require__(9);
 
 var mapStateToProps = function mapStateToProps() /**{meta}**/{
   var _$p = $p,
-      wsql = _$p.wsql;
+      wsql = _$p.wsql,
+      superlogin = _$p.superlogin;
 
-  var res = {};
-  var _arr = ['zone', 'couch_path', 'couch_suffix', ['couch_direct', 'boolean'], ['enable_save_pwd', 'boolean'], 'user_name', 'user_pwd'];
+  var res = { use_superlogin: !!superlogin };
+  var _arr = ['zone', 'couch_path', 'superlogin_path', 'couch_suffix', ['couch_direct', 'boolean'], ['enable_save_pwd', 'boolean'], 'user_name', 'user_pwd'];
   for (var _i = 0; _i < _arr.length; _i++) {
     var name = _arr[_i];
     if (Array.isArray(name)) {

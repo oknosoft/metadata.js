@@ -6,12 +6,12 @@ export default withStyles(theme => ({
     marginTop: theme.custom && theme.custom.appbar.position == 'fixed' ? 72 : 24,
     marginLeft: 'auto',
     marginRight: 'auto',
-    '&$disabled': {
-      pointerEvents: 'none',
-      backgroundColor: 'transparent',
-      boxShadow: theme.shadows[0],
-    },
   }),
+  disabled: {
+    pointerEvents: 'none',
+    backgroundColor: 'transparent',
+    boxShadow: theme.shadows[0],
+  },
   error: {
     color: theme.palette.error.A400,
   },

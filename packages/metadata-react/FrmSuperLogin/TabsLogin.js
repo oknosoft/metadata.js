@@ -92,7 +92,10 @@ class TabsLogin extends Component {
 
     return (
 
-      <Paper disabled={user.try_log_in} className={classes.root} elevation={4}>
+      <Paper className={classnames({
+        [classes.root]: true,
+        [classes.disabled]: user.try_log_in
+      })} elevation={4}>
 
         <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
           <Tab label="Вход"/>
@@ -128,6 +131,7 @@ class TabsLogin extends Component {
           <IconError className={classes.error} /><Typography type="subheading" color="error" gutterBottom>&nbsp;{user.log_error}</Typography>
         </FormGroup>
         }
+
         {state.index === 0 &&
         <FormGroup>
           <Divider/>
