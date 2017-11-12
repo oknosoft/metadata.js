@@ -58,6 +58,7 @@ const styles = theme => ({
     },
     '& h1': {
       ...theme.typography.display2,
+      fontSize: '2.2rem',
       color: theme.palette.text.secondary,
       margin: '0 0 0.7em 0',
       ...anchorLinkStyle(theme, 20),

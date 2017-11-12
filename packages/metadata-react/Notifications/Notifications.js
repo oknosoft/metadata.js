@@ -84,7 +84,7 @@ class Notifications extends Component {
         <NotificationsIconNone className={classes.white}/>
       </IconButton>,
 
-      props.open && <Drawer key="noti_drawer" anchor="right" open={props.open} onRequestClose={handleClose} classes={{paper: classes.drawer}}>
+      props.open && <Drawer key="noti_drawer" anchor="right" open={props.open} onRequestClose={handleClose} classes={{paper: classes.ndrawer}}>
         <AppBar position="static">
           <Toolbar disableGutters>
             <Typography type="title" color="inherit" className={classnames(classes.title, classes.flex)}>Оповещения </Typography>

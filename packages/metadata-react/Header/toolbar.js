@@ -9,6 +9,9 @@ export default withStyles(theme => ({
   drawer: {
     width: 280,
   },
+  ndrawer: {
+    width: 310,
+  },
   flex: {
     flex: 1,
     whiteSpace: 'nowrap',

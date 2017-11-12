@@ -9,7 +9,7 @@ import Helmet from 'react-helmet';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 import DataListToolbar from './DataListToolbar';
 import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
-import Confirm from '../Confirm';
+import Confirm from '../App/Confirm';
 import withStyles from './styles';
 import {withIface} from 'metadata-redux';
 import control_by_type from 'metadata-abstract-ui/src/ui';

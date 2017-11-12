@@ -600,14 +600,14 @@ function adapter({AbstracrAdapter}) {
      * @method reset_local_data
      */
     reset_local_data() {
-      const {doc, ram} = this.local;
+      const {local, remote} = this;
       const do_reload = () => {
         setTimeout(() => typeof location != 'undefined' && location.reload(true), 1000);
       };
 
       return this.log_out()
-        .then(ram.destroy.bind(ram))
-        .then(doc.destroy.bind(doc))
+        .then(() => remote.ram != local.ram && local.ram.destroy())
+        .then(() => remote.doc != local.doc && local.doc.destroy())
         .then(do_reload)
         .catch(do_reload);
     }

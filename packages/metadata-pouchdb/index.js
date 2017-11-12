@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.39, built:2017-11-11
+ metadata-pouchdb v2.0.16-beta.39, built:2017-11-12
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -547,13 +547,13 @@ function adapter({AbstracrAdapter}) {
       }
     }
     reset_local_data() {
-      const {doc, ram} = this.local;
+      const {local, remote} = this;
       const do_reload = () => {
         setTimeout(() => typeof location != 'undefined' && location.reload(true), 1000);
       };
       return this.log_out()
-        .then(ram.destroy.bind(ram))
-        .then(doc.destroy.bind(doc))
+        .then(() => remote.ram != local.ram && local.ram.destroy())
+        .then(() => remote.doc != local.doc && local.doc.destroy())
         .then(do_reload)
         .catch(do_reload);
     }

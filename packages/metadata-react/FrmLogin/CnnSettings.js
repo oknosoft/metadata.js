@@ -7,7 +7,7 @@ import Button from 'material-ui/Button';
 import Switch from 'material-ui/Switch';
 import {DialogActions} from 'material-ui/Dialog';
 
-import Confirm from '../Confirm';
+import Confirm from '../App/Confirm';
 
 class CnnSettings extends Component {
 
