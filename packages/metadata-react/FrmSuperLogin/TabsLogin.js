@@ -9,6 +9,7 @@ import Grid from 'material-ui/Grid';
 import Divider from 'material-ui/Divider';
 import Typography from 'material-ui/Typography';
 import IconError from 'material-ui-icons/ErrorOutline';
+import {CircularProgress} from 'material-ui/Progress';
 import classnames from 'classnames';
 
 import {blue, red} from 'material-ui/colors';
