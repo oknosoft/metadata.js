@@ -8,7 +8,7 @@ import {Route} from 'react-router';
 import {withMeta} from 'metadata-redux';
 
 // заставка несовместимый браузер
-import BrowserCompatibility, {browser_compatible} from '../BrowserCompatibility';
+import BrowserCompatibility, {browser_compatible} from './BrowserCompatibility';
 
 // тема для material-ui
 import {MuiThemeProvider} from 'material-ui/styles';
