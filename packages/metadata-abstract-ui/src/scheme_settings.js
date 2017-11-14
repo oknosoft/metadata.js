@@ -462,6 +462,10 @@ export default function scheme_settings() {
         this.date_till = utils.date_add_day(new Date(), 1);
       }
 
+      if(!this.user) {
+        this.user = $p.current_user.name;
+      }
+
       return this;
     }
 

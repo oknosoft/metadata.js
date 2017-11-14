@@ -87,7 +87,7 @@ export default class SchemeSettingsTabs extends Component {
     const is_tabular = scheme.obj.split('.').length > 2;
 
     return [
-      <AppBar key="bar" position="static" color="default">
+      <AppBar key="bar" position="static" color="default" style={{width: sizes.width}}>
         <Tabs
           value={value}
           onChange={this.handleTabChange}
@@ -106,7 +106,7 @@ export default class SchemeSettingsTabs extends Component {
         </Tabs>
       </AppBar>,
 
-      <div key="tabs" style={{height: sizes.height}}>
+      <div key="tabs" style={{height: sizes.height, width: sizes.width}}>
         {value === 0 &&
         (tabParams ? tabParams : (
           scheme.query.match('date') ?

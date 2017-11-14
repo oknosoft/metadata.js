@@ -21,6 +21,7 @@ export default class TabularSection extends MComponent {
     scheme: PropTypes.object,             // Вариант настроек
 
     read_only: PropTypes.bool,            // Элемент только для чтения
+    hideToolbar: PropTypes.bool,          // Указывает не выводить toolbar
     denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
     denyReorder: PropTypes.bool,          // Запрет изменения порядка строк
     minHeight: PropTypes.number,
@@ -177,7 +178,7 @@ export default class TabularSection extends MComponent {
   render() {
     const {props, state, rowGetter, onRowsSelected, onRowsDeselected, handleRowUpdated} = this;
     const {_meta, _tabular, _columns, scheme, selectedIds, settings_open} = state;
-    const {_obj, rowSelection, denyAddDel, denyReorder, minHeight, classes} = props;
+    const {_obj, rowSelection, denyAddDel, denyReorder, minHeight, hideToolbar, classes} = props;
 
     if(!_columns || !_columns.length) {
       if(!scheme) {
@@ -199,8 +200,9 @@ export default class TabularSection extends MComponent {
 
             const show_grid = !settings_open || Math.max(minHeight, height) > 372;
 
-            return <div>
-              <TabularSectionToolbar
+            return [
+              !hideToolbar && <TabularSectionToolbar
+                key="toolbar"
                 width={width}
                 _obj={_obj}
                 _tabular={_tabular}
@@ -218,16 +220,17 @@ export default class TabularSection extends MComponent {
                 handleUp={this.handleUp}
                 handleDown={this.handleDown}
                 handleCustom={this.handleCustom}
-              />
+              />,
 
-              { settings_open &&
-              <SchemeSettingsTabs
+              settings_open && <SchemeSettingsTabs
+                key="schemesettings"
                 height={show_grid ? 272 : Math.max(minHeight, height)}
                 scheme={scheme}
                 handleSchemeChange={this.handleSchemeChange}
-              />}
+              />,
 
               <ReactDataGrid
+                key="grid"
                 minWidth={width}
                 minHeight={Math.max(minHeight, height) - 52 - (settings_open ? 320 : 0)}
                 rowHeight={33}
@@ -239,11 +242,10 @@ export default class TabularSection extends MComponent {
                 rowsCount={_tabular.count()}
                 onRowUpdated={handleRowUpdated}
                 rowSelection={rowSelection}/>
-            </div>
-          }
-          }
-        </AutoSizer>
 
+            ];
+          }}
+        </AutoSizer>
     );
   }
 }

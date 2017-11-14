@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.40, built:2017-11-13
+ metadata-abstract-ui v2.0.16-beta.40, built:2017-11-14
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -455,6 +455,9 @@ function scheme_settings() {
         this.name = 'Основная';
         this.date_from = new Date((new Date()).getFullYear().toFixed() + '-01-01');
         this.date_till = utils.date_add_day(new Date(), 1);
+      }
+      if(!this.user) {
+        this.user = $p.current_user.name;
       }
       return this;
     }
