@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.40, built:2017-11-14
+ metadata-abstract-ui v2.0.16-beta.40, built:2017-11-15
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -139,21 +139,24 @@ function scheme_settings() {
   const {wsql, utils, cat, enm, dp, md, constructor} = this;
   const {CatManager, DataProcessorsManager, DataProcessorObj, CatObj, DocManager, TabularSectionRow} = constructor.classes || this;
   class SchemeSettingsManager extends CatManager {
+    find_schemas(class_name) {
+      const opt = {
+        _view: 'doc/scheme_settings',
+        _top: 100,
+        _skip: 0,
+        _key: {
+          startkey: [class_name, 0],
+          endkey: [class_name, 9999],
+        },
+      };
+      return this.find_rows_remote ? this.find_rows_remote(opt) : this.pouch_find_rows(opt);
+    }
     get_scheme(class_name) {
       return new Promise((resolve, reject) => {
         const scheme_name = this.scheme_name(class_name);
         const find_scheme = () => {
-          const opt = {
-            _view: 'doc/scheme_settings',
-            _top: 100,
-            _skip: 0,
-            _key: {
-              startkey: [class_name, 0],
-              endkey: [class_name, 9999],
-            },
-          };
-          const query = this.find_rows_remote ? this.find_rows_remote(opt) : this.pouch_find_rows(opt);
-          query.then((data) => {
+          this.find_schemas(class_name)
+            .then((data) => {
             if(data.length == 1) {
               set_default_and_resolve(data[0]);
             }

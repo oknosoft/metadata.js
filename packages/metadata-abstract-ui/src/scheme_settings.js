@@ -16,6 +16,25 @@ export default function scheme_settings() {
    */
   class SchemeSettingsManager extends CatManager {
 
+
+    /**
+     * Возвращает промис с подходящими схемами
+     * @param class_name
+     * @return {*|{value}|Promise.<Array>}
+     */
+    find_schemas(class_name) {
+      const opt = {
+        _view: 'doc/scheme_settings',
+        _top: 100,
+        _skip: 0,
+        _key: {
+          startkey: [class_name, 0],
+          endkey: [class_name, 9999],
+        },
+      };
+      return this.find_rows_remote ? this.find_rows_remote(opt) : this.pouch_find_rows(opt);
+    }
+
     /**
      * ### Возвращает объект текущих настроек
      * - если не существует ни одной настройки для _class_name_, создаёт элемент справочника _SchemeSettings_
@@ -32,19 +51,8 @@ export default function scheme_settings() {
 
         const find_scheme = () => {
 
-          const opt = {
-            _view: 'doc/scheme_settings',
-            _top: 100,
-            _skip: 0,
-            _key: {
-              startkey: [class_name, 0],
-              endkey: [class_name, 9999],
-            },
-          };
-
-          const query = this.find_rows_remote ? this.find_rows_remote(opt) : this.pouch_find_rows(opt);
-
-          query.then((data) => {
+          this.find_schemas(class_name)
+            .then((data) => {
             // если существует с текущим пользователем, берём его, иначе - первый попавшийся
             if(data.length == 1) {
               set_default_and_resolve(data[0]);
