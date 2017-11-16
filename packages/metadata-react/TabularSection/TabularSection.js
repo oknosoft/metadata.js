@@ -232,7 +232,7 @@ export default class TabularSection extends MComponent {
               <ReactDataGrid
                 key="grid"
                 minWidth={width}
-                minHeight={Math.max(minHeight, height) - 52 - (settings_open ? 320 : 0)}
+                minHeight={Math.max(minHeight, height) - (hideToolbar ? 2 : 52) - (settings_open ? 320 : 0)}
                 rowHeight={33}
 
                 ref={(el) => this._grid = el}
