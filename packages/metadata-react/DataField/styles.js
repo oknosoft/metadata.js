@@ -6,27 +6,6 @@ const styles = theme => ({
     paddingRight: theme.spacing.unit,
     boxSizing: 'border-box',
   },
-  icon: {
-    '&:before': {
-      backgroundColor: '#216ba5',
-      borderRadius: '50%',
-      bottom: 0,
-      boxSizing: 'border-box',
-      color: '#fff',
-      content: 'х',
-      cursor: 'pointer',
-      fontSize: 12,
-      height: 16,
-      width: 16,
-      lineHeight: 1,
-      margin: '-8px auto 0',
-      padding: 2,
-      position: 'absolute',
-      right: 17,
-      textAlign: 'center',
-      top: '50%'
-    },
-  },
   container: {
     flexGrow: 1,
     position: 'relative',
@@ -35,17 +14,15 @@ const styles = theme => ({
     outline: 'none'
   },
   suggestionsContainerOpen: {
-    position: 'absolute',
-    //overflow: 'auto',
+    position: 'fixed',
     marginBottom: theme.spacing.unit * 2,
     marginRight: theme.spacing.unit,
-    //left: 0,
-    //right: 0,
-    //maxHeight: 280,
     zIndex: 3000,
   },
   suggestion: {
     padding: '4px 8px',
+    whiteSpace: 'nowrap',
+    //textOverflow: 'ellipsis',
   },
   suggestionSelected: {
     backgroundColor: 'rgba(0, 0, 0, 0.12)'

@@ -6,7 +6,7 @@
  * Created by Evgeniy Malyarov on 18.09.2017.
  */
 
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {InfiniteLoader, List, AutoSizer} from 'react-virtualized';
 import {ListItem, ListItemIcon, ListItemText} from 'material-ui/List';
@@ -22,7 +22,7 @@ function prevent(evt) {
   evt.preventDefault();
 }
 
-export default class InfiniteList extends PureComponent {
+export default class InfiniteList extends Component {
 
   static propTypes = {
     _mgr: PropTypes.object.isRequired,  // Менеджер данных
@@ -44,26 +44,13 @@ export default class InfiniteList extends PureComponent {
     }
     this.search = props.search;
     this.state = {
-      totalRows: 2,
-      selectedItem: -1,
+      totalRows: props.is_enm && this.list.length ? 1 : 2,
+      selectedItem: this.list.length ? 0 : -1,
     };
-    // для перечислений заполняем сразу
-    if(props.is_enm){
-      if(this.list.length){
-        this.state.totalRows = 1;
-      }
-      else{
-        this.loadMoreRows({startIndex: 0, stopIndex: 999});
-      }
-    }
   }
 
   componentDidMount() {
-    this._mounted = true;
-  }
-
-  componentWillUnmount() {
-    this._mounted = false;
+    this.loadMoreRows({startIndex: 0, stopIndex: 99});
   }
 
   componentWillReceiveProps(nextProps) {
@@ -89,22 +76,15 @@ export default class InfiniteList extends PureComponent {
     const increment = Math.max(limit, stopIndex - startIndex + 1);
     const select = _mgr.get_search_selector({_obj, _meta, search, top: increment, skip: startIndex});
 
-    const update_state = (length) => {
+    const update_state = (added) => {
       // обновляем состояние - изменилось количество записей
-      const rowsCount = startIndex + length + (length < increment ? 0 : increment );
-      if(totalRows != rowsCount) {
-        if(this._mounted) {
-          this.setState({totalRows: rowsCount});
-        }
-        else {
-          this.state.totalRows = rowsCount;
-        }
-      }
+      const rowsCount = this.list.length + (added < increment ? 0 : increment);
+      this.setState({totalRows: rowsCount});
     };
 
     // если объекты живут в ram
+    let added = 0;
     if(_mgr.cachable == 'ram' || _mgr.cachable == 'doc_ram') {
-      let added = 0;
       _mgr.find_rows(select, (o) => {
         // если значение уже есть в коллекции - пропускаем
         if(this.list.indexOf(o) === -1) {
@@ -117,13 +97,6 @@ export default class InfiniteList extends PureComponent {
     // будем делать запрос к couchdb
     else {
       // готовим фильтры для запроса couchdb
-      let fun = 'doc/by_id';
-      Object.assign(select, {
-        include_docs: true,
-        skip: startIndex,
-        limit: increment
-      });
-
       const filter = that.get_filter(start, count);
 
       return _mgr.pouch_db.find(filter)
@@ -134,7 +107,7 @@ export default class InfiniteList extends PureComponent {
               list._data[i + startIndex] = data.rows[i].doc;
             }
           }
-          update_state(this.list.length);
+          update_state(data.rows.length);
 
         });
     }
@@ -204,8 +177,9 @@ export default class InfiniteList extends PureComponent {
 
   listRenderer = ({onRowsRendered, registerChild}) => {
     const {totalRows} = this.state;
-    const rowCount = Math.min(this.list.length || 1, totalRows) + 0.6;
+    const rowCount = Math.min(this.list.length || 1, totalRows) + 1;
     const height = rowCount < 7 ? rowCount * rowHeight : 220;
+    //containerStyle={rowCount < 7 && {overflow: 'hidden'}}
     return <List
       ref={(el) => registerChild(this.listContainer = el)}
       height={height}
@@ -213,8 +187,7 @@ export default class InfiniteList extends PureComponent {
       rowCount={totalRows}
       rowHeight={rowHeight}
       rowRenderer={this.rowRenderer}
-      width={300}
-      containerStyle={{}}
+      width={310}
     />;
   };
 

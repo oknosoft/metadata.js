@@ -44,13 +44,13 @@ class FieldInfinit extends AbstractField {
   }
 
   inputRef = el => {
-    if(el !== null) {
+    if(el) {
       this.input = el;
     }
   };
 
   infiniteRef = el => {
-    if(el !== null) {
+    if(el) {
       this.infinite = el;
     }
   };
@@ -82,10 +82,7 @@ class FieldInfinit extends AbstractField {
       const {_obj, _fld, handleValueChange} = this.props;
       _obj[_fld] = value;
       setTimeout(() => {
-        this.setState({
-          inputValue: suggestionText(value),
-          focused: false,
-        });
+        this.setState({focused: false, inputValue: suggestionText(value)});
         handleValueChange && handleValueChange(value);
       });
     }
@@ -98,7 +95,10 @@ class FieldInfinit extends AbstractField {
 
   onBlur = (evt) => {
     evt.stopPropagation();
-    this.blurTimeout = setTimeout(() => this.setState({focused: false}), 100);
+    this.blurTimeout = setTimeout(() => {
+      const {_obj, _fld} = this.props;
+      this.setState({focused: false, inputValue: _obj && suggestionText(_obj[_fld])});
+    }, 100);
   };
 
   resetBlurTimeout() {
