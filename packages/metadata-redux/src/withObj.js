@@ -52,5 +52,4 @@ const mapDispatchToProps = (dispatch) => {
   return Object.assign({handlers}, handlers);
 };
 
-
 export default connect(null, mapDispatchToProps);

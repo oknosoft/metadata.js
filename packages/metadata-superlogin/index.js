@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.16-beta.38, built:2017-11-06
+ metadata-superlogin v2.0.16-beta.40, built:2017-11-13
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -17,29 +17,40 @@ var adapter = (constructor) => {
   classes.AdapterPouch = class AdapterPouchSuperlogin extends classes.AdapterPouch {
     after_init() {
     }
-    log_in() {
+    log_in(username, password) {
       const {props, local, remote, $p} = this;
       const {job_prm, wsql, aes, md, superlogin: superlogin$$1} = $p;
-      if(!superlogin$$1._session) {
-        return Promise.reject(new Error('Empty superlogin session'));
-      }
-      if(this.props._auth) {
-        if(this.props._auth.username == username) {
-          return Promise.resolve();
-        }
-        else {
-          return Promise.reject(new Error('need logout first'));
-        }
-      }
-      super.after_init();
-      if(wsql.get_user_param('user_name') != superlogin$$1._session.user_id) {
-        wsql.set_user_param('user_name', superlogin$$1._session.user_id);
-      }
-      this.emit_async('user_log_in', superlogin$$1._session.user_id);
-      return this.after_log_in()
-        .catch(err => {
+      const start = superlogin$$1.getSession() ? Promise.resolve(superlogin$$1.getSession()) : superlogin$$1.login({username, password})
+        .catch((err) => {
           this.emit('user_log_fault', err);
+          return Promise.reject(err);
         });
+      return start.then((session) => {
+        if(!session) {
+          const err = new Error('empty login or password');
+          this.emit('user_log_fault', err);
+          return Promise.reject(err);
+        }
+        if(this.props._auth) {
+          if(this.props._auth.username == username) {
+            return Promise.resolve();
+          }
+          else {
+            const err = new Error('need logout first');
+            this.emit('user_log_fault', err);
+            return Promise.reject(err);
+          }
+        }
+        super.after_init();
+        if(wsql.get_user_param('user_name') != session.user_id) {
+          wsql.set_user_param('user_name', session.user_id);
+        }
+        this.emit_async('user_log_in', session.user_id);
+        return this.after_log_in()
+          .catch(err => {
+            this.emit('user_log_fault', err);
+          });
+      });
     }
     dbpath(name) {
       const {$p, props} = this;
@@ -47,7 +58,7 @@ var adapter = (constructor) => {
       return $p.superlogin.getDbUrl(props.prefix + (name == 'meta' ? name : (props.zone + '_' + name)));
     }
     get authorized() {
-      return !!this.$p.superlogin._session;
+      return !!this.$p.superlogin.getSession();
     }
   };
 };
@@ -179,12 +190,16 @@ function attach($p) {
   };
 }
 function plugin(config = default_config) {
-  superlogin.configure(config);
   return {
     proto(constructor) {
       adapter(constructor);
     },
     constructor() {
+      const baseUrl = this.wsql.get_user_param('superlogin_path', 'string');
+      if(baseUrl){
+        config.baseUrl = baseUrl;
+      }
+      superlogin.configure(config);
       attach(this);
     }
   };

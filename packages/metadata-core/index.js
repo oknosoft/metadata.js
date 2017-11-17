@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.38, built:2017-11-06
+ metadata-core v2.0.16-beta.40, built:2017-11-15
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -81,7 +81,9 @@ const msg$1 = new I18n({
 		},
     login: {
 		  title: 'Вход на сервер',
+      wait: 'ожидание ответа',
       empty: 'Не указаны имя пользователя или пароль',
+      network: 'Сервер недоступен, ошибка сети или сервера',
       need_logout: 'Для авторизации под новым именем, завершите сеанс текущего пользователя',
       error: 'Ошибка авторизации. Проверьте имя пользователя, пароль и параметры подключения',
       suffix: 'Суффикс пользователя не совпадает с суффиксом подключения',
@@ -801,7 +803,7 @@ class DataObj {
       initial_posted = this.posted;
       this.posted = post;
     }
-    const before_save_res = this.before_save();
+    let before_save_res = this.before_save();
     const reset_modified = () => {
       if(before_save_res === false) {
         if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted != initial_posted) {
@@ -816,35 +818,43 @@ class DataObj {
     if(before_save_res === false) {
       return Promise.reject(reset_modified());
     }
-    else if(before_save_res instanceof Promise || typeof before_save_res === 'object' && before_save_res.then) {
-      return before_save_res.then(reset_modified);
-    }
     if(this._metadata().hierarchical && !this._obj.parent) {
       this._obj.parent = utils.blank.guid;
     }
+    let numerator = before_save_res instanceof Promise ? before_save_res : Promise.resolve();
     if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
       if(utils.blank.date == this.date) {
         this.date = new Date();
       }
       if(!this.number_doc) {
-        this.new_number_doc();
+        numerator = numerator.then(() => this.new_number_doc());
       }
     }
     else {
       if(!this.id) {
-        this.new_number_doc();
+        numerator = numerator.then(() => this.new_number_doc());
       }
     }
-    return this._manager.adapter.save_obj(this, {
+    for (const mf in this._metadata().fields) {
+      if (this._metadata().fields[mf].mandatory && !this._obj[mf]) {
+        const {msg, md} = this._manager.$p;
+        md.emit('alert', {
+          title: msg.mandatory_title,
+          type: "alert-error",
+          text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
+        });
+        before_save_res = false;
+        return Promise.reject(reset_modified());
+      }
+    }
+    return numerator.then(() => this._manager.adapter.save_obj(this, {
       post: post,
       operational: operational,
       attachments: attachments
     })
-      .then(() => {
-        this.after_save();
-        return this;
-      })
-      .then(reset_modified);
+      .then(() => this.after_save())
+      .then(reset_modified)
+    );
   }
   get_attachment(att_id) {
     const {_manager, ref} = this;
@@ -939,12 +949,7 @@ class CatObj extends DataObj {
     this._mixin(attr);
   }
   get presentation() {
-    if(this.name || this.id) {
-      return this.name || this.id || this._metadata().obj_presentation || this._metadata().synonym;
-    }
-    else {
-      return this._presentation || '';
-    }
+    return this.name || this.id || this._presentation || '';
   }
   set presentation(v) {
     if(v) {
@@ -1010,12 +1015,9 @@ class DocObj extends NumberDocAndDate(DataObj) {
     this._mixin(attr);
   }
   get presentation() {
-    if(this.number_doc) {
-      return (this._metadata().obj_presentation || this._metadata().synonym) + ' №' + this.number_doc + ' от ' + moment(this.date).format(moment._masks.ldt);
-    }
-    else {
-      return this._presentation || '';
-    }
+    const meta = this._metadata();
+    const {number_doc, date, posted, _modified} = this;
+    return `${meta.obj_presentation || meta.synonym}  №${number_doc || 'б/н'} от ${moment(date).format(moment._masks.ldt)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`;
   }
   set presentation(v) {
     if(v) {
@@ -2619,7 +2621,7 @@ moment$1.locale('ru');
 moment$1._masks = {
 	date: 'DD.MM.YY',
 	date_time: 'DD.MM.YYYY HH:mm',
-	ldt: 'DD MMMM YYYY, HH:mm',
+	ldt: 'DD MMM YYYY, HH:mm',
 	iso: 'YYYY-MM-DDTHH:mm:ss',
 };
 if(typeof global != 'undefined'){
@@ -3392,27 +3394,35 @@ class WSQL {
 		alasql.utils.isBrowserify = false;
 		const {job_prm, adapters} = this.$p;
 		job_prm.init(settings);
-		if (!job_prm.local_storage_prefix && !job_prm.create_tables)
-			return;
-		var nesessery_params = [
-			{p: "user_name", v: "", t: "string"},
-			{p: "user_pwd", v: "", t: "string"},
-			{p: "browser_uid", v: utils.generate_guid(), t: "string"},
-			{p: "zone", v: job_prm.hasOwnProperty("zone") ? job_prm.zone : 1, t: job_prm.zone_is_string ? "string" : "number"},
-			{p: "rest_path", v: "", t: "string"},
-			{p: "couch_path", v: "", t: "string"},
-      {p: "couch_suffix", v: "", t: "string"},
-      {p: "couch_direct", v: true, t: "boolean"},
-      {p: "enable_save_pwd", v: true, t: "boolean"},
-		], zone;
-		if (job_prm.additional_params){
-      nesessery_params = nesessery_params.concat(job_prm.additional_params);
+		if (!job_prm.local_storage_prefix){
+      throw new Error('local_storage_prefix unset in job_prm settings');
     }
+    const nesessery_params = [
+      {p: 'user_name', v: '', t: 'string'},
+      {p: 'user_pwd', v: '', t: 'string'},
+      {p: 'browser_uid', v: utils.generate_guid(), t: 'string'},
+      {p: 'zone', v: job_prm.hasOwnProperty('zone') ? job_prm.zone : 1, t: job_prm.zone_is_string ? 'string' : 'number'},
+      {p: 'rest_path', v: '', t: 'string'},
+      {p: 'couch_path', v: '', t: 'string'},
+      {p: 'couch_suffix', v: '', t: 'string'},
+      {p: 'couch_direct', v: true, t: 'boolean'},
+      {p: 'enable_save_pwd', v: true, t: 'boolean'},
+    ];
+		Array.isArray(job_prm.additional_params) && job_prm.additional_params.forEach((v) => nesessery_params.push(v));
+    let zone;
 		if (!this._ls.getItem(job_prm.local_storage_prefix + "zone")){
       zone = job_prm.hasOwnProperty("zone") ? job_prm.zone : 1;
     }
 		if (zone !== undefined){
       this.set_user_param("zone", zone);
+    }
+    if(zone == job_prm.zone_demo){
+      nesessery_params.some((prm) => {
+        if(prm.p == 'couch_suffix'){
+          prm.v = false;
+          return true;
+        }
+      });
     }
 		nesessery_params.forEach((prm) => {
 		  if(job_prm.url_prm && job_prm.url_prm.hasOwnProperty(prm.p)) {
@@ -4050,7 +4060,7 @@ class MetaEngine$1 {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.38';
+    return '2.0.16-beta.40';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

@@ -463,13 +463,17 @@ export class DataObj {
       return Promise.resolve(this);
     }
 
+    // запоминаем признак проведенности, чтобы восстановить его в случае неудачной записи
     let initial_posted;
     if(this instanceof DocObj && typeof post == 'boolean') {
       initial_posted = this.posted;
       this.posted = post;
     }
 
-    const before_save_res = this.before_save();
+    // выполняем обработчик перед записью
+    let before_save_res = this.before_save();
+
+    // этот код выполним в самом конце, после записи и после обработчика after_save
     const reset_modified = () => {
       if(before_save_res === false) {
         if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted != initial_posted) {
@@ -486,60 +490,55 @@ export class DataObj {
     if(before_save_res === false) {
       return Promise.reject(reset_modified());
     }
-    // если пользовательский обработчик перед записью вернул промис, его и возвращаем
-    else if(before_save_res instanceof Promise || typeof before_save_res === 'object' && before_save_res.then) {
-      return before_save_res.then(reset_modified);
-    }
 
     // для объектов с иерархией установим пустого родителя, если иной не указан
     if(this._metadata().hierarchical && !this._obj.parent) {
       this._obj.parent = utils.blank.guid;
     }
 
-    // для документов, контролируем заполненность даты
+    // если пользовательский обработчик перед записью вернул промис, дожидаемся его завершения
+
+    // для документов, контролируем заполненность даты и номера
+    let numerator = before_save_res instanceof Promise ? before_save_res : Promise.resolve();
     if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
       if(utils.blank.date == this.date) {
         this.date = new Date();
       }
       if(!this.number_doc) {
-        this.new_number_doc();
+        numerator = numerator.then(() => this.new_number_doc());
       }
     }
     else {
       if(!this.id) {
-        this.new_number_doc();
+        numerator = numerator.then(() => this.new_number_doc());
       }
     }
 
-
     // если не указаны обязательные реквизиты
-    // TODO: show_msg alert-error
-    // if (msg && msg.show_msg) {
-    // 	for (var mf in this._metadata().fields) {
-    // 		if (this._metadata().fields[mf].mandatory && !this._obj[mf]) {
-    // 			msg.show_msg({
-    // 				title: msg.mandatory_title,
-    // 				type: "alert-error",
-    // 				text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
-    // 			});
-    // 			before_save_res = false;
-    // 			return Promise.reject(reset_modified());
-    // 		}
-    // 	}
-    // }
+    // TODO: show_msg alert-error нужно делать emit на метаданных
+    for (const mf in this._metadata().fields) {
+      if (this._metadata().fields[mf].mandatory && !this._obj[mf]) {
+        const {msg, md} = this._manager.$p;
+        md.emit('alert', {
+          title: msg.mandatory_title,
+          type: "alert-error",
+          text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
+        })
+        before_save_res = false;
+        return Promise.reject(reset_modified());
+      }
+    }
 
     // в зависимости от типа кеширования, получаем saver и сохраняем объект во внешней базе
-    return this._manager.adapter.save_obj(this, {
+    return numerator.then(() => this._manager.adapter.save_obj(this, {
       post: post,
       operational: operational,
       attachments: attachments
     })
     // и выполняем обработку после записи
-      .then(() => {
-        this.after_save();
-        return this;
-      })
-      .then(reset_modified);
+      .then(() => this.after_save())
+      .then(reset_modified)
+    );
   }
 
 
@@ -764,13 +763,7 @@ export class CatObj extends DataObj {
    * @type String
    */
   get presentation() {
-    if(this.name || this.id) {
-      // return this._metadata().obj_presentation || this._metadata().synonym + " " + this.name || this.id;
-      return this.name || this.id || this._metadata().obj_presentation || this._metadata().synonym;
-    }
-    else {
-      return this._presentation || '';
-    }
+    return this.name || this.id || this._presentation || '';
   }
   set presentation(v) {
     if(v) {
@@ -906,12 +899,9 @@ export class DocObj extends NumberDocAndDate(DataObj) {
    * @type String
    */
   get presentation() {
-    if(this.number_doc) {
-      return (this._metadata().obj_presentation || this._metadata().synonym) + ' №' + this.number_doc + ' от ' + moment(this.date).format(moment._masks.ldt);
-    }
-    else {
-      return this._presentation || '';
-    }
+    const meta = this._metadata();
+    const {number_doc, date, posted, _modified} = this;
+    return `${meta.obj_presentation || meta.synonym}  №${number_doc || 'б/н'} от ${moment(date).format(moment._masks.ldt)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`;
   }
 
   set presentation(v) {

@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import DataField from './DataField';
 
-import {Editors} from 'metadata-external/react-data-grid-addons';
+import {Editors} from 'metadata-external/react-data-grid-addons.min';
 
 class DataCell extends Editors.SimpleTextEditor {
 

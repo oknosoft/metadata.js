@@ -9,13 +9,13 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import {Editors, Formatters} from 'metadata-external/react-data-grid-addons';
+import {Editors, Formatters} from 'metadata-external/react-data-grid-addons.min';
 const {CheckboxEditor, DropDownEditor} = Editors;
 const {DropDownFormatter, ImageFormatter} = Formatters;
 
-import DataCell from './DataField/DataCell';
-import TypeFieldCell from './DataField/FieldTypeCell';
-import PathFieldCell from './DataField/FieldPathCell';
+import DataCell from 'metadata-react/DataField/DataCell';
+import TypeFieldCell from 'metadata-react/DataField/FieldTypeCell';
+import PathFieldCell from 'metadata-react/DataField/FieldPathCell';
 
 class ToggleEditor extends CheckboxEditor {
 

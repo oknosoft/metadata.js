@@ -10,7 +10,7 @@ import React, {Component} from "react";
 import PropTypes from 'prop-types';
 import DataCell from "../DataField/DataCell";
 import FieldPathCell from "../DataField/FieldPathCell";
-import {Formatters} from "metadata-external/react-data-grid-addons";
+import {Formatters} from "metadata-external/react-data-grid-addons.min";
 
 const DropDownFormatter = Formatters.DropDownFormatter;
 

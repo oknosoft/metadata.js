@@ -7,7 +7,10 @@ export default withStyles(theme => ({
     width: '100%',
   },
   drawer: {
-    maxWidth: 300,
+    width: 280,
+  },
+  ndrawer: {
+    width: 310,
   },
   flex: {
     flex: 1,
@@ -20,13 +23,23 @@ export default withStyles(theme => ({
   progress: {
     color: colors.white,
     position: 'absolute',
-    top: 8,
+    top: theme.spacing.unit,
   },
   toolbar: {
     backgroundColor: theme.palette.primary[50],
   },
   white: {
-    color: colors.white
+    color: colors.white,
+  },
+  title: {
+    marginLeft: theme.spacing.unit * 3,
+  },
+  bold: {
+    fontWeight: 'bold',
+  },
+  select: {
+    width: 180,
+    marginLeft: theme.spacing.unit,
   },
   rotation: {
     animation: 'rotate-progress-circle 1733ms linear infinite',

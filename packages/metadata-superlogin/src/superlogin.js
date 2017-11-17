@@ -272,8 +272,6 @@ function attach($p) {
 
 export default function plugin(config = default_config) {
 
-  superlogin.configure(config);
-
   return {
 
     proto(constructor) {
@@ -282,6 +280,12 @@ export default function plugin(config = default_config) {
     },
 
     constructor() {
+
+      const baseUrl = this.wsql.get_user_param('superlogin_path', 'string');
+      if(baseUrl){
+        config.baseUrl = baseUrl;
+      }
+      superlogin.configure(config);
 
       attach(this);
 

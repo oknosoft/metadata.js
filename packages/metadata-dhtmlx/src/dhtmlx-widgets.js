@@ -3521,16 +3521,6 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 							if(o instanceof CatObj){
                 title = (_meta.obj_presentation || _meta.synonym) + ': ' + title;
               }
-							else if(o instanceof DocObj){
-                title += o.posted ? " (проведен)" : " (не проведен)";
-              }
-
-							if(o._modified && title.lastIndexOf("*")!=title.length-1){
-                title += " *";
-              }
-							else if(!o._modified && title.lastIndexOf("*")==title.length-1){
-                title = title.replace(" *", "");
-              }
 
 							if(force || _title !== title){
 								_title = title;

@@ -7,7 +7,7 @@ import Button from 'material-ui/Button';
 import Divider from 'material-ui/Divider';
 import {FormGroup} from 'material-ui/Form';
 import {DialogActions} from 'material-ui/Dialog';
-
+import Helmet from 'react-helmet';
 import DataField from '../DataField';
 import CnnSettings from './CnnSettings';
 import {withPrm} from 'metadata-redux';
@@ -78,6 +78,8 @@ class TabsUser extends Component {
 
       <Paper className={classes.root} elevation={4}>
 
+        <Helmet title={props.title} />
+
         <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
           <Tab label="Профиль"/>
           <Tab label="Подключение"/>
@@ -92,7 +94,7 @@ class TabsUser extends Component {
         {state.index === 0 &&
         <DialogActions>
           <Button color="primary" dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
-          <Button color="primary" dense className={classes.button} onClick={handleNavigate}>К списку заказов</Button>
+          <Button color="primary" dense className={classes.button} onClick={handleNavigate} title="Перейти к списку документов">К документам</Button>
         </DialogActions>}
 
         {state.index === 1 && <CnnSettings {...props}/>}
@@ -100,6 +102,7 @@ class TabsUser extends Component {
       </Paper>
       :
       <div>
+        <Helmet title="Пользователь не найден" />
         нет данных
       </div>;
   }

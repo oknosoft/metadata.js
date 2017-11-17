@@ -4,13 +4,14 @@ import PropTypes from 'prop-types';
 import MDNRComponent from '../common/MDNRComponent';
 
 import {InfiniteLoader, AutoSizer, MultiGrid} from 'react-virtualized';
-import cn from 'classnames';
-
+import classnames from 'classnames';
+import Helmet from 'react-helmet';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 import DataListToolbar from './DataListToolbar';
 import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
-import Confirm from '../Confirm';
+import Confirm from '../App/Confirm';
 import withStyles from './styles';
+import {withIface} from 'metadata-redux';
 import control_by_type from 'metadata-abstract-ui/src/ui';
 
 class DataList extends MDNRComponent {
@@ -42,7 +43,7 @@ class DataList extends MDNRComponent {
     // Redux actions
     handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
 
-  }
+  };
 
   constructor(props, context) {
     super(props, context);
@@ -56,14 +57,6 @@ class DataList extends MDNRComponent {
     this._list = new Map();
 
     this.handleManagerChange(props);
-  }
-
-  shouldComponentUpdate({_mgr, _meta}) {
-    if (this.props._mgr != _mgr) {
-      this.handleManagerChange({_mgr, _meta});
-      return false;
-    }
-    return true;
   }
 
   // при изменении менеджера данных
@@ -151,11 +144,11 @@ class DataList extends MDNRComponent {
 
     const {state, _list, _mounted} = this;
 
-    if(!(scheme instanceof $p.CatScheme_settings)){
+    if(!(scheme instanceof $p.CatScheme_settings)) {
       scheme = state.scheme;
     }
 
-    if(!columns){
+    if(!columns) {
       columns = state.columns;
     }
 
@@ -174,7 +167,7 @@ class DataList extends MDNRComponent {
       startIndex: 0,
       stopIndex: DataList.LIMIT
     });
-  }
+  };
 
   // обработчик печати теущей строки
   handlePrint = () => {
@@ -216,6 +209,11 @@ class DataList extends MDNRComponent {
     return {width, height};
   }
 
+  get ltitle() {
+    const {_mgr} = this.props;
+    return `${_mgr.metadata().list_presentation || _mgr.metadata().synonym} (список)`;
+  }
+
   render() {
     const {state, props, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer} = this;
     const {columns, rowsLoaded, scheme, colResize, confirm_text, settings_open} = state;
@@ -223,15 +221,15 @@ class DataList extends MDNRComponent {
 
     const styleTopRightGrid = {
       cursor: colResize ? 'col-resize' : 'default',
-    }
+    };
 
-    let {selection_mode, denyAddDel, show_search, show_variants, classes} = props;
+    let {selection_mode, denyAddDel, show_search, show_variants, classes, title} = props;
 
     if(!scheme) {
-      return <LoadingMessage title="Чтение настроек компоновки..."/>;
+      return <LoadingMessage text="Чтение настроек компоновки..."/>;
     }
     else if(!columns || !columns.length) {
-      return <LoadingMessage title="Ошибка настроек компоновки..."/>;
+      return <LoadingMessage text="Ошибка настроек компоновки..."/>;
     }
 
     const show_grid = !settings_open || sizes.height > 572;
@@ -259,6 +257,8 @@ class DataList extends MDNRComponent {
 
     return [
 
+      <Helmet key="helmet" title={title}/>,
+
       // диалог предупреждений при удалении
       confirm_text && <Confirm
         key="confirm"
@@ -277,7 +277,7 @@ class DataList extends MDNRComponent {
         key="tabs"
         height={show_grid ? 272 : (sizes.height || 500) - 104}
         scheme={scheme}
-        tabParams={RepParams && <RepParams scheme={scheme} />}
+        tabParams={RepParams && <RepParams scheme={scheme}/>}
         handleSchemeChange={this.handleSchemeChange}
       />,
 
@@ -343,7 +343,7 @@ class DataList extends MDNRComponent {
     const {cell, headerCell, hoveredItem, selectedItem} = props.classes;
 
     // оформление ячейки
-    const classNames = cn(this._getRowClassName(rowIndex), cell, {
+    const classNames = classnames(this._getRowClassName(rowIndex), cell, {
       [headerCell]: rowIndex === 0, // выравнивание текста по центру
       [hoveredItem]: rowIndex != 0 && rowIndex == hoveredRowIndex && rowIndex != selectedRowIndex, // || columnIndex === this.state.hoveredColumnIndex
       [selectedItem]: rowIndex != 0 && rowIndex == selectedRowIndex
@@ -378,9 +378,10 @@ class DataList extends MDNRComponent {
       onDoubleClick: props.selection_mode ? handleSelect : handleEdit,
       title: hoveredColumnIndex == columnIndex && hoveredRowIndex == rowIndex ? content : '',
     };
-    if(rowIndex == 0){
+    if(rowIndex == 0) {
       dprops.onMouseMove = onMouseMove;
-    };
+    }
+    ;
 
     return (
       <div {...dprops}>{content}</div>
@@ -428,7 +429,7 @@ class DataList extends MDNRComponent {
     }
     // Обновить количество записей.
     this._mounted && reallyLoadedRows && this.setState({rowsLoaded: this.state.rowsLoaded + reallyLoadedRows});
-  }
+  };
 
   _loadMoreRows = ({startIndex, stopIndex}) => {
     const {_mgr, _owner} = this.props;
@@ -437,7 +438,7 @@ class DataList extends MDNRComponent {
     const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);
 
     // в зависимости от типа кеширования...
-    if(_mgr.cachable === 'ram' || _mgr.cachable === 'doc_ram'){
+    if(_mgr.cachable === 'ram' || _mgr.cachable === 'doc_ram') {
       // фильтруем в озу
       const selector = _mgr.get_search_selector({
         _obj: _owner ? _owner._obj : null,
@@ -446,9 +447,9 @@ class DataList extends MDNRComponent {
         top: increment,
         skip: startIndex ? startIndex - 1 : 0,
       });
-      return Promise.resolve(this._updateList(_mgr.find_rows(selector), startIndex))
+      return Promise.resolve(this._updateList(_mgr.find_rows(selector), startIndex));
     }
-    else{
+    else {
       // выполняем запрос
       return _mgr.find_rows_remote(scheme.mango_selector({
         columns,
@@ -461,4 +462,4 @@ class DataList extends MDNRComponent {
 }
 
 
-export default withStyles(DataList);
+export default withStyles(withIface(DataList));

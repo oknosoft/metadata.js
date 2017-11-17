@@ -75,7 +75,7 @@ export default class SchemeSettingsButtons extends PureComponent {
     this.props.handleFilterChange();
   };
 
-  Variants() {
+  VariantsMenu() {
     const {variants, menu_open, anchorEl} = this.state;
     const menuitems = variants.map((v, index) => <MenuItem
       selected={v == this.props.scheme}
@@ -86,7 +86,7 @@ export default class SchemeSettingsButtons extends PureComponent {
       }}
     >{v.name}</MenuItem>);
 
-    return <Menu anchorEl={anchorEl} open={menu_open} onRequestClose={this.handleMenuClose}>{menuitems}</Menu>;
+    return <Menu key="ssm" anchorEl={anchorEl} open={menu_open} onRequestClose={this.handleMenuClose}>{menuitems}</Menu>;
   }
 
   render() {
@@ -94,39 +94,21 @@ export default class SchemeSettingsButtons extends PureComponent {
     const {menu_open} = state;
     const {scheme, show_search, show_variants, tabParams, classes, settings_open} = props;
 
-    return (
-      <div className={classes.inline}>
-        {/* Search box */
-          show_search && <SearchBox value={scheme._search || ''} onChange={this.handleSearchChange}/>
-        }
+    return [
+      // Search box
+      show_search && <SearchBox key="ss1" value={scheme._search || ''} onChange={this.handleSearchChange}/>,
 
-        {/* Variants */
-          show_variants && scheme && <Button dense onClick={this.handleMenuOpen} style={{alignSelf: 'center'}}>{scheme.name}</Button>
-        }
-        {/* Variants */
-          show_variants && scheme && this.Variants()
-        }
+      // Variants
+      show_variants && scheme && <Button key="ss2" dense onClick={this.handleMenuOpen} style={{alignSelf: 'center'}}>{scheme.name}</Button>,
+      show_variants && scheme && this.VariantsMenu(),
 
-        {/* Кнопка открытия настроек */ !settings_open &&
-        <IconButton title="Настройка списка" onClick={props.handleSettingsOpen}>
-          <IconSettings/>
-        </IconButton>
-        }
+      // Кнопка открытия настроек
+      !settings_open && <IconButton key="ss3" title="Настройка списка" onClick={props.handleSettingsOpen}><IconSettings/></IconButton>,
 
-        {/* Кнопки Ок или Отмена настроек */ settings_open &&
-        <IconButton title="Применить настройки" onClick={props.handleSettingsClose}>
-          <IconSettingsDone/>
-        </IconButton>
-        }
+      // Кнопки Ок или Отмена настроек
+      settings_open && <IconButton key="ss4" title="Применить настройки" onClick={props.handleSettingsClose}><IconSettingsDone/></IconButton>,
+      settings_open && <IconButton key="ss5" title="Скрыть настройки" onClick={props.handleSettingsClose}><IconSettingsCancel/></IconButton>
 
-        {/* Кнопки Ок или Отмена настроек */ settings_open &&
-        <IconButton title="Скрыть настройки" onClick={props.handleSettingsClose}>
-          <IconSettingsCancel/>
-        </IconButton>
-        }
-
-      </div>
-
-    );
+    ];
   }
 }
