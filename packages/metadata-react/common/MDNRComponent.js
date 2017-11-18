@@ -21,14 +21,16 @@ export default class MDNRComponent extends MComponent {
 
     let res = true;
 
-    const {handleManagerChange, ltitle} = this;
+    const {handleManagerChange, ltitle, context} = this;
 
+    // если изменился менеджер, ищем новые настройки компоновки
     if(handleManagerChange && this.props._mgr != _mgr) {
       handleManagerChange({_mgr, _meta});
       res = false;
     }
 
-    if (ltitle && title != ltitle) {
+    // если мы не в диалоге, меняем заголовок приложения
+    if (!context.dnr && ltitle && title != ltitle) {
       handleIfaceState({
         component: '',
         name: 'title',

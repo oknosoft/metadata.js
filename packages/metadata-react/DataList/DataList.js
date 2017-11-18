@@ -215,7 +215,7 @@ class DataList extends MDNRComponent {
   }
 
   render() {
-    const {state, props, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer} = this;
+    const {state, props, context, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer} = this;
     const {columns, rowsLoaded, scheme, colResize, confirm_text, settings_open} = state;
     const {RepParams} = props._mgr;
 
@@ -257,7 +257,7 @@ class DataList extends MDNRComponent {
 
     return [
 
-      <Helmet key="helmet" title={title}/>,
+      !context.dnr && <Helmet key="helmet" title={title}/>,
 
       // диалог предупреждений при удалении
       confirm_text && <Confirm

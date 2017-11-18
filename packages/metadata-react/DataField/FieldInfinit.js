@@ -22,7 +22,7 @@ import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
 
 // окно диалога, чтобы показать всплывающие формы
-import DnR from '../DnR/Dialog';
+import Dialog from '../App/Dialog';
 
 import AbstractField, {suggestionText} from './AbstractField';
 import withStyles from './styles';
@@ -57,12 +57,15 @@ class FieldInfinit extends AbstractField {
 
   handleOpenList = (evt) => {
     this.resetBlurTimeout();
-    this.setState({dialog: 'list', focused: false});
+
+    const {_obj, _fld} = this.props;
+    this.setState({focused: false, dialog: 'list', inputValue: _obj && suggestionText(_obj[_fld])});
   };
 
   handleOpenObj = (evt) => {
     this.resetBlurTimeout();
-    this.setState({dialog: 'obj', focused: false});
+    const {_obj, _fld} = this.props;
+    this.setState({focused: false, dialog: 'obj', inputValue: _obj && suggestionText(_obj[_fld])});
   };
 
   handleCloseDialog = (evt) => {
@@ -90,7 +93,7 @@ class FieldInfinit extends AbstractField {
 
   onFocus = (evt) => {
     this.resetBlurTimeout();
-    this.setState({focused: true});
+    !this.state.dialog && this.setState({focused: true});
   };
 
   onBlur = (evt) => {
@@ -206,13 +209,17 @@ class FieldInfinit extends AbstractField {
         :
         (_manager.metadata().obj_presentation || _manager.metadata().synonym);
 
-      return <DnR title={title} onClose={this.handleCloseDialog}>
+      return <Dialog
+        open
+        title={title}
+        onRequestClose={this.handleCloseDialog}
+      >
         {state.dialog == 'list' ?
-          <DataList _mgr={_manager} _acl={_acl} handlers={{}}/>
+          <DataList _mgr={_manager} _acl={_acl} _owner={this} selection_mode handlers={{}}/>
           :
           <DataObj _mgr={_manager} _acl={_acl} match={{params: {ref}}} handlers={{}}/>
         }
-      </DnR>;
+      </Dialog>;
     }
   }
 

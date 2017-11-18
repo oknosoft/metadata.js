@@ -1,17 +1,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Button from 'material-ui/Button';
-import Dialog, {DialogActions, DialogContent, DialogContentText, DialogTitle} from 'material-ui/Dialog';
+import {DialogContentText} from 'material-ui/Dialog';
+import Dialog from './Dialog';
 
 export default function Alert({text, title, handleOk, open}) {
-  return <Dialog open={open} onRequestClose={props.handleOk}>
-    <DialogTitle>{title}</DialogTitle>
-    <DialogContent>
-      <DialogContentText>{text}</DialogContentText>
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={props.handleOk} color="primary">Ок</Button>
-    </DialogActions>
+  return <Dialog
+    open={open}
+    title={title}
+    onRequestClose={handleOk}
+    actions={[
+      <Button key="ok" onClick={handleOk} color="primary">Ок</Button>
+    ]}
+  >
+    <DialogContentText>{text}</DialogContentText>
   </Dialog>;
 }
 
