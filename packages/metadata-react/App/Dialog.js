@@ -19,6 +19,8 @@ const style = theme => ({
   },
   toolbar: {
     backgroundColor: theme.palette.primary[50],
+    borderBottom: '1px solid',
+    borderBottomColor: theme.palette.primary[100],
   },
   title: {
     flex: '1 1 auto',
@@ -26,6 +28,9 @@ const style = theme => ({
   },
   content: {
     padding: theme.spacing.unit * 2,
+  },
+  contentNoSpace: {
+    padding: 0,
   },
 });
 
@@ -40,14 +45,14 @@ class SimpleDialog extends React.Component {
   }
 
   render() {
-    const {open, fullScreen, title, actions, children, classes, onRequestClose} = this.props;
+    const {open, fullScreen, noSpace, title, actions, children, classes, onRequestClose} = this.props;
     const paper = classes.paper ? {paper: classes.paper} : {};
     return <Dialog open={open} fullScreen={fullScreen} onRequestClose={onRequestClose} classes={paper}>
       <Toolbar disableGutters className={classes.toolbar}>
         <Typography className={classes.title} type="title" color="inherit" noWrap>{title}</Typography>
         <IconButton title="Закрыть диалог" onClick={onRequestClose}><CloseIcon/></IconButton>
       </Toolbar>
-      <DialogContent className={classes.content}>{children}</DialogContent>
+      <DialogContent className={noSpace ? classes.contentNoSpace : classes.content}>{children}</DialogContent>
       {actions && <DialogActions>{actions}</DialogActions>}
     </Dialog>;
   }

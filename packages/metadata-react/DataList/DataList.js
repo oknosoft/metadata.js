@@ -33,7 +33,7 @@ class DataList extends MDNRComponent {
                                           // а внутри _meta могут быть choice_params и choice_links
 
     // настройки внешнего вида и поведения
-    selection_mode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисуем кнопку выбора
+    selectionMode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисуем кнопку выбора
     read_only: PropTypes.object,          // Элемент только для чтения
     denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
     show_search: PropTypes.bool,          // Показывать поле поиска
@@ -223,7 +223,7 @@ class DataList extends MDNRComponent {
       cursor: colResize ? 'col-resize' : 'default',
     };
 
-    let {selection_mode, denyAddDel, show_search, show_variants, classes, title} = props;
+    let {selectionMode, denyAddDel, show_search, show_variants, classes, title} = props;
 
     if(!scheme) {
       return <LoadingMessage text="Чтение настроек компоновки..."/>;
@@ -237,7 +237,7 @@ class DataList extends MDNRComponent {
     const toolbar_props = {
       key: 'toolbar',
       scheme,
-      selection_mode,
+      selectionMode,
       denyAddDel,
       show_search,
       show_variants,
@@ -375,7 +375,7 @@ class DataList extends MDNRComponent {
       style,
       onMouseOver,
       onClick,
-      onDoubleClick: props.selection_mode ? handleSelect : handleEdit,
+      onDoubleClick: props.selectionMode ? handleSelect : handleEdit,
       title: hoveredColumnIndex == columnIndex && hoveredRowIndex == rowIndex ? content : '',
     };
     if(rowIndex == 0) {

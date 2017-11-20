@@ -85,7 +85,7 @@ class FieldInfinit extends AbstractField {
       const {_obj, _fld, handleValueChange} = this.props;
       _obj[_fld] = value;
       setTimeout(() => {
-        this.setState({focused: false, inputValue: suggestionText(value)});
+        this.setState({focused: false, dialog: false, inputValue: suggestionText(value)});
         handleValueChange && handleValueChange(value);
       });
     }
@@ -159,19 +159,32 @@ class FieldInfinit extends AbstractField {
 
   renderContainer() {
 
-    const {_meta, props, state, infiniteRef, handleSelect} = this;
+    const {_meta, props, state, input, infiniteRef, handleSelect} = this;
 
     if(state.focused) {
       const {_obj, _fld, classes} = props;
       const {_manager} = _obj[_fld];
       const is_enm = $p.utils.is_enm_mgr(_manager);
       const footer = !is_enm || _meta.type.types.length > 1;
-
+      const rect = input && input.getBoundingClientRect();
+      const paperProps = {
+        square: true,
+        className: classes.suggestionsContainerOpen,
+      };
+      if(rect){
+        const {innerHeight} = window;
+        if(rect.bottom + 220 < innerHeight){
+          paperProps.style = {top: rect.bottom};
+        }
+        else if(rect.top > 220){
+          paperProps.style = {bottom: innerHeight - rect.top - 12};
+        }
+        else{
+          paperProps.style = {top: 10};
+        }
+      }
       return state.focused &&
-        <Paper
-          square
-          className={classes.suggestionsContainerOpen}
-        >
+        <Paper {...paperProps}>
           <InfiniteList
             ref={infiniteRef}
             _mgr={_manager}
@@ -197,7 +210,7 @@ class FieldInfinit extends AbstractField {
   }
 
   renderDialog() {
-    const {props, state, context} = this;
+    const {props, state, context, handleSelect} = this;
 
     if(state.dialog) {
       const {_obj, _fld} = props;
@@ -211,11 +224,12 @@ class FieldInfinit extends AbstractField {
 
       return <Dialog
         open
+        noSpace
         title={title}
         onRequestClose={this.handleCloseDialog}
       >
         {state.dialog == 'list' ?
-          <DataList _mgr={_manager} _acl={_acl} _owner={this} selection_mode handlers={{}}/>
+          <DataList _mgr={_manager} _acl={_acl} _owner={this} selectionMode handlers={{handleSelect}}/>
           :
           <DataObj _mgr={_manager} _acl={_acl} match={{params: {ref}}} handlers={{}}/>
         }
