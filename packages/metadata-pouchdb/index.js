@@ -1046,7 +1046,7 @@ function adapter({AbstracrAdapter}) {
       }
       return new Promise((resolve, reject) => {
         function process_docs(result) {
-          if(result.rows.length) {
+          if(result && result.rows.length) {
             options.startkey = result.rows[result.rows.length - 1].key;
             options.skip = 1;
             result.rows.forEach((rev) => {

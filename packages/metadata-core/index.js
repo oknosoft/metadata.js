@@ -1257,14 +1257,13 @@ class DataManager extends MetaEventEmitter{
 		return msg$1.meta_mgrs[this._owner.name]
 	}
 	metadata(field_name) {
-		if(!this._meta){
-			this._meta = this._owner.$p.md.get(this.class_name);
-		}
+	  const {_owner, class_name} = this;
+	  const _meta = _owner.$p.md.get(class_name) || {};
 		if(field_name){
-			return this._meta && this._meta.fields && this._meta.fields[field_name] || this._owner.$p.md.get(this.class_name, field_name);
+			return _meta.fields && _meta.fields[field_name] || _owner.$p.md.get(class_name, field_name);
 		}
 		else{
-			return this._meta;
+			return _meta;
 		}
 	}
 	get adapter(){
@@ -3902,115 +3901,116 @@ Meta.Obj = MetaObj;
 Meta.Field = MetaField;
 
 class ManagersCollection {
-	constructor($p) {
-		this.$p = $p;
-	}
-	toString(){
-		return msg.meta_classes[this.name];
-	}
-	create(name, constructor) {
-		this[name] = new (constructor || this._constructor)(this, this.name + '.' + name);
-	}
+  constructor($p) {
+    this.$p = $p;
+  }
+  toString() {
+    return msg.meta_classes[this.name];
+  }
+  create(name, constructor) {
+    this[name] = new (constructor || this._constructor)(this, this.name + '.' + name);
+    constructor && Object.freeze(this[name]);
+  }
 }
 class Enumerations extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'enm';
-		this._constructor = EnumManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'enm';
+    this._constructor = EnumManager;
+  }
 }
 class Catalogs extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'cat';
-		this._constructor = CatManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'cat';
+    this._constructor = CatManager;
+  }
 }
 class Documents extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'doc';
-		this._constructor = DocManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'doc';
+    this._constructor = DocManager;
+  }
 }
 class InfoRegs extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'ireg';
-		this._constructor = InfoRegManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'ireg';
+    this._constructor = InfoRegManager;
+  }
 }
 class AccumRegs extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'areg';
-		this._constructor = AccumRegManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'areg';
+    this._constructor = AccumRegManager;
+  }
 }
 class AccountsRegs extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'accreg';
-		this._constructor = AccumRegManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'accreg';
+    this._constructor = AccumRegManager;
+  }
 }
 class DataProcessors extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'dp';
-		this._constructor = DataProcessorsManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'dp';
+    this._constructor = DataProcessorsManager;
+  }
 }
 class Reports extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'rep';
-		this._constructor = DataProcessorsManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'rep';
+    this._constructor = DataProcessorsManager;
+  }
 }
 class ChartsOfAccounts extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'cacc';
-		this._constructor = ChartOfAccountManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'cacc';
+    this._constructor = ChartOfAccountManager;
+  }
 }
 class ChartsOfCharacteristics extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'cch';
-		this._constructor = ChartOfCharacteristicManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'cch';
+    this._constructor = ChartOfCharacteristicManager;
+  }
 }
 class Tasks extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'tsk';
-		this._constructor = TaskManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'tsk';
+    this._constructor = TaskManager;
+  }
 }
 class BusinessProcesses extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'bp';
-		this._constructor = BusinessProcessManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'bp';
+    this._constructor = BusinessProcessManager;
+  }
 }
 function mngrs($p) {
-	Object.defineProperties($p, {
-		enm: { value: new Enumerations($p) },
-		cat: { value: new Catalogs($p) },
-		doc: { value: new Documents($p) },
-		ireg: { value: new InfoRegs($p) },
-		areg: { value: new AccumRegs($p) },
-		accreg: { value: new AccountsRegs($p) },
-		dp: { value: new DataProcessors($p) },
-		rep: { value: new Reports($p) },
-		cacc: { value: new ChartsOfAccounts($p) },
-		cch: { value: new ChartsOfCharacteristics($p) },
-		tsk: { value: new Tasks($p) },
-		bp: { value: new BusinessProcesses($p) }
-	});
+  Object.defineProperties($p, {
+    enm: {value: new Enumerations($p)},
+    cat: {value: new Catalogs($p)},
+    doc: {value: new Documents($p)},
+    ireg: {value: new InfoRegs($p)},
+    areg: {value: new AccumRegs($p)},
+    accreg: {value: new AccountsRegs($p)},
+    dp: {value: new DataProcessors($p)},
+    rep: {value: new Reports($p)},
+    cacc: {value: new ChartsOfAccounts($p)},
+    cch: {value: new ChartsOfCharacteristics($p)},
+    tsk: {value: new Tasks($p)},
+    bp: {value: new BusinessProcesses($p)}
+  });
 }
 
 class AbstracrAdapter extends MetaEventEmitter{
