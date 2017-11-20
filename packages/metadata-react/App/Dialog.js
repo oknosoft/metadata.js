@@ -32,6 +32,9 @@ const style = theme => ({
   contentNoSpace: {
     padding: 0,
   },
+  paper: {
+    minWidth: 600,
+  },
 });
 
 class SimpleDialog extends React.Component {
@@ -46,8 +49,7 @@ class SimpleDialog extends React.Component {
 
   render() {
     const {open, fullScreen, noSpace, title, actions, children, classes, onRequestClose} = this.props;
-    const paper = classes.paper ? {paper: classes.paper} : {};
-    return <Dialog open={open} fullScreen={fullScreen} onRequestClose={onRequestClose} classes={paper}>
+    return <Dialog open={open} fullScreen={fullScreen} onRequestClose={onRequestClose} classes={{paper: classes.paper}}>
       <Toolbar disableGutters className={classes.toolbar}>
         <Typography className={classes.title} type="title" color="inherit" noWrap>{title}</Typography>
         <IconButton title="Закрыть диалог" onClick={onRequestClose}><CloseIcon/></IconButton>

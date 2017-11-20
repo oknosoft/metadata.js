@@ -813,18 +813,18 @@ function adapter({AbstracrAdapter}) {
         flds.push('finished');
       }
       else {
-        if(cmd['hierarchical'] && cmd['group_hierarchy']) {
+        if(cmd.hierarchical && cmd.group_hierarchy) {
           flds.push('is_folder');
         }
         else {
           flds.push('0 as is_folder');
         }
 
-        if(cmd['main_presentation_name']) {
+        if(cmd.main_presentation_name) {
           flds.push('name as presentation');
         }
         else {
-          if(cmd['code_length']) {
+          if(cmd.code_length) {
             flds.push('id as presentation');
           }
           else {
@@ -832,11 +832,11 @@ function adapter({AbstracrAdapter}) {
           }
         }
 
-        if(cmd['has_owners']) {
+        if(cmd.has_owners) {
           flds.push('owner');
         }
 
-        if(cmd['code_length']) {
+        if(cmd.code_length) {
           flds.push('id');
         }
 
@@ -857,7 +857,7 @@ function adapter({AbstracrAdapter}) {
       }
 
       // фильтр по родителю
-      if(cmd['hierarchical'] && attr.parent) {
+      if(cmd.hierarchical && attr.parent) {
         selection.parent = attr.parent;
       }
 

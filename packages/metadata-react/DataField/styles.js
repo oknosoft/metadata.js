@@ -54,6 +54,10 @@ const styles = theme => ({
     cursor: 'pointer',
     color: '#0b0080'
   },
+  icon: {
+    width: 32,
+    height: 32,
+  }
 });
 
-export default withStyles(styles);
+export default withStyles(styles, {name: 'DataField'});

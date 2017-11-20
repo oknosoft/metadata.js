@@ -6,23 +6,23 @@
  * Created by Evgeniy Malyarov on 18.09.2017.
  */
 
-import React, {Component} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import {InfiniteLoader, List, AutoSizer} from 'react-virtualized';
 import {ListItem, ListItemIcon, ListItemText} from 'material-ui/List';
 import classnames from 'classnames';
-
+import MComponent from '../common/MComponent';
 import {suggestionText} from './AbstractField';
 
 const limit = 30;
 const rowHeight = 32;
 
-function prevent(evt) {
+export function prevent(evt) {
   evt.stopPropagation();
   evt.preventDefault();
 }
 
-export default class InfiniteList extends Component {
+export default class InfiniteList extends MComponent {
 
   static propTypes = {
     _mgr: PropTypes.object.isRequired,  // Менеджер данных
@@ -50,6 +50,7 @@ export default class InfiniteList extends Component {
   }
 
   componentDidMount() {
+    super.componentDidMount();
     this.loadMoreRows({startIndex: 0, stopIndex: 99});
   }
 
@@ -115,29 +116,36 @@ export default class InfiniteList extends Component {
   };
 
   next(evt) {
-    let {selectedItem} = this.state;
-    if(selectedItem < this.list.length - 1){
-      selectedItem++;
+    const {state, list, _mounted, listContainer} = this;
+    if(_mounted){
+      let {selectedItem} = state;
+      if(selectedItem < list.length - 1){
+        selectedItem++;
+      }
+      this.setState({selectedItem});
+      listContainer.forceUpdateGrid();
+      prevent(evt);
     }
-    this.setState({selectedItem});
-    this.listContainer.forceUpdateGrid();
-    prevent(evt);
   }
 
   prev(evt) {
-    let {selectedItem} = this.state;
-    if(selectedItem >= 0){
-      selectedItem--;
+    const {state, _mounted, listContainer} = this;
+    if(_mounted){
+      let {selectedItem} = state;
+      if(selectedItem >= 0){
+        selectedItem--;
+      }
+      this.setState({selectedItem});
+      listContainer.forceUpdateGrid();
+      prevent(evt);
     }
-    this.setState({selectedItem});
-    this.listContainer.forceUpdateGrid();
-    prevent(evt);
   }
 
   handleSelect = (evt) => {
-    const value = this.list[this.state.selectedItem];
+    const {state, props, list} = this;
+    const value = list[state.selectedItem];
     prevent(evt);
-    value && this.props.handleSelect(value);
+    value && props.handleSelect(value);
   };
 
 
@@ -162,9 +170,7 @@ export default class InfiniteList extends Component {
         className={classnames({[classes.suggestion]: true, [classes.suggestionSelected]: index == this.state.selectedItem})}
         style={style}
         onClick={this.handleSelect}
-        onMouseOver ={() => {
-          this.setState({selectedItem: index})
-        }}
+        onMouseOver ={() => this.setState({selectedItem: index})}
       >
         {suggestion && !isScrolling && isVisible ?
           <ListItemText primary={suggestionText(suggestion)}/>
