@@ -3557,31 +3557,31 @@ class MetaObj {
 class MetaField {
 }
 class Meta extends MetaEventEmitter {
-	constructor($p) {
-		super();
-		Object.defineProperties(this, {
+  constructor($p) {
+    super();
+    Object.defineProperties(this, {
       _m: {value: {}},
       $p: {value: $p},
     });
-		Meta._sys.forEach((patch) => utils._patch(this._m, patch));
-		Meta._sys.length = 0;
-	}
+    Meta._sys.forEach((patch) => utils._patch(this._m, patch));
+    Meta._sys.length = 0;
+  }
   init(patch) {
     return utils._patch(this._m, patch);
   }
   get(class_name, field_name) {
     const np = class_name.split('.');
-    if (!this._m[np[0]]) {
+    if(!this._m[np[0]]) {
       return;
     }
     const _meta = this._m[np[0]][np[1]];
-    if (!field_name) {
+    if(!field_name) {
       return _meta;
     }
-    else if (_meta && _meta.fields[field_name]) {
+    else if(_meta && _meta.fields[field_name]) {
       return _meta.fields[field_name];
     }
-    else if (_meta && _meta.tabular_sections && _meta.tabular_sections[field_name]) {
+    else if(_meta && _meta.tabular_sections && _meta.tabular_sections[field_name]) {
       return _meta.tabular_sections[field_name];
     }
     const res = {
@@ -3596,33 +3596,44 @@ class Meta extends MetaEventEmitter {
       },
       is_doc = 'doc,tsk,bp'.indexOf(np[0]) != -1,
       is_cat = 'cat,cch,cacc,tsk'.indexOf(np[0]) != -1;
-    if (is_doc && field_name == 'number_doc') {
+    if(is_doc && field_name == 'number_doc') {
       res.synonym = 'Номер';
       res.tooltip = 'Номер документа';
       res.type.str_len = 11;
-    } else if (is_doc && field_name == 'date') {
+    }
+    else if(is_doc && field_name == 'date') {
       res.synonym = 'Дата';
       res.tooltip = 'Дата документа';
       res.type.date_part = 'date_time';
       res.type.types[0] = 'date';
-    } else if (is_doc && field_name == 'posted') {
+    }
+    else if(is_doc && field_name == 'posted') {
       res.synonym = 'Проведен';
       res.type.types[0] = 'boolean';
-    } else if (is_cat && field_name == 'id') {
+    }
+    else if(is_cat && field_name == 'id') {
       res.synonym = 'Код';
-    } else if (is_cat && field_name == 'name') {
+    }
+    else if(is_cat && field_name == 'name') {
       res.synonym = 'Наименование';
-    } else if (field_name == '_deleted') {
+    }
+    else if(field_name == 'presentation') {
+      res.synonym = 'Представление';
+    }
+    else if(field_name == '_deleted') {
       res.synonym = 'Пометка удаления';
       res.type.types[0] = 'boolean';
-    } else if (field_name == 'is_folder') {
+    }
+    else if(field_name == 'is_folder') {
       res.synonym = 'Это группа';
       res.type.types[0] = 'boolean';
-    } else if (field_name == 'ref') {
+    }
+    else if(field_name == 'ref') {
       res.synonym = 'Ссылка';
       res.type.is_ref = true;
       res.type.types[0] = class_name;
-    } else {
+    }
+    else {
       return;
     }
     return res;
@@ -3641,10 +3652,11 @@ class Meta extends MetaEventEmitter {
     const {_m} = this;
     for (let i in _m) {
       for (let j in _m[i]) {
-        if (_m[i][j].cachable) {
+        if(_m[i][j].cachable) {
           let _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '');
-          if (_name != 'meta' && _name != 'e1cib' && !res[_name])
+          if(_name != 'meta' && _name != 'e1cib' && !res[_name]) {
             res[_name] = _name;
+          }
         }
       }
     }
@@ -3687,24 +3699,25 @@ class Meta extends MetaEventEmitter {
     return syn1c[v] || this._m.syns_1с[this._m.syns_js.indexOf(v)] || v;
   }
   printing_plates(pp) {
-    if (pp){
-      for (const i in pp.doc){
+    if(pp) {
+      for (const i in pp.doc) {
         this._m.doc[i].printing_plates = pp.doc[i];
       }
     }
   }
   mgr_by_class_name(class_name) {
-    if (class_name) {
+    if(class_name) {
       const {$p} = this;
       let np = class_name.split('.');
-      if (np[1] && $p[np[0]]){
+      if(np[1] && $p[np[0]]) {
         return $p[np[0]][np[1]];
       }
       const pos = class_name.indexOf('_');
-      if (pos) {
+      if(pos) {
         np = [class_name.substr(0, pos), class_name.substr(pos + 1)];
-        if (np[1] && $p[np[0]])
+        if(np[1] && $p[np[0]]) {
           return $p[np[0]][np[1]];
+        }
       }
     }
   }
@@ -3715,13 +3728,17 @@ class Meta extends MetaEventEmitter {
     let cstep = 0, create = (attr && attr.postgres) ? '' : 'USE md; ';
     function on_table_created() {
       cstep--;
-      if (cstep == 0) {
-        if (callback)
+      if(cstep == 0) {
+        if(callback) {
           callback(create);
-        else
+        }
+        else {
           $p.wsql.alasql.utils.saveFile('create_tables.sql', create);
-      } else
+        }
+      }
+      else {
         iteration();
+      }
     }
     function iteration() {
       var data = data_names[cstep - 1];
@@ -3736,206 +3753,229 @@ class Meta extends MetaEventEmitter {
     cstep = data_names.length;
     iteration();
   }
-	sql_type(mgr, f, mf, pg) {
-		var sql;
-		if ((f == 'type' && mgr.table_name == 'cch_properties') || (f == 'svg' && mgr.table_name == 'cat_production_params'))
-			sql = ' JSON';
-		else if (mf.is_ref || mf.types.indexOf('guid') != -1) {
-			if (!pg)
-				sql = ' CHAR';
-			else if (mf.types.every((v) => v.indexOf('enm.') == 0))
-				sql = ' character varying(100)';
-			else if (!mf.hasOwnProperty('str_len'))
-				sql = ' uuid';
-			else
-				sql = ' character varying(' + Math.max(36, mf.str_len) + ')';
-		} else if (mf.hasOwnProperty('str_len'))
-			sql = pg ? (mf.str_len ? ' character varying(' + mf.str_len + ')' : ' text') : ' CHAR';
-		else if (mf.date_part)
-			if (!pg || mf.date_part == 'date')
-				sql = ' Date';
-			else if (mf.date_part == 'date_time')
-				sql = ' timestamp with time zone';
-			else
-				sql = ' time without time zone';
-		else if (mf.hasOwnProperty('digits')) {
-			if (mf.fraction_figits == 0)
-				sql = pg ? (mf.digits < 7 ? ' integer' : ' bigint') : ' INT';
-			else
-				sql = pg ? (' numeric(' + mf.digits + ',' + mf.fraction_figits + ')') : ' FLOAT';
-		} else if (mf.types.indexOf('boolean') != -1)
-			sql = ' BOOLEAN';
-		else if (mf.types.indexOf('json') != -1)
-			sql = ' JSON';
-		else
-			sql = pg ? ' character varying(255)' : ' CHAR';
-		return sql;
-	}
-	sql_mask(f, t) {
-		return ', ' + (t ? '_t_.' : '') + ('`' + f + '`');
-	}
-	ts_captions(class_name, ts_name, source) {
-		if (!source)
-			source = {};
-		var mts = this.get(class_name).tabular_sections[ts_name],
-			mfrm = this.get(class_name).form,
-			fields = mts.fields, mf;
-		if (mfrm && mfrm.obj) {
-			if (!mfrm.obj.tabular_sections[ts_name])
-				return;
-			utils._mixin(source, mfrm.obj.tabular_sections[ts_name]);
-		} else {
-			if (ts_name === 'contact_information')
-				fields = {type: '', kind: '', presentation: ''};
-			source.fields = ['row'];
-			source.headers = '№';
-			source.widths = '40';
-			source.min_widths = '';
-			source.aligns = '';
-			source.sortings = 'na';
-			source.types = 'cntr';
-			for (var f in fields) {
-				mf = mts.fields[f];
-				if (!mf.hide) {
-					source.fields.push(f);
-					source.headers += ',' + (mf.synonym ? mf.synonym.replace(/,/g, ' ') : f);
-					source.types += ',' + this.control_by_type(mf.type);
-					source.sortings += ',na';
-				}
-			}
-		}
-		return true;
-	}
-	class_name_from_1c(name) {
-		var pn = name.split('.');
-		if (pn.length == 1)
-			return 'enm.' + name;
-		else if (pn[0] == 'Перечисление')
-			name = 'enm.';
-		else if (pn[0] == 'Справочник')
-			name = 'cat.';
-		else if (pn[0] == 'Документ')
-			name = 'doc.';
-		else if (pn[0] == 'РегистрСведений')
-			name = 'ireg.';
-		else if (pn[0] == 'РегистрНакопления')
-			name = 'areg.';
-		else if (pn[0] == 'РегистрБухгалтерии')
-			name = 'accreg.';
-		else if (pn[0] == 'ПланВидовХарактеристик')
-			name = 'cch.';
-		else if (pn[0] == 'ПланСчетов')
-			name = 'cacc.';
-		else if (pn[0] == 'Обработка')
-			name = 'dp.';
-		else if (pn[0] == 'Отчет')
-			name = 'rep.';
-		return name + this.syns_js(pn[1]);
-	}
-	class_name_to_1c(name) {
-		var pn = name.split('.');
-		if (pn.length == 1)
-			return 'Перечисление.' + name;
-		else if (pn[0] == 'enm')
-			name = 'Перечисление.';
-		else if (pn[0] == 'cat')
-			name = 'Справочник.';
-		else if (pn[0] == 'doc')
-			name = 'Документ.';
-		else if (pn[0] == 'ireg')
-			name = 'РегистрСведений.';
-		else if (pn[0] == 'areg')
-			name = 'РегистрНакопления.';
-		else if (pn[0] == 'accreg')
-			name = 'РегистрБухгалтерии.';
-		else if (pn[0] == 'cch')
-			name = 'ПланВидовХарактеристик.';
-		else if (pn[0] == 'cacc')
-			name = 'ПланСчетов.';
-		else if (pn[0] == 'dp')
-			name = 'Обработка.';
-		else if (pn[0] == 'rep')
-			name = 'Отчет.';
-		return name + this.syns_1с(pn[1]);
-	}
+  sql_type(mgr, f, mf, pg) {
+    var sql;
+    if((f == 'type' && mgr.table_name == 'cch_properties') || (f == 'svg' && mgr.table_name == 'cat_production_params')) {
+      sql = ' JSON';
+    }
+    else if(mf.is_ref || mf.types.indexOf('guid') != -1) {
+      if(!pg) {
+        sql = ' CHAR';
+      }
+      else if(mf.types.every((v) => v.indexOf('enm.') == 0)) {
+        sql = ' character varying(100)';
+      }
+      else if(!mf.hasOwnProperty('str_len')) {
+        sql = ' uuid';
+      }
+      else {
+        sql = ' character varying(' + Math.max(36, mf.str_len) + ')';
+      }
+    }
+    else if(mf.hasOwnProperty('str_len')) {
+      sql = pg ? (mf.str_len ? ' character varying(' + mf.str_len + ')' : ' text') : ' CHAR';
+    }
+    else if(mf.date_part) {
+      if(!pg || mf.date_part == 'date') {
+        sql = ' Date';
+      }
+      else if(mf.date_part == 'date_time') {
+        sql = ' timestamp with time zone';
+      }
+      else {
+        sql = ' time without time zone';
+      }
+    }
+    else if(mf.hasOwnProperty('digits')) {
+      if(mf.fraction_figits == 0) {
+        sql = pg ? (mf.digits < 7 ? ' integer' : ' bigint') : ' INT';
+      }
+      else {
+        sql = pg ? (' numeric(' + mf.digits + ',' + mf.fraction_figits + ')') : ' FLOAT';
+      }
+    }
+    else if(mf.types.indexOf('boolean') != -1) {
+      sql = ' BOOLEAN';
+    }
+    else if(mf.types.indexOf('json') != -1) {
+      sql = ' JSON';
+    }
+    else {
+      sql = pg ? ' character varying(255)' : ' CHAR';
+    }
+    return sql;
+  }
+  sql_mask(f, t) {
+    return ', ' + (t ? '_t_.' : '') + ('`' + f + '`');
+  }
+  ts_captions(class_name, ts_name, source) {
+    if(!source) {
+      source = {};
+    }
+    var mts = this.get(class_name).tabular_sections[ts_name],
+      mfrm = this.get(class_name).form,
+      fields = mts.fields, mf;
+    if(mfrm && mfrm.obj) {
+      if(!mfrm.obj.tabular_sections[ts_name]) {
+        return;
+      }
+      utils._mixin(source, mfrm.obj.tabular_sections[ts_name]);
+    }
+    else {
+      if(ts_name === 'contact_information') {
+        fields = {type: '', kind: '', presentation: ''};
+      }
+      source.fields = ['row'];
+      source.headers = '№';
+      source.widths = '40';
+      source.min_widths = '';
+      source.aligns = '';
+      source.sortings = 'na';
+      source.types = 'cntr';
+      for (var f in fields) {
+        mf = mts.fields[f];
+        if(!mf.hide) {
+          source.fields.push(f);
+          source.headers += ',' + (mf.synonym ? mf.synonym.replace(/,/g, ' ') : f);
+          source.types += ',' + this.control_by_type(mf.type);
+          source.sortings += ',na';
+        }
+      }
+    }
+    return true;
+  }
+  class_name_from_1c(name) {
+    var pn = name.split('.');
+    if(pn.length == 1) {
+      return 'enm.' + name;
+    }
+    else if(pn[0] == 'Перечисление') {
+      name = 'enm.';
+    }
+    else if(pn[0] == 'Справочник') {
+      name = 'cat.';
+    }
+    else if(pn[0] == 'Документ') {
+      name = 'doc.';
+    }
+    else if(pn[0] == 'РегистрСведений') {
+      name = 'ireg.';
+    }
+    else if(pn[0] == 'РегистрНакопления') {
+      name = 'areg.';
+    }
+    else if(pn[0] == 'РегистрБухгалтерии') {
+      name = 'accreg.';
+    }
+    else if(pn[0] == 'ПланВидовХарактеристик') {
+      name = 'cch.';
+    }
+    else if(pn[0] == 'ПланСчетов') {
+      name = 'cacc.';
+    }
+    else if(pn[0] == 'Обработка') {
+      name = 'dp.';
+    }
+    else if(pn[0] == 'Отчет') {
+      name = 'rep.';
+    }
+    return name + this.syns_js(pn[1]);
+  }
+  class_name_to_1c(name) {
+    var pn = name.split('.');
+    if(pn.length == 1) {
+      return 'Перечисление.' + name;
+    }
+    else if(pn[0] == 'enm') {
+      name = 'Перечисление.';
+    }
+    else if(pn[0] == 'cat') {
+      name = 'Справочник.';
+    }
+    else if(pn[0] == 'doc') {
+      name = 'Документ.';
+    }
+    else if(pn[0] == 'ireg') {
+      name = 'РегистрСведений.';
+    }
+    else if(pn[0] == 'areg') {
+      name = 'РегистрНакопления.';
+    }
+    else if(pn[0] == 'accreg') {
+      name = 'РегистрБухгалтерии.';
+    }
+    else if(pn[0] == 'cch') {
+      name = 'ПланВидовХарактеристик.';
+    }
+    else if(pn[0] == 'cacc') {
+      name = 'ПланСчетов.';
+    }
+    else if(pn[0] == 'dp') {
+      name = 'Обработка.';
+    }
+    else if(pn[0] == 'rep') {
+      name = 'Отчет.';
+    }
+    return name + this.syns_1с(pn[1]);
+  }
 }
 Meta._sys = [{
-	enm: {
-		accumulation_record_type: [
-			{
-				order: 0,
-				name: 'debit',
-				synonym: 'Приход',
-			},
-			{
-				order: 1,
-				name: 'credit',
-				synonym: 'Расход',
-			},
-		],
-	},
-	ireg: {
-		log: {
-			name: 'log',
-			note: '',
-			synonym: 'Журнал событий',
-			dimensions: {
-				date: {
-					synonym: 'Дата',
-					tooltip: 'Время события',
-					type: {
-						types: ['number'],
-						digits: 15,
-						fraction_figits: 0,
-					},
-				},
-				sequence: {
-					synonym: 'Порядок',
-					tooltip: 'Порядок следования',
-					type: {
-						types: ['number'],
-						digits: 6,
-						fraction_figits: 0,
-					},
-				},
-			},
-			resources: {
-				'class': {
-					synonym: 'Класс',
-					tooltip: 'Класс события',
-					type: {
-						types: ['string'],
-						str_len: 100,
-					},
-				},
-				note: {
-					synonym: 'Комментарий',
-					multiline_mode: true,
-					tooltip: 'Текст события',
-					type: {
-						types: ['string'],
-						str_len: 0,
-					},
-				},
-				obj: {
-					synonym: 'Объект',
-					multiline_mode: true,
-					tooltip: 'Объект, к которому относится событие',
-					type: {
-						types: ['string'],
-						str_len: 0,
-					},
-				},
+  enm: {
+    accumulation_record_type: [
+      {
+        order: 0,
+        name: 'debit',
+        synonym: 'Приход',
+      },
+      {
+        order: 1,
+        name: 'credit',
+        synonym: 'Расход',
+      },
+    ],
+  },
+  ireg: {
+    log: {
+      name: 'log',
+      note: '',
+      synonym: 'Журнал событий',
+      dimensions: {
+        date: {
+          synonym: 'Дата',
+          tooltip: 'Время события',
+          type: {types: ['number'], digits: 15, fraction_figits: 0},
+        },
+        sequence: {
+          synonym: 'Порядок',
+          tooltip: 'Порядок следования',
+          type: {types: ['number'], digits: 6, fraction_figits: 0},
+        },
+      },
+      resources: {
+        'class': {
+          synonym: 'Класс',
+          tooltip: 'Класс события',
+          type: {types: ['string'], str_len: 100},
+        },
+        note: {
+          synonym: 'Комментарий',
+          multiline_mode: true,
+          tooltip: 'Текст события',
+          type: {types: ['string'], str_len: 0},
+        },
+        obj: {
+          synonym: 'Объект',
+          multiline_mode: true,
+          tooltip: 'Объект, к которому относится событие',
+          type: {types: ['string'], str_len: 0},
+        },
         user: {
           synonym: 'Пользователь',
           tooltip: 'Пользователь, в сеансе которого произошло событие',
-          type: {
-            types: ['string'],
-            str_len: 100,
-          },
+          type: {types: ['string'], str_len: 100},
         },
-			},
-		},
+      },
+    },
     log_view: {
       name: 'log_view',
       note: '',
@@ -3944,22 +3984,16 @@ Meta._sys = [{
         key: {
           synonym: 'Ключ',
           tooltip: 'Ключ события',
-          type: {
-            types: ['string'],
-            str_len: 100,
-          },
+          type: {types: ['string'], str_len: 100},
         },
         user: {
           synonym: 'Пользователь',
           tooltip: 'Пользователь, отметивыший событие, как просмотренное',
-          type: {
-            types: ['string'],
-            str_len: 100,
-          },
+          type: {types: ['string'], str_len: 100},
         },
       },
     },
-	},
+  },
 }];
 Meta.Obj = MetaObj;
 Meta.Field = MetaField;

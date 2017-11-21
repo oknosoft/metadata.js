@@ -24,7 +24,8 @@ export default function mngrs() {
      */
     frm_selection_name: {
       get: function () {
-        return `${msg.open_frm} ${msg.selection_parent} ${msg.meta_parents[this.class_name.split('.')[0]]} '${this._meta.synonym || this._meta.name}'`;
+        const meta = this.metadata();
+        return `${msg.open_frm} ${msg.selection_parent} ${msg.meta_parents[this.class_name.split('.')[0]]} '${meta.synonym || meta.name}'`;
       }
     },
 
@@ -35,7 +36,8 @@ export default function mngrs() {
      */
     frm_obj_name: {
       get: function () {
-        return `${msg.open_frm} ${msg.obj_parent} ${msg.meta_parents[this.class_name.split('.')[0]]} '${this._meta.synonym || this._meta.name}'`;
+        const meta = this.metadata();
+        return `${msg.open_frm} ${msg.obj_parent} ${msg.meta_parents[this.class_name.split('.')[0]]} '${meta.synonym || meta.name}'`;
       }
     }
 

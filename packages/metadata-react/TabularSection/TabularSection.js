@@ -125,9 +125,14 @@ export default class TabularSection extends MComponent {
     }
   };
 
-  handleRowUpdated(e) {
+  handleRowUpdated = (e) => {
     //merge updated row with current row and rerender by setting state
     const row = this.rowGetter(e.rowIdx);
+    if(this.props.onRowUpdated){
+      if(this.props.onRowUpdated(e, row) === false){
+        return;
+      }
+    }
     Object.assign(row._row || row, e.updated);
   }
 
