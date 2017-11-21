@@ -12,9 +12,9 @@ class ManagersCollection {
     return msg.meta_classes[this.name];
   }
 
-  create(name, constructor) {
+  create(name, constructor, freeze) {
     this[name] = new (constructor || this._constructor)(this, this.name + '.' + name);
-    constructor && Object.freeze(this[name]);
+    freeze && Object.freeze(this[name]);
   }
 }
 

@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.40, built:2017-11-20
+ metadata-core v2.0.16-beta.40, built:2017-11-21
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2943,6 +2943,49 @@ const utils = {
 			}
 		}
 	},
+  check_compare(left, right, comparison_type, comparison_types) {
+      const {ne, gt, gte, lt, lte, nin, inh, ninh} = comparison_types;
+      switch (comparison_type) {
+      case ne:
+        return left != right;
+      case gt:
+        return left > right;
+      case gte:
+        return left >= right;
+      case lt:
+        return left < right;
+      case lte:
+        return left <= right;
+      case nin:
+        if(Array.isArray(left) && !Array.isArray(right)) {
+          return left.indexOf(right) == -1;
+        }
+        else if(!Array.isArray(left) && Array.isArray(right)) {
+          return right.indexOf(left) == -1;
+        }
+        else if(!Array.isArray(left) && !Array.isArray(right)) {
+          return right != left;
+        }
+        break;
+      case comparison_types.in:
+        if(Array.isArray(left) && !Array.isArray(right)) {
+          return left.indexOf(right) != -1;
+        }
+        else if(!Array.isArray(left) && Array.isArray(right)) {
+          return right.indexOf(left) != -1;
+        }
+        else if(!Array.isArray(left) && !Array.isArray(right)) {
+          return left == right;
+        }
+        break;
+      case inh:
+        return utils.is_data_obj(left) ? left._hierarchy(right) : left == right;
+      case ninh:
+        return utils.is_data_obj(left) ? !left._hierarchy(right) : left != right;
+      default:
+        return left == right;
+      }
+    },
 	_selection(o, selection) {
 		let ok = true;
 		if (selection) {
@@ -3841,9 +3884,7 @@ Meta._sys = [{
 					synonym: 'Дата',
 					tooltip: 'Время события',
 					type: {
-						types: [
-							'number',
-						],
+						types: ['number'],
 						digits: 15,
 						fraction_figits: 0,
 					},
@@ -3852,9 +3893,7 @@ Meta._sys = [{
 					synonym: 'Порядок',
 					tooltip: 'Порядок следования',
 					type: {
-						types: [
-							'number',
-						],
+						types: ['number'],
 						digits: 6,
 						fraction_figits: 0,
 					},
@@ -3865,9 +3904,7 @@ Meta._sys = [{
 					synonym: 'Класс',
 					tooltip: 'Класс события',
 					type: {
-						types: [
-							'string',
-						],
+						types: ['string'],
 						str_len: 100,
 					},
 				},
@@ -3876,9 +3913,7 @@ Meta._sys = [{
 					multiline_mode: true,
 					tooltip: 'Текст события',
 					type: {
-						types: [
-							'string',
-						],
+						types: ['string'],
 						str_len: 0,
 					},
 				},
@@ -3887,14 +3922,43 @@ Meta._sys = [{
 					multiline_mode: true,
 					tooltip: 'Объект, к которому относится событие',
 					type: {
-						types: [
-							'string',
-						],
+						types: ['string'],
 						str_len: 0,
 					},
 				},
+        user: {
+          synonym: 'Пользователь',
+          tooltip: 'Пользователь, в сеансе которого произошло событие',
+          type: {
+            types: ['string'],
+            str_len: 100,
+          },
+        },
 			},
 		},
+    log_view: {
+      name: 'log_view',
+      note: '',
+      synonym: 'Просмотр журнала событий',
+      dimensions: {
+        key: {
+          synonym: 'Ключ',
+          tooltip: 'Ключ события',
+          type: {
+            types: ['string'],
+            str_len: 100,
+          },
+        },
+        user: {
+          synonym: 'Пользователь',
+          tooltip: 'Пользователь, отметивыший событие, как просмотренное',
+          type: {
+            types: ['string'],
+            str_len: 100,
+          },
+        },
+      },
+    },
 	},
 }];
 Meta.Obj = MetaObj;
@@ -3907,9 +3971,9 @@ class ManagersCollection {
   toString() {
     return msg.meta_classes[this.name];
   }
-  create(name, constructor) {
+  create(name, constructor, freeze) {
     this[name] = new (constructor || this._constructor)(this, this.name + '.' + name);
-    constructor && Object.freeze(this[name]);
+    freeze && Object.freeze(this[name]);
   }
 }
 class Enumerations extends ManagersCollection {

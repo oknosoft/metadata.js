@@ -81,8 +81,17 @@ export default class TabularSection extends MComponent {
     }
   }
 
+  getRows() {
+    const {scheme, _tabular} = this.state;
+    return scheme ? scheme.filter(_tabular) : [];
+  }
+
+  rowsCount() {
+    return this.getRows().length;
+  }
+
   rowGetter = (i) => {
-    return this.state._tabular.get(i);
+    return this.getRows()[i];
   };
 
   handleRemove = () => {
@@ -239,7 +248,7 @@ export default class TabularSection extends MComponent {
                 columns={_columns}
                 enableCellSelect={true}
                 rowGetter={rowGetter}
-                rowsCount={_tabular.count()}
+                rowsCount={this.rowsCount()}
                 onRowUpdated={handleRowUpdated}
                 rowSelection={rowSelection}/>
 

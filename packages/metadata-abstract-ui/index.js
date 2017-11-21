@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.40, built:2017-11-20
+ metadata-abstract-ui v2.0.16-beta.40, built:2017-11-21
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -25,114 +25,109 @@ function meta_objs() {
 }
 
 function log_manager() {
-	const {classes} = this;
-	const {InfoRegManager, RegisterRow} = classes;
-	class LogManager extends InfoRegManager {
-		constructor(owner) {
-			super(owner, 'ireg.log');
-		}
-		record(msg) {
-			const {wsql} = this._owner.$p;
-			if (msg instanceof Error) {
-				if (console)
-					console.log(msg);
-				msg = {
-					class: 'error',
-					note: msg.toString(),
-				};
-			}
-			else if (typeof msg == 'object' && !msg.class && !msg.obj) {
-				msg = {
-					class: 'obj',
-					obj: msg,
-					note: msg.note,
-				};
-			}
-			else if (typeof msg != 'object')
-				msg = {note: msg};
-			msg.date = Date.now() + wsql.time_diff;
-			if (!this.smax) {
-				this.smax = alasql.compile('select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?');
-			}
-			var res = this.smax([msg.date]);
-			if (!res.length || res[0].sequence === undefined)
-				msg.sequence = 0;
-			else
-				msg.sequence = parseInt(res[0].sequence) + 1;
-			if (!msg.class)
-				msg.class = 'note';
-			wsql.alasql('insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)',
-				[msg.date + '¶' + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : '']);
-		}
-		backup(dfrom, dtill) {
-		}
-		restore(dfrom, dtill) {
-		}
-		clear(dfrom, dtill) {
-		}
-		show(pwnd) {
-		}
-		get(ref, force_promise, do_not_create) {
-			if (typeof ref == 'object')
-				ref = ref.ref || '';
-			if (!this.by_ref[ref]) {
-				if (force_promise === false)
-					return undefined;
-				var parts = ref.split('¶');
-				this._owner.$p.wsql.alasql('select * from `ireg_log` where date=' + parts[0] + ' and sequence=' + parts[1])
-					.forEach(row => new RegisterRow(row, this));
-			}
-			return force_promise ? Promise.resolve(this.by_ref[ref]) : this.by_ref[ref];
-		}
-		get_sql_struct(attr) {
-			if (attr && attr.action == 'get_selection') {
-				var sql = 'select * from `ireg_log`';
-				if (attr.date_from) {
-					if (attr.date_till)
-						sql += ' where `date` >= ? and `date` <= ?';
-					else
-						sql += ' where `date` >= ?';
-				} else if (attr.date_till)
-					sql += ' where `date` <= ?';
-				return sql;
-			} else
-				return InfoRegManager.prototype.get_sql_struct.call(this, attr);
-		}
-	}
-	this.IregLog = class IregLog extends RegisterRow {
-		get date() {
-			return this._getter('date');
-		}
-		set date(v) {
-			this._setter('date', v);
-		}
-		get sequence() {
-			return this._getter('sequence');
-		}
-		set sequence(v) {
-			this._setter('sequence', v);
-		}
-		get class() {
-			return this._getter('class');
-		}
-		set class(v) {
-			this._setter('class', v);
-		}
-		get note() {
-			return this._getter('note');
-		}
-		set note(v) {
-			this._setter('note', v);
-		}
-		get obj() {
-			return this._getter('obj');
-		}
-		set obj(v) {
-			this._setter('obj', v);
-		}
-	};
-	classes.LogManager = LogManager;
-	this.ireg.create('log', LogManager);
+  const {classes} = this;
+  const {InfoRegManager, RegisterRow} = classes;
+  class LogManager extends InfoRegManager {
+    constructor(owner) {
+      super(owner, 'ireg.log');
+    }
+    record(msg) {
+      const {wsql} = this._owner.$p;
+      if(msg instanceof Error) {
+        if(console) {
+          console.log(msg);
+        }
+        msg = {
+          class: 'error',
+          note: msg.toString(),
+        };
+      }
+      else if(typeof msg == 'object' && !msg.class && !msg.obj) {
+        msg = {
+          class: 'obj',
+          obj: msg,
+          note: msg.note,
+        };
+      }
+      else if(typeof msg != 'object') {
+        msg = {note: msg};
+      }
+      msg.date = Date.now() + wsql.time_diff;
+      if(!this.smax){
+        this.smax = wsql.alasql.compile('select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?');
+      }
+      const res = this.smax([msg.date]);
+      if(!res.length || res[0].sequence === undefined) {
+        msg.sequence = 0;
+      }
+      else {
+        msg.sequence = parseInt(res[0].sequence) + 1;
+      }
+      if(!msg.class) {
+        msg.class = 'note';
+      }
+      wsql.alasql('insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)',
+        [msg.date + '¶' + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : '']);
+    }
+    backup(dfrom, dtill) {
+    }
+    restore(dfrom, dtill) {
+    }
+    clear(dfrom, dtill) {
+    }
+    show(pwnd) {
+    }
+    get(ref, force_promise, do_not_create) {
+      if(typeof ref == 'object') {
+        ref = ref.ref || '';
+      }
+      if(!this.by_ref[ref]) {
+        if(force_promise === false) {
+          return undefined;
+        }
+        var parts = ref.split('¶');
+        this._owner.$p.wsql.alasql('select * from `ireg_log` where date=' + parts[0] + ' and sequence=' + parts[1])
+          .forEach(row => new RegisterRow(row, this));
+      }
+      return force_promise ? Promise.resolve(this.by_ref[ref]) : this.by_ref[ref];
+    }
+    get_sql_struct(attr) {
+      if(attr && attr.action == 'get_selection') {
+        var sql = 'select * from `ireg_log`';
+        if(attr.date_from) {
+          if(attr.date_till) {
+            sql += ' where `date` >= ? and `date` <= ?';
+          }
+          else {
+            sql += ' where `date` >= ?';
+          }
+        }
+        else if(attr.date_till) {
+          sql += ' where `date` <= ?';
+        }
+        return sql;
+      }
+      else {
+        return InfoRegManager.prototype.get_sql_struct.call(this, attr);
+      }
+    }
+  }
+  this.IregLog = class IregLog extends RegisterRow {
+    get date() {return this._getter('date')}
+    set date(v) {this._setter('date', v);}
+    get sequence() {return this._getter('sequence')}
+    set sequence(v) {this._setter('sequence', v);}
+    get class() {return this._getter('class')}
+    set class(v) {this._setter('class', v);}
+    get note() {return this._getter('note')}
+    set note(v) {this._setter('note', v);}
+    get obj() {return this._getter('obj')}
+    set obj(v) {this._setter('obj', v);}
+    get user() {return this._getter('obj')}
+    set user(v) {this._setter('obj', v);}
+  };
+  classes.LogManager = LogManager;
+  this.ireg.create('log', LogManager);
 }
 
 function scheme_settings() {
@@ -157,29 +152,29 @@ function scheme_settings() {
         const find_scheme = () => {
           this.find_schemas(class_name)
             .then((data) => {
-            if(data.length == 1) {
-              set_default_and_resolve(data[0]);
-            }
-            else if(data.length) {
-              if(!$p.current_user || !$p.current_user.name) {
+              if(data.length == 1) {
                 set_default_and_resolve(data[0]);
               }
-              else {
-                const {name} = $p.current_user;
-                if(!data.some((scheme) => {
-                    if(scheme.user == name) {
-                      set_default_and_resolve(scheme);
-                      return true;
-                    }
-                  })) {
+              else if(data.length) {
+                if(!$p.current_user || !$p.current_user.name) {
                   set_default_and_resolve(data[0]);
                 }
+                else {
+                  const {name} = $p.current_user;
+                  if(!data.some((scheme) => {
+                      if(scheme.user == name) {
+                        set_default_and_resolve(scheme);
+                        return true;
+                      }
+                    })) {
+                    set_default_and_resolve(data[0]);
+                  }
+                }
               }
-            }
-            else {
-              create_scheme();
-            }
-          })
+              else {
+                create_scheme();
+              }
+            })
             .catch((err) => {
               create_scheme();
             });
@@ -231,15 +226,16 @@ function scheme_settings() {
       return {_obj, _meta};
     }
   }
-  this.DpScheme_settings = class DpScheme_settings extends DataProcessorObj {
+  class DpScheme_settings extends DataProcessorObj {
     get scheme() {
       return this._getter('scheme');
     }
     set scheme(v) {
       this._setter('scheme', v);
     }
-  };
-  this.CatScheme_settings = class CatScheme_settings extends CatObj {
+  }
+  this.DpScheme_settings = DpScheme_settings;
+  class CatScheme_settings extends CatObj {
     constructor(attr, manager, loading) {
       super(attr, manager, loading);
       this.set_standard_period();
@@ -498,35 +494,6 @@ function scheme_settings() {
       wsql.set_user_param(this._manager.scheme_name(this.obj), this.ref);
       return this;
     }
-    fix_select(select, key0) {
-      const keys = this.query.split('/');
-      const {_key, _view} = select;
-      let res;
-      if(keys.length > 2) {
-        key0 = keys[2];
-      }
-      if(_key.startkey[0] != key0) {
-        _key.startkey[0] = _key.endkey[0] = key0;
-        res = true;
-      }
-      if(keys.length > 1) {
-        const select_view = keys[0] + '/' + keys[1];
-        if(_view != select_view) {
-          select._view = select_view;
-          res = true;
-        }
-      }
-      if(!this.standard_period.empty()) {
-        const {date_from, date_till} = this;
-        _key.startkey[1] = date_from.getFullYear();
-        _key.startkey[2] = date_from.getMonth() + 1;
-        _key.startkey[3] = date_from.getDate();
-        _key.endkey[1] = date_till.getFullYear();
-        _key.endkey[2] = date_till.getMonth() + 1;
-        _key.endkey[3] = date_till.getDate();
-      }
-      return res;
-    }
     mango_selector({columns, skip, limit}) {
       function format(date) {
         return utils.moment(date).format('YYYY-MM-DD');
@@ -559,6 +526,34 @@ function scheme_settings() {
         res.limit = limit;
       }
       Object.defineProperty(res, '_mango', {value: true});
+      return res;
+    }
+    filter(collection) {
+      const selection = [];
+      this.selection.find_rows({use: true}, (row) => selection.push(row));
+      const res = [];
+      const {utils, md, enm: {comparison_types}} = $p;
+      collection.forEach((row) => {
+        let ok = true;
+        for(let {left_value, left_value_type, right_value, right_value_type, comparison_type} of selection){
+          if(left_value_type === 'path'){
+            const path = left_value.split('.');
+            left_value = row[path[0]];
+            for(let i = 1; i < path.length; i++){
+              left_value = left_value[path[i]];
+            }
+          }
+          if(right_value_type !== 'path'){
+            const mgr = md.mgr_by_class_name(right_value_type);
+            right_value = mgr ? mgr.get(right_value) : utils.fetch_type(right_value, {types: [right_value_type]});
+          }
+          ok = utils.check_compare(left_value, right_value, comparison_type, comparison_types);
+          if(!ok){
+            break;
+          }
+        }
+        ok && res.push(row);
+      });
       return res;
     }
     columns(mode) {
@@ -617,7 +612,8 @@ function scheme_settings() {
         title: caption,
       }));
     }
-  };
+  }
+  this.CatScheme_settings = CatScheme_settings;
   this.CatScheme_settingsDimensionsRow = class CatScheme_settingsDimensionsRow extends TabularSectionRow {
     get parent() {
       return this._getter('parent');

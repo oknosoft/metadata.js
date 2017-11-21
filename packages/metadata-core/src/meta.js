@@ -544,9 +544,7 @@ Meta._sys = [{
 					synonym: 'Дата',
 					tooltip: 'Время события',
 					type: {
-						types: [
-							'number',
-						],
+						types: ['number'],
 						digits: 15,
 						fraction_figits: 0,
 					},
@@ -555,9 +553,7 @@ Meta._sys = [{
 					synonym: 'Порядок',
 					tooltip: 'Порядок следования',
 					type: {
-						types: [
-							'number',
-						],
+						types: ['number'],
 						digits: 6,
 						fraction_figits: 0,
 					},
@@ -568,9 +564,7 @@ Meta._sys = [{
 					synonym: 'Класс',
 					tooltip: 'Класс события',
 					type: {
-						types: [
-							'string',
-						],
+						types: ['string'],
 						str_len: 100,
 					},
 				},
@@ -579,9 +573,7 @@ Meta._sys = [{
 					multiline_mode: true,
 					tooltip: 'Текст события',
 					type: {
-						types: [
-							'string',
-						],
+						types: ['string'],
 						str_len: 0,
 					},
 				},
@@ -590,14 +582,43 @@ Meta._sys = [{
 					multiline_mode: true,
 					tooltip: 'Объект, к которому относится событие',
 					type: {
-						types: [
-							'string',
-						],
+						types: ['string'],
 						str_len: 0,
 					},
 				},
+        user: {
+          synonym: 'Пользователь',
+          tooltip: 'Пользователь, в сеансе которого произошло событие',
+          type: {
+            types: ['string'],
+            str_len: 100,
+          },
+        },
 			},
 		},
+    log_view: {
+      name: 'log_view',
+      note: '',
+      synonym: 'Просмотр журнала событий',
+      dimensions: {
+        key: {
+          synonym: 'Ключ',
+          tooltip: 'Ключ события',
+          type: {
+            types: ['string'],
+            str_len: 100,
+          },
+        },
+        user: {
+          synonym: 'Пользователь',
+          tooltip: 'Пользователь, отметивыший событие, как просмотренное',
+          type: {
+            types: ['string'],
+            str_len: 100,
+          },
+        },
+      },
+    },
 	},
 }];
 
