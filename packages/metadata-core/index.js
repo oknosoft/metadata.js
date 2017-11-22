@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.40, built:2017-11-21
+ metadata-core v2.0.16-beta.40, built:2017-11-22
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3150,7 +3150,6 @@ utils.__define('blank', {
 });
 
 function Aes(default_key) {
-	'use strict';
 	var Aes = this;
 	Aes.cipher = function(input, w) {
 		var Nb = 4;
