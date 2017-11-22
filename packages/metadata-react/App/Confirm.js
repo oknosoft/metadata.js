@@ -1,18 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Button from 'material-ui/Button';
-import Dialog, {DialogActions, DialogContent, DialogContentText, DialogTitle} from 'material-ui/Dialog';
+import {DialogContentText} from 'material-ui/Dialog';
+import Dialog from './Dialog';
 
 export default function Confirm({text, title, handleOk, handleCancel, open}) {
-  return <Dialog open={open} onRequestClose={handleCancel}>
-    <DialogTitle>{title}</DialogTitle>
-    <DialogContent>
-      <DialogContentText>{text}</DialogContentText>
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={handleCancel} color="primary">Отмена</Button>
-      <Button onClick={handleOk} color="primary">Ок</Button>
-    </DialogActions>
+  return <Dialog
+    open={open}
+    title={title}
+    onRequestClose={handleCancel}
+    actions={[
+      <Button key="cancel" onClick={handleCancel} color="primary">Отмена</Button>,
+      <Button key="ok" onClick={handleOk} color="primary">Ок</Button>
+    ]}
+  >
+    <DialogContentText>{text}</DialogContentText>
   </Dialog>;
 }
 

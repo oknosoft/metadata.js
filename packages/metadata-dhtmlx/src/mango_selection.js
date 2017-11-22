@@ -21,7 +21,7 @@ class MangoSelection {
     this.body_keydown = this.body_keydown.bind(this);
 
     // создаём и настраиваем форму
-    if (this.has_tree && attr.initial_value && attr.initial_value != $p.utils.blank.guid && !attr.parent) {
+    if(this.has_tree && attr.initial_value && attr.initial_value != $p.utils.blank.guid && !attr.parent) {
       this._mgr.get(attr.initial_value, true)
         .then((tObj) => {
           attr.set_parent = attr.parent = tObj.parent.ref;
@@ -35,7 +35,7 @@ class MangoSelection {
   }
 
   get has_tree() {
-    return this._meta["hierarchical"] && !(this._mgr instanceof this._mgr._owner.$p.classes.ChartOfAccountManager);
+    return this._meta.hierarchical && !(this._mgr instanceof this._mgr._owner.$p.classes.ChartOfAccountManager);
   }
 
 
@@ -50,24 +50,24 @@ class MangoSelection {
     const {_attr, _mgr, _pwnd, _meta} = this;
 
     // создаём и настраиваем окно формы
-    if (_pwnd instanceof dhtmlXCellObject) {
-      if (!(_pwnd instanceof dhtmlXTabBarCell) && (typeof _pwnd.close == "function")) {
+    if(_pwnd instanceof dhtmlXCellObject) {
+      if(!(_pwnd instanceof dhtmlXTabBarCell) && (typeof _pwnd.close == 'function')) {
         _pwnd.close(true);
       }
       this.wnd = _pwnd;
       this.wnd.close = (on_create) => {
         const wnd = this.wnd || _pwnd;
-        if (wnd) {
+        if(wnd) {
           wnd.detachToolbar();
           wnd.detachStatusBar();
-          if (wnd.conf) {
+          if(wnd.conf) {
             wnd.conf.unloading = true;
           }
           wnd.detachObject(true);
         }
         this.frm_unload(on_create);
       };
-      if (!_attr.hide_header) {
+      if(!_attr.hide_header) {
         setTimeout(() => this.wnd.showHeader());
       }
     }
@@ -78,18 +78,18 @@ class MangoSelection {
       wnd.button('park').hide();
       wnd.button('minmax').show();
       wnd.button('minmax').enable();
-      wnd.attachEvent("onClose", this.frm_close.bind(this));
+      wnd.attachEvent('onClose', this.frm_close.bind(this));
     }
 
     const {wnd} = this;
 
     $p.iface.bind_help(wnd);
 
-    if (wnd.setText && !_attr.hide_text) {
-      wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (_meta["list_presentation"] || _meta.synonym) + '"');
+    if(wnd.setText && !_attr.hide_text) {
+      wnd.setText('Список ' + (_mgr.class_name.indexOf('doc.') == -1 ? 'справочника "' : 'документов "') + (_meta.list_presentation || _meta.synonym) + '"');
     }
 
-    document.body.addEventListener("keydown", this.body_keydown, false);
+    document.body.addEventListener('keydown', this.body_keydown, false);
 
     wnd.elmnts = {};
     wnd._mgr = _mgr;
@@ -112,14 +112,14 @@ class MangoSelection {
 
     const toolbar = elmnts.toolbar = wnd.attachToolbar();
     toolbar.setIconsPath(dhtmlx.image_path + 'dhxtoolbar' + dhtmlx.skin_suffix());
-    toolbar.loadStruct(_attr.toolbar_struct || $p.injected_data["toolbar_selection.xml"], () => {
+    toolbar.loadStruct(_attr.toolbar_struct || $p.injected_data['toolbar_selection.xml'], () => {
 
-      toolbar.attachEvent("onclick", this.toolbar_click.bind(this));
+      toolbar.attachEvent('onclick', this.toolbar_click.bind(this));
 
       // если мы приклеены к ячейке, сдвигаем toolbar на 4px
-      if (wnd === _pwnd) {
-        toolbar.cont.parentElement.classList.add("dhx_cell_toolbar_no_borders");
-        toolbar.cont.parentElement.classList.remove("dhx_cell_toolbar_def");
+      if(wnd === _pwnd) {
+        toolbar.cont.parentElement.classList.add('dhx_cell_toolbar_no_borders');
+        toolbar.cont.parentElement.classList.remove('dhx_cell_toolbar_def');
         //toolbar.cont.style.top = "4px";
       }
 
@@ -131,51 +131,54 @@ class MangoSelection {
         hide_filter: _attr.hide_filter,
         custom_selection: _attr.custom_selection
       };
-      if (_attr.date_from) tbattr.date_from = _attr.date_from;
-      if (_attr.date_till) tbattr.date_till = _attr.date_till;
-      if (_attr.period) tbattr.period = _attr.period;
+      if(_attr.date_from) tbattr.date_from = _attr.date_from;
+      if(_attr.date_till) tbattr.date_till = _attr.date_till;
+      if(_attr.period) tbattr.period = _attr.period;
       elmnts.filter = new $p.iface.Toolbar_filter(tbattr);
 
 
       // учтём права для каждой роли на каждый объект
       const _acl = $p.current_user.get_acl(_mgr.class_name);
 
-      if (_acl.indexOf("i") == -1)
-        toolbar.hideItem("btn_new");
-
-      if (_acl.indexOf("v") == -1)
-        toolbar.hideItem("btn_edit");
-
-      if (_acl.indexOf("d") == -1)
-        toolbar.hideItem("btn_delete");
-
-      if (!(_pwnd.on_select || _attr.on_select)) {
-        toolbar.hideItem("btn_select");
-        toolbar.hideItem("sep1");
-        if ($p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper")
-          toolbar.addListOption("bs_more", "btn_order_list", "~", "button", "<i class='fa fa-briefcase fa-lg fa-fw'></i> Список заказов");
+      if(_acl.indexOf('i') == -1) {
+        toolbar.hideItem('btn_new');
       }
-      toolbar.addListOption("bs_more", "btn_import", "~", "button", "<i class='fa fa-upload fa-lg fa-fw'></i> Загрузить из файла");
-      toolbar.addListOption("bs_more", "btn_export", "~", "button", "<i class='fa fa-download fa-lg fa-fw'></i> Выгрузить в файл");
+
+      if(_acl.indexOf('v') == -1) {
+        toolbar.hideItem('btn_edit');
+      }
+
+      if(_acl.indexOf('d') == -1) {
+        toolbar.hideItem('btn_delete');
+      }
+
+      if(!(_pwnd.on_select || _attr.on_select)) {
+        toolbar.hideItem('btn_select');
+        toolbar.hideItem('sep1');
+        if($p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == 'oper') {
+          toolbar.addListOption('bs_more', 'btn_order_list', '~', 'button', '<i class="fa fa-briefcase fa-lg fa-fw"></i> Список заказов');
+        }
+      }
+      toolbar.addListOption('bs_more', 'btn_import', '~', 'button', '<i class="fa fa-upload fa-lg fa-fw"></i> Загрузить из файла');
+      toolbar.addListOption('bs_more', 'btn_export', '~', 'button', '<i class="fa fa-download fa-lg fa-fw"></i> Выгрузить в файл');
 
 
       // добавляем команды печати
-      if (_mgr.printing_plates) {
+      if(_mgr.printing_plates) {
         _mgr.printing_plates().then((pp) => {
           let added;
           for (let pid in pp) {
-            toolbar.addListOption("bs_print", pid, "~", "button", pp[pid].toString());
+            toolbar.addListOption('bs_print', pid, '~', 'button', pp[pid].toString());
             added = true;
           }
-          if (!added)
-            toolbar.hideItem("bs_print");
+          if(!added) {
+            toolbar.hideItem('bs_print');
+          }
         });
       }
       else {
-        toolbar.hideItem("bs_print");
+        toolbar.hideItem('bs_print');
       }
-
-
     });
   }
 
@@ -185,7 +188,7 @@ class MangoSelection {
 
     const do_reload = () => setTimeout(() => wnd.elmnts.grid && this.reload(), 20);
 
-    if (this.has_tree) {
+    if(this.has_tree) {
       const layout = wnd.attachLayout('2U');
 
       cell_grid = layout.cells('b');
@@ -196,20 +199,21 @@ class MangoSelection {
       cell_tree.hideHeader();
 
       tree = wnd.elmnts.tree = cell_tree.attachDynTree(_mgr, null, do_reload);
-      tree.attachEvent("onSelect", (id, mode) => {	// довешиваем обработчик на дерево
-        if (!mode) {
+      tree.attachEvent('onSelect', (id, mode) => {	// довешиваем обработчик на дерево
+        if(!mode) {
           return;
         }
-        if (this.do_not_reload) {
+        if(this.do_not_reload) {
           delete this.do_not_reload;
         }
         else {
           do_reload();
         }
       });
-      tree.attachEvent("onDblClick", this.select);
+      tree.attachEvent('onDblClick', this.select);
 
-    } else {
+    }
+    else {
       cell_grid = wnd;
       do_reload();
     }
@@ -218,11 +222,11 @@ class MangoSelection {
     const grid = wnd.elmnts.grid = cell_grid.attachGrid();
     grid.setIconsPath(dhtmlx.image_path);
     grid.setImagePath(dhtmlx.image_path);
-    grid.attachEvent("onBeforeSorting", this.custom_column_sort.bind(this));
-    grid.attachEvent("onXLE", () => cell_grid.progressOff());
-    grid.attachEvent("onXLS", () => cell_grid.progressOn());
-    grid.attachEvent("onRowDblClicked", (rId, cInd) => {
-      if (tree && tree.items[rId]) {
+    grid.attachEvent('onBeforeSorting', this.custom_column_sort.bind(this));
+    grid.attachEvent('onXLE', () => cell_grid.progressOff());
+    grid.attachEvent('onXLS', () => cell_grid.progressOn());
+    grid.attachEvent('onRowDblClicked', (rId, cInd) => {
+      if(tree && tree.items[rId]) {
         tree.selectItem(rId);
         const pid = tree.getParentId(rId);
         pid && pid != $p.utils.blank.guid && tree.openItem(pid);
@@ -254,18 +258,18 @@ class MangoSelection {
 
     return function (url, call) {
 
-      this.callEvent("onXLS", [this]);
+      this.callEvent('onXLS', [this]);
       this._data_type = 'xml';
-      if (!this.xmlFileUrl) {
+      if(!this.xmlFileUrl) {
         this.xmlFileUrl = url;
       }
-      if (!this.xmlLoader_updated) {
+      if(!this.xmlLoader_updated) {
         this.xmlLoader_updated = true;
         this.xmlLoader = (xml) => {
-          if (!this.callEvent) return;
+          if(!this.callEvent) return;
           this._process_xml(xml.xmlDoc);
-          if (!this._contextCallTimer) {
-            this.callEvent("onXLE", [this, 0, 0, xml.xmlDoc]);
+          if(!this._contextCallTimer) {
+            this.callEvent('onXLE', [this, 0, 0, xml.xmlDoc]);
           }
         };
       }
@@ -273,12 +277,12 @@ class MangoSelection {
       let start = this._current_load ? this._current_load[0] : 0;
       let count = this._current_load ? this._current_load[1] : 40;
       const parts = url.split('?');
-      if (parts.length > 1) {
+      if(parts.length > 1) {
         const prm = $p.job_prm.parse_url_str(parts[1]);
-        if (prm.posStart) {
+        if(prm.posStart) {
           start = parseInt(prm.posStart);
         }
-        if (prm.count) {
+        if(prm.count) {
           count = parseInt(prm.count);
         }
       }
@@ -287,7 +291,7 @@ class MangoSelection {
       that._mgr.pouch_db.find(filter)
         .then(({docs}) => {
 
-          if(that._need_reload){
+          if(that._need_reload) {
             that._need_reload = false;
             return this.load(url, call);
           }
@@ -299,14 +303,14 @@ class MangoSelection {
               v.date = new Date(v.date);
               v.posted = v.posted || false;
               v.partner = $p.cat.partners.get(v.partner).presentation;
-              return v
+              return v;
             }), {
               _total_count: start + (docs.length < count ? docs.length : docs.length + 1),
               start: start
             }),
             filePath: url,
             async: true
-          }
+          };
           this.xmlLoader(xml);
 
           const sort = that._sort[0];
@@ -317,16 +321,16 @@ class MangoSelection {
           that._loading = false;
 
         });
-    }
+    };
   }
 
   get_filter(start, count) {
 
     const {wnd, _mgr, _sort, _attr} = this;
     const fields = _mgr.caption_flds({}).acols.map(v => v.id);
-    fields.push("_id");
-    fields.push("posted");
-    fields.push("_deleted");
+    fields.push('_id');
+    fields.push('posted');
+    fields.push('_deleted');
 
     const eflt = wnd.elmnts.filter;
     const flt = eflt.get_filter(true);
@@ -340,36 +344,36 @@ class MangoSelection {
       fields: fields,
       skip: start,
       limit: count
-    }
+    };
 
-    if(_attr._index.fields){
-      for(let sfld of _attr._index.fields){
-        if(sfld == 'date'){
+    if(_attr._index.fields) {
+      for (let sfld of _attr._index.fields) {
+        if(sfld == 'date') {
           filter.selector.date = date;
         }
-        else if(eflt.custom_selection[sfld]){
+        else if(eflt.custom_selection[sfld]) {
           filter.selector[sfld] = eflt.custom_selection[sfld];
         }
       }
     }
-    else{
+    else {
       filter.selector.date = date;
-      for(let sfld in eflt.custom_selection){
-        if(sfld[0] != '_'){
+      for (let sfld in eflt.custom_selection) {
+        if(sfld[0] != '_') {
           filter.selector[sfld] = eflt.custom_selection[sfld];
         }
       }
     }
 
-    if(flt.filter){
-      filter.selector.search = {$regex: flt.filter.toLowerCase()}
+    if(flt.filter) {
+      filter.selector.search = {$regex: flt.filter.toLowerCase()};
     }
 
-    if(_sort){
+    if(_sort) {
       filter.sort = _sort;
     }
 
-    if(eflt.custom_selection._index){
+    if(eflt.custom_selection._index) {
       filter.use_index = eflt.custom_selection._index.ddoc;
     }
 
@@ -385,23 +389,25 @@ class MangoSelection {
     const {wnd} = this;
     const {iface, job_prm} = $p;
 
-    if (wnd && wnd.is_visible && wnd.is_visible()) {
-      if (evt.ctrlKey && evt.keyCode == 70) { // фокус на поиск по {Ctrl+F}
-        if (!iface.check_exit(wnd)) {
+    if(wnd && wnd.is_visible && wnd.is_visible()) {
+      if(evt.ctrlKey && evt.keyCode == 70) { // фокус на поиск по {Ctrl+F}
+        if(!iface.check_exit(wnd)) {
           setTimeout(() => {
-            wnd.elmnts.filter.input_filter && job_prm.device_type == "desktop" && wnd.elmnts.filter.input_filter.focus();
+            wnd.elmnts.filter.input_filter && job_prm.device_type == 'desktop' && wnd.elmnts.filter.input_filter.focus();
           });
           return iface.cancel_bubble(evt, true);
         }
 
-      } else if (evt.shiftKey && evt.keyCode == 116) { // requery по {Shift+F5}
-        if (!iface.check_exit(wnd)) {
+      }
+      else if(evt.shiftKey && evt.keyCode == 116) { // requery по {Shift+F5}
+        if(!iface.check_exit(wnd)) {
           setTimeout(() => this.reload());
           return iface.cancel_bubble(evt, true);
         }
 
-      } else if (evt.keyCode == 27) { // закрытие по {ESC}
-        if (wnd instanceof dhtmlXWindowsCell && !iface.check_exit(wnd)) {
+      }
+      else if(evt.keyCode == 27) { // закрытие по {ESC}
+        if(wnd instanceof dhtmlXWindowsCell && !iface.check_exit(wnd)) {
           setTimeout(() => wnd.close());
         }
       }
@@ -416,83 +422,85 @@ class MangoSelection {
     const {_attr, wnd, _mgr} = this;
 
     // если внешний обработчик вернул false - выходим
-    if(_attr.toolbar_click && _attr.toolbar_click(btn_id, wnd, _mgr) === false){
+    if(_attr.toolbar_click && _attr.toolbar_click(btn_id, wnd, _mgr) === false) {
       return;
     }
 
     switch (btn_id) {
-      case "btn_select":
-        this.select();
-        break;
+    case 'btn_select':
+      this.select();
+      break;
 
-      case "btn_new":
-        _mgr.create({}, true)
-          .then((o) => {
-            if(_attr.on_new){
-              _attr.on_new(o, wnd);
-            }
-            else if($p.job_prm.keep_hash){
-              o.form_obj(wnd);
-            }
-            else{
-              o._set_loaded(o.ref);
-              $p.iface.set_hash(_mgr.class_name, o.ref);
-            }
-          });
-        break;
+    case 'btn_new':
+      _mgr.create({}, true)
+        .then((o) => {
+          if(_attr.on_new) {
+            _attr.on_new(o, wnd);
+          }
+          else if($p.job_prm.keep_hash) {
+            o.form_obj(wnd);
+          }
+          else {
+            o._set_loaded(o.ref);
+            $p.iface.set_hash(_mgr.class_name, o.ref);
+          }
+        });
+      break;
 
-      case "btn_edit":
-        const rId = wnd.elmnts.grid.getSelectedRowId();
-        if (rId){
-          if(_attr.on_edit){
-            _attr.on_edit(_mgr, rId, wnd);
-          }
-          else if($p.job_prm.keep_hash){
-            _mgr.form_obj(wnd, {ref: rId});
-          }
-          else{
-            $p.iface.set_hash(_mgr.class_name, rId);
-          }
+    case 'btn_edit':
+      const rId = wnd.elmnts.grid.getSelectedRowId();
+      if(rId) {
+        if(_attr.on_edit) {
+          _attr.on_edit(_mgr, rId, wnd);
         }
-        else{
-          $p.msg.show_msg({
-            type: "alert-warning",
-            text: $p.msg.no_selected_row.replace("%1", ""),
-            title: $p.msg.main_title
-          });
+        else if($p.job_prm.keep_hash) {
+          _mgr.form_obj(wnd, {ref: rId});
         }
-        break;
+        else {
+          $p.iface.set_hash(_mgr.class_name, rId);
+        }
+      }
+      else {
+        $p.msg.show_msg({
+          type: 'alert-warning',
+          text: $p.msg.no_selected_row.replace('%1', ''),
+          title: $p.msg.main_title
+        });
+      }
+      break;
 
-      case "btn_delete":
-        this.mark_deleted();
-        break;
+    case 'btn_delete':
+      this.mark_deleted();
+      break;
 
-      case "btn_import":
-        _mgr.import();
-        break;
+    case 'btn_import':
+      _mgr.import();
+      break;
 
-      case "btn_export":
-        _mgr.export(wnd.elmnts.grid.getSelectedRowId());
-        break;
+    case 'btn_export':
+      _mgr.export(wnd.elmnts.grid.getSelectedRowId());
+      break;
 
-      case "btn_requery":
-        this.reload(true);
-        break;
+    case 'btn_requery':
+      this.reload(true);
+      break;
 
-      default:
-        btn_id.substr(0,4) == "prn_" && this.print(btn_id);
+    default:
+      btn_id.substr(0, 4) == 'prn_' && this.print(btn_id);
 
     }
   }
 
   input_filter_change(flt) {
     const {wnd, grid, has_tree} = this;
-    if (wnd && wnd.elmnts) {
-      if (has_tree) {
-        if (flt.filter || flt.hide_tree)
+    if(wnd && wnd.elmnts) {
+      if(has_tree) {
+        if(flt.filter || flt.hide_tree) {
           wnd.elmnts.cell_tree.collapse();
-        else
+        }
+        else {
           wnd.elmnts.cell_tree.expand();
+        }
       }
       this.reload();
     }
@@ -505,15 +513,15 @@ class MangoSelection {
   select(rId) {
     const {_attr, wnd, _pwnd, _mgr} = this;
 
-    if(!rId){
+    if(!rId) {
       rId = wnd.elmnts.grid.getSelectedRowId();
     }
 
     let folders;
-    if(_attr.selection){
+    if(_attr.selection) {
       _attr.selection.forEach((sel) => {
-        for(let key in sel){
-          if(key=="is_folder"){
+        for (let key in sel) {
+          if(key == 'is_folder') {
             folders = sel[key];
           }
         }
@@ -523,32 +531,32 @@ class MangoSelection {
     // запрещаем выбирать папки
     if(wnd.elmnts.tree &&
       wnd.elmnts.tree.items[rId] &&
-      wnd.elmnts.tree.getSelectedId() != rId){
+      wnd.elmnts.tree.getSelectedId() != rId) {
       wnd.elmnts.tree.selectItem(rId, true);
       return;
     }
 
     // запрещаем выбирать элементы, если в метаданных указано выбирать только папки
     // TODO: спозиционировать сообщение над выбранным элементом
-    if(rId && folders === true && wnd.elmnts.grid.cells(rId, 0).cell.classList.contains("cell_ref_elm")){
+    if(rId && folders === true && wnd.elmnts.grid.cells(rId, 0).cell.classList.contains('cell_ref_elm')) {
       $p.msg.show_msg($p.msg.select_grp);
       return;
     }
 
 
-    if((!rId && wnd.elmnts.tree) || (wnd.elmnts.tree && wnd.elmnts.tree.getSelectedId() == rId)){
-      if(folders === false){
+    if((!rId && wnd.elmnts.tree) || (wnd.elmnts.tree && wnd.elmnts.tree.getSelectedId() == rId)) {
+      if(folders === false) {
         $p.msg.show_msg($p.msg.select_elm);
         return;
       }
       rId = wnd.elmnts.tree.getSelectedId();
     }
 
-    if(rId){
-      if(_attr.on_edit){
+    if(rId) {
+      if(_attr.on_edit) {
         _attr.on_edit(_mgr, rId, wnd);
       }
-      else if(on_select){
+      else if(on_select) {
         _mgr.get(rId, true)
           .then((selv) => {
             wnd.close();
@@ -556,10 +564,10 @@ class MangoSelection {
           });
 
       }
-      else if($p.job_prm.keep_hash){
+      else if($p.job_prm.keep_hash) {
         _mgr.form_obj(wnd, {ref: rId});
       }
-      else{
+      else {
         $p.iface.set_hash(_mgr.class_name, rId);
       }
     }
@@ -571,42 +579,44 @@ class MangoSelection {
   mark_deleted() {
     const {wnd, _mgr} = this;
     const rId = wnd.elmnts.grid.getSelectedRowId();
-    if(rId){
+    if(rId) {
       _mgr.get(rId, true, true)
         .then((o) => dhtmlx.confirm({
           title: $p.msg.main_title,
-          text: o._deleted ? $p.msg.mark_undelete_confirm.replace("%1", o.presentation) : $p.msg.mark_delete_confirm.replace("%1", o.presentation),
-          cancel: "Отмена",
+          text: o._deleted ? $p.msg.mark_undelete_confirm.replace('%1', o.presentation) : $p.msg.mark_delete_confirm.replace('%1', o.presentation),
+          cancel: 'Отмена',
           callback: (btn) => btn && o.mark_deleted(!o._deleted)
         }));
     }
-    else{
+    else {
       $p.msg.show_msg({
-        type: "alert-warning",
-        text: $p.msg.no_selected_row.replace("%1", ""),
+        type: 'alert-warning',
+        text: $p.msg.no_selected_row.replace('%1', ''),
         title: $p.msg.main_title
       });
     }
   }
 
   /**
-   *	Печатает документ
+   *  Печатает документ
    */
   print(pid) {
     const {wnd, _mgr} = this;
     const rId = wnd.elmnts.grid.getSelectedRowId();
-    if(rId){
+    if(rId) {
       _mgr.print(rId, pid, wnd);
     }
-    else{
-      $p.msg.show_msg({type: "alert-warning",
-        text: $p.msg.no_selected_row.replace("%1", ""),
-        title: $p.msg.main_title});
+    else {
+      $p.msg.show_msg({
+        type: 'alert-warning',
+        text: $p.msg.no_selected_row.replace('%1', ''),
+        title: $p.msg.main_title
+      });
     }
   }
 
   reload(force, call) {
-    if(this._loading){
+    if(this._loading) {
       this._need_reload = true;
     }
     this._loading = true;
@@ -627,24 +637,24 @@ class MangoSelection {
    * освобождает переменные после закрытия формы
    */
   frm_unload(on_create) {
-    if(this.body_keydown){
-      document.body.removeEventListener("keydown", this.body_keydown);
+    if(this.body_keydown) {
+      document.body.removeEventListener('keydown', this.body_keydown);
     }
     const {_attr} = this;
-    if (_attr && _attr.on_close && !on_create){
+    if(_attr && _attr.on_close && !on_create) {
       _attr.on_close();
     }
     delete this.select;
     delete this.body_keydown;
   }
 
-  frm_close(){
+  frm_close() {
     const {_pwnd} = this;
 
     setTimeout(this.frm_unload.bind, 10);
 
     // если в родительском установлен обработчик выгрузки нашего - вызываем с контекстом грида
-    if(_pwnd.on_unload){
+    if(_pwnd.on_unload) {
       _pwnd.on_unload.call(_pwnd.grid || _pwnd);
     }
 
@@ -669,8 +679,8 @@ class MangoSelection {
 
 
 export default ({classes}) => {
-	classes.MangoSelection = MangoSelection;
-	classes.DataManager.prototype.mango_selection = function (pwnd, attr) {
-		return new MangoSelection(this, pwnd, attr);
-	};
+  classes.MangoSelection = MangoSelection;
+  classes.DataManager.prototype.mango_selection = function (pwnd, attr) {
+    return new MangoSelection(this, pwnd, attr);
+  };
 };

@@ -26,7 +26,7 @@ import withWidth, {isWidthUp} from 'material-ui/utils/withWidth';
 class DataListToolbar extends Component {
 
   static propTypes = {
-    selection_mode: PropTypes.bool,                   // режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
+    selectionMode: PropTypes.bool,                   // режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
     denyAddDel: PropTypes.bool,                     // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
 
     handleAdd: PropTypes.func.isRequired,             // обработчик добавления объекта
@@ -65,7 +65,7 @@ class DataListToolbar extends Component {
     return (
       <Toolbar disableGutters className={classes.toolbar}>
 
-        {props.selection_mode && <IconButton key="select" title="Выбрать из списка" onClick={props.handleSelect}><SelectIcon/></IconButton>}
+        {props.selectionMode && <IconButton key="select" title="Выбрать из списка" onClick={props.handleSelect}><SelectIcon/></IconButton>}
         {!props.denyAddDel && <IconButton key="create" title="Создать объект" onClick={props.handleAdd}><AddIcon/></IconButton>}
         {!props.denyAddDel && <IconButton key="edit" title="Открыть форму объекта" onClick={props.handleEdit}><EditIcon/></IconButton>}
         {!props.denyAddDel && <IconButton key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}

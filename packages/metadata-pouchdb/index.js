@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.40, built:2017-11-13
+ metadata-pouchdb v2.0.16-beta.40, built:2017-11-21
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -709,27 +709,27 @@ function adapter({AbstracrAdapter}) {
         flds.push('finished');
       }
       else {
-        if(cmd['hierarchical'] && cmd['group_hierarchy']) {
+        if(cmd.hierarchical && cmd.group_hierarchy) {
           flds.push('is_folder');
         }
         else {
           flds.push('0 as is_folder');
         }
-        if(cmd['main_presentation_name']) {
+        if(cmd.main_presentation_name) {
           flds.push('name as presentation');
         }
         else {
-          if(cmd['code_length']) {
+          if(cmd.code_length) {
             flds.push('id as presentation');
           }
           else {
             flds.push('... as presentation');
           }
         }
-        if(cmd['has_owners']) {
+        if(cmd.has_owners) {
           flds.push('owner');
         }
-        if(cmd['code_length']) {
+        if(cmd.code_length) {
           flds.push('id');
         }
       }
@@ -742,7 +742,7 @@ function adapter({AbstracrAdapter}) {
         }
         selection.date = {between: [attr.date_from, attr.date_till]};
       }
-      if(cmd['hierarchical'] && attr.parent) {
+      if(cmd.hierarchical && attr.parent) {
         selection.parent = attr.parent;
       }
       if(attr.selection) {
@@ -1046,7 +1046,7 @@ function adapter({AbstracrAdapter}) {
       }
       return new Promise((resolve, reject) => {
         function process_docs(result) {
-          if(result.rows.length) {
+          if(result && result.rows.length) {
             options.startkey = result.rows[result.rows.length - 1].key;
             options.skip = 1;
             result.rows.forEach((rev) => {

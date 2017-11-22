@@ -82,16 +82,13 @@ export class DataManager extends MetaEventEmitter{
 	 * @return {Object} - объект метаданных
 	 */
 	metadata(field_name) {
-
-		if(!this._meta){
-			this._meta = this._owner.$p.md.get(this.class_name)
-		}
-
+	  const {_owner, class_name} = this;
+	  const _meta = _owner.$p.md.get(class_name) || {};
 		if(field_name){
-			return this._meta && this._meta.fields && this._meta.fields[field_name] || this._owner.$p.md.get(this.class_name, field_name);
+			return _meta.fields && _meta.fields[field_name] || _owner.$p.md.get(class_name, field_name);
 		}
 		else{
-			return this._meta;
+			return _meta;
 		}
 	}
 

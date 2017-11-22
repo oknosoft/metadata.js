@@ -620,6 +620,58 @@ const utils = {
 		}
 	},
 
+  /**
+   * Сравнивает левое значение с правым
+   * @param left              {Any}
+   * @param right             {Any}
+   * @param comparison_type   {EnumObj}
+   * @param comparison_types  {EnumManager}
+   * @return {*}
+   */
+  check_compare(left, right, comparison_type, comparison_types) {
+      const {ne, gt, gte, lt, lte, nin, inh, ninh} = comparison_types;
+      switch (comparison_type) {
+      case ne:
+        return left != right;
+      case gt:
+        return left > right;
+      case gte:
+        return left >= right;
+      case lt:
+        return left < right;
+      case lte:
+        return left <= right;
+      case nin:
+        if(Array.isArray(left) && !Array.isArray(right)) {
+          return left.indexOf(right) == -1;
+        }
+        else if(!Array.isArray(left) && Array.isArray(right)) {
+          return right.indexOf(left) == -1;
+        }
+        else if(!Array.isArray(left) && !Array.isArray(right)) {
+          return right != left;
+        }
+        break;
+      case comparison_types.in:
+        if(Array.isArray(left) && !Array.isArray(right)) {
+          return left.indexOf(right) != -1;
+        }
+        else if(!Array.isArray(left) && Array.isArray(right)) {
+          return right.indexOf(left) != -1;
+        }
+        else if(!Array.isArray(left) && !Array.isArray(right)) {
+          return left == right;
+        }
+        break;
+      case inh:
+        return utils.is_data_obj(left) ? left._hierarchy(right) : left == right;
+      case ninh:
+        return utils.is_data_obj(left) ? !left._hierarchy(right) : left != right;
+      default:
+        return left == right;
+      }
+    },
+
 	/**
 	 * Выясняет, удовлетворяет ли объект `o` условию `selection`
 	 * @method _selection
