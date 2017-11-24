@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.40, built:2017-11-22
+ metadata-core v2.0.16-beta.40, built:2017-11-24
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1250,6 +1250,7 @@ class DataManager extends MetaEventEmitter{
 		super();
 		this._owner = owner;
 		this.class_name = class_name;
+    this.name = class_name.split('.')[1];
 		this.constructor_names = {};
 		this.by_ref = {};
 	}
@@ -1257,10 +1258,10 @@ class DataManager extends MetaEventEmitter{
 		return msg$1.meta_mgrs[this._owner.name]
 	}
 	metadata(field_name) {
-	  const {_owner, class_name} = this;
-	  const _meta = _owner.$p.md.get(class_name) || {};
+	  const {md} = this._owner.$p;
+	  const _meta = md.get(this) || {};
 		if(field_name){
-			return _meta.fields && _meta.fields[field_name] || _owner.$p.md.get(class_name, field_name);
+			return _meta.fields && _meta.fields[field_name] || md.get(this, field_name);
 		}
 		else{
 			return _meta;
@@ -3568,8 +3569,8 @@ class Meta extends MetaEventEmitter {
   init(patch) {
     return utils._patch(this._m, patch);
   }
-  get(class_name, field_name) {
-    const np = class_name.split('.');
+  get(type, field_name) {
+    const np = type instanceof DataManager ? [type._owner.name, type.name] : type.split('.');
     if(!this._m[np[0]]) {
       return;
     }
@@ -3630,7 +3631,7 @@ class Meta extends MetaEventEmitter {
     else if(field_name == 'ref') {
       res.synonym = 'Ссылка';
       res.type.is_ref = true;
-      res.type.types[0] = class_name;
+      res.type.types[0] = type;
     }
     else {
       return;

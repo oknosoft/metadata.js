@@ -7,6 +7,7 @@
 
 import MetaEventEmitter from './emitter';
 import utils from './utils';
+import {DataManager} from './mngrs';
 
 /**
  * ### Описание метаданных объекта
@@ -65,13 +66,13 @@ class Meta extends MetaEventEmitter {
    * ### Возвращает описание объекта метаданных
    *
    * @method get
-   * @param class_name {String} - например, "doc.calc_order"
+   * @param type {String|DataManager} - например, "doc.calc_order"
    * @param [field_name] {String}
    * @return {Object}
    */
-  get(class_name, field_name) {
+  get(type, field_name) {
 
-    const np = class_name.split('.');
+    const np = type instanceof DataManager ? [type._owner.name, type.name] : type.split('.');
 
     if(!this._m[np[0]]) {
       return;
@@ -145,7 +146,7 @@ class Meta extends MetaEventEmitter {
     else if(field_name == 'ref') {
       res.synonym = 'Ссылка';
       res.type.is_ref = true;
-      res.type.types[0] = class_name;
+      res.type.types[0] = type;
 
     }
     else {
