@@ -9,12 +9,11 @@ class DataCell extends Editors.SimpleTextEditor {
   // props.column.key, props.rowData(._row)
 
   constructor(props, context) {
-
     super(props, context);
-
+    const {rowData, column, value, _meta} = props;
     this.state = {
-      value: [],
-      _meta: props._meta || (props.rowData._metadata && props.rowData._metadata(props.column.key)) || {type: {types: ['string']}},
+      value: value || rowData[column.key],
+      _meta: _meta || column._meta || {type: {types: ['string']}},
     };
     this.handleSelectChange = this.handleSelectChange.bind(this);
   }
@@ -31,12 +30,11 @@ class DataCell extends Editors.SimpleTextEditor {
 
     const _obj = this.props.rowData;
     const _fld = this.props.column.key;
-    const _val = _obj[_fld];
     const subProps = {
+      _obj,
+      _fld,
+      _val: _obj[_fld],
       _meta: this.state._meta,
-      _obj: _obj,
-      _fld: _fld,
-      _val: _val,
       label_position: $p.enm.label_positions.hide,
       handleValueChange: this.handleSelectChange,
     };

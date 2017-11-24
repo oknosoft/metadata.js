@@ -31,8 +31,10 @@ export default class TabularSection extends MComponent {
     handleCustom: PropTypes.func,         // Внешний дополнительный подключаемый обработчик
 
     rowSelection: PropTypes.object,       // Настройка пометок строк
+    selectedIds: PropTypes.array,
 
-    selectedIds: PropTypes.array
+    onCellSelected: PropTypes.func,
+    onRowUpdated: PropTypes.func,
   };
 
   static defaultProps = {
@@ -128,12 +130,14 @@ export default class TabularSection extends MComponent {
   handleRowUpdated = (e) => {
     //merge updated row with current row and rerender by setting state
     const row = this.rowGetter(e.rowIdx);
-    if(this.props.onRowUpdated){
-      if(this.props.onRowUpdated(e, row) === false){
-        return;
+    if(row){
+      if(this.props.onRowUpdated){
+        if(this.props.onRowUpdated(e, row) === false){
+          return;
+        }
       }
+      Object.assign(row._row || row, e.updated);
     }
-    Object.assign(row._row || row, e.updated);
   }
 
   handleSettingsOpen = () => {
@@ -164,9 +168,10 @@ export default class TabularSection extends MComponent {
   };
 
   onRowsSelected = (rows) => {
-    const {keys} = this.props.rowSelection.selectBy;
+    const {props, state} = this;
+    const {keys} = props.rowSelection.selectBy;
     this.setState({
-      selectedIds: this.state.selectedIds.concat(
+      selectedIds: state.selectedIds.concat(
         rows.map(r => {
           if(keys.markKey) {
             r.row[keys.markKey] = true;
@@ -192,7 +197,7 @@ export default class TabularSection extends MComponent {
   render() {
     const {props, state, rowGetter, onRowsSelected, onRowsDeselected, handleRowUpdated} = this;
     const {_meta, _tabular, _columns, scheme, selectedIds, settings_open} = state;
-    const {_obj, rowSelection, denyAddDel, denyReorder, minHeight, hideToolbar, classes} = props;
+    const {_obj, rowSelection, denyAddDel, denyReorder, minHeight, hideToolbar, onCellSelected, classes} = props;
 
     if(!_columns || !_columns.length) {
       if(!scheme) {
@@ -254,8 +259,10 @@ export default class TabularSection extends MComponent {
                 enableCellSelect={true}
                 rowGetter={rowGetter}
                 rowsCount={this.rowsCount()}
+                rowSelection={rowSelection}
                 onRowUpdated={handleRowUpdated}
-                rowSelection={rowSelection}/>
+                onCellSelected={onCellSelected}
+              />
 
             ];
           }}

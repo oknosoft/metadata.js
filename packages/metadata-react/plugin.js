@@ -10,6 +10,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
 import {Editors, Formatters} from 'metadata-external/react-data-grid-addons.min';
+
 const {CheckboxEditor, DropDownEditor} = Editors;
 const {DropDownFormatter, ImageFormatter} = Formatters;
 
@@ -52,7 +53,7 @@ function rx_columns($p) {
 
   const presentation_formatter = ({value}) => {
     let text = (value && value.presentation) || '';
-    if(text === '_'){
+    if(text === '_') {
       text = '';
     }
     return <div title={text}>{text}</div>;
@@ -66,7 +67,7 @@ function rx_columns($p) {
     if(fields) {
       res.forEach((column) => {
 
-        const _fld = fields[column.key];
+        const _fld = column._meta = fields[column.key];
 
         if(!column.formatter) {
 
@@ -112,16 +113,16 @@ function rx_columns($p) {
           // options = _obj.used_fields_list();
           // column.editor = <DropDownEditor options={options}/>;
           // column.formatter = <DropDownFormatter options={options} value=""/>;
-          column.editor = <PathFieldCell />;
+          column.editor = <PathFieldCell/>;
           break;
 
         case type:
-          column.editor = <TypeFieldCell />;
+          column.editor = <TypeFieldCell/>;
           //column.formatter = <DropDownFormatter options={[]} value=""/>;
           break;
 
         default:
-          column.editor = <DataCell />;
+          column.editor = <DataCell/>;
         }
 
       });
@@ -144,7 +145,7 @@ export function export_handlers() {
   this.doExport = (format) => {
     setTimeout(() => {
       const {_obj, _tabular, _columns} = this.props;
-      _obj[_tabular].export(format, _columns.map((column) => column.key))
+      _obj[_tabular].export(format, _columns.map((column) => column.key));
     });
     this.handleMenuClose && this.handleMenuClose();
   };
