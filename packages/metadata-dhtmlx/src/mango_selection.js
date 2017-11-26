@@ -368,6 +368,9 @@ class MangoSelection {
     if(flt.filter) {
       filter.selector.search = {$regex: flt.filter.toLowerCase()};
     }
+    else if(_attr._index.fields && _attr._index.fields.indexOf('search') !== -1){
+      filter.selector.search = {$ne: null};
+    }
 
     if(_sort) {
       filter.sort = _sort;
