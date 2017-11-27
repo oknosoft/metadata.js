@@ -24,7 +24,7 @@
     "react-helmet": "^5.2.0",
     "react-onclickoutside": "^6.7.0",
     "react-portal": "^4.0.0",
-    "react-virtualized": "^9.12"
+    "react-virtualized": "^9.13.0"
   },
   "peerDependencies": {
     "react": "^16.1.0",
