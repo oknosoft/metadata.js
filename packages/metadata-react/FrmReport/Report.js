@@ -139,6 +139,7 @@ class Report extends MDNRComponent {
       settings_open && <SchemeSettingsTabs
         key="tabs"
         height={show_grid ? 272 : (props.height || 500) - 104}
+        width={props.width}
         scheme={scheme}
         tabParams={RepParams && <RepParams _obj={_obj} scheme={scheme}/>}
         handleSchemeChange={this.handleSchemeChange}
