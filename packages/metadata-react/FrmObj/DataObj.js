@@ -103,7 +103,9 @@ class DataObj extends MDNRComponent {
           </FormGroup>);
       }
       else if(_obj instanceof $p.classes.CatObj) {
-
+        _meta.code_length && elements.push(<DataField _obj={_obj} key={`field_id`} _fld="id"/>);
+        _meta.main_presentation_name && elements.push(<DataField _obj={_obj} key={`field_name`} _fld="name"/>);
+        _meta.has_owners && elements.push(<DataField _obj={_obj} key={`field_owner`} _fld="owner"/>);
       }
       for (const _fld in _meta.fields) {
         _fld != 'predefined_name' && elements.push(<DataField fullWidth key={`field_${_fld}`} _obj={_obj} _fld={_fld}/>);
@@ -125,8 +127,8 @@ class DataObj extends MDNRComponent {
       if(elements.length || Object.keys(_meta.fields).length) {
         elements.push(<Divider light key={`dv_${ts}`}/>);
       }
-      elements.push(<div style={{height: 300}}>
-        <TabularSection key={`ts_${ts}`} _obj={_obj} _tabular={ts}/>
+      elements.push(<div key={`ts_${ts}`} style={{height: 300}}>
+        <TabularSection _obj={_obj} _tabular={ts}/>
       </div>);
     }
 
@@ -141,17 +143,16 @@ class DataObj extends MDNRComponent {
   render() {
     const {props, state, context, _handlers} = this;
 
-    if(!state._obj) {
-      return <LoadingMessage/>;
-    }
-
-    return <div>
-      <DataObjToolbar {..._handlers} closeButton={!context.dnr}/>
-      <FormGroup className={props.classes.spaceLeft}>
-        {this.renderFields()}
-        {this.renderTabularSections()}
-      </FormGroup>
-    </div>;
+    return state._obj ?
+      [
+        <DataObjToolbar key="toolbar" {..._handlers} closeButton={!context.dnr}/>,
+        <FormGroup key="data" className={props.classes.spaceLeft}>
+          {this.renderFields()}
+          {this.renderTabularSections()}
+        </FormGroup>
+      ]
+      :
+      <LoadingMessage/>;
   }
 
 }

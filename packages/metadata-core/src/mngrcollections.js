@@ -1,18 +1,21 @@
-import {EnumManager, CatManager, DocManager, InfoRegManager, AccumRegManager, DataProcessorsManager,
-	ChartOfAccountManager, ChartOfCharacteristicManager, TaskManager, BusinessProcessManager} from './mngrs';
+import {
+  EnumManager, CatManager, DocManager, InfoRegManager, AccumRegManager, DataProcessorsManager,
+  ChartOfAccountManager, ChartOfCharacteristicManager, TaskManager, BusinessProcessManager
+} from './mngrs';
 
 class ManagersCollection {
-	constructor($p) {
-		this.$p = $p;
-	}
+  constructor($p) {
+    this.$p = $p;
+  }
 
-	toString(){
-		return msg.meta_classes[this.name];
-	}
+  toString() {
+    return msg.meta_classes[this.name];
+  }
 
-	create(name, constructor) {
-		this[name] = new (constructor || this._constructor)(this, this.name + '.' + name);
-	}
+  create(name, constructor, freeze) {
+    this[name] = new (constructor || this._constructor)(this, this.name + '.' + name);
+    freeze && Object.freeze(this[name]);
+  }
 }
 
 /**
@@ -24,12 +27,11 @@ class ManagersCollection {
  * @static
  */
 class Enumerations extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'enm';
-		this._constructor = EnumManager;
-	}
-
+  constructor($p) {
+    super($p);
+    this.name = 'enm';
+    this._constructor = EnumManager;
+  }
 }
 
 /**
@@ -41,11 +43,11 @@ class Enumerations extends ManagersCollection {
  * @static
  */
 class Catalogs extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'cat';
-		this._constructor = CatManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'cat';
+    this._constructor = CatManager;
+  }
 }
 
 /**
@@ -57,11 +59,11 @@ class Catalogs extends ManagersCollection {
  * @static
  */
 class Documents extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'doc';
-		this._constructor = DocManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'doc';
+    this._constructor = DocManager;
+  }
 }
 
 /**
@@ -73,11 +75,11 @@ class Documents extends ManagersCollection {
  * @static
  */
 class InfoRegs extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'ireg';
-		this._constructor = InfoRegManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'ireg';
+    this._constructor = InfoRegManager;
+  }
 }
 
 /**
@@ -89,11 +91,11 @@ class InfoRegs extends ManagersCollection {
  * @static
  */
 class AccumRegs extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'areg';
-		this._constructor = AccumRegManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'areg';
+    this._constructor = AccumRegManager;
+  }
 }
 
 /**
@@ -105,11 +107,11 @@ class AccumRegs extends ManagersCollection {
  * @static
  */
 class AccountsRegs extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'accreg';
-		this._constructor = AccumRegManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'accreg';
+    this._constructor = AccumRegManager;
+  }
 }
 
 /**
@@ -121,11 +123,11 @@ class AccountsRegs extends ManagersCollection {
  * @static
  */
 class DataProcessors extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'dp';
-		this._constructor = DataProcessorsManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'dp';
+    this._constructor = DataProcessorsManager;
+  }
 }
 
 /**
@@ -137,11 +139,11 @@ class DataProcessors extends ManagersCollection {
  * @static
  */
 class Reports extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'rep';
-		this._constructor = DataProcessorsManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'rep';
+    this._constructor = DataProcessorsManager;
+  }
 }
 
 /**
@@ -153,11 +155,11 @@ class Reports extends ManagersCollection {
  * @static
  */
 class ChartsOfAccounts extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'cacc';
-		this._constructor = ChartOfAccountManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'cacc';
+    this._constructor = ChartOfAccountManager;
+  }
 }
 
 /**
@@ -169,11 +171,11 @@ class ChartsOfAccounts extends ManagersCollection {
  * @static
  */
 class ChartsOfCharacteristics extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'cch';
-		this._constructor = ChartOfCharacteristicManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'cch';
+    this._constructor = ChartOfCharacteristicManager;
+  }
 }
 
 /**
@@ -185,11 +187,11 @@ class ChartsOfCharacteristics extends ManagersCollection {
  * @static
  */
 class Tasks extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'tsk';
-		this._constructor = TaskManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'tsk';
+    this._constructor = TaskManager;
+  }
 }
 
 /**
@@ -201,115 +203,115 @@ class Tasks extends ManagersCollection {
  * @static
  */
 class BusinessProcesses extends ManagersCollection {
-	constructor($p) {
-		super($p);
-		this.name = 'bp';
-		this._constructor = BusinessProcessManager;
-	}
+  constructor($p) {
+    super($p);
+    this.name = 'bp';
+    this._constructor = BusinessProcessManager;
+  }
 }
 
 function mngrs($p) {
 
-	// создаём коллекции менеджеров
-	Object.defineProperties($p, {
+  // создаём коллекции менеджеров
+  Object.defineProperties($p, {
 
-		/**
-		 * Коллекция менеджеров перечислений
-		 * @property enm
-		 * @type Enumerations
-		 * @static
-		 */
-		enm: { value: new Enumerations($p) },
+    /**
+     * Коллекция менеджеров перечислений
+     * @property enm
+     * @type Enumerations
+     * @static
+     */
+    enm: {value: new Enumerations($p)},
 
-		/**
-		 * Коллекция менеджеров справочников
-		 * @property cat
-		 * @type Catalogs
-		 * @static
-		 */
-		cat: { value: new Catalogs($p) },
+    /**
+     * Коллекция менеджеров справочников
+     * @property cat
+     * @type Catalogs
+     * @static
+     */
+    cat: {value: new Catalogs($p)},
 
-		/**
-		 * Коллекция менеджеров документов
-		 * @property doc
-		 * @type Documents
-		 * @static
-		 */
-		doc: { value: new Documents($p) },
+    /**
+     * Коллекция менеджеров документов
+     * @property doc
+     * @type Documents
+     * @static
+     */
+    doc: {value: new Documents($p)},
 
-		/**
-		 * Коллекция менеджеров регистров сведений
-		 * @property ireg
-		 * @type InfoRegs
-		 * @static
-		 */
-		ireg: { value: new InfoRegs($p) },
+    /**
+     * Коллекция менеджеров регистров сведений
+     * @property ireg
+     * @type InfoRegs
+     * @static
+     */
+    ireg: {value: new InfoRegs($p)},
 
-		/**
-		 * Коллекция менеджеров регистров накопления
-		 * @property areg
-		 * @type AccumRegs
-		 * @static
-		 */
-		areg: { value: new AccumRegs($p) },
+    /**
+     * Коллекция менеджеров регистров накопления
+     * @property areg
+     * @type AccumRegs
+     * @static
+     */
+    areg: {value: new AccumRegs($p)},
 
-		/**
-		 * Коллекция менеджеров регистров бухгалтерии
-		 * @property accreg
-		 * @type AccountsRegs
-		 * @static
-		 */
-		accreg: { value: new AccountsRegs($p) },
+    /**
+     * Коллекция менеджеров регистров бухгалтерии
+     * @property accreg
+     * @type AccountsRegs
+     * @static
+     */
+    accreg: {value: new AccountsRegs($p)},
 
-		/**
-		 * Коллекция менеджеров обработок
-		 * @property dp
-		 * @type DataProcessors
-		 * @static
-		 */
-		dp: { value: new DataProcessors($p) },
+    /**
+     * Коллекция менеджеров обработок
+     * @property dp
+     * @type DataProcessors
+     * @static
+     */
+    dp: {value: new DataProcessors($p)},
 
-		/**
-		 * Коллекция менеджеров отчетов
-		 * @property rep
-		 * @type Reports
-		 * @static
-		 */
-		rep: { value: new Reports($p) },
+    /**
+     * Коллекция менеджеров отчетов
+     * @property rep
+     * @type Reports
+     * @static
+     */
+    rep: {value: new Reports($p)},
 
-		/**
-		 * Коллекция менеджеров планов счетов
-		 * @property cacc
-		 * @type ChartsOfAccounts
-		 * @static
-		 */
-		cacc: { value: new ChartsOfAccounts($p) },
+    /**
+     * Коллекция менеджеров планов счетов
+     * @property cacc
+     * @type ChartsOfAccounts
+     * @static
+     */
+    cacc: {value: new ChartsOfAccounts($p)},
 
-		/**
-		 * Коллекция менеджеров планов видов характеристик
-		 * @property cch
-		 * @type ChartsOfCharacteristics
-		 * @static
-		 */
-		cch: { value: new ChartsOfCharacteristics($p) },
+    /**
+     * Коллекция менеджеров планов видов характеристик
+     * @property cch
+     * @type ChartsOfCharacteristics
+     * @static
+     */
+    cch: {value: new ChartsOfCharacteristics($p)},
 
-		/**
-		 * Коллекция менеджеров задач
-		 * @property tsk
-		 * @type Tasks
-		 * @static
-		 */
-		tsk: { value: new Tasks($p) },
+    /**
+     * Коллекция менеджеров задач
+     * @property tsk
+     * @type Tasks
+     * @static
+     */
+    tsk: {value: new Tasks($p)},
 
-		/**
-		 * Коллекция менеджеров бизнес-процессов
-		 * @property bp
-		 * @type Tasks
-		 * @static
-		 */
-		bp: { value: new BusinessProcesses($p) }
+    /**
+     * Коллекция менеджеров бизнес-процессов
+     * @property bp
+     * @type Tasks
+     * @static
+     */
+    bp: {value: new BusinessProcesses($p)}
 
-	});
+  });
 
 }
 

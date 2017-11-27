@@ -6,11 +6,11 @@
  * Created 10.01.2017
  */
 
-import React, {Component} from "react";
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import DataCell from "../DataField/DataCell";
-import FieldPathCell from "../DataField/FieldPathCell";
-import {Formatters} from "metadata-external/react-data-grid-addons.min";
+import DataCell from '../DataField/DataCell';
+import FieldPathCell from '../DataField/FieldPathCell';
+import {Formatters} from 'metadata-external/react-data-grid-addons.min';
 
 const DropDownFormatter = Formatters.DropDownFormatter;
 
@@ -20,67 +20,94 @@ function rx_columns($p) {
   const {moment} = $p.utils;
 
   const date_formatter = {
-    date: (v) => {
-      const {presentation} = moment(v).format(moment._masks.date);
-      return <div title={presentation}>{presentation}</div>
+    date: ({value}) => {
+      const presentation = moment(value).format(moment._masks.date);
+      return <div title={presentation}>{presentation}</div>;
     },
-    date_time: (v) => {
-      const {presentation} = moment(v).format(moment._masks.date_time);
-      return <div title={presentation}>{presentation}</div>
+    date_time: ({value}) => {
+      const presentation = moment(value).format(moment._masks.date_time);
+      return <div title={presentation}>{presentation}</div>;
     }
-  }
+  };
 
-  const presentation_formatter = (v) => {
-    const {presentation} = v.value
-    return <div title={presentation}>{presentation}</div>
-  }
+  const presentation_formatter = ({value}) => {
+    let text = (value && value.presentation) || '';
+    if(text === '_'){
+      text = '';
+    }
+    return <div title={text}>{text}</div>;
+  };
 
   return function columns({mode, fields, _obj}) {
 
     const res = this.columns(mode);
+    const {input, text, label, link, cascader, toggle, image, type, path} = $p.enm.data_field_kinds;
 
-    if (fields) {
+    if(fields) {
       res.forEach((column) => {
 
-        const _fld = fields[column.key]
+        const _fld = column._meta = fields[column.key];
 
-        if (!column.formatter) {
+        if(!column.formatter) {
 
-          if (_fld.type.is_ref) {
-            column.formatter = presentation_formatter
+          if(_fld.type.is_ref) {
+            column.formatter = presentation_formatter;
           }
-          else if (_fld.type.date_part) {
-            column.formatter = date_formatter[_fld.type.date_part]
+          else if(_fld.type.date_part) {
+            column.formatter = date_formatter[_fld.type.date_part];
           }
         }
 
+        let options;
         switch (column.ctrl_type) {
 
-          case 'input':
-            column.editable = true;
-            break;
+        case input:
+        case text:
+        case label:
+        case link:
+        case cascader:
+          column.editable = true;
+          break;
 
-          case 'ocombo':
-            column.editor = <DataCell />;
-            break;
+        case toggle:
+          const toggle_options = [
+            {
+              id: 0,
+              value: false,
+              text: 'Нет',
+              title: 'Нет',
+            },
+            {
+              id: 1,
+              value: true,
+              text: 'Да',
+              title: 'Да',
+            }
+          ];
+          column.editor = <DropDownEditor options={toggle_options}/>;
+          column.formatter = <DropDownFormatter options={toggle_options} value={''}/>;
+          break;
 
-          case 'ofields':
-            column.editor = <FieldPathCell />
-            column.formatter = <DropDownFormatter options={_obj.used_fields_list()}/>
-            break;
+        case path:
+          // options = _obj.used_fields_list();
+          // column.editor = <DropDownEditor options={options}/>;
+          // column.formatter = <DropDownFormatter options={options} value=""/>;
+          column.editor = <PathFieldCell />;
+          break;
 
-          case 'dhxCalendar':
-            column.editor = <DataCell />;
-            break;
+        case type:
+          column.editor = <TypeFieldCell />;
+          //column.formatter = <DropDownFormatter options={[]} value=""/>;
+          break;
 
-          default:
-            ;
+        default:
+          column.editor = <DataCell />;
         }
 
-      })
+      });
     }
 
     return res;
-  }
+  };
 }
 

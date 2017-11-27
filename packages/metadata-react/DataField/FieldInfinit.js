@@ -8,8 +8,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import TextField from 'material-ui/TextField';
-import InfiniteList from './InfiniteList';
+import Input, {InputLabel, InputAdornment} from 'material-ui/Input';
+import {FormControl} from 'material-ui/Form';
 import Paper from 'material-ui/Paper';
 import Divider from 'material-ui/Divider';
 import Button from 'material-ui/Button';
@@ -22,7 +22,8 @@ import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
 
 // окно диалога, чтобы показать всплывающие формы
-import DnR from '../DnR/Dialog';
+import Dialog from '../App/Dialog';
+import InfiniteList, {prevent} from './InfiniteList';
 
 import AbstractField, {suggestionText} from './AbstractField';
 import withStyles from './styles';
@@ -39,41 +40,55 @@ class FieldInfinit extends AbstractField {
     Object.assign(this.state, {
       inputValue,
       focused: false,
+      containerOpened: false,
+      dialogOpened: '',
       search: inputValue,
     });
   }
 
   inputRef = el => {
-    if(el !== null) {
-      this.input = el;
-    }
+    this.input = el;
   };
 
   infiniteRef = el => {
-    if(el !== null) {
-      this.infinite = el;
-    }
+    this.infinite = el;
   };
 
-  handleOpenList = (evt) => {
+  handleOpenList = () => {
     this.resetBlurTimeout();
-    this.setState({dialog: 'list', focused: false});
+
+    const {_obj, _fld} = this.props;
+    this.setState({
+      containerOpened: false,
+      dialogOpened: 'list',
+      inputValue: _obj && suggestionText(_obj[_fld])
+    });
   };
 
-  handleOpenObj = (evt) => {
+  handleOpenObj = () => {
     this.resetBlurTimeout();
-    this.setState({dialog: 'obj', focused: false});
+    const {_obj, _fld} = this.props;
+    this.setState({
+      containerOpened: false,
+      dialogOpened: 'obj',
+      inputValue: _obj && suggestionText(_obj[_fld])
+    });
+  };
+
+  handleOpenContainer = () => {
+    this.setState({containerOpened: true});
   };
 
   handleCloseDialog = (evt) => {
-    this.setState({dialog: false});
+    this.setState({dialogOpened: ''});
   };
 
   handleInputChange = ({target}) => {
     const {value} = target;
     this.setState({
       inputValue: value,
-      search: value
+      search: value,
+      containerOpened: true,
     });
   };
 
@@ -83,8 +98,9 @@ class FieldInfinit extends AbstractField {
       _obj[_fld] = value;
       setTimeout(() => {
         this.setState({
-          inputValue: suggestionText(value),
-          focused: false,
+          containerOpened: false,
+          dialogOpened: '',
+          inputValue: suggestionText(value)
         });
         handleValueChange && handleValueChange(value);
       });
@@ -93,12 +109,21 @@ class FieldInfinit extends AbstractField {
 
   onFocus = (evt) => {
     this.resetBlurTimeout();
-    this.setState({focused: true});
+    !this.state.dialogOpened && this.setState({
+      focused: true,
+    });
   };
 
   onBlur = (evt) => {
     evt.stopPropagation();
-    this.blurTimeout = setTimeout(() => this.setState({focused: false}), 100);
+    this.blurTimeout = setTimeout(() => {
+      const {_obj, _fld} = this.props;
+      this.setState({
+        focused: false,
+        containerOpened: false,
+        inputValue: _obj && suggestionText(_obj[_fld])
+      });
+    }, 100);
   };
 
   resetBlurTimeout() {
@@ -109,24 +134,67 @@ class FieldInfinit extends AbstractField {
   }
 
   onKeyDown = (evt) => {
+    let keyIsSpecial;
     switch (evt.key) {
     case 'ArrowDown':
-      this.infinite.next(evt);
+      if(this.infinite) {
+        this.infinite.next(evt);
+      }
+      else {
+        this.handleOpenContainer();
+      }
+      ;
+      keyIsSpecial = true;
       break;
 
     case 'ArrowUp':
-      this.infinite.prev(evt);
+      if(this.infinite) {
+        this.infinite && this.infinite.prev(evt);
+      }
+      else {
+        this.handleOpenContainer();
+      }
+      ;
+      keyIsSpecial = true;
       break;
 
     case 'Enter':
-      this.infinite.handleSelect(evt);
+      if(this.infinite) {
+        this.infinite && this.infinite.handleSelect(evt);
+      }
+      else {
+        this.handleOpenContainer();
+      }
+      ;
+      keyIsSpecial = true;
+      break;
+
+    case 'Escape':
+      this.setState({containerOpened: false});
+      keyIsSpecial = true;
+      break;
+
+    case 'F2':
+      this.handleOpenContainer();
+      keyIsSpecial = true;
+      break;
+
+    case 'F4':
+      if(evt.ctrlKey && evt.shiftKey) {
+        this.handleOpenObj();
+      }
+      else {
+        this.handleOpenList();
+      }
+      keyIsSpecial = true;
       break;
     }
+    keyIsSpecial && prevent(evt);
   };
 
   renderInput() {
-    const {props, state, _meta, handleInputChange, inputRef} = this;
-    const {classes, _fld, fullWidth, mandatory} = props;
+    const {props, state, _meta, handleInputChange, handleOpenContainer, inputRef} = this;
+    const {classes, _obj, _fld, fullWidth, mandatory} = props;
 
     return this.isTabular ?
       <input
@@ -134,85 +202,118 @@ class FieldInfinit extends AbstractField {
         ref={inputRef}
         value={state.inputValue}
         title={_meta.tooltip || _meta.synonym}
-        placeholder={_fld}
+        placeholder="Введите текст для поиска"
         onChange={handleInputChange}
+        onClick={handleOpenContainer}
       />
       :
-      <TextField
+      <FormControl
         className={classes.formControl}
         fullWidth={fullWidth}
         margin="dense"
-        value={state.inputValue}
-        label={_meta.synonym}
-        title={_meta.tooltip || _meta.synonym}
-        inputRef={inputRef}
-        InputProps={{
-          classes: {input: classes.input},
-          placeholder: _fld,
-        }}
-        onChange={handleInputChange}
-      />;
+        onDoubleClick={handleOpenContainer}
+      >
+        <InputLabel>{_meta.tooltip || _meta.synonym}</InputLabel>
+        <Input
+          inputRef={inputRef}
+          value={state.inputValue}
+          onChange={handleInputChange}
+          classes={{input: classes.input}}
+          placeholder={_fld}
+          endAdornment={state.focused &&
+          <InputAdornment position="end">
+            <IconButton
+              tabIndex={-1}
+              className={classes.icon}
+              title={_obj[_fld]._manager.frm_obj_name}
+              onClick={this.handleOpenObj}
+              onMouseDown={prevent}
+            >
+              <OpenInNew/>
+            </IconButton>
+          </InputAdornment>
+          }
+        />
+      </FormControl>;
   }
 
   renderContainer() {
 
-    const {_meta, props, state, infiniteRef, handleSelect} = this;
+    const {_meta, props, state, input, infiniteRef, handleSelect} = this;
 
-    if(state.focused) {
+    if(state.containerOpened) {
       const {_obj, _fld, classes} = props;
       const {_manager} = _obj[_fld];
       const is_enm = $p.utils.is_enm_mgr(_manager);
       const footer = !is_enm || _meta.type.types.length > 1;
-
-      return state.focused &&
-        <Paper
-          square
-          className={classes.suggestionsContainerOpen}
-        >
-          <InfiniteList
-            ref={infiniteRef}
-            _mgr={_manager}
-            _obj={_obj}
-            _fld={_fld}
-            _meta={_meta}
-            is_enm={is_enm}
-            classes={classes}
-            search={state.search}
-            handleSelect={handleSelect}
-          />
-          {footer && <Divider/>}
-          {footer && <Toolbar disableGutters >
-            <Button dense className={classes.a} onClick={this.handleOpenList} title={_manager.frm_selection_name}>{is_enm ? '...' : 'Показать все'}</Button>
-            <Typography type="title" color="inherit" className={classes.flex}> </Typography>
-            {_meta.type.types.length > 1 && <IconButton title="Выбрать тип значения"><TitleIcon/></IconButton>}
-            {!is_enm && _manager.acl.indexOf('i') != -1 && <IconButton title="Создать элемент"><AddIcon/></IconButton>}
-            {!is_enm && _manager.acl.indexOf('v') != -1 && <IconButton title={_manager.frm_obj_name} onClick={this.handleOpenObj}><OpenInNew/></IconButton>}
-          </Toolbar>}
-        </Paper>;
+      const rect = input && input.getBoundingClientRect();
+      const paperProps = {
+        square: true,
+        className: classes.suggestionsContainerOpen,
+      };
+      if(rect) {
+        const {innerHeight} = window;
+        if(rect.bottom + 220 < innerHeight) {
+          paperProps.style = {top: rect.bottom};
+        }
+        else if(rect.top > 220) {
+          paperProps.style = {bottom: innerHeight - rect.top - 12};
+        }
+        else {
+          paperProps.style = {top: 10};
+        }
+      }
+      return <Paper {...paperProps}>
+        <InfiniteList
+          ref={infiniteRef}
+          _mgr={_manager}
+          _obj={_obj}
+          _fld={_fld}
+          _meta={_meta}
+          is_enm={is_enm}
+          classes={classes}
+          search={state.search}
+          handleSelect={handleSelect}
+        />
+        {footer && <Divider/>}
+        {footer && <Toolbar disableGutters>
+          <Button dense className={classes.a} onClick={this.handleOpenList} title={_manager.frm_selection_name}>{is_enm ? '...' : 'Показать все'}</Button>
+          <Typography type="title" color="inherit" className={classes.flex}> </Typography>
+          {_meta.type.types.length > 1 && <IconButton title="Выбрать тип значения"><TitleIcon/></IconButton>}
+          {!is_enm && _manager.acl.indexOf('i') != -1 && <IconButton title="Создать элемент"><AddIcon/></IconButton>}
+          {!is_enm && _manager.acl.indexOf('v') != -1 && this.isTabular &&
+          <IconButton title={_manager.frm_obj_name} onClick={this.handleOpenObj}><OpenInNew/></IconButton>}
+        </Toolbar>}
+      </Paper>;
     }
 
   }
 
   renderDialog() {
-    const {props, state, context} = this;
+    const {props, state, context, handleSelect} = this;
 
-    if(state.dialog) {
+    if(state.dialogOpened) {
       const {_obj, _fld} = props;
       const {_manager, ref} = _obj[_fld];
       const _acl = $p.current_user.get_acl(_manager.class_name);
       const {DataList, DataObj} = context.components;
-      const title = state.dialog == 'list' ?
+      const title = state.dialogOpened == 'list' ?
         (_manager.metadata().list_presentation || _manager.metadata().synonym)
         :
         (_manager.metadata().obj_presentation || _manager.metadata().synonym);
 
-      return <DnR title={title} onClose={this.handleCloseDialog}>
-        {state.dialog == 'list' ?
-          <DataList _mgr={_manager} _acl={_acl} handlers={{}}/>
+      return <Dialog
+        open
+        noSpace
+        title={title}
+        onRequestClose={this.handleCloseDialog}
+      >
+        {state.dialogOpened == 'list' ?
+          <DataList _mgr={_manager} _acl={_acl} _owner={this} selectionMode handlers={{handleSelect}}/>
           :
           <DataObj _mgr={_manager} _acl={_acl} match={{params: {ref}}} handlers={{}}/>
         }
-      </DnR>;
+      </Dialog>;
     }
   }
 

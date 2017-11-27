@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.16-beta.40, built:2017-11-13
+ metadata-superlogin v2.0.16-beta.41, built:2017-11-27
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -54,7 +54,6 @@ var adapter = (constructor) => {
     }
     dbpath(name) {
       const {$p, props} = this;
-      const {superlogin: superlogin$$1} = $p;
       return $p.superlogin.getDbUrl(props.prefix + (name == 'meta' ? name : (props.zone + '_' + name)));
     }
     get authorized() {

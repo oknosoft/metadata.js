@@ -56,6 +56,7 @@ export class DataManager extends MetaEventEmitter{
 		 * @final
 		 */
 		this.class_name = class_name;
+    this.name = class_name.split('.')[1];
 
 		/**
 		 * В этом свойстве хранятся имена конструктора объекта и конструкторов табличных частей
@@ -82,16 +83,13 @@ export class DataManager extends MetaEventEmitter{
 	 * @return {Object} - объект метаданных
 	 */
 	metadata(field_name) {
-
-		if(!this._meta){
-			this._meta = this._owner.$p.md.get(this.class_name)
-		}
-
+	  const {md} = this._owner.$p;
+	  const _meta = md.get(this) || {};
 		if(field_name){
-			return this._meta && this._meta.fields && this._meta.fields[field_name] || this._owner.$p.md.get(this.class_name, field_name);
+			return _meta.fields && _meta.fields[field_name] || md.get(this, field_name);
 		}
 		else{
-			return this._meta;
+			return _meta;
 		}
 	}
 

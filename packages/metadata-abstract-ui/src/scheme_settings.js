@@ -53,30 +53,30 @@ export default function scheme_settings() {
 
           this.find_schemas(class_name)
             .then((data) => {
-            // если существует с текущим пользователем, берём его, иначе - первый попавшийся
-            if(data.length == 1) {
-              set_default_and_resolve(data[0]);
-            }
-            else if(data.length) {
-              if(!$p.current_user || !$p.current_user.name) {
+              // если существует с текущим пользователем, берём его, иначе - первый попавшийся
+              if(data.length == 1) {
                 set_default_and_resolve(data[0]);
               }
-              else {
-                const {name} = $p.current_user;
-                if(!data.some((scheme) => {
-                    if(scheme.user == name) {
-                      set_default_and_resolve(scheme);
-                      return true;
-                    }
-                  })) {
+              else if(data.length) {
+                if(!$p.current_user || !$p.current_user.name) {
                   set_default_and_resolve(data[0]);
                 }
+                else {
+                  const {name} = $p.current_user;
+                  if(!data.some((scheme) => {
+                      if(scheme.user == name) {
+                        set_default_and_resolve(scheme);
+                        return true;
+                      }
+                    })) {
+                    set_default_and_resolve(data[0]);
+                  }
+                }
               }
-            }
-            else {
-              create_scheme();
-            }
-          })
+              else {
+                create_scheme();
+              }
+            })
             .catch((err) => {
               create_scheme();
             });
@@ -163,7 +163,7 @@ export default function scheme_settings() {
    * @extends DataProcessorObj
    * @constructor
    */
-  this.DpScheme_settings = class DpScheme_settings extends DataProcessorObj {
+  class DpScheme_settings extends DataProcessorObj {
 
     get scheme() {
       return this._getter('scheme');
@@ -173,6 +173,7 @@ export default function scheme_settings() {
       this._setter('scheme', v);
     }
   };
+  this.DpScheme_settings = DpScheme_settings;
 
   /**
    * ### Справочник scheme_settings
@@ -181,7 +182,7 @@ export default function scheme_settings() {
    * @extends CatObj
    * @constructor
    */
-  this.CatScheme_settings = class CatScheme_settings extends CatObj {
+  class CatScheme_settings extends CatObj {
 
     constructor(attr, manager, loading) {
 
@@ -477,6 +478,11 @@ export default function scheme_settings() {
       return this;
     }
 
+    /**
+     * ### Расширенные метаданные по имени класса
+     * @param class_name
+     * @return {{parts: (Array|*), _mgr: (DataManager|undefined|*), _meta: Object}}
+     */
     child_meta(class_name) {
       if(!class_name) {
         class_name = this.obj;
@@ -522,48 +528,6 @@ export default function scheme_settings() {
     }
 
     /**
-     * ### Формирует селектор для find_rows
-     */
-    fix_select(select, key0) {
-
-      const keys = this.query.split('/');
-      const {_key, _view} = select;
-      let res;
-
-      if(keys.length > 2) {
-        key0 = keys[2];
-      }
-
-      if(_key.startkey[0] != key0) {
-        _key.startkey[0] = _key.endkey[0] = key0;
-        res = true;
-      }
-
-      if(keys.length > 1) {
-        const select_view = keys[0] + '/' + keys[1];
-        if(_view != select_view) {
-          select._view = select_view;
-          res = true;
-        }
-      }
-
-      // если задано использование периода, установим значения фильтра
-      if(!this.standard_period.empty()) {
-        const {date_from, date_till} = this;
-
-        _key.startkey[1] = date_from.getFullYear();
-        _key.startkey[2] = date_from.getMonth() + 1;
-        _key.startkey[3] = date_from.getDate();
-
-        _key.endkey[1] = date_till.getFullYear();
-        _key.endkey[2] = date_till.getMonth() + 1;
-        _key.endkey[3] = date_till.getDate();
-      }
-
-      return res;
-    }
-
-    /**
      * ### Формирует манго селектор
      */
     mango_selector({columns, skip, limit}) {
@@ -594,7 +558,7 @@ export default function scheme_settings() {
       //   ];
       // }
 
-      res.selector.search = this._search ? {$regex: this._search} : {$ne: null}
+      res.selector.search = this._search ? {$regex: this._search} : {$ne: null};
 
       // пока сортируем только по дате
       this.sorting.find_rows({use: true, field: 'date'}, (row) => {
@@ -615,6 +579,42 @@ export default function scheme_settings() {
 
       Object.defineProperty(res, '_mango', {value: true});
 
+      return res;
+    }
+
+    /**
+     * ### Фильтрует внешнюю табчасть
+     * @param collection
+     * @return {Array}
+     */
+    filter(collection) {
+      // получаем активный отбор
+      const selection = [];
+      this.selection.find_rows({use: true}, (row) => selection.push(row));
+
+      const res = [];
+      const {utils, md, enm: {comparison_types}} = $p;
+      collection.forEach((row) => {
+        let ok = true;
+        for(let {left_value, left_value_type, right_value, right_value_type, comparison_type} of selection){
+          if(left_value_type === 'path'){
+            const path = left_value.split('.');
+            left_value = row[path[0]];
+            for(let i = 1; i < path.length; i++){
+              left_value = left_value[path[i]];
+            }
+          }
+          if(right_value_type !== 'path'){
+            const mgr = md.mgr_by_class_name(right_value_type);
+            right_value = mgr ? mgr.get(right_value) : utils.fetch_type(right_value, {types: [right_value_type]});
+          }
+          ok = utils.check_compare(left_value, right_value, comparison_type, comparison_types);
+          if(!ok){
+            break;
+          }
+        }
+        ok && res.push(row);
+      });
       return res;
     }
 
@@ -660,7 +660,8 @@ export default function scheme_settings() {
     }
 
     /**
-     * Фильтрует табчасть
+     * ### Фильтрует табчасть компоновки
+     * не путать с фильтром внешних данных
      * @param collection
      * @param parent
      * @return {Array}
@@ -708,6 +709,7 @@ export default function scheme_settings() {
       }));
     }
   };
+  this.CatScheme_settings = CatScheme_settings;
 
   this.CatScheme_settingsDimensionsRow = class CatScheme_settingsDimensionsRow extends TabularSectionRow {
 
