@@ -13,7 +13,7 @@
     "classnames": "^2.2",
     "font-awesome": "^4.7.0",
     "marked": "^0.3.6",
-    "material-ui": "^1.0.0-beta.21",
+    "material-ui": "^1.0.0-beta.22",
     "material-ui-icons": "^1.0.0-beta.17",
     "metadata-abstract-ui": "^2.0.16-beta.41",
     "metadata-external": "^2.0.16-beta.41",
@@ -27,8 +27,8 @@
     "react-virtualized": "^9.13.0"
   },
   "peerDependencies": {
-    "react": "^16.1.0",
-    "react-dom": "^16.1.0"
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0"
   },
   "main": "dist/index.js",
   "repository": {
