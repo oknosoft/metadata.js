@@ -198,6 +198,7 @@ export default class TabularSection extends MComponent {
     const {props, state, rowGetter, onRowsSelected, onRowsDeselected, handleRowUpdated} = this;
     const {_meta, _tabular, _columns, scheme, selectedIds, settings_open} = state;
     const {_obj, rowSelection, denyAddDel, denyReorder, minHeight, hideToolbar, onCellSelected, classes} = props;
+    const Toolbar = props.Toolbar || TabularSectionToolbar;
 
     if(!_columns || !_columns.length) {
       if(!scheme) {
@@ -220,7 +221,7 @@ export default class TabularSection extends MComponent {
             const show_grid = !settings_open || Math.max(minHeight, height) > 372;
 
             return [
-              !hideToolbar && <TabularSectionToolbar
+              !hideToolbar && <Toolbar
                 key="toolbar"
                 width={width}
                 _obj={_obj}
@@ -238,7 +239,7 @@ export default class TabularSection extends MComponent {
                 handleRemove={this.handleRemove}
                 handleUp={this.handleUp}
                 handleDown={this.handleDown}
-                handleCustom={this.handleCustom}
+                handleCustom={props.handleCustom}
               />,
 
               settings_open && <SchemeSettingsTabs
