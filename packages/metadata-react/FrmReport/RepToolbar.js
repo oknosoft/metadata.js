@@ -35,6 +35,7 @@ class RepToolbar extends Component {
     _tabular: PropTypes.string.isRequired,          // имя табчасти с данными
     scheme: PropTypes.object.isRequired,            // значение настроек компоновки CatSchemeSettings
     settings_open: PropTypes.bool,                  // открыта панель настроек
+    ToolbarExt: PropTypes.func,
   };
 
   constructor(props, context) {
@@ -56,7 +57,7 @@ class RepToolbar extends Component {
   render() {
 
     const {props, state, handleChange} = this;
-    const {handleSave, handleClose, handlePrint, _obj, _tabular, classes, scheme, settings_open} = props;
+    const {handleSave, handleClose, handlePrint, _obj, _tabular, classes, scheme, settings_open, ToolbarExt} = props;
 
 
     return (
@@ -73,7 +74,9 @@ class RepToolbar extends Component {
           handleChange={handleChange}
         />}
 
-        <Typography type="title" color="inherit" className={classes.flex}> </Typography>
+        {ToolbarExt && <ToolbarExt />}
+
+        <Typography color="inherit" className={classes.flex}> </Typography>
 
         <SchemeSettingsButtons
           handleSettingsOpen={props.handleSettingsOpen}

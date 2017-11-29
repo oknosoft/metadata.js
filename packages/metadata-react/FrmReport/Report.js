@@ -19,6 +19,7 @@ class Report extends MDNRComponent {
 
     handlePrint: PropTypes.func,          // внешний обработчик печати
     handleSchemeChange: PropTypes.func,   // внешний обработчик при изменении настроек компоновки
+    ToolbarExt: PropTypes.func,
 
   };
 
@@ -74,17 +75,18 @@ class Report extends MDNRComponent {
 
     const {props, state} = this;
     const {handleSchemeChange} = props;
-    const {_obj, _meta} = state;
+    const {_obj, _meta, _tabular} = state;
     const _columns = scheme.rx_columns({mode: 'ts', fields: _meta.fields, _obj});
 
     // в этом методе
     handleSchemeChange && handleSchemeChange(this, scheme);
 
     // в случае непустого результата - чистим
-    if(_obj.data && _obj.data.count()){
-      _obj.data.clear();
-      if(_obj.data._rows){
-        _obj.data._rows.length = 0;
+    const tabular = _obj[_tabular];
+    if(tabular && tabular.count()){
+      tabular.clear();
+      if(tabular._rows){
+        tabular._rows.length = 0;
       }
     }
 
@@ -127,7 +129,7 @@ class Report extends MDNRComponent {
         _columns={_columns}
         scheme={scheme}
         settings_open={settings_open}
-
+        ToolbarExt={props.ToolbarExt}
         handleSettingsOpen={this.handleSettingsOpen}
         handleSettingsClose={this.handleSettingsClose}
         handleSchemeChange={this.handleSchemeChange}
