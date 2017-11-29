@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.41, built:2017-11-27
+ metadata-core v2.0.16-beta.41, built:2017-11-29
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3684,7 +3684,13 @@ class Meta extends MetaEventEmitter {
     else if(field_name == 'ref') {
       res.synonym = 'Ссылка';
       res.type.is_ref = true;
-      res.type.types[0] = type;
+      if(type instanceof DataManager) {
+        res.type._mgr = type;
+        res.type.types[0] = `${type._owner.name}.${type.name}`;
+      }
+      else {
+        res.type.types[0] = type;
+      }
     }
     else {
       return;

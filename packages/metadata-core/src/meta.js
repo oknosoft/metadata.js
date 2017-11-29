@@ -107,47 +107,44 @@ class Meta extends MetaEventEmitter {
       res.synonym = 'Номер';
       res.tooltip = 'Номер документа';
       res.type.str_len = 11;
-
     }
     else if(is_doc && field_name == 'date') {
       res.synonym = 'Дата';
       res.tooltip = 'Дата документа';
       res.type.date_part = 'date_time';
       res.type.types[0] = 'date';
-
     }
     else if(is_doc && field_name == 'posted') {
       res.synonym = 'Проведен';
       res.type.types[0] = 'boolean';
-
     }
     else if(is_cat && field_name == 'id') {
       res.synonym = 'Код';
-
     }
     else if(is_cat && field_name == 'name') {
       res.synonym = 'Наименование';
-
     }
     else if(field_name == 'presentation') {
       res.synonym = 'Представление';
-
     }
     else if(field_name == '_deleted') {
       res.synonym = 'Пометка удаления';
       res.type.types[0] = 'boolean';
-
     }
     else if(field_name == 'is_folder') {
       res.synonym = 'Это группа';
       res.type.types[0] = 'boolean';
-
     }
     else if(field_name == 'ref') {
       res.synonym = 'Ссылка';
       res.type.is_ref = true;
-      res.type.types[0] = type;
-
+      if(type instanceof DataManager) {
+        res.type._mgr = type;
+        res.type.types[0] = `${type._owner.name}.${type.name}`;
+      }
+      else {
+        res.type.types[0] = type;
+      }
     }
     else {
       return;
