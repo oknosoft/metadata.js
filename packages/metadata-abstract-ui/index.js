@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.41, built:2017-11-27
+ metadata-abstract-ui v2.0.16-beta.41, built:2017-11-30
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -528,7 +528,7 @@ function scheme_settings() {
       Object.defineProperty(res, '_mango', {value: true});
       return res;
     }
-    filter(collection) {
+    filter(collection, parent = '', self = false) {
       const selection = [];
       this.selection.find_rows({use: true}, (row) => selection.push(row));
       const res = [];
@@ -543,7 +543,18 @@ function scheme_settings() {
               left_value = left_value[path[i]];
             }
           }
-          if(right_value_type !== 'path'){
+          else if(left_value_type && left_value_type !== 'string'){
+            const mgr = md.mgr_by_class_name(left_value_type);
+            left_value = mgr ? mgr.get(left_value) : utils.fetch_type(left_value, {types: [left_value_type]});
+          }
+          if(right_value_type === 'path'){
+            const path = right_value.split('.');
+            right_value = row[path[0]];
+            for(let i = 1; i < path.length; i++){
+              right_value = right_value[path[i]];
+            }
+          }
+          if(right_value_type && right_value_type !== 'string'){
             const mgr = md.mgr_by_class_name(right_value_type);
             right_value = mgr ? mgr.get(right_value) : utils.fetch_type(right_value, {types: [right_value_type]});
           }
@@ -552,9 +563,24 @@ function scheme_settings() {
             break;
           }
         }
-        ok && res.push(row);
+        if(self){
+          !ok && res.push(row._obj);
+        }
+        else{
+          ok && res.push(row);
+        }
       });
-      return res;
+      if(self){
+        const {_obj} = collection;
+        res.forEach((row) => {
+          _obj.splice(_obj.indexOf(row), 1);
+        });
+        _obj.forEach((row, index) => row.row = index + 1);
+        return collection;
+      }
+      else{
+        return res;
+      }
     }
     columns(mode) {
       const parts = this.obj.split('.'),

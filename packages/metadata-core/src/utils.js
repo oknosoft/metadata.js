@@ -629,7 +629,7 @@ const utils = {
    * @return {*}
    */
   check_compare(left, right, comparison_type, comparison_types) {
-      const {ne, gt, gte, lt, lte, nin, inh, ninh} = comparison_types;
+      const {ne, gt, gte, lt, lte, nin, inh, ninh, lke, nlk} = comparison_types;
       switch (comparison_type) {
       case ne:
         return left != right;
@@ -667,6 +667,10 @@ const utils = {
         return utils.is_data_obj(left) ? left._hierarchy(right) : left == right;
       case ninh:
         return utils.is_data_obj(left) ? !left._hierarchy(right) : left != right;
+      case lke:
+        return left.indexOf && right && left.indexOf(right) !== -1;
+      case nlk:
+        return left.indexOf && left.indexOf(right) === -1;
       default:
         return left == right;
       }

@@ -100,7 +100,7 @@ export default class RepTabularSection extends Component {
       rows.splice(rowIndex + 1, subRows.length);
     }
 
-    this.setState({ expanded: expanded, rows: rows });
+    this.setState({ expanded: expanded });
   };
 
   getSubRowDetails = (rowItem) => {
