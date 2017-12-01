@@ -55,21 +55,26 @@ export default class RepTabularSection extends Component {
     const that = this;
 
     this.state = {
-
       _meta: _meta || _obj._metadata(_tabular),
-      _tabular: _obj[_tabular],
-
-      get rows() {
-        return this._tabular._rows || [];
-      },
-
-      // get groupBy() {
-      //   const {scheme} = that.props;
-      //   return scheme ? scheme.dims() : [];
-      // },
-
-      expanded: {}
+      rows: [],
+      expanded: {},
     };
+  }
+
+  expandRoot() {
+    const {_obj, _tabular, scheme} = this.props;
+    const dims = scheme.dims();
+    const rows = _obj[_tabular]._rows || [];
+    if(rows.length && dims.length && !dims[0]){
+      const srows = rows.slice(0);
+      const subRows = rows[0].children;
+      srows.splice(1, 0, ...subRows);
+      this.updateSubRowDetails(subRows, 1);
+      this.setState({expanded: {'0': true}, rows: srows});
+    }
+    else{
+      this.setState({expanded: {}, rows});
+    }
   }
 
   getRows = (i) => {
@@ -85,7 +90,7 @@ export default class RepTabularSection extends Component {
 
   onCellExpand = (args) => {
     let rows = this.state.rows.slice(0);
-    let rowKey = args.rowData.name;
+    let rowKey = args.rowData.row;
     let rowIndex = rows.indexOf(args.rowData);
     let subRows = args.expandArgs.children;
 
@@ -100,11 +105,11 @@ export default class RepTabularSection extends Component {
       rows.splice(rowIndex + 1, subRows.length);
     }
 
-    this.setState({ expanded: expanded });
+    this.setState({expanded, rows});
   };
 
   getSubRowDetails = (rowItem) => {
-    const {scheme, _columns} = this.props;
+    const {_columns} = this.props;
     const {key} = _columns[0];
     let isExpanded = this.state.expanded[rowItem.row] ? this.state.expanded[rowItem.row] : false;
     return {

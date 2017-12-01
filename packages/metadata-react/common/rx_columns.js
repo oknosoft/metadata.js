@@ -21,18 +21,18 @@ function rx_columns($p) {
 
   const date_formatter = {
     date: ({value}) => {
-      const presentation = moment(value).format(moment._masks.date);
+      const presentation = !value || value.length < 5 ? value || '' : moment(value).format(moment._masks.date);
       return <div title={presentation}>{presentation}</div>;
     },
     date_time: ({value}) => {
-      const presentation = moment(value).format(moment._masks.date_time);
+      const presentation = !value || value.length < 5 ? value || '' : moment(value).format(moment._masks.date_time);
       return <div title={presentation}>{presentation}</div>;
     }
   };
 
   const presentation_formatter = ({value}) => {
     let text = (value && value.presentation) || '';
-    if(text === '_'){
+    if(text === '_') {
       text = '';
     }
     return <div title={text}>{text}</div>;
@@ -92,16 +92,16 @@ function rx_columns($p) {
           // options = _obj.used_fields_list();
           // column.editor = <DropDownEditor options={options}/>;
           // column.formatter = <DropDownFormatter options={options} value=""/>;
-          column.editor = <PathFieldCell />;
+          column.editor = <PathFieldCell/>;
           break;
 
         case type:
-          column.editor = <TypeFieldCell />;
+          column.editor = <TypeFieldCell/>;
           //column.formatter = <DropDownFormatter options={[]} value=""/>;
           break;
 
         default:
-          column.editor = <DataCell />;
+          column.editor = <DataCell/>;
         }
 
       });

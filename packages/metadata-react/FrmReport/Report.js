@@ -42,12 +42,12 @@ class Report extends MDNRComponent {
   }
 
   handleSave = () => {
-    const {_obj, _columns, scheme} = this.state;
+    const {_obj, _columns, _tabular, scheme} = this.state;
     if(scheme && !scheme.empty()){
       if(_obj.scheme !== scheme){
         _obj.scheme = scheme;
       }
-      _obj.calculate().then(() => this._result.forceUpdate());
+      _obj.calculate().then(() => this._result.expandRoot());
     }
     else{
       $p.record_log({class: 'info', note: 'Пустая схема компоновки', obj: this.props._mgr.class_name});

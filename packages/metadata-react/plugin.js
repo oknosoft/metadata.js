@@ -9,14 +9,13 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import {Editors, Formatters} from 'metadata-external/react-data-grid-addons.min';
-
-const {CheckboxEditor, DropDownEditor} = Editors;
-const {DropDownFormatter, ImageFormatter} = Formatters;
-
 import DataCell from 'metadata-react/DataField/DataCell';
 import TypeFieldCell from 'metadata-react/DataField/FieldTypeCell';
 import PathFieldCell from 'metadata-react/DataField/FieldPathCell';
+
+import {Editors, Formatters} from 'metadata-external/react-data-grid-addons.min';
+const {CheckboxEditor, DropDownEditor} = Editors;
+const {DropDownFormatter, ImageFormatter} = Formatters;
 
 class ToggleEditor extends CheckboxEditor {
 
@@ -36,17 +35,15 @@ class ToggleEditor extends CheckboxEditor {
 }
 
 
-function rx_columns($p) {
-
-  const {moment} = $p.utils;
+function rx_columns({utils: {moment}, enm}) {
 
   const date_formatter = {
     date: ({value}) => {
-      const presentation = moment(value).format(moment._masks.date);
+      const presentation = !value || value.length < 5 ? value || '' : moment(value).format(moment._masks.date);
       return <div title={presentation}>{presentation}</div>;
     },
     date_time: ({value}) => {
-      const presentation = moment(value).format(moment._masks.date_time);
+      const presentation = !value || value.length < 5 ? value || '' : moment(value).format(moment._masks.date_time);
       return <div title={presentation}>{presentation}</div>;
     }
   };
@@ -62,7 +59,8 @@ function rx_columns($p) {
   return function columns({mode, fields, _obj}) {
 
     const res = this.columns(mode);
-    const {input, text, label, link, cascader, toggle, image, type, path} = $p.enm.data_field_kinds;
+    const {input, text, label, link, cascader, toggle, image, type, path} = enm.data_field_kinds;
+    const editable = _obj._manager.class_name.indexOf('rep.') !== 0;
 
     if(fields) {
       res.forEach((column) => {
@@ -87,7 +85,7 @@ function rx_columns($p) {
         case label:
         case link:
         case cascader:
-          column.editable = true;
+          column.editable = editable;
           break;
 
         case toggle:
@@ -105,7 +103,9 @@ function rx_columns($p) {
               title: 'Да',
             }
           ];
-          column.editor = <DropDownEditor options={toggle_options}/>;
+          if(editable){
+            column.editor = <DropDownEditor options={toggle_options}/>;
+          }
           column.formatter = <DropDownFormatter options={toggle_options} value={''}/>;
           break;
 
@@ -122,7 +122,9 @@ function rx_columns($p) {
           break;
 
         default:
-          column.editor = <DataCell/>;
+          if(editable){
+            column.editor = <DataCell/>;
+          }
         }
 
       });
