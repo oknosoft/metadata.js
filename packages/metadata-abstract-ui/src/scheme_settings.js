@@ -456,13 +456,9 @@ export default function scheme_settings() {
         this.fields.add(column);
       });
 
-      // если для объекта определены измерения по умолчанию - используем
-      const {resources} = _mgr.obj_constructor('', true);
-      if(resources) {
-        resources.forEach(function (column) {
-          this.resources.add({field: column});
-        });
-      }
+      // если для объекта определены показатели по умолчанию - используем
+      const {resources} = _mgr.obj_constructor('', true).prototype;
+      resources && resources.forEach((field) => this.resources.add({field}));
 
       this.obj = class_name;
 
@@ -657,39 +653,38 @@ export default function scheme_settings() {
      */
     group_by(collection) {
 
-      // получаем основные измерения
+      // grouping -  основные измерения
       const grouping = this.dims();
+
+      // dims - конкатенация явных полей группировки с полями детальных записей
+      const dims = this.dims();
+
+      // ress - активные ресурсы - те, что есть в выводимых полях
+      const ress = [];
+      const resources = this.resources._obj.map(v => v.field);
+      const {_manager} = collection._owner;
+      const meta = _manager.metadata(_manager._tabular || 'data').fields;
+      const _columns = this.rx_columns({_obj: this, mode: 'ts', fields: meta});
+      _columns.forEach(({key}) => {
+        if(dims.indexOf(key) == -1 && resources.indexOf(key) != -1) {
+          ress.push(key);
+        }
+        else {
+          // для базовой группировки, подмешиваем в измерения всё, что не ресурс
+          dims.indexOf(key) == -1 && dims.push(key);
+        }
+      });
 
       // TODO сейчас поддержана только первая запись иерархии
 
       // TODO сейчас нет понятия детальных записей - всё сворачивается по измерениям
 
-      // TODO сейчас набор полей не поддержан в интерфейсе, но решаем сразу для группировки по нескольким полям
+      // TODO сейчас группировка по набору полей не поддержана - группируем ступенькой по всем измерениям. нужная математика в DataFrame уже есть
 
       if(grouping.length) {
 
-        const {_manager} = collection._owner;
-        const meta = _manager.metadata(_manager._tabular || 'data').fields;
-        const _columns = this.rx_columns({_obj: this, mode: 'ts', fields: meta});
-
-        // dims - конкатенация явных полей группировки с полями детальных записей
-        const dims = this.dims();
-        const resources = this.resources._obj.map(v => v.field);
-        const ress = [];
-        _columns.forEach(({key}) => {
-          if(dims.indexOf(key) == -1 && resources.indexOf(key) != -1) {
-            ress.push(key);
-          }
-          else {
-            // для базовой группировки, подмешиваем в измерения всё, что не ресурс
-            dims.indexOf(key) == -1 && dims.push(key);
-          }
-        });
-
         // поля группировки без пустых имён (без сводных итогов)
         const dflds = dims.filter(v => v);
-
-        // DataFrame
 
         // TODO: скомпилировать и подклеить агрегаты из схемы
         const reduce = function(row, memo) {

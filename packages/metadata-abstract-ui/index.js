@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.41, built:2017-12-03
+ metadata-abstract-ui v2.0.16-beta.42, built:2017-12-03
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -7,10 +7,6 @@
 
 
 'use strict';
-
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-var DataFrame = _interopDefault(require('dataframe'));
 
 function meta_objs() {
 	const {classes} = this;
@@ -134,6 +130,7 @@ function log_manager() {
   this.ireg.create('log', LogManager);
 }
 
+const DataFrame = require('dataframe');
 function scheme_settings() {
   const {wsql, utils, cat, enm, dp, md, constructor} = this;
   const {CatManager, DataProcessorsManager, DataProcessorObj, CatObj, DocManager, TabularSectionRow} = constructor.classes || this;
@@ -447,12 +444,8 @@ function scheme_settings() {
       columns.forEach((column) => {
         this.fields.add(column);
       });
-      const {resources} = _mgr.obj_constructor('', true);
-      if(resources) {
-        resources.forEach(function (column) {
-          this.resources.add({field: column});
-        });
-      }
+      const {resources} = _mgr.obj_constructor('', true).prototype;
+      resources && resources.forEach((field) => this.resources.add({field}));
       this.obj = class_name;
       if(!this.name) {
         this.name = 'Основная';
@@ -588,21 +581,21 @@ function scheme_settings() {
     }
     group_by(collection) {
       const grouping = this.dims();
+      const dims = this.dims();
+      const ress = [];
+      const resources = this.resources._obj.map(v => v.field);
+      const {_manager} = collection._owner;
+      const meta = _manager.metadata(_manager._tabular || 'data').fields;
+      const _columns = this.rx_columns({_obj: this, mode: 'ts', fields: meta});
+      _columns.forEach(({key}) => {
+        if(dims.indexOf(key) == -1 && resources.indexOf(key) != -1) {
+          ress.push(key);
+        }
+        else {
+          dims.indexOf(key) == -1 && dims.push(key);
+        }
+      });
       if(grouping.length) {
-        const {_manager} = collection._owner;
-        const meta = _manager.metadata(_manager._tabular || 'data').fields;
-        const _columns = this.rx_columns({_obj: this, mode: 'ts', fields: meta});
-        const dims = this.dims();
-        const resources = this.resources._obj.map(v => v.field);
-        const ress = [];
-        _columns.forEach(({key}) => {
-          if(dims.indexOf(key) == -1 && resources.indexOf(key) != -1) {
-            ress.push(key);
-          }
-          else {
-            dims.indexOf(key) == -1 && dims.push(key);
-          }
-        });
         const dflds = dims.filter(v => v);
         const reduce = function(row, memo) {
           for(const resource of ress){
