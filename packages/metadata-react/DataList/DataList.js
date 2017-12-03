@@ -276,6 +276,7 @@ class DataList extends MDNRComponent {
       settings_open && <SchemeSettingsTabs
         key="tabs"
         height={show_grid ? 272 : (sizes.height || 500) - 104}
+        width={sizes.width}
         scheme={scheme}
         tabParams={RepParams && <RepParams scheme={scheme}/>}
         handleSchemeChange={this.handleSchemeChange}

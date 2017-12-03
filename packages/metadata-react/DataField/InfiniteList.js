@@ -72,14 +72,15 @@ export default class InfiniteList extends MComponent {
 
   loadMoreRows = ({startIndex, stopIndex}) => {
 
-    const {_mgr, _obj, _fld, _meta, search} = this.props;
-    const {totalRows} = this.state;
+    const {props, state, list} = this;
+    const {_mgr, _obj, _fld, _meta, search} = props;
+    const {totalRows} = state;
     const increment = Math.max(limit, stopIndex - startIndex + 1);
     const select = _mgr.get_search_selector({_obj, _meta, search, top: increment, skip: startIndex});
 
     const update_state = (added) => {
       // обновляем состояние - изменилось количество записей
-      const rowsCount = this.list.length + (added < increment ? 0 : increment);
+      const rowsCount = list.length + (added < increment ? 0 : increment);
       this.setState({totalRows: rowsCount});
     };
 
@@ -88,8 +89,8 @@ export default class InfiniteList extends MComponent {
     if(_mgr.cachable == 'ram' || _mgr.cachable == 'doc_ram') {
       _mgr.find_rows(select, (o) => {
         // если значение уже есть в коллекции - пропускаем
-        if(this.list.indexOf(o) === -1) {
-          this.list.push(o);
+        if(list.indexOf(o) === -1) {
+          list.push(o);
           added++;
         }
       });
@@ -97,19 +98,18 @@ export default class InfiniteList extends MComponent {
     }
     // будем делать запрос к couchdb
     else {
-      // готовим фильтры для запроса couchdb
-      const filter = that.get_filter(start, count);
 
-      return _mgr.pouch_db.find(filter)
-        .then(({data}) => {
+      const class_name_length = _mgr.class_name.length + 1;
+
+      return _mgr.pouch_db.find(select)
+        .then(({docs}) => {
           // обновляем массив результата
-          for (let i = 0; i < data.rows.length; i++) {
-            if(!list._data[i + startIndex]) {
-              list._data[i + startIndex] = data.rows[i].doc;
+          for (let i = 0; i < docs.length; i++) {
+            if(!list[i + startIndex]) {
+              list[i + startIndex] = {presentation: docs[i].name, ref: docs[i]._id.substr(class_name_length)};
             }
           }
-          update_state(data.rows.length);
-
+          update_state(docs.length);
         });
     }
 

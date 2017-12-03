@@ -796,7 +796,7 @@ export class RefDataManager extends DataManager{
 
 				}else{
 
-					if(cmd["hierarchical"] && cmd["group_hierarchy"])
+					if(cmd.hierarchical && cmd.group_hierarchy)
 						flds.push("is_folder");
 					else
 						flds.push("0 as is_folder");
@@ -805,7 +805,7 @@ export class RefDataManager extends DataManager{
 						flds.push("id");
 						flds.push("name as presentation");
 
-					}else if(cmd["main_presentation_name"])
+					}else if(cmd.main_presentation_name)
 						flds.push("name as presentation");
 
 					else{
@@ -815,10 +815,10 @@ export class RefDataManager extends DataManager{
 							flds.push("'...' as presentation");
 					}
 
-					if(cmd["has_owners"])
+					if(cmd.has_owners)
 						flds.push("owner");
 
-					if(cmd["code_length"])
+					if(cmd.code_length)
 						flds.push("id");
 
 				}
@@ -1179,6 +1179,7 @@ export class RefDataManager extends DataManager{
     const {cachable, _owner} = this;
     const {md} = _owner.$p;
     const select = {};
+    const {input_by_string} = this.metadata();
 
     if(cachable === 'ram' || cachable === 'doc_ram') {
 
@@ -1186,7 +1187,6 @@ export class RefDataManager extends DataManager{
       select._skip = skip;
 
       // поиск по строке
-      const {input_by_string} = this.metadata();
       if(search && input_by_string) {
         if(input_by_string.length > 1) {
           select.or = [];
@@ -1200,46 +1200,110 @@ export class RefDataManager extends DataManager{
       }
 
       // для связей параметров выбора, значение берём из объекта
-      if(_meta.choice_links) {
-        _meta.choice_links.forEach((choice) => {
-          if(choice.name && choice.name[0] == 'selection') {
-            if(_obj instanceof TabularSectionRow) {
-              if(choice.path.length < 2) {
-                select[choice.name[1]] = typeof choice.path[0] == 'function' ? choice.path[0] : _obj._owner._owner[choice.path[0]];
-              }
-              else {
-                if(choice.name[1] == 'owner' && !_mgr.metadata().has_owners) {
-                  return;
-                }
-                select[choice.name[1]] = _obj[choice.path[1]];
-              }
+      _meta.choice_links && _meta.choice_links.forEach((choice) => {
+        if(choice.name && choice.name[0] == 'selection') {
+          if(_obj instanceof TabularSectionRow) {
+            if(choice.path.length < 2) {
+              select[choice.name[1]] = typeof choice.path[0] == 'function' ? choice.path[0] : _obj._owner._owner[choice.path[0]];
             }
             else {
-              select[choice.name[1]] = typeof choice.path[0] == 'function' ? choice.path[0] : _obj[choice.path[0]];
+              if(choice.name[1] == 'owner' && !_mgr.metadata().has_owners) {
+                return;
+              }
+              select[choice.name[1]] = _obj[choice.path[1]];
             }
           }
-        });
-      }
+          else {
+            select[choice.name[1]] = typeof choice.path[0] == 'function' ? choice.path[0] : _obj[choice.path[0]];
+          }
+        }
+      });
 
       // у параметров выбора, значение живёт внутри отбора
-      if(_meta.choice_params) {
-        _meta.choice_params.forEach((choice) => {
-          const fval = Array.isArray(choice.path) ? {in: choice.path} : choice.path;
-          if(!select[choice.name]) {
-            select[choice.name] = fval;
-          }
-          else if(Array.isArray(select[choice.name])) {
-            select[choice.name].push(fval);
-          }
-          else {
-            select[choice.name] = [select[choice.name]];
-            select[choice.name].push(fval);
-          }
-        });
+      _meta.choice_params && _meta.choice_params.forEach((choice) => {
+        const fval = Array.isArray(choice.path) ? {in: choice.path} : choice.path;
+        if(!select[choice.name]) {
+          select[choice.name] = fval;
+        }
+        else if(Array.isArray(select[choice.name])) {
+          select[choice.name].push(fval);
+        }
+        else {
+          select[choice.name] = [select[choice.name]];
+          select[choice.name].push(fval);
+        }
+      });
+
+    }
+    else if(cachable === 'doc' || cachable === 'remote'){
+
+      Object.assign(select, {
+        selector: {class_name: this.class_name},
+        fields: ["_id", "name"],
+        skip,
+        limit: top
+      });
+
+      if(_meta.hierarchical) {
+        select.fields.push('parent');
       }
 
-      return select;
+      if(_meta.has_owners) {
+        select.fields.push('owner');
+      }
+
+      // для связей параметров выбора, значение берём из объекта
+      _meta.choice_links && _meta.choice_links.forEach((choice) => {
+        if(choice.name && choice.name[0] == 'selection' && typeof choice.path[0] !== 'function') {
+          select.selector[choice.name[1]] = _obj[choice.path[0]].valueOf();
+        }
+      });
+
+      // у параметров выбора, значение живёт внутри отбора
+      _meta.choice_params && _meta.choice_params.forEach((choice) => {
+        const fval = Array.isArray(choice.path) ? {$in: choice.path.map(v => v.valueOf())} : choice.path.valueOf();
+        if(fval.hasOwnProperty('not')){
+          fval.$ne = fval.not;
+          delete fval.not;
+        }
+        if(!select.selector[choice.name]) {
+          select.selector[choice.name] = Array.isArray(choice.path) ? {$in: choice.path.map(v => v.valueOf())} : choice.path.valueOf();
+        }
+        else if(select.selector[choice.name].$in) {
+          if(Array.isArray(choice.path)){
+            choice.path.forEach(v => select.selector[choice.name].$in.push(v.valueOf()));
+          }
+          else{
+            select.selector[choice.name].$in.push(choice.path.valueOf());
+          }
+        }
+        else {
+          select.selector[choice.name] = {$in: [select[choice.name]]};
+          if(Array.isArray(choice.path)){
+            choice.path.forEach(v => select.selector[choice.name].$in.push(v.valueOf()));
+          }
+          else{
+            select.selector[choice.name].$in.push(choice.path.valueOf());
+          }
+        }
+      });
+
+      // поиск по строке
+      if(search && input_by_string) {
+        if(input_by_string.length > 1) {
+          select.selector.$or = [];
+          input_by_string.forEach((fld) => {
+            select.selector.$or.push({[fld]: {like: search}});
+          });
+        }
+        else {
+          select.selector[input_by_string[0]] = {$regex: search};
+        }
+      }
+
     }
+
+    return select;
 
   }
 
