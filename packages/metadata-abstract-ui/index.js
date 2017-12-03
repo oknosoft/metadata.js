@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.41, built:2017-11-30
+ metadata-abstract-ui v2.0.16-beta.41, built:2017-12-02
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -554,7 +554,7 @@ function scheme_settings() {
               right_value = right_value[path[i]];
             }
           }
-          if(right_value_type && right_value_type !== 'string'){
+          else if(right_value_type && right_value_type !== 'string'){
             const mgr = md.mgr_by_class_name(right_value_type);
             right_value = mgr ? mgr.get(right_value) : utils.fetch_type(right_value, {types: [right_value_type]});
           }

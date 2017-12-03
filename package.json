@@ -34,11 +34,11 @@
     "react-onclickoutside": "^6.7.0",
     "react-virtualized": "^9.13.0",
     "superlogin-client": "^0.8.0",
-    "webpack": "^3.9.0"
+    "webpack": "^3.9.1"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
-    "babel-eslint": "^8.0.2",
+    "babel-eslint": "^8.0.3",
     "babel-loader": "^7.1.2",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-syntax-object-rest-spread": "^6.13.0",

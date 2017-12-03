@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.41, built:2017-11-30
+ metadata-core v2.0.16-beta.41, built:2017-12-02
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3037,7 +3037,7 @@ const utils = {
       case ninh:
         return utils.is_data_obj(left) ? !left._hierarchy(right) : left != right;
       case lke:
-        return left.indexOf && left.indexOf(right) !== -1;
+        return left.indexOf && right && left.indexOf(right) !== -1;
       case nlk:
         return left.indexOf && left.indexOf(right) === -1;
       default:
