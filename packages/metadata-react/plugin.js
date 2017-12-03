@@ -56,11 +56,16 @@ function rx_columns({utils: {moment}, enm}) {
     return <div title={text}>{text}</div>;
   };
 
+  const number_formatter = (fraction_figits = 0) => ({value}) => {
+    const text = (value || 0).toFixed(fraction_figits);
+    return <div title={text} style={{textAlign: 'right'}}>{text}</div>;
+  };
+
   return function columns({mode, fields, _obj}) {
 
     const res = this.columns(mode);
     const {input, text, label, link, cascader, toggle, image, type, path} = enm.data_field_kinds;
-    const editable = _obj._manager.class_name.indexOf('rep.') !== 0;
+    const editable = _obj._manager.class_name.indexOf('rep.') !== 0 || this.obj.indexOf(`.${_obj._manager._tabular || 'data'}`) === -1;
 
     if(fields) {
       res.forEach((column) => {
@@ -74,6 +79,9 @@ function rx_columns({utils: {moment}, enm}) {
           }
           else if(_fld.type.date_part) {
             column.formatter = date_formatter[_fld.type.date_part];
+          }
+          else if(_fld.type.digits && _fld.type.types.length === 1){
+            column.formatter = number_formatter(_fld.type.fraction_figits);
           }
         }
 

@@ -14,6 +14,7 @@
   "dependencies": {
     "alasql": "^0.4.3",
     "clipboard": "^1.7",
+    "dataframe": "^2.0.1",
     "debug": "^3.1.0",
     "material-ui": "^1.0.0-beta.22",
     "material-ui-icons": "^1.0.0-beta.17",

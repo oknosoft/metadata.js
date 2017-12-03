@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.41, built:2017-11-30
+ metadata-abstract-ui v2.0.16-beta.41, built:2017-12-03
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -380,7 +380,25 @@ var meta = {
             name: 'drawer',
             synonym: 'Панель формы'
           },
-        ]
+        ],
+        report_output: [
+          {
+            order: 0,
+            name: 'grid',
+            synonym: 'Таблица',
+            'default': true
+          },
+          {
+            order: 1,
+            name: 'chart',
+            synonym: 'Диаграмма'
+          },
+          {
+            order: 2,
+            name: 'pivot',
+            synonym: 'Cводная таблица'
+          },
+        ],
       },
       cat: {
         meta_objs: {
@@ -463,6 +481,14 @@ var meta = {
               tooltip: 'Формула инициализации',
               type: {
                 types: ['cat.formulas'],
+                is_ref: true
+              }
+            },
+            output: {
+              synonym: 'Вывод',
+              tooltip: 'Вывод результата',
+              type: {
+                types: ['enm.report_output'],
                 is_ref: true
               }
             },

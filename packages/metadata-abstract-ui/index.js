@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.41, built:2017-12-02
+ metadata-abstract-ui v2.0.16-beta.41, built:2017-12-03
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -7,6 +7,10 @@
 
 
 'use strict';
+
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+
+var DataFrame = _interopDefault(require('dataframe'));
 
 function meta_objs() {
 	const {classes} = this;
@@ -582,6 +586,119 @@ function scheme_settings() {
         return res;
       }
     }
+    group_by(collection) {
+      const grouping = this.dims();
+      if(grouping.length) {
+        const {_manager} = collection._owner;
+        const meta = _manager.metadata(_manager._tabular || 'data').fields;
+        const _columns = this.rx_columns({_obj: this, mode: 'ts', fields: meta});
+        const dims = this.dims();
+        const resources = this.resources._obj.map(v => v.field);
+        const ress = [];
+        _columns.forEach(({key}) => {
+          if(dims.indexOf(key) == -1 && resources.indexOf(key) != -1) {
+            ress.push(key);
+          }
+          else {
+            dims.indexOf(key) == -1 && dims.push(key);
+          }
+        });
+        const dflds = dims.filter(v => v);
+        const reduce = function(row, memo) {
+          for(const resource of ress){
+            memo[resource] = (memo[resource] || 0) + row[resource];
+          }
+          return memo;
+        };
+        const df = DataFrame({
+          rows: collection._obj,
+          dimensions: dflds.map(v => ({value: v, title: v})),
+          reduce
+        });
+        const res = df.calculate({
+          dimensions: dflds,
+          sortBy: '',
+          sortDir: 'asc',
+        });
+        const stack = [];
+        const col0 = _columns[0];
+        const {is_data_obj, is_data_mgr, moment} = $p.utils;
+        let prevLevel;
+        let index = 0;
+        const cast_field = function (row, gdim, force) {
+          const mgr = _manager.value_mgr(row, gdim, meta[gdim].type);
+          const val = is_data_mgr(mgr) ? mgr.get(row[gdim]) : row[gdim];
+          if(_columns.some(v => v.key === gdim)){
+            row[gdim] = val;
+          }
+          else if(force){
+            row[col0.key] = _manager.value_mgr(row, col0.key, meta[col0.key].type) ?
+              is_data_obj(val) ? val : {presentation: val instanceof Date ? moment(val).format(moment._masks[meta[gdim].type.date_part]) : val }
+              :
+              is_data_obj(val) ? val.toString() : val;
+          }
+        };
+        const totals = !grouping[0];
+        if(totals){
+          grouping.splice(0, 1);
+          const row = {
+            row: (index++).toString(),
+            children: [],
+          };
+          collection._rows.push(row);
+          stack.push(row);
+          row[col0.key] = col0._meta.type.is_ref ? {presentation: 'Σ'} : 'Σ';
+        }
+        else{
+          stack.push({children: collection._rows});
+        }
+        for(const row of res) {
+          const level = stack.length - 1;
+          const parent = stack[level];
+          if(!prevLevel) {
+            prevLevel = level;
+          }
+          let lvl = row._level + 1;
+          if(lvl > grouping.length && lvl < dflds.length) {
+            prevLevel = lvl;
+            continue;
+          }
+          row.row = (index++).toString();
+          if(lvl > level && lvl < dflds.length){
+            parent.children.push(row);
+            row.children = [];
+            stack.push(row);
+            cast_field(row, grouping[stack.length - 2], true);
+          }
+          else if(lvl < prevLevel) {
+            stack.pop();
+            stack[stack.length - 1].children.push(row);
+            row.children = [];
+            stack.push(row);
+            cast_field(row, grouping[stack.length - 2], true);
+          }
+          else {
+            parent.children.push(row);
+            for(const gdim of dflds){
+              cast_field(row, gdim);
+            }
+          }
+          prevLevel = lvl;
+        }
+        collection._rows._count = index;
+        if(totals){
+          const row = collection._rows[0];
+          row.children.reduce((memo, row) => reduce(row, memo), row);
+        }
+      }
+      else {
+        collection.group_by(dims, ress);
+        collection.forEach((row) => {
+          collection._rows.push(row);
+        });
+        collection._rows._count = collection._rows.length;
+      }
+    }
     columns(mode) {
       const parts = this.obj.split('.'),
         _mgr = md.mgr_by_class_name(this.obj),
@@ -661,6 +778,11 @@ function scheme_settings() {
     }
   };
   this.CatScheme_settingsResourcesRow = class CatScheme_settingsResourcesRow extends this.CatScheme_settingsDimensionsRow {
+    get use() {
+      return true;
+    }
+    set use(v) {
+    }
     get formula() {
       return this._getter('formula');
     }
@@ -782,6 +904,12 @@ function scheme_settings() {
     }
     set quick_access(v) {
       this._setter('quick_access', v);
+    }
+    get output() {
+      return this._getter('output');
+    }
+    set output(v) {
+      this._setter('output', v);
     }
   };
   this.CatScheme_settingsCompositionRow = class CatScheme_settingsCompositionRow extends this.CatScheme_settingsDimensionsRow {
