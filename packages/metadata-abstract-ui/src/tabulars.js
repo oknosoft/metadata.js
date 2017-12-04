@@ -15,7 +15,7 @@ function tabulars(constructor) {
 
   Object.defineProperty(TabularSection.prototype, 'export', {
 
-    value: function (format = 'csv', columns = []) {
+    value: function (format = 'csv', columns = [], container) {
 
       if(!columns.length) {
         columns = Object.keys(this._owner._metadata(this._name).fields);
@@ -81,22 +81,11 @@ function tabulars(constructor) {
             });
           }
 
-          // const cb = new Clipboard('.null', {text: () => text});
-          // const finish = (e) => {
-          //   resolve();
-          //   cb.off('error');
-          //   cb.off('success');
-          //   cb.destroy();
-          // };
-          // cb.on('success', finish);
-          // cb.on('error', finish);
-          // cb.onClick(evt);
-
           const action = {
             action: 'copy',
             text,
             emitter: {emit: resolve},
-            container: document.body,
+            container: container || document.body,
           };
           const clipboardAction = new Clipboard(action);
           clipboardAction.destroy();

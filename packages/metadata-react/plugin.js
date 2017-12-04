@@ -152,22 +152,19 @@ function rx_columns({utils: {moment}, enm}) {
 
 export function export_handlers() {
 
-  this.doExport = (format) => {
-    setTimeout(() => {
-      const {_obj, _tabular, _columns} = this.props;
-      _obj[_tabular].export(format, _columns.map((column) => column.key));
-    });
-    this.handleMenuClose && this.handleMenuClose();
+  this.doExport = (format, evt) => {
+    const {handleMenuClose, props} = this;
+    const {_obj, _tabular, _columns} = props;
+    _obj && _obj[_tabular].export(format, _columns.map(({key}) => key), evt && evt.target);
+    handleMenuClose && handleMenuClose();
   };
 
-  this.handleExportXLS = (evt) => this.doExport('xls');
-  this.handleExportJSON = (evt) => this.doExport('json');
-  this.handleExportCSV = (evt) => this.doExport('csv');
+  this.handleExportXLS = (evt) => this.doExport('xls', evt);
+  this.handleExportJSON = (evt) => this.doExport('json', evt);
+  this.handleExportCSV = (evt) => this.doExport('csv', evt);
 
-  this.handleMenuOpen = (evt) =>
-    this.setState({menuOpen: true, anchorEl: evt.currentTarget});
-  this.handleMenuClose = (evt) =>
-    this.setState({menuOpen: false});
+  this.handleMenuOpen = (evt) => this.setState({menuOpen: true, anchorEl: evt.currentTarget});
+  this.handleMenuClose = (evt) => this.setState({menuOpen: false});
 
 }
 
