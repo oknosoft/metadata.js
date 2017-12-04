@@ -57,7 +57,7 @@ function rx_columns({utils: {moment}, enm}) {
   };
 
   const number_formatter = (fraction_figits = 0) => ({value}) => {
-    const text = (value || 0).toFixed(fraction_figits);
+    const text = (typeof value === 'number' ? value : 0).toFixed(fraction_figits);
     return <div title={text} style={{textAlign: 'right'}}>{text}</div>;
   };
 
