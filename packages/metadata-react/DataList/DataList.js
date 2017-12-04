@@ -3,7 +3,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import MDNRComponent from '../common/MDNRComponent';
 
-import {InfiniteLoader, AutoSizer, MultiGrid} from 'react-virtualized';
+import InfiniteLoader from 'react-virtualized/dist/es/InfiniteLoader';
+import MultiGrid from 'react-virtualized/dist/es/MultiGrid';
+import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
 import classnames from 'classnames';
 import Helmet from 'react-helmet';
 import LoadingMessage from '../DumbLoader/LoadingMessage';

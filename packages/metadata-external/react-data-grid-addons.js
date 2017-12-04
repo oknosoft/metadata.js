@@ -1,12 +1,12 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory(require("react"), require("prop-types"), require("react-dom"), require("metadata-external/react-data-grid"), require("react-contextmenu"));
+		module.exports = factory(require("react"), require("prop-types"), require("react-dom"), require("metadata-external/react-data-grid.min"), require("react-contextmenu"));
 	else if(typeof define === 'function' && define.amd)
-		define(["react", "prop-types", "react-dom", "metadata-external/react-data-grid", "react-contextmenu"], factory);
+		define(["react", "prop-types", "react-dom", "metadata-external/react-data-grid.min", "react-contextmenu"], factory);
 	else if(typeof exports === 'object')
-		exports["ReactDataGrid"] = factory(require("react"), require("prop-types"), require("react-dom"), require("metadata-external/react-data-grid"), require("react-contextmenu"));
+		exports["ReactDataGrid"] = factory(require("react"), require("prop-types"), require("react-dom"), require("metadata-external/react-data-grid.min"), require("react-contextmenu"));
 	else
-		root["ReactDataGrid"] = factory(root["React"], root["PropTypes"], root["ReactDOM"], root["metadata-external/react-data-grid"], root["react-contextmenu"]);
+		root["ReactDataGrid"] = factory(root["React"], root["PropTypes"], root["ReactDOM"], root["metadata-external/react-data-grid.min"], root["react-contextmenu"]);
 })(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_7__, __WEBPACK_EXTERNAL_MODULE_21__, __WEBPACK_EXTERNAL_MODULE_22__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -789,7 +789,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	//const Draggable = require('./draggable');
 	//const DraggableHeader = require('./draggable-header');
 	//const Filters = require('./cells/headerCells/filters');
-	//const { RowComparer: rowComparer } = require('metadata-external/react-data-grid');
+	//const { RowComparer: rowComparer } = require('metadata-external/react-data-grid.min');
 	//const performance = require('./performance');
 	//const Utils = { rowComparer, performance };
 
