@@ -247,7 +247,7 @@ const msg = new I18n({
 		sync_break: 'Прервать синхронизацию',
 		sync_no_data: 'Файл не содержит подходящих элементов для загрузки',
 
-		tabular_will_cleared: 'Табличная часть "%1" будет очищена. Продолжить?',
+    tabular: 'Табличная часть',
 
 		unsupported_browser_title: 'Браузер не поддерживается',
 		unsupported_browser: 'Несовместимая версия браузера<br/>Рекомендуется Google Chrome',
