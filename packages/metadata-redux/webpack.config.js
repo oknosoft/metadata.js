@@ -44,7 +44,7 @@ function getExternals() {
     'alasql/dist/alasql.min': true,
     'clipboard/lib/clipboard-action': true,
   };
-  for (const key in package_data.peerDependecies) {
+  for (const key in package_data.dependencies) {
     if(!externals[key]) {
       externals[key] = true;
     }
@@ -56,13 +56,11 @@ const config = {
   entry: {
     'packages/metadata-redux/index': ['./packages/metadata-redux/src'],
     'packages/metadata-redux/index.min': ['./packages/metadata-redux/src'],
-    // 'packages/metadata-redux/with': ['./packages/metadata-redux/src/with'],
-    // 'packages/metadata-redux/with.min': ['./packages/metadata-redux/src/with'],
   },
   output: {
     path: path.resolve('.'),
     filename: '[name].js',
-    libraryTarget: 'umd'
+    libraryTarget: 'commonjs2'
   },
   externals: getExternals(),
   module: {

@@ -194,7 +194,7 @@ class FieldInfinit extends AbstractField {
 
   renderInput() {
     const {props, state, _meta, handleInputChange, handleOpenContainer, inputRef} = this;
-    const {classes, _fld, fullWidth, mandatory} = props;
+    const {classes, _obj, _fld, fullWidth, mandatory} = props;
 
     return this.isTabular ?
       <input
@@ -222,7 +222,13 @@ class FieldInfinit extends AbstractField {
           placeholder={_fld}
           endAdornment={state.focused &&
           <InputAdornment position="end">
-            <IconButton tabIndex={-1} className={classes.icon} onClick={this.handleOpenObj} onMouseDown={prevent}>
+            <IconButton
+              tabIndex={-1}
+              className={classes.icon}
+              title={_obj[_fld]._manager.frm_obj_name}
+              onClick={this.handleOpenObj}
+              onMouseDown={prevent}
+            >
               <OpenInNew/>
             </IconButton>
           </InputAdornment>

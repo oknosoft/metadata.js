@@ -6,6 +6,8 @@
  * Created 19.12.2016
  */
 
+const DataFrame = require('dataframe');
+
 export default function scheme_settings() {
 
   const {wsql, utils, cat, enm, dp, md, constructor} = this;
@@ -454,13 +456,9 @@ export default function scheme_settings() {
         this.fields.add(column);
       });
 
-      // если для объекта определены измерения по умолчанию - используем
-      const {resources} = _mgr.obj_constructor('', true);
-      if(resources) {
-        resources.forEach(function (column) {
-          this.resources.add({field: column});
-        });
-      }
+      // если для объекта определены показатели по умолчанию - используем
+      const {resources} = _mgr.obj_constructor('', true).prototype;
+      resources && resources.forEach((field) => this.resources.add({field}));
 
       this.obj = class_name;
 
@@ -584,10 +582,10 @@ export default function scheme_settings() {
 
     /**
      * ### Фильтрует внешнюю табчасть
-     * @param collection
-     * @return {Array}
+     * @param collection {TabularSection}
+     * @return {Array|TabularSection}
      */
-    filter(collection) {
+    filter(collection, parent = '', self = false) {
       // получаем активный отбор
       const selection = [];
       this.selection.find_rows({use: true}, (row) => selection.push(row));
@@ -596,7 +594,9 @@ export default function scheme_settings() {
       const {utils, md, enm: {comparison_types}} = $p;
       collection.forEach((row) => {
         let ok = true;
+
         for(let {left_value, left_value_type, right_value, right_value_type, comparison_type} of selection){
+          // получаем значение слева
           if(left_value_type === 'path'){
             const path = left_value.split('.');
             left_value = row[path[0]];
@@ -604,7 +604,19 @@ export default function scheme_settings() {
               left_value = left_value[path[i]];
             }
           }
-          if(right_value_type !== 'path'){
+          else if(left_value_type && left_value_type !== 'string'){
+            const mgr = md.mgr_by_class_name(left_value_type);
+            left_value = mgr ? mgr.get(left_value) : utils.fetch_type(left_value, {types: [left_value_type]});
+          }
+          // получаем значение справа
+          if(right_value_type === 'path'){
+            const path = right_value.split('.');
+            right_value = row[path[0]];
+            for(let i = 1; i < path.length; i++){
+              right_value = right_value[path[i]];
+            }
+          }
+          else if(right_value_type && right_value_type !== 'string'){
             const mgr = md.mgr_by_class_name(right_value_type);
             right_value = mgr ? mgr.get(right_value) : utils.fetch_type(right_value, {types: [right_value_type]});
           }
@@ -613,9 +625,201 @@ export default function scheme_settings() {
             break;
           }
         }
-        ok && res.push(row);
+
+        if(self){
+          !ok && res.push(row._obj);
+        }
+        else{
+          ok && res.push(row);
+        }
       });
-      return res;
+      if(self){
+        const {_obj} = collection;
+        res.forEach((row) => {
+          _obj.splice(_obj.indexOf(row), 1);
+        });
+        _obj.forEach((row, index) => row.row = index + 1);
+        return collection;
+      }
+      else{
+        return res;
+      }
+    }
+
+    /**
+     * ### Выполняет группировку записей внешней табчасти
+     * помещяет результат в collection._rows
+     * @param collection {TabularSection}
+     */
+    group_by(collection) {
+
+      // grouping -  основные измерения
+      const grouping = this.dims();
+
+      // dims - конкатенация явных полей группировки с полями детальных записей
+      const dims = this.dims();
+
+      // ress - активные ресурсы - те, что есть в выводимых полях
+      const ress = [];
+      const resources = this.resources._obj.map(v => v.field);
+      const {_manager} = collection._owner;
+      const meta = _manager.metadata(_manager._tabular || 'data').fields;
+      const _columns = this.rx_columns({_obj: this, mode: 'ts', fields: meta});
+      _columns.forEach(({key}) => {
+        if(dims.indexOf(key) == -1 && resources.indexOf(key) != -1) {
+          ress.push(key);
+        }
+        else {
+          // для базовой группировки, подмешиваем в измерения всё, что не ресурс
+          dims.indexOf(key) == -1 && dims.push(key);
+        }
+      });
+
+      // TODO сейчас поддержана только первая запись иерархии
+
+      // TODO сейчас нет понятия детальных записей - всё сворачивается по измерениям
+
+      // TODO сейчас группировка по набору полей не поддержана - группируем ступенькой по всем измерениям. нужная математика в DataFrame уже есть
+
+      if(grouping.length) {
+
+        // поля группировки без пустых имён (без сводных итогов)
+        const dflds = dims.filter(v => v);
+
+        // TODO: скомпилировать и подклеить агрегаты из схемы
+        const reduce = function(row, memo) {
+          for(const resource of ress){
+            memo[resource] = (memo[resource] || 0) + row[resource];
+          }
+          return memo;
+        };
+
+        const df = DataFrame({
+          rows: collection._obj,
+          dimensions: dflds.map(v => ({value: v, title: v})),
+          reduce
+        });
+
+        const res = df.calculate({
+          dimensions: dflds,
+          sortBy: '',
+          sortDir: 'asc',
+        });
+
+        // TODO в группировке может потребоваться разыменовать поля
+
+        // TODO итоги надо считать не по всем русурсам
+
+        // TODO итоги надо считать с учетом формулы
+
+        // const sql = `select ${dflds}${ress.length ? ', ' : ' '}${
+        //   ress.map(res => `sum(${res}) as ${res}`).join(', ')} INTO CSV("my.csv", {headers:true}) from ? ${dflds ? 'group by ROLLUP(' + dflds + ')' : ''}`;
+        //
+        // // TODO еще, в alasql есть ROLLUP, CUBE и GROUPING SETS - сейчас используем ROLLUP
+        // const res = $p.wsql.alasql(sql, [collection._obj]);
+
+        // складываем результат в иерархическую структуру
+        const stack = []; // здесь храним родительские строки
+        const col0 = _columns[0];
+        const {is_data_obj, is_data_mgr, moment} = $p.utils;
+        let prevLevel;    // предыдущий уровень группировки
+        let index = 0;    // счетчик количества строк + id строки результирующего набора
+
+        const cast_field = function (row, gdim, force) {
+
+          const mgr = _manager.value_mgr(row, gdim, meta[gdim].type);
+          const val = is_data_mgr(mgr) ? mgr.get(row[gdim]) : row[gdim];
+
+          if(_columns.some(v => v.key === gdim)){
+            row[gdim] = val;
+          }
+          else if(force){
+            row[col0.key] = _manager.value_mgr(row, col0.key, meta[col0.key].type) ?
+              is_data_obj(val) ? val : {presentation: val instanceof Date ? moment(val).format(moment._masks[meta[gdim].type.date_part]) : val }
+              :
+              is_data_obj(val) ? val.toString() : val;
+          }
+        };
+
+        const totals = !grouping[0];
+        if(totals){
+          grouping.splice(0, 1);
+          const row = {
+            row: (index++).toString(),
+            children: [],
+          };
+          collection._rows.push(row);
+          stack.push(row);
+          row[col0.key] = col0._meta.type.is_ref ? {presentation: 'Σ'} : 'Σ';
+        }
+        else{
+          stack.push({children: collection._rows});
+        }
+
+        for(const row of res) {
+
+          // варианты:
+          // - это подуровень группировки: добавляем к родителю, добавляем в stack, level растёт
+          // - это очередная строка того же уровня: добавляем к родителю, level без изменений
+          // - это следующее значение родителя: меняем в стеке, level без изменений
+          // - этот уровень не нужен в результирующем наборе - пропускаем
+          const level = stack.length - 1;
+          const parent = stack[level];
+          if(!prevLevel) {
+            prevLevel = level;
+          }
+
+          // по числу не-null в измерениях, определяем уровень
+          let lvl = row._level + 1;
+
+          // если такой уровень не нужен - пропускаем
+          if(lvl > grouping.length && lvl < dflds.length) {
+            prevLevel = lvl;
+            continue;
+          }
+
+          row.row = (index++).toString();
+
+          if(lvl > level && lvl < dflds.length){
+            parent.children.push(row);
+            row.children = [];
+            stack.push(row);
+            cast_field(row, grouping[stack.length - 2], true);
+          }
+          else if(lvl < prevLevel) {
+            stack.pop();
+            stack[stack.length - 1].children.push(row);
+            row.children = [];
+            stack.push(row);
+            cast_field(row, grouping[stack.length - 2], true);
+          }
+          else {
+            parent.children.push(row);
+            for(const gdim of dflds){
+              cast_field(row, gdim);
+            }
+          }
+
+          prevLevel = lvl;
+        }
+
+        collection._rows._count = index;
+
+        if(totals){
+          const row = collection._rows[0];
+          row.children.reduce((memo, row) => reduce(row, memo), row);
+        }
+
+      }
+      else {
+        // или заполняем без группировки
+        collection.group_by(dims, ress);
+        collection.forEach((row) => {
+          collection._rows.push(row);
+        });
+        collection._rows._count = collection._rows.length;
+      }
+
     }
 
     /**
@@ -739,6 +943,13 @@ export default function scheme_settings() {
   };
 
   this.CatScheme_settingsResourcesRow = class CatScheme_settingsResourcesRow extends this.CatScheme_settingsDimensionsRow {
+
+    get use() {
+      return true;
+    }
+
+    set use(v) {
+    }
 
     get formula() {
       return this._getter('formula');
@@ -903,6 +1114,14 @@ export default function scheme_settings() {
 
     set quick_access(v) {
       this._setter('quick_access', v);
+    }
+
+    get output() {
+      return this._getter('output');
+    }
+
+    set output(v) {
+      this._setter('output', v);
     }
   };
 

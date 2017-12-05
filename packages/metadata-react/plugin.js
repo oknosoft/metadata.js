@@ -9,14 +9,13 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import {Editors, Formatters} from 'metadata-external/react-data-grid-addons.min';
-
-const {CheckboxEditor, DropDownEditor} = Editors;
-const {DropDownFormatter, ImageFormatter} = Formatters;
-
 import DataCell from 'metadata-react/DataField/DataCell';
 import TypeFieldCell from 'metadata-react/DataField/FieldTypeCell';
 import PathFieldCell from 'metadata-react/DataField/FieldPathCell';
+
+import {Editors, Formatters} from 'metadata-external/react-data-grid-addons.min';
+const {CheckboxEditor, DropDownEditor} = Editors;
+const {DropDownFormatter, ImageFormatter} = Formatters;
 
 class ToggleEditor extends CheckboxEditor {
 
@@ -36,17 +35,15 @@ class ToggleEditor extends CheckboxEditor {
 }
 
 
-function rx_columns($p) {
-
-  const {moment} = $p.utils;
+function rx_columns({utils: {moment}, enm}) {
 
   const date_formatter = {
     date: ({value}) => {
-      const presentation = moment(value).format(moment._masks.date);
+      const presentation = !value || value.length < 5 ? value || '' : moment(value).format(moment._masks.date);
       return <div title={presentation}>{presentation}</div>;
     },
     date_time: ({value}) => {
-      const presentation = moment(value).format(moment._masks.date_time);
+      const presentation = !value || value.length < 5 ? value || '' : moment(value).format(moment._masks.date_time);
       return <div title={presentation}>{presentation}</div>;
     }
   };
@@ -59,10 +56,16 @@ function rx_columns($p) {
     return <div title={text}>{text}</div>;
   };
 
+  const number_formatter = (fraction_figits = 0) => ({value}) => {
+    const text = (typeof value === 'number' ? value : 0).toFixed(fraction_figits);
+    return <div title={text} style={{textAlign: 'right'}}>{text}</div>;
+  };
+
   return function columns({mode, fields, _obj}) {
 
     const res = this.columns(mode);
-    const {input, text, label, link, cascader, toggle, image, type, path} = $p.enm.data_field_kinds;
+    const {input, text, label, link, cascader, toggle, image, type, path} = enm.data_field_kinds;
+    const editable = _obj._manager.class_name.indexOf('rep.') !== 0 || this.obj.indexOf(`.${_obj._manager._tabular || 'data'}`) === -1;
 
     if(fields) {
       res.forEach((column) => {
@@ -77,6 +80,9 @@ function rx_columns($p) {
           else if(_fld.type.date_part) {
             column.formatter = date_formatter[_fld.type.date_part];
           }
+          else if(_fld.type.digits && _fld.type.types.length === 1){
+            column.formatter = number_formatter(_fld.type.fraction_figits);
+          }
         }
 
         let options;
@@ -87,7 +93,7 @@ function rx_columns($p) {
         case label:
         case link:
         case cascader:
-          column.editable = true;
+          column.editable = editable;
           break;
 
         case toggle:
@@ -105,7 +111,9 @@ function rx_columns($p) {
               title: 'Да',
             }
           ];
-          column.editor = <DropDownEditor options={toggle_options}/>;
+          if(editable){
+            column.editor = <DropDownEditor options={toggle_options}/>;
+          }
           column.formatter = <DropDownFormatter options={toggle_options} value={''}/>;
           break;
 
@@ -122,7 +130,9 @@ function rx_columns($p) {
           break;
 
         default:
-          column.editor = <DataCell/>;
+          if(editable){
+            column.editor = <DataCell/>;
+          }
         }
 
       });
@@ -142,22 +152,19 @@ function rx_columns($p) {
 
 export function export_handlers() {
 
-  this.doExport = (format) => {
-    setTimeout(() => {
-      const {_obj, _tabular, _columns} = this.props;
-      _obj[_tabular].export(format, _columns.map((column) => column.key));
-    });
-    this.handleMenuClose && this.handleMenuClose();
+  this.doExport = (format, evt) => {
+    const {handleMenuClose, props} = this;
+    const {_obj, _tabular, _columns} = props;
+    _obj && _obj[_tabular].export(format, _columns.map(({key}) => key), evt && evt.target);
+    handleMenuClose && handleMenuClose();
   };
 
-  this.handleExportXLS = (evt) => this.doExport('xls');
-  this.handleExportJSON = (evt) => this.doExport('json');
-  this.handleExportCSV = (evt) => this.doExport('csv');
+  this.handleExportXLS = (evt) => this.doExport('xls', evt);
+  this.handleExportJSON = (evt) => this.doExport('json', evt);
+  this.handleExportCSV = (evt) => this.doExport('csv', evt);
 
-  this.handleMenuOpen = (evt) =>
-    this.setState({menuOpen: true, anchorEl: evt.currentTarget});
-  this.handleMenuClose = (evt) =>
-    this.setState({menuOpen: false});
+  this.handleMenuOpen = (evt) => this.setState({menuOpen: true, anchorEl: evt.currentTarget});
+  this.handleMenuClose = (evt) => this.setState({menuOpen: false});
 
 }
 

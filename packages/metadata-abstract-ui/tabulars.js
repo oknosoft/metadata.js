@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.40, built:2017-11-22
+ metadata-abstract-ui v2.0.16-beta.42, built:2017-12-04
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -42,7 +42,7 @@ const Clipboard = require('clipboard/lib/clipboard-action');
 function tabulars(constructor) {
   const {TabularSection} = constructor.classes;
   Object.defineProperty(TabularSection.prototype, 'export', {
-    value: function (format = 'csv', columns = []) {
+    value: function (format = 'csv', columns = [], container) {
       if(!columns.length) {
         columns = Object.keys(this._owner._metadata(this._name).fields);
       }
@@ -105,7 +105,7 @@ function tabulars(constructor) {
             action: 'copy',
             text,
             emitter: {emit: resolve},
-            container: document.body,
+            container: container || document.body,
           };
           const clipboardAction = new Clipboard(action);
           clipboardAction.destroy();

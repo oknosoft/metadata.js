@@ -23,6 +23,8 @@ export default class SchemeSettingsButtons extends PureComponent {
   static propTypes = {
     scheme: PropTypes.object.isRequired,
     handleSchemeChange: PropTypes.func.isRequired,
+    handleSettingsOpen: PropTypes.func.isRequired,
+    handleSettingsClose: PropTypes.func.isRequired,
     tabParams: PropTypes.object,                    // конструктор пользовательской панели параметров
     show_search: PropTypes.bool,                    // показывать поле поиска
     show_variants: PropTypes.bool,                  // показывать список вариантов настройки динсписка
@@ -55,9 +57,11 @@ export default class SchemeSettingsButtons extends PureComponent {
     this.setState({menu_open: false});
   };
 
-  // handleOk = () => {
-  //   this.props.handleSchemeChange(this.props.scheme);
-  // };
+  handleOk = () => {
+    const {scheme, handleSchemeChange, handleSettingsClose} = this.props;
+    handleSettingsClose();
+    handleSchemeChange(scheme);
+  };
 
   handleSchemeChange = (scheme) => {
     scheme._search = '';
@@ -106,7 +110,7 @@ export default class SchemeSettingsButtons extends PureComponent {
       !settings_open && <IconButton key="ss3" title="Настройка списка" onClick={props.handleSettingsOpen}><IconSettings/></IconButton>,
 
       // Кнопки Ок или Отмена настроек
-      settings_open && <IconButton key="ss4" title="Применить настройки" onClick={props.handleSettingsClose}><IconSettingsDone/></IconButton>,
+      settings_open && <IconButton key="ss4" title="Применить настройки" onClick={this.handleOk}><IconSettingsDone/></IconButton>,
       settings_open && <IconButton key="ss5" title="Скрыть настройки" onClick={props.handleSettingsClose}><IconSettingsCancel/></IconButton>
 
     ];

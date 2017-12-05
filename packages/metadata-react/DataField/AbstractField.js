@@ -11,7 +11,7 @@ import PropTypes from 'prop-types';
 import MComponent from '../common/MComponent';
 
 export function suggestionText(suggestion) {
-  const text = suggestion.toString();
+  const text = suggestion.presentation || suggestion.toString();
   return text === '_' ? '' : text;
 };
 

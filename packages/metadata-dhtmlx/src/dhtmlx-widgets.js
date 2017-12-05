@@ -296,16 +296,16 @@ export default ($p) => {
 
     // если существует локальный обработчик, используем его
     if(model instanceof DataObj && model.execute){
-
-      if(ref instanceof DataObj)
-        return model.execute(ref)
-          .then(tune_wnd_print);
-      else
+      if(ref instanceof DataObj){
+        return model.execute(ref, wnd).then(tune_wnd_print);
+      }
+      else {
         return this.get(ref, true, true)
-          .then(model.execute.bind(model))
+          .then((ref) => model.execute(ref, wnd))
           .then(tune_wnd_print);
-
-    }else{
+      }
+    }
+    else{
 
       // иначе - печатаем средствами 1С или иного сервера
       var rattr = {};
