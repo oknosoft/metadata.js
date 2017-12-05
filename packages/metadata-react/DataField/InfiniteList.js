@@ -8,7 +8,9 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {InfiniteLoader, List, AutoSizer} from 'react-virtualized';
+import InfiniteLoader from 'react-virtualized/dist/es/InfiniteLoader';
+import List from 'react-virtualized/dist/es/List';
+import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
 import {ListItem, ListItemIcon, ListItemText} from 'material-ui/List';
 import classnames from 'classnames';
 import MComponent from '../common/MComponent';

@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.42, built:2017-12-03
+ metadata-core v2.0.16-beta.42, built:2017-12-05
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -223,7 +223,7 @@ const msg$1 = new I18n({
 		sync_data: 'Синхронизация с сервером выполняется:<br />* при первом старте программы<br /> * при обновлении метаданных<br /> * при изменении цен или технологических справочников',
 		sync_break: 'Прервать синхронизацию',
 		sync_no_data: 'Файл не содержит подходящих элементов для загрузки',
-		tabular_will_cleared: 'Табличная часть "%1" будет очищена. Продолжить?',
+    tabular: 'Табличная часть',
 		unsupported_browser_title: 'Браузер не поддерживается',
 		unsupported_browser: 'Несовместимая версия браузера<br/>Рекомендуется Google Chrome',
 		supported_browsers: 'Рекомендуется Chrome, Safari или Opera',
@@ -250,9 +250,11 @@ class TabularSection {
 			},
 		});
 	}
-	toString() {
-		return "Табличная часть " + this._owner._manager.class_name + "." + this._name
-	}
+  toString() {
+	  const {_owner: {_manager}, _name} = this;
+    const {msg} = _manager._owner.$p;
+    return msg.tabular + ' ' + _manager.class_name + '.' + _name;
+  }
 	get _obj(){
 		const {_owner, _name} = this;
 		return _owner._obj[_name]
@@ -279,10 +281,10 @@ class TabularSection {
 		const {_obj, _owner, _name} = this;
     const {_data, _manager} = _owner;
 		let index;
-		if (typeof val == "undefined"){
+    if(typeof val == 'undefined') {
       return;
     }
-		else if (typeof val == "number"){
+    else if(typeof val == 'number') {
       index = val;
     }
 		else if (_obj[val.row - 1]._row === val){
@@ -337,7 +339,7 @@ class TabularSection {
 			row[f] = attr[f] || "";
 		}
 		row._obj.row = _obj.push(row._obj);
-		Object.defineProperty(row._obj, "_row", {
+    Object.defineProperty(row._obj, '_row', {
 			value: row,
 			enumerable: false
 		});
@@ -355,7 +357,7 @@ class TabularSection {
 	}
 	group_by(dimensions, resources) {
 		try {
-			const res = this.aggregate(dimensions, resources, "SUM", true);
+      const res = this.aggregate(dimensions, resources, 'SUM', true);
 			return this.load(res);
 		}
 		catch (err) {
@@ -363,24 +365,24 @@ class TabularSection {
 		}
 	}
 	sort(fields) {
-		if (typeof fields == "string"){
-			fields = fields.split(",");
-		}
-		let sql = "select * from ? order by ";
+    if(typeof fields == 'string') {
+      fields = fields.split(',');
+    }
+    let sql = 'select * from ? order by ';
 		let	res = true;
 		let	has_dot;
 		for(let f of fields){
       has_dot = has_dot || f.indexOf('.') !== -1;
-      f = f.trim().replace(/\s{1,}/g, " ").split(" ");
+      f = f.trim().replace(/\s{1,}/g, ' ').split(' ');
       if (res){
         res = false;
       }
       else{
-        sql += ", ";
+        sql += ', ';
       }
-      sql += "`" + f[0] + "`";
-      if (f[1]){
-        sql += " " + f[1];
+      sql += '`' + f[0] + '`';
+      if(f[1]) {
+        sql += ' ' + f[1];
       }
     }
     const {$p} = this._owner._manager._owner;
@@ -393,12 +395,12 @@ class TabularSection {
 		}
 	}
 	aggregate(dimensions, resources, aggr = "sum", ret_array) {
-		if (typeof dimensions == "string"){
-			dimensions = dimensions.split(",");
-		}
-		if (typeof resources == "string"){
-			resources = resources.split(",");
-		}
+		if (typeof dimensions == "string") {
+      dimensions = dimensions.length ? dimensions.split(",") : [];
+    }
+    if (typeof resources == "string") {
+      resources = resources.length ? resources.split(",") : [];
+    }
 		if (!dimensions.length && resources.length == 1 && aggr == "sum") {
 			return this._obj.reduce(function (sum, row, index, array) {
 				return sum + row[resources[0]];
