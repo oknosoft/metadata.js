@@ -350,12 +350,22 @@ export class TabularSection {
 	 */
 	aggregate(dimensions, resources, aggr = "sum", ret_array) {
 
-		if (typeof dimensions == "string"){
-			dimensions = dimensions.split(",")
-		}
-		if (typeof resources == "string"){
-			resources = resources.split(",")
-		}
+		if (typeof dimensions == "string") {
+      if (dimensions.length == 0) {
+        dimensions = [];
+      }
+      else {
+        dimensions = dimensions.split(",")
+      }
+    }
+    if (typeof resources == "string") {
+      if (resources.length == 0) {
+        resources = [];
+      }
+      else {
+        resources = resources.split(",")
+      }
+    }
 
 		// для простых агрегатных функций, sql не используем
 		if (!dimensions.length && resources.length == 1 && aggr == "sum") {
