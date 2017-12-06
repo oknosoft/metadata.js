@@ -29,13 +29,13 @@
     "pouchdb-find": "^6.3.4",
     "pouchdb-mapreduce": "^6.3.4",
     "pouchdb-replication": "^6.3.4",
-    "rc-calendar": "^9.3.0",
+    "rc-calendar": "^9.3.1",
     "rc-cascader": "^0.12.1",
     "rc-time-picker": "^3.2.1",
     "react-onclickoutside": "^6.7.0",
     "react-virtualized": "^9.13.0",
     "superlogin-client": "^0.8.0",
-    "webpack": "^3.9.1"
+    "webpack": "^3.10.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
@@ -68,7 +68,7 @@
     "react-router-dom": "^4.2.2",
     "react-router-redux": "^5.0.0-alpha.8",
     "rimraf": "^2.6.2",
-    "rollup": "^0.52.0",
+    "rollup": "^0.52.1",
     "rollup-plugin-cleanup": "^2.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^3.0.0",

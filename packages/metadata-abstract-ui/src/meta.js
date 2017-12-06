@@ -401,6 +401,11 @@ export default {
             name: 'pivot',
             synonym: 'Cводная таблица'
           },
+          {
+            order: 3,
+            name: 'html',
+            synonym: 'Документ HTML'
+          },
         ],
       },
       cat: {
