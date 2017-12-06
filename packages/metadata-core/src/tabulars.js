@@ -51,9 +51,11 @@ export class TabularSection {
 		})
 	}
 
-	toString() {
-		return "Табличная часть " + this._owner._manager.class_name + "." + this._name
-	}
+  toString() {
+	  const {_owner: {_manager}, _name} = this;
+    const {msg} = _manager._owner.$p;
+    return msg.tabular + ' ' + _manager.class_name + '.' + _name;
+  }
 
 	/**
 	 * ### Фактическое хранилище данных объекта
@@ -125,10 +127,10 @@ export class TabularSection {
 
 		let index;
 
-		if (typeof val == "undefined"){
+    if(typeof val == 'undefined') {
       return;
     }
-		else if (typeof val == "number"){
+    else if(typeof val == 'number') {
       index = val;
     }
 		else if (_obj[val.row - 1]._row === val){
@@ -235,7 +237,7 @@ export class TabularSection {
 		}
 
 		row._obj.row = _obj.push(row._obj);
-		Object.defineProperty(row._obj, "_row", {
+    Object.defineProperty(row._obj, '_row', {
 			value: row,
 			enumerable: false
 		})
@@ -277,7 +279,7 @@ export class TabularSection {
 	group_by(dimensions, resources) {
 
 		try {
-			const res = this.aggregate(dimensions, resources, "SUM", true);
+      const res = this.aggregate(dimensions, resources, 'SUM', true);
 			return this.load(res);
 		}
 		catch (err) {
@@ -293,27 +295,27 @@ export class TabularSection {
 	 */
 	sort(fields) {
 
-		if (typeof fields == "string"){
-			fields = fields.split(",")
-		}
+    if(typeof fields == 'string') {
+      fields = fields.split(',');
+    }
 
-		let sql = "select * from ? order by ";
+    let sql = 'select * from ? order by ';
 		let	res = true;
 		let	has_dot;
 
 		for(let f of fields){
       has_dot = has_dot || f.indexOf('.') !== -1;
-      f = f.trim().replace(/\s{1,}/g, " ").split(" ");
+      f = f.trim().replace(/\s{1,}/g, ' ').split(' ');
       if (res){
         res = false;
       }
       else{
-        sql += ", ";
+        sql += ', ';
       }
 
-      sql += "`" + f[0] + "`";
-      if (f[1]){
-        sql += " " + f[1];
+      sql += '`' + f[0] + '`';
+      if(f[1]) {
+        sql += ' ' + f[1];
       }
     }
 
@@ -351,20 +353,10 @@ export class TabularSection {
 	aggregate(dimensions, resources, aggr = "sum", ret_array) {
 
 		if (typeof dimensions == "string") {
-      if (dimensions.length == 0) {
-        dimensions = [];
-      }
-      else {
-        dimensions = dimensions.split(",")
-      }
+      dimensions = dimensions.length ? dimensions.split(",") : []
     }
     if (typeof resources == "string") {
-      if (resources.length == 0) {
-        resources = [];
-      }
-      else {
-        resources = resources.split(",")
-      }
+      resources = resources.length ? resources.split(",") : [];
     }
 
 		// для простых агрегатных функций, sql не используем
