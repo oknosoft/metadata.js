@@ -4,6 +4,8 @@ import Dialog, {DialogActions, DialogContent, DialogTitle, withMobileDialog} fro
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
 import CloseIcon from 'material-ui-icons/Close';
+import FullscreenIcon from 'material-ui-icons/Fullscreen';
+import FullscreenExitIcon from 'material-ui-icons/FullscreenExit';
 import IconButton from 'material-ui/IconButton';
 import colors from 'material-ui/colors/common';
 import withStyles from 'material-ui/styles/withStyles';
@@ -39,6 +41,8 @@ const style = theme => ({
 
 class SimpleDialog extends React.Component {
 
+  state = {fullScreen: false};
+
   getChildContext() {
     return {dnr: this};
   }
@@ -47,11 +51,23 @@ class SimpleDialog extends React.Component {
     return {};
   }
 
+  toggleFullScreen = () => {
+    this.setState({fullScreen: !this.state.fullScreen})
+  }
+
   render() {
     const {open, fullScreen, noSpace, title, actions, children, classes, onRequestClose} = this.props;
-    return <Dialog open={open} fullScreen={fullScreen} onRequestClose={onRequestClose} classes={{paper: classes.paper}}>
+    const stateFullScreen = fullScreen || this.state.fullScreen;
+    return <Dialog open={open} fullScreen={stateFullScreen} onRequestClose={onRequestClose} classes={{paper: classes.paper}}>
       <Toolbar disableGutters className={classes.toolbar}>
         <Typography className={classes.title} type="title" color="inherit" noWrap>{title}</Typography>
+        {
+          !fullScreen && <IconButton
+            title={stateFullScreen ? 'Свернуть' : 'Развернуть'}
+            onClick={this.toggleFullScreen}>
+            {stateFullScreen ? <FullscreenExitIcon/> : <FullscreenIcon/>}
+          </IconButton>
+        }
         <IconButton title="Закрыть диалог" onClick={onRequestClose}><CloseIcon/></IconButton>
       </Toolbar>
       <DialogContent className={noSpace ? classes.contentNoSpace : classes.content}>{children}</DialogContent>
@@ -76,4 +92,4 @@ SimpleDialog.childContextTypes = {
 };
 
 
-export default compose(withStyles(style), withMobileDialog())(SimpleDialog);
+export default compose(withStyles(style), withMobileDialog({ breakpoint: 'md' }))(SimpleDialog);
