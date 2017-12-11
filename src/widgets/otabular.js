@@ -103,23 +103,23 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
     if(attr.read_only){
       return;
     }
-    var rId = get_sel_index();
+    const r0 = get_sel_index();
 
-    if(rId != undefined){
+    if(r0 != undefined){
+      const r1 = get_sel_index(true, direction);
+
       if(direction == "up"){
-        if(rId != 0){
-          _ts.swap(rId-1, rId);
-          setTimeout(function () {
-            _grid.selectRow(rId-1, true);
-          }, 100)
+        if(r0 >= 0 && r1 >= 0){
+          _ts.swap(r1, r0);
+          //_ts.sync_grid(_grid, _selection);
+          setTimeout(() => _grid.selectRow(r1, true), 100)
         }
       }
       else{
-        if(rId < _ts.count() - 1){
-          _ts.swap(rId, rId+1);
-          setTimeout(function () {
-            _grid.selectRow(rId+1, true);
-          }, 100)
+        if(r0 < _ts.count() && r1 < _ts.count()){
+          _ts.swap(r0, r1);
+          //_ts.sync_grid(_grid, _selection);
+          setTimeout(() => _grid.selectRow(r1, true), 100)
         }
       }
     }
@@ -131,7 +131,7 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	_grid._del_row = function(keydown){
 
 		if(!attr.read_only && !attr.disable_add_del){
-			var rId = get_sel_index();
+			const rId = get_sel_index();
 
 			if(rId != undefined){
 				if(_mgr.handle_event(_obj, "del_row",
@@ -153,15 +153,29 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	};
 
 
-	function get_sel_index(silent){
-		var selId = _grid.getSelectedRowId();
+	function get_sel_index(silent, direction){
+    let selId = parseFloat(_grid.getSelectedRowId());
 
-		if(selId && !isNaN(Number(selId))){
-      return Number(selId)-1;
+		if(!isNaN(selId)){
+
+      if(direction == "up"){
+        selId -= 1;
+        while (!_grid.getRowById(selId) && selId >= 0) {
+          selId -= 1;
+        }
+      }
+      else if(direction){
+        selId += 1;
+        while (!_grid.getRowById(selId) && selId < _ts.count()) {
+          selId += 1;
+        }
+      }
+
+      return direction ? ((_grid.getRowById(selId) || undefined) && selId - 1) : (selId - 1);
     }
 
 		if(!silent){
-      var _tssynonym = (typeof _obj._metadata == 'function' ? _obj._metadata(_tsname) : _obj._metadata.tabular_sections[_tsname]).synonym;
+      const _tssynonym = (typeof _obj._metadata == 'function' ? _obj._metadata(_tsname) : _obj._metadata.tabular_sections[_tsname]).synonym;
       $p.msg.show_msg({
         type: "alert-warning",
         text: $p.msg.no_selected_row.replace("%1", _tssynonym || _tsname),
