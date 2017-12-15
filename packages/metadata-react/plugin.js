@@ -49,7 +49,7 @@ function rx_columns({utils: {moment}, enm}) {
   };
 
   const presentation_formatter = ({value}) => {
-    let text = (value && value.presentation) || '';
+    let text = typeof value === 'string' ? value : (value && value.presentation) || '';
     if(text === '_') {
       text = '';
     }
@@ -57,7 +57,7 @@ function rx_columns({utils: {moment}, enm}) {
   };
 
   const number_formatter = (fraction_figits = 0) => ({value}) => {
-    const text = (typeof value === 'number' ? value : 0).toFixed(fraction_figits);
+    const text = typeof value === 'number' ? value.toFixed(fraction_figits) : value.toString();
     return <div title={text} style={{textAlign: 'right'}}>{text}</div>;
   };
 
