@@ -200,8 +200,8 @@ export class TabularSection {
 	swap(rowid1, rowid2) {
     const {_obj, _owner, _name} = this;
 		[_obj[rowid1], _obj[rowid2]] = [_obj[rowid2], _obj[rowid1]];
-		_obj[rowid1].row = rowid2 + 1;
-		_obj[rowid2].row = rowid1 + 1;
+		_obj[rowid1].row = rowid1 + 1;
+		_obj[rowid2].row = rowid2 + 1;
 
     // obj, {ts_name: null}
     const {_data, _manager} = _owner;

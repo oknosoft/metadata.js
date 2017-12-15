@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.42, built:2017-12-05
+ metadata-core v2.0.16-beta.43, built:2017-12-14
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -322,8 +322,8 @@ class TabularSection {
 	swap(rowid1, rowid2) {
     const {_obj, _owner, _name} = this;
 		[_obj[rowid1], _obj[rowid2]] = [_obj[rowid2], _obj[rowid1]];
-		_obj[rowid1].row = rowid2 + 1;
-		_obj[rowid2].row = rowid1 + 1;
+		_obj[rowid1].row = rowid1 + 1;
+		_obj[rowid2].row = rowid2 + 1;
     const {_data, _manager} = _owner;
     !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});
     _data._modified = true;
@@ -4223,7 +4223,7 @@ class MetaEngine$1 {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.42';
+    return '2.0.16-beta.43';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
