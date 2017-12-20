@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.43, built:2017-12-18
+ metadata-core v2.0.16-beta.43, built:2017-12-20
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -287,7 +287,7 @@ class TabularSection {
     else if(typeof val == 'number') {
       index = val;
     }
-		else if (_obj[val.row - 1]._row === val){
+		else if (val.row && _obj[val.row - 1] && _obj[val.row - 1]._row === val){
       index = val.row - 1;
     }
 		else {
