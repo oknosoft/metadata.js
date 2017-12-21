@@ -944,7 +944,7 @@ export class RefDataManager extends DataManager{
                           if(folder && folder.is_folder) {
                             if(folders.indexOf(folder) === -1){
                               folders.push(folder);
-                              folder._children(true).forEach((child) => folders.indexOf(child) === -1 && folders.push(child))
+                              folder._children().forEach((child) => folders.indexOf(child) === -1 && folders.push(child));
                             }
                           }
                         });
