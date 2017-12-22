@@ -195,7 +195,7 @@ export default (constructor) => {
 		 */
 		save_attachment: {
 			value: function (ref, att_id, attachment, type) {
-				return this.adapter.save_attachment(this, att_id, attachment, type);
+				return this.adapter.save_attachment(this, ref, att_id, attachment, type);
 			}
 		},
 
