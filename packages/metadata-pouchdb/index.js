@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.43, built:2017-12-17
+ metadata-pouchdb v2.0.16-beta.43, built:2017-12-23
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -127,7 +127,7 @@ var proto = (constructor) => {
 		},
 		save_attachment: {
 			value: function (ref, att_id, attachment, type) {
-				return this.adapter.save_attachment(this, att_id, attachment, type);
+				return this.adapter.save_attachment(this, ref, att_id, attachment, type);
 			}
 		},
 		get_attachment: {
@@ -608,7 +608,7 @@ function adapter({AbstracrAdapter}) {
         getter.then((res) => {
           if(res) {
             tmp._rev = res._rev;
-            for (var att in res._attachments) {
+            for (let att in res._attachments) {
               if(!tmp._attachments) {
                 tmp._attachments = {};
               }
@@ -618,12 +618,8 @@ function adapter({AbstracrAdapter}) {
             }
           }
         })
-          .catch((err) => {
-            err && err.status != 404 && reject(err);
-          })
-          .then(() => {
-            return db.put(tmp);
-          })
+          .catch((err) => err && err.status != 404 && reject(err))
+          .then(() => db.put(tmp))
           .then(() => {
             tObj.is_new() && tObj._set_loaded(tObj.ref);
             if(tmp._attachments) {
@@ -1136,7 +1132,7 @@ function adapter({AbstracrAdapter}) {
       return this.db(_mgr).getAttachment(_mgr.class_name + '|' + this.$p.utils.fix_guid(ref), att_id);
     }
     delete_attachment(_mgr, ref, att_id) {
-      var _rev,
+      let _rev,
         db = this.db(_mgr);
       ref = _mgr.class_name + '|' + this.$p.utils.fix_guid(ref);
       return db.get(ref)

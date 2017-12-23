@@ -530,11 +530,7 @@ export class DataObj {
     }
 
     // в зависимости от типа кеширования, получаем saver и сохраняем объект во внешней базе
-    return numerator.then(() => this._manager.adapter.save_obj(this, {
-      post: post,
-      operational: operational,
-      attachments: attachments
-    })
+    return numerator.then(() => this._manager.adapter.save_obj(this, {post, operational, attachments })
     // и выполняем обработку после записи
       .then(() => this.after_save())
       .then(reset_modified)

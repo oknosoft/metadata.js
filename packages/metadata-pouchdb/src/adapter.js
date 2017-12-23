@@ -690,7 +690,7 @@ function adapter({AbstracrAdapter}) {
         getter.then((res) => {
           if(res) {
             tmp._rev = res._rev;
-            for (var att in res._attachments) {
+            for (let att in res._attachments) {
               if(!tmp._attachments) {
                 tmp._attachments = {};
               }
@@ -700,12 +700,8 @@ function adapter({AbstracrAdapter}) {
             }
           }
         })
-          .catch((err) => {
-            err && err.status != 404 && reject(err);
-          })
-          .then(() => {
-            return db.put(tmp);
-          })
+          .catch((err) => err && err.status != 404 && reject(err))
+          .then(() => db.put(tmp))
           .then(() => {
             tObj.is_new() && tObj._set_loaded(tObj.ref);
             if(tmp._attachments) {
@@ -789,7 +785,6 @@ function adapter({AbstracrAdapter}) {
         _skip: attr.start || 0,
       };   // условие см. find_rows()
       const ares = [];
-
 
       // набираем поля
       if(cmd.form && cmd.form.selection) {
@@ -1419,7 +1414,7 @@ function adapter({AbstracrAdapter}) {
     delete_attachment(_mgr, ref, att_id) {
 
       // получаем ревизию документа
-      var _rev,
+      let _rev,
         db = this.db(_mgr);
 
       ref = _mgr.class_name + '|' + this.$p.utils.fix_guid(ref);
