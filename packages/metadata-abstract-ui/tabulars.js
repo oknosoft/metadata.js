@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.43, built:2017-12-14
+ metadata-abstract-ui v2.0.16-beta.43, built:2017-12-17
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -8,7 +8,7 @@
 
 'use strict';
 
-var docxtemplater = function ({wsql, utils}) {
+function docxtemplater ({wsql, utils}) {
   utils.docxtemplater = function (blob) {
     let docx;
     if('Docxtemplater' in window) {
@@ -36,7 +36,7 @@ var docxtemplater = function ({wsql, utils}) {
     return ('JSZip' in window ? Promise.resolve() : utils.load_script('https://cdn.jsdelivr.net/jszip/2/jszip.min.js', 'script'))
       .then(() => utils.load_script('https://cdn.jsdelivr.net/npm/xlsx@0.11.3/dist/xlsx.min.js', 'script'));
   };
-};
+}
 
 const Clipboard = require('clipboard/lib/clipboard-action');
 function tabulars(constructor) {

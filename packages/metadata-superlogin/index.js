@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.16-beta.42, built:2017-12-03
+ metadata-superlogin v2.0.16-beta.43, built:2017-12-17
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -60,7 +60,7 @@ var adapter = (constructor) => {
       return !!this.$p.superlogin.getSession();
     }
   };
-};
+}
 
 var default_config = {
   baseUrl: 'http://localhost:3000/auth/',
@@ -70,7 +70,7 @@ var default_config = {
   providers: ['google', 'yandex', 'github', 'facebook'],
   checkExpired: false,
   refreshThreshold: 0.5
-};
+}
 
 const {metaActions} = require('metadata-redux');
 function attach($p) {

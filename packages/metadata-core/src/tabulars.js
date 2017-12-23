@@ -133,7 +133,7 @@ export class TabularSection {
     else if(typeof val == 'number') {
       index = val;
     }
-		else if (_obj[val.row - 1]._row === val){
+		else if (val.row && _obj[val.row - 1] && _obj[val.row - 1]._row === val){
       index = val.row - 1;
     }
 		else {
