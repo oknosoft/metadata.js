@@ -56,7 +56,7 @@ export default (constructor) => {
 					.then((res) => {
 						if (res.rows.length) {
 							const num0 = res.rows[0].key[2];
-							for (let i = num0.length - 1; i > 0; i--) {
+							for (let i = num0.length - 1; i > prefix.length; i--) {
 								if (isNaN(parseInt(num0[i])))
 									break;
 								part = num0[i] + part;
