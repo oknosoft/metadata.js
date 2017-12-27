@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.43, built:2017-12-24
+ metadata-pouchdb v2.0.16-beta.44, built:2017-12-27
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -41,7 +41,7 @@ var proto = (constructor) => {
 					.then((res) => {
 						if (res.rows.length) {
 							const num0 = res.rows[0].key[2];
-							for (let i = num0.length - 1; i > 0; i--) {
+							for (let i = num0.length - 1; i > prefix.length; i--) {
 								if (isNaN(parseInt(num0[i])))
 									break;
 								part = num0[i] + part;
