@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.43, built:2017-12-20
+ metadata-core v2.0.16-beta.44, built:2017-12-27
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -849,11 +849,7 @@ class DataObj {
         return Promise.reject(reset_modified());
       }
     }
-    return numerator.then(() => this._manager.adapter.save_obj(this, {
-      post: post,
-      operational: operational,
-      attachments: attachments
-    })
+    return numerator.then(() => this._manager.adapter.save_obj(this, {post, operational, attachments })
       .then(() => this.after_save())
       .then(reset_modified)
     );
@@ -4223,7 +4219,7 @@ class MetaEngine$1 {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.43';
+    return '2.0.16-beta.44';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
