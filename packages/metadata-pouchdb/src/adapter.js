@@ -1510,6 +1510,28 @@ function adapter({AbstracrAdapter}) {
     }
 
     /**
+     * Дёргает сервер для освежения авторизации
+     * @param regex {RegExp}
+     * @param timout {Number}
+     */
+    attach_refresher(regex, timout = 600000) {
+      if(this.props._refresher) {
+        clearInterval(this.props._refresher);
+      }
+      setInterval(() => {
+        if(this.authorized && this.remote.ram && this.remote.ram.adapter == 'http') {
+          this.remote.ram.getSession()
+            .then(response => {
+              response = null;
+            })
+            .catch(err => {
+              err = null;
+            });
+        }
+      }, timout);
+    }
+
+    /**
      * Формирует архив полной выгрузки базы для сохранения в файловой системе клиента
      * @method backup_database
      * @param [do_zip] {Boolean} - указывает на необходимость архивировать стоки таблиц в озу перед записью файла

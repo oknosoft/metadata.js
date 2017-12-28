@@ -14,7 +14,7 @@
     "pouchdb-adapter-idb": "^6.4.1",
     "pouchdb-adapter-memory": "^6.4.1",
     "pouchdb-adapter-websql": "^6.4.1",
-    "pouchdb-authentication": "^0.5",
+    "pouchdb-authentication": "^1.1.0",
     "pouchdb-core": "^6.4.1",
     "pouchdb-find": "^6.4.1",
     "pouchdb-mapreduce": "^6.4.1",
