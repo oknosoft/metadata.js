@@ -50,57 +50,6 @@ gulp.task('dhtmlx-ui', function () {
     .pipe(gulp.dest('./packages/metadata-dhtmlx/src'))
 });
 
-gulp.task('build-metadata', function () {
-	return gulp.src([
-		'./src/common.js',
-		'./src/wsql.js',
-		'./src/common.ui.js',
-		'./src/pouchdb.js',
-		'./src/i18n.ru.js',
-		'./src/meta_meta.js',
-		'./src/meta_mngrs.js',
-		'./src/meta_objs.js',
-		'./src/meta_tabulars.js',
-		'./src/meta_rest.js',
-		'./src/meta_pouchdb.js',
-		'./src/widgets/*.js',
-		'./src/import_export.js',
-		'./src/events.js',
-		'./src/events.ui.js',
-		'./src/geocoding.js',
-		'./src/reporting.js',
-		'./data/merged_data.js',
-		'./lib/xml_to_json.js',
-		//'./lib/filesaver.js',
-		'./lib/aes/aes.js',
-		'./lib/rubles/rubles.js',
-		//'./lib/daterangepicker/daterangepicker.js',
-		'./lib/mime-types/db.js',
-	])
-		.pipe(concat('metadata.js'))
-		.pipe(umd({
-			exports: function() {
-				return '$p';
-			},
-			namespace: function() {
-				return '$p';
-			},
-			template: path.join(__dirname, './src/utils/umd-exports-oknosoft.js')
-		}))
-		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
-		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
-    .pipe(strip({safe: true}))
-		.pipe(gulp.dest('./lib'))
-		.pipe(gulp.dest('./dist'))
-		.pipe(rename('metadata.min.js'))
-		.pipe(uglify({
-			preserveComments: function (node, comment) {
-				return comment.value[0]=="!";
-			}
-		}))
-		.pipe(gulp.dest('./lib'))
-		.pipe(gulp.dest('./dist'));
-});
 
 gulp.task('injected_main', function(){
     return gulp.src(['./data/*.xml'])
@@ -274,43 +223,6 @@ gulp.task('css-icon1c', function () {
 		.pipe(concat('icon1c.min.css'))
 		//.pipe(csso())
 		.pipe(gulp.dest('./src/css'));
-});
-
-// Сборка сервера для Node.js
-gulp.task('build-metadata-core', function(){
-	return gulp.src([
-		'./src/common.js',
-		'./src/wsql.js',
-		'./src/i18n.ru.js',
-		'./src/pouchdb.js',
-		'./src/meta_meta.js',
-		'./src/meta_mngrs.js',
-		'./src/meta_tabulars.js',
-		'./src/meta_objs.js',
-		'./src/meta_rest.js',
-		'./src/meta_pouchdb.js',
-		'./src/events.js',
-		'./lib/aes/aes.js'
-	])
-		.pipe(concat('metadata.core.js'))
-		.pipe(umd({
-			exports: function(file) {
-				return '$p';
-			},
-			namespace: function(file) {
-				return '$p';
-			},
-			template: path.join(__dirname, './src/utils/umd-exports-oknosoft.js')
-		}))
-		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
-		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
-		.pipe(gulp.dest('./lib'))
-		.pipe(gulp.dest('./dist'))
-		.pipe(rename('metadata.core.min.js'))
-		.pipe(uglify({
-			preserveComments: "license"
-		}))
-		.pipe(gulp.dest('./dist'));
 });
 
 

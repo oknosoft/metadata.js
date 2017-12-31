@@ -34,7 +34,8 @@ function adapter({AbstracrAdapter}) {
         _data_loaded: false,
         _doc_ram_loading: false,
         _doc_ram_loaded: false,
-        _auth: null
+        _auth: null,
+        _suffix: '',
       };
 
       /**
@@ -62,14 +63,13 @@ function adapter({AbstracrAdapter}) {
      */
     init(wsql, job_prm) {
 
-      const {props, local, remote, $p} = this;
+      const {props, local, remote, $p: {md}} = this;
 
       // настриваем параметры
       Object.assign(props, {
         path: wsql.get_user_param('couch_path', 'string') || job_prm.couch_path || '',
         zone: wsql.get_user_param('zone', 'number'),
         prefix: job_prm.local_storage_prefix,
-        suffix: wsql.get_user_param('couch_suffix', 'string') || '',
         direct: job_prm.hasOwnProperty('couch_direct') ? job_prm.couch_direct : wsql.get_user_param('couch_direct', 'boolean'),
         user_node: job_prm.user_node,
         noreplicate: job_prm.noreplicate,
@@ -77,18 +77,13 @@ function adapter({AbstracrAdapter}) {
       if(props.path && props.path.indexOf('http') != 0 && typeof location != 'undefined') {
         props.path = location.protocol + '//' + location.host + props.path;
       }
-      if(props.suffix) {
-        while (props.suffix.length < 4) {
-          props.suffix = '0' + props.suffix;
-        }
-      }
       if(job_prm.use_meta === false) {
         props.use_meta = false;
       }
 
       // создаём локальные базы
-      const opts = {auto_compaction: true, revs_limit: 2};
-      const bases = $p.md.bases();
+      const opts = {auto_compaction: true, revs_limit: 3};
+      const bases = md.bases();
 
       // если используется meta, вместе с локальной создаём удалённую, т.к. для неё не нужна авторизация
       if(props.use_meta !== false) {
@@ -116,9 +111,9 @@ function adapter({AbstracrAdapter}) {
         }
       }
 
-      // В штатном режиме, серверные базы создаём сразу
+      // В штатном режиме, серверную базу ram создаём сразу
       // superlogin переопределяет метод after_init и создаёт базы после авторизации
-      this.after_init();
+      this.after_init( props.user_node ? bases : ['ram']);
 
     }
 
@@ -127,15 +122,15 @@ function adapter({AbstracrAdapter}) {
      */
     after_init(bases) {
 
-      const {props, remote, $p} = this;
+      const {props, remote, $p: {md}} = this;
       const opts = {skip_setup: true, adapter: 'http'};
 
       if(props.user_node) {
         opts.auth = props.user_node;
       }
 
-      (bases || $p.md.bases()).forEach((name) => {
-        if(name == 'e1cib' || name == 'pgsql' || name == 'github') {
+      (bases || md.bases()).forEach((name) => {
+        if(remote[name] || name == 'e1cib' || name == 'pgsql' || name == 'github') {
           return;
         }
         remote[name] = new PouchDB(this.dbpath(name), opts);
@@ -147,10 +142,10 @@ function adapter({AbstracrAdapter}) {
      */
     after_log_in() {
 
-      const {props, local, remote, $p} = this;
+      const {props, local, remote, $p: {md}} = this;
       const try_auth = [];
 
-      $p.md.bases().forEach((dbid) => {
+      md.bases().forEach((dbid) => {
         if(dbid !== 'meta' && local[dbid] && remote[dbid] && local[dbid] != remote[dbid]) {
           if(props.noreplicate && props.noreplicate.indexOf(dbid) != -1) {
             return;
@@ -181,8 +176,7 @@ function adapter({AbstracrAdapter}) {
      * @return {Promise}
      */
     log_in(username, password) {
-      const {props, local, remote, $p} = this;
-      const {job_prm, wsql, aes, md, cat} = $p;
+      const {props, local, remote, $p: {job_prm, wsql, aes, md, cat}} = this;
 
       // реквизиты гостевого пользователя для демобаз
       if(username == undefined && password == undefined) {
@@ -215,31 +209,34 @@ function adapter({AbstracrAdapter}) {
       }
 
       // в node - мы уже авторизованы
-      // браузере - авторизуемся в первой попавшейся базе, а из остальных получаем info()
-      let try_auth = Promise.resolve();
+      // браузере - авторизуемся в ram, а из остальных получаем info()
+      const bases = md.bases();
+      let try_auth = props.user_node ? Promise.resolve() : remote.ram.login(username, password)
+        .then(({roles}) => {
+          // установим суффикс базы отдела абонента
+          const suffix = /^suffix:/;
+          roles.some((role) => {
+            if(suffix.test(role)) {
+              props._suffix = role.substr(7);
+              return true;
+            }
+          });
+          if(props._suffix) {
+            while (props._suffix.length < 4) {
+              props._suffix = '0' + props._suffix;
+            }
+          }
+          this.after_init(bases);
+
+          // установим признак push-репликации
+
+        });
       if(!props.user_node) {
-        md.bases().forEach((dbid) => {
-          if(dbid !== 'meta' && remote[dbid]) {
-            try_auth = try_auth.then(() => remote[dbid].login(username, password)
-              .then(() => {
-                if(dbid == 'ram' && cat.users && cat.users.cachable == dbid){
-                  // проверим суффикс пользователя, при необходимости - перелогинемся
-                  return this.find_rows(cat.users, {_raw: true, _top: 1, id: username})
-                    .then((rows) => {
-                      if(rows && rows.length){
-                        const suffix = rows[0].suffix || '';
-                        if(wsql.get_user_param('couch_suffix', 'string') != suffix){
-                          wsql.set_user_param('couch_suffix', suffix);
-                          throw new Error('couch_suffix');
-                        }
-                      }
-                    });
-                }
-                else{
-                  return remote[dbid].info();
-                }
-              })
-            );
+        bases.forEach((dbid) => {
+          if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
+            try_auth = try_auth
+              .then(() => remote[dbid].login(username, password))
+              .then(() => remote[dbid].info());
           }
         });
       }
@@ -282,7 +279,7 @@ function adapter({AbstracrAdapter}) {
      * @method log_out
      */
     log_out() {
-      const {props, local, remote, authorized, $p} = this;
+      const {props, local, remote, authorized, $p: {md}} = this;
 
       if(authorized) {
         for (const name in local.sync) {
@@ -298,7 +295,7 @@ function adapter({AbstracrAdapter}) {
         props._auth = null;
       }
 
-      return Promise.all($p.md.bases().map((id) => id != 'meta' && remote[id] && remote[id].logout()))
+      return Promise.all(md.bases().map((id) => id != 'meta' && remote[id] && remote[id].logout()))
         .then(() => this.emit('user_log_out'));
     }
 
@@ -310,7 +307,7 @@ function adapter({AbstracrAdapter}) {
      */
     load_data() {
 
-      const {local, $p} = this;
+      const {local, $p: {job_prm}} = this;
       const options = {
         limit: 800,
         include_docs: true,
@@ -354,7 +351,7 @@ function adapter({AbstracrAdapter}) {
         };
 
         local.ram.info().then((info) => {
-          if(info.doc_count >= ($p.job_prm.pouch_ram_doc_count || 10)) {
+          if(info.doc_count >= (job_prm.pouch_ram_doc_count || 10)) {
             // широковещательное оповещение о начале загрузки локальных данных
             this.emit('pouch_load_start', Object.assign(_page, {local_rows: info.doc_count}));
             local._loading = true;
@@ -376,15 +373,15 @@ function adapter({AbstracrAdapter}) {
      * @return {*}
      */
     dbpath(name) {
-      const {props} = this;
+      const {props: {path, zone, _suffix}} = this;
       if(name == 'meta') {
-        return props.path + 'meta';
+        return path + 'meta';
       }
       else if(name == 'ram') {
-        return props.path + props.zone + '_ram';
+        return path + zone + '_ram';
       }
       else {
-        return props.path + props.zone + '_' + name + (props.suffix ? '_' + props.suffix : '');
+        return path + zone + '_' + name + (_suffix ? '_' + _suffix : '');
       }
     }
 
@@ -416,8 +413,7 @@ function adapter({AbstracrAdapter}) {
      */
     run_sync(id) {
 
-      const {local, remote, $p} = this;
-      const {wsql, job_prm} = $p;
+      const {local, remote, $p: {wsql, job_prm, record_log}} = this;
       const db_local = local[id];
       const db_remote = remote[id];
       let linfo, _page;
@@ -444,7 +440,7 @@ function adapter({AbstracrAdapter}) {
                 }
                 return rinfo;
               })
-              .catch($p.record_log)
+              .catch(record_log)
               .then(() => rinfo);
           }
 
@@ -727,7 +723,7 @@ function adapter({AbstracrAdapter}) {
     /**
      * ### Возвращает набор данных для дерева динсписка
      *
-     * @method pouch_tree
+     * @method get_tree
      * @param _mgr {DataManager}
      * @param attr {Object}
      * @return {Promise.<Array>}
@@ -741,10 +737,11 @@ function adapter({AbstracrAdapter}) {
       })
         .then((rows) => {
           rows.sort((a, b) => {
-            if(a.parent == $p.utils.blank.guid && b.parent != $p.utils.blank.guid) {
+            const {guid} = this.$p.utils.blank
+            if(a.parent == guid && b.parent != guid) {
               return -1;
             }
-            if(b.parent == $p.utils.blank.guid && a.parent != $p.utils.blank.guid) {
+            if(b.parent == guid && a.parent != guid) {
               return 1;
             }
             if(a.name < b.name) {
@@ -761,7 +758,7 @@ function adapter({AbstracrAdapter}) {
             presentation: row.name
           }));
         })
-        .then((ares) => $p.iface.data_to_tree.call(_mgr, ares, attr));
+        .then((ares) => this.$p.iface.data_to_tree.call(_mgr, ares, attr));
     }
 
     /**
@@ -1085,7 +1082,7 @@ function adapter({AbstracrAdapter}) {
      * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
      * Eсли отбор пустой, возвращаются все строки из PouchDB.
      *
-     * @method pouch_find_rows
+     * @method find_rows
      * @param _mgr {DataManager}
      * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
      * @param [selection._top] {Number}

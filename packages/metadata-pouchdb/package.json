@@ -18,7 +18,8 @@
     "pouchdb-core": "^6.4.1",
     "pouchdb-find": "^6.4.1",
     "pouchdb-mapreduce": "^6.4.1",
-    "pouchdb-replication": "^6.4.1"
+    "pouchdb-replication": "^6.4.1",
+    "rollup": "^0.53.2"
   },
   "repository": {
     "type": "git",

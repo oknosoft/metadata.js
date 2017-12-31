@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.44, built:2017-12-28
+ metadata-core v2.0.16-beta.44, built:2017-12-31
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2150,6 +2150,18 @@ class RefDataManager extends DataManager{
     }
 		return this._predefined[name];
 	}
+  get_attachment(ref, att_id) {
+    const {adapter} = this;
+    return adapter.get_attachment ? adapter.get_attachment(this, ref, att_id) : Promise.reject();
+  }
+  save_attachment(ref, att_id, attachment, type) {
+    const {adapter} = this;
+    return adapter.save_attachment ? adapter.save_attachment(this, ref, att_id, attachment, type) : Promise.reject();
+  }
+  delete_attachment(ref, att_id) {
+    const {adapter} = this;
+    return adapter.delete_attachment ? adapter.delete_attachment(this, ref, att_id) : Promise.reject();
+  }
 }
 class DataProcessorsManager extends DataManager{
 	create(attr = {}){
@@ -3501,7 +3513,6 @@ class WSQL {
       {p: 'zone', v: job_prm.hasOwnProperty('zone') ? job_prm.zone : 1, t: job_prm.zone_is_string ? 'string' : 'number'},
       {p: 'rest_path', v: '', t: 'string'},
       {p: 'couch_path', v: '', t: 'string'},
-      {p: 'couch_suffix', v: '', t: 'string'},
       {p: 'couch_direct', v: true, t: 'boolean'},
       {p: 'enable_save_pwd', v: true, t: 'boolean'},
     ];
@@ -3515,7 +3526,7 @@ class WSQL {
     }
     if(zone == job_prm.zone_demo){
       nesessery_params.some((prm) => {
-        if(prm.p == 'couch_suffix'){
+        if(prm.p == 'couch_direct'){
           prm.v = false;
           return true;
         }

@@ -1544,7 +1544,7 @@ var mapStateToProps = function mapStateToProps() /**{meta}**/{
       superlogin = _$p.superlogin;
 
   var res = { use_superlogin: !!superlogin };
-  var _arr = ['zone', 'couch_path', 'superlogin_path', 'couch_suffix', ['couch_direct', 'boolean'], ['enable_save_pwd', 'boolean'], 'user_name', 'user_pwd'];
+  var _arr = ['zone', 'couch_path', 'superlogin_path', ['couch_direct', 'boolean'], ['enable_save_pwd', 'boolean'], 'user_name', 'user_pwd'];
   for (var _i = 0; _i < _arr.length; _i++) {
     var name = _arr[_i];
     if (Array.isArray(name)) {

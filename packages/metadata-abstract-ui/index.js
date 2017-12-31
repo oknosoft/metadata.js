@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.44, built:2017-12-27
+ metadata-abstract-ui v2.0.16-beta.44, built:2017-12-29
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -145,7 +145,7 @@ function scheme_settings() {
           endkey: [class_name, 9999],
         },
       };
-      return this.find_rows_remote ? this.find_rows_remote(opt) : this.pouch_find_rows(opt);
+      return this.find_rows_remote ? this.find_rows_remote(opt) : this.adapter.find_rows(this, opt);
     }
     get_scheme(class_name) {
       return new Promise((resolve, reject) => {
