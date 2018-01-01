@@ -9,16 +9,16 @@
     "npm": "^5.5"
   },
   "dependencies": {
-    "pouchdb": "^6.4.1",
-    "pouchdb-adapter-http": "^6.4.1",
-    "pouchdb-adapter-idb": "^6.4.1",
-    "pouchdb-adapter-memory": "^6.4.1",
-    "pouchdb-adapter-websql": "^6.4.1",
+    "pouchdb": "6.3.4",
+    "pouchdb-adapter-http": "6.3.4",
+    "pouchdb-adapter-idb": "6.3.4",
+    "pouchdb-adapter-memory": "6.3.4",
+    "pouchdb-adapter-websql": "6.3.4",
     "pouchdb-authentication": "^1.1.0",
-    "pouchdb-core": "^6.4.1",
-    "pouchdb-find": "^6.4.1",
-    "pouchdb-mapreduce": "^6.4.1",
-    "pouchdb-replication": "^6.4.1",
+    "pouchdb-core": "6.3.4",
+    "pouchdb-find": "6.3.4",
+    "pouchdb-mapreduce": "6.3.4",
+    "pouchdb-replication": "6.3.4",
     "rollup": "^0.53.2"
   },
   "repository": {

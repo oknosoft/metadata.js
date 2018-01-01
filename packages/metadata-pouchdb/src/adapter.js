@@ -36,6 +36,7 @@ function adapter({AbstracrAdapter}) {
         _doc_ram_loaded: false,
         _auth: null,
         _suffix: '',
+        _push_only: false,
       };
 
       /**
@@ -215,12 +216,22 @@ function adapter({AbstracrAdapter}) {
         .then(({roles}) => {
           // установим суффикс базы отдела абонента
           const suffix = /^suffix:/;
-          roles.some((role) => {
+          roles.forEach((role) => {
             if(suffix.test(role)) {
               props._suffix = role.substr(7);
-              return true;
+            }
+            if(role === 'direct' && !props.direct) {
+              props.direct = true;
+              wsql.set_user_param('couch_direct', true);
+            }
+            if(role === 'push_only' && !props._push_only) {
+              props._push_only = true;
             }
           });
+          if(props._push_only && props.direct) {
+            props.direct = false;
+            wsql.set_user_param('couch_direct', false);
+          }
           if(props._suffix) {
             while (props._suffix.length < 4) {
               props._suffix = '0' + props._suffix;
@@ -413,7 +424,7 @@ function adapter({AbstracrAdapter}) {
      */
     run_sync(id) {
 
-      const {local, remote, $p: {wsql, job_prm, record_log}} = this;
+      const {local, remote, $p: {wsql, job_prm, record_log}, props: {_push_only}} = this;
       const db_local = local[id];
       const db_remote = remote[id];
       let linfo, _page;
@@ -477,8 +488,8 @@ function adapter({AbstracrAdapter}) {
             if(job_prm.pouch_filter && job_prm.pouch_filter[id]) {
               options.filter = job_prm.pouch_filter[id];
             }
+            // если для базы meta фильтр не задан, используем умолчание
             else if(id == 'meta') {
-              // если для базы meta фильтр не задан, используем умолчание
               options.filter = 'auth/meta';
             }
 
@@ -537,6 +548,12 @@ function adapter({AbstracrAdapter}) {
                     if(id == 'ram' || id == 'meta' || wsql.get_user_param('zone') == job_prm.zone_demo) {
                       local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
                     }
+                    else if(_push_only) {
+                      if(options.filter) {
+                        delete options.filter;
+                      }
+                      local.sync[id] = sync_events(db_local.replicate.to(db_remote, options));
+                    }
                     else {
                       local.sync[id] = sync_events(db_local.sync(db_remote, options));
                     }
@@ -546,20 +563,19 @@ function adapter({AbstracrAdapter}) {
                 });
 
               if(id == 'ram') {
-                sync.on('paused', (info) => {
+                sync
                   // replication was paused, usually because of a lost connection
-                  this.emit('pouch_sync_paused', id, info);
-
-                })
-                  .on('active', (info) => {
-                    // replication was resumed
-                    this.emit('pouch_sync_resumed', id, info);
-                  });
+                  .on('paused', (info) => this.emit('pouch_sync_paused', id, info))
+                  // replication was resumed
+                  .on('active', (info) => this.emit('pouch_sync_resumed', id, info));
               }
 
               return sync;
             };
 
+            if(_push_only && !options.filter && id !== 'ram' && id !== 'meta') {
+              options.filter = 'auth/push_only';
+            }
             sync_events(db_local.replicate.from(db_remote, options), options);
 
           });

@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.44, built:2017-12-31
+ metadata-core v2.0.16-beta.44, built:2018-01-01
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
