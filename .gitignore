@@ -1,12 +1,13 @@
 tmp
 .DS_Store
 .idea/
-node_modules
 localstorage
-npm-debug.log
-npm-debug.log.*
-lerna-debug.log
 zarchive/
+
+# npm files
+node_modules
+package-lock.json
+*.log
 
 packages/metadata-abstract-ui/index.js
 packages/metadata-abstract-ui/index.js.map
