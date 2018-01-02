@@ -38,7 +38,7 @@ function metaInitialState() {
     fetch: false,
     offline: typeof navigator != 'undefined' && !navigator.onLine,
     path_log_in: false,
-    couch_direct: true,
+    couch_direct: wsql.get_user_param('couch_direct', 'boolean'),
     user: {
       name: user_name,
       has_login: has_login,
