@@ -36,6 +36,7 @@ function adapter({AbstracrAdapter}) {
         _doc_ram_loaded: false,
         _auth: null,
         _suffix: '',
+        _user: '',
         _push_only: false,
       };
 
@@ -216,15 +217,19 @@ function adapter({AbstracrAdapter}) {
         .then(({roles}) => {
           // установим суффикс базы отдела абонента
           const suffix = /^suffix:/;
+          const ref = /^ref:/;
           roles.forEach((role) => {
             if(suffix.test(role)) {
               props._suffix = role.substr(7);
             }
-            if(role === 'direct' && !props.direct) {
+            else if(ref.test(role)) {
+              props._user = role.substr(4);
+            }
+            else if(role === 'direct' && !props.direct) {
               props.direct = true;
               wsql.set_user_param('couch_direct', true);
             }
-            if(role === 'push_only' && !props._push_only) {
+            else if(role === 'push_only' && !props._push_only) {
               props._push_only = true;
             }
           });
@@ -424,7 +429,7 @@ function adapter({AbstracrAdapter}) {
      */
     run_sync(id) {
 
-      const {local, remote, $p: {wsql, job_prm, record_log}, props: {_push_only}} = this;
+      const {local, remote, $p: {wsql, job_prm, record_log}, props: {_push_only, _user}} = this;
       const db_local = local[id];
       const db_remote = remote[id];
       let linfo, _page;
@@ -551,6 +556,7 @@ function adapter({AbstracrAdapter}) {
                     else if(_push_only) {
                       if(options.filter) {
                         delete options.filter;
+                        delete options.query_params;
                       }
                       local.sync[id] = sync_events(db_local.replicate.to(db_remote, options));
                     }
@@ -575,6 +581,7 @@ function adapter({AbstracrAdapter}) {
 
             if(_push_only && !options.filter && id !== 'ram' && id !== 'meta') {
               options.filter = 'auth/push_only';
+              options.query_params = {user: _user};
             }
             sync_events(db_local.replicate.from(db_remote, options), options);
 
@@ -992,23 +999,19 @@ function adapter({AbstracrAdapter}) {
      * @return {*}
      */
     load_array(_mgr, refs, with_attachments) {
-
-      if(!refs.length) {
+      if(!refs || !refs.length) {
         return Promise.resolve(false);
       }
-
+      const db = this.db(_mgr);
       const options = {
-          limit: refs.length + 1,
-          include_docs: true,
-          keys: refs.map((v) => _mgr.class_name + '|' + v),
-        },
-        db = this.db(_mgr);
-
+        limit: refs.length + 1,
+        include_docs: true,
+        keys: refs.map((v) => _mgr.class_name + '|' + v),
+      };
       if(with_attachments) {
         options.attachments = true;
         options.binary = true;
       }
-
       return db.allDocs(options).then((result) => this.load_changes(result, {}));
     }
 

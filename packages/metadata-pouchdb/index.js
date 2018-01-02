@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.44, built:2018-01-01
+ metadata-pouchdb v2.0.16-beta.45, built:2018-01-02
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -121,7 +121,7 @@ else {
     PouchDB = window.PouchDB;
   }
   else {
-    const ua = (navigator && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
+    const ua = (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
     PouchDB = window.PouchDB = require('pouchdb-core').default
       .plugin(require('pouchdb-adapter-http').default)
       .plugin(require('pouchdb-replication').default)
@@ -142,6 +142,7 @@ function adapter({AbstracrAdapter}) {
         _doc_ram_loaded: false,
         _auth: null,
         _suffix: '',
+        _user: '',
         _push_only: false,
       };
       this.local = {_loading: false, sync: {}};
@@ -256,15 +257,19 @@ function adapter({AbstracrAdapter}) {
       let try_auth = props.user_node ? Promise.resolve() : remote.ram.login(username, password)
         .then(({roles}) => {
           const suffix = /^suffix:/;
+          const ref = /^ref:/;
           roles.forEach((role) => {
             if(suffix.test(role)) {
               props._suffix = role.substr(7);
             }
-            if(role === 'direct' && !props.direct) {
+            else if(ref.test(role)) {
+              props._user = role.substr(4);
+            }
+            else if(role === 'direct' && !props.direct) {
               props.direct = true;
               wsql.set_user_param('couch_direct', true);
             }
-            if(role === 'push_only' && !props._push_only) {
+            else if(role === 'push_only' && !props._push_only) {
               props._push_only = true;
             }
           });
@@ -397,7 +402,7 @@ function adapter({AbstracrAdapter}) {
       }
     }
     run_sync(id) {
-      const {local, remote, $p: {wsql, job_prm, record_log}, props: {_push_only}} = this;
+      const {local, remote, $p: {wsql, job_prm, record_log}, props: {_push_only, _user}} = this;
       const db_local = local[id];
       const db_remote = remote[id];
       let linfo, _page;
@@ -484,6 +489,7 @@ function adapter({AbstracrAdapter}) {
                     else if(_push_only) {
                       if(options.filter) {
                         delete options.filter;
+                        delete options.query_params;
                       }
                       local.sync[id] = sync_events(db_local.replicate.to(db_remote, options));
                     }
@@ -502,6 +508,7 @@ function adapter({AbstracrAdapter}) {
             };
             if(_push_only && !options.filter && id !== 'ram' && id !== 'meta') {
               options.filter = 'auth/push_only';
+              options.query_params = {user: _user};
             }
             sync_events(db_local.replicate.from(db_remote, options), options);
           });
@@ -809,15 +816,15 @@ function adapter({AbstracrAdapter}) {
         .catch($p.record_log);
     }
     load_array(_mgr, refs, with_attachments) {
-      if(!refs.length) {
+      if(!refs || !refs.length) {
         return Promise.resolve(false);
       }
+      const db = this.db(_mgr);
       const options = {
-          limit: refs.length + 1,
-          include_docs: true,
-          keys: refs.map((v) => _mgr.class_name + '|' + v),
-        },
-        db = this.db(_mgr);
+        limit: refs.length + 1,
+        include_docs: true,
+        keys: refs.map((v) => _mgr.class_name + '|' + v),
+      };
       if(with_attachments) {
         options.attachments = true;
         options.binary = true;
