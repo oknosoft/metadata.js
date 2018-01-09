@@ -15,6 +15,8 @@ import PouchDB from './pouchdb';
 
 function adapter({AbstracrAdapter}) {
 
+  const fieldsToDelete = '_id,_rev,search,timestamp'.split(',');
+
   /**
    * ### Интерфейс локальной и сетевой баз данных PouchDB
    * Содержит абстрактные методы методы и подписки на события PouchDB, отвечает за авторизацию, синхронизацию и доступ к данным в IndexedDB и на сервере
@@ -643,8 +645,9 @@ function adapter({AbstracrAdapter}) {
       const db = this.db(tObj._manager);
       return db.get(tObj._manager.class_name + '|' + tObj.ref)
         .then((res) => {
-          delete res._id;
-          delete res._rev;
+          for(const fld of fieldsToDelete) {
+            delete res[fld];
+          }
           tObj._data._loading = true;
           tObj._mixin(res);
         })
@@ -690,13 +693,20 @@ function adapter({AbstracrAdapter}) {
       const tmp = Object.assign({_id: class_name + '|' + ref, class_name}, _obj);
 
       // формируем строку поиска
-      if(this.$p.utils.is_doc_obj(tObj) || _manager.build_search) {
+      const {utils, wsql} = this.$p;
+      if(utils.is_doc_obj(tObj) || _manager.build_search) {
         if(_manager.build_search) {
           _manager.build_search(tmp, tObj);
         }
         else {
           tmp.search = ((_obj.number_doc || '') + (_obj.note ? ' ' + _obj.note : '')).toLowerCase();
         }
+      }
+
+      // установим timestamp
+      tmp.timestamp = {
+        user: this.authorized || wsql.get_user_param('user_name'),
+        moment: utils.moment().format("YYYY-MM-DDTHH:mm:ss ZZ"),
       }
 
       delete tmp.ref;
