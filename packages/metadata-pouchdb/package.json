@@ -13,12 +13,11 @@
     "pouchdb-adapter-idb": "6.3.4",
     "pouchdb-adapter-memory": "6.3.4",
     "pouchdb-adapter-websql": "6.3.4",
-    "pouchdb-authentication": "^1.1.0",
+    "pouchdb-authentication": "0.5.5",
     "pouchdb-core": "6.3.4",
     "pouchdb-find": "6.3.4",
     "pouchdb-mapreduce": "6.3.4",
-    "pouchdb-replication": "6.3.4",
-    "rollup": "^0.53.2"
+    "pouchdb-replication": "6.3.4"
   },
   "repository": {
     "type": "git",

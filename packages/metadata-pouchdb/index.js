@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.45, built:2018-01-08
+ metadata-pouchdb v2.0.16-beta.45, built:2018-01-09
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -133,6 +133,7 @@ else {
 var PouchDB$1 = PouchDB;
 
 function adapter({AbstracrAdapter}) {
+  const fieldsToDelete = '_id,_rev,search,timestamp'.split(',');
   return class AdapterPouch extends AbstracrAdapter {
     constructor($p) {
       super($p);
@@ -542,8 +543,9 @@ function adapter({AbstracrAdapter}) {
       const db = this.db(tObj._manager);
       return db.get(tObj._manager.class_name + '|' + tObj.ref)
         .then((res) => {
-          delete res._id;
-          delete res._rev;
+          for(const fld of fieldsToDelete) {
+            delete res[fld];
+          }
           tObj._data._loading = true;
           tObj._mixin(res);
         })
@@ -572,7 +574,8 @@ function adapter({AbstracrAdapter}) {
       _data._saving = true;
       const db = this.db(_manager);
       const tmp = Object.assign({_id: class_name + '|' + ref, class_name}, _obj);
-      if(this.$p.utils.is_doc_obj(tObj) || _manager.build_search) {
+      const {utils, wsql} = this.$p;
+      if(utils.is_doc_obj(tObj) || _manager.build_search) {
         if(_manager.build_search) {
           _manager.build_search(tmp, tObj);
         }
@@ -580,6 +583,10 @@ function adapter({AbstracrAdapter}) {
           tmp.search = ((_obj.number_doc || '') + (_obj.note ? ' ' + _obj.note : '')).toLowerCase();
         }
       }
+      tmp.timestamp = {
+        user: this.authorized || wsql.get_user_param('user_name'),
+        moment: utils.moment().format("YYYY-MM-DDTHH:mm:ss ZZ"),
+      };
       delete tmp.ref;
       if(attr.attachments) {
         tmp._attachments = attr.attachments;
