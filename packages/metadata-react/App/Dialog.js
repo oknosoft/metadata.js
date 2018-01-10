@@ -56,9 +56,9 @@ class SimpleDialog extends React.Component {
   }
 
   render() {
-    const {open, fullScreen, noSpace, title, actions, children, classes, onRequestClose} = this.props;
+    const {open, fullScreen, noSpace, title, actions, children, classes, onClose} = this.props;
     const stateFullScreen = fullScreen || this.state.fullScreen;
-    return <Dialog open={open} fullScreen={stateFullScreen} onRequestClose={onRequestClose} classes={{paper: classes.paper}}>
+    return <Dialog open={open} fullScreen={stateFullScreen} onClose={onClose} classes={{paper: classes.paper}}>
       <Toolbar disableGutters className={classes.toolbar}>
         <Typography className={classes.title} type="title" color="inherit" noWrap>{title}</Typography>
         {
@@ -68,7 +68,7 @@ class SimpleDialog extends React.Component {
             {stateFullScreen ? <FullscreenExitIcon/> : <FullscreenIcon/>}
           </IconButton>
         }
-        <IconButton title="Закрыть диалог" onClick={onRequestClose}><CloseIcon/></IconButton>
+        <IconButton title="Закрыть диалог" onClick={onClose}><CloseIcon/></IconButton>
       </Toolbar>
       <DialogContent className={noSpace ? classes.contentNoSpace : classes.content}>{children}</DialogContent>
       {actions && <DialogActions>{actions}</DialogActions>}
@@ -84,7 +84,7 @@ SimpleDialog.propTypes = {
   actions: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   children: PropTypes.object.isRequired,
   classes: PropTypes.object.isRequired,
-  onRequestClose: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 SimpleDialog.childContextTypes = {

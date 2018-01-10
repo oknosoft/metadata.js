@@ -84,7 +84,7 @@ class Notifications extends Component {
         <NotificationsIconNone className={classes.white}/>
       </IconButton>,
 
-      props.open && <Drawer key="noti_drawer" anchor="right" open={props.open} onRequestClose={handleClose} classes={{paper: classes.ndrawer}}>
+      props.open && <Drawer key="noti_drawer" anchor="right" open={props.open} onClose={handleClose} classes={{paper: classes.ndrawer}}>
         <AppBar position="static">
           <Toolbar disableGutters>
             <Typography type="title" color="inherit" className={classnames(classes.title, classes.flex)}>Оповещения </Typography>
@@ -115,7 +115,7 @@ class Notifications extends Component {
           <Menu
             anchorEl={state.anchorEl}
             open={state.open}
-            onRequestClose={this.handleRequestClose}
+            onClose={this.handleRequestClose}
           >
             <MenuItem>Считать все прочитанными</MenuItem>
             <MenuItem>Удалить все</MenuItem>
