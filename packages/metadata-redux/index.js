@@ -951,7 +951,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function metaInitialState() {
   var _$p = $p,
       wsql = _$p.wsql,
-      job_prm = _$p.job_prm;
+      job_prm = _$p.job_prm,
+      superlogin = _$p.superlogin;
 
   var user_name = wsql.get_user_param('user_name');
   var has_login = void 0;
@@ -961,6 +962,8 @@ function metaInitialState() {
     wsql.set_user_param('user_pwd', job_prm.guests[0].password);
     has_login = true;
   } else if (wsql.get_user_param('enable_save_pwd', 'boolean') && user_name && wsql.get_user_param('user_pwd')) {
+    has_login = true;
+  } else if (superlogin && user_name) {
     has_login = true;
   } else {
     has_login = false;

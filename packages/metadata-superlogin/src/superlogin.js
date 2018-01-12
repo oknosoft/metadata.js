@@ -183,7 +183,7 @@ function attach($p) {
           if(reg) {
             if(reg.success) {
               if(superlogin.getConfig().email.requireEmailConfirm) {
-                dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'info: Создана учетная запись. Проверьте почтовый ящик для активации.'}));
+                dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'info:Создана учетная запись. Проверьте почтовый ящик для активации'}));
               }
               else {
                 return superlogin.authenticated() ? superlogin.getSession() :

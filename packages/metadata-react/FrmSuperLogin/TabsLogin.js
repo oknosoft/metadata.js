@@ -91,6 +91,7 @@ class TabsLogin extends Component {
     const {props, state, handleLogin} = this;
     const {classes, user, handleLogOut} = props;
     const btn = classnames(classes.button, classes.fullWidth);
+    const info = user.log_error && /info:/.test(user.log_error);
 
     return (
 
@@ -140,8 +141,10 @@ class TabsLogin extends Component {
 
         {state.index === 0 && user.log_error &&
         <FormGroup row>
-          <IconError className={classes.error}/>
-          <Typography type="subheading" color="error" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>{user.log_error}</Typography>
+          {info ? <IconError /> : <IconError className={classes.error}/>}
+          <Typography type="subheading" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+            {user.log_error.replace('info:', '')}
+          </Typography>
         </FormGroup>
         }
 
@@ -228,8 +231,10 @@ class TabsLogin extends Component {
 
         {state.index === 1 && user.log_error &&
         <FormGroup row>
-          <IconError className={classes.error}/>
-          <Typography type="subheading" color="error" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>{user.log_error}</Typography>
+          {info ? <IconError /> : <IconError className={classes.error}/>}
+          <Typography type="subheading" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+            {user.log_error.replace('info:', '')}
+          </Typography>
         </FormGroup>
         }
 

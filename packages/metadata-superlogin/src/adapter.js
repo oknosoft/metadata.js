@@ -31,7 +31,7 @@ export default (constructor) => {
 
       const start = superlogin.getSession() ? Promise.resolve(superlogin.getSession()) : superlogin.login({username, password})
         .catch((err) => {
-          this.emit('user_log_fault', err);
+          this.emit('user_log_fault', {message: 'custom', text: err.message});
           return Promise.reject(err);
         });
 

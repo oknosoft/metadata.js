@@ -22,7 +22,7 @@ var adapter = (constructor) => {
       const {job_prm, wsql, aes, md, superlogin: superlogin$$1} = $p;
       const start = superlogin$$1.getSession() ? Promise.resolve(superlogin$$1.getSession()) : superlogin$$1.login({username, password})
         .catch((err) => {
-          this.emit('user_log_fault', err);
+          this.emit('user_log_fault', {message: 'custom', text: err.message});
           return Promise.reject(err);
         });
       return start.then((session) => {
@@ -147,7 +147,7 @@ function attach($p) {
           if(reg) {
             if(reg.success) {
               if(superlogin.getConfig().email.requireEmailConfirm) {
-                dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'info: Создана учетная запись. Проверьте почтовый ящик для активации.'}));
+                dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'info:Создана учетная запись. Проверьте почтовый ящик для активации'}));
               }
               else {
                 return superlogin.authenticated() ? superlogin.getSession() :
