@@ -24,12 +24,10 @@ function attach($p) {
 
   });
 
-
   // Message is a message that explains why the user was logged out: 'Logged out' or 'Session expired'.
   superlogin.on('logout', function (event, message) {
 
   });
-
 
   // Broadcast when the token is refreshed.
   superlogin.on('refresh', function (event, newSession) {
@@ -99,34 +97,33 @@ function attach($p) {
    * Actions
    */
 
+  // генерирует функцию авторизации через соцсети
   function handleSocialAuth(provider) {
-
-
-    // Thunk middleware знает, как обращаться с функциями.
-    // Он передает метод действия в качестве аргумента функции,
-    // т.о, это позволяет отправить действие самостоятельно.
 
     return function (dispatch, getState) {
 
       // First dispatch: the app state is updated to inform
       // that the API call is starting.
-
       dispatch({
         type: metaActions.types.USER_TRY_LOG_IN,
         payload: {name: 'oauth', provider: provider}
       });
 
-      // The function called by the thunk middleware can return a value,
-      // that is passed on as the return value of the dispatch method.
+      // Если мы уже авторизованы - делаем link вместо создания нового пользователя
+      if(superlogin.authenticated()) {
+        return superlogin.link(provider)
+          .then((res) => {
 
-      // In this case, we return a promise to wait for.
-      // This is not required by thunk middleware, but it is convenient for us.
+          })
+          .catch((err) => {
 
+          });
+      }
+
+      // Если еще не авторизованы - создаём пользователя по данным соцсети
       return superlogin.socialAuth(provider)
-        .then((session) => $p.adapters.pouch.log_in(session.token, session.password));
-
-      // In a real world app, you also want to
-      // catch any error in the network call.
+        .then((session) => $p.adapters.pouch.log_in(session.token, session.password))
+        .catch((err) => $p.adapters.pouch.log_out());
     };
   }
 
@@ -154,20 +151,57 @@ function attach($p) {
 
     return function (dispatch) {
 
-      superlogin.register(registration)
-        .then(function () {
-          if(superlogin.authenticated()) {
+      const {username, email, password, confirmPassword} = registration;
 
-            const session = superlogin.getSession();
-            dispatch({
-              type: metaActions.types.USER_LOG_IN,
-              payload: {name: session.name, password: session.password, provider: 'local'}
-            });
+      if(!password || password.length < 6 || password !== confirmPassword) {
+        return dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Password must be at least 6 characters length'}));
+      }
+      if(!username || username.length < 3) {
+        return dispatch(metaActions.USER_LOG_ERROR({message: 'empty'}));
+      }
 
+      // проверим login, email и password
+      return superlogin.validateUsername(username)
+        .catch((err) => {
+          dispatch(metaActions.USER_LOG_ERROR(
+            err.message && err.message.match(/(time|network)/i) ? err : {message: 'custom', text: err.error ? err.error : 'Username error'}
+          ));
+        })
+        .then((ok) => {
+          return ok && superlogin.validateEmail(email)
+        })
+        .catch((err) => {
+          dispatch(metaActions.USER_LOG_ERROR(
+            err.message && err.message.match(/(time|network)/i) ? err : {message: 'custom', text: err.error ? err.error : 'Email error'}
+          ));
+        })
+        // попытка регистрации
+        .then((ok) => {
+          return ok && superlogin.register(registration)
+        })
+        .then((reg) => {
+          if(reg) {
+            if(reg.success) {
+              if(superlogin.getConfig().email.requireEmailConfirm) {
+                dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'info: Создана учетная запись. Проверьте почтовый ящик для активации.'}));
+              }
+              else {
+                return superlogin.authenticated() ? superlogin.getSession() :
+                  superlogin.login({username, password}).then((session) => {
+                    return superlogin.getSession();
+                  });
+              }
+            }
+            else {
+              dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Registration error'}));
+            }
           }
-          else {
-            //toasty('Registration successful.');
-          }
+        })
+        .then((session) => {
+          return session && $p.adapters.pouch.log_in(session.username, session.password);
+        })
+        .catch((err) => {
+          dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: err.error ? err.error : 'Registration error'}));
         });
     };
   }
@@ -206,7 +240,7 @@ function attach($p) {
   }
 
   function handleSetPrm(attr) {
-    for (var key in attr) {
+    for (const key in attr) {
       $p.wsql.set_user_param(key, attr[key]);
     }
     return metaActions.PRM_CHANGE(attr);

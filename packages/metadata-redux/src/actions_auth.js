@@ -106,6 +106,9 @@ export function log_error(err) {
   else if(err.message.match('logout')){
     text = msg.need_logout;
   }
+  else if(err.message.match('custom') && err.text){
+    text = err.text;
+  }
   return {
     type: LOG_ERROR,
     payload: text

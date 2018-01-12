@@ -82,9 +82,12 @@ export default (constructor) => {
      * @return {*}
      */
     dbpath(name) {
-      const {$p, props} = this;
-      const {superlogin} = $p;
-      return $p.superlogin.getDbUrl(props.prefix + (name == 'meta' ? name : (props.zone + '_' + name)));
+      const {$p, props: {path, prefix, zone}} = this;
+      let url = $p.superlogin.getDbUrl(prefix + (name == 'meta' ? name : (zone + '_' + name)));
+      if(/localhost:5984/.test(url)) {
+        url = url.replace('localhost:5984', 'localhost:5984');
+      }
+      return url;
     }
 
     /**

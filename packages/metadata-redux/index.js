@@ -187,6 +187,8 @@ function log_error(err) {
     text = msg.empty;
   } else if (err.message.match('logout')) {
     text = msg.need_logout;
+  } else if (err.message.match('custom') && err.text) {
+    text = err.text;
   }
   return {
     type: LOG_ERROR,

@@ -313,7 +313,7 @@ function adapter({AbstracrAdapter}) {
         props._auth = null;
       }
 
-      return Promise.all(md.bases().map((id) => id != 'meta' && remote[id] && remote[id].logout()))
+      return Promise.all(md.bases().map((id) => id != 'meta' && remote[id] && remote[id].logout && remote[id].logout()))
         .then(() => this.emit('user_log_out'));
     }
 

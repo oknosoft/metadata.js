@@ -76,31 +76,28 @@ export default class TabsLogin extends React.Component {
                   label="Google"
                   className={classes.button}
                   labelStyle={{width: 110, textAlign: 'left', display: 'inline-block'}}
-                  icon={<GoogleIcon viewBox="0 0 256 262" style={{width: 18, height: 18}}
-                                    color={blue[500]}/>}
+                  icon={<GoogleIcon viewBox="0 0 256 262" style={{height: 18, fill: blue[500]}}/>}
                   onClick={this.buttonTouchTap("google")}
                 /><br />
                 <RaisedButton
                   label="Yandex"
                   className={classes.button}
                   labelStyle={{width: 110, textAlign: 'left', display: 'inline-block'}}
-                  icon={<YandexIcon viewBox="0 0 180 190" style={{height: 18}}
-                                    color={red[500]}/>}
+                  icon={<YandexIcon viewBox="0 0 180 190" style={{height: 18, fill: red[500]}}/>}
                   onClick={this.buttonTouchTap("yandex")}
                 /><br />
                 <RaisedButton
                   label="Facebook"
                   className={classes.button}
                   labelStyle={{width: 110, textAlign: 'left', display: 'inline-block'}}
-                  icon={<FacebookIcon viewBox="0 0 420 420" style={{height: 18}}
-                                      color={blue[500]}/>}
+                  icon={<FacebookIcon viewBox="0 0 420 420" style={{height: 18, fill: '#3A559F'}}/>}
                   onClick={this.buttonTouchTap("facebook")}
                 /><br />
                 <RaisedButton
                   label="В контакте"
                   className={classes.button}
                   labelStyle={{width: 110, textAlign: 'left', display: 'inline-block'}}
-                  icon={<GitHubIcon viewBox="0 0 256 250" style={{height: 18}}/>}
+                  icon={<GitHubIcon viewBox="0 0 256 250" style={{height: 18, fill: 'darkslategrey'}}/>}
                   onClick={this.buttonTouchTap("vkontakte")}
                 />
                 {/*
