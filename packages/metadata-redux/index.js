@@ -542,15 +542,16 @@ function data_loaded(page) {
 
 
       if (!meta.user.logged_in && meta.user.has_login) {
-        var _$p = $p,
-            job_prm = _$p.job_prm,
-            wsql = _$p.wsql,
-            adapters = _$p.adapters,
-            aes = _$p.aes;
-
         setTimeout(function () {
+          var _$p = $p,
+              job_prm = _$p.job_prm,
+              wsql = _$p.wsql,
+              adapters = _$p.adapters,
+              superlogin = _$p.superlogin,
+              aes = _$p.aes;
 
           // получаем имя сохраненного или гостевого пользователя
+
           var name = wsql.get_user_param('user_name');
           var password = wsql.get_user_param('user_pwd');
 
@@ -566,6 +567,9 @@ function data_loaded(page) {
           // если разрешено сохранение пароля или гостевая зона...
           if (name && password && wsql.get_user_param('enable_save_pwd')) {
             return dispatch((0, _actions_auth.try_log_in)(adapters.pouch, name, aes.Ctr.decrypt(password)));
+          }
+          if (superlogin && superlogin.getSession()) {
+            return adapters.pouch.log_in(superlogin.getSession().user_id);
           }
 
           if (name && job_prm.zone_demo == wsql.get_user_param('zone')) {

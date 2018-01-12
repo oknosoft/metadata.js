@@ -44,8 +44,8 @@ export function data_loaded(page) {
 
       // если вход еще не выполнен...
       if(!meta.user.logged_in && meta.user.has_login) {
-        const {job_prm, wsql, adapters, aes} = $p;
         setTimeout(() => {
+          const {job_prm, wsql, adapters, superlogin, aes} = $p;
 
           // получаем имя сохраненного или гостевого пользователя
           let name = wsql.get_user_param('user_name');
@@ -63,8 +63,11 @@ export function data_loaded(page) {
           }
 
           // если разрешено сохранение пароля или гостевая зона...
-          if(name && password && wsql.get_user_param('enable_save_pwd')) {
+          if(name && (password && wsql.get_user_param('enable_save_pwd'))) {
             return dispatch(try_log_in(adapters.pouch, name, aes.Ctr.decrypt(password)));
+          }
+          if(superlogin && superlogin.getSession()) {
+            return adapters.pouch.log_in(superlogin.getSession().user_id);
           }
 
           if(name && job_prm.zone_demo == wsql.get_user_param('zone')) {
