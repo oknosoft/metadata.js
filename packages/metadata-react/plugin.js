@@ -74,7 +74,7 @@ function rx_columns({utils: {moment}, enm}) {
 
         if(!column.formatter) {
 
-          if(_fld.type.is_ref) {
+          if(column.key === 'ref' || _fld.type.is_ref) {
             column.formatter = presentation_formatter;
           }
           else if(_fld.type.date_part) {
