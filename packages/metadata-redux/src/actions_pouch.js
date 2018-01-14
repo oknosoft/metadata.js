@@ -62,14 +62,13 @@ export function data_loaded(page) {
             dispatch(defined(name));
           }
 
-          // если разрешено сохранение пароля или гостевая зона...
-          if(name && (password && wsql.get_user_param('enable_save_pwd'))) {
+          // если разрешено сохранение пароля или superlogin или гостевая зона...
+          if(name && password && wsql.get_user_param('enable_save_pwd')) {
             return dispatch(try_log_in(adapters.pouch, name, aes.Ctr.decrypt(password)));
           }
-          if(superlogin && superlogin.getSession()) {
-            return adapters.pouch.log_in(superlogin.getSession().user_id);
+          if(superlogin && superlogin.authenticated()) {
+            return dispatch(try_log_in(adapters.pouch));
           }
-
           if(name && job_prm.zone_demo == wsql.get_user_param('zone')) {
             dispatch(try_log_in(adapters.pouch, name, aes.Ctr.decrypt(job_prm.guests[0].password)));
           }

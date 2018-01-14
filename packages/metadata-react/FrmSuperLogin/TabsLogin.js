@@ -1,24 +1,25 @@
 import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+
 import Tabs, {Tab} from 'material-ui/Tabs';
 import Paper from 'material-ui/Paper';
-import TextField from 'material-ui/TextField';
 import Button from 'material-ui/Button';
 import {FormGroup} from 'material-ui/Form';
 import {DialogActions} from 'material-ui/Dialog';
+import Helmet from 'react-helmet';
 import Grid from 'material-ui/Grid';
 import Divider from 'material-ui/Divider';
 import Typography from 'material-ui/Typography';
+import TextField from 'material-ui/TextField';
 import IconError from 'material-ui-icons/ErrorOutline';
 import {CircularProgress} from 'material-ui/Progress';
-import classnames from 'classnames';
 
 import {blue, red} from 'material-ui/colors';
 import {FacebookIcon, GitHubIcon, GoogleIcon, YandexIcon} from './assets/icons';
 
 import withStyles from '../styles/paper600';
-
-
 import connect from './connect';
+import classnames from 'classnames';
 
 class TabsLogin extends Component {
 

@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.16-beta.46, built:2018-01-12
+ metadata-superlogin v2.0.16-beta.46, built:2018-01-14
  © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -88,17 +88,19 @@ function attach($p) {
   });
   function handleSocialAuth(provider) {
     return function (dispatch, getState) {
+      if(superlogin.authenticated()) {
+        return superlogin.link(provider)
+          .then((res) => {
+            res = null;
+          })
+          .catch((err) => {
+            err = null;
+          });
+      }
       dispatch({
         type: metaActions.types.USER_TRY_LOG_IN,
         payload: {name: 'oauth', provider: provider}
       });
-      if(superlogin.authenticated()) {
-        return superlogin.link(provider)
-          .then((res) => {
-          })
-          .catch((err) => {
-          });
-      }
       return superlogin.socialAuth(provider)
         .then((session) => $p.adapters.pouch.log_in(session.token, session.password))
         .catch((err) => $p.adapters.pouch.log_out());

@@ -102,23 +102,21 @@ function attach($p) {
 
     return function (dispatch, getState) {
 
-      // First dispatch: the app state is updated to inform
-      // that the API call is starting.
-      dispatch({
-        type: metaActions.types.USER_TRY_LOG_IN,
-        payload: {name: 'oauth', provider: provider}
-      });
-
       // Если мы уже авторизованы - делаем link вместо создания нового пользователя
       if(superlogin.authenticated()) {
         return superlogin.link(provider)
           .then((res) => {
-
+            res = null;
           })
           .catch((err) => {
-
+            err = null;
           });
       }
+
+      dispatch({
+        type: metaActions.types.USER_TRY_LOG_IN,
+        payload: {name: 'oauth', provider: provider}
+      });
 
       // Если еще не авторизованы - создаём пользователя по данным соцсети
       return superlogin.socialAuth(provider)

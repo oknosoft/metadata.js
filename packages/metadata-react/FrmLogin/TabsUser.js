@@ -38,25 +38,7 @@ class TabsUser extends Component {
     return true;
   }
 
-  handleSave() {
 
-  }
-
-  handleSend() {
-
-  }
-
-  handleMarkDeleted() {
-
-  }
-
-  handlePrint() {
-
-  }
-
-  handleAttachment() {
-
-  }
 
   handleNavigate() {
     const {handleNavigate, first_run} = this.props;
@@ -72,9 +54,9 @@ class TabsUser extends Component {
   render() {
 
     const {props, state, handleNavigate} = this;
-    const {classes, handleLogOut} = props;
+    const {classes, handleLogOut, _obj} = props;
 
-    return this.props._obj ?
+    return _obj ?
 
       <Paper className={classes.root} elevation={4}>
 
@@ -87,8 +69,8 @@ class TabsUser extends Component {
 
         {state.index === 0 &&
         <FormGroup>
-          <DataField _obj={this.props._obj} _fld="id" read_only />
-          <DataField _obj={this.props._obj} _fld="name" read_only />
+          <DataField _obj={_obj} _fld="id" read_only />
+          <DataField _obj={_obj} _fld="name" read_only />
         </FormGroup>}
 
         {state.index === 0 &&

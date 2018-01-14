@@ -166,8 +166,15 @@ function log_out(adapter) {
     };
 
     // в зависимости от использования суперлогина, разные действия
-    if ($p.superlogin) {
-      $p.superlogin.logout().then(disp_log_out);
+    var _$p = $p,
+        superlogin = _$p.superlogin;
+
+    if (superlogin) {
+      if (superlogin.authenticated()) {
+        superlogin.logout().then(disp_log_out);
+      } else {
+        disp_log_out();
+      }
     } else if (!adapter) {
       disp_log_out();
     } else {
@@ -564,14 +571,13 @@ function data_loaded(page) {
             dispatch((0, _actions_auth.defined)(name));
           }
 
-          // если разрешено сохранение пароля или гостевая зона...
+          // если разрешено сохранение пароля или superlogin или гостевая зона...
           if (name && password && wsql.get_user_param('enable_save_pwd')) {
             return dispatch((0, _actions_auth.try_log_in)(adapters.pouch, name, aes.Ctr.decrypt(password)));
           }
-          if (superlogin && superlogin.getSession()) {
-            return adapters.pouch.log_in(superlogin.getSession().user_id);
+          if (superlogin && superlogin.authenticated()) {
+            return dispatch((0, _actions_auth.try_log_in)(adapters.pouch));
           }
-
           if (name && job_prm.zone_demo == wsql.get_user_param('zone')) {
             dispatch((0, _actions_auth.try_log_in)(adapters.pouch, name, aes.Ctr.decrypt(job_prm.guests[0].password)));
           }
@@ -732,7 +738,8 @@ function mapDispatchToProps(dispatch) {
       wsql = _$p.wsql,
       job_prm = _$p.job_prm,
       aes = _$p.aes,
-      cat = _$p.cat;
+      cat = _$p.cat,
+      superlogin = _$p.superlogin;
 
 
   return {
@@ -744,6 +751,12 @@ function mapDispatchToProps(dispatch) {
         } else if (wsql.get_user_param('zone') == job_prm.zone_demo) {
           login = job_prm.guests[0].username;
           password = aes.Ctr.decrypt(job_prm.guests[0].password);
+        } else if (superlogin) {
+          if (superlogin.authenticated()) {
+            login = superlogin.getSession().user_id;
+          } else {
+            return dispatch((0, _actions_auth.log_out)(adapters.pouch));
+          }
         } else {
           return dispatch((0, _actions_auth.log_out)(adapters.pouch));
         }
