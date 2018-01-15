@@ -84,8 +84,13 @@ export default (constructor) => {
     dbpath(name) {
       const {$p, props: {path, prefix, zone}} = this;
       let url = $p.superlogin.getDbUrl(prefix + (name == 'meta' ? name : (zone + '_' + name)));
-      if(/localhost:5984/.test(url)) {
-        url = url.replace('localhost:5984', 'localhost:5984');
+      const localhost = 'localhost:5984/' + prefix;
+      if(url.indexOf(localhost) !== -1) {
+        const https = path.indexOf('https://') !== -1;
+        if(https){
+          url = url.replace('http://', 'https://');
+        }
+        url = url.replace(localhost, path.substr(https ? 8 : 7));
       }
       return url;
     }
