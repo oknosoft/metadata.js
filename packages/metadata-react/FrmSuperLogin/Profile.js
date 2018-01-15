@@ -82,27 +82,19 @@ class UserObj extends Component {
         <FormGroup>
 
           <FormGroup>
-            <Typography type="subheading" color="inherit">Вы можете связать свою учетную запись с профилем социальных сетей:</Typography>
-
             <Grid container spacing={24}>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={14} sm={7}>
+                <Typography type="subheading" color="inherit">Вы можете связать свою учетную запись с профилем социальных сетей</Typography>
+              </Grid>
+              <Grid item xs={10} sm={5}>
+                <Button raised dense className={btn} onClick={this.oauthClick('github')}>
+                  <GitHubIcon viewBox="0 0 256 250" style={{height: 18, fill: 'darkslategrey'}}/> GitHub
+                </Button>
                 <Button raised dense className={btn} onClick={this.oauthClick('google')}>
                   <GoogleIcon viewBox="0 0 256 262" style={{height: 18, fill: blue[500]}}/> Google
                 </Button>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Button raised dense className={btn} onClick={this.oauthClick('yandex')}>
-                  <YandexIcon viewBox="0 0 180 190" style={{height: 18, fill: red[500]}}/> Яндекс
-                </Button>
-              </Grid>
-              <Grid item xs={12} sm={6}>
                 <Button raised dense className={btn} onClick={this.oauthClick('facebook')}>
                   <FacebookIcon viewBox="0 0 450 450" style={{height: 18, fill: '#3A559F'}}/> Facebook
-                </Button>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Button raised dense className={btn} onClick={this.oauthClick('github')}>
-                  <GitHubIcon viewBox="0 0 256 250" style={{height: 18, fill: 'darkslategrey'}}/> GitHub
                 </Button>
               </Grid>
             </Grid>

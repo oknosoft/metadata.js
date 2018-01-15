@@ -1,6 +1,6 @@
 /*!
- metadata-core v2.0.16-beta.46, built:2018-01-09
- © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
+ metadata-core v2.0.16-beta.46, built:2018-01-15
+ © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */
@@ -4210,7 +4210,7 @@ class AbstracrAdapter extends MetaEventEmitter{
 
 const classes = Object.assign({Meta, MetaEventEmitter, AbstracrAdapter}, data_managers, data_objs, data_tabulars);
 
-class MetaEngine$1 {
+class MetaEngine {
   constructor() {
     this.classes = classes;
     this.adapters = {};
@@ -4220,8 +4220,8 @@ class MetaEngine$1 {
     this.md = new Meta(this);
     mngrs(this);
     this.record_log = this.record_log.bind(this);
-    MetaEngine$1._plugins.forEach((plugin) => plugin.call(this));
-    MetaEngine$1._plugins.length = 0;
+    MetaEngine._plugins.forEach((plugin) => plugin.call(this));
+    MetaEngine._plugins.length = 0;
   }
   on(type, listener) {
     this.md.on(type, listener);
@@ -4305,23 +4305,23 @@ class MetaEngine$1 {
     }
     if (obj.hasOwnProperty('proto')) {
       if (typeof obj.proto == 'function') {
-        obj.proto(MetaEngine$1);
+        obj.proto(MetaEngine);
       }
       else if (typeof obj.proto == 'object') {
-        Object.keys(obj.proto).forEach((id) => MetaEngine$1.prototype[id] = obj.proto[id]);
+        Object.keys(obj.proto).forEach((id) => MetaEngine.prototype[id] = obj.proto[id]);
       }
     }
     if (obj.hasOwnProperty('constructor')) {
       if (typeof obj.constructor != 'function') {
         throw new TypeError('Invalid plugin: constructor must be a function');
       }
-      MetaEngine$1._plugins.push(obj.constructor);
+      MetaEngine._plugins.push(obj.constructor);
     }
-    return MetaEngine$1;
+    return MetaEngine;
   }
 }
-MetaEngine$1.classes = classes;
-MetaEngine$1._plugins = [];
+MetaEngine.classes = classes;
+MetaEngine._plugins = [];
 
-module.exports = MetaEngine$1;
+module.exports = MetaEngine;
 //# sourceMappingURL=index.js.map
