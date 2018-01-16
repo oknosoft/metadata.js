@@ -22,9 +22,9 @@
     "rc-cascader": "^0.12.1",
     "rc-time-picker": "^3.2.1",
     "react-helmet": "^5.2.0",
-    "react-onclickoutside": "^6.7.0",
+    "react-onclickoutside": "^6.7.1",
     "react-portal": "^4.0.0",
-    "react-virtualized": "^9.17.1"
+    "react-virtualized": "^9.17.2"
   },
   "peerDependencies": {
     "react": "^16.2.0",

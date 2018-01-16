@@ -31,8 +31,8 @@
     "rc-calendar": "^9.4.0",
     "rc-cascader": "^0.12.1",
     "rc-time-picker": "^3.2.1",
-    "react-onclickoutside": "^6.7.0",
-    "react-virtualized": "^9.17.1",
+    "react-onclickoutside": "^6.7.1",
+    "react-virtualized": "^9.17.2",
     "superlogin-client": "^0.8.0",
     "webpack": "^3.10.0"
   },
