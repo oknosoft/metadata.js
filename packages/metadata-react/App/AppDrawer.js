@@ -75,7 +75,7 @@ function AppDrawer(props) {
         </Drawer>
       </Hidden>
       {disablePermanent ? null : (
-        <Hidden lgDown implementation="css">
+        <Hidden mdDown implementation="css">
           <Drawer
             classes={{
               paper: classes.paper,

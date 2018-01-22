@@ -28,7 +28,7 @@
     "pouchdb-find": "6.3.4",
     "pouchdb-mapreduce": "6.3.4",
     "pouchdb-replication": "6.3.4",
-    "rc-calendar": "^9.4.0",
+    "rc-calendar": "^9.5.0",
     "rc-cascader": "^0.12.2",
     "rc-time-picker": "^3.2.1",
     "react-onclickoutside": "^6.7.1",
