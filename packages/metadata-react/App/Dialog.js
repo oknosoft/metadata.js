@@ -41,7 +41,10 @@ const style = theme => ({
 
 class SimpleDialog extends React.Component {
 
-  state = {fullScreen: false};
+  constructor(props, context) {
+    super(props, context);
+    this.state = {fullScreen: props.initFullScreen || false};
+  }
 
   getChildContext() {
     return {dnr: this};
@@ -80,6 +83,7 @@ class SimpleDialog extends React.Component {
 SimpleDialog.propTypes = {
   open: PropTypes.bool,
   fullScreen: PropTypes.bool,
+  initFullScreen: PropTypes.bool,
   title: PropTypes.string.isRequired,
   actions: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   children: PropTypes.object.isRequired,
