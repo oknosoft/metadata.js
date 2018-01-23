@@ -1,5 +1,5 @@
 /*!
- metadata.js vPACKAGE_VERSION, built:PACKAGE_BUILT_TIME &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2017
+ metadata.js vPACKAGE_VERSION, built:PACKAGE_BUILT_TIME &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2018
  metadata.js may be freely distributed under the MIT. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {

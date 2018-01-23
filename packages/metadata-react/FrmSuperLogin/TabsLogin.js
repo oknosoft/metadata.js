@@ -1,24 +1,25 @@
 import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+
 import Tabs, {Tab} from 'material-ui/Tabs';
 import Paper from 'material-ui/Paper';
-import TextField from 'material-ui/TextField';
 import Button from 'material-ui/Button';
 import {FormGroup} from 'material-ui/Form';
 import {DialogActions} from 'material-ui/Dialog';
+import Helmet from 'react-helmet';
 import Grid from 'material-ui/Grid';
 import Divider from 'material-ui/Divider';
 import Typography from 'material-ui/Typography';
+import TextField from 'material-ui/TextField';
 import IconError from 'material-ui-icons/ErrorOutline';
 import {CircularProgress} from 'material-ui/Progress';
-import classnames from 'classnames';
 
 import {blue, red} from 'material-ui/colors';
 import {FacebookIcon, GitHubIcon, GoogleIcon, YandexIcon} from './assets/icons';
 
 import withStyles from '../styles/paper600';
-
-
 import connect from './connect';
+import classnames from 'classnames';
 
 class TabsLogin extends Component {
 
@@ -91,6 +92,7 @@ class TabsLogin extends Component {
     const {props, state, handleLogin} = this;
     const {classes, user, handleLogOut} = props;
     const btn = classnames(classes.button, classes.fullWidth);
+    const info = user.log_error && /info:/.test(user.log_error);
 
     return (
 
@@ -140,34 +142,29 @@ class TabsLogin extends Component {
 
         {state.index === 0 && user.log_error &&
         <FormGroup row>
-          <IconError className={classes.error}/>
-          <Typography type="subheading" color="error" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>{user.log_error}</Typography>
+          {info ? <IconError /> : <IconError className={classes.error}/>}
+          <Typography type="subheading" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+            {user.log_error.replace('info:', '')}
+          </Typography>
         </FormGroup>
         }
 
         {state.index === 0 &&
         <FormGroup>
           <Divider/>
-          <Typography type="subheading" color="inherit">Вы можете авторизоваться при помощи учетных записей социальных сетей:</Typography>
           <Grid container spacing={24}>
-            <Grid item xs={12} sm={6}>
-              <Button raised dense className={btn} onClick={this.oauthClick('google')}>
-                <GoogleIcon viewBox="0 0 256 262" style={{height: 18}} color={blue[500]}/> Google
-              </Button>
+            <Grid item xs={14} sm={7}>
+              <Typography type="subheading" color="inherit">Вы можете авторизоваться при помощи учетных записей социальных сетей</Typography>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button raised dense className={btn} onClick={this.oauthClick('yandex')}>
-                <YandexIcon viewBox="0 0 180 190" style={{height: 18}} color={red[500]}/> Яндекс
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button raised dense className={btn} onClick={this.oauthClick('facebook')}>
-                <FacebookIcon viewBox="0 0 450 450" style={{height: 18}} color="#3A559F"/> Facebook
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={10} sm={5}>
               <Button raised dense className={btn} onClick={this.oauthClick('github')}>
-                <GitHubIcon viewBox="0 0 256 250" style={{height: 18}}/> GitHub
+                <GitHubIcon viewBox="0 0 256 250" style={{height: 18, fill: 'darkslategrey'}}/> GitHub
+              </Button>
+              <Button raised dense className={btn} onClick={this.oauthClick('google')}>
+                <GoogleIcon viewBox="0 0 256 262" style={{height: 18, fill: blue[500]}}/> Google
+              </Button>
+              <Button raised dense className={btn} onClick={this.oauthClick('facebook')}>
+                <FacebookIcon viewBox="0 0 450 450" style={{height: 18, fill: '#3A559F'}}/> Facebook
               </Button>
             </Grid>
           </Grid>
@@ -213,6 +210,25 @@ class TabsLogin extends Component {
           <DialogActions>
             <Button color="primary" dense className={classes.button} onClick={this.handleRegister}>Регистрация</Button>
           </DialogActions>
+
+        </FormGroup>
+        }
+
+        {state.index === 1 && !user.log_error && user.try_log_in &&
+        <FormGroup row>
+          <CircularProgress size={24}/>
+          <Typography type="subheading" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+            {`${$p.msg.login.title}, ${$p.msg.login.wait}...`}
+          </Typography>
+        </FormGroup>
+        }
+
+        {state.index === 1 && user.log_error &&
+        <FormGroup row>
+          {info ? <IconError /> : <IconError className={classes.error}/>}
+          <Typography type="subheading" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+            {user.log_error.replace('info:', '')}
+          </Typography>
         </FormGroup>
         }
 

@@ -370,11 +370,6 @@ export default class InterfaceObjs {
 				{type:"input" , inputWidth: 220, name:"zone", label:"Зона:", numberFormat: ["0", "", ""], validate:"NotEmpty,ValidInteger"},
 				{type:"template", label:"",value:"", note: {text: "Для неразделенной публикации, зона = 0", width: 320}},
 
-				{type: "label", labelWidth:320, label: "Суффикс базы пользователя", className: "label_options"},
-				{type:"input" , inputWidth: 220, name:"couch_suffix", label:"Суффикс:"},
-				{type:"template", label:"",value:"",
-					note: {text: "Назначается абоненту при регистрации", width: 320}},
-
 				{type:"block", blockOffset: 0, name:"block_buttons", list:[
 					{type: "button", name: "save", value: "<i class='fa fa-floppy-o fa-lg'></i>", tooltip: "Применить настройки и перезагрузить программу"},
 					{type:"newcolumn"},
@@ -386,7 +381,7 @@ export default class InterfaceObjs {
 			form.cont.style.fontSize = "100%";
 
 			// инициализация свойств
-			["zone", "couch_path", "couch_suffix", "rest_path"].forEach(function (prm) {
+			["zone", "couch_path", "rest_path"].forEach(function (prm) {
 				if(prm == "zone")
 					form.setItemValue(prm, wsql.get_user_param(prm));
 				else
@@ -396,8 +391,6 @@ export default class InterfaceObjs {
 			form.attachEvent("onChange", function (name, value, state){
 				wsql.set_user_param(name, name == "enable_save_pwd" ? state || "" : value);
 			});
-
-			form.disableItem("couch_suffix");
 
 			if(!job_prm.rest_path)
 				form.disableItem("rest_path");

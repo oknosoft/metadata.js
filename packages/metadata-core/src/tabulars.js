@@ -194,11 +194,17 @@ export class TabularSection {
 	/**
 	 * ### Меняет местами строки табчасти
 	 * @method swap
-	 * @param rowid1 {number}
-	 * @param rowid2 {number}
+	 * @param rowid1 {number|TabularSectionRow}
+	 * @param rowid2 {number|TabularSectionRow}
 	 */
 	swap(rowid1, rowid2) {
     const {_obj, _owner, _name} = this;
+    if(typeof rowid1 !== 'number') {
+      rowid1 = rowid1.row - 1;
+    }
+    if(typeof rowid2 !== 'number') {
+      rowid2 = rowid2.row - 1;
+    }
 		[_obj[rowid1], _obj[rowid2]] = [_obj[rowid2], _obj[rowid1]];
 		_obj[rowid1].row = rowid1 + 1;
 		_obj[rowid2].row = rowid2 + 1;
@@ -214,17 +220,18 @@ export class TabularSection {
 	 * @method add
 	 * @param attr {object} - объект со значениями полей. если некого поля нет в attr, для него используется пустое значение типа
 	 * @param silent {Boolean} - тихий режим, без генерации событий изменения объекта
+   * @param Constructor {function} - альтернативный конструктор строки
 	 * @return {TabularSectionRow}
 	 *
 	 * @example
 	 *     // Добавляет строку в табчасть и заполняет её значениями, переданными в аргументе
 	 *     const row = ts.add({field1: value1});
 	 */
-	add(attr = {}, silent) {
+	add(attr = {}, silent, Constructor) {
 
 		const {_owner, _name, _obj} = this;
     const {_manager, _data} = _owner;
-		const row = _manager.obj_constructor(_name, this);
+		const row = Constructor ? new Constructor(this) : _manager.obj_constructor(_name, this);
 
     // триггер
 		if(!_data._loading && _owner.add_row(row) === false){

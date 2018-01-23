@@ -1,6 +1,6 @@
 /*!
- metadata-core v2.0.16-beta.44, built:2017-12-27
- © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
+ metadata-core v2.0.16-beta.47, built:2018-01-22
+ © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */
@@ -321,6 +321,12 @@ class TabularSection {
 	}
 	swap(rowid1, rowid2) {
     const {_obj, _owner, _name} = this;
+    if(typeof rowid1 !== 'number') {
+      rowid1 = rowid1.row - 1;
+    }
+    if(typeof rowid2 !== 'number') {
+      rowid2 = rowid2.row - 1;
+    }
 		[_obj[rowid1], _obj[rowid2]] = [_obj[rowid2], _obj[rowid1]];
 		_obj[rowid1].row = rowid1 + 1;
 		_obj[rowid2].row = rowid2 + 1;
@@ -328,10 +334,10 @@ class TabularSection {
     !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});
     _data._modified = true;
 	}
-	add(attr = {}, silent) {
+	add(attr = {}, silent, Constructor) {
 		const {_owner, _name, _obj} = this;
     const {_manager, _data} = _owner;
-		const row = _manager.obj_constructor(_name, this);
+		const row = Constructor ? new Constructor(this) : _manager.obj_constructor(_name, this);
 		if(!_data._loading && _owner.add_row(row) === false){
 		  return;
     }
@@ -2150,6 +2156,18 @@ class RefDataManager extends DataManager{
     }
 		return this._predefined[name];
 	}
+  get_attachment(ref, att_id) {
+    const {adapter} = this;
+    return adapter.get_attachment ? adapter.get_attachment(this, ref, att_id) : Promise.reject();
+  }
+  save_attachment(ref, att_id, attachment, type) {
+    const {adapter} = this;
+    return adapter.save_attachment ? adapter.save_attachment(this, ref, att_id, attachment, type) : Promise.reject();
+  }
+  delete_attachment(ref, att_id) {
+    const {adapter} = this;
+    return adapter.delete_attachment ? adapter.delete_attachment(this, ref, att_id) : Promise.reject();
+  }
 }
 class DataProcessorsManager extends DataManager{
 	create(attr = {}){
@@ -3501,7 +3519,6 @@ class WSQL {
       {p: 'zone', v: job_prm.hasOwnProperty('zone') ? job_prm.zone : 1, t: job_prm.zone_is_string ? 'string' : 'number'},
       {p: 'rest_path', v: '', t: 'string'},
       {p: 'couch_path', v: '', t: 'string'},
-      {p: 'couch_suffix', v: '', t: 'string'},
       {p: 'couch_direct', v: true, t: 'boolean'},
       {p: 'enable_save_pwd', v: true, t: 'boolean'},
     ];
@@ -3515,7 +3532,7 @@ class WSQL {
     }
     if(zone == job_prm.zone_demo){
       nesessery_params.some((prm) => {
-        if(prm.p == 'couch_suffix'){
+        if(prm.p == 'couch_direct'){
           prm.v = false;
           return true;
         }
@@ -4199,7 +4216,7 @@ class AbstracrAdapter extends MetaEventEmitter{
 
 const classes = Object.assign({Meta, MetaEventEmitter, AbstracrAdapter}, data_managers, data_objs, data_tabulars);
 
-class MetaEngine$1 {
+class MetaEngine {
   constructor() {
     this.classes = classes;
     this.adapters = {};
@@ -4209,8 +4226,8 @@ class MetaEngine$1 {
     this.md = new Meta(this);
     mngrs(this);
     this.record_log = this.record_log.bind(this);
-    MetaEngine$1._plugins.forEach((plugin) => plugin.call(this));
-    MetaEngine$1._plugins.length = 0;
+    MetaEngine._plugins.forEach((plugin) => plugin.call(this));
+    MetaEngine._plugins.length = 0;
   }
   on(type, listener) {
     this.md.on(type, listener);
@@ -4219,7 +4236,7 @@ class MetaEngine$1 {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.44';
+    return '2.0.16-beta.47';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
@@ -4294,23 +4311,23 @@ class MetaEngine$1 {
     }
     if (obj.hasOwnProperty('proto')) {
       if (typeof obj.proto == 'function') {
-        obj.proto(MetaEngine$1);
+        obj.proto(MetaEngine);
       }
       else if (typeof obj.proto == 'object') {
-        Object.keys(obj.proto).forEach((id) => MetaEngine$1.prototype[id] = obj.proto[id]);
+        Object.keys(obj.proto).forEach((id) => MetaEngine.prototype[id] = obj.proto[id]);
       }
     }
     if (obj.hasOwnProperty('constructor')) {
       if (typeof obj.constructor != 'function') {
         throw new TypeError('Invalid plugin: constructor must be a function');
       }
-      MetaEngine$1._plugins.push(obj.constructor);
+      MetaEngine._plugins.push(obj.constructor);
     }
-    return MetaEngine$1;
+    return MetaEngine;
   }
 }
-MetaEngine$1.classes = classes;
-MetaEngine$1._plugins = [];
+MetaEngine.classes = classes;
+MetaEngine._plugins = [];
 
-module.exports = MetaEngine$1;
+module.exports = MetaEngine;
 //# sourceMappingURL=index.js.map

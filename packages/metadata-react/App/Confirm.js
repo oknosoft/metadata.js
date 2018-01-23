@@ -8,7 +8,7 @@ export default function Confirm({text, title, handleOk, handleCancel, open}) {
   return <Dialog
     open={open}
     title={title}
-    onRequestClose={handleCancel}
+    onClose={handleCancel}
     actions={[
       <Button key="cancel" onClick={handleCancel} color="primary">Отмена</Button>,
       <Button key="ok" onClick={handleOk} color="primary">Ок</Button>

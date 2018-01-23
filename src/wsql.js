@@ -239,7 +239,6 @@ function WSQL(){
 					path: wsql.get_user_param("couch_path", "string") || $p.job_prm.couch_path || "",
 					zone: wsql.get_user_param("zone", "number"),
 					prefix: $p.job_prm.local_storage_prefix,
-					suffix: wsql.get_user_param("couch_suffix", "string") || "",
 					direct: wsql.get_user_param("couch_direct", "boolean"),
 					user_node: $p.job_prm.user_node,
 					noreplicate: $p.job_prm.noreplicate

@@ -50,7 +50,7 @@ function rx_columns($p) {
 
         if(!column.formatter) {
 
-          if(_fld.type.is_ref) {
+          if(column.key === 'ref' || _fld.type.is_ref) {
             column.formatter = presentation_formatter;
           }
           else if(_fld.type.date_part) {

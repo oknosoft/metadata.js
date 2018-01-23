@@ -99,7 +99,7 @@ class DataListToolbar extends Component {
         <Menu
           anchorEl={state.anchorEl}
           open={state.open}
-          onRequestClose={this.handleRequestClose}
+          onClose={this.handleRequestClose}
         >
           <MenuItem onClick={this.handleDnROpen}><PrintIcon/> &nbsp;Печать</MenuItem>
           <MenuItem onClick={props.handleAttachment}><AttachIcon/> &nbsp;Вложения</MenuItem>

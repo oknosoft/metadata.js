@@ -1,6 +1,6 @@
 /*!
- metadata-pouchdb v2.0.16-beta.44, built:2017-12-27
- © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
+ metadata-pouchdb v2.0.16-beta.47, built:2018-01-22
+ © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */
@@ -50,15 +50,18 @@ var proto = (constructor) => {
 						} else {
 							part = '1';
 						}
-						while (part.length < code_length)
-							part = '0' + part;
-						if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj)
+						while (part.length < code_length){
+              part = '0' + part;
+            }
+						if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj){
               this.number_doc = prefix + part;
-						else
+            }
+						else{
               this.id = prefix + part;
+            }
 						return this;
 					});
-			},
+			}
 		},
 		new_cat_id: {
 			value: function (prefix) {
@@ -82,11 +85,12 @@ var proto = (constructor) => {
 				} else {
 					part = '1';
 				}
-				while (part.length < code_length)
-					part = '0' + part;
+				while (part.length < code_length){
+          part = '0' + part;
+        }
 				this[field] = prefix + part;
 				return this;
-			},
+			}
 		},
 	});
 	Object.defineProperties(DataManager.prototype, {
@@ -100,46 +104,6 @@ var proto = (constructor) => {
 					return pouch.local[cachable] || pouch.remote[cachable];
 			}
 		},
-		pouch_find_rows: {
-			value: function (selection) {
-				return this.adapter.find_rows(this, selection);
-			}
-		},
-		pouch_load_view: {
-			value: function (view) {
-				return this.adapter.load_view(this, view);
-			}
-		},
-		pouch_load_array: {
-			value: function (refs, with_attachments) {
-				return this.adapter.load_array(this, refs, with_attachments);
-			}
-		},
-		pouch_selection: {
-			value: function (attr) {
-				return this.adapter.get_selection(this, attr);
-			}
-		},
-		pouch_tree: {
-			value: function (attr) {
-				return this.adapter.get_tree(this, attr);
-			}
-		},
-		save_attachment: {
-			value: function (ref, att_id, attachment, type) {
-				return this.adapter.save_attachment(this, ref, att_id, attachment, type);
-			}
-		},
-		get_attachment: {
-			value: function (ref, att_id) {
-				return this.adapter.get_attachment(this, ref, att_id);
-			}
-		},
-		delete_attachment: {
-			value: function (ref, att_id) {
-				return this.adapter.delete_attachment(this, ref, att_id);
-			}
-		}
 	});
 }
 
@@ -157,7 +121,7 @@ else {
     PouchDB = window.PouchDB;
   }
   else {
-    const ua = (navigator && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
+    const ua = (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
     PouchDB = window.PouchDB = require('pouchdb-core').default
       .plugin(require('pouchdb-adapter-http').default)
       .plugin(require('pouchdb-replication').default)
@@ -169,6 +133,7 @@ else {
 var PouchDB$1 = PouchDB;
 
 function adapter({AbstracrAdapter}) {
+  const fieldsToDelete = '_id,_rev,search,timestamp'.split(',');
   return class AdapterPouch extends AbstracrAdapter {
     constructor($p) {
       super($p);
@@ -176,18 +141,20 @@ function adapter({AbstracrAdapter}) {
         _data_loaded: false,
         _doc_ram_loading: false,
         _doc_ram_loaded: false,
-        _auth: null
+        _auth: null,
+        _suffix: '',
+        _user: '',
+        _push_only: false,
       };
       this.local = {_loading: false, sync: {}};
       this.remote = {};
     }
     init(wsql, job_prm) {
-      const {props, local, remote, $p} = this;
+      const {props, local, remote, $p: {md}} = this;
       Object.assign(props, {
         path: wsql.get_user_param('couch_path', 'string') || job_prm.couch_path || '',
         zone: wsql.get_user_param('zone', 'number'),
         prefix: job_prm.local_storage_prefix,
-        suffix: wsql.get_user_param('couch_suffix', 'string') || '',
         direct: job_prm.hasOwnProperty('couch_direct') ? job_prm.couch_direct : wsql.get_user_param('couch_direct', 'boolean'),
         user_node: job_prm.user_node,
         noreplicate: job_prm.noreplicate,
@@ -195,16 +162,11 @@ function adapter({AbstracrAdapter}) {
       if(props.path && props.path.indexOf('http') != 0 && typeof location != 'undefined') {
         props.path = location.protocol + '//' + location.host + props.path;
       }
-      if(props.suffix) {
-        while (props.suffix.length < 4) {
-          props.suffix = '0' + props.suffix;
-        }
-      }
       if(job_prm.use_meta === false) {
         props.use_meta = false;
       }
-      const opts = {auto_compaction: true, revs_limit: 2};
-      const bases = $p.md.bases();
+      const opts = {auto_compaction: true, revs_limit: 3};
+      const bases = md.bases();
       if(props.use_meta !== false) {
         local.meta = new PouchDB$1(props.prefix + 'meta', opts);
         if(props.path) {
@@ -226,25 +188,25 @@ function adapter({AbstracrAdapter}) {
           }
         }
       }
-      this.after_init();
+      this.after_init( props.user_node ? bases : ['ram']);
     }
     after_init(bases) {
-      const {props, remote, $p} = this;
+      const {props, remote, $p: {md}} = this;
       const opts = {skip_setup: true, adapter: 'http'};
       if(props.user_node) {
         opts.auth = props.user_node;
       }
-      (bases || $p.md.bases()).forEach((name) => {
-        if(name == 'e1cib' || name == 'pgsql' || name == 'github') {
+      (bases || md.bases()).forEach((name) => {
+        if(remote[name] || name == 'e1cib' || name == 'pgsql' || name == 'github') {
           return;
         }
         remote[name] = new PouchDB$1(this.dbpath(name), opts);
       });
     }
     after_log_in() {
-      const {props, local, remote, $p} = this;
+      const {props, local, remote, $p: {md}} = this;
       const try_auth = [];
-      $p.md.bases().forEach((dbid) => {
+      md.bases().forEach((dbid) => {
         if(dbid !== 'meta' && local[dbid] && remote[dbid] && local[dbid] != remote[dbid]) {
           if(props.noreplicate && props.noreplicate.indexOf(dbid) != -1) {
             return;
@@ -265,8 +227,7 @@ function adapter({AbstracrAdapter}) {
         });
     }
     log_in(username, password) {
-      const {props, local, remote, $p} = this;
-      const {job_prm, wsql, aes, md, cat} = $p;
+      const {props, local, remote, $p: {job_prm, wsql, aes, md, cat}} = this;
       if(username == undefined && password == undefined) {
         if(job_prm.guests && job_prm.guests.length) {
           username = job_prm.guests[0].username;
@@ -293,29 +254,43 @@ function adapter({AbstracrAdapter}) {
           return Promise.reject(err);
         }
       }
-      let try_auth = Promise.resolve();
+      const bases = md.bases();
+      let try_auth = props.user_node ? Promise.resolve() : remote.ram.login(username, password)
+        .then(({roles}) => {
+          const suffix = /^suffix:/;
+          const ref = /^ref:/;
+          roles.forEach((role) => {
+            if(suffix.test(role)) {
+              props._suffix = role.substr(7);
+            }
+            else if(ref.test(role)) {
+              props._user = role.substr(4);
+            }
+            else if(role === 'direct' && !props.direct) {
+              props.direct = true;
+              wsql.set_user_param('couch_direct', true);
+            }
+            else if(role === 'push_only' && !props._push_only) {
+              props._push_only = true;
+            }
+          });
+          if(props._push_only && props.direct) {
+            props.direct = false;
+            wsql.set_user_param('couch_direct', false);
+          }
+          if(props._suffix) {
+            while (props._suffix.length < 4) {
+              props._suffix = '0' + props._suffix;
+            }
+          }
+          this.after_init(bases);
+        });
       if(!props.user_node) {
-        md.bases().forEach((dbid) => {
-          if(dbid !== 'meta' && remote[dbid]) {
-            try_auth = try_auth.then(() => remote[dbid].login(username, password)
-              .then(() => {
-                if(dbid == 'ram' && cat.users && cat.users.cachable == dbid){
-                  return this.find_rows(cat.users, {_raw: true, _top: 1, id: username})
-                    .then((rows) => {
-                      if(rows && rows.length){
-                        const suffix = rows[0].suffix || '';
-                        if(wsql.get_user_param('couch_suffix', 'string') != suffix){
-                          wsql.set_user_param('couch_suffix', suffix);
-                          throw new Error('couch_suffix');
-                        }
-                      }
-                    });
-                }
-                else{
-                  return remote[dbid].info();
-                }
-              })
-            );
+        bases.forEach((dbid) => {
+          if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
+            try_auth = try_auth
+              .then(() => remote[dbid].login(username, password))
+              .then(() => remote[dbid].info());
           }
         });
       }
@@ -341,7 +316,7 @@ function adapter({AbstracrAdapter}) {
         });
     }
     log_out() {
-      const {props, local, remote, authorized, $p} = this;
+      const {props, local, remote, authorized, $p: {md}} = this;
       if(authorized) {
         for (const name in local.sync) {
           if(name != 'meta') {
@@ -355,11 +330,11 @@ function adapter({AbstracrAdapter}) {
         }
         props._auth = null;
       }
-      return Promise.all($p.md.bases().map((id) => id != 'meta' && remote[id] && remote[id].logout()))
+      return Promise.all(md.bases().map((id) => id != 'meta' && remote[id] && remote[id].logout && remote[id].logout()))
         .then(() => this.emit('user_log_out'));
     }
     load_data() {
-      const {local, $p} = this;
+      const {local, $p: {job_prm}} = this;
       const options = {
         limit: 800,
         include_docs: true,
@@ -393,7 +368,7 @@ function adapter({AbstracrAdapter}) {
           });
         };
         local.ram.info().then((info) => {
-          if(info.doc_count >= ($p.job_prm.pouch_ram_doc_count || 10)) {
+          if(info.doc_count >= (job_prm.pouch_ram_doc_count || 10)) {
             this.emit('pouch_load_start', Object.assign(_page, {local_rows: info.doc_count}));
             local._loading = true;
             fetchNextPage();
@@ -406,15 +381,15 @@ function adapter({AbstracrAdapter}) {
       });
     }
     dbpath(name) {
-      const {props} = this;
+      const {props: {path, zone, _suffix}} = this;
       if(name == 'meta') {
-        return props.path + 'meta';
+        return path + 'meta';
       }
       else if(name == 'ram') {
-        return props.path + props.zone + '_ram';
+        return path + zone + '_ram';
       }
       else {
-        return props.path + props.zone + '_' + name + (props.suffix ? '_' + props.suffix : '');
+        return path + zone + '_' + name + (_suffix ? '_' + _suffix : '');
       }
     }
     db(_mgr) {
@@ -428,8 +403,7 @@ function adapter({AbstracrAdapter}) {
       }
     }
     run_sync(id) {
-      const {local, remote, $p} = this;
-      const {wsql, job_prm} = $p;
+      const {local, remote, $p: {wsql, job_prm, record_log}, props: {_push_only, _user}} = this;
       const db_local = local[id];
       const db_remote = remote[id];
       let linfo, _page;
@@ -450,7 +424,7 @@ function adapter({AbstracrAdapter}) {
                 }
                 return rinfo;
               })
-              .catch($p.record_log)
+              .catch(record_log)
               .then(() => rinfo);
           }
           return rinfo;
@@ -513,6 +487,13 @@ function adapter({AbstracrAdapter}) {
                     if(id == 'ram' || id == 'meta' || wsql.get_user_param('zone') == job_prm.zone_demo) {
                       local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
                     }
+                    else if(_push_only) {
+                      if(options.filter) {
+                        delete options.filter;
+                        delete options.query_params;
+                      }
+                      local.sync[id] = sync_events(db_local.replicate.to(db_remote, options));
+                    }
                     else {
                       local.sync[id] = sync_events(db_local.sync(db_remote, options));
                     }
@@ -520,15 +501,16 @@ function adapter({AbstracrAdapter}) {
                   }
                 });
               if(id == 'ram') {
-                sync.on('paused', (info) => {
-                  this.emit('pouch_sync_paused', id, info);
-                })
-                  .on('active', (info) => {
-                    this.emit('pouch_sync_resumed', id, info);
-                  });
+                sync
+                  .on('paused', (info) => this.emit('pouch_sync_paused', id, info))
+                  .on('active', (info) => this.emit('pouch_sync_resumed', id, info));
               }
               return sync;
             };
+            if(_push_only && !options.filter && id !== 'ram' && id !== 'meta') {
+              options.filter = 'auth/push_only';
+              options.query_params = {user: _user};
+            }
             sync_events(db_local.replicate.from(db_remote, options), options);
           });
         });
@@ -561,8 +543,9 @@ function adapter({AbstracrAdapter}) {
       const db = this.db(tObj._manager);
       return db.get(tObj._manager.class_name + '|' + tObj.ref)
         .then((res) => {
-          delete res._id;
-          delete res._rev;
+          for(const fld of fieldsToDelete) {
+            delete res[fld];
+          }
           tObj._data._loading = true;
           tObj._mixin(res);
         })
@@ -591,7 +574,8 @@ function adapter({AbstracrAdapter}) {
       _data._saving = true;
       const db = this.db(_manager);
       const tmp = Object.assign({_id: class_name + '|' + ref, class_name}, _obj);
-      if(this.$p.utils.is_doc_obj(tObj) || _manager.build_search) {
+      const {utils, wsql} = this.$p;
+      if(utils.is_doc_obj(tObj) || _manager.build_search) {
         if(_manager.build_search) {
           _manager.build_search(tmp, tObj);
         }
@@ -599,6 +583,10 @@ function adapter({AbstracrAdapter}) {
           tmp.search = ((_obj.number_doc || '') + (_obj.note ? ' ' + _obj.note : '')).toLowerCase();
         }
       }
+      tmp.timestamp = {
+        user: this.authorized || wsql.get_user_param('user_name'),
+        moment: utils.moment().format("YYYY-MM-DDTHH:mm:ss ZZ"),
+      };
       delete tmp.ref;
       if(attr.attachments) {
         tmp._attachments = attr.attachments;
@@ -650,10 +638,11 @@ function adapter({AbstracrAdapter}) {
       })
         .then((rows) => {
           rows.sort((a, b) => {
-            if(a.parent == $p.utils.blank.guid && b.parent != $p.utils.blank.guid) {
+            const {guid} = this.$p.utils.blank;
+            if(a.parent == guid && b.parent != guid) {
               return -1;
             }
-            if(b.parent == $p.utils.blank.guid && a.parent != $p.utils.blank.guid) {
+            if(b.parent == guid && a.parent != guid) {
               return 1;
             }
             if(a.name < b.name) {
@@ -670,7 +659,7 @@ function adapter({AbstracrAdapter}) {
             presentation: row.name
           }));
         })
-        .then((ares) => $p.iface.data_to_tree.call(_mgr, ares, attr));
+        .then((ares) => this.$p.iface.data_to_tree.call(_mgr, ares, attr));
     }
     get_selection(_mgr, attr) {
       const {utils, classes} = this.$p;
@@ -834,15 +823,15 @@ function adapter({AbstracrAdapter}) {
         .catch($p.record_log);
     }
     load_array(_mgr, refs, with_attachments) {
-      if(!refs.length) {
+      if(!refs || !refs.length) {
         return Promise.resolve(false);
       }
+      const db = this.db(_mgr);
       const options = {
-          limit: refs.length + 1,
-          include_docs: true,
-          keys: refs.map((v) => _mgr.class_name + '|' + v),
-        },
-        db = this.db(_mgr);
+        limit: refs.length + 1,
+        include_docs: true,
+        keys: refs.map((v) => _mgr.class_name + '|' + v),
+      };
       if(with_attachments) {
         options.attachments = true;
         options.binary = true;
@@ -1207,6 +1196,22 @@ function adapter({AbstracrAdapter}) {
         return true;
       }
       return false;
+    }
+    attach_refresher(regex, timout = 600000) {
+      if(this.props._refresher) {
+        clearInterval(this.props._refresher);
+      }
+      setInterval(() => {
+        if(this.authorized && this.remote.ram && this.remote.ram.adapter == 'http') {
+          this.remote.ram.getSession()
+            .then(response => {
+              response = null;
+            })
+            .catch(err => {
+              err = null;
+            });
+        }
+      }, timout);
     }
     backup_database(do_zip) {
     }

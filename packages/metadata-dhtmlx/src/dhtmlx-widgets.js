@@ -214,10 +214,10 @@ export default ($p) => {
 
 				// todo: запрос к pouchdb
 				if (attr.action == 'get_tree')
-					return mgr.pouch_tree(attr);
+					return mgr.adapter.get_tree(mgr, attr);
 
 				else if (attr.action == 'get_selection')
-					return mgr.pouch_selection(attr);
+					return mgr.adapter.get_selection(mgr, attr);
 
 			} else {
 
@@ -2247,14 +2247,12 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
       if(direction == "up"){
         if(r0 >= 0 && r1 >= 0){
           _ts.swap(r1, r0);
-          //_ts.sync_grid(_grid, _selection);
           setTimeout(() => _grid.selectRow(r1, true), 100)
         }
       }
       else{
         if(r0 < _ts.count() && r1 < _ts.count()){
           _ts.swap(r0, r1);
-          //_ts.sync_grid(_grid, _selection);
           setTimeout(() => _grid.selectRow(r1, true), 100)
         }
       }

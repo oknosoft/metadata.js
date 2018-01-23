@@ -79,8 +79,14 @@ export function log_out(adapter) {
     };
 
     // в зависимости от использования суперлогина, разные действия
-    if($p.superlogin) {
-      $p.superlogin.logout().then(disp_log_out);
+    const {superlogin} = $p;
+    if(superlogin) {
+      if(superlogin.authenticated()) {
+        superlogin.logout().then(disp_log_out);
+      }
+      else {
+        disp_log_out();
+      }
     }
     else if(!adapter) {
       disp_log_out();
@@ -105,6 +111,9 @@ export function log_error(err) {
   }
   else if(err.message.match('logout')){
     text = msg.need_logout;
+  }
+  else if(err.message.match('custom') && err.text){
+    text = err.text;
   }
   return {
     type: LOG_ERROR,

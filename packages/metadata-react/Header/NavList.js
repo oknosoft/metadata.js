@@ -88,7 +88,7 @@ class NavList extends Component {
           </IconButton>
         </ListItemSecondaryAction>
       </ListItem>
-      <Collapse in={expanded} transitionDuration="auto" unmountOnExit>
+      <Collapse in={expanded} unmountOnExit>
         {items}
       </Collapse>
     </div>;
