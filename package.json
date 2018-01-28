@@ -67,7 +67,7 @@
     "react-router-dom": "^4.2.2",
     "react-router-redux": "^5.0.0-alpha.9",
     "rimraf": "^2.6.2",
-    "rollup": "^0.55.0",
+    "rollup": "^0.55.1",
     "rollup-plugin-cleanup": "^2.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^3.0.2",

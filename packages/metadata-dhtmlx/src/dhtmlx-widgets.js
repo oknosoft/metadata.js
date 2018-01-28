@@ -539,17 +539,15 @@ var eXcell_proto = new eXcell();
 eXcell_proto.input_keydown = function(e, t){
 
 	function obj_on_select(v){
-		if(t.source.on_select)
-			t.source.on_select.call(t.source, v);
+    t.source && t.source.on_select && t.source.on_select.call(t.source, v);
 	}
 
 	if(e.keyCode === 8 || e.keyCode === 46){          // по {del} и {bs} очищаем значение
 		t.setValue("");
 		t.grid.editStop();
-		if(t.source.on_select)
-			t.source.on_select.call(t.source, "");
-
-	}else if(e.keyCode === 9 || e.keyCode === 13)
+    t.source && t.source.on_select && t.source.on_select.call(t.source, "");
+	}
+	else if(e.keyCode === 9 || e.keyCode === 13)
 		t.grid.editStop();                          // по {tab} и {enter} заканчиваем редактирование
 
 	else if(e.keyCode === 115)
