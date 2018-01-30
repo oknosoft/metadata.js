@@ -53,7 +53,7 @@
     "decompress": "^4.2",
     "graceful-fs": "^4.1",
     "gulp": "^3.9",
-    "gulp-babel": "^7.0",
+    "gulp-babel": "^7.0.1",
     "gulp-base64": "^0.1",
     "gulp-concat": "^2.6",
     "gulp-csso": "^3.0.1",

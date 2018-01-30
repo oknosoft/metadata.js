@@ -710,6 +710,15 @@ export class DataObj {
     return this;
   }
 
+  /**
+   * ### После удаления строки табличной части
+   *
+   * @event AFTER_DEL_ROW
+   */
+  after_del_row(name) {
+    return this;
+  }
+
 }
 
 /**

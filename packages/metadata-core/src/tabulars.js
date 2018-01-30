@@ -157,6 +157,9 @@ export class TabularSection {
 
 		_obj.forEach((row, index) => row.row = index + 1);
 
+    // триггер
+    !_data._loading && _owner.after_del_row(_name);
+
     // obj, {ts_name: null}
     !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});
 		_data._modified = true;

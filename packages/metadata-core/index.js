@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.47, built:2018-01-22
+ metadata-core v2.0.16-beta.47, built:2018-01-30
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -306,6 +306,7 @@ class TabularSection {
     }
 		_obj.splice(index, 1);
 		_obj.forEach((row, index) => row.row = index + 1);
+    !_data._loading && _owner.after_del_row(_name);
     !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});
 		_data._modified = true;
 	}
@@ -932,6 +933,9 @@ class DataObj {
     return this;
   }
   del_row(row) {
+    return this;
+  }
+  after_del_row(name) {
     return this;
   }
 }
