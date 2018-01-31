@@ -242,7 +242,7 @@ export class TabularSection {
     }
 
 		// присваиваем типизированные значения по умолчанию
-		for (let f in row._metadata().fields){
+		for (const f in row._metadata().fields){
 			row[f] = attr[f] || "";
 		}
 
@@ -488,7 +488,7 @@ export class TabularSection {
  */
 export class TabularSectionRow {
 
-	constructor(owner) {
+	constructor(owner, attr) {
 
 		//var _obj = {};
 
@@ -510,7 +510,7 @@ export class TabularSectionRow {
 			 * @type Object
 			 */
 			_obj: {
-				value: {}
+				value: attr ? attr : {}
 			}
 		})
 	}
