@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.47, built:2018-01-30
+ metadata-core v2.0.16-beta.47, built:2018-01-31
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -342,7 +342,7 @@ class TabularSection {
 		if(!_data._loading && _owner.add_row(row) === false){
 		  return;
     }
-		for (let f in row._metadata().fields){
+		for (const f in row._metadata().fields){
 			row[f] = attr[f] || "";
 		}
 		row._obj.row = _obj.push(row._obj);
@@ -480,13 +480,13 @@ class TabularSection {
 	}
 }
 class TabularSectionRow$1 {
-	constructor(owner) {
+	constructor(owner, attr) {
 		Object.defineProperties(this, {
 			_owner: {
 				value: owner
 			},
 			_obj: {
-				value: {}
+				value: attr ? attr : {}
 			}
 		});
 	}
@@ -549,7 +549,7 @@ class InnerData {
   }
 }
 class DataObj {
-  constructor(attr, manager, loading) {
+  constructor(attr, manager, loading, direct) {
     if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)) {
       const tmp = manager.get(attr, true);
       if(tmp) {
@@ -558,7 +558,7 @@ class DataObj {
     }
     Object.defineProperties(this, {
       _obj: {
-        value: {
+        value: direct ? attr : {
           ref: manager instanceof EnumManager ? attr.name : (manager instanceof RegisterManager ? manager.get_ref(attr) : utils.fix_guid(attr))
         },
         configurable: true
@@ -953,8 +953,14 @@ TabularSectionRow$1.prototype._getter = DataObj.prototype._getter;
 TabularSectionRow$1.prototype.__setter = DataObj.prototype.__setter;
 class CatObj extends DataObj {
   constructor(attr, manager, loading) {
-    super(attr, manager, loading);
-    this._mixin(attr);
+    const direct = loading && attr && utils.is_guid(attr.ref);
+    super(attr, manager, loading, direct);
+    if(direct) {
+      utils.fix_meta(this);
+    }
+    else {
+      this._mixin(attr);
+    }
   }
   get presentation() {
     return this.name || this.id || this._presentation || '';
@@ -1019,8 +1025,14 @@ const NumberDocAndDate = (superclass) => class extends superclass {
 };
 class DocObj extends NumberDocAndDate(DataObj) {
   constructor(attr, manager, loading) {
-    super(attr, manager, loading);
-    this._mixin(attr);
+    const direct = loading && attr && utils.is_guid(attr.ref);
+    super(attr, manager, loading, direct);
+    if(direct) {
+      utils.fix_meta(this);
+    }
+    else {
+      this._mixin(attr);
+    }
   }
   get presentation() {
     const meta = this._metadata();
@@ -1043,15 +1055,15 @@ class DocObj extends NumberDocAndDate(DataObj) {
 class DataProcessorObj extends DataObj {
   constructor(attr, manager, loading) {
     super(attr, manager, loading);
-    const cmd = manager.metadata();
-    for (let f in cmd.fields) {
-      if(!attr[f]) {
-        attr[f] = utils.fetch_type('', cmd.fields[f].type);
+    const {fields, tabular_sections} = manager.metadata();
+    for (const fld in fields) {
+      if(!attr[fld]) {
+        attr[fld] = utils.fetch_type('', fields[fld].type);
       }
     }
-    for (let f in cmd['tabular_sections']) {
-      if(!attr[f]) {
-        attr[f] = [];
+    for (const fld in tabular_sections) {
+      if(!attr[fld]) {
+        attr[fld] = [];
       }
     }
     utils._mixin(this, attr);
@@ -2744,6 +2756,7 @@ if (!Object.prototype.__define) {
 		},
 	});
 }
+const date_frmts = ['DD-MM-YYYY', 'DD-MM-YYYY HH:mm', 'DD-MM-YYYY HH:mm:ss', 'DD-MM-YY HH:mm', 'YYYYDDMMHHmmss', moment$1.ISO_8601];
 const utils = {
 	moment: moment$1,
   load_script(src, type, callback) {
@@ -2770,10 +2783,11 @@ const utils = {
     });
   },
 	fix_date(str, strict) {
-		if (str instanceof Date)
-			return str;
+		if (str instanceof Date){
+      return str;
+    }
 		else {
-			var m = moment$1(str, ['DD-MM-YYYY', 'DD-MM-YYYY HH:mm', 'DD-MM-YYYY HH:mm:ss', 'DD-MM-YY HH:mm', 'YYYYDDMMHHmmss', moment$1.ISO_8601]);
+			const m = moment$1(str, date_frmts);
 			return m.isValid() ? m.toDate() : (strict ? this.blank.date : str);
 		}
 	},
@@ -2784,11 +2798,13 @@ const utils = {
 			return ref.ref;
 		}
 		else if (ref && typeof ref == 'object') {
-			if (ref.presentation) {
-				if (ref.ref)
-					return ref.ref;
-				else if (ref.name)
-					return ref.name;
+			if (ref.hasOwnProperty('presentation')) {
+				if (ref.ref){
+          return ref.ref;
+        }
+				else if (ref.name){
+          return ref.name;
+        }
 			}
 			else {
 				ref = (typeof ref.ref == 'object' && ref.ref.hasOwnProperty('ref')) ? ref.ref.ref : ref.ref;
@@ -2818,20 +2834,20 @@ const utils = {
 		}
 		return !!str;
 	},
-	fetch_type(str, mtype) {
-		if (mtype.is_ref) {
-      if(mtype.types && mtype.types.some((type) => type.indexOf('enm') == 0 || type.indexOf('string') == 0)){
+	fetch_type(str, type) {
+		if (type.is_ref) {
+      if(type.types && type.types.some((type) => type.indexOf('enm') == 0 || type.indexOf('string') == 0)){
         return str;
       }
 			return this.fix_guid(str);
 		}
-		if (mtype.date_part) {
+		if (type.date_part) {
 			return this.fix_date(str, true);
 		}
-		if (mtype['digits']) {
+		if (type['digits']) {
 			return this.fix_number(str, true);
 		}
-		if (mtype.types && mtype.types[0] == 'boolean') {
+		if (type.types && type.types[0] == 'boolean') {
 			return this.fix_boolean(str);
 		}
 		return str;
@@ -2956,6 +2972,56 @@ const utils = {
 		}
 		return obj;
 	},
+  fix_meta(obj) {
+    const {_obj, _manager} = obj;
+    const {fields, tabular_sections} = obj._metadata();
+    for (const fld in fields) {
+      if(_obj[fld]) {
+        const {type} = fields[fld];
+        if (type.is_ref) {
+          if(type.types.length > 1) {
+            obj.__setter(fld, _obj[fld]);
+          }
+          else {
+            _obj[fld] = this.fix_guid(_obj[fld]);
+          }
+        }
+        else if (type.date_part) {
+          _obj[fld] = this.fix_date(_obj[fld], true);
+        }
+      }
+    }
+    for (const ts in tabular_sections) {
+      if(Array.isArray(_obj[ts])){
+        const tabular = obj[ts];
+        const Constructor = _manager.obj_constructor(ts, true);
+        const {fields} = tabular_sections[ts];
+        for(let i = 0; i < _obj[ts].length; i++) {
+          const row = _obj[ts][i];
+          const _row = new Constructor(tabular, row);
+          row.row = i + 1;
+          Object.defineProperty(row, '_row', {value: _row});
+          for (const fld in fields){
+            const {type} = fields[fld];
+            if(row[fld]) {
+              const {type} = fields[fld];
+              if (type.is_ref) {
+                if(type.types.length > 1) {
+                  _row.__setter(fld, row[fld]);
+                }
+                else {
+                  row[fld] = this.fix_guid(row[fld]);
+                }
+              }
+              else if (type.date_part) {
+                row[fld] = this.fix_date(row[fld], true);
+              }
+            }
+          }
+        }
+      }
+    }
+  },
 	_patch(obj, patch) {
 		for (let area in patch) {
 			if (typeof patch[area] == 'object') {

@@ -15,7 +15,19 @@ class MangoSelection {
     this._pwnd = pwnd || attr.pwnd || {};
     this._meta = attr.metadata || mgr.metadata();
     this._prev_filter = {};
-    this._sort = [{department: 'desc'}, {state: 'desc'}, {date: 'desc'}];
+    this._direction = 'desc';
+
+    this.__define('_sort', {
+      get: function () {
+        const {_sort} = this.wnd.elmnts.filter.custom_selection;
+        for(const srt of _sort) {
+          for(const fld in srt) {
+            srt[fld] = this._direction;
+          }
+        };
+        return _sort;
+      }
+    });
 
     this.select = this.select.bind(this);
     this.body_keydown = this.body_keydown.bind(this);
@@ -326,7 +338,7 @@ class MangoSelection {
 
   get_filter(start, count) {
 
-    const {wnd, _mgr, _sort, _attr} = this;
+    const {wnd, _mgr, _attr, _sort} = this;
     const fields = _mgr.caption_flds({}).acols.map(v => v.id);
     fields.push('_id');
     fields.push('posted');
@@ -346,8 +358,9 @@ class MangoSelection {
       limit: count
     };
 
-    if(_attr._index.fields) {
-      for (let sfld of _attr._index.fields) {
+    const _index = eflt.custom_selection._index || _attr._index;
+    if(_index.fields) {
+      for (let sfld of _index.fields) {
         if(sfld == 'date') {
           filter.selector.date = date;
         }
@@ -368,7 +381,7 @@ class MangoSelection {
     if(flt.filter) {
       filter.selector.search = {$regex: flt.filter.toLowerCase()};
     }
-    else if(_attr._index.fields && _attr._index.fields.indexOf('search') !== -1){
+    else if(_index.fields && _index.fields.indexOf('search') !== -1){
       filter.selector.search = {$ne: null};
     }
 
@@ -376,8 +389,8 @@ class MangoSelection {
       filter.sort = _sort;
     }
 
-    if(eflt.custom_selection._index) {
-      filter.use_index = eflt.custom_selection._index.ddoc;
+    if(_index.ddoc) {
+      filter.use_index = _index.ddoc;
     }
 
     return filter;
@@ -627,11 +640,7 @@ class MangoSelection {
   }
 
   custom_column_sort(ind, type, direction) {
-    const {grid} = this.wnd.elmnts;
-    const fld = this._mgr.caption_flds({}).acols[ind];
-    const dir = direction == 'des' ? 'desc' : direction;
-    this._sort = [{department: dir}, {state: dir}, {[fld.id]: dir}];
-    //this._sort = [{[fld.id]: dir}];
+    this._direction = direction === 'des' ? 'desc' : direction;
     this.reload();
     return false;
   }
