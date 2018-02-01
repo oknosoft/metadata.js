@@ -83,7 +83,7 @@ class UserObj extends Component {
 
           <FormGroup>
             <Grid container spacing={24}>
-              <Grid item xs={14} sm={7}>
+              <Grid item xs={12} sm={7}>
                 <Typography type="subheading" color="inherit">Вы можете связать свою учетную запись с профилем социальных сетей</Typography>
               </Grid>
               <Grid item xs={10} sm={5}>
