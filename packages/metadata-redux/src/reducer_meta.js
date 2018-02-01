@@ -11,7 +11,7 @@ import handlers_meta from './handlers_meta';
  */
 
 function metaInitialState() {
-  const {wsql, job_prm} = $p;
+  const {wsql, job_prm, superlogin} = $p;
   let user_name = wsql.get_user_param('user_name');
   let has_login;
   if(wsql.get_user_param('zone') == job_prm.zone_demo && !user_name && job_prm.guests.length) {
@@ -21,6 +21,9 @@ function metaInitialState() {
     has_login = true;
   }
   else if(wsql.get_user_param('enable_save_pwd', 'boolean') && user_name && wsql.get_user_param('user_pwd')) {
+    has_login = true;
+  }
+  else if(superlogin && user_name) {
     has_login = true;
   }
   else {
@@ -38,7 +41,7 @@ function metaInitialState() {
     fetch: false,
     offline: typeof navigator != 'undefined' && !navigator.onLine,
     path_log_in: false,
-    couch_direct: true,
+    couch_direct: wsql.get_user_param('couch_direct', 'boolean'),
     user: {
       name: user_name,
       has_login: has_login,

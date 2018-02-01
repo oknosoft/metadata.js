@@ -34,7 +34,7 @@ export default function scheme_settings() {
           endkey: [class_name, 9999],
         },
       };
-      return this.find_rows_remote ? this.find_rows_remote(opt) : this.pouch_find_rows(opt);
+      return this.find_rows_remote ? this.find_rows_remote(opt) : this.adapter.find_rows(this, opt);
     }
 
     /**
@@ -113,7 +113,6 @@ export default function scheme_settings() {
             .catch((err) => {
               find_scheme();
             });
-
         }
         else {
           find_scheme();

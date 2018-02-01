@@ -94,11 +94,7 @@ class AppEvents {
 						cache.addEventListener('noupdate', (e) => console.log(e), false);
 
 						// Ресурсы уже кэшированнны. Индикатор прогресса скрыт.
-						cache.addEventListener('cached', (e) => {
-							timer_setted = true;
-							if (iface.appcache)
-								iface.appcache.close();
-						}, false);
+						cache.addEventListener('cached', (e) => iface.appcache && iface.appcache.close(), false);
 
 						// Начало скачивания ресурсов. progress_max - количество ресурсов. Показываем индикатор прогресса
 						//cache.addEventListener('downloading', do_cache_update_msg, false);

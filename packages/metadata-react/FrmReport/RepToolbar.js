@@ -95,7 +95,7 @@ class RepToolbar extends Component {
         <Menu
           anchorEl={state.anchorEl}
           open={state.menuOpen}
-          onRequestClose={this.handleMenuClose}
+          onClose={this.handleMenuClose}
         >
           <MenuItem disabled onClick={handlePrint}><PrintIcon/> &nbsp;Печать</MenuItem>
           <MenuItem onClick={this.handleExportCSV}><CopyIcon/> &nbsp;Копировать CSV</MenuItem>

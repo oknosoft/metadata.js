@@ -90,7 +90,7 @@ export default class SchemeSettingsButtons extends PureComponent {
       }}
     >{v.name}</MenuItem>);
 
-    return <Menu key="ssm" anchorEl={anchorEl} open={menu_open} onRequestClose={this.handleMenuClose}>{menuitems}</Menu>;
+    return <Menu key="ssm" anchorEl={anchorEl} open={menu_open} onClose={this.handleMenuClose}>{menuitems}</Menu>;
   }
 
   render() {

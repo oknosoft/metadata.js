@@ -8,7 +8,7 @@ export default function Alert({text, title, handleOk, open}) {
   return <Dialog
     open={open}
     title={title}
-    onRequestClose={handleOk}
+    onClose={handleOk}
     actions={[
       <Button key="ok" onClick={handleOk} color="primary">Ок</Button>
     ]}

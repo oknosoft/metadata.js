@@ -21,7 +21,7 @@ else {
     PouchDB = window.PouchDB;
   }
   else {
-    const ua = (navigator && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
+    const ua = (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
     PouchDB = window.PouchDB = require('pouchdb-core').default
       .plugin(require('pouchdb-adapter-http').default)
       .plugin(require('pouchdb-replication').default)

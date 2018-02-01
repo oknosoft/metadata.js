@@ -166,8 +166,15 @@ function log_out(adapter) {
     };
 
     // в зависимости от использования суперлогина, разные действия
-    if ($p.superlogin) {
-      $p.superlogin.logout().then(disp_log_out);
+    var _$p = $p,
+        superlogin = _$p.superlogin;
+
+    if (superlogin) {
+      if (superlogin.authenticated()) {
+        superlogin.logout().then(disp_log_out);
+      } else {
+        disp_log_out();
+      }
     } else if (!adapter) {
       disp_log_out();
     } else {
@@ -187,6 +194,8 @@ function log_error(err) {
     text = msg.empty;
   } else if (err.message.match('logout')) {
     text = msg.need_logout;
+  } else if (err.message.match('custom') && err.text) {
+    text = err.text;
   }
   return {
     type: LOG_ERROR,
@@ -540,15 +549,16 @@ function data_loaded(page) {
 
 
       if (!meta.user.logged_in && meta.user.has_login) {
-        var _$p = $p,
-            job_prm = _$p.job_prm,
-            wsql = _$p.wsql,
-            adapters = _$p.adapters,
-            aes = _$p.aes;
-
         setTimeout(function () {
+          var _$p = $p,
+              job_prm = _$p.job_prm,
+              wsql = _$p.wsql,
+              adapters = _$p.adapters,
+              superlogin = _$p.superlogin,
+              aes = _$p.aes;
 
           // получаем имя сохраненного или гостевого пользователя
+
           var name = wsql.get_user_param('user_name');
           var password = wsql.get_user_param('user_pwd');
 
@@ -561,11 +571,13 @@ function data_loaded(page) {
             dispatch((0, _actions_auth.defined)(name));
           }
 
-          // если разрешено сохранение пароля или гостевая зона...
+          // если разрешено сохранение пароля или superlogin или гостевая зона...
           if (name && password && wsql.get_user_param('enable_save_pwd')) {
             return dispatch((0, _actions_auth.try_log_in)(adapters.pouch, name, aes.Ctr.decrypt(password)));
           }
-
+          if (superlogin && superlogin.authenticated()) {
+            return dispatch((0, _actions_auth.try_log_in)(adapters.pouch));
+          }
           if (name && job_prm.zone_demo == wsql.get_user_param('zone')) {
             dispatch((0, _actions_auth.try_log_in)(adapters.pouch, name, aes.Ctr.decrypt(job_prm.guests[0].password)));
           }
@@ -726,7 +738,8 @@ function mapDispatchToProps(dispatch) {
       wsql = _$p.wsql,
       job_prm = _$p.job_prm,
       aes = _$p.aes,
-      cat = _$p.cat;
+      cat = _$p.cat,
+      superlogin = _$p.superlogin;
 
 
   return {
@@ -738,6 +751,12 @@ function mapDispatchToProps(dispatch) {
         } else if (wsql.get_user_param('zone') == job_prm.zone_demo) {
           login = job_prm.guests[0].username;
           password = aes.Ctr.decrypt(job_prm.guests[0].password);
+        } else if (superlogin) {
+          if (superlogin.authenticated()) {
+            login = superlogin.getSession().user_id;
+          } else {
+            return dispatch((0, _actions_auth.log_out)(adapters.pouch));
+          }
         } else {
           return dispatch((0, _actions_auth.log_out)(adapters.pouch));
         }
@@ -949,7 +968,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function metaInitialState() {
   var _$p = $p,
       wsql = _$p.wsql,
-      job_prm = _$p.job_prm;
+      job_prm = _$p.job_prm,
+      superlogin = _$p.superlogin;
 
   var user_name = wsql.get_user_param('user_name');
   var has_login = void 0;
@@ -959,6 +979,8 @@ function metaInitialState() {
     wsql.set_user_param('user_pwd', job_prm.guests[0].password);
     has_login = true;
   } else if (wsql.get_user_param('enable_save_pwd', 'boolean') && user_name && wsql.get_user_param('user_pwd')) {
+    has_login = true;
+  } else if (superlogin && user_name) {
     has_login = true;
   } else {
     has_login = false;
@@ -975,7 +997,7 @@ function metaInitialState() {
     fetch: false,
     offline: typeof navigator != 'undefined' && !navigator.onLine,
     path_log_in: false,
-    couch_direct: true,
+    couch_direct: wsql.get_user_param('couch_direct', 'boolean'),
     user: {
       name: user_name,
       has_login: has_login,
@@ -1544,7 +1566,7 @@ var mapStateToProps = function mapStateToProps() /**{meta}**/{
       superlogin = _$p.superlogin;
 
   var res = { use_superlogin: !!superlogin };
-  var _arr = ['zone', 'couch_path', 'superlogin_path', 'couch_suffix', ['couch_direct', 'boolean'], ['enable_save_pwd', 'boolean'], 'user_name', 'user_pwd'];
+  var _arr = ['zone', 'couch_path', 'superlogin_path', ['couch_direct', 'boolean'], ['enable_save_pwd', 'boolean'], 'user_name', 'user_pwd'];
   for (var _i = 0; _i < _arr.length; _i++) {
     var name = _arr[_i];
     if (Array.isArray(name)) {

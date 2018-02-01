@@ -1,6 +1,6 @@
 /*!
- metadata-core v2.0.16-beta.43, built:2017-12-20
- © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
+ metadata-core v2.0.16-beta.48, built:2018-02-01
+ © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */
@@ -306,6 +306,7 @@ class TabularSection {
     }
 		_obj.splice(index, 1);
 		_obj.forEach((row, index) => row.row = index + 1);
+    !_data._loading && _owner.after_del_row(_name);
     !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});
 		_data._modified = true;
 	}
@@ -321,6 +322,12 @@ class TabularSection {
 	}
 	swap(rowid1, rowid2) {
     const {_obj, _owner, _name} = this;
+    if(typeof rowid1 !== 'number') {
+      rowid1 = rowid1.row - 1;
+    }
+    if(typeof rowid2 !== 'number') {
+      rowid2 = rowid2.row - 1;
+    }
 		[_obj[rowid1], _obj[rowid2]] = [_obj[rowid2], _obj[rowid1]];
 		_obj[rowid1].row = rowid1 + 1;
 		_obj[rowid2].row = rowid2 + 1;
@@ -328,14 +335,14 @@ class TabularSection {
     !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});
     _data._modified = true;
 	}
-	add(attr = {}, silent) {
+	add(attr = {}, silent, Constructor) {
 		const {_owner, _name, _obj} = this;
     const {_manager, _data} = _owner;
-		const row = _manager.obj_constructor(_name, this);
+		const row = Constructor ? new Constructor(this) : _manager.obj_constructor(_name, this);
 		if(!_data._loading && _owner.add_row(row) === false){
 		  return;
     }
-		for (let f in row._metadata().fields){
+		for (const f in row._metadata().fields){
 			row[f] = attr[f] || "";
 		}
 		row._obj.row = _obj.push(row._obj);
@@ -473,13 +480,13 @@ class TabularSection {
 	}
 }
 class TabularSectionRow$1 {
-	constructor(owner) {
+	constructor(owner, attr) {
 		Object.defineProperties(this, {
 			_owner: {
 				value: owner
 			},
 			_obj: {
-				value: {}
+				value: attr ? attr : {}
 			}
 		});
 	}
@@ -542,7 +549,7 @@ class InnerData {
   }
 }
 class DataObj {
-  constructor(attr, manager, loading) {
+  constructor(attr, manager, loading, direct) {
     if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)) {
       const tmp = manager.get(attr, true);
       if(tmp) {
@@ -551,7 +558,7 @@ class DataObj {
     }
     Object.defineProperties(this, {
       _obj: {
-        value: {
+        value: direct ? attr : {
           ref: manager instanceof EnumManager ? attr.name : (manager instanceof RegisterManager ? manager.get_ref(attr) : utils.fix_guid(attr))
         },
         configurable: true
@@ -849,11 +856,7 @@ class DataObj {
         return Promise.reject(reset_modified());
       }
     }
-    return numerator.then(() => this._manager.adapter.save_obj(this, {
-      post: post,
-      operational: operational,
-      attachments: attachments
-    })
+    return numerator.then(() => this._manager.adapter.save_obj(this, {post, operational, attachments })
       .then(() => this.after_save())
       .then(reset_modified)
     );
@@ -932,6 +935,9 @@ class DataObj {
   del_row(row) {
     return this;
   }
+  after_del_row(name) {
+    return this;
+  }
 }
 Object.defineProperty(DataObj.prototype, 'ref', {
   get: function () {
@@ -947,8 +953,14 @@ TabularSectionRow$1.prototype._getter = DataObj.prototype._getter;
 TabularSectionRow$1.prototype.__setter = DataObj.prototype.__setter;
 class CatObj extends DataObj {
   constructor(attr, manager, loading) {
-    super(attr, manager, loading);
-    this._mixin(attr);
+    const direct = loading && attr && utils.is_guid(attr.ref);
+    super(attr, manager, loading, direct);
+    if(direct) {
+      utils.fix_meta(this);
+    }
+    else {
+      this._mixin(attr);
+    }
   }
   get presentation() {
     return this.name || this.id || this._presentation || '';
@@ -1013,8 +1025,14 @@ const NumberDocAndDate = (superclass) => class extends superclass {
 };
 class DocObj extends NumberDocAndDate(DataObj) {
   constructor(attr, manager, loading) {
-    super(attr, manager, loading);
-    this._mixin(attr);
+    const direct = loading && attr && utils.is_guid(attr.ref);
+    super(attr, manager, loading, direct);
+    if(direct) {
+      utils.fix_meta(this);
+    }
+    else {
+      this._mixin(attr);
+    }
   }
   get presentation() {
     const meta = this._metadata();
@@ -1037,15 +1055,15 @@ class DocObj extends NumberDocAndDate(DataObj) {
 class DataProcessorObj extends DataObj {
   constructor(attr, manager, loading) {
     super(attr, manager, loading);
-    const cmd = manager.metadata();
-    for (let f in cmd.fields) {
-      if(!attr[f]) {
-        attr[f] = utils.fetch_type('', cmd.fields[f].type);
+    const {fields, tabular_sections} = manager.metadata();
+    for (const fld in fields) {
+      if(!attr[fld]) {
+        attr[fld] = utils.fetch_type('', fields[fld].type);
       }
     }
-    for (let f in cmd['tabular_sections']) {
-      if(!attr[f]) {
-        attr[f] = [];
+    for (const fld in tabular_sections) {
+      if(!attr[fld]) {
+        attr[fld] = [];
       }
     }
     utils._mixin(this, attr);
@@ -2154,6 +2172,18 @@ class RefDataManager extends DataManager{
     }
 		return this._predefined[name];
 	}
+  get_attachment(ref, att_id) {
+    const {adapter} = this;
+    return adapter.get_attachment ? adapter.get_attachment(this, ref, att_id) : Promise.reject();
+  }
+  save_attachment(ref, att_id, attachment, type) {
+    const {adapter} = this;
+    return adapter.save_attachment ? adapter.save_attachment(this, ref, att_id, attachment, type) : Promise.reject();
+  }
+  delete_attachment(ref, att_id) {
+    const {adapter} = this;
+    return adapter.delete_attachment ? adapter.delete_attachment(this, ref, att_id) : Promise.reject();
+  }
 }
 class DataProcessorsManager extends DataManager{
 	create(attr = {}){
@@ -2726,6 +2756,7 @@ if (!Object.prototype.__define) {
 		},
 	});
 }
+const date_frmts = ['DD-MM-YYYY', 'DD-MM-YYYY HH:mm', 'DD-MM-YYYY HH:mm:ss', 'DD-MM-YY HH:mm', 'YYYYDDMMHHmmss', moment$1.ISO_8601];
 const utils = {
 	moment: moment$1,
   load_script(src, type, callback) {
@@ -2752,10 +2783,11 @@ const utils = {
     });
   },
 	fix_date(str, strict) {
-		if (str instanceof Date)
-			return str;
+		if (str instanceof Date){
+      return str;
+    }
 		else {
-			var m = moment$1(str, ['DD-MM-YYYY', 'DD-MM-YYYY HH:mm', 'DD-MM-YYYY HH:mm:ss', 'DD-MM-YY HH:mm', 'YYYYDDMMHHmmss', moment$1.ISO_8601]);
+			const m = moment$1(str, date_frmts);
 			return m.isValid() ? m.toDate() : (strict ? this.blank.date : str);
 		}
 	},
@@ -2766,11 +2798,13 @@ const utils = {
 			return ref.ref;
 		}
 		else if (ref && typeof ref == 'object') {
-			if (ref.presentation) {
-				if (ref.ref)
-					return ref.ref;
-				else if (ref.name)
-					return ref.name;
+			if (ref.hasOwnProperty('presentation')) {
+				if (ref.ref){
+          return ref.ref;
+        }
+				else if (ref.name){
+          return ref.name;
+        }
 			}
 			else {
 				ref = (typeof ref.ref == 'object' && ref.ref.hasOwnProperty('ref')) ? ref.ref.ref : ref.ref;
@@ -2800,20 +2834,20 @@ const utils = {
 		}
 		return !!str;
 	},
-	fetch_type(str, mtype) {
-		if (mtype.is_ref) {
-      if(mtype.types && mtype.types.some((type) => type.indexOf('enm') == 0 || type.indexOf('string') == 0)){
+	fetch_type(str, type) {
+		if (type.is_ref) {
+      if(type.types && type.types.some((type) => type.indexOf('enm') == 0 || type.indexOf('string') == 0)){
         return str;
       }
 			return this.fix_guid(str);
 		}
-		if (mtype.date_part) {
+		if (type.date_part) {
 			return this.fix_date(str, true);
 		}
-		if (mtype['digits']) {
+		if (type['digits']) {
 			return this.fix_number(str, true);
 		}
-		if (mtype.types && mtype.types[0] == 'boolean') {
+		if (type.types && type.types[0] == 'boolean') {
 			return this.fix_boolean(str);
 		}
 		return str;
@@ -2938,6 +2972,56 @@ const utils = {
 		}
 		return obj;
 	},
+  fix_meta(obj) {
+    const {_obj, _manager} = obj;
+    const {fields, tabular_sections} = obj._metadata();
+    for (const fld in fields) {
+      if(_obj[fld]) {
+        const {type} = fields[fld];
+        if (type.is_ref) {
+          if(type.types.length > 1) {
+            obj.__setter(fld, _obj[fld]);
+          }
+          else {
+            _obj[fld] = this.fix_guid(_obj[fld]);
+          }
+        }
+        else if (type.date_part) {
+          _obj[fld] = this.fix_date(_obj[fld], true);
+        }
+      }
+    }
+    for (const ts in tabular_sections) {
+      if(Array.isArray(_obj[ts])){
+        const tabular = obj[ts];
+        const Constructor = _manager.obj_constructor(ts, true);
+        const {fields} = tabular_sections[ts];
+        for(let i = 0; i < _obj[ts].length; i++) {
+          const row = _obj[ts][i];
+          const _row = new Constructor(tabular, row);
+          row.row = i + 1;
+          Object.defineProperty(row, '_row', {value: _row});
+          for (const fld in fields){
+            const {type} = fields[fld];
+            if(row[fld]) {
+              const {type} = fields[fld];
+              if (type.is_ref) {
+                if(type.types.length > 1) {
+                  _row.__setter(fld, row[fld]);
+                }
+                else {
+                  row[fld] = this.fix_guid(row[fld]);
+                }
+              }
+              else if (type.date_part) {
+                row[fld] = this.fix_date(row[fld], true);
+              }
+            }
+          }
+        }
+      }
+    }
+  },
 	_patch(obj, patch) {
 		for (let area in patch) {
 			if (typeof patch[area] == 'object') {
@@ -3505,7 +3589,6 @@ class WSQL {
       {p: 'zone', v: job_prm.hasOwnProperty('zone') ? job_prm.zone : 1, t: job_prm.zone_is_string ? 'string' : 'number'},
       {p: 'rest_path', v: '', t: 'string'},
       {p: 'couch_path', v: '', t: 'string'},
-      {p: 'couch_suffix', v: '', t: 'string'},
       {p: 'couch_direct', v: true, t: 'boolean'},
       {p: 'enable_save_pwd', v: true, t: 'boolean'},
     ];
@@ -3519,7 +3602,7 @@ class WSQL {
     }
     if(zone == job_prm.zone_demo){
       nesessery_params.some((prm) => {
-        if(prm.p == 'couch_suffix'){
+        if(prm.p == 'couch_direct'){
           prm.v = false;
           return true;
         }
@@ -4203,7 +4286,7 @@ class AbstracrAdapter extends MetaEventEmitter{
 
 const classes = Object.assign({Meta, MetaEventEmitter, AbstracrAdapter}, data_managers, data_objs, data_tabulars);
 
-class MetaEngine$1 {
+class MetaEngine {
   constructor() {
     this.classes = classes;
     this.adapters = {};
@@ -4213,8 +4296,8 @@ class MetaEngine$1 {
     this.md = new Meta(this);
     mngrs(this);
     this.record_log = this.record_log.bind(this);
-    MetaEngine$1._plugins.forEach((plugin) => plugin.call(this));
-    MetaEngine$1._plugins.length = 0;
+    MetaEngine._plugins.forEach((plugin) => plugin.call(this));
+    MetaEngine._plugins.length = 0;
   }
   on(type, listener) {
     this.md.on(type, listener);
@@ -4223,7 +4306,7 @@ class MetaEngine$1 {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.43';
+    return '2.0.16-beta.48';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
@@ -4298,23 +4381,23 @@ class MetaEngine$1 {
     }
     if (obj.hasOwnProperty('proto')) {
       if (typeof obj.proto == 'function') {
-        obj.proto(MetaEngine$1);
+        obj.proto(MetaEngine);
       }
       else if (typeof obj.proto == 'object') {
-        Object.keys(obj.proto).forEach((id) => MetaEngine$1.prototype[id] = obj.proto[id]);
+        Object.keys(obj.proto).forEach((id) => MetaEngine.prototype[id] = obj.proto[id]);
       }
     }
     if (obj.hasOwnProperty('constructor')) {
       if (typeof obj.constructor != 'function') {
         throw new TypeError('Invalid plugin: constructor must be a function');
       }
-      MetaEngine$1._plugins.push(obj.constructor);
+      MetaEngine._plugins.push(obj.constructor);
     }
-    return MetaEngine$1;
+    return MetaEngine;
   }
 }
-MetaEngine$1.classes = classes;
-MetaEngine$1._plugins = [];
+MetaEngine.classes = classes;
+MetaEngine._plugins = [];
 
-module.exports = MetaEngine$1;
+module.exports = MetaEngine;
 //# sourceMappingURL=index.js.map

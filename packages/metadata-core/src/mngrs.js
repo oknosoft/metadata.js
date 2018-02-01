@@ -1384,6 +1384,45 @@ export class RefDataManager extends DataManager{
 		return this._predefined[name];
 	}
 
+  /**
+   * Получает присоединенный к объекту файл
+   * @param ref
+   * @param att_id
+   * @return {Promise}
+   */
+  get_attachment(ref, att_id) {
+    const {adapter} = this;
+    return adapter.get_attachment ? adapter.get_attachment(this, ref, att_id) : Promise.reject();
+  }
+
+  /**
+   * ### Сохраняет присоединенный файл
+   *
+   * @method save_attachment
+   * @for DataManager
+   * @param ref
+   * @param att_id
+   * @param attachment
+   * @param type
+   * @return {Promise}
+   * @async
+   */
+  save_attachment(ref, att_id, attachment, type) {
+    const {adapter} = this;
+    return adapter.save_attachment ? adapter.save_attachment(this, ref, att_id, attachment, type) : Promise.reject();
+  }
+
+  /**
+   * Удаляет присоединенный к объекту файл
+   * @param ref
+   * @param att_id
+   * @return {Promise}
+   */
+  delete_attachment(ref, att_id) {
+    const {adapter} = this;
+    return adapter.delete_attachment ? adapter.delete_attachment(this, ref, att_id) : Promise.reject();
+  }
+
 }
 
 /**

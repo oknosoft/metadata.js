@@ -12,7 +12,8 @@ MetaEngine
   .plugin(metadata_abstract_ui_tabulars)
   .plugin(metadata_dhtmlx);
 
-require('pouchdb-authentication/dist/pouchdb.authentication.min');
+//require('pouchdb-authentication/lib/index.browser.es.js');
+require('pouchdb-authentication/dist/pouchdb.authentication.min.js');
 
 const $p = new MetaEngine();
 

@@ -1,6 +1,6 @@
 /*!
- metadata-superlogin v2.0.16-beta.43, built:2017-12-17
- © 2014-2017 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
+ metadata-superlogin v2.0.16-beta.48, built:2018-02-01
+ © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */
@@ -22,7 +22,7 @@ var adapter = (constructor) => {
       const {job_prm, wsql, aes, md, superlogin: superlogin$$1} = $p;
       const start = superlogin$$1.getSession() ? Promise.resolve(superlogin$$1.getSession()) : superlogin$$1.login({username, password})
         .catch((err) => {
-          this.emit('user_log_fault', err);
+          this.emit('user_log_fault', {message: 'custom', text: err.message});
           return Promise.reject(err);
         });
       return start.then((session) => {
@@ -53,8 +53,17 @@ var adapter = (constructor) => {
       });
     }
     dbpath(name) {
-      const {$p, props} = this;
-      return $p.superlogin.getDbUrl(props.prefix + (name == 'meta' ? name : (props.zone + '_' + name)));
+      const {$p, props: {path, prefix, zone}} = this;
+      let url = $p.superlogin.getDbUrl(prefix + (name == 'meta' ? name : (zone + '_' + name)));
+      const localhost = 'localhost:5984/' + prefix;
+      if(url.indexOf(localhost) !== -1) {
+        const https = path.indexOf('https://') !== -1;
+        if(https){
+          url = url.replace('http://', 'https://');
+        }
+        url = url.replace(localhost, path.substr(https ? 8 : 7));
+      }
+      return url;
     }
     get authorized() {
       return !!this.$p.superlogin.getSession();
@@ -84,12 +93,22 @@ function attach($p) {
   });
   function handleSocialAuth(provider) {
     return function (dispatch, getState) {
+      if(superlogin.authenticated()) {
+        return superlogin.link(provider)
+          .then((res) => {
+            res = null;
+          })
+          .catch((err) => {
+            err = null;
+          });
+      }
       dispatch({
         type: metaActions.types.USER_TRY_LOG_IN,
         payload: {name: 'oauth', provider: provider}
       });
       return superlogin.socialAuth(provider)
-        .then((session) => $p.adapters.pouch.log_in(session.token, session.password));
+        .then((session) => $p.adapters.pouch.log_in(session.token, session.password))
+        .catch((err) => $p.adapters.pouch.log_out());
     };
   }
   function handleLogin(login, password) {
@@ -107,17 +126,53 @@ function attach($p) {
   }
   function handleRegister(registration) {
     return function (dispatch) {
-      superlogin.register(registration)
-        .then(function () {
-          if(superlogin.authenticated()) {
-            const session = superlogin.getSession();
-            dispatch({
-              type: metaActions.types.USER_LOG_IN,
-              payload: {name: session.name, password: session.password, provider: 'local'}
-            });
+      const {username, email, password, confirmPassword} = registration;
+      if(!password || password.length < 6 || password !== confirmPassword) {
+        return dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Password must be at least 6 characters length'}));
+      }
+      if(!username || username.length < 3) {
+        return dispatch(metaActions.USER_LOG_ERROR({message: 'empty'}));
+      }
+      return superlogin.validateUsername(username)
+        .catch((err) => {
+          dispatch(metaActions.USER_LOG_ERROR(
+            err.message && err.message.match(/(time|network)/i) ? err : {message: 'custom', text: err.error ? err.error : 'Username error'}
+          ));
+        })
+        .then((ok) => {
+          return ok && superlogin.validateEmail(email)
+        })
+        .catch((err) => {
+          dispatch(metaActions.USER_LOG_ERROR(
+            err.message && err.message.match(/(time|network)/i) ? err : {message: 'custom', text: err.error ? err.error : 'Email error'}
+          ));
+        })
+        .then((ok) => {
+          return ok && superlogin.register(registration)
+        })
+        .then((reg) => {
+          if(reg) {
+            if(reg.success) {
+              if(superlogin.getConfig().email.requireEmailConfirm) {
+                dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'info:Создана учетная запись. Проверьте почтовый ящик для активации'}));
+              }
+              else {
+                return superlogin.authenticated() ? superlogin.getSession() :
+                  superlogin.login({username, password}).then((session) => {
+                    return superlogin.getSession();
+                  });
+              }
+            }
+            else {
+              dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Registration error'}));
+            }
           }
-          else {
-          }
+        })
+        .then((session) => {
+          return session && $p.adapters.pouch.log_in(session.username, session.password);
+        })
+        .catch((err) => {
+          dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: err.error ? err.error : 'Registration error'}));
         });
     };
   }
@@ -136,7 +191,7 @@ function attach($p) {
   function handlecheckEmail(email) {
   }
   function handleSetPrm(attr) {
-    for (var key in attr) {
+    for (const key in attr) {
       $p.wsql.set_user_param(key, attr[key]);
     }
     return metaActions.PRM_CHANGE(attr);

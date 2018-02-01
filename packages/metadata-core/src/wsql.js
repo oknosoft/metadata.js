@@ -106,7 +106,6 @@ export default class WSQL {
       {p: 'zone', v: job_prm.hasOwnProperty('zone') ? job_prm.zone : 1, t: job_prm.zone_is_string ? 'string' : 'number'},
       {p: 'rest_path', v: '', t: 'string'},
       {p: 'couch_path', v: '', t: 'string'},
-      {p: 'couch_suffix', v: '', t: 'string'},
       {p: 'couch_direct', v: true, t: 'boolean'},
       {p: 'enable_save_pwd', v: true, t: 'boolean'},
     ];
@@ -126,7 +125,7 @@ export default class WSQL {
     // для гостевой зоны, couch_direct по умолчанию сброшен
     if(zone == job_prm.zone_demo){
       nesessery_params.some((prm) => {
-        if(prm.p == 'couch_suffix'){
+        if(prm.p == 'couch_direct'){
           prm.v = false;
           return true;
         }

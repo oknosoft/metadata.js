@@ -67,7 +67,7 @@ class TabularSectionToolbar extends Component {
             <MoreVertIcon/>
           </IconButton>,
 
-          !settings_open && <Menu key="menu" anchorEl={state.anchorEl} open={state.menuOpen} onRequestClose={this.handleMenuClose}>
+          !settings_open && <Menu key="menu" anchorEl={state.anchorEl} open={state.menuOpen} onClose={this.handleMenuClose}>
             <MenuItem onClick={this.handleExportCSV}><CopyIcon/> &nbsp;Копировать CSV</MenuItem>
             <MenuItem onClick={this.handleExportJSON}><CloudDownloadIcon/> &nbsp;Копировать JSON</MenuItem>
             <MenuItem onClick={this.handleExportXLS}><FileDownloadIcon/> &nbsp;Экспорт в XLS</MenuItem>

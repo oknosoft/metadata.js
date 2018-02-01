@@ -16,7 +16,6 @@ class CnnSettings extends Component {
     zone: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     couch_path: PropTypes.string.isRequired,
     superlogin_path: PropTypes.string,
-    couch_suffix: PropTypes.string,
     couch_direct: PropTypes.bool,
     enable_save_pwd: PropTypes.bool,
     use_superlogin: PropTypes.bool,
@@ -25,8 +24,8 @@ class CnnSettings extends Component {
 
   constructor(props) {
     super(props);
-    const {zone, couch_path, superlogin_path, enable_save_pwd, couch_suffix, couch_direct} = props;
-    this.state = {zone, couch_path, superlogin_path, couch_suffix, enable_save_pwd, couch_direct, confirm_reset: false};
+    const {zone, couch_path, superlogin_path, enable_save_pwd, couch_direct} = props;
+    this.state = {zone, couch_path, superlogin_path, enable_save_pwd, couch_direct, confirm_reset: false};
   }
 
   handleSetPrm = () => {
@@ -56,7 +55,7 @@ class CnnSettings extends Component {
   render() {
 
     const {classes, use_superlogin} = this.props;
-    const {zone, couch_path, superlogin_path, enable_save_pwd, couch_suffix, couch_direct, confirm_reset} = this.state;
+    const {zone, couch_path, superlogin_path, enable_save_pwd, couch_direct, confirm_reset} = this.state;
 
     return [
       <TextField
@@ -88,16 +87,6 @@ class CnnSettings extends Component {
         helperText="Значение разделителя данных"
         onChange={this.valueToState('zone')}
         value={zone}/>,
-
-      !use_superlogin && <TextField
-        fullWidth
-        key="couch_suffix"
-        margin="dense"
-        label="Суффикс пользователя"
-        InputProps={{placeholder: 'couch_suffix'}}
-        helperText="Назначается дилеру при регистрации"
-        onChange={this.valueToState('couch_suffix')}
-        value={couch_suffix}/>,
 
       <FormGroup key="switchers">
         <FormControl>

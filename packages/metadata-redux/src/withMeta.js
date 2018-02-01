@@ -11,7 +11,7 @@ export function mapStateToProps({meta}) {
 
 export function mapDispatchToProps(dispatch) {
 
-  const {adapters, wsql, job_prm, aes, cat} = $p;
+  const {adapters, wsql, job_prm, aes, cat, superlogin} = $p;
 
   return {
     handleLogin(login, password) {
@@ -23,6 +23,14 @@ export function mapDispatchToProps(dispatch) {
         else if(wsql.get_user_param('zone') == job_prm.zone_demo) {
           login = job_prm.guests[0].username;
           password = aes.Ctr.decrypt(job_prm.guests[0].password);
+        }
+        else if(superlogin) {
+          if(superlogin.authenticated()){
+            login = superlogin.getSession().user_id;
+          }
+          else {
+            return dispatch(log_out(adapters.pouch));
+          }
         }
         else {
           return dispatch(log_out(adapters.pouch));

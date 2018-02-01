@@ -31,7 +31,7 @@ export default (constructor) => {
 
       const start = superlogin.getSession() ? Promise.resolve(superlogin.getSession()) : superlogin.login({username, password})
         .catch((err) => {
-          this.emit('user_log_fault', err);
+          this.emit('user_log_fault', {message: 'custom', text: err.message});
           return Promise.reject(err);
         });
 
@@ -82,9 +82,17 @@ export default (constructor) => {
      * @return {*}
      */
     dbpath(name) {
-      const {$p, props} = this;
-      const {superlogin} = $p;
-      return $p.superlogin.getDbUrl(props.prefix + (name == 'meta' ? name : (props.zone + '_' + name)));
+      const {$p, props: {path, prefix, zone}} = this;
+      let url = $p.superlogin.getDbUrl(prefix + (name == 'meta' ? name : (zone + '_' + name)));
+      const localhost = 'localhost:5984/' + prefix;
+      if(url.indexOf(localhost) !== -1) {
+        const https = path.indexOf('https://') !== -1;
+        if(https){
+          url = url.replace('http://', 'https://');
+        }
+        url = url.replace(localhost, path.substr(https ? 8 : 7));
+      }
+      return url;
     }
 
     /**

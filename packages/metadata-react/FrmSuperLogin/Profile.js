@@ -1,79 +1,60 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
+
 import Tabs, {Tab} from 'material-ui/Tabs';
 import Paper from 'material-ui/Paper';
-import TextField from 'material-ui/TextField';
 import Button from 'material-ui/Button';
-import Grid from 'material-ui/Grid';
 import Divider from 'material-ui/Divider';
-import DataField from '../DataField';
-import Typography from 'material-ui/Typography';
-import {FacebookIcon, GitHubIcon, GoogleIcon, YandexIcon} from './assets/icons';
-
 import {FormGroup} from 'material-ui/Form';
 import {DialogActions} from 'material-ui/Dialog';
-
-import {red, blue} from 'material-ui/colors';
+import Helmet from 'react-helmet';
+import Grid from 'material-ui/Grid';
+import DataField from '../DataField';
+import Typography from 'material-ui/Typography';
+import TextField from 'material-ui/TextField';
+import {blue, red} from 'material-ui/colors';
+import {FacebookIcon, GitHubIcon, GoogleIcon, YandexIcon} from './assets/icons';
 
 import withStyles from '../styles/paper600';
+import connect from './connect';
 import classnames from 'classnames';
 
 class UserObj extends Component {
 
-  static propTypes = {
-
-    _obj: PropTypes.object,
-    _acl: PropTypes.string.isRequired,
-
-    handleSave: PropTypes.func,
-    handleRevert: PropTypes.func,
-    handleMarkDeleted: PropTypes.func,
-    handlePost: PropTypes.func,
-    handleUnPost: PropTypes.func,
-    handlePrint: PropTypes.func,
-    handleAttachment: PropTypes.func,
-    handleValueChange: PropTypes.func,
-    handleAddRow: PropTypes.func,
-    handleDelRow: PropTypes.func,
-  };
-
   constructor(props) {
     super(props);
     this.state = {
-      index: 0,
-      login: props.user_name,
+      index: 0
     };
   }
 
+  componentDidMount() {
+    this.shouldComponentUpdate(this.props, this.state);
+  }
+
+  // если изменили state - не перерисовываем
+  shouldComponentUpdate({handleIfaceState, title}, {index}) {
+    const ltitle = index ? 'Регистрация...' : 'Авторизация...';
+    if(title != ltitle) {
+      handleIfaceState({
+        component: '',
+        name: 'title',
+        value: ltitle,
+      });
+      return false;
+    }
+    return true;
+  }
+
   oauthClick(provider) {
-    return () => $p.superlogin._actions.handleSocialAuth(provider);
+    return this.props.handleSocialAuth(provider);
   }
 
-  handleSave() {
-
-  }
-
-  handleSend() {
-
-  }
-
-  handleMarkDeleted() {
-
-  }
-
-  handlePrint() {
-
-  }
-
-  handleAttachment() {
-
-  }
 
 
   render() {
 
-    const {props, state} = this;
-    const {classes, handleLogOut, _obj} = props;
+    const {props: {classes, handleLogOut, title, _obj}, state, handleNavigate} = this;
     const btn = classnames(classes.button, classes.fullWidth);
 
     return _obj ?
@@ -86,43 +67,34 @@ class UserObj extends Component {
         </Tabs>
 
         {state.index === 0 &&
-        <div>
+        <FormGroup>
           <DataField _obj={_obj} _fld="id"/>
           <DataField _obj={_obj} _fld="name"/>
           <DataField _obj={_obj} _fld="sex"/>
           <DataField _obj={_obj} _fld="email"/>
           <DialogActions>
-            <Button color="primary" dense className={classes.button} onClick={this.handleSave}>Сохранить</Button>
             <Button color="primary" dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
           </DialogActions>
-        </div>
+        </FormGroup>
         }
 
         {state.index === 1 &&
-        <div>
+        <FormGroup>
 
           <FormGroup>
-            <Typography type="subheading" color="inherit">Вы можете авторизоваться либо связать свою учетную запись с учетными данными социальных сетей:</Typography>
-
             <Grid container spacing={24}>
-              <Grid item xs={12} sm={6}>
-                <Button raised dense className={btn} onClick={this.oauthClick('google')}>
-                  <GoogleIcon viewBox="0 0 256 262" style={{height: 18}} color={blue[500]}/> Google
-                </Button>
+              <Grid item xs={12} sm={7}>
+                <Typography type="subheading" color="inherit">Вы можете связать свою учетную запись с профилем социальных сетей</Typography>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <Button raised dense className={btn} onClick={this.oauthClick('yandex')}>
-                  <YandexIcon viewBox="0 0 180 190" style={{height: 18}} color={red[500]}/> Яндекс
-                </Button>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Button raised dense className={btn} onClick={this.oauthClick('facebook')}>
-                  <FacebookIcon viewBox="0 0 450 450" style={{height: 18}} color="#3A559F"/> Facebook
-                </Button>
-              </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={10} sm={5}>
                 <Button raised dense className={btn} onClick={this.oauthClick('github')}>
-                  <GitHubIcon viewBox="0 0 256 250" style={{height: 18}}/> GitHub
+                  <GitHubIcon viewBox="0 0 256 250" style={{height: 18, fill: 'darkslategrey'}}/> GitHub
+                </Button>
+                <Button raised dense className={btn} onClick={this.oauthClick('google')}>
+                  <GoogleIcon viewBox="0 0 256 262" style={{height: 18, fill: blue[500]}}/> Google
+                </Button>
+                <Button raised dense className={btn} onClick={this.oauthClick('facebook')}>
+                  <FacebookIcon viewBox="0 0 450 450" style={{height: 18, fill: '#3A559F'}}/> Facebook
                 </Button>
               </Grid>
             </Grid>
@@ -132,7 +104,7 @@ class UserObj extends Component {
             <Button color="primary" dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
           </DialogActions>
 
-        </div>
+        </FormGroup>
         }
 
       </Paper>
@@ -144,4 +116,12 @@ class UserObj extends Component {
   }
 }
 
-export default withStyles(UserObj);
+UserObj.propTypes = {
+  _obj: PropTypes.object,
+  _acl: PropTypes.string.isRequired,
+  handleLogOut: PropTypes.func.isRequired,
+  handleNavigate: PropTypes.func.isRequired,
+  first_run: PropTypes.bool.isRequired,
+};
+
+export default withStyles(connect(UserObj));

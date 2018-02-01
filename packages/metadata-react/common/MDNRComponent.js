@@ -21,11 +21,11 @@ export default class MDNRComponent extends MComponent {
 
     let res = true;
 
-    const {handleManagerChange, ltitle, context} = this;
+    const {props, ltitle, context} = this;
 
     // если изменился менеджер, ищем новые настройки компоновки
-    if(handleManagerChange && this.props._mgr != _mgr) {
-      handleManagerChange({_mgr, _meta});
+    if(props._mgr !== _mgr && this.handleManagerChange) {
+      this.handleManagerChange({_mgr, _meta});
       res = false;
     }
 

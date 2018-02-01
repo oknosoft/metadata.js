@@ -214,10 +214,10 @@ export default ($p) => {
 
 				// todo: запрос к pouchdb
 				if (attr.action == 'get_tree')
-					return mgr.pouch_tree(attr);
+					return mgr.adapter.get_tree(mgr, attr);
 
 				else if (attr.action == 'get_selection')
-					return mgr.pouch_selection(attr);
+					return mgr.adapter.get_selection(mgr, attr);
 
 			} else {
 

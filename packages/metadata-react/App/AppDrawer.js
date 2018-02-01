@@ -40,14 +40,14 @@ const styles = theme => ({
 });
 
 function AppDrawer(props) {
-  const {classes, className, disablePermanent, mobileOpen, onRequestClose, handleNavigate, isHome, items, title} = props;
+  const {classes, className, disablePermanent, mobileOpen, onClose, handleNavigate, isHome, items, title} = props;
 
   const navigation = (
     <div className={classes.nav}>
       <div className={classes.toolbarIe11}>
         <Toolbar className={classes.toolbar}>
           <div className={classes.title} onClick={() => {
-            onRequestClose();
+            onClose();
             !isHome && handleNavigate('/');
           }}>
             <Typography type="title" color="inherit">{title}</Typography>
@@ -55,7 +55,7 @@ function AppDrawer(props) {
           <Divider absolute/>
         </Toolbar>
       </div>
-      <NavList items={items} handleClose={onRequestClose} handleNavigate={handleNavigate}/>
+      <NavList items={items} handleClose={onClose} handleNavigate={handleNavigate}/>
     </div>
   );
 
@@ -66,7 +66,7 @@ function AppDrawer(props) {
           classes={{paper: classes.paper}}
           type="temporary"
           open={mobileOpen}
-          onRequestClose={onRequestClose}
+          onClose={onClose}
           ModalProps={{
             keepMounted: true,
           }}
@@ -75,7 +75,7 @@ function AppDrawer(props) {
         </Drawer>
       </Hidden>
       {disablePermanent ? null : (
-        <Hidden lgDown implementation="css">
+        <Hidden mdDown implementation="css">
           <Drawer
             classes={{
               paper: classes.paper,
@@ -97,7 +97,7 @@ AppDrawer.propTypes = {
   disablePermanent: PropTypes.bool.isRequired,
   mobileOpen: PropTypes.bool.isRequired,
   isHome: PropTypes.bool.isRequired,
-  onRequestClose: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
   handleNavigate: PropTypes.func.isRequired,// action для навигации
   items: PropTypes.array.isRequired,        // массив элементов меню
   title: PropTypes.string,

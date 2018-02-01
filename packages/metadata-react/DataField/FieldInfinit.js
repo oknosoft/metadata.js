@@ -306,7 +306,7 @@ class FieldInfinit extends AbstractField {
         open
         noSpace
         title={title}
-        onRequestClose={this.handleCloseDialog}
+        onClose={this.handleCloseDialog}
       >
         {state.dialogOpened == 'list' ?
           <DataList _mgr={_manager} _acl={_acl} _owner={this} selectionMode handlers={{handleSelect}}/>
