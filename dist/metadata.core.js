@@ -1,6 +1,6 @@
 /*!
- metadata.js v0.12.226, built:2017-04-23 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- metadata.js may be freely distributed under the AGPL-3.0. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
+ metadata.js v0.12.231, built:2017-06-26 &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2017
+ metadata.js may be freely distributed under the MIT. To obtain _Oknosoft Commercial license_, contact info@oknosoft.ru
  */
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
@@ -21,7 +21,7 @@
  */
 
 
-"use strict";
+;"use strict";
 
 /**
  * Фреймворк добавляет в прототипы _Object_ и _Number_<br />
@@ -110,7 +110,7 @@ Object.defineProperties(Object.prototype, {
 	 * @returns {Object|Array} - копия объекта
 	 */
 	_clone: {
-		value: function(exclude) {
+		value: function(exclude, str_date) {
 			if(!this || "object" !== typeof this)
 				return this;
 			var p, v, c = "function" === typeof this.pop ? [] : {};
@@ -121,22 +121,39 @@ Object.defineProperties(Object.prototype, {
 				if (this.hasOwnProperty(p)){
 					v = this[p];
 					if(v){
-						if("function" === typeof v || v instanceof DataObj || v instanceof DataManager || v instanceof Date)
-							c[p] = v;
-
-						else if("object" === typeof v)
-							c[p] = v._clone(exclude);
-
-						else
-							c[p] = v;
-					} else
-						c[p] = v;
+						if("function" === typeof v || v instanceof DataObj || v instanceof DataManager){
+              c[p] = v;
+            }
+						else if("object" === typeof v){
+              if(v instanceof Date){
+                c[p] = str_date ? v.toJSON() : v;
+              }
+              else{
+                c[p] = v._clone(exclude, str_date);
+              }
+            }
+						else{
+              c[p] = v;
+            }
+					}
+					else{
+            c[p] = v;
+          }
 				}
 			}
 			return c;
 		}
 	}
 });
+
+/**
+ * Отбрасываем часовой пояс при сериализации даты
+ * @method toJSON
+ * @for Date
+ */
+Date.prototype.toJSON = function () {
+  return $p.moment(this).format($p.moment._masks.iso);
+}
 
 /**
  * Метод округления в прототип числа
@@ -300,7 +317,7 @@ function MetaEngine() {
 	this.__define({
 
 		version: {
-			value: "0.12.226",
+			value: "0.12.231",
 			writable: false
 		},
 
@@ -506,7 +523,7 @@ function MetaEngine() {
 								ok = sel.some(function (element) {
 									var key = Object.keys(element)[0];
 									if(element[key].hasOwnProperty("like"))
-										return o[key] && o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
+										return typeof o[key] == "string" && o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
 									else
 										return $p.utils.is_equal(o[key], element[key]);
 								});
@@ -645,14 +662,20 @@ function MetaEngine() {
 		 */
 		off: {
 			value: function (id) {
+			  if(arguments.length == 2){
+          id = arguments[1];
+        }
 				if(typeof id == "function" && id._evnts){
 					id._evnts.forEach(function (id) {
 						$p.eve.detachEvent(id);
 					});
-				}else if(!id)
-					$p.eve.detachAllEvents();
-				else
-					$p.eve.detachEvent(id);
+				}
+				else if(!id){
+          $p.eve.detachAllEvents();
+        }
+				else{
+          $p.eve.detachEvent(id);
+        }
 			}
 		},
 
@@ -865,7 +888,7 @@ function MetaEngine() {
 				 * @static
 				 */
 					function ChartsOfAccounts(){
-					this.toString = function(){return $p.msg.meta_charts_of_accounts_mgr};
+					this.toString = function(){return $p.msg.meta_cacc_mgr};
 				})
 		},
 
@@ -887,7 +910,7 @@ function MetaEngine() {
 				 * @static
 				 */
 					function ChartsOfCharacteristics(){
-					this.toString = function(){return $p.msg.meta_charts_of_characteristic_mgr};
+					this.toString = function(){return $p.msg.meta_cch_mgr};
 				})
 		},
 
@@ -1210,7 +1233,7 @@ function Utils() {
 
 	/**
 	 * ### Добавляет days дней к дате
-	 *
+	 * и сбрасывает время в 00:00:00
 	 * @method date_add_day
 	 * @param date {Date} - исходная дата
 	 * @param days {Number} - число дней, добавляемых к дате (может быть отрицательным)
@@ -1323,10 +1346,16 @@ function Utils() {
 			reader.onerror = function(err){
 				reject(err);
 			};
-			if(type == "data_url")
-				reader.readAsDataURL(blob);
-			else
-				reader.readAsText(blob);
+			switch (type) {
+        case "array" :
+          reader.readAsArrayBuffer(blob);
+          break;
+        case "data_url":
+          reader.readAsDataURL(blob);
+          break;
+        default:
+          reader.readAsText(blob);
+      }
 		});
 
 	};
@@ -1612,19 +1641,23 @@ function Ajax() {
 			return wnd_print;
 		}
 
-		if(!method || (typeof method == "string" && method.toLowerCase().indexOf("post")!=-1))
-			return this.post_ex(url,
-				typeof post_data == "object" ? JSON.stringify(post_data) : post_data,
-				true,
-				function(xhr){
-					xhr.responseType = "blob";
-				})
-				.then(show_blob);
-		else
-			return this.get_ex(url, true, function(xhr){
-					xhr.responseType = "blob";
-				})
-				.then(show_blob);
+    if(url instanceof Blob){
+      Promise.resolve(show_blob({response: url}));
+    }
+    else if(!method || (typeof method == "string" && method.toLowerCase().indexOf("post")!=-1))
+      return this.post_ex(url,
+        typeof post_data == "object" ? JSON.stringify(post_data) : post_data,
+        true,
+        function(xhr){
+          xhr.responseType = "blob";
+        })
+        .then(show_blob);
+    else{
+      return this.get_ex(url, true, function(xhr){
+        xhr.responseType = "blob";
+      })
+        .then(show_blob);
+    }
 	};
 
 	/**
@@ -1848,7 +1881,7 @@ function WSQL(){
 					return prm;
 			}
 		},
-    
+
 		/**
 		 * ### Указатель на alasql
 		 * @property alasql
@@ -1898,6 +1931,7 @@ function WSQL(){
 					{p: "browser_uid",		v: $p.utils.generate_guid(), t:"string"},
 					{p: "zone",           v: $p.job_prm.hasOwnProperty("zone") ? $p.job_prm.zone : 1, t: $p.job_prm.zone_is_string ? "string" : "number"},
 					{p: "enable_save_pwd",v: $p.job_prm.enable_save_pwd,	t:"boolean"},
+          {p: "couch_direct",   v: $p.job_prm.hasOwnProperty("couch_direct") ? $p.job_prm.couch_direct : true,	t:"boolean"},
 					{p: "couch_path",		  v: $p.job_prm.couch_path,	t:"string"},
           {p: "rest_path",		  v: "", t:"string"},
 					{p: "skin",		        v: "dhx_web", t:"string"},
@@ -2150,47 +2184,6 @@ if(typeof window !== "undefined" && window.dhx4){
 	};
 }
 
-/**
- *  строки ФИАС адресного классификатора
- */
-$p.fias = function FIAS(){};
-(function (fias){
-
-	fias.toString = function(){return "Коды адресного классификатора"};
-
-	fias.types = ["владение", "здание", "помещение"];
-
-	// Код, Наименование, Тип, Порядок, КодФИАС
-	fias["1010"] = {name: "дом",			type: 1, order: 1, fid: 2, syn: [" д.", " д ", " дом"]};
-	fias["1020"] = {name: "владение",		type: 1, order: 2, fid: 1, syn: [" вл.", " вл ", " влад.", " влад ", " владен.", " владен ", " владение"]};
-	fias["1030"] = {name: "домовладение",	type: 1, order: 3, fid: 3};
-
-	fias["1050"] = {name: "корпус",		type: 2, order: 1, syn: [" к.", " к ", " корп.", " корп ", "корпус"]};
-	fias["1060"] = {name: "строение",	type: 2, order: 2, fid: 1, syn: [" стр.", " стр ", " строен.", " строен ", "строение"]};
-	fias["1080"] = {name: "литера",		type: 2, order: 3, fid: 3, syn: [" л.", " л ", " лит.", " лит ", "литера"]};
-	fias["1070"] = {name: "сооружение",	type: 2, order: 4, fid: 2, syn: [" соор.", " соор ", " сооруж.", " сооруж ", "сооружение"]};
-	fias["1040"] = {name: "участок",	type: 2, order: 5, syn: [" уч.", " уч ", "участок"]};
-
-	fias["2010"] = {name: "квартира",	type: 3, order: 1, syn: ["кв.", "кв ", "кварт.", "кварт ", "квартира", "-"]};
-	fias["2030"] = {name: "офис",		type: 3, order: 2, syn: ["оф.", "оф ", "офис", "-"]};
-	fias["2040"] = {name: "бокс",		type: 3, order: 3};
-	fias["2020"] = {name: "помещение",	type: 3, order: 4};
-	fias["2050"] = {name: "комната",	type: 3, order: 5, syn: ["комн.", "комн ", "комната"]};
-
-	//	//  сокращения 1C для поддержки обратной совместимости при парсинге
-	//	fias["2010"] = {name: "кв.",	type: 3, order: 6};
-	//	fias["2030"] = {name: "оф.",	type: 3, order: 7};
-
-	// Уточняющие объекты
-	fias["10100000"] = {name: "Почтовый индекс"};
-	fias["10200000"] = {name: "Адресная точка"};
-	fias["10300000"] = {name: "Садовое товарищество"};
-	fias["10400000"] = {name: "Элемент улично-дорожной сети, планировочной структуры дополнительного адресного элемента"};
-	fias["10500000"] = {name: "Промышленная зона"};
-	fias["10600000"] = {name: "Гаражно-строительный кооператив"};
-	fias["10700000"] = {name: "Территория"};
-
-})($p.fias);
 
 /**
  * Строки сообщений и элементов интерфейса
@@ -2277,8 +2270,8 @@ $p.fias = function FIAS(){};
 	msg.meta_task_mgr = "Менеджер задач";
 	msg.meta_bp_mgr = "Менеджер бизнес-процессов";
 	msg.meta_reports_mgr = "Менеджер отчетов";
-	msg.meta_charts_of_accounts_mgr = "Менеджер планов счетов";
-	msg.meta_charts_of_characteristic_mgr = "Менеджер планов видов характеристик";
+	msg.meta_cacc_mgr = "Менеджер планов счетов";
+	msg.meta_cch_mgr = "Менеджер планов видов характеристик";
 	msg.meta_extender = "Модификаторы объектов и менеджеров";
 
 	msg.modified_close = "Объект изменен<br/>Закрыть без сохранения?";
@@ -2383,32 +2376,21 @@ function Pouch(){
 		 * ### Локальные базы PouchDB
 		 *
 		 * @property local
-		 * @type {{ram: PouchDB, doc: PouchDB, meta: PouchDB, sync: {}}}
+		 * @type {Object}
 		 */
 		local: {
 			get: function () {
 				if(!_local){
 					var opts = {auto_compaction: true, revs_limit: 2};
-					if(_paths.direct){
-						_local = {
-							ram: this.remote.ram,
-							doc: this.remote.doc,
-							sync: {}
-						}
-					}
-					else{
-						_local = {
-							ram: new t.DB(_paths.prefix + _paths.zone + "_ram", opts),
-							doc: new t.DB(_paths.prefix + _paths.zone + "_doc", opts),
-							meta: new t.DB(_paths.prefix + "meta", opts),
-							sync: {}
-						}
-					}
+          _local = {
+            ram: new t.DB(_paths.prefix + _paths.zone + "_ram", opts),
+            doc: _paths.direct ? t.remote.doc : new t.DB(_paths.prefix + _paths.zone + "_doc", opts),
+            meta: new t.DB(_paths.prefix + "meta", opts),
+            sync: {}
+          }
 				}
 				if(_paths.path && !_local._meta){
-					_local._meta = new t.DB(_paths.path + "meta", {
-						skip_setup: true
-					});
+					_local._meta = new t.DB(_paths.path + "meta", {skip_setup: true});
 					t.run_sync(_local.meta, _local._meta, "meta");
 				}
 				return _local;
@@ -2419,16 +2401,18 @@ function Pouch(){
 		 * ### Базы PouchDB на сервере
 		 *
 		 * @property remote
-		 * @type {{ram: PouchDB, doc: PouchDB}}
+		 * @type {Object}
 		 */
 		remote: {
 			get: function () {
 				if(!_remote){
 					var opts = {skip_setup: true, adapter: 'http'};
-					_remote = {
-						ram: new t.DB(_paths.path + _paths.zone + "_ram", opts),
-						doc: new t.DB(_paths.path + _paths.zone + "_doc" + (_paths.suffix ? "_" + _paths.suffix : ""), opts)
-					}
+          _remote = {};
+          $p.md.bases().forEach(function (db) {
+            _remote[db] = db == 'ram' ?
+              new t.DB(_paths.path + _paths.zone + "_" + db, opts) :
+              new t.DB(_paths.path + _paths.zone + "_" + db + (_paths.suffix ? "_" + _paths.suffix : ""), opts)
+          })
 				}
 				return _remote;
 			}
@@ -2463,7 +2447,7 @@ function Pouch(){
 				}
 
 				// авторизуемся во всех базах
-				var bases = ["ram", "doc"],
+				var bases = $p.md.bases(),
 					try_auth = [];
 
 				this.remote;
@@ -2499,30 +2483,29 @@ function Pouch(){
 							$p.eve.callEvent('user_log_in', [username]);
 						});
 
-						if(!_paths.direct){
-							bases.forEach(function(dbid) {
-								t.run_sync(t.local[dbid], t.remote[dbid], dbid)
-							})
-						}
-						return t.local.sync;
-
+            try_auth.length = 0;
+            bases.forEach(function(dbid) {
+              if(t.local[dbid] && t.remote[dbid] && t.local[dbid] != t.remote[dbid]){
+                try_auth.push(t.run_sync(t.local[dbid], t.remote[dbid], dbid));
+              }
+            });
+            return Promise.all(try_auth);
 					})
+          .then(function () {
+            // широковещательное оповещение об окончании загрузки локальных данных
+            if(t.local._loading){
+              return new Promise(function (resolve, reject) {
+                $p.eve.attachEvent("pouch_data_loaded", resolve);
+              });
+            }
+            else{
+              return t.call_data_loaded();
+            }
+          })
 					.catch(function(err) {
 						// излучаем событие
 						$p.eve.callEvent("user_log_fault", [err])
 					})
-
-				// return $p.ajax.get_ex(_paths.path + _paths.zone + "_ram", {username: username, password: password})
-				// 	.then(function (req) {
-				// 		_auth = {username: username, password: password};
-				// 		setTimeout(function () {
-				// 			$p.eve.callEvent("log_in", [username]);
-				// 		});
-				// 		return {
-				// 			ram: t.run_sync(t.local.ram, t.remote.ram, "ram"),
-				// 			doc: t.run_sync(t.local.doc, t.remote.doc, "doc")
-				// 		}
-				// 	});
 			}
 		},
 
@@ -2609,6 +2592,20 @@ function Pouch(){
 			}
 		},
 
+    call_data_loaded: {
+		  value: function (page) {
+        _data_loaded = true;
+        if(!page){
+          page = _local.sync._page || {};
+        }
+        return $p.md.load_doc_ram().then(function () {
+          setTimeout(function () {
+            $p.eve.callEvent(page.note = "pouch_data_loaded", [page]);
+          }, 1000);
+        });
+      }
+    },
+
 		/**
 		 * ### Загружает условно-постоянные данные из базы ram в alasql
 		 * Используется при инициализации данных на старте приложения
@@ -2648,10 +2645,7 @@ function Pouch(){
 								else{
 									resolve();
 									// широковещательное оповещение об окончании загрузки локальных данных
-									_data_loaded = true;
-									$p.eve.callEvent("pouch_load_data_loaded", [_page]);
-									_page.note = "pouch_load_data_loaded";
-									$p.record_log(_page);
+                  t.call_data_loaded(_page);
 								}
 
 							} else if(err){
@@ -2667,6 +2661,7 @@ function Pouch(){
 							if(info.doc_count >= ($p.job_prm.pouch_ram_doc_count || 10)){
 								// широковещательное оповещение о начале загрузки локальных данных
 								$p.eve.callEvent("pouch_load_data_start", [_page]);
+                t.local._loading = true;
 								fetchNextPage();
 							}else{
 								$p.eve.callEvent("pouch_load_data_error", [info]);
@@ -2717,17 +2712,16 @@ function Pouch(){
 
 				return local.info()
 					.then(function (info) {
-
 						linfo = info;
 						return remote.info()
-
 					})
 					.then(function (rinfo) {
 
 						// для базы "ram", сервер мог указать тотальную перезагрузку данных
 						// в этом случае - очищаем базы и перезапускаем браузер
-						if(id != "ram")
-							return rinfo;
+						if(id != "ram"){
+              return rinfo;
+            }
 
 						return remote.get("data_version")
 							.then(function (v) {
@@ -2753,104 +2747,104 @@ function Pouch(){
 					})
 					.then(function (rinfo) {
 
-						if(!rinfo)
-							return;
+						if(!rinfo){
+              return;
+            }
 
+            _page = {
+              id: id,
+              total_rows: rinfo.doc_count + rinfo.doc_del_count,
+              local_rows: linfo.doc_count,
+              docs_written: 0,
+              limit: 200,
+              page: 0,
+              start: Date.now()
+            };
+
+            // широковещательное оповещение о начале загрузки локальных данных
 						if(id == "ram" && linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
-							// широковещательное оповещение о начале загрузки локальных данных
-							_page = {
-								total_rows: rinfo.doc_count,
-								local_rows: linfo.doc_count,
-								docs_written: 0,
-								limit: 200,
-								page: 0,
-								start: Date.now()
-							};
 							$p.eve.callEvent("pouch_load_data_start", [_page]);
-
-						}else if(id == "doc"){
-							// широковещательное оповещение о начале синхронизации базы doc
-							setTimeout(function () {
-								$p.eve.callEvent("pouch_doc_sync_start");
-							});
+						}
+            // широковещательное оповещение о начале синхронизации базы doc
+						else{
+              $p.eve.callEvent("pouch_" + id + "_sync_start");
 						}
 
-						// ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
-						var options = {
-								live: true,
-								retry: true,
-								batch_size: 200,
-								batches_limit: 6
-							};
+            return new Promise(function(resolve, reject){
 
-						// если указан клиентский или серверный фильтр - подключаем
-						if(id == "meta"){
-							options.filter = "auth/meta";
+              // ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
+              var options = {
+                batch_size: 200,
+                batches_limit: 6
+              };
 
-						}else if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id]){
-							options.filter = $p.job_prm.pouch_filter[id];
-						}
+              function sync_events(sync, options) {
 
-						if(id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo){
-							_local.sync[id] = local.replicate.from(remote, options);
-						}else{
-							_local.sync[id] = local.sync(remote, options);
-						}
+                return sync.on('change', function (change) {
+                  // yo, something changed!
 
-						_local.sync[id]
-							.on('change', function (change) {
-								// yo, something changed!
-								if(id == "ram"){
-									t.load_changes(change);
+                  // широковещательное оповещение о загрузке порции данных
+                  if(!_data_loaded && linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
+                    _page.page++;
+                    _page.docs_written = change.docs_written;
+                    _page.duration = Date.now() - _page.start;
+                    $p.eve.callEvent("pouch_load_data_page", [_page]);
+                  }
 
-									if(linfo.doc_count < ($p.job_prm.pouch_ram_doc_count || 10)){
+                  if(id != "ram"){
+                    change.update_only = true;
+                  }
+                  t.load_changes(change);
+                  $p.eve.callEvent("pouch_change", [id, change]);
 
-										// широковещательное оповещение о загрузке порции данных
-										_page.page++;
-										_page.docs_written = change.docs_written;
-										_page.duration = Date.now() - _page.start;
-										$p.eve.callEvent("pouch_load_data_page", [_page]);
+                })
+                  .on('paused', function (info) {
+                    // replication was paused, usually because of a lost connection
+                    $p.eve.callEvent("pouch_paused", [id, info]);
+                  })
+                  .on('active', function (info) {
+                    // replication was resumed
+                    $p.eve.callEvent("pouch_active", [id, info]);
+                  })
+                  .on('denied', function (info) {
+                    // a document failed to replicate, e.g. due to permissions
+                    $p.eve.callEvent("pouch_denied", [id, info]);
+                  })
+                  .on('complete', function (info) {
+                    // handle complete
+                    if(options){
+                      options.live = true;
+                      options.retry = true;
 
-										if(_page.docs_written >= _page.total_rows){
+                      if(id == "ram" || id == "meta" || $p.wsql.get_user_param("zone") == $p.job_prm.zone_demo){
+                        _local.sync[id] = sync_events(local.replicate.from(remote, options));
+                      }else{
+                        _local.sync[id] = sync_events(local.sync(remote, options));
+                      }
+                      resolve(id);
+                    }
+                  })
+                  .on('error', function (err) {
+                    // totally unhandled error (shouldn't happen)
+                    reject([id, err]);
+                    $p.eve.callEvent("pouch_error", [id, err]);
+                  });
+              }
 
-											// широковещательное оповещение об окончании загрузки локальных данных
-											_data_loaded = true;
-											$p.eve.callEvent("pouch_load_data_loaded", [_page]);
-											_page.note = "pouch_load_data_loaded";
-											$p.record_log(_page);
-										}
+              // если указан клиентский или серверный фильтр - подключаем
+              if(id == "meta"){
+                options.filter = "auth/meta";
+                options.live = true;
+                options.retry = true;
+              }
+              else if($p.job_prm.pouch_filter && $p.job_prm.pouch_filter[id]){
+                options.filter = $p.job_prm.pouch_filter[id];
+              }
 
-									}
-								}else{
-									change.update_only = true;
-									t.load_changes(change);
-								}
-								$p.eve.callEvent("pouch_change", [id, change]);
+              sync_events(local.replicate.from(remote, options), options)
 
-							}).on('paused', function (info) {
-							// replication was paused, usually because of a lost connection
-							if(info)
-								$p.eve.callEvent("pouch_paused", [id, info]);
+            });
 
-						}).on('active', function (info) {
-							// replication was resumed
-							$p.eve.callEvent("pouch_active", [id, info]);
-
-						}).on('denied', function (info) {
-							// a document failed to replicate, e.g. due to permissions
-							$p.eve.callEvent("pouch_denied", [id, info]);
-
-						}).on('complete', function (info) {
-							// handle complete
-							$p.eve.callEvent("pouch_complete", [id, info]);
-
-						}).on('error', function (err) {
-							// totally unhandled error (shouldn't happen)
-							$p.eve.callEvent("pouch_error", [id, err]);
-
-						});
-
-						return _local.sync[id];
 					});
 			}
 		},
@@ -2865,7 +2859,7 @@ function Pouch(){
 		load_obj: {
 			value: function (tObj) {
 
-				return tObj._manager.pouch_db.get(tObj._manager.class_name + "|" + tObj.ref)
+				return tObj._manager.pouch_db.get(tObj.class_name + "|" + tObj.ref)
 					.then(function (res) {
 						delete res._id;
 						delete res._rev;
@@ -2892,14 +2886,29 @@ function Pouch(){
 		save_obj: {
 			value: function (tObj, attr) {
 
-				var tmp = tObj._obj._clone(),
+			  var _data = tObj._data;
+        if(!_data || (_data._saving && !_data._modified)){
+          return Promise.resolve(tObj);
+        }
+        if(_data._saving && _data._modified){
+          return new Promise(function(resolve, reject) {
+            setTimeout(function(){
+              resolve(t.save_obj(tObj, attr));
+            }, 100);
+          });
+        }
+        _data._saving = true;
+
+				var tmp = tObj._obj._clone(void 0, true),
 					db = attr.db || tObj._manager.pouch_db;
 
-				tmp._id = tObj._manager.class_name + "|" + tObj.ref;
+        tmp.class_name = tObj.class_name;
+				tmp._id = tmp.class_name + "|" + tObj.ref;
 				delete tmp.ref;
 
-				if(attr.attachments)
-					tmp._attachments = attr.attachments;
+				if(attr.attachments){
+          tmp._attachments = attr.attachments;
+        }
 
 				return (tObj.is_new() ? Promise.resolve() : db.get(tmp._id))
 					.then(function (res) {
@@ -2914,8 +2923,9 @@ function Pouch(){
 						}
 					})
 					.catch(function (err) {
-						if(err.status != 404)
-							throw err;
+						if(err && err.status != 404){
+              throw err;
+            }
 					})
 					.then(function () {
 						return db.put(tmp);
@@ -2934,10 +2944,15 @@ function Pouch(){
 							}
 						}
 
-						tmp = null;
-						attr = null;
+            delete _data._saving;
 						return tObj;
-					});
+					})
+          .catch(function (err) {
+            delete _data._saving;
+            if(err && err.status != 404){
+              throw err;
+            }
+          });
 			}
 		},
 
@@ -2961,8 +2976,8 @@ function Pouch(){
 						docs = changes.change.docs;
 					}else
 						docs = changes.docs;
-
-				}else
+				}
+				else
 					docs = changes.rows;
 
 				if (docs.length > 0) {
@@ -2997,12 +3012,12 @@ function Pouch(){
 					for(var mgr in res){
 						for(cn in res[mgr]){
 							if($p[mgr] && $p[mgr][cn]){
-								$p[mgr][cn].load_array(res[mgr][cn], changes.update_only ? "update_only" : true);
+								$p[mgr][cn].load_array(res[mgr][cn],
+                  changes.update_only && $p[mgr][cn].cachable.indexOf("ram") == -1 ? "update_only" : true);
 							}
 						}
 					}
 
-					res	= changes = docs = doc = null;
 					return true;
 				}
 
@@ -3762,9 +3777,48 @@ function Meta() {
 	/**
 	 * ### Cоздаёт объекты менеджеров
 	 * @method create_managers
-	 * @for Meta
 	 */
 	_md.create_managers = function(){};
+
+  /**
+   * ### Возвращает массив используемых баз
+   *
+   * @method bases
+   * @return {Array}
+   */
+  _md.bases = function () {
+    var res = {};
+    for(var i in _m){
+      for(var j in _m[i]){
+        if(_m[i][j].cachable){
+          var _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '');
+          if(_name != 'meta' && _name != 'e1cib' && !res[_name])
+            res[_name] = _name;
+        }
+      }
+    }
+    return Object.keys(res);
+  }
+
+  /**
+   * ### Загружает объекты с типом кеширования doc_ram в ОЗУ
+   * @method load_doc_ram
+   */
+  _md.load_doc_ram = function() {
+    var res = [];
+    ['cat','cch','ireg'].forEach(function (kind) {
+      for (var name in _m[kind]) {
+        if (_m[kind][name].cachable == 'doc_ram') {
+          res.push(kind + '.' + name);
+        }
+      }
+    });
+    return $p.wsql.pouch.local.doc.find({
+      selector: {class_name: {$in: res}},
+      limit: 10000
+    })
+      .then($p.wsql.pouch.load_changes);
+  }
 
 	/**
 	 * ### Инициализирует метаданные
@@ -4029,12 +4083,12 @@ function Meta() {
 
 		var property, oproperty, tnames, rt, mgr;
 
-		if(mf._mgr){
+		if(mf._mgr instanceof DataManager){
 			return mf._mgr;
 		}
 
 		function mf_mgr(mgr){
-			if(mgr && mf.types.length == 1){
+			if(mgr instanceof DataManager && mf.types.length == 1){
 				mf._mgr = mgr;
 			}
 			return mgr;
@@ -4097,17 +4151,6 @@ function Meta() {
 				}
 
 				// и через его тип выходми на мнеджера значения
-				// for(rt in oproperty.type.types)
-				// 	if(oproperty.type.types[rt].indexOf(".") > -1){
-				// 		tnames = oproperty.type.types[rt].split(".");
-				// 		break;
-				// 	}
-				// if(tnames && tnames.length > 1 && $p[tnames[0]])
-				// 	return mf_mgr($p[tnames[0]][tnames[1]]);
-				// else
-				// 	return oproperty.type;
-
-				//---
 				rt = [];
 				oproperty.type.types.some(function(v){
 					tnames = v.split(".");
@@ -4844,7 +4887,7 @@ DataManager.prototype.__define({
         if(typeof attr.custom_selection == "function"){
           return attr.custom_selection(attr);
 
-        }else if(mgr.cachable == "ram"){
+        }else if(mgr.cachable == "ram" || mgr.cachable == "doc_ram"){
 
           // запрос к alasql
           if(attr.action == "get_tree")
@@ -4857,7 +4900,7 @@ DataManager.prototype.__define({
                 return $p.iface.data_to_grid.call(mgr, data, attr);
               });
 
-        }else if(mgr.cachable.indexOf("doc") == 0){
+        }else if(mgr.cachable.indexOf("doc") == 0 || mgr.cachable.indexOf("remote") == 0){
 
           // todo: запрос к pouchdb
           if(attr.action == "get_tree")
@@ -4948,10 +4991,19 @@ DataManager.prototype.__define({
         })
       }
 
-      if(t.cachable == "ram" || (selection && selection._local)) {
+      if(t.cachable.indexOf("ram") != -1 || (selection && selection._local)) {
         t.find_rows(selection, function (v) {
           l.push(check({text: v.presentation, value: v.ref}));
         });
+        l.sort(function(a, b) {
+          if (a.text < b.text){
+            return -1;
+          }
+          else if (a.text > b.text){
+            return 1;
+          }
+          return 0;
+        })
         return Promise.resolve(l);
 
       }else if(t.cachable != "e1cib"){
@@ -4964,8 +5016,8 @@ DataManager.prototype.__define({
             });
             return l;
           });
-
-      }else{
+      }
+      else{
         // для некешируемых выполняем запрос к серверу
         var attr = { selection: selection, top: selection._top},
           is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
@@ -5498,20 +5550,18 @@ RefDataManager.prototype.__define({
 				obj = this.by_ref[ref];
 
 				if(!obj){
-
 					if(forse == "update_only"){
 						continue;
 					}
-
 					obj = new $p[this.obj_constructor()](aattr[i], this);
-					if(forse)
-						obj._set_loaded();
-
-				}else if(obj.is_new() || forse){
+					if(forse){
+            obj._set_loaded();
+          }
+				}
+				else if(obj.is_new() || forse){
 					obj._mixin(aattr[i]);
 					obj._set_loaded();
 				}
-
 				res.push(obj);
 			}
 			return res;
@@ -6111,7 +6161,7 @@ DataProcessorsManager.prototype.__define({
 	},
 
 	/**
-	 * fake-метод, не имеет смысла для обработок, т.к. они не кешируются в alasql. Добавлен, чтобы не ругалась форма обхекта при закрытии
+	 * fake-метод, не имеет смысла для обработок, т.к. они не кешируются в alasql. Добавлен, чтобы не ругалась форма объекта при закрытии
 	 * @method unload_obj
 	 * @param ref
 	 */
@@ -6286,6 +6336,15 @@ EnumManager.prototype.__define({
         }
         l.push(check({text: v.synonym || "", value: v.ref}));
       });
+      l.sort(function(a, b) {
+        if (a.text < b.text){
+          return -1;
+        }
+        else if (a.text > b.text){
+          return 1;
+        }
+        return 0;
+      })
       return Promise.resolve(l);
     }
   }
@@ -6382,28 +6441,24 @@ function RegisterManager(class_name){
 	 * @async
 	 */
 	this.load_array = function(aattr, forse){
-
 		var ref, obj, res = [];
 
 		for(var i=0; i<aattr.length; i++){
-
 			ref = this.get_ref(aattr[i]);
 			obj = this.by_ref[ref];
 
 			if(!obj && !aattr[i]._deleted){
 				obj = new $p[this.obj_constructor()](aattr[i], this);
-				if(forse)
-					obj._set_loaded();
-
-			}else if(obj && aattr[i]._deleted){
-				obj.unload();
+				forse && obj._set_loaded();
+			}
+			else if(aattr[i]._deleted){
+        obj && obj.unload();
 				continue;
-
-			}else if(obj.is_new() || forse){
+			}
+			else if(obj.is_new() || forse){
 				obj._mixin(aattr[i]);
 				obj._set_loaded();
 			}
-
 			res.push(obj);
 		}
 		return res;
@@ -7090,14 +7145,25 @@ function LogManager(){
 			value: function(msg){
 
 				if(msg instanceof Error){
-          if(console){
-            console.log(msg);
-          }
+          console && console.log(msg);
 					msg = {
 						class: "error",
 						note: msg.toString()
 					}
 				}
+        else if(msg instanceof DataObj){
+          console && console.log(msg);
+          var _err = msg._data._err;
+          msg = {
+            class: "error",
+            obj: {
+              type: msg.class_name,
+              ref: msg.ref,
+              presentation: msg.presentation
+            },
+            note: _err ? _err.text : ''
+          }
+        }
 				else if(typeof msg == "object" && !msg.class && !msg.obj){
 					msg = {
 						class: "obj",
@@ -7361,7 +7427,7 @@ function TabularSection(name, owner){
 }
 
 TabularSection.prototype.toString = function(){
-	return "Табличная часть " + this._owner._manager.class_name + "." + this._name
+	return "Табличная часть " + this._owner.class_name + "." + this._name
 };
 
 /**
@@ -7904,15 +7970,12 @@ TabularSectionRow.prototype._setter = function (f, v) {
 function DataObj(attr, manager) {
 
 	var tmp,
-		_ts_ = {},
-		_obj = {},
-		_data = {
-			_is_new: !(this instanceof EnumObj)
-		};
+		_ts_ = {};
 
 	// если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
-	if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager))
-		tmp = manager.get(attr, false, true);
+	if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)){
+    tmp = manager.get(attr, false, true);
+  }
 
 	if(tmp){
 		attr = null;
@@ -7920,29 +7983,7 @@ function DataObj(attr, manager) {
 	}
 
 
-	if(manager instanceof EnumManager)
-		_obj.ref = attr.name;
-
-	else if(!(manager instanceof RegisterManager)){
-		_obj.ref = $p.utils.fix_guid(attr);
-
-	}else
-		_obj.ref = manager.get_ref(attr);
-
-
 	this.__define({
-
-		/**
-		 * ### Фактическое хранилище данных объекта
-		 * Оно же, запись в таблице объекта локальной базы данных
-		 * @property _obj
-		 * @type Object
-		 * @final
-		 */
-		_obj: {
-			value: _obj,
-			configurable: true
-		},
 
 		/**
 		 * Хранилище ссылок на табличные части - не сохраняется в базе данных
@@ -7968,177 +8009,42 @@ function DataObj(attr, manager) {
 			value : manager
 		},
 
-		/**
-		 * Пользовательские данные - аналог `AdditionalProperties` _Дополнительные cвойства_ в 1С
-		 * @property _data
-		 * @type DataManager
-		 * @final
-		 */
-		_data: {
-			value : _data,
-			configurable: true
-		}
+    /**
+     * Пользовательские данные - аналог `AdditionalProperties` _Дополнительные cвойства_ в 1С
+     * @property _data
+     * @type DataManager
+     * @final
+     */
+    _data: {
+		  value: {
+        _is_new: !(this instanceof EnumObj)
+      }
+    },
+
+    /**
+     * ### Фактическое хранилище данных объекта
+     * Оно же, запись в таблице объекта локальной базы данных
+     * @property _obj
+     * @type Object
+     * @final
+     */
+    _obj: {
+		  value: {
+        ref: manager instanceof EnumManager ? attr.name : (manager instanceof RegisterManager ? manager.get_ref(attr) : $p.utils.fix_guid(attr))
+      }
+    }
 
 	});
 
 
 	if(manager.alatable && manager.push){
-		manager.alatable.push(_obj);
-		manager.push(this, _obj.ref);
+		manager.alatable.push(this._obj);
+		manager.push(this, this._obj.ref);
 	}
 
 	attr = null;
 
 }
-
-
-DataObj.prototype._getter = function (f) {
-
-	var mf = this._metadata.fields[f].type,
-		res = this._obj ? this._obj[f] : "",
-		mgr, ref;
-
-	if(f == "type" && typeof res == "object")
-		return res;
-
-	else if(f == "ref"){
-		return res;
-
-	}else if(mf.is_ref){
-
-		if(mf.digits && typeof res === "number"){
-			return res;
-		}
-
-		if(mf.hasOwnProperty("str_len") && !$p.utils.is_guid(res)){
-			return res;
-		}
-
-		if(mgr = _md.value_mgr(this._obj, f, mf)){
-			if($p.utils.is_data_mgr(mgr)){
-				return mgr.get(res, false);
-			}
-			else{
-				return $p.utils.fetch_type(res, mgr);
-			}
-		}
-
-		if(res){
-			console.log([f, mf, this._obj]);
-			return null;
-		}
-
-	}else if(mf.date_part)
-		return $p.utils.fix_date(this._obj[f], true);
-
-	else if(mf.digits)
-		return $p.utils.fix_number(this._obj[f], !mf.hasOwnProperty("str_len"));
-
-	else if(mf.types[0]=="boolean")
-		return $p.utils.fix_boolean(this._obj[f]);
-
-	else
-		return this._obj[f] || "";
-};
-
-DataObj.prototype.__setter = function (f, v) {
-
-	var mf = this._metadata.fields[f].type,
-		mgr;
-
-	if(f == "type" && v.types)
-		this._obj[f] = v;
-
-	else if(f == "ref")
-
-		this._obj[f] = $p.utils.fix_guid(v);
-
-	else if(mf.is_ref){
-
-		if(mf.digits && typeof v == "number" || mf.hasOwnProperty("str_len") && typeof v == "string" && !$p.utils.is_guid(v)){
-			this._obj[f] = v;
-		}
-		else if(typeof v == "boolean" && mf.types.indexOf("boolean") != -1){
-			this._obj[f] = v;
-		}
-		else {
-			this._obj[f] = $p.utils.fix_guid(v);
-
-			mgr = _md.value_mgr(this._obj, f, mf, false, v);
-
-			if(mgr){
-				if(mgr instanceof EnumManager){
-					if(typeof v == "string"){
-						this._obj[f] = v;
-					}
-					else if(!v){
-						this._obj[f] = "";
-					}
-					else if(typeof v == "object"){
-						this._obj[f] = v.ref || v.name || "";
-					}
-				}
-				else if(v && v.presentation){
-					if(v.type && !(v instanceof DataObj)){
-						delete v.type;
-					}
-					mgr.create(v);
-				}
-				else if(!$p.utils.is_data_mgr(mgr)){
-					this._obj[f] = $p.utils.fetch_type(v, mgr);
-				}
-			}
-			else{
-				if(typeof v != "object"){
-					this._obj[f] = v;
-				}
-			}
-		}
-	}
-	else if(mf.date_part){
-		this._obj[f] = $p.utils.fix_date(v, true);
-	}
-	else if(mf.digits){
-		this._obj[f] = $p.utils.fix_number(v, !mf.hasOwnProperty("str_len"));
-	}
-	else if(mf.types[0]=="boolean"){
-		this._obj[f] = $p.utils.fix_boolean(v);
-	}
-	else{
-		this._obj[f] = v;
-	}
-
-};
-
-DataObj.prototype.__notify = function (f) {
-	if(!this._data._silent)
-		Object.getNotifier(this).notify({
-			type: 'update',
-			name: f,
-			oldValue: this._obj[f]
-		});
-};
-
-DataObj.prototype._setter = function (f, v) {
-
-	if(this._obj[f] == v)
-		return;
-
-	this.__notify(f);
-	this.__setter(f, v);
-	this._data._modified = true;
-
-};
-
-DataObj.prototype._getter_ts = function (f) {
-	return this._ts_(f);
-};
-
-DataObj.prototype._setter_ts = function (f, v) {
-	var ts = this._ts_(f);
-	if(ts instanceof TabularSection && Array.isArray(v))
-		ts.load(v);
-};
 
 DataObj.prototype.__define({
 
@@ -8171,6 +8077,164 @@ DataObj.prototype.__define({
 			return this.presentation;
 		}
 	},
+
+  __notify: {
+	  value: function (f) {
+      if(!this._data._silent)
+        Object.getNotifier(this).notify({
+          type: 'update',
+          name: f,
+          oldValue: this._obj[f]
+        });
+    }
+  },
+
+  _getter: {
+	  value: function (f) {
+
+      var mf = this._metadata.fields[f].type,
+        res = this._obj ? this._obj[f] : "",
+        mgr, ref;
+
+      if(f == "type" && typeof res == "object")
+        return res;
+
+      else if(f == "ref"){
+        return res;
+
+      }else if(mf.is_ref){
+
+        if(mf.digits && typeof res === "number"){
+          return res;
+        }
+
+        if(mf.hasOwnProperty("str_len") && !$p.utils.is_guid(res)){
+          return res;
+        }
+
+        if(mgr = _md.value_mgr(this._obj, f, mf)){
+          if($p.utils.is_data_mgr(mgr)){
+            return mgr.get(res, false);
+          }
+          else{
+            return $p.utils.fetch_type(res, mgr);
+          }
+        }
+
+        if(res){
+          console.log([f, mf, this._obj]);
+          return null;
+        }
+
+      }else if(mf.date_part)
+        return $p.utils.fix_date(this._obj[f], true);
+
+      else if(mf.digits)
+        return $p.utils.fix_number(this._obj[f], !mf.hasOwnProperty("str_len"));
+
+      else if(mf.types[0]=="boolean")
+        return $p.utils.fix_boolean(this._obj[f]);
+
+      else
+        return this._obj[f] || "";
+    }
+  },
+
+  _getter_ts: {
+	  value: function (f) {return this._ts_(f)}
+  },
+
+  _setter: {
+	  value: function (f, v) {
+
+      if(this._obj[f] == v)
+        return;
+
+      this.__notify(f);
+      this.__setter(f, v);
+      this._data._modified = true;
+
+    }
+  },
+
+  __setter: {
+    value: function (f, v) {
+
+      var mf = this._metadata.fields[f].type,
+        mgr;
+
+      if(f == "type" && v.types)
+        this._obj[f] = v;
+
+      else if(f == "ref")
+
+        this._obj[f] = $p.utils.fix_guid(v);
+
+      else if(mf.is_ref){
+
+        if(mf.digits && typeof v == "number" || mf.hasOwnProperty("str_len") && typeof v == "string" && !$p.utils.is_guid(v)){
+          this._obj[f] = v;
+        }
+        else if(typeof v == "boolean" && mf.types.indexOf("boolean") != -1){
+          this._obj[f] = v;
+        }
+        else {
+          this._obj[f] = $p.utils.fix_guid(v);
+
+          mgr = _md.value_mgr(this._obj, f, mf, false, v);
+
+          if(mgr){
+            if(mgr instanceof EnumManager){
+              if(typeof v == "string"){
+                this._obj[f] = v;
+              }
+              else if(!v){
+                this._obj[f] = "";
+              }
+              else if(typeof v == "object"){
+                this._obj[f] = v.ref || v.name || "";
+              }
+            }
+            else if(v && v.presentation){
+              if(v.type && !(v instanceof DataObj)){
+                delete v.type;
+              }
+              mgr.create(v);
+            }
+            else if(!$p.utils.is_data_mgr(mgr)){
+              this._obj[f] = $p.utils.fetch_type(v, mgr);
+            }
+          }
+          else{
+            if(typeof v != "object"){
+              this._obj[f] = v;
+            }
+          }
+        }
+      }
+      else if(mf.date_part){
+        this._obj[f] = $p.utils.fix_date(v, true);
+      }
+      else if(mf.digits){
+        this._obj[f] = $p.utils.fix_number(v, !mf.hasOwnProperty("str_len"));
+      }
+      else if(mf.types[0]=="boolean"){
+        this._obj[f] = $p.utils.fix_boolean(v);
+      }
+      else{
+        this._obj[f] = v;
+      }
+
+    }
+  },
+
+  _setter_ts: {
+	  value: function (f, v) {
+      var ts = this._ts_(f);
+      ts instanceof TabularSection && Array.isArray(v) && ts.load(v);
+    }
+  },
+
 
 	/**
 	 * Метаданные текущего объекта
@@ -8254,11 +8318,22 @@ DataObj.prototype.__define({
 	 * @type String
 	 */
 	ref: {
-		get : function(){ return this._obj.ref},
-		set : function(v){ this._obj.ref = $p.utils.fix_guid(v)},
+		get : function(){return this._obj.ref},
+		set : function(v){this._obj.ref = $p.utils.fix_guid(v)},
 		enumerable : true,
 		configurable: true
 	},
+
+  /**
+   * ### Имя типа этого объекта
+   * @property class_name
+   * @type String
+   * @final
+   */
+  class_name: {
+    get : function(){return this._manager.class_name},
+    set : function(v){this._obj.class_name = v}
+  },
 
 	/**
 	 * Проверяет, является ли ссылка объекта пустой
@@ -8367,49 +8442,44 @@ DataObj.prototype.__define({
 				before_save_res = this._manager.handle_event(this, "before_save"),
 
 				reset_modified = function () {
-
 					if(before_save_res === false){
 						if(this instanceof DocObj && typeof initial_posted == "boolean" && this.posted != initial_posted){
 							this.posted = initial_posted;
 						}
-					}else
-						this._data._modified = false;
-
+					}else{
+            this._data._modified = false;
+          }
 					saver = null;
 					before_save_res = null;
 					reset_modified = null;
-
 					return this;
 				}.bind(this);
 
 			// если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
 			if(before_save_res === false){
 				return Promise.reject(reset_modified());
-
-			}else if(before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then){
-				// если пользовательский обработчик перед записью вернул промис, его и возвращаем
+			}
+      // если пользовательский обработчик перед записью вернул промис, его и возвращаем
+			else if(before_save_res instanceof Promise || typeof before_save_res === "object" && before_save_res.then){
 				return before_save_res.then(reset_modified);
 			}
 
-
 			// для объектов с иерархией установим пустого родителя, если иной не указан
-			if(this._metadata.hierarchical && !this._obj.parent)
-				this._obj.parent = $p.utils.blank.guid;
+			if(this._metadata.hierarchical && !this._obj.parent){
+        this._obj.parent = $p.utils.blank.guid;
+      }
 
 			// для документов, контролируем заполненность даты
 			if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj){
-
 				if($p.utils.blank.date == this.date)
 					this.date = new Date();
-
 				if(!this.number_doc)
 					this.new_number_doc();
-
-			}else{
+			}
+			else{
 				if(!this.id)
 					this.new_number_doc();
 			}
-
 
 			// если не указаны обязательные реквизиты
 			if($p.msg && $p.msg.show_msg){
@@ -8429,11 +8499,10 @@ DataObj.prototype.__define({
 			// в зависимости от типа кеширования, получаем saver
 			if(this._manager.cachable && this._manager.cachable != "e1cib"){
 				saver = $p.wsql.pouch.save_obj;
-
-			} else {
-				// запрос к серверу 1C по сети
+			}
+      // запрос к серверу 1C по сети
+			else {
 				saver = _rest.save_irest;
-
 			}
 
 			// Сохраняем во внешней базе
@@ -8563,7 +8632,8 @@ function CatObj(attr, manager) {
 	// выполняем конструктор родительского объекта
 	CatObj.superclass.constructor.call(this, attr, manager);
 
-	if(attr && typeof attr == "object"){
+	if(this._data && attr && typeof attr == "object"){
+	  this._data._silent = true;
 		if(attr._not_set_loaded){
 			delete attr._not_set_loaded;
 			this._mixin(attr);
@@ -8573,6 +8643,7 @@ function CatObj(attr, manager) {
 			if(!$p.utils.is_empty_guid(this.ref) && (attr.id || attr.name))
 				this._set_loaded(this.ref);
 		}
+    this._data._silent = false;
 	}
 
 }
@@ -8637,12 +8708,12 @@ CatObj.prototype.__define({
    * @param group {Object|Array} - папка или массив папок
    *
    */
-  in_hierarchy: {
+  _hierarchy: {
     value: function (group) {
       var t = this;
       if(Array.isArray(group)){
         return group.some(function (v) {
-          return t.in_hierarchy(v);
+          return t._hierarchy(v);
         });
       }
       if(this == group || t.parent == group){
@@ -8650,9 +8721,25 @@ CatObj.prototype.__define({
       }
       var parent = t.parent;
       if(parent && !parent.empty()){
-        return parent.in_hierarchy(group);
+        return parent._hierarchy(group);
       }
       return group == $p.utils.blank.guid;
+    }
+  },
+
+  /**
+   * ### Дети
+   * Возвращает массив элементов, находящихся в иерархии текущего
+   */
+  _children: {
+    get: function () {
+      var  t = this, res = [];
+      this._manager.forEach(function (o) {
+        if(o != t && o._hierarchy(t)){
+          res.push(o);
+        }
+      });
+      return res;
     }
   }
 
@@ -8696,8 +8783,11 @@ function DocObj(attr, manager) {
 		}
 	});
 
-	if(attr && typeof attr == "object")
-		this._mixin(attr);
+	if(attr && typeof attr == "object"){
+    this._data._silent = true;
+    this._mixin(attr);
+    this._data._silent = false;
+  }
 
 	if(!$p.utils.is_empty_guid(this.ref) && attr.number_doc)
 		this._set_loaded(this.ref);
@@ -9900,7 +9990,7 @@ DataManager.prototype.__define({
 					limit : 1000,
 					include_docs: true,
 					startkey: t.class_name + "|",
-					endkey: t.class_name + '|\uffff'
+					endkey: t.class_name + '|\ufff0'
 				};
 
 			return new Promise(function(resolve, reject){
@@ -9949,10 +10039,11 @@ DataManager.prototype.__define({
 	 */
 	pouch_db: {
 		get: function () {
-			if(this.cachable.indexOf("_remote") != -1)
-				return $p.wsql.pouch.remote[this.cachable.replace("_remote", "")];
+		  const cachable = this.cachable.replace("_ram", "");
+			if(cachable.indexOf("remote") != -1)
+				return $p.wsql.pouch.remote[cachable.replace("_remote", "")];
 			else
-				return $p.wsql.pouch.local[this.cachable] || $p.wsql.pouch.remote[this.cachable];
+				return $p.wsql.pouch.local[cachable] || $p.wsql.pouch.remote[cachable];
 		}
 	},
 
@@ -9980,7 +10071,7 @@ DataManager.prototype.__define({
 					limit : 100,
 					include_docs: true,
 					startkey: t.class_name + "|",
-					endkey: t.class_name + '|\uffff'
+					endkey: t.class_name + '|\ufff0'
 				};
 
 			if(selection){
@@ -10009,12 +10100,12 @@ DataManager.prototype.__define({
 				if(selection._key) {
 
 					if(selection._key._order_by == "des"){
-						options.startkey = selection._key.endkey || selection._key + '\uffff';
+						options.startkey = selection._key.endkey || selection._key + '\ufff0';
 						options.endkey = selection._key.startkey || selection._key;
 						options.descending = true;
 					}else{
 						options.startkey = selection._key.startkey || selection._key;
-						options.endkey = selection._key.endkey || selection._key + '\uffff';
+						options.endkey = selection._key.endkey || selection._key + '\ufff0';
 					}
 				}
 
@@ -10378,6 +10469,7 @@ DataManager.prototype.__define({
 		}
 	},
 
+
 	/**
 	 * ### Возвращает набор данных для дерева динсписка
 	 *
@@ -10519,9 +10611,9 @@ DataObj.prototype.__define({
 				return;
 
 			// если не указан явно, рассчитываем префикс по умолчанию
-			if(!prefix)
-				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
-					(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
+			if(!prefix){
+        prefix = (($p.current_user && $p.current_user.prefix) || "") + ((this.organization && this.organization.prefix) || "");
+      }
 
 			var obj = this,
 				part = "",
@@ -10536,8 +10628,8 @@ DataObj.prototype.__define({
 				{
 					limit : 1,
 					include_docs: false,
-					startkey: [obj._manager.class_name, year, prefix + '\uffff'],
-					endkey: [obj._manager.class_name, year, prefix],
+					startkey: [obj.class_name, year, prefix + '\ufff0'],
+					endkey: [obj.class_name, year, prefix],
 					descending: true
 				})
 				.then(function (res) {
@@ -10571,7 +10663,7 @@ DataObj.prototype.__define({
 		value: function (prefix) {
 
 			if(!prefix)
-				prefix = (($p.current_acl && $p.current_acl.prefix) || "") +
+				prefix = (($p.current_user && $p.current_user.prefix) || "") +
 					(this.organization && this.organization.prefix ? this.organization.prefix : ($p.wsql.get_user_param("zone") + "-"));
 
 			var code_length = this._metadata.code_length - prefix.length,
@@ -10830,52 +10922,7 @@ function AppEvents() {
  */
 function JobPrm(){
 
-	function base_url(){
-		return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
-	}
-
-	function parse_url(){
-
-		function parse(url_prm){
-			var prm = {}, tmp = [], pairs;
-
-			if(url_prm.substr(0, 1) === "#" || url_prm.substr(0, 1) === "?")
-				url_prm = url_prm.substr(1);
-
-			if(url_prm.length > 2){
-
-				pairs = decodeURI(url_prm).split('&');
-
-				// берём параметры из url
-				for (var i in pairs){   //разбиваем пару на ключ и значение, добавляем в их объект
-					tmp = pairs[i].split('=');
-					if(tmp[0] == "m"){
-						try{
-							prm[tmp[0]] = JSON.parse(tmp[1]);
-						}catch(e){
-							prm[tmp[0]] = {};
-						}
-					}else
-						prm[tmp[0]] = tmp[1] || "";
-				}
-			}
-
-			return prm;
-		}
-
-		return parse(location.search)._mixin(parse(location.hash));
-	}
-
 	this.__define({
-
-		/**
-		 * Осуществляет синтаксический разбор параметров url
-		 * @method parse_url
-		 * @return {Object}
-		 */
-		parse_url: {
-			value: parse_url
-		},
 
 		offline: {
 			value: false,
@@ -10899,41 +10946,9 @@ function JobPrm(){
 		 * @static
 		 */
 		url_prm: {
-			value: typeof window != "undefined" ? parse_url() : {}
-		},
-
-		/**
-		 * Адрес стандартного интерфейса 1С OData
-		 * @method rest_url
-		 * @return {string}
-		 */
-		rest_url: {
-			value: function () {
-				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
-				if(zone)
-					return url.replace("%1", zone);
-				else
-					return url.replace("%1/", "");
-			}
-		},
-
-		/**
-		 * Адрес http интерфейса библиотеки интеграции
-		 * @method irest_url
-		 * @return {string}
-		 */
-		irest_url: {
-			value: function () {
-				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
-				url = url.replace("odata/standard.odata", "hs/rest");
-				if(zone)
-					return url.replace("%1", zone);
-				else
-					return url.replace("%1/", "");
-			}
+			value: typeof window != "undefined" ? this.parse_url() : {}
 		}
+
 	});
 
 	// подмешиваем параметры, заданные в файле настроек сборки
@@ -10946,7 +10961,89 @@ function JobPrm(){
 			this[prm_name] = this.url_prm[prm_name];
 	}
 
-}
+};
+
+JobPrm.prototype.__define({
+
+  base_url: {
+    value: function (){
+      return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
+    }
+  },
+
+  /**
+   * Осуществляет синтаксический разбор параметров url
+   * @method parse_url
+   * @return {Object}
+   */
+  parse_url_str: {
+    value: function (prm_str) {
+      var prm = {}, tmp = [], pairs;
+
+      if (prm_str[0] === "#" || prm_str[0] === "?")
+        prm_str = prm_str.substr(1);
+
+      if (prm_str.length > 2) {
+
+        pairs = decodeURI(prm_str).split('&');
+
+        // берём параметры из url
+        for (var i in pairs) {   //разбиваем пару на ключ и значение, добавляем в их объект
+          tmp = pairs[i].split('=');
+          if (tmp[0] == "m") {
+            try {
+              prm[tmp[0]] = JSON.parse(tmp[1]);
+            } catch (e) {
+              prm[tmp[0]] = {};
+            }
+          } else
+            prm[tmp[0]] = tmp[1] || "";
+        }
+      }
+
+      return prm;
+    }
+  },
+
+  /**
+   * Осуществляет синтаксический разбор параметров url
+   * @method parse_url
+   * @return {Object}
+   */
+  parse_url: {
+    value: function () {
+      return this.parse_url_str(location.search)._mixin(this.parse_url_str(location.hash));
+    }
+  },
+
+  /**
+   * Адрес стандартного интерфейса 1С OData
+   * @method rest_url
+   * @return {string}
+   */
+  rest_url: {
+    value: function () {
+      var url = this.base_url(),
+        zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
+      return zone ? url.replace("%1", zone) : url.replace("%1/", "");
+    }
+  },
+
+  /**
+   * Адрес http интерфейса библиотеки интеграции
+   * @method irest_url
+   * @return {string}
+   */
+  irest_url: {
+    value: function () {
+      var url = this.base_url().replace("odata/standard.odata", "hs/rest"),
+        zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
+      return zone ? url.replace("%1", zone) : url.replace("%1/", "");
+    }
+  }
+
+});
+
 
 /**
  * ### Модификатор отложенного запуска
@@ -11036,7 +11133,8 @@ function Modifiers(){
 			}.bind(this));
 	};
 
-}
+};
+
 
 
 /**

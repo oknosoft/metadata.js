@@ -5,7 +5,34 @@
 For details, see [metadata.js](https://github.com/oknosoft/metadata.js)
 
 Библиотека экспортирует плагин для metadata-core и описывет перечислимые типы и методы, востребованные всеми
-ui-библиотеками ([metadata-react-ui](../metadata-react-ui), [metadata-ember-ui](../metadata-ember-ui), [metadata-angular-ui](../metadata-angular-ui) и т.д.)
+ui-библиотеками ([metadata-react](../metadata-react), [metadata-ember](../metadata-ember), [metadata-angular](../metadata-angular) и т.д.)
+
+#### События при старте приложения
+
+- `meta_loaded` - информирует о факте загрузки скриптов (код приложения) с сервера, appcache или serviseworker
+- `data_empty` - нет данных в pouchdb - это первый запуск либо сброс базы
+- `data_loaded` - данные из базы `ram` загружены в `ram`
+- `has_login` - есть сохранённый пароль либо это гостевая база
+- `sync_started` - выполняется синхронизация либо начальная загрузка данных
+- `fetch_local` - передаётся порция данных
+- `offline` - отсутствует подключение к сети либо сервер недоступен
+- `try_log_in` - запрос авторизации отправлен на сервер
+- `path_log_in` - мы на странице авторизации
+- `couch_direct` - прямое подключение к couchdb, offline запрещён
+
+
+|\                              |<sub><sup>meta loaded</sup></sub>|<sub><sup>data empty</sup></sub>|<sub><sup>data loaded</sup></sub>|<sub><sup>has login</sup></sub>|<sub><sup>offline</sup></sub>|<sub><sup>try log_in</sup></sub>|<sub><sup>path log_in</sup></sub>|<sub><sup>couch direct</sup></sub>|
+|:-----------------------------------------------------------------------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|Если скрипты не загружены, показываем splash                            | - |   |   |   |   |   |   |   |
+|Если скрипты не загружены и offline - показваем дополнительный индикатор| - |   |   |   | + |   |   |   |
+|Если есть сохранённый пароль и online, пытаемся авторизоваться          | + |   |   | + | - | - |   |   |
+|Если пустые данные и не запущен процесс авторизации, переходим на страницу login| + | + |   |   | - | - |   |   |
+|Если couch_direct и offline, переходим на страницу login                | + | + |   |   | - | - |   |   |
+|Если мы на странице login и еще не авторизованы, никуда не переходим    | + |   |   |   |   |   | + |   |
+|Если данные загружены, передаём управление роутеру                      | + | - | + |   |   |   |   |   |
+|Если мы на странице автоизации и offline - блокируем кнопку login       |   |   |   |   | + |   | + |   |
+|                                                                        |   |   |   |   |   |   |   |   |
+
 
 #### Перечисления
 

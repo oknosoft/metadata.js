@@ -21,7 +21,7 @@
  * @for DataManager
  * @param attr {Object} - параметры экспорта
  * @param [attr.pwnd] {dhtmlXWindows} - указатель на родительскую форму
- * 
+ *
  * @example
  *
  *     //	обработчик нажатия кнопок командной панели формы списка
@@ -120,9 +120,7 @@ DataManager.prototype.export = function(attr){
 			if(attr.obj)
 				wnd.elmnts.frm.setItemLabel("range", "selected", "Тек. объект: " + attr.items[0].presentation);
 			else
-				_mgr.get(attr.items[0], true).then(function (Obj) {
-					wnd.elmnts.frm.setItemLabel("range", "selected", "Тек. объект: " + Obj.presentation);
-				});
+				_mgr.get(attr.items[0], 'promise').then((Obj) => wnd.elmnts.frm.setItemLabel("range", "selected", "Тек. объект: " + Obj.presentation));
 			wnd.elmnts.frm.setItemValue("range", "selected");
 
 		}else if(attr.items && attr.items.length)
@@ -211,7 +209,7 @@ DataManager.prototype.export = function(attr){
 				});
 
 			if(attr.items.length && !items.length)
-				_mgr.get(attr.items[0], true).then(function (Obj) {
+				_mgr.get(attr.items[0], 'promise').then(function (Obj) {
 					items.push(Obj._obj);
 					alasql.utils.saveFile(_mgr.table_name+".json", JSON.stringify(res, null, 4));
 				});
@@ -227,7 +225,7 @@ DataManager.prototype.export = function(attr){
 
 		}else if(options.format == "atom" && attr.items.length){
 
-			var po = attr.obj ? Promise.resolve(attr.items[0]) : _mgr.get(attr.items[0], true);
+			var po = attr.obj ? Promise.resolve(attr.items[0]) : _mgr.get(attr.items[0], 'promise');
 			po.then(function (o) {
 				alasql.utils.saveFile(_mgr.table_name+".xml", o.to_atom());
 			});

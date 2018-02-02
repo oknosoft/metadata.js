@@ -37,9 +37,9 @@ npm install                     # install dependencies
 
 For the browser, include:
 ```html
-<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/fontawesome/latest/css/font-awesome.min.css">
-<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/g/metadata(dhx_terrace.css+metadata.css)">
-<script src="//cdn.jsdelivr.net/g/momentjs,alasql,pouchdb,jquery,metadata(dhtmlx.min.js+metadata.min.js)"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/combine/npm/metadata-js/dist/dhx_terrace.min.css,npm/metadata-js/dist/metadata.min.css">
+<script src="//cdn.jsdelivr.net/combine/npm/moment,npm/alasql,npm/pouchdb,npm/jquery,npm/metadata-js/dist/dhtmlx.min.js,npm/metadata-js/dist/metadata.min.js"></script>
 ```
 
 ### Credits
@@ -53,4 +53,4 @@ Many thanks to
 
 The license on this repo covers all contents of the repo, but does not supercede the existing licenses for products used for this work and other products.
 
-(c) 2014-2016, Oknosoft Lab (info@oknosoft.ru)
+(c) 2014-2018, Oknosoft Lab (info@oknosoft.ru)

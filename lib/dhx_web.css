@@ -1,5 +1,5 @@
 
-		
+
 .dhtmlxcalendar_dhx_web {
   position: absolute;
   display: block;
@@ -1959,7 +1959,7 @@ div.dhx_popup_dhx_web div.dhx_popup_area tr.dhxnode td.dhx_popup_td div.dhxedito
 /*style of dataview's item, when drag is moved other it*/
 .dhx_drag_over {
   background-color: #faf768;
-  background-image: url("../imgs/dhxdataview_web/marker.png");
+  background-image: url("imgs/dhxdataview_web/marker.png");
   background-repeat: repeat-x;
 }
 /*paging related styles*/
@@ -3726,7 +3726,7 @@ div.dhx_form_skin_detect {
   z-index: 0;
 }
 .dhx_vault_dhx_web div.dhx_vault_f_pr {
-  background-image: url("../imgs/dhxvault_web/dhxvault_progress.gif");
+  background-image: url("imgs/dhxvault_web/dhxvault_progress.gif");
   background-position: center center;
   background-repeat: no-repeat;
   opacity: 0.5;
@@ -4291,7 +4291,7 @@ div.dhxlayout_sep_sw_dhx_web {
 }
 .dhxlayout_base_dhx_web div.dhx_cell_layout.dhxlayout_collapsed_v div.dhx_cell_hdr {
   width: 21px;
-  /*background: -moz-linear-gradient(left, @gbg1, @gbg2); // not recognoze 'left' w/o -prefix- 
+  /*background: -moz-linear-gradient(left, @gbg1, @gbg2); // not recognoze 'left' w/o -prefix-
 	background: -webkit-linear-gradient(left, @gbg1, @gbg2);
 	background: -o-linear-gradient(left, @gbg1, @gbg2);
 	background: -ms-linear-gradient(left, @gbg1, @gbg2);
@@ -6400,4 +6400,3 @@ div.dhx_modal_cover {
 }
 
 
-	

@@ -61,7 +61,7 @@ function TabularSection(name, owner){
 }
 
 TabularSection.prototype.toString = function(){
-	return "Табличная часть " + this._owner._manager.class_name + "." + this._name
+	return "Табличная часть " + this._owner.class_name + "." + this._name
 };
 
 /**
@@ -188,7 +188,7 @@ TabularSection.prototype.find_rows = function(selection, callback){
 			return callback.call(t, row._row);
 		} : null;
 
-	return $p._find_rows.call(t, t._obj, selection, cb);
+	return $p.utils._find_rows.call(t, t._obj, selection, cb);
 
 };
 

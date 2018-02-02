@@ -135,7 +135,7 @@ function IPInfo(){
 								locality = (locality ? (locality + " ") : "") + c.short_name;
 								break;
 							case "street_number":
-								street = (street ? (street + " ") : "") + c.short_name;
+                v.house = "дом " + c.short_name;
 								break;
 							case "postal_code":
 								v.postal_code = c.short_name;
@@ -175,7 +175,7 @@ function IPInfo(){
 
 				if(navigator.geolocation)
 					navigator.geolocation.getCurrentPosition(function(position){
-						
+
 						/**
 						 * Географическая широта геолокации пользователя программы
 						 * @property latitude
@@ -213,5 +213,5 @@ function IPInfo(){
 			}
 		}
 	});
-	
+
 }

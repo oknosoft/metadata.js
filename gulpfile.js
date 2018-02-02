@@ -15,6 +15,7 @@ const gulp = require('gulp'),
 	path = require('path'),
   strip = require('gulp-strip-comments'),
 	umd = require('gulp-umd'),
+  wrap = require('gulp-wrap'),
 	replace = require('gulp-replace'),
 	babel = require('gulp-babel');
 	// async = require('gulp-async-func-runner'),
@@ -37,59 +38,18 @@ gulp.task('prebuild', function(){
 
 });
 
-
-gulp.task('build-metadata', function () {
-	return gulp.src([
-		'./node_modules/moment/locale/ru.js',
-		'./src/common.js',
-		'./src/wsql.js',
-		'./src/common.ui.js',
-		'./src/pouchdb.js',
-		'./src/i18n.ru.js',
-		'./src/meta_meta.js',
-		'./src/meta_mngrs.js',
-		'./src/meta_objs.js',
-		'./src/meta_tabulars.js',
-		'./src/meta_rest.js',
-		'./src/meta_pouchdb.js',
-		'./src/widgets/*.js',
-		'./src/import_export.js',
-		'./src/events.js',
-		'./src/events.ui.js',
-		'./src/geocoding.js',
-		'./src/reporting.js',
-		'./data/merged_data.js',
-		'./lib/xml_to_json.js',
-		'./lib/filesaver.js',
-		'./lib/aes/aes.js',
-		'./lib/rubles/rubles.js',
-		//'./lib/daterangepicker/daterangepicker.js',
-		'./lib/mime-types/db.js',
-	])
-		.pipe(concat('metadata.js'))
-		.pipe(umd({
-			exports: function() {
-				return '$p';
-			},
-			namespace: function() {
-				return '$p';
-			},
-			template: path.join(__dirname, './src/utils/umd-exports-oknosoft.js')
-		}))
-		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
-		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
-    .pipe(strip({safe: true}))
-		.pipe(gulp.dest('./lib'))
-		.pipe(gulp.dest('./dist'))
-		.pipe(rename('metadata.min.js'))
-		.pipe(uglify({
-			preserveComments: function (node, comment) {
-				return comment.value[0]=="!";
-			}
-		}))
-		.pipe(gulp.dest('./lib'))
-		.pipe(gulp.dest('./dist'));
+gulp.task('dhtmlx-ui', function () {
+  return gulp.src([
+    './src/widgets/*.js',
+    './src/reporting.js',
+    './src/import_export.js',
+    './data/merged_data.js',
+  ])
+    .pipe(concat('dhtmlx-widgets.js'))
+    .pipe(wrap({ src: './packages/metadata-dhtmlx/src/wrapper.js'}))
+    .pipe(gulp.dest('./packages/metadata-dhtmlx/src'))
 });
+
 
 gulp.task('injected_main', function(){
     return gulp.src(['./data/*.xml'])
@@ -214,7 +174,7 @@ gulp.task('build-dhtmlx', function(){
 			}
 		}))
 		.pipe(gulp.dest('./lib'))
-		.pipe(gulp.dest('./dist'));
+		.pipe(gulp.dest('./packages/metadata-dhtmlx'));
 });
 
 // dhtmlx css
@@ -225,7 +185,7 @@ gulp.task('css-dhtmlx', function () {
 		])
 		.pipe(base64())
 		.pipe(csso())
-		.pipe(gulp.dest('./dist'));
+		.pipe(gulp.dest('./packages/metadata-dhtmlx'));
 });
 
 gulp.task('css-dhtmlx-images', function () {
@@ -242,15 +202,15 @@ gulp.task('css-metadata', function () {
 	return gulp.src([
 		'./src/dhtmlx/patches/dhtmlxtreegrid_property.css',
 		'./src/dhtmlx/dhtmlxTreeView/codebase/skins/dhtmlxtreeview_dhx_terrace.css',
-		'./lib/daterangepicker/daterangepicker.css',
+		//'./lib/daterangepicker/daterangepicker.css',
 		'./src/css/upzp20.css'
 			//'./src/css/options.css'
 		])
 		.pipe(base64())
 		.pipe(concat('metadata.css'))
-		.pipe(gulp.dest('./lib'))
-		.pipe(csso())
-		.pipe(gulp.dest('./dist'));
+		//.pipe(gulp.dest('./lib'))
+    .pipe(csso())
+		.pipe(gulp.dest('./packages/metadata-dhtmlx'));
 });
 
 // metadata css
@@ -263,43 +223,6 @@ gulp.task('css-icon1c', function () {
 		.pipe(concat('icon1c.min.css'))
 		//.pipe(csso())
 		.pipe(gulp.dest('./src/css'));
-});
-
-// Сборка сервера для Node.js
-gulp.task('build-metadata-core', function(){
-	return gulp.src([
-		'./src/common.js',
-		'./src/wsql.js',
-		'./src/i18n.ru.js',
-		'./src/pouchdb.js',
-		'./src/meta_meta.js',
-		'./src/meta_mngrs.js',
-		'./src/meta_tabulars.js',
-		'./src/meta_objs.js',
-		'./src/meta_rest.js',
-		'./src/meta_pouchdb.js',
-		'./src/events.js',
-		'./lib/aes/aes.js'
-	])
-		.pipe(concat('metadata.core.js'))
-		.pipe(umd({
-			exports: function(file) {
-				return '$p';
-			},
-			namespace: function(file) {
-				return '$p';
-			},
-			template: path.join(__dirname, './src/utils/umd-exports-oknosoft.js')
-		}))
-		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
-		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
-		.pipe(gulp.dest('./lib'))
-		.pipe(gulp.dest('./dist'))
-		.pipe(rename('metadata.core.min.js'))
-		.pipe(uglify({
-			preserveComments: "license"
-		}))
-		.pipe(gulp.dest('./dist'));
 });
 
 
@@ -315,27 +238,6 @@ const metadataCoreFiles = [
     './packages/metadata-core/lib/aes.js',
     './packages/metadata-core/src/common.js'
 ];
-
-// metadata-core
-gulp.task('build--core', function(){
-
-	package_data = JSON.parse(require('fs').readFileSync('./packages/metadata-core/package.json', 'utf8'));
-
-	return gulp.src(metadataCoreFiles)
-
-		.pipe(replace(/PACKAGE_VERSION/g, package_data.version))
-		.pipe(replace(/PACKAGE_BUILT_TIME/g, new Date().toISOString().split("T")[0]))
-
-		.pipe(concat('index.js'))
-
-		.pipe(babel({
-			presets: ['es2016'],
-			plugins: ['transform-es2015-modules-commonjs'],
-			compact: false,
-            comments: false
-        }))
-        .pipe(gulp.dest('./packages/metadata-core'));
-});
 
 
 // Ресурсы для codres

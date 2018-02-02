@@ -2,317 +2,326 @@
  * Содержит методы и подписки на события superlogin-client
  * https://github.com/micky2be/superlogin-client
  *
- * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
  */
 
+import superlogin from 'superlogin-client';
 
-import superlogin from "superlogin-client";
+import adapter from './adapter';
+import default_config from './default.config';
 
-const default_config = {
-	// The base URL for the SuperLogin routes with leading and trailing slashes (defaults to '/auth/')
-	baseUrl: 'http://localhost:3000/auth/',
-	// A list of API endpoints to automatically add the Authorization header to
-	// By default the host the browser is pointed to will be added automatically
-	endpoints: ['api.example.com'],
-	// Set this to true if you do not want the URL bar host automatically added to the list
-	noDefaultEndpoint: false,
-	// Where to save your session token: localStorage ('local') or sessionStorage ('session'), default: 'local'
-	storage: 'local',
-	// The authentication providers that are supported by your SuperLogin host
-	providers: ['google', 'yandex', 'github', 'facebook'],
-	// Sets when to check if the session is expired during the setup.
-	// false by default.
-	checkExpired: false,
-	// A float that determines the percentage of a session duration, after which SuperLogin will automatically refresh the
-	// token. For example if a token was issued at 1pm and expires at 2pm, and the threshold is 0.5, the token will
-	// automatically refresh after 1:30pm. When authenticated, the token expiration is automatically checked on every
-	// request. You can do this manually by calling superlogin.checkRefresh(). Default: 0.5
-	refreshThreshold: 0.5
-};
+const {metaActions} = require('metadata-redux');
 
-const default_getDbUrl = superlogin.getDbUrl.bind(superlogin)
-superlogin.getDbUrl = function (name) {
-	return default_getDbUrl(name).replace('http://', 'https://').replace('cou206:5984', 'kint.oknosoft.ru/couchdb')
+// переопределяем getDbUrl
+// const default_getDbUrl = superlogin.getDbUrl.bind(superlogin);
+// superlogin.getDbUrl = function (name) {
+//   return default_getDbUrl(name).replace('http://', 'https://').replace('fl211:5984', 'flowcon.oknosoft.ru/couchdb');
+// };
+
+function attach($p) {
+
+  // Session is an object that contains all the session information returned by SuperLogin, along with serverTimeDiff, the difference between the server clock and the local clock.
+  superlogin.on('login', function (event, session) {
+
+  });
+
+  // Message is a message that explains why the user was logged out: 'Logged out' or 'Session expired'.
+  superlogin.on('logout', function (event, message) {
+
+  });
+
+  // Broadcast when the token is refreshed.
+  superlogin.on('refresh', function (event, newSession) {
+
+  });
+
+  //
+  superlogin.on('link', function (event, provider) {
+
+  });
+
+
+  /**
+   * Подмена обработчиков событий PouchDB
+   */
+
+  /**
+   * ### После загрузки локальных данных
+   * если разрешено сохранение пароля или демо-режим, выполняем попытку авторизации
+   * @param page
+   * @return {{type: string, payload: *}}
+   */
+  function pouch_data_loaded(page) {
+
+    return function (dispatch, getState) {
+
+      // First dispatch: the app state is updated to inform
+      // that the API call is starting.
+
+      dispatch({
+        type: metaActions.types.POUCH_DATA_LOADED,
+        payload: page
+      });
+
+
+      const {meta} = getState();
+
+      // если вход еще не выполнен...
+      if(!meta.user.logged_in && superlogin.authenticated()) {
+
+        setTimeout(function () {
+
+          const session = superlogin.getSession();
+
+          // устанавливаем текущего пользователя и пытаемся авторизоваться
+          if(session) {
+
+            dispatch(metaActions.USER_DEFINED(session.user_id));
+
+            dispatch({
+              type: metaActions.types.USER_TRY_LOG_IN,
+              payload: {name: session.token, password: session.password, provider: session.provider}
+            });
+
+            return $p.adapters.pouch.log_in(session.token, session.password);
+          }
+
+
+        }, 10);
+      }
+    };
+
+  }
+
+
+  /**
+   * Actions
+   */
+
+  // генерирует функцию авторизации через соцсети
+  function handleSocialAuth(provider) {
+
+    return function (dispatch, getState) {
+
+      // Если мы уже авторизованы - делаем link вместо создания нового пользователя
+      if(superlogin.authenticated()) {
+        return superlogin.link(provider)
+          .then((res) => {
+            res = null;
+          })
+          .catch((err) => {
+            err = null;
+          });
+      }
+
+      dispatch({
+        type: metaActions.types.USER_TRY_LOG_IN,
+        payload: {name: 'oauth', provider: provider}
+      });
+
+      // Если еще не авторизованы - создаём пользователя по данным соцсети
+      return superlogin.socialAuth(provider)
+        .then((session) => $p.adapters.pouch.log_in(session.token, session.password))
+        .catch((err) => $p.adapters.pouch.log_out());
+    };
+  }
+
+  // запускает авторизацию - обычную или SuperLogin
+  function handleLogin(login, password) {
+    return metaActions.USER_TRY_LOG_IN($p.adapters.pouch, login, password);
+  }
+
+  // завершает сессию
+  function handleLogOut() {
+
+    return function (dispatch, getState) {
+
+      $p.adapters.pouch.log_out()
+        .then(() => superlogin.logout())
+        .then(() => dispatch({
+          type: metaActions.types.USER_LOG_OUT,
+          payload: {name: getState().meta.user.name}
+        }));
+    };
+  }
+
+  // регистрация нового пользователя
+  function handleRegister(registration) {
+
+    return function (dispatch) {
+
+      const {username, email, password, confirmPassword} = registration;
+
+      if(!password || password.length < 6 || password !== confirmPassword) {
+        return dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Password must be at least 6 characters length'}));
+      }
+      if(!username || username.length < 3) {
+        return dispatch(metaActions.USER_LOG_ERROR({message: 'empty'}));
+      }
+
+      // проверим login, email и password
+      return superlogin.validateUsername(username)
+        .catch((err) => {
+          dispatch(metaActions.USER_LOG_ERROR(
+            err.message && err.message.match(/(time|network)/i) ? err : {message: 'custom', text: err.error ? err.error : 'Username error'}
+          ));
+        })
+        .then((ok) => {
+          return ok && superlogin.validateEmail(email)
+        })
+        .catch((err) => {
+          dispatch(metaActions.USER_LOG_ERROR(
+            err.message && err.message.match(/(time|network)/i) ? err : {message: 'custom', text: err.error ? err.error : 'Email error'}
+          ));
+        })
+        // попытка регистрации
+        .then((ok) => {
+          return ok && superlogin.register(registration)
+        })
+        .then((reg) => {
+          if(reg) {
+            if(reg.success) {
+              if(superlogin.getConfig().email.requireEmailConfirm) {
+                dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'info:Создана учетная запись. Проверьте почтовый ящик для активации'}));
+              }
+              else {
+                return superlogin.authenticated() ? superlogin.getSession() :
+                  superlogin.login({username, password}).then((session) => {
+                    return superlogin.getSession();
+                  });
+              }
+            }
+            else {
+              dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Registration error'}));
+            }
+          }
+        })
+        .then((session) => {
+          return session && $p.adapters.pouch.log_in(session.username, session.password);
+        })
+        .catch((err) => {
+          dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: err.error ? err.error : 'Registration error'}));
+        });
+    };
+  }
+
+  function handleLink(provider) {
+
+    return function (dispatch, getState) {
+
+      superlogin.link(provider)
+        .then(function () {
+          // toasty(provider.toUpperCase() + ' link successful!');
+          // refresh();
+        });
+    };
+  }
+
+  // генерирует письмо восстановления пароля
+  function handleForgotPassword() {
+
+    return superlogin.forgotPassword(email)
+      .then(function () {
+        toasty('Check your email!');
+      }, function (err) {
+        if(err) {
+          console.error(err);
+        }
+      });
+  }
+
+  function handleCheckUsername(name) {
+
+  }
+
+  function handlecheckEmail(email) {
+
+  }
+
+  function handleSetPrm(attr) {
+    for (const key in attr) {
+      $p.wsql.set_user_param(key, attr[key]);
+    }
+    return metaActions.PRM_CHANGE(attr);
+  }
+
+  // экспортируем superlogin в MetaEngine
+  Object.defineProperty($p, 'superlogin', {
+    get: function () {
+      return superlogin;
+    }
+  });
+
+  superlogin._actions = {
+    handleSocialAuth,
+    handleLogin,
+    handleLogOut,
+    handleRegister,
+    handleForgotPassword,
+    handleCheckUsername,
+    handlecheckEmail,
+    handleSetPrm,
+  };
+
+  // меняем подписки на события pouchdb
+  superlogin._init = function (store) {
+
+    $p.adapters.pouch.on('superlogin_log_in', () => {
+
+      const user_name = superlogin.getSession().user_id;
+
+      if($p.cat && $p.cat.users) {
+
+        $p.cat.users.find_rows_remote({
+          _view: 'doc/number_doc',
+          _key: {
+            startkey: ['cat.users', 0, user_name],
+            endkey: ['cat.users', 0, user_name]
+          }
+        }).then(function (res) {
+          if(res.length) {
+            return res[0];
+          }
+          else {
+            let user = $p.cat.users.create({
+              ref: $p.utils.generate_guid(),
+              id: user_name
+            });
+            return user.save();
+          }
+        })
+          .then(function () {
+            store.dispatch(metaActions.USER_LOG_IN(user_name));
+          });
+      }
+      else {
+        store.dispatch(metaActions.USER_LOG_IN(user_name));
+      }
+    });
+  };
+
 }
 
-function attach($p){
 
-	// Session is an object that contains all the session information returned by SuperLogin, along with serverTimeDiff, the difference between the server clock and the local clock.
-	superlogin.on('login', function(event, session) {
+export default function plugin(config = default_config) {
 
-	});
+  return {
 
+    proto(constructor) {
+      // дополняем и модифицируем конструкторы
+      adapter(constructor);
+    },
 
-// Message is a message that explains why the user was logged out: 'Logged out' or 'Session expired'.
-	superlogin.on('logout', function(event, message) {
+    constructor() {
 
-	});
+      const baseUrl = this.wsql.get_user_param('superlogin_path', 'string');
+      if(baseUrl){
+        config.baseUrl = baseUrl;
+      }
+      superlogin.configure(config);
 
+      attach(this);
 
-// Broadcast when the token is refreshed.
-	superlogin.on('refresh', function(event, newSession) {
-
-	});
-
-//
-	superlogin.on('link', function(event, provider) {
-
-	});
-
-
-	/**
-	 * Подмена обработчиков событий PouchDB
-	 */
-
-	/**
-	 * ### После загрузки локальных данных
-	 * если разрешено сохранение пароля или демо-режим, выполняем попытку авторизации
-	 * @param page
-	 * @return {{type: string, payload: *}}
-	 */
-	function pouch_data_loaded(page) {
-
-		return function (dispatch, getState) {
-
-			// First dispatch: the app state is updated to inform
-			// that the API call is starting.
-
-			dispatch({
-				type: $p.rx_action_types.POUCH_DATA_LOADED,
-				payload: page
-			});
-
-
-			const { meta } = getState();
-
-			// если вход еще не выполнен...
-			if(!meta.user.logged_in && superlogin.authenticated()){
-
-				setTimeout(function () {
-
-					const session = superlogin.getSession();
-
-					// устанавливаем текущего пользователя и пытаемся авторизоваться
-					if(session){
-
-						dispatch($p.rx_actions.USER_DEFINED(session.user_id));
-
-						dispatch({
-							type: $p.rx_action_types.USER_TRY_LOG_IN,
-							payload: {name: session.token, password: session.password, provider: session.provider}
-						})
-
-						return $p.adapters.pouch.log_in(session.token, session.password)
-					}
-
-
-				}, 10)
-			}
-		}
-
-	}
-
-
-	/**
-	 * Actions
-	 */
-
-	function handleSocialAuth (provider) {
-
-
-		// Thunk middleware знает, как обращаться с функциями.
-		// Он передает метод действия в качестве аргумента функции,
-		// т.о, это позволяет отправить действие самостоятельно.
-
-		return function (dispatch, getState) {
-
-			// First dispatch: the app state is updated to inform
-			// that the API call is starting.
-
-			dispatch({
-				type: $p.rx_action_types.USER_TRY_LOG_IN,
-				payload: {name: 'oauth', provider: provider}
-			})
-
-			// The function called by the thunk middleware can return a value,
-			// that is passed on as the return value of the dispatch method.
-
-			// In this case, we return a promise to wait for.
-			// This is not required by thunk middleware, but it is convenient for us.
-
-			return superlogin.socialAuth(provider)
-				.then(function (session) {
-					$p.adapters.pouch.log_in(session.token, session.password)
-				})
-
-			// In a real world app, you also want to
-			// catch any error in the network call.
-		}
-	}
-
-	// запускает авторизацию - обычную или SuperLogin
-	function handleLogin (login, password) {
-		return $p.rx_actions.USER_TRY_LOG_IN($p.adapters.pouch, login, password)
-	}
-
-	// завершает сессию
-	function handleLogOut () {
-
-		return function (dispatch, getState) {
-
-			$p.adapters.pouch.log_out()
-				.then(() => superlogin.logout())
-				.then(function () {
-					dispatch({
-						type: $p.rx_action_types.USER_LOG_OUT,
-						payload: {name: getState().meta.user.name}
-					})
-				})
-		}
-	}
-
-	// регистрация нового пользователя
-	function handleRegister(registration) {
-
-		return function (dispatch, getState) {
-
-			superlogin.register(registration)
-				.then(function() {
-					if(superlogin.authenticated()) {
-						//flashy.set('Registration successful, welcome!');
-						//$state.go('navbar.todos');
-
-						const session = superlogin.getSession()
-						dispatch({
-							type: USER_LOG_IN,
-							payload: {name: session.name, password: session.password, provider: 'local'}
-						})
-
-					} else {
-						//toasty('Registration successful.');
-					}
-				})
-		}
-	}
-
-	function handleLink(provider) {
-
-		return function (dispatch, getState) {
-
-			superlogin.link(provider)
-				.then(function() {
-					// toasty(provider.toUpperCase() + ' link successful!');
-					// refresh();
-				});
-		}
-	}
-
-	// генерирует письмо восстановления пароля
-	function handleForgotPassword() {
-
-		return superlogin.forgotPassword(email)
-			.then(function() {
-				toasty('Check your email!');
-			}, function(err) {
-				if(err) {
-					console.error(err);
-				}
-			});
-	}
-
-	function handleCheckUsername(name) {
-
-	}
-
-	function handlecheckEmail(email) {
-
-	}
-
-	function handleSetPrm (attr) {
-		for(var key in attr){
-			$p.wsql.set_user_param(key, attr[key]);
-		}
-		return $p.rx_actions.PRM_CHANGE(attr)
-	}
-
-	// экспортируем superlogin в MetaEngine
-	Object.defineProperties($p, {
-
-		superlogin: {
-			get: function () {
-				return superlogin;
-			}
-		},
-
-		sl_actions: {
-			value: {
-				handleSocialAuth,
-				handleLogin,
-				handleLogOut,
-				handleRegister,
-				handleForgotPassword,
-				handleCheckUsername,
-				handlecheckEmail,
-				handleSetPrm
-			}
-		}
-	});
-
-	// меняем подписки на события pouchdb
-	const old_rx_events = $p.rx_events;
-	$p.rx_events = function (store) {
-
-		old_rx_events.call($p, store);
-
-		$p.adapters.pouch.removeAllListeners('pouch_data_loaded');
-		$p.adapters.pouch.on('pouch_data_loaded', (page) => {store.dispatch(pouch_data_loaded(page))});
-
-		$p.adapters.pouch.removeAllListeners('user_log_in');
-		$p.adapters.pouch.on('user_log_in', () => {
-
-			const user_name = superlogin.getSession().user_id;
-
-			if($p.cat && $p.cat.users){
-
-				$p.cat.users.find_rows_remote({
-					_view: 'doc/number_doc',
-					_key: {
-						startkey: ['cat.users',0,user_name],
-						endkey: ['cat.users',0,user_name]
-					}
-				}).then(function (res) {
-					if (res.length) {
-						return res[0];
-					} else {
-						let user = $p.cat.users.create({
-							ref: $p.utils.generate_guid(),
-							id: user_name
-						});
-						return user.save();
-					}
-				})
-					.then(function () {
-						store.dispatch($p.rx_actions.USER_LOG_IN(user_name));
-					})
-			}else{
-				store.dispatch($p.rx_actions.USER_LOG_IN(user_name));
-			}
-		});
-	}
-}
-
-
-export default function plugin(config) {
-
-	superlogin.configure(config || default_config);
-
-	return {
-
-		constructor(){
-
-			attach(this);
-
-		}
-	}
+    }
+  };
 };
 

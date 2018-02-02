@@ -297,431 +297,25 @@ div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td div.dhxtreeview_dhx
 	overflow: hidden;
 }
 
-
-.btn {
-	display: inline-block;
-	padding: 4px 8px;
-	margin-bottom: 0;
-	line-height: 1.5;
-	text-align: center;
-	white-space: nowrap;
-	vertical-align: middle;
-	-ms-touch-action: manipulation;
-	touch-action: manipulation;
-	cursor: pointer;
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
-	background-image: none;
-	border: 1px solid transparent;
-	border-radius: 3px;
-}
-.btn-default {
-	color: #333;
-	background-color: #fff;
-	border-color: #ccc;
-}
-.btn:focus,
-.btn:active:focus,
-.btn.active:focus,
-.btn.focus,
-.btn:active.focus,
-.btn.active.focus {
-	outline: thin dotted;
-	outline: 5px auto -webkit-focus-ring-color;
-	outline-offset: -2px;
-}
-.btn:hover,
-.btn:focus,
-.btn.focus {
-	color: #333;
-	text-decoration: none;
-}
-.btn:active,
-.btn.active {
-	background-image: none;
-	outline: 0;
-	-webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
-	box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
-}
-.btn.disabled,
-.btn[disabled],
-fieldset[disabled] .btn {
-	pointer-events: none;
-	cursor: not-allowed;
-	filter: alpha(opacity=65);
-	-webkit-box-shadow: none;
-	box-shadow: none;
-	opacity: .65;
-}
-.btn-default {
-	color: #333;
-	background-color: #fff;
-	border-color: #ccc;
-}
-.btn-default:hover,
-.btn-default:focus,
-.btn-default.focus,
-.btn-default:active,
-.btn-default.active,
-.open > .dropdown-toggle.btn-default {
-	color: #333;
-	background-color: #e6e6e6;
-	border-color: #adadad;
-}
-.btn-default:active,
-.btn-default.active,
-.open > .dropdown-toggle.btn-default {
-	background-image: none;
-}
-
-.btn-success {
-	color: #fff;
-	background-color: #5cb85c;
-	border-color: #4cae4c;
-}
-.btn-success:hover,
-.btn-success:focus,
-.btn-success.focus,
-.btn-success:active,
-.btn-success.active,
-.open > .dropdown-toggle.btn-success {
-	color: #fff;
-	background-color: #449d44;
-	border-color: #398439;
-}
-.btn-success:active,
-.btn-success.active,
-.open > .dropdown-toggle.btn-success {
-	background-image: none;
-}
-.btn-success.disabled,
-.btn-success[disabled],
-fieldset[disabled] .btn-success,
-.btn-success.disabled:hover,
-.btn-success[disabled]:hover,
-fieldset[disabled] .btn-success:hover,
-.btn-success.disabled:focus,
-.btn-success[disabled]:focus,
-fieldset[disabled] .btn-success:focus,
-.btn-success.disabled.focus,
-.btn-success[disabled].focus,
-fieldset[disabled] .btn-success.focus,
-.btn-success.disabled:active,
-.btn-success[disabled]:active,
-fieldset[disabled] .btn-success:active,
-.btn-success.disabled.active,
-.btn-success[disabled].active,
-fieldset[disabled] .btn-success.active {
-	background-color: #5cb85c;
-	border-color: #4cae4c;
-}
-
-.daterangepicker {
-  position: absolute;
-  color: inherit;
-  background: #fff;
-  border-radius: 4px;
-  width: 278px;
-  padding: 4px;
-  margin-top: 1px;
-  top: 100px;
-  left: 20px;
-  /* Calendars */ }
-  .daterangepicker:before, .daterangepicker:after {
-    position: absolute;
-    display: inline-block;
-    border-bottom-color: rgba(0, 0, 0, 0.2);
-    content: ''; }
-  .daterangepicker:before {
-    top: -7px;
-    border-right: 7px solid transparent;
-    border-left: 7px solid transparent;
-    border-bottom: 7px solid #ccc; }
-  .daterangepicker:after {
-    top: -6px;
-    border-right: 6px solid transparent;
-    border-bottom: 6px solid #fff;
-    border-left: 6px solid transparent; }
-  .daterangepicker.opensleft:before {
-    right: 9px; }
-  .daterangepicker.opensleft:after {
-    right: 10px; }
-  .daterangepicker.openscenter:before {
-    left: 0;
-    right: 0;
-    width: 0;
-    margin-left: auto;
-    margin-right: auto; }
-  .daterangepicker.openscenter:after {
-    left: 0;
-    right: 0;
-    width: 0;
-    margin-left: auto;
-    margin-right: auto; }
-  .daterangepicker.opensright:before {
-    left: 9px; }
-  .daterangepicker.opensright:after {
-    left: 10px; }
-  .daterangepicker.dropup {
-    margin-top: -5px; }
-    .daterangepicker.dropup:before {
-      top: initial;
-      bottom: -7px;
-      border-bottom: initial;
-      border-top: 7px solid #ccc; }
-    .daterangepicker.dropup:after {
-      top: initial;
-      bottom: -6px;
-      border-bottom: initial;
-      border-top: 6px solid #fff; }
-  .daterangepicker.dropdown-menu {
-	  max-width: none;
-	  z-index: 3001;
-	  display: none;
-	  float: left;
-	  min-width: 160px;
-	  padding: 5px 0;
-	  margin: 2px 8px 0;
-	  font-size: 90%;
-	  text-align: left;
-	  list-style: none;
-	  background-color: #fff;
-	  -webkit-background-clip: padding-box;
-	  background-clip: padding-box;
-	  border: 1px solid #ccc;
-	  border: 1px solid rgba(0,0,0,.15);
-	  border-radius: 4px;
-	  -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
-	  box-shadow: 0 6px 12px rgba(0,0,0,.175);
-  }
-  .daterangepicker.single .ranges, .daterangepicker.single .calendar {
-    float: none; }
-  .daterangepicker.show-calendar .calendar {
-    display: block; }
-  .daterangepicker .calendar {
-    display: none;
-    max-width: 270px;
-    margin: 4px; }
-    .daterangepicker .calendar.single .calendar-table {
-      border: none; }
-    .daterangepicker .calendar th, .daterangepicker .calendar td {
-      white-space: nowrap;
-      text-align: center;
-      min-width: 32px; }
-  .daterangepicker .calendar-table {
-    border: 1px solid #fff;
-    padding: 4px;
-    border-radius: 4px;
-    background: #fff; }
-  .daterangepicker table {
-    width: 100%;
-    margin: 0; }
-  .daterangepicker td, .daterangepicker th {
-    text-align: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    border: 1px solid transparent;
-    white-space: nowrap;
-    cursor: pointer; }
-    .daterangepicker td.available:hover, .daterangepicker th.available:hover {
-      background-color: #eee;
-      border-color: transparent;
-      color: inherit; }
-    .daterangepicker td.week, .daterangepicker th.week {
-      font-size: 80%;
-      color: #ccc; }
-  .daterangepicker td.off, .daterangepicker td.off.in-range, .daterangepicker td.off.start-date, .daterangepicker td.off.end-date {
-    background-color: #fff;
-    border-color: transparent;
-    color: #999; }
-  .daterangepicker td.in-range {
-    background-color: #ebf4f8;
-    border-color: transparent;
-    color: #000;
-    border-radius: 0; }
-  .daterangepicker td.start-date {
-    border-radius: 4px 0 0 4px; }
-  .daterangepicker td.end-date {
-    border-radius: 0 4px 4px 0; }
-  .daterangepicker td.start-date.end-date {
-    border-radius: 4px; }
-  .daterangepicker td.active, .daterangepicker td.active:hover {
-    background-color: #357ebd;
-    border-color: transparent;
-    color: #fff; }
-  .daterangepicker th.month {
-    width: auto; }
-  .daterangepicker td.disabled, .daterangepicker option.disabled {
-    color: #999;
-    cursor: not-allowed;
-    text-decoration: line-through; }
-  .daterangepicker select.monthselect, .daterangepicker select.yearselect {
-    font-size: 12px;
-    padding: 1px;
-    height: auto;
-    margin: 0;
-    cursor: default; }
-  .daterangepicker select.monthselect {
-    margin-right: 2%;
-    width: 56%; }
-  .daterangepicker select.yearselect {
-    width: 40%; }
-  .daterangepicker select.hourselect, .daterangepicker select.minuteselect, .daterangepicker select.secondselect, .daterangepicker select.ampmselect {
-    width: 50px;
-    margin-bottom: 0; }
-  .daterangepicker .input-mini {
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    color: #555;
-    height: 30px;
-    line-height: 30px;
-    display: block;
-    vertical-align: middle;
-    margin: 0 0 5px 0;
-    padding: 0 6px 0 28px;
-    width: 100%;
-	  box-sizing: border-box;
-  }
-    .daterangepicker .input-mini.active {
-      border: 1px solid #08c;
-      border-radius: 4px; }
-  .daterangepicker .daterangepicker_input {
-    position: relative; }
-    .daterangepicker .daterangepicker_input i {
-      position: absolute;
-      left: 8px;
-      top: 8px; }
-  .daterangepicker.rtl .input-mini {
-    padding-right: 28px;
-    padding-left: 6px; }
-  .daterangepicker.rtl .daterangepicker_input i {
-    left: auto;
-    right: 8px; }
-  .daterangepicker .calendar-time {
-    text-align: center;
-    margin: 5px auto;
-    line-height: 30px;
-    position: relative;
-    padding-left: 28px; }
-    .daterangepicker .calendar-time select.disabled {
-      color: #ccc;
-      cursor: not-allowed; }
-
-.ranges {
-  font-size: 11px;
-  float: none;
-  margin: 4px;
-  text-align: left; }
-  .ranges ul {
-    list-style: none;
-    margin: 0 auto;
-    padding: 0;
-    width: 100%; }
-  .ranges li {
-    font-size: 13px;
-    background: #f5f5f5;
-    border: 1px solid #f5f5f5;
-    border-radius: 4px;
-    color: #08c;
-    padding: 3px 12px;
-    margin-bottom: 8px;
-    cursor: pointer; }
-    .ranges li:hover {
-      background: #08c;
-      border: 1px solid #08c;
-      color: #fff; }
-    .ranges li.active {
-      background: #08c;
-      border: 1px solid #08c;
-      color: #fff; }
-
-/*  Larger Screen Styling */
-@media (min-width: 564px) {
-  .daterangepicker {
-    width: auto; }
-    .daterangepicker .ranges ul {
-      width: 160px; }
-    .daterangepicker.single .ranges ul {
-      width: 100%; }
-    .daterangepicker.single .calendar.left {
-      clear: none; }
-    .daterangepicker.single.ltr .ranges, .daterangepicker.single.ltr .calendar {
-      float: left; }
-    .daterangepicker.single.rtl .ranges, .daterangepicker.single.rtl .calendar {
-      float: right; }
-    .daterangepicker.ltr {
-      direction: ltr;
-      text-align: left; }
-      .daterangepicker.ltr .calendar.left {
-        clear: left;
-        margin-right: 0; }
-        .daterangepicker.ltr .calendar.left .calendar-table {
-          border-right: none;
-          border-top-right-radius: 0;
-          border-bottom-right-radius: 0; }
-      .daterangepicker.ltr .calendar.right {
-        margin-left: 0; }
-        .daterangepicker.ltr .calendar.right .calendar-table {
-          border-left: none;
-          border-top-left-radius: 0;
-          border-bottom-left-radius: 0; }
-      .daterangepicker.ltr .left .daterangepicker_input {
-        padding-right: 12px; }
-      .daterangepicker.ltr .calendar.left .calendar-table {
-        padding-right: 12px; }
-      .daterangepicker.ltr .ranges, .daterangepicker.ltr .calendar {
-        float: left; }
-    .daterangepicker.rtl {
-      direction: rtl;
-      text-align: right; }
-      .daterangepicker.rtl .calendar.left {
-        clear: right;
-        margin-left: 0; }
-        .daterangepicker.rtl .calendar.left .calendar-table {
-          border-left: none;
-          border-top-left-radius: 0;
-          border-bottom-left-radius: 0; }
-      .daterangepicker.rtl .calendar.right {
-        margin-right: 0; }
-        .daterangepicker.rtl .calendar.right .calendar-table {
-          border-right: none;
-          border-top-right-radius: 0;
-          border-bottom-right-radius: 0; }
-      .daterangepicker.rtl .left .daterangepicker_input {
-        padding-left: 12px; }
-      .daterangepicker.rtl .calendar.left .calendar-table {
-        padding-left: 12px; }
-      .daterangepicker.rtl .ranges, .daterangepicker.rtl .calendar {
-        text-align: right;
-        float: right; } }
-@media (min-width: 730px) {
-  .daterangepicker .ranges {
-    width: auto; }
-  .daterangepicker.ltr .ranges {
-    float: left; }
-  .daterangepicker.rtl .ranges {
-    float: right; }
-  .daterangepicker .calendar.left {
-    clear: none !important; } }
-
-
+/*
 html, body {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: hidden;
 	color: rgb(48, 57, 66);
-	/* font-family: Segoe UI, Tahoma, sans-serif;
-	font-family: 'Open Sans', sans-serif; */
+
+	font-family: Segoe UI, Tahoma, sans-serif;
+	font-family: 'Open Sans', sans-serif;
 	font-family: Arial, sans-serif;
+
 	font-size: 100%;
 	line-height: 21px;
 	text-rendering: optimizeLegibility;
 }
+*/
 
 .disabledbutton {
 	pointer-events: none;
@@ -741,7 +335,7 @@ html, body {
 	position: absolute;
 	width: 18px;
 	height: 18px;
-	background-image: url("../imgs/dhxlayout_web/dhxlayout_cell_btns.gif");
+	background-image: url(data:image/gif;base64,R0lGODlhQAAQAOMAAP///wAAAAAAAIyMjAAAAMfHxwAAAP///wAAAJmZmQAAANzc3AAAAAAAAAAAAPDw8CH5BAEAAAEALAAAAABAABAAAARRMMhJq7046827/2AojmRpntWBput1vJ3KvbJWS7cLz/tG270fRuij5YY9nYpoYWZ+TuSRYpxSk8pJNIXN8qxaFhAsjnVL2xV5tG653/C4XBQBADs=);
 	background-repeat: no-repeat;
 	background-color: #808080;
 	cursor: pointer;
@@ -854,17 +448,17 @@ a.dropdown_list {
 }
 
 /* зачки состояния объекта: папка, элемент, пометка удаления, проведён */
-.gridbox_dhx_terrace .cell_ref_folder {padding-left: 26px !important; background: url(../imgs/dhxtree_terrace/folderClosed.gif) no-repeat left center;}
+.gridbox_dhx_terrace .cell_ref_folder {padding-left: 26px !important; background: url(data:image/gif;base64,R0lGODlhEgASAOMAAJeXl7Gvrf///wAAAPX19QAAAMzMzAAAADMzMwAAALu7uwAAAAAAAAAAALW1tQAAACH5BAEAAAIALAAAAAASABIAAAQ1UMhJq714us2z3EYoeo5BiVz3mafosqUnhassxDdLwnqG47ua7NfDEG1EQ2rJ0b2eI5tUFgEAOw==) no-repeat left center;}
 .gridbox_dhx_terrace .cell_ref_folder_deleted {padding-left: 26px !important; background: url(data:image/gif;base64,R0lGODlhEgASAMQUAHl5eWhoaI+Pj4yMjGJiYomJiYSEhF5eXoiIiG1tbVtbW5OTk1VVVYaGhllZWXV1dVJSUpKSkrW1tczMzP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAABQALAAAAAASABIAAAVWICWOZGme6CitbCquUyy70kTKbPvat+zzNZcothNSgkceDagcRQqjgoBpWggMlIEAQTU1BgMDAIk0Ac7JoukRCAAS5FhOQmhLDgeG8hdzKGQEEEaDRiEAOw==) no-repeat left center;}
 
-.gridbox_dhx_web .cell_ref_folder {padding-left: 26px !important; background: url(../imgs/dhxtree_web/folderClosed.gif) no-repeat left center;}
-.gridbox_dhx_web .cell_ref_folder_deleted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/folderDeleted.gif) no-repeat left center;}
+.gridbox_dhx_web .cell_ref_folder {padding-left: 26px !important; background: url(data:image/gif;base64,R0lGODlhEgASAOMOAP/HQf/jmunQif/km//JP/C6IvTx6v/KQf/IPf/GN//IOv/FONShFP/HNv///////yH5BAEKAA8ALAAAAAASABIAAARJ8MlJq704a8F6F9rjjWA2jkCaBhRjvO9wzPTRwoZcHwRBFYigcCikKI7IZJKyaDqfT0piSq1WKY2sdrvFcr9ZSgDMZYXO6LQlAgA7) no-repeat left center;}
+.gridbox_dhx_web .cell_ref_folder_deleted {padding-left: 26px !important; background: url(data:image/gif;base64,R0lGODlhEgASANUjAP/HQcBAMqowJ+nQieBQPqQkINBIONxOPf/JP//km5wmIP/jmpggHuNDLro5MNVIN+NFMJgcG+RSQO1JMuNFL9xVPfC6Iu1OOY4YF5AcGq8yK/Tx6v/GN//FOP/KQf/IPf/IOtShFP/HNv///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAACMALAAAAAASABIAAAZ0wJFwSCwaj8ikcjQIOZ2D5XMaTU6ngGx2QQxtvt+EZ0z2dMEbcdmDQBAtn7h8LieC7vh8ntjp+/sSEH4UE0Mch4iHFwQGHAcEDUMik5SUDwcVBgFElZ0iAaAiRAuekw4CAgEaSyMFqCMKChlLEQxDBRisR0EAOw==) no-repeat left center;}
 
-.cell_ref_elm {padding-left: 26px !important; background: url(../imgs/dhxtree_web/catelm.gif) no-repeat left center;}
-.cell_ref_elm_deleted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/catelmDeleted.gif) no-repeat left center;}
-.cell_doc_posted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/doc_posted.png) no-repeat left center;}
-.cell_doc_deleted {padding-left: 26px !important; background: url(../imgs/dhxtree_web/doc_deleted.png) no-repeat left center;}
-.cell_doc {padding-left: 26px !important; background: url(../imgs/dhxtree_web/doc_saved.png) no-repeat left center;}
+.cell_ref_elm {padding-left: 26px !important; background: url(data:image/gif;base64,R0lGODlhEgASAMQbAFx7kcnb55+80djn8WeEmtvp9NTk75m2zIKiutHh7HuctZSxyM3e6cXY5G6LoVV3j3eXrIemvnWYsGWFnFt7k8HV4Y2sw3WUq3SSqHqZsFh3jf///wAAAAAAAAAAAAAAACH5BAEAABsALAAAAAASABIAAAUy4CaOZGmeaKqubOu+aibPGXRNKFYMRsIEjcoD5RAcFpYIQiGhoAiaqDQKgFmv2KwWGwIAOw==) no-repeat left center;}
+.cell_ref_elm_deleted {padding-left: 26px !important; background: url(data:image/gif;base64,R0lGODlhEgASANUyAMBAMqowJ3qZsH2bslh3jdxOPZwmIKQkIOBQPtBIONbe5PL1+PD1+K6+yXeXrGeEmu1JMnSSqJSxyO1OOdzl63WUq9Tk79jn8fDx8ro5MONDLtVIN5+80a++yGWFnJAcGtXd4q8yK+NFL26LoeNFMJggHt7m7OLq8I4YF3uZsNxVPaMoIuRSQPH2+dvp9JgcG8HV4Zm2zP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAADIALAAAAAASABIAAAZWQJlwSCwaj8ikcslsOo+CaGpAdVQ8yIjrYllgWgxYAznixCQnFslEUYggxgdh3pkgEqACQsPcFFQJAE4AhE4ZAQEAIUwHiDIGBh9LLyVDByhLK0+bTUEAOw==) no-repeat left center;}
+.cell_doc_posted {padding-left: 26px !important; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAMAAABhEH5lAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABhQTFRF8PDw4ODg4uLiZGRksLCwkJCQ+vr6////If2cjQAAAAh0Uk5T/////////wDeg71ZAAAAWUlEQVR42nSQSQ7AMAgDAzbu/39cqiZqBKlvjAaxjKtllNpYkdEqgj2NHm8cdNI9UWiGEEyxEIBhSPihqXFDzKSmaokqVo5js9Qt/ltr+3VE+8ThOWd0CzAA2EkHVRToEloAAAAASUVORK5CYII=) no-repeat left center;}
+.cell_doc_deleted {padding-left: 26px !important; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAMAAABhEH5lAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABtQTFRF+MzIADDI+JiY4OTg+AAAmJjIkJCQ+Pz4////g2T7BAAAAAl0Uk5T//////////8AU094EgAAAE9JREFUeNqckEEOwCAIBLc4Sv//4gaNRuzNuZBMNgtB7w/dq5YpobzDGN66wtywJ5hKrMxUkamDpQDllBDkFERd3ojXs2snVDnOv//EJ8AAt/IIgqZugJ0AAAAASUVORK5CYII=) no-repeat left center;}
+.cell_doc {padding-left: 26px !important; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAMAAABhEH5lAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABJQTFRF4OTgyMjIqKyokJCQ+Pz4////iXLUUQAAAAZ0Uk5T//////8As7+kvwAAACxJREFUeNpiYMUADOQLMaECBpAQCwpgJk2IkZGRgQGI6aKKgRkVkB8SAAEGAGeIBQToa/6gAAAAAElFTkSuQmCC) no-repeat left center;}
 .cell_mandatory {border-bottom: 2px red dotted !important;}
 
 /* высота строки грида
@@ -1041,7 +635,7 @@ div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td {
     width: 100%
 }
 .ref_field21 {
-    background: url(../imgs/custom_web/points.png) no-repeat left center;
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAVCAIAAADNQonCAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAC1JREFUeNpiuH379n8KAFA7EwPFYNSIUSNGmhF+YICfTWVXMIxm9kFmBECAAQDrvYdvMFF6wAAAAABJRU5ErkJggg==) no-repeat left center;
     position: relative;
     width: 22px;
     height: 21px;
@@ -1051,12 +645,12 @@ div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td {
     cursor: alias;
 }
 .ref_field21:hover {
-    background: url(../imgs/custom_web/points_hover.png) no-repeat left center;
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAVCAIAAADNQonCAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAADZJREFUeNpivH37tqSkJAO54Pnz50wMFINRI0aNGGlGRIIBfjZFrmBlZUUTYRzN7IPMCIAAAwDD5RGcnhhxbgAAAABJRU5ErkJggg==) no-repeat left center;
 }
 
 /* картинка длительной операции*/
 .img_long {
-    background: url(../imgs/dhxwins_web/dhxwins_progress.gif) no-repeat 20px 20px;
+    background: url(data:image/gif;base64,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) no-repeat 20px 20px;
     width: 80px;
     height: 100px;
 }

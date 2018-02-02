@@ -42,54 +42,55 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		_grid = _cell.attachGrid(),
 		_destructor = _grid.destructor;
 
+  function listener_unload(obj, fields){
+    if(!_obj){
+      _grid.destructor && _grid.destructor();
+    }
+    else if(_grid.entBox && !_grid.entBox.parentElement){
+      setTimeout(_grid.destructor);
+    }
+    else if(_obj === obj){
+      if(_cell && _cell.close)
+        _cell.close();
+      else
+        _grid.destructor();
+    }
+  }
+
 	// задача обсервера - перерисовать поле при изменении свойств объекта
-	function observer(changes){
+	function listener(obj, fields){
 		if(!_obj){
-			var stack = [];
-			changes.forEach(function(change){
-				if(stack.indexOf[change.object]==-1){
-					stack.push(change.object);
-					Object.unobserve(change.object, observer);
-					if(_extra_fields && _extra_fields instanceof TabularSection)
-						Object.unobserve(change.object, observer_rows);
-				}
-			});
-			stack = null;
-
-		}else if(_grid.entBox && !_grid.entBox.parentElement)
-			setTimeout(_grid.destructor);
-
-		else
-			changes.forEach(function(change){
-				if(change.type == "unload"){
-					if(_cell && _cell.close)
-						_cell.close();
-					else
-						_grid.destructor();
-				}else
-					_grid.forEachRow(function(id){
-						if (id == change.name)
-							_grid.cells(id,1).setValue(_obj[change.name]);
-					});
-			});
+      _grid.destructor && _grid.destructor();
+			throw new Error('observer');
+		}
+		else if(_grid.entBox && !_grid.entBox.parentElement){
+      setTimeout(_grid.destructor);
+    }
+    _grid.forEachRow((id) => {
+      if (fields.hasOwnProperty(id))
+        _grid.cells(id,1).setValue(_obj[id]);
+    });
 	}
 
-	function observer_rows(changes){
-		var synced;
-		changes.forEach(function(change){
-			if (!synced && _grid.clearAll && _tsname == change.tabular){
-				synced = true;
-				_grid.clearAll();
-				_grid.parse(_mgr.get_property_grid_xml(_oxml, _obj, {
-					title: attr.ts_title,
-					ts: _tsname,
-					selection: _selection,
-					metadata: _meta
-				}), function(){
+	function listener_rows(obj, fields){
 
-				}, "xml");
-			}
-		});
+    if(!_obj){
+      _grid.destructor && _grid.destructor();
+    }
+    else if(_grid.entBox && !_grid.entBox.parentElement){
+      setTimeout(_grid.destructor);
+    }
+    else if((_obj === obj && fields[_tsname]) || (obj._owner && obj._owner._owner === _obj && obj._owner.name == _tsname)){
+      _grid.clearAll();
+      _grid.parse(_mgr.get_property_grid_xml(_oxml, _obj, {
+        title: attr.ts_title,
+        ts: _tsname,
+        selection: _selection,
+        metadata: _meta
+      }), function(){
+
+      }, "xml");
+    }
 	}
 
 
@@ -144,7 +145,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 
 		reload: {
 			value: function () {
-				observer_rows([{tabular: _tsname}]);
+        listener_rows(_obj, {[_tsname]: true});
 			}
 		},
 
@@ -205,10 +206,12 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		destructor: {
 			value: function () {
 
-				if(_obj)
-					Object.unobserve(_obj, observer);
-				if(_extra_fields && _extra_fields instanceof TabularSection)
-					Object.unobserve(_extra_fields, observer_rows);
+        if(_mgr){
+          _mgr.off('update', listener);
+          _mgr.off('unload', listener_unload);
+          _mgr.off('update', listener_rows);
+          _mgr.off('rows', listener_rows);
+        }
 
 				_obj = null;
 				_extra_fields = null;
@@ -226,21 +229,22 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		 */
 		attach: {
 			value: function (attr) {
+			  if(_mgr){
+          _mgr.off('update', listener);
+          _mgr.off('unload', listener_unload);
+          _mgr.off('update', listener_rows);
+          _mgr.off('rows', listener_rows);
+        }
 
-				if (_obj)
-					Object.unobserve(_obj, observer);
-
-				if(_extra_fields && _extra_fields instanceof TabularSection)
-					Object.unobserve(_obj, observer_rows);
-
-				if(attr.oxml)
-					_oxml = attr.oxml;
+				if(attr.oxml){
+          _oxml = attr.oxml;
+        }
 
 				if(attr.selection)
 					_selection = attr.selection;
 
 				_obj = attr.obj;
-				_meta = attr.metadata || _obj._metadata.fields;
+				_meta = attr.metadata || typeof _obj._metadata == 'function' ? _obj._metadata().fields : _obj._metadata.fields;
 				_mgr = _obj._manager;
 				_tsname = attr.ts || "";
 				_extra_fields = _tsname ? _obj[_tsname] : (_obj.extra_fields || _obj["ДополнительныеРеквизиты"]);
@@ -273,15 +277,23 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 
 
 				// начинаем следить за объектом и, его табчастью допреквизитов
-				Object.observe(_obj, observer, ["update", "unload"]);
+				_mgr.on({
+          update: listener,
+          unload: listener_unload,
+        })
 
-				if(_extra_fields && _extra_fields instanceof TabularSection)
-					Object.observe(_obj, observer_rows, ["row", "rows"]);
+				if(_extra_fields && _extra_fields instanceof TabularSection){
+          _mgr.on({
+            update: listener_rows,
+            rows: listener_rows,
+          })
+        }
 
 				// заполняем табчасть данными
-				if(_tsname && !attr.ts_title)
-					attr.ts_title = _obj._metadata.tabular_sections[_tsname].synonym;
-				observer_rows([{tabular: _tsname}]);
+				if(_tsname && !attr.ts_title){
+          attr.ts_title = typeof _obj._metadata == 'function' ? _obj._metadata(_tsname).synonym : _obj._metadata.tabular_sections[_tsname].synonym;
+        }
+				listener_rows(_obj, {[_tsname]: true});
 
 			}
 		}

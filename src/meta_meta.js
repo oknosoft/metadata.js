@@ -709,9 +709,48 @@ function Meta() {
 	/**
 	 * ### Cоздаёт объекты менеджеров
 	 * @method create_managers
-	 * @for Meta
 	 */
 	_md.create_managers = function(){};
+
+  /**
+   * ### Возвращает массив используемых баз
+   *
+   * @method bases
+   * @return {Array}
+   */
+  _md.bases = function () {
+    var res = {};
+    for(var i in _m){
+      for(var j in _m[i]){
+        if(_m[i][j].cachable){
+          var _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '');
+          if(_name != 'meta' && _name != 'e1cib' && !res[_name])
+            res[_name] = _name;
+        }
+      }
+    }
+    return Object.keys(res);
+  }
+
+  /**
+   * ### Загружает объекты с типом кеширования doc_ram в ОЗУ
+   * @method load_doc_ram
+   */
+  _md.load_doc_ram = function() {
+    var res = [];
+    ['cat','cch','ireg'].forEach(function (kind) {
+      for (var name in _m[kind]) {
+        if (_m[kind][name].cachable == 'doc_ram') {
+          res.push(kind + '.' + name);
+        }
+      }
+    });
+    return $p.wsql.pouch.local.doc.find({
+      selector: {class_name: {$in: res}},
+      limit: 10000
+    })
+      .then($p.wsql.pouch.load_changes);
+  }
 
 	/**
 	 * ### Инициализирует метаданные
@@ -1044,17 +1083,6 @@ function Meta() {
 				}
 
 				// и через его тип выходми на мнеджера значения
-				// for(rt in oproperty.type.types)
-				// 	if(oproperty.type.types[rt].indexOf(".") > -1){
-				// 		tnames = oproperty.type.types[rt].split(".");
-				// 		break;
-				// 	}
-				// if(tnames && tnames.length > 1 && $p[tnames[0]])
-				// 	return mf_mgr($p[tnames[0]][tnames[1]]);
-				// else
-				// 	return oproperty.type;
-
-				//---
 				rt = [];
 				oproperty.type.types.some(function(v){
 					tnames = v.split(".");

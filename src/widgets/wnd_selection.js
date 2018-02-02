@@ -82,6 +82,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		}
 
 		$p.iface.bind_help(wnd);
+
 		if(wnd.setText && !attr.hide_text)
 			wnd.setText('Список ' + (_mgr.class_name.indexOf("doc.") == -1 ? 'справочника "' : 'документов "') + (_meta["list_presentation"] || _meta.synonym) + '"');
 
@@ -109,7 +110,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			if(wnd === pwnd){
 				this.cont.parentElement.classList.add("dhx_cell_toolbar_no_borders");
 				this.cont.parentElement.classList.remove("dhx_cell_toolbar_def");
-				this.cont.style.top = "4px";
+				//this.cont.style.top = "4px";
 			}
 
 			// текстовое поле фильтра по подстроке
@@ -127,7 +128,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 
 			// учтём права для каждой роли на каждый объект
-			var _acl = $p.current_acl.get_acl(_mgr.class_name);
+			var _acl = $p.current_user.get_acl(_mgr.class_name);
 
 			if(_acl.indexOf("i") == -1)
 				this.hideItem("btn_new");
@@ -178,22 +179,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 */
 	function body_keydown(evt){
 
-		/**
-		 * Проверяет, нет ли других модальных форм
-		 */
-		function check_exit(){
-			var do_exit;
-			// если есть внешнее модальное, ничего обрабатывать не надо
-			$p.iface.w.forEachWindow(function (w) {
-				if(w != wnd && (w.isModal() || $p.iface.w.getTopmostWindow() == w))
-					do_exit = true;
-			});
-			return do_exit;
-		}
-
 		if(wnd && wnd.is_visible && wnd.is_visible()){
 			if (evt.ctrlKey && evt.keyCode == 70){ // фокус на поиск по {Ctrl+F}
-				if(!check_exit()){
+				if(!$p.iface.check_exit(wnd)){
 					setTimeout(function(){
 						if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == "desktop")
 							wnd.elmnts.filter.input_filter.focus();
@@ -202,7 +190,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				}
 
 			} else if(evt.shiftKey && evt.keyCode == 116){ // requery по {Shift+F5}
-				if(!check_exit()){
+				if(!$p.iface.check_exit(wnd)){
 					setTimeout(function(){
 						wnd.elmnts.grid.reload();
 					});
@@ -212,7 +200,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				}
 
 			} else if(evt.keyCode == 27){ // закрытие по {ESC}
-				if(!check_exit()){
+				if(wnd instanceof dhtmlXWindowsCell && !$p.iface.check_exit(wnd)){
 					setTimeout(function(){
 						wnd.close();
 					});
@@ -375,63 +363,62 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		if(btn_id=="btn_select"){
 			select();
-
-		}else if(btn_id=="btn_new"){
-
+		}
+		else if(btn_id=="btn_new"){
 			_mgr.create({}, true)
 				.then(function (o) {
-
-					if(attr.on_new)
-						attr.on_new(o, wnd);
-
+					if(attr.on_new){
+            attr.on_new(o, wnd);
+          }
 					else if($p.job_prm.keep_hash){
 						o.form_obj(wnd);
-
-					} else{
+					}
+					else{
 						o._set_loaded(o.ref);
 						$p.iface.set_hash(_mgr.class_name, o.ref);
 					}
 				});
-
-
-		}else if(btn_id=="btn_edit") {
-			var rId = wnd.elmnts.grid.getSelectedRowId();
+		}
+		else if(btn_id=="btn_edit") {
+			const rId = wnd.elmnts.grid.getSelectedRowId();
 			if (rId){
-				if(attr.on_edit)
-					attr.on_edit(_mgr, rId, wnd);
-
-				else if($p.job_prm.keep_hash){
-
+				if(attr.on_edit){
+          attr.on_edit(_mgr, rId, wnd);
+        }
+        else if($p.job_prm.keep_hash){
 					_mgr.form_obj(wnd, {ref: rId});
 
-				} else
-					$p.iface.set_hash(_mgr.class_name, rId);
-			}else
-				$p.msg.show_msg({
-					type: "alert-warning",
-					text: $p.msg.no_selected_row.replace("%1", ""),
-					title: $p.msg.main_title
-				});
-
-		}else if(btn_id.substr(0,4)=="prn_"){
+				}
+				else{
+          $p.iface.set_hash(_mgr.class_name, rId);
+        }
+			}
+			else{
+        $p.msg.show_msg({
+          type: "alert-warning",
+          text: $p.msg.no_selected_row.replace("%1", ""),
+          title: $p.msg.main_title
+        });
+      }
+		}
+		else if(btn_id.substr(0,4)=="prn_"){
 				print(btn_id);
-
-		}else if(btn_id=="btn_order_list"){
+		}
+		else if(btn_id=="btn_order_list"){
 			$p.iface.set_hash("", "", "", "def");
-
-		}else if(btn_id=="btn_delete"){
+		}
+		else if(btn_id=="btn_delete"){
 			mark_deleted();
-
-		}else if(btn_id=="btn_import"){
+		}
+		else if(btn_id=="btn_import"){
 			_mgr.import();
-
-		}else if(btn_id=="btn_export"){
+		}
+		else if(btn_id=="btn_export"){
 			_mgr.export(wnd.elmnts.grid.getSelectedRowId());
-
-		}else if(btn_id=="btn_requery"){
+		}
+		else if(btn_id=="btn_requery"){
 			previous_filter = {};
 			wnd.elmnts.grid.reload();
-
 		}
 	}
 
@@ -485,7 +472,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 			else if(on_select){
 
-				_mgr.get(rId, true)
+				_mgr.get(rId, 'promise')
 					.then(function(selv){
 						wnd.close();
 						on_select.call(pwnd.grid || pwnd, selv);
@@ -517,7 +504,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	function mark_deleted(){
 		var rId = wnd.elmnts.grid.getSelectedRowId();
 		if(rId){
-			_mgr.get(rId, true, true)
+			_mgr.get(rId, 'promise')
 				.then(function (o) {
 
 					dhtmlx.confirm({
@@ -543,8 +530,9 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 		document.body.removeEventListener("keydown", body_keydown);
 
-		if(attr && attr.on_close && !on_create)
-			attr.on_close();
+		if(attr && attr.on_close && !on_create){
+      attr.on_close();
+    }
 
 		if(!on_create){
 			_mgr = wnd = _meta = previous_filter = on_select = pwnd = attr = null;
@@ -664,7 +652,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 
 	// создаём и настраиваем форму
 	if(has_tree && attr.initial_value && attr.initial_value!= $p.utils.blank.guid && !attr.parent)
-		return _mgr.get(attr.initial_value, true)
+		return _mgr.get(attr.initial_value, 'promise')
 			.then(function (tObj) {
 				attr.parent = tObj.parent.ref;
 				attr.set_parent = attr.parent;

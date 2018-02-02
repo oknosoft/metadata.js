@@ -8,7 +8,7 @@
  */
 
 
-"use strict";
+;"use strict";
 
 /**
  * Фреймворк добавляет в прототипы _Object_ и _Number_<br />
@@ -97,7 +97,7 @@ Object.defineProperties(Object.prototype, {
 	 * @returns {Object|Array} - копия объекта
 	 */
 	_clone: {
-		value: function(exclude) {
+		value: function(exclude, str_date) {
 			if(!this || "object" !== typeof this)
 				return this;
 			var p, v, c = "function" === typeof this.pop ? [] : {};
@@ -108,22 +108,39 @@ Object.defineProperties(Object.prototype, {
 				if (this.hasOwnProperty(p)){
 					v = this[p];
 					if(v){
-						if("function" === typeof v || v instanceof DataObj || v instanceof DataManager || v instanceof Date)
-							c[p] = v;
-
-						else if("object" === typeof v)
-							c[p] = v._clone(exclude);
-
-						else
-							c[p] = v;
-					} else
-						c[p] = v;
+						if("function" === typeof v || v instanceof DataObj || v instanceof DataManager){
+              c[p] = v;
+            }
+						else if("object" === typeof v){
+              if(v instanceof Date){
+                c[p] = str_date ? v.toJSON() : v;
+              }
+              else{
+                c[p] = v._clone(exclude, str_date);
+              }
+            }
+						else{
+              c[p] = v;
+            }
+					}
+					else{
+            c[p] = v;
+          }
 				}
 			}
 			return c;
 		}
 	}
 });
+
+/**
+ * Отбрасываем часовой пояс при сериализации даты
+ * @method toJSON
+ * @for Date
+ */
+Date.prototype.toJSON = function () {
+  return $p.moment(this).format($p.moment._masks.iso);
+}
 
 /**
  * Метод округления в прототип числа
@@ -147,107 +164,6 @@ if(!Number.prototype.pad)
 		while (s.length < (size || 2)) {s = "0" + s;}
 		return s;
 	};
-
-/**
- * Полифил обсервера и нотифаера
- */
-if(!Object.observe && !Object.unobserve && !Object.getNotifier){
-	Object.prototype.__define({
-
-		/**
-		 * Подключает наблюдателя
-		 * @method observe
-		 * @for Object
-		 */
-		observe: {
-			value: function(target, observer) {
-				if(!target){
-					return;
-				}
-				if(!target._observers){
-					target.__define({
-						_observers: {
-							value: [],
-							enumerable: false
-						},
-						_notis: {
-							value: [],
-							enumerable: false
-						}
-					});
-				}
-				target._observers.push(observer);
-			},
-			enumerable: false
-		},
-
-		/**
-		 * Отключает наблюдателя
-		 * @method unobserve
-		 * @for Object
-		 */
-		unobserve: {
-			value: function(target, observer) {
-				if(target && target._observers){
-
-					if(!observer){
-						target._observers.length = 0;
-					}
-
-					for(var i=0; i<target._observers.length; i++){
-						if(target._observers[i]===observer){
-							target._observers.splice(i, 1);
-							break;
-						}
-					}
-				}
-			},
-			enumerable: false
-		},
-
-		/**
-		 * Возвращает объект нотификатора
-		 * @method getNotifier
-		 * @for Object
-		 */
-		getNotifier: {
-			value: function(target) {
-				var timer;
-				return {
-					notify: function (noti) {
-
-						if(!target._observers || !noti)
-							return;
-
-						if(!noti.object)
-							noti.object = target;
-
-						target._notis.push(noti);
-						noti = null;
-
-						if(timer){
-							clearTimeout(timer);
-						}
-
-						timer = setTimeout(function () {
-							//TODO: свернуть массив оповещений перед отправкой
-							if(target._notis.length){
-								target._observers.forEach(function (observer) {
-									observer(target._notis);
-								});
-								target._notis.length = 0;
-							}
-							timer = false;
-
-						}, 4);
-					}
-				}
-			},
-			enumerable: false
-		}
-
-	});
-}
 
 
 /**
@@ -493,7 +409,7 @@ function MetaEngine() {
 								ok = sel.some(function (element) {
 									var key = Object.keys(element)[0];
 									if(element[key].hasOwnProperty("like"))
-										return o[key] && o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
+										return typeof o[key] == "string" && o[key].toLowerCase().indexOf(element[key].like.toLowerCase())!=-1;
 									else
 										return $p.utils.is_equal(o[key], element[key]);
 								});
@@ -632,14 +548,20 @@ function MetaEngine() {
 		 */
 		off: {
 			value: function (id) {
+			  if(arguments.length == 2){
+          id = arguments[1];
+        }
 				if(typeof id == "function" && id._evnts){
 					id._evnts.forEach(function (id) {
 						$p.eve.detachEvent(id);
 					});
-				}else if(!id)
-					$p.eve.detachAllEvents();
-				else
-					$p.eve.detachEvent(id);
+				}
+				else if(!id){
+          $p.eve.detachAllEvents();
+        }
+				else{
+          $p.eve.detachEvent(id);
+        }
 			}
 		},
 
@@ -852,7 +774,7 @@ function MetaEngine() {
 				 * @static
 				 */
 					function ChartsOfAccounts(){
-					this.toString = function(){return $p.msg.meta_charts_of_accounts_mgr};
+					this.toString = function(){return $p.msg.meta_cacc_mgr};
 				})
 		},
 
@@ -874,7 +796,7 @@ function MetaEngine() {
 				 * @static
 				 */
 					function ChartsOfCharacteristics(){
-					this.toString = function(){return $p.msg.meta_charts_of_characteristic_mgr};
+					this.toString = function(){return $p.msg.meta_cch_mgr};
 				})
 		},
 
@@ -1197,7 +1119,7 @@ function Utils() {
 
 	/**
 	 * ### Добавляет days дней к дате
-	 *
+	 * и сбрасывает время в 00:00:00
 	 * @method date_add_day
 	 * @param date {Date} - исходная дата
 	 * @param days {Number} - число дней, добавляемых к дате (может быть отрицательным)
@@ -1310,10 +1232,16 @@ function Utils() {
 			reader.onerror = function(err){
 				reject(err);
 			};
-			if(type == "data_url")
-				reader.readAsDataURL(blob);
-			else
-				reader.readAsText(blob);
+			switch (type) {
+        case "array" :
+          reader.readAsArrayBuffer(blob);
+          break;
+        case "data_url":
+          reader.readAsDataURL(blob);
+          break;
+        default:
+          reader.readAsText(blob);
+      }
 		});
 
 	};
@@ -1599,19 +1527,23 @@ function Ajax() {
 			return wnd_print;
 		}
 
-		if(!method || (typeof method == "string" && method.toLowerCase().indexOf("post")!=-1))
-			return this.post_ex(url,
-				typeof post_data == "object" ? JSON.stringify(post_data) : post_data,
-				true,
-				function(xhr){
-					xhr.responseType = "blob";
-				})
-				.then(show_blob);
-		else
-			return this.get_ex(url, true, function(xhr){
-					xhr.responseType = "blob";
-				})
-				.then(show_blob);
+    if(url instanceof Blob){
+      Promise.resolve(show_blob({response: url}));
+    }
+    else if(!method || (typeof method == "string" && method.toLowerCase().indexOf("post")!=-1))
+      return this.post_ex(url,
+        typeof post_data == "object" ? JSON.stringify(post_data) : post_data,
+        true,
+        function(xhr){
+          xhr.responseType = "blob";
+        })
+        .then(show_blob);
+    else{
+      return this.get_ex(url, true, function(xhr){
+        xhr.responseType = "blob";
+      })
+        .then(show_blob);
+    }
 	};
 
 	/**

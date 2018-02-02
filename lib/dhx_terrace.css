@@ -1,5 +1,5 @@
 
-		
+
 .dhtmlxcalendar_dhx_terrace {
   position: absolute;
   display: block;
@@ -1394,14 +1394,15 @@ div.dhtmlxMenu_dhx_terrace_SubLevelArea_ArrowDown_Disabled {
 .dhx_toolbar_dhx_terrace {
   background-color: #ffffff;
   position: relative;
-  padding: 0px 5px;
-  height: 34px;
+  padding: 2px 5px;
   cursor: default;
   overflow: hidden;
-  /* font */
-  line-height: normal;
+  min-height: 30px;
+  /*
   font-family: Arial;
   font-size: 13px;
+   */
+  line-height: normal;
   color: #333333;
 }
 .dhx_toolbar_dhx_terrace div.dhxtoolbar_float_left {
@@ -2009,7 +2010,7 @@ div.dhx_toolbar_slider_label_dhx_terrace {
 /*style of dataview's item, when drag is moved other it*/
 .dhx_drag_over {
   background-color: #faf768;
-  background-image: url("../imgs/dhxdataview_terrace/marker.png");
+  background-image: url("imgs/dhxdataview_terrace/marker.png");
   background-repeat: repeat-x;
 }
 /*paging related styles*/
@@ -2533,8 +2534,11 @@ div.gridbox_dhx_terrace.gridbox .ftr table td {
   font-style: normal;
   color: #333;
   border-color: #cccccc;
-  padding-left: 20px;
-  line-height: 41px;
+  /*padding-left: 10px;*/
+  line-height: 23px;
+  font-size: 90%;
+  font-weight: bold;
+  text-align: right;
   width: 100%;
 }
 div.gridbox_dhx_terrace.gridbox table.hdr td {
@@ -3775,7 +3779,7 @@ div.dhx_form_skin_detect {
   z-index: 0;
 }
 .dhx_vault_dhx_terrace div.dhx_vault_f_pr {
-  background-image: url("../imgs/dhxvault_terrace/dhxvault_progress.gif");
+  background-image: url("imgs/dhxvault_terrace/dhxvault_progress.gif");
   background-position: center center;
   background-repeat: no-repeat;
   opacity: 0.5;
@@ -5592,9 +5596,11 @@ span.dhxtabbar_tabs_text_test_dhx_terrace {
   position: relative;
   cursor: default;
 }
+/*
 .dhxwins_vp_auto {
   overflow: auto!important;
 }
+*/
 .dhxwins_vp_dhx_terrace div.dhxwin_active {
   position: absolute;
   overflow: hidden;
@@ -6566,4 +6572,3 @@ div.dhx_modal_cover {
 }
 
 
-	

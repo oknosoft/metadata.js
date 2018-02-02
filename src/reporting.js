@@ -216,7 +216,7 @@ SpreadsheetDocument.prototype.__define({
 
       // цикл по табчасти - выводим строку
       for(var i = 0; i < rows.length; i++){
-        this.put(dhx4.template(template.innerHTML, rows[i]), template.attributes);
+        this.put(dhx4.template(template.innerHTML.replace(/<!---/g, '').replace(/--->/g, ''), rows[i]), template.attributes);
       }
     }
   },
@@ -237,7 +237,7 @@ SpreadsheetDocument.prototype.__define({
         var doc = this,
           url = window.URL.createObjectURL($p.injected_data['view_blank.html']),
           wnd_print = window.open(
-          url, "wnd_print", "fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes");
+          url, "_blank", "fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes");
 
         if (wnd_print.outerWidth < screen.availWidth || wnd_print.outerHeight < screen.availHeight){
           wnd_print.moveTo(0,0);

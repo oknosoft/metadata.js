@@ -1,18 +1,27 @@
 {
   "name": "metadata-superlogin",
   "description": "Social auth & session manager for metadata.js",
-  "version": "2.0.0-beta.14",
+  "version": "2.0.16-beta.48",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "engines": {
-    "node": "^6.9",
-    "npm": "^3.5"
+    "node": "^8.8",
+    "npm": "^5.5"
   },
-  "peerDependencies": {
-    "superlogin-client": "^0.4"
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "metadata-redux": "^2.0.16-beta.48",
+    "passport-facebook": "^2.1",
+    "passport-github": "^1.1",
+    "passport-google-oauth": "^1.0",
+    "passport-vkontakte": "^0.3",
+    "passport-yandex": "0.0.3",
+    "superlogin": "^0.6.1",
+    "superlogin-client": "^0.8.0",
+    "yamljs": "^0.3.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-superlogin/"
+    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-superlogin"
   },
   "bugs": {
     "url": "https://github.com/oknosoft/metadata.js/issues"

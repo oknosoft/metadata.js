@@ -1,0 +1,55 @@
+import withStyles from 'material-ui/styles/withStyles';
+import colors from 'material-ui/colors/common';
+
+export default withStyles(theme => ({
+  root: {
+    marginTop: 20,
+    width: '100%',
+  },
+  drawer: {
+    width: 280,
+  },
+  ndrawer: {
+    width: 310,
+  },
+  flex: {
+    flex: 1,
+    whiteSpace: 'nowrap',
+  },
+  inline: {
+    display: 'inline-flex',
+    alignItems: 'baseline'
+  },
+  progress: {
+    color: colors.white,
+    position: 'absolute',
+    top: theme.spacing.unit,
+  },
+  toolbar: {
+    backgroundColor: theme.palette.primary[50],
+  },
+  white: {
+    color: colors.white,
+  },
+  title: {
+    marginLeft: theme.spacing.unit * 3,
+  },
+  bold: {
+    fontWeight: 'bold',
+  },
+  select: {
+    width: 180,
+    marginLeft: theme.spacing.unit,
+  },
+  rotation: {
+    animation: 'rotate-progress-circle 1733ms linear infinite',
+  },
+  '@keyframes rotate-progress-circle': {
+    '0%': {
+      transform: 'rotate(270deg)',
+    },
+    '100%': {
+      transform: 'rotate(-90deg)',
+    },
+  },
+}));

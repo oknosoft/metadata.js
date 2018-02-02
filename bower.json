@@ -36,8 +36,8 @@
     "node"
   ],
   "dependencies": {
-    "alasql": "^0.3",
-    "pouchdb": "^5.4"
+    "alasql": "^0.4",
+    "pouchdb": "^6.2"
   },
   "devDependencies": {
     "gulp": ">=3.9",
@@ -46,7 +46,7 @@
     "gulp-rename": ">=1.2",
     "gulp-uglify": ">=2.0",
     "gulp-umd": ">=0.2",
-    "gulp-replace": ">=0.5",
+    "gulp-replace": ">=0.6",
     "gulp-base64": ">=0.1",
     "yuidocjs": ">=0.10",
     "jasmine": ">=2.4"

@@ -52,148 +52,7 @@ function AppEvents() {
 			}
 		},
 
-		/**
-		 * ### Добавляет объекту методы генерации и обработки событий
-		 *
-		 * @method do_eventable
-		 * @for AppEvents
-		 * @param obj {Object} - объект, которому будут добавлены eventable свойства
-		 */
-		do_eventable: {
-			value: function (obj) {
 
-				function attach(name, func) {
-					name = String(name).toLowerCase();
-					if (!this._evnts.data[name])
-						this._evnts.data[name] = {};
-					var eventId = $p.utils.generate_guid();
-					this._evnts.data[name][eventId] = func;
-					return eventId;
-				}
-
-				function detach(eventId) {
-
-					if(!eventId){
-						return detach_all.call(this);
-					}
-
-					for (var a in this._evnts.data) {
-						var k = 0;
-						for (var b in this._evnts.data[a]) {
-							if (b == eventId) {
-								this._evnts.data[a][b] = null;
-								delete this._evnts.data[a][b];
-							} else {
-								k++;
-							}
-						}
-						if (k == 0) {
-							this._evnts.data[a] = null;
-							delete this._evnts.data[a];
-						}
-					}
-				}
-
-				 function detach_all() {
-					for (var a in this._evnts.data) {
-						for (var b in this._evnts.data[a]) {
-							this._evnts.data[a][b] = null;
-							delete this._evnts.data[a][b];
-						}
-						this._evnts.data[a] = null;
-						delete this._evnts.data[a];
-					}
-				}
-
-				function call(name, params) {
-					name = String(name).toLowerCase();
-					if (this._evnts.data[name] == null)
-						return true;
-					var r = true;
-					for (var a in this._evnts.data[name]) {
-						r = this._evnts.data[name][a].apply(this, params) && r;
-					}
-					return r;
-				}
-
-				function ontimer() {
-
-					for(var name in this._evnts.evnts){
-						var l = this._evnts.evnts[name].length;
-						if(l){
-							for(var i=0; i<l; i++){
-								this.emit(name, this._evnts.evnts[name][i]);
-							}
-							this._evnts.evnts[name].length = 0;
-						}
-					}
-
-					this._evnts.timer = 0;
-				}
-
-				obj.__define({
-
-					_evnts: {
-						value: {
-							data: {},
-							timer: 0,
-							evnts: {}
-						}
-					},
-
-					on: {
-						value: attach
-					},
-
-					attachEvent: {
-						value: attach
-					},
-
-					off: {
-						value: detach
-					},
-
-					detachEvent: {
-						value: detach
-					},
-
-					detachAllEvents: {
-						value: detach_all
-					},
-
-					checkEvent: {
-						value: function(name) {
-							name = String(name).toLowerCase();
-							return (this._evnts.data[name] != null);
-						}
-					},
-
-					callEvent: {
-						value: call
-					},
-
-					emit: {
-						value: call
-					},
-
-					emit_async: {
-						value: function callEvent(name, params){
-
-							if(!this._evnts.evnts[name])
-								this._evnts.evnts[name] = [];
-
-							this._evnts.evnts[name].push(params);
-
-							if(this._evnts.timer)
-								clearTimeout(this._evnts.timer);
-
-							this._evnts.timer = setTimeout(ontimer.bind(this), 4);
-						}
-					}
-
-				});
-			}
-		}
 	});
 
 	// если мы внутри браузера и загружен dhtmlx, переносим в AppEvents свойства dhx4
@@ -228,52 +87,7 @@ function AppEvents() {
  */
 function JobPrm(){
 
-	function base_url(){
-		return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
-	}
-
-	function parse_url(){
-
-		function parse(url_prm){
-			var prm = {}, tmp = [], pairs;
-
-			if(url_prm.substr(0, 1) === "#" || url_prm.substr(0, 1) === "?")
-				url_prm = url_prm.substr(1);
-
-			if(url_prm.length > 2){
-
-				pairs = decodeURI(url_prm).split('&');
-
-				// берём параметры из url
-				for (var i in pairs){   //разбиваем пару на ключ и значение, добавляем в их объект
-					tmp = pairs[i].split('=');
-					if(tmp[0] == "m"){
-						try{
-							prm[tmp[0]] = JSON.parse(tmp[1]);
-						}catch(e){
-							prm[tmp[0]] = {};
-						}
-					}else
-						prm[tmp[0]] = tmp[1] || "";
-				}
-			}
-
-			return prm;
-		}
-
-		return parse(location.search)._mixin(parse(location.hash));
-	}
-
 	this.__define({
-
-		/**
-		 * Осуществляет синтаксический разбор параметров url
-		 * @method parse_url
-		 * @return {Object}
-		 */
-		parse_url: {
-			value: parse_url
-		},
 
 		offline: {
 			value: false,
@@ -297,41 +111,9 @@ function JobPrm(){
 		 * @static
 		 */
 		url_prm: {
-			value: typeof window != "undefined" ? parse_url() : {}
-		},
-
-		/**
-		 * Адрес стандартного интерфейса 1С OData
-		 * @method rest_url
-		 * @return {string}
-		 */
-		rest_url: {
-			value: function () {
-				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
-				if(zone)
-					return url.replace("%1", zone);
-				else
-					return url.replace("%1/", "");
-			}
-		},
-
-		/**
-		 * Адрес http интерфейса библиотеки интеграции
-		 * @method irest_url
-		 * @return {string}
-		 */
-		irest_url: {
-			value: function () {
-				var url = base_url(),
-					zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
-				url = url.replace("odata/standard.odata", "hs/rest");
-				if(zone)
-					return url.replace("%1", zone);
-				else
-					return url.replace("%1/", "");
-			}
+			value: typeof window != "undefined" ? this.parse_url() : {}
 		}
+
 	});
 
 	// подмешиваем параметры, заданные в файле настроек сборки
@@ -344,95 +126,88 @@ function JobPrm(){
 			this[prm_name] = this.url_prm[prm_name];
 	}
 
-}
+};
 
-/**
- * ### Модификатор отложенного запуска
- * Служебный объект, реализующий отложенную загрузку модулей,<br />
- * в которых доопределяется (переопределяется) поведение объектов и менеджеров конкретных типов
- *
- * @class Modifiers
- * @constructor
- * @menuorder 62
- * @tooltip Внешние модули
- */
-function Modifiers(){
+JobPrm.prototype.__define({
 
-	var methods = [];
+  base_url: {
+    value: function (){
+      return $p.wsql.get_user_param("rest_path") || $p.job_prm.rest_path || "/a/zd/%1/odata/standard.odata/";
+    }
+  },
 
-	/**
-	 * Добавляет метод в коллекцию методов для отложенного вызова
-	 * @method push
-	 * @param method {Function} - функция, которая будет вызвана после инициализации менеджеров объектов данных
-	 */
-	this.push = function (method) {
-		methods.push(method);
-	};
+  /**
+   * Осуществляет синтаксический разбор параметров url
+   * @method parse_url
+   * @return {Object}
+   */
+  parse_url_str: {
+    value: function (prm_str) {
+      var prm = {}, tmp = [], pairs;
 
-	/**
-	 * Отменяет подписку на событие
-	 * @method detache
-	 * @param method {Function}
-	 */
-	this.detache = function (method) {
-		var index = methods.indexOf(method);
-		if(index != -1)
-			methods.splice(index, 1);
-	};
+      if (prm_str[0] === "#" || prm_str[0] === "?")
+        prm_str = prm_str.substr(1);
 
-	/**
-	 * Отменяет все подписки
-	 * @method clear
-	 */
-	this.clear = function () {
-		methods.length = 0;
-	};
+      if (prm_str.length > 2) {
 
-	/**
-	 * Загружает и выполняет методы модификаторов
-	 * @method execute
-	 */
-	this.execute = function (context) {
+        pairs = decodeURI(prm_str).split('&');
 
-		// выполняем вшитые в сборку модификаторы
-		var res, tres;
-		methods.forEach(function (method) {
-			if(typeof method === "function")
-				tres = method(context);
-			else
-				tres = $p.injected_data[method](context);
-			if(res !== false)
-				res = tres;
-		});
-		return res;
-	};
+        // берём параметры из url
+        for (var i in pairs) {   //разбиваем пару на ключ и значение, добавляем в их объект
+          tmp = pairs[i].split('=');
+          if (tmp[0] == "m") {
+            try {
+              prm[tmp[0]] = JSON.parse(tmp[1]);
+            } catch (e) {
+              prm[tmp[0]] = {};
+            }
+          } else
+            prm[tmp[0]] = tmp[1] || "";
+        }
+      }
 
-	/**
-	 * выполняет подключаемые модификаторы
-	 * @method execute_external
-	 * @param data
-	 */
-	this.execute_external = function (data) {
+      return prm;
+    }
+  },
 
-		var paths = $p.wsql.get_user_param("modifiers");
+  /**
+   * Осуществляет синтаксический разбор параметров url
+   * @method parse_url
+   * @return {Object}
+   */
+  parse_url: {
+    value: function () {
+      return this.parse_url_str(location.search)._mixin(this.parse_url_str(location.hash));
+    }
+  },
 
-		if(paths){
-			paths = paths.split('\n').map(function (path) {
-				if(path)
-					return new Promise(function(resolve, reject){
-						$p.load_script(path, "script", resolve);
-					});
-				else
-					return Promise.resolve();
-			});
-		}else
-			paths = [];
+  /**
+   * Адрес стандартного интерфейса 1С OData
+   * @method rest_url
+   * @return {string}
+   */
+  rest_url: {
+    value: function () {
+      var url = this.base_url(),
+        zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
+      return zone ? url.replace("%1", zone) : url.replace("%1/", "");
+    }
+  },
 
-		return Promise.all(paths)
-			.then(function () {
-				this.execute(data);
-			}.bind(this));
-	};
+  /**
+   * Адрес http интерфейса библиотеки интеграции
+   * @method irest_url
+   * @return {string}
+   */
+  irest_url: {
+    value: function () {
+      var url = this.base_url().replace("odata/standard.odata", "hs/rest"),
+        zone = $p.wsql.get_user_param("zone", $p.job_prm.zone_is_string ? "string" : "number");
+      return zone ? url.replace("%1", zone) : url.replace("%1/", "");
+    }
+  }
 
-}
+});
+
+
 

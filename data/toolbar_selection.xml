@@ -1,23 +1,30 @@
 <?xml version="1.0" encoding='utf-8'?>
 <toolbar>
 
-    <item id="sep0" type="separator"/>
+  <item id="sep0" type="separator"/>
 
-    <item id="btn_select"   type="button"   title="Выбрать элемент списка" text="&lt;b&gt;Выбрать&lt;/b&gt;"  />
+  <item id="btn_select" type="button" title="Выбрать элемент списка" text="&lt;b&gt;Выбрать&lt;/b&gt;"/>
 
-    <item id="sep1" type="separator"/>
-    <item id="btn_new"      type="button"	text="&lt;i class='fa fa-plus-circle fa-fw'&gt;&lt;/i&gt;"	title="Создать" />
-    <item id="btn_edit"     type="button"	text="&lt;i class='fa fa-pencil fa-fw'&gt;&lt;/i&gt;"	title="Изменить" />
-    <item id="btn_delete"   type="button"	text="&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt;"	title="Удалить" />
-    <item id="sep2" type="separator"/>
+  <item id="sep1" type="separator"/>
+  <item id="btn_new" type="button" text="&lt;i class='fa fa-plus-circle fa-fw'&gt;&lt;/i&gt;" title="Создать"/>
+  <item id="btn_edit" type="button" text="&lt;i class='fa fa-pencil fa-fw'&gt;&lt;/i&gt;" title="Изменить"/>
+  <item id="btn_delete" type="button" text="&lt;i class='fa fa-times fa-fw'&gt;&lt;/i&gt;" title="Удалить"/>
+  <item id="sep2" type="separator"/>
 
-    <item type="buttonSelect" id="bs_print" text="&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt; Печать" openAll="true" >
-    </item>
+  <item type="buttonSelect" id="bs_print" text="&lt;i class='fa fa-print fa-fw'&gt;&lt;/i&gt; Печать" openAll="true">
+  </item>
 
-    <item type="buttonSelect"   id="bs_more"    text="&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;" title="Дополнительно" openAll="true">
-        <item id="btn_requery"  type="button"	text="&lt;i class='fa fa-refresh fa-fw'&gt;&lt;/i&gt; Обновить список" />
-    </item>
+  <item type="buttonSelect" id="bs_create_by_virtue" text="&lt;i class='fa fa-bolt fa-fw'&gt;&lt;/i&gt;" title="Создать на основании" openAll="true">
+  </item>
 
-    <item id="sep3" type="separator"/>
+  <item type="buttonSelect" id="bs_go_to" text="&lt;i class='fa fa-external-link fa-fw'&gt;&lt;/i&gt;" title="Перейти" openAll="true" >
+    <item type="button" id="btn_go_connection" enabled="false" text="Связи" />
+  </item>
+
+  <item type="buttonSelect" id="bs_more" text="&lt;i class='fa fa-th-large fa-fw'&gt;&lt;/i&gt;" title="Дополнительно" openAll="true">
+    <item id="btn_requery" type="button" text="&lt;i class='fa fa-refresh fa-fw'&gt;&lt;/i&gt; Обновить список"/>
+  </item>
+
+  <item id="sep3" type="separator"/>
 
 </toolbar>
