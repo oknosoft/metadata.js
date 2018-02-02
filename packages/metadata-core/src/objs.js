@@ -6,7 +6,7 @@
  */
 
 import utils from './utils';
-import {DataProcessorsManager, EnumManager, RegisterManager} from './mngrs';
+import {DataProcessorsManager, EnumManager, RegisterManager, RefDataManager} from './mngrs';
 import {TabularSection, TabularSectionRow} from './tabulars';
 
 class InnerData {
@@ -43,7 +43,7 @@ class InnerData {
  */
 export class DataObj {
 
-  constructor(attr, manager, loading) {
+  constructor(attr, manager, loading, direct) {
 
     // если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
     if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)) {
@@ -63,7 +63,7 @@ export class DataObj {
        * @final
        */
       _obj: {
-        value: {
+        value: direct ? attr : {
           ref: manager instanceof EnumManager ? attr.name : (manager instanceof RegisterManager ? manager.get_ref(attr) : utils.fix_guid(attr))
         },
         configurable: true
@@ -710,6 +710,15 @@ export class DataObj {
     return this;
   }
 
+  /**
+   * ### После удаления строки табличной части
+   *
+   * @event AFTER_DEL_ROW
+   */
+  after_del_row(name) {
+    return this;
+  }
+
 }
 
 /**
@@ -745,10 +754,17 @@ export class CatObj extends DataObj {
 
   constructor(attr, manager, loading) {
 
-    // выполняем конструктор родительского объекта
-    super(attr, manager, loading);
+    const direct = loading && attr && utils.is_guid(attr.ref);
 
-    this._mixin(attr);
+    // выполняем конструктор родительского объекта
+    super(attr, manager, loading, direct);
+
+    if(direct) {
+      utils.fix_meta(this);
+    }
+    else {
+      this._mixin(attr);
+    }
 
   }
 
@@ -881,10 +897,17 @@ export class DocObj extends NumberDocAndDate(DataObj) {
 
   constructor(attr, manager, loading) {
 
-    // выполняем конструктор родительского объекта
-    super(attr, manager, loading);
+    const direct = loading && attr && utils.is_guid(attr.ref);
 
-    this._mixin(attr);
+    // выполняем конструктор родительского объекта
+    super(attr, manager, loading, direct);
+
+    if(direct) {
+      utils.fix_meta(this);
+    }
+    else {
+      this._mixin(attr);
+    }
 
   }
 
@@ -938,16 +961,16 @@ export class DataProcessorObj extends DataObj {
     // выполняем конструктор родительского объекта
     super(attr, manager, loading);
 
-    const cmd = manager.metadata();
+    const {fields, tabular_sections} = manager.metadata();
 
-    for (let f in cmd.fields) {
-      if(!attr[f]) {
-        attr[f] = utils.fetch_type('', cmd.fields[f].type);
+    for (const fld in fields) {
+      if(!attr[fld]) {
+        attr[fld] = utils.fetch_type('', fields[fld].type);
       }
     }
-    for (let f in cmd['tabular_sections']) {
-      if(!attr[f]) {
-        attr[f] = [];
+    for (const fld in tabular_sections) {
+      if(!attr[fld]) {
+        attr[fld] = [];
       }
     }
     utils._mixin(this, attr);

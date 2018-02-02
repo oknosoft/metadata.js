@@ -115,6 +115,8 @@ if (!Object.prototype.__define) {
 	});
 }
 
+const date_frmts = ['DD-MM-YYYY', 'DD-MM-YYYY HH:mm', 'DD-MM-YYYY HH:mm:ss', 'DD-MM-YY HH:mm', 'YYYYDDMMHHmmss', moment.ISO_8601];
+
 /**
  * ### Коллекция вспомогательных методов
  * @class Utils
@@ -172,11 +174,11 @@ const utils = {
 	 * @return {Date|*}
 	 */
 	fix_date(str, strict) {
-
-		if (str instanceof Date)
-			return str;
+		if (str instanceof Date){
+      return str;
+    }
 		else {
-			var m = moment(str, ['DD-MM-YYYY', 'DD-MM-YYYY HH:mm', 'DD-MM-YYYY HH:mm:ss', 'DD-MM-YY HH:mm', 'YYYYDDMMHHmmss', moment.ISO_8601]);
+			const m = moment(str, date_frmts);
 			return m.isValid() ? m.toDate() : (strict ? this.blank.date : str);
 		}
 	},
@@ -198,11 +200,13 @@ const utils = {
 			return ref.ref;
 		}
 		else if (ref && typeof ref == 'object') {
-			if (ref.presentation) {
-				if (ref.ref)
-					return ref.ref;
-				else if (ref.name)
-					return ref.name;
+			if (ref.hasOwnProperty('presentation')) {
+				if (ref.ref){
+          return ref.ref;
+        }
+				else if (ref.name){
+          return ref.name;
+        }
 			}
 			else {
 				ref = (typeof ref.ref == 'object' && ref.ref.hasOwnProperty('ref')) ? ref.ref.ref : ref.ref;
@@ -256,23 +260,23 @@ const utils = {
 	 *
 	 * @method fetch_type
 	 * @param str {*} - значение (обычно, строка, полученная из html поля ввода)
-	 * @param mtype {Object} - поле type объекта метаданных (field.type)
+	 * @param type {Object} - поле type объекта метаданных (field.type)
 	 * @return {*}
 	 */
-	fetch_type(str, mtype) {
-		if (mtype.is_ref) {
-      if(mtype.types && mtype.types.some((type) => type.indexOf('enm') == 0 || type.indexOf('string') == 0)){
+	fetch_type(str, type) {
+		if (type.is_ref) {
+      if(type.types && type.types.some((type) => type.indexOf('enm') == 0 || type.indexOf('string') == 0)){
         return str;
       }
 			return this.fix_guid(str);
 		}
-		if (mtype.date_part) {
+		if (type.date_part) {
 			return this.fix_date(str, true);
 		}
-		if (mtype['digits']) {
+		if (type['digits']) {
 			return this.fix_number(str, true);
 		}
-		if (mtype.types && mtype.types[0] == 'boolean') {
+		if (type.types && type.types[0] == 'boolean') {
 			return this.fix_boolean(str);
 		}
 		return str;
@@ -527,6 +531,62 @@ const utils = {
 		return obj;
 
 	},
+
+  /**
+   * Приводит строки дат к датам в реквизитах объекта, создаёт табчасти
+   * @param obj - {DataObj}
+   */
+  fix_meta(obj) {
+    const {_obj, _manager} = obj;
+    const {fields, tabular_sections} = obj._metadata();
+    for (const fld in fields) {
+      if(_obj[fld]) {
+        const {type} = fields[fld];
+        if (type.is_ref) {
+          if(type.types.length > 1) {
+            obj.__setter(fld, _obj[fld]);
+          }
+          else {
+            _obj[fld] = this.fix_guid(_obj[fld]);
+          }
+        }
+        else if (type.date_part) {
+          _obj[fld] = this.fix_date(_obj[fld], true);
+        }
+      }
+    }
+    for (const ts in tabular_sections) {
+      if(Array.isArray(_obj[ts])){
+        const tabular = obj[ts];
+        const Constructor = _manager.obj_constructor(ts, true);
+        const {fields} = tabular_sections[ts];
+        for(let i = 0; i < _obj[ts].length; i++) {
+          const row = _obj[ts][i];
+          const _row = new Constructor(tabular, row);
+          row.row = i + 1;
+          Object.defineProperty(row, '_row', {value: _row});
+
+          for (const fld in fields){
+            const {type} = fields[fld];
+            if(row[fld]) {
+              const {type} = fields[fld];
+              if (type.is_ref) {
+                if(type.types.length > 1) {
+                  _row.__setter(fld, row[fld]);
+                }
+                else {
+                  row[fld] = this.fix_guid(row[fld]);
+                }
+              }
+              else if (type.date_part) {
+                row[fld] = this.fix_date(row[fld], true);
+              }
+            }
+          }
+        }
+      }
+    }
+  },
 
 	/**
 	 * ### Подмешивает в объект свойства с иерархией объекта patch

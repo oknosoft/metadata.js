@@ -27,6 +27,9 @@ function mapStateToProps(/*{meta}*/) {
       _acl: 'r',
     };
   }
+  else {
+    return {};
+  }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps);

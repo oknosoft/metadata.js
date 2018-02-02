@@ -153,7 +153,7 @@ class TabsLogin extends Component {
         <FormGroup>
           <Divider/>
           <Grid container spacing={24}>
-            <Grid item xs={14} sm={7}>
+            <Grid item xs={12} sm={7}>
               <Typography type="subheading" color="inherit">Вы можете авторизоваться при помощи учетных записей социальных сетей</Typography>
             </Grid>
             <Grid item xs={10} sm={5}>
