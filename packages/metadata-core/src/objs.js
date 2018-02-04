@@ -6,7 +6,7 @@
  */
 
 import utils from './utils';
-import {DataProcessorsManager, EnumManager, RegisterManager, RefDataManager} from './mngrs';
+import {DataManager, DataProcessorsManager, EnumManager, RegisterManager} from './mngrs';
 import {TabularSection, TabularSectionRow} from './tabulars';
 
 class InnerData {
@@ -176,18 +176,21 @@ export class DataObj {
       }
     }
 
-    if(f == 'type' && v.types) {
+    if(f === 'type' && v.types) {
       _obj[f] = v;
     }
-    else if(f == 'ref') {
+    else if(f === 'ref') {
       _obj[f] = utils.fix_guid(v);
+    }
+    else if(mf instanceof DataObj || mf instanceof DataManager) {
+      _obj[f] = utils.fix_guid(v, false);
     }
     else if(mf.is_ref) {
 
-      if(mf.digits && typeof v == 'number' || mf.hasOwnProperty('str_len') && typeof v == 'string' && !utils.is_guid(v)) {
+      if(mf.digits && typeof v === 'number' || mf.hasOwnProperty('str_len') && typeof v === 'string' && !utils.is_guid(v)) {
         _obj[f] = v;
       }
-      else if(typeof v == 'boolean' && mf.types.indexOf('boolean') != -1) {
+      else if(typeof v === 'boolean' && mf.types.indexOf('boolean') != -1) {
         _obj[f] = v;
       }
       else if(mf.date_part && v instanceof Date) {
@@ -203,13 +206,13 @@ export class DataObj {
           let mgr = this._manager.value_mgr(_obj, f, mf, false, v);
           if(mgr) {
             if(mgr instanceof EnumManager) {
-              if(typeof v == 'string') {
+              if(typeof v === 'string') {
                 _obj[f] = v;
               }
               else if(!v) {
                 _obj[f] = '';
               }
-              else if(typeof v == 'object') {
+              else if(typeof v === 'object') {
                 _obj[f] = v.ref || v.name || '';
               }
 
@@ -225,7 +228,7 @@ export class DataObj {
             }
           }
           else {
-            if(typeof v != 'object') {
+            if(typeof v !== 'object') {
               _obj[f] = v;
             }
           }
@@ -625,6 +628,69 @@ export class DataObj {
     }
   }
 
+  /**
+   * ### Приводит строки дат к датам, ссылки к ссылкам
+   * @param obj
+   * @param _obj
+   * @param fields
+   */
+  static fix_collection(obj, _obj, fields) {
+    for (const fld in fields) {
+      if(_obj[fld]) {
+        const {type} = fields[fld];
+        if (type.is_ref) {
+          if(type.types.length > 1) {
+            obj.__setter(fld, _obj[fld]);
+          }
+          else {
+            _obj[fld] = utils.fix_guid(_obj[fld]);
+          }
+        }
+        else if (type.date_part) {
+          _obj[fld] = utils.fix_date(_obj[fld], true);
+        }
+      }
+    }
+  }
+
+  /**
+   * ### Приводит строки дат к датам, ссылки к ссылкам в реквизитах объекта, создаёт табчасти
+   */
+  _fix_plain() {
+    const {_obj, _manager} = this;
+    const {fields, tabular_sections, hierarchical, has_owners} = this._metadata();
+
+    // корректируем реквизиты
+    DataObj.fix_collection(this, _obj, fields);
+
+    // корректируем системные реквизиты
+    if(hierarchical || has_owners) {
+      const sys_fields = {};
+      if(hierarchical) {
+        sys_fields.parent = this._metadata('parent');
+      }
+      if(has_owners) {
+        sys_fields.owner = this._metadata('owner');
+      }
+      DataObj.fix_collection(this, _obj, sys_fields);
+    }
+
+    for (const ts in tabular_sections) {
+      if(Array.isArray(_obj[ts])){
+        const tabular = this[ts];
+        const Constructor = _manager.obj_constructor(ts, true);
+        const {fields} = tabular_sections[ts];
+        for(let i = 0; i < _obj[ts].length; i++) {
+          const row = _obj[ts][i];
+          const _row = new Constructor(tabular, row);
+          row.row = i + 1;
+          Object.defineProperty(row, '_row', {value: _row});
+          DataObj.fix_collection(_row, row, fields);
+        }
+      }
+    }
+  }
+
 
   /**
    * ### Выполняет команду печати
@@ -760,7 +826,7 @@ export class CatObj extends DataObj {
     super(attr, manager, loading, direct);
 
     if(direct) {
-      utils.fix_meta(this);
+      this._fix_plain();
     }
     else {
       this._mixin(attr);
@@ -903,7 +969,7 @@ export class DocObj extends NumberDocAndDate(DataObj) {
     super(attr, manager, loading, direct);
 
     if(direct) {
-      utils.fix_meta(this);
+      this._fix_plain(this);
     }
     else {
       this._mixin(attr);
@@ -1022,7 +1088,11 @@ export class EnumObj extends DataObj {
     super(attr, manager, loading);
 
     if(attr && typeof attr == 'object') {
-      utils._mixin(this, attr);
+      const {_obj} = this;
+      if(!_obj.ref && _obj.name) {
+        _obj.ref = _obj.name;
+      }
+      _obj !== attr && utils._mixin(this, attr);
     }
 
   }
