@@ -638,12 +638,9 @@ export class DataObj {
     for (const fld in fields) {
       if(_obj[fld]) {
         const {type} = fields[fld];
-        if (type.is_ref) {
-          if(type.types.length > 1) {
-            obj.__setter(fld, _obj[fld]);
-          }
-          else {
-            _obj[fld] = utils.fix_guid(_obj[fld]);
+        if (type.is_ref && typeof _obj[fld] === 'object') {
+          if(!(fld === 'type' && obj._manager instanceof $p.classes.ChartOfCharacteristicManager)) {
+            _obj[fld] = utils.fix_guid(_obj[fld], false);
           }
         }
         else if (type.date_part) {
