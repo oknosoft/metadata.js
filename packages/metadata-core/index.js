@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.48, built:2018-02-05
+ metadata-core v2.0.16-beta.48, built:2018-02-06
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -923,8 +923,8 @@ class DataObj {
             _obj[fld] = utils.fix_guid(_obj[fld], false);
           }
         }
-        else if (type.date_part) {
-          _obj[fld] = utils.fix_date(_obj[fld], true);
+        else if (type.date_part && typeof _obj[fld] === 'string') {
+          _obj[fld] = utils.fix_date(_obj[fld], type.types.length === 1);
         }
       }
     }
@@ -2835,7 +2835,7 @@ const utils = {
     });
   },
 	fix_date(str, strict) {
-		if (str instanceof Date){
+		if (str instanceof Date || (!strict && this.is_guid(str))){
       return str;
     }
 		else {
@@ -2851,10 +2851,10 @@ const utils = {
 		}
 		else if (ref && typeof ref == 'object') {
 			if (ref.hasOwnProperty('presentation')) {
-				if (ref.ref){
-          return ref.ref;
+				if (ref.hasOwnProperty('ref')){
+          return ref.ref || this.blank.guid;
         }
-				else if (ref.name){
+				else if (ref.hasOwnProperty('name')){
           return ref.name;
         }
 			}

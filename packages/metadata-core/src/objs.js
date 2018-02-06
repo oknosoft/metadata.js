@@ -643,8 +643,8 @@ export class DataObj {
             _obj[fld] = utils.fix_guid(_obj[fld], false);
           }
         }
-        else if (type.date_part) {
-          _obj[fld] = utils.fix_date(_obj[fld], true);
+        else if (type.date_part && typeof _obj[fld] === 'string') {
+          _obj[fld] = utils.fix_date(_obj[fld], type.types.length === 1);
         }
       }
     }

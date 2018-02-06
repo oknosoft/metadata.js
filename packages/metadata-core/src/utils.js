@@ -175,7 +175,7 @@ const utils = {
 	 * @return {Date|*}
 	 */
 	fix_date(str, strict) {
-		if (str instanceof Date){
+		if (str instanceof Date || (!strict && this.is_guid(str))){
       return str;
     }
 		else {
@@ -202,10 +202,10 @@ const utils = {
 		}
 		else if (ref && typeof ref == 'object') {
 			if (ref.hasOwnProperty('presentation')) {
-				if (ref.ref){
-          return ref.ref;
+				if (ref.hasOwnProperty('ref')){
+          return ref.ref || this.blank.guid;
         }
-				else if (ref.name){
+				else if (ref.hasOwnProperty('name')){
           return ref.name;
         }
 			}
