@@ -116,6 +116,7 @@ if (!Object.prototype.__define) {
 }
 
 const date_frmts = ['DD-MM-YYYY', 'DD-MM-YYYY HH:mm', 'DD-MM-YYYY HH:mm:ss', 'DD-MM-YY HH:mm', 'YYYYDDMMHHmmss', moment.ISO_8601];
+const rxref = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
 /**
  * ### Коллекция вспомогательных методов
@@ -213,7 +214,7 @@ const utils = {
 			}
 		}
 
-		if (this.is_guid(ref) || generate === false) {
+		if (generate === false || this.is_guid(ref)) {
 			return ref;
 		}
 		else if (generate) {
@@ -329,7 +330,7 @@ const utils = {
 			const parts = v.split('|');
 			v = parts.length == 2 ? parts[1] : v.substr(0, 36);
 		}
-		return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v);
+		return rxref.test(v);
 	},
 
 	/**
@@ -532,62 +533,6 @@ const utils = {
 
 	},
 
-  /**
-   * Приводит строки дат к датам в реквизитах объекта, создаёт табчасти
-   * @param obj - {DataObj}
-   */
-  fix_meta(obj) {
-    const {_obj, _manager} = obj;
-    const {fields, tabular_sections} = obj._metadata();
-    for (const fld in fields) {
-      if(_obj[fld]) {
-        const {type} = fields[fld];
-        if (type.is_ref) {
-          if(type.types.length > 1) {
-            obj.__setter(fld, _obj[fld]);
-          }
-          else {
-            _obj[fld] = this.fix_guid(_obj[fld]);
-          }
-        }
-        else if (type.date_part) {
-          _obj[fld] = this.fix_date(_obj[fld], true);
-        }
-      }
-    }
-    for (const ts in tabular_sections) {
-      if(Array.isArray(_obj[ts])){
-        const tabular = obj[ts];
-        const Constructor = _manager.obj_constructor(ts, true);
-        const {fields} = tabular_sections[ts];
-        for(let i = 0; i < _obj[ts].length; i++) {
-          const row = _obj[ts][i];
-          const _row = new Constructor(tabular, row);
-          row.row = i + 1;
-          Object.defineProperty(row, '_row', {value: _row});
-
-          for (const fld in fields){
-            const {type} = fields[fld];
-            if(row[fld]) {
-              const {type} = fields[fld];
-              if (type.is_ref) {
-                if(type.types.length > 1) {
-                  _row.__setter(fld, row[fld]);
-                }
-                else {
-                  row[fld] = this.fix_guid(row[fld]);
-                }
-              }
-              else if (type.date_part) {
-                row[fld] = this.fix_date(row[fld], true);
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-
 	/**
 	 * ### Подмешивает в объект свойства с иерархией объекта patch
 	 * В отличии от `_mixin`, не замещает, а дополняет одноименные свойства
@@ -614,7 +559,7 @@ const utils = {
 	},
 
 	/**
-	 * Создаёт копию объекта и вложенных объектов
+	 * ### Создаёт копию объекта и вложенных объектов
 	 * @method _clone
 	 * @for Object
 	 * @param obj {Object|Array} - исходный объект

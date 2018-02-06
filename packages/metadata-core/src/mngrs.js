@@ -861,14 +861,14 @@ export class RefDataManager extends DataManager{
 					s = " WHERE (" + (filter ? 0 : 1);
 
 				}else if(cmd["hierarchical"]){
-					if(cmd["has_owners"])
+					if(cmd.has_owners)
 						s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" +
 							(owner == utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 					else
 						s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" + (filter ? 0 : 1);
 
 				}else{
-					if(cmd["has_owners"])
+					if(cmd.has_owners)
 						s = " WHERE (" + (owner == utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 					else
 						s = " WHERE (" + (filter ? 0 : 1);
@@ -1016,7 +1016,7 @@ export class RefDataManager extends DataManager{
 				}
 
 				// установим владельца
-				if(cmd["has_owners"]){
+				if(cmd.has_owners){
 					owner = attr.owner;
 					if(attr.selection && typeof attr.selection != "function"){
 						attr.selection.forEach(sel => {
@@ -1715,12 +1715,12 @@ export class RegisterManager extends DataManager{
 	 */
 	load_array(aattr, forse) {
 
-		var ref, obj, res = [];
+		const res = [];
 
-		for (var i = 0; i < aattr.length; i++) {
+		for (let i = 0; i < aattr.length; i++) {
 
-			ref = this.get_ref(aattr[i]);
-			obj = this.by_ref[ref];
+			const ref = this.get_ref(aattr[i]);
+			let obj = this.by_ref[ref];
 
 			if (!obj && !aattr[i]._deleted) {
 				obj = this.obj_constructor('', [aattr[i], this, true]);
