@@ -456,10 +456,8 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				_meta = null;
 				_mgr = null;
 				_pwnd = null;
-				_cell.detachToolbar();
-
-				_grid.entBox.removeEventListener("paste", onpaste);
-
+        _cell.detachToolbar && _cell.detachToolbar();
+        _grid.entBox && _grid.entBox.removeEventListener("paste", onpaste);
 				_destructor.call(_grid);
 			}
 		},
