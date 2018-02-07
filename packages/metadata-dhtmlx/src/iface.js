@@ -523,9 +523,10 @@ export default class InterfaceObjs {
   check_exit(wnd){
     let do_exit;
     // если есть внешнее модальное, ничего обрабатывать не надо
-    this.w.forEachWindow(function (w) {
-      if(w != wnd && (w.isModal() || this.w.getTopmostWindow() == w))
+    this.w.forEachWindow((w) => {
+      if(w != wnd && (w.isModal() || this.w.getTopmostWindow() == w)){
         do_exit = true;
+      }
     });
     return do_exit;
   }
