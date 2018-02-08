@@ -475,6 +475,9 @@ export class DataObj {
 
     // выполняем обработчик перед записью
     let before_save_res = this.before_save();
+    if(this._data.before_save_sync) {
+      this._data.before_save_sync = false;
+    }
 
     // этот код выполним в самом конце, после записи и после обработчика after_save
     const reset_modified = () => {
@@ -519,8 +522,9 @@ export class DataObj {
 
     // если не указаны обязательные реквизиты
     // TODO: show_msg alert-error нужно делать emit на метаданных
-    for (const mf in this._metadata().fields) {
-      if (this._metadata().fields[mf].mandatory && !this._obj[mf]) {
+    const {fields} = this._metadata();
+    for (const mf in fields) {
+      if (fields[mf].mandatory && !this._obj[mf]) {
         const {msg, md} = this._manager.$p;
         md.emit('alert', {
           title: msg.mandatory_title,
