@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.49, built:2018-02-07
+ metadata-core v2.0.16-beta.49, built:2018-02-08
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -816,6 +816,9 @@ class DataObj {
       this.posted = post;
     }
     let before_save_res = this.before_save();
+    if(this._data.before_save_sync) {
+      this._data.before_save_sync = false;
+    }
     const reset_modified = () => {
       if(before_save_res === false) {
         if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted != initial_posted) {
@@ -847,8 +850,9 @@ class DataObj {
         numerator = numerator.then(() => this.new_number_doc());
       }
     }
-    for (const mf in this._metadata().fields) {
-      if (this._metadata().fields[mf].mandatory && !this._obj[mf]) {
+    const {fields} = this._metadata();
+    for (const mf in fields) {
+      if (fields[mf].mandatory && !this._obj[mf]) {
         const {msg, md} = this._manager.$p;
         md.emit('alert', {
           title: msg.mandatory_title,
@@ -1663,7 +1667,7 @@ class RefDataManager extends DataManager{
 			return do_not_create == rp ? Promise.resolve(o) : o;
 		}
 	}
-	create(attr, fill_default, force_obj){
+	create(attr, do_after_create, force_obj){
 		if(!attr || typeof attr !== "object"){
 			attr = {};
 		}
@@ -1676,45 +1680,42 @@ class RefDataManager extends DataManager{
 		let o = this.by_ref[attr.ref];
 		if(!o){
 			o = this.obj_constructor('', [attr, this]);
-			if(force_obj){
-				return o;
-			}
-			if(!fill_default && attr.ref && attr.presentation && Object.keys(attr).length == 2){
-			}else{
-				if(o instanceof DocObj && o.date == utils.blank.date){
-					o.date = new Date();
-				}
-				const after_create_res = o.after_create();
-				let call_new_number_doc;
-				if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
-					if(!o.number_doc){
-						call_new_number_doc = true;
-					}
-				}
-				else{
-					if(!o.id){
-						call_new_number_doc = true;
-					}
-				}
-				return (call_new_number_doc ? o.new_number_doc() : Promise.resolve(o))
-					.then(() => {
-						if(after_create_res === false)
-							return o;
-						else if(typeof after_create_res === "object" && after_create_res.then)
-							return after_create_res;
-						if(this.cachable == "e1cib" && fill_default){
-              const {ajax} = this._owner.$p;
-              const rattr = {};
-							ajax.default_attr(rattr, job_prm.irest_url());
-							rattr.url += this.rest_name + "/Create()";
-							return ajax.get_ex(rattr.url, rattr)
-								.then(function (req) {
-									return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
-								});
-						}else
-							return o;
-					})
-			}
+      const after_create_res = do_after_create === false ? false : o.after_create();
+      if(o instanceof DocObj && o.date == utils.blank.date){
+        o.date = new Date();
+      }
+      if(force_obj){
+        return o;
+      }
+      let call_new_number_doc;
+      if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
+        call_new_number_doc = !o.number_doc;
+      }
+      else{
+        call_new_number_doc = !o.id;
+      }
+      return (call_new_number_doc ? o.new_number_doc() : Promise.resolve(o))
+        .then(() => {
+          if(after_create_res === false) {
+            return o;
+          }
+          else if(typeof after_create_res === 'object' && after_create_res.then) {
+            return after_create_res;
+          }
+          if(this.cachable == 'e1cib' && do_after_create) {
+            const {ajax} = this._owner.$p;
+            const rattr = {};
+            ajax.default_attr(rattr, job_prm.irest_url());
+            rattr.url += this.rest_name + '/Create()';
+            return ajax.get_ex(rattr.url, rattr)
+              .then(function (req) {
+                return o._mixin(JSON.parse(req.response), undefined, ['ref']);
+              });
+          }
+          else {
+            return o;
+          }
+        });
 		}
 		return force_obj ? o : Promise.resolve(o);
 	}

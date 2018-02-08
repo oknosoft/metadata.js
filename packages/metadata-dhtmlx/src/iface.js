@@ -490,8 +490,8 @@ export default class InterfaceObjs {
 			dhtmlx.confirm({
 				title: title || msg.file_new_date_title,
 				text: text || msg.file_new_date,
-				ok: "Перезагрузка",
-				cancel: "Продолжить",
+        ok: 'Перезагрузка',
+        cancel: 'Продолжить',
 				callback: function(btn) {
 
 					if(btn){
