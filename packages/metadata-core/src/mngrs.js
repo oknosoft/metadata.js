@@ -667,13 +667,6 @@ export class RefDataManager extends DataManager{
       return (call_new_number_doc ? o.new_number_doc() : Promise.resolve(o))
         .then(() => {
 
-          if(after_create_res === false) {
-            return o;
-          }
-          else if(typeof after_create_res === 'object' && after_create_res.then) {
-            return after_create_res;
-          }
-
           // выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
           if(this.cachable == 'e1cib' && do_after_create) {
             const {ajax} = this._owner.$p;
@@ -686,7 +679,7 @@ export class RefDataManager extends DataManager{
               });
           }
           else {
-            return o;
+            return after_create_res instanceof Promise ? after_create_res : o;
           }
         });
 		}
