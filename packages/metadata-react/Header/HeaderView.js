@@ -26,7 +26,7 @@ class Header extends Component {
       <AppBar position="static" >
         <Toolbar disableGutters >
           <HeaderMenu {...props} classes={classes} />
-          <Typography type="title" color="inherit" className={classes.flex}>{title}</Typography>
+          <Typography variant="title" color="inherit" className={classes.flex}>{title}</Typography>
           <HeaderButtons {...props} />
         </Toolbar>
       </AppBar>

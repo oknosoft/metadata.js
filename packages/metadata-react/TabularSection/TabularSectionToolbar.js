@@ -61,7 +61,7 @@ class TabularSectionToolbar extends Component {
           !denyReorder && <IconButton key="btn_up" title="Переместить вверх" onClick={handleUp}><ArrowUpIcon/></IconButton>,
           !denyReorder && <IconButton key="btn_down"  title="Переместить вниз" onClick={handleDown}><ArrowDownIcon/></IconButton>,
 
-          <Typography key="space" type="title" color="inherit" className={classes.flex}> </Typography>,
+          <Typography key="space" variant="title" color="inherit" className={classes.flex}> </Typography>,
 
           !settings_open && <IconButton key="more" onClick={this.handleMenuOpen} title="Дополнительно">
             <MoreVertIcon/>

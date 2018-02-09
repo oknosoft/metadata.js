@@ -94,7 +94,7 @@ class TabsLogin extends Component {
           InputProps={{placeholder: 'password'}}
           fullWidth
           margin="dense"
-          type="password"
+          variant="password"
           value={state.password}
           onChange={event => this.setState({password: event.target.value})}
         />
@@ -105,7 +105,7 @@ class TabsLogin extends Component {
       {state.index === 0 && !user.log_error && user.try_log_in &&
       <FormGroup row>
         <CircularProgress size={24}/>
-        <Typography type="subheading" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+        <Typography variant="subheading" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
           {`${$p.msg.login.title}, ${$p.msg.login.wait}...`}
         </Typography>
       </FormGroup>
@@ -114,17 +114,17 @@ class TabsLogin extends Component {
       {state.index === 0 && user.log_error &&
       <FormGroup row>
         <IconError className={classes.error}/>
-        <Typography type="subheading" color="error" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>{user.log_error}</Typography>
+        <Typography variant="subheading" color="error" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>{user.log_error}</Typography>
       </FormGroup>
       }
 
       {state.index === 0 && <DialogActions>
         {props.user.logged_in ?
-          <Button color="primary" dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
+          <Button color="primary" size="small" className={classes.button} onClick={handleLogOut}>Выйти</Button>
           :
-          <Button color="primary" dense className={classes.button} disabled={!state.login || !state.password} onClick={handleLogin}>Войти</Button>
+          <Button color="primary" size="small" className={classes.button} disabled={!state.login || !state.password} onClick={handleLogin}>Войти</Button>
         }
-        <Button raised dense disabled={true} className={classes.button}>Забыли пароль?</Button>
+        <Button variant="raised" size="small" disabled={true} className={classes.button}>Забыли пароль?</Button>
       </DialogActions>}
 
       {state.index === 1 && <CnnSettings {...props}/>}

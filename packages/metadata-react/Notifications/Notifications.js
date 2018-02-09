@@ -87,7 +87,7 @@ class Notifications extends Component {
       props.open && <Drawer key="noti_drawer" anchor="right" open={props.open} onClose={handleClose} classes={{paper: classes.ndrawer}}>
         <AppBar position="static">
           <Toolbar disableGutters>
-            <Typography type="title" color="inherit" className={classnames(classes.title, classes.flex)}>Оповещения </Typography>
+            <Typography variant="title" color="inherit" className={classnames(classes.title, classes.flex)}>Оповещения </Typography>
             <IconButton onClick={handleClose}><NotificationsIconNone className={classes.white}/></IconButton>
           </Toolbar>
         </AppBar>
@@ -108,7 +108,7 @@ class Notifications extends Component {
             <MenuItem value="info" className={classnames({[classes.bold]: filter.indexOf('info') !== -1})}>Инфо</MenuItem>
           </Select>
 
-          <Typography type="title" color="inherit" className={classes.flex}>&nbsp;</Typography>
+          <Typography variant="title" color="inherit" className={classes.flex}>&nbsp;</Typography>
 
           {/* меню дополнительных действий */}
           <IconButton onClick={this.handleMenu} title="Дополнительно"><MoreVertIcon/></IconButton>

@@ -54,7 +54,7 @@ class DataObjToolbar extends Component {
         <IconButton title="Отправить на согласование" onClick={props.handleSend}><SendIcon/></IconButton>
         <IconButton title="Отозвать заказ" onClick={props.handleMarkDeleted}><RemoveIcon/></IconButton>
 
-        <Typography type="title" color="inherit" className={props.classes.flex}> </Typography>
+        <Typography variant="title" color="inherit" className={props.classes.flex}> </Typography>
 
         <IconButton onClick={this.handleClick} title="Дополнительно"><MoreVertIcon/></IconButton>
 

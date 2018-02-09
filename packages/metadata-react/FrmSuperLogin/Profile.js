@@ -73,7 +73,7 @@ class UserObj extends Component {
           <DataField _obj={_obj} _fld="sex"/>
           <DataField _obj={_obj} _fld="email"/>
           <DialogActions>
-            <Button color="primary" dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
+            <Button color="primary" size="small" className={classes.button} onClick={handleLogOut}>Выйти</Button>
           </DialogActions>
         </FormGroup>
         }
@@ -84,16 +84,16 @@ class UserObj extends Component {
           <FormGroup>
             <Grid container spacing={24}>
               <Grid item xs={12} sm={7}>
-                <Typography type="subheading" color="inherit">Вы можете связать свою учетную запись с профилем социальных сетей</Typography>
+                <Typography variant="subheading" color="inherit">Вы можете связать свою учетную запись с профилем социальных сетей</Typography>
               </Grid>
               <Grid item xs={10} sm={5}>
-                <Button raised dense className={btn} onClick={this.oauthClick('github')}>
+                <Button variant="raised" size="small" className={btn} onClick={this.oauthClick('github')}>
                   <GitHubIcon viewBox="0 0 256 250" style={{height: 18, fill: 'darkslategrey'}}/> GitHub
                 </Button>
-                <Button raised dense className={btn} onClick={this.oauthClick('google')}>
+                <Button variant="raised" size="small" className={btn} onClick={this.oauthClick('google')}>
                   <GoogleIcon viewBox="0 0 256 262" style={{height: 18, fill: blue[500]}}/> Google
                 </Button>
-                <Button raised dense className={btn} onClick={this.oauthClick('facebook')}>
+                <Button variant="raised" size="small" className={btn} onClick={this.oauthClick('facebook')}>
                   <FacebookIcon viewBox="0 0 450 450" style={{height: 18, fill: '#3A559F'}}/> Facebook
                 </Button>
               </Grid>
@@ -101,7 +101,7 @@ class UserObj extends Component {
           </FormGroup>
 
           <DialogActions>
-            <Button color="primary" dense className={classes.button} onClick={handleLogOut}>Выйти</Button>
+            <Button color="primary" size="small" className={classes.button} onClick={handleLogOut}>Выйти</Button>
           </DialogActions>
 
         </FormGroup>

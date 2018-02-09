@@ -50,7 +50,7 @@ function AppDrawer(props) {
             onClose();
             !isHome && handleNavigate('/');
           }}>
-            <Typography type="title" color="inherit">{title}</Typography>
+            <Typography variant="title" color="inherit">{title}</Typography>
           </div>
           <Divider absolute/>
         </Toolbar>
@@ -64,7 +64,7 @@ function AppDrawer(props) {
       <Hidden lgUp={!disablePermanent}>
         <Drawer
           classes={{paper: classes.paper}}
-          type="temporary"
+          variant="temporary"
           open={mobileOpen}
           onClose={onClose}
           ModalProps={{
@@ -80,7 +80,7 @@ function AppDrawer(props) {
             classes={{
               paper: classes.paper,
             }}
-            type="permanent"
+            variant="permanent"
             open
           >
             {navigation}

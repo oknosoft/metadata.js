@@ -118,14 +118,14 @@ class TabsLogin extends Component {
           <TextField
             placeholder="Пароль"
             label="Пароль"
-            type="password"
+            variant="password"
             defaultValue={this.props.password}
             onChange={this.handleChange('password')}
           />
 
           <DialogActions>
-            <Button color="primary" dense disabled={state.btn_login_disabled} className={classes.button} onClick={this.handleLogin}>Войти</Button>
-            <Button color="primary" dense disabled={true} className={classes.button}>Забыли пароль?</Button>
+            <Button color="primary" size="small" disabled={state.btn_login_disabled} className={classes.button} onClick={this.handleLogin}>Войти</Button>
+            <Button color="primary" size="small" disabled={true} className={classes.button}>Забыли пароль?</Button>
           </DialogActions>
 
         </FormGroup>
@@ -134,7 +134,7 @@ class TabsLogin extends Component {
         {state.index === 0 && !user.log_error && user.try_log_in &&
         <FormGroup row>
           <CircularProgress size={24}/>
-          <Typography type="subheading" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+          <Typography variant="subheading" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
             {`${$p.msg.login.title}, ${$p.msg.login.wait}...`}
           </Typography>
         </FormGroup>
@@ -143,7 +143,7 @@ class TabsLogin extends Component {
         {state.index === 0 && user.log_error &&
         <FormGroup row>
           {info ? <IconError /> : <IconError className={classes.error}/>}
-          <Typography type="subheading" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+          <Typography variant="subheading" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
             {user.log_error.replace('info:', '')}
           </Typography>
         </FormGroup>
@@ -154,16 +154,16 @@ class TabsLogin extends Component {
           <Divider/>
           <Grid container spacing={24}>
             <Grid item xs={12} sm={7}>
-              <Typography type="subheading" color="inherit">Вы можете авторизоваться при помощи учетных записей социальных сетей</Typography>
+              <Typography variant="subheading" color="inherit">Вы можете авторизоваться при помощи учетных записей социальных сетей</Typography>
             </Grid>
             <Grid item xs={10} sm={5}>
-              <Button raised dense className={btn} onClick={this.oauthClick('github')}>
+              <Button variant="raised" size="small" className={btn} onClick={this.oauthClick('github')}>
                 <GitHubIcon viewBox="0 0 256 250" style={{height: 18, fill: 'darkslategrey'}}/> GitHub
               </Button>
-              <Button raised dense className={btn} onClick={this.oauthClick('google')}>
+              <Button variant="raised" size="small" className={btn} onClick={this.oauthClick('google')}>
                 <GoogleIcon viewBox="0 0 256 262" style={{height: 18, fill: blue[500]}}/> Google
               </Button>
-              <Button raised dense className={btn} onClick={this.oauthClick('facebook')}>
+              <Button variant="raised" size="small" className={btn} onClick={this.oauthClick('facebook')}>
                 <FacebookIcon viewBox="0 0 450 450" style={{height: 18, fill: '#3A559F'}}/> Facebook
               </Button>
             </Grid>
@@ -197,18 +197,18 @@ class TabsLogin extends Component {
             fullWidth
             placeholder="Пароль"
             label="Пароль"
-            type="password"
+            variant="password"
           /><br/>
           <TextField
             onChange={this.handleChange('confirmPassword')}
             fullWidth
             placeholder="Подтвердить пароль"
             label="Подтвердить пароль"
-            type="password"
+            variant="password"
           />
 
           <DialogActions>
-            <Button color="primary" dense className={classes.button} onClick={this.handleRegister}>Регистрация</Button>
+            <Button color="primary" size="small" className={classes.button} onClick={this.handleRegister}>Регистрация</Button>
           </DialogActions>
 
         </FormGroup>
@@ -217,7 +217,7 @@ class TabsLogin extends Component {
         {state.index === 1 && !user.log_error && user.try_log_in &&
         <FormGroup row>
           <CircularProgress size={24}/>
-          <Typography type="subheading" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+          <Typography variant="subheading" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
             {`${$p.msg.login.title}, ${$p.msg.login.wait}...`}
           </Typography>
         </FormGroup>
@@ -226,7 +226,7 @@ class TabsLogin extends Component {
         {state.index === 1 && user.log_error &&
         <FormGroup row>
           {info ? <IconError /> : <IconError className={classes.error}/>}
-          <Typography type="subheading" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+          <Typography variant="subheading" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
             {user.log_error.replace('info:', '')}
           </Typography>
         </FormGroup>

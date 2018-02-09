@@ -50,7 +50,7 @@ class NavDrawer extends Component {
               <IconButton onClick={handleClose}>
                 <IconNavigationMenu className={classes.white}/>
               </IconButton>
-              <Typography type="title" color="inherit" className={classes.flex}>{title}</Typography>
+              <Typography variant="title" color="inherit" className={classes.flex}>{title}</Typography>
             </Toolbar>
           </AppBar>
 

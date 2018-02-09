@@ -26,9 +26,9 @@ function NeedAuth(props) {
   return <AppContent>
     <Helmet title="Пользователь не авторизован"/>
     <div style={{marginTop: 16}}>
-      <Typography type="display1" component="h1" color="primary" style={margin}>Пользователь не авторизован</Typography>
+      <Typography variant="display1" component="h1" color="primary" style={margin}>Пользователь не авторизован</Typography>
       <Typography color="inherit" style={margin}>Для доступа к данному разделу, необходима авторизация</Typography>
-      <Button color="primary" dense onClick={() => handleNavigate('/login')}>Перейти на страницу авторизации</Button>
+      <Button color="primary" size="small" onClick={() => handleNavigate('/login')}>Перейти на страницу авторизации</Button>
     </div>
   </AppContent>;
 }
