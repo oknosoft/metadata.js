@@ -85,9 +85,7 @@ class DataList extends MDNRComponent {
   handleSelect = () => {
     const row = this._list.get(this.state.selectedRowIndex);
     const {handlers, _mgr} = this.props;
-    if(row && handlers.handleSelect) {
-      handlers.handleSelect(row, _mgr);
-    }
+    row && handlers.handleSelect && handlers.handleSelect(row, _mgr);
   };
 
   // обработчик добавления элемента списка
@@ -182,7 +180,7 @@ class DataList extends MDNRComponent {
   handleAttachment = () => {
     const row = this._list.get(this.state.selectedRowIndex);
     const {handlers, _mgr} = this.props;
-    row && handlers.handleAttachment && handleAttachment(row, _mgr);
+    row && handlers.handleAttachment && handlers.handleAttachment(row, _mgr);
   };
 
   handleSettingsOpen = () => {

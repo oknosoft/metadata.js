@@ -2590,10 +2590,8 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 				_meta = null;
 				_mgr = null;
 				_pwnd = null;
-				_cell.detachToolbar();
-
-				_grid.entBox.removeEventListener("paste", onpaste);
-
+        _cell.detachToolbar && _cell.detachToolbar();
+        _grid.entBox && _grid.entBox.removeEventListener("paste", onpaste);
 				_destructor.call(_grid);
 			}
 		},
@@ -3275,11 +3273,16 @@ function OTooolBar(attr){
 					this.subdiv = document.createElement('div');
 					this.subdiv.className = 'md_otooolbar';
 					offset = $p.iface.get_offset(bdiv);
-					if(battr.sub.align == 'right')
-						this.subdiv.style.left = (offset.left + bdiv.offsetWidth - (parseInt(battr.sub.width.replace(/\D+/g,"")) || 56)) + 'px';
-					else
-						this.subdiv.style.left = offset.left + 'px';
-					this.subdiv.style.top = (offset.top + div.offsetHeight) + 'px';
+					if(battr.sub.align == 'right') {
+            this.subdiv.style.left = (offset.left + bdiv.offsetWidth - (parseInt(battr.sub.width.replace(/\D+/g,"")) || 56)) + 'px';
+          }
+					else if(battr.sub.align == 'hor') {
+            this.subdiv.style.left = offset.left + bdiv.offsetWidth + 'px';
+          }
+					else{
+            this.subdiv.style.left = offset.left + 'px';
+          }
+					this.subdiv.style.top = (offset.top + (battr.sub.align == 'hor' ? 0 : div.offsetHeight)) + 'px';
 					this.subdiv.style.height = battr.sub.height || '198px';
 					this.subdiv.style.width = battr.sub.width || '56px';
 					for(var i in battr.sub.buttons){
@@ -4291,7 +4294,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 				});
 			}
 		}else{
-			wnd = $p.iface.w.createWindow(null, 0, 0, 700, 500);
+			wnd = $p.iface.w.createWindow(null, 0, 0, 760, 540);
 			wnd.centerOnScreen();
 			wnd.setModal(1);
 			wnd.button('park').hide();

@@ -1508,6 +1508,9 @@ function adapter({AbstracrAdapter}) {
             }
           }
           key = doc._id.split('|');
+          if(key[0] === 'system') {
+            return !options && this.emit('system', key[1], doc);
+          }
           cn = key[0].split('.');
           doc.ref = key[1];
           delete doc._id;

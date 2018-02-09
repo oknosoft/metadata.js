@@ -79,7 +79,7 @@ class DataListToolbar extends Component {
           handleChange={props.handleFilterChange}
         />}
 
-        <Typography type="caption" color="inherit" className={classes.flex} > </Typography>
+        <Typography variant="caption" color="inherit" className={classes.flex} > </Typography>
 
         {/* кнопки настройки компоновки */}
         <SchemeSettingsButtons

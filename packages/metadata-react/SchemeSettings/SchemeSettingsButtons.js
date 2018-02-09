@@ -103,7 +103,7 @@ export default class SchemeSettingsButtons extends PureComponent {
       show_search && <SearchBox key="ss1" value={scheme._search || ''} onChange={this.handleSearchChange}/>,
 
       // Variants
-      show_variants && scheme && <Button key="ss2" dense onClick={this.handleMenuOpen} style={{alignSelf: 'center'}}>{scheme.name}</Button>,
+      show_variants && scheme && <Button key="ss2" size="small" onClick={this.handleMenuOpen} style={{alignSelf: 'center'}}>{scheme.name}</Button>,
       show_variants && scheme && this.VariantsMenu(),
 
       // Кнопка открытия настроек

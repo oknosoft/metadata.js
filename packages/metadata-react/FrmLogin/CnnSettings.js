@@ -111,8 +111,8 @@ class CnnSettings extends Component {
       </FormGroup>,
 
       <DialogActions key="buttons" style={{marginBottom: 0, marginRight: 0}}>
-        <Button dense className={classes.button} onClick={this.handleSetPrm}>Сохранить настройки</Button>
-        <Button dense className={classes.button} onClick={this.openConfirm}>Сбросить данные</Button>
+        <Button size="small" className={classes.button} onClick={this.handleSetPrm}>Сохранить настройки</Button>
+        <Button size="small" className={classes.button} onClick={this.openConfirm}>Сбросить данные</Button>
       </DialogActions>,
 
       <Confirm

@@ -60,7 +60,7 @@ export default class TabsLogin extends React.Component {
                 <TextField
                   hintText="password"
                   floatingLabelText="Пароль"
-                  type="password"
+                  variant="password"
                 /><br />
                 <RaisedButton label="Забыли пароль?" className={classes.button}/>
                 <RaisedButton label="Войти" disabled={true} className={classes.button}/>
@@ -69,7 +69,7 @@ export default class TabsLogin extends React.Component {
 
               <div className={classes.sub_paper}>
 
-                <Typography type="title" color="inherit" >Вы можете авторизоваться при помощи учетных
+                <Typography variant="title" color="inherit" >Вы можете авторизоваться при помощи учетных
                   записей социальных сетей:</Typography>
 
                 <RaisedButton
@@ -140,14 +140,14 @@ export default class TabsLogin extends React.Component {
                   fullWidth
                   margin="dense"
                   floatingLabelText="Пароль"
-                  type="password"
+                  variant="password"
                 /><br />
                 <TextField
                   hintText="confirm_password"
                   fullWidth
                   margin="dense"
                   floatingLabelText="Подтвердить пароль"
-                  type="password"
+                  variant="password"
                 />
 
               </div>
