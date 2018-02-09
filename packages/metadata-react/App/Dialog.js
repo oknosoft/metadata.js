@@ -63,7 +63,7 @@ class SimpleDialog extends React.Component {
     const stateFullScreen = fullScreen || this.state.fullScreen;
     return <Dialog open={open} fullScreen={stateFullScreen} onClose={onClose} classes={{paper: classes.paper}}>
       <Toolbar disableGutters className={classes.toolbar}>
-        <Typography className={classes.title} type="title" color="inherit" noWrap>{title}</Typography>
+        <Typography className={classes.title} variant="title" color="inherit" noWrap>{title}</Typography>
         {
           !fullScreen && <IconButton
             title={stateFullScreen ? 'Свернуть' : 'Развернуть'}

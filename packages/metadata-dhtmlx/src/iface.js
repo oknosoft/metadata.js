@@ -490,8 +490,8 @@ export default class InterfaceObjs {
 			dhtmlx.confirm({
 				title: title || msg.file_new_date_title,
 				text: text || msg.file_new_date,
-				ok: "Перезагрузка",
-				cancel: "Продолжить",
+        ok: 'Перезагрузка',
+        cancel: 'Продолжить',
 				callback: function(btn) {
 
 					if(btn){
@@ -523,9 +523,10 @@ export default class InterfaceObjs {
   check_exit(wnd){
     let do_exit;
     // если есть внешнее модальное, ничего обрабатывать не надо
-    this.w.forEachWindow(function (w) {
-      if(w != wnd && (w.isModal() || this.w.getTopmostWindow() == w))
+    this.w.forEachWindow((w) => {
+      if(w != wnd && (w.isModal() || this.w.getTopmostWindow() == w)){
         do_exit = true;
+      }
     });
     return do_exit;
   }

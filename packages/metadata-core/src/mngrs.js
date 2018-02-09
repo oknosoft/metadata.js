@@ -622,10 +622,10 @@ export class RefDataManager extends DataManager{
 	 *
 	 * @method create
 	 * @param [attr] {Object} - значениями полей этого объекта будет заполнен создаваемый объект
-	 * @param [fill_default] {Boolean} - признак, надо ли заполнять (инициализировать) создаваемый объект значениями полей по умолчанию
+	 * @param [do_after_create] {Boolean} - признак, надо ли заполнять (инициализировать) создаваемый объект значениями полей по умолчанию
 	 * @return {Promise.<*>}
 	 */
-	create(attr, fill_default, force_obj){
+	create(attr, do_after_create, force_obj){
 
 		if(!attr || typeof attr !== "object"){
 			attr = {};
@@ -643,60 +643,45 @@ export class RefDataManager extends DataManager{
 		if(!o){
 
 			o = this.obj_constructor('', [attr, this]);
-			if(force_obj){
-				return o;
-			}
 
-			if(!fill_default && attr.ref && attr.presentation && Object.keys(attr).length == 2){
-				// заглушка ссылки объекта
+      // Триггер после создания
+      const after_create_res = do_after_create === false ? false : o.after_create();
 
-			}else{
+      if(o instanceof DocObj && o.date == utils.blank.date){
+        o.date = new Date();
+      }
 
-				if(o instanceof DocObj && o.date == utils.blank.date){
-					o.date = new Date();
-				}
+      if(force_obj){
+        return o;
+      }
 
-				// Триггер после создания
-				const after_create_res = o.after_create();
+      // Если новый код или номер не были назначены в триггере - устанавливаем стандартное значение
+      let call_new_number_doc;
+      if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
+        call_new_number_doc = !o.number_doc;
+      }
+      else{
+        call_new_number_doc = !o.id;
+      }
 
-				// Если новый код или номер не были назначены в триггере - устанавливаем стандартное значение
-				let call_new_number_doc;
-				if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
-					if(!o.number_doc){
-						call_new_number_doc = true;
-					}
-				}
-				else{
-					if(!o.id){
-						call_new_number_doc = true;
-					}
-				}
+      return (call_new_number_doc ? o.new_number_doc() : Promise.resolve(o))
+        .then(() => {
 
-				return (call_new_number_doc ? o.new_number_doc() : Promise.resolve(o))
-					.then(() => {
-
-						if(after_create_res === false)
-							return o;
-
-						else if(typeof after_create_res === "object" && after_create_res.then)
-							return after_create_res;
-
-						// выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
-						if(this.cachable == "e1cib" && fill_default){
-              const {ajax} = this._owner.$p;
-              const rattr = {};
-							ajax.default_attr(rattr, job_prm.irest_url());
-							rattr.url += this.rest_name + "/Create()";
-							return ajax.get_ex(rattr.url, rattr)
-								.then(function (req) {
-									return o._mixin(JSON.parse(req.response), undefined, ["ref"]);
-								});
-						}else
-							return o;
-					})
-
-			}
-
+          // выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
+          if(this.cachable == 'e1cib' && do_after_create) {
+            const {ajax} = this._owner.$p;
+            const rattr = {};
+            ajax.default_attr(rattr, job_prm.irest_url());
+            rattr.url += this.rest_name + '/Create()';
+            return ajax.get_ex(rattr.url, rattr)
+              .then(function (req) {
+                return o._mixin(JSON.parse(req.response), undefined, ['ref']);
+              });
+          }
+          else {
+            return after_create_res instanceof Promise ? after_create_res : o;
+          }
+        });
 		}
 
 		return force_obj ? o : Promise.resolve(o);
@@ -861,14 +846,14 @@ export class RefDataManager extends DataManager{
 					s = " WHERE (" + (filter ? 0 : 1);
 
 				}else if(cmd["hierarchical"]){
-					if(cmd["has_owners"])
+					if(cmd.has_owners)
 						s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" +
 							(owner == utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 					else
 						s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" + (filter ? 0 : 1);
 
 				}else{
-					if(cmd["has_owners"])
+					if(cmd.has_owners)
 						s = " WHERE (" + (owner == utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 					else
 						s = " WHERE (" + (filter ? 0 : 1);
@@ -1016,7 +1001,7 @@ export class RefDataManager extends DataManager{
 				}
 
 				// установим владельца
-				if(cmd["has_owners"]){
+				if(cmd.has_owners){
 					owner = attr.owner;
 					if(attr.selection && typeof attr.selection != "function"){
 						attr.selection.forEach(sel => {
@@ -1715,12 +1700,12 @@ export class RegisterManager extends DataManager{
 	 */
 	load_array(aattr, forse) {
 
-		var ref, obj, res = [];
+		const res = [];
 
-		for (var i = 0; i < aattr.length; i++) {
+		for (let i = 0; i < aattr.length; i++) {
 
-			ref = this.get_ref(aattr[i]);
-			obj = this.by_ref[ref];
+			const ref = this.get_ref(aattr[i]);
+			let obj = this.by_ref[ref];
 
 			if (!obj && !aattr[i]._deleted) {
 				obj = this.obj_constructor('', [aattr[i], this, true]);

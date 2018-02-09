@@ -277,8 +277,8 @@ class FieldInfinit extends AbstractField {
         />
         {footer && <Divider/>}
         {footer && <Toolbar disableGutters>
-          <Button dense className={classes.a} onClick={this.handleOpenList} title={_manager.frm_selection_name}>{is_enm ? '...' : 'Показать все'}</Button>
-          <Typography type="title" color="inherit" className={classes.flex}> </Typography>
+          <Button size="small" className={classes.a} onClick={this.handleOpenList} title={_manager.frm_selection_name}>{is_enm ? '...' : 'Показать все'}</Button>
+          <Typography variant="title" color="inherit" className={classes.flex}> </Typography>
           {_meta.type.types.length > 1 && <IconButton title="Выбрать тип значения"><TitleIcon/></IconButton>}
           {!is_enm && _manager.acl.indexOf('i') != -1 && <IconButton title="Создать элемент"><AddIcon/></IconButton>}
           {!is_enm && _manager.acl.indexOf('v') != -1 && this.isTabular &&
