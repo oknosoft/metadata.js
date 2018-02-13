@@ -525,7 +525,7 @@ export class DataObj {
     const {fields} = this._metadata();
     for (const mf in fields) {
       if (fields[mf].mandatory && !this._obj[mf]) {
-        const {msg, md} = this._manager.$p;
+        const {msg, md} = this._manager._owner.$p;
         md.emit('alert', {
           title: msg.mandatory_title,
           type: "alert-error",
