@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import Tabs, {Tab} from 'material-ui/Tabs';
 import Paper from 'material-ui/Paper';
 import Button from 'material-ui/Button';
+import IconButton from 'material-ui/IconButton';
 import {FormGroup} from 'material-ui/Form';
 import {DialogActions} from 'material-ui/Dialog';
 import Helmet from 'react-helmet';
@@ -11,6 +12,10 @@ import Grid from 'material-ui/Grid';
 import Divider from 'material-ui/Divider';
 import Typography from 'material-ui/Typography';
 import TextField from 'material-ui/TextField';
+import Input, { InputLabel, InputAdornment } from 'material-ui/Input';
+import { FormControl } from 'material-ui/Form';
+import Visibility from 'material-ui-icons/Visibility';
+import VisibilityOff from 'material-ui-icons/VisibilityOff';
 import IconError from 'material-ui-icons/ErrorOutline';
 import {CircularProgress} from 'material-ui/Progress';
 
@@ -35,6 +40,7 @@ class TabsLogin extends Component {
       index: 0,
       login: props.user_name,
       password,
+      showPassword: false,
     };
   }
 
@@ -59,6 +65,14 @@ class TabsLogin extends Component {
   oauthClick(provider) {
     return this.props.handleSocialAuth(provider);
   }
+
+  handleMouseDownPassword(event) {
+    event.preventDefault();
+  }
+
+  handleClickShowPasssword = () => {
+    this.setState({ showPassword: !this.state.showPassword });
+  };
 
   handleTextChange = () => {
     this.setState({
@@ -115,13 +129,28 @@ class TabsLogin extends Component {
             onChange={this.handleChange('login')}
           />
 
-          <TextField
-            placeholder="Пароль"
-            label="Пароль"
-            variant="password"
-            defaultValue={this.props.password}
-            onChange={this.handleChange('password')}
-          />
+          <FormControl
+            fullWidth
+            margin="dense"
+          >
+            <InputLabel>Пароль</InputLabel>
+            <Input
+              type={state.showPassword ? 'text' : 'password'}
+              placeholder="password"
+              defaultValue={this.props.password}
+              onChange={this.handleChange('password')}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={this.handleClickShowPasssword}
+                    onMouseDown={this.handleMouseDownPassword}
+                  >
+                    {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              }
+            />
+          </FormControl>
 
           <DialogActions>
             <Button color="primary" size="small" disabled={state.btn_login_disabled} className={classes.button} onClick={this.handleLogin}>Войти</Button>
@@ -179,32 +208,32 @@ class TabsLogin extends Component {
             fullWidth
             placeholder="Полное имя"
             label="Полное имя"
-          /><br/>
+          />
           <TextField
             onChange={this.handleChange('username')}
             fullWidth
             placeholder="Имя пользователя"
             label="Имя пользователя (login)"
-          /><br/>
+          />
           <TextField
             onChange={this.handleChange('email')}
             fullWidth
             placeholder="Электронная почта"
             label="Электронная почта"
-          /><br/>
+          />
           <TextField
             onChange={this.handleChange('password')}
             fullWidth
             placeholder="Пароль"
             label="Пароль"
-            variant="password"
-          /><br/>
+            type="password"
+          />
           <TextField
             onChange={this.handleChange('confirmPassword')}
             fullWidth
             placeholder="Подтвердить пароль"
             label="Подтвердить пароль"
-            variant="password"
+            type="password"
           />
 
           <DialogActions>

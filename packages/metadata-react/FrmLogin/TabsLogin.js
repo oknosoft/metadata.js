@@ -5,17 +5,24 @@ import Tabs, {Tab} from 'material-ui/Tabs';
 import Paper from 'material-ui/Paper';
 import TextField from 'material-ui/TextField';
 import Button from 'material-ui/Button';
+import IconButton from 'material-ui/IconButton';
 import {FormGroup} from 'material-ui/Form';
 import {DialogActions} from 'material-ui/Dialog';
 import Helmet from 'react-helmet';
 import Typography from 'material-ui/Typography';
 import IconError from 'material-ui-icons/ErrorOutline';
+import Input, { InputLabel, InputAdornment } from 'material-ui/Input';
+import { FormControl } from 'material-ui/Form';
+import Visibility from 'material-ui-icons/Visibility';
+import VisibilityOff from 'material-ui-icons/VisibilityOff';
 import {CircularProgress} from 'material-ui/Progress';
 import classnames from 'classnames';
 
 import CnnSettings from './CnnSettings';
 import {withPrm} from 'metadata-redux';
 import withStyles from '../styles/paper600';
+
+
 
 
 class TabsLogin extends Component {
@@ -32,6 +39,7 @@ class TabsLogin extends Component {
       index: 0,
       login: props.user_name,
       password,
+      showPassword: false,
     };
 
     this.handleLogin = this.handleLogin.bind(this);
@@ -59,6 +67,14 @@ class TabsLogin extends Component {
     }
     return true;
   }
+
+  handleMouseDownPassword(event) {
+    event.preventDefault();
+  }
+
+  handleClickShowPasssword = () => {
+    this.setState({ showPassword: !this.state.showPassword });
+  };
 
   render() {
 
@@ -89,15 +105,28 @@ class TabsLogin extends Component {
           onChange={event => this.setState({login: event.target.value})}
         />
 
-        <TextField
-          label="Пароль"
-          InputProps={{placeholder: 'password'}}
+        <FormControl
           fullWidth
           margin="dense"
-          variant="password"
-          value={state.password}
-          onChange={event => this.setState({password: event.target.value})}
-        />
+        >
+          <InputLabel>Пароль</InputLabel>
+          <Input
+            type={state.showPassword ? 'text' : 'password'}
+            placeholder="password"
+            value={state.password}
+            onChange={event => this.setState({password: event.target.value})}
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={this.handleClickShowPasssword}
+                  onMouseDown={this.handleMouseDownPassword}
+                >
+                  {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            }
+          />
+        </FormControl>
 
       </FormGroup>
       }
