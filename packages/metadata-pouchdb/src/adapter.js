@@ -421,6 +421,21 @@ function adapter({AbstracrAdapter}) {
     }
 
     /**
+     * Интервал опроса при live-репликации
+     * @param delay
+     * @return {number}
+     */
+    back_off (delay) {
+      if (!delay) {
+        return 500 + Math.floor(Math.random() * 2000);
+      }
+      else if (delay >= 90000) {
+        return 90000;
+      }
+      return delay * 3;
+    }
+
+    /**
      * ### Запускает процесс синхронизвации
      *
      * @method run_sync
@@ -550,6 +565,7 @@ function adapter({AbstracrAdapter}) {
 
                   if(options) {
                     options.live = true;
+                    options.back_off_function = this.back_off;
 
                     // ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
                     if(id == 'ram' || id == 'meta' || wsql.get_user_param('zone') == job_prm.zone_demo) {

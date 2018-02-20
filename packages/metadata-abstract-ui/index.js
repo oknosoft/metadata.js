@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.51, built:2018-02-13
+ metadata-abstract-ui v2.0.16-beta.52, built:2018-02-20
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -234,8 +234,7 @@ function scheme_settings() {
     set scheme(v) {
       this._setter('scheme', v);
     }
-  }
-  this.DpScheme_settings = DpScheme_settings;
+  }  this.DpScheme_settings = DpScheme_settings;
   class CatScheme_settings extends CatObj {
     constructor(attr, manager, loading) {
       super(attr, manager, loading);
@@ -871,8 +870,7 @@ function scheme_settings() {
         title: caption,
       }));
     }
-  }
-  this.CatScheme_settings = CatScheme_settings;
+  }  this.CatScheme_settings = CatScheme_settings;
   this.CatScheme_settingsDimensionsRow = class CatScheme_settingsDimensionsRow extends TabularSectionRow {
     get parent() {
       return this._getter('parent');

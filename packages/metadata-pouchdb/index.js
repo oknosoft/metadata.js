@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.51, built:2018-02-13
+ metadata-pouchdb v2.0.16-beta.52, built:2018-02-20
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -121,13 +121,12 @@ else {
     PouchDB = window.PouchDB;
   }
   else {
-    const ua = (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
     PouchDB = window.PouchDB = require('pouchdb-core').default
       .plugin(require('pouchdb-adapter-http').default)
       .plugin(require('pouchdb-replication').default)
       .plugin(require('pouchdb-mapreduce').default)
       .plugin(require('pouchdb-find').default)
-      .plugin(ua.match('safari') && !ua.match('chrome') ? require('pouchdb-adapter-websql').default : require('pouchdb-adapter-idb').default);
+      .plugin(require('pouchdb-adapter-idb').default);
   }
 }
 var PouchDB$1 = PouchDB;
@@ -402,6 +401,15 @@ function adapter({AbstracrAdapter}) {
         return local[dbid] || remote[dbid];
       }
     }
+    back_off (delay) {
+      if (!delay) {
+        return 500 + Math.floor(Math.random() * 2000);
+      }
+      else if (delay >= 90000) {
+        return 90000;
+      }
+      return delay * 3;
+    }
     run_sync(id) {
       const {local, remote, $p: {wsql, job_prm, record_log}, props: {_push_only, _user}} = this;
       const db_local = local[id];
@@ -484,6 +492,7 @@ function adapter({AbstracrAdapter}) {
                   sync.removeAllListeners();
                   if(options) {
                     options.live = true;
+                    options.back_off_function = this.back_off;
                     if(id == 'ram' || id == 'meta' || wsql.get_user_param('zone') == job_prm.zone_demo) {
                       local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
                     }

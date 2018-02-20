@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.51, built:2018-02-13
+ metadata-core v2.0.16-beta.52, built:2018-02-20
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -44,8 +44,7 @@ class I18n {
 		if(typeof Proxy == 'function'){
       this.i18n = syn;
       return new Proxy(this, new I18Handler());
-    }
-    return syn[this._lang];
+    }    return syn[this._lang];
 	}
 }
 const msg$1 = new I18n({
@@ -532,7 +531,6 @@ class TabularSectionRow$1 {
     return this;
   }
 }
-
 
 var data_tabulars = Object.freeze({
 	TabularSection: TabularSection,
@@ -1461,8 +1459,7 @@ class DataManager extends MetaEventEmitter{
         .then((data) => {
 		    for(const v of data){
 		      push(v);
-		    }
-		    return l;
+		    }		    return l;
 		  });
 		}
 		else{
@@ -4303,7 +4300,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.51';
+    return '2.0.16-beta.52';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
