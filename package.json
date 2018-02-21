@@ -22,7 +22,7 @@
     "pouchdb-adapter-http": "6.3.4",
     "pouchdb-adapter-idb": "6.3.4",
     "pouchdb-adapter-memory": "6.3.4",
-    "pouchdb-authentication": "0.5.5",
+    "pouchdb-authentication": "1.1.2",
     "pouchdb-core": "6.3.4",
     "pouchdb-find": "6.3.4",
     "pouchdb-mapreduce": "6.3.4",
