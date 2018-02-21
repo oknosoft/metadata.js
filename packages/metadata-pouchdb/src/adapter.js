@@ -1099,6 +1099,8 @@ function adapter({AbstracrAdapter}) {
       }
       const res = [];
       const {_m} = this.$p.md;
+      const load = this.load_changes.bind(this);
+
 
       props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
@@ -1106,20 +1108,23 @@ function adapter({AbstracrAdapter}) {
           _m[kind][name].cachable === 'doc_ram' && res.push(kind + '.' + name);
         }
       });
-      return local.doc.find({
-        selector: {class_name: {$in: res}},
-        limit: 10000,
-      })
+
+      return res.reduce((acc, name) => {
+        return acc.then(() => {
+          return local.doc.find({selector: {class_name: name}, limit: 10000}).then(load);
+        });
+      }, Promise.resolve())
         .catch((err) => {
+          props._doc_ram_loading = false;
           this.emit('pouch_sync_error', 'doc', err);
           return {docs: []};
         })
-        .then((data) => this.load_changes(data))
         .then(() => {
           props._doc_ram_loading = false;
           props._doc_ram_loaded = true;
           this.emit('pouch_doc_ram_loaded');
         });
+
     }
 
     /**
