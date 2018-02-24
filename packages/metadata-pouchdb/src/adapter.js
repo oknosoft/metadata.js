@@ -1111,7 +1111,13 @@ function adapter({AbstracrAdapter}) {
 
       return res.reduce((acc, name) => {
         return acc.then(() => {
-          return local.doc.find({selector: {class_name: name}, limit: 10000}).then(load);
+          const opt = {
+            include_docs: true,
+            startkey: name + '|',
+            endkey: name + '|\ufff0',
+            limit: 10000,
+          };
+          return local.doc.allDocs(opt).then((res) => load(res, opt));
         });
       }, Promise.resolve())
         .catch((err) => {
