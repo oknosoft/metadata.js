@@ -53,7 +53,7 @@ class TabsUser extends Component {
 
   render() {
 
-    const {props, state, handleNavigate} = this;
+    const {props, state, handleNavigate, handlePush} = this;
     const {classes, handleLogOut, _obj} = props;
 
     return _obj ?
@@ -77,6 +77,8 @@ class TabsUser extends Component {
         <DialogActions>
           <Button color="primary" size="small" className={classes.button} onClick={handleLogOut}>Выйти</Button>
           <Button color="primary" size="small" className={classes.button} onClick={handleNavigate} title="Перейти к списку документов">К документам</Button>
+          {handlePush && _obj.push_only && <Button color="primary" size="small" className={classes.button}
+                                                   onClick={handlePush} title="Прочитать изменения с сервера">Прочитать изменения</Button>}
         </DialogActions>}
 
         {state.index === 1 && <CnnSettings {...props}/>}
@@ -95,6 +97,7 @@ TabsUser.propTypes = {
   _acl: PropTypes.string.isRequired,
   handleLogOut: PropTypes.func.isRequired,
   handleNavigate: PropTypes.func.isRequired,
+  handlePush: PropTypes.func,
   first_run: PropTypes.bool.isRequired,
 };
 

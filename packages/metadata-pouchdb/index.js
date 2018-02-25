@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.52, built:2018-02-23
+ metadata-pouchdb v2.0.16-beta.52, built:2018-02-25
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -411,7 +411,8 @@ function adapter({AbstracrAdapter}) {
       return delay * 3;
     }
     run_sync(id) {
-      const {local, remote, $p: {wsql, job_prm, record_log}, props: {_push_only, _user}} = this;
+      const {local, remote, $p: {wsql, job_prm, record_log}, props} = this;
+      const {_push_only, _user} = props;
       const db_local = local[id];
       const db_remote = remote[id];
       let linfo, _page;
@@ -439,6 +440,12 @@ function adapter({AbstracrAdapter}) {
         })
         .then((rinfo) => {
           if(!rinfo) {
+            return;
+          }
+          if(!_push_only && rinfo.data_size > (job_prm.data_size_sync_limit || 120000000)) {
+            this.emit('pouch_sync_error', id, {data_size: rinfo.data_size});
+            props.direct = true;
+            wsql.set_user_param('couch_direct', true);
             return;
           }
           if(id == 'ram' && linfo.doc_count < (job_prm.pouch_ram_doc_count || 10)) {
@@ -885,7 +892,6 @@ function adapter({AbstracrAdapter}) {
       }
       const res = [];
       const {_m} = this.$p.md;
-      const load = this.load_changes.bind(this);
       props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
         for (const name in _m[kind]) {
@@ -894,7 +900,16 @@ function adapter({AbstracrAdapter}) {
       });
       return res.reduce((acc, name) => {
         return acc.then(() => {
-          return local.doc.find({selector: {class_name: name}, limit: 10000}).then(load);
+          const opt = {
+            include_docs: true,
+            startkey: name + '|',
+            endkey: name + '|\ufff0',
+            limit: 10000,
+          };
+          this.emit('pouch_data_page', {synonym: $p.md.get(name).synonym});
+          return local.doc.allDocs(opt).then((res) => {
+            this.load_changes(res, opt);
+          });
         });
       }, Promise.resolve())
         .catch((err) => {

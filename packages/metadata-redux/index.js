@@ -1126,6 +1126,8 @@ exports.default = (_META_LOADED$PRM_CHAN = {}, _defineProperty(_META_LOADED$PRM_
 
   if (err && err.error == 'forbidden') {
     return (0, _actions_auth.reset_user)(state);
+  } else if (err && err.data_size) {
+    return Object.assign({}, state, { sync_started: false, data_size: err.data_size });
   }
   return state;
 }), _defineProperty(_META_LOADED$PRM_CHAN, _actions_auth.DEFINED, function (state, action) {

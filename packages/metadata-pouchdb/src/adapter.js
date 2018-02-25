@@ -446,7 +446,8 @@ function adapter({AbstracrAdapter}) {
      */
     run_sync(id) {
 
-      const {local, remote, $p: {wsql, job_prm, record_log}, props: {_push_only, _user}} = this;
+      const {local, remote, $p: {wsql, job_prm, record_log}, props} = this;
+      const {_push_only, _user} = props;
       const db_local = local[id];
       const db_remote = remote[id];
       let linfo, _page;
@@ -482,6 +483,14 @@ function adapter({AbstracrAdapter}) {
         .then((rinfo) => {
 
           if(!rinfo) {
+            return;
+          }
+
+          // репликация больших данных
+          if(!_push_only && rinfo.data_size > (job_prm.data_size_sync_limit || 120000000)) {
+            this.emit('pouch_sync_error', id, {data_size: rinfo.data_size});
+            props.direct = true;
+            wsql.set_user_param('couch_direct', true);
             return;
           }
 
@@ -1099,8 +1108,6 @@ function adapter({AbstracrAdapter}) {
       }
       const res = [];
       const {_m} = this.$p.md;
-      const load = this.load_changes.bind(this);
-
 
       props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
@@ -1117,7 +1124,10 @@ function adapter({AbstracrAdapter}) {
             endkey: name + '|\ufff0',
             limit: 10000,
           };
-          return local.doc.allDocs(opt).then((res) => load(res, opt));
+          this.emit('pouch_data_page', {synonym: $p.md.get(name).synonym});
+          return local.doc.allDocs(opt).then((res) => {
+            this.load_changes(res, opt)
+          });
         });
       }, Promise.resolve())
         .catch((err) => {

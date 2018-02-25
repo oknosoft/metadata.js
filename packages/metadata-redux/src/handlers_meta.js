@@ -67,6 +67,9 @@ export default {
     if(err && err.error == 'forbidden') {
       return reset_user(state);
     }
+    else if(err && err.data_size) {
+      return Object.assign({}, state, {sync_started: false, data_size: err.data_size});
+    }
     return state;
   },
 
