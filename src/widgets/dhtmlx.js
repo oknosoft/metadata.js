@@ -32,7 +32,7 @@ eXcell_proto.input_keydown = function(e, t){
 		t.grid.editStop();                          // по {tab} и {enter} заканчиваем редактирование
 
 	else if(e.keyCode === 115)
-		t.cell.firstChild.childNodes[1].onclick(e); // по {F4} открываем редактор
+		t.cell.firstChild.childNodes[1].onclick(e); // по {F4} открываем форму списка
 
 	else if(e.keyCode === 113){                      // по {F2} открываем форму объекта
 		if(t.source.tabular_section){

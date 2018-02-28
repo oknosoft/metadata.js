@@ -126,7 +126,12 @@ export default class InterfaceObjs {
 	 * @return {XML|string}
 	 */
 	normalize_xml(str){
-		if(!str) return "";
+    if(!str) {
+      return '';
+    }
+    else if(typeof str === 'object') {
+      return str.toString();
+    }
 		const entities = { '&':  '&amp;', '"': '&quot;',  "'":  '&apos;', '<': '&lt;', '>': '&gt;'};
 		return str.replace(	/[&"'<>]/g, (s) => entities[s]);
 	};

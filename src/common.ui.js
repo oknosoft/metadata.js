@@ -63,7 +63,12 @@ function InterfaceObjs(){
 	 * @return {XML|string}
 	 */
 	this.normalize_xml = function(str){
-		if(!str) return "";
+    if(!str) {
+      return '';
+    }
+    else if(typeof str === 'object') {
+      return str.toString();
+    }
 		var entities = { '&':  '&amp;', '"': '&quot;',  "'":  '&apos;', '<': '&lt;', '>': '&gt;'};
 		return str.replace(	/[&"'<>]/g, function (s) {return entities[s];});
 	};
