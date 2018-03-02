@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.52, built:2018-02-25
+ metadata-pouchdb v2.0.16-beta.52, built:2018-03-02
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -410,6 +410,41 @@ function adapter({AbstracrAdapter}) {
       }
       return delay * 3;
     }
+    sync_from_dump(local, remote) {
+      const {utils} = this.$p;
+      return local.get('_local/dumped')
+        .then(() => true)
+        .catch(() => remote.get('_local/dump'))
+        .then(doc => {
+          if(doc === true) {
+            return doc;
+          }
+          const byteCharacters = atob(doc.dump);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const blob = new Blob([new Uint8Array(byteNumbers)], {type: 'application/zip'});
+          return utils.blob_as_text(blob, 'array');
+        })
+        .then((uarray) => {
+          if(uarray === true) {
+            return uarray;
+          }
+          return ('JSZip' in window ? Promise.resolve() : utils.load_script('https://cdn.jsdelivr.net/jszip/2/jszip.min.js', 'script'))
+            .then(() => {
+              const zip = new JSZip(uarray);
+              return zip.files.dump.asText();
+            });
+        })
+        .then((text) => {
+          return false;
+        })
+        .catch((err) => {
+          this.$p.record_log(err);
+          return false;
+        });
+    }
     run_sync(id) {
       const {local, remote, $p: {wsql, job_prm, record_log}, props} = this;
       const {_push_only, _user} = props;
@@ -471,6 +506,23 @@ function adapter({AbstracrAdapter}) {
             else if(id == 'meta') {
               options.filter = 'auth/meta';
             }
+            const final_sync = (options) => {
+              options.live = true;
+              options.back_off_function = this.back_off;
+              if(id == 'ram' || id == 'meta' || wsql.get_user_param('zone') == job_prm.zone_demo) {
+                local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
+              }
+              else if(_push_only) {
+                if(options.filter) {
+                  delete options.filter;
+                  delete options.query_params;
+                }
+                local.sync[id] = sync_events(db_local.replicate.to(db_remote, options));
+              }
+              else {
+                local.sync[id] = sync_events(db_local.sync(db_remote, options));
+              }
+            };
             const sync_events = (sync, options) => {
               sync.on('change', (change) => {
                 if(id == 'ram') {
@@ -498,21 +550,7 @@ function adapter({AbstracrAdapter}) {
                   sync.cancel();
                   sync.removeAllListeners();
                   if(options) {
-                    options.live = true;
-                    options.back_off_function = this.back_off;
-                    if(id == 'ram' || id == 'meta' || wsql.get_user_param('zone') == job_prm.zone_demo) {
-                      local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
-                    }
-                    else if(_push_only) {
-                      if(options.filter) {
-                        delete options.filter;
-                        delete options.query_params;
-                      }
-                      local.sync[id] = sync_events(db_local.replicate.to(db_remote, options));
-                    }
-                    else {
-                      local.sync[id] = sync_events(db_local.sync(db_remote, options));
-                    }
+                    final_sync(options);
                     resolve(id);
                   }
                 });
@@ -527,7 +565,15 @@ function adapter({AbstracrAdapter}) {
               options.filter = 'auth/push_only';
               options.query_params = {user: _user};
             }
-            sync_events(db_local.replicate.from(db_remote, options), options);
+            this.sync_from_dump(db_local, db_remote)
+              .then((synced) => {
+                if(synced) {
+                  final_sync(options);
+                }
+                else {
+                  sync_events(db_local.replicate.from(db_remote, options), options);
+                }
+              });
           });
         });
     }
@@ -854,15 +900,17 @@ function adapter({AbstracrAdapter}) {
       }
       return db.allDocs(options).then((result) => this.load_changes(result, {}));
     }
-    load_view(_mgr, _view) {
+    load_view(_mgr, _view, options) {
       return new Promise((resolve, reject) => {
         const db = this.db(_mgr);
-        const options = {
-          limit: 1000,
-          include_docs: true,
-          startkey: _mgr.class_name + '|',
-          endkey: _mgr.class_name + '|\ufff0',
-        };
+        if(!options) {
+          options = {
+            limit: 1000,
+            include_docs: true,
+            startkey: _mgr.class_name + '|',
+            endkey: _mgr.class_name + '|\ufff0',
+          };
+        }
         function process_docs(err, result) {
           if(result) {
             if(result.rows.length) {
@@ -872,7 +920,12 @@ function adapter({AbstracrAdapter}) {
                 doc.ref = doc._id.split('|')[1];
                 return doc;
               }));
-              db.query(_view, options, process_docs);
+              if(result.rows.length < options.limit) {
+                resolve();
+              }
+              else {
+                db.query(_view, options, process_docs);
+              }
             }
             else {
               resolve();

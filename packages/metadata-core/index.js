@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.52, built:2018-02-25
+ metadata-core v2.0.16-beta.52, built:2018-02-28
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -835,17 +835,19 @@ class DataObj {
       this._obj.parent = utils.blank.guid;
     }
     let numerator = before_save_res instanceof Promise ? before_save_res : Promise.resolve();
-    if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
-      if(utils.blank.date == this.date) {
-        this.date = new Date();
+    if(!this._deleted) {
+      if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
+        if(utils.blank.date == this.date) {
+          this.date = new Date();
+        }
+        if(!this.number_doc) {
+          numerator = numerator.then(() => this.new_number_doc());
+        }
       }
-      if(!this.number_doc) {
-        numerator = numerator.then(() => this.new_number_doc());
-      }
-    }
-    else {
-      if(!this.id) {
-        numerator = numerator.then(() => this.new_number_doc());
+      else {
+        if(!this.id) {
+          numerator = numerator.then(() => this.new_number_doc());
+        }
       }
     }
     const {fields} = this._metadata();
@@ -921,7 +923,7 @@ class DataObj {
       if(_obj[fld]) {
         const {type} = fields[fld];
         if (type.is_ref && typeof _obj[fld] === 'object') {
-          if(!(fld === 'type' && obj._manager instanceof $p.classes.ChartOfCharacteristicManager)) {
+          if(!(fld === 'type' && obj.class_name.indexOf('cch.') === 0)) {
             _obj[fld] = utils.fix_guid(_obj[fld], false);
           }
         }

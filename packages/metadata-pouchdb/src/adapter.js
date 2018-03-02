@@ -436,6 +436,51 @@ function adapter({AbstracrAdapter}) {
     }
 
     /**
+     * Предпринимает попытку загрузки начального образа из _local/dump базы remote
+     * @param local
+     * @param remote
+     * @return {Promise<Boolean>}
+     */
+    sync_from_dump(local, remote) {
+      const {utils} = this.$p;
+      // если уже грузили из дампа, не суетимся
+      return local.get('_local/dumped')
+        .then(() => true)
+        // проверяем наличие дампа в remote
+        .catch(() => remote.get('_local/dump'))
+        .then(doc => {
+          if(doc === true) {
+            return doc;
+          }
+          // извлекаем и разархивируем дамп
+          const byteCharacters = atob(doc.dump);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const blob = new Blob([new Uint8Array(byteNumbers)], {type: 'application/zip'});
+          return utils.blob_as_text(blob, 'array');
+        })
+        .then((uarray) => {
+          if(uarray === true) {
+            return uarray;
+          }
+          return ('JSZip' in window ? Promise.resolve() : utils.load_script('https://cdn.jsdelivr.net/jszip/2/jszip.min.js', 'script'))
+            .then(() => {
+              const zip = new JSZip(uarray);
+              return zip.files.dump.asText();
+            });
+        })
+        .then((text) => {
+          return false;
+        })
+        .catch((err) => {
+          this.$p.record_log(err);
+          return false;
+        });
+    }
+
+    /**
      * ### Запускает процесс синхронизвации
      *
      * @method run_sync
@@ -524,6 +569,26 @@ function adapter({AbstracrAdapter}) {
               options.filter = 'auth/meta';
             }
 
+            const final_sync = (options) => {
+              options.live = true;
+              options.back_off_function = this.back_off;
+
+              // ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
+              if(id == 'ram' || id == 'meta' || wsql.get_user_param('zone') == job_prm.zone_demo) {
+                local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
+              }
+              else if(_push_only) {
+                if(options.filter) {
+                  delete options.filter;
+                  delete options.query_params;
+                }
+                local.sync[id] = sync_events(db_local.replicate.to(db_remote, options));
+              }
+              else {
+                local.sync[id] = sync_events(db_local.sync(db_remote, options));
+              }
+            }
+
             const sync_events = (sync, options) => {
 
               sync.on('change', (change) => {
@@ -573,23 +638,7 @@ function adapter({AbstracrAdapter}) {
                   sync.removeAllListeners();
 
                   if(options) {
-                    options.live = true;
-                    options.back_off_function = this.back_off;
-
-                    // ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
-                    if(id == 'ram' || id == 'meta' || wsql.get_user_param('zone') == job_prm.zone_demo) {
-                      local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
-                    }
-                    else if(_push_only) {
-                      if(options.filter) {
-                        delete options.filter;
-                        delete options.query_params;
-                      }
-                      local.sync[id] = sync_events(db_local.replicate.to(db_remote, options));
-                    }
-                    else {
-                      local.sync[id] = sync_events(db_local.sync(db_remote, options));
-                    }
+                    final_sync(options);
 
                     resolve(id);
                   }
@@ -610,7 +659,16 @@ function adapter({AbstracrAdapter}) {
               options.filter = 'auth/push_only';
               options.query_params = {user: _user};
             }
-            sync_events(db_local.replicate.from(db_remote, options), options);
+
+            this.sync_from_dump(db_local, db_remote)
+              .then((synced) => {
+                if(synced) {
+                  final_sync(options);
+                }
+                else {
+                  sync_events(db_local.replicate.from(db_remote, options), options);
+                }
+              });
 
           });
 
@@ -1053,16 +1111,18 @@ function adapter({AbstracrAdapter}) {
     /**
      * Загружает объекты из PouchDB, обрезанные по view
      */
-    load_view(_mgr, _view) {
+    load_view(_mgr, _view, options) {
       return new Promise((resolve, reject) => {
 
         const db = this.db(_mgr);
-        const options = {
-          limit: 1000,
-          include_docs: true,
-          startkey: _mgr.class_name + '|',
-          endkey: _mgr.class_name + '|\ufff0',
-        };
+        if(!options) {
+          options = {
+            limit: 1000,
+            include_docs: true,
+            startkey: _mgr.class_name + '|',
+            endkey: _mgr.class_name + '|\ufff0',
+          };
+        }
 
         function process_docs(err, result) {
 
@@ -1079,13 +1139,16 @@ function adapter({AbstracrAdapter}) {
                 return doc;
               }));
 
-              db.query(_view, options, process_docs);
-
+              if(result.rows.length < options.limit) {
+                resolve();
+              }
+              else {
+                db.query(_view, options, process_docs);
+              }
             }
             else {
               resolve();
             }
-
           }
           else if(err) {
             reject(err);
