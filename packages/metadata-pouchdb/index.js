@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.52, built:2018-03-02
+ metadata-pouchdb v2.0.16-beta.52, built:2018-03-03
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -410,7 +410,7 @@ function adapter({AbstracrAdapter}) {
       }
       return delay * 3;
     }
-    sync_from_dump(local, remote) {
+    sync_from_dump(local, remote, opts) {
       const {utils} = this.$p;
       return local.get('_local/dumped')
         .then(() => true)
@@ -438,10 +438,39 @@ function adapter({AbstracrAdapter}) {
             });
         })
         .then((text) => {
-          return false;
+          if(text === true) {
+            return text;
+          }
+          const opt = {
+            proxy: remote.name,
+            emit: (docs) => {
+              if(local.name.indexOf('ram') !== -1) {
+                this.emit('pouch_data_page', {
+                  total_rows: docs.length,
+                  local_rows: 0,
+                  docs_written: 3,
+                  limit: 300,
+                  page: 0,
+                  start: Date.now(),
+                });
+              }
+            }
+          };
+          if(opts.filter) {
+            opt.filter = opts.filter;
+          }
+          if(opts.query_params) {
+            opt.query_params = opts.query_params;
+          }
+          return (local.load ? Promise.resolve() : utils.load_script('/dist/pouchdb.load.js', 'script'))
+            .then(() => {
+              return local.load(text, opt);
+            })
+            .then(() => local.put({_id: '_local/dumped'}))
+            .then(() => -1);
         })
         .catch((err) => {
-          this.$p.record_log(err);
+          err.status !== 404 && console.log(err);
           return false;
         });
     }
@@ -565,10 +594,11 @@ function adapter({AbstracrAdapter}) {
               options.filter = 'auth/push_only';
               options.query_params = {user: _user};
             }
-            this.sync_from_dump(db_local, db_remote)
+            this.sync_from_dump(db_local, db_remote, options)
               .then((synced) => {
                 if(synced) {
                   final_sync(options);
+                  typeof synced === 'number' && this.load_data();
                 }
                 else {
                   sync_events(db_local.replicate.from(db_remote, options), options);

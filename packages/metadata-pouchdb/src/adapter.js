@@ -441,7 +441,7 @@ function adapter({AbstracrAdapter}) {
      * @param remote
      * @return {Promise<Boolean>}
      */
-    sync_from_dump(local, remote) {
+    sync_from_dump(local, remote, opts) {
       const {utils} = this.$p;
       // если уже грузили из дампа, не суетимся
       return local.get('_local/dumped')
@@ -465,6 +465,7 @@ function adapter({AbstracrAdapter}) {
           if(uarray === true) {
             return uarray;
           }
+
           return ('JSZip' in window ? Promise.resolve() : utils.load_script('https://cdn.jsdelivr.net/jszip/2/jszip.min.js', 'script'))
             .then(() => {
               const zip = new JSZip(uarray);
@@ -472,10 +473,42 @@ function adapter({AbstracrAdapter}) {
             });
         })
         .then((text) => {
-          return false;
+          if(text === true) {
+            return text;
+          }
+
+          const opt = {
+            proxy: remote.name,
+            emit: (docs) => {
+              if(local.name.indexOf('ram') !== -1) {
+                // широковещательное оповещение о начале загрузки локальных данных
+                this.emit('pouch_data_page', {
+                  total_rows: docs.length,
+                  local_rows: 3,
+                  docs_written: 3,
+                  limit: 300,
+                  page: 0,
+                  start: Date.now(),
+                });
+              }
+            }
+          };
+          if(opts.filter) {
+            opt.filter = opts.filter;
+          }
+          if(opts.query_params) {
+            opt.query_params = opts.query_params;
+          }
+
+          return (local.load ? Promise.resolve() : utils.load_script('/dist/pouchdb.load.js', 'script'))
+            .then(() => {
+              return local.load(text, opt);
+            })
+            .then(() => local.put({_id: '_local/dumped'}))
+            .then(() => -1);
         })
         .catch((err) => {
-          this.$p.record_log(err);
+          err.status !== 404 && console.log(err);
           return false;
         });
     }
@@ -639,7 +672,6 @@ function adapter({AbstracrAdapter}) {
 
                   if(options) {
                     final_sync(options);
-
                     resolve(id);
                   }
                 });
@@ -660,10 +692,11 @@ function adapter({AbstracrAdapter}) {
               options.query_params = {user: _user};
             }
 
-            this.sync_from_dump(db_local, db_remote)
+            this.sync_from_dump(db_local, db_remote, options)
               .then((synced) => {
                 if(synced) {
                   final_sync(options);
+                  typeof synced === 'number' && this.load_data();
                 }
                 else {
                   sync_events(db_local.replicate.from(db_remote, options), options);
