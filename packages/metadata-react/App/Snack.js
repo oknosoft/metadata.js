@@ -8,7 +8,7 @@ export default function Snack({snack = {open: true}, handleClose}) {
     anchorOrigin={{vertical: 'top', horizontal: 'center'}}
     open={snack.open}
     message={snack.message || 'Требуется перезагрузить страницу после первой синхронизации данных'}
-    action={<Button color="inherit" onClick={handleClose}>Выполнить</Button>}
+    action={<Button color="inherit" onClick={handleClose}>{snack.button || 'Выполнить'}</Button>}
   />;
 }
 

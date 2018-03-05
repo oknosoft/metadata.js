@@ -315,6 +315,7 @@ class MangoSelection {
               v.date = new Date(v.date);
               v.posted = v.posted || false;
               v.partner = $p.cat.partners.get(v.partner).presentation;
+              v.manager = $p.cat.users.get(v.manager).presentation;
               return v;
             }), {
               _total_count: start + (docs.length < count ? docs.length : docs.length + 1),

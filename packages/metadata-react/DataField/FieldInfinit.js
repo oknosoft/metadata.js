@@ -318,17 +318,33 @@ class FieldInfinit extends AbstractField {
   }
 
   render() {
+
+    const {props, state, _meta, inputRef} = this;
+    const {read_only} = (props.hasOwnProperty('read_only') ? props : _meta);
+
     return (
-      <div
-        className={this.props.classes.root}
-        onBlur={this.onBlur}
-        onFocus={this.onFocus}
-        onKeyDown={this.onKeyDown}
-      >
-        {this.renderInput()}
-        {this.renderContainer()}
-        {this.renderDialog()}
-      </div>
+      read_only ?
+        <div>
+          <input
+            type="text"
+            ref={inputRef}
+            value={state.inputValue}
+            title={_meta.tooltip || _meta.synonym}
+            placeholder="Только просмотр"
+            readOnly
+          />
+        </div>
+        :
+        <div
+          className={props.classes.root}
+          onBlur={this.onBlur}
+          onFocus={this.onFocus}
+          onKeyDown={this.onKeyDown}
+        >
+          {this.renderInput()}
+          {this.renderContainer()}
+          {this.renderDialog()}
+        </div>
     );
   }
 }

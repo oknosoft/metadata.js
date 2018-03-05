@@ -506,17 +506,19 @@ export class DataObj {
 
     // для документов, контролируем заполненность даты и номера
     let numerator = before_save_res instanceof Promise ? before_save_res : Promise.resolve();
-    if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
-      if(utils.blank.date == this.date) {
-        this.date = new Date();
+    if(!this._deleted) {
+      if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
+        if(utils.blank.date == this.date) {
+          this.date = new Date();
+        }
+        if(!this.number_doc) {
+          numerator = numerator.then(() => this.new_number_doc());
+        }
       }
-      if(!this.number_doc) {
-        numerator = numerator.then(() => this.new_number_doc());
-      }
-    }
-    else {
-      if(!this.id) {
-        numerator = numerator.then(() => this.new_number_doc());
+      else {
+        if(!this.id) {
+          numerator = numerator.then(() => this.new_number_doc());
+        }
       }
     }
 
@@ -643,7 +645,7 @@ export class DataObj {
       if(_obj[fld]) {
         const {type} = fields[fld];
         if (type.is_ref && typeof _obj[fld] === 'object') {
-          if(!(fld === 'type' && obj._manager instanceof $p.classes.ChartOfCharacteristicManager)) {
+          if(!(fld === 'type' && obj.class_name.indexOf('cch.') === 0)) {
             _obj[fld] = utils.fix_guid(_obj[fld], false);
           }
         }

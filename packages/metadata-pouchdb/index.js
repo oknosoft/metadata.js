@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.51, built:2018-02-13
+ metadata-pouchdb v2.0.16-beta.52, built:2018-03-03
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -121,13 +121,12 @@ else {
     PouchDB = window.PouchDB;
   }
   else {
-    const ua = (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
     PouchDB = window.PouchDB = require('pouchdb-core').default
       .plugin(require('pouchdb-adapter-http').default)
       .plugin(require('pouchdb-replication').default)
       .plugin(require('pouchdb-mapreduce').default)
       .plugin(require('pouchdb-find').default)
-      .plugin(ua.match('safari') && !ua.match('chrome') ? require('pouchdb-adapter-websql').default : require('pouchdb-adapter-idb').default);
+      .plugin(require('pouchdb-adapter-idb').default);
   }
 }
 var PouchDB$1 = PouchDB;
@@ -402,8 +401,82 @@ function adapter({AbstracrAdapter}) {
         return local[dbid] || remote[dbid];
       }
     }
+    back_off (delay) {
+      if (!delay) {
+        return 500 + Math.floor(Math.random() * 2000);
+      }
+      else if (delay >= 90000) {
+        return 90000;
+      }
+      return delay * 3;
+    }
+    sync_from_dump(local, remote, opts) {
+      const {utils} = this.$p;
+      return local.get('_local/dumped')
+        .then(() => true)
+        .catch(() => remote.get('_local/dump'))
+        .then(doc => {
+          if(doc === true) {
+            return doc;
+          }
+          const byteCharacters = atob(doc.dump);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const blob = new Blob([new Uint8Array(byteNumbers)], {type: 'application/zip'});
+          return utils.blob_as_text(blob, 'array');
+        })
+        .then((uarray) => {
+          if(uarray === true) {
+            return uarray;
+          }
+          return ('JSZip' in window ? Promise.resolve() : utils.load_script('https://cdn.jsdelivr.net/jszip/2/jszip.min.js', 'script'))
+            .then(() => {
+              const zip = new JSZip(uarray);
+              return zip.files.dump.asText();
+            });
+        })
+        .then((text) => {
+          if(text === true) {
+            return text;
+          }
+          const opt = {
+            proxy: remote.name,
+            emit: (docs) => {
+              if(local.name.indexOf('ram') !== -1) {
+                this.emit('pouch_data_page', {
+                  total_rows: docs.length,
+                  local_rows: 0,
+                  docs_written: 3,
+                  limit: 300,
+                  page: 0,
+                  start: Date.now(),
+                });
+              }
+            }
+          };
+          if(opts.filter) {
+            opt.filter = opts.filter;
+          }
+          if(opts.query_params) {
+            opt.query_params = opts.query_params;
+          }
+          return (local.load ? Promise.resolve() : utils.load_script('/dist/pouchdb.load.js', 'script'))
+            .then(() => {
+              return local.load(text, opt);
+            })
+            .then(() => local.put({_id: '_local/dumped'}))
+            .then(() => -1);
+        })
+        .catch((err) => {
+          err.status !== 404 && console.log(err);
+          return false;
+        });
+    }
     run_sync(id) {
-      const {local, remote, $p: {wsql, job_prm, record_log}, props: {_push_only, _user}} = this;
+      const {local, remote, $p: {wsql, job_prm, record_log}, props} = this;
+      const {_push_only, _user} = props;
       const db_local = local[id];
       const db_remote = remote[id];
       let linfo, _page;
@@ -433,6 +506,12 @@ function adapter({AbstracrAdapter}) {
           if(!rinfo) {
             return;
           }
+          if(!_push_only && rinfo.data_size > (job_prm.data_size_sync_limit || 120000000)) {
+            this.emit('pouch_sync_error', id, {data_size: rinfo.data_size});
+            props.direct = true;
+            wsql.set_user_param('couch_direct', true);
+            return;
+          }
           if(id == 'ram' && linfo.doc_count < (job_prm.pouch_ram_doc_count || 10)) {
             _page = {
               total_rows: rinfo.doc_count,
@@ -456,6 +535,23 @@ function adapter({AbstracrAdapter}) {
             else if(id == 'meta') {
               options.filter = 'auth/meta';
             }
+            const final_sync = (options) => {
+              options.live = true;
+              options.back_off_function = this.back_off;
+              if(id == 'ram' || id == 'meta' || wsql.get_user_param('zone') == job_prm.zone_demo) {
+                local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
+              }
+              else if(_push_only) {
+                if(options.filter) {
+                  delete options.filter;
+                  delete options.query_params;
+                }
+                local.sync[id] = sync_events(db_local.replicate.to(db_remote, options));
+              }
+              else {
+                local.sync[id] = sync_events(db_local.sync(db_remote, options));
+              }
+            };
             const sync_events = (sync, options) => {
               sync.on('change', (change) => {
                 if(id == 'ram') {
@@ -483,20 +579,7 @@ function adapter({AbstracrAdapter}) {
                   sync.cancel();
                   sync.removeAllListeners();
                   if(options) {
-                    options.live = true;
-                    if(id == 'ram' || id == 'meta' || wsql.get_user_param('zone') == job_prm.zone_demo) {
-                      local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
-                    }
-                    else if(_push_only) {
-                      if(options.filter) {
-                        delete options.filter;
-                        delete options.query_params;
-                      }
-                      local.sync[id] = sync_events(db_local.replicate.to(db_remote, options));
-                    }
-                    else {
-                      local.sync[id] = sync_events(db_local.sync(db_remote, options));
-                    }
+                    final_sync(options);
                     resolve(id);
                   }
                 });
@@ -511,7 +594,16 @@ function adapter({AbstracrAdapter}) {
               options.filter = 'auth/push_only';
               options.query_params = {user: _user};
             }
-            sync_events(db_local.replicate.from(db_remote, options), options);
+            this.sync_from_dump(db_local, db_remote, options)
+              .then((synced) => {
+                if(synced) {
+                  final_sync(options);
+                  typeof synced === 'number' && this.load_data();
+                }
+                else {
+                  sync_events(db_local.replicate.from(db_remote, options), options);
+                }
+              });
           });
         });
     }
@@ -838,15 +930,17 @@ function adapter({AbstracrAdapter}) {
       }
       return db.allDocs(options).then((result) => this.load_changes(result, {}));
     }
-    load_view(_mgr, _view) {
+    load_view(_mgr, _view, options) {
       return new Promise((resolve, reject) => {
         const db = this.db(_mgr);
-        const options = {
-          limit: 1000,
-          include_docs: true,
-          startkey: _mgr.class_name + '|',
-          endkey: _mgr.class_name + '|\ufff0',
-        };
+        if(!options) {
+          options = {
+            limit: 1000,
+            include_docs: true,
+            startkey: _mgr.class_name + '|',
+            endkey: _mgr.class_name + '|\ufff0',
+          };
+        }
         function process_docs(err, result) {
           if(result) {
             if(result.rows.length) {
@@ -856,7 +950,12 @@ function adapter({AbstracrAdapter}) {
                 doc.ref = doc._id.split('|')[1];
                 return doc;
               }));
-              db.query(_view, options, process_docs);
+              if(result.rows.length < options.limit) {
+                resolve();
+              }
+              else {
+                db.query(_view, options, process_docs);
+              }
             }
             else {
               resolve();
@@ -882,15 +981,25 @@ function adapter({AbstracrAdapter}) {
           _m[kind][name].cachable === 'doc_ram' && res.push(kind + '.' + name);
         }
       });
-      return local.doc.find({
-        selector: {class_name: {$in: res}},
-        limit: 10000,
-      })
+      return res.reduce((acc, name) => {
+        return acc.then(() => {
+          const opt = {
+            include_docs: true,
+            startkey: name + '|',
+            endkey: name + '|\ufff0',
+            limit: 10000,
+          };
+          this.emit('pouch_data_page', {synonym: $p.md.get(name).synonym});
+          return local.doc.allDocs(opt).then((res) => {
+            this.load_changes(res, opt);
+          });
+        });
+      }, Promise.resolve())
         .catch((err) => {
+          props._doc_ram_loading = false;
           this.emit('pouch_sync_error', 'doc', err);
           return {docs: []};
         })
-        .then((data) => this.load_changes(data))
         .then(() => {
           props._doc_ram_loading = false;
           props._doc_ram_loaded = true;
