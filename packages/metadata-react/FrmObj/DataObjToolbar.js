@@ -51,8 +51,8 @@ class DataObjToolbar extends Component {
       <Toolbar disableGutters className={props.classes.toolbar}>
 
         <IconButton title="Записать" onClick={props.handleSave}><SaveIcon/></IconButton>
-        <IconButton title="Отправить на согласование" onClick={props.handleSend}><SendIcon/></IconButton>
-        <IconButton title="Отозвать заказ" onClick={props.handleMarkDeleted}><RemoveIcon/></IconButton>
+        {props.needSendButton && <IconButton title="Отправить на согласование" onClick={props.handleSend}><SendIcon/></IconButton>}
+        <IconButton title="Отозвать" onClick={props.handleMarkDeleted}><RemoveIcon/></IconButton>
 
         <Typography variant="title" color="inherit" className={props.classes.flex}> </Typography>
 
