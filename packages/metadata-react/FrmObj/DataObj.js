@@ -39,6 +39,7 @@ class DataObj extends MDNRComponent {
       handleClose: this.handleClose.bind(this),
     };
     this.state = {_meta: _meta || _mgr.metadata()};
+
     _mgr.get(match.params.ref, 'promise').then((_obj) => {
       if(this._mounted) {
         this.setState({_obj}, () => this.shouldComponentUpdate(props));
@@ -141,12 +142,19 @@ class DataObj extends MDNRComponent {
   }
 
   render() {
-    const {props, state, context, _handlers} = this;
+    const {props: {_mgr, classes}, state: {_obj, _meta}, context, _handlers} = this;
+    const toolbar_props = Object.assign({
+      closeButton: !context.dnr,
+      posted: _obj && _obj.posted,
+      deleted: _obj && _obj.deleted,
+      postable: !!(_meta.posted || _mgr.metadata('posted')),
+      deletable: true,
+    }, _handlers)
 
-    return state._obj ?
+    return _obj ?
       [
-        <DataObjToolbar key="toolbar" {..._handlers} closeButton={!context.dnr} needSendButton={props._mgr.class_name.substr(0,3)=='doc'}/>,
-        <FormGroup key="data" className={props.classes.spaceLeft}>
+        <DataObjToolbar key="toolbar" {...toolbar_props} />,
+        <FormGroup key="data" className={classes.spaceLeft}>
           {this.renderFields()}
           {this.renderTabularSections()}
         </FormGroup>

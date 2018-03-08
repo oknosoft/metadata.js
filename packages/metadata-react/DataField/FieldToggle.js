@@ -30,17 +30,17 @@ class FieldToggle extends AbstractField {
 
     return (
       <FormControlLabel
-    control={
-      < Switch
-    name = {_fld}
-    checked = {_obj[_fld]}
-    value = "{_obj[_fld]}"
-    onChange = {onChange}
-    />
-      }
-    label={_meta.tooltip || _meta.synonym}
-    />
-  );
+        control={
+          < Switch
+            name = {_fld}
+            checked = {_obj[_fld]}
+            value = "{_obj[_fld]}"
+            onChange = {onChange}
+          />
+        }
+        label={_meta.tooltip || _meta.synonym}
+      />
+    );
   }
 }
 
