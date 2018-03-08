@@ -8,35 +8,40 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import TextField from 'material-ui/TextField';
+import Switch from 'material-ui/Switch';
 
-export default class FieldToggle extends Component {
+import {
+  FormLabel,
+  FormControl,
+  FormGroup,
+  FormControlLabel,
+  FormHelperText,
+} from 'material-ui/Form';
 
-  static propTypes = {
-    _obj: PropTypes.object.isRequired,
-    _fld: PropTypes.string.isRequired,
-    _meta: PropTypes.object.isRequired,
-    handleValueChange: PropTypes.func,
-  };
+import AbstractField from './AbstractField';
+import withStyles from './styles';
 
-  onChange = (event, newValue) => {
-    const {_obj, _fld, handleValueChange} = this.props;
-    _obj[_fld] = newValue;
-    handleValueChange && handleValueChange(newValue);
-  };
+
+class FieldToggle extends AbstractField {
 
   render() {
-    const {onChange, props} = this;
-    const {_obj, _fld, _meta, fullWidth} = props;
+    const {props, _meta, isTabular, onChange} = this;
+    const {_obj, _fld, classes, read_only, fullWidth} = props;
 
     return (
-      <TextField
-        name={_fld}
-        fullWidth={fullWidth}
-        margin="dense"
-        defaultValue={_obj[_fld]}
-        hintText={_meta.tooltip || _meta.synonym}
-        onChange={onChange}/>
-    );
+      <FormControlLabel
+    control={
+      < Switch
+    name = {_fld}
+    checked = {_obj[_fld]}
+    value = "{_obj[_fld]}"
+    onChange = {onChange}
+    />
+      }
+    label={_meta.tooltip || _meta.synonym}
+    />
+  );
   }
 }
+
+export default withStyles(FieldToggle);

@@ -145,7 +145,7 @@ class DataObj extends MDNRComponent {
 
     return state._obj ?
       [
-        <DataObjToolbar key="toolbar" {..._handlers} closeButton={!context.dnr}/>,
+        <DataObjToolbar key="toolbar" {..._handlers} closeButton={!context.dnr} needSendButton={props._mgr.class_name.substr(0,3)=='doc'}/>,
         <FormGroup key="data" className={props.classes.spaceLeft}>
           {this.renderFields()}
           {this.renderTabularSections()}
