@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.52, built:2018-03-03
+ metadata-core v2.0.16-beta.53, built:2018-03-09
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -478,7 +478,7 @@ class TabularSection {
 		return this._obj;
 	}
 }
-class TabularSectionRow$1 {
+let TabularSectionRow$1 = class TabularSectionRow {
 	constructor(owner, attr) {
 		Object.defineProperties(this, {
 			_owner: {
@@ -530,7 +530,7 @@ class TabularSectionRow$1 {
   value_change(f, mf, v) {
     return this;
   }
-}
+};
 
 var data_tabulars = Object.freeze({
 	TabularSection: TabularSection,
@@ -4302,7 +4302,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.52';
+    return '2.0.16-beta.53';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.52, built:2018-03-03
+ metadata-pouchdb v2.0.16-beta.53, built:2018-03-09
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -444,10 +444,11 @@ function adapter({AbstracrAdapter}) {
           const opt = {
             proxy: remote.name,
             emit: (docs) => {
+              this.emit('pouch_dumped', {db: local, docs});
               if(local.name.indexOf('ram') !== -1) {
                 this.emit('pouch_data_page', {
                   total_rows: docs.length,
-                  local_rows: 0,
+                  local_rows: 3,
                   docs_written: 3,
                   limit: 300,
                   page: 0,

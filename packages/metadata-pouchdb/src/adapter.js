@@ -480,6 +480,7 @@ function adapter({AbstracrAdapter}) {
           const opt = {
             proxy: remote.name,
             emit: (docs) => {
+              this.emit('pouch_dumped', {db: local, docs});
               if(local.name.indexOf('ram') !== -1) {
                 // широковещательное оповещение о начале загрузки локальных данных
                 this.emit('pouch_data_page', {
