@@ -804,7 +804,8 @@ function adapter({AbstracrAdapter}) {
       }
       _data._saving = true;
 
-      const db = this.db(_manager);
+      // нас могли попросить записать объект не в родную базу менеджера, а в любую другую
+      const db = attr.db || this.db(_manager);
 
       // подмешиваем class_name
       const tmp = Object.assign({_id: class_name + '|' + ref, class_name}, _obj);
