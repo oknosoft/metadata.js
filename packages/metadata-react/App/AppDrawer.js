@@ -9,6 +9,9 @@ import Drawer from 'material-ui/Drawer';
 import Typography from 'material-ui/Typography';
 import Divider from 'material-ui/Divider';
 import Hidden from 'material-ui/Hidden';
+import IconButton from 'material-ui/IconButton';
+import ChevronLeftIcon from 'material-ui-icons/ChevronLeft';
+
 import NavList from '../Header/NavList';
 
 
@@ -23,6 +26,12 @@ const styles = theme => ({
     '&:hover': {
       color: theme.palette.primary[500],
     },
+    display: 'flex',
+    alignItems: 'center',
+    width: '100%'
+  },
+  space: {
+    flex: '1 1 auto',
   },
   // https://github.com/philipwalton/flexbugs#3-min-height-on-a-flex-container-wont-apply-to-its-flex-items
   toolbarIe11: {
@@ -33,6 +42,7 @@ const styles = theme => ({
     flexDirection: 'column',
     alignItems: 'flex-start',
     justifyContent: 'center',
+    paddingRight: 0,
   },
   anchor: {
     color: theme.palette.text.secondary,
@@ -40,17 +50,28 @@ const styles = theme => ({
 });
 
 function AppDrawer(props) {
-  const {classes, className, disablePermanent, mobileOpen, onClose, handleNavigate, isHome, items, title} = props;
+  const {classes, className, disablePermanent, mobileOpen, onClose, onPermanentClose, handleNavigate, isHome, items, title} = props;
 
   const navigation = (
     <div className={classes.nav}>
       <div className={classes.toolbarIe11}>
         <Toolbar className={classes.toolbar}>
-          <div className={classes.title} onClick={() => {
-            onClose();
-            !isHome && handleNavigate('/');
-          }}>
-            <Typography variant="title" color="inherit">{title}</Typography>
+          <div
+            className={classes.title}
+            onClick={() => {
+              onClose();
+              !isHome && handleNavigate('/');
+            }}
+          >
+            <Typography className={classes.space} variant="title" color="inherit">{title}</Typography>
+            {onPermanentClose &&
+            <IconButton onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onPermanentClose();
+            }}>
+              <ChevronLeftIcon />
+            </IconButton>}
           </div>
           <Divider absolute/>
         </Toolbar>
@@ -98,6 +119,7 @@ AppDrawer.propTypes = {
   mobileOpen: PropTypes.bool.isRequired,
   isHome: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
+  onPermanentClose: PropTypes.func,
   handleNavigate: PropTypes.func.isRequired,// action для навигации
   items: PropTypes.array.isRequired,        // массив элементов меню
   title: PropTypes.string,

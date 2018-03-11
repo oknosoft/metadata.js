@@ -22,12 +22,17 @@ class DataObjToolbar extends Component {
   static propTypes = {
 
     handleSave: PropTypes.func.isRequired,        // обработчик добавления объекта
-    handleSend: PropTypes.func.isRequired,        // команда Отправить
-    handleMarkDeleted: PropTypes.func.isRequired,      // команда Отозвать
-
+    handleMarkDeleted: PropTypes.func.isRequired, // команда Отозвать
     handlePrint: PropTypes.func.isRequired,       // обработчик открытия диалога печати
     handleAttachment: PropTypes.func.isRequired,  // обработчик открытия диалога присоединенных файлов
     handleClose: PropTypes.func.isRequired,       // команда Закрыть форму
+
+    postable: PropTypes.bool,                     // объект можно провести-распровести
+    posted: PropTypes.bool,                       // объект проведён
+    deletable: PropTypes.bool,                    // объект можно пометить на удаление или снять пометку
+    deleted: PropTypes.bool,                      // объект помечен на удаление
+
+    handleSend: PropTypes.func,                   // команда Отправить
 
   };
 
@@ -51,8 +56,8 @@ class DataObjToolbar extends Component {
       <Toolbar disableGutters className={props.classes.toolbar}>
 
         <IconButton title="Записать" onClick={props.handleSave}><SaveIcon/></IconButton>
-        {props.needSendButton && <IconButton title="Отправить на согласование" onClick={props.handleSend}><SendIcon/></IconButton>}
-        <IconButton title="Отозвать" onClick={props.handleMarkDeleted}><RemoveIcon/></IconButton>
+        {props.postable && <IconButton title={props.posted ? 'Отменить проведение' : 'Провести'} onClick={() => props.handleSave(!props.posted)}><SendIcon/></IconButton>}
+        {props.deletable && <IconButton title={props.deleted ? 'Снять пометку удаления' : 'Пометить на удаление'} onClick={props.handleMarkDeleted}><RemoveIcon/></IconButton>}
 
         <Typography variant="title" color="inherit" className={props.classes.flex}> </Typography>
 

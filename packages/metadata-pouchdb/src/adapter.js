@@ -480,6 +480,7 @@ function adapter({AbstracrAdapter}) {
           const opt = {
             proxy: remote.name,
             emit: (docs) => {
+              this.emit('pouch_dumped', {db: local, docs});
               if(local.name.indexOf('ram') !== -1) {
                 // широковещательное оповещение о начале загрузки локальных данных
                 this.emit('pouch_data_page', {
@@ -803,7 +804,8 @@ function adapter({AbstracrAdapter}) {
       }
       _data._saving = true;
 
-      const db = this.db(_manager);
+      // нас могли попросить записать объект не в родную базу менеджера, а в любую другую
+      const db = attr.db || this.db(_manager);
 
       // подмешиваем class_name
       const tmp = Object.assign({_id: class_name + '|' + ref, class_name}, _obj);
