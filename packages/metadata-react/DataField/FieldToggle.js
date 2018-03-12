@@ -3,7 +3,7 @@
  *
  * @module FieldToggle
  *
- * Created 22.09.2016
+ * Created 12.03.2018
  */
 
 import React, {Component} from 'react';
@@ -24,18 +24,32 @@ import withStyles from './styles';
 
 class FieldToggle extends AbstractField {
 
+  constructor(props, context) {
+    super(props, context);
+    const {_obj, _fld} = props;
+    this.state = {checked: _obj[_fld]};
+  }
+
+  handleChange = name => event => {
+    const {checked} = event.target;
+    this.setState({ 'checked': checked });
+    const {_obj, _fld} = this.props;
+    _obj[_fld] = checked;
+  };
+
   render() {
-    const {props, _meta, isTabular, onChange} = this;
-    const {_obj, _fld, classes, read_only, fullWidth} = props;
+    const {props, _meta, isTabular} = this;
+    const {_obj, _fld, read_only} = props;
 
     return (
       <FormControlLabel
         control={
           < Switch
             name = {_fld}
-            checked = {_obj[_fld]}
-            value = "{_obj[_fld]}"
-            onChange = {onChange}
+            checked = {this.state.checked}
+            disabled = {read_only}
+            color = 'primary'
+            onChange = {this.handleChange()}
           />
         }
         label={_meta.tooltip || _meta.synonym}
