@@ -24,36 +24,35 @@ import withStyles from './styles';
 
 class FieldToggle extends AbstractField {
 
-  constructor(props, context) {
-    super(props, context);
-    const {_obj, _fld} = props;
-    this.state = {checked: _obj[_fld]};
-  }
-
-  handleChange = name => event => {
-    const {checked} = event.target;
-    this.setState({ 'checked': checked });
-    const {_obj, _fld} = this.props;
-    _obj[_fld] = checked;
+  // при изменении, подсовываем типовому обработчику, свойство checked, выдавая его за value
+  handleChange = ({target}) => {
+    this.onChange({target: {value: target.checked}});
   };
 
   render() {
-    const {props, _meta, isTabular} = this;
-    const {_obj, _fld, read_only} = props;
+    const {props: {read_only}, state: {value}, _meta, isTabular, handleChange} = this;
 
     return (
-      <FormControlLabel
-        control={
-          < Switch
-            name = {_fld}
-            checked = {this.state.checked}
-            disabled = {read_only}
-            color = 'primary'
-            onChange = {this.handleChange()}
-          />
-        }
-        label={_meta.tooltip || _meta.synonym}
-      />
+      // в табчасти показываем обычный чекбокс
+      isTabular ?
+        <input
+          type="checkbox"
+          value={value ? 'checked' : ''}
+          disabled = {read_only}
+          onChange = {handleChange}
+        />
+        :
+        <FormControlLabel
+          control={
+            <Switch
+              checked = {value}
+              disabled = {read_only}
+              color = "primary"
+              onChange = {handleChange}
+            />
+          }
+          label={_meta.tooltip || _meta.synonym}
+        />
     );
   }
 }
