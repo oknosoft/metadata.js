@@ -1200,12 +1200,12 @@ function adapter({AbstracrAdapter}) {
      * @method load_doc_ram
      */
     load_doc_ram() {
-      const {local, props} = this;
+      const {local, props, $p: {md}} = this;
       if(!local.doc){
         return;
       }
       const res = [];
-      const {_m} = this.$p.md;
+      const {_m} = md;
 
       props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
@@ -1222,7 +1222,7 @@ function adapter({AbstracrAdapter}) {
             endkey: name + '|\ufff0',
             limit: 10000,
           };
-          this.emit('pouch_data_page', {synonym: $p.md.get(name).synonym});
+          this.emit('pouch_data_page', {synonym: md.get(name).synonym});
           return local.doc.allDocs(opt).then((res) => {
             this.load_changes(res, opt)
           });

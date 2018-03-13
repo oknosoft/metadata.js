@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.53, built:2018-03-09
+ metadata-core v2.0.16-beta.53, built:2018-03-13
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -923,7 +923,7 @@ class DataObj {
       if(_obj[fld]) {
         const {type} = fields[fld];
         if (type.is_ref && typeof _obj[fld] === 'object') {
-          if(!(fld === 'type' && obj.class_name.indexOf('cch.') === 0)) {
+          if(!(fld === 'type' && obj.class_name && obj.class_name.indexOf('cch.') === 0)) {
             _obj[fld] = utils.fix_guid(_obj[fld], false);
           }
         }

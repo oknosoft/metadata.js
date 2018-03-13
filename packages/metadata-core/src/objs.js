@@ -645,7 +645,7 @@ export class DataObj {
       if(_obj[fld]) {
         const {type} = fields[fld];
         if (type.is_ref && typeof _obj[fld] === 'object') {
-          if(!(fld === 'type' && obj.class_name.indexOf('cch.') === 0)) {
+          if(!(fld === 'type' && obj.class_name && obj.class_name.indexOf('cch.') === 0)) {
             _obj[fld] = utils.fix_guid(_obj[fld], false);
           }
         }
