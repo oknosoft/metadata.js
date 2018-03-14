@@ -3,40 +3,58 @@
  *
  * @module FieldToggle
  *
- * Created 22.09.2016
+ * Created 12.03.2018
  */
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import TextField from 'material-ui/TextField';
+import Switch from 'material-ui/Switch';
 
-export default class FieldToggle extends Component {
+import {
+  FormLabel,
+  FormControl,
+  FormGroup,
+  FormControlLabel,
+  FormHelperText,
+} from 'material-ui/Form';
 
-  static propTypes = {
-    _obj: PropTypes.object.isRequired,
-    _fld: PropTypes.string.isRequired,
-    _meta: PropTypes.object.isRequired,
-    handleValueChange: PropTypes.func,
-  };
+import AbstractField from './AbstractField';
+import withStyles from './styles';
 
-  onChange = (event, newValue) => {
-    const {_obj, _fld, handleValueChange} = this.props;
-    _obj[_fld] = newValue;
-    handleValueChange && handleValueChange(newValue);
+
+class FieldToggle extends AbstractField {
+
+  // при изменении, подсовываем типовому обработчику, свойство checked, выдавая его за value
+  handleChange = ({target}) => {
+    this.onChange({target: {value: target.checked}});
   };
 
   render() {
-    const {onChange, props} = this;
-    const {_obj, _fld, _meta, fullWidth} = props;
+    const {props: {read_only}, state: {value}, _meta, isTabular, handleChange} = this;
 
     return (
-      <TextField
-        name={_fld}
-        fullWidth={fullWidth}
-        margin="dense"
-        defaultValue={_obj[_fld]}
-        hintText={_meta.tooltip || _meta.synonym}
-        onChange={onChange}/>
+      // в табчасти показываем обычный чекбокс
+      isTabular ?
+        <input
+          type="checkbox"
+          value={value ? 'checked' : ''}
+          disabled = {read_only}
+          onChange = {handleChange}
+        />
+        :
+        <FormControlLabel
+          control={
+            <Switch
+              checked = {value}
+              disabled = {read_only}
+              color = "primary"
+              onChange = {handleChange}
+            />
+          }
+          label={_meta.tooltip || _meta.synonym}
+        />
     );
   }
 }
+
+export default withStyles(FieldToggle);

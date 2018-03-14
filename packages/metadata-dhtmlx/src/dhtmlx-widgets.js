@@ -551,7 +551,7 @@ eXcell_proto.input_keydown = function(e, t){
 		t.grid.editStop();                          // по {tab} и {enter} заканчиваем редактирование
 
 	else if(e.keyCode === 115)
-		t.cell.firstChild.childNodes[1].onclick(e); // по {F4} открываем редактор
+		t.cell.firstChild.childNodes[1].onclick(e); // по {F4} открываем форму списка
 
 	else if(e.keyCode === 113){                      // по {F2} открываем форму объекта
 		if(t.source.tabular_section){
@@ -1882,7 +1882,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
     }
     _grid.forEachRow((id) => {
       if (fields.hasOwnProperty(id))
-        _grid.cells(id,1).setValue(_obj[id]);
+        _grid.cells(id,1).setValue(_obj[id], id);
     });
 	}
 
@@ -1966,16 +1966,20 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 		get_cell_field: {
 			value: function (rId) {
 
-				if(!_obj)
-					return;
+				if(!_obj){
+          return;
+        }
 
 				var res = {row_id: rId || _grid.getSelectedRowId()},
-					fpath = res.row_id.split("|");
+					fpath = res.row_id ? res.row_id.split("|") : [];
 
+        if(!fpath.length){
+          return {obj: _obj, field: ''}._mixin(_pwnd);
+        }
 				if(fpath.length < 2){
 					return {obj: _obj, field: fpath[0]}._mixin(_pwnd);
-
-				}else {
+				}
+				else {
 					var vr;
 					if(_selection){
 						_obj[fpath[0]].find_rows(_selection, function (row) {

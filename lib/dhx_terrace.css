@@ -2373,6 +2373,7 @@ div.gridbox table.obj td.group_row {
   padding-right: 1px;
   margin: 0px;
   overflow: hidden;
+  outline: none;
 }
 .dhx_textarea {
   border: 1px solid;

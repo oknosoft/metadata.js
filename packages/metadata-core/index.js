@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.50, built:2018-02-09
+ metadata-core v2.0.16-beta.54, built:2018-03-13
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -44,8 +44,7 @@ class I18n {
 		if(typeof Proxy == 'function'){
       this.i18n = syn;
       return new Proxy(this, new I18Handler());
-    }
-    return syn[this._lang];
+    }    return syn[this._lang];
 	}
 }
 const msg$1 = new I18n({
@@ -479,7 +478,7 @@ class TabularSection {
 		return this._obj;
 	}
 }
-class TabularSectionRow$1 {
+let TabularSectionRow$1 = class TabularSectionRow {
 	constructor(owner, attr) {
 		Object.defineProperties(this, {
 			_owner: {
@@ -531,8 +530,7 @@ class TabularSectionRow$1 {
   value_change(f, mf, v) {
     return this;
   }
-}
-
+};
 
 var data_tabulars = Object.freeze({
 	TabularSection: TabularSection,
@@ -837,23 +835,25 @@ class DataObj {
       this._obj.parent = utils.blank.guid;
     }
     let numerator = before_save_res instanceof Promise ? before_save_res : Promise.resolve();
-    if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
-      if(utils.blank.date == this.date) {
-        this.date = new Date();
+    if(!this._deleted) {
+      if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
+        if(utils.blank.date == this.date) {
+          this.date = new Date();
+        }
+        if(!this.number_doc) {
+          numerator = numerator.then(() => this.new_number_doc());
+        }
       }
-      if(!this.number_doc) {
-        numerator = numerator.then(() => this.new_number_doc());
-      }
-    }
-    else {
-      if(!this.id) {
-        numerator = numerator.then(() => this.new_number_doc());
+      else {
+        if(!this.id) {
+          numerator = numerator.then(() => this.new_number_doc());
+        }
       }
     }
     const {fields} = this._metadata();
     for (const mf in fields) {
       if (fields[mf].mandatory && !this._obj[mf]) {
-        const {msg, md} = this._manager.$p;
+        const {msg, md} = this._manager._owner.$p;
         md.emit('alert', {
           title: msg.mandatory_title,
           type: "alert-error",
@@ -923,7 +923,7 @@ class DataObj {
       if(_obj[fld]) {
         const {type} = fields[fld];
         if (type.is_ref && typeof _obj[fld] === 'object') {
-          if(!(fld === 'type' && obj._manager instanceof $p.classes.ChartOfCharacteristicManager)) {
+          if(!(fld === 'type' && obj.class_name && obj.class_name.indexOf('cch.') === 0)) {
             _obj[fld] = utils.fix_guid(_obj[fld], false);
           }
         }
@@ -1461,8 +1461,7 @@ class DataManager extends MetaEventEmitter{
         .then((data) => {
 		    for(const v of data){
 		      push(v);
-		    }
-		    return l;
+		    }		    return l;
 		  });
 		}
 		else{
@@ -4303,7 +4302,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.50';
+    return '2.0.16-beta.54';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
