@@ -52,23 +52,7 @@ Metadata.js не конкурирует с UI фреймворками, а до�
 
 ## Установка и подключение
 
-```bash
-npm install --save metadata-js  # node
-npm install -g metadata-js      # command line
-```
-
-Чтобы создать структуру папок и заготовки файлов проекта, выполните команды
-```bash
-metadata init                   # create empty repo
-npm install                     # install dependencies
-```
-
-Для браузера, подключите таблицы стилей `fontawesome`, `dhtmlx`, `metadata` и скрипты `alasql`, `dhtmlx`, `metadata`
-```html
-<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/fontawesome/latest/css/font-awesome.min.css">
-<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/g/metadata(dhx_terrace.css+metadata.css)">
-<script src="//cdn.jsdelivr.net/g/momentjs,alasql,pouchdb,jquery,metadata(dhtmlx.min.js+metadata.min.js)"></script>
-```
+см.: [helloworld](https://github.com/oknosoft/helloworld)
 
 ## Благодарности
 - Andrey Gershun & M. Rangel Wulff, authors of [AlaSQL](https://github.com/agershun/alasql) - Javascript SQL database library
