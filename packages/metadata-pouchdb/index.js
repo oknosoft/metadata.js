@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.53, built:2018-03-10
+ metadata-pouchdb v2.0.16-beta.54, built:2018-03-13
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -970,12 +970,12 @@ function adapter({AbstracrAdapter}) {
       });
     }
     load_doc_ram() {
-      const {local, props} = this;
+      const {local, props, $p: {md}} = this;
       if(!local.doc){
         return;
       }
       const res = [];
-      const {_m} = this.$p.md;
+      const {_m} = md;
       props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
         for (const name in _m[kind]) {
@@ -990,7 +990,7 @@ function adapter({AbstracrAdapter}) {
             endkey: name + '|\ufff0',
             limit: 10000,
           };
-          this.emit('pouch_data_page', {synonym: $p.md.get(name).synonym});
+          this.emit('pouch_data_page', {synonym: md.get(name).synonym});
           return local.doc.allDocs(opt).then((res) => {
             this.load_changes(res, opt);
           });

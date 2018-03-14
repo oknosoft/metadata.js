@@ -1882,7 +1882,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
     }
     _grid.forEachRow((id) => {
       if (fields.hasOwnProperty(id))
-        _grid.cells(id,1).setValue(_obj[id]);
+        _grid.cells(id,1).setValue(_obj[id], id);
     });
 	}
 
