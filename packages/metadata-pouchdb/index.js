@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.54, built:2018-03-13
+ metadata-pouchdb v2.0.16-beta.54, built:2018-03-18
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -969,19 +969,51 @@ function adapter({AbstracrAdapter}) {
         db.query(_view, options, process_docs);
       });
     }
+    load_formulas(rows) {
+      const {cat: {formulas}, md} = this.$p;
+      if(!formulas) {
+        return;
+      }
+      const parents = [formulas.predefined('printing_plates'), formulas.predefined('modifiers')];
+      const filtered = rows.filter(v => !v.disabled && parents.indexOf(v.parent) !== -1);
+      filtered.sort((a, b) => a.sorting_field - b.sorting_field).forEach((formula) => {
+        if(formula.parent == parents[0]) {
+          formula.params.find_rows({param: 'destination'}, (dest) => {
+            const dmgr = md.mgr_by_class_name(dest.value);
+            if(dmgr) {
+              if(!dmgr._printing_plates) {
+                dmgr._printing_plates = {};
+              }
+              dmgr._printing_plates[`prn_${formula.ref}`] = formula;
+            }
+          });
+        }
+        else {
+          try {
+            formula.execute();
+          }
+          catch (err) {
+          }
+        }
+      });
+    }
     load_doc_ram() {
-      const {local, props, $p: {md}} = this;
+      const {local, props, $p: {md, cat}} = this;
       if(!local.doc){
         return;
       }
       const res = [];
       const {_m} = md;
+      const formulas = 'cat.formulas';
       props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
         for (const name in _m[kind]) {
           _m[kind][name].cachable === 'doc_ram' && res.push(kind + '.' + name);
         }
       });
+      if(res.indexOf(formulas) === -1) {
+        res.push(formulas);
+      }
       return res.reduce((acc, name) => {
         return acc.then(() => {
           const opt = {
@@ -993,6 +1025,15 @@ function adapter({AbstracrAdapter}) {
           this.emit('pouch_data_page', {synonym: md.get(name).synonym});
           return local.doc.allDocs(opt).then((res) => {
             this.load_changes(res, opt);
+            if(name === formulas) {
+              if(cat.formulas) {
+                const rows = [];
+                cat.formulas.forEach((o) => {
+                  rows.push(o);
+                });
+                this.load_formulas(rows);
+              }
+            }
           });
         });
       }, Promise.resolve())
