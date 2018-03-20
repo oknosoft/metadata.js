@@ -210,11 +210,7 @@ class MetaEngine {
       Object.defineProperty(CatUsers.prototype, 'partners_uids', {
         get: function () {
           const res = [];
-          this.acl_objs && this.acl_objs.each((row) => {
-            if (row.acl_obj instanceof this._manager._owner.$p.CatPartners) {
-              res.push(row.acl_obj.ref);
-            }
-          });
+          this.acl_objs && this.acl_objs.forEach((row) => row.type === 'cat.partners' && res.push(row.acl_obj.ref));
           return res;
         },
       });
