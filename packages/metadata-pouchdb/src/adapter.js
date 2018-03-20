@@ -1171,6 +1171,8 @@ function adapter({AbstracrAdapter}) {
               // наполняем
               _mgr.load_array(result.rows.map(({doc}) => {
                 doc.ref = doc._id.split('|')[1];
+                delete doc._id;
+                delete doc._rev;
                 return doc;
               }));
 
