@@ -97,11 +97,11 @@ class MetaEngine {
     // начинаем следить за ошибками
     if(typeof process !== 'undefined' && process.addEventListener) {
       process.addEventListener('error', this.record_log, false);
-      process.addEventListener('unhandledrejection', this.record_log, false);
+      //process.addEventListener('unhandledrejection', this.record_log, false);
     }
     else if(typeof window !== 'undefined' && window.addEventListener) {
       window.addEventListener('error', this.record_log, false);
-      window.addEventListener('unhandledRejection', this.record_log, false);
+      //window.addEventListener('unhandledRejection', this.record_log, false);
     }
 
     // при налчии расширений, выполняем их методы инициализации

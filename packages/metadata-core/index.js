@@ -4294,11 +4294,9 @@ class MetaEngine {
     this.record_log = this.record_log.bind(this);
     if(typeof process !== 'undefined' && process.addEventListener) {
       process.addEventListener('error', this.record_log, false);
-      process.addEventListener('unhandledrejection', this.record_log, false);
     }
     else if(typeof window !== 'undefined' && window.addEventListener) {
       window.addEventListener('error', this.record_log, false);
-      window.addEventListener('unhandledRejection', this.record_log, false);
     }
     MetaEngine._plugins.forEach((plugin) => plugin.call(this));
     MetaEngine._plugins.length = 0;
