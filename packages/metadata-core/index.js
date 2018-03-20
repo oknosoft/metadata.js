@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.54, built:2018-03-13
+ metadata-core v2.0.16-beta.54, built:2018-03-20
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -4292,6 +4292,14 @@ class MetaEngine {
     this.md = new Meta(this);
     mngrs(this);
     this.record_log = this.record_log.bind(this);
+    if(typeof process !== 'undefined' && process.addEventListener) {
+      process.addEventListener('error', this.record_log, false);
+      process.addEventListener('unhandledrejection', this.record_log, false);
+    }
+    else if(typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('error', this.record_log, false);
+      window.addEventListener('unhandledRejection', this.record_log, false);
+    }
     MetaEngine._plugins.forEach((plugin) => plugin.call(this));
     MetaEngine._plugins.length = 0;
   }
@@ -4307,7 +4315,7 @@ class MetaEngine {
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
   }
-  record_log(err) {
+  record_log(err, promise) {
     this && this.ireg && this.ireg.log && this.ireg.log.record(err);
     console && console.log(err);
   }

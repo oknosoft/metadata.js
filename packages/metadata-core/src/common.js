@@ -94,9 +94,20 @@ class MetaEngine {
     // дублируем метод record_log в utils
     this.record_log = this.record_log.bind(this);
 
+    // начинаем следить за ошибками
+    if(typeof process !== 'undefined' && process.addEventListener) {
+      process.addEventListener('error', this.record_log, false);
+      process.addEventListener('unhandledrejection', this.record_log, false);
+    }
+    else if(typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('error', this.record_log, false);
+      window.addEventListener('unhandledRejection', this.record_log, false);
+    }
+
     // при налчии расширений, выполняем их методы инициализации
     MetaEngine._plugins.forEach((plugin) => plugin.call(this));
     MetaEngine._plugins.length = 0;
+
 
   }
 
@@ -123,7 +134,7 @@ class MetaEngine {
    * @method record_log
    * @param err
    */
-  record_log(err) {
+  record_log(err, promise) {
     this && this.ireg && this.ireg.log && this.ireg.log.record(err);
     console && console.log(err);
   }
