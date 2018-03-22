@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.54, built:2018-03-13
+ metadata-core v2.0.16-beta.55, built:2018-03-20
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -4292,6 +4292,12 @@ class MetaEngine {
     this.md = new Meta(this);
     mngrs(this);
     this.record_log = this.record_log.bind(this);
+    if(typeof process !== 'undefined' && process.addEventListener) {
+      process.addEventListener('error', this.record_log, false);
+    }
+    else if(typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('error', this.record_log, false);
+    }
     MetaEngine._plugins.forEach((plugin) => plugin.call(this));
     MetaEngine._plugins.length = 0;
   }
@@ -4302,12 +4308,12 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.54';
+    return '2.0.16-beta.55';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
   }
-  record_log(err) {
+  record_log(err, promise) {
     this && this.ireg && this.ireg.log && this.ireg.log.record(err);
     console && console.log(err);
   }
@@ -4343,11 +4349,7 @@ class MetaEngine {
       Object.defineProperty(CatUsers.prototype, 'partners_uids', {
         get: function () {
           const res = [];
-          this.acl_objs && this.acl_objs.each((row) => {
-            if (row.acl_obj instanceof this._manager._owner.$p.CatPartners) {
-              res.push(row.acl_obj.ref);
-            }
-          });
+          this.acl_objs && this.acl_objs.forEach((row) => row.type === 'cat.partners' && res.push(row.acl_obj.ref));
           return res;
         },
       });
