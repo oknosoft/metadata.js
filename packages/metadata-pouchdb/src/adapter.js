@@ -755,11 +755,14 @@ function adapter({AbstracrAdapter}) {
      *
      * @method load_obj
      * @param tObj {DataObj} - объект данных, который необходимо прочитать - дозаполнить
+     * @param attr {Object} - ополнительные параметры, например, db - прочитать из другой базы
      * @return {Promise.<DataObj>} - промис с загруженным объектом
      */
-    load_obj(tObj) {
+    load_obj(tObj, attr) {
 
-      const db = this.db(tObj._manager);
+      // нас могли попросить прочитать объект не из родной базы менеджера, а из любой другой
+      const db = (attr && attr.db) || this.db(tObj._manager);
+
       return db.get(tObj._manager.class_name + '|' + tObj.ref)
         .then((res) => {
           for(const fld of fieldsToDelete) {
