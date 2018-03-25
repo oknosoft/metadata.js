@@ -719,7 +719,7 @@ function adapter({AbstracrAdapter}) {
      */
     rebuild_indexes(id) {
       const {local, remote} = this;
-      const promises = [];
+      let promises = Promise.resolve();
       return local[id] === remote[id] ?
         Promise.resolve() :
         local[id].allDocs({
@@ -729,17 +729,20 @@ function adapter({AbstracrAdapter}) {
           limit: 1000,
         })
           .then(({rows}) => {
-            this.emit('rebuild_indexes', {id, start: true});
             for(const {doc} of rows) {
               if(doc.views) {
                 for(const name in doc.views) {
                   const view = doc.views[name];
+                  const index = doc._id.replace('_design/', '') + '/' + name;
                   if(doc.language === 'javascript') {
-                    promises.push(local[id].query(doc._id.replace('_design/', '') + '/' + name, {limit: 1}));
+                    promises = promises.then(() => {
+                      this.emit('rebuild_indexes', {id, index, start: true});
+                      return local[id].query(index, {limit: 1});
+                    });
                   }
                   else {
                     const selector = {
-                      //use_index: doc._id.replace('_design/', '') + '/' + name,
+                      //use_index: index,
                       limit: 1,
                       fields: ['_id'],
                       selector: {}
@@ -747,13 +750,15 @@ function adapter({AbstracrAdapter}) {
                     for(const fld of view.options.def.fields) {
                       selector.selector[fld] = '';
                     }
-                    promises.push(local[id].find(selector));
+                    promises = promises.then(() => {
+                      this.emit('rebuild_indexes', {id, index, start: true});
+                      return local[id].find(selector);
+                    });
                   }
                 }
               }
             }
-            return Promise.all(promises)
-              .then(() => {
+            return promises.then(() => {
                 this.emit('rebuild_indexes', {id, start: false, finish: true});
               });
           });
