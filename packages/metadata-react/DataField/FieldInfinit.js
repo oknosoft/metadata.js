@@ -323,17 +323,36 @@ class FieldInfinit extends AbstractField {
     const {read_only} = (props.hasOwnProperty('read_only') ? props : _meta);
 
     return (
-      read_only ?
-        <div>
-          <input
-            type="text"
-            ref={inputRef}
-            value={state.inputValue}
-            title={_meta.tooltip || _meta.synonym}
-            placeholder="Только просмотр"
-            readOnly
-          />
-        </div>
+      read_only ? (
+        this.isTabular ?
+          <div>
+            <input
+              type="text"
+              ref={inputRef}
+              value={state.inputValue}
+              title={_meta.tooltip || _meta.synonym}
+              placeholder={_meta.synonym || _meta.tooltip}
+              readOnly
+            />
+          </div>
+          :
+          <div className={props.classes.root}>
+            <FormControl
+              className={props.classes.formControl}
+              fullWidth={props.fullWidth}
+              margin="dense"
+              disabled
+            >
+              <InputLabel>{_meta.tooltip || _meta.synonym}</InputLabel>
+              <Input
+                inputRef={inputRef}
+                value={state.inputValue}
+                classes={{input: props.classes.input}}
+                placeholder={props._fld}
+              />
+            </FormControl>
+          </div>
+        )
         :
         <div
           className={props.classes.root}

@@ -697,7 +697,10 @@ function adapter({AbstracrAdapter}) {
               .then((synced) => {
                 if(synced) {
                   final_sync(options);
-                  typeof synced === 'number' && this.load_data();
+                  if(typeof synced === 'number') {
+                    this.rebuild_indexes(id)
+                      .then(() => this.load_data());
+                  };
                 }
                 else {
                   sync_events(db_local.replicate.from(db_remote, options), options);
@@ -707,6 +710,54 @@ function adapter({AbstracrAdapter}) {
           });
 
         });
+    }
+
+    /**
+     * Перестраивает индексы
+     * Обычно, вызывается после начальной синхронизации
+     * @param id {String}
+     */
+    rebuild_indexes(id) {
+      const {local, remote} = this;
+      const promises = [];
+      return local[id] === remote[id] ?
+        Promise.resolve() :
+        local[id].allDocs({
+          include_docs: true,
+          startkey: '_design/',
+          endkey : '_design/\u0fff',
+          limit: 1000,
+        })
+          .then(({rows}) => {
+            this.emit('rebuild_indexes', {id, start: true});
+            for(const {doc} of rows) {
+              if(doc.views) {
+                for(const name in doc.views) {
+                  const view = doc.views[name];
+                  if(doc.language === 'javascript') {
+                    promises.push(local[id].query(doc._id.replace('_design/', '') + '/' + name, {limit: 1}));
+                  }
+                  else {
+                    const selector = {
+                      //use_index: doc._id.replace('_design/', '') + '/' + name,
+                      limit: 1,
+                      fields: ['_id'],
+                      selector: {}
+                    };
+                    for(const fld of view.options.def.fields) {
+                      selector.selector[fld] = '';
+                    }
+                    promises.push(local[id].find(selector));
+                  }
+                }
+              }
+            }
+            return Promise.all(promises)
+              .then(() => {
+                this.emit('rebuild_indexes', {id, start: false, finish: true});
+              });
+          });
+
     }
 
     /**
