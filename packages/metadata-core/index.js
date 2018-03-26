@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.55, built:2018-03-25
+ metadata-core v2.0.16-beta.55, built:2018-03-26
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -850,17 +850,42 @@ class DataObj {
         }
       }
     }
-    const {fields} = this._metadata();
+    const {fields, tabular_sections} = this._metadata();
+    const {msg, md, cch: {properties}} = this._manager._owner.$p;
     for (const mf in fields) {
       if (fields[mf].mandatory && !this._obj[mf]) {
-        const {msg, md} = this._manager._owner.$p;
         md.emit('alert', {
+          obj: this,
           title: msg.mandatory_title,
           type: "alert-error",
           text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
         });
         before_save_res = false;
         return Promise.reject(reset_modified());
+      }
+    }
+    if(properties) {
+      for (const prts of ['extra_fields', 'product_params', 'params']) {
+        if(!tabular_sections[prts]) {
+          continue;
+        }
+        for (const row of this[prts]._obj) {
+          const property = properties.get(row.property || row.param);
+          if(property && property.mandatory) {
+            const {value} = (row._row || row);
+            if(utils.is_data_obj(value) ? value.empty() : !value) {
+              md.emit('alert', {
+                obj: this,
+                row: row._row || row,
+                title: msg.mandatory_title,
+                type: 'alert-error',
+                text: msg.mandatory_field.replace('%1', property.caption || property.name)
+              });
+              before_save_res = false;
+              return Promise.reject(reset_modified());
+            }
+          }
+        }
       }
     }
     return numerator.then(() => this._manager.adapter.save_obj(this, {post, operational, attachments })
