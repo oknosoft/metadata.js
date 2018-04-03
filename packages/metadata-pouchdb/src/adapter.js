@@ -697,7 +697,10 @@ function adapter({AbstracrAdapter}) {
               .then((synced) => {
                 if(synced) {
                   final_sync(options);
-                  typeof synced === 'number' && this.load_data();
+                  if(typeof synced === 'number') {
+                    this.rebuild_indexes(id)
+                      .then(() => this.load_data());
+                  };
                 }
                 else {
                   sync_events(db_local.replicate.from(db_remote, options), options);
@@ -707,6 +710,59 @@ function adapter({AbstracrAdapter}) {
           });
 
         });
+    }
+
+    /**
+     * Перестраивает индексы
+     * Обычно, вызывается после начальной синхронизации
+     * @param id {String}
+     */
+    rebuild_indexes(id) {
+      const {local, remote} = this;
+      let promises = Promise.resolve();
+      return local[id] === remote[id] ?
+        Promise.resolve() :
+        local[id].allDocs({
+          include_docs: true,
+          startkey: '_design/',
+          endkey : '_design/\u0fff',
+          limit: 1000,
+        })
+          .then(({rows}) => {
+            for(const {doc} of rows) {
+              if(doc.views) {
+                for(const name in doc.views) {
+                  const view = doc.views[name];
+                  const index = doc._id.replace('_design/', '') + '/' + name;
+                  if(doc.language === 'javascript') {
+                    promises = promises.then(() => {
+                      this.emit('rebuild_indexes', {id, index, start: true});
+                      return local[id].query(index, {limit: 1});
+                    });
+                  }
+                  else {
+                    const selector = {
+                      //use_index: index,
+                      limit: 1,
+                      fields: ['_id'],
+                      selector: {}
+                    };
+                    for(const fld of view.options.def.fields) {
+                      selector.selector[fld] = '';
+                    }
+                    promises = promises.then(() => {
+                      this.emit('rebuild_indexes', {id, index, start: true});
+                      return local[id].find(selector);
+                    });
+                  }
+                }
+              }
+            }
+            return promises.then(() => {
+                this.emit('rebuild_indexes', {id, start: false, finish: true});
+              });
+          });
+
     }
 
     /**
@@ -755,11 +811,14 @@ function adapter({AbstracrAdapter}) {
      *
      * @method load_obj
      * @param tObj {DataObj} - объект данных, который необходимо прочитать - дозаполнить
+     * @param attr {Object} - ополнительные параметры, например, db - прочитать из другой базы
      * @return {Promise.<DataObj>} - промис с загруженным объектом
      */
-    load_obj(tObj) {
+    load_obj(tObj, attr) {
 
-      const db = this.db(tObj._manager);
+      // нас могли попросить прочитать объект не из родной базы менеджера, а из любой другой
+      const db = (attr && attr.db) || this.db(tObj._manager);
+
       return db.get(tObj._manager.class_name + '|' + tObj.ref)
         .then((res) => {
           for(const fld of fieldsToDelete) {
