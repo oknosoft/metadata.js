@@ -1135,7 +1135,7 @@ exports.default = (_META_LOADED$PRM_CHAN = {}, _defineProperty(_META_LOADED$PRM_
   user.name = action.payload;
   return Object.assign({}, state, { user: user });
 }), _defineProperty(_META_LOADED$PRM_CHAN, _actions_auth.LOG_IN, function (state, action) {
-  var user = Object.assign({}, state.user, { logged_in: true, try_log_in: false, log_error: '' });
+  var user = Object.assign({}, state.user, { logged_in: action.payload ? true : false, try_log_in: false, log_error: '' });
   return Object.assign({}, state, { user: user });
 }), _defineProperty(_META_LOADED$PRM_CHAN, _actions_auth.TRY_LOG_IN, function (state, action) {
   var user = Object.assign({}, state.user, { try_log_in: true, log_error: '' });
@@ -1205,6 +1205,10 @@ function metaMiddleware(_ref) {
 
             user_log_fault: function user_log_fault(err) {
               return dispatch((0, _actions_auth.log_error)(err));
+            },
+
+            user_log_stop: function user_log_stop() {
+              return dispatch((0, _actions_auth.log_in)());
             },
 
             pouch_data_page: function pouch_data_page(page) {

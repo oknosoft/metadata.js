@@ -312,6 +312,9 @@ function adapter({AbstracrAdapter}) {
           // излучаем событие
           this.emit_async('user_log_in', username);
         }
+        else {
+          this.emit_async('user_log_stop', username);
+        }
 
         props._data_loaded && !props._doc_ram_loading && !props._doc_ram_loaded && this.load_doc_ram();
 
