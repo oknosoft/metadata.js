@@ -31,12 +31,22 @@ export default class DateRange extends PureComponent {
 
   constructor(props, context) {
     super(props, context);
-    const {_obj, _fld} = props;
+    this.state = this.initState(props);
+  }
 
-    this.state = {
+  shouldComponentUpdate(nextProps) {
+    if(this.props._obj !== nextProps._obj || this.props._fld !== nextProps._fld) {
+      this.setState(this.initState(nextProps));
+      return false;
+    }
+    return true;
+  }
+
+  initState({_obj, _fld}) {
+    return {
       value: [moment(_obj[`${_fld}_from`]), moment(_obj[`${_fld}_till`])],
       hoverValue: [moment(_obj[`${_fld}_from`]), moment(_obj[`${_fld}_till`])],
-    };
+    }
   }
 
   handleHoverChange = (hoverValue) => {

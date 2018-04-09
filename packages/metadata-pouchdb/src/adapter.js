@@ -180,7 +180,8 @@ function adapter({AbstracrAdapter}) {
      * @return {Promise}
      */
     log_in(username, password) {
-      const {props, local, remote, $p: {job_prm, wsql, aes, md, cat}} = this;
+      const {props, local, remote, $p} = this;
+      const {job_prm, wsql, aes, md, cat} = $p;
 
       // реквизиты гостевого пользователя для демобаз
       if(username == undefined && password == undefined) {
@@ -215,11 +216,13 @@ function adapter({AbstracrAdapter}) {
       // в node - мы уже авторизованы
       // браузере - авторизуемся в ram, а из остальных получаем info()
       const bases = md.bases();
-      let try_auth = props.user_node ? Promise.resolve() : remote.ram.login(username, password)
+      const try_auth = props.user_node ? Promise.resolve() : remote.ram.login(username, password)
         .then(({roles}) => {
           // установим суффикс базы отдела абонента
           const suffix = /^suffix:/;
           const ref = /^ref:/;
+
+          // уточняем значения констант в соответствии с ролями пользователя
           roles.forEach((role) => {
             if(suffix.test(role)) {
               props._suffix = role.substr(7);
@@ -244,31 +247,59 @@ function adapter({AbstracrAdapter}) {
               props._suffix = '0' + props._suffix;
             }
           }
+          return true;
+        })
+        .catch((err) => {
+          // если direct, вываливаемся с ошибкой
+          if(props.direct) {
+            throw err;
+          }
+          const {current_user} = $p;
+          if(current_user) {
+            if(current_user.push_only) {
+              props._push_only = true;
+            }
+            if(current_user.suffix) {
+              props._suffix = current_user.suffix;
+              while (props._suffix.length < 4) {
+                props._suffix = '0' + props._suffix;
+              }
+            }
+          }
+        })
+        .then((ram_logged_in) => {
           this.after_init(bases);
-
-          // установим признак push-репликации
-
-        });
-      if(!props.user_node) {
-        bases.forEach((dbid) => {
-          if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
-            try_auth = try_auth
-              .then(() => remote[dbid].login(username, password))
-              .then(() => remote[dbid].info());
+          return ram_logged_in;
+        })
+        .then((ram_logged_in) => {
+          let postlogin = Promise.resolve(ram_logged_in);
+          if(!props.user_node) {
+            bases.forEach((dbid) => {
+              if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
+                postlogin = postlogin
+                  .then((ram_logged_in) => {
+                    if(ram_logged_in) {
+                      return remote[dbid].login(username, password).then(() => ram_logged_in)
+                    }
+                  })
+                  .then((ram_logged_in) => ram_logged_in && remote[dbid].info());
+              }
+            });
           }
+          return postlogin;
         });
-      }
 
-      return try_auth.then(() => {
+      return try_auth.then((info) => {
 
-          props._auth = {username};
+        props._auth = {username};
 
-          // сохраняем имя пользователя в localstorage
-          if(wsql.get_user_param('user_name') != username) {
-            wsql.set_user_param('user_name', username);
-          }
+        // сохраняем имя пользователя в localstorage
+        if(wsql.get_user_param('user_name') != username) {
+          wsql.set_user_param('user_name', username);
+        }
 
-          // если настроено сохранение пароля - сохраняем и его
+        // если настроено сохранение пароля - сохраняем и его
+        if(info) {
           if(wsql.get_user_param('enable_save_pwd')) {
             if(aes.Ctr.decrypt(wsql.get_user_param('user_pwd')) != password) {
               wsql.set_user_param('user_pwd', aes.Ctr.encrypt(password));   // сохраняем имя пользователя в базе
@@ -280,12 +311,16 @@ function adapter({AbstracrAdapter}) {
 
           // излучаем событие
           this.emit_async('user_log_in', username);
+        }
+        else {
+          this.emit_async('user_log_stop', username);
+        }
 
-          props._data_loaded && !props._doc_ram_loading && !props._doc_ram_loaded && this.load_doc_ram();
+        props._data_loaded && !props._doc_ram_loading && !props._doc_ram_loaded && this.load_doc_ram();
 
-          // запускаем синхронизацию для нужных баз
-          return this.after_log_in();
-        })
+        // запускаем синхронизацию для нужных баз
+        return info && this.after_log_in();
+      })
         .catch(err => {
           // излучаем событие
           this.emit('user_log_fault', err);

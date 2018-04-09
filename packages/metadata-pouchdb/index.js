@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.55, built:2018-03-25
+ metadata-pouchdb v2.0.16-beta.55, built:2018-04-05
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -226,7 +226,8 @@ function adapter({AbstracrAdapter}) {
         });
     }
     log_in(username, password) {
-      const {props, local, remote, $p: {job_prm, wsql, aes, md, cat}} = this;
+      const {props, local, remote, $p} = this;
+      const {job_prm, wsql, aes, md, cat} = $p;
       if(username == undefined && password == undefined) {
         if(job_prm.guests && job_prm.guests.length) {
           username = job_prm.guests[0].username;
@@ -254,7 +255,7 @@ function adapter({AbstracrAdapter}) {
         }
       }
       const bases = md.bases();
-      let try_auth = props.user_node ? Promise.resolve() : remote.ram.login(username, password)
+      const try_auth = props.user_node ? Promise.resolve() : remote.ram.login(username, password)
         .then(({roles}) => {
           const suffix = /^suffix:/;
           const ref = /^ref:/;
@@ -282,22 +283,52 @@ function adapter({AbstracrAdapter}) {
               props._suffix = '0' + props._suffix;
             }
           }
+          return true;
+        })
+        .catch((err) => {
+          if(props.direct) {
+            throw err;
+          }
+          const {current_user} = $p;
+          if(current_user) {
+            if(current_user.push_only) {
+              props._push_only = true;
+            }
+            if(current_user.suffix) {
+              props._suffix = current_user.suffix;
+              while (props._suffix.length < 4) {
+                props._suffix = '0' + props._suffix;
+              }
+            }
+          }
+        })
+        .then((ram_logged_in) => {
           this.after_init(bases);
-        });
-      if(!props.user_node) {
-        bases.forEach((dbid) => {
-          if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
-            try_auth = try_auth
-              .then(() => remote[dbid].login(username, password))
-              .then(() => remote[dbid].info());
+          return ram_logged_in;
+        })
+        .then((ram_logged_in) => {
+          let postlogin = Promise.resolve(ram_logged_in);
+          if(!props.user_node) {
+            bases.forEach((dbid) => {
+              if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
+                postlogin = postlogin
+                  .then((ram_logged_in) => {
+                    if(ram_logged_in) {
+                      return remote[dbid].login(username, password).then(() => ram_logged_in)
+                    }
+                  })
+                  .then((ram_logged_in) => ram_logged_in && remote[dbid].info());
+              }
+            });
           }
+          return postlogin;
         });
-      }
-      return try_auth.then(() => {
-          props._auth = {username};
-          if(wsql.get_user_param('user_name') != username) {
-            wsql.set_user_param('user_name', username);
-          }
+      return try_auth.then((info) => {
+        props._auth = {username};
+        if(wsql.get_user_param('user_name') != username) {
+          wsql.set_user_param('user_name', username);
+        }
+        if(info) {
           if(wsql.get_user_param('enable_save_pwd')) {
             if(aes.Ctr.decrypt(wsql.get_user_param('user_pwd')) != password) {
               wsql.set_user_param('user_pwd', aes.Ctr.encrypt(password));
@@ -307,9 +338,13 @@ function adapter({AbstracrAdapter}) {
             wsql.set_user_param('user_pwd', '');
           }
           this.emit_async('user_log_in', username);
-          props._data_loaded && !props._doc_ram_loading && !props._doc_ram_loaded && this.load_doc_ram();
-          return this.after_log_in();
-        })
+        }
+        else {
+          this.emit_async('user_log_stop', username);
+        }
+        props._data_loaded && !props._doc_ram_loading && !props._doc_ram_loaded && this.load_doc_ram();
+        return info && this.after_log_in();
+      })
         .catch(err => {
           this.emit('user_log_fault', err);
         });

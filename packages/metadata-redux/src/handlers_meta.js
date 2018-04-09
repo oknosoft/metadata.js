@@ -80,7 +80,7 @@ export default {
   },
 
   [LOG_IN]: (state, action) => {
-    const user = Object.assign({}, state.user, {logged_in: true, try_log_in: false, log_error: ''});
+    const user = Object.assign({}, state.user, {logged_in: action.payload ? true : false, try_log_in: false, log_error: ''});
     return Object.assign({}, state, {user});
   },
 

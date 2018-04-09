@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.55, built:2018-03-28
+ metadata-core v2.0.16-beta.55, built:2018-04-03
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -480,7 +480,7 @@ class TabularSection {
 		return this._obj;
 	}
 }
-let TabularSectionRow$1 = class TabularSectionRow {
+class TabularSectionRow$1 {
 	constructor(owner, attr) {
 		Object.defineProperties(this, {
 			_owner: {
@@ -532,9 +532,9 @@ let TabularSectionRow$1 = class TabularSectionRow {
   value_change(f, mf, v) {
     return this;
   }
-};
+}
 
-var data_tabulars = Object.freeze({
+var data_tabulars = /*#__PURE__*/Object.freeze({
 	TabularSection: TabularSection,
 	TabularSectionRow: TabularSectionRow$1
 });
@@ -1227,8 +1227,7 @@ class RegisterRow extends DataObj {
   }
 }
 
-
-var data_objs = Object.freeze({
+var data_objs = /*#__PURE__*/Object.freeze({
 	DataObj: DataObj,
 	CatObj: CatObj,
 	NumberDocAndDate: NumberDocAndDate,
@@ -1747,14 +1746,16 @@ class RefDataManager extends DataManager{
 		for(let attr of aattr){
 			let obj = this.by_ref[utils.fix_guid(attr)];
 			if(!obj){
-				if(forse == "update_only"){
+        if(forse === 'update_only') {
 					continue;
 				}
 				obj = this.obj_constructor('', [attr, this, true]);
 				forse && obj.is_new() && obj._set_loaded();
 			}
 			else if(obj.is_new() || forse){
-        obj._data._loading = true;
+			  if(obj.is_new() || forse !== 'update_only') {
+          obj._data._loading = true;
+        }
 				obj._mixin(attr);
 			}
 			res.push(obj);
@@ -2755,8 +2756,7 @@ class TaskManager extends CatManager{
 class BusinessProcessManager extends CatManager{
 }
 
-
-var data_managers = Object.freeze({
+var data_managers = /*#__PURE__*/Object.freeze({
 	DataManager: DataManager,
 	RefDataManager: RefDataManager,
 	DataProcessorsManager: DataProcessorsManager,

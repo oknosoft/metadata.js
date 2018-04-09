@@ -54,7 +54,7 @@ class CnnSettings extends Component {
 
   render() {
 
-    const {classes, use_superlogin} = this.props;
+    const {classes, use_superlogin, disable_settings} = this.props;
     const {zone, couch_path, superlogin_path, enable_save_pwd, couch_direct, confirm_reset} = this.state;
 
     return [
@@ -65,8 +65,10 @@ class CnnSettings extends Component {
         label="Адрес CouchDB"
         InputProps={{placeholder: 'couch_path'}}
         helperText="Абсолютный либо относительный путь CouchDB"
+        disabled={disable_settings}
         onChange={this.valueToState('couch_path')}
-        value={couch_path}/>,
+        value={couch_path}
+      />,
 
       use_superlogin && <TextField
         fullWidth
@@ -85,6 +87,7 @@ class CnnSettings extends Component {
         label="Область данных"
         InputProps={{placeholder: 'zone'}}
         helperText="Значение разделителя данных"
+        disabled={disable_settings}
         onChange={this.valueToState('zone')}
         value={zone}/>,
 
@@ -92,6 +95,7 @@ class CnnSettings extends Component {
         <FormControl>
           <FormControlLabel
             control={<Switch
+              disabled={disable_settings}
               onChange={(event, checked) => this.setState({couch_direct: checked})}
               checked={couch_direct}/>}
             label="Прямое подключение без кеширования"

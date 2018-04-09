@@ -712,14 +712,16 @@ export class RefDataManager extends DataManager{
 		for(let attr of aattr){
 			let obj = this.by_ref[utils.fix_guid(attr)];
 			if(!obj){
-				if(forse == "update_only"){
+        if(forse === 'update_only') {
 					continue;
 				}
 				obj = this.obj_constructor('', [attr, this, true]);
 				forse && obj.is_new() && obj._set_loaded();
 			}
 			else if(obj.is_new() || forse){
-        obj._data._loading = true;
+			  if(obj.is_new() || forse !== 'update_only') {
+          obj._data._loading = true;
+        }
 				obj._mixin(attr);
 			}
 			res.push(obj);
