@@ -35,7 +35,7 @@ class ToggleEditor extends CheckboxEditor {
 }
 
 
-function rx_columns({utils: {moment}, enm}) {
+function rx_columns({utils: {moment}, enm, md}) {
 
   const date_formatter = {
     date: ({value}) => {
@@ -70,7 +70,14 @@ function rx_columns({utils: {moment}, enm}) {
     if(fields) {
       res.forEach((column) => {
 
-        const _fld = column._meta = fields[column.key];
+        const keys = column.key.split('.');
+        let _fld = column._meta = fields[keys[0]];
+        for(let i = 1; i < keys.length; i++) {
+          const pmeta = md.get(_fld.type.types[0]);
+          if(pmeta) {
+            _fld = column._meta = pmeta.fields[keys[i]];
+          }
+        }
 
         if(!column.formatter) {
 

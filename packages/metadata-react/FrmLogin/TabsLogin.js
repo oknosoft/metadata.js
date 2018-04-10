@@ -79,11 +79,11 @@ class TabsLogin extends Component {
   render() {
 
     const {props, state, handleLogin} = this;
-    const {classes, user, handleLogOut} = props;
+    const {classes, user, handleLogOut, couch_direct} = props;
 
     return <Paper className={classnames({
       [classes.root]: true,
-      [classes.disabled]: user.try_log_in
+      [classes.disabled]: user.try_log_in && couch_direct
     })} elevation={4}>
 
       <Helmet title={props.title}/>

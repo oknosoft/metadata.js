@@ -24,6 +24,8 @@ export default function metaMiddleware({adapters, md}) {
 
           user_log_fault: (err) => dispatch(log_error(err)),
 
+          user_log_stop: () => dispatch(log_in()),
+
           pouch_data_page: (page) => dispatch(data_page(page)),
 
           pouch_data_loaded: (page) => dispatch(data_loaded(page)),

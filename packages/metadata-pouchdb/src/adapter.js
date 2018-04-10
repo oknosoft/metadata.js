@@ -180,7 +180,8 @@ function adapter({AbstracrAdapter}) {
      * @return {Promise}
      */
     log_in(username, password) {
-      const {props, local, remote, $p: {job_prm, wsql, aes, md, cat}} = this;
+      const {props, local, remote, $p} = this;
+      const {job_prm, wsql, aes, md, cat} = $p;
 
       // реквизиты гостевого пользователя для демобаз
       if(username == undefined && password == undefined) {
@@ -215,11 +216,13 @@ function adapter({AbstracrAdapter}) {
       // в node - мы уже авторизованы
       // браузере - авторизуемся в ram, а из остальных получаем info()
       const bases = md.bases();
-      let try_auth = props.user_node ? Promise.resolve() : remote.ram.login(username, password)
+      const try_auth = props.user_node ? Promise.resolve() : remote.ram.login(username, password)
         .then(({roles}) => {
           // установим суффикс базы отдела абонента
           const suffix = /^suffix:/;
           const ref = /^ref:/;
+
+          // уточняем значения констант в соответствии с ролями пользователя
           roles.forEach((role) => {
             if(suffix.test(role)) {
               props._suffix = role.substr(7);
@@ -244,31 +247,59 @@ function adapter({AbstracrAdapter}) {
               props._suffix = '0' + props._suffix;
             }
           }
+          return true;
+        })
+        .catch((err) => {
+          // если direct, вываливаемся с ошибкой
+          if(props.direct) {
+            throw err;
+          }
+          const {current_user} = $p;
+          if(current_user) {
+            if(current_user.push_only) {
+              props._push_only = true;
+            }
+            if(current_user.suffix) {
+              props._suffix = current_user.suffix;
+              while (props._suffix.length < 4) {
+                props._suffix = '0' + props._suffix;
+              }
+            }
+          }
+        })
+        .then((ram_logged_in) => {
           this.after_init(bases);
-
-          // установим признак push-репликации
-
-        });
-      if(!props.user_node) {
-        bases.forEach((dbid) => {
-          if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
-            try_auth = try_auth
-              .then(() => remote[dbid].login(username, password))
-              .then(() => remote[dbid].info());
+          return ram_logged_in;
+        })
+        .then((ram_logged_in) => {
+          let postlogin = Promise.resolve(ram_logged_in);
+          if(!props.user_node) {
+            bases.forEach((dbid) => {
+              if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
+                postlogin = postlogin
+                  .then((ram_logged_in) => {
+                    if(ram_logged_in) {
+                      return remote[dbid].login(username, password).then(() => ram_logged_in)
+                    }
+                  })
+                  .then((ram_logged_in) => ram_logged_in && remote[dbid].info());
+              }
+            });
           }
+          return postlogin;
         });
-      }
 
-      return try_auth.then(() => {
+      return try_auth.then((info) => {
 
-          props._auth = {username};
+        props._auth = {username};
 
-          // сохраняем имя пользователя в localstorage
-          if(wsql.get_user_param('user_name') != username) {
-            wsql.set_user_param('user_name', username);
-          }
+        // сохраняем имя пользователя в localstorage
+        if(wsql.get_user_param('user_name') != username) {
+          wsql.set_user_param('user_name', username);
+        }
 
-          // если настроено сохранение пароля - сохраняем и его
+        // если настроено сохранение пароля - сохраняем и его
+        if(info) {
           if(wsql.get_user_param('enable_save_pwd')) {
             if(aes.Ctr.decrypt(wsql.get_user_param('user_pwd')) != password) {
               wsql.set_user_param('user_pwd', aes.Ctr.encrypt(password));   // сохраняем имя пользователя в базе
@@ -280,12 +311,16 @@ function adapter({AbstracrAdapter}) {
 
           // излучаем событие
           this.emit_async('user_log_in', username);
+        }
+        else {
+          this.emit_async('user_log_stop', username);
+        }
 
-          props._data_loaded && !props._doc_ram_loading && !props._doc_ram_loaded && this.load_doc_ram();
+        props._data_loaded && !props._doc_ram_loading && !props._doc_ram_loaded && this.load_doc_ram();
 
-          // запускаем синхронизацию для нужных баз
-          return this.after_log_in();
-        })
+        // запускаем синхронизацию для нужных баз
+        return info && this.after_log_in();
+      })
         .catch(err => {
           // излучаем событие
           this.emit('user_log_fault', err);
@@ -697,7 +732,10 @@ function adapter({AbstracrAdapter}) {
               .then((synced) => {
                 if(synced) {
                   final_sync(options);
-                  typeof synced === 'number' && this.load_data();
+                  if(typeof synced === 'number') {
+                    this.rebuild_indexes(id)
+                      .then(() => this.load_data());
+                  };
                 }
                 else {
                   sync_events(db_local.replicate.from(db_remote, options), options);
@@ -707,6 +745,59 @@ function adapter({AbstracrAdapter}) {
           });
 
         });
+    }
+
+    /**
+     * Перестраивает индексы
+     * Обычно, вызывается после начальной синхронизации
+     * @param id {String}
+     */
+    rebuild_indexes(id) {
+      const {local, remote} = this;
+      let promises = Promise.resolve();
+      return local[id] === remote[id] ?
+        Promise.resolve() :
+        local[id].allDocs({
+          include_docs: true,
+          startkey: '_design/',
+          endkey : '_design/\u0fff',
+          limit: 1000,
+        })
+          .then(({rows}) => {
+            for(const {doc} of rows) {
+              if(doc.views) {
+                for(const name in doc.views) {
+                  const view = doc.views[name];
+                  const index = doc._id.replace('_design/', '') + '/' + name;
+                  if(doc.language === 'javascript') {
+                    promises = promises.then(() => {
+                      this.emit('rebuild_indexes', {id, index, start: true});
+                      return local[id].query(index, {limit: 1});
+                    });
+                  }
+                  else {
+                    const selector = {
+                      //use_index: index,
+                      limit: 1,
+                      fields: ['_id'],
+                      selector: {}
+                    };
+                    for(const fld of view.options.def.fields) {
+                      selector.selector[fld] = '';
+                    }
+                    promises = promises.then(() => {
+                      this.emit('rebuild_indexes', {id, index, start: true});
+                      return local[id].find(selector);
+                    });
+                  }
+                }
+              }
+            }
+            return promises.then(() => {
+                this.emit('rebuild_indexes', {id, start: false, finish: true});
+              });
+          });
+
     }
 
     /**
@@ -755,11 +846,14 @@ function adapter({AbstracrAdapter}) {
      *
      * @method load_obj
      * @param tObj {DataObj} - объект данных, который необходимо прочитать - дозаполнить
+     * @param attr {Object} - ополнительные параметры, например, db - прочитать из другой базы
      * @return {Promise.<DataObj>} - промис с загруженным объектом
      */
-    load_obj(tObj) {
+    load_obj(tObj, attr) {
 
-      const db = this.db(tObj._manager);
+      // нас могли попросить прочитать объект не из родной базы менеджера, а из любой другой
+      const db = (attr && attr.db) || this.db(tObj._manager);
+
       return db.get(tObj._manager.class_name + '|' + tObj.ref)
         .then((res) => {
           for(const fld of fieldsToDelete) {
@@ -1171,6 +1265,8 @@ function adapter({AbstracrAdapter}) {
               // наполняем
               _mgr.load_array(result.rows.map(({doc}) => {
                 doc.ref = doc._id.split('|')[1];
+                delete doc._id;
+                delete doc._rev;
                 return doc;
               }));
 
@@ -1196,16 +1292,51 @@ function adapter({AbstracrAdapter}) {
     }
 
     /**
+     * Формулы - это не обычный справочник, для него отдельный метод
+     */
+    load_formulas(rows) {
+      const {cat: {formulas}, md} = this.$p;
+      if(!formulas) {
+        return;
+      }
+      const parents = [formulas.predefined('printing_plates'), formulas.predefined('modifiers')];
+      const filtered = rows.filter(v => !v.disabled && parents.indexOf(v.parent) !== -1);
+      filtered.sort((a, b) => a.sorting_field - b.sorting_field).forEach((formula) => {
+        // формируем списки печатных форм и внешних обработок
+        if(formula.parent == parents[0]) {
+          formula.params.find_rows({param: 'destination'}, (dest) => {
+            const dmgr = md.mgr_by_class_name(dest.value);
+            if(dmgr) {
+              if(!dmgr._printing_plates) {
+                dmgr._printing_plates = {};
+              }
+              dmgr._printing_plates[`prn_${formula.ref}`] = formula;
+            }
+          });
+        }
+        else {
+          // выполняем модификаторы
+          try {
+            formula.execute();
+          }
+          catch (err) {
+          }
+        }
+      });
+    }
+
+    /**
      * ### Загружает объекты с типом кеширования doc_ram в ОЗУ
      * @method load_doc_ram
      */
     load_doc_ram() {
-      const {local, props, $p: {md}} = this;
+      const {local, props, $p: {md, cat}} = this;
       if(!local.doc){
         return;
       }
       const res = [];
       const {_m} = md;
+      const formulas = 'cat.formulas';
 
       props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
@@ -1213,6 +1344,10 @@ function adapter({AbstracrAdapter}) {
           _m[kind][name].cachable === 'doc_ram' && res.push(kind + '.' + name);
         }
       });
+      // с марта 2018, формулы грузим вместе с doc_ram
+      if(res.indexOf(formulas) === -1) {
+        res.push(formulas);
+      }
 
       return res.reduce((acc, name) => {
         return acc.then(() => {
@@ -1224,7 +1359,16 @@ function adapter({AbstracrAdapter}) {
           };
           this.emit('pouch_data_page', {synonym: md.get(name).synonym});
           return local.doc.allDocs(opt).then((res) => {
-            this.load_changes(res, opt)
+            this.load_changes(res, opt);
+            if(name === formulas) {
+              if(cat.formulas) {
+                const rows = [];
+                cat.formulas.forEach((o) => {
+                  rows.push(o);
+                });
+                this.load_formulas(rows);
+              }
+            }
           });
         });
       }, Promise.resolve())

@@ -54,13 +54,9 @@ class SchemeSettingsSelect extends Component {
     });
   };
 
-  handleNameChange = () => {
-    this.fld_scheme.forceUpdate();
-  };
-
   render() {
 
-    const {state, props, handleCreate, handleSave, handleNameChange} = this;
+    const {state, props, handleCreate, handleSave} = this;
     const {_obj, _meta} = state;
     const {scheme, classes, handleSchemeChange} = props;
 
@@ -71,7 +67,7 @@ class SchemeSettingsSelect extends Component {
       </Toolbar>,
 
       <FormGroup key="body" style={{margin: 16}}>
-        <DataField _obj={scheme} _fld="name" fullWidth handleValueChange={handleNameChange}/>
+        <DataField _obj={scheme} _fld="name" fullWidth/>
         <DataField _obj={scheme} _fld="query" fullWidth/>
         <DataField _obj={scheme} _fld="standard_period" fullWidth/>
       </FormGroup>

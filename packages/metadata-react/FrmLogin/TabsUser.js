@@ -71,6 +71,10 @@ class TabsUser extends Component {
         <FormGroup>
           <DataField _obj={_obj} _fld="id" read_only />
           <DataField _obj={_obj} _fld="name" read_only />
+          <DataField _obj={_obj} _fld="branch" read_only fullWidth />
+          <DataField _obj={_obj} _fld="suffix" read_only />
+          <DataField _obj={_obj} _fld="direct" read_only />
+          <DataField _obj={_obj} _fld="push_only" read_only />
         </FormGroup>}
 
         {state.index === 0 &&

@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.54, built:2018-03-13
+ metadata-pouchdb v2.0.16-beta.55, built:2018-04-05
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -226,7 +226,8 @@ function adapter({AbstracrAdapter}) {
         });
     }
     log_in(username, password) {
-      const {props, local, remote, $p: {job_prm, wsql, aes, md, cat}} = this;
+      const {props, local, remote, $p} = this;
+      const {job_prm, wsql, aes, md, cat} = $p;
       if(username == undefined && password == undefined) {
         if(job_prm.guests && job_prm.guests.length) {
           username = job_prm.guests[0].username;
@@ -254,7 +255,7 @@ function adapter({AbstracrAdapter}) {
         }
       }
       const bases = md.bases();
-      let try_auth = props.user_node ? Promise.resolve() : remote.ram.login(username, password)
+      const try_auth = props.user_node ? Promise.resolve() : remote.ram.login(username, password)
         .then(({roles}) => {
           const suffix = /^suffix:/;
           const ref = /^ref:/;
@@ -282,22 +283,52 @@ function adapter({AbstracrAdapter}) {
               props._suffix = '0' + props._suffix;
             }
           }
+          return true;
+        })
+        .catch((err) => {
+          if(props.direct) {
+            throw err;
+          }
+          const {current_user} = $p;
+          if(current_user) {
+            if(current_user.push_only) {
+              props._push_only = true;
+            }
+            if(current_user.suffix) {
+              props._suffix = current_user.suffix;
+              while (props._suffix.length < 4) {
+                props._suffix = '0' + props._suffix;
+              }
+            }
+          }
+        })
+        .then((ram_logged_in) => {
           this.after_init(bases);
-        });
-      if(!props.user_node) {
-        bases.forEach((dbid) => {
-          if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
-            try_auth = try_auth
-              .then(() => remote[dbid].login(username, password))
-              .then(() => remote[dbid].info());
+          return ram_logged_in;
+        })
+        .then((ram_logged_in) => {
+          let postlogin = Promise.resolve(ram_logged_in);
+          if(!props.user_node) {
+            bases.forEach((dbid) => {
+              if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
+                postlogin = postlogin
+                  .then((ram_logged_in) => {
+                    if(ram_logged_in) {
+                      return remote[dbid].login(username, password).then(() => ram_logged_in)
+                    }
+                  })
+                  .then((ram_logged_in) => ram_logged_in && remote[dbid].info());
+              }
+            });
           }
+          return postlogin;
         });
-      }
-      return try_auth.then(() => {
-          props._auth = {username};
-          if(wsql.get_user_param('user_name') != username) {
-            wsql.set_user_param('user_name', username);
-          }
+      return try_auth.then((info) => {
+        props._auth = {username};
+        if(wsql.get_user_param('user_name') != username) {
+          wsql.set_user_param('user_name', username);
+        }
+        if(info) {
           if(wsql.get_user_param('enable_save_pwd')) {
             if(aes.Ctr.decrypt(wsql.get_user_param('user_pwd')) != password) {
               wsql.set_user_param('user_pwd', aes.Ctr.encrypt(password));
@@ -307,9 +338,13 @@ function adapter({AbstracrAdapter}) {
             wsql.set_user_param('user_pwd', '');
           }
           this.emit_async('user_log_in', username);
-          props._data_loaded && !props._doc_ram_loading && !props._doc_ram_loaded && this.load_doc_ram();
-          return this.after_log_in();
-        })
+        }
+        else {
+          this.emit_async('user_log_stop', username);
+        }
+        props._data_loaded && !props._doc_ram_loading && !props._doc_ram_loaded && this.load_doc_ram();
+        return info && this.after_log_in();
+      })
         .catch(err => {
           this.emit('user_log_fault', err);
         });
@@ -599,14 +634,61 @@ function adapter({AbstracrAdapter}) {
               .then((synced) => {
                 if(synced) {
                   final_sync(options);
-                  typeof synced === 'number' && this.load_data();
-                }
+                  if(typeof synced === 'number') {
+                    this.rebuild_indexes(id)
+                      .then(() => this.load_data());
+                  }                }
                 else {
                   sync_events(db_local.replicate.from(db_remote, options), options);
                 }
               });
           });
         });
+    }
+    rebuild_indexes(id) {
+      const {local, remote} = this;
+      let promises = Promise.resolve();
+      return local[id] === remote[id] ?
+        Promise.resolve() :
+        local[id].allDocs({
+          include_docs: true,
+          startkey: '_design/',
+          endkey : '_design/\u0fff',
+          limit: 1000,
+        })
+          .then(({rows}) => {
+            for(const {doc} of rows) {
+              if(doc.views) {
+                for(const name in doc.views) {
+                  const view = doc.views[name];
+                  const index = doc._id.replace('_design/', '') + '/' + name;
+                  if(doc.language === 'javascript') {
+                    promises = promises.then(() => {
+                      this.emit('rebuild_indexes', {id, index, start: true});
+                      return local[id].query(index, {limit: 1});
+                    });
+                  }
+                  else {
+                    const selector = {
+                      limit: 1,
+                      fields: ['_id'],
+                      selector: {}
+                    };
+                    for(const fld of view.options.def.fields) {
+                      selector.selector[fld] = '';
+                    }
+                    promises = promises.then(() => {
+                      this.emit('rebuild_indexes', {id, index, start: true});
+                      return local[id].find(selector);
+                    });
+                  }
+                }
+              }
+            }
+            return promises.then(() => {
+                this.emit('rebuild_indexes', {id, start: false, finish: true});
+              });
+          });
     }
     call_data_loaded(page) {
       const {local, props} = this;
@@ -632,8 +714,8 @@ function adapter({AbstracrAdapter}) {
         .then(do_reload)
         .catch(do_reload);
     }
-    load_obj(tObj) {
-      const db = this.db(tObj._manager);
+    load_obj(tObj, attr) {
+      const db = (attr && attr.db) || this.db(tObj._manager);
       return db.get(tObj._manager.class_name + '|' + tObj.ref)
         .then((res) => {
           for(const fld of fieldsToDelete) {
@@ -949,6 +1031,8 @@ function adapter({AbstracrAdapter}) {
               options.skip = 1;
               _mgr.load_array(result.rows.map(({doc}) => {
                 doc.ref = doc._id.split('|')[1];
+                delete doc._id;
+                delete doc._rev;
                 return doc;
               }));
               if(result.rows.length < options.limit) {
@@ -969,19 +1053,51 @@ function adapter({AbstracrAdapter}) {
         db.query(_view, options, process_docs);
       });
     }
+    load_formulas(rows) {
+      const {cat: {formulas}, md} = this.$p;
+      if(!formulas) {
+        return;
+      }
+      const parents = [formulas.predefined('printing_plates'), formulas.predefined('modifiers')];
+      const filtered = rows.filter(v => !v.disabled && parents.indexOf(v.parent) !== -1);
+      filtered.sort((a, b) => a.sorting_field - b.sorting_field).forEach((formula) => {
+        if(formula.parent == parents[0]) {
+          formula.params.find_rows({param: 'destination'}, (dest) => {
+            const dmgr = md.mgr_by_class_name(dest.value);
+            if(dmgr) {
+              if(!dmgr._printing_plates) {
+                dmgr._printing_plates = {};
+              }
+              dmgr._printing_plates[`prn_${formula.ref}`] = formula;
+            }
+          });
+        }
+        else {
+          try {
+            formula.execute();
+          }
+          catch (err) {
+          }
+        }
+      });
+    }
     load_doc_ram() {
-      const {local, props, $p: {md}} = this;
+      const {local, props, $p: {md, cat}} = this;
       if(!local.doc){
         return;
       }
       const res = [];
       const {_m} = md;
+      const formulas = 'cat.formulas';
       props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
         for (const name in _m[kind]) {
           _m[kind][name].cachable === 'doc_ram' && res.push(kind + '.' + name);
         }
       });
+      if(res.indexOf(formulas) === -1) {
+        res.push(formulas);
+      }
       return res.reduce((acc, name) => {
         return acc.then(() => {
           const opt = {
@@ -993,6 +1109,15 @@ function adapter({AbstracrAdapter}) {
           this.emit('pouch_data_page', {synonym: md.get(name).synonym});
           return local.doc.allDocs(opt).then((res) => {
             this.load_changes(res, opt);
+            if(name === formulas) {
+              if(cat.formulas) {
+                const rows = [];
+                cat.formulas.forEach((o) => {
+                  rows.push(o);
+                });
+                this.load_formulas(rows);
+              }
+            }
           });
         });
       }, Promise.resolve())

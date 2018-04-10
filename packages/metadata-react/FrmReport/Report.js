@@ -81,16 +81,7 @@ class Report extends MDNRComponent {
     // в этом методе
     handleSchemeChange && handleSchemeChange(this, scheme);
 
-    // в случае непустого результата - чистим
-    const tabular = _obj[_tabular];
-    if(tabular && tabular.count()){
-      tabular.clear();
-      if(tabular._rows){
-        tabular._rows.length = 0;
-      }
-    }
-
-    // обновляем state
+    // обновляем state, shouldComponentUpdate берём из MDNRComponent
     this.setState({scheme, _columns}, () => this.shouldComponentUpdate(props));
 
   };

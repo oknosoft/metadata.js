@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.54, built:2018-03-13
+ metadata-core v2.0.16-beta.55, built:2018-04-07
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -342,7 +342,9 @@ class TabularSection {
 		  return;
     }
 		for (const f in row._metadata().fields){
-			row[f] = attr[f] || "";
+		  if(!row._obj[f]) {
+        row[f] = attr[f] || "";
+      }
 		}
 		row._obj.row = _obj.push(row._obj);
     Object.defineProperty(row._obj, '_row', {
@@ -478,7 +480,7 @@ class TabularSection {
 		return this._obj;
 	}
 }
-let TabularSectionRow$1 = class TabularSectionRow {
+class TabularSectionRow$1 {
 	constructor(owner, attr) {
 		Object.defineProperties(this, {
 			_owner: {
@@ -530,9 +532,9 @@ let TabularSectionRow$1 = class TabularSectionRow {
   value_change(f, mf, v) {
     return this;
   }
-};
+}
 
-var data_tabulars = Object.freeze({
+var data_tabulars = /*#__PURE__*/Object.freeze({
 	TabularSection: TabularSection,
 	TabularSectionRow: TabularSectionRow$1
 });
@@ -850,17 +852,42 @@ class DataObj {
         }
       }
     }
-    const {fields} = this._metadata();
+    const {fields, tabular_sections} = this._metadata();
+    const {msg, md, cch: {properties}} = this._manager._owner.$p;
     for (const mf in fields) {
       if (fields[mf].mandatory && !this._obj[mf]) {
-        const {msg, md} = this._manager._owner.$p;
         md.emit('alert', {
+          obj: this,
           title: msg.mandatory_title,
           type: "alert-error",
           text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
         });
         before_save_res = false;
         return Promise.reject(reset_modified());
+      }
+    }
+    if(properties) {
+      for (const prts of ['extra_fields', 'product_params', 'params']) {
+        if(!tabular_sections[prts]) {
+          continue;
+        }
+        for (const row of this[prts]._obj) {
+          const property = properties.get(row.property || row.param);
+          if(property && property.mandatory) {
+            const {value} = (row._row || row);
+            if(utils.is_data_obj(value) ? value.empty() : !value) {
+              md.emit('alert', {
+                obj: this,
+                row: row._row || row,
+                title: msg.mandatory_title,
+                type: 'alert-error',
+                text: msg.mandatory_field.replace('%1', property.caption || property.name)
+              });
+              before_save_res = false;
+              return Promise.reject(reset_modified());
+            }
+          }
+        }
       }
     }
     return numerator.then(() => this._manager.adapter.save_obj(this, {post, operational, attachments })
@@ -1200,8 +1227,7 @@ class RegisterRow extends DataObj {
   }
 }
 
-
-var data_objs = Object.freeze({
+var data_objs = /*#__PURE__*/Object.freeze({
 	DataObj: DataObj,
 	CatObj: CatObj,
 	NumberDocAndDate: NumberDocAndDate,
@@ -1720,14 +1746,16 @@ class RefDataManager extends DataManager{
 		for(let attr of aattr){
 			let obj = this.by_ref[utils.fix_guid(attr)];
 			if(!obj){
-				if(forse == "update_only"){
+        if(forse === 'update_only') {
 					continue;
 				}
 				obj = this.obj_constructor('', [attr, this, true]);
 				forse && obj.is_new() && obj._set_loaded();
 			}
 			else if(obj.is_new() || forse){
-        obj._data._loading = true;
+			  if(obj.is_new() || forse !== 'update_only') {
+          obj._data._loading = true;
+        }
 				obj._mixin(attr);
 			}
 			res.push(obj);
@@ -2728,8 +2756,7 @@ class TaskManager extends CatManager{
 class BusinessProcessManager extends CatManager{
 }
 
-
-var data_managers = Object.freeze({
+var data_managers = /*#__PURE__*/Object.freeze({
 	DataManager: DataManager,
 	RefDataManager: RefDataManager,
 	DataProcessorsManager: DataProcessorsManager,
@@ -2954,6 +2981,9 @@ const utils = {
 		}
 		return (this.fix_guid(v1, false) == this.fix_guid(v2, false));
 	},
+  snake_ref(ref) {
+    return '_' + ref.replace(/-/g, '_');
+  },
 	blob_as_text(blob, type) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -4292,6 +4322,12 @@ class MetaEngine {
     this.md = new Meta(this);
     mngrs(this);
     this.record_log = this.record_log.bind(this);
+    if(typeof process !== 'undefined' && process.addEventListener) {
+      process.addEventListener('error', this.record_log, false);
+    }
+    else if(typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('error', this.record_log, false);
+    }
     MetaEngine._plugins.forEach((plugin) => plugin.call(this));
     MetaEngine._plugins.length = 0;
   }
@@ -4302,12 +4338,12 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.54';
+    return '2.0.16-beta.55';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
   }
-  record_log(err) {
+  record_log(err, promise) {
     this && this.ireg && this.ireg.log && this.ireg.log.record(err);
     console && console.log(err);
   }
@@ -4343,11 +4379,7 @@ class MetaEngine {
       Object.defineProperty(CatUsers.prototype, 'partners_uids', {
         get: function () {
           const res = [];
-          this.acl_objs && this.acl_objs.each((row) => {
-            if (row.acl_obj instanceof this._manager._owner.$p.CatPartners) {
-              res.push(row.acl_obj.ref);
-            }
-          });
+          this.acl_objs && this.acl_objs.forEach((row) => row.type === 'cat.partners' && res.push(row.acl_obj.ref));
           return res;
         },
       });

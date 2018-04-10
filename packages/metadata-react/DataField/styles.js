@@ -5,6 +5,7 @@ const styles = theme => ({
     // marginLeft: theme.spacing.unit,
     paddingRight: theme.spacing.unit,
     boxSizing: 'border-box',
+    minWidth: 240,
   },
   container: {
     flexGrow: 1,

@@ -243,7 +243,9 @@ export class TabularSection {
 
 		// присваиваем типизированные значения по умолчанию
 		for (const f in row._metadata().fields){
-			row[f] = attr[f] || "";
+		  if(!row._obj[f]) {
+        row[f] = attr[f] || "";
+      }
 		}
 
 		row._obj.row = _obj.push(row._obj);

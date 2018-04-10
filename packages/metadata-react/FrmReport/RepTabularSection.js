@@ -61,11 +61,28 @@ export default class RepTabularSection extends Component {
     };
   }
 
+  shouldComponentUpdate({scheme}) {
+    if(scheme !== this.props.scheme) {
+      // в случае непустого результата - чистим
+      const {_obj, _tabular} = this.props;
+      const tabular = _obj[_tabular];
+      if(tabular && tabular.count()){
+        if(tabular._rows){
+          tabular._rows.length = tabular._rows._count = 0;
+        }
+        tabular.clear();
+      }
+      this.state.rows.length = 0;
+      this.state.expanded = {};
+    }
+    return true;
+  }
+
   expandRoot() {
     const {_obj, _tabular, scheme} = this.props;
     const dims = scheme.dims();
     const rows = _obj[_tabular]._rows || [];
-    if(rows.length && dims.length && !dims[0]){
+    if(rows.length && dims.length /*&& !dims[0]*/){
       const srows = rows.slice(0);
       const subRows = rows[0].children;
       srows.splice(1, 0, ...subRows);
