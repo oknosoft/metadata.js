@@ -7,9 +7,9 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import IconButton from 'material-ui/IconButton';
-import IconSettings from 'material-ui-icons/Settings';
-import IconSettingsCancel from 'material-ui-icons/HighlightOff';
-import IconSettingsDone from 'material-ui-icons/Done';
+import IconSettings from '@material-ui/icons/Settings';
+import IconSettingsCancel from '@material-ui/icons/HighlightOff';
+import IconSettingsDone from '@material-ui/icons/Done';
 
 import Button from 'material-ui/Button';
 import TextField from 'material-ui/TextField';

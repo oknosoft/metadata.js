@@ -8,12 +8,12 @@ import PropTypes from 'prop-types';
 
 import IconButton from 'material-ui/IconButton';
 
-import CloudQueue from 'material-ui-icons/CloudQueue';
-import CloudOff from 'material-ui-icons/CloudOff';
+import CloudQueue from '@material-ui/icons/CloudQueue';
+import CloudOff from '@material-ui/icons/CloudOff';
 
-import SyncIcon from 'material-ui-icons/Sync';
-import SyncIconDisabled from 'material-ui-icons/SyncDisabled';
-import PersonOutline from 'material-ui-icons/PersonOutline';
+import SyncIcon from '@material-ui/icons/Sync';
+import SyncIconDisabled from '@material-ui/icons/SyncDisabled';
+import PersonOutline from '@material-ui/icons/PersonOutline';
 import AccountOff from './AccountOff';
 
 import Notifications from '../Notifications';

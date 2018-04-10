@@ -10,7 +10,7 @@ import classnames from 'classnames';
 import withStyles from './menu';
 import {withIface} from 'metadata-redux';
 
-import IconExpandMore from 'material-ui-icons/ExpandMore';
+import IconExpandMore from '@material-ui/icons/ExpandMore';
 
 class NavList extends Component {
 

@@ -14,9 +14,9 @@ import Typography from 'material-ui/Typography';
 import TextField from 'material-ui/TextField';
 import Input, { InputLabel, InputAdornment } from 'material-ui/Input';
 import { FormControl } from 'material-ui/Form';
-import Visibility from 'material-ui-icons/Visibility';
-import VisibilityOff from 'material-ui-icons/VisibilityOff';
-import IconError from 'material-ui-icons/ErrorOutline';
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import IconError from '@material-ui/icons/ErrorOutline';
 import {CircularProgress} from 'material-ui/Progress';
 
 import {blue, red} from 'material-ui/colors';

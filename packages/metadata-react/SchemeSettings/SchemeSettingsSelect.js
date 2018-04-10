@@ -9,8 +9,8 @@ import PropTypes from 'prop-types';
 
 import Toolbar from 'material-ui/Toolbar';
 import IconButton from 'material-ui/IconButton';
-import SaveIcon from 'material-ui-icons/Save';
-import CopyIcon from 'material-ui-icons/ContentCopy';
+import SaveIcon from '@material-ui/icons/Save';
+import CopyIcon from '@material-ui/icons/ContentCopy';
 import {FormGroup} from 'material-ui/Form';
 import DataField from '../DataField';
 import styles from './styles/SchemeSettingsSelect.scss';
