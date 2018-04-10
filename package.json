@@ -16,7 +16,7 @@
     "clipboard": "^1.7",
     "dataframe": "^2.0.1",
     "debug": "^3.1.0",
-    "material-ui": "^1.0.0-beta.40",
+    "material-ui": "^1.0.0-beta.41",
     "material-ui-icons": "^1.0.0-beta.36",
     "moment": "^2.22.0",
     "pouchdb-adapter-http": "6.3.4",
