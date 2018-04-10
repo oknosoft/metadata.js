@@ -141,6 +141,29 @@ class DataObj extends MDNRComponent {
     return (_obj && _obj.presentation) || _meta.obj_presentation || _meta.synonym;
   }
 
+  renderItems(items) {
+    const {props: {_mgr, classes}, state: {_obj, _meta}} = this;
+
+    return items.map((item, index) => {
+
+      if(Array.isArray(item)) {
+        return this.renderItems(item);
+      }
+
+      const {element, fld, ...props} = item;
+
+      if(element === 'DataField') {
+        return <DataField key={index} _obj={_obj} _fld={fld} _meta={_meta.fields[item.fld]} {...props}/>;
+      }
+
+      if(element === 'FormGroup') {
+        return <FormGroup key={index} className={classes.spaceLeft} {...props}>{this.renderItems(item.items)}</FormGroup>;
+      }
+
+      return <div key={index}>Не реализовано в текущей версии</div>;
+    });
+  }
+
   render() {
     const {props: {_mgr, classes}, state: {_obj, _meta}, context, _handlers} = this;
     const toolbar_props = Object.assign({
@@ -154,10 +177,13 @@ class DataObj extends MDNRComponent {
     return _obj ?
       [
         <DataObjToolbar key="toolbar" {...toolbar_props} />,
-        <FormGroup key="data" className={classes.spaceLeft}>
-          {this.renderFields()}
-          {this.renderTabularSections()}
-        </FormGroup>
+        _meta.form && _meta.form.obj ?
+          this.renderItems(_meta.form.obj.items)
+          :
+          <FormGroup key="data" className={classes.spaceLeft}>
+            {this.renderFields()}
+            {this.renderTabularSections()}
+          </FormGroup>
       ]
       :
       <LoadingMessage/>;
