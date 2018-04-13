@@ -775,40 +775,44 @@ export class RefDataManager extends DataManager{
 					cmd.form.selection.fields.forEach(function (fld) {
 						flds.push(fld);
 					});
-
-				}else if(t instanceof DocManager){
+				}
+				else if(t instanceof DocManager){
 					flds.push("posted");
 					flds.push("date");
 					flds.push("number_doc");
-
-				}else{
-
-					if(cmd.hierarchical && cmd.group_hierarchy)
-						flds.push("is_folder");
-					else
-						flds.push("0 as is_folder");
-
-					if(t instanceof ChartOfAccountManager){
-						flds.push("id");
-						flds.push("name as presentation");
-
-					}else if(cmd.main_presentation_name)
-						flds.push("name as presentation");
-
-					else{
-						if(cmd["code_length"])
-							flds.push("id as presentation");
-						else
-							flds.push("'...' as presentation");
-					}
-
-					if(cmd.has_owners)
-						flds.push("owner");
-
-					if(cmd.code_length)
-						flds.push("id");
-
 				}
+				else{
+          if(cmd.hierarchical && cmd.group_hierarchy) {
+            flds.push('is_folder');
+          }
+          else {
+            flds.push('0 as is_folder');
+          }
+
+          if(t instanceof ChartOfAccountManager) {
+            flds.push('id');
+            flds.push('name as presentation');
+          }
+          else if(cmd.main_presentation_name) {
+            flds.push('name as presentation');
+          }
+          else {
+            if(cmd['code_length']) {
+              flds.push("id as presentation");
+            }
+            else {
+              flds.push("'...' as presentation");
+            }
+          }
+
+          if(cmd.has_owners) {
+            flds.push('owner');
+          }
+
+          if(cmd.code_length) {
+            flds.push("id");
+          }
+        }
 
 				flds.forEach(fld => {
 					if(fld.indexOf(" as ") != -1)
@@ -846,15 +850,15 @@ export class RefDataManager extends DataManager{
 
 				if(t instanceof ChartOfAccountManager){
 					s = " WHERE (" + (filter ? 0 : 1);
-
-				}else if(cmd["hierarchical"]){
+				}
+				else if(cmd["hierarchical"]){
 					if(cmd.has_owners)
 						s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" +
 							(owner == utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 					else
 						s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" + (filter ? 0 : 1);
-
-				}else{
+				}
+				else{
 					if(cmd.has_owners)
 						s = " WHERE (" + (owner == utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 					else
@@ -863,10 +867,10 @@ export class RefDataManager extends DataManager{
 
 				if(t.sql_selection_where_flds){
 					s += t.sql_selection_where_flds(filter);
-
-				}else if(t instanceof DocManager)
-					s += " OR _t_.number_doc LIKE '" + filter + "'";
-
+				}
+				else if(t instanceof DocManager){
+          s += " OR _t_.number_doc LIKE '" + filter + "'";
+        }
 				else{
 					if(cmd["main_presentation_name"] || t instanceof ChartOfAccountManager)
 						s += " OR _t_.name LIKE '" + filter + "'";
@@ -928,10 +932,10 @@ export class RefDataManager extends DataManager{
                         const folders = [];
                         (Array.isArray(val) ? val : [val]).forEach((val) => {
                           const folder = vmgr.get(val, true);
-                          if(folder && folder.is_folder) {
+                          if(folder) {
                             if(folders.indexOf(folder) === -1){
                               folders.push(folder);
-                              folder._children().forEach((child) => folders.indexOf(child) === -1 && folders.push(child));
+                              folder.is_folder && folder._children().forEach((child) => folders.indexOf(child) === -1 && folders.push(child));
                             }
                           }
                         });
@@ -1127,35 +1131,44 @@ export class RefDataManager extends DataManager{
 		}
 
 
-		if(action == "create_table")
-			res = sql_create();
+    if(action == 'create_table') {
+      res = sql_create();
+    }
+    else if(['insert', 'update', 'replace'].indexOf(action) != -1) {
+      res[t.table_name] = sql_update();
+    }
+    else if(action == 'select') {
+      res = 'SELECT * FROM `' + t.table_name + '` WHERE ref = ?';
+    }
+    else if(action == 'select_all') {
+      res = 'SELECT * FROM `' + t.table_name + '`';
+    }
+    else if(action == 'delete') {
+      res = 'DELETE FROM `' + t.table_name + '` WHERE ref = ?';
+    }
+    else if(action == 'drop') {
+      res = 'DROP TABLE IF EXISTS `' + t.table_name + '`';
+    }
+    else if(action == 'get_tree') {
+      res = 'SELECT ref, parent, name as presentation FROM `' + t.table_name + '`';
+      if(!attr.filter || attr.filter.is_folder) {
+        res += ' WHERE is_folder ';
+        if(attr.filter && attr.filter.ref) {
+          res += `and ref in (${attr.filter.ref.in.map(v => `"${v.ref}"`).join(',')})`;
+        }
+      }
+      else if(attr.filter && attr.filter.ref) {
+        if(attr.filter && attr.filter.ref) {
+          res += ` WHERE ref in (${attr.filter.ref.in.map(v => `"${v.ref}"`).join(',')})`;
+        }
+      }
+      res += ' order by parent, name';
+    }
+    else if(action == 'get_selection') {
+      res = sql_selection();
+    }
 
-		else if(["insert", "update", "replace"].indexOf(action) != -1)
-			res[t.table_name] = sql_update();
-
-		else if(action == "select")
-			res = "SELECT * FROM `"+t.table_name+"` WHERE ref = ?";
-
-		else if(action == "select_all")
-			res = "SELECT * FROM `"+t.table_name+"`";
-
-		else if(action == "delete")
-			res = "DELETE FROM `"+t.table_name+"` WHERE ref = ?";
-
-		else if(action == "drop")
-			res = "DROP TABLE IF EXISTS `"+t.table_name+"`";
-
-		else if(action == "get_tree"){
-			if(!attr.filter || attr.filter.is_folder)
-				res = "SELECT ref, parent, name as presentation FROM `" + t.table_name + "` WHERE is_folder order by parent, name";
-			else
-				res = "SELECT ref, parent, name as presentation FROM `" + t.table_name + "` order by parent, name";
-		}
-
-		else if(action == "get_selection")
-			res = sql_selection();
-
-		return res;
+    return res;
 	}
 
   /**

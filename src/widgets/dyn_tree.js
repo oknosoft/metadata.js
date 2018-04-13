@@ -2,7 +2,7 @@
  * ### Динамическое дерево иерархического справочника
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- * 
+ *
  * @module  widgets
  * @submodule wdg_dyn_tree
  * @requires common
@@ -25,15 +25,11 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 	if(this.setCollapsedText)
 		this.setCollapsedText("Дерево");
 
-	if(!filter)
-		filter = {is_folder: true};
+  if(!filter) {
+    filter = {is_folder: true};
+  }
 
-	var tree = this.attachTreeView();
-
-	// tree.setImagePath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
-	// tree.setIconsPath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
-	// if($p.job_prm.device_type == "desktop")
-	// 	tree.enableKeyboardNavigation(true);
+  var tree = this.attachTreeView();
 
 	tree.__define({
 		/**

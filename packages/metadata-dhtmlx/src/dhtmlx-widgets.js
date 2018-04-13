@@ -194,44 +194,72 @@ export default ($p) => {
 		const mgr = this;
 		const {iface, record_log, wsql} = this._owner.$p;
 
-		function request() {
+    function request() {
 
-			if (typeof attr.custom_selection == 'function') {
-				return attr.custom_selection(attr);
+      if(typeof attr.custom_selection == 'function') {
+        return attr.custom_selection(attr);
+      }
+      else if(mgr.cachable == 'ram') {
 
-			} else if (mgr.cachable == 'ram') {
+        // если переопределён get_option_list, фильтруем
+        let option_list = Promise.resolve();
+        if(mgr.get_option_list !== mgr.constructor.prototype.get_option_list) {
+          const filter = {};
+          if(attr.action !== 'get_tree') {
+            Object.assign(filter, attr.filter);
+          }
+          filter._top = 1000;
+          option_list = mgr.get_option_list(filter)
+            .then((list) => {
+              if(attr.action === 'get_tree') {
+                const set = new Set();
+                list.forEach((v) => {
+                  for(const parent of mgr.get(v.value)._parents()) {
+                    set.add(parent);
+                  }
+                });
+                attr.filter.ref = {in: Array.from(set)};
+              }
+              else {
+                attr.selection.push({ref: {in: list.map((v) => v.value)}});
+              }
+            });
+        }
 
-				// запрос к alasql
-				if (attr.action == 'get_tree')
-					return wsql.alasql.promise(mgr.get_sql_struct(attr), [])
-						.then(iface.data_to_tree);
+        // запрос к alasql
+        if(attr.action == 'get_tree') {
+          return option_list.then(() => wsql.alasql.promise(mgr.get_sql_struct(attr), []))
+            .then(iface.data_to_tree);
+        }
+        else if(attr.action == 'get_selection') {
+          return option_list.then(() => wsql.alasql.promise(mgr.get_sql_struct(attr), []))
+            .then(data => iface.data_to_grid.call(mgr, data, attr));
+        }
+      }
+      else if(mgr.cachable.indexOf('doc') == 0) {
 
-				else if (attr.action == 'get_selection')
-					return wsql.alasql.promise(mgr.get_sql_struct(attr), [])
-						.then(data => iface.data_to_grid.call(mgr, data, attr));
+        // todo: запрос к pouchdb
+        if(attr.action == 'get_tree') {
+          return mgr.adapter.get_tree(mgr, attr);
+        }
+        else if(attr.action == 'get_selection') {
+          return mgr.adapter.get_selection(mgr, attr);
+        }
+      }
+      else {
 
-			} else if (mgr.cachable.indexOf('doc') == 0) {
+        // запрос к серверу по сети
+        if(attr.action == 'get_tree') {
+          return mgr.rest_tree(attr);
+        }
+        else if(attr.action == 'get_selection') {
+          return mgr.rest_selection(attr);
+        }
 
-				// todo: запрос к pouchdb
-				if (attr.action == 'get_tree')
-					return mgr.adapter.get_tree(mgr, attr);
+      }
+    }
 
-				else if (attr.action == 'get_selection')
-					return mgr.adapter.get_selection(mgr, attr);
-
-			} else {
-
-				// запрос к серверу по сети
-				if (attr.action == 'get_tree')
-					return mgr.rest_tree(attr);
-
-				else if (attr.action == 'get_selection')
-					return mgr.rest_selection(attr);
-
-			}
-		}
-
-		function to_grid(res) {
+    function to_grid(res) {
 
 			return new Promise(function (resolve, reject) {
 
@@ -1078,7 +1106,7 @@ $p.iface.ODropdownList = ODropdownList;
  * ### Динамическое дерево иерархического справочника
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- * 
+ *
  * @module  widgets
  * @submodule wdg_dyn_tree
  * @requires common
@@ -4248,16 +4276,18 @@ DataProcessorsManager.prototype.form_rep = function(pwnd, attr) {
  */
 DataManager.prototype.form_selection = function(pwnd, attr){
 
-	if(!pwnd)
-		pwnd = attr && attr.pwnd ? attr.pwnd : {};
+  if(!pwnd) {
+    pwnd = attr && attr.pwnd ? attr.pwnd : {};
+  }
 
-	if(!attr && !(pwnd instanceof dhtmlXCellObject)){
+  if(!attr && !(pwnd instanceof dhtmlXCellObject)){
 		attr = pwnd;
 		pwnd = {};
 	}
 
-	if(!attr)
-		attr = {};
+  if(!attr) {
+    attr = {};
+  }
 
 
 	var _mgr = this,
@@ -4460,34 +4490,67 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			cell_tree.setWidth('220');
 			cell_tree.hideHeader();
 
-			tree = wnd.elmnts.tree = cell_tree.attachDynTree(_mgr, null, function(){
-				setTimeout(function(){
-					if(grid && grid.reload)
-						grid.reload();
-				}, 20);
-			});
-			tree.attachEvent("onSelect", function(id, mode){	// довешиваем обработчик на дерево
-				if(!mode)
-					return;
-				if(this.do_not_reload)
-					delete this.do_not_reload;
-				else
-					setTimeout(function(){
-						if(grid && grid.reload)
-							grid.reload();
-					}, 20);
-			});
-			tree.attachEvent("onDblClick", function(id){
+			const filter = {is_folder: true};
+      const {selection} = get_filter(0, 1000);
+      previous_filter = {};
+      if(Array.isArray(selection)) {
+        const set = new Set();
+        for (const sel of selection) {
+          for (let key in sel) {
+            if(key === 'ref') {
+              const cmp = sel[key].in ? 'in' : (sel[key].inh ? 'inh' : '')
+              if(cmp) {
+                sel[key][cmp].forEach((v) => {
+                  v.is_folder && set.add(v);
+                  for (const elm of v._parents()) {
+                    set.add(elm);
+                  }
+                  for (const elm of v._children(true)) {
+                    set.add(elm);
+                  }
+                });
+              }
+            }
+          }
+        }
+        if(set.size) {
+          filter.ref = {in: Array.from(set)};
+        }
+      }
+      tree = wnd.elmnts.tree = cell_tree.attachDynTree(_mgr, filter, function(){
+        setTimeout(function () {
+          if(grid && grid.reload) {
+            grid.reload();
+          }
+        }, 20);
+      });
+      tree.attachEvent('onSelect', function (id, mode) {	// довешиваем обработчик на дерево
+        if(!mode) {
+          return;
+        }
+        if(this.do_not_reload) {
+          delete this.do_not_reload;
+        }
+        else {
+          setTimeout(function () {
+            if(grid && grid.reload) {
+              grid.reload();
+            }
+          }, 20);
+        }
+      });
+      tree.attachEvent("onDblClick", function(id){
 				select(id);
 			});
-
-		}else{
-			cell_grid = wnd;
-			setTimeout(function(){
-				if(grid && grid.reload)
-					grid.reload();
-			}, 20);
 		}
+		else{
+			cell_grid = wnd;
+      setTimeout(function () {
+        if(grid && grid.reload) {
+          grid.reload();
+        }
+      }, 20);
+    }
 
 		// настройка грида
 		grid = wnd.elmnts.grid = cell_grid.attachGrid();
@@ -4498,49 +4561,56 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		grid.attachEvent("onXLE", function(){cell_grid.progressOff(); });
 		grid.attachEvent("onXLS", function(){cell_grid.progressOn(); });
 		grid.attachEvent("onDynXLS", function(start,count){
-			var filter = get_filter(start,count);
-			if(!filter)
-				return;
-			_mgr.sync_grid(filter, grid);
-			return false;
-		});
+      var filter = get_filter(start, count);
+      if(!filter) {
+        return;
+      }
+      _mgr.sync_grid(filter, grid);
+      return false;
+    });
 		grid.attachEvent("onRowDblClicked", function(rId, cInd){
-			if(tree && tree.items[rId]){
-				tree.selectItem(rId);
-				var pid = tree.getParentId(rId);
-				if(pid && pid != $p.utils.blank.guid)
-					tree.openItem(pid);
-			}else
-				select(rId);
-		});
+      if(tree && tree.items[rId]) {
+        tree.selectItem(rId);
+        var pid = tree.getParentId(rId);
+        if(pid && pid != $p.utils.blank.guid) {
+          tree.openItem(pid);
+        }
+      }
+      else {
+        select(rId);
+      }
+    });
 
-		if(attr.smart_rendering){
-			grid.enableSmartRendering(true, 50);
-		}else{
-			grid.setPagingWTMode(true,true,true,[20,30,60]);
-			grid.enablePaging(true, 30, 8, _mgr.class_name.replace(".", "_") + "_select_recinfoArea");
-			grid.setPagingSkin("toolbar", dhtmlx.skin);
-		}
+    if(attr.smart_rendering) {
+      grid.enableSmartRendering(true, 50);
+    }
+    else {
+      grid.setPagingWTMode(true, true, true, [20, 30, 60]);
+      grid.enablePaging(true, 30, 8, _mgr.class_name.replace('.', '_') + '_select_recinfoArea');
+      grid.setPagingSkin('toolbar', dhtmlx.skin);
+    }
 
-		if($p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper")
-			grid.enableMultiselect(true);
+    if($p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == 'oper') {
+      grid.enableMultiselect(true);
+    }
 
-		// эту функцию будем вызывать снаружи, чтобы перечитать данные
+    // эту функцию будем вызывать снаружи, чтобы перечитать данные
 		grid.reload = function(){
 
 			var filter = get_filter();
-			if(!filter)
-				return Promise.resolve();
+      if(!filter) {
+        return Promise.resolve();
+      }
 
-			cell_grid.progressOn();
+      cell_grid.progressOn();
 			grid.clearAll();
 
 			return _mgr.sync_grid(filter, grid)
 				.then(function(xml){
 					if(typeof xml === "object"){
 						$p.msg.check_soap_result(xml);
-
-					}else if(!grid_inited){
+					}
+					else if(!grid_inited){
 						if(filter.initial_value){
 							var xpos = xml.indexOf("set_parent"),
 								xpos2 = xml.indexOf("'>", xpos),
@@ -4561,17 +4631,20 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 						grid.enableAutoWidth(true, 1200, 600);
 						grid.setSizes();
 						grid_inited = true;
-						if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == "desktop")
-							wnd.elmnts.filter.input_filter.focus();
+            if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == 'desktop') {
+              wnd.elmnts.filter.input_filter.focus();
+            }
 
-						if(attr.on_grid_inited)
-							attr.on_grid_inited();
-					}
+            if(attr.on_grid_inited) {
+              attr.on_grid_inited();
+            }
+          }
 
-					if (a_direction && grid_inited)
-						grid.setSortImgState(true, s_col, a_direction);
+          if(a_direction && grid_inited) {
+            grid.setSortImgState(true, s_col, a_direction);
+          }
 
-					cell_grid.progressOff();
+          cell_grid.progressOff();
 
 				});
 		};
@@ -4788,35 +4861,41 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 * @return {*|{value, enumerable}}
 	 */
 	function get_filter(start, count){
-		var filter = wnd.elmnts.filter.get_filter()
+	  const {grid, tree} = wnd.elmnts;
+    const filter = wnd.elmnts.filter.get_filter()
 				._mixin({
 					action: "get_selection",
 					metadata: _meta,
 					class_name: _mgr.class_name,
-					order_by: wnd.elmnts.grid.columnIds[s_col] || s_col,
+					order_by: (grid && grid.columnIds[s_col]) || s_col,
 					direction: a_direction,
-					start: start || ((wnd.elmnts.grid.currentPage || 1)-1)*wnd.elmnts.grid.rowsBufferOutSize,
-					count: count || wnd.elmnts.grid.rowsBufferOutSize,
+          start: start || (grid ? ((grid.currentPage || 1) - 1) * grid.rowsBufferOutSize : 0),
+					count: count || (grid ? grid.rowsBufferOutSize : 50),
 					get_header: (previous_filter.get_header == undefined)
 				}),
-			tparent = has_tree ? wnd.elmnts.tree.getSelectedId() : null;
+			tparent = (has_tree && tree) ? tree.getSelectedId() : null;
 
-		if(attr.smart_rendering)
-			filter.smart_rendering = true;
+    if(attr.smart_rendering) {
+      filter.smart_rendering = true;
+    }
 
-		if(attr.date_from && !filter.date_from)
-			filter.date_from = attr.date_from;
+    if(attr.date_from && !filter.date_from) {
+      filter.date_from = attr.date_from;
+    }
 
-		if(attr.date_till && !filter.date_till)
-			filter.date_till = attr.date_till;
+    if(attr.date_till && !filter.date_till) {
+      filter.date_till = attr.date_till;
+    }
 
-		if(attr.initial_value)
-			filter.initial_value = attr.initial_value;
+    if(attr.initial_value) {
+      filter.initial_value = attr.initial_value;
+    }
 
-		if(attr.custom_selection)
-			filter.custom_selection = attr.custom_selection;
+    if(attr.custom_selection) {
+      filter.custom_selection = attr.custom_selection;
+    }
 
-		if(attr.selection){
+    if(attr.selection){
 			if(!filter.selection)
 				filter.selection = attr.selection;
 
@@ -4839,15 +4918,17 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			//}
 		}
 
-		if(attr.owner && !filter.owner)
-			filter.owner = attr.owner;
+    if(attr.owner && !filter.owner) {
+      filter.owner = attr.owner;
+    }
 
-		filter.parent = ((tparent  || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
-		if(has_tree && !filter.parent)
-			filter.parent = $p.utils.blank.guid;
+    filter.parent = ((tparent  || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
+    if(has_tree && !filter.parent) {
+      filter.parent = $p.utils.blank.guid;
+    }
 
 
-		for(var f in filter){
+    for(var f in filter){
 			if(previous_filter[f] != filter[f]){
 				previous_filter = filter;
 				return filter;
