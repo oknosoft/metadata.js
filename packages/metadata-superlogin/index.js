@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.16-beta.56, built:2018-04-10
+ metadata-superlogin v2.0.16-beta.56, built:2018-04-16
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -16,6 +16,26 @@ var adapter = (constructor) => {
   const {classes} = constructor;
   classes.AdapterPouch = class AdapterPouchSuperlogin extends classes.AdapterPouch {
     after_init() {
+      const {props, local, remote} = this;
+      const opts = {skip_setup: true, adapter: 'http'};
+      props.autologin.forEach((name) => {
+        if(!remote[name]) {
+          remote[name] = new PouchDB(super.dbpath(name), opts);
+          if(name === 'ram') {
+            this.run_sync(name)
+              .then(() => {
+                if(local._loading) {
+                  return new Promise((resolve, reject) => {
+                    this.once('pouch_data_loaded', resolve);
+                  });
+                }
+                else if(!props.user_node) {
+                  return this.call_data_loaded();
+                }
+              });
+          }
+        }
+      });
     }
     log_in(username, password) {
       const {props, local, remote, $p} = this;

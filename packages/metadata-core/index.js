@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.56, built:2018-04-13
+ metadata-core v2.0.16-beta.56, built:2018-04-16
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1935,10 +1935,10 @@ class RefDataManager extends DataManager{
                         const folders = [];
                         (Array.isArray(val) ? val : [val]).forEach((val) => {
                           const folder = vmgr.get(val, true);
-                          if(folder && folder.is_folder) {
+                          if(folder) {
                             if(folders.indexOf(folder) === -1){
                               folders.push(folder);
-                              folder._children().forEach((child) => folders.indexOf(child) === -1 && folders.push(child));
+                              folder.is_folder && folder._children().forEach((child) => folders.indexOf(child) === -1 && folders.push(child));
                             }
                           }
                         });
