@@ -10,11 +10,11 @@ import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
 import IconButton from 'material-ui/IconButton';
-import NotificationsIcon from 'material-ui-icons/Notifications';
-import NotificationsIconActive from 'material-ui-icons/NotificationsActive';
-import NotificationsIconNone from 'material-ui-icons/NotificationsNone';
+import NotificationsIcon from '@material-ui/icons/Notifications';
+import NotificationsIconActive from '@material-ui/icons/NotificationsActive';
+import NotificationsIconNone from '@material-ui/icons/NotificationsNone';
 import Menu, {MenuItem} from 'material-ui/Menu';
-import MoreVertIcon from 'material-ui-icons/MoreVert';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Select from 'material-ui/Select';
 import classnames from 'classnames';
 

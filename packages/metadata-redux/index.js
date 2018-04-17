@@ -487,6 +487,33 @@ function offline(state) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = mapDispatchToProps;
+
+var _actions_iface = __webpack_require__(2);
+
+var _reactRouterRedux = __webpack_require__(9);
+
+function mapDispatchToProps(dispatch) {
+  return {
+    handleIfaceState: function handleIfaceState(state) {
+      return dispatch((0, _actions_iface.iface_state)(state));
+    },
+    handleNavigate: function handleNavigate(path) {
+      return dispatch((0, _reactRouterRedux.push)(path));
+    }
+  };
+};
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 exports.SYNC_DENIED = exports.SYNC_RESUMED = exports.SYNC_PAUSED = exports.SYNC_DATA = exports.SYNC_ERROR = exports.SYNC_START = exports.NO_DATA = exports.DATA_ERROR = exports.DATA_LOADED = exports.LOAD_START = exports.DATA_PAGE = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /**
@@ -679,33 +706,6 @@ function no_data(dbid, err) {
 }
 
 /***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = mapDispatchToProps;
-
-var _actions_iface = __webpack_require__(2);
-
-var _reactRouterRedux = __webpack_require__(9);
-
-function mapDispatchToProps(dispatch) {
-  return {
-    handleIfaceState: function handleIfaceState(state) {
-      return dispatch((0, _actions_iface.iface_state)(state));
-    },
-    handleNavigate: function handleNavigate(path) {
-      return dispatch((0, _reactRouterRedux.push)(path));
-    }
-  };
-};
-
-/***/ }),
 /* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -785,7 +785,7 @@ exports.mapStateToProps = mapStateToProps;
 
 var _reactRedux = __webpack_require__(0);
 
-var _dispatchIface = __webpack_require__(6);
+var _dispatchIface = __webpack_require__(5);
 
 var _dispatchIface2 = _interopRequireDefault(_dispatchIface);
 
@@ -833,7 +833,7 @@ module.exports = __webpack_require__(11);
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.withPrm = exports.withObj = exports.withIfaceAndMeta = exports.withNavigateAndMeta = exports.withMeta = exports.withIface = exports.ifaceMiddleware = exports.ifaceReducer = exports.ifaceActions = exports.metaMiddleware = exports.metaReducer = exports.metaActions = undefined;
+exports.dispatchIface = exports.withPrm = exports.withObj = exports.withIfaceAndMeta = exports.withNavigateAndMeta = exports.withMeta = exports.withIface = exports.ifaceMiddleware = exports.ifaceReducer = exports.ifaceActions = exports.metaMiddleware = exports.metaReducer = exports.metaActions = undefined;
 
 var _actions_meta = __webpack_require__(12);
 
@@ -883,6 +883,10 @@ var _withPrm = __webpack_require__(23);
 
 var _withPrm2 = _interopRequireDefault(_withPrm);
 
+var _dispatchIface = __webpack_require__(5);
+
+var _dispatchIface2 = _interopRequireDefault(_dispatchIface);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.metaActions = _actions_meta2.default;
@@ -897,6 +901,7 @@ exports.withNavigateAndMeta = _withNavigateAndMeta2.default;
 exports.withIfaceAndMeta = _withIfaceAndMeta2.default;
 exports.withObj = _withObj2.default;
 exports.withPrm = _withPrm2.default;
+exports.dispatchIface = _dispatchIface2.default;
 
 /***/ }),
 /* 12 */
@@ -919,7 +924,7 @@ var _actions_obj = __webpack_require__(3);
 
 var obj = _interopRequireWildcard(_actions_obj);
 
-var _actions_pouch = __webpack_require__(5);
+var _actions_pouch = __webpack_require__(6);
 
 var pouch = _interopRequireWildcard(_actions_pouch);
 
@@ -1044,7 +1049,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _actions_base = __webpack_require__(4);
 
-var _actions_pouch = __webpack_require__(5);
+var _actions_pouch = __webpack_require__(6);
 
 var _actions_auth = __webpack_require__(1);
 
@@ -1169,7 +1174,7 @@ exports.default = metaMiddleware;
 
 var _actions_auth = __webpack_require__(1);
 
-var _actions_pouch = __webpack_require__(5);
+var _actions_pouch = __webpack_require__(6);
 
 var _actions_obj = __webpack_require__(3);
 
@@ -1438,7 +1443,7 @@ var _withMeta = __webpack_require__(7);
 
 var _withMeta2 = _interopRequireDefault(_withMeta);
 
-var _dispatchIface = __webpack_require__(6);
+var _dispatchIface = __webpack_require__(5);
 
 var _dispatchIface2 = _interopRequireDefault(_dispatchIface);
 
@@ -1480,7 +1485,7 @@ var _withMeta = __webpack_require__(7);
 
 var _withIface = __webpack_require__(8);
 
-var _dispatchIface = __webpack_require__(6);
+var _dispatchIface = __webpack_require__(5);
 
 var _dispatchIface2 = _interopRequireDefault(_dispatchIface);
 

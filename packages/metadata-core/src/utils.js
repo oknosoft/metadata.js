@@ -420,6 +420,15 @@ const utils = {
 		return (this.fix_guid(v1, false) == this.fix_guid(v2, false));
 	},
 
+  /**
+   * Заменяет в ссылке минусы '_' и добавляет '_' в начало
+   * @param ref
+   * @return {string}
+   */
+  snake_ref(ref) {
+    return '_' + ref.replace(/-/g, '_');
+  },
+
 	/**
 	 * ### Читает данные из блоба
 	 * Возвращает промис с прочитанными данными

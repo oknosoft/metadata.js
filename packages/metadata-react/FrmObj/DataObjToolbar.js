@@ -6,13 +6,13 @@ import Typography from 'material-ui/Typography';
 import IconButton from 'material-ui/IconButton';
 import Menu, {MenuItem} from 'material-ui/Menu';
 
-import SaveIcon from 'material-ui-icons/Save';
-import SendIcon from 'material-ui-icons/Send';
-import RemoveIcon from 'material-ui-icons/Delete';
-import CloseIcon from 'material-ui-icons/Close';
-import MoreVertIcon from 'material-ui-icons/MoreVert';
-import PrintIcon from 'material-ui-icons/Print';
-import AttachIcon from 'material-ui-icons/AttachFile';
+import SaveIcon from '@material-ui/icons/Save';
+import SendIcon from '@material-ui/icons/Send';
+import RemoveIcon from '@material-ui/icons/Delete';
+import CloseIcon from '@material-ui/icons/Close';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+import PrintIcon from '@material-ui/icons/Print';
+import AttachIcon from '@material-ui/icons/AttachFile';
 
 import withStyles from '../Header/toolbar';
 import classnames from 'classnames';

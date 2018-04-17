@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.55, built:2018-04-05
+ metadata-pouchdb v2.0.16-beta.56, built:2018-04-16
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -157,6 +157,7 @@ function adapter({AbstracrAdapter}) {
         direct: job_prm.hasOwnProperty('couch_direct') ? job_prm.couch_direct : wsql.get_user_param('couch_direct', 'boolean'),
         user_node: job_prm.user_node,
         noreplicate: job_prm.noreplicate,
+        autologin: job_prm.autologin || [],
       });
       if(props.path && props.path.indexOf('http') != 0 && typeof location != 'undefined') {
         props.path = location.protocol + '//' + location.host + props.path;
@@ -187,7 +188,7 @@ function adapter({AbstracrAdapter}) {
           }
         }
       }
-      this.after_init( props.user_node ? bases : ['ram']);
+      this.after_init( props.user_node ? bases : (props.autologin.length ? props.autologin : ['ram']));
     }
     after_init(bases) {
       const {props, remote, $p: {md}} = this;
@@ -512,6 +513,9 @@ function adapter({AbstracrAdapter}) {
     }
     run_sync(id) {
       const {local, remote, $p: {wsql, job_prm, record_log}, props} = this;
+      if(local.sync[id]) {
+        return Promise.resolve(id);
+      }
       const {_push_only, _user} = props;
       const db_local = local[id];
       const db_remote = remote[id];
@@ -542,7 +546,7 @@ function adapter({AbstracrAdapter}) {
           if(!rinfo) {
             return;
           }
-          if(!_push_only && rinfo.data_size > (job_prm.data_size_sync_limit || 120000000)) {
+          if(!_push_only && rinfo.data_size > (job_prm.data_size_sync_limit || 2e8)) {
             this.emit('pouch_sync_error', id, {data_size: rinfo.data_size});
             props.direct = true;
             wsql.set_user_param('couch_direct', true);

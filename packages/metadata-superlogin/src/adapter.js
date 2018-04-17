@@ -13,10 +13,31 @@ export default (constructor) => {
   classes.AdapterPouch = class AdapterPouchSuperlogin extends classes.AdapterPouch {
 
     /**
-     * Cерверные на старте создавать не надо
+     * Cерверные на старте создавать не надо, за исключением autologin
      */
     after_init() {
+      const {props, local, remote} = this;
+      const opts = {skip_setup: true, adapter: 'http'};
 
+      props.autologin.forEach((name) => {
+        if(!remote[name]) {
+          remote[name] = new PouchDB(super.dbpath(name), opts);
+          if(name === 'ram') {
+            this.run_sync(name)
+              .then(() => {
+                // широковещательное оповещение об окончании загрузки локальных данных
+                if(local._loading) {
+                  return new Promise((resolve, reject) => {
+                    this.once('pouch_data_loaded', resolve);
+                  });
+                }
+                else if(!props.user_node) {
+                  return this.call_data_loaded();
+                }
+              });
+          }
+        }
+      });
     }
 
     /**
@@ -55,7 +76,7 @@ export default (constructor) => {
           }
         }
 
-        // создаём базы
+        // создаём недостающие базы
         super.after_init();
 
         // сохраняем имя пользователя в localstorage

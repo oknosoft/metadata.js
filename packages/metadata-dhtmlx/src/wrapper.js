@@ -194,44 +194,72 @@ export default ($p) => {
 		const mgr = this;
 		const {iface, record_log, wsql} = this._owner.$p;
 
-		function request() {
+    function request() {
 
-			if (typeof attr.custom_selection == 'function') {
-				return attr.custom_selection(attr);
+      if(typeof attr.custom_selection == 'function') {
+        return attr.custom_selection(attr);
+      }
+      else if(mgr.cachable == 'ram') {
 
-			} else if (mgr.cachable == 'ram') {
+        // если переопределён get_option_list, фильтруем
+        let option_list = Promise.resolve();
+        if(mgr.get_option_list !== mgr.constructor.prototype.get_option_list) {
+          const filter = {};
+          if(attr.action !== 'get_tree') {
+            Object.assign(filter, attr.filter);
+          }
+          filter._top = 1000;
+          option_list = mgr.get_option_list(filter)
+            .then((list) => {
+              if(attr.action === 'get_tree') {
+                const set = new Set();
+                list.forEach((v) => {
+                  for(const parent of mgr.get(v.value)._parents()) {
+                    set.add(parent);
+                  }
+                });
+                attr.filter.ref = {in: Array.from(set)};
+              }
+              else {
+                attr.selection.push({ref: {in: list.map((v) => v.value)}});
+              }
+            });
+        }
 
-				// запрос к alasql
-				if (attr.action == 'get_tree')
-					return wsql.alasql.promise(mgr.get_sql_struct(attr), [])
-						.then(iface.data_to_tree);
+        // запрос к alasql
+        if(attr.action == 'get_tree') {
+          return option_list.then(() => wsql.alasql.promise(mgr.get_sql_struct(attr), []))
+            .then(iface.data_to_tree);
+        }
+        else if(attr.action == 'get_selection') {
+          return option_list.then(() => wsql.alasql.promise(mgr.get_sql_struct(attr), []))
+            .then(data => iface.data_to_grid.call(mgr, data, attr));
+        }
+      }
+      else if(mgr.cachable.indexOf('doc') == 0) {
 
-				else if (attr.action == 'get_selection')
-					return wsql.alasql.promise(mgr.get_sql_struct(attr), [])
-						.then(data => iface.data_to_grid.call(mgr, data, attr));
+        // todo: запрос к pouchdb
+        if(attr.action == 'get_tree') {
+          return mgr.adapter.get_tree(mgr, attr);
+        }
+        else if(attr.action == 'get_selection') {
+          return mgr.adapter.get_selection(mgr, attr);
+        }
+      }
+      else {
 
-			} else if (mgr.cachable.indexOf('doc') == 0) {
+        // запрос к серверу по сети
+        if(attr.action == 'get_tree') {
+          return mgr.rest_tree(attr);
+        }
+        else if(attr.action == 'get_selection') {
+          return mgr.rest_selection(attr);
+        }
 
-				// todo: запрос к pouchdb
-				if (attr.action == 'get_tree')
-					return mgr.adapter.get_tree(mgr, attr);
+      }
+    }
 
-				else if (attr.action == 'get_selection')
-					return mgr.adapter.get_selection(mgr, attr);
-
-			} else {
-
-				// запрос к серверу по сети
-				if (attr.action == 'get_tree')
-					return mgr.rest_tree(attr);
-
-				else if (attr.action == 'get_selection')
-					return mgr.rest_selection(attr);
-
-			}
-		}
-
-		function to_grid(res) {
+    function to_grid(res) {
 
 			return new Promise(function (resolve, reject) {
 

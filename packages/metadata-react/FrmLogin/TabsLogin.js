@@ -10,11 +10,11 @@ import {FormGroup} from 'material-ui/Form';
 import {DialogActions} from 'material-ui/Dialog';
 import Helmet from 'react-helmet';
 import Typography from 'material-ui/Typography';
-import IconError from 'material-ui-icons/ErrorOutline';
+import IconError from '@material-ui/icons/ErrorOutline';
 import Input, { InputLabel, InputAdornment } from 'material-ui/Input';
 import { FormControl } from 'material-ui/Form';
-import Visibility from 'material-ui-icons/Visibility';
-import VisibilityOff from 'material-ui-icons/VisibilityOff';
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import {CircularProgress} from 'material-ui/Progress';
 import classnames from 'classnames';
 

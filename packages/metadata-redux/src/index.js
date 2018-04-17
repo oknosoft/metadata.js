@@ -13,6 +13,8 @@ import withIfaceAndMeta from './withIfaceAndMeta';
 import withObj from './withObj';
 import withPrm from './withPrm';
 
+import dispatchIface from './dispatchIface';
+
 export {
   metaActions,
   metaReducer,
@@ -28,4 +30,6 @@ export {
   withIfaceAndMeta,
   withObj,
   withPrm,
+
+  dispatchIface,
 };

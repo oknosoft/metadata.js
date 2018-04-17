@@ -919,6 +919,21 @@ export class CatObj extends DataObj {
   }
 
   /**
+   * ### Родители
+   * Возвращает массив родителей, в иерархии которых находится текущий элемент
+   * @private
+   */
+  _parents() {
+    const res = [];
+    let {parent} = this;
+    while (parent && !parent.empty()) {
+      res.push(parent);
+      parent = parent.parent;
+    }
+    return res;
+  }
+
+  /**
    * ### В иерархии
    * Выясняет, находится ли текущий объект в указанной группе
    *

@@ -6,13 +6,13 @@ import Typography from 'material-ui/Typography';
 import IconButton from 'material-ui/IconButton';
 import Menu, {MenuItem} from 'material-ui/Menu';
 
-import AddIcon from 'material-ui-icons/AddCircleOutline';
-import RemoveIcon from 'material-ui-icons/Delete';
-import EditIcon from 'material-ui-icons/Edit';
-import MoreVertIcon from 'material-ui-icons/MoreVert';
-import PrintIcon from 'material-ui-icons/Print';
-import AttachIcon from 'material-ui-icons/AttachFile';
-import SelectIcon from 'material-ui-icons/PlaylistAddCheck';
+import AddIcon from '@material-ui/icons/AddCircleOutline';
+import RemoveIcon from '@material-ui/icons/Delete';
+import EditIcon from '@material-ui/icons/Edit';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+import PrintIcon from '@material-ui/icons/Print';
+import AttachIcon from '@material-ui/icons/AttachFile';
+import SelectIcon from '@material-ui/icons/PlaylistAddCheck';
 
 import SchemeSettingsButtons from '../SchemeSettings/SchemeSettingsButtons';
 import DateRange from '../SchemeSettings/DateRange';

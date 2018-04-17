@@ -14,9 +14,9 @@ import Paper from 'material-ui/Paper';
 import Divider from 'material-ui/Divider';
 import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
-import OpenInNew from 'material-ui-icons/OpenInNew';
-import AddIcon from 'material-ui-icons/AddCircleOutline';
-import TitleIcon from 'material-ui-icons/Title';
+import OpenInNew from '@material-ui/icons/OpenInNew';
+import AddIcon from '@material-ui/icons/AddCircleOutline';
+import TitleIcon from '@material-ui/icons/Title';
 
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
