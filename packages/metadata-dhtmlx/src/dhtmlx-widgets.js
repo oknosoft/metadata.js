@@ -1129,15 +1129,11 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 	if(this.setCollapsedText)
 		this.setCollapsedText("Дерево");
 
-	if(!filter)
-		filter = {is_folder: true};
+  if(!filter) {
+    filter = {is_folder: true};
+  }
 
-	var tree = this.attachTreeView();
-
-	// tree.setImagePath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
-	// tree.setIconsPath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
-	// if($p.job_prm.device_type == "desktop")
-	// 	tree.enableKeyboardNavigation(true);
+  var tree = this.attachTreeView();
 
 	tree.__define({
 		/**
@@ -1172,6 +1168,7 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 
 	return tree;
 };
+
 /**
  * ### Визуальный компонент OCombo
  * Поле с выпадающим списком + функция выбора из списка
@@ -4290,7 +4287,7 @@ DataManager.prototype.form_selection = function(pwnd, attr){
   }
 
 
-	var _mgr = this,
+  var _mgr = this,
 		_meta = attr.metadata || _mgr.metadata(),
 		has_tree = _meta["hierarchical"] && !(_mgr instanceof ChartOfAccountManager),
 		wnd, s_col = 0, a_direction = "asc",
@@ -4501,11 +4498,15 @@ DataManager.prototype.form_selection = function(pwnd, attr){
               const cmp = sel[key].in ? 'in' : (sel[key].inh ? 'inh' : '')
               if(cmp) {
                 sel[key][cmp].forEach((v) => {
-                  v.is_folder && set.add(v);
-                  for (const elm of v._parents()) {
+                  const o = _mgr.get(v);
+                  if(!o || o.empty()) {
+                    return;
+                  }
+                  o.is_folder && set.add(o);
+                  for (const elm of o._parents()) {
                     set.add(elm);
                   }
-                  for (const elm of v._children(true)) {
+                  for (const elm of o._children(true)) {
                     set.add(elm);
                   }
                 });

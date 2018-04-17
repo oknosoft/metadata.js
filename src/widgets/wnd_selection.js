@@ -247,11 +247,15 @@ DataManager.prototype.form_selection = function(pwnd, attr){
               const cmp = sel[key].in ? 'in' : (sel[key].inh ? 'inh' : '')
               if(cmp) {
                 sel[key][cmp].forEach((v) => {
-                  v.is_folder && set.add(v);
-                  for (const elm of v._parents()) {
+                  const o = _mgr.get(v);
+                  if(!o || o.empty()) {
+                    return;
+                  }
+                  o.is_folder && set.add(o);
+                  for (const elm of o._parents()) {
                     set.add(elm);
                   }
-                  for (const elm of v._children(true)) {
+                  for (const elm of o._children(true)) {
                     set.add(elm);
                   }
                 });
