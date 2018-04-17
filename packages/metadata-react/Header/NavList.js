@@ -57,19 +57,16 @@ class NavList extends Component {
     }
   }
 
-  menuItem(item, inset) {
+  menuItem(item, ident) {
     const props = {
       button: true,
       key: this.key,
       onClick: this.handleNavigate(item.navigate, item.id),
     };
-    if(inset) {
-      props.className = this.props.classes.nested;
-    }
-    //inset={inset}
+    const {nested, bold} = this.props.classes;
     return <ListItem {...props} >
       {item.icon && <ListItemIcon>{item.icon}</ListItemIcon>}
-      <ListItemText primary={item.text}/>
+      <ListItemText disableTypography className={classnames({[nested]: ident, [bold]: item.bold})} primary={item.text}/>
     </ListItem>;
   }
 
@@ -81,7 +78,7 @@ class NavList extends Component {
     return <div key={this.key} className={list}>
       <ListItem button onClick={expander}>
         <ListItemIcon>{item.icon}</ListItemIcon>
-        <ListItemText disableTypography className={bold} primary={item.text}/>
+        <ListItemText disableTypography className={classnames({[bold]: item.bold})} primary={item.text}/>
         <ListItemSecondaryAction>
           <IconButton className={classnames(expand, {[expandOpen]: expanded})} onClick={expander}>
             <IconExpandMore/>
