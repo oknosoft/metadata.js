@@ -175,7 +175,7 @@ const utils = {
 	 * @return {Date|*}
 	 */
 	fix_date(str, strict) {
-		if (str instanceof Date || (!strict && this.is_guid(str))){
+		if (str instanceof Date || (!strict && (this.is_guid(str) || (str && (str.length === 11 || str.length === 9))))){
       return str;
     }
 		else {

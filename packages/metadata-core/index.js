@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.56, built:2018-04-17
+ metadata-core v2.0.16-beta.56, built:2018-04-18
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2896,7 +2896,7 @@ const utils = {
     });
   },
 	fix_date(str, strict) {
-		if (str instanceof Date || (!strict && this.is_guid(str))){
+		if (str instanceof Date || (!strict && (this.is_guid(str) || (str && (str.length === 11 || str.length === 9))))){
       return str;
     }
 		else {
