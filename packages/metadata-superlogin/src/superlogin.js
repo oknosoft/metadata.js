@@ -21,7 +21,7 @@ function attach($p) {
 
   // Session is an object that contains all the session information returned by SuperLogin, along with serverTimeDiff, the difference between the server clock and the local clock.
   superlogin.on('login', function (event, session) {
-
+    session = null;
   });
 
   // Message is a message that explains why the user was logged out: 'Logged out' or 'Session expired'.
@@ -38,6 +38,16 @@ function attach($p) {
   superlogin.on('link', function (event, provider) {
 
   });
+
+  superlogin.create_user = function () {
+    const session = superlogin.getSession();
+    if(session) {
+      const attr = {
+        id: session.user_id,
+      }
+      return $p.cat.users.create(attr, false, true);
+    }
+  };
 
 
   /**

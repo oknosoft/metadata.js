@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.56, built:2018-04-18
+ metadata-core v2.0.16-beta.56, built:2018-04-20
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -4435,10 +4435,15 @@ class MetaEngine {
     if (cat && cat.users) {
       user = cat.users.by_id(user_name);
       if (!user || user.empty()) {
-        cat.users.find_rows_remote({
-          _top: 1,
-          id: user_name,
-        });
+        if (superlogin) {
+          user = superlogin.create_user();
+        }
+        else {
+          cat.users.find_rows_remote({
+            _top: 1,
+            id: user_name,
+          });
+        }
       }
     }
     return user && !user.empty() ? user : null;

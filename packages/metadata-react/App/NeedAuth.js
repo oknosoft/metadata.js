@@ -8,7 +8,7 @@ import Button from 'material-ui/Button';
 import Helmet from 'react-helmet';
 import AppContent from './AppContent';
 
-const ltitle = 'Необходима авторизация';
+export const ltitle = 'Необходима авторизация';
 
 function NeedAuth(props) {
   const {handleNavigate, handleIfaceState, title} = props;

@@ -230,10 +230,16 @@ class MetaEngine {
     if (cat && cat.users) {
       user = cat.users.by_id(user_name);
       if (!user || user.empty()) {
-        cat.users.find_rows_remote({
-          _top: 1,
-          id: user_name,
-        });
+        if (superlogin) {
+          // если superlogin, всю онформацию о пользователе получаем из sl_users
+          user = superlogin.create_user();
+        }
+        else {
+          cat.users.find_rows_remote({
+            _top: 1,
+            id: user_name,
+          });
+        }
       }
     }
 

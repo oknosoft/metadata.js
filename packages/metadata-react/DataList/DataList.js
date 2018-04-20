@@ -273,10 +273,9 @@ class DataList extends MDNRComponent {
       <DataListToolbar {...toolbar_props} />,
 
       // панель настроек компоновки
-      settings_open && <AutoSizer disableHeight>
+      settings_open && <AutoSizer key="tabs" disableHeight>
         {({width}) => (
           <SchemeSettingsTabs
-            key="tabs"
             height={show_grid ? 272 : (sizes.height || 500) - 104}
             width={width}
             scheme={scheme}
@@ -287,10 +286,9 @@ class DataList extends MDNRComponent {
       </AutoSizer>,
 
       // собственно, InfiniteLoader, внутри которого MultiGrid
-      show_grid && <AutoSizer disableHeight>
+      show_grid && <AutoSizer key="infinite" disableHeight>
         {({width}) => (
           <InfiniteLoader
-            key="infinite"
             isRowLoaded={_isRowLoaded}
             loadMoreRows={_loadMoreRows}
             rowCount={rowsLoaded + DataList.LIMIT}
