@@ -29,7 +29,7 @@ class DataObj extends MDNRComponent {
 
   constructor(props, context) {
     super(props, context);
-    const {_mgr, _meta, match} = props;
+    const {_mgr, _meta} = props;
     this._handlers = {
       handleSave: this.handleSave.bind(this),
       handleSend: this.handleSend.bind(this),
@@ -38,16 +38,14 @@ class DataObj extends MDNRComponent {
       handleAttachment: this.handleAttachment.bind(this),
       handleClose: this.handleClose.bind(this),
     };
-    this.state = {_meta: _meta || _mgr.metadata()};
+    this.state = {_meta: _meta || _mgr.metadata(), _obj: null};
 
+  }
+
+  componentDidMount() {
+    const {_mgr, match} = this.props;
     _mgr.get(match.params.ref, 'promise').then((_obj) => {
-      if(this._mounted) {
-        this.setState({_obj}, () => this.shouldComponentUpdate(props));
-      }
-      else {
-        this.state._obj = _obj;
-        this.shouldComponentUpdate(props);
-      }
+      this.setState({_obj}, () => this.shouldComponentUpdate(this.props));
     });
   }
 
