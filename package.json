@@ -12,13 +12,13 @@
     "doc": "doc"
   },
   "dependencies": {
+    "@material-ui/icons": "^1.0.0-beta.42",
     "alasql": "^0.4.5",
     "clipboard": "^1.7",
     "dataframe": "^2.0.1",
     "debug": "^3.1.0",
-    "material-ui": "^1.0.0-beta.41",
-    "@material-ui/icons": "^1.0.0-beta.42",
-    "moment": "^2.22.0",
+    "material-ui": "^1.0.0-beta.42",
+    "moment": "^2.22.1",
     "pouchdb-adapter-http": "6.3.4",
     "pouchdb-adapter-idb": "6.3.4",
     "pouchdb-adapter-memory": "6.3.4",
@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
-    "babel-eslint": "^8.2.2",
+    "babel-eslint": "^8.2.3",
     "babel-loader": "^7.1.4",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-syntax-object-rest-spread": "^6.13.0",
@@ -66,12 +66,12 @@
     "react-router-dom": "^4.2.2",
     "react-router-redux": "^5.0.0-alpha.9",
     "rimraf": "^2.6.2",
-    "rollup": "^0.57.1",
-    "rollup-plugin-cleanup": "^2.0",
+    "rollup": "^0.58.1",
+    "rollup-plugin-cleanup": "^2.0.1",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^3.3.0",
     "rollup-plugin-replace": "^2.0.0",
-    "yargs": "^11.0.0",
+    "yargs": "^11.1.0",
     "yuidocjs": "^0.10"
   },
   "peerDependecies": {

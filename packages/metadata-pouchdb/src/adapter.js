@@ -317,7 +317,14 @@ function adapter({AbstracrAdapter}) {
           this.emit_async('user_log_stop', username);
         }
 
-        props._data_loaded && !props._doc_ram_loading && !props._doc_ram_loaded && this.load_doc_ram();
+        if(props._data_loaded && !props._doc_ram_loading) {
+          if(props._doc_ram_loaded) {
+            this.emit('pouch_doc_ram_loaded')
+          }
+          else {
+            this.load_doc_ram();
+          }
+        };
 
         // запускаем синхронизацию для нужных баз
         return info && this.after_log_in();
@@ -826,6 +833,9 @@ function adapter({AbstracrAdapter}) {
           // пытаемся загрузить doc_ram
           this.authorized && this.load_doc_ram();
         });
+      }
+      else if(!props._doc_ram_loaded && !props._doc_ram_loading && this.authorized) {
+        this.load_doc_ram();
       }
     }
 
