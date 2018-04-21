@@ -24,9 +24,10 @@ export function getHeaders(markdown: string) {
     headers[regexMatchs[1]] = regexMatchs[2];
   }
 
-  if (headers.components) {
+  if(headers.components) {
     headers.components = headers.components.split(', ').sort();
-  } else {
+  }
+  else {
     headers.components = [];
   }
 
@@ -34,7 +35,7 @@ export function getHeaders(markdown: string) {
 }
 
 export function getContents(markdown: string) {
-  return markdown
+  return (markdown || '')
     .replace(headerRegExp, '') // Remove header information
     .split(/^{{|}}$/gm) // Split markdown into an array, separating demos
     .filter(content => !emptyRegExp.test(content)); // Remove empty lines
@@ -42,6 +43,5 @@ export function getContents(markdown: string) {
 
 export function getTitle(markdown: string) {
   const matches = markdown.match(titleRegExp);
-
-  return matches ? matches[1] : 'Material-UI';
+  return matches ? matches[1] : 'Metadata.js';
 }

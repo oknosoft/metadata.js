@@ -77,8 +77,10 @@ class CnnSettings extends Component {
         label="Адрес Superlogin"
         InputProps={{placeholder: 'superlogin_path'}}
         helperText="URL сервера авторизации"
+        disabled={disable_settings}
         onChange={this.valueToState('superlogin_path')}
-        value={superlogin_path}/>,
+        value={superlogin_path}
+      />,
 
       <TextField
         fullWidth
@@ -89,7 +91,8 @@ class CnnSettings extends Component {
         helperText="Значение разделителя данных"
         disabled={disable_settings}
         onChange={this.valueToState('zone')}
-        value={zone}/>,
+        value={zone}
+      />,
 
       <FormGroup key="switchers">
         <FormControl>

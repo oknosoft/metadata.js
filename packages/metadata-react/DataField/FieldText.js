@@ -16,7 +16,7 @@ class FieldText extends AbstractField {
 
   render() {
     const {props, _meta, isTabular, onChange} = this;
-    const {_obj, _fld, classes, read_only, fullWidth} = props;
+    const {_obj, _fld, classes, read_only, ...other} = props;
 
     return isTabular ?
       <input
@@ -30,7 +30,6 @@ class FieldText extends AbstractField {
       :
       <TextField
         className={classes.formControl}
-        fullWidth={fullWidth}
         margin="dense"
         disabled={read_only}
         label={_meta.synonym}
@@ -38,6 +37,7 @@ class FieldText extends AbstractField {
         InputProps={{placeholder: _fld}}
         value={_obj[_fld]}
         onChange={onChange}
+        {...other}
       />;
   }
 }

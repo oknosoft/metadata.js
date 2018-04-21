@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.56, built:2018-04-20
+ metadata-core v2.0.16-beta.57, built:2018-04-21
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -190,7 +190,7 @@ const msg$1 = new I18n({
 		meta_task_mgr: 'Менеджер задач',
 		meta_bp_mgr: 'Менеджер бизнес-процессов',
 		meta_reports_mgr: 'Менеджер отчетов',
-		meta_cch_mgr: 'Менеджер планов счетов',
+		meta_cacc_mgr: 'Менеджер планов счетов',
 		meta_cch_mgr: 'Менеджер планов видов характеристик',
 		meta_extender: 'Модификаторы объектов и менеджеров',
 		modified_close: 'Объект изменен<br/>Закрыть без сохранения?',
@@ -4378,7 +4378,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.56';
+    return '2.0.16-beta.57';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.16-beta.56, built:2018-04-20
+ metadata-superlogin v2.0.16-beta.57, built:2018-04-21
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -62,6 +62,18 @@ var adapter = (constructor) => {
           }
         }
         super.after_init();
+        for(const name of props.autologin) {
+          if(name === 'doc' || name === 'ram') {
+            continue;
+          }
+          let url = this.dbpath('doc');
+          if(url && remote[name]) {
+            const {path, prefix, zone} = props;
+            const pos = url.indexOf(prefix + (name == 'meta' ? name : (zone + '_doc')));
+            remote[name] = new PouchDB(url.substr(0, pos) + prefix + (name == 'meta' ? name : (zone + '_' + name)),
+              {skip_setup: true, adapter: 'http'});
+          }
+        }
         if(wsql.get_user_param('user_name') != session.user_id) {
           wsql.set_user_param('user_name', session.user_id);
         }

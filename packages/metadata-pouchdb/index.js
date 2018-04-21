@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.56, built:2018-04-20
+ metadata-pouchdb v2.0.16-beta.57, built:2018-04-21
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -360,10 +360,11 @@ function adapter({AbstracrAdapter}) {
       const {props, local, remote, authorized, $p: {md}} = this;
       if(authorized) {
         for (const name in local.sync) {
-          if(name != 'meta') {
+          if(name != 'meta' && props.autologin.indexOf(name) === -1) {
             try {
+              local.sync[name].removeAllListeners();
               local.sync[name].cancel();
-              doc.removeAllListeners();
+              local.sync[name] = null;
             }
             catch (err) {
             }
@@ -371,7 +372,23 @@ function adapter({AbstracrAdapter}) {
         }
         props._auth = null;
       }
-      return Promise.all(md.bases().map((id) => id != 'meta' && remote[id] && remote[id].logout && remote[id].logout()))
+      return Promise.all(md.bases().map((name) => {
+        if(name != 'meta' && remote[name]) {
+          let res = remote[name].logout && remote[name].logout();
+          if(name != 'ram' && props.autologin.indexOf(name) !== -1) {
+            const dbpath = AdapterPouch.prototype.dbpath.call(this, name);
+            if(remote[name].name !== dbpath) {
+              const sub = remote[name].close()
+                .then(() => {
+                  remote[name].removeAllListeners();
+                  remote[name] = new PouchDB$1(dbpath, {skip_setup: true, adapter: 'http'});
+                });
+              res = res ? res.then(() => sub) : sub;
+            }
+          }
+          return res;
+        }
+      }))
         .then(() => this.emit('user_log_out'));
     }
     load_data() {
@@ -398,6 +415,7 @@ function adapter({AbstracrAdapter}) {
                 fetchNextPage();
               }
               else {
+                local._loading = false;
                 this.call_data_loaded(_page);
                 resolve();
               }

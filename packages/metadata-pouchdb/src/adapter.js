@@ -344,10 +344,11 @@ function adapter({AbstracrAdapter}) {
 
       if(authorized) {
         for (const name in local.sync) {
-          if(name != 'meta') {
+          if(name != 'meta' && props.autologin.indexOf(name) === -1) {
             try {
+              local.sync[name].removeAllListeners();
               local.sync[name].cancel();
-              doc.removeAllListeners();
+              local.sync[name] = null;
             }
             catch (err) {
             }
@@ -356,7 +357,23 @@ function adapter({AbstracrAdapter}) {
         props._auth = null;
       }
 
-      return Promise.all(md.bases().map((id) => id != 'meta' && remote[id] && remote[id].logout && remote[id].logout()))
+      return Promise.all(md.bases().map((name) => {
+        if(name != 'meta' && remote[name]) {
+          let res = remote[name].logout && remote[name].logout();
+          if(name != 'ram' && props.autologin.indexOf(name) !== -1) {
+            const dbpath = AdapterPouch.prototype.dbpath.call(this, name);
+            if(remote[name].name !== dbpath) {
+              const sub = remote[name].close()
+                .then(() => {
+                  remote[name].removeAllListeners();
+                  remote[name] = new PouchDB(dbpath, {skip_setup: true, adapter: 'http'});
+                });
+              res = res ? res.then(() => sub) : sub;
+            }
+          }
+          return res;
+        }
+      }))
         .then(() => this.emit('user_log_out'));
     }
 
@@ -399,6 +416,7 @@ function adapter({AbstracrAdapter}) {
               }
               // широковещательное оповещение об окончании загрузки локальных данных
               else {
+                local._loading = false;
                 this.call_data_loaded(_page);
                 resolve();
               }
