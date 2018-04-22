@@ -44,6 +44,8 @@ function attach($p) {
     if(session) {
       const attr = {
         id: session.user_id,
+        ref: session.profile && session.profile.ref ? session.profile.ref : $p.utils.generate_guid(),
+        name: session.profile && session.profile.name ? session.profile.name : session.user_id,
       }
       return $p.cat.users.create(attr, false, true);
     }

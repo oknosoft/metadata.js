@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.16-beta.57, built:2018-04-21
+ metadata-superlogin v2.0.16-beta.57, built:2018-04-22
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -129,6 +129,8 @@ function attach($p) {
     if(session) {
       const attr = {
         id: session.user_id,
+        ref: session.profile && session.profile.ref ? session.profile.ref : $p.utils.generate_guid(),
+        name: session.profile && session.profile.name ? session.profile.name : session.user_id,
       };
       return $p.cat.users.create(attr, false, true);
     }

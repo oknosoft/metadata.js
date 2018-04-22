@@ -360,13 +360,18 @@ function adapter({AbstracrAdapter}) {
       return Promise.all(md.bases().map((name) => {
         if(name != 'meta' && remote[name]) {
           let res = remote[name].logout && remote[name].logout();
-          if(name != 'ram' && props.autologin.indexOf(name) !== -1) {
+          if(name != 'ram') {
             const dbpath = AdapterPouch.prototype.dbpath.call(this, name);
             if(remote[name].name !== dbpath) {
               const sub = remote[name].close()
                 .then(() => {
                   remote[name].removeAllListeners();
-                  remote[name] = new PouchDB(dbpath, {skip_setup: true, adapter: 'http'});
+                  if(props.autologin.indexOf(name) === -1) {
+                    remote[name] = null;
+                  }
+                  else {
+                    remote[name] = new PouchDB(dbpath, {skip_setup: true, adapter: 'http'});
+                  }
                 });
               res = res ? res.then(() => sub) : sub;
             }

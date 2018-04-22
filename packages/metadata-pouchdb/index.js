@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.57, built:2018-04-21
+ metadata-pouchdb v2.0.16-beta.57, built:2018-04-22
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -121,12 +121,13 @@ else {
     PouchDB = window.PouchDB;
   }
   else {
+    const ua = (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
     PouchDB = window.PouchDB = require('pouchdb-core').default
       .plugin(require('pouchdb-adapter-http').default)
       .plugin(require('pouchdb-replication').default)
       .plugin(require('pouchdb-mapreduce').default)
       .plugin(require('pouchdb-find').default)
-      .plugin(require('pouchdb-adapter-idb').default);
+      .plugin(ua.match('safari') && !ua.match('chrome') ? require('pouchdb-adapter-websql').default : require('pouchdb-adapter-idb').default);
   }
 }
 var PouchDB$1 = PouchDB;
@@ -375,13 +376,18 @@ function adapter({AbstracrAdapter}) {
       return Promise.all(md.bases().map((name) => {
         if(name != 'meta' && remote[name]) {
           let res = remote[name].logout && remote[name].logout();
-          if(name != 'ram' && props.autologin.indexOf(name) !== -1) {
+          if(name != 'ram') {
             const dbpath = AdapterPouch.prototype.dbpath.call(this, name);
             if(remote[name].name !== dbpath) {
               const sub = remote[name].close()
                 .then(() => {
                   remote[name].removeAllListeners();
-                  remote[name] = new PouchDB$1(dbpath, {skip_setup: true, adapter: 'http'});
+                  if(props.autologin.indexOf(name) === -1) {
+                    remote[name] = null;
+                  }
+                  else {
+                    remote[name] = new PouchDB$1(dbpath, {skip_setup: true, adapter: 'http'});
+                  }
                 });
               res = res ? res.then(() => sub) : sub;
             }

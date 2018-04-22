@@ -68,9 +68,8 @@ class DataObjToolbar extends Component {
           open={this.state.open}
           onClose={this.handleRequestClose}
         >
-          <MenuItem primaryText="Печать" leftIcon={<PrintIcon/>} onClick={props.handlePrint}/>
-          <MenuItem primaryText="Вложения" leftIcon={<AttachIcon/>} onClick={props.handleAttachment}/>
-
+          <MenuItem onClick={props.handlePrint}><PrintIcon/> &nbsp;Печать</MenuItem>
+          <MenuItem onClick={props.handleAttachment}><AttachIcon/> &nbsp;Вложения</MenuItem>
         </Menu>
 
         {props.closeButton && <IconButton title="Закрыть форму" onClick={props.handleClose}><CloseIcon/></IconButton>}
