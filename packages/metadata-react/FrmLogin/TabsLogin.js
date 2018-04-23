@@ -49,8 +49,8 @@ class TabsLogin extends Component {
   }
 
   handleLogin() {
-    const {props, state} = this;
-    props.handleLogin(state.login, state.password);
+    const {props, state: {login, password}} = this;
+    login && password && props.handleLogin(login, password);
   }
 
   // если изменили state - не перерисовываем
@@ -114,6 +114,7 @@ class TabsLogin extends Component {
             placeholder="password"
             value={state.password}
             onChange={event => this.setState({password: event.target.value})}
+            onKeyPress={(e) => e.key === 'Enter' && this.handleLogin()}
             endAdornment={
               <InputAdornment position="end">
                 <IconButton
