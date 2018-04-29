@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.57, built:2018-04-22
+ metadata-pouchdb v2.0.16-beta.57, built:2018-04-29
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -27,7 +27,7 @@ var proto = (constructor) => {
 				}
 				let part = '',
 					code_length = this._metadata().code_length - prefix.length;
-				if (_manager.cachable == 'ram') {
+				if (_manager.cachable == 'ram' || _manager.cachable == 'doc_ram') {
 					return Promise.resolve(this.new_cat_id(prefix));
 				}
 				return _manager.pouch_db.query('doc/number_doc',
@@ -95,15 +95,17 @@ var proto = (constructor) => {
 	});
 	Object.defineProperties(DataManager.prototype, {
 		pouch_db: {
-			get: function () {
-				const cachable = this.cachable.replace("_ram", "");
-				const {pouch} = this._owner.$p.adapters;
-				if(cachable.indexOf("remote") != -1)
-					return pouch.remote[cachable.replace("_remote", "")];
-				else
-					return pouch.local[cachable] || pouch.remote[cachable];
-			}
-		},
+      get: function () {
+        const cachable = this.cachable.replace('_ram', '').replace('_doc', '');
+        const {pouch} = this._owner.$p.adapters;
+        if(cachable.indexOf('remote') != -1) {
+          return pouch.remote[cachable.replace('_remote', '')];
+        }
+        else {
+          return pouch.local[cachable] || pouch.remote[cachable];
+        }
+      }
+    },
 	});
 }
 
@@ -458,7 +460,7 @@ function adapter({AbstracrAdapter}) {
       }
     }
     db(_mgr) {
-      const dbid = _mgr.cachable.replace('_remote', '').replace('_ram', '');
+      const dbid = _mgr.cachable.replace('_remote', '').replace('_ram', '').replace('_doc', '');
       const {props, local, remote} = this;
       if(dbid.indexOf('remote') != -1 || (props.noreplicate && props.noreplicate.indexOf(dbid) != -1)) {
         return remote[dbid.replace('_remote', '')];
@@ -1090,51 +1092,20 @@ function adapter({AbstracrAdapter}) {
         db.query(_view, options, process_docs);
       });
     }
-    load_formulas(rows) {
-      const {cat: {formulas}, md} = this.$p;
-      if(!formulas) {
-        return;
-      }
-      const parents = [formulas.predefined('printing_plates'), formulas.predefined('modifiers')];
-      const filtered = rows.filter(v => !v.disabled && parents.indexOf(v.parent) !== -1);
-      filtered.sort((a, b) => a.sorting_field - b.sorting_field).forEach((formula) => {
-        if(formula.parent == parents[0]) {
-          formula.params.find_rows({param: 'destination'}, (dest) => {
-            const dmgr = md.mgr_by_class_name(dest.value);
-            if(dmgr) {
-              if(!dmgr._printing_plates) {
-                dmgr._printing_plates = {};
-              }
-              dmgr._printing_plates[`prn_${formula.ref}`] = formula;
-            }
-          });
-        }
-        else {
-          try {
-            formula.execute();
-          }
-          catch (err) {
-          }
-        }
-      });
-    }
     load_doc_ram() {
-      const {local, props, $p: {md, cat}} = this;
+      const {local, props, $p: {md}} = this;
       if(!local.doc){
         return;
       }
       const res = [];
       const {_m} = md;
-      const formulas = 'cat.formulas';
+      this.emit('pouch_doc_ram_start');
       props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
         for (const name in _m[kind]) {
           _m[kind][name].cachable === 'doc_ram' && res.push(kind + '.' + name);
         }
       });
-      if(res.indexOf(formulas) === -1) {
-        res.push(formulas);
-      }
       return res.reduce((acc, name) => {
         return acc.then(() => {
           const opt = {
@@ -1144,18 +1115,7 @@ function adapter({AbstracrAdapter}) {
             limit: 10000,
           };
           this.emit('pouch_data_page', {synonym: md.get(name).synonym});
-          return local.doc.allDocs(opt).then((res) => {
-            this.load_changes(res, opt);
-            if(name === formulas) {
-              if(cat.formulas) {
-                const rows = [];
-                cat.formulas.forEach((o) => {
-                  rows.push(o);
-                });
-                this.load_formulas(rows);
-              }
-            }
-          });
+          return local.doc.allDocs(opt).then((res) => this.load_changes(res, opt));
         });
       }, Promise.resolve())
         .catch((err) => {

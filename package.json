@@ -30,7 +30,7 @@
     "pouchdb-mapreduce": "6.3.4",
     "pouchdb-replication": "6.3.4",
     "rc-calendar": "^9.6.0",
-    "rc-cascader": "^0.12.2",
+    "rc-cascader": "^0.13.0",
     "rc-time-picker": "^3.3.1",
     "react-onclickoutside": "^6.7.1",
     "react-virtualized": "^9.18.5",
@@ -38,7 +38,7 @@
     "webpack": "^3.11.0"
   },
   "devDependencies": {
-    "babel-core": "^6.26.0",
+    "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.3",
     "babel-loader": "^7.1.4",
     "babel-plugin-external-helpers": "^6.22.0",
@@ -68,7 +68,7 @@
     "react-router-dom": "^4.2.2",
     "react-router-redux": "^5.0.0-alpha.9",
     "rimraf": "^2.6.2",
-    "rollup": "^0.58.1",
+    "rollup": "^0.58.2",
     "rollup-plugin-cleanup": "^2.0.1",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^3.3.0",

@@ -476,7 +476,7 @@ function adapter({AbstracrAdapter}) {
      * @return {PouchDB}
      */
     db(_mgr) {
-      const dbid = _mgr.cachable.replace('_remote', '').replace('_ram', '');
+      const dbid = _mgr.cachable.replace('_remote', '').replace('_ram', '').replace('_doc', '');
       const {props, local, remote} = this;
       if(dbid.indexOf('remote') != -1 || (props.noreplicate && props.noreplicate.indexOf(dbid) != -1)) {
         return remote[dbid.replace('_remote', '')];
@@ -1332,62 +1332,27 @@ function adapter({AbstracrAdapter}) {
     }
 
     /**
-     * Формулы - это не обычный справочник, для него отдельный метод
-     */
-    load_formulas(rows) {
-      const {cat: {formulas}, md} = this.$p;
-      if(!formulas) {
-        return;
-      }
-      const parents = [formulas.predefined('printing_plates'), formulas.predefined('modifiers')];
-      const filtered = rows.filter(v => !v.disabled && parents.indexOf(v.parent) !== -1);
-      filtered.sort((a, b) => a.sorting_field - b.sorting_field).forEach((formula) => {
-        // формируем списки печатных форм и внешних обработок
-        if(formula.parent == parents[0]) {
-          formula.params.find_rows({param: 'destination'}, (dest) => {
-            const dmgr = md.mgr_by_class_name(dest.value);
-            if(dmgr) {
-              if(!dmgr._printing_plates) {
-                dmgr._printing_plates = {};
-              }
-              dmgr._printing_plates[`prn_${formula.ref}`] = formula;
-            }
-          });
-        }
-        else {
-          // выполняем модификаторы
-          try {
-            formula.execute();
-          }
-          catch (err) {
-          }
-        }
-      });
-    }
-
-    /**
      * ### Загружает объекты с типом кеширования doc_ram в ОЗУ
      * @method load_doc_ram
      */
     load_doc_ram() {
-      const {local, props, $p: {md, cat}} = this;
+      const {local, props, $p: {md}} = this;
       if(!local.doc){
         return;
       }
       const res = [];
       const {_m} = md;
-      const formulas = 'cat.formulas';
 
+      // информируем мир о начале загрузки doc_ram
+      this.emit('pouch_doc_ram_start');
+
+      // ищем элементы с подходящим типом кеширования
       props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
         for (const name in _m[kind]) {
           _m[kind][name].cachable === 'doc_ram' && res.push(kind + '.' + name);
         }
       });
-      // с марта 2018, формулы грузим вместе с doc_ram
-      if(res.indexOf(formulas) === -1) {
-        res.push(formulas);
-      }
 
       return res.reduce((acc, name) => {
         return acc.then(() => {
@@ -1398,18 +1363,7 @@ function adapter({AbstracrAdapter}) {
             limit: 10000,
           };
           this.emit('pouch_data_page', {synonym: md.get(name).synonym});
-          return local.doc.allDocs(opt).then((res) => {
-            this.load_changes(res, opt);
-            if(name === formulas) {
-              if(cat.formulas) {
-                const rows = [];
-                cat.formulas.forEach((o) => {
-                  rows.push(o);
-                });
-                this.load_formulas(rows);
-              }
-            }
-          });
+          return local.doc.allDocs(opt).then((res) => this.load_changes(res, opt));
         });
       }, Promise.resolve())
         .catch((err) => {
@@ -1422,7 +1376,6 @@ function adapter({AbstracrAdapter}) {
           props._doc_ram_loaded = true;
           this.emit('pouch_doc_ram_loaded');
         });
-
     }
 
     /**

@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.57, built:2018-04-22
+ metadata-core v2.0.16-beta.57, built:2018-04-29
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -655,8 +655,7 @@ class DataObj {
       }
       else {
         _obj[f] = utils.fix_guid(v);
-        if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1) {
-        }
+        if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1) ;
         else {
           let mgr = this._manager.value_mgr(_obj, f, mf, false, v);
           if(mgr) {
@@ -1379,19 +1378,19 @@ class DataManager extends MetaEventEmitter{
 		}
 	}
 	get adapter(){
-		const {adapters} = this._owner.$p;
-		switch (this.cachable){
-			case undefined:
-			case "ram":
-			case "doc":
-			case "doc_remote":
-			case "doc_ram":
-			case "remote":
-			case "user":
-			case "meta":
-				return adapters.pouch;
-		}
-		return adapters[this.cachable];
+    const {adapters} = this._owner.$p;
+    switch (this.cachable) {
+    case undefined:
+    case 'ram':
+    case 'doc':
+    case 'doc_ram':
+    case 'ram_doc':
+    case 'remote':
+    case 'user':
+    case 'meta':
+      return adapters.pouch;
+    }
+    return adapters[this.cachable];
 	}
 	get alatable(){
 		const {table_name, _owner} = this;
@@ -1403,18 +1402,21 @@ class DataManager extends MetaEventEmitter{
     return current_user ? current_user.get_acl(this.class_name) : 'r';
   }
 	get cachable(){
-		const {class_name} = this;
-		const _meta = this.metadata();
-		if(class_name.indexOf("enm.") != -1)
-			return "ram";
-		if(_meta && _meta.cachable)
-			return _meta.cachable;
-		if(class_name.indexOf("doc.") != -1 || class_name.indexOf("dp.") != -1 || class_name.indexOf("rep.") != -1)
-			return "doc";
-		return "ram";
-	}
+    const {class_name} = this;
+    const _meta = this.metadata();
+    if(class_name.indexOf('enm.') != -1) {
+      return 'ram';
+    }
+    if(_meta && _meta.cachable) {
+      return _meta.cachable;
+    }
+    if(class_name.indexOf('doc.') != -1 || class_name.indexOf('dp.') != -1 || class_name.indexOf('rep.') != -1) {
+      return 'doc';
+    }
+    return 'ram';
+  }
 	get table_name(){
-		return this.class_name.replace(".", "_");
+    return this.class_name.replace('.', '_');
 	}
 	find_rows(selection, callback){
 		return utils._find_rows.call(this, this.by_ref, selection, callback);
@@ -1478,45 +1480,49 @@ class DataManager extends MetaEventEmitter{
 			}
 			l.push(v);
 		}
-		if(selection.presentation && (input_by_string = t.metadata().input_by_string)){
-			text = selection.presentation.like;
-			delete selection.presentation;
-			selection.or = [];
-			input_by_string.forEach((fld) => {
-				const sel = {};
-				sel[fld] = {like: text};
-				selection.or.push(sel);
-			});
-		}
-		if(t.cachable == "ram" || t.cachable == "doc_ram" || (selection && selection._local)) {
-			t.find_rows(selection, push);
-			return Promise.resolve(l);
-		}
-		else if(t.cachable != "e1cib"){
-		  return t.adapter.find_rows(t, selection)
+    if(selection.presentation && (input_by_string = t.metadata().input_by_string)) {
+      text = selection.presentation.like;
+      delete selection.presentation;
+      selection.or = [];
+      input_by_string.forEach((fld) => {
+        const sel = {};
+        sel[fld] = {like: text};
+        selection.or.push(sel);
+      });
+    }
+    if(t.cachable == 'ram' || t.cachable == 'doc_ram' || (selection && selection._local)) {
+      t.find_rows(selection, push);
+      return Promise.resolve(l);
+    }
+    else if(t.cachable != 'e1cib') {
+      return t.adapter.find_rows(t, selection)
         .then((data) => {
-		    for(const v of data){
-		      push(v);
-		    }		    return l;
-		  });
-		}
-		else{
-			var attr = { selection: selection, top: selection._top},
-				is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
-			delete selection._top;
-			if(is_doc)
-				attr.fields = ["ref", "date", "number_doc"];
-			else if(t.metadata().main_presentation_name)
-				attr.fields = ["ref", "name"];
-			else
-				attr.fields = ["ref", "id"];
-			return _rest.load_array(attr, t)
-				.then((data) => {
-					data.forEach(push);
-					return l;
-				});
-		}
-	}
+          for (const v of data) {
+            push(v);
+          }
+          return l;
+        });
+    }
+    else {
+      let attr = {selection: selection, top: selection._top},
+        is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
+      delete selection._top;
+      if(is_doc) {
+        attr.fields = ['ref', 'date', 'number_doc'];
+      }
+      else if(t.metadata().main_presentation_name) {
+        attr.fields = ['ref', 'name'];
+      }
+      else {
+        attr.fields = ['ref', 'id'];
+      }
+      return _rest.load_array(attr, t)
+        .then((data) => {
+          data.forEach(push);
+          return l;
+        });
+    }
+  }
 	value_mgr(row, f, mf, array_enabled, v) {
 		const {$p} = this._owner;
 		let property, oproperty, tnames, rt, mgr;
@@ -1611,31 +1617,31 @@ class DataManager extends MetaEventEmitter{
 		}
 	}
 	printing_plates(){
-		var rattr = {}, t = this;
+		const rattr = {};
 		const {ajax} = this._owner.$p;
-		if(!t._printing_plates){
-			if(t.metadata().printing_plates){
-				t._printing_plates = t.metadata().printing_plates;
+		if(!this._printing_plates){
+			if(this.metadata().printing_plates){
+        this._printing_plates = this.metadata().printing_plates;
 			}
-			else if(t.metadata().cachable == "ram" || (t.metadata().cachable && t.metadata().cachable.indexOf("doc") == 0)){
-				t._printing_plates = {};
-			}
+			else {
+			  const {cachable} = this.metadata();
+        if(cachable && (cachable.indexOf('doc') == 0 || cachable.indexOf('ram') == 0)){
+          this._printing_plates = {};
+        }
+      }
 		}
-		if(!t._printing_plates && ajax.authorized){
-			ajax.default_attr(rattr, job_prm.irest_url());
-			rattr.url += t.rest_name + "/Print()";
-			return ajax.get_ex(rattr.url, rattr)
-				.then(function (req) {
-					t._printing_plates = JSON.parse(req.response);
-					return t._printing_plates;
-				})
-				.catch(function () {
-				})
-				.then(function (pp) {
-					return pp || (t._printing_plates = {});
-				});
-		}
-		return Promise.resolve(t._printing_plates);
+    if(!this._printing_plates && ajax.authorized) {
+      ajax.default_attr(rattr, job_prm.irest_url());
+      rattr.url += this.rest_name + '/Print()';
+      return ajax.get_ex(rattr.url, rattr)
+        .then((req) => {
+          this._printing_plates = JSON.parse(req.response);
+          return this._printing_plates;
+        })
+        .catch(() => null)
+        .then((pp) => pp || (this._printing_plates = {}));
+    }
+		return Promise.resolve(this._printing_plates);
 	}
   unload_obj(ref) {
     delete this.by_ref[ref];
@@ -1960,8 +1966,7 @@ class RefDataManager extends DataManager{
                   else
                     s += and + "(_t_." + key + " = " + sel[key] + ") ";
                 }
-                else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
-                }
+                else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy);
               }
             });
           }
@@ -2175,10 +2180,10 @@ class RefDataManager extends DataManager{
         }
       });
     }
-    else if(cachable === 'doc' || cachable === 'remote'){
+    else if(cachable === 'doc' || cachable === 'ram_doc' || cachable === 'remote'){
       Object.assign(select, {
         selector: {class_name: this.class_name},
-        fields: ["_id", "name"],
+        fields: ['_id', 'name'],
         skip,
         limit: top
       });
@@ -2533,8 +2538,7 @@ class RegisterManager extends DataManager{
 				}
 				s += ")";
 				if(attr.selection){
-					if(typeof attr.selection == "function"){
-					}else
+					if(typeof attr.selection == "function");else
 						attr.selection.forEach(sel => {
 							for(var key in sel){
 								if(typeof sel[key] == "function"){
@@ -2564,8 +2568,7 @@ class RegisterManager extends DataManager{
 										s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
 									else
 										s += "\n AND (_t_." + key + " = " + sel[key] + ") ";
-								} else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
-								}
+								} else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy);
 							}
 						});
 				}
@@ -2905,8 +2908,7 @@ const utils = {
 		}
 	},
 	fix_guid(ref, generate) {
-		if (ref && typeof ref == 'string') {
-		}
+		if (ref && typeof ref == 'string') ;
 		else if (ref instanceof DataObj) {
 			return ref.ref;
 		}
@@ -3867,7 +3869,7 @@ class Meta extends MetaEventEmitter {
     for (let i in _m) {
       for (let j in _m[i]) {
         if(_m[i][j].cachable) {
-          let _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '');
+          let _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '').replace('_doc', '');
           if(_name != 'meta' && _name != 'e1cib' && !res[_name]) {
             res[_name] = _name;
           }
