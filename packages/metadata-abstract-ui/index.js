@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.57, built:2018-04-22
+ metadata-abstract-ui v2.0.16-beta.57, built:2018-05-02
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -52,22 +52,24 @@ function log_manager() {
       else if(typeof msg != 'object') {
         msg = {note: msg};
       }
-      msg.date = Date.now() + wsql.time_diff;
-      if(!this.smax){
-        this.smax = wsql.alasql.compile('select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?');
+      if(wsql.alasql.databases.dbo.tables.ireg_log) {
+        msg.date = Date.now() + wsql.time_diff;
+        if(!this.smax){
+          this.smax = wsql.alasql.compile('select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?');
+        }
+        const res = this.smax([msg.date]);
+        if(!res.length || res[0].sequence === undefined) {
+          msg.sequence = 0;
+        }
+        else {
+          msg.sequence = parseInt(res[0].sequence) + 1;
+        }
+        if(!msg.class) {
+          msg.class = 'note';
+        }
+        wsql.alasql('insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)',
+          [msg.date + '¶' + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : '']);
       }
-      const res = this.smax([msg.date]);
-      if(!res.length || res[0].sequence === undefined) {
-        msg.sequence = 0;
-      }
-      else {
-        msg.sequence = parseInt(res[0].sequence) + 1;
-      }
-      if(!msg.class) {
-        msg.class = 'note';
-      }
-      wsql.alasql('insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)',
-        [msg.date + '¶' + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : '']);
     }
     backup(dfrom, dtill) {
     }
