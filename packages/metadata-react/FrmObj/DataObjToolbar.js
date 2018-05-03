@@ -51,6 +51,7 @@ class DataObjToolbar extends Component {
 
   render() {
     const {props} = this;
+    const showMenu = props.handleAttachments || props.handlePrint;
     return (
 
       <Toolbar disableGutters className={props.classes.toolbar}>
@@ -61,15 +62,15 @@ class DataObjToolbar extends Component {
 
         <Typography variant="title" color="inherit" className={props.classes.flex}> </Typography>
 
-        <IconButton onClick={this.handleClick} title="Дополнительно"><MoreVertIcon/></IconButton>
+        {showMenu && <IconButton onClick={this.handleClick} title="Дополнительно"><MoreVertIcon/></IconButton>}
 
         <Menu
           anchorEl={this.state.anchorEl}
           open={this.state.open}
           onClose={this.handleRequestClose}
         >
-          <MenuItem onClick={props.handlePrint}><PrintIcon/> &nbsp;Печать</MenuItem>
-          <MenuItem onClick={props.handleAttachments}><AttachIcon/> &nbsp;Вложения</MenuItem>
+          {props.handlePrint && <MenuItem onClick={props.handlePrint}><PrintIcon/> &nbsp;Печать</MenuItem>}
+          {props.handleAttachments && <MenuItem onClick={props.handleAttachments}><AttachIcon/> &nbsp;Вложения</MenuItem>}
         </Menu>
 
         {props.closeButton && <IconButton title="Закрыть форму" onClick={props.handleClose}><CloseIcon/></IconButton>}

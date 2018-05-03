@@ -23,7 +23,7 @@ function AttachmentsToolbar (props) {
 
       <Typography variant="title" color="inherit" className={props.classes.flex}> </Typography>
 
-      {props.closeButton && <IconButton title="Закрыть форму" onClick={props.handleClose}><CloseIcon/></IconButton>}
+      {props.closeButton && props.handleClose && <IconButton title="Закрыть форму" onClick={props.handleClose}><CloseIcon/></IconButton>}
 
     </Toolbar>
   );
@@ -34,7 +34,7 @@ AttachmentsToolbar.propTypes = {
   handleAdd: PropTypes.func.isRequired,
   handleDelete: PropTypes.func.isRequired,
   handleDownload: PropTypes.func.isRequired,
-  handleClose: PropTypes.func.isRequired,
+  handleClose: PropTypes.func,
   closeButton: PropTypes.bool,
 
 };

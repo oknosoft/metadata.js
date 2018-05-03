@@ -32,7 +32,7 @@ function AttachmentsList ({classes}) {
   return (
     <MenuList>
       <MenuItem className={classes.menuItem}>
-        <Avatar className={classes.avatar}>docx</Avatar>
+        <Avatar className={classes.avatar}>doc</Avatar>
         <ListItemText classes={{ primary: classes.primary }} inset primary="Sent mail" />
       </MenuItem>
       <MenuItem className={classes.menuItem}>
