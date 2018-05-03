@@ -4,28 +4,20 @@ import MDNRComponent from '../common/MDNRComponent';
 
 import {FormGroup} from 'material-ui/Form';
 import Divider from 'material-ui/Divider';
-import Paper from 'material-ui/Paper';
+
+// окно диалога, чтобы показать всплывающие формы
+import Dialog from '../App/Dialog';
 
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 import DataObjToolbar from './DataObjToolbar';
 import DataField from '../DataField';
 import TabularSection from '../TabularSection';
+import FrmAttachments from '../FrmAttachments';
 
 import withStyles from '../styles/paper600';
 import {withIface} from 'metadata-redux';
 
 class DataObj extends MDNRComponent {
-
-  static propTypes = {
-    _mgr: PropTypes.object,             // DataManager, с которым будет связан компонент
-    _acl: PropTypes.string,             // Права на чтение-изменение
-    _meta: PropTypes.object,            // Здесь можно переопределить метаданные
-    _layout: PropTypes.object,          // Состав и расположение полей, если не задано - рисуем типовую форму
-
-    read_only: PropTypes.object,        // Элемент только для чтения
-
-    handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
-  };
 
   constructor(props, context) {
     super(props, context);
@@ -35,10 +27,15 @@ class DataObj extends MDNRComponent {
       handleSend: this.handleSend.bind(this),
       handleMarkDeleted: this.handleMarkDeleted.bind(this),
       handlePrint: this.handlePrint.bind(this),
-      handleAttachment: this.handleAttachment.bind(this),
+      handleAttachments: this.handleAttachments.bind(this),
+      handleCloseAttachments: this.handleCloseAttachments.bind(this),
       handleClose: this.handleClose.bind(this),
     };
-    this.state = {_meta: _meta || _mgr.metadata(), _obj: null};
+    this.state = {
+      _meta: _meta || _mgr.metadata(),
+      _obj: null,
+      _attachments: false,
+    };
 
   }
 
@@ -71,7 +68,12 @@ class DataObj extends MDNRComponent {
   handlePrint() {
   }
 
-  handleAttachment() {
+  handleAttachments() {
+    this.setState({_attachments: true})
+  }
+
+  handleCloseAttachments() {
+    this.setState({_attachments: false})
   }
 
   handleValueChange(_fld) {
@@ -163,7 +165,7 @@ class DataObj extends MDNRComponent {
   }
 
   render() {
-    const {props: {_mgr, classes}, state: {_obj, _meta}, context, _handlers} = this;
+    const {props: {_mgr, classes}, state: {_obj, _meta, _attachments}, context, _handlers} = this;
     const toolbar_props = Object.assign({
       closeButton: !context.dnr,
       posted: _obj && _obj.posted,
@@ -175,19 +177,40 @@ class DataObj extends MDNRComponent {
     return _obj ?
       [
         <DataObjToolbar key="toolbar" {...toolbar_props} />,
+
         _meta.form && _meta.form.obj ?
           this.renderItems(_meta.form.obj.items)
           :
           <FormGroup key="data" className={classes.spaceLeft}>
             {this.renderFields()}
             {this.renderTabularSections()}
-          </FormGroup>
+          </FormGroup>,
+
+        _attachments && <Dialog key="attachments"
+          open
+          noSpace
+          title={`Вложения /${this.ltitle}/`}
+          onClose={_handlers.handleCloseAttachments}
+        >
+          <FrmAttachments _obj={_obj} handleClose={_handlers.handleCloseAttachments}/>
+        </Dialog>
       ]
       :
       <LoadingMessage/>;
   }
 
 }
+
+DataObj.propTypes = {
+  _mgr: PropTypes.object,             // DataManager, с которым будет связан компонент
+  _acl: PropTypes.string,             // Права на чтение-изменение
+  _meta: PropTypes.object,            // Здесь можно переопределить метаданные
+  match: PropTypes.object,            // match роутера, из него добываем ref, можно передать fake-объект со ссылкой
+
+  read_only: PropTypes.object,        // Элемент только для чтения
+
+  handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
+};
 
 export default withStyles(withIface(DataObj));
 

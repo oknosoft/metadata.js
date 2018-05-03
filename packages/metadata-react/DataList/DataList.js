@@ -177,10 +177,10 @@ class DataList extends MDNRComponent {
   };
 
   // обработчик вложений теущей строки
-  handleAttachment = () => {
+  handleAttachments = () => {
     const row = this._list.get(this.state.selectedRowIndex);
     const {handlers, _mgr} = this.props;
-    row && handlers.handleAttachment && handlers.handleAttachment(row, _mgr);
+    row && handlers.handleAttachments && handlers.handleAttachments(row, _mgr);
   };
 
   handleSettingsOpen = () => {
@@ -247,7 +247,7 @@ class DataList extends MDNRComponent {
       handleEdit: this.handleEdit,
       handleRemove: this.handleRemove,
       handlePrint: this.handlePrint,
-      handleAttachment: this.handleAttachment,
+      handleAttachments: this.handleAttachments,
       handleSettingsOpen: this.handleSettingsOpen,
       handleSettingsClose: this.handleSettingsClose,
       handleSchemeChange: this.handleSchemeChange,
