@@ -177,10 +177,10 @@ class DataList extends MDNRComponent {
   };
 
   // обработчик вложений теущей строки
-  handleAttachment = () => {
+  handleAttachments = () => {
     const row = this._list.get(this.state.selectedRowIndex);
     const {handlers, _mgr} = this.props;
-    row && handlers.handleAttachment && handlers.handleAttachment(row, _mgr);
+    row && handlers.handleAttachments && handlers.handleAttachments(row, _mgr);
   };
 
   handleSettingsOpen = () => {
@@ -247,7 +247,7 @@ class DataList extends MDNRComponent {
       handleEdit: this.handleEdit,
       handleRemove: this.handleRemove,
       handlePrint: this.handlePrint,
-      handleAttachment: this.handleAttachment,
+      handleAttachments: this.handleAttachments,
       handleSettingsOpen: this.handleSettingsOpen,
       handleSettingsClose: this.handleSettingsClose,
       handleSchemeChange: this.handleSchemeChange,
@@ -273,10 +273,9 @@ class DataList extends MDNRComponent {
       <DataListToolbar {...toolbar_props} />,
 
       // панель настроек компоновки
-      settings_open && <AutoSizer disableHeight>
+      settings_open && <AutoSizer key="tabs" disableHeight>
         {({width}) => (
           <SchemeSettingsTabs
-            key="tabs"
             height={show_grid ? 272 : (sizes.height || 500) - 104}
             width={width}
             scheme={scheme}
@@ -287,10 +286,9 @@ class DataList extends MDNRComponent {
       </AutoSizer>,
 
       // собственно, InfiniteLoader, внутри которого MultiGrid
-      show_grid && <AutoSizer disableHeight>
+      show_grid && <AutoSizer key="infinite" disableHeight>
         {({width}) => (
           <InfiniteLoader
-            key="infinite"
             isRowLoaded={_isRowLoaded}
             loadMoreRows={_loadMoreRows}
             rowCount={rowsLoaded + DataList.LIMIT}

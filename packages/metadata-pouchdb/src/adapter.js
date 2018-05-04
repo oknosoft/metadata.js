@@ -317,7 +317,14 @@ function adapter({AbstracrAdapter}) {
           this.emit_async('user_log_stop', username);
         }
 
-        props._data_loaded && !props._doc_ram_loading && !props._doc_ram_loaded && this.load_doc_ram();
+        if(props._data_loaded && !props._doc_ram_loading) {
+          if(props._doc_ram_loaded) {
+            this.emit('pouch_doc_ram_loaded')
+          }
+          else {
+            this.load_doc_ram();
+          }
+        };
 
         // запускаем синхронизацию для нужных баз
         return info && this.after_log_in();
@@ -337,10 +344,11 @@ function adapter({AbstracrAdapter}) {
 
       if(authorized) {
         for (const name in local.sync) {
-          if(name != 'meta') {
+          if(name != 'meta' && props.autologin.indexOf(name) === -1) {
             try {
+              local.sync[name].removeAllListeners();
               local.sync[name].cancel();
-              doc.removeAllListeners();
+              local.sync[name] = null;
             }
             catch (err) {
             }
@@ -349,7 +357,28 @@ function adapter({AbstracrAdapter}) {
         props._auth = null;
       }
 
-      return Promise.all(md.bases().map((id) => id != 'meta' && remote[id] && remote[id].logout && remote[id].logout()))
+      return Promise.all(md.bases().map((name) => {
+        if(name != 'meta' && remote[name]) {
+          let res = remote[name].logout && remote[name].logout();
+          if(name != 'ram') {
+            const dbpath = AdapterPouch.prototype.dbpath.call(this, name);
+            if(remote[name].name !== dbpath) {
+              const sub = remote[name].close()
+                .then(() => {
+                  remote[name].removeAllListeners();
+                  if(props.autologin.indexOf(name) === -1) {
+                    remote[name] = null;
+                  }
+                  else {
+                    remote[name] = new PouchDB(dbpath, {skip_setup: true, adapter: 'http'});
+                  }
+                });
+              res = res ? res.then(() => sub) : sub;
+            }
+          }
+          return res;
+        }
+      }))
         .then(() => this.emit('user_log_out'));
     }
 
@@ -392,6 +421,7 @@ function adapter({AbstracrAdapter}) {
               }
               // широковещательное оповещение об окончании загрузки локальных данных
               else {
+                local._loading = false;
                 this.call_data_loaded(_page);
                 resolve();
               }
@@ -446,7 +476,7 @@ function adapter({AbstracrAdapter}) {
      * @return {PouchDB}
      */
     db(_mgr) {
-      const dbid = _mgr.cachable.replace('_remote', '').replace('_ram', '');
+      const dbid = _mgr.cachable.replace('_remote', '').replace('_ram', '').replace('_doc', '');
       const {props, local, remote} = this;
       if(dbid.indexOf('remote') != -1 || (props.noreplicate && props.noreplicate.indexOf(dbid) != -1)) {
         return remote[dbid.replace('_remote', '')];
@@ -826,6 +856,9 @@ function adapter({AbstracrAdapter}) {
           // пытаемся загрузить doc_ram
           this.authorized && this.load_doc_ram();
         });
+      }
+      else if(!props._doc_ram_loaded && !props._doc_ram_loading && this.authorized) {
+        this.load_doc_ram();
       }
     }
 
@@ -1299,62 +1332,27 @@ function adapter({AbstracrAdapter}) {
     }
 
     /**
-     * Формулы - это не обычный справочник, для него отдельный метод
-     */
-    load_formulas(rows) {
-      const {cat: {formulas}, md} = this.$p;
-      if(!formulas) {
-        return;
-      }
-      const parents = [formulas.predefined('printing_plates'), formulas.predefined('modifiers')];
-      const filtered = rows.filter(v => !v.disabled && parents.indexOf(v.parent) !== -1);
-      filtered.sort((a, b) => a.sorting_field - b.sorting_field).forEach((formula) => {
-        // формируем списки печатных форм и внешних обработок
-        if(formula.parent == parents[0]) {
-          formula.params.find_rows({param: 'destination'}, (dest) => {
-            const dmgr = md.mgr_by_class_name(dest.value);
-            if(dmgr) {
-              if(!dmgr._printing_plates) {
-                dmgr._printing_plates = {};
-              }
-              dmgr._printing_plates[`prn_${formula.ref}`] = formula;
-            }
-          });
-        }
-        else {
-          // выполняем модификаторы
-          try {
-            formula.execute();
-          }
-          catch (err) {
-          }
-        }
-      });
-    }
-
-    /**
      * ### Загружает объекты с типом кеширования doc_ram в ОЗУ
      * @method load_doc_ram
      */
     load_doc_ram() {
-      const {local, props, $p: {md, cat}} = this;
+      const {local, props, $p: {md}} = this;
       if(!local.doc){
         return;
       }
       const res = [];
       const {_m} = md;
-      const formulas = 'cat.formulas';
 
+      // информируем мир о начале загрузки doc_ram
+      this.emit('pouch_doc_ram_start');
+
+      // ищем элементы с подходящим типом кеширования
       props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
         for (const name in _m[kind]) {
           _m[kind][name].cachable === 'doc_ram' && res.push(kind + '.' + name);
         }
       });
-      // с марта 2018, формулы грузим вместе с doc_ram
-      if(res.indexOf(formulas) === -1) {
-        res.push(formulas);
-      }
 
       return res.reduce((acc, name) => {
         return acc.then(() => {
@@ -1365,18 +1363,7 @@ function adapter({AbstracrAdapter}) {
             limit: 10000,
           };
           this.emit('pouch_data_page', {synonym: md.get(name).synonym});
-          return local.doc.allDocs(opt).then((res) => {
-            this.load_changes(res, opt);
-            if(name === formulas) {
-              if(cat.formulas) {
-                const rows = [];
-                cat.formulas.forEach((o) => {
-                  rows.push(o);
-                });
-                this.load_formulas(rows);
-              }
-            }
-          });
+          return local.doc.allDocs(opt).then((res) => this.load_changes(res, opt));
         });
       }, Promise.resolve())
         .catch((err) => {
@@ -1389,7 +1376,6 @@ function adapter({AbstracrAdapter}) {
           props._doc_ram_loaded = true;
           this.emit('pouch_doc_ram_loaded');
         });
-
     }
 
     /**

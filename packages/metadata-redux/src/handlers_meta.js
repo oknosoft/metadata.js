@@ -90,7 +90,7 @@ export default {
   },
 
   [LOG_OUT]: (state, action) => {
-    return reset_user(state);
+    return reset_user(state, true);
   },
 
   [LOG_ERROR]: (state, action) => {

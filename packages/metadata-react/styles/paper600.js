@@ -24,6 +24,9 @@ export default withStyles(theme => ({
   spaceLeft: {
     marginLeft: theme.spacing.unit,
   },
+  paddingRight: {
+    paddingRight: theme.spacing.unit,
+  },
   button: {
     margin: theme.spacing.unit,
   },

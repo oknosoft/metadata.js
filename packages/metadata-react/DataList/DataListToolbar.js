@@ -37,7 +37,7 @@ class DataListToolbar extends Component {
     scheme: PropTypes.object.isRequired,              // значение настроек компоновки
 
     handlePrint: PropTypes.func.isRequired,           // обработчик открытия диалога печати
-    handleAttachment: PropTypes.func.isRequired,      // обработчик открытия диалога присоединенных файлов
+    handleAttachments: PropTypes.func.isRequired,      // обработчик открытия диалога присоединенных файлов
   };
 
   static defaultProps = {
@@ -102,7 +102,7 @@ class DataListToolbar extends Component {
           onClose={this.handleRequestClose}
         >
           <MenuItem onClick={this.handleDnROpen}><PrintIcon/> &nbsp;Печать</MenuItem>
-          <MenuItem onClick={props.handleAttachment}><AttachIcon/> &nbsp;Вложения</MenuItem>
+          <MenuItem onClick={props.handleAttachments}><AttachIcon/> &nbsp;Вложения</MenuItem>
         </Menu>
 
       </Toolbar>

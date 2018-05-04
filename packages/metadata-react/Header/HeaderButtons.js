@@ -23,7 +23,7 @@ import classnames from 'classnames';
 import withStyles from './toolbar';
 import withWidth, {isWidthUp} from 'material-ui/utils/withWidth';
 
-function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavigate, width}) {
+function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavigate, width, compact}) {
 
   const offline_tooltip = offline ? 'Сервер недоступен' : 'Подключение установлено';
   const sync_tooltip = `Синхронизация ${user.logged_in && sync_started ? 'выполняется' : 'отключена'}`;
@@ -31,10 +31,12 @@ function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavig
 
   return [
     // индикатор доступности облака показываем только на экране шире 'sm'
-    isWidthUp('sm', width) && <IconButton key="offline" title={offline_tooltip}>
+    !compact && isWidthUp('sm', width) &&
+    <IconButton key="offline" title={offline_tooltip}>
       {offline ? <CloudOff className={classes.white}/> : <CloudQueue className={classes.white}/>}
     </IconButton>,
 
+    !compact &&
     <IconButton key="sync_started" title={sync_tooltip}>
       {user.logged_in && sync_started ?
         <SyncIcon className={classnames(classes.white, {[classes.rotation]: fetch || user.try_log_in})} />
@@ -59,6 +61,7 @@ HeaderButtons.propTypes = {
   user: PropTypes.object,       // пользователь
   handleNavigate: PropTypes.func.isRequired,
   classes: PropTypes.object.isRequired,
+  compact: PropTypes.bool,      // скрывает кнопки облака
 };
 
 export default compose(withStyles, withWidth())(HeaderButtons);

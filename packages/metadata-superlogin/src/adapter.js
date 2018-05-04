@@ -79,6 +79,20 @@ export default (constructor) => {
         // создаём недостающие базы
         super.after_init();
 
+        // пересоздаём базы autologin
+        for(const name of props.autologin) {
+          if(name === 'doc' || name === 'ram') {
+            continue;
+          }
+          let url = this.dbpath('doc');
+          if(url && remote[name]) {
+            const {path, prefix, zone} = props;
+            const pos = url.indexOf(prefix + (name == 'meta' ? name : (zone + '_doc')));
+            remote[name] = new PouchDB(url.substr(0, pos) + prefix + (name == 'meta' ? name : (zone + '_' + name)),
+              {skip_setup: true, adapter: 'http'});
+          }
+        }
+
         // сохраняем имя пользователя в localstorage
         if(wsql.get_user_param('user_name') != session.user_id) {
           wsql.set_user_param('user_name', session.user_id);

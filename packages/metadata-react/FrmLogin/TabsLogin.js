@@ -6,13 +6,12 @@ import Paper from 'material-ui/Paper';
 import TextField from 'material-ui/TextField';
 import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
-import {FormGroup} from 'material-ui/Form';
 import {DialogActions} from 'material-ui/Dialog';
 import Helmet from 'react-helmet';
 import Typography from 'material-ui/Typography';
 import IconError from '@material-ui/icons/ErrorOutline';
 import Input, { InputLabel, InputAdornment } from 'material-ui/Input';
-import { FormControl } from 'material-ui/Form';
+import { FormGroup, FormControl } from 'material-ui/Form';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import {CircularProgress} from 'material-ui/Progress';
@@ -50,8 +49,8 @@ class TabsLogin extends Component {
   }
 
   handleLogin() {
-    const {props, state} = this;
-    props.handleLogin(state.login, state.password);
+    const {props, state: {login, password}} = this;
+    login && password && props.handleLogin(login, password);
   }
 
   // если изменили state - не перерисовываем
@@ -115,6 +114,7 @@ class TabsLogin extends Component {
             placeholder="password"
             value={state.password}
             onChange={event => this.setState({password: event.target.value})}
+            onKeyPress={(e) => e.key === 'Enter' && this.handleLogin()}
             endAdornment={
               <InputAdornment position="end">
                 <IconButton

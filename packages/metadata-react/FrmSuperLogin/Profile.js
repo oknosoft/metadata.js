@@ -69,9 +69,9 @@ class UserObj extends Component {
         {state.index === 0 &&
         <FormGroup>
           <DataField _obj={_obj} _fld="id"/>
-          <DataField _obj={_obj} _fld="name"/>
+          <DataField _obj={_obj} _fld="name" label="ФИО пользователя"/>
           <DataField _obj={_obj} _fld="sex"/>
-          <DataField _obj={_obj} _fld="email"/>
+          <DataField _obj={_obj} _fld="email_addr"/>
           <DialogActions>
             <Button color="primary" size="small" className={classes.button} onClick={handleLogOut}>Выйти</Button>
           </DialogActions>

@@ -24,7 +24,7 @@ class DataObjToolbar extends Component {
     handleSave: PropTypes.func.isRequired,        // обработчик добавления объекта
     handleMarkDeleted: PropTypes.func.isRequired, // команда Отозвать
     handlePrint: PropTypes.func.isRequired,       // обработчик открытия диалога печати
-    handleAttachment: PropTypes.func.isRequired,  // обработчик открытия диалога присоединенных файлов
+    handleAttachments: PropTypes.func.isRequired,  // обработчик открытия диалога присоединенных файлов
     handleClose: PropTypes.func.isRequired,       // команда Закрыть форму
 
     postable: PropTypes.bool,                     // объект можно провести-распровести
@@ -51,6 +51,7 @@ class DataObjToolbar extends Component {
 
   render() {
     const {props} = this;
+    const showMenu = props.handleAttachments || props.handlePrint;
     return (
 
       <Toolbar disableGutters className={props.classes.toolbar}>
@@ -61,16 +62,15 @@ class DataObjToolbar extends Component {
 
         <Typography variant="title" color="inherit" className={props.classes.flex}> </Typography>
 
-        <IconButton onClick={this.handleClick} title="Дополнительно"><MoreVertIcon/></IconButton>
+        {showMenu && <IconButton onClick={this.handleClick} title="Дополнительно"><MoreVertIcon/></IconButton>}
 
         <Menu
           anchorEl={this.state.anchorEl}
           open={this.state.open}
           onClose={this.handleRequestClose}
         >
-          <MenuItem primaryText="Печать" leftIcon={<PrintIcon/>} onClick={props.handlePrint}/>
-          <MenuItem primaryText="Вложения" leftIcon={<AttachIcon/>} onClick={props.handleAttachment}/>
-
+          {props.handlePrint && <MenuItem onClick={props.handlePrint}><PrintIcon/> &nbsp;Печать</MenuItem>}
+          {props.handleAttachments && <MenuItem onClick={props.handleAttachments}><AttachIcon/> &nbsp;Вложения</MenuItem>}
         </Menu>
 
         {props.closeButton && <IconButton title="Закрыть форму" onClick={props.handleClose}><CloseIcon/></IconButton>}

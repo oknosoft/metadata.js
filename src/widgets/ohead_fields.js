@@ -96,8 +96,8 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 
 	new dhtmlXPropertyGrid(_grid);
 
-	_grid.setInitWidthsP("40,60");
-	_grid.setDateFormat("%d.%m.%Y %H:%i");
+  _grid.setInitWidthsP(attr.widths || '40,60');
+  _grid.setDateFormat('%d.%m.%Y %H:%i');
 	_grid.init();
 	//t.enableAutoHeight(false,_cell._getHeight()-20,true);
 	_grid.setSizes();

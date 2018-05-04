@@ -5,7 +5,7 @@
 let PouchDB;
 
 /**
- * В зависимости от среды исполнения, подключаем адаптер memory или idb
+ * В зависимости от среды исполнения, подключаем адаптер memory или idb или websql
  * isNode
  */
 if(typeof process !== 'undefined' && process.versions && process.versions.node) {
@@ -21,12 +21,13 @@ else {
     PouchDB = window.PouchDB;
   }
   else {
+    const ua = (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
     PouchDB = window.PouchDB = require('pouchdb-core').default
       .plugin(require('pouchdb-adapter-http').default)
       .plugin(require('pouchdb-replication').default)
       .plugin(require('pouchdb-mapreduce').default)
       .plugin(require('pouchdb-find').default)
-      .plugin(require('pouchdb-adapter-idb').default);
+      .plugin(ua.match('safari') && !ua.match('chrome') ? require('pouchdb-adapter-websql').default : require('pouchdb-adapter-idb').default);
   }
 }
 

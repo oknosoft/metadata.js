@@ -79,20 +79,15 @@ export function log_out(adapter) {
     };
 
     // в зависимости от использования суперлогина, разные действия
-    const {superlogin} = $p;
-    if(superlogin) {
-      if(superlogin.authenticated()) {
-        superlogin.logout().then(disp_log_out);
-      }
-      else {
-        disp_log_out();
-      }
-    }
-    else if(!adapter) {
+    if(!adapter) {
       disp_log_out();
     }
     else {
-      adapter.log_out();
+      adapter.log_out()
+        .then(() => {
+          const {superlogin} = $p;
+          superlogin && superlogin.authenticated() && superlogin.logout();
+        })
     }
   };
 }
@@ -121,11 +116,14 @@ export function log_error(err) {
   };
 }
 
-export function reset_user(state) {
+export function reset_user(state, logged_out) {
   const user = Object.assign({}, state.user);
   user.logged_in = false;
   user.has_login = false;
   user.try_log_in = false;
   user.log_error = '';
+  if(logged_out) {
+    user.logged_out = true;
+  }
   return Object.assign({}, state, {user});
 }

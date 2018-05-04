@@ -74,20 +74,15 @@ class TabsLogin extends Component {
     this.setState({ showPassword: !this.state.showPassword });
   };
 
-  handleTextChange = () => {
-    this.setState({
-      btn_login_disabled: !this.state.login || !this.state.password
-    });
-  };
-
   handleChange = (name) => event => {
     this.setState({
       [name]: event.target.value,
-    }, this.handleTextChange);
+    });
   };
 
   handleLogin = () => {
-    this.props.handleLogin(this.state.login, this.state.password);
+    const {login, password} = this.state;
+    login && password && this.props.handleLogin(login, password);
   };
 
   handleRegister = () => {
@@ -139,6 +134,7 @@ class TabsLogin extends Component {
               placeholder="password"
               defaultValue={this.props.password}
               onChange={this.handleChange('password')}
+              onKeyPress={(e) => e.key === 'Enter' && this.handleLogin()}
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton
@@ -153,7 +149,7 @@ class TabsLogin extends Component {
           </FormControl>
 
           <DialogActions>
-            <Button color="primary" size="small" disabled={state.btn_login_disabled} className={classes.button} onClick={this.handleLogin}>Войти</Button>
+            <Button color="primary" size="small" disabled={!state.login || !state.password} className={classes.button} onClick={this.handleLogin}>Войти</Button>
             <Button color="primary" size="small" disabled={true} className={classes.button}>Забыли пароль?</Button>
           </DialogActions>
 

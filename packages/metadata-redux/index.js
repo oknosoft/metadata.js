@@ -166,19 +166,15 @@ function log_out(adapter) {
     };
 
     // в зависимости от использования суперлогина, разные действия
-    var _$p = $p,
-        superlogin = _$p.superlogin;
-
-    if (superlogin) {
-      if (superlogin.authenticated()) {
-        superlogin.logout().then(disp_log_out);
-      } else {
-        disp_log_out();
-      }
-    } else if (!adapter) {
+    if (!adapter) {
       disp_log_out();
     } else {
-      adapter.log_out();
+      adapter.log_out().then(function () {
+        var _$p = $p,
+            superlogin = _$p.superlogin;
+
+        superlogin && superlogin.authenticated() && superlogin.logout();
+      });
     }
   };
 }
@@ -203,12 +199,15 @@ function log_error(err) {
   };
 }
 
-function reset_user(state) {
+function reset_user(state, logged_out) {
   var user = Object.assign({}, state.user);
   user.logged_in = false;
   user.has_login = false;
   user.try_log_in = false;
   user.log_error = '';
+  if (logged_out) {
+    user.logged_out = true;
+  }
   return Object.assign({}, state, { user: user });
 }
 
@@ -1146,7 +1145,7 @@ exports.default = (_META_LOADED$PRM_CHAN = {}, _defineProperty(_META_LOADED$PRM_
   var user = Object.assign({}, state.user, { try_log_in: true, log_error: '' });
   return Object.assign({}, state, { user: user });
 }), _defineProperty(_META_LOADED$PRM_CHAN, _actions_auth.LOG_OUT, function (state, action) {
-  return (0, _actions_auth.reset_user)(state);
+  return (0, _actions_auth.reset_user)(state, true);
 }), _defineProperty(_META_LOADED$PRM_CHAN, _actions_auth.LOG_ERROR, function (state, action) {
   var reseted = (0, _actions_auth.reset_user)(state);
   reseted.user.log_error = action.payload;

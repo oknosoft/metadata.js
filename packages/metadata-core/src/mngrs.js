@@ -97,19 +97,19 @@ export class DataManager extends MetaEventEmitter{
 	 * Указатель на адаптер данных этого менеджера
 	 */
 	get adapter(){
-		const {adapters} = this._owner.$p;
-		switch (this.cachable){
-			case undefined:
-			case "ram":
-			case "doc":
-			case "doc_remote":
-			case "doc_ram":
-			case "remote":
-			case "user":
-			case "meta":
-				return adapters.pouch;
-		}
-		return adapters[this.cachable];
+    const {adapters} = this._owner.$p;
+    switch (this.cachable) {
+    case undefined:
+    case 'ram':
+    case 'doc':
+    case 'doc_ram':
+    case 'ram_doc':
+    case 'remote':
+    case 'user':
+    case 'meta':
+      return adapters.pouch;
+    }
+    return adapters[this.cachable];
 	}
 
 	/**
@@ -145,29 +145,32 @@ export class DataManager extends MetaEventEmitter{
 	 * Для кешируемых, представления ссылок запоминать необязательно, т.к. его быстрее вычислить по месту
 	 * @property cachable
 	 * @for DataManager
-	 * @type String - ("ram", "doc", "doc_remote", "meta", "e1cib")
+	 * @type String - ("ram", "doc", "remote", "meta", "e1cib")
 	 * @final
 	 */
 	get cachable(){
 
-		const {class_name} = this
-		const _meta = this.metadata()
+    const {class_name} = this;
+    const _meta = this.metadata();
 
-		// перечисления кешируются всегда
-		if(class_name.indexOf("enm.") != -1)
-			return "ram";
+    // перечисления кешируются всегда
+    if(class_name.indexOf('enm.') != -1) {
+      return 'ram';
+    }
 
-		// Если в метаданных явно указано правило кеширования, используем его
-		if(_meta && _meta.cachable)
-			return _meta.cachable;
+    // Если в метаданных явно указано правило кеширования, используем его
+    if(_meta && _meta.cachable) {
+      return _meta.cachable;
+    }
 
-		// документы, отчеты и обработки по умолчанию кешируем в idb, но в память не загружаем
-		if(class_name.indexOf("doc.") != -1 || class_name.indexOf("dp.") != -1 || class_name.indexOf("rep.") != -1)
-			return "doc";
+    // документы, отчеты и обработки по умолчанию кешируем в idb, но в память не загружаем
+    if(class_name.indexOf('doc.') != -1 || class_name.indexOf('dp.') != -1 || class_name.indexOf('rep.') != -1) {
+      return 'doc';
+    }
 
-		// остальные классы по умолчанию кешируем и загружаем в память при старте
-		return "ram";
-	}
+    // остальные классы по умолчанию кешируем и загружаем в память при старте
+    return 'ram';
+  }
 
 	/**
 	 * ### Имя таблицы объектов этого менеджера в базе alasql
@@ -176,7 +179,7 @@ export class DataManager extends MetaEventEmitter{
 	 * @final
 	 */
 	get table_name(){
-		return this.class_name.replace(".", "_");
+    return this.class_name.replace('.', '_');
 	}
 
 	/**
@@ -304,52 +307,55 @@ export class DataManager extends MetaEventEmitter{
 			l.push(v);
 		}
 
-		// поиск по строке
-		if(selection.presentation && (input_by_string = t.metadata().input_by_string)){
-			text = selection.presentation.like;
-			delete selection.presentation;
-			selection.or = [];
-			input_by_string.forEach((fld) => {
-				const sel = {};
-				sel[fld] = {like: text};
-				selection.or.push(sel);
-			})
-		}
+    // поиск по строке
+    if(selection.presentation && (input_by_string = t.metadata().input_by_string)) {
+      text = selection.presentation.like;
+      delete selection.presentation;
+      selection.or = [];
+      input_by_string.forEach((fld) => {
+        const sel = {};
+        sel[fld] = {like: text};
+        selection.or.push(sel);
+      });
+    }
 
-		if(t.cachable == "ram" || t.cachable == "doc_ram" || (selection && selection._local)) {
-			t.find_rows(selection, push);
-			return Promise.resolve(l);
-		}
-		else if(t.cachable != "e1cib"){
-		  return t.adapter.find_rows(t, selection)
+    if(t.cachable == 'ram' || t.cachable == 'doc_ram' || (selection && selection._local)) {
+      t.find_rows(selection, push);
+      return Promise.resolve(l);
+    }
+    else if(t.cachable != 'e1cib') {
+      return t.adapter.find_rows(t, selection)
         .then((data) => {
-		    for(const v of data){
-		      push(v)
-		    };
-		    return l;
-		  });
-		}
-		else{
-			// для некешируемых выполняем запрос к серверу
-			var attr = { selection: selection, top: selection._top},
-				is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
-			delete selection._top;
+          for (const v of data) {
+            push(v);
+          }
+          ;
+          return l;
+        });
+    }
+    else {
+      // для некешируемых выполняем запрос к серверу
+      let attr = {selection: selection, top: selection._top},
+        is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
+      delete selection._top;
 
-			if(is_doc)
-				attr.fields = ["ref", "date", "number_doc"];
+      if(is_doc) {
+        attr.fields = ['ref', 'date', 'number_doc'];
+      }
+      else if(t.metadata().main_presentation_name) {
+        attr.fields = ['ref', 'name'];
+      }
+      else {
+        attr.fields = ['ref', 'id'];
+      }
 
-			else if(t.metadata().main_presentation_name)
-				attr.fields = ["ref", "name"];
-			else
-				attr.fields = ["ref", "id"];
-
-			return _rest.load_array(attr, t)
-				.then((data) => {
-					data.forEach(push);
-					return l;
-				});
-		}
-	}
+      return _rest.load_array(attr, t)
+        .then((data) => {
+          data.forEach(push);
+          return l;
+        });
+    }
+  }
 
 	/**
 	 * ### Возвращает менеджер значения по свойству строки
@@ -473,34 +479,35 @@ export class DataManager extends MetaEventEmitter{
 	 * @return {Promise.<Object>}
 	 */
 	printing_plates(){
-		var rattr = {}, t = this;
+		const rattr = {};
 		const {ajax} = this._owner.$p;
 
-		if(!t._printing_plates){
-			if(t.metadata().printing_plates){
-				t._printing_plates = t.metadata().printing_plates;
+		if(!this._printing_plates){
+			if(this.metadata().printing_plates){
+        this._printing_plates = this.metadata().printing_plates;
 			}
-			else if(t.metadata().cachable == "ram" || (t.metadata().cachable && t.metadata().cachable.indexOf("doc") == 0)){
-				t._printing_plates = {};
-			}
+			else {
+			  const {cachable} = this.metadata();
+        if(cachable && (cachable.indexOf('doc') == 0 || cachable.indexOf('ram') == 0)){
+          this._printing_plates = {};
+        }
+      }
 		}
 
-		if(!t._printing_plates && ajax.authorized){
-			ajax.default_attr(rattr, job_prm.irest_url());
-			rattr.url += t.rest_name + "/Print()";
-			return ajax.get_ex(rattr.url, rattr)
-				.then(function (req) {
-					t._printing_plates = JSON.parse(req.response);
-					return t._printing_plates;
-				})
-				.catch(function () {
-				})
-				.then(function (pp) {
-					return pp || (t._printing_plates = {});
-				});
-		}
+		// атавизм совместимости с 1С
+    if(!this._printing_plates && ajax.authorized) {
+      ajax.default_attr(rattr, job_prm.irest_url());
+      rattr.url += this.rest_name + '/Print()';
+      return ajax.get_ex(rattr.url, rattr)
+        .then((req) => {
+          this._printing_plates = JSON.parse(req.response);
+          return this._printing_plates;
+        })
+        .catch(() => null)
+        .then((pp) => pp || (this._printing_plates = {}));
+    }
 
-		return Promise.resolve(t._printing_plates);
+		return Promise.resolve(this._printing_plates);
 
 	}
 
@@ -1235,11 +1242,11 @@ export class RefDataManager extends DataManager{
       });
 
     }
-    else if(cachable === 'doc' || cachable === 'remote'){
+    else if(cachable === 'doc' || cachable === 'ram_doc' || cachable === 'remote'){
 
       Object.assign(select, {
         selector: {class_name: this.class_name},
-        fields: ["_id", "name"],
+        fields: ['_id', 'name'],
         skip,
         limit: top
       });

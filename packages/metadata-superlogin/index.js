@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.16-beta.56, built:2018-04-16
+ metadata-superlogin v2.0.16-beta.57, built:2018-04-22
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -62,6 +62,18 @@ var adapter = (constructor) => {
           }
         }
         super.after_init();
+        for(const name of props.autologin) {
+          if(name === 'doc' || name === 'ram') {
+            continue;
+          }
+          let url = this.dbpath('doc');
+          if(url && remote[name]) {
+            const {path, prefix, zone} = props;
+            const pos = url.indexOf(prefix + (name == 'meta' ? name : (zone + '_doc')));
+            remote[name] = new PouchDB(url.substr(0, pos) + prefix + (name == 'meta' ? name : (zone + '_' + name)),
+              {skip_setup: true, adapter: 'http'});
+          }
+        }
         if(wsql.get_user_param('user_name') != session.user_id) {
           wsql.set_user_param('user_name', session.user_id);
         }
@@ -104,6 +116,7 @@ var default_config = {
 const {metaActions} = require('metadata-redux');
 function attach($p) {
   superlogin.on('login', function (event, session) {
+    session = null;
   });
   superlogin.on('logout', function (event, message) {
   });
@@ -111,6 +124,17 @@ function attach($p) {
   });
   superlogin.on('link', function (event, provider) {
   });
+  superlogin.create_user = function () {
+    const session = superlogin.getSession();
+    if(session) {
+      const attr = {
+        id: session.user_id,
+        ref: session.profile && session.profile.ref ? session.profile.ref : $p.utils.generate_guid(),
+        name: session.profile && session.profile.name ? session.profile.name : session.user_id,
+      };
+      return $p.cat.users.create(attr, false, true);
+    }
+  };
   function handleSocialAuth(provider) {
     return function (dispatch, getState) {
       if(superlogin.authenticated()) {
