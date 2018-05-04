@@ -23,9 +23,9 @@ class DataObjToolbar extends Component {
 
     handleSave: PropTypes.func.isRequired,        // обработчик добавления объекта
     handleMarkDeleted: PropTypes.func.isRequired, // команда Отозвать
-    handlePrint: PropTypes.func.isRequired,       // обработчик открытия диалога печати
-    handleAttachments: PropTypes.func.isRequired,  // обработчик открытия диалога присоединенных файлов
-    handleClose: PropTypes.func.isRequired,       // команда Закрыть форму
+    handlePrint: PropTypes.func,                  // обработчик открытия диалога печати
+    handleAttachments: PropTypes.func,            // обработчик открытия диалога присоединенных файлов
+    handleClose: PropTypes.func,                  // команда Закрыть форму
 
     postable: PropTypes.bool,                     // объект можно провести-распровести
     posted: PropTypes.bool,                       // объект проведён

@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.57, built:2018-04-29
+ metadata-core v2.0.16-beta.57, built:2018-05-04
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2832,7 +2832,7 @@ Date.prototype.toJSON = Date.prototype.toISOString = function () {
 };
 if (!Number.prototype.round) {
 	Number.prototype.round = function (places) {
-		var multiplier = Math.pow(10, places);
+		var multiplier = Math.pow(10, places || 0);
 		return (Math.round(this * multiplier) / multiplier);
 	};
 }
