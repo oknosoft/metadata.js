@@ -17,9 +17,9 @@ function AttachmentsToolbar (props) {
 
   return (
     <Toolbar disableGutters className={props.classes.toolbar}>
-      <IconButton title="Добавить" onClick={props.handleAdd}><UploadIcon/></IconButton>
+      {!props.short && <IconButton title="Добавить" onClick={props.handleAdd}><UploadIcon/></IconButton>}
       <IconButton title="Получить" onClick={props.handleDownload}><DownloadIcon/></IconButton>
-      <IconButton title="Удалить" onClick={props.handleDelete}><RemoveIcon/></IconButton>
+      {!props.short && <IconButton title="Удалить" onClick={props.handleDelete}><RemoveIcon/></IconButton>}
 
       <Typography variant="title" color="inherit" className={props.classes.flex}> </Typography>
 
@@ -30,13 +30,12 @@ function AttachmentsToolbar (props) {
 };
 
 AttachmentsToolbar.propTypes = {
-
-  handleAdd: PropTypes.func.isRequired,
-  handleDelete: PropTypes.func.isRequired,
-  handleDownload: PropTypes.func.isRequired,
+  handleAdd: PropTypes.func,
+  handleDelete: PropTypes.func,
+  handleDownload: PropTypes.func,
   handleClose: PropTypes.func,
   closeButton: PropTypes.bool,
-
+  short: PropTypes.bool,
 };
 
 export default withStyles(AttachmentsToolbar);

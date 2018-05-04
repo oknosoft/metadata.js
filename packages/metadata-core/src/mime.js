@@ -2616,7 +2616,7 @@ export default {
       },
 
       mime_lookup: {
-        value: function (ext) {
+        value(ext) {
 
           if (!ext)
             return 'application/octet-stream';

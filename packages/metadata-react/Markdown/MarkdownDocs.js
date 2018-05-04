@@ -9,7 +9,6 @@ import {withIface} from 'metadata-redux';
 import Typography from 'material-ui/Typography';
 
 
-
 import AppContent from '../App/AppContent';
 import MarkdownElement from './MarkdownElement';
 //import Demo from 'docs/src/modules/components/Demo';
