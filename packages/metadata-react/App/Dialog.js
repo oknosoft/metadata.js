@@ -86,7 +86,7 @@ SimpleDialog.propTypes = {
   initFullScreen: PropTypes.bool,
   title: PropTypes.string.isRequired,
   actions: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  children: PropTypes.object.isRequired,
+  children: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   classes: PropTypes.object.isRequired,
   onClose: PropTypes.func.isRequired,
 };

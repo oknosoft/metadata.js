@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.57, built:2018-05-04
+ metadata-core v2.0.16-beta.57, built:2018-05-05
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -66,6 +66,7 @@ const msg$1 = new I18n({
 		error_rights: 'Ограничение доступа',
 		error_low_acl: 'Недостаточно прав для выполнения операции',
     file_download: 'Загрузка файлов',
+    file_select: 'Укажите строку для действий с файлом',
 		file_size: 'Запрещена загрузка файлов размером более ',
 		file_confirm_delete: 'Подтвердите удаление файла ',
 		file_new_date: 'Файлы на сервере обновлены<br /> Рекомендуется закрыть браузер и войти<br />повторно для применения обновления',

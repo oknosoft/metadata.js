@@ -38,6 +38,6 @@ export default function ({wsql, utils}) {
       return Promise.resolve();
     }
     return ('JSZip' in window ? Promise.resolve() : utils.load_script('https://cdn.jsdelivr.net/jszip/2/jszip.min.js', 'script'))
-      .then(() => utils.load_script('https://cdn.jsdelivr.net/npm/xlsx@0.11.3/dist/xlsx.min.js', 'script'));
+      .then(() => utils.load_script('https://cdn.jsdelivr.net/npm/xlsx@0.12.11/dist/xlsx.min.js', 'script'));
   };
 }

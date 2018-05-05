@@ -13,13 +13,18 @@ import MDNRComponent from '../common/MDNRComponent';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 import AttachmentsToolbar from './AttachmentsToolbar';
 import AttachmentsList from './AttachmentsList';
-
+import Dialog from '../App/Dialog';
+import Button from 'material-ui/Button';
+import Typography from 'material-ui/Typography';
 
 class Attachments extends MDNRComponent {
 
   constructor(props, context) {
     super(props, context);
-    this.state = {_obj: props._obj};
+    this.state = {
+      _obj: props._obj,
+      dialog: null,
+    };
     this.input = null;
   }
 
@@ -50,12 +55,10 @@ class Attachments extends MDNRComponent {
         .then(() => this.forceUpdate())
         .catch((err) => {
           // показываем диалог
-          const {handleIfaceState} = this.props;
-          handleIfaceState && handleIfaceState({
-            component: '',
-            name: 'alert',
-            value: {open: true, title: msg.file_download, text: err.message}
-          });
+          this.setState({dialog: {
+              title: msg.file_download,
+              message: err.message,
+            }});
         });
     }
   };
@@ -63,6 +66,40 @@ class Attachments extends MDNRComponent {
   handleAdd = () => {
     this.input && this.input.click();
   };
+
+  handleDelete = () => {
+    const {name} = this.state;
+    if(name) {
+      this.setState({dialog: {
+          title: 'Удаление файла',
+          name: name,
+          message: `Удалить вложение "${name}"?`,
+        }});
+    }
+    else {
+      this.setState({dialog: {
+          title: $p.msg.file_download,
+          message: $p.msg.file_select,
+        }});
+    }
+  }
+
+  handleDeleteFinish = () => {
+    const {name, _obj} = this.state;
+    _obj.delete_attachment(name)
+      .then(() => this.setState({dialog: null}))
+      .catch((err) => {
+        // показываем диалог
+        this.setState({dialog: {
+            title: $p.msg.file_download,
+            message: err.message,
+          }});
+      });
+  }
+
+  handleCloseDialog = () => {
+    this.setState({dialog: null});
+  }
 
   handleSelect = (name) => {
     this.setState({name});
@@ -74,14 +111,20 @@ class Attachments extends MDNRComponent {
       const url = `${_obj._manager.pouch_db.name}/${_obj.class_name}|${_obj.ref}/${name}`;
       window.open(url, '_blank');
     }
+    else {
+      this.setState({dialog: {
+          title: $p.msg.file_download,
+          message: $p.msg.file_select,
+        }});
+    }
   }
 
   render() {
-    const {state: {_obj}, context, props} = this;
+    const {state: {_obj, dialog}, context, props} = this;
     const tbProps = {
       closeButton: !context.dnr,
       handleAdd: this.handleAdd,
-      handleDelete: () => {},
+      handleDelete: this.handleDelete,
       handleDownload: this.handleDownload,
       handleClose: props.handleClose,
     };
@@ -95,7 +138,23 @@ class Attachments extends MDNRComponent {
       [
         <input key="input" ref={(el) => this.input = el} onChange={this.fileChange} type="file" multiple="1" style={{display: 'none'}} />,
         <AttachmentsToolbar key="toolbar" {...tbProps} />,
-        <AttachmentsList key="data" {...listProps} />
+        <AttachmentsList key="data" {...listProps} />,
+        dialog && <Dialog
+          key="dialog"
+          open
+          title={dialog.title}
+          onClose={this.handleCloseDialog}
+          actions={dialog.name ?
+            [
+              <Button key="cancel" onClick={this.handleCloseDialog} color="primary">Отмена</Button>,
+              <Button key="ok" onClick={this.handleDeleteFinish} color="primary">Ок</Button>
+            ]
+            :
+            <Button key="ok" onClick={this.handleCloseDialog} color="primary">Ок</Button>
+          }
+        >
+          <Typography color="primary">{dialog.message}</Typography>
+        </Dialog>
       ]
       :
       <LoadingMessage/>;
