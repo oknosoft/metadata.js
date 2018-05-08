@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.58, built:2018-05-06
+ metadata-pouchdb v2.0.16-beta.58, built:2018-05-08
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -168,6 +168,9 @@ function adapter({AbstracrAdapter}) {
       if(job_prm.use_meta === false) {
         props.use_meta = false;
       }
+      if(job_prm.use_ram === false) {
+        props.use_ram = false;
+      }
       const opts = {auto_compaction: true, revs_limit: 3};
       const bases = md.bases();
       if(props.use_meta !== false) {
@@ -177,7 +180,11 @@ function adapter({AbstracrAdapter}) {
           setTimeout(() => this.run_sync('meta'));
         }
       }
-      for (const name of ['ram', 'doc', 'user']) {
+      const pbases = ['doc', 'user'];
+      if(props.use_ram !== false) {
+        pbases.push('ram');
+      }
+      for (const name of pbases) {
         if(bases.indexOf(name) != -1) {
           if(props.user_node || (props.direct && name != 'ram')) {
             Object.defineProperty(local, name, {
@@ -200,7 +207,7 @@ function adapter({AbstracrAdapter}) {
         opts.auth = props.user_node;
       }
       (bases || md.bases()).forEach((name) => {
-        if(remote[name] || name == 'e1cib' || name == 'pgsql' || name == 'github') {
+        if(remote[name] || name == 'e1cib' || name == 'pgsql' || name == 'github' || (props.use_ram === false && name === 'ram')) {
           return;
         }
         remote[name] = new PouchDB$1(this.dbpath(name), opts);
@@ -733,6 +740,9 @@ function adapter({AbstracrAdapter}) {
         if(!page) {
           page = local.sync._page || {};
         }
+        if(!local.sync._page) {
+          local.sync._page = page;
+        }
         Promise.resolve().then(() => {
           this.emit(page.note = 'pouch_data_loaded', page);
           this.authorized && this.load_doc_ram();
@@ -1114,7 +1124,8 @@ function adapter({AbstracrAdapter}) {
             endkey: name + '|\ufff0',
             limit: 10000,
           };
-          this.emit('pouch_data_page', {synonym: md.get(name).synonym});
+          const page = local.sync._page || {};
+          this.emit('pouch_data_page', Object.assign(page, {synonym: md.get(name).synonym}));
           return local.doc.allDocs(opt).then((res) => this.load_changes(res, opt));
         });
       }, Promise.resolve())

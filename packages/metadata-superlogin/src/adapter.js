@@ -136,7 +136,7 @@ export default (constructor) => {
      * @property authorized
      */
     get authorized() {
-      return !!this.$p.superlogin.getSession();
+      return this.$p.superlogin.authenticated();
     }
   };
 
