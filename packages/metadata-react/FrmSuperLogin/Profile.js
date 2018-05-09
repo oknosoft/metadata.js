@@ -26,6 +26,10 @@ class UserObj extends Component {
     this.state = {
       index: 0
     };
+    const {profile} = $p.superlogin.getSession();
+    if(profile && props._obj && props._obj.subscription !== !!profile.subscription) {
+      props._obj._obj.subscription = !!profile.subscription;
+    }
   }
 
   componentDidMount() {
@@ -68,10 +72,10 @@ class UserObj extends Component {
 
         {state.index === 0 &&
         <FormGroup>
-          <DataField _obj={_obj} _fld="id"/>
-          <DataField _obj={_obj} _fld="name" label="ФИО пользователя"/>
-          <DataField _obj={_obj} _fld="sex"/>
-          <DataField _obj={_obj} _fld="email_addr"/>
+          <DataField _obj={_obj} _fld="id" read_only/>
+          <DataField _obj={_obj} _fld="name" label="ФИО пользователя" read_only/>
+          <DataField _obj={_obj} _fld="email_addr" read_only/>
+          <DataField _obj={_obj} _fld="subscription"/>
           <DialogActions>
             <Button color="primary" size="small" className={classes.button} onClick={handleLogOut}>Выйти</Button>
           </DialogActions>

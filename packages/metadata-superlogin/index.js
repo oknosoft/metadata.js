@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.16-beta.58, built:2018-05-08
+ metadata-superlogin v2.0.16-beta.58, built:2018-05-09
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -125,7 +125,7 @@ function attach($p) {
   superlogin.on('link', function (event, provider) {
   });
   superlogin.create_user = function () {
-    const session = superlogin.getSession();
+    const session = this.getSession();
     if(session) {
       const attr = {
         id: session.user_id,
@@ -134,6 +134,24 @@ function attach($p) {
       };
       return $p.cat.users.create(attr, false, true);
     }
+  };
+  superlogin.change_name = function (newName) {
+    if(this.authenticated()) {
+      return this.getSession().profile.name == newName ?
+        Promise.resolve() :
+        this._http.post(`/user/change-name`, {newName})
+          .then(res => res.data);
+    }
+    return Promise.reject({error: 'Authentication required'});
+  };
+  superlogin.change_subscription = function (subscription) {
+    if(this.authenticated()) {
+      return this.getSession().profile.subscription == subscription ?
+        Promise.resolve() :
+        this._http.post(`/user/change-subscription`, {subscription})
+          .then(res => res.data);
+    }
+    return Promise.reject({error: 'Authentication required'});
   };
   function handleSocialAuth(provider) {
     return function (dispatch, getState) {

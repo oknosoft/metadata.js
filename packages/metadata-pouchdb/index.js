@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.58, built:2018-05-08
+ metadata-pouchdb v2.0.16-beta.58, built:2018-05-09
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
