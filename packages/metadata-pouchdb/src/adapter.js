@@ -74,7 +74,8 @@ function adapter({AbstracrAdapter}) {
         path: wsql.get_user_param('couch_path', 'string') || job_prm.couch_path || '',
         zone: wsql.get_user_param('zone', 'number'),
         prefix: job_prm.local_storage_prefix,
-        direct: job_prm.hasOwnProperty('couch_direct') ? job_prm.couch_direct : wsql.get_user_param('couch_direct', 'boolean'),
+        direct: wsql.get_user_param('zone', 'number') == job_prm.zone_demo ? false :
+          (job_prm.hasOwnProperty('couch_direct') ? job_prm.couch_direct : wsql.get_user_param('couch_direct', 'boolean')),
         user_node: job_prm.user_node,
         noreplicate: job_prm.noreplicate,
         autologin: job_prm.autologin || [],
@@ -239,7 +240,7 @@ function adapter({AbstracrAdapter}) {
             else if(ref.test(role)) {
               props._user = role.substr(4);
             }
-            else if(role === 'direct' && !props.direct) {
+            else if(role === 'direct' && !props.direct && props.zone != job_prm.zone_demo) {
               props.direct = true;
               wsql.set_user_param('couch_direct', true);
             }
@@ -688,7 +689,7 @@ function adapter({AbstracrAdapter}) {
               options.back_off_function = this.back_off;
 
               // ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
-              if(id == 'ram' || id == 'meta' || wsql.get_user_param('zone') == job_prm.zone_demo) {
+              if(id == 'ram' || id == 'meta' || props.zone == job_prm.zone_demo) {
                 local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
               }
               else if(_push_only) {
