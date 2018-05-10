@@ -81,14 +81,12 @@ function MarkdownDocs(props: Props) {
       value: ltitle,
     });
   }
-  const helmet = {title: ltitle};
-  if(descr) {
-    helmet.description = descr;
-  }
 
   return (
     <AppContent className={classes.root}>
-      <Helmet {...helmet} />
+      <Helmet title={ltitle}>
+        <meta name="description" content={descr || h1} />
+      </Helmet>
 
       {/*
         <div className={classes.header}>

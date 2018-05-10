@@ -257,7 +257,9 @@ class DataList extends MDNRComponent {
 
     return [
 
-      !context.dnr && <Helmet key="helmet" title={title}/>,
+      !context.dnr && <Helmet key="helmet" title={title}>
+        <meta name="description" content="Форма списка" />
+      </Helmet>,
 
       // диалог предупреждений при удалении
       confirm_text && <Confirm

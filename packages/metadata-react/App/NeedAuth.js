@@ -24,7 +24,9 @@ function NeedAuth(props) {
 
   const margin = {marginTop: 16, marginBottom: 16};
   return <AppContent>
-    <Helmet title="Пользователь не авторизован"/>
+    <Helmet title="Пользователь не авторизован">
+      <meta name="description" content="Необходима авторизация" />
+    </Helmet>
     <div style={{marginTop: 16}}>
       <Typography variant="display1" component="h1" color="primary" style={margin}>Пользователь не авторизован</Typography>
       <Typography color="inherit" style={margin}>Для доступа к данному разделу, необходима авторизация</Typography>

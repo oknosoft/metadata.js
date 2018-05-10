@@ -8,7 +8,9 @@ import Profile from './Profile';
 
 export default function FrmSuperLogin({ classes, ...other}) {
   return [
-    <Helmet key="helmet" title="Профиль пользователя" />,
+    <Helmet key="helmet" title="Профиль пользователя">
+      <meta name="description" content="Вход в систему" />
+    </Helmet>,
     other.user.logged_in ? < Profile key="profile" {...other} /> : < TabsLogin key="profile" {...other} />
   ];
 };

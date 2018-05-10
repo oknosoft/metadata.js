@@ -85,7 +85,9 @@ class TabsLogin extends Component {
       [classes.disabled]: user.try_log_in && couch_direct
     })} elevation={4}>
 
-      <Helmet title={props.title}/>
+      <Helmet title={props.title}>
+        <meta name="description" content="Вход в систему" />
+      </Helmet>
 
       <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
         <Tab label="Вход"/>

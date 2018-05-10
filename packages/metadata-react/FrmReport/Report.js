@@ -111,7 +111,9 @@ class Report extends MDNRComponent {
     const show_grid = !settings_open || (props.height || 500) > 572;
 
     return [
-      <Helmet key="helmet" title={props.title}/>,
+      <Helmet key="helmet" title={props.title}>
+        <meta name="description" content="Отчет" />
+      </Helmet>,
 
       <RepToolbar
         key="toolbar"

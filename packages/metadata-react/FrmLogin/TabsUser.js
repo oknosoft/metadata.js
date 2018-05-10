@@ -60,7 +60,9 @@ class TabsUser extends Component {
 
       <Paper className={classes.root} elevation={4}>
 
-        <Helmet title={props.title} />
+        <Helmet title={props.title}>
+          <meta name="description" content="Свойства пользователя" />
+        </Helmet>
 
         <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
           <Tab label="Профиль"/>
@@ -90,7 +92,9 @@ class TabsUser extends Component {
       </Paper>
       :
       <div>
-        <Helmet title="Пользователь не найден" />
+        <Helmet title="Пользователь не найден">
+          <meta name="description" content="Свойства пользователя" />
+        </Helmet>
         нет данных
       </div>;
   }
