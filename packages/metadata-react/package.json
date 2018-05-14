@@ -9,7 +9,7 @@
     "npm": "^5.5"
   },
   "dependencies": {
-    "@material-ui/icons": "^1.0.0-beta.43",
+    "@material-ui/icons": "^1.0.0-rc.0",
     "autoprefixer": "^7.1.6",
     "classnames": "^2.2",
     "font-awesome": "^4.7.0",

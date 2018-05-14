@@ -39,42 +39,37 @@ export function data_loaded(page) {
       payload: page
     });
 
-    if(typeof page == 'object') {
-      const {meta} = getState();
+    if(typeof page === 'object' && typeof $p === 'object') {
+      const {meta: {user}} = getState();
 
-      // если вход еще не выполнен...
-      if(!meta.user.logged_in && meta.user.has_login) {
-        setTimeout(() => {
-          const {job_prm, wsql, adapters, superlogin, aes} = $p;
+      if(user.has_login) {
+        const {job_prm, wsql, adapters, superlogin, aes} = $p;
 
-          // получаем имя сохраненного или гостевого пользователя
-          let name = wsql.get_user_param('user_name');
-          let password = wsql.get_user_param('user_pwd');
+        // получаем имя сохраненного или гостевого пользователя
+        let name = wsql.get_user_param('user_name');
+        let password = wsql.get_user_param('user_pwd');
 
-          if(!name &&
-            job_prm.zone_demo == wsql.get_user_param('zone') &&
-            job_prm.guests.length) {
-            name = job_prm.guests[0].name;
-          }
+        if(!name &&
+          job_prm.zone_demo == wsql.get_user_param('zone') &&
+          job_prm.guests.length) {
+          name = job_prm.guests[0].name;
+        }
 
-          // устанавливаем текущего пользователя
-          if(name) {
-            dispatch(defined(name));
-          }
+        // устанавливаем текущего пользователя
+        if(name) {
+          dispatch(defined(name));
+        }
 
+        // если вход еще не выполнен...
+        if(!user.logged_in && !user.try_log_in) {
           // если разрешено сохранение пароля или superlogin или гостевая зона...
-          if(name && password && wsql.get_user_param('enable_save_pwd')) {
+          if((superlogin && superlogin.authenticated()) || (name && password && wsql.get_user_param('enable_save_pwd'))) {
             return dispatch(try_log_in(adapters.pouch, name, aes.Ctr.decrypt(password)));
-          }
-          if(superlogin && superlogin.authenticated()) {
-            return dispatch(try_log_in(adapters.pouch));
           }
           if(name && job_prm.zone_demo == wsql.get_user_param('zone')) {
             dispatch(try_log_in(adapters.pouch, name, aes.Ctr.decrypt(job_prm.guests[0].password)));
           }
-
-        });
-
+        }
       }
     }
 
