@@ -32,7 +32,7 @@
     "rc-cascader": "^0.13.1",
     "rc-time-picker": "^3.3.1",
     "react-onclickoutside": "^6.7.1",
-    "react-virtualized": "^9.18.5",
+    "react-virtualized": "^9.19.0",
     "superlogin-client": "^0.8.0"
   },
   "devDependencies": {
@@ -56,7 +56,7 @@
     "gulp-base64": "^0.1",
     "gulp-concat": "^2.6",
     "gulp-csso": "^3.0.1",
-    "gulp-rename": "^1.2",
+    "gulp-rename": "^1.2.3",
     "gulp-replace": "^0.6.1",
     "gulp-strip-comments": "^2.5.2",
     "gulp-uglify": "^2.1",
