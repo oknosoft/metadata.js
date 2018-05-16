@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.58, built:2018-05-14
+ metadata-abstract-ui v2.0.16-beta.58, built:2018-05-16
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -138,6 +138,11 @@ function scheme_settings() {
   const {CatManager, DataProcessorsManager, DataProcessorObj, CatObj, DocManager, TabularSectionRow} = constructor.classes || this;
   class SchemeSettingsManager extends CatManager {
     find_schemas(class_name) {
+      if(this.cachable === 'ram') {
+        return Promise.resolve(
+          this.find_rows({obj: 'cat.articles.aliases'}).sort((a,b) => a.user > b.user)
+        );
+      }
       const opt = {
         _view: 'doc/scheme_settings',
         _top: 100,
