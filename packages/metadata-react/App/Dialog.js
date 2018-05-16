@@ -10,6 +10,7 @@ import IconButton from 'material-ui/IconButton';
 import colors from 'material-ui/colors/common';
 import withStyles from 'material-ui/styles/withStyles';
 import compose from 'recompose/compose';
+import cn from 'classnames';
 
 const style = theme => ({
   flex: {
@@ -35,8 +36,11 @@ const style = theme => ({
     padding: 0,
   },
   paper: {
-    minWidth: 600,
+    minWidth: 480,
   },
+  minheight: {
+    minHeight: 320,
+  }
 });
 
 class SimpleDialog extends React.Component {
@@ -59,9 +63,9 @@ class SimpleDialog extends React.Component {
   }
 
   render() {
-    const {open, fullScreen, noSpace, title, actions, children, classes, onClose} = this.props;
+    const {open, fullScreen, noSpace, title, actions, children, classes, onClose, minheight} = this.props;
     const stateFullScreen = fullScreen || this.state.fullScreen;
-    return <Dialog open={open} fullScreen={stateFullScreen} onClose={onClose} classes={{paper: classes.paper}}>
+    return <Dialog open={open} fullScreen={stateFullScreen} onClose={onClose} classes={{paper: cn(classes.paper, minheight && classes.minheight)}}>
       <Toolbar disableGutters className={classes.toolbar}>
         <Typography className={classes.title} variant="title" color="inherit" noWrap>{title}</Typography>
         {
