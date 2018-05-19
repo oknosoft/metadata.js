@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.58, built:2018-05-14
+ metadata-core v2.0.16-beta.59, built:2018-05-19
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -4382,7 +4382,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.58';
+    return '2.0.16-beta.59';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

@@ -11,7 +11,7 @@ import {withMeta} from 'metadata-redux';
 import BrowserCompatibility, {browser_compatible} from './BrowserCompatibility';
 
 // тема для material-ui
-import {MuiThemeProvider} from 'material-ui/styles';
+import {MuiThemeProvider} from '@material-ui/core/styles';
 
 class RootView extends Component {
 

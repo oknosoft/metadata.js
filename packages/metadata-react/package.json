@@ -1,7 +1,7 @@
 {
   "name": "metadata-react",
   "description": "React UI components for metadata.js",
-  "version": "2.0.16-beta.58",
+  "version": "2.0.16-beta.59",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
@@ -9,15 +9,15 @@
     "npm": "^5.5"
   },
   "dependencies": {
-    "@material-ui/icons": "^1.0.0-rc.0",
+    "@material-ui/core": "^1.0.0",
+    "@material-ui/icons": "^1.0.0",
     "autoprefixer": "^7.2.6",
     "classnames": "^2.2",
     "font-awesome": "^4.7.0",
     "marked": "^0.3.19",
-    "material-ui": "1.0.0-beta.47",
-    "metadata-abstract-ui": "^2.0.16-beta.58",
-    "metadata-external": "^2.0.16-beta.58",
-    "metadata-redux": "^2.0.16-beta.58",
+    "metadata-abstract-ui": "^2.0.16-beta.59",
+    "metadata-external": "^2.0.16-beta.59",
+    "metadata-redux": "^2.0.16-beta.59",
     "rc-calendar": "^9.6.0",
     "rc-cascader": "^0.13.1",
     "rc-time-picker": "^3.3.1",

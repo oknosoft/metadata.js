@@ -1,10 +1,11 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Toolbar from 'material-ui/Toolbar';
-import Typography from 'material-ui/Typography';
-import IconButton from 'material-ui/IconButton';
-import Menu, {MenuItem} from 'material-ui/Menu';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 
 import AddIcon from '@material-ui/icons/AddCircleOutline';
 import RemoveIcon from '@material-ui/icons/Delete';
@@ -20,7 +21,7 @@ import DateRange from '../SchemeSettings/DateRange';
 import compose from 'recompose/compose';
 import classnames from 'classnames';
 import withStyles from '../Header/toolbar';
-import withWidth, {isWidthUp} from 'material-ui/utils/withWidth';
+import withWidth, {isWidthUp} from '@material-ui/core/withWidth';
 
 
 class DataListToolbar extends Component {

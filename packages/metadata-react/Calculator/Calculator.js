@@ -5,7 +5,8 @@ import PlayArrow from '@material-ui/icons/PlayArrow';
 import ArrowBack from '@material-ui/icons/ArrowBack';
 import CalculatorInput from './CalculatorInput';
 import CalculatorButton from './CalculatorButton';
-import Menu, {MenuItem} from 'material-ui/Menu';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 import ReactClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
 

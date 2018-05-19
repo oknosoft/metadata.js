@@ -2,8 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import MDNRComponent from '../common/MDNRComponent';
 
-import {FormGroup} from 'material-ui/Form';
-import Divider from 'material-ui/Divider';
+import FormGroup from '@material-ui/core/FormGroup';
+import Divider from '@material-ui/core/Divider';
 
 // окно диалога, чтобы показать всплывающие формы
 import Dialog from '../App/Dialog';

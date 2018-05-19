@@ -4,9 +4,9 @@ import React from 'react';
 import kebabCase from 'lodash/kebabCase';
 import warning from 'warning';
 import Helmet from 'react-helmet';
-import {withStyles} from 'material-ui/styles';
+import withStyles from '@material-ui/core/styles/withStyles';
 import {withIface} from 'metadata-redux';
-import Typography from 'material-ui/Typography';
+import Typography from '@material-ui/core/Typography';
 
 
 import AppContent from '../App/AppContent';

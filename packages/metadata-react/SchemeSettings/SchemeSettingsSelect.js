@@ -7,11 +7,11 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Toolbar from 'material-ui/Toolbar';
-import IconButton from 'material-ui/IconButton';
+import Toolbar from '@material-ui/core/Toolbar';
+import IconButton from '@material-ui/core/IconButton';
 import SaveIcon from '@material-ui/icons/Save';
 import CopyIcon from '@material-ui/icons/ContentCopy';
-import {FormGroup} from 'material-ui/Form';
+import FormGroup from '@material-ui/core/FormGroup';
 import DataField from '../DataField';
 import styles from './styles/SchemeSettingsSelect.scss';
 import withStyles from '../Header/toolbar';
