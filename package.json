@@ -12,7 +12,7 @@
     "doc": "doc"
   },
   "dependencies": {
-    "@material-ui/icons": "^1.0.0-rc.0",
+    "@material-ui/icons": "^1.0.0",
     "alasql": "^0.4.5",
     "dataframe": "^2.0.1",
     "debug": "^3.1.0",

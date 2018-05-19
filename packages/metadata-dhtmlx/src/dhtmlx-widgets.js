@@ -2825,17 +2825,18 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 
 	});
 
-	function onkeydown(){
+  function onkeydown() {
 
-		if(input_filter_changed)
-			clearTimeout(input_filter_changed);
+    if(input_filter_changed) {
+      clearTimeout(input_filter_changed);
+    }
 
-		input_filter_changed = setTimeout(function () {
+    input_filter_changed = setTimeout(function () {
       input_filter_changed && t._prev_input_filter != t.input_filter.value && t.call_event();
-		}, 500);
-	}
+    }, 750);
+  }
 
-	// заготовка для адаптивного фильтра
+  // заготовка для адаптивного фильтра
 	t.toolbar.addText("div_filter", attr.pos, "");
 	t.div = t.toolbar.objPull[t.toolbar.idPrefix + "div_filter"];
 	attr.pos++;
