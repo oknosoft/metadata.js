@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.16-beta.57, built:2018-04-22
+ metadata-superlogin v2.0.16-beta.59, built:2018-05-19
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -98,7 +98,7 @@ var adapter = (constructor) => {
       return url;
     }
     get authorized() {
-      return !!this.$p.superlogin.getSession();
+      return this.$p.superlogin.authenticated();
     }
   };
 }
@@ -125,7 +125,7 @@ function attach($p) {
   superlogin.on('link', function (event, provider) {
   });
   superlogin.create_user = function () {
-    const session = superlogin.getSession();
+    const session = this.getSession();
     if(session) {
       const attr = {
         id: session.user_id,
@@ -134,6 +134,34 @@ function attach($p) {
       };
       return $p.cat.users.create(attr, false, true);
     }
+  };
+  superlogin.change_name = function (newName) {
+    if(this.authenticated()) {
+      const session = this.getSession();
+      return session.profile.name == newName ?
+        Promise.resolve() :
+        this._http.post(`/user/change-name`, {newName})
+          .then(res => {
+            session.profile.name = newName;
+            this.setSession(session);
+            return res.data;
+          });
+    }
+    return Promise.reject({error: 'Authentication required'});
+  };
+  superlogin.change_subscription = function (subscription) {
+    if(this.authenticated()) {
+      const session = this.getSession();
+      return session.profile.subscription == subscription ?
+        Promise.resolve() :
+        this._http.post(`/user/change-subscription`, {subscription})
+          .then(res => {
+            session.profile.subscription = subscription;
+            this.setSession(session);
+            return res.data;
+          });
+    }
+    return Promise.reject({error: 'Authentication required'});
   };
   function handleSocialAuth(provider) {
     return function (dispatch, getState) {

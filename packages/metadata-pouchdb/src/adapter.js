@@ -74,7 +74,8 @@ function adapter({AbstracrAdapter}) {
         path: wsql.get_user_param('couch_path', 'string') || job_prm.couch_path || '',
         zone: wsql.get_user_param('zone', 'number'),
         prefix: job_prm.local_storage_prefix,
-        direct: job_prm.hasOwnProperty('couch_direct') ? job_prm.couch_direct : wsql.get_user_param('couch_direct', 'boolean'),
+        direct: wsql.get_user_param('zone', 'number') == job_prm.zone_demo ? false :
+          (job_prm.hasOwnProperty('couch_direct') ? job_prm.couch_direct : wsql.get_user_param('couch_direct', 'boolean')),
         user_node: job_prm.user_node,
         noreplicate: job_prm.noreplicate,
         autologin: job_prm.autologin || [],
@@ -84,6 +85,9 @@ function adapter({AbstracrAdapter}) {
       }
       if(job_prm.use_meta === false) {
         props.use_meta = false;
+      }
+      if(job_prm.use_ram === false) {
+        props.use_ram = false;
       }
 
       // создаём локальные базы
@@ -99,7 +103,12 @@ function adapter({AbstracrAdapter}) {
         }
       }
 
-      for (const name of ['ram', 'doc', 'user']) {
+      const pbases = ['doc', 'user'];
+      if(props.use_ram !== false) {
+        pbases.push('ram');
+      }
+
+      for (const name of pbases) {
         if(bases.indexOf(name) != -1) {
           // в Node, локальные базы - это алиасы удалённых
           // если direct, то все базы, кроме ram, так же - удалённые
@@ -135,7 +144,7 @@ function adapter({AbstracrAdapter}) {
       }
 
       (bases || md.bases()).forEach((name) => {
-        if(remote[name] || name == 'e1cib' || name == 'pgsql' || name == 'github') {
+        if(remote[name] || name == 'e1cib' || name == 'pgsql' || name == 'github' || (props.use_ram === false && name === 'ram')) {
           return;
         }
         remote[name] = new PouchDB(this.dbpath(name), opts);
@@ -231,7 +240,7 @@ function adapter({AbstracrAdapter}) {
             else if(ref.test(role)) {
               props._user = role.substr(4);
             }
-            else if(role === 'direct' && !props.direct) {
+            else if(role === 'direct' && !props.direct && props.zone != job_prm.zone_demo) {
               props.direct = true;
               wsql.set_user_param('couch_direct', true);
             }
@@ -680,7 +689,7 @@ function adapter({AbstracrAdapter}) {
               options.back_off_function = this.back_off;
 
               // ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
-              if(id == 'ram' || id == 'meta' || wsql.get_user_param('zone') == job_prm.zone_demo) {
+              if(id == 'ram' || id == 'meta' || props.zone == job_prm.zone_demo) {
                 local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
               }
               else if(_push_only) {
@@ -849,6 +858,9 @@ function adapter({AbstracrAdapter}) {
         props._data_loaded = true;
         if(!page) {
           page = local.sync._page || {};
+        }
+        if(!local.sync._page) {
+          local.sync._page = page;
         }
         // информируем мир о загруженности данных
         Promise.resolve().then(() => {
@@ -1362,7 +1374,8 @@ function adapter({AbstracrAdapter}) {
             endkey: name + '|\ufff0',
             limit: 10000,
           };
-          this.emit('pouch_data_page', {synonym: md.get(name).synonym});
+          const page = local.sync._page || {};
+          this.emit('pouch_data_page', Object.assign(page, {synonym: md.get(name).synonym}));
           return local.doc.allDocs(opt).then((res) => this.load_changes(res, opt));
         });
       }, Promise.resolve())

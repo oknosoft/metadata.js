@@ -8,9 +8,11 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Input, {InputLabel} from 'material-ui/Input';
-import {FormControl, FormHelperText} from 'material-ui/Form';
-import Select from 'material-ui/Select';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import FormControl from '@material-ui/core/FormControl';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import Select from '@material-ui/core/Select';
 
 import AbstractField, {suggestionText} from './AbstractField';
 import withStyles from './styles';

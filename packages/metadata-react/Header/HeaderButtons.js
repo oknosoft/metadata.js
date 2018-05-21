@@ -6,7 +6,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import IconButton from 'material-ui/IconButton';
+import IconButton from '@material-ui/core/IconButton';
 
 import CloudQueue from '@material-ui/icons/CloudQueue';
 import CloudOff from '@material-ui/icons/CloudOff';
@@ -21,7 +21,7 @@ import Notifications from '../Notifications';
 import compose from 'recompose/compose';
 import classnames from 'classnames';
 import withStyles from './toolbar';
-import withWidth, {isWidthUp} from 'material-ui/utils/withWidth';
+import withWidth, {isWidthUp} from '@material-ui/core/withWidth';
 
 function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavigate, width, compact}) {
 

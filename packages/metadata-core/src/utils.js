@@ -41,7 +41,7 @@ Date.prototype.toJSON = Date.prototype.toISOString = function () {
  */
 if (!Number.prototype.round) {
 	Number.prototype.round = function (places) {
-		var multiplier = Math.pow(10, places);
+		var multiplier = Math.pow(10, places || 0);
 		return (Math.round(this * multiplier) / multiplier);
 	};
 }

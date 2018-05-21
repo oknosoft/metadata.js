@@ -40,7 +40,7 @@ function attach($p) {
   });
 
   superlogin.create_user = function () {
-    const session = superlogin.getSession();
+    const session = this.getSession();
     if(session) {
       const attr = {
         id: session.user_id,
@@ -50,6 +50,36 @@ function attach($p) {
       return $p.cat.users.create(attr, false, true);
     }
   };
+
+  superlogin.change_name = function (newName) {
+    if(this.authenticated()) {
+      const session = this.getSession();
+      return session.profile.name == newName ?
+        Promise.resolve() :
+        this._http.post(`/user/change-name`, {newName})
+          .then(res => {
+            session.profile.name = newName;
+            this.setSession(session);
+            return res.data;
+          });
+    }
+    return Promise.reject({error: 'Authentication required'});
+  };
+
+  superlogin.change_subscription = function (subscription) {
+    if(this.authenticated()) {
+      const session = this.getSession();
+      return session.profile.subscription == subscription ?
+        Promise.resolve() :
+        this._http.post(`/user/change-subscription`, {subscription})
+          .then(res => {
+            session.profile.subscription = subscription;
+            this.setSession(session);
+            return res.data;
+          });
+    }
+    return Promise.reject({error: 'Authentication required'});
+  }
 
 
   /**

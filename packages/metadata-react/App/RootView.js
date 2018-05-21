@@ -11,7 +11,7 @@ import {withMeta} from 'metadata-redux';
 import BrowserCompatibility, {browser_compatible} from './BrowserCompatibility';
 
 // тема для material-ui
-import {MuiThemeProvider} from 'material-ui/styles';
+import {MuiThemeProvider} from '@material-ui/core/styles';
 
 class RootView extends Component {
 
@@ -27,7 +27,7 @@ class RootView extends Component {
   }
 
   shouldComponentUpdate(props, {need_meta}, iprops) {
-    const {meta_loaded, user, data_empty, couch_direct, offline, history, item_props, first_run, path_log_in} = props;
+    const {meta_loaded, user, data_empty, couch_direct, offline, history, item_props, first_run, path_log_in, disableAutoLogin} = props;
     let res = true;
 
     if(!iprops || !iprops.hasOwnProperty('need_meta')){
@@ -40,7 +40,7 @@ class RootView extends Component {
     }
 
     // если есть сохранённый пароль и online, пытаемся авторизоваться
-    if(meta_loaded && !user.logged_in && user.has_login && !user.try_log_in && !offline && !user.logged_out) {
+    if(!disableAutoLogin && meta_loaded && !user.logged_in && user.has_login && !user.try_log_in && !offline && !user.logged_out) {
       props.handleLogin();
       res = false;
     }
@@ -63,9 +63,7 @@ class RootView extends Component {
     const {meta_loaded, data_empty, data_loaded, history, DumbScreen, AppView, theme} = props;
 
     const show_dumb = DumbScreen && state.need_meta && (
-      !meta_loaded ||
-      (data_empty === undefined) ||
-      (data_empty === false && !data_loaded)
+      !meta_loaded || (!data_empty && !data_loaded)
     );
 
     return <MuiThemeProvider theme={theme}>
@@ -92,6 +90,7 @@ RootView.propTypes = {
   item_props: PropTypes.func.isRequired,
   theme: PropTypes.object.isRequired,
   ie11: PropTypes.bool,
+  disableAutoLogin: PropTypes.bool,
 };
 
 export default withMeta(RootView);

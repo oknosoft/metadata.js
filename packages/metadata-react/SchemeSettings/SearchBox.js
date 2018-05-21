@@ -10,10 +10,10 @@ import PropTypes from 'prop-types';
 
 import compose from 'recompose/compose';
 import onlyUpdateForKeys from 'recompose/onlyUpdateForKeys';
-import withWidth, {isWidthUp} from 'material-ui/utils/withWidth';
+import withWidth, {isWidthUp} from '@material-ui/core/withWidth';
 import SearchIcon from '@material-ui/icons/Search';
-import {fade} from 'material-ui/styles/colorManipulator';
-import {withStyles} from 'material-ui/styles';
+import {fade} from '@material-ui/core/styles/colorManipulator';
+import withStyles from '@material-ui/core/styles/withStyles';
 
 const styles = theme => ({
   wrapper: {

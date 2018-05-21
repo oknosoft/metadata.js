@@ -5,17 +5,18 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Drawer from 'material-ui/Drawer';
-import AppBar from 'material-ui/AppBar';
-import Toolbar from 'material-ui/Toolbar';
-import Typography from 'material-ui/Typography';
-import IconButton from 'material-ui/IconButton';
+import Drawer from '@material-ui/core/Drawer';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import NotificationsIconActive from '@material-ui/icons/NotificationsActive';
 import NotificationsIconNone from '@material-ui/icons/NotificationsNone';
-import Menu, {MenuItem} from 'material-ui/Menu';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
-import Select from 'material-ui/Select';
+import Select from '@material-ui/core/Select';
 import classnames from 'classnames';
 
 import {withIface} from 'metadata-redux';

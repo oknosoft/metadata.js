@@ -1,10 +1,11 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Toolbar from 'material-ui/Toolbar';
-import Typography from 'material-ui/Typography';
-import IconButton from 'material-ui/IconButton';
-import Menu, {MenuItem} from 'material-ui/Menu';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 
 import SaveIcon from '@material-ui/icons/Save';
 import SendIcon from '@material-ui/icons/Send';
@@ -23,9 +24,9 @@ class DataObjToolbar extends Component {
 
     handleSave: PropTypes.func.isRequired,        // обработчик добавления объекта
     handleMarkDeleted: PropTypes.func.isRequired, // команда Отозвать
-    handlePrint: PropTypes.func.isRequired,       // обработчик открытия диалога печати
-    handleAttachments: PropTypes.func.isRequired,  // обработчик открытия диалога присоединенных файлов
-    handleClose: PropTypes.func.isRequired,       // команда Закрыть форму
+    handlePrint: PropTypes.func,                  // обработчик открытия диалога печати
+    handleAttachments: PropTypes.func,            // обработчик открытия диалога присоединенных файлов
+    handleClose: PropTypes.func,                  // команда Закрыть форму
 
     postable: PropTypes.bool,                     // объект можно провести-распровести
     posted: PropTypes.bool,                       // объект проведён

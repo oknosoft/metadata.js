@@ -17,6 +17,9 @@ export default {
 
   [PRM_CHANGE]: (state, action) => {
     const {name, value} = action.payload;
+    if(typeof $p !== 'object') {
+      return;
+    }
     const {wsql} = $p;
     if(Array.isArray(name)) {
       for (const {prm, value} of name) {

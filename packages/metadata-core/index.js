@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.57, built:2018-04-29
+ metadata-core v2.0.16-beta.59, built:2018-05-19
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -65,7 +65,9 @@ const msg$1 = new I18n({
 		error_network: 'Ошибка сети или сервера - запрос отклонен',
 		error_rights: 'Ограничение доступа',
 		error_low_acl: 'Недостаточно прав для выполнения операции',
-		file_size: 'Запрещена загрузка файлов<br/>размером более ',
+    file_download: 'Загрузка файлов',
+    file_select: 'Укажите строку для действий с файлом',
+		file_size: 'Запрещена загрузка файлов размером более ',
 		file_confirm_delete: 'Подтвердите удаление файла ',
 		file_new_date: 'Файлы на сервере обновлены<br /> Рекомендуется закрыть браузер и войти<br />повторно для применения обновления',
 		file_new_date_title: 'Версия файлов',
@@ -2832,7 +2834,7 @@ Date.prototype.toJSON = Date.prototype.toISOString = function () {
 };
 if (!Number.prototype.round) {
 	Number.prototype.round = function (places) {
-		var multiplier = Math.pow(10, places);
+		var multiplier = Math.pow(10, places || 0);
 		return (Math.round(this * multiplier) / multiplier);
 	};
 }
@@ -4380,7 +4382,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.57';
+    return '2.0.16-beta.59';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

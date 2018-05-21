@@ -4,10 +4,9 @@ import React from 'react';
 import kebabCase from 'lodash/kebabCase';
 import warning from 'warning';
 import Helmet from 'react-helmet';
-import {withStyles} from 'material-ui/styles';
+import withStyles from '@material-ui/core/styles/withStyles';
 import {withIface} from 'metadata-redux';
-import Typography from 'material-ui/Typography';
-
+import Typography from '@material-ui/core/Typography';
 
 
 import AppContent from '../App/AppContent';
@@ -82,14 +81,12 @@ function MarkdownDocs(props: Props) {
       value: ltitle,
     });
   }
-  const helmet = {title: ltitle};
-  if(descr) {
-    helmet.description = descr;
-  }
 
   return (
     <AppContent className={classes.root}>
-      <Helmet {...helmet} />
+      <Helmet title={ltitle}>
+        <meta name="description" content={descr || h1} />
+      </Helmet>
 
       {/*
         <div className={classes.header}>

@@ -25,6 +25,12 @@ export default function scheme_settings() {
      * @return {*|{value}|Promise.<Array>}
      */
     find_schemas(class_name) {
+      if(this.cachable === 'ram') {
+        return Promise.resolve(
+          this.find_rows({obj: 'cat.articles.aliases'}).sort((a,b) => a.user > b.user)
+        );
+      }
+
       const opt = {
         _view: 'doc/scheme_settings',
         _top: 100,
