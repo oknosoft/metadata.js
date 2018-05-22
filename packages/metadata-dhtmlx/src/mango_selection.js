@@ -308,7 +308,7 @@ class MangoSelection {
             return this.load(url, call);
           }
 
-          const xml = {
+          return {
             xmlDoc: $p.iface.data_to_grid.call(that._mgr, docs.map(v => {
               v.ref = v._id.substr(15);
               delete v._id;
@@ -324,6 +324,19 @@ class MangoSelection {
             filePath: url,
             async: true
           };
+
+        })
+        .catch((err) => {
+          return {
+            xmlDoc: $p.iface.data_to_grid.call(that._mgr, [], {
+              _total_count: start,
+              start: start
+            }),
+            filePath: url,
+            async: true
+          };
+        })
+        .then((xml) => {
           this.xmlLoader(xml);
 
           const sort = that._sort[0];
@@ -332,7 +345,6 @@ class MangoSelection {
           typeof call === 'function' && call();
 
           that._loading = false;
-
         });
     };
   }
