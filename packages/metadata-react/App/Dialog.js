@@ -21,9 +21,6 @@ const style = theme => ({
     flex: 1,
     whiteSpace: 'nowrap',
   },
-  white: {
-    color: colors.white,
-  },
   toolbar: {
     backgroundColor: theme.palette.primary[50],
     borderBottom: '1px solid',

@@ -28,9 +28,6 @@ export default withStyles(theme => ({
   toolbar: {
     backgroundColor: theme.palette.primary[50],
   },
-  white: {
-    color: colors.white,
-  },
   title: {
     marginLeft: theme.spacing.unit * 3,
   },

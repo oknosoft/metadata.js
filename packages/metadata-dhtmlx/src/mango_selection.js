@@ -327,6 +327,7 @@ class MangoSelection {
 
         })
         .catch((err) => {
+          $p.msg.show_msg('Ошибка получения списка заказов');
           return {
             xmlDoc: $p.iface.data_to_grid.call(that._mgr, [], {
               _total_count: start,
@@ -337,7 +338,7 @@ class MangoSelection {
           };
         })
         .then((xml) => {
-          this.xmlLoader(xml);
+          xml && this.xmlLoader(xml);
 
           const sort = that._sort[0];
           this.setSortImgState(true, 0, sort[Object.keys(sort)[0]]);

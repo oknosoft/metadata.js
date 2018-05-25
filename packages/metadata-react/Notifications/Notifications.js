@@ -73,7 +73,7 @@ class Notifications extends Component {
   render() {
 
     const {props, state, handleClose, handleToggle} = this;
-    const {classes} = props;
+    const {classes, barColor} = props;
     const notifications_tooltip = 'Нет непрочитанных сообщений';
     const filter = props.filter || [];
     if(!filter.length || filter[0] === ''){
@@ -82,14 +82,14 @@ class Notifications extends Component {
 
     return [
       <IconButton key="noti_button" title={notifications_tooltip} onClick={handleToggle}>
-        <NotificationsIconNone className={classes.white}/>
+        <NotificationsIconNone color="inherit"/>
       </IconButton>,
 
       props.open && <Drawer key="noti_drawer" anchor="right" open={props.open} onClose={handleClose} classes={{paper: classes.ndrawer}}>
-        <AppBar position="static">
+        <AppBar position="static" color={props.barColor}>
           <Toolbar disableGutters>
-            <Typography variant="title" color="inherit" className={classnames(classes.title, classes.flex)}>Оповещения </Typography>
-            <IconButton onClick={handleClose}><NotificationsIconNone className={classes.white}/></IconButton>
+            <Typography variant="title" color="textSecondary" className={classnames(classes.title, classes.flex)}>Оповещения </Typography>
+            <IconButton onClick={handleClose}><NotificationsIconNone color="inherit"/></IconButton>
           </Toolbar>
         </AppBar>
 
