@@ -86,7 +86,7 @@ export function log_out(adapter) {
       adapter.log_out()
         .then(() => {
           const {superlogin} = $p;
-          superlogin && superlogin.authenticated() && superlogin.logout();
+          superlogin && superlogin.authenticated() && superlogin.logoutAll();
         })
     }
   };

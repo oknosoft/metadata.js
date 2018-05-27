@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.16-beta.59, built:2018-05-19
+ metadata-superlogin v2.0.16-beta.60, built:2018-05-27
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -16,11 +16,11 @@ var adapter = (constructor) => {
   const {classes} = constructor;
   classes.AdapterPouch = class AdapterPouchSuperlogin extends classes.AdapterPouch {
     after_init() {
-      const {props, local, remote} = this;
+      const {props, local, remote, authorized} = this;
       const opts = {skip_setup: true, adapter: 'http'};
       props.autologin.forEach((name) => {
         if(!remote[name]) {
-          remote[name] = new PouchDB(super.dbpath(name), opts);
+          remote[name] = new PouchDB(authorized ? this.dbpath(name) : super.dbpath(name), opts);
           if(name === 'ram') {
             this.run_sync(name)
               .then(() => {
@@ -66,12 +66,9 @@ var adapter = (constructor) => {
           if(name === 'doc' || name === 'ram') {
             continue;
           }
-          let url = this.dbpath('doc');
-          if(url && remote[name]) {
-            const {path, prefix, zone} = props;
-            const pos = url.indexOf(prefix + (name == 'meta' ? name : (zone + '_doc')));
-            remote[name] = new PouchDB(url.substr(0, pos) + prefix + (name == 'meta' ? name : (zone + '_' + name)),
-              {skip_setup: true, adapter: 'http'});
+          const url = this.dbpath(name);
+          if(url && remote[name] && remote[name].name !== url) {
+            remote[name] = new PouchDB(url, {skip_setup: true, adapter: 'http'});
           }
         }
         if(wsql.get_user_param('user_name') != session.user_id) {
@@ -87,6 +84,11 @@ var adapter = (constructor) => {
     dbpath(name) {
       const {$p, props: {path, prefix, zone}} = this;
       let url = $p.superlogin.getDbUrl(prefix + (name == 'meta' ? name : (zone + '_' + name)));
+      if(!url) {
+        url = $p.superlogin.getDbUrl(prefix + zone + '_doc');
+        const pos = url.indexOf(prefix + (name == 'meta' ? name : (zone + '_doc')));
+        url = url.substr(0, pos) + prefix + (name == 'meta' ? name : (zone + '_' + name));
+      }
       const localhost = 'localhost:5984/' + prefix;
       if(url.indexOf(localhost) !== -1) {
         const https = path.indexOf('https://') !== -1;
