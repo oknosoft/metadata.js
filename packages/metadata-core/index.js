@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.60, built:2018-05-27
+ metadata-core v2.0.16-beta.60, built:2018-05-28
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -773,20 +773,27 @@ class DataObj {
     return !this._obj || utils.is_empty_guid(this._obj.ref);
   }
   load() {
+    const {_data} = this;
     if(this.ref == utils.blank.guid) {
-      const {_data} = this;
       if(_data) {
         _data._loading = false;
         _data._modified = false;
       }
       return Promise.resolve(this);
     }
+    else if(_data._loading) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve(_data._loading ? this.load() : this);
+        }, 1000);
+      });
+    }
     else {
-      this._data._loading = true;
+      _data._loading = true;
       return this._manager.adapter.load_obj(this)
         .then(() => {
-          this._data._loading = false;
-          this._data._modified = false;
+          _data._loading = false;
+          _data._modified = false;
           return this.after_load();
         });
     }

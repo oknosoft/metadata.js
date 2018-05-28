@@ -16,14 +16,47 @@ export default (constructor) => {
      * Cерверные на старте создавать не надо, за исключением autologin
      */
     after_init() {
-      const {props, local, remote, authorized} = this;
+      const {props, local, remote, authorized, $p: {superlogin}} = this;
       const opts = {skip_setup: true, adapter: 'http'};
+
+      // создаём анонимные базы либо с реквизитами авторизации из superlogin
+      const bases = new Map();
+      const check = [];
 
       props.autologin.forEach((name) => {
         if(!remote[name]) {
-          remote[name] = new PouchDB(authorized ? this.dbpath(name) : super.dbpath(name), opts);
-          if(name === 'ram') {
-            this.run_sync(name)
+          bases.set(name, new PouchDB(authorized ? this.dbpath(name) : super.dbpath(name), opts));
+          check.push(bases.get(name).info());
+        }
+      });
+
+      return Promise.all(check)
+        .catch(() => {
+          // если проблемы с авторизацией, создаём анонимные базы
+          const close = [];
+          // закрываем текущие базы
+          bases.forEach((value) => close.push(value.close()));
+
+          return Promise.all(close)
+            .then(() => superlogin.logout())
+            .then(() => {
+              bases.clear();
+              check.length = [];
+              props.autologin.forEach((name) => {
+                if(!remote[name]) {
+                  bases.set(name, new PouchDB(super.dbpath(name), opts));
+                  check.push(bases.get(name).info());
+                }
+              });
+            })
+            .then(() => Promise.all(check));
+        })
+        .then(() => {
+          bases.forEach((value, key) => remote[key] = value);
+        })
+        .then(() => {
+          if(bases.get('ram')) {
+            this.run_sync('ram')
               .then(() => {
                 // широковещательное оповещение об окончании загрузки локальных данных
                 if(local._loading) {
@@ -36,8 +69,8 @@ export default (constructor) => {
                 }
               });
           }
-        }
-      });
+        })
+        .then(() => this.emit_async('pouch_autologin', true));
     }
 
     /**
@@ -47,14 +80,21 @@ export default (constructor) => {
      */
     log_in(username, password) {
 
-      const {props, local, remote, $p} = this;
+      const {props, local, remote, $p, authorized} = this;
       const {job_prm, wsql, aes, md, superlogin} = $p;
 
-      const start = superlogin.getSession() ? Promise.resolve(superlogin.getSession()) : superlogin.login({username, password})
-        .catch((err) => {
-          this.emit('user_log_fault', {message: 'custom', text: err.message});
-          return Promise.reject(err);
-        });
+      const start = authorized ?
+        superlogin.refresh()
+          .catch(() => {
+            superlogin.logout()
+              .then(() => superlogin.login({username, password}));
+          })
+        :
+        superlogin.login({username, password})
+          .catch((err) => {
+            this.emit('user_log_fault', {message: 'custom', text: err.message});
+            return Promise.reject(err);
+          });
 
       return start.then((session) => {
         // при пустой сесии, дальше не движемся

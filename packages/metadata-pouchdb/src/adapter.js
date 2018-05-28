@@ -906,6 +906,10 @@ function adapter({AbstracrAdapter}) {
       // нас могли попросить прочитать объект не из родной базы менеджера, а из любой другой
       const db = (attr && attr.db) || this.db(tObj._manager);
 
+      if(!db) {
+        return Promise.resolve(tObj);
+      }
+
       return db.get(tObj._manager.class_name + '|' + tObj.ref)
         .then((res) => {
           for(const fld of fieldsToDelete) {

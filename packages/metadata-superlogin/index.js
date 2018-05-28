@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.16-beta.60, built:2018-05-27
+ metadata-superlogin v2.0.16-beta.60, built:2018-05-28
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -16,13 +16,40 @@ var adapter = (constructor) => {
   const {classes} = constructor;
   classes.AdapterPouch = class AdapterPouchSuperlogin extends classes.AdapterPouch {
     after_init() {
-      const {props, local, remote, authorized} = this;
+      const {props, local, remote, authorized, $p: {superlogin: superlogin$$1}} = this;
       const opts = {skip_setup: true, adapter: 'http'};
+      const bases = new Map();
+      const check = [];
       props.autologin.forEach((name) => {
         if(!remote[name]) {
-          remote[name] = new PouchDB(authorized ? this.dbpath(name) : super.dbpath(name), opts);
-          if(name === 'ram') {
-            this.run_sync(name)
+          bases.set(name, new PouchDB(authorized ? this.dbpath(name) : super.dbpath(name), opts));
+          check.push(bases.get(name).info());
+        }
+      });
+      return Promise.all(check)
+        .catch(() => {
+          const close = [];
+          bases.forEach((value) => close.push(value.close()));
+          return Promise.all(close)
+            .then(() => superlogin$$1.logout())
+            .then(() => {
+              bases.clear();
+              check.length = [];
+              props.autologin.forEach((name) => {
+                if(!remote[name]) {
+                  bases.set(name, new PouchDB(super.dbpath(name), opts));
+                  check.push(bases.get(name).info());
+                }
+              });
+            })
+            .then(() => Promise.all(check));
+        })
+        .then(() => {
+          bases.forEach((value, key) => remote[key] = value);
+        })
+        .then(() => {
+          if(bases.get('ram')) {
+            this.run_sync('ram')
               .then(() => {
                 if(local._loading) {
                   return new Promise((resolve, reject) => {
@@ -34,17 +61,24 @@ var adapter = (constructor) => {
                 }
               });
           }
-        }
-      });
+        })
+        .then(() => this.emit_async('pouch_autologin', true));
     }
     log_in(username, password) {
-      const {props, local, remote, $p} = this;
+      const {props, local, remote, $p, authorized} = this;
       const {job_prm, wsql, aes, md, superlogin: superlogin$$1} = $p;
-      const start = superlogin$$1.getSession() ? Promise.resolve(superlogin$$1.getSession()) : superlogin$$1.login({username, password})
-        .catch((err) => {
-          this.emit('user_log_fault', {message: 'custom', text: err.message});
-          return Promise.reject(err);
-        });
+      const start = authorized ?
+        superlogin$$1.refresh()
+          .catch(() => {
+            superlogin$$1.logout()
+              .then(() => superlogin$$1.login({username, password}));
+          })
+        :
+        superlogin$$1.login({username, password})
+          .catch((err) => {
+            this.emit('user_log_fault', {message: 'custom', text: err.message});
+            return Promise.reject(err);
+          });
       return start.then((session) => {
         if(!session) {
           const err = new Error('empty login or password');

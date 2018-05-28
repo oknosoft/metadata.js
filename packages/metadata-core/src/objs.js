@@ -404,20 +404,27 @@ export class DataObj {
    * @async
    */
   load() {
+    const {_data} = this;
     if(this.ref == utils.blank.guid) {
-      const {_data} = this;
       if(_data) {
         _data._loading = false;
         _data._modified = false;
       }
       return Promise.resolve(this);
     }
+    else if(_data._loading) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve(_data._loading ? this.load() : this);
+        }, 1000);
+      });
+    }
     else {
-      this._data._loading = true;
+      _data._loading = true;
       return this._manager.adapter.load_obj(this)
         .then(() => {
-          this._data._loading = false;
-          this._data._modified = false;
+          _data._loading = false;
+          _data._modified = false;
           return this.after_load();
         });
     }
