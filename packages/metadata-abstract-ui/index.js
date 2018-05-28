@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.60, built:2018-05-27
+ metadata-abstract-ui v2.0.16-beta.60, built:2018-05-28
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -140,7 +140,7 @@ function scheme_settings() {
     find_schemas(class_name) {
       if(this.cachable === 'ram') {
         return Promise.resolve(
-          this.find_rows({obj: 'cat.articles.aliases'}).sort((a,b) => a.user > b.user)
+          this.find_rows({obj: class_name}).sort((a,b) => a.user > b.user)
         );
       }
       const opt = {
@@ -629,7 +629,7 @@ function scheme_settings() {
           class_name: {$eq: this.obj}
         },
         fields: ['_id', 'posted'],
-        use_index: '_design/mango',
+        use_index: 'mango/search',
       };
       for (const column of (columns || this.columns())) {
         if(res.fields.indexOf(column.id) == -1) {

@@ -27,7 +27,7 @@ export default function scheme_settings() {
     find_schemas(class_name) {
       if(this.cachable === 'ram') {
         return Promise.resolve(
-          this.find_rows({obj: 'cat.articles.aliases'}).sort((a,b) => a.user > b.user)
+          this.find_rows({obj: class_name}).sort((a,b) => a.user > b.user)
         );
       }
 
@@ -667,7 +667,7 @@ export default function scheme_settings() {
           class_name: {$eq: this.obj}
         },
         fields: ['_id', 'posted'],
-        use_index: '_design/mango',
+        use_index: 'mango/search',
       };
 
       for (const column of (columns || this.columns())) {
