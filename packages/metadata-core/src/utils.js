@@ -618,6 +618,9 @@ const utils = {
 				}
 			}
 		} else {
+			let find = {
+				priority: -1
+			};
 			for (let i in src) { // ищем по ключам из val
 				const o = src[i];
 				let finded = true;
@@ -627,9 +630,12 @@ const utils = {
 						break;
 					}
 				}
-				if (finded) {
-					return o;
+				if (finded && o['priority'] > find['priority']) {
+					find = o;
 				}
+			}
+			if (find.priority !== -1) {
+				return find;
 			}
 		}
 	},
