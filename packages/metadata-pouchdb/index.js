@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.61, built:2018-06-14
+ metadata-pouchdb v2.0.17-beta.1, built:2018-06-24
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -107,7 +107,7 @@ var proto = (constructor) => {
       }
     },
 	});
-}
+};
 
 let PouchDB;
 if(typeof process !== 'undefined' && process.versions && process.versions.node) {
@@ -123,13 +123,12 @@ else {
     PouchDB = window.PouchDB;
   }
   else {
-    const ua = (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
     PouchDB = window.PouchDB = require('pouchdb-core').default
       .plugin(require('pouchdb-adapter-http').default)
       .plugin(require('pouchdb-replication').default)
       .plugin(require('pouchdb-mapreduce').default)
       .plugin(require('pouchdb-find').default)
-      .plugin(ua.match('safari') && !ua.match('chrome') ? require('pouchdb-adapter-websql').default : require('pouchdb-adapter-idb').default);
+      .plugin(require('pouchdb-adapter-idb').default);
   }
 }
 var PouchDB$1 = PouchDB;
@@ -201,14 +200,18 @@ function adapter({AbstracrAdapter}) {
       }
       this.after_init( props.user_node ? bases : (props.autologin.length ? props.autologin : ['ram']));
     }
-    after_init(bases) {
+    after_init(bases, auth) {
       const {props, remote, $p: {md}} = this;
       const opts = {skip_setup: true, adapter: 'http'};
-      if(props.user_node) {
+      if(auth) {
+        opts.auth = auth;
+      }
+      else if(props.user_node) {
         opts.auth = props.user_node;
       }
       (bases || md.bases()).forEach((name) => {
-        if(remote[name] || name == 'e1cib' || name == 'pgsql' || name == 'github' || (props.use_ram === false && name === 'ram')) {
+        if((!auth && remote[name]) || name == 'e1cib' || name == 'pgsql' || name == 'github' ||
+          (name === 'ram' && (props.use_ram === false || auth))) {
           return;
         }
         remote[name] = new PouchDB$1(this.dbpath(name), opts);
@@ -315,7 +318,7 @@ function adapter({AbstracrAdapter}) {
           }
         })
         .then((ram_logged_in) => {
-          this.after_init(bases);
+          this.after_init(bases, {username, password});
           return ram_logged_in;
         })
         .then((ram_logged_in) => {
@@ -324,11 +327,6 @@ function adapter({AbstracrAdapter}) {
             bases.forEach((dbid) => {
               if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
                 postlogin = postlogin
-                  .then((ram_logged_in) => {
-                    if(ram_logged_in) {
-                      return remote[dbid].login(username, password).then(() => ram_logged_in)
-                    }
-                  })
                   .then((ram_logged_in) => ram_logged_in && remote[dbid].info());
               }
             });
@@ -1447,7 +1445,7 @@ function adapter({AbstracrAdapter}) {
       }
       return false;
     }
-    attach_refresher(regex, timout = 600000) {
+    attach_refresher(regex, timout = 500000) {
       if(this.props._refresher) {
         clearInterval(this.props._refresher);
       }
@@ -1477,7 +1475,7 @@ var adapter$1 = (constructor) => {
   const {classes} = constructor;
   classes.PouchDB = PouchDB$1;
   classes.AdapterPouch = adapter(classes);
-}
+};
 
 const plugin = {
 	proto(constructor) {

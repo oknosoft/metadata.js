@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.61, built:2018-06-14
+ metadata-core v2.0.17-beta.1, built:2018-06-24
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1775,7 +1775,7 @@ class RefDataManager extends DataManager{
 					continue;
 				}
 				obj = this.obj_constructor('', [attr, this, true]);
-				forse && obj.is_new() && obj._set_loaded();
+				obj.is_new() && obj._set_loaded();
 			}
 			else if(obj.is_new() || forse){
 			  if(obj.is_new() || forse !== 'update_only') {
@@ -2484,7 +2484,7 @@ class RegisterManager extends DataManager{
 			let obj = this.by_ref[ref];
 			if (!obj && !aattr[i]._deleted) {
 				obj = this.obj_constructor('', [aattr[i], this, true]);
-				forse && obj.is_new() && obj._set_loaded();
+				obj.is_new() && obj._set_loaded();
 			}
 			else if (obj && aattr[i]._deleted) {
 				obj.unload();
@@ -3080,10 +3080,9 @@ const utils = {
 			});
 	},
 	_mixin(obj, src, include, exclude) {
-		const tobj = {};
 		function exclude_cpy(f) {
 			if (!exclude || exclude.indexOf(f) == -1) {
-				if ((typeof tobj[f] == 'undefined') || (tobj[f] != src[f])) {
+				{
 					obj[f] = src[f];
 				}
 			}
@@ -4389,7 +4388,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.61';
+    return '2.0.17-beta.1';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

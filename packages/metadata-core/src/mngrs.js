@@ -723,7 +723,7 @@ export class RefDataManager extends DataManager{
 					continue;
 				}
 				obj = this.obj_constructor('', [attr, this, true]);
-				forse && obj.is_new() && obj._set_loaded();
+				obj.is_new() && obj._set_loaded();
 			}
 			else if(obj.is_new() || forse){
 			  if(obj.is_new() || forse !== 'update_only') {
@@ -1731,7 +1731,7 @@ export class RegisterManager extends DataManager{
 
 			if (!obj && !aattr[i]._deleted) {
 				obj = this.obj_constructor('', [aattr[i], this, true]);
-				forse && obj.is_new() && obj._set_loaded();
+				obj.is_new() && obj._set_loaded();
 			}
 			else if (obj && aattr[i]._deleted) {
 				obj.unload();

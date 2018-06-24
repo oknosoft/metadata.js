@@ -134,17 +134,21 @@ function adapter({AbstracrAdapter}) {
     /**
      * В штатном режиме (без суперлогина), серверные базы создаём сразу
      */
-    after_init(bases) {
+    after_init(bases, auth) {
 
       const {props, remote, $p: {md}} = this;
       const opts = {skip_setup: true, adapter: 'http'};
 
-      if(props.user_node) {
+      if(auth) {
+        opts.auth = auth;
+      }
+      else if(props.user_node) {
         opts.auth = props.user_node;
       }
 
       (bases || md.bases()).forEach((name) => {
-        if(remote[name] || name == 'e1cib' || name == 'pgsql' || name == 'github' || (props.use_ram === false && name === 'ram')) {
+        if((!auth && remote[name]) || name == 'e1cib' || name == 'pgsql' || name == 'github' ||
+          (name === 'ram' && (props.use_ram === false || auth))) {
           return;
         }
         remote[name] = new PouchDB(this.dbpath(name), opts);
@@ -224,7 +228,7 @@ function adapter({AbstracrAdapter}) {
       }
 
       // в node - мы уже авторизованы
-      // браузере - авторизуемся в ram, а из остальных получаем info()
+      // браузере - авторизуемся и получаем info() во всех базах
       const bases = md.bases();
       const try_auth = props.user_node ? Promise.resolve() : remote.ram.login(username, password)
         .then(({roles}) => {
@@ -278,7 +282,7 @@ function adapter({AbstracrAdapter}) {
           }
         })
         .then((ram_logged_in) => {
-          this.after_init(bases);
+          this.after_init(bases, {username, password});
           return ram_logged_in;
         })
         .then((ram_logged_in) => {
@@ -287,11 +291,11 @@ function adapter({AbstracrAdapter}) {
             bases.forEach((dbid) => {
               if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
                 postlogin = postlogin
-                  .then((ram_logged_in) => {
-                    if(ram_logged_in) {
-                      return remote[dbid].login(username, password).then(() => ram_logged_in)
-                    }
-                  })
+                  // .then((ram_logged_in) => {
+                  //   if(ram_logged_in) {
+                  //     return remote[dbid].login(username, password).then(() => ram_logged_in)
+                  //   }
+                  // })
                   .then((ram_logged_in) => ram_logged_in && remote[dbid].info());
               }
             });
@@ -1832,7 +1836,7 @@ function adapter({AbstracrAdapter}) {
      * @param regex {RegExp}
      * @param timout {Number}
      */
-    attach_refresher(regex, timout = 600000) {
+    attach_refresher(regex, timout = 500000) {
       if(this.props._refresher) {
         clearInterval(this.props._refresher);
       }
