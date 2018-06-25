@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.1, built:2018-06-24
+ metadata-pouchdb v2.0.17-beta.1, built:2018-06-25
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -210,8 +210,7 @@ function adapter({AbstracrAdapter}) {
         opts.auth = props.user_node;
       }
       (bases || md.bases()).forEach((name) => {
-        if((!auth && remote[name]) || name == 'e1cib' || name == 'pgsql' || name == 'github' ||
-          (name === 'ram' && (props.use_ram === false || auth))) {
+        if((!auth && remote[name]) || name == 'e1cib' || name == 'pgsql' || name == 'github' || (name === 'ram' && props.use_ram === false)) {
           return;
         }
         remote[name] = new PouchDB$1(this.dbpath(name), opts);
@@ -318,7 +317,7 @@ function adapter({AbstracrAdapter}) {
           }
         })
         .then((ram_logged_in) => {
-          this.after_init(bases, {username, password});
+          ram_logged_in && this.after_init(bases, {username, password});
           return ram_logged_in;
         })
         .then((ram_logged_in) => {
@@ -1451,7 +1450,7 @@ function adapter({AbstracrAdapter}) {
       }
       setInterval(() => {
         if(this.authorized && this.remote.ram && this.remote.ram.adapter == 'http') {
-          this.remote.ram.getSession()
+          this.remote.ram.info()
             .then(response => {
               response = null;
             })
