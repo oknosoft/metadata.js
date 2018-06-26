@@ -572,6 +572,9 @@ function adapter({AbstracrAdapter}) {
               }
             }
           };
+          if(remote.__opts.auth) {
+            opt.auth = remote.__opts.auth;
+          }
           if(opts.filter) {
             opt.filter = opts.filter;
           }
