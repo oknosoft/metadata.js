@@ -32,7 +32,7 @@
     "rc-cascader": "^0.13.1",
     "rc-time-picker": "^3.3.1",
     "react-onclickoutside": "^6.7.1",
-    "react-virtualized": "^9.19.1",
+    "react-virtualized": "^9.20.0",
     "superlogin-client": "^0.8.0"
   },
   "devDependencies": {
@@ -76,7 +76,7 @@
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^3.3.0",
     "rollup-plugin-replace": "^2.0.0",
-    "uglifyjs-webpack-plugin": "^1.2.6",
+    "uglifyjs-webpack-plugin": "^1.2.7",
     "webpack": "^4.12.1",
     "yargs": "^11.1.0",
     "yuidocjs": "^0.10"
