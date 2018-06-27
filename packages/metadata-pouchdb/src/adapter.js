@@ -323,24 +323,29 @@ function adapter({AbstracrAdapter}) {
           }
 
           // излучаем событие
-          this.emit_async('user_log_in', username);
+          this.emit('user_log_in', username);
+
+          // врезаем асинхронную подписку на событие
+          return this.emit_promise('on_log_in').then(() => info);
         }
         else {
-          this.emit_async('user_log_stop', username);
+          this.emit('user_log_stop', username);
+          return Promise.resolve();
         }
 
-        if(props._data_loaded && !props._doc_ram_loading) {
-          if(props._doc_ram_loaded) {
-            this.emit('pouch_doc_ram_loaded')
-          }
-          else {
-            this.load_doc_ram();
-          }
-        };
-
-        // запускаем синхронизацию для нужных баз
-        return info && this.after_log_in();
       })
+        .then((info) => {
+          if(props._data_loaded && !props._doc_ram_loading) {
+            if(props._doc_ram_loaded) {
+              this.emit('pouch_doc_ram_loaded')
+            }
+            else {
+              this.load_doc_ram();
+            }
+          };
+          // запускаем синхронизацию для нужных баз
+          return info && this.after_log_in();
+        })
         .catch(err => {
           // излучаем событие
           this.emit('user_log_fault', err);
@@ -557,6 +562,7 @@ function adapter({AbstracrAdapter}) {
 
           const opt = {
             proxy: remote.name,
+            checkpoints: 'target',
             emit: (docs) => {
               this.emit('pouch_dumped', {db: local, docs});
               if(local.name.indexOf('ram') !== -1) {

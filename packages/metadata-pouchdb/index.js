@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.1, built:2018-06-25
+ metadata-pouchdb v2.0.17-beta.2, built:2018-06-27
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -346,20 +346,24 @@ function adapter({AbstracrAdapter}) {
           else if(wsql.get_user_param('user_pwd') != '') {
             wsql.set_user_param('user_pwd', '');
           }
-          this.emit_async('user_log_in', username);
+          this.emit('user_log_in', username);
+          return this.emit_promise('on_log_in').then(() => info);
         }
         else {
-          this.emit_async('user_log_stop', username);
+          this.emit('user_log_stop', username);
+          return Promise.resolve();
         }
-        if(props._data_loaded && !props._doc_ram_loading) {
-          if(props._doc_ram_loaded) {
-            this.emit('pouch_doc_ram_loaded');
-          }
-          else {
-            this.load_doc_ram();
-          }
-        }        return info && this.after_log_in();
       })
+        .then((info) => {
+          if(props._data_loaded && !props._doc_ram_loading) {
+            if(props._doc_ram_loaded) {
+              this.emit('pouch_doc_ram_loaded');
+            }
+            else {
+              this.load_doc_ram();
+            }
+          }          return info && this.after_log_in();
+        })
         .catch(err => {
           this.emit('user_log_fault', err);
         });
@@ -516,6 +520,7 @@ function adapter({AbstracrAdapter}) {
           }
           const opt = {
             proxy: remote.name,
+            checkpoints: 'target',
             emit: (docs) => {
               this.emit('pouch_dumped', {db: local, docs});
               if(local.name.indexOf('ram') !== -1) {
@@ -530,6 +535,9 @@ function adapter({AbstracrAdapter}) {
               }
             }
           };
+          if(remote.__opts.auth) {
+            opt.auth = remote.__opts.auth;
+          }
           if(opts.filter) {
             opt.filter = opts.filter;
           }
