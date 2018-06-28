@@ -137,6 +137,15 @@ export default class MetaEventEmitter extends EventEmitter{
   }
 
   /**
+   * Реализует асинхронную обработку событий
+   * @param type
+   * @param args
+   */
+  emit_promise(type, ...args) {
+    return this.listeners(type).reduce((acc, curr) => acc.then(curr), Promise.resolve());
+  }
+
+  /**
    * Дополняет список изменённых полей
    * Полезен в обработчиках value_change, внутри которых по умолчанию отключена регистрация изенений полей объекта
    * @param obj

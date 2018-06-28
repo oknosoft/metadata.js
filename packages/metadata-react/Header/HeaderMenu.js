@@ -40,17 +40,17 @@ class NavDrawer extends Component {
       <div>
 
         <IconButton onClick={handleToggle}>
-          <IconNavigationMenu className={classes.white}/>
+          <IconNavigationMenu color="inherit"/>
         </IconButton>
 
         <Drawer open={props.open} onClose={handleClose} classes={{paper: classes.drawer}} >
 
-          <AppBar position="static" >
+          <AppBar position="static" color="default">
             <Toolbar disableGutters >
               <IconButton onClick={handleClose}>
-                <IconNavigationMenu className={classes.white}/>
+                <IconNavigationMenu color="inherit"/>
               </IconButton>
-              <Typography variant="title" color="inherit" className={classes.flex}>{title}</Typography>
+              <Typography variant="title" color="textSecondary" className={classes.flex}>{title}</Typography>
             </Toolbar>
           </AppBar>
 

@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.16-beta.59, built:2018-05-19
+ metadata-pouchdb v2.0.17-beta.2, built:2018-06-27
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -107,7 +107,7 @@ var proto = (constructor) => {
       }
     },
 	});
-}
+};
 
 let PouchDB;
 if(typeof process !== 'undefined' && process.versions && process.versions.node) {
@@ -123,13 +123,12 @@ else {
     PouchDB = window.PouchDB;
   }
   else {
-    const ua = (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
     PouchDB = window.PouchDB = require('pouchdb-core').default
       .plugin(require('pouchdb-adapter-http').default)
       .plugin(require('pouchdb-replication').default)
       .plugin(require('pouchdb-mapreduce').default)
       .plugin(require('pouchdb-find').default)
-      .plugin(ua.match('safari') && !ua.match('chrome') ? require('pouchdb-adapter-websql').default : require('pouchdb-adapter-idb').default);
+      .plugin(require('pouchdb-adapter-idb').default);
   }
 }
 var PouchDB$1 = PouchDB;
@@ -201,14 +200,17 @@ function adapter({AbstracrAdapter}) {
       }
       this.after_init( props.user_node ? bases : (props.autologin.length ? props.autologin : ['ram']));
     }
-    after_init(bases) {
+    after_init(bases, auth) {
       const {props, remote, $p: {md}} = this;
       const opts = {skip_setup: true, adapter: 'http'};
-      if(props.user_node) {
+      if(auth) {
+        opts.auth = auth;
+      }
+      else if(props.user_node) {
         opts.auth = props.user_node;
       }
       (bases || md.bases()).forEach((name) => {
-        if(remote[name] || name == 'e1cib' || name == 'pgsql' || name == 'github' || (props.use_ram === false && name === 'ram')) {
+        if((!auth && remote[name]) || name == 'e1cib' || name == 'pgsql' || name == 'github' || (name === 'ram' && props.use_ram === false)) {
           return;
         }
         remote[name] = new PouchDB$1(this.dbpath(name), opts);
@@ -315,7 +317,7 @@ function adapter({AbstracrAdapter}) {
           }
         })
         .then((ram_logged_in) => {
-          this.after_init(bases);
+          ram_logged_in && this.after_init(bases, {username, password});
           return ram_logged_in;
         })
         .then((ram_logged_in) => {
@@ -324,11 +326,6 @@ function adapter({AbstracrAdapter}) {
             bases.forEach((dbid) => {
               if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
                 postlogin = postlogin
-                  .then((ram_logged_in) => {
-                    if(ram_logged_in) {
-                      return remote[dbid].login(username, password).then(() => ram_logged_in)
-                    }
-                  })
                   .then((ram_logged_in) => ram_logged_in && remote[dbid].info());
               }
             });
@@ -349,20 +346,24 @@ function adapter({AbstracrAdapter}) {
           else if(wsql.get_user_param('user_pwd') != '') {
             wsql.set_user_param('user_pwd', '');
           }
-          this.emit_async('user_log_in', username);
+          this.emit('user_log_in', username);
+          return this.emit_promise('on_log_in').then(() => info);
         }
         else {
-          this.emit_async('user_log_stop', username);
+          this.emit('user_log_stop', username);
+          return Promise.resolve();
         }
-        if(props._data_loaded && !props._doc_ram_loading) {
-          if(props._doc_ram_loaded) {
-            this.emit('pouch_doc_ram_loaded');
-          }
-          else {
-            this.load_doc_ram();
-          }
-        }        return info && this.after_log_in();
       })
+        .then((info) => {
+          if(props._data_loaded && !props._doc_ram_loading) {
+            if(props._doc_ram_loaded) {
+              this.emit('pouch_doc_ram_loaded');
+            }
+            else {
+              this.load_doc_ram();
+            }
+          }          return info && this.after_log_in();
+        })
         .catch(err => {
           this.emit('user_log_fault', err);
         });
@@ -519,6 +520,7 @@ function adapter({AbstracrAdapter}) {
           }
           const opt = {
             proxy: remote.name,
+            checkpoints: 'target',
             emit: (docs) => {
               this.emit('pouch_dumped', {db: local, docs});
               if(local.name.indexOf('ram') !== -1) {
@@ -533,6 +535,9 @@ function adapter({AbstracrAdapter}) {
               }
             }
           };
+          if(remote.__opts.auth) {
+            opt.auth = remote.__opts.auth;
+          }
           if(opts.filter) {
             opt.filter = opts.filter;
           }
@@ -766,6 +771,9 @@ function adapter({AbstracrAdapter}) {
     }
     load_obj(tObj, attr) {
       const db = (attr && attr.db) || this.db(tObj._manager);
+      if(!db) {
+        return Promise.resolve(tObj);
+      }
       return db.get(tObj._manager.class_name + '|' + tObj.ref)
         .then((res) => {
           for(const fld of fieldsToDelete) {
@@ -1444,13 +1452,13 @@ function adapter({AbstracrAdapter}) {
       }
       return false;
     }
-    attach_refresher(regex, timout = 600000) {
+    attach_refresher(regex, timout = 500000) {
       if(this.props._refresher) {
         clearInterval(this.props._refresher);
       }
       setInterval(() => {
         if(this.authorized && this.remote.ram && this.remote.ram.adapter == 'http') {
-          this.remote.ram.getSession()
+          this.remote.ram.info()
             .then(response => {
               response = null;
             })
@@ -1474,7 +1482,7 @@ var adapter$1 = (constructor) => {
   const {classes} = constructor;
   classes.PouchDB = PouchDB$1;
   classes.AdapterPouch = adapter(classes);
-}
+};
 
 const plugin = {
 	proto(constructor) {

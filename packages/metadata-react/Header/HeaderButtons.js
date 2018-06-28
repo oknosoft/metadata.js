@@ -22,8 +22,9 @@ import compose from 'recompose/compose';
 import classnames from 'classnames';
 import withStyles from './toolbar';
 import withWidth, {isWidthUp} from '@material-ui/core/withWidth';
+import DnR from '../DnR/DnR';
 
-function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavigate, width, compact}) {
+function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavigate, width, compact, barColor}) {
 
   const offline_tooltip = offline ? 'Сервер недоступен' : 'Подключение установлено';
   const sync_tooltip = `Синхронизация ${user.logged_in && sync_started ? 'выполняется' : 'отключена'}`;
@@ -33,26 +34,30 @@ function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavig
     // индикатор доступности облака показываем только на экране шире 'sm'
     !compact && isWidthUp('sm', width) &&
     <IconButton key="offline" title={offline_tooltip}>
-      {offline ? <CloudOff className={classes.white}/> : <CloudQueue className={classes.white}/>}
+      {offline ? <CloudOff color="inherit"/> : <CloudQueue color="inherit"/>}
     </IconButton>,
 
     !compact &&
     <IconButton key="sync_started" title={sync_tooltip}>
       {user.logged_in && sync_started ?
-        <SyncIcon className={classnames(classes.white, {[classes.rotation]: fetch || user.try_log_in})} />
+        <SyncIcon color="inherit" className={classnames({[classes.rotation]: fetch || user.try_log_in})} />
         :
-        <SyncIconDisabled className={classes.white}/>
+        <SyncIconDisabled color="inherit"/>
       }
     </IconButton>,
 
     <IconButton key="logged_in" title={login_tooltip} onClick={() => handleNavigate('/login')}>
-      {user.logged_in ? <PersonOutline className={classes.white}/> : <AccountOff className={classes.white}/>}
+      {user.logged_in ? <PersonOutline color="inherit"/> : <AccountOff color="inherit"/>}
     </IconButton>,
 
-    <Notifications key="noti" />
+    <Notifications key="noti" barColor={barColor}/>
 
   ];
 }
+
+// HeaderButtons.defaultProps = {
+//   barColor: 'primary'
+// }
 
 HeaderButtons.propTypes = {
   sync_started: PropTypes.bool, // выполняется синхронизация
@@ -62,6 +67,7 @@ HeaderButtons.propTypes = {
   handleNavigate: PropTypes.func.isRequired,
   classes: PropTypes.object.isRequired,
   compact: PropTypes.bool,      // скрывает кнопки облака
+  barColor: PropTypes.string,
 };
 
 export default compose(withStyles, withWidth())(HeaderButtons);

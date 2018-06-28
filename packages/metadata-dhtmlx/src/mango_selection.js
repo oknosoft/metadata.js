@@ -308,7 +308,7 @@ class MangoSelection {
             return this.load(url, call);
           }
 
-          const xml = {
+          return {
             xmlDoc: $p.iface.data_to_grid.call(that._mgr, docs.map(v => {
               v.ref = v._id.substr(15);
               delete v._id;
@@ -324,7 +324,21 @@ class MangoSelection {
             filePath: url,
             async: true
           };
-          this.xmlLoader(xml);
+
+        })
+        .catch((err) => {
+          $p.msg.show_msg('Ошибка получения списка заказов');
+          return {
+            xmlDoc: $p.iface.data_to_grid.call(that._mgr, [], {
+              _total_count: start,
+              start: start
+            }),
+            filePath: url,
+            async: true
+          };
+        })
+        .then((xml) => {
+          xml && this.xmlLoader(xml);
 
           const sort = that._sort[0];
           this.setSortImgState(true, 0, sort[Object.keys(sort)[0]]);
@@ -332,7 +346,6 @@ class MangoSelection {
           typeof call === 'function' && call();
 
           that._loading = false;
-
         });
     };
   }

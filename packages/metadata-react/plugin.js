@@ -79,7 +79,7 @@ function rx_columns({utils: {moment}, enm, md}) {
           }
         }
 
-        if(!column.formatter) {
+        if(!column.formatter && _fld && _fld.type) {
 
           if(column.key === 'ref' || _fld.type.is_ref) {
             column.formatter = presentation_formatter;

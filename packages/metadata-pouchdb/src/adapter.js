@@ -134,17 +134,20 @@ function adapter({AbstracrAdapter}) {
     /**
      * В штатном режиме (без суперлогина), серверные базы создаём сразу
      */
-    after_init(bases) {
+    after_init(bases, auth) {
 
       const {props, remote, $p: {md}} = this;
       const opts = {skip_setup: true, adapter: 'http'};
 
-      if(props.user_node) {
+      if(auth) {
+        opts.auth = auth;
+      }
+      else if(props.user_node) {
         opts.auth = props.user_node;
       }
 
       (bases || md.bases()).forEach((name) => {
-        if(remote[name] || name == 'e1cib' || name == 'pgsql' || name == 'github' || (props.use_ram === false && name === 'ram')) {
+        if((!auth && remote[name]) || name == 'e1cib' || name == 'pgsql' || name == 'github' || (name === 'ram' && props.use_ram === false)) {
           return;
         }
         remote[name] = new PouchDB(this.dbpath(name), opts);
@@ -224,7 +227,7 @@ function adapter({AbstracrAdapter}) {
       }
 
       // в node - мы уже авторизованы
-      // браузере - авторизуемся в ram, а из остальных получаем info()
+      // браузере - авторизуемся и получаем info() во всех базах
       const bases = md.bases();
       const try_auth = props.user_node ? Promise.resolve() : remote.ram.login(username, password)
         .then(({roles}) => {
@@ -278,7 +281,7 @@ function adapter({AbstracrAdapter}) {
           }
         })
         .then((ram_logged_in) => {
-          this.after_init(bases);
+          ram_logged_in && this.after_init(bases, {username, password});
           return ram_logged_in;
         })
         .then((ram_logged_in) => {
@@ -287,11 +290,11 @@ function adapter({AbstracrAdapter}) {
             bases.forEach((dbid) => {
               if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
                 postlogin = postlogin
-                  .then((ram_logged_in) => {
-                    if(ram_logged_in) {
-                      return remote[dbid].login(username, password).then(() => ram_logged_in)
-                    }
-                  })
+                  // .then((ram_logged_in) => {
+                  //   if(ram_logged_in) {
+                  //     return remote[dbid].login(username, password).then(() => ram_logged_in)
+                  //   }
+                  // })
                   .then((ram_logged_in) => ram_logged_in && remote[dbid].info());
               }
             });
@@ -320,24 +323,29 @@ function adapter({AbstracrAdapter}) {
           }
 
           // излучаем событие
-          this.emit_async('user_log_in', username);
+          this.emit('user_log_in', username);
+
+          // врезаем асинхронную подписку на событие
+          return this.emit_promise('on_log_in').then(() => info);
         }
         else {
-          this.emit_async('user_log_stop', username);
+          this.emit('user_log_stop', username);
+          return Promise.resolve();
         }
 
-        if(props._data_loaded && !props._doc_ram_loading) {
-          if(props._doc_ram_loaded) {
-            this.emit('pouch_doc_ram_loaded')
-          }
-          else {
-            this.load_doc_ram();
-          }
-        };
-
-        // запускаем синхронизацию для нужных баз
-        return info && this.after_log_in();
       })
+        .then((info) => {
+          if(props._data_loaded && !props._doc_ram_loading) {
+            if(props._doc_ram_loaded) {
+              this.emit('pouch_doc_ram_loaded')
+            }
+            else {
+              this.load_doc_ram();
+            }
+          };
+          // запускаем синхронизацию для нужных баз
+          return info && this.after_log_in();
+        })
         .catch(err => {
           // излучаем событие
           this.emit('user_log_fault', err);
@@ -554,6 +562,7 @@ function adapter({AbstracrAdapter}) {
 
           const opt = {
             proxy: remote.name,
+            checkpoints: 'target',
             emit: (docs) => {
               this.emit('pouch_dumped', {db: local, docs});
               if(local.name.indexOf('ram') !== -1) {
@@ -569,6 +578,9 @@ function adapter({AbstracrAdapter}) {
               }
             }
           };
+          if(remote.__opts.auth) {
+            opt.auth = remote.__opts.auth;
+          }
           if(opts.filter) {
             opt.filter = opts.filter;
           }
@@ -905,6 +917,10 @@ function adapter({AbstracrAdapter}) {
 
       // нас могли попросить прочитать объект не из родной базы менеджера, а из любой другой
       const db = (attr && attr.db) || this.db(tObj._manager);
+
+      if(!db) {
+        return Promise.resolve(tObj);
+      }
 
       return db.get(tObj._manager.class_name + '|' + tObj.ref)
         .then((res) => {
@@ -1828,13 +1844,13 @@ function adapter({AbstracrAdapter}) {
      * @param regex {RegExp}
      * @param timout {Number}
      */
-    attach_refresher(regex, timout = 600000) {
+    attach_refresher(regex, timout = 500000) {
       if(this.props._refresher) {
         clearInterval(this.props._refresher);
       }
       setInterval(() => {
         if(this.authorized && this.remote.ram && this.remote.ram.adapter == 'http') {
-          this.remote.ram.getSession()
+          this.remote.ram.info()
             .then(response => {
               response = null;
             })

@@ -7,10 +7,11 @@
 import {defined, try_log_in} from './actions_auth';
 
 export const DATA_PAGE = 'POUCH_DATA_PAGE';     // Оповещение о загрузке порции локальных данных
-export const LOAD_START = 'POUCH_LOAD_START';    // Оповещение о начале загрузки локальных данных
-export const DATA_LOADED = 'POUCH_DATA_LOADED';   // Оповещение об окончании загрузки локальных данных
-export const DATA_ERROR = 'POUCH_DATA_ERROR';    // Оповещение об ошибке при загрузке локальных данных
-export const NO_DATA = 'POUCH_NO_DATA';       // Оповещение об отсутствии локальных данных (как правило, при первом запуске)
+export const LOAD_START = 'POUCH_LOAD_START';   // Оповещение о начале загрузки локальных данных
+export const DATA_LOADED = 'POUCH_DATA_LOADED'; // Оповещение об окончании загрузки локальных данных
+export const DATA_ERROR = 'POUCH_DATA_ERROR';   // Оповещение об ошибке при загрузке локальных данных
+export const NO_DATA = 'POUCH_NO_DATA';         // Оповещение об отсутствии локальных данных (как правило, при первом запуске)
+export const AUTOLOGIN = 'POUCH_AUTOLOGIN';     // Оповещение о создании баз autologin
 
 export const SYNC_START = 'POUCH_SYNC_START';    // Оповещение о начале синхронизации базы doc
 export const SYNC_ERROR = 'POUCH_SYNC_ERROR';    // Оповещение об ошибке репликации - не означает окончания репликации - просто информирует об ошибке
@@ -124,6 +125,13 @@ export function load_start(page) {
   return {
     type: LOAD_START,
     payload: page
+  };
+}
+
+export function autologin() {
+  return {
+    type: AUTOLOGIN,
+    payload: true
   };
 }
 

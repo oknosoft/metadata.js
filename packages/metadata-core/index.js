@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.59, built:2018-05-19
+ metadata-core v2.0.17-beta.2, built:2018-06-28
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -773,20 +773,27 @@ class DataObj {
     return !this._obj || utils.is_empty_guid(this._obj.ref);
   }
   load() {
+    const {_data} = this;
     if(this.ref == utils.blank.guid) {
-      const {_data} = this;
       if(_data) {
         _data._loading = false;
         _data._modified = false;
       }
       return Promise.resolve(this);
     }
+    else if(_data._loading) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve(_data._loading ? this.load() : this);
+        }, 1000);
+      });
+    }
     else {
-      this._data._loading = true;
+      _data._loading = true;
       return this._manager.adapter.load_obj(this)
         .then(() => {
-          this._data._loading = false;
-          this._data._modified = false;
+          _data._loading = false;
+          _data._modified = false;
           return this.after_load();
         });
     }
@@ -1342,6 +1349,9 @@ class MetaEventEmitter extends EventEmitter{
     handler.args.push(args);
     handler.timer = setTimeout(this._emit.bind(this, type), 4);
   }
+  emit_promise(type, ...args) {
+    return this.listeners(type).reduce((acc, curr) => acc.then(curr), Promise.resolve());
+  }
   emit_add_fields(obj, fields){
     const {_async} = this;
     _async && _async.update && _async.update.args.some(attr => {
@@ -1768,7 +1778,7 @@ class RefDataManager extends DataManager{
 					continue;
 				}
 				obj = this.obj_constructor('', [attr, this, true]);
-				forse && obj.is_new() && obj._set_loaded();
+				obj.is_new() && obj._set_loaded();
 			}
 			else if(obj.is_new() || forse){
 			  if(obj.is_new() || forse !== 'update_only') {
@@ -2477,7 +2487,7 @@ class RegisterManager extends DataManager{
 			let obj = this.by_ref[ref];
 			if (!obj && !aattr[i]._deleted) {
 				obj = this.obj_constructor('', [aattr[i], this, true]);
-				forse && obj.is_new() && obj._set_loaded();
+				obj.is_new() && obj._set_loaded();
 			}
 			else if (obj && aattr[i]._deleted) {
 				obj.unload();
@@ -3073,10 +3083,9 @@ const utils = {
 			});
 	},
 	_mixin(obj, src, include, exclude) {
-		const tobj = {};
 		function exclude_cpy(f) {
 			if (!exclude || exclude.indexOf(f) == -1) {
-				if ((typeof tobj[f] == 'undefined') || (tobj[f] != src[f])) {
+				{
 					obj[f] = src[f];
 				}
 			}
@@ -4382,7 +4391,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.59';
+    return '2.0.17-beta.2';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
