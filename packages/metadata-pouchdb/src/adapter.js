@@ -899,8 +899,15 @@ function adapter({AbstracrAdapter}) {
       };
 
       return this.log_out()
-        .then(() => remote.ram != local.ram && local.ram.destroy())
-        .then(() => remote.doc != local.doc && local.doc.destroy())
+        .then(() => {
+          return local.templates && local.templates.destroy()
+        })
+        .then(() => {
+          return remote.ram != local.ram && local.ram.destroy()
+        })
+        .then(() => {
+          return remote.doc != local.doc && local.doc.destroy()
+        })
         .then(do_reload)
         .catch(do_reload);
     }
@@ -1288,11 +1295,13 @@ function adapter({AbstracrAdapter}) {
      * @param with_attachments {Boolean}
      * @return {*}
      */
-    load_array(_mgr, refs, with_attachments) {
+    load_array(_mgr, refs, with_attachments, db) {
       if(!refs || !refs.length) {
         return Promise.resolve(false);
       }
-      const db = this.db(_mgr);
+      if(!db) {
+        db = this.db(_mgr);
+      }
       const options = {
         limit: refs.length + 1,
         include_docs: true,

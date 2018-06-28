@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.2, built:2018-06-27
+ metadata-pouchdb v2.0.17-beta.2, built:2018-06-28
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -764,8 +764,15 @@ function adapter({AbstracrAdapter}) {
         setTimeout(() => typeof location != 'undefined' && location.reload(true), 1000);
       };
       return this.log_out()
-        .then(() => remote.ram != local.ram && local.ram.destroy())
-        .then(() => remote.doc != local.doc && local.doc.destroy())
+        .then(() => {
+          return local.templates && local.templates.destroy()
+        })
+        .then(() => {
+          return remote.ram != local.ram && local.ram.destroy()
+        })
+        .then(() => {
+          return remote.doc != local.doc && local.doc.destroy()
+        })
         .then(do_reload)
         .catch(do_reload);
     }
@@ -1055,11 +1062,13 @@ function adapter({AbstracrAdapter}) {
         })
         .catch($p.record_log);
     }
-    load_array(_mgr, refs, with_attachments) {
+    load_array(_mgr, refs, with_attachments, db) {
       if(!refs || !refs.length) {
         return Promise.resolve(false);
       }
-      const db = this.db(_mgr);
+      if(!db) {
+        db = this.db(_mgr);
+      }
       const options = {
         limit: refs.length + 1,
         include_docs: true,
