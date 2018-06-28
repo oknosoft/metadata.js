@@ -109,7 +109,7 @@ export default function log_manager() {
         const _stamp = Date.now();
         const rows = this._rows([this._stamp + wsql.time_diff]);
         for(const row of rows) {
-          row._id = `${pouch.props._suffix || '0000'}|${moment(row.date - wsql.time_diff).format('YYYYMMDDHHmmssSSS') + row.sequence}|${pouch.authorized}`;
+          row._id = `${moment(row.date - wsql.time_diff).format('YYYYMMDDHHmmssSSS') + row.sequence}|${pouch.props._suffix || '0000'}|${pouch.authorized}`;
           if(row.obj) {
             row.obj = JSON.parse(row.obj);
           }
