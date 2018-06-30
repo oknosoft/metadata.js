@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.2, built:2018-06-28
+ metadata-pouchdb v2.0.17-beta.2, built:2018-06-30
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -426,7 +426,6 @@ function adapter({AbstracrAdapter}) {
             if(response) {
               _page.page++;
               _page.total_rows = response.total_rows;
-              _page.duration = Date.now() - _page.start;
               this.emit('pouch_data_page', Object.assign({}, _page));
               if(this.load_changes(response, options)) {
                 fetchNextPage();
@@ -544,6 +543,9 @@ function adapter({AbstracrAdapter}) {
           if(opts.query_params) {
             opt.query_params = opts.query_params;
           }
+          if(opts.selector) {
+            opt.selector = opts.selector;
+          }
           return (local.load ? Promise.resolve() : utils.load_script('/dist/pouchdb.load.js', 'script'))
             .then(() => {
               return local.load(text, opt);
@@ -639,19 +641,12 @@ function adapter({AbstracrAdapter}) {
             };
             const sync_events = (sync, options) => {
               sync.on('change', (change) => {
-                if(id == 'ram') {
-                  this.load_changes(change);
-                  if(linfo.doc_count < (job_prm.pouch_ram_doc_count || 10)) {
-                    _page.page++;
-                    _page.docs_written = change.docs_written;
-                    _page.duration = Date.now() - _page.start;
-                    this.emit('pouch_data_page', Object.assign({}, _page));
-                  }
+                if(change.pending > 10) {
+                  change.db = id;
+                  this.emit_async('repl_state', change);
                 }
-                else {
-                  change.update_only = true;
-                  this.load_changes(change);
-                }
+                change.update_only = id !== 'ram';
+                this.load_changes(change);
                 this.emit('pouch_sync_data', id, change);
               })
                 .on('denied', (info) => {
@@ -661,11 +656,14 @@ function adapter({AbstracrAdapter}) {
                   this.emit('pouch_sync_error', id, err);
                 })
                 .on('complete', (info) => {
+                  info.db = id;
+                  this.emit_async('repl_state', info);
                   sync.cancel();
                   sync.removeAllListeners();
                   if(options) {
                     final_sync(options);
-                    resolve(id);
+                    this.rebuild_indexes(id)
+                      .then(() => resolve(id));
                   }
                 });
               if(id == 'ram') {
@@ -696,6 +694,7 @@ function adapter({AbstracrAdapter}) {
     }
     rebuild_indexes(id) {
       const {local, remote} = this;
+      const msg = {db: id, ok: true, docs_read: 0, pending: 0, start_time: new Date().toISOString()};
       let promises = Promise.resolve();
       return local[id] === remote[id] ?
         Promise.resolve() :
@@ -713,7 +712,8 @@ function adapter({AbstracrAdapter}) {
                   const index = doc._id.replace('_design/', '') + '/' + name;
                   if(doc.language === 'javascript') {
                     promises = promises.then(() => {
-                      this.emit('rebuild_indexes', {id, index, start: true});
+                      msg.index = index;
+                      this.emit_async('repl_state', msg);
                       return local[id].query(index, {limit: 1});
                     });
                   }
@@ -727,7 +727,8 @@ function adapter({AbstracrAdapter}) {
                       selector.selector[fld] = '';
                     }
                     promises = promises.then(() => {
-                      this.emit('rebuild_indexes', {id, index, start: true});
+                      msg.index = index;
+                      this.emit_async('repl_state', msg);
                       return local[id].find(selector);
                     });
                   }
@@ -735,8 +736,10 @@ function adapter({AbstracrAdapter}) {
               }
             }
             return promises.then(() => {
-                this.emit('rebuild_indexes', {id, start: false, finish: true});
-              });
+              msg.index = '';
+              msg.end_time = new Date().toISOString();
+              this.emit_async('repl_state', msg);
+            });
           });
     }
     call_data_loaded(page) {
@@ -765,7 +768,7 @@ function adapter({AbstracrAdapter}) {
       };
       return this.log_out()
         .then(() => {
-          return local.templates && local.templates.destroy()
+          return local.templates && local.templates.adapter === 'idb' && local.templates.destroy()
         })
         .then(() => {
           return remote.ram != local.ram && local.ram.destroy()
@@ -1131,7 +1134,7 @@ function adapter({AbstracrAdapter}) {
       props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
         for (const name in _m[kind]) {
-          _m[kind][name].cachable === 'doc_ram' && res.push(kind + '.' + name);
+          (_m[kind][name].cachable === 'doc_ram' || _m[kind][name].cachable === 'templates_ram') && res.push(kind + '.' + name);
         }
       });
       return res.reduce((acc, name) => {
@@ -1143,8 +1146,9 @@ function adapter({AbstracrAdapter}) {
             limit: 10000,
           };
           const page = local.sync._page || {};
-          this.emit('pouch_data_page', Object.assign(page, {synonym: md.get(name).synonym}));
-          return local.doc.allDocs(opt).then((res) => this.load_changes(res, opt));
+          const meta = md.get(name);
+          this.emit('pouch_data_page', Object.assign(page, {synonym: meta.synonym}));
+          return local[meta.cachable === 'templates_ram' ? 'templates' : 'doc'].allDocs(opt).then((res) => this.load_changes(res, opt));
         });
       }, Promise.resolve())
         .catch((err) => {

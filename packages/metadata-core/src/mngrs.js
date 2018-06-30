@@ -107,6 +107,7 @@ export class DataManager extends MetaEventEmitter{
     case 'remote':
     case 'user':
     case 'meta':
+    case 'templates':
       return adapters.pouch;
     }
     return adapters[this.cachable];

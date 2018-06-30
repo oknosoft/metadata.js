@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.2, built:2018-06-28
+ metadata-core v2.0.17-beta.2, built:2018-06-29
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1400,6 +1400,7 @@ class DataManager extends MetaEventEmitter{
     case 'remote':
     case 'user':
     case 'meta':
+    case 'templates':
       return adapters.pouch;
     }
     return adapters[this.cachable];
@@ -3881,7 +3882,7 @@ class Meta extends MetaEventEmitter {
       for (let j in _m[i]) {
         if(_m[i][j].cachable) {
           let _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '').replace('_doc', '');
-          if(_name != 'meta' && _name != 'e1cib' && !res[_name]) {
+          if(_name != 'meta' && _name != 'templates' && _name != 'e1cib' && !res[_name]) {
             res[_name] = _name;
           }
         }

@@ -429,7 +429,6 @@ function adapter({AbstracrAdapter}) {
               // широковещательное оповещение о загрузке порции локальных данных
               _page.page++;
               _page.total_rows = response.total_rows;
-              _page.duration = Date.now() - _page.start;
 
               this.emit('pouch_data_page', Object.assign({}, _page));
 
@@ -587,6 +586,9 @@ function adapter({AbstracrAdapter}) {
           if(opts.query_params) {
             opt.query_params = opts.query_params;
           }
+          if(opts.selector) {
+            opt.selector = opts.selector;
+          }
 
           return (local.load ? Promise.resolve() : utils.load_script('/dist/pouchdb.load.js', 'script'))
             .then(() => {
@@ -608,7 +610,7 @@ function adapter({AbstracrAdapter}) {
      * @param local {PouchDB}
      * @param remote {PouchDB}
      * @param id {String}
-     * @return {Promise.<TResult>}
+     * @return {Promise}
      */
     run_sync(id) {
 
@@ -719,28 +721,15 @@ function adapter({AbstracrAdapter}) {
             const sync_events = (sync, options) => {
 
               sync.on('change', (change) => {
-                // yo, something changed!
-                if(id == 'ram') {
-                  this.load_changes(change);
-
-                  if(linfo.doc_count < (job_prm.pouch_ram_doc_count || 10)) {
-
-                    // широковещательное оповещение о загрузке порции данных
-                    _page.page++;
-                    _page.docs_written = change.docs_written;
-                    _page.duration = Date.now() - _page.start;
-
-                    this.emit('pouch_data_page', Object.assign({}, _page));
-                  }
+                if(change.pending > 10) {
+                  change.db = id;
+                  this.emit_async('repl_state', change);
                 }
-                else {
-                  // если прибежали изменения базы doc - обновляем только те объекты, которые уже прочитаны в озу
-                  change.update_only = true;
-                  this.load_changes(change);
-                }
+
+                change.update_only = id !== 'ram';
+                this.load_changes(change);
 
                 this.emit('pouch_sync_data', id, change);
-
               })
                 .on('denied', (info) => {
                   // a document failed to replicate, e.g. due to permissions
@@ -748,25 +737,20 @@ function adapter({AbstracrAdapter}) {
 
                 })
                 .on('error', (err) => {
-                  // if(err.result && !err.result.errors.length && sync){
-                  //   sync.emit('complete');
-                  // }
-                  // else{
-                  //   // totally unhandled error (shouldn't happen)
-                  //   this.emit('pouch_sync_error', id, err);
-                  // }
-                  // totally unhandled error (shouldn't happen)
                   this.emit('pouch_sync_error', id, err);
                 })
                 .on('complete', (info) => {
                   // handle complete
+                  info.db = id;
+                  this.emit_async('repl_state', info);
 
                   sync.cancel();
                   sync.removeAllListeners();
 
                   if(options) {
                     final_sync(options);
-                    resolve(id);
+                    this.rebuild_indexes(id)
+                      .then(() => resolve(id));
                   }
                 });
 
@@ -806,12 +790,14 @@ function adapter({AbstracrAdapter}) {
     }
 
     /**
-     * Перестраивает индексы
+     * ### Перестраивает индексы
      * Обычно, вызывается после начальной синхронизации
      * @param id {String}
+     * @return {Promise}
      */
     rebuild_indexes(id) {
       const {local, remote} = this;
+      const msg = {db: id, ok: true, docs_read: 0, pending: 0, start_time: new Date().toISOString()}
       let promises = Promise.resolve();
       return local[id] === remote[id] ?
         Promise.resolve() :
@@ -823,13 +809,18 @@ function adapter({AbstracrAdapter}) {
         })
           .then(({rows}) => {
             for(const {doc} of rows) {
+              if(doc._id.indexOf('/server') !== -1) {
+                continue;
+              }
               if(doc.views) {
                 for(const name in doc.views) {
                   const view = doc.views[name];
                   const index = doc._id.replace('_design/', '') + '/' + name;
                   if(doc.language === 'javascript') {
                     promises = promises.then(() => {
-                      this.emit('rebuild_indexes', {id, index, start: true});
+                      msg.index = index;
+                      this.emit_async('repl_state', msg);
+                      //this.emit('rebuild_indexes', {id, index, start: true});
                       return local[id].query(index, {limit: 1});
                     });
                   }
@@ -844,7 +835,9 @@ function adapter({AbstracrAdapter}) {
                       selector.selector[fld] = '';
                     }
                     promises = promises.then(() => {
-                      this.emit('rebuild_indexes', {id, index, start: true});
+                      msg.index = index;
+                      this.emit_async('repl_state', msg);
+                      //this.emit('rebuild_indexes', {id, index, start: true});
                       return local[id].find(selector);
                     });
                   }
@@ -852,8 +845,11 @@ function adapter({AbstracrAdapter}) {
               }
             }
             return promises.then(() => {
-                this.emit('rebuild_indexes', {id, start: false, finish: true});
-              });
+              msg.index = '';
+              msg.end_time = new Date().toISOString();
+              this.emit_async('repl_state', msg);
+              //this.emit('rebuild_indexes', {id, start: false, finish: true});
+            });
           });
 
     }
@@ -900,7 +896,7 @@ function adapter({AbstracrAdapter}) {
 
       return this.log_out()
         .then(() => {
-          return local.templates && local.templates.destroy()
+          return local.templates && local.templates.adapter === 'idb' && local.templates.destroy()
         })
         .then(() => {
           return remote.ram != local.ram && local.ram.destroy()
@@ -1387,7 +1383,7 @@ function adapter({AbstracrAdapter}) {
       props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
         for (const name in _m[kind]) {
-          _m[kind][name].cachable === 'doc_ram' && res.push(kind + '.' + name);
+          (_m[kind][name].cachable === 'doc_ram' || _m[kind][name].cachable === 'templates_ram') && res.push(kind + '.' + name);
         }
       });
 
@@ -1400,8 +1396,9 @@ function adapter({AbstracrAdapter}) {
             limit: 10000,
           };
           const page = local.sync._page || {};
-          this.emit('pouch_data_page', Object.assign(page, {synonym: md.get(name).synonym}));
-          return local.doc.allDocs(opt).then((res) => this.load_changes(res, opt));
+          const meta = md.get(name);
+          this.emit('pouch_data_page', Object.assign(page, {synonym: meta.synonym}));
+          return local[meta.cachable === 'templates_ram' ? 'templates' : 'doc'].allDocs(opt).then((res) => this.load_changes(res, opt));
         });
       }, Promise.resolve())
         .catch((err) => {
