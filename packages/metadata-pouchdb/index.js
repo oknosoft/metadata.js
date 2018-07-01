@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.2, built:2018-06-30
+ metadata-pouchdb v2.0.17-beta.2, built:2018-07-01
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -486,7 +486,141 @@ function adapter({AbstracrAdapter}) {
       }
       return delay * 3;
     }
-    sync_from_dump(local, remote, opts) {
+    run_sync(id) {
+      const {local, remote, $p: {wsql, job_prm, record_log}, props} = this;
+      if(local.sync[id]) {
+        return Promise.resolve(id);
+      }
+      const {_push_only, _user} = props;
+      const db_local = local[id];
+      const db_remote = remote[id];
+      let linfo, _page;
+      return db_local.info()
+        .then((info) => {
+          linfo = info;
+          return db_remote.info();
+        })
+        .then((rinfo) => {
+          if(id == 'ram') {
+            return db_remote.get('data_version')
+              .then((v) => {
+                if(v.version != wsql.get_user_param('couch_ram_data_version')) {
+                  if(wsql.get_user_param('couch_ram_data_version')) {
+                    rinfo = this.reset_local_data();
+                  }
+                  wsql.set_user_param('couch_ram_data_version', v.version);
+                }
+                return rinfo;
+              })
+              .catch(record_log)
+              .then(() => rinfo);
+          }
+          return rinfo;
+        })
+        .then((rinfo) => {
+          if(!rinfo) {
+            return;
+          }
+          if(!_push_only && rinfo.data_size > (job_prm.data_size_sync_limit || 2e8)) {
+            this.emit('pouch_sync_error', id, {data_size: rinfo.data_size});
+            props.direct = true;
+            wsql.set_user_param('couch_direct', true);
+            return;
+          }
+          if(id == 'ram' && linfo.doc_count < (job_prm.pouch_ram_doc_count || 10)) {
+            _page = {
+              total_rows: rinfo.doc_count,
+              local_rows: linfo.doc_count,
+              docs_written: 0,
+              limit: 300,
+              page: 0,
+              start: Date.now(),
+            };
+            this.emit('pouch_load_start', _page);
+          }
+          return new Promise((resolve, reject) => {
+            const options = {
+              batch_size: 200,
+              batches_limit: 3,
+              retry: true,
+            };
+            if(job_prm.pouch_filter && job_prm.pouch_filter[id]) {
+              options.filter = job_prm.pouch_filter[id];
+            }
+            else if(id == 'meta') {
+              options.filter = 'auth/meta';
+            }
+            const final_sync = (options) => {
+              options.live = true;
+              options.back_off_function = this.back_off;
+              if(id == 'ram' || id == 'meta' || props.zone == job_prm.zone_demo) {
+                local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
+              }
+              else if(_push_only) {
+                if(options.filter) {
+                  delete options.filter;
+                  delete options.query_params;
+                }
+                local.sync[id] = sync_events(db_local.replicate.to(db_remote, options));
+              }
+              else {
+                local.sync[id] = sync_events(db_local.sync(db_remote, options));
+              }
+            };
+            const sync_events = (sync, options) => {
+              sync.on('change', (change) => {
+                if(change.pending > 10) {
+                  change.db = id;
+                  this.emit_async('repl_state', change);
+                }
+                change.update_only = id !== 'ram';
+                this.load_changes(change);
+                this.emit('pouch_sync_data', id, change);
+              })
+                .on('denied', (info) => {
+                  this.emit('pouch_sync_denied', id, info);
+                })
+                .on('error', (err) => {
+                  this.emit('pouch_sync_error', id, err);
+                })
+                .on('complete', (info) => {
+                  info.db = id;
+                  this.emit_async('repl_state', info);
+                  sync.cancel();
+                  sync.removeAllListeners();
+                  if(options) {
+                    final_sync(options);
+                    this.rebuild_indexes(id)
+                      .then(() => resolve(id));
+                  }
+                });
+              if(id == 'ram') {
+                sync
+                  .on('paused', (info) => this.emit('pouch_sync_paused', id, info))
+                  .on('active', (info) => this.emit('pouch_sync_resumed', id, info));
+              }
+              return sync;
+            };
+            if(_push_only && !options.filter && id !== 'ram' && id !== 'meta') {
+              options.filter = 'auth/push_only';
+              options.query_params = {user: _user};
+            }
+            (job_prm.templates ? this.from_files(db_local, db_remote, options) : this.from_dump(db_local, db_remote, options))
+              .then((synced) => {
+                if(synced) {
+                  final_sync(options);
+                  if(typeof synced === 'number') {
+                    this.rebuild_indexes(id)
+                      .then(() => this.load_data());
+                  }                }
+                else {
+                  sync_events(db_local.replicate.from(db_remote, options), options);
+                }
+              });
+          });
+        });
+    }
+    from_dump(local, remote, opts = {}) {
       const {utils} = this.$p;
       return local.get('_local/dumped')
         .then(() => true)
@@ -558,141 +692,84 @@ function adapter({AbstracrAdapter}) {
           return false;
         });
     }
-    run_sync(id) {
-      const {local, remote, $p: {wsql, job_prm, record_log}, props} = this;
-      if(local.sync[id]) {
-        return Promise.resolve(id);
-      }
-      const {_push_only, _user} = props;
-      const db_local = local[id];
-      const db_remote = remote[id];
-      let linfo, _page;
-      return db_local.info()
+    from_files(local, remote, opts = {}) {
+      const li = local.name.lastIndexOf('_');
+      const id = local.name.substr(li + 1);
+      return fetch(`/${id}/00000.json`)
+        .then((res) => res.json())
         .then((info) => {
-          linfo = info;
-          return db_remote.info();
+          return local.get('_local/stamp')
+            .then((doc) => {
+              if(doc.stamp === info.stamp) {
+                return true;
+              }
+              info._rev = doc._rev;
+              return info;
+            })
+            .catch((err) => {
+              return info;
+            });
         })
-        .then((rinfo) => {
-          if(id == 'ram') {
-            return db_remote.get('data_version')
-              .then((v) => {
-                if(v.version != wsql.get_user_param('couch_ram_data_version')) {
-                  if(wsql.get_user_param('couch_ram_data_version')) {
-                    rinfo = this.reset_local_data();
-                  }
-                  wsql.set_user_param('couch_ram_data_version', v.version);
-                }
-                return rinfo;
-              })
-              .catch(record_log)
-              .then(() => rinfo);
+        .then((info) => {
+          if(info === true) {
+            return info;
           }
-          return rinfo;
+          if(info) {
+            return (local.load ? Promise.resolve() : this.$p.utils.load_script('/dist/pouchdb.load.js', 'script'))
+              .then(() => info);
+          }
         })
-        .then((rinfo) => {
-          if(!rinfo) {
-            return;
+        .then((info) => {
+          if(info === true) {
+            return info;
           }
-          if(!_push_only && rinfo.data_size > (job_prm.data_size_sync_limit || 2e8)) {
-            this.emit('pouch_sync_error', id, {data_size: rinfo.data_size});
-            props.direct = true;
-            wsql.set_user_param('couch_direct', true);
-            return;
-          }
-          if(id == 'ram' && linfo.doc_count < (job_prm.pouch_ram_doc_count || 10)) {
-            _page = {
-              total_rows: rinfo.doc_count,
-              local_rows: linfo.doc_count,
-              docs_written: 0,
-              limit: 300,
-              page: 0,
-              start: Date.now(),
+          if(info) {
+            const {origin} = location;
+            let series = Promise.resolve();
+            const msg = {db: id, ok: true, docs_read: 0, pending: info.doc_count, start_time: new Date().toISOString()};
+            this.emit_async('repl_state', msg);
+            const opt = {
+              proxy: remote.name,
+              checkpoints: 'target',
+              emit: (docs) => {
+                this.emit('pouch_dumped', {db: local, docs});
+              }
             };
-            this.emit('pouch_load_start', _page);
-          }
-          return new Promise((resolve, reject) => {
-            const options = {
-              batch_size: 200,
-              batches_limit: 6,
-              retry: true,
-            };
-            if(job_prm.pouch_filter && job_prm.pouch_filter[id]) {
-              options.filter = job_prm.pouch_filter[id];
+            if(remote.__opts.auth) {
+              opt.auth = remote.__opts.auth;
             }
-            else if(id == 'meta') {
-              options.filter = 'auth/meta';
+            if(opts.filter) {
+              opt.filter = opts.filter;
             }
-            const final_sync = (options) => {
-              options.live = true;
-              options.back_off_function = this.back_off;
-              if(id == 'ram' || id == 'meta' || props.zone == job_prm.zone_demo) {
-                local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
-              }
-              else if(_push_only) {
-                if(options.filter) {
-                  delete options.filter;
-                  delete options.query_params;
-                }
-                local.sync[id] = sync_events(db_local.replicate.to(db_remote, options));
-              }
-              else {
-                local.sync[id] = sync_events(db_local.sync(db_remote, options));
-              }
-            };
-            const sync_events = (sync, options) => {
-              sync.on('change', (change) => {
-                if(change.pending > 10) {
-                  change.db = id;
-                  this.emit_async('repl_state', change);
-                }
-                change.update_only = id !== 'ram';
-                this.load_changes(change);
-                this.emit('pouch_sync_data', id, change);
+            if(opts.query_params) {
+              opt.query_params = opts.query_params;
+            }
+            if(opts.selector) {
+              opt.selector = opts.selector;
+            }
+            for(let i = 1; i <= info.files; i++) {
+              series = series.then(() => {
+                return local.load(`${origin}/${id}/${i.pad(5)}.json`, opt);
               })
-                .on('denied', (info) => {
-                  this.emit('pouch_sync_denied', id, info);
-                })
-                .on('error', (err) => {
-                  this.emit('pouch_sync_error', id, err);
-                })
-                .on('complete', (info) => {
-                  info.db = id;
-                  this.emit_async('repl_state', info);
-                  sync.cancel();
-                  sync.removeAllListeners();
-                  if(options) {
-                    final_sync(options);
-                    this.rebuild_indexes(id)
-                      .then(() => resolve(id));
-                  }
+                .then((step) => {
+                  msg.docs_read = (info.doc_count * i / info.files).round();
+                  msg.pending = info.doc_count - msg.docs_read;
+                  this.emit_async('repl_state', msg);
                 });
-              if(id == 'ram') {
-                sync
-                  .on('paused', (info) => this.emit('pouch_sync_paused', id, info))
-                  .on('active', (info) => this.emit('pouch_sync_resumed', id, info));
-              }
-              return sync;
-            };
-            if(_push_only && !options.filter && id !== 'ram' && id !== 'meta') {
-              options.filter = 'auth/push_only';
-              options.query_params = {user: _user};
             }
-            this.sync_from_dump(db_local, db_remote, options)
-              .then((synced) => {
-                if(synced) {
-                  final_sync(options);
-                  if(typeof synced === 'number') {
-                    this.rebuild_indexes(id)
-                      .then(() => this.load_data());
-                  }                }
-                else {
-                  sync_events(db_local.replicate.from(db_remote, options), options);
-                }
-              });
-          });
+            return series
+              .then(() => {
+                info._id = '_local/stamp';
+                return local.put(info);
+              })
+              .then(() => -1);
+          }
+        })
+        .catch((err) => {
+          return false;
         });
     }
-    rebuild_indexes(id) {
+    rebuild_indexes(id, silent) {
       const {local, remote} = this;
       const msg = {db: id, ok: true, docs_read: 0, pending: 0, start_time: new Date().toISOString()};
       let promises = Promise.resolve();
@@ -706,14 +783,22 @@ function adapter({AbstracrAdapter}) {
         })
           .then(({rows}) => {
             for(const {doc} of rows) {
+              if(doc._id.indexOf('/server') !== -1) {
+                continue;
+              }
               if(doc.views) {
                 for(const name in doc.views) {
                   const view = doc.views[name];
                   const index = doc._id.replace('_design/', '') + '/' + name;
                   if(doc.language === 'javascript') {
                     promises = promises.then(() => {
-                      msg.index = index;
-                      this.emit_async('repl_state', msg);
+                      if(silent) {
+                        this.emit('rebuild_indexes', {id, index, start: true});
+                      }
+                      else {
+                        msg.index = index;
+                        this.emit('repl_state', msg);
+                      }
                       return local[id].query(index, {limit: 1});
                     });
                   }
@@ -727,8 +812,13 @@ function adapter({AbstracrAdapter}) {
                       selector.selector[fld] = '';
                     }
                     promises = promises.then(() => {
-                      msg.index = index;
-                      this.emit_async('repl_state', msg);
+                      if(silent) {
+                        this.emit('rebuild_indexes', {id, index, start: true});
+                      }
+                      else {
+                        msg.index = index;
+                        this.emit('repl_state', msg);
+                      }
                       return local[id].find(selector);
                     });
                   }
@@ -738,7 +828,8 @@ function adapter({AbstracrAdapter}) {
             return promises.then(() => {
               msg.index = '';
               msg.end_time = new Date().toISOString();
-              this.emit_async('repl_state', msg);
+              this.emit('repl_state', msg);
+              this.emit('rebuild_indexes', {id, start: false, finish: true});
             });
           });
     }
@@ -1162,8 +1253,10 @@ function adapter({AbstracrAdapter}) {
           this.emit('pouch_doc_ram_loaded');
         });
     }
-    find_rows(_mgr, selection) {
-      const db = this.db(_mgr);
+    find_rows(_mgr, selection, db) {
+      if(!db) {
+        db = this.db(_mgr);
+      }
       if(!db) {
         return Promise.resolve([]);
       }

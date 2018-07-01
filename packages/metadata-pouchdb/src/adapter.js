@@ -518,92 +518,6 @@ function adapter({AbstracrAdapter}) {
     }
 
     /**
-     * Предпринимает попытку загрузки начального образа из _local/dump базы remote
-     * @param local
-     * @param remote
-     * @return {Promise<Boolean>}
-     */
-    sync_from_dump(local, remote, opts) {
-      const {utils} = this.$p;
-      // если уже грузили из дампа, не суетимся
-      return local.get('_local/dumped')
-        .then(() => true)
-        // проверяем наличие дампа в remote
-        .catch(() => remote.get('_local/dump'))
-        .then(doc => {
-          if(doc === true) {
-            return doc;
-          }
-          // извлекаем и разархивируем дамп
-          const byteCharacters = atob(doc.dump);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-          }
-          const blob = new Blob([new Uint8Array(byteNumbers)], {type: 'application/zip'});
-          return utils.blob_as_text(blob, 'array');
-        })
-        .then((uarray) => {
-          if(uarray === true) {
-            return uarray;
-          }
-
-          return ('JSZip' in window ? Promise.resolve() : utils.load_script('https://cdn.jsdelivr.net/jszip/2/jszip.min.js', 'script'))
-            .then(() => {
-              const zip = new JSZip(uarray);
-              return zip.files.dump.asText();
-            });
-        })
-        .then((text) => {
-          if(text === true) {
-            return text;
-          }
-
-          const opt = {
-            proxy: remote.name,
-            checkpoints: 'target',
-            emit: (docs) => {
-              this.emit('pouch_dumped', {db: local, docs});
-              if(local.name.indexOf('ram') !== -1) {
-                // широковещательное оповещение о начале загрузки локальных данных
-                this.emit('pouch_data_page', {
-                  total_rows: docs.length,
-                  local_rows: 3,
-                  docs_written: 3,
-                  limit: 300,
-                  page: 0,
-                  start: Date.now(),
-                });
-              }
-            }
-          };
-          if(remote.__opts.auth) {
-            opt.auth = remote.__opts.auth;
-          }
-          if(opts.filter) {
-            opt.filter = opts.filter;
-          }
-          if(opts.query_params) {
-            opt.query_params = opts.query_params;
-          }
-          if(opts.selector) {
-            opt.selector = opts.selector;
-          }
-
-          return (local.load ? Promise.resolve() : utils.load_script('/dist/pouchdb.load.js', 'script'))
-            .then(() => {
-              return local.load(text, opt);
-            })
-            .then(() => local.put({_id: '_local/dumped'}))
-            .then(() => -1);
-        })
-        .catch((err) => {
-          err.status !== 404 && console.log(err);
-          return false;
-        });
-    }
-
-    /**
      * ### Запускает процесс синхронизвации
      *
      * @method run_sync
@@ -685,7 +599,7 @@ function adapter({AbstracrAdapter}) {
 
             const options = {
               batch_size: 200,
-              batches_limit: 6,
+              batches_limit: 3,
               retry: true,
             };
 
@@ -770,7 +684,7 @@ function adapter({AbstracrAdapter}) {
               options.query_params = {user: _user};
             }
 
-            this.sync_from_dump(db_local, db_remote, options)
+            (job_prm.templates ? this.from_files(db_local, db_remote, options) : this.from_dump(db_local, db_remote, options))
               .then((synced) => {
                 if(synced) {
                   final_sync(options);
@@ -790,12 +704,185 @@ function adapter({AbstracrAdapter}) {
     }
 
     /**
+     * Предпринимает попытку загрузки начального образа из _local/dump базы remote
+     * @param local
+     * @param remote
+     * @return {Promise<Boolean>}
+     */
+    from_dump(local, remote, opts = {}) {
+      const {utils} = this.$p;
+      // если уже грузили из дампа, не суетимся
+      return local.get('_local/dumped')
+        .then(() => true)
+        // проверяем наличие дампа в remote
+        .catch(() => remote.get('_local/dump'))
+        .then(doc => {
+          if(doc === true) {
+            return doc;
+          }
+          // извлекаем и разархивируем дамп
+          const byteCharacters = atob(doc.dump);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const blob = new Blob([new Uint8Array(byteNumbers)], {type: 'application/zip'});
+          return utils.blob_as_text(blob, 'array');
+        })
+        .then((uarray) => {
+          if(uarray === true) {
+            return uarray;
+          }
+
+          return ('JSZip' in window ? Promise.resolve() : utils.load_script('https://cdn.jsdelivr.net/jszip/2/jszip.min.js', 'script'))
+            .then(() => {
+              const zip = new JSZip(uarray);
+              return zip.files.dump.asText();
+            });
+        })
+        .then((text) => {
+          if(text === true) {
+            return text;
+          }
+
+          const opt = {
+            proxy: remote.name,
+            checkpoints: 'target',
+            emit: (docs) => {
+              this.emit('pouch_dumped', {db: local, docs});
+              if(local.name.indexOf('ram') !== -1) {
+                // широковещательное оповещение о начале загрузки локальных данных
+                this.emit('pouch_data_page', {
+                  total_rows: docs.length,
+                  local_rows: 3,
+                  docs_written: 3,
+                  limit: 300,
+                  page: 0,
+                  start: Date.now(),
+                });
+              }
+            }
+          };
+          if(remote.__opts.auth) {
+            opt.auth = remote.__opts.auth;
+          }
+          if(opts.filter) {
+            opt.filter = opts.filter;
+          }
+          if(opts.query_params) {
+            opt.query_params = opts.query_params;
+          }
+          if(opts.selector) {
+            opt.selector = opts.selector;
+          }
+
+          return (local.load ? Promise.resolve() : utils.load_script('/dist/pouchdb.load.js', 'script'))
+            .then(() => {
+              return local.load(text, opt);
+            })
+            .then(() => local.put({_id: '_local/dumped'}))
+            .then(() => -1);
+        })
+        .catch((err) => {
+          err.status !== 404 && console.log(err);
+          return false;
+        });
+    }
+
+    /**
+     * Предпринимает попытку загрузки начального образа из файлов
+     * @param local
+     * @param remote
+     * @return {Promise<Boolean>}
+     */
+    from_files(local, remote, opts = {}) {
+      const li = local.name.lastIndexOf('_');
+      const id = local.name.substr(li + 1);
+      return fetch(`/${id}/00000.json`)
+        .then((res) => res.json())
+        .then((info) => {
+          return local.get('_local/stamp')
+            .then((doc) => {
+              if(doc.stamp === info.stamp) {
+                return true;
+              }
+              info._rev = doc._rev;
+              return info;
+            })
+            .catch((err) => {
+              return info;
+            });
+        })
+        .then((info) => {
+          if(info === true) {
+            return info;
+          }
+          if(info) {
+            return (local.load ? Promise.resolve() : this.$p.utils.load_script('/dist/pouchdb.load.js', 'script'))
+              .then(() => info);
+          }
+        })
+        .then((info) => {
+          if(info === true) {
+            return info;
+          }
+          if(info) {
+            const {origin} = location;
+            let series = Promise.resolve();
+
+            const msg = {db: id, ok: true, docs_read: 0, pending: info.doc_count, start_time: new Date().toISOString()}
+            this.emit_async('repl_state', msg);
+
+            const opt = {
+              proxy: remote.name,
+              checkpoints: 'target',
+              emit: (docs) => {
+                this.emit('pouch_dumped', {db: local, docs});
+              }
+            };
+            if(remote.__opts.auth) {
+              opt.auth = remote.__opts.auth;
+            }
+            if(opts.filter) {
+              opt.filter = opts.filter;
+            }
+            if(opts.query_params) {
+              opt.query_params = opts.query_params;
+            }
+            if(opts.selector) {
+              opt.selector = opts.selector;
+            }
+
+            for(let i = 1; i <= info.files; i++) {
+              series = series.then(() => {
+                return local.load(`${origin}/${id}/${i.pad(5)}.json`, opt);
+              })
+                .then((step) => {
+                  msg.docs_read = (info.doc_count * i / info.files).round();
+                  msg.pending = info.doc_count - msg.docs_read;
+                  this.emit_async('repl_state', msg);
+                });
+            }
+            return series
+              .then(() => {
+                info._id = '_local/stamp';
+                return local.put(info);
+              })
+              .then(() => -1);
+          }
+        })
+        .catch((err) => {
+          return false;
+        });
+    }
+
+    /**
      * ### Перестраивает индексы
      * Обычно, вызывается после начальной синхронизации
      * @param id {String}
      * @return {Promise}
      */
-    rebuild_indexes(id) {
+    rebuild_indexes(id, silent) {
       const {local, remote} = this;
       const msg = {db: id, ok: true, docs_read: 0, pending: 0, start_time: new Date().toISOString()}
       let promises = Promise.resolve();
@@ -818,9 +905,13 @@ function adapter({AbstracrAdapter}) {
                   const index = doc._id.replace('_design/', '') + '/' + name;
                   if(doc.language === 'javascript') {
                     promises = promises.then(() => {
-                      msg.index = index;
-                      this.emit_async('repl_state', msg);
-                      //this.emit('rebuild_indexes', {id, index, start: true});
+                      if(silent) {
+                        this.emit('rebuild_indexes', {id, index, start: true});
+                      }
+                      else {
+                        msg.index = index;
+                        this.emit('repl_state', msg);
+                      }
                       return local[id].query(index, {limit: 1});
                     });
                   }
@@ -835,9 +926,13 @@ function adapter({AbstracrAdapter}) {
                       selector.selector[fld] = '';
                     }
                     promises = promises.then(() => {
-                      msg.index = index;
-                      this.emit_async('repl_state', msg);
-                      //this.emit('rebuild_indexes', {id, index, start: true});
+                      if(silent) {
+                        this.emit('rebuild_indexes', {id, index, start: true});
+                      }
+                      else {
+                        msg.index = index;
+                        this.emit('repl_state', msg);
+                      }
                       return local[id].find(selector);
                     });
                   }
@@ -847,8 +942,8 @@ function adapter({AbstracrAdapter}) {
             return promises.then(() => {
               msg.index = '';
               msg.end_time = new Date().toISOString();
-              this.emit_async('repl_state', msg);
-              //this.emit('rebuild_indexes', {id, start: false, finish: true});
+              this.emit('repl_state', msg);
+              this.emit('rebuild_indexes', {id, start: false, finish: true});
             });
           });
 
@@ -1427,9 +1522,11 @@ function adapter({AbstracrAdapter}) {
      * @param [selection._total_count] {Boolean} - если _истина_, вычисляет общее число записей под фильтром, без учета _skip и _top
      * @return {Promise.<Array>}
      */
-    find_rows(_mgr, selection) {
+    find_rows(_mgr, selection, db) {
 
-      const db = this.db(_mgr);
+      if(!db) {
+        db = this.db(_mgr);
+      }
 
       // если базы не инициализированы, возвращаем пустой массив
       if(!db) {

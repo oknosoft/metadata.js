@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.17-beta.2, built:2018-06-28
+ metadata-abstract-ui v2.0.17-beta.2, built:2018-07-01
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -186,7 +186,19 @@ function scheme_settings() {
           endkey: [class_name, 9999],
         },
       };
-      return this.find_rows_remote ? this.find_rows_remote(opt) : this.adapter.find_rows(this, opt);
+      const {adapter} = this;
+      if(adapter.local.templates && adapter.local.templates !==  adapter.remote.doc) {
+        return this.adapter.find_rows(this, opt, adapter.local.templates)
+          .then((templates_data) => {
+            return this.adapter.find_rows(this, opt)
+              .then((data) => {
+                return templates_data.concat(data);
+              });
+          })
+      }
+      else {
+        return this.adapter.find_rows(this, opt);
+      }
     }
     get_scheme(class_name) {
       return new Promise((resolve, reject) => {
@@ -280,6 +292,22 @@ function scheme_settings() {
     constructor(attr, manager, loading) {
       super(attr, manager, loading);
       this.set_standard_period();
+    }
+    load() {
+      return super.load()
+        .then(() => {
+          const {_data, _manager: {adapter}} = this;
+          if(this.is_new() && adapter.local.templates && adapter.local.templates !== adapter.remote.doc) {
+            _data._loading = true;
+            return adapter.load_obj(this, {db: adapter.local.templates})
+              .then(() => {
+                _data._loading = false;
+                _data._modified = false;
+                return this.after_load();
+              });
+          }
+          return this;
+        })
     }
     set_standard_period() {
       const {standard_period} = enm;
