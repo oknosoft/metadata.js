@@ -66,9 +66,12 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
       clearTimeout(input_filter_changed);
     }
 
-    input_filter_changed = setTimeout(function () {
-      input_filter_changed && t._prev_input_filter != t.input_filter.value && t.call_event();
-    }, 750);
+    if(!t.disable_timer) {
+      input_filter_changed = setTimeout(function () {
+        input_filter_changed && t._prev_input_filter != t.input_filter.value && t.call_event();
+      }, 750);
+    }
+
   }
 
   // заготовка для адаптивного фильтра
