@@ -5,6 +5,7 @@ import classNames from 'classnames';
 import marked from 'marked';
 
 import withStyles from './styles';
+import {withIface} from 'metadata-redux';
 
 // const renderer = new marked.Renderer();
 //
@@ -41,19 +42,33 @@ type Props = {
   classes: Object,
   className?: string,
   text: string,
+  handleNavigate: func,
 };
 
 function MarkdownElement(props: Props) {
-  const { classes, className, text, ...other } = props;
+  const { classes, className, text, handleNavigate, handleIfaceState, disconnect, ...other } = props;
   /* eslint-disable react/no-danger */
   return (
     <div
       className={classNames(classes.root, 'markdown-body', className)}
       dangerouslySetInnerHTML={{__html: marked(text)}}
+      onClick={(evt) => {
+        if(evt.target.tagName === 'A') {
+          const url = new URL(evt.target.href);
+          if(url.origin === location.origin) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            handleNavigate(url.pathname);
+          }
+          else if(!evt.target.target) {
+            evt.target.target = '_blank';
+          }
+        }
+      }}
       {...other}
     />
   );
   /* eslint-enable */
 }
 
-export default withStyles(MarkdownElement);
+export default withStyles(withIface(MarkdownElement));
