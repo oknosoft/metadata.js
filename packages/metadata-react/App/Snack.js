@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Button from 'material-ui/Button';
-import Snackbar from 'material-ui/Snackbar';        // сообщения в верхней части страницы (например, обновить после первого запуска)
+import Button from '@material-ui/core/Button';
+import Snackbar from '@material-ui/core/Snackbar';        // сообщения в верхней части страницы (например, обновить после первого запуска)
 
 export default function Snack({snack = {open: true}, handleClose}) {
   return <Snackbar

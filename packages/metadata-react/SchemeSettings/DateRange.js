@@ -6,10 +6,10 @@
  * Created by Evgeniy Malyarov on 25.09.2017.
  */
 
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import IconButton from 'material-ui/IconButton';
-import IconDateRange from 'material-ui-icons/DateRange';
+import IconButton from '@material-ui/core/IconButton';
+import IconDateRange from '@material-ui/icons/DateRange';
 
 import Picker from 'rc-calendar/lib/Picker';
 import RangeCalendar from 'rc-calendar/lib/RangeCalendar';
@@ -19,7 +19,7 @@ import 'rc-calendar/assets/index.css';
 import {isValidRange, formatRange} from '../DataField/FieldDateRange';
 
 
-export default class DateRange extends PureComponent {
+export default class DateRange extends Component {
 
   static propTypes = {
     _obj: PropTypes.object.isRequired,

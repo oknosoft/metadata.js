@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Button from 'material-ui/Button';
-import {DialogContentText} from 'material-ui/Dialog';
+import Button from '@material-ui/core/Button';
+import DialogContentText from '@material-ui/core/DialogContentText';
 import Dialog from './Dialog';
 
 export default function Alert({text, title, handleOk, open}) {

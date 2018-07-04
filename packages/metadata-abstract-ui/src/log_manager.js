@@ -24,6 +24,10 @@ export default function log_manager() {
 
     constructor(owner) {
       super(owner, 'ireg.log');
+
+      this._stamp = Date.now();
+      // раз в полторы минуты, пытаемся сбросить данные на сервер
+      setInterval(this.backup.bind(this, 'stamp'), 90000);
     }
 
     /**
@@ -55,27 +59,29 @@ export default function log_manager() {
         msg = {note: msg};
       }
 
-      msg.date = Date.now() + wsql.time_diff;
+      if(wsql.alasql.databases.dbo.tables.ireg_log) {
+        msg.date = Date.now() + wsql.time_diff;
 
-      // уникальность ключа
-      if(!this.smax){
-        this.smax = wsql.alasql.compile('select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?');
-      }
-      const res = this.smax([msg.date]);
-      if(!res.length || res[0].sequence === undefined) {
-        msg.sequence = 0;
-      }
-      else {
-        msg.sequence = parseInt(res[0].sequence) + 1;
-      }
+        // уникальность ключа
+        if(!this.smax){
+          this.smax = wsql.alasql.compile('select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?');
+        }
+        const res = this.smax([msg.date]);
+        if(!res.length || res[0].sequence === undefined) {
+          msg.sequence = 0;
+        }
+        else {
+          msg.sequence = parseInt(res[0].sequence) + 1;
+        }
 
-      // класс сообщения
-      if(!msg.class) {
-        msg.class = 'note';
-      }
+        // класс сообщения
+        if(!msg.class) {
+          msg.class = 'note';
+        }
 
-      wsql.alasql('insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)',
-        [msg.date + '¶' + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : '']);
+        wsql.alasql('insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)',
+          [msg.date + '¶' + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : '']);
+      }
 
     }
 
@@ -86,6 +92,41 @@ export default function log_manager() {
      * @param [dtill] {Date}
      */
     backup(dfrom, dtill) {
+      const {wsql, adapters: {pouch}, classes, utils: {moment}} = this._owner.$p;
+
+      if(dfrom === 'stamp' && pouch.authorized) {
+        dfrom = this._stamp;
+        if(!pouch.remote.log) {
+          const {__opts} = pouch.remote.ram;
+          pouch.remote.log = new classes.PouchDB(__opts.name.replace(/ram$/, 'log'),
+            {skip_setup: true, adapter: 'http', auth: __opts.auth});
+        }
+
+        if(!this._rows){
+          this._rows = wsql.alasql.compile('select * from `ireg_log` where `date` >= ?');
+        }
+
+        const _stamp = Date.now();
+        const rows = this._rows([this._stamp + wsql.time_diff]);
+        for(const row of rows) {
+          row._id = `${moment(row.date - wsql.time_diff).format('YYYYMMDDHHmmssSSS') + row.sequence}|${pouch.props._suffix || '0000'}|${pouch.authorized}`;
+          if(row.obj) {
+            row.obj = JSON.parse(row.obj);
+          }
+          else{
+            delete row.obj;
+          }
+          delete row.ref;
+          delete row.user;
+          delete row._deleted;
+        }
+        rows.length && pouch.remote.log.bulkDocs(rows)
+          .then((result) => {
+            this._stamp = _stamp;
+          }).catch((err) => {
+            console.log(err);
+          });
+      }
 
     }
 

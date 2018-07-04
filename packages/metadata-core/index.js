@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.16-beta.55, built:2018-04-07
+ metadata-core v2.0.17-beta.2, built:2018-06-28
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -56,6 +56,7 @@ const msg$1 = new I18n({
 		cache_update: 'Выполняется загрузка измененных файлов<br/>и их кеширование в хранилище браузера',
 		cancel: 'Отмена',
 		delivery_area_empty: 'Укажите район доставки',
+    data_error: 'Ошибка в данных',
 		empty_response: 'Пустой ответ сервера',
 		empty_geocoding: 'Пустой ответ геокодера. Вероятно, отслеживание адреса запрещено в настройках браузера',
 		error_geocoding: 'Ошибка геокодера',
@@ -64,7 +65,9 @@ const msg$1 = new I18n({
 		error_network: 'Ошибка сети или сервера - запрос отклонен',
 		error_rights: 'Ограничение доступа',
 		error_low_acl: 'Недостаточно прав для выполнения операции',
-		file_size: 'Запрещена загрузка файлов<br/>размером более ',
+    file_download: 'Загрузка файлов',
+    file_select: 'Укажите строку для действий с файлом',
+		file_size: 'Запрещена загрузка файлов размером более ',
 		file_confirm_delete: 'Подтвердите удаление файла ',
 		file_new_date: 'Файлы на сервере обновлены<br /> Рекомендуется закрыть браузер и войти<br />повторно для применения обновления',
 		file_new_date_title: 'Версия файлов',
@@ -189,7 +192,7 @@ const msg$1 = new I18n({
 		meta_task_mgr: 'Менеджер задач',
 		meta_bp_mgr: 'Менеджер бизнес-процессов',
 		meta_reports_mgr: 'Менеджер отчетов',
-		meta_cch_mgr: 'Менеджер планов счетов',
+		meta_cacc_mgr: 'Менеджер планов счетов',
 		meta_cch_mgr: 'Менеджер планов видов характеристик',
 		meta_extender: 'Модификаторы объектов и менеджеров',
 		modified_close: 'Объект изменен<br/>Закрыть без сохранения?',
@@ -654,8 +657,7 @@ class DataObj {
       }
       else {
         _obj[f] = utils.fix_guid(v);
-        if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1) {
-        }
+        if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1) ;
         else {
           let mgr = this._manager.value_mgr(_obj, f, mf, false, v);
           if(mgr) {
@@ -771,20 +773,27 @@ class DataObj {
     return !this._obj || utils.is_empty_guid(this._obj.ref);
   }
   load() {
+    const {_data} = this;
     if(this.ref == utils.blank.guid) {
-      const {_data} = this;
       if(_data) {
         _data._loading = false;
         _data._modified = false;
       }
       return Promise.resolve(this);
     }
+    else if(_data._loading) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve(_data._loading ? this.load() : this);
+        }, 1000);
+      });
+    }
     else {
-      this._data._loading = true;
+      _data._loading = true;
       return this._manager.adapter.load_obj(this)
         .then(() => {
-          this._data._loading = false;
-          this._data._modified = false;
+          _data._loading = false;
+          _data._modified = false;
           return this.after_load();
         });
     }
@@ -1071,6 +1080,15 @@ class CatObj extends DataObj {
     });
     return res;
   }
+  _parents() {
+    const res = [];
+    let {parent} = this;
+    while (parent && !parent.empty()) {
+      res.push(parent);
+      parent = parent.parent;
+    }
+    return res;
+  }
   _hierarchy(group) {
     if(Array.isArray(group)) {
       return group.some((v) => this._hierarchy(v));
@@ -1331,6 +1349,9 @@ class MetaEventEmitter extends EventEmitter{
     handler.args.push(args);
     handler.timer = setTimeout(this._emit.bind(this, type), 4);
   }
+  emit_promise(type, ...args) {
+    return this.listeners(type).reduce((acc, curr) => acc.then(curr), Promise.resolve());
+  }
   emit_add_fields(obj, fields){
     const {_async} = this;
     _async && _async.update && _async.update.args.some(attr => {
@@ -1369,19 +1390,19 @@ class DataManager extends MetaEventEmitter{
 		}
 	}
 	get adapter(){
-		const {adapters} = this._owner.$p;
-		switch (this.cachable){
-			case undefined:
-			case "ram":
-			case "doc":
-			case "doc_remote":
-			case "doc_ram":
-			case "remote":
-			case "user":
-			case "meta":
-				return adapters.pouch;
-		}
-		return adapters[this.cachable];
+    const {adapters} = this._owner.$p;
+    switch (this.cachable) {
+    case undefined:
+    case 'ram':
+    case 'doc':
+    case 'doc_ram':
+    case 'ram_doc':
+    case 'remote':
+    case 'user':
+    case 'meta':
+      return adapters.pouch;
+    }
+    return adapters[this.cachable];
 	}
 	get alatable(){
 		const {table_name, _owner} = this;
@@ -1393,18 +1414,21 @@ class DataManager extends MetaEventEmitter{
     return current_user ? current_user.get_acl(this.class_name) : 'r';
   }
 	get cachable(){
-		const {class_name} = this;
-		const _meta = this.metadata();
-		if(class_name.indexOf("enm.") != -1)
-			return "ram";
-		if(_meta && _meta.cachable)
-			return _meta.cachable;
-		if(class_name.indexOf("doc.") != -1 || class_name.indexOf("dp.") != -1 || class_name.indexOf("rep.") != -1)
-			return "doc";
-		return "ram";
-	}
+    const {class_name} = this;
+    const _meta = this.metadata();
+    if(class_name.indexOf('enm.') != -1) {
+      return 'ram';
+    }
+    if(_meta && _meta.cachable) {
+      return _meta.cachable;
+    }
+    if(class_name.indexOf('doc.') != -1 || class_name.indexOf('dp.') != -1 || class_name.indexOf('rep.') != -1) {
+      return 'doc';
+    }
+    return 'ram';
+  }
 	get table_name(){
-		return this.class_name.replace(".", "_");
+    return this.class_name.replace('.', '_');
 	}
 	find_rows(selection, callback){
 		return utils._find_rows.call(this, this.by_ref, selection, callback);
@@ -1468,45 +1492,49 @@ class DataManager extends MetaEventEmitter{
 			}
 			l.push(v);
 		}
-		if(selection.presentation && (input_by_string = t.metadata().input_by_string)){
-			text = selection.presentation.like;
-			delete selection.presentation;
-			selection.or = [];
-			input_by_string.forEach((fld) => {
-				const sel = {};
-				sel[fld] = {like: text};
-				selection.or.push(sel);
-			});
-		}
-		if(t.cachable == "ram" || t.cachable == "doc_ram" || (selection && selection._local)) {
-			t.find_rows(selection, push);
-			return Promise.resolve(l);
-		}
-		else if(t.cachable != "e1cib"){
-		  return t.adapter.find_rows(t, selection)
+    if(selection.presentation && (input_by_string = t.metadata().input_by_string)) {
+      text = selection.presentation.like;
+      delete selection.presentation;
+      selection.or = [];
+      input_by_string.forEach((fld) => {
+        const sel = {};
+        sel[fld] = {like: text};
+        selection.or.push(sel);
+      });
+    }
+    if(t.cachable == 'ram' || t.cachable == 'doc_ram' || (selection && selection._local)) {
+      t.find_rows(selection, push);
+      return Promise.resolve(l);
+    }
+    else if(t.cachable != 'e1cib') {
+      return t.adapter.find_rows(t, selection)
         .then((data) => {
-		    for(const v of data){
-		      push(v);
-		    }		    return l;
-		  });
-		}
-		else{
-			var attr = { selection: selection, top: selection._top},
-				is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
-			delete selection._top;
-			if(is_doc)
-				attr.fields = ["ref", "date", "number_doc"];
-			else if(t.metadata().main_presentation_name)
-				attr.fields = ["ref", "name"];
-			else
-				attr.fields = ["ref", "id"];
-			return _rest.load_array(attr, t)
-				.then((data) => {
-					data.forEach(push);
-					return l;
-				});
-		}
-	}
+          for (const v of data) {
+            push(v);
+          }
+          return l;
+        });
+    }
+    else {
+      let attr = {selection: selection, top: selection._top},
+        is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
+      delete selection._top;
+      if(is_doc) {
+        attr.fields = ['ref', 'date', 'number_doc'];
+      }
+      else if(t.metadata().main_presentation_name) {
+        attr.fields = ['ref', 'name'];
+      }
+      else {
+        attr.fields = ['ref', 'id'];
+      }
+      return _rest.load_array(attr, t)
+        .then((data) => {
+          data.forEach(push);
+          return l;
+        });
+    }
+  }
 	value_mgr(row, f, mf, array_enabled, v) {
 		const {$p} = this._owner;
 		let property, oproperty, tnames, rt, mgr;
@@ -1601,31 +1629,31 @@ class DataManager extends MetaEventEmitter{
 		}
 	}
 	printing_plates(){
-		var rattr = {}, t = this;
+		const rattr = {};
 		const {ajax} = this._owner.$p;
-		if(!t._printing_plates){
-			if(t.metadata().printing_plates){
-				t._printing_plates = t.metadata().printing_plates;
+		if(!this._printing_plates){
+			if(this.metadata().printing_plates){
+        this._printing_plates = this.metadata().printing_plates;
 			}
-			else if(t.metadata().cachable == "ram" || (t.metadata().cachable && t.metadata().cachable.indexOf("doc") == 0)){
-				t._printing_plates = {};
-			}
+			else {
+			  const {cachable} = this.metadata();
+        if(cachable && (cachable.indexOf('doc') == 0 || cachable.indexOf('ram') == 0)){
+          this._printing_plates = {};
+        }
+      }
 		}
-		if(!t._printing_plates && ajax.authorized){
-			ajax.default_attr(rattr, job_prm.irest_url());
-			rattr.url += t.rest_name + "/Print()";
-			return ajax.get_ex(rattr.url, rattr)
-				.then(function (req) {
-					t._printing_plates = JSON.parse(req.response);
-					return t._printing_plates;
-				})
-				.catch(function () {
-				})
-				.then(function (pp) {
-					return pp || (t._printing_plates = {});
-				});
-		}
-		return Promise.resolve(t._printing_plates);
+    if(!this._printing_plates && ajax.authorized) {
+      ajax.default_attr(rattr, job_prm.irest_url());
+      rattr.url += this.rest_name + '/Print()';
+      return ajax.get_ex(rattr.url, rattr)
+        .then((req) => {
+          this._printing_plates = JSON.parse(req.response);
+          return this._printing_plates;
+        })
+        .catch(() => null)
+        .then((pp) => pp || (this._printing_plates = {}));
+    }
+		return Promise.resolve(this._printing_plates);
 	}
   unload_obj(ref) {
     delete this.by_ref[ref];
@@ -1750,7 +1778,7 @@ class RefDataManager extends DataManager{
 					continue;
 				}
 				obj = this.obj_constructor('', [attr, this, true]);
-				forse && obj.is_new() && obj._set_loaded();
+				obj.is_new() && obj._set_loaded();
 			}
 			else if(obj.is_new() || forse){
 			  if(obj.is_new() || forse !== 'update_only') {
@@ -1789,31 +1817,41 @@ class RefDataManager extends DataManager{
 					cmd.form.selection.fields.forEach(function (fld) {
 						flds.push(fld);
 					});
-				}else if(t instanceof DocManager){
+				}
+				else if(t instanceof DocManager){
 					flds.push("posted");
 					flds.push("date");
 					flds.push("number_doc");
-				}else{
-					if(cmd.hierarchical && cmd.group_hierarchy)
-						flds.push("is_folder");
-					else
-						flds.push("0 as is_folder");
-					if(t instanceof ChartOfAccountManager){
-						flds.push("id");
-						flds.push("name as presentation");
-					}else if(cmd.main_presentation_name)
-						flds.push("name as presentation");
-					else{
-						if(cmd["code_length"])
-							flds.push("id as presentation");
-						else
-							flds.push("'...' as presentation");
-					}
-					if(cmd.has_owners)
-						flds.push("owner");
-					if(cmd.code_length)
-						flds.push("id");
 				}
+				else{
+          if(cmd.hierarchical && cmd.group_hierarchy) {
+            flds.push('is_folder');
+          }
+          else {
+            flds.push('0 as is_folder');
+          }
+          if(t instanceof ChartOfAccountManager) {
+            flds.push('id');
+            flds.push('name as presentation');
+          }
+          else if(cmd.main_presentation_name) {
+            flds.push('name as presentation');
+          }
+          else {
+            if(cmd['code_length']) {
+              flds.push("id as presentation");
+            }
+            else {
+              flds.push("'...' as presentation");
+            }
+          }
+          if(cmd.has_owners) {
+            flds.push('owner');
+          }
+          if(cmd.code_length) {
+            flds.push("id");
+          }
+        }
 				flds.forEach(fld => {
 					if(fld.indexOf(" as ") != -1)
 						s += ", " + fld;
@@ -1843,13 +1881,15 @@ class RefDataManager extends DataManager{
 				var s;
 				if(t instanceof ChartOfAccountManager){
 					s = " WHERE (" + (filter ? 0 : 1);
-				}else if(cmd["hierarchical"]){
+				}
+				else if(cmd["hierarchical"]){
 					if(cmd.has_owners)
 						s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" +
 							(owner == utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 					else
 						s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" + (filter ? 0 : 1);
-				}else{
+				}
+				else{
 					if(cmd.has_owners)
 						s = " WHERE (" + (owner == utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 					else
@@ -1857,8 +1897,10 @@ class RefDataManager extends DataManager{
 				}
 				if(t.sql_selection_where_flds){
 					s += t.sql_selection_where_flds(filter);
-				}else if(t instanceof DocManager)
-					s += " OR _t_.number_doc LIKE '" + filter + "'";
+				}
+				else if(t instanceof DocManager){
+          s += " OR _t_.number_doc LIKE '" + filter + "'";
+        }
 				else{
 					if(cmd["main_presentation_name"] || t instanceof ChartOfAccountManager)
 						s += " OR _t_.name LIKE '" + filter + "'";
@@ -1912,10 +1954,10 @@ class RefDataManager extends DataManager{
                         const folders = [];
                         (Array.isArray(val) ? val : [val]).forEach((val) => {
                           const folder = vmgr.get(val, true);
-                          if(folder && folder.is_folder) {
+                          if(folder) {
                             if(folders.indexOf(folder) === -1){
                               folders.push(folder);
-                              folder._children().forEach((child) => folders.indexOf(child) === -1 && folders.push(child));
+                              folder.is_folder && folder._children().forEach((child) => folders.indexOf(child) === -1 && folders.push(child));
                             }
                           }
                         });
@@ -1936,8 +1978,7 @@ class RefDataManager extends DataManager{
                   else
                     s += and + "(_t_." + key + " = " + sel[key] + ") ";
                 }
-                else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
-                }
+                else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy);
               }
             });
           }
@@ -2062,27 +2103,43 @@ class RefDataManager extends DataManager{
 			sql += values;
 			return {sql: sql, fields: fields, values: values};
 		}
-		if(action == "create_table")
-			res = sql_create();
-		else if(["insert", "update", "replace"].indexOf(action) != -1)
-			res[t.table_name] = sql_update();
-		else if(action == "select")
-			res = "SELECT * FROM `"+t.table_name+"` WHERE ref = ?";
-		else if(action == "select_all")
-			res = "SELECT * FROM `"+t.table_name+"`";
-		else if(action == "delete")
-			res = "DELETE FROM `"+t.table_name+"` WHERE ref = ?";
-		else if(action == "drop")
-			res = "DROP TABLE IF EXISTS `"+t.table_name+"`";
-		else if(action == "get_tree"){
-			if(!attr.filter || attr.filter.is_folder)
-				res = "SELECT ref, parent, name as presentation FROM `" + t.table_name + "` WHERE is_folder order by parent, name";
-			else
-				res = "SELECT ref, parent, name as presentation FROM `" + t.table_name + "` order by parent, name";
-		}
-		else if(action == "get_selection")
-			res = sql_selection();
-		return res;
+    if(action == 'create_table') {
+      res = sql_create();
+    }
+    else if(['insert', 'update', 'replace'].indexOf(action) != -1) {
+      res[t.table_name] = sql_update();
+    }
+    else if(action == 'select') {
+      res = 'SELECT * FROM `' + t.table_name + '` WHERE ref = ?';
+    }
+    else if(action == 'select_all') {
+      res = 'SELECT * FROM `' + t.table_name + '`';
+    }
+    else if(action == 'delete') {
+      res = 'DELETE FROM `' + t.table_name + '` WHERE ref = ?';
+    }
+    else if(action == 'drop') {
+      res = 'DROP TABLE IF EXISTS `' + t.table_name + '`';
+    }
+    else if(action == 'get_tree') {
+      res = 'SELECT ref, parent, name as presentation FROM `' + t.table_name + '`';
+      if(!attr.filter || attr.filter.is_folder) {
+        res += ' WHERE is_folder ';
+        if(attr.filter && attr.filter.ref) {
+          res += `and ref in (${attr.filter.ref.in.map(v => `"${v.ref}"`).join(',')})`;
+        }
+      }
+      else if(attr.filter && attr.filter.ref) {
+        if(attr.filter && attr.filter.ref) {
+          res += ` WHERE ref in (${attr.filter.ref.in.map(v => `"${v.ref}"`).join(',')})`;
+        }
+      }
+      res += ' order by parent, name';
+    }
+    else if(action == 'get_selection') {
+      res = sql_selection();
+    }
+    return res;
 	}
   get_search_selector({_obj, _meta, search, top, skip}) {
     const {cachable, _owner} = this;
@@ -2135,10 +2192,10 @@ class RefDataManager extends DataManager{
         }
       });
     }
-    else if(cachable === 'doc' || cachable === 'remote'){
+    else if(cachable === 'doc' || cachable === 'ram_doc' || cachable === 'remote'){
       Object.assign(select, {
         selector: {class_name: this.class_name},
-        fields: ["_id", "name"],
+        fields: ['_id', 'name'],
         skip,
         limit: top
       });
@@ -2430,7 +2487,7 @@ class RegisterManager extends DataManager{
 			let obj = this.by_ref[ref];
 			if (!obj && !aattr[i]._deleted) {
 				obj = this.obj_constructor('', [aattr[i], this, true]);
-				forse && obj.is_new() && obj._set_loaded();
+				obj.is_new() && obj._set_loaded();
 			}
 			else if (obj && aattr[i]._deleted) {
 				obj.unload();
@@ -2493,8 +2550,7 @@ class RegisterManager extends DataManager{
 				}
 				s += ")";
 				if(attr.selection){
-					if(typeof attr.selection == "function"){
-					}else
+					if(typeof attr.selection == "function");else
 						attr.selection.forEach(sel => {
 							for(var key in sel){
 								if(typeof sel[key] == "function"){
@@ -2524,8 +2580,7 @@ class RegisterManager extends DataManager{
 										s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
 									else
 										s += "\n AND (_t_." + key + " = " + sel[key] + ") ";
-								} else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
-								}
+								} else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy);
 							}
 						});
 				}
@@ -2789,7 +2844,7 @@ Date.prototype.toJSON = Date.prototype.toISOString = function () {
 };
 if (!Number.prototype.round) {
 	Number.prototype.round = function (places) {
-		var multiplier = Math.pow(10, places);
+		var multiplier = Math.pow(10, places || 0);
 		return (Math.round(this * multiplier) / multiplier);
 	};
 }
@@ -2856,7 +2911,7 @@ const utils = {
     });
   },
 	fix_date(str, strict) {
-		if (str instanceof Date || (!strict && this.is_guid(str))){
+		if (str instanceof Date || (!strict && (this.is_guid(str) || (str && (str.length === 11 || str.length === 9))))){
       return str;
     }
 		else {
@@ -2865,8 +2920,7 @@ const utils = {
 		}
 	},
 	fix_guid(ref, generate) {
-		if (ref && typeof ref == 'string') {
-		}
+		if (ref && typeof ref == 'string') ;
 		else if (ref instanceof DataObj) {
 			return ref.ref;
 		}
@@ -3029,10 +3083,9 @@ const utils = {
 			});
 	},
 	_mixin(obj, src, include, exclude) {
-		const tobj = {};
 		function exclude_cpy(f) {
 			if (!exclude || exclude.indexOf(f) == -1) {
-				if ((typeof tobj[f] == 'undefined') || (tobj[f] != src[f])) {
+				{
 					obj[f] = src[f];
 				}
 			}
@@ -3827,7 +3880,7 @@ class Meta extends MetaEventEmitter {
     for (let i in _m) {
       for (let j in _m[i]) {
         if(_m[i][j].cachable) {
-          let _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '');
+          let _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '').replace('_doc', '');
           if(_name != 'meta' && _name != 'e1cib' && !res[_name]) {
             res[_name] = _name;
           }
@@ -4338,7 +4391,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.16-beta.55';
+    return '2.0.17-beta.2';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
@@ -4395,10 +4448,15 @@ class MetaEngine {
     if (cat && cat.users) {
       user = cat.users.by_id(user_name);
       if (!user || user.empty()) {
-        cat.users.find_rows_remote({
-          _top: 1,
-          id: user_name,
-        });
+        if (superlogin) {
+          user = superlogin.create_user();
+        }
+        else {
+          cat.users.find_rows_remote({
+            _top: 1,
+            id: user_name,
+          });
+        }
       }
     }
     return user && !user.empty() ? user : null;

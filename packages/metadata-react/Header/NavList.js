@@ -1,16 +1,20 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import List, {ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction} from 'material-ui/List';
-import Divider from 'material-ui/Divider';
-import IconButton from 'material-ui/IconButton';
-import Collapse from 'material-ui/transitions/Collapse';
+import List from '@material-ui/core/List';
+import ListItem  from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import Divider from '@material-ui/core/Divider';
+import IconButton from '@material-ui/core/IconButton';
+import Collapse from '@material-ui/core/Collapse';
 
 import classnames from 'classnames';
 import withStyles from './menu';
 import {withIface} from 'metadata-redux';
 
-import IconExpandMore from 'material-ui-icons/ExpandMore';
+import IconExpandMore from '@material-ui/icons/ExpandMore';
 
 class NavList extends Component {
 
@@ -57,19 +61,16 @@ class NavList extends Component {
     }
   }
 
-  menuItem(item, inset) {
+  menuItem(item, ident) {
     const props = {
       button: true,
       key: this.key,
       onClick: this.handleNavigate(item.navigate, item.id),
     };
-    if(inset) {
-      props.className = this.props.classes.nested;
-    }
-    //inset={inset}
+    const {nested, bold} = this.props.classes;
     return <ListItem {...props} >
       {item.icon && <ListItemIcon>{item.icon}</ListItemIcon>}
-      <ListItemText primary={item.text}/>
+      <ListItemText disableTypography className={classnames({[nested]: ident, [bold]: item.bold})} primary={item.text}/>
     </ListItem>;
   }
 
@@ -81,7 +82,7 @@ class NavList extends Component {
     return <div key={this.key} className={list}>
       <ListItem button onClick={expander}>
         <ListItemIcon>{item.icon}</ListItemIcon>
-        <ListItemText disableTypography className={bold} primary={item.text}/>
+        <ListItemText disableTypography className={classnames({[bold]: item.bold})} primary={item.text}/>
         <ListItemSecondaryAction>
           <IconButton className={classnames(expand, {[expandOpen]: expanded})} onClick={expander}>
             <IconExpandMore/>

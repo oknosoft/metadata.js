@@ -8,18 +8,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import Input, {InputLabel, InputAdornment} from 'material-ui/Input';
-import {FormControl} from 'material-ui/Form';
-import Paper from 'material-ui/Paper';
-import Divider from 'material-ui/Divider';
-import Button from 'material-ui/Button';
-import IconButton from 'material-ui/IconButton';
-import OpenInNew from 'material-ui-icons/OpenInNew';
-import AddIcon from 'material-ui-icons/AddCircleOutline';
-import TitleIcon from 'material-ui-icons/Title';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import FormControl from '@material-ui/core/FormControl';
+import Paper from '@material-ui/core/Paper';
+import Divider from '@material-ui/core/Divider';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import OpenInNew from '@material-ui/icons/OpenInNew';
+import AddIcon from '@material-ui/icons/AddCircleOutline';
+import TitleIcon from '@material-ui/icons/Title';
 
-import Toolbar from 'material-ui/Toolbar';
-import Typography from 'material-ui/Typography';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
 
 // окно диалога, чтобы показать всплывающие формы
 import Dialog from '../App/Dialog';

@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.16-beta.55, built:2018-03-20
+ metadata-superlogin v2.0.17-beta.2, built:2018-06-27
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -16,15 +16,69 @@ var adapter = (constructor) => {
   const {classes} = constructor;
   classes.AdapterPouch = class AdapterPouchSuperlogin extends classes.AdapterPouch {
     after_init() {
+      const {props, local, remote, authorized, $p: {superlogin: superlogin$$1}} = this;
+      const opts = {skip_setup: true, adapter: 'http'};
+      const bases = new Map();
+      const check = [];
+      props.autologin.forEach((name) => {
+        if(!remote[name]) {
+          bases.set(name, new PouchDB(authorized ? this.dbpath(name) : super.dbpath(name), opts));
+          check.push(bases.get(name).info());
+        }
+      });
+      return Promise.all(check)
+        .catch(() => {
+          const close = [];
+          bases.forEach((value) => close.push(value.close()));
+          return Promise.all(close)
+            .then(() => superlogin$$1.logout())
+            .then(() => {
+              bases.clear();
+              check.length = [];
+              props.autologin.forEach((name) => {
+                if(!remote[name]) {
+                  bases.set(name, new PouchDB(super.dbpath(name), opts));
+                  check.push(bases.get(name).info());
+                }
+              });
+            })
+            .then(() => Promise.all(check));
+        })
+        .then(() => {
+          bases.forEach((value, key) => remote[key] = value);
+        })
+        .then(() => {
+          if(bases.get('ram')) {
+            this.run_sync('ram')
+              .then(() => {
+                if(local._loading) {
+                  return new Promise((resolve, reject) => {
+                    this.once('pouch_data_loaded', resolve);
+                  });
+                }
+                else if(!props.user_node) {
+                  return this.call_data_loaded();
+                }
+              });
+          }
+        })
+        .then(() => this.emit_async('pouch_autologin', true));
     }
     log_in(username, password) {
-      const {props, local, remote, $p} = this;
+      const {props, local, remote, $p, authorized} = this;
       const {job_prm, wsql, aes, md, superlogin: superlogin$$1} = $p;
-      const start = superlogin$$1.getSession() ? Promise.resolve(superlogin$$1.getSession()) : superlogin$$1.login({username, password})
-        .catch((err) => {
-          this.emit('user_log_fault', {message: 'custom', text: err.message});
-          return Promise.reject(err);
-        });
+      const start = authorized ?
+        superlogin$$1.refresh()
+          .catch(() => {
+            superlogin$$1.logout()
+              .then(() => superlogin$$1.login({username, password}));
+          })
+        :
+        superlogin$$1.login({username, password})
+          .catch((err) => {
+            this.emit('user_log_fault', {message: 'custom', text: err.message});
+            return Promise.reject(err);
+          });
       return start.then((session) => {
         if(!session) {
           const err = new Error('empty login or password');
@@ -42,6 +96,15 @@ var adapter = (constructor) => {
           }
         }
         super.after_init();
+        for(const name of props.autologin) {
+          if(name === 'doc' || name === 'ram') {
+            continue;
+          }
+          const url = this.dbpath(name);
+          if(url && remote[name] && remote[name].name !== url) {
+            remote[name] = new PouchDB(url, {skip_setup: true, adapter: 'http'});
+          }
+        }
         if(wsql.get_user_param('user_name') != session.user_id) {
           wsql.set_user_param('user_name', session.user_id);
         }
@@ -55,6 +118,11 @@ var adapter = (constructor) => {
     dbpath(name) {
       const {$p, props: {path, prefix, zone}} = this;
       let url = $p.superlogin.getDbUrl(prefix + (name == 'meta' ? name : (zone + '_' + name)));
+      if(!url) {
+        url = $p.superlogin.getDbUrl(prefix + zone + '_doc');
+        const pos = url.indexOf(prefix + (name == 'meta' ? name : (zone + '_doc')));
+        url = url.substr(0, pos) + prefix + (name == 'meta' ? name : (zone + '_' + name));
+      }
       const localhost = 'localhost:5984/' + prefix;
       if(url.indexOf(localhost) !== -1) {
         const https = path.indexOf('https://') !== -1;
@@ -66,10 +134,10 @@ var adapter = (constructor) => {
       return url;
     }
     get authorized() {
-      return !!this.$p.superlogin.getSession();
+      return this.$p.superlogin.authenticated();
     }
   };
-}
+};
 
 var default_config = {
   baseUrl: 'http://localhost:3000/auth/',
@@ -79,11 +147,12 @@ var default_config = {
   providers: ['google', 'yandex', 'github', 'facebook'],
   checkExpired: false,
   refreshThreshold: 0.5
-}
+};
 
 const {metaActions} = require('metadata-redux');
 function attach($p) {
   superlogin.on('login', function (event, session) {
+    session = null;
   });
   superlogin.on('logout', function (event, message) {
   });
@@ -91,6 +160,45 @@ function attach($p) {
   });
   superlogin.on('link', function (event, provider) {
   });
+  superlogin.create_user = function () {
+    const session = this.getSession();
+    if(session) {
+      const attr = {
+        id: session.user_id,
+        ref: session.profile && session.profile.ref ? session.profile.ref : $p.utils.generate_guid(),
+        name: session.profile && session.profile.name ? session.profile.name : session.user_id,
+      };
+      return $p.cat.users.create(attr, false, true);
+    }
+  };
+  superlogin.change_name = function (newName) {
+    if(this.authenticated()) {
+      const session = this.getSession();
+      return session.profile.name == newName ?
+        Promise.resolve() :
+        this._http.post(`/user/change-name`, {newName})
+          .then(res => {
+            session.profile.name = newName;
+            this.setSession(session);
+            return res.data;
+          });
+    }
+    return Promise.reject({error: 'Authentication required'});
+  };
+  superlogin.change_subscription = function (subscription) {
+    if(this.authenticated()) {
+      const session = this.getSession();
+      return session.profile.subscription == subscription ?
+        Promise.resolve() :
+        this._http.post(`/user/change-subscription`, {subscription})
+          .then(res => {
+            session.profile.subscription = subscription;
+            this.setSession(session);
+            return res.data;
+          });
+    }
+    return Promise.reject({error: 'Authentication required'});
+  };
   function handleSocialAuth(provider) {
     return function (dispatch, getState) {
       if(superlogin.authenticated()) {

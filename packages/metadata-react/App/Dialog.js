@@ -1,23 +1,25 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Dialog, {DialogActions, DialogContent, DialogTitle, withMobileDialog} from 'material-ui/Dialog';
-import Toolbar from 'material-ui/Toolbar';
-import Typography from 'material-ui/Typography';
-import CloseIcon from 'material-ui-icons/Close';
-import FullscreenIcon from 'material-ui-icons/Fullscreen';
-import FullscreenExitIcon from 'material-ui-icons/FullscreenExit';
-import IconButton from 'material-ui/IconButton';
-import colors from 'material-ui/colors/common';
-import withStyles from 'material-ui/styles/withStyles';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import withMobileDialog from '@material-ui/core/withMobileDialog';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import CloseIcon from '@material-ui/icons/Close';
+import FullscreenIcon from '@material-ui/icons/Fullscreen';
+import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
+import IconButton from '@material-ui/core/IconButton';
+import colors from '@material-ui/core/colors/common';
+import withStyles from '@material-ui/core/styles/withStyles';
 import compose from 'recompose/compose';
+import cn from 'classnames';
 
 const style = theme => ({
   flex: {
     flex: 1,
     whiteSpace: 'nowrap',
-  },
-  white: {
-    color: colors.white,
   },
   toolbar: {
     backgroundColor: theme.palette.primary[50],
@@ -35,8 +37,11 @@ const style = theme => ({
     padding: 0,
   },
   paper: {
-    minWidth: 600,
+    minWidth: 480,
   },
+  minheight: {
+    minHeight: 320,
+  }
 });
 
 class SimpleDialog extends React.Component {
@@ -59,9 +64,9 @@ class SimpleDialog extends React.Component {
   }
 
   render() {
-    const {open, fullScreen, noSpace, title, actions, children, classes, onClose} = this.props;
+    const {open, fullScreen, noSpace, title, actions, children, classes, onClose, minheight} = this.props;
     const stateFullScreen = fullScreen || this.state.fullScreen;
-    return <Dialog open={open} fullScreen={stateFullScreen} onClose={onClose} classes={{paper: classes.paper}}>
+    return <Dialog open={open} fullScreen={stateFullScreen} onClose={onClose} classes={{paper: cn(classes.paper, minheight && classes.minheight)}}>
       <Toolbar disableGutters className={classes.toolbar}>
         <Typography className={classes.title} variant="title" color="inherit" noWrap>{title}</Typography>
         {
@@ -86,7 +91,7 @@ SimpleDialog.propTypes = {
   initFullScreen: PropTypes.bool,
   title: PropTypes.string.isRequired,
   actions: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  children: PropTypes.object.isRequired,
+  children: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   classes: PropTypes.object.isRequired,
   onClose: PropTypes.func.isRequired,
 };

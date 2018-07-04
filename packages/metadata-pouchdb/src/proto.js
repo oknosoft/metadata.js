@@ -40,7 +40,7 @@ export default (constructor) => {
 					code_length = this._metadata().code_length - prefix.length;
 
 				// для кешируемых в озу, вычисляем без индекса
-				if (_manager.cachable == 'ram') {
+				if (_manager.cachable == 'ram' || _manager.cachable == 'doc_ram') {
 					return Promise.resolve(this.new_cat_id(prefix));
 				}
 
@@ -123,15 +123,17 @@ export default (constructor) => {
 		 * @for DataManager
 		 */
 		pouch_db: {
-			get: function () {
-				const cachable = this.cachable.replace("_ram", "");
-				const {pouch} = this._owner.$p.adapters;
-				if(cachable.indexOf("remote") != -1)
-					return pouch.remote[cachable.replace("_remote", "")];
-				else
-					return pouch.local[cachable] || pouch.remote[cachable];
-			}
-		},
+      get: function () {
+        const cachable = this.cachable.replace('_ram', '').replace('_doc', '');
+        const {pouch} = this._owner.$p.adapters;
+        if(cachable.indexOf('remote') != -1) {
+          return pouch.remote[cachable.replace('_remote', '')];
+        }
+        else {
+          return pouch.local[cachable] || pouch.remote[cachable];
+        }
+      }
+    },
 
 	})
 

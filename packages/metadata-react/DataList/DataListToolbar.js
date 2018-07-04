@@ -1,18 +1,19 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Toolbar from 'material-ui/Toolbar';
-import Typography from 'material-ui/Typography';
-import IconButton from 'material-ui/IconButton';
-import Menu, {MenuItem} from 'material-ui/Menu';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 
-import AddIcon from 'material-ui-icons/AddCircleOutline';
-import RemoveIcon from 'material-ui-icons/Delete';
-import EditIcon from 'material-ui-icons/Edit';
-import MoreVertIcon from 'material-ui-icons/MoreVert';
-import PrintIcon from 'material-ui-icons/Print';
-import AttachIcon from 'material-ui-icons/AttachFile';
-import SelectIcon from 'material-ui-icons/PlaylistAddCheck';
+import AddIcon from '@material-ui/icons/AddCircleOutline';
+import RemoveIcon from '@material-ui/icons/Delete';
+import EditIcon from '@material-ui/icons/Edit';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+import PrintIcon from '@material-ui/icons/Print';
+import AttachIcon from '@material-ui/icons/AttachFile';
+import SelectIcon from '@material-ui/icons/PlaylistAddCheck';
 
 import SchemeSettingsButtons from '../SchemeSettings/SchemeSettingsButtons';
 import DateRange from '../SchemeSettings/DateRange';
@@ -20,7 +21,7 @@ import DateRange from '../SchemeSettings/DateRange';
 import compose from 'recompose/compose';
 import classnames from 'classnames';
 import withStyles from '../Header/toolbar';
-import withWidth, {isWidthUp} from 'material-ui/utils/withWidth';
+import withWidth, {isWidthUp} from '@material-ui/core/withWidth';
 
 
 class DataListToolbar extends Component {
@@ -37,7 +38,7 @@ class DataListToolbar extends Component {
     scheme: PropTypes.object.isRequired,              // значение настроек компоновки
 
     handlePrint: PropTypes.func.isRequired,           // обработчик открытия диалога печати
-    handleAttachment: PropTypes.func.isRequired,      // обработчик открытия диалога присоединенных файлов
+    handleAttachments: PropTypes.func.isRequired,      // обработчик открытия диалога присоединенных файлов
   };
 
   static defaultProps = {
@@ -102,7 +103,7 @@ class DataListToolbar extends Component {
           onClose={this.handleRequestClose}
         >
           <MenuItem onClick={this.handleDnROpen}><PrintIcon/> &nbsp;Печать</MenuItem>
-          <MenuItem onClick={props.handleAttachment}><AttachIcon/> &nbsp;Вложения</MenuItem>
+          <MenuItem onClick={props.handleAttachments}><AttachIcon/> &nbsp;Вложения</MenuItem>
         </Menu>
 
       </Toolbar>

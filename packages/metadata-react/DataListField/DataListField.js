@@ -10,10 +10,10 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import { InputLabel } from 'material-ui/Input';
-import { MenuItem } from 'material-ui/Menu';
-import { FormControl } from 'material-ui/Form';
-import Select from 'material-ui/Select';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
 import classnames from 'classnames';
 import withStyles from './styles';
 

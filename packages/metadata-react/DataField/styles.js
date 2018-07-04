@@ -1,11 +1,11 @@
-import {withStyles} from 'material-ui/styles';
+import withStyles from '@material-ui/core/styles/withStyles';
 
 const styles = theme => ({
   formControl: {
     // marginLeft: theme.spacing.unit,
     paddingRight: theme.spacing.unit,
     boxSizing: 'border-box',
-    minWidth: 240,
+    minWidth: 260,
   },
   container: {
     flexGrow: 1,

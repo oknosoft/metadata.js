@@ -7,10 +7,11 @@
 import {defined, try_log_in} from './actions_auth';
 
 export const DATA_PAGE = 'POUCH_DATA_PAGE';     // Оповещение о загрузке порции локальных данных
-export const LOAD_START = 'POUCH_LOAD_START';    // Оповещение о начале загрузки локальных данных
-export const DATA_LOADED = 'POUCH_DATA_LOADED';   // Оповещение об окончании загрузки локальных данных
-export const DATA_ERROR = 'POUCH_DATA_ERROR';    // Оповещение об ошибке при загрузке локальных данных
-export const NO_DATA = 'POUCH_NO_DATA';       // Оповещение об отсутствии локальных данных (как правило, при первом запуске)
+export const LOAD_START = 'POUCH_LOAD_START';   // Оповещение о начале загрузки локальных данных
+export const DATA_LOADED = 'POUCH_DATA_LOADED'; // Оповещение об окончании загрузки локальных данных
+export const DATA_ERROR = 'POUCH_DATA_ERROR';   // Оповещение об ошибке при загрузке локальных данных
+export const NO_DATA = 'POUCH_NO_DATA';         // Оповещение об отсутствии локальных данных (как правило, при первом запуске)
+export const AUTOLOGIN = 'POUCH_AUTOLOGIN';     // Оповещение о создании баз autologin
 
 export const SYNC_START = 'POUCH_SYNC_START';    // Оповещение о начале синхронизации базы doc
 export const SYNC_ERROR = 'POUCH_SYNC_ERROR';    // Оповещение об ошибке репликации - не означает окончания репликации - просто информирует об ошибке
@@ -39,42 +40,37 @@ export function data_loaded(page) {
       payload: page
     });
 
-    if(typeof page == 'object') {
-      const {meta} = getState();
+    if(typeof page === 'object' && typeof $p === 'object') {
+      const {meta: {user}} = getState();
 
-      // если вход еще не выполнен...
-      if(!meta.user.logged_in && meta.user.has_login) {
-        setTimeout(() => {
-          const {job_prm, wsql, adapters, superlogin, aes} = $p;
+      if(user.has_login) {
+        const {job_prm, wsql, adapters, superlogin, aes} = $p;
 
-          // получаем имя сохраненного или гостевого пользователя
-          let name = wsql.get_user_param('user_name');
-          let password = wsql.get_user_param('user_pwd');
+        // получаем имя сохраненного или гостевого пользователя
+        let name = wsql.get_user_param('user_name');
+        let password = wsql.get_user_param('user_pwd');
 
-          if(!name &&
-            job_prm.zone_demo == wsql.get_user_param('zone') &&
-            job_prm.guests.length) {
-            name = job_prm.guests[0].name;
-          }
+        if(!name &&
+          job_prm.zone_demo == wsql.get_user_param('zone') &&
+          job_prm.guests.length) {
+          name = job_prm.guests[0].name;
+        }
 
-          // устанавливаем текущего пользователя
-          if(name) {
-            dispatch(defined(name));
-          }
+        // устанавливаем текущего пользователя
+        if(name) {
+          dispatch(defined(name));
+        }
 
+        // если вход еще не выполнен...
+        if(!user.logged_in && !user.try_log_in) {
           // если разрешено сохранение пароля или superlogin или гостевая зона...
-          if(name && password && wsql.get_user_param('enable_save_pwd')) {
+          if((superlogin && superlogin.authenticated()) || (name && password && wsql.get_user_param('enable_save_pwd'))) {
             return dispatch(try_log_in(adapters.pouch, name, aes.Ctr.decrypt(password)));
-          }
-          if(superlogin && superlogin.authenticated()) {
-            return dispatch(try_log_in(adapters.pouch));
           }
           if(name && job_prm.zone_demo == wsql.get_user_param('zone')) {
             dispatch(try_log_in(adapters.pouch, name, aes.Ctr.decrypt(job_prm.guests[0].password)));
           }
-
-        });
-
+        }
       }
     }
 
@@ -129,6 +125,13 @@ export function load_start(page) {
   return {
     type: LOAD_START,
     payload: page
+  };
+}
+
+export function autologin() {
+  return {
+    type: AUTOLOGIN,
+    payload: true
   };
 }
 

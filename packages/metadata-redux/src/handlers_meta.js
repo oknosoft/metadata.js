@@ -5,7 +5,7 @@
  */
 
 import {META_LOADED, PRM_CHANGE, OFFLINE} from './actions_base';
-import {DATA_LOADED, DATA_PAGE, DATA_ERROR, LOAD_START, NO_DATA, SYNC_DATA, SYNC_ERROR, SYNC_PAUSED, SYNC_RESUMED} from './actions_pouch';
+import {DATA_LOADED, DATA_PAGE, DATA_ERROR, LOAD_START, AUTOLOGIN, NO_DATA, SYNC_DATA, SYNC_ERROR, SYNC_PAUSED, SYNC_RESUMED} from './actions_pouch';
 import {DEFINED, LOG_IN, TRY_LOG_IN, LOG_OUT, LOG_ERROR, reset_user} from './actions_auth';
 import {ADD, CHANGE} from './actions_obj';
 
@@ -17,6 +17,9 @@ export default {
 
   [PRM_CHANGE]: (state, action) => {
     const {name, value} = action.payload;
+    if(typeof $p !== 'object') {
+      return;
+    }
     const {wsql} = $p;
     if(Array.isArray(name)) {
       for (const {prm, value} of name) {
@@ -54,6 +57,8 @@ export default {
 
   [LOAD_START]: (state, action) => Object.assign({}, state, {data_empty: false, fetch: true}),
 
+  [AUTOLOGIN]: (state, action) => Object.assign({}, state, {autologin: true}),
+
   [NO_DATA]: (state, action) => Object.assign({}, state, {data_empty: true, first_run: true, fetch: false}),
 
   [SYNC_DATA]: (state, action) => Object.assign({}, state, {fetch: !!action.payload}),
@@ -90,7 +95,7 @@ export default {
   },
 
   [LOG_OUT]: (state, action) => {
-    return reset_user(state);
+    return reset_user(state, true);
   },
 
   [LOG_ERROR]: (state, action) => {

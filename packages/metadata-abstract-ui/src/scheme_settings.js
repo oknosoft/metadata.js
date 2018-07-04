@@ -25,6 +25,12 @@ export default function scheme_settings() {
      * @return {*|{value}|Promise.<Array>}
      */
     find_schemas(class_name) {
+      if(this.cachable === 'ram') {
+        return Promise.resolve(
+          this.find_rows({obj: class_name}).sort((a,b) => a.user > b.user)
+        );
+      }
+
       const opt = {
         _view: 'doc/scheme_settings',
         _top: 100,
@@ -661,7 +667,7 @@ export default function scheme_settings() {
           class_name: {$eq: this.obj}
         },
         fields: ['_id', 'posted'],
-        use_index: '_design/mango',
+        use_index: 'mango/search',
       };
 
       for (const column of (columns || this.columns())) {
