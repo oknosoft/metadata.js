@@ -9,7 +9,7 @@ const webpack = require('webpack');
 const path = require('path');
 const package_data = require(path.resolve(__dirname, './package.json'));
 
-const external = ['react-redux'];
+const external = ['react', 'react-redux', 'react-router', 'react-router-redux'];
 const plugins = [
 	resolve({jsnext: true, main: true}),
 	replace({PACKAGE_VERSION: package_data.version}),
@@ -22,30 +22,30 @@ const header = `/*!
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */\n\n`;
 
-return webpack(require('./webpack.config'), (err, stats) => {
-  if (err || stats.hasErrors()) {
-    // Handle errors here
-  }
-  // Done processing
-});
+// return webpack(require('./webpack.config'), (err, stats) => {
+//   if (err || stats.hasErrors()) {
+//     // Handle errors here
+//   }
+//   // Done processing
+// });
 
-// return rollup({
-//   input: path.resolve(__dirname, './src/index.js'),
-// 	external,
-// 	plugins,
-// })
-// 	.then((bundle) => bundle.write({
-// 		format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
-//     name: package_data.name.replace(/-/g, '_'),
-//     banner: header,
-//     file: path.resolve(__dirname, './index.js'),
-//     sourcemap: true,
-// 	}))
-//   .then(() => {
-//     webpack(require('./webpack.config'), (err, stats) => {
-//       if (err || stats.hasErrors()) {
-//         // Handle errors here
-//       }
-//       // Done processing
-//     });
-//   });
+return rollup({
+  input: path.resolve(__dirname, './src/index.js'),
+	external,
+	plugins,
+})
+	.then((bundle) => bundle.write({
+		format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
+    name: package_data.name.replace(/-/g, '_'),
+    banner: header,
+    file: path.resolve(__dirname, './index.js'),
+    sourcemap: true,
+	}))
+  .then(() => {
+    webpack(require('./webpack.config'), (err, stats) => {
+      if (err || stats.hasErrors()) {
+        // Handle errors here
+      }
+      // Done processing
+    });
+  });
