@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.2, built:2018-07-01
+ metadata-pouchdb v2.0.17-beta.2, built:2018-07-06
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -186,7 +186,7 @@ function adapter({AbstracrAdapter}) {
       }
       for (const name of pbases) {
         if(bases.indexOf(name) != -1) {
-          if(props.user_node || (props.direct && name != 'ram')) {
+          if(props.user_node || (props.direct && name != 'ram' && name != 'user')) {
             Object.defineProperty(local, name, {
               get: function () {
                 return remote[name];
@@ -269,11 +269,13 @@ function adapter({AbstracrAdapter}) {
         }
       }
       const bases = md.bases();
-      const try_auth = props.user_node ? Promise.resolve() : remote.ram.login(username, password)
-        .then(({roles}) => {
-          const suffix = /^suffix:/;
-          const ref = /^ref:/;
-          roles.forEach((role) => {
+      const try_auth = (props.user_node || !remote.ram) ?
+        Promise.resolve() :
+        remote.ram.login(username, password)
+          .then(({roles}) => {
+            const suffix = /^suffix:/;
+            const ref = /^ref:/;
+            roles.forEach((role) => {
             if(suffix.test(role)) {
               props._suffix = role.substr(7);
             }
@@ -288,23 +290,23 @@ function adapter({AbstracrAdapter}) {
               props._push_only = true;
             }
           });
-          if(props._push_only && props.direct) {
+            if(props._push_only && props.direct) {
             props.direct = false;
             wsql.set_user_param('couch_direct', false);
           }
-          if(props._suffix) {
+            if(props._suffix) {
             while (props._suffix.length < 4) {
               props._suffix = '0' + props._suffix;
             }
           }
-          return true;
-        })
-        .catch((err) => {
-          if(props.direct) {
-            throw err;
-          }
-          const {current_user} = $p;
-          if(current_user) {
+            return true;
+          })
+          .catch((err) => {
+            if(props.direct) {
+              throw err;
+            }
+            const {current_user} = $p;
+            if(current_user) {
             if(current_user.push_only) {
               props._push_only = true;
             }
@@ -315,12 +317,12 @@ function adapter({AbstracrAdapter}) {
               }
             }
           }
-        })
-        .then((ram_logged_in) => {
+          })
+          .then((ram_logged_in) => {
           ram_logged_in && this.after_init(bases, {username, password});
           return ram_logged_in;
         })
-        .then((ram_logged_in) => {
+          .then((ram_logged_in) => {
           let postlogin = Promise.resolve(ram_logged_in);
           if(!props.user_node) {
             bases.forEach((dbid) => {
@@ -474,7 +476,7 @@ function adapter({AbstracrAdapter}) {
         return remote[dbid.replace('_remote', '')];
       }
       else {
-        return local[dbid] || remote[dbid];
+        return local[dbid] || remote[dbid] || local.user;
       }
     }
     back_off (delay) {
@@ -1239,7 +1241,9 @@ function adapter({AbstracrAdapter}) {
           const page = local.sync._page || {};
           const meta = md.get(name);
           this.emit('pouch_data_page', Object.assign(page, {synonym: meta.synonym}));
-          return local[meta.cachable === 'templates_ram' ? 'templates' : 'doc'].allDocs(opt).then((res) => this.load_changes(res, opt));
+          return local[meta.cachable.replace(/_ram$/, '')].allDocs(opt).then((res) => {
+            this.load_changes(res, opt);
+          });
         });
       }, Promise.resolve())
         .catch((err) => {
