@@ -97,8 +97,8 @@ export default function log_manager() {
       if(dfrom === 'stamp' && pouch.authorized) {
         dfrom = this._stamp;
         if(!pouch.remote.log) {
-          const {__opts} = pouch.remote.ram;
-          pouch.remote.log = new classes.PouchDB(__opts.name.replace(/ram$/, 'log'),
+          const {__opts} = (pouch.remote.ram || pouch.remote.remote || pouch.remote.doc);
+          pouch.remote.log = new classes.PouchDB(__opts.name.replace(/(ram|remote|doc)$/, 'log'),
             {skip_setup: true, adapter: 'http', auth: __opts.auth});
         }
 
