@@ -697,7 +697,7 @@ export default function scheme_settings() {
           class_name: {$eq: this.obj}
         },
         fields: ['_id', 'posted'],
-        use_index: 'mango/search',
+        use_index: ['mango', 'search'],
       };
 
       for (const column of (columns || this.columns())) {

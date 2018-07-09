@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.17-beta.2, built:2018-07-06
+ metadata-abstract-ui v2.0.17-beta.2, built:2018-07-09
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -691,7 +691,7 @@ function scheme_settings() {
           class_name: {$eq: this.obj}
         },
         fields: ['_id', 'posted'],
-        use_index: 'mango/search',
+        use_index: ['mango', 'search'],
       };
       for (const column of (columns || this.columns())) {
         if(res.fields.indexOf(column.id) == -1) {
