@@ -460,11 +460,20 @@ class DataList extends MDNRComponent {
     }
     else {
       // выполняем запрос
-      return _mgr.find_rows_remote(scheme.mango_selector({
-        columns,
-        skip: startIndex ? startIndex - 1 : 0,
-        limit: increment,
-      })).then((data) => this._updateList(data, startIndex));
+      const selector = _mgr.mango_selector ?
+        _mgr.mango_selector(scheme, {
+          columns,
+          skip: startIndex ? startIndex - 1 : 0,
+          limit: increment,
+        }) :
+        scheme.mango_selector({
+          columns,
+          skip: startIndex ? startIndex - 1 : 0,
+          limit: increment,
+        });
+
+      return _mgr.find_rows_remote(selector)
+        .then((data) => this._updateList(data, startIndex));
     }
 
   };
