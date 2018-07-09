@@ -922,7 +922,8 @@ function adapter({AbstracrAdapter}) {
                       //use_index: index,
                       limit: 1,
                       fields: ['_id'],
-                      selector: {}
+                      selector: {},
+                      use_index: index.split('/'),
                     };
                     for(const fld of view.options.def.fields) {
                       selector.selector[fld] = '';
