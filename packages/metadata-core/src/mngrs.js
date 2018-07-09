@@ -613,10 +613,14 @@ export class RefDataManager extends DataManager{
 
 		if(o.is_new()){
 			if(do_not_create == rp){
-				return o.load();	// читаем из 1С или иного сервера
+        // читаем из 1С или иного сервера
+				return o.load()
+          .then(() => {
+            return o.is_new() ? o.after_create() : o;
+          });
 			}
 			else{
-				return o;
+				return o.after_create();
 			}
 		}else{
 			return do_not_create == rp ? Promise.resolve(o) : o;

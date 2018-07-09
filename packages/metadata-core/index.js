@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.2, built:2018-07-06
+ metadata-core v2.0.17-beta.2, built:2018-07-09
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1712,10 +1712,13 @@ class RefDataManager extends DataManager{
 		}
 		if(o.is_new()){
 			if(do_not_create == rp){
-				return o.load();
+				return o.load()
+          .then(() => {
+            return o.is_new() ? o.after_create() : o;
+          });
 			}
 			else{
-				return o;
+				return o.after_create();
 			}
 		}else{
 			return do_not_create == rp ? Promise.resolve(o) : o;
