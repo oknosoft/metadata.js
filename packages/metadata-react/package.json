@@ -19,7 +19,7 @@
     "metadata-external": "^2.0.17-beta.2",
     "metadata-redux": "^2.0.17-beta.2",
     "rc-calendar": "^9.6.2",
-    "rc-cascader": "^0.13.1",
+    "rc-cascader": "^0.14",
     "rc-time-picker": "^3.3.1",
     "react-helmet": "^5.2.0",
     "react-onclickoutside": "^6.7.1",

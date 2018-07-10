@@ -63,10 +63,10 @@ export class TabularSection {
 	 * @property _obj
 	 * @type Object
 	 */
-	get _obj(){
-		const {_owner, _name} = this
-		return _owner._obj[_name]
-	}
+  get _obj() {
+    const {_owner, _name} = this;
+    return _owner._obj[_name];
+  }
 
 	/**
 	 * ### Возвращает строку табчасти по индексу
@@ -74,10 +74,10 @@ export class TabularSection {
 	 * @param index {Number} - индекс строки табчасти
 	 * @return {TabularSectionRow}
 	 */
-	get(index) {
-		const row = this._obj[index]
-		return row ? row._row : null
-	}
+  get(index) {
+    const row = this._obj[index];
+    return row ? row._row : null;
+  }
 
 	/**
 	 * ### Возвращает количество элементов в табчасти
@@ -88,9 +88,9 @@ export class TabularSection {
 	 *     // количество элементов в табчасти
 	 *     var count = ts.count();
 	 */
-	count() {
-		return this._obj.length
-	}
+  count() {
+    return this._obj.length;
+  }
 
 	/**
 	 * ### Очищает табличнут часть
@@ -267,7 +267,7 @@ export class TabularSection {
 	 * @param fn {Function} - callback, в который передается строка табчасти
 	 */
 	each(fn) {
-	  for(let row of this._obj){
+	  for(const row of this._obj){
 	    if(fn.call(this, row._row) === false) break;
     }
 	}
