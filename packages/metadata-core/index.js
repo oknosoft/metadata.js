@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.2, built:2018-07-09
+ metadata-core v2.0.17-beta.2, built:2018-07-11
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -257,17 +257,17 @@ class TabularSection {
     const {msg} = _manager._owner.$p;
     return msg.tabular + ' ' + _manager.class_name + '.' + _name;
   }
-	get _obj(){
-		const {_owner, _name} = this;
-		return _owner._obj[_name]
-	}
-	get(index) {
-		const row = this._obj[index];
-		return row ? row._row : null
-	}
-	count() {
-		return this._obj.length
-	}
+  get _obj() {
+    const {_owner, _name} = this;
+    return _owner._obj[_name];
+  }
+  get(index) {
+    const row = this._obj[index];
+    return row ? row._row : null;
+  }
+  count() {
+    return this._obj.length;
+  }
 	clear(selection) {
 		const {_obj, _owner, _name} = this;
     if(!selection){
@@ -359,7 +359,7 @@ class TabularSection {
 		return row;
 	}
 	each(fn) {
-	  for(let row of this._obj){
+	  for(const row of this._obj){
 	    if(fn.call(this, row._row) === false) break;
     }
 	}
@@ -1699,12 +1699,14 @@ class RefDataManager extends DataManager{
 				do_not_create = arguments[2];
 			}
 		}
+		let created;
 		if(!o){
 			if(do_not_create && do_not_create != rp){
 				return;
 			}
 			else{
 				o = this.obj_constructor('', [ref, this]);
+        created = true;
 			}
 		}
 		if(ref === utils.blank.guid){
@@ -1718,7 +1720,8 @@ class RefDataManager extends DataManager{
           });
 			}
 			else{
-				return o.after_create();
+        created && o.after_create();
+				return o;
 			}
 		}else{
 			return do_not_create == rp ? Promise.resolve(o) : o;
@@ -4436,7 +4439,7 @@ class MetaEngine {
       Object.defineProperty(CatUsers.prototype, 'partners_uids', {
         get: function () {
           const res = [];
-          this.acl_objs && this.acl_objs.forEach((row) => row.type === 'cat.partners' && res.push(row.acl_obj.ref));
+          this.acl_objs && this.acl_objs.forEach((row) => row.type === 'cat.partners' && row.acl_obj && res.push(row.acl_obj.ref));
           return res;
         },
       });

@@ -598,12 +598,14 @@ export class RefDataManager extends DataManager{
 				do_not_create = arguments[2];
 			}
 		}
+		let created;
 		if(!o){
 			if(do_not_create && do_not_create != rp){
 				return;
 			}
 			else{
-				o = this.obj_constructor('', [ref, this])
+				o = this.obj_constructor('', [ref, this]);
+        created = true;
 			}
 		}
 
@@ -620,7 +622,8 @@ export class RefDataManager extends DataManager{
           });
 			}
 			else{
-				return o.after_create();
+        created && o.after_create();
+				return o;
 			}
 		}else{
 			return do_not_create == rp ? Promise.resolve(o) : o;
