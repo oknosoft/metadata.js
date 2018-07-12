@@ -121,6 +121,7 @@ export function reset_user(state, logged_out) {
   user.logged_in = false;
   user.has_login = false;
   user.try_log_in = false;
+  user.stop_log_in = false;
   user.log_error = '';
   if(logged_out) {
     user.logged_out = true;

@@ -1,7 +1,7 @@
 {
   "name": "metadata-vue",
   "description": "Vue JS components for metadata.js",
-  "version": "2.0.17-beta.2",
+  "version": "2.0.17-beta.3",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
@@ -9,7 +9,7 @@
     "npm": "^5.5"
   },
   "dependencies": {
-    "metadata-abstract-ui": "^2.0.17-beta.2"
+    "metadata-abstract-ui": "^2.0.17-beta.3"
   },
   "main": "dist/index.js",
   "repository": {

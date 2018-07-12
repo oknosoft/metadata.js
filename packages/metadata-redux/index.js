@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.17-beta.2, built:2018-07-10
+ metadata-redux v2.0.17-beta.3, built:2018-07-12
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -93,6 +93,7 @@ function reset_user(state, logged_out) {
   user.logged_in = false;
   user.has_login = false;
   user.try_log_in = false;
+  user.stop_log_in = false;
   user.log_error = '';
   if(logged_out) {
     user.logged_out = true;
@@ -470,11 +471,20 @@ var handlers_meta = {
     return Object.assign({}, state, {user});
   },
   [LOG_IN]: (state, action) => {
-    const user = Object.assign({}, state.user, {logged_in: action.payload ? true : false, try_log_in: false, log_error: ''});
+    const user = Object.assign({}, state.user, {
+      logged_in: action.payload ? true : false,
+      stop_log_in: action.payload ? false : true,
+      try_log_in: false,
+      log_error: ''
+    });
     return Object.assign({}, state, {user});
   },
   [TRY_LOG_IN]: (state, action) => {
-    const user = Object.assign({}, state.user, {try_log_in: true, log_error: ''});
+    const user = Object.assign({}, state.user, {
+      try_log_in: true,
+      stop_log_in: false,
+      log_error: ''
+    });
     return Object.assign({}, state, {user});
   },
   [LOG_OUT]: (state, action) => {
