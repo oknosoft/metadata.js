@@ -28,27 +28,20 @@ export class TabularSection {
 			owner._obj[name] = []
 		}
 
-		Object.defineProperties(this, {
+    /**
+     * Имя табличной части
+     * @property _name
+     * @type String
+     */
+		this._name = name;
 
-			/**
-			 * Имя табличной части
-			 * @property _name
-			 * @type String
-			 */
-			_name: {
-				get: () => name
-			},
+    /**
+     * Объект-владелец табличной части
+     * @property _owner
+     * @type DataObj
+     */
+    this._owner = owner;
 
-			/**
-			 * Объект-владелец табличной части
-			 * @property _owner
-			 * @type DataObj
-			 */
-			_owner: {
-				get: () => owner
-			},
-
-		})
 	}
 
   toString() {
@@ -237,7 +230,7 @@ export class TabularSection {
 		const row = Constructor ? new Constructor(this) : _manager.obj_constructor(_name, this);
 
     // триггер
-		if(!_data._loading && _owner.add_row(row) === false){
+		if(!_data._loading && _owner.add_row && _owner.add_row(row) === false){
 		  return;
     }
 
@@ -248,11 +241,11 @@ export class TabularSection {
       }
 		}
 
-		row._obj.row = _obj.push(row._obj);
+    row._obj.row = _obj.push(row._obj);
     Object.defineProperty(row._obj, '_row', {
-			value: row,
-			enumerable: false
-		})
+      value: row,
+      enumerable: false
+    });
 
     // obj, {ts_name: null}
     !_data._loading && !silent && _manager.emit_async('rows', _owner, {[_name]: true});

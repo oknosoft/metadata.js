@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.3, built:2018-07-12
+ metadata-core v2.0.17-beta.3, built:2018-07-13
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -243,14 +243,8 @@ class TabularSection {
 		if (!owner._obj[name]){
 			owner._obj[name] = [];
 		}
-		Object.defineProperties(this, {
-			_name: {
-				get: () => name
-			},
-			_owner: {
-				get: () => owner
-			},
-		});
+		this._name = name;
+    this._owner = owner;
 	}
   toString() {
 	  const {_owner: {_manager}, _name} = this;
@@ -341,7 +335,7 @@ class TabularSection {
 		const {_owner, _name, _obj} = this;
     const {_manager, _data} = _owner;
 		const row = Constructor ? new Constructor(this) : _manager.obj_constructor(_name, this);
-		if(!_data._loading && _owner.add_row(row) === false){
+		if(!_data._loading && _owner.add_row && _owner.add_row(row) === false){
 		  return;
     }
 		for (const f in row._metadata().fields){
@@ -349,11 +343,11 @@ class TabularSection {
         row[f] = attr[f] || "";
       }
 		}
-		row._obj.row = _obj.push(row._obj);
+    row._obj.row = _obj.push(row._obj);
     Object.defineProperty(row._obj, '_row', {
-			value: row,
-			enumerable: false
-		});
+      value: row,
+      enumerable: false
+    });
     !_data._loading && !silent && _manager.emit_async('rows', _owner, {[_name]: true});
 		_data._modified = true;
 		return row;
