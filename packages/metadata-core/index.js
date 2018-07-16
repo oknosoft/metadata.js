@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.3, built:2018-07-13
+ metadata-core v2.0.17-beta.3, built:2018-07-16
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1714,7 +1714,7 @@ class RefDataManager extends DataManager{
           });
 			}
 			else{
-        created && o.after_create();
+        created && arguments.length !== 3 && o.after_create();
 				return o;
 			}
 		}else{

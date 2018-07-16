@@ -622,7 +622,7 @@ export class RefDataManager extends DataManager{
           });
 			}
 			else{
-        created && o.after_create();
+        created && arguments.length !== 3 && o.after_create();
 				return o;
 			}
 		}else{
