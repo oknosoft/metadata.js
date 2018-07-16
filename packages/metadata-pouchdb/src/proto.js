@@ -53,22 +53,24 @@ export default (constructor) => {
 						descending: true,
 					})
 					.then((res) => {
-						if (res.rows.length) {
-							const num0 = res.rows[0].key[2];
-							for (let i = num0.length - 1; i >= prefix.length; i--) {
-								if (isNaN(parseInt(num0[i])))
-									break;
-								part = num0[i] + part;
-							}
-							part = (parseInt(part || 0) + 1).toFixed(0);
-						} else {
-							part = '1';
-						}
-						while (part.length < code_length){
+            if(res.rows.length) {
+              const num0 = res.rows[0].key[2];
+              for (let i = num0.length - 1; i >= prefix.length; i--) {
+                if(isNaN(parseInt(num0[i]))) {
+                  break;
+                }
+                part = num0[i] + part;
+              }
+              part = (parseInt(part || 0) + 1).toFixed(0);
+            }
+            else {
+              part = '1';
+            }
+            while (part.length < code_length) {
               part = '0' + part;
             }
 
-						if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj){
+            if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj){
               this.number_doc = prefix + part;
             }
 						else{

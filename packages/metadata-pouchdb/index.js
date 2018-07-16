@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.3, built:2018-07-12
+ metadata-pouchdb v2.0.17-beta.3, built:2018-07-16
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -39,21 +39,23 @@ var proto = (constructor) => {
 						descending: true,
 					})
 					.then((res) => {
-						if (res.rows.length) {
-							const num0 = res.rows[0].key[2];
-							for (let i = num0.length - 1; i > prefix.length; i--) {
-								if (isNaN(parseInt(num0[i])))
-									break;
-								part = num0[i] + part;
-							}
-							part = (parseInt(part || 0) + 1).toFixed(0);
-						} else {
-							part = '1';
-						}
-						while (part.length < code_length){
+            if(res.rows.length) {
+              const num0 = res.rows[0].key[2];
+              for (let i = num0.length - 1; i >= prefix.length; i--) {
+                if(isNaN(parseInt(num0[i]))) {
+                  break;
+                }
+                part = num0[i] + part;
+              }
+              part = (parseInt(part || 0) + 1).toFixed(0);
+            }
+            else {
+              part = '1';
+            }
+            while (part.length < code_length) {
               part = '0' + part;
             }
-						if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj){
+            if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj){
               this.number_doc = prefix + part;
             }
 						else{
