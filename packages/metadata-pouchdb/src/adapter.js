@@ -147,7 +147,7 @@ function adapter({AbstracrAdapter}) {
       }
 
       (bases || md.bases()).forEach((name) => {
-        if((!auth && remote[name]) || name == 'e1cib' || name == 'pgsql' || name == 'github' || (name === 'ram' && props.use_ram === false)) {
+        if((!auth && remote[name]) || name.match(/(e1cib|pgsql|github|user)/) || (name === 'ram' && props.use_ram === false)) {
           return;
         }
         remote[name] = new PouchDB(this.dbpath(name), opts);
@@ -229,8 +229,8 @@ function adapter({AbstracrAdapter}) {
       // в node - мы уже авторизованы
       // браузере - авторизуемся и получаем info() во всех базах
       const bases = md.bases();
-      const try_auth = (props.user_node || !remote.ram) ?
-        Promise.resolve() :
+      let try_auth = (props.user_node || !remote.ram) ?
+        Promise.resolve(true) :
         remote.ram.login(username, password)
           .then(({roles}) => {
             // установим суффикс базы отдела абонента
@@ -281,28 +281,32 @@ function adapter({AbstracrAdapter}) {
               }
             }
           }
+          });
+
+      if(!props.user_node) {
+        try_auth = try_auth
+          .then((ram_logged_in) => {
+            ram_logged_in && this.after_init(bases, {username, password});
+            return ram_logged_in;
           })
           .then((ram_logged_in) => {
-          ram_logged_in && this.after_init(bases, {username, password});
-          return ram_logged_in;
-        })
-          .then((ram_logged_in) => {
-          let postlogin = Promise.resolve(ram_logged_in);
-          if(!props.user_node) {
-            bases.forEach((dbid) => {
-              if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
-                postlogin = postlogin
+            let postlogin = Promise.resolve(ram_logged_in);
+            if(!props.user_node) {
+              bases.forEach((dbid) => {
+                if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
+                  postlogin = postlogin
                   // .then((ram_logged_in) => {
                   //   if(ram_logged_in) {
                   //     return remote[dbid].login(username, password).then(() => ram_logged_in)
                   //   }
                   // })
-                  .then((ram_logged_in) => ram_logged_in && remote[dbid].info());
-              }
-            });
-          }
-          return postlogin;
-        });
+                    .then((ram_logged_in) => ram_logged_in && remote[dbid].info());
+                }
+              });
+            }
+            return postlogin;
+          });
+      }
 
       return try_auth.then((info) => {
 
