@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.3, built:2018-07-16
+ metadata-core v2.0.17-beta.3, built:2018-07-21
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2147,7 +2147,7 @@ class RefDataManager extends DataManager{
     const {md} = _owner.$p;
     const select = {};
     const {input_by_string} = this.metadata();
-    if(cachable === 'ram' || cachable === 'doc_ram') {
+    if(cachable.match(/^(ram|doc_ram)$/)) {
       select._top = top;
       select._skip = skip;
       if(search && input_by_string) {
@@ -2193,7 +2193,7 @@ class RefDataManager extends DataManager{
         }
       });
     }
-    else if(cachable === 'doc' || cachable === 'ram_doc' || cachable === 'remote'){
+    else if(cachable.match(/^(doc|ram_doc|remote)$/)){
       Object.assign(select, {
         selector: {class_name: this.class_name},
         fields: ['_id', 'name'],
@@ -2208,7 +2208,10 @@ class RefDataManager extends DataManager{
       }
       _meta.choice_links && _meta.choice_links.forEach((choice) => {
         if(choice.name && choice.name[0] == 'selection' && typeof choice.path[0] !== 'function') {
-          select.selector[choice.name[1]] = _obj[choice.path[0]].valueOf();
+          const val = _obj[choice.path.length > 1 ? choice.path[1] : choice.path[0]];
+          if(val != undefined && this.metadata(choice.name[1])){
+            select.selector[choice.name[1]] = val.valueOf();
+          }
         }
       });
       _meta.choice_params && _meta.choice_params.forEach((choice) => {
@@ -2483,23 +2486,23 @@ class RegisterManager extends DataManager{
 	};
 	load_array(aattr, forse) {
 		const res = [];
-		for (let i = 0; i < aattr.length; i++) {
-			const ref = this.get_ref(aattr[i]);
-			let obj = this.by_ref[ref];
-			if (!obj && !aattr[i]._deleted) {
-				obj = this.obj_constructor('', [aattr[i], this, true]);
-				obj.is_new() && obj._set_loaded();
-			}
-			else if (obj && aattr[i]._deleted) {
-				obj.unload();
-				continue;
-			}
-			else if (forse) {
+    for (const row of aattr) {
+      const ref = this.get_ref(row);
+      let obj = this.by_ref[ref];
+      if (!obj && !row._deleted) {
+        obj = this.obj_constructor('', [row, this, true]);
+        obj.is_new() && obj._set_loaded();
+      }
+      else if (obj && row._deleted) {
+        obj.unload();
+        continue;
+      }
+      else if (forse) {
         obj._data._loading = true;
-				obj._mixin(aattr[i]);
-			}
-			res.push(obj);
-		}
+        obj._mixin(row);
+      }
+      res.push(obj);
+    }
 		return res;
 	};
 	get_sql_struct(attr) {
@@ -2512,20 +2515,23 @@ class RegisterManager extends DataManager{
 			var filter = attr.filter || "";
 			function list_flds(){
 				var flds = [], s = "_t_.ref";
-				if(cmd.form && cmd.form.selection){
-					cmd.form.selection.fields.forEach(fld => flds.push(fld));
-				}else{
-					for(var f in cmd["dimensions"]){
-						flds.push(f);
-					}
-				}
-				flds.forEach(fld => {
-					if(fld.indexOf(" as ") != -1)
-						s += ", " + fld;
-					else
-						s += sql_mask(fld, true);
-				});
-				return s;
+        if(cmd.form && cmd.form.selection) {
+          cmd.form.selection.fields.forEach(fld => flds.push(fld));
+        }
+        else {
+          for (var f in cmd.dimensions) {
+            flds.push(f);
+          }
+        }
+        flds.forEach(fld => {
+          if(fld.indexOf(' as ') != -1) {
+            s += ', ' + fld;
+          }
+          else {
+            s += sql_mask(fld, true);
+          }
+        });
+        return s;
 			}
 			function join_flds(){
 				var s = "", parts;
@@ -3084,9 +3090,10 @@ const utils = {
 			});
 	},
 	_mixin(obj, src, include, exclude) {
+		const tobj = {};
 		function exclude_cpy(f) {
 			if (!exclude || exclude.indexOf(f) == -1) {
-				{
+				if ((typeof tobj[f] == 'undefined') || (tobj[f] != src[f])) {
 					obj[f] = src[f];
 				}
 			}

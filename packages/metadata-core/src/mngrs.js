@@ -1196,7 +1196,7 @@ export class RefDataManager extends DataManager{
     const select = {};
     const {input_by_string} = this.metadata();
 
-    if(cachable === 'ram' || cachable === 'doc_ram') {
+    if(cachable.match(/^(ram|doc_ram)$/)) {
 
       select._top = top;
       select._skip = skip;
@@ -1250,7 +1250,7 @@ export class RefDataManager extends DataManager{
       });
 
     }
-    else if(cachable === 'doc' || cachable === 'ram_doc' || cachable === 'remote'){
+    else if(cachable.match(/^(doc|ram_doc|remote)$/)){
 
       Object.assign(select, {
         selector: {class_name: this.class_name},
@@ -1270,7 +1270,10 @@ export class RefDataManager extends DataManager{
       // для связей параметров выбора, значение берём из объекта
       _meta.choice_links && _meta.choice_links.forEach((choice) => {
         if(choice.name && choice.name[0] == 'selection' && typeof choice.path[0] !== 'function') {
-          select.selector[choice.name[1]] = _obj[choice.path[0]].valueOf();
+          const val = _obj[choice.path.length > 1 ? choice.path[1] : choice.path[0]];
+          if(val != undefined && this.metadata(choice.name[1])){
+            select.selector[choice.name[1]] = val.valueOf();
+          }
         }
       });
 

@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.17-beta.3, built:2018-07-13
+ metadata-abstract-ui v2.0.17-beta.3, built:2018-07-21
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1136,12 +1136,148 @@ function mngrs() {
   });
 }
 
+class YaGeocoder {
+  geocode(attr) {
+    return Promise.resolve(false);
+  }
+}
+function ipinfo() {
+  const {classes, md, msg, record_log, utils, job_prm} = this;
+  class IPInfo{
+    constructor() {
+      this._yageocoder = null;
+      this._ggeocoder = null;
+      this._parts = null;
+      this._addr = '';
+      if (job_prm.use_google_geo && typeof window !== 'undefined') {
+        if (!window.google || !window.google.maps) {
+          utils.load_script(`https://maps.google.com/maps/api/js?key=${job_prm.use_google_geo}&callback=$p.ipinfo.location_callback`, 'script');
+        }
+        else {
+          this.location_callback();
+        }
+      }
+    }
+    ipgeo() {
+      return fetch('//api.sypexgeo.net/')
+        .then(response => response.json())
+        .catch(record_log);
+    }
+    get yageocoder() {
+      if(!this._yageocoder){
+        this._yageocoder = new YaGeocoder();
+      }
+      return _yageocoder;
+    }
+    get ggeocoder(){
+      return this._ggeocoder;
+    }
+    get addr() {
+      return this._addr;
+    }
+    get parts() {
+      return this._parts;
+    }
+    components(v, components) {
+      var i, c, j, street = "", street0 = "", locality = "";
+      for(i in components){
+        c = components[i];
+        for(j in c.types){
+          switch(c.types[j]){
+          case "route":
+            if(c.short_name.indexOf("Unnamed")==-1){
+              street = c.short_name + (street ? (" " + street) : "");
+              street0 = c.long_name.replace("улица", "").trim();
+            }
+            break;
+          case "administrative_area_level_1":
+            v.region = c.long_name;
+            break;
+          case "administrative_area_level_2":
+            v.city = c.short_name;
+            v.city_long = c.long_name;
+            break;
+          case "locality":
+            locality = (locality ? (locality + " ") : "") + c.short_name;
+            break;
+          case "street_number":
+            v.house = "дом " + c.short_name;
+            break;
+          case "postal_code":
+            v.postal_code = c.short_name;
+            break;
+          default:
+            break;
+          }
+        }
+      }
+      if(v.region && v.region == v.city_long)
+        if(v.city.indexOf(locality) == -1)
+          v.city = locality;
+        else
+          v.city = "";
+      else if(locality){
+        if(v.city.indexOf(locality) == -1 && v.region.indexOf(locality) == -1)
+          street = locality + ", " + street;
+      }
+      if(!v.street || v.street.indexOf(street0)==-1)
+        v.street = street;
+      return v;
+    }
+    location_callback() {
+      this._ggeocoder = new google.maps.Geocoder();
+      md.emit('geo_google_ready');
+      navigator.geolocation && navigator.geolocation.getCurrentPosition(
+        (position) => {
+            this.latitude = position.coords.latitude;
+            this.longitude = position.coords.longitude;
+            const latlng = new google.maps.LatLng(this.latitude, this.longitude);
+            this._ggeocoder.geocode({'latLng': latlng}, (results, status) => {
+              if (status == google.maps.GeocoderStatus.OK){
+                if(!results[1] || results[0].address_components.length >= results[1].address_components.length) {
+                  this._parts = results[0];
+                }
+                else {
+                  this._parts = results[1];
+                }
+                this._addr = this._parts.formatted_address;
+                md.emit('geo_current_position', this.components({}, this._parts.address_components));
+              }
+            });
+          },
+        record_log,
+        {timeout: 20000}
+        );
+    }
+    google_ready() {
+      return new Promise((resolve, reject) => {
+        if(this._ggeocoder) {
+          return resolve();
+        }
+        setTimeout(() => {
+          if(this._ggeocoder){
+            return resolve();
+          }
+          msg.show_msg({
+            type: "alert-warning",
+            text: msg.error_geocoding + " Google",
+            title: msg.main_title
+          });
+          reject();
+        }, 10000);
+      });
+    }
+  }
+	classes.IPInfo = IPInfo;
+}
+
 var plugin = {
   constructor() {
     meta_objs.call(this);
     log_manager.call(this);
     scheme_settings.call(this);
     mngrs.call(this);
+    ipinfo.call(this);
   }
 };
 

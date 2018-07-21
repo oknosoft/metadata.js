@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.3, built:2018-07-16
+ metadata-pouchdb v2.0.17-beta.3, built:2018-07-20
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -212,7 +212,7 @@ function adapter({AbstracrAdapter}) {
         opts.auth = props.user_node;
       }
       (bases || md.bases()).forEach((name) => {
-        if((!auth && remote[name]) || name == 'e1cib' || name == 'pgsql' || name == 'github' || (name === 'ram' && props.use_ram === false)) {
+        if((!auth && remote[name]) || name.match(/(e1cib|pgsql|github|user)/) || (name === 'ram' && props.use_ram === false)) {
           return;
         }
         remote[name] = new PouchDB$1(this.dbpath(name), opts);
@@ -271,8 +271,8 @@ function adapter({AbstracrAdapter}) {
         }
       }
       const bases = md.bases();
-      const try_auth = (props.user_node || !remote.ram) ?
-        Promise.resolve() :
+      let try_auth = (props.user_node || !remote.ram) ?
+        Promise.resolve(true) :
         remote.ram.login(username, password)
           .then(({roles}) => {
             const suffix = /^suffix:/;
@@ -319,23 +319,26 @@ function adapter({AbstracrAdapter}) {
               }
             }
           }
+          });
+      if(!props.user_node) {
+        try_auth = try_auth
+          .then((ram_logged_in) => {
+            ram_logged_in && this.after_init(bases, {username, password});
+            return ram_logged_in;
           })
           .then((ram_logged_in) => {
-          ram_logged_in && this.after_init(bases, {username, password});
-          return ram_logged_in;
-        })
-          .then((ram_logged_in) => {
-          let postlogin = Promise.resolve(ram_logged_in);
-          if(!props.user_node) {
-            bases.forEach((dbid) => {
-              if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
-                postlogin = postlogin
-                  .then((ram_logged_in) => ram_logged_in && remote[dbid].info());
-              }
-            });
-          }
-          return postlogin;
-        });
+            let postlogin = Promise.resolve(ram_logged_in);
+            if(!props.user_node) {
+              bases.forEach((dbid) => {
+                if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
+                  postlogin = postlogin
+                    .then((ram_logged_in) => ram_logged_in && remote[dbid].info());
+                }
+              });
+            }
+            return postlogin;
+          });
+      }
       return try_auth.then((info) => {
         props._auth = {username};
         if(wsql.get_user_param('user_name') != username) {
