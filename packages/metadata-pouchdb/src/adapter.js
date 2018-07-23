@@ -515,10 +515,10 @@ function adapter({AbstracrAdapter}) {
      */
     back_off (delay) {
       if (!delay) {
-        return 500 + Math.floor(Math.random() * 2000);
+        return 1000 + Math.floor(Math.random() * 2000);
       }
-      else if (delay >= 90000) {
-        return 90000;
+      else if (delay >= 200000) {
+        return 200000;
       }
       return delay * 3;
     }
@@ -631,7 +631,7 @@ function adapter({AbstracrAdapter}) {
                   delete options.filter;
                   delete options.query_params;
                 }
-                local.sync[id] = sync_events(db_local.replicate.to(db_remote, options));
+                local.sync[id] = sync_events(db_local.replicate.to(db_remote, Object.assign({}, options, {batch_size: 50})));
               }
               else {
                 local.sync[id] = sync_events(db_local.sync(db_remote, options));
