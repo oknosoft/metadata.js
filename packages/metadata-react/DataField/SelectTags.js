@@ -40,17 +40,20 @@ function sort(a, b) {
 class SelectTags extends React.Component {
 
   render() {
-    const {classes, tags, handleChange, tagList, categories, ...other} = this.props;
+    let {classes, tags, title, handleChange, tagList, categories, _mgr, ...other} = this.props;
+    if(!_mgr){
+      _mgr = $p.cat.tags;
+    }
 
     return (
       <FormControl className={classes.formControl} margin="dense" {...other}>
-        <InputLabel>Разделы</InputLabel>
+        <InputLabel>{title || 'Разделы'}</InputLabel>
         <Select
           multiple
           value={tags}
           onChange={handleChange}
           input={<Input />}
-          renderValue={selected => selected.map(v => $p.cat.tags.get(v).name).join(', ')}
+          renderValue={selected => selected.map(v => _mgr.get(v).name).join(', ')}
         >
           {(categories ? tagList.sort(sort) : tagList).map((tag) => (
             <MenuItem key={tag.ref} value={tag.ref}>
