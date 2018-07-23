@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.3, built:2018-07-21
+ metadata-core v2.0.17-beta.3, built:2018-07-23
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1262,10 +1262,8 @@ class MetaEventEmitter extends EventEmitter{
 			return [type, listener];
 		}
 		else{
-			for(let fld in type){
-				if(typeof type[fld] == 'function'){
-					super.on(fld, type[fld]);
-				}
+			for(const fld in type){
+        typeof type[fld] === 'function' && super.on(fld, type[fld]);
 			}
 			return this;
 		}
@@ -1277,7 +1275,12 @@ class MetaEventEmitter extends EventEmitter{
 		else if(Array.isArray(type)){
 			super.removeListener(...type);
 		}
-		else if(typeof type == 'function'){
+		else if(typeof type === 'object'){
+      for(const fld in type){
+        typeof type[fld] === 'function' && super.removeListener(fld, type[fld]);
+      }
+    }
+		else if(typeof type === 'function'){
 			throw new TypeError('MetaEventEmitter.off: type must be a string')
 		}
 		else{

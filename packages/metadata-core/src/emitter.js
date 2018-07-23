@@ -24,10 +24,8 @@ export default class MetaEventEmitter extends EventEmitter{
 			return [type, listener];
 		}
 		else{
-			for(let fld in type){
-				if(typeof type[fld] == 'function'){
-					super.on(fld, type[fld]);
-				}
+			for(const fld in type){
+        typeof type[fld] === 'function' && super.on(fld, type[fld]);
 			}
 			return this;
 		}
@@ -45,7 +43,12 @@ export default class MetaEventEmitter extends EventEmitter{
 		else if(Array.isArray(type)){
 			super.removeListener(...type);
 		}
-		else if(typeof type == 'function'){
+		else if(typeof type === 'object'){
+      for(const fld in type){
+        typeof type[fld] === 'function' && super.removeListener(fld, type[fld]);
+      }
+    }
+		else if(typeof type === 'function'){
 			throw new TypeError('MetaEventEmitter.off: type must be a string')
 		}
 		else{
