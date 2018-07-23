@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.17-beta.3, built:2018-07-21
+ metadata-abstract-ui v2.0.17-beta.3, built:2018-07-23
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1149,6 +1149,7 @@ function ipinfo() {
       this._ggeocoder = null;
       this._parts = null;
       this._addr = '';
+      this._pos = 0;
       if (job_prm.use_google_geo && typeof window !== 'undefined') {
         if (!window.google || !window.google.maps) {
           utils.load_script(`https://maps.google.com/maps/api/js?key=${job_prm.use_google_geo}&callback=$p.ipinfo.location_callback`, 'script');
@@ -1179,7 +1180,9 @@ function ipinfo() {
       return this._parts;
     }
     components(v, components) {
-      var i, c, j, street = "", street0 = "", locality = "";
+      if(!v) v = {};
+      if(!components) components = this._parts.address_components;
+      let i, c, j, street = "", street0 = "", locality = "";
       for(i in components){
         c = components[i];
         for(j in c.types){
@@ -1198,6 +1201,7 @@ function ipinfo() {
             v.city_long = c.long_name;
             break;
           case "locality":
+            v.locality = c.short_name;
             locality = (locality ? (locality + " ") : "") + c.short_name;
             break;
           case "street_number":
@@ -1227,27 +1231,62 @@ function ipinfo() {
     location_callback() {
       this._ggeocoder = new google.maps.Geocoder();
       md.emit('geo_google_ready');
-      navigator.geolocation && navigator.geolocation.getCurrentPosition(
-        (position) => {
-            this.latitude = position.coords.latitude;
-            this.longitude = position.coords.longitude;
-            const latlng = new google.maps.LatLng(this.latitude, this.longitude);
-            this._ggeocoder.geocode({'latLng': latlng}, (results, status) => {
-              if (status == google.maps.GeocoderStatus.OK){
-                if(!results[1] || results[0].address_components.length >= results[1].address_components.length) {
-                  this._parts = results[0];
+      this.crrent_pos_ready();
+    }
+    crrent_pos_ready() {
+      return new Promise((resolve, reject) => {
+        if(this._pos === 2) {
+          resolve();
+        }
+        else if(this._pos === 1) {
+          const timer = setTimeout(() => {
+            if(this._pos === 2) {
+              resolve();
+            }
+            else {
+              reject();
+            }
+          }, 10000);
+          md.once('geo_current_position', () => {
+            clearTimeout(timer);
+            resolve();
+          });
+        }
+        else {
+          if(!navigator.geolocation){
+            return reject();
+          }
+          this._pos = 1;
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              this.latitude = position.coords.latitude;
+              this.longitude = position.coords.longitude;
+              const latlng = new google.maps.LatLng(this.latitude, this.longitude);
+              this._ggeocoder.geocode({'latLng': latlng}, (results, status) => {
+                if (status == google.maps.GeocoderStatus.OK){
+                  this._pos = 2;
+                  if(!results[1] || results[0].address_components.length >= results[1].address_components.length) {
+                    this._parts = results[0];
+                  }
+                  else {
+                    this._parts = results[1];
+                  }
+                  this._addr = this._parts.formatted_address;
+                  md.emit('geo_current_position', this.components());
                 }
-                else {
-                  this._parts = results[1];
-                }
-                this._addr = this._parts.formatted_address;
-                md.emit('geo_current_position', this.components({}, this._parts.address_components));
-              }
-            });
-          },
-        record_log,
-        {timeout: 20000}
-        );
+              });
+            },
+            (err) => {
+              reject(err);
+            },
+            {
+              enableHighAccuracy: true,
+              maximumAge: 300000,
+              timeout: 20000,
+            }
+          );
+        }
+      });
     }
     google_ready() {
       return new Promise((resolve, reject) => {

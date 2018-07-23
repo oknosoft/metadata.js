@@ -47,6 +47,7 @@ export default function ipinfo() {
       this._ggeocoder = null;
       this._parts = null;
       this._addr = '';
+      this._pos = 0;
 
       // подгружаем скрипты google
       if (job_prm.use_google_geo && typeof window !== 'undefined') {
@@ -106,7 +107,9 @@ export default function ipinfo() {
      * Выполняет синтаксический разбор частей адреса
      */
     components(v, components) {
-      var i, c, j, street = "", street0 = "", locality = "";
+      if(!v) v = {};
+      if(!components) components = this._parts.address_components;
+      let i, c, j, street = "", street0 = "", locality = "";
       for(i in components){
         c = components[i];
         //street_number,route,locality,administrative_area_level_2,administrative_area_level_1,country,sublocality_level_1
@@ -126,6 +129,7 @@ export default function ipinfo() {
             v.city_long = c.long_name;
             break;
           case "locality":
+            v.locality = c.short_name;
             locality = (locality ? (locality + " ") : "") + c.short_name;
             break;
           case "street_number":
@@ -161,48 +165,82 @@ export default function ipinfo() {
      */
     location_callback() {
       this._ggeocoder = new google.maps.Geocoder();
-
       md.emit('geo_google_ready');
+      this.crrent_pos_ready();
+    }
 
-      navigator.geolocation && navigator.geolocation.getCurrentPosition(
-        (position) => {
+    crrent_pos_ready() {
+      return new Promise((resolve, reject) => {
+        if(this._pos === 2) {
+          resolve();
+        }
+        else if(this._pos === 1) {
+          const timer = setTimeout(() => {
+            if(this._pos === 2) {
+              resolve();
+            }
+            else {
+              reject();
+            }
+          }, 10000);
+          md.once('geo_current_position', () => {
+            clearTimeout(timer);
+            resolve();
+          });
+        }
+        else {
+          if(!navigator.geolocation){
+            return reject();
+          }
+          this._pos = 1;
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
 
-            /**
-             * Географическая широта геолокации пользователя программы
-             * @property latitude
-             * @for IPInfo
-             * @type Number
-             */
-            this.latitude = position.coords.latitude;
+              /**
+               * Географическая широта геолокации пользователя программы
+               * @property latitude
+               * @for IPInfo
+               * @type Number
+               */
+              this.latitude = position.coords.latitude;
 
-            /**
-             * Географическая долгота геолокации пользователя программы
-             * @property longitude
-             * @for IPInfo
-             * @type Number
-             */
-            this.longitude = position.coords.longitude;
+              /**
+               * Географическая долгота геолокации пользователя программы
+               * @property longitude
+               * @for IPInfo
+               * @type Number
+               */
+              this.longitude = position.coords.longitude;
 
-            const latlng = new google.maps.LatLng(this.latitude, this.longitude);
+              const latlng = new google.maps.LatLng(this.latitude, this.longitude);
 
-            this._ggeocoder.geocode({'latLng': latlng}, (results, status) => {
-              if (status == google.maps.GeocoderStatus.OK){
-                if(!results[1] || results[0].address_components.length >= results[1].address_components.length) {
-                  this._parts = results[0];
+              this._ggeocoder.geocode({'latLng': latlng}, (results, status) => {
+                if (status == google.maps.GeocoderStatus.OK){
+                  this._pos = 2;
+                  if(!results[1] || results[0].address_components.length >= results[1].address_components.length) {
+                    this._parts = results[0];
+                  }
+                  else {
+                    this._parts = results[1];
+                  }
+                  this._addr = this._parts.formatted_address;
+
+                  md.emit('geo_current_position', this.components());
                 }
-                else {
-                  this._parts = results[1];
-                }
-                this._addr = this._parts.formatted_address;
+              });
 
-                md.emit('geo_current_position', this.components({}, this._parts.address_components));
-              }
-            });
-
-          },
-        record_log,
-        {timeout: 20000}
-        );
+            },
+            (err) => {
+              reject(err)
+            },
+            {
+              enableHighAccuracy: true,
+              maximumAge: 300000,
+              timeout: 20000,
+            }
+          );
+        }
+      });
     }
 
     /**
