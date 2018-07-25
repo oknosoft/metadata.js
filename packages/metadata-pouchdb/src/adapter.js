@@ -269,18 +269,35 @@ function adapter({AbstracrAdapter}) {
             if(props.direct) {
               throw err;
             }
-            const {current_user} = $p;
-            if(current_user) {
-            if(current_user.push_only) {
-              props._push_only = true;
-            }
-            if(current_user.suffix) {
-              props._suffix = current_user.suffix;
-              while (props._suffix.length < 4) {
-                props._suffix = '0' + props._suffix;
-              }
-            }
-          }
+            // ожидаем текущего пользователя из ram
+            return new Promise((resolve, reject) => {
+              let count = 0;
+              function props_by_user() {
+                setTimeout(() => {
+                  const {current_user} = $p;
+                  if(current_user) {
+                    if(current_user.push_only) {
+                      props._push_only = true;
+                    }
+                    if(current_user.suffix) {
+                      props._suffix = current_user.suffix;
+                      while (props._suffix.length < 4) {
+                        props._suffix = '0' + props._suffix;
+                      }
+                    }
+                    resolve();
+                  }
+                  else {
+                    if(count > 4) {
+                      return reject();
+                    }
+                    count++;
+                    props_by_user();
+                  }
+                }, 100 + count * 500);
+              };
+              props_by_user();
+            });
           });
 
       if(!props.user_node) {
@@ -330,14 +347,12 @@ function adapter({AbstracrAdapter}) {
 
           // излучаем событие
           this.emit('user_log_in', username);
-
-          // врезаем асинхронную подписку на событие
-          return this.emit_promise('on_log_in').then(() => info);
         }
         else {
           this.emit('user_log_stop', username);
-          return Promise.resolve();
         }
+        // врезаем асинхронную подписку на событие
+        return this.emit_promise('on_log_in').then(() => info);
 
       })
         .then((info) => {

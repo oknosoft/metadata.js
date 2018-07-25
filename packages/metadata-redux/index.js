@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.17-beta.3, built:2018-07-12
+ metadata-redux v2.0.17-beta.3, built:2018-07-25
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -253,7 +253,7 @@ function data_loaded(page) {
         if(name) {
           dispatch(defined(name));
         }
-        if(!user.logged_in && !user.try_log_in) {
+        if(!user.logged_in && !user.try_log_in && !user.stop_log_in) {
           if((superlogin && superlogin.authenticated()) || (name && password && wsql.get_user_param('enable_save_pwd'))) {
             return dispatch(try_log_in(adapters.pouch, name, aes.Ctr.decrypt(password)));
           }

@@ -62,7 +62,7 @@ export function data_loaded(page) {
         }
 
         // если вход еще не выполнен...
-        if(!user.logged_in && !user.try_log_in) {
+        if(!user.logged_in && !user.try_log_in && !user.stop_log_in) {
           // если разрешено сохранение пароля или superlogin или гостевая зона...
           if((superlogin && superlogin.authenticated()) || (name && password && wsql.get_user_param('enable_save_pwd'))) {
             return dispatch(try_log_in(adapters.pouch, name, aes.Ctr.decrypt(password)));
