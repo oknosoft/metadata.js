@@ -55,6 +55,7 @@ const config = {
     'packages/metadata-abstract-ui/index.min': ['./packages/metadata-abstract-ui/src/plugin'],
     'packages/metadata-abstract-ui/meta.min': ['./packages/metadata-abstract-ui/src/meta'],
     'packages/metadata-abstract-ui/tabulars.min': ['./packages/metadata-abstract-ui/src/tabulars'],
+    'packages/metadata-abstract-ui/cron.min': ['./packages/metadata-abstract-ui/src/cron'],
   },
   output: {
     path: path.resolve('.'),
