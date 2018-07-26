@@ -430,7 +430,7 @@ function adapter({AbstracrAdapter}) {
 
       const {local, $p: {job_prm}} = this;
       const options = {
-        limit: 800,
+        limit: 700,
         include_docs: true,
       };
       const _page = {
@@ -443,35 +443,50 @@ function adapter({AbstracrAdapter}) {
       // бежим по всем документам из ram
       return new Promise((resolve, reject) => {
 
+        let index;
+
+        const processPage = (err, response) => {
+          if(response) {
+            // широковещательное оповещение о загрузке порции локальных данных
+            _page.page++;
+            _page.total_rows = response.total_rows;
+
+            this.emit('pouch_data_page', Object.assign({}, _page));
+
+            if(this.load_changes(response, options)) {
+              fetchNextPage();
+            }
+            // широковещательное оповещение об окончании загрузки локальных данных
+            else {
+              local._loading = false;
+              this.call_data_loaded(_page);
+              resolve();
+            }
+          }
+          else if(err) {
+            reject(err);
+            // широковещательное оповещение об ошибке загрузки
+            this.emit('pouch_data_error', 'ram', err);
+          }
+        }
+
         const fetchNextPage = () => {
-          local.ram.allDocs(options, (err, response) => {
-
-            if(response) {
-              // широковещательное оповещение о загрузке порции локальных данных
-              _page.page++;
-              _page.total_rows = response.total_rows;
-
-              this.emit('pouch_data_page', Object.assign({}, _page));
-
-              if(this.load_changes(response, options)) {
-                fetchNextPage();
-              }
-              // широковещательное оповещение об окончании загрузки локальных данных
-              else {
-                local._loading = false;
-                this.call_data_loaded(_page);
-                resolve();
-              }
-            }
-            else if(err) {
-              reject(err);
-              // широковещательное оповещение об ошибке загрузки
-              this.emit('pouch_data_error', 'ram', err);
-            }
-          });
+          if(index){
+            local.ram.query('server/load_order', options, processPage);
+          }
+          else {
+            local.ram.allDocs(options, processPage);
+          }
         };
 
-        local.ram.info().then((info) => {
+        local.ram.get('_design/server')
+          .then(({views}) => {
+            if(views.load_order){
+              index = true;
+            };
+            return local.ram.info();
+          })
+          .then((info) => {
           if(info.doc_count >= (job_prm.pouch_ram_doc_count || 10)) {
             // широковещательное оповещение о начале загрузки локальных данных
             this.emit('pouch_load_start', Object.assign(_page, {local_rows: info.doc_count}));

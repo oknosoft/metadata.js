@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.3, built:2018-07-25
+ metadata-pouchdb v2.0.17-beta.3, built:2018-07-26
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -432,7 +432,7 @@ function adapter({AbstracrAdapter}) {
     load_data() {
       const {local, $p: {job_prm}} = this;
       const options = {
-        limit: 800,
+        limit: 700,
         include_docs: true,
       };
       const _page = {
@@ -442,28 +442,41 @@ function adapter({AbstracrAdapter}) {
         start: Date.now(),
       };
       return new Promise((resolve, reject) => {
-        const fetchNextPage = () => {
-          local.ram.allDocs(options, (err, response) => {
-            if(response) {
-              _page.page++;
-              _page.total_rows = response.total_rows;
-              this.emit('pouch_data_page', Object.assign({}, _page));
-              if(this.load_changes(response, options)) {
-                fetchNextPage();
-              }
-              else {
-                local._loading = false;
-                this.call_data_loaded(_page);
-                resolve();
-              }
+        let index;
+        const processPage = (err, response) => {
+          if(response) {
+            _page.page++;
+            _page.total_rows = response.total_rows;
+            this.emit('pouch_data_page', Object.assign({}, _page));
+            if(this.load_changes(response, options)) {
+              fetchNextPage();
             }
-            else if(err) {
-              reject(err);
-              this.emit('pouch_data_error', 'ram', err);
+            else {
+              local._loading = false;
+              this.call_data_loaded(_page);
+              resolve();
             }
-          });
+          }
+          else if(err) {
+            reject(err);
+            this.emit('pouch_data_error', 'ram', err);
+          }
         };
-        local.ram.info().then((info) => {
+        const fetchNextPage = () => {
+          if(index){
+            local.ram.query('server/load_order', options, processPage);
+          }
+          else {
+            local.ram.allDocs(options, processPage);
+          }
+        };
+        local.ram.get('_design/server')
+          .then(({views}) => {
+            if(views.load_order){
+              index = true;
+            }            return local.ram.info();
+          })
+          .then((info) => {
           if(info.doc_count >= (job_prm.pouch_ram_doc_count || 10)) {
             this.emit('pouch_load_start', Object.assign(_page, {local_rows: info.doc_count}));
             local._loading = true;
