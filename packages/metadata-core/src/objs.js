@@ -675,7 +675,13 @@ export class DataObj {
   static fix_collection(obj, _obj, fields) {
     for (const fld in fields) {
       if(_obj[fld]) {
-        const {type} = fields[fld];
+        let {type, choice_type} = fields[fld];
+        if(choice_type && choice_type.path){
+          const prop = obj[choice_type.path[choice_type.path.length - 1]];
+          if(prop && prop.type) {
+            type = prop.type;
+          }
+        }
         if (type.is_ref && typeof _obj[fld] === 'object') {
           if(!(fld === 'type' && obj.class_name && obj.class_name.indexOf('cch.') === 0)) {
             _obj[fld] = utils.fix_guid(_obj[fld], false);
