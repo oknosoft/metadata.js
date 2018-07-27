@@ -7,7 +7,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import IconButton from '@material-ui/core/IconButton';
-import IconSettings from '@material-ui/icons/PermDataSetting';
+import IconSettings from '../styles/Setting';
 import IconSettingsCancel from '@material-ui/icons/HighlightOff';
 import IconSettingsDone from '@material-ui/icons/Done';
 
