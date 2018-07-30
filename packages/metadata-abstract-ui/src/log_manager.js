@@ -28,6 +28,7 @@ export default function log_manager() {
       this._stamp = Date.now();
       // раз в полторы минуты, пытаемся сбросить данные на сервер
       setInterval(this.backup.bind(this, 'stamp'), 90000);
+
     }
 
     /**
@@ -92,7 +93,7 @@ export default function log_manager() {
      * @param [dtill] {Date}
      */
     backup(dfrom, dtill) {
-      const {wsql, adapters: {pouch}, classes, utils: {moment}} = this._owner.$p;
+      const {wsql, adapters: {pouch}, utils: {moment}} = this._owner.$p;
 
       if(dfrom === 'stamp' && pouch.authorized) {
         dfrom = this._stamp;

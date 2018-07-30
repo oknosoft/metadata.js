@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.17-beta.4, built:2018-07-26
+ metadata-abstract-ui v2.0.17-beta.4, built:2018-07-30
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -74,7 +74,7 @@ function log_manager() {
       }
     }
     backup(dfrom, dtill) {
-      const {wsql, adapters: {pouch}, classes, utils: {moment}} = this._owner.$p;
+      const {wsql, adapters: {pouch}, utils: {moment}} = this._owner.$p;
       if(dfrom === 'stamp' && pouch.authorized) {
         dfrom = this._stamp;
         if(!pouch.remote.log) {
@@ -1117,18 +1117,18 @@ function mngrs() {
   const {classes, msg} = this;
   Object.defineProperties(classes.DataManager.prototype, {
     family_name: {
-      get: function () {
+      get () {
         return msg.meta_mgrs[this.class_name.split('.')[0]].replace(msg.meta_mgrs.mgr + ' ', '');
       }
     },
     frm_selection_name: {
-      get: function () {
+      get () {
         const meta = this.metadata();
         return `${msg.open_frm} ${msg.selection_parent} ${msg.meta_parents[this.class_name.split('.')[0]]} '${meta.synonym || meta.name}'`;
       }
     },
     frm_obj_name: {
-      get: function () {
+      get () {
         const meta = this.metadata();
         return `${msg.open_frm} ${msg.obj_parent} ${msg.meta_parents[this.class_name.split('.')[0]]} '${meta.synonym || meta.name}'`;
       }
@@ -1310,6 +1310,48 @@ function ipinfo() {
 	classes.IPInfo = IPInfo;
 }
 
+function ipinfo$1() {
+  const {utils, job_prm, md} = this;
+  const checker = utils.single_instance_checker = {
+    init() {
+      if(typeof window === 'undefined') {
+        return;
+      }
+      window.addEventListener('storage', this.storageChanged);
+      const prefix = job_prm.local_storage_prefix;
+      this.LocalStorageKeyName = prefix + 'instanceCheck';
+      this.LocalStorageResponseKeyName = prefix + 'instanceMaster';
+      this.instanceKey = prefix + Date.now().toString();
+      this.setKey(this.LocalStorageKeyName, this.instanceKey);
+      this.emit = function (type) {
+        md.emit(type);
+      };
+    },
+    storageChanged(e) {
+      if(!e.newValue) {
+        return;
+      }
+      const {LocalStorageKeyName, LocalStorageResponseKeyName, instanceKey} = checker;
+      if(e.key === LocalStorageKeyName && e.newValue !== instanceKey) {
+        checker.setKey(LocalStorageResponseKeyName, instanceKey + Math.random().toString());
+      }
+      else if(e.key === LocalStorageResponseKeyName && e.newValue.indexOf(instanceKey) < 0) {
+        window.removeEventListener('storage', checker.storageChanged);
+        checker.emit('second_instance');
+      }
+    },
+    setKey(key, value) {
+      try {
+        localStorage.setItem(key, value);
+        setTimeout(() => {
+          localStorage.removeItem(key);
+        }, 100);
+      } catch (e) {
+      }
+    }
+  };
+}
+
 var plugin = {
   constructor() {
     meta_objs.call(this);
@@ -1317,6 +1359,7 @@ var plugin = {
     scheme_settings.call(this);
     mngrs.call(this);
     ipinfo.call(this);
+    ipinfo$1.call(this);
   }
 };
 
