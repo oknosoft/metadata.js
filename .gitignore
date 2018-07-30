@@ -18,6 +18,9 @@ packages/metadata-abstract-ui/meta.min.js
 packages/metadata-abstract-ui/tabulars.js
 packages/metadata-abstract-ui/tabulars.js.map
 packages/metadata-abstract-ui/tabulars.min.js
+packages/metadata-abstract-ui/cron.js
+packages/metadata-abstract-ui/cron.js.map
+packages/metadata-abstract-ui/cron.min.js
 
 packages/metadata-core/index.js
 packages/metadata-core/index.js.map
@@ -43,4 +46,3 @@ packages/metadata-dhtmlx/metadata.css
 packages/metadata-dhtmlx/dhx_web.css
 packages/metadata-dhtmlx/dhx_terrace.css
 packages/metadata-dhtmlx/index.js.map
-

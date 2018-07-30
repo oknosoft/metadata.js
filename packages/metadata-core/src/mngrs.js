@@ -107,6 +107,7 @@ export class DataManager extends MetaEventEmitter{
     case 'remote':
     case 'user':
     case 'meta':
+    case 'templates':
       return adapters.pouch;
     }
     return adapters[this.cachable];
@@ -597,12 +598,14 @@ export class RefDataManager extends DataManager{
 				do_not_create = arguments[2];
 			}
 		}
+		let created;
 		if(!o){
 			if(do_not_create && do_not_create != rp){
 				return;
 			}
 			else{
-				o = this.obj_constructor('', [ref, this])
+				o = this.obj_constructor('', [ref, this]);
+        created = true;
 			}
 		}
 
@@ -612,9 +615,14 @@ export class RefDataManager extends DataManager{
 
 		if(o.is_new()){
 			if(do_not_create == rp){
-				return o.load();	// читаем из 1С или иного сервера
+        // читаем из 1С или иного сервера
+				return o.load()
+          .then(() => {
+            return o.is_new() ? o.after_create() : o;
+          });
 			}
 			else{
+        created && arguments.length !== 3 && o.after_create();
 				return o;
 			}
 		}else{
@@ -1188,7 +1196,7 @@ export class RefDataManager extends DataManager{
     const select = {};
     const {input_by_string} = this.metadata();
 
-    if(cachable === 'ram' || cachable === 'doc_ram') {
+    if(cachable.match(/^(ram|doc_ram)$/)) {
 
       select._top = top;
       select._skip = skip;
@@ -1242,7 +1250,7 @@ export class RefDataManager extends DataManager{
       });
 
     }
-    else if(cachable === 'doc' || cachable === 'ram_doc' || cachable === 'remote'){
+    else if(cachable.match(/^(doc|ram_doc|remote)$/)){
 
       Object.assign(select, {
         selector: {class_name: this.class_name},
@@ -1262,7 +1270,10 @@ export class RefDataManager extends DataManager{
       // для связей параметров выбора, значение берём из объекта
       _meta.choice_links && _meta.choice_links.forEach((choice) => {
         if(choice.name && choice.name[0] == 'selection' && typeof choice.path[0] !== 'function') {
-          select.selector[choice.name[1]] = _obj[choice.path[0]].valueOf();
+          const val = _obj[choice.path.length > 1 ? choice.path[1] : choice.path[0]];
+          if(val != undefined && this.metadata(choice.name[1])){
+            select.selector[choice.name[1]] = val.valueOf();
+          }
         }
       });
 
@@ -1716,35 +1727,33 @@ export class RegisterManager extends DataManager{
 	/**
 	 * сохраняет массив объектов в менеджере
 	 * @method load_array
-	 * @param aattr {array} - массив объектов для трансформации в объекты ссылочного типа
+	 * @param aattr {Array} - массив объектов для трансформации в объекты ссылочного типа
 	 * @param forse {Boolean} - перезаполнять объект
-	 * @async
 	 */
 	load_array(aattr, forse) {
 
 		const res = [];
 
-		for (let i = 0; i < aattr.length; i++) {
+    for (const row of aattr) {
+      const ref = this.get_ref(row);
+      let obj = this.by_ref[ref];
 
-			const ref = this.get_ref(aattr[i]);
-			let obj = this.by_ref[ref];
-
-			if (!obj && !aattr[i]._deleted) {
-				obj = this.obj_constructor('', [aattr[i], this, true]);
-				obj.is_new() && obj._set_loaded();
-			}
-			else if (obj && aattr[i]._deleted) {
-				obj.unload();
-				continue;
-
-			}
-			else if (forse) {
+      if (!obj && !row._deleted) {
+        obj = this.obj_constructor('', [row, this, true]);
+        obj.is_new() && obj._set_loaded();
+      }
+      else if (obj && row._deleted) {
+        obj.unload();
+        continue;
+      }
+      else if (forse) {
         obj._data._loading = true;
-				obj._mixin(aattr[i]);
-			}
+        obj._mixin(row);
+      }
 
-			res.push(obj);
-		}
+      res.push(obj);
+    }
+
 		return res;
 	};
 
@@ -1770,23 +1779,24 @@ export class RegisterManager extends DataManager{
 			function list_flds(){
 				var flds = [], s = "_t_.ref";
 
-				if(cmd.form && cmd.form.selection){
-					cmd.form.selection.fields.forEach(fld => flds.push(fld));
+        if(cmd.form && cmd.form.selection) {
+          cmd.form.selection.fields.forEach(fld => flds.push(fld));
+        }
+        else {
+          for (var f in cmd.dimensions) {
+            flds.push(f);
+          }
+        }
 
-				}else{
-
-					for(var f in cmd["dimensions"]){
-						flds.push(f);
-					}
-				}
-
-				flds.forEach(fld => {
-					if(fld.indexOf(" as ") != -1)
-						s += ", " + fld;
-					else
-						s += sql_mask(fld, true);
-				});
-				return s;
+        flds.forEach(fld => {
+          if(fld.indexOf(' as ') != -1) {
+            s += ', ' + fld;
+          }
+          else {
+            s += sql_mask(fld, true);
+          }
+        });
+        return s;
 
 			}
 

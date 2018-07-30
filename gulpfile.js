@@ -16,11 +16,7 @@ const gulp = require('gulp'),
   strip = require('gulp-strip-comments'),
 	umd = require('gulp-umd'),
   wrap = require('gulp-wrap'),
-	replace = require('gulp-replace'),
-	babel = require('gulp-babel');
-	// async = require('gulp-async-func-runner'),
-	// gulpfile = require('gulp-file'),
-	// async = require('gulp-replace-async');
+	replace = require('gulp-replace');
 
 module.exports = gulp;
 

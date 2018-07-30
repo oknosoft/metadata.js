@@ -1,16 +1,18 @@
 /**
- * ### Поле ввода пути к данным в табчасти
+ * Редактор табчасти свойств с видами сравнений, как поле табчасти
  *
- * Created by Evgeniy Malyarov on 18.09.2017.
+ * @module FieldPropsCell
+ *
+ * Created by Evgeniy Malyarov on 13.07.2018.
  */
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
 import {Editors} from 'metadata-external/react-data-grid-addons.min';
-import PathField from './FieldPath';
+import FieldProps from './FieldProps';
 
-class FieldPathCell extends Editors.SimpleTextEditor {
+class FieldPropsCell extends Editors.SimpleTextEditor {
 
   // props.column.key, props.rowData(._row)
 
@@ -19,27 +21,38 @@ class FieldPathCell extends Editors.SimpleTextEditor {
     return {[column.key]: rowData[column.key]};
   }
 
+  onBlur = (evt) => {
+    evt.stopPropagation();
+    evt.preventDefault();
+  };
+
   render() {
 
     const {rowData, column, onCommit} = this.props;
     const subProps = {
       _obj: rowData,
       _fld: column.key,
-      defaultValue: rowData[column.key],
       label_position: $p.enm.label_positions.hide,
-      popupVisible: true,
       handleValueChange: onCommit,
     };
 
-    return <PathField {...subProps} />;
+    return <div onBlur={this.onBlur}>
+      <input
+        type="text"
+        disabled
+        placeholder="Свойства"
+        value=""
+      />
+      <FieldProps {...subProps} />
+    </div>;
   }
 }
 
-FieldPathCell.propTypes = {
+FieldPropsCell.propTypes = {
   options: PropTypes.array,
   column: Editors.CheckboxEditor.propTypes.column,
   value: PropTypes.oneOfType([PropTypes.array, PropTypes.object, PropTypes.string]),
   rowData: PropTypes.object,
 };
 
-export default FieldPathCell;
+export default FieldPropsCell;

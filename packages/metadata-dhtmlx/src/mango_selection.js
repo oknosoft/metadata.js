@@ -300,7 +300,8 @@ class MangoSelection {
       }
       const filter = that.get_filter(start, count);
 
-      that._mgr.pouch_db.find(filter)
+      // если вместо фильтра нам подсунули промис, запросов не делаем - берём результат из него
+      (filter instanceof Promise ? filter : that._mgr.pouch_db.find(filter))
         .then(({docs}) => {
 
           if(that._need_reload) {
@@ -373,6 +374,10 @@ class MangoSelection {
     };
 
     const _index = eflt.custom_selection._index || _attr._index;
+    // если вместо индекса нам подсунули промис...
+    if(_index instanceof Promise) {
+      return _index;
+    }
     if(_index.fields) {
       for (let sfld of _index.fields) {
         if(sfld == 'date') {

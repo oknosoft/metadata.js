@@ -28,27 +28,20 @@ export class TabularSection {
 			owner._obj[name] = []
 		}
 
-		Object.defineProperties(this, {
+    /**
+     * Имя табличной части
+     * @property _name
+     * @type String
+     */
+		this._name = name;
 
-			/**
-			 * Имя табличной части
-			 * @property _name
-			 * @type String
-			 */
-			_name: {
-				get: () => name
-			},
+    /**
+     * Объект-владелец табличной части
+     * @property _owner
+     * @type DataObj
+     */
+    this._owner = owner;
 
-			/**
-			 * Объект-владелец табличной части
-			 * @property _owner
-			 * @type DataObj
-			 */
-			_owner: {
-				get: () => owner
-			},
-
-		})
 	}
 
   toString() {
@@ -63,10 +56,10 @@ export class TabularSection {
 	 * @property _obj
 	 * @type Object
 	 */
-	get _obj(){
-		const {_owner, _name} = this
-		return _owner._obj[_name]
-	}
+  get _obj() {
+    const {_owner, _name} = this;
+    return _owner._obj[_name];
+  }
 
 	/**
 	 * ### Возвращает строку табчасти по индексу
@@ -74,10 +67,10 @@ export class TabularSection {
 	 * @param index {Number} - индекс строки табчасти
 	 * @return {TabularSectionRow}
 	 */
-	get(index) {
-		const row = this._obj[index]
-		return row ? row._row : null
-	}
+  get(index) {
+    const row = this._obj[index];
+    return row ? row._row : null;
+  }
 
 	/**
 	 * ### Возвращает количество элементов в табчасти
@@ -88,9 +81,9 @@ export class TabularSection {
 	 *     // количество элементов в табчасти
 	 *     var count = ts.count();
 	 */
-	count() {
-		return this._obj.length
-	}
+  count() {
+    return this._obj.length;
+  }
 
 	/**
 	 * ### Очищает табличнут часть
@@ -237,7 +230,7 @@ export class TabularSection {
 		const row = Constructor ? new Constructor(this) : _manager.obj_constructor(_name, this);
 
     // триггер
-		if(!_data._loading && _owner.add_row(row) === false){
+		if(!_data._loading && _owner.add_row && _owner.add_row(row) === false){
 		  return;
     }
 
@@ -248,11 +241,11 @@ export class TabularSection {
       }
 		}
 
-		row._obj.row = _obj.push(row._obj);
+    row._obj.row = _obj.push(row._obj);
     Object.defineProperty(row._obj, '_row', {
-			value: row,
-			enumerable: false
-		})
+      value: row,
+      enumerable: false
+    });
 
     // obj, {ts_name: null}
     !_data._loading && !silent && _manager.emit_async('rows', _owner, {[_name]: true});
@@ -267,7 +260,7 @@ export class TabularSection {
 	 * @param fn {Function} - callback, в который передается строка табчасти
 	 */
 	each(fn) {
-	  for(let row of this._obj){
+	  for(const row of this._obj){
 	    if(fn.call(this, row._row) === false) break;
     }
 	}

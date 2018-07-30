@@ -26,8 +26,6 @@ import {withPrm} from 'metadata-redux';
 import withStyles from '../styles/paper600';
 
 
-
-
 class TabsLogin extends Component {
 
   constructor(props) {

@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.2, built:2018-06-27
+ metadata-pouchdb v2.0.17-beta.4, built:2018-07-26
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -39,21 +39,23 @@ var proto = (constructor) => {
 						descending: true,
 					})
 					.then((res) => {
-						if (res.rows.length) {
-							const num0 = res.rows[0].key[2];
-							for (let i = num0.length - 1; i > prefix.length; i--) {
-								if (isNaN(parseInt(num0[i])))
-									break;
-								part = num0[i] + part;
-							}
-							part = (parseInt(part || 0) + 1).toFixed(0);
-						} else {
-							part = '1';
-						}
-						while (part.length < code_length){
+            if(res.rows.length) {
+              const num0 = res.rows[0].key[2];
+              for (let i = num0.length - 1; i >= prefix.length; i--) {
+                if(isNaN(parseInt(num0[i]))) {
+                  break;
+                }
+                part = num0[i] + part;
+              }
+              part = (parseInt(part || 0) + 1).toFixed(0);
+            }
+            else {
+              part = '1';
+            }
+            while (part.length < code_length) {
               part = '0' + part;
             }
-						if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj){
+            if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj){
               this.number_doc = prefix + part;
             }
 						else{
@@ -186,7 +188,7 @@ function adapter({AbstracrAdapter}) {
       }
       for (const name of pbases) {
         if(bases.indexOf(name) != -1) {
-          if(props.user_node || (props.direct && name != 'ram')) {
+          if(props.user_node || (props.direct && name != 'ram' && name != 'user')) {
             Object.defineProperty(local, name, {
               get: function () {
                 return remote[name];
@@ -210,7 +212,7 @@ function adapter({AbstracrAdapter}) {
         opts.auth = props.user_node;
       }
       (bases || md.bases()).forEach((name) => {
-        if((!auth && remote[name]) || name == 'e1cib' || name == 'pgsql' || name == 'github' || (name === 'ram' && props.use_ram === false)) {
+        if((!auth && remote[name]) || name.match(/(e1cib|pgsql|github|user)/) || (name === 'ram' && props.use_ram === false)) {
           return;
         }
         remote[name] = new PouchDB$1(this.dbpath(name), opts);
@@ -269,11 +271,13 @@ function adapter({AbstracrAdapter}) {
         }
       }
       const bases = md.bases();
-      const try_auth = props.user_node ? Promise.resolve() : remote.ram.login(username, password)
-        .then(({roles}) => {
-          const suffix = /^suffix:/;
-          const ref = /^ref:/;
-          roles.forEach((role) => {
+      let try_auth = (props.user_node || !remote.ram) ?
+        Promise.resolve(true) :
+        remote.ram.login(username, password)
+          .then(({roles}) => {
+            const suffix = /^suffix:/;
+            const ref = /^ref:/;
+            roles.forEach((role) => {
             if(suffix.test(role)) {
               props._suffix = role.substr(7);
             }
@@ -288,50 +292,68 @@ function adapter({AbstracrAdapter}) {
               props._push_only = true;
             }
           });
-          if(props._push_only && props.direct) {
+            if(props._push_only && props.direct) {
             props.direct = false;
             wsql.set_user_param('couch_direct', false);
           }
-          if(props._suffix) {
+            if(props._suffix) {
             while (props._suffix.length < 4) {
               props._suffix = '0' + props._suffix;
             }
           }
-          return true;
-        })
-        .catch((err) => {
-          if(props.direct) {
-            throw err;
-          }
-          const {current_user} = $p;
-          if(current_user) {
-            if(current_user.push_only) {
-              props._push_only = true;
+            return true;
+          })
+          .catch((err) => {
+            if(props.direct) {
+              throw err;
             }
-            if(current_user.suffix) {
-              props._suffix = current_user.suffix;
-              while (props._suffix.length < 4) {
-                props._suffix = '0' + props._suffix;
-              }
-            }
-          }
-        })
-        .then((ram_logged_in) => {
-          ram_logged_in && this.after_init(bases, {username, password});
-          return ram_logged_in;
-        })
-        .then((ram_logged_in) => {
-          let postlogin = Promise.resolve(ram_logged_in);
-          if(!props.user_node) {
-            bases.forEach((dbid) => {
-              if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
-                postlogin = postlogin
-                  .then((ram_logged_in) => ram_logged_in && remote[dbid].info());
-              }
+            return new Promise((resolve, reject) => {
+              let count = 0;
+              function props_by_user() {
+                setTimeout(() => {
+                  const {current_user} = $p;
+                  if(current_user) {
+                    if(current_user.push_only) {
+                      props._push_only = true;
+                    }
+                    if(current_user.suffix) {
+                      props._suffix = current_user.suffix;
+                      while (props._suffix.length < 4) {
+                        props._suffix = '0' + props._suffix;
+                      }
+                    }
+                    resolve();
+                  }
+                  else {
+                    if(count > 4) {
+                      return reject();
+                    }
+                    count++;
+                    props_by_user();
+                  }
+                }, 100 + count * 500);
+              }              props_by_user();
             });
-          }
-          return postlogin;
-        });
+          });
+      if(!props.user_node) {
+        try_auth = try_auth
+          .then((ram_logged_in) => {
+            ram_logged_in && this.after_init(bases, {username, password});
+            return ram_logged_in;
+          })
+          .then((ram_logged_in) => {
+            let postlogin = Promise.resolve(ram_logged_in);
+            if(!props.user_node) {
+              bases.forEach((dbid) => {
+                if(dbid !== 'meta' && dbid !== 'ram' && remote[dbid]) {
+                  postlogin = postlogin
+                    .then((ram_logged_in) => ram_logged_in && remote[dbid].info());
+                }
+              });
+            }
+            return postlogin;
+          });
+      }
       return try_auth.then((info) => {
         props._auth = {username};
         if(wsql.get_user_param('user_name') != username) {
@@ -347,12 +369,11 @@ function adapter({AbstracrAdapter}) {
             wsql.set_user_param('user_pwd', '');
           }
           this.emit('user_log_in', username);
-          return this.emit_promise('on_log_in').then(() => info);
         }
         else {
           this.emit('user_log_stop', username);
-          return Promise.resolve();
         }
+        return this.emit_promise('on_log_in').then(() => info);
       })
         .then((info) => {
           if(props._data_loaded && !props._doc_ram_loading) {
@@ -411,7 +432,7 @@ function adapter({AbstracrAdapter}) {
     load_data() {
       const {local, $p: {job_prm}} = this;
       const options = {
-        limit: 800,
+        limit: 700,
         include_docs: true,
       };
       const _page = {
@@ -421,29 +442,41 @@ function adapter({AbstracrAdapter}) {
         start: Date.now(),
       };
       return new Promise((resolve, reject) => {
-        const fetchNextPage = () => {
-          local.ram.allDocs(options, (err, response) => {
-            if(response) {
-              _page.page++;
-              _page.total_rows = response.total_rows;
-              _page.duration = Date.now() - _page.start;
-              this.emit('pouch_data_page', Object.assign({}, _page));
-              if(this.load_changes(response, options)) {
-                fetchNextPage();
-              }
-              else {
-                local._loading = false;
-                this.call_data_loaded(_page);
-                resolve();
-              }
+        let index;
+        const processPage = (err, response) => {
+          if(response) {
+            _page.page++;
+            _page.total_rows = response.total_rows;
+            this.emit('pouch_data_page', Object.assign({}, _page));
+            if(this.load_changes(response, options)) {
+              fetchNextPage();
             }
-            else if(err) {
-              reject(err);
-              this.emit('pouch_data_error', 'ram', err);
+            else {
+              local._loading = false;
+              this.call_data_loaded(_page);
+              resolve();
             }
-          });
+          }
+          else if(err) {
+            reject(err);
+            this.emit('pouch_data_error', 'ram', err);
+          }
         };
-        local.ram.info().then((info) => {
+        const fetchNextPage = () => {
+          if(index){
+            local.ram.query('server/load_order', options, processPage);
+          }
+          else {
+            local.ram.allDocs(options, processPage);
+          }
+        };
+        local.ram.get('_design/server')
+          .then(({views}) => {
+            if(views.load_order){
+              index = true;
+            }            return local.ram.info();
+          })
+          .then((info) => {
           if(info.doc_count >= (job_prm.pouch_ram_doc_count || 10)) {
             this.emit('pouch_load_start', Object.assign(_page, {local_rows: info.doc_count}));
             local._loading = true;
@@ -475,86 +508,17 @@ function adapter({AbstracrAdapter}) {
         return remote[dbid.replace('_remote', '')];
       }
       else {
-        return local[dbid] || remote[dbid];
+        return local[dbid] || remote[dbid] || local.user;
       }
     }
     back_off (delay) {
       if (!delay) {
-        return 500 + Math.floor(Math.random() * 2000);
+        return 1000 + Math.floor(Math.random() * 2000);
       }
-      else if (delay >= 90000) {
-        return 90000;
+      else if (delay >= 200000) {
+        return 200000;
       }
       return delay * 3;
-    }
-    sync_from_dump(local, remote, opts) {
-      const {utils} = this.$p;
-      return local.get('_local/dumped')
-        .then(() => true)
-        .catch(() => remote.get('_local/dump'))
-        .then(doc => {
-          if(doc === true) {
-            return doc;
-          }
-          const byteCharacters = atob(doc.dump);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-          }
-          const blob = new Blob([new Uint8Array(byteNumbers)], {type: 'application/zip'});
-          return utils.blob_as_text(blob, 'array');
-        })
-        .then((uarray) => {
-          if(uarray === true) {
-            return uarray;
-          }
-          return ('JSZip' in window ? Promise.resolve() : utils.load_script('https://cdn.jsdelivr.net/jszip/2/jszip.min.js', 'script'))
-            .then(() => {
-              const zip = new JSZip(uarray);
-              return zip.files.dump.asText();
-            });
-        })
-        .then((text) => {
-          if(text === true) {
-            return text;
-          }
-          const opt = {
-            proxy: remote.name,
-            checkpoints: 'target',
-            emit: (docs) => {
-              this.emit('pouch_dumped', {db: local, docs});
-              if(local.name.indexOf('ram') !== -1) {
-                this.emit('pouch_data_page', {
-                  total_rows: docs.length,
-                  local_rows: 3,
-                  docs_written: 3,
-                  limit: 300,
-                  page: 0,
-                  start: Date.now(),
-                });
-              }
-            }
-          };
-          if(remote.__opts.auth) {
-            opt.auth = remote.__opts.auth;
-          }
-          if(opts.filter) {
-            opt.filter = opts.filter;
-          }
-          if(opts.query_params) {
-            opt.query_params = opts.query_params;
-          }
-          return (local.load ? Promise.resolve() : utils.load_script('/dist/pouchdb.load.js', 'script'))
-            .then(() => {
-              return local.load(text, opt);
-            })
-            .then(() => local.put({_id: '_local/dumped'}))
-            .then(() => -1);
-        })
-        .catch((err) => {
-          err.status !== 404 && console.log(err);
-          return false;
-        });
     }
     run_sync(id) {
       const {local, remote, $p: {wsql, job_prm, record_log}, props} = this;
@@ -611,7 +575,7 @@ function adapter({AbstracrAdapter}) {
           return new Promise((resolve, reject) => {
             const options = {
               batch_size: 200,
-              batches_limit: 6,
+              batches_limit: 3,
               retry: true,
             };
             if(job_prm.pouch_filter && job_prm.pouch_filter[id]) {
@@ -631,7 +595,7 @@ function adapter({AbstracrAdapter}) {
                   delete options.filter;
                   delete options.query_params;
                 }
-                local.sync[id] = sync_events(db_local.replicate.to(db_remote, options));
+                local.sync[id] = sync_events(db_local.replicate.to(db_remote, Object.assign({}, options, {batch_size: 50})));
               }
               else {
                 local.sync[id] = sync_events(db_local.sync(db_remote, options));
@@ -639,19 +603,12 @@ function adapter({AbstracrAdapter}) {
             };
             const sync_events = (sync, options) => {
               sync.on('change', (change) => {
-                if(id == 'ram') {
-                  this.load_changes(change);
-                  if(linfo.doc_count < (job_prm.pouch_ram_doc_count || 10)) {
-                    _page.page++;
-                    _page.docs_written = change.docs_written;
-                    _page.duration = Date.now() - _page.start;
-                    this.emit('pouch_data_page', Object.assign({}, _page));
-                  }
+                if(change.pending > 10) {
+                  change.db = id;
+                  this.emit_async('repl_state', change);
                 }
-                else {
-                  change.update_only = true;
-                  this.load_changes(change);
-                }
+                change.update_only = id !== 'ram';
+                this.load_changes(change);
                 this.emit('pouch_sync_data', id, change);
               })
                 .on('denied', (info) => {
@@ -661,11 +618,14 @@ function adapter({AbstracrAdapter}) {
                   this.emit('pouch_sync_error', id, err);
                 })
                 .on('complete', (info) => {
+                  info.db = id;
+                  this.emit_async('repl_state', info);
                   sync.cancel();
                   sync.removeAllListeners();
                   if(options) {
                     final_sync(options);
-                    resolve(id);
+                    this.rebuild_indexes(id)
+                      .then(() => resolve(id));
                   }
                 });
               if(id == 'ram') {
@@ -679,7 +639,7 @@ function adapter({AbstracrAdapter}) {
               options.filter = 'auth/push_only';
               options.query_params = {user: _user};
             }
-            this.sync_from_dump(db_local, db_remote, options)
+            (job_prm.templates ? this.from_files(db_local, db_remote, options) : this.from_dump(db_local, db_remote, options))
               .then((synced) => {
                 if(synced) {
                   final_sync(options);
@@ -694,8 +654,158 @@ function adapter({AbstracrAdapter}) {
           });
         });
     }
-    rebuild_indexes(id) {
+    from_dump(local, remote, opts = {}) {
+      const {utils} = this.$p;
+      return local.get('_local/dumped')
+        .then(() => true)
+        .catch(() => remote.get('_local/dump'))
+        .then(doc => {
+          if(doc === true) {
+            return doc;
+          }
+          const byteCharacters = atob(doc.dump);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const blob = new Blob([new Uint8Array(byteNumbers)], {type: 'application/zip'});
+          return utils.blob_as_text(blob, 'array');
+        })
+        .then((uarray) => {
+          if(uarray === true) {
+            return uarray;
+          }
+          return ('JSZip' in window ? Promise.resolve() : utils.load_script('https://cdn.jsdelivr.net/jszip/2/jszip.min.js', 'script'))
+            .then(() => {
+              const zip = new JSZip(uarray);
+              return zip.files.dump.asText();
+            });
+        })
+        .then((text) => {
+          if(text === true) {
+            return text;
+          }
+          const opt = {
+            proxy: remote.name,
+            checkpoints: 'target',
+            emit: (docs) => {
+              this.emit('pouch_dumped', {db: local, docs});
+              if(local.name.indexOf('ram') !== -1) {
+                this.emit('pouch_data_page', {
+                  total_rows: docs.length,
+                  local_rows: 3,
+                  docs_written: 3,
+                  limit: 300,
+                  page: 0,
+                  start: Date.now(),
+                });
+              }
+            }
+          };
+          if(remote.__opts.auth) {
+            opt.auth = remote.__opts.auth;
+          }
+          if(opts.filter) {
+            opt.filter = opts.filter;
+          }
+          if(opts.query_params) {
+            opt.query_params = opts.query_params;
+          }
+          if(opts.selector) {
+            opt.selector = opts.selector;
+          }
+          return (local.load ? Promise.resolve() : utils.load_script('/dist/pouchdb.load.js', 'script'))
+            .then(() => {
+              return local.load(text, opt);
+            })
+            .then(() => local.put({_id: '_local/dumped'}))
+            .then(() => -1);
+        })
+        .catch((err) => {
+          err.status !== 404 && console.log(err);
+          return false;
+        });
+    }
+    from_files(local, remote, opts = {}) {
+      const li = local.name.lastIndexOf('_');
+      const id = local.name.substr(li + 1);
+      return fetch(`/${id}/00000.json`)
+        .then((res) => res.json())
+        .then((info) => {
+          return local.get('_local/stamp')
+            .then((doc) => {
+              if(doc.stamp === info.stamp) {
+                return true;
+              }
+              info._rev = doc._rev;
+              return info;
+            })
+            .catch((err) => {
+              return info;
+            });
+        })
+        .then((info) => {
+          if(info === true) {
+            return info;
+          }
+          if(info) {
+            return (local.load ? Promise.resolve() : this.$p.utils.load_script('/dist/pouchdb.load.js', 'script'))
+              .then(() => info);
+          }
+        })
+        .then((info) => {
+          if(info === true) {
+            return info;
+          }
+          if(info) {
+            const {origin} = location;
+            let series = Promise.resolve();
+            const msg = {db: id, ok: true, docs_read: 0, pending: info.doc_count, start_time: new Date().toISOString()};
+            this.emit_async('repl_state', msg);
+            const opt = {
+              proxy: remote.name,
+              checkpoints: 'target',
+              emit: (docs) => {
+                this.emit('pouch_dumped', {db: local, docs});
+              }
+            };
+            if(remote.__opts.auth) {
+              opt.auth = remote.__opts.auth;
+            }
+            if(opts.filter) {
+              opt.filter = opts.filter;
+            }
+            if(opts.query_params) {
+              opt.query_params = opts.query_params;
+            }
+            if(opts.selector) {
+              opt.selector = opts.selector;
+            }
+            for(let i = 1; i <= info.files; i++) {
+              series = series.then(() => {
+                return local.load(`${origin}/${id}/${i.pad(5)}.json`, opt);
+              })
+                .then((step) => {
+                  msg.docs_read = (info.doc_count * i / info.files).round();
+                  msg.pending = info.doc_count - msg.docs_read;
+                  this.emit_async('repl_state', msg);
+                });
+            }
+            return series
+              .then(() => {
+                info._id = '_local/stamp';
+                return local.put(info);
+              })
+              .then(() => -1);
+          }
+        })
+        .catch((err) => {
+          return false;
+        });
+    }
+    rebuild_indexes(id, silent) {
       const {local, remote} = this;
+      const msg = {db: id, ok: true, docs_read: 0, pending: 0, start_time: new Date().toISOString()};
       let promises = Promise.resolve();
       return local[id] === remote[id] ?
         Promise.resolve() :
@@ -707,13 +817,22 @@ function adapter({AbstracrAdapter}) {
         })
           .then(({rows}) => {
             for(const {doc} of rows) {
+              if(doc._id.indexOf('/server') !== -1) {
+                continue;
+              }
               if(doc.views) {
                 for(const name in doc.views) {
                   const view = doc.views[name];
                   const index = doc._id.replace('_design/', '') + '/' + name;
                   if(doc.language === 'javascript') {
                     promises = promises.then(() => {
-                      this.emit('rebuild_indexes', {id, index, start: true});
+                      if(silent) {
+                        this.emit('rebuild_indexes', {id, index, start: true});
+                      }
+                      else {
+                        msg.index = index;
+                        this.emit('repl_state', msg);
+                      }
                       return local[id].query(index, {limit: 1});
                     });
                   }
@@ -721,13 +840,20 @@ function adapter({AbstracrAdapter}) {
                     const selector = {
                       limit: 1,
                       fields: ['_id'],
-                      selector: {}
+                      selector: {},
+                      use_index: index.split('/'),
                     };
                     for(const fld of view.options.def.fields) {
                       selector.selector[fld] = '';
                     }
                     promises = promises.then(() => {
-                      this.emit('rebuild_indexes', {id, index, start: true});
+                      if(silent) {
+                        this.emit('rebuild_indexes', {id, index, start: true});
+                      }
+                      else {
+                        msg.index = index;
+                        this.emit('repl_state', msg);
+                      }
                       return local[id].find(selector);
                     });
                   }
@@ -735,8 +861,11 @@ function adapter({AbstracrAdapter}) {
               }
             }
             return promises.then(() => {
-                this.emit('rebuild_indexes', {id, start: false, finish: true});
-              });
+              msg.index = '';
+              msg.end_time = new Date().toISOString();
+              this.emit('repl_state', msg);
+              this.emit('rebuild_indexes', {id, start: false, finish: true});
+            });
           });
     }
     call_data_loaded(page) {
@@ -764,8 +893,15 @@ function adapter({AbstracrAdapter}) {
         setTimeout(() => typeof location != 'undefined' && location.reload(true), 1000);
       };
       return this.log_out()
-        .then(() => remote.ram != local.ram && local.ram.destroy())
-        .then(() => remote.doc != local.doc && local.doc.destroy())
+        .then(() => {
+          return local.templates && local.templates.adapter === 'idb' && local.templates.destroy()
+        })
+        .then(() => {
+          return remote.ram != local.ram && local.ram.destroy()
+        })
+        .then(() => {
+          return remote.doc != local.doc && local.doc.destroy()
+        })
         .then(do_reload)
         .catch(do_reload);
     }
@@ -1055,11 +1191,13 @@ function adapter({AbstracrAdapter}) {
         })
         .catch($p.record_log);
     }
-    load_array(_mgr, refs, with_attachments) {
+    load_array(_mgr, refs, with_attachments, db) {
       if(!refs || !refs.length) {
         return Promise.resolve(false);
       }
-      const db = this.db(_mgr);
+      if(!db) {
+        db = this.db(_mgr);
+      }
       const options = {
         limit: refs.length + 1,
         include_docs: true,
@@ -1122,7 +1260,7 @@ function adapter({AbstracrAdapter}) {
       props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
         for (const name in _m[kind]) {
-          _m[kind][name].cachable === 'doc_ram' && res.push(kind + '.' + name);
+          (_m[kind][name].cachable === 'doc_ram' || _m[kind][name].cachable === 'templates_ram') && res.push(kind + '.' + name);
         }
       });
       return res.reduce((acc, name) => {
@@ -1134,8 +1272,11 @@ function adapter({AbstracrAdapter}) {
             limit: 10000,
           };
           const page = local.sync._page || {};
-          this.emit('pouch_data_page', Object.assign(page, {synonym: md.get(name).synonym}));
-          return local.doc.allDocs(opt).then((res) => this.load_changes(res, opt));
+          const meta = md.get(name);
+          this.emit('pouch_data_page', Object.assign(page, {synonym: meta.synonym}));
+          return local[meta.cachable.replace(/_ram$/, '')].allDocs(opt).then((res) => {
+            this.load_changes(res, opt);
+          });
         });
       }, Promise.resolve())
         .catch((err) => {
@@ -1149,8 +1290,10 @@ function adapter({AbstracrAdapter}) {
           this.emit('pouch_doc_ram_loaded');
         });
     }
-    find_rows(_mgr, selection) {
-      const db = this.db(_mgr);
+    find_rows(_mgr, selection, db) {
+      if(!db) {
+        db = this.db(_mgr);
+      }
       if(!db) {
         return Promise.resolve([]);
       }

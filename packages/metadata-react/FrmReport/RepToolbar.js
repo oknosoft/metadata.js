@@ -12,9 +12,9 @@ import MenuItem from '@material-ui/core/MenuItem';
 import RunIcon from '@material-ui/icons/PlayArrow';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import PrintIcon from '@material-ui/icons/Print';
-import CopyIcon from '@material-ui/icons/ContentCopy';
+import CopyIcon from '@material-ui/icons/FileCopy';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
-import FileDownloadIcon from '@material-ui/icons/FileDownload';
+import FileDownloadIcon from '@material-ui/icons/ArrowDropDownCircle';
 
 import {export_handlers} from '../plugin';
 

@@ -31,6 +31,9 @@ export default withStyles(theme => ({
   title: {
     marginLeft: theme.spacing.unit * 3,
   },
+  spaceLeft: {
+    marginLeft: theme.spacing.unit,
+  },
   bold: {
     fontWeight: 'bold',
   },

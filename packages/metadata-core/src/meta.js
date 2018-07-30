@@ -182,7 +182,7 @@ class Meta extends MetaEventEmitter {
       for (let j in _m[i]) {
         if(_m[i][j].cachable) {
           let _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '').replace('_doc', '');
-          if(_name != 'meta' && _name != 'e1cib' && !res[_name]) {
+          if(_name != 'meta' && _name != 'templates' && _name != 'e1cib' && !res[_name]) {
             res[_name] = _name;
           }
         }

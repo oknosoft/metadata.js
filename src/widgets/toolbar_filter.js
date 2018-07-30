@@ -66,9 +66,12 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
       clearTimeout(input_filter_changed);
     }
 
-    input_filter_changed = setTimeout(function () {
-      input_filter_changed && t._prev_input_filter != t.input_filter.value && t.call_event();
-    }, 750);
+    if(!t.disable_timer) {
+      input_filter_changed = setTimeout(function () {
+        input_filter_changed && t._prev_input_filter != t.input_filter.value && t.call_event();
+      }, 750);
+    }
+
   }
 
   // заготовка для адаптивного фильтра
@@ -165,14 +168,16 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 
 		t.toolbar.addSpacer("input_filter");
 
-	}else if(t.input_date_till)
-		t.toolbar.addSpacer("input_date_till");
-
-	else
-		t.toolbar.addSpacer("div_filter");
-
+	}
+  else if(t.input_date_till) {
+    t.toolbar.addSpacer("input_date_till");
+  }
+  else {
+    t.toolbar.addSpacer('div_filter');
+  }
 
 };
+
 $p.iface.Toolbar_filter.prototype.__define({
 
 	get_filter: {
@@ -204,17 +209,16 @@ $p.iface.Toolbar_filter.prototype.__define({
 
 	add_filter: {
 		value: function (elm) {
-
 			var pos = this.toolbar.getPosition("input_filter") - 2,
 				id = dhx4.newId(),
 				width = (this.toolbar.getWidth("input_filter") / 2).round(0);
-
 			this.toolbar.setWidth("input_filter", width);
 			this.toolbar.addText("lbl_"+id, pos, elm.text || "");
 			pos++;
 			this.toolbar.addInput("input_"+id, pos, "", width);
-
 			this.custom_selection[elm.name] = this.toolbar.getInput("input_"+id);
+			return this;
 		}
 	}
+
 });

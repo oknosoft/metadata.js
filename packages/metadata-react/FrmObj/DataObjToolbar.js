@@ -60,6 +60,7 @@ class DataObjToolbar extends Component {
         <IconButton title="Записать" onClick={props.handleSave}><SaveIcon/></IconButton>
         {props.postable && <IconButton title={props.posted ? 'Отменить проведение' : 'Провести'} onClick={() => props.handleSave(!props.posted)}><SendIcon/></IconButton>}
         {props.deletable && <IconButton title={props.deleted ? 'Снять пометку удаления' : 'Пометить на удаление'} onClick={props.handleMarkDeleted}><RemoveIcon/></IconButton>}
+        {props.buttons}
 
         <Typography variant="title" color="inherit" className={props.classes.flex}> </Typography>
 
@@ -72,6 +73,7 @@ class DataObjToolbar extends Component {
         >
           {props.handlePrint && <MenuItem onClick={props.handlePrint}><PrintIcon/> &nbsp;Печать</MenuItem>}
           {props.handleAttachments && <MenuItem onClick={props.handleAttachments}><AttachIcon/> &nbsp;Вложения</MenuItem>}
+          {props.menu_buttons}
         </Menu>
 
         {props.closeButton && <IconButton title="Закрыть форму" onClick={props.handleClose}><CloseIcon/></IconButton>}

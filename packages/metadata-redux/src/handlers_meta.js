@@ -85,12 +85,21 @@ export default {
   },
 
   [LOG_IN]: (state, action) => {
-    const user = Object.assign({}, state.user, {logged_in: action.payload ? true : false, try_log_in: false, log_error: ''});
+    const user = Object.assign({}, state.user, {
+      logged_in: action.payload ? true : false,
+      stop_log_in: action.payload ? false : true,
+      try_log_in: false,
+      log_error: ''
+    });
     return Object.assign({}, state, {user});
   },
 
   [TRY_LOG_IN]: (state, action) => {
-    const user = Object.assign({}, state.user, {try_log_in: true, log_error: ''});
+    const user = Object.assign({}, state.user, {
+      try_log_in: true,
+      stop_log_in: false,
+      log_error: ''
+    });
     return Object.assign({}, state, {user});
   },
 

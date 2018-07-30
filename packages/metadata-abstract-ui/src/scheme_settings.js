@@ -40,7 +40,19 @@ export default function scheme_settings() {
           endkey: [class_name, 9999],
         },
       };
-      return this.find_rows_remote ? this.find_rows_remote(opt) : this.adapter.find_rows(this, opt);
+      const {adapter} = this;
+      if(adapter.local.templates && adapter.local.templates !==  adapter.remote.doc) {
+        return this.adapter.find_rows(this, opt, adapter.local.templates)
+          .then((templates_data) => {
+            return this.adapter.find_rows(this, opt)
+              .then((data) => {
+                return templates_data.concat(data);
+              });
+          })
+      }
+      else {
+        return this.adapter.find_rows(this, opt);
+      }
     }
 
     /**
@@ -199,6 +211,24 @@ export default function scheme_settings() {
       // если указан стандартный период - заполняем
       this.set_standard_period();
 
+    }
+
+    load() {
+      return super.load()
+        .then(() => {
+          const {_data, _manager: {adapter}} = this;
+          if(this.is_new() && adapter.local.templates && adapter.local.templates !== adapter.remote.doc) {
+
+            _data._loading = true;
+            return adapter.load_obj(this, {db: adapter.local.templates})
+              .then(() => {
+                _data._loading = false;
+                _data._modified = false;
+                return this.after_load();
+              });
+          }
+          return this;
+        })
     }
 
     set_standard_period() {
@@ -667,7 +697,7 @@ export default function scheme_settings() {
           class_name: {$eq: this.obj}
         },
         fields: ['_id', 'posted'],
-        use_index: 'mango/search',
+        use_index: ['mango', 'search'],
       };
 
       for (const column of (columns || this.columns())) {

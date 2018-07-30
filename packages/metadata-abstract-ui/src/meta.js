@@ -135,7 +135,7 @@ export default {
           {
             order: 3,
             name: 'label',
-            synonym: 'Поле надписи'
+            synonym: 'Надпись'
           },
           {
             order: 4,
@@ -171,6 +171,11 @@ export default {
             order: 10,
             name: 'typed_field',
             synonym: 'Поле связи по типу'
+          },
+          {
+            order: 11,
+            name: 'props',
+            synonym: 'Свойства объекта'
           },
         ],
         standard_period: [
