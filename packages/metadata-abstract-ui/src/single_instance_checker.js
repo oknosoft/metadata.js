@@ -8,7 +8,7 @@
  * Created 30.07.2018
  */
 
-export default function ipinfo() {
+export default function checker() {
   const {utils, job_prm, md} = this;
 
   const checker = utils.single_instance_checker = {

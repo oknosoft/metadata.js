@@ -484,6 +484,14 @@ function adapter({AbstracrAdapter}) {
         };
 
         local.ram.get('_design/server')
+          .catch((err) => {
+            if(err.status === 404) {
+              return {views: {}}
+            }
+            else {
+              reject(err);
+            }
+          })
           .then(({views}) => {
             if(views.load_order){
               index = true;
