@@ -1337,6 +1337,7 @@ function ipinfo$1() {
       }
       else if(e.key === LocalStorageResponseKeyName && e.newValue.indexOf(instanceKey) < 0) {
         window.removeEventListener('storage', checker.storageChanged);
+        job_prm.second_instance = true;
         checker.emit('second_instance');
       }
     },

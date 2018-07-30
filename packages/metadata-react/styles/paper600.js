@@ -6,6 +6,7 @@ export default withStyles(theme => ({
     marginTop: theme.custom && theme.custom.appbar.position == 'fixed' ? 72 : 24,
     marginLeft: 'auto',
     marginRight: 'auto',
+    paddingTop: theme.spacing.unit,
   }),
   disabled: {
     pointerEvents: 'none',

@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.17-beta.4, built:2018-07-26
+ metadata-redux v2.0.17-beta.4, built:2018-07-30
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -344,6 +344,7 @@ function no_data(dbid, err) {
 const META_LOADED = 'META_LOADED';
 const PRM_CHANGE = 'PRM_CHANGE';
 const OFFLINE = 'OFFLINE';
+const SECOND_INSTANCE = 'SECOND_INSTANCE';
 function meta_loaded({version}) {
   return {
     type: META_LOADED,
@@ -360,6 +361,12 @@ function offline(state) {
   return {
     type: OFFLINE,
     payload: state,
+  };
+}
+function second_instance() {
+  return {
+    type: SECOND_INSTANCE,
+    payload: true,
   };
 }
 
@@ -437,6 +444,7 @@ var handlers_meta = {
     return Object.assign({}, state);
   },
   [OFFLINE]: (state, action) => Object.assign({}, state, {offline: action.payload}),
+  [SECOND_INSTANCE]: (state, action) => Object.assign({}, state, {second_instance: true}),
   [DATA_LOADED]: (state, action) => {
     const payload = {data_loaded: true, fetch: false};
     if(action.payload == 'doc_ram') {
@@ -503,6 +511,7 @@ function metaInitialState() {
   let user_name = "",
     has_login = false,
     couch_direct = true,
+    second_instance = false,
     fake = typeof $p !== 'object';
   if(!fake) {
     const {wsql, job_prm, superlogin} = $p;
@@ -523,6 +532,7 @@ function metaInitialState() {
     else {
       has_login = false;
     }
+    second_instance = second_instance || job_prm.second_instance;
   }
   return {
     meta_loaded: false,
@@ -536,6 +546,7 @@ function metaInitialState() {
     offline: typeof navigator != 'undefined' && !navigator.onLine,
     path_log_in: false,
     couch_direct,
+    second_instance,
     fake,
     user: {
       name: user_name,
@@ -584,6 +595,9 @@ function metaMiddleware({adapters, md}) {
         md.on({
           obj_loaded: (_obj) => {
             dispatch(change(_obj._manager.class_name, _obj.ref));
+          },
+          second_instance: (_obj) => {
+            dispatch(second_instance());
           },
           setting_changed: () => {
           },

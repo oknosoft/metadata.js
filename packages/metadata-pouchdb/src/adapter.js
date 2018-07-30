@@ -440,6 +440,10 @@ function adapter({AbstracrAdapter}) {
         start: Date.now(),
       };
 
+      if(job_prm.second_instance) {
+        return Promise.reject(new Error('second_instance'));
+      }
+
       // бежим по всем документам из ram
       return new Promise((resolve, reject) => {
 
