@@ -724,7 +724,8 @@ export class RefDataManager extends DataManager{
 	 */
 	load_array(aattr, forse){
 		const res = [];
-		for(let attr of aattr){
+    const {wsql, adapters: {pouch}} = this._owner.$p;
+		for(const attr of aattr){
 			let obj = this.by_ref[utils.fix_guid(attr)];
 			if(!obj){
         if(forse === 'update_only') {
@@ -736,6 +737,13 @@ export class RefDataManager extends DataManager{
 			else if(obj.is_new() || forse){
 			  if(obj.is_new() || forse !== 'update_only') {
           obj._data._loading = true;
+        }
+        else if(forse === 'update_only' && attr.timestamp) {
+          if(attr.timestamp.user === (pouch.authorized || wsql.get_user_param('user_name'))) {
+            if(new Date() - moment(attr.timestamp.moment, "YYYY-MM-DDTHH:mm:ss ZZ").toDate() < 30000) {
+              continue;
+            }
+          }
         }
 				obj._mixin(attr);
 			}

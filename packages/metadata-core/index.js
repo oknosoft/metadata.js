@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.4, built:2018-07-26
+ metadata-core v2.0.17-beta.5, built:2018-07-31
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1781,7 +1781,8 @@ class RefDataManager extends DataManager{
 	}
 	load_array(aattr, forse){
 		const res = [];
-		for(let attr of aattr){
+    const {wsql, adapters: {pouch}} = this._owner.$p;
+		for(const attr of aattr){
 			let obj = this.by_ref[utils.fix_guid(attr)];
 			if(!obj){
         if(forse === 'update_only') {
@@ -1793,6 +1794,13 @@ class RefDataManager extends DataManager{
 			else if(obj.is_new() || forse){
 			  if(obj.is_new() || forse !== 'update_only') {
           obj._data._loading = true;
+        }
+        else if(forse === 'update_only' && attr.timestamp) {
+          if(attr.timestamp.user === (pouch.authorized || wsql.get_user_param('user_name'))) {
+            if(new Date() - moment(attr.timestamp.moment, "YYYY-MM-DDTHH:mm:ss ZZ").toDate() < 30000) {
+              continue;
+            }
+          }
         }
 				obj._mixin(attr);
 			}
@@ -4408,7 +4416,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.17-beta.4';
+    return '2.0.17-beta.5';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
