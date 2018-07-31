@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.17-beta.4, built:2018-07-26
+ metadata-superlogin v2.0.17-beta.5, built:2018-07-31
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
