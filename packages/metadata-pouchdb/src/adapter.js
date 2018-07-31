@@ -496,7 +496,8 @@ function adapter({AbstracrAdapter}) {
             if(views.load_order){
               index = true;
             };
-            return local.ram.info();
+            return (Object.keys(views).length ? this.rebuild_indexes('ram') : Promise.resolve())
+              .then(() => local.ram.info());
           })
           .then((info) => {
           if(info.doc_count >= (job_prm.pouch_ram_doc_count || 10)) {
@@ -944,7 +945,7 @@ function adapter({AbstracrAdapter}) {
         })
           .then(({rows}) => {
             for(const {doc} of rows) {
-              if(doc._id.indexOf('/server') !== -1) {
+              if(doc._id.indexOf('/server') !== -1 && id !== 'ram') {
                 continue;
               }
               if(doc.views) {

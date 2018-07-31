@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.4, built:2018-07-30
+ metadata-pouchdb v2.0.17-beta.5, built:2018-07-31
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -474,10 +474,19 @@ function adapter({AbstracrAdapter}) {
           }
         };
         local.ram.get('_design/server')
+          .catch((err) => {
+            if(err.status === 404) {
+              return {views: {}}
+            }
+            else {
+              reject(err);
+            }
+          })
           .then(({views}) => {
             if(views.load_order){
               index = true;
-            }            return local.ram.info();
+            }            return (Object.keys(views).length ? this.rebuild_indexes('ram') : Promise.resolve())
+              .then(() => local.ram.info());
           })
           .then((info) => {
           if(info.doc_count >= (job_prm.pouch_ram_doc_count || 10)) {
@@ -820,7 +829,7 @@ function adapter({AbstracrAdapter}) {
         })
           .then(({rows}) => {
             for(const {doc} of rows) {
-              if(doc._id.indexOf('/server') !== -1) {
+              if(doc._id.indexOf('/server') !== -1 && id !== 'ram') {
                 continue;
               }
               if(doc.views) {
