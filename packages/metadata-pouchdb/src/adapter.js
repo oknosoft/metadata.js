@@ -961,7 +961,7 @@ function adapter({AbstracrAdapter}) {
                         msg.index = index;
                         this.emit('repl_state', msg);
                       }
-                      return local[id].query(index, {limit: 1});
+                      return local[id].query(index, {limit: 1}).catch(() => null);
                     });
                   }
                   else {
@@ -983,7 +983,7 @@ function adapter({AbstracrAdapter}) {
                         msg.index = index;
                         this.emit('repl_state', msg);
                       }
-                      return local[id].find(selector);
+                      return local[id].find(selector).catch(() => null);
                     });
                   }
                 }
@@ -1157,7 +1157,7 @@ function adapter({AbstracrAdapter}) {
             }
           }
         })
-          .catch((err) => err && err.status != 404 && reject(err))
+          .catch((err) => err && err.status !== 404 && reject(err))
           .then(() => db.put(tmp))
           .then(() => {
             tObj.is_new() && tObj._set_loaded(tObj.ref);
@@ -1176,7 +1176,7 @@ function adapter({AbstracrAdapter}) {
           })
           .catch((err) => {
             _data._saving = false;
-            err && err.status != 404 && reject(err);
+            err && err.status !== 404 && reject(err);
           });
       });
     }
@@ -1499,7 +1499,7 @@ function adapter({AbstracrAdapter}) {
               resolve();
             }
           }
-          else if(err) {
+          else if(err && err.status !== 404) {
             reject(err);
           }
         }
