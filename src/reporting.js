@@ -18,7 +18,7 @@ function SpreadsheetDocument(attr, events) {
 		orientation: "portrait",
     blank: "",
     head: document.createElement("HEAD"),
-    content: document.createElement("BODY"),
+    content: document.createElement("DIV"),
     title: ""
 	};
 
@@ -307,8 +307,12 @@ SpreadsheetDocument.prototype.__define({
             wnd_print.document.head.appendChild(doc.copy_element(doc.head.children[i]));
           }
           // копируем элементы из content
-          for (var i = 0; i < doc.content.children.length; i++) {
-            wnd_print.document.body.appendChild(doc.copy_element(doc.content.children[i]));
+          if (doc.innerContent) {
+            for (var i = 0; i < doc.content.children.length; i++) {
+              wnd_print.document.body.appendChild(doc.copy_element(doc.content.children[i]));
+            }
+          } else {
+            wnd_print.document.body.appendChild(doc.content);
           }
           if(doc.title){
             wnd_print.document.title = doc.title;
@@ -362,8 +366,12 @@ SpreadsheetDocument.prototype.__define({
             wnd_print.document.head.appendChild(doc.copy_element(doc.head.children[i]));
           }
           // копируем элементы из content
-          for (var i = 0; i < doc.content.children.length; i++) {
-            wnd_print.document.body.appendChild(doc.copy_element(doc.content.children[i]));
+          if (doc.innerContent) {
+            for (var i = 0; i < doc.content.children.length; i++) {
+              wnd_print.document.body.appendChild(doc.copy_element(doc.content.children[i]));
+            }
+          } else {
+            wnd_print.document.body.appendChild(doc.content);
           }
           if(doc.title){
             wnd_print.document.title = doc.title;
