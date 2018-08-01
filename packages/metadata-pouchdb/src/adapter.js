@@ -1486,7 +1486,7 @@ function adapter({AbstracrAdapter}) {
                 delete doc._id;
                 delete doc._rev;
                 return doc;
-              }));
+              }), true);
 
               if(result.rows.length < options.limit) {
                 resolve();
