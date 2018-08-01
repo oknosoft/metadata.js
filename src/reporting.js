@@ -16,10 +16,10 @@ function SpreadsheetDocument(attr, events) {
 
 	this._attr = {
 		orientation: "portrait",
-    blank: "",
-    head: document.createElement("HEAD"),
+    title: "",
     content: document.createElement("DIV"),
-    title: ""
+    head: document.createElement("HEAD"),
+    blank: "",
 	};
 
 	if(attr && typeof attr == "string"){
@@ -62,7 +62,7 @@ SpreadsheetDocument.prototype.__define({
 			}
 		}
   },
-  
+
   /**
 	 * Добавляем элементы в заголовок
 	 */
@@ -270,8 +270,29 @@ SpreadsheetDocument.prototype.__define({
       Object.keys(attr).forEach(function (key) {
         elm.setAttribute(attr[key].name || key, attr[key].value || attr[key]);
       });
-    
+
       return elm;
+    }
+  },
+
+  /**
+   * Возвращает objectURL шаблона пустой страницы
+   */
+  blankURL: {
+    get: function () {
+      if(!this._blankURL) {
+        var blob;
+        if(this.blank) {
+          blob = new Blob([this.blank], {type: 'text/html'});
+        }
+        else {
+          blob = $p.injected_data['view_blank.html'] instanceof Blob ?
+            $p.injected_data['view_blank.html'] :
+            new Blob([$p.injected_data['view_blank.html']], {type: 'text/html'});
+        }
+        this._blankURL = window.URL.createObjectURL(blob);
+      }
+      return this._blankURL;
     }
   },
 
@@ -283,15 +304,8 @@ SpreadsheetDocument.prototype.__define({
 
       try{
 
-        // создаём blob из шаблона пустой страницы
-        if(!($p.injected_data['view_blank.html'] instanceof Blob)){
-          $p.injected_data['view_blank.html'] = new Blob([$p.injected_data['view_blank.html']], {type: 'text/html'});
-        }
-
-        var blob = this.blank ? (new Blob([this.blank], {type: 'text/html'})) : $p.injected_data['view_blank.html'];
-
         var doc = this,
-          url = window.URL.createObjectURL(blob),
+          url = this.blankURL,
           wnd_print = window.open(
           url, "_blank", "fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes");
 
@@ -336,21 +350,14 @@ SpreadsheetDocument.prototype.__define({
   },
 
   /**
-   * Сохраняет отчет в файл
+   * Сохраняет печатную форму в файл
    */
   save_as: {
     value: function (filename) {
 
       try{
-
-        if (!($p.injected_data['view_blank.html'] instanceof Blob)){
-          $p.injected_data['view_blank.html'] = new Blob([$p.injected_data['view_blank.html']], {type: 'text/html'});
-        }
-
-        var blob = this.blank ? (new Blob([this.blank], {type: 'text/html'})) : $p.injected_data['view_blank.html'];
-
         var doc = this,
-          url = window.URL.createObjectURL(blob),
+          url = this.blankURL,
           wnd_print = window.open(
           url, "_blank", "fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes");
 
@@ -378,10 +385,11 @@ SpreadsheetDocument.prototype.__define({
           }
 
           // сохраняем содержимое документа
-          var blob = new Blob([wnd_print.document.firstElementChild.outerHTML], { type: 'text/html' });
-          if (window.navigator.msSaveOrOpenBlob) {
+          var blob = new Blob([wnd_print.document.firstElementChild.outerHTML], {type: 'text/html'});
+          if(window.navigator.msSaveOrOpenBlob) {
             window.navigator.msSaveBlob(blob, filename);
-          } else {
+          }
+          else {
             var elem = window.document.createElement('a');
             elem.href = window.URL.createObjectURL(blob);
             elem.download = filename;
@@ -422,14 +430,13 @@ SpreadsheetDocument.prototype.__define({
       return this._attr.head
     },
     set: function (v) {
-
       this.clear_head();
-
-      if(typeof v == "string")
+      if(typeof v == 'string') {
         this._attr.head.innerHTML = v;
-      
-      else if(v instanceof HTMLElement)
+      }
+      else if(v instanceof HTMLElement) {
         this._attr.head.innerHTML = v.innerHTML;
+      }
     }
   },
 
@@ -437,27 +444,23 @@ SpreadsheetDocument.prototype.__define({
 		get: function () {
 			return this._attr.content
 		},
-		set: function (v) {
-
-			this.clear();
-
-			if(typeof v == "string")
-				this._attr.content.innerHTML = v;
-
-			else if(v instanceof HTMLElement)
-				this._attr.content.innerHTML = v.innerHTML;
-
-		}
-	},
+    set: function (v) {
+      this.clear();
+      if(typeof v == 'string') {
+        this._attr.content.innerHTML = v;
+      }
+      else if(v instanceof HTMLElement) {
+        this._attr.content.innerHTML = v.innerHTML;
+      }
+    }
+  },
 
 	title: {
 		get: function () {
 			return this._attr.title
 		},
 		set: function (v) {
-
 			this._attr.title = v;
-
 		}
 	}
 

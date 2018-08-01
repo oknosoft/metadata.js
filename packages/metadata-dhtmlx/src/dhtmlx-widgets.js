@@ -5088,8 +5088,10 @@ function SpreadsheetDocument(attr, events) {
 
 	this._attr = {
 		orientation: "portrait",
-		title: "",
-		content: document.createElement("DIV")
+    title: "",
+    content: document.createElement("DIV"),
+    head: document.createElement("HEAD"),
+    blank: "",
 	};
 
 	if(attr && typeof attr == "string"){
@@ -5117,13 +5119,48 @@ function SpreadsheetDocument(attr, events) {
 }
 SpreadsheetDocument.prototype.__define({
 
+  clear_head: {
+    value: function () {
+      while (this._attr.head.firstChild) {
+        this._attr.head.removeChild(this._attr.head.firstChild);
+      }
+    }
+  },
+
 	clear: {
 		value: function () {
 			while (this._attr.content.firstChild) {
 				this._attr.content.removeChild(this._attr.content.firstChild);
 			}
 		}
-	},
+  },
+
+  /**
+	 * Добавляем элементы в заголовок
+	 */
+  put_head: {
+    value: function (tag, attr) {
+
+      var elm;
+
+      if(tag instanceof HTMLElement){
+        elm = document.createElement(tag.tagName);
+        elm.innerHTML = tag.innerHTML;
+        if(!attr)
+          attr = tag.attributes;
+      }else{
+        elm = document.createElement(tag);
+      }
+
+      if(attr){
+        Object.keys(attr).forEach(function (key) {
+          elm.setAttribute(attr[key].name || key, attr[key].value || attr[key]);
+        });
+      }
+
+      this._attr.head.appendChild(elm);
+    }
+  },
 
 	/**
 	 * Выводит область ячеек в табличный документ
@@ -5145,8 +5182,8 @@ SpreadsheetDocument.prototype.__define({
 
 			if(attr){
 				Object.keys(attr).forEach(function (key) {
-					if(key == "id" || attr[key].name == "id")
-						return;
+					//if(key == "id" || attr[key].name == "id")
+					//	return;
 					elm.setAttribute(attr[key].name || key, attr[key].value || attr[key]);
 				});
 			}
@@ -5294,6 +5331,44 @@ SpreadsheetDocument.prototype.__define({
   },
 
   /**
+   * Копирование элемента
+   */
+  copy_element: {
+    value: function(elem) {
+
+      var elm = document.createElement(elem.tagName);
+      elm.innerHTML = elem.innerHTML;
+      var attr = elem.attributes;
+      Object.keys(attr).forEach(function (key) {
+        elm.setAttribute(attr[key].name || key, attr[key].value || attr[key]);
+      });
+
+      return elm;
+    }
+  },
+
+  /**
+   * Возвращает objectURL шаблона пустой страницы
+   */
+  blankURL: {
+    get: function () {
+      if(!this._blankURL) {
+        var blob;
+        if(this.blank) {
+          blob = new Blob([this.blank], {type: 'text/html'});
+        }
+        else {
+          blob = $p.injected_data['view_blank.html'] instanceof Blob ?
+            $p.injected_data['view_blank.html'] :
+            new Blob([$p.injected_data['view_blank.html']], {type: 'text/html'});
+        }
+        this._blankURL = window.URL.createObjectURL(blob);
+      }
+      return this._blankURL;
+    }
+  },
+
+  /**
    * Показывает отчет в отдельном окне
    */
   print: {
@@ -5301,13 +5376,8 @@ SpreadsheetDocument.prototype.__define({
 
       try{
 
-        // создаём blob из шаблона пустой страницы
-        if(!($p.injected_data['view_blank.html'] instanceof Blob)){
-          $p.injected_data['view_blank.html'] = new Blob([$p.injected_data['view_blank.html']], {type: 'text/html'});
-        }
-
         var doc = this,
-          url = window.URL.createObjectURL($p.injected_data['view_blank.html']),
+          url = this.blankURL,
           wnd_print = window.open(
           url, "_blank", "fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes");
 
@@ -5318,7 +5388,18 @@ SpreadsheetDocument.prototype.__define({
 
         wnd_print.onload = function(e) {
           window.URL.revokeObjectURL(url);
-          wnd_print.document.body.appendChild(doc.content);
+          // копируем элементы из head
+          for (var i = 0; i < doc.head.children.length; i++) {
+            wnd_print.document.head.appendChild(doc.copy_element(doc.head.children[i]));
+          }
+          // копируем элементы из content
+          if (doc.innerContent) {
+            for (var i = 0; i < doc.content.children.length; i++) {
+              wnd_print.document.body.appendChild(doc.copy_element(doc.content.children[i]));
+            }
+          } else {
+            wnd_print.document.body.appendChild(doc.content);
+          }
           if(doc.title){
             wnd_print.document.title = doc.title;
           }
@@ -5340,31 +5421,118 @@ SpreadsheetDocument.prototype.__define({
     }
   },
 
+  /**
+   * Сохраняет печатную форму в файл
+   */
+  save_as: {
+    value: function (filename) {
+
+      try{
+        var doc = this,
+          url = this.blankURL,
+          wnd_print = window.open(
+          url, "_blank", "fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes");
+
+        if (wnd_print.outerWidth < screen.availWidth || wnd_print.outerHeight < screen.availHeight){
+          wnd_print.moveTo(0,0);
+          wnd_print.resizeTo(screen.availWidth, screen.availHeight);
+        }
+
+        wnd_print.onload = function(e) {
+          window.URL.revokeObjectURL(url);
+          // копируем элементы из head
+          for (var i = 0; i < doc.head.children.length; i++) {
+            wnd_print.document.head.appendChild(doc.copy_element(doc.head.children[i]));
+          }
+          // копируем элементы из content
+          if (doc.innerContent) {
+            for (var i = 0; i < doc.content.children.length; i++) {
+              wnd_print.document.body.appendChild(doc.copy_element(doc.content.children[i]));
+            }
+          } else {
+            wnd_print.document.body.appendChild(doc.content);
+          }
+          if(doc.title){
+            wnd_print.document.title = doc.title;
+          }
+
+          // сохраняем содержимое документа
+          var blob = new Blob([wnd_print.document.firstElementChild.outerHTML], {type: 'text/html'});
+          if(window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveBlob(blob, filename);
+          }
+          else {
+            var elem = window.document.createElement('a');
+            elem.href = window.URL.createObjectURL(blob);
+            elem.download = filename;
+            document.body.appendChild(elem);
+            elem.click();
+            document.body.removeChild(elem);
+          }
+
+          wnd_print.close();
+          doc = null;
+        };
+
+        return null;
+      }
+      catch(err){
+        window.URL.revokeObjectURL && window.URL.revokeObjectURL(url);
+        $p.msg.show_msg({
+          title: $p.msg.bld_title,
+          type: "alert-error",
+          text: err.message.match("outerWidth") ?
+            "Ошибка сохранения документа" : err.message
+        });
+      }
+    }
+  },
+
+  blank: {
+    get: function () {
+      return this._attr.blank
+    },
+    set: function (v) {
+      this._attr.blank = v;
+    }
+  },
+
+  head: {
+    get: function () {
+      return this._attr.head
+    },
+    set: function (v) {
+      this.clear_head();
+      if(typeof v == 'string') {
+        this._attr.head.innerHTML = v;
+      }
+      else if(v instanceof HTMLElement) {
+        this._attr.head.innerHTML = v.innerHTML;
+      }
+    }
+  },
+
 	content: {
 		get: function () {
 			return this._attr.content
 		},
-		set: function (v) {
-
-			this.clear();
-
-			if(typeof v == "string")
-				this._attr.content.innerHTML = v;
-
-			else if(v instanceof HTMLElement)
-				this._attr.content.innerHTML = v.innerHTML;
-
-		}
-	},
+    set: function (v) {
+      this.clear();
+      if(typeof v == 'string') {
+        this._attr.content.innerHTML = v;
+      }
+      else if(v instanceof HTMLElement) {
+        this._attr.content.innerHTML = v.innerHTML;
+      }
+    }
+  },
 
 	title: {
 		get: function () {
 			return this._attr.title
 		},
 		set: function (v) {
-
 			this._attr.title = v;
-
 		}
 	}
 
