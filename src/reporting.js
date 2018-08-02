@@ -301,24 +301,28 @@ SpreadsheetDocument.prototype.__define({
         }
 
         wnd_print.onload = function(e) {
-          window.URL.revokeObjectURL(url);
-          // копируем элементы из head
-          for (var i = 0; i < doc.head.children.length; i++) {
-            wnd_print.document.head.appendChild(doc.copy_element(doc.head.children[i]));
-          }
-          // копируем элементы из content
-          if (doc.innerContent) {
-            for (var i = 0; i < doc.content.children.length; i++) {
-              wnd_print.document.body.appendChild(doc.copy_element(doc.content.children[i]));
+          new Promise((resolve, reject) => {
+            window.URL.revokeObjectURL(url);
+            // копируем элементы из head
+            for (var i = 0; i < doc.head.children.length; i++) {
+              wnd_print.document.head.appendChild(doc.copy_element(doc.head.children[i]));
             }
-          } else {
-            wnd_print.document.body.appendChild(doc.content);
-          }
-          if(doc.title){
-            wnd_print.document.title = doc.title;
-          }
-          wnd_print.print();
-          doc = null;
+            // копируем элементы из content
+            if (doc.innerContent) {
+              for (var i = 0; i < doc.content.children.length; i++) {
+                wnd_print.document.body.appendChild(doc.copy_element(doc.content.children[i]));
+              }
+            } else {
+              wnd_print.document.body.appendChild(doc.content);
+            }
+            if(doc.title){
+              wnd_print.document.title = doc.title;
+            }
+            setTimeout(resolve, 200);
+          }).then(() => {
+            wnd_print.print();
+            doc = null;
+          });
         };
 
         return wnd_print;
