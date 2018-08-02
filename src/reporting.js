@@ -331,8 +331,10 @@ SpreadsheetDocument.prototype.__define({
           if(doc.title){
             wnd_print.document.title = doc.title;
           }
-          wnd_print.print();
-          doc = null;
+          setTimeout(() => {
+            wnd_print.print();
+            doc = null;
+          }, 200);
         };
 
         return wnd_print;
