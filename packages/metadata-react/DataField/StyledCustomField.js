@@ -9,9 +9,9 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
-import Input from 'material-ui/Input';
-import InputLabel from 'material-ui/Input/InputLabel';
-import FormControl from 'material-ui/Form/FormControl';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import FormControl from '@material-ui/core/FormControl';
 
 import withStyles from './styles';
 

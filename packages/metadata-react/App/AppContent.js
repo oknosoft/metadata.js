@@ -3,18 +3,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { withStyles } from 'material-ui/styles';
+import withStyles from '@material-ui/core/styles/withStyles';
 
 const styles = theme => ({
   content: theme.mixins.gutters({
-    paddingTop: 64,
+    paddingTop: theme.spacing.unit * 4,
     flex: '1 1 100%',
     maxWidth: '100%',
     margin: '0 auto',
   }),
-  [theme.breakpoints.up(900 + theme.spacing.unit * 6)]: {
+  [theme.breakpoints.up(980 + theme.spacing.unit * 4)]: {
     content: {
-      maxWidth: 900,
+      maxWidth: 980,
     },
   },
 });

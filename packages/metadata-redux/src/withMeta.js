@@ -2,19 +2,22 @@ import {connect} from 'react-redux';
 import {try_log_in, log_out} from './actions_auth';
 
 export function mapStateToProps({meta}) {
-  return Object.assign({}, meta, {
-    _obj: $p.current_user,
-    _mgr: $p.cat.users,
-    _acl: 'e',
-  });
+  return typeof $p === 'object' ?
+    Object.assign({}, meta, {
+      _obj: $p.current_user,
+      _mgr: $p.cat.users,
+      _acl: 'e',
+    }) : meta;
 };
 
 export function mapDispatchToProps(dispatch) {
 
-  const {adapters, wsql, job_prm, aes, cat, superlogin} = $p;
-
   return {
+
     handleLogin(login, password) {
+
+      const {adapters, wsql, job_prm, aes, cat, superlogin} = $p;
+
       if(!login && !password) {
         if(wsql.get_user_param('user_name') && wsql.get_user_param('user_pwd')) {
           login = wsql.get_user_param('user_name');
@@ -38,8 +41,9 @@ export function mapDispatchToProps(dispatch) {
       }
       return dispatch(try_log_in(adapters.pouch, login, password));
     },
+
     handleLogOut() {
-      return dispatch(log_out(adapters.pouch));
+      return dispatch(log_out($p.adapters.pouch));
     }
   };
 };

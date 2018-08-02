@@ -300,7 +300,8 @@ class MangoSelection {
       }
       const filter = that.get_filter(start, count);
 
-      that._mgr.pouch_db.find(filter)
+      // если вместо фильтра нам подсунули промис, запросов не делаем - берём результат из него
+      (filter instanceof Promise ? filter : that._mgr.pouch_db.find(filter))
         .then(({docs}) => {
 
           if(that._need_reload) {
@@ -308,7 +309,7 @@ class MangoSelection {
             return this.load(url, call);
           }
 
-          const xml = {
+          return {
             xmlDoc: $p.iface.data_to_grid.call(that._mgr, docs.map(v => {
               v.ref = v._id.substr(15);
               delete v._id;
@@ -324,7 +325,21 @@ class MangoSelection {
             filePath: url,
             async: true
           };
-          this.xmlLoader(xml);
+
+        })
+        .catch((err) => {
+          $p.msg.show_msg('Ошибка получения списка заказов');
+          return {
+            xmlDoc: $p.iface.data_to_grid.call(that._mgr, [], {
+              _total_count: start,
+              start: start
+            }),
+            filePath: url,
+            async: true
+          };
+        })
+        .then((xml) => {
+          xml && this.xmlLoader(xml);
 
           const sort = that._sort[0];
           this.setSortImgState(true, 0, sort[Object.keys(sort)[0]]);
@@ -332,7 +347,6 @@ class MangoSelection {
           typeof call === 'function' && call();
 
           that._loading = false;
-
         });
     };
   }
@@ -360,6 +374,10 @@ class MangoSelection {
     };
 
     const _index = eflt.custom_selection._index || _attr._index;
+    // если вместо индекса нам подсунули промис...
+    if(_index instanceof Promise) {
+      return _index;
+    }
     if(_index.fields) {
       for (let sfld of _index.fields) {
         if(sfld == 'date') {

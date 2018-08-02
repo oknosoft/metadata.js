@@ -1,12 +1,12 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Drawer from 'material-ui/Drawer';
-import AppBar from 'material-ui/AppBar';
-import Toolbar from 'material-ui/Toolbar';
-import Typography from 'material-ui/Typography';
-import IconButton from 'material-ui/IconButton';
-import IconNavigationMenu from 'material-ui-icons/Menu';
+import Drawer from '@material-ui/core/Drawer';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
+import IconNavigationMenu from '@material-ui/icons/Menu';
 
 import {withIface} from 'metadata-redux';
 
@@ -40,17 +40,17 @@ class NavDrawer extends Component {
       <div>
 
         <IconButton onClick={handleToggle}>
-          <IconNavigationMenu className={classes.white}/>
+          <IconNavigationMenu color="inherit"/>
         </IconButton>
 
         <Drawer open={props.open} onClose={handleClose} classes={{paper: classes.drawer}} >
 
-          <AppBar position="static" >
+          <AppBar position="static" color="default">
             <Toolbar disableGutters >
               <IconButton onClick={handleClose}>
-                <IconNavigationMenu className={classes.white}/>
+                <IconNavigationMenu color="inherit"/>
               </IconButton>
-              <Typography variant="title" color="inherit" className={classes.flex}>{title}</Typography>
+              <Typography variant="title" color="textSecondary" className={classes.flex}>{title}</Typography>
             </Toolbar>
           </AppBar>
 

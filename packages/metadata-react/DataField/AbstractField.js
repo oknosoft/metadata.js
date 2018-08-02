@@ -48,7 +48,8 @@ export default class AbstractField extends FieldWithMeta {
   }
 
   get isTabular() {
-    return $p.utils.is_tabular(this.props._obj);
+    const {props} = this;
+    return props.hasOwnProperty('isTabular') ? props.isTabular : $p.utils.is_tabular(props._obj);
   }
 
   onChange({target}) {

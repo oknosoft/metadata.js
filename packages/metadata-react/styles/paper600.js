@@ -1,4 +1,4 @@
-import withStyles from 'material-ui/styles/withStyles';
+import withStyles from '@material-ui/core/styles/withStyles';
 
 export default withStyles(theme => ({
   root: theme.mixins.gutters({
@@ -6,6 +6,7 @@ export default withStyles(theme => ({
     marginTop: theme.custom && theme.custom.appbar.position == 'fixed' ? 72 : 24,
     marginLeft: 'auto',
     marginRight: 'auto',
+    paddingTop: theme.spacing.unit,
   }),
   disabled: {
     pointerEvents: 'none',
@@ -23,6 +24,9 @@ export default withStyles(theme => ({
   },
   spaceLeft: {
     marginLeft: theme.spacing.unit,
+  },
+  paddingRight: {
+    paddingRight: theme.spacing.unit,
   },
   button: {
     margin: theme.spacing.unit,

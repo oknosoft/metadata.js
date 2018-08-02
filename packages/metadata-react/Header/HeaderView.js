@@ -4,9 +4,9 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import AppBar from 'material-ui/AppBar';
-import Toolbar from 'material-ui/Toolbar';
-import Typography from 'material-ui/Typography';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
 
 import {withIface} from 'metadata-redux';
 
@@ -23,11 +23,11 @@ class Header extends Component {
     const {classes, title} = this.props;
 
     return (
-      <AppBar position="static" >
+      <AppBar position="static" color="default">
         <Toolbar disableGutters >
           <HeaderMenu {...props} classes={classes} />
-          <Typography variant="title" color="inherit" className={classes.flex}>{title}</Typography>
-          <HeaderButtons {...props} />
+          <Typography variant="title" color="textSecondary" className={classes.flex}>{title}</Typography>
+          <HeaderButtons {...props} barColor="default"/>
         </Toolbar>
       </AppBar>
     );

@@ -12,6 +12,7 @@ import PropTypes from 'prop-types';
 import DataCell from 'metadata-react/DataField/DataCell';
 import TypeFieldCell from 'metadata-react/DataField/FieldTypeCell';
 import PathFieldCell from 'metadata-react/DataField/FieldPathCell';
+import PropsFieldCell from 'metadata-react/DataField/FieldPropsCell';
 
 import {Editors, Formatters} from 'metadata-external/react-data-grid-addons.min';
 const {CheckboxEditor, DropDownEditor} = Editors;
@@ -61,10 +62,14 @@ function rx_columns({utils: {moment}, enm, md}) {
     return <div title={text} style={{textAlign: 'right'}}>{text}</div>;
   };
 
+  const props_formatter = ({value}) => {
+    return <div title={value.toString()}>{value.presentation}</div>;
+  };
+
   return function columns({mode, fields, _obj}) {
 
     const res = this.columns(mode);
-    const {input, text, label, link, cascader, toggle, image, type, path} = enm.data_field_kinds;
+    const {input, text, label, link, cascader, toggle, image, type, path, props} = enm.data_field_kinds;
     const editable = _obj._manager.class_name.indexOf('rep.') !== 0 || this.obj.indexOf(`.${_obj._manager._tabular || 'data'}`) === -1;
 
     if(fields) {
@@ -79,7 +84,7 @@ function rx_columns({utils: {moment}, enm, md}) {
           }
         }
 
-        if(!column.formatter) {
+        if(!column.formatter && _fld && _fld.type) {
 
           if(column.key === 'ref' || _fld.type.is_ref) {
             column.formatter = presentation_formatter;
@@ -134,6 +139,11 @@ function rx_columns({utils: {moment}, enm, md}) {
         case type:
           column.editor = <TypeFieldCell/>;
           //column.formatter = <DropDownFormatter options={[]} value=""/>;
+          break;
+
+        case props:
+          column.editor = <PropsFieldCell/>;
+          column.formatter = props_formatter;
           break;
 
         default:

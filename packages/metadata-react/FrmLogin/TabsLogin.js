@@ -1,28 +1,29 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Tabs, {Tab} from 'material-ui/Tabs';
-import Paper from 'material-ui/Paper';
-import TextField from 'material-ui/TextField';
-import Button from 'material-ui/Button';
-import IconButton from 'material-ui/IconButton';
-import {FormGroup} from 'material-ui/Form';
-import {DialogActions} from 'material-ui/Dialog';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Paper from '@material-ui/core/Paper';
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import DialogActions from '@material-ui/core/DialogActions';
 import Helmet from 'react-helmet';
-import Typography from 'material-ui/Typography';
-import IconError from 'material-ui-icons/ErrorOutline';
-import Input, { InputLabel, InputAdornment } from 'material-ui/Input';
-import { FormControl } from 'material-ui/Form';
-import Visibility from 'material-ui-icons/Visibility';
-import VisibilityOff from 'material-ui-icons/VisibilityOff';
-import {CircularProgress} from 'material-ui/Progress';
+import Typography from '@material-ui/core/Typography';
+import IconError from '@material-ui/icons/ErrorOutline';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControl from '@material-ui/core/FormControl';
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import classnames from 'classnames';
 
 import CnnSettings from './CnnSettings';
 import {withPrm} from 'metadata-redux';
 import withStyles from '../styles/paper600';
-
-
 
 
 class TabsLogin extends Component {
@@ -50,8 +51,8 @@ class TabsLogin extends Component {
   }
 
   handleLogin() {
-    const {props, state} = this;
-    props.handleLogin(state.login, state.password);
+    const {props, state: {login, password}} = this;
+    login && password && props.handleLogin(login, password);
   }
 
   // если изменили state - не перерисовываем
@@ -86,7 +87,9 @@ class TabsLogin extends Component {
       [classes.disabled]: user.try_log_in && couch_direct
     })} elevation={4}>
 
-      <Helmet title={props.title}/>
+      <Helmet title={props.title}>
+        <meta name="description" content="Вход в систему" />
+      </Helmet>
 
       <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
         <Tab label="Вход"/>
@@ -115,6 +118,7 @@ class TabsLogin extends Component {
             placeholder="password"
             value={state.password}
             onChange={event => this.setState({password: event.target.value})}
+            onKeyPress={(e) => e.key === 'Enter' && this.handleLogin()}
             endAdornment={
               <InputAdornment position="end">
                 <IconButton

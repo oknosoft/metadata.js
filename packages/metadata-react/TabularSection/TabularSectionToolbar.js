@@ -1,21 +1,22 @@
 import React, {Component} from "react";
 import PropTypes from 'prop-types';
 
-import Toolbar from 'material-ui/Toolbar';
-import Typography from 'material-ui/Typography';
-import IconButton from "material-ui/IconButton";
-import Menu, {MenuItem} from 'material-ui/Menu';
-import MoreVertIcon from 'material-ui-icons/MoreVert';
-import AddIcon from "material-ui-icons/AddCircleOutline";
-import RemoveIcon from "material-ui-icons/Delete";
-import ArrowUpIcon from "material-ui-icons/ArrowUpward";
-import ArrowDownIcon from "material-ui-icons/ArrowDownward";
-import CopyIcon from 'material-ui-icons/ContentCopy';
-import CloudDownloadIcon from 'material-ui-icons/CloudDownload';
-import FileDownloadIcon from 'material-ui-icons/FileDownload';
-import IconSettings from 'material-ui-icons/Settings';
-import IconSettingsCancel from 'material-ui-icons/HighlightOff';
-import IconSettingsDone from 'material-ui-icons/Done';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+import AddIcon from '@material-ui/icons/AddCircleOutline';
+import RemoveIcon from '@material-ui/icons/Delete';
+import ArrowUpIcon from '@material-ui/icons/ArrowUpward';
+import ArrowDownIcon from '@material-ui/icons/ArrowDownward';
+import CopyIcon from '@material-ui/icons/FileCopy';
+import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
+import FileDownloadIcon from '@material-ui/icons/ArrowDropDownCircle';
+import IconSettings from '../styles/Setting';
+import IconSettingsCancel from '@material-ui/icons/HighlightOff';
+import IconSettingsDone from '@material-ui/icons/Done';
 
 import withStyles from '../Header/toolbar';
 import {export_handlers} from '../plugin';

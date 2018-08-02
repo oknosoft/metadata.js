@@ -1,12 +1,13 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Tabs, {Tab} from 'material-ui/Tabs';
-import Paper from 'material-ui/Paper';
-import Button from 'material-ui/Button';
-import Divider from 'material-ui/Divider';
-import {FormGroup} from 'material-ui/Form';
-import {DialogActions} from 'material-ui/Dialog';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Paper from '@material-ui/core/Paper';
+import Button from '@material-ui/core/Button';
+import Divider from '@material-ui/core/Divider';
+import FormGroup from '@material-ui/core/FormGroup';
+import DialogActions from '@material-ui/core/DialogActions';
 import Helmet from 'react-helmet';
 import DataField from '../DataField';
 import CnnSettings from './CnnSettings';
@@ -60,7 +61,9 @@ class TabsUser extends Component {
 
       <Paper className={classes.root} elevation={4}>
 
-        <Helmet title={props.title} />
+        <Helmet title={props.title}>
+          <meta name="description" content="Свойства пользователя" />
+        </Helmet>
 
         <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
           <Tab label="Профиль"/>
@@ -90,7 +93,9 @@ class TabsUser extends Component {
       </Paper>
       :
       <div>
-        <Helmet title="Пользователь не найден" />
+        <Helmet title="Пользователь не найден">
+          <meta name="description" content="Свойства пользователя" />
+        </Helmet>
         нет данных
       </div>;
   }

@@ -177,10 +177,10 @@ class DataList extends MDNRComponent {
   };
 
   // обработчик вложений теущей строки
-  handleAttachment = () => {
+  handleAttachments = () => {
     const row = this._list.get(this.state.selectedRowIndex);
     const {handlers, _mgr} = this.props;
-    row && handlers.handleAttachment && handlers.handleAttachment(row, _mgr);
+    row && handlers.handleAttachments && handlers.handleAttachments(row, _mgr);
   };
 
   handleSettingsOpen = () => {
@@ -247,7 +247,7 @@ class DataList extends MDNRComponent {
       handleEdit: this.handleEdit,
       handleRemove: this.handleRemove,
       handlePrint: this.handlePrint,
-      handleAttachment: this.handleAttachment,
+      handleAttachments: this.handleAttachments,
       handleSettingsOpen: this.handleSettingsOpen,
       handleSettingsClose: this.handleSettingsClose,
       handleSchemeChange: this.handleSchemeChange,
@@ -257,7 +257,9 @@ class DataList extends MDNRComponent {
 
     return [
 
-      !context.dnr && <Helmet key="helmet" title={title}/>,
+      !context.dnr && <Helmet key="helmet" title={title}>
+        <meta name="description" content="Форма списка" />
+      </Helmet>,
 
       // диалог предупреждений при удалении
       confirm_text && <Confirm
@@ -273,54 +275,60 @@ class DataList extends MDNRComponent {
       <DataListToolbar {...toolbar_props} />,
 
       // панель настроек компоновки
-      settings_open && <SchemeSettingsTabs
-        key="tabs"
-        height={show_grid ? 272 : (sizes.height || 500) - 104}
-        width={sizes.width}
-        scheme={scheme}
-        tabParams={RepParams && <RepParams scheme={scheme}/>}
-        handleSchemeChange={this.handleSchemeChange}
-      />,
+      settings_open && <AutoSizer key="tabs" disableHeight>
+        {({width}) => (
+          <SchemeSettingsTabs
+            height={show_grid ? 272 : (sizes.height || 500) - 104}
+            width={width}
+            scheme={scheme}
+            tabParams={RepParams && <RepParams scheme={scheme}/>}
+            handleSchemeChange={this.handleSchemeChange}
+          />
+        )}
+      </AutoSizer>,
 
       // собственно, InfiniteLoader, внутри которого MultiGrid
-      show_grid && <InfiniteLoader
-        key="infinite"
-        isRowLoaded={_isRowLoaded}
-        loadMoreRows={_loadMoreRows}
-        rowCount={rowsLoaded + DataList.LIMIT}
-        minimumBatchSize={DataList.LIMIT}>
+      show_grid && <AutoSizer key="infinite" disableHeight>
+        {({width}) => (
+          <InfiniteLoader
+            isRowLoaded={_isRowLoaded}
+            loadMoreRows={_loadMoreRows}
+            rowCount={rowsLoaded + DataList.LIMIT}
+            minimumBatchSize={DataList.LIMIT}>
 
-        {({onRowsRendered, registerChild}) => {
-          const onSectionRendered = ({rowOverscanStartIndex, rowOverscanStopIndex, rowStartIndex, rowStopIndex, columnStartIndex, columnStopIndex}) => {
-            onRowsRendered({
-              overscanStartIndex: rowOverscanStartIndex,
-              overscanStopIndex: rowOverscanStopIndex,
-              startIndex: rowStartIndex * this.state.columns.length + columnStartIndex,
-              stopIndex: rowStopIndex * this.state.columns.length + columnStopIndex
-            });
-          };
+            {({onRowsRendered, registerChild}) => {
+              const onSectionRendered = ({rowOverscanStartIndex, rowOverscanStopIndex, rowStartIndex, rowStopIndex, columnStartIndex, columnStopIndex}) => {
+                onRowsRendered({
+                  overscanStartIndex: rowOverscanStartIndex,
+                  overscanStopIndex: rowOverscanStopIndex,
+                  startIndex: rowStartIndex * this.state.columns.length + columnStartIndex,
+                  stopIndex: rowStopIndex * this.state.columns.length + columnStopIndex
+                });
+              };
 
-          return (
-            <MultiGrid
-              ref={registerChild}
-              tabIndex={0}
-              width={sizes.width}
-              height={sizes.height - 52 - (settings_open ? 320 : 0)}
-              rowCount={rowsLoaded}
-              columnCount={columns.length}
-              fixedRowCount={1}
-              noContentRenderer={this._noContentRendered}
-              cellRenderer={this._cellRenderer}
-              overscanColumnCount={DataList.OVERSCAN_COLUMN_COUNT}
-              overscanRowCount={DataList.OVERSCAN_ROW_COUNT}
-              columnWidth={this._getColumnWidth}
-              rowHeight={DataList.COLUMN_HEIGHT}
-              onSectionRendered={onSectionRendered}
-              styleTopRightGrid={styleTopRightGrid}
-              classNameTopRightGrid={classes.topRightGrid}/>
-          );
-        }}
-      </InfiniteLoader>
+              return (
+                <MultiGrid
+                  ref={registerChild}
+                  tabIndex={0}
+                  width={width}
+                  height={sizes.height - 52 - (settings_open ? 320 : 0)}
+                  rowCount={rowsLoaded}
+                  columnCount={columns.length}
+                  fixedRowCount={1}
+                  noContentRenderer={this._noContentRendered}
+                  cellRenderer={this._cellRenderer}
+                  overscanColumnCount={DataList.OVERSCAN_COLUMN_COUNT}
+                  overscanRowCount={DataList.OVERSCAN_ROW_COUNT}
+                  columnWidth={this._getColumnWidth}
+                  rowHeight={DataList.COLUMN_HEIGHT}
+                  onSectionRendered={onSectionRendered}
+                  styleTopRightGrid={styleTopRightGrid}
+                  classNameTopRightGrid={classes.topRightGrid}/>
+              );
+            }}
+          </InfiniteLoader>
+        )}
+      </AutoSizer>
     ];
   }
 
@@ -452,11 +460,20 @@ class DataList extends MDNRComponent {
     }
     else {
       // выполняем запрос
-      return _mgr.find_rows_remote(scheme.mango_selector({
-        columns,
-        skip: startIndex ? startIndex - 1 : 0,
-        limit: increment,
-      })).then((data) => this._updateList(data, startIndex));
+      const selector = _mgr.mango_selector ?
+        _mgr.mango_selector(scheme, {
+          columns,
+          skip: startIndex ? startIndex - 1 : 0,
+          limit: increment,
+        }) :
+        scheme.mango_selector({
+          columns,
+          skip: startIndex ? startIndex - 1 : 0,
+          limit: increment,
+        });
+
+      return _mgr.find_rows_remote(selector)
+        .then((data) => this._updateList(data, startIndex));
     }
 
   };

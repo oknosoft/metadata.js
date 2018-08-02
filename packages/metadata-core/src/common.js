@@ -210,7 +210,7 @@ class MetaEngine {
       Object.defineProperty(CatUsers.prototype, 'partners_uids', {
         get: function () {
           const res = [];
-          this.acl_objs && this.acl_objs.forEach((row) => row.type === 'cat.partners' && res.push(row.acl_obj.ref));
+          this.acl_objs && this.acl_objs.forEach((row) => row.type === 'cat.partners' && row.acl_obj && res.push(row.acl_obj.ref));
           return res;
         },
       });
@@ -230,10 +230,16 @@ class MetaEngine {
     if (cat && cat.users) {
       user = cat.users.by_id(user_name);
       if (!user || user.empty()) {
-        cat.users.find_rows_remote({
-          _top: 1,
-          id: user_name,
-        });
+        if (superlogin) {
+          // если superlogin, всю онформацию о пользователе получаем из sl_users
+          user = superlogin.create_user();
+        }
+        else {
+          cat.users.find_rows_remote({
+            _top: 1,
+            id: user_name,
+          });
+        }
       }
     }
 

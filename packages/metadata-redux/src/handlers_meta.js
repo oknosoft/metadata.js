@@ -4,8 +4,8 @@
  * Активные действия и работа с данными происходит в actions
  */
 
-import {META_LOADED, PRM_CHANGE, OFFLINE} from './actions_base';
-import {DATA_LOADED, DATA_PAGE, DATA_ERROR, LOAD_START, NO_DATA, SYNC_DATA, SYNC_ERROR, SYNC_PAUSED, SYNC_RESUMED} from './actions_pouch';
+import {META_LOADED, PRM_CHANGE, OFFLINE, SECOND_INSTANCE} from './actions_base';
+import {DATA_LOADED, DATA_PAGE, DATA_ERROR, LOAD_START, AUTOLOGIN, NO_DATA, SYNC_DATA, SYNC_ERROR, SYNC_PAUSED, SYNC_RESUMED} from './actions_pouch';
 import {DEFINED, LOG_IN, TRY_LOG_IN, LOG_OUT, LOG_ERROR, reset_user} from './actions_auth';
 import {ADD, CHANGE} from './actions_obj';
 
@@ -17,6 +17,9 @@ export default {
 
   [PRM_CHANGE]: (state, action) => {
     const {name, value} = action.payload;
+    if(typeof $p !== 'object') {
+      return;
+    }
     const {wsql} = $p;
     if(Array.isArray(name)) {
       for (const {prm, value} of name) {
@@ -37,6 +40,8 @@ export default {
 
   [OFFLINE]: (state, action) => Object.assign({}, state, {offline: action.payload}),
 
+  [SECOND_INSTANCE]: (state, action) => Object.assign({}, state, {second_instance: true}),
+
   [DATA_LOADED]: (state, action) => {
     const payload = {data_loaded: true, fetch: false};
     if(action.payload == 'doc_ram') {
@@ -53,6 +58,8 @@ export default {
   [DATA_ERROR]: (state, action) => Object.assign({}, state, {err: action.payload, fetch: false}),
 
   [LOAD_START]: (state, action) => Object.assign({}, state, {data_empty: false, fetch: true}),
+
+  [AUTOLOGIN]: (state, action) => Object.assign({}, state, {autologin: true}),
 
   [NO_DATA]: (state, action) => Object.assign({}, state, {data_empty: true, first_run: true, fetch: false}),
 
@@ -80,17 +87,26 @@ export default {
   },
 
   [LOG_IN]: (state, action) => {
-    const user = Object.assign({}, state.user, {logged_in: action.payload ? true : false, try_log_in: false, log_error: ''});
+    const user = Object.assign({}, state.user, {
+      logged_in: action.payload ? true : false,
+      stop_log_in: action.payload ? false : true,
+      try_log_in: false,
+      log_error: ''
+    });
     return Object.assign({}, state, {user});
   },
 
   [TRY_LOG_IN]: (state, action) => {
-    const user = Object.assign({}, state.user, {try_log_in: true, log_error: ''});
+    const user = Object.assign({}, state.user, {
+      try_log_in: true,
+      stop_log_in: false,
+      log_error: ''
+    });
     return Object.assign({}, state, {user});
   },
 
   [LOG_OUT]: (state, action) => {
-    return reset_user(state);
+    return reset_user(state, true);
   },
 
   [LOG_ERROR]: (state, action) => {

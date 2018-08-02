@@ -2,7 +2,6 @@ import InterfaceObjs from './iface';
 import widgets from './dhtmlx-widgets';
 import events from './events';
 import mango_selection from './mango_selection';
-import geocoding from './geocoding';
 import ajax from './ajax';
 import jobprm from './jobprm';
 import oo from './object_proto';
@@ -24,7 +23,6 @@ export default {
 
     mango_selection(constructor);
 
-    geocoding(constructor);
   },
 
   /**

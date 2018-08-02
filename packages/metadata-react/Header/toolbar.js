@@ -1,5 +1,5 @@
-import withStyles from 'material-ui/styles/withStyles';
-import colors from 'material-ui/colors/common';
+import withStyles from '@material-ui/core/styles/withStyles';
+import colors from '@material-ui/core/colors/common';
 
 export default withStyles(theme => ({
   root: {
@@ -28,11 +28,11 @@ export default withStyles(theme => ({
   toolbar: {
     backgroundColor: theme.palette.primary[50],
   },
-  white: {
-    color: colors.white,
-  },
   title: {
     marginLeft: theme.spacing.unit * 3,
+  },
+  spaceLeft: {
+    marginLeft: theme.spacing.unit,
   },
   bold: {
     fontWeight: 'bold',

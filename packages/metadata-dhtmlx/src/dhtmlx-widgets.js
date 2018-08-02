@@ -194,44 +194,72 @@ export default ($p) => {
 		const mgr = this;
 		const {iface, record_log, wsql} = this._owner.$p;
 
-		function request() {
+    function request() {
 
-			if (typeof attr.custom_selection == 'function') {
-				return attr.custom_selection(attr);
+      if(typeof attr.custom_selection == 'function') {
+        return attr.custom_selection(attr);
+      }
+      else if(mgr.cachable == 'ram') {
 
-			} else if (mgr.cachable == 'ram') {
+        // если переопределён get_option_list, фильтруем
+        let option_list = Promise.resolve();
+        if(mgr.get_option_list !== mgr.constructor.prototype.get_option_list) {
+          const filter = {};
+          if(attr.action !== 'get_tree') {
+            Object.assign(filter, attr.filter);
+          }
+          filter._top = 1000;
+          option_list = mgr.get_option_list(filter)
+            .then((list) => {
+              if(attr.action === 'get_tree') {
+                const set = new Set();
+                list.forEach((v) => {
+                  for(const parent of mgr.get(v.value)._parents()) {
+                    set.add(parent);
+                  }
+                });
+                attr.filter.ref = {in: Array.from(set)};
+              }
+              else {
+                attr.selection.push({ref: {in: list.map((v) => v.value)}});
+              }
+            });
+        }
 
-				// запрос к alasql
-				if (attr.action == 'get_tree')
-					return wsql.alasql.promise(mgr.get_sql_struct(attr), [])
-						.then(iface.data_to_tree);
+        // запрос к alasql
+        if(attr.action == 'get_tree') {
+          return option_list.then(() => wsql.alasql.promise(mgr.get_sql_struct(attr), []))
+            .then(iface.data_to_tree);
+        }
+        else if(attr.action == 'get_selection') {
+          return option_list.then(() => wsql.alasql.promise(mgr.get_sql_struct(attr), []))
+            .then(data => iface.data_to_grid.call(mgr, data, attr));
+        }
+      }
+      else if(mgr.cachable.indexOf('doc') == 0) {
 
-				else if (attr.action == 'get_selection')
-					return wsql.alasql.promise(mgr.get_sql_struct(attr), [])
-						.then(data => iface.data_to_grid.call(mgr, data, attr));
+        // todo: запрос к pouchdb
+        if(attr.action == 'get_tree') {
+          return mgr.adapter.get_tree(mgr, attr);
+        }
+        else if(attr.action == 'get_selection') {
+          return mgr.adapter.get_selection(mgr, attr);
+        }
+      }
+      else {
 
-			} else if (mgr.cachable.indexOf('doc') == 0) {
+        // запрос к серверу по сети
+        if(attr.action == 'get_tree') {
+          return mgr.rest_tree(attr);
+        }
+        else if(attr.action == 'get_selection') {
+          return mgr.rest_selection(attr);
+        }
 
-				// todo: запрос к pouchdb
-				if (attr.action == 'get_tree')
-					return mgr.adapter.get_tree(mgr, attr);
+      }
+    }
 
-				else if (attr.action == 'get_selection')
-					return mgr.adapter.get_selection(mgr, attr);
-
-			} else {
-
-				// запрос к серверу по сети
-				if (attr.action == 'get_tree')
-					return mgr.rest_tree(attr);
-
-				else if (attr.action == 'get_selection')
-					return mgr.rest_selection(attr);
-
-			}
-		}
-
-		function to_grid(res) {
+    function to_grid(res) {
 
 			return new Promise(function (resolve, reject) {
 
@@ -1078,7 +1106,7 @@ $p.iface.ODropdownList = ODropdownList;
  * ### Динамическое дерево иерархического справочника
  *
  * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2016
- * 
+ *
  * @module  widgets
  * @submodule wdg_dyn_tree
  * @requires common
@@ -1101,15 +1129,11 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 	if(this.setCollapsedText)
 		this.setCollapsedText("Дерево");
 
-	if(!filter)
-		filter = {is_folder: true};
+  if(!filter) {
+    filter = {is_folder: true};
+  }
 
-	var tree = this.attachTreeView();
-
-	// tree.setImagePath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
-	// tree.setIconsPath(dhtmlx.image_path + 'dhxtree' + dhtmlx.skin_suffix());
-	// if($p.job_prm.device_type == "desktop")
-	// 	tree.enableKeyboardNavigation(true);
+  var tree = this.attachTreeView();
 
 	tree.__define({
 		/**
@@ -1144,6 +1168,7 @@ dhtmlXCellObject.prototype.attachDynTree = function(mgr, filter, callback) {
 
 	return tree;
 };
+
 /**
  * ### Визуальный компонент OCombo
  * Поле с выпадающим списком + функция выбора из списка
@@ -1910,8 +1935,8 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 
 	new dhtmlXPropertyGrid(_grid);
 
-	_grid.setInitWidthsP("40,60");
-	_grid.setDateFormat("%d.%m.%Y %H:%i");
+  _grid.setInitWidthsP(attr.widths || '40,60');
+  _grid.setDateFormat('%d.%m.%Y %H:%i');
 	_grid.init();
 	//t.enableAutoHeight(false,_cell._getHeight()-20,true);
 	_grid.setSizes();
@@ -2800,17 +2825,21 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 
 	});
 
-	function onkeydown(){
+  function onkeydown() {
 
-		if(input_filter_changed)
-			clearTimeout(input_filter_changed);
+    if(input_filter_changed) {
+      clearTimeout(input_filter_changed);
+    }
 
-		input_filter_changed = setTimeout(function () {
-      input_filter_changed && t._prev_input_filter != t.input_filter.value && t.call_event();
-		}, 500);
-	}
+    if(!t.disable_timer) {
+      input_filter_changed = setTimeout(function () {
+        input_filter_changed && t._prev_input_filter != t.input_filter.value && t.call_event();
+      }, 750);
+    }
 
-	// заготовка для адаптивного фильтра
+  }
+
+  // заготовка для адаптивного фильтра
 	t.toolbar.addText("div_filter", attr.pos, "");
 	t.div = t.toolbar.objPull[t.toolbar.idPrefix + "div_filter"];
 	attr.pos++;
@@ -2904,14 +2933,16 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 
 		t.toolbar.addSpacer("input_filter");
 
-	}else if(t.input_date_till)
-		t.toolbar.addSpacer("input_date_till");
-
-	else
-		t.toolbar.addSpacer("div_filter");
-
+	}
+  else if(t.input_date_till) {
+    t.toolbar.addSpacer("input_date_till");
+  }
+  else {
+    t.toolbar.addSpacer('div_filter');
+  }
 
 };
+
 $p.iface.Toolbar_filter.prototype.__define({
 
 	get_filter: {
@@ -2943,19 +2974,18 @@ $p.iface.Toolbar_filter.prototype.__define({
 
 	add_filter: {
 		value: function (elm) {
-
 			var pos = this.toolbar.getPosition("input_filter") - 2,
 				id = dhx4.newId(),
 				width = (this.toolbar.getWidth("input_filter") / 2).round(0);
-
 			this.toolbar.setWidth("input_filter", width);
 			this.toolbar.addText("lbl_"+id, pos, elm.text || "");
 			pos++;
 			this.toolbar.addInput("input_"+id, pos, "", width);
-
 			this.custom_selection[elm.name] = this.toolbar.getInput("input_"+id);
+			return this;
 		}
 	}
+
 });
 
 /**
@@ -4248,19 +4278,21 @@ DataProcessorsManager.prototype.form_rep = function(pwnd, attr) {
  */
 DataManager.prototype.form_selection = function(pwnd, attr){
 
-	if(!pwnd)
-		pwnd = attr && attr.pwnd ? attr.pwnd : {};
+  if(!pwnd) {
+    pwnd = attr && attr.pwnd ? attr.pwnd : {};
+  }
 
-	if(!attr && !(pwnd instanceof dhtmlXCellObject)){
+  if(!attr && !(pwnd instanceof dhtmlXCellObject)){
 		attr = pwnd;
 		pwnd = {};
 	}
 
-	if(!attr)
-		attr = {};
+  if(!attr) {
+    attr = {};
+  }
 
 
-	var _mgr = this,
+  var _mgr = this,
 		_meta = attr.metadata || _mgr.metadata(),
 		has_tree = _meta["hierarchical"] && !(_mgr instanceof ChartOfAccountManager),
 		wnd, s_col = 0, a_direction = "asc",
@@ -4460,34 +4492,71 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			cell_tree.setWidth('220');
 			cell_tree.hideHeader();
 
-			tree = wnd.elmnts.tree = cell_tree.attachDynTree(_mgr, null, function(){
-				setTimeout(function(){
-					if(grid && grid.reload)
-						grid.reload();
-				}, 20);
-			});
-			tree.attachEvent("onSelect", function(id, mode){	// довешиваем обработчик на дерево
-				if(!mode)
-					return;
-				if(this.do_not_reload)
-					delete this.do_not_reload;
-				else
-					setTimeout(function(){
-						if(grid && grid.reload)
-							grid.reload();
-					}, 20);
-			});
-			tree.attachEvent("onDblClick", function(id){
+			const filter = {is_folder: true};
+      const {selection} = get_filter(0, 1000);
+      previous_filter = {};
+      if(Array.isArray(selection)) {
+        const set = new Set();
+        for (const sel of selection) {
+          for (let key in sel) {
+            if(key === 'ref') {
+              const cmp = sel[key].in ? 'in' : (sel[key].inh ? 'inh' : '')
+              if(cmp) {
+                sel[key][cmp].forEach((v) => {
+                  const o = _mgr.get(v);
+                  if(!o || o.empty()) {
+                    return;
+                  }
+                  o.is_folder && set.add(o);
+                  for (const elm of o._parents()) {
+                    set.add(elm);
+                  }
+                  for (const elm of o._children(true)) {
+                    set.add(elm);
+                  }
+                });
+              }
+            }
+          }
+        }
+        if(set.size) {
+          filter.ref = {in: Array.from(set)};
+        }
+      }
+      tree = wnd.elmnts.tree = cell_tree.attachDynTree(_mgr, filter, function(){
+        setTimeout(function () {
+          if(grid && grid.reload) {
+            grid.reload();
+          }
+        }, 20);
+      });
+      tree.attachEvent('onSelect', function (id, mode) {	// довешиваем обработчик на дерево
+        if(!mode) {
+          return;
+        }
+        if(this.do_not_reload) {
+          delete this.do_not_reload;
+        }
+        else {
+          setTimeout(function () {
+            if(grid && grid.reload) {
+              grid.reload();
+            }
+          }, 20);
+        }
+      });
+      tree.attachEvent("onDblClick", function(id){
 				select(id);
 			});
-
-		}else{
-			cell_grid = wnd;
-			setTimeout(function(){
-				if(grid && grid.reload)
-					grid.reload();
-			}, 20);
 		}
+		else{
+			cell_grid = wnd;
+      setTimeout(function () {
+        if(grid && grid.reload) {
+          grid.reload();
+        }
+      }, 20);
+    }
 
 		// настройка грида
 		grid = wnd.elmnts.grid = cell_grid.attachGrid();
@@ -4498,49 +4567,56 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 		grid.attachEvent("onXLE", function(){cell_grid.progressOff(); });
 		grid.attachEvent("onXLS", function(){cell_grid.progressOn(); });
 		grid.attachEvent("onDynXLS", function(start,count){
-			var filter = get_filter(start,count);
-			if(!filter)
-				return;
-			_mgr.sync_grid(filter, grid);
-			return false;
-		});
+      var filter = get_filter(start, count);
+      if(!filter) {
+        return;
+      }
+      _mgr.sync_grid(filter, grid);
+      return false;
+    });
 		grid.attachEvent("onRowDblClicked", function(rId, cInd){
-			if(tree && tree.items[rId]){
-				tree.selectItem(rId);
-				var pid = tree.getParentId(rId);
-				if(pid && pid != $p.utils.blank.guid)
-					tree.openItem(pid);
-			}else
-				select(rId);
-		});
+      if(tree && tree.items[rId]) {
+        tree.selectItem(rId);
+        var pid = tree.getParentId(rId);
+        if(pid && pid != $p.utils.blank.guid) {
+          tree.openItem(pid);
+        }
+      }
+      else {
+        select(rId);
+      }
+    });
 
-		if(attr.smart_rendering){
-			grid.enableSmartRendering(true, 50);
-		}else{
-			grid.setPagingWTMode(true,true,true,[20,30,60]);
-			grid.enablePaging(true, 30, 8, _mgr.class_name.replace(".", "_") + "_select_recinfoArea");
-			grid.setPagingSkin("toolbar", dhtmlx.skin);
-		}
+    if(attr.smart_rendering) {
+      grid.enableSmartRendering(true, 50);
+    }
+    else {
+      grid.setPagingWTMode(true, true, true, [20, 30, 60]);
+      grid.enablePaging(true, 30, 8, _mgr.class_name.replace('.', '_') + '_select_recinfoArea');
+      grid.setPagingSkin('toolbar', dhtmlx.skin);
+    }
 
-		if($p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == "oper")
-			grid.enableMultiselect(true);
+    if($p.iface.docs && $p.iface.docs.getViewName && $p.iface.docs.getViewName() == 'oper') {
+      grid.enableMultiselect(true);
+    }
 
-		// эту функцию будем вызывать снаружи, чтобы перечитать данные
+    // эту функцию будем вызывать снаружи, чтобы перечитать данные
 		grid.reload = function(){
 
 			var filter = get_filter();
-			if(!filter)
-				return Promise.resolve();
+      if(!filter) {
+        return Promise.resolve();
+      }
 
-			cell_grid.progressOn();
+      cell_grid.progressOn();
 			grid.clearAll();
 
 			return _mgr.sync_grid(filter, grid)
 				.then(function(xml){
 					if(typeof xml === "object"){
 						$p.msg.check_soap_result(xml);
-
-					}else if(!grid_inited){
+					}
+					else if(!grid_inited){
 						if(filter.initial_value){
 							var xpos = xml.indexOf("set_parent"),
 								xpos2 = xml.indexOf("'>", xpos),
@@ -4561,17 +4637,20 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 						grid.enableAutoWidth(true, 1200, 600);
 						grid.setSizes();
 						grid_inited = true;
-						if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == "desktop")
-							wnd.elmnts.filter.input_filter.focus();
+            if(wnd.elmnts.filter.input_filter && $p.job_prm.device_type == 'desktop') {
+              wnd.elmnts.filter.input_filter.focus();
+            }
 
-						if(attr.on_grid_inited)
-							attr.on_grid_inited();
-					}
+            if(attr.on_grid_inited) {
+              attr.on_grid_inited();
+            }
+          }
 
-					if (a_direction && grid_inited)
-						grid.setSortImgState(true, s_col, a_direction);
+          if(a_direction && grid_inited) {
+            grid.setSortImgState(true, s_col, a_direction);
+          }
 
-					cell_grid.progressOff();
+          cell_grid.progressOff();
 
 				});
 		};
@@ -4788,35 +4867,41 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 	 * @return {*|{value, enumerable}}
 	 */
 	function get_filter(start, count){
-		var filter = wnd.elmnts.filter.get_filter()
+	  const {grid, tree} = wnd.elmnts;
+    const filter = wnd.elmnts.filter.get_filter()
 				._mixin({
 					action: "get_selection",
 					metadata: _meta,
 					class_name: _mgr.class_name,
-					order_by: wnd.elmnts.grid.columnIds[s_col] || s_col,
+					order_by: (grid && grid.columnIds[s_col]) || s_col,
 					direction: a_direction,
-					start: start || ((wnd.elmnts.grid.currentPage || 1)-1)*wnd.elmnts.grid.rowsBufferOutSize,
-					count: count || wnd.elmnts.grid.rowsBufferOutSize,
+          start: start || (grid ? ((grid.currentPage || 1) - 1) * grid.rowsBufferOutSize : 0),
+					count: count || (grid ? grid.rowsBufferOutSize : 50),
 					get_header: (previous_filter.get_header == undefined)
 				}),
-			tparent = has_tree ? wnd.elmnts.tree.getSelectedId() : null;
+			tparent = (has_tree && tree) ? tree.getSelectedId() : null;
 
-		if(attr.smart_rendering)
-			filter.smart_rendering = true;
+    if(attr.smart_rendering) {
+      filter.smart_rendering = true;
+    }
 
-		if(attr.date_from && !filter.date_from)
-			filter.date_from = attr.date_from;
+    if(attr.date_from && !filter.date_from) {
+      filter.date_from = attr.date_from;
+    }
 
-		if(attr.date_till && !filter.date_till)
-			filter.date_till = attr.date_till;
+    if(attr.date_till && !filter.date_till) {
+      filter.date_till = attr.date_till;
+    }
 
-		if(attr.initial_value)
-			filter.initial_value = attr.initial_value;
+    if(attr.initial_value) {
+      filter.initial_value = attr.initial_value;
+    }
 
-		if(attr.custom_selection)
-			filter.custom_selection = attr.custom_selection;
+    if(attr.custom_selection) {
+      filter.custom_selection = attr.custom_selection;
+    }
 
-		if(attr.selection){
+    if(attr.selection){
 			if(!filter.selection)
 				filter.selection = attr.selection;
 
@@ -4839,15 +4924,17 @@ DataManager.prototype.form_selection = function(pwnd, attr){
 			//}
 		}
 
-		if(attr.owner && !filter.owner)
-			filter.owner = attr.owner;
+    if(attr.owner && !filter.owner) {
+      filter.owner = attr.owner;
+    }
 
-		filter.parent = ((tparent  || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
-		if(has_tree && !filter.parent)
-			filter.parent = $p.utils.blank.guid;
+    filter.parent = ((tparent  || attr.parent) && !filter.filter) ? (tparent || attr.parent) : null;
+    if(has_tree && !filter.parent) {
+      filter.parent = $p.utils.blank.guid;
+    }
 
 
-		for(var f in filter){
+    for(var f in filter){
 			if(previous_filter[f] != filter[f]){
 				previous_filter = filter;
 				return filter;
@@ -5001,14 +5088,16 @@ function SpreadsheetDocument(attr, events) {
 
 	this._attr = {
 		orientation: "portrait",
-		title: "",
-		content: document.createElement("DIV")
+    title: "",
+    content: document.createElement("DIV"),
+    head: document.createElement("HEAD"),
+    blank: "",
 	};
 
-	if(attr && typeof attr == "string"){
+	if(attr && typeof attr === "string"){
 		this.content = attr;
 	}
-	else if(typeof attr == "object"){
+	else if(typeof attr === "object"){
 		this._mixin(attr);
 	}
 	attr = null;
@@ -5024,28 +5113,57 @@ function SpreadsheetDocument(attr, events) {
     fill_template: null,
 
   };
-  if(events && typeof events == "object"){
+  if(events && typeof events === "object"){
     this._events._mixin(events);
   }
 }
 SpreadsheetDocument.prototype.__define({
 
+  clear_head: {
+    value() {
+      while (this._attr.head.firstChild) {
+        this._attr.head.removeChild(this._attr.head.firstChild);
+      }
+    }
+  },
+
 	clear: {
-		value: function () {
+		value() {
 			while (this._attr.content.firstChild) {
 				this._attr.content.removeChild(this._attr.content.firstChild);
 			}
 		}
-	},
+  },
+
+  /**
+	 * Добавляем элементы в заголовок
+	 */
+  put_head: {
+    value(tag, attr) {
+      let elm;
+      if(tag instanceof HTMLElement){
+        elm = document.createElement(tag.tagName);
+        elm.innerHTML = tag.innerHTML;
+        if(!attr)
+          attr = tag.attributes;
+      }else{
+        elm = document.createElement(tag);
+      }
+      if(attr){
+        Object.keys(attr).forEach(function (key) {
+          elm.setAttribute(attr[key].name || key, attr[key].value || attr[key]);
+        });
+      }
+      this._attr.head.appendChild(elm);
+    }
+  },
 
 	/**
 	 * Выводит область ячеек в табличный документ
 	 */
 	put: {
-		value: function (range, attr) {
-
-			var elm;
-
+		value(range, attr) {
+			let elm;
 			if(range instanceof HTMLElement){
 				elm = document.createElement(range.tagName);
 				elm.innerHTML = range.innerHTML;
@@ -5055,15 +5173,13 @@ SpreadsheetDocument.prototype.__define({
 				elm = document.createElement("DIV");
 				elm.innerHTML = range;
 			}
-
 			if(attr){
 				Object.keys(attr).forEach(function (key) {
-					if(key == "id" || attr[key].name == "id")
-						return;
+					//if(key == "id" || attr[key].name == "id")
+					//	return;
 					elm.setAttribute(attr[key].name || key, attr[key].value || attr[key]);
 				});
 			}
-
 			this._attr.content.appendChild(elm);
 		}
 	},
@@ -5075,7 +5191,7 @@ SpreadsheetDocument.prototype.__define({
    * @param data {Object}
    */
   append: {
-    value: function (template, data) {
+    value(template, data) {
 
       if(this._events.fill_template){
         data = this._events.fill_template(template, data);
@@ -5099,30 +5215,30 @@ SpreadsheetDocument.prototype.__define({
   },
 
   draw_table: {
-    value: function (template, data) {
+    value(template, data) {
 
-      var tabular = template.attributes.tabular && template.attributes.tabular.value;
+      const tabular = template.attributes.tabular && template.attributes.tabular.value;
       if(!tabular){
         console.error('Не указана табличная часть в шаблоне ' + template.id);
         return;
       }
-      var rows = data[tabular];
+      const rows = data[tabular];
       if(!Array.isArray(rows)){
         console.error('В данных отсутствует массив ' + tabular);
         return;
       }
 
       // контейнер таблицы
-      var cont = document.createElement("div");
+      const cont = document.createElement('div');
 
       // заполняем контейнер по шаблону
       cont.innerHTML = template.innerHTML;
 
       // собственно, таблица
-      var table = cont.querySelector("table");
+      const table = cont.querySelector('table');
 
       // шаблон строки таблицы
-      var tpl_row = table.querySelector("[name=row]");
+      const tpl_row = table.querySelector('[name=row]');
 
       // удаляем пустую строку из итоговой таблицы
       if(tpl_row){
@@ -5134,16 +5250,14 @@ SpreadsheetDocument.prototype.__define({
       }
 
       // находим все шаблоны группировок
-      var tpl_grouping = table.querySelector("tbody").querySelectorAll("tr");
+      const tpl_grouping = table.querySelector('tbody').querySelectorAll('tr');
 
       // удаляем шаблоны группировок из итоговой таблицы
-      tpl_grouping.forEach(function (elm) {
-        elm.parentElement.removeChild(elm);
-      });
+      tpl_grouping.forEach((elm) => elm.parentElement.removeChild(elm));
 
 
       // подвал таблицы
-      var tfoot = table.querySelector("tfoot");
+      const tfoot = table.querySelector("tfoot");
       if(tfoot){
         tfoot.parentElement.removeChild(tfoot);
         tfoot.innerHTML = dhx4.template(tfoot.innerHTML, data);
@@ -5153,27 +5267,25 @@ SpreadsheetDocument.prototype.__define({
       // есть ли итоги
 
       function put_rows(rows) {
-        rows.forEach(function(row) {
-          var table_row = document.createElement("TR");
+        rows.forEach((row) => {
+          const table_row = document.createElement("TR");
           table_row.innerHTML = dhx4.template(tpl_row.innerHTML, row);
           table.appendChild(table_row);
         });
       }
 
       // есть ли группировка + цикл по табчасти
-      var grouping = data._grouping && data._grouping.find_rows({use: true, parent: tabular});
-      if(grouping && grouping.length == 1 && tpl_grouping.length){
+      const grouping = data._grouping && data._grouping.find_rows({use: true, parent: tabular});
+      if(grouping && grouping.length === 1 && tpl_grouping.length){
 
-        var gfield = grouping[0].field;
+        const gfield = grouping[0].field;
 
         $p.wsql.alasql("select distinct `"+gfield+"` from ? order by `"+gfield+"`", [rows])
-          .forEach(function (group) {
-            var table_row = document.createElement("TR");
+          .forEach((group) => {
+            const table_row = document.createElement("TR");
             table_row.innerHTML = dhx4.template(tpl_grouping[0].innerHTML, group);
             table.appendChild(table_row);
-            put_rows(rows.filter(function (row) {
-              return row[gfield] == group[gfield];
-            }));
+            put_rows(rows.filter((row) => row[gfield] == group[gfield]));
           })
       }
       else{
@@ -5186,23 +5298,55 @@ SpreadsheetDocument.prototype.__define({
   },
 
   draw_rows: {
-    value: function (template, data) {
+    value(template, data) {
 
-      var tabular = template.attributes.tabular && template.attributes.tabular.value;
+      const tabular = template.attributes.tabular && template.attributes.tabular.value;
       if(!tabular){
         console.error('Не указана табличная часть в шаблоне ' + template.id);
         return;
       }
-      var rows = data[tabular];
+      const rows = data[tabular];
       if(!Array.isArray(rows)){
         console.error('В данных отсутствует массив ' + tabular);
         return;
       }
 
       // цикл по табчасти - выводим строку
-      for(var i = 0; i < rows.length; i++){
-        this.put(dhx4.template(template.innerHTML.replace(/<!---/g, '').replace(/--->/g, ''), rows[i]), template.attributes);
+      for(const row of rows){
+        this.put(dhx4.template(template.innerHTML.replace(/<!---/g, '').replace(/--->/g, ''), row), template.attributes);
       }
+    }
+  },
+
+  /**
+   * Копирование элемента
+   */
+  copy_element: {
+    value(elem) {
+      const elm = document.createElement(elem.tagName);
+      elm.innerHTML = elem.innerHTML;
+      const attr = elem.attributes;
+      Object.keys(attr).forEach((key) => elm.setAttribute(attr[key].name || key, attr[key].value || attr[key]));
+      return elm;
+    }
+  },
+
+  /**
+   * Возвращает objectURL шаблона пустой страницы
+   */
+  blankURL: {
+    get: function () {
+      if(!this._blob) {
+        if(this.blank) {
+          this._blob = new Blob([this.blank], {type: 'text/html'});
+        }
+        else {
+          this._blob = $p.injected_data['view_blank.html'] instanceof Blob ?
+            $p.injected_data['view_blank.html'] :
+            new Blob([$p.injected_data['view_blank.html']], {type: 'text/html'});
+        }
+      }
+      return URL.createObjectURL(this._blob);
     }
   },
 
@@ -5210,39 +5354,44 @@ SpreadsheetDocument.prototype.__define({
    * Показывает отчет в отдельном окне
    */
   print: {
-    value: function () {
+    value() {
 
       try{
 
-        // создаём blob из шаблона пустой страницы
-        if(!($p.injected_data['view_blank.html'] instanceof Blob)){
-          $p.injected_data['view_blank.html'] = new Blob([$p.injected_data['view_blank.html']], {type: 'text/html'});
-        }
-
-        var doc = this,
-          url = window.URL.createObjectURL($p.injected_data['view_blank.html']),
-          wnd_print = window.open(
-          url, "_blank", "fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes");
+        const doc = this,
+          url = this.blankURL,
+          wnd_print = window.open(url, '_blank',
+            'fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes');
 
         if (wnd_print.outerWidth < screen.availWidth || wnd_print.outerHeight < screen.availHeight){
           wnd_print.moveTo(0,0);
           wnd_print.resizeTo(screen.availWidth, screen.availHeight);
         }
 
-        wnd_print.onload = function(e) {
-          window.URL.revokeObjectURL(url);
-          wnd_print.document.body.appendChild(doc.content);
+        wnd_print.onload = function() {
+          URL.revokeObjectURL(url);
+          // копируем элементы из head
+          for (let i = 0; i < doc.head.children.length; i++) {
+            wnd_print.document.head.appendChild(doc.copy_element(doc.head.children[i]));
+          }
+          // копируем элементы из content
+          if (doc.innerContent) {
+            for (let i = 0; i < doc.content.children.length; i++) {
+              wnd_print.document.body.appendChild(doc.copy_element(doc.content.children[i]));
+            }
+          } else {
+            wnd_print.document.body.appendChild(doc.content);
+          }
           if(doc.title){
             wnd_print.document.title = doc.title;
           }
-          wnd_print.print();
-          doc = null;
+          setTimeout(() => wnd_print.print(), 200);
         };
 
         return wnd_print;
       }
       catch(err){
-        window.URL.revokeObjectURL && window.URL.revokeObjectURL(url);
+        URL.revokeObjectURL(url);
         $p.msg.show_msg({
           title: $p.msg.bld_title,
           type: "alert-error",
@@ -5253,31 +5402,119 @@ SpreadsheetDocument.prototype.__define({
     }
   },
 
+  /**
+   * Сохраняет печатную форму в файл
+   */
+  save_as: {
+    value(filename) {
+
+      try{
+        const doc = this,
+          url = this.blankURL,
+          wnd_print = window.open(url, '_blank',
+            'fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes');
+
+        if (wnd_print.outerWidth < screen.availWidth || wnd_print.outerHeight < screen.availHeight){
+          wnd_print.moveTo(0,0);
+          wnd_print.resizeTo(screen.availWidth, screen.availHeight);
+        }
+
+        wnd_print.onload = function() {
+          URL.revokeObjectURL(url);
+          // копируем элементы из head
+          for (let i = 0; i < doc.head.children.length; i++) {
+            wnd_print.document.head.appendChild(doc.copy_element(doc.head.children[i]));
+          }
+          // копируем элементы из content
+          if (doc.innerContent) {
+            for (let i = 0; i < doc.content.children.length; i++) {
+              wnd_print.document.body.appendChild(doc.copy_element(doc.content.children[i]));
+            }
+          } else {
+            wnd_print.document.body.appendChild(doc.content);
+          }
+          if(doc.title){
+            wnd_print.document.title = doc.title;
+          }
+
+          // сохраняем содержимое документа
+          setTimeout(() => {
+            const blob = new Blob([wnd_print.document.firstElementChild.outerHTML], {type: 'text/html'});
+            if(navigator.msSaveOrOpenBlob) {
+              navigator.msSaveBlob(blob, filename);
+            }
+            else {
+              const elem = document.createElement('a');
+              elem.href = URL.createObjectURL(blob);
+              elem.download = filename;
+              document.body.appendChild(elem);
+              elem.click();
+              document.body.removeChild(elem);
+            }
+            wnd_print.close();
+          }, 200);
+
+        };
+
+        return null;
+      }
+      catch(err){
+        URL.revokeObjectURL(url);
+        $p.msg.show_msg({
+          title: $p.msg.bld_title,
+          type: "alert-error",
+          text: err.message.match("outerWidth") ?
+            "Ошибка сохранения документа" : err.message
+        });
+      }
+    }
+  },
+
+  blank: {
+    get: function () {
+      return this._attr.blank
+    },
+    set: function (v) {
+      this._attr.blank = v;
+    }
+  },
+
+  head: {
+    get: function () {
+      return this._attr.head
+    },
+    set: function (v) {
+      this.clear_head();
+      if(typeof v === 'string') {
+        this._attr.head.innerHTML = v;
+      }
+      else if(v instanceof HTMLElement) {
+        this._attr.head.innerHTML = v.innerHTML;
+      }
+    }
+  },
+
 	content: {
 		get: function () {
 			return this._attr.content
 		},
-		set: function (v) {
-
-			this.clear();
-
-			if(typeof v == "string")
-				this._attr.content.innerHTML = v;
-
-			else if(v instanceof HTMLElement)
-				this._attr.content.innerHTML = v.innerHTML;
-
-		}
-	},
+    set: function (v) {
+      this.clear();
+      if(typeof v === 'string') {
+        this._attr.content.innerHTML = v;
+      }
+      else if(v instanceof HTMLElement) {
+        this._attr.content.innerHTML = v.innerHTML;
+      }
+    }
+  },
 
 	title: {
 		get: function () {
 			return this._attr.title
 		},
 		set: function (v) {
-
 			this._attr.title = v;
-
 		}
 	}
 
@@ -5300,11 +5537,8 @@ $p.SpreadsheetDocument = SpreadsheetDocument;
  */
 function HandsontableDocument(container, attr) {
 
-	var init = function () {
-
-		if(this._then)
-			this._then(this);
-
+	const init = function () {
+		ithis._then && this._then(this);
 	}.bind(this);
 
 	this._online = (attr && attr.allow_offline) || (navigator.onLine && $p.wsql.pouch.authorized);
@@ -5342,29 +5576,20 @@ function HandsontableDocument(container, attr) {
 		}
 	};
 
-
 	// отложенная загрузка handsontable и зависимостей
-	if(typeof Handsontable != "function" && this._online){
-
-		$p.load_script("https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.4.0/pikaday.min.js","script")
-			.then(function () {
-				return $p.load_script("https://cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/numbro.min.js","script")
-			})
-			.then(function () {
-				return $p.load_script("https://cdn.jsdelivr.net/g/zeroclipboard,handsontable@0.26(handsontable.min.js)","script")
-			})
-			.then(function () {
-				return Promise.all([
-					$p.load_script("https://cdn.jsdelivr.net/handsontable/0.26/handsontable.min.css","link"),
-					$p.load_script("https://cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/languages/ru-RU.min.js","script")
-				]);
-			})
-			.then(init);
-
-	}else{
+	if(typeof Handsontable !== "function" && this._online){
+    $p.load_script('https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.4.0/pikaday.min.js', 'script')
+      .then(() => $p.load_script('https://cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/numbro.min.js', 'script'))
+      .then(() => $p.load_script('https://cdn.jsdelivr.net/g/zeroclipboard,handsontable@0.26(handsontable.min.js)', 'script'))
+      .then(() => Promise.all([
+        $p.load_script('https://cdn.jsdelivr.net/handsontable/0.26/handsontable.min.css', 'link'),
+        $p.load_script('https://cdnjs.cloudflare.com/ajax/libs/numbro/1.9.2/languages/ru-RU.min.js', 'script')
+      ]))
+      .then(init);
+	}
+	else{
 		setTimeout(init);
 	}
-
 }
 
 /**

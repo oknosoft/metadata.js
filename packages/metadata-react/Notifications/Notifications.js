@@ -5,17 +5,18 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Drawer from 'material-ui/Drawer';
-import AppBar from 'material-ui/AppBar';
-import Toolbar from 'material-ui/Toolbar';
-import Typography from 'material-ui/Typography';
-import IconButton from 'material-ui/IconButton';
-import NotificationsIcon from 'material-ui-icons/Notifications';
-import NotificationsIconActive from 'material-ui-icons/NotificationsActive';
-import NotificationsIconNone from 'material-ui-icons/NotificationsNone';
-import Menu, {MenuItem} from 'material-ui/Menu';
-import MoreVertIcon from 'material-ui-icons/MoreVert';
-import Select from 'material-ui/Select';
+import Drawer from '@material-ui/core/Drawer';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
+import NotificationsIcon from '@material-ui/icons/Notifications';
+import NotificationsIconActive from '@material-ui/icons/NotificationsActive';
+import NotificationsIconNone from '@material-ui/icons/NotificationsNone';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+import Select from '@material-ui/core/Select';
 import classnames from 'classnames';
 
 import {withIface} from 'metadata-redux';
@@ -72,7 +73,7 @@ class Notifications extends Component {
   render() {
 
     const {props, state, handleClose, handleToggle} = this;
-    const {classes} = props;
+    const {classes, barColor} = props;
     const notifications_tooltip = 'Нет непрочитанных сообщений';
     const filter = props.filter || [];
     if(!filter.length || filter[0] === ''){
@@ -81,14 +82,14 @@ class Notifications extends Component {
 
     return [
       <IconButton key="noti_button" title={notifications_tooltip} onClick={handleToggle}>
-        <NotificationsIconNone className={classes.white}/>
+        <NotificationsIconNone color="inherit"/>
       </IconButton>,
 
       props.open && <Drawer key="noti_drawer" anchor="right" open={props.open} onClose={handleClose} classes={{paper: classes.ndrawer}}>
-        <AppBar position="static">
+        <AppBar position="static" color={props.barColor}>
           <Toolbar disableGutters>
-            <Typography variant="title" color="inherit" className={classnames(classes.title, classes.flex)}>Оповещения </Typography>
-            <IconButton onClick={handleClose}><NotificationsIconNone className={classes.white}/></IconButton>
+            <Typography variant="title" color="textSecondary" className={classnames(classes.title, classes.flex)}>Оповещения </Typography>
+            <IconButton onClick={handleClose}><NotificationsIconNone color="inherit"/></IconButton>
           </Toolbar>
         </AppBar>
 

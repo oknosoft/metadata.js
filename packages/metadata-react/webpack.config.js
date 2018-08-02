@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const path = require('path');
 const package_data = require('./package.json');
 const RELEASE = true;
@@ -10,10 +11,6 @@ function getPlugins() {
 
   if(RELEASE) {
     pluginsBase.push(new webpack.optimize.AggressiveMergingPlugin());
-    pluginsBase.push(new webpack.optimize.UglifyJsPlugin({
-      include: /\.min\.js$/,
-      compress: {warnings: false}
-    }));
   }
   return pluginsBase;
 }
@@ -46,7 +43,10 @@ function getExternals() {
     'metadata-react/DataField/DataCell': true,
     'metadata-react/DataField/FieldTypeCell': true,
     'metadata-react/DataField/FieldPathCell': true,
+    'metadata-react/DataField/FieldPropsCell': true,
+    'metadata-external/react-data-grid': true,
     'metadata-external/react-data-grid.min': true,
+    'metadata-external/react-data-grid-addons': true,
     'metadata-external/react-data-grid-addons.min': true,
   };
   for (const key in package_data.dependencies) {
@@ -79,6 +79,14 @@ const config = {
     ]
   },
   plugins: getPlugins(),
+  optimization: {
+    minimizer: [new UglifyJSPlugin({
+      uglifyOptions: {
+        include: /\.min\.js$/,
+        compress: { warnings: false, }
+      }
+    })]
+  },
 };
 
 

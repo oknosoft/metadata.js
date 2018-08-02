@@ -1,18 +1,19 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Tabs, {Tab} from 'material-ui/Tabs';
-import Paper from 'material-ui/Paper';
-import Button from 'material-ui/Button';
-import Divider from 'material-ui/Divider';
-import {FormGroup} from 'material-ui/Form';
-import {DialogActions} from 'material-ui/Dialog';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Paper from '@material-ui/core/Paper';
+import Button from '@material-ui/core/Button';
+import Divider from '@material-ui/core/Divider';
+import FormGroup from '@material-ui/core/FormGroup';
+import DialogActions from '@material-ui/core/DialogActions';
 import Helmet from 'react-helmet';
-import Grid from 'material-ui/Grid';
+import Grid from '@material-ui/core/Grid';
 import DataField from '../DataField';
-import Typography from 'material-ui/Typography';
-import TextField from 'material-ui/TextField';
-import {blue, red} from 'material-ui/colors';
+import Typography from '@material-ui/core/Typography';
+import TextField from '@material-ui/core/TextField';
+import {blue, red} from '@material-ui/core/colors';
 import {FacebookIcon, GitHubIcon, GoogleIcon, YandexIcon} from './assets/icons';
 
 import withStyles from '../styles/paper600';
@@ -26,6 +27,10 @@ class UserObj extends Component {
     this.state = {
       index: 0
     };
+    const {profile} = $p.superlogin.getSession();
+    if(profile && props._obj && props._obj.subscription !== !!profile.subscription) {
+      props._obj._obj.subscription = !!profile.subscription;
+    }
   }
 
   componentDidMount() {
@@ -68,10 +73,10 @@ class UserObj extends Component {
 
         {state.index === 0 &&
         <FormGroup>
-          <DataField _obj={_obj} _fld="id"/>
-          <DataField _obj={_obj} _fld="name"/>
-          <DataField _obj={_obj} _fld="sex"/>
-          <DataField _obj={_obj} _fld="email"/>
+          <DataField _obj={_obj} _fld="id" read_only/>
+          <DataField _obj={_obj} _fld="name" label="ФИО пользователя" read_only/>
+          <DataField _obj={_obj} _fld="email_addr" read_only/>
+          <DataField _obj={_obj} _fld="subscription"/>
           <DialogActions>
             <Button color="primary" size="small" className={classes.button} onClick={handleLogOut}>Выйти</Button>
           </DialogActions>

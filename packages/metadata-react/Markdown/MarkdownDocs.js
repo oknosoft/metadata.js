@@ -4,9 +4,11 @@ import React from 'react';
 import kebabCase from 'lodash/kebabCase';
 import warning from 'warning';
 import Helmet from 'react-helmet';
-import {withStyles} from 'material-ui/styles';
+import withStyles from '@material-ui/core/styles/withStyles';
 import {withIface} from 'metadata-redux';
-//import Button from 'material-ui/Button';
+import Typography from '@material-ui/core/Typography';
+
+
 import AppContent from '../App/AppContent';
 import MarkdownElement from './MarkdownElement';
 //import Demo from 'docs/src/modules/components/Demo';
@@ -23,23 +25,33 @@ const styles = {
   },
 };
 
+
 const demoRegexp = /^demo='(.*)'$/;
 
 type Props = {
   classes: Object,
   demos?: { [key: string]: any },
-markdown: string,
+  markdown: string,
   // You can define the direction location of the markdown file.
   // Otherwise, we try to determine it with an heuristic.
   sourceLocation?: string,
   // корень расположения исходных текстов, например, 'https://github.com/oknosoft/flowcon/tree/master'
   sourceCodeRootUrl?: string,
+  // заголовок в табе браузера
+  title?: string,
   // суффикс проекта в заголовке
   subtitle?: string,
+  // заголовок статьи
+  h1?: string,
+  // html meta description
+  descr?: string,
+  // показывать кнопки share соцсетей
+  footer?: bool,
 };
 
 function MarkdownDocs(props: Props) {
-  const {classes, demos, markdown, subtitle, sourceLocation: sourceLocationProp, title, handleIfaceState} = props;
+  const {classes, demos, markdown, subtitle, sourceLocation: sourceLocationProp, title, htitle, h1,
+    descr, canonical, footer, handleIfaceState} = props;
   const contents = getContents(markdown);
   const headers = getHeaders(markdown);
 
@@ -62,7 +74,7 @@ function MarkdownDocs(props: Props) {
     }
   }
 
-  const ltitle = `${getTitle(markdown)}${subtitle ? ' - ' + subtitle : ''}`;
+  const ltitle = htitle || `${getTitle(markdown)}${subtitle ? ' - ' + subtitle : ''}`;
   if (title != ltitle) {
     handleIfaceState({
       component: '',
@@ -73,13 +85,20 @@ function MarkdownDocs(props: Props) {
 
   return (
     <AppContent className={classes.root}>
-      <Helmet title={ltitle} />
+      <Helmet title={ltitle}>
+        <meta name="description" content={descr || h1} />
+        {canonical && <link rel="canonical" href={canonical} />}
+      </Helmet>
 
       {/*
         <div className={classes.header}>
           <Button component="a" href={`${sourceCodeRootUrl}${sourceLocation}`}>Edit this page</Button>
         </div>
       */}
+
+      {
+        h1 && <Typography key="h1" variant="display1" component="h1" color="primary">{h1}</Typography>
+      }
 
       {contents.map(content => {
         const match = content.match(demoRegexp);
@@ -92,6 +111,7 @@ function MarkdownDocs(props: Props) {
 
         return <MarkdownElement key={content} text={content}/>;
       })}
+
       {headers.components.length > 0 ? (
         <MarkdownElement
           text={`
@@ -103,6 +123,11 @@ ${headers.components
           `}
         />
       ) : null}
+
+      {
+        footer
+      }
+
     </AppContent>
   );
 }

@@ -12,7 +12,7 @@ export default function mngrs() {
      * @final
      */
     family_name: {
-      get: function () {
+      get () {
         return msg.meta_mgrs[this.class_name.split('.')[0]].replace(msg.meta_mgrs.mgr + ' ', '');
       }
     },
@@ -23,7 +23,7 @@ export default function mngrs() {
      * @type String
      */
     frm_selection_name: {
-      get: function () {
+      get () {
         const meta = this.metadata();
         return `${msg.open_frm} ${msg.selection_parent} ${msg.meta_parents[this.class_name.split('.')[0]]} '${meta.synonym || meta.name}'`;
       }
@@ -35,7 +35,7 @@ export default function mngrs() {
      * @type String
      */
     frm_obj_name: {
-      get: function () {
+      get () {
         const meta = this.metadata();
         return `${msg.open_frm} ${msg.obj_parent} ${msg.meta_parents[this.class_name.split('.')[0]]} '${meta.synonym || meta.name}'`;
       }

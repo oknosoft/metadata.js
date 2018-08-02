@@ -31,7 +31,7 @@ function rx_columns($p) {
   };
 
   const presentation_formatter = ({value}) => {
-    let text = (value && value.presentation) || '';
+    let text = typeof value === 'string' ? value : (value && value.presentation) || '';
     if(text === '_') {
       text = '';
     }
@@ -48,7 +48,7 @@ function rx_columns($p) {
 
         const _fld = column._meta = fields[column.key];
 
-        if(!column.formatter) {
+        if(!column.formatter && _fld && _fld.type) {
 
           if(column.key === 'ref' || _fld.type.is_ref) {
             column.formatter = presentation_formatter;

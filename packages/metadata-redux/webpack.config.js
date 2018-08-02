@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const path = require('path');
 const package_data = require('./package.json');
 const RELEASE = true;
@@ -10,10 +11,6 @@ function getPlugins() {
 
   if(RELEASE) {
     pluginsBase.push(new webpack.optimize.AggressiveMergingPlugin());
-    pluginsBase.push(new webpack.optimize.UglifyJsPlugin({
-      include: /\.min\.js$/,
-      compress: {warnings: false}
-    }));
   }
   return pluginsBase;
 }
@@ -54,7 +51,7 @@ function getExternals() {
 
 const config = {
   entry: {
-    'packages/metadata-redux/index': ['./packages/metadata-redux/src'],
+    //'packages/metadata-redux/index': ['./packages/metadata-redux/src'],
     'packages/metadata-redux/index.min': ['./packages/metadata-redux/src'],
   },
   output: {
@@ -75,6 +72,14 @@ const config = {
     ]
   },
   plugins: getPlugins(),
+  optimization: {
+    minimizer: [new UglifyJSPlugin({
+      uglifyOptions: {
+        include: /\.min\.js$/,
+        compress: { warnings: false, }
+      }
+    })]
+  }
 };
 
 

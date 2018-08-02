@@ -21,7 +21,7 @@ function attach($p) {
 
   // Session is an object that contains all the session information returned by SuperLogin, along with serverTimeDiff, the difference between the server clock and the local clock.
   superlogin.on('login', function (event, session) {
-
+    session = null;
   });
 
   // Message is a message that explains why the user was logged out: 'Logged out' or 'Session expired'.
@@ -38,6 +38,48 @@ function attach($p) {
   superlogin.on('link', function (event, provider) {
 
   });
+
+  superlogin.create_user = function () {
+    const session = this.getSession();
+    if(session) {
+      const attr = {
+        id: session.user_id,
+        ref: session.profile && session.profile.ref ? session.profile.ref : $p.utils.generate_guid(),
+        name: session.profile && session.profile.name ? session.profile.name : session.user_id,
+      }
+      return $p.cat.users.create(attr, false, true);
+    }
+  };
+
+  superlogin.change_name = function (newName) {
+    if(this.authenticated()) {
+      const session = this.getSession();
+      return session.profile.name == newName ?
+        Promise.resolve() :
+        this._http.post(`/user/change-name`, {newName})
+          .then(res => {
+            session.profile.name = newName;
+            this.setSession(session);
+            return res.data;
+          });
+    }
+    return Promise.reject({error: 'Authentication required'});
+  };
+
+  superlogin.change_subscription = function (subscription) {
+    if(this.authenticated()) {
+      const session = this.getSession();
+      return session.profile.subscription == subscription ?
+        Promise.resolve() :
+        this._http.post(`/user/change-subscription`, {subscription})
+          .then(res => {
+            session.profile.subscription = subscription;
+            this.setSession(session);
+            return res.data;
+          });
+    }
+    return Promise.reject({error: 'Authentication required'});
+  }
 
 
   /**

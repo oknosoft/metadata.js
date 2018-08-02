@@ -1,3 +1,9 @@
+/**
+ * ### Поле ввода пути к данным в табчасти
+ *
+ * Created by Evgeniy Malyarov on 18.09.2017.
+ */
+
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 

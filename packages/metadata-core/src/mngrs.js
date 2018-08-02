@@ -97,19 +97,20 @@ export class DataManager extends MetaEventEmitter{
 	 * Указатель на адаптер данных этого менеджера
 	 */
 	get adapter(){
-		const {adapters} = this._owner.$p;
-		switch (this.cachable){
-			case undefined:
-			case "ram":
-			case "doc":
-			case "doc_remote":
-			case "doc_ram":
-			case "remote":
-			case "user":
-			case "meta":
-				return adapters.pouch;
-		}
-		return adapters[this.cachable];
+    const {adapters} = this._owner.$p;
+    switch (this.cachable) {
+    case undefined:
+    case 'ram':
+    case 'doc':
+    case 'doc_ram':
+    case 'ram_doc':
+    case 'remote':
+    case 'user':
+    case 'meta':
+    case 'templates':
+      return adapters.pouch;
+    }
+    return adapters[this.cachable];
 	}
 
 	/**
@@ -145,29 +146,32 @@ export class DataManager extends MetaEventEmitter{
 	 * Для кешируемых, представления ссылок запоминать необязательно, т.к. его быстрее вычислить по месту
 	 * @property cachable
 	 * @for DataManager
-	 * @type String - ("ram", "doc", "doc_remote", "meta", "e1cib")
+	 * @type String - ("ram", "doc", "remote", "meta", "e1cib")
 	 * @final
 	 */
 	get cachable(){
 
-		const {class_name} = this
-		const _meta = this.metadata()
+    const {class_name} = this;
+    const _meta = this.metadata();
 
-		// перечисления кешируются всегда
-		if(class_name.indexOf("enm.") != -1)
-			return "ram";
+    // перечисления кешируются всегда
+    if(class_name.indexOf('enm.') != -1) {
+      return 'ram';
+    }
 
-		// Если в метаданных явно указано правило кеширования, используем его
-		if(_meta && _meta.cachable)
-			return _meta.cachable;
+    // Если в метаданных явно указано правило кеширования, используем его
+    if(_meta && _meta.cachable) {
+      return _meta.cachable;
+    }
 
-		// документы, отчеты и обработки по умолчанию кешируем в idb, но в память не загружаем
-		if(class_name.indexOf("doc.") != -1 || class_name.indexOf("dp.") != -1 || class_name.indexOf("rep.") != -1)
-			return "doc";
+    // документы, отчеты и обработки по умолчанию кешируем в idb, но в память не загружаем
+    if(class_name.indexOf('doc.') != -1 || class_name.indexOf('dp.') != -1 || class_name.indexOf('rep.') != -1) {
+      return 'doc';
+    }
 
-		// остальные классы по умолчанию кешируем и загружаем в память при старте
-		return "ram";
-	}
+    // остальные классы по умолчанию кешируем и загружаем в память при старте
+    return 'ram';
+  }
 
 	/**
 	 * ### Имя таблицы объектов этого менеджера в базе alasql
@@ -176,7 +180,7 @@ export class DataManager extends MetaEventEmitter{
 	 * @final
 	 */
 	get table_name(){
-		return this.class_name.replace(".", "_");
+    return this.class_name.replace('.', '_');
 	}
 
 	/**
@@ -304,52 +308,55 @@ export class DataManager extends MetaEventEmitter{
 			l.push(v);
 		}
 
-		// поиск по строке
-		if(selection.presentation && (input_by_string = t.metadata().input_by_string)){
-			text = selection.presentation.like;
-			delete selection.presentation;
-			selection.or = [];
-			input_by_string.forEach((fld) => {
-				const sel = {};
-				sel[fld] = {like: text};
-				selection.or.push(sel);
-			})
-		}
+    // поиск по строке
+    if(selection.presentation && (input_by_string = t.metadata().input_by_string)) {
+      text = selection.presentation.like;
+      delete selection.presentation;
+      selection.or = [];
+      input_by_string.forEach((fld) => {
+        const sel = {};
+        sel[fld] = {like: text};
+        selection.or.push(sel);
+      });
+    }
 
-		if(t.cachable == "ram" || t.cachable == "doc_ram" || (selection && selection._local)) {
-			t.find_rows(selection, push);
-			return Promise.resolve(l);
-		}
-		else if(t.cachable != "e1cib"){
-		  return t.adapter.find_rows(t, selection)
+    if(t.cachable == 'ram' || t.cachable == 'doc_ram' || (selection && selection._local)) {
+      t.find_rows(selection, push);
+      return Promise.resolve(l);
+    }
+    else if(t.cachable != 'e1cib') {
+      return t.adapter.find_rows(t, selection)
         .then((data) => {
-		    for(const v of data){
-		      push(v)
-		    };
-		    return l;
-		  });
-		}
-		else{
-			// для некешируемых выполняем запрос к серверу
-			var attr = { selection: selection, top: selection._top},
-				is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
-			delete selection._top;
+          for (const v of data) {
+            push(v);
+          }
+          ;
+          return l;
+        });
+    }
+    else {
+      // для некешируемых выполняем запрос к серверу
+      let attr = {selection: selection, top: selection._top},
+        is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
+      delete selection._top;
 
-			if(is_doc)
-				attr.fields = ["ref", "date", "number_doc"];
+      if(is_doc) {
+        attr.fields = ['ref', 'date', 'number_doc'];
+      }
+      else if(t.metadata().main_presentation_name) {
+        attr.fields = ['ref', 'name'];
+      }
+      else {
+        attr.fields = ['ref', 'id'];
+      }
 
-			else if(t.metadata().main_presentation_name)
-				attr.fields = ["ref", "name"];
-			else
-				attr.fields = ["ref", "id"];
-
-			return _rest.load_array(attr, t)
-				.then((data) => {
-					data.forEach(push);
-					return l;
-				});
-		}
-	}
+      return _rest.load_array(attr, t)
+        .then((data) => {
+          data.forEach(push);
+          return l;
+        });
+    }
+  }
 
 	/**
 	 * ### Возвращает менеджер значения по свойству строки
@@ -473,34 +480,35 @@ export class DataManager extends MetaEventEmitter{
 	 * @return {Promise.<Object>}
 	 */
 	printing_plates(){
-		var rattr = {}, t = this;
+		const rattr = {};
 		const {ajax} = this._owner.$p;
 
-		if(!t._printing_plates){
-			if(t.metadata().printing_plates){
-				t._printing_plates = t.metadata().printing_plates;
+		if(!this._printing_plates){
+			if(this.metadata().printing_plates){
+        this._printing_plates = this.metadata().printing_plates;
 			}
-			else if(t.metadata().cachable == "ram" || (t.metadata().cachable && t.metadata().cachable.indexOf("doc") == 0)){
-				t._printing_plates = {};
-			}
+			else {
+			  const {cachable} = this.metadata();
+        if(cachable && (cachable.indexOf('doc') == 0 || cachable.indexOf('ram') == 0)){
+          this._printing_plates = {};
+        }
+      }
 		}
 
-		if(!t._printing_plates && ajax.authorized){
-			ajax.default_attr(rattr, job_prm.irest_url());
-			rattr.url += t.rest_name + "/Print()";
-			return ajax.get_ex(rattr.url, rattr)
-				.then(function (req) {
-					t._printing_plates = JSON.parse(req.response);
-					return t._printing_plates;
-				})
-				.catch(function () {
-				})
-				.then(function (pp) {
-					return pp || (t._printing_plates = {});
-				});
-		}
+		// атавизм совместимости с 1С
+    if(!this._printing_plates && ajax.authorized) {
+      ajax.default_attr(rattr, job_prm.irest_url());
+      rattr.url += this.rest_name + '/Print()';
+      return ajax.get_ex(rattr.url, rattr)
+        .then((req) => {
+          this._printing_plates = JSON.parse(req.response);
+          return this._printing_plates;
+        })
+        .catch(() => null)
+        .then((pp) => pp || (this._printing_plates = {}));
+    }
 
-		return Promise.resolve(t._printing_plates);
+		return Promise.resolve(this._printing_plates);
 
 	}
 
@@ -590,12 +598,14 @@ export class RefDataManager extends DataManager{
 				do_not_create = arguments[2];
 			}
 		}
+		let created;
 		if(!o){
 			if(do_not_create && do_not_create != rp){
 				return;
 			}
 			else{
-				o = this.obj_constructor('', [ref, this])
+				o = this.obj_constructor('', [ref, this]);
+        created = true;
 			}
 		}
 
@@ -605,9 +615,14 @@ export class RefDataManager extends DataManager{
 
 		if(o.is_new()){
 			if(do_not_create == rp){
-				return o.load();	// читаем из 1С или иного сервера
+        // читаем из 1С или иного сервера
+				return o.load()
+          .then(() => {
+            return o.is_new() ? o.after_create() : o;
+          });
 			}
 			else{
+        created && arguments.length !== 3 && o.after_create();
 				return o;
 			}
 		}else{
@@ -709,18 +724,26 @@ export class RefDataManager extends DataManager{
 	 */
 	load_array(aattr, forse){
 		const res = [];
-		for(let attr of aattr){
+    const {wsql, adapters: {pouch}} = this._owner.$p;
+		for(const attr of aattr){
 			let obj = this.by_ref[utils.fix_guid(attr)];
 			if(!obj){
         if(forse === 'update_only') {
 					continue;
 				}
 				obj = this.obj_constructor('', [attr, this, true]);
-				forse && obj.is_new() && obj._set_loaded();
+				obj.is_new() && obj._set_loaded();
 			}
 			else if(obj.is_new() || forse){
 			  if(obj.is_new() || forse !== 'update_only') {
           obj._data._loading = true;
+        }
+        else if(forse === 'update_only' && attr.timestamp) {
+          if(attr.timestamp.user === (pouch.authorized || wsql.get_user_param('user_name'))) {
+            if(new Date() - moment(attr.timestamp.moment, "YYYY-MM-DDTHH:mm:ss ZZ").toDate() < 30000) {
+              continue;
+            }
+          }
         }
 				obj._mixin(attr);
 			}
@@ -775,40 +798,44 @@ export class RefDataManager extends DataManager{
 					cmd.form.selection.fields.forEach(function (fld) {
 						flds.push(fld);
 					});
-
-				}else if(t instanceof DocManager){
+				}
+				else if(t instanceof DocManager){
 					flds.push("posted");
 					flds.push("date");
 					flds.push("number_doc");
-
-				}else{
-
-					if(cmd.hierarchical && cmd.group_hierarchy)
-						flds.push("is_folder");
-					else
-						flds.push("0 as is_folder");
-
-					if(t instanceof ChartOfAccountManager){
-						flds.push("id");
-						flds.push("name as presentation");
-
-					}else if(cmd.main_presentation_name)
-						flds.push("name as presentation");
-
-					else{
-						if(cmd["code_length"])
-							flds.push("id as presentation");
-						else
-							flds.push("'...' as presentation");
-					}
-
-					if(cmd.has_owners)
-						flds.push("owner");
-
-					if(cmd.code_length)
-						flds.push("id");
-
 				}
+				else{
+          if(cmd.hierarchical && cmd.group_hierarchy) {
+            flds.push('is_folder');
+          }
+          else {
+            flds.push('0 as is_folder');
+          }
+
+          if(t instanceof ChartOfAccountManager) {
+            flds.push('id');
+            flds.push('name as presentation');
+          }
+          else if(cmd.main_presentation_name) {
+            flds.push('name as presentation');
+          }
+          else {
+            if(cmd['code_length']) {
+              flds.push("id as presentation");
+            }
+            else {
+              flds.push("'...' as presentation");
+            }
+          }
+
+          if(cmd.has_owners) {
+            flds.push('owner');
+          }
+
+          if(cmd.code_length) {
+            flds.push("id");
+          }
+        }
 
 				flds.forEach(fld => {
 					if(fld.indexOf(" as ") != -1)
@@ -846,15 +873,15 @@ export class RefDataManager extends DataManager{
 
 				if(t instanceof ChartOfAccountManager){
 					s = " WHERE (" + (filter ? 0 : 1);
-
-				}else if(cmd["hierarchical"]){
+				}
+				else if(cmd["hierarchical"]){
 					if(cmd.has_owners)
 						s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" +
 							(owner == utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 					else
 						s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" + (filter ? 0 : 1);
-
-				}else{
+				}
+				else{
 					if(cmd.has_owners)
 						s = " WHERE (" + (owner == utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 					else
@@ -863,10 +890,10 @@ export class RefDataManager extends DataManager{
 
 				if(t.sql_selection_where_flds){
 					s += t.sql_selection_where_flds(filter);
-
-				}else if(t instanceof DocManager)
-					s += " OR _t_.number_doc LIKE '" + filter + "'";
-
+				}
+				else if(t instanceof DocManager){
+          s += " OR _t_.number_doc LIKE '" + filter + "'";
+        }
 				else{
 					if(cmd["main_presentation_name"] || t instanceof ChartOfAccountManager)
 						s += " OR _t_.name LIKE '" + filter + "'";
@@ -928,10 +955,10 @@ export class RefDataManager extends DataManager{
                         const folders = [];
                         (Array.isArray(val) ? val : [val]).forEach((val) => {
                           const folder = vmgr.get(val, true);
-                          if(folder && folder.is_folder) {
+                          if(folder) {
                             if(folders.indexOf(folder) === -1){
                               folders.push(folder);
-                              folder._children().forEach((child) => folders.indexOf(child) === -1 && folders.push(child));
+                              folder.is_folder && folder._children().forEach((child) => folders.indexOf(child) === -1 && folders.push(child));
                             }
                           }
                         });
@@ -1127,35 +1154,44 @@ export class RefDataManager extends DataManager{
 		}
 
 
-		if(action == "create_table")
-			res = sql_create();
+    if(action == 'create_table') {
+      res = sql_create();
+    }
+    else if(['insert', 'update', 'replace'].indexOf(action) != -1) {
+      res[t.table_name] = sql_update();
+    }
+    else if(action == 'select') {
+      res = 'SELECT * FROM `' + t.table_name + '` WHERE ref = ?';
+    }
+    else if(action == 'select_all') {
+      res = 'SELECT * FROM `' + t.table_name + '`';
+    }
+    else if(action == 'delete') {
+      res = 'DELETE FROM `' + t.table_name + '` WHERE ref = ?';
+    }
+    else if(action == 'drop') {
+      res = 'DROP TABLE IF EXISTS `' + t.table_name + '`';
+    }
+    else if(action == 'get_tree') {
+      res = 'SELECT ref, parent, name as presentation FROM `' + t.table_name + '`';
+      if(!attr.filter || attr.filter.is_folder) {
+        res += ' WHERE is_folder ';
+        if(attr.filter && attr.filter.ref) {
+          res += `and ref in (${attr.filter.ref.in.map(v => `"${v.ref}"`).join(',')})`;
+        }
+      }
+      else if(attr.filter && attr.filter.ref) {
+        if(attr.filter && attr.filter.ref) {
+          res += ` WHERE ref in (${attr.filter.ref.in.map(v => `"${v.ref}"`).join(',')})`;
+        }
+      }
+      res += ' order by parent, name';
+    }
+    else if(action == 'get_selection') {
+      res = sql_selection();
+    }
 
-		else if(["insert", "update", "replace"].indexOf(action) != -1)
-			res[t.table_name] = sql_update();
-
-		else if(action == "select")
-			res = "SELECT * FROM `"+t.table_name+"` WHERE ref = ?";
-
-		else if(action == "select_all")
-			res = "SELECT * FROM `"+t.table_name+"`";
-
-		else if(action == "delete")
-			res = "DELETE FROM `"+t.table_name+"` WHERE ref = ?";
-
-		else if(action == "drop")
-			res = "DROP TABLE IF EXISTS `"+t.table_name+"`";
-
-		else if(action == "get_tree"){
-			if(!attr.filter || attr.filter.is_folder)
-				res = "SELECT ref, parent, name as presentation FROM `" + t.table_name + "` WHERE is_folder order by parent, name";
-			else
-				res = "SELECT ref, parent, name as presentation FROM `" + t.table_name + "` order by parent, name";
-		}
-
-		else if(action == "get_selection")
-			res = sql_selection();
-
-		return res;
+    return res;
 	}
 
   /**
@@ -1168,7 +1204,7 @@ export class RefDataManager extends DataManager{
     const select = {};
     const {input_by_string} = this.metadata();
 
-    if(cachable === 'ram' || cachable === 'doc_ram') {
+    if(cachable.match(/^(ram|doc_ram)$/)) {
 
       select._top = top;
       select._skip = skip;
@@ -1222,11 +1258,11 @@ export class RefDataManager extends DataManager{
       });
 
     }
-    else if(cachable === 'doc' || cachable === 'remote'){
+    else if(cachable.match(/^(doc|ram_doc|remote)$/)){
 
       Object.assign(select, {
         selector: {class_name: this.class_name},
-        fields: ["_id", "name"],
+        fields: ['_id', 'name'],
         skip,
         limit: top
       });
@@ -1242,7 +1278,10 @@ export class RefDataManager extends DataManager{
       // для связей параметров выбора, значение берём из объекта
       _meta.choice_links && _meta.choice_links.forEach((choice) => {
         if(choice.name && choice.name[0] == 'selection' && typeof choice.path[0] !== 'function') {
-          select.selector[choice.name[1]] = _obj[choice.path[0]].valueOf();
+          const val = _obj[choice.path.length > 1 ? choice.path[1] : choice.path[0]];
+          if(val != undefined && this.metadata(choice.name[1])){
+            select.selector[choice.name[1]] = val.valueOf();
+          }
         }
       });
 
@@ -1696,35 +1735,33 @@ export class RegisterManager extends DataManager{
 	/**
 	 * сохраняет массив объектов в менеджере
 	 * @method load_array
-	 * @param aattr {array} - массив объектов для трансформации в объекты ссылочного типа
+	 * @param aattr {Array} - массив объектов для трансформации в объекты ссылочного типа
 	 * @param forse {Boolean} - перезаполнять объект
-	 * @async
 	 */
 	load_array(aattr, forse) {
 
 		const res = [];
 
-		for (let i = 0; i < aattr.length; i++) {
+    for (const row of aattr) {
+      const ref = this.get_ref(row);
+      let obj = this.by_ref[ref];
 
-			const ref = this.get_ref(aattr[i]);
-			let obj = this.by_ref[ref];
-
-			if (!obj && !aattr[i]._deleted) {
-				obj = this.obj_constructor('', [aattr[i], this, true]);
-				forse && obj.is_new() && obj._set_loaded();
-			}
-			else if (obj && aattr[i]._deleted) {
-				obj.unload();
-				continue;
-
-			}
-			else if (forse) {
+      if (!obj && !row._deleted) {
+        obj = this.obj_constructor('', [row, this, true]);
+        obj.is_new() && obj._set_loaded();
+      }
+      else if (obj && row._deleted) {
+        obj.unload();
+        continue;
+      }
+      else if (forse) {
         obj._data._loading = true;
-				obj._mixin(aattr[i]);
-			}
+        obj._mixin(row);
+      }
 
-			res.push(obj);
-		}
+      res.push(obj);
+    }
+
 		return res;
 	};
 
@@ -1750,23 +1787,24 @@ export class RegisterManager extends DataManager{
 			function list_flds(){
 				var flds = [], s = "_t_.ref";
 
-				if(cmd.form && cmd.form.selection){
-					cmd.form.selection.fields.forEach(fld => flds.push(fld));
+        if(cmd.form && cmd.form.selection) {
+          cmd.form.selection.fields.forEach(fld => flds.push(fld));
+        }
+        else {
+          for (var f in cmd.dimensions) {
+            flds.push(f);
+          }
+        }
 
-				}else{
-
-					for(var f in cmd["dimensions"]){
-						flds.push(f);
-					}
-				}
-
-				flds.forEach(fld => {
-					if(fld.indexOf(" as ") != -1)
-						s += ", " + fld;
-					else
-						s += sql_mask(fld, true);
-				});
-				return s;
+        flds.forEach(fld => {
+          if(fld.indexOf(' as ') != -1) {
+            s += ', ' + fld;
+          }
+          else {
+            s += sql_mask(fld, true);
+          }
+        });
+        return s;
 
 			}
 

@@ -9,8 +9,6 @@ import LoadingMessage from '../DumbLoader/LoadingMessage';
 import ReactDataGrid from 'metadata-external/react-data-grid.min';
 import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
 
-// import withStyles from 'material-ui/styles/withStyles';
-// import styles from './TabularSection.scss';
 
 export default class TabularSection extends MComponent {
 

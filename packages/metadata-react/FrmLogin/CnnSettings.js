@@ -1,11 +1,14 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import {FormGroup, FormHelperText, FormControl, FormControlLabel} from 'material-ui/Form';
-import TextField from 'material-ui/TextField';
-import Button from 'material-ui/Button';
-import Switch from 'material-ui/Switch';
-import {DialogActions} from 'material-ui/Dialog';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import FormControl from '@material-ui/core/FormControl';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
+import Switch from '@material-ui/core/Switch';
+import DialogActions from '@material-ui/core/DialogActions';
 
 import Confirm from '../App/Confirm';
 
@@ -77,8 +80,10 @@ class CnnSettings extends Component {
         label="Адрес Superlogin"
         InputProps={{placeholder: 'superlogin_path'}}
         helperText="URL сервера авторизации"
+        disabled={disable_settings}
         onChange={this.valueToState('superlogin_path')}
-        value={superlogin_path}/>,
+        value={superlogin_path}
+      />,
 
       <TextField
         fullWidth
@@ -89,7 +94,8 @@ class CnnSettings extends Component {
         helperText="Значение разделителя данных"
         disabled={disable_settings}
         onChange={this.valueToState('zone')}
-        value={zone}/>,
+        value={zone}
+      />,
 
       <FormGroup key="switchers">
         <FormControl>

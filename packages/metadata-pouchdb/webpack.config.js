@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const path = require('path');
 const package_data = require('./package.json');
 const RELEASE = true;
@@ -10,10 +11,6 @@ function getPlugins() {
 
   if(RELEASE) {
     pluginsBase.push(new webpack.optimize.AggressiveMergingPlugin());
-    // pluginsBase.push(new webpack.optimize.UglifyJsPlugin({
-    //   include: /\.min\.js$/,
-    //   compress: {warnings: false}
-    // }));
   }
   return pluginsBase;
 }
@@ -59,7 +56,7 @@ const config = {
   output: {
     path: path.resolve('.'),
     filename: '[name].js',
-    libraryTarget: 'umd'
+    libraryTarget: 'commonjs2'
   },
   externals: getExternals(),
   module: {
@@ -74,6 +71,14 @@ const config = {
     ]
   },
   plugins: getPlugins(),
+  optimization: {
+    minimizer: [new UglifyJSPlugin({
+      uglifyOptions: {
+        include: /\.min\.js$/,
+        compress: { warnings: false, }
+      }
+    })]
+  }
 };
 
 

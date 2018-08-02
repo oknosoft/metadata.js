@@ -24,10 +24,8 @@ export default class MetaEventEmitter extends EventEmitter{
 			return [type, listener];
 		}
 		else{
-			for(let fld in type){
-				if(typeof type[fld] == 'function'){
-					super.on(fld, type[fld]);
-				}
+			for(const fld in type){
+        typeof type[fld] === 'function' && super.on(fld, type[fld]);
 			}
 			return this;
 		}
@@ -45,7 +43,12 @@ export default class MetaEventEmitter extends EventEmitter{
 		else if(Array.isArray(type)){
 			super.removeListener(...type);
 		}
-		else if(typeof type == 'function'){
+		else if(typeof type === 'object'){
+      for(const fld in type){
+        typeof type[fld] === 'function' && super.removeListener(fld, type[fld]);
+      }
+    }
+		else if(typeof type === 'function'){
 			throw new TypeError('MetaEventEmitter.off: type must be a string')
 		}
 		else{
@@ -134,6 +137,15 @@ export default class MetaEventEmitter extends EventEmitter{
     handler.timer && clearTimeout(handler.timer);
     handler.args.push(args);
     handler.timer = setTimeout(this._emit.bind(this, type), 4);
+  }
+
+  /**
+   * Реализует асинхронную обработку событий
+   * @param type
+   * @param args
+   */
+  emit_promise(type, ...args) {
+    return this.listeners(type).reduce((acc, curr) => acc.then(curr), Promise.resolve());
   }
 
   /**

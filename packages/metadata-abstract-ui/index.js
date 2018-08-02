@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.16-beta.55, built:2018-03-20
+ metadata-abstract-ui v2.0.17-beta.5, built:2018-08-02
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -30,6 +30,8 @@ function log_manager() {
   class LogManager extends InfoRegManager {
     constructor(owner) {
       super(owner, 'ireg.log');
+      this._stamp = Date.now();
+      setInterval(this.backup.bind(this, 'stamp'), 90000);
     }
     record(msg) {
       const {wsql} = this._owner.$p;
@@ -52,24 +54,58 @@ function log_manager() {
       else if(typeof msg != 'object') {
         msg = {note: msg};
       }
-      msg.date = Date.now() + wsql.time_diff;
-      if(!this.smax){
-        this.smax = wsql.alasql.compile('select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?');
+      if(wsql.alasql.databases.dbo.tables.ireg_log) {
+        msg.date = Date.now() + wsql.time_diff;
+        if(!this.smax){
+          this.smax = wsql.alasql.compile('select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?');
+        }
+        const res = this.smax([msg.date]);
+        if(!res.length || res[0].sequence === undefined) {
+          msg.sequence = 0;
+        }
+        else {
+          msg.sequence = parseInt(res[0].sequence) + 1;
+        }
+        if(!msg.class) {
+          msg.class = 'note';
+        }
+        wsql.alasql('insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)',
+          [msg.date + '¶' + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : '']);
       }
-      const res = this.smax([msg.date]);
-      if(!res.length || res[0].sequence === undefined) {
-        msg.sequence = 0;
-      }
-      else {
-        msg.sequence = parseInt(res[0].sequence) + 1;
-      }
-      if(!msg.class) {
-        msg.class = 'note';
-      }
-      wsql.alasql('insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)',
-        [msg.date + '¶' + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : '']);
     }
     backup(dfrom, dtill) {
+      const {wsql, adapters: {pouch}, utils: {moment}} = this._owner.$p;
+      if(dfrom === 'stamp' && pouch.authorized) {
+        dfrom = this._stamp;
+        if(!pouch.remote.log) {
+          const {__opts} = (pouch.remote.ram || pouch.remote.remote || pouch.remote.doc);
+          pouch.remote.log = new classes.PouchDB(__opts.name.replace(/(ram|remote|doc)$/, 'log'),
+            {skip_setup: true, adapter: 'http', auth: __opts.auth});
+        }
+        if(!this._rows){
+          this._rows = wsql.alasql.compile('select * from `ireg_log` where `date` >= ?');
+        }
+        const _stamp = Date.now();
+        const rows = this._rows([this._stamp + wsql.time_diff]);
+        for(const row of rows) {
+          row._id = `${moment(row.date - wsql.time_diff).format('YYYYMMDDHHmmssSSS') + row.sequence}|${pouch.props._suffix || '0000'}|${pouch.authorized}`;
+          if(row.obj) {
+            row.obj = JSON.parse(row.obj);
+          }
+          else{
+            delete row.obj;
+          }
+          delete row.ref;
+          delete row.user;
+          delete row._deleted;
+        }
+        rows.length && pouch.remote.log.bulkDocs(rows)
+          .then((result) => {
+            this._stamp = _stamp;
+          }).catch((err) => {
+            console.log(err);
+          });
+      }
     }
     restore(dfrom, dtill) {
     }
@@ -136,6 +172,11 @@ function scheme_settings() {
   const {CatManager, DataProcessorsManager, DataProcessorObj, CatObj, DocManager, TabularSectionRow} = constructor.classes || this;
   class SchemeSettingsManager extends CatManager {
     find_schemas(class_name) {
+      if(this.cachable === 'ram') {
+        return Promise.resolve(
+          this.find_rows({obj: class_name}).sort((a,b) => a.user > b.user)
+        );
+      }
       const opt = {
         _view: 'doc/scheme_settings',
         _top: 100,
@@ -145,7 +186,19 @@ function scheme_settings() {
           endkey: [class_name, 9999],
         },
       };
-      return this.find_rows_remote ? this.find_rows_remote(opt) : this.adapter.find_rows(this, opt);
+      const {adapter} = this;
+      if(adapter.local.templates && adapter.local.templates !==  adapter.remote.doc) {
+        return this.adapter.find_rows(this, opt, adapter.local.templates)
+          .then((templates_data) => {
+            return this.adapter.find_rows(this, opt)
+              .then((data) => {
+                return templates_data.concat(data);
+              });
+          })
+      }
+      else {
+        return this.adapter.find_rows(this, opt);
+      }
     }
     get_scheme(class_name) {
       return new Promise((resolve, reject) => {
@@ -239,6 +292,22 @@ function scheme_settings() {
     constructor(attr, manager, loading) {
       super(attr, manager, loading);
       this.set_standard_period();
+    }
+    load() {
+      return super.load()
+        .then(() => {
+          const {_data, _manager: {adapter}} = this;
+          if(this.is_new() && adapter.local.templates && adapter.local.templates !== adapter.remote.doc) {
+            _data._loading = true;
+            return adapter.load_obj(this, {db: adapter.local.templates})
+              .then(() => {
+                _data._loading = false;
+                _data._modified = false;
+                return this.after_load();
+              });
+          }
+          return this;
+        })
     }
     set_standard_period() {
       const {standard_period} = enm;
@@ -622,7 +691,7 @@ function scheme_settings() {
           class_name: {$eq: this.obj}
         },
         fields: ['_id', 'posted'],
-        use_index: '_design/mango',
+        use_index: ['mango', 'search'],
       };
       for (const column of (columns || this.columns())) {
         if(res.fields.indexOf(column.id) == -1) {
@@ -1048,23 +1117,240 @@ function mngrs() {
   const {classes, msg} = this;
   Object.defineProperties(classes.DataManager.prototype, {
     family_name: {
-      get: function () {
+      get () {
         return msg.meta_mgrs[this.class_name.split('.')[0]].replace(msg.meta_mgrs.mgr + ' ', '');
       }
     },
     frm_selection_name: {
-      get: function () {
+      get () {
         const meta = this.metadata();
         return `${msg.open_frm} ${msg.selection_parent} ${msg.meta_parents[this.class_name.split('.')[0]]} '${meta.synonym || meta.name}'`;
       }
     },
     frm_obj_name: {
-      get: function () {
+      get () {
         const meta = this.metadata();
         return `${msg.open_frm} ${msg.obj_parent} ${msg.meta_parents[this.class_name.split('.')[0]]} '${meta.synonym || meta.name}'`;
       }
     }
   });
+}
+
+class YaGeocoder {
+  geocode(attr) {
+    return Promise.resolve(false);
+  }
+}
+function ipinfo() {
+  const {classes, md, msg, record_log, utils, job_prm} = this;
+  class IPInfo{
+    constructor() {
+      this._yageocoder = null;
+      this._ggeocoder = null;
+      this._parts = null;
+      this._addr = '';
+      this._pos = 0;
+      if (job_prm.use_google_geo && typeof window !== 'undefined') {
+        if (!window.google || !window.google.maps) {
+          utils.load_script(`https://maps.google.com/maps/api/js?key=${job_prm.use_google_geo}&callback=$p.ipinfo.location_callback`, 'script');
+        }
+        else {
+          this.location_callback();
+        }
+      }
+    }
+    ipgeo() {
+      return fetch('//api.sypexgeo.net/')
+        .then(response => response.json())
+        .catch(record_log);
+    }
+    get yageocoder() {
+      if(!this._yageocoder){
+        this._yageocoder = new YaGeocoder();
+      }
+      return _yageocoder;
+    }
+    get ggeocoder(){
+      return this._ggeocoder;
+    }
+    get addr() {
+      return this._addr;
+    }
+    get parts() {
+      return this._parts;
+    }
+    components(v, components) {
+      if(!v) v = {};
+      if(!components) components = this._parts.address_components;
+      let i, c, j, street = "", street0 = "", locality = "";
+      for(i in components){
+        c = components[i];
+        for(j in c.types){
+          switch(c.types[j]){
+          case "route":
+            if(c.short_name.indexOf("Unnamed")==-1){
+              street = c.short_name + (street ? (" " + street) : "");
+              street0 = c.long_name.replace("улица", "").trim();
+            }
+            break;
+          case "administrative_area_level_1":
+            v.region = c.long_name;
+            break;
+          case "administrative_area_level_2":
+            v.city = c.short_name;
+            v.city_long = c.long_name;
+            break;
+          case "locality":
+            v.locality = c.short_name;
+            locality = (locality ? (locality + " ") : "") + c.short_name;
+            break;
+          case "street_number":
+            v.house = "дом " + c.short_name;
+            break;
+          case "postal_code":
+            v.postal_code = c.short_name;
+            break;
+          default:
+            break;
+          }
+        }
+      }
+      if(v.region && v.region == v.city_long)
+        if(v.city.indexOf(locality) == -1)
+          v.city = locality;
+        else
+          v.city = "";
+      else if(locality){
+        if(v.city.indexOf(locality) == -1 && v.region.indexOf(locality) == -1)
+          street = locality + ", " + street;
+      }
+      if(!v.street || v.street.indexOf(street0)==-1)
+        v.street = street;
+      return v;
+    }
+    location_callback() {
+      this._ggeocoder = new google.maps.Geocoder();
+      md.emit('geo_google_ready');
+      this.crrent_pos_ready();
+    }
+    crrent_pos_ready() {
+      return new Promise((resolve, reject) => {
+        if(this._pos === 2) {
+          resolve();
+        }
+        else if(this._pos === 1) {
+          const timer = setTimeout(() => {
+            if(this._pos === 2) {
+              resolve();
+            }
+            else {
+              reject();
+            }
+          }, 10000);
+          md.once('geo_current_position', () => {
+            clearTimeout(timer);
+            resolve();
+          });
+        }
+        else {
+          if(!navigator.geolocation){
+            return reject();
+          }
+          this._pos = 1;
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              this.latitude = position.coords.latitude;
+              this.longitude = position.coords.longitude;
+              const latlng = new google.maps.LatLng(this.latitude, this.longitude);
+              this._ggeocoder.geocode({'latLng': latlng}, (results, status) => {
+                if (status == google.maps.GeocoderStatus.OK){
+                  this._pos = 2;
+                  if(!results[1] || results[0].address_components.length >= results[1].address_components.length) {
+                    this._parts = results[0];
+                  }
+                  else {
+                    this._parts = results[1];
+                  }
+                  this._addr = this._parts.formatted_address;
+                  md.emit('geo_current_position', this.components());
+                }
+              });
+            },
+            (err) => {
+              reject(err);
+            },
+            {
+              enableHighAccuracy: true,
+              maximumAge: 300000,
+              timeout: 20000,
+            }
+          );
+        }
+      });
+    }
+    google_ready() {
+      return new Promise((resolve, reject) => {
+        if(this._ggeocoder) {
+          return resolve();
+        }
+        setTimeout(() => {
+          if(this._ggeocoder){
+            return resolve();
+          }
+          msg.show_msg({
+            type: "alert-warning",
+            text: msg.error_geocoding + " Google",
+            title: msg.main_title
+          });
+          reject();
+        }, 10000);
+      });
+    }
+  }
+	classes.IPInfo = IPInfo;
+}
+
+function checker() {
+  const {utils, job_prm, md} = this;
+  const checker = utils.single_instance_checker = {
+    init() {
+      if(typeof window === 'undefined') {
+        return;
+      }
+      window.addEventListener('storage', this.storageChanged);
+      const prefix = job_prm.local_storage_prefix;
+      this.LocalStorageKeyName = prefix + 'instanceCheck';
+      this.LocalStorageResponseKeyName = prefix + 'instanceMaster';
+      this.instanceKey = prefix + Date.now().toString();
+      this.setKey(this.LocalStorageKeyName, this.instanceKey);
+      this.emit = function (type) {
+        md.emit(type);
+      };
+    },
+    storageChanged(e) {
+      if(!e.newValue) {
+        return;
+      }
+      const {LocalStorageKeyName, LocalStorageResponseKeyName, instanceKey} = checker;
+      if(e.key === LocalStorageKeyName && e.newValue !== instanceKey) {
+        checker.setKey(LocalStorageResponseKeyName, instanceKey + Math.random().toString());
+      }
+      else if(e.key === LocalStorageResponseKeyName && e.newValue.indexOf(instanceKey) < 0) {
+        window.removeEventListener('storage', checker.storageChanged);
+        job_prm.second_instance = true;
+        checker.emit('second_instance');
+      }
+    },
+    setKey(key, value) {
+      try {
+        localStorage.setItem(key, value);
+        setTimeout(() => {
+          localStorage.removeItem(key);
+        }, 100);
+      } catch (e) {
+      }
+    }
+  };
 }
 
 var plugin = {
@@ -1073,6 +1359,8 @@ var plugin = {
     log_manager.call(this);
     scheme_settings.call(this);
     mngrs.call(this);
+    ipinfo.call(this);
+    checker.call(this);
   }
 };
 

@@ -8,20 +8,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import Input, {InputLabel, InputAdornment} from 'material-ui/Input';
-import {FormControl} from 'material-ui/Form';
-import Paper from 'material-ui/Paper';
-import Divider from 'material-ui/Divider';
-import Button from 'material-ui/Button';
-import IconButton from 'material-ui/IconButton';
-import OpenInNew from 'material-ui-icons/OpenInNew';
-import AddIcon from 'material-ui-icons/AddCircleOutline';
-import TitleIcon from 'material-ui-icons/Title';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import FormControl from '@material-ui/core/FormControl';
+import Paper from '@material-ui/core/Paper';
+import Divider from '@material-ui/core/Divider';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import OpenInNew from '@material-ui/icons/OpenInNew';
+import AddIcon from '@material-ui/icons/AddCircleOutline';
+import TitleIcon from '@material-ui/icons/Title';
 
-import Toolbar from 'material-ui/Toolbar';
-import Typography from 'material-ui/Typography';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
 
-// окно диалога, чтобы показать всплывающие формы
+// окно диалога для показа всплывающей формы
 import Dialog from '../App/Dialog';
 import InfiniteList, {prevent} from './InfiniteList';
 
@@ -264,26 +266,36 @@ class FieldInfinit extends AbstractField {
         }
       }
       return <Paper {...paperProps}>
-        <InfiniteList
-          ref={infiniteRef}
-          _mgr={_manager}
-          _obj={_obj}
-          _fld={_fld}
-          _meta={_meta}
-          is_enm={is_enm}
-          classes={classes}
-          search={state.search}
-          handleSelect={handleSelect}
-        />
-        {footer && <Divider/>}
-        {footer && <Toolbar disableGutters>
-          <Button size="small" className={classes.a} onClick={this.handleOpenList} title={_manager.frm_selection_name}>{is_enm ? '...' : 'Показать все'}</Button>
-          <Typography variant="title" color="inherit" className={classes.flex}> </Typography>
-          {_meta.type.types.length > 1 && <IconButton title="Выбрать тип значения"><TitleIcon/></IconButton>}
-          {!is_enm && _manager.acl.indexOf('i') != -1 && <IconButton title="Создать элемент"><AddIcon/></IconButton>}
-          {!is_enm && _manager.acl.indexOf('v') != -1 && this.isTabular &&
-          <IconButton title={_manager.frm_obj_name} onClick={this.handleOpenObj}><OpenInNew/></IconButton>}
-        </Toolbar>}
+        {
+          _manager ? [
+            <InfiniteList
+              key="infinite"
+              ref={infiniteRef}
+              _mgr={_manager}
+              _obj={_obj}
+              _fld={_fld}
+              _meta={_meta}
+              is_enm={is_enm}
+              classes={classes}
+              search={state.search}
+              handleSelect={handleSelect}
+            />,
+            footer && <Divider key="divider"/>,
+            footer && <Toolbar key="Toolbar" disableGutters>
+              <Button size="small" className={classes.a} onClick={this.handleOpenList} title={_manager.frm_selection_name}>{is_enm ? '...' : 'Показать все'}</Button>
+              <Typography variant="title" color="inherit" className={classes.flex}> </Typography>
+              {_meta.type.types.length > 1 && <IconButton title="Выбрать тип значения"><TitleIcon/></IconButton>}
+              {!is_enm && _manager.acl.indexOf('i') != -1 && <IconButton title="Создать элемент"><AddIcon/></IconButton>}
+              {!is_enm && _manager.acl.indexOf('v') != -1 && this.isTabular &&
+              <IconButton title={_manager.frm_obj_name} onClick={this.handleOpenObj}><OpenInNew/></IconButton>}
+              </Toolbar>
+          ]
+          :
+          footer && <Toolbar disableGutters>
+            <Typography variant="title" color="inherit" className={classes.flex}> </Typography>
+            {_meta.type.types.length > 1 && <IconButton title="Выбрать тип значения"><TitleIcon/></IconButton>}
+            </Toolbar>
+        }
       </Paper>;
     }
 

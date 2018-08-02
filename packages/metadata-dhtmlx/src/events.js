@@ -42,8 +42,7 @@ class AppEvents {
 
 
 				/**
-				 * Инициализируем параметры пользователя,
-				 * проверяем offline и версию файлов
+				 * Инициализируем параметры пользователя, проверяем offline и версию файлов
 				 */
 				function init_params() {
 
@@ -121,29 +120,7 @@ class AppEvents {
 				 * если в job_prm указано использование геолокации, геокодер инициализируем с небольшой задержкой
 				 */
 				if (job_prm.use_ip_geo || job_prm.use_google_geo) {
-
-					/**
-					 * Данные геолокации
-					 * @property ipinfo
-					 * @for MetaEngine
-					 * @type IPInfo
-					 * @static
-					 */
-					$p.ipinfo = new classes.IPInfo($p);
-
-				}
-				if (job_prm.use_google_geo) {
-
-					// подгружаем скрипты google
-					if (!window.google || !window.google.maps) {
-            $p.md.once('iface_init', () => {
-							setTimeout( () =>
-								$p.load_script('https://maps.google.com/maps/api/js?key=' + job_prm.use_google_geo + '&callback=$p.ipinfo.location_callback', 'script'), 100);
-						});
-					}
-					else {
-						$p.ipinfo.location_callback();
-					}
+					$p.ipinfo = new classes.IPInfo();
 				}
 
 				job_prm.__define('device_type', {

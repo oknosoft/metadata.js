@@ -2,13 +2,12 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import Typography from 'material-ui/Typography';
-import Button from 'material-ui/Button';
-//import {DialogActions} from 'material-ui/Dialog';
+import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
 import Helmet from 'react-helmet';
 import AppContent from './AppContent';
 
-const ltitle = 'Необходима авторизация';
+export const ltitle = 'Необходима авторизация';
 
 function NeedAuth(props) {
   const {handleNavigate, handleIfaceState, title} = props;
@@ -24,7 +23,9 @@ function NeedAuth(props) {
 
   const margin = {marginTop: 16, marginBottom: 16};
   return <AppContent>
-    <Helmet title="Пользователь не авторизован"/>
+    <Helmet title="Пользователь не авторизован">
+      <meta name="description" content="Необходима авторизация" />
+    </Helmet>
     <div style={{marginTop: 16}}>
       <Typography variant="display1" component="h1" color="primary" style={margin}>Пользователь не авторизован</Typography>
       <Typography color="inherit" style={margin}>Для доступа к данному разделу, необходима авторизация</Typography>

@@ -2,6 +2,9 @@ import {connect} from 'react-redux';
 import {prm_change} from './actions_base';
 
 const mapStateToProps = (/**{meta}**/) => {
+  if(typeof $p !== 'object'){
+    return;
+  }
   const {wsql, superlogin} = $p;
   const res = {use_superlogin: !!superlogin};
   for (const name of ['zone', 'couch_path', 'superlogin_path', ['couch_direct', 'boolean'], ['enable_save_pwd', 'boolean'], 'user_name', 'user_pwd']) {

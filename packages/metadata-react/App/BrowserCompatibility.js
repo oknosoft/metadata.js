@@ -1,5 +1,5 @@
 /**
- *
+ * Показывает предупреждение о несовместимом браузере
  *
  * @module BrowserCompatibility
  *
@@ -9,8 +9,8 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Paper from 'material-ui/Paper';
-import Typography from 'material-ui/Typography';
+import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
 import withStyles from '../styles/paper600';
 
 // Совместимость браузера проверяем по наличию конструкторов Promise, Proxy и Symbol
@@ -18,7 +18,8 @@ export function browser_compatible(ie11) {
   // navigator.userAgent.match(/(Chrome|Opera|YaBrowser)/) && !navigator.userAgent.match(/Edge/);
 
   return (typeof Promise == 'function' && typeof Proxy == 'function' && typeof Symbol == 'function') ||
-    (ie11 && navigator.userAgent.match(/Trident\/7.0/) && navigator.userAgent.match(/11.0/));
+    (ie11 && navigator.userAgent.match(/Trident\/7.0/) && navigator.userAgent.match(/11.0/)) ||
+    navigator.userAgent.match(/Google|Yandex|Slurp|ia_archiver/i);
 }
 
 function BrowserCompatibility({classes}) {

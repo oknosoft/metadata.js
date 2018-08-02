@@ -404,20 +404,27 @@ export class DataObj {
    * @async
    */
   load() {
+    const {_data} = this;
     if(this.ref == utils.blank.guid) {
-      const {_data} = this;
       if(_data) {
         _data._loading = false;
         _data._modified = false;
       }
       return Promise.resolve(this);
     }
+    else if(_data._loading) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve(_data._loading ? this.load() : this);
+        }, 1000);
+      });
+    }
     else {
-      this._data._loading = true;
+      _data._loading = true;
       return this._manager.adapter.load_obj(this)
         .then(() => {
-          this._data._loading = false;
-          this._data._modified = false;
+          _data._loading = false;
+          _data._modified = false;
           return this.after_load();
         });
     }
@@ -668,7 +675,13 @@ export class DataObj {
   static fix_collection(obj, _obj, fields) {
     for (const fld in fields) {
       if(_obj[fld]) {
-        const {type} = fields[fld];
+        let {type, choice_type} = fields[fld];
+        if(choice_type && choice_type.path){
+          const prop = obj[choice_type.path[choice_type.path.length - 1]];
+          if(prop && prop.type) {
+            type = prop.type;
+          }
+        }
         if (type.is_ref && typeof _obj[fld] === 'object') {
           if(!(fld === 'type' && obj.class_name && obj.class_name.indexOf('cch.') === 0)) {
             _obj[fld] = utils.fix_guid(_obj[fld], false);
@@ -748,7 +761,7 @@ export class DataObj {
 
   /**
    * ### После чтения объекта с сервера
-   * Имеет смысл для объектов с типом кеширования ("doc", "doc_remote", "meta", "e1cib").
+   * Имеет смысл для объектов с типом кеширования ("doc", "remote", "meta", "e1cib").
    * т.к. структура _DataObj_ может отличаться от прототипа в базе-источнике, в обработчике можно дозаполнить или пересчитать реквизиты прочитанного объекта
    *
    * @event AFTER_LOAD
@@ -915,6 +928,21 @@ export class CatObj extends DataObj {
         res.push(o);
       }
     });
+    return res;
+  }
+
+  /**
+   * ### Родители
+   * Возвращает массив родителей, в иерархии которых находится текущий элемент
+   * @private
+   */
+  _parents() {
+    const res = [];
+    let {parent} = this;
+    while (parent && !parent.empty()) {
+      res.push(parent);
+      parent = parent.parent;
+    }
     return res;
   }
 
