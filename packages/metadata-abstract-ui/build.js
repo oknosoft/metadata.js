@@ -62,6 +62,19 @@ return rollup({
   }))
 
   .then(() => rollup({
+    input: path.resolve(__dirname, './src/row_props.js'),
+    external,
+    plugins,
+  }))
+  .then((bundle) => bundle.write({
+    format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
+    name: package_data.name.replace(/-/g, '_') + '_row_props',
+    banner: header,
+    file: path.resolve(__dirname, './row_props.js'),
+    sourcemap: true,
+  }))
+
+  .then(() => rollup({
     input: path.resolve(__dirname, './src/tabulars.js'),
     external,
     plugins,
