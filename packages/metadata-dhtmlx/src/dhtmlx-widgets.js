@@ -5356,7 +5356,7 @@ SpreadsheetDocument.prototype.__define({
   print: {
     value() {
 
-			const doc = this,
+      const doc = this,
         url = this.blankURL;
 
       try{
@@ -5409,7 +5409,7 @@ SpreadsheetDocument.prototype.__define({
   save_as: {
     value(filename) {
 
-			const doc = this,
+      const doc = this,
         url = this.blankURL;
 
       try{

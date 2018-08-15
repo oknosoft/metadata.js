@@ -284,11 +284,12 @@ SpreadsheetDocument.prototype.__define({
   print: {
     value() {
 
+      const doc = this,
+        url = this.blankURL;
+
       try{
 
-        const doc = this,
-          url = this.blankURL,
-          wnd_print = window.open(url, '_blank',
+        const wnd_print = window.open(url, '_blank',
             'fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes');
 
         if (wnd_print.outerWidth < screen.availWidth || wnd_print.outerHeight < screen.availHeight){
@@ -336,10 +337,11 @@ SpreadsheetDocument.prototype.__define({
   save_as: {
     value(filename) {
 
+      const doc = this,
+        url = this.blankURL;
+
       try{
-        const doc = this,
-          url = this.blankURL,
-          wnd_print = window.open(url, '_blank',
+        const wnd_print = window.open(url, '_blank',
             'fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes');
 
         if (wnd_print.outerWidth < screen.availWidth || wnd_print.outerHeight < screen.availHeight){
