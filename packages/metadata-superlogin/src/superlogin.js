@@ -19,6 +19,8 @@ const {metaActions} = require('metadata-redux');
 
 function attach($p) {
 
+  const {cat, utils, wsql, adapters: {pouch}} = $p;
+
   // Session is an object that contains all the session information returned by SuperLogin, along with serverTimeDiff, the difference between the server clock and the local clock.
   superlogin.on('login', function (event, session) {
     session = null;
@@ -44,10 +46,10 @@ function attach($p) {
     if(session) {
       const attr = {
         id: session.user_id,
-        ref: session.profile && session.profile.ref ? session.profile.ref : $p.utils.generate_guid(),
+        ref: session.profile && session.profile.ref ? session.profile.ref : utils.generate_guid(),
         name: session.profile && session.profile.name ? session.profile.name : session.user_id,
       }
-      return $p.cat.users.create(attr, false, true);
+      return cat.users.create(attr, false, true);
     }
   };
 
@@ -124,7 +126,7 @@ function attach($p) {
               payload: {name: session.token, password: session.password, provider: session.provider}
             });
 
-            return $p.adapters.pouch.log_in(session.token, session.password);
+            return pouch.log_in(session.token, session.password);
           }
 
 
@@ -162,14 +164,14 @@ function attach($p) {
 
       // Если еще не авторизованы - создаём пользователя по данным соцсети
       return superlogin.socialAuth(provider)
-        .then((session) => $p.adapters.pouch.log_in(session.token, session.password))
-        .catch((err) => $p.adapters.pouch.log_out());
+        .then((session) => pouch.log_in(session.token, session.password))
+        .catch((err) => pouch.log_out());
     };
   }
 
   // запускает авторизацию - обычную или SuperLogin
   function handleLogin(login, password) {
-    return metaActions.USER_TRY_LOG_IN($p.adapters.pouch, login, password);
+    return metaActions.USER_TRY_LOG_IN(pouch, login, password);
   }
 
   // завершает сессию
@@ -177,7 +179,7 @@ function attach($p) {
 
     return function (dispatch, getState) {
 
-      $p.adapters.pouch.log_out()
+      pouch.log_out()
         .then(() => superlogin.logout())
         .then(() => dispatch({
           type: metaActions.types.USER_LOG_OUT,
@@ -238,7 +240,7 @@ function attach($p) {
           }
         })
         .then((session) => {
-          return session && $p.adapters.pouch.log_in(session.username, session.password);
+          return session && pouch.log_in(session.username, session.password);
         })
         .catch((err) => {
           dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: err.error ? err.error : 'Registration error'}));
@@ -281,7 +283,7 @@ function attach($p) {
 
   function handleSetPrm(attr) {
     for (const key in attr) {
-      $p.wsql.set_user_param(key, attr[key]);
+      wsql.set_user_param(key, attr[key]);
     }
     return metaActions.PRM_CHANGE(attr);
   }
@@ -307,13 +309,13 @@ function attach($p) {
   // меняем подписки на события pouchdb
   superlogin._init = function (store) {
 
-    $p.adapters.pouch.on('superlogin_log_in', () => {
+    pouch.on('superlogin_log_in', () => {
 
       const user_name = superlogin.getSession().user_id;
 
-      if($p.cat && $p.cat.users) {
+      if(cat.users) {
 
-        $p.cat.users.find_rows_remote({
+        cat.users.find_rows_remote({
           _view: 'doc/number_doc',
           _key: {
             startkey: ['cat.users', 0, user_name],
@@ -324,8 +326,8 @@ function attach($p) {
             return res[0];
           }
           else {
-            let user = $p.cat.users.create({
-              ref: $p.utils.generate_guid(),
+            let user = cat.users.create({
+              ref: utils.generate_guid(),
               id: user_name
             });
             return user.save();
