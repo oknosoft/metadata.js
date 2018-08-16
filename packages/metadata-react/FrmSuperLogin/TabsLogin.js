@@ -182,7 +182,7 @@ class TabsLogin extends Component {
           <Divider/>
           <Grid container spacing={24}>
             <Grid item xs={12} sm={7}>
-              <Typography variant="subheading" color="inherit">Вы можете авторизоваться при помощи учетных записей социальных сетей</Typography>
+              <Typography variant="subheading" color="inherit">После первичной регистрации по логину/паролю, Вы можете связать учетную запись с профилем социальных сетей и выполнять вход через oAuth GitHub, Facebook и Google</Typography>
             </Grid>
             <Grid item xs={10} sm={5}>
               <Button variant="raised" size="small" className={btn} onClick={this.oauthClick('github')}>

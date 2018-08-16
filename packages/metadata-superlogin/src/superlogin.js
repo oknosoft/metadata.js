@@ -164,8 +164,19 @@ function attach($p) {
 
       // Если еще не авторизованы - создаём пользователя по данным соцсети
       return superlogin.socialAuth(provider)
-        .then((session) => pouch.log_in(session.token, session.password))
-        .catch((err) => pouch.log_out());
+        .then((session) => {
+          return pouch.log_in(session.token, session.password);
+        })
+        .catch((err) => {
+          return pouch.log_out()
+            .then(() => {
+              if(typeof err === 'string' && err.indexOf('newAccount') !== -1) {
+                const text = `Пользователь '${err.substr(11)}' провайдера '${provider}' не связан с пользователем сервиса.
+                Для авторизации oAuth, зарегистрируйтесь через логин/пароль и свяжите учётную запись сервиса с провайдером социальной сети`;
+                dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text}));
+              }
+            });
+        });
     };
   }
 
@@ -196,7 +207,7 @@ function attach($p) {
       const {username, email, password, confirmPassword} = registration;
 
       if(!password || password.length < 6 || password !== confirmPassword) {
-        return dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Password must be at least 6 characters length'}));
+        return dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Длина пароля должна быть не менее 6 символов'}));
       }
       if(!username || username.length < 3) {
         return dispatch(metaActions.USER_LOG_ERROR({message: 'empty'}));
@@ -206,7 +217,7 @@ function attach($p) {
       return superlogin.validateUsername(username)
         .catch((err) => {
           dispatch(metaActions.USER_LOG_ERROR(
-            err.message && err.message.match(/(time|network)/i) ? err : {message: 'custom', text: err.error ? err.error : 'Username error'}
+            err.message && err.message.match(/(time|network)/i) ? err : {message: 'custom', text: err.error ? err.error : 'Ошибка при проверке имени пользователя'}
           ));
         })
         .then((ok) => {
