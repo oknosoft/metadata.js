@@ -18,7 +18,7 @@
     "cron": "^1.4.0",
     "dataframe": "^2.0.1",
     "debug": "^3.1.0",
-    "marked": "^0.4",
+    "marked": "^0.5.0",
     "moment": "^2.22.2",
     "pouchdb-adapter-http": "7.0.0",
     "pouchdb-adapter-idb": "7.0.0",

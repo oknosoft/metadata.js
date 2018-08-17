@@ -14,7 +14,7 @@
     "autoprefixer": "^7.2.6",
     "classnames": "^2.2",
     "font-awesome": "^4.7.0",
-    "marked": "^0.4",
+    "marked": "^0.5",
     "metadata-abstract-ui": "^2.0.17-beta.6",
     "metadata-external": "^2.0.17-beta.6",
     "metadata-redux": "^2.0.17-beta.6",
