@@ -12,8 +12,8 @@
     "doc": "doc"
   },
   "dependencies": {
-    "@material-ui/core": "^1.5.0",
-    "@material-ui/icons": "^2.0.2",
+    "@material-ui/core": "^1.5.1",
+    "@material-ui/icons": "^2.0.3",
     "alasql": "^0.4.9",
     "cron": "^1.4.0",
     "dataframe": "^2.0.1",
