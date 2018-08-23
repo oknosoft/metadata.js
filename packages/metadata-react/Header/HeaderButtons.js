@@ -22,15 +22,18 @@ import compose from 'recompose/compose';
 import classnames from 'classnames';
 import withStyles from './toolbar';
 import withWidth, {isWidthUp} from '@material-ui/core/withWidth';
-import DnR from '../DnR/DnR';
 
-function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavigate, width, compact, barColor}) {
+function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavigate, width, compact, barColor, CustomBtn}) {
 
   const offline_tooltip = offline ? 'Сервер недоступен' : 'Подключение установлено';
   const sync_tooltip = `Синхронизация ${user.logged_in && sync_started ? 'выполняется' : 'отключена'}`;
   const login_tooltip = `${user.name}${user.logged_in ? '\n(подключен к серверу)' : '\n(автономный режим)'}`;
 
   return [
+
+    // показываем допкнопки, если задано в redux
+    CustomBtn && <CustomBtn key="custom_btn"/>,
+
     // индикатор доступности облака показываем только на экране шире 'sm'
     !compact && isWidthUp('sm', width) &&
     <IconButton key="offline" title={offline_tooltip}>
@@ -68,6 +71,7 @@ HeaderButtons.propTypes = {
   classes: PropTypes.object.isRequired,
   compact: PropTypes.bool,      // скрывает кнопки облака
   barColor: PropTypes.string,
+  custom_btn: PropTypes.object, // дополнительные кнопки, подключаемые через redux
 };
 
 export default compose(withStyles, withWidth())(HeaderButtons);

@@ -13,16 +13,16 @@ const styles = theme => ({
     margin: '0 auto',
   }),
   [theme.breakpoints.up(980 + theme.spacing.unit * 4)]: {
-    content: {
+    maxWidth: {
       maxWidth: 980,
     },
   },
 });
 
 function AppContent(props) {
-  const { className, classes, children } = props;
+  const { className, fullWidth, classes, children } = props;
 
-  return <div className={classNames(classes.content, className)}>{children}</div>;
+  return <div className={classNames(classes.content, !fullWidth && classes.maxWidth, className)}>{children}</div>;
 }
 
 AppContent.propTypes = {
