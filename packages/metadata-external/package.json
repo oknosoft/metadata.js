@@ -9,8 +9,8 @@
     "npm": "^5.5"
   },
   "dependencies": {
-    "create-react-class": "^15.6.2",
-    "react-contextmenu": "^2.8.0"
+    "create-react-class": "^15.6.3",
+    "react-contextmenu": "^2.9.3"
   },
   "repository": {
     "type": "git",
