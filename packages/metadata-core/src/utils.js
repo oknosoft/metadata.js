@@ -830,20 +830,22 @@ const utils = {
 		const res = [];
 		let top, skip, count = 0, skipped = 0;
 
-		if (selection) {
-			if (selection.hasOwnProperty('_top')) {
-				top = selection._top;
-				delete selection._top;
-			} else {
-				top = 300;
-			}
-      if (selection.hasOwnProperty('_skip')) {
+    if(selection) {
+      if(selection.hasOwnProperty('_top')) {
+        top = selection._top;
+        delete selection._top;
+      }
+      else {
+        top = 300;
+      }
+      if(selection.hasOwnProperty('_skip')) {
         skip = selection._skip;
         delete selection._skip;
-      } else {
+      }
+      else {
         skip = 0;
       }
-		}
+    }
 
 		for (let i in src) {
 			const o = src[i];
