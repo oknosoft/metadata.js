@@ -15,6 +15,7 @@ import Confirm from '../App/Confirm';
 import withStyles from './styles';
 import {withIface} from 'metadata-redux';
 import control_by_type from 'metadata-abstract-ui/src/ui';
+import StarRate from '@material-ui/icons/StarRate';
 
 class DataList extends MDNRComponent {
 
@@ -334,11 +335,12 @@ class DataList extends MDNRComponent {
 
   _getColumnWidth = ({index}) => {
     // todo: Take remaining space if width of column equal '*'
-    if(!isNaN(parseInt(this.state.columns[index].width))) {
+    const {columns} = this.state;
+    if(isNaN(parseInt(columns[index].width, 10))) {
       return DataList.COLUMN_DEFAULT_WIDTH;
     }
     else {
-      return parseInt(this.state.columns[index].width);
+      return parseInt(columns[index].width, 10);
     }
   };
 
@@ -348,8 +350,11 @@ class DataList extends MDNRComponent {
 
   _cellRenderer = ({columnIndex, rowIndex, isScrolling, isVisible, key, parent, style}) => {
     const {state, props, handleEdit, handleSelect} = this;
-    const {hoveredColumnIndex, hoveredRowIndex, selectedRowIndex} = state;
+    const {hoveredColumnIndex, hoveredRowIndex, selectedRowIndex, columns} = state;
     const {cell, headerCell, hoveredItem, selectedItem} = props.classes;
+
+    const {ctrl_type} = columns[columnIndex];
+    const {star, toggle} = $p.enm.data_field_kinds;
 
     // оформление ячейки
     const classNames = classnames(this._getRowClassName(rowIndex), cell, {
@@ -389,22 +394,23 @@ class DataList extends MDNRComponent {
     };
     if(rowIndex == 0) {
       dprops.onMouseMove = onMouseMove;
-    }
-    ;
+    };
+
 
     return (
-      <div {...dprops}>{content}</div>
+      <div {...dprops}>{rowIndex !== 0 && (ctrl_type === star || ctrl_type === toggle) && content ?
+        <StarRate className={props.classes.star}/> : content}</div>
     );
   };
 
   _formatter(rowData, columnIndex) {
     const {columns} = this.state;
-    const column = columns[columnIndex];
-    const v = rowData[column.id];
+    const {id, type} = columns[columnIndex];
+    const v = rowData[id];
 
-    switch (control_by_type(column.type, v)) {
+    switch (control_by_type(type, v)) {
     case 'ocombo':
-      return this.props._mgr.value_mgr(rowData, column.id, column.type, false, v).get(v).presentation;
+      return this.props._mgr.value_mgr(rowData, id, type, false, v).get(v).presentation;
 
     case 'dhxCalendar':
       return $p.utils.moment(v).format($p.utils.moment._masks.date);
