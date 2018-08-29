@@ -34,6 +34,19 @@ export class FieldWithMeta extends MComponent {
     super(props, context);
     const {_obj, _fld, _meta} = props;
     this._meta = _meta || _obj._metadata(_fld) || {type: {types: ['string']}};
+    if(this._meta.choice_type) {
+      const {path} = this._meta.choice_type;
+      const prm = _obj[path[path.length - 1]] || (_obj._owner && _obj._owner[path[path.length - 1]]);
+      if(prm && !prm.empty()) {
+        this._meta = Object.assign({}, this._meta, {type: prm.type});
+        prm.choice_params.forEach(({name, path}) => {
+          if(!this._meta.choice_params){
+            this._meta.choice_params = [];
+          }
+          this._meta.choice_params.push({name, path});
+        });
+      }
+    }
   }
 
 }
