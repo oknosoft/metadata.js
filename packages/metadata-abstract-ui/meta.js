@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.17-beta.7, built:2018-08-28
+ metadata-abstract-ui v2.0.17-beta.7, built:2018-08-29
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -173,6 +173,11 @@ var meta = {
             order: 11,
             name: 'props',
             synonym: 'Свойства объекта'
+          },
+          {
+            order: 12,
+            name: 'star',
+            synonym: 'Пометка'
           },
         ],
         standard_period: [

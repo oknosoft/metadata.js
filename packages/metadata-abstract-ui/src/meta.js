@@ -177,6 +177,11 @@ export default {
             name: 'props',
             synonym: 'Свойства объекта'
           },
+          {
+            order: 12,
+            name: 'star',
+            synonym: 'Пометка'
+          },
         ],
         standard_period: [
           {

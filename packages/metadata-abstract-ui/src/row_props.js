@@ -30,7 +30,13 @@ export default function (classes) {
     get comparison_type(){return this._getter('comparison_type');}
     set comparison_type(v){this._setter('comparison_type',v);}
     get value(){return this._getter('value');}
-    set value(v){this._setter('value',v);}
+    set value(v){
+      this._setter('value',v);
+      if(!this._owner._owner._data._loading) {
+        const {value} = this;
+        value.is_new && value.is_new() && value.load();
+      }
+    }
 
   }
   RowPropsRow._metadata = {
