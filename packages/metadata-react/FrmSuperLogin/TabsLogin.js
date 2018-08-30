@@ -79,9 +79,11 @@ class TabsLogin extends Component {
   };
 
   handleChange = (name) => event => {
-    this.setState({
-      [name]: event.target.value,
-    });
+    this.setState({[name]: event.target.value});
+  };
+
+  handleInfo = (text) => {
+    this.setState({log_error: `${text}`});
   };
 
   handleLogin = () => {
@@ -105,7 +107,8 @@ class TabsLogin extends Component {
     const {props, state, handleLogin} = this;
     const {classes, user, handleLogOut} = props;
     const btn = classnames(classes.button, classes.fullWidth);
-    const info = user.log_error && /info:/.test(user.log_error);
+    const log_error = user.log_error || state.log_error;
+    const info = log_error && /info:/.test(log_error);
 
     return (
 
@@ -154,13 +157,13 @@ class TabsLogin extends Component {
 
           <DialogActions>
             <Button color="primary" size="small" disabled={!state.login || !state.password} className={classes.button} onClick={this.handleLogin}>Войти</Button>
-            <Fogot classes={classes} />
+            <Fogot classes={classes} handleInfo={this.handleInfo} />
           </DialogActions>
 
         </FormGroup>
         }
 
-        {state.index === 0 && !user.log_error && user.try_log_in &&
+        {state.index === 0 && !log_error && user.try_log_in &&
         <FormGroup row>
           <CircularProgress size={24}/>
           <Typography variant="subheading" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
@@ -169,11 +172,11 @@ class TabsLogin extends Component {
         </FormGroup>
         }
 
-        {state.index === 0 && user.log_error &&
+        {state.index === 0 && log_error &&
         <FormGroup row>
           {info ? <IconError /> : <IconError className={classes.error}/>}
           <Typography variant="subheading" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
-            {user.log_error.replace('info:', '')}
+            {log_error.replace('info:', '')}
           </Typography>
         </FormGroup>
         }
@@ -243,7 +246,7 @@ class TabsLogin extends Component {
         </FormGroup>
         }
 
-        {state.index === 1 && !user.log_error && user.try_log_in &&
+        {state.index === 1 && !log_error && user.try_log_in &&
         <FormGroup row>
           <CircularProgress size={24}/>
           <Typography variant="subheading" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
@@ -252,11 +255,11 @@ class TabsLogin extends Component {
         </FormGroup>
         }
 
-        {state.index === 1 && user.log_error &&
+        {state.index === 1 && log_error &&
         <FormGroup row>
           {info ? <IconError /> : <IconError className={classes.error}/>}
           <Typography variant="subheading" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
-            {user.log_error.replace('info:', '')}
+            {log_error.replace('info:', '')}
           </Typography>
         </FormGroup>
         }

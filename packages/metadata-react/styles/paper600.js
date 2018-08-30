@@ -1,39 +1,40 @@
 import withStyles from '@material-ui/core/styles/withStyles';
 
-export default withStyles(theme => ({
-  root: theme.mixins.gutters({
+export default withStyles(({mixins, custom, spacing, shadows, palette}) => ({
+  root: mixins.gutters({
     maxWidth: 600,
-    marginTop: theme.custom && theme.custom.appbar.position == 'fixed' ? 72 : 24,
+    marginTop: custom && custom.appbar.position == 'fixed' ? 72 : 24,
     marginLeft: 'auto',
     marginRight: 'auto',
-    paddingTop: theme.spacing.unit,
+    paddingTop: spacing.unit,
   }),
   disabled: {
     pointerEvents: 'none',
     backgroundColor: 'transparent',
-    boxShadow: theme.shadows[0],
+    boxShadow: shadows[0],
   },
   error: {
-    color: theme.palette.error.A400,
+    color: palette.error.A400,
   },
   errorText: {
     maxWidth: 500,
   },
   textField: {
-    marginTop: theme.spacing.unit * 3,
+    marginTop: spacing.unit * 3,
   },
   spaceLeft: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: spacing.unit,
   },
   spaceOuter: {
-    padding: '16px 16px 0 16px',
-    minWidth: 240,
+    padding: spacing.unit * 2,
+    paddingBottom: 0,
+    minWidth: 260,
   },
   paddingRight: {
-    paddingRight: theme.spacing.unit,
+    paddingRight: spacing.unit,
   },
   button: {
-    margin: theme.spacing.unit,
+    margin: spacing.unit,
   },
   fullWidth: {
     width: '100%',

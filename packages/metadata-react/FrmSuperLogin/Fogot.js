@@ -40,18 +40,10 @@ class Fogot extends Component {
     this.closeFogot();
     $p.superlogin.forgotPassword(this.state.email)
       .then(() => {
-        this.props.handleIfaceState({
-          component: '',
-          name: 'snack',
-          value: {open: true, message: 'Отправлено письмо, проверьте почтовый ящик'},
-        });
+        this.props.handleInfo('info:Отправлено письмо, проверьте почтовый ящик');
       })
       .catch((err) => {
-        this.props.handleIfaceState({
-          component: '',
-          name: 'snack',
-          value: {open: true, message: err.error || err.toString()},
-        });
+        this.props.handleInfo(err.error || err.toString());
       });
   };
 
