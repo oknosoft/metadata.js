@@ -25,6 +25,10 @@ export default withStyles(theme => ({
   spaceLeft: {
     marginLeft: theme.spacing.unit,
   },
+  spaceOuter: {
+    padding: '16px 16px 0 16px',
+    minWidth: 240,
+  },
   paddingRight: {
     paddingRight: theme.spacing.unit,
   },

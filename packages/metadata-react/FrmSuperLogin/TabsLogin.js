@@ -28,6 +28,7 @@ import {FacebookIcon, GitHubIcon, GoogleIcon, YandexIcon} from './assets/icons';
 import withStyles from '../styles/paper600';
 import connect from './connect';
 import classnames from 'classnames';
+import Fogot from './Fogot';
 
 class TabsLogin extends Component {
 
@@ -74,7 +75,7 @@ class TabsLogin extends Component {
   }
 
   handleClickShowPasssword = () => {
-    this.setState({ showPassword: !this.state.showPassword });
+    this.setState({showPassword: !this.state.showPassword});
   };
 
   handleChange = (name) => event => {
@@ -153,7 +154,7 @@ class TabsLogin extends Component {
 
           <DialogActions>
             <Button color="primary" size="small" disabled={!state.login || !state.password} className={classes.button} onClick={this.handleLogin}>Войти</Button>
-            <Button color="primary" size="small" disabled={true} className={classes.button}>Забыли пароль?</Button>
+            <Fogot classes={classes} />
           </DialogActions>
 
         </FormGroup>

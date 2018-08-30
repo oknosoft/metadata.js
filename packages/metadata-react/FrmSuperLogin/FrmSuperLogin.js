@@ -4,13 +4,23 @@ import Helmet from 'react-helmet';
 
 import TabsLogin from './TabsLogin';
 import Profile from './Profile';
+import Reset from './Reset';
 
 
 export default function FrmSuperLogin({ classes, ...other}) {
+  const {token} = other.match.params;
   return [
     <Helmet key="helmet" title="Профиль пользователя">
       <meta name="description" content="Вход в систему" />
     </Helmet>,
-    other.user.logged_in ? < Profile key="profile" {...other} /> : < TabsLogin key="profile" {...other} />
+    token ?
+      < Reset key="profile" {...other} />
+      :
+      (
+        other.user.logged_in ?
+        < Profile key="profile" {...other} />
+        :
+        < TabsLogin key="profile" {...other} />
+      )
   ];
 };
