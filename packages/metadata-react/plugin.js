@@ -100,9 +100,11 @@ function rx_columns({utils: {moment}, enm, md}) {
         let options;
         switch (column.ctrl_type) {
 
+        case label:
+          break;
+
         case input:
         case text:
-        case label:
         case link:
         case cascader:
           column.editable = editable;

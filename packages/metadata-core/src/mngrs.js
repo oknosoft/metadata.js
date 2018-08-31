@@ -1319,11 +1319,11 @@ export class RefDataManager extends DataManager{
         if(input_by_string.length > 1) {
           select.selector.$or = [];
           input_by_string.forEach((fld) => {
-            select.selector.$or.push({[fld]: {like: search}});
+            select.selector.$or.push({[fld]: {$regex: `(?i)${search}`}});
           });
         }
         else {
-          select.selector[input_by_string[0]] = {$regex: search};
+          select.selector[input_by_string[0]] = {$regex: `(?i)${search}`};
         }
       }
 

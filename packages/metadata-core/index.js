@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.7, built:2018-08-28
+ metadata-core v2.0.17-beta.7, built:2018-08-31
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2262,11 +2262,11 @@ class RefDataManager extends DataManager{
         if(input_by_string.length > 1) {
           select.selector.$or = [];
           input_by_string.forEach((fld) => {
-            select.selector.$or.push({[fld]: {like: search}});
+            select.selector.$or.push({[fld]: {$regex: `(?i)${search}`}});
           });
         }
         else {
-          select.selector[input_by_string[0]] = {$regex: search};
+          select.selector[input_by_string[0]] = {$regex: `(?i)${search}`};
         }
       }
     }
