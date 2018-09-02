@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.7, built:2018-08-31
+ metadata-core v2.0.17-beta.7, built:2018-09-02
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1151,15 +1151,17 @@ class DocObj extends NumberDocAndDate(DataObj) {
 class DataProcessorObj extends DataObj {
   constructor(attr, manager, loading) {
     super(attr, manager, loading);
-    const {fields, tabular_sections} = manager.metadata();
-    for (const fld in fields) {
-      if(!attr[fld]) {
-        attr[fld] = utils.fetch_type('', fields[fld].type);
+    if(!loading) {
+      const {fields, tabular_sections} = manager.metadata();
+      for (const fld in fields) {
+        if(!attr[fld]) {
+          attr[fld] = utils.fetch_type('', fields[fld].type);
+        }
       }
-    }
-    for (const fld in tabular_sections) {
-      if(!attr[fld]) {
-        attr[fld] = [];
+      for (const fld in tabular_sections) {
+        if(!attr[fld]) {
+          attr[fld] = [];
+        }
       }
     }
     utils._mixin(this, attr);
@@ -2337,8 +2339,8 @@ class RefDataManager extends DataManager{
   }
 }
 class DataProcessorsManager extends DataManager{
-	create(attr = {}){
-		return this.obj_constructor('', [attr, this]);
+	create(attr = {}, loading){
+		return this.obj_constructor('', [attr, this, loading]);
 	}
 	get(ref){
 		if(ref){
