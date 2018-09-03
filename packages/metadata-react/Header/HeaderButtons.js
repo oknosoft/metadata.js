@@ -32,7 +32,7 @@ function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavig
   return [
 
     // показываем допкнопки, если задано в redux
-    CustomBtn && <CustomBtn key="custom_btn"/>,
+    CustomBtn && <CustomBtn key="custom_btn" user={user}/>,
 
     // индикатор доступности облака показываем только на экране шире 'sm'
     !compact && isWidthUp('sm', width) &&
