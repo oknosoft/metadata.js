@@ -33,8 +33,15 @@ export default withStyles(({mixins, custom, spacing, shadows, palette}) => ({
   paddingRight: {
     paddingRight: spacing.unit,
   },
+  marginRight: {
+    marginRight: spacing.unit / 2,
+  },
   button: {
     margin: spacing.unit,
+  },
+  row: {
+    display: 'flex',
+    alignItems: 'center',
   },
   fullWidth: {
     width: '100%',
