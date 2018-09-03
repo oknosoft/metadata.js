@@ -77,7 +77,16 @@ class UserObj extends Component {
         <a href={info.html_url} target="_blank" rel="noopener noreferrer">{info.html_url}</a>
         </div>;
     }
-    return <Typography>{`Связь с провайдером '${provider}' установлена`}</Typography>;
+    else if(provider === 'google') {
+      return <div className={classes.spaceOuter}>
+        <div className={classes.row}>
+          {info.image && <Avatar alt={info.displayName} src={info.image.url} className={classes.avatar} />}
+          <Typography>{info.displayName}</Typography>
+        </div>
+        <a href={info.url} target="_blank" rel="noopener noreferrer">{info.url}</a>
+      </div>;
+    }
+    return <Typography className={classes.spaceOuter}>{`Связь с провайдером '${provider}' установлена`}</Typography>;
   }
 
   profileButton(provider, classes) {
