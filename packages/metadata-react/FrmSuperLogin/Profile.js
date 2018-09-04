@@ -86,6 +86,15 @@ class UserObj extends Component {
         <a href={info.url} target="_blank" rel="noopener noreferrer">{info.url}</a>
       </div>;
     }
+    else if(provider === 'facebook') {
+      return <div className={classes.spaceOuter}>
+        <div className={classes.row}>
+          {info.picture && <Avatar alt={info.name} src={info.picture.data.url} className={classes.avatar} />}
+          <Typography>{info.name}</Typography>
+        </div>
+        <Typography>{info.email}</Typography>
+      </div>;
+    }
     return <Typography className={classes.spaceOuter}>{`Связь с провайдером '${provider}' установлена`}</Typography>;
   }
 

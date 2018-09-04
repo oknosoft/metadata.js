@@ -61,8 +61,8 @@ class Fogot extends Component {
       }
     })
       .catch((res) => {
-        if(res.error.indexOf('invalid') !== -1) {
-          this.setState({errorText: `Неверный формат email`});
+        if(res.error.indexOf('Неверный формат') !== -1) {
+          this.setState({errorText: res.error});
         }
         else {
           this.setState({emailOk: true, errorText: '', });

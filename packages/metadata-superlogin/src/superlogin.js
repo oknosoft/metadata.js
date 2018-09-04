@@ -4,7 +4,7 @@
  *
  */
 
-import superlogin from 'superlogin-client';
+import superlogin from './client';
 
 import adapter from './adapter';
 import default_config from './default.config';
@@ -65,7 +65,7 @@ function attach($p) {
             return res.data;
           });
     }
-    return Promise.reject({error: 'Authentication required'});
+    return Promise.reject({error: 'Требуется авторизация'});
   };
 
   superlogin.change_subscription = function (subscription) {
@@ -80,7 +80,7 @@ function attach($p) {
             return res.data;
           });
     }
-    return Promise.reject({error: 'Authentication required'});
+    return Promise.reject({error: 'Требуется авторизация'});
   }
 
 
@@ -209,9 +209,6 @@ function attach($p) {
       if(!password || password.length < 6 || password !== confirmPassword) {
         return dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Длина пароля должна быть не менее 6 символов'}));
       }
-      if(!username || username.length < 3) {
-        return dispatch(metaActions.USER_LOG_ERROR({message: 'empty'}));
-      }
 
       // проверим login, email и password
       return superlogin.validateUsername(username)
@@ -220,18 +217,14 @@ function attach($p) {
             err.message && err.message.match(/(time|network)/i) ? err : {message: 'custom', text: err.error ? err.error : 'Ошибка при проверке имени пользователя'}
           ));
         })
-        .then((ok) => {
-          return ok && superlogin.validateEmail(email)
-        })
+        .then((ok) => ok && superlogin.validateEmail(email))
         .catch((err) => {
           dispatch(metaActions.USER_LOG_ERROR(
             err.message && err.message.match(/(time|network)/i) ? err : {message: 'custom', text: err.error ? err.error : 'Email error'}
           ));
         })
         // попытка регистрации
-        .then((ok) => {
-          return ok && superlogin.register(registration)
-        })
+        .then((ok) => ok && superlogin.register(registration))
         .then((reg) => {
           if(reg) {
             if(reg.success) {
@@ -246,7 +239,7 @@ function attach($p) {
               }
             }
             else {
-              dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Registration error'}));
+              dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: reg.error ? reg.error : 'Registration error'}));
             }
           }
         })

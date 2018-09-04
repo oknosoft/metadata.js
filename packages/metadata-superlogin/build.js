@@ -9,7 +9,7 @@ const webpack = require('webpack');
 const path = require('path');
 const package_data = require(path.resolve(__dirname, './package.json'));
 
-const external = ['superlogin-client'];
+const external = ['events', 'debug', 'axios'];
 const plugins = [
   resolve({jsnext: true, main: true}),
   replace({PACKAGE_VERSION: package_data.version}),
