@@ -8,6 +8,7 @@ import Helmet from 'react-helmet';
 import AppContent from './AppContent';
 
 export const ltitle = 'Необходима авторизация';
+const htitle = 'Пользователь не авторизован';
 
 function NeedAuth(props) {
   const {handleNavigate, handleIfaceState, title} = props;
@@ -23,8 +24,10 @@ function NeedAuth(props) {
 
   const margin = {marginTop: 16, marginBottom: 16};
   return <AppContent>
-    <Helmet title="Пользователь не авторизован">
-      <meta name="description" content="Необходима авторизация" />
+    <Helmet title={htitle}>
+      <meta name="description" content={ltitle} />
+      <meta property="og:title" content={htitle} />
+      <meta property="og:description" content={ltitle} />
     </Helmet>
     <div style={{marginTop: 16}}>
       <Typography variant="display1" component="h1" color="primary" style={margin}>Пользователь не авторизован</Typography>

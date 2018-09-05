@@ -88,6 +88,8 @@ function MarkdownDocs(props: Props) {
       <Helmet title={ltitle}>
         <meta name="description" content={descr || h1} />
         {canonical && <link rel="canonical" href={canonical} />}
+        <meta property="og:title" content={ltitle} />
+        <meta property="og:description" content={descr || h1} />
       </Helmet>
 
       {/*

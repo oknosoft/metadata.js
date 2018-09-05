@@ -260,6 +260,8 @@ class DataList extends MDNRComponent {
 
       !context.dnr && <Helmet key="helmet" title={title}>
         <meta name="description" content="Форма списка" />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content="Форма списка" />
       </Helmet>,
 
       // диалог предупреждений при удалении

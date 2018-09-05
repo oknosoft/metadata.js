@@ -81,6 +81,7 @@ class TabsLogin extends Component {
 
     const {props, state, handleLogin} = this;
     const {classes, user, handleLogOut, couch_direct} = props;
+    const descr = "Вход в систему";
 
     return <Paper className={classnames({
       [classes.root]: true,
@@ -88,7 +89,9 @@ class TabsLogin extends Component {
     })} elevation={4}>
 
       <Helmet title={props.title}>
-        <meta name="description" content="Вход в систему" />
+        <meta name="description" content={descr} />
+        <meta property="og:title" content={props.title} />
+        <meta property="og:description" content={descr} />
       </Helmet>
 
       <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>

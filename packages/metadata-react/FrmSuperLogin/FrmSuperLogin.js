@@ -12,6 +12,8 @@ export default function FrmSuperLogin({ classes, ...other}) {
   return [
     <Helmet key="helmet" title="Профиль пользователя">
       <meta name="description" content="Вход в систему" />
+      <meta property="og:title" content="Профиль пользователя" />
+      <meta property="og:description" content="Вход в систему" />
     </Helmet>,
     token ?
       < Reset key="profile" {...other} />
