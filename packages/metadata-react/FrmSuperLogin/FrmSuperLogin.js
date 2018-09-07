@@ -11,18 +11,18 @@ export default function FrmSuperLogin({ classes, ...other}) {
   const {token} = other.match.params;
   return [
     <Helmet key="helmet" title="Профиль пользователя">
-      <meta name="description" content="Вход в систему" />
-      <meta property="og:title" content="Профиль пользователя" />
-      <meta property="og:description" content="Вход в систему" />
+      <meta name="description" content="Вход в систему"/>
+      <meta property="og:title" content="Профиль пользователя"/>
+      <meta property="og:description" content="Вход в систему"/>
     </Helmet>,
     token ?
-      < Reset key="profile" {...other} />
+      <Reset key="profile" {...other}/>
       :
       (
         other.user.logged_in ?
-        < Profile key="profile" {...other} />
-        :
-        < TabsLogin key="profile" {...other} />
+          <Profile key="profile" {...other}/>
+          :
+          <TabsLogin key="profile" {...other}/>
       )
   ];
 };
