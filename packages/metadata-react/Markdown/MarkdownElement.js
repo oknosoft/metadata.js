@@ -1,14 +1,35 @@
 // @flow
 
 import React from 'react';
-import classNames from 'classnames';
-import marked from 'marked';
 
+import marked from 'marked';
+import Diagrams from '../Diagrams/Diagrams';
+
+import classNames from 'classnames';
 import withStyles from './styles';
 import {withIface} from 'metadata-redux';
 
 // const renderer = new marked.Renderer();
-//
+// renderer.html = function(html) {
+//   if(/^<div>.*<\/div>$/.test(html)) {
+//     html = html.replace(/^<div>/, '').replace(/<\/div>$/, '');
+//     if(/^<Diagrams/.test(html)) {
+//       const xml = new DOMParser().parseFromString(html,"text/xml");
+//       const elm = xml && xml.firstElementChild;
+//       if(elm) {
+//         const {diagrams, grid} = elm.attributes;
+//         return ReactDOMServer.renderToString(
+//           React.createElement(Diagrams, {
+//             diagrams: diagrams ? JSON.parse(diagrams.nodeValue) : [],
+//             grid: grid && grid.nodeValue || '1'
+//           })
+//         );
+//       }
+//     }
+//   }
+//   return html;
+// }
+
 // renderer.heading = (text, level) => {
 //   const escapedText = text
 //     .toLowerCase()
@@ -25,7 +46,7 @@ import {withIface} from 'metadata-redux';
 //   `
 //   );
 // };
-//
+
 // marked.setOptions({
 //   // gfm: true,
 //   // tables: true,
@@ -37,6 +58,36 @@ import {withIface} from 'metadata-redux';
 //   renderer,
 // });
 
+function render(text) {
+  const res = [];
+  let prev = 0;
+  text.replace(/<Diagrams[\s\S]*?\/>/g, (str, offset) => {
+    res.push(<div
+      key={`md-${res.length + 1}`}
+      dangerouslySetInnerHTML={{__html: marked(text.substr(prev, offset - prev))}}
+    />);
+
+    const xml = new DOMParser().parseFromString(str,"text/xml");
+    const elm = xml && xml.firstElementChild;
+    if(elm) {
+      const {charts, grid} = elm.attributes;
+      res.push(<Diagrams
+        key={`md-${res.length + 1}`}
+        charts={charts ? JSON.parse(charts.nodeValue) : []}
+        grid={grid && grid.nodeValue || '1'}
+      />);
+    }
+    prev = offset + str.length;
+  });
+  if(prev < text.length) {
+    res.push(<div
+      key={`md-${res.length + 1}`}
+      dangerouslySetInnerHTML={{__html: marked(text.substr(prev))}}
+    />);
+  }
+  return res;
+}
+
 
 type Props = {
   classes: Object,
@@ -47,26 +98,30 @@ type Props = {
 
 function MarkdownElement(props: Props) {
   const { classes, className, text, handleNavigate, handleIfaceState, disconnect, ...other } = props;
+
+  function anchorCkick(evt) {
+    if(evt.target.tagName === 'A') {
+      const url = new URL(evt.target.href);
+      if(url.origin === location.origin) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        handleNavigate(url.pathname);
+      }
+      else if(!evt.target.target) {
+        evt.target.target = '_blank';
+      }
+    }
+  }
+
   /* eslint-disable react/no-danger */
   return (
     <div
       className={classNames(classes.root, 'markdown-body', className)}
-      dangerouslySetInnerHTML={{__html: marked(text)}}
-      onClick={(evt) => {
-        if(evt.target.tagName === 'A') {
-          const url = new URL(evt.target.href);
-          if(url.origin === location.origin) {
-            evt.preventDefault();
-            evt.stopPropagation();
-            handleNavigate(url.pathname);
-          }
-          else if(!evt.target.target) {
-            evt.target.target = '_blank';
-          }
-        }
-      }}
+      onClick={anchorCkick}
       {...other}
-    />
+    >
+      {render(text)}
+    </div>
   );
   /* eslint-enable */
 }
