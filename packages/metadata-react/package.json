@@ -9,7 +9,7 @@
     "npm": "^5.5"
   },
   "dependencies": {
-    "@material-ui/core": "^3.0.2",
+    "@material-ui/core": "^3.0.3",
     "@material-ui/icons": "^3.0.1",
     "autoprefixer": "^7.2.6",
     "classnames": "^2.2",
@@ -21,10 +21,13 @@
     "rc-calendar": "^9.7.7",
     "rc-cascader": "^0.16",
     "rc-time-picker": "^3.4",
+    "react-fullscreenable": "^2.5.1-0",
     "react-helmet": "^5.2.0",
     "react-onclickoutside": "^6.7.1",
     "react-portal": "^4.1.5",
+    "react-swipeable": "^4.3.0",
     "react-virtualized": "^9.20",
+    "recharts": "^1.2.0",
     "yamljs": "^0.3"
   },
   "peerDependencies": {
