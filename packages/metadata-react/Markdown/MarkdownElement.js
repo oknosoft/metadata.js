@@ -97,7 +97,7 @@ type Props = {
 };
 
 function MarkdownElement(props: Props) {
-  const { classes, className, text, handleNavigate, handleIfaceState, disconnect, ...other } = props;
+  const { classes, className, text, handleNavigate, handleIfaceState, disconnect, CustomBtn, ...other } = props;
 
   function anchorCkick(evt) {
     if(evt.target.tagName === 'A') {
