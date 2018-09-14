@@ -400,6 +400,58 @@ SpreadsheetDocument.prototype.__define({
     }
   },
 
+  /**
+   * Получаем HTML печатной формы
+   */
+  get_html: {
+    value() {
+      return new Promise((resolve, reject) => {
+        
+        const doc = this,
+          url = this.blankURL;
+
+        try{
+          const wnd_print = window.open(url, '_blank',
+              'fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes');
+
+          if (wnd_print.outerWidth < screen.availWidth || wnd_print.outerHeight < screen.availHeight){
+            wnd_print.moveTo(0,0);
+            wnd_print.resizeTo(screen.availWidth, screen.availHeight);
+          }
+
+          wnd_print.onload = function() {
+            URL.revokeObjectURL(url);
+            // копируем элементы из head
+            for (let i = 0; i < doc.head.children.length; i++) {
+              wnd_print.document.head.appendChild(doc.copy_element(doc.head.children[i]));
+            }
+            // копируем элементы из content
+            if (doc.innerContent) {
+              for (let i = 0; i < doc.content.children.length; i++) {
+                wnd_print.document.body.appendChild(doc.copy_element(doc.content.children[i]));
+              }
+            } else {
+              wnd_print.document.body.appendChild(doc.content);
+            }
+            if(doc.title){
+              wnd_print.document.title = doc.title;
+            }
+
+            // сохраняем содержимое документа
+            setTimeout(() => {
+              resolve(wnd_print.document.firstElementChild.outerHTML);
+              wnd_print.close();
+            }, 200);
+          };
+        }
+        catch(err){
+          URL.revokeObjectURL(url);
+          reject(err);
+        }
+      });
+    }
+  },
+
   blank: {
     get: function () {
       return this._attr.blank
