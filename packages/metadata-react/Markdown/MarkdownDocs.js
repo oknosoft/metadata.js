@@ -20,9 +20,10 @@ const styles = {
   },
   header: {
     display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-end',
   },
+  width: {
+    width: '100%',
+  }
 };
 
 
@@ -51,7 +52,7 @@ type Props = {
 
 function MarkdownDocs(props: Props) {
   const {classes, demos, markdown, subtitle, sourceLocation: sourceLocationProp, title, htitle, h1,
-    descr, canonical, footer, handleIfaceState} = props;
+    descr, canonical, footer, handleIfaceState, TopButton} = props;
   const contents = getContents(markdown);
   const headers = getHeaders(markdown);
 
@@ -99,7 +100,10 @@ function MarkdownDocs(props: Props) {
       */}
 
       {
-        h1 && <Typography key="h1" variant="display1" component="h1" color="primary">{h1}</Typography>
+        h1 && <div className={classes.header}>
+          <Typography key="h1" variant="display1" component="h1" color="primary" className={classes.width}>{h1}</Typography>
+          {TopButton}
+        </div>
       }
 
       {contents.map(content => {

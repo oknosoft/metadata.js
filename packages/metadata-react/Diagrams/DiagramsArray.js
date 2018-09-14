@@ -54,7 +54,7 @@ class DiagramsArray extends Component {
       {
         diagrams.map((data, key) => {
           let md, w;
-          const height = width >= 960 ? width / 5 : 0;
+          const height = width >= 960 ? (width / 5.2).round() : 0;
           switch (grid) {
           case '2':
             md = 6;

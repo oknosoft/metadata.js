@@ -19,6 +19,7 @@ import Bar from './Bar';
 import Line from './Line';
 import Radar from './Radar';
 import Table from './Table';
+import MuiTable from './MuiTable';
 
 let Recharts;
 
@@ -37,6 +38,9 @@ function TypedDiagram(props) {
     break;
   case 'table':
     diagram = Table(props);
+    break;
+  case 'muitable':
+    diagram = MuiTable(props);
     break;
   default:
     diagram = <div>{`Неизвестный тип диаграммы '${props.data.kind}'`}</div>;

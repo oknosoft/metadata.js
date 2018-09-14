@@ -9,7 +9,7 @@ const anchorLinkStyle = (theme, size) => ({
   '&:hover .anchor-link-style': {
     display: 'inline-block',
     opacity: 1,
-    padding: `0 ${theme.spacing.unit}px`,
+    padding: theme.spacing.unit,
     color: theme.palette.text.hint,
     '&:hover': {
       color: theme.palette.text.secondary,

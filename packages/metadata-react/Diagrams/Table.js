@@ -1,5 +1,6 @@
 /**
  * ### Диаграмма Table
+ * на основе react-data-grid
  *
  * @module Table
  *

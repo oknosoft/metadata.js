@@ -18,6 +18,19 @@ const styles = theme => ({
       margin: [0, '!important'],
     }
   },
+  root: {
+    width: '100%',
+    overflow: 'auto',
+  },
+  table: {
+    minWidth: 300,
+  },
+  cellBody: {
+    fontSize: 'inherit',
+  },
+  rowRoot: {
+    height: 'auto'
+  },
   secondary: {
     marginTop: -theme.spacing.unit * 1.5,
   },
