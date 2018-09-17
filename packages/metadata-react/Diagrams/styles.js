@@ -27,9 +27,13 @@ const styles = theme => ({
   },
   cellBody: {
     fontSize: 'inherit',
+    padding: '4px 8px!important',
   },
   rowRoot: {
     height: 'auto'
+  },
+  darkblue: {
+    color: 'darkblue',
   },
   secondary: {
     marginTop: -theme.spacing.unit * 1.5,

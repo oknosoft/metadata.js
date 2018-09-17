@@ -64,10 +64,10 @@ export default function log_manager() {
         msg.date = Date.now() + wsql.time_diff;
 
         // уникальность ключа
-        if(!this.smax){
-          this.smax = wsql.alasql.compile('select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?');
+        if(!this._smax){
+          this._smax = wsql.alasql.compile('select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?');
         }
-        const res = this.smax([msg.date]);
+        const res = this._smax([msg.date]);
         if(!res.length || res[0].sequence === undefined) {
           msg.sequence = 0;
         }
@@ -80,10 +80,29 @@ export default function log_manager() {
           msg.class = 'note';
         }
 
-        wsql.alasql('insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)',
-          [msg.date + '¶' + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : '']);
-      }
+        if(!this._insert){
+          this._insert = wsql.alasql.compile('insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)');
+        }
+        this._insert([msg.date + '¶' + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : '']);
 
+        this.emit_async('record', {count: this.unviewed_count()});
+      }
+    }
+
+    viewed() {
+      if(!this._viewed){
+        this._viewed = this._owner.$p.wsql.alasql.compile('select l.*, v.key from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key)');
+      }
+      return this._viewed();
+    }
+
+    unviewed_count() {
+      if(!this._unviewed_count){
+        // select l.* from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key) where v.key is null
+        this._unviewed_count = this._owner.$p.wsql.alasql.compile(
+          'select value count(*) from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key) where v.key is null');
+      }
+      return this._unviewed_count();
     }
 
     /**
@@ -148,11 +167,36 @@ export default function log_manager() {
      * @param [dtill] {Date}
      */
     clear(dfrom, dtill) {
+      for(const ref in this.by_ref) {
+        delete this.by_ref[ref];
+      }
+      this.alatable.length = 0;
 
+      const {log_view} = $p.ireg;
+      for(const ref in log_view.by_ref) {
+        delete log_view.by_ref[ref];
+      }
+      log_view.alatable.length = 0;
     }
 
-    show(pwnd) {
+    /**
+     * Помечает записи, как просмотренные
+     * @param dfrom
+     * @param dtill
+     */
+    mark_viewed(dfrom, dtill) {
+      const {alatable} = $p.ireg.log_view;
+      const user = $p.adapters.pouch.authorized || '';
 
+      if(!this._unviewed){
+        // select l.* from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key) where v.key is null
+        this._unviewed = this._owner.$p.wsql.alasql.compile(
+          'select l.ref from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key) where v.key is null');
+      }
+
+      for(const {ref} of this._unviewed()) {
+        alatable.push({key: ref, user})
+      }
     }
 
     get(ref, force_promise, do_not_create) {

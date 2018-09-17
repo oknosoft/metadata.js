@@ -15,7 +15,6 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
 
 
 function MuiTable ({width, height, data, classes, isFullscreen}) {
@@ -59,7 +58,7 @@ function MuiTable ({width, height, data, classes, isFullscreen}) {
         }
       </TableRow>;
     }
-    return <TableRow key={key} classes={{root: classes.rowRoot}}>
+    return <TableRow key={key} hover classes={{root: classes.rowRoot}}>
       {
         columns.map((v, ind) => {
           const value = row[v.name];
@@ -84,13 +83,13 @@ function MuiTable ({width, height, data, classes, isFullscreen}) {
   return (
     <div className={classes.root} style={{maxWidth: width, maxHeight: height}}>
       <Table padding="dense" className={classes.table}>
-      <TableHead>
-        {renderRow(null, 'head')}
-      </TableHead>
-      <TableBody>
-        {data.rows.map(renderRow)}
-      </TableBody>
-    </Table>
+        <TableHead>
+          {renderRow(null, 'head')}
+        </TableHead>
+        <TableBody>
+          {data.rows.map(renderRow)}
+        </TableBody>
+      </Table>
     </div>
   );
 }

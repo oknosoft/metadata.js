@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.17-beta.7, built:2018-09-03
+ metadata-abstract-ui v2.0.17-beta.8, built:2018-09-17
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -56,10 +56,10 @@ function log_manager() {
       }
       if(wsql.alasql.databases.dbo.tables.ireg_log) {
         msg.date = Date.now() + wsql.time_diff;
-        if(!this.smax){
-          this.smax = wsql.alasql.compile('select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?');
+        if(!this._smax){
+          this._smax = wsql.alasql.compile('select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?');
         }
-        const res = this.smax([msg.date]);
+        const res = this._smax([msg.date]);
         if(!res.length || res[0].sequence === undefined) {
           msg.sequence = 0;
         }
@@ -69,9 +69,25 @@ function log_manager() {
         if(!msg.class) {
           msg.class = 'note';
         }
-        wsql.alasql('insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)',
-          [msg.date + '¶' + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : '']);
+        if(!this._insert){
+          this._insert = wsql.alasql.compile('insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)');
+        }
+        this._insert([msg.date + '¶' + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : '']);
+        this.emit_async('record', {count: this.unviewed_count()});
       }
+    }
+    viewed() {
+      if(!this._viewed){
+        this._viewed = this._owner.$p.wsql.alasql.compile('select l.*, v.key from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key)');
+      }
+      return this._viewed();
+    }
+    unviewed_count() {
+      if(!this._unviewed_count){
+        this._unviewed_count = this._owner.$p.wsql.alasql.compile(
+          'select value count(*) from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key) where v.key is null');
+      }
+      return this._unviewed_count();
     }
     backup(dfrom, dtill) {
       const {wsql, adapters: {pouch}, utils: {moment}} = this._owner.$p;
@@ -110,8 +126,26 @@ function log_manager() {
     restore(dfrom, dtill) {
     }
     clear(dfrom, dtill) {
+      for(const ref in this.by_ref) {
+        delete this.by_ref[ref];
+      }
+      this.alatable.length = 0;
+      const {log_view} = $p.ireg;
+      for(const ref in log_view.by_ref) {
+        delete log_view.by_ref[ref];
+      }
+      log_view.alatable.length = 0;
     }
-    show(pwnd) {
+    mark_viewed(dfrom, dtill) {
+      const {alatable} = $p.ireg.log_view;
+      const user = $p.adapters.pouch.authorized || '';
+      if(!this._unviewed){
+        this._unviewed = this._owner.$p.wsql.alasql.compile(
+          'select l.ref from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key) where v.key is null');
+      }
+      for(const {ref} of this._unviewed()) {
+        alatable.push({key: ref, user});
+      }
     }
     get(ref, force_promise, do_not_create) {
       if(typeof ref == 'object') {
