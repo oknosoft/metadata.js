@@ -46,11 +46,16 @@ class Notifications extends Component {
   }
 
   componentDidMount() {
-    $p.ireg.log.on({record: this.onLog});
+    if(typeof $p === 'object') {
+      $p.ireg.log.on({record: this.onLog});
+    }
+    else{
+      setTimeout(this.componentDidMount.bind(this), 1000);
+    }
   }
 
   componentWillUnmount() {
-    $p.ireg.log.off({record: this.onLog});
+    typeof $p === 'object' && $p.ireg.log.off({record: this.onLog});
   }
 
   filterChange = ({target: {value}}) => {
@@ -83,12 +88,12 @@ class Notifications extends Component {
   };
 
   mark_viewed = () => {
-    $p.ireg.log.mark_viewed();
+    typeof $p === 'object' && $p.ireg.log.mark_viewed();
     this.setState({count: 0});
   };
 
   clear_log = () => {
-    $p.ireg.log.clear();
+    typeof $p === 'object' && $p.ireg.log.clear();
     this.setState({count: 0});
   };
 
