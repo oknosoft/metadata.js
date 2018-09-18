@@ -112,15 +112,26 @@ function adapter({AbstracrAdapter}) {
         if(bases.indexOf(name) != -1) {
           // в Node, локальные базы - это алиасы удалённых
           // если direct, то все базы, кроме ram, так же - удалённые
-          if(props.user_node || (props.direct && name != 'ram' && name != 'user')) {
-            Object.defineProperty(local, name, {
-              get: function () {
+          Object.defineProperty(local, name, {
+            get() {
+              if(props.user_node) {
                 return remote[name];
               }
-            });
+              const dynamic_doc = wsql.get_user_param('dynamic_doc');
+              if(dynamic_doc && name === 'doc' && props.direct) {
+                return remote[dynamic_doc];
+              }
+              else {
+                return local[`__${name}`] || remote[name];
+              }
+            }
+          });
+
+          if(props.user_node || (props.direct && name != 'ram' && name != 'user')) {
+            local[`__${name}`] = null;
           }
           else {
-            local[name] = new PouchDB(props.prefix + props.zone + '_' + name, opts);
+            local[`__${name}`] = new PouchDB(props.prefix + props.zone + '_' + name, opts);
           }
         }
       }

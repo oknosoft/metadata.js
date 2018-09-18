@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.7, built:2018-08-28
+ metadata-pouchdb v2.0.17-beta.8, built:2018-09-18
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -188,15 +188,25 @@ function adapter({AbstracrAdapter}) {
       }
       for (const name of pbases) {
         if(bases.indexOf(name) != -1) {
-          if(props.user_node || (props.direct && name != 'ram' && name != 'user')) {
-            Object.defineProperty(local, name, {
-              get: function () {
+          Object.defineProperty(local, name, {
+            get() {
+              if(props.user_node) {
                 return remote[name];
               }
-            });
+              const dynamic_doc = wsql.get_user_param('dynamic_doc');
+              if(dynamic_doc && name === 'doc' && props.direct) {
+                return remote[dynamic_doc];
+              }
+              else {
+                return local[`__${name}`] || remote[name];
+              }
+            }
+          });
+          if(props.user_node || (props.direct && name != 'ram' && name != 'user')) {
+            local[`__${name}`] = null;
           }
           else {
-            local[name] = new PouchDB$1(props.prefix + props.zone + '_' + name, opts);
+            local[`__${name}`] = new PouchDB$1(props.prefix + props.zone + '_' + name, opts);
           }
         }
       }

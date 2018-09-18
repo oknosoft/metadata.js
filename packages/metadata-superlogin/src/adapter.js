@@ -130,6 +130,15 @@ export default (constructor) => {
           }
         }
 
+        // дополнительные базы пользователя
+        for(const id in session.userDBs) {
+          const name = id.replace(/.*_/, '');
+          if(remote[name]) {
+            continue;
+          }
+          remote[name] = new PouchDB(this.dbpath(name), {skip_setup: true, adapter: 'http'});
+        }
+
         // сохраняем имя пользователя в localstorage
         if(wsql.get_user_param('user_name') != session.user_id) {
           wsql.set_user_param('user_name', session.user_id);
