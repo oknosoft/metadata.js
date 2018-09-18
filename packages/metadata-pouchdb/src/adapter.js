@@ -170,11 +170,14 @@ function adapter({AbstracrAdapter}) {
      */
     after_log_in() {
 
-      const {props, local, remote, $p: {md}} = this;
+      const {props, local, remote, $p: {md, wsql}} = this;
       const try_auth = [];
 
       md.bases().forEach((dbid) => {
-        if(dbid !== 'meta' && local[dbid] && remote[dbid] && local[dbid] != remote[dbid]) {
+        if(dbid !== 'meta' &&
+          local[dbid] && remote[dbid] && local[dbid] != remote[dbid] &&
+          (dbid !== 'doc' || !wsql.get_user_param('dynamic_doc'))
+        ) {
           if(props.noreplicate && props.noreplicate.indexOf(dbid) != -1) {
             return;
           }
