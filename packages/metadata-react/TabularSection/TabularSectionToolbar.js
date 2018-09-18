@@ -14,7 +14,7 @@ import ArrowDownIcon from '@material-ui/icons/ArrowDownward';
 import CopyIcon from '@material-ui/icons/FileCopy';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import FileDownloadIcon from '@material-ui/icons/ArrowDropDownCircle';
-import IconSettings from '../styles/Setting';
+import IconSettings from '@material-ui/icons/Settings';
 import IconSettingsCancel from '@material-ui/icons/HighlightOff';
 import IconSettingsDone from '@material-ui/icons/Done';
 

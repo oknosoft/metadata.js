@@ -672,7 +672,8 @@ var adapter = (constructor) => {
       return url;
     }
     get authorized() {
-      return this.$p.superlogin.authenticated();
+      const session = $p.superlogin.getSession();
+      return session && session.user_id;
     }
   };
 };
