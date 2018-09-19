@@ -40,6 +40,9 @@ function mapStateToProps(state, props) {
           const dbname = rurl.substr(rurl.lastIndexOf('/'));
           reports = pouch.remote.reports = new classes.PouchDB(dbpath.substr(0, dbpath.lastIndexOf('/')) + dbname, {skip_setup: true, adapter: 'http'});
         }
+        else {
+          reports = pouch.remote.remote;
+        }
       }
       doc = pouch.local.doc;
     }
@@ -77,7 +80,7 @@ function mapStateToProps(state, props) {
         return doc.allDocs({include_docs: true, keys})
           .then(({rows}) => {
             for(const row of rows) {
-              if(row.doc && (row.id === keys[1] || !settings)){
+              if(row.doc && (row.id === keys[1] || !settings || settings._id === keys[0])){
                 settings = row.doc;
               }
               if(row.doc && (row.id === keys[0])){
@@ -102,7 +105,7 @@ function mapStateToProps(state, props) {
   }
 
   function queryGrid() {
-    const query = qs.parse(location.search.replace('?',''));
+    const query = qs.parse(location.search.replace('?', ''));
     return query.grid;
   }
 
@@ -113,7 +116,6 @@ function mapStateToProps(state, props) {
       const {reports, doc} = dbs();
       return charts(reports, doc)
         .then(({settings}) => {
-          const grid = queryGrid() || (settings && settings.grid) || "1";
           const docs = settings && settings.charts ?
             Promise.all(settings.charts.map((chart) => {
               const path = chart.split('/');
@@ -123,7 +125,7 @@ function mapStateToProps(state, props) {
 
           return docs.then((diagrams) => ({
             diagrams,
-            grid,
+            grid: queryGrid() || (settings && settings.grid) || "1",
             settings,
           }));
         });

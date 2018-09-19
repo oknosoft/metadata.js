@@ -156,8 +156,8 @@ class TabsLogin extends Component {
           </FormControl>
 
           <DialogActions>
-            <Button color="primary" size="small" disabled={!state.login || !state.password} className={classes.button} onClick={this.handleLogin}>Войти</Button>
             <Fogot classes={classes} handleInfo={this.handleInfo} />
+            <Button color="primary" size="small" disabled={!state.login || !state.password} className={classes.button} onClick={this.handleLogin}>Войти</Button>
           </DialogActions>
 
         </FormGroup>

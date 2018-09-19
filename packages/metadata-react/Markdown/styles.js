@@ -93,12 +93,10 @@ const styles = theme => ({
       overflow: 'hidden',
     },
     '& thead': {
-      fontSize: 12,
       fontWeight: theme.typography.fontWeightMedium,
       color: theme.palette.text.secondary,
     },
     '& tbody': {
-      fontSize: 13,
       lineHeight: 1.5,
       color: theme.palette.text.primary,
     },
@@ -115,7 +113,6 @@ const styles = theme => ({
       paddingRight: theme.spacing.unit * 3,
     },
     '& td code': {
-      fontSize: 13,
       lineHeight: 1.6,
     },
     '& th': {
@@ -126,12 +123,6 @@ const styles = theme => ({
     },
     '& th:last-child': {
       paddingRight: theme.spacing.unit * 3,
-    },
-    '& tr': {
-      height: 48,
-    },
-    '& thead tr': {
-      height: 64,
     },
     '& strong': {
       fontWeight: theme.typography.fontWeightMedium,

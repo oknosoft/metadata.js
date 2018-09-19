@@ -162,8 +162,8 @@ class UserObj extends Component {
           <DataField _obj={_obj} _fld="email_addr" read_only/>
           <DataField _obj={_obj} _fld="subscription"/>
           <DialogActions>
-            <Button color="primary" size="small" className={classes.button} onClick={handleLogOut}>Выйти</Button>
             <Fogot classes={classes} text="Изменить пароль" handleInfo={this.handleInfo} />
+            <Button color="primary" size="small" className={classes.button} onClick={handleLogOut}>Выйти</Button>
           </DialogActions>
         </FormGroup>
         }
