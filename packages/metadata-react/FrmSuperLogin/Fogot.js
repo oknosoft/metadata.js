@@ -44,6 +44,9 @@ class Fogot extends Component {
       })
       .catch((err) => {
         this.props.handleInfo(err.error || err.toString());
+      })
+      .then(() => {
+        this.props.afterSend && this.props.afterSend();
       });
   };
 

@@ -123,7 +123,7 @@ class UserObj extends Component {
 
   // если изменили state - не перерисовываем
   shouldComponentUpdate({handleIfaceState, title}, {index}) {
-    const ltitle = index ? 'Профиль...' : 'Социальные сети...';
+    const ltitle = index ? 'Социальные сети...' : 'Профиль...';
     if(title != ltitle) {
       handleIfaceState({
         component: '',
@@ -162,7 +162,7 @@ class UserObj extends Component {
           <DataField _obj={_obj} _fld="email_addr" read_only/>
           <DataField _obj={_obj} _fld="subscription"/>
           <DialogActions>
-            <Fogot classes={classes} text="Изменить пароль" handleInfo={this.handleInfo} />
+            <Fogot classes={classes} text="Изменить пароль" handleInfo={this.handleInfo} afterSend={handleLogOut}/>
             <Button color="primary" size="small" className={classes.button} onClick={handleLogOut}>Выйти</Button>
           </DialogActions>
         </FormGroup>
