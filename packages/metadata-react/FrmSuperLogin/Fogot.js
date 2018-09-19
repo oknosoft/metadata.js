@@ -72,9 +72,9 @@ class Fogot extends Component {
 
 
   render() {
-    const {props: {classes}, state: {email, emailOk, popover, errorText}} = this;
+    const {props: {classes, text}, state: {email, emailOk, popover, errorText}} = this;
     return <div>
-      <Button color="primary" size="small" className={classes.button} onClick={this.openFogot}>Забыли пароль?</Button>
+      <Button color="primary" size="small" className={classes.button} onClick={this.openFogot}>{text || 'Забыли пароль?'}</Button>
       <Popover
         classes={{paper: classes.spaceOuter}}
         open={!!popover}

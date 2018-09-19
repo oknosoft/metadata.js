@@ -30,6 +30,8 @@ import connect from './connect';
 import classnames from 'classnames';
 
 import YAML from 'yamljs';
+import Fogot from './Fogot';
+import IconError from '@material-ui/core/SvgIcon/SvgIcon';
 
 class UserObj extends Component {
 
@@ -37,7 +39,8 @@ class UserObj extends Component {
     super(props);
     this.state = {
       index: 0,
-      profile: {}
+      profile: {},
+      log_error: '',
     };
     const {profile} = $p.superlogin.getSession();
     if(profile && props._obj && props._obj.subscription !== !!profile.subscription) {
@@ -114,7 +117,9 @@ class UserObj extends Component {
     </ExpansionPanelActions>
   }
 
-
+  handleInfo = (text) => {
+    this.setState({log_error: `${text}`});
+  };
 
   // если изменили state - не перерисовываем
   shouldComponentUpdate({handleIfaceState, title}, {index}) {
@@ -137,8 +142,9 @@ class UserObj extends Component {
 
   render() {
 
-    const {props: {classes, handleLogOut, title, _obj}, state: {profile, index}, handleNavigate} = this;
+    const {props: {classes, handleLogOut, title, _obj}, state: {profile, index, log_error}, handleNavigate} = this;
     const btn = classnames(classes.button, classes.fullWidth);
+    const info = log_error && /info:/.test(log_error);
 
     return _obj ?
 
@@ -157,7 +163,17 @@ class UserObj extends Component {
           <DataField _obj={_obj} _fld="subscription"/>
           <DialogActions>
             <Button color="primary" size="small" className={classes.button} onClick={handleLogOut}>Выйти</Button>
+            <Fogot classes={classes} text="Изменить пароль" handleInfo={this.handleInfo} />
           </DialogActions>
+        </FormGroup>
+        }
+
+        {index === 0 && log_error &&
+        <FormGroup row>
+          {info ? <IconError /> : <IconError className={classes.error}/>}
+          <Typography variant="subheading" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+            {log_error.replace('info:', '')}
+          </Typography>
         </FormGroup>
         }
 
