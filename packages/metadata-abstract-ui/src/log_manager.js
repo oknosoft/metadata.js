@@ -80,20 +80,35 @@ export default function log_manager() {
           msg.class = 'note';
         }
 
-        if(!this._insert){
-          this._insert = wsql.alasql.compile('insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)');
-        }
-        this._insert([msg.date + '¶' + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : '']);
+        this.alatable.push({
+          ref: msg.date + '¶' + msg.sequence,
+          date: msg.date,
+          sequence: msg.sequence,
+          'class': msg.class,
+          note: msg.note,
+          obj: msg.obj || null,
+        });
 
         this.emit_async('record', {count: this.unviewed_count()});
       }
     }
 
     viewed() {
-      if(!this._viewed){
-        this._viewed = this._owner.$p.wsql.alasql.compile('select l.*, v.key from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key)');
+      const res = [];
+      const {alatable} = this;
+      const log_view = $p.ireg.log_view.alatable;
+      const user = $p.adapters.pouch.authorized || '';
+      for(let i = alatable.length - 1; i >= 0; i--) {
+        const v = alatable[i];
+        log_view.some((row) => {
+          if(row.key === v.ref && row.user === user) {
+            v.key = row.key;
+            return true;
+          }
+        });
+        res.push(v);
       }
-      return this._viewed();
+      return res;
     }
 
     unviewed_count() {
@@ -130,11 +145,13 @@ export default function log_manager() {
         const rows = this._rows([this._stamp + wsql.time_diff]);
         for(const row of rows) {
           row._id = `${moment(row.date - wsql.time_diff).format('YYYYMMDDHHmmssSSS') + row.sequence}|${pouch.props._suffix || '0000'}|${pouch.authorized}`;
-          if(row.obj) {
-            row.obj = JSON.parse(row.obj);
-          }
-          else{
-            delete row.obj;
+          if(typeof row.obj === 'string') {
+            try{
+              row.obj = JSON.parse(row.obj);
+            }
+            catch(e) {
+
+            }
           }
           delete row.ref;
           delete row.user;
@@ -195,7 +212,7 @@ export default function log_manager() {
       }
 
       for(const {ref} of this._unviewed()) {
-        alatable.push({key: ref, user})
+        alatable.push({key: ref, user});
       }
     }
 

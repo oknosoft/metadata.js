@@ -18,7 +18,7 @@
     "metadata-abstract-ui": "^2.0.17-beta.8",
     "metadata-external": "^2.0.17-beta.8",
     "metadata-redux": "^2.0.17-beta.8",
-    "rc-calendar": "^9.7.7",
+    "rc-calendar": "^9.7.8",
     "rc-cascader": "^0.16",
     "rc-time-picker": "^3.4",
     "react-fullscreenable": "^2.5.1-0",
