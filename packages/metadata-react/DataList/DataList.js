@@ -69,7 +69,7 @@ class DataList extends MDNRComponent {
 
     this._meta = _meta || _mgr.metadata();
 
-    const state = {rowsLoaded: cachable === 'ram' ? alatable.length : 0};
+    const state = {rowsLoaded: /ram$/.test(cachable) ? alatable.length : 0};
 
     if(this._mounted) {
       this.setState(state);
@@ -455,7 +455,7 @@ class DataList extends MDNRComponent {
     const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);
 
     // в зависимости от типа кеширования...
-    if(_mgr.cachable === 'ram' || _mgr.cachable === 'doc_ram') {
+    if(/ram$/.test(_mgr.cachable)) {
       // фильтруем в озу
       const selector = _mgr.get_search_selector({
         _obj: _owner ? _owner._obj : null,

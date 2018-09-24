@@ -90,7 +90,7 @@ export default class InfiniteList extends MComponent {
 
     // если объекты живут в ram
     let added = 0;
-    if(_mgr.cachable == 'ram' || _mgr.cachable == 'doc_ram') {
+    if(/ram$/.test(_mgr.cachable)) {
       _mgr.find_rows(select, (o) => {
         // если значение уже есть в коллекции - пропускаем
         if(list.indexOf(o) === -1) {

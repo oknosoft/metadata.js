@@ -1204,7 +1204,7 @@ export class RefDataManager extends DataManager{
     const select = {};
     const {input_by_string} = this.metadata();
 
-    if(cachable.match(/^(ram|doc_ram)$/)) {
+    if(/ram$/.test(cachable)) {
 
       select._top = top;
       select._skip = skip;
