@@ -212,7 +212,6 @@ class FieldInfinit extends AbstractField {
       <FormControl
         className={classes.formControl}
         fullWidth={fullWidth}
-        margin="dense"
         onDoubleClick={handleOpenContainer}
       >
         <InputLabel>{_meta.tooltip || _meta.synonym}</InputLabel>
@@ -352,7 +351,6 @@ class FieldInfinit extends AbstractField {
             <FormControl
               className={props.classes.formControl}
               fullWidth={props.fullWidth}
-              margin="dense"
               disabled
             >
               <InputLabel>{_meta.tooltip || _meta.synonym}</InputLabel>

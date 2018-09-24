@@ -30,7 +30,6 @@ class FieldText extends AbstractField {
       :
       <TextField
         className={classes.formControl}
-        margin="dense"
         disabled={read_only}
         label={_meta.synonym}
         title={_meta.tooltip || _meta.synonym}
