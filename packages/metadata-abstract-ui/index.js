@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.17-beta.8, built:2018-09-20
+ metadata-abstract-ui v2.0.17-beta.8, built:2018-09-24
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -738,7 +738,9 @@ function scheme_settings() {
       }
       const res = {
         selector: {
-          class_name: {$eq: this.obj}
+          $and: [
+            {class_name: {$eq: this.obj}}
+          ]
         },
         fields: ['_id', 'posted'],
         use_index: ['mango', 'search'],
@@ -748,8 +750,14 @@ function scheme_settings() {
           res.fields.push(column.id);
         }
       }
-      res.selector.date = this.standard_period.empty() ? {$ne: null} : {$and: [{$gte: format(this.date_from)}, {$lte: format(this.date_till) + '\ufff0'}]};
-      res.selector.search = this._search ? {$regex: this._search} : {$ne: null};
+      if(this.standard_period.empty()) {
+        this._search && res.selector.$and.push({search: {$regex: this._search}});
+      }
+      else {
+        res.selector.$and.push({date: {$gte: format(this.date_from)}});
+        res.selector.$and.push({date: {$lte: format(this.date_till) + '\ufff0'}});
+        res.selector.$and.push({search: this._search ? {$regex: this._search} : {$gt: null}});
+      }
       this.sorting.find_rows({use: true, field: 'date'}, (row) => {
         let direction = row.direction.valueOf();
         if(!direction || direction == '_') {

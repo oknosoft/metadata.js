@@ -694,7 +694,9 @@ export default function scheme_settings() {
 
       const res = {
         selector: {
-          class_name: {$eq: this.obj}
+          $and: [
+            {class_name: {$eq: this.obj}}
+          ]
         },
         fields: ['_id', 'posted'],
         use_index: ['mango', 'search'],
@@ -706,15 +708,14 @@ export default function scheme_settings() {
         }
       }
 
-      res.selector.date = this.standard_period.empty() ? {$ne: null} : {$and: [{$gte: format(this.date_from)}, {$lte: format(this.date_till) + '\ufff0'}]};
-      // if(!this.standard_period.empty()) {
-      //   res.selector.$and = [
-      //     {date: {$gte: format(this.date_from)}},
-      //     {date: {$lte: format(this.date_till) + '\ufff0'}}
-      //   ];
-      // }
-
-      res.selector.search = this._search ? {$regex: this._search} : {$ne: null};
+      if(this.standard_period.empty()) {
+        this._search && res.selector.$and.push({search: {$regex: this._search}});
+      }
+      else {
+        res.selector.$and.push({date: {$gte: format(this.date_from)}});
+        res.selector.$and.push({date: {$lte: format(this.date_till) + '\ufff0'}});
+        res.selector.$and.push({search: this._search ? {$regex: this._search} : {$gt: null}});
+      }
 
       // пока сортируем только по дате
       this.sorting.find_rows({use: true, field: 'date'}, (row) => {
