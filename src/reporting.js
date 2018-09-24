@@ -400,6 +400,55 @@ SpreadsheetDocument.prototype.__define({
     }
   },
 
+  /**
+   * Получаем HTML печатной формы
+   */
+  get_html: {
+    value() {
+      return new Promise((resolve, reject) => {
+        const doc = this,
+          // вызываем для заполнения _blob
+          url = this.blankURL;
+    
+        // отзываем объект
+        URL.revokeObjectURL(url);
+    
+        const reader = new FileReader();
+    
+        // срабатывает после как blob будет загружен
+        reader.addEventListener('loadend', e => {
+          const document = new DOMParser().parseFromString(e.srcElement.result, 'text/html');
+    
+          // копируем элементы из head
+          for (let i = 0; i < doc.head.children.length; i++) {
+            document.head.appendChild(doc.copy_element(doc.head.children[i]));
+          }
+          // копируем элементы из content
+          if (doc.innerContent) {
+            for (let i = 0; i < doc.content.children.length; i++) {
+              document.body.appendChild(doc.copy_element(doc.content.children[i]));
+            }
+          } else {
+            document.body.appendChild(doc.content);
+          }
+          if (doc.title) {
+            document.title = doc.title;
+          }
+    
+          resolve(document.firstElementChild.outerHTML);
+        });
+    
+        // срабатывает при ошибке в процессе загрузки blob
+        reader.addEventListener('error', e => {
+          reject(e);
+        });
+    
+        // читаем blob как текст
+        reader.readAsText(this._blob);
+      });
+    }
+  },
+
   blank: {
     get: function () {
       return this._attr.blank
