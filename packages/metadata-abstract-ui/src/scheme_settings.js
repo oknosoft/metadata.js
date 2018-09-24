@@ -699,7 +699,6 @@ export default function scheme_settings() {
           ]
         },
         fields: ['_id', 'posted'],
-        use_index: ['mango', 'search'],
       };
 
       for (const column of (columns || this.columns())) {
@@ -715,6 +714,7 @@ export default function scheme_settings() {
         res.selector.$and.push({date: {$gte: format(this.date_from)}});
         res.selector.$and.push({date: {$lte: format(this.date_till) + '\ufff0'}});
         res.selector.$and.push({search: this._search ? {$regex: this._search} : {$gt: null}});
+        res.use_index = ['mango', 'search'];
       }
 
       // пока сортируем только по дате

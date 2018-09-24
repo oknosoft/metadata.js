@@ -743,7 +743,6 @@ function scheme_settings() {
           ]
         },
         fields: ['_id', 'posted'],
-        use_index: ['mango', 'search'],
       };
       for (const column of (columns || this.columns())) {
         if(res.fields.indexOf(column.id) == -1) {
@@ -757,6 +756,7 @@ function scheme_settings() {
         res.selector.$and.push({date: {$gte: format(this.date_from)}});
         res.selector.$and.push({date: {$lte: format(this.date_till) + '\ufff0'}});
         res.selector.$and.push({search: this._search ? {$regex: this._search} : {$gt: null}});
+        res.use_index = ['mango', 'search'];
       }
       this.sorting.find_rows({use: true, field: 'date'}, (row) => {
         let direction = row.direction.valueOf();
