@@ -84,9 +84,14 @@ class DataList extends MDNRComponent {
 
   // обработчик выбора значения в списке
   handleSelect = () => {
-    const row = this._list.get(this.state.selectedRowIndex);
-    const {handlers, _mgr} = this.props;
-    row && handlers.handleSelect && handlers.handleSelect(row, _mgr);
+    const {state: {selectedRowIndex}, props: {handlers, _mgr}} = this;
+    if(!selectedRowIndex) {
+      this.handleInfoText('Не выбрана строка');
+    }
+    else {
+      const row = this._list.get(selectedRowIndex);
+      row && handlers.handleSelect && handlers.handleSelect(row, _mgr);
+    }
   };
 
   // обработчик добавления элемента списка
@@ -192,6 +197,13 @@ class DataList extends MDNRComponent {
     this.setState({settings_open: false});
   };
 
+  handleInfoText = (info_text) => {
+    if(typeof info_text !== 'string') {
+      info_text = '';
+    }
+    this.setState({info_text});
+  }
+
   get sizes() {
     const {dnr} = this.context;
     let {width, height} = this.props;
@@ -217,7 +229,7 @@ class DataList extends MDNRComponent {
 
   render() {
     const {state, props, context, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer} = this;
-    const {columns, rowsLoaded, scheme, colResize, confirm_text, settings_open} = state;
+    const {columns, rowsLoaded, scheme, colResize, confirm_text, info_text, settings_open} = state;
     const {RepParams} = props._mgr;
 
     const styleTopRightGrid = {
@@ -271,6 +283,15 @@ class DataList extends MDNRComponent {
         text={confirm_text}
         handleOk={this._handleRemove}
         handleCancel={() => this.setState({confirm_text: ''})}
+        open
+      />,
+
+      info_text && <Confirm
+        key="confirm"
+        title={_meta.synonym}
+        text={info_text}
+        handleOk={this.handleInfoText}
+        handleCancel={this.handleInfoText}
         open
       />,
 
