@@ -172,9 +172,9 @@ function rx_columns({utils: {moment}, enm, md}) {
 export function export_handlers() {
 
   this.doExport = (format, evt) => {
-    const {handleMenuClose, props} = this;
-    const {_obj, _tabular, _columns} = props;
-    _obj && _obj[_tabular].export(format, _columns.map(({key}) => key), evt && evt.target);
+    const {handleMenuClose, props: {_obj, _tabular, _columns}} = this;
+    const t = typeof _tabular === 'object' && _tabular.export ? _tabular : _obj && _obj[_tabular];
+    t && t.export(format, _columns.map(({key}) => key), evt && evt.target);
     handleMenuClose && handleMenuClose();
   };
 
