@@ -9,6 +9,7 @@ import LoadingMessage from '../DumbLoader/LoadingMessage';
 import ReactDataGrid from 'metadata-external/react-data-grid.min';
 import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
 
+const cmpType = PropTypes.oneOfType([PropTypes.object, PropTypes.array]);
 
 export default class TabularSection extends MComponent {
 
@@ -23,6 +24,8 @@ export default class TabularSection extends MComponent {
     denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
     denyReorder: PropTypes.bool,          // Запрет изменения порядка строк
     minHeight: PropTypes.number,
+    btns: cmpType,                        // дополнительные кнопки
+    menu_items: cmpType,                  // дополнительные пункты меню
 
     handleValueChange: PropTypes.func,    // Обработчик изменения значения в ячейке
     handleRowChange: PropTypes.func,      // При окончании редактирования строки
@@ -195,7 +198,7 @@ export default class TabularSection extends MComponent {
   render() {
     const {props, state, rowGetter, onRowsSelected, onRowsDeselected, handleRowUpdated} = this;
     const {_meta, _tabular, _columns, scheme, selectedIds, settings_open} = state;
-    const {_obj, rowSelection, denyAddDel, denyReorder, minHeight, hideToolbar, onCellSelected, classes} = props;
+    const {_obj, rowSelection, denyAddDel, denyReorder, minHeight, hideToolbar, onCellSelected, classes, btns, menu_items} = props;
     const Toolbar = props.Toolbar || TabularSectionToolbar;
 
     if(!_columns || !_columns.length) {
@@ -229,6 +232,8 @@ export default class TabularSection extends MComponent {
                 denyAddDel={denyAddDel}
                 denyReorder={denyReorder}
                 settings_open={settings_open}
+                btns={btns}
+                menu_items={menu_items}
 
                 handleSettingsOpen={this.handleSettingsOpen}
                 handleSettingsClose={this.handleSettingsClose}

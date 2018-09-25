@@ -21,6 +21,7 @@ import IconSettingsDone from '@material-ui/icons/Done';
 import withStyles from '../Header/toolbar';
 import {export_handlers} from '../plugin';
 
+const cmpType = PropTypes.oneOfType([PropTypes.object, PropTypes.array]);
 
 class TabularSectionToolbar extends Component {
 
@@ -31,8 +32,11 @@ class TabularSectionToolbar extends Component {
     handleUp: PropTypes.func.isRequired,      // обработчик удаления строки
     handleDown: PropTypes.func.isRequired,    // обработчик удаления строки
 
-    denyAddDel: PropTypes.bool,             // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
-    denyReorder: PropTypes.bool,             // Запрет изменения порядка строк
+    denyAddDel: PropTypes.bool,               // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+    denyReorder: PropTypes.bool,              // Запрет изменения порядка строк
+
+    btns: cmpType,                            // дополнительные кнопки
+    menu_items: cmpType,                      // дополнительные пункты меню
 
   }
 
@@ -51,7 +55,7 @@ class TabularSectionToolbar extends Component {
   render() {
 
     const {props, state} = this;
-    const {handleAdd, handleRemove, handleUp, handleDown, denyAddDel, denyReorder, classes, width, settings_open} = props;
+    const {handleAdd, handleRemove, handleUp, handleDown, denyAddDel, denyReorder, classes, width, settings_open, btns, menu_items} = props;
 
     return (
       <Toolbar disableGutters className={classes.toolbar} style={{width: width || '100%'}}>
@@ -61,6 +65,9 @@ class TabularSectionToolbar extends Component {
           !denyAddDel && !denyReorder && <IconButton key="sep1" disabled>|</IconButton>,
           !denyReorder && <IconButton key="btn_up" title="Переместить вверх" onClick={handleUp}><ArrowUpIcon/></IconButton>,
           !denyReorder && <IconButton key="btn_down"  title="Переместить вниз" onClick={handleDown}><ArrowDownIcon/></IconButton>,
+
+          // дополнительные кнопки
+          btns,
 
           <Typography key="space" variant="title" color="inherit" className={classes.flex}> </Typography>,
 
@@ -72,7 +79,10 @@ class TabularSectionToolbar extends Component {
             <MenuItem onClick={this.handleExportCSV}><CopyIcon/> &nbsp;Копировать CSV</MenuItem>
             <MenuItem onClick={this.handleExportJSON}><CloudDownloadIcon/> &nbsp;Копировать JSON</MenuItem>
             <MenuItem onClick={this.handleExportXLS}><FileDownloadIcon/> &nbsp;Экспорт в XLS</MenuItem>
-
+            {
+              // дополнительные пункты меню
+              menu_items
+            }
             <MenuItem onClick={() => {
               this.handleMenuClose();
               props.handleSettingsOpen();
