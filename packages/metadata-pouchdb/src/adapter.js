@@ -1097,7 +1097,7 @@ function adapter({AbstracrAdapter}) {
             throw err;
           }
           else {
-            this.$p.record_log(db.name + ':' + tObj._manager.class_name + '|' + tObj.ref);
+            //console.log(db.name + '/' + tObj._manager.class_name + '|' + tObj.ref);
           }
         })
         .then((res) => {
