@@ -4,12 +4,13 @@ import PropTypes from 'prop-types';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
+import Button from '@material-ui/core/Button';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import SaveIcon from '@material-ui/icons/Save';
-import SendIcon from '@material-ui/icons/Send';
-import RemoveIcon from '@material-ui/icons/Delete';
+import SendIcon from '@material-ui/icons/CheckCircleOutline';
+import RemoveIcon from '@material-ui/icons/DeleteOutline';
 import CloseIcon from '@material-ui/icons/Close';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import PrintIcon from '@material-ui/icons/Print';
@@ -23,7 +24,8 @@ class DataObjToolbar extends Component {
   static propTypes = {
 
     handleSave: PropTypes.func.isRequired,        // обработчик добавления объекта
-    handleMarkDeleted: PropTypes.func.isRequired, // команда Отозвать
+    handlePost: PropTypes.func,                   // обработчик проведения
+    handleMarkDeleted: PropTypes.func.isRequired, // обработчик пометки удаления
     handlePrint: PropTypes.func,                  // обработчик открытия диалога печати
     handleAttachments: PropTypes.func,            // обработчик открытия диалога присоединенных файлов
     handleClose: PropTypes.func,                  // команда Закрыть форму
@@ -32,8 +34,6 @@ class DataObjToolbar extends Component {
     posted: PropTypes.bool,                       // объект проведён
     deletable: PropTypes.bool,                    // объект можно пометить на удаление или снять пометку
     deleted: PropTypes.bool,                      // объект помечен на удаление
-
-    handleSend: PropTypes.func,                   // команда Отправить
 
   };
 
@@ -56,7 +56,12 @@ class DataObjToolbar extends Component {
     return (
 
       <Toolbar disableGutters className={props.classes.toolbar}>
-
+        {props.handleSaveClose && <Button
+          title="Записать и закрыть"
+          size="small"
+          variant="outlined"
+          className={props.classes.spaceLeft}
+          onClick={props.handleSaveClose}>Записать и закрыть</Button>}
         <IconButton title="Записать" onClick={props.handleSave}><SaveIcon/></IconButton>
         {props.postable && <IconButton title={props.posted ? 'Отменить проведение' : 'Провести'} onClick={() => props.handleSave(!props.posted)}><SendIcon/></IconButton>}
         {props.deletable && <IconButton title={props.deleted ? 'Снять пометку удаления' : 'Пометить на удаление'} onClick={props.handleMarkDeleted}><RemoveIcon/></IconButton>}

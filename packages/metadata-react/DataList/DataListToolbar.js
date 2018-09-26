@@ -9,7 +9,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import AddIcon from '@material-ui/icons/AddCircleOutline';
-import RemoveIcon from '@material-ui/icons/Delete';
+import RemoveIcon from '@material-ui/icons/DeleteOutline';
 import EditIcon from '@material-ui/icons/Edit';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import PrintIcon from '@material-ui/icons/Print';
@@ -72,6 +72,7 @@ class DataListToolbar extends Component {
           title="Выбрать из списка"
           size="small"
           variant="outlined"
+          className={classes.spaceLeft}
           onClick={props.handleSelect}><SelectIcon/>Выбрать</Button>}
         {!props.denyAddDel && <IconButton key="create" title="Создать объект" onClick={props.handleAdd}><AddIcon/></IconButton>}
         {!props.denyAddDel && <IconButton key="edit" title="Открыть форму объекта" onClick={props.handleEdit}><EditIcon/></IconButton>}

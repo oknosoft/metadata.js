@@ -98,31 +98,45 @@ export default class TabularSection extends MComponent {
   };
 
   handleRemove = () => {
-    const {selected} = this._grid.state;
+    const {state: {_tabular}, _grid: {state}} = this;
+    const {selected} = state;
     if(selected && selected.hasOwnProperty('rowIdx')) {
-      this.state._tabular.del(selected.rowIdx);
+      _tabular.del(selected.rowIdx);
+      this.forceUpdate();
+    }
+  };
+
+  handleClear = () => {
+    const {_tabular} = this.state;
+    if(_tabular) {
+      _tabular.clear();
       this.forceUpdate();
     }
   };
 
   handleAdd = () => {
-    this.state._tabular.add();
-    this.forceUpdate();
+    const {_tabular} = this.state;
+    if(_tabular) {
+      _tabular.add();
+      this.forceUpdate();
+    }
   };
 
   handleUp = () => {
-    const {selected} = this._grid.state;
+    const {state: {_tabular}, _grid: {state}} = this;
+    const {selected} = state;
     if(selected && selected.hasOwnProperty('rowIdx') && selected.rowIdx > 0) {
-      this.state._tabular.swap(selected.rowIdx, selected.rowIdx - 1);
+      _tabular.swap(selected.rowIdx, selected.rowIdx - 1);
       selected.rowIdx = selected.rowIdx - 1;
       this.forceUpdate();
     }
   };
 
   handleDown = () => {
-    const {selected} = this._grid.state;
-    if(selected && selected.hasOwnProperty('rowIdx') && selected.rowIdx < this.state._tabular.count() - 1) {
-      this.state._tabular.swap(selected.rowIdx, selected.rowIdx + 1);
+    const {state: {_tabular}, _grid: {state}} = this;
+    const {selected} = state;
+    if(selected && selected.hasOwnProperty('rowIdx') && selected.rowIdx < _tabular.count() - 1) {
+      _tabular.swap(selected.rowIdx, selected.rowIdx + 1);
       selected.rowIdx = selected.rowIdx + 1;
       this.forceUpdate();
     }
@@ -240,6 +254,7 @@ export default class TabularSection extends MComponent {
                 handleSchemeChange={this.handleSchemeChange}
                 handleAdd={this.handleAdd}
                 handleRemove={this.handleRemove}
+                handleClear={this.handleClear}
                 handleUp={this.handleUp}
                 handleDown={this.handleDown}
                 handleCustom={props.handleCustom}
