@@ -62,12 +62,8 @@ const styles = theme => ({
 
 class SearchBox extends React.Component {
 
-  handleBlur = (event) => {
-    this.props.onChange({target: event.target, force: true});
-  };
-
   handleKeyDown = (event) => {
-    if(event.key === 'Enter') {
+    if(event.key === 'Enter' || event.key === 'Tab') {
       this.props.onChange({target: event.target, force: true});
     }
   };
@@ -90,7 +86,6 @@ class SearchBox extends React.Component {
           placeholder="Поиск..."
           value={value}
           onChange={this.handleChange}
-          onBlur={this.handleBlur}
           onKeyDown={this.handleKeyDown}
         />
         <div className={classes.search}>
