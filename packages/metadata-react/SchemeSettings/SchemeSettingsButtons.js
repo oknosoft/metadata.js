@@ -69,15 +69,14 @@ export default class SchemeSettingsButtons extends PureComponent {
     this.props.handleSchemeChange(scheme);
   };
 
-  handleSearchChange = (event) => {
-    this.props.scheme._search = event.target.value;
-    this._timer && clearTimeout(this._timer);
-    this._timer = setTimeout(this.handleSearchTimer, 600);
-    this.forceUpdate();
-  };
-
-  handleSearchTimer = () => {
-    this.props.handleFilterChange();
+  handleSearchChange = ({target, force}) => {
+    const {props} = this;
+    if(props.scheme._search !== target.value) {
+      props.scheme._search = target.value;
+      this._timer && clearTimeout(this._timer);
+      this._timer = setTimeout(props.handleFilterChange, force ? 10 : 1500);
+      this.forceUpdate();
+    }
   };
 
   VariantsMenu() {
@@ -101,7 +100,11 @@ export default class SchemeSettingsButtons extends PureComponent {
 
     return [
       // Search box
-      show_search && <SearchBox key="ss1" value={scheme._search || ''} onChange={this.handleSearchChange}/>,
+      show_search && <SearchBox
+        key="ss1"
+        value={scheme._search || ''}
+        onChange={this.handleSearchChange}
+      />,
 
       // Variants
       show_variants && scheme && <Button key="ss2" size="small" onClick={this.handleMenuOpen} style={{alignSelf: 'center'}}>{scheme.name}</Button>,
