@@ -21,7 +21,7 @@ class DataList extends MDNRComponent {
 
   static LIMIT = 40;
   static OVERSCAN_ROW_COUNT = 2;
-  static OVERSCAN_COLUMN_COUNT = 2;
+  static OVERSCAN_COLUMN_COUNT = 0;
   static COLUMN_HEIGHT = 33;
   static COLUMN_DEFAULT_WIDTH = 220;
 
@@ -209,7 +209,7 @@ class DataList extends MDNRComponent {
     const {dnr} = this.context;
     let {width, height} = this.props;
     if(!height) {
-      height = dnr && parseInt(dnr.frameRect.height);
+      height = dnr && parseInt(dnr.frameRect.height) - 26;
     }
     if(!height || height < 320) {
       height = 320;
@@ -342,8 +342,8 @@ class DataList extends MDNRComponent {
                   fixedRowCount={1}
                   noContentRenderer={this._noContentRendered}
                   cellRenderer={this._cellRenderer}
-                  overscanColumnCount={DataList.OVERSCAN_COLUMN_COUNT}
-                  overscanRowCount={DataList.OVERSCAN_ROW_COUNT}
+                  //overscanColumnCount={DataList.OVERSCAN_COLUMN_COUNT}
+                  //overscanRowCount={DataList.OVERSCAN_ROW_COUNT}
                   columnWidth={this._getColumnWidth}
                   rowHeight={DataList.COLUMN_HEIGHT}
                   onSectionRendered={onSectionRendered}
@@ -474,7 +474,15 @@ class DataList extends MDNRComponent {
     const {_mgr, _owner} = this.props;
     const {scheme, columns, rowsLoaded} = this.state;
 
-    const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);
+    //const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);
+
+    let increment = stopIndex - startIndex;
+    if(!increment && startIndex < rowsLoaded) {
+      return;
+    }
+    if(increment < 10) {
+      increment = 10;
+    }
 
     // в зависимости от типа кеширования...
     if(/ram$/.test(_mgr.cachable)) {
@@ -490,17 +498,12 @@ class DataList extends MDNRComponent {
     }
     else {
       // выполняем запрос
-      const selector = _mgr.mango_selector ?
-        _mgr.mango_selector(scheme, {
-          columns,
-          skip: startIndex ? startIndex - 1 : 0,
-          limit: increment,
-        }) :
-        scheme.mango_selector({
-          columns,
-          skip: startIndex ? startIndex - 1 : 0,
-          limit: increment,
-        });
+      const sprm = {
+        columns,
+        skip: startIndex ? startIndex - 1 : 0,
+        limit: startIndex ? increment + 1 : increment,
+      };
+      const selector = _mgr.mango_selector ? _mgr.mango_selector(scheme, sprm) : scheme.mango_selector(sprm);
 
       return _mgr.find_rows_remote(selector)
         .then((data) => this._updateList(data, startIndex));

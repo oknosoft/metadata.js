@@ -71,7 +71,7 @@ export default class SchemeSettingsButtons extends PureComponent {
 
   handleSearchChange = ({target, force}) => {
     const {props} = this;
-    if(props.scheme._search !== target.value) {
+    if(props.scheme._search !== target.value || force) {
       props.scheme._search = target.value;
       this._timer && clearTimeout(this._timer);
       this._timer = setTimeout(props.handleFilterChange, force ? 10 : 1500);
