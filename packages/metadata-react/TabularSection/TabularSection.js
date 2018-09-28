@@ -212,7 +212,7 @@ export default class TabularSection extends MComponent {
   render() {
     const {props, state, rowGetter, onRowsSelected, onRowsDeselected, handleRowUpdated} = this;
     const {_meta, _tabular, _columns, scheme, selectedIds, settings_open} = state;
-    const {_obj, rowSelection, denyAddDel, denyReorder, minHeight, hideToolbar, onCellSelected, classes, btns, menu_items} = props;
+    const {_obj, rowSelection, minHeight, hideToolbar, onCellSelected, classes, denyAddDel, denyReorder, btns, end_btns, menu_items} = props;
     const Toolbar = props.Toolbar || TabularSectionToolbar;
 
     if(!_columns || !_columns.length) {
@@ -243,10 +243,12 @@ export default class TabularSection extends MComponent {
                 _tabular={_tabular}
                 _columns={_columns}
                 scheme={scheme}
+                settings_open={settings_open}
+
                 denyAddDel={denyAddDel}
                 denyReorder={denyReorder}
-                settings_open={settings_open}
                 btns={btns}
+                end_btns={end_btns}
                 menu_items={menu_items}
 
                 handleSettingsOpen={this.handleSettingsOpen}

@@ -57,7 +57,7 @@ class TabularSectionToolbar extends Component {
   render() {
 
     const {props, state} = this;
-    const {handleUp, handleDown, denyAddDel, denyReorder, classes, width, settings_open, btns, menu_items} = props;
+    const {handleUp, handleDown, denyAddDel, denyReorder, classes, width, settings_open, btns, end_btns, menu_items} = props;
 
     return (
       <Toolbar disableGutters className={classes.toolbar} style={{width: width || '100%'}}>
@@ -73,6 +73,9 @@ class TabularSectionToolbar extends Component {
           btns,
 
           <Typography key="space" variant="title" color="inherit" className={classes.flex}> </Typography>,
+
+          // дополнительные кнопки
+          end_btns,
 
           !settings_open && <IconButton key="more" onClick={this.handleMenuOpen} title="Дополнительно">
             <MoreVertIcon/>
