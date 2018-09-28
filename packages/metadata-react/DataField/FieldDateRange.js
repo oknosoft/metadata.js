@@ -17,6 +17,7 @@ import Picker from 'rc-calendar/lib/Picker';
 import RangeCalendar from 'rc-calendar/lib/RangeCalendar';
 import ruRU from 'rc-calendar/lib/locale/ru_RU';
 import 'rc-calendar/assets/index.css';
+import './rc-calendar.css';
 
 
 const formatStr = 'DD.MM.YYYY';

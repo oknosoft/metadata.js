@@ -15,6 +15,8 @@ import Picker from 'rc-calendar/lib/Picker';
 import RangeCalendar from 'rc-calendar/lib/RangeCalendar';
 import ruRU from 'rc-calendar/lib/locale/ru_RU';
 import 'rc-calendar/assets/index.css';
+import '../DataField/rc-calendar.css';
+
 
 import {isValidRange, formatRange} from '../DataField/FieldDateRange';
 
