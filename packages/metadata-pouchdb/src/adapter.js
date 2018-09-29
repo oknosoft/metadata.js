@@ -15,7 +15,7 @@ import PouchDB from './pouchdb';
 
 function adapter({AbstracrAdapter}) {
 
-  const fieldsToDelete = '_id,_rev,search,timestamp'.split(',');
+  const fieldsToDelete = '_id,search,timestamp'.split(',');
 
   /**
    * ### Интерфейс локальной и сетевой баз данных PouchDB
@@ -1498,7 +1498,6 @@ function adapter({AbstracrAdapter}) {
               _mgr.load_array(result.rows.map(({doc}) => {
                 doc.ref = doc._id.split('|')[1];
                 delete doc._id;
-                delete doc._rev;
                 return doc;
               }), true);
 
@@ -1747,7 +1746,6 @@ function adapter({AbstracrAdapter}) {
                     doc.ref = doc._id.split('|')[1];
                     if(!_raw) {
                       delete doc._id;
-                      delete doc._rev;
                     }
                     return doc;
                   }),
@@ -1777,7 +1775,6 @@ function adapter({AbstracrAdapter}) {
 
               if(!_raw) {
                 delete doc._id;
-                delete doc._rev;
               }
 
               // фильтруем
@@ -1984,7 +1981,6 @@ function adapter({AbstracrAdapter}) {
           cn = key[0].split('.');
           doc.ref = key[1];
           delete doc._id;
-          delete doc._rev;
           if(!res[cn[0]]) {
             res[cn[0]] = {};
           }

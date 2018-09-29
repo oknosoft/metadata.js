@@ -333,7 +333,20 @@ export class DataObj {
     return !!this._obj._deleted;
   }
   set _deleted(v) {
-    return this._obj._deleted = !!v;
+    this._obj._deleted = !!v;
+  }
+
+  /**
+   * Ревизия
+   * @property _rev
+   * @for DataObj
+   * @type Boolean
+   */
+  get _rev() {
+    return this._obj._rev || '';
+  }
+  set _rev(v) {
+    this._obj._rev = v;
   }
 
   /**

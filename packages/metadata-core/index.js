@@ -734,7 +734,13 @@ class DataObj {
     return !!this._obj._deleted;
   }
   set _deleted(v) {
-    return this._obj._deleted = !!v;
+    this._obj._deleted = !!v;
+  }
+  get _rev() {
+    return this._obj._rev || '';
+  }
+  set _rev(v) {
+    this._obj._rev = v;
   }
   get _modified() {
     return !!this._data._modified;
