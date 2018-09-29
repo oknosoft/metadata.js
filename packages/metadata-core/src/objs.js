@@ -124,7 +124,7 @@ export class DataObj {
       let mgr = this._manager.value_mgr(_obj, f, mf);
       if(mgr) {
         if(utils.is_data_mgr(mgr)) {
-          return mgr.get(res);
+          return mgr.get(res, false, false);
         }
         else {
           return utils.fetch_type(res, mgr);

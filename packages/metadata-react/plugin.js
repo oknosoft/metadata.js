@@ -62,6 +62,10 @@ function rx_columns({utils: {moment}, enm, md}) {
     return <div title={text} style={{textAlign: 'right'}}>{text}</div>;
   };
 
+  const bool_formatter = ({value}) => {
+    return <div>{value ? 'Да' : 'Нет'}</div>;
+  };
+
   const props_formatter = ({value}) => {
     return <div title={value.toString()}>{value.presentation}</div>;
   };
@@ -94,6 +98,9 @@ function rx_columns({utils: {moment}, enm, md}) {
           }
           else if(_fld.type.digits && _fld.type.types.length === 1){
             column.formatter = number_formatter(_fld.type.fraction_figits);
+          }
+          else if(_fld.type.types.includes('boolean')) {
+            column.formatter = bool_formatter;
           }
         }
 

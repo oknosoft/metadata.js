@@ -45,5 +45,8 @@ export default withStyles(({mixins, custom, spacing, shadows, palette}) => ({
   },
   fullWidth: {
     width: '100%',
-  }
+  },
+  fullFlex: {
+    flex: 1,
+  },
 }), {name: 'Paper600'});

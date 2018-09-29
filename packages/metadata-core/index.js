@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.8, built:2018-09-24
+ metadata-core v2.0.17-beta.8, built:2018-09-29
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -593,7 +593,7 @@ class DataObj {
       let mgr = this._manager.value_mgr(_obj, f, mf);
       if(mgr) {
         if(utils.is_data_mgr(mgr)) {
-          return mgr.get(res);
+          return mgr.get(res, false, false);
         }
         else {
           return utils.fetch_type(res, mgr);
