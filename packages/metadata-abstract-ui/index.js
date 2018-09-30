@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.17-beta.8, built:2018-09-24
+ metadata-abstract-ui v2.0.17-beta.8, built:2018-09-30
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -394,8 +394,8 @@ function scheme_settings() {
           this.date_till = till.endOf('day').toDate();
           break;
         case standard_period.last3Month:
-          this.date_from = from.subtract(3, 'month').startOf('month').toDate();
-          this.date_till = till.subtract(1, 'month').endOf('month').toDate();
+          this.date_from = from.subtract(2, 'month').startOf('month').toDate();
+          this.date_till = till.endOf('month').toDate();
           break;
         case standard_period.lastWeek:
           this.date_from = from.subtract(1, 'weeks').startOf('week').toDate();

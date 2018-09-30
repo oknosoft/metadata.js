@@ -266,8 +266,8 @@ export default function scheme_settings() {
           this.date_till = till.endOf('day').toDate();
           break;
         case standard_period.last3Month:
-          this.date_from = from.subtract(3, 'month').startOf('month').toDate();
-          this.date_till = till.subtract(1, 'month').endOf('month').toDate();
+          this.date_from = from.subtract(2, 'month').startOf('month').toDate();
+          this.date_till = till.endOf('month').toDate();
           break;
         case standard_period.lastWeek:
           this.date_from = from.subtract(1, 'weeks').startOf('week').toDate();
