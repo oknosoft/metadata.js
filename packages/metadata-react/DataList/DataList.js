@@ -53,7 +53,10 @@ class DataList extends MDNRComponent {
 
     this.state = {
       selectedRowIndex: 0,
+      rowsLoaded: 0,
       settings_open: false,
+      network_error: '',
+      no_rows: false,
     };
 
     /** Set of grid rows. */
@@ -230,7 +233,7 @@ class DataList extends MDNRComponent {
 
   render() {
     const {state, props, context, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer} = this;
-    const {columns, rowsLoaded, scheme, colResize, confirm_text, info_text, settings_open} = state;
+    const {columns, rowsLoaded, no_rows, scheme, colResize, confirm_text, info_text, settings_open} = state;
     const {RepParams} = props._mgr;
 
     const styleTopRightGrid = {
@@ -244,6 +247,9 @@ class DataList extends MDNRComponent {
     }
     else if(!columns || !columns.length) {
       return <LoadingMessage text="Ошибка настроек компоновки..."/>;
+    }
+    else if(no_rows) {
+      return <LoadingMessage text="Записей не найдено..."/>;
     }
 
     const show_grid = !settings_open || sizes.height > 572;
@@ -467,11 +473,14 @@ class DataList extends MDNRComponent {
       }
     }
     // Обновить количество записей.
-    this._mounted && reallyLoadedRows && this.setState({rowsLoaded: this.state.rowsLoaded + reallyLoadedRows});
+    this._mounted && this.setState({
+      rowsLoaded: this.state.rowsLoaded + reallyLoadedRows,
+      no_rows: !startIndex && this.state.rowsLoaded === 1 && !reallyLoadedRows,
+    });
   };
 
   _loadMoreRows = ({startIndex, stopIndex}) => {
-    const {_mgr, _owner} = this.props;
+    const {_mgr, _owner, find_rows} = this.props;
     const {scheme, columns, rowsLoaded} = this.state;
 
     //const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);
@@ -497,6 +506,7 @@ class DataList extends MDNRComponent {
       return Promise.resolve(this._updateList(_mgr.find_rows(selector), startIndex));
     }
     else {
+      this.setState({no_rows: false});
       // выполняем запрос
       const sprm = {
         columns,
@@ -505,8 +515,9 @@ class DataList extends MDNRComponent {
       };
       const selector = _mgr.mango_selector ? _mgr.mango_selector(scheme, sprm) : scheme.mango_selector(sprm);
 
-      return _mgr.find_rows_remote(selector)
-        .then((data) => this._updateList(data, startIndex));
+      return (find_rows ? find_rows(selector) : _mgr.find_rows_remote(selector))
+        .then((data) => this._updateList(data, startIndex))
+        .catch((err) => this.setState({network_error: err}));
     }
 
   };

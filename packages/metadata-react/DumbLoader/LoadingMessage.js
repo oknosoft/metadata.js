@@ -21,7 +21,8 @@ export default withStyles({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: 'calc(100vh - 80px)'
+    height: '100%',
+    minHeight: 300,
   },
   text: {
     padding: '.4em 1em',

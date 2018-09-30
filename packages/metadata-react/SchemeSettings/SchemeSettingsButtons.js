@@ -74,7 +74,12 @@ export default class SchemeSettingsButtons extends PureComponent {
     if(props.scheme._search !== target.value.toLowerCase() || force) {
       props.scheme._search = target.value.toLowerCase();
       this._timer && clearTimeout(this._timer);
-      this._timer = setTimeout(props.handleFilterChange, force ? 10 : 1500);
+      if(force) {
+        props.handleFilterChange();
+      }
+      else {
+        this._timer = setTimeout(props.handleFilterChange, 300);
+      }
       this.forceUpdate();
     }
   };

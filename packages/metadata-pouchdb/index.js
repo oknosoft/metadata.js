@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.8, built:2018-09-26
+ metadata-pouchdb v2.0.17-beta.8, built:2018-09-29
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -136,7 +136,7 @@ else {
 var PouchDB$1 = PouchDB;
 
 function adapter({AbstracrAdapter}) {
-  const fieldsToDelete = '_id,_rev,search,timestamp'.split(',');
+  const fieldsToDelete = '_id,search,timestamp'.split(',');
   return class AdapterPouch extends AbstracrAdapter {
     constructor($p) {
       super($p);
@@ -1250,7 +1250,6 @@ function adapter({AbstracrAdapter}) {
               _mgr.load_array(result.rows.map(({doc}) => {
                 doc.ref = doc._id.split('|')[1];
                 delete doc._id;
-                delete doc._rev;
                 return doc;
               }), true);
               if(result.rows.length < options.limit) {
@@ -1436,7 +1435,6 @@ function adapter({AbstracrAdapter}) {
                     doc.ref = doc._id.split('|')[1];
                     if(!_raw) {
                       delete doc._id;
-                      delete doc._rev;
                     }
                     return doc;
                   }),
@@ -1457,7 +1455,6 @@ function adapter({AbstracrAdapter}) {
               doc.ref = key[1];
               if(!_raw) {
                 delete doc._id;
-                delete doc._rev;
               }
               if(!utils._selection.call(_mgr, doc, selection)) {
                 return;
@@ -1597,7 +1594,6 @@ function adapter({AbstracrAdapter}) {
           cn = key[0].split('.');
           doc.ref = key[1];
           delete doc._id;
-          delete doc._rev;
           if(!res[cn[0]]) {
             res[cn[0]] = {};
           }
