@@ -233,7 +233,7 @@ class DataList extends MDNRComponent {
 
   render() {
     const {state, props, context, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer} = this;
-    const {columns, rowsLoaded, no_rows, scheme, colResize, confirm_text, info_text, settings_open} = state;
+    const {columns, rowsLoaded, scheme, colResize, confirm_text, info_text, settings_open} = state;
     const {RepParams} = props._mgr;
 
     const styleTopRightGrid = {
@@ -247,9 +247,6 @@ class DataList extends MDNRComponent {
     }
     else if(!columns || !columns.length) {
       return <LoadingMessage text="Ошибка настроек компоновки..."/>;
-    }
-    else if(no_rows) {
-      return <LoadingMessage text="Записей не найдено..."/>;
     }
 
     const show_grid = !settings_open || sizes.height > 572;
@@ -374,8 +371,9 @@ class DataList extends MDNRComponent {
     }
   };
 
-  _noContentRendered() {
-    return <LoadingMessage/>;
+  _noContentRendered = () => {
+    const {no_rows} = this.state;
+    return <LoadingMessage text={no_rows ? 'Записей не найдено...' : ''}/>;
   };
 
   _cellRenderer = ({columnIndex, rowIndex, isScrolling, isVisible, key, parent, style}) => {
