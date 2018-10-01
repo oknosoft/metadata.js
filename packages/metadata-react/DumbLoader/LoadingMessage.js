@@ -1,12 +1,13 @@
 import React from "react";
 import PropTypes from "prop-types";
-
 import withStyles from '@material-ui/core/styles/withStyles';
+import CircularProgress from '@material-ui/core/CircularProgress/CircularProgress';
+import Typography from '@material-ui/core/Typography/Typography';
 
 function SimpleLoadingMessage({classes, text}) {
   return (
     <div className={classes.message}>
-      <div className={classes.text}>{text || "загрузка..."}</div>
+      <div className={classes.text}>{text || <div><CircularProgress size={24}/> загрузка...</div>}</div>
     </div>
   );
 }

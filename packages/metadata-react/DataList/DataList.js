@@ -1,4 +1,3 @@
-/** @flow */
 import React from 'react';
 import PropTypes from 'prop-types';
 import MDNRComponent from '../common/MDNRComponent';
@@ -16,6 +15,7 @@ import withStyles from './styles';
 import {withIface} from 'metadata-redux';
 import control_by_type from 'metadata-abstract-ui/src/ui';
 import StarRate from '@material-ui/icons/StarRate';
+import Typography from '@material-ui/core/Typography/Typography';
 
 class DataList extends MDNRComponent {
 
@@ -372,8 +372,13 @@ class DataList extends MDNRComponent {
   };
 
   _noContentRendered = () => {
-    const {no_rows} = this.state;
-    return <LoadingMessage text={no_rows ? 'Записей не найдено...' : ''}/>;
+    const {no_rows, network_error}  = this.state;
+    return <LoadingMessage text={network_error ? (
+      <div>
+        <Typography variant="inherit">Ошибка сети, повторите запрос позже:</Typography>
+        <Typography variant="inherit" color="error">{network_error.message || network_error.message}</Typography>
+      </div>
+    ) : (no_rows ? 'Записей не найдено...' : '')}/>;
   };
 
   _cellRenderer = ({columnIndex, rowIndex, isScrolling, isVisible, key, parent, style}) => {
@@ -491,6 +496,8 @@ class DataList extends MDNRComponent {
       increment = 10;
     }
 
+    this.setState({no_rows: false, network_error: null});
+
     // в зависимости от типа кеширования...
     if(/ram$/.test(_mgr.cachable)) {
       // фильтруем в озу
@@ -504,7 +511,6 @@ class DataList extends MDNRComponent {
       return Promise.resolve(this._updateList(_mgr.find_rows(selector), startIndex));
     }
     else {
-      this.setState({no_rows: false});
       // выполняем запрос
       const sprm = {
         columns,

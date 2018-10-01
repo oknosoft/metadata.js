@@ -6,7 +6,7 @@
   "license": "MIT",
   "engines": {
     "node": "^8.8",
-    "npm": "^5.5"
+    "npm": "^6.0"
   },
   "dependencies": {
     "@material-ui/core": "^3.1.2",
