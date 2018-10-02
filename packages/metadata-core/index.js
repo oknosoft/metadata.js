@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.8, built:2018-09-29
+ metadata-core v2.0.17-beta.8, built:2018-10-02
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -335,7 +335,7 @@ class TabularSection {
 		const {_owner, _name, _obj} = this;
     const {_manager, _data} = _owner;
 		const row = Constructor ? new Constructor(this) : _manager.obj_constructor(_name, this);
-		if(!_data._loading && _owner.add_row && _owner.add_row(row) === false){
+		if(!_data._loading && _owner.add_row && _owner.add_row(row, attr) === false){
 		  return;
     }
 		for (const f in row._metadata().fields){
@@ -931,13 +931,12 @@ class DataObj {
         return att;
       });
   }
-  _mixin(attr, include, exclude, silent) {
+  _mixin(attr, include, exclude = [], silent) {
     if(Object.isFrozen(this)) {
       return;
     }
     if(attr && typeof attr == 'object') {
       const {_not_set_loaded} = attr;
-      delete attr._not_set_loaded;
       const {_data} = this;
       if(silent) {
         if(_data._loading) {
@@ -945,6 +944,7 @@ class DataObj {
         }
         _data._loading = true;
       }
+      exclude.push('_not_set_loaded', '_rev');
       utils._mixin(this, attr, include, exclude);
       if(silent) {
         _data._loading = false;
@@ -3117,21 +3117,22 @@ const utils = {
 	_mixin(obj, src, include, exclude) {
 		const tobj = {};
 		function exclude_cpy(f) {
-			if (!exclude || exclude.indexOf(f) == -1) {
+			if (!exclude || exclude.includes(f)) {
 				if ((typeof tobj[f] == 'undefined') || (tobj[f] != src[f])) {
 					obj[f] = src[f];
 				}
 			}
 		}
-		if (include && include.length) {
-			for (let i = 0; i < include.length; i++) {
-				exclude_cpy(include[i]);
-			}
-		} else {
-			for (let f in src) {
-				exclude_cpy(f);
-			}
-		}
+    if(include && include.length) {
+      for (let i = 0; i < include.length; i++) {
+        exclude_cpy(include[i]);
+      }
+    }
+    else {
+      for (let f in src) {
+        exclude_cpy(f);
+      }
+    }
 		return obj;
 	},
 	_patch(obj, patch) {

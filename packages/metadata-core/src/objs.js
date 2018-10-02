@@ -655,13 +655,12 @@ export class DataObj {
    * @param attr
    * @private
    */
-  _mixin(attr, include, exclude, silent) {
+  _mixin(attr, include, exclude = [], silent) {
     if(Object.isFrozen(this)) {
       return;
     }
     if(attr && typeof attr == 'object') {
       const {_not_set_loaded} = attr;
-      delete attr._not_set_loaded;
       const {_data} = this;
       if(silent) {
         if(_data._loading) {
@@ -669,6 +668,7 @@ export class DataObj {
         }
         _data._loading = true;
       }
+      exclude.push('_not_set_loaded', '_rev');
       utils._mixin(this, attr, include, exclude);
       if(silent) {
         _data._loading = false;
