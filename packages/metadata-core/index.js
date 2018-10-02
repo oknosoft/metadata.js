@@ -753,10 +753,11 @@ class DataObj {
   }
   _set_loaded(ref) {
     this._manager.push(this, ref);
-    const {_data} = this;
-    _data._modified = false;
-    _data._is_new = false;
-    _data._loading = false;
+    Object.assign(this._data, {
+      _modified: false,
+      _is_new: false,
+      _loading: false,
+    });
     return this;
   }
   mark_deleted(deleted) {
@@ -3117,7 +3118,7 @@ const utils = {
 	_mixin(obj, src, include, exclude) {
 		const tobj = {};
 		function exclude_cpy(f) {
-			if (!exclude || exclude.includes(f)) {
+			if (!(exclude && exclude.includes(f))) {
 				if ((typeof tobj[f] == 'undefined') || (tobj[f] != src[f])) {
 					obj[f] = src[f];
 				}

@@ -374,10 +374,11 @@ export class DataObj {
    */
   _set_loaded(ref) {
     this._manager.push(this, ref);
-    const {_data} = this;
-    _data._modified = false;
-    _data._is_new = false;
-    _data._loading = false;
+    Object.assign(this._data, {
+      _modified: false,
+      _is_new: false,
+      _loading: false,
+    });
     return this;
   }
 

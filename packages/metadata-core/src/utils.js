@@ -521,7 +521,7 @@ const utils = {
 		const tobj = {}; // tobj - вспомогательный объект для фильтрации свойств, которые есть у объекта Object и его прототипа
 
 		function exclude_cpy(f) {
-			if (!exclude || exclude.includes(f)) {
+			if (!(exclude && exclude.includes(f))) {
 				// копируем в dst свойства src, кроме тех, которые унаследованы от Object
 				if ((typeof tobj[f] == 'undefined') || (tobj[f] != src[f])) {
 					obj[f] = src[f];
