@@ -27,8 +27,9 @@ export default withStyles({
   },
   text: {
     padding: '.4em 1em',
-    fontSize: '1.2em',
+    //fontSize: '1.2em',
     backgroundColor: '#f9f9f9',
-    border: '1px solid #e0e0e0'
+    border: '1px solid #e0e0e0',
+    maxWidth: '70%',
   },
 })(SimpleLoadingMessage);

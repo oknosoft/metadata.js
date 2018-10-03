@@ -20,65 +20,42 @@ import Typography from '@material-ui/core/Typography/Typography';
 class DataList extends MDNRComponent {
 
   static LIMIT = 40;
-  static OVERSCAN_ROW_COUNT = 2;
-  static OVERSCAN_COLUMN_COUNT = 0;
+  static OVERSCAN_ROW_COUNT = 5;
   static COLUMN_HEIGHT = 33;
   static COLUMN_DEFAULT_WIDTH = 220;
-
-  static propTypes = {
-
-    // данные
-    _mgr: PropTypes.object.isRequired,    // Менеджер данных
-    _acl: PropTypes.string,               // Права на чтение-изменение
-    _meta: PropTypes.object,              // Описание метаданных. Если не указано, используем метаданные менеджера
-
-    _owner: PropTypes.object,             // Поле - владелец. У него должны быть _obj, _fld и _meta
-                                          // а внутри _meta могут быть choice_params и choice_links
-
-    // настройки внешнего вида и поведения
-    selectionMode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисуем кнопку выбора
-    read_only: PropTypes.object,          // Элемент только для чтения
-    denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
-    show_search: PropTypes.bool,          // Показывать поле поиска
-    show_variants: PropTypes.bool,        // Показывать список вариантов настройки динсписка
-    modal: PropTypes.bool,                // Показывать список в модальном диалоге
-
-    // Redux actions
-    handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
-
-  };
 
   constructor(props, context) {
     super(props, context);
 
     this.state = {
-      selectedRowIndex: 0,
-      rowsLoaded: 0,
+      selectedRow: 0,
+      rowCount: 0,
       settings_open: false,
       network_error: '',
       no_rows: false,
+      ref: '',
     };
 
     /** Set of grid rows. */
-    this._list = new Map();
+    this._list = [];
 
     this.handleManagerChange(props);
   }
 
   // при изменении менеджера данных
-  handleManagerChange({_mgr, _meta}) {
+  handleManagerChange({_mgr, _meta, _ref}) {
 
     const {class_name, cachable, alatable} = _mgr;
 
     this._meta = _meta || _mgr.metadata();
 
-    const state = {rowsLoaded: /ram$/.test(cachable) ? alatable.length : 0};
+    const newState = {ref: _ref || ''};
 
     if(this._mounted) {
-      this.setState(state);
+      this.setState(newState);
     }
     else {
-      Object.assign(this.state, state);
+      Object.assign(this.state, newState);
     }
 
     $p.cat.scheme_settings.get_scheme(class_name).then(this.handleSchemeChange);
@@ -87,12 +64,12 @@ class DataList extends MDNRComponent {
 
   // обработчик выбора значения в списке
   handleSelect = () => {
-    const {state: {selectedRowIndex}, props: {handlers, _mgr}} = this;
-    if(!selectedRowIndex) {
+    const {state: {selectedRow}, props: {handlers, _mgr}} = this;
+    if(!selectedRow) {
       this.handleInfoText('Не выбрана строка');
     }
     else {
-      const row = this._list.get(selectedRowIndex);
+      const row = this._list[selectedRow];
       row && handlers.handleSelect && handlers.handleSelect(row, _mgr);
     }
   };
@@ -107,7 +84,7 @@ class DataList extends MDNRComponent {
   handleEdit = () => {
     const {_list, _meta, state, props} = this;
     const {handlers, _mgr} = props;
-    const row = _list.get(state.selectedRowIndex);
+    const row = _list[state.selectedRow];
     if(!row || $p.utils.is_empty_guid(row.ref)) {
       handlers.handleIfaceState({
         component: '',
@@ -124,7 +101,7 @@ class DataList extends MDNRComponent {
   handleRemove = () => {
     const {_list, _meta, state, props} = this;
     const {handlers, _mgr} = props;
-    const row = _list.get(state.selectedRowIndex);
+    const row = _list[state.selectedRow];
 
     if(!row || $p.utils.is_empty_guid(row.ref)) {
       handlers.handleIfaceState({
@@ -152,7 +129,7 @@ class DataList extends MDNRComponent {
   // при изменении параметров компоновки - схему не меняем, но выполняем пересчет
   handleFilterChange = (scheme, columns) => {
 
-    const {state, _list, _mounted} = this;
+    const {state, props, _list, _mounted} = this;
 
     if(!(scheme instanceof $p.CatScheme_settings)) {
       scheme = state.scheme;
@@ -163,32 +140,33 @@ class DataList extends MDNRComponent {
     }
 
     // Set first row as header.
-    _list.clear();
-    _list.set(0, columns.map(column => (column.synonym)));
+    _list.length = 0;
+    _list.push(columns.map(column => (column.synonym)));
 
+    const newState = {scheme, columns, selectedRow: 0};
     if(_mounted) {
-      this.setState({scheme, columns, rowsLoaded: 1});
+      this.setState(newState);
     }
     else {
-      Object.assign(state, {scheme, columns, rowsLoaded: 1});
+      Object.assign(state, newState);
     }
 
     this._loadMoreRows({
-      startIndex: 0,
-      stopIndex: DataList.LIMIT
+      startIndex: 1,
+      stopIndex: DataList.LIMIT - 1,
     });
   };
 
   // обработчик печати теущей строки
   handlePrint = () => {
-    const row = this._list.get(this.state.selectedRowIndex);
+    const row = this._list[this.state.selectedRow];
     const {handlers, _mgr} = this.props;
     row && handlers.handlePrint && handlers.handlePrint(row, _mgr);
   };
 
   // обработчик вложений теущей строки
   handleAttachments = () => {
-    const row = this._list.get(this.state.selectedRowIndex);
+    const row = this._list[this.state.selectedRow];
     const {handlers, _mgr} = this.props;
     row && handlers.handleAttachments && handlers.handleAttachments(row, _mgr);
   };
@@ -232,12 +210,12 @@ class DataList extends MDNRComponent {
   }
 
   render() {
-    const {state, props, context, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer} = this;
-    const {columns, rowsLoaded, scheme, colResize, confirm_text, info_text, settings_open} = state;
+    const {state, props, context, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer, _list} = this;
+    const {columns, scheme, confirm_text, info_text, settings_open, rowCount} = state;
     const {RepParams} = props._mgr;
 
     const styleTopRightGrid = {
-      cursor: colResize ? 'col-resize' : 'default',
+      cursor: state.colResize ? 'col-resize' : 'default',
     };
 
     let {selectionMode, denyAddDel, show_search, show_variants, classes, title} = props;
@@ -321,7 +299,7 @@ class DataList extends MDNRComponent {
           <InfiniteLoader
             isRowLoaded={_isRowLoaded}
             loadMoreRows={_loadMoreRows}
-            rowCount={rowsLoaded + DataList.LIMIT}
+            rowCount={rowCount}
             minimumBatchSize={DataList.LIMIT}>
 
             {({onRowsRendered, registerChild}) => {
@@ -329,8 +307,8 @@ class DataList extends MDNRComponent {
                 onRowsRendered({
                   overscanStartIndex: rowOverscanStartIndex,
                   overscanStopIndex: rowOverscanStopIndex,
-                  startIndex: rowStartIndex * this.state.columns.length + columnStartIndex,
-                  stopIndex: rowStopIndex * this.state.columns.length + columnStopIndex
+                  startIndex: rowStartIndex * columns.length + columnStartIndex,
+                  stopIndex: rowStopIndex * columns.length + columnStopIndex
                 });
               };
 
@@ -340,13 +318,13 @@ class DataList extends MDNRComponent {
                   tabIndex={0}
                   width={width}
                   height={sizes.height - 52 - (settings_open ? 320 : 0)}
-                  rowCount={rowsLoaded}
+                  rowCount={rowCount}
                   columnCount={columns.length}
                   fixedRowCount={1}
                   noContentRenderer={this._noContentRendered}
                   cellRenderer={this._cellRenderer}
-                  //overscanColumnCount={DataList.OVERSCAN_COLUMN_COUNT}
-                  //overscanRowCount={DataList.OVERSCAN_ROW_COUNT}
+                  scrollToRow={state.selectedRow || 1}
+                  overscanRowCount={DataList.OVERSCAN_ROW_COUNT}
                   columnWidth={this._getColumnWidth}
                   rowHeight={DataList.COLUMN_HEIGHT}
                   onSectionRendered={onSectionRendered}
@@ -373,17 +351,19 @@ class DataList extends MDNRComponent {
 
   _noContentRendered = () => {
     const {no_rows, network_error}  = this.state;
-    return <LoadingMessage text={network_error ? (
+    return <LoadingMessage text={network_error ?
       <div>
         <Typography variant="inherit">Ошибка сети, повторите запрос позже:</Typography>
         <Typography variant="inherit" color="error">{network_error.message || network_error.message}</Typography>
       </div>
-    ) : (no_rows ? 'Записей не найдено...' : '')}/>;
+      :
+      (no_rows ? 'Записей не найдено...' : '')}
+    />;
   };
 
   _cellRenderer = ({columnIndex, rowIndex, isScrolling, isVisible, key, parent, style}) => {
     const {state, props, handleEdit, handleSelect} = this;
-    const {hoveredColumnIndex, hoveredRowIndex, selectedRowIndex, columns} = state;
+    const {hoveredColumnIndex, hoveredRowIndex, selectedRow, columns} = state;
     const {cell, headerCell, hoveredItem, selectedItem} = props.classes;
 
     const {ctrl_type} = columns[columnIndex];
@@ -392,12 +372,12 @@ class DataList extends MDNRComponent {
     // оформление ячейки
     const classNames = classnames(this._getRowClassName(rowIndex), cell, {
       [headerCell]: rowIndex === 0, // выравнивание текста по центру
-      [hoveredItem]: rowIndex != 0 && rowIndex == hoveredRowIndex && rowIndex != selectedRowIndex, // || columnIndex === this.state.hoveredColumnIndex
-      [selectedItem]: rowIndex != 0 && rowIndex == selectedRowIndex
+      [hoveredItem]: rowIndex != 0 && rowIndex == hoveredRowIndex && rowIndex != selectedRow, // || columnIndex === this.state.hoveredColumnIndex
+      [selectedItem]: rowIndex != 0 && rowIndex == selectedRow
     });
 
     // данные строки
-    const row = this._list.get(rowIndex);
+    const row = this._list[rowIndex];
 
     // текст ячейки (header - data cell - empty cell)
     const content = rowIndex === 0 ? row[columnIndex] : row && this._formatter(row, columnIndex);
@@ -414,7 +394,7 @@ class DataList extends MDNRComponent {
       colResize != this.state.colResize && this.setState({colResize});
     };
 
-    const onClick = () => this.setState({selectedRowIndex: rowIndex});
+    const onClick = () => this.setState({selectedRow: rowIndex});
 
     const dprops = {
       className: classNames,
@@ -459,44 +439,50 @@ class DataList extends MDNRComponent {
   }
 
   _isRowLoaded = ({index}) => {
-    return this._list.has(index);
+    return !!this._list[index];
   };
 
-  _updateList = (data, startIndex) => {
+  _updateList = (data, startIndex, selectedRow, rowCount) => {
     const {_list} = this;
-
-    let reallyLoadedRows = 0;
 
     // обновляем массив результата
     for (let i = 0; i < data.length; i++) {
       // Append one because first row is header.
-      if(_list.has(1 + i + startIndex) === false) {
-        reallyLoadedRows++;
-        _list.set(1 + i + startIndex, data[i]);
-      }
+      _list[i + startIndex] = data[i];
     }
     // Обновить количество записей.
-    this._mounted && this.setState({
-      rowsLoaded: this.state.rowsLoaded + reallyLoadedRows,
-      no_rows: !startIndex && this.state.rowsLoaded === 1 && !reallyLoadedRows,
-    });
+    if(this._mounted) {
+      if(!rowCount) {
+        rowCount = _list.length;
+      }
+      const newState = {
+        no_rows: !startIndex && rowCount === 1,
+        rowCount,
+      };
+      if(selectedRow) {
+        newState.selectedRow = selectedRow;
+        newState.scrollSetted = true;
+      }
+      this.setState(newState);
+    }
   };
 
   _loadMoreRows = ({startIndex, stopIndex}) => {
-    const {_mgr, _owner, find_rows} = this.props;
-    const {scheme, columns, rowsLoaded} = this.state;
+    const {props: {_mgr, _owner, find_rows}, state: {scheme, columns, ref, scrollSetted}, _list}  = this;
 
     //const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);
 
     let increment = stopIndex - startIndex;
-    if(!increment && startIndex < rowsLoaded) {
+    if(!increment && _list[startIndex]) {
       return;
     }
-    if(increment < 10) {
-      increment = 10;
-    }
 
-    this.setState({no_rows: false, network_error: null});
+    const newState = {no_rows: false, network_error: null};
+    if(scrollSetted) {
+      newState.scrollSetted = false;
+      newState.ref = '';
+    }
+    this.setState(newState);
 
     // в зависимости от типа кеширования...
     if(/ram$/.test(_mgr.cachable)) {
@@ -515,17 +501,58 @@ class DataList extends MDNRComponent {
       const sprm = {
         columns,
         skip: startIndex ? startIndex - 1 : 0,
-        limit: startIndex ? increment + 1 : increment,
+        limit: increment + 1,
       };
       const selector = _mgr.mango_selector ? _mgr.mango_selector(scheme, sprm) : scheme.mango_selector(sprm);
+      // если указано начальное значение списка, первый запрос делаем со ссылкой
+      if(ref && !startIndex) {
+        selector.ref = ref;
+      }
 
       return (find_rows ? find_rows(selector) : _mgr.find_rows_remote(selector))
-        .then((data) => this._updateList(data, startIndex))
+        .then((data) => {
+          if(Array.isArray(data)) {
+            this._updateList(data, startIndex);
+          }
+          else {
+            const {docs, scroll, flag, count} = data;
+            if(scroll && !flag) {
+              this._updateList(docs, startIndex, scroll + 1, count + 1);
+            }
+            else{
+              this._updateList(docs, startIndex, 0, count + 1);
+            }
+          }
+        })
         .catch((err) => this.setState({network_error: err}));
     }
 
   };
 }
+
+DataList.propTypes = {
+
+  // данные
+  _mgr: PropTypes.object.isRequired,    // Менеджер данных
+  _acl: PropTypes.string,               // Права на чтение-изменение
+  _meta: PropTypes.object,              // Описание метаданных. Если не указано, используем метаданные менеджера
+  _ref: PropTypes.string,                // Ссылка, на которую надо спозиционироваться
+
+  _owner: PropTypes.object,             // Поле - владелец. У него должны быть _obj, _fld и _meta
+                                        // а внутри _meta могут быть choice_params и choice_links
+
+  // настройки внешнего вида и поведения
+  selectionMode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисуем кнопку выбора
+  read_only: PropTypes.object,          // Элемент только для чтения
+  denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+  show_search: PropTypes.bool,          // Показывать поле поиска
+  show_variants: PropTypes.bool,        // Показывать список вариантов настройки динсписка
+  modal: PropTypes.bool,                // Показывать список в модальном диалоге
+
+  // Redux actions
+  handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
+
+};
 
 
 export default withStyles(withIface(DataList));
