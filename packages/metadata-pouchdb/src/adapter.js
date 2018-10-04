@@ -1123,11 +1123,15 @@ function adapter({AbstracrAdapter}) {
       }
       // TODO: опасное место с гонками при одновременной записи
       if(_data._saving && _data._modified) {
+        _data._saving++;
+        if(_data._saving > 10) {
+          return Promise.reject(new Error(`Циклическая перезапись`));
+        }
         return new Promise((resolve, reject) => {
-          setTimeout(() => resolve(this.save_obj(tObj, attr)), 100);
+          setTimeout(() => resolve(this.save_obj(tObj, attr)), 200);
         });
       }
-      _data._saving = true;
+      _data._saving = 1;
 
       // нас могли попросить записать объект не в родную базу менеджера, а в любую другую
       const db = attr.db || this.db(_manager);
@@ -1162,6 +1166,7 @@ function adapter({AbstracrAdapter}) {
         getter.then((res) => {
           if(typeof res === 'object') {
             if(tmp._rev !== res._rev && _manager.metadata().check_rev !== false) {
+              _data._saving = 0;
               const {timestamp} = res;
               return reject(new Error(`Запись изменена ${timestamp && typeof timestamp.user === 'string' ?
                 `пользователем ${timestamp.user} ${timestamp.moment}` : 'другим пользователем'}`));
@@ -1193,13 +1198,13 @@ function adapter({AbstracrAdapter}) {
                   }
                 }
               }
-              _data._saving = false;
+              _data._saving = 0;
               _obj._rev = res.rev;
               resolve(tObj);
             }
           })
           .catch((err) => {
-            _data._saving = false;
+            _data._saving = 0;
             err && err.status !== 404 && reject(err);
           });
       });

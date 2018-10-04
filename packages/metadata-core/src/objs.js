@@ -15,7 +15,7 @@ class InnerData {
     this._ts_ = {};
     this._is_new = !(owner instanceof EnumObj);
     this._loading = !!loading;
-    this._saving = false;
+    this._saving = 0;
     this._modified = false;
   }
 
