@@ -669,7 +669,7 @@ export class DataObj {
         }
         _data._loading = true;
       }
-      exclude.push('_not_set_loaded', '_rev');
+      exclude.push('_not_set_loaded');
       utils._mixin(this, attr, include, exclude);
       if(silent) {
         _data._loading = false;
