@@ -1168,8 +1168,10 @@ function adapter({AbstracrAdapter}) {
             if(tmp._rev !== res._rev && _manager.metadata().check_rev !== false) {
               _data._saving = 0;
               const {timestamp} = res;
-              return reject(new Error(`Запись изменена ${timestamp && typeof timestamp.user === 'string' ?
-                `пользователем ${timestamp.user} ${timestamp.moment}` : 'другим пользователем'}`));
+              return reject(new Error(`Объект изменён ${timestamp && typeof timestamp.user === 'string' ?
+                `пользователем ${timestamp.user} ${timestamp.moment}` : 'другим пользователем'}
+                <br/>${tmp._id}
+                `));
             }
             tmp._rev = res._rev;
             for (let att in res._attachments) {
