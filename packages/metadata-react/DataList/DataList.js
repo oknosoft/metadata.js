@@ -325,7 +325,7 @@ class DataList extends MDNRComponent {
                   fixedRowCount={1}
                   noContentRenderer={this._noContentRendered}
                   cellRenderer={this._cellRenderer}
-                  scrollToRow={state.scrollSetted ? state.scrollToRow : void 0}
+                  scrollToRow={state.scrollSetted ? state.scrollToRow : undefined}
                   overscanRowCount={DataList.OVERSCAN_ROW_COUNT}
                   columnWidth={this._getColumnWidth}
                   rowHeight={DataList.COLUMN_HEIGHT}
@@ -444,7 +444,7 @@ class DataList extends MDNRComponent {
     return !!this._list[index];
   };
 
-  _updateList = (data, startIndex, selectedRow, rowCount) => {
+  _updateList = (data, startIndex, rowCount) => {
     const {_list} = this;
 
     // обновляем массив результата
@@ -454,18 +454,13 @@ class DataList extends MDNRComponent {
     }
     // Обновить количество записей.
     if(this._mounted) {
-      if(!rowCount) {
-        rowCount = _list.length + 1;
+      if(rowCount === undefined) {
+        rowCount = _list.length > 1 ? _list.length + 1 : 0;
       }
       const newState = {
-        no_rows: !startIndex && rowCount === 1,
+        no_rows: rowCount <= 1,
         rowCount,
       };
-      if(selectedRow) {
-        newState.scrollToRow = selectedRow;
-        newState.selectedRow = selectedRow;
-        newState.scrollSetted = true;
-      }
       this.setState(newState);
     }
   };
@@ -512,7 +507,7 @@ class DataList extends MDNRComponent {
       }
       const selector = _mgr.mango_selector ? _mgr.mango_selector(scheme, sprm) : scheme.mango_selector(sprm);
       // если указано начальное значение списка, первый запрос делаем со ссылкой
-      if(ref && !startIndex) {
+      if(ref && !scrollSetted) {
         selector.ref = ref;
       }
 
@@ -523,11 +518,30 @@ class DataList extends MDNRComponent {
           }
           else {
             const {docs, scroll, flag, count} = data;
-            if(scroll && !flag) {
-              this._updateList(docs, startIndex, scroll + 1, count + 1);
-            }
-            else{
-              this._updateList(docs, startIndex, 0, count + 1);
+            this._updateList(docs, startIndex, count ? count + 1 : count);
+            if(ref && !scrollSetted) {
+              const newState = {
+                scrollSetted: true,
+                ref: '',
+              }
+              if(scroll && !flag) {
+                newState.selectedRow = scroll + 1;
+                newState.scrollToRow = newState.selectedRow + 4 < count ? newState.selectedRow + 4 : newState.selectedRow;
+              }
+              this.setState(newState);
+              if(newState.scrollToRow && (!_list[newState.selectedRow] || !_list[newState.scrollToRow])) {
+                const opt = {
+                  startIndex: newState.scrollToRow - DataList.LIMIT / 2,
+                  stopIndex: newState.scrollToRow + DataList.LIMIT / 2,
+                };
+                if(opt.startIndex < 1) {
+                  opt.startIndex = 1;
+                }
+                if(opt.stopIndex > count) {
+                  opt.stopIndex = count;
+                }
+                this._loadMoreRows(opt);
+              }
             }
           }
         })
