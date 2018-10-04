@@ -337,7 +337,8 @@ export class DataObj {
   }
 
   /**
-   * Ревизия
+   * ### Ревизия
+   * Eё устанваливает адаптер при чтении и записи
    * @property _rev
    * @for DataObj
    * @type Boolean
@@ -346,7 +347,6 @@ export class DataObj {
     return this._obj._rev || '';
   }
   set _rev(v) {
-    this._obj._rev = v;
   }
 
   /**
@@ -656,12 +656,13 @@ export class DataObj {
    * @param attr
    * @private
    */
-  _mixin(attr, include, exclude = [], silent) {
+  _mixin(attr, include, exclude, silent) {
     if(Object.isFrozen(this)) {
       return;
     }
     if(attr && typeof attr == 'object') {
       const {_not_set_loaded} = attr;
+      _not_set_loaded && delete attr._not_set_loaded;
       const {_data} = this;
       if(silent) {
         if(_data._loading) {
@@ -669,7 +670,6 @@ export class DataObj {
         }
         _data._loading = true;
       }
-      exclude.push('_not_set_loaded');
       utils._mixin(this, attr, include, exclude);
       if(silent) {
         _data._loading = false;

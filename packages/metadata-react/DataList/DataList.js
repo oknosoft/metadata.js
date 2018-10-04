@@ -20,7 +20,7 @@ import Typography from '@material-ui/core/Typography/Typography';
 class DataList extends MDNRComponent {
 
   static LIMIT = 40;
-  static OVERSCAN_ROW_COUNT = 5;
+  static OVERSCAN_ROW_COUNT = 2;
   static COLUMN_HEIGHT = 33;
   static COLUMN_DEFAULT_WIDTH = 220;
 
@@ -29,6 +29,7 @@ class DataList extends MDNRComponent {
 
     this.state = {
       selectedRow: 0,
+      scrollToRow: 0,
       rowCount: 0,
       settings_open: false,
       network_error: '',
@@ -300,7 +301,7 @@ class DataList extends MDNRComponent {
             isRowLoaded={_isRowLoaded}
             loadMoreRows={_loadMoreRows}
             rowCount={rowCount}
-            minimumBatchSize={DataList.LIMIT}>
+            minimumBatchSize={DataList.LIMIT / 2}>
 
             {({onRowsRendered, registerChild}) => {
               const onSectionRendered = ({rowOverscanStartIndex, rowOverscanStopIndex, rowStartIndex, rowStopIndex, columnStartIndex, columnStopIndex}) => {
@@ -453,7 +454,7 @@ class DataList extends MDNRComponent {
     // Обновить количество записей.
     if(this._mounted) {
       if(!rowCount) {
-        rowCount = _list.length;
+        rowCount = _list.length + 1;
       }
       const newState = {
         no_rows: !startIndex && rowCount === 1,
@@ -503,6 +504,9 @@ class DataList extends MDNRComponent {
         skip: startIndex ? startIndex - 1 : 0,
         limit: increment + 1,
       };
+      if(sprm.limit < DataList.LIMIT / 2) {
+        sprm.limit = DataList.LIMIT / 2;
+      }
       const selector = _mgr.mango_selector ? _mgr.mango_selector(scheme, sprm) : scheme.mango_selector(sprm);
       // если указано начальное значение списка, первый запрос делаем со ссылкой
       if(ref && !startIndex) {

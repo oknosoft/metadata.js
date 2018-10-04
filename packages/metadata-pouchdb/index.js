@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.8, built:2018-09-29
+ metadata-pouchdb v2.0.17-beta.8, built:2018-10-04
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -942,6 +942,7 @@ function adapter({AbstracrAdapter}) {
           }
           tObj._data._loading = true;
           tObj._mixin(res);
+          tObj._obj._rev = res._rev;
         })
         .catch((err) => {
           if(err.status != 404) {
@@ -983,9 +984,14 @@ function adapter({AbstracrAdapter}) {
         tmp._attachments = attr.attachments;
       }
       return new Promise((resolve, reject) => {
-        const getter = tObj.is_new() ? Promise.resolve() : db.get(tmp._id);
+        const getter = tObj.is_new() ? Promise.resolve(true) : db.get(tmp._id);
         getter.then((res) => {
-          if(res) {
+          if(typeof res === 'object') {
+            if(tmp._rev !== res._rev && _manager.metadata().check_rev !== false) {
+              const {timestamp} = res;
+              return reject(new Error(`Запись изменена ${timestamp && typeof timestamp.user === 'string' ?
+                `пользователем ${timestamp.user} ${timestamp.moment}` : 'другим пользователем'}`));
+            }
             tmp._rev = res._rev;
             for (let att in res._attachments) {
               if(!tmp._attachments) {
@@ -996,23 +1002,27 @@ function adapter({AbstracrAdapter}) {
               }
             }
           }
+          return res;
         })
           .catch((err) => err && err.status !== 404 && reject(err))
-          .then(() => db.put(tmp))
-          .then(() => {
-            tObj.is_new() && tObj._set_loaded(tObj.ref);
-            if(tmp._attachments) {
-              if(!tObj._attachments) {
-                tObj._attachments = {};
-              }
-              for (var att in tmp._attachments) {
-                if(!tObj._attachments[att] || !tmp._attachments[att].stub) {
-                  tObj._attachments[att] = tmp._attachments[att];
+          .then((res) => res && db.put(tmp))
+          .then((res) => {
+            if(res) {
+              tObj.is_new() && tObj._set_loaded(tObj.ref);
+              if(tmp._attachments) {
+                if(!tObj._attachments) {
+                  tObj._attachments = {};
+                }
+                for (var att in tmp._attachments) {
+                  if(!tObj._attachments[att] || !tmp._attachments[att].stub) {
+                    tObj._attachments[att] = tmp._attachments[att];
+                  }
                 }
               }
+              _data._saving = false;
+              _obj._rev = res.rev;
+              resolve(tObj);
             }
-            _data._saving = false;
-            resolve(tObj);
           })
           .catch((err) => {
             _data._saving = false;
