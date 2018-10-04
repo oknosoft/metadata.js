@@ -30,6 +30,7 @@ class DataList extends MDNRComponent {
     this.state = {
       selectedRow: 0,
       scrollToRow: 0,
+      scrollSetted: false,
       rowCount: 0,
       settings_open: false,
       network_error: '',
@@ -144,7 +145,7 @@ class DataList extends MDNRComponent {
     _list.length = 0;
     _list.push(columns.map(column => (column.synonym)));
 
-    const newState = {scheme, columns, selectedRow: 0};
+    const newState = {scheme, columns, scrollToRow: 1};
     if(_mounted) {
       this.setState(newState);
     }
@@ -324,7 +325,7 @@ class DataList extends MDNRComponent {
                   fixedRowCount={1}
                   noContentRenderer={this._noContentRendered}
                   cellRenderer={this._cellRenderer}
-                  scrollToRow={state.selectedRow || 1}
+                  scrollToRow={state.scrollSetted ? state.scrollToRow : void 0}
                   overscanRowCount={DataList.OVERSCAN_ROW_COUNT}
                   columnWidth={this._getColumnWidth}
                   rowHeight={DataList.COLUMN_HEIGHT}
@@ -461,6 +462,7 @@ class DataList extends MDNRComponent {
         rowCount,
       };
       if(selectedRow) {
+        newState.scrollToRow = selectedRow;
         newState.selectedRow = selectedRow;
         newState.scrollSetted = true;
       }
@@ -481,6 +483,7 @@ class DataList extends MDNRComponent {
     const newState = {no_rows: false, network_error: null};
     if(scrollSetted) {
       newState.scrollSetted = false;
+      newState.scrollToRow = 0;
       newState.ref = '';
     }
     this.setState(newState);
