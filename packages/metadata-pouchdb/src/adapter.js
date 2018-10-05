@@ -1633,7 +1633,7 @@ function adapter({AbstracrAdapter}) {
             for (const doc of docs) {
               doc.ref = doc._id.split('|')[1];
             }
-            return docs;
+            return selection._raw ? docs : _mgr.load_array(docs);
           })
           .catch((err) => {
             err_handler(err);
