@@ -748,11 +748,13 @@ export class RefDataManager extends DataManager{
         else if(forse === 'update_only' && attr.timestamp) {
           if(attr.timestamp.user === (pouch.authorized || wsql.get_user_param('user_name'))) {
             if(new Date() - moment(attr.timestamp.moment, "YYYY-MM-DDTHH:mm:ss ZZ").toDate() < 30000) {
+              attr._rev && (obj._obj._rev = attr._rev);
               continue;
             }
           }
         }
 				obj._mixin(attr);
+        attr._rev && (obj._obj._rev = attr._rev);
 			}
 			res.push(obj);
 		}
