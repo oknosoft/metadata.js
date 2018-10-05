@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.8, built:2018-10-04
+ metadata-pouchdb v2.0.17-beta.8, built:2018-10-05
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1337,11 +1337,13 @@ function adapter({AbstracrAdapter}) {
       }
       const err_handler = this.emit.bind(this, 'pouch_sync_error', _mgr.cachable);
       if(selection && selection._mango) {
-        const {selector} = selection;
-        if(db.adapter == 'idb' && selector.date && selector.date.$and){
-          selector.date = selector.date.$and[0];
+        const sel = {};
+        for(const fld in selection) {
+          if(fld[0] !== '_') {
+            sel[fld] = selection[fld];
+          }
         }
-        return db.find(selection)
+        return db.find(sel)
           .then(({docs}) => {
             if(!docs) {
               docs = [];

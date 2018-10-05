@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.8, built:2018-10-04
+ metadata-core v2.0.17-beta.8, built:2018-10-05
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -541,7 +541,7 @@ class InnerData {
     this._ts_ = {};
     this._is_new = !(owner instanceof EnumObj);
     this._loading = !!loading;
-    this._saving = false;
+    this._saving = 0;
     this._modified = false;
   }
 }
@@ -1514,17 +1514,24 @@ class DataManager extends MetaEventEmitter{
         selection.or.push(sel);
       });
     }
-    if(t.cachable == 'ram' || t.cachable == 'doc_ram' || (selection && selection._local)) {
+    if(t.cachable.endsWith('ram') || (selection && selection._local)) {
       t.find_rows(selection, push);
       return Promise.resolve(l);
     }
     else if(t.cachable != 'e1cib') {
+      if(selection._mango){
+        if(selection.selector.hasOwnProperty('$and')) {
+          selection.selector.push({class_name: t.class_name});
+        }
+        else {
+          selection.selector.class_name = t.class_name;
+        }
+      }
       return t.adapter.find_rows(t, selection)
         .then((data) => {
           for (const v of data) {
             push(v);
-          }
-          return l;
+          }          return l;
         });
     }
     else {

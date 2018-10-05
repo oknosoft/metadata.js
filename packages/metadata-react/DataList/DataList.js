@@ -366,13 +366,13 @@ class DataList extends MDNRComponent {
   _cellRenderer = ({columnIndex, rowIndex, isScrolling, isVisible, key, parent, style}) => {
     const {state, props, handleEdit, handleSelect} = this;
     const {hoveredColumnIndex, hoveredRowIndex, selectedRow, columns} = state;
-    const {cell, headerCell, hoveredItem, selectedItem} = props.classes;
+    const {cell, headerCell, hoveredItem, selectedItem, evenRow, oddRow} = props.classes;
 
     const {ctrl_type} = columns[columnIndex];
     const {star, toggle} = $p.enm.data_field_kinds;
 
     // оформление ячейки
-    const classNames = classnames(this._getRowClassName(rowIndex), cell, {
+    const classNames = classnames(rowIndex % 2 === 0 ? evenRow : oddRow, cell, {
       [headerCell]: rowIndex === 0, // выравнивание текста по центру
       [hoveredItem]: rowIndex != 0 && rowIndex == hoveredRowIndex && rowIndex != selectedRow, // || columnIndex === this.state.hoveredColumnIndex
       [selectedItem]: rowIndex != 0 && rowIndex == selectedRow
@@ -390,11 +390,6 @@ class DataList extends MDNRComponent {
         hoveredRowIndex: rowIndex
       });
     };
-    const onMouseMove = ({target, clientX}) => {
-      const br = target.getBoundingClientRect();
-      const colResize = (Math.abs(br.left - clientX) < 6) || (Math.abs(br.right - clientX) < 6);
-      colResize != this.state.colResize && this.setState({colResize});
-    };
 
     const onClick = () => this.setState({selectedRow: rowIndex});
 
@@ -408,13 +403,22 @@ class DataList extends MDNRComponent {
       title: hoveredColumnIndex == columnIndex && hoveredRowIndex == rowIndex ? content : '',
     };
     if(rowIndex == 0) {
-      dprops.onMouseMove = onMouseMove;
+      dprops.onMouseMove = ({target, clientX}) => {
+        const br = target.getBoundingClientRect();
+        const colResize = (Math.abs(br.left - clientX) < 6) || (Math.abs(br.right - clientX) < 6);
+        colResize != this.state.colResize && this.setState({colResize});
+      };
     };
 
 
     return (
-      <div {...dprops}>{rowIndex !== 0 && (ctrl_type === star || ctrl_type === toggle) && content ?
-        <StarRate className={props.classes.star}/> : content}</div>
+      <div {...dprops}>
+        {
+          rowIndex !== 0 && (ctrl_type === star || ctrl_type === toggle) && content ?
+            <StarRate className={props.classes.star}/> :
+            content
+        }
+      </div>
     );
   };
 
@@ -433,11 +437,6 @@ class DataList extends MDNRComponent {
     default:
       return v ? v.toString() : '';
     }
-  }
-
-  _getRowClassName(row) {
-    const {classes} = this.props;
-    return row % 2 === 0 ? classes.evenRow : classes.oddRow;
   }
 
   _isRowLoaded = ({index}) => {

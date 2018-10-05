@@ -33,16 +33,20 @@ export default class SchemeSettingsButtons extends PureComponent {
 
   constructor(props, context) {
     super(props, context);
-    const {scheme} = props;
 
     this.state = {
       menu_open: false,
-      variants: [scheme]
+      variants: [props.scheme],
     };
 
-    scheme._manager.get_option_list({
-      _top: 40,
-      obj: scheme.obj,
+  }
+
+  componentDidMount() {
+    const {scheme: {obj, _manager}, show_variants} = this.props;
+    show_variants && _manager.get_option_list({
+      _mango: true,
+      limit: 40,
+      selector: {obj, user: {$in: ['', _manager.adapter.authorized]}}
     })
       .then((variants) => {
         this.setState({variants});

@@ -1619,11 +1619,13 @@ function adapter({AbstracrAdapter}) {
 
       // если указан MangoQuery, выполняем его без лишних церемоний
       if(selection && selection._mango) {
-        const {selector} = selection;
-        if(db.adapter == 'idb' && selector.date && selector.date.$and){
-          selector.date = selector.date.$and[0];
+        const sel = {};
+        for(const fld in selection) {
+          if(fld[0] !== '_') {
+            sel[fld] = selection[fld];
+          }
         }
-        return db.find(selection)
+        return db.find(sel)
           .then(({docs}) => {
             if(!docs) {
               docs = [];

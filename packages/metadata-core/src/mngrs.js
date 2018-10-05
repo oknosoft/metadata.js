@@ -320,17 +320,24 @@ export class DataManager extends MetaEventEmitter{
       });
     }
 
-    if(t.cachable == 'ram' || t.cachable == 'doc_ram' || (selection && selection._local)) {
+    if(t.cachable.endsWith('ram') || (selection && selection._local)) {
       t.find_rows(selection, push);
       return Promise.resolve(l);
     }
     else if(t.cachable != 'e1cib') {
+      if(selection._mango){
+        if(selection.selector.hasOwnProperty('$and')) {
+          selection.selector.push({class_name: t.class_name})
+        }
+        else {
+          selection.selector.class_name = t.class_name;
+        }
+      }
       return t.adapter.find_rows(t, selection)
         .then((data) => {
           for (const v of data) {
             push(v);
-          }
-          ;
+          };
           return l;
         });
     }
