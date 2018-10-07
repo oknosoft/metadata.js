@@ -20,6 +20,9 @@ export default withStyles(theme => ({
   star: {
     color: 'darkorange'
   },
+  colResize: {
+    cursor: 'col-resize',
+  },
   evenRow: {},
   oddRow: {
     backgroundColor: '#fafafa'

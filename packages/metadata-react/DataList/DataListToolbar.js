@@ -62,7 +62,7 @@ class DataListToolbar extends Component {
   render() {
 
     const {props, state} = this;
-    const {classes, width} = props;
+    const {classes, width, btns, end_btns, menu_items} = props;
 
     return (
       <Toolbar disableGutters className={classes.toolbar}>
@@ -87,9 +87,15 @@ class DataListToolbar extends Component {
           handleChange={props.handleFilterChange}
         />}
 
+        /* дополнительные кнопки */
+        {btns}
+
         <Typography variant="caption" color="inherit" className={classes.flex} > </Typography>
 
-        {/* кнопки настройки компоновки */}
+        /* дополнительные кнопки */
+        {end_btns}
+
+        /* кнопки настройки компоновки */
         <SchemeSettingsButtons
           handleSettingsOpen={props.handleSettingsOpen}
           handleSettingsClose={props.handleSettingsClose}
@@ -102,7 +108,7 @@ class DataListToolbar extends Component {
           show_variants={props.show_variants}
         />
 
-        {/* меню дополнительных действий */}
+        /* меню дополнительных действий */
         <IconButton onClick={this.handleClick} title="Дополнительно"><MoreVertIcon/></IconButton>
         <Menu
           anchorEl={state.anchorEl}
@@ -111,6 +117,10 @@ class DataListToolbar extends Component {
         >
           <MenuItem onClick={this.handleDnROpen}><PrintIcon/> &nbsp;Печать</MenuItem>
           <MenuItem onClick={props.handleAttachments}><AttachIcon/> &nbsp;Вложения</MenuItem>
+          {
+            /* дополнительные пункты меню */
+            menu_items
+          }
         </Menu>
 
       </Toolbar>

@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.8, built:2018-10-05
+ metadata-pouchdb v2.0.17-beta.9, built:2018-10-07
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -103,7 +103,9 @@ class RamIndexer {
   }
   find({selector, sort, ref, limit, skip = 0}, {branch}) {
     if(!this._ready) {
-      throw new Error('Индекс прочитн не полностью, повторите запрос позже');
+      const err = new Error('Индекс прочитн не полностью, повторите запрос позже');
+      err.status = 403;
+      throw err;
     }
     let dfrom, dtill, from, till, search, department, state;
     for(const row of selector.$and) {

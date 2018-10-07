@@ -5,7 +5,7 @@ import MDNRComponent from '../common/MDNRComponent';
 import InfiniteLoader from 'react-virtualized/dist/es/InfiniteLoader';
 import MultiGrid from 'react-virtualized/dist/es/MultiGrid';
 import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
-import classnames from 'classnames';
+import cn from 'classnames';
 import Helmet from 'react-helmet';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 import DataListToolbar from './DataListToolbar';
@@ -214,13 +214,7 @@ class DataList extends MDNRComponent {
   render() {
     const {state, props, context, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer, _list} = this;
     const {columns, scheme, confirm_text, info_text, settings_open, rowCount} = state;
-    const {RepParams} = props._mgr;
-
-    const styleTopRightGrid = {
-      cursor: state.colResize ? 'col-resize' : 'default',
-    };
-
-    let {selectionMode, denyAddDel, show_search, show_variants, classes, title} = props;
+    const {_mgr: {RepParams}, classes, title, ...others} = props;
 
     if(!scheme) {
       return <LoadingMessage text="Чтение настроек компоновки..."/>;
@@ -234,10 +228,7 @@ class DataList extends MDNRComponent {
     const toolbar_props = {
       key: 'toolbar',
       scheme,
-      selectionMode,
-      denyAddDel,
-      show_search,
-      show_variants,
+      ...others,
       settings_open,
       handleSelect: this.handleSelect,
       handleAdd: this.handleAdd,
@@ -330,8 +321,7 @@ class DataList extends MDNRComponent {
                   columnWidth={this._getColumnWidth}
                   rowHeight={DataList.COLUMN_HEIGHT}
                   onSectionRendered={onSectionRendered}
-                  styleTopRightGrid={styleTopRightGrid}
-                  classNameTopRightGrid={classes.topRightGrid}/>
+                  classNameTopRightGrid={cn(classes.topRightGrid, state.colResize && classes.colResize)}/>
               );
             }}
           </InfiniteLoader>
@@ -372,7 +362,7 @@ class DataList extends MDNRComponent {
     const {star, toggle} = $p.enm.data_field_kinds;
 
     // оформление ячейки
-    const classNames = classnames(rowIndex % 2 === 0 ? evenRow : oddRow, cell, {
+    const classNames = cn(rowIndex % 2 === 0 ? evenRow : oddRow, cell, {
       [headerCell]: rowIndex === 0, // выравнивание текста по центру
       [hoveredItem]: rowIndex != 0 && rowIndex == hoveredRowIndex && rowIndex != selectedRow, // || columnIndex === this.state.hoveredColumnIndex
       [selectedItem]: rowIndex != 0 && rowIndex == selectedRow

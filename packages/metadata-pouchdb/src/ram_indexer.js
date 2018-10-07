@@ -118,7 +118,9 @@ export default class RamIndexer {
   find({selector, sort, ref, limit, skip = 0}, {branch}) {
 
     if(!this._ready) {
-      throw new Error('Индекс прочитн не полностью, повторите запрос позже');
+      const err = new Error('Индекс прочитн не полностью, повторите запрос позже');
+      err.status = 403;
+      throw err;
     }
 
     // извлекаем значения полей фильтра из селектора
