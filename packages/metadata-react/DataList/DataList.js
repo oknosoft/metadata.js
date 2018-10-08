@@ -499,6 +499,7 @@ class DataList extends MDNRComponent {
       if(ref && !scrollSetted) {
         selector.ref = ref;
       }
+      selector._raw = true;
 
       return (find_rows ? find_rows(selector) : _mgr.find_rows_remote(selector))
         .then((data) => {
