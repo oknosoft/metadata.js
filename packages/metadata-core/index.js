@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.9, built:2018-10-07
+ metadata-core v2.0.17-beta.9, built:2018-10-09
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -824,19 +824,21 @@ class DataObj {
       initial_posted = this.posted;
       this.posted = post;
     }
+    const {_data} = this;
     let before_save_res = this.before_save();
-    if(this._data.before_save_sync) {
-      this._data.before_save_sync = false;
+    if(_data.before_save_sync) {
+      _data.before_save_sync = false;
     }
     const reset_modified = () => {
       if(before_save_res === false) {
-        if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted != initial_posted) {
+        if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted !== initial_posted) {
           this.posted = initial_posted;
         }
       }
       else {
-        this._data._modified = false;
+        _data._modified = false;
       }
+      _data._saving = 0;
       return this;
     };
     if(before_save_res === false) {
@@ -899,10 +901,11 @@ class DataObj {
         }
       }
     }
-    return numerator.then(() => this._manager.adapter.save_obj(this, {post, operational, attachments })
+    return numerator
+      .then(() => this._manager.adapter.save_obj(this, {post, operational, attachments }))
       .then(() => this.after_save())
       .then(reset_modified)
-    );
+      .catch(reset_modified);
   }
   get_attachment(att_id) {
     const {_manager, ref} = this;

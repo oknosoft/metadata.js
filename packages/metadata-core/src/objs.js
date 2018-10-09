@@ -495,21 +495,23 @@ export class DataObj {
     }
 
     // выполняем обработчик перед записью
+    const {_data} = this;
     let before_save_res = this.before_save();
-    if(this._data.before_save_sync) {
-      this._data.before_save_sync = false;
+    if(_data.before_save_sync) {
+      _data.before_save_sync = false;
     }
 
     // этот код выполним в самом конце, после записи и после обработчика after_save
     const reset_modified = () => {
       if(before_save_res === false) {
-        if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted != initial_posted) {
+        if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted !== initial_posted) {
           this.posted = initial_posted;
         }
       }
       else {
-        this._data._modified = false;
+        _data._modified = false;
       }
+      _data._saving = 0;
       return this;
     };
 
@@ -585,11 +587,12 @@ export class DataObj {
     }
 
     // в зависимости от типа кеширования, получаем saver и сохраняем объект во внешней базе
-    return numerator.then(() => this._manager.adapter.save_obj(this, {post, operational, attachments })
-    // и выполняем обработку после записи
+    return numerator
+      .then(() => this._manager.adapter.save_obj(this, {post, operational, attachments }))
+      // и выполняем обработку после записи
       .then(() => this.after_save())
       .then(reset_modified)
-    );
+      .catch(reset_modified);
   }
 
 

@@ -1166,7 +1166,6 @@ function adapter({AbstracrAdapter}) {
         getter.then((res) => {
           if(typeof res === 'object') {
             if(tmp._rev !== res._rev && _manager.metadata().check_rev !== false) {
-              _data._saving = 0;
               const {timestamp} = res;
               return reject(new Error(`Объект изменён ${timestamp && typeof timestamp.user === 'string' ?
                 `пользователем ${timestamp.user} ${timestamp.moment}` : 'другим пользователем'}
@@ -1185,7 +1184,9 @@ function adapter({AbstracrAdapter}) {
           }
           return res;
         })
-          .catch((err) => err && err.status !== 404 && reject(err))
+          .catch((err) => {
+            return err && err.status !== 404 ? reject(err) : true;
+          })
           .then((res) => res && db.put(tmp))
           .then((res) => {
             if(res) {
@@ -1200,13 +1201,11 @@ function adapter({AbstracrAdapter}) {
                   }
                 }
               }
-              _data._saving = 0;
               _obj._rev = res.rev;
               resolve(tObj);
             }
           })
           .catch((err) => {
-            _data._saving = 0;
             err && err.status !== 404 && reject(err);
           });
       });
