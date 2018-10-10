@@ -592,7 +592,10 @@ export class DataObj {
       // и выполняем обработку после записи
       .then(() => this.after_save())
       .then(reset_modified)
-      .catch(reset_modified);
+      .catch((err) => {
+        reset_modified();
+        throw err;
+      });
   }
 
 

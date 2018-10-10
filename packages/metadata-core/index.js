@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.9, built:2018-10-09
+ metadata-core v2.0.17-beta.9, built:2018-10-10
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -905,7 +905,10 @@ class DataObj {
       .then(() => this._manager.adapter.save_obj(this, {post, operational, attachments }))
       .then(() => this.after_save())
       .then(reset_modified)
-      .catch(reset_modified);
+      .catch((err) => {
+        reset_modified();
+        throw err;
+      });
   }
   get_attachment(att_id) {
     const {_manager, ref} = this;
