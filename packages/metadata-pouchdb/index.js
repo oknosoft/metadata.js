@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.9, built:2018-10-10
+ metadata-pouchdb v2.0.17-beta.9, built:2018-10-11
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -24,7 +24,7 @@ class RamIndexer {
   constructor({fields, search_fields, mgr}) {
     this._fields = fields;
     this._search_fields = search_fields;
-    this._mgr = mgr;
+    this._mgrs = Array.isArray(mgr) ? mgr : [mgr];
     this._count = 0;
     this._ready = false;
     this.by_date = {};
@@ -101,13 +101,13 @@ class RamIndexer {
       return res;
     }
   }
-  find({selector, sort, ref, limit, skip = 0}, {branch}) {
+  find({selector, sort, ref, limit, skip = 0}, auth) {
     if(!this._ready) {
       const err = new Error('Индекс прочитн не полностью, повторите запрос позже');
       err.status = 403;
       throw err;
     }
-    let dfrom, dtill, from, till, search, department, state;
+    let dfrom, dtill, from, till, search;
     for(const row of selector.$and) {
       const fld = Object.keys(row)[0];
       const cond = Object.keys(row[fld])[0];
@@ -124,12 +124,6 @@ class RamIndexer {
       else if(fld === 'search') {
         search = row[fld][cond] ? row[fld][cond].toLowerCase().split(' ') : [];
       }
-      else if(fld === 'department') {
-        department = cond ? row[fld][cond] : row[fld];
-      }
-      else if(fld === 'state') {
-        state = cond ? row[fld][cond] : row[fld];
-      }
     }
     if(sort && sort.length && sort[0][Object.keys(sort[0])[0]] === 'desc' || sort === 'desc') {
       sort = 'desc';
@@ -137,12 +131,11 @@ class RamIndexer {
     else {
       sort = 'asc';
     }
-    const {_search_fields, _mgr} = this;
-    const partners = branch.partners._obj.map(({acl_obj}) => acl_obj);
-    const divisions = branch.divisions._obj.map(({acl_obj}) => acl_obj);
+    const {_search_fields} = this;
+    const {utils} = $p;
     let part,
       step = 0,
-      flag = skip === 0 && _mgr._owner.$p.utils.is_guid(ref),
+      flag = skip === 0 && utils.is_guid(ref),
       scroll = 0,
       count = 0;
     const docs = [];
@@ -162,12 +155,6 @@ class RamIndexer {
     }
     function check(doc) {
       if(doc.date < dfrom || doc.date > dtill) {
-        return;
-      }
-      if(doc.partner && partners.length && !partners.includes(doc.partner)) {
-        return;
-      }
-      if(doc.department && divisions.length && !divisions.includes(doc.department)) {
         return;
       }
       let ok = true;
@@ -200,14 +187,20 @@ class RamIndexer {
     }
     return {docs, scroll, flag, count};
   }
-  init(bookmark) {
+  init(bookmark, _mgr) {
+    if(!_mgr) {
+      return Promise.all(this._mgrs.map((_mgr) => this.init(bookmark, _mgr)))
+        .then(() => {
+          this.sort();
+        });
+    }
     if(!bookmark) {
-      this._mgr.on('change', (change) => this.put(change));
+      _mgr.on('change', (change) => this.put(change, _mgr));
       debug('start');
     }
-    this._mgr.pouch_db.find({
+    return _mgr.pouch_db.find({
       selector: {
-        class_name: this._mgr.class_name,
+        class_name: _mgr.class_name,
       },
       fields: this._fields,
       bookmark,
@@ -220,12 +213,7 @@ class RamIndexer {
           this.put(doc, true);
         }
         debug(`indexed ${this._count} ${bookmark.substr(10, 30)}`);
-        if(docs.length < 10000) {
-          this.sort();
-        }
-        else {
-          this.init(bookmark);
-        }
+        return docs.length === 10000 && this.init(bookmark, _mgr);
       });
   }
 }

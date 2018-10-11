@@ -28,7 +28,7 @@ export default class RamIndexer {
 
     this._fields = fields;
     this._search_fields = search_fields;
-    this._mgr = mgr;
+    this._mgrs = Array.isArray(mgr) ? mgr : [mgr];
     this._count = 0;
     this._ready = false;
 
@@ -150,13 +150,14 @@ export default class RamIndexer {
       sort = 'asc';
     }
 
-    const {_search_fields, _mgr} = this;
+    const {_search_fields} = this;
+    const {utils} = $p;
 
     let part,
       // выборка диапазона кеша
       step = 0,
       // флаг поиска страницы со ссылкой
-      flag = skip === 0 && _mgr._owner.$p.utils.is_guid(ref),
+      flag = skip === 0 && utils.is_guid(ref),
       // результат поиска строки со ссылкой
       scroll = 0,
       count = 0;
@@ -223,16 +224,23 @@ export default class RamIndexer {
   }
 
   // формирует начальный дамп
-  init(bookmark) {
+  init(bookmark, _mgr) {
+
+    if(!_mgr) {
+      return Promise.all(this._mgrs.map((_mgr) => this.init(bookmark, _mgr)))
+        .then(() => {
+          this.sort();
+        });
+    }
 
     if(!bookmark) {
-      this._mgr.on('change', (change) => this.put(change));
+      _mgr.on('change', (change) => this.put(change, _mgr));
       debug('start');
     }
 
-    this._mgr.pouch_db.find({
+    return _mgr.pouch_db.find({
       selector: {
-        class_name: this._mgr.class_name,
+        class_name: _mgr.class_name,
       },
       fields: this._fields,
       bookmark,
@@ -245,12 +253,7 @@ export default class RamIndexer {
           this.put(doc, true);
         }
         debug(`indexed ${this._count} ${bookmark.substr(10, 30)}`);
-        if(docs.length < 10000) {
-          this.sort();
-        }
-        else {
-          this.init(bookmark);
-        }
+        return docs.length === 10000 && this.init(bookmark, _mgr);
       });
   }
 }
