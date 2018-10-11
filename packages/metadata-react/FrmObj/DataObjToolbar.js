@@ -67,7 +67,7 @@ class DataObjToolbar extends Component {
         {props.deletable && <IconButton title={props.deleted ? 'Снять пометку удаления' : 'Пометить на удаление'} onClick={props.handleMarkDeleted}><RemoveIcon/></IconButton>}
         {props.buttons}
 
-        <Typography variant="title" color="inherit" className={props.classes.flex}> </Typography>
+        <Typography variant="h6" color="inherit" className={props.classes.flex}> </Typography>
 
         {showMenu && <IconButton onClick={this.handleClick} title="Дополнительно"><MoreVertIcon/></IconButton>}
 

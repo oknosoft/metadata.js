@@ -101,7 +101,7 @@ function MarkdownDocs(props: Props) {
 
       {
         h1 && <div className={classes.header}>
-          <Typography key="h1" variant="display1" component="h1" color="primary" className={classes.width}>{h1}</Typography>
+          <Typography key="h1" variant="h4" component="h1" color="primary" className={classes.width}>{h1}</Typography>
           {TopButton}
         </div>
       }

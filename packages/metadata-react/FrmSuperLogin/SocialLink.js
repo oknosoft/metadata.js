@@ -70,7 +70,7 @@ export default class TabsLogin extends React.Component {
 
               <div className={classes.sub_paper}>
 
-                <Typography variant="title" color="inherit" >Вы можете авторизоваться при помощи учетных
+                <Typography variant="h6" color="inherit" >Вы можете авторизоваться при помощи учетных
                   записей социальных сетей:</Typography>
 
                 <RaisedButton

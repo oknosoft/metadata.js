@@ -72,7 +72,7 @@ class TabularSectionToolbar extends Component {
           // дополнительные кнопки
           btns,
 
-          <Typography key="space" variant="title" color="inherit" className={classes.flex}> </Typography>,
+          <Typography key="space" variant="h6" color="inherit" className={classes.flex}> </Typography>,
 
           // дополнительные кнопки
           end_btns,

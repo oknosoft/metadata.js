@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "alasql": "^0.4",
-    "debug": "^4.0",
+    "debug": "^4.1",
     "moment": "^2.22"
   },
   "repository": {
@@ -25,11 +25,11 @@
   "keywords": [
     "metadata",
     "browser data engine",
+    "node data engine",
     "spa offline",
     "web сервис",
     "клиент 1с",
     "offline framework",
-    "offline data engine",
     "offline-first",
     "replication"
   ]

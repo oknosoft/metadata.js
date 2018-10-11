@@ -30,7 +30,7 @@ function NeedAuth(props) {
       <meta property="og:description" content={ltitle} />
     </Helmet>
     <div style={{marginTop: 16}}>
-      <Typography variant="display1" component="h1" color="primary" style={margin}>Пользователь не авторизован</Typography>
+      <Typography variant="h4" component="h1" color="primary" style={margin}>Пользователь не авторизован</Typography>
       <Typography color="inherit" style={margin}>Для доступа к данному разделу, необходима авторизация</Typography>
       <Button color="primary" size="small" onClick={() => handleNavigate('/login')}>Перейти на страницу авторизации</Button>
     </div>

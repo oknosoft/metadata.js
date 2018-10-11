@@ -166,7 +166,7 @@ class TabsLogin extends Component {
         {state.index === 0 && !log_error && user.try_log_in &&
         <FormGroup row>
           <CircularProgress size={24}/>
-          <Typography variant="subheading" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+          <Typography variant="subtitle1" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
             {`${$p.msg.login.title}, ${$p.msg.login.wait}...`}
           </Typography>
         </FormGroup>
@@ -175,7 +175,7 @@ class TabsLogin extends Component {
         {state.index === 0 && log_error &&
         <FormGroup row>
           {info ? <IconError /> : <IconError className={classes.error}/>}
-          <Typography variant="subheading" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+          <Typography variant="subtitle1" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
             {log_error.replace('info:', '')}
           </Typography>
         </FormGroup>
@@ -186,7 +186,7 @@ class TabsLogin extends Component {
           <Divider/>
           <Grid container spacing={24}>
             <Grid item xs={12} sm={7}>
-              <Typography variant="subheading" color="inherit">После первичной регистрации по логину/паролю, Вы можете связать учетную запись с профилем социальных сетей и выполнять вход через oAuth GitHub, Facebook и Google</Typography>
+              <Typography variant="subtitle1" color="inherit">После первичной регистрации по логину/паролю, Вы можете связать учетную запись с профилем социальных сетей и выполнять вход через oAuth GitHub, Facebook и Google</Typography>
             </Grid>
             <Grid item xs={10} sm={5}>
               <Button variant="raised" size="small" className={btn} onClick={this.oauthClick('github')}>
@@ -249,7 +249,7 @@ class TabsLogin extends Component {
         {state.index === 1 && !log_error && user.try_log_in &&
         <FormGroup row>
           <CircularProgress size={24}/>
-          <Typography variant="subheading" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+          <Typography variant="subtitle1" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
             {`${$p.msg.login.title}, ${$p.msg.login.wait}...`}
           </Typography>
         </FormGroup>
@@ -258,7 +258,7 @@ class TabsLogin extends Component {
         {state.index === 1 && log_error &&
         <FormGroup row>
           {info ? <IconError /> : <IconError className={classes.error}/>}
-          <Typography variant="subheading" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+          <Typography variant="subtitle1" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
             {log_error.replace('info:', '')}
           </Typography>
         </FormGroup>

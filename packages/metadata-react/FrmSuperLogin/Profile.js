@@ -171,7 +171,7 @@ class UserObj extends Component {
         {index === 0 && log_error &&
         <FormGroup row>
           {info ? <IconError /> : <IconError className={classes.error}/>}
-          <Typography variant="subheading" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+          <Typography variant="subtitle1" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
             {log_error.replace('info:', '')}
           </Typography>
         </FormGroup>
@@ -180,7 +180,7 @@ class UserObj extends Component {
         {index === 1 &&
         <FormGroup>
           <Typography
-            variant="subheading"
+            variant="subtitle1"
             color="inherit"
             className={classes.button}>
             Можно связать учетную запись с профилем социальных сетей

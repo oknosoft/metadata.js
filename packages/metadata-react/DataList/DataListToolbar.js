@@ -90,7 +90,7 @@ class DataListToolbar extends Component {
 
         {btns /* дополнительные кнопки */}
 
-        <Typography variant="caption" color="inherit" className={classes.flex} > </Typography>
+        <Typography color="inherit" className={classes.flex} />
 
         {end_btns /* дополнительные кнопки */}
 

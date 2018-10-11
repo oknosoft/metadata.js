@@ -92,7 +92,7 @@ class Fogot extends Component {
           horizontal: 'right',
         }}
       >
-        <Typography variant="title">Сброс пароля</Typography>
+        <Typography variant="h6">Сброс пароля</Typography>
         <TextField
           label="Электронная почта"
           value={email}

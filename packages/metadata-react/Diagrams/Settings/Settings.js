@@ -124,7 +124,7 @@ class Settings extends React.Component {
         <Paper>
           <ExpansionPanel expanded={expansion.layout} onChange={this.expandLayout}>
             <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} classes={{expanded: classes.summary, content: classes.summaryCont}}>
-              <Typography variant="title" color="textSecondary" className={classes.title}>Расположение</Typography>
+              <Typography variant="h6" color="textSecondary" className={classes.title}>Расположение</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails className={classes.expansion}>
               <MenuList className={classes.height}>
@@ -176,7 +176,7 @@ class Settings extends React.Component {
 
           <ExpansionPanel expanded={expansion.composition} onChange={this.expandComposition}>
             <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} classes={{expanded: classes.summary, content: classes.summaryCont}}>
-              <Typography variant="title" color="textSecondary" className={classes.title}>Состав</Typography>
+              <Typography variant="h6" color="textSecondary" className={classes.title}>Состав</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails className={classes.expansion}>
               <Composition rows={available} onChange={onChange} changeCharts={changeCharts}/>
