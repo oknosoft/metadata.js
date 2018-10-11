@@ -115,7 +115,7 @@ export default class RamIndexer {
   }
 
   // перебирает кеш в диапазоне дат
-  find({selector, sort, ref, limit, skip = 0}, {branch}) {
+  find({selector, sort, ref, limit, skip = 0}, auth) {
 
     if(!this._ready) {
       const err = new Error('Индекс прочитн не полностью, повторите запрос позже');
@@ -124,7 +124,7 @@ export default class RamIndexer {
     }
 
     // извлекаем значения полей фильтра из селектора
-    let dfrom, dtill, from, till, search, department, state;
+    let dfrom, dtill, from, till, search;
     for(const row of selector.$and) {
       const fld = Object.keys(row)[0];
       const cond = Object.keys(row[fld])[0];
@@ -141,12 +141,6 @@ export default class RamIndexer {
       else if(fld === 'search') {
         search = row[fld][cond] ? row[fld][cond].toLowerCase().split(' ') : [];
       }
-      else if(fld === 'department') {
-        department = cond ? row[fld][cond] : row[fld];
-      }
-      else if(fld === 'state') {
-        state = cond ? row[fld][cond] : row[fld];
-      }
     }
 
     if(sort && sort.length && sort[0][Object.keys(sort[0])[0]] === 'desc' || sort === 'desc') {
@@ -157,8 +151,6 @@ export default class RamIndexer {
     }
 
     const {_search_fields, _mgr} = this;
-    const partners = branch.partners._obj.map(({acl_obj}) => acl_obj);
-    const divisions = branch.divisions._obj.map(({acl_obj}) => acl_obj);
 
     let part,
       // выборка диапазона кеша
@@ -190,16 +182,6 @@ export default class RamIndexer {
 
       // фильтруем по дате
       if(doc.date < dfrom || doc.date > dtill) {
-        return;
-      }
-
-      // фильтруем по контрагенту acl
-      if(doc.partner && partners.length && !partners.includes(doc.partner)) {
-        return;
-      }
-
-      // фильтруем по подразделению acl
-      if(doc.department && divisions.length && !divisions.includes(doc.department)) {
         return;
       }
 
