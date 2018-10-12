@@ -148,7 +148,8 @@ export default (constructor) => {
         this.emit_async('user_log_in', session.user_id);
 
         // запускаем синхронизацию для нужных баз
-        return this.after_log_in()
+        return this.emit_promise('on_log_in')
+          .then(() => this.after_log_in())
           .catch(err => {
             // излучаем событие
             this.emit('user_log_fault', err);

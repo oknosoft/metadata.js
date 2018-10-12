@@ -98,19 +98,7 @@ export class DataManager extends MetaEventEmitter{
 	 */
 	get adapter(){
     const {adapters} = this._owner.$p;
-    switch (this.cachable) {
-    case undefined:
-    case 'ram':
-    case 'doc':
-    case 'doc_ram':
-    case 'ram_doc':
-    case 'remote':
-    case 'user':
-    case 'meta':
-    case 'templates':
-      return adapters.pouch;
-    }
-    return adapters[this.cachable];
+    return adapters[this.cachable] || adapters.pouch;
 	}
 
 	/**
@@ -151,7 +139,11 @@ export class DataManager extends MetaEventEmitter{
 	 */
 	get cachable(){
 
-    const {class_name} = this;
+    const {class_name, _cachable} = this;
+    if(_cachable) {
+      return _cachable;
+    }
+
     const _meta = this.metadata();
 
     // перечисления кешируются всегда

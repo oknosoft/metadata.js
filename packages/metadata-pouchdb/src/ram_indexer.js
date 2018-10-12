@@ -31,6 +31,8 @@ export default class RamIndexer {
     this._mgrs = Array.isArray(mgr) ? mgr : [mgr];
     this._count = 0;
     this._ready = false;
+    this._listeners = new Map();
+    this._area = this._mgrs.length > 1;
 
     // кеш по дате
     this.by_date = {};
@@ -49,12 +51,15 @@ export default class RamIndexer {
   // помещает документ в кеш
   put(indoc, force) {
     const doc = {};
+    if(this._area) {
+      doc._area = indoc._area;
+    }
     this._fields.forEach((fld) => {
       if(indoc.hasOwnProperty(fld)) {
         doc[fld] = indoc[fld];
       }
     });
-    const date = doc.date.substr(0,7);
+    const date = doc.date.substr(0, 7);
     const arr = this.by_date[date];
     if(arr) {
       if(force || !arr.some((row) => {
@@ -62,7 +67,7 @@ export default class RamIndexer {
           Object.assign(row, doc);
           return true;
         }
-      })){
+      })) {
         arr.push(doc);
         !force && arr.sort(sort_fn);
       }
@@ -205,7 +210,7 @@ export default class RamIndexer {
     }
 
     // получаем очередной кусочек кеша
-    while(part = this.get_range(from, till, step, sort === 'desc')) {
+    while((part = this.get_range(from, till, step, sort === 'desc'))) {
       step += 1;
       // фильтруем
       if(sort === 'desc') {
@@ -234,7 +239,14 @@ export default class RamIndexer {
     }
 
     if(!bookmark) {
-      _mgr.on('change', (change) => this.put(change, _mgr));
+      const listener = (change) => {
+        if(this._area) {
+          change._area = _mgr.cachable;
+        }
+        this.put(change, _mgr);
+      };
+      this._listeners.set(_mgr, listener)
+      _mgr.on('change', listener);
       debug('start');
     }
 
@@ -250,11 +262,28 @@ export default class RamIndexer {
         this._count += docs.length;
         debug(`received ${this._count}`);
         for(const doc of docs) {
+          if(this._area) {
+            doc._area = _mgr.cachable;
+          }
           this.put(doc, true);
         }
         debug(`indexed ${this._count} ${bookmark.substr(10, 30)}`);
         return docs.length === 10000 && this.init(bookmark, _mgr);
       });
+  }
+
+  // чистит кеш и подписки на события
+  reset(mgrs) {
+    for(const date in this.by_date) {
+      this.by_date[date].length = 0;
+    }
+    for(const [_mgr, listener] of this._listeners) {
+      _mgr.off('change', listener);
+    }
+    this._listeners.clear();
+    this._mgrs.length = 0;
+    mgrs && this._mgrs.push.apply(this._mgrs, mgrs);
+    this._area = this._mgrs.length > 1;
   }
 }
 

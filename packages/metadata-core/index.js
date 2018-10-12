@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.9, built:2018-10-10
+ metadata-core v2.0.17-beta.9, built:2018-10-12
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1408,19 +1408,7 @@ class DataManager extends MetaEventEmitter{
 	}
 	get adapter(){
     const {adapters} = this._owner.$p;
-    switch (this.cachable) {
-    case undefined:
-    case 'ram':
-    case 'doc':
-    case 'doc_ram':
-    case 'ram_doc':
-    case 'remote':
-    case 'user':
-    case 'meta':
-    case 'templates':
-      return adapters.pouch;
-    }
-    return adapters[this.cachable];
+    return adapters[this.cachable] || adapters.pouch;
 	}
 	get alatable(){
 		const {table_name, _owner} = this;
@@ -1432,7 +1420,10 @@ class DataManager extends MetaEventEmitter{
     return current_user ? current_user.get_acl(this.class_name) : 'r';
   }
 	get cachable(){
-    const {class_name} = this;
+    const {class_name, _cachable} = this;
+    if(_cachable) {
+      return _cachable;
+    }
     const _meta = this.metadata();
     if(class_name.indexOf('enm.') != -1) {
       return 'ram';
@@ -3888,6 +3879,9 @@ class Meta extends MetaEventEmitter {
     }
     else if(is_cat && field_name == 'name') {
       res.synonym = 'Наименование';
+    }
+    else if(field_name == '_area') {
+      res.synonym = 'Область';
     }
     else if(field_name == 'presentation') {
       res.synonym = 'Представление';

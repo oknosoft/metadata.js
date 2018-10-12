@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.17-beta.9, built:2018-10-07
+ metadata-superlogin v2.0.17-beta.9, built:2018-10-11
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -647,7 +647,8 @@ var adapter = (constructor) => {
           wsql.set_user_param('user_name', session.user_id);
         }
         this.emit_async('user_log_in', session.user_id);
-        return this.after_log_in()
+        return this.emit_promise('on_log_in')
+          .then(() => this.after_log_in())
           .catch(err => {
             this.emit('user_log_fault', err);
           });
