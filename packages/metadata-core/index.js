@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.9, built:2018-10-12
+ metadata-core v2.0.17-beta.9, built:2018-10-13
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -841,6 +841,14 @@ class DataObj {
       _data._saving = 0;
       return this;
     };
+    const reset_mandatory = (msg) => {
+      before_save_res = false;
+      reset_modified();
+      md.emit('alert', msg);
+      const err = new Error(msg.text);
+      err.msg = msg;
+      return Promise.reject(err);
+    };
     if(before_save_res === false) {
       return Promise.reject(reset_modified());
     }
@@ -867,14 +875,12 @@ class DataObj {
     const {msg, md, cch: {properties}} = this._manager._owner.$p;
     for (const mf in fields) {
       if (fields[mf].mandatory && !this._obj[mf]) {
-        md.emit('alert', {
+        return reset_mandatory({
           obj: this,
           title: msg.mandatory_title,
           type: "alert-error",
           text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
         });
-        before_save_res = false;
-        return Promise.reject(reset_modified());
       }
     }
     if(properties) {
@@ -887,15 +893,13 @@ class DataObj {
           if(property && property.mandatory) {
             const {value} = (row._row || row);
             if(utils.is_data_obj(value) ? value.empty() : !value) {
-              md.emit('alert', {
+              return reset_mandatory({
                 obj: this,
                 row: row._row || row,
                 title: msg.mandatory_title,
                 type: 'alert-error',
                 text: msg.mandatory_field.replace('%1', property.caption || property.name)
               });
-              before_save_res = false;
-              return Promise.reject(reset_modified());
             }
           }
         }

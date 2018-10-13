@@ -515,6 +515,15 @@ export class DataObj {
       return this;
     };
 
+    const reset_mandatory = (msg) => {
+      before_save_res = false;
+      reset_modified();
+      md.emit('alert', msg);
+      const err = new Error(msg.text);
+      err.msg = msg;
+      return Promise.reject(err);
+    }
+
     // если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
     if(before_save_res === false) {
       return Promise.reject(reset_modified());
@@ -551,14 +560,12 @@ export class DataObj {
     const {msg, md, cch: {properties}} = this._manager._owner.$p;
     for (const mf in fields) {
       if (fields[mf].mandatory && !this._obj[mf]) {
-        md.emit('alert', {
+        return reset_mandatory({
           obj: this,
           title: msg.mandatory_title,
           type: "alert-error",
           text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
-        })
-        before_save_res = false;
-        return Promise.reject(reset_modified());
+        });
       }
     }
     if(properties) {
@@ -571,15 +578,13 @@ export class DataObj {
           if(property && property.mandatory) {
             const {value} = (row._row || row);
             if(utils.is_data_obj(value) ? value.empty() : !value) {
-              md.emit('alert', {
+              return reset_mandatory({
                 obj: this,
                 row: row._row || row,
                 title: msg.mandatory_title,
                 type: 'alert-error',
                 text: msg.mandatory_field.replace('%1', property.caption || property.name)
               });
-              before_save_res = false;
-              return Promise.reject(reset_modified());
             }
           }
         }
