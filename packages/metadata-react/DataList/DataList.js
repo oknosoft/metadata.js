@@ -95,7 +95,7 @@ class DataList extends MDNRComponent {
       });
     }
     else if(handlers.handleEdit) {
-      handlers.handleEdit({ref: row.ref, _mgr});
+      handlers.handleEdit({row, ref: row.ref, _mgr});
     }
   };
 

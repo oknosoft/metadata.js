@@ -13,7 +13,7 @@ function SimpleLoadingMessage({classes, text}) {
 }
 
 SimpleLoadingMessage.propTypes = {
-  text: PropTypes.string,
+  text: PropTypes.node,
   classes: PropTypes.object.isRequired,
 }
 
