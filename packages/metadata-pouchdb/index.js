@@ -1231,9 +1231,10 @@ function adapter({AbstracrAdapter}) {
           if(typeof res === 'object') {
             if(tmp._rev !== res._rev && _manager.metadata().check_rev !== false) {
               const {timestamp} = res;
-              return reject(new Error(`Объект ${timestamp && typeof timestamp.user === 'string' ?
-                `изменил ${timestamp.user}<br/>${timestamp.moment}` : 'изменён другим пользователем'}
-                <br/>${tmp._id}`));
+              const err = new Error(`Объект ${timestamp && typeof timestamp.user === 'string' ?
+                `изменил ${timestamp.user}<br/>${timestamp.moment}` : 'изменён другим пользователем'}`);
+              err._rev = true;
+              return reject(err);
             }
             tmp._rev = res._rev;
             for (let att in res._attachments) {
