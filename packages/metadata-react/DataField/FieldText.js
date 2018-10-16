@@ -11,6 +11,7 @@ import TextField from '@material-ui/core/TextField';
 
 import AbstractField from './AbstractField';
 import withStyles from './styles';
+import cn from 'classnames';
 
 class FieldText extends AbstractField {
 
@@ -29,7 +30,7 @@ class FieldText extends AbstractField {
       />
       :
       <TextField
-        className={classes.formControl}
+        className={cn(classes.formControl, classes.root)}
         disabled={read_only}
         label={_meta.synonym}
         title={_meta.tooltip || _meta.synonym}
