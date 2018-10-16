@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.17-beta.9, built:2018-10-13
+ metadata-redux v2.0.17-beta.9, built:2018-10-16
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -767,7 +767,7 @@ const mapDispatchToProps$2 = (dispatch) => {
       return dispatch(iface_state(state));
     },
     handleAdd(_mgr) {
-      return dispatch(reactRouterRedux.push(`/${_mgr.class_name}/${$p.utils.generate_guid()}`));
+      return dispatch(reactRouterRedux.push(`/${_mgr.class_name}/${$p.utils.generate_guid()}${_mgr.hasOwnProperty('_cachable') ? '?area=' + _mgr._cachable : ''}`));
     },
     handleAddRow() {
     },

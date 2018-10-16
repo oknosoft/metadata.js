@@ -77,9 +77,9 @@ class DataList extends MDNRComponent {
   };
 
   // обработчик добавления элемента списка
-  handleAdd = () => {
+  handleAdd = (event) => {
     const {handlers, _mgr} = this.props;
-    handlers.handleAdd && handlers.handleAdd(_mgr);
+    handlers.handleAdd && handlers.handleAdd(_mgr, event);
   };
 
   // обработчик редактирования элемента списка

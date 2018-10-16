@@ -243,7 +243,7 @@ export default class RamIndexer {
         if(this._area) {
           change._area = _mgr.cachable;
         }
-        this.put(change, _mgr);
+        this.put(change);
       };
       this._listeners.set(_mgr, listener)
       _mgr.on('change', listener);
