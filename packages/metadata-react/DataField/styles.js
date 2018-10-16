@@ -44,6 +44,11 @@ const styles = theme => ({
     paddingLeft: theme.spacing.unit,
     paddingRight: theme.spacing.unit,
   },
+  barInput: {
+    minWidth: 200,
+    marginLeft: theme.spacing.unit,
+    marginTop: 0,
+  },
   flex: {
     flex: 1,
     whiteSpace: 'nowrap',

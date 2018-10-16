@@ -29,6 +29,7 @@ import InfiniteList, {prevent} from './InfiniteList';
 
 import AbstractField, {suggestionText} from './AbstractField';
 import withStyles from './styles';
+import cn from 'classnames';
 
 class FieldInfinit extends AbstractField {
 
@@ -196,7 +197,7 @@ class FieldInfinit extends AbstractField {
 
   renderInput() {
     const {props, state, _meta, handleInputChange, handleOpenContainer, inputRef} = this;
-    const {classes, _obj, _fld, fullWidth, mandatory} = props;
+    const {classes, _obj, _fld, fullWidth, mandatory, label_position} = props;
 
     return this.isTabular ?
       <input
@@ -210,17 +211,17 @@ class FieldInfinit extends AbstractField {
       />
       :
       <FormControl
-        className={classes.formControl}
+        className={cn(classes.formControl, props.bar && classes.barInput)}
         fullWidth={fullWidth}
         onDoubleClick={handleOpenContainer}
       >
-        <InputLabel>{_meta.tooltip || _meta.synonym}</InputLabel>
+        {label_position != 'hide' && <InputLabel>{_meta.tooltip || _meta.synonym}</InputLabel>}
         <Input
           inputRef={inputRef}
           value={state.inputValue}
           onChange={handleInputChange}
           classes={{input: classes.input}}
-          placeholder={_fld}
+          placeholder={label_position == 'hide' ? (_meta.tooltip || _meta.synonym) : _fld}
           endAdornment={state.focused &&
           <InputAdornment position="end">
             <IconButton
@@ -349,16 +350,16 @@ class FieldInfinit extends AbstractField {
           :
           <div className={props.classes.root}>
             <FormControl
-              className={props.classes.formControl}
+              className={cn(props.classes.formControl, props.bar && props.classes.barInput)}
               fullWidth={props.fullWidth}
               disabled
             >
-              <InputLabel>{_meta.tooltip || _meta.synonym}</InputLabel>
+              {props.label_position != 'hide' && <InputLabel>{_meta.tooltip || _meta.synonym}</InputLabel>}
               <Input
                 inputRef={inputRef}
                 value={state.inputValue}
                 classes={{input: props.classes.input}}
-                placeholder={props._fld}
+                placeholder={props.label_position == 'hide' ? (_meta.tooltip || _meta.synonym) : props._fld}
               />
             </FormControl>
           </div>
