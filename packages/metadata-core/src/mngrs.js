@@ -313,7 +313,7 @@ export class DataManager extends MetaEventEmitter{
     }
 
     if(t.cachable.endsWith('ram') || (selection && selection._local)) {
-      t.find_rows(selection, push);
+      t.find_rows(selection._mango ? selection.selector : selection, push);
       return Promise.resolve(l);
     }
     else if(t.cachable != 'e1cib') {

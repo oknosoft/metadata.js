@@ -735,7 +735,6 @@ const utils = {
 						});
 						if (!ok)
 							break;
-
 					}
 					// если свойство отбора является объектом `like`, сравниваем подстроку
 					else if (is_obj && sel.hasOwnProperty('like')) {
@@ -759,15 +758,17 @@ const utils = {
             }
           }
 					// если свойство отбора является объектом `not`, сравниваем на неравенство
-					else if (is_obj && sel.hasOwnProperty('not')) {
-						if (utils.is_equal(o[j], sel.not)) {
+					else if (is_obj && (sel.hasOwnProperty('not') || sel.hasOwnProperty('$ne'))) {
+					  const not = sel.hasOwnProperty('not') ? sel.not : sel.$ne;
+						if (utils.is_equal(o[j], not)) {
 							ok = false;
 							break;
 						}
 					}
 					// если свойство отбора является объектом `in`, выполняем Array.some()
-					else if (is_obj && sel.hasOwnProperty('in')) {
-						ok = sel.in.some((el) => utils.is_equal(el, o[j]));
+					else if (is_obj && (sel.hasOwnProperty('in') || sel.hasOwnProperty('$in'))) {
+					  const arr = sel.in || sel.$in;
+						ok = arr.some((el) => utils.is_equal(el, o[j]));
 						if (!ok)
 							break;
 					}

@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.9, built:2018-10-13
+ metadata-core v2.0.17-beta.9, built:2018-10-15
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1516,7 +1516,7 @@ class DataManager extends MetaEventEmitter{
       });
     }
     if(t.cachable.endsWith('ram') || (selection && selection._local)) {
-      t.find_rows(selection, push);
+      t.find_rows(selection._mango ? selection.selector : selection, push);
       return Promise.resolve(l);
     }
     else if(t.cachable != 'e1cib') {
@@ -3300,14 +3300,16 @@ const utils = {
               break;
             }
           }
-					else if (is_obj && sel.hasOwnProperty('not')) {
-						if (utils.is_equal(o[j], sel.not)) {
+					else if (is_obj && (sel.hasOwnProperty('not') || sel.hasOwnProperty('$ne'))) {
+					  const not = sel.hasOwnProperty('not') ? sel.not : sel.$ne;
+						if (utils.is_equal(o[j], not)) {
 							ok = false;
 							break;
 						}
 					}
-					else if (is_obj && sel.hasOwnProperty('in')) {
-						ok = sel.in.some((el) => utils.is_equal(el, o[j]));
+					else if (is_obj && (sel.hasOwnProperty('in') || sel.hasOwnProperty('$in'))) {
+					  const arr = sel.in || sel.$in;
+						ok = arr.some((el) => utils.is_equal(el, o[j]));
 						if (!ok)
 							break;
 					}
