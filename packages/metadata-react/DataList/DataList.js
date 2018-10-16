@@ -214,7 +214,7 @@ class DataList extends MDNRComponent {
   render() {
     const {state, props, context, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer, _list} = this;
     const {columns, scheme, confirm_text, info_text, settings_open, rowCount} = state;
-    const {_mgr: {RepParams}, classes, title, ...others} = props;
+    const {_mgr: {RepParams}, classes, title, registerFilterChange, ...others} = props;
 
     if(!scheme) {
       return <LoadingMessage text="Чтение настроек компоновки..."/>;
@@ -222,6 +222,8 @@ class DataList extends MDNRComponent {
     else if(!columns || !columns.length) {
       return <LoadingMessage text="Ошибка настроек компоновки..."/>;
     }
+
+    registerFilterChange && registerFilterChange(this.handleFilterChange);
 
     const show_grid = !settings_open || sizes.height > 572;
 
