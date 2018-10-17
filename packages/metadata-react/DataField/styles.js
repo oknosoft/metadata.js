@@ -44,6 +44,14 @@ const styles = theme => ({
     paddingLeft: theme.spacing.unit,
     paddingRight: theme.spacing.unit,
   },
+  threestateLabel: {
+    paddingLeft: theme.spacing.unit,
+    paddingTop: theme.spacing.unit,
+  },
+  threestateInput: {
+    width: theme.spacing.unit * 2,
+    height: theme.spacing.unit * 2,
+  },
   barInput: {
     minWidth: 200,
     marginLeft: theme.spacing.unit,

@@ -379,7 +379,10 @@ class DataList extends MDNRComponent {
     const row = this._list[rowIndex];
 
     // текст ячейки (header - data cell - empty cell)
-    const content = rowIndex === 0 ? row[columnIndex] : row && this._formatter(row, columnIndex);
+    let content = rowIndex === 0 ? row[columnIndex] : row && this._formatter(row, columnIndex);
+    if((ctrl_type === star || ctrl_type === toggle) && typeof content === 'number' && content <= 0) {
+      content = '';
+    }
 
     const onMouseOver = () => {
       this.setState({
@@ -412,7 +415,8 @@ class DataList extends MDNRComponent {
       <div {...dprops}>
         {
           rowIndex !== 0 && (ctrl_type === star || ctrl_type === toggle) && content ?
-            <StarRate className={props.classes.star}/> :
+            <StarRate className={props.classes.star}/>
+            :
             content
         }
       </div>
@@ -430,6 +434,9 @@ class DataList extends MDNRComponent {
 
     case 'dhxCalendar':
       return $p.utils.moment(v).format($p.utils.moment._masks.date);
+
+    case 'calck':
+      return v;
 
     default:
       return v ? v.toString() : '';

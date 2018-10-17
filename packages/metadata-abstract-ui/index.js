@@ -791,6 +791,9 @@ function scheme_settings() {
           else if(right_value_type.includes('.') && (comparison_type == 'filled' || comparison_type == 'nfilled')){
             selector.$and.push({[left_value]: {[comparison_type.valueOf()]: true}});
           }
+          else if(right_value_type === 'number' && (comparison_type == 'filled' || comparison_type == 'nfilled')){
+            selector.$and.push({[left_value]: {[comparison_type.valueOf()]: 0}});
+          }
         }
       });
     }
