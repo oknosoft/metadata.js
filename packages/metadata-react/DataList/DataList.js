@@ -147,16 +147,21 @@ class DataList extends MDNRComponent {
 
     const newState = {scheme, columns, scrollToRow: 1};
     if(_mounted) {
-      this.setState(newState);
+      this.setState(newState, () => {
+        this._loadMoreRows({
+          startIndex: 1,
+          stopIndex: DataList.LIMIT - 1,
+        });
+      });
     }
     else {
       Object.assign(state, newState);
+      this._loadMoreRows({
+        startIndex: 1,
+        stopIndex: DataList.LIMIT - 1,
+      });
     }
 
-    this._loadMoreRows({
-      startIndex: 1,
-      stopIndex: DataList.LIMIT - 1,
-    });
   };
 
   // обработчик печати теущей строки
@@ -503,7 +508,7 @@ class DataList extends MDNRComponent {
       }
       selector._raw = true;
 
-      return (find_rows ? find_rows(selector) : _mgr.find_rows_remote(selector))
+      return (find_rows ? find_rows(selector, scheme) : _mgr.find_rows_remote(selector))
         .then((data) => {
           if(Array.isArray(data)) {
             this._updateList(data, startIndex);

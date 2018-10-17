@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.17-beta.9, built:2018-10-15
+ metadata-abstract-ui v2.0.17-beta.9, built:2018-10-17
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -773,6 +773,26 @@ function scheme_settings() {
       }
       Object.defineProperty(res, '_mango', {value: true});
       return res;
+    }
+    append_selection(selector) {
+      if(!selector.$and) {
+        selector.$and = [];
+      }
+      this.selection.find_rows({use: true}, ({left_value, left_value_type, right_value, right_value_type, comparison_type}) => {
+        if(left_value_type === 'path'){
+          if(right_value_type === 'boolean') {
+            const val = Boolean(right_value);
+            selector.$and.push({[left_value]: comparison_type == 'ne' ? {$ne: val} : val});
+          }
+          else if(right_value_type === 'calculated') {
+            const val = $p.current_user && $p.current_user[right_value];
+            selector.$and.push({[left_value]: comparison_type == 'ne' ? {$ne: val} : val});
+          }
+          else if(right_value_type.includes('.') && (comparison_type == 'filled' || comparison_type == 'nfilled')){
+            selector.$and.push({[left_value]: {[comparison_type.valueOf()]: true}});
+          }
+        }
+      });
     }
     filter(collection, parent = '', self = false) {
       const selection = [];

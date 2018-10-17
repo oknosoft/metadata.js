@@ -80,6 +80,16 @@ export default {
             order: 9,
             name: 'nlk',
             synonym: 'Не содержит'
+          },
+          {
+            order: 10,
+            name: 'filled',
+            synonym: 'Заполнено '
+          },
+          {
+            order: 11,
+            name: 'nfilled',
+            synonym: 'Не заполнено'
           }
         ],
         label_positions: [

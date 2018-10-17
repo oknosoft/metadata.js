@@ -740,6 +740,31 @@ export default function scheme_settings() {
     }
 
     /**
+     * ### Дополняет селектор по отбору
+     * @param selector
+     */
+    append_selection(selector) {
+      if(!selector.$and) {
+        selector.$and = [];
+      }
+      this.selection.find_rows({use: true}, ({left_value, left_value_type, right_value, right_value_type, comparison_type}) => {
+        if(left_value_type === 'path'){
+          if(right_value_type === 'boolean') {
+            const val = Boolean(right_value);
+            selector.$and.push({[left_value]: comparison_type == 'ne' ? {$ne: val} : val});
+          }
+          else if(right_value_type === 'calculated') {
+            const val = $p.current_user && $p.current_user[right_value];
+            selector.$and.push({[left_value]: comparison_type == 'ne' ? {$ne: val} : val});
+          }
+          else if(right_value_type.includes('.') && (comparison_type == 'filled' || comparison_type == 'nfilled')){
+            selector.$and.push({[left_value]: {[comparison_type.valueOf()]: true}});
+          }
+        }
+      });
+    }
+
+    /**
      * ### Фильтрует внешнюю табчасть
      * @param collection {TabularSection}
      * @return {Array|TabularSection}
