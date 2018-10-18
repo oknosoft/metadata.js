@@ -35,21 +35,20 @@ export default class InfiniteList extends MComponent {
     _fld: PropTypes.string.isRequired,  // имя поля объекта - путь к данным
     _meta: PropTypes.object,            // Описание метаданных. Если не указано, используем метаданные менеджера
     search: PropTypes.string,           // Строка поиска
-    selectedItem: PropTypes.number,     // Текущий выделенный элемент
-    handleSelect: PropTypes.func,       // обработчик при изменении значения в поле
+    highlightedIndex: PropTypes.number,
+    selectedItem: PropTypes.object,     // Текущий выделенный элемент
+    getItemProps: PropTypes.func,       // обработчик при изменении значения в поле
   };
 
   constructor(props, context) {
     super(props, context);
-    const val = props._obj[props._fld];
     this.list = [];
-    if(val && !val.empty()){
-      this.list.push(val);
+    if(props.selectedItem && !props.selectedItem.empty()){
+      this.list.push(props.selectedItem);
     }
-    this.search = props.search;
     this.state = {
       totalRows: props.is_enm && this.list.length ? 1 : 2,
-      selectedItem: this.list.length ? 0 : -1,
+      //selectedItem: this.list.length ? 0 : -1,
     };
   }
 
@@ -62,11 +61,14 @@ export default class InfiniteList extends MComponent {
     if(this.updateTimer) {
       clearTimeout(this.updateTimer);
     }
-    if(this.props.search != nextProps.search) {
+    if(this.props.search !== nextProps.search) {
       this.updateTimer = setTimeout(() => {
         this.list.length = 0;
         this.setState({totalRows: this.state.totalRows <= 1 ? 2 : 1});
       }, 10);
+    }
+    else if(this.props.highlightedIndex !== nextProps.highlightedIndex) {
+      this.listContainer && this.listContainer.forceUpdateGrid();
     }
   }
 
@@ -119,40 +121,6 @@ export default class InfiniteList extends MComponent {
 
   };
 
-  next(evt) {
-    const {state, list, _mounted, listContainer} = this;
-    if(_mounted){
-      let {selectedItem} = state;
-      if(selectedItem < list.length - 1){
-        selectedItem++;
-      }
-      this.setState({selectedItem});
-      listContainer.forceUpdateGrid();
-      prevent(evt);
-    }
-  }
-
-  prev(evt) {
-    const {state, _mounted, listContainer} = this;
-    if(_mounted){
-      let {selectedItem} = state;
-      if(selectedItem >= 0){
-        selectedItem--;
-      }
-      this.setState({selectedItem});
-      listContainer.forceUpdateGrid();
-      prevent(evt);
-    }
-  }
-
-  handleSelect = (evt) => {
-    const {state, props, list} = this;
-    const value = list[state.selectedItem];
-    prevent(evt);
-    value && props.handleSelect(value);
-  };
-
-
   /**
    *
    * @param index {Number} - Index of row
@@ -164,20 +132,17 @@ export default class InfiniteList extends MComponent {
    * @return {Object}
    */
   rowRenderer = ({index, isScrolling, isVisible, key, parent, style}) => {
-    const {classes} = this.props;
-    const suggestion = this.list[index];
+    const {classes, selectedItem, highlightedIndex, getItemProps} = this.props;
+    const item = this.list[index];
 
     return (
       <ListItem
         button
-        key={key}
-        className={classnames({[classes.suggestion]: true, [classes.suggestionSelected]: index == this.state.selectedItem})}
-        style={style}
-        onClick={this.handleSelect}
-        onMouseOver ={() => this.setState({selectedItem: index})}
+        className={classnames({[classes.suggestion]: true, [classes.suggestionSelected]: index === highlightedIndex})}
+        {...getItemProps({key, index, style, item: item || {}})}
       >
-        {suggestion && !isScrolling && isVisible ?
-          <ListItemText primary={suggestionText(suggestion)}/>
+        {item && !isScrolling && isVisible ?
+          <ListItemText primary={suggestionText(item)}/>
           :
           <div className={classes.placeholder} style={{width: 10 + Math.random() * 80}}/>
         }
@@ -197,7 +162,7 @@ export default class InfiniteList extends MComponent {
       rowCount={totalRows}
       rowHeight={rowHeight}
       rowRenderer={this.rowRenderer}
-      width={310}
+      width={300}
     />;
   };
 

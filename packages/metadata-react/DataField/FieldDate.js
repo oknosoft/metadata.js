@@ -34,7 +34,6 @@ export default class FieldDate extends AbstractField {
     this.state = {
       showTime: true,
       showDateInput: true,
-      disabled: false,
       value: moment(_obj[_fld]),
       defaultCalendarValue: moment(_obj[_fld]),
     };
@@ -74,7 +73,7 @@ export default class FieldDate extends AbstractField {
 
     return (<DatePicker
       animation="slide-up"
-      disabled={state.disabled}
+      disabled={props.read_only}
       calendar={calendar}
       value={state.value}
       onChange={this.handleChange}
@@ -84,14 +83,14 @@ export default class FieldDate extends AbstractField {
 
           return (isTabular ?
             <input
-              disabled={state.disabled}
-              readOnly
+              type="date"
+              readOnly={props.read_only}
               value={value && value.format(getFormat(state.showTime)) || ''}
             />
             :
             <StyledCustomField
               placeholder={_meta.tooltip || _meta.synonym}
-              disabled={state.disabled}
+              disabled={props.read_only}
               readOnly
               value={value && value.format(getFormat(state.showTime)) || ''}
               _fld={_fld}

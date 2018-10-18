@@ -95,14 +95,14 @@ export default class FieldDateRange extends AbstractField {
           ({ value }) => {
             return (isTabular ?
               <input
-                disabled={state.disabled}
+                disabled={props.read_only}
                 readOnly
                 value={formatRange(value)}
               />
             :
               <StyledCustomField
                 placeholder={_meta.tooltip || _meta.synonym}
-                disabled={state.disabled}
+                disabled={props.read_only}
                 readOnly
                 value={formatRange(value)}
                 _fld={_fld}

@@ -52,7 +52,7 @@ class DataObjToolbar extends Component {
 
   render() {
     const {props} = this;
-    const showMenu = props.handleAttachments || props.handlePrint;
+    const showMenu = props.showMenu || props.handleAttachments || props.handlePrint;
     return (
 
       <Toolbar disableGutters className={props.classes.toolbar}>
