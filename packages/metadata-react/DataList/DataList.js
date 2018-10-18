@@ -194,8 +194,8 @@ class DataList extends MDNRComponent {
   }
 
   get sizes() {
-    const {dnr} = this.context;
-    let {width, height} = this.props;
+    let {context: {dnr}, props: {width, height}, state: {columns}} = this;
+
     if(!height) {
       height = dnr && parseInt(dnr.frameRect.height) - 26;
     }
@@ -208,6 +208,15 @@ class DataList extends MDNRComponent {
     if(!width || width < 480) {
       width = 480;
     }
+
+    // горизонтальная прокрутка
+    const w2 = columns && columns.reduce((sum, val, index) => {
+      return sum + this._getColumnWidth({index});
+    }, 0)
+    if(w2 > width) {
+      width = w2;
+    }
+
     return {width, height};
   }
 
@@ -219,7 +228,7 @@ class DataList extends MDNRComponent {
   render() {
     const {state, props, context, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer, _list} = this;
     const {columns, scheme, confirm_text, info_text, settings_open, rowCount} = state;
-    const {_mgr: {RepParams}, classes, title, registerFilterChange, ...others} = props;
+    const {_mgr: {RepParams}, classes, title, registerFilterChange, width, height, ...others} = props;
 
     if(!scheme) {
       return <LoadingMessage text="Чтение настроек компоновки..."/>;
