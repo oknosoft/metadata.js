@@ -1118,7 +1118,10 @@ function adapter({AbstracrAdapter}) {
 
       const {_manager, _obj, _data, ref, class_name} = tObj;
 
-      if(!_data || (_data._saving && !_data._modified)) {
+      // нас могли попросить записать объект не в родную базу менеджера, а в любую другую
+      const db = attr.db || this.db(_manager);
+
+      if(!_data || (_data._saving && !_data._modified) || !db) {
         return Promise.resolve(tObj);
       }
       // TODO: опасное место с гонками при одновременной записи
@@ -1131,10 +1134,8 @@ function adapter({AbstracrAdapter}) {
           setTimeout(() => resolve(this.save_obj(tObj, attr)), 200);
         });
       }
-      _data._saving = 1;
 
-      // нас могли попросить записать объект не в родную базу менеджера, а в любую другую
-      const db = attr.db || this.db(_manager);
+      _data._saving = 1;
 
       // подмешиваем class_name
       const tmp = Object.assign({_id: class_name + '|' + ref, class_name}, _obj);

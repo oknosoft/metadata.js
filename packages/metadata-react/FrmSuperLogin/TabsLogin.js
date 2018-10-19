@@ -189,13 +189,13 @@ class TabsLogin extends Component {
               <Typography variant="subtitle1" color="inherit">После первичной регистрации по логину/паролю, Вы можете связать учетную запись с профилем социальных сетей и выполнять вход через oAuth GitHub, Facebook и Google</Typography>
             </Grid>
             <Grid item xs={10} sm={5}>
-              <Button variant="raised" size="small" className={btn} onClick={this.oauthClick('github')}>
+              <Button variant="contained" size="small" className={btn} onClick={this.oauthClick('github')}>
                 <GitHubIcon viewBox="0 0 256 250" style={{height: 18, fill: 'darkslategrey'}}/> GitHub
               </Button>
-              <Button variant="raised" size="small" className={btn} onClick={this.oauthClick('google')}>
+              <Button variant="contained" size="small" className={btn} onClick={this.oauthClick('google')}>
                 <GoogleIcon viewBox="0 0 256 262" style={{height: 18, fill: blue[500]}}/> Google
               </Button>
-              <Button variant="raised" size="small" className={btn} onClick={this.oauthClick('facebook')}>
+              <Button variant="contained" size="small" className={btn} onClick={this.oauthClick('facebook')}>
                 <FacebookIcon viewBox="0 0 450 450" style={{height: 18, fill: '#3A559F'}}/> Facebook
               </Button>
             </Grid>

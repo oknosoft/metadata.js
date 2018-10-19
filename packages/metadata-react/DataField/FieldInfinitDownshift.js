@@ -13,6 +13,7 @@ import InputLabel from '@material-ui/core/InputLabel';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import FormControl from '@material-ui/core/FormControl';
 import Paper from '@material-ui/core/Paper';
+import Popper from '@material-ui/core/Popper';
 import Divider from '@material-ui/core/Divider';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
@@ -31,7 +32,6 @@ import InfiniteList, {prevent} from './InfiniteList';
 import AbstractField, {suggestionText} from './AbstractField';
 import withStyles from './styles';
 import cn from 'classnames';
-
 
 function InpitReadOnly(props) {
   const {_meta, classes} = props;
@@ -63,7 +63,7 @@ function InpitReadOnly(props) {
 }
 
 function InpitEditable(props) {
-  const {_meta, _obj, _fld, classes, fullWidth, mandatory, label_position, inputValue, inputRef, inputProps, labelProps} = props;
+  const {_meta, _obj, _fld, classes, fullWidth, mandatory, label_position, inputRef, inputProps, labelProps} = props;
 
   return props.isTabular ?
     <input
@@ -113,6 +113,7 @@ class FieldInfinitDownshift extends AbstractField {
     super(props, context);
     Object.assign(this.state, {
       dialogOpened: '',
+      focused: false,
       inputValue: suggestionText(this.state.value),
     });
   }
@@ -123,17 +124,22 @@ class FieldInfinitDownshift extends AbstractField {
       _obj[_fld] = value;
       this.setState({dialogOpened: ''});
       handleValueChange && handleValueChange(value);
+      this.downshift && this.downshift.selectItem(value, {inputValue: suggestionText(value)});
     }
   };
 
-  handleOpenList = () => {
+  handleOpenList = (evt) => {
     const {_obj, _fld} = this.props;
     this.setState({dialogOpened: 'list'});
+    this.downshift && this.downshift.closeMenu();
+    prevent(evt);
   };
 
-  handleOpenObj = () => {
+  handleOpenObj = (evt) => {
     const {_obj, _fld} = this.props;
     this.setState({dialogOpened: 'obj'});
+    this.downshift && this.downshift.closeMenu();
+    prevent(evt);
   };
 
   handleCloseDialog = (evt) => {
@@ -144,30 +150,80 @@ class FieldInfinitDownshift extends AbstractField {
     this.input = el;
   };
 
-  paperProps = () => {
-    const {input, props: {classes}} = this;
-    const props = {
-      square: true,
-      className: classes.suggestionsContainerOpen,
-    };
-    const rect = input && input.getBoundingClientRect();
-    if(rect) {
-      const {innerHeight, innerWidth} = window;
-      if(rect.bottom + 220 < innerHeight) {
-        props.style = {top: rect.bottom};
+  downshiftRef = el => {
+    this.downshift = el;
+  };
+
+  stateReducer = (state, changes) => {
+    // this prevents the menu from being closed
+    switch (changes.type) {
+    case Downshift.stateChangeTypes.mouseUp:
+    case Downshift.stateChangeTypes.touchStart:
+      if(state.isOpen && !changes.isOpen) {
+        setTimeout(() => this.downshift && this.downshift.closeMenu(), 100);
       }
-      else if(rect.top > 220) {
-        props.style = {bottom: innerHeight - rect.top - 12};
+      return {
+        ...changes,
+        isOpen: state.isOpen,
+        highlightedIndex: state.highlightedIndex,
+      }
+    default:
+      return changes
+    }
+  };
+
+  inputKeyDown = (evt) => {
+    let keyIsSpecial;
+    const {downshift} = this;
+    if(!downshift) {
+      return;
+    }
+    switch (evt.key) {
+    case 'ArrowDown':
+      if(!downshift.state.isOpen) {
+        downshift.openMenu();
       }
       else {
-        props.style = {top: 10};
+        const {items, state} = downshift;
+        downshift.setState({highlightedIndex: state.highlightedIndex < items.length - 1 ? state.highlightedIndex + 1 : 0});
+      };
+      keyIsSpecial = true;
+      break;
+    case 'ArrowUp':
+      if(!downshift.state.isOpen) {
+        downshift.openMenu();
       }
-      if(rect.left + 308 > innerWidth) {
-        props.style = Object.assign({left: innerWidth - 308}, props.style);
+      else {
+        const {items, state} = downshift;
+        downshift.setState({highlightedIndex: state.highlightedIndex > 0 ? state.highlightedIndex - 1 : items.length - 1});
+      };
+      keyIsSpecial = true;
+      break;
+    case 'Enter':
+      if(!downshift.state.isOpen) {
+        downshift.openMenu();
       }
+      else {
+        typeof downshift.state.highlightedIndex === 'number' && downshift.selectItemAtIndex(downshift.state.highlightedIndex);
+      };
+      keyIsSpecial = true;
+      break;
+    case 'F2':
+      downshift.openMenu();
+      break;
+
+    case 'F4':
+      if(evt.ctrlKey && evt.shiftKey) {
+        this.handleOpenObj(evt);
+      }
+      else {
+        this.handleOpenList(evt);
+      }
+      keyIsSpecial = true;
+      break;
     }
-    return props;
-  }
+    keyIsSpecial && prevent(evt);
+  };
 
   renderItems({getItemProps, inputValue, highlightedIndex, selectedItem}) {
     const {_meta, props, handleSelect} = this;
@@ -193,7 +249,7 @@ class FieldInfinitDownshift extends AbstractField {
             getItemProps={getItemProps}
           />,
           footer && <Divider key="divider"/>,
-          footer && <Toolbar key="Toolbar" disableGutters>
+          footer && <Toolbar key="Toolbar" disableGutters onMouseDown={prevent} onTouchStart={prevent}>
             <Button size="small" className={classes.a} onClick={this.handleOpenList} title={_manager.frm_selection_name}>{is_enm ? '...' : 'Показать все'}</Button>
             <Typography variant="h6" color="inherit" className={classes.flex}> </Typography>
             {_meta.type.types.length > 1 && <IconButton title="Выбрать тип значения"><TitleIcon/></IconButton>}
@@ -203,7 +259,7 @@ class FieldInfinitDownshift extends AbstractField {
           </Toolbar>
         ]
         :
-        footer && <Toolbar disableGutters>
+        footer && <Toolbar disableGutters onMouseDown={prevent} onTouchStart={prevent}>
           <Typography variant="h6" color="inherit" className={classes.flex}> </Typography>
           {_meta.type.types.length > 1 && <IconButton title="Выбрать тип значения"><TitleIcon/></IconButton>}
         </Toolbar>
@@ -223,6 +279,7 @@ class FieldInfinitDownshift extends AbstractField {
       (_manager.metadata().obj_presentation || _manager.metadata().synonym);
 
     return <Dialog
+      key="down-dialog"
       open
       noSpace
       title={title}
@@ -256,6 +313,8 @@ class FieldInfinitDownshift extends AbstractField {
         [
           <Downshift
             key="downshift"
+            ref={this.downshiftRef}
+            stateReducer={this.stateReducer}
             onChange={this.handleSelect}
             itemToString={suggestionText}
             initialSelectedItem={state.value}
@@ -265,8 +324,13 @@ class FieldInfinitDownshift extends AbstractField {
               <div className={classes.root}>
                 <InpitEditable
                   labelProps={getLabelProps()}
-                  inputProps={getInputProps()}
+                  inputProps={getInputProps({
+                    onKeyDown: this.inputKeyDown,
+                    onBlur: () => this.setState({focused: false}),
+                    onFocus: () => this.setState({focused: true}),
+                  })}
                   inputRef={this.inputRef}
+                  focused={state.focused}
                   isTabular={this.isTabular}
                   _meta={_meta}
                   _obj={props._obj}
@@ -276,11 +340,28 @@ class FieldInfinitDownshift extends AbstractField {
                   fullWidth={props.fullWidth}
                   mandatory={props.mandatory}
                   label_position={props.label_position}
+                  handleOpenObj={this.handleOpenObj}
                 />
                 {isOpen && (
-                  <Paper {...paperProps()}>
-                    {this.renderItems({getItemProps, inputValue, highlightedIndex, selectedItem})}
-                  </Paper>
+                  <Popper
+                    open
+                    anchorEl={this.input}
+                    placement="bottom-start"
+                    disablePortal={false}
+                    modifiers={{
+                      flip: {
+                        enabled: true,
+                      },
+                      preventOverflow: {
+                        enabled: true,
+                        boundariesElement: 'scrollParent',
+                      },
+                    }}
+                  >
+                    <Paper square>
+                      {this.renderItems({getItemProps, inputValue, highlightedIndex, selectedItem})}
+                    </Paper>
+                  </Popper>
                 )}
               </div>
             )}

@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.17-beta.9, built:2018-10-17
+ metadata-abstract-ui v2.0.17-beta.9, built:2018-10-19
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -636,9 +636,9 @@ function scheme_settings() {
       const {parts, _mgr, _meta} = this.child_meta(class_name);
       const columns = [];
       function add_column(fld, use) {
-        const id = fld.id || fld,
-          fld_meta = _meta.fields[id] || _mgr.metadata(id);
-        columns.push({
+        const id = fld.id || fld;
+        const fld_meta = _meta.fields[id] || _mgr.metadata(id);
+        fld_meta && columns.push({
           field: id,
           caption: fld.caption || fld_meta.synonym,
           tooltip: fld_meta.tooltip,

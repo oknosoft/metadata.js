@@ -551,9 +551,9 @@ export default function scheme_settings() {
       const columns = [];
 
       function add_column(fld, use) {
-        const id = fld.id || fld,
-          fld_meta = _meta.fields[id] || _mgr.metadata(id);
-        columns.push({
+        const id = fld.id || fld;
+        const fld_meta = _meta.fields[id] || _mgr.metadata(id);
+        fld_meta && columns.push({
           field: id,
           caption: fld.caption || fld_meta.synonym,
           tooltip: fld_meta.tooltip,

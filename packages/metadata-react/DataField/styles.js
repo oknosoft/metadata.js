@@ -29,6 +29,9 @@ const styles = theme => ({
   suggestionSelected: {
     backgroundColor: 'rgba(0, 0, 0, 0.12)'
   },
+  suggestionCurrent: {
+    fontWeight: 500
+  },
   suggestionsList: {
     margin: 0,
     padding: 0,

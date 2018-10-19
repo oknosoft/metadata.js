@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.9, built:2018-10-16
+ metadata-pouchdb v2.0.17-beta.9, built:2018-10-19
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1193,7 +1193,8 @@ function adapter({AbstracrAdapter}) {
     }
     save_obj(tObj, attr) {
       const {_manager, _obj, _data, ref, class_name} = tObj;
-      if(!_data || (_data._saving && !_data._modified)) {
+      const db = attr.db || this.db(_manager);
+      if(!_data || (_data._saving && !_data._modified) || !db) {
         return Promise.resolve(tObj);
       }
       if(_data._saving && _data._modified) {
@@ -1206,7 +1207,6 @@ function adapter({AbstracrAdapter}) {
         });
       }
       _data._saving = 1;
-      const db = attr.db || this.db(_manager);
       const tmp = Object.assign({_id: class_name + '|' + ref, class_name}, _obj);
       const {utils, wsql} = this.$p;
       if(utils.is_doc_obj(tObj) || _manager.build_search) {

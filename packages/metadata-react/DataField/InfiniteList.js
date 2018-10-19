@@ -37,7 +37,8 @@ export default class InfiniteList extends MComponent {
     search: PropTypes.string,           // Строка поиска
     highlightedIndex: PropTypes.number,
     selectedItem: PropTypes.object,     // Текущий выделенный элемент
-    getItemProps: PropTypes.func,       // обработчик при изменении значения в поле
+    getItemProps: PropTypes.func,
+    getMenuProps: PropTypes.func,
   };
 
   constructor(props, context) {
@@ -138,11 +139,18 @@ export default class InfiniteList extends MComponent {
     return (
       <ListItem
         button
-        className={classnames({[classes.suggestion]: true, [classes.suggestionSelected]: index === highlightedIndex})}
+        className={classnames({
+          [classes.suggestion]: true,
+          [classes.suggestionSelected]: index === highlightedIndex,
+        })}
         {...getItemProps({key, index, style, item: item || {}})}
       >
         {item && !isScrolling && isVisible ?
-          <ListItemText primary={suggestionText(item)}/>
+          <ListItemText
+            primaryTypographyProps={{
+              className: item === selectedItem ? classes.suggestionCurrent : ''
+            }}
+            primary={suggestionText(item)}/>
           :
           <div className={classes.placeholder} style={{width: 10 + Math.random() * 80}}/>
         }
@@ -162,6 +170,7 @@ export default class InfiniteList extends MComponent {
       rowCount={totalRows}
       rowHeight={rowHeight}
       rowRenderer={this.rowRenderer}
+
       width={300}
     />;
   };

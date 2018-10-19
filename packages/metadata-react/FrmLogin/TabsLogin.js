@@ -160,7 +160,7 @@ class TabsLogin extends Component {
           :
           <Button color="primary" size="small" className={classes.button} disabled={!state.login || !state.password} onClick={handleLogin}>Войти</Button>
         }
-        <Button variant="raised" size="small" disabled={true} className={classes.button}>Забыли пароль?</Button>
+        <Button variant="contained" size="small" disabled={true} className={classes.button}>Забыли пароль?</Button>
       </DialogActions>}
 
       {state.index === 1 && <CnnSettings {...props}/>}
