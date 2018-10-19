@@ -142,22 +142,22 @@ function rx_columns({utils: {moment}, enm, md}) {
           // options = _obj.used_fields_list();
           // column.editor = <DropDownEditor options={options}/>;
           // column.formatter = <DropDownFormatter options={options} value=""/>;
-          column.editor = <PathFieldCell/>;
+          column.editor = PathFieldCell;
           break;
 
         case type:
-          column.editor = <TypeFieldCell/>;
+          column.editor = TypeFieldCell;
           //column.formatter = <DropDownFormatter options={[]} value=""/>;
           break;
 
         case props:
-          column.editor = <PropsFieldCell/>;
+          column.editor = PropsFieldCell;
           column.formatter = props_formatter;
           break;
 
         default:
           if(editable){
-            column.editor = <DataCell/>;
+            column.editor = DataCell;
           }
         }
 

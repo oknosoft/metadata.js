@@ -146,6 +146,25 @@ class FieldInfinitDownshift extends AbstractField {
     this.setState({dialogOpened: ''});
   };
 
+  handleBlur = (evt) => {
+    this.isTabular && this.state.dialogOpened && prevent(evt);
+  };
+
+  handleKeyBlur = (evt) => {
+    if(this.isTabular && this.state.dialogOpened) {
+      switch (evt.key) {
+      case 'ArrowUp':
+      case 'ArrowDown':
+      case 'ArrowLeft':
+      case 'ArrowRight':
+      case 'Tab':
+      case 'Enter':
+        prevent(evt);
+        break;
+      }
+    }
+  };
+
   inputRef = el => {
     this.input = el;
   };
@@ -160,7 +179,7 @@ class FieldInfinitDownshift extends AbstractField {
     case Downshift.stateChangeTypes.mouseUp:
     case Downshift.stateChangeTypes.touchStart:
       if(state.isOpen && !changes.isOpen) {
-        setTimeout(() => this.downshift && this.downshift.closeMenu(), 100);
+        setTimeout(() => this.downshift && this.downshift.closeMenu(), 1000);
       }
       return {
         ...changes,
@@ -310,64 +329,68 @@ class FieldInfinitDownshift extends AbstractField {
           label_position={props.label_position}
       />
         :
-        [
-          <Downshift
-            key="downshift"
-            ref={this.downshiftRef}
-            stateReducer={this.stateReducer}
-            onChange={this.handleSelect}
-            itemToString={suggestionText}
-            initialSelectedItem={state.value}
-            initialInputValue={state.inputValue}
-          >
-            {({isOpen, getLabelProps, getInputProps, getItemProps, inputValue, highlightedIndex, selectedItem}) => (
-              <div className={classes.root}>
-                <InpitEditable
-                  labelProps={getLabelProps()}
-                  inputProps={getInputProps({
-                    onKeyDown: this.inputKeyDown,
-                    onBlur: () => this.setState({focused: false}),
-                    onFocus: () => this.setState({focused: true}),
-                  })}
-                  inputRef={this.inputRef}
-                  focused={state.focused}
-                  isTabular={this.isTabular}
-                  _meta={_meta}
-                  _obj={props._obj}
-                  _fld={props._fld}
-                  classes={classes}
-                  bar={props.bar}
-                  fullWidth={props.fullWidth}
-                  mandatory={props.mandatory}
-                  label_position={props.label_position}
-                  handleOpenObj={this.handleOpenObj}
-                />
-                {isOpen && (
-                  <Popper
-                    open
-                    anchorEl={this.input}
-                    placement="bottom-start"
-                    disablePortal={false}
-                    modifiers={{
-                      flip: {
-                        enabled: true,
-                      },
-                      preventOverflow: {
-                        enabled: true,
-                        boundariesElement: 'scrollParent',
-                      },
-                    }}
-                  >
-                    <Paper square>
-                      {this.renderItems({getItemProps, inputValue, highlightedIndex, selectedItem})}
-                    </Paper>
-                  </Popper>
-                )}
-              </div>
-            )}
-          </Downshift>,
-          state.dialogOpened && this.renderDialog()
-        ]
+        <Downshift
+          key="downshift"
+          ref={this.downshiftRef}
+          onChange={this.handleSelect}
+          itemToString={suggestionText}
+          initialSelectedItem={state.value}
+          initialInputValue={state.inputValue}
+        >
+          {({isOpen, getLabelProps, getInputProps, getItemProps, inputValue, highlightedIndex, selectedItem}) => (
+            <div
+              className={classes.root}
+              onBlur={this.handleBlur}
+              onClick={this.handleBlur}
+              onKeyDown={this.handleKeyBlur}
+            >
+              <InpitEditable
+                labelProps={getLabelProps()}
+                inputProps={getInputProps({
+                  onKeyDown: this.inputKeyDown,
+                  onBlur: () => this.setState({focused: false}),
+                  onFocus: () => this.setState({focused: true}),
+                })}
+                inputRef={this.inputRef}
+                focused={state.focused}
+                isTabular={this.isTabular}
+                _meta={_meta}
+                _obj={props._obj}
+                _fld={props._fld}
+                classes={classes}
+                bar={props.bar}
+                fullWidth={props.fullWidth}
+                mandatory={props.mandatory}
+                label_position={props.label_position}
+                handleOpenObj={this.handleOpenObj}
+              />
+              {isOpen && (
+                <Popper
+                  open
+                  anchorEl={this.input}
+                  placement="bottom-start"
+                  disablePortal={false}
+                  modifiers={{
+                    flip: {
+                      enabled: true,
+                    },
+                    preventOverflow: {
+                      enabled: true,
+                      boundariesElement: 'scrollParent',
+                    },
+                  }}
+                >
+                  <Paper square>
+                    {this.renderItems({getItemProps, inputValue, highlightedIndex, selectedItem})}
+                  </Paper>
+                </Popper>
+              )}
+              {
+                state.dialogOpened && this.renderDialog()
+              }
+            </div>
+          )}
+        </Downshift>
 
     );
   }
