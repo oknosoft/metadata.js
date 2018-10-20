@@ -139,15 +139,11 @@ function rx_columns({utils: {moment}, enm, md}) {
           break;
 
         case path:
-          // options = _obj.used_fields_list();
-          // column.editor = <DropDownEditor options={options}/>;
-          // column.formatter = <DropDownFormatter options={options} value=""/>;
           column.editor = PathFieldCell;
           break;
 
         case type:
           column.editor = TypeFieldCell;
-          //column.formatter = <DropDownFormatter options={[]} value=""/>;
           break;
 
         case props:

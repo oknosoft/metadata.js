@@ -11,7 +11,7 @@ import PropTypes from 'prop-types';
 
 import {FieldWithMeta} from './AbstractField';
 import FieldSelect from './FieldSelect';
-import FieldInfinit from './FieldInfinitDownshift';
+import FieldInfinit from './FieldInfinit';
 import FieldText from './FieldText';
 import FieldDate from './FieldDate';
 import FieldNumber from './FieldNumber';
