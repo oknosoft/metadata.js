@@ -97,7 +97,7 @@ type Props = {
 };
 
 function MarkdownElement(props: Props) {
-  const { classes, className, text, handleNavigate, handleIfaceState, disconnect, CustomBtn, ...other } = props;
+  const { classes, className, text, mdtitle, title, handleNavigate, handleIfaceState, disconnect, CustomBtn, ...other } = props;
 
   function anchorCkick(evt) {
     if(evt.target.tagName === 'A') {
@@ -118,6 +118,7 @@ function MarkdownElement(props: Props) {
     <div
       className={classNames(classes.root, 'markdown-body', className)}
       onClick={anchorCkick}
+      title={mdtitle || title}
       {...other}
     >
       {render(text)}

@@ -19,6 +19,9 @@ export default withStyles(({mixins, custom, spacing, shadows, palette}) => ({
   errorText: {
     maxWidth: 500,
   },
+  rightWidth: {
+    minWidth: 310,
+  },
   textField: {
     marginTop: spacing.unit * 3,
   },

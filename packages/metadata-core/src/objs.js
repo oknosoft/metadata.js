@@ -1067,7 +1067,10 @@ export class DocObj extends NumberDocAndDate(DataObj) {
   get presentation() {
     const meta = this._metadata();
     const {number_doc, date, posted, _modified} = this;
-    return `${meta.obj_presentation || meta.synonym}  №${number_doc || 'б/н'} от ${moment(date).format(moment._masks.ldt)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`;
+    return number_doc ?
+      `${meta.obj_presentation || meta.synonym}  №${number_doc} от ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`
+      :
+      `${meta.obj_presentation || meta.synonym} ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`;
   }
 
   set presentation(v) {

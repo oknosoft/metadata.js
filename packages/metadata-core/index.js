@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.10, built:2018-10-20
+ metadata-core v2.0.17-beta.10, built:2018-10-21
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1149,7 +1149,10 @@ class DocObj extends NumberDocAndDate(DataObj) {
   get presentation() {
     const meta = this._metadata();
     const {number_doc, date, posted, _modified} = this;
-    return `${meta.obj_presentation || meta.synonym}  №${number_doc || 'б/н'} от ${moment(date).format(moment._masks.ldt)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`;
+    return number_doc ?
+      `${meta.obj_presentation || meta.synonym}  №${number_doc} от ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`
+      :
+      `${meta.obj_presentation || meta.synonym} ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`;
   }
   set presentation(v) {
     if(v) {
