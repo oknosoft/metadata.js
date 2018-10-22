@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
 import FormGroup from '@material-ui/core/FormGroup';
@@ -148,7 +147,7 @@ class UserObj extends Component {
 
     return _obj ?
 
-      <Paper className={classes.root} elevation={4}>
+      <div>
 
         <Tabs value={index} onChange={(event, index) => this.setState({index})}>
           <Tab label="Пользователь"/>
@@ -222,7 +221,7 @@ class UserObj extends Component {
         </FormGroup>
         }
 
-      </Paper>
+      </div>
 
       :
       <div>

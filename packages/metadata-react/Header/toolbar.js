@@ -41,7 +41,7 @@ export default withStyles(theme => ({
     marginLeft: theme.spacing.unit,
   },
   bold: {
-    fontWeight: 'bold',
+    fontWeight: 500,
   },
   select: {
     width: 180,

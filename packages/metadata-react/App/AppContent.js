@@ -2,7 +2,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames';
+import cn from 'classnames';
 import withStyles from '@material-ui/core/styles/withStyles';
 
 const styles = theme => ({
@@ -16,13 +16,13 @@ const styles = theme => ({
     maxWidth: {
       maxWidth: 980,
     },
-  },
+  }
 });
 
 function AppContent(props) {
   const { className, fullWidth, classes, children } = props;
 
-  return <div className={classNames(classes.content, !fullWidth && classes.maxWidth, className)}>{children}</div>;
+  return <div className={cn(classes.content, !fullWidth && classes.maxWidth, className)}>{children}</div>;
 }
 
 AppContent.propTypes = {

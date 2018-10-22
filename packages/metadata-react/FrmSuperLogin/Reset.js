@@ -7,7 +7,6 @@
  */
 
 import React, {Component} from 'react';
-import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import FormGroup from '@material-ui/core/FormGroup';
@@ -99,10 +98,7 @@ class Reset extends Component {
 
     return (
 
-      <Paper className={classnames({
-        [classes.root]: true,
-        [classes.disabled]: user.try_log_in
-      })} elevation={4}>
+      <div className={classnames({[classes.disabled]: user.try_log_in})}>
 
         <FormGroup>
           <FormControl
@@ -149,7 +145,7 @@ class Reset extends Component {
           </DialogActions>
 
         </FormGroup>
-      </Paper>
+      </div>
 
     );
   }

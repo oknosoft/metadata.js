@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import FormGroup from '@material-ui/core/FormGroup';
@@ -112,10 +111,7 @@ class TabsLogin extends Component {
 
     return (
 
-      <Paper className={classnames({
-        [classes.root]: true,
-        [classes.disabled]: user.try_log_in
-      })} elevation={4}>
+      <div className={classnames({[classes.disabled]: user.try_log_in})}>
 
         <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
           <Tab label="Вход"/>
@@ -264,7 +260,7 @@ class TabsLogin extends Component {
         </FormGroup>
         }
 
-      </Paper>
+      </div>
 
     );
   }

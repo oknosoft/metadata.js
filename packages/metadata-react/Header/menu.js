@@ -19,7 +19,7 @@ export default withStyles(theme => ({
     height: 48,
   },
   bold: {
-    fontWeight: 'bold',
+    fontWeight: 500,
   },
   expand: {
     transform: 'rotate(0deg)',
