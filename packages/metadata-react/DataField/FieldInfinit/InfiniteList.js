@@ -15,8 +15,8 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import classnames from 'classnames';
-import MComponent from '../common/MComponent';
-import {suggestionText} from './AbstractField';
+import MComponent from '../../common/MComponent';
+import {suggestionText} from '../AbstractField';
 
 const limit = 30;
 const rowHeight = 32;

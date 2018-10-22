@@ -8,10 +8,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import Input from '@material-ui/core/Input';
-import InputLabel from '@material-ui/core/InputLabel';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import FormControl from '@material-ui/core/FormControl';
 import Paper from '@material-ui/core/Paper';
 import Popper from '@material-ui/core/Popper';
 import Divider from '@material-ui/core/Divider';
@@ -24,83 +20,18 @@ import Downshift from 'downshift'
 import OpenInNew from '@material-ui/icons/OpenInNew';
 import AddIcon from '@material-ui/icons/AddCircleOutline';
 import TitleIcon from '@material-ui/icons/Title';
+import ClearIcon from '@material-ui/icons/Clear';
 
 // окно диалога для показа всплывающей формы
-import Dialog from '../App/Dialog';
 import InfiniteList, {prevent} from './InfiniteList';
+import InpitReadOnly from './InpitReadOnly';
+import InpitEditable from './InpitEditable';
+import OuterDialog from './OuterDialog';
 
-import AbstractField, {suggestionText} from './AbstractField';
-import withStyles from './styles';
+
+import AbstractField, {suggestionText} from '../AbstractField';
+import withStyles from '../styles';
 import cn from 'classnames';
-
-function InpitReadOnly(props) {
-  const {_meta, classes} = props;
-  return props.isTabular ?
-    <div>
-      <input
-        type="text"
-        value={props.inputValue}
-        title={_meta.tooltip || _meta.synonym}
-        placeholder={_meta.synonym || _meta.tooltip}
-        readOnly
-      />
-    </div>
-    :
-    <div className={classes.root}>
-      <FormControl
-        className={cn(classes.formControl, props.bar && classes.barInput)}
-        fullWidth={props.fullWidth}
-        disabled
-      >
-        {props.label_position != 'hide' && <InputLabel>{_meta.tooltip || _meta.synonym}</InputLabel>}
-        <Input
-          value={props.inputValue}
-          classes={{input: classes.input}}
-          placeholder={props.label_position == 'hide' ? (_meta.tooltip || _meta.synonym) : props._fld}
-        />
-      </FormControl>
-    </div>
-}
-
-function InpitEditable(props) {
-  const {_meta, _obj, _fld, classes, fullWidth, mandatory, label_position, inputRef, inputProps, labelProps} = props;
-
-  return props.isTabular ?
-    <input
-      type="text"
-      title={_meta.tooltip || _meta.synonym}
-      placeholder="Введите текст для поиска"
-      {...inputProps}
-      ref={inputRef}
-    />
-    :
-    <FormControl
-      className={cn(classes.formControl, props.bar && classes.barInput)}
-      fullWidth={fullWidth}
-      onDoubleClick={null}
-    >
-      {label_position != 'hide' && <InputLabel {...labelProps}>{_meta.tooltip || _meta.synonym}</InputLabel>}
-      <Input
-        {...inputProps}
-        inputRef={inputRef}
-        classes={{input: classes.input}}
-        placeholder={label_position == 'hide' ? (_meta.tooltip || _meta.synonym) : _fld}
-        endAdornment={props.focused &&
-        <InputAdornment position="end">
-          <IconButton
-            tabIndex={-1}
-            className={classes.icon}
-            title={_obj[_fld]._manager.frm_obj_name}
-            onClick={props.handleOpenObj}
-            onMouseDown={prevent}
-          >
-            <OpenInNew/>
-          </IconButton>
-        </InputAdornment>
-        }
-      />
-    </FormControl>;
-}
 
 
 class FieldInfinit extends AbstractField {
@@ -122,7 +53,8 @@ class FieldInfinit extends AbstractField {
     if(value) {
       const {_obj, _fld, handleValueChange} = this.props;
       _obj[_fld] = value;
-      this.setState({dialogOpened: ''});
+      value = _obj[_fld];
+      this.handleCloseDialog();
       handleValueChange && handleValueChange(value);
       this.downshift && this.downshift.selectItem(value, {inputValue: suggestionText(value)});
     }
@@ -142,8 +74,8 @@ class FieldInfinit extends AbstractField {
     prevent(evt);
   };
 
-  handleCloseDialog = (evt) => {
-    this.setState({dialogOpened: ''});
+  handleCloseDialog = () => {
+    this.setState({dialogOpened: '', focused: true});
   };
 
   handleBlur = (evt) => {
@@ -251,6 +183,7 @@ class FieldInfinit extends AbstractField {
     const {_manager} = _obj[_fld];
     const is_enm = $p.utils.is_enm_mgr(_manager);
     const footer = !is_enm || _meta.type.types.length > 1;
+    const iconDisabled=!_obj[_fld] || _obj[_fld].empty();
 
     return (
       _manager ? [
@@ -269,12 +202,26 @@ class FieldInfinit extends AbstractField {
           />,
           footer && <Divider key="divider"/>,
           footer && <Toolbar key="Toolbar" disableGutters onMouseDown={prevent} onTouchStart={prevent}>
-            <Button size="small" className={classes.a} onClick={this.handleOpenList} title={_manager.frm_selection_name}>{is_enm ? '...' : 'Показать все'}</Button>
+            <Button size="small" className={classes.a} onClick={this.handleOpenList} title={_manager.frm_selection_name}>Список</Button>
             <Typography variant="h6" color="inherit" className={classes.flex}> </Typography>
+
+            <IconButton
+              title="Очистить"
+              disabled={iconDisabled}
+              onClick={() => handleSelect(_manager.get())}
+            ><ClearIcon/></IconButton>
+
             {_meta.type.types.length > 1 && <IconButton title="Выбрать тип значения"><TitleIcon/></IconButton>}
+
             {!is_enm && _manager.acl.indexOf('i') != -1 && <IconButton title="Создать элемент"><AddIcon/></IconButton>}
-            {!is_enm && _manager.acl.indexOf('v') != -1 && this.isTabular &&
-            <IconButton title={_manager.frm_obj_name} onClick={this.handleOpenObj}><OpenInNew/></IconButton>}
+
+            {!is_enm && _manager.acl.indexOf('v') != -1 &&
+            <IconButton
+              title={_manager.frm_obj_name}
+              disabled={iconDisabled}
+              onClick={this.handleOpenObj}
+            ><OpenInNew/></IconButton>}
+
           </Toolbar>
         ]
         :
@@ -285,38 +232,12 @@ class FieldInfinit extends AbstractField {
     );
   }
 
-  renderDialog() {
-    const {props, state: {dialogOpened}, context, handleSelect} = this;
-
-    const {_obj, _fld} = props;
-    const {_manager, ref} = _obj[_fld];
-    const _acl = $p.current_user.get_acl(_manager.class_name);
-    const {DataList, DataObj} = context.components;
-    const title = dialogOpened == 'list' ?
-      (_manager.metadata().list_presentation || _manager.metadata().synonym)
-      :
-      (_manager.metadata().obj_presentation || _manager.metadata().synonym);
-
-    return <Dialog
-      key="down-dialog"
-      open
-      noSpace
-      title={title}
-      onClose={this.handleCloseDialog}
-    >
-      {dialogOpened == 'list' ?
-        <DataList _mgr={_manager} _acl={_acl} _owner={this} selectionMode handlers={{handleSelect}}/>
-        :
-        <DataObj _mgr={_manager} _acl={_acl} match={{params: {ref}}} handlers={{}}/>
-      }
-    </Dialog>;
-  }
 
   render() {
 
     const {props, state, _meta, paperProps} = this;
     const {read_only} = (props.hasOwnProperty('read_only') ? props : _meta);
-    const {classes} = props;
+    const {classes, _obj, _fld} = props;
 
     return (
       read_only ? <InpitReadOnly
@@ -337,7 +258,7 @@ class FieldInfinit extends AbstractField {
           initialSelectedItem={state.value}
           initialInputValue={state.inputValue}
         >
-          {({isOpen, getLabelProps, getInputProps, getItemProps, inputValue, highlightedIndex, selectedItem}) => {
+          {({isOpen, getLabelProps, getInputProps, getItemProps, inputValue, highlightedIndex, selectedItem, openMenu, closeMenu}) => {
             let zIndex = 1;
             let parent = this.input && this.input.parentElement;
             while(isOpen && parent) {
@@ -367,14 +288,16 @@ class FieldInfinit extends AbstractField {
                 focused={state.focused}
                 isTabular={this.isTabular}
                 _meta={_meta}
-                _obj={props._obj}
-                _fld={props._fld}
+                _obj={_obj}
+                _fld={_fld}
+                isOpen={isOpen}
                 classes={classes}
                 bar={props.bar}
                 fullWidth={props.fullWidth}
                 mandatory={props.mandatory}
                 label_position={props.label_position}
                 handleOpenObj={this.handleOpenObj}
+                handleToggle={() => isOpen ? closeMenu() : openMenu()}
               />
               {isOpen && (
                 <Popper
@@ -393,13 +316,23 @@ class FieldInfinit extends AbstractField {
                     },
                   }}
                 >
-                  <Paper square>
+                  <Paper
+                    square
+                    onTouchStart={prevent}
+                  >
                     {this.renderItems({getItemProps, inputValue, highlightedIndex, selectedItem})}
                   </Paper>
                 </Popper>
               )}
               {
-                state.dialogOpened && this.renderDialog()
+                state.dialogOpened && <OuterDialog
+                  _obj={_obj}
+                  _fld={_fld}
+                  dialogOpened={state.dialogOpened}
+                  handleSelect={this.handleSelect}
+                  handleCloseDialog={this.handleCloseDialog}
+                  components={this.context.components}
+                />
               }
             </div>;
           }}
