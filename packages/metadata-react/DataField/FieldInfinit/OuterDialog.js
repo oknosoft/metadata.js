@@ -11,7 +11,7 @@ import React from 'react';
 
 export default function OuterDialog(props) {
 
-  const {_obj, _fld, dialogOpened, handleSelect, components} = props;
+  const {_obj, _fld, dialogOpened, handleSelect, components, _owner} = props;
   const {_manager, ref} = _obj[_fld];
   const _acl = $p.current_user.get_acl(_manager.class_name);
   const {DataList, DataObj} = components;
@@ -28,7 +28,7 @@ export default function OuterDialog(props) {
     onClose={props.handleCloseDialog}
   >
     {dialogOpened == 'list' ?
-      <DataList _mgr={_manager} _acl={_acl} _owner={this} selectionMode handlers={{handleSelect}}/>
+      <DataList _mgr={_manager} _acl={_acl} _owner={_owner} selectionMode handlers={{handleSelect}}/>
       :
       <DataObj _mgr={_manager} _acl={_acl} match={{params: {ref}}} handlers={{}}/>
     }

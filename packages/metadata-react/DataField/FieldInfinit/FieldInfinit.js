@@ -207,7 +207,7 @@ class FieldInfinit extends AbstractField {
 
             <IconButton
               title="Очистить"
-              disabled={iconDisabled}
+              disabled={iconDisabled || _meta.disable_clear}
               onClick={() => handleSelect(_manager.get())}
             ><ClearIcon/></IconButton>
 
@@ -328,6 +328,7 @@ class FieldInfinit extends AbstractField {
                 state.dialogOpened && <OuterDialog
                   _obj={_obj}
                   _fld={_fld}
+                  _owner={this}
                   dialogOpened={state.dialogOpened}
                   handleSelect={this.handleSelect}
                   handleCloseDialog={this.handleCloseDialog}
