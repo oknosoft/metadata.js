@@ -105,24 +105,6 @@ class FieldInfinit extends AbstractField {
     this.downshift = el;
   };
 
-  stateReducer = (state, changes) => {
-    // this prevents the menu from being closed
-    switch (changes.type) {
-    case Downshift.stateChangeTypes.mouseUp:
-    case Downshift.stateChangeTypes.touchStart:
-      if(state.isOpen && !changes.isOpen) {
-        setTimeout(() => this.downshift && this.downshift.closeMenu(), 1000);
-      }
-      return {
-        ...changes,
-        isOpen: state.isOpen,
-        highlightedIndex: state.highlightedIndex,
-      }
-    default:
-      return changes
-    }
-  };
-
   inputKeyDown = (evt) => {
     let keyIsSpecial;
     const {downshift} = this;
@@ -235,7 +217,7 @@ class FieldInfinit extends AbstractField {
 
   render() {
 
-    const {props, state, _meta, paperProps} = this;
+    const {props, state, _meta, paperProps, isTabular} = this;
     const {read_only} = (props.hasOwnProperty('read_only') ? props : _meta);
     const {classes, _obj, _fld} = props;
 
@@ -243,7 +225,7 @@ class FieldInfinit extends AbstractField {
       read_only ? <InpitReadOnly
           _meta={_meta}
           _fld={props._fld}
-          isTabular={this.isTabular}
+          isTabular={isTabular}
           classes={classes}
           inputValue={state.inputValue}
           fullWidth={props.fullWidth}
@@ -257,6 +239,7 @@ class FieldInfinit extends AbstractField {
           itemToString={suggestionText}
           initialSelectedItem={state.value}
           initialInputValue={state.inputValue}
+          initialIsOpen={isTabular}
         >
           {({isOpen, getLabelProps, getInputProps, getItemProps, inputValue, highlightedIndex, selectedItem, openMenu, closeMenu}) => {
             let zIndex = 1;
@@ -286,7 +269,7 @@ class FieldInfinit extends AbstractField {
                 })}
                 inputRef={this.inputRef}
                 focused={state.focused}
-                isTabular={this.isTabular}
+                isTabular={isTabular}
                 _meta={_meta}
                 _obj={_obj}
                 _fld={_fld}
