@@ -164,10 +164,13 @@ export default (constructor) => {
      * @return {*}
      */
     dbpath(name) {
-      const {$p, props: {path, prefix, zone}} = this;
-      let url = $p.superlogin.getDbUrl(prefix + (name == 'meta' ? name : (zone + '_' + name)));
+      const {$p: {superlogin}, props: {path, prefix, zone}} = this;
+      let url = superlogin.getDbUrl(prefix + (name == 'meta' ? name : (zone + '_' + name)));
       if(!url) {
-        url = $p.superlogin.getDbUrl(prefix + zone + '_doc');
+        url = superlogin.getDbUrl(name);
+      }
+      if(!url) {
+        url = superlogin.getDbUrl(prefix + zone + '_doc');
         const pos = url.indexOf(prefix + (name == 'meta' ? name : (zone + '_doc')));
         url = url.substr(0, pos) + prefix + (name == 'meta' ? name : (zone + '_' + name));
       }

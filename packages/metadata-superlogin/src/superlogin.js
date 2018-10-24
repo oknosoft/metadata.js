@@ -85,15 +85,7 @@ function attach($p) {
     return this.authenticated() ?
       this._http.post(`/user/create-db`, {name})
         .then(res => {
-          const session = this.getSession();
-          if(!session.profile.myDBs){
-            session.profile.myDBs = [];
-          }
-          if(!session.profile.myDBs.includes(name)) {
-            session.profile.myDBs.push(name);
-            this.setSession(session);
-          }
-          return res.data;
+          return this.refresh();
         })
       :
       needAuth();
