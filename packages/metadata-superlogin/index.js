@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.17-beta.10, built:2018-10-20
+ metadata-superlogin v2.0.17-beta.10, built:2018-10-24
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -690,6 +690,9 @@ var default_config = {
 };
 
 const {metaActions} = require('metadata-redux');
+function needAuth() {
+  return Promise.reject({error: 'Требуется авторизация'});
+}
 function attach($p) {
   const {cat, utils, wsql, adapters: {pouch}} = $p;
   superlogin.on('login', function (event, session) {
@@ -724,7 +727,7 @@ function attach($p) {
             return res.data;
           });
     }
-    return Promise.reject({error: 'Требуется авторизация'});
+    return needAuth();
   };
   superlogin.change_subscription = function (subscription) {
     if(this.authenticated()) {
@@ -738,7 +741,24 @@ function attach($p) {
             return res.data;
           });
     }
-    return Promise.reject({error: 'Требуется авторизация'});
+    return needAuth();
+  };
+  superlogin.create_db = function (name) {
+    return this.authenticated() ?
+      this._http.post(`/user/create-db`, {name})
+        .then(res => {
+          const session = this.getSession();
+          if(!session.profile.myDBs){
+            session.profile.myDBs = [];
+          }
+          if(!session.profile.myDBs.includes(name)) {
+            session.profile.myDBs.push(name);
+            this.setSession(session);
+          }
+          return res.data;
+        })
+      :
+      needAuth();
   };
   function handleSocialAuth(provider) {
     return function (dispatch, getState) {

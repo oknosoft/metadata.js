@@ -11,11 +11,9 @@ import default_config from './default.config';
 
 const {metaActions} = require('metadata-redux');
 
-// переопределяем getDbUrl
-// const default_getDbUrl = superlogin.getDbUrl.bind(superlogin);
-// superlogin.getDbUrl = function (name) {
-//   return default_getDbUrl(name).replace('http://', 'https://').replace('fl211:5984', 'flowcon.oknosoft.ru/couchdb');
-// };
+function needAuth() {
+  return Promise.reject({error: 'Требуется авторизация'});
+}
 
 function attach($p) {
 
@@ -65,7 +63,7 @@ function attach($p) {
             return res.data;
           });
     }
-    return Promise.reject({error: 'Требуется авторизация'});
+    return needAuth();
   };
 
   superlogin.change_subscription = function (subscription) {
@@ -80,7 +78,25 @@ function attach($p) {
             return res.data;
           });
     }
-    return Promise.reject({error: 'Требуется авторизация'});
+    return needAuth();
+  }
+
+  superlogin.create_db = function (name) {
+    return this.authenticated() ?
+      this._http.post(`/user/create-db`, {name})
+        .then(res => {
+          const session = this.getSession();
+          if(!session.profile.myDBs){
+            session.profile.myDBs = [];
+          }
+          if(!session.profile.myDBs.includes(name)) {
+            session.profile.myDBs.push(name);
+            this.setSession(session);
+          }
+          return res.data;
+        })
+      :
+      needAuth();
   }
 
 
