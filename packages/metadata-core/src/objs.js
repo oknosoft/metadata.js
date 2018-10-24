@@ -496,111 +496,112 @@ export class DataObj {
 
     // выполняем обработчик перед записью
     const {_data} = this;
-    let before_save_res = this.before_save();
-    if(_data.before_save_sync) {
-      _data.before_save_sync = false;
-    }
+    return Promise.resolve()
+      .then(() => this.before_save())
+      .then((before_save_res) => {
 
-    // этот код выполним в самом конце, после записи и после обработчика after_save
-    const reset_modified = () => {
-      if(before_save_res === false) {
-        if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted !== initial_posted) {
-          this.posted = initial_posted;
+        // этот код выполним в самом конце, после записи
+        const reset_modified = () => {
+          if(before_save_res === false) {
+            if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted !== initial_posted) {
+              this.posted = initial_posted;
+            }
+          }
+          else {
+            _data._modified = false;
+          }
+          _data._saving = 0;
+          return this;
+        };
+
+
+        // если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
+        if(before_save_res === false) {
+          return Promise.reject(reset_modified());
         }
-      }
-      else {
-        _data._modified = false;
-      }
-      _data._saving = 0;
-      return this;
-    };
 
-    const reset_mandatory = (msg) => {
-      before_save_res = false;
-      reset_modified();
-      md.emit('alert', msg);
-      const err = new Error(msg.text);
-      err.msg = msg;
-      return Promise.reject(err);
-    }
+        // этот код выполняем в случае ошибки незаполненных реквизитов
+        const reset_mandatory = (msg) => {
+          before_save_res = false;
+          reset_modified();
+          md.emit('alert', msg);
+          const err = new Error(msg.text);
+          err.msg = msg;
+          return Promise.reject(err);
+        };
 
-    // если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
-    if(before_save_res === false) {
-      return Promise.reject(reset_modified());
-    }
-
-    // для объектов с иерархией установим пустого родителя, если иной не указан
-    if(this._metadata().hierarchical && !this._obj.parent) {
-      this._obj.parent = utils.blank.guid;
-    }
-
-    // если пользовательский обработчик перед записью вернул промис, дожидаемся его завершения
-
-    // для документов, контролируем заполненность даты и номера
-    let numerator = before_save_res instanceof Promise ? before_save_res : Promise.resolve();
-    if(!this._deleted) {
-      if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
-        if(utils.blank.date == this.date) {
-          this.date = new Date();
+        // для объектов с иерархией установим пустого родителя, если иной не указан
+        if(this._metadata().hierarchical && !this._obj.parent) {
+          this._obj.parent = utils.blank.guid;
         }
-        if(!this.number_doc) {
-          numerator = numerator.then(() => this.new_number_doc());
-        }
-      }
-      else {
-        if(!this.id) {
-          numerator = numerator.then(() => this.new_number_doc());
-        }
-      }
-    }
 
-    // если не указаны обязательные реквизиты
-    // TODO: show_msg alert-error нужно делать emit на метаданных
-    const {fields, tabular_sections} = this._metadata();
-    const {msg, md, cch: {properties}} = this._manager._owner.$p;
-    for (const mf in fields) {
-      if (fields[mf].mandatory && !this._obj[mf]) {
-        return reset_mandatory({
-          obj: this,
-          title: msg.mandatory_title,
-          type: "alert-error",
-          text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
-        });
-      }
-    }
-    if(properties) {
-      for (const prts of ['extra_fields', 'product_params', 'params']) {
-        if(!tabular_sections[prts]) {
-          continue;
-        }
-        for (const row of this[prts]._obj) {
-          const property = properties.get(row.property || row.param);
-          if(property && property.mandatory) {
-            const {value} = (row._row || row);
-            if(utils.is_data_obj(value) ? value.empty() : !value) {
-              return reset_mandatory({
-                obj: this,
-                row: row._row || row,
-                title: msg.mandatory_title,
-                type: 'alert-error',
-                text: msg.mandatory_field.replace('%1', property.caption || property.name)
-              });
+        // для документов, контролируем заполненность даты и номера
+        let numerator;
+        if(!this._deleted) {
+          if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
+            if(utils.blank.date == this.date) {
+              this.date = new Date();
+            }
+            if(!this.number_doc) {
+              numerator = this.new_number_doc();
+            }
+          }
+          else {
+            if(!this.id) {
+              numerator = this.new_number_doc();
             }
           }
         }
-      }
-    }
 
-    // в зависимости от типа кеширования, получаем saver и сохраняем объект во внешней базе
-    return numerator
-      .then(() => this._manager.adapter.save_obj(this, {post, operational, attachments }))
-      // и выполняем обработку после записи
-      .then(() => this.after_save())
-      .then(reset_modified)
-      .catch((err) => {
-        reset_modified();
-        throw err;
+        // если не указаны обязательные реквизиты...
+        const {fields, tabular_sections} = this._metadata();
+        const {msg, md, cch: {properties}} = this._manager._owner.$p;
+        for (const mf in fields) {
+          if (fields[mf].mandatory && !this._obj[mf]) {
+            return reset_mandatory({
+              obj: this,
+              title: msg.mandatory_title,
+              type: "alert-error",
+              text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
+            });
+          }
+        }
+        if(properties) {
+          for (const prts of ['extra_fields', 'product_params', 'params']) {
+            if(!tabular_sections[prts]) {
+              continue;
+            }
+            for (const row of this[prts]._obj) {
+              const property = properties.get(row.property || row.param);
+              if(property && property.mandatory) {
+                const {value} = (row._row || row);
+                if(utils.is_data_obj(value) ? value.empty() : !value) {
+                  return reset_mandatory({
+                    obj: this,
+                    row: row._row || row,
+                    title: msg.mandatory_title,
+                    type: 'alert-error',
+                    text: msg.mandatory_field.replace('%1', property.caption || property.name)
+                  });
+                }
+              }
+            }
+          }
+        }
+
+        // в зависимости от типа кеширования, получаем saver и сохраняем объект во внешней базе
+        return (numerator || Promise.resolve())
+          .then(() => this._manager.adapter.save_obj(this, {post, operational, attachments }))
+          // и выполняем обработку после записи
+          .then(() => this.after_save())
+          .then(reset_modified)
+          .catch((err) => {
+            reset_modified();
+            throw err;
+          });
+
       });
+
   }
 
 

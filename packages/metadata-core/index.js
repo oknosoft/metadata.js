@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.10, built:2018-10-22
+ metadata-core v2.0.17-beta.10, built:2018-10-24
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -825,93 +825,93 @@ class DataObj {
       this.posted = post;
     }
     const {_data} = this;
-    let before_save_res = this.before_save();
-    if(_data.before_save_sync) {
-      _data.before_save_sync = false;
-    }
-    const reset_modified = () => {
-      if(before_save_res === false) {
-        if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted !== initial_posted) {
-          this.posted = initial_posted;
+    return Promise.resolve()
+      .then(() => this.before_save())
+      .then((before_save_res) => {
+        const reset_modified = () => {
+          if(before_save_res === false) {
+            if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted !== initial_posted) {
+              this.posted = initial_posted;
+            }
+          }
+          else {
+            _data._modified = false;
+          }
+          _data._saving = 0;
+          return this;
+        };
+        if(before_save_res === false) {
+          return Promise.reject(reset_modified());
         }
-      }
-      else {
-        _data._modified = false;
-      }
-      _data._saving = 0;
-      return this;
-    };
-    const reset_mandatory = (msg) => {
-      before_save_res = false;
-      reset_modified();
-      md.emit('alert', msg);
-      const err = new Error(msg.text);
-      err.msg = msg;
-      return Promise.reject(err);
-    };
-    if(before_save_res === false) {
-      return Promise.reject(reset_modified());
-    }
-    if(this._metadata().hierarchical && !this._obj.parent) {
-      this._obj.parent = utils.blank.guid;
-    }
-    let numerator = before_save_res instanceof Promise ? before_save_res : Promise.resolve();
-    if(!this._deleted) {
-      if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
-        if(utils.blank.date == this.date) {
-          this.date = new Date();
+        const reset_mandatory = (msg) => {
+          before_save_res = false;
+          reset_modified();
+          md.emit('alert', msg);
+          const err = new Error(msg.text);
+          err.msg = msg;
+          return Promise.reject(err);
+        };
+        if(this._metadata().hierarchical && !this._obj.parent) {
+          this._obj.parent = utils.blank.guid;
         }
-        if(!this.number_doc) {
-          numerator = numerator.then(() => this.new_number_doc());
-        }
-      }
-      else {
-        if(!this.id) {
-          numerator = numerator.then(() => this.new_number_doc());
-        }
-      }
-    }
-    const {fields, tabular_sections} = this._metadata();
-    const {msg, md, cch: {properties}} = this._manager._owner.$p;
-    for (const mf in fields) {
-      if (fields[mf].mandatory && !this._obj[mf]) {
-        return reset_mandatory({
-          obj: this,
-          title: msg.mandatory_title,
-          type: "alert-error",
-          text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
-        });
-      }
-    }
-    if(properties) {
-      for (const prts of ['extra_fields', 'product_params', 'params']) {
-        if(!tabular_sections[prts]) {
-          continue;
-        }
-        for (const row of this[prts]._obj) {
-          const property = properties.get(row.property || row.param);
-          if(property && property.mandatory) {
-            const {value} = (row._row || row);
-            if(utils.is_data_obj(value) ? value.empty() : !value) {
-              return reset_mandatory({
-                obj: this,
-                row: row._row || row,
-                title: msg.mandatory_title,
-                type: 'alert-error',
-                text: msg.mandatory_field.replace('%1', property.caption || property.name)
-              });
+        let numerator;
+        if(!this._deleted) {
+          if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
+            if(utils.blank.date == this.date) {
+              this.date = new Date();
+            }
+            if(!this.number_doc) {
+              numerator = this.new_number_doc();
+            }
+          }
+          else {
+            if(!this.id) {
+              numerator = this.new_number_doc();
             }
           }
         }
-      }
-    }
-    return numerator
-      .then(() => this._manager.adapter.save_obj(this, {post, operational, attachments }))
-      .then(() => this.after_save())
-      .then(reset_modified)
-      .catch((err) => {
-        reset_modified();
-        throw err;
+        const {fields, tabular_sections} = this._metadata();
+        const {msg, md, cch: {properties}} = this._manager._owner.$p;
+        for (const mf in fields) {
+          if (fields[mf].mandatory && !this._obj[mf]) {
+            return reset_mandatory({
+              obj: this,
+              title: msg.mandatory_title,
+              type: "alert-error",
+              text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
+            });
+          }
+        }
+        if(properties) {
+          for (const prts of ['extra_fields', 'product_params', 'params']) {
+            if(!tabular_sections[prts]) {
+              continue;
+            }
+            for (const row of this[prts]._obj) {
+              const property = properties.get(row.property || row.param);
+              if(property && property.mandatory) {
+                const {value} = (row._row || row);
+                if(utils.is_data_obj(value) ? value.empty() : !value) {
+                  return reset_mandatory({
+                    obj: this,
+                    row: row._row || row,
+                    title: msg.mandatory_title,
+                    type: 'alert-error',
+                    text: msg.mandatory_field.replace('%1', property.caption || property.name)
+                  });
+                }
+              }
+            }
+          }
+        }
+        return (numerator || Promise.resolve())
+          .then(() => this._manager.adapter.save_obj(this, {post, operational, attachments }))
+          .then(() => this.after_save())
+          .then(reset_modified)
+          .catch((err) => {
+            reset_modified();
+            throw err;
+          });
       });
   }
   get_attachment(att_id) {
