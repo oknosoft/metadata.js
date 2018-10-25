@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.4, built:2018-07-26
+ metadata-pouchdb v2.0.17-beta.10, built:2018-10-22
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -8,8 +8,246 @@
 
 'use strict';
 
-var proto = (constructor) => {
-	const {DataManager, DataObj, DocObj, TaskObj, BusinessProcessObj} = constructor.classes;
+const debug = require('debug')('wb:indexer');
+function sort_fn(a, b) {
+  if (a.date < b.date){
+    return -1;
+  }
+  else if (a.date > b.date){
+    return 1;
+  }
+  else{
+    return 0;
+  }
+}
+class RamIndexer {
+  constructor({fields, search_fields, mgr}) {
+    this._fields = fields;
+    this._search_fields = search_fields;
+    this._mgrs = Array.isArray(mgr) ? mgr : [mgr];
+    this._count = 0;
+    this._ready = false;
+    this._listeners = new Map();
+    this._area = this._mgrs.length > 1;
+    this.by_date = {};
+  }
+  sort() {
+    debug('sorting');
+    for(const date in this.by_date) {
+      this.by_date[date].sort(sort_fn);
+    }
+    this._ready = true;
+    debug('ready');
+  }
+  put(indoc, force) {
+    const doc = {};
+    if(this._area) {
+      doc._area = indoc._area;
+    }
+    this._fields.forEach((fld) => {
+      if(indoc.hasOwnProperty(fld)) {
+        doc[fld] = indoc[fld];
+      }
+    });
+    const date = doc.date.substr(0, 7);
+    const arr = this.by_date[date];
+    if(arr) {
+      if(force || !arr.some((row) => {
+        if(row._id === doc._id) {
+          Object.assign(row, doc);
+          return true;
+        }
+      })) {
+        arr.push(doc);
+        !force && arr.sort(sort_fn);
+      }
+    }
+    else {
+      this.by_date[date] = [doc];
+    }
+  }
+  get_range(from, till, step, desc) {
+    if(desc) {
+      if(step) {
+        let [year, month] = till.split('-');
+        month = parseInt(month, 10) - step;
+        while (month < 1) {
+          year = parseInt(year, 10) - 1;
+          month += 12;
+        }
+        till = `${year}-${month.pad(2)}`;
+      }
+      if(till < from) {
+        return null;
+      }
+      let res = this.by_date[till];
+      if(!res) {
+        res = [];
+      }
+      return res;
+    }
+    else {
+      if(step) {
+        let [year, month] = from.split('-');
+        month = parseInt(month, 10) + step;
+        while (month > 12) {
+          year = parseInt(year, 10) + 1;
+          month -= 12;
+        }
+        from = `${year}-${month.pad(2)}`;
+      }
+      if(from > till) {
+        return null;
+      }
+      let res = this.by_date[from];
+      if(!res) {
+        res = [];
+      }
+      return res;
+    }
+  }
+  find({selector, sort, ref, limit, skip = 0}, auth) {
+    if(!this._ready) {
+      const err = new Error('Индекс прочитн не полностью, повторите запрос позже');
+      err.status = 403;
+      throw err;
+    }
+    let dfrom, dtill, from, till, search;
+    for(const row of selector.$and) {
+      const fld = Object.keys(row)[0];
+      const cond = Object.keys(row[fld])[0];
+      if(fld === 'date') {
+        if(cond === '$lt' || cond === '$lte') {
+          dtill = row[fld][cond];
+          till = dtill.substr(0,7);
+        }
+        else if(cond === '$gt' || cond === '$gte') {
+          dfrom = row[fld][cond];
+          from = dfrom.substr(0,7);
+        }
+      }
+      else if(fld === 'search') {
+        search = row[fld][cond] ? row[fld][cond].toLowerCase().split(' ') : [];
+      }
+    }
+    if(sort && sort.length && sort[0][Object.keys(sort[0])[0]] === 'desc' || sort === 'desc') {
+      sort = 'desc';
+    }
+    else {
+      sort = 'asc';
+    }
+    const {_search_fields} = this;
+    const {utils} = $p;
+    let part,
+      step = 0,
+      flag = skip === 0 && utils.is_guid(ref),
+      scroll = 0,
+      count = 0;
+    const docs = [];
+    function add(doc) {
+      count++;
+      if(flag && doc._id.endsWith(ref)) {
+        scroll = count - 1;
+        flag = false;
+      }
+      if(skip > 0) {
+        return skip--;
+      }
+      if(limit > 0) {
+        limit--;
+        docs.push(doc);
+      }
+    }
+    function check(doc) {
+      if(doc.date < dfrom || doc.date > dtill) {
+        return;
+      }
+      let ok = true;
+      for(const word of search) {
+        if(!word) {
+          continue;
+        }
+        if(!_search_fields.some((fld) => {
+          const val = doc[fld];
+          return val && typeof val === 'string' && val.toLowerCase().includes(word);
+        })){
+          ok = false;
+          break;
+        }
+      }
+      ok && add(doc);
+    }
+    while((part = this.get_range(from, till, step, sort === 'desc'))) {
+      step += 1;
+      if(sort === 'desc') {
+        for(let i = part.length - 1; i >= 0; i--){
+          check(part[i]);
+        }
+      }
+      else {
+        for(let i = 0; i < part.length; i++){
+          check(part[i]);
+        }
+      }
+    }
+    return {docs, scroll, flag, count};
+  }
+  init(bookmark, _mgr) {
+    if(!_mgr) {
+      return Promise.all(this._mgrs.map((_mgr) => this.init(bookmark, _mgr)))
+        .then(() => {
+          this.sort();
+        });
+    }
+    if(!bookmark) {
+      const listener = (change) => {
+        if(this._area) {
+          change._area = _mgr.cachable;
+        }
+        this.put(change);
+      };
+      this._listeners.set(_mgr, listener);
+      _mgr.on('change', listener);
+      debug('start');
+    }
+    return _mgr.pouch_db.find({
+      selector: {
+        class_name: _mgr.class_name,
+      },
+      fields: this._fields,
+      bookmark,
+      limit: 10000,
+    })
+      .then(({bookmark, docs}) => {
+        this._count += docs.length;
+        debug(`received ${this._count}`);
+        for(const doc of docs) {
+          if(this._area) {
+            doc._area = _mgr.cachable;
+          }
+          this.put(doc, true);
+        }
+        debug(`indexed ${this._count} ${bookmark.substr(10, 30)}`);
+        return docs.length === 10000 && this.init(bookmark, _mgr);
+      });
+  }
+  reset(mgrs) {
+    for(const date in this.by_date) {
+      this.by_date[date].length = 0;
+    }
+    for(const [_mgr, listener] of this._listeners) {
+      _mgr.off('change', listener);
+    }
+    this._listeners.clear();
+    this._mgrs.length = 0;
+    mgrs && this._mgrs.push.apply(this._mgrs, mgrs);
+    this._area = this._mgrs.length > 1;
+  }
+}
+
+var proto = ({classes}) => {
+	const {DataManager, DataObj, DocObj, TaskObj, BusinessProcessObj} = classes;
+  classes.RamIndexer = RamIndexer;
 	Object.defineProperties(DataObj.prototype, {
 		new_number_doc: {
 			value: function (prefix) {
@@ -99,12 +337,12 @@ var proto = (constructor) => {
 		pouch_db: {
       get: function () {
         const cachable = this.cachable.replace('_ram', '').replace('_doc', '');
-        const {pouch} = this._owner.$p.adapters;
+        const {adapter} = this;
         if(cachable.indexOf('remote') != -1) {
-          return pouch.remote[cachable.replace('_remote', '')];
+          return adapter.remote[cachable.replace('_remote', '')];
         }
         else {
-          return pouch.local[cachable] || pouch.remote[cachable];
+          return adapter.local[cachable] || adapter.remote[cachable];
         }
       }
     },
@@ -136,7 +374,7 @@ else {
 var PouchDB$1 = PouchDB;
 
 function adapter({AbstracrAdapter}) {
-  const fieldsToDelete = '_id,_rev,search,timestamp'.split(',');
+  const fieldsToDelete = '_id,search,timestamp'.split(',');
   return class AdapterPouch extends AbstracrAdapter {
     constructor($p) {
       super($p);
@@ -188,15 +426,25 @@ function adapter({AbstracrAdapter}) {
       }
       for (const name of pbases) {
         if(bases.indexOf(name) != -1) {
-          if(props.user_node || (props.direct && name != 'ram' && name != 'user')) {
-            Object.defineProperty(local, name, {
-              get: function () {
+          Object.defineProperty(local, name, {
+            get() {
+              if(props.user_node) {
                 return remote[name];
               }
-            });
+              const dynamic_doc = wsql.get_user_param('dynamic_doc');
+              if(dynamic_doc && name === 'doc' && props.direct) {
+                return remote[dynamic_doc];
+              }
+              else {
+                return local[`__${name}`] || remote[name];
+              }
+            }
+          });
+          if(props.user_node || (props.direct && name != 'ram' && name != 'user')) {
+            local[`__${name}`] = null;
           }
           else {
-            local[name] = new PouchDB$1(props.prefix + props.zone + '_' + name, opts);
+            local[`__${name}`] = new PouchDB$1(props.prefix + props.zone + '_' + name, opts);
           }
         }
       }
@@ -219,10 +467,13 @@ function adapter({AbstracrAdapter}) {
       });
     }
     after_log_in() {
-      const {props, local, remote, $p: {md}} = this;
+      const {props, local, remote, $p: {md, wsql}} = this;
       const try_auth = [];
       md.bases().forEach((dbid) => {
-        if(dbid !== 'meta' && local[dbid] && remote[dbid] && local[dbid] != remote[dbid]) {
+        if(dbid !== 'meta' &&
+          local[dbid] && remote[dbid] && local[dbid] != remote[dbid] &&
+          (dbid !== 'doc' || !wsql.get_user_param('dynamic_doc'))
+        ) {
           if(props.noreplicate && props.noreplicate.indexOf(dbid) != -1) {
             return;
           }
@@ -441,6 +692,9 @@ function adapter({AbstracrAdapter}) {
         page: 0,
         start: Date.now(),
       };
+      if(job_prm.second_instance) {
+        return Promise.reject(new Error('second_instance'));
+      }
       return new Promise((resolve, reject) => {
         let index;
         const processPage = (err, response) => {
@@ -471,10 +725,19 @@ function adapter({AbstracrAdapter}) {
           }
         };
         local.ram.get('_design/server')
+          .catch((err) => {
+            if(err.status === 404) {
+              return {views: {}}
+            }
+            else {
+              reject(err);
+            }
+          })
           .then(({views}) => {
             if(views.load_order){
               index = true;
-            }            return local.ram.info();
+            }            return (Object.keys(views).length ? this.rebuild_indexes('ram') : Promise.resolve())
+              .then(() => local.ram.info());
           })
           .then((info) => {
           if(info.doc_count >= (job_prm.pouch_ram_doc_count || 10)) {
@@ -817,7 +1080,7 @@ function adapter({AbstracrAdapter}) {
         })
           .then(({rows}) => {
             for(const {doc} of rows) {
-              if(doc._id.indexOf('/server') !== -1) {
+              if(doc._id.indexOf('/server') !== -1 && id !== 'ram') {
                 continue;
               }
               if(doc.views) {
@@ -833,7 +1096,7 @@ function adapter({AbstracrAdapter}) {
                         msg.index = index;
                         this.emit('repl_state', msg);
                       }
-                      return local[id].query(index, {limit: 1});
+                      return local[id].query(index, {limit: 1}).catch(() => null);
                     });
                   }
                   else {
@@ -854,7 +1117,7 @@ function adapter({AbstracrAdapter}) {
                         msg.index = index;
                         this.emit('repl_state', msg);
                       }
-                      return local[id].find(selector);
+                      return local[id].find(selector).catch(() => null);
                     });
                   }
                 }
@@ -917,13 +1180,11 @@ function adapter({AbstracrAdapter}) {
           }
           tObj._data._loading = true;
           tObj._mixin(res);
+          tObj._obj._rev = res._rev;
         })
         .catch((err) => {
           if(err.status != 404) {
             throw err;
-          }
-          else {
-            this.$p.record_log(db.name + ':' + tObj._manager.class_name + '|' + tObj.ref);
           }
         })
         .then((res) => {
@@ -932,16 +1193,20 @@ function adapter({AbstracrAdapter}) {
     }
     save_obj(tObj, attr) {
       const {_manager, _obj, _data, ref, class_name} = tObj;
-      if(!_data || (_data._saving && !_data._modified)) {
+      const db = attr.db || this.db(_manager);
+      if(!_data || (_data._saving && !_data._modified) || !db) {
         return Promise.resolve(tObj);
       }
       if(_data._saving && _data._modified) {
+        _data._saving++;
+        if(_data._saving > 10) {
+          return Promise.reject(new Error(`Циклическая перезапись`));
+        }
         return new Promise((resolve, reject) => {
-          setTimeout(() => resolve(this.save_obj(tObj, attr)), 100);
+          setTimeout(() => resolve(this.save_obj(tObj, attr)), 200);
         });
       }
-      _data._saving = true;
-      const db = attr.db || this.db(_manager);
+      _data._saving = 1;
       const tmp = Object.assign({_id: class_name + '|' + ref, class_name}, _obj);
       const {utils, wsql} = this.$p;
       if(utils.is_doc_obj(tObj) || _manager.build_search) {
@@ -961,9 +1226,16 @@ function adapter({AbstracrAdapter}) {
         tmp._attachments = attr.attachments;
       }
       return new Promise((resolve, reject) => {
-        const getter = tObj.is_new() ? Promise.resolve() : db.get(tmp._id);
+        const getter = tObj.is_new() ? Promise.resolve(true) : db.get(tmp._id);
         getter.then((res) => {
-          if(res) {
+          if(typeof res === 'object') {
+            if(tmp._rev !== res._rev && _manager.metadata().check_rev !== false) {
+              const {timestamp} = res;
+              const err = new Error(`Объект ${timestamp && typeof timestamp.user === 'string' ?
+                `изменил ${timestamp.user}<br/>${timestamp.moment}` : 'изменён другим пользователем'}`);
+              err._rev = true;
+              return reject(err);
+            }
             tmp._rev = res._rev;
             for (let att in res._attachments) {
               if(!tmp._attachments) {
@@ -974,27 +1246,31 @@ function adapter({AbstracrAdapter}) {
               }
             }
           }
+          return res;
         })
-          .catch((err) => err && err.status != 404 && reject(err))
-          .then(() => db.put(tmp))
-          .then(() => {
-            tObj.is_new() && tObj._set_loaded(tObj.ref);
-            if(tmp._attachments) {
-              if(!tObj._attachments) {
-                tObj._attachments = {};
-              }
-              for (var att in tmp._attachments) {
-                if(!tObj._attachments[att] || !tmp._attachments[att].stub) {
-                  tObj._attachments[att] = tmp._attachments[att];
+          .catch((err) => {
+            return err && err.status !== 404 ? reject(err) : true;
+          })
+          .then((res) => res && db.put(tmp))
+          .then((res) => {
+            if(res) {
+              tObj.is_new() && tObj._set_loaded(tObj.ref);
+              if(tmp._attachments) {
+                if(!tObj._attachments) {
+                  tObj._attachments = {};
+                }
+                for (var att in tmp._attachments) {
+                  if(!tObj._attachments[att] || !tmp._attachments[att].stub) {
+                    tObj._attachments[att] = tmp._attachments[att];
+                  }
                 }
               }
+              _obj._rev = res.rev;
+              resolve(tObj);
             }
-            _data._saving = false;
-            resolve(tObj);
           })
           .catch((err) => {
-            _data._saving = false;
-            err && err.status != 404 && reject(err);
+            err && err.status !== 404 && reject(err);
           });
       });
     }
@@ -1228,9 +1504,8 @@ function adapter({AbstracrAdapter}) {
               _mgr.load_array(result.rows.map(({doc}) => {
                 doc.ref = doc._id.split('|')[1];
                 delete doc._id;
-                delete doc._rev;
                 return doc;
-              }));
+              }), true);
               if(result.rows.length < options.limit) {
                 resolve();
               }
@@ -1242,7 +1517,7 @@ function adapter({AbstracrAdapter}) {
               resolve();
             }
           }
-          else if(err) {
+          else if(err && err.status !== 404) {
             reject(err);
           }
         }
@@ -1299,11 +1574,13 @@ function adapter({AbstracrAdapter}) {
       }
       const err_handler = this.emit.bind(this, 'pouch_sync_error', _mgr.cachable);
       if(selection && selection._mango) {
-        const {selector} = selection;
-        if(db.adapter == 'idb' && selector.date && selector.date.$and){
-          selector.date = selector.date.$and[0];
+        const sel = {};
+        for(const fld in selection) {
+          if(fld[0] !== '_') {
+            sel[fld] = selection[fld];
+          }
         }
-        return db.find(selection)
+        return db.find(sel)
           .then(({docs}) => {
             if(!docs) {
               docs = [];
@@ -1311,7 +1588,7 @@ function adapter({AbstracrAdapter}) {
             for (const doc of docs) {
               doc.ref = doc._id.split('|')[1];
             }
-            return docs;
+            return selection._raw ? docs : _mgr.load_array(docs);
           })
           .catch((err) => {
             err_handler(err);
@@ -1414,7 +1691,6 @@ function adapter({AbstracrAdapter}) {
                     doc.ref = doc._id.split('|')[1];
                     if(!_raw) {
                       delete doc._id;
-                      delete doc._rev;
                     }
                     return doc;
                   }),
@@ -1435,7 +1711,6 @@ function adapter({AbstracrAdapter}) {
               doc.ref = key[1];
               if(!_raw) {
                 delete doc._id;
-                delete doc._rev;
               }
               if(!utils._selection.call(_mgr, doc, selection)) {
                 return;
@@ -1575,7 +1850,6 @@ function adapter({AbstracrAdapter}) {
           cn = key[0].split('.');
           doc.ref = key[1];
           delete doc._id;
-          delete doc._rev;
           if(!res[cn[0]]) {
             res[cn[0]] = {};
           }

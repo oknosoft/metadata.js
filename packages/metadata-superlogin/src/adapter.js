@@ -130,6 +130,15 @@ export default (constructor) => {
           }
         }
 
+        // дополнительные базы пользователя
+        for(const id in session.userDBs) {
+          const name = id.replace(/.*_/, '');
+          if(remote[name]) {
+            continue;
+          }
+          remote[name] = new PouchDB(this.dbpath(name), {skip_setup: true, adapter: 'http'});
+        }
+
         // сохраняем имя пользователя в localstorage
         if(wsql.get_user_param('user_name') != session.user_id) {
           wsql.set_user_param('user_name', session.user_id);
@@ -139,7 +148,8 @@ export default (constructor) => {
         this.emit_async('user_log_in', session.user_id);
 
         // запускаем синхронизацию для нужных баз
-        return this.after_log_in()
+        return this.emit_promise('on_log_in')
+          .then(() => this.after_log_in())
           .catch(err => {
             // излучаем событие
             this.emit('user_log_fault', err);
@@ -154,10 +164,13 @@ export default (constructor) => {
      * @return {*}
      */
     dbpath(name) {
-      const {$p, props: {path, prefix, zone}} = this;
-      let url = $p.superlogin.getDbUrl(prefix + (name == 'meta' ? name : (zone + '_' + name)));
+      const {$p: {superlogin}, props: {path, prefix, zone}} = this;
+      let url = superlogin.getDbUrl(prefix + (name == 'meta' ? name : (zone + '_' + name)));
       if(!url) {
-        url = $p.superlogin.getDbUrl(prefix + zone + '_doc');
+        url = superlogin.getDbUrl(name);
+      }
+      if(!url) {
+        url = superlogin.getDbUrl(prefix + zone + '_doc');
         const pos = url.indexOf(prefix + (name == 'meta' ? name : (zone + '_doc')));
         url = url.substr(0, pos) + prefix + (name == 'meta' ? name : (zone + '_' + name));
       }
@@ -178,7 +191,8 @@ export default (constructor) => {
      * @property authorized
      */
     get authorized() {
-      return this.$p.superlogin.authenticated();
+      const session = $p.superlogin.getSession();
+      return session && session.user_id;
     }
   };
 

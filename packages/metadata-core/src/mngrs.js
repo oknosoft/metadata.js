@@ -98,19 +98,7 @@ export class DataManager extends MetaEventEmitter{
 	 */
 	get adapter(){
     const {adapters} = this._owner.$p;
-    switch (this.cachable) {
-    case undefined:
-    case 'ram':
-    case 'doc':
-    case 'doc_ram':
-    case 'ram_doc':
-    case 'remote':
-    case 'user':
-    case 'meta':
-    case 'templates':
-      return adapters.pouch;
-    }
-    return adapters[this.cachable];
+    return adapters[this.cachable] || adapters.pouch;
 	}
 
 	/**
@@ -151,7 +139,11 @@ export class DataManager extends MetaEventEmitter{
 	 */
 	get cachable(){
 
-    const {class_name} = this;
+    const {class_name, _cachable} = this;
+    if(_cachable) {
+      return _cachable;
+    }
+
     const _meta = this.metadata();
 
     // перечисления кешируются всегда
@@ -320,17 +312,24 @@ export class DataManager extends MetaEventEmitter{
       });
     }
 
-    if(t.cachable == 'ram' || t.cachable == 'doc_ram' || (selection && selection._local)) {
-      t.find_rows(selection, push);
+    if(t.cachable.endsWith('ram') || (selection && selection._local)) {
+      t.find_rows(selection._mango ? selection.selector : selection, push);
       return Promise.resolve(l);
     }
     else if(t.cachable != 'e1cib') {
+      if(selection._mango){
+        if(selection.selector.hasOwnProperty('$and')) {
+          selection.selector.push({class_name: t.class_name})
+        }
+        else {
+          selection.selector.class_name = t.class_name;
+        }
+      }
       return t.adapter.find_rows(t, selection)
         .then((data) => {
           for (const v of data) {
             push(v);
-          }
-          ;
+          };
           return l;
         });
     }
@@ -724,7 +723,8 @@ export class RefDataManager extends DataManager{
 	 */
 	load_array(aattr, forse){
 		const res = [];
-		for(let attr of aattr){
+    const {wsql, adapters: {pouch}} = this._owner.$p;
+		for(const attr of aattr){
 			let obj = this.by_ref[utils.fix_guid(attr)];
 			if(!obj){
         if(forse === 'update_only') {
@@ -737,7 +737,16 @@ export class RefDataManager extends DataManager{
 			  if(obj.is_new() || forse !== 'update_only') {
           obj._data._loading = true;
         }
+        else if(forse === 'update_only' && attr.timestamp) {
+          if(attr.timestamp.user === (pouch.authorized || wsql.get_user_param('user_name'))) {
+            if(new Date() - moment(attr.timestamp.moment, "YYYY-MM-DDTHH:mm:ss ZZ").toDate() < 30000) {
+              attr._rev && (obj._obj._rev = attr._rev);
+              continue;
+            }
+          }
+        }
 				obj._mixin(attr);
+        attr._rev && (obj._obj._rev = attr._rev);
 			}
 			res.push(obj);
 		}
@@ -1196,7 +1205,7 @@ export class RefDataManager extends DataManager{
     const select = {};
     const {input_by_string} = this.metadata();
 
-    if(cachable.match(/^(ram|doc_ram)$/)) {
+    if(/ram$/.test(cachable)) {
 
       select._top = top;
       select._skip = skip;
@@ -1311,11 +1320,11 @@ export class RefDataManager extends DataManager{
         if(input_by_string.length > 1) {
           select.selector.$or = [];
           input_by_string.forEach((fld) => {
-            select.selector.$or.push({[fld]: {like: search}});
+            select.selector.$or.push({[fld]: {$regex: `(?i)${search}`}});
           });
         }
         else {
-          select.selector[input_by_string[0]] = {$regex: search};
+          select.selector[input_by_string[0]] = {$regex: `(?i)${search}`};
         }
       }
 
@@ -1460,8 +1469,8 @@ export class DataProcessorsManager extends DataManager{
 	 * @method create
 	 * @return {DataProcessorObj}
 	 */
-	create(attr = {}){
-		return this.obj_constructor('', [attr, this]);
+	create(attr = {}, loading){
+		return this.obj_constructor('', [attr, this, loading]);
 	}
 
 	/**

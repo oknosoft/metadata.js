@@ -1,7 +1,7 @@
 {
   "name": "metadata-core",
   "description": "The core of metadata.js as a standalone package",
-  "version": "2.0.17-beta.4",
+  "version": "2.0.17-beta.10",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "alasql": "^0.4",
-    "debug": "^3.1",
+    "debug": "^4.1",
     "moment": "^2.22"
   },
   "repository": {
@@ -25,11 +25,11 @@
   "keywords": [
     "metadata",
     "browser data engine",
+    "node data engine",
     "spa offline",
     "web сервис",
     "клиент 1с",
     "offline framework",
-    "offline data engine",
     "offline-first",
     "replication"
   ]

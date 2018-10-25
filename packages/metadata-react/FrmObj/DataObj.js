@@ -14,9 +14,6 @@ import DataField from '../DataField';
 import TabularSection from '../TabularSection';
 import FrmAttachments from '../FrmAttachments';
 
-import withStyles from '../styles/paper600';
-import {withIface} from 'metadata-redux';
-
 class DataObj extends MDNRComponent {
 
   constructor(props, context) {
@@ -24,12 +21,13 @@ class DataObj extends MDNRComponent {
     const {_mgr, _meta} = props;
     this._handlers = {
       handleSave: this.handleSave.bind(this),
-      handleSend: this.handleSend.bind(this),
+      handlePost: this.handlePost.bind(this),
       handleMarkDeleted: this.handleMarkDeleted.bind(this),
       handlePrint: this.handlePrint.bind(this),
       handleAttachments: this.handleAttachments.bind(this),
       handleCloseAttachments: this.handleCloseAttachments.bind(this),
       handleClose: this.handleClose.bind(this),
+      handleSaveClose: this.handleSaveClose.bind(this),
     };
     this.state = {
       _meta: _meta || _mgr.metadata(),
@@ -41,25 +39,46 @@ class DataObj extends MDNRComponent {
 
   componentDidMount() {
     const {_mgr, match} = this.props;
+
     _mgr.get(match.params.ref, 'promise').then((_obj) => {
       this.setState({_obj}, () => this.shouldComponentUpdate(this.props));
     });
+
+    _mgr.on('update', this.onDataChange);
   }
 
-  handleSave() {
-    //this.props.handleSave(this.state._obj);
+  componentWillUnmount() {
+    this.props._mgr.off('update', this.onDataChange);
+  }
+
+  handlePost() {
+    return this.handleSave(true);
+  }
+
+  handleSave(post) {
     const {_obj} = this.state;
-    _obj && _obj.save();
-  }
-
-  handleSend() {
-    this.props.handlers.handleSave(this.state._obj);
+    return !_obj ? Promise.resolve() : _obj.save(typeof post === 'boolean' ? post : void 0)
+      .then(() => this.shouldComponentUpdate(this.props))
+      .catch((err) => {
+        // показываем диалог
+        this.props.handleIfaceState({
+          component: '',
+          name: 'alert',
+          value: {open: true, title: _obj.presentation, text: err.reason || err.message}
+        });
+        return err;
+      });
   }
 
   handleClose() {
     const {handlers, _mgr} = this.props;
     const {_obj} = this.state;
     handlers.handleNavigate(`/${_mgr.class_name}/list${_obj ? '/?ref=' + _obj.ref : ''}`);
+  }
+
+  handleSaveClose() {
+    this.handleSave()
+      .then((err) => typeof err !== 'object' && this.handleClose());
   }
 
   handleMarkDeleted() {
@@ -83,6 +102,12 @@ class DataObj extends MDNRComponent {
       _obj[_fld] = (value || (event && event.target ? event.target.value : ''));
       handlers.handleValueChange(_fld, old_value);
     };
+  }
+
+  onDataChange = (obj, fields) => {
+    if(obj === this.state._obj && this.shouldComponentUpdate(this.props)) {
+      this.forceUpdate();
+    }
   }
 
 
@@ -138,7 +163,11 @@ class DataObj extends MDNRComponent {
 
   get ltitle() {
     const {_meta, _obj} = this.state;
-    return (_obj && _obj.presentation) || _meta.obj_presentation || _meta.synonym;
+    let ltitle = (_obj && _obj.presentation) || _meta.obj_presentation || _meta.synonym;
+    if(_obj && _obj._modified && ltitle[ltitle.length - 1] !== '*') {
+      ltitle += ' *';
+    }
+    return ltitle;
   }
 
   renderItems(items) {
@@ -212,5 +241,5 @@ DataObj.propTypes = {
   handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
 };
 
-export default withStyles(withIface(DataObj));
+export default DataObj;
 

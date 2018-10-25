@@ -17,6 +17,12 @@ export default withStyles(theme => ({
     borderBottom: '1px solid #e0e0e0',
     userSelect: 'none',
   },
+  star: {
+    color: 'darkorange'
+  },
+  colResize: {
+    cursor: 'col-resize',
+  },
   evenRow: {},
   oddRow: {
     backgroundColor: '#fafafa'

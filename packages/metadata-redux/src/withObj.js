@@ -13,7 +13,7 @@ const mapDispatchToProps = (dispatch) => {
       return dispatch(iface_state(state));
     },
     handleAdd(_mgr) {
-      return dispatch(push(`/${_mgr.class_name}/${$p.utils.generate_guid()}`));
+      return dispatch(push(`/${_mgr.class_name}/${$p.utils.generate_guid()}${_mgr.hasOwnProperty('_cachable') ? '?area=' + _mgr._cachable : ''}`));
     },
     handleAddRow() {
 

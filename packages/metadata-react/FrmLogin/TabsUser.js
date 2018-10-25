@@ -56,13 +56,16 @@ class TabsUser extends Component {
 
     const {props, state, handleNavigate, handlePush} = this;
     const {classes, handleLogOut, _obj} = props;
+    const descr = "Свойства пользователя";
 
     return _obj ?
 
       <Paper className={classes.root} elevation={4}>
 
         <Helmet title={props.title}>
-          <meta name="description" content="Свойства пользователя" />
+          <meta name="description" content={descr} />
+          <meta property="og:title" content={props.title} />
+          <meta property="og:description" content={descr} />
         </Helmet>
 
         <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
@@ -94,7 +97,9 @@ class TabsUser extends Component {
       :
       <div>
         <Helmet title="Пользователь не найден">
-          <meta name="description" content="Свойства пользователя" />
+          <meta name="description" content={descr} />
+          <meta property="og:title" content="Пользователь не найден" />
+          <meta property="og:description" content={descr} />
         </Helmet>
         нет данных
       </div>;

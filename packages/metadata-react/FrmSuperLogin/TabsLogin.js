@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import FormGroup from '@material-ui/core/FormGroup';
@@ -28,6 +27,7 @@ import {FacebookIcon, GitHubIcon, GoogleIcon, YandexIcon} from './assets/icons';
 import withStyles from '../styles/paper600';
 import connect from './connect';
 import classnames from 'classnames';
+import Fogot from './Fogot';
 
 class TabsLogin extends Component {
 
@@ -74,13 +74,15 @@ class TabsLogin extends Component {
   }
 
   handleClickShowPasssword = () => {
-    this.setState({ showPassword: !this.state.showPassword });
+    this.setState({showPassword: !this.state.showPassword});
   };
 
   handleChange = (name) => event => {
-    this.setState({
-      [name]: event.target.value,
-    });
+    this.setState({[name]: event.target.value});
+  };
+
+  handleInfo = (text) => {
+    this.setState({log_error: `${text}`});
   };
 
   handleLogin = () => {
@@ -104,14 +106,12 @@ class TabsLogin extends Component {
     const {props, state, handleLogin} = this;
     const {classes, user, handleLogOut} = props;
     const btn = classnames(classes.button, classes.fullWidth);
-    const info = user.log_error && /info:/.test(user.log_error);
+    const log_error = user.log_error || state.log_error;
+    const info = log_error && /info:/.test(log_error);
 
     return (
 
-      <Paper className={classnames({
-        [classes.root]: true,
-        [classes.disabled]: user.try_log_in
-      })} elevation={4}>
+      <div className={classnames({[classes.disabled]: user.try_log_in})}>
 
         <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
           <Tab label="Вход"/>
@@ -152,27 +152,27 @@ class TabsLogin extends Component {
           </FormControl>
 
           <DialogActions>
+            <Fogot classes={classes} handleInfo={this.handleInfo} />
             <Button color="primary" size="small" disabled={!state.login || !state.password} className={classes.button} onClick={this.handleLogin}>Войти</Button>
-            <Button color="primary" size="small" disabled={true} className={classes.button}>Забыли пароль?</Button>
           </DialogActions>
 
         </FormGroup>
         }
 
-        {state.index === 0 && !user.log_error && user.try_log_in &&
+        {state.index === 0 && !log_error && user.try_log_in &&
         <FormGroup row>
           <CircularProgress size={24}/>
-          <Typography variant="subheading" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+          <Typography variant="subtitle1" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
             {`${$p.msg.login.title}, ${$p.msg.login.wait}...`}
           </Typography>
         </FormGroup>
         }
 
-        {state.index === 0 && user.log_error &&
+        {state.index === 0 && log_error &&
         <FormGroup row>
           {info ? <IconError /> : <IconError className={classes.error}/>}
-          <Typography variant="subheading" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
-            {user.log_error.replace('info:', '')}
+          <Typography variant="subtitle1" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+            {log_error.replace('info:', '')}
           </Typography>
         </FormGroup>
         }
@@ -182,16 +182,16 @@ class TabsLogin extends Component {
           <Divider/>
           <Grid container spacing={24}>
             <Grid item xs={12} sm={7}>
-              <Typography variant="subheading" color="inherit">Вы можете авторизоваться при помощи учетных записей социальных сетей</Typography>
+              <Typography variant="subtitle1" color="inherit">После первичной регистрации по логину/паролю, Вы можете связать учетную запись с профилем социальных сетей и выполнять вход через oAuth GitHub, Facebook и Google</Typography>
             </Grid>
             <Grid item xs={10} sm={5}>
-              <Button variant="raised" size="small" className={btn} onClick={this.oauthClick('github')}>
+              <Button variant="contained" size="small" className={btn} onClick={this.oauthClick('github')}>
                 <GitHubIcon viewBox="0 0 256 250" style={{height: 18, fill: 'darkslategrey'}}/> GitHub
               </Button>
-              <Button variant="raised" size="small" className={btn} onClick={this.oauthClick('google')}>
+              <Button variant="contained" size="small" className={btn} onClick={this.oauthClick('google')}>
                 <GoogleIcon viewBox="0 0 256 262" style={{height: 18, fill: blue[500]}}/> Google
               </Button>
-              <Button variant="raised" size="small" className={btn} onClick={this.oauthClick('facebook')}>
+              <Button variant="contained" size="small" className={btn} onClick={this.oauthClick('facebook')}>
                 <FacebookIcon viewBox="0 0 450 450" style={{height: 18, fill: '#3A559F'}}/> Facebook
               </Button>
             </Grid>
@@ -242,25 +242,25 @@ class TabsLogin extends Component {
         </FormGroup>
         }
 
-        {state.index === 1 && !user.log_error && user.try_log_in &&
+        {state.index === 1 && !log_error && user.try_log_in &&
         <FormGroup row>
           <CircularProgress size={24}/>
-          <Typography variant="subheading" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+          <Typography variant="subtitle1" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
             {`${$p.msg.login.title}, ${$p.msg.login.wait}...`}
           </Typography>
         </FormGroup>
         }
 
-        {state.index === 1 && user.log_error &&
+        {state.index === 1 && log_error &&
         <FormGroup row>
           {info ? <IconError /> : <IconError className={classes.error}/>}
-          <Typography variant="subheading" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
-            {user.log_error.replace('info:', '')}
+          <Typography variant="subtitle1" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+            {log_error.replace('info:', '')}
           </Typography>
         </FormGroup>
         }
 
-      </Paper>
+      </div>
 
     );
   }

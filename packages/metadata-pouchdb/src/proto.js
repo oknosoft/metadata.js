@@ -5,10 +5,14 @@
  *
  */
 
+import RamIndexer from './ram_indexer'
 
-export default (constructor) => {
+export default ({classes}) => {
 
-	const {DataManager, DataObj, DocObj, TaskObj, BusinessProcessObj} = constructor.classes;
+	const {DataManager, DataObj, DocObj, TaskObj, BusinessProcessObj} = classes;
+
+	// RamIndexer в classes
+  classes.RamIndexer = RamIndexer;
 
 	// методы в прототип DataObj
 	Object.defineProperties(DataObj.prototype, {
@@ -127,12 +131,12 @@ export default (constructor) => {
 		pouch_db: {
       get: function () {
         const cachable = this.cachable.replace('_ram', '').replace('_doc', '');
-        const {pouch} = this._owner.$p.adapters;
+        const {adapter} = this;
         if(cachable.indexOf('remote') != -1) {
-          return pouch.remote[cachable.replace('_remote', '')];
+          return adapter.remote[cachable.replace('_remote', '')];
         }
         else {
-          return pouch.local[cachable] || pouch.remote[cachable];
+          return adapter.local[cachable] || adapter.remote[cachable];
         }
       }
     },

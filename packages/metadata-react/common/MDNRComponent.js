@@ -30,7 +30,7 @@ export default class MDNRComponent extends MComponent {
     }
 
     // если мы не в диалоге, меняем заголовок приложения
-    if (!context.dnr && ltitle && title != ltitle) {
+    if (!context.dnr && ltitle && title != ltitle && !props.ignoreTitle) {
       handleIfaceState({
         component: '',
         name: 'title',

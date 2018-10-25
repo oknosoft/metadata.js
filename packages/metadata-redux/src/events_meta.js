@@ -2,7 +2,7 @@ import {log_in, log_out, log_error} from './actions_auth';
 import {data_page, data_loaded, data_error, load_start, autologin,
   no_data, sync_data, sync_error, sync_paused, sync_resumed, sync_denied} from './actions_pouch';
 import {change} from './actions_obj';
-import {offline} from './actions_base';
+import {offline, second_instance} from './actions_base';
 
 
 let attached;
@@ -59,6 +59,9 @@ export default function metaMiddleware({adapters, md}) {
         md.on({
           obj_loaded: (_obj) => {
             dispatch(change(_obj._manager.class_name, _obj.ref));
+          },
+          second_instance: (_obj) => {
+            dispatch(second_instance());
           },
 
           setting_changed: () => {

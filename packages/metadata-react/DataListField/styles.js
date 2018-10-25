@@ -3,7 +3,7 @@ import colors from '@material-ui/core/colors/common';
 
 export default withStyles(theme => ({
   bold: {
-    fontWeight: 'bold',
+    fontWeight: 500,
   },
   item: {
     paddingLeft: theme.spacing.unit * 2,

@@ -14,6 +14,7 @@ function metaInitialState() {
   let user_name = "",
     has_login = false,
     couch_direct = true,
+    second_instance = false,
     fake = typeof $p !== 'object';
   if(!fake) {
     const {wsql, job_prm, superlogin} = $p;
@@ -34,6 +35,7 @@ function metaInitialState() {
     else {
       has_login = false;
     }
+    second_instance = second_instance || job_prm.second_instance;
   }
 
   return {
@@ -48,6 +50,7 @@ function metaInitialState() {
     offline: typeof navigator != 'undefined' && !navigator.onLine,
     path_log_in: false,
     couch_direct,
+    second_instance,
     fake,
     user: {
       name: user_name,

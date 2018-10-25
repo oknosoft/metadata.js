@@ -21,7 +21,7 @@ function AttachmentsToolbar (props) {
       <IconButton title="Получить" onClick={props.handleDownload}><DownloadIcon/></IconButton>
       {!props.short && <IconButton title="Удалить" onClick={props.handleDelete}><RemoveIcon/></IconButton>}
 
-      <Typography variant="title" color="inherit" className={props.classes.flex}> </Typography>
+      <Typography variant="h6" color="inherit" className={props.classes.flex}> </Typography>
 
       {props.closeButton && props.handleClose && <IconButton title="Закрыть форму" onClick={props.handleClose}><CloseIcon/></IconButton>}
 

@@ -266,8 +266,8 @@ export default function scheme_settings() {
           this.date_till = till.endOf('day').toDate();
           break;
         case standard_period.last3Month:
-          this.date_from = from.subtract(3, 'month').startOf('month').toDate();
-          this.date_till = till.subtract(1, 'month').endOf('month').toDate();
+          this.date_from = from.subtract(2, 'month').startOf('month').toDate();
+          this.date_till = till.endOf('month').toDate();
           break;
         case standard_period.lastWeek:
           this.date_from = from.subtract(1, 'weeks').startOf('week').toDate();
@@ -551,9 +551,9 @@ export default function scheme_settings() {
       const columns = [];
 
       function add_column(fld, use) {
-        const id = fld.id || fld,
-          fld_meta = _meta.fields[id] || _mgr.metadata(id);
-        columns.push({
+        const id = fld.id || fld;
+        const fld_meta = _meta.fields[id] || _mgr.metadata(id);
+        fld_meta && columns.push({
           field: id,
           caption: fld.caption || fld_meta.synonym,
           tooltip: fld_meta.tooltip,
@@ -694,10 +694,11 @@ export default function scheme_settings() {
 
       const res = {
         selector: {
-          class_name: {$eq: this.obj}
+          $and: [
+            {class_name: {$eq: this.obj}}
+          ]
         },
         fields: ['_id', 'posted'],
-        use_index: ['mango', 'search'],
       };
 
       for (const column of (columns || this.columns())) {
@@ -706,15 +707,15 @@ export default function scheme_settings() {
         }
       }
 
-      res.selector.date = this.standard_period.empty() ? {$ne: null} : {$and: [{$gte: format(this.date_from)}, {$lte: format(this.date_till) + '\ufff0'}]};
-      // if(!this.standard_period.empty()) {
-      //   res.selector.$and = [
-      //     {date: {$gte: format(this.date_from)}},
-      //     {date: {$lte: format(this.date_till) + '\ufff0'}}
-      //   ];
-      // }
-
-      res.selector.search = this._search ? {$regex: this._search} : {$ne: null};
+      if(this.standard_period.empty()) {
+        this._search && res.selector.$and.push({search: {$regex: this._search}});
+      }
+      else {
+        res.selector.$and.push({date: {$gte: format(this.date_from)}});
+        res.selector.$and.push({date: {$lte: format(this.date_till) + '\ufff0'}});
+        res.selector.$and.push({search: this._search ? {$regex: this._search} : {$gt: null}});
+        res.use_index = ['mango', 'search'];
+      }
 
       // пока сортируем только по дате
       this.sorting.find_rows({use: true, field: 'date'}, (row) => {
@@ -736,6 +737,34 @@ export default function scheme_settings() {
       Object.defineProperty(res, '_mango', {value: true});
 
       return res;
+    }
+
+    /**
+     * ### Дополняет селектор по отбору
+     * @param selector
+     */
+    append_selection(selector) {
+      if(!selector.$and) {
+        selector.$and = [];
+      }
+      this.selection.find_rows({use: true}, ({left_value, left_value_type, right_value, right_value_type, comparison_type}) => {
+        if(left_value_type === 'path'){
+          if(right_value_type === 'boolean') {
+            const val = Boolean(right_value);
+            selector.$and.push({[left_value]: comparison_type == 'ne' ? {$ne: val} : val});
+          }
+          else if(right_value_type === 'calculated') {
+            const val = $p.current_user && $p.current_user[right_value];
+            selector.$and.push({[left_value]: comparison_type == 'ne' ? {$ne: val} : val});
+          }
+          else if(right_value_type.includes('.') && (comparison_type == 'filled' || comparison_type == 'nfilled')){
+            selector.$and.push({[left_value]: {[comparison_type.valueOf()]: true}});
+          }
+          else if(right_value_type === 'number' && (comparison_type == 'filled' || comparison_type == 'nfilled')){
+            selector.$and.push({[left_value]: {[comparison_type.valueOf()]: 0}});
+          }
+        }
+      });
     }
 
     /**

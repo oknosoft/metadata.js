@@ -7,7 +7,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import IconButton from '@material-ui/core/IconButton';
-import IconSettings from '../styles/Setting';
+import IconSettings from '@material-ui/icons/Settings';
 import IconSettingsCancel from '@material-ui/icons/HighlightOff';
 import IconSettingsDone from '@material-ui/icons/Done';
 
@@ -33,16 +33,20 @@ export default class SchemeSettingsButtons extends PureComponent {
 
   constructor(props, context) {
     super(props, context);
-    const {scheme} = props;
 
     this.state = {
       menu_open: false,
-      variants: [scheme]
+      variants: [props.scheme],
     };
 
-    scheme._manager.get_option_list({
-      _top: 40,
-      obj: scheme.obj,
+  }
+
+  componentDidMount() {
+    const {scheme: {obj, _manager}, show_variants} = this.props;
+    show_variants && _manager.get_option_list({
+      _mango: true,
+      limit: 40,
+      selector: {obj, user: {$in: ['', _manager.adapter.authorized]}}
     })
       .then((variants) => {
         this.setState({variants});
@@ -69,15 +73,19 @@ export default class SchemeSettingsButtons extends PureComponent {
     this.props.handleSchemeChange(scheme);
   };
 
-  handleSearchChange = (event) => {
-    this.props.scheme._search = event.target.value;
-    this._timer && clearTimeout(this._timer);
-    this._timer = setTimeout(this.handleSearchTimer, 600);
-    this.forceUpdate();
-  };
-
-  handleSearchTimer = () => {
-    this.props.handleFilterChange();
+  handleSearchChange = ({target, force}) => {
+    const {props} = this;
+    if(props.scheme._search !== target.value.toLowerCase() || force) {
+      props.scheme._search = target.value.toLowerCase();
+      this._timer && clearTimeout(this._timer);
+      if(force) {
+        props.handleFilterChange();
+      }
+      else {
+        this._timer = setTimeout(props.handleFilterChange, 300);
+      }
+      this.forceUpdate();
+    }
   };
 
   VariantsMenu() {
@@ -101,7 +109,11 @@ export default class SchemeSettingsButtons extends PureComponent {
 
     return [
       // Search box
-      show_search && <SearchBox key="ss1" value={scheme._search || ''} onChange={this.handleSearchChange}/>,
+      show_search && <SearchBox
+        key="ss1"
+        value={scheme._search || ''}
+        onChange={this.handleSearchChange}
+      />,
 
       // Variants
       show_variants && scheme && <Button key="ss2" size="small" onClick={this.handleMenuOpen} style={{alignSelf: 'center'}}>{scheme.name}</Button>,

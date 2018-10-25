@@ -14,8 +14,8 @@ import {WindowsTheme} from './themes';
 
 const paneStyle = {
   width: '60%',
-  height: '60%',
-  top: '25%',
+  height: '70%',
+  top: '20%',
   left: '10%',
   backgroundColor: 'white',
   border: '1px solid #e0e0e0'
@@ -53,7 +53,7 @@ export default class Dialog extends Component {
         {...this.Windows}
         cursorRemap={(c) => c === 'move' ? 'default' : null}
         style={paneStyle}
-        contentStyle={{overflow: 'auto'}}
+        //contentStyle={{overflow: 'auto'}}
         {...others}
       >
         {children}

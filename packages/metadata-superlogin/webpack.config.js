@@ -41,6 +41,10 @@ function getExternals() {
     'alasql/dist/alasql.min': true,
     'clipboard/lib/clipboard-action': true,
     'metadata-redux': true,
+    'axios': true,
+    'debug': true,
+    'eventemitter2': true,
+    'url-parse': true
   };
   for (const key in package_data.dependencies) {
     if(!externals[key]) {

@@ -21,6 +21,9 @@ packages/metadata-abstract-ui/tabulars.min.js
 packages/metadata-abstract-ui/cron.js
 packages/metadata-abstract-ui/cron.js.map
 packages/metadata-abstract-ui/cron.min.js
+packages/metadata-abstract-ui/row_props.js
+packages/metadata-abstract-ui/row_props.js.map
+packages/metadata-abstract-ui/row_props.min.js
 
 packages/metadata-core/index.js
 packages/metadata-core/index.js.map

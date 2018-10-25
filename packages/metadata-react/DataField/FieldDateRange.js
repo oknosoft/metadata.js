@@ -17,6 +17,7 @@ import Picker from 'rc-calendar/lib/Picker';
 import RangeCalendar from 'rc-calendar/lib/RangeCalendar';
 import ruRU from 'rc-calendar/lib/locale/ru_RU';
 import 'rc-calendar/assets/index.css';
+import './rc-calendar.css';
 
 
 const formatStr = 'DD.MM.YYYY';
@@ -94,14 +95,14 @@ export default class FieldDateRange extends AbstractField {
           ({ value }) => {
             return (isTabular ?
               <input
-                disabled={state.disabled}
+                disabled={props.read_only}
                 readOnly
                 value={formatRange(value)}
               />
             :
               <StyledCustomField
                 placeholder={_meta.tooltip || _meta.synonym}
-                disabled={state.disabled}
+                disabled={props.read_only}
                 readOnly
                 value={formatRange(value)}
                 _fld={_fld}

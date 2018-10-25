@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.17-beta.4, built:2018-07-26
+ metadata-abstract-ui v2.0.17-beta.10, built:2018-10-22
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -56,10 +56,10 @@ function log_manager() {
       }
       if(wsql.alasql.databases.dbo.tables.ireg_log) {
         msg.date = Date.now() + wsql.time_diff;
-        if(!this.smax){
-          this.smax = wsql.alasql.compile('select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?');
+        if(!this._smax){
+          this._smax = wsql.alasql.compile('select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?');
         }
-        const res = this.smax([msg.date]);
+        const res = this._smax([msg.date]);
         if(!res.length || res[0].sequence === undefined) {
           msg.sequence = 0;
         }
@@ -69,12 +69,43 @@ function log_manager() {
         if(!msg.class) {
           msg.class = 'note';
         }
-        wsql.alasql('insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)',
-          [msg.date + '¶' + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : '']);
+        this.alatable.push({
+          ref: msg.date + '¶' + msg.sequence,
+          date: msg.date,
+          sequence: msg.sequence,
+          'class': msg.class,
+          note: msg.note,
+          obj: msg.obj || null,
+        });
+        this.emit_async('record', {count: this.unviewed_count()});
       }
     }
+    viewed() {
+      const res = [];
+      const {alatable} = this;
+      const log_view = $p.ireg.log_view.alatable;
+      const user = $p.adapters.pouch.authorized || '';
+      for(let i = alatable.length - 1; i >= 0; i--) {
+        const v = alatable[i];
+        log_view.some((row) => {
+          if(row.key === v.ref && row.user === user) {
+            v.key = row.key;
+            return true;
+          }
+        });
+        res.push(v);
+      }
+      return res;
+    }
+    unviewed_count() {
+      if(!this._unviewed_count){
+        this._unviewed_count = this._owner.$p.wsql.alasql.compile(
+          'select value count(*) from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key) where v.key is null');
+      }
+      return this._unviewed_count();
+    }
     backup(dfrom, dtill) {
-      const {wsql, adapters: {pouch}, classes, utils: {moment}} = this._owner.$p;
+      const {wsql, adapters: {pouch}, utils: {moment}} = this._owner.$p;
       if(dfrom === 'stamp' && pouch.authorized) {
         dfrom = this._stamp;
         if(!pouch.remote.log) {
@@ -89,11 +120,12 @@ function log_manager() {
         const rows = this._rows([this._stamp + wsql.time_diff]);
         for(const row of rows) {
           row._id = `${moment(row.date - wsql.time_diff).format('YYYYMMDDHHmmssSSS') + row.sequence}|${pouch.props._suffix || '0000'}|${pouch.authorized}`;
-          if(row.obj) {
-            row.obj = JSON.parse(row.obj);
-          }
-          else{
-            delete row.obj;
+          if(typeof row.obj === 'string') {
+            try{
+              row.obj = JSON.parse(row.obj);
+            }
+            catch(e) {
+            }
           }
           delete row.ref;
           delete row.user;
@@ -110,8 +142,26 @@ function log_manager() {
     restore(dfrom, dtill) {
     }
     clear(dfrom, dtill) {
+      for(const ref in this.by_ref) {
+        delete this.by_ref[ref];
+      }
+      this.alatable.length = 0;
+      const {log_view} = $p.ireg;
+      for(const ref in log_view.by_ref) {
+        delete log_view.by_ref[ref];
+      }
+      log_view.alatable.length = 0;
     }
-    show(pwnd) {
+    mark_viewed(dfrom, dtill) {
+      const {alatable} = $p.ireg.log_view;
+      const user = $p.adapters.pouch.authorized || '';
+      if(!this._unviewed){
+        this._unviewed = this._owner.$p.wsql.alasql.compile(
+          'select l.ref from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key) where v.key is null');
+      }
+      for(const {ref} of this._unviewed()) {
+        alatable.push({key: ref, user});
+      }
     }
     get(ref, force_promise, do_not_create) {
       if(typeof ref == 'object') {
@@ -344,8 +394,8 @@ function scheme_settings() {
           this.date_till = till.endOf('day').toDate();
           break;
         case standard_period.last3Month:
-          this.date_from = from.subtract(3, 'month').startOf('month').toDate();
-          this.date_till = till.subtract(1, 'month').endOf('month').toDate();
+          this.date_from = from.subtract(2, 'month').startOf('month').toDate();
+          this.date_till = till.endOf('month').toDate();
           break;
         case standard_period.lastWeek:
           this.date_from = from.subtract(1, 'weeks').startOf('week').toDate();
@@ -586,9 +636,9 @@ function scheme_settings() {
       const {parts, _mgr, _meta} = this.child_meta(class_name);
       const columns = [];
       function add_column(fld, use) {
-        const id = fld.id || fld,
-          fld_meta = _meta.fields[id] || _mgr.metadata(id);
-        columns.push({
+        const id = fld.id || fld;
+        const fld_meta = _meta.fields[id] || _mgr.metadata(id);
+        fld_meta && columns.push({
           field: id,
           caption: fld.caption || fld_meta.synonym,
           tooltip: fld_meta.tooltip,
@@ -688,18 +738,26 @@ function scheme_settings() {
       }
       const res = {
         selector: {
-          class_name: {$eq: this.obj}
+          $and: [
+            {class_name: {$eq: this.obj}}
+          ]
         },
         fields: ['_id', 'posted'],
-        use_index: ['mango', 'search'],
       };
       for (const column of (columns || this.columns())) {
         if(res.fields.indexOf(column.id) == -1) {
           res.fields.push(column.id);
         }
       }
-      res.selector.date = this.standard_period.empty() ? {$ne: null} : {$and: [{$gte: format(this.date_from)}, {$lte: format(this.date_till) + '\ufff0'}]};
-      res.selector.search = this._search ? {$regex: this._search} : {$ne: null};
+      if(this.standard_period.empty()) {
+        this._search && res.selector.$and.push({search: {$regex: this._search}});
+      }
+      else {
+        res.selector.$and.push({date: {$gte: format(this.date_from)}});
+        res.selector.$and.push({date: {$lte: format(this.date_till) + '\ufff0'}});
+        res.selector.$and.push({search: this._search ? {$regex: this._search} : {$gt: null}});
+        res.use_index = ['mango', 'search'];
+      }
       this.sorting.find_rows({use: true, field: 'date'}, (row) => {
         let direction = row.direction.valueOf();
         if(!direction || direction == '_') {
@@ -715,6 +773,29 @@ function scheme_settings() {
       }
       Object.defineProperty(res, '_mango', {value: true});
       return res;
+    }
+    append_selection(selector) {
+      if(!selector.$and) {
+        selector.$and = [];
+      }
+      this.selection.find_rows({use: true}, ({left_value, left_value_type, right_value, right_value_type, comparison_type}) => {
+        if(left_value_type === 'path'){
+          if(right_value_type === 'boolean') {
+            const val = Boolean(right_value);
+            selector.$and.push({[left_value]: comparison_type == 'ne' ? {$ne: val} : val});
+          }
+          else if(right_value_type === 'calculated') {
+            const val = $p.current_user && $p.current_user[right_value];
+            selector.$and.push({[left_value]: comparison_type == 'ne' ? {$ne: val} : val});
+          }
+          else if(right_value_type.includes('.') && (comparison_type == 'filled' || comparison_type == 'nfilled')){
+            selector.$and.push({[left_value]: {[comparison_type.valueOf()]: true}});
+          }
+          else if(right_value_type === 'number' && (comparison_type == 'filled' || comparison_type == 'nfilled')){
+            selector.$and.push({[left_value]: {[comparison_type.valueOf()]: 0}});
+          }
+        }
+      });
     }
     filter(collection, parent = '', self = false) {
       const selection = [];
@@ -1117,18 +1198,18 @@ function mngrs() {
   const {classes, msg} = this;
   Object.defineProperties(classes.DataManager.prototype, {
     family_name: {
-      get: function () {
+      get () {
         return msg.meta_mgrs[this.class_name.split('.')[0]].replace(msg.meta_mgrs.mgr + ' ', '');
       }
     },
     frm_selection_name: {
-      get: function () {
+      get () {
         const meta = this.metadata();
         return `${msg.open_frm} ${msg.selection_parent} ${msg.meta_parents[this.class_name.split('.')[0]]} '${meta.synonym || meta.name}'`;
       }
     },
     frm_obj_name: {
-      get: function () {
+      get () {
         const meta = this.metadata();
         return `${msg.open_frm} ${msg.obj_parent} ${msg.meta_parents[this.class_name.split('.')[0]]} '${meta.synonym || meta.name}'`;
       }
@@ -1310,6 +1391,49 @@ function ipinfo() {
 	classes.IPInfo = IPInfo;
 }
 
+function checker() {
+  const {utils, job_prm, md} = this;
+  const checker = utils.single_instance_checker = {
+    init() {
+      if(typeof window === 'undefined') {
+        return;
+      }
+      window.addEventListener('storage', this.storageChanged);
+      const prefix = job_prm.local_storage_prefix;
+      this.LocalStorageKeyName = prefix + 'instanceCheck';
+      this.LocalStorageResponseKeyName = prefix + 'instanceMaster';
+      this.instanceKey = prefix + Date.now().toString();
+      this.setKey(this.LocalStorageKeyName, this.instanceKey);
+      this.emit = function (type) {
+        md.emit(type);
+      };
+    },
+    storageChanged(e) {
+      if(!e.newValue) {
+        return;
+      }
+      const {LocalStorageKeyName, LocalStorageResponseKeyName, instanceKey} = checker;
+      if(e.key === LocalStorageKeyName && e.newValue !== instanceKey) {
+        checker.setKey(LocalStorageResponseKeyName, instanceKey + Math.random().toString());
+      }
+      else if(e.key === LocalStorageResponseKeyName && e.newValue.indexOf(instanceKey) < 0) {
+        window.removeEventListener('storage', checker.storageChanged);
+        job_prm.second_instance = true;
+        checker.emit('second_instance');
+      }
+    },
+    setKey(key, value) {
+      try {
+        localStorage.setItem(key, value);
+        setTimeout(() => {
+          localStorage.removeItem(key);
+        }, 100);
+      } catch (e) {
+      }
+    }
+  };
+}
+
 var plugin = {
   constructor() {
     meta_objs.call(this);
@@ -1317,6 +1441,7 @@ var plugin = {
     scheme_settings.call(this);
     mngrs.call(this);
     ipinfo.call(this);
+    checker.call(this);
   }
 };
 

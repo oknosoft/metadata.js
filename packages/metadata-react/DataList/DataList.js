@@ -1,4 +1,3 @@
-/** @flow */
 import React from 'react';
 import PropTypes from 'prop-types';
 import MDNRComponent from '../common/MDNRComponent';
@@ -6,7 +5,7 @@ import MDNRComponent from '../common/MDNRComponent';
 import InfiniteLoader from 'react-virtualized/dist/es/InfiniteLoader';
 import MultiGrid from 'react-virtualized/dist/es/MultiGrid';
 import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
-import classnames from 'classnames';
+import cn from 'classnames';
 import Helmet from 'react-helmet';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 import DataListToolbar from './DataListToolbar';
@@ -15,66 +14,50 @@ import Confirm from '../App/Confirm';
 import withStyles from './styles';
 import {withIface} from 'metadata-redux';
 import control_by_type from 'metadata-abstract-ui/src/ui';
+import StarRate from '@material-ui/icons/StarRate';
+import Typography from '@material-ui/core/Typography/Typography';
 
 class DataList extends MDNRComponent {
 
   static LIMIT = 40;
   static OVERSCAN_ROW_COUNT = 2;
-  static OVERSCAN_COLUMN_COUNT = 2;
   static COLUMN_HEIGHT = 33;
   static COLUMN_DEFAULT_WIDTH = 220;
-
-  static propTypes = {
-
-    // данные
-    _mgr: PropTypes.object.isRequired,    // Менеджер данных
-    _acl: PropTypes.string,               // Права на чтение-изменение
-    _meta: PropTypes.object,              // Описание метаданных. Если не указано, используем метаданные менеджера
-
-    _owner: PropTypes.object,             // Поле - владелец. У него должны быть _obj, _fld и _meta
-                                          // а внутри _meta могут быть choice_params и choice_links
-
-    // настройки внешнего вида и поведения
-    selectionMode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисуем кнопку выбора
-    read_only: PropTypes.object,          // Элемент только для чтения
-    denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
-    show_search: PropTypes.bool,          // Показывать поле поиска
-    show_variants: PropTypes.bool,        // Показывать список вариантов настройки динсписка
-    modal: PropTypes.bool,                // Показывать список в модальном диалоге
-
-    // Redux actions
-    handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
-
-  };
 
   constructor(props, context) {
     super(props, context);
 
     this.state = {
-      selectedRowIndex: 0,
+      selectedRow: 0,
+      scrollToRow: 0,
+      scrollSetted: false,
+      rowCount: 0,
       settings_open: false,
+      network_error: '',
+      no_rows: false,
+      ref: '',
     };
 
     /** Set of grid rows. */
-    this._list = new Map();
+    this._list = [];
 
     this.handleManagerChange(props);
   }
 
   // при изменении менеджера данных
-  handleManagerChange({_mgr, _meta}) {
+  handleManagerChange({_mgr, _meta, _ref}) {
 
     const {class_name, cachable, alatable} = _mgr;
 
     this._meta = _meta || _mgr.metadata();
 
-    const state = {rowsLoaded: cachable === 'ram' ? alatable.length : 0};
+    const newState = {ref: _ref || ''};
 
     if(this._mounted) {
-      this.setState(state);
+      this.setState(newState);
     }
     else {
-      Object.assign(this.state, state);
+      Object.assign(this.state, newState);
     }
 
     $p.cat.scheme_settings.get_scheme(class_name).then(this.handleSchemeChange);
@@ -83,22 +66,27 @@ class DataList extends MDNRComponent {
 
   // обработчик выбора значения в списке
   handleSelect = () => {
-    const row = this._list.get(this.state.selectedRowIndex);
-    const {handlers, _mgr} = this.props;
-    row && handlers.handleSelect && handlers.handleSelect(row, _mgr);
+    const {state: {selectedRow}, props: {handlers, _mgr}} = this;
+    if(!selectedRow) {
+      this.handleInfoText('Не выбрана строка');
+    }
+    else {
+      const row = this._list[selectedRow];
+      row && handlers.handleSelect && handlers.handleSelect(row, _mgr);
+    }
   };
 
   // обработчик добавления элемента списка
-  handleAdd = () => {
+  handleAdd = (event) => {
     const {handlers, _mgr} = this.props;
-    handlers.handleAdd && handlers.handleAdd(_mgr);
+    handlers.handleAdd && handlers.handleAdd(_mgr, event);
   };
 
   // обработчик редактирования элемента списка
   handleEdit = () => {
     const {_list, _meta, state, props} = this;
     const {handlers, _mgr} = props;
-    const row = _list.get(state.selectedRowIndex);
+    const row = _list[state.selectedRow];
     if(!row || $p.utils.is_empty_guid(row.ref)) {
       handlers.handleIfaceState({
         component: '',
@@ -107,7 +95,7 @@ class DataList extends MDNRComponent {
       });
     }
     else if(handlers.handleEdit) {
-      handlers.handleEdit({ref: row.ref, _mgr});
+      handlers.handleEdit({row, ref: row.ref, _mgr});
     }
   };
 
@@ -115,7 +103,7 @@ class DataList extends MDNRComponent {
   handleRemove = () => {
     const {_list, _meta, state, props} = this;
     const {handlers, _mgr} = props;
-    const row = _list.get(state.selectedRowIndex);
+    const row = _list[state.selectedRow];
 
     if(!row || $p.utils.is_empty_guid(row.ref)) {
       handlers.handleIfaceState({
@@ -135,6 +123,7 @@ class DataList extends MDNRComponent {
   // при изменении настроек или варианта компоновки
   handleSchemeChange = (scheme) => {
     scheme.set_default();
+    scheme.set_standard_period();
     // пересчитываем и перерисовываем динсписок
     this.handleFilterChange(scheme, scheme.columns());
   };
@@ -142,7 +131,7 @@ class DataList extends MDNRComponent {
   // при изменении параметров компоновки - схему не меняем, но выполняем пересчет
   handleFilterChange = (scheme, columns) => {
 
-    const {state, _list, _mounted} = this;
+    const {state, props, _list, _mounted} = this;
 
     if(!(scheme instanceof $p.CatScheme_settings)) {
       scheme = state.scheme;
@@ -153,32 +142,38 @@ class DataList extends MDNRComponent {
     }
 
     // Set first row as header.
-    _list.clear();
-    _list.set(0, columns.map(column => (column.synonym)));
+    _list.length = 0;
+    _list.push(columns.map(column => (column.synonym)));
 
+    const newState = {scheme, columns, scrollToRow: 1};
     if(_mounted) {
-      this.setState({scheme, columns, rowsLoaded: 1});
+      this.setState(newState, () => {
+        this._loadMoreRows({
+          startIndex: 1,
+          stopIndex: DataList.LIMIT - 1,
+        });
+      });
     }
     else {
-      Object.assign(state, {scheme, columns, rowsLoaded: 1});
+      Object.assign(state, newState);
+      this._loadMoreRows({
+        startIndex: 1,
+        stopIndex: DataList.LIMIT - 1,
+      });
     }
 
-    this._loadMoreRows({
-      startIndex: 0,
-      stopIndex: DataList.LIMIT
-    });
   };
 
   // обработчик печати теущей строки
   handlePrint = () => {
-    const row = this._list.get(this.state.selectedRowIndex);
+    const row = this._list[this.state.selectedRow];
     const {handlers, _mgr} = this.props;
     row && handlers.handlePrint && handlers.handlePrint(row, _mgr);
   };
 
   // обработчик вложений теущей строки
   handleAttachments = () => {
-    const row = this._list.get(this.state.selectedRowIndex);
+    const row = this._list[this.state.selectedRow];
     const {handlers, _mgr} = this.props;
     row && handlers.handleAttachments && handlers.handleAttachments(row, _mgr);
   };
@@ -191,11 +186,18 @@ class DataList extends MDNRComponent {
     this.setState({settings_open: false});
   };
 
+  handleInfoText = (info_text) => {
+    if(typeof info_text !== 'string') {
+      info_text = '';
+    }
+    this.setState({info_text});
+  }
+
   get sizes() {
-    const {dnr} = this.context;
-    let {width, height} = this.props;
+    let {context: {dnr}, props: {width, height}, state: {columns}} = this;
+
     if(!height) {
-      height = dnr && parseInt(dnr.frameRect.height);
+      height = dnr && parseInt(dnr.frameRect.height) - 26;
     }
     if(!height || height < 320) {
       height = 320;
@@ -206,6 +208,15 @@ class DataList extends MDNRComponent {
     if(!width || width < 480) {
       width = 480;
     }
+
+    // горизонтальная прокрутка
+    const w2 = columns && columns.reduce((sum, val, index) => {
+      return sum + this._getColumnWidth({index});
+    }, 0)
+    if(w2 > width) {
+      width = w2;
+    }
+
     return {width, height};
   }
 
@@ -215,15 +226,9 @@ class DataList extends MDNRComponent {
   }
 
   render() {
-    const {state, props, context, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer} = this;
-    const {columns, rowsLoaded, scheme, colResize, confirm_text, settings_open} = state;
-    const {RepParams} = props._mgr;
-
-    const styleTopRightGrid = {
-      cursor: colResize ? 'col-resize' : 'default',
-    };
-
-    let {selectionMode, denyAddDel, show_search, show_variants, classes, title} = props;
+    const {state, props, context, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer, _list} = this;
+    const {columns, scheme, confirm_text, info_text, settings_open, rowCount} = state;
+    const {_mgr: {RepParams}, classes, title, registerFilterChange, width, height, ...others} = props;
 
     if(!scheme) {
       return <LoadingMessage text="Чтение настроек компоновки..."/>;
@@ -232,15 +237,14 @@ class DataList extends MDNRComponent {
       return <LoadingMessage text="Ошибка настроек компоновки..."/>;
     }
 
+    registerFilterChange && registerFilterChange(this.handleFilterChange);
+
     const show_grid = !settings_open || sizes.height > 572;
 
     const toolbar_props = {
       key: 'toolbar',
       scheme,
-      selectionMode,
-      denyAddDel,
-      show_search,
-      show_variants,
+      ...others,
       settings_open,
       handleSelect: this.handleSelect,
       handleAdd: this.handleAdd,
@@ -259,6 +263,8 @@ class DataList extends MDNRComponent {
 
       !context.dnr && <Helmet key="helmet" title={title}>
         <meta name="description" content="Форма списка" />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content="Форма списка" />
       </Helmet>,
 
       // диалог предупреждений при удалении
@@ -268,6 +274,15 @@ class DataList extends MDNRComponent {
         text={confirm_text}
         handleOk={this._handleRemove}
         handleCancel={() => this.setState({confirm_text: ''})}
+        open
+      />,
+
+      info_text && <Confirm
+        key="confirm"
+        title={_meta.synonym}
+        text={info_text}
+        handleOk={this.handleInfoText}
+        handleCancel={this.handleInfoText}
         open
       />,
 
@@ -293,16 +308,16 @@ class DataList extends MDNRComponent {
           <InfiniteLoader
             isRowLoaded={_isRowLoaded}
             loadMoreRows={_loadMoreRows}
-            rowCount={rowsLoaded + DataList.LIMIT}
-            minimumBatchSize={DataList.LIMIT}>
+            rowCount={rowCount}
+            minimumBatchSize={DataList.LIMIT / 2}>
 
             {({onRowsRendered, registerChild}) => {
               const onSectionRendered = ({rowOverscanStartIndex, rowOverscanStopIndex, rowStartIndex, rowStopIndex, columnStartIndex, columnStopIndex}) => {
                 onRowsRendered({
                   overscanStartIndex: rowOverscanStartIndex,
                   overscanStopIndex: rowOverscanStopIndex,
-                  startIndex: rowStartIndex * this.state.columns.length + columnStartIndex,
-                  stopIndex: rowStopIndex * this.state.columns.length + columnStopIndex
+                  startIndex: rowStartIndex * columns.length + columnStartIndex,
+                  stopIndex: rowStopIndex * columns.length + columnStopIndex
                 });
               };
 
@@ -312,18 +327,17 @@ class DataList extends MDNRComponent {
                   tabIndex={0}
                   width={width}
                   height={sizes.height - 52 - (settings_open ? 320 : 0)}
-                  rowCount={rowsLoaded}
+                  rowCount={rowCount}
                   columnCount={columns.length}
                   fixedRowCount={1}
                   noContentRenderer={this._noContentRendered}
                   cellRenderer={this._cellRenderer}
-                  overscanColumnCount={DataList.OVERSCAN_COLUMN_COUNT}
+                  scrollToRow={state.scrollSetted ? state.scrollToRow : undefined}
                   overscanRowCount={DataList.OVERSCAN_ROW_COUNT}
                   columnWidth={this._getColumnWidth}
                   rowHeight={DataList.COLUMN_HEIGHT}
                   onSectionRendered={onSectionRendered}
-                  styleTopRightGrid={styleTopRightGrid}
-                  classNameTopRightGrid={classes.topRightGrid}/>
+                  classNameTopRightGrid={cn(classes.topRightGrid, state.colResize && classes.colResize)}/>
               );
             }}
           </InfiniteLoader>
@@ -334,35 +348,50 @@ class DataList extends MDNRComponent {
 
   _getColumnWidth = ({index}) => {
     // todo: Take remaining space if width of column equal '*'
-    if(!isNaN(parseInt(this.state.columns[index].width))) {
+    const {columns} = this.state;
+    if(isNaN(parseInt(columns[index].width, 10))) {
       return DataList.COLUMN_DEFAULT_WIDTH;
     }
     else {
-      return parseInt(this.state.columns[index].width);
+      return parseInt(columns[index].width, 10);
     }
   };
 
-  _noContentRendered() {
-    return <LoadingMessage/>;
+  _noContentRendered = () => {
+    const {no_rows, network_error}  = this.state;
+    return <LoadingMessage text={network_error ?
+      <div>
+        <Typography variant="inherit">Ошибка сети, повторите запрос позже:</Typography>
+        <Typography variant="inherit" color="error">{network_error.message || network_error.message}</Typography>
+      </div>
+      :
+      (no_rows ? 'Записей не найдено...' : '')}
+    />;
   };
 
   _cellRenderer = ({columnIndex, rowIndex, isScrolling, isVisible, key, parent, style}) => {
     const {state, props, handleEdit, handleSelect} = this;
-    const {hoveredColumnIndex, hoveredRowIndex, selectedRowIndex} = state;
-    const {cell, headerCell, hoveredItem, selectedItem} = props.classes;
+    const {hoveredColumnIndex, hoveredRowIndex, selectedRow, columns} = state;
+    const {cell, headerCell, hoveredItem, selectedItem, evenRow, oddRow} = props.classes;
+
+    const {ctrl_type} = columns[columnIndex];
+    const {star, toggle} = $p.enm.data_field_kinds;
 
     // оформление ячейки
-    const classNames = classnames(this._getRowClassName(rowIndex), cell, {
+    const classNames = cn(rowIndex % 2 === 0 ? evenRow : oddRow, cell, {
       [headerCell]: rowIndex === 0, // выравнивание текста по центру
-      [hoveredItem]: rowIndex != 0 && rowIndex == hoveredRowIndex && rowIndex != selectedRowIndex, // || columnIndex === this.state.hoveredColumnIndex
-      [selectedItem]: rowIndex != 0 && rowIndex == selectedRowIndex
+      [hoveredItem]: rowIndex != 0 && rowIndex == hoveredRowIndex && rowIndex != selectedRow, // || columnIndex === this.state.hoveredColumnIndex
+      [selectedItem]: rowIndex != 0 && rowIndex == selectedRow
     });
 
     // данные строки
-    const row = this._list.get(rowIndex);
+    const row = this._list[rowIndex];
 
     // текст ячейки (header - data cell - empty cell)
-    const content = rowIndex === 0 ? row[columnIndex] : row && this._formatter(row, columnIndex);
+    let content = rowIndex === 0 ? row[columnIndex] : row && this._formatter(row, columnIndex);
+    if((ctrl_type === star || ctrl_type === toggle) && typeof content === 'number' && content <= 0) {
+      content = '';
+    }
 
     const onMouseOver = () => {
       this.setState({
@@ -370,13 +399,8 @@ class DataList extends MDNRComponent {
         hoveredRowIndex: rowIndex
       });
     };
-    const onMouseMove = ({target, clientX}) => {
-      const br = target.getBoundingClientRect();
-      const colResize = (Math.abs(br.left - clientX) < 6) || (Math.abs(br.right - clientX) < 6);
-      colResize != this.state.colResize && this.setState({colResize});
-    };
 
-    const onClick = () => this.setState({selectedRowIndex: rowIndex});
+    const onClick = () => this.setState({selectedRow: rowIndex});
 
     const dprops = {
       className: classNames,
@@ -388,66 +412,91 @@ class DataList extends MDNRComponent {
       title: hoveredColumnIndex == columnIndex && hoveredRowIndex == rowIndex ? content : '',
     };
     if(rowIndex == 0) {
-      dprops.onMouseMove = onMouseMove;
-    }
-    ;
+      dprops.onMouseMove = ({target, clientX}) => {
+        const br = target.getBoundingClientRect();
+        const colResize = (Math.abs(br.left - clientX) < 6) || (Math.abs(br.right - clientX) < 6);
+        colResize != this.state.colResize && this.setState({colResize});
+      };
+    };
+
 
     return (
-      <div {...dprops}>{content}</div>
+      <div {...dprops}>
+        {
+          rowIndex !== 0 && (ctrl_type === star || ctrl_type === toggle) && content ?
+            <StarRate className={props.classes.star}/>
+            :
+            content
+        }
+      </div>
     );
   };
 
   _formatter(rowData, columnIndex) {
     const {columns} = this.state;
-    const column = columns[columnIndex];
-    const v = rowData[column.id];
+    const {id, type} = columns[columnIndex];
+    const v = rowData[id];
 
-    switch (control_by_type(column.type, v)) {
+    switch (control_by_type(type, v)) {
     case 'ocombo':
-      return this.props._mgr.value_mgr(rowData, column.id, column.type, false, v).get(v).presentation;
+      return this.props._mgr.value_mgr(rowData, id, type, false, v).get(v).presentation;
 
     case 'dhxCalendar':
       return $p.utils.moment(v).format($p.utils.moment._masks.date);
+
+    case 'calck':
+      return v;
 
     default:
       return v ? v.toString() : '';
     }
   }
 
-  _getRowClassName(row) {
-    const {classes} = this.props;
-    return row % 2 === 0 ? classes.evenRow : classes.oddRow;
-  }
-
   _isRowLoaded = ({index}) => {
-    return this._list.has(index);
+    return !!this._list[index];
   };
 
-  _updateList = (data, startIndex) => {
+  _updateList = (data, startIndex, rowCount) => {
     const {_list} = this;
-
-    let reallyLoadedRows = 0;
 
     // обновляем массив результата
     for (let i = 0; i < data.length; i++) {
       // Append one because first row is header.
-      if(_list.has(1 + i + startIndex) === false) {
-        reallyLoadedRows++;
-        _list.set(1 + i + startIndex, data[i]);
-      }
+      _list[i + startIndex] = data[i];
     }
     // Обновить количество записей.
-    this._mounted && reallyLoadedRows && this.setState({rowsLoaded: this.state.rowsLoaded + reallyLoadedRows});
+    if(this._mounted) {
+      if(rowCount === undefined) {
+        rowCount = _list.length > 1 ? _list.length + 1 : 0;
+      }
+      const newState = {
+        no_rows: rowCount <= 1,
+        rowCount,
+      };
+      this.setState(newState);
+    }
   };
 
   _loadMoreRows = ({startIndex, stopIndex}) => {
-    const {_mgr, _owner} = this.props;
-    const {scheme, columns, rowsLoaded} = this.state;
+    const {props: {_mgr, _owner, find_rows}, state: {scheme, columns, ref, scrollSetted}, _list}  = this;
 
-    const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);
+    //const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);
+
+    let increment = stopIndex - startIndex;
+    if(!increment && _list[startIndex]) {
+      return;
+    }
+
+    const newState = {no_rows: false, network_error: null};
+    if(scrollSetted) {
+      newState.scrollSetted = false;
+      newState.scrollToRow = 0;
+      newState.ref = '';
+    }
+    this.setState(newState);
 
     // в зависимости от типа кеширования...
-    if(_mgr.cachable === 'ram' || _mgr.cachable === 'doc_ram') {
+    if(/ram$/.test(_mgr.cachable)) {
       // фильтруем в озу
       const selector = _mgr.get_search_selector({
         _obj: _owner ? _owner._obj : null,
@@ -460,24 +509,84 @@ class DataList extends MDNRComponent {
     }
     else {
       // выполняем запрос
-      const selector = _mgr.mango_selector ?
-        _mgr.mango_selector(scheme, {
-          columns,
-          skip: startIndex ? startIndex - 1 : 0,
-          limit: increment,
-        }) :
-        scheme.mango_selector({
-          columns,
-          skip: startIndex ? startIndex - 1 : 0,
-          limit: increment,
-        });
+      const sprm = {
+        columns,
+        skip: startIndex ? startIndex - 1 : 0,
+        limit: increment + 1,
+      };
+      if(sprm.limit < DataList.LIMIT / 2) {
+        sprm.limit = DataList.LIMIT / 2;
+      }
+      const selector = _mgr.mango_selector ? _mgr.mango_selector(scheme, sprm) : scheme.mango_selector(sprm);
+      // если указано начальное значение списка, первый запрос делаем со ссылкой
+      if(ref && !scrollSetted) {
+        selector.ref = ref;
+      }
+      selector._raw = true;
 
-      return _mgr.find_rows_remote(selector)
-        .then((data) => this._updateList(data, startIndex));
+      return (find_rows ? find_rows(selector, scheme) : _mgr.find_rows_remote(selector))
+        .then((data) => {
+          if(Array.isArray(data)) {
+            this._updateList(data, startIndex);
+          }
+          else {
+            const {docs, scroll, flag, count} = data;
+            this._updateList(docs, startIndex, count ? count + 1 : count);
+            if(ref && !scrollSetted) {
+              const newState = {
+                scrollSetted: true,
+                ref: '',
+              }
+              if(scroll && !flag) {
+                newState.selectedRow = scroll + 1;
+                newState.scrollToRow = newState.selectedRow + 4 < count ? newState.selectedRow + 4 : newState.selectedRow;
+              }
+              this.setState(newState);
+              if(newState.scrollToRow && (!_list[newState.selectedRow] || !_list[newState.scrollToRow])) {
+                const opt = {
+                  startIndex: newState.scrollToRow - DataList.LIMIT / 2,
+                  stopIndex: newState.scrollToRow + DataList.LIMIT / 2,
+                };
+                if(opt.startIndex < 1) {
+                  opt.startIndex = 1;
+                }
+                if(opt.stopIndex > count) {
+                  opt.stopIndex = count;
+                }
+                this._loadMoreRows(opt);
+              }
+            }
+          }
+        })
+        .catch((err) => this.setState({network_error: err}));
     }
 
   };
 }
+
+DataList.propTypes = {
+
+  // данные
+  _mgr: PropTypes.object.isRequired,    // Менеджер данных
+  _acl: PropTypes.string,               // Права на чтение-изменение
+  _meta: PropTypes.object,              // Описание метаданных. Если не указано, используем метаданные менеджера
+  _ref: PropTypes.string,                // Ссылка, на которую надо спозиционироваться
+
+  _owner: PropTypes.object,             // Поле - владелец. У него должны быть _obj, _fld и _meta
+                                        // а внутри _meta могут быть choice_params и choice_links
+
+  // настройки внешнего вида и поведения
+  selectionMode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисуем кнопку выбора
+  read_only: PropTypes.object,          // Элемент только для чтения
+  denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+  show_search: PropTypes.bool,          // Показывать поле поиска
+  show_variants: PropTypes.bool,        // Показывать список вариантов настройки динсписка
+  modal: PropTypes.bool,                // Показывать список в модальном диалоге
+
+  // Redux actions
+  handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
+
+};
 
 
 export default withStyles(withIface(DataList));

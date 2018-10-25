@@ -15,7 +15,7 @@ class InnerData {
     this._ts_ = {};
     this._is_new = !(owner instanceof EnumObj);
     this._loading = !!loading;
-    this._saving = false;
+    this._saving = 0;
     this._modified = false;
   }
 
@@ -124,7 +124,7 @@ export class DataObj {
       let mgr = this._manager.value_mgr(_obj, f, mf);
       if(mgr) {
         if(utils.is_data_mgr(mgr)) {
-          return mgr.get(res);
+          return mgr.get(res, false, false);
         }
         else {
           return utils.fetch_type(res, mgr);
@@ -333,7 +333,20 @@ export class DataObj {
     return !!this._obj._deleted;
   }
   set _deleted(v) {
-    return this._obj._deleted = !!v;
+    this._obj._deleted = !!v;
+  }
+
+  /**
+   * ### Ревизия
+   * Eё устанваливает адаптер при чтении и записи
+   * @property _rev
+   * @for DataObj
+   * @type Boolean
+   */
+  get _rev() {
+    return this._obj._rev || '';
+  }
+  set _rev(v) {
   }
 
   /**
@@ -361,10 +374,11 @@ export class DataObj {
    */
   _set_loaded(ref) {
     this._manager.push(this, ref);
-    const {_data} = this;
-    _data._modified = false;
-    _data._is_new = false;
-    _data._loading = false;
+    Object.assign(this._data, {
+      _modified: false,
+      _is_new: false,
+      _loading: false,
+    });
     return this;
   }
 
@@ -481,101 +495,113 @@ export class DataObj {
     }
 
     // выполняем обработчик перед записью
-    let before_save_res = this.before_save();
-    if(this._data.before_save_sync) {
-      this._data.before_save_sync = false;
-    }
+    const {_data} = this;
+    return Promise.resolve()
+      .then(() => this.before_save())
+      .then((before_save_res) => {
 
-    // этот код выполним в самом конце, после записи и после обработчика after_save
-    const reset_modified = () => {
-      if(before_save_res === false) {
-        if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted != initial_posted) {
-          this.posted = initial_posted;
+        // этот код выполним в самом конце, после записи
+        const reset_modified = () => {
+          if(before_save_res === false) {
+            if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted !== initial_posted) {
+              this.posted = initial_posted;
+            }
+          }
+          else {
+            _data._modified = false;
+          }
+          _data._saving = 0;
+          return this;
+        };
+
+
+        // если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
+        if(before_save_res === false) {
+          return Promise.reject(reset_modified());
         }
-      }
-      else {
-        this._data._modified = false;
-      }
-      return this;
-    };
 
-    // если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
-    if(before_save_res === false) {
-      return Promise.reject(reset_modified());
-    }
+        // этот код выполняем в случае ошибки незаполненных реквизитов
+        const reset_mandatory = (msg) => {
+          before_save_res = false;
+          reset_modified();
+          md.emit('alert', msg);
+          const err = new Error(msg.text);
+          err.msg = msg;
+          return Promise.reject(err);
+        };
 
-    // для объектов с иерархией установим пустого родителя, если иной не указан
-    if(this._metadata().hierarchical && !this._obj.parent) {
-      this._obj.parent = utils.blank.guid;
-    }
-
-    // если пользовательский обработчик перед записью вернул промис, дожидаемся его завершения
-
-    // для документов, контролируем заполненность даты и номера
-    let numerator = before_save_res instanceof Promise ? before_save_res : Promise.resolve();
-    if(!this._deleted) {
-      if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
-        if(utils.blank.date == this.date) {
-          this.date = new Date();
+        // для объектов с иерархией установим пустого родителя, если иной не указан
+        if(this._metadata().hierarchical && !this._obj.parent) {
+          this._obj.parent = utils.blank.guid;
         }
-        if(!this.number_doc) {
-          numerator = numerator.then(() => this.new_number_doc());
-        }
-      }
-      else {
-        if(!this.id) {
-          numerator = numerator.then(() => this.new_number_doc());
-        }
-      }
-    }
 
-    // если не указаны обязательные реквизиты
-    // TODO: show_msg alert-error нужно делать emit на метаданных
-    const {fields, tabular_sections} = this._metadata();
-    const {msg, md, cch: {properties}} = this._manager._owner.$p;
-    for (const mf in fields) {
-      if (fields[mf].mandatory && !this._obj[mf]) {
-        md.emit('alert', {
-          obj: this,
-          title: msg.mandatory_title,
-          type: "alert-error",
-          text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
-        })
-        before_save_res = false;
-        return Promise.reject(reset_modified());
-      }
-    }
-    if(properties) {
-      for (const prts of ['extra_fields', 'product_params', 'params']) {
-        if(!tabular_sections[prts]) {
-          continue;
-        }
-        for (const row of this[prts]._obj) {
-          const property = properties.get(row.property || row.param);
-          if(property && property.mandatory) {
-            const {value} = (row._row || row);
-            if(utils.is_data_obj(value) ? value.empty() : !value) {
-              md.emit('alert', {
-                obj: this,
-                row: row._row || row,
-                title: msg.mandatory_title,
-                type: 'alert-error',
-                text: msg.mandatory_field.replace('%1', property.caption || property.name)
-              });
-              before_save_res = false;
-              return Promise.reject(reset_modified());
+        // для документов, контролируем заполненность даты и номера
+        let numerator;
+        if(!this._deleted) {
+          if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
+            if(utils.blank.date == this.date) {
+              this.date = new Date();
+            }
+            if(!this.number_doc) {
+              numerator = this.new_number_doc();
+            }
+          }
+          else {
+            if(!this.id) {
+              numerator = this.new_number_doc();
             }
           }
         }
-      }
-    }
 
-    // в зависимости от типа кеширования, получаем saver и сохраняем объект во внешней базе
-    return numerator.then(() => this._manager.adapter.save_obj(this, {post, operational, attachments })
-    // и выполняем обработку после записи
-      .then(() => this.after_save())
-      .then(reset_modified)
-    );
+        // если не указаны обязательные реквизиты...
+        const {fields, tabular_sections} = this._metadata();
+        const {msg, md, cch: {properties}} = this._manager._owner.$p;
+        for (const mf in fields) {
+          if (fields[mf].mandatory && !this._obj[mf]) {
+            return reset_mandatory({
+              obj: this,
+              title: msg.mandatory_title,
+              type: "alert-error",
+              text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
+            });
+          }
+        }
+        if(properties) {
+          for (const prts of ['extra_fields', 'product_params', 'params']) {
+            if(!tabular_sections[prts]) {
+              continue;
+            }
+            for (const row of this[prts]._obj) {
+              const property = properties.get(row.property || row.param);
+              if(property && property.mandatory) {
+                const {value} = (row._row || row);
+                if(utils.is_data_obj(value) ? value.empty() : !value) {
+                  return reset_mandatory({
+                    obj: this,
+                    row: row._row || row,
+                    title: msg.mandatory_title,
+                    type: 'alert-error',
+                    text: msg.mandatory_field.replace('%1', property.caption || property.name)
+                  });
+                }
+              }
+            }
+          }
+        }
+
+        // в зависимости от типа кеширования, получаем saver и сохраняем объект во внешней базе
+        return (numerator || Promise.resolve())
+          .then(() => this._manager.adapter.save_obj(this, {post, operational, attachments }))
+          // и выполняем обработку после записи
+          .then(() => this.after_save())
+          .then(reset_modified)
+          .catch((err) => {
+            reset_modified();
+            throw err;
+          });
+
+      });
+
   }
 
 
@@ -648,7 +674,7 @@ export class DataObj {
     }
     if(attr && typeof attr == 'object') {
       const {_not_set_loaded} = attr;
-      delete attr._not_set_loaded;
+      _not_set_loaded && delete attr._not_set_loaded;
       const {_data} = this;
       if(silent) {
         if(_data._loading) {
@@ -1042,7 +1068,10 @@ export class DocObj extends NumberDocAndDate(DataObj) {
   get presentation() {
     const meta = this._metadata();
     const {number_doc, date, posted, _modified} = this;
-    return `${meta.obj_presentation || meta.synonym}  №${number_doc || 'б/н'} от ${moment(date).format(moment._masks.ldt)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`;
+    return number_doc ?
+      `${meta.obj_presentation || meta.synonym}  №${number_doc} от ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`
+      :
+      `${meta.obj_presentation || meta.synonym} ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`;
   }
 
   set presentation(v) {
@@ -1083,18 +1112,20 @@ export class DataProcessorObj extends DataObj {
     // выполняем конструктор родительского объекта
     super(attr, manager, loading);
 
-    const {fields, tabular_sections} = manager.metadata();
+    if(!loading) {
+      const {fields, tabular_sections} = manager.metadata();
+      for (const fld in fields) {
+        if(!attr[fld]) {
+          attr[fld] = utils.fetch_type('', fields[fld].type);
+        }
+      }
+      for (const fld in tabular_sections) {
+        if(!attr[fld]) {
+          attr[fld] = [];
+        }
+      }
+    }
 
-    for (const fld in fields) {
-      if(!attr[fld]) {
-        attr[fld] = utils.fetch_type('', fields[fld].type);
-      }
-    }
-    for (const fld in tabular_sections) {
-      if(!attr[fld]) {
-        attr[fld] = [];
-      }
-    }
     utils._mixin(this, attr);
   }
 }
