@@ -16,6 +16,7 @@ class InnerData {
     this._is_new = !(owner instanceof EnumObj);
     this._loading = !!loading;
     this._saving = 0;
+    this._saving_trans = false;
     this._modified = false;
   }
 
@@ -496,6 +497,7 @@ export class DataObj {
 
     // выполняем обработчик перед записью
     const {_data} = this;
+    _data._saving_trans = true;
     return Promise.resolve()
       .then(() => this.before_save())
       .then((before_save_res) => {
@@ -511,6 +513,7 @@ export class DataObj {
             _data._modified = false;
           }
           _data._saving = 0;
+          _data._saving_trans = false;
           return this;
         };
 

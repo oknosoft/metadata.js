@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.10, built:2018-10-24
+ metadata-core v2.0.17-beta.10, built:2018-10-25
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -542,6 +542,7 @@ class InnerData {
     this._is_new = !(owner instanceof EnumObj);
     this._loading = !!loading;
     this._saving = 0;
+    this._saving_trans = false;
     this._modified = false;
   }
 }
@@ -825,6 +826,7 @@ class DataObj {
       this.posted = post;
     }
     const {_data} = this;
+    _data._saving_trans = true;
     return Promise.resolve()
       .then(() => this.before_save())
       .then((before_save_res) => {
@@ -838,6 +840,7 @@ class DataObj {
             _data._modified = false;
           }
           _data._saving = 0;
+          _data._saving_trans = false;
           return this;
         };
         if(before_save_res === false) {
