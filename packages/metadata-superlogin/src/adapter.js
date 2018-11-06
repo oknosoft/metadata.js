@@ -164,17 +164,23 @@ export default (constructor) => {
      * @return {*}
      */
     dbpath(name) {
-      const {$p: {superlogin}, props: {path, prefix, zone}} = this;
+      let {$p: {superlogin}, props: {path, prefix, zone}} = this;
       let url = superlogin.getDbUrl(prefix + (name == 'meta' ? name : (zone + '_' + name)));
+      let localhost = 'localhost:5984/' + prefix;
       if(!url) {
         url = superlogin.getDbUrl(name);
+        if(url) {
+          const regex = new RegExp(prefix + '$');
+          path = path.replace(regex, '');
+          localhost = localhost.replace(regex, '');
+        }
       }
       if(!url) {
         url = superlogin.getDbUrl(prefix + zone + '_doc');
         const pos = url.indexOf(prefix + (name == 'meta' ? name : (zone + '_doc')));
         url = url.substr(0, pos) + prefix + (name == 'meta' ? name : (zone + '_' + name));
+        localhost = 'localhost:5984/' + prefix;
       }
-      const localhost = 'localhost:5984/' + prefix;
       if(url.indexOf(localhost) !== -1) {
         const https = path.indexOf('https://') !== -1;
         if(https){
@@ -182,7 +188,7 @@ export default (constructor) => {
         }
         url = url.replace(localhost, path.substr(https ? 8 : 7));
       }
-      return url;
+      return url; // replace('fl211:5984', 'localhost:8000/couchdb')
     }
 
     /**

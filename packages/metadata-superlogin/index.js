@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.17-beta.10, built:2018-10-24
+ metadata-superlogin v2.0.17-beta.10, built:2018-11-06
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -655,17 +655,23 @@ var adapter = (constructor) => {
       });
     }
     dbpath(name) {
-      const {$p: {superlogin}, props: {path, prefix, zone}} = this;
+      let {$p: {superlogin}, props: {path, prefix, zone}} = this;
       let url = superlogin.getDbUrl(prefix + (name == 'meta' ? name : (zone + '_' + name)));
+      let localhost = 'localhost:5984/' + prefix;
       if(!url) {
         url = superlogin.getDbUrl(name);
+        if(url) {
+          const regex = new RegExp(prefix + '$');
+          path = path.replace(regex, '');
+          localhost = localhost.replace(regex, '');
+        }
       }
       if(!url) {
         url = superlogin.getDbUrl(prefix + zone + '_doc');
         const pos = url.indexOf(prefix + (name == 'meta' ? name : (zone + '_doc')));
         url = url.substr(0, pos) + prefix + (name == 'meta' ? name : (zone + '_' + name));
+        localhost = 'localhost:5984/' + prefix;
       }
-      const localhost = 'localhost:5984/' + prefix;
       if(url.indexOf(localhost) !== -1) {
         const https = path.indexOf('https://') !== -1;
         if(https){
