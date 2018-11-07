@@ -188,7 +188,7 @@ export default (constructor) => {
         }
         url = url.replace(localhost, path.substr(https ? 8 : 7));
       }
-      return url; // replace('fl211:5984', 'localhost:8000/couchdb')
+      return url;
     }
 
     /**
