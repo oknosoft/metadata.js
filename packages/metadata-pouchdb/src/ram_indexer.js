@@ -240,6 +240,9 @@ export default class RamIndexer {
 
     if(!bookmark) {
       const listener = (change) => {
+        if(!change) {
+          return;
+        }
         if(this._area) {
           change._area = _mgr.cachable;
         }

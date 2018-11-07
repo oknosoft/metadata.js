@@ -73,6 +73,18 @@ export default (constructor) => {
         .then(() => this.emit_async('pouch_autologin', true));
     }
 
+    recreate(name) {
+      if(name === 'doc' || name === 'ram') {
+        return;
+      }
+      const {remote} = this;
+      const url = this.dbpath(name);
+      if(url && (!remote[name] || remote[name].name !== url)) {
+        remote[name] && remote[name].close();
+        remote[name] = new PouchDB(url, {skip_setup: true, adapter: 'http'});
+      }
+    }
+
     /**
      * ### Создаёт базы remote и запускает репликацию
      * @method log_in
@@ -121,22 +133,12 @@ export default (constructor) => {
 
         // пересоздаём базы autologin
         for(const name of props.autologin) {
-          if(name === 'doc' || name === 'ram') {
-            continue;
-          }
-          const url = this.dbpath(name);
-          if(url && remote[name] && remote[name].name !== url) {
-            remote[name] = new PouchDB(url, {skip_setup: true, adapter: 'http'});
-          }
+          this.recreate(name);
         }
 
         // дополнительные базы пользователя
         for(const id in session.userDBs) {
-          const name = id.replace(/.*_/, '');
-          if(remote[name]) {
-            continue;
-          }
-          remote[name] = new PouchDB(this.dbpath(name), {skip_setup: true, adapter: 'http'});
+          this.recreate(id.replace(/.*_/, ''));
         }
 
         // сохраняем имя пользователя в localstorage

@@ -595,6 +595,17 @@ var adapter = (constructor) => {
         })
         .then(() => this.emit_async('pouch_autologin', true));
     }
+    recreate(name) {
+      if(name === 'doc' || name === 'ram') {
+        return;
+      }
+      const {remote} = this;
+      const url = this.dbpath(name);
+      if(url && (!remote[name] || remote[name].name !== url)) {
+        remote[name] && remote[name].close();
+        remote[name] = new PouchDB(url, {skip_setup: true, adapter: 'http'});
+      }
+    }
     log_in(username, password) {
       const {props, local, remote, $p, authorized} = this;
       const {job_prm, wsql, aes, md, superlogin} = $p;
@@ -628,20 +639,10 @@ var adapter = (constructor) => {
         }
         super.after_init();
         for(const name of props.autologin) {
-          if(name === 'doc' || name === 'ram') {
-            continue;
-          }
-          const url = this.dbpath(name);
-          if(url && remote[name] && remote[name].name !== url) {
-            remote[name] = new PouchDB(url, {skip_setup: true, adapter: 'http'});
-          }
+          this.recreate(name);
         }
         for(const id in session.userDBs) {
-          const name = id.replace(/.*_/, '');
-          if(remote[name]) {
-            continue;
-          }
-          remote[name] = new PouchDB(this.dbpath(name), {skip_setup: true, adapter: 'http'});
+          this.recreate(id.replace(/.*_/, ''));
         }
         if(wsql.get_user_param('user_name') != session.user_id) {
           wsql.set_user_param('user_name', session.user_id);
