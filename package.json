@@ -47,7 +47,7 @@
     "babel-runtime": "^6.26.0",
     "concat-files": "^0.1.1",
     "decompress": "^4.2",
-    "downshift": "^3.1.4",
+    "downshift": "^3.1.5",
     "graceful-fs": "^4.1.15",
     "gulp": "^3.9",
     "gulp-base64": "^0.1",

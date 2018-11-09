@@ -51,7 +51,7 @@ type Props = {
 };
 
 function MarkdownDocs(props: Props) {
-  const {classes, demos, markdown, subtitle, sourceLocation: sourceLocationProp, title, htitle, h1,
+  const {classes, demos, markdown, subtitle, sourceLocation: sourceLocationProp, title, htitle, h1, img,
     descr, canonical, footer, handleIfaceState, TopButton} = props;
   const contents = getContents(markdown);
   const headers = getHeaders(markdown);
@@ -91,6 +91,7 @@ function MarkdownDocs(props: Props) {
         {canonical && <link rel="canonical" href={canonical} />}
         <meta property="og:title" content={ltitle} />
         <meta property="og:description" content={descr || h1} />
+        {img && <meta property="og:image" content={img} />}
       </Helmet>
 
       {/*
