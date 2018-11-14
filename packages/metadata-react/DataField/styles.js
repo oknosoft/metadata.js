@@ -6,6 +6,7 @@ const styles = theme => ({
     paddingRight: theme.spacing.unit,
     boxSizing: 'border-box',
     minWidth: 260,
+    marginTop: theme.spacing.unit,
   },
   container: {
     flexGrow: 1,
@@ -28,6 +29,9 @@ const styles = theme => ({
   suggestionSelected: {
     backgroundColor: 'rgba(0, 0, 0, 0.12)'
   },
+  suggestionCurrent: {
+    fontWeight: 500
+  },
   suggestionsList: {
     margin: 0,
     padding: 0,
@@ -42,6 +46,19 @@ const styles = theme => ({
     minHeight: 48,
     paddingLeft: theme.spacing.unit,
     paddingRight: theme.spacing.unit,
+  },
+  threestateLabel: {
+    paddingLeft: theme.spacing.unit,
+    paddingTop: theme.spacing.unit,
+  },
+  threestateInput: {
+    width: theme.spacing.unit * 2,
+    height: theme.spacing.unit * 2,
+  },
+  barInput: {
+    minWidth: 200,
+    marginLeft: theme.spacing.unit,
+    marginTop: 0,
   },
   flex: {
     flex: 1,
@@ -58,7 +75,8 @@ const styles = theme => ({
   icon: {
     width: 32,
     height: 32,
+    paddingTop: 4,
   }
 });
 
-export default withStyles(styles, {name: 'DataField'});
+export default withStyles(styles);

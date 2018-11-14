@@ -113,6 +113,8 @@ class Report extends MDNRComponent {
     return [
       <Helmet key="helmet" title={props.title}>
         <meta name="description" content="Отчет" />
+        <meta property="og:title" content={props.title} />
+        <meta property="og:description" content="Отчет" />
       </Helmet>,
 
       <RepToolbar

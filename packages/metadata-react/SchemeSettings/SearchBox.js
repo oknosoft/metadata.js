@@ -23,15 +23,13 @@ const styles = theme => ({
     background: fade(theme.palette.common.white, 0.15),
     '&:hover': {
       background: fade(theme.palette.common.white, 0.25),
-      border: '1px solid #e0e0e0',
+      //border: '1px solid #e0e0e0',
     },
     '& $input': {
       transition: theme.transitions.create('width'),
-      width: 100,
+      width: 150,
       '&:focus': {
-        width: 160,
         background: theme.palette.common.white,
-        // border: '1px solid #e0e0e0',
       },
     },
   },
@@ -62,21 +60,40 @@ const styles = theme => ({
   },
 });
 
-function SearchBox(props) {
-  const {classes, width} = props;
+class SearchBox extends React.Component {
 
-  if(!isWidthUp('sm', width)) {
-    return null;
-  }
+  handleKeyDown = (event) => {
+    if(event.key === 'Enter' || event.key === 'Tab') {
+      this.props.onChange({target: event.target, force: true});
+    }
+  };
 
-  return (
-    <div className={classes.wrapper}>
-      <input className={classes.input} placeholder="Поиск..." value={props.value} onChange={props.onChange}/>
-      <div className={classes.search}>
-        <SearchIcon/>
+  handleChange = (event) => {
+    this.props.onChange(event);
+  };
+
+  render() {
+    const {classes, width, value} = this.props;
+
+    if(!isWidthUp('sm', width)) {
+      return null;
+    }
+
+    return (
+      <div className={classes.wrapper}>
+        <input
+          className={classes.input}
+          placeholder="Поиск..."
+          value={value}
+          onChange={this.handleChange}
+          onKeyDown={this.handleKeyDown}
+        />
+        <div className={classes.search}>
+          <SearchIcon/>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 SearchBox.propTypes = {

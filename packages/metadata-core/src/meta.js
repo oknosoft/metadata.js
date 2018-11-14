@@ -124,6 +124,9 @@ class Meta extends MetaEventEmitter {
     else if(is_cat && field_name == 'name') {
       res.synonym = 'Наименование';
     }
+    else if(field_name == '_area') {
+      res.synonym = 'Область';
+    }
     else if(field_name == 'presentation') {
       res.synonym = 'Представление';
     }

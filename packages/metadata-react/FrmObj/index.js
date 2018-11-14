@@ -1,3 +1,5 @@
 import DataObj from './DataObj'
+import withStyles from '../styles/paper600';
+import {withIface} from 'metadata-redux';
 
-export default DataObj
+export default withStyles(withIface(DataObj));

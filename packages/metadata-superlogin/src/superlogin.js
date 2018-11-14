@@ -4,20 +4,20 @@
  *
  */
 
-import superlogin from 'superlogin-client';
+import superlogin from './client';
 
 import adapter from './adapter';
 import default_config from './default.config';
 
 const {metaActions} = require('metadata-redux');
 
-// переопределяем getDbUrl
-// const default_getDbUrl = superlogin.getDbUrl.bind(superlogin);
-// superlogin.getDbUrl = function (name) {
-//   return default_getDbUrl(name).replace('http://', 'https://').replace('fl211:5984', 'flowcon.oknosoft.ru/couchdb');
-// };
+function needAuth() {
+  return Promise.reject({error: 'Требуется авторизация'});
+}
 
 function attach($p) {
+
+  const {cat, utils, wsql, adapters: {pouch}} = $p;
 
   // Session is an object that contains all the session information returned by SuperLogin, along with serverTimeDiff, the difference between the server clock and the local clock.
   superlogin.on('login', function (event, session) {
@@ -44,10 +44,10 @@ function attach($p) {
     if(session) {
       const attr = {
         id: session.user_id,
-        ref: session.profile && session.profile.ref ? session.profile.ref : $p.utils.generate_guid(),
+        ref: session.profile && session.profile.ref ? session.profile.ref : utils.generate_guid(),
         name: session.profile && session.profile.name ? session.profile.name : session.user_id,
       }
-      return $p.cat.users.create(attr, false, true);
+      return cat.users.create(attr, false, true);
     }
   };
 
@@ -63,7 +63,7 @@ function attach($p) {
             return res.data;
           });
     }
-    return Promise.reject({error: 'Authentication required'});
+    return needAuth();
   };
 
   superlogin.change_subscription = function (subscription) {
@@ -78,7 +78,17 @@ function attach($p) {
             return res.data;
           });
     }
-    return Promise.reject({error: 'Authentication required'});
+    return needAuth();
+  }
+
+  superlogin.create_db = function (name) {
+    return this.authenticated() ?
+      this._http.post(`/user/create-db`, {name})
+        .then(res => {
+          return this.refresh();
+        })
+      :
+      needAuth();
   }
 
 
@@ -124,7 +134,7 @@ function attach($p) {
               payload: {name: session.token, password: session.password, provider: session.provider}
             });
 
-            return $p.adapters.pouch.log_in(session.token, session.password);
+            return pouch.log_in(session.token, session.password);
           }
 
 
@@ -162,14 +172,25 @@ function attach($p) {
 
       // Если еще не авторизованы - создаём пользователя по данным соцсети
       return superlogin.socialAuth(provider)
-        .then((session) => $p.adapters.pouch.log_in(session.token, session.password))
-        .catch((err) => $p.adapters.pouch.log_out());
+        .then((session) => {
+          return pouch.log_in(session.token, session.password);
+        })
+        .catch((err) => {
+          return pouch.log_out()
+            .then(() => {
+              if(typeof err === 'string' && err.indexOf('newAccount') !== -1) {
+                const text = `Пользователь '${err.substr(11)}' провайдера '${provider}' не связан с пользователем сервиса.
+                Для авторизации oAuth, зарегистрируйтесь через логин/пароль и свяжите учётную запись сервиса с провайдером социальной сети`;
+                dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text}));
+              }
+            });
+        });
     };
   }
 
   // запускает авторизацию - обычную или SuperLogin
   function handleLogin(login, password) {
-    return metaActions.USER_TRY_LOG_IN($p.adapters.pouch, login, password);
+    return metaActions.USER_TRY_LOG_IN(pouch, login, password);
   }
 
   // завершает сессию
@@ -177,7 +198,7 @@ function attach($p) {
 
     return function (dispatch, getState) {
 
-      $p.adapters.pouch.log_out()
+      pouch.log_out()
         .then(() => superlogin.logout())
         .then(() => dispatch({
           type: metaActions.types.USER_LOG_OUT,
@@ -194,31 +215,24 @@ function attach($p) {
       const {username, email, password, confirmPassword} = registration;
 
       if(!password || password.length < 6 || password !== confirmPassword) {
-        return dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Password must be at least 6 characters length'}));
-      }
-      if(!username || username.length < 3) {
-        return dispatch(metaActions.USER_LOG_ERROR({message: 'empty'}));
+        return dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Длина пароля должна быть не менее 6 символов'}));
       }
 
       // проверим login, email и password
       return superlogin.validateUsername(username)
         .catch((err) => {
           dispatch(metaActions.USER_LOG_ERROR(
-            err.message && err.message.match(/(time|network)/i) ? err : {message: 'custom', text: err.error ? err.error : 'Username error'}
+            err.message && err.message.match(/(time|network)/i) ? err : {message: 'custom', text: err.error ? err.error : 'Ошибка при проверке имени пользователя'}
           ));
         })
-        .then((ok) => {
-          return ok && superlogin.validateEmail(email)
-        })
+        .then((ok) => ok && superlogin.validateEmail(email))
         .catch((err) => {
           dispatch(metaActions.USER_LOG_ERROR(
             err.message && err.message.match(/(time|network)/i) ? err : {message: 'custom', text: err.error ? err.error : 'Email error'}
           ));
         })
         // попытка регистрации
-        .then((ok) => {
-          return ok && superlogin.register(registration)
-        })
+        .then((ok) => ok && superlogin.register(registration))
         .then((reg) => {
           if(reg) {
             if(reg.success) {
@@ -233,12 +247,12 @@ function attach($p) {
               }
             }
             else {
-              dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Registration error'}));
+              dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: reg.error ? reg.error : 'Registration error'}));
             }
           }
         })
         .then((session) => {
-          return session && $p.adapters.pouch.log_in(session.username, session.password);
+          return session && pouch.log_in(session.username, session.password);
         })
         .catch((err) => {
           dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: err.error ? err.error : 'Registration error'}));
@@ -281,7 +295,7 @@ function attach($p) {
 
   function handleSetPrm(attr) {
     for (const key in attr) {
-      $p.wsql.set_user_param(key, attr[key]);
+      wsql.set_user_param(key, attr[key]);
     }
     return metaActions.PRM_CHANGE(attr);
   }
@@ -307,13 +321,13 @@ function attach($p) {
   // меняем подписки на события pouchdb
   superlogin._init = function (store) {
 
-    $p.adapters.pouch.on('superlogin_log_in', () => {
+    pouch.on('superlogin_log_in', () => {
 
       const user_name = superlogin.getSession().user_id;
 
-      if($p.cat && $p.cat.users) {
+      if(cat.users) {
 
-        $p.cat.users.find_rows_remote({
+        cat.users.find_rows_remote({
           _view: 'doc/number_doc',
           _key: {
             startkey: ['cat.users', 0, user_name],
@@ -324,8 +338,8 @@ function attach($p) {
             return res[0];
           }
           else {
-            let user = $p.cat.users.create({
-              ref: $p.utils.generate_guid(),
+            let user = cat.users.create({
+              ref: utils.generate_guid(),
               id: user_name
             });
             return user.save();

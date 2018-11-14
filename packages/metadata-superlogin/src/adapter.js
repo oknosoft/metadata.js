@@ -73,6 +73,18 @@ export default (constructor) => {
         .then(() => this.emit_async('pouch_autologin', true));
     }
 
+    recreate(name) {
+      if(name === 'doc' || name === 'ram') {
+        return;
+      }
+      const {remote} = this;
+      const url = this.dbpath(name);
+      if(url && (!remote[name] || remote[name].name !== url)) {
+        remote[name] && remote[name].close();
+        remote[name] = new PouchDB(url, {skip_setup: true, adapter: 'http'});
+      }
+    }
+
     /**
      * ### Создаёт базы remote и запускает репликацию
      * @method log_in
@@ -121,13 +133,12 @@ export default (constructor) => {
 
         // пересоздаём базы autologin
         for(const name of props.autologin) {
-          if(name === 'doc' || name === 'ram') {
-            continue;
-          }
-          const url = this.dbpath(name);
-          if(url && remote[name] && remote[name].name !== url) {
-            remote[name] = new PouchDB(url, {skip_setup: true, adapter: 'http'});
-          }
+          this.recreate(name);
+        }
+
+        // дополнительные базы пользователя
+        for(const id in session.userDBs) {
+          this.recreate(id.replace(/.*_/, ''));
         }
 
         // сохраняем имя пользователя в localstorage
@@ -139,7 +150,8 @@ export default (constructor) => {
         this.emit_async('user_log_in', session.user_id);
 
         // запускаем синхронизацию для нужных баз
-        return this.after_log_in()
+        return this.emit_promise('on_log_in')
+          .then(() => this.after_log_in())
           .catch(err => {
             // излучаем событие
             this.emit('user_log_fault', err);
@@ -154,14 +166,23 @@ export default (constructor) => {
      * @return {*}
      */
     dbpath(name) {
-      const {$p, props: {path, prefix, zone}} = this;
-      let url = $p.superlogin.getDbUrl(prefix + (name == 'meta' ? name : (zone + '_' + name)));
+      let {$p: {superlogin}, props: {path, prefix, zone}} = this;
+      let url = superlogin.getDbUrl(prefix + (name == 'meta' ? name : (zone + '_' + name)));
+      let localhost = 'localhost:5984/' + prefix;
       if(!url) {
-        url = $p.superlogin.getDbUrl(prefix + zone + '_doc');
+        url = superlogin.getDbUrl(name);
+        if(url) {
+          const regex = new RegExp(prefix + '$');
+          path = path.replace(regex, '');
+          localhost = localhost.replace(regex, '');
+        }
+      }
+      if(!url) {
+        url = superlogin.getDbUrl(prefix + zone + '_doc');
         const pos = url.indexOf(prefix + (name == 'meta' ? name : (zone + '_doc')));
         url = url.substr(0, pos) + prefix + (name == 'meta' ? name : (zone + '_' + name));
+        localhost = 'localhost:5984/' + prefix;
       }
-      const localhost = 'localhost:5984/' + prefix;
       if(url.indexOf(localhost) !== -1) {
         const https = path.indexOf('https://') !== -1;
         if(https){
@@ -178,7 +199,8 @@ export default (constructor) => {
      * @property authorized
      */
     get authorized() {
-      return this.$p.superlogin.authenticated();
+      const session = $p.superlogin.getSession();
+      return session && session.user_id;
     }
   };
 

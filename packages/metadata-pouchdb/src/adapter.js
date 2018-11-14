@@ -15,7 +15,7 @@ import PouchDB from './pouchdb';
 
 function adapter({AbstracrAdapter}) {
 
-  const fieldsToDelete = '_id,_rev,search,timestamp'.split(',');
+  const fieldsToDelete = '_id,search,timestamp'.split(',');
 
   /**
    * ### Интерфейс локальной и сетевой баз данных PouchDB
@@ -112,15 +112,26 @@ function adapter({AbstracrAdapter}) {
         if(bases.indexOf(name) != -1) {
           // в Node, локальные базы - это алиасы удалённых
           // если direct, то все базы, кроме ram, так же - удалённые
-          if(props.user_node || (props.direct && name != 'ram' && name != 'user')) {
-            Object.defineProperty(local, name, {
-              get: function () {
+          Object.defineProperty(local, name, {
+            get() {
+              if(props.user_node) {
                 return remote[name];
               }
-            });
+              const dynamic_doc = wsql.get_user_param('dynamic_doc');
+              if(dynamic_doc && name === 'doc' && props.direct) {
+                return remote[dynamic_doc];
+              }
+              else {
+                return local[`__${name}`] || remote[name];
+              }
+            }
+          });
+
+          if(props.user_node || (props.direct && name != 'ram' && name != 'user')) {
+            local[`__${name}`] = null;
           }
           else {
-            local[name] = new PouchDB(props.prefix + props.zone + '_' + name, opts);
+            local[`__${name}`] = new PouchDB(props.prefix + props.zone + '_' + name, opts);
           }
         }
       }
@@ -159,11 +170,14 @@ function adapter({AbstracrAdapter}) {
      */
     after_log_in() {
 
-      const {props, local, remote, $p: {md}} = this;
+      const {props, local, remote, $p: {md, wsql}} = this;
       const try_auth = [];
 
       md.bases().forEach((dbid) => {
-        if(dbid !== 'meta' && local[dbid] && remote[dbid] && local[dbid] != remote[dbid]) {
+        if(dbid !== 'meta' &&
+          local[dbid] && remote[dbid] && local[dbid] != remote[dbid] &&
+          (dbid !== 'doc' || !wsql.get_user_param('dynamic_doc'))
+        ) {
           if(props.noreplicate && props.noreplicate.indexOf(dbid) != -1) {
             return;
           }
@@ -1077,13 +1091,14 @@ function adapter({AbstracrAdapter}) {
           }
           tObj._data._loading = true;
           tObj._mixin(res);
+          tObj._obj._rev = res._rev;
         })
         .catch((err) => {
           if(err.status != 404) {
             throw err;
           }
           else {
-            this.$p.record_log(db.name + ':' + tObj._manager.class_name + '|' + tObj.ref);
+            //console.log(db.name + '/' + tObj._manager.class_name + '|' + tObj.ref);
           }
         })
         .then((res) => {
@@ -1103,19 +1118,24 @@ function adapter({AbstracrAdapter}) {
 
       const {_manager, _obj, _data, ref, class_name} = tObj;
 
-      if(!_data || (_data._saving && !_data._modified)) {
+      // нас могли попросить записать объект не в родную базу менеджера, а в любую другую
+      const db = attr.db || this.db(_manager);
+
+      if(!_data || (_data._saving && !_data._modified) || !db) {
         return Promise.resolve(tObj);
       }
       // TODO: опасное место с гонками при одновременной записи
       if(_data._saving && _data._modified) {
+        _data._saving++;
+        if(_data._saving > 10) {
+          return Promise.reject(new Error(`Циклическая перезапись`));
+        }
         return new Promise((resolve, reject) => {
-          setTimeout(() => resolve(this.save_obj(tObj, attr)), 100);
+          setTimeout(() => resolve(this.save_obj(tObj, attr)), 200);
         });
       }
-      _data._saving = true;
 
-      // нас могли попросить записать объект не в родную базу менеджера, а в любую другую
-      const db = attr.db || this.db(_manager);
+      _data._saving = 1;
 
       // подмешиваем class_name
       const tmp = Object.assign({_id: class_name + '|' + ref, class_name}, _obj);
@@ -1143,9 +1163,16 @@ function adapter({AbstracrAdapter}) {
       }
 
       return new Promise((resolve, reject) => {
-        const getter = tObj.is_new() ? Promise.resolve() : db.get(tmp._id);
+        const getter = tObj.is_new() ? Promise.resolve(true) : db.get(tmp._id);
         getter.then((res) => {
-          if(res) {
+          if(typeof res === 'object') {
+            if(tmp._rev !== res._rev && _manager.metadata().check_rev !== false) {
+              const {timestamp} = res;
+              const err = new Error(`Объект ${timestamp && typeof timestamp.user === 'string' ?
+                `изменил ${timestamp.user}<br/>${timestamp.moment}` : 'изменён другим пользователем'}`);
+              err._rev = true;
+              return reject(err);
+            }
             tmp._rev = res._rev;
             for (let att in res._attachments) {
               if(!tmp._attachments) {
@@ -1156,26 +1183,30 @@ function adapter({AbstracrAdapter}) {
               }
             }
           }
+          return res;
         })
-          .catch((err) => err && err.status !== 404 && reject(err))
-          .then(() => db.put(tmp))
-          .then(() => {
-            tObj.is_new() && tObj._set_loaded(tObj.ref);
-            if(tmp._attachments) {
-              if(!tObj._attachments) {
-                tObj._attachments = {};
-              }
-              for (var att in tmp._attachments) {
-                if(!tObj._attachments[att] || !tmp._attachments[att].stub) {
-                  tObj._attachments[att] = tmp._attachments[att];
+          .catch((err) => {
+            return err && err.status !== 404 ? reject(err) : true;
+          })
+          .then((res) => res && db.put(tmp))
+          .then((res) => {
+            if(res) {
+              tObj.is_new() && tObj._set_loaded(tObj.ref);
+              if(tmp._attachments) {
+                if(!tObj._attachments) {
+                  tObj._attachments = {};
+                }
+                for (var att in tmp._attachments) {
+                  if(!tObj._attachments[att] || !tmp._attachments[att].stub) {
+                    tObj._attachments[att] = tmp._attachments[att];
+                  }
                 }
               }
+              _obj._rev = res.rev;
+              resolve(tObj);
             }
-            _data._saving = false;
-            resolve(tObj);
           })
           .catch((err) => {
-            _data._saving = false;
             err && err.status !== 404 && reject(err);
           });
       });
@@ -1484,7 +1515,6 @@ function adapter({AbstracrAdapter}) {
               _mgr.load_array(result.rows.map(({doc}) => {
                 doc.ref = doc._id.split('|')[1];
                 delete doc._id;
-                delete doc._rev;
                 return doc;
               }), true);
 
@@ -1589,11 +1619,13 @@ function adapter({AbstracrAdapter}) {
 
       // если указан MangoQuery, выполняем его без лишних церемоний
       if(selection && selection._mango) {
-        const {selector} = selection;
-        if(db.adapter == 'idb' && selector.date && selector.date.$and){
-          selector.date = selector.date.$and[0];
+        const sel = {};
+        for(const fld in selection) {
+          if(fld[0] !== '_') {
+            sel[fld] = selection[fld];
+          }
         }
-        return db.find(selection)
+        return db.find(sel)
           .then(({docs}) => {
             if(!docs) {
               docs = [];
@@ -1601,7 +1633,7 @@ function adapter({AbstracrAdapter}) {
             for (const doc of docs) {
               doc.ref = doc._id.split('|')[1];
             }
-            return docs;
+            return selection._raw ? docs : _mgr.load_array(docs);
           })
           .catch((err) => {
             err_handler(err);
@@ -1733,7 +1765,6 @@ function adapter({AbstracrAdapter}) {
                     doc.ref = doc._id.split('|')[1];
                     if(!_raw) {
                       delete doc._id;
-                      delete doc._rev;
                     }
                     return doc;
                   }),
@@ -1763,7 +1794,6 @@ function adapter({AbstracrAdapter}) {
 
               if(!_raw) {
                 delete doc._id;
-                delete doc._rev;
               }
 
               // фильтруем
@@ -1970,7 +2000,6 @@ function adapter({AbstracrAdapter}) {
           cn = key[0].split('.');
           doc.ref = key[1];
           delete doc._id;
-          delete doc._rev;
           if(!res[cn[0]]) {
             res[cn[0]] = {};
           }

@@ -1,0 +1,8 @@
+.noPadding .react-grid-Cell {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.fullscreen {
+  background-color: #fafafa;
+}

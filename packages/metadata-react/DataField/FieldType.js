@@ -31,11 +31,9 @@ const options = [{
   }, {
     label: 'Массив',
     value: 'array',
-    disabled: true,
   }, {
     label: 'Вычисляемое значение',
     value: 'calculated',
-    disabled: true,
   }],
 }];
 

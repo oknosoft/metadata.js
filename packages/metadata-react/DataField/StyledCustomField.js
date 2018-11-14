@@ -29,7 +29,7 @@ class CustomField extends PureComponent {
     return <FormControl
       className={classes.formControl}
       fullWidth={fullWidth}
-      margin="dense">
+    >
       <InputLabel>{_meta.synonym}</InputLabel>
       <Input {...others} />
     </FormControl>;

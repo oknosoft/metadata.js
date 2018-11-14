@@ -11,12 +11,13 @@ import TextField from '@material-ui/core/TextField';
 
 import AbstractField from './AbstractField';
 import withStyles from './styles';
+import cn from 'classnames';
 
 class FieldText extends AbstractField {
 
   render() {
     const {props, _meta, isTabular, onChange} = this;
-    const {_obj, _fld, classes, read_only, InputProps, ...other} = props;
+    const {_obj, _fld, classes, read_only, InputProps, bar, ...other} = props;
 
     return isTabular ?
       <input
@@ -29,8 +30,7 @@ class FieldText extends AbstractField {
       />
       :
       <TextField
-        className={classes.formControl}
-        margin="dense"
+        className={cn(classes.formControl, bar && classes.barInput)}
         disabled={read_only}
         label={_meta.synonym}
         title={_meta.tooltip || _meta.synonym}

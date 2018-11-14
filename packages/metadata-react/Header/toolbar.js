@@ -11,6 +11,12 @@ export default withStyles(theme => ({
   },
   ndrawer: {
     width: 310,
+    [theme.breakpoints.up('md')]: {
+      width: 420,
+    },
+    [theme.breakpoints.up('lg')]: {
+      width: 560,
+    },
   },
   flex: {
     flex: 1,
@@ -35,7 +41,7 @@ export default withStyles(theme => ({
     marginLeft: theme.spacing.unit,
   },
   bold: {
-    fontWeight: 'bold',
+    fontWeight: 500,
   },
   select: {
     width: 180,

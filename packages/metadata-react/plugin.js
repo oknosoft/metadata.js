@@ -62,6 +62,10 @@ function rx_columns({utils: {moment}, enm, md}) {
     return <div title={text} style={{textAlign: 'right'}}>{text}</div>;
   };
 
+  const bool_formatter = ({value}) => {
+    return <div>{value ? 'Да' : 'Нет'}</div>;
+  };
+
   const props_formatter = ({value}) => {
     return <div title={value.toString()}>{value.presentation}</div>;
   };
@@ -95,14 +99,19 @@ function rx_columns({utils: {moment}, enm, md}) {
           else if(_fld.type.digits && _fld.type.types.length === 1){
             column.formatter = number_formatter(_fld.type.fraction_figits);
           }
+          else if(_fld.type.types.includes('boolean')) {
+            column.formatter = bool_formatter;
+          }
         }
 
         let options;
         switch (column.ctrl_type) {
 
+        case label:
+          break;
+
         case input:
         case text:
-        case label:
         case link:
         case cascader:
           column.editable = editable;
@@ -130,25 +139,21 @@ function rx_columns({utils: {moment}, enm, md}) {
           break;
 
         case path:
-          // options = _obj.used_fields_list();
-          // column.editor = <DropDownEditor options={options}/>;
-          // column.formatter = <DropDownFormatter options={options} value=""/>;
-          column.editor = <PathFieldCell/>;
+          column.editor = PathFieldCell;
           break;
 
         case type:
-          column.editor = <TypeFieldCell/>;
-          //column.formatter = <DropDownFormatter options={[]} value=""/>;
+          column.editor = TypeFieldCell;
           break;
 
         case props:
-          column.editor = <PropsFieldCell/>;
+          column.editor = PropsFieldCell;
           column.formatter = props_formatter;
           break;
 
         default:
           if(editable){
-            column.editor = <DataCell/>;
+            column.editor = DataCell;
           }
         }
 
@@ -170,9 +175,9 @@ function rx_columns({utils: {moment}, enm, md}) {
 export function export_handlers() {
 
   this.doExport = (format, evt) => {
-    const {handleMenuClose, props} = this;
-    const {_obj, _tabular, _columns} = props;
-    _obj && _obj[_tabular].export(format, _columns.map(({key}) => key), evt && evt.target);
+    const {handleMenuClose, props: {_obj, _tabular, _columns}} = this;
+    const t = typeof _tabular === 'object' && _tabular.export ? _tabular : _obj && _obj[_tabular];
+    t && t.export(format, _columns.map(({key}) => key), evt && evt.target);
     handleMenuClose && handleMenuClose();
   };
 

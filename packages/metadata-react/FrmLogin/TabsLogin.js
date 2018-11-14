@@ -81,6 +81,7 @@ class TabsLogin extends Component {
 
     const {props, state, handleLogin} = this;
     const {classes, user, handleLogOut, couch_direct} = props;
+    const descr = "Вход в систему";
 
     return <Paper className={classnames({
       [classes.root]: true,
@@ -88,7 +89,9 @@ class TabsLogin extends Component {
     })} elevation={4}>
 
       <Helmet title={props.title}>
-        <meta name="description" content="Вход в систему" />
+        <meta name="description" content={descr} />
+        <meta property="og:title" content={props.title} />
+        <meta property="og:description" content={descr} />
       </Helmet>
 
       <Tabs value={state.index} onChange={(event, index) => this.setState({index})}>
@@ -138,7 +141,7 @@ class TabsLogin extends Component {
       {state.index === 0 && !user.log_error && user.try_log_in &&
       <FormGroup row>
         <CircularProgress size={24}/>
-        <Typography variant="subheading" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
+        <Typography variant="subtitle1" color="primary" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
           {`${$p.msg.login.title}, ${$p.msg.login.wait}...`}
         </Typography>
       </FormGroup>
@@ -147,7 +150,7 @@ class TabsLogin extends Component {
       {state.index === 0 && user.log_error &&
       <FormGroup row>
         <IconError className={classes.error}/>
-        <Typography variant="subheading" color="error" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>{user.log_error}</Typography>
+        <Typography variant="subtitle1" color="error" gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>{user.log_error}</Typography>
       </FormGroup>
       }
 
@@ -157,7 +160,7 @@ class TabsLogin extends Component {
           :
           <Button color="primary" size="small" className={classes.button} disabled={!state.login || !state.password} onClick={handleLogin}>Войти</Button>
         }
-        <Button variant="raised" size="small" disabled={true} className={classes.button}>Забыли пароль?</Button>
+        <Button variant="contained" size="small" disabled={true} className={classes.button}>Забыли пароль?</Button>
       </DialogActions>}
 
       {state.index === 1 && <CnnSettings {...props}/>}

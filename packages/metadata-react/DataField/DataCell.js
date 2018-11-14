@@ -46,7 +46,7 @@ class DataCell extends Editors.SimpleTextEditor {
 DataCell.propTypes = {
   options: PropTypes.array,
   column: Editors.CheckboxEditor.propTypes.column,
-  value: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
+  value: PropTypes.any,
   rowData: PropTypes.object,
   _meta: PropTypes.object,
 };

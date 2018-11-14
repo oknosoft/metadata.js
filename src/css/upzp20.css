@@ -287,7 +287,7 @@ div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td {
 }
 
 .dhtmlx_modal_box {
-	width: 400px;
+	width: 480px;
 	border: none;
 	border-radius: 4px;
 }
@@ -346,6 +346,19 @@ div.dhx_popup_dhx_terrace div.dhx_popup_area td.dhx_popup_td {
 }
 .ref_field21:hover {
     background: url(../imgs/custom_web/points_hover.png) no-repeat left center;
+}
+.ref_ofrm21 {
+  background: url(../imgs/custom_web/ofrm.png) no-repeat left center;
+  position: relative;
+  width: 22px;
+  height: 21px;
+  right: -5px;
+  top: -21px;
+  float: right;
+  cursor: alias;
+}
+.ref_ofrm21:hover {
+  background: url(../imgs/custom_web/ofrm_hover.png) no-repeat left center;
 }
 
 /* картинка длительной операции*/

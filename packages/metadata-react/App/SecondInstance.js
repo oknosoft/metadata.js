@@ -17,7 +17,7 @@ import withStyles from '../styles/paper600';
 function SecondInstance({classes}) {
 
   return <Paper className={classes.root} >
-    <Typography variant="display1">Второй экземпляр</Typography>
+    <Typography variant="h4">Второй экземпляр</Typography>
     <Typography>В соседнем окне или закладке браузера, открыт второй экземпляр приложения</Typography>
     <Typography>Программы на metadata.js, монопольно используют idb и localstorage браузера, одновременный запуск в нескольких окнах - не поддержан</Typography>
     <p>&nbsp;</p>

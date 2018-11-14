@@ -9,6 +9,7 @@ import LoadingMessage from '../DumbLoader/LoadingMessage';
 import ReactDataGrid from 'metadata-external/react-data-grid.min';
 import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
 
+const cmpType = PropTypes.oneOfType([PropTypes.object, PropTypes.array]);
 
 export default class TabularSection extends MComponent {
 
@@ -23,6 +24,8 @@ export default class TabularSection extends MComponent {
     denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
     denyReorder: PropTypes.bool,          // Запрет изменения порядка строк
     minHeight: PropTypes.number,
+    btns: cmpType,                        // дополнительные кнопки
+    menu_items: cmpType,                  // дополнительные пункты меню
 
     handleValueChange: PropTypes.func,    // Обработчик изменения значения в ячейке
     handleRowChange: PropTypes.func,      // При окончании редактирования строки
@@ -95,31 +98,45 @@ export default class TabularSection extends MComponent {
   };
 
   handleRemove = () => {
-    const {selected} = this._grid.state;
+    const {state: {_tabular}, _grid: {state}} = this;
+    const {selected} = state;
     if(selected && selected.hasOwnProperty('rowIdx')) {
-      this.state._tabular.del(selected.rowIdx);
+      _tabular.del(selected.rowIdx);
+      this.forceUpdate();
+    }
+  };
+
+  handleClear = () => {
+    const {_tabular} = this.state;
+    if(_tabular) {
+      _tabular.clear();
       this.forceUpdate();
     }
   };
 
   handleAdd = () => {
-    this.state._tabular.add();
-    this.forceUpdate();
+    const {_tabular} = this.state;
+    if(_tabular) {
+      _tabular.add();
+      this.forceUpdate();
+    }
   };
 
   handleUp = () => {
-    const {selected} = this._grid.state;
+    const {state: {_tabular}, _grid: {state}} = this;
+    const {selected} = state;
     if(selected && selected.hasOwnProperty('rowIdx') && selected.rowIdx > 0) {
-      this.state._tabular.swap(selected.rowIdx, selected.rowIdx - 1);
+      _tabular.swap(selected.rowIdx, selected.rowIdx - 1);
       selected.rowIdx = selected.rowIdx - 1;
       this.forceUpdate();
     }
   };
 
   handleDown = () => {
-    const {selected} = this._grid.state;
-    if(selected && selected.hasOwnProperty('rowIdx') && selected.rowIdx < this.state._tabular.count() - 1) {
-      this.state._tabular.swap(selected.rowIdx, selected.rowIdx + 1);
+    const {state: {_tabular}, _grid: {state}} = this;
+    const {selected} = state;
+    if(selected && selected.hasOwnProperty('rowIdx') && selected.rowIdx < _tabular.count() - 1) {
+      _tabular.swap(selected.rowIdx, selected.rowIdx + 1);
       selected.rowIdx = selected.rowIdx + 1;
       this.forceUpdate();
     }
@@ -195,7 +212,7 @@ export default class TabularSection extends MComponent {
   render() {
     const {props, state, rowGetter, onRowsSelected, onRowsDeselected, handleRowUpdated} = this;
     const {_meta, _tabular, _columns, scheme, selectedIds, settings_open} = state;
-    const {_obj, rowSelection, denyAddDel, denyReorder, minHeight, hideToolbar, onCellSelected, classes} = props;
+    const {_obj, rowSelection, minHeight, hideToolbar, onCellSelected, classes, denyAddDel, denyReorder, btns, end_btns, menu_items} = props;
     const Toolbar = props.Toolbar || TabularSectionToolbar;
 
     if(!_columns || !_columns.length) {
@@ -226,15 +243,20 @@ export default class TabularSection extends MComponent {
                 _tabular={_tabular}
                 _columns={_columns}
                 scheme={scheme}
+                settings_open={settings_open}
+
                 denyAddDel={denyAddDel}
                 denyReorder={denyReorder}
-                settings_open={settings_open}
+                btns={btns}
+                end_btns={end_btns}
+                menu_items={menu_items}
 
                 handleSettingsOpen={this.handleSettingsOpen}
                 handleSettingsClose={this.handleSettingsClose}
                 handleSchemeChange={this.handleSchemeChange}
                 handleAdd={this.handleAdd}
                 handleRemove={this.handleRemove}
+                handleClear={this.handleClear}
                 handleUp={this.handleUp}
                 handleDown={this.handleDown}
                 handleCustom={props.handleCustom}

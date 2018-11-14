@@ -41,6 +41,10 @@ const style = theme => ({
   },
   minheight: {
     minHeight: 320,
+  },
+  large: {
+    minWidth: 960,
+    maxHeight: 'calc(100vh - 80px)',
   }
 });
 
@@ -64,11 +68,16 @@ class SimpleDialog extends React.Component {
   }
 
   render() {
-    const {open, fullScreen, noSpace, title, actions, children, classes, onClose, minheight} = this.props;
+    const {open, fullScreen, noSpace, title, actions, children, classes, onClose, minheight, large} = this.props;
     const stateFullScreen = fullScreen || this.state.fullScreen;
-    return <Dialog open={open} fullScreen={stateFullScreen} onClose={onClose} classes={{paper: cn(classes.paper, minheight && classes.minheight)}}>
+    return <Dialog
+      open={open}
+      fullScreen={stateFullScreen}
+      onClose={onClose}
+      classes={{paper: cn(large ? classes.large : classes.paper, minheight && classes.minheight)}}
+    >
       <Toolbar disableGutters className={classes.toolbar}>
-        <Typography className={classes.title} variant="title" color="inherit" noWrap>{title}</Typography>
+        <Typography className={classes.title} variant="h6" color="inherit" noWrap>{title}</Typography>
         {
           !fullScreen && <IconButton
             title={stateFullScreen ? 'Свернуть' : 'Развернуть'}

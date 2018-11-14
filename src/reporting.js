@@ -284,11 +284,12 @@ SpreadsheetDocument.prototype.__define({
   print: {
     value() {
 
+      const doc = this,
+        url = this.blankURL;
+
       try{
 
-        const doc = this,
-          url = this.blankURL,
-          wnd_print = window.open(url, '_blank',
+        const wnd_print = window.open(url, '_blank',
             'fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes');
 
         if (wnd_print.outerWidth < screen.availWidth || wnd_print.outerHeight < screen.availHeight){
@@ -336,10 +337,11 @@ SpreadsheetDocument.prototype.__define({
   save_as: {
     value(filename) {
 
+      const doc = this,
+        url = this.blankURL;
+
       try{
-        const doc = this,
-          url = this.blankURL,
-          wnd_print = window.open(url, '_blank',
+        const wnd_print = window.open(url, '_blank',
             'fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes');
 
         if (wnd_print.outerWidth < screen.availWidth || wnd_print.outerHeight < screen.availHeight){
@@ -395,6 +397,55 @@ SpreadsheetDocument.prototype.__define({
             "Ошибка сохранения документа" : err.message
         });
       }
+    }
+  },
+
+  /**
+   * Получаем HTML печатной формы
+   */
+  get_html: {
+    value() {
+      return new Promise((resolve, reject) => {
+        const doc = this,
+          // вызываем для заполнения _blob
+          url = this.blankURL;
+    
+        // отзываем объект
+        URL.revokeObjectURL(url);
+    
+        const reader = new FileReader();
+    
+        // срабатывает после как blob будет загружен
+        reader.addEventListener('loadend', e => {
+          const document = new DOMParser().parseFromString(e.srcElement.result, 'text/html');
+    
+          // копируем элементы из head
+          for (let i = 0; i < doc.head.children.length; i++) {
+            document.head.appendChild(doc.copy_element(doc.head.children[i]));
+          }
+          // копируем элементы из content
+          if (doc.innerContent) {
+            for (let i = 0; i < doc.content.children.length; i++) {
+              document.body.appendChild(doc.copy_element(doc.content.children[i]));
+            }
+          } else {
+            document.body.appendChild(doc.content);
+          }
+          if (doc.title) {
+            document.title = doc.title;
+          }
+    
+          resolve(document.firstElementChild.outerHTML);
+        });
+    
+        // срабатывает при ошибке в процессе загрузки blob
+        reader.addEventListener('error', e => {
+          reject(e);
+        });
+    
+        // читаем blob как текст
+        reader.readAsText(this._blob);
+      });
     }
   },
 

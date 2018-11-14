@@ -1273,66 +1273,67 @@ function OCombo(attr){
 	});
 
 	function get_filter(text){
-		var filter = {_top: 50, _dhtmlx: true}, choice;
+		var filter = {_top: 50, _dhtmlx: true};
 
-		if(_mgr && _mgr.metadata().hierarchical && _mgr.metadata().group_hierarchy){
-			if(_meta.choice_groups_elm == "elm")
-				filter.is_folder = false;
-			else if(_meta.choice_groups_elm == "grp" || _field == "parent")
-				filter.is_folder = true;
-		}
+    if(_mgr && _mgr.metadata().hierarchical && _mgr.metadata().group_hierarchy) {
+      if(_meta.choice_groups_elm == 'elm') {
+        filter.is_folder = false;
+      }
+      else if(_meta.choice_groups_elm == 'grp' || _field == 'parent') {
+        filter.is_folder = true;
+      }
+    }
 
-		// для связей параметров выбора, значение берём из объекта
+    // для связей параметров выбора, значение берём из объекта
 		if(_meta.choice_links)
-			_meta.choice_links.forEach(function (choice) {
-				if(choice.name && choice.name[0] == "selection"){
+			_meta.choice_links.forEach(({name, path}) => {
+				if(name && name[0] == "selection"){
 					if(_obj instanceof TabularSectionRow){
-						if(choice.path.length < 2)
-							filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj._owner._owner[choice.path[0]];
+						if(path.length < 2)
+							filter[name[1]] = typeof path[0] == "function" ? path[0] : _obj._owner._owner[path[0]];
 						else{
-							if(choice.name[1] == "owner" && !_mgr.metadata().has_owners){
+							if(name[1] == "owner" && !_mgr.metadata().has_owners){
 								return;
 							}
-							filter[choice.name[1]] = _obj[choice.path[1]];
+							filter[name[1]] = _obj[path[1]];
 						}
 					}else{
-						filter[choice.name[1]] = typeof choice.path[0] == "function" ? choice.path[0] : _obj[choice.path[0]];
+						filter[name[1]] = typeof path[0] == "function" ? path[0] : _obj[path[0]];
 					}
 				}
 			});
 
 		// у параметров выбора, значение живёт внутри отбора
-		if(_meta.choice_params)
-			_meta.choice_params.forEach(function (choice) {
-
-				var fval = Array.isArray(choice.path) ? {in: choice.path} : choice.path;
-
-				if(!filter[choice.name])
-					filter[choice.name] = fval;
-
-				else if(Array.isArray(filter[choice.name]))
-					filter[choice.name].push(fval);
-
-				else{
-					filter[choice.name] = [filter[choice.name]];
-					filter[choice.name].push(fval);
-				}
-			});
+		if(_meta.choice_params){
+      _meta.choice_params.forEach(({name, path}) => {
+        const fval = Array.isArray(path) ? {in: path} : path;
+        if(!filter[name]) {
+          filter[name] = fval;
+        }
+        else if(Array.isArray(filter[name])) {
+          filter[name].push(fval);
+        }
+        else {
+          filter[name] = [filter[name]];
+          filter[name].push(fval);
+        }
+      });
+    }
 
 		// если в метаданных указано строить список по локальным данным, подмешиваем эту информацию в фильтр
-		if(_meta._option_list_local){
-			filter._local = true;
-		}
+    if(_meta._option_list_local) {
+      filter._local = true;
+    }
 
-		// навешиваем фильтр по подстроке
-		if(text){
-			filter.presentation = {like: text};
-		}
+    // навешиваем фильтр по подстроке
+    if(text) {
+      filter.presentation = {like: text};
+    }
 
-		// если включен справочник связей параметров - дополнительно фильтруем результат
-		if(attr.property && attr.property.filter_params_links){
-			attr.property.filter_params_links(filter, attr);
-		}
+    // если включен справочник связей параметров - дополнительно фильтруем результат
+    if(attr.property && attr.property.filter_params_links) {
+      attr.property.filter_params_links(filter, attr);
+    }
 
 		return filter;
 	}
@@ -5356,11 +5357,12 @@ SpreadsheetDocument.prototype.__define({
   print: {
     value() {
 
+      const doc = this,
+        url = this.blankURL;
+
       try{
 
-        const doc = this,
-          url = this.blankURL,
-          wnd_print = window.open(url, '_blank',
+        const wnd_print = window.open(url, '_blank',
             'fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes');
 
         if (wnd_print.outerWidth < screen.availWidth || wnd_print.outerHeight < screen.availHeight){
@@ -5408,10 +5410,11 @@ SpreadsheetDocument.prototype.__define({
   save_as: {
     value(filename) {
 
+      const doc = this,
+        url = this.blankURL;
+
       try{
-        const doc = this,
-          url = this.blankURL,
-          wnd_print = window.open(url, '_blank',
+        const wnd_print = window.open(url, '_blank',
             'fullscreen,menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes');
 
         if (wnd_print.outerWidth < screen.availWidth || wnd_print.outerHeight < screen.availHeight){
@@ -5467,6 +5470,55 @@ SpreadsheetDocument.prototype.__define({
             "Ошибка сохранения документа" : err.message
         });
       }
+    }
+  },
+
+  /**
+   * Получаем HTML печатной формы
+   */
+  get_html: {
+    value() {
+      return new Promise((resolve, reject) => {
+        const doc = this,
+          // вызываем для заполнения _blob
+          url = this.blankURL;
+    
+        // отзываем объект
+        URL.revokeObjectURL(url);
+    
+        const reader = new FileReader();
+    
+        // срабатывает после как blob будет загружен
+        reader.addEventListener('loadend', e => {
+          const document = new DOMParser().parseFromString(e.srcElement.result, 'text/html');
+    
+          // копируем элементы из head
+          for (let i = 0; i < doc.head.children.length; i++) {
+            document.head.appendChild(doc.copy_element(doc.head.children[i]));
+          }
+          // копируем элементы из content
+          if (doc.innerContent) {
+            for (let i = 0; i < doc.content.children.length; i++) {
+              document.body.appendChild(doc.copy_element(doc.content.children[i]));
+            }
+          } else {
+            document.body.appendChild(doc.content);
+          }
+          if (doc.title) {
+            document.title = doc.title;
+          }
+    
+          resolve(document.firstElementChild.outerHTML);
+        });
+    
+        // срабатывает при ошибке в процессе загрузки blob
+        reader.addEventListener('error', e => {
+          reject(e);
+        });
+    
+        // читаем blob как текст
+        reader.readAsText(this._blob);
+      });
     }
   },
 

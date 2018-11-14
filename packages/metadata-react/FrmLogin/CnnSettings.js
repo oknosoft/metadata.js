@@ -14,17 +14,6 @@ import Confirm from '../App/Confirm';
 
 class CnnSettings extends Component {
 
-  static propTypes = {
-    classes: PropTypes.object.isRequired,
-    zone: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    couch_path: PropTypes.string.isRequired,
-    superlogin_path: PropTypes.string,
-    couch_direct: PropTypes.bool,
-    enable_save_pwd: PropTypes.bool,
-    use_superlogin: PropTypes.bool,
-    handleSetPrm: PropTypes.func.isRequired,
-  };
-
   constructor(props) {
     super(props);
     const {zone, couch_path, superlogin_path, enable_save_pwd, couch_direct} = props;
@@ -73,17 +62,17 @@ class CnnSettings extends Component {
         value={couch_path}
       />,
 
-      use_superlogin && <TextField
-        fullWidth
-        key="superlogin_path"
-        margin="dense"
-        label="Адрес Superlogin"
-        InputProps={{placeholder: 'superlogin_path'}}
-        helperText="URL сервера авторизации"
-        disabled={disable_settings}
-        onChange={this.valueToState('superlogin_path')}
-        value={superlogin_path}
-      />,
+      // use_superlogin && <TextField
+      //   fullWidth
+      //   key="superlogin_path"
+      //   margin="dense"
+      //   label="Адрес Superlogin"
+      //   InputProps={{placeholder: 'superlogin_path'}}
+      //   helperText="URL сервера авторизации"
+      //   disabled={disable_settings}
+      //   onChange={this.valueToState('superlogin_path')}
+      //   value={superlogin_path}
+      // />,
 
       <TextField
         fullWidth
@@ -137,5 +126,16 @@ class CnnSettings extends Component {
     ];
   }
 }
+
+CnnSettings.propTypes = {
+  classes: PropTypes.object.isRequired,
+  zone: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  couch_path: PropTypes.string.isRequired,
+  superlogin_path: PropTypes.string,
+  couch_direct: PropTypes.bool,
+  enable_save_pwd: PropTypes.bool,
+  use_superlogin: PropTypes.bool,
+  handleSetPrm: PropTypes.func.isRequired,
+};
 
 export default CnnSettings;

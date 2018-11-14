@@ -64,10 +64,10 @@ export default function log_manager() {
         msg.date = Date.now() + wsql.time_diff;
 
         // уникальность ключа
-        if(!this.smax){
-          this.smax = wsql.alasql.compile('select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?');
+        if(!this._smax){
+          this._smax = wsql.alasql.compile('select MAX(`sequence`) as `sequence` from `ireg_log` where `date` = ?');
         }
-        const res = this.smax([msg.date]);
+        const res = this._smax([msg.date]);
         if(!res.length || res[0].sequence === undefined) {
           msg.sequence = 0;
         }
@@ -80,10 +80,44 @@ export default function log_manager() {
           msg.class = 'note';
         }
 
-        wsql.alasql('insert into `ireg_log` (`ref`, `date`, `sequence`, `class`, `note`, `obj`) values (?,?,?,?,?,?)',
-          [msg.date + '¶' + msg.sequence, msg.date, msg.sequence, msg.class, msg.note, msg.obj ? JSON.stringify(msg.obj) : '']);
-      }
+        this.alatable.push({
+          ref: msg.date + '¶' + msg.sequence,
+          date: msg.date,
+          sequence: msg.sequence,
+          'class': msg.class,
+          note: msg.note,
+          obj: msg.obj || null,
+        });
 
+        this.emit_async('record', {count: this.unviewed_count()});
+      }
+    }
+
+    viewed() {
+      const res = [];
+      const {alatable} = this;
+      const log_view = $p.ireg.log_view.alatable;
+      const user = $p.adapters.pouch.authorized || '';
+      for(let i = alatable.length - 1; i >= 0; i--) {
+        const v = alatable[i];
+        log_view.some((row) => {
+          if(row.key === v.ref && row.user === user) {
+            v.key = row.key;
+            return true;
+          }
+        });
+        res.push(v);
+      }
+      return res;
+    }
+
+    unviewed_count() {
+      if(!this._unviewed_count){
+        // select l.* from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key) where v.key is null
+        this._unviewed_count = this._owner.$p.wsql.alasql.compile(
+          'select value count(*) from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key) where v.key is null');
+      }
+      return this._unviewed_count();
     }
 
     /**
@@ -111,11 +145,13 @@ export default function log_manager() {
         const rows = this._rows([this._stamp + wsql.time_diff]);
         for(const row of rows) {
           row._id = `${moment(row.date - wsql.time_diff).format('YYYYMMDDHHmmssSSS') + row.sequence}|${pouch.props._suffix || '0000'}|${pouch.authorized}`;
-          if(row.obj) {
-            row.obj = JSON.parse(row.obj);
-          }
-          else{
-            delete row.obj;
+          if(typeof row.obj === 'string') {
+            try{
+              row.obj = JSON.parse(row.obj);
+            }
+            catch(e) {
+
+            }
           }
           delete row.ref;
           delete row.user;
@@ -148,11 +184,36 @@ export default function log_manager() {
      * @param [dtill] {Date}
      */
     clear(dfrom, dtill) {
+      for(const ref in this.by_ref) {
+        delete this.by_ref[ref];
+      }
+      this.alatable.length = 0;
 
+      const {log_view} = $p.ireg;
+      for(const ref in log_view.by_ref) {
+        delete log_view.by_ref[ref];
+      }
+      log_view.alatable.length = 0;
     }
 
-    show(pwnd) {
+    /**
+     * Помечает записи, как просмотренные
+     * @param dfrom
+     * @param dtill
+     */
+    mark_viewed(dfrom, dtill) {
+      const {alatable} = $p.ireg.log_view;
+      const user = $p.adapters.pouch.authorized || '';
 
+      if(!this._unviewed){
+        // select l.* from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key) where v.key is null
+        this._unviewed = this._owner.$p.wsql.alasql.compile(
+          'select l.ref from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key) where v.key is null');
+      }
+
+      for(const {ref} of this._unviewed()) {
+        alatable.push({key: ref, user});
+      }
     }
 
     get(ref, force_promise, do_not_create) {

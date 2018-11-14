@@ -230,7 +230,7 @@ export class TabularSection {
 		const row = Constructor ? new Constructor(this) : _manager.obj_constructor(_name, this);
 
     // триггер
-		if(!_data._loading && _owner.add_row && _owner.add_row(row) === false){
+		if(!_data._loading && _owner.add_row && _owner.add_row(row, attr) === false){
 		  return;
     }
 

@@ -4,11 +4,12 @@ import PropTypes from 'prop-types';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
+import Button from '@material-ui/core/Button';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import AddIcon from '@material-ui/icons/AddCircleOutline';
-import RemoveIcon from '@material-ui/icons/Delete';
+import RemoveIcon from '@material-ui/icons/DeleteOutline';
 import EditIcon from '@material-ui/icons/Edit';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import PrintIcon from '@material-ui/icons/Print';
@@ -61,12 +62,18 @@ class DataListToolbar extends Component {
   render() {
 
     const {props, state} = this;
-    const {classes, width} = props;
+    const {classes, width, btns, end_btns, menu_items} = props;
 
     return (
       <Toolbar disableGutters className={classes.toolbar}>
 
-        {props.selectionMode && <IconButton key="select" title="Выбрать из списка" onClick={props.handleSelect}><SelectIcon/></IconButton>}
+        {props.selectionMode && <Button
+          key="select"
+          title="Выбрать из списка"
+          size="small"
+          variant="outlined"
+          className={classes.spaceLeft}
+          onClick={props.handleSelect}>Выбрать</Button>}
         {!props.denyAddDel && <IconButton key="create" title="Создать объект" onClick={props.handleAdd}><AddIcon/></IconButton>}
         {!props.denyAddDel && <IconButton key="edit" title="Открыть форму объекта" onClick={props.handleEdit}><EditIcon/></IconButton>}
         {!props.denyAddDel && <IconButton key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}
@@ -80,9 +87,13 @@ class DataListToolbar extends Component {
           handleChange={props.handleFilterChange}
         />}
 
-        <Typography variant="caption" color="inherit" className={classes.flex} > </Typography>
 
-        {/* кнопки настройки компоновки */}
+        {btns /* дополнительные кнопки */}
+
+        <Typography color="inherit" className={classes.flex} />
+
+        {end_btns /* дополнительные кнопки */}
+
         <SchemeSettingsButtons
           handleSettingsOpen={props.handleSettingsOpen}
           handleSettingsClose={props.handleSettingsClose}
@@ -95,7 +106,6 @@ class DataListToolbar extends Component {
           show_variants={props.show_variants}
         />
 
-        {/* меню дополнительных действий */}
         <IconButton onClick={this.handleClick} title="Дополнительно"><MoreVertIcon/></IconButton>
         <Menu
           anchorEl={state.anchorEl}
@@ -104,6 +114,7 @@ class DataListToolbar extends Component {
         >
           <MenuItem onClick={this.handleDnROpen}><PrintIcon/> &nbsp;Печать</MenuItem>
           <MenuItem onClick={props.handleAttachments}><AttachIcon/> &nbsp;Вложения</MenuItem>
+          {menu_items /* дополнительные пункты меню */}
         </Menu>
 
       </Toolbar>

@@ -46,7 +46,10 @@ class SelectTags extends React.Component {
     }
 
     return (
-      <FormControl className={classes.formControl} margin="dense" {...other}>
+      <FormControl
+        className={classes.formControl}
+        {...other}
+      >
         <InputLabel>{title || 'Разделы'}</InputLabel>
         <Select
           multiple

@@ -16,6 +16,7 @@ import FieldText from './FieldText';
 import FieldDate from './FieldDate';
 import FieldNumber from './FieldNumber';
 import FieldToggle from './FieldToggle';
+import FieldThreeState from './FieldThreeState';
 
 import control_by_type from 'metadata-abstract-ui/src/ui';
 
@@ -25,9 +26,10 @@ export default class DataField extends FieldWithMeta {
   render() {
 
     const {_meta, props} = this;
-    const {_obj, _fld} = props;
+    const {_obj, _fld, ctrl_type} = props;
+    const type = ctrl_type || control_by_type(_meta.type, _obj[_fld]);
 
-    switch (control_by_type(_meta.type, _obj[_fld])) {
+    switch (type) {
 
     case 'ocombo':
       return <FieldInfinit {...props} />;
@@ -43,6 +45,9 @@ export default class DataField extends FieldWithMeta {
 
     case 'ch':
       return <FieldToggle {...props} />;
+
+    case 'threestate':
+      return <FieldThreeState {...props} />;
 
     default:
       return <FieldText {...props} />;

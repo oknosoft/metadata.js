@@ -521,7 +521,7 @@ const utils = {
 		const tobj = {}; // tobj - вспомогательный объект для фильтрации свойств, которые есть у объекта Object и его прототипа
 
 		function exclude_cpy(f) {
-			if (!exclude || exclude.indexOf(f) == -1) {
+			if (!(exclude && exclude.includes(f))) {
 				// копируем в dst свойства src, кроме тех, которые унаследованы от Object
 				if ((typeof tobj[f] == 'undefined') || (tobj[f] != src[f])) {
 					obj[f] = src[f];
@@ -529,15 +529,16 @@ const utils = {
 			}
 		}
 
-		if (include && include.length) {
-			for (let i = 0; i < include.length; i++) {
-				exclude_cpy(include[i]);
-			}
-		} else {
-			for (let f in src) {
-				exclude_cpy(f);
-			}
-		}
+    if(include && include.length) {
+      for (let i = 0; i < include.length; i++) {
+        exclude_cpy(include[i]);
+      }
+    }
+    else {
+      for (let f in src) {
+        exclude_cpy(f);
+      }
+    }
 		return obj;
 
 	},
@@ -734,7 +735,6 @@ const utils = {
 						});
 						if (!ok)
 							break;
-
 					}
 					// если свойство отбора является объектом `like`, сравниваем подстроку
 					else if (is_obj && sel.hasOwnProperty('like')) {
@@ -758,15 +758,17 @@ const utils = {
             }
           }
 					// если свойство отбора является объектом `not`, сравниваем на неравенство
-					else if (is_obj && sel.hasOwnProperty('not')) {
-						if (utils.is_equal(o[j], sel.not)) {
+					else if (is_obj && (sel.hasOwnProperty('not') || sel.hasOwnProperty('$ne'))) {
+					  const not = sel.hasOwnProperty('not') ? sel.not : sel.$ne;
+						if (utils.is_equal(o[j], not)) {
 							ok = false;
 							break;
 						}
 					}
 					// если свойство отбора является объектом `in`, выполняем Array.some()
-					else if (is_obj && sel.hasOwnProperty('in')) {
-						ok = sel.in.some((el) => utils.is_equal(el, o[j]));
+					else if (is_obj && (sel.hasOwnProperty('in') || sel.hasOwnProperty('$in'))) {
+					  const arr = sel.in || sel.$in;
+						ok = arr.some((el) => utils.is_equal(el, o[j]));
 						if (!ok)
 							break;
 					}
@@ -830,20 +832,22 @@ const utils = {
 		const res = [];
 		let top, skip, count = 0, skipped = 0;
 
-		if (selection) {
-			if (selection.hasOwnProperty('_top')) {
-				top = selection._top;
-				delete selection._top;
-			} else {
-				top = 300;
-			}
-      if (selection.hasOwnProperty('_skip')) {
+    if(selection) {
+      if(selection.hasOwnProperty('_top')) {
+        top = selection._top;
+        delete selection._top;
+      }
+      else {
+        top = 300;
+      }
+      if(selection.hasOwnProperty('_skip')) {
         skip = selection._skip;
         delete selection._skip;
-      } else {
+      }
+      else {
         skip = 0;
       }
-		}
+    }
 
 		for (let i in src) {
 			const o = src[i];

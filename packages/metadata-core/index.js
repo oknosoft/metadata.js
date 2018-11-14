@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.17-beta.5, built:2018-08-02
+ metadata-core v2.0.17-beta.11, built:2018-11-14
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -335,7 +335,7 @@ class TabularSection {
 		const {_owner, _name, _obj} = this;
     const {_manager, _data} = _owner;
 		const row = Constructor ? new Constructor(this) : _manager.obj_constructor(_name, this);
-		if(!_data._loading && _owner.add_row && _owner.add_row(row) === false){
+		if(!_data._loading && _owner.add_row && _owner.add_row(row, attr) === false){
 		  return;
     }
 		for (const f in row._metadata().fields){
@@ -541,7 +541,8 @@ class InnerData {
     this._ts_ = {};
     this._is_new = !(owner instanceof EnumObj);
     this._loading = !!loading;
-    this._saving = false;
+    this._saving = 0;
+    this._saving_trans = false;
     this._modified = false;
   }
 }
@@ -593,7 +594,7 @@ class DataObj {
       let mgr = this._manager.value_mgr(_obj, f, mf);
       if(mgr) {
         if(utils.is_data_mgr(mgr)) {
-          return mgr.get(res);
+          return mgr.get(res, false, false);
         }
         else {
           return utils.fetch_type(res, mgr);
@@ -734,7 +735,12 @@ class DataObj {
     return !!this._obj._deleted;
   }
   set _deleted(v) {
-    return this._obj._deleted = !!v;
+    this._obj._deleted = !!v;
+  }
+  get _rev() {
+    return this._obj._rev || '';
+  }
+  set _rev(v) {
   }
   get _modified() {
     return !!this._data._modified;
@@ -747,10 +753,11 @@ class DataObj {
   }
   _set_loaded(ref) {
     this._manager.push(this, ref);
-    const {_data} = this;
-    _data._modified = false;
-    _data._is_new = false;
-    _data._loading = false;
+    Object.assign(this._data, {
+      _modified: false,
+      _is_new: false,
+      _loading: false,
+    });
     return this;
   }
   mark_deleted(deleted) {
@@ -818,85 +825,97 @@ class DataObj {
       initial_posted = this.posted;
       this.posted = post;
     }
-    let before_save_res = this.before_save();
-    if(this._data.before_save_sync) {
-      this._data.before_save_sync = false;
-    }
-    const reset_modified = () => {
-      if(before_save_res === false) {
-        if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted != initial_posted) {
-          this.posted = initial_posted;
+    const {_data} = this;
+    _data._saving_trans = true;
+    return Promise.resolve()
+      .then(() => this.before_save())
+      .then((before_save_res) => {
+        const reset_modified = () => {
+          if(before_save_res === false) {
+            if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted !== initial_posted) {
+              this.posted = initial_posted;
+            }
+          }
+          else {
+            _data._modified = false;
+          }
+          _data._saving = 0;
+          _data._saving_trans = false;
+          return this;
+        };
+        if(before_save_res === false) {
+          return Promise.reject(reset_modified());
         }
-      }
-      else {
-        this._data._modified = false;
-      }
-      return this;
-    };
-    if(before_save_res === false) {
-      return Promise.reject(reset_modified());
-    }
-    if(this._metadata().hierarchical && !this._obj.parent) {
-      this._obj.parent = utils.blank.guid;
-    }
-    let numerator = before_save_res instanceof Promise ? before_save_res : Promise.resolve();
-    if(!this._deleted) {
-      if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
-        if(utils.blank.date == this.date) {
-          this.date = new Date();
+        const reset_mandatory = (msg) => {
+          before_save_res = false;
+          reset_modified();
+          md.emit('alert', msg);
+          const err = new Error(msg.text);
+          err.msg = msg;
+          return Promise.reject(err);
+        };
+        if(this._metadata().hierarchical && !this._obj.parent) {
+          this._obj.parent = utils.blank.guid;
         }
-        if(!this.number_doc) {
-          numerator = numerator.then(() => this.new_number_doc());
-        }
-      }
-      else {
-        if(!this.id) {
-          numerator = numerator.then(() => this.new_number_doc());
-        }
-      }
-    }
-    const {fields, tabular_sections} = this._metadata();
-    const {msg, md, cch: {properties}} = this._manager._owner.$p;
-    for (const mf in fields) {
-      if (fields[mf].mandatory && !this._obj[mf]) {
-        md.emit('alert', {
-          obj: this,
-          title: msg.mandatory_title,
-          type: "alert-error",
-          text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
-        });
-        before_save_res = false;
-        return Promise.reject(reset_modified());
-      }
-    }
-    if(properties) {
-      for (const prts of ['extra_fields', 'product_params', 'params']) {
-        if(!tabular_sections[prts]) {
-          continue;
-        }
-        for (const row of this[prts]._obj) {
-          const property = properties.get(row.property || row.param);
-          if(property && property.mandatory) {
-            const {value} = (row._row || row);
-            if(utils.is_data_obj(value) ? value.empty() : !value) {
-              md.emit('alert', {
-                obj: this,
-                row: row._row || row,
-                title: msg.mandatory_title,
-                type: 'alert-error',
-                text: msg.mandatory_field.replace('%1', property.caption || property.name)
-              });
-              before_save_res = false;
-              return Promise.reject(reset_modified());
+        let numerator;
+        if(!this._deleted) {
+          if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
+            if(utils.blank.date == this.date) {
+              this.date = new Date();
+            }
+            if(!this.number_doc) {
+              numerator = this.new_number_doc();
+            }
+          }
+          else {
+            if(!this.id) {
+              numerator = this.new_number_doc();
             }
           }
         }
-      }
-    }
-    return numerator.then(() => this._manager.adapter.save_obj(this, {post, operational, attachments })
-      .then(() => this.after_save())
-      .then(reset_modified)
-    );
+        const {fields, tabular_sections} = this._metadata();
+        const {msg, md, cch: {properties}} = this._manager._owner.$p;
+        for (const mf in fields) {
+          if (fields[mf].mandatory && !this._obj[mf]) {
+            return reset_mandatory({
+              obj: this,
+              title: msg.mandatory_title,
+              type: "alert-error",
+              text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
+            });
+          }
+        }
+        if(properties) {
+          for (const prts of ['extra_fields', 'product_params', 'params']) {
+            if(!tabular_sections[prts]) {
+              continue;
+            }
+            for (const row of this[prts]._obj) {
+              const property = properties.get(row.property || row.param);
+              if(property && property.mandatory) {
+                const {value} = (row._row || row);
+                if(utils.is_data_obj(value) ? value.empty() : !value) {
+                  return reset_mandatory({
+                    obj: this,
+                    row: row._row || row,
+                    title: msg.mandatory_title,
+                    type: 'alert-error',
+                    text: msg.mandatory_field.replace('%1', property.caption || property.name)
+                  });
+                }
+              }
+            }
+          }
+        }
+        return (numerator || Promise.resolve())
+          .then(() => this._manager.adapter.save_obj(this, {post, operational, attachments }))
+          .then(() => this.after_save())
+          .then(reset_modified)
+          .catch((err) => {
+            reset_modified();
+            throw err;
+          });
+      });
   }
   get_attachment(att_id) {
     const {_manager, ref} = this;
@@ -931,7 +950,7 @@ class DataObj {
     }
     if(attr && typeof attr == 'object') {
       const {_not_set_loaded} = attr;
-      delete attr._not_set_loaded;
+      _not_set_loaded && delete attr._not_set_loaded;
       const {_data} = this;
       if(silent) {
         if(_data._loading) {
@@ -1133,7 +1152,10 @@ class DocObj extends NumberDocAndDate(DataObj) {
   get presentation() {
     const meta = this._metadata();
     const {number_doc, date, posted, _modified} = this;
-    return `${meta.obj_presentation || meta.synonym}  №${number_doc || 'б/н'} от ${moment(date).format(moment._masks.ldt)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`;
+    return number_doc ?
+      `${meta.obj_presentation || meta.synonym}  №${number_doc} от ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`
+      :
+      `${meta.obj_presentation || meta.synonym} ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`;
   }
   set presentation(v) {
     if(v) {
@@ -1151,15 +1173,17 @@ class DocObj extends NumberDocAndDate(DataObj) {
 class DataProcessorObj extends DataObj {
   constructor(attr, manager, loading) {
     super(attr, manager, loading);
-    const {fields, tabular_sections} = manager.metadata();
-    for (const fld in fields) {
-      if(!attr[fld]) {
-        attr[fld] = utils.fetch_type('', fields[fld].type);
+    if(!loading) {
+      const {fields, tabular_sections} = manager.metadata();
+      for (const fld in fields) {
+        if(!attr[fld]) {
+          attr[fld] = utils.fetch_type('', fields[fld].type);
+        }
       }
-    }
-    for (const fld in tabular_sections) {
-      if(!attr[fld]) {
-        attr[fld] = [];
+      for (const fld in tabular_sections) {
+        if(!attr[fld]) {
+          attr[fld] = [];
+        }
       }
     }
     utils._mixin(this, attr);
@@ -1394,19 +1418,7 @@ class DataManager extends MetaEventEmitter{
 	}
 	get adapter(){
     const {adapters} = this._owner.$p;
-    switch (this.cachable) {
-    case undefined:
-    case 'ram':
-    case 'doc':
-    case 'doc_ram':
-    case 'ram_doc':
-    case 'remote':
-    case 'user':
-    case 'meta':
-    case 'templates':
-      return adapters.pouch;
-    }
-    return adapters[this.cachable];
+    return adapters[this.cachable] || adapters.pouch;
 	}
 	get alatable(){
 		const {table_name, _owner} = this;
@@ -1418,7 +1430,10 @@ class DataManager extends MetaEventEmitter{
     return current_user ? current_user.get_acl(this.class_name) : 'r';
   }
 	get cachable(){
-    const {class_name} = this;
+    const {class_name, _cachable} = this;
+    if(_cachable) {
+      return _cachable;
+    }
     const _meta = this.metadata();
     if(class_name.indexOf('enm.') != -1) {
       return 'ram';
@@ -1506,17 +1521,24 @@ class DataManager extends MetaEventEmitter{
         selection.or.push(sel);
       });
     }
-    if(t.cachable == 'ram' || t.cachable == 'doc_ram' || (selection && selection._local)) {
-      t.find_rows(selection, push);
+    if(t.cachable.endsWith('ram') || (selection && selection._local)) {
+      t.find_rows(selection._mango ? selection.selector : selection, push);
       return Promise.resolve(l);
     }
     else if(t.cachable != 'e1cib') {
+      if(selection._mango){
+        if(selection.selector.hasOwnProperty('$and')) {
+          selection.selector.push({class_name: t.class_name});
+        }
+        else {
+          selection.selector.class_name = t.class_name;
+        }
+      }
       return t.adapter.find_rows(t, selection)
         .then((data) => {
           for (const v of data) {
             push(v);
-          }
-          return l;
+          }          return l;
         });
     }
     else {
@@ -1798,11 +1820,13 @@ class RefDataManager extends DataManager{
         else if(forse === 'update_only' && attr.timestamp) {
           if(attr.timestamp.user === (pouch.authorized || wsql.get_user_param('user_name'))) {
             if(new Date() - moment(attr.timestamp.moment, "YYYY-MM-DDTHH:mm:ss ZZ").toDate() < 30000) {
+              attr._rev && (obj._obj._rev = attr._rev);
               continue;
             }
           }
         }
 				obj._mixin(attr);
+        attr._rev && (obj._obj._rev = attr._rev);
 			}
 			res.push(obj);
 		}
@@ -2164,7 +2188,7 @@ class RefDataManager extends DataManager{
     const {md} = _owner.$p;
     const select = {};
     const {input_by_string} = this.metadata();
-    if(cachable.match(/^(ram|doc_ram)$/)) {
+    if(/ram$/.test(cachable)) {
       select._top = top;
       select._skip = skip;
       if(search && input_by_string) {
@@ -2262,11 +2286,11 @@ class RefDataManager extends DataManager{
         if(input_by_string.length > 1) {
           select.selector.$or = [];
           input_by_string.forEach((fld) => {
-            select.selector.$or.push({[fld]: {like: search}});
+            select.selector.$or.push({[fld]: {$regex: `(?i)${search}`}});
           });
         }
         else {
-          select.selector[input_by_string[0]] = {$regex: search};
+          select.selector[input_by_string[0]] = {$regex: `(?i)${search}`};
         }
       }
     }
@@ -2337,8 +2361,8 @@ class RefDataManager extends DataManager{
   }
 }
 class DataProcessorsManager extends DataManager{
-	create(attr = {}){
-		return this.obj_constructor('', [attr, this]);
+	create(attr = {}, loading){
+		return this.obj_constructor('', [attr, this, loading]);
 	}
 	get(ref){
 		if(ref){
@@ -3109,21 +3133,22 @@ const utils = {
 	_mixin(obj, src, include, exclude) {
 		const tobj = {};
 		function exclude_cpy(f) {
-			if (!exclude || exclude.indexOf(f) == -1) {
+			if (!(exclude && exclude.includes(f))) {
 				if ((typeof tobj[f] == 'undefined') || (tobj[f] != src[f])) {
 					obj[f] = src[f];
 				}
 			}
 		}
-		if (include && include.length) {
-			for (let i = 0; i < include.length; i++) {
-				exclude_cpy(include[i]);
-			}
-		} else {
-			for (let f in src) {
-				exclude_cpy(f);
-			}
-		}
+    if(include && include.length) {
+      for (let i = 0; i < include.length; i++) {
+        exclude_cpy(include[i]);
+      }
+    }
+    else {
+      for (let f in src) {
+        exclude_cpy(f);
+      }
+    }
 		return obj;
 	},
 	_patch(obj, patch) {
@@ -3281,14 +3306,16 @@ const utils = {
               break;
             }
           }
-					else if (is_obj && sel.hasOwnProperty('not')) {
-						if (utils.is_equal(o[j], sel.not)) {
+					else if (is_obj && (sel.hasOwnProperty('not') || sel.hasOwnProperty('$ne'))) {
+					  const not = sel.hasOwnProperty('not') ? sel.not : sel.$ne;
+						if (utils.is_equal(o[j], not)) {
 							ok = false;
 							break;
 						}
 					}
-					else if (is_obj && sel.hasOwnProperty('in')) {
-						ok = sel.in.some((el) => utils.is_equal(el, o[j]));
+					else if (is_obj && (sel.hasOwnProperty('in') || sel.hasOwnProperty('$in'))) {
+					  const arr = sel.in || sel.$in;
+						ok = arr.some((el) => utils.is_equal(el, o[j]));
 						if (!ok)
 							break;
 					}
@@ -3332,20 +3359,22 @@ const utils = {
 	_find_rows(src, selection, callback) {
 		const res = [];
 		let top, skip, count = 0, skipped = 0;
-		if (selection) {
-			if (selection.hasOwnProperty('_top')) {
-				top = selection._top;
-				delete selection._top;
-			} else {
-				top = 300;
-			}
-      if (selection.hasOwnProperty('_skip')) {
+    if(selection) {
+      if(selection.hasOwnProperty('_top')) {
+        top = selection._top;
+        delete selection._top;
+      }
+      else {
+        top = 300;
+      }
+      if(selection.hasOwnProperty('_skip')) {
         skip = selection._skip;
         delete selection._skip;
-      } else {
+      }
+      else {
         skip = 0;
       }
-		}
+    }
 		for (let i in src) {
 			const o = src[i];
 			if (utils._selection.call(this, o, selection)) {
@@ -3862,6 +3891,9 @@ class Meta extends MetaEventEmitter {
     }
     else if(is_cat && field_name == 'name') {
       res.synonym = 'Наименование';
+    }
+    else if(field_name == '_area') {
+      res.synonym = 'Область';
     }
     else if(field_name == 'presentation') {
       res.synonym = 'Представление';
@@ -4416,7 +4448,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.17-beta.5';
+    return '2.0.17-beta.11';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
