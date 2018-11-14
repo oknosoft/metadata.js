@@ -1377,7 +1377,7 @@ class MetaEventEmitter extends EventEmitter{
     handler.timer = setTimeout(this._emit.bind(this, type), 4);
   }
   emit_promise(type, ...args) {
-    return this.listeners(type).reduce((acc, curr) => acc.then(curr), Promise.resolve());
+    return this.listeners(type).reduce((acc, curr) => acc.then(curr.bind(this, ...args)), Promise.resolve());
   }
   emit_add_fields(obj, fields){
     const {_async} = this;
