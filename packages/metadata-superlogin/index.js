@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.17-beta.11, built:2018-11-14
+ metadata-superlogin v2.0.17-beta.11, built:2018-11-16
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -753,11 +753,36 @@ function attach($p) {
     }
     return needAuth();
   };
+  superlogin.refresh_profile = function(profile) {
+    const session = superlogin.getSession();
+    if(session) {
+      Object.assign(session, {profile});
+      return superlogin.setSession(session);
+    }
+  };
   superlogin.create_db = function (name) {
     return this.authenticated() ?
       this._http.post(`/user/create-db`, {name})
-        .then(res => {
-          return this.refresh();
+        .then(profile => {
+          return this.refresh_profile(profile);
+        })
+      :
+      needAuth();
+  };
+  superlogin.add_user = function (name) {
+    return this.authenticated() ?
+      this._http.post(`/user/add-user`, {name})
+        .then(profile => {
+          return this.refresh_profile(profile);
+        })
+      :
+      needAuth();
+  };
+  superlogin.rm_user = function (name) {
+    return this.authenticated() ?
+      this._http.post(`/user/rm-user`, {name})
+        .then(profile => {
+          return this.refresh_profile(profile);
         })
       :
       needAuth();

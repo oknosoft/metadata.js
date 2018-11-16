@@ -81,11 +81,42 @@ function attach($p) {
     return needAuth();
   }
 
+  superlogin.refresh_profile = function(profile) {
+    const session = superlogin.getSession();
+    if(session) {
+      Object.assign(session, {profile});
+      return superlogin.setSession(session);
+    }
+  }
+
+  // создаёт общую базу и добавляет её в профиль подписчика
   superlogin.create_db = function (name) {
     return this.authenticated() ?
       this._http.post(`/user/create-db`, {name})
-        .then(res => {
-          return this.refresh();
+        .then(profile => {
+          return this.refresh_profile(profile);
+        })
+      :
+      needAuth();
+  }
+
+  // добавляет пользователя в список администрирования
+  superlogin.add_user = function (name) {
+    return this.authenticated() ?
+      this._http.post(`/user/add-user`, {name})
+        .then(profile => {
+          return this.refresh_profile(profile);
+        })
+      :
+      needAuth();
+  }
+
+  // удаляет пользователя из списка администрирования
+  superlogin.rm_user = function (name) {
+    return this.authenticated() ?
+      this._http.post(`/user/rm-user`, {name})
+        .then(profile => {
+          return this.refresh_profile(profile);
         })
       :
       needAuth();

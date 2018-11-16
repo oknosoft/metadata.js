@@ -58,7 +58,7 @@ export default {
       return Promise.reject('type or list must be defined');
     }
     if(list && list.some((v) => {
-      const key = = v.value || v.ref || v;
+      const key = v.value || v.ref || v;
       return !key || typeof key !== 'string';
     })) {
       return Promise.reject('list keys must be defined and has a string type');
