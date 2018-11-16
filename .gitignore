@@ -33,7 +33,6 @@ packages/metadata-pouchdb/index.js
 packages/metadata-pouchdb/index.js.map
 packages/metadata-pouchdb/index.min.js
 
-packages/metadata-react/plugin.js
 packages/metadata-react/plugin.min.js
 
 packages/metadata-redux/index.js
