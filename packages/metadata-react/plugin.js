@@ -13,7 +13,7 @@ import DataCell from 'metadata-react/DataField/DataCell';
 import TypeFieldCell from 'metadata-react/DataField/FieldTypeCell';
 import PathFieldCell from 'metadata-react/DataField/FieldPathCell';
 import PropsFieldCell from 'metadata-react/DataField/FieldPropsCell';
-
+import dialogs from 'metadata-react/App/dialogs';
 import {Editors, Formatters} from 'metadata-external/react-data-grid-addons.min';
 const {CheckboxEditor, DropDownEditor} = Editors;
 const {DropDownFormatter, ImageFormatter} = Formatters;
@@ -284,6 +284,11 @@ export default {
     // методы печати в прототип DataManager
     Object.defineProperties(this.classes.DataManager, {
       value: print
+    });
+
+    // публичные методы ui
+    Object.defineProperty(this, 'ui', {
+      value: {dialogs}
     });
 
   }

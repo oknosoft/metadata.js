@@ -4,7 +4,7 @@ import Button from '@material-ui/core/Button';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Dialog from './Dialog';
 
-export default function Confirm({text, title, handleOk, handleCancel, open}) {
+export default function Confirm({text, title, children, handleOk, handleCancel, open}) {
   return <Dialog
     open={open}
     title={title}
@@ -14,13 +14,15 @@ export default function Confirm({text, title, handleOk, handleCancel, open}) {
       <Button key="ok" onClick={handleOk} color="primary">Ок</Button>
     ]}
   >
-    <DialogContentText>{text}</DialogContentText>
+    {text && <DialogContentText>{text}</DialogContentText>}
+    {children}
   </Dialog>;
 }
 
 Confirm.propTypes = {
-  text: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
+  text: PropTypes.string,
+  children: PropTypes.node,
   handleOk: PropTypes.func.isRequired,
   handleCancel: PropTypes.func.isRequired,
   open: PropTypes.bool,
