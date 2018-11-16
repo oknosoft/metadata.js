@@ -93,9 +93,7 @@ function attach($p) {
   superlogin.create_db = function (name) {
     return this.authenticated() ?
       this._http.post(`/user/create-db`, {name})
-        .then(profile => {
-          return this.refresh_profile(profile);
-        })
+        .then(res => res.data && this.refresh_profile(res.data))
       :
       needAuth();
   }
@@ -104,9 +102,7 @@ function attach($p) {
   superlogin.add_user = function (name) {
     return this.authenticated() ?
       this._http.post(`/user/add-user`, {name})
-        .then(profile => {
-          return this.refresh_profile(profile);
-        })
+        .then(res => res.data && this.refresh_profile(res.data))
       :
       needAuth();
   }
@@ -115,9 +111,7 @@ function attach($p) {
   superlogin.rm_user = function (name) {
     return this.authenticated() ?
       this._http.post(`/user/rm-user`, {name})
-        .then(profile => {
-          return this.refresh_profile(profile);
-        })
+        .then(res => res.data && this.refresh_profile(res.data))
       :
       needAuth();
   }
