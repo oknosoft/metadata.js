@@ -20,10 +20,10 @@ export default {
     this._handleIfaceState = handleIfaceState;
   },
 
-  close_confirm() {
+  close_confirm(name = 'confirm') {
     this._handleIfaceState({
       component: '',
-      name: 'confirm',
+      name,
       value: {open: false}
     });
     this._confirm = false;
@@ -116,6 +116,13 @@ export default {
     });
   },
 
+  /**
+   * Диалог Ок, Отмена
+   * @param title
+   * @param text
+   * @param timeout
+   * @return {Promise}
+   */
   confirm({
             title = 'Внимание',
             text,
@@ -163,6 +170,52 @@ export default {
       });
 
     });
-  }
+  },
+
+  /**
+   * Диалог alert
+   * @param title
+   * @param text
+   * @param timeout
+   * @return {Promise}
+   */
+  alert({
+            title = 'Внимание',
+            text,
+            timeout = 60000,
+          }) {
+    if(!this._handleIfaceState) {
+      return Promise.reject('init');
+    }
+    if(this._confirm) {
+      return Promise.reject('already open');
+    }
+
+    return new Promise((resolve, reject) => {
+
+      const close_confirm = () => {
+        this.close_confirm('alert');
+        if(timer) {
+          clearTimeout(timer);
+          timer = 0;
+        }
+        resolve();
+      };
+
+      let timer = setTimeout(close_confirm, timeout);
+
+      this._handleIfaceState({
+        component: '',
+        name: 'alert',
+        value: {
+          open: true,
+          title,
+          text,
+          handleOk: close_confirm,
+        }
+      });
+
+    });
+  },
 
 };
