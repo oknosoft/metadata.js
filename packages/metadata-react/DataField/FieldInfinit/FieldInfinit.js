@@ -61,8 +61,8 @@ class FieldInfinit extends AbstractField {
   };
 
   handleOpenList = (evt) => {
-    const {_obj, _fld} = this.props;
-    this.setState({dialogOpened: 'list'});
+    const {_obj, _fld, tree} = this.props;
+    this.setState({dialogOpened: tree ? 'tree' : 'list'});
     this.downshift && this.downshift.closeMenu();
     prevent(evt);
   };

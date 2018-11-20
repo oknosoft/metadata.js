@@ -28,18 +28,18 @@ import withWidth, {isWidthUp} from '@material-ui/core/withWidth';
 class DataListToolbar extends Component {
 
   static propTypes = {
-    selectionMode: PropTypes.bool,                   // режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
+    selectionMode: PropTypes.bool,                  // режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
     denyAddDel: PropTypes.bool,                     // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
 
-    handleAdd: PropTypes.func.isRequired,             // обработчик добавления объекта
-    handleEdit: PropTypes.func.isRequired,            // обработчик открфтия формы редактора
-    handleRemove: PropTypes.func.isRequired,          // обработчик удаления строки
+    handleAdd: PropTypes.func,                      // обработчик добавления объекта
+    handleEdit: PropTypes.func,                     // обработчик открфтия формы редактора
+    handleRemove: PropTypes.func,                   // обработчик удаления строки
 
-    handleSchemeChange: PropTypes.func.isRequired,    // обработчик при изменении настроек компоновки
-    scheme: PropTypes.object.isRequired,              // значение настроек компоновки
+    handleSchemeChange: PropTypes.func.isRequired,  // обработчик при изменении настроек компоновки
+    scheme: PropTypes.object.isRequired,            // значение настроек компоновки
 
-    handlePrint: PropTypes.func.isRequired,           // обработчик открытия диалога печати
-    handleAttachments: PropTypes.func.isRequired,      // обработчик открытия диалога присоединенных файлов
+    handlePrint: PropTypes.func.isRequired,         // обработчик открытия диалога печати
+    handleAttachments: PropTypes.func.isRequired,   // обработчик открытия диалога присоединенных файлов
   };
 
   static defaultProps = {

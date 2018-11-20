@@ -11,11 +11,10 @@ import React from 'react';
 
 export default function OuterDialog(props) {
 
-  const {_obj, _fld, dialogOpened, handleSelect, components, _owner} = props;
+  const {_obj, _fld, dialogOpened, handleSelect, components: {DataList, DataObj, DataTree}, _owner} = props;
   const {_manager, ref} = _obj[_fld];
   const _acl = $p.current_user.get_acl(_manager.class_name);
-  const {DataList, DataObj} = components;
-  const title = dialogOpened == 'list' ?
+  const title = (dialogOpened == 'list' || dialogOpened == 'tree') ?
     (_manager.metadata().list_presentation || _manager.metadata().synonym)
     :
     (_manager.metadata().obj_presentation || _manager.metadata().synonym);
@@ -30,7 +29,11 @@ export default function OuterDialog(props) {
     {dialogOpened == 'list' ?
       <DataList _mgr={_manager} _acl={_acl} _owner={_owner} selectionMode handlers={{handleSelect}}/>
       :
-      <DataObj _mgr={_manager} _acl={_acl} match={{params: {ref}}} handlers={{}}/>
+      (dialogOpened == 'tree' ?
+        <DataTree _mgr={_manager} _acl={_acl} _owner={_owner} selectionMode denyAddDel handlers={{handleSelect}}/>
+        :
+        <DataObj _mgr={_manager} _acl={_acl} match={{params: {ref}}} handlers={{}}/>
+      )
     }
   </Dialog>;
 }

@@ -47,7 +47,7 @@ class DataList extends MDNRComponent {
   // при изменении менеджера данных
   handleManagerChange({_mgr, _meta, _ref}) {
 
-    const {class_name, cachable, alatable} = _mgr;
+    const {class_name} = _mgr;
 
     this._meta = _meta || _mgr.metadata();
 
