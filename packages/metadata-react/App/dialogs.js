@@ -114,6 +114,55 @@ export default {
       });
 
     });
+  },
+
+  confirm({
+            title = 'Внимание',
+            text,
+            timeout = 60000,
+          }) {
+    if(!this._handleIfaceState) {
+      return Promise.reject('init');
+    }
+    if(this._confirm) {
+      return Promise.reject('already open');
+    }
+
+    return new Promise((resolve, reject) => {
+
+      const close_confirm = () => {
+        this.close_confirm();
+        if(timer) {
+          clearTimeout(timer);
+          timer = 0;
+        }
+        resolve();
+      };
+
+      const reject_confirm = () => {
+        this.close_confirm();
+        if(timer) {
+          clearTimeout(timer);
+          timer = 0;
+        }
+        reject();
+      };
+
+      let timer = setTimeout(reject_confirm, timeout);
+
+      this._handleIfaceState({
+        component: '',
+        name: 'confirm',
+        value: {
+          open: true,
+          title,
+          text,
+          handleOk: close_confirm,
+          handleCancel: reject_confirm,
+        }
+      });
+
+    });
   }
 
 };
