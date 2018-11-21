@@ -52,6 +52,8 @@ packages/metadata-react/FrmSuperLogin/
 packages/metadata-react/Header/
 packages/metadata-react/Markdown/
 packages/metadata-react/MetaDesigner/
+packages/metadata-react/MetaList/
+packages/metadata-react/MetaTree/
 packages/metadata-react/Notifications/
 packages/metadata-react/SchemeSettings/
 packages/metadata-react/SplitPane/
