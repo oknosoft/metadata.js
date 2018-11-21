@@ -1,11 +1,9 @@
-// @flow
-
 const headerRegExp = /---\n([\s\S]*)\n---/;
 const titleRegExp = /# (.*)\n/;
 const headerKeyValueRegExp = /(.*): (.*)/g;
 const emptyRegExp = /^\s*$/;
 
-export function getHeaders(markdown: string) {
+export function getHeaders(markdown) {
   let header = markdown.match(headerRegExp);
 
   if (!header) {
@@ -34,14 +32,14 @@ export function getHeaders(markdown: string) {
   return headers;
 }
 
-export function getContents(markdown: string) {
+export function getContents(markdown) {
   return (markdown || '')
     .replace(headerRegExp, '') // Remove header information
     .split(/^{{|}}$/gm) // Split markdown into an array, separating demos
     .filter(content => !emptyRegExp.test(content)); // Remove empty lines
 }
 
-export function getTitle(markdown: string) {
+export function getTitle(markdown) {
   const matches = markdown.match(titleRegExp);
   return matches ? matches[1] : 'Metadata.js';
 }

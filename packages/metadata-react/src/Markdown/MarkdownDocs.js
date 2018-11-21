@@ -1,13 +1,11 @@
-// @flow
-
 import React from 'react';
+import PropTypes from 'prop-types';
 import kebabCase from 'lodash/kebabCase';
 import warning from 'warning';
 import Helmet from 'react-helmet';
 import withStyles from '@material-ui/core/styles/withStyles';
 import {withIface} from 'metadata-redux';
 import Typography from '@material-ui/core/Typography';
-
 
 import AppContent from '../App/AppContent';
 import MarkdownElement from './MarkdownElement';
@@ -26,31 +24,9 @@ const styles = {
   }
 };
 
-
 const demoRegexp = /^demo='(.*)'$/;
 
-type Props = {
-  classes: Object,
-  demos?: { [key: string]: any },
-  markdown: string,
-  // You can define the direction location of the markdown file.
-  // Otherwise, we try to determine it with an heuristic.
-  sourceLocation?: string,
-  // корень расположения исходных текстов, например, 'https://github.com/oknosoft/flowcon/tree/master'
-  sourceCodeRootUrl?: string,
-  // заголовок в табе браузера
-  title?: string,
-  // суффикс проекта в заголовке
-  subtitle?: string,
-  // заголовок статьи
-  h1?: string,
-  // html meta description
-  descr?: string,
-  // показывать кнопки share соцсетей
-  footer?: bool,
-};
-
-function MarkdownDocs(props: Props) {
+function MarkdownDocs(props) {
   const {classes, demos, markdown, subtitle, sourceLocation: sourceLocationProp, title, htitle, h1, img,
     descr, canonical, footer, handleIfaceState, TopButton} = props;
   const contents = getContents(markdown);
@@ -137,6 +113,19 @@ ${headers.components
 
     </AppContent>
   );
+}
+
+MarkdownDocs.propTypes = {
+  classes: PropTypes.object.isRequired,
+  demos: PropTypes.any,
+  markdown: PropTypes.string.isRequired,
+  sourceLocation: PropTypes.string,     // You can define the direction location of the markdown file. Otherwise, we try to determine it with an heuristic.
+  sourceCodeRootUrl: PropTypes.string,  // корень расположения исходных текстов, например, 'https://github.com/oknosoft/flowcon/tree/master'
+  title: PropTypes.string,              // заголовок в табе браузера
+  subtitle: PropTypes.string,           // суффикс проекта в заголовке
+  h1: PropTypes.string,                 // заголовок статьи
+  descr: PropTypes.string,              // html meta description
+  footer: PropTypes.bool,               // показывать кнопки share соцсетей
 }
 
 export default withStyles(styles)(withIface(MarkdownDocs));

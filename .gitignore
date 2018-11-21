@@ -34,6 +34,7 @@ packages/metadata-pouchdb/index.js.map
 packages/metadata-pouchdb/index.min.js
 
 packages/metadata-react/plugin.min.js
+packages/metadata-react/build/
 
 packages/metadata-redux/index.js
 packages/metadata-redux/index.js.map
@@ -48,3 +49,4 @@ packages/metadata-dhtmlx/metadata.css
 packages/metadata-dhtmlx/dhx_web.css
 packages/metadata-dhtmlx/dhx_terrace.css
 packages/metadata-dhtmlx/index.js.map
+

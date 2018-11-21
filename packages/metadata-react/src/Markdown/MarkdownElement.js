@@ -1,6 +1,5 @@
-// @flow
-
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import marked from 'marked';
 import Diagrams from '../Diagrams/Diagrams';
@@ -88,15 +87,7 @@ function render(text) {
   return res;
 }
 
-
-type Props = {
-  classes: Object,
-  className?: string,
-  text: string,
-  handleNavigate: func,
-};
-
-function MarkdownElement(props: Props) {
+function MarkdownElement(props) {
   const { classes, className, text, mdtitle, title, handleNavigate, handleIfaceState, disconnect, CustomBtn, ...other } = props;
 
   function anchorCkick(evt) {
@@ -125,6 +116,14 @@ function MarkdownElement(props: Props) {
     </div>
   );
   /* eslint-enable */
+}
+
+MarkdownElement.propTypes = {
+  classes: PropTypes.object.isRequired,
+  className: PropTypes.string,
+  text: PropTypes.string.isRequired,
+  handleNavigate: PropTypes.func.isRequired,
+
 }
 
 export default withStyles(withIface(MarkdownElement));

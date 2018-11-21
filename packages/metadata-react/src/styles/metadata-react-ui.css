@@ -1,0 +1,83 @@
+.content-with-toolbar-layout {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	height: 100%;
+}
+
+.content-with-toolbar-layout__toolbar {
+}
+
+.content-with-toolbar-layout__content {
+	flex: 1;
+}
+
+.meta-progress {
+	margin: 40px auto auto auto !important;
+	display: block !important;
+}
+
+/* Toolbar */
+.meta-toolbar {
+	z-index: 800;
+}
+
+.meta-toolbar-group {
+	z-index: 850;
+}
+
+/* DataField */
+.meta-datafield-field {
+	min-width: 320px;
+	display: flex;
+	flex-direction: row;
+}
+
+.meta-datafield-label {
+	display: flex;
+	flex: 4;
+	justify-content: flex-start;
+	align-items: center;
+}
+
+.meta-datafield-data {
+	flex: 6;
+}
+
+.meta-datafield-dataselect {
+	width: 55%;
+	display: inline-block;
+	position: relative;
+	bottom: -8px;
+}
+
+/* Paper */
+.meta-paper {
+	min-width: 280px !important;
+	margin: auto !important;
+	max-width: 800px !important;
+	padding-top: 18px !important;
+}
+
+.meta-padding-8 {
+	padding: 8px;
+}
+
+.meta-padding-18 {
+	padding: 18px;
+}
+
+.meta-button-18-0 {
+	margin: 18px 18px 0 0
+}
+
+.meta-toggle {
+	margin: 18px;
+	width: 90% !important
+}
+
+/* AppBar */
+.meta-appbar-button {
+	color: #fff !important;
+	vertical-align: middle;
+}
