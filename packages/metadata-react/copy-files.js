@@ -8,10 +8,9 @@
 
 const path = require('path');
 const fs = require('fs');
+const md5File = require('md5-file');
 const lpath = path.resolve(__dirname, '.');
 const rpath = path.resolve(__dirname, './src');;
-const {dependencies} = require(path.resolve(__dirname, '../package.json'));
-const libs = Object.keys(dependencies).filter(v => /^metadata-/.test(v));
 
 function fromDir(startPath, filter, callback) {
 
@@ -52,4 +51,3 @@ if(!copied){
   console.log(`all files match`);
 }
 
-console.log('copy-files');

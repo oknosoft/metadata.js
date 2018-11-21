@@ -79,6 +79,7 @@
     "gulp-umd": "^2.0",
     "gulp-wrap": "^0.14",
     "history": "^4.7.2",
+    "md5-file": "^4.0.0",
     "react-fullscreenable": "^2.5.1-0",
     "react-helmet": "^5.2.0",
     "react-onclickoutside": "^6.7.1",
