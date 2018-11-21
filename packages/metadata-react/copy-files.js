@@ -35,7 +35,7 @@ function fromDir(startPath, filter, callback) {
 
 let copied;
 let i = 0;
-fromDir(rpath, /\.(css|md)$/, (rname) => {
+fromDir(rpath, /\.(css|md|woff2|svg)$/, (rname) => {
   const name = rname.replace(rpath, '');
   const lame = path.join(lpath, name);
   if(!fs.existsSync(lame) || (md5File.sync(rname) != md5File.sync(lame))){
