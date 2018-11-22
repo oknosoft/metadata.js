@@ -33,7 +33,7 @@ class Attachments extends MDNRComponent {
       let res;
       const {_obj} = this.state;
       const {utils, job_prm, msg} = $p;
-      (utils.mime_lookup ? Promise.resolve() : import('metadata-core/src/mime').then((module) => {
+      (utils.mime_lookup ? Promise.resolve() : import('metadata-core/lib/mime.min').then((module) => {
         module.default.constructor.call($p);
       }))
         .then(() => {
