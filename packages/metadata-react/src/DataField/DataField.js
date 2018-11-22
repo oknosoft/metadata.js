@@ -18,7 +18,7 @@ import FieldNumber from './FieldNumber';
 import FieldToggle from './FieldToggle';
 import FieldThreeState from './FieldThreeState';
 
-import control_by_type from 'metadata-abstract-ui/src/ui';
+import control_by_type from 'metadata-abstract-ui/ui';
 
 
 export default class DataField extends FieldWithMeta {

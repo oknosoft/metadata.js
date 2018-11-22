@@ -62,6 +62,19 @@ return rollup({
   }))
 
   .then(() => rollup({
+    input: path.resolve(__dirname, './src/ui.js'),
+    external,
+    plugins,
+  }))
+  .then((bundle) => bundle.write({
+    format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
+    name: package_data.name.replace(/-/g, '_') + '_cron',
+    banner: header,
+    file: path.resolve(__dirname, './ui.js'),
+    sourcemap: true,
+  }))
+
+  .then(() => rollup({
     input: path.resolve(__dirname, './src/row_props.js'),
     external,
     plugins,
