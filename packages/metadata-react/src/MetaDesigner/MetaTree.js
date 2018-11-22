@@ -6,7 +6,7 @@ import treebeardTheme from './assets/treebeard-theme'
 
 import * as filters from './filter';
 
-import classes from './MetaDesigner.scss';
+import classes from './MetaDesigner.css';
 import styles from './assets/treebeard-styles';
 
 import data from './assets/meta';

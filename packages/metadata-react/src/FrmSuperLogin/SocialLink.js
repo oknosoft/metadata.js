@@ -9,7 +9,7 @@ import {YandexIcon, GoogleIcon, GitHubIcon, FacebookIcon} from './assets/icons';
 
 import superlogin from './client';
 
-import classes from './FrmSuperLogin.scss';
+import classes from './FrmSuperLogin.css';
 
 
 // https://github.com/micky2be/superlogin-client

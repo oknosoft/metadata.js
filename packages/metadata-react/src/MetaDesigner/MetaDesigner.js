@@ -5,7 +5,7 @@ import ReactGridLayout from 'react-grid-layout';
 import LayoutCSS from 'react-grid-layout/css/styles.css';
 import ResizableCSS from 'react-resizable/css/styles.css';
 
-import classes from './MetaDesigner.scss';
+import classes from './MetaDesigner.css';
 
 import MetaTree from './MetaTree';
 
