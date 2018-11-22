@@ -29,16 +29,16 @@ return webpack(require('./webpack.config'), (err, stats) => {
   // Done processing
 });
 
-return rollup({
-  input: path.resolve(__dirname, './bandle.js'),
-  external,
-  plugins,
-})
-  .then((bundle) => bundle.write({
-    format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
-    name: package_data.name.replace(/-/g, '_'),
-    banner: header,
-    file: path.resolve(__dirname, './index.js'),
-    sourcemap: true,
-  }));
+// return rollup({
+//   input: path.resolve(__dirname, './bandle.js'),
+//   external,
+//   plugins,
+// })
+//   .then((bundle) => bundle.write({
+//     format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
+//     name: package_data.name.replace(/-/g, '_'),
+//     banner: header,
+//     file: path.resolve(__dirname, './index.js'),
+//     sourcemap: true,
+//   }));
 

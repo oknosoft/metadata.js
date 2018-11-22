@@ -22,13 +22,6 @@ const header = `/*!
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */\n\n`;
 
-// return webpack(require('./webpack.config'), (err, stats) => {
-//   if (err || stats.hasErrors()) {
-//     // Handle errors here
-//   }
-//   // Done processing
-// });
-
 return rollup({
   input: path.resolve(__dirname, './src/index.js'),
 	external,
