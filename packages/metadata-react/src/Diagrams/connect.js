@@ -131,6 +131,8 @@ function mapStateToProps(state, props) {
         });
     },
 
+    // получает объекты диаграмм из couchdb или из произвольного сервиса
+    // либо, складывает готовый chart, если его передали в исходном массиве
     fetch(charts) {
       const {reports, doc} = dbs();
       const http = [], db = [];

@@ -164,7 +164,7 @@ export default class RamIndexer {
       // флаг поиска страницы со ссылкой
       flag = skip === 0 && utils.is_guid(ref),
       // результат поиска строки со ссылкой
-      scroll = 0,
+      scroll = null,
       count = 0;
 
     const docs = [];

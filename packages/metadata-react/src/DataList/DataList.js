@@ -537,7 +537,7 @@ class DataList extends MDNRComponent {
                 scrollSetted: true,
                 ref: '',
               }
-              if(scroll && !flag) {
+              if(!flag && scroll !== null) {
                 newState.selectedRow = scroll + 1;
                 newState.scrollToRow = newState.selectedRow + 4 < count ? newState.selectedRow + 4 : newState.selectedRow;
               }

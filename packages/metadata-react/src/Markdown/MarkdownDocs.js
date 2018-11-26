@@ -125,7 +125,7 @@ MarkdownDocs.propTypes = {
   subtitle: PropTypes.string,           // суффикс проекта в заголовке
   h1: PropTypes.string,                 // заголовок статьи
   descr: PropTypes.string,              // html meta description
-  footer: PropTypes.bool,               // показывать кнопки share соцсетей
+  footer: PropTypes.node,               // кнопки share соцсетей, прочие элементы в подвале
 }
 
 export default withStyles(styles)(withIface(MarkdownDocs));
