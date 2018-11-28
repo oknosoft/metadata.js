@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.17-beta.13, built:2018-11-22
+ metadata-redux v2.0.17-beta.13, built:2018-11-28
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -780,7 +780,14 @@ const mapDispatchToProps$2 = (dispatch) => {
     },
     handleUnPost() {
     },
-    handleMarkDeleted() {
+    handleMarkDeleted(ref, _mgr) {
+      const {current_user} = $p;
+      if(current_user && current_user.get_acl(_mgr.class_name).includes('d')) {
+        return _mgr.get(ref, 'promise')
+          .then((o) => {
+            return !o._deleted && o.mark_deleted(true);
+          })
+      }
     },
     handleUnMarkDeleted() {
     },

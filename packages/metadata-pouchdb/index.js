@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.17-beta.13, built:2018-11-22
+ metadata-pouchdb v2.0.17-beta.13, built:2018-11-26
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -141,7 +141,7 @@ class RamIndexer {
     let part,
       step = 0,
       flag = skip === 0 && utils.is_guid(ref),
-      scroll = 0,
+      scroll = null,
       count = 0;
     const docs = [];
     function add(doc) {

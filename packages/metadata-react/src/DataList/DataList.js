@@ -113,8 +113,13 @@ class DataList extends MDNRComponent {
       });
     }
     else if(handlers.handleMarkDeleted) {
-      this._handleRemove = function () {
-        handlers.handleMarkDeleted(row.ref, _mgr);
+      this._handleRemove = () => {
+        this.setState({confirm_text: ''}, () => {
+          Promise.resolve()
+            .then(() => handlers.handleMarkDeleted(row.ref, _mgr))
+            .then(this.handleFilterChange)
+            .catch((err) => this.setState({network_error: err}));
+        });
       };
       this.setState({confirm_text: 'Удалить объект?'});
     }
@@ -184,6 +189,10 @@ class DataList extends MDNRComponent {
 
   handleSettingsClose = () => {
     this.setState({settings_open: false});
+  };
+
+  handleConfirmClose = () => {
+    this.setState({confirm_text: ''});
   };
 
   handleInfoText = (info_text) => {
@@ -273,7 +282,7 @@ class DataList extends MDNRComponent {
         title={_meta.synonym}
         text={confirm_text}
         handleOk={this._handleRemove}
-        handleCancel={() => this.setState({confirm_text: ''})}
+        handleCancel={this.handleConfirmClose}
         open
       />,
 
