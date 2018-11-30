@@ -44,17 +44,19 @@ class DiagramsArray extends Component {
     this.setState({fullscreen: this.state.fullscreen === key ? null : key});
   }
 
-  renderGrid({width, classes, diagrams, isFullscreen, grid}) {
+  renderGrid({width, height, classes, diagrams, isFullscreen, grid}) {
     if(grid == "1" || width <= 600) {
       return diagrams.map((data, key) => this.renderDiagram({width, classes, data, key, isFullscreen}));
     }
 
     const spacing = 16;
+    if(!height) {
+      height = width >= 960 ? (width / 5.2).round() : 0;
+    }
     return <Grid container>
       {
         diagrams.map((data, key) => {
           let md, w;
-          const height = width >= 960 ? (width / 5.2).round() : 0;
           switch (grid) {
           case '2':
             md = 6;
@@ -119,6 +121,7 @@ class DiagramsArray extends Component {
 DiagramsArray.propTypes = {
   classes: PropTypes.object.isRequired,
   width: PropTypes.number.isRequired,
+  height: PropTypes.number,
   diagrams: PropTypes.array.isRequired,
   toggleFullscreen: PropTypes.func,
   isFullscreen: PropTypes.bool,
