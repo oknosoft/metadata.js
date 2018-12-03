@@ -1,5 +1,5 @@
 /**
- * ### Поле ввода ссылочных данных на базе react-select
+ * ### Поле ввода ссылочных данных на базе material-ui-select
  *
  * @module FieldSelect
  *
