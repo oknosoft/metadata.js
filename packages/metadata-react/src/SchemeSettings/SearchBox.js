@@ -8,9 +8,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import compose from 'recompose/compose';
-import onlyUpdateForKeys from 'recompose/onlyUpdateForKeys';
-import withWidth, {isWidthUp} from '@material-ui/core/withWidth';
 import SearchIcon from '@material-ui/icons/Search';
 import {fade} from '@material-ui/core/styles/colorManipulator';
 import withStyles from '@material-ui/core/styles/withStyles';
@@ -75,10 +72,6 @@ class SearchBox extends React.Component {
   render() {
     const {classes, width, value} = this.props;
 
-    if(!isWidthUp('sm', width)) {
-      return null;
-    }
-
     return (
       <div className={classes.wrapper}>
         <input
@@ -98,13 +91,8 @@ class SearchBox extends React.Component {
 
 SearchBox.propTypes = {
   classes: PropTypes.object.isRequired,
-  width: PropTypes.string.isRequired,
   value: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
 };
 
-export default compose(
-  withStyles(styles, {name: 'SearchBox'}),
-  withWidth(),
-  onlyUpdateForKeys(['width', 'value']),
-)(SearchBox);
+export default withStyles(styles, {name: 'SearchBox'})(SearchBox);

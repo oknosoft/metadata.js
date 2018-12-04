@@ -56,7 +56,7 @@ const styles = theme => ({
     height: theme.spacing.unit * 2,
   },
   barInput: {
-    minWidth: 200,
+    minWidth: 180,
     marginLeft: theme.spacing.unit,
     marginTop: 0,
   },

@@ -23,7 +23,7 @@ const rowHeight = 32;
 
 export function prevent(evt) {
   evt.stopPropagation();
-  evt.preventDefault();
+  (!evt.touches || !evt.touches.length) && evt.preventDefault();
 }
 
 export default class InfiniteList extends MComponent {

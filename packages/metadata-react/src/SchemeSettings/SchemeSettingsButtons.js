@@ -105,7 +105,7 @@ export default class SchemeSettingsButtons extends PureComponent {
   render() {
     const {props, state} = this;
     const {menu_open} = state;
-    const {scheme, show_search, show_variants, tabParams, classes, settings_open} = props;
+    const {scheme, show_search, show_variants, tabParams, classes, settings_open, hide_btn} = props;
 
     return [
       // Search box
@@ -120,11 +120,11 @@ export default class SchemeSettingsButtons extends PureComponent {
       show_variants && scheme && this.VariantsMenu(),
 
       // Кнопка открытия настроек
-      !settings_open && <IconButton key="ss3" title="Настройка списка" onClick={props.handleSettingsOpen}><IconSettings/></IconButton>,
+      !hide_btn && !settings_open && <IconButton key="ss3" title="Настройка списка" onClick={props.handleSettingsOpen}><IconSettings/></IconButton>,
 
       // Кнопки Ок или Отмена настроек
-      settings_open && <IconButton key="ss4" title="Применить настройки" onClick={this.handleOk}><IconSettingsDone/></IconButton>,
-      settings_open && <IconButton key="ss5" title="Скрыть настройки" onClick={props.handleSettingsClose}><IconSettingsCancel/></IconButton>
+      !hide_btn && settings_open && <IconButton key="ss4" title="Применить настройки" onClick={this.handleOk}><IconSettingsDone/></IconButton>,
+      !hide_btn && settings_open && <IconButton key="ss5" title="Скрыть настройки" onClick={props.handleSettingsClose}><IconSettingsCancel/></IconButton>
 
     ];
   }

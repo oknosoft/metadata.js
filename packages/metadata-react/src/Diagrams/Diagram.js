@@ -55,9 +55,13 @@ class Diagram extends React.Component {
       import('recharts')
         .then((module) => {
           Recharts = module;
-          this.forceUpdate();
+          !this._unmount && this.forceUpdate();
         });
     }
+  }
+
+  componentWillUnmount() {
+    this._unmount = true;
   }
 
   render() {

@@ -63,6 +63,7 @@ class DataListToolbar extends Component {
 
     const {props, state} = this;
     const {classes, width, btns, end_btns, menu_items} = props;
+    const widthUpSm = isWidthUp('sm', width);
 
     return (
       <Toolbar disableGutters className={classes.toolbar}>
@@ -78,7 +79,7 @@ class DataListToolbar extends Component {
         {!props.denyAddDel && <IconButton key="edit" title="Открыть форму объекта" onClick={props.handleEdit}><EditIcon/></IconButton>}
         {!props.denyAddDel && <IconButton key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}
 
-        {!props.scheme.standard_period.empty() && isWidthUp('sm', width) && <IconButton disabled>|</IconButton>}
+        {!props.scheme.standard_period.empty() && widthUpSm && <IconButton disabled>|</IconButton>}
         {!props.scheme.standard_period.empty() && <DateRange
           _obj={props.scheme}
           _fld={'date'}
@@ -86,7 +87,6 @@ class DataListToolbar extends Component {
           classes={classes}
           handleChange={props.handleFilterChange}
         />}
-
 
         {btns /* дополнительные кнопки */}
 
@@ -104,6 +104,7 @@ class DataListToolbar extends Component {
           scheme={props.scheme}
           show_search={props.show_search}
           show_variants={props.show_variants}
+          hide_btn={!widthUpSm}
         />
 
         <IconButton onClick={this.handleClick} title="Дополнительно"><MoreVertIcon/></IconButton>

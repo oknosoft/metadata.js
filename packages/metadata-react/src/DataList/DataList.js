@@ -237,7 +237,7 @@ class DataList extends MDNRComponent {
   render() {
     const {state, props, context, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer, _list} = this;
     const {columns, scheme, confirm_text, info_text, settings_open, rowCount} = state;
-    const {_mgr: {RepParams}, classes, title, registerFilterChange, width, height, ...others} = props;
+    const {_mgr: {RepParams}, classes, title, registerFilterChange, width, height, Toolbar2, GridRenderer, ...others} = props;
 
     if(!scheme) {
       return <LoadingMessage text="Чтение настроек компоновки..."/>;
@@ -267,6 +267,7 @@ class DataList extends MDNRComponent {
       handleFilterChange: this.handleFilterChange,
     };
 
+    const Grid = GridRenderer || MultiGrid;
 
     return [
 
@@ -297,6 +298,8 @@ class DataList extends MDNRComponent {
 
       // панель инструментов табчасти
       <DataListToolbar {...toolbar_props} />,
+
+      Toolbar2 && <Toolbar2 {...toolbar_props} key="toolbar2"/>,
 
       // панель настроек компоновки
       settings_open && <AutoSizer key="tabs" disableHeight>
@@ -331,8 +334,11 @@ class DataList extends MDNRComponent {
               };
 
               return (
-                <MultiGrid
+                <Grid
                   ref={registerChild}
+                  onRowsRendered={onRowsRendered}
+                  onSectionRendered={onSectionRendered}
+                  _list={this._list}
                   tabIndex={0}
                   width={width}
                   height={sizes.height - 52 - (settings_open ? 320 : 0)}
@@ -345,7 +351,6 @@ class DataList extends MDNRComponent {
                   overscanRowCount={DataList.OVERSCAN_ROW_COUNT}
                   columnWidth={this._getColumnWidth}
                   rowHeight={DataList.COLUMN_HEIGHT}
-                  onSectionRendered={onSectionRendered}
                   classNameTopRightGrid={cn(classes.topRightGrid, state.colResize && classes.colResize)}/>
               );
             }}
