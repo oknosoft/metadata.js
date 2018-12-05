@@ -29,6 +29,7 @@ const styles = theme => ({
         background: theme.palette.common.white,
       },
     },
+    marginRight: theme.spacing.unit,
   },
   search: {
     width: theme.spacing.unit * 4,
@@ -61,23 +62,34 @@ class SearchBox extends React.Component {
 
   handleKeyDown = (event) => {
     if(event.key === 'Enter' || event.key === 'Tab') {
-      this.props.onChange({target: event.target, force: true});
+      this.handleChange({target: event.target, force: true});
     }
   };
 
-  handleChange = (event) => {
-    this.props.onChange(event);
+  handleChange = ({target, force}) => {
+    const {scheme, handleFilterChange} = this.props;
+    if(scheme._search !== target.value.toLowerCase() || force) {
+      scheme._search = target.value.toLowerCase();
+      this._timer && clearTimeout(this._timer);
+      if(force) {
+        handleFilterChange();
+      }
+      else {
+        this._timer = setTimeout(handleFilterChange, 300);
+      }
+      this.forceUpdate();
+    }
   };
 
   render() {
-    const {classes, width, value} = this.props;
+    const {classes, scheme} = this.props;
 
     return (
       <div className={classes.wrapper}>
         <input
           className={classes.input}
           placeholder="Поиск..."
-          value={value}
+          value={scheme._search}
           onChange={this.handleChange}
           onKeyDown={this.handleKeyDown}
         />
@@ -91,8 +103,8 @@ class SearchBox extends React.Component {
 
 SearchBox.propTypes = {
   classes: PropTypes.object.isRequired,
-  value: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
+  scheme: PropTypes.string.isRequired,
+  handleFilterChange: PropTypes.func.isRequired,
 };
 
 export default withStyles(styles, {name: 'SearchBox'})(SearchBox);

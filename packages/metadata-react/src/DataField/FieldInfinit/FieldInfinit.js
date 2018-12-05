@@ -302,6 +302,7 @@ class FieldInfinit extends AbstractField {
                   <Paper
                     square
                     onTouchStart={prevent}
+                    onTouchEnd={prevent}
                   >
                     {this.renderItems({getItemProps, inputValue, highlightedIndex, selectedItem})}
                   </Paper>

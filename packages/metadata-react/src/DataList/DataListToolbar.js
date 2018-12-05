@@ -17,6 +17,7 @@ import AttachIcon from '@material-ui/icons/AttachFile';
 import SelectIcon from '@material-ui/icons/PlaylistAddCheck';
 
 import SchemeSettingsButtons from '../SchemeSettings/SchemeSettingsButtons';
+import SearchBox from '../SchemeSettings/SearchBox';
 import DateRange from '../SchemeSettings/DateRange';
 
 import compose from 'recompose/compose';
@@ -62,11 +63,11 @@ class DataListToolbar extends Component {
   render() {
 
     const {props, state} = this;
-    const {classes, width, btns, end_btns, menu_items} = props;
+    const {classes, scheme, width, btns, end_btns, menu_items, toolbar2row} = props;
     const widthUpSm = isWidthUp('sm', width);
 
-    return (
-      <Toolbar disableGutters className={classes.toolbar}>
+    return [
+      <Toolbar key="toolbar1" disableGutters className={classes.toolbar}>
 
         {props.selectionMode && <Button
           key="select"
@@ -79,20 +80,20 @@ class DataListToolbar extends Component {
         {!props.denyAddDel && <IconButton key="edit" title="Открыть форму объекта" onClick={props.handleEdit}><EditIcon/></IconButton>}
         {!props.denyAddDel && <IconButton key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}
 
-        {!props.scheme.standard_period.empty() && widthUpSm && <IconButton disabled>|</IconButton>}
-        {!props.scheme.standard_period.empty() && <DateRange
-          _obj={props.scheme}
+        {!scheme.standard_period.empty() && widthUpSm && <IconButton disabled>|</IconButton>}
+        {!scheme.standard_period.empty() && <DateRange
+          _obj={scheme}
           _fld={'date'}
           _meta={{synonym: 'Период'}}
           classes={classes}
           handleChange={props.handleFilterChange}
         />}
 
-        {btns /* дополнительные кнопки */}
+        {(!toolbar2row || widthUpSm) && btns /* дополнительные кнопки */}
 
-        <Typography color="inherit" className={classes.flex} />
+        <div className={classes.flex} />
 
-        {end_btns /* дополнительные кнопки */}
+        {(!toolbar2row || widthUpSm) && end_btns /* дополнительные кнопки */}
 
         <SchemeSettingsButtons
           handleSettingsOpen={props.handleSettingsOpen}
@@ -101,8 +102,8 @@ class DataListToolbar extends Component {
           handleFilterChange={props.handleFilterChange}
           settings_open={props.settings_open}
           classes={classes}
-          scheme={props.scheme}
-          show_search={props.show_search}
+          scheme={scheme}
+          show_search={props.show_search && (!toolbar2row || widthUpSm)}
           show_variants={props.show_variants}
           hide_btn={!widthUpSm}
         />
@@ -118,8 +119,18 @@ class DataListToolbar extends Component {
           {menu_items /* дополнительные пункты меню */}
         </Menu>
 
+      </Toolbar>,
+
+      toolbar2row && !widthUpSm && <Toolbar key="toolbar2" disableGutters className={classes.toolbar}>
+        {btns /* дополнительные кнопки */}
+        <div className={classes.flex}/>
+        {end_btns /* дополнительные кнопки */}
+        <SearchBox
+          scheme={scheme}
+          handleFilterChange={props.handleFilterChange}
+        />
       </Toolbar>
-    );
+    ];
   }
 }
 

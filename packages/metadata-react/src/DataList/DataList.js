@@ -15,7 +15,7 @@ import withStyles from './styles';
 import {withIface} from 'metadata-redux';
 import control_by_type from 'metadata-abstract-ui/ui';
 import StarRate from '@material-ui/icons/StarRate';
-import Typography from '@material-ui/core/Typography/Typography';
+import Typography from '@material-ui/core/Typography';
 
 class DataList extends MDNRComponent {
 
@@ -237,7 +237,7 @@ class DataList extends MDNRComponent {
   render() {
     const {state, props, context, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer, _list} = this;
     const {columns, scheme, confirm_text, info_text, settings_open, rowCount} = state;
-    const {_mgr: {RepParams}, classes, title, registerFilterChange, width, height, Toolbar2, GridRenderer, ...others} = props;
+    const {_mgr: {RepParams}, classes, title, registerFilterChange, width, height, GridRenderer, ...others} = props;
 
     if(!scheme) {
       return <LoadingMessage text="Чтение настроек компоновки..."/>;
@@ -298,8 +298,6 @@ class DataList extends MDNRComponent {
 
       // панель инструментов табчасти
       <DataListToolbar {...toolbar_props} />,
-
-      Toolbar2 && <Toolbar2 {...toolbar_props} key="toolbar2"/>,
 
       // панель настроек компоновки
       settings_open && <AutoSizer key="tabs" disableHeight>
