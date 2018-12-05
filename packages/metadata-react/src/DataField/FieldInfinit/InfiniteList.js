@@ -14,7 +14,7 @@ import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import classnames from 'classnames';
+import cn from 'classnames';
 import MComponent from '../../common/MComponent';
 import {suggestionText} from '../AbstractField';
 
@@ -29,6 +29,22 @@ export function prevent(evt) {
   catch(e) {
 
   }
+}
+
+const ontouch = {
+  onTouchStart: 'onMouseDown',
+  onTouchEnd: 'onClick',
+  onTouchMove: 'onMouseMove',
+};
+
+function touches(itemProps) {
+  for(const on in ontouch) {
+    itemProps[on] = function(evt) {
+      itemProps[ontouch[on]](evt);
+      prevent(evt);
+    };
+  }
+  return itemProps;
 }
 
 export default class InfiniteList extends MComponent {
@@ -144,11 +160,11 @@ export default class InfiniteList extends MComponent {
     return (
       <ListItem
         button
-        className={classnames({
+        className={cn({
           [classes.suggestion]: true,
           [classes.suggestionSelected]: index === highlightedIndex,
         })}
-        {...getItemProps({key, index, style, item: item || {}})}
+        {...touches(getItemProps({key, index, style, item: item || {}}))}
       >
         {item && !isScrolling && isVisible ?
           <ListItemText

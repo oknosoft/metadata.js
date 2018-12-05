@@ -167,6 +167,10 @@ class FieldInfinit extends AbstractField {
     const footer = !is_enm || _meta.type.types.length > 1;
     const iconDisabled=!_obj[_fld] || _obj[_fld].empty();
 
+    function clear() {
+      handleSelect(_manager.get());
+    }
+
     return (
       _manager ? [
           <InfiniteList
@@ -184,13 +188,20 @@ class FieldInfinit extends AbstractField {
           />,
           footer && <Divider key="divider"/>,
           footer && <Toolbar key="Toolbar" disableGutters onMouseDown={prevent} onTouchStart={prevent}>
-            <Button size="small" className={classes.a} onClick={this.handleOpenList} title={_manager.frm_selection_name}>Список</Button>
+            <Button
+              size="small"
+              className={classes.a}
+              onClick={this.handleOpenList}
+              onTouchEnd={this.handleOpenList}
+              title={_manager.frm_selection_name}
+            >Список</Button>
             <Typography variant="h6" color="inherit" className={classes.flex}> </Typography>
 
             <IconButton
               title="Очистить"
               disabled={iconDisabled || _meta.disable_clear}
-              onClick={() => handleSelect(_manager.get())}
+              onClick={clear}
+              onTouchEnd={clear}
             ><ClearIcon/></IconButton>
 
             {_meta.type.types.length > 1 && <IconButton title="Выбрать тип значения"><TitleIcon/></IconButton>}
@@ -202,6 +213,7 @@ class FieldInfinit extends AbstractField {
               title={_manager.frm_obj_name}
               disabled={iconDisabled}
               onClick={this.handleOpenObj}
+              onTouchEnd={this.handleOpenObj}
             ><OpenInNew/></IconButton>}
 
           </Toolbar>

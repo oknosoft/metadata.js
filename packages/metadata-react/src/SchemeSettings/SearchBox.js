@@ -103,7 +103,7 @@ class SearchBox extends React.Component {
 
 SearchBox.propTypes = {
   classes: PropTypes.object.isRequired,
-  scheme: PropTypes.string.isRequired,
+  scheme: PropTypes.object.isRequired,
   handleFilterChange: PropTypes.func.isRequired,
 };
 
