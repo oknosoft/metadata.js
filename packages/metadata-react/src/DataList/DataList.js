@@ -169,6 +169,11 @@ class DataList extends MDNRComponent {
 
   };
 
+  ownerState = (state) => {
+    state && this.setState(state);
+    return this;
+  };
+
   // обработчик печати теущей строки
   handlePrint = () => {
     const row = this._list[this.state.selectedRow];
@@ -349,7 +354,9 @@ class DataList extends MDNRComponent {
                   overscanRowCount={DataList.OVERSCAN_ROW_COUNT}
                   columnWidth={this._getColumnWidth}
                   rowHeight={rowHeight || DataList.COLUMN_HEIGHT}
-                  classNameTopRightGrid={cn(classes.topRightGrid, state.colResize && classes.colResize)}/>
+                  classNameTopRightGrid={cn(classes.topRightGrid, state.colResize && classes.colResize)}
+                  ownerState={this.ownerState}
+                />
               );
             }}
           </InfiniteLoader>
