@@ -11,7 +11,7 @@
   "dependencies": {
     "alasql": "^0.4",
     "debug": "^4.1",
-    "moment": "^2.22"
+    "moment": "^2.23"
   },
   "repository": {
     "type": "git",
