@@ -290,6 +290,10 @@ function attach($p) {
           return session && pouch.log_in(session.username, session.password);
         })
         .catch((err) => {
+          const {validationErrors} = err;
+          if(validationErrors) {
+            err.error = validationErrors[Object.keys(validationErrors)[0]];
+          }
           dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: err.error ? err.error : 'Registration error'}));
         });
     };
