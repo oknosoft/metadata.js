@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.18-beta.2, built:2018-12-18
+ metadata-superlogin v2.0.18-beta.2, built:2018-12-19
  © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -829,8 +829,11 @@ function attach($p) {
   function handleRegister(registration) {
     return function (dispatch) {
       const {username, email, password, confirmPassword} = registration;
-      if(!password || password.length < 6 || password !== confirmPassword) {
+      if(!password || password.length < 6) {
         return dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Длина пароля должна быть не менее 6 символов'}));
+      }
+      else if(password !== confirmPassword) {
+        return dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Не совпадают пароль и подтверждение пароля'}));
       }
       return superlogin.validateUsername(username)
         .catch((err) => {
