@@ -13,15 +13,15 @@
     "@material-ui/icons": "^3.0",
     "autoprefixer": "^7.2.6",
     "classnames": "^2.2.6",
-    "downshift": "^3.1.7",
+    "downshift": "^3.1.8",
     "font-awesome": "^4.7.0",
     "marked": "^0.5.2",
     "metadata-abstract-ui": "^2.0.18-beta.2",
     "metadata-external": "^2.0.18-beta.2",
     "metadata-redux": "^2.0.18-beta.2",
-    "rc-calendar": "^9.8",
+    "rc-calendar": "^9.9",
     "rc-cascader": "^0.17",
-    "rc-time-picker": "^3.4",
+    "rc-time-picker": "^3.5",
     "react-fullscreenable": "^2.5.1-0",
     "react-helmet": "^5.2",
     "react-onclickoutside": "^6.7.1",
@@ -32,8 +32,8 @@
     "yamljs": "^0.3"
   },
   "peerDependencies": {
-    "react": "^16.6",
-    "react-dom": "^16.6"
+    "react": "^16.7",
+    "react-dom": "^16.7"
   },
   "scripts": {
     "build:es": "cross-env NODE_ENV=production BABEL_ENV=es babel --config-file ./babel.config.js ./src --out-dir . && node ./copy-files",
