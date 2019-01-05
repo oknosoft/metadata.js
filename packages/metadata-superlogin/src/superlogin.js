@@ -113,6 +113,11 @@ function attach($p) {
     return postWithAuth('/user/rm-user', {name});
   }
 
+  // получает список пользователей общих баз текущего пользователя
+  superlogin.shared_users = function () {
+    return superlogin._http.post('/user/shared-users', {});
+  }
+
   // добавляет общую базу пользователю
   superlogin.share_db = function (name, db) {
     return postWithAuth('/user/share-db', {name, db});
