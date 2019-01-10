@@ -1,6 +1,6 @@
 /*!
- metadata-abstract-ui v2.0.18-beta.2, built:2018-12-18
- © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
+ metadata-abstract-ui v2.0.18-beta.2, built:2019-01-10
+ © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */

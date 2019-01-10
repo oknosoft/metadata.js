@@ -1,6 +1,6 @@
 /*!
- metadata-redux v2.0.18-beta.2, built:2018-12-18
- © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
+ metadata-redux v2.0.18-beta.2, built:2019-01-10
+ © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */
@@ -804,7 +804,7 @@ const mapDispatchToProps$2 = (dispatch) => {
 };
 var withObj = reactRedux.connect(null, mapDispatchToProps$2);
 
-const mapStateToProps$3 = (            ) => {
+const mapStateToProps$3 = () => {
   if(typeof $p !== 'object'){
     return;
   }

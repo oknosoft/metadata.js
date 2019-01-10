@@ -1,6 +1,6 @@
 /**
  * ### React-component _Поле списка_
- * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2018
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2019
  *
  * @module DataListField
  *

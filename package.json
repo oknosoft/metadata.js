@@ -12,8 +12,8 @@
     "doc": "doc"
   },
   "dependencies": {
-    "@material-ui/core": "^3.8.1",
-    "@material-ui/icons": "^3.0.1",
+    "@material-ui/core": "^3.8.3",
+    "@material-ui/icons": "^3.0.2",
     "alasql": "^0.4",
     "cron": "^1.6.0",
     "dataframe": "^2.0",
@@ -29,7 +29,7 @@
     "pouchdb-find": "7.0.0",
     "pouchdb-mapreduce": "7.0.0",
     "pouchdb-replication": "7.0.0",
-    "rc-calendar": "^9.10.4",
+    "rc-calendar": "^9.10.5",
     "rc-cascader": "^0.17.1",
     "rc-time-picker": "^3.5.0",
     "superlogin-client": "^0.8.0"
@@ -66,7 +66,7 @@
     "concat-files": "^0.1.1",
     "cross-env": "^5.2.0",
     "decompress": "^4.2",
-    "downshift": "^3.1.8",
+    "downshift": "^3.1.12",
     "graceful-fs": "^4.1.15",
     "gulp": "^3.9",
     "gulp-base64": "^0.1",
@@ -95,7 +95,7 @@
     "redux-dynamic-middlewares": "^1.0",
     "redux-thunk": "^2.3.0",
     "rimraf": "^2.6.3",
-    "rollup": "^1.0.1",
+    "rollup": "^1.1.0",
     "rollup-plugin-cleanup": "^3.1.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^4.0.0",
