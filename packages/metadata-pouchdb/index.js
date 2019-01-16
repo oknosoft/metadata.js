@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.18-beta.2, built:2019-01-10
+ metadata-pouchdb v2.0.18-beta.2, built:2019-01-16
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -21,6 +21,11 @@ function sort_fn(a, b) {
   }
 }
 class RamIndexer {
+  static waitError() {
+    const err = new Error('Индекс прочитн не полностью, повторите запрос позже');
+    err.status = 403;
+    throw err;
+  }
   constructor({fields, search_fields, mgr}) {
     this._fields = fields;
     this._search_fields = search_fields;
@@ -108,9 +113,7 @@ class RamIndexer {
   }
   find({selector, sort, ref, limit, skip = 0}, auth) {
     if(!this._ready) {
-      const err = new Error('Индекс прочитн не полностью, повторите запрос позже');
-      err.status = 403;
-      throw err;
+      RamIndexer.waitError();
     }
     let dfrom, dtill, from, till, search;
     for(const row of selector.$and) {
@@ -194,7 +197,7 @@ class RamIndexer {
   }
   init(bookmark, _mgr) {
     if(!_mgr) {
-      return Promise.all(this._mgrs.map((_mgr) => this.init(bookmark, _mgr)))
+      return this._mgrs.reduce((sum, _mgr) => sum.then(() => this.init(bookmark, _mgr)), Promise.resolve())
         .then(() => {
           this.sort();
         });
