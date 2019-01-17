@@ -30,7 +30,7 @@ const mapDispatchToProps = (dispatch) => {
     handleUnPost() {
 
     },
-    handleMarkDeleted(ref, _mgr) {
+    handleMarkDeleted({ref, _mgr}) {
       const {current_user} = $p;
       if(current_user && current_user.get_acl(_mgr.class_name).includes('d')) {
         return _mgr.get(ref, 'promise')

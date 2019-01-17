@@ -50,18 +50,17 @@ class FieldPath extends Component {
     if(_obj._manager == $p.cat.scheme_settings){
       const {parts, _mgr, _meta} = _obj._owner._owner.child_meta();
       for(const fld in _meta.fields){
-        if(fld == 'predefined_name'){
-          continue;
-        }
-        const {synonym, tooltip, type} = _meta.fields[fld];
-        const option = {
-          label: synonym || tooltip || fld,
-          value: fld,
-          type: type,
-        };
-        options.push(option);
-        if(type.is_ref){
-          this.loadData([option], 1);
+        if(fld !== 'predefined_name' && _meta.fields[fld]) {
+          const {synonym, tooltip, type} = _meta.fields[fld];
+          const option = {
+            label: synonym || tooltip || fld,
+            value: fld,
+            type: type,
+          };
+          options.push(option);
+          if(type.is_ref){
+            this.loadData([option], 1);
+          }
         }
       }
     }

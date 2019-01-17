@@ -116,7 +116,7 @@ class DataList extends MDNRComponent {
       this._handleRemove = () => {
         this.setState({confirm_text: ''}, () => {
           Promise.resolve()
-            .then(() => handlers.handleMarkDeleted(row.ref, _mgr))
+            .then(() => handlers.handleMarkDeleted({row, ref: row.ref, _mgr}))
             .then(this.handleFilterChange)
             .catch((err) => this.setState({network_error: err}));
         });
