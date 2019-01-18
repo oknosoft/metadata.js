@@ -565,7 +565,7 @@ export class DataObj {
           flds.id = this._metadata('id') || {};
         }
         for (const mf in flds) {
-          if (flds[mf].mandatory && (!this._obj[mf] || this._obj[mf] === utils.blank.guid)) {
+          if (flds[mf] && flds[mf].mandatory && (!this._obj[mf] || this._obj[mf] === utils.blank.guid)) {
             return reset_mandatory({
               obj: this,
               title: msg.mandatory_title,

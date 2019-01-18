@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.18-beta.2, built:2019-01-16
+ metadata-core v2.0.18-beta.2, built:2019-01-18
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -881,7 +881,7 @@ class DataObj {
           flds.id = this._metadata('id') || {};
         }
         for (const mf in flds) {
-          if (flds[mf].mandatory && (!this._obj[mf] || this._obj[mf] === utils.blank.guid)) {
+          if (flds[mf] && flds[mf].mandatory && (!this._obj[mf] || this._obj[mf] === utils.blank.guid)) {
             return reset_mandatory({
               obj: this,
               title: msg.mandatory_title,
