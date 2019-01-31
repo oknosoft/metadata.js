@@ -171,7 +171,7 @@ class UserObj extends Component {
         <FormGroup row>
           {info ? <IconError /> : <IconError className={classes.error}/>}
           <Typography variant="subtitle1" color={info ? 'primary' : 'error'} gutterBottom className={classnames(classes.spaceLeft, classes.errorText)}>
-            {log_error.replace('info:', '')}
+            {Array.isArray(log_error) ? log_error.join('; ') : log_error.replace('info:', '')}
           </Typography>
         </FormGroup>
         }
