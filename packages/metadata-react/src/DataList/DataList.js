@@ -577,7 +577,10 @@ class DataList extends MDNRComponent {
             }
           }
         })
-        .catch((err) => this.setState({network_error: err}));
+        .catch((err) => {
+          this.setState({network_error: err});
+          setTimeout(this.handleFilterChange, 2000);
+        });
     }
 
   };
