@@ -145,6 +145,7 @@ class MangoSelection {
       };
       if(_attr.date_from) tbattr.date_from = _attr.date_from;
       if(_attr.date_till) tbattr.date_till = _attr.date_till;
+      if(_attr.filter) tbattr.filter = _attr.filter;
       if(_attr.period) tbattr.period = _attr.period;
       elmnts.filter = new $p.iface.Toolbar_filter(tbattr);
 
