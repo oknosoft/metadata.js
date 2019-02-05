@@ -37,13 +37,17 @@ const style = theme => ({
     padding: 0,
   },
   paper: {
-    minWidth: 480,
+    [theme.breakpoints.up('sm')]: {
+      minWidth: 480,
+    }
   },
   minheight: {
     minHeight: 320,
   },
   large: {
-    minWidth: 960,
+    [theme.breakpoints.up('md')]: {
+      minWidth: 960,
+    },
     maxHeight: 'calc(100vh - 80px)',
   }
 });
