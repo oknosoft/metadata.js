@@ -1,6 +1,6 @@
 /*!
- metadata-superlogin v2.0.17-beta.11, built:2018-11-14
- © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
+ metadata-superlogin v2.0.18-beta.3, built:2019-02-08
+ © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */
@@ -703,6 +703,13 @@ const {metaActions} = require('metadata-redux');
 function needAuth() {
   return Promise.reject({error: 'Требуется авторизация'});
 }
+function postWithAuth(url, body) {
+  return superlogin.authenticated() ?
+    superlogin._http.post(url, body)
+      .then(res => res.data && superlogin.refresh_profile(res.data))
+    :
+    needAuth();
+}
 function attach($p) {
   const {cat, utils, wsql, adapters: {pouch}} = $p;
   superlogin.on('login', function (event, session) {
@@ -753,14 +760,30 @@ function attach($p) {
     }
     return needAuth();
   };
+  superlogin.refresh_profile = function(profile) {
+    const session = superlogin.getSession();
+    if(session) {
+      Object.assign(session, {profile});
+      return superlogin.setSession(session);
+    }
+  };
   superlogin.create_db = function (name) {
-    return this.authenticated() ?
-      this._http.post(`/user/create-db`, {name})
-        .then(res => {
-          return this.refresh();
-        })
-      :
-      needAuth();
+    return postWithAuth('/user/create-db', {name});
+  };
+  superlogin.add_user = function (name) {
+    return postWithAuth('/user/add-user', {name});
+  };
+  superlogin.rm_user = function (name) {
+    return postWithAuth('/user/rm-user', {name});
+  };
+  superlogin.shared_users = function () {
+    return superlogin._http.post('/user/shared-users', {});
+  };
+  superlogin.share_db = function (name, db) {
+    return postWithAuth('/user/share-db', {name, db});
+  };
+  superlogin.unshare_db = function (name, db) {
+    return postWithAuth('/user/unshare-db', {name, db});
   };
   function handleSocialAuth(provider) {
     return function (dispatch, getState) {
@@ -809,8 +832,11 @@ function attach($p) {
   function handleRegister(registration) {
     return function (dispatch) {
       const {username, email, password, confirmPassword} = registration;
-      if(!password || password.length < 6 || password !== confirmPassword) {
+      if(!password || password.length < 6) {
         return dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Длина пароля должна быть не менее 6 символов'}));
+      }
+      else if(password !== confirmPassword) {
+        return dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Не совпадают пароль и подтверждение пароля'}));
       }
       return superlogin.validateUsername(username)
         .catch((err) => {
@@ -847,6 +873,10 @@ function attach($p) {
           return session && pouch.log_in(session.username, session.password);
         })
         .catch((err) => {
+          const {validationErrors} = err;
+          if(validationErrors) {
+            err.error = validationErrors[Object.keys(validationErrors)[0]];
+          }
           dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: err.error ? err.error : 'Registration error'}));
         });
     };

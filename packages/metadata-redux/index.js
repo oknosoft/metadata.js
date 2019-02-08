@@ -1,6 +1,6 @@
 /*!
- metadata-redux v2.0.17-beta.11, built:2018-11-14
- © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
+ metadata-redux v2.0.18-beta.3, built:2019-02-08
+ © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */
@@ -10,9 +10,9 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var reactRouter = require('react-router');
-var reactRouterRedux = require('react-router-redux');
 var reactRedux = require('react-redux');
+var reactRouterRedux = require('react-router-redux');
+var reactRouter = require('react-router');
 
 const TRY_LOG_IN = 'USER_TRY_LOG_IN';
 const LOG_IN = 'USER_LOG_IN';
@@ -780,7 +780,14 @@ const mapDispatchToProps$2 = (dispatch) => {
     },
     handleUnPost() {
     },
-    handleMarkDeleted() {
+    handleMarkDeleted({ref, _mgr}) {
+      const {current_user} = $p;
+      if(current_user && current_user.get_acl(_mgr.class_name).includes('d')) {
+        return _mgr.get(ref, 'promise')
+          .then((o) => {
+            return !o._deleted && o.mark_deleted(true);
+          })
+      }
     },
     handleUnMarkDeleted() {
     },
@@ -797,7 +804,7 @@ const mapDispatchToProps$2 = (dispatch) => {
 };
 var withObj = reactRedux.connect(null, mapDispatchToProps$2);
 
-const mapStateToProps$3 = (            ) => {
+const mapStateToProps$3 = () => {
   if(typeof $p !== 'object'){
     return;
   }

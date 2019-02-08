@@ -17,17 +17,10 @@ const plugins = [
 ];
 const header = `/*!
  ${package_data.name} v${package_data.version}, built:${new Date().toISOString().split('T')[0]}
- © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
+ © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */\n\n`;
-
-// return webpack(require('./webpack.config'), (err, stats) => {
-//   if (err || stats.hasErrors()) {
-//     // Handle errors here
-//   }
-//   // Done processing
-// });
 
 return rollup({
   input: path.resolve(__dirname, './src/index.js'),

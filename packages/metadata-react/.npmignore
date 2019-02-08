@@ -1,0 +1,8 @@
+.DS_Store
+node_modules
+/src/
+/build.js
+/webpack.config.js
+/package-lock.json
+/babel.config.js
+/copy-files.js

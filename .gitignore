@@ -24,6 +24,9 @@ packages/metadata-abstract-ui/cron.min.js
 packages/metadata-abstract-ui/row_props.js
 packages/metadata-abstract-ui/row_props.js.map
 packages/metadata-abstract-ui/row_props.min.js
+packages/metadata-abstract-ui/ui.js
+packages/metadata-abstract-ui/ui.js.map
+packages/metadata-abstract-ui/ui.min.js
 
 packages/metadata-core/index.js
 packages/metadata-core/index.js.map
@@ -35,6 +38,32 @@ packages/metadata-pouchdb/index.min.js
 
 packages/metadata-react/plugin.js
 packages/metadata-react/plugin.min.js
+packages/metadata-react/App/
+packages/metadata-react/Calculator/
+packages/metadata-react/common/
+packages/metadata-react/DataField/
+packages/metadata-react/DataList/
+packages/metadata-react/DataListField/
+packages/metadata-react/DataTree/
+packages/metadata-react/Diagrams/
+packages/metadata-react/DnR/
+packages/metadata-react/DumbLoader/
+packages/metadata-react/FrmAttachments/
+packages/metadata-react/FrmLogin/
+packages/metadata-react/FrmObj/
+packages/metadata-react/FrmReport/
+packages/metadata-react/FrmSuperLogin/
+packages/metadata-react/Header/
+packages/metadata-react/Markdown/
+packages/metadata-react/MetaDesigner/
+packages/metadata-react/MetaList/
+packages/metadata-react/MetaTree/
+packages/metadata-react/Notifications/
+packages/metadata-react/SchemeSettings/
+packages/metadata-react/SplitPane/
+packages/metadata-react/styles/
+packages/metadata-react/TabularSection/
+packages/metadata-react/WindowSize/
 
 packages/metadata-redux/index.js
 packages/metadata-redux/index.js.map
@@ -49,3 +78,4 @@ packages/metadata-dhtmlx/metadata.css
 packages/metadata-dhtmlx/dhx_web.css
 packages/metadata-dhtmlx/dhx_terrace.css
 packages/metadata-dhtmlx/index.js.map
+

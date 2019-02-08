@@ -48,6 +48,7 @@ function getExternals() {
     'metadata-external/react-data-grid.min': true,
     'metadata-external/react-data-grid-addons': true,
     'metadata-external/react-data-grid-addons.min': true,
+    'metadata-react/App/dialogs': true,
   };
   for (const key in package_data.dependencies) {
     if(!externals[key]) {

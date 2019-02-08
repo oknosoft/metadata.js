@@ -6,3 +6,5 @@ localstorage
 lib
 examples
 packages
+spec
+src

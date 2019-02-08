@@ -558,14 +558,19 @@ export class DataObj {
 
         // если не указаны обязательные реквизиты...
         const {fields, tabular_sections} = this._metadata();
-        const {msg, md, cch: {properties}} = this._manager._owner.$p;
-        for (const mf in fields) {
-          if (fields[mf].mandatory && !this._obj[mf]) {
+        const {msg, md, cch: {properties}, classes} = this._manager._owner.$p;
+        const flds = Object.assign({}, fields);
+        if(this._manager instanceof classes.CatManager) {
+          flds.name = this._metadata('name') || {};
+          flds.id = this._metadata('id') || {};
+        }
+        for (const mf in flds) {
+          if (flds[mf] && flds[mf].mandatory && (!this._obj[mf] || this._obj[mf] === utils.blank.guid)) {
             return reset_mandatory({
               obj: this,
               title: msg.mandatory_title,
-              type: "alert-error",
-              text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
+              type: 'alert-error',
+              text: msg.mandatory_field.replace('%1', this._metadata(mf).synonym)
             });
           }
         }

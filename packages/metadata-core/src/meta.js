@@ -100,10 +100,10 @@ class Meta extends MetaEventEmitter {
           types: ['string'],
         },
       },
-      is_doc = 'doc,tsk,bp'.indexOf(np[0]) != -1,
-      is_cat = 'cat,cch,cacc,tsk'.indexOf(np[0]) != -1;
+      is_doc = 'doc,tsk,bp'.includes(np[0]),
+      is_cat = 'cat,cch,cacc,tsk'.includes(np[0]);
 
-    if(is_doc && field_name == 'number_doc') {
+    if(is_doc && field_name == 'number_doc' && _meta.code_length) {
       res.synonym = 'Номер';
       res.tooltip = 'Номер документа';
       res.type.str_len = 11;
@@ -118,11 +118,13 @@ class Meta extends MetaEventEmitter {
       res.synonym = 'Проведен';
       res.type.types[0] = 'boolean';
     }
-    else if(is_cat && field_name == 'id') {
+    else if(is_cat && field_name == 'id' && _meta.code_length) {
       res.synonym = 'Код';
+      res.mandatory = true;
     }
     else if(is_cat && field_name == 'name') {
       res.synonym = 'Наименование';
+      res.mandatory = _meta.main_presentation_name;
     }
     else if(field_name == '_area') {
       res.synonym = 'Область';

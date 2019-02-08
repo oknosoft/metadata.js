@@ -15,6 +15,14 @@ function needAuth() {
   return Promise.reject({error: 'Требуется авторизация'});
 }
 
+function postWithAuth(url, body) {
+  return superlogin.authenticated() ?
+    superlogin._http.post(url, body)
+      .then(res => res.data && superlogin.refresh_profile(res.data))
+    :
+    needAuth();
+}
+
 function attach($p) {
 
   const {cat, utils, wsql, adapters: {pouch}} = $p;
@@ -66,6 +74,7 @@ function attach($p) {
     return needAuth();
   };
 
+  // инвертирует бит подписки в профиле пользователя
   superlogin.change_subscription = function (subscription) {
     if(this.authenticated()) {
       const session = this.getSession();
@@ -81,14 +90,42 @@ function attach($p) {
     return needAuth();
   }
 
+  superlogin.refresh_profile = function(profile) {
+    const session = superlogin.getSession();
+    if(session) {
+      Object.assign(session, {profile});
+      return superlogin.setSession(session);
+    }
+  }
+
+  // создаёт общую базу и добавляет её в профиль подписчика
   superlogin.create_db = function (name) {
-    return this.authenticated() ?
-      this._http.post(`/user/create-db`, {name})
-        .then(res => {
-          return this.refresh();
-        })
-      :
-      needAuth();
+    return postWithAuth('/user/create-db', {name});
+  }
+
+  // добавляет пользователя в список администрирования
+  superlogin.add_user = function (name) {
+    return postWithAuth('/user/add-user', {name});
+  }
+
+  // удаляет пользователя из списка администрирования
+  superlogin.rm_user = function (name) {
+    return postWithAuth('/user/rm-user', {name});
+  }
+
+  // получает список пользователей общих баз текущего пользователя
+  superlogin.shared_users = function () {
+    return superlogin._http.post('/user/shared-users', {});
+  }
+
+  // добавляет общую базу пользователю
+  superlogin.share_db = function (name, db) {
+    return postWithAuth('/user/share-db', {name, db});
+  }
+
+  // отнимает общую базу у пользователя
+  superlogin.unshare_db = function (name, db) {
+    return postWithAuth('/user/unshare-db', {name, db});
   }
 
 
@@ -214,8 +251,11 @@ function attach($p) {
 
       const {username, email, password, confirmPassword} = registration;
 
-      if(!password || password.length < 6 || password !== confirmPassword) {
+      if(!password || password.length < 6) {
         return dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Длина пароля должна быть не менее 6 символов'}));
+      }
+      else if(password !== confirmPassword) {
+        return dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: 'Не совпадают пароль и подтверждение пароля'}));
       }
 
       // проверим login, email и password
@@ -255,6 +295,10 @@ function attach($p) {
           return session && pouch.log_in(session.username, session.password);
         })
         .catch((err) => {
+          const {validationErrors} = err;
+          if(validationErrors) {
+            err.error = validationErrors[Object.keys(validationErrors)[0]];
+          }
           dispatch(metaActions.USER_LOG_ERROR({message: 'custom', text: err.error ? err.error : 'Registration error'}));
         });
     };

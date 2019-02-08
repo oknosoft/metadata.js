@@ -1,6 +1,6 @@
 /*!
- metadata-core v2.0.17-beta.11, built:2018-11-14
- © 2014-2018 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
+ metadata-core v2.0.18-beta.3, built:2019-02-08
+ © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */
@@ -204,7 +204,7 @@ const msg$1 = new I18n({
 		not_implemented: 'Не реализовано в текущей версии',
     obj_parent: 'объекта',
 		offline_request: 'Запрос к серверу в автономном режиме',
-		onbeforeunload: 'Окнософт: легкий клиент. Закрыть программу?',
+		onbeforeunload: 'Окнософт. Закрыть программу?',
     open_frm: 'Открыть форму',
 		order_sent_title: 'Подтвердите отправку заказа',
 		order_sent_message: 'Отправленный заказ нельзя изменить.<br/>После проверки менеджером<br/>он будет запущен в работу',
@@ -874,14 +874,19 @@ class DataObj {
           }
         }
         const {fields, tabular_sections} = this._metadata();
-        const {msg, md, cch: {properties}} = this._manager._owner.$p;
-        for (const mf in fields) {
-          if (fields[mf].mandatory && !this._obj[mf]) {
+        const {msg, md, cch: {properties}, classes} = this._manager._owner.$p;
+        const flds = Object.assign({}, fields);
+        if(this._manager instanceof classes.CatManager) {
+          flds.name = this._metadata('name') || {};
+          flds.id = this._metadata('id') || {};
+        }
+        for (const mf in flds) {
+          if (flds[mf] && flds[mf].mandatory && (!this._obj[mf] || this._obj[mf] === utils.blank.guid)) {
             return reset_mandatory({
               obj: this,
               title: msg.mandatory_title,
-              type: "alert-error",
-              text: msg.mandatory_field.replace("%1", this._metadata(mf).synonym)
+              type: 'alert-error',
+              text: msg.mandatory_field.replace('%1', this._metadata(mf).synonym)
             });
           }
         }
@@ -1377,7 +1382,7 @@ class MetaEventEmitter extends EventEmitter{
     handler.timer = setTimeout(this._emit.bind(this, type), 4);
   }
   emit_promise(type, ...args) {
-    return this.listeners(type).reduce((acc, curr) => acc.then(curr), Promise.resolve());
+    return this.listeners(type).reduce((acc, curr) => acc.then(curr.bind(this, ...args)), Promise.resolve());
   }
   emit_add_fields(obj, fields){
     const {_async} = this;
@@ -3869,9 +3874,9 @@ class Meta extends MetaEventEmitter {
           types: ['string'],
         },
       },
-      is_doc = 'doc,tsk,bp'.indexOf(np[0]) != -1,
-      is_cat = 'cat,cch,cacc,tsk'.indexOf(np[0]) != -1;
-    if(is_doc && field_name == 'number_doc') {
+      is_doc = 'doc,tsk,bp'.includes(np[0]),
+      is_cat = 'cat,cch,cacc,tsk'.includes(np[0]);
+    if(is_doc && field_name == 'number_doc' && _meta.code_length) {
       res.synonym = 'Номер';
       res.tooltip = 'Номер документа';
       res.type.str_len = 11;
@@ -3886,11 +3891,13 @@ class Meta extends MetaEventEmitter {
       res.synonym = 'Проведен';
       res.type.types[0] = 'boolean';
     }
-    else if(is_cat && field_name == 'id') {
+    else if(is_cat && field_name == 'id' && _meta.code_length) {
       res.synonym = 'Код';
+      res.mandatory = true;
     }
     else if(is_cat && field_name == 'name') {
       res.synonym = 'Наименование';
+      res.mandatory = _meta.main_presentation_name;
     }
     else if(field_name == '_area') {
       res.synonym = 'Область';
@@ -4448,7 +4455,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.17-beta.11';
+    return '2.0.18-beta.3';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
