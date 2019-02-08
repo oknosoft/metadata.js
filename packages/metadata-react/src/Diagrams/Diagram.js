@@ -14,7 +14,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import IconButton from '@material-ui/core/IconButton';
 import FullscreenIcon from '@material-ui/icons/Fullscreen';
 import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
-import Swipeable from 'react-swipeable';
+import {Swipeable, LEFT, RIGHT} from 'react-swipeable';
 import Bar from './Bar';
 import Line from './Line';
 import Radar from './Radar';
@@ -45,7 +45,12 @@ function TypedDiagram(props) {
   default:
     diagram = <div>{`Неизвестный тип диаграммы '${props.data.kind}'`}</div>;
   }
-  return <Swipeable onSwipingLeft={props.swipingLeft} onSwipingRight={props.swipingRight} delta={20}>{diagram}</Swipeable>;
+  return <Swipeable
+    onSwiping={({dir}) => {
+      if(dir === LEFT) props.swipingLeft();
+      if(dir === RIGHT) props.swipingRight();
+    }}
+    delta={20}>{diagram}</Swipeable>;
 }
 
 class Diagram extends React.Component {
