@@ -4,7 +4,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import withMobileDialog from '@material-ui/core/withMobileDialog';
+//import withMobileDialog from '@material-ui/core/withMobileDialog';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import CloseIcon from '@material-ui/icons/Close';
@@ -114,4 +114,5 @@ SimpleDialog.childContextTypes = {
 };
 
 
-export default compose(withStyles(style), withMobileDialog({ breakpoint: 'md' }))(SimpleDialog);
+//export default compose(withStyles(style), withMobileDialog({ breakpoint: 'md' }))(SimpleDialog);
+export default withStyles(style)(SimpleDialog);

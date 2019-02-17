@@ -28,7 +28,7 @@
     "react-portal": "^4.2",
     "react-swipeable": "^5.0",
     "react-virtualized": "^9.21",
-    "recharts": "^1.4",
+    "recharts": "^1.5",
     "yamljs": "^0.3"
   },
   "peerDependencies": {
