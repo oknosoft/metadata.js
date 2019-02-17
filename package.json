@@ -112,7 +112,7 @@
   "scripts": {
     "build:core": "node ./packages/metadata-core/build.js",
     "build:transition": "node ./packages/metadata-dhtmlx/build.js",
-    "build:react-ui": "node ./packages/metadata-react/build.js",
+    "build:react-ui": "cd ./packages/metadata-react/ && cross-env NODE_ENV=production BABEL_ENV=es babel --config-file ./babel.config.js ./src --out-dir . && node ./copy-files && cd ../../ && node ./packages/metadata-react/build.js",
     "build:abstract-ui": "node ./packages/metadata-abstract-ui/build.js",
     "build:adapter-pouchdb": "node ./packages/metadata-pouchdb/build.js",
     "build:redux": "node ./packages/metadata-redux/build.js",
