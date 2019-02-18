@@ -227,7 +227,7 @@ class MetaEngine {
       user_name = wsql.get_user_param('user_name');
     }
 
-    if (cat && cat.users) {
+    if (cat && cat.users && user_name) {
       user = cat.users.by_id(user_name);
       if (!user || user.empty()) {
         if (superlogin) {

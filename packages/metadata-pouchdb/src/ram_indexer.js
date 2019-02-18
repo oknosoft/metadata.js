@@ -274,6 +274,7 @@ export default class RamIndexer {
           }
           this.put(doc, true);
         }
+        _mgr.adapter.emit('indexer_page', {indexer: this, bookmark: bookmark || '', _mgr});
         debug(`indexed ${this._count} ${bookmark.substr(10, 30)}`);
         return docs.length === 10000 && this.init(bookmark, _mgr);
       });
