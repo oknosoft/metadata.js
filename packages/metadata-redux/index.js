@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.18-beta.3, built:2019-02-17
+ metadata-redux v2.0.18-beta.4, built:2019-02-25
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -586,7 +586,7 @@ function metaMiddleware({adapters, md}) {
           pouch_load_start: (page) => dispatch(load_start(page)),
           pouch_autologin: (page) => dispatch(autologin()),
           pouch_no_data: (dbid, err) => dispatch(no_data(dbid, err)),
-          pouch_sync_data: (dbid, change$$1) => dispatch(sync_data(dbid, change$$1)),
+          pouch_sync_data: (dbid, change) => dispatch(sync_data(dbid, change)),
           pouch_sync_error: (dbid, err) => dispatch(sync_error(dbid, err)),
           pouch_sync_paused: (dbid, info) => dispatch(sync_paused(dbid, info)),
           pouch_sync_resumed: (dbid, info) => dispatch(sync_resumed(dbid, info)),
