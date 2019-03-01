@@ -501,8 +501,11 @@ function MetaEngine() {
 					// выполняем колбэк с элементом и пополняем итоговый массив
 					if($p._selection.call(this, o, selection)){
 						if(callback){
-							if(callback.call(this, o) === false)
+							if(callback.call(this, o)){
+								res.push(o);
+							}else{
 								break;
+							}
 						}else
 							res.push(o);
 
