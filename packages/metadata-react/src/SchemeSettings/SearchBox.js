@@ -89,7 +89,7 @@ class SearchBox extends React.Component {
         <input
           className={classes.input}
           placeholder="Поиск..."
-          value={scheme._search}
+          value={scheme._search ? scheme._search : ""}
           onChange={this.handleChange}
           onKeyDown={this.handleKeyDown}
         />
