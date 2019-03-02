@@ -208,6 +208,8 @@ export default function scheme_settings() {
       // выполняем конструктор родительского объекта
       super(attr, manager, loading);
 
+      this._search = '';
+
       // если указан стандартный период - заполняем
       this.set_standard_period();
 
