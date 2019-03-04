@@ -165,7 +165,9 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 		t.input_filter.onkeydown = onkeydown;
 		t.input_filter.type = "search";
 		t.input_filter.setAttribute("placeholder", "Фильтр");
-		t.input_filter.value = attr.filter ? attr.filter : "";
+		if(attr.filter) {
+      t.input_filter.value = attr.filter;
+    }
 
 		t.toolbar.addSpacer("input_filter");
 

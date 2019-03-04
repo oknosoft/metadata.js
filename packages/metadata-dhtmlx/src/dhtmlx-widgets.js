@@ -2931,6 +2931,9 @@ $p.iface.Toolbar_filter = function Toolbar_filter(attr) {
 		t.input_filter.onkeydown = onkeydown;
 		t.input_filter.type = "search";
 		t.input_filter.setAttribute("placeholder", "Фильтр");
+		if(attr.filter) {
+      t.input_filter.value = attr.filter;
+    }
 
 		t.toolbar.addSpacer("input_filter");
 
@@ -3430,8 +3433,11 @@ $p.iface.add_button = function(parent, attr, battr) {
 		html +='<b style="vertical-align: super;"> ' + battr.b + '</b>';
 	else if(battr.text)
 		html +='<span style="vertical-align: super;"> ' + battr.text + '</span>';
-	else if(battr.css)
-		bdiv.classList.add(battr.css);
+	else if(battr.css){
+    battr.css.split(' ').forEach(function (s) {
+      s && bdiv.classList.add(s);
+    });
+  }
 	bdiv.innerHTML = html;
 
 	if(battr.float) bdiv.style.float = battr.float;
