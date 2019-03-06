@@ -72,10 +72,10 @@ class SimpleDialog extends React.Component {
   }
 
   render() {
-    const {open, fullScreen, noSpace, title, actions, children, classes, onClose, minheight, large} = this.props;
+    const {open, fullScreen, disablePortal, noSpace, title, actions, children, classes, onClose, minheight, large} = this.props;
     const stateFullScreen = fullScreen || this.state.fullScreen;
     return <Dialog
-      disablePortal
+      disablePortal={disablePortal}
       open={open}
       fullScreen={stateFullScreen}
       onClose={onClose}
@@ -102,12 +102,17 @@ class SimpleDialog extends React.Component {
 SimpleDialog.propTypes = {
   open: PropTypes.bool,
   fullScreen: PropTypes.bool,
+  disablePortal: PropTypes.bool,
   initFullScreen: PropTypes.bool,
   title: PropTypes.string.isRequired,
   actions: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   children: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   classes: PropTypes.object.isRequired,
   onClose: PropTypes.func.isRequired,
+};
+
+SimpleDialog.defaultProps = {
+  disablePortal: true,
 };
 
 SimpleDialog.childContextTypes = {
