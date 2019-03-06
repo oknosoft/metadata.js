@@ -75,7 +75,6 @@ class SimpleDialog extends React.Component {
     const {open, fullScreen, noSpace, title, actions, children, classes, onClose, minheight, large} = this.props;
     const stateFullScreen = fullScreen || this.state.fullScreen;
     return <Dialog
-      disablePortal
       open={open}
       fullScreen={stateFullScreen}
       onClose={onClose}
