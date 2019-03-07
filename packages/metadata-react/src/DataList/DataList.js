@@ -128,7 +128,7 @@ class DataList extends MDNRComponent {
   // при изменении настроек или варианта компоновки
   handleSchemeChange = (scheme) => {
     scheme.set_default();
-    scheme.set_standard_period();
+    scheme.set_standard_period(true);
     // пересчитываем и перерисовываем динсписок
     this.handleFilterChange(scheme, scheme.columns());
   };

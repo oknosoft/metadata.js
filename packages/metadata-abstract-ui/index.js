@@ -360,7 +360,11 @@ function scheme_settings() {
           return this;
         })
     }
-    set_standard_period() {
+    set_standard_period(once) {
+      const {_data} = this;
+      if(once && _data._standard_period_setted) {
+        return;
+      }
       const {standard_period} = enm;
       const from = utils.moment();
       const till = from.clone();
@@ -529,6 +533,7 @@ function scheme_settings() {
           this.date_till = till.endOf('month').toDate();
           break;
       }
+      _data._standard_period_setted = true;
     }
     get obj() {
       return this._getter('obj');

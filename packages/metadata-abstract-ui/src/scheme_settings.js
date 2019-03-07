@@ -233,7 +233,11 @@ export default function scheme_settings() {
         })
     }
 
-    set_standard_period() {
+    set_standard_period(once) {
+      const {_data} = this;
+      if(once && _data._standard_period_setted) {
+        return;
+      }
       const {standard_period} = enm;
       const from = utils.moment();
       const till = from.clone();
@@ -403,6 +407,7 @@ export default function scheme_settings() {
           break;
 
       }
+      _data._standard_period_setted = true;
     }
 
     get obj() {
