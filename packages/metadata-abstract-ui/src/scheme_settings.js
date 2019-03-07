@@ -768,8 +768,13 @@ export default function scheme_settings() {
             const val = $p.current_user && $p.current_user[right_value];
             selector.$and.push({[left_value]: comparison_type == 'ne' ? {$ne: val} : val});
           }
-          else if(right_value_type.includes('.') && (comparison_type == 'filled' || comparison_type == 'nfilled')){
-            selector.$and.push({[left_value]: {[comparison_type.valueOf()]: true}});
+          else if(right_value_type.includes('.')){
+            if((comparison_type == 'filled' || comparison_type == 'nfilled')){
+              selector.$and.push({[left_value]: {[comparison_type.valueOf()]: true}});
+            }
+            else {
+              selector.$and.push({[left_value]: {[`$${comparison_type.valueOf()}`]: right_value}});
+            }
           }
           else if(right_value_type === 'number' && (comparison_type == 'filled' || comparison_type == 'nfilled')){
             selector.$and.push({[left_value]: {[comparison_type.valueOf()]: 0}});
