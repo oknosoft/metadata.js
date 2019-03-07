@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.18-beta.4, built:2019-02-25
+ metadata-pouchdb v2.0.18-beta.4, built:2019-03-07
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -25,6 +25,51 @@ class RamIndexer {
     const err = new Error('Индекс прочитн не полностью, повторите запрос позже');
     err.status = 403;
     throw err;
+  }
+  static truth(fld, cond) {
+    const blank = '00000000-0000-0000-0000-000000000000';
+    if(cond === true || (cond && cond.hasOwnProperty('$ne') && !cond.$ne)) {
+      return function (doc) {
+        return doc[fld];
+      };
+    }
+    else if(cond === false || (cond && cond.hasOwnProperty('$ne') && cond.$ne && typeof cond.$ne === 'boolean')) {
+      return function (doc) {
+        return !doc[fld];
+      };
+    }
+    else if(cond && cond.hasOwnProperty('filled')) {
+      return function (doc) {
+        return doc[fld] && doc[fld] !== blank;
+      };
+    }
+    else if(cond && cond.hasOwnProperty('nfilled')) {
+      return function (doc) {
+        return !doc[fld] || doc[fld] === blank;
+      };
+    }
+    else if(cond && cond.hasOwnProperty('$ne')) {
+      return function (doc) {
+        return doc[fld] !== cond.$ne;
+      };
+    }
+    else if(cond && cond.hasOwnProperty('$in')) {
+      const acond = typeof cond.$in === 'string' ? cond.$in.split(',').map((v) => v.trim()) : cond.$in;
+      return function (doc) {
+        return acond.includes(doc[fld]);
+      };
+    }
+    else if(cond && cond.hasOwnProperty('$nin')) {
+      const acond = typeof cond.$nin === 'string' ? cond.$nin.split(',').map((v) => v.trim()) : cond.$nin;
+      return function (doc) {
+        return !acond.includes(doc[fld]);
+      };
+    }
+    else {
+      return function (doc) {
+        return doc[fld] === cond;
+      };
+    }
   }
   constructor({fields, search_fields, mgr}) {
     this._fields = fields;
