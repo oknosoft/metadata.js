@@ -20,18 +20,27 @@ class FieldText extends AbstractField {
     const {_obj, _fld, classes, read_only, InputProps, bar, ...other} = props;
 
     return isTabular ?
-      <input
+      (_meta.mandatory ? <input
+        type="text"
+        disabled={read_only}
+        required=""
+        title={_meta.tooltip || _meta.synonym}
+        placeholder={_fld}
+        value={_obj[_fld]}
+        onChange={onChange}
+      /> : <input
         type="text"
         disabled={read_only}
         title={_meta.tooltip || _meta.synonym}
         placeholder={_fld}
         value={_obj[_fld]}
         onChange={onChange}
-      />
+      />)
       :
       <TextField
         className={cn(classes.formControl, bar && classes.barInput)}
         disabled={read_only}
+        required={_meta.mandatory ? true : false}
         label={_meta.synonym}
         title={_meta.tooltip || _meta.synonym}
         InputProps={InputProps || {placeholder: _fld}}
