@@ -19,20 +19,23 @@ export default function OuterDialog(props) {
     :
     (_manager.metadata().obj_presentation || _manager.metadata().synonym);
 
+  const handlers = {handleSelect};
+
   return <Dialog
     key="down-dialog"
+    disablePortal={!_owner.isTabular}
     open
     noSpace
     title={title}
     onClose={props.handleCloseDialog}
   >
     {dialogOpened == 'list' ?
-      <DataList _mgr={_manager} _acl={_acl} _owner={_owner} selectionMode handlers={{handleSelect}}/>
+      <DataList _mgr={_manager} _acl={_acl} _owner={_owner} selectionMode handlers={handlers}/>
       :
       (dialogOpened == 'tree' ?
-        <DataTree _mgr={_manager} _acl={_acl} _owner={_owner} selectionMode denyAddDel handlers={{handleSelect}}/>
+        <DataTree _mgr={_manager} _acl={_acl} _owner={_owner} selectionMode denyAddDel handlers={handlers}/>
         :
-        <DataObj _mgr={_manager} _acl={_acl} match={{params: {ref}}} handlers={{}}/>
+        <DataObj _mgr={_manager} _acl={_acl} match={{params: {ref}}} handlers={handlers}/>
       )
     }
   </Dialog>;

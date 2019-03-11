@@ -128,7 +128,6 @@ class DataList extends MDNRComponent {
   // при изменении настроек или варианта компоновки
   handleSchemeChange = (scheme) => {
     scheme.set_default();
-    scheme.set_standard_period();
     // пересчитываем и перерисовываем динсписок
     this.handleFilterChange(scheme, scheme.columns());
   };
@@ -240,7 +239,7 @@ class DataList extends MDNRComponent {
   }
 
   render() {
-    const {state, props, context, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer, _list} = this;
+    const {state, props, context, _meta, sizes, _isRowLoaded, _loadMoreRows, _cellRenderer, _list, handleFilterChange} = this;
     const {columns, scheme, confirm_text, info_text, settings_open, rowCount} = state;
     const {_mgr: {RepParams}, classes, title, registerFilterChange, width, height, GridRenderer, rowHeight, ...others} = props;
 
@@ -251,7 +250,7 @@ class DataList extends MDNRComponent {
       return <LoadingMessage text="Ошибка настроек компоновки..."/>;
     }
 
-    registerFilterChange && registerFilterChange(this.handleFilterChange);
+    registerFilterChange && registerFilterChange(handleFilterChange);
 
     const show_grid = !settings_open || sizes.height > 572;
 
@@ -269,7 +268,7 @@ class DataList extends MDNRComponent {
       handleSettingsOpen: this.handleSettingsOpen,
       handleSettingsClose: this.handleSettingsClose,
       handleSchemeChange: this.handleSchemeChange,
-      handleFilterChange: this.handleFilterChange,
+      handleFilterChange,
     };
 
     const Grid = GridRenderer || MultiGrid;
@@ -311,7 +310,7 @@ class DataList extends MDNRComponent {
             height={show_grid ? 272 : (sizes.height || 500) - 104}
             width={width}
             scheme={scheme}
-            tabParams={RepParams && <RepParams scheme={scheme}/>}
+            tabParams={RepParams && <RepParams scheme={scheme} handleFilterChange={handleFilterChange}/>}
             handleSchemeChange={this.handleSchemeChange}
           />
         )}

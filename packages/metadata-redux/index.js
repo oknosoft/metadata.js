@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.18-beta.3, built:2019-02-08
+ metadata-redux v2.0.18-beta.4, built:2019-03-07
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -586,7 +586,7 @@ function metaMiddleware({adapters, md}) {
           pouch_load_start: (page) => dispatch(load_start(page)),
           pouch_autologin: (page) => dispatch(autologin()),
           pouch_no_data: (dbid, err) => dispatch(no_data(dbid, err)),
-          pouch_sync_data: (dbid, change$$1) => dispatch(sync_data(dbid, change$$1)),
+          pouch_sync_data: (dbid, change) => dispatch(sync_data(dbid, change)),
           pouch_sync_error: (dbid, err) => dispatch(sync_error(dbid, err)),
           pouch_sync_paused: (dbid, info) => dispatch(sync_paused(dbid, info)),
           pouch_sync_resumed: (dbid, info) => dispatch(sync_resumed(dbid, info)),
@@ -810,7 +810,16 @@ const mapStateToProps$3 = () => {
   }
   const {wsql, superlogin} = $p;
   const res = {use_superlogin: !!superlogin};
-  for (const name of ['zone', 'couch_path', 'superlogin_path', ['couch_direct', 'boolean'], ['enable_save_pwd', 'boolean'], 'user_name', 'user_pwd']) {
+  for (const name of [
+    'zone',
+    'couch_path',
+    'superlogin_path',
+    ['couch_direct', 'boolean'],
+    ['enable_save_pwd', 'boolean'],
+    ['ram_indexer', 'boolean'],
+    'user_name',
+    'user_pwd'
+  ]) {
     if(Array.isArray(name)) {
       res[name[0]] = wsql.get_user_param(name[0], name[1]);
     }

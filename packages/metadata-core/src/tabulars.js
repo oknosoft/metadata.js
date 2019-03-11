@@ -86,7 +86,7 @@ export class TabularSection {
   }
 
 	/**
-	 * ### Очищает табличнут часть
+	 * ### Очищает табличную часть
 	 * @method clear
 	 * @return {TabularSection}
 	 *

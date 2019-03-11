@@ -4,7 +4,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import withMobileDialog from '@material-ui/core/withMobileDialog';
+//import withMobileDialog from '@material-ui/core/withMobileDialog';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import CloseIcon from '@material-ui/icons/Close';
@@ -72,9 +72,10 @@ class SimpleDialog extends React.Component {
   }
 
   render() {
-    const {open, fullScreen, noSpace, title, actions, children, classes, onClose, minheight, large} = this.props;
+    const {open, fullScreen, disablePortal, noSpace, title, actions, children, classes, onClose, minheight, large} = this.props;
     const stateFullScreen = fullScreen || this.state.fullScreen;
     return <Dialog
+      disablePortal={disablePortal}
       open={open}
       fullScreen={stateFullScreen}
       onClose={onClose}
@@ -101,6 +102,7 @@ class SimpleDialog extends React.Component {
 SimpleDialog.propTypes = {
   open: PropTypes.bool,
   fullScreen: PropTypes.bool,
+  disablePortal: PropTypes.bool,
   initFullScreen: PropTypes.bool,
   title: PropTypes.string.isRequired,
   actions: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
@@ -109,9 +111,14 @@ SimpleDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
 };
 
+SimpleDialog.defaultProps = {
+  disablePortal: true,
+};
+
 SimpleDialog.childContextTypes = {
   dnr: PropTypes.object
 };
 
 
-export default compose(withStyles(style), withMobileDialog({ breakpoint: 'md' }))(SimpleDialog);
+//export default compose(withStyles(style), withMobileDialog({ breakpoint: 'md' }))(SimpleDialog);
+export default withStyles(style)(SimpleDialog);

@@ -95,8 +95,8 @@ export default class SchemeSettingsTabs extends Component {
           onChange={this.handleTabChange}
           indicatorColor="primary"
           textColor="primary"
-          scrollable
-          scrollButtons="auto"
+          variant="scrollable"
+          scrollButtons="on"
         >
           <Tab label="Параметры"/>
           <Tab label="Колонки"/>
