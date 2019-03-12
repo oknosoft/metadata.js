@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.18-beta.4, built:2019-03-07
+ metadata-core v2.0.18-beta.4, built:2019-03-12
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1809,7 +1809,12 @@ class RefDataManager extends DataManager{
 	load_array(aattr, forse){
 		const res = [];
     const {wsql, adapters: {pouch}} = this._owner.$p;
+    const {grouping} = this.metadata();
 		for(const attr of aattr){
+		  if(grouping === 'array' && attr.ref.length <= 3) {
+		    res.push.apply(res, this.load_array(attr.rows, forse));
+		    continue;
+      }
 			let obj = this.by_ref[utils.fix_guid(attr)];
 			if(!obj){
         if(forse === 'update_only') {
@@ -3406,6 +3411,26 @@ const utils = {
 		}
 		return res;
 	},
+  crcTable: Object.freeze(function () {
+      let c, crcTable = [];
+      for (let n = 0; n < 256; n++) {
+        c = n;
+        for (let k = 0; k < 8; k++) {
+          c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+        }
+        crcTable[n] = c;
+      }
+      return crcTable;
+    }()
+  ),
+  crc32(str) {
+    const {crcTable} = this;
+    let crc = 0 ^ (-1);
+    for (let i = 0; i < str.length; i++ ) {
+      crc = (crc >>> 8) ^ crcTable[(crc ^ str.charCodeAt(i)) & 0xFF];
+    }
+    return (crc ^ (-1)) >>> 0;
+  },
 };
 utils.__define('blank', {
 	value: Object.freeze({

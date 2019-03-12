@@ -724,7 +724,12 @@ export class RefDataManager extends DataManager{
 	load_array(aattr, forse){
 		const res = [];
     const {wsql, adapters: {pouch}} = this._owner.$p;
+    const {grouping} = this.metadata();
 		for(const attr of aattr){
+		  if(grouping === 'array' && attr.ref.length <= 3) {
+		    res.push.apply(res, this.load_array(attr.rows, forse));
+		    continue;
+      }
 			let obj = this.by_ref[utils.fix_guid(attr)];
 			if(!obj){
         if(forse === 'update_only') {

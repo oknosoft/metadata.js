@@ -1138,7 +1138,7 @@ function adapter({AbstracrAdapter}) {
       _data._saving = 1;
 
       // подмешиваем class_name
-      const tmp = Object.assign({_id: class_name + '|' + ref, class_name}, _obj);
+      const tmp = Object.assign({_id: `${class_name}|${ref}`, class_name}, _obj);
 
       // формируем строку поиска
       const {utils, wsql} = this.$p;
@@ -1154,41 +1154,71 @@ function adapter({AbstracrAdapter}) {
       // установим timestamp
       tmp.timestamp = {
         user: this.authorized || wsql.get_user_param('user_name'),
-        moment: utils.moment().format("YYYY-MM-DDTHH:mm:ss ZZ"),
-      }
+        moment: utils.moment().format('YYYY-MM-DDTHH:mm:ss ZZ'),
+      };
 
-      delete tmp.ref;
       if(attr.attachments) {
         tmp._attachments = attr.attachments;
       }
 
-      return new Promise((resolve, reject) => {
-        const getter = tObj.is_new() ? Promise.resolve(true) : db.get(tmp._id);
-        getter.then((res) => {
-          if(typeof res === 'object') {
-            if(tmp._rev !== res._rev && _manager.metadata().check_rev !== false) {
-              const {timestamp} = res;
-              const err = new Error(`Объект ${timestamp && typeof timestamp.user === 'string' ?
-                `изменил ${timestamp.user}<br/>${timestamp.moment}` : 'изменён другим пользователем'}`);
-              err._rev = true;
-              return reject(err);
-            }
-            tmp._rev = res._rev;
-            for (let att in res._attachments) {
-              if(!tmp._attachments) {
-                tmp._attachments = {};
-              }
-              if(!tmp._attachments[att]) {
-                tmp._attachments[att] = res._attachments[att];
-              }
-            }
-          }
-          return res;
-        })
+      // сохраняем с учетом grouping метаданных
+      if(_manager.metadata().grouping === 'array') {
+        delete tmp._id;
+        delete tmp.class_name;
+        const index = Math.floor(utils.crc32(tmp.ref) / 268435455);
+        const _id = `${class_name}|${index.pad()}`;
+        return db.get(_id)
           .catch((err) => {
-            return err && err.status !== 404 ? reject(err) : true;
+            if(err.status !== 404) throw err;
+            return {_id, class_name, rows: []};
           })
-          .then((res) => res && db.put(tmp))
+          .then((doc) => {
+            let finded;
+            for(const row of doc.rows) {
+              if(row.ref === tmp.ref) {
+                Object.assign(row, tmp);
+                finded = true;
+                break;
+              }
+            }
+            if(!finded) {
+              doc.rows.push(tmp);
+            }
+            return db.put(doc);
+          })
+          .then((res) => {
+            tObj.is_new() && tObj._set_loaded(tObj.ref);
+            return tObj;
+          });
+      }
+      else {
+        delete tmp.ref;
+        return (tObj.is_new() ? Promise.resolve(true) : db.get(tmp._id))
+          .then((res) => {
+            if(typeof res === 'object') {
+              if(tmp._rev !== res._rev && _manager.metadata().check_rev !== false) {
+                const {timestamp} = res;
+                const err = new Error(`Объект ${timestamp && typeof timestamp.user === 'string' ?
+                  `изменил ${timestamp.user}<br/>${timestamp.moment}` : 'изменён другим пользователем'}`);
+                err._rev = true;
+                return reject(err);
+              }
+              tmp._rev = res._rev;
+              for (let att in res._attachments) {
+                if(!tmp._attachments) {
+                  tmp._attachments = {};
+                }
+                if(!tmp._attachments[att]) {
+                  tmp._attachments[att] = res._attachments[att];
+                }
+              }
+            }
+            return res;
+          })
+          .catch((err) => {
+            if(err.status !== 404) throw err;
+          })
+          .then(() => db.put(tmp))
           .then((res) => {
             if(res) {
               tObj.is_new() && tObj._set_loaded(tObj.ref);
@@ -1203,13 +1233,10 @@ function adapter({AbstracrAdapter}) {
                 }
               }
               _obj._rev = res.rev;
-              resolve(tObj);
+              return tObj;
             }
-          })
-          .catch((err) => {
-            err && err.status !== 404 && reject(err);
           });
-      });
+      }
     }
 
     /**
