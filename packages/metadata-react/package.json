@@ -19,7 +19,7 @@
     "metadata-abstract-ui": "^2.0.18-beta.4",
     "metadata-external": "^2.0.18-beta.4",
     "metadata-redux": "^2.0.18-beta.4",
-    "rc-calendar": "^9.10",
+    "rc-calendar": "^9.11",
     "rc-cascader": "^0.17",
     "rc-time-picker": "^3.6",
     "react-fullscreenable": "^2.5.1-0",

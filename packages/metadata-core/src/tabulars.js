@@ -467,7 +467,16 @@ export class TabularSection {
 	 * @return {Object}
 	 */
 	toJSON() {
-		return this._obj;
+	  const {_owner, _obj, _name} = this;
+	  const {fields} = _owner._metadata(_name);
+	  const _manager = {
+      _owner: _owner._manager._owner,
+      metadata(fld) {
+        return fields[fld];
+      }
+    };
+	  const {toJSON} = _owner.constructor.prototype;
+		return _obj.map(_obj => toJSON.call({_obj, _manager}));
 	}
 }
 
@@ -517,10 +526,10 @@ export class TabularSectionRow {
 	 * @for TabularSectionRow
 	 * @type Number
 	 */
-	_metadata(field_name) {
-		const {_owner} = this
-		return field_name ? _owner._owner._metadata(_owner._name).fields[field_name] : _owner._owner._metadata(_owner._name)
-	}
+  _metadata(field_name) {
+    const {_owner} = this;
+    return field_name ? _owner._owner._metadata(_owner._name).fields[field_name] : _owner._owner._metadata(_owner._name);
+  }
 
 	get _manager() {
 		return this._owner._owner._manager;

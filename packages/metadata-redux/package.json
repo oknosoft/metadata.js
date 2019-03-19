@@ -9,7 +9,7 @@
     "npm": "^6.0"
   },
   "dependencies": {
-    "history": "^4.7.2",
+    "history": "^4.9",
     "react-redux": "^5.1",
     "react-router": "^4.3",
     "react-router-dom": "^4.3",

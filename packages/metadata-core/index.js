@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.18-beta.4, built:2019-03-12
+ metadata-core v2.0.18-beta.4, built:2019-03-19
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -474,7 +474,16 @@ class TabularSection {
 		return res;
 	}
 	toJSON() {
-		return this._obj;
+	  const {_owner, _obj, _name} = this;
+	  const {fields} = _owner._metadata(_name);
+	  const _manager = {
+      _owner: _owner._manager._owner,
+      metadata(fld) {
+        return fields[fld];
+      }
+    };
+	  const {toJSON} = _owner.constructor.prototype;
+		return _obj.map(_obj => toJSON.call({_obj, _manager}));
 	}
 }
 class TabularSectionRow$1 {
@@ -488,10 +497,10 @@ class TabularSectionRow$1 {
 			}
 		});
 	}
-	_metadata(field_name) {
-		const {_owner} = this;
-		return field_name ? _owner._owner._metadata(_owner._name).fields[field_name] : _owner._owner._metadata(_owner._name)
-	}
+  _metadata(field_name) {
+    const {_owner} = this;
+    return field_name ? _owner._owner._metadata(_owner._name).fields[field_name] : _owner._owner._metadata(_owner._name);
+  }
 	get _manager() {
 		return this._owner._owner._manager;
 	}
@@ -723,7 +732,26 @@ class DataObj {
     return this.ref;
   }
   toJSON() {
-    return this._obj;
+    const res = {};
+    const {_obj, _manager} = this;
+    const {blank} = _manager._owner.$p.utils;
+    const service = ['zone', 'zones', 'direct_zones', 'id', 'number_doc', 'date'];
+    for(const fld in _obj) {
+      const mfld = _manager.metadata(fld);
+      if(mfld) {
+        if(Array.isArray(_obj[fld])) {
+          res[fld] = this[fld].toJSON();
+        }
+        else {
+          if(!service.includes(fld) &&
+              (_obj[fld] === blank.guid || (!_obj[fld] && mfld.type.types.length === 1 && mfld.type.types[0] !== 'boolean'))) {
+            continue;
+          }
+          res[fld] = _obj[fld];
+        }
+      }
+    }
+    return res;
   }
   toString() {
     return this.presentation;

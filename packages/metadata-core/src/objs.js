@@ -301,7 +301,27 @@ export class DataObj {
    * для сериализации возвращаем внутренний _obj
    */
   toJSON() {
-    return this._obj;
+    const res = {};
+    const {_obj, _manager} = this;
+    const {blank} = _manager._owner.$p.utils;
+    const service = ['zone', 'zones', 'direct_zones', 'id', 'number_doc', 'date'];
+
+    for(const fld in _obj) {
+      const mfld = _manager.metadata(fld);
+      if(mfld) {
+        if(Array.isArray(_obj[fld])) {
+          res[fld] = this[fld].toJSON();
+        }
+        else {
+          if(!service.includes(fld) &&
+              (_obj[fld] === blank.guid || (!_obj[fld] && mfld.type.types.length === 1 && mfld.type.types[0] !== 'boolean'))) {
+            continue;
+          }
+          res[fld] = _obj[fld];
+        }
+      }
+    }
+    return res;
   }
 
   /**
