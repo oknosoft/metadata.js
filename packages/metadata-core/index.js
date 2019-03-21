@@ -1835,7 +1835,7 @@ class RefDataManager extends DataManager{
 	}
 	load_array(aattr, forse){
 		const res = [];
-    const {wsql, adapters: {pouch}} = this._owner.$p;
+    const {wsql} = this._owner.$p;
     const {grouping} = this.metadata();
 		for(const attr of aattr){
 		  if(grouping === 'array' && attr.ref.length <= 3) {
@@ -1855,7 +1855,7 @@ class RefDataManager extends DataManager{
           obj._data._loading = true;
         }
         else if(forse === 'update_only' && attr.timestamp) {
-          if(attr.timestamp.user === (pouch.authorized || wsql.get_user_param('user_name'))) {
+          if(attr.timestamp.user === (this.adapter.authorized || wsql.get_user_param('user_name'))) {
             if(new Date() - moment(attr.timestamp.moment, "YYYY-MM-DDTHH:mm:ss ZZ").toDate() < 30000) {
               attr._rev && (obj._obj._rev = attr._rev);
               continue;

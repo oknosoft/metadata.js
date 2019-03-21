@@ -8,7 +8,7 @@ const cleanup = require('rollup-plugin-cleanup');
 const path = require('path');
 const package_data = require(path.resolve(__dirname, './package.json'));
 
-const external = ['events', 'pouchdb-*'];
+const external = ['events', 'pg'];
 const plugins = [
 	resolve({jsnext: true, main: true}),
 	replace({PACKAGE_VERSION: package_data.version}),
