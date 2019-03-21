@@ -511,7 +511,7 @@ export default ($p) => {
 			ft = 'ch';
 		}
 		else if (typeof val == 'number' && type.digits) {
-			if (type.fraction_figits < 5)
+			if (type.fraction < 5)
 				ft = 'calck';
 			else
 				ft = 'edn';
@@ -527,7 +527,7 @@ export default ($p) => {
 			ft = 'dhxCalendar';
 		}
 		else if (type.digits) {
-			if (type.fraction_figits < 5)
+			if (type.fraction < 5)
 				ft = 'calck';
 			else
 				ft = 'edn';

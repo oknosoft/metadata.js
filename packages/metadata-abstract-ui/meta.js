@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.18-beta.4, built:2019-03-12
+ metadata-abstract-ui v2.0.18-beta.4, built:2019-03-21
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -466,7 +466,7 @@ var meta = {
               type: {
                 types: ['number'],
                 digits: 6,
-                fraction_figits: 0,
+                fraction: 0,
               }
             },
             query: {
@@ -805,7 +805,7 @@ var meta = {
                     ],
                     str_len: 0,
                     digits: 15,
-                    fraction_figits: 3,
+                    fraction: 3,
                     date_part: 'date'
                   }
                 },

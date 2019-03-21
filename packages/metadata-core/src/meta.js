@@ -377,11 +377,11 @@ class Meta extends MetaEventEmitter {
       }
     }
     else if(mf.hasOwnProperty('digits')) {
-      if(mf.fraction_figits == 0) {
+      if(mf.fraction == 0) {
         sql = pg ? (mf.digits < 7 ? ' integer' : ' bigint') : ' INT';
       }
       else {
-        sql = pg ? (' numeric(' + mf.digits + ',' + mf.fraction_figits + ')') : ' FLOAT';
+        sql = pg ? (' numeric(' + mf.digits + ',' + mf.fraction + ')') : ' FLOAT';
       }
 
     }
@@ -597,12 +597,12 @@ Meta._sys = [{
         date: {
           synonym: 'Дата',
           tooltip: 'Время события',
-          type: {types: ['number'], digits: 15, fraction_figits: 0},
+          type: {types: ['number'], digits: 15, fraction: 0},
         },
         sequence: {
           synonym: 'Порядок',
           tooltip: 'Порядок следования',
-          type: {types: ['number'], digits: 6, fraction_figits: 0},
+          type: {types: ['number'], digits: 6, fraction: 0},
         },
       },
       resources: {
@@ -650,6 +650,11 @@ Meta._sys = [{
   },
 }];
 
+/**
+ * ### Служебные поля, которые сохраняем при прочистке
+ * @type {string[]}
+ */
+Meta._sys_fields = ['zone', 'zones', 'direct_zones', 'id', 'number_doc', 'date'];
 Meta.Obj = MetaObj;
 Meta.Field = MetaField;
 

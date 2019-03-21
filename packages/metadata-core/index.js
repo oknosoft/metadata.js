@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.18-beta.4, built:2019-03-19
+ metadata-core v2.0.18-beta.4, built:2019-03-21
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -734,8 +734,7 @@ class DataObj {
   toJSON() {
     const res = {};
     const {_obj, _manager} = this;
-    const {blank} = _manager._owner.$p.utils;
-    const service = ['zone', 'zones', 'direct_zones', 'id', 'number_doc', 'date'];
+    const {utils: {blank}, classes: {Meta}} = _manager._owner.$p;
     for(const fld in _obj) {
       const mfld = _manager.metadata(fld);
       if(mfld) {
@@ -743,7 +742,7 @@ class DataObj {
           res[fld] = this[fld].toJSON();
         }
         else {
-          if(!service.includes(fld) &&
+          if(!Meta._sys_fields.includes(fld) &&
               (_obj[fld] === blank.guid || (!_obj[fld] && mfld.type.types.length === 1 && mfld.type.types[0] !== 'boolean'))) {
             continue;
           }
@@ -4131,11 +4130,11 @@ class Meta extends MetaEventEmitter {
       }
     }
     else if(mf.hasOwnProperty('digits')) {
-      if(mf.fraction_figits == 0) {
+      if(mf.fraction == 0) {
         sql = pg ? (mf.digits < 7 ? ' integer' : ' bigint') : ' INT';
       }
       else {
-        sql = pg ? (' numeric(' + mf.digits + ',' + mf.fraction_figits + ')') : ' FLOAT';
+        sql = pg ? (' numeric(' + mf.digits + ',' + mf.fraction + ')') : ' FLOAT';
       }
     }
     else if(mf.types.indexOf('boolean') != -1) {
@@ -4287,12 +4286,12 @@ Meta._sys = [{
         date: {
           synonym: 'Дата',
           tooltip: 'Время события',
-          type: {types: ['number'], digits: 15, fraction_figits: 0},
+          type: {types: ['number'], digits: 15, fraction: 0},
         },
         sequence: {
           synonym: 'Порядок',
           tooltip: 'Порядок следования',
-          type: {types: ['number'], digits: 6, fraction_figits: 0},
+          type: {types: ['number'], digits: 6, fraction: 0},
         },
       },
       resources: {
@@ -4339,6 +4338,7 @@ Meta._sys = [{
     },
   },
 }];
+Meta._sys_fields = ['zone', 'zones', 'direct_zones', 'id', 'number_doc', 'date'];
 Meta.Obj = MetaObj;
 Meta.Field = MetaField;
 

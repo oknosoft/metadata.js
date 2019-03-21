@@ -149,7 +149,7 @@ function Meta() {
                 "number"
               ],
               digits: 6,
-              fraction_figits: 0,
+              fraction: 0,
             }
           },
           query: {
@@ -520,7 +520,7 @@ function Meta() {
                   ],
                   str_len: 0,
                   digits: 15,
-                  fraction_figits: 3,
+                  fraction: 3,
                   // date_part: "date"
                 }
               }
@@ -603,7 +603,7 @@ function Meta() {
 								"number"
 							],
 							digits: 15,
-							fraction_figits: 0
+              fraction: 0
 						}
 					},
 					sequence: {
@@ -615,7 +615,7 @@ function Meta() {
 								"number"
 							],
 							digits: 6,
-							fraction_figits: 0
+              fraction: 0
 						}
 					}
 				},
@@ -932,10 +932,10 @@ function Meta() {
 				sql = " time without time zone";
 
 		else if(mf.hasOwnProperty("digits")){
-			if(mf.fraction_figits==0)
+			if(mf.fraction==0)
 				sql = pg ? (mf.digits < 7 ? " integer" : " bigint") : " INT";
 			else
-				sql = pg ? (" numeric(" + mf.digits + "," + mf.fraction_figits + ")") : " FLOAT";
+				sql = pg ? (" numeric(" + mf.digits + "," + mf.fraction + ")") : " FLOAT";
 
 		}else if(mf.types.indexOf("boolean") != -1)
 			sql = " BOOLEAN";
@@ -1127,7 +1127,7 @@ function Meta() {
 			ft = "ch";
 
 		} else if(typeof val == "number" && type.digits) {
-			if(type.fraction_figits < 5)
+			if(type.fraction < 5)
 				ft = "calck";
 			else
 				ft = "edn";
@@ -1142,7 +1142,7 @@ function Meta() {
 			ft = "dhxCalendar";
 
 		} else if(type.digits) {
-			if(type.fraction_figits < 5)
+			if(type.fraction < 5)
 				ft = "calck";
 			else
 				ft = "edn";

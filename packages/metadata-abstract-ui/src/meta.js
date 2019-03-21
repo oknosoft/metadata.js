@@ -469,7 +469,7 @@ export default {
               type: {
                 types: ['number'],
                 digits: 6,
-                fraction_figits: 0,
+                fraction: 0,
               }
             },
             query: {
@@ -811,7 +811,7 @@ export default {
                     ],
                     str_len: 0,
                     digits: 15,
-                    fraction_figits: 3,
+                    fraction: 3,
                     date_part: 'date'
                   }
                 },

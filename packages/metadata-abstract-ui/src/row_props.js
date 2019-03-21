@@ -137,7 +137,7 @@ export default function (classes) {
           str_len: 1024,
           date_part: "date_time",
           digits: 15,
-          fraction_figits: 3
+          fraction: 3
         }
       },
       txt_row: {

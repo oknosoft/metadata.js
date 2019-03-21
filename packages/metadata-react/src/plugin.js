@@ -57,8 +57,8 @@ function rx_columns({utils: {moment}, enm, md}) {
     return <div title={text}>{text}</div>;
   };
 
-  const number_formatter = (fraction_figits = 0) => ({value}) => {
-    const text = typeof value === 'number' ? value.toFixed(fraction_figits) : value.toString();
+  const number_formatter = (fraction = 0) => ({value}) => {
+    const text = typeof value === 'number' ? value.toFixed(fraction) : value.toString();
     return <div title={text} style={{textAlign: 'right'}}>{text}</div>;
   };
 
@@ -97,7 +97,7 @@ function rx_columns({utils: {moment}, enm, md}) {
             column.formatter = date_formatter[_fld.type.date_part];
           }
           else if(_fld.type.digits && _fld.type.types.length === 1){
-            column.formatter = number_formatter(_fld.type.fraction_figits);
+            column.formatter = number_formatter(_fld.type.fraction);
           }
           else if(_fld.type.types.includes('boolean')) {
             column.formatter = bool_formatter;

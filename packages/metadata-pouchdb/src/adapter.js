@@ -1469,8 +1469,8 @@ function adapter({AbstracrAdapter}) {
                     }
                   }
                 }
-                else if(typeof doc[fld] === 'number' && mf.type.fraction_figits) {
-                  o[fldsyn] = doc[fld].toFixed(mf.type.fraction_figits);
+                else if(typeof doc[fld] === 'number' && mf.type.fraction) {
+                  o[fldsyn] = doc[fld].toFixed(mf.type.fraction);
                 }
                 else {
                   o[fldsyn] = doc[fld];

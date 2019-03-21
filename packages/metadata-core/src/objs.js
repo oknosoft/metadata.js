@@ -303,8 +303,7 @@ export class DataObj {
   toJSON() {
     const res = {};
     const {_obj, _manager} = this;
-    const {blank} = _manager._owner.$p.utils;
-    const service = ['zone', 'zones', 'direct_zones', 'id', 'number_doc', 'date'];
+    const {utils: {blank}, classes: {Meta}} = _manager._owner.$p;
 
     for(const fld in _obj) {
       const mfld = _manager.metadata(fld);
@@ -313,7 +312,7 @@ export class DataObj {
           res[fld] = this[fld].toJSON();
         }
         else {
-          if(!service.includes(fld) &&
+          if(!Meta._sys_fields.includes(fld) &&
               (_obj[fld] === blank.guid || (!_obj[fld] && mfld.type.types.length === 1 && mfld.type.types[0] !== 'boolean'))) {
             continue;
           }
