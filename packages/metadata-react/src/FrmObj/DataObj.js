@@ -40,9 +40,11 @@ class DataObj extends MDNRComponent {
   componentDidMount() {
     const {_mgr, match} = this.props;
 
-    _mgr.get(match.params.ref, 'promise').then((_obj) => {
-      this.setState({_obj}, () => this.shouldComponentUpdate(this.props));
-    });
+    _mgr.get(match.params.ref, 'promise')
+      .then((_obj) => _obj.load_linked_refs())
+      .then((_obj) => {
+        this.setState({_obj}, () => this.shouldComponentUpdate(this.props));
+      });
 
     _mgr.on('update', this.onDataChange);
   }
@@ -208,7 +210,7 @@ class DataObj extends MDNRComponent {
       [
         <DataObjToolbar key="toolbar" {...toolbar_props} />,
 
-        _meta.form && _meta.form.obj ?
+        _meta.form && _meta.form.obj && _meta.form.obj.items ?
           this.renderItems(_meta.form.obj.items)
           :
           <FormGroup key="data" className={classes.spaceLeft}>

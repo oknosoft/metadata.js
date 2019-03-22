@@ -166,8 +166,10 @@ export default (constructor) => {
      * @return {*}
      */
     dbpath(name) {
+      if(name === 'pgsql') return super.dbpath(name);
+      const isMeta = name === 'meta';
       let {$p: {superlogin}, props: {path, prefix, zone}} = this;
-      let url = superlogin.getDbUrl(prefix + (name == 'meta' ? name : (zone + '_' + name)));
+      let url = superlogin.getDbUrl(prefix + (isMeta ? name : (zone + '_' + name)));
       let localhost = 'localhost:5984/' + prefix;
       if(!url) {
         url = superlogin.getDbUrl(name);
@@ -179,8 +181,8 @@ export default (constructor) => {
       }
       if(!url) {
         url = superlogin.getDbUrl(prefix + zone + '_doc');
-        const pos = url.indexOf(prefix + (name == 'meta' ? name : (zone + '_doc')));
-        url = url.substr(0, pos) + prefix + (name == 'meta' ? name : (zone + '_' + name));
+        const pos = url.indexOf(prefix + (isMeta ? name : (zone + '_doc')));
+        url = url.substr(0, pos) + prefix + (isMeta ? name : (zone + '_' + name));
         localhost = 'localhost:5984/' + prefix;
       }
       if(url.indexOf(localhost) !== -1) {

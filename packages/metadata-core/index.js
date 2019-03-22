@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.18-beta.4, built:2019-03-21
+ metadata-core v2.0.18-beta.4, built:2019-03-22
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -948,6 +948,36 @@ class DataObj {
             throw err;
           });
       });
+  }
+  load_linked_refs() {
+    const adapters = new Map();
+    const {fields, tabular_sections} = this._metadata();
+    function add_refs(obj, meta) {
+      for(const fld in meta) {
+        if(meta[fld].type.is_ref) {
+          const v = obj[fld];
+          if(v instanceof DataObj && !v.empty() && v.is_new()) {
+            const {adapter} = v._manager;
+            if(!adapters.get(adapter)) {
+              adapters.set(adapter, new Set());
+            }
+            adapters.get(adapter).add(`${v.class_name}|${v.ref}`);
+          }
+        }
+      }
+    }
+    add_refs(this, fields);
+    for(const tsname in tabular_sections) {
+      const meta = tabular_sections[tsname].fields;
+      this[tsname].forEach((row) => {
+        add_refs(row, meta);
+      });
+    }
+    return Promise.all(Array.from(adapters).map(([adapter, refs]) => {
+      return adapter.load_array(Array.from(refs));
+    }))
+      .catch((err) => null)
+      .then(() => this);
   }
   get_attachment(att_id) {
     const {_manager, ref} = this;
@@ -2333,48 +2363,6 @@ class RefDataManager extends DataManager{
     }
     return select;
   }
-	load_cached_server_array(list, alt_rest_name) {
-		const {ajax, rest} = this._owner.$p;
-		var query = [], obj,
-			t = this,
-			mgr = alt_rest_name ? {class_name: t.class_name, rest_name: alt_rest_name} : t,
-			check_loaded = !alt_rest_name;
-		list.forEach(o => {
-			obj = t.get(o.ref || o, true);
-			if(!obj || (check_loaded && obj.is_new()))
-				query.push(o.ref || o);
-		});
-		if(query.length){
-			var attr = {
-				url: "",
-				selection: {ref: {in: query}}
-			};
-			if(check_loaded)
-				attr.fields = ["ref"];
-			rest.build_select(attr, mgr);
-			return ajax.get_ex(attr.url, attr)
-				.then(function (req) {
-					var data = JSON.parse(req.response);
-					if(check_loaded)
-						data = data.value;
-					else{
-						data = data.data;
-						for(var i in data){
-							if(!data[i].ref && data[i].id)
-								data[i].ref = data[i].id;
-							if(data[i].Код){
-								data[i].id = data[i].Код;
-								delete data[i].Код;
-							}
-							data[i]._not_set_loaded = true;
-						}
-					}
-					t.load_array(data);
-					return(list);
-				});
-		}else
-			return Promise.resolve(list);
-	}
 	predefined(name){
 		if(!this._predefined){
       const predefined = this._predefined = {};

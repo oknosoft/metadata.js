@@ -147,7 +147,7 @@ function adapter({AbstracrAdapter}) {
      */
     after_init(bases, auth) {
 
-      const {props, remote, $p: {md}} = this;
+      const {props, remote, $p: {md, wsql}} = this;
       const opts = {skip_setup: true, adapter: 'http'};
 
       if(auth) {
@@ -158,7 +158,10 @@ function adapter({AbstracrAdapter}) {
       }
 
       (bases || md.bases()).forEach((name) => {
-        if((!auth && remote[name]) || name.match(/(e1cib|pgsql|github|user)/) || (name === 'ram' && props.use_ram === false)) {
+        if((!auth && remote[name]) ||
+          name.match(/(e1cib|github|user)/) ||
+          (name === 'ram' && props.use_ram === false) ||
+          (name === 'pgsql' && wsql.alasql.utils.isNode)) {
           return;
         }
         remote[name] = new PouchDB(this.dbpath(name), opts);
@@ -536,12 +539,15 @@ function adapter({AbstracrAdapter}) {
      * @return {*}
      */
     dbpath(name) {
-      const {props: {path, zone, _suffix}} = this;
+      const {props: {path, zone, _suffix}, $p: {wsql, job_prm}} = this;
       if(name == 'meta') {
         return path + 'meta';
       }
       else if(name == 'ram') {
         return path + zone + '_ram';
+      }
+      else if(name === 'pgsql') {
+        return (job_prm.pg_path.startsWith('/') && !wsql.alasql.utils.isNode ? location.origin + job_prm.pg_path : job_prm.pg_path) + zone;
       }
       else {
         return path + zone + '_' + name + (_suffix ? '_' + _suffix : '');
@@ -557,7 +563,7 @@ function adapter({AbstracrAdapter}) {
     db(_mgr) {
       const dbid = _mgr.cachable.replace('_remote', '').replace('_ram', '').replace('_doc', '');
       const {props, local, remote} = this;
-      if(dbid.indexOf('remote') != -1 || (props.noreplicate && props.noreplicate.indexOf(dbid) != -1)) {
+      if(dbid.indexOf('remote') != -1 || dbid === 'pgsql' || (props.noreplicate && props.noreplicate.indexOf(dbid) != -1)) {
         return remote[dbid.replace('_remote', '')];
       }
       else {
@@ -1498,13 +1504,13 @@ function adapter({AbstracrAdapter}) {
       if(!refs || !refs.length) {
         return Promise.resolve(false);
       }
-      if(!db) {
+      if(!db && _mgr) {
         db = this.db(_mgr);
       }
       const options = {
         limit: refs.length + 1,
         include_docs: true,
-        keys: refs.map((v) => _mgr.class_name + '|' + v),
+        keys: _mgr ? refs.map((v) => _mgr.class_name + '|' + v) : refs,
       };
       if(with_attachments) {
         options.attachments = true;

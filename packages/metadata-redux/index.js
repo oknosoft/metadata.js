@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.18-beta.4, built:2019-03-21
+ metadata-redux v2.0.18-beta.4, built:2019-03-22
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -838,17 +838,17 @@ const mapDispatchToProps$3 = (dispatch) => {
 };
 var withPrm = reactRedux.connect(mapStateToProps$3, mapDispatchToProps$3);
 
-exports.metaActions = actions_meta;
-exports.metaReducer = metaReducer;
-exports.metaMiddleware = metaMiddleware;
+exports.dispatchIface = mapDispatchToProps;
 exports.ifaceActions = actions_iface;
-exports.ifaceReducer = getIfaceReducer;
 exports.ifaceMiddleware = ifaceMiddleware;
+exports.ifaceReducer = getIfaceReducer;
+exports.metaActions = actions_meta;
+exports.metaMiddleware = metaMiddleware;
+exports.metaReducer = metaReducer;
 exports.withIface = withIface;
+exports.withIfaceAndMeta = withIfaceAndMeta;
 exports.withMeta = withMeta;
 exports.withNavigateAndMeta = withNavigateAndMeta;
-exports.withIfaceAndMeta = withIfaceAndMeta;
 exports.withObj = withObj;
 exports.withPrm = withPrm;
-exports.dispatchIface = mapDispatchToProps;
 //# sourceMappingURL=index.js.map

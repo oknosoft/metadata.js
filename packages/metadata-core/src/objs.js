@@ -631,6 +631,44 @@ export class DataObj {
 
   }
 
+  /**
+   * Загружает недостающие объекты, ссылки на которые есть в текущем объекте
+   * @return {Promise<DataObj>}
+   */
+  load_linked_refs() {
+    const adapters = new Map();
+    const {fields, tabular_sections} = this._metadata();
+
+    function add_refs(obj, meta) {
+      for(const fld in meta) {
+        if(meta[fld].type.is_ref) {
+          const v = obj[fld];
+          if(v instanceof DataObj && !v.empty() && v.is_new()) {
+            const {adapter} = v._manager;
+            if(!adapters.get(adapter)) {
+              adapters.set(adapter, new Set());
+            }
+            adapters.get(adapter).add(`${v.class_name}|${v.ref}`);
+          }
+        }
+      }
+    }
+
+    add_refs(this, fields);
+    for(const tsname in tabular_sections) {
+      const meta = tabular_sections[tsname].fields;
+      this[tsname].forEach((row) => {
+        add_refs(row, meta);
+      });
+    }
+
+    return Promise.all(Array.from(adapters).map(([adapter, refs]) => {
+      return adapter.load_array(Array.from(refs));
+    }))
+      .catch((err) => null)
+      .then(() => this);
+  }
+
 
   /**
    * ### Возвращает присоединенный объект или файл

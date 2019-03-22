@@ -1340,67 +1340,6 @@ export class RefDataManager extends DataManager{
   }
 
 	/**
-	 * Догружает с сервера объекты, которых нет в локальном кеше
-	 * @method load_cached_server_array
-	 * @param list {Array} - массив строк ссылок или объектов со свойством ref
-	 * @param alt_rest_name {String} - альтернативный rest_name для загрузки с сервера
-	 * @return {Promise}
-	 */
-	load_cached_server_array(list, alt_rest_name) {
-
-		const {ajax, rest} = this._owner.$p;
-
-		var query = [], obj,
-			t = this,
-			mgr = alt_rest_name ? {class_name: t.class_name, rest_name: alt_rest_name} : t,
-			check_loaded = !alt_rest_name;
-
-		list.forEach(o => {
-			obj = t.get(o.ref || o, true);
-			if(!obj || (check_loaded && obj.is_new()))
-				query.push(o.ref || o);
-		});
-		if(query.length){
-
-			var attr = {
-				url: "",
-				selection: {ref: {in: query}}
-			};
-			if(check_loaded)
-				attr.fields = ["ref"];
-
-			rest.build_select(attr, mgr);
-			//if(dhx4.isIE)
-			//	attr.url = encodeURI(attr.url);
-
-			return ajax.get_ex(attr.url, attr)
-				.then(function (req) {
-					var data = JSON.parse(req.response);
-
-					if(check_loaded)
-						data = data.value;
-					else{
-						data = data.data;
-						for(var i in data){
-							if(!data[i].ref && data[i].id)
-								data[i].ref = data[i].id;
-							if(data[i].Код){
-								data[i].id = data[i].Код;
-								delete data[i].Код;
-							}
-							data[i]._not_set_loaded = true;
-						}
-					}
-
-					t.load_array(data);
-					return(list);
-				});
-
-		}else
-			return Promise.resolve(list);
-	}
-
-	/**
 	 * Возаращает предопределенный элемент по имени предопределенных данных
 	 * @method predefined
 	 * @param name {String} - имя предопределенного
