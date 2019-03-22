@@ -644,11 +644,16 @@ export class DataObj {
         if(meta[fld].type.is_ref) {
           const v = obj[fld];
           if(v instanceof DataObj && !v.empty() && v.is_new()) {
-            const {adapter} = v._manager;
+            const {_manager} = v;
+            const {adapter} = _manager;
+            const db = adapter.db(_manager);
             if(!adapters.get(adapter)) {
-              adapters.set(adapter, new Set());
+              adapters.set(adapter, new Map());
             }
-            adapters.get(adapter).add(`${v.class_name}|${v.ref}`);
+            if(!adapters.get(adapter).get(db)){
+              adapters.get(adapter).set(db, new Set());
+            }
+            adapters.get(adapter).get(db).add(`${v.class_name}|${v.ref}`);
           }
         }
       }
@@ -662,9 +667,14 @@ export class DataObj {
       });
     }
 
-    return Promise.all(Array.from(adapters).map(([adapter, refs]) => {
-      return adapter.load_array(null, Array.from(refs));
-    }))
+    const res = [];
+    for(const [adapter, mdb] of adapters) {
+      for(const [db, refs] of mdb) {
+        res.push(adapter.load_array(null, Array.from(refs), false, db));
+      }
+    }
+
+    return Promise.all(res)
       .catch((err) => null)
       .then(() => this);
   }
