@@ -663,7 +663,7 @@ export class DataObj {
     }
 
     return Promise.all(Array.from(adapters).map(([adapter, refs]) => {
-      return adapter.load_array(Array.from(refs));
+      return adapter.load_array(null, Array.from(refs));
     }))
       .catch((err) => null)
       .then(() => this);
