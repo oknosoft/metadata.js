@@ -44,6 +44,11 @@ class DataList extends MDNRComponent {
     this.handleManagerChange(props);
   }
 
+  componentWillUnmount() {
+    super.componentWillUnmount();
+    clearTimeout(this._timer);
+  }
+
   // при изменении менеджера данных
   handleManagerChange({_mgr, _meta, _ref}) {
 
@@ -578,7 +583,9 @@ class DataList extends MDNRComponent {
         })
         .catch((err) => {
           this.setState({network_error: err});
-          setTimeout(this.handleFilterChange, 2000);
+          if(this._mounted) {
+            this._timer = setTimeout(this.handleFilterChange, 2600);
+          }
         });
     }
 

@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.18-beta.4, built:2019-03-22
+ metadata-core v2.0.18-beta.4, built:2019-03-25
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -743,7 +743,7 @@ class DataObj {
         }
         else {
           if(!Meta._sys_fields.includes(fld) &&
-              (_obj[fld] === blank.guid || (!_obj[fld] && mfld.type.types.length === 1 && mfld.type.types[0] !== 'boolean'))) {
+              (_obj[fld] === blank.guid || (_obj[fld] === '' && mfld.type.types.length === 1 && mfld.type.types[0] === 'string'))) {
             continue;
           }
           res[fld] = _obj[fld];
@@ -979,11 +979,11 @@ class DataObj {
       });
     }
     const res = [];
-    adapters.forEach(([adapter, mdb]) => {
-      mdb.forEach(([db, refs]) => {
+    for(const [adapter, mdb] of adapters) {
+      for(const [db, refs] of mdb) {
         res.push(adapter.load_array(null, Array.from(refs), false, db));
-      });
-    });
+      }
+    }
     return Promise.all(res)
       .catch((err) => null)
       .then(() => this);

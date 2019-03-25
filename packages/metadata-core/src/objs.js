@@ -313,7 +313,7 @@ export class DataObj {
         }
         else {
           if(!Meta._sys_fields.includes(fld) &&
-              (_obj[fld] === blank.guid || (!_obj[fld] && mfld.type.types.length === 1 && mfld.type.types[0] !== 'boolean'))) {
+              (_obj[fld] === blank.guid || (_obj[fld] === '' && mfld.type.types.length === 1 && mfld.type.types[0] === 'string'))) {
             continue;
           }
           res[fld] = _obj[fld];

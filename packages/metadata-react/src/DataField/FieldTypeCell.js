@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import {Editors} from 'metadata-external/react-data-grid-addons.min';
+import {Editors} from 'react-data-grid-addons';
 import TypeField from './FieldType';
 
 class FieldTypeCell extends Editors.SimpleTextEditor {

@@ -2,12 +2,33 @@
 /**
  * React Virtualized Grid
  * ========================
- * MIT License: https://github.com/bvaughn/react-virtualized/
+ * MIT License: https://github.com/bvaughn/react-virtualized
 */
 .ReactVirtualized__Grid {
   outline: none;
 }
 
+/**
+ * React-data-grid
+ * ========================
+ * MIT License: https://github.com/adazzle/react-data-grid
+*/
+.react-grid-HeaderCell {
+  font-weight: 400;
+}
+.react-grid-Cell--frozen {
+  z-index: unset;
+}
+input.editor-main:focus, select.editor-main:focus {
+  border-color: unset;
+  border: 1px solid;
+  background: white;
+  border-radius: 0;
+}
+.rdg-editor-container input.editor-main, select.editor-main {
+  padding: 6px;
+  font-size: inherit;
+}
 
 /**
  * React Select

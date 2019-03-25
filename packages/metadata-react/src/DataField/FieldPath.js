@@ -127,7 +127,12 @@ class FieldPath extends Component {
                 loadData={this.loadData}
                 changeOnSelect
       >
-        <input placeholder="Путь к данным" value={inputValue} onBlur={this.prevent}/>
+        <input
+          readOnly
+          value={inputValue}
+          placeholder="Путь к данным"
+          onBlur={this.prevent}
+        />
       </Cascader>
     );
   }

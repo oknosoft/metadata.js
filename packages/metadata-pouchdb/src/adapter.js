@@ -1207,7 +1207,7 @@ function adapter({AbstracrAdapter}) {
                 const err = new Error(`Объект ${timestamp && typeof timestamp.user === 'string' ?
                   `изменил ${timestamp.user}<br/>${timestamp.moment}` : 'изменён другим пользователем'}`);
                 err._rev = true;
-                return reject(err);
+                throw err;
               }
               tmp._rev = res._rev;
               for (let att in res._attachments) {

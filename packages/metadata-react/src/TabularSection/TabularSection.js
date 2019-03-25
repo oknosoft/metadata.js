@@ -6,12 +6,12 @@ import TabularSectionToolbar from './TabularSectionToolbar';
 import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 
-import ReactDataGrid from 'metadata-external/react-data-grid.min';
+import ReactDataGrid from 'react-data-grid';
 import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
 
 const cmpType = PropTypes.oneOfType([PropTypes.object, PropTypes.array]);
 
-export default class TabularSection extends MComponent {
+class TabularSection extends MComponent {
 
   static propTypes = {
     _obj: PropTypes.object.isRequired,
@@ -142,17 +142,23 @@ export default class TabularSection extends MComponent {
     }
   };
 
-  handleRowUpdated = (e) => {
+  handleRowsUpdated = ({ fromRow, toRow, updated }) => {
     //merge updated row with current row and rerender by setting state
-    const row = this.rowGetter(e.rowIdx);
-    if(row){
-      if(this.props.onRowUpdated){
-        if(this.props.onRowUpdated(e, row) === false){
-          return;
+    for (let i = fromRow; i <= toRow; i++) {
+      const row = this.rowGetter(i);
+      if(row){
+        if(this.props.onRowUpdated){
+          if(this.props.onRowUpdated(updated, row) === false){
+            return;
+          }
         }
+        const _row = row._row || row;
+        Object.assign(_row, updated, {_modified: true});
       }
-      Object.assign(row._row || row, e.updated);
     }
+    // const selectedIds = this.state.selectedIds.slice();
+    // this.setState({selectedIds});
+    Promise.resolve().then(() => this._grid.forceUpdate());
   }
 
   handleSettingsOpen = () => {
@@ -210,7 +216,7 @@ export default class TabularSection extends MComponent {
   };
 
   render() {
-    const {props, state, rowGetter, onRowsSelected, onRowsDeselected, handleRowUpdated} = this;
+    const {props, state, rowGetter, onRowsSelected, onRowsDeselected, handleRowsUpdated} = this;
     const {_meta, _tabular, _columns, scheme, selectedIds, settings_open} = state;
     const {_obj, rowSelection, minHeight, hideToolbar, onCellSelected, classes, denyAddDel, denyReorder, btns, end_btns, menu_items} = props;
     const Toolbar = props.Toolbar || TabularSectionToolbar;
@@ -274,15 +280,15 @@ export default class TabularSection extends MComponent {
                 minWidth={width}
                 minHeight={Math.max(minHeight, height) - (hideToolbar ? 2 : 52) - (settings_open ? 320 : 0)}
                 rowHeight={33}
-
                 ref={(el) => this._grid = el}
                 columns={_columns}
                 enableCellSelect={true}
                 rowGetter={rowGetter}
                 rowsCount={this.rowsCount()}
                 rowSelection={rowSelection}
-                onRowUpdated={handleRowUpdated}
+                //onRowUpdated={handleRowsUpdated}
                 onCellSelected={onCellSelected}
+                onGridRowsUpdated={handleRowsUpdated}
               />
 
             ];
@@ -291,4 +297,6 @@ export default class TabularSection extends MComponent {
     );
   }
 }
+
+export default TabularSection;
 

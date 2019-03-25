@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.18-beta.4, built:2019-03-22
+ metadata-pouchdb v2.0.18-beta.4, built:2019-03-25
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1321,7 +1321,7 @@ function adapter({AbstracrAdapter}) {
                 const err = new Error(`Объект ${timestamp && typeof timestamp.user === 'string' ?
                   `изменил ${timestamp.user}<br/>${timestamp.moment}` : 'изменён другим пользователем'}`);
                 err._rev = true;
-                return reject(err);
+                throw err;
               }
               tmp._rev = res._rev;
               for (let att in res._attachments) {

@@ -11,8 +11,8 @@
   "dependencies": {
     "history": "^4.9",
     "react-redux": "^5.1",
-    "react-router": "^4.3",
-    "react-router-dom": "^4.3",
+    "react-router": "^5.0",
+    "react-router-dom": "^5.0",
     "react-router-redux": "^5.0.0-alpha.9",
     "redux": "^4.0.1",
     "redux-dynamic-middlewares": "^1.0",

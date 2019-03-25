@@ -9700,7 +9700,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Draggable = __webpack_require__(134);
 	//const DraggableHeader = require('./draggable-header');
 	//const Filters = require('./cells/headerCells/filters');
-	//const { RowComparer: rowComparer } = require('metadata-external/react-data-grid.min');
+	//const { RowComparer: rowComparer } = require('react-data-grid');
 	//const performance = require('./performance');
 	//const Utils = { rowComparer, performance };
 

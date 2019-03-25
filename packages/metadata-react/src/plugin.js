@@ -7,6 +7,7 @@
  */
 
 import React, {Component} from 'react';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 
 import DataCell from 'metadata-react/DataField/DataCell';
@@ -14,8 +15,11 @@ import TypeFieldCell from 'metadata-react/DataField/FieldTypeCell';
 import PathFieldCell from 'metadata-react/DataField/FieldPathCell';
 import PropsFieldCell from 'metadata-react/DataField/FieldPropsCell';
 import dialogs from 'metadata-react/App/dialogs';
-import {Editors, Formatters} from 'metadata-external/react-data-grid-addons.min';
-const {CheckboxEditor, DropDownEditor} = Editors;
+import {Editors, Formatters} from 'react-data-grid-addons';
+import DataGrid from 'react-data-grid';
+const {CheckboxEditor, DropDownEditor, SimpleTextEditor} = Editors;
+const {editors: {EditorBase}, Row, RowComparer} = DataGrid;
+
 const {DropDownFormatter, ImageFormatter} = Formatters;
 
 class ToggleEditor extends CheckboxEditor {
@@ -33,6 +37,24 @@ class ToggleEditor extends CheckboxEditor {
     rowData[column.key] = !rowData[column.key];
     //this.props.column.onCellChange(this.props.rowIdx, this.props.column.key, this.props.dependentValues, e);
   }
+}
+
+EditorBase.prototype.getInputNode = SimpleTextEditor.prototype.getInputNode = function () {
+  let domNode = ReactDOM.findDOMNode(this);
+  if (domNode.tagName === 'INPUT' || domNode.tagName === 'SELECT') {
+    return domNode;
+  }
+
+  return domNode.querySelector('input:not([type=hidden])');
+}
+
+Row.prototype.shouldComponentUpdate = function(nextProps) {
+  const res = RowComparer(nextProps, this.props);
+  if(!res && nextProps.row._modified) {
+    Promise.resolve().then(() => {delete nextProps.row._modified});
+    return true;
+  }
+  return res;
 }
 
 

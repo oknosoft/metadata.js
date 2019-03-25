@@ -124,7 +124,12 @@ class FieldType extends Component {
                 onKeyDown={this.prevent}
                 onKeyPress={this.prevent}
       >
-        <input placeholder="Тип значения" value={inputValue} onBlur={this.prevent}/>
+        <input
+          readOnly
+          value={inputValue}
+          placeholder="Тип значения"
+          onBlur={this.prevent}
+        />
       </Cascader>
     );
   }

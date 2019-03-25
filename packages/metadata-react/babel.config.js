@@ -19,7 +19,6 @@ if (process.env.BABEL_ENV === 'es') {
 
 const defaultAlias = {
   'metadata-core': './packages/metadata-core/src',
-  'metadata-external': './packages/metadata-external',
 };
 
 module.exports = {
