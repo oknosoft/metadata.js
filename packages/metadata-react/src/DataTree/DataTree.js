@@ -293,7 +293,7 @@ class DataTree extends MDNRComponent {
     if(/ram$/.test(_mgr.cachable)) {
       // фильтруем в озу
       const selector = _mgr.get_search_selector({
-        _obj: _owner ? _owner._obj : null,
+        _obj: _owner ? (_owner._obj || _owner.props && _owner.props._obj) : null,
         _meta: _owner ? _owner._meta : {},
         search: scheme._search,
         top: 1000,

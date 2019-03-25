@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.18-beta.4, built:2019-03-25
+ metadata-core v2.0.18-beta.5, built:2019-03-25
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -486,7 +486,7 @@ class TabularSection {
 		return _obj.map(_obj => toJSON.call({_obj, _manager}));
 	}
 }
-class TabularSectionRow$1 {
+class TabularSectionRow {
 	constructor(owner, attr) {
 		Object.defineProperties(this, {
 			_owner: {
@@ -542,7 +542,7 @@ class TabularSectionRow$1 {
 
 var data_tabulars = /*#__PURE__*/Object.freeze({
 	TabularSection: TabularSection,
-	TabularSectionRow: TabularSectionRow$1
+	TabularSectionRow: TabularSectionRow
 });
 
 class InnerData {
@@ -1126,8 +1126,8 @@ Object.defineProperty(DataObj.prototype, 'ref', {
   enumerable: true,
   configurable: true
 });
-TabularSectionRow$1.prototype._getter = DataObj.prototype._getter;
-TabularSectionRow$1.prototype.__setter = DataObj.prototype.__setter;
+TabularSectionRow.prototype._getter = DataObj.prototype._getter;
+TabularSectionRow.prototype.__setter = DataObj.prototype.__setter;
 class CatObj extends DataObj {
   constructor(attr, manager, loading) {
     const direct = loading && attr && utils.is_guid(attr.ref);
@@ -2261,7 +2261,7 @@ class RefDataManager extends DataManager{
 	}
   get_search_selector({_obj, _meta, search, top, skip}) {
     const {cachable, _owner} = this;
-    const {md} = _owner.$p;
+    const {md, utils} = _owner.$p;
     const select = {};
     const {input_by_string} = this.metadata();
     if(/ram$/.test(cachable)) {
@@ -2280,7 +2280,7 @@ class RefDataManager extends DataManager{
       }
       _meta.choice_links && _meta.choice_links.forEach((choice) => {
         if(choice.name && choice.name[0] == 'selection') {
-          if(_obj instanceof TabularSectionRow) {
+          if(utils.is_tabular(_obj)) {
             if(choice.path.length < 2) {
               select[choice.name[1]] = typeof choice.path[0] == 'function' ? choice.path[0] : _obj._owner._owner[choice.path[0]];
             }
@@ -3103,7 +3103,7 @@ const utils = {
     return v instanceof EnumManager;
   },
   is_tabular(v) {
-    return v instanceof TabularSectionRow$1 || v instanceof TabularSection;
+    return v instanceof TabularSectionRow || v instanceof TabularSection;
   },
 	is_equal(v1, v2) {
 		if (v1 == v2) {
@@ -4505,7 +4505,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return '2.0.18-beta.4';
+    return '2.0.18-beta.5';
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

@@ -1206,7 +1206,7 @@ export class RefDataManager extends DataManager{
   get_search_selector({_obj, _meta, search, top, skip}) {
 
     const {cachable, _owner} = this;
-    const {md} = _owner.$p;
+    const {md, utils} = _owner.$p;
     const select = {};
     const {input_by_string} = this.metadata();
 
@@ -1231,7 +1231,7 @@ export class RefDataManager extends DataManager{
       // для связей параметров выбора, значение берём из объекта
       _meta.choice_links && _meta.choice_links.forEach((choice) => {
         if(choice.name && choice.name[0] == 'selection') {
-          if(_obj instanceof TabularSectionRow) {
+          if(utils.is_tabular(_obj)) {
             if(choice.path.length < 2) {
               select[choice.name[1]] = typeof choice.path[0] == 'function' ? choice.path[0] : _obj._owner._owner[choice.path[0]];
             }

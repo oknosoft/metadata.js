@@ -110,7 +110,8 @@
   },
   "peerDependecies": {
     "jasmine": "^2.6",
-    "react": "^16.6"
+    "react": "^16.8",
+    "react-dom": "^16.8"
   },
   "scripts": {
     "build:core": "node ./packages/metadata-core/build.js",

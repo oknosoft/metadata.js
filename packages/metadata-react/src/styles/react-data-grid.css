@@ -29,6 +29,9 @@ input.editor-main:focus, select.editor-main:focus {
   padding: 6px;
   font-size: inherit;
 }
+.rdg-editor-container, .react-grid-Container *, input {
+  box-sizing: border-box;
+}
 
 /**
  * React Select

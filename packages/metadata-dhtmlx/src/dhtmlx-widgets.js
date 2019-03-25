@@ -1288,7 +1288,7 @@ function OCombo(attr){
 		if(_meta.choice_links)
 			_meta.choice_links.forEach(({name, path}) => {
 				if(name && name[0] == "selection"){
-					if(_obj instanceof TabularSectionRow){
+					if($p.utils.is_tabular(_obj)){
 						if(path.length < 2)
 							filter[name[1]] = typeof path[0] == "function" ? path[0] : _obj._owner._owner[path[0]];
 						else{
