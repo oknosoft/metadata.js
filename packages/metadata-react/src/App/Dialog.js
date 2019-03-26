@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -63,6 +64,11 @@ class SimpleDialog extends React.Component {
     return {dnr: this};
   }
 
+  portalTarget() {
+    const domNode = ReactDOM.findDOMNode(this);
+    return domNode ? domNode.lastChild.firstChild : document.body;
+  }
+
   get frameRect() {
     return {};
   }
@@ -106,7 +112,7 @@ SimpleDialog.propTypes = {
   initFullScreen: PropTypes.bool,
   title: PropTypes.string.isRequired,
   actions: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  children: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+  children: PropTypes.oneOfType([PropTypes.object, PropTypes.node]),
   classes: PropTypes.object.isRequired,
   onClose: PropTypes.func.isRequired,
 };

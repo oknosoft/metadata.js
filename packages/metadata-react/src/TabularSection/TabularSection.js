@@ -286,9 +286,9 @@ class TabularSection extends MComponent {
                 rowGetter={rowGetter}
                 rowsCount={this.rowsCount()}
                 rowSelection={rowSelection}
-                //onRowUpdated={handleRowsUpdated}
                 onCellSelected={onCellSelected}
                 onGridRowsUpdated={handleRowsUpdated}
+                editorPortalTarget={props.portalTarget}
               />
 
             ];
