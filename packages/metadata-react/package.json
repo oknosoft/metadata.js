@@ -22,6 +22,7 @@
     "rc-cascader": "^0.17",
     "rc-time-picker": "^3.6",
     "react-data-grid": "^6.1.0-0",
+    "react-data-grid-addons": "^6.1.0-0",
     "react-fullscreenable": "^2.5.1-0",
     "react-helmet": "^5.2",
     "react-onclickoutside": "^6.8",

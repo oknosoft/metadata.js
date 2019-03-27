@@ -13,40 +13,13 @@ const cmpType = PropTypes.oneOfType([PropTypes.object, PropTypes.array]);
 
 class TabularSection extends MComponent {
 
-  static propTypes = {
-    _obj: PropTypes.object.isRequired,
-    _tabular: PropTypes.string.isRequired,
-    _meta: PropTypes.object,
-    scheme: PropTypes.object,             // Вариант настроек
-
-    read_only: PropTypes.bool,            // Элемент только для чтения
-    hideToolbar: PropTypes.bool,          // Указывает не выводить toolbar
-    denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
-    denyReorder: PropTypes.bool,          // Запрет изменения порядка строк
-    minHeight: PropTypes.number,
-    btns: cmpType,                        // дополнительные кнопки
-    menu_items: cmpType,                  // дополнительные пункты меню
-
-    handleValueChange: PropTypes.func,    // Обработчик изменения значения в ячейке
-    handleRowChange: PropTypes.func,      // При окончании редактирования строки
-    handleCustom: PropTypes.func,         // Внешний дополнительный подключаемый обработчик
-
-    rowSelection: PropTypes.object,       // Настройка пометок строк
-    selectedIds: PropTypes.array,
-
-    onCellSelected: PropTypes.func,
-    onRowUpdated: PropTypes.func,
-  };
-
-  static defaultProps = {
-    denyAddDel: false,
-    read_only: false,
-    minHeight: 220,
-  };
-
   constructor(props, context) {
     super(props, context);
     this.handleObjChange(props, true);
+  }
+
+  componentDidMount() {
+    this.portalTarget = this.context.dnr ? this.context.dnr.portalTarget() : undefined;
   }
 
   shouldComponentUpdate(props, {_tabular}){
@@ -288,7 +261,7 @@ class TabularSection extends MComponent {
                 rowSelection={rowSelection}
                 onCellSelected={onCellSelected}
                 onGridRowsUpdated={handleRowsUpdated}
-                editorPortalTarget={props.portalTarget}
+                editorPortalTarget={this.portalTarget || props.portalTarget}
               />
 
             ];
@@ -297,6 +270,41 @@ class TabularSection extends MComponent {
     );
   }
 }
+
+TabularSection.propTypes = {
+  _obj: PropTypes.object.isRequired,
+  _tabular: PropTypes.string.isRequired,
+  _meta: PropTypes.object,
+  scheme: PropTypes.object,             // Вариант настроек
+
+  read_only: PropTypes.bool,            // Элемент только для чтения
+  hideToolbar: PropTypes.bool,          // Указывает не выводить toolbar
+  denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+  denyReorder: PropTypes.bool,          // Запрет изменения порядка строк
+  minHeight: PropTypes.number,
+  btns: cmpType,                        // дополнительные кнопки
+  menu_items: cmpType,                  // дополнительные пункты меню
+
+  handleValueChange: PropTypes.func,    // Обработчик изменения значения в ячейке
+  handleRowChange: PropTypes.func,      // При окончании редактирования строки
+  handleCustom: PropTypes.func,         // Внешний дополнительный подключаемый обработчик
+
+  rowSelection: PropTypes.object,       // Настройка пометок строк
+  selectedIds: PropTypes.array,
+
+  onCellSelected: PropTypes.func,
+  onRowUpdated: PropTypes.func,
+};
+
+TabularSection.defaultProps = {
+  denyAddDel: false,
+  read_only: false,
+  minHeight: 220,
+};
+
+TabularSection.contextTypes = {
+  dnr: PropTypes.object
+};
 
 export default TabularSection;
 

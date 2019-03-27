@@ -85,6 +85,8 @@
     "md5-file": "^4.0.0",
     "react-fullscreenable": "^2.5.1-0",
     "react-helmet": "^5.2.0",
+    "react-data-grid": "^6.1.0-0",
+    "react-data-grid-addons": "^6.1.0-0",
     "react-onclickoutside": "^6.8.0",
     "react-portal": "^4.2.0",
     "react-redux": "^5.1.1",
