@@ -19,6 +19,7 @@ class TabularSection extends MComponent {
   }
 
   componentDidMount() {
+    super.componentDidMount();
     this.portalTarget = this.context.dnr ? this.context.dnr.portalTarget() : undefined;
   }
 
@@ -261,7 +262,7 @@ class TabularSection extends MComponent {
                 rowSelection={rowSelection}
                 onCellSelected={onCellSelected}
                 onGridRowsUpdated={handleRowsUpdated}
-                editorPortalTarget={this.portalTarget || props.portalTarget}
+                editorPortalTarget={props.portalTarget || this.portalTarget}
               />
 
             ];

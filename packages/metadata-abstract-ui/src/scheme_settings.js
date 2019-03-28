@@ -8,6 +8,25 @@
 
 const DataFrame = require('dataframe');
 
+class GridColumn {
+  constructor(props) {
+    for(const prop in props) {
+      if(prop === 'width') {
+        if(props.width !== '*') {
+          this.width = parseInt(props.width, 10) || 140;
+        }
+      }
+      else {
+        this[prop] = props[prop];
+      }
+    }
+  }
+
+  get _width() {
+    return this.width || 200;
+  }
+}
+
 export default function scheme_settings() {
 
   const {wsql, utils, cat, enm, dp, md, constructor} = this;
@@ -63,79 +82,68 @@ export default function scheme_settings() {
      * @param class_name
      */
     get_scheme(class_name) {
+      // получаем сохраненную настройку
+      const scheme_name = this.scheme_name(class_name);
 
-      return new Promise((resolve, reject) => {
+      const find_scheme = () => {
 
-        // получаем сохраненную настройку
-        const scheme_name = this.scheme_name(class_name);
-
-        const find_scheme = () => {
-
-          this.find_schemas(class_name)
-            .then((data) => {
-              // если существует с текущим пользователем, берём его, иначе - первый попавшийся
-              if(data.length == 1) {
-                set_default_and_resolve(data[0]);
+        return this.find_schemas(class_name)
+          .then((data) => {
+            // если существует с текущим пользователем, берём его, иначе - первый попавшийся
+            if(data.length == 1) {
+              return data[0].set_default();
+            }
+            else if(data.length) {
+              const {current_user} = $p;
+              if(!current_user || !current_user.name) {
+                return data[0].set_default();
               }
-              else if(data.length) {
-                if(!$p.current_user || !$p.current_user.name) {
-                  set_default_and_resolve(data[0]);
-                }
-                else {
-                  const {name} = $p.current_user;
-                  if(!data.some((scheme) => {
-                      if(scheme.user == name) {
-                        set_default_and_resolve(scheme);
-                        return true;
-                      }
-                    })) {
-                    set_default_and_resolve(data[0]);
+              else {
+                const {name} = current_user;
+                for(const scheme of data) {
+                  if(scheme.user == name) {
+                    return scheme.set_default();
                   }
                 }
+                return data[0].set_default();
               }
-              else {
-                create_scheme();
-              }
-            })
-            .catch((err) => {
-              create_scheme();
-            });
-        };
+            }
+            else {
+              return create_scheme();
+            }
+          })
+          .catch((err) => {
+            return create_scheme();
+          });
+      };
 
-        let ref = wsql.get_user_param(scheme_name, 'string');
+      let ref = wsql.get_user_param(scheme_name, 'string');
 
-        function set_default_and_resolve(obj) {
-          resolve(obj.set_default());
+      function create_scheme() {
+        if(!utils.is_guid(ref)) {
+          ref = utils.generate_guid();
         }
+        cat.scheme_settings.create({ref})
+          .then((obj) => obj.fill_default(class_name).save())
+          .then((obj) => obj.set_default());
+      }
 
-        function create_scheme() {
-          if(!utils.is_guid(ref)) {
-            ref = utils.generate_guid();
-          }
-          cat.scheme_settings.create({ref})
-            .then((obj) => obj.fill_default(class_name).save())
-            .then((obj) => set_default_and_resolve(obj));
-        }
-
-        if(ref) {
-          // получаем по гвиду
-          cat.scheme_settings.get(ref, 'promise')
-            .then((scheme) => {
-              if(scheme && !scheme.is_new()) {
-                resolve(scheme);
-              }
-              else {
-                find_scheme();
-              }
-            })
-            .catch((err) => {
-              find_scheme();
-            });
-        }
-        else {
-          find_scheme();
-        }
-      });
+      if(ref) {
+        // получаем по гвиду
+        return cat.scheme_settings.get(ref, 'promise')
+          .then((scheme) => {
+            if(scheme && !scheme.is_new()) {
+              return scheme;
+            }
+            else {
+              return find_scheme();
+            }
+          })
+          .catch((err) => find_scheme());
+      }
+      else {
+        return find_scheme();
+      }
     }
 
     /**
@@ -191,7 +199,8 @@ export default function scheme_settings() {
     set scheme(v) {
       this._setter('scheme', v);
     }
-  };
+  }
+
   this.DpScheme_settings = DpScheme_settings;
 
   /**
@@ -607,12 +616,12 @@ export default function scheme_settings() {
       }
       else { // поля табличной части
 
-        for (var field in _meta.fields) {
+        for (let field in _meta.fields) {
           add_column(field, true);
         }
       }
 
-      for (var field in _meta.fields) {
+      for (let field in _meta.fields) {
         if(!columns.some(function (column) {
             return column.field == field;
           })) {
@@ -713,8 +722,9 @@ export default function scheme_settings() {
       };
 
       for (const column of (columns || this.columns())) {
-        if(res.fields.indexOf(column.id) == -1) {
-          res.fields.push(column.id);
+        const fld = column.id || column.key;
+        if(fld && !res.fields.includes(fld)) {
+          res.fields.push(fld);
         }
       }
 
@@ -1040,28 +1050,24 @@ export default function scheme_settings() {
       this.fields.find_rows({use: true}, (row) => {
 
         const fld_meta = _meta.fields[row.field] || _mgr.metadata(row.field);
-        let column;
 
-        if(mode == 'ts') {
-          column = {
+        res.push(new GridColumn(mode == 'ts' ?
+          {
             key: row.field,
             name: row.caption,
             resizable: true,
             ctrl_type: row.ctrl_type,
-            width: row.width == '*' ? 250 : (parseInt(row.width) || 140),
-          };
-        }
-        else {
-          column = {
+            width: row.width,
+          }
+          :
+          {
             id: row.field,
             synonym: row.caption,
             tooltip: row.tooltip,
             type: fld_meta.type,
             ctrl_type: row.ctrl_type,
-            width: row.width == '*' ? 250 : (parseInt(row.width) || 140),
-          };
-        }
-        res.push(column);
+            width: row.width == '*' ? 250 : row.width,
+          }));
       });
       return res;
     }
@@ -1115,7 +1121,8 @@ export default function scheme_settings() {
         title: caption,
       }));
     }
-  };
+  }
+
   this.CatScheme_settings = CatScheme_settings;
 
   this.CatScheme_settingsDimensionsRow = class CatScheme_settingsDimensionsRow extends TabularSectionRow {

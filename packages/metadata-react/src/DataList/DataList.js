@@ -22,7 +22,6 @@ class DataList extends MDNRComponent {
   static LIMIT = 40;
   static OVERSCAN_ROW_COUNT = 2;
   static COLUMN_HEIGHT = 33;
-  static COLUMN_DEFAULT_WIDTH = 220;
 
   constructor(props, context) {
     super(props, context);
@@ -211,33 +210,6 @@ class DataList extends MDNRComponent {
     this.setState({info_text});
   }
 
-  get sizes() {
-    let {context: {dnr}, props: {width, height}, state: {columns}} = this;
-
-    if(!height) {
-      height = dnr && parseInt(dnr.frameRect.height) - 26;
-    }
-    if(!height || height < 320) {
-      height = 320;
-    }
-    if(!width) {
-      width = dnr && parseInt(dnr.frameRect.width);
-    }
-    if(!width || width < 480) {
-      width = 480;
-    }
-
-    // горизонтальная прокрутка
-    const w2 = columns && columns.reduce((sum, val, index) => {
-      return sum + this._getColumnWidth({index});
-    }, 0)
-    if(w2 > width) {
-      width = w2;
-    }
-
-    return {width, height};
-  }
-
   get ltitle() {
     const {_mgr} = this.props;
     return `${_mgr.metadata().list_presentation || _mgr.metadata().synonym} (список)`;
@@ -297,7 +269,7 @@ class DataList extends MDNRComponent {
       />,
 
       info_text && <Confirm
-        key="confirm"
+        key="info"
         title={_meta.synonym}
         text={info_text}
         handleOk={this.handleInfoText}
@@ -372,12 +344,7 @@ class DataList extends MDNRComponent {
   _getColumnWidth = ({index}) => {
     // todo: Take remaining space if width of column equal '*'
     const {columns} = this.state;
-    if(isNaN(parseInt(columns[index].width, 10))) {
-      return DataList.COLUMN_DEFAULT_WIDTH;
-    }
-    else {
-      return parseInt(columns[index].width, 10);
-    }
+    return columns[index] ? columns[index]._width : 200;
   };
 
   _noContentRendered = () => {
@@ -598,13 +565,13 @@ DataList.propTypes = {
   _mgr: PropTypes.object.isRequired,    // Менеджер данных
   _acl: PropTypes.string,               // Права на чтение-изменение
   _meta: PropTypes.object,              // Описание метаданных. Если не указано, используем метаданные менеджера
-  _ref: PropTypes.string,                // Ссылка, на которую надо спозиционироваться
+  _ref: PropTypes.string,               // Ссылка, на которую надо спозиционироваться
 
   _owner: PropTypes.object,             // Поле - владелец. У него должны быть _obj, _fld и _meta
                                         // а внутри _meta могут быть choice_params и choice_links
 
   // настройки внешнего вида и поведения
-  selectionMode: PropTypes.bool,       // Режим выбора из списка. Если истина - дополнительно рисуем кнопку выбора
+  selectionMode: PropTypes.bool,        // Режим выбора из списка. Если истина - дополнительно рисуем кнопку выбора
   read_only: PropTypes.object,          // Элемент только для чтения
   denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
   show_search: PropTypes.bool,          // Показывать поле поиска

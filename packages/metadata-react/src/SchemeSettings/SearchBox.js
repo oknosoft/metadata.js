@@ -75,7 +75,7 @@ class SearchBox extends React.Component {
         handleFilterChange();
       }
       else {
-        this._timer = setTimeout(handleFilterChange, 300);
+        this._timer = setTimeout(handleFilterChange, 900);
       }
       this.forceUpdate();
     }

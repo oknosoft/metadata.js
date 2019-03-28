@@ -61,9 +61,6 @@ export default class SchemeSettingsTabs extends Component {
     if(!width) {
       width = dnr && parseInt(dnr.frameRect.width);
     }
-    if(!width || width < 480) {
-      width = 480;
-    }
     return {width, height};
   }
 
@@ -87,9 +84,14 @@ export default class SchemeSettingsTabs extends Component {
     const {scheme, handleSchemeChange, tabParams} = props;
     const {value} = state;
     const is_tabular = scheme.obj.split('.').length > 2;
+    const styleBar = sizes.width ? {width: sizes.width} : undefined;
+    const styleTabs = {height: sizes.height, width: sizes.width};
+    if(sizes.width) {
+      styleTabs.width = sizes.width;
+    }
 
     return [
-      <AppBar key="bar" position="static" color="default" style={{width: sizes.width}}>
+      <AppBar key="bar" position="static" color="default" style={styleBar}>
         <Tabs
           value={value}
           onChange={this.handleTabChange}
@@ -108,7 +110,7 @@ export default class SchemeSettingsTabs extends Component {
         </Tabs>
       </AppBar>,
 
-      <div key="tabs" style={{height: sizes.height, width: sizes.width}}>
+      <div key="tabs" style={styleTabs}>
         {value === 0 &&
         (tabParams ? tabParams : (
           scheme.query.match('date') ?

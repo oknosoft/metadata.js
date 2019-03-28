@@ -41,4 +41,29 @@ export default class MDNRComponent extends MComponent {
 
     return res;
   }
+
+  get sizes() {
+    let {context: {dnr}, props: {width, height}, state: {columns}} = this;
+
+    if(!height) {
+      height = dnr && parseInt(dnr.frameRect.height) - 26;
+    }
+    if(!height || height < 320) {
+      height = 320;
+    }
+    if(!width) {
+      width = dnr && parseInt(dnr.frameRect.width);
+    }
+    if(!width || width < 480) {
+      width = 480;
+    }
+
+    // горизонтальная прокрутка
+    const w2 = columns && columns.reduce((sum, val) => sum + val._width, 0);
+    if(w2 > width) {
+      width = w2;
+    }
+
+    return {width, height};
+  }
 }

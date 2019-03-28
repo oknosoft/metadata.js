@@ -57,8 +57,9 @@ Row.prototype.shouldComponentUpdate = function(nextProps) {
   return res;
 }
 
-
 function rx_columns({utils: {moment}, enm, md}) {
+
+  const typed_formatters = {};
 
   const date_formatter = {
     date: ({value}) => {
@@ -79,6 +80,19 @@ function rx_columns({utils: {moment}, enm, md}) {
     return <div title={text}>{text}</div>;
   };
 
+  const typed_formatter = (type) => {
+    if(typed_formatters[type]) {
+      return typed_formatters[type];
+    }
+    const _mgr = md.mgr_by_class_name(type);
+    if(_mgr) {
+      typed_formatters[type] = (row) => {
+        return presentation_formatter({value: _mgr.get(row.value)});
+      };
+      return typed_formatters[type];
+    }
+  }
+
   const number_formatter = (fraction = 0) => ({value}) => {
     const text = typeof value === 'number' ? value.toFixed(fraction) : value.toString();
     return <div title={text} style={{textAlign: 'right'}}>{text}</div>;
@@ -92,11 +106,14 @@ function rx_columns({utils: {moment}, enm, md}) {
     return <div title={value.toString()}>{value.presentation}</div>;
   };
 
-  return function columns({mode, fields, _obj}) {
+  return function columns({mode, fields, _obj, _mgr}) {
 
     const res = this.columns(mode);
     const {input, text, label, link, cascader, toggle, image, type, path, props} = enm.data_field_kinds;
-    const editable = _obj._manager.class_name.indexOf('rep.') !== 0 || this.obj.indexOf(`.${_obj._manager._tabular || 'data'}`) === -1;
+    if(!_mgr && _obj) {
+      _mgr = _obj._manager;
+    }
+    const editable = _obj ? _mgr.class_name.indexOf('rep.') !== 0 || this.obj.indexOf(`.${_mgr._tabular || 'data'}`) === -1 : false;
 
     if(fields) {
       res.forEach((column) => {
@@ -109,11 +126,14 @@ function rx_columns({utils: {moment}, enm, md}) {
             _fld = column._meta = pmeta.fields[keys[i]];
           }
         }
+        if(!_fld && _mgr) {
+          _fld = column._meta = _mgr.metadata(keys[0]);
+        }
 
         if(!column.formatter && _fld && _fld.type) {
 
           if(column.key === 'ref' || _fld.type.is_ref) {
-            column.formatter = presentation_formatter;
+            column.formatter = !_obj && _fld.type.types[0].includes('.') ? typed_formatter(_fld.type.types[0]) : presentation_formatter;
           }
           else if(_fld.type.date_part) {
             column.formatter = date_formatter[_fld.type.date_part];
@@ -161,15 +181,21 @@ function rx_columns({utils: {moment}, enm, md}) {
           break;
 
         case path:
-          column.editor = PathFieldCell;
+          if(editable){
+            column.editor = PathFieldCell;
+          }
           break;
 
         case type:
-          column.editor = TypeFieldCell;
+          if(editable){
+            column.editor = TypeFieldCell;
+          }
           break;
 
         case props:
-          column.editor = PropsFieldCell;
+          if(editable){
+            column.editor = PropsFieldCell;
+          }
           column.formatter = props_formatter;
           break;
 

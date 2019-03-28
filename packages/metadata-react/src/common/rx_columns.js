@@ -38,7 +38,7 @@ function rx_columns($p) {
     return <div title={text}>{text}</div>;
   };
 
-  return function columns({mode, fields, _obj}) {
+  return function columns({mode, fields, _obj, read_only}) {
 
     const res = this.columns(mode);
     const {input, text, label, link, cascader, toggle, image, type, path} = $p.enm.data_field_kinds;
@@ -66,7 +66,7 @@ function rx_columns($p) {
         case label:
         case link:
         case cascader:
-          column.editable = true;
+          column.editable = !read_only;
           break;
 
         case toggle:
@@ -84,7 +84,9 @@ function rx_columns($p) {
               title: 'Да',
             }
           ];
-          column.editor = <DropDownEditor options={toggle_options}/>;
+          if(!read_only) {
+            column.editor = <DropDownEditor options={toggle_options}/>;
+          }
           column.formatter = <DropDownFormatter options={toggle_options} value={''}/>;
           break;
 
@@ -92,16 +94,22 @@ function rx_columns($p) {
           // options = _obj.used_fields_list();
           // column.editor = <DropDownEditor options={options}/>;
           // column.formatter = <DropDownFormatter options={options} value=""/>;
-          column.editor = <PathFieldCell/>;
+          if(!read_only) {
+            column.editor = <PathFieldCell/>;
+          }
           break;
 
         case type:
-          column.editor = <TypeFieldCell/>;
+          if(!read_only) {
+            column.editor = <TypeFieldCell/>;
+          }
           //column.formatter = <DropDownFormatter options={[]} value=""/>;
           break;
 
         default:
-          column.editor = <DataCell/>;
+          if(!read_only) {
+            column.editor = <DataCell/>;
+          }
         }
 
       });
