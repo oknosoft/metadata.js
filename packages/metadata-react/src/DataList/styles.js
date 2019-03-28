@@ -1,7 +1,7 @@
 import withStyles from '@material-ui/core/styles/withStyles';
 //import colors from '@material-ui/core/colors/common';
 
-export default withStyles(theme => ({
+export default withStyles(({palette, breakpoints}) => ({
   cell: {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -13,7 +13,7 @@ export default withStyles(theme => ({
     borderLeft: '1px solid #e0e0e0',
   },
   topRightGrid: {
-    backgroundColor: theme.palette.primary[100],
+    backgroundColor: palette.primary[100],
     borderBottom: '1px solid #e0e0e0',
     userSelect: 'none',
   },

@@ -98,6 +98,7 @@ export default class SchemeSettingsButtons extends PureComponent {
         key="ss1"
         scheme={scheme}
         handleFilterChange={props.handleFilterChange}
+        isWidthUp={!hide_btn}
       />,
 
       // Variants

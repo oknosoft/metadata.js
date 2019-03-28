@@ -15,6 +15,7 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 import PrintIcon from '@material-ui/icons/Print';
 import AttachIcon from '@material-ui/icons/AttachFile';
 import SelectIcon from '@material-ui/icons/PlaylistAddCheck';
+import SettingsIcon from '@material-ui/icons/Settings';
 
 import SchemeSettingsButtons from '../SchemeSettings/SchemeSettingsButtons';
 import SearchBox from '../SchemeSettings/SearchBox';
@@ -60,6 +61,17 @@ class DataListToolbar extends Component {
     this.setState({open: false});
   };
 
+  handleSettingsToggle = () => {
+    const {props} = this;
+    if(props.settings_open) {
+      props.handleSettingsClose();
+    }
+    else {
+      props.handleSettingsOpen();
+    }
+    this.handleRequestClose();
+  };
+
   render() {
 
     const {props, state} = this;
@@ -81,7 +93,7 @@ class DataListToolbar extends Component {
         {!props.denyAddDel && <IconButton key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}
 
         {!scheme.standard_period.empty() && widthUpSm && <IconButton disabled>|</IconButton>}
-        {!scheme.standard_period.empty() && <DateRange
+        {!scheme.standard_period.empty() && widthUpSm && <DateRange
           _obj={scheme}
           _fld={'date'}
           _meta={{synonym: 'Период'}}
@@ -114,6 +126,7 @@ class DataListToolbar extends Component {
           open={state.open}
           onClose={this.handleRequestClose}
         >
+          {!widthUpSm && <MenuItem onClick={this.handleSettingsToggle}><SettingsIcon/> &nbsp;Настройки</MenuItem>}
           <MenuItem onClick={this.handleDnROpen}><PrintIcon/> &nbsp;Печать</MenuItem>
           <MenuItem onClick={props.handleAttachments}><AttachIcon/> &nbsp;Вложения</MenuItem>
           {menu_items /* дополнительные пункты меню */}
@@ -128,6 +141,7 @@ class DataListToolbar extends Component {
         <SearchBox
           scheme={scheme}
           handleFilterChange={props.handleFilterChange}
+          isWidthUp={isWidthUp}
         />
       </Toolbar>
     ];

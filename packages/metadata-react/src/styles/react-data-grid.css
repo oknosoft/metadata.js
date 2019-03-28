@@ -19,6 +19,9 @@
 .react-grid-Cell--frozen {
   z-index: unset;
 }
+.react-grid-Cell:focus-within {
+  user-select: text;
+}
 input.editor-main:focus, select.editor-main:focus {
   border-color: unset;
   border: 1px solid;
@@ -32,6 +35,7 @@ input.editor-main:focus, select.editor-main:focus {
 .rdg-editor-container, .react-grid-Container *, input {
   box-sizing: border-box;
 }
+
 
 /**
  * React Select

@@ -12,27 +12,33 @@ import SearchIcon from '@material-ui/icons/Search';
 import {fade} from '@material-ui/core/styles/colorManipulator';
 import withStyles from '@material-ui/core/styles/withStyles';
 
-const styles = theme => ({
+const styles = ({typography, palette, transitions, spacing, breakpoints}) => ({
   wrapper: {
-    fontFamily: theme.typography.fontFamily,
+    fontFamily: typography.fontFamily,
     position: 'relative',
     alignSelf: 'center',
-    background: fade(theme.palette.common.white, 0.15),
+    background: fade(palette.common.white, 0.15),
     '&:hover': {
-      background: fade(theme.palette.common.white, 0.25),
+      background: fade(palette.common.white, 0.25),
       //border: '1px solid #e0e0e0',
     },
     '& $input': {
-      transition: theme.transitions.create('width'),
-      width: 150,
+      transition: transitions.create('width'),
+      width: 120,
+      [breakpoints.up('sm')]: {
+        width: 200,
+      },
+      [breakpoints.up('lg')]: {
+        width: 280,
+      },
       '&:focus': {
-        background: theme.palette.common.white,
+        background: palette.common.white,
       },
     },
-    marginRight: theme.spacing.unit,
+    marginRight: spacing.unit,
   },
   search: {
-    width: theme.spacing.unit * 4,
+    width: spacing.unit * 4,
     height: '100%',
     position: 'absolute',
     top: 0,
@@ -43,7 +49,7 @@ const styles = theme => ({
   },
   input: {
     font: 'inherit',
-    padding: `${theme.spacing.unit}px ${theme.spacing.unit}px ${theme.spacing.unit}px ${theme.spacing.unit * 4}px`,
+    padding: `${spacing.unit}px ${spacing.unit}px ${spacing.unit}px ${spacing.unit * 4}px`,
     border: 0,
     display: 'block',
     verticalAlign: 'middle',
@@ -82,7 +88,7 @@ class SearchBox extends React.Component {
   };
 
   render() {
-    const {classes, scheme} = this.props;
+    const {classes, scheme, isWidthUp} = this.props;
 
     return (
       <div className={classes.wrapper}>
@@ -92,6 +98,7 @@ class SearchBox extends React.Component {
           value={scheme._search}
           onChange={this.handleChange}
           onKeyDown={this.handleKeyDown}
+          type={isWidthUp ? 'search' : 'text'}
         />
         <div className={classes.search}>
           <SearchIcon/>
@@ -105,6 +112,7 @@ SearchBox.propTypes = {
   classes: PropTypes.object.isRequired,
   scheme: PropTypes.object.isRequired,
   handleFilterChange: PropTypes.func.isRequired,
+  isWidthUp: PropTypes.bool,
 };
 
 export default withStyles(styles, {name: 'SearchBox'})(SearchBox);
