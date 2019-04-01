@@ -47,6 +47,7 @@ packages/metadata-react/Calculator/
 packages/metadata-react/common/
 packages/metadata-react/DataField/
 packages/metadata-react/DataList/
+packages/metadata-react/DynList/
 packages/metadata-react/DataListField/
 packages/metadata-react/DataTree/
 packages/metadata-react/Diagrams/
