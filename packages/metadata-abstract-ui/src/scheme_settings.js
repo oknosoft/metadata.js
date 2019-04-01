@@ -16,6 +16,14 @@ class GridColumn {
           this.width = parseInt(props.width, 10) || 140;
         }
       }
+      else if(prop === 'sortable') {
+        if(props[prop]) {
+          this[prop] = true;
+          if(props[prop].direction == 'desc') {
+            this.sortDescendingFirst = true;
+          }
+        }
+      }
       else {
         this[prop] = props[prop];
       }
@@ -765,6 +773,15 @@ export default function scheme_settings() {
      * @param selector
      */
     append_selection(selector) {
+      if(selector.selector) {
+        if(!selector.sort) {
+          selector.sort = [];
+        }
+        this.selection.find_rows({use: true}, ({field, direction}) => {
+          selector.sort.push({[field]: direction.valueOf() || 'asc'});
+        });
+        selector = selector.selector;
+      }
       if(!selector.$and) {
         selector.$and = [];
       }
@@ -1058,6 +1075,7 @@ export default function scheme_settings() {
             resizable: true,
             ctrl_type: row.ctrl_type,
             width: row.width,
+            sortable: this.sorting.find({use: true, field: row.field}),
           }
           :
           {
@@ -1120,6 +1138,37 @@ export default function scheme_settings() {
         text: caption,
         title: caption,
       }));
+    }
+
+    first_sorting(sortColumn, sortDirection) {
+      let row;
+      if(sortColumn) {
+        row = this.sorting.find({field: sortColumn});
+        if(!row) {
+          row = this.sorting.add({use: true, field: sortColumn});
+        }
+        switch (sortDirection.toLowerCase()) {
+        case 'none':
+          row.use = false;
+          break;
+        case 'desc':
+          row.use = true;
+          row.direction = 'desc';
+          break;
+        case 'asc':
+          row.use = true;
+          row.direction = 'asc';
+          break;
+        }
+
+      }
+      else {
+        this.sorting.find_rows({use: true}, (srow) => {
+          row = srow;
+          return false;
+        });
+        return row ? {sortColumn: row.field, sortDirection: row.direction.valueOf().toUpperCase()} : {};
+      }
     }
   }
 

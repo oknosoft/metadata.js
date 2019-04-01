@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.18-beta.6, built:2019-03-29
+ metadata-abstract-ui v2.0.19-beta.1, built:2019-04-01
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -223,6 +223,14 @@ class GridColumn {
       if(prop === 'width') {
         if(props.width !== '*') {
           this.width = parseInt(props.width, 10) || 140;
+        }
+      }
+      else if(prop === 'sortable') {
+        if(props[prop]) {
+          this[prop] = true;
+          if(props[prop].direction == 'desc') {
+            this.sortDescendingFirst = true;
+          }
         }
       }
       else {
@@ -796,6 +804,15 @@ function scheme_settings() {
       return res;
     }
     append_selection(selector) {
+      if(selector.selector) {
+        if(!selector.sort) {
+          selector.sort = [];
+        }
+        this.selection.find_rows({use: true}, ({field, direction}) => {
+          selector.sort.push({[field]: direction.valueOf() || 'asc'});
+        });
+        selector = selector.selector;
+      }
       if(!selector.$and) {
         selector.$and = [];
       }
@@ -1004,6 +1021,7 @@ function scheme_settings() {
             resizable: true,
             ctrl_type: row.ctrl_type,
             width: row.width,
+            sortable: this.sorting.find({use: true, field: row.field}),
           }
           :
           {
@@ -1041,6 +1059,35 @@ function scheme_settings() {
         text: caption,
         title: caption,
       }));
+    }
+    first_sorting(sortColumn, sortDirection) {
+      let row;
+      if(sortColumn) {
+        row = this.sorting.find({field: sortColumn});
+        if(!row) {
+          row = this.sorting.add({use: true, field: sortColumn});
+        }
+        switch (sortDirection.toLowerCase()) {
+        case 'none':
+          row.use = false;
+          break;
+        case 'desc':
+          row.use = true;
+          row.direction = 'desc';
+          break;
+        case 'asc':
+          row.use = true;
+          row.direction = 'asc';
+          break;
+        }
+      }
+      else {
+        this.sorting.find_rows({use: true}, (srow) => {
+          row = srow;
+          return false;
+        });
+        return row ? {sortColumn: row.field, sortDirection: row.direction.valueOf().toUpperCase()} : {};
+      }
     }
   }
   this.CatScheme_settings = CatScheme_settings;
