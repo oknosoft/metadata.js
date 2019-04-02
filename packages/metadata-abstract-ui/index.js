@@ -808,7 +808,7 @@ function scheme_settings() {
         if(!selector.sort) {
           selector.sort = [];
         }
-        this.selection.find_rows({use: true}, ({field, direction}) => {
+        this.sorting.find_rows({use: true}, ({field, direction}) => {
           selector.sort.push({[field]: direction.valueOf() || 'asc'});
         });
         selector = selector.selector;

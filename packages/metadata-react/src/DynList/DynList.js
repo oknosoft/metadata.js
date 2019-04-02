@@ -102,8 +102,12 @@ class DynList extends MDNRComponent {
   loadMoreRows = ({startIndex, stopIndex}) => {
     const {props: {_mgr, _owner, find_rows}, state: {scheme, columns, ref, scrollSetted}, rows, fakeRows, ranges}  = this;
 
-    //const increment = Math.max(DataList.LIMIT, stopIndex - startIndex + 1);
-
+    if(startIndex < 0) {
+      startIndex = 0;
+    }
+    if(stopIndex < startIndex) {
+      stopIndex = startIndex;
+    }
     let increment = stopIndex - startIndex;
     if(!increment && rows.get(startIndex)) {
       return;
@@ -167,6 +171,8 @@ class DynList extends MDNRComponent {
 
         return (find_rows ? find_rows(selector, scheme) : this.fromIndexer(selector))
           .then((data) => {
+
+            if(!this._mounted) return;
 
             for(let j = startIndex; j <= stopIndex; j++) {
               fakeRows.delete(j);
