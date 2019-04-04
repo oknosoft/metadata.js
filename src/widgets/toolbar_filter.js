@@ -198,8 +198,8 @@ $p.iface.Toolbar_filter.prototype.__define({
 
 			if(!exclude_custom){
 				for(fld in this.custom_selection){
-					if(!res.selection)
-						res.selection = [];
+          if (!this.custom_selection[fld] || !this.custom_selection[fld].value) continue;
+          if(!res.selection) res.selection = [];
 					flt = {};
 					flt[fld] = this.custom_selection[fld].value;
 					res.selection.push(flt);

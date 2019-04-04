@@ -131,6 +131,9 @@ export default class RamIndexer {
 
   // возаращает фрагмент кеша по датам
   get_range(from, till, step, desc) {
+    if(!from || !till) {
+      return [];
+    }
     if(desc) {
       if(step) {
         let [year, month] = till.split('-');
