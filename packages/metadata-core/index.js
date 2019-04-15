@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.19-beta.1, built:2019-04-02
+ metadata-core v2.0.19-beta.1, built:2019-04-15
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3028,13 +3028,18 @@ const utils = {
 		return this.blank.guid;
 	},
 	fix_number(str, strict) {
-		const v = parseFloat(str);
-		if (!isNaN(v)) {
-			return v;
-		}
-		else if (strict) {
-			return 0;
-		}
+	  if(typeof str === 'number') {
+      return str;
+    }
+	  else if(typeof str === 'string') {
+      const v = parseFloat(str.replace(/\s|\xa0/g, '').replace(/,/, '.'));
+      if (!isNaN(v)) {
+        return v;
+      }
+    }
+    if (strict) {
+      return 0;
+    }
 		return str;
 	},
 	fix_boolean(str) {

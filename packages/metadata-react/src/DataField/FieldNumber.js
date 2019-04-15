@@ -20,11 +20,10 @@ class FieldNumber extends AbstractField {
     Object.assign(this.state, {isCalculatorVisible: false});
   }
 
-  onChange = (event) => {
+  onChange = ({target}) => {
     const {_obj, _fld, handleValueChange} = this.props;
-    let {value} = event.target;
-    value = value.replace(/,/g, '.');
-    _obj[_fld] = value;
+    _obj[_fld] = target.value;
+    const value = _obj[_fld];
     this.setState({value}, () => handleValueChange && handleValueChange(value));
   };
 

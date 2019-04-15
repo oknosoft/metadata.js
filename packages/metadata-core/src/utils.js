@@ -232,13 +232,18 @@ const utils = {
 	 * @return {Number}
 	 */
 	fix_number(str, strict) {
-		const v = parseFloat(str);
-		if (!isNaN(v)) {
-			return v;
-		}
-		else if (strict) {
-			return 0;
-		}
+	  if(typeof str === 'number') {
+      return str;
+    }
+	  else if(typeof str === 'string') {
+      const v = parseFloat(str.replace(/\s|\xa0/g, '').replace(/,/, '.'));
+      if (!isNaN(v)) {
+        return v;
+      }
+    }
+    if (strict) {
+      return 0;
+    }
 		return str;
 	},
 
