@@ -32,17 +32,10 @@ class Notifications extends Component {
       count: 0,
     };
 
-    const {name} = this.constructor;
-    this.handleToggle = props.handleIfaceState.bind(this, {
-      component: name,
-      name: 'open',
-      value: 'invert',
-    });
-    this.handleClose = props.handleIfaceState.bind(this, {
-      component: name,
-      name: 'open',
-      value: false,
-    });
+    const component = Notifications.rname;
+    const name = 'open';
+    this.handleToggle = props.handleIfaceState.bind(this, {component, name, value: 'invert'});
+    this.handleClose = props.handleIfaceState.bind(this, {component, name, value: false});
   }
 
   componentDidMount() {
@@ -68,11 +61,7 @@ class Notifications extends Component {
         value.splice(any, 1);
       }
     }
-    this.props.handleIfaceState({
-      component: this.constructor.name,
-      name: 'filter',
-      value
-    });
+    this.props.handleIfaceState({component, name: 'filter', value});
   };
 
   handleMenu = (event) => {
@@ -169,5 +158,7 @@ class Notifications extends Component {
 
   }
 }
+
+Notifications.rname = 'Notifications';
 
 export default withStyles(withIface(Notifications));

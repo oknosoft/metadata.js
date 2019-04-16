@@ -19,13 +19,13 @@ class NavDrawer extends Component {
     super(props, context);
 
     this.handleToggle = props.handleIfaceState.bind(this, {
-      component: this.constructor.name,
+      component: NavDrawer.rname,
       name: 'open',
       value: 'invert',
     });
 
     this.handleClose = props.handleIfaceState.bind(this, {
-      component: this.constructor.name,
+      component: NavDrawer.rname,
       name: 'open',
       value: false,
     });
@@ -71,6 +71,7 @@ class NavDrawer extends Component {
   };
 }
 
+NavDrawer.rname = 'NavDrawer';
 
 export default withIface(NavDrawer);
 

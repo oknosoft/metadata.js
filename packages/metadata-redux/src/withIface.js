@@ -9,7 +9,7 @@ function disconnect(iface, area) {
 
 export function mapStateToProps(Component, area) {
   if(!area) {
-    area = Component.name;
+    area = Component.rname || Component.name;
   }
   return ({iface}) => Object.assign({disconnect: disconnect(iface, area)}, iface.common, iface[area]);
 }

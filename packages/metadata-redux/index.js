@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.19-beta.1, built:2019-04-02
+ metadata-redux v2.0.19-beta.1, built:2019-04-16
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -698,7 +698,7 @@ function disconnect(iface, area) {
 }
 function mapStateToProps(Component, area) {
   if(!area) {
-    area = Component.name;
+    area = Component.rname || Component.name;
   }
   return ({iface}) => Object.assign({disconnect: disconnect(iface, area)}, iface.common, iface[area]);
 }

@@ -23,7 +23,7 @@ class NavList extends Component {
     // при создании компонента, устанавливаем open для открытых по умолчанию пунктов меню
     const handleIfaceState = props.handleIfaceState.bind(this);
     const open = {
-      component: this.constructor.name,
+      component: NavList.rname,
       name: '',
       value: true,
     };
@@ -109,7 +109,7 @@ class NavList extends Component {
 
   handleExpanded(name) {
     return this.props.handleIfaceState.bind(this, {
-      component: this.constructor.name,
+      component: NavList.rname,
       name: name,
       value: 'invert',
     });
@@ -127,6 +127,8 @@ class NavList extends Component {
     );
   }
 }
+
+NavList.rname = 'NavList';
 
 NavList.propTypes = {
   handleClose: PropTypes.func.isRequired,

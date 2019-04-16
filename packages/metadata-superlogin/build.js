@@ -10,7 +10,7 @@ const package_data = require(path.resolve(__dirname, './package.json'));
 
 const external = ['events', 'debug', 'axios'];
 const plugins = [
-  resolve({jsnext: true, main: true}),
+  resolve(),
   replace({PACKAGE_VERSION: package_data.version}),
   cleanup(),
 ];

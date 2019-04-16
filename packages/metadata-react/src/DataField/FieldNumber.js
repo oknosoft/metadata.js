@@ -22,9 +22,9 @@ class FieldNumber extends AbstractField {
 
   onChange = ({target}) => {
     const {_obj, _fld, handleValueChange} = this.props;
-    _obj[_fld] = target.value;
-    const value = _obj[_fld];
-    this.setState({value}, () => handleValueChange && handleValueChange(value));
+    const {value} = target;
+    _obj[_fld] = value;
+    this.setState({value}, () => handleValueChange && handleValueChange(_obj[_fld]));
   };
 
   handleInputClick() {
