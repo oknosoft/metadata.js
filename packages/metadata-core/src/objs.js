@@ -833,6 +833,58 @@ export class DataObj {
     }
   }
 
+  /**
+   * Возвращает массив оборванных ссылок в реквизитах и табличных частях объекта
+   * @return {Array}
+   */
+  broken_links() {
+    const res = [];
+    const {fields, tabular_sections} = this._metadata();
+    const {_obj, _manager} = this;
+    const {md} = _manager._owner.$p;
+
+    if(this.empty() || this.is_new()){
+      return res;
+    }
+
+    for (const fld in fields) {
+      const {type} = fields[fld];
+      if (type.is_ref && _obj.hasOwnProperty(fld) && _obj[fld] && !$p.utils.is_empty_guid(_obj[fld])) {
+        let finded = false;
+        type.types.forEach((m_type) => {
+          const _mgr = md.mgr_by_class_name(m_type);
+          finded = finded || !_mgr.get(_obj[fld], false, false).is_new();
+        })
+        if (!finded) {
+          res.push({'obj': _obj, fld, 'ts': '', 'row': 0, 'value': _obj[fld], type});
+        }
+      }
+    }
+
+    for(const ts in tabular_sections) {
+      const {fields} = tabular_sections[ts];
+      if (_obj.hasOwnProperty(ts)) {
+        _obj[ts].forEach((row) => {
+          for(const fld in fields) {
+            const {type} = fields[fld];
+            if (type.is_ref && row.hasOwnProperty(fld) && row[fld] && !$p.utils.is_empty_guid(row[fld])) {
+              let finded = false;
+              type.types.forEach((m_type) => {
+                const _mgr = md.mgr_by_class_name(m_type);
+                finded = finded || !_mgr.get(row[fld], false, false).is_new();
+              })
+              if (!finded) {
+                res.push({'obj': _obj, fld, ts, 'row': row.row, 'value': row[fld], type});
+              }
+            }
+          }
+        })
+      }
+    }
+
+    return res;
+  }
+
 
   /**
    * ### Выполняет команду печати

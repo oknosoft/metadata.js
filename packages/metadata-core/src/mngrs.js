@@ -1394,6 +1394,19 @@ export class RefDataManager extends DataManager{
     return adapter.delete_attachment ? adapter.delete_attachment(this, ref, att_id) : Promise.reject();
   }
 
+  /**
+   * Возвращает массив оборванных ссылок в объектах текущего менеджера
+   * @return {Array}
+   */
+  broken_links() {
+    const res = [];
+    const push = res.push.bind(res);
+    for(const ref in this.by_ref) {
+      this.by_ref[ref].broken_links().forEach(push);
+    }
+    return res;
+  }
+
 }
 
 /**

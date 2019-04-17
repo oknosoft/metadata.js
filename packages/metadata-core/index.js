@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.19-beta.1, built:2019-04-16
+ metadata-core v2.0.19-beta.1, built:2019-04-17
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1087,6 +1087,49 @@ class DataObj {
         }
       }
     }
+  }
+  broken_links() {
+    const res = [];
+    const {fields, tabular_sections} = this._metadata();
+    const {_obj, _manager} = this;
+    const {md} = _manager._owner.$p;
+    if(this.empty() || this.is_new()){
+      return res;
+    }
+    for (const fld in fields) {
+      const {type} = fields[fld];
+      if (type.is_ref && _obj.hasOwnProperty(fld) && _obj[fld] && !$p.utils.is_empty_guid(_obj[fld])) {
+        let finded = false;
+        type.types.forEach((m_type) => {
+          const _mgr = md.mgr_by_class_name(m_type);
+          finded = finded || !_mgr.get(_obj[fld], false, false).is_new();
+        });
+        if (!finded) {
+          res.push({'obj': _obj, fld, 'ts': '', 'row': 0, 'value': _obj[fld], type});
+        }
+      }
+    }
+    for(const ts in tabular_sections) {
+      const {fields} = tabular_sections[ts];
+      if (_obj.hasOwnProperty(ts)) {
+        _obj[ts].forEach((row) => {
+          for(const fld in fields) {
+            const {type} = fields[fld];
+            if (type.is_ref && row.hasOwnProperty(fld) && row[fld] && !$p.utils.is_empty_guid(row[fld])) {
+              let finded = false;
+              type.types.forEach((m_type) => {
+                const _mgr = md.mgr_by_class_name(m_type);
+                finded = finded || !_mgr.get(row[fld], false, false).is_new();
+              });
+              if (!finded) {
+                res.push({'obj': _obj, fld, ts, 'row': row.row, 'value': row[fld], type});
+              }
+            }
+          }
+        });
+      }
+    }
+    return res;
   }
   print(model, wnd) {
     return this._manager.print(this, model, wnd);
@@ -2392,6 +2435,14 @@ class RefDataManager extends DataManager{
   delete_attachment(ref, att_id) {
     const {adapter} = this;
     return adapter.delete_attachment ? adapter.delete_attachment(this, ref, att_id) : Promise.reject();
+  }
+  broken_links() {
+    const res = [];
+    const push = res.push.bind(res);
+    for(const ref in this.by_ref) {
+      this.by_ref[ref].broken_links().forEach(push);
+    }
+    return res;
   }
 }
 class DataProcessorsManager extends DataManager{
