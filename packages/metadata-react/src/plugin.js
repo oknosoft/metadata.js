@@ -94,6 +94,7 @@ function rx_columns({utils: {moment}, enm, md}) {
   }
 
   const number_formatter = (fraction = 0) => ({value}) => {
+    if(!value && value !== 0) value = 0;
     const text = typeof value === 'number' ? value.toFixed(fraction) : value.toString();
     return <div title={text} style={{textAlign: 'right'}}>{text}</div>;
   };
