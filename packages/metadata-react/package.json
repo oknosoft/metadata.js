@@ -26,7 +26,6 @@
     "react-fullscreenable": "^2.5.1-0",
     "react-helmet": "^5.2",
     "react-onclickoutside": "^6.8",
-    "react-portal": "^4.2",
     "react-swipeable": "^5.0",
     "react-virtualized": "^9.21",
     "recharts": "^1.5",

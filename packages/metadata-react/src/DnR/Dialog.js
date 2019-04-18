@@ -8,7 +8,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import {Portal} from 'react-portal';
+import Portal from '@material-ui/core/Portal';
 import DnR from './DnR';
 import {WindowsTheme} from './themes';
 
@@ -47,7 +47,7 @@ export default class Dialog extends Component {
 
   render() {
     const {children, ...others} = this.props;
-    return <Portal isOpened>
+    return <Portal>
       <DnR
         ref={(el) => this._dnr = el}
         {...this.Windows}
