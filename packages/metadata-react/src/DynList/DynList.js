@@ -113,23 +113,28 @@ class DynList extends MDNRComponent {
       return;
     }
 
+    const nrange = {startIndex, stopIndex};
+    let merged;
+    for(const range of ranges) {
+      // если запрашиваемый диапазон внутри полученного ранее - выходим
+      if(range.stopIndex >= nrange.stopIndex && range.startIndex <= nrange.startIndex) {
+        return;
+      }
+      if(range.stopIndex >= nrange.startIndex && range.stopIndex <= nrange.stopIndex) {
+        range.stopIndex = Math.max(range.stopIndex, nrange.stopIndex);
+        merged = true;
+      }
+      if(range.startIndex <= nrange.stopIndex && range.startIndex >= nrange.startIndex) {
+        range.startIndex = Math.min(range.startIndex, nrange.startIndex);
+        merged = true;
+      }
+    }
+    if(!merged) {
+      ranges.push(nrange);
+    }
+
     for(let j = startIndex; j < stopIndex; j++) {
       fakeRows.set(j, {});
-      const nrange = {startIndex, stopIndex};
-      let merged;
-      for(const range of ranges) {
-        if(range.stopIndex >= nrange.startIndex && range.stopIndex <= nrange.stopIndex) {
-          range.stopIndex = Math.max(range.stopIndex, nrange.stopIndex);
-          merged = true;
-        }
-        if(range.startIndex <= nrange.stopIndex && range.startIndex >= nrange.startIndex) {
-          range.startIndex = Math.min(range.startIndex, nrange.startIndex);
-          merged = true;
-        }
-      }
-      if(!merged) {
-        ranges.push(nrange);
-      }
     }
 
     return Promise.resolve().then(() => {
