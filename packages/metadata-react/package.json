@@ -26,7 +26,7 @@
     "react-fullscreenable": "^2.5.1-0",
     "react-helmet": "^5.2",
     "react-onclickoutside": "^6.8",
-    "react-swipeable": "^5.0",
+    "react-swipeable": "^5.2",
     "react-virtualized": "^9.21",
     "recharts": "^1.5",
     "yamljs": "^0.3"
