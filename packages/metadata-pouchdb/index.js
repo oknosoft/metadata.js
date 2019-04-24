@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.19-beta.2, built:2019-04-21
+ metadata-pouchdb v2.0.19-beta.2, built:2019-04-24
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -844,6 +844,32 @@ function adapter({AbstracrAdapter}) {
       }
       return delay * 3;
     }
+    rerun_sync(id, options, sync_events) {
+      const {local, remote} = this;
+      const sync = local.sync[id];
+      const rerun = () => {
+        if(sync) {
+          sync.cancel();
+          sync.removeAllListeners();
+        }
+        setTimeout(() => {
+          local.sync[id] = sync_events(local[id].replicate.from(remote[id], options));
+          this.rerun_sync(id, options, sync_events);
+        }, 300000 + Math.floor(Math.random() * 60000));
+      };
+      if(sync) {
+        sync.listeners('complete').forEach((fn) => {
+          if(fn.toString().includes('(info)')) {
+            sync.removeListener('complete', fn);
+          }
+        });
+        sync.on('complete', rerun);
+        sync.on('error', rerun);
+      }
+      else {
+        rerun();
+      }
+    }
     run_sync(id) {
       const {local, remote, $p: {wsql, job_prm, record_log}, props} = this;
       if(local.sync[id]) {
@@ -909,12 +935,18 @@ function adapter({AbstracrAdapter}) {
               options.filter = 'auth/meta';
             }
             const final_sync = (options) => {
-              options.live = true;
               options.back_off_function = this.back_off;
               if(id == 'ram' || id == 'meta' || props.zone == job_prm.zone_demo) {
-                local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
+                options.live = !job_prm.crazy_ram;
+                if(options.live) {
+                  local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
+                }
+                else {
+                  this.rerun_sync(id, options, sync_events);
+                }
               }
               else if(_push_only) {
+                options.live = true;
                 if(options.filter) {
                   delete options.filter;
                   delete options.query_params;
@@ -922,6 +954,7 @@ function adapter({AbstracrAdapter}) {
                 local.sync[id] = sync_events(db_local.replicate.to(db_remote, Object.assign({}, options, {batch_size: 50})));
               }
               else {
+                options.live = true;
                 local.sync[id] = sync_events(db_local.sync(db_remote, options));
               }
             };
@@ -942,11 +975,11 @@ function adapter({AbstracrAdapter}) {
                   this.emit('pouch_sync_error', id, err);
                 })
                 .on('complete', (info) => {
-                  info.db = id;
-                  this.emit_async('repl_state', info);
                   sync.cancel();
                   sync.removeAllListeners();
                   if(options) {
+                    info.db = id;
+                    this.emit_async('repl_state', info);
                     final_sync(options);
                     this.rebuild_indexes(id)
                       .then(() => resolve(id));
@@ -979,7 +1012,10 @@ function adapter({AbstracrAdapter}) {
         });
     }
     from_dump(local, remote, opts = {}) {
-      const {utils} = this.$p;
+      const {utils, job_prm} = this.$p;
+      if(job_prm.crazy_ram && local === this.local.ram) {
+        return Promise.resolve(false);
+      }
       return local.get('_local/dumped')
         .then(() => true)
         .catch(() => remote.get('_local/dump'))
@@ -1053,6 +1089,10 @@ function adapter({AbstracrAdapter}) {
     from_files(local, remote, opts = {}) {
       const li = local.name.lastIndexOf('_');
       const id = local.name.substr(li + 1);
+      const {job_prm} = this.$p;
+      if(job_prm.crazy_ram && local === this.local.ram) {
+        return Promise.resolve(false);
+      }
       return fetch(`/${id}/00000.json`)
         .then((res) => res.json())
         .then((info) => {
