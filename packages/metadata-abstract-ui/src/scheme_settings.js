@@ -263,169 +263,176 @@ export default function scheme_settings() {
       const from = utils.moment();
       const till = from.clone();
       switch (standard_period) {
-        case period.yesterday:
-          this.date_from = from.subtract(1, 'days').startOf('day').toDate();
-          this.date_till = till.subtract(1, 'days').endOf('day').toDate();
-          break;
-        case period.today:
-          this.date_from = from.startOf('day').toDate();
-          this.date_till = till.endOf('day').toDate();
-          break;
-        case period.tomorrow:
-          this.date_from = from.add(1, 'days').startOf('day').toDate();
-          this.date_till = till.add(1, 'days').endOf('day').toDate();
-          break;
-        case period.last7days:
-          this.date_from = from.subtract(7, 'days').startOf('day').toDate();
-          this.date_till = till.endOf('day').toDate();
-          break;
-        case period.lastTendays:
-          const nf = from.clone();
-          (nf.date() > 10) ? nf.subtract(10, 'days') : nf.subtract(1, 'month').endOf('month');
-          const days_of_ten = 10 * Math.floor(nf.date() / 10);
-          this.date_from = from.startOf('month').add(days_of_ten, 'days').toDate();
-          const ed = from.clone();
-          ed.add(9, 'days');
-          this.date_till = (ed.month() > nf.month()) ? nf.endOf('month').toDate() : ed.endOf('day').toDate();
-          break;
-        case period.last30days:
-          this.date_from = from.subtract(30, 'days').startOf('day').toDate();
-          this.date_till = till.endOf('day').toDate();
-          break;
-        case period.last3Month:
-          this.date_from = from.subtract(2, 'month').startOf('month').toDate();
-          this.date_till = till.endOf('month').toDate();
-          break;
-        case period.lastWeek:
-          this.date_from = from.subtract(1, 'weeks').startOf('week').toDate();
-          this.date_till = till.subtract(1, 'weeks').endOf('week').toDate();
-          break;
-        case period.lastMonth:
-          this.date_from = from.subtract(1, 'month').startOf('month').toDate();
-          this.date_till = till.subtract(1, 'month').endOf('month').toDate();
-          break;
-        case period.lastQuarter:
-          this.date_from = from.subtract(1, 'quarters').startOf('quarter').toDate();
-          this.date_till = till.subtract(1, 'quarters').endOf('quarter').toDate();
-          break;
-        case period.lastHalfYear:
-          this.date_from = (from.quarter() >= 3) ? from.startOf('year').toDate() : from.subtract(from.quarter() + 1, 'quarters').startOf('quarter').toDate();
-          this.date_till = from.add(180, 'days').endOf('quarter').toDate();
-          break;
-        case period.lastYear:
-          this.date_from = from.subtract(1, 'years').startOf('year').toDate();
-          this.date_till = till.subtract(1, 'years').endOf('year').toDate();
-          break;
-        case period.next7Days:
-          this.date_from = from.add(1, 'days').startOf('day').toDate();
-          this.date_till = till.add(7, 'days').endOf('day').toDate();
-          break;
-        case period.nextTendays:
-          const dot = 10 * Math.floor(from.date() / 10) + 10;
-          const nf2 = from.clone().startOf('month').add(dot, 'days');
-          this.date_from = (nf2.month() > from.month()) ? nf2.startOf('month').toDate() : nf2.startOf('day').toDate();
-          const ed2 = nf2.clone();
-          ed2.add(9, 'days');
-          this.date_till = (ed2.month() > nf2.month()) ? nf2.endOf('month').toDate() : ed2.endOf('day').toDate();
-          break;
-        case period.nextWeek:
-          this.date_from = from.add(1, 'weeks').startOf('week').toDate();
-          this.date_till = till.add(1, 'weeks').endOf('week').toDate();
-          break;
-        case period.nextMonth:
-          this.date_from = from.add(1, 'months').startOf('month').toDate();
-          this.date_till = till.add(1, 'months').endOf('month').toDate();
-          break;
-        case period.nextQuarter:
-          this.date_from = from.add(1, 'quarters').startOf('quarter').toDate();
-          this.date_till = till.add(1, 'quarters').endOf('quarter').toDate();
-          break;
-        case period.nextHalfYear:
-          this.date_from = (from.quarter() <= 2) ? from.startOf('year').add(7, 'month').startOf('quarter').toDate() : from.add(1, 'year').startOf('year').toDate();
-          this.date_till = (till.quarter() <= 2) ? till.startOf('year').add(7, 'month').endOf('year').toDate() : till.add(1, 'year').startOf('year').add(5, 'month').endOf('quarter').toDate();
-          break;
-        case period.nextYear:
-          this.date_from = from.add(1, 'years').startOf('year').toDate();
-          this.date_till = till.add(1, 'years').endOf('year').toDate();
-          break;
-        case period.tillEndOfThisYear:
-          this.date_from = from.startOf('day').toDate();
-          this.date_till = till.endOf('year').toDate();
-          break;
-        case period.tillEndOfThisQuarter:
-          this.date_from = from.startOf('day').toDate();
-          this.date_till = till.endOf('quarter').toDate();
-          break;
-        case period.tillEndOfThisMonth:
-          this.date_from = from.startOf('day').toDate();
-          this.date_till = till.endOf('month').toDate();
-          break;
-        case period.tillEndOfThisHalfYear:
-          this.date_from = from.startOf('day').toDate();
-          this.date_till = (from.quarter() <= 2) ? from.startOf('year').add(5, 'month').endOf('quarter').toDate() : from.endOf('year').toDate()
-          break;
-        case period.tillEndOfThistendays:
-          this.date_from = from.startOf('day').toDate();
-          const dot2 = 10 * Math.floor(from.date() / 10) + 9;
-          const this_end_days = from.clone().startOf('month').add(dot2, 'days');
-          this.date_till = (this_end_days.month() > from.date()) ? from.endOf('month').toDate() : this_end_days.endOf('day').toDate();
-          break;
-        case period.tillEndOfThisweek:
-          this.date_from = from.startOf('day').toDate();
-          this.date_till = till.endOf('week').toDate();
-          break;
-        case period.fromBeginningOfThisYear:
-          this.date_from = from.startOf('year').toDate();
-          this.date_till = till.endOf('day').toDate();
-          break;
-        case period.fromBeginningOfThisQuarter:
-          this.date_from = from.startOf('quarter').toDate();
-          this.date_till = till.endOf('day').toDate();
-          break;
-        case period.fromBeginningOfThisMonth:
-          this.date_from = from.startOf('month').toDate();
-          this.date_till = till.endOf('day').toDate();
-          break;
-        case period.fromBeginningOfThisHalfYear:
-          this.date_from = (from.quarter() <= 2) ? from.startOf('year').toDate : from.startOf('year').add(7, 'month').startOf('quarter').toDate();
-          this.date_till = till.endOf('day').toDate();
-          break;
-        case period.fromBeginningOfThisTendays:
-          const dot4 = 10 * Math.floor(from.date() / 10);
-          this.date_from = from.startOf('month').add(dot4, 'days').toDate();
-          this.date_till = till.endOf('day').toDate();
-          break;
-        case period.fromBeginningOfThisWeek:
-          this.date_from = from.startOf('week').toDate();
-          this.date_till = till.endOf('day').toDate();
-          break;
-        case period.thisTenDays:
-          const dot5 = 10 * Math.floor(from.date() / 10);
-          this.date_from = from.startOf('month').add(dot5, 'days').toDate();
-          const dot6 = 10 * Math.floor(from.date() / 10) + 9;
-          const this_end_days2 = from.clone().startOf('month').add(dot6, 'days');
-          this.date_till = (this_end_days2.month() > from.date()) ? from.endOf('month').toDate() : this_end_days2.endOf('day').toDate();
-          break;
-        case period.thisWeek:
-          this.date_from = from.startOf('week').toDate();
-          this.date_till = till.endOf('week').toDate();
-          break;
-        case period.thisHalfYear:
-          this.date_from = (from.quarter() <= 2) ? from.startOf('year').toDate : from.startOf('year').add(7, 'month').startOf('quarter').toDate();
-          this.date_till = (from.quarter() <= 2) ? from.startOf('year').add(5, 'month').endOf('quarter').toDate() : from.endOf('year').toDate()
-          break;
-        case period.thisYear:
-          this.date_from = from.startOf('year').toDate();
-          this.date_till = till.endOf('year').toDate();
-          break;
-        case period.thisQuarter:
-          this.date_from = from.startOf('quarter').toDate();
-          this.date_till = till.endOf('quarter').toDate();
-          break;
-        case period.thisMonth:
-          this.date_from = from.startOf('month').toDate();
-          this.date_till = till.endOf('month').toDate();
-          break;
+      case period.yesterday:
+        this.date_from = from.subtract(1, 'days').startOf('day').toDate();
+        this.date_till = till.subtract(1, 'days').endOf('day').toDate();
+        break;
+      case period.today:
+        this.date_from = from.startOf('day').toDate();
+        this.date_till = till.endOf('day').toDate();
+        break;
+      case period.tomorrow:
+        this.date_from = from.add(1, 'days').startOf('day').toDate();
+        this.date_till = till.add(1, 'days').endOf('day').toDate();
+        break;
+      case period.last7days:
+        this.date_from = from.subtract(7, 'days').startOf('day').toDate();
+        this.date_till = till.endOf('day').toDate();
+        break;
+      case period.lastTendays:
+        const nf = from.clone();
+        (nf.date() > 10) ? nf.subtract(10, 'days') : nf.subtract(1, 'month').endOf('month');
+        const days_of_ten = 10 * Math.floor(nf.date() / 10);
+        this.date_from = from.startOf('month').add(days_of_ten, 'days').toDate();
+        const ed = from.clone();
+        ed.add(9, 'days');
+        this.date_till = (ed.month() > nf.month()) ? nf.endOf('month').toDate() : ed.endOf('day').toDate();
+        break;
+      case period.last30days:
+        this.date_from = from.subtract(30, 'days').startOf('day').toDate();
+        this.date_till = till.endOf('day').toDate();
+        break;
+      case period.last3Month:
+        this.date_from = from.subtract(2, 'month').startOf('month').toDate();
+        this.date_till = till.endOf('month').toDate();
+        break;
+      case period.last6Month:
+        this.date_from = from.subtract(5, 'month').startOf('month').toDate();
+        this.date_till = till.endOf('month').toDate();
+        break;
+      case period.lastWeek:
+        this.date_from = from.subtract(1, 'weeks').startOf('week').toDate();
+        this.date_till = till.subtract(1, 'weeks').endOf('week').toDate();
+        break;
+      case period.lastMonth:
+        this.date_from = from.subtract(1, 'month').startOf('month').toDate();
+        this.date_till = till.subtract(1, 'month').endOf('month').toDate();
+        break;
+      case period.lastQuarter:
+        this.date_from = from.subtract(1, 'quarters').startOf('quarter').toDate();
+        this.date_till = till.subtract(1, 'quarters').endOf('quarter').toDate();
+        break;
+      case period.lastHalfYear:
+        this.date_from = (from.quarter() >= 3) ? from.startOf('year').toDate() :
+          from.subtract(from.quarter() + 1, 'quarters').startOf('quarter').toDate();
+        this.date_till = from.add(180, 'days').endOf('quarter').toDate();
+        break;
+      case period.lastYear:
+        this.date_from = from.subtract(1, 'years').startOf('year').toDate();
+        this.date_till = till.subtract(1, 'years').endOf('year').toDate();
+        break;
+      case period.next7Days:
+        this.date_from = from.add(1, 'days').startOf('day').toDate();
+        this.date_till = till.add(7, 'days').endOf('day').toDate();
+        break;
+      case period.nextTendays:
+        const dot = 10 * Math.floor(from.date() / 10) + 10;
+        const nf2 = from.clone().startOf('month').add(dot, 'days');
+        this.date_from = (nf2.month() > from.month()) ? nf2.startOf('month').toDate() : nf2.startOf('day').toDate();
+        const ed2 = nf2.clone();
+        ed2.add(9, 'days');
+        this.date_till = (ed2.month() > nf2.month()) ? nf2.endOf('month').toDate() : ed2.endOf('day').toDate();
+        break;
+      case period.nextWeek:
+        this.date_from = from.add(1, 'weeks').startOf('week').toDate();
+        this.date_till = till.add(1, 'weeks').endOf('week').toDate();
+        break;
+      case period.nextMonth:
+        this.date_from = from.add(1, 'months').startOf('month').toDate();
+        this.date_till = till.add(1, 'months').endOf('month').toDate();
+        break;
+      case period.nextQuarter:
+        this.date_from = from.add(1, 'quarters').startOf('quarter').toDate();
+        this.date_till = till.add(1, 'quarters').endOf('quarter').toDate();
+        break;
+      case period.nextHalfYear:
+        this.date_from = (from.quarter() <= 2) ? from.startOf('year').add(7, 'month').startOf('quarter').toDate() :
+          from.add(1, 'year').startOf('year').toDate();
+        this.date_till = (till.quarter() <= 2) ? till.startOf('year').add(7, 'month').endOf('year').toDate() :
+          till.add(1, 'year').startOf('year').add(5, 'month').endOf('quarter').toDate();
+        break;
+      case period.nextYear:
+        this.date_from = from.add(1, 'years').startOf('year').toDate();
+        this.date_till = till.add(1, 'years').endOf('year').toDate();
+        break;
+      case period.tillEndOfThisYear:
+        this.date_from = from.startOf('day').toDate();
+        this.date_till = till.endOf('year').toDate();
+        break;
+      case period.tillEndOfThisQuarter:
+        this.date_from = from.startOf('day').toDate();
+        this.date_till = till.endOf('quarter').toDate();
+        break;
+      case period.tillEndOfThisMonth:
+        this.date_from = from.startOf('day').toDate();
+        this.date_till = till.endOf('month').toDate();
+        break;
+      case period.tillEndOfThisHalfYear:
+        this.date_from = from.startOf('day').toDate();
+        this.date_till = (from.quarter() <= 2) ? from.startOf('year').add(5, 'month').endOf('quarter').toDate() : from.endOf('year').toDate();
+        break;
+      case period.tillEndOfThistendays:
+        this.date_from = from.startOf('day').toDate();
+        const dot2 = 10 * Math.floor(from.date() / 10) + 9;
+        const this_end_days = from.clone().startOf('month').add(dot2, 'days');
+        this.date_till = (this_end_days.month() > from.date()) ? from.endOf('month').toDate() : this_end_days.endOf('day').toDate();
+        break;
+      case period.tillEndOfThisweek:
+        this.date_from = from.startOf('day').toDate();
+        this.date_till = till.endOf('week').toDate();
+        break;
+      case period.fromBeginningOfThisYear:
+        this.date_from = from.startOf('year').toDate();
+        this.date_till = till.endOf('day').toDate();
+        break;
+      case period.fromBeginningOfThisQuarter:
+        this.date_from = from.startOf('quarter').toDate();
+        this.date_till = till.endOf('day').toDate();
+        break;
+      case period.fromBeginningOfThisMonth:
+        this.date_from = from.startOf('month').toDate();
+        this.date_till = till.endOf('day').toDate();
+        break;
+      case period.fromBeginningOfThisHalfYear:
+        this.date_from = (from.quarter() <= 2) ? from.startOf('year').toDate : from.startOf('year').add(7, 'month').startOf('quarter').toDate();
+        this.date_till = till.endOf('day').toDate();
+        break;
+      case period.fromBeginningOfThisTendays:
+        const dot4 = 10 * Math.floor(from.date() / 10);
+        this.date_from = from.startOf('month').add(dot4, 'days').toDate();
+        this.date_till = till.endOf('day').toDate();
+        break;
+      case period.fromBeginningOfThisWeek:
+        this.date_from = from.startOf('week').toDate();
+        this.date_till = till.endOf('day').toDate();
+        break;
+      case period.thisTenDays:
+        const dot5 = 10 * Math.floor(from.date() / 10);
+        this.date_from = from.startOf('month').add(dot5, 'days').toDate();
+        const dot6 = 10 * Math.floor(from.date() / 10) + 9;
+        const this_end_days2 = from.clone().startOf('month').add(dot6, 'days');
+        this.date_till = (this_end_days2.month() > from.date()) ? from.endOf('month').toDate() : this_end_days2.endOf('day').toDate();
+        break;
+      case period.thisWeek:
+        this.date_from = from.startOf('week').toDate();
+        this.date_till = till.endOf('week').toDate();
+        break;
+      case period.thisHalfYear:
+        this.date_from = (from.quarter() <= 2) ? from.startOf('year').toDate : from.startOf('year').add(7, 'month').startOf('quarter').toDate();
+        this.date_till = (from.quarter() <= 2) ? from.startOf('year').add(5, 'month').endOf('quarter').toDate() : from.endOf('year').toDate();
+        break;
+      case period.thisYear:
+        this.date_from = from.startOf('year').toDate();
+        this.date_till = till.endOf('year').toDate();
+        break;
+      case period.thisQuarter:
+        this.date_from = from.startOf('quarter').toDate();
+        this.date_till = till.endOf('quarter').toDate();
+        break;
+      case period.thisMonth:
+        this.date_from = from.startOf('month').toDate();
+        this.date_till = till.endOf('month').toDate();
+        break;
 
       }
       _data._standard_period_setted = true;

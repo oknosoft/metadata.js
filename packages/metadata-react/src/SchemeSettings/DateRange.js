@@ -36,8 +36,28 @@ export default class DateRange extends Component {
     this.state = this.initState(props);
   }
 
+  componentDidMount() {
+    this.props._obj && this.props._obj._manager.on('update', this.onDataChange);
+  }
+
+  componentWillUnmount() {
+    this.props._obj && this.props._obj._manager.off('update', this.onDataChange);
+  }
+
+  onDataChange = (obj, fields) => {
+    const {props} = this;
+    if(obj === props._obj && (fields.hasOwnProperty(`${props._fld}_from`) || fields.hasOwnProperty(`${props._fld}_till`))) {
+      this.setState(this.initState(props));
+    }
+  }
+
   shouldComponentUpdate(nextProps) {
-    if(this.props._obj !== nextProps._obj || this.props._fld !== nextProps._fld) {
+    const {_obj, _fld} = this.props;
+    if(_obj !== nextProps._obj) {
+      this.componentWillUnmount();
+      this.componentDidMount();
+    }
+    if(_obj !== nextProps._obj || _fld !== nextProps._fld) {
       this.setState(this.initState(nextProps));
       return false;
     }

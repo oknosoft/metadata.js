@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.19-beta.2, built:2019-04-21
+ metadata-abstract-ui v2.0.19-beta.2, built:2019-04-24
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -229,156 +229,161 @@ var meta = {
           },
           {
             order: 7,
+            name: 'last6Month',
+            synonym: 'Последние 6 месяцев'
+          },
+          {
+            order: 8,
             name: 'lastWeek',
             synonym: 'Прошлая неделя'
           },
           {
-            order: 8,
+            order: 9,
             name: 'lastTendays',
             synonym: 'Прошлая декада'
           },
           {
-            order: 9,
+            order: 10,
             name: 'lastMonth',
             synonym: 'Прошлый месяц'
           },
           {
-            order: 10,
+            order: 11,
             name: 'lastQuarter',
             synonym: 'Прошлый квартал'
           },
           {
-            order: 11,
+            order: 12,
             name: 'lastHalfYear',
             synonym: 'Прошлое полугодие'
           },
           {
-            order: 12,
+            order: 13,
             name: 'lastYear',
             synonym: 'Прошлый год'
           },
           {
-            order: 13,
+            order: 14,
             name: 'next7Days',
             synonym: 'Следующие 7 дней'
           },
           {
-            order: 14,
+            order: 15,
             name: 'nextTendays',
             synonym: 'Следующая декада'
           },
           {
-            order: 15,
+            order: 16,
             name: 'nextWeek',
             synonym: 'Следующая неделя'
           },
           {
-            order: 16,
+            order: 17,
             name: 'nextMonth',
             synonym: 'Следующий месяц'
           },
           {
-            order: 17,
+            order: 18,
             name: 'nextQuarter',
             synonym: 'Следующий квартал'
           },
           {
-            order: 18,
+            order: 19,
             name: 'nextHalfYear',
             synonym: 'Следующее полугодие'
           },
           {
-            order: 19,
+            order: 20,
             name: 'nextYear',
             synonym: 'Следующий год'
           },
           {
-            order: 20,
+            order: 21,
             name: 'tillEndOfThisYear',
             synonym: 'До конца этого года'
           },
           {
-            order: 21,
+            order: 22,
             name: 'tillEndOfThisQuarter',
             synonym: 'До конца этого квартала'
           },
           {
-            order: 22,
+            order: 23,
             name: 'tillEndOfThisMonth',
             synonym: 'До конца этого месяца'
           },
           {
-            order: 23,
+            order: 24,
             name: 'tillEndOfThisHalfYear',
             synonym: 'До конца этого полугодия'
           },
           {
-            order: 24,
+            order: 25,
             name: 'tillEndOfThistendays',
             synonym: 'До конца этой декады'
           },
           {
-            order: 25,
+            order: 26,
             name: 'tillEndOfThisweek',
             synonym: 'До конца этой недели'
           },
           {
-            order: 26,
+            order: 27,
             name: 'fromBeginningOfThisYear',
             synonym: 'С начала этого года'
           },
           {
-            order: 27,
+            order: 28,
             name: 'fromBeginningOfThisQuarter',
             synonym: 'С начала этого квартала'
           },
           {
-            order: 28,
+            order: 29,
             name: 'fromBeginningOfThisMonth',
             synonym: 'С начала этого месяца'
           },
           {
-            order: 29,
+            order: 30,
             name: 'fromBeginningOfThisHalfYear',
             synonym: 'С начала этого полугодия'
           },
           {
-            order: 30,
+            order: 31,
             name: 'fromBeginningOfThisTendays',
             synonym: 'С начала этой декады'
           },
           {
-            order: 31,
+            order: 32,
             name: 'fromBeginningOfThisWeek',
             synonym: 'С начала этой недели'
           },
           {
-            order: 32,
+            order: 33,
             name: 'thisTenDays',
             synonym: 'Эта декада'
           },
           {
-            order: 33,
+            order: 34,
             name: 'thisWeek',
             synonym: 'Эта неделя'
           },
           {
-            order: 34,
+            order: 35,
             name: 'thisHalfYear',
             synonym: 'Это полугодие'
           },
           {
-            order: 35,
+            order: 36,
             name: 'thisYear',
             synonym: 'Этот год'
           },
           {
-            order: 36,
+            order: 37,
             name: 'thisQuarter',
             synonym: 'Этот квартал'
           },
           {
-            order: 37,
+            order: 38,
             name: 'thisMonth',
             synonym: 'Этот месяц'
           },
