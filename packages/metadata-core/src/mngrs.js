@@ -559,19 +559,21 @@ export class RefDataManager extends DataManager{
 	 * @param fn {Function} - функция, вызываемая для каждого элемента локальной коллекции
 	 */
 	each(fn){
-		for(var i in this.by_ref){
-			if(!i || i == utils.blank.guid)
-				continue;
-			if(fn.call(this, this.by_ref[i]) == true)
-				break;
-		}
-	}
+    for (const i in this.by_ref) {
+      if(!i || i === utils.blank.guid) {
+        continue;
+      }
+      if(fn.call(this, this.by_ref[i]) === true) {
+        break;
+      }
+    }
+  }
 
 	/**
 	 * Синоним для each()
 	 */
 	forEach(fn) {
-		return this.each.call(this, fn);
+		return this.each(fn);
 	}
 
 	/**

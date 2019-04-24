@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.19-beta.2, built:2019-04-21
+ metadata-core v2.0.19-beta.2, built:2019-04-24
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1812,15 +1812,17 @@ class RefDataManager extends DataManager{
 			this.by_ref[o.ref] = o;
 	}
 	each(fn){
-		for(var i in this.by_ref){
-			if(!i || i == utils.blank.guid)
-				continue;
-			if(fn.call(this, this.by_ref[i]) == true)
-				break;
-		}
-	}
+    for (const i in this.by_ref) {
+      if(!i || i === utils.blank.guid) {
+        continue;
+      }
+      if(fn.call(this, this.by_ref[i]) === true) {
+        break;
+      }
+    }
+  }
 	forEach(fn) {
-		return this.each.call(this, fn);
+		return this.each(fn);
 	}
 	get(ref, do_not_create){
 		const rp = 'promise';
