@@ -84,6 +84,9 @@ const styles = theme => ({
     '& p, & ul, & ol': {
       lineHeight: 1.6,
     },
+    '& img': {
+      maxWidth: '100%',
+    },
     '& table': {
       width: '100%',
       display: 'block',

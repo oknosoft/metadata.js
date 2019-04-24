@@ -66,8 +66,11 @@ class DynList extends MDNRComponent {
   // при изменении настроек или варианта компоновки
   handleSchemeChange = (scheme) => {
     scheme.set_default();
+    const {props: {handlers, _mgr}, _meta: {fields}} = this;
+    handlers.handleSchemeChange && handlers.handleSchemeChange(scheme);
+
     // пересчитываем и перерисовываем динсписок
-    const columns = scheme.rx_columns({mode: 'ts', fields: this._meta.fields, _mgr: this.props._mgr});
+    const columns = scheme.rx_columns({mode: 'ts', fields, _mgr});
     this.handleFilterChange(scheme, columns);
   };
 
