@@ -51,7 +51,7 @@ class DataObj extends MDNRComponent {
 
   componentWillUnmount() {
     this.props._mgr.off('update', this.onDataChange);
-    this.state._obj.is_new() && this.state._obj.unload();
+    this.state._obj && this.state._obj.is_new() && this.state._obj.unload();
   }
 
   handlePost() {
