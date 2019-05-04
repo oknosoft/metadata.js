@@ -55,8 +55,13 @@ class FieldInfinit extends AbstractField {
       _obj[_fld] = value;
       value = _obj[_fld];
       this.handleCloseDialog();
-      handleValueChange && handleValueChange(value);
-      this.downshift && this.downshift.selectItem(value, {inputValue: suggestionText(value)});
+      const loader = value && value.is_new() ? value.load() : Promise.resolve();
+      loader
+        .catch(() => null)
+        .then(() => {
+          handleValueChange && handleValueChange(value);
+          this.downshift && this.downshift.selectItem(value, {inputValue: suggestionText(value)});
+        });
     }
   };
 
