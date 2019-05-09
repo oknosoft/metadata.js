@@ -114,40 +114,37 @@ function OCombo(attr){
     }
 
     // для связей параметров выбора, значение берём из объекта
-		if(_meta.choice_links)
-			_meta.choice_links.forEach(({name, path}) => {
-				if(name && name[0] == "selection"){
-					if($p.utils.is_tabular(_obj)){
-						if(path.length < 2)
-							filter[name[1]] = typeof path[0] == "function" ? path[0] : _obj._owner._owner[path[0]];
-						else{
-							if(name[1] == "owner" && !_mgr.metadata().has_owners){
-								return;
-							}
-							filter[name[1]] = _obj[path[1]];
-						}
-					}else{
-						filter[name[1]] = typeof path[0] == "function" ? path[0] : _obj[path[0]];
-					}
-				}
-			});
+    _meta.choice_links && _meta.choice_links.forEach(({name, path}) => {
+      if(name && name[0] == "selection"){
+        if($p.utils.is_tabular(_obj)){
+          if(path.length < 2)
+            filter[name[1]] = typeof path[0] == "function" ? path[0] : _obj._owner._owner[path[0]];
+          else{
+            if(name[1] == "owner" && !_mgr.metadata().has_owners){
+              return;
+            }
+            filter[name[1]] = _obj[path[1]];
+          }
+        }else{
+          filter[name[1]] = typeof path[0] == "function" ? path[0] : _obj[path[0]];
+        }
+      }
+    });
 
 		// у параметров выбора, значение живёт внутри отбора
-		if(_meta.choice_params){
-      _meta.choice_params.forEach(({name, path}) => {
-        const fval = Array.isArray(path) ? {in: path} : path;
-        if(!filter[name]) {
-          filter[name] = fval;
-        }
-        else if(Array.isArray(filter[name])) {
-          filter[name].push(fval);
-        }
-        else {
-          filter[name] = [filter[name]];
-          filter[name].push(fval);
-        }
-      });
-    }
+    _meta.choice_params && _meta.choice_params.forEach(({name, path}) => {
+      const fval = Array.isArray(path) ? {in: path} : path;
+      if(!filter[name]) {
+        filter[name] = fval;
+      }
+      else if(Array.isArray(filter[name])) {
+        filter[name].push(fval);
+      }
+      else {
+        filter[name] = [filter[name]];
+        filter[name].push(fval);
+      }
+    });
 
 		// если в метаданных указано строить список по локальным данным, подмешиваем эту информацию в фильтр
     if(_meta._option_list_local) {

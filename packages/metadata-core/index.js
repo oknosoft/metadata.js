@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.19-beta.3, built:2019-05-01
+ metadata-core v2.0.19-beta.3, built:2019-05-09
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1966,12 +1966,13 @@ class RefDataManager extends DataManager{
 			res = {}, f, f0, trunc_index = 0,
 			action = attr && attr.action ? attr.action : "create_table";
 		function sql_selection(){
-			var ignore_parent = !attr.parent,
+			let ignore_parent = !attr.parent,
 				parent = attr.parent || utils.blank.guid,
 				owner,
 				initial_value = attr.initial_value || utils.blank.guid,
 				filter = attr.filter || "",
 				set_parent = utils.blank.guid;
+      const and = '\n AND ';
 			function list_flds(){
 				var flds = [], s = "_t_.ref, _t_.`_deleted`";
 				if(cmd.form && cmd.form.selection){
@@ -2069,79 +2070,91 @@ class RefDataManager extends DataManager{
 						s += " OR _t_.id LIKE '" + filter + "'";
 				}
 				s += ") AND (_t_.ref != '" + utils.blank.guid + "')";
+				const sel_el = (sel) => {
+          for(let key in sel){
+            if(typeof sel[key] == "function"){
+              s += and + sel[key](t, key) + " ";
+            }
+            else if(Array.isArray(sel[key])) {
+              sel[key].forEach((el) => sel_el({[key]: el}));
+            }
+            else if(cmd.fields.hasOwnProperty(key) || key === "ref"){
+              if(sel[key] === true){
+                s += and + "_t_." + key + " ";
+              }
+              else if(sel[key] === false){
+                s += and + "(not _t_." + key + ") ";
+              }
+              else if(typeof sel[key] == "object"){
+                if(utils.is_data_obj(sel[key]) || utils.is_guid(sel[key])){
+                  s += and + "(_t_." + key + " = '" + sel[key] + "') ";
+                }
+                else{
+                  var keys = Object.keys(sel[key]),
+                    val = sel[key][keys[0]],
+                    mf = cmd.fields[key] || t.metadata(key),
+                    vmgr;
+                  if(mf && mf.type.is_ref){
+                    vmgr = t.value_mgr({}, key, mf.type, true, val);
+                  }
+                  if(keys[0] == "not"){
+                    s += and + "(not _t_." + key + " = '" + val + "') ";
+                  }
+                  else if(keys[0] == "in"){
+                    s += and +  "(_t_." + key + " in (" + (Array.isArray(val) ? val : [val]).reduce((sum, val) => {
+                      if(sum){
+                        sum+=",";
+                      }
+                      sum+= typeof val == "number" ? val.toString() : "'" + val + "'";
+                      return  sum;
+                    }, "") + ")) ";
+                  }
+                  else if(keys[0] == "nin"){
+                    s += and +  "(_t_." + key + " not in (" + (Array.isArray(val) ? val : [val]).reduce((sum, val) => {
+                      if(sum){
+                        sum+=",";
+                      }
+                      sum+= typeof val == "number" ? val.toString() : "'" + val + "'";
+                      return  sum;
+                    }, "") + ")) ";
+                  }
+                  else if(keys[0] == "inh"){
+                    const folders = [];
+                    (Array.isArray(val) ? val : [val]).forEach((val) => {
+                      const folder = vmgr.get(val, true);
+                      if(folder) {
+                        if(folders.indexOf(folder) === -1){
+                          folders.push(folder);
+                          folder.is_folder && folder._children().forEach((child) => folders.indexOf(child) === -1 && folders.push(child));
+                        }
+                      }
+                    });
+                    s += and +  "(_t_." + key + " in (" + folders.reduce((sum, val) => {
+                      if(sum){
+                        sum+=",";
+                      }
+                      sum+= "'" + val.ref + "'";
+                      return  sum;
+                    }, "") + ")) ";
+                  }
+                  else{
+                    s += and + "(_t_." + key + " = '" + val + "') ";
+                  }
+                }
+              }else if(typeof sel[key] == "string")
+                s += and + "(_t_." + key + " = '" + sel[key] + "') ";
+              else
+                s += and + "(_t_." + key + " = " + sel[key] + ") ";
+            }
+            else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy);
+          }
+        };
 				if(attr.selection){
 					if(typeof attr.selection === "function"){
             attr.selection(s);
 					}
 					else{
-					  const and = "\n AND ";
-            attr.selection.forEach(sel => {
-              for(var key in sel){
-                if(typeof sel[key] == "function"){
-                  s += and + sel[key](t, key) + " ";
-                }
-                else if(cmd.fields.hasOwnProperty(key) || key === "ref"){
-                  if(sel[key] === true){
-                    s += and + "_t_." + key + " ";
-                  }
-                  else if(sel[key] === false){
-                    s += and + "(not _t_." + key + ") ";
-                  }
-                  else if(typeof sel[key] == "object"){
-                    if(utils.is_data_obj(sel[key]) || utils.is_guid(sel[key])){
-                      s += and + "(_t_." + key + " = '" + sel[key] + "') ";
-                    }
-                    else{
-                      var keys = Object.keys(sel[key]),
-                        val = sel[key][keys[0]],
-                        mf = cmd.fields[key] || t.metadata(key),
-                        vmgr;
-                      if(mf && mf.type.is_ref){
-                        vmgr = t.value_mgr({}, key, mf.type, true, val);
-                      }
-                      if(keys[0] == "not"){
-                        s += and + "(not _t_." + key + " = '" + val + "') ";
-                      }
-                      else if(keys[0] == "in"){
-                        s += and +  "(_t_." + key + " in (" + (Array.isArray(val) ? val : [val]).reduce((sum, val) => {
-                          if(sum){
-                            sum+=",";
-                          }
-                          sum+= typeof val == "number" ? val.toString() : "'" + val + "'";
-                          return  sum;
-                        }, "") + ")) ";
-                      }
-                      else if(keys[0] == "inh"){
-                        const folders = [];
-                        (Array.isArray(val) ? val : [val]).forEach((val) => {
-                          const folder = vmgr.get(val, true);
-                          if(folder) {
-                            if(folders.indexOf(folder) === -1){
-                              folders.push(folder);
-                              folder.is_folder && folder._children().forEach((child) => folders.indexOf(child) === -1 && folders.push(child));
-                            }
-                          }
-                        });
-                        s += and +  "(_t_." + key + " in (" + folders.reduce((sum, val) => {
-                          if(sum){
-                            sum+=",";
-                          }
-                          sum+= "'" + val.ref + "'";
-                          return  sum;
-                        }, "") + ")) ";
-                      }
-                      else{
-                        s += and + "(_t_." + key + " = '" + val + "') ";
-                      }
-                    }
-                  }else if(typeof sel[key] == "string")
-                    s += and + "(_t_." + key + " = '" + sel[key] + "') ";
-                  else
-                    s += and + "(_t_." + key + " = " + sel[key] + ") ";
-                }
-                else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy);
-              }
-            });
+            attr.selection.forEach(sel_el);
           }
 				}
 				return s;
@@ -3367,17 +3380,25 @@ const utils = {
 						if (!ok)
 							break;
 					}
-					else if (j == 'or' && Array.isArray(sel)) {
-						ok = sel.some((el) => {
-							const key = Object.keys(el)[0];
-							if (el[key].hasOwnProperty('like'))
-								return o[key] && o[key].toLowerCase().indexOf(el[key].like.toLowerCase()) != -1;
-							else
-								return utils.is_equal(o[key], el[key]);
-						});
-						if (!ok)
-							break;
-					}
+					else if (Array.isArray(sel)) {
+					  if(j === 'or') {
+              ok = sel.some((el) => {
+                const key = Object.keys(el)[0];
+                if (el[key].hasOwnProperty('like'))
+                  return o[key] && o[key].toLowerCase().indexOf(el[key].like.toLowerCase()) != -1;
+                else
+                  return utils.is_equal(o[key], el[key]);
+              });
+            }
+					  else {
+              ok = sel.every((el) => {
+                return utils._selection(o, {[j]: el});
+              });
+            }
+            if(!ok) {
+              break;
+            }
+          }
 					else if (is_obj && sel.hasOwnProperty('like')) {
 						if (!o[j] || o[j].toLowerCase().indexOf(sel.like.toLowerCase()) == -1) {
 							ok = false;
@@ -3406,37 +3427,50 @@ const utils = {
 					else if (is_obj && (sel.hasOwnProperty('in') || sel.hasOwnProperty('$in'))) {
 					  const arr = sel.in || sel.$in;
 						ok = arr.some((el) => utils.is_equal(el, o[j]));
-						if (!ok)
-							break;
-					}
+            if(!ok) {
+              break;
+            }
+          }
+          else if (is_obj && (sel.hasOwnProperty('nin') || sel.hasOwnProperty('$nin'))) {
+            const arr = sel.nin || sel.$nin;
+            ok = arr.every((el) => !utils.is_equal(el, o[j]));
+            if(!ok) {
+              break;
+            }
+          }
           else if (is_obj && sel.hasOwnProperty('inh')) {
             ok = j === 'ref' ? o._hierarchy && o._hierarchy(sel.inh) : o[j]._hierarchy && o[j]._hierarchy(sel.inh);
-            if (!ok)
+            if(!ok) {
               break;
+            }
           }
           else if (is_obj && sel.hasOwnProperty('ninh')) {
             ok = !(j === 'ref' ? o._hierarchy && o._hierarchy(sel.inh) : o[j]._hierarchy && o[j]._hierarchy(sel.inh));
-            if (!ok)
+            if(!ok) {
               break;
+            }
           }
 					else if (is_obj && sel.hasOwnProperty('lt')) {
 						ok = o[j] < sel.lt;
-						if (!ok)
-							break;
-					}
+            if(!ok) {
+              break;
+            }
+          }
 					else if (is_obj && sel.hasOwnProperty('gt')) {
 						ok = o[j] > sel.gt;
-						if (!ok)
-							break;
-					}
+            if(!ok) {
+              break;
+            }
+          }
 					else if (is_obj && sel.hasOwnProperty('between')) {
 						var tmp = o[j];
 						if (typeof tmp != 'number')
 							tmp = utils.fix_date(o[j]);
 						ok = (tmp >= sel.between[0]) && (tmp <= sel.between[1]);
-						if (!ok)
-							break;
-					}
+            if(!ok) {
+              break;
+            }
+          }
 					else if (!utils.is_equal(o[j], sel)) {
 						ok = false;
 						break;

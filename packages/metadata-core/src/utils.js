@@ -729,18 +729,27 @@ const utils = {
 						if (!ok)
 							break;
 					}
-					// если свойство отбора является объектом `or`, выполняем Array.some() TODO: здесь напрашивается рекурсия
-					else if (j == 'or' && Array.isArray(sel)) {
-						ok = sel.some((el) => {
-							const key = Object.keys(el)[0];
-							if (el[key].hasOwnProperty('like'))
-								return o[key] && o[key].toLowerCase().indexOf(el[key].like.toLowerCase()) != -1;
-							else
-								return utils.is_equal(o[key], el[key]);
-						});
-						if (!ok)
-							break;
-					}
+					else if (Array.isArray(sel)) {
+            // если свойство отбора является объектом `or`, выполняем Array.some() TODO: здесь напрашивается рекурсия
+					  if(j === 'or') {
+              ok = sel.some((el) => {
+                const key = Object.keys(el)[0];
+                if (el[key].hasOwnProperty('like'))
+                  return o[key] && o[key].toLowerCase().indexOf(el[key].like.toLowerCase()) != -1;
+                else
+                  return utils.is_equal(o[key], el[key]);
+              });
+            }
+            // выполняем все отборы текущего sel
+					  else {
+              ok = sel.every((el) => {
+                return utils._selection(o, {[j]: el});
+              });
+            }
+            if(!ok) {
+              break;
+            }
+          }
 					// если свойство отбора является объектом `like`, сравниваем подстроку
 					else if (is_obj && sel.hasOwnProperty('like')) {
 						if (!o[j] || o[j].toLowerCase().indexOf(sel.like.toLowerCase()) == -1) {
@@ -774,42 +783,56 @@ const utils = {
 					else if (is_obj && (sel.hasOwnProperty('in') || sel.hasOwnProperty('$in'))) {
 					  const arr = sel.in || sel.$in;
 						ok = arr.some((el) => utils.is_equal(el, o[j]));
-						if (!ok)
-							break;
-					}
+            if(!ok) {
+              break;
+            }
+          }
+          // если свойство отбора является объектом `nin`, выполняем Array.every(!=)
+          else if (is_obj && (sel.hasOwnProperty('nin') || sel.hasOwnProperty('$nin'))) {
+            const arr = sel.nin || sel.$nin;
+            ok = arr.every((el) => !utils.is_equal(el, o[j]));
+            if(!ok) {
+              break;
+            }
+          }
           // если свойство отбора является объектом `inh`, вычисляем иерархию
           else if (is_obj && sel.hasOwnProperty('inh')) {
             ok = j === 'ref' ? o._hierarchy && o._hierarchy(sel.inh) : o[j]._hierarchy && o[j]._hierarchy(sel.inh);
-            if (!ok)
+            if(!ok) {
               break;
+            }
           }
           // если свойство отбора является объектом `ninh`, вычисляем иерархию
           else if (is_obj && sel.hasOwnProperty('ninh')) {
             ok = !(j === 'ref' ? o._hierarchy && o._hierarchy(sel.inh) : o[j]._hierarchy && o[j]._hierarchy(sel.inh));
-            if (!ok)
+            if(!ok) {
               break;
+            }
           }
 					// если свойство отбора является объектом `lt`, сравниваем на _меньше_
 					else if (is_obj && sel.hasOwnProperty('lt')) {
 						ok = o[j] < sel.lt;
-						if (!ok)
-							break;
-					}
+            if(!ok) {
+              break;
+            }
+          }
 					// если свойство отбора является объектом `gt`, сравниваем на _больше_
 					else if (is_obj && sel.hasOwnProperty('gt')) {
 						ok = o[j] > sel.gt;
-						if (!ok)
-							break;
-					}
+            if(!ok) {
+              break;
+            }
+          }
 					// если свойство отбора является объектом `between`, сравниваем на _вхождение_
 					else if (is_obj && sel.hasOwnProperty('between')) {
 						var tmp = o[j];
 						if (typeof tmp != 'number')
 							tmp = utils.fix_date(o[j]);
 						ok = (tmp >= sel.between[0]) && (tmp <= sel.between[1]);
-						if (!ok)
-							break;
-					}
+            if(!ok) {
+              break;
+            }
+          }
 					else if (!utils.is_equal(o[j], sel)) {
 						ok = false;
 						break;

@@ -792,12 +792,13 @@ export class RefDataManager extends DataManager{
 
 		function sql_selection(){
 
-			var ignore_parent = !attr.parent,
+			let ignore_parent = !attr.parent,
 				parent = attr.parent || utils.blank.guid,
 				owner,
 				initial_value = attr.initial_value || utils.blank.guid,
 				filter = attr.filter || "",
 				set_parent = utils.blank.guid;
+      const and = '\n AND ';
 
 			function list_flds(){
 				var flds = [], s = "_t_.ref, _t_.`_deleted`";
@@ -912,6 +913,98 @@ export class RefDataManager extends DataManager{
 
 				s += ") AND (_t_.ref != '" + utils.blank.guid + "')";
 
+				// добавляет условие
+				const sel_el = (sel) => {
+          for(let key in sel){
+            if(typeof sel[key] == "function"){
+              s += and + sel[key](t, key) + " ";
+            }
+            else if(Array.isArray(sel[key])) {
+              sel[key].forEach((el) => sel_el({[key]: el}));
+            }
+            else if(cmd.fields.hasOwnProperty(key) || key === "ref"){
+              if(sel[key] === true){
+                s += and + "_t_." + key + " ";
+              }
+              else if(sel[key] === false){
+                s += and + "(not _t_." + key + ") ";
+              }
+              else if(typeof sel[key] == "object"){
+                if(utils.is_data_obj(sel[key]) || utils.is_guid(sel[key])){
+                  s += and + "(_t_." + key + " = '" + sel[key] + "') ";
+                }
+                else{
+                  var keys = Object.keys(sel[key]),
+                    val = sel[key][keys[0]],
+                    mf = cmd.fields[key] || t.metadata(key),
+                    vmgr;
+
+                  if(mf && mf.type.is_ref){
+                    vmgr = t.value_mgr({}, key, mf.type, true, val);
+                  }
+
+                  if(keys[0] == "not"){
+                    s += and + "(not _t_." + key + " = '" + val + "') ";
+                  }
+                  else if(keys[0] == "in"){
+                    s += and +  "(_t_." + key + " in (" + (Array.isArray(val) ? val : [val]).reduce((sum, val) => {
+                      if(sum){
+                        sum+=",";
+                      }
+                      sum+= typeof val == "number" ? val.toString() : "'" + val + "'";
+                      return  sum;
+                    }, "") + ")) ";
+                  }
+                  else if(keys[0] == "nin"){
+                    s += and +  "(_t_." + key + " not in (" + (Array.isArray(val) ? val : [val]).reduce((sum, val) => {
+                      if(sum){
+                        sum+=",";
+                      }
+                      sum+= typeof val == "number" ? val.toString() : "'" + val + "'";
+                      return  sum;
+                    }, "") + ")) ";
+                  }
+                  else if(keys[0] == "inh"){
+                    // получаем массив папок в иерархии текущих
+                    const folders = [];
+                    (Array.isArray(val) ? val : [val]).forEach((val) => {
+                      const folder = vmgr.get(val, true);
+                      if(folder) {
+                        if(folders.indexOf(folder) === -1){
+                          folders.push(folder);
+                          folder.is_folder && folder._children().forEach((child) => folders.indexOf(child) === -1 && folders.push(child));
+                        }
+                      }
+                    });
+                    s += and +  "(_t_." + key + " in (" + folders.reduce((sum, val) => {
+                      if(sum){
+                        sum+=",";
+                      }
+                      sum+= "'" + val.ref + "'";
+                      return  sum;
+                    }, "") + ")) ";
+                  }
+                  else{
+                    s += and + "(_t_." + key + " = '" + val + "') ";
+                  }
+                }
+
+              }else if(typeof sel[key] == "string")
+                s += and + "(_t_." + key + " = '" + sel[key] + "') ";
+
+              else
+                s += and + "(_t_." + key + " = " + sel[key] + ") ";
+
+            }
+            else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
+              //if(sel[key])
+              //	s += and + "_t_." + key + " ";
+              //else
+              //	s += and + "(not _t_." + key + ") ";
+            }
+          }
+        };
+
 
 				// допфильтры форм и связей параметров выбора
 				if(attr.selection){
@@ -919,85 +1012,7 @@ export class RefDataManager extends DataManager{
             attr.selection(s);
 					}
 					else{
-					  const and = "\n AND ";
-            attr.selection.forEach(sel => {
-              for(var key in sel){
-                if(typeof sel[key] == "function"){
-                  s += and + sel[key](t, key) + " ";
-                }
-                else if(cmd.fields.hasOwnProperty(key) || key === "ref"){
-                  if(sel[key] === true){
-                    s += and + "_t_." + key + " ";
-                  }
-                  else if(sel[key] === false){
-                    s += and + "(not _t_." + key + ") ";
-                  }
-                  else if(typeof sel[key] == "object"){
-                    if(utils.is_data_obj(sel[key]) || utils.is_guid(sel[key])){
-                      s += and + "(_t_." + key + " = '" + sel[key] + "') ";
-                    }
-                    else{
-                      var keys = Object.keys(sel[key]),
-                        val = sel[key][keys[0]],
-                        mf = cmd.fields[key] || t.metadata(key),
-                        vmgr;
-
-                      if(mf && mf.type.is_ref){
-                        vmgr = t.value_mgr({}, key, mf.type, true, val);
-                      }
-
-                      if(keys[0] == "not"){
-                        s += and + "(not _t_." + key + " = '" + val + "') ";
-                      }
-                      else if(keys[0] == "in"){
-                        s += and +  "(_t_." + key + " in (" + (Array.isArray(val) ? val : [val]).reduce((sum, val) => {
-                          if(sum){
-                            sum+=",";
-                          }
-                          sum+= typeof val == "number" ? val.toString() : "'" + val + "'";
-                          return  sum;
-                        }, "") + ")) ";
-                      }
-                      else if(keys[0] == "inh"){
-                        // получаем массив папок в иерархии текущих
-                        const folders = [];
-                        (Array.isArray(val) ? val : [val]).forEach((val) => {
-                          const folder = vmgr.get(val, true);
-                          if(folder) {
-                            if(folders.indexOf(folder) === -1){
-                              folders.push(folder);
-                              folder.is_folder && folder._children().forEach((child) => folders.indexOf(child) === -1 && folders.push(child));
-                            }
-                          }
-                        });
-                        s += and +  "(_t_." + key + " in (" + folders.reduce((sum, val) => {
-                          if(sum){
-                            sum+=",";
-                          }
-                          sum+= "'" + val.ref + "'";
-                          return  sum;
-                        }, "") + ")) ";
-                      }
-                      else{
-                        s += and + "(_t_." + key + " = '" + val + "') ";
-                      }
-                    }
-
-                  }else if(typeof sel[key] == "string")
-                    s += and + "(_t_." + key + " = '" + sel[key] + "') ";
-
-                  else
-                    s += and + "(_t_." + key + " = " + sel[key] + ") ";
-
-                }
-                else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
-                  //if(sel[key])
-                  //	s += and + "_t_." + key + " ";
-                  //else
-                  //	s += and + "(not _t_." + key + ") ";
-                }
-              }
-            });
+            attr.selection.forEach(sel_el);
           }
 				}
 
