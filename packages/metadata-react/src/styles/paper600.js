@@ -37,7 +37,10 @@ export default withStyles(({mixins, custom, spacing, shadows, palette}) => ({
     paddingRight: spacing.unit,
   },
   paddingTop: {
-    paddingTop: spacing.unit * 1.5,
+    paddingTop: spacing.unit,
+  },
+  paddingBottom: {
+    paddingBottom: spacing.unit,
   },
   marginRight: {
     marginRight: spacing.unit / 2,

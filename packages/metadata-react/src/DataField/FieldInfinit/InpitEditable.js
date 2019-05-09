@@ -23,12 +23,13 @@ export default function InpitEditable(props) {
       fullWidth={fullWidth}
       onDoubleClick={null}
     >
-      {label_position != 'hide' && <InputLabel {...labelProps}>{_meta.tooltip || _meta.synonym}</InputLabel>}
+      {label_position != 'hide' && <InputLabel {...labelProps}>{_meta.synonym}</InputLabel>}
       <Input
         {...inputProps}
         inputRef={inputRef}
         classes={{input: classes.input}}
-        placeholder={label_position == 'hide' ? (_meta.tooltip || _meta.synonym) : _fld}
+        //placeholder={label_position == 'hide' ? (_meta.tooltip || _meta.synonym) : _fld}
+        title={_meta.tooltip || _meta.synonym}
         endAdornment={props.focused &&
         <Adornment
           classes={classes}
