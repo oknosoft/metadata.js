@@ -28,7 +28,7 @@ class DataCell extends Editors.SimpleTextEditor {
 
   render() {
 
-    const _obj = this.props.rowData;
+    const _obj = this.props.rowData || {};
     const _fld = this.props.column.key;
     const subProps = {
       _obj,
