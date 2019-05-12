@@ -28,18 +28,23 @@ class DataCell extends Editors.SimpleTextEditor {
 
   render() {
 
-    const _obj = this.props.rowData || {};
+    const _obj = this.props.rowData;
+    if(!_obj) {
+      return <div>...</div>;
+    }
+
     const _fld = this.props.column.key;
     const subProps = {
       _obj,
       _fld,
       _val: _obj[_fld],
       _meta: this.state._meta,
+      ref: (node) => this.node = node,
       label_position: $p.enm.label_positions.hide,
       handleValueChange: this.handleSelectChange,
     };
 
-    return <DataField ref={node => this.node = node} {...subProps} />;
+    return <DataField {...subProps} />;
   }
 }
 
