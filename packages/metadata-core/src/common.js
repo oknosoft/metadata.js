@@ -120,7 +120,7 @@ class MetaEngine {
   }
 
   get version() {
-    return 'PACKAGE_VERSION';
+    return PACKAGE_VERSION;
   }
 
   toString() {

@@ -30,7 +30,7 @@ class DataCell extends Editors.SimpleTextEditor {
 
     const _obj = this.props.rowData;
     if(!_obj) {
-      return <div>...</div>;
+      return null;
     }
 
     const _fld = this.props.column.key;

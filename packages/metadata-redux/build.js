@@ -12,7 +12,7 @@ const package_data = require(path.resolve(__dirname, './package.json'));
 const external = ['react', 'react-redux', 'react-router', 'react-router-redux'];
 const plugins = [
 	resolve(),
-	replace({PACKAGE_VERSION: package_data.version}),
+	replace({PACKAGE_VERSION: `"${package_data.version}"`}),
 	cleanup(),
 ];
 const header = `/*!

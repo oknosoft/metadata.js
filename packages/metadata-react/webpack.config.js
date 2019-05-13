@@ -1,5 +1,4 @@
 const webpack = require('webpack');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const path = require('path');
 const package_data = require('./package.json');
 const RELEASE = true;
@@ -78,14 +77,6 @@ const config = {
     ]
   },
   plugins: getPlugins(),
-  optimization: {
-    minimizer: [new UglifyJSPlugin({
-      uglifyOptions: {
-        include: /\.min\.js$/,
-        compress: { warnings: false, }
-      }
-    })]
-  },
 };
 
 

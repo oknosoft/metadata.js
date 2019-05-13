@@ -11,7 +11,7 @@ const package_data = require(path.resolve(__dirname, './package.json'));
 const external = ['events', 'pouchdb-*'];
 const plugins = [
 	resolve(),
-	replace({PACKAGE_VERSION: package_data.version}),
+	replace({PACKAGE_VERSION: `"${package_data.version}"`}),
 	cleanup(),
 ];
 const header = `/*!

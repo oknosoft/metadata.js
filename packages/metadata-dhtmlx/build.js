@@ -13,7 +13,7 @@ const external = ['moment', 'alasql', 'pouchdb*'];
 const plugins = [
   resolve({preferBuiltins: true}),
   builtins(),
-  replace({PACKAGE_VERSION: package_data.version}),
+  replace({PACKAGE_VERSION: `"${package_data.version}"`}),
   cleanup(),
 ];
 const header = `/*!

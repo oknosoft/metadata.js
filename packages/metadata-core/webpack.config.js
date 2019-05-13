@@ -1,12 +1,11 @@
 const webpack = require('webpack');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const path = require('path');
 const package_data = require('./package.json');
 const RELEASE = true;
 
 function getPlugins() {
   var pluginsBase =  [
-    new webpack.DefinePlugin({'process.env.NODE_ENV': '"production"', 'global': 'window'})
+    new webpack.DefinePlugin({'process.env.NODE_ENV': '"production"', 'global': 'window', PACKAGE_VERSION: `"${package_data.version}"`}),
   ];
 
   if (RELEASE) {
@@ -66,14 +65,6 @@ const config = {
     ]
   },
   plugins: getPlugins(),
-  optimization: {
-    minimizer: [new UglifyJSPlugin({
-      uglifyOptions: {
-        include: /\.min\.js$/,
-        compress: { warnings: false, }
-      }
-    })]
-  },
 };
 
 
