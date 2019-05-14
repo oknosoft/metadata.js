@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.19-beta.3, built:2019-05-13
+ metadata-core v2.0.19-beta.3, built:2019-05-14
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3132,6 +3132,9 @@ const utils = {
 	},
 	date_add_day(date, days, reset_time) {
 		const newDt = new Date(date);
+		if(!isFinite(newDt)) {
+		  return this.blank.date;
+    }
 		newDt.setDate(date.getDate() + days);
 		if (reset_time) {
 			newDt.setHours(0, -newDt.getTimezoneOffset(), 0, 0);

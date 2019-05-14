@@ -191,9 +191,9 @@ $p.iface.Toolbar_filter.prototype.__define({
       }
 
 			var res = {
-				date_from: this.input_date_from && this.input_date_from.value ? $p.utils.date_add_day(dhx4.str2date(this.input_date_from.value), 0, true) : new Date(),
-				date_till: this.input_date_till && this.input_date_till.value ? $p.utils.date_add_day(dhx4.str2date(this.input_date_till.value), 0, true) : new Date(),
-				filter: this.input_filter ? this.input_filter.value : ""
+        date_from: this.input_date_from ? $p.utils.date_add_day(dhx4.str2date(this.input_date_from.value), 0, true) : "",
+        date_till: this.input_date_till ? $p.utils.date_add_day(dhx4.str2date(this.input_date_till.value), 0, true) : "",
+        filter: this.input_filter ? this.input_filter.value : ""
 			}, fld, flt;
 
 			if(!exclude_custom){

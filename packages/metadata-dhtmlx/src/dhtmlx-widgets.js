@@ -1285,40 +1285,37 @@ function OCombo(attr){
     }
 
     // для связей параметров выбора, значение берём из объекта
-		if(_meta.choice_links)
-			_meta.choice_links.forEach(({name, path}) => {
-				if(name && name[0] == "selection"){
-					if($p.utils.is_tabular(_obj)){
-						if(path.length < 2)
-							filter[name[1]] = typeof path[0] == "function" ? path[0] : _obj._owner._owner[path[0]];
-						else{
-							if(name[1] == "owner" && !_mgr.metadata().has_owners){
-								return;
-							}
-							filter[name[1]] = _obj[path[1]];
-						}
-					}else{
-						filter[name[1]] = typeof path[0] == "function" ? path[0] : _obj[path[0]];
-					}
-				}
-			});
+    _meta.choice_links && _meta.choice_links.forEach(({name, path}) => {
+      if(name && name[0] == "selection"){
+        if($p.utils.is_tabular(_obj)){
+          if(path.length < 2)
+            filter[name[1]] = typeof path[0] == "function" ? path[0] : _obj._owner._owner[path[0]];
+          else{
+            if(name[1] == "owner" && !_mgr.metadata().has_owners){
+              return;
+            }
+            filter[name[1]] = _obj[path[1]];
+          }
+        }else{
+          filter[name[1]] = typeof path[0] == "function" ? path[0] : _obj[path[0]];
+        }
+      }
+    });
 
 		// у параметров выбора, значение живёт внутри отбора
-		if(_meta.choice_params){
-      _meta.choice_params.forEach(({name, path}) => {
-        const fval = Array.isArray(path) ? {in: path} : path;
-        if(!filter[name]) {
-          filter[name] = fval;
-        }
-        else if(Array.isArray(filter[name])) {
-          filter[name].push(fval);
-        }
-        else {
-          filter[name] = [filter[name]];
-          filter[name].push(fval);
-        }
-      });
-    }
+    _meta.choice_params && _meta.choice_params.forEach(({name, path}) => {
+      const fval = Array.isArray(path) ? {in: path} : path;
+      if(!filter[name]) {
+        filter[name] = fval;
+      }
+      else if(Array.isArray(filter[name])) {
+        filter[name].push(fval);
+      }
+      else {
+        filter[name] = [filter[name]];
+        filter[name].push(fval);
+      }
+    });
 
 		// если в метаданных указано строить список по локальным данным, подмешиваем эту информацию в фильтр
     if(_meta._option_list_local) {
@@ -2957,9 +2954,9 @@ $p.iface.Toolbar_filter.prototype.__define({
       }
 
 			var res = {
-				date_from: this.input_date_from ? $p.utils.date_add_day(dhx4.str2date(this.input_date_from.value), 0, true) : "",
-				date_till: this.input_date_till ? $p.utils.date_add_day(dhx4.str2date(this.input_date_till.value), 0, true) : "",
-				filter: this.input_filter ? this.input_filter.value : ""
+        date_from: this.input_date_from ? $p.utils.date_add_day(dhx4.str2date(this.input_date_from.value), 0, true) : "",
+        date_till: this.input_date_till ? $p.utils.date_add_day(dhx4.str2date(this.input_date_till.value), 0, true) : "",
+        filter: this.input_filter ? this.input_filter.value : ""
 			}, fld, flt;
 
 			if(!exclude_custom){

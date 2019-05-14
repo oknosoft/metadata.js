@@ -298,6 +298,9 @@ const utils = {
 	 */
 	date_add_day(date, days, reset_time) {
 		const newDt = new Date(date);
+		if(!isFinite(newDt)) {
+		  return this.blank.date;
+    }
 		newDt.setDate(date.getDate() + days);
 		if (reset_time) {
 			newDt.setHours(0, -newDt.getTimezoneOffset(), 0, 0);
