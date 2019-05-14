@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import DataField from './DataField';
 
@@ -15,22 +15,25 @@ class DataCell extends Editors.SimpleTextEditor {
       value: value || rowData[column.key],
       _meta: _meta || column._meta || {type: {types: ['string']}},
     };
-    this.handleSelectChange = this.handleSelectChange.bind(this);
   }
 
   getValue() {
     return {[this.props.column.key]: this.state.value};
   }
 
-  handleSelectChange(value) {
+  handleSelectChange = (value) => {
     this.setState({value});
-  }
+  };
+
+  nodeRef = (node) => {
+    this.node = node;
+  };
 
   render() {
 
     const _obj = this.props.rowData;
     if(!_obj) {
-      return null;
+      return <input ref={this.nodeRef} />;
     }
 
     const _fld = this.props.column.key;
@@ -39,7 +42,7 @@ class DataCell extends Editors.SimpleTextEditor {
       _fld,
       _val: _obj[_fld],
       _meta: this.state._meta,
-      ref: (node) => this.node = node,
+      ref: this.nodeRef,
       label_position: $p.enm.label_positions.hide,
       handleValueChange: this.handleSelectChange,
     };

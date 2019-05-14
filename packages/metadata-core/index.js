@@ -253,7 +253,7 @@ class TabularSection {
   }
   get _obj() {
     const {_owner, _name} = this;
-    return _owner._obj[_name];
+    return _owner._obj ? _owner._obj[_name] : [];
   }
   get(index) {
     const row = this._obj[index];
@@ -2366,7 +2366,7 @@ class RefDataManager extends DataManager{
         }
       });
     }
-    else if(cachable.match(/^(doc|ram_doc|remote)$/)){
+    else if(cachable.match(/^(doc|ram_doc|remote|templates)$/)){
       Object.assign(select, {
         selector: {class_name: this.class_name},
         fields: ['_id', 'name'],

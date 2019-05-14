@@ -58,7 +58,7 @@ export class TabularSection {
 	 */
   get _obj() {
     const {_owner, _name} = this;
-    return _owner._obj[_name];
+    return _owner._obj ? _owner._obj[_name] : [];
   }
 
 	/**

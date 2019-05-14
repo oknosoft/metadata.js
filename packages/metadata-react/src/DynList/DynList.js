@@ -91,15 +91,12 @@ class DynList extends MDNRComponent {
     fakeRows.clear();
     ranges.length = 0;
 
-    const newState = {scheme, columns, rowCount: 0, selectedRow: null};
-
-    this.setState(newState, () => {
+    this.onRowSelect({scheme, columns, rowCount: 0, selectedRow: null}, () => {
       this.loadMoreRows({
         startIndex: 0,
         stopIndex: LIMIT - 1,
       });
     });
-
   };
 
   loadMoreRows = ({startIndex, stopIndex}) => {
@@ -456,6 +453,11 @@ class DynList extends MDNRComponent {
     return `${_mgr.metadata().list_presentation || _mgr.metadata().synonym} (список)`;
   }
 
+  onRowSelect(newState, fn) {
+    this.setState(newState, fn);
+    this.props.onRowSelect && this.props.onRowSelect(newState);
+  }
+
   render() {
 
     const {state, props, context, sizes, handleFilterChange, handleSchemeChange} = this;
@@ -540,12 +542,8 @@ class DynList extends MDNRComponent {
         columns={columns}
         rowGetter={this.rowGetter}
         rowsCount={rowCount}
-        onCellDeSelected={(v) => {
-          this.setState({selectedRow: null});
-        }}
-        onCellSelected={(v) => {
-          this.setState({selectedRow: this.rows.get(v.rowIdx) || v.rowIdx});
-        }}
+        onCellDeSelected={() => this.onRowSelect({selectedRow: null})}
+        onCellSelected={(v) => this.onRowSelect({selectedRow: this.rows.get(v.rowIdx) || v.rowIdx})}
         onRowDoubleClick={props.selectionMode ? this.handleSelect : this.handleEdit}
         sortColumn={sorting.sortColumn}
         sortDirection={sorting.sortDirection}

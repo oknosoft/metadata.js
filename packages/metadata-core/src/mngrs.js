@@ -1281,7 +1281,7 @@ export class RefDataManager extends DataManager{
       });
 
     }
-    else if(cachable.match(/^(doc|ram_doc|remote)$/)){
+    else if(cachable.match(/^(doc|ram_doc|remote|templates)$/)){
 
       Object.assign(select, {
         selector: {class_name: this.class_name},
