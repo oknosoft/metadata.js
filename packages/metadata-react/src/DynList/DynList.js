@@ -438,7 +438,7 @@ class DynList extends MDNRComponent {
 
   // обработчик печати теущей строки
   handlePrint = (model) => {
-    const {selectedRow: row, props: {handlers, _mgr}} = this;
+    const {selectedRow: row, props: {_mgr}} = this;
     row && _mgr.print(row.ref, model);
   };
 

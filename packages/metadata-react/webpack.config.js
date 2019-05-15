@@ -62,7 +62,9 @@ const config = {
   output: {
     path: path.resolve('.'),
     filename: '[name].js',
-    libraryTarget: 'umd'
+    libraryTarget: 'umd',
+    //ecma: 7,
+    //ascii_only: false,
   },
   externals: getExternals(),
   module: {

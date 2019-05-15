@@ -14,8 +14,40 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import PrintIcon from '@material-ui/icons/Print';
 import ChevronLeft from '@material-ui/icons/ChevronLeft';
 
+class SubMenu extends React.Component {
+  state = {anchorEl: null};
 
-class MenuPrint extends React.Component {
+  handleOpen = (event) => {
+    this.setState({anchorEl: event.currentTarget});
+  };
+
+  handleClose = () => {
+    this.setState({ anchorEl: null });
+  };
+
+  render() {
+    const {props: {items, Icon, text, handlePrint, prefix}, state: {anchorEl}} = this;
+    return [
+      <MenuItem key={`${prefix}_open`} onClick={this.handleOpen}>
+        {Icon && <ListItemIcon><Icon/></ListItemIcon>}
+        {text}
+      </MenuItem>,
+      <Menu key={`${prefix}_menu`}
+            open={Boolean(anchorEl)}
+            anchorEl={anchorEl}
+            anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            onClose={this.handleClose}>
+        {anchorEl && items.map((v) => <MenuItem key={v.ref} onClick={() => {
+          handlePrint(v);
+          this.handleClose();
+        }}>{v.name}</MenuItem>)}
+      </Menu>
+    ];
+  }
+}
+
+class MenuPrint extends SubMenu {
 
   state = {anchorEl: null, plates: []};
 
@@ -26,7 +58,7 @@ class MenuPrint extends React.Component {
         const groups = new Map();
         for(const key in plates) {
           const plate = plates[key];
-          const group = plate.name.indexOf('/') !== -1 ? plate.name.substr(plate.name.indexOf('/')).trim() : 'Общее';
+          const group = plate.name.includes('/') ? plate.name.substr(0, plate.name.indexOf('/')).trim() : 'Общее';
           if(!groups.get(group)) {
             groups.set(group, []);
           }
@@ -38,33 +70,34 @@ class MenuPrint extends React.Component {
       });
   }
 
-  openSubMenu = event => {
-    this.setState({anchorEl: event.currentTarget});
-  };
-
-  handleClose = () => {
-    this.setState({ anchorEl: null });
-  };
-
-  renderItems(plates) {
-    const {handlePrint} = this.props;
-    if(plates.length === 1) {
-      return plates[0].value.map((v) => <MenuItem key={v.ref} onClick={() => handlePrint(v)}>{v.name}</MenuItem>)
-    }
-  }
-
   render() {
-    const {anchorEl, plates} = this.state;
+    const {props: {handlePrint}, state: {anchorEl, plates}} = this;
+    if(plates.length === 1) {
+      return <SubMenu
+        items={plates[0].value}
+        Icon={PrintIcon}
+        text="Печать"
+        handlePrint={handlePrint}
+        prefix="root"
+      />;
+    }
     return [
-      <MenuItem key="open_print" onClick={this.openSubMenu}>
+      <MenuItem key="prn_open" onClick={this.handleOpen}>
         <ListItemIcon><PrintIcon/></ListItemIcon>Печать</MenuItem>,
-      <Menu key="print_menu"
+      <Menu key="prn_menu"
             open={Boolean(anchorEl)}
             anchorEl={anchorEl}
             anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
             transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             onClose={this.handleClose}>
-        {this.renderItems(plates)}
+        {anchorEl && plates.map((plate, index) => <SubMenu
+          key={`prn_${index}`}
+          items={plate.value}
+          Icon={ChevronLeft}
+          text={plate.name}
+          handlePrint={handlePrint}
+          prefix={`prn_${index}`}
+        />)}
       </Menu>
     ];
   }
