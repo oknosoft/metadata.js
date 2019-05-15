@@ -7,12 +7,12 @@ import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 
 import AddIcon from '@material-ui/icons/AddCircleOutline';
 import RemoveIcon from '@material-ui/icons/DeleteOutline';
 import EditIcon from '@material-ui/icons/Edit';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
-import PrintIcon from '@material-ui/icons/Print';
 import AttachIcon from '@material-ui/icons/AttachFile';
 import SelectIcon from '@material-ui/icons/PlaylistAddCheck';
 import SettingsIcon from '@material-ui/icons/Settings';
@@ -25,6 +25,8 @@ import compose from 'recompose/compose';
 import classnames from 'classnames';
 import withStyles from '../Header/toolbar';
 import withWidth, {isWidthUp} from '@material-ui/core/withWidth';
+
+import MenuPrint from './MenuPrint';
 
 
 class DataListToolbar extends Component {
@@ -126,9 +128,16 @@ class DataListToolbar extends Component {
           open={state.open}
           onClose={this.handleRequestClose}
         >
-          {!widthUpSm && <MenuItem onClick={this.handleSettingsToggle}><SettingsIcon/> &nbsp;Настройки</MenuItem>}
-          <MenuItem onClick={this.handleDnROpen}><PrintIcon/> &nbsp;Печать</MenuItem>
-          <MenuItem onClick={props.handleAttachments}><AttachIcon/> &nbsp;Вложения</MenuItem>
+          {!widthUpSm && <MenuItem onClick={this.handleSettingsToggle}>
+            <ListItemIcon><SettingsIcon/></ListItemIcon>Настройки</MenuItem>}
+          <MenuPrint
+            scheme={scheme}
+            handlePrint={(ref) => {
+              props.handlePrint && props.handlePrint(ref);
+            }}
+          />
+          <MenuItem onClick={props.handleAttachments}>
+            <ListItemIcon><AttachIcon/></ListItemIcon>Вложения</MenuItem>
           {menu_items /* дополнительные пункты меню */}
         </Menu>
 
