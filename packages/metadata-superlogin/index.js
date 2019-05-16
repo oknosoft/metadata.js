@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.19-beta.3, built:2019-05-13
+ metadata-superlogin v2.0.19-beta.3, built:2019-05-16
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -24,8 +24,13 @@ function capitalizeFirstLetter(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
 }
 function parseHostFromUrl(url) {
-	const parsedURL = new URL(url);
-	return parsedURL.host;
+  try{
+    const parsedURL = new URL(url);
+    return parsedURL.host;
+  }
+  catch (e) {
+    return location.host;
+  }
 }
 function checkEndpoint(url, endpoints) {
 	const host = parseHostFromUrl(url);

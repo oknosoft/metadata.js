@@ -15,8 +15,13 @@ function capitalizeFirstLetter(string) {
 }
 
 function parseHostFromUrl(url) {
-	const parsedURL = new URL(url);
-	return parsedURL.host;
+  try{
+    const parsedURL = new URL(url);
+    return parsedURL.host;
+  }
+  catch (e) {
+    return location.host;
+  }
 }
 
 function checkEndpoint(url, endpoints) {
