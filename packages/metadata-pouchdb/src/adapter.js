@@ -504,24 +504,29 @@ function adapter({AbstracrAdapter}) {
               reject(err);
             }
           })
-          .then(({views}) => {
-            if(views.load_order){
-              index = true;
-            };
-            return (Object.keys(views).length ? this.rebuild_indexes('ram') : Promise.resolve())
-              .then(() => local.ram.info());
+          .then((design) => {
+            if(design) {
+              const {views} = design;
+              if(views.load_order){
+                index = true;
+              };
+              return (Object.keys(views).length ? this.rebuild_indexes('ram') : Promise.resolve())
+                .then(() => local.ram.info());
+            }
           })
           .then((info) => {
-          if(info.doc_count >= (job_prm.pouch_ram_doc_count || 10)) {
-            // широковещательное оповещение о начале загрузки локальных данных
-            this.emit('pouch_load_start', Object.assign(_page, {local_rows: info.doc_count}));
-            local._loading = true;
-            fetchNextPage();
-          }
-          else {
-            this.emit('pouch_no_data', info);
-            resolve();
-          }
+            if(info) {
+              if(info.doc_count >= (job_prm.pouch_ram_doc_count || 10)) {
+                // широковещательное оповещение о начале загрузки локальных данных
+                this.emit('pouch_load_start', Object.assign(_page, {local_rows: info.doc_count}));
+                local._loading = true;
+                fetchNextPage();
+              }
+              else {
+                this.emit('pouch_no_data', info);
+                resolve();
+              }
+            }
         });
       });
 

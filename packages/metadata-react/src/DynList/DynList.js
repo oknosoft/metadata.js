@@ -59,14 +59,21 @@ class DynList extends MDNRComponent {
     const newState = {ref: _ref || '', scrollSetted: false};
     this.setState(newState);
 
-    $p.cat.scheme_settings.get_scheme(class_name).then(this.handleSchemeChange);
+    $p.cat.scheme_settings.get_scheme(class_name)
+      .then(this.handleSchemeChange);
 
   }
 
   // при изменении настроек или варианта компоновки
   handleSchemeChange = (scheme) => {
-    scheme.set_default();
-    const {props: {handlers, _mgr}, _meta: {fields}} = this;
+
+    scheme && scheme.set_default();
+
+    const {props: {handlers, _mgr}, _meta: {fields}, _mounted} = this;
+    if(!_mounted) {
+      return;
+    }
+
     handlers.handleSchemeChange && handlers.handleSchemeChange(scheme);
 
     // пересчитываем и перерисовываем динсписок
