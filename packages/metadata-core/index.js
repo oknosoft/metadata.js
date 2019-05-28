@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.19-beta.3, built:2019-05-14
+ metadata-core v2.0.20-beta.1, built:2019-05-28
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2904,8 +2904,8 @@ class CatManager extends RefDataManager{
 		const _meta = this.metadata() || {};
 		if (_meta.hierarchical && _meta.group_hierarchy) {
 			Object.defineProperty(this.obj_constructor('', true).prototype, 'is_folder', {
-				get : function(){ return this._obj.is_folder || false},
-				set : function(v){ this._obj.is_folder = utils.fix_boolean(v);},
+				get(){ return this._obj.is_folder || false},
+				set(v){ this._obj.is_folder = utils.fix_boolean(v);},
 				enumerable: true,
 				configurable: true
 			});
@@ -4598,7 +4598,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.19-beta.3";
+    return "2.0.20-beta.1";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

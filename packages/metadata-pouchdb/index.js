@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.19-beta.3, built:2019-05-13
+ metadata-pouchdb v2.0.20-beta.1, built:2019-05-28
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -791,22 +791,27 @@ function adapter({AbstracrAdapter}) {
               reject(err);
             }
           })
-          .then(({views}) => {
-            if(views.load_order){
-              index = true;
-            }            return (Object.keys(views).length ? this.rebuild_indexes('ram') : Promise.resolve())
-              .then(() => local.ram.info());
+          .then((design) => {
+            if(design) {
+              const {views} = design;
+              if(views.load_order){
+                index = true;
+              }              return (Object.keys(views).length ? this.rebuild_indexes('ram') : Promise.resolve())
+                .then(() => local.ram.info());
+            }
           })
           .then((info) => {
-          if(info.doc_count >= (job_prm.pouch_ram_doc_count || 10)) {
-            this.emit('pouch_load_start', Object.assign(_page, {local_rows: info.doc_count}));
-            local._loading = true;
-            fetchNextPage();
-          }
-          else {
-            this.emit('pouch_no_data', info);
-            resolve();
-          }
+            if(info) {
+              if(info.doc_count >= (job_prm.pouch_ram_doc_count || 10)) {
+                this.emit('pouch_load_start', Object.assign(_page, {local_rows: info.doc_count}));
+                local._loading = true;
+                fetchNextPage();
+              }
+              else {
+                this.emit('pouch_no_data', info);
+                resolve();
+              }
+            }
         });
       });
     }
