@@ -1917,7 +1917,7 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
     else if(_grid.entBox && !_grid.entBox.parentElement){
       setTimeout(_grid.destructor);
     }
-    else if((_obj === obj && fields[_tsname]) || (obj._owner && obj._owner._owner === _obj && obj._owner.name == _tsname)){
+    else if((_obj === obj && fields.hasOwnProperty(_tsname)) || (obj._owner && obj._owner._owner === _obj && obj._owner.name == _tsname)){
       _grid.clearAll();
       _grid.parse(_mgr.get_property_grid_xml(_oxml, _obj, {
         title: attr.ts_title,
