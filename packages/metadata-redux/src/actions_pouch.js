@@ -50,9 +50,7 @@ export function data_loaded(page) {
         let name = wsql.get_user_param('user_name');
         let password = wsql.get_user_param('user_pwd');
 
-        if(!name &&
-          job_prm.zone_demo == wsql.get_user_param('zone') &&
-          job_prm.guests.length) {
+        if(!name && job_prm.zone_demo == wsql.get_user_param('zone') && job_prm.guests.length) {
           name = job_prm.guests[0].name;
         }
 
@@ -64,9 +62,9 @@ export function data_loaded(page) {
         // если вход еще не выполнен...
         if(!user.logged_in && !user.try_log_in && !user.stop_log_in) {
           // если разрешено сохранение пароля или superlogin или гостевая зона...
-          if((superlogin && superlogin.authenticated()) || (name && password && wsql.get_user_param('enable_save_pwd'))) {
-            return dispatch(try_log_in(adapters.pouch, name, aes.Ctr.decrypt(password)));
-          }
+          // if((superlogin && superlogin.authenticated()) || (name && password && wsql.get_user_param('enable_save_pwd'))) {
+          //   return dispatch(try_log_in(adapters.pouch, name, aes.Ctr.decrypt(password)));
+          // }
           if(name && job_prm.zone_demo == wsql.get_user_param('zone')) {
             dispatch(try_log_in(adapters.pouch, name, aes.Ctr.decrypt(job_prm.guests[0].password)));
           }

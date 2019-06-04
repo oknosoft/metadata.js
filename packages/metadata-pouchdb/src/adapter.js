@@ -704,6 +704,7 @@ function adapter({AbstracrAdapter}) {
             const options = {
               batch_size: 200,
               batches_limit: 3,
+              heartbeat: 20000,
               retry: true,
             };
 

@@ -56,7 +56,10 @@ class TabsLogin extends Component {
   }
 
   // если изменили state - не перерисовываем
-  shouldComponentUpdate({handleIfaceState, title}, {index}) {
+  shouldComponentUpdate({handleIfaceState, title, disableTitle}, {index}) {
+    if(disableTitle) {
+      return true;
+    }
     const ltitle = index ? 'Параметры подключения' : 'Авторизация...';
     if(title != ltitle) {
       handleIfaceState({
@@ -80,13 +83,15 @@ class TabsLogin extends Component {
   render() {
 
     const {props, state, handleLogin} = this;
-    const {classes, user, handleLogOut, couch_direct} = props;
+    const {classes, user, handleLogOut, couch_direct, offline, disableTitle} = props;
     const descr = "Вход в систему";
 
     return <Paper className={classnames({
       [classes.root]: true,
-      [classes.disabled]: user.try_log_in && couch_direct
-    })} elevation={4}>
+      [classes.disabled]: user.try_log_in && couch_direct,
+      [classes.spaceLeft]: disableTitle,
+
+    })} elevation={4} id="login-form">
 
       <Helmet title={props.title}>
         <meta name="description" content={descr} />
@@ -104,7 +109,7 @@ class TabsLogin extends Component {
 
         <TextField
           label="Имя пользователя"
-          InputProps={{placeholder: 'login'}}
+          inputProps={{placeholder: 'login', id: 'username', name: 'username'}}
           fullWidth
           margin="dense"
           value={state.login}
@@ -118,7 +123,7 @@ class TabsLogin extends Component {
           <InputLabel>Пароль</InputLabel>
           <Input
             type={state.showPassword ? 'text' : 'password'}
-            placeholder="password"
+            inputProps={{placeholder: 'password', id: 'password', name: 'password'}}
             value={state.password}
             onChange={event => this.setState({password: event.target.value})}
             onKeyPress={(e) => e.key === 'Enter' && this.handleLogin()}
@@ -158,7 +163,22 @@ class TabsLogin extends Component {
         {props.user.logged_in ?
           <Button color="primary" size="small" className={classes.button} onClick={handleLogOut}>Выйти</Button>
           :
-          <Button color="primary" size="small" className={classes.button} disabled={!state.login || !state.password} onClick={handleLogin}>Войти</Button>
+          [
+            !couch_direct && <Button
+              key="offline"
+              color="primary"
+              size="small"
+              className={classes.button}
+              disabled={user.try_log_in || !state.login || !state.password}
+              onClick={handleLogin}>Автономный режим</Button>,
+            !offline && <Button
+              key="login"
+              color="primary"
+              size="small"
+              className={classes.button}
+              disabled={user.try_log_in || !state.login || !state.password}
+              onClick={handleLogin}>Войти</Button>
+          ]
         }
         <Button variant="contained" size="small" disabled={true} className={classes.button}>Забыли пароль?</Button>
       </DialogActions>}

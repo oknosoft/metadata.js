@@ -93,9 +93,7 @@ function AppDrawer(props) {
           variant="temporary"
           open={mobileOpen}
           onClose={onClose}
-          ModalProps={{
-            keepMounted: true,
-          }}
+          ModalProps={{keepMounted: true}}
         >
           {navigation}
         </Drawer>
@@ -103,9 +101,7 @@ function AppDrawer(props) {
       {disablePermanent ? null : (
         <Hidden mdDown implementation="css">
           <Drawer
-            classes={{
-              paper: classes.paper,
-            }}
+            classes={{paper: classes.paper}}
             variant="permanent"
             open
           >
