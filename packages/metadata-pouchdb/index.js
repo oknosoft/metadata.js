@@ -466,6 +466,9 @@ function adapter({AbstracrAdapter}) {
       if(job_prm.use_ram === false) {
         props.use_ram = false;
       }
+      if(props.user_node && props.user_node.suffix) {
+        props._suffix = props.user_node.suffix;
+      }
       const opts = {auto_compaction: true, revs_limit: 3};
       const bases = md.bases();
       if(props.use_meta !== false) {
@@ -2013,10 +2016,8 @@ function adapter({AbstracrAdapter}) {
         if(this.authorized && this.remote.ram && this.remote.ram.adapter == 'http') {
           this.remote.ram.info()
             .then(response => {
-              response = null;
             })
             .catch(err => {
-              err = null;
             });
         }
       }, timout);

@@ -720,7 +720,6 @@ function postWithAuth(url, body) {
 function attach($p) {
   const {cat, utils, wsql, adapters: {pouch}} = $p;
   superlogin.on('login', function (event, session) {
-    session = null;
   });
   superlogin.on('logout', function (event, message) {
   });
@@ -797,10 +796,8 @@ function attach($p) {
       if(superlogin.authenticated()) {
         return superlogin.link(provider)
           .then((res) => {
-            res = null;
           })
           .catch((err) => {
-            err = null;
           });
       }
       dispatch({
