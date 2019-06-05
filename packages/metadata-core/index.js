@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.20-beta.1, built:2019-06-01
+ metadata-core v2.0.20-beta.1, built:2019-06-05
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -4442,6 +4442,13 @@ class ManagersCollection {
   create(name, constructor, freeze) {
     this[name] = new (constructor || this._constructor)(this, this.name + '.' + name);
     freeze && Object.freeze(this[name]);
+  }
+  forEach(cb) {
+    for(const el in this) {
+      if(this[el] instanceof this._constructor) {
+        cb(this[el]);
+      }
+    }
   }
 }
 class Enumerations extends ManagersCollection {

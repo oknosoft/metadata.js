@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.20-beta.1, built:2019-06-04
+ metadata-pouchdb v2.0.20-beta.1, built:2019-06-05
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -483,9 +483,6 @@ function adapter({AbstracrAdapter}) {
         if(bases.indexOf(name) != -1) {
           Object.defineProperty(local, name, {
             get() {
-              if(props.user_node) {
-                return remote[name];
-              }
               const dynamic_doc = wsql.get_user_param('dynamic_doc');
               if(dynamic_doc && name === 'doc' && props.direct) {
                 return remote[dynamic_doc];
@@ -495,7 +492,10 @@ function adapter({AbstracrAdapter}) {
               }
             }
           });
-          if(props.user_node || (props.direct && name != 'ram' && name != 'user')) {
+          if(job_prm.couch_memory && job_prm.couch_memory.includes(name)) {
+            local[`__${name}`] = new PouchDB$1(props.prefix + props.zone + '_' + name, Object.assign({adapter: 'memory'}, opts));
+          }
+          else if(props.user_node || (props.direct && name != 'ram' && name != 'user')) {
             local[`__${name}`] = null;
           }
           else {
@@ -532,7 +532,7 @@ function adapter({AbstracrAdapter}) {
           local[dbid] && remote[dbid] && local[dbid] != remote[dbid] &&
           (dbid !== 'doc' || !wsql.get_user_param('dynamic_doc'))
         ) {
-          if(props.noreplicate && props.noreplicate.indexOf(dbid) != -1) {
+          if(props.noreplicate && props.noreplicate.includes(dbid)) {
             return;
           }
           try_auth.push(this.run_sync(dbid));
@@ -738,7 +738,7 @@ function adapter({AbstracrAdapter}) {
       }))
         .then(() => this.emit('user_log_out'));
     }
-    load_data() {
+    load_data(db) {
       const {local, $p: {job_prm}} = this;
       const options = {
         limit: 700,
@@ -752,6 +752,9 @@ function adapter({AbstracrAdapter}) {
       };
       if(job_prm.second_instance) {
         return Promise.reject(new Error('second_instance'));
+      }
+      if(!db) {
+        db = local.ram;
       }
       return new Promise((resolve, reject) => {
         let index;
@@ -776,13 +779,13 @@ function adapter({AbstracrAdapter}) {
         };
         const fetchNextPage = () => {
           if(index){
-            local.ram.query('server/load_order', options, processPage);
+            db.query('server/load_order', options, processPage);
           }
           else {
-            local.ram.allDocs(options, processPage);
+            db.allDocs(options, processPage);
           }
         };
-        local.ram.get('_design/server')
+        db.get('_design/server')
           .catch((err) => {
             if(err.status === 404) {
               return {views: {}}
@@ -797,7 +800,7 @@ function adapter({AbstracrAdapter}) {
               if(views.load_order){
                 index = true;
               }              return (Object.keys(views).length ? this.rebuild_indexes('ram') : Promise.resolve())
-                .then(() => local.ram.info());
+                .then(() => db.info());
             }
           })
           .then((info) => {
@@ -833,7 +836,7 @@ function adapter({AbstracrAdapter}) {
     db(_mgr) {
       const dbid = _mgr.cachable.replace('_remote', '').replace('_ram', '').replace('_doc', '');
       const {props, local, remote} = this;
-      if(dbid.indexOf('remote') != -1 || dbid === 'pgsql' || (props.noreplicate && props.noreplicate.indexOf(dbid) != -1)) {
+      if(dbid.indexOf('remote') != -1 || dbid === 'pgsql' || (props.noreplicate && props.noreplicate.includes(dbid))) {
         return remote[dbid.replace('_remote', '')];
       }
       else {

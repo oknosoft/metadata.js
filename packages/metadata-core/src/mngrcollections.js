@@ -16,6 +16,14 @@ class ManagersCollection {
     this[name] = new (constructor || this._constructor)(this, this.name + '.' + name);
     freeze && Object.freeze(this[name]);
   }
+
+  forEach(cb) {
+    for(const el in this) {
+      if(this[el] instanceof this._constructor) {
+        cb(this[el]);
+      }
+    }
+  }
 }
 
 /**
