@@ -89,6 +89,9 @@ function adapter({AbstracrAdapter}) {
       if(job_prm.use_ram === false) {
         props.use_ram = false;
       }
+      if(props.user_node && props.user_node.suffix) {
+        props._suffix = props.user_node.suffix;
+      }
 
       // создаём локальные базы
       const opts = {auto_compaction: true, revs_limit: 3};

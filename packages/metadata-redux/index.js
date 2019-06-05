@@ -1,5 +1,5 @@
 /*!
- metadata-redux v2.0.20-beta.1, built:2019-06-04
+ metadata-redux v2.0.20-beta.1, built:2019-06-05
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -245,9 +245,7 @@ function data_loaded(page) {
         const {job_prm, wsql, adapters, superlogin, aes} = $p;
         let name = wsql.get_user_param('user_name');
         let password = wsql.get_user_param('user_pwd');
-        if(!name &&
-          job_prm.zone_demo == wsql.get_user_param('zone') &&
-          job_prm.guests.length) {
+        if(!name && job_prm.zone_demo == wsql.get_user_param('zone') && job_prm.guests.length) {
           name = job_prm.guests[0].name;
         }
         if(name) {
