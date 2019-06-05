@@ -7,7 +7,7 @@
 
 import {connect} from 'react-redux';
 import withStyles from './styles';
-import compose from 'recompose/compose';
+import {compose} from 'redux';
 import qs from 'qs';
 
 // раз в час сбрасываем кеш

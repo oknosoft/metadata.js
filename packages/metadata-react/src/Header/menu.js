@@ -32,6 +32,6 @@ export default withStyles(theme => ({
   },
   pointer: {cursor: 'pointer'},
   nested: {
-    paddingLeft: theme.spacing.unit * 4,
+    paddingLeft: theme.spacing(4),
   },
 }));

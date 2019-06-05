@@ -6,9 +6,9 @@ export default withStyles(theme => ({
     fontWeight: 500,
   },
   item: {
-    paddingLeft: theme.spacing.unit * 2,
-    paddingRight: theme.spacing.unit * 2,
-    paddingTop: theme.spacing.unit / 2,
-    paddingBottom: theme.spacing.unit / 2,
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    paddingTop: theme.spacing() / 2,
+    paddingBottom: theme.spacing() / 2,
   },
 }));

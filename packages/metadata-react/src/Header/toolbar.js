@@ -29,23 +29,23 @@ export default withStyles(theme => ({
   progress: {
     color: colors.white,
     position: 'absolute',
-    top: theme.spacing.unit,
+    top: theme.spacing(),
   },
   toolbar: {
     backgroundColor: theme.palette.primary[50],
   },
   title: {
-    marginLeft: theme.spacing.unit * 3,
+    marginLeft: theme.spacing(3),
   },
   spaceLeft: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(),
   },
   bold: {
     fontWeight: 500,
   },
   select: {
     width: 180,
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(),
   },
   rotation: {
     animation: 'rotate-progress-circle 1733ms linear infinite',

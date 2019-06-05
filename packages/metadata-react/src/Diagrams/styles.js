@@ -10,7 +10,7 @@ import withStyles from '@material-ui/core/styles/withStyles';
 const styles = theme => ({
   flex: {
     flex: 1,
-    paddingTop: theme.spacing.unit,
+    paddingTop: theme.spacing(),
   },
   container: {
     display: 'flex',
@@ -36,10 +36,10 @@ const styles = theme => ({
     color: 'darkblue',
   },
   secondary: {
-    marginTop: -theme.spacing.unit * 1.5,
+    marginTop: -theme.spacing(1.5),
   },
   title: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(),
     fontSize: '1.1rem',
   },
   height: {

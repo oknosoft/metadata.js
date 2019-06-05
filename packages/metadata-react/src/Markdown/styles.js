@@ -9,7 +9,7 @@ const anchorLinkStyle = (theme, size) => ({
   '&:hover .anchor-link-style': {
     display: 'inline-block',
     opacity: 1,
-    padding: theme.spacing.unit,
+    padding: theme.spacing(),
     color: theme.palette.text.hint,
     '&:hover': {
       color: theme.palette.text.secondary,
@@ -24,16 +24,16 @@ const anchorLinkStyle = (theme, size) => ({
 const styles = theme => ({
   root: {
     fontFamily: theme.typography.fontFamily,
-    marginTop: theme.spacing.unit * 2,
-    marginBottom: theme.spacing.unit * 2,
-    padding: `0 ${theme.spacing.unit}px`,
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+    padding: `0 ${theme.spacing()}px`,
     color: theme.palette.text.primary,
     '& .anchor-link': {
-      marginTop: -theme.spacing.unit * 12, // Offset for the anchor.
+      marginTop: -theme.spacing(12), // Offset for the anchor.
       position: 'absolute',
     },
     '& pre': {
-      margin: `${theme.spacing.unit * 3}px 0`,
+      margin: `${theme.spacing(3)}px 0`,
       padding: '12px 18px',
       backgroundColor: theme.palette.background.paper,
       borderRadius: 3,
@@ -105,15 +105,14 @@ const styles = theme => ({
     },
     '& td': {
       borderBottom: `1px solid ${theme.palette.text.lightDivider}`,
-      padding: `${theme.spacing.unit}px ${theme.spacing.unit * 5}px ${theme.spacing.unit}px ${theme
-        .spacing.unit * 3}px`,
+      padding: `${theme.spacing()}px ${theme.spacing(5)}px ${theme.spacing()}px ${theme.spacing(3)}px`,
       textAlign: 'left',
     },
     '& td:last-child': {
-      paddingRight: theme.spacing.unit * 3,
+      paddingRight: theme.spacing(3),
     },
     '& td compact': {
-      paddingRight: theme.spacing.unit * 3,
+      paddingRight: theme.spacing(3),
     },
     '& td code': {
       lineHeight: 1.6,
@@ -121,11 +120,11 @@ const styles = theme => ({
     '& th': {
       whiteSpace: 'pre',
       borderBottom: `1px solid ${theme.palette.text.lightDivider}`,
-      padding: `0 ${theme.spacing.unit * 5}px 0 ${theme.spacing.unit * 3}px`,
+      padding: `0 ${theme.spacing(5)}px 0 ${theme.spacing(3)}px`,
       textAlign: 'left',
     },
     '& th:last-child': {
-      paddingRight: theme.spacing.unit * 3,
+      paddingRight: theme.spacing(3),
     },
     '& strong': {
       fontWeight: theme.typography.fontWeightMedium,
@@ -133,8 +132,8 @@ const styles = theme => ({
     '& blockquote': {
       borderLeft: `5px solid ${theme.palette.text.hint}`,
       background: theme.palette.background.paper,
-      padding: `${theme.spacing.unit / 2}px ${theme.spacing.unit * 3}px`,
-      margin: `${theme.spacing.unit * 3}px 0`,
+      padding: `${theme.spacing() / 2}px ${theme.spacing(3)}px`,
+      margin: `${theme.spacing(3)}px 0`,
     },
     '& a, & a code': {
       // Style taken from the Link component

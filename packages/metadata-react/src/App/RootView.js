@@ -85,7 +85,7 @@ class RootView extends Component {
 
 RootView.propTypes = {
   DumbScreen: PropTypes.func,
-  AppView: PropTypes.func.isRequired,
+  AppView: PropTypes.oneOfType([PropTypes.object, PropTypes.node, PropTypes.func]).isRequired,
   history: PropTypes.object.isRequired,
   item_props: PropTypes.func.isRequired,
   theme: PropTypes.object.isRequired,

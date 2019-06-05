@@ -36,7 +36,7 @@ import Grid23 from './grid23';
 
 import Composition from './Composition';
 import connect from '../connect';
-import compose from 'recompose/compose';
+import {compose} from 'redux';
 
 import {withIface} from 'metadata-redux';
 

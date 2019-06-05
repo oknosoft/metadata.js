@@ -14,7 +14,7 @@ import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
 import IconButton from '@material-ui/core/IconButton';
 import colors from '@material-ui/core/colors/common';
 import withStyles from '@material-ui/core/styles/withStyles';
-import compose from 'recompose/compose';
+import {compose} from 'redux';
 import cn from 'classnames';
 
 const style = theme => ({
@@ -29,10 +29,10 @@ const style = theme => ({
   },
   title: {
     flex: '1 1 auto',
-    marginLeft: theme.spacing.unit * 2,
+    marginLeft: theme.spacing(2),
   },
   content: {
-    padding: theme.spacing.unit * 2,
+    padding: theme.spacing(2),
   },
   contentNoSpace: {
     padding: 0,

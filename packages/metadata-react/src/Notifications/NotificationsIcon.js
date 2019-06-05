@@ -25,7 +25,7 @@ const styles = theme => ({
       }`,
   },
   root: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(),
   }
 });
 

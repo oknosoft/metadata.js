@@ -6,7 +6,7 @@ export default withStyles(({mixins, custom, spacing, shadows, palette}) => ({
     marginTop: custom && custom.appbar.position == 'fixed' ? 72 : 24,
     marginLeft: 'auto',
     marginRight: 'auto',
-    paddingTop: spacing.unit,
+    paddingTop: spacing(),
   }),
   disabled: {
     pointerEvents: 'none',
@@ -23,30 +23,30 @@ export default withStyles(({mixins, custom, spacing, shadows, palette}) => ({
     minWidth: 310,
   },
   textField: {
-    marginTop: spacing.unit * 3,
+    marginTop: spacing(3),
   },
   spaceLeft: {
-    marginLeft: spacing.unit,
+    marginLeft: spacing(),
   },
   spaceOuter: {
-    padding: spacing.unit * 2,
+    padding: spacing(2),
     paddingBottom: 0,
     minWidth: 260,
   },
   paddingRight: {
-    paddingRight: spacing.unit,
+    paddingRight: spacing(),
   },
   paddingTop: {
-    paddingTop: spacing.unit,
+    paddingTop: spacing(),
   },
   paddingBottom: {
-    paddingBottom: spacing.unit,
+    paddingBottom: spacing(),
   },
   marginRight: {
-    marginRight: spacing.unit / 2,
+    marginRight: spacing() / 2,
   },
   button: {
-    margin: spacing.unit,
+    margin: spacing(),
   },
   row: {
     display: 'flex',

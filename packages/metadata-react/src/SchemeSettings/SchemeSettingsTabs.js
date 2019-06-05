@@ -23,8 +23,6 @@ import SchemeSettingsSelect from './SchemeSettingsSelect';
 import DataField, {FieldSelect} from '../DataField';
 import Divider from '@material-ui/core/Divider';
 
-import spacing from '@material-ui/core/styles/spacing';
-
 
 /**
  * Wrapper for tabs whitch returned function above.

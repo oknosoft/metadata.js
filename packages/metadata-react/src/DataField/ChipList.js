@@ -23,20 +23,20 @@ const styles = theme => ({
   paper: {
     position: 'absolute',
     zIndex: 1,
-    marginTop: theme.spacing.unit,
+    marginTop: theme.spacing(),
     left: 0,
     right: 0,
   },
   chip: {
-    margin: theme.spacing.unit / 4,
+    margin: theme.spacing() / 4,
   },
   chipRoot: {
     height: 'auto',
-    marginRight: theme.spacing.unit / 2,
+    marginRight: theme.spacing() / 2,
   },
   formControl: {
-    // marginLeft: theme.spacing.unit,
-    paddingRight: theme.spacing.unit,
+    // marginLeft: theme.spacing(),
+    paddingRight: theme.spacing(),
     boxSizing: 'border-box',
     minWidth: 260,
   },

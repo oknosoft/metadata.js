@@ -18,7 +18,7 @@ import AccountOff from './AccountOff';
 
 import Notifications from '../Notifications';
 
-import compose from 'recompose/compose';
+import {compose} from 'redux';
 import classnames from 'classnames';
 import withStyles from './toolbar';
 import withWidth, {isWidthUp} from '@material-ui/core/withWidth';

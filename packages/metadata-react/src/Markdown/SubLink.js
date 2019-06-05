@@ -13,7 +13,7 @@ import { withStyles } from '@material-ui/core/styles';
 const anchorLinkStyle = (theme) => ({
     anchor: {
       opacity: 0.4,
-      marginLeft: theme.spacing.unit,
+      marginLeft: theme.spacing(),
       color: theme.palette.text.secondary,
       // To prevent the link to get the focus.
       //display: 'none',

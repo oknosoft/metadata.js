@@ -35,10 +35,10 @@ const styles = ({typography, palette, transitions, spacing, breakpoints}) => ({
         background: palette.common.white,
       },
     },
-    marginRight: spacing.unit,
+    marginRight: spacing(),
   },
   search: {
-    width: spacing.unit * 4,
+    width: spacing(4),
     height: '100%',
     position: 'absolute',
     top: 0,
@@ -49,7 +49,7 @@ const styles = ({typography, palette, transitions, spacing, breakpoints}) => ({
   },
   input: {
     font: 'inherit',
-    padding: `${spacing.unit}px ${spacing.unit}px ${spacing.unit}px ${spacing.unit * 4}px`,
+    padding: `${spacing()}px ${spacing()}px ${spacing()}px ${spacing(4)}px`,
     border: 0,
     display: 'block',
     verticalAlign: 'middle',

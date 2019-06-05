@@ -21,7 +21,7 @@ import SchemeSettingsButtons from '../SchemeSettings/SchemeSettingsButtons';
 import SearchBox from '../SchemeSettings/SearchBox';
 import DateRange from '../SchemeSettings/DateRange';
 
-import compose from 'recompose/compose';
+import {compose} from 'redux';
 import classnames from 'classnames';
 import withStyles from '../Header/toolbar';
 import withWidth, {isWidthUp} from '@material-ui/core/withWidth';

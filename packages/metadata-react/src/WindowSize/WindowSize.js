@@ -3,7 +3,7 @@
 // export default windowSize(Component);
 
 import React, {Component} from 'react';
-import wrapDisplayName from 'recompose/wrapDisplayName';
+import {getDisplayName} from '@material-ui/utils';
 
 export default (BaseComponent) => class extends Component {
 
@@ -58,7 +58,7 @@ export default (BaseComponent) => class extends Component {
   }
 
   static get displayName() {
-    return wrapDisplayName(BaseComponent, 'withWindowSizes');
+    return `WithWindowSizes(${getDisplayName(BaseComponent)})`;
   }
 
 };

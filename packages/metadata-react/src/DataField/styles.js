@@ -2,11 +2,11 @@ import withStyles from '@material-ui/core/styles/withStyles';
 
 const styles = theme => ({
   formControl: {
-    // marginLeft: theme.spacing.unit,
-    paddingRight: theme.spacing.unit,
+    // marginLeft: theme.spacing(),
+    paddingRight: theme.spacing(),
     boxSizing: 'border-box',
     minWidth: 260,
-    marginTop: theme.spacing.unit,
+    marginTop: theme.spacing(),
   },
   container: {
     flexGrow: 1,
@@ -17,8 +17,8 @@ const styles = theme => ({
   },
   suggestionsContainerOpen: {
     position: 'fixed',
-    marginBottom: theme.spacing.unit * 2,
-    marginRight: theme.spacing.unit,
+    marginBottom: theme.spacing(2),
+    marginRight: theme.spacing(),
     zIndex: 3000,
   },
   suggestion: {
@@ -44,20 +44,20 @@ const styles = theme => ({
   },
   bar: {
     minHeight: 48,
-    paddingLeft: theme.spacing.unit,
-    paddingRight: theme.spacing.unit,
+    paddingLeft: theme.spacing(),
+    paddingRight: theme.spacing(),
   },
   threestateLabel: {
-    paddingLeft: theme.spacing.unit,
-    paddingTop: theme.spacing.unit,
+    paddingLeft: theme.spacing(),
+    paddingTop: theme.spacing(),
   },
   threestateInput: {
-    width: theme.spacing.unit * 2,
-    height: theme.spacing.unit * 2,
+    width: theme.spacing(2),
+    height: theme.spacing(2),
   },
   barInput: {
     minWidth: 180,
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(),
     marginTop: 0,
   },
   flex: {

@@ -48,7 +48,7 @@ const styles = theme => ({
     color: theme.palette.text.secondary,
   },
   marginRight: {
-    marginRight: theme.spacing.unit * 2,
+    marginRight: theme.spacing(2),
   },
 });
 

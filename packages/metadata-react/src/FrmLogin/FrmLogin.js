@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 
 import TabsLogin from './TabsLogin';
 import TabsUser from './TabsUser';
-import compose from 'recompose/compose';
+import {compose} from 'redux';
 import {withMeta, withIface} from 'metadata-redux';
 
 function FrmLogin({ classes, ...other}) {

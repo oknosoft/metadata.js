@@ -6,7 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import AppContent from './AppContent';
 import TabsLogin from '../FrmLogin/TabsLogin';
 
-import compose from 'recompose/compose';
+import {compose} from 'redux';
 import {withMeta, withPrm} from 'metadata-redux';
 
 const FrmLogin = compose(withMeta, withPrm)(({classes, ...other}) => < TabsLogin disableTitle {...other} />);
