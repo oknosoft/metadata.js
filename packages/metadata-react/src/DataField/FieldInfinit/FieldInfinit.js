@@ -301,7 +301,7 @@ class FieldInfinit extends AbstractField {
               />
               {isOpen && (
                 <Popper
-                  open
+                  open={Boolean(this.input)}
                   anchorEl={this.input}
                   placement="bottom-start"
                   disablePortal={false}

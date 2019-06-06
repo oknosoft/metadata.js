@@ -66,7 +66,15 @@ class SimpleDialog extends React.Component {
 
   portalTarget() {
     const domNode = ReactDOM.findDOMNode(this);
-    return domNode ? domNode.lastChild.firstChild : document.body;
+    if(domNode) {
+      for(let i = domNode.children.length - 1; i > 0; i--) {
+        const child = domNode.children.item(i).firstChild;
+        if(child) {
+          return child;
+        }
+      }
+    }
+    return document.body;
   }
 
   get frameRect() {

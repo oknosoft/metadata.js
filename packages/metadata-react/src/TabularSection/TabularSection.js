@@ -132,7 +132,7 @@ class TabularSection extends MComponent {
     }
     // const selectedIds = this.state.selectedIds.slice();
     // this.setState({selectedIds});
-    Promise.resolve().then(() => this._grid.forceUpdate());
+    Promise.resolve().then(() => this._grid && this._grid.forceUpdate());
   }
 
   handleSettingsOpen = () => {
