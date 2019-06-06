@@ -8,7 +8,7 @@
 
 import React from 'react';
 import Link from '@material-ui/icons/Link';
-import { withStyles } from '@material-ui/core/styles';
+import {withStyles} from '@material-ui/styles';
 
 const anchorLinkStyle = (theme) => ({
     anchor: {

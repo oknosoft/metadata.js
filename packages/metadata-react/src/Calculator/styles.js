@@ -1,4 +1,4 @@
-import withStyles from '@material-ui/core/styles/withStyles';
+import {withStyles} from '@material-ui/styles';
 import colors from '@material-ui/core/colors/common';
 
 export default withStyles({

@@ -13,7 +13,7 @@ import FullscreenIcon from '@material-ui/icons/Fullscreen';
 import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
 import IconButton from '@material-ui/core/IconButton';
 import colors from '@material-ui/core/colors/common';
-import withStyles from '@material-ui/core/styles/withStyles';
+import {withStyles} from '@material-ui/styles';
 import {compose} from 'redux';
 import cn from 'classnames';
 

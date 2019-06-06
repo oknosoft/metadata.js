@@ -6,7 +6,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 
-import { withStyles } from '@material-ui/core/styles';
+import {withStyles} from '@material-ui/styles';
 
 import Avatar from '@material-ui/core/Avatar';
 

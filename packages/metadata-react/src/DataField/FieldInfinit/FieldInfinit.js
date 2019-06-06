@@ -44,7 +44,7 @@ class FieldInfinit extends AbstractField {
     super(props, context);
     Object.assign(this.state, {
       dialogOpened: '',
-      focused: false,
+      inputFocused: false,
       inputValue: suggestionText(this.state.value),
     });
   }
@@ -80,7 +80,7 @@ class FieldInfinit extends AbstractField {
   };
 
   handleCloseDialog = () => {
-    this.setState({dialogOpened: '', focused: true});
+    this.setState({dialogOpened: '', inputFocused: true});
   };
 
   handleBlur = (evt) => {
@@ -281,11 +281,11 @@ class FieldInfinit extends AbstractField {
                 labelProps={getLabelProps()}
                 inputProps={getInputProps({
                   onKeyDown: this.inputKeyDown,
-                  onBlur: () => this.setState({focused: false}),
-                  onFocus: () => this.setState({focused: true}),
+                  onBlur: () => this.setState({inputFocused: false}),
+                  onFocus: () => this.setState({inputFocused: true}),
                 })}
                 inputRef={this.inputRef}
-                focused={state.focused}
+                inputFocused={state.inputFocused}
                 isTabular={isTabular}
                 _meta={_meta}
                 _obj={_obj}

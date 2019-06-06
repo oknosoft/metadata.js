@@ -1,7 +1,8 @@
 import React from 'react';
-import FormControl from '@material-ui/core/FormControl/FormControl';
-import InputLabel from '@material-ui/core/InputLabel/InputLabel';
-import Input from '@material-ui/core/Input/Input';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
+import Input from '@material-ui/core/Input';
+import TextField from '@material-ui/core/TextField';
 import cn from 'classnames';
 
 export default function InpitReadOnly(props) {
@@ -17,18 +18,13 @@ export default function InpitReadOnly(props) {
       />
     </div>
     :
-    <div className={classes.root}>
-      <FormControl
-        className={cn(classes.formControl, props.bar && classes.barInput)}
-        fullWidth={props.fullWidth}
-        disabled
-      >
-        {props.label_position != 'hide' && <InputLabel>{_meta.tooltip || _meta.synonym}</InputLabel>}
-        <Input
-          value={props.inputValue}
-          classes={{input: classes.input}}
-          placeholder={props.label_position == 'hide' ? (_meta.tooltip || _meta.synonym) : props._fld}
-        />
-      </FormControl>
-    </div>;
+    <TextField
+      disabled
+      className={cn(classes.root, classes.formControl, props.bar && classes.barInput)}
+      fullWidth={props.fullWidth}
+      label={props.label_position === 'hide' ? '' : _meta.synonym}
+      title={_meta.tooltip || _meta.synonym}
+      value={props.inputValue}
+      classes={{input: classes.input}}
+    />;
 }

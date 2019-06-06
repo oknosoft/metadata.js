@@ -14,7 +14,7 @@ import NotificationsIcon from '@material-ui/icons/Notifications';
 import NotificationsIconActive from '@material-ui/icons/NotificationsActive';
 import NotificationsIconNone from '@material-ui/icons/NotificationsNone';
 import Badge from '@material-ui/core/Badge';
-import { withStyles } from '@material-ui/core/styles';
+import {withStyles} from '@material-ui/styles';
 
 const styles = theme => ({
   badge: {

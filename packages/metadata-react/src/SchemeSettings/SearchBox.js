@@ -10,7 +10,7 @@ import PropTypes from 'prop-types';
 
 import SearchIcon from '@material-ui/icons/Search';
 import {fade} from '@material-ui/core/styles/colorManipulator';
-import withStyles from '@material-ui/core/styles/withStyles';
+import {withStyles} from '@material-ui/styles';
 
 const styles = ({typography, palette, transitions, spacing, breakpoints}) => ({
   wrapper: {

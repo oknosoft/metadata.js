@@ -1,4 +1,4 @@
-import withStyles from '@material-ui/core/styles/withStyles';
+import {withStyles} from '@material-ui/styles';
 import {light} from '@material-ui/core/styles/createPalette';
 import transitions from '@material-ui/core/styles/transitions';
 

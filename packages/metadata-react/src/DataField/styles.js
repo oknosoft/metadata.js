@@ -1,4 +1,4 @@
-import withStyles from '@material-ui/core/styles/withStyles';
+import {withStyles} from '@material-ui/styles';
 
 const styles = theme => ({
   formControl: {
@@ -76,6 +76,11 @@ const styles = theme => ({
     width: 32,
     height: 32,
     paddingTop: 4,
+  },
+  checkbox: {
+    width: `${theme.spacing(2)}px !important`,
+    boxShadow: 'none  !important',
+    margin: 'auto',
   }
 });
 

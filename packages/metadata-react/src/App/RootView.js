@@ -11,7 +11,7 @@ import {withMeta} from 'metadata-redux';
 import BrowserCompatibility, {browser_compatible} from './BrowserCompatibility';
 
 // тема для material-ui
-import {MuiThemeProvider} from '@material-ui/core/styles';
+import {ThemeProvider} from '@material-ui/styles';
 
 class RootView extends Component {
 
@@ -66,7 +66,7 @@ class RootView extends Component {
       !meta_loaded || (!data_empty && !data_loaded)
     );
 
-    return <MuiThemeProvider theme={theme}>
+    return <ThemeProvider theme={theme}>
       {
         state.browser_compatible ?
           (show_dumb ?
@@ -78,7 +78,7 @@ class RootView extends Component {
           :
           (<BrowserCompatibility/>)
       }
-    </MuiThemeProvider>;
+    </ThemeProvider>;
 
   }
 }

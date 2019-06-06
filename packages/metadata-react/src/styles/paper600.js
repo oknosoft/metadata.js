@@ -1,4 +1,4 @@
-import withStyles from '@material-ui/core/styles/withStyles';
+import {withStyles} from '@material-ui/styles';
 
 export default withStyles(({mixins, custom, spacing, shadows, palette}) => ({
   root: mixins.gutters({

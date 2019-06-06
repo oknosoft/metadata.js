@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import kebabCase from 'lodash/kebabCase';
 import warning from 'warning';
 import Helmet from 'react-helmet';
-import withStyles from '@material-ui/core/styles/withStyles';
+import {withStyles} from '@material-ui/styles';
 import {withIface} from 'metadata-redux';
 import Typography from '@material-ui/core/Typography';
 

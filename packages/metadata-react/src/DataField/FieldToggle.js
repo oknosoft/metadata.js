@@ -23,14 +23,15 @@ class FieldToggle extends AbstractField {
   };
 
   render() {
-    const {props: {read_only}, state: {value}, _meta, isTabular, handleChange} = this;
+    const {props: {read_only, _fld, classes}, state: {value}, _meta, isTabular, handleChange} = this;
 
     return (
       // в табчасти показываем обычный чекбокс
       isTabular ?
         <input
           type="checkbox"
-          value={value ? 'checked' : ''}
+          className={classes.checkbox}
+          checked={value ? 'checked' : ''}
           disabled = {read_only}
           onChange = {handleChange}
         />

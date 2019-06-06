@@ -5,7 +5,7 @@
  * Created by Evgeniy Malyarov on 16.08.2018
  */
 
-import withStyles from '@material-ui/core/styles/withStyles';
+import {withStyles} from '@material-ui/styles';
 
 const styles = theme => ({
   flex: {
