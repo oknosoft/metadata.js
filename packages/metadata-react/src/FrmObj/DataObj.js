@@ -182,17 +182,27 @@ class DataObj extends MDNRComponent {
         return this.renderItems(item);
       }
 
-      const {element, fld, ...props} = item;
+      const {element, fld, light, ...props} = item;
 
       if(element === 'DataField') {
-        return <DataField key={index} _obj={_obj} _fld={fld} _meta={_meta.fields[item.fld]} {...props}/>;
+        return <DataField key={`fld_${index}`} _obj={_obj} _fld={fld} _meta={_meta.fields[item.fld]} {...props}/>;
       }
 
       if(element === 'FormGroup') {
-        return <FormGroup key={index} className={classes.spaceLeft} {...props}>{this.renderItems(item.items)}</FormGroup>;
+        return <FormGroup key={`grp_${index}`} className={classes.spaceLeft} {...props}>{this.renderItems(item.items)}</FormGroup>;
       }
 
-      return <div key={index}>Не реализовано в текущей версии</div>;
+      if(element === 'Divider') {
+        return <Divider light={light} key={`dv_${index}`}/>;
+      }
+
+      if(element === 'TabularSection') {
+        return <div key={`ts_${index}`} style={{height: 300}}>
+          <TabularSection _obj={_obj} _tabular={fld}/>
+        </div>;
+      }
+
+      return <div key={index}>{`${element}: не реализовано в текущей версии`}</div>;
     });
   }
 
