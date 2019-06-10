@@ -1225,7 +1225,7 @@ export class RefDataManager extends DataManager{
     const {cachable, _owner} = this;
     const {md, utils} = _owner.$p;
     const select = {};
-    const {input_by_string} = this.metadata();
+    const {input_by_string, has_owners} = this.metadata();
 
     if(/ram$/.test(cachable)) {
 
@@ -1253,7 +1253,7 @@ export class RefDataManager extends DataManager{
               select[choice.name[1]] = typeof choice.path[0] == 'function' ? choice.path[0] : _obj._owner._owner[choice.path[0]];
             }
             else {
-              if(choice.name[1] == 'owner' && !_mgr.metadata().has_owners) {
+              if(choice.name[1] == 'owner' && !has_owners) {
                 return;
               }
               select[choice.name[1]] = _obj[choice.path[1]];

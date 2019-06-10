@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.20-beta.2, built:2019-06-06
+ metadata-core v2.0.20-beta.3, built:2019-06-10
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2319,7 +2319,7 @@ class RefDataManager extends DataManager{
     const {cachable, _owner} = this;
     const {md, utils} = _owner.$p;
     const select = {};
-    const {input_by_string} = this.metadata();
+    const {input_by_string, has_owners} = this.metadata();
     if(/ram$/.test(cachable)) {
       select._top = top;
       select._skip = skip;
@@ -2341,7 +2341,7 @@ class RefDataManager extends DataManager{
               select[choice.name[1]] = typeof choice.path[0] == 'function' ? choice.path[0] : _obj._owner._owner[choice.path[0]];
             }
             else {
-              if(choice.name[1] == 'owner' && !_mgr.metadata().has_owners) {
+              if(choice.name[1] == 'owner' && !has_owners) {
                 return;
               }
               select[choice.name[1]] = _obj[choice.path[1]];
@@ -4605,7 +4605,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.20-beta.2";
+    return "2.0.20-beta.3";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
