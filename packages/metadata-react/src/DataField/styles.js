@@ -81,6 +81,10 @@ const styles = theme => ({
     width: `${theme.spacing(2)}px !important`,
     boxShadow: 'none  !important',
     margin: 'auto',
+  },
+  required: {
+    borderBottom: '3px dashed red',
+    paddingBottom: 4,
   }
 });
 

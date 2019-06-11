@@ -26,6 +26,9 @@ class FieldText extends AbstractField {
     }
     if(_meta.mandatory) {
       attr.required = true;
+      if(!attr.value) {
+        other.inputProps = Object.assign(other.inputProps || {}, {className: classes.required});
+      }
     }
 
     return isTabular ?

@@ -11,6 +11,7 @@ export default function InpitEditable(props) {
   const attr = {
     title: _meta.tooltip || _meta.synonym,
   }
+  const value = _obj[_fld];
   if(_meta.mandatory) {
     attr.required = true;
   }
@@ -37,14 +38,14 @@ export default function InpitEditable(props) {
         id={`downshift-${_fld}`}
         {...inputProps}
         inputRef={inputRef}
-        classes={{input: classes.input}}
+        classes={{input: cn(classes.input, attr.required && (!value || value.empty()) && classes.required)}}
         endAdornment={props.inputFocused &&
-        <Adornment
-          classes={classes}
-          title={_obj[_fld]._manager.frm_obj_name}
-          isOpen={props.isOpen}
-          handleToggle={props.handleToggle}
-        />
+          <Adornment
+            classes={classes}
+            title={value && value._manager.frm_obj_name}
+            isOpen={props.isOpen}
+            handleToggle={props.handleToggle}
+          />
         }
       />
     </FormControl>
