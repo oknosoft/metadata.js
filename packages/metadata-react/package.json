@@ -11,7 +11,6 @@
   "dependencies": {
     "@material-ui/core": "^4.1",
     "@material-ui/icons": "^4.1",
-    "autoprefixer": "^9.5",
     "classnames": "^2.2.6",
     "downshift": "^3.2",
     "font-awesome": "^4.7.0",
@@ -20,7 +19,7 @@
     "metadata-redux": "^2.0.20-beta.3",
     "rc-calendar": "^9.15",
     "rc-cascader": "^0.17",
-    "rc-time-picker": "^3.6",
+    "rc-time-picker": "^3.7",
     "react-data-grid": "^6.1",
     "react-data-grid-addons": "^6.1",
     "react-fullscreenable": "^2.5.1-0",

@@ -118,7 +118,7 @@ SimpleDialog.propTypes = {
   fullScreen: PropTypes.bool,
   disablePortal: PropTypes.bool,
   initFullScreen: PropTypes.bool,
-  title: PropTypes.string.isRequired,
+  title: PropTypes.node.isRequired,
   actions: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   children: PropTypes.oneOfType([PropTypes.object, PropTypes.node]),
   classes: PropTypes.object.isRequired,
