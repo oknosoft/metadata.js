@@ -15,7 +15,7 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import Downshift from 'downshift'
+import Downshift from 'downshift';
 
 import OpenInNew from '@material-ui/icons/OpenInNew';
 import AddIcon from '@material-ui/icons/AddCircleOutline';
@@ -45,8 +45,22 @@ class FieldInfinit extends AbstractField {
     Object.assign(this.state, {
       dialogOpened: '',
       inputFocused: false,
-      inputValue: suggestionText(this.state.value),
     });
+  }
+
+  shouldComponentUpdate({_obj, _fld}, nextState, nextContext) {
+    if(this.downshift && !this.state.inputFocused && !nextState.inputFocused) {
+      const value = _obj[_fld];
+      const {state} = this.downshift;
+      if(state.selectedItem !== value) {
+        this.downshift.setState({
+          selectedItem: value,
+          inputValue: suggestionText(value),
+        });
+        return false;
+      }
+    }
+    return true;
   }
 
   handleSelect = (value) => {
@@ -237,6 +251,7 @@ class FieldInfinit extends AbstractField {
     const {props, state, _meta, paperProps, isTabular} = this;
     const {read_only} = (props.hasOwnProperty('read_only') ? props : _meta);
     const {classes, _obj, _fld} = props;
+    const value = _obj[_fld];
 
     return (
       read_only ? <InpitReadOnly
@@ -244,7 +259,7 @@ class FieldInfinit extends AbstractField {
           _fld={props._fld}
           isTabular={isTabular}
           classes={classes}
-          inputValue={state.inputValue}
+          inputValue={suggestionText(value)}
           fullWidth={props.fullWidth}
           label_position={props.label_position}
       />
@@ -254,8 +269,8 @@ class FieldInfinit extends AbstractField {
           ref={this.downshiftRef}
           onChange={this.handleSelect}
           itemToString={suggestionText}
-          initialSelectedItem={state.value}
-          initialInputValue={state.inputValue}
+          initialSelectedItem={value}
+          initialInputValue={suggestionText(value)}
           initialIsOpen={isTabular}
         >
           {({isOpen, getLabelProps, getInputProps, getItemProps, inputValue, highlightedIndex, selectedItem, openMenu, closeMenu}) => {
