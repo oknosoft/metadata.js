@@ -12,15 +12,11 @@ import Helmet from 'react-helmet';
 import Typography from '@material-ui/core/Typography';
 import IconError from '@material-ui/icons/ErrorOutline';
 import Input from '@material-ui/core/Input';
-import InputLabel from '@material-ui/core/InputLabel';
-import InputAdornment from '@material-ui/core/InputAdornment';
 import FormGroup from '@material-ui/core/FormGroup';
-import FormControl from '@material-ui/core/FormControl';
-import Visibility from '@material-ui/icons/Visibility';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import classnames from 'classnames';
 
+import Creditales from './Creditales';
 import CnnSettings from './CnnSettings';
 import {withPrm} from 'metadata-redux';
 import withStyles from '../styles/paper600';
@@ -43,16 +39,10 @@ class TabsLogin extends Component {
       showPassword: false,
     };
 
-    this.handleLogin = this.handleLogin.bind(this);
   }
 
   componentDidMount() {
     this.shouldComponentUpdate(this.props, this.state);
-  }
-
-  handleLogin() {
-    const {props, state: {login, password}} = this;
-    login && password && props.handleLogin(login, password);
   }
 
   // если изменили state - не перерисовываем
@@ -80,6 +70,11 @@ class TabsLogin extends Component {
     this.setState({ showPassword: !this.state.showPassword });
   };
 
+  handleLogin = () => {
+    const {props, state: {login, password}} = this;
+    login && password && props.handleLogin(login, password);
+  };
+
   render() {
 
     const {props, state, handleLogin} = this;
@@ -104,43 +99,16 @@ class TabsLogin extends Component {
         <Tab label="Подключение"/>
       </Tabs>
 
-      {state.index === 0 &&
-      <FormGroup>
-
-        <TextField
-          label="Имя пользователя"
-          inputProps={{placeholder: 'login', id: 'username', name: 'username'}}
-          fullWidth
-          margin="dense"
-          value={state.login}
-          onChange={event => this.setState({login: event.target.value})}
-        />
-
-        <FormControl
-          fullWidth
-          margin="dense"
-        >
-          <InputLabel>Пароль</InputLabel>
-          <Input
-            type={state.showPassword ? 'text' : 'password'}
-            inputProps={{placeholder: 'password', id: 'password', name: 'password'}}
-            value={state.password}
-            onChange={event => this.setState({password: event.target.value})}
-            onKeyPress={(e) => e.key === 'Enter' && this.handleLogin()}
-            endAdornment={
-              <InputAdornment position="end">
-                <IconButton
-                  onClick={this.handleClickShowPasssword}
-                  onMouseDown={this.handleMouseDownPassword}
-                >
-                  {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            }
-          />
-        </FormControl>
-
-      </FormGroup>
+      {state.index === 0 && <Creditales
+        login={state.login}
+        password={state.password}
+        showPassword={state.showPassword}
+        handleClickShowPasssword={this.handleClickShowPasssword}
+        handleMouseDownPassword={this.handleMouseDownPassword}
+        handleLogin={this.handleLogin}
+        loginChange={event => this.setState({login: event.target.value})}
+        passwordChange={event => this.setState({password: event.target.value})}
+      />
       }
 
       {state.index === 0 && !user.log_error && user.try_log_in &&

@@ -9,11 +9,11 @@ import TabsLogin from '../FrmLogin/TabsLogin';
 import {compose} from 'redux';
 import {withMeta, withPrm} from 'metadata-redux';
 
-const FrmLogin = compose(withMeta, withPrm)(({classes, ...other}) => < TabsLogin disableTitle {...other} />);
+const DefaultLogin = compose(withMeta, withPrm)(({classes, ...other}) => < TabsLogin disableTitle {...other} />);
 
 function NeedAuth(props) {
-  const {handleNavigate, handleIfaceState, title} = props;
-
+  const {handleNavigate, handleIfaceState, title, ComponentLogin} = props;
+  const FrmLogin = ComponentLogin || DefaultLogin;
   const margin = {marginTop: 16, marginBottom: 16};
   return <AppContent>
     <div style={margin}>
@@ -27,6 +27,7 @@ function NeedAuth(props) {
 NeedAuth.propTypes = {
   handleNavigate: PropTypes.func.isRequired,
   handleIfaceState: PropTypes.func.isRequired,
+  ComponentLogin: PropTypes.func,
   title: PropTypes.string,
 };
 
