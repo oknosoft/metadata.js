@@ -27,7 +27,7 @@ function NeedAuth(props) {
 NeedAuth.propTypes = {
   handleNavigate: PropTypes.func.isRequired,
   handleIfaceState: PropTypes.func.isRequired,
-  ComponentLogin: PropTypes.func,
+  ComponentLogin: PropTypes.oneOfType([PropTypes.object, PropTypes.node, PropTypes.func]),
   title: PropTypes.string,
 };
 

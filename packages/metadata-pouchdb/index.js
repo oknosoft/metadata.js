@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.20-beta.4, built:2019-06-19
+ metadata-pouchdb v2.0.20-beta.4, built:2019-06-22
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -469,12 +469,12 @@ function adapter({AbstracrAdapter}) {
       if(props.user_node && props.user_node.suffix) {
         props._suffix = props.user_node.suffix;
       }
-      const opts = {auto_compaction: true, revs_limit: 3};
+      const opts = {auto_compaction: true, revs_limit: 3, owner: this};
       const bases = md.bases();
       if(props.use_meta !== false) {
         local.meta = new PouchDB$1(props.prefix + 'meta', opts);
         if(props.path) {
-          remote.meta = new PouchDB$1(props.path + 'meta', {skip_setup: true});
+          remote.meta = new PouchDB$1(props.path + 'meta', {skip_setup: true, owner: this});
           setTimeout(() => this.run_sync('meta'));
         }
       }
@@ -510,7 +510,7 @@ function adapter({AbstracrAdapter}) {
     }
     after_init(bases, auth) {
       const {props, remote, $p: {md, wsql}} = this;
-      const opts = {skip_setup: true, adapter: 'http'};
+      const opts = {skip_setup: true, adapter: 'http', owner: this};
       if(auth) {
         opts.auth = auth;
       }
@@ -586,33 +586,46 @@ function adapter({AbstracrAdapter}) {
       let try_auth = (props.user_node || !remote.ram) ?
         Promise.resolve(true) :
         remote.ram.login(username, password)
-          .then(({roles}) => {
-            const suffix = /^suffix:/;
-            const ref = /^ref:/;
-            roles.forEach((role) => {
-            if(suffix.test(role)) {
-              props._suffix = role.substr(7);
+          .then((user) => {
+            if(user.ref && typeof user.roles === 'string') {
+              this.emit('authenticated', user);
+              props._suffix = user.suffix || '';
+              props._user = user.ref;
+              props._push_only = Boolean(user.push_only);
+              if(user.direct && !props.direct && props.zone != job_prm.zone_demo) {
+                props.direct = true;
+                wsql.set_user_param('couch_direct', true);
+              }
             }
-            else if(ref.test(role)) {
-              props._user = role.substr(4);
+            else {
+              const {roles} = user;
+              const suffix = /^suffix:/;
+              const ref = /^ref:/;
+              roles.forEach((role) => {
+                if(suffix.test(role)) {
+                  props._suffix = role.substr(7);
+                }
+                else if(ref.test(role)) {
+                  props._user = role.substr(4);
+                }
+                else if(role === 'direct' && !props.direct && props.zone != job_prm.zone_demo) {
+                  props.direct = true;
+                  wsql.set_user_param('couch_direct', true);
+                }
+                else if(role === 'push_only' && !props._push_only) {
+                  props._push_only = true;
+                }
+              });
             }
-            else if(role === 'direct' && !props.direct && props.zone != job_prm.zone_demo) {
-              props.direct = true;
-              wsql.set_user_param('couch_direct', true);
-            }
-            else if(role === 'push_only' && !props._push_only) {
-              props._push_only = true;
-            }
-          });
             if(props._push_only && props.direct) {
-            props.direct = false;
-            wsql.set_user_param('couch_direct', false);
-          }
-            if(props._suffix) {
-            while (props._suffix.length < 4) {
-              props._suffix = '0' + props._suffix;
+              props.direct = false;
+              wsql.set_user_param('couch_direct', false);
             }
-          }
+            if(props._suffix) {
+              while (props._suffix.length < 4) {
+                props._suffix = '0' + props._suffix;
+              }
+            }
             return true;
           })
           .catch((err) => {
@@ -730,7 +743,7 @@ function adapter({AbstracrAdapter}) {
                     remote[name] = null;
                   }
                   else {
-                    remote[name] = new PouchDB$1(dbpath, {skip_setup: true, adapter: 'http'});
+                    remote[name] = new PouchDB$1(dbpath, {skip_setup: true, adapter: 'http', owner: this});
                   }
                 });
               res = res ? res.then(() => sub) : sub;
@@ -739,7 +752,26 @@ function adapter({AbstracrAdapter}) {
           return res;
         }
       }))
-        .then(() => this.emit('user_log_out'));
+        .then(() => {
+          props._user = '';
+          this.emit('user_log_out');
+        });
+    }
+    auth_prefix() {
+      switch (this.props._auth_provider) {
+      case 'google':
+          return 'Google ';
+      case 'ldap':
+        return 'LDAP ';
+      case 'github':
+        return 'Github ';
+      case 'vkontakte':
+        return 'Vkontakte ';
+      case 'facebook':
+        return 'Facebook ';
+      default:
+        return 'Basic ';
+      }
     }
     load_data(db) {
       const {local, $p: {job_prm}} = this;

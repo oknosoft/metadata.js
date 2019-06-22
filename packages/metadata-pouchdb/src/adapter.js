@@ -94,14 +94,14 @@ function adapter({AbstracrAdapter}) {
       }
 
       // создаём локальные базы
-      const opts = {auto_compaction: true, revs_limit: 3};
+      const opts = {auto_compaction: true, revs_limit: 3, owner: this};
       const bases = md.bases();
 
       // если используется meta, вместе с локальной создаём удалённую, т.к. для неё не нужна авторизация
       if(props.use_meta !== false) {
         local.meta = new PouchDB(props.prefix + 'meta', opts);
         if(props.path) {
-          remote.meta = new PouchDB(props.path + 'meta', {skip_setup: true});
+          remote.meta = new PouchDB(props.path + 'meta', {skip_setup: true, owner: this});
           setTimeout(() => this.run_sync('meta'));
         }
       }
@@ -151,7 +151,7 @@ function adapter({AbstracrAdapter}) {
     after_init(bases, auth) {
 
       const {props, remote, $p: {md, wsql}} = this;
-      const opts = {skip_setup: true, adapter: 'http'};
+      const opts = {skip_setup: true, adapter: 'http', owner: this};
 
       if(auth) {
         opts.auth = auth;
@@ -252,36 +252,52 @@ function adapter({AbstracrAdapter}) {
       let try_auth = (props.user_node || !remote.ram) ?
         Promise.resolve(true) :
         remote.ram.login(username, password)
-          .then(({roles}) => {
-            // установим суффикс базы отдела абонента
-            const suffix = /^suffix:/;
-            const ref = /^ref:/;
+          .then((user) => {
+            if(user.ref && typeof user.roles === 'string') {
+              this.emit('authenticated', user);
+              props._suffix = user.suffix || '';
+              props._user = user.ref;
+              props._push_only = Boolean(user.push_only);
+              if(user.direct && !props.direct && props.zone != job_prm.zone_demo) {
+                props.direct = true;
+                wsql.set_user_param('couch_direct', true);
+              }
+            }
+            else {
+              const {roles} = user;
+              // установим суффикс базы отдела абонента
+              const suffix = /^suffix:/;
+              const ref = /^ref:/;
 
-            // уточняем значения констант в соответствии с ролями пользователя
-            roles.forEach((role) => {
-            if(suffix.test(role)) {
-              props._suffix = role.substr(7);
+              // уточняем значения констант в соответствии с ролями пользователя
+              roles.forEach((role) => {
+                if(suffix.test(role)) {
+                  props._suffix = role.substr(7);
+                }
+                else if(ref.test(role)) {
+                  props._user = role.substr(4);
+                }
+                else if(role === 'direct' && !props.direct && props.zone != job_prm.zone_demo) {
+                  props.direct = true;
+                  wsql.set_user_param('couch_direct', true);
+                }
+                else if(role === 'push_only' && !props._push_only) {
+                  props._push_only = true;
+                }
+              });
             }
-            else if(ref.test(role)) {
-              props._user = role.substr(4);
-            }
-            else if(role === 'direct' && !props.direct && props.zone != job_prm.zone_demo) {
-              props.direct = true;
-              wsql.set_user_param('couch_direct', true);
-            }
-            else if(role === 'push_only' && !props._push_only) {
-              props._push_only = true;
-            }
-          });
+
             if(props._push_only && props.direct) {
-            props.direct = false;
-            wsql.set_user_param('couch_direct', false);
-          }
-            if(props._suffix) {
-            while (props._suffix.length < 4) {
-              props._suffix = '0' + props._suffix;
+              props.direct = false;
+              wsql.set_user_param('couch_direct', false);
             }
-          }
+
+            if(props._suffix) {
+              while (props._suffix.length < 4) {
+                props._suffix = '0' + props._suffix;
+              }
+            }
+
             return true;
           })
           .catch((err) => {
@@ -423,7 +439,7 @@ function adapter({AbstracrAdapter}) {
                     remote[name] = null;
                   }
                   else {
-                    remote[name] = new PouchDB(dbpath, {skip_setup: true, adapter: 'http'});
+                    remote[name] = new PouchDB(dbpath, {skip_setup: true, adapter: 'http', owner: this});
                   }
                 });
               res = res ? res.then(() => sub) : sub;
@@ -432,7 +448,27 @@ function adapter({AbstracrAdapter}) {
           return res;
         }
       }))
-        .then(() => this.emit('user_log_out'));
+        .then(() => {
+          props._user = '';
+          this.emit('user_log_out');
+        });
+    }
+
+    auth_prefix() {
+      switch (this.props._auth_provider) {
+      case 'google':
+          return 'Google ';
+      case 'ldap':
+        return 'LDAP ';
+      case 'github':
+        return 'Github ';
+      case 'vkontakte':
+        return 'Vkontakte ';
+      case 'facebook':
+        return 'Facebook ';
+      default:
+        return 'Basic ';
+      }
     }
 
     /**

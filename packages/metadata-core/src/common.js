@@ -163,7 +163,7 @@ class MetaEngine {
    */
   get current_user() {
 
-    const {CatUsers, cat, superlogin, wsql} = this;
+    const {CatUsers, cat, superlogin, wsql, adapters: {pouch}} = this;
 
     // заглушка "всё разрешено", если методы acl не переопределены внешним приложением
     if (CatUsers && !CatUsers.prototype.hasOwnProperty('role_available')) {
@@ -217,28 +217,33 @@ class MetaEngine {
     }
 
     let user_name, user;
+    if (cat && cat.users) {
 
-    if (superlogin) {
-      const session = superlogin.getSession();
-      user_name = session ? session.user_id : '';
-    }
-
-    if (!user_name) {
-      user_name = wsql.get_user_param('user_name');
-    }
-
-    if (cat && cat.users && user_name) {
-      user = cat.users.by_id(user_name);
-      if (!user || user.empty()) {
+      if(pouch && pouch.props._user) {
+        user = cat.users.get(pouch.props._user);
+      }
+      else {
         if (superlogin) {
-          // если superlogin, всю онформацию о пользователе получаем из sl_users
-          user = superlogin.create_user();
+          const session = superlogin.getSession();
+          user_name = session ? session.user_id : '';
         }
-        else {
-          cat.users.find_rows_remote({
-            _top: 1,
-            id: user_name,
-          });
+
+        if (!user_name) {
+          user_name = wsql.get_user_param('user_name');
+        }
+
+        user = cat.users.by_id(user_name);
+        if (!user || user.empty()) {
+          if (superlogin) {
+            // если superlogin, всю онформацию о пользователе получаем из sl_users
+            user = superlogin.create_user();
+          }
+          else {
+            cat.users.find_rows_remote({
+              _top: 1,
+              id: user_name,
+            });
+          }
         }
       }
     }

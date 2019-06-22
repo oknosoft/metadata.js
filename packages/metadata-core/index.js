@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.20-beta.4, built:2019-06-19
+ metadata-core v2.0.20-beta.4, built:2019-06-22
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -4621,7 +4621,7 @@ class MetaEngine {
     return msg$1;
   }
   get current_user() {
-    const {CatUsers, cat, superlogin, wsql} = this;
+    const {CatUsers, cat, superlogin, wsql, adapters: {pouch}} = this;
     if (CatUsers && !CatUsers.prototype.hasOwnProperty('role_available')) {
       CatUsers.prototype.role_available = function (name) {
         return this.acl_objs ? this.acl_objs._obj.some((row) => row.type == name) : true;
@@ -4652,24 +4652,29 @@ class MetaEngine {
       });
     }
     let user_name, user;
-    if (superlogin) {
-      const session = superlogin.getSession();
-      user_name = session ? session.user_id : '';
-    }
-    if (!user_name) {
-      user_name = wsql.get_user_param('user_name');
-    }
-    if (cat && cat.users && user_name) {
-      user = cat.users.by_id(user_name);
-      if (!user || user.empty()) {
+    if (cat && cat.users) {
+      if(pouch && pouch.props._user) {
+        user = cat.users.get(pouch.props._user);
+      }
+      else {
         if (superlogin) {
-          user = superlogin.create_user();
+          const session = superlogin.getSession();
+          user_name = session ? session.user_id : '';
         }
-        else {
-          cat.users.find_rows_remote({
-            _top: 1,
-            id: user_name,
-          });
+        if (!user_name) {
+          user_name = wsql.get_user_param('user_name');
+        }
+        user = cat.users.by_id(user_name);
+        if (!user || user.empty()) {
+          if (superlogin) {
+            user = superlogin.create_user();
+          }
+          else {
+            cat.users.find_rows_remote({
+              _top: 1,
+              id: user_name,
+            });
+          }
         }
       }
     }
