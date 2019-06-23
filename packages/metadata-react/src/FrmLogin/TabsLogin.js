@@ -128,7 +128,7 @@ class TabsLogin extends Component {
       }
 
       {state.index === 0 && <DialogActions>
-        {props.user.logged_in ?
+        {user.logged_in ?
           <Button color="primary" size="small" className={classes.button} onClick={handleLogOut}>Выйти</Button>
           :
           [

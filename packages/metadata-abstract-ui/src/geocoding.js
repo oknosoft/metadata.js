@@ -249,7 +249,7 @@ export default function ipinfo() {
      */
     google_ready() {
       return new Promise((resolve, reject) => {
-        if(this._ggeocoder) {
+        if(this._ggeocoder || !job_prm.use_google_geo) {
           return resolve();
         }
         // Если Google не ответил - информируем об ошибке и продолжаем
