@@ -126,5 +126,5 @@ export function reset_user(state, logged_out) {
   if(logged_out) {
     user.logged_out = true;
   }
-  return Object.assign({}, state, {user});
+  return Object.assign({}, state, {user, idle: false});
 }

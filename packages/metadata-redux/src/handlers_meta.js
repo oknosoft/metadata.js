@@ -4,7 +4,7 @@
  * Активные действия и работа с данными происходит в actions
  */
 
-import {META_LOADED, PRM_CHANGE, OFFLINE, SECOND_INSTANCE} from './actions_base';
+import {META_LOADED, PRM_CHANGE, OFFLINE, IDLE, SECOND_INSTANCE} from './actions_base';
 import {DATA_LOADED, DATA_PAGE, DATA_ERROR, LOAD_START, AUTOLOGIN, NO_DATA, SYNC_DATA, SYNC_ERROR, SYNC_PAUSED, SYNC_RESUMED} from './actions_pouch';
 import {DEFINED, LOG_IN, TRY_LOG_IN, LOG_OUT, LOG_ERROR, reset_user} from './actions_auth';
 import {ADD, CHANGE} from './actions_obj';
@@ -39,6 +39,8 @@ export default {
   },
 
   [OFFLINE]: (state, action) => Object.assign({}, state, {offline: action.payload}),
+
+  [IDLE]: (state, action) => Object.assign({}, state, {idle: action.payload}),
 
   [SECOND_INSTANCE]: (state, action) => Object.assign({}, state, {second_instance: true}),
 
@@ -93,7 +95,7 @@ export default {
       try_log_in: false,
       log_error: ''
     });
-    return Object.assign({}, state, {user});
+    return Object.assign({}, state, {user, idle: false});
   },
 
   [TRY_LOG_IN]: (state, action) => {

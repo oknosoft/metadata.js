@@ -5,7 +5,6 @@
 
 import handlers_meta from './handlers_meta';
 
-
 /**
  * META
  */
@@ -47,6 +46,7 @@ function metaInitialState() {
     data_empty: undefined,
     sync_started: false,
     fetch: false,
+    idle: false,
     offline: typeof navigator != 'undefined' && !navigator.onLine,
     path_log_in: false,
     couch_direct,
