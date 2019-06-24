@@ -1,5 +1,6 @@
 import {connect} from 'react-redux';
 import {try_log_in, log_out} from './actions_auth';
+import {idle} from './actions_base';
 
 export function mapStateToProps({meta}) {
   return typeof $p === 'object' ?
@@ -44,7 +45,16 @@ export function mapDispatchToProps(dispatch) {
 
     handleLogOut() {
       return dispatch(log_out($p.adapters.pouch));
+    },
+
+    handleLock() {
+      return dispatch(idle(true));
+    },
+
+    handleUnLock() {
+      return dispatch(idle(false));
     }
+
   };
 };
 

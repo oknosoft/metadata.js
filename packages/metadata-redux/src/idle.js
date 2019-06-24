@@ -8,7 +8,7 @@
 
 import {offline, idle} from './actions_base';
 import {log_out} from './actions_auth';
-const timeout = 10 * 60 * 1000;
+const timeout = 12 * 60 * 1000;
 
 export default class Idle {
   constructor(dispatch) {
@@ -21,7 +21,7 @@ export default class Idle {
 
     function watchdog() {
       if(Date.now() - activity > timeout) {
-        dispatch(log_out($p.adapters.pouch));
+        event();
         dispatch(idle(true));
       }
     }
@@ -32,7 +32,7 @@ export default class Idle {
       window.addEventListener('offline', () => dispatch(offline(true)), false);
       document.addEventListener('mousemove', event, false);
       document.addEventListener('keydown', event, false);
-      setInterval(watchdog, 60000);
+      setInterval(watchdog, 30000);
     }
 
     // TODO: здесь можно подписаться на rotate и т.д.

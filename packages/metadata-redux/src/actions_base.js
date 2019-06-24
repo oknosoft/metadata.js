@@ -30,6 +30,9 @@ export function offline(state) {
 }
 
 export function idle(state) {
+  if(typeof $p === 'object' && $p.ui) {
+    $p.ui.idle = state;
+  }
   return {
     type: IDLE,
     payload: state,
