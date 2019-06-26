@@ -699,6 +699,17 @@ const utils = {
       }
     },
 
+  /**
+   * Выясняет, содержит ли left подстроку right
+   * @param left
+   * @param right
+   * @return {boolean}
+   * @private
+   */
+  _like(left, right) {
+    return left && left.toString().toLowerCase().includes(right.toLowerCase());
+  },
+
 	/**
 	 * Выясняет, удовлетворяет ли объект `o` условию `selection`
 	 * @method _selection
@@ -737,17 +748,17 @@ const utils = {
 					  if(j === 'or') {
               ok = sel.some((el) => {
                 const key = Object.keys(el)[0];
-                if (el[key].hasOwnProperty('like'))
-                  return o[key] && o[key].toLowerCase().indexOf(el[key].like.toLowerCase()) != -1;
-                else
+                if(el[key].hasOwnProperty('like')) {
+                  return utils._like(o[key], el[key].like);
+                }
+                else {
                   return utils.is_equal(o[key], el[key]);
+                }
               });
             }
             // выполняем все отборы текущего sel
 					  else {
-              ok = sel.every((el) => {
-                return utils._selection(o, {[j]: el});
-              });
+              ok = sel.every((el) => utils._selection(o, {[j]: el}));
             }
             if(!ok) {
               break;
@@ -755,21 +766,21 @@ const utils = {
           }
 					// если свойство отбора является объектом `like`, сравниваем подстроку
 					else if (is_obj && sel.hasOwnProperty('like')) {
-						if (!o[j] || o[j].toLowerCase().indexOf(sel.like.toLowerCase()) == -1) {
+						if (!utils._like(o[j], sel.like)) {
 							ok = false;
 							break;
 						}
 					}
 					// это синоним `like`
           else if (is_obj && sel.hasOwnProperty('lke')) {
-            if (!o[j] || o[j].toLowerCase().indexOf(sel.lke.toLowerCase()) == -1) {
+            if (!utils._like(o[j], sel.lke)) {
               ok = false;
               break;
             }
           }
           // это вид сравнения `не содержит`
           else if (is_obj && sel.hasOwnProperty('nlk')) {
-            if (o[j] && o[j].toLowerCase().indexOf(sel.nlk.toLowerCase()) != -1) {
+            if (utils._like(o[j], sel.nlk)) {
               ok = false;
               break;
             }

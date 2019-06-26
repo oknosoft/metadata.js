@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.20-beta.4, built:2019-06-22
+ metadata-core v2.0.20-beta.4, built:2019-06-26
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -555,14 +555,8 @@ class InnerData {
     this._modified = false;
   }
 }
-class DataObj {
+class BaseDataObj {
   constructor(attr, manager, loading, direct) {
-    if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)) {
-      const tmp = manager.get(attr, true);
-      if(tmp) {
-        return tmp;
-      }
-    }
     Object.defineProperties(this, {
       _obj: {
         value: direct ? attr : {
@@ -578,10 +572,6 @@ class DataObj {
         configurable: true
       }
     });
-    if(manager.alatable && manager.push) {
-      manager.alatable.push(this._obj);
-      manager.push(this, this._obj.ref);
-    }
   }
   _getter(f) {
     const mf = this._metadata(f).type;
@@ -743,7 +733,7 @@ class DataObj {
         }
         else {
           if(!Meta._sys_fields.includes(fld) &&
-              (_obj[fld] === blank.guid || (_obj[fld] === '' && mfld.type.types.length === 1 && mfld.type.types[0] === 'string'))) {
+            (_obj[fld] === blank.guid || (_obj[fld] === '' && mfld.type.types.length === 1 && mfld.type.types[0] === 'string'))) {
             continue;
           }
           res[fld] = _obj[fld];
@@ -763,11 +753,6 @@ class DataObj {
   }
   set _deleted(v) {
     this._obj._deleted = !!v;
-  }
-  get _rev() {
-    return this._obj._rev || '';
-  }
-  set _rev(v) {
   }
   get _modified() {
     return !!this._data._modified;
@@ -799,6 +784,126 @@ class DataObj {
   }
   empty() {
     return !this._obj || utils.is_empty_guid(this._obj.ref);
+  }
+  _mixin(attr, include, exclude, silent) {
+    if(Object.isFrozen(this)) {
+      return;
+    }
+    if(attr && typeof attr == 'object') {
+      const {_not_set_loaded} = attr;
+      _not_set_loaded && delete attr._not_set_loaded;
+      const {_data} = this;
+      if(silent) {
+        if(_data._loading) {
+          silent = false;
+        }
+        _data._loading = true;
+      }
+      utils._mixin(this, attr, include, exclude);
+      if(silent) {
+        _data._loading = false;
+      }
+      if(!_not_set_loaded && (_data._loading || (!utils.is_empty_guid(this.ref) && (attr.id || attr.name || attr.number_doc)))) {
+        this._set_loaded(this.ref);
+      }
+    }
+  }
+  _fix_plain() {
+    const {_obj, _manager} = this;
+    const {fields, tabular_sections, hierarchical, has_owners} = this._metadata();
+    DataObj.fix_collection(this, _obj, fields);
+    if(hierarchical || has_owners) {
+      const sys_fields = {};
+      if(hierarchical) {
+        sys_fields.parent = this._metadata('parent');
+      }
+      if(has_owners) {
+        sys_fields.owner = this._metadata('owner');
+      }
+      DataObj.fix_collection(this, _obj, sys_fields);
+    }
+    for (const ts in tabular_sections) {
+      if(Array.isArray(_obj[ts])){
+        const tabular = this[ts];
+        const Constructor = _manager.obj_constructor(ts, true);
+        const {fields} = tabular_sections[ts];
+        for(let i = 0; i < _obj[ts].length; i++) {
+          const row = _obj[ts][i];
+          const _row = new Constructor(tabular, row);
+          row.row = i + 1;
+          Object.defineProperty(row, '_row', {value: _row});
+          DataObj.fix_collection(_row, row, fields);
+        }
+      }
+    }
+  }
+  print(model, wnd) {
+    return this._manager.print(this, model, wnd);
+  }
+  after_create() {
+    return this;
+  }
+  after_load() {
+    return this;
+  }
+  before_save() {
+    return this;
+  }
+  after_save() {
+    return this;
+  }
+  value_change(f, mf, v) {
+    return this;
+  }
+  add_row(row) {
+    return this;
+  }
+  del_row(row) {
+    return this;
+  }
+  after_del_row(name) {
+    return this;
+  }
+  static fix_collection(obj, _obj, fields) {
+    for (const fld in fields) {
+      if(_obj[fld]) {
+        let {type, choice_type} = fields[fld];
+        if(choice_type && choice_type.path){
+          const prop = obj[choice_type.path[choice_type.path.length - 1]];
+          if(prop && prop.type) {
+            type = prop.type;
+          }
+        }
+        if (type.is_ref && typeof _obj[fld] === 'object') {
+          if(!(fld === 'type' && obj.class_name && obj.class_name.indexOf('cch.') === 0)) {
+            _obj[fld] = utils.fix_guid(_obj[fld], false);
+          }
+        }
+        else if (type.date_part && typeof _obj[fld] === 'string') {
+          _obj[fld] = utils.fix_date(_obj[fld], type.types.length === 1);
+        }
+      }
+    }
+  }
+}
+class DataObj extends BaseDataObj {
+  constructor(attr, manager, loading, direct) {
+    if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)) {
+      const tmp = manager.get(attr, true);
+      if(tmp) {
+        return tmp;
+      }
+    }
+    super(attr, manager, loading, direct);
+    if(manager.alatable && manager.push) {
+      manager.alatable.push(this._obj);
+      manager.push(this, this._obj.ref);
+    }
+  }
+  get _rev() {
+    return this._obj._rev || '';
+  }
+  set _rev(v) {
   }
   load() {
     const {_data} = this;
@@ -1015,79 +1120,6 @@ class DataObj {
         return att;
       });
   }
-  _mixin(attr, include, exclude, silent) {
-    if(Object.isFrozen(this)) {
-      return;
-    }
-    if(attr && typeof attr == 'object') {
-      const {_not_set_loaded} = attr;
-      _not_set_loaded && delete attr._not_set_loaded;
-      const {_data} = this;
-      if(silent) {
-        if(_data._loading) {
-          silent = false;
-        }
-        _data._loading = true;
-      }
-      utils._mixin(this, attr, include, exclude);
-      if(silent) {
-        _data._loading = false;
-      }
-      if(!_not_set_loaded && (_data._loading || (!utils.is_empty_guid(this.ref) && (attr.id || attr.name || attr.number_doc)))) {
-        this._set_loaded(this.ref);
-      }
-    }
-  }
-  static fix_collection(obj, _obj, fields) {
-    for (const fld in fields) {
-      if(_obj[fld]) {
-        let {type, choice_type} = fields[fld];
-        if(choice_type && choice_type.path){
-          const prop = obj[choice_type.path[choice_type.path.length - 1]];
-          if(prop && prop.type) {
-            type = prop.type;
-          }
-        }
-        if (type.is_ref && typeof _obj[fld] === 'object') {
-          if(!(fld === 'type' && obj.class_name && obj.class_name.indexOf('cch.') === 0)) {
-            _obj[fld] = utils.fix_guid(_obj[fld], false);
-          }
-        }
-        else if (type.date_part && typeof _obj[fld] === 'string') {
-          _obj[fld] = utils.fix_date(_obj[fld], type.types.length === 1);
-        }
-      }
-    }
-  }
-  _fix_plain() {
-    const {_obj, _manager} = this;
-    const {fields, tabular_sections, hierarchical, has_owners} = this._metadata();
-    DataObj.fix_collection(this, _obj, fields);
-    if(hierarchical || has_owners) {
-      const sys_fields = {};
-      if(hierarchical) {
-        sys_fields.parent = this._metadata('parent');
-      }
-      if(has_owners) {
-        sys_fields.owner = this._metadata('owner');
-      }
-      DataObj.fix_collection(this, _obj, sys_fields);
-    }
-    for (const ts in tabular_sections) {
-      if(Array.isArray(_obj[ts])){
-        const tabular = this[ts];
-        const Constructor = _manager.obj_constructor(ts, true);
-        const {fields} = tabular_sections[ts];
-        for(let i = 0; i < _obj[ts].length; i++) {
-          const row = _obj[ts][i];
-          const _row = new Constructor(tabular, row);
-          row.row = i + 1;
-          Object.defineProperty(row, '_row', {value: _row});
-          DataObj.fix_collection(_row, row, fields);
-        }
-      }
-    }
-  }
   broken_links() {
     const res = [];
     const {fields, tabular_sections} = this._metadata();
@@ -1128,33 +1160,6 @@ class DataObj {
       }
     }
     return res;
-  }
-  print(model, wnd) {
-    return this._manager.print(this, model, wnd);
-  }
-  after_create() {
-    return this;
-  }
-  after_load() {
-    return this;
-  }
-  before_save() {
-    return this;
-  }
-  after_save() {
-    return this;
-  }
-  value_change(f, mf, v) {
-    return this;
-  }
-  add_row(row) {
-    return this;
-  }
-  del_row(row) {
-    return this;
-  }
-  after_del_row(name) {
-    return this;
   }
 }
 Object.defineProperty(DataObj.prototype, 'ref', {
@@ -1382,6 +1387,8 @@ class RegisterRow extends DataObj {
 }
 
 var data_objs = /*#__PURE__*/Object.freeze({
+	InnerData: InnerData,
+	BaseDataObj: BaseDataObj,
 	DataObj: DataObj,
 	CatObj: CatObj,
 	NumberDocAndDate: NumberDocAndDate,
@@ -3365,6 +3372,9 @@ const utils = {
         return left == right;
       }
     },
+  _like(left, right) {
+    return left && left.toString().toLowerCase().includes(right.toLowerCase());
+  },
 	_selection(o, selection) {
 		let ok = true;
 		if (selection) {
@@ -3387,35 +3397,35 @@ const utils = {
 					  if(j === 'or') {
               ok = sel.some((el) => {
                 const key = Object.keys(el)[0];
-                if (el[key].hasOwnProperty('like'))
-                  return o[key] && o[key].toLowerCase().indexOf(el[key].like.toLowerCase()) != -1;
-                else
+                if(el[key].hasOwnProperty('like')) {
+                  return utils._like(o[key], el[key].like);
+                }
+                else {
                   return utils.is_equal(o[key], el[key]);
+                }
               });
             }
 					  else {
-              ok = sel.every((el) => {
-                return utils._selection(o, {[j]: el});
-              });
+              ok = sel.every((el) => utils._selection(o, {[j]: el}));
             }
             if(!ok) {
               break;
             }
           }
 					else if (is_obj && sel.hasOwnProperty('like')) {
-						if (!o[j] || o[j].toLowerCase().indexOf(sel.like.toLowerCase()) == -1) {
+						if (!utils._like(o[j], sel.like)) {
 							ok = false;
 							break;
 						}
 					}
           else if (is_obj && sel.hasOwnProperty('lke')) {
-            if (!o[j] || o[j].toLowerCase().indexOf(sel.lke.toLowerCase()) == -1) {
+            if (!utils._like(o[j], sel.lke)) {
               ok = false;
               break;
             }
           }
           else if (is_obj && sel.hasOwnProperty('nlk')) {
-            if (o[j] && o[j].toLowerCase().indexOf(sel.nlk.toLowerCase()) != -1) {
+            if (utils._like(o[j], sel.nlk)) {
               ok = false;
               break;
             }

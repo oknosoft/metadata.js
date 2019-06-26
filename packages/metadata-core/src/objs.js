@@ -9,7 +9,7 @@ import utils from './utils';
 import {DataManager, DataProcessorsManager, EnumManager, RegisterManager} from './mngrs';
 import {TabularSection, TabularSectionRow} from './tabulars';
 
-class InnerData {
+export class InnerData {
 
   constructor(owner, loading) {
     this._ts_ = {};
@@ -22,37 +22,9 @@ class InnerData {
 
 }
 
-/**
- * ### Абстрактный объект данных
- * Прародитель как ссылочных объектов (документов и справочников), так и регистров с суррогатным ключом и несохраняемых обработок<br />
- * См. так же:
- * - {{#crossLink "EnumObj"}}{{/crossLink}} - ПеречислениеОбъект
- * - {{#crossLink "CatObj"}}{{/crossLink}} - СправочникОбъект
- * - {{#crossLink "DocObj"}}{{/crossLink}} - ДокументОбъект
- * - {{#crossLink "DataProcessorObj"}}{{/crossLink}} - ОбработкаОбъект
- * - {{#crossLink "TaskObj"}}{{/crossLink}} - ЗадачаОбъект
- * - {{#crossLink "BusinessProcessObj"}}{{/crossLink}} - БизнеспроцессОбъект
- * - {{#crossLink "RegisterRow"}}{{/crossLink}} - ЗаписьРегистраОбъект
- *
- * @class DataObj
- * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
- * @param manager {RefDataManager}
- * @param [loading] {Boolean}
- * @constructor
- * @menuorder 20
- * @tooltip Объект данных
- */
-export class DataObj {
+export class BaseDataObj {
 
   constructor(attr, manager, loading, direct) {
-
-    // если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
-    if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)) {
-      const tmp = manager.get(attr, true);
-      if(tmp) {
-        return tmp;
-      }
-    }
 
     Object.defineProperties(this, {
 
@@ -93,12 +65,8 @@ export class DataObj {
 
     });
 
-    if(manager.alatable && manager.push) {
-      manager.alatable.push(this._obj);
-      manager.push(this, this._obj.ref);
-    }
-
   }
+
 
   _getter(f) {
 
@@ -313,7 +281,7 @@ export class DataObj {
         }
         else {
           if(!Meta._sys_fields.includes(fld) &&
-              (_obj[fld] === blank.guid || (_obj[fld] === '' && mfld.type.types.length === 1 && mfld.type.types[0] === 'string'))) {
+            (_obj[fld] === blank.guid || (_obj[fld] === '' && mfld.type.types.length === 1 && mfld.type.types[0] === 'string'))) {
             continue;
           }
           res[fld] = _obj[fld];
@@ -354,19 +322,6 @@ export class DataObj {
   }
   set _deleted(v) {
     this._obj._deleted = !!v;
-  }
-
-  /**
-   * ### Ревизия
-   * Eё устанваливает адаптер при чтении и записи
-   * @property _rev
-   * @for DataObj
-   * @type Boolean
-   */
-  get _rev() {
-    return this._obj._rev || '';
-  }
-  set _rev(v) {
   }
 
   /**
@@ -427,6 +382,251 @@ export class DataObj {
    */
   empty() {
     return !this._obj || utils.is_empty_guid(this._obj.ref);
+  }
+
+  /**
+   * Применяет атрибуты к объекту
+   * @param attr
+   * @private
+   */
+  _mixin(attr, include, exclude, silent) {
+    if(Object.isFrozen(this)) {
+      return;
+    }
+    if(attr && typeof attr == 'object') {
+      const {_not_set_loaded} = attr;
+      _not_set_loaded && delete attr._not_set_loaded;
+      const {_data} = this;
+      if(silent) {
+        if(_data._loading) {
+          silent = false;
+        }
+        _data._loading = true;
+      }
+      utils._mixin(this, attr, include, exclude);
+      if(silent) {
+        _data._loading = false;
+      }
+      if(!_not_set_loaded && (_data._loading || (!utils.is_empty_guid(this.ref) && (attr.id || attr.name || attr.number_doc)))) {
+        this._set_loaded(this.ref);
+      }
+    }
+  }
+
+
+  /**
+   * ### Приводит строки дат к датам, ссылки к ссылкам в реквизитах объекта, создаёт табчасти
+   */
+  _fix_plain() {
+    const {_obj, _manager} = this;
+    const {fields, tabular_sections, hierarchical, has_owners} = this._metadata();
+
+    // корректируем реквизиты
+    DataObj.fix_collection(this, _obj, fields);
+
+    // корректируем системные реквизиты
+    if(hierarchical || has_owners) {
+      const sys_fields = {};
+      if(hierarchical) {
+        sys_fields.parent = this._metadata('parent');
+      }
+      if(has_owners) {
+        sys_fields.owner = this._metadata('owner');
+      }
+      DataObj.fix_collection(this, _obj, sys_fields);
+    }
+
+    for (const ts in tabular_sections) {
+      if(Array.isArray(_obj[ts])){
+        const tabular = this[ts];
+        const Constructor = _manager.obj_constructor(ts, true);
+        const {fields} = tabular_sections[ts];
+        for(let i = 0; i < _obj[ts].length; i++) {
+          const row = _obj[ts][i];
+          const _row = new Constructor(tabular, row);
+          row.row = i + 1;
+          Object.defineProperty(row, '_row', {value: _row});
+          DataObj.fix_collection(_row, row, fields);
+        }
+      }
+    }
+  }
+
+  /**
+   * ### Выполняет команду печати
+   * Вызывает одноименный метод менеджера и передаёт себя в качестве объекта печати
+   *
+   * @method print
+   * @for DataObj
+   * @param model {String} - идентификатор макета печатной формы
+   * @param [wnd] - указатель на форму, из которой произведён вызов команды печати
+   * @return {*|{value}|void}
+   * @async
+   */
+  print(model, wnd) {
+    return this._manager.print(this, model, wnd);
+  }
+
+  /**
+   * ### После создания
+   * Возникает после создания объекта. В обработчике можно установить значения по умолчанию для полей и табличных частей
+   * или заполнить объект на основании данных связанного объекта
+   *
+   * @event AFTER_CREATE
+   */
+  after_create() {
+    return this;
+  }
+
+  /**
+   * ### После чтения объекта с сервера
+   * Имеет смысл для объектов с типом кеширования ("doc", "remote", "meta", "e1cib").
+   * т.к. структура _DataObj_ может отличаться от прототипа в базе-источнике, в обработчике можно дозаполнить или пересчитать реквизиты прочитанного объекта
+   *
+   * @event AFTER_LOAD
+   */
+  after_load() {
+    return this;
+  }
+
+  /**
+   * ### Перед записью
+   * Возникает перед записью объекта. В обработчике можно проверить корректность данных, рассчитать итоги и т.д.
+   * Запись можно отклонить, если у пользователя недостаточно прав, либо введены некорректные данные
+   *
+   * @event BEFORE_SAVE
+   */
+  before_save() {
+    return this;
+  }
+
+  /**
+   * ### После записи
+   *
+   * @event AFTER_SAVE
+   */
+  after_save() {
+    return this;
+  }
+
+  /**
+   * ### При изменении реквизита шапки или табличной части
+   *
+   * @event VALUE_CHANGE
+   */
+  value_change(f, mf, v) {
+    return this;
+  }
+
+  /**
+   * ### При добавлении строки табличной части
+   *
+   * @event ADD_ROW
+   */
+  add_row(row) {
+    return this;
+  }
+
+  /**
+   * ### При удалении строки табличной части
+   *
+   * @event DEL_ROW
+   */
+  del_row(row) {
+    return this;
+  }
+
+  /**
+   * ### После удаления строки табличной части
+   *
+   * @event AFTER_DEL_ROW
+   */
+  after_del_row(name) {
+    return this;
+  }
+
+  /**
+   * ### Приводит строки дат к датам, ссылки к ссылкам
+   * @param obj
+   * @param _obj
+   * @param fields
+   */
+  static fix_collection(obj, _obj, fields) {
+    for (const fld in fields) {
+      if(_obj[fld]) {
+        let {type, choice_type} = fields[fld];
+        if(choice_type && choice_type.path){
+          const prop = obj[choice_type.path[choice_type.path.length - 1]];
+          if(prop && prop.type) {
+            type = prop.type;
+          }
+        }
+        if (type.is_ref && typeof _obj[fld] === 'object') {
+          if(!(fld === 'type' && obj.class_name && obj.class_name.indexOf('cch.') === 0)) {
+            _obj[fld] = utils.fix_guid(_obj[fld], false);
+          }
+        }
+        else if (type.date_part && typeof _obj[fld] === 'string') {
+          _obj[fld] = utils.fix_date(_obj[fld], type.types.length === 1);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * ### Абстрактный объект данных
+ * Прародитель как ссылочных объектов (документов и справочников), так и регистров с суррогатным ключом и несохраняемых обработок<br />
+ * См. так же:
+ * - {{#crossLink "EnumObj"}}{{/crossLink}} - ПеречислениеОбъект
+ * - {{#crossLink "CatObj"}}{{/crossLink}} - СправочникОбъект
+ * - {{#crossLink "DocObj"}}{{/crossLink}} - ДокументОбъект
+ * - {{#crossLink "DataProcessorObj"}}{{/crossLink}} - ОбработкаОбъект
+ * - {{#crossLink "TaskObj"}}{{/crossLink}} - ЗадачаОбъект
+ * - {{#crossLink "BusinessProcessObj"}}{{/crossLink}} - БизнеспроцессОбъект
+ * - {{#crossLink "RegisterRow"}}{{/crossLink}} - ЗаписьРегистраОбъект
+ *
+ * @class DataObj
+ * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
+ * @param manager {RefDataManager}
+ * @param [loading] {Boolean}
+ * @constructor
+ * @menuorder 20
+ * @tooltip Объект данных
+ */
+export class DataObj extends BaseDataObj {
+
+  constructor(attr, manager, loading, direct) {
+
+    // если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
+    if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)) {
+      const tmp = manager.get(attr, true);
+      if(tmp) {
+        return tmp;
+      }
+    }
+
+    super(attr, manager, loading, direct);
+
+    if(manager.alatable && manager.push) {
+      manager.alatable.push(this._obj);
+      manager.push(this, this._obj.ref);
+    }
+
+  }
+
+
+  /**
+   * ### Ревизия
+   * Eё устанваливает адаптер при чтении и записи
+   * @property _rev
+   * @for DataObj
+   * @type Boolean
+   */
+  get _rev() {
+    return this._obj._rev || '';
+  }
+  set _rev(v) {
   }
 
   /**
@@ -679,7 +879,6 @@ export class DataObj {
       .then(() => this);
   }
 
-
   /**
    * ### Возвращает присоединенный объект или файл
    * @method get_attachment
@@ -717,7 +916,6 @@ export class DataObj {
       });
   }
 
-
   /**
    * ### Удаляет присоединенный объект или файл
    * Вызывает одноименный метод менеджера и передаёт ссылку на себя в качестве контекста
@@ -736,101 +934,6 @@ export class DataObj {
         }
         return att;
       });
-  }
-
-  /**
-   * Применяет атрибуты к объекту
-   * @param attr
-   * @private
-   */
-  _mixin(attr, include, exclude, silent) {
-    if(Object.isFrozen(this)) {
-      return;
-    }
-    if(attr && typeof attr == 'object') {
-      const {_not_set_loaded} = attr;
-      _not_set_loaded && delete attr._not_set_loaded;
-      const {_data} = this;
-      if(silent) {
-        if(_data._loading) {
-          silent = false;
-        }
-        _data._loading = true;
-      }
-      utils._mixin(this, attr, include, exclude);
-      if(silent) {
-        _data._loading = false;
-      }
-      if(!_not_set_loaded && (_data._loading || (!utils.is_empty_guid(this.ref) && (attr.id || attr.name || attr.number_doc)))) {
-        this._set_loaded(this.ref);
-      }
-    }
-  }
-
-  /**
-   * ### Приводит строки дат к датам, ссылки к ссылкам
-   * @param obj
-   * @param _obj
-   * @param fields
-   */
-  static fix_collection(obj, _obj, fields) {
-    for (const fld in fields) {
-      if(_obj[fld]) {
-        let {type, choice_type} = fields[fld];
-        if(choice_type && choice_type.path){
-          const prop = obj[choice_type.path[choice_type.path.length - 1]];
-          if(prop && prop.type) {
-            type = prop.type;
-          }
-        }
-        if (type.is_ref && typeof _obj[fld] === 'object') {
-          if(!(fld === 'type' && obj.class_name && obj.class_name.indexOf('cch.') === 0)) {
-            _obj[fld] = utils.fix_guid(_obj[fld], false);
-          }
-        }
-        else if (type.date_part && typeof _obj[fld] === 'string') {
-          _obj[fld] = utils.fix_date(_obj[fld], type.types.length === 1);
-        }
-      }
-    }
-  }
-
-  /**
-   * ### Приводит строки дат к датам, ссылки к ссылкам в реквизитах объекта, создаёт табчасти
-   */
-  _fix_plain() {
-    const {_obj, _manager} = this;
-    const {fields, tabular_sections, hierarchical, has_owners} = this._metadata();
-
-    // корректируем реквизиты
-    DataObj.fix_collection(this, _obj, fields);
-
-    // корректируем системные реквизиты
-    if(hierarchical || has_owners) {
-      const sys_fields = {};
-      if(hierarchical) {
-        sys_fields.parent = this._metadata('parent');
-      }
-      if(has_owners) {
-        sys_fields.owner = this._metadata('owner');
-      }
-      DataObj.fix_collection(this, _obj, sys_fields);
-    }
-
-    for (const ts in tabular_sections) {
-      if(Array.isArray(_obj[ts])){
-        const tabular = this[ts];
-        const Constructor = _manager.obj_constructor(ts, true);
-        const {fields} = tabular_sections[ts];
-        for(let i = 0; i < _obj[ts].length; i++) {
-          const row = _obj[ts][i];
-          const _row = new Constructor(tabular, row);
-          row.row = i + 1;
-          Object.defineProperty(row, '_row', {value: _row});
-          DataObj.fix_collection(_row, row, fields);
-        }
-      }
-    }
   }
 
   /**
@@ -881,100 +984,6 @@ export class DataObj {
     }
 
     return res;
-  }
-
-
-  /**
-   * ### Выполняет команду печати
-   * Вызывает одноименный метод менеджера и передаёт себя в качестве объекта печати
-   *
-   * @method print
-   * @for DataObj
-   * @param model {String} - идентификатор макета печатной формы
-   * @param [wnd] - указатель на форму, из которой произведён вызов команды печати
-   * @return {*|{value}|void}
-   * @async
-   */
-  print(model, wnd) {
-    return this._manager.print(this, model, wnd);
-  }
-
-  /**
-   * ### После создания
-   * Возникает после создания объекта. В обработчике можно установить значения по умолчанию для полей и табличных частей
-   * или заполнить объект на основании данных связанного объекта
-   *
-   * @event AFTER_CREATE
-   */
-  after_create() {
-    return this;
-  }
-
-  /**
-   * ### После чтения объекта с сервера
-   * Имеет смысл для объектов с типом кеширования ("doc", "remote", "meta", "e1cib").
-   * т.к. структура _DataObj_ может отличаться от прототипа в базе-источнике, в обработчике можно дозаполнить или пересчитать реквизиты прочитанного объекта
-   *
-   * @event AFTER_LOAD
-   */
-  after_load() {
-    return this;
-  }
-
-  /**
-   * ### Перед записью
-   * Возникает перед записью объекта. В обработчике можно проверить корректность данных, рассчитать итоги и т.д.
-   * Запись можно отклонить, если у пользователя недостаточно прав, либо введены некорректные данные
-   *
-   * @event BEFORE_SAVE
-   */
-  before_save() {
-    return this;
-  }
-
-  /**
-   * ### После записи
-   *
-   * @event AFTER_SAVE
-   */
-  after_save() {
-    return this;
-  }
-
-  /**
-   * ### При изменении реквизита шапки или табличной части
-   *
-   * @event VALUE_CHANGE
-   */
-  value_change(f, mf, v) {
-    return this;
-  }
-
-  /**
-   * ### При добавлении строки табличной части
-   *
-   * @event ADD_ROW
-   */
-  add_row(row) {
-    return this;
-  }
-
-  /**
-   * ### При удалении строки табличной части
-   *
-   * @event DEL_ROW
-   */
-  del_row(row) {
-    return this;
-  }
-
-  /**
-   * ### После удаления строки табличной части
-   *
-   * @event AFTER_DEL_ROW
-   */
-  after_del_row(name) {
-    return this;
   }
 
 }
