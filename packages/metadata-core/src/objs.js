@@ -348,6 +348,7 @@ export class DataObj {
     return this._obj._rev || '';
   }
   set _rev(v) {
+    this._obj._rev = v;
   }
 
   /**
@@ -643,6 +644,9 @@ export class DataObj {
         if(!_attachments) {
           this._attachments = {};
         }
+        if(att.rev && this) {
+          this._rev = att.rev;
+         }        
         if(!this._attachments[att_id] || !att.stub) {
           this._attachments[att_id] = att;
         }
@@ -666,6 +670,7 @@ export class DataObj {
       .then((att) => {
         if(_attachments) {
           delete _attachments[att_id];
+          this._rev = att.rev;
         }
         return att;
       });
