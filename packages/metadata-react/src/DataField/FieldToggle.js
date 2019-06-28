@@ -45,7 +45,8 @@ class FieldToggle extends AbstractField {
               onChange = {handleChange}
             />
           }
-          label={_meta.tooltip || _meta.synonym}
+          label={_meta.synonym || _fld}
+          title={_meta.tooltip}
         />
     );
   }

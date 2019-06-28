@@ -903,11 +903,14 @@ export class DataObj extends BaseDataObj {
    * @async
    */
   save_attachment(att_id, attachment, type) {
-    const {_manager, ref, _attachments} = this;
+    const {_manager, ref, _obj, _attachments} = this;
     return _manager.save_attachment(ref, att_id, attachment, type)
       .then((att) => {
         if(!_attachments) {
           this._attachments = {};
+        }
+        if(att.rev && _obj) {
+          _obj._rev = att.rev;
         }
         if(!this._attachments[att_id] || !att.stub) {
           this._attachments[att_id] = att;
@@ -926,11 +929,14 @@ export class DataObj extends BaseDataObj {
    * @async
    */
   delete_attachment(att_id) {
-    const {_manager, ref, _attachments} = this;
+    const {_manager, ref, _obj, _attachments} = this;
     return _manager.delete_attachment(ref, att_id)
       .then((att) => {
         if(_attachments) {
           delete _attachments[att_id];
+        }
+        if(att.rev && _obj) {
+          _obj._rev = att.rev;
         }
         return att;
       });

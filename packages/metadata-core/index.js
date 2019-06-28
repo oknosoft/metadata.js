@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.20-beta.4, built:2019-06-26
+ metadata-core v2.0.20-beta.4, built:2019-06-28
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1098,11 +1098,14 @@ class DataObj extends BaseDataObj {
     return _manager.adapter.get_attachment(_manager, ref, att_id);
   }
   save_attachment(att_id, attachment, type) {
-    const {_manager, ref, _attachments} = this;
+    const {_manager, ref, _obj, _attachments} = this;
     return _manager.save_attachment(ref, att_id, attachment, type)
       .then((att) => {
         if(!_attachments) {
           this._attachments = {};
+        }
+        if(att.rev && _obj) {
+          _obj._rev = att.rev;
         }
         if(!this._attachments[att_id] || !att.stub) {
           this._attachments[att_id] = att;
@@ -1111,11 +1114,14 @@ class DataObj extends BaseDataObj {
       });
   }
   delete_attachment(att_id) {
-    const {_manager, ref, _attachments} = this;
+    const {_manager, ref, _obj, _attachments} = this;
     return _manager.delete_attachment(ref, att_id)
       .then((att) => {
         if(_attachments) {
           delete _attachments[att_id];
+        }
+        if(att.rev && _obj) {
+          _obj._rev = att.rev;
         }
         return att;
       });

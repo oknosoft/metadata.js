@@ -110,6 +110,9 @@ export function log_error(err) {
   else if(err.message.match('custom') && err.text){
     text = err.text;
   }
+  else if(err.status >= 400){
+    text = err.message;
+  }
   return {
     type: LOG_ERROR,
     payload: text
