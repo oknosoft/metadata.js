@@ -11,7 +11,7 @@ let attached;
 /**
  * Подключает диспетчеризацию событий redux к pouchdb
  */
-export default function metaMiddleware({adapters, md}) {
+export default function metaMiddleware({adapters, md, job_prm}) {
   return ({dispatch}) => {
     return next => action => {
       if(!attached) {
@@ -70,7 +70,7 @@ export default function metaMiddleware({adapters, md}) {
         });
 
         // события window
-        new Idle(dispatch);
+        job_prm.idle = new Idle(dispatch, job_prm.idle_timeout);
 
 
       }

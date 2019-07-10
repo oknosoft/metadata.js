@@ -8,19 +8,21 @@
 
 import {offline, idle} from './actions_base';
 import {log_out} from './actions_auth';
-const timeout = 12 * 60 * 1000;
 
 export default class Idle {
-  constructor(dispatch) {
-    let start = Date.now();
-    let activity = start;
+  constructor(dispatch, timeout) {
+    if(!timeout) {
+      timeout = 12 * 60 * 1000;
+    }
+    this.start = Date.now();
+    this.activity = this.start;
 
-    function event() {
-      activity = Date.now();
+    const event = () => {
+      this.activity = Date.now();
     }
 
-    function watchdog() {
-      if(Date.now() - activity > timeout) {
+    const watchdog = () => {
+      if(Date.now() - this.activity > timeout) {
         event();
         dispatch(idle(true));
       }
@@ -39,6 +41,9 @@ export default class Idle {
 
   }
 
+  get idle() {
+    return Date.now() - this.activity;
+  }
 
 
 }
