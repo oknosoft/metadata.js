@@ -7,6 +7,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import MenuPrint from '../DataList/MenuPrint';
 
 import SaveIcon from '@material-ui/icons/Save';
 import SendIcon from '@material-ui/icons/CheckCircleOutline';
@@ -76,7 +77,14 @@ class DataObjToolbar extends Component {
           open={this.state.open}
           onClose={this.handleRequestClose}
         >
-          {props.handlePrint && <MenuItem onClick={props.handlePrint}><PrintIcon/> &nbsp;Печать</MenuItem>}
+          {props.handlePrint && <MenuPrint
+            scheme={{child_meta() {
+              return {_mgr: props._obj._manager};
+            }}}
+            handlePrint={(ref) => {
+              return props.handlePrint(ref);
+            }}
+          />}
           {props.handleAttachments && <MenuItem onClick={props.handleAttachments}><AttachIcon/> &nbsp;Вложения</MenuItem>}
           {props.menu_buttons}
         </Menu>

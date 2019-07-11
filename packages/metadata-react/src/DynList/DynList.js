@@ -491,7 +491,7 @@ class DynList extends MDNRComponent {
       handleEdit: this.handleEdit,
       handleRemove: this.handleRemove,
       handlePrint: this.handlePrint,
-      handleAttachments: this.handleAttachments,
+      //handleAttachments: this.handleAttachments,
       handleSettingsOpen: this.handleSettingsOpen,
       handleSettingsClose: this.handleSettingsClose,
       handleSchemeChange,

@@ -136,8 +136,8 @@ class DataListToolbar extends Component {
               props.handlePrint && props.handlePrint(ref);
             }}
           />
-          <MenuItem onClick={props.handleAttachments}>
-            <ListItemIcon><AttachIcon/></ListItemIcon>Вложения</MenuItem>
+          {props.handleAttachments && <MenuItem onClick={props.handleAttachments}>
+            <ListItemIcon><AttachIcon/></ListItemIcon>Вложения</MenuItem>}
           {menu_items /* дополнительные пункты меню */}
         </Menu>
 

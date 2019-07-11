@@ -87,8 +87,10 @@ class DataObj extends MDNRComponent {
   handleMarkDeleted() {
   }
 
-  handlePrint() {
-  }
+  handlePrint = (model) => {
+    const {_obj} = this.state;
+    _obj && _obj._manager.print(_obj, model);
+  };
 
   handleAttachments() {
     this.setState({_attachments: true})
@@ -100,7 +102,7 @@ class DataObj extends MDNRComponent {
 
   handleValueChange(_fld) {
     return (event, value) => {
-      const {_obj, handlers} = this.props;
+      const {state: {_obj}, props: {handlers}} = this;
       const old_value = _obj[_fld];
       _obj[_fld] = (value || (event && event.target ? event.target.value : ''));
       handlers.handleValueChange(_fld, old_value);
@@ -213,7 +215,8 @@ class DataObj extends MDNRComponent {
       posted: _obj && _obj.posted,
       deleted: _obj && _obj.deleted,
       postable: !!(_meta.posted || _mgr.metadata('posted')),
-      deletable: true,
+      deletable: !_meta.read_only,
+      _obj,
     }, _handlers)
 
     return _obj ?

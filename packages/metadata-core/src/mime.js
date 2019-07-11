@@ -2632,4 +2632,4 @@ function constructor() {
 /**
  * Экспортируем объект-плагин, добавляющий методы в utils
  */
-export default {constructor: constructor};
+export default {constructor};
