@@ -31,25 +31,6 @@ import MenuPrint from './MenuPrint';
 
 class DataListToolbar extends Component {
 
-  static propTypes = {
-    selectionMode: PropTypes.bool,                  // режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
-    denyAddDel: PropTypes.bool,                     // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
-
-    handleAdd: PropTypes.func,                      // обработчик добавления объекта
-    handleEdit: PropTypes.func,                     // обработчик открфтия формы редактора
-    handleRemove: PropTypes.func,                   // обработчик удаления строки
-
-    handleSchemeChange: PropTypes.func.isRequired,  // обработчик при изменении настроек компоновки
-    scheme: PropTypes.object.isRequired,            // значение настроек компоновки
-
-    handlePrint: PropTypes.func.isRequired,         // обработчик открытия диалога печати
-    handleAttachments: PropTypes.func.isRequired,   // обработчик открытия диалога присоединенных файлов
-  };
-
-  static defaultProps = {
-    show_search: true
-  };
-
   state = {
     anchorEl: undefined,
     open: false,
@@ -130,14 +111,13 @@ class DataListToolbar extends Component {
         >
           {!widthUpSm && <MenuItem onClick={this.handleSettingsToggle}>
             <ListItemIcon><SettingsIcon/></ListItemIcon>Настройки</MenuItem>}
-          <MenuPrint
+          {props.handlePrint && <MenuPrint
             scheme={scheme}
-            handlePrint={(ref) => {
-              props.handlePrint && props.handlePrint(ref);
-            }}
-          />
+            handlePrint={props.handlePrint}
+          />}
           {props.handleAttachments && <MenuItem onClick={props.handleAttachments}>
             <ListItemIcon><AttachIcon/></ListItemIcon>Вложения</MenuItem>}
+
           {menu_items /* дополнительные пункты меню */}
         </Menu>
 
@@ -156,6 +136,24 @@ class DataListToolbar extends Component {
     ];
   }
 }
+
+DataListToolbar.propTypes = {
+  selectionMode: PropTypes.bool,                  // режим выбора из списка. Если истина - дополнительно рисум кнопку выбора
+  denyAddDel: PropTypes.bool,                     // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
+
+  handleSchemeChange: PropTypes.func.isRequired,  // обработчик при изменении настроек компоновки
+  scheme: PropTypes.object.isRequired,            // значение настроек компоновки
+
+  handleAdd: PropTypes.func,                      // обработчик добавления объекта
+  handleEdit: PropTypes.func,                     // обработчик открфтия формы редактора
+  handleRemove: PropTypes.func,                   // обработчик удаления строки
+  handlePrint: PropTypes.func,                    // обработчик открытия диалога печати
+  handleAttachments: PropTypes.func,              // обработчик открытия диалога присоединенных файлов
+};
+
+DataListToolbar.defaultProps = {
+  show_search: true
+};
 
 
 export default compose(withStyles, withWidth())(DataListToolbar);

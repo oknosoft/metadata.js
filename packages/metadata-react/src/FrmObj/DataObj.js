@@ -146,11 +146,12 @@ class DataObj extends MDNRComponent {
   }
 
   onDataChange = (obj, fields) => {
-    if(obj === this.state._obj && this.shouldComponentUpdate(this.props)) {
-      this.forceUpdate();
+    if(($p.utils.is_tabular(obj) && obj._owner._owner === this.state._obj) || (obj === this.state._obj)) {
+      if(this.shouldComponentUpdate(this.props)) {
+        this.forceUpdate();
+      }
     }
   }
-
 
   /**
    * Render part with fields.
