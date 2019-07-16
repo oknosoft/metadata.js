@@ -14,6 +14,42 @@ import DataField from '../DataField';
 import TabularSection from '../TabularSection';
 import FrmAttachments from '../FrmAttachments';
 
+export function renderItems(items) {
+  const {props: {_mgr, classes}, state: {_obj, _meta}} = this;
+
+  return items.map((item, index) => {
+
+    if(Array.isArray(item)) {
+      return renderItems.call(this, item);
+    }
+
+    const {element, fld, light, cond_value, items, ...props} = item;
+
+    switch (element) {
+    case 'DataField':
+      return <DataField key={`fld_${index}`} _obj={_obj} _fld={fld} _meta={_meta.fields[item.fld]} {...props}/>;
+    case 'FormGroup':
+      return <FormGroup key={`grp_${index}`} className={classes.spaceLeft} {...props}>{renderItems.call(this, items)}</FormGroup>;
+    case 'Divider':
+      return <Divider light={light} key={`dv_${index}`}/>;
+    case 'TabularSection':
+      return <div key={`ts_${index}`} style={{height: 320}}>
+        <TabularSection _obj={_obj} _tabular={fld} {...props}/>
+      </div>;
+    case 'Tabs':
+      return <Tabs key={`tabs_${index}`} value={_obj[fld]} onChange={this.handleValueChange(_fld)}>
+        {renderItems.call(this, items)}
+      </Tabs>;
+    case 'Tab':
+      return <Tab key={`tab_${index}`} value={cond_value !== undefined ? cond_value : index} {...props}/>;
+    case 'Condition':
+      return _obj[fld] == cond_value && renderItems.call(this, items);
+    default:
+      return <div key={index}>{`${element}: не реализовано в текущей версии`}</div>;
+    }
+  });
+};
+
 class DataObj extends MDNRComponent {
 
   constructor(props, context) {
@@ -175,39 +211,6 @@ class DataObj extends MDNRComponent {
     return ltitle;
   }
 
-  renderItems(items) {
-    const {props: {_mgr, classes}, state: {_obj, _meta}} = this;
-
-    return items.map((item, index) => {
-
-      if(Array.isArray(item)) {
-        return this.renderItems(item);
-      }
-
-      const {element, fld, light, ...props} = item;
-
-      if(element === 'DataField') {
-        return <DataField key={`fld_${index}`} _obj={_obj} _fld={fld} _meta={_meta.fields[item.fld]} {...props}/>;
-      }
-
-      if(element === 'FormGroup') {
-        return <FormGroup key={`grp_${index}`} className={classes.spaceLeft} {...props}>{this.renderItems(item.items)}</FormGroup>;
-      }
-
-      if(element === 'Divider') {
-        return <Divider light={light} key={`dv_${index}`}/>;
-      }
-
-      if(element === 'TabularSection') {
-        return <div key={`ts_${index}`} style={{height: 300}}>
-          <TabularSection _obj={_obj} _tabular={fld}/>
-        </div>;
-      }
-
-      return <div key={index}>{`${element}: не реализовано в текущей версии`}</div>;
-    });
-  }
-
   render() {
     const {props: {_mgr, classes}, state: {_obj, _meta, _attachments}, context, _handlers} = this;
     const toolbar_props = Object.assign({
@@ -224,7 +227,7 @@ class DataObj extends MDNRComponent {
         <DataObjToolbar key="toolbar" {...toolbar_props} />,
 
         _meta.form && _meta.form.obj && _meta.form.obj.items ?
-          this.renderItems(_meta.form.obj.items)
+          renderItems.call(this, _meta.form.obj.items)
           :
           <FormGroup key="data" className={classes.spaceLeft}>
             {this.renderFields()}

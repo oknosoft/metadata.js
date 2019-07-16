@@ -31,7 +31,7 @@
     "pouchdb-find": "7.1",
     "pouchdb-mapreduce": "7.1",
     "pouchdb-replication": "7.1",
-    "rc-calendar": "^9.15.3",
+    "rc-calendar": "^9.15.4",
     "rc-cascader": "^0.17.4",
     "rc-time-picker": "^3.7.1",
     "superlogin-client": "^0.8.0"
@@ -97,13 +97,13 @@
     "redux-dynamic-middlewares": "^1.0",
     "redux-thunk": "^2.3.0",
     "rimraf": "^2.6.3",
-    "rollup": "^1.16.7",
+    "rollup": "^1.17.0",
     "rollup-plugin-cleanup": "^3.1.1",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-replace": "^2.2.0",
     "webpack": "^4.35.3",
-    "yargs": "^13.2.4",
+    "yargs": "^13.3.0",
     "yuidocjs": "^0.10"
   },
   "peerDependecies": {
