@@ -8,6 +8,10 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import TextField from '@material-ui/core/TextField';
+import IconButton from '@material-ui/core/IconButton';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import Keyboard from '@material-ui/icons/Keyboard';
+
 import Calculator from '../Calculator';
 
 import AbstractField from './AbstractField';
@@ -17,7 +21,7 @@ class FieldNumber extends AbstractField {
 
   constructor(props, context) {
     super(props, context);
-    Object.assign(this.state, {isCalculatorVisible: false});
+    Object.assign(this.state, {isCalculatorVisible: false, focused: false});
   }
 
   onChange = ({target}) => {
@@ -27,14 +31,13 @@ class FieldNumber extends AbstractField {
     this.setState({value}, () => handleValueChange && handleValueChange(_obj[_fld]));
   };
 
-  handleInputClick() {
+  handleInputClick = () => {
     this.setState({isCalculatorVisible: true});
-  }
+  };
 
-  handleCalculatorClose(value) {
+  handleCalculatorClose = () => {
     this.setState({isCalculatorVisible: false});
-    //this.onChange({target: {value}});
-  }
+  };
 
   render() {
 
@@ -49,28 +52,32 @@ class FieldNumber extends AbstractField {
           position={'bottom'}
           visible={state.isCalculatorVisible}
           value={state.value}
-          onChange={(value) => this.setState({value})}
-          onClose={(value) => this.handleCalculatorClose(value)}/>
+          onChange={(value) => this.onChange({target: {value}})}
+          onClose={this.handleCalculatorClose}/>
 
         {isTabular ?
           <input
             type="text"
             value={state.value}
-            onChange={this.onChange.bind(this)}
-            onClick={this.handleInputClick.bind(this)}
+            onChange={this.onChange}
+            onClick={this.handleInputClick}
           />
           :
           <TextField
             className={classes.formControl}
             fullWidth={fullWidth}
-            disabled={read_only}
             label={_meta.synonym}
             title={_meta.tooltip || _meta.synonym}
-
-            value={state.value}
-
-            onChange={this.onChange.bind(this)}
-            onClick={this.handleInputClick.bind(this)}
+            value={state.focused && !read_only ? state.value : _obj[_fld]}
+            onChange={this.onChange}
+            onFocus={() => {setTimeout(() => this._mounted && this.setState({focused: true}), 200)}}
+            onBlur={() => {setTimeout(() => this._mounted && this.setState({focused: false}), 200)}}
+            InputProps={{
+              readOnly: Boolean(read_only),
+              endAdornment: !read_only && (state.focused || state.isCalculatorVisible) ? <InputAdornment position="end">
+                <IconButton onClick={this.handleInputClick}><Keyboard /></IconButton>
+              </InputAdornment>  : undefined,
+            }}
           />
         }
       </div>
