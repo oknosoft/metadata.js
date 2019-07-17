@@ -1,3 +1,25 @@
 .rc-calendar-picker {
   z-index: 2000;
 }
+
+div.fld-calendar {
+  top: 17px;
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  z-index: 1000;
+}
+
+.fld-calendar .rc-calendar-year-select, .fld-calendar .rc-calendar-month-select, .fld-calendar .rc-calendar-day-select {
+  font-size: inherit;
+  font-weight: 500;
+}
+
+.rc-calendar-input {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.fld-calendar .rc-calendar-year-panel-header > a {
+  font-weight: 500;
+}

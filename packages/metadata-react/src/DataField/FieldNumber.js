@@ -39,6 +39,20 @@ class FieldNumber extends AbstractField {
     this.setState({isCalculatorVisible: false});
   };
 
+  handleFocus = (focused) => {
+    if(typeof focused === 'boolean') {
+      const {_obj, _fld} = this.props;
+      this._mounted && this.setState({focused, value: _obj[_fld]});
+    }
+    else {
+      setTimeout(this.handleFocus.bind(this, true), 200);
+    }
+  };
+
+  handleBlur = () => {
+    setTimeout(this.handleFocus.bind(this, false), 200);
+  };
+
   render() {
 
     const {state, props, _meta, isTabular} = this;
@@ -70,12 +84,12 @@ class FieldNumber extends AbstractField {
             title={_meta.tooltip || _meta.synonym}
             value={state.focused && !read_only ? state.value : _obj[_fld]}
             onChange={this.onChange}
-            onFocus={() => {setTimeout(() => this._mounted && this.setState({focused: true}), 200)}}
-            onBlur={() => {setTimeout(() => this._mounted && this.setState({focused: false}), 200)}}
+            onFocus={this.handleFocus}
+            onBlur={this.handleBlur}
             InputProps={{
               readOnly: Boolean(read_only),
               endAdornment: !read_only && (state.focused || state.isCalculatorVisible) ? <InputAdornment position="end">
-                <IconButton onClick={this.handleInputClick}><Keyboard /></IconButton>
+                <IconButton onClick={this.handleInputClick} tabIndex={-1}><Keyboard /></IconButton>
               </InputAdornment>  : undefined,
             }}
           />

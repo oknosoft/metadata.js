@@ -15,17 +15,19 @@ import DatePicker from 'rc-calendar/lib/Picker';
 import TimePickerPanel from 'rc-time-picker/lib/Panel';
 import ruRU from 'rc-calendar/lib/locale/ru_RU';
 import 'rc-time-picker/assets/index.css';
+import './rc-calendar.css';
 
 import StyledCustomField from './StyledCustomField';
 import AbstractField from './AbstractField';
 
-const format = 'DD.MM.YYYY HH:mm:ss';
+const multiFormats = ['DD.MM.YYYY HH:mm', 'DD.MM.YYYY HH:mm:ss', 'DD.MM.YYYY HHmm', 'DD.MM.YYYY', 'DD.MM.YY', 'DD/MM/YY', 'DDMMYY', 'DDMMYYYY'];
+const format = multiFormats[0];
 
 function getFormat(time) {
   return time ? format : 'DD.MM.YYYY';
 }
 
-export default class FieldDate extends AbstractField {
+class FieldDate extends AbstractField {
 
   constructor(props, context) {
     super(props, context);
@@ -41,11 +43,9 @@ export default class FieldDate extends AbstractField {
 
   handleChange = (value) => {
     if(value){
-      const {props, _meta} = this;
-      const {_obj, _fld, handleValueChange} = props;
+      const {_obj, _fld, handleValueChange} = this.props;
       _obj[_fld] = value.toDate();
-      this.setState({value});
-      handleValueChange && handleValueChange(_obj[_fld]);
+      this.setState({value}, () => handleValueChange && handleValueChange(_obj[_fld]));
     }
   };
 
@@ -63,9 +63,10 @@ export default class FieldDate extends AbstractField {
 
     const calendar = (<Calendar
       locale={ruRU}
-      style={{ zIndex: 1000 }}
+      className="fld-calendar"
       dateInputPlaceholder={_meta.tooltip || _meta.synonym}
-      formatter={getFormat(state.showTime)}
+      //formatter={getFormat(state.showTime)}
+      format={multiFormats}
       timePicker={state.showTime ? this.timePickerElement : null}
       defaultValue={state.defaultCalendarValue}
       showDateInput={state.showDateInput}
@@ -106,3 +107,5 @@ export default class FieldDate extends AbstractField {
   }
 
 }
+
+export default FieldDate;
