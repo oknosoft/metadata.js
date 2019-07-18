@@ -262,6 +262,9 @@ function adapter({AbstracrAdapter}) {
                 props.direct = true;
                 wsql.set_user_param('couch_direct', true);
               }
+              if(user.su) {
+                username = user.su;
+              }
             }
             else {
               const {roles} = user;
