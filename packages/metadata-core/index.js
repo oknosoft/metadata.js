@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.20-beta.5, built:2019-07-17
+ metadata-core v2.0.20-beta.5, built:2019-07-18
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3126,6 +3126,12 @@ const utils = {
 		return !!str;
 	},
 	fetch_type(str, type) {
+	  if(type.type && type.type.types) {
+	    if(!str) {
+	      str = type.default || '';
+      }
+      type = type.type;
+    }
 		if (type.is_ref) {
       if(type.types && type.types.some((type) => type.indexOf('enm') == 0 || type.indexOf('string') == 0)){
         return str;

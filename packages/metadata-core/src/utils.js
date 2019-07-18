@@ -270,6 +270,12 @@ const utils = {
 	 * @return {*}
 	 */
 	fetch_type(str, type) {
+	  if(type.type && type.type.types) {
+	    if(!str) {
+	      str = type.default || '';
+      }
+      type = type.type;
+    }
 		if (type.is_ref) {
       if(type.types && type.types.some((type) => type.indexOf('enm') == 0 || type.indexOf('string') == 0)){
         return str;

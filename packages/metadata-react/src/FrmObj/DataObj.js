@@ -4,6 +4,9 @@ import MDNRComponent from '../common/MDNRComponent';
 
 import FormGroup from '@material-ui/core/FormGroup';
 import Divider from '@material-ui/core/Divider';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 
 // окно диалога, чтобы показать всплывающие формы
 import Dialog from '../App/Dialog';
@@ -11,6 +14,8 @@ import Dialog from '../App/Dialog';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 import DataObjToolbar from './DataObjToolbar';
 import DataField from '../DataField';
+import FieldSelect from '../DataField/FieldSelect';
+import FieldSelectStatic from '../DataField/FieldSelectStatic';
 import TabularSection from '../TabularSection';
 import FrmAttachments from '../FrmAttachments';
 
@@ -28,6 +33,10 @@ export function renderItems(items) {
     switch (element) {
     case 'DataField':
       return <DataField key={`fld_${index}`} _obj={_obj} _fld={fld} _meta={_meta.fields[item.fld]} {...props}/>;
+    case 'FieldSelect':
+      return <FieldSelect key={`fld_${index}`} _obj={_obj} _fld={fld} _meta={_meta.fields[item.fld]} {...props}/>;
+    case 'FieldSelectStatic':
+      return <FieldSelectStatic key={`fld_${index}`} _obj={_obj} _fld={fld} _meta={_meta.fields[item.fld]} {...props}/>;
     case 'FormGroup':
       return <FormGroup key={`grp_${index}`} className={classes.spaceLeft} {...props}>{renderItems.call(this, items)}</FormGroup>;
     case 'Divider':
@@ -37,9 +46,11 @@ export function renderItems(items) {
         <TabularSection _obj={_obj} _tabular={fld} {...props}/>
       </div>;
     case 'Tabs':
-      return <Tabs key={`tabs_${index}`} value={_obj[fld]} onChange={this.handleValueChange(_fld)}>
-        {renderItems.call(this, items)}
-      </Tabs>;
+      return <AppBar position="static" color="default">
+        <Tabs key={`tabs_${index}`} value={_obj[fld]} onChange={this.handleValueChange(fld)} {...props}>
+          {renderItems.call(this, items)}
+        </Tabs>
+      </AppBar>;
     case 'Tab':
       return <Tab key={`tab_${index}`} value={cond_value !== undefined ? cond_value : index} {...props}/>;
     case 'Condition':
@@ -141,7 +152,7 @@ class DataObj extends MDNRComponent {
       const {state: {_obj}, props: {handlers}} = this;
       const old_value = _obj[_fld];
       _obj[_fld] = (value || (event && event.target ? event.target.value : ''));
-      handlers.handleValueChange(_fld, old_value);
+      handlers.handleValueChange && handlers.handleValueChange(_fld, old_value);
     };
   }
 
