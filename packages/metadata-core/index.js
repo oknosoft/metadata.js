@@ -1527,6 +1527,7 @@ class DataManager extends MetaEventEmitter{
     this.name = class_name.split('.')[1];
 		this.constructor_names = {};
 		this.by_ref = {};
+    this._by_id = {};
 	}
 	toString(){
 		return msg$1.meta_mgrs[this._owner.name]
@@ -1810,6 +1811,12 @@ class DataManager extends MetaEventEmitter{
     delete this.by_ref[ref];
     this.alatable.some((o, i, a) => {
       if(o.ref == ref){
+        if(o.id && this._by_id[o.id]) {
+          delete this._by_id[o.id];
+        }
+        else if(o.number_doc && this._by_id[o.number_doc]) {
+          delete this._by_id[o.number_doc];
+        }
         a.splice(i, 1);
         return true;
       }
@@ -2936,11 +2943,14 @@ class CatManager extends RefDataManager{
 		return o || this.get();
 	}
 	by_id(id) {
-    let o;
-		this.find_rows({id: id}, obj => {
-			o = obj;
-			return false;
-		});
+    let o = this._by_id[id];
+    if(!o) {
+      this.find_rows({id: id}, obj => {
+        o = obj;
+        this._by_id[id] = o;
+        return false;
+      });
+    }
     return o || this.get();
 	};
 	path(ref) {
