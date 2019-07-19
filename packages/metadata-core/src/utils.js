@@ -741,14 +741,21 @@ const utils = {
 
 					// пропускаем служебные свойства
 					if (j.substr(0, 1) == '_') {
+            if(j === '_search' && sel.fields && sel.value) {
+              ok = sel.value.every((str) => sel.fields.some((fld) => utils._like(o[fld], str)));
+              if(!ok) {
+                break;
+              }
+            }
 						continue;
 					}
 					// если свойство отбора является функцией, выполняем её, передав контекст
 					else if (typeof sel == 'function') {
 						ok = sel.call(this, o, j);
-						if (!ok)
-							break;
-					}
+            if(!ok) {
+              break;
+            }
+          }
 					else if (Array.isArray(sel)) {
             // если свойство отбора является объектом `or`, выполняем Array.some() TODO: здесь напрашивается рекурсия
 					  if(j === 'or') {
@@ -863,6 +870,67 @@ const utils = {
 
 		return ok;
 	},
+
+  /**
+   * ### Поиск массива значений в коллекции
+   * Кроме стандартного поиска по равенству значений,
+   * поддержаны операторы `in`, `not` и `like` и фильтрация через внешнюю функцию
+   * @method _find_rows_with_sort
+   * @param src {Array}
+   * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
+   * @return {{docs: Array, count: number}}
+   * @private
+   */
+  _find_rows_with_sort(src, selection) {
+    let pre = [], docs = [], sort, top = 300, skip = 0, count = 0, skipped = 0;
+
+    if(selection) {
+      if(selection._sort) {
+        sort = selection._sort;
+        delete selection._sort;
+      }
+      if(selection.hasOwnProperty('_top')) {
+        top = selection._top;
+        delete selection._top;
+      }
+      if(selection.hasOwnProperty('_skip')) {
+        skip = selection._skip;
+        delete selection._skip;
+      }
+    }
+
+    // фильтруем
+    for (const o of src) {
+      // выполняем колбэк с элементом и пополняем итоговый массив
+      if (utils._selection.call(this, o, selection)) {
+        pre.push(o);
+      }
+    }
+
+    // сортируем
+    if(sort && sort.length && typeof alasql !== 'undefined') {
+      pre = alasql(`select * from ? order by ${sort.map(({field, direction}) => `${field} ${direction}`).join(',')}`, [pre]);
+    }
+
+    // обрезаем кол-во возвращаемых элементов
+    for (const o of pre) {
+      if(skip){
+        skipped++;
+        if (skipped <= skip) {
+          continue;
+        }
+      }
+      docs.push(o);
+      if (top) {
+        count++;
+        if (count >= top) {
+          break;
+        }
+      }
+    }
+
+    return {docs, count: pre.length};
+  },
 
 	/**
 	 * ### Поиск массива значений в коллекции

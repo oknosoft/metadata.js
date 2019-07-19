@@ -159,10 +159,20 @@ class DynList extends MDNRComponent {
           _obj: _owner ? (_owner._obj || _owner.props && _owner.props._obj) : null,
           _meta: _owner ? _owner._meta : {},
           search: scheme._search,
-          top: increment,
-          skip: startIndex ? startIndex - 1 : 0,
+          skip: startIndex,
+          top: increment + 1,
+          sorting: scheme.sorting,
         });
-        return Promise.resolve(this.updateList(_mgr.find_rows(selector), startIndex));
+        if(selector.top < LIMIT / 2) {
+          selector.top = LIMIT / 2;
+        }
+        return Promise.resolve($p.utils._find_rows_with_sort.call(_mgr, _mgr.alatable, selector))
+          .then(({docs, count}) => {
+            for(let j = startIndex; j <= stopIndex; j++) {
+              fakeRows.delete(j);
+            }
+            this.updateList(docs, startIndex, count);
+          });
       }
       else {
         // выполняем запрос
@@ -552,12 +562,7 @@ class DynList extends MDNRComponent {
         onCellDeSelected={() => this.onRowSelect({selectedRow: null})}
         onCellSelected={(v) => this.onRowSelect({selectedRow: this.rows.get(v.rowIdx) || v.rowIdx})}
         onRowDoubleClick={props.selectionMode ? this.handleSelect : this.handleEdit}
-        sortColumn={sorting.sortColumn}
-        sortDirection={sorting.sortDirection}
         onGridSort={(sortColumn, sortDirection) => {
-          if(sortDirection === 'NONE') {
-            sortDirection = 'ASC';
-          }
           scheme.first_sorting(sortColumn, sortDirection);
           this.handleFilterChange();
         }}

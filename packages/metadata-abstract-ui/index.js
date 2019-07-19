@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.20-beta.5, built:2019-07-17
+ metadata-abstract-ui v2.0.20-beta.5, built:2019-07-19
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1028,7 +1028,7 @@ function scheme_settings() {
             resizable: true,
             ctrl_type: row.ctrl_type,
             width: row.width,
-            sortable: this.sorting.find({use: true, field: row.field}),
+            sortable: this.sorting.find({field: row.field}),
           }
           :
           {
@@ -1070,22 +1070,15 @@ function scheme_settings() {
     first_sorting(sortColumn, sortDirection) {
       let row;
       if(sortColumn) {
-        row = this.sorting.find({field: sortColumn});
-        if(!row) {
-          row = this.sorting.add({use: true, field: sortColumn});
-        }
-        switch (sortDirection.toLowerCase()) {
-        case 'none':
-          row.use = false;
-          break;
-        case 'desc':
+        this.sorting.forEach((srow) => {
+          srow.use = false;
+          if(srow.field === sortColumn) {
+            row = srow;
+          }
+        });
+        if(row && sortDirection.toLowerCase() !== 'none') {
           row.use = true;
-          row.direction = 'desc';
-          break;
-        case 'asc':
-          row.use = true;
-          row.direction = 'asc';
-          break;
+          row.direction = sortDirection.toLowerCase();
         }
       }
       else {

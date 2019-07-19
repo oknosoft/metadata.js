@@ -1220,7 +1220,7 @@ export class RefDataManager extends DataManager{
   /**
    * Возвращает объект фильтра для find_rows или find_rows_remote
    */
-  get_search_selector({_obj, _meta, search, top, skip}) {
+  get_search_selector({_obj, _meta, search, top, skip, sorting}) {
 
     const {cachable, _owner} = this;
     const {md, utils} = _owner.$p;
@@ -1232,17 +1232,31 @@ export class RefDataManager extends DataManager{
       select._top = top;
       select._skip = skip;
 
+      // учтём сортировку
+      if(sorting) {
+        sorting.find_rows({use: true}, ({field, direction}) => {
+          if(!select._sort) {
+            select._sort = [];
+          }
+          select._sort.push({field, direction: direction.valueOf()});
+        });
+      }
+
       // поиск по строке
       if(search && input_by_string) {
-        if(input_by_string.length > 1) {
-          select.or = [];
-          input_by_string.forEach((fld) => {
-            select.or.push({[fld]: {like: search}});
-          });
+        select._search = {
+          fields: input_by_string,
+          value: search.trim().replace(/\s\s/g, ' ').split(' ').filter(v => v),
         }
-        else {
-          select[input_by_string[0]] = {like: search};
-        }
+        // if(input_by_string.length > 1) {
+        //   select.or = [];
+        //   input_by_string.forEach((fld) => {
+        //     select.or.push({[fld]: {like: search}});
+        //   });
+        // }
+        // else {
+        //   select[input_by_string[0]] = {like: search};
+        // }
       }
 
       // для связей параметров выбора, значение берём из объекта

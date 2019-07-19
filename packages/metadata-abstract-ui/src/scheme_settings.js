@@ -1082,7 +1082,7 @@ export default function scheme_settings() {
             resizable: true,
             ctrl_type: row.ctrl_type,
             width: row.width,
-            sortable: this.sorting.find({use: true, field: row.field}),
+            sortable: this.sorting.find({field: row.field}),
           }
           :
           {
@@ -1150,24 +1150,16 @@ export default function scheme_settings() {
     first_sorting(sortColumn, sortDirection) {
       let row;
       if(sortColumn) {
-        row = this.sorting.find({field: sortColumn});
-        if(!row) {
-          row = this.sorting.add({use: true, field: sortColumn});
-        }
-        switch (sortDirection.toLowerCase()) {
-        case 'none':
-          row.use = false;
-          break;
-        case 'desc':
+        this.sorting.forEach((srow) => {
+          srow.use = false;
+          if(srow.field === sortColumn) {
+            row = srow;
+          }
+        });
+        if(row && sortDirection.toLowerCase() !== 'none') {
           row.use = true;
-          row.direction = 'desc';
-          break;
-        case 'asc':
-          row.use = true;
-          row.direction = 'asc';
-          break;
+          row.direction = sortDirection.toLowerCase();
         }
-
       }
       else {
         this.sorting.find_rows({use: true}, (srow) => {

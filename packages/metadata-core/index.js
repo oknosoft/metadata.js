@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.20-beta.5, built:2019-07-18
+ metadata-core v2.0.20-beta.5, built:2019-07-19
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2328,7 +2328,7 @@ class RefDataManager extends DataManager{
     }
     return res;
 	}
-  get_search_selector({_obj, _meta, search, top, skip}) {
+  get_search_selector({_obj, _meta, search, top, skip, sorting}) {
     const {cachable, _owner} = this;
     const {md, utils} = _owner.$p;
     const select = {};
@@ -2336,16 +2336,19 @@ class RefDataManager extends DataManager{
     if(/ram$/.test(cachable)) {
       select._top = top;
       select._skip = skip;
+      if(sorting) {
+        sorting.find_rows({use: true}, ({field, direction}) => {
+          if(!select._sort) {
+            select._sort = [];
+          }
+          select._sort.push({field, direction: direction.valueOf()});
+        });
+      }
       if(search && input_by_string) {
-        if(input_by_string.length > 1) {
-          select.or = [];
-          input_by_string.forEach((fld) => {
-            select.or.push({[fld]: {like: search}});
-          });
-        }
-        else {
-          select[input_by_string[0]] = {like: search};
-        }
+        select._search = {
+          fields: input_by_string,
+          value: search.trim().replace(/\s\s/g, ' ').split(' ').filter(v => v),
+        };
       }
       _meta.choice_links && _meta.choice_links.forEach((choice) => {
         if(choice.name && choice.name[0] == 'selection') {
@@ -3398,13 +3401,20 @@ const utils = {
 					const sel = selection[j];
 					const is_obj = sel && typeof(sel) === 'object';
 					if (j.substr(0, 1) == '_') {
+            if(j === '_search' && sel.fields && sel.value) {
+              ok = sel.value.every((str) => sel.fields.some((fld) => utils._like(o[fld], str)));
+              if(!ok) {
+                break;
+              }
+            }
 						continue;
 					}
 					else if (typeof sel == 'function') {
 						ok = sel.call(this, o, j);
-						if (!ok)
-							break;
-					}
+            if(!ok) {
+              break;
+            }
+          }
 					else if (Array.isArray(sel)) {
 					  if(j === 'or') {
               ok = sel.some((el) => {
@@ -3505,6 +3515,47 @@ const utils = {
 		}
 		return ok;
 	},
+  _find_rows_with_sort(src, selection) {
+    let pre = [], docs = [], sort, top = 300, skip = 0, count = 0, skipped = 0;
+    if(selection) {
+      if(selection._sort) {
+        sort = selection._sort;
+        delete selection._sort;
+      }
+      if(selection.hasOwnProperty('_top')) {
+        top = selection._top;
+        delete selection._top;
+      }
+      if(selection.hasOwnProperty('_skip')) {
+        skip = selection._skip;
+        delete selection._skip;
+      }
+    }
+    for (const o of src) {
+      if (utils._selection.call(this, o, selection)) {
+        pre.push(o);
+      }
+    }
+    if(sort && sort.length && typeof alasql !== 'undefined') {
+      pre = alasql(`select * from ? order by ${sort.map(({field, direction}) => `${field} ${direction}`).join(',')}`, [pre]);
+    }
+    for (const o of pre) {
+      if(skip){
+        skipped++;
+        if (skipped <= skip) {
+          continue;
+        }
+      }
+      docs.push(o);
+      if (top) {
+        count++;
+        if (count >= top) {
+          break;
+        }
+      }
+    }
+    return {docs, count: pre.length};
+  },
 	_find_rows(src, selection, callback) {
 		const res = [];
 		let top, skip, count = 0, skipped = 0;
@@ -3854,9 +3905,9 @@ class JobPrm {
 	}
 }
 
-const alasql = (typeof window != 'undefined' && window.alasql) || require('alasql/dist/alasql.min');
+const alasql$1 = (typeof window != 'undefined' && window.alasql) || require('alasql/dist/alasql.min');
 if(typeof window != 'undefined' && !window.alasql){
-  window.alasql = alasql;
+  window.alasql = alasql$1;
 }
 const fake_ls = {
 	setItem(name, value) {},
@@ -3866,8 +3917,8 @@ class WSQL {
 	constructor($p) {
 		this.$p = $p;
 		this._params = {};
-		this.aladb = new alasql.Database('md');
-		this.alasql = alasql;
+		this.aladb = new alasql$1.Database('md');
+		this.alasql = alasql$1;
 	}
 	get js_time_diff(){ return -(new Date("0001-01-01")).valueOf()}
 	get time_diff(){
@@ -3878,7 +3929,7 @@ class WSQL {
 		return typeof localStorage === "undefined" ? fake_ls : localStorage;
 	}
 	init(settings, meta) {
-		alasql.utils.isBrowserify = false;
+		alasql$1.utils.isBrowserify = false;
 		const {job_prm, adapters} = this.$p;
 		job_prm.init(settings);
 		if (!job_prm.local_storage_prefix){
