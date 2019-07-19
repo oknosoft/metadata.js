@@ -68,6 +68,11 @@ export class DataManager extends MetaEventEmitter{
 		 */
 		this.by_ref = {};
 
+    /**
+     * ### Индекс по коду-номеру
+     */
+    this._by_id = {};
+
 	}
 
 	toString(){
@@ -520,6 +525,12 @@ export class DataManager extends MetaEventEmitter{
     delete this.by_ref[ref];
     this.alatable.some((o, i, a) => {
       if(o.ref == ref){
+        if(o.id && this._by_id[o.id]) {
+          delete this._by_id[o.id];
+        }
+        else if(o.number_doc && this._by_id[o.number_doc]) {
+          delete this._by_id[o.number_doc];
+        }
         a.splice(i, 1);
         return true;
       }
@@ -2225,11 +2236,14 @@ export class CatManager extends RefDataManager{
 	 * @return {DataObj}
 	 */
 	by_id(id) {
-    let o;
-		this.find_rows({id: id}, obj => {
-			o = obj;
-			return false;
-		});
+    let o = this._by_id[id];
+    if(!o) {
+      this.find_rows({id: id}, obj => {
+        o = obj;
+        this._by_id[id] = o;
+        return false;
+      });
+    }
     return o || this.get();
 	};
 
