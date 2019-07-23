@@ -9,7 +9,7 @@ import FormGroup from '@material-ui/core/FormGroup';
 import DialogActions from '@material-ui/core/DialogActions';
 import Helmet from 'react-helmet';
 import Grid from '@material-ui/core/Grid';
-import DataField from '../DataField';
+import DataField from '../../DataField';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import {blue, red} from '@material-ui/core/colors';
@@ -24,7 +24,7 @@ import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
 import Avatar from '@material-ui/core/Avatar';
 
-import withStyles from '../styles/paper600';
+import withStyles from '../../styles/paper600';
 import connect from './connect';
 import classnames from 'classnames';
 

@@ -9,7 +9,7 @@ import TabsLogin from '../FrmLogin/TabsLogin';
 import {compose} from 'redux';
 import {withMeta, withPrm} from 'metadata-redux';
 
-const DefaultLogin = compose(withMeta, withPrm)(({classes, ...other}) => < TabsLogin disableTitle {...other} />);
+const DefaultLogin = compose(withMeta, withPrm)(({classes, ...other}) => < TabsLogin {...other} />);
 
 function NeedAuth(props) {
   const {handleNavigate, handleIfaceState, title, idle, ComponentLogin} = props;
@@ -21,7 +21,7 @@ function NeedAuth(props) {
       {idle && <Typography variant="h4" component="h1" color="primary" style={margin}>Сеанс работы был прерван</Typography>}
       {!idle && <Typography color="inherit" style={margin}>Для доступа к данному разделу, необходима авторизация</Typography>}
       {idle && <Typography color="inherit" style={margin}>Вы долгое время не совершали никаких действий, повторите вход в систему</Typography>}
-      <FrmLogin {...props}/>
+      <FrmLogin disableTitle {...props}/>
     </div>
   </AppContent>;
 }

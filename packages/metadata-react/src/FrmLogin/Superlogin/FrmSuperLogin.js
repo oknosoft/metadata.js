@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import Helmet from 'react-helmet';
 
-import AppContent from '../App/AppContent';
+import AppContent from '../../App/AppContent';
 import TabsLogin from './TabsLogin';
 import Profile from './Profile';
 import Reset from './Reset';

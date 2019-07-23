@@ -19,7 +19,7 @@ import FormControl from '@material-ui/core/FormControl';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
-import withStyles from '../styles/paper600';
+import withStyles from '../../styles/paper600';
 import connect from './connect';
 import classnames from 'classnames';
 

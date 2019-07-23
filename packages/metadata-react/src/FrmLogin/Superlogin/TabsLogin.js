@@ -24,7 +24,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import {blue, red} from '@material-ui/core/colors';
 import {FacebookIcon, GitHubIcon, GoogleIcon, YandexIcon} from './assets/icons';
 
-import withStyles from '../styles/paper600';
+import withStyles from '../../styles/paper600';
 import connect from './connect';
 import classnames from 'classnames';
 import Fogot from './Fogot';
