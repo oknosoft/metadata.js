@@ -3,13 +3,10 @@ import PropTypes from 'prop-types';
 import NeedAuth from '../../App/NeedAuth';
 import FrmLogin from './FrmLogin';
 
-function Auth({dstyle, handleNavigate, handleIfaceState, title, offline}) {
+function Auth({dstyle, ...others}) {
   return <div style={dstyle}>
     <NeedAuth
-      handleNavigate={handleNavigate}
-      handleIfaceState={handleIfaceState}
-      title={title}
-      offline={offline}
+      {...others}
       ComponentLogin={FrmLogin}
     />
   </div>;

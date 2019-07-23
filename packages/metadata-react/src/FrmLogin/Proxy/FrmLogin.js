@@ -8,7 +8,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import Button from '@material-ui/core/Button';
+import BaseButton from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
 import FormGroup from '@material-ui/core/FormGroup';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -24,7 +24,6 @@ import withStyles from './styles';
 import providers from './providers';
 
 const directLogins = ['couchdb', 'ldap'];
-
 
 class FrmLogin extends React.Component {
 
@@ -61,14 +60,42 @@ class FrmLogin extends React.Component {
 
   };
 
+  handleNavigate = () => {
+    const {handleNavigate, first_run, ret_url} = this.props;
+    if (first_run) {
+      $p.eve && ($p.eve.redirect = true);
+      location.replace(ret_url || '/');
+    }
+    else {
+      handleNavigate(ret_url || '/');
+    }
+  };
+
+  handleAuth = (provider) => {
+    if(directLogins.includes(provider)) {
+      this.setState({provider})
+    }
+    else if(provider === 'offline') {
+      this.handleLogin('couchdb')
+    }
+    else {
+      this.handleLogin('google')
+    }
+  };
+
   footer() {
-    const {state: {provider}, props: {classes, user, handleLogOut}} = this;
+    const {state: {provider}, props: {classes, user, idle, handleLogOut, handleUnLock}, handleNavigate} = this;
+
+    function Button(props) {
+      return <BaseButton color="primary" size="small" className={classes.dialogButton} {...props}/>;
+    }
+
     return [
       <DialogActions key="actions">
-        {user.logged_in &&
-        <Button color="primary" size="small" className={classes.dialogButton} onClick={handleLogOut}>Выйти</Button>}
-        {!user.logged_in && directLogins.includes(provider) &&
-        <Button color="primary" size="small" className={classes.dialogButton} onClick={() => this.handleLogin(provider)}>Войти</Button>}
+        {user.logged_in && !idle && <Button onClick={handleLogOut}>Выйти</Button>}
+        {user.logged_in && idle && <Button onClick={handleUnLock}>Войти</Button>}
+        {!user.logged_in && directLogins.includes(provider) && <Button onClick={() => this.handleLogin(provider)}>Войти</Button>}
+        {user.logged_in && !idle && <Button onClick={handleNavigate} title="Перейти к списку документов">К документам</Button>}
       </DialogActions>,
       user.log_error &&
       <FormGroup key="error" row>
@@ -86,7 +113,7 @@ class FrmLogin extends React.Component {
   }
 
   creditales() {
-    const {state: {  provider, login, password, showPassword}, props: {classes, user, _obj}} = this;
+    const {state: {  provider, login, password, showPassword}, props: {classes, user, _obj, disable}} = this;
     if(user.logged_in) {
       return <FormGroup>
         <DataField _obj={_obj} _fld="id" read_only />
@@ -117,14 +144,14 @@ class FrmLogin extends React.Component {
         </Typography>,
         Object.keys(providers).map((provider) => {
           const {Icon, name, disabled} = providers[provider];
-          return <Button
+          return <BaseButton
             key={provider}
             className={classes.button}
             variant="contained"
-            disabled={disabled}
+            disabled={(disable || []).includes(provider)}
             onClick={() => directLogins.includes(provider) ? this.setState({provider}) : this.handleLogin('google')}>
             <Icon className={classes.icon}/>{name}
-          </Button>;
+          </BaseButton>;
         })
         ];
     }
@@ -145,6 +172,9 @@ class FrmLogin extends React.Component {
 
 FrmLogin.propTypes = {
   classes: PropTypes.object.isRequired,
+  handleLogOut: PropTypes.func.isRequired,
+  handleNavigate: PropTypes.func.isRequired,
+  handleLogin: PropTypes.func.isRequired,
 };
 
 export default withMeta(withStyles(FrmLogin));

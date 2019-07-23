@@ -21,10 +21,6 @@ import CnnSettings from './CnnSettings';
 import {withPrm} from 'metadata-redux';
 import withStyles from '../styles/paper600';
 
-function Button({classes, ...other}) {
-  return <BaseButton color="primary" size="small" className={classes.button} {...other}/>;
-}
-
 class TabsLogin extends Component {
 
   constructor(props) {
@@ -84,6 +80,10 @@ class TabsLogin extends Component {
     const {classes, user, couch_direct, offline, disableTitle} = props;
     const descr = "Вход в систему";
 
+    function Button(props) {
+      return <BaseButton color="primary" size="small" className={classes.button} {...props}/>;
+    }
+
     return <Paper className={classnames({
       [classes.root]: true,
       [classes.disabled]: user.try_log_in && couch_direct,
@@ -131,13 +131,11 @@ class TabsLogin extends Component {
 
         state.index === 0 &&
         <DialogActions key="actions" >
-          {user.logged_in && !props.idle && <Button classes={classes} onClick={props.handleLogOut}>Выйти</Button>}
-          {user.logged_in && props.idle && <Button classes={classes} onClick={props.handleUnLock}>Войти</Button>}
-          {!user.logged_in && !couch_direct &&
-          <Button classes={classes} disabled={user.try_log_in || !state.login || !state.password} onClick={handleLogin}>Автономный режим</Button>}
-          {!user.logged_in && !offline &&
-          <Button classes={classes} disabled={user.try_log_in || !state.login || !state.password} onClick={handleLogin}>Войти</Button>}
-          <Button classes={classes} disabled={true}>Забыли пароль?</Button>
+          {user.logged_in && !props.idle && <Button onClick={props.handleLogOut}>Выйти</Button>}
+          {user.logged_in && props.idle && <Button onClick={props.handleUnLock}>Войти</Button>}
+          {!user.logged_in && !couch_direct && <Button disabled={user.try_log_in || !state.login || !state.password} onClick={handleLogin}>Автономный режим</Button>}
+          {!user.logged_in && !offline && <Button disabled={user.try_log_in || !state.login || !state.password} onClick={handleLogin}>Войти</Button>}
+          <Button disabled={true}>Забыли пароль?</Button>
         </DialogActions>,
 
         state.index === 1 && <CnnSettings key="settings" {...props}/>,
