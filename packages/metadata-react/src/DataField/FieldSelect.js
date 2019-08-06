@@ -40,7 +40,23 @@ class FieldSelect extends AbstractField {
     const _manager = _obj[props._fld]._manager || _meta.type._mgr;
     const select = _manager ? _manager.get_search_selector({_obj, _meta, top: 999, skip: 0}) : {};
 
-    return _manager.get_option_list(select)
+    if(_meta.list) {
+      if(_manager) {
+        select.ref = {in: _meta.list};
+      }
+      else {
+        const opt = {options: _meta.list};
+        if(this._mounted) {
+          this.setState(opt);
+        }
+        else {
+          Object.assign(state, opt);
+        }
+        return;
+      }
+    }
+
+    _manager.get_option_list(select)
       .then((options) => {
         if(this._mounted) {
           this.setState({options});

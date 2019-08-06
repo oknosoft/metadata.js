@@ -27,7 +27,7 @@ export default class DataField extends FieldWithMeta {
 
     const {_meta, props} = this;
     const {_obj, _fld, ctrl_type} = props;
-    const type = ctrl_type || control_by_type(_meta.type, _obj[_fld]);
+    const type = ctrl_type || control_by_type(_meta.type, _obj[_fld], _meta.list);
 
     switch (type) {
 
@@ -35,6 +35,7 @@ export default class DataField extends FieldWithMeta {
       return <FieldInfinit {...props} />;
 
     case 'oselect':
+    case 'dselect':
       return <FieldSelect {...props} />;
 
     case 'calck':

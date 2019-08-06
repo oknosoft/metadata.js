@@ -7,10 +7,13 @@
  * @param type
  * @return {*}
  */
-export default function control_by_type (type, val) {
-  var ft;
+export default function control_by_type (type, val, list) {
+  let ft;
 
-  if (typeof val == "boolean" && type.types.indexOf("boolean") != -1) {
+  if(Array.isArray(list) && list.length) {
+    ft = "dselect";
+  }
+  else if (typeof val == "boolean" && type.types.indexOf("boolean") != -1) {
     ft = "ch";
   }
   else if (typeof val == "number" && type.digits) {
