@@ -37,8 +37,8 @@ class FieldSelect extends AbstractField {
   loadOptions(_obj) {
 
     const {_meta, props, state} = this;
-    const {_manager} = _obj[props._fld];
-    const select = _manager.get_search_selector({_obj, _meta, top: 999, skip: 0});
+    const _manager = _obj[props._fld]._manager || _meta.type._mgr;
+    const select = _manager ? _manager.get_search_selector({_obj, _meta, top: 999, skip: 0}) : {};
 
     return _manager.get_option_list(select)
       .then((options) => {

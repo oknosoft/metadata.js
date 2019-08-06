@@ -16,8 +16,8 @@ import cn from 'classnames';
 class FieldText extends AbstractField {
 
   render() {
-    const {props, _meta, isTabular, onChange} = this;
-    const {_obj, _fld, classes, read_only, InputProps, bar, ...other} = props;
+    const {props, _meta, onChange} = this;
+    const {_obj, _fld, classes, read_only, InputProps, bar, isTabular, ...other} = props;
     const attr = {
       disabled: read_only,
       title: _meta.tooltip || _meta.synonym,
@@ -31,7 +31,7 @@ class FieldText extends AbstractField {
       }
     }
 
-    return isTabular ?
+    return this.isTabular ?
       <input type="text" {...attr}/>
       :
       <TextField
