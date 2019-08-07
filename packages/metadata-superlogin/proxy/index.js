@@ -69,7 +69,7 @@ export default function index (withMeta) {
       const ajaxOpts = Object.assign({
         method: 'POST',
         headers: Object.assign({'Content-Type': 'application/json'}, getBasicAuthHeaders({prefix, username, password})),
-        body: {name: username, password},
+        body: JSON.stringify({name: username, password}),
       }, opts.ajax || {});
       if(impersonation) {
         ajaxOpts.headers.impersonation = encodeURI(impersonation);
@@ -78,7 +78,7 @@ export default function index (withMeta) {
         .then((res) => res.json())
         .then((res) => {
           if(res.error) {
-            throw new AuthError(`${res.message}`);
+            throw new AuthError(res.message || `${res.error} ${res.reason}`);
           }
           delete ajaxOpts.method;
           delete ajaxOpts.body;
