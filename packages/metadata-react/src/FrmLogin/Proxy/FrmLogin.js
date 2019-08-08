@@ -45,7 +45,15 @@ class FrmLogin extends React.Component {
   }
 
   handleClickShowPasssword = () => {
-    this.setState({ showPassword: !this.state.showPassword });
+    this.setState({showPassword: !this.state.showPassword});
+  };
+
+  handlePasswordChange = ({target}) => {
+    this.setState({password: target.value, error: ''});
+  };
+
+  handleLoginChange = ({target}) => {
+    this.setState({login: target.value, error: ''});
   };
 
   handleLogin = (provider) => {
@@ -73,18 +81,36 @@ class FrmLogin extends React.Component {
 
   handleAuth = (provider) => {
     if(directLogins.includes(provider)) {
-      this.setState({provider})
+      this.setState({provider, error: ''});
     }
     else if(provider === 'offline') {
-      this.handleLogin('couchdb')
+      let {login, password} = this.state;
+      if(login && password) {
+        this.handleLogin('couchdb');
+      }
+      else {
+        const {wsql, aes} = $p;
+        login = wsql.get_user_param('user_name');
+        password = wsql.get_user_param('user_pwd');
+        if(login && password) {
+          this.setState({
+            login,
+            password: aes.Ctr.decrypt(password),
+            error: '',
+          }, () => this.handleLogin('couchdb'));
+        }
+        else {
+          this.setState({error: 'Нет сохраненных логина и пароля для автономного режима'});
+        }
+      }
     }
     else {
-      this.handleLogin('google')
+      this.handleLogin('google');
     }
   };
 
   footer() {
-    const {state: {provider}, props: {classes, user, idle, handleLogOut, handleUnLock}, handleNavigate} = this;
+    const {state: {provider, error}, props: {classes, user, idle, handleLogOut, handleUnLock}, handleNavigate} = this;
 
     function Button(props) {
       return <BaseButton color="primary" size="small" className={classes.dialogButton} {...props}/>;
@@ -97,10 +123,10 @@ class FrmLogin extends React.Component {
         {!user.logged_in && directLogins.includes(provider) && <Button onClick={() => this.handleLogin(provider)}>Войти</Button>}
         {user.logged_in && !idle && <Button onClick={handleNavigate} title="Перейти к списку документов">К документам</Button>}
       </DialogActions>,
-      user.log_error &&
+      (user.log_error || error) &&
       <FormGroup key="error" row>
         <IconError className={classes.error}/>
-        <Typography variant="subtitle1" color="error" gutterBottom className={classes.infoText}>{user.log_error}</Typography>
+        <Typography variant="subtitle1" color="error" gutterBottom className={classes.infoText}>{(user.log_error || error)}</Typography>
       </FormGroup>,
       !user.log_error && user.try_log_in &&
       <FormGroup key="info" row>
@@ -124,7 +150,7 @@ class FrmLogin extends React.Component {
     else if(directLogins.includes(provider)) {
       const {Icon, name} = providers[provider];
       return [
-        <Provider key="select-provider" provider={provider} changeProvider={(provider) => this.setState({provider})}/>,
+        <Provider key="select-provider" provider={provider} changeProvider={(provider) => this.setState({provider, error: ''})}/>,
         <Creditales
           key="creditales"
           login={login}
@@ -133,8 +159,8 @@ class FrmLogin extends React.Component {
           handleClickShowPasssword={this.handleClickShowPasssword}
           handleMouseDownPassword={this.handleMouseDownPassword}
           handleLogin={this.handleLogin}
-          loginChange={({target}) => this.setState({login: target.value})}
-          passwordChange={({target}) => this.setState({password: target.value})}
+          loginChange={this.handleLoginChange}
+          passwordChange={this.handlePasswordChange}
         />];
     }
     else {
@@ -149,7 +175,7 @@ class FrmLogin extends React.Component {
             className={classes.button}
             variant="contained"
             disabled={(disable || []).includes(provider)}
-            onClick={() => directLogins.includes(provider) ? this.setState({provider}) : this.handleLogin('google')}>
+            onClick={() => this.handleAuth(provider)}>
             <Icon className={classes.icon}/>{name}
           </BaseButton>;
         })
