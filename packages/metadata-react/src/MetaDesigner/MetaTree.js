@@ -6,10 +6,10 @@ import treebeardTheme from './assets/treebeard-theme'
 
 import * as filters from './filter';
 
-import classes from './MetaDesigner.css';
-import styles from './assets/treebeard-styles';
+import Draggable from './Draggable';
 
-import data from './assets/meta';
+
+import styles from './assets/treebeard-styles';
 
 // Example: Customising The Header Decorator To Include Icons
 decorators.Header = (props) => {
@@ -17,8 +17,8 @@ decorators.Header = (props) => {
   return (
     <div style={style.base}>
       <div style={style.title}>
-        <div style={styles.treeview_icon} className={classes[props.node.icon]}/>
-        <div className={classes.span}>{props.node.name}</div>
+        <div style={styles.treeview_icon} className={props.node.icon}/>
+        {props.node.name}
       </div>
     </div>
   );
@@ -58,48 +58,45 @@ decorators.Container = Container;
 
 export default class MetaTree extends Component {
 
-  constructor(props) {
-    super(props);
-    this.state = {data};
-    this.onToggle = this.onToggle.bind(this);
+  constructor(props, context) {
+    super(props, context);
+    this.state = {data: props.data, current: null};
   }
 
-  onToggle(node, toggled) {
-    if (this.state.cursor) {
-      this.state.cursor.active = false;
+  onToggle = (node, toggled) => {
+    const {current} = this.state;
+    if (current) {
+      current.active = false;
     }
     node.active = true;
     if (node.children) {
       node.toggled = toggled;
     }
-    this.setState({cursor: node});
-  }
+    this.setState({current: node});
+    this.props.treeSelect(node);
+  };
 
-  onFilterMouseUp(e) {
+  onFilterMouseUp = (e) => {
     const filter = e.target.value.trim();
+    const {data} = this.props;
     if (!filter) {
       return this.setState({data});
     }
-    var filtered = filters.filterTree(data, filter);
-    filtered = filters.expandFilteredNodes(filtered, filter);
+    const filtered = filters.expandFilteredNodes(filters.filterTree(data, filter), filter);
     this.setState({data: filtered});
   }
 
   render() {
     return (
-      <div className={classes.component}>
-
-        <div className={classes.draggableHandle}></div>
-
-        <div className={classes.content}>
-          <div className={classes.searchBox}>
-            <input type="text"
-                   className={classes.input}
-                   placeholder="Поиск в метаданных..."
-                   onKeyUp={this.onFilterMouseUp.bind(this)}
-            />
-          </div>
-
+      <Draggable title="Метаданные">
+        <div className="designer-search-box">
+          <input type="text"
+                 className="designer-input"
+                 placeholder="Поиск в метаданных..."
+                 onKeyUp={this.onFilterMouseUp}
+          />
+        </div>
+        <div className="designer-tree">
           <Treebeard
             data={this.state.data}
             style={treebeardTheme}
@@ -107,10 +104,7 @@ export default class MetaTree extends Component {
             decorators={decorators}
           />
         </div>
-
-
-      </div>
-
+      </Draggable>
     );
   }
 }

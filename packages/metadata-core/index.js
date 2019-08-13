@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.20-beta.6, built:2019-08-08
+ metadata-core v2.0.20-beta.6, built:2019-08-13
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -47,7 +47,7 @@ class I18n {
     }    return syn[this._lang];
 	}
 }
-const msg$1 = new I18n({
+const msg = new I18n({
 	ru: {
 		store_url_od: 'https://chrome.google.com/webstore/detail/hcncallbdlondnoadgjomnhifopfaage',
 		argument_is_not_ref: 'Аргумент не является ссылкой',
@@ -1530,7 +1530,7 @@ class DataManager extends MetaEventEmitter{
     this._by_id = {};
 	}
 	toString(){
-		return msg$1.meta_mgrs[this._owner.name]
+		return msg.meta_mgrs[this._owner.name]
 	}
 	metadata(field_name) {
 	  const {md} = this._owner.$p;
@@ -4520,7 +4520,7 @@ class ManagersCollection {
     this.$p = $p;
   }
   toString() {
-    return msg.meta_classes[this.name];
+    return this.$p.msg.meta_classes[this.name];
   }
   create(name, constructor, freeze) {
     this[name] = new (constructor || this._constructor)(this, this.name + '.' + name);
@@ -4701,7 +4701,7 @@ class MetaEngine {
     return utils;
   }
   get msg() {
-    return msg$1;
+    return msg;
   }
   get current_user() {
     const {CatUsers, cat, superlogin, wsql, adapters: {pouch}} = this;

@@ -9,7 +9,7 @@ class ManagersCollection {
   }
 
   toString() {
-    return msg.meta_classes[this.name];
+    return this.$p.msg.meta_classes[this.name];
   }
 
   create(name, constructor, freeze) {

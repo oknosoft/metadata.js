@@ -1,14 +1,13 @@
-'use strict';
 
 export default {
   tree: {
     base: {
       listStyle: 'none',
-      //backgroundColor: '#FFFFFF',
+      backgroundColor: 'inherit',
       margin: 0,
       padding: 0,
       color: '#9DA5AB',
-      //fontFamily: 'lucida grande ,tahoma,verdana,arial,sans-serif',
+      fontFamily: 'inherit',
       //fontSize: '14px'
     },
     node: {
@@ -19,7 +18,8 @@ export default {
         cursor: 'pointer',
         position: 'relative',
         padding: '0px 5px',
-        display: 'block'
+        display: 'block',
+        whiteSpace: 'nowrap'
       },
       activeLink: {
         background: '#EEEEEE'

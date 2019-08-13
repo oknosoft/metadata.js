@@ -1,17 +1,22 @@
 
-.span {
+.designer-span {
   float: left;
 }
 
-.searchBox {
+.designer-search-box {
   padding: 8px;
 }
 
-.input {
+.designer-tree {
+  height: calc(100% - 37px);
+  overflow: auto;
+}
+
+.designer-input {
   width: 100%;
 }
 
-.component {
+.designer-component {
   width: 100%;
   height: 100%;
   display: block;
@@ -20,19 +25,21 @@
   border: 1px gray solid;
 }
 
-.content {
+.designer-content {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 24px);
   display: block;
   vertical-align: top;
-  //padding: 8px;
 }
 
-.draggableHandle {
+.designer-draggable-handle {
   width: 100%;
   height: 24px;
   background-color: gray;
   cursor: move;
+  color: white;
+  font-weight: 500;
+  padding: 2px 8px;
 }
 
 /* иконы классов 1С */
