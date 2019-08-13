@@ -87,7 +87,7 @@ export default function index (withMeta) {
               .then((res) => res.json())
               .then((info) => {
                 if(info.error) {
-                  throw new AuthError(`${info.error}: ${res.id}: ${info.reason}`);
+                  throw new AuthError(`${typeof info.error === 'boolean' ? '' : info.error}: ${res.id}: ${info.reason || info.message}`);
                 }
                 return res;
               })
