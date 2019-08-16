@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.20-beta.6, built:2019-08-13
+ metadata-core v2.0.20-beta.6, built:2019-08-16
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -948,7 +948,10 @@ class DataObj extends BaseDataObj {
     }
     delete this._obj;
   }
-  save(post, operational, attachments) {
+  check_mandatory(fields) {
+    return true;
+  }
+  save(post, operational, attachments, attr) {
     if(utils.is_empty_guid(this.ref)) {
       return Promise.resolve(this);
     }
@@ -1045,7 +1048,7 @@ class DataObj extends BaseDataObj {
           }
         }
         return (numerator || Promise.resolve())
-          .then(() => this._manager.adapter.save_obj(this, {post, operational, attachments }))
+          .then(() => this._manager.adapter.save_obj(this, Object.assign({post, operational, attachments}, attr)))
           .then(() => this.after_save())
           .then(reset_modified)
           .catch((err) => {

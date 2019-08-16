@@ -689,6 +689,16 @@ export class DataObj extends BaseDataObj {
   }
 
   /**
+   * ### Проверяет заполненность реквизитов
+   * и прочие ограничения, заданные в метаданных
+   * @param [fields] {Array} - массив полей, которые нужно проверить. Если не задан, проверяются все поля
+   * @return {boolean}
+   */
+  check_mandatory(fields) {
+    return true;
+  }
+
+  /**
    * ### Записывает объект
    * Ввыполняет подписки на события перед записью и после записи<br />
    * В зависимости от настроек, выполняет запись объекта во внешнюю базу данных
@@ -701,7 +711,7 @@ export class DataObj extends BaseDataObj {
    * @return {Promise.<DataObj>} - промис с результатом выполнения операции
    * @async
    */
-  save(post, operational, attachments) {
+  save(post, operational, attachments, attr) {
 
     if(utils.is_empty_guid(this.ref)) {
       return Promise.resolve(this);
@@ -818,7 +828,7 @@ export class DataObj extends BaseDataObj {
 
         // в зависимости от типа кеширования, получаем saver и сохраняем объект во внешней базе
         return (numerator || Promise.resolve())
-          .then(() => this._manager.adapter.save_obj(this, {post, operational, attachments }))
+          .then(() => this._manager.adapter.save_obj(this, Object.assign({post, operational, attachments}, attr)))
           // и выполняем обработку после записи
           .then(() => this.after_save())
           .then(reset_modified)
