@@ -72,7 +72,7 @@ export default function index (withMeta) {
         body: JSON.stringify({name: username, password}),
       }, opts.ajax || {});
       if(impersonation) {
-        ajaxOpts.headers.impersonation = encodeURI(impersonation);
+        ajaxOpts.headers.impersonation = encodeURIComponent(impersonation);
       }
       fetch(getSessionUrl(this), ajaxOpts)
         .then((res) => res.json())
@@ -131,5 +131,6 @@ export default function index (withMeta) {
     logIn: logIn,
     logout: logOut,
     logOut: logOut,
+    getBasicAuthHeaders,
   };
 };

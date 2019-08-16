@@ -19,13 +19,13 @@ import FieldSelectStatic from '../DataField/FieldSelectStatic';
 import TabularSection from '../TabularSection';
 import FrmAttachments from '../FrmAttachments';
 
-export function renderItems(items) {
+export function renderItems(items, customComponents) {
   const {props: {_mgr, classes}, state: {_obj, _meta}} = this;
 
   return items.map((item, index) => {
 
     if(Array.isArray(item)) {
-      return renderItems.call(this, item);
+      return renderItems.call(this, item, customComponents);
     }
 
     const {element, fld, light, cond_value, items, ...props} = item;
@@ -38,7 +38,7 @@ export function renderItems(items) {
     case 'FieldSelectStatic':
       return <FieldSelectStatic key={`fld_${index}`} _obj={_obj} _fld={fld} _meta={_meta.fields[item.fld]} {...props}/>;
     case 'FormGroup':
-      return <FormGroup key={`grp_${index}`} className={classes.spaceLeft} {...props}>{renderItems.call(this, items)}</FormGroup>;
+      return <FormGroup key={`grp_${index}`} className={classes.spaceLeft} {...props}>{renderItems.call(this, items, customComponents)}</FormGroup>;
     case 'Divider':
       return <Divider light={light} key={`dv_${index}`}/>;
     case 'TabularSection':
@@ -48,15 +48,19 @@ export function renderItems(items) {
     case 'Tabs':
       return <AppBar position="static" color="default">
         <Tabs key={`tabs_${index}`} value={_obj[fld]} onChange={this.handleValueChange(fld)} {...props}>
-          {renderItems.call(this, items)}
+          {renderItems.call(this, items, customComponents)}
         </Tabs>
       </AppBar>;
     case 'Tab':
       return <Tab key={`tab_${index}`} value={cond_value !== undefined ? cond_value : index} {...props}/>;
     case 'Condition':
-      return _obj[fld] == cond_value && renderItems.call(this, items);
+      return _obj[fld] == cond_value && renderItems.call(this, items, customComponents);
     default:
-      return <div key={index}>{`${element}: не реализовано в текущей версии`}</div>;
+      const Cmp = customComponents && customComponents[element];
+      return Cmp ?
+        <Cmp key={`fld_${index}`} _obj={_obj} _fld={fld} _meta={_meta.fields[item.fld]} {...props}/>
+        :
+        <div key={index}>{`${element}: не реализовано в текущей версии`}</div>;
     }
   });
 };
@@ -224,7 +228,7 @@ class DataObj extends MDNRComponent {
   }
 
   render() {
-    const {props: {_mgr, classes}, state: {_obj, _meta, _attachments}, context, _handlers} = this;
+    const {props: {_mgr, classes, customComponents}, state: {_obj, _meta, _attachments}, context, _handlers} = this;
     const toolbar_props = Object.assign({
       closeButton: !context.dnr,
       posted: _obj && _obj.posted,
@@ -239,7 +243,7 @@ class DataObj extends MDNRComponent {
         <DataObjToolbar key="toolbar" {...toolbar_props} />,
 
         _meta.form && _meta.form.obj && _meta.form.obj.items ?
-          renderItems.call(this, _meta.form.obj.items)
+          renderItems.call(this, _meta.form.obj.items, customComponents)
           :
           <FormGroup key="data" className={classes.spaceLeft}>
             {this.renderFields()}

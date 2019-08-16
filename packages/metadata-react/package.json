@@ -27,7 +27,7 @@
     "react-onclickoutside": "^6.8",
     "react-swipeable": "^5.4",
     "react-virtualized": "^9.21",
-    "recharts": "^1.6",
+    "recharts": "^1.7",
     "yamljs": "^0.3"
   },
   "peerDependencies": {
