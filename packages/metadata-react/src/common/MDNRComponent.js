@@ -14,7 +14,8 @@ import MComponent from './MComponent';
 export default class MDNRComponent extends MComponent {
 
   static contextTypes = {
-    dnr: PropTypes.object
+    dnr: PropTypes.object,
+    customComponents: PropTypes.object,
   };
 
   shouldComponentUpdate({_mgr, _meta, title, handleIfaceState}) {
@@ -46,7 +47,7 @@ export default class MDNRComponent extends MComponent {
     let {context: {dnr}, props: {width, height}, state: {columns}} = this;
 
     if(!height) {
-      height = dnr && parseInt(dnr.frameRect.height) - 26;
+      height = dnr && parseInt(dnr.frameRect.height) - 2;
     }
     if(!height || height < 320) {
       height = 320;
@@ -59,11 +60,6 @@ export default class MDNRComponent extends MComponent {
     }
 
     // горизонтальная прокрутка
-    const w2 = columns && columns.reduce((sum, val) => sum + val._width, 0);
-    if(w2 > width) {
-      width = w2;
-    }
-
-    return {width, height};
+    return {width, height, columnsWidth: columns ? columns.reduce((sum, val) => sum + val._width, 0) : width};
   }
 }

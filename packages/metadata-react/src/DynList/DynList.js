@@ -158,6 +158,7 @@ class DynList extends MDNRComponent {
         const selector = _mgr.get_search_selector({
           _obj: _owner ? (_owner._obj || _owner.props && _owner.props._obj) : null,
           _meta: _owner ? _owner._meta : {},
+          _fld: _owner && _owner.props._fld,
           search: scheme._search,
           skip: startIndex,
           top: increment + 1,
@@ -180,6 +181,7 @@ class DynList extends MDNRComponent {
           columns,
           skip: startIndex,
           limit: increment + 1,
+          _owner,
         };
         if(sprm.limit < LIMIT / 2) {
           sprm.limit = LIMIT / 2;
@@ -555,6 +557,7 @@ class DynList extends MDNRComponent {
         ref={(el) => this.grid = el}
         rowHeight={ROW_HEIGHT}
         minHeight={sizes.height - 50 - (settings_open ? 320 : 0)}
+        minWidth={context.dnr && Math.max(sizes.width, sizes.columnsWidth)}
         cellNavigationMode="changeRow"
         columns={columns}
         rowGetter={this.rowGetter}

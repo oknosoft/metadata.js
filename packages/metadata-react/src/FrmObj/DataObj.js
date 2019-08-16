@@ -178,6 +178,7 @@ class DataObj extends MDNRComponent {
     const {_meta, _obj} = this.state;
 
     if(!struct) {
+      const exclude = ['predefined_name'];
       if(_obj instanceof $p.classes.DocObj) {
         elements.push(
           <FormGroup row key={`group_sys`}>
@@ -188,10 +189,17 @@ class DataObj extends MDNRComponent {
       else if(_obj instanceof $p.classes.CatObj) {
         _meta.code_length && elements.push(<DataField _obj={_obj} key={`field_id`} _fld="id"/>);
         _meta.main_presentation_name && elements.push(<DataField _obj={_obj} key={`field_name`} _fld="name"/>);
-        _meta.has_owners && elements.push(<DataField _obj={_obj} key={`field_owner`} _fld="owner"/>);
+        if(_meta.has_owners) {
+          elements.push(<DataField _obj={_obj} key={`field_owner`} _fld="owner"/>);
+          exclude.push('owner');
+        }
+        if(_meta.hierarchical) {
+          elements.push(<DataField _obj={_obj} key={`field_parent`} _fld="parent"/>);
+          exclude.push('parent');
+        }
       }
       for (const _fld in _meta.fields) {
-        _fld != 'predefined_name' && elements.push(<DataField fullWidth key={`field_${_fld}`} _obj={_obj} _fld={_fld}/>);
+        !exclude.includes(_fld) && elements.push(<DataField fullWidth key={`field_${_fld}`} _obj={_obj} _fld={_fld}/>);
       }
     }
 
@@ -228,7 +236,7 @@ class DataObj extends MDNRComponent {
   }
 
   render() {
-    const {props: {_mgr, classes, customComponents}, state: {_obj, _meta, _attachments}, context, _handlers} = this;
+    const {props: {_mgr, classes}, state: {_obj, _meta, _attachments}, context, _handlers} = this;
     const toolbar_props = Object.assign({
       closeButton: !context.dnr,
       posted: _obj && _obj.posted,
@@ -243,7 +251,7 @@ class DataObj extends MDNRComponent {
         <DataObjToolbar key="toolbar" {...toolbar_props} />,
 
         _meta.form && _meta.form.obj && _meta.form.obj.items ?
-          renderItems.call(this, _meta.form.obj.items, customComponents)
+          renderItems.call(this, _meta.form.obj.items, context.customComponents)
           :
           <FormGroup key="data" className={classes.spaceLeft}>
             {this.renderFields()}

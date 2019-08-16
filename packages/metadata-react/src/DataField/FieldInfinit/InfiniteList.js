@@ -104,7 +104,7 @@ export default class InfiniteList extends MComponent {
     const {_mgr, _obj, _fld, _meta, search} = props;
     const {totalRows} = state;
     const increment = Math.max(limit, stopIndex - startIndex + 1);
-    const select = _mgr.get_search_selector({_obj, _meta, search, top: increment, skip: startIndex});
+    const select = _mgr.get_search_selector({_obj, _fld, _meta, search, top: increment, skip: startIndex});
 
     const update_state = (added) => {
       // обновляем состояние - изменилось количество записей

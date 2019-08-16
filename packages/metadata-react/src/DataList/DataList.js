@@ -492,6 +492,7 @@ class DataList extends MDNRComponent {
       const selector = _mgr.get_search_selector({
         _obj: _owner ? (_owner._obj || _owner.props && _owner.props._obj) : null,
         _meta: _owner ? _owner._meta : {},
+        _fld: _owner && _owner.props._fld,
         search: scheme._search,
         top: increment,
         skip: startIndex ? startIndex - 1 : 0,
@@ -504,6 +505,7 @@ class DataList extends MDNRComponent {
         columns,
         skip: startIndex ? startIndex - 1 : 0,
         limit: increment + 1,
+        _owner,
       };
       if(sprm.limit < DataList.LIMIT / 2) {
         sprm.limit = DataList.LIMIT / 2;
