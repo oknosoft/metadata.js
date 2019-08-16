@@ -721,7 +721,7 @@ export default function scheme_settings() {
     /**
      * ### Формирует манго селектор
      */
-    mango_selector({columns, skip, limit}) {
+    mango_selector({columns, skip, limit, _owner}) {
 
       function format(date) {
         return utils.moment(date).format('YYYY-MM-DD');
@@ -768,6 +768,19 @@ export default function scheme_settings() {
 
       if(limit) {
         res.limit = limit;
+      }
+
+      if(_owner && _owner.props) {
+        const {input_by_string, has_owners, hierarchical, group_hierarchy, fields} = this.child_meta();
+        if(hierarchical) {
+          const _meta = fields && fields[_owner.props._fld];
+          if((group_hierarchy && _owner.props._fld === 'parent') || (_meta && _meta.choice_groups_elm === 'grp')) {
+            res.selector.$and.push({is_folder: true});
+          }
+          else if(_meta && _meta.choice_groups_elm === 'elm') {
+            res.selector.$and.push({is_folder: false});
+          }
+        }
       }
 
       Object.defineProperty(res, '_mango', {value: true});

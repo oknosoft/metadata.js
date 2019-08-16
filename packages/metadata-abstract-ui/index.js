@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.20-beta.6, built:2019-08-08
+ metadata-abstract-ui v2.0.20-beta.6, built:2019-08-16
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -767,7 +767,7 @@ function scheme_settings() {
       wsql.set_user_param(this._manager.scheme_name(this.obj), this.ref);
       return this;
     }
-    mango_selector({columns, skip, limit}) {
+    mango_selector({columns, skip, limit, _owner}) {
       function format(date) {
         return utils.moment(date).format('YYYY-MM-DD');
       }
@@ -806,6 +806,18 @@ function scheme_settings() {
       }
       if(limit) {
         res.limit = limit;
+      }
+      if(_owner && _owner.props) {
+        const {input_by_string, has_owners, hierarchical, group_hierarchy, fields} = this.child_meta();
+        if(hierarchical) {
+          const _meta = fields && fields[_owner.props._fld];
+          if((group_hierarchy && _owner.props._fld === 'parent') || (_meta && _meta.choice_groups_elm === 'grp')) {
+            res.selector.$and.push({is_folder: true});
+          }
+          else if(_meta && _meta.choice_groups_elm === 'elm') {
+            res.selector.$and.push({is_folder: false});
+          }
+        }
       }
       Object.defineProperty(res, '_mango', {value: true});
       return res;
@@ -1282,6 +1294,132 @@ function mngrs() {
       get () {
         const meta = this.metadata();
         return `${msg.open_frm} ${msg.obj_parent} ${msg.meta_parents[this.class_name.split('.')[0]]} '${meta.synonym || meta.name}'`;
+      }
+    },
+    get_search_selector: {
+      value({_obj, _fld, _meta, search, top, skip, sorting}) {
+        const {cachable, _owner, adapter} = this;
+        const {md, utils, classes} = _owner.$p;
+        const select = {};
+        const {input_by_string, has_owners, hierarchical, group_hierarchy} = this.metadata();
+        if(hierarchical) {
+          if((group_hierarchy && _fld === 'parent') || (_meta && _meta.choice_groups_elm === 'grp')) {
+            select.is_folder = true;
+          }
+          else if(_meta &&  _meta.choice_groups_elm === 'elm') {
+            select.is_folder = false;
+          }
+        }
+        if(/ram$/.test(cachable)) {
+          select._top = top;
+          select._skip = skip;
+          if(sorting) {
+            sorting.find_rows({use: true}, ({field, direction}) => {
+              if(!select._sort) {
+                select._sort = [];
+              }
+              select._sort.push({field, direction: direction.valueOf()});
+            });
+          }
+          if(search && input_by_string) {
+            select._search = {
+              fields: input_by_string,
+              value: search.trim().replace(/\s\s/g, ' ').split(' ').filter(v => v),
+            };
+          }
+          _meta.choice_links && _meta.choice_links.forEach((choice) => {
+            if(choice.name && choice.name[0] == 'selection') {
+              if(utils.is_tabular(_obj)) {
+                if(choice.path.length < 2) {
+                  select[choice.name[1]] = typeof choice.path[0] == 'function' ? choice.path[0] : _obj._owner._owner[choice.path[0]];
+                }
+                else {
+                  if(choice.name[1] == 'owner' && !has_owners) {
+                    return;
+                  }
+                  select[choice.name[1]] = _obj[choice.path[1]];
+                }
+              }
+              else {
+                select[choice.name[1]] = typeof choice.path[0] == 'function' ? choice.path[0] : _obj[choice.path[0]];
+              }
+            }
+          });
+          _meta.choice_params && _meta.choice_params.forEach((choice) => {
+            const fval = Array.isArray(choice.path) ? {in: choice.path} : choice.path;
+            if(!select[choice.name]) {
+              select[choice.name] = fval;
+            }
+            else if(Array.isArray(select[choice.name])) {
+              select[choice.name].push(fval);
+            }
+            else {
+              select[choice.name] = [select[choice.name]];
+              select[choice.name].push(fval);
+            }
+          });
+        }
+        else if(adapter.db(this) instanceof classes.PouchDB){
+          Object.assign(select, {
+            selector: {class_name: this.class_name},
+            fields: ['_id', 'name'],
+            skip,
+            limit: top
+          });
+          if(_meta.hierarchical) {
+            select.fields.push('parent');
+          }
+          if(_meta.has_owners) {
+            select.fields.push('owner');
+          }
+          _meta.choice_links && _meta.choice_links.forEach((choice) => {
+            if(choice.name && choice.name[0] == 'selection' && typeof choice.path[0] !== 'function') {
+              const val = _obj[choice.path.length > 1 ? choice.path[1] : choice.path[0]];
+              if(val != undefined && this.metadata(choice.name[1])){
+                select.selector[choice.name[1]] = val.valueOf();
+              }
+            }
+          });
+          _meta.choice_params && _meta.choice_params.forEach((choice) => {
+            const fval = Array.isArray(choice.path) ? {$in: choice.path.map(v => v.valueOf())} : choice.path.valueOf();
+            if(fval.hasOwnProperty('not')){
+              fval.$ne = fval.not;
+              delete fval.not;
+            }
+            if(!select.selector[choice.name]) {
+              select.selector[choice.name] = Array.isArray(choice.path) ? {$in: choice.path.map(v => v.valueOf())} : choice.path.valueOf();
+            }
+            else if(select.selector[choice.name].$in) {
+              if(Array.isArray(choice.path)){
+                choice.path.forEach(v => select.selector[choice.name].$in.push(v.valueOf()));
+              }
+              else{
+                select.selector[choice.name].$in.push(choice.path.valueOf());
+              }
+            }
+            else {
+              select.selector[choice.name] = {$in: [select[choice.name]]};
+              if(Array.isArray(choice.path)){
+                choice.path.forEach(v => select.selector[choice.name].$in.push(v.valueOf()));
+              }
+              else{
+                select.selector[choice.name].$in.push(choice.path.valueOf());
+              }
+            }
+          });
+          if(search && input_by_string) {
+            if(input_by_string.length > 1) {
+              select.selector.$or = [];
+              input_by_string.forEach((fld) => {
+                select.selector.$or.push({[fld]: {$regex: `(?i)${search}`}});
+              });
+            }
+            else {
+              select.selector[input_by_string[0]] = {$regex: `(?i)${search}`};
+            }
+          }
+        }
+        return select;
       }
     }
   });
