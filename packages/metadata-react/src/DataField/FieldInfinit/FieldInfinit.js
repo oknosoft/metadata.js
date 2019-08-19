@@ -28,11 +28,9 @@ import InpitReadOnly from './InpitReadOnly';
 import InpitEditable from './InpitEditable';
 import OuterDialog from './OuterDialog';
 
-
 import AbstractField, {suggestionText} from '../AbstractField';
 import withStyles from '../styles';
 import cn from 'classnames';
-
 
 class FieldInfinit extends AbstractField {
 

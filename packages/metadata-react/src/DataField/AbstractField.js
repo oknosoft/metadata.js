@@ -34,6 +34,16 @@ export class FieldWithMeta extends MComponent {
     super(props, context);
     const {_obj, _fld, _meta} = props;
     this._meta = _meta || _obj._metadata(_fld) || {type: {types: ['string']}};
+
+    if(!this._meta.synonym) {
+      if(_fld === 'parent') {
+        this._meta.synonym = 'Группа';
+      }
+      else if(_fld === 'owner') {
+        this._meta.synonym = 'Владелец';
+      }
+    }
+
     if(this._meta.choice_type) {
       const {path} = this._meta.choice_type;
       const prm = _obj[path[path.length - 1]] || (_obj._owner && _obj._owner[path[path.length - 1]]);

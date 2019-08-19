@@ -30,6 +30,10 @@ export function renderItems(items, customComponents) {
 
     const {element, fld, light, cond_value, items, ...props} = item;
 
+    if(_obj.is_folder && fld && !['id', 'name', 'owner', 'parent'].includes(fld)) {
+      return null;
+    }
+
     switch (element) {
     case 'DataField':
       return <DataField key={`fld_${index}`} _obj={_obj} _fld={fld} _meta={_meta.fields[item.fld]} {...props}/>;
@@ -229,6 +233,9 @@ class DataObj extends MDNRComponent {
   get ltitle() {
     const {_meta, _obj} = this.state;
     let ltitle = (_obj && _obj.presentation) || _meta.obj_presentation || _meta.synonym;
+    if(_obj && _obj.is_folder) {
+      ltitle += ' (Группа)';
+    }
     if(_obj && _obj._modified && ltitle[ltitle.length - 1] !== '*') {
       ltitle += ' *';
     }
@@ -265,7 +272,9 @@ class DataObj extends MDNRComponent {
           onClose={_handlers.handleCloseAttachments}
         >
           <FrmAttachments _obj={_obj} handleClose={_handlers.handleCloseAttachments}/>
-        </Dialog>
+        </Dialog>,
+
+        <div style={{marginBottom: 8}} />,
       ]
       :
       <LoadingMessage/>;
