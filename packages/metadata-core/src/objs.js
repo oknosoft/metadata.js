@@ -391,12 +391,12 @@ export class BaseDataObj {
    */
   _mixin(attr, include, exclude, silent) {
     if(Object.isFrozen(this)) {
-      return;
+      return this;
     }
     if(attr && typeof attr == 'object') {
       const {_not_set_loaded} = attr;
+      const {_data, _manager} = this;
       _not_set_loaded && delete attr._not_set_loaded;
-      const {_data} = this;
       if(silent) {
         if(_data._loading) {
           silent = false;
@@ -404,6 +404,9 @@ export class BaseDataObj {
         _data._loading = true;
       }
       utils._mixin(this, attr, include, exclude);
+      if(_data._loading) {
+        _manager.emit('mixin', this);
+      }
       if(silent) {
         _data._loading = false;
       }
@@ -411,6 +414,7 @@ export class BaseDataObj {
         this._set_loaded(this.ref);
       }
     }
+    return this;
   }
 
 

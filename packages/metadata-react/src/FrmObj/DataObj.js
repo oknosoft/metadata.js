@@ -97,11 +97,11 @@ class DataObj extends MDNRComponent {
         this.setState({_obj}, () => this.shouldComponentUpdate(this.props));
       });
 
-    _mgr.on('update', this.onDataChange);
+    _mgr.on({update: this.onDataChange, mixin: this.onDataChange});
   }
 
   componentWillUnmount() {
-    this.props._mgr.off('update', this.onDataChange);
+    this.props._mgr.off({update: this.onDataChange, mixin: this.onDataChange});
     this.state._obj && this.state._obj.is_new() && this.state._obj.unload();
   }
 

@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.20-beta.6, built:2019-08-16
+ metadata-core v2.0.20-beta.6, built:2019-08-19
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -787,12 +787,12 @@ class BaseDataObj {
   }
   _mixin(attr, include, exclude, silent) {
     if(Object.isFrozen(this)) {
-      return;
+      return this;
     }
     if(attr && typeof attr == 'object') {
       const {_not_set_loaded} = attr;
+      const {_data, _manager} = this;
       _not_set_loaded && delete attr._not_set_loaded;
-      const {_data} = this;
       if(silent) {
         if(_data._loading) {
           silent = false;
@@ -800,6 +800,9 @@ class BaseDataObj {
         _data._loading = true;
       }
       utils._mixin(this, attr, include, exclude);
+      if(_data._loading) {
+        _manager.emit('mixin', this);
+      }
       if(silent) {
         _data._loading = false;
       }
@@ -807,6 +810,7 @@ class BaseDataObj {
         this._set_loaded(this.ref);
       }
     }
+    return this;
   }
   _fix_plain() {
     const {_obj, _manager} = this;
