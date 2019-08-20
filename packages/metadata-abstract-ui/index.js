@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.20-beta.6, built:2019-08-16
+ metadata-abstract-ui v2.0.20-beta.6, built:2019-08-20
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -110,8 +110,12 @@ function log_manager() {
         dfrom = this._stamp;
         if(!pouch.remote.log) {
           const {__opts} = (pouch.remote.ram || pouch.remote.remote || pouch.remote.doc);
-          pouch.remote.log = new classes.PouchDB(__opts.name.replace(/(ram|remote|doc)$/, 'log'),
-            {skip_setup: true, adapter: 'http', auth: __opts.auth});
+          pouch.remote.log = new classes.PouchDB(__opts.name.replace(/(ram|remote|doc)$/, 'log'), {
+            skip_setup: true,
+            adapter: 'http',
+            auth: __opts.auth,
+            owner: pouch,
+          });
         }
         if(!this._rows){
           this._rows = wsql.alasql.compile('select * from `ireg_log` where `date` >= ?');

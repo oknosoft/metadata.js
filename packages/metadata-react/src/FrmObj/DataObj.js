@@ -274,7 +274,7 @@ class DataObj extends MDNRComponent {
           <FrmAttachments _obj={_obj} handleClose={_handlers.handleCloseAttachments}/>
         </Dialog>,
 
-        <div style={{marginBottom: 8}} />,
+        <div key="bottom" style={{marginBottom: 8}} />,
       ]
       :
       <LoadingMessage/>;
