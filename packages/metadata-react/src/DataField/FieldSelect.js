@@ -37,7 +37,7 @@ class FieldSelect extends AbstractField {
   loadOptions(_obj) {
 
     const {_meta, props, state} = this;
-    const _manager = _obj[props._fld]._manager || _meta.type._mgr;
+    const _manager = _obj[props._fld] && _obj[props._fld]._manager || _meta.type._mgr;
     const select = _manager ? _manager.get_search_selector({_obj, _meta, top: 999, skip: 0}) : {};
 
     if(_meta.list) {
@@ -78,10 +78,11 @@ class FieldSelect extends AbstractField {
 
     const {props, _meta, isTabular, onChange} = this;
     const {_obj, _fld, classes} = props;
+    const value = _obj[_fld];
 
     return isTabular ?
       <select
-        value={_obj[_fld].valueOf()}
+        value={value && value.valueOf()}
         onChange={onChange}
       >
         {this.renderOptions()}
@@ -91,7 +92,7 @@ class FieldSelect extends AbstractField {
         <InputLabel>{_meta.tooltip || _meta.synonym}</InputLabel>
         <Select
           native
-          value={_obj[_fld].valueOf()}
+          value={value && value.valueOf()}
           onChange={onChange}
           input={<Input/>}
         >

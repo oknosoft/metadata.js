@@ -29,14 +29,20 @@ class FrmLogin extends React.Component {
 
   constructor(props, context) {
     super(props, context);
+    let provider = typeof $p === 'object' && $p.adapters.pouch ? $p.adapters.pouch.props._auth_provider || '' : '';
+    if(typeof $p === 'object' && $p.adapters.pouch) {
+      provider = $p.adapters.pouch.props._auth_provider || '';
+      if(!provider) {
+        provider = $p.wsql.get_user_param('auth_provider');
+      }
+    }
     this.state = {
       fetching: false,
       showPassword: false,
       error: '',
-      provider: typeof $p === 'object' && $p.adapters.pouch ? $p.adapters.pouch.props._auth_provider || '' : '',
       login: '',
       password: '',
-
+      provider,
     };
   }
 
@@ -64,6 +70,7 @@ class FrmLogin extends React.Component {
     }
 
     $p.adapters.pouch.props._auth_provider = provider;
+    $p.wsql.set_user_param('auth_provider', provider);
     props.handleLogin(login, password);
 
   };

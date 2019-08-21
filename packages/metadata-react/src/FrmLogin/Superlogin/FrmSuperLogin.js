@@ -12,20 +12,20 @@ import Reset from './Reset';
 export default function FrmSuperLogin({ classes, ...other}) {
   const {token} = other.match.params;
   return <AppContent>
-    <Helmet key="helmet" title="Профиль пользователя">
+    <Helmet title="Профиль пользователя">
       <meta name="description" content="Вход в систему"/>
       <meta property="og:title" content="Профиль пользователя"/>
       <meta property="og:description" content="Вход в систему"/>
     </Helmet>
     {
       token ?
-        <Reset key="profile" {...other}/>
+        <Reset {...other}/>
         :
         (
           other.user.logged_in ?
-            <Profile key="profile" {...other}/>
+            <Profile {...other}/>
             :
-            <TabsLogin key="profile" {...other}/>
+            <TabsLogin {...other}/>
         )
     }
   </AppContent>;
