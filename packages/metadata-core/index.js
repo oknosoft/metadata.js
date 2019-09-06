@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.20-beta.7, built:2019-08-21
+ metadata-core v2.0.20-beta.7, built:2019-09-06
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2902,6 +2902,7 @@ moment$1._masks = {
 if(typeof global != 'undefined'){
   global.moment = moment$1;
 }
+const uuidv1 = require('uuid/v1');
 Date.prototype.toJSON = Date.prototype.toISOString = function () {
 	return moment$1(this).format(moment$1._masks.iso);
 };
@@ -3065,12 +3066,7 @@ const utils = {
 		return newDt;
 	},
 	generate_guid() {
-		let d = new Date().getTime();
-		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-			const r = (d + Math.random() * 16) % 16 | 0;
-			d = Math.floor(d / 16);
-			return (c == 'x' ? r : (r & 0x7 | 0x8)).toString(16);
-		});
+		return uuidv1();
 	},
 	is_guid(v) {
 		if (typeof v !== 'string' || v.length < 36) {
