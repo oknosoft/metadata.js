@@ -79,7 +79,7 @@ function eXcell_calck(cell){
 				if(!((e||event) instanceof KeyboardEvent)){
 					(e||event).preventDefault();
 					if (rZone.value!="0"){
-						if(rZone.selectionStart == rZone.selectionEnd)  //rZone.readOnly || 
+						if(rZone.selectionStart == rZone.selectionEnd)  //rZone.readOnly ||
 							rZone.value+=z;
 						else
 							rZone.value= rZone.value.substr(0, rZone.selectionStart) + z + rZone.value.substr(rZone.selectionEnd);
@@ -274,7 +274,9 @@ function eXcell_calck(cell){
 			div.style.top=this.top+"px";
 			div.style.left=this.left+"px";
 			div.innerHTML="<table cellspacing='0' id='calc_01' class='calcTable'><tr><td colspan='4' style='padding: 0px;'><table cellpadding='1' cellspacing='0' width='100%'><tr><td width='100%' style='overflow:hidden; padding: 0px;'><input type='search' class='calcInput' value='0' align='right'></td><td class='calkSubmit'>Ok</td></tr></table></td></tr><tr><td class='calcButton' width='25%'>Off</td><td class='calcButton' width='25%'>C</td><td class='calcButton' width='25%'>π</td><td class='calcButton' width='25%'>/</td></tr><tr><td class='calcButton'>7</td><td class='calcButton'>8</td><td class='calcButton'>9</td><td class='calcButton'>*</td></tr><tr><td class='calcButton'>4</td><td class='calcButton'>5</td><td class='calcButton'>6</td><td class='calcButton'>+</td></tr><tr><td class='calcButton'>1</td><td class='calcButton'>2</td><td class='calcButton'>3</td><td class='calcButton'>-</td></tr><tr><td class='calcButton'>0</td><td class='calcButton'>.</td><td class='calcButton' style='font-family: Arial, Helvetica; font-size: 12pt;'>±</td><td class='calcButton'>=</td></tr></table>";
-			div.onclick=function(e){ (e||event).cancelBubble=true; };
+      div.addEventListener('click', function(evt){
+        evt.stopPropagation();
+      }, false);
 			document.body.appendChild(div);
 			this.topNod=div;
 		};
