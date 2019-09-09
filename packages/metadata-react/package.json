@@ -9,8 +9,8 @@
     "npm": "^6.0"
   },
   "dependencies": {
-    "@material-ui/core": "^4.3",
-    "@material-ui/icons": "^4.2",
+    "@material-ui/core": "^4.4",
+    "@material-ui/icons": "^4.4",
     "classnames": "^2.2.6",
     "downshift": "^3.2",
     "font-awesome": "^4.7.0",
@@ -24,7 +24,7 @@
     "react-data-grid-addons": "^6.1",
     "react-fullscreenable": "^2.5.1-0",
     "react-helmet": "^5.2",
-    "react-onclickoutside": "^6.8",
+    "react-onclickoutside": "^6.9",
     "react-swipeable": "^5.4",
     "react-virtualized": "^9.21",
     "recharts": "^1.7",
