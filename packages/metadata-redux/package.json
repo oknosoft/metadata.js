@@ -9,14 +9,14 @@
     "npm": "^6.0"
   },
   "dependencies": {
-    "history": "^4.9",
+    "history": "^4.10",
     "react-redux": "^7.1",
     "react-router": "^5.0",
     "react-router-dom": "^5.0",
     "react-router-redux": "github:unpete/react-router-redux",
     "redux": "^4.0",
     "redux-dynamic-middlewares": "^1.0",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3"
   },
   "repository": {
     "type": "git",

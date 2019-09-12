@@ -11,8 +11,8 @@
   "dependencies": {
     "@material-ui/core": "^4.4",
     "@material-ui/icons": "^4.4",
-    "classnames": "^2.2.6",
-    "downshift": "^3.2",
+    "classnames": "^2.2",
+    "downshift": "^3.3",
     "font-awesome": "^4.7.0",
     "marked": "^0.7",
     "metadata-abstract-ui": "^2.0.20-beta.7",
