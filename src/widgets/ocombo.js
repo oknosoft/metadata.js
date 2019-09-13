@@ -146,6 +146,11 @@ function OCombo(attr){
       }
     });
 
+    // учтём дискретный ряд - он перекрывает другие отборы по ref
+    if(_meta.list) {
+      filter.ref = {in: _meta.list};
+    }
+
 		// если в метаданных указано строить список по локальным данным, подмешиваем эту информацию в фильтр
     if(_meta._option_list_local) {
       filter._local = true;
@@ -365,17 +370,27 @@ function OCombo(attr){
 		_field = attr.field;
 		_property = attr.property;
 
-		if(attr.metadata)
-			_meta = attr.metadata;
+    if(attr.metadata) {
+      _meta = attr.metadata;
+    }
+    else if(_property) {
+      _meta = (typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field])._clone();
+      _meta.type = _property.type;
+      if(_obj.inset && _obj.inset.product_params) {
+        const drow = _obj.inset.product_params.find({param: _property});
+        if(drow && drow.list) {
+          try{
+            _meta.list = JSON.parse(drow.list);
+          }
+          catch (e) {}
+        }
+      }
+    }
+    else {
+      _meta = typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field];
+    }
 
-		else if(_property){
-			_meta = (typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field])._clone();
-			_meta.type = _property.type;
-
-		}else
-			_meta = typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field];
-
-		t.clearAll();
+    t.clearAll();
 		_mgr = _md.value_mgr(_obj, _field, _meta.type);
 
 		if(_mgr || attr.get_option_list){

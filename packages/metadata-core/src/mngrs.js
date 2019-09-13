@@ -292,18 +292,24 @@ export class DataManager extends MetaEventEmitter{
 
 		let t = this, l = [], input_by_string, text;
 
-		function push(v){
-			if(selection._dhtmlx){
-				v = {
-					text: v.presentation,
-					value: v.ref
-				}
-				if(utils.is_equal(v.value, val)){
-					v.selected = true;
-				}
-			}
-			l.push(v);
-		}
+    function push(v){
+      if(selection._dhtmlx){
+        const opt = {
+          text: v.presentation,
+          value: v.ref
+        }
+        if(utils.is_equal(opt.value, val)){
+          opt.selected = true;
+        }
+        if(v.class_name == 'cat.property_values' && v.css) {
+          opt.css = v.css;
+        }
+        l.push(opt);
+      }
+      else if(!v.empty()){
+        l.push(v);
+      }
+    }
 
     // поиск по строке
     if(selection.presentation && (input_by_string = t.metadata().input_by_string)) {

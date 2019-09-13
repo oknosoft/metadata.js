@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.20-beta.7, built:2019-09-06
+ metadata-core v2.0.20-beta.7, built:2019-09-13
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1632,18 +1632,24 @@ class DataManager extends MetaEventEmitter{
 	}
 	get_option_list(selection = {}, val){
 		let t = this, l = [], input_by_string, text;
-		function push(v){
-			if(selection._dhtmlx){
-				v = {
-					text: v.presentation,
-					value: v.ref
-				};
-				if(utils.is_equal(v.value, val)){
-					v.selected = true;
-				}
-			}
-			l.push(v);
-		}
+    function push(v){
+      if(selection._dhtmlx){
+        const opt = {
+          text: v.presentation,
+          value: v.ref
+        };
+        if(utils.is_equal(opt.value, val)){
+          opt.selected = true;
+        }
+        if(v.class_name == 'cat.property_values' && v.css) {
+          opt.css = v.css;
+        }
+        l.push(opt);
+      }
+      else if(!v.empty()){
+        l.push(v);
+      }
+    }
     if(selection.presentation && (input_by_string = t.metadata().input_by_string)) {
       text = selection.presentation.like;
       delete selection.presentation;

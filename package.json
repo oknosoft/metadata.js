@@ -80,7 +80,7 @@
     "gulp-umd": "^2.0",
     "gulp-util": "^3.0.8",
     "gulp-wrap": "^0.15.0",
-    "history": "^4.10.0",
+    "history": "^4.10.1",
     "md5-file": "^4.0.0",
     "react-data-grid": "^6.1.0",
     "react-data-grid-addons": "^6.1.0",
@@ -103,7 +103,7 @@
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-replace": "^2.2.0",
-    "webpack": "^4.39.3",
+    "webpack": "^4.40.1",
     "yargs": "^14.0.0",
     "yuidocjs": "^0.10"
   },
