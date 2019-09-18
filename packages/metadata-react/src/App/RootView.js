@@ -39,15 +39,6 @@ class RootView extends Component {
       res = false;
     }
 
-    // если это первый запуск или couch_direct и offline, переходим на страницу login
-    if(!path_log_in && meta_loaded && res && iprops.need_user && (
-      first_run || (data_empty === true && !user.try_log_in && !user.logged_in) || (couch_direct && offline)
-      )) {
-      history.push('/login');
-      this.setState({pathname: '/login'});
-      res = false;
-    }
-
     return res;
   }
 

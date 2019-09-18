@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Drawer from '@material-ui/core/Drawer';
+import Drawer from '@material-ui/core/SwipeableDrawer';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -29,21 +29,32 @@ class NavDrawer extends Component {
       name: 'open',
       value: false,
     });
+
+    this.handleOpen = props.handleIfaceState.bind(this, {
+      component: NavDrawer.rname,
+      name: 'open',
+      value: true,
+    });
   }
 
   render() {
 
-    const {props, handleClose, handleToggle} = this;
+    const {props, handleClose} = this;
     const {classes, items, title, handleNavigate} = props;
 
     return (
       <div>
 
-        <IconButton onClick={handleToggle}>
+        <IconButton onClick={this.handleToggle}>
           <IconNavigationMenu color="inherit"/>
         </IconButton>
 
-        <Drawer open={props.open} onClose={handleClose} classes={{paper: classes.drawer}} >
+        <Drawer
+          open={props.open}
+          onClose={handleClose}
+          onOpen={this.handleOpen}
+          classes={{paper: classes.drawer}}
+        >
 
           <AppBar position="static" color="default">
             <Toolbar disableGutters >
