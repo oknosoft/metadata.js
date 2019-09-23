@@ -54,6 +54,7 @@ class NavDrawer extends Component {
           onClose={handleClose}
           onOpen={this.handleOpen}
           classes={{paper: classes.drawer}}
+          swipeAreaWidth={8}
         >
 
           <AppBar position="static" color="default">

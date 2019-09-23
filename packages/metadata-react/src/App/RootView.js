@@ -9,6 +9,7 @@ import {withMeta} from 'metadata-redux';
 
 // заставка несовместимый браузер
 import BrowserCompatibility, {browser_compatible} from './BrowserCompatibility';
+import SecondInstance from './SecondInstance';
 
 // тема для material-ui
 import {ThemeProvider} from '@material-ui/styles';
@@ -45,23 +46,39 @@ class RootView extends Component {
   render() {
 
     const {props, state} = this;
-    const {meta_loaded, data_empty, data_loaded, history, DumbScreen, AppView, theme} = props;
+    const {meta_loaded, data_empty, data_loaded, history, DumbScreen, AppView, theme, repl, second_instance} = props;
 
     const show_dumb = DumbScreen && state.need_meta && (
       !meta_loaded || (!data_empty && !data_loaded)
     );
 
+    if(!show_dumb && repl) {
+      for(const dbs in repl) {
+        const info = repl[dbs];
+        if(info.ok && !info.end_time) {
+          show_dumb = true;
+        }
+      }
+    }
+
     return <ThemeProvider theme={theme}>
       {
-        state.browser_compatible ?
-          (show_dumb ?
-            <DumbScreen {...props} />
-            :
-            <Router history={history}>
-              <Route component={AppView}/>
-            </Router>)
+        second_instance ?
+          (
+            <SecondInstance/>
+          )
           :
-          (<BrowserCompatibility/>)
+          (
+            state.browser_compatible ?
+              (show_dumb ?
+                <DumbScreen {...props} />
+                :
+                <Router history={history}>
+                  <Route component={AppView}/>
+                </Router>)
+              :
+              (<BrowserCompatibility/>)
+          )
       }
     </ThemeProvider>;
 

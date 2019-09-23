@@ -25,7 +25,7 @@ class Header extends Component {
     return (
       <AppBar position="static" color="default">
         <Toolbar disableGutters >
-          <HeaderMenu {...props} classes={classes} />
+          <HeaderMenu {...props} classes={{drawer: classes.drawer}} />
           <Typography variant="h6" color="textSecondary" className={classes.flex}>{title}</Typography>
           <HeaderButtons {...props} barColor="default"/>
         </Toolbar>
