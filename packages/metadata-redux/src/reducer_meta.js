@@ -10,7 +10,8 @@ import handlers_meta from './handlers_meta';
  */
 
 function metaInitialState() {
-  let user_name = "",
+  let user_name = '',
+    iface_kind = '',
     has_login = false,
     couch_direct = true,
     second_instance = false,
@@ -18,6 +19,7 @@ function metaInitialState() {
   if(!fake) {
     const {wsql, job_prm, superlogin} = $p;
     user_name = wsql.get_user_param('user_name');
+    iface_kind = wsql.get_user_param('iface_kind');
     couch_direct = wsql.get_user_param('couch_direct', 'boolean');
     if(wsql.get_user_param('zone') == job_prm.zone_demo && !user_name && job_prm.guests.length) {
       wsql.set_user_param('enable_save_pwd', true);
@@ -51,6 +53,7 @@ function metaInitialState() {
     path_log_in: false,
     couch_direct,
     second_instance,
+    iface_kind,
     fake,
     user: {
       name: user_name,

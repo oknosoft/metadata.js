@@ -11,6 +11,7 @@ const mapStateToProps = (/**{meta}**/) => {
     'zone',
     'couch_path',
     'superlogin_path',
+    'iface_kind',
     ['couch_direct', 'boolean'],
     ['enable_save_pwd', 'boolean'],
     ['ram_indexer', 'boolean'],
