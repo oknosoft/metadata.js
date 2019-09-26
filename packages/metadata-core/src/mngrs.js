@@ -743,7 +743,7 @@ export class RefDataManager extends DataManager{
 	load_array(aattr, forse){
 		const res = [];
     const {wsql} = this._owner.$p;
-    const {grouping} = this.metadata();
+    const {grouping, tabular_sections} = this.metadata();
 		for(const attr of aattr){
 		  if(grouping === 'array' && attr.ref.length <= 3) {
 		    res.push.apply(res, this.load_array(attr.rows, forse));
@@ -772,6 +772,9 @@ export class RefDataManager extends DataManager{
 				obj._mixin(attr);
         attr._rev && (obj._obj._rev = attr._rev);
 			}
+      for(const ts in tabular_sections) {
+        obj[ts]._index && obj[ts]._index.clear();
+      }
 			res.push(obj);
 		}
 		return res;

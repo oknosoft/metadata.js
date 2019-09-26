@@ -76,9 +76,11 @@ if (!Number.prototype.pad) {
  */
 if (!Object.prototype._clone) {
 	Object.defineProperty(Object.prototype, '_clone', {
-		value: function () {
+		value() {
 			return utils._clone(this);
 		},
+    configurable: true,
+    writable: true,
 	});
 }
 

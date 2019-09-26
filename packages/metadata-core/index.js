@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.20-beta.7, built:2019-09-19
+ metadata-core v2.0.20-beta.7, built:2019-09-26
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -314,7 +314,21 @@ class TabularSection {
 		const cb = callback ? (row) => {
 			return callback.call(this, row._row);
 		} : null;
-		return utils._find_rows.call(this, this._obj, selection, cb);
+		let {_obj, _owner, _name, _index} = this;
+		const {index} = _owner._metadata(_name);
+		if(index && selection.hasOwnProperty(index)) {
+		  if(!_index) {
+        _index = this._index = new Map();
+      }
+      _obj = _index.get(selection[index]);
+		  if(!_obj) {
+		    _obj = this._obj.filter((row) => row[index] == selection[index]);
+        _index.set(selection[index], _obj);
+      }
+		  selection = Object.assign({}, selection);
+		  delete selection[index];
+    }
+		return utils._find_rows.call(this, _obj, selection, cb);
 	}
 	swap(rowid1, rowid2) {
     const {_obj, _owner, _name} = this;
@@ -1951,7 +1965,7 @@ class RefDataManager extends DataManager{
 	load_array(aattr, forse){
 		const res = [];
     const {wsql} = this._owner.$p;
-    const {grouping} = this.metadata();
+    const {grouping, tabular_sections} = this.metadata();
 		for(const attr of aattr){
 		  if(grouping === 'array' && attr.ref.length <= 3) {
 		    res.push.apply(res, this.load_array(attr.rows, forse));
@@ -1980,6 +1994,9 @@ class RefDataManager extends DataManager{
 				obj._mixin(attr);
         attr._rev && (obj._obj._rev = attr._rev);
 			}
+      for(const ts in tabular_sections) {
+        obj[ts]._index && obj[ts]._index.clear();
+      }
 			res.push(obj);
 		}
 		return res;
@@ -2929,9 +2946,11 @@ if (!Number.prototype.pad) {
 }
 if (!Object.prototype._clone) {
 	Object.defineProperty(Object.prototype, '_clone', {
-		value: function () {
+		value() {
 			return utils._clone(this);
 		},
+    configurable: true,
+    writable: true,
 	});
 }
 if (!Object.prototype._mixin) {

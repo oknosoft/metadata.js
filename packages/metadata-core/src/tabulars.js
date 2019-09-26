@@ -184,7 +184,23 @@ export class TabularSection {
 			return callback.call(this, row._row);
 		} : null;
 
-		return utils._find_rows.call(this, this._obj, selection, cb);
+		// поддержка индекса
+		let {_obj, _owner, _name, _index} = this;
+		const {index} = _owner._metadata(_name);
+		if(index && selection.hasOwnProperty(index)) {
+		  if(!_index) {
+        _index = this._index = new Map();
+      }
+      _obj = _index.get(selection[index]);
+		  if(!_obj) {
+		    _obj = this._obj.filter((row) => row[index] == selection[index]);
+        _index.set(selection[index], _obj);
+      }
+		  selection = Object.assign({}, selection);
+		  delete selection[index];
+    }
+
+		return utils._find_rows.call(this, _obj, selection, cb);
 	}
 
 	/**
