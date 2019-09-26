@@ -68,7 +68,7 @@ function AppDrawer(props) {
           >
             <IconHome className={classes.marginRight}/>
 
-            <Typography className={classes.space} variant="h6" color="inherit">{title}</Typography>
+            <Typography className={classes.space} variant="subtitle2" color="inherit">{title}</Typography>
             {onPermanentClose &&
             <IconButton onClick={(e) => {
               e.preventDefault();

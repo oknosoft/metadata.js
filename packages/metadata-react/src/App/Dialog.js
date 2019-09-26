@@ -104,7 +104,7 @@ class SimpleDialog extends React.Component {
       classes={{paper: cn(large ? classes.large : classes.paper, minheight && classes.minheight, !stateFullScreen && classes.maxwidth)}}
     >
       <Toolbar disableGutters className={classes.toolbar}>
-        <Typography className={classes.title} variant="h6" color="inherit" noWrap>{title}</Typography>
+        <Typography className={classes.title} variant="subtitle2" color="inherit" noWrap>{title}</Typography>
         {toolbtns}
         {
           !fullScreen && <IconButton
