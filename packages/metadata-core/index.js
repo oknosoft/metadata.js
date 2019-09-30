@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.20-beta.7, built:2019-09-26
+ metadata-core v2.0.20-beta.7, built:2019-09-30
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2367,9 +2367,14 @@ class RefDataManager extends DataManager{
 	}
 	predefined(name){
 		if(!this._predefined){
-      const predefined = this._predefined = {};
+      this._predefined = {};
       this.find_rows({predefined_name: {not: ''}}, (el) => {
         predefined[el.predefined_name] = el;
+      });
+    }
+    if(!this._predefined[name]){
+      this.find_rows({predefined_name: name}, (el) => {
+        this._predefined[name] = el;
       });
     }
 		return this._predefined[name];
