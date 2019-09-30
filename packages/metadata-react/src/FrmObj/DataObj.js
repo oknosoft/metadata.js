@@ -243,7 +243,7 @@ class DataObj extends MDNRComponent {
   }
 
   render() {
-    const {props: {_mgr, classes}, state: {_obj, _meta, _attachments}, context, _handlers} = this;
+    let {props: {_mgr, classes, Toolbar}, state: {_obj, _meta, _attachments}, context, _handlers} = this;
     const toolbar_props = Object.assign({
       closeButton: !context.dnr,
       posted: _obj && _obj.posted,
@@ -251,11 +251,15 @@ class DataObj extends MDNRComponent {
       postable: !!(_meta.posted || _mgr.metadata('posted')),
       deletable: !_meta.read_only,
       _obj,
-    }, _handlers)
+    }, _handlers);
+
+    if(!Toolbar) {
+      Toolbar = DataObjToolbar;
+    }
 
     return _obj ?
       [
-        <DataObjToolbar key="toolbar" {...toolbar_props} />,
+        <Toolbar key="toolbar" {...toolbar_props} />,
 
         _meta.form && _meta.form.obj && _meta.form.obj.items ?
           renderItems.call(this, _meta.form.obj.items, context.customComponents)

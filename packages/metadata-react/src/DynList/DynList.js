@@ -481,7 +481,7 @@ class DynList extends MDNRComponent {
 
     const {state, props, context, sizes, handleFilterChange, handleSchemeChange} = this;
     const {columns, scheme, confirm_text, info_text, settings_open, rowCount} = state;
-    const {_mgr: {RepParams}, classes, title, registerFilterChange, width, height, GridRenderer, rowHeight, ...others} = props;
+    let {_mgr: {RepParams}, classes, title, registerFilterChange, width, height, GridRenderer, rowHeight, Toolbar, ...others} = props;
 
     if(!scheme) {
       return <LoadingMessage text="Чтение настроек компоновки..."/>;
@@ -512,6 +512,10 @@ class DynList extends MDNRComponent {
 
     const sorting = scheme.first_sorting();
 
+    if(!Toolbar) {
+      Toolbar = DataListToolbar;
+    }
+
     return [
 
       !context.dnr && <Helmet key="helmet" title={title}>
@@ -541,7 +545,7 @@ class DynList extends MDNRComponent {
       />,
 
       // панель инструментов табчасти
-      <DataListToolbar key="toolbar" {...toolbar_props} />,
+      <Toolbar key="toolbar" {...toolbar_props} />,
 
       // панель настроек компоновки
       settings_open && <SchemeSettingsTabs
