@@ -2369,10 +2369,10 @@ class RefDataManager extends DataManager{
 		if(!this._predefined){
       this._predefined = {};
       this.find_rows({predefined_name: {not: ''}}, (el) => {
-        predefined[el.predefined_name] = el;
+        this._predefined[el.predefined_name] = el;
       });
     }
-    if(!this._predefined[name]){
+		else if(!this._predefined[name]){
       this.find_rows({predefined_name: name}, (el) => {
         this._predefined[name] = el;
       });
