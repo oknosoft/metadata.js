@@ -54,6 +54,7 @@ const styles = theme => ({
 
 function AppDrawer(props) {
   const {classes, className, disablePermanent, mobileOpen, onClose, onPermanentClose, handleNavigate, isHome, items, title} = props;
+  const {base} = $p.job_prm;
 
   const navigation = (
     <div className={classes.nav}>
@@ -63,7 +64,7 @@ function AppDrawer(props) {
             className={classes.title}
             onClick={() => {
               onClose();
-              !isHome && handleNavigate('/');
+              !isHome && handleNavigate(`${base || ''}`);
             }}
           >
             <IconHome className={classes.marginRight}/>

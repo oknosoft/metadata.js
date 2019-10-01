@@ -472,6 +472,10 @@ class DynList extends MDNRComponent {
     return `${_mgr.metadata().list_presentation || _mgr.metadata().synonym} (список)`;
   }
 
+  get Toolbar() {
+    return DataListToolbar;
+  }
+
   onRowSelect(newState, fn) {
     this.setState(newState, fn);
     this.props.onRowSelect && this.props.onRowSelect(newState);
@@ -479,9 +483,9 @@ class DynList extends MDNRComponent {
 
   render() {
 
-    const {state, props, context, sizes, handleFilterChange, handleSchemeChange} = this;
+    const {state, props, context, sizes, handleFilterChange, handleSchemeChange, Toolbar} = this;
     const {columns, scheme, confirm_text, info_text, settings_open, rowCount} = state;
-    let {_mgr: {RepParams}, classes, title, registerFilterChange, width, height, GridRenderer, rowHeight, Toolbar, ...others} = props;
+    const {_mgr: {RepParams}, classes, title, registerFilterChange, width, height, GridRenderer, rowHeight, ...others} = props;
 
     if(!scheme) {
       return <LoadingMessage text="Чтение настроек компоновки..."/>;
@@ -511,10 +515,6 @@ class DynList extends MDNRComponent {
     };
 
     const sorting = scheme.first_sorting();
-
-    if(!Toolbar) {
-      Toolbar = DataListToolbar;
-    }
 
     return [
 

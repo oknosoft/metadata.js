@@ -67,9 +67,10 @@ class Reset extends Component {
   };
 
   handleReset = () => {
-    const {password, confirmPassword, token} = this.state;
+    const {state: {password, confirmPassword, token}, props} = this;
+    const {base} = $p.job_prm;
     if(password !== confirmPassword) {
-      this.props.handleIfaceState({
+      props.handleIfaceState({
         component: '',
         name: 'snack',
         value: {open: true, message: 'Не совпадают пароль и подтверждение пароля'},
@@ -78,10 +79,10 @@ class Reset extends Component {
     else {
       $p.superlogin.resetPassword({password, confirmPassword, token})
         .then(() => {
-          this.props.handleNavigate('/login');
+          props.handleNavigate(`${base || ''}/login`);
         })
         .catch((err) => {
-          this.props.handleIfaceState({
+          props.handleIfaceState({
             component: '',
             name: 'snack',
             value: {open: true, message: err.error || err.toString()},

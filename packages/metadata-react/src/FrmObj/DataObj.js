@@ -131,7 +131,8 @@ class DataObj extends MDNRComponent {
   handleClose() {
     const {handlers, _mgr} = this.props;
     const {_obj} = this.state;
-    handlers.handleNavigate(`/${_mgr.class_name}/list${_obj ? '/?ref=' + _obj.ref : ''}`);
+    const {base} = $p.job_prm;
+    handlers.handleNavigate(`${base || ''}/${_mgr.class_name}/list${_obj ? '/?ref=' + _obj.ref : ''}`);
   }
 
   handleSaveClose() {
@@ -242,8 +243,12 @@ class DataObj extends MDNRComponent {
     return ltitle;
   }
 
+  get Toolbar() {
+    return DataObjToolbar;
+  }
+
   render() {
-    let {props: {_mgr, classes, Toolbar}, state: {_obj, _meta, _attachments}, context, _handlers} = this;
+    const {props: {_mgr, classes}, state: {_obj, _meta, _attachments}, context, _handlers, Toolbar} = this;
     const toolbar_props = Object.assign({
       closeButton: !context.dnr,
       posted: _obj && _obj.posted,
@@ -252,10 +257,6 @@ class DataObj extends MDNRComponent {
       deletable: !_meta.read_only,
       _obj,
     }, _handlers);
-
-    if(!Toolbar) {
-      Toolbar = DataObjToolbar;
-    }
 
     return _obj ?
       [

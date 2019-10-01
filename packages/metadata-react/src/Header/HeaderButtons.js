@@ -28,6 +28,7 @@ function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavig
   const offline_tooltip = offline ? 'Сервер недоступен' : 'Подключение установлено';
   const sync_tooltip = `Синхронизация ${user.logged_in && sync_started ? 'выполняется' : 'отключена'}`;
   const login_tooltip = `${user.name}${user.logged_in ? '\n(подключен к серверу)' : '\n(автономный режим)'}`;
+  const {base} = $p.job_prm;
 
   return [
 
@@ -49,7 +50,7 @@ function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavig
       }
     </IconButton>,
 
-    <IconButton key="logged_in" title={login_tooltip} onClick={() => handleNavigate('/login')}>
+    <IconButton key="logged_in" title={login_tooltip} onClick={() => handleNavigate(`${base || ''}/login`)}>
       {user.logged_in ? <PersonOutline color="inherit"/> : <AccountOff color="inherit"/>}
     </IconButton>,
 

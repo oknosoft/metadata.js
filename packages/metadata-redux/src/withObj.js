@@ -13,7 +13,8 @@ const mapDispatchToProps = (dispatch) => {
       return dispatch(iface_state(state));
     },
     handleAdd(_mgr) {
-      return dispatch(push(`/${_mgr.class_name}/${$p.utils.generate_guid()}${_mgr.hasOwnProperty('_cachable') ? '?area=' + _mgr._cachable : ''}`));
+      const {base} = $p.job_prm;
+      return dispatch(push(`${base || ''}/${_mgr.class_name}/${$p.utils.generate_guid()}${_mgr.hasOwnProperty('_cachable') ? '?area=' + _mgr._cachable : ''}`));
     },
     handleAddRow() {
 
@@ -22,7 +23,8 @@ const mapDispatchToProps = (dispatch) => {
 
     },
     handleEdit({ref, _mgr}) {
-      return dispatch(push(`/${_mgr.class_name}/${ref}`));
+      const {base} = $p.job_prm;
+      return dispatch(push(`${base || ''}/${_mgr.class_name}/${ref}`));
     },
     handlePost() {
 

@@ -21,6 +21,7 @@ export default withStyles(theme => ({
   flex: {
     flex: 1,
     whiteSpace: 'nowrap',
+    overflow: 'hidden',
   },
   inline: {
     display: 'inline-flex',
