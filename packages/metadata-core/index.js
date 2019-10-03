@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.20-beta.7, built:2019-09-30
+ metadata-core v2.0.21-beta.1, built:2019-10-03
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -555,6 +555,7 @@ class TabularSectionRow {
 }
 
 var data_tabulars = /*#__PURE__*/Object.freeze({
+	__proto__: null,
 	TabularSection: TabularSection,
 	TabularSectionRow: TabularSectionRow
 });
@@ -1414,6 +1415,7 @@ class RegisterRow extends DataObj {
 }
 
 var data_objs = /*#__PURE__*/Object.freeze({
+	__proto__: null,
 	InnerData: InnerData,
 	BaseDataObj: BaseDataObj,
 	DataObj: DataObj,
@@ -2903,6 +2905,7 @@ class BusinessProcessManager extends CatManager{
 }
 
 var data_managers = /*#__PURE__*/Object.freeze({
+	__proto__: null,
 	DataManager: DataManager,
 	RefDataManager: RefDataManager,
 	DataProcessorsManager: DataProcessorsManager,
@@ -4609,7 +4612,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.20-beta.7";
+    return "2.0.21-beta.1";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
