@@ -285,6 +285,9 @@ export class BaseDataObj {
             continue;
           }
           res[fld] = _obj[fld];
+          if(fld === 'type' && typeof res[fld] === 'object') {
+            delete res[fld]._mgr;
+          }
         }
       }
     }

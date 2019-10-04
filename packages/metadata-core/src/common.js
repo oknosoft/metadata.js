@@ -238,7 +238,7 @@ class MetaEngine {
             // если superlogin, всю онформацию о пользователе получаем из sl_users
             user = superlogin.create_user();
           }
-          else {
+          else if(this.job_prm.use_ram !== false) {
             cat.users.find_rows_remote({
               _top: 1,
               id: user_name,

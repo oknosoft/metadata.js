@@ -177,7 +177,7 @@ function adapter({AbstracrAdapter}) {
     after_log_in() {
 
       const {props, local, remote, $p: {md, wsql}} = this;
-      const try_auth = [];
+      const run_sync = [];
 
       md.bases().forEach((dbid) => {
         if(dbid !== 'meta' &&
@@ -187,14 +187,17 @@ function adapter({AbstracrAdapter}) {
           if(props.noreplicate && props.noreplicate.includes(dbid)) {
             return;
           }
-          try_auth.push(this.run_sync(dbid));
+          run_sync.push(this.run_sync(dbid));
         }
       });
 
-      return Promise.all(try_auth)
+      return Promise.all(run_sync)
         .then(() => {
           // широковещательное оповещение об окончании загрузки локальных данных
-          if(local._loading) {
+          if(props.use_ram === false) {
+            ;
+          }
+          else if(local._loading) {
             return new Promise((resolve, reject) => {
               this.once('pouch_data_loaded', resolve);
             });
@@ -300,6 +303,13 @@ function adapter({AbstracrAdapter}) {
                 props._suffix = '0' + props._suffix;
               }
             }
+
+            wsql.set_user_param('authenticated', JSON.stringify({
+              suffix: props._suffix,
+              user: props._user,
+              push_only: props._push_only,
+              direct: props.direct,
+            }));
 
             return true;
           })

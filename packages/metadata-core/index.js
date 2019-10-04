@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.21-beta.1, built:2019-10-03
+ metadata-core v2.0.21-beta.1, built:2019-10-04
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -752,6 +752,9 @@ class BaseDataObj {
             continue;
           }
           res[fld] = _obj[fld];
+          if(fld === 'type' && typeof res[fld] === 'object') {
+            delete res[fld]._mgr;
+          }
         }
       }
     }
@@ -4676,7 +4679,7 @@ class MetaEngine {
           if (superlogin) {
             user = superlogin.create_user();
           }
-          else {
+          else if(this.job_prm.use_ram !== false) {
             cat.users.find_rows_remote({
               _top: 1,
               id: user_name,

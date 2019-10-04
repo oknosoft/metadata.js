@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.21-beta.1, built:2019-10-03
+ metadata-pouchdb v2.0.21-beta.1, built:2019-10-04
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -529,7 +529,7 @@ function adapter({AbstracrAdapter}) {
     }
     after_log_in() {
       const {props, local, remote, $p: {md, wsql}} = this;
-      const try_auth = [];
+      const run_sync = [];
       md.bases().forEach((dbid) => {
         if(dbid !== 'meta' &&
           local[dbid] && remote[dbid] && local[dbid] != remote[dbid] &&
@@ -538,12 +538,13 @@ function adapter({AbstracrAdapter}) {
           if(props.noreplicate && props.noreplicate.includes(dbid)) {
             return;
           }
-          try_auth.push(this.run_sync(dbid));
+          run_sync.push(this.run_sync(dbid));
         }
       });
-      return Promise.all(try_auth)
+      return Promise.all(run_sync)
         .then(() => {
-          if(local._loading) {
+          if(props.use_ram === false) ;
+          else if(local._loading) {
             return new Promise((resolve, reject) => {
               this.once('pouch_data_loaded', resolve);
             });
@@ -629,6 +630,12 @@ function adapter({AbstracrAdapter}) {
                 props._suffix = '0' + props._suffix;
               }
             }
+            wsql.set_user_param('authenticated', JSON.stringify({
+              suffix: props._suffix,
+              user: props._user,
+              push_only: props._push_only,
+              direct: props.direct,
+            }));
             return true;
           })
           .catch((err) => {
