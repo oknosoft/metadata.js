@@ -68,7 +68,7 @@ class Reset extends Component {
 
   handleReset = () => {
     const {state: {password, confirmPassword, token}, props} = this;
-    const {base} = $p.job_prm;
+    const base = typeof $p === 'object' ? $p.job_prm.base : '';
     if(password !== confirmPassword) {
       props.handleIfaceState({
         component: '',

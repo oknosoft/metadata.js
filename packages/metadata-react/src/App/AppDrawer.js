@@ -54,7 +54,7 @@ const styles = theme => ({
 
 function AppDrawer(props) {
   const {classes, className, disablePermanent, mobileOpen, onClose, onPermanentClose, handleNavigate, isHome, items, title} = props;
-  const {base} = $p.job_prm;
+  const base = typeof $p === 'object' ? $p.job_prm.base : '';
 
   const navigation = (
     <div className={classes.nav}>

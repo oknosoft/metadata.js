@@ -131,7 +131,7 @@ class DataObj extends MDNRComponent {
   handleClose() {
     const {handlers, _mgr} = this.props;
     const {_obj} = this.state;
-    const {base} = $p.job_prm;
+    const base = typeof $p === 'object' ? $p.job_prm.base : '';
     handlers.handleNavigate(`${base || ''}/${_mgr.class_name}/list${_obj ? '/?ref=' + _obj.ref : ''}`);
   }
 
