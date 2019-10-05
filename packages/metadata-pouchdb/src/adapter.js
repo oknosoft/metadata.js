@@ -304,13 +304,6 @@ function adapter({AbstracrAdapter}) {
               }
             }
 
-            wsql.set_user_param('authenticated', JSON.stringify({
-              suffix: props._suffix,
-              user: props._user,
-              push_only: props._push_only,
-              direct: props.direct,
-            }));
-
             return true;
           })
           .catch((err) => {

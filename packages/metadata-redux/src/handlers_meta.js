@@ -11,12 +11,12 @@ import {ADD, CHANGE} from './actions_obj';
 
 export default {
 
-  [META_LOADED]: (state, action) => {
+  [META_LOADED]: (state) => {
     return Object.assign({}, state, {meta_loaded: true});
   },
 
-  [PRM_CHANGE]: (state, action) => {
-    const {name, value} = action.payload;
+  [PRM_CHANGE]: (state, {payload}) => {
+    const {name, value} = payload;
     if(typeof $p !== 'object') {
       return;
     }
@@ -38,41 +38,41 @@ export default {
     return Object.assign({}, state);
   },
 
-  [OFFLINE]: (state, action) => Object.assign({}, state, {offline: action.payload}),
+  [OFFLINE]: (state, {payload}) => Object.assign({}, state, {offline: payload}),
 
-  [IDLE]: (state, action) => Object.assign({}, state, {idle: action.payload}),
+  [IDLE]: (state, {payload}) => Object.assign({}, state, {idle: payload}),
 
   [SECOND_INSTANCE]: (state, action) => Object.assign({}, state, {second_instance: true}),
 
-  [DATA_LOADED]: (state, action) => {
+  [DATA_LOADED]: (state, {payload: name}) => {
     const payload = {data_loaded: true, fetch: false};
-    if(action.payload == 'doc_ram') {
+    if(name == 'doc_ram') {
       payload.doc_ram_loaded = true;
     }
-    else if(action.payload == 'complete') {
+    else if(name == 'complete') {
       payload.complete_loaded = true;
     }
     return Object.assign({}, state, payload);
   },
 
-  [DATA_PAGE]: (state, action) => Object.assign({}, state, {page: action.payload}),
+  [DATA_PAGE]: (state, {payload}) => Object.assign({}, state, {page: payload}),
 
-  [DATA_ERROR]: (state, action) => Object.assign({}, state, {err: action.payload, fetch: false}),
+  [DATA_ERROR]: (state, {payload}) => Object.assign({}, state, {err: payload, fetch: false}),
 
-  [LOAD_START]: (state, action) => Object.assign({}, state, {data_empty: false, fetch: true}),
+  [LOAD_START]: (state) => Object.assign({}, state, {data_empty: false, fetch: true}),
 
-  [AUTOLOGIN]: (state, action) => Object.assign({}, state, {autologin: true}),
+  [AUTOLOGIN]: (state) => Object.assign({}, state, {autologin: true}),
 
-  [NO_DATA]: (state, action) => Object.assign({}, state, {data_empty: true, first_run: true, fetch: false}),
+  [NO_DATA]: (state, {payload}) => Object.assign({}, state, {data_empty: true, first_run: payload.dbid !== 'no_ram', fetch: false}),
 
-  [SYNC_DATA]: (state, action) => Object.assign({}, state, {fetch: !!action.payload}),
+  [SYNC_DATA]: (state, {payload}) => Object.assign({}, state, {fetch: !!payload}),
 
-  [SYNC_PAUSED]: (state, action) => Object.assign({}, state, {sync_started: false}),
+  [SYNC_PAUSED]: (state) => Object.assign({}, state, {sync_started: false}),
 
-  [SYNC_RESUMED]: (state, action) => Object.assign({}, state, {sync_started: true}),
+  [SYNC_RESUMED]: (state) => Object.assign({}, state, {sync_started: true}),
 
-  [SYNC_ERROR]: (state, action) => {
-    const {err} = action.payload;
+  [SYNC_ERROR]: (state, {payload}) => {
+    const {err} = payload;
     if(err && err.error == 'forbidden') {
       return reset_user(state);
     }
@@ -82,23 +82,23 @@ export default {
     return state;
   },
 
-  [DEFINED]: (state, action) => {
+  [DEFINED]: (state, {payload}) => {
     const user = Object.assign({}, state.user);
-    user.name = action.payload;
+    user.name = payload;
     return Object.assign({}, state, {user});
   },
 
-  [LOG_IN]: (state, action) => {
+  [LOG_IN]: (state, {payload}) => {
     const user = Object.assign({}, state.user, {
-      logged_in: action.payload ? true : false,
-      stop_log_in: action.payload ? false : true,
+      logged_in: payload ? true : false,
+      stop_log_in: payload ? false : true,
       try_log_in: false,
       log_error: ''
     });
     return Object.assign({}, state, {user, idle: false});
   },
 
-  [TRY_LOG_IN]: (state, action) => {
+  [TRY_LOG_IN]: (state) => {
     const user = Object.assign({}, state.user, {
       try_log_in: true,
       stop_log_in: false,
@@ -107,18 +107,18 @@ export default {
     return Object.assign({}, state, {user});
   },
 
-  [LOG_OUT]: (state, action) => {
+  [LOG_OUT]: (state) => {
     return reset_user(state, true);
   },
 
-  [LOG_ERROR]: (state, action) => {
+  [LOG_ERROR]: (state, {payload}) => {
     const reseted = reset_user(state);
-    reseted.user.log_error = action.payload;
+    reseted.user.log_error = payload;
     return reseted;
   },
 
   [ADD]: (state, action) => state,
 
-  [CHANGE]: (state, action) => Object.assign({}, state, {obj_change: action.payload}),
+  [CHANGE]: (state, {payload}) => Object.assign({}, state, {obj_change: payload}),
 
 };

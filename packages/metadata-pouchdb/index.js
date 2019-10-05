@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.21-beta.1, built:2019-10-04
+ metadata-pouchdb v2.0.21-beta.2, built:2019-10-05
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -630,12 +630,6 @@ function adapter({AbstracrAdapter}) {
                 props._suffix = '0' + props._suffix;
               }
             }
-            wsql.set_user_param('authenticated', JSON.stringify({
-              suffix: props._suffix,
-              user: props._user,
-              push_only: props._push_only,
-              direct: props.direct,
-            }));
             return true;
           })
           .catch((err) => {
