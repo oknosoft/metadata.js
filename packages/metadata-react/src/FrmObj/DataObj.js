@@ -93,13 +93,12 @@ class DataObj extends MDNRComponent {
   }
 
   componentDidMount() {
-    const {_mgr, match} = this.props;
-
-    _mgr.get(match.params.ref, 'promise')
+    const {_mgr, match: {params}} = this.props;
+    const get = params.num && _mgr.by_num ? _mgr.by_num(params.num) : _mgr.get(params.ref, 'promise');
+    get
       .then((_obj) => _obj.load_linked_refs())
-      .then((_obj) => {
-        this.setState({_obj}, () => this.shouldComponentUpdate(this.props));
-      });
+      .then((_obj) => this.setState({_obj}, () => this.shouldComponentUpdate(this.props)))
+      .catch(this.handleError);
 
     _mgr.on({update: this.onDataChange, mixin: this.onDataChange});
   }
@@ -146,6 +145,9 @@ class DataObj extends MDNRComponent {
   handlePrint = (model) => {
     const {_obj} = this.state;
     _obj && _obj._manager.print(_obj, model);
+  };
+
+  handleError = (err) => {
   };
 
   handleAttachments() {
