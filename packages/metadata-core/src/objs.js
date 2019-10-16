@@ -887,13 +887,13 @@ export class DataObj extends BaseDataObj {
     const res = [];
     for(const [adapter, mdb] of adapters) {
       for(const [db, refs] of mdb) {
-        res.push(adapter.load_array(null, Array.from(refs), false, db));
+        res.push(adapter
+          .load_array(null, Array.from(refs), false, db)
+          .catch((err) => null));
       }
     }
 
-    return Promise.all(res)
-      .catch((err) => null)
-      .then(() => this);
+    return Promise.all(res).then(() => this);
   }
 
   /**

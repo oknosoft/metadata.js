@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.21-beta.2, built:2019-10-15
+ metadata-core v2.0.21-beta.2, built:2019-10-16
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1111,12 +1111,12 @@ class DataObj extends BaseDataObj {
     const res = [];
     for(const [adapter, mdb] of adapters) {
       for(const [db, refs] of mdb) {
-        res.push(adapter.load_array(null, Array.from(refs), false, db));
+        res.push(adapter
+          .load_array(null, Array.from(refs), false, db)
+          .catch((err) => null));
       }
     }
-    return Promise.all(res)
-      .catch((err) => null)
-      .then(() => this);
+    return Promise.all(res).then(() => this);
   }
   get_attachment(att_id) {
     const {_manager, ref} = this;
