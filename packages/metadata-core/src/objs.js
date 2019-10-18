@@ -442,6 +442,9 @@ export class BaseDataObj {
       }
       DataObj.fix_collection(this, _obj, sys_fields);
     }
+    else if(utils.is_doc_obj(this)) {
+      DataObj.fix_collection(this, _obj, {date: this._metadata('date')});
+    }
 
     for (const ts in tabular_sections) {
       if(Array.isArray(_obj[ts])){

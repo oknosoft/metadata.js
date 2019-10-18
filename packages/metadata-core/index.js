@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.21-beta.2, built:2019-10-16
+ metadata-core v2.0.21-beta.2, built:2019-10-18
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -843,6 +843,9 @@ class BaseDataObj {
         sys_fields.owner = this._metadata('owner');
       }
       DataObj.fix_collection(this, _obj, sys_fields);
+    }
+    else if(utils.is_doc_obj(this)) {
+      DataObj.fix_collection(this, _obj, {date: this._metadata('date')});
     }
     for (const ts in tabular_sections) {
       if(Array.isArray(_obj[ts])){
