@@ -11,6 +11,7 @@ import TextField from '@material-ui/core/TextField';
 import IconButton from '@material-ui/core/IconButton';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Keyboard from '@material-ui/icons/Keyboard';
+import cn from 'classnames';
 
 import Calculator from '../Calculator';
 
@@ -56,7 +57,16 @@ class FieldNumber extends AbstractField {
   render() {
 
     const {state, props, _meta, isTabular} = this;
-    const {_obj, _fld, classes, read_only, fullWidth} = props;
+    const {_obj, _fld, classes, className, read_only, fullWidth} = props;
+    const inputProps={readOnly: Boolean(read_only)};
+    if(navigator.userAgent.match(/android|ios|iphone/i)) {
+      inputProps.type = 'number'
+    }
+    else {
+      inputProps.endAdornment = !read_only && (state.focused || state.isCalculatorVisible) ? <InputAdornment position="end">
+        <IconButton onClick={this.handleInputClick} tabIndex={-1}><Keyboard /></IconButton>
+      </InputAdornment>  : undefined;
+    }
 
     // Render plain html input in cell of table.
     return (
@@ -78,7 +88,7 @@ class FieldNumber extends AbstractField {
           />
           :
           <TextField
-            className={classes.formControl}
+            className={cn(classes.formControl, className)}
             fullWidth={fullWidth}
             label={_meta.synonym}
             title={_meta.tooltip || _meta.synonym}
@@ -86,12 +96,7 @@ class FieldNumber extends AbstractField {
             onChange={this.onChange}
             onFocus={this.handleFocus}
             onBlur={this.handleBlur}
-            InputProps={{
-              readOnly: Boolean(read_only),
-              endAdornment: !read_only && (state.focused || state.isCalculatorVisible) ? <InputAdornment position="end">
-                <IconButton onClick={this.handleInputClick} tabIndex={-1}><Keyboard /></IconButton>
-              </InputAdornment>  : undefined,
-            }}
+            InputProps={inputProps}
           />
         }
       </div>

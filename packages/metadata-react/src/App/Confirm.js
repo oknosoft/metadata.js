@@ -20,8 +20,8 @@ export default function Confirm({text, title, children, handleOk, handleCancel, 
 }
 
 Confirm.propTypes = {
-  title: PropTypes.string.isRequired,
-  text: PropTypes.string,
+  title: PropTypes.node.isRequired,
+  text: PropTypes.node,
   children: PropTypes.node,
   handleOk: PropTypes.func.isRequired,
   handleCancel: PropTypes.func.isRequired,

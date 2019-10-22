@@ -18,8 +18,8 @@ export default function Alert({text, title, handleOk, open}) {
 }
 
 Alert.propTypes = {
-  text: PropTypes.string.isRequired,
-  title: PropTypes.string.isRequired,
+  text: PropTypes.node.isRequired,
+  title: PropTypes.node.isRequired,
   handleOk: PropTypes.func.isRequired,
   open: PropTypes.bool,
 };

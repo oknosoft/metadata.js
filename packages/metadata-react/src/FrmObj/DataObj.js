@@ -97,10 +97,11 @@ class DataObj extends MDNRComponent {
     const get = params.num && _mgr.by_num ? _mgr.by_num(params.num) : _mgr.get(params.ref, 'promise');
     get
       .then((_obj) => _obj.load_linked_refs())
-      .then((_obj) => this.setState({_obj}, () => this.shouldComponentUpdate(this.props)))
+      .then((_obj) => this.setState({_obj}, () => {
+        _mgr.on({update: this.onDataChange, mixin: this.onDataChange});
+        this.shouldComponentUpdate(this.props);
+      }))
       .catch(this.handleError);
-
-    _mgr.on({update: this.onDataChange, mixin: this.onDataChange});
   }
 
   componentWillUnmount() {
