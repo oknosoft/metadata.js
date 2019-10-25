@@ -4,9 +4,10 @@ import Button from '@material-ui/core/Button';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Dialog from './Dialog';
 
-export default function Confirm({text, title, children, handleOk, handleCancel, open}) {
+export default function Confirm({text, html, title, children, handleOk, handleCancel, open, initFullScreen}) {
   return <Dialog
     open={open}
+    initFullScreen={initFullScreen}
     title={title}
     onClose={handleCancel}
     actions={[
@@ -15,6 +16,7 @@ export default function Confirm({text, title, children, handleOk, handleCancel, 
     ]}
   >
     {text && <DialogContentText>{text}</DialogContentText>}
+    {html && <div dangerouslySetInnerHTML={{__html: html}}/>}
     {children}
   </Dialog>;
 }
@@ -22,8 +24,10 @@ export default function Confirm({text, title, children, handleOk, handleCancel, 
 Confirm.propTypes = {
   title: PropTypes.node.isRequired,
   text: PropTypes.node,
+  html: PropTypes.string,
   children: PropTypes.node,
   handleOk: PropTypes.func.isRequired,
   handleCancel: PropTypes.func.isRequired,
   open: PropTypes.bool,
+  initFullScreen: PropTypes.bool,
 };

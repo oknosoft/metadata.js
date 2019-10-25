@@ -123,11 +123,7 @@ export default {
    * @param timeout
    * @return {Promise}
    */
-  confirm({
-            title = 'Внимание',
-            text,
-            timeout = 60000,
-          }) {
+  confirm({title = 'Внимание', text, html, initFullScreen, timeout = 60000}) {
     if(!this._handleIfaceState) {
       return Promise.reject('init');
     }
@@ -160,13 +156,7 @@ export default {
       this._handleIfaceState({
         component: '',
         name: 'confirm',
-        value: {
-          open: true,
-          title,
-          text,
-          handleOk: close_confirm,
-          handleCancel: reject_confirm,
-        }
+        value: {open: true, title, text, html, initFullScreen, handleOk: close_confirm, handleCancel: reject_confirm}
       });
 
     });
@@ -179,11 +169,7 @@ export default {
    * @param timeout
    * @return {Promise}
    */
-  alert({
-            title = 'Внимание',
-            text,
-            timeout = 60000,
-          }) {
+  alert({title = 'Внимание', text, html, initFullScreen, timeout = 60000}) {
     if(!this._handleIfaceState) {
       return Promise.reject('init');
     }
@@ -207,12 +193,7 @@ export default {
       this._handleIfaceState({
         component: '',
         name: 'alert',
-        value: {
-          open: true,
-          title,
-          text,
-          handleOk: close_confirm,
-        }
+        value: {open: true, title, text, html, initFullScreen, handleOk: close_confirm}
       });
 
     });
