@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.21-beta.2, built:2019-10-18
+ metadata-core v2.0.21-beta.2, built:2019-10-25
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1157,8 +1157,8 @@ class DataObj extends BaseDataObj {
   broken_links() {
     const res = [];
     const {fields, tabular_sections} = this._metadata();
-    const {_obj, _manager} = this;
-    const {md, utils} = _manager._owner.$p;
+    const {_obj, _manager: {_owner}} = this;
+    const {md, utils} = _owner.$p;
     if(this.empty() || this.is_new()){
       return res;
     }
@@ -1271,6 +1271,44 @@ class CatObj extends DataObj {
       return parent._hierarchy(group);
     }
     return group == utils.blank.guid;
+  }
+  _extra(name) {
+    const {extra_fields, _manager: {_owner}} = this;
+    const {cch, md} = _owner.$p;
+    if(!extra_fields || !cch.properties) {
+      return;
+    }
+    const property = cch.properties.predefined(name);
+    if(!property) {
+      return;
+    }
+    const row = extra_fields.find(property.ref, 'property');
+    if(row) {
+      return row.value;
+    }
+    const {types, is_ref} = property.type;
+    if(is_ref && types.length === 1) {
+      const mgr = md.mgr_by_class_name(types[0]);
+      return mgr && mgr.get();
+    }
+  }
+  _extra_set(name, value) {
+    const {extra_fields, _manager: {_owner}} = this;
+    const {cch, md} = _owner.$p;
+    if(!extra_fields || !cch.properties) {
+      return;
+    }
+    const property = cch.properties.predefined(name);
+    if(!property) {
+      return;
+    }
+    const row = extra_fields.find(property.ref, 'property');
+    if(row) {
+      row.value = value;
+    }
+    else {
+      extra_fields.add({property, value});
+    }
   }
 }
 const NumberDocAndDate = (superclass) => class extends superclass {
@@ -1857,6 +1895,9 @@ class DataManager extends MetaEventEmitter{
       }
     });
   }
+  forEach(fn) {
+    return this.each(fn);
+  }
 }
 class RefDataManager extends DataManager{
 	push(o, new_ref){
@@ -1876,9 +1917,6 @@ class RefDataManager extends DataManager{
       }
     }
   }
-	forEach(fn) {
-		return this.each(fn);
-	}
 	get(ref, do_not_create){
 		const rp = 'promise';
 		if(!ref || typeof ref !== 'string'){
@@ -2548,7 +2586,7 @@ class RegisterManager extends DataManager{
 			this.by_ref[new_ref] = o;
 		} else
 			this.by_ref[o.ref] = o;
-	};
+	}
 	get(attr, return_row) {
 		if (!attr)
 			attr = {};
@@ -2572,7 +2610,7 @@ class RegisterManager extends DataManager{
 			}
 		}
 		return res;
-	};
+	}
 	load_array(aattr, forse) {
 		const res = [];
     for (const row of aattr) {
@@ -2593,7 +2631,7 @@ class RegisterManager extends DataManager{
       res.push(obj);
     }
 		return res;
-	};
+	}
 	get_sql_struct(attr) {
 		const {sql_mask, sql_type} = this._owner.$p.md;
 		var t = this,
@@ -2839,6 +2877,13 @@ class RegisterManager extends DataManager{
 		}
 		return Promise.resolve(o);
 	}
+  each(fn) {
+    for (const i in this.by_ref) {
+      if(fn.call(this, this.by_ref[i]) === true) {
+        break;
+      }
+    }
+  }
 }
 class InfoRegManager extends RegisterManager{
 	slice_first(filter){

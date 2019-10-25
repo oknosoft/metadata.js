@@ -969,8 +969,8 @@ export class DataObj extends BaseDataObj {
   broken_links() {
     const res = [];
     const {fields, tabular_sections} = this._metadata();
-    const {_obj, _manager} = this;
-    const {md, utils} = _manager._owner.$p;
+    const {_obj, _manager: {_owner}} = this;
+    const {md, utils} = _owner.$p;
 
     if(this.empty() || this.is_new()){
       return res;
@@ -1120,7 +1120,6 @@ export class CatObj extends DataObj {
   /**
    * ### Родители
    * Возвращает массив родителей, в иерархии которых находится текущий элемент
-   * @private
    */
   _parents() {
     const res = [];
@@ -1135,9 +1134,7 @@ export class CatObj extends DataObj {
   /**
    * ### В иерархии
    * Выясняет, находится ли текущий объект в указанной группе
-   *
    * @param group {Object|Array} - папка или массив папок
-   *
    */
   _hierarchy(group) {
     if(Array.isArray(group)) {
@@ -1151,6 +1148,55 @@ export class CatObj extends DataObj {
       return parent._hierarchy(group);
     }
     return group == utils.blank.guid;
+  }
+
+  /**
+   * ### Значение допреквизита по имени
+   * @param name
+   */
+  _extra(name) {
+    const {extra_fields, _manager: {_owner}} = this;
+    const {cch, md} = _owner.$p;
+    if(!extra_fields || !cch.properties) {
+      return;
+    }
+    const property = cch.properties.predefined(name);
+    if(!property) {
+      return;
+    }
+    const row = extra_fields.find(property.ref, 'property');
+    if(row) {
+      return row.value;
+    }
+    const {types, is_ref} = property.type;
+    if(is_ref && types.length === 1) {
+      const mgr = md.mgr_by_class_name(types[0]);
+      return mgr && mgr.get();
+    }
+  }
+
+  /**
+   * ### Устанавливает значение допреквизита
+   * @param name
+   * @param value
+   */
+  _extra_set(name, value) {
+    const {extra_fields, _manager: {_owner}} = this;
+    const {cch, md} = _owner.$p;
+    if(!extra_fields || !cch.properties) {
+      return;
+    }
+    const property = cch.properties.predefined(name);
+    if(!property) {
+      return;
+    }
+    const row = extra_fields.find(property.ref, 'property');
+    if(row) {
+      row.value = value;
+    }
+    else {
+      extra_fields.add({property, value});
+    }
   }
 
 
