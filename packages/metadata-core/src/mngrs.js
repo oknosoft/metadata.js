@@ -543,6 +543,12 @@ export class DataManager extends MetaEventEmitter{
     });
   }
 
+  /**
+   * Синоним для each()
+   */
+  forEach(fn) {
+    return this.each(fn);
+  }
 }
 
 /**
@@ -585,13 +591,6 @@ export class RefDataManager extends DataManager{
       }
     }
   }
-
-	/**
-	 * Синоним для each()
-	 */
-	forEach(fn) {
-		return this.each(fn);
-	}
 
 	/**
 	 * Возвращает объект по ссылке (читает из датабазы или локального кеша) если идентификатор пуст, создаёт новый объект
@@ -1550,7 +1549,7 @@ export class RegisterManager extends DataManager{
 			this.by_ref[new_ref] = o;
 		} else
 			this.by_ref[o.ref] = o;
-	};
+	}
 
 	/**
 	 * Возвращает массив записей c заданным отбором либо запись по ключу
@@ -1591,7 +1590,7 @@ export class RegisterManager extends DataManager{
 		}
 
 		return res;
-	};
+	}
 
 	/**
 	 * сохраняет массив объектов в менеджере
@@ -1624,7 +1623,7 @@ export class RegisterManager extends DataManager{
     }
 
 		return res;
-	};
+	}
 
 	/**
 	 * Возаращает запросов для создания таблиц или извлечения данных
@@ -1964,7 +1963,6 @@ export class RegisterManager extends DataManager{
 		return key;
 	}
 
-
 	create(attr){
 
 		if(!attr || typeof attr != "object")
@@ -1989,6 +1987,19 @@ export class RegisterManager extends DataManager{
 
 		return Promise.resolve(o);
 	}
+
+  /**
+   * Выполняет перебор элементов локальной коллекции
+   * @method each
+   * @param fn {Function} - функция, вызываемая для каждого элемента локальной коллекции
+   */
+  each(fn) {
+    for (const i in this.by_ref) {
+      if(fn.call(this, this.by_ref[i]) === true) {
+        break;
+      }
+    }
+  }
 
 }
 
