@@ -16,18 +16,18 @@ if(typeof process !== 'undefined' && process.versions && process.versions.node) 
     .plugin(require('pouchdb-find'))
     .plugin(require('pouchdb-adapter-memory'));
 }
+else if(typeof window !== 'undefined' && window.PouchDB) {
+  PouchDB = window.PouchDB;
+}
 else {
-  if(window.PouchDB) {
-    PouchDB = window.PouchDB;
-  }
-  else {
-    //const ua = (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent.toLowerCase() : '';
-    PouchDB = window.PouchDB = require('pouchdb-core').default
-      .plugin(require('pouchdb-adapter-http').default)
-      .plugin(require('pouchdb-replication').default)
-      .plugin(require('pouchdb-mapreduce').default)
-      .plugin(require('pouchdb-find').default)
-      .plugin(require('pouchdb-adapter-idb').default);
+  PouchDB = require('pouchdb-core').default
+    .plugin(require('pouchdb-adapter-http').default)
+    .plugin(require('pouchdb-replication').default)
+    .plugin(require('pouchdb-mapreduce').default)
+    .plugin(require('pouchdb-find').default)
+    .plugin(require('pouchdb-adapter-idb').default);
+  if(typeof window !== 'undefined') {
+    window.PouchDB = PouchDB;
   }
 }
 

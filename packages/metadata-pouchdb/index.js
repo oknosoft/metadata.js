@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.21-beta.2, built:2019-10-15
+ metadata-pouchdb v2.0.21-beta.2, built:2019-10-27
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -413,17 +413,18 @@ if(typeof process !== 'undefined' && process.versions && process.versions.node) 
     .plugin(require('pouchdb-find'))
     .plugin(require('pouchdb-adapter-memory'));
 }
+else if(typeof window !== 'undefined' && window.PouchDB) {
+  PouchDB = window.PouchDB;
+}
 else {
-  if(window.PouchDB) {
-    PouchDB = window.PouchDB;
-  }
-  else {
-    PouchDB = window.PouchDB = require('pouchdb-core').default
-      .plugin(require('pouchdb-adapter-http').default)
-      .plugin(require('pouchdb-replication').default)
-      .plugin(require('pouchdb-mapreduce').default)
-      .plugin(require('pouchdb-find').default)
-      .plugin(require('pouchdb-adapter-idb').default);
+  PouchDB = require('pouchdb-core').default
+    .plugin(require('pouchdb-adapter-http').default)
+    .plugin(require('pouchdb-replication').default)
+    .plugin(require('pouchdb-mapreduce').default)
+    .plugin(require('pouchdb-find').default)
+    .plugin(require('pouchdb-adapter-idb').default);
+  if(typeof window !== 'undefined') {
+    window.PouchDB = PouchDB;
   }
 }
 var PouchDB$1 = PouchDB;
